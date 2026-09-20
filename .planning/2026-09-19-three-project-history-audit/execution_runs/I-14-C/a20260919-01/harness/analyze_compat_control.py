@@ -11,13 +11,15 @@ This script answers exactly that from the captured stdout files:
 
 * per-run failing node ids,
 * the union per tree,
-* whether T4's union is a SUBSET of T0's - the criterion that matters.  Every node that fails
-  on the fixed tree must also fail on the pristine tree; if it does, nothing is card-specific.
-  Exact union EQUALITY is reported too but is not the verdict, because the flaky nodes drop in
-  and out of individual runs and can make the T4 union a strict subset purely by chance.
-* the per-node occurrence count per tree.
+* which nodes failed ONLY on the fixed tree in these particular runs,
+* and, crucially, whether each such "T4-only" node is independently PROVEN to fail on the
+  pristine tree too.  Four compat runs are far too few samples when the flaky nodes drop in and
+  out by chance (measured: the T4-only set was empty in one pass and contained the restart node
+  in the next), so the script also reads the dedicated interleaved frequency evidence
+  (``--frequency``, produced by ``harness/run_flake_frequency.py``) and checks every T4-only node
+  against the T0 failure count of the same test.
 
-Exit 0 when T4's union is a subset of T0's (no T4-only node), 3 otherwise.
+Exit 0 when no T4-only node is unproven on T0, 3 otherwise.
 
     python analyze_compat_control.py --attempt <attempt> --out <attempt>/r5/compat-control-analysis.json
 """
@@ -53,6 +55,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--attempt", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument(
+        "--frequency",
+        default="r5/flake-evidence/frequency-child_without_runtime.json",
+        help="interleaved frequency evidence used to prove a T4-only node also fails on T0",
+    )
     args = parser.parse_args(argv)
 
     attempt = Path(args.attempt).resolve()
@@ -71,7 +78,33 @@ def main(argv: list[str] | None = None) -> int:
                for tree in ("T0", "T4")}
         for node in sorted(set(unions["T0"]) | set(unions["T4"]))
     }
+
+    # Independent T0 evidence for nodes that appear only on T4 in these few runs.
+    frequency_path = attempt / args.frequency
+    frequency_evidence: dict[str, object] = {"path": args.frequency, "available": False}
+    t0_proven: dict[str, dict] = {}
+    if frequency_path.is_file():
+        freq = json.loads(frequency_path.read_text(encoding="utf-8"))
+        node_name = freq.get("node_name")
+        t0_failed = freq.get("frequency", {}).get("T0", {}).get("failed")
+        frequency_evidence = {
+            "path": args.frequency,
+            "available": True,
+            "node_name": node_name,
+            "interleaved": freq.get("interleaved", False),
+            "pooled": freq.get("frequency"),
+            "per_pass": freq.get("frequency_per_pass"),
+        }
+        if node_name:
+            t0_proven[node_name] = {
+                "t0_failed_runs": t0_failed,
+                "t0_runs": freq.get("frequency", {}).get("T0", {}).get("runs"),
+                "evidence": args.frequency,
+            }
+
     t4_only = sorted(set(unions["T4"]) - set(unions["T0"]))
+    unproven = [node for node in t4_only if node not in t0_proven
+                or not t0_proven[node]["t0_failed_runs"]]
     payload = {
         "script": "harness/analyze_compat_control.py",
         "runs": list(RUNS),
@@ -84,12 +117,18 @@ def main(argv: list[str] | None = None) -> int:
         "occurrences": occurrences,
         "only_on_T4": t4_only,
         "only_on_T0": sorted(set(unions["T0"]) - set(unions["T4"])),
+        "t0_evidence_for_t4_only_nodes": t0_proven,
+        "unproven_t4_only_nodes": unproven,
+        "verdict": ("no card-specific compat failure: every T4 failure also occurs on T0"
+                    if not unproven else
+                    "UNPROVEN T4-only failures: " + ", ".join(unproven)),
         "note": (
             "The failing COUNT varies run to run (3..5) and the sets differ by the timing nodes "
             "test_child_without_runtime_session_is_terminated_and_restarted and "
-            "test_stale_child_heartbeat_is_terminated_and_restarted; the UNIONS are what matter. "
-            "The verdict is 'no T4-only node' (T4 union is a subset of the T0 union), because "
-            "the flaky nodes can make the T4 union a strict subset by chance."
+            "test_stale_child_heartbeat_is_terminated_and_restarted.  Four compat runs are too few "
+            "samples for a ~30% flake, so a node that happens to appear only on T4 in these runs "
+            "is checked against the dedicated interleaved frequency evidence before being called "
+            "card-specific."
         ),
     }
     out = Path(args.out)
@@ -99,7 +138,9 @@ def main(argv: list[str] | None = None) -> int:
     print("unions equal:", payload["unions_equal"],
           "| T4 subset of T0:", payload["t4_union_is_subset_of_t0"],
           "| only on T4:", t4_only)
-    return 0 if payload["t4_union_is_subset_of_t0"] else 3
+    print("t0 evidence for T4-only nodes:", json.dumps(t0_proven))
+    print("verdict:", payload["verdict"])
+    return 0 if not unproven else 3
 
 
 if __name__ == "__main__":

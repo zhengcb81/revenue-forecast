@@ -19,16 +19,19 @@ MIN_BYTES = {
     "oracle.md": 5000,
     "decision.md": 8000,
     "commands.json": 3000,
-    "review.md": 2000,
+    "review.md": 10000,
     "handoff.json": 2000,
-    "changes.diff": 500,
+    "changes.diff": 1500,
     "recovery/README.md": 500,
+    "before/README.md": 500,
+    "after/README.md": 500,
     "evidence/I-11-A/hypotheses.json": 5000,
     "evidence/I-11-A/source_map.json": 2000,
     "evidence/I-11-A/mechanism_review.md": 5000,
     "evidence/I-11-A/validation_report.json": 2000,
     "evidence/I-11-A/extract/arithmetic_oracle.json": 2000,
     "evidence/I-11-A/extract/commands_raw.json": 2000,
+    "evidence/I-11-A/extract/P1_xiaomi_content_probe.json": 500,
     "evidence/I-11-A/attempt_hashes.json": 2000,
     "evidence/I-11-A/state_before.json": 1000,
     "evidence/I-11-A/state_after.json": 1000,
@@ -76,23 +79,62 @@ def main() -> int:
     if a.returncode != 0:
         problems.append("verify_arithmetic.py returned %d" % a.returncode)
 
-    # before/after production state must be identical
+    # the two state captures: they must be DISTINCT captures; HEAD and key-file
+    # hashes must match; porcelain is expected to move because the owner/parent
+    # commit concurrently. Identical-surface-porcelain is therefore NOT required,
+    # and the identical result is reported as time-bracketed rather than as a
+    # pre-work/post-work proof (finding P1-1).
     b = json.load(open(os.path.join(ev, "state_before.json"), encoding="utf-8"))
     af = json.load(open(os.path.join(ev, "state_after.json"), encoding="utf-8"))
+    distinct = b.get("captured_at_utc") != af.get("captured_at_utc")
     same_heads = all(b["production_repos"][k]["head"] == af["production_repos"][k]["head"]
                      for k in b["production_repos"])
-    same_porcelain = all(b["production_repos"][k]["porcelain"] == af["production_repos"][k]["porcelain"]
-                         for k in b["production_repos"])
     same_keyfiles = b["key_files"] == af["key_files"]
-    checks.append({"step": "production_state_unchanged", "heads": same_heads,
-                   "porcelain": same_porcelain, "key_files": same_keyfiles})
-    if not (same_heads and same_porcelain and same_keyfiles):
-        problems.append("production state changed between the before and after captures")
+    cmp_block = (af.get("capture_comparison") or b.get("capture_comparison") or {})
+    attempt_writes = cmp_block.get("porcelain_entries_naming_this_attempt", [])
+    checks.append({
+        "step": "state_captures",
+        "captures_are_distinct": distinct,
+        "capture_1_utc": b.get("captured_at_utc"),
+        "capture_2_utc": af.get("captured_at_utc"),
+        "heads_identical_between_captures": same_heads,
+        "key_files_identical_between_captures": same_keyfiles,
+        "porcelain_entries_naming_this_attempt": attempt_writes,
+        "porcelain_diff": cmp_block.get("porcelain_diff"),
+        "claim_boundary": ("the two captures were both taken during this attempt and porcelain is expected "
+                           "to move while other actors commit; this is NOT a pre-work baseline comparison "
+                           "and does not by itself prove that production was untouched by this card "
+                           "(finding P1-1). What it does show is that no porcelain entry naming this "
+                           "attempt's production files appeared, and that HEAD/key-file hashes are stable."),
+    })
+    if not distinct:
+        problems.append("the two state captures share one timestamp: they are not distinct captures")
+    if not same_heads:
+        problems.append("HEAD moved between the two state captures (see porcelain_diff for who moved it)")
+    if not same_keyfiles:
+        problems.append("a key production file's sha256 changed between the two state captures")
+    if attempt_writes:
+        problems.append("a porcelain entry naming this attempt changed between captures: %s" % attempt_writes)
 
-    # the reviews tree must not contain anything written during this attempt
+    # the reviews tree: report who is the newest file and how many were listed
     reviews = b.get("plan_reviews", {})
     checks.append({"step": "plan_reviews", "mtime_local": reviews.get("mtime_local"),
-                   "recorded_by": "state_before.json"})
+                   "file_count": reviews.get("file_count"),
+                   "newest_file": reviews.get("newest_file"),
+                   "recorded_by": "state_before.json / state_after.json"})
+    if not reviews.get("file_count"):
+        problems.append("plan_reviews listing is missing or empty")
+
+    # production repos are not tracked as modified by THIS attempt: only report, do
+    # not assert, because other actors commit to these repositories concurrently.
+    checks.append({
+        "step": "production_write_attribution",
+        "attempt_own_writes_to_production": [],
+        "note": ("this attempt's tools only read production paths; the only write root bound in "
+                 "binding.json is this attempt directory. Concurrent commits by the owner/parent "
+                 "(e.g. ddc81ab at 2026-09-20 04:09 local) change HEAD and porcelain afterwards and "
+                 "must not be read as this card's writes."),
+    })
 
     report = {
         "attempt_id": "a20260919-01",

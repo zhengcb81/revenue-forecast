@@ -4,6 +4,30 @@
  "revision": "r2",
  "independent_review_received": true,
  "independent_review_verdict_received": "accepted_scoped (formula qualification only)",
+ "independent_review_verdict_received_note": "P3-5 (independent review r2): the field above is a faithful transcription of the r1 review's HEADLINE ONLY.  It is NOT a sign-off and it deliberately omits the two P2 conditions the r1 review attached (P2-1: the runner must enforce the per-case declared expectation; P2-2: OQ-05 must be parameterised per card).  The value is kept, not overwritten, so the r1 record stays intact; the CURRENT verdict is in the field below.",
+ "independent_review_verdict_r1_conditions": [
+  "P2-1: enforce cases.json's per-case declared expectation in the runner",
+  "P2-2: parameterise OQ-05 per card (it had been a cross-card constant)"
+ ],
+ "r2_verdict_received": "changes_required",
+ "r2_verdict_scope": "audit metadata only (P2-A hash-table drift, P2-B rc_namespace.json not valid JSON, P2-C two contradictory M17 addendum-record values, plus P3-1..P3-6); the formula evidence itself was re-verified UNCHANGED",
+ "r2_verdict_record": "a20260919-01/review.md section 'revision r2 review - 独立 reviewer 的 r2 判定' (verbatim transcription of the reviewer's text)",
+ "formula_state_after_r2": "review_pending - the implementer does not sign; the r2 review states that formula may be signed accepted_scoped once the three P2 items are closed",
+ "boundary_metadata_correction": {
+  "source": "independent review r2, finding P2-C",
+  "what_was_wrong": [
+   "revision_r2.json.mechanism_proof.line_boundary_is_real was FALSE while its own note said the boundary was real: the comparison asked whether the offset points at a '## ' heading instead of whether the byte before it is LF",
+   "oracle_addendum_record.json.added_section_header_line_number was 184 instead of 186: it was computed from the number of newlines in the PRE-append prefix"
+  ],
+  "corrected_values": {
+   "line_boundary_is_real": true,
+   "byte_before_boundary_is_lf": true,
+   "appended_section_header_line_number": 186,
+   "appended_section_header_line": "## 13. 修订 r2（仅更正描述行，不动任何期望值）"
+  },
+  "oracle_md_untouched": "oracle.md was NOT appended to and NOT truncated to fix this: the correction is metadata-only, and oracle.md's hash is unchanged at c99714285fe031301d9e46c2bd4e179f21a5d850866f6ce10683fd83fb780b9f",
+  "verified_by": "scripts/append_oracle_addendum.py --rebuild-record-only (record rebuilt from the current file) + pack_card.py live re-verification"
+ },
  "r2_append_performed": true,
  "r2_sections_in_oracle_md": 1,
  "r2_section_locations": [
@@ -22,7 +46,13 @@
  "mechanism_proof": {
   "source": "the real append recorded in evidence/M17/oracle_addendum_record.json",
   "boundary_byte_offset": 11768,
-  "line_boundary_is_real": false,
+  "boundary_semantics": "offset of the first appended byte; because the pre-append file ended with LF it is the start of the blank separator line that precedes the appended section header",
+  "line_boundary_is_real": true,
+  "byte_before_boundary_is_lf": true,
+  "boundary_points_at_appended_section_header": false,
+  "appended_section_header_line": "## 13. 修订 r2（仅更正描述行，不动任何期望值）",
+  "appended_section_header_line_number": 186,
+  "appended_section_header_byte_offset": 11770,
   "recorded_pre_append_sha256": "9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69",
   "live_truncated_prefix_sha256": "9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69",
   "prefix_hash_equals_base_hash": true,

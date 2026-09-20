@@ -10,7 +10,8 @@
     "The RED commands (c1/c2) ran against before/baseline_tree/rf (pre-edit code). Everything from c3 on ran against iso/rf (edited code).",
     "All TWELVE verification commands in this file were executed after the edit (eight pytest/validation commands plus the two RED commands, the census and the diff generator; c15/c16 were added in the round-1 revision and c22 is a packaging check whose raw output is in after/) and every raw return code matched its frozen expectation (0/0).",
     "TEST VALUES ARE NOT NORMATIVE: 20 s (T), 65536 B (L) and 3600 s (W) appear only in tests/bindings and are injected explicitly. OPEN-D7 is not adjudicated.",
-    "A previous revision of handoff.json said 'eight bound commands'; commands.json has 12 bound entries and this revision added two more (c15, c16). The count was wrong in the handoff text, not in this file."
+    "A previous revision of handoff.json said 'eight bound commands'; commands.json has 15 bound entries (the original 12 plus c15, c16 and the round-2 contract command). The count was wrong in the handoff text, not in this file.",
+    "ROUND 2: the attestation commitment is now CONSUMED on a real artifact. verify_publication_attestation compares record['payload_sha256'] against payload_sha256(result) AND against the artifact's own exported statement; run_forecast exports result['payload_sha256'] for signed publications; the key is excluded from the projection (a self-referential key would make the commitment depend on itself). Test: tests/test_publication_attestation_contract.py."
   ],
   "commands": [
     {
@@ -186,7 +187,7 @@
       "expected_returncode": 0,
       "raw_returncode": 0,
       "expected_business_result": "G3b lands in G4 (never silently downgraded), 3.0..3.6 are G1 read-only, 3.7/3.8 without a claim are G3a, only the explicit G1 set is exempt, E29 is raised by require_legacy_exemption, E30 is raised by verify_input_binding, and every content key is inside the commitment",
-      "actual_business_result": "21 passed, 22 subtests passed",
+      "actual_business_result": "22 passed, 22 subtests passed",
       "before_after_evidence": [
         "after/I08B-c5-legacy-classify.stdout.txt"
       ],
@@ -425,7 +426,7 @@
       "expected_returncode": 0,
       "raw_returncode": 0,
       "expected_business_result": "a unified diff covering exactly the touched files (9 edited + 4 added)",
-      "actual_business_result": "13 files (9 edited + 4 added); changes.diff 207171 bytes at that revision",
+      "actual_business_result": "13 files (9 edited + 4 added); changes.diff 216023 bytes",
       "before_after_evidence": [
         "changes.diff",
         "after/c13_changes_diff.stdout.txt"
@@ -496,6 +497,44 @@
       ],
       "binding_status": "bound",
       "capability_limit": "it proves the key set and the count of changed values, not that each refreshed value still represents the intended behaviour"
+    },
+    {
+      "id": "I08B-c36-attestation-contract",
+      "purpose": "the round-2 fix: the attestation commitment must be CONSUMED on a REAL artifact, with an AST guard against a second projection implementation",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso/rf",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "tests/test_publication_attestation_contract.py",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp=<attempt>/scratch/c36-pytest"
+      ],
+      "config_paths": [
+        "<attempt>/iso/rf/scripts",
+        "<attempt>/iso/rf/tests"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/scratch/c36-pytest"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 540,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "a real signed run_forecast artifact verifies; every one of 12 covered fields mutated produces exactly [E16] and G4; the stated commitment, the record commitment and the receipt projection agree",
+      "actual_business_result": "10 passed, 12 subtests passed",
+      "before_after_evidence": [
+        "after/c36_contract.stdout.txt",
+        "after/c22_red_verifier.stdout.txt"
+      ],
+      "binding_status": "bound",
+      "capability_limit": "runtime verification stays inside iso/rf and before/baseline_tree/rf"
     }
   ],
   "not_run_commands": [

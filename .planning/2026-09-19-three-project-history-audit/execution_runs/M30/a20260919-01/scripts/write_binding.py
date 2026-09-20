@@ -1,11 +1,11 @@
-"""Write the attempt's binding.json BEFORE the product run (START_HERE step 2).
+"""!!! M31 CARD-TEXT CONSTANT CORRECTED (F-02 withdrawal, 2026-09-20T03:38:57.268038+00:00) !!!
 
-All paths are absolute and verified to exist; the model contract block is read back from
-the isolated snapshot (never from prose), and the driver list declared in this file is
-ASSERTED against the registry contract so it cannot drift silently.
-
-Usage:
-  python -X utf8 -B write_binding.py --card M29 --attempt-root <attempt> --interpreter <python.exe>
+The M31 entry below used to claim that card_M31.md L9 does NOT list net_revenue_per_unit.  That
+claim was FALSE and was withdrawn by finding F-02: card_M31.md L9 lists all seven drivers and
+model_cards.md L2818 lists the same seven, byte-identical.  The constant is now the seven drivers
+with card_text_required_matches_registry = True, so a regeneration cannot re-create the retracted
+record.  See evidence/M31/binding.json card_text_required_list_vs_registry.errata.superseded_values
+for the withdrawn values.
 """
 
 from __future__ import annotations
@@ -43,16 +43,18 @@ CARDS = {
                                   "scrapped_units", "sold_units", "closing_inventory",
                                   "net_revenue_per_unit"],
             "card_text_required_list": ["opening_inventory", "saleable_production", "purchased_units",
-                                        "scrapped_units", "sold_units", "closing_inventory"],
-            "card_text_required_matches_registry": False,
-            "card_text_divergence_note": (
-                "card_M31.md L9 lists required as opening_inventory, saleable_production, "
-                "purchased_units, scrapped_units, sold_units, closing_inventory and does NOT list "
-                "net_revenue_per_unit, while the registry declares it required (dimension "
-                "revenue_per_unit). The formula itself is printed in the card without that driver in "
-                "the parameter list, so the REGISTRY is the authority here: not supplying "
-                "net_revenue_per_unit is refused with 'missing drivers'. Recorded, not silently "
-                "resolved."),
+                                        "scrapped_units", "sold_units", "closing_inventory",
+                                        "net_revenue_per_unit"],
+            "card_text_required_matches_registry": True,
+            "card_text_divergence_note": None,
+            "card_text_divergence_withdrawal_note": (
+                "F-02 WITHDRAWAL: an earlier version of this constant claimed that card_M31.md L9 "
+                "does NOT list net_revenue_per_unit. That claim was false: card_M31.md L9 lists all "
+                "seven drivers and model_cards.md L2818 lists the same seven, byte-identical. The "
+                "constant is now seven drivers with card_text_required_matches_registry = True; see "
+                "evidence/M31/binding.json "
+                "card_text_required_list_vs_registry.errata.superseded_values for the withdrawn "
+                "values."),
             "declared_optional": []},
 }
 

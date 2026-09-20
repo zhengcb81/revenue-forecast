@@ -228,6 +228,28 @@ def main() -> int:
     entry_f["expected_rc"] = 3
     runs.append(entry_f)
 
+    # G: remove the DECLARED expectation of a negative case.
+    # P3-3 unification: an unusable frozen expectation is "no verdict" (rc=2), NOT a negative verdict,
+    # because no judgement about "was it rejected as declared?" is possible.
+    reset_copies()
+    cases = read_json(cases_path)
+    removed_from = None
+    for case in cases["cases"]:
+        if case["id"] == "N02":
+            removed_from = case.pop("expected", None)
+            break
+    if removed_from is None:
+        raise SystemExit("SELFCHECK ERROR: N02 has no 'expected' key in the frozen cases.json")
+    write_json(cases_path, cases)
+    entry_g = run("G_missing_declared_expectation")
+    entry_g["mutation"] = {"file": "evidence/%s/cases.json" % card, "case": "N02",
+                           "field": "expected", "action": "key removed", "from": removed_from,
+                           "why": ("the frozen expectation for this case is unusable, so no judgement "
+                                   "is possible: the runner must refuse a verdict (rc=2) instead of "
+                                   "reporting a negative verdict")}
+    entry_g["expected_rc"] = 2
+    runs.append(entry_g)
+
     reset_copies()
     entry_e = run("E_uncorrupted_copy")
     entry_e["mutation"] = {"action": "none; byte copy of the frozen evidence"}
@@ -248,7 +270,9 @@ def main() -> int:
         "scratch_scope": "recovery/selfcheck only; the frozen evidence was never written to",
         "runner_sha256": sha256(os.path.join(attempt, "scripts", "run_card.py")),
         "exit_code_contract": {"0": "pass", "1": "harness error",
-                               "2": "no verdict (missing expectation or fidelity mismatch)",
+                               "2": ("no verdict: a frozen expectation is missing or unusable "
+                                     "(positive expectations, or any case's declared 'expected' in "
+                                     "cases.json), or the output shape cannot be compared"),
                                "3": ("negative verdict, including a negative case that was not "
                                      "rejected with the exact type name declared in cases.json")},
         "valid_optional_driver_used_to_neuter_N04": valid_driver,
@@ -257,7 +281,7 @@ def main() -> int:
         "frozen_evidence_unchanged": frozen_unchanged,
         "runs": runs,
         "all_mutations_produced_the_expected_exit_code": all_as_expected,
-        "red_then_green": ("A/B/C/D/F are red (rc != 0) and E is green (rc = 0) only if "
+        "red_then_green": ("A/B/C/D/F/G are red (rc != 0) and E is green (rc = 0) only if "
                            "all_mutations_produced_the_expected_exit_code is true"),
     }
     out = os.path.join(evidence, "mutation_selfcheck.json")

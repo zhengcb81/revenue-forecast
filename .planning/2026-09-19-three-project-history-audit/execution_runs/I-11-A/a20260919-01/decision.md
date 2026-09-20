@@ -3,8 +3,9 @@
 card_id: I-11-A · attempt_id: a20260919-01 · 角色：实现者（弱模型）
 状态：`review_pending`（**本文件不构成验收；实现者不自签 accepted**）
 
-决定清单索引：DEC-1 … DEC-12 为本次必须做的设计决定；OPEN-1 … OPEN-8 为无法由我独立决定、
-需要 owner/专业 reviewer 裁定的事项。每个决定的格式固定为：
+决定清单索引：DEC-1 … DEC-12 为本次必须做的设计决定，DEC-13 / DEC-14 为独立复核后追加的决定
+（状态捕获对语义、校验器强度边界）；OPEN-1 … OPEN-12 为无法由我独立决定、需要 owner/专业 reviewer
+裁定的事项（编号顺序保留原样，OPEN-11/OPEN-12 为 R2 新增，故排在表末）。每个决定的格式固定为：
 **选项 / 选择与理由 / 反例（什么会推翻这个选择）/ 兼容影响 / 恢复规则 / 被拒绝的替代方案**。
 不得用"按最佳实践"代替决定：凡是没有依据的判断，一律登记为开放项而不是写成决定。
 
@@ -308,6 +309,67 @@ I-07-B/I-11-B 若需要港股分部参数，必须先解决 OPEN-5。
 
 ---
 
+## DEC-13 状态捕获对的语义：两次"工作期间快照"，不是开工前/完工后基线（R2 新增）
+
+**背景（独立复核发现 P1-1）**：首版 `tools/finalize_state.py` 把**同一次**捕获写入
+`state_before.json` 与 `state_after.json`（两份的 `captured_at_utc` 完全相同），而该时点
+（本地 04:04:43）又晚于本 attempt 目录创建时间（03:32:54）。后果有两个：一是
+`final_selfcheck.json` 的 `production_state_unchanged` 变成自反比较；二是文档措辞会让人读成
+"这是开工前的基线"，而它并不是。
+
+**选项**：(a) 重做一对真正的前后捕获；(b) 如实声明"两次捕获的语义是工作期间快照"，
+并把"生产零改动"的承载体改到第三方复核 + "本卡无生产写入路径"上；(c) 删掉这对文件。
+
+**选择与理由**：选 (b) 与 (a) 的组合——已重做出一对**时间戳不同**的捕获，并在文件内显式声明
+语义：两者都是**本次工作期间**的快照，角色名为 `state_capture_1` / `state_capture_2`。
+理由：本卡不写任何生产文件，因此并不存在与本卡相关的"工作前生产状态"；(a) 单独做会制造
+"这对证据证明了零改动"的错觉，(c) 会丢掉"reviews 目录只读基线"与"关键文件 hash"两项仍有用的观测。
+
+**反例**：若下游把两次捕获的生产面一致当作"本卡未写生产"的**证明**，该推理不成立——两者都在
+工作期间取得，任何在本卡工作**之前**发生的写入都不会体现在这一对里。防这一点：两个文件内都写入
+`capture_comparison.claim_boundary`，`final_selfcheck.py` 把该边界写进检查项，并把"两次捕获时间戳
+必须不同"变成可执行检查（相同即判 problem）。
+
+**兼容影响**：`changes.diff` 头部不再声称"before/after 证明零改动"，改为打印**生成时点**的
+porcelain 计数并注明"这是带时点的观测，不是本卡的属性"。另一项时点事实一并承接：父级在
+2026-09-20 04:09（本地）的提交 `ddc81ab` 已把本 attempt 文件纳入 git，因此"本 attempt 只以
+未跟踪形式出现"这句**在捕获时点成立、在复核时点已不成立**；后续判读必须带时点。
+
+**恢复规则**：若将来需要真正的"开工前基线"，只能在**新 attempt** 开工前捕获，不得回填到本次；
+本 attempt 不追改历史文件，只追加语义声明（旧字段保留）。
+
+**被拒绝的替代方案**：(c) 删除证据；(a-only) 用两次捕获暗示一个它们无法承载的结论。
+
+---
+
+## DEC-14 校验器强度的边界：明确承认无完备性（R2 新增）
+
+**背景（独立复核发现 P2-5）**：reviewer 自造 7 个清单外变异，首版校验器有 5 个未拒绝
+（`approved_frozen` + 编造 reviewer 名、`threshold_basis` 冒充算术恒等式、
+`refuted_by=["","   "]`、`mechanism_chain=['a','b','c']`、`observation_date="TBD"`、
+两条同 parameter_id 的相同命题）。
+
+**选项**：(a) 补检查并声称"校验器已完备"；(b) 补检查、把新增变异固化为反例，
+并**显式声明仍不完备**；(c) 不补，只在文档里写"14/14 通过"。
+
+**选择与理由**：选 (b)。补的四类检查已写入 `tools/validate_hypotheses.py`
+（`threshold_basis` 闭集与一致性、机制链末环语义、观察日可解析、唯一参数规则、
+`approved_frozen` 的身份与 `decision_sha256` 要求），反例套件由 14 例扩到 **21 例**；
+同时在 `mechanism_review.md` §5 第 8 条与 `oracle.md` §R2-1 写明"这仍不是完备性证明"。
+(c) 会让"oracle 写成可执行检查"被过度解读，是本计划最想防的失效模式。
+
+**反例**：若 reviewer 再找到未被拒绝的变异，说明仍有未写下的规则 → 按同一流程：补检查、
+把该变异固化为反例、把局限写进 §5，而不是辩解"21/21 已足够"。
+
+**兼容影响**：新增错误码必须同步进 `oracle.md` §7 的 R2 表；I-11-B 若复用本校验器，
+需接受"阈值依据三分类"（新增 `disclosure_definition`）与更严的参数唯一性。
+
+**恢复规则**：校验器规则变更必须重跑全部反例并重新计数；不允许只跑正例。
+
+**被拒绝的替代方案**：(a) 夸大强度；(c) 隐瞒有限测试。
+
+---
+
 ## DEC-12 资格边界：三资格分开陈述，本卡只做取证不做适配/准确性
 
 **选项**：(a) 把"命题填满模板 + 恒等式复算通过"表述为"披露适配通过"；
@@ -333,15 +395,17 @@ I-07-B/I-11-B 若需要港股分部参数，必须先解决 OPEN-5。
 | 编号 | 问题 | 裁定人 | 阻塞 I-11-A 签收？ | 阻塞什么 |
 |---|---|---|---|---|
 | OPEN-1 | 允许使用仓库外控制台工具 `pdftotext.exe` 作为第二条取文路径吗？ | PLAN owner / 环境规范制定者 | 否（已登记 argv/hash/输出） | 若否决，I-11-B 前需另找独立路径 |
-| OPEN-2 | 紫金矿产品"铜当量换算系数"从何而来？结论对其高度敏感（每 +1 吨/千克 ≈ 10,670.9 元/吨铜当量） | 会计 reviewer + 矿业行业 reviewer | 否 | I-11-B 对 `ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027` 的幅度校准 |
+| OPEN-2 | 紫金矿产品"铜当量换算系数"从何而来？结论对其高度敏感：系数 +1 吨/千克 ⇒ 当量分母 +83,161 吨 ⇒ 单位收入 −10,670.89 元/吨铜当量（两点差分，非偏导） | 会计 reviewer + 矿业行业 reviewer | 否 | I-11-B 对 `ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027` 的幅度校准 |
 | OPEN-3 | FY2027 起微软建模分部是否仍为 PBP/IC/MPC（2026-09-02 8-K 的重分类原文不在本地可核来源） | 行业 reviewer（软件与云）+ 会计 reviewer | 否 | I-11-B/I-07-E 的微软分部选择 |
 | OPEN-4 | `pdf_leaf_1based` / `table_index_0based` 是否需成为披露字段的规范枚举值 | schema owner | 否 | 跨卡页码复用 |
 | OPEN-5 | 港股（小米）年报原文可读性由谁解决 | 环境/依赖 owner + 行业 reviewer | 否 | 任何港股份部命题 + I-11-B 港股参数 |
-| OPEN-6 | 4 条 `professional_judgement_required` 阈值（±5%、0.9–1.1 等）是否按此采用 | 行业 reviewer（分行业） | 否 | I-11-B/I-11-C 的触发器生效 |
+| OPEN-6 | 3 条 `professional_judgement_required` 阈值（±5%、0.9–1.1 等）是否按此采用；另 1 条已改判 `disclosure_definition`（见 R2-2） | 行业 reviewer（分行业） | 否 | I-11-B/I-11-C 的触发器生效 |
 | OPEN-7 | 命题 1/6 的分部集合是否就是 FY2027 的最小建模块 | 行业 reviewer | 否 | 分部集合变更时的重建工作 |
-| OPEN-8 | oracle O-6 的页号措辞与实测 offset=+1 不一致，如何处置（R2 附录 or 接受择优规则） | 独立 reviewer（oracle 读者） | 否 | 后续读者的页码假设 |
+| OPEN-8 | oracle O-6 的页号措辞与实测 offset=+1 不一致；独立 reviewer 已裁定「接受择优规则、不回改正文」，本 attempt 按此处理并记入 oracle §R2-4 | 独立 reviewer（已给意见） | 否 | 后续读者的页码假设 |
+| OPEN-11 | 命题 3 的库存判定式需要"上一期披露的期末库存"作为期初库存，其跨期可得性由谁确认（R2 新增，review P2-8） | 矿业行业 reviewer | 否；若不可得则该式不可判定，须转 `STOP_DISCLOSURE_ADAPTATION` | I-11-B 对该参数的产能约束使用 |
 | OPEN-9 | I-11 参数模板是否应升级为本卡的超集字段（`state`/`page_index_basis`/`anchor_text`/`evidence_path`/`refuted_by`） | `common_research_cards.md` 的 owner | 否 | 跨卡 schema 一致性 |
-| OPEN-10 | `PLAN/reviews` 目录的 LastWriteTime 实测为 `2026-09-19 09:14:20`，与任务说明要求的 `10:05` 不符；本 attempt 未写入该目录（state_before/after 记录一致，且 285 个文件中无任何文件的 mtime 晚于本 attempt 开始时间） | PLAN owner（核对是否说明有误或期间有他方写入） | 否 | 后续卡对 reviews 只读性的基线判断 |
+| OPEN-10 | `PLAN/reviews` 目录的 LastWriteTime 实测为 `2026-09-19 09:14:20`，而目录内**最新文件** mtime 为 `2026-09-19 10:05:32`（`second_wave/final_review_checks.json`）；两个口径都对、不矛盾，建议后续卡采用"最新文件 mtime"。本 attempt 未写入该目录 | PLAN owner（确认采用哪个口径） | 否 | 后续卡对 reviews 只读基线的判断 |
+| OPEN-12 | 独立复核指出的 P2-5/P2-6/P2-7/P2-8/P2-9 已在本 attempt 内处置（见 oracle §R2、mechanism_review §5 第 8/9 条、review.md §4）；是否需要为"校验器完备性"另立一张专业卡（统计/工程 reviewer） | PLAN owner / 统计 reviewer | 否 | I-11-C 是否复用同一校验器 |
 
 **没有任何一项阻塞本卡签收**；但 OPEN-2 / OPEN-3 / OPEN-5 / OPEN-6 **阻塞 I-11-B**，
 因此 I-11-B 不能在本次之后自动开工。

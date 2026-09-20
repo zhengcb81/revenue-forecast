@@ -23,6 +23,14 @@ import re
 
 import card_units
 
+
+def atomic_dump(path, doc):
+    """Write JSON through a temp file + os.replace so an interrupted write cannot truncate it."""
+    tmp = path + ".tmp-atomic"
+    with open(tmp, "w", encoding="utf-8") as handle:
+        json.dump(doc, handle, ensure_ascii=False, indent=1)
+    os.replace(tmp, path)
+
 PATH_RE = re.compile(r"^[A-Za-z]:\\")
 
 
@@ -42,7 +50,9 @@ def main() -> int:
     card = args.card
     attempt = os.path.abspath(args.attempt_root)
     units = (card_units.build_units(card, attempt) + card_units.r2_units(card, attempt)
-             + card_units.closing_units(card, attempt))
+             + card_units.r2_fix_units(card, attempt)
+             + card_units.closing_units(card, attempt)
+             + card_units.verifier_units(card, attempt))
 
     checked = 0
     declared = 0
@@ -94,6 +104,14 @@ def main() -> int:
             entry["stdout_sha256"] = rc_doc.get("stdout_sha256")
             entry["stderr_sha256"] = rc_doc.get("stderr_sha256")
             entry["rc_recorded_utc"] = rc_doc.get("finished_utc")
+            if unit["unit_id"] in ("Z-close-attempt", "V-verify-hash-tables"):
+                entry["rc_is_from_previous_execution_of_identical_argv"] = True
+                entry["rc_provenance_note"] = (
+                    "P3-4: this unit writes the record file you are reading (or is its own last "
+                    "writer), and the capture wrapper refreshes its rc.json only after it returns, so "
+                    "the value here is from the previous execution of the identical argv; the most "
+                    "recent execution's rc is in the rc.json named by rc_record and in "
+                    "pipeline_run.json / recovery/closing_run.json")
         else:
             entry["raw_rc_note"] = "pending: this unit had not completed when this record was written"
         recorded.append(entry)
@@ -129,6 +147,7 @@ def main() -> int:
             "undeclared_missing_tokens": undeclared,
         },
         "units": recorded,
+        "declared_unrecorded_commands": card_units.UNRECORDED_COMMANDS.get(card, []),
         "phase": args.phase,
         "created_before_card_runs": args.phase == "post",
         "scope": "this card only; no unit of this file belongs to another card attempt",
@@ -137,8 +156,7 @@ def main() -> int:
     }
 
     out = os.path.join(attempt, "commands.json")
-    with open(out, "w", encoding="utf-8") as handle:
-        json.dump(doc, handle, ensure_ascii=False, indent=1)
+    atomic_dump(out, doc)
     print("commands.json written", out, "phase", args.phase, "units", len(recorded))
 
     if args.phase == "post":
@@ -156,8 +174,7 @@ def main() -> int:
                      "as it stood when the pack hashed it"),
         }
         mout = os.path.join(attempt, "evidence", card, "command_manifest.json")
-        with open(mout, "w", encoding="utf-8") as handle:
-            json.dump(manifest, handle, ensure_ascii=False, indent=1)
+        atomic_dump(mout, manifest)
         print("command_manifest.json written", mout)
 
     for entry in recorded:

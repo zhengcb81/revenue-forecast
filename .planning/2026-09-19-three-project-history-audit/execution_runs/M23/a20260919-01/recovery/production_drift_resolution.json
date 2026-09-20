@@ -1,0 +1,46 @@
+{
+ "card_id": "M23",
+ "resolves": "recovery/production_drift.json (this file ADDS to it; the drift record itself was left untouched)",
+ "event": "production worktree was reset to HEAD by an orchestration-layer commit job and has since been restored",
+ "window": {
+  "not_anchored_from": "2026-09-20 04:35:31",
+  "not_anchored_until": "2026-09-20 04:40:53",
+  "evidence_of_the_window": "during it the worktree scripts/model_registry.py was 19703 B / 247 lines / sha256 1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86, which diverted from the anchored 26446 B / 354 lines / 9ec65295..."
+ },
+ "root_cause": {
+  "reported_by": "the parent agent (orchestration layer), after independently investigating both this attempt and the M25-M28 attempt",
+  "mechanism": "the repository's own pre-commit/pre-push gate exported the un-staged changes to C:\\Users\\郑曾波\\.cache\\pre-commit\\patch1789875331-33652 (557924 B) at 04:35:31 and then ran `git checkout -- .` to roll back its own auto-fixes; that command failed with exit 255 on three concurrently-locked scratch files ('unable to unlink ... Invalid argument'), so the exported patch was never re-applied and the production worktree stayed reset to HEAD",
+  "same_event_explains": [
+   "scripts/revenue_core.py",
+   "scripts/contracts/constants.py",
+   "scripts/revenue_report.py",
+   "tests/test_backtest.py",
+   "SKILL.md",
+   "all of them turning 'clean' at the same 04:35:32 mtime, which is how I-08-B's review independently spotted the same event"
+  ],
+  "attribution": "NOT caused by this attempt or any card attempt"
+ },
+ "resolution": {
+  "chosen_option": "option 1 from this attempt's escalation: restore the audit-fixed revision",
+  "method": "the parent agent applied the SAME pre-commit patch to its NON-.planning subset: git apply --check --whitespace=nowarn --exclude=.planning/* <patch> -> exit 0, then git apply -> exit 0 (.planning/** could not be applied because later sessions had already rewritten it; that is unrelated to these cards)",
+  "hashes_after_recovery_measured_by_this_attempt": {
+   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+  },
+  "anchored_value_restored": true,
+  "model_registry_mtime_after_recovery": "2026-09-20 04:40:53",
+  "model_registry_bytes_after_recovery": 26446,
+  "model_registry_lines_after_recovery": 354
+ },
+ "time_qualification": {
+  "statement": "the `production_hashes_unchanged = false` / `anchored_hashes_match = false` readings produced INSIDE the window are CORRECT WARNINGS, not defects. They are preserved as first-hand evidence of the event and must NOT be used to change any expectation, tolerance, case, or frozen artifact.",
+  "what_was_not_done": [
+   "no expectation, tolerance, negative case or rejection condition was adjusted to fit the diverted file",
+   "no frozen artifact was rewritten",
+   "no re-snapshot of iso/checkout_scripts was taken",
+   "no production file was written by this attempt at any point"
+  ],
+  "current_state": "after the restoration, `final_verify.py` reports production_hashes_unchanged = True (see after/final_verify_restored.txt); the False reading from inside the window is kept at recovery/final_verify_during_drift.txt"
+ },
+ "batch_wide_note": "the diversion affected every attempt whose acceptance chain cites the production hash 9ec65295... , not only M21-M24; this attempt reports only its own four cards"
+}

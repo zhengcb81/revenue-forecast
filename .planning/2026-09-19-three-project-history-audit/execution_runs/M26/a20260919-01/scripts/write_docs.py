@@ -365,6 +365,38 @@ def main() -> int:
         "note": ("the throwaway tree is recovery/rerun_check/; the frozen evidence directory is "
                  "read but never written"),
     })
+    units.append({
+        "unit_id": "D-%s-drift-and-restoration-record" % card,
+        "purpose": ("record the production drift window and its restoration side by side in a NEW "
+                    "file (recovery/production_drift_and_restoration_r3.json) and verify that the "
+                    "isolated snapshot equals production again and that the frozen four-piece is "
+                    "byte-unchanged"),
+        "cwd": attempt,
+        "argv": [args.interpreter, "-X", "utf8", "-B",
+                 os.path.join(attempt, "scripts", "record_drift_restoration.py"), "--card", card,
+                 "--attempt-root", attempt,
+                 "--repo", "C:\\Users\\郑曾波\\Projects\\revenue-forecast"],
+        "network": "disabled", "raw_rc": 0, "expected_rc": 0,
+        "note": ("read-only with respect to production: it hashes the production files and the "
+                 "isolated snapshot, and writes only its own record file"),
+    })
+    units.append({
+        "unit_id": "V-%s-post-restoration-verify" % card,
+        "purpose": ("post-restoration re-check written to NEW filenames: final_pass (refreshes "
+                    "integrity.json's production re-verification) and verify_attempt (consistency "
+                    "gate)"),
+        "cwd": attempt,
+        "argv": [args.interpreter, "-X", "utf8", "-B",
+                 os.path.join(attempt, "scripts", "verify_attempt.py"), "--card", card,
+                 "--attempt-root", attempt, "--plan-root",
+                 "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\"
+                 "2026-09-19-three-project-history-audit"],
+        "network": "disabled", "raw_rc": 0, "expected_rc": 0,
+        "stdout": "recovery/post_restoration_verify_20260920.txt",
+        "note": ("the accompanying final_pass output is in "
+                 "recovery/post_restoration_final_pass_20260920.txt; both are new filenames so the "
+                 "pre-restoration records stay readable"),
+    })
     commands = {
         "attempt_id": "a20260919-01",
         "batch_id": "I-10 M25-M28 (four independent attempts, one per card)",
@@ -937,6 +969,48 @@ def main() -> int:
              "that to the owner."),
         ],
         "blocked_by": [],
+        "production_drift_window_and_restoration": {
+            "both_facts_kept_side_by_side": True,
+            "fact_1_drift": {
+                "window_utc_approx": "2026-09-20 04:35:31 - 04:40:53",
+                "production_was_not_in_the_anchored_state": True,
+                "observed_here": ("scripts/model_registry.py = "
+                                  "1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86 "
+                                  "(19703 B, HEAD blob c80075c4...), i.e. the model_extensions "
+                                  "wiring, the driver_bounds mechanism and this batch's four models "
+                                  "were absent"),
+                "alarm_correctness": ("any production_hashes_unchanged=false recorded inside this "
+                                      "window is a CORRECT alarm and must not be used to change an "
+                                      "expectation, threshold or frozen artefact"),
+            },
+            "fact_2_restored": {
+                "restored_after_utc": "2026-09-20 04:40:53",
+                "method": ("owner replayed the pre-commit patch patch1789875331-33652 with "
+                           "`git apply --exclude=.planning/*` (check and apply both exit 0)"),
+                "reverified_here": ("scripts/model_registry.py = "
+                                    "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f "
+                                    "(26446 B) and iso/checkout_scripts/* equals production again; "
+                                    "the reviewer's invalidation condition is cleared and no "
+                                    "blocked reclassification is needed"),
+                "evidence": "recovery/production_drift_and_restoration_r3.json",
+            },
+            "residual_risk": ("scripts/model_extensions.py is still UNTRACKED while "
+                              "model_registry.py imports it from the worktree; another "
+                              "`git checkout -- .` / `reset --hard` could repeat this. Owner should "
+                              "bring it under version control; this implementer did not run git add."),
+        },
+        "lesson_recorded": {
+            "id": "LESSON-production-hash-as-a-live-quantity",
+            "statement": ("any card whose acceptance rests on a PRODUCTION FILE HASH is resting on a "
+                          "quantity that an external git operation can change without warning. On "
+                          "mismatch: record the drift and its time window, escalate to the "
+                          "orchestration layer for a ruling, and NEVER adapt by editing "
+                          "expectations or frozen artefacts."),
+            "applied_here": ("the drift was recorded (INCIDENT.md + "
+                             "recovery/production_drift_and_restoration_r3.json), escalated, and "
+                             "removed externally; not one expectation, threshold or frozen "
+                             "artefact was touched while the production state was wrong"),
+        },
         "stop_conditions_hit": [
             "STOP_ACCURACY (no I-12 frozen design)",
             "STOP_DISCLOSURE_ADAPTATION (no signed per-driver mapping / no adapted disclosure)",
@@ -957,9 +1031,16 @@ def main() -> int:
             + ["evidence/%s/%s" % (card, name) for name in sorted(os.listdir(ev))]),
         "reviewer_status": ("r1 reviewed: four cards accepted_scoped (formula only), P1 = 0, with "
                             "mandatory findings P2-1 and P2-2 and observations P3-1..P3-8. Both "
-                            "mandatory findings were handled in this revision and returned for "
-                            "point review; the implementer still does not sign accepted."),
-        "revision": "r2 (single revision section; see evidence/%s/revision_r2.json)" % card,
+                            "mandatory findings were handled in r2 and returned for point review; "
+                            "r2 point review returned accepted_scoped for all four cards (P1 = 0, "
+                            "no new P2) and its verdict text was transcribed APPEND-ONLY into "
+                            "review.md (block at lines 83-131). The r2 acceptance was briefly "
+                            "invalidated by an external production rollback and restored by the "
+                            "owner (see production_drift_window_and_restoration). The implementer "
+                            "still does not sign accepted."),
+        "revision": ("r3 (r2 verdict transcribed append-only into review.md; P3-A..P3-D corrections "
+                     "recorded in evidence/%s/revision_r3.json; production drift + restoration in "
+                     "recovery/production_drift_and_restoration_r3.json)" % card),
         "disclosure_impact_note": ("not applicable: no real-company disclosure was adapted by this "
                                    "attempt"),
     }

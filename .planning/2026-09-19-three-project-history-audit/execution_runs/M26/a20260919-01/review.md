@@ -80,3 +80,52 @@ Card M26 (`store_cohorts`), Parent I-10. Attempt `execution_runs/M26/a20260919-0
 5. Confirm the r2 re-freeze only changed `cases.json` for M26/M27/M28 (the NEG-CARD patch), compare `evidence/%s/revision_r2.json` `p2_1_cases_json_refreeze.cases_json_sha256`, and confirm no gating expectation moved.
 6. Pick a case the implementer did not use (section 7) and freeze its expectation BEFORE running.
 7. Adjudicate the DEC items in `evidence/M26/accounting_decision.md` and the OQ items in `evidence/M26/oq_rulings.json`.
+
+---
+
+## 独立复核 r2（定点再复核，reviewer 署名：独立会话，非实现者）
+
+> 转录说明（实现者）：本节由 reviewer 的报告 `%TEMP%\m25m28-review-20260920-035254\REPORT-r2.md`
+> 第 8.1 节原文转录，`<>` 占位符按第 8.2 节逐卡填入。**只追加**：追加前的 `review.md`
+> sha256 = `f98a4589e3ff4819709c5e915f98d7830e8ebe91ccab1d248a0dc66703b2c8a4`（`9895` B），追加后新文件以该旧文件字节为前缀（脚本实测
+> `new_bytes.startswith(old_bytes)`，记录见 `evidence/M26/append_record_r3.json`）。
+> 本节的裁决由独立 reviewer 作出，**不是实现者的签名**。
+
+**verdict: accepted_scoped —— 仅 `formula`。**
+`disclosure_adaptation = unmapped`、`accuracy = unproven` 维持；本裁决不涉及 D/E/F。
+
+### 复核范围与方法（可复现）
+- 解释器：本 attempt `iso/venv/Scripts/python.exe`，`-B -X utf8`；只读生产与冻结证据，reviewer 只写 `%TEMP%\m25m28-review-20260920-035254\`。
+- **r1 冻结内容的不可变基线**：commit `ddc81ab6`（及 `e954449`）的 blob 经 CRLF 还原后，与本 reviewer 在 r1 记录的四件套 sha256 逐项相等（16/16），故以该提交为 r1 基准做逐字段 diff。
+- 独立重跑：reviewer 用同一 argv 重跑 `scripts/run_card.py`，`rc=0`，且新生成的 `run_result.json` 与冻结件**逐字节相同**（sha256 见下）。
+- 期望值复算：reviewer 以自造输入 + `Fraction` 精确算术独立复算正例/连续性/defaults（未采信本卡 oracle.json 的推导过程）。
+
+### 对上一轮发现的处置核验
+- **P2-1（NEG-CARD 覆盖声明）已闭合**。r1→r2 的 `cases.json` **唯一** per-case 改动是 `NEG-CARD.value` 由 `{"__float__": X}` 改为单元素列表 `[X]`（`expected`、id 清单与其他 10 例 value 全部不变），并新增 `case_contract`。
+  - 实测拒绝机制（reviewer 复跑）：`opening_stores stock-flow balance failed: FY2027`，即本卡专属守卫**确实**被求值；第 8 节 R1 的"是（NEG-CARD）"现在成立。
+  - `negative_summary = {total: 11, passed: 11, failed: []}`；正例 `[205.0]`、连续性 `[205.0, 230.0]`、defaults `[0.0]` 全部与 r1 一致（本卡 defaults 案例是全零恒等输入，`optional = ()`）。
+- **P2-2（oracle 事故叙述）已按更正清单改写**：撤回"no oracle.json was produced at all"（v1 `oracle.json` 存在且与冻结件逐字节相同）；撤回"correction before oracle.md"（mtime 不支持），改为"闸门期望在首次产品运行前已定稿 / M25 的 non-gating defaults 块在首次运行之后更正 / 定版运行在冻结件写入之后"。reviewer 独立复核了首次运行 `run_result.json` 的期望值，支持上述口径。v1 生成器源码与 traceback **未留档**已如实登记为 provenance gap。
+- **P3-1..P3-8** 已逐条处置；其中三处措辞与一处残留见下"遗留观察"。
+
+### 遗留观察（P3，不影响本次签收；只许追加修正）
+1. 新闸门 rc 归类：`expected`/`expected_count`/`expected_ids`/缺 `case_contract` → **rc=1**；**机制子串不匹配或声明无反引号片段 → rc=3**。本卡 r2 修订节写的"一律 rc=1"与此不符，应改为两类分别表述（reviewer 实测：G5/G6/G7/G8 均 rc=3）。
+2. `evidence/M26/line_ending_and_blob_hashes.json` 的 25 条中有 3 条（`evidence_hashes.json`、该文件自身、`revision_r2.json`）为自指条目，写入后即不可复现（reviewer 复算 22/25 一致）；冻结四件套全部可复现。
+3. `revision_r2.json.p3_7_precorrection_is_not_uniform` 的 `identical:false` 是 CRLF-vs-LF 的裸字节比较，与同段"byte-identical"叙述冲突；LF 归一后确为逐字节相同（reviewer 用 git 基线与 CRLF 还原两法证明）。
+4. LF 修复未覆盖 `recovery/**`（仍有 72 个 CRLF JSON：selfcheck scratch、`rerun_check.json` 等）；`recovery/precorrection/*` 保留 CRLF 属**正确**的 v1 冻结字节。
+
+### 签收范围与失效条件
+- 签收值：`formula`（A–C）。基于以下复算值：正例 `[205.0]`、连续性 `[205.0, 230.0]`、defaults `[0.0]`（non-gating）、负例 11/11 全部 `ModelRegistryError`。
+- 冻结件哈希（reviewer 复核时点，LF 版本）：
+  `input.json=72045bf780034e63cb1f813d1c77aff887912f7e610ae9333ea40aa8b9d4fbc0`、`oracle.json=90e99bc2f32e18cfd8a847b39c6e62c29327af3ba3d3469c77cfb7147b074d10`、`cases.json=f3e86ef0eed59fd9a4e2cc4ace408859458c793a1b15fd52deadb926d241b1e1`、`run_result.json=092dcabbc1e22a7f857f4721e32fc7156fc82f4f9dc86483716a8b63e0fd729f`。
+- **失效条件**：上述任一冻结件、`iso/checkout_scripts/{model_registry,model_extensions}.py`（须恒等于生产 `9ec65295…/9939480b…`）、或 `scripts/run_card.py`（`eab01162…`）发生任何变化，本裁决自动失效并须重新复核。
+- 本裁决**不**覆盖：D 披露映射（`unmapped`）、E 历史对账、F 精度/回测（`unproven`），也不得据此外推为行业级准确度。
+
+### 实现者补充（非裁决的一部分；只作对本次转录与 P3 更正的定位说明）
+- 本次追加不含任何期望值、阈值或判定条件的改动；四卡冻结件（`input.json`/`oracle.json`/
+  `cases.json`/`run_result.json`）**未触碰**，哈希见 `evidence/M26/append_record_r3.json` 的
+  `frozen_four_piece_unchanged_after_append`。
+- 对遗留观察 1–4 的**只追加更正**落在 `evidence/M26/revision_r3.json`（含 P3-A 两类 rc 归类、
+  P3-B 自指条目与 `files_with_crlf` 口径、P3-C 字段命名更正、P3-D LF 覆盖边界），并在
+  `evidence/M26/revision_r3.json` 中给出改前→改后对照与仍存缺口。
+- 四卡通用：`status` 保持 `review_pending`（本文件不构成实现者签名）；
+  `disclosure_adaptation = unmapped`、`accuracy = unproven` 不外推。

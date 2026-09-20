@@ -96,3 +96,23 @@
 
 - 我**未**授予：D/E/F 任何资格；真实公司适配；准确性。
 - 我**未能验证**：pass-1 是否调用过产品；`oracle.md` 运行前字节；仓库整体"零写入"。
+
+## 独立 reviewer 追加确认（有界文本确认，独立 reviewer session，2026-09-20 04:2x）
+
+- 抽验结论：①追加块与 reviewer 报告 §6 逐字节一致 → PASS；③ `source_manifest.json` 与 `oracle.md` E-1 已统一为
+  "事后 stat 比较、不构成事前冻结"，未把 `oracle.md` 写成事前冻结证据 → PASS；④ `oracle.md` 冻结正文逐字节未动 →
+  PASS（`recovery/pre_remediation/oracle.md` = `55a52c67…`/`aaa7faf7…`/`f89b1ad7…`，当前文件以其为前缀）；
+  ⑤ F-01/P3 登记如实、无一处写成"已修" → PASS；② F-02 撤回**不完全** → 见残项 R-1/R-2。
+- **维持判定：M29 / M30 / M31 = `accepted_scoped`（仅 `formula`）**；`disclosure_adaptation = unmapped`、
+  `accuracy = unproven`；未授予任何其他资格。
+- **关闭条件：M31 在 R-1 / R-2 清除前不得关闭**；M29/M30 的关闭不受影响（残项为共享文案）。
+- 残项（纯文本，最小修法见 reviewer 确认报告）：
+  R-1 `handoff.json` OQ-04 `title` 仍称存在 "the M31 card-text divergence on net_revenue_per_unit"；
+  R-2 `scripts/write_binding.py`（三 attempt + `_m2931_build`）M31 常量仍为 6 项 / `False` / "does NOT list"；
+  R-3 `handoff.json` OQ-05 `title` 仍称 "present mtime is later than the product stdout"（与同 attempt 的
+      `source_manifest.oracle_md_provenance` 相反）；
+  R-4 `scripts/pack_card.py` / `scripts/write_handoff.py` 仍会重新生成 R-3 的旧措辞。
+- 只许追加：`oracle.md` / `review.md` 的进一步更正只能追加新节并附前缀 hash；
+  `input.json` / `oracle.json` / `cases.json` 一律不得触碰；`handoff.json` / `binding.json` / `source_manifest.json`
+  属活记录，可就地更正并记 `superseded_values`。
+- 我零写入生产仓库。

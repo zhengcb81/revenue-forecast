@@ -91,7 +91,13 @@ def main() -> int:
     checks["stderr_empty"] = os.path.getsize(os.path.join(ev, "stderr.txt")) == 0
 
     # pinned convention 1: oracle frozen first, regenerable, mtime ordering
-    checks["oracle_json_regenerable_flag"] = True  # proved by the A5 regeneration unit
+    # the regenerability flag is now MEASURED (recovery/regen_proof.json) instead of hard-coded
+    regen = load(os.path.join(attempt, "recovery", "regen_proof.json"))
+    checks["oracle_json_regenerable_flag"] = bool(
+        regen["per_file"]["oracle.json"]["two_regenerations_identical"])
+    checks["all_frozen_inputs_regenerable"] = bool(regen["two_regenerations_byte_identical"])
+    checks["regen_scratch_matches_frozen_evidence"] = all(
+        v["matches_frozen_evidence"] for v in regen["per_file"].values())
     checks["oracle_json_mtime_before_stdout"] = (
         os.path.getmtime(os.path.join(ev, "oracle.json"))
         < os.path.getmtime(os.path.join(ev, "stdout.txt")))

@@ -203,7 +203,7 @@ def main() -> int:
     reviewer_opinions_block = (
         "## 独立复核者对上述开放项的意见（**不是本实现者的决定**）\n\n"
         "以下为 2026-09-20 独立复核转达的**复核者立场**，原样承接，**未由实现者采纳为决定**；\n"
-        "owner 需要据此自行裁定（复核者对 OQ-02 / OQ-03 明确表示"同意登记、反对在本批修"）：\n\n"
+        "owner 需要据此自行裁定（复核者对 OQ-02 / OQ-03 明确表示「同意登记、反对在本批修」）：\n\n"
         + "\n".join("- %s" % item for item in reviewer_opinions) + "\n"
         if reviewer_opinions else
         "## 独立复核者对上述开放项的意见\n\n复核意见未转达到本 attempt。\n")

@@ -28,3 +28,12 @@
 */a*/r2/runs-*/
 */a*/evidence/run/
 */a*/harness/scratch/
+# Scratch GIT REPOSITORIES created inside attempts (e.g. `git init` + `git apply`
+# diff-apply checks). They must never be versioned AND must never be traversed by
+# the parent repository: an embedded `.git` makes git treat the directory as a
+# submodule, which breaks `git status` / `git add` and made the pre-push hook's
+# stash/checkout sequence fail (see the 20260920 production-rollback incident in
+# `_isolation_incidents/`). Ignoring them keeps the scratch trees on disk while
+# keeping parent git operations healthy.
+*/a*/r5/diff-apply-check/
+*/a*/r5/diff-repo/

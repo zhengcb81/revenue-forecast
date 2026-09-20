@@ -215,6 +215,67 @@ REVIEW_ITEMS_ROUND2 = {
 }
 
 
+# Round-3 (bounded final review) items, from the reviewer report's sections 0-5 and the
+# transcribed verdict blocks.
+REVIEW_ITEMS_R3 = {
+    "M21": {
+        "verdict_round3": "accepted_scoped (formula only) - signed off",
+        "P3-1 (empty gate set)": {
+            "requirement": "an empty `required_message_ids` looks like a gate but is not one; "
+                           "delete it or state that it is deliberately empty",
+            "disposition": "kept the field (the runner asserts its presence) and added "
+                           "`required_message_ids_cardinality`, "
+                           "`required_message_ids_is_intentionally_empty` and "
+                           "`required_message_ids_empty_explanation` to cases.json, which state "
+                           "in machine-readable form that this card freezes NO message "
+                           "requirements and that the gate is therefore a no-op here",
+        },
+        "P3-2 (misarchived runner snapshot)": {
+            "requirement": "before/run_card_preround2.py holds the wrong bytes; re-archive, or "
+                           "register the gap honestly if the old bytes cannot be restored",
+            "disposition": "GAP REGISTERED: the file is byte-identical to the round-3 runner, and "
+                           "the round-2 bytes exist only inside the M22/M23/M24 attempts. They "
+                           "were deliberately NOT copied across attempts, because that would "
+                           "make this attempt's snapshot chain claim something that did not "
+                           "happen. See before/run_card_preround2.GAP.json.",
+        },
+        "round-2 disclosure corrections": {
+            "requirement": "register that the round-2 statements about the FY2027 balance guard "
+                           "were too strong / wrong",
+            "disposition": "registered in the appended run section section 10 and in "
+                           "revision_r2.json.round2_disclosure_corrections; no expectation or "
+                           "case changes",
+        },
+    },
+    "M22": {
+        "verdict_round3": "accepted_scoped (formula only) - promoted and signed off",
+        "gate": "reviewer independently confirmed the gate closes under all three破坏方式",
+    },
+    "M23": {
+        "verdict_round3": "accepted_scoped (formula only) - promoted and signed off",
+        "gate": "reviewer independently confirmed the gate closes under all three破坏方式",
+    },
+    "M24": {
+        "verdict_round3": "accepted_scoped (formula only) - the deviation was independently "
+                          "upheld and the reviewer stated the round-2 checklist was its own "
+                          "error, not the implementation's",
+        "P3-1 (stale frozen body)": {
+            "requirement": "the reviewer removed CONT-BREAK-CROSSYEAR as a duplicate; the frozen "
+                           "section 5 still prints it, and the count still says 12",
+            "disposition": "REGISTERED, NOT FIXED - the round-3 boundary forbids body edits. "
+                           "The appended run section section 9 itemises the three stale places, "
+                           "states that it supersedes them, and hands the owner two options.",
+        },
+        "two-year balance-guard sample": {
+            "requirement": "optional only; the reviewer judged it NOT needed this round",
+            "disposition": "NOT ADDED, per that judgement. The frozen recipe if the owner wants "
+                           "it: {\"opening_arr\": [200, 250], \"closing_arr\": [251, 251]} -> "
+                           "`stock-flow balance failed: FY2027`.",
+        },
+    },
+}
+
+
 def _bridge_call_sites(card: str) -> str:
     if card == "M24":
         return ("`model_extensions.py:47-48` —— `_arr` 内的 `_bridge(...)` 调用，"
@@ -449,6 +510,44 @@ def main() -> int:
             "opening_arr continuity failed: FY2028`、`required_message_ids: ['NEG-CARD', "
             "'CONT-BREAK'] ok= True`；另见 `recovery/selfcheck/selfcheck_result.json` 的 R4/R5 探针。）")
         add("")
+        add("### 9. M24：冻结正文第 4/5 节与当前 `cases.json` 的**已知不一致**（round-3 登记，需 owner 裁定）")
+        add("")
+        add("第 0–12 节自 round 2 起被裁定**逐字节不得再改**，所以本轮的 `cases.json` 变更**没有**同步回正文。"
+            "结果是正文里有三处与当前用例集不一致：")
+        add("")
+        add("| 正文位置 | 正文写的是 | 当前实际（`evidence/M24/cases.json`） |")
+        add("|---|---|---|")
+        add("| 第 5 节 `CONT-BREAK` 行 | 期望列只有 `ModelRegistryError`（无消息要求） | 带 "
+            "`expect_message_contains = \"continuity failed: FY2028\"` |")
+        add("| 第 5 节 `CONT-BREAK-CROSSYEAR` 行 | 仍列该用例，值 "
+            "`{\"opening_arr\": [200, 251], \"closing_arr\": [250, 251]}` | **该用例已移除**"
+            "（round 3 独立判定其与 CONT-BREAK 重复，属\"清单写错\"而非实现错） |")
+        add("| 第 5 节「合计 **12 个负例**」 | 12 | **11** |")
+        add("")
+        add("**以 `evidence/M24/cases.json` 与本追加节为准。** 本实现者**没有**运行 "
+            "`scripts/splice_oracle_md_r2.py`（已一次性退役），也未以任何其它方式改正文："
+            "四卡正文 sha256 与 round 2 记录值逐字节相同（M24 = `9c8f6b23…` / 13382 B；见 "
+            "`recovery/oracle_body_hash.json` 与 `final_verify.txt` 的 "
+            "`oracle_md_body_matches_recorded_frozen_body = True`）。")
+        add("")
+        add("两条口径由 owner 二选一：(a) 接受「第 5 节该三处已被本追加节取代」，正文不再改动；"
+            "(b) 授权一次性正文定点修订，把该三处更新到与 `cases.json` 一致（预计正文 "
+            "13382 → 13243 字节；`splice_oracle_md_r2.py` 的白名单机制可复用，但该脚本已声明退役，"
+            "需 owner 明确解除）。**本实现者不自行选择。**")
+        add("")
+        add("### 10. round-3 对本实现者 round-2 陈述的两条纠正（如实登记）")
+        add("")
+        add("- **P3-CORR-1：** round-2 本追加节/`review.md` 称「FY2027 桥平衡守卫在这个两年基座上不可达、"
+            "改任何 driver 都不行」——**该措辞过强**。复核者实测 `closing_arr = [251, 251]` 可达，"
+            "输出 `stock-flow balance failed: FY2027`。正确表述：不改 `closing_arr[0]` 时它不可达。")
+        add("- **P3-CORR-2：** round-2 附带例证 `lost_arr_revenue_fraction[0] = 0.5` **是错的**："
+            "该输入实测**正常返回**（复核者记录 `('OK', [220.0, 250.0])`；本实现者按 FY2028 的 "
+            "`closing = opening[1] - lost + exp + new` 直接求值也为 220），"
+            "原因是 FY2027 的桥只用 FY2027 自己的 driver，FY2028 的 closing 由 FY2028 的 opening 推出。")
+        add("- 这两条**不影响**任何期望值、容差、用例集合或判据；已登记为纠正，未据此改动任何冻结件。"
+            "其独立证据在复核者 round-3 报告第 2.3/2.4 节；本 attempt **没有**把它们冻结为观察项，"
+            "理由是那会新增第 6 节表格行、从而改动 0–12 节正文（越界），见第 9 节同一约束。")
+        add("")
     else:
         add("### 8. 第 2 轮补测清单的处置")
         add("")
@@ -653,6 +752,47 @@ recovery/
                                "retrofitted here.",
         "hard_boundary": "oracle.md sections 0-12 are frozen; editing them again would be "
                          "judged `blocked` by the reviewer rather than `changes_required`",
+    }
+    rev["review_items_r3"] = REVIEW_ITEMS_R3[card]
+    rev["verdict_transcription_round3"] = {
+        "path": "evidence/%s/verdict_transcription_check.txt" % card,
+        "machine_record": "recovery/verdict_transcription_check_round3.json",
+        "rule": "the round-3 verdict was extracted programmatically (block order in the report's "
+                "section 7) and appended verbatim to review.md as a SEPARATE round-3 block; the "
+                "written block was re-extracted and compared byte-for-byte; the round-2 block was "
+                "left untouched",
+    }
+    rev["stale_frozen_body_registration"] = {
+        "applies_to": card,
+        "problem": "frozen oracle.md section 5 no longer matches the current cases.json in three "
+                   "places: CONT-BREAK's expectation column lacks the frozen message requirement; "
+                   "the removed CONT-BREAK-CROSSYEAR row is still printed; and the case count "
+                   "says 12 while 11 cases exist",
+        "why_not_fixed": "sections 0-12 were frozen byte-for-byte by the round-2 adjudication, "
+                         "and the round-3 instructions repeat that freeze; editing them again "
+                         "would be judged `blocked`",
+        "consequence": "the frozen body is internally stale but byte-unchanged; the appended run "
+                       "section (its section 9) states that it supersedes those three places",
+        "owner_options": [
+            "accept the append-section override and leave the body untouched",
+            "authorise one one-shot body edit (expected 13382 -> 13243 bytes)",
+        ],
+        "state": "REGISTERED, NOT FIXED - needs an owner ruling",
+    }
+    rev["round2_disclosure_corrections"] = {
+        "P3-CORR-1": "the round-2 claim that the FY2027 balance guard was unreachable on the "
+                     "two-year base 'for any driver change' was TOO STRONG; the reviewer measured "
+                     "closing_arr = [251, 251] reaching it. Correct statement: it is unreachable "
+                     "without moving closing_arr[0].",
+        "P3-CORR-2": "the round-2 example lost_arr_revenue_fraction[0] = 0.5 was WRONG: the run "
+                     "returns normally (reviewer: ('OK', [220.0, 250.0])), because FY2027's bridge "
+                     "uses only FY2027's drivers.",
+        "effect_on_expectations": "none - no expectation, tolerance, case set or rejection "
+                                  "condition changes; these are corrections to this attempt's own "
+                                  "prose, registered here and in the appended run section",
+        "independent_evidence": "the reviewer's round-3 report sections 2.3 and 2.4",
+        "not_frozen_as_observations_because": "adding them would insert rows into the frozen "
+                                              "section-6 table, which the round-3 boundary forbids",
     }
     with open(os.path.join(ev, "revision_r2.json"), "w", encoding="utf-8") as fh:
         json.dump(rev, fh, ensure_ascii=False, indent=1)

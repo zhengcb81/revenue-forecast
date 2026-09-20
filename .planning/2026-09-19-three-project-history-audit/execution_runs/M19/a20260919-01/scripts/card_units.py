@@ -28,6 +28,30 @@ TEMPLATE_INTERPRETER = (r"C:\Users\郑曾波\Projects\revenue-forecast\.planning
                         r"\2026-09-19-three-project-history-audit\execution_runs\I-00-A"
                         r"\a20260919-01\iso\venv\Scripts\python.exe")
 ENTRY_POINT_LINE = 308
+REVIEW_REPORT_R2 = (r"C:\Users\郑曾波\AppData\Local\Temp"
+                    r"\m17m20-review-r2-20260920-041815\REPORT_r2.md")
+BATCH_ROOT = (r"C:\Users\郑曾波\Projects\revenue-forecast\.planning"
+              r"\2026-09-19-three-project-history-audit\execution_runs\M17-M20\a20260919-01")
+
+# Commands that were actually executed but whose raw rc/stdout were never captured.  Declared here so
+# that commands.json states the gap instead of implying that every execution has a capture record.
+UNRECORDED_COMMANDS = {
+    "M17": [{
+        "id": "R2-repair-restore-original",
+        "purpose": ("truncate oracle.md back to the recorded pre-append bytes after the first R2 "
+                    "execution appended correctly but returned rc=3 for a mis-computed metadata flag"),
+        "argv": ["<attempt venv python>", "-X", "utf8", "-B",
+                 "<attempt>/scripts/append_oracle_addendum.py", "--card", "M17",
+                 "--attempt-root", "<attempt>", "--repair-restore"],
+        "observed_raw_rc": 0,
+        "captured": False,
+        "honest_gap": ("run in the interactive session before R2 units were captured, so no rc.json / "
+                       "stdout exists for it; the RESULT state is verifiable (truncation at the "
+                       "recorded boundary reproduces the pre-append hash) and a safe non-writing replay "
+                       "is recorded as the unit R2b-repair-restore-dry-run"),
+        "result_verification": "evidence/M17/oracle_addendum_record.json.repair_history",
+    }],
+}
 
 
 def paths(card, attempt_root):
@@ -275,6 +299,56 @@ def r2_units(card, attempt_root):
     ]
 
 
+def r2_fix_units(card, attempt_root):
+    """M17-only post-review fixes (P2-C / P3-1).  These NEVER append to or truncate oracle.md."""
+    if card != "M17":
+        return []
+    p = paths(card, attempt_root)
+    py = [p["interpreter"], "-X", "utf8", "-B"]
+    return [
+        _run(
+            p, "R2b-repair-restore-dry-run",
+            py + [os.path.join(p["scripts"], "append_oracle_addendum.py"), "--card", card,
+                  "--attempt-root", p["attempt"], "--repair-restore", "--dry-run"],
+            0,
+            ("record the lossless round trip of the r2 append WITHOUT writing: performs both hash "
+             "checks, prints WOULD RESTORE, and exits non-zero if the round trip is not lossless"),
+            creates=[],
+            note=("P3-1/P2-C: the ORIGINAL --repair-restore invocation was destructive-on-success and "
+                  "ran before this unit existed, so its own argv/rc/stdout were never captured; that is "
+                  "declared as an honest gap in commands.json.declared_unrecorded_commands and in "
+                  "evidence/<card>/oracle_addendum_record.json.repair_history")),
+        _run(
+            p, "R2c-rebuild-addendum-record",
+            py + [os.path.join(p["scripts"], "append_oracle_addendum.py"), "--card", card,
+                  "--attempt-root", p["attempt"], "--rebuild-record-only"],
+            0,
+            ("recompute oracle_addendum_record.json's boundary metadata from the CURRENT oracle.md "
+             "(P2-C): corrects the header line number and the real-line-boundary flag without "
+             "appending to or truncating oracle.md"),
+            creates=[os.path.join(p["evidence"], "oracle_addendum_record.json")]),
+    ]
+
+
+def verifier_units(card, attempt_root):
+    """Runs AFTER the closing unit so that drift can be measured post-hoc (P2-A)."""
+    p = paths(card, attempt_root)
+    py = [p["interpreter"], "-X", "utf8", "-B"]
+    return [
+        _run(
+            p, "V-verify-hash-tables",
+            py + [os.path.join(p["scripts"], "verify_hash_tables.py"), "--card", card,
+                  "--attempt-root", p["attempt"]],
+            0,
+            ("re-read BOTH hash tables entry by entry after the closing unit returned and publish the "
+             "measurement (after/hash_table_verification.json); non-zero exit on drift or missing "
+             "entries"),
+            creates=[os.path.join(p["attempt"], "after", "hash_table_verification.json")],
+            note=("this unit's own capture records and its output file are excluded from the final "
+                  "table because they are written after it (P2-A)")),
+    ]
+
+
 def closing_units(card, attempt_root):
     """Units executed after the pack: process history, handoff, then the closing recorder.
 
@@ -295,6 +369,20 @@ def closing_units(card, attempt_root):
             ("record the pass structure of this attempt (observed last-execution records plus the "
              "DECLARED earlier passes) so that repeated executions of one argv are visible"),
             creates=[os.path.join(p["attempt"], "process_history.json")]),
+        _run(
+            p, "T-transcribe-review-verdict",
+            py + [os.path.join(p["scripts"], "transcribe_review_verdict.py"), "--card", card,
+                  "--report", REVIEW_REPORT_R2, "--block-index", "0",
+                  "--target", os.path.join(p["attempt"], "review.md"), "--note-mode", "card",
+                  "--proof-out", os.path.join(p["evidence"], "transcription_proof.json")],
+            0,
+            ("append the independent reviewer's r2 verdict to review.md BYTE-FOR-BYTE (the reviewer "
+             "authorised transcription on the condition that nothing is rewritten, shortened or "
+             "summarised), then append an explicitly labelled implementer note"),
+            creates=[os.path.join(p["evidence"], "transcription_proof.json")],
+            note=("refuses to run if the block is already present, so the verdict cannot be "
+                  "transcribed twice; the proof records the sha256 of the source block and of the "
+                  "copied region")),
         _run(
             p, "H-write-handoff",
             py + [os.path.join(p["scripts"], "write_handoff.py"), "--card", card,

@@ -1,27 +1,40 @@
 diff --git I-11-A/a20260919-01 (new files only; no production file modified)
+# generated_at_utc : 2026-09-20T03:40:06+00:00
+# card             : I-11-A
+# attempt          : execution_runs/I-11-A/a20260919-01
 #
-# card            : I-11-A
-# attempt         : execution_runs/I-11-A/a20260919-01
-# production diff : NONE. The three production repositories were not written to.
-#   revenue-forecast HEAD e95444956100  porcelain entries before/after: 221/221
-#   company-wiki     HEAD f39bd5a64224  porcelain entries before/after: 2/2
-#   filing-fetch     HEAD d35b6f5b09f1  porcelain entries before/after: 0/0
-#   key-file hashes identical before/after: True
-# PLAN/reviews mtime recorded in both captures: 2026-09-19 09:14:20
-#   (no file under PLAN/reviews was created or modified by this attempt; this is
-#    evidenced by state_before/state_after plus the file listing captured in them)
-# excluded from this inventory: iso/venv/** (isolated interpreter, third-party bytes)
+# PRODUCTION DIFF  : NONE. This card has no write path to the three production
+#                    repositories; the only bound write root is this attempt directory.
+#                    That claim is supported by the independent review (review.md
+#                    section 5), NOT by the state-capture pair alone: both captures were
+#                    taken during this attempt (review finding P1-1).
 #
-# new-file inventory (93 files):
+# dated observation (porcelain entries at generation time; other actors commit to
+# these repositories concurrently, so these counts are NOT a property of this card):
+#   revenue-forecast   HEAD(captured)=cc78c5298acd  porcelain(now)=1497 (tracked 1370, untracked 127)
+#   company-wiki       HEAD(captured)=f39bd5a64224  porcelain(now)=2 (tracked 2, untracked 0)
+#   filing-fetch       HEAD(captured)=d35b6f5b09f1  porcelain(now)=0 (tracked 0, untracked 0)
+#   key files identical between the two captures: True
+#   PLAN/reviews directory mtime: 2026-09-19 09:14:20 ; newest file inside: 2026-09-19 10:05:32
+#   (this attempt created or modified no file under PLAN/reviews)
+#
+# SELF-REFERENCE    : changes.diff and attempt_hashes.json each list themselves and
+#                    therefore cannot carry their own final hash; both are
+#                    regenerated last (tools/make_changes_diff.py, then
+#                    tools/hash_attempt.py).
+#
+# excluded from this inventory: iso/venv/**, tools/__pycache__/**
+#
+# new-file inventory (98 files):
 +++ b/after/README.md	1581 bytes	sha256=4fad4891faf312934c57454df9d003f737653127ce398c044b6ec3457063c745
 +++ b/before/README.md	1233 bytes	sha256=83cd14cb313bf2ddfc869cc65c9c6463504658ca6132586147b12225c0f961c3
-+++ b/binding.json	5505 bytes	sha256=da43ab1f9b453e17f7b342a33d2b70d3dee2cd3f7490f2d682b993ce6652402d
-+++ b/changes.diff	12229 bytes	sha256=c62fc58b16d330f1bff0fcf5fc91058e814e16b36f255627e1a76763489bdb47
++++ b/binding.json	6322 bytes	sha256=9d9c89a7fb83e4ef99bbfe94a492ad96d21705ba62a3e499b829e669447f9e24
++++ b/changes.diff	13587 bytes	sha256=09d8b41827b46050952d1c0e48539954b675ec01b8f48e8a52d9de2c138f02f9
 +++ b/commands.json	27091 bytes	sha256=d802efef8fdecd3d8610d119a630c18513ac3a87f1b6b812168c6d59b5be5c79
-+++ b/decision.md	24421 bytes	sha256=43364ff715ea0dd574b6e34c81bea4df6f0cf8014e7a70b766f45ca9569c8cba
-+++ b/evidence/I-11-A/attempt_hashes.json	15455 bytes	sha256=a4bf99dcabc1948cd5758effbc649eb68b2f907e19db1327bcc9842cb6e12d01
++++ b/decision.md	29756 bytes	sha256=e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951
++++ b/evidence/I-11-A/attempt_hashes.json	16989 bytes	sha256=4f6d443414f73f815060fd4b26ee92b52dc86f1f43f05c8ef844b3bca10004d4
 +++ b/evidence/I-11-A/commands_build.log	2726 bytes	sha256=a3f3a546a4b10c402662faa95a76403c7e489f3c06cd70197ce1c22bdd7aebcd
-+++ b/evidence/I-11-A/commands_run.log	4351 bytes	sha256=b59b61563d3ae084eed2daaace61337065de86b38f7c3c429ebcf7be4c5eed40
++++ b/evidence/I-11-A/commands_run.log	3861 bytes	sha256=da53384e07b0c6eb0e5d2df90966e6f5ea36e1d1f429cfbc032c92397cfd4f94
 +++ b/evidence/I-11-A/extract/P1_msft_narrative.txt	852 bytes	sha256=dee68e42ca916bb5de555a9d9add8ff8b76d1ada50bff917a773e6972a4e515b
 +++ b/evidence/I-11-A/extract/P1_msft_scan.ascii.txt	729 bytes	sha256=04eafce8691fce3c8d4640ab7fb3573448a65edfb978e5f31d75a792a5ea20f6
 +++ b/evidence/I-11-A/extract/P1_msft_tables.ascii.txt	8773 bytes	sha256=373b491ae9af2d06c24184c222e91424810f7a60e5515e58eb6d18ac1fb20718
@@ -29,6 +42,8 @@ diff --git I-11-A/a20260919-01 (new files only; no production file modified)
 +++ b/evidence/I-11-A/extract/P1_vs_prior_offset.json	57110 bytes	sha256=44c8c73f6ba7102752945a15aa670b4244d3351e89b4605ff2d1edce7d3096f0
 +++ b/evidence/I-11-A/extract/P1_xiaomi.stderr.txt	0 bytes	sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 +++ b/evidence/I-11-A/extract/P1_xiaomi.stdout.txt	256 bytes	sha256=75168c83874f791a473704dd4b4234af84b613b02a5500586139e70bb049b727
++++ b/evidence/I-11-A/extract/P1_xiaomi_content_probe.ascii.txt	1723 bytes	sha256=d5cf25f98e95a7501417acb78cdf9195bbb6900c7f961e8e9e99937acd56b6f7
++++ b/evidence/I-11-A/extract/P1_xiaomi_content_probe.json	2822 bytes	sha256=dc8dcf841a5d72465115e57da548213942568a6c97a54a5aa3537a5316db2614
 +++ b/evidence/I-11-A/extract/P1_xiaomi_probe.json	418 bytes	sha256=dab534ab10921e9fe1a4a6347bd3b38d148bbadaa56b2f9819234e94e60f1c8d
 +++ b/evidence/I-11-A/extract/P1_zijin.stderr.txt	0 bytes	sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 +++ b/evidence/I-11-A/extract/P1_zijin.stdout.txt	1238 bytes	sha256=3473fdb18d89791a0bedd94eb77ae290ae2c10f432e252919d3d8ed10a095ed9
@@ -54,44 +69,46 @@ diff --git I-11-A/a20260919-01 (new files only; no production file modified)
 +++ b/evidence/I-11-A/extract/msft_scan.stdout.txt	729 bytes	sha256=04eafce8691fce3c8d4640ab7fb3573448a65edfb978e5f31d75a792a5ea20f6
 +++ b/evidence/I-11-A/extract/offset.stderr.txt	0 bytes	sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 +++ b/evidence/I-11-A/extract/offset.stdout.txt	4055 bytes	sha256=024912105fb1f029249df93a09e61f2e0b0d772eb277914dac681821ad981604
-+++ b/evidence/I-11-A/final_selfcheck.json	4073 bytes	sha256=83a6f5cc8619199a338ba0b3132b0aab2d8ea2c2c93b195738000d6b6614a054
-+++ b/evidence/I-11-A/hypotheses.json	50916 bytes	sha256=a0ee74b0f49ae118c5dfd971ab87e3073fdf72499a021349680dc354047cad18
-+++ b/evidence/I-11-A/mechanism_review.md	17779 bytes	sha256=15a83df352dbe51e64d30524b569c147f8f1bab6969ebe4cbd8595f0db6961c1
++++ b/evidence/I-11-A/final_selfcheck.json	10711 bytes	sha256=adbd6d844894cd0e0f05a91f5c145242fc56b1868ce2f357082bb604a6a4af4f
++++ b/evidence/I-11-A/hypotheses.json	52680 bytes	sha256=788b5b7c80c094af9b056739b0123d309c759b1bfd32b7ccf4ab351d132d4169
++++ b/evidence/I-11-A/mechanism_review.md	21806 bytes	sha256=70c3ca91c16bacedb719fbe8033ee169a490017e9da3099906879e222f8c6d26
 +++ b/evidence/I-11-A/pipeline_final.utf8.txt	3840 bytes	sha256=3a9de454050c17e1e127ffb2b5996af86efc6ab5a917904cfca2b223d293d6d0
-+++ b/evidence/I-11-A/source_map.json	12165 bytes	sha256=19148eb97053f77a4249d3f0a35964d280c5421d18f55b2c19db689b474e1f74
++++ b/evidence/I-11-A/run_log_archive.json	7351 bytes	sha256=ca030757c631bc22918b619d2565598a84278e3d90e6ce40f3e188e01a48e3f8
++++ b/evidence/I-11-A/scratch/tmp_crosscheck_zijin.json	35708 bytes	sha256=6a0190c68b1b550618ba93969289d8307c5b77902e9f56d461281d1a7a9e819a
++++ b/evidence/I-11-A/scratch/tmp_msft.json	95750 bytes	sha256=0386db68c6cb0c5c8555dc1786d6739d3bc72131cf29fd9e48968a5ac4b81fe5
++++ b/evidence/I-11-A/scratch/tmp_msft.txt	5712 bytes	sha256=adac0e7415b957c9e605280121ad67e82e0f92f36e05b239b6432622abfdffaa
++++ b/evidence/I-11-A/scratch/tmp_msft_products.txt	346 bytes	sha256=741c84867357c04c5803a428a9fcb0eb0398448a60cadc1353caefb162536932
++++ b/evidence/I-11-A/scratch/tmp_msft_scan.txt	729 bytes	sha256=04eafce8691fce3c8d4640ab7fb3573448a65edfb978e5f31d75a792a5ea20f6
++++ b/evidence/I-11-A/scratch/tmp_offset_zijin.json	56867 bytes	sha256=6e888b723a984b03d42ae3442cf769389e253ffd323e80c22fad06f96c7b6466
++++ b/evidence/I-11-A/scratch/tmp_zijin.json	3957 bytes	sha256=2582ec4eb5bba7b7c8b6b3616464dc06cff8d1bb2812e183b9492358dbc35a54
++++ b/evidence/I-11-A/scratch/tmp_zijin326.json	2153 bytes	sha256=2a34bb732dca5d08a0f19798a2109ed4035bcc143f9d8ad3bd4daa3d8d9b4658
++++ b/evidence/I-11-A/scratch/tmp_zijin45.json	2008 bytes	sha256=d7f673de54e4f6d0374390359711526793c38574b1cb7b9acb9bf7674a44d789
++++ b/evidence/I-11-A/scratch/tmp_zijin_6_60.json	63566 bytes	sha256=d0fea57a77aeb0be804be348a3d563631e7dff5524f4983b4a1fdff7a4ea1d02
++++ b/evidence/I-11-A/scratch/tmp_zijin_A.json	86903 bytes	sha256=f5cc235c71d91637eccd2ba27eb8848a7b9648379241b60e3e0e2f0ed0e51124
++++ b/evidence/I-11-A/scratch/tmp_zijin_figures.json	27679 bytes	sha256=cc357c9cbe88b52b3f33600568841162ab0aad6ae4b6f1b49d947feb787d4041
++++ b/evidence/I-11-A/scratch/tmp_zijin_figures.txt	1347 bytes	sha256=4c6628ce51d96ce8097b7b13ec9e62069cec9b81a94afae3f42845dcb64891af
++++ b/evidence/I-11-A/scratch/tmp_zijin_prior_pages.json	81733 bytes	sha256=712f67d242155f411ca9e25b3d88f40436e14d816eb79db193095dec32bff2e5
++++ b/evidence/I-11-A/source_map.json	14258 bytes	sha256=83370f570bca9bc061b8751b503cd801bba55934d83f752be427e7048bfcb0e3
 +++ b/evidence/I-11-A/source_probe.json	10667 bytes	sha256=6a04bf99f32ce05d29fe1ad9d9c2ab6ca4e9d97571db961bef9d029efd51118b
-+++ b/evidence/I-11-A/state_after.json	31704 bytes	sha256=cca6171d656ffda0aa9fbf1ede12a4c32e93ef9d17f2d9bf0db74bfd256c03da
-+++ b/evidence/I-11-A/state_before.json	31705 bytes	sha256=8996d2ed753c51fe43221433d8cb322611e3f7089025d7d2d9d843585c8b3d95
-+++ b/evidence/I-11-A/validation_report.ascii.txt	1951 bytes	sha256=e0f46fe9057ed9d3cd8d287d200fd68ae5f0c0fefd6569342c1206908bb76645
-+++ b/evidence/I-11-A/validation_report.json	3872 bytes	sha256=d9e7858c2f892a795fd49983d57f8e6aa29963b73afcae003e2a95c0198be59c
-+++ b/evidence/tmp_crosscheck_zijin.json	35708 bytes	sha256=6a0190c68b1b550618ba93969289d8307c5b77902e9f56d461281d1a7a9e819a
-+++ b/evidence/tmp_msft.json	95750 bytes	sha256=0386db68c6cb0c5c8555dc1786d6739d3bc72131cf29fd9e48968a5ac4b81fe5
-+++ b/evidence/tmp_msft.txt	5712 bytes	sha256=adac0e7415b957c9e605280121ad67e82e0f92f36e05b239b6432622abfdffaa
-+++ b/evidence/tmp_msft_products.txt	346 bytes	sha256=741c84867357c04c5803a428a9fcb0eb0398448a60cadc1353caefb162536932
-+++ b/evidence/tmp_msft_scan.txt	729 bytes	sha256=04eafce8691fce3c8d4640ab7fb3573448a65edfb978e5f31d75a792a5ea20f6
-+++ b/evidence/tmp_offset_zijin.json	56867 bytes	sha256=6e888b723a984b03d42ae3442cf769389e253ffd323e80c22fad06f96c7b6466
-+++ b/evidence/tmp_zijin.json	3957 bytes	sha256=2582ec4eb5bba7b7c8b6b3616464dc06cff8d1bb2812e183b9492358dbc35a54
-+++ b/evidence/tmp_zijin326.json	2153 bytes	sha256=2a34bb732dca5d08a0f19798a2109ed4035bcc143f9d8ad3bd4daa3d8d9b4658
-+++ b/evidence/tmp_zijin45.json	2008 bytes	sha256=d7f673de54e4f6d0374390359711526793c38574b1cb7b9acb9bf7674a44d789
-+++ b/evidence/tmp_zijin_6_60.json	63566 bytes	sha256=d0fea57a77aeb0be804be348a3d563631e7dff5524f4983b4a1fdff7a4ea1d02
-+++ b/evidence/tmp_zijin_A.json	86903 bytes	sha256=f5cc235c71d91637eccd2ba27eb8848a7b9648379241b60e3e0e2f0ed0e51124
-+++ b/evidence/tmp_zijin_figures.json	27679 bytes	sha256=cc357c9cbe88b52b3f33600568841162ab0aad6ae4b6f1b49d947feb787d4041
-+++ b/evidence/tmp_zijin_figures.txt	1347 bytes	sha256=4c6628ce51d96ce8097b7b13ec9e62069cec9b81a94afae3f42845dcb64891af
-+++ b/evidence/tmp_zijin_prior_pages.json	81733 bytes	sha256=712f67d242155f411ca9e25b3d88f40436e14d816eb79db193095dec32bff2e5
-+++ b/handoff.json	16383 bytes	sha256=c47a186b8b667182f865d85a60b0534d2ab00b3b045a074126703d036a5361da
-+++ b/oracle.md	18450 bytes	sha256=8d2b47a8bf40cc8de5a803ad2e9391564235a1337104eeabc6df67955d404c3c
++++ b/evidence/I-11-A/state_after.json	277558 bytes	sha256=a003b86c604fee4c37e16111d3329449e5d6a491072250d9f11dd1dfe155f2be
++++ b/evidence/I-11-A/state_before.json	271135 bytes	sha256=b57b33e48c93b0e7e2f1cefd7385f0782c5386fe18ca1cf58fbb7e52b9967b8b
++++ b/evidence/I-11-A/val.log	5750 bytes	sha256=56acfd1ae60e0dd653ef63d5639b390cbb11dc7efcd8991c6b993a3d81a06480
++++ b/evidence/I-11-A/validation_report.ascii.txt	2705 bytes	sha256=655bde87c3ef804123cc3b7d5f07f15482a96fa8293c24417a30d082719ccef6
++++ b/evidence/I-11-A/validation_report.json	5569 bytes	sha256=adcade2ff0dfff71692f85136c8d2091dc4125b399b473742fdea5475da8701b
++++ b/handoff.json	16578 bytes	sha256=c48b2252e85a6e1a59c91ad4187a8402f51f277ee9dc78705198ee2999a3058e
++++ b/oracle.md	22418 bytes	sha256=83dca500732f9365bbca865b4098729657d994af6ad40b282c26237c9906a890
 +++ b/recovery/README.md	4557 bytes	sha256=25732193fe6660276c6c175915a6cff71661c4126607ad5cdb8de902e7de8ba5
-+++ b/review.md	8684 bytes	sha256=52f3766cacaff796df008da23ff589326a4d156b64090c0ae36aaab0e64254b7
-+++ b/tools/__pycache__/msft_figures.cpython-313.pyc	7073 bytes	sha256=6c984c13da95cd66a5071c3069c8b2d4e1033cef9fb0ff58b15de3cace3f1f78
-+++ b/tools/__pycache__/pdf_text.cpython-313.pyc	24956 bytes	sha256=1e4bfc12ae7cb675d9028d58eb626e985a0e1ac721b42b22fc3a1e2d0f98c7fa
-+++ b/tools/build_commands.py	11107 bytes	sha256=e40cd2b09198db1e49ddbbe672071290286c143fe2dfee22d51e213a6014e2eb
++++ b/review.md	19417 bytes	sha256=4938e745adc3f32582cc6fd70e3e69197385035d0270807d955d2a7c7776daed
++++ b/tools/apply_review_fixes.py	5755 bytes	sha256=3963678ca2858ce21c6f1b05612bdf80be1339c2715f7041cf20569be0ecc258
++++ b/tools/archive_run_log.py	4402 bytes	sha256=86fe61cdd77075a9e13c6c8831c672b6a9f809daaea8f8ea65990fb924e95a4b
++++ b/tools/build_commands.py	13700 bytes	sha256=a3b4a33b24c370952be4b24e2f1032cebb346a618bda8495a25b13a2959d2fca
 +++ b/tools/build_hypotheses.py	56268 bytes	sha256=7e71bb0a43dd1b49d88bc58c0f042b7151d5a4dd17d1639c7a7151f610c3b350
-+++ b/tools/capture_state.py	4194 bytes	sha256=57e35be4eb4877247199b7cafe346d5d0aa3f9b4710295f0e254d88ad2ebf24f
++++ b/tools/capture_state.py	6034 bytes	sha256=d447f77a8662aeef63a18da7e6e59d23c559d34e37bf9dd06ff8ea979c5132f6
 +++ b/tools/crosscheck_extract.py	3199 bytes	sha256=69659e3d05eff0b51417c065688f92defd1b5adaaee76187d68ffd63a1813289
-+++ b/tools/final_selfcheck.py	4991 bytes	sha256=88a1d1d9c5dc0fffd1bb59527143162beb42d8dca384614183ff1dddf8c6d0e0
-+++ b/tools/finalize_state.py	2327 bytes	sha256=1db3209fee59bd7b527f7db0e89705758e08e77c57de3639abe40a2e6c482a01
-+++ b/tools/hash_attempt.py	2108 bytes	sha256=8d16e79566561a8b8474bba60afe136fbfa141359d692df34daffacd1d3789b6
-+++ b/tools/make_changes_diff.py	3756 bytes	sha256=aaf8ccffc71ff0e25dc43d68debe7efe5fa5817064812906fb16744af979bfc1
++++ b/tools/final_selfcheck.py	7583 bytes	sha256=be4f1d2c0a2ab17f41bebe530d2881e4d5d9c8c90149740f4c0a392b9a389a30
++++ b/tools/finalize_state.py	6651 bytes	sha256=ea537a8920b827e56e4e9c307fce0e994d50ac12de967c3e41464e8241b23142
++++ b/tools/hash_attempt.py	3306 bytes	sha256=4347aa85953aa895c4afb99e9f1b772258c54c6a5c42e96e6d3faff16afc314a
++++ b/tools/make_changes_diff.py	5510 bytes	sha256=b8d8f98f587fbf13ab5385dab8f53fe2d74c80acc8d482f9000d215b5c65fb72
 +++ b/tools/msft_figures.py	3910 bytes	sha256=ed3208d2bd896238ff9710f39dfb56e8544865fc95a2899388ae28a7527e0140
 +++ b/tools/msft_products.py	2027 bytes	sha256=74860b56c0c4fa9a39c0c46c6453a6dadbe6088f117147aa2b2c20f6e407e8f2
 +++ b/tools/msft_scan_tables.py	2360 bytes	sha256=13bbc6c03a7f7c87f9158842f0bdabd1d4e3878fd0b95eb4cd65ce403a15e207
@@ -102,7 +119,8 @@ diff --git I-11-A/a20260919-01 (new files only; no production file modified)
 +++ b/tools/probe_pdf_fonts.py	2514 bytes	sha256=89982a425dfe2377e56b7964f8dc4517ccd4b0de3541e74ee650ff4e5ab85929
 +++ b/tools/probe_pdf_page.py	1600 bytes	sha256=4530382f7fae1801245d85c9b0c8ff8e09b9e137a3d61cff551b4418cc741678
 +++ b/tools/probe_source_bytes.py	5341 bytes	sha256=95ed29d4ba00e602372be0e9d138d3e50593c73ab6366d2bbb92bfbd6fdd4501
++++ b/tools/probe_xiaomi.py	7995 bytes	sha256=ef3ec838cad4b5a9fa429fea0660d372a2cfbc14f6b652bf6735243fb38f36f0
 +++ b/tools/run_extraction.py	9375 bytes	sha256=4078f3ca0b8368390948fddbe5d93b1f930dc93ca035bc6553713cbee7557527
-+++ b/tools/validate_hypotheses.py	22533 bytes	sha256=661190908d7e2770ff583a69e628a2419eddbc8dc042c12b8d20cdaad83d418d
++++ b/tools/validate_hypotheses.py	28549 bytes	sha256=cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac
 +++ b/tools/verify_arithmetic.py	12066 bytes	sha256=df8910dc46afd42c0c95e377ee28e4ebcd6ea293be27b3bd257f0a3bd453e951
 +++ b/tools/zijin_figures.py	3078 bytes	sha256=a1123e87071a1096939baed6426c107b577adadea6a63ac4e2aaf2c8a5674234

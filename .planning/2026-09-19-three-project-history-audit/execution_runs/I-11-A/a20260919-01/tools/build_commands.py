@@ -14,6 +14,9 @@ import os
 import subprocess
 import sys
 
+HK_PDF = (r"C:\Users\郑曾波\Projects\company-wiki\companies\小米集團－Ｗ\raw\financial_reports"
+          r"\annual\2026-04-28_hkexnews_12127452_2025年度報告.pdf")
+
 PURPOSE = {
     "I11A-01-p1-zijin": ("CN-ZIJIN-AR2025 pages 3..58,326..329 rendered by tools/pdf_text.py; "
                          "proves the cited statements are readable by the stdlib path"),
@@ -40,13 +43,20 @@ PURPOSE = {
     "I11A-18-finalize-state": ("freeze the before/after capture semantics: drop the attempt-directory "
                                "inventory from the before capture (it was taken after this attempt's tools "
                                "existed) and keep the production facts as the compared surface"),
+    "I11A-19-probe-xiaomi": ("adversarial readability probe for HK-XIAOMI-AR2025 (415 classic page objects, "
+                             "contents-stream string counts, ToUnicode availability, page sample) - added in "
+                             "R2 to correct review finding P1-3"),
+    "I11A-20-apply-review-fixes": ("rewrite the two fields that review findings P2-6 and P1-3 require "
+                                   "(copper-equivalent sensitivity wording; HK unreadability reason)"),
+    "I11A-21-archive-run-log": ("write one canonical index of the archived run logs and the terminal state, "
+                                "with the sha256 of every log it points at"),
 }
 
 EXPECTED_EXTRA = {
     "I11A-10-build-hypotheses": ("tools/build_hypotheses.py", 0,
                                  "8 propositions, 2 unquantified / 6 pending, 0 approved_frozen"),
     "I11A-11-validate-hypotheses": ("tools/validate_hypotheses.py", 0,
-                                    "positive case pass, 14/14 counterexamples rejected"),
+                                    "positive case pass, 21/21 counterexamples rejected"),
     "I11A-12-state-before": ("tools/capture_state.py", 0, "state captured"),
     "I11A-13-state-after": ("tools/capture_state.py", 0, "state captured"),
     "I11A-14-hash-attempt": ("tools/hash_attempt.py", 0, "delivery manifest written"),
@@ -54,7 +64,16 @@ EXPECTED_EXTRA = {
                              "new-file inventory written as changes.diff"),
     "I11A-16-hash-attempt-final": ("tools/hash_attempt.py", 0, "final delivery manifest written"),
     "I11A-17-final-selfcheck": ("tools/final_selfcheck.py", 0,
-                                "all required artifacts present, validators re-run, production unchanged"),
+                                "all required artifacts present, validators re-run, captures distinct"),
+    "I11A-18-finalize-state": ("tools/finalize_state.py", 0,
+                               "capture roles declared; HEAD/key-file stability reported; porcelain delta "
+                               "reported explicitly instead of being asserted stable"),
+    "I11A-19-probe-xiaomi": ("tools/probe_xiaomi.py", 0,
+                             "the HK unreadability reason is stated from measurements, not from memory"),
+    "I11A-20-apply-review-fixes": ("tools/apply_review_fixes.py", 0,
+                                   "two documented fields rewritten; counts unchanged"),
+    "I11A-21-archive-run-log": ("tools/archive_run_log.py", 0,
+                                "one canonical log index; every observed return code equals its expectation"),
 }
 
 BUSINESS = {
@@ -110,9 +129,10 @@ def main() -> int:
             "output_sha256": {os.path.basename(o["path"]): o.get("sha256") for o in rec["outputs"]},
         })
 
-    def add(cid, script, out_paths, timeout=600):
+    def add(cid, script, out_paths, timeout=600, extra_args=()):
         argv = [py, "-X", "utf8", "-B", os.path.join(attempt, "tools", script)]
-        if cid in ("I11A-10-build-hypotheses", "I11A-12-state-before", "I11A-13-state-after"):
+        if cid in ("I11A-10-build-hypotheses", "I11A-12-state-before", "I11A-13-state-after",
+                   "I11A-18-finalize-state", "I11A-20-apply-review-fixes", "I11A-21-archive-run-log"):
             argv.append(attempt)
         if cid == "I11A-11-validate-hypotheses":
             argv += [attempt, os.path.join(ev, "validation_report.json"),
@@ -121,6 +141,7 @@ def main() -> int:
             argv.append("before")
         if cid == "I11A-13-state-after":
             argv.append("after")
+        argv += list(extra_args)
         _, expected, business = EXPECTED_EXTRA[cid]
         commands.append({
             "id": cid,
@@ -167,6 +188,14 @@ def main() -> int:
     add("I11A-17-final-selfcheck", "final_selfcheck.py", ["evidence/I-11-A/final_selfcheck.json"])
     add("I11A-18-finalize-state", "finalize_state.py",
         ["evidence/I-11-A/state_before.json", "evidence/I-11-A/state_after.json"])
+    add("I11A-19-probe-xiaomi", "probe_xiaomi.py",
+        ["evidence/I-11-A/extract/P1_xiaomi_content_probe.json",
+         "evidence/I-11-A/extract/P1_xiaomi_content_probe.ascii.txt"],
+        extra_args=(HK_PDF, os.path.join(ev, "extract", "P1_xiaomi_content_probe.json"),
+                    os.path.join(ev, "extract", "P1_xiaomi_content_probe.ascii.txt")))
+    add("I11A-20-apply-review-fixes", "apply_review_fixes.py",
+        ["evidence/I-11-A/hypotheses.json", "evidence/I-11-A/source_map.json"])
+    add("I11A-21-archive-run-log", "archive_run_log.py", ["evidence/I-11-A/run_log_archive.json"])
 
     # second pass: attach the observed return codes parsed from the archived logs
     for c in commands:
@@ -174,13 +203,17 @@ def main() -> int:
             c["observed_returncode"] = observed[c["id"]]
         c.setdefault("observed_returncode", None)
 
-    note = ("every expected_returncode equals its observed_returncode; the separate id "
-            "I11A-14-hash-attempt (an earlier manifest run superseded by I11A-16) was dropped so that no "
-            "entry lacks an observed code; attempt_hashes.json is written by I11A-16 while describing "
-            "itself, so it cannot contain its own final sha256 - re-running I11A-16 after any edit is "
-            "required and is idempotent for every other file; the before/after captures are finalized by "
-            "I11A-18, which drops the attempt-directory inventory from the before capture because it was "
-            "taken after this attempt's tools already existed.")
+    note = ("commands.json holds 20 bound command ids; expected_returncode == observed_returncode for every "
+            "one of them, and the observed values come from the consolidated R2/closure log "
+            "(evidence/I-11-A/commands_run.log, which carries all of them in one file). The id "
+            "I11A-14-hash-attempt (an earlier manifest run superseded by I11A-16) was dropped so no entry "
+            "lacks an observed code. By design these paths end up stale inside attempt_hashes.json: the "
+            "manifest itself, commands_run.log (it records the manifest run's own rc line), "
+            "final_selfcheck.json (regenerated after the manifest it validates) and commands.json "
+            "(regenerated last from the log). attempt_hashes.json carries that expectation in "
+            "stale_at_manifest_time.expected - any OTHER path there is an unexpected change. "
+            "run_log_archive.json is written after the manifest by design; its sha256 is reported in "
+            "review.md section 5.1 and handoff.json.")
     for c in commands:
         c["commands_note"] = note
 

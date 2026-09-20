@@ -1,0 +1,53 @@
+﻿{
+    "card_id":  "M24",
+    "drift_event":  "PRODUCTION SOURCE DRIFT DETECTED DURING ROUND-3 CLOSE-OUT",
+    "detected_at":  "2026-09-20 04:38 (local), while re-running final_verify.py during round-3 close-out",
+    "drift_type":  "production repository reverted, mid-attempt, to a different revision of scripts/model_registry.py",
+    "details":  {
+                    "anchored_hash_given_by_the_task":  "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+                    "hash_used_by_this_attempt":  "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+                    "production_hash_now":  "1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86",
+                    "production_mtime_now":  "2026-09-20 04:35:32",
+                    "production_lines_now":  247,
+                    "attempt_snapshot_lines":  354,
+                    "attempt_snapshot_hash":  "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+                    "model_extensions_hash_now":  "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+                    "model_extensions_unchanged":  true,
+                    "git_state":  {
+                                      "head":  "cc78c5298acd5a5ff8b898d9aa237fc5a8559979",
+                                      "status_for_scripts_model_registry_py":  "(no output - the worktree file now matches its committed blob)",
+                                      "last_commits_touching_that_path":  [
+                                                                              "4a8b454e feat: add reserve_depletion model for resource-to-revenue businesses (v3.9.0)",
+                                                                              "69df60d6 feat: release revenue forecast 3.3.0"
+                                                                          ],
+                                      "interpretation":  "the file is now git-CLEAN at an older committed blob. The audit-fixed revision (which was untracked local modification content and hashed 9ec6529...) is no longer present in the worktree."
+                                  }
+                },
+    "what_changed_behaviourally":  {
+                                       "probe":  "calculate_registered_model(delivery_pipeline, timing_factor=[1, 1.5] on the 2-year card_neg base)",
+                                       "expected_under_the_attempt_snapshot":  "ModelRegistryError: driver delivery_pipeline.timing_factor must be between 0.0 and 1.0: FY2028",
+                                       "observed_under_the_current_production_file":  "returns [122.0, 0.0] - NO rejection",
+                                       "mechanism":  "the current production file has no ModelSpec.driver_bounds, no driver_value_bounds() and no _SIGNED_DRIVERS; the ratio-domain guard that this batch\u0027s negatives rely on is absent",
+                                       "registry_api_probe":  {
+                                                                  "has_driver_bounds_attribute":  false,
+                                                                  "driver_value_bounds":  "AttributeError: module \u0027model_registry\u0027 has no attribute \u0027driver_value_bounds\u0027"
+                                                              }
+                                   },
+    "impact_on_this_batch":  {
+                                 "frozen_expectations":  "NOT invalidated as worked examples of the frozen snapshot; they are invalid against the CURRENT worktree file",
+                                 "M21":  "the round-3 accepted_scoped verdict was rendered against the snapshot; the value-domain guard it credits does not exist in the current production file",
+                                 "M22":  "same - NEG-CARD\u0027s value-domain refusal depends on the absent guard",
+                                 "M23":  "same - plus timing_factor\u0027s [0,1] default bound",
+                                 "M24":  "the ARR bridge itself lives in model_extensions.py, which is unchanged; but M24\u0027s NEG-CARD message and the whole batch runner also depend on registry-side guards",
+                                 "verification_chain":  "UNCHANGED: every artifact, hash and verdict in this attempt still describes the ISOLATED SNAPSHOT, whose bytes are preserved and whose hash is recorded. Nothing in this attempt was re-anchored to the reverted file."
+                             },
+    "what_this_attempt_did":  [
+                                  "recorded the drift here and in recovery/production_drift.json",
+                                  "did NOT re-snapshot (that would change the bytes under test without a new revision)",
+                                  "did NOT modify anything in any production repository",
+                                  "re-ran the product against the SAME isolated snapshot so that the local chain (oracle.json mtime \u003c stdout.txt mtime) stays intact",
+                                  "rebuilt the evidence documents so that integrity.json records the CURRENT production hash and reports anchored_hashes_match = false"
+                              ],
+    "why_this_needs_an_owner_ruling":  "the acceptance basis is now ambiguous: the cards were accepted against a revision of scripts/model_registry.py that the repository no longer contains. Either (a) the audit-fixed revision is restored and re-hashed, or (b) the batch is re-snapshotted from the reverted file and the affected cases are re-derived, which would put the value-domain guards at risk because they do not exist there.",
+    "rules_invoked":  "START_HERE.md \u0027source/contract has drifted: stop writing in this card, submit old/new hashes and the diff; the dispatcher updates affected bindings and the reviewer re-reviews the oracle\u0027"
+}

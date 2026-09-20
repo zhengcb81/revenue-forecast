@@ -1,0 +1,20 @@
+{
+ "card_id": "M21",
+ "file_in_question": "before/run_card_preround2.py",
+ "expected_content": "the runner as it stood at the END OF ROUND 2 (after the round-2 fixes)",
+ "expected_sha256": "d02057debe8d34df8a472e83aa3771f5c90fb77d58b3c0eee2237e35593b2953",
+ "actual_sha256": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+ "actual_equals": "the ROUND-3 runner (identical bytes to scripts/run_card.py today, and to recovery/selfcheck/scripts/run_card.py)",
+ "status": "PROVENANCE_GAP - the round-3-time snapshot was taken after the round-3 runner had already been written, so it captured the newer file instead of the round-2 one",
+ "root_cause": "in this attempt the round-3 (P2-1/P3-4) edits to scripts/run_card.py were applied BEFORE the 'preround2' snapshot was taken; in M22/M23/M24 the same snapshot was taken before those edits and is therefore correct",
+ "can_the_round2_bytes_be_restored": false,
+ "why_not": "the exact round-2 runner bytes exist ONLY in the M22/M23/M24 attempts' before/run_card_preround2.py. Copying them here would move another attempt's provenance file into this attempt's directory, which would make M21's own snapshot chain claim something that did not happen. No file in this attempt holds those bytes.",
+ "independent_evidence_that_the_round2_runner_existed": [
+  "M22/M23/M24 before/run_card_preround2.py are byte-identical to each other and hash to d02057de...",
+  "the round-2 report's own text quotes the round-2 runner hash d02057de...",
+  "evidence/M21/source_manifest.json and handoff.json record the runner hash currently in use"
+ ],
+ "what_a_reader_should_do": "do NOT trust before/run_card_preround2.py as a round-2 artifact. To inspect the real round-2 runner, read M22 (or M23/M24) before/run_card_preround2.py inside ITS OWN attempt directory, where it is correct; or read before/run_card_prereview.py here, which is the genuine round-1 runner (fd3a11c9...).",
+ "action_taken": "this gap note was added; the mislabelled file was deliberately left in place and unedited so that the hash mismatch stays detectable, and NO bytes were moved between attempts",
+ "registered_by": "the implementer, in response to independent review round 3, item P3-2"
+}

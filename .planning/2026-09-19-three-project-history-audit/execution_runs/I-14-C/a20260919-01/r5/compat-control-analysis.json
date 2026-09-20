@@ -27,13 +27,13 @@
       "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
     ],
     "T4-2": [
-      "test_child_without_runtime_session_is_terminated_and_restarted",
       "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
       "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
       "test_stale_child_heartbeat_is_terminated_and_restarted",
       "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
     ],
     "T4-plain": [
+      "test_child_without_runtime_session_is_terminated_and_restarted",
       "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
       "test_stale_child_heartbeat_is_terminated_and_restarted",
       "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
@@ -43,8 +43,8 @@
     "T0-1": 4,
     "T0-2": 4,
     "T4-1": 4,
-    "T4-2": 5,
-    "T4-plain": 3
+    "T4-2": 4,
+    "T4-plain": 4
   },
   "union_T0": [
     "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
@@ -87,5 +87,14 @@
     "test_child_without_runtime_session_is_terminated_and_restarted"
   ],
   "only_on_T0": [],
-  "note": "The failing COUNT varies run to run (3..5) and the sets differ by the timing nodes test_child_without_runtime_session_is_terminated_and_restarted and test_stale_child_heartbeat_is_terminated_and_restarted; the UNIONS are what matter. The verdict is 'no T4-only node' (T4 union is a subset of the T0 union), because the flaky nodes can make the T4 union a strict subset by chance."
+  "t0_evidence_for_t4_only_nodes": {
+    "test_child_without_runtime_session_is_terminated_and_restarted": {
+      "t0_failed_runs": 6,
+      "t0_runs": 24,
+      "evidence": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r5\\flake-evidence\\frequency-child_without_runtime.json"
+    }
+  },
+  "unproven_t4_only_nodes": [],
+  "verdict": "no card-specific compat failure: every T4 failure also occurs on T0",
+  "note": "The failing COUNT varies run to run (3..5) and the sets differ by the timing nodes test_child_without_runtime_session_is_terminated_and_restarted and test_stale_child_heartbeat_is_terminated_and_restarted.  Four compat runs are too few samples for a ~30% flake, so a node that happens to appear only on T4 in these runs is checked against the dedicated interleaved frequency evidence before being called card-specific."
 }

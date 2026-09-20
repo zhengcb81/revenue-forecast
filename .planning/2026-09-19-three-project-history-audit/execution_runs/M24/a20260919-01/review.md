@@ -120,6 +120,7 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 
 `frozen_hashes_unchanged` = `True`. Full record:
 `recovery/selfcheck/selfcheck_result.json`.
+
 <!-- BEGIN independent-review verdict (round 2, transcribed verbatim) -->
 
 > **独立复核裁决（revision r2 后）：`changes_required`。仍有 1 项阻塞 + 1 项闸门缺口。**
@@ -131,4 +132,25 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 > 补充：`revision_r2.json` 仍写 `state=not_started`、`trigger="…has not yet been received"`、`review_verdict_received=None`，而同一文件已列出六项复核处置并引用我的结论——请一并更正（不影响数值）。
 > 签收边界：即便修完，签收范围也只能是 **`formula`**；`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`。两条产品侧待裁项（保留 ARR 守卫 `==0` 精确比较；`retail_franchise.recognized_fee_rate` 同时是 optional-without-default 与 ratio）继续登记，不阻塞本卡。
 
-<!-- END independent-review verdict -->
+<!-- END independent-review verdict (round 2) -->
+
+<!-- BEGIN independent-review verdict (round 3, transcribed verbatim) -->
+
+> **独立复核裁决（round 3 终裁）：`accepted_scoped`（仅 formula）。`changes_required` 予以解除——实现者的偏离经我独立复核成立，我 round-2 清单的字面值在本卡基座上不可执行。**
+>
+> 偏离裁定（我逐条独立实测，非采信）：
+> 1. 冻结 `continuity_positive` 为 `opening_arr=[200,250]`、`closing_arr=[250,250]`，故卡片 L117–L122 原文 patch（`opening=[200,251], closing=[250,251]`）在 FY2027 **自平**（`200−20+30+40=250=closing_arr[0]`），失败发生在 FY2028 跨年锚定 → 我实测 `opening_arr continuity failed: FY2028`。**我 round-2 要求的 `stock-flow balance failed: FY2027` 在该输入上确实不可达**；
+> 2. 我 round-2 给出的 CROSSYEAR 新值 `opening_arr:[200,250]` 与冻结基座**逐字节相同**（空操作）→ 我实测该"改动"后与 control 完全一致（`[215.0, 250.0]`）。**是我的清单写错，不是实现者的实现错**；
+> 3. 在该基座上，不改 `closing_arr[0]` 则 FY2027 平衡守卫代数上不可达（代入 `opening[1]=closing[0]` 后 index-1 平衡期望恒为 `closing[0]`）；我另实测 `closing_arr=[251,251]` 可让它可达，故"改任何 driver 都不可能"这一措辞过强，但其结论对本裁定成立。
+>
+> 处置是否满足实质要求：**满足**。①跨年锚定守卫有判定性失败样本（`CONT-BREAK` 用卡片原文 patch，消息要求冻结为 `continuity failed: FY2028`）；②两个守卫分属不同输入——平衡守卫由 `NEG-CARD`（`closing_arr=[251]` → `stock-flow balance failed: FY2027`）覆盖，跨年连续性守卫由 `CONT-BREAK` 覆盖；③M24 回到 **11 个用例 / 11 个互不相同的输入**（我独立重建每个用例输入并做 canonical sha256，无重复），上轮"12/12 含一个重复输入"的问题消除。
+>
+> 闸门：`required_message_ids = ["NEG-CARD","CONT-BREAK"]` 已闭合；我实测"删掉成员的消息要求"→rc=3、"成员要求置空"→rc=3、"连闸门字段一起删"→rc=3。9 个探针序列 `[0,3,3,2,3,3,3,3,3,0]`（我核对了 registry 的 tag 列表与 code）。
+>
+> 冻结与留档：`oracle.md` 0–12 节自 round 2 起逐字节未改（`9c8f6b23…`/13382 B）；`splice_oracle_md_r2.py` 本轮未运行；`final_verify.txt` False 计数 0；`verify_prefix_chain.py` ALL-OK；`stderr.txt` 0 字节。
+>
+> 关于 FY2027 桥平衡守卫的 2 年路径样本：**判定为不需要**。若 owner 仍要，只需在 `cases.json` 冻结 `{"opening_arr":[200,250],"closing_arr":[251,251]}`（我实测 → `stock-flow balance failed: FY2027`），**无需改 `oracle.md` 正文**，也无需改 `continuity_positive`。
+>
+> 签收边界：**仅 `formula`**。`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`。两条产品侧待裁项（保留 ARR 守卫 `==0` 精确比较；`retail_franchise.recognized_fee_rate` 同时是 optional-without-default 与 ratio）继续登记，不阻塞本卡。
+
+<!-- END independent-review verdict (round 3) -->

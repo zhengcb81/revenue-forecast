@@ -45,9 +45,12 @@
   "I11A-15-changes-diff",
   "I11A-16-hash-attempt-final",
   "I11A-17-final-selfcheck",
-  "I11A-18-finalize-state"
+  "I11A-18-finalize-state",
+  "I11A-19-probe-xiaomi",
+  "I11A-20-apply-review-fixes",
+  "I11A-21-archive-run-log"
  ],
- "commands_note": "commands.json holds 17 bound command ids; every expected_returncode equals its observed_returncode. The separate id I11A-14-hash-attempt (an earlier manifest run superseded by I11A-16) was dropped so that no entry is left without an observed code. attempt_hashes.json is written by I11A-16 while describing itself, so it cannot contain its own final sha256 - a re-run of I11A-16 after any edit is required and is idempotent for every other file. I11A-18 (tools/finalize_state.py) drops the attempt-directory inventory from the before capture because it was taken after this attempt's tools already existed.",
+ "commands_note": "commands.json holds 20 bound command ids; every expected_returncode equals its observed_returncode. The id I11A-14-hash-attempt (an earlier manifest run superseded by I11A-16) was dropped so no entry lacks an observed code. attempt_hashes.json is written by I11A-16 while describing itself, so it cannot contain its own final sha256; commands_run.log records that run's own rc line; final_selfcheck.json is regenerated after the manifest it validates; commands.json is regenerated from the archived logs. Those paths are expected to appear in attempt_hashes.json's stale_at_manifest_time audit - any OTHER path there is an unexpected change. run_log_archive.json is written after the manifest by design and its sha256 is reported in review.md section 5.1 / handoff instead.",
  "completed_steps": [
   "1 lingqu (card I-11-A read in full together with START_HERE, common_research_cards, review_and_handoff, dispatch row; one observable result fixed: every proposition has a traceable source, a mechanism, a driver, a time point, a double-count exclusion and an explicit state)",
   "2 binding (binding.json: three read-only production paths, sample sha256 from I-00-A, per-attempt iso venv python 3.13.9, external pdftotext registered as OPEN-1, allowed write root = this attempt only)",
@@ -65,13 +68,14 @@
   "US-MSFT-10K-FY2026": "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecfff",
   "PRIOR-EXTRACT-ZIJIN": "cbda5abb248d9c5f032a681befbd2bc4012896c8bdfef2192490995c358c07eb",
   "pdftotext_exe": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
-  "production_unchanged_after_attempt": true,
-  "revenue_forecast_HEAD": "e95444956100 (observed; differs from the I-00-A baseline 2c5384bb, i.e. this repo moved before this card started)",
+  "production_unchanged_after_attempt": "NOT asserted from the attempt's own captures any more (review finding P1-1): the two state captures were both taken during this attempt. The zero-write claim rests on the independent review (review.md section 5) plus the fact that binding.json's only allowed write root is this attempt directory; this attempt's tools contain no write path into a production repo.",
+  "revenue_forecast_HEAD": "e95444956100 at the first capture -> cc78c5298acd at the R2 captures (moved by OTHER actors, e.g. commit ddc81ab at 2026-09-20 04:09 local and later commits; this attempt never ran git add/commit)",
   "filing_fetch_HEAD": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
   "company_wiki_HEAD": "f39bd5a64224 (porcelain: 2 pre-existing entries)",
-  "revenue_forecast_porcelain": "126 entries before and after (125 pre-existing user/other-card changes + this attempt as untracked ?? .planning/.../execution_runs/I-11-A/)",
-  "plan_reviews_note": "PLAN/reviews LastWriteTime = 2026-09-19 09:14:20 (NOT 10:05 as the task brief stated); enumeration of all 285 files under it found none with an mtime after this attempt began; this attempt wrote nothing there. See OPEN-10.",
+  "revenue_forecast_porcelain_timeline": "126 entries at the first capture -> 1412/1413 during the R2 captures -> 1541/1532 inside the final capture pair; concurrent writers moved it in both directions while this attempt only wrote inside its own directory. The final capture pair records the appeared/disappeared sets explicitly and no porcelain entry naming this attempt's production files ever appeared.",
+  "plan_reviews_note": "PLAN/reviews directory LastWriteTime = 2026-09-19 09:14:20, while the NEWEST FILE inside is 2026-09-19 10:05:32 (second_wave/final_review_checks.json): both readings are correct and the task brief's 10:05 refers to the latter (review-verified). state_before/after.json now hold the full recursive listing (285 files). This attempt wrote nothing there. See OPEN-10.",
   "attempt_manifest": "evidence/I-11-A/attempt_hashes.json",
+  "run_log_archive": "evidence/I-11-A/run_log_archive.json (canonical index of the archived logs + terminal state; written after the manifest by design, so its own sha256 is recorded here: see review.md section 5.1 / commands.json I11A-21)",
   "revenue_forecast_base_hash_mismatch_note": "I do NOT claim to have consumed the production repos as sources; the only production paths read were the company-wiki raw filings and the revenue-forecast audit_review prior extraction artifact (read-only)."
  },
  "decisions_frozen": {
@@ -112,7 +116,7 @@
   "execution_runs/I-11-A/a20260919-01/before/README.md",
   "execution_runs/I-11-A/a20260919-01/after/README.md"
  ],
- "expected_exit_codes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+ "expected_exit_codes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
  "input_hashes": {
   "card": "execution_v2/card_I-11-A.md",
   "common_rules": "execution_v2/common_research_cards.md (I-11 template + I-11 synthetic example + metric boundaries)",
@@ -146,7 +150,7 @@
   "OPEN-10 (PLAN owner): PLAN/reviews LastWriteTime is 2026-09-19 09:14:20, not the 10:05 stated in the task brief; this attempt wrote nothing there. Please confirm which is authoritative."
  ],
  "product_changed_paths": [],
- "raw_exit_codes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+ "raw_exit_codes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
  "results": {
   "arithmetic_oracle": "7 identities, 7 pass, difference 0 for the six sum identities, sign test for A4 (sales exceed production for gold/copper/zinc/silver)",
   "extraction_paths": {
@@ -168,15 +172,35 @@
   },
   "validation": "positive case pass (0 errors); counterexamples 14/14 rejected as expected, 0 accepted by mistake",
   "selfcheck": "final_selfcheck.json verdict complete_for_review (re-run after review.md and handoff.json are written; see the file for the exact run)",
-  "production_state": "before/after captures identical (HEADs, porcelain, key-file sha256)"
+  "production_state": "the two state captures (both taken during this attempt) share HEAD + key-file hashes; porcelain moved by concurrent writers (see revenue_forecast_porcelain_timeline). The zero-write claim rests on the independent review, not on this pair (review finding P1-1)."
  },
- "reviewer_status": "PENDING - the implementer wrote no verdict; review.md section 5 is deliberately empty for the independent reviewer",
+ "reviewer_status": "ACCEPTED_SCOPED (independent review round 1; report sha256 e8b7d223e83c91128545e2b25b28b97ecba50cf2a5855e7366fabcaba16cafaf; the verdict text is transcribed verbatim into review.md section 5 by the implementer, who wrote no verdict and did not self-sign). Three mandatory-fix items came with the signature and are dispositioned in this attempt: P1-1 state-capture semantics, P1-2 stale composite manifests, P1-3 HK unreadability reason.",
+ "r2_dispositions": {
+  "P1-1_state_capture_semantics": "FIXED: both captures retaken with distinct timestamps and renamed in-content to state_capture_1/2, each carrying capture_comparison.claim_boundary; final_selfcheck.py now requires the two timestamps to differ and reports the porcelain delta instead of asserting a stable surface; changes.diff prints generation-time porcelain counts and names the concurrent commits; DEC-13 records the decision.",
+  "P1-2_stale_manifests": "FIXED: composite lists are regenerated after every other write (order: build_commands -> hash_attempt -> review.md/handoff.json -> hash_attempt); attempt_hashes.json now carries a read-only stale-at-manifest-time audit naming the paths that are expected to be stale by design.",
+  "P1-3_hk_reason": "FIXED: tools/probe_xiaomi.py measures it; source_map.json / mechanism_review.md section 5 / binding.json now state 415 enumerable classic page objects, 30 of 30 contents streams decoded on the sampled pages, 3264 literal + 2756 hex strings, 0 characters per sampled page, 1 of 5 classic fonts carries a /ToUnicode reference, pdftotext mojibake. Conclusion unchanged (STOP_EVIDENCE, zero HK propositions).",
+  "P2-5_validator_strength": "FIXED + limitation stated: four new machine checks and a counterexample suite grown from 14 to 21 (all five mutations the reviewer found un-rejected are now rejected); the remaining incompleteness is written into mechanism_review.md section 5 item 8 and oracle.md R2-1.",
+  "P2-6_sensitivity_wording": "FIXED: two-point difference over an +83,161 t denominator change, explicitly not a partial derivative.",
+  "P2-7_probe_scope": "FIXED: file-level / all-stream / page-contents scopes are reported separately.",
+  "P2-8_vol03_threshold": "FIXED: decidability statement over disclosed figures + observability_note + OPEN-11.",
+  "P2-9_reviews_listing": "FIXED: full recursive listing with mtimes and newest_file.",
+  "P3-10_pyc": "FIXED: __pycache__/** and *.pyc excluded with the reason stated.",
+  "P3-11_command_count": "FIXED: commands.json holds 20 bound ids, all with expected == observed return code, and handoff.commands_executed matches.",
+  "P3-12_scratch": "FIXED: the 14 tmp_* intermediates moved to evidence/I-11-A/scratch/."
+ },
+ "review_must_reverify": [
+  "P1-1: that the two captures really carry distinct timestamps and that both files declare the claim boundary",
+  "P1-2: regenerate the two composite lists and confirm only the by-design paths appear in stale_at_manifest_time.entries",
+  "P1-3: re-run tools/probe_xiaomi.py and compare with source_map.not_readable_in_this_attempt[0].measured_facts",
+  "P2-5: re-run the counterexample suite (21 cases) and try a NEW mutation outside the suite"
+ ],
  "scope": "DESIGN/CONTRACT card: freeze qualitative judgements into falsifiable propositions with parameters, thresholds and pre-registered refutations, plus the source map and the mechanism review. No product code change, no parameter magnitudes, no prediction.",
  "status": "review_pending",
  "true_counts": {
-  "counterexamples": "14 cases, 14 rejected as expected, 0 accepted by mistake (evidence/I-11-A/validation_report.json)",
+  "counterexamples": "21 cases, 21 rejected as expected, 0 accepted by mistake (R2; evidence/I-11-A/validation_report.json)",
   "documents_mapped": "3 documents in source_map (CN-ZIJIN-AR2025 + its TXT-anchor block, US-MSFT-10K-FY2026); 1 source declared not readable (HK-XIAOMI-AR2025)",
   "hypotheses": "8 (6 pending_professional_decision, 2 unquantified, 0 approved_frozen)",
-  "superseded_counts": "none - this is the first attempt of this card"
+  "threshold_bases": "arithmetic_identity 4 / professional_judgement_required 3 / disclosure_definition 1 (third class added in R2)",
+  "superseded_counts": "the pre-R2 figures (14 counterexamples, threshold bases 4/4) are superseded by the R2 run; oracle.md carries them as the R2 appendix rather than rewriting the frozen body"
  }
 }

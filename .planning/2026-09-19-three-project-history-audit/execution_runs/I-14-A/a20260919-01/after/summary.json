@@ -284,16 +284,15 @@
     "breaches": []
   },
   "r2_new_hashes": {
-    "captured_at_utc": "2026-09-20T02:51:24.711059+00:00",
+    "captured_at_utc": "2026-09-20T03:29:06.670648+00:00",
     "rule": "A hash citation names the file AND its capture time. Values for files that are edited after this capture are marked self_invalidating and must be recomputed with Get-FileHash.",
     "values": {
       "oracle.md": "87775f2f4ff025e4d104fd1dfe23d7f7bfc75a20520f8859732133e96ec84bb7",
-      "review.md": "7895675c211cc6181a1fdf3d63a20ad8b249771c6633e7bf1f0688146c253752",
+      "review.md": "bab39ef647db5aee750bac72ed04fbc29f2e33b925a9a17e90f5ab6e530a0038",
       "decision.md": "a1a9d37478ffb42f15877ac29b9ecb044b8f402f4d77f532d1a25f1646bfda24",
-      "handoff.json": "c5ba34d716f3cd1cdb0722c8d736b86b302949d0e2c3d9db4e110d6cf012a0c3",
       "commands.json": "59624971ec0bd926d16c580963cb6ed92e2f07778b100faf6beb4f6e6181867e",
       "binding.json": "d713c6c385318ef60a8786690ef3533615af359743d3844fc46f7a892d64808c",
-      "recovery/README.md": "b385353d2907165b467559c7798afcb31a7622323d41e26f8296d013337a2487",
+      "recovery/README.md": "9a67c2dddfa445664530f5398b6d0ae4efe5099fcab2f6095803b128082caa8e",
       "after/r2_review_evidence.md": "a7a51fbb9498a8fab83cd6ca90af5f474bb6e541845262109a8279d34e374f37",
       "before/cmd-E5b/report.json": "15f522deb4214257aea053d8eb1801449e77669661c0e034998f9aca8a4bf440",
       "before/cmd-E5b/stderr.txt": "10ada408f59f7c478a445ef50e41129e78f860ab287f873fe09c811872a9c8e3",
@@ -322,6 +321,21 @@
       "verified_here": "on this host local time 03:49 and UTC 02:49 differ (GMT/BST confusion in the interpreter timezone table), so the naive form was already 1 h off, not merely fragile"
     },
     "values_note": "paths are relative to the attempt root (<attempt>/...)",
-    "r3_note": "recomputed after the r3 pass (P4/P5 closed, N2 timestamp fixed, handoff/review/recovery notes added). Same rule: a cited hash names the file and its capture time; entries that are edited after capture are marked self_invalidating."
+    "r3_note": "recomputed after the r3 pass (P4/P5 closed, N2 timestamp fixed, handoff/review/recovery notes added). Same rule: a cited hash names the file and its capture time; entries that are edited after capture are marked self_invalidating.",
+    "uncited_files": {
+      "handoff.json": "CONTINUOUSLY EXTENDED by bookkeeping; no hash citation is provided. Recompute with Get-FileHash on use if you need one.",
+      "reason": "review finding P4 reopened by the reviewer (review.md r4 §4 :323-334): a citation written into a file that is edited again afterwards is dead on arrival. Option 1 (recompute after the last write) cannot be executed by the same pass that performs the write, so this file is declared uncited instead.",
+      "reviewer_verified": "handoff.json contains no citation of its own hash (12 distinct 64-hex strings, none self)."
+    },
+    "corrected_for_review_finding_P4_option2": {
+      "what": "handoff.json removed from r2_new_hashes.values",
+      "cited_value_that_went_stale": "c5ba34d716f3cd1cdb0722c8d736b86b302949d0e2c3d9db4e110d6cf012a0c3",
+      "actual_when_the_reviewer_checked": "6722ab34e91defae3fdcbb256eae5f6afd83d0fe5ab35f841d20dc62ca06cac0 (20445 B, mtime 2026-09-20 04:17:53)",
+      "actual_logged_on_removal": "8b065b12ad9caf758b6373ffd75e55a366063c277aa57cac6a70b045197956b9",
+      "why_it_kept_going_stale": "every subsequent bookkeeping edit re-invalidated the citation; removing the file from the cited set is the only fix that does not re-arm itself",
+      "other_entries_reverified": "the remaining entries were re-checked at this write; see values."
+    },
+    "r4_note": "r4 pass: handoff.json uncited (option 2) and the remaining 11 entries reverified; review.md is cited at its reviewer-written revision bab39ef647db5aee750bac72ed04fbc29f2e33b925a9a17e90f5ab6e530a0038.",
+    "final_note": "FINAL capture of this block. handoff.json is uncited by design (P4 option 2). The head pointer is a live value: revenue-forecast HEAD advanced to cc78c5298acd5a5ff8b898d9aa237fc5a8559979 after this attempt captured 7d7ea1ed; tools/slo_probe.py blob is 413aad5f788732520ace76acbaebcf06633f34d5 at every observed revision, so the card anchors are unaffected. No file cited here is edited after this write."
   }
 }

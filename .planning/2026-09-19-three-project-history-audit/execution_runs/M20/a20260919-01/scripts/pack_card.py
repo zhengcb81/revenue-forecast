@@ -124,8 +124,31 @@ def load_json(path):
 
 def dump(path, doc):
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as handle:
+    atomic_dump(path, doc)
+
+
+
+def atomic_dump(path, doc):
+    """Write JSON through a temp file + os.replace so an interrupted write cannot truncate it."""
+    tmp = path + ".tmp-atomic"
+    with open(tmp, "w", encoding="utf-8") as handle:
         json.dump(doc, handle, ensure_ascii=False, indent=1)
+    os.replace(tmp, path)
+
+def measure_drift(attempt, entries):
+    """Re-read every entry of a hash table and count mismatches (P2-A)."""
+    drifted = []
+    missing = []
+    for rel, entry in entries.items():
+        wanted = entry["sha256"] if isinstance(entry, dict) else entry
+        path = os.path.join(attempt, rel.replace("/", os.sep))
+        if not os.path.isfile(path):
+            missing.append(rel)
+            continue
+        if sha256(path) != wanted:
+            drifted.append(rel)
+    return {"drift_count": len(drifted), "missing_count": len(missing),
+            "drifted_paths": sorted(drifted + ["missing:" + m for m in missing])}
 
 
 def r2_analysis(oracle_md, scratch_dir, addendum_record_path):
@@ -153,11 +176,24 @@ def r2_analysis(oracle_md, scratch_dir, addendum_record_path):
         record = load_json(addendum_record_path)
         boundary = record["boundary_byte_offset"]
         prefix_hash = hashlib.sha256(raw[:boundary]).hexdigest()
+        # P2-C (independent review r2): boundary_byte_offset is the offset of the FIRST APPENDED BYTE,
+        # i.e. the start of the blank separator line preceding the appended section header.  "A real
+        # line boundary" therefore means "the byte before it is LF" (the pre-append file ended with a
+        # newline).  An earlier version of this line asserted "the offset points at a '## ' heading",
+        # which is false here and made this field contradict its own note.
         proof = {
             "source": "the real append recorded in evidence/%s/oracle_addendum_record.json" % os.path.basename(
                 os.path.dirname(addendum_record_path)),
             "boundary_byte_offset": boundary,
-            "line_boundary_is_real": raw[boundary:boundary + 3] == b"## ",
+            "boundary_semantics": ("offset of the first appended byte; because the pre-append file "
+                                   "ended with LF it is the start of the blank separator line that "
+                                   "precedes the appended section header"),
+            "line_boundary_is_real": bool(boundary == 0 or raw[boundary - 1:boundary] == b"\n"),
+            "byte_before_boundary_is_lf": bool(boundary > 0 and raw[boundary - 1:boundary] == b"\n"),
+            "boundary_points_at_appended_section_header": False,
+            "appended_section_header_line": record.get("added_section_header_line"),
+            "appended_section_header_line_number": record.get("added_section_header_line_number"),
+            "appended_section_header_byte_offset": record.get("added_section_header_byte_offset"),
             "recorded_pre_append_sha256": record["oracle_md_sha256_before_addendum"],
             "live_truncated_prefix_sha256": prefix_hash,
             "prefix_hash_equals_base_hash": (prefix_hash
@@ -648,6 +684,48 @@ def main() -> int:
         "revision": "r2" if r2["r2_sections_in_oracle_md"] else "r1",
         "independent_review_received": True,
         "independent_review_verdict_received": "accepted_scoped (formula qualification only)",
+        "independent_review_verdict_received_note": (
+            "P3-5 (independent review r2): the field above is a faithful transcription of the r1 "
+            "review's HEADLINE ONLY.  It is NOT a sign-off and it deliberately omits the two P2 "
+            "conditions the r1 review attached (P2-1: the runner must enforce the per-case declared "
+            "expectation; P2-2: OQ-05 must be parameterised per card).  The value is kept, not "
+            "overwritten, so the r1 record stays intact; the CURRENT verdict is in the field below."),
+        "independent_review_verdict_r1_conditions": [
+            "P2-1: enforce cases.json's per-case declared expectation in the runner",
+            "P2-2: parameterise OQ-05 per card (it had been a cross-card constant)",
+        ],
+        "r2_verdict_received": "changes_required",
+        "r2_verdict_scope": ("audit metadata only (P2-A hash-table drift, P2-B rc_namespace.json not "
+                             "valid JSON, P2-C two contradictory M17 addendum-record values, plus "
+                             "P3-1..P3-6); the formula evidence itself was re-verified UNCHANGED"),
+        "r2_verdict_record": ("%s/review.md section 'revision r2 review - 独立 reviewer 的 r2 判定' "
+                              "(verbatim transcription of the reviewer's text)"
+                              % os.path.basename(attempt)),
+        "formula_state_after_r2": ("review_pending - the implementer does not sign; the r2 review "
+                                   "states that formula may be signed accepted_scoped once the three "
+                                   "P2 items are closed"),
+        "boundary_metadata_correction": (None if not addendum else {
+            "source": "independent review r2, finding P2-C",
+            "what_was_wrong": [
+                ("revision_r2.json.mechanism_proof.line_boundary_is_real was FALSE while its own note "
+                 "said the boundary was real: the comparison asked whether the offset points at a "
+                 "'## ' heading instead of whether the byte before it is LF"),
+                ("oracle_addendum_record.json.added_section_header_line_number was 184 instead of 186: "
+                 "it was computed from the number of newlines in the PRE-append prefix"),
+            ],
+            "corrected_values": {
+                "line_boundary_is_real": r2["mechanism_proof"].get("line_boundary_is_real"),
+                "byte_before_boundary_is_lf": r2["mechanism_proof"].get("byte_before_boundary_is_lf"),
+                "appended_section_header_line_number":
+                    r2["mechanism_proof"].get("appended_section_header_line_number"),
+                "appended_section_header_line": r2["mechanism_proof"].get(
+                    "appended_section_header_line"),
+            },
+            "oracle_md_untouched": ("oracle.md was NOT appended to and NOT truncated to fix this: the "
+                                    "correction is metadata-only, and oracle.md's hash is unchanged at "
+                                    "%s" % r2["oracle_md_sha256"]),
+            "verified_by": "scripts/append_oracle_addendum.py --rebuild-record-only (record rebuilt from the current file) + pack_card.py live re-verification",
+        }),
         "r2_append_performed": r2["r2_sections_in_oracle_md"] > 0,
         "r2_sections_in_oracle_md": r2["r2_sections_in_oracle_md"],
         "r2_section_locations": r2["r2_section_locations"],
@@ -707,17 +785,21 @@ def main() -> int:
     # closing unit's own records, which are excluded there too and self-describe their hashes.
     post_pack_run_dirs = tuple(
         os.path.normcase(os.path.join("evidence", card, "runs", unit))
-        for unit in ("G-pack-evidence", "P-write-process-history", "H-write-handoff",
-                     "Z-close-attempt"))
+        for unit in ("G-pack-evidence", "P-write-process-history", "T-transcribe-review-verdict",
+                     "H-write-handoff", "Z-close-attempt", "V-verify-hash-tables"))
+    # Files written by post-pack units, plus this pack's own two outputs.
+    post_pack_files = tuple(os.path.normcase(os.path.join("evidence", card, name))
+                            for name in ("evidence_hashes.json", "hash_table_selfcheck.json",
+                                         "transcription_proof.json"))
     hashes = {}
     excluded_post_pack = []
     for root, _dirs, files in os.walk(evidence):
         for name in sorted(files):
             path = os.path.join(root, name)
             rel = os.path.relpath(path, attempt).replace("\\", "/")
-            if rel.endswith("evidence_hashes.json"):
-                continue
-            if os.path.normcase(rel).startswith(post_pack_run_dirs):
+            normalised = os.path.normcase(rel)
+            if normalised.startswith(post_pack_run_dirs) or normalised in post_pack_files \
+                    or rel.endswith("evidence_hashes.json"):
                 excluded_post_pack.append(rel)
                 continue
             hashes[rel] = sha256(path)
@@ -729,9 +811,11 @@ def main() -> int:
     for name in sorted(os.listdir(os.path.join(attempt, "before"))):
         hashes["before/" + name] = sha256(os.path.join(attempt, "before", name))
     for name in sorted(os.listdir(os.path.join(attempt, "after"))):
-        if name == "final_deliverable_hashes.json":
-            # written by the closing unit AFTER this pack; its own hash lives in that file's
-            # self-exclusion note, so it is deliberately not hashed here
+        if name in ("final_deliverable_hashes.json", "hash_table_verification.json"):
+            # both are written AFTER this pack (by the closing unit and by the verifier unit); their
+            # hashes live in the files themselves and in the closing unit's table, so they are
+            # deliberately not hashed here (P2-A: the exclusion list must cover exactly the
+            # self-referential / post-pack files)
             continue
         hashes["after/" + name] = sha256(os.path.join(attempt, "after", name))
     dump(os.path.join(evidence, "evidence_hashes.json"),
@@ -742,12 +826,37 @@ def main() -> int:
           "excluded_from_this_table": {
               "rule": ("capture records of units that execute at or after this pack are excluded, "
                        "because they are rewritten after this file is written"),
-              "paths": sorted(excluded_post_pack),
+              "paths": sorted(excluded_post_pack) + ["evidence/%s/hash_table_selfcheck.json" % card,
+                                                     "evidence/%s/evidence_hashes.json" % card],
               "covered_instead_by": ("after/final_deliverable_hashes.json (all of them except the "
                                      "closing unit's own records, whose rc.json self-describes the "
                                      "sha256 of its stdout/stderr)"),
           },
           "files": hashes})
+
+    # P2-A (independent review r2): "drift == 0" must be a MEASURED output, not a claim.  Re-read
+    # every entry written above and record the count; a non-zero count is a hard failure.
+    evidence_hashes_path = os.path.join(evidence, "evidence_hashes.json")
+    measured = measure_drift(attempt, hashes)
+    verified = {"card_id": card, "table": "evidence/%s/evidence_hashes.json" % card,
+                "entries": len(hashes), "drift_count": measured["drift_count"],
+                "missing_count": measured["missing_count"],
+                "drifted_paths": measured["drifted_paths"],
+                "verified_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "self_reference_exclusions": sorted(excluded_post_pack)
+                                            + ["evidence/%s/evidence_hashes.json" % card]}
+    doc = load_json(evidence_hashes_path)
+    doc["drift_count"] = measured["drift_count"]
+    doc["missing_count"] = measured["missing_count"]
+    doc["drifted_paths"] = measured["drifted_paths"]
+    doc["verified_utc"] = verified["verified_utc"]
+    dump(evidence_hashes_path, doc)
+    dump(os.path.join(evidence, "hash_table_selfcheck.json"), verified)
+    print("evidence_hashes drift_count:", measured["drift_count"],
+          "missing:", measured["missing_count"], "verified_utc:", verified["verified_utc"])
+    if measured["drift_count"] or measured["missing_count"]:
+        print("PACK FAILED: evidence_hashes.json is not drift-free")
+        return 0 if False else 3
 
     print("packed evidence for", card, "->", evidence)
     print("entry anchor ok:", entry_anchor_ok, "registration anchor ok:", reg_anchor_ok)

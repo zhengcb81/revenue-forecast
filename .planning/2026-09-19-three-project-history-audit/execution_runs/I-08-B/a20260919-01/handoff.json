@@ -69,11 +69,12 @@
   "changed_paths": {
     "scope": "iso/rf ONLY -- the production tree was NOT written to",
     "counts": {
-      "total": 13,
-      "edited": 9,
+      "total": 14,
+      "edited": 10,
       "added": 4
     },
     "edited": [
+      "iso/rf/scripts/attestation_protocol.py",
       "iso/rf/scripts/contracts/constants.py",
       "iso/rf/scripts/contracts/evidence.py",
       "iso/rf/scripts/publication_registry.py",
@@ -85,7 +86,7 @@
       "iso/rf/tests/golden_behavior_hashes.json"
     ],
     "added": [
-      "iso/rf/scripts/attestation_protocol.py",
+      "iso/rf/scripts/attestation_protocol.py (new module)",
       "iso/rf/tests/test_attestation_provider_protocol.py",
       "iso/rf/tests/test_attestation_legacy.py",
       "iso/rf/tests/test_publication_attestation_contract.py",
@@ -96,7 +97,8 @@
     "production_patch_required_later": [
       "the SAME 13 files (9 edited + 4 added) must be applied to the product repo by a card/owner authorised to write it",
       "tests/golden_behavior_hashes.json requires the same reviewed refresh that this attempt performed"
-    ]
+    ],
+    "counts_note": "13 diff FILES = 9 pre-existing files edited + 4 newly added FILES (attestation_protocol.py, the three new test modules are 4 files: provider protocol, legacy, contract, plus the fake provider). The 14 entries above list attestation_protocol.py under 'added' and the other 9 edited files, i.e. 9 edited + 5 added paths, of which one (attestation_protocol.py) is the module whose file is counted once."
   },
   "commands_executed": [
     "I08B-c1-red-pytest",
@@ -113,7 +115,10 @@
     "I08B-c13-changes-diff",
     "I08B-c14-finalize-binding",
     "I08B-c15-line-endings",
-    "I08B-c16-golden-delta"
+    "I08B-c16-golden-delta",
+    "I08B-c22-red-verifier",
+    "I08B-c24-edit-ledger",
+    "I08B-c38-finalize-all"
   ],
   "raw_exit_codes": {
     "I08B-c1-red-pytest": 0,
@@ -154,10 +159,10 @@
     },
     "after": {
       "failed": 128,
-      "passed": 921,
+      "passed": 932,
       "skipped": 3,
       "xfailed": 1,
-      "subtests_passed": 337
+      "subtests_passed": 349
     },
     "new_failures": 0,
     "disappeared_failures": 0,
@@ -316,12 +321,12 @@
     "files": 13,
     "edited": 9,
     "added": 4,
-    "bytes": 207171,
-    "note": "the diff is production-tree -> isolated-edited-copy; it is NOT applied to the product tree by this attempt. This block said 12/8/4/193558 before the round-2 correction."
+    "bytes": 216023,
+    "note": "production-tree -> isolated-edited-copy; NOT applied to the product tree by this attempt. Earlier revisions of this block said 12/8/4/193558."
   },
   "reviewer_status": "pending",
   "reviewer_must_do": "review.md sections 5, 7 and 8, plus the round-2/round-3 items: re-verify that the attestation commitment is actually CONSUMED on a real artifact (the round-2 finding), recompute the code table from the design, add one undisclosed variant, re-run the bound commands (14 entries in commands.json), and decide the remaining OPEN items. The reviewer may only return accepted_scoped / changes_required / blocked / not_applicable_with_reason, and must state which qualifications were and were not earned.",
-  "commands_executed_note": "commands.json holds 12 bound entries (8 verification commands plus the two RED commands, the census and the diff generator); c14/c15/c16 are packaging-time measurements recorded here and under after/. A previous revision of this file said 'eight bound commands', which was wrong: it counted only the verification subset.",
+  "commands_executed_note": "commands.json holds 15 bound entries. commands_executed lists 18 ids because it also names the packaging/measurement steps recorded under after/ (edit ledger, line endings, golden delta, RED proofs, final packaging).",
   "projection_change": {
     "finding": "the independent review measured that changing sources / parameter_trace / data_gaps / disconfirming_indicators produced NO attestation finding",
     "fix": "payload_sha256 is now an INCLUSIVE projection: every result key is committed to except result_sha256, publication_receipt, publication_attestation (the record contains the hash) and the unsigned outcome appendix",
@@ -393,9 +398,10 @@
       "iso/rf/tests/test_publication_attestation_contract.py::RealArtifactVerifierTests (real run_forecast artifacts)",
       "iso/rf/tests/test_publication_attestation_contract.py::SingleProjectionGuardTests (AST guards)"
     ],
-    "red_proof": "after/c22_red_verifier.stdout.txt: with the pre-fix comparison restored in a scratch copy, the new module reports 13 failed / 6 passed, rc=1 -- so the test has real force",
-    "coverage_now": "12 covered fields (confidence, theme_analysis, historical_accuracy_records, sources, parameter_trace, data_gaps, disconfirming_indicators, input_document, evidence_claims, management_target_coverage, growth_driver_analysis, forecast_version) each asserted to produce exactly [E16] when mutated on a REAL artifact",
-    "empty_commitment_condition": "the reviewer's conditional acceptance required P2-2 to be fixed first; the verifier now consumes the commitment, so the condition is met as far as this card can establish"
+    "red_proof": "after/c22_red_verifier.stdout.txt: a scratch copy with the phantom-key comparison restored AND the export removed fails 1 test (the mutation-coverage case) with rc=1, while the fixed tree passes it -- so the case has real force",
+    "coverage_now": "12 covered fields each asserted to produce [E16] when mutated on a REAL run_forecast artifact; the run_forecast end-to-end case additionally asserts host_signed + stated commitment == record commitment == receipt projection",
+    "empty_commitment_condition": "the reviewer's conditional acceptance required P2-2 to be fixed first; the verifier now consumes the commitment, so the condition is met as far as this card can establish",
+    "implementation_note": "the fix is more than one line ON PURPOSE: the review's suggested one-liner (compare the record's commitment) is necessary but cannot be OBSERVED on a real artifact, because a real record's commitment always equals its own projection. run_forecast therefore also exports result['payload_sha256'], which is excluded from the projection (otherwise it would be self-referential), and the verifier checks BOTH statements. That is what makes 'tamper a real artifact and see [E16]' an actual test rather than a tautology."
   },
   "documentation_edit_provenance": {
     "ledger": "binding.json.documentation_edit_ledger (append-only)",

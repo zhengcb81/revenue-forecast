@@ -232,3 +232,56 @@ A4 只声明“四产品销量均高于产量”，**不**由此推断库存桥�
 - 不产生 `approved_frozen` 命题 → 需行业 reviewer。
 - 不产生 HK 的原文数值 → 原文在本 attempt 不可读（若 E4 成立）。
 - 不产生准确性证据、不产生预测、不产生发布资格。
+
+---
+
+## R2 附录（运行后修订，按 START_HERE"事后修改只追加"的规则）
+
+本节于独立复核之后追加。**§0–§9 正文一字未改**；凡与本节冲突之处，以本节为准。
+
+### R2-1 §7 反例套件由 14 条扩到 21 条（对应 review 发现 P2-5）
+
+独立 reviewer 在清单外用 7 个自造变异测试校验器，当时有 5 个**未被拒绝**，说明 §3.3 的机制链末环
+语义、§3.4 的观察日、O-11 的唯一参数规则、`threshold_basis` 的诚实性在首版校验器里**没有机器检查**。
+本 §7 因此追加以下固定错误码与反例：
+
+| 错误码 | 反例输入 | 期望行为 |
+|---|---|---|
+| `E_THRESHOLD_BASIS_UNKNOWN` | `threshold_basis` 不在闭集 `{arithmetic_identity, professional_judgement_required, disclosure_definition}` 内 | 拒绝 |
+| `E_THRESHOLD_BASIS_INCONSISTENT` | `arithmetic_identity` 但阈值文本不是等式；或判断类阈值却把命题标为非 pending；或 `disclosure_definition` 但阈值文本不提披露 | 拒绝 |
+| `E_CHAIN_END_SEMANTICS` | `mechanism_chain` 末环不含收入确认/期间归属语义，或任一环短于 6 字符 | 拒绝 |
+| `E_OBSERVATION_DATE_UNRESOLVED` | `observation_date` 为 `TBD`/`待定` 等，或不含 `YYYY-MM` 级日期锚点 | 拒绝 |
+| `E_STATE_APPROVED_BY_IMPLEMENTER`（加强） | `approved_frozen` 且 reviewer 名为空、在黑名单内、或短于 8 字符；或 `decision.decision_sha256` 未填 | 拒绝 |
+| `E_DUPLICATE_PARAMETER`（加强） | 同一 `parameter_id` 对应不同 driver/期间，**或**两条命题的 claim/observation 不同 | 拒绝 |
+| `E_EMPTY_FIELD`（加强） | `refuted_by` 列表非空但含空白条目 | 拒绝 |
+
+**这仍不是完备性证明**：校验器只覆盖已写下来的规则；`mechanism_review.md` §5 第 8 条已把该局限
+写成显式声明，禁止下游把"21/21 被拒"读成"校验器完备"。
+
+### R2-2 阈值依据新增第三类 `disclosure_definition`（对应 P2-5 的衍生问题）
+
+命题 7（Microsoft Cloud 聚合口径）的阈值本质是"年报是否给出可复算的披露映射"，既不是算术恒等式，
+也不是需要专业审定的幅度，而首版把它记成 `professional_judgement_required` 却让命题停在
+`unquantified`（自相矛盾）。R2 增设 `disclosure_definition` 类并把该命题改到此类；当前分布为
+`arithmetic_identity 4 / professional_judgement_required 3 / disclosure_definition 1`。
+
+### R2-3 §3.4 的措辞修订
+
+§3.4 第 2 条原写"`threshold` 可与观测量直接比较的数值/枚举边界"。对 `disclosure_definition` 类，
+阈值是**判定式**（是否给出可复算披露映射），不是数值上下界；原措辞对这类不适用，以本行为准。
+另：§5 的 A4 只声明"销量高于产量"，**不**证明存货桥闭合——此点由 review 复核重申。
+
+### R2-4 关于 O-6 的页号措辞（OPEN-8 的处置）
+
+O-6 写"prior artifact **同页**"时 offset 尚未测定，而实测 offset = +1。独立 reviewer 的裁定意见是
+**接受"以 `P1_vs_prior_offset.json` 的择优规则为准"，不回改 O-6 正文**。本附录据此记录：
+O-6 的"同页"应读作"按 `tools/page_offset_match.py` 择优选出的对应页"，其余不变。
+
+### R2-5 状态捕获对的语义（对应 P1-1）
+
+§0.1 第 1 条与 §1 未曾声称"两次捕获分别在工作前后"。首版 `tools/finalize_state.py` 把同一次捕获
+写入两个文件，使 `final_selfcheck.json` 的 `production_state_unchanged` 变成自反比较。R2 更正：
+两个文件现分别声明为 `state_capture_1` / `state_capture_2`（皆在本次工作期间取得），
+`final_selfcheck.py` 改为**先检查两次捕获时间戳不同**、再比较生产面，并明确写出
+"该比较不构成开工前基线的证明"。生产零改动的结论由独立复核与"本卡无生产写入路径"承载，
+不由该对证据承载（另见 `decision.md` DEC-13）。

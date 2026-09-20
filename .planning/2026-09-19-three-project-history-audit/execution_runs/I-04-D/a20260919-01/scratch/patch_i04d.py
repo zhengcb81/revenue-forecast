@@ -382,20 +382,39 @@ def _unique_tmp_path(path: Path) -> Path:
     )
 
 
+class _LeaseWriteError(OSError):
+    """An OSError from the ledger write, with the window it happened in."""
+
+    def __init__(self, window: str, tmp: Path, target: Path, cause: OSError) -> None:
+        super().__init__(
+            f"{window}: {type(cause).__name__} errno={cause.errno} "
+            f"filename={cause.filename!r} tmp_len={len(str(tmp))} "
+            f"target_len={len(str(target))} target={target} ({cause})"
+        )
+        self.window = window
+        self.cause = cause
+
+
 def _atomic_write_json(path: Path, payload: Any) -> None:
-    text = json.dumps(payload, ensure_ascii=False, sort_keys=True)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise _LeaseWriteError("mkdir", path, path, exc) from exc
     tmp = _unique_tmp_path(path)
     try:
-        tmp.write_text(text, encoding="utf-8")
+        tmp.write_text(encoded, encoding="utf-8")
+    except OSError as exc:
+        raise _LeaseWriteError("write_text", tmp, path, exc) from exc
+    try:
         tmp.replace(path)
-    except OSError:
+    except OSError as exc:
         try:
             if tmp.exists():
                 tmp.unlink()
         except OSError:
             pass
-        raise
+        raise _LeaseWriteError("replace", tmp, path, exc) from exc
 
 
 def _hash_file(path: Path) -> str:
@@ -419,6 +438,20 @@ class _ProbeResult:
         return f"_ProbeResult({self.verdict!r}, {self.os_start_time!r}, {self.error!r})"
 
 
+def _probe_injection(pid: int) -> str | None:
+    """I04D_PROBE_INJECT={"<pid>": "<reason>"} forces an UNKNOWN verdict for that pid."""
+    raw = os.environ.get("I04D_PROBE_INJECT")
+    if not raw:
+        return None
+    try:
+        payload = json.loads(raw)
+    except ValueError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return payload.get(str(pid))
+
+
 def _probe_entry_verdict(entry: dict[str, Any], *, probe_timeout: float) -> _ProbeResult:
     """Decide one lease holder's liveness.  The failure direction is always safe."""
     pid = entry.get("pid")
@@ -427,6 +460,11 @@ def _probe_entry_verdict(entry: dict[str, Any], *, probe_timeout: float) -> _Pro
     recorded_boot = entry.get("boot_uuid")
     if pid == os.getpid() and recorded_boot == _boot_uuid():
         return _ProbeResult("self")  # rule 1: own incarnation, never spawn a probe
+    injected = _probe_injection(pid)
+    if injected is not None:
+        # Test-only: a schedule can force one pid's probe to fail so the UNKNOWN
+        # branch (ADR-4 rule 5) is reachable without breaking a real probe.
+        return _ProbeResult("unknown", "", f"injected:{injected}")
     try:
         alive, observed_start = _pid_is_alive_with_start_time(pid, timeout=probe_timeout)
     except subprocess.TimeoutExpired:
@@ -580,24 +618,6 @@ class _Hooks:
         return not point_tag or point_tag == self.tag
 
     def __call__(self, point: str, context: dict[str, Any]) -> None:
-        try:
-            root = Path(context.get("root") or ".")
-            catalog = root / ".source_catalog"
-            listing = sorted(p.name for p in catalog.iterdir()) if catalog.is_dir() else "ABSENT"
-            refcount = catalog / "filing_fetch_pause.refcount"
-            with open(self.dir / "hook-probe.log", "a", encoding="utf-8") as handle:
-                handle.write(
-                    f"{point}|tag={self.tag}|pid={os.getpid()}|root={root}|listing={listing}|"
-                    f"refcount_exists={refcount.exists()}|"
-                    f"refcount_text={(refcount.read_text(encoding='utf-8')[:80] if refcount.is_file() else None)!r}|"
-                    f"env_call_trace={os.environ.get('I04D_CALL_TRACE')!r}\n"
-                )
-        except Exception as exc:  # noqa: BLE001 - diagnostics only
-            try:
-                with open(self.dir / "hook-probe.log", "a", encoding="utf-8") as handle:
-                    handle.write(f"{point}|PROBE-ERROR|{type(exc).__name__}: {exc}\n")
-            except OSError:
-                pass
         code = self.crashes.get(point)
         if code is not None:
             _lease_journal(Path(context.get("root") or "."), "i04d_hook_crash", point=point, code=code)
@@ -617,6 +637,16 @@ class _Hooks:
             reached = self.dir / f"{base}.reached"
             if not reached.exists():
                 reached.write_text("reached", encoding="utf-8")
+                try:
+                    import traceback as _tb
+
+                    sys.stderr.write(
+                        f"[i04d] gate {base} published by pid {os.getpid()} at {point}\n"
+                        + "".join(_tb.format_stack()[-6:])
+                    )
+                    sys.stderr.flush()
+                except Exception:  # noqa: BLE001
+                    pass
             fence = self.dir / f"{base}.fence"
             limit = time.monotonic() + timeout
             while not fence.exists():
@@ -626,18 +656,6 @@ class _Hooks:
                         code="i04d_gate_timeout",
                     )
                 time.sleep(0.005)
-
-
-def _i04d_call(name: str, **fields: Any) -> None:
-    """Diagnostic call trace; inert unless I04D_CALL_TRACE names a file."""
-    path = os.environ.get("I04D_CALL_TRACE")
-    if not path:
-        return
-    try:
-        with open(path, "a", encoding="utf-8") as handle:
-            handle.write(f"{name}|{os.getpid()}|{time.monotonic():.4f}|{fields}\n")
-    except OSError:
-        pass
 
 
 _HOOKS: "_Hooks | None" = None
@@ -1009,7 +1027,8 @@ class PausedWorkerScope:
         handle = os.open(str(path), os.O_RDWR | os.O_CREAT, 0o644)
         try:
             while True:
-                if _try_lock_byte(handle):
+                locked_now = _try_lock_byte(handle)
+                if locked_now:
                     break
                 if time.monotonic() >= deadline:
                     raise _LeaseScopeError(
@@ -1245,14 +1264,12 @@ class PausedWorkerScope:
     # -- enter -----------------------------------------------------------
 
     def __enter__(self) -> "PausedWorkerScope":
-        _i04d_call("__enter__", lease_id=self.lease_id, enabled=self.enabled)
         if not self.enabled:
             self.action = "disabled"
             return self
         try:
             self.lease_id = _new_lease_id()
             self._proc_start_time = _sys_process_start_time()
-            _i04d_hook("at-lock-attempt", root=self.root, payload={"lease_id": self.lease_id})
             with self._lock as locked:
                 _i04d_hook("enter-acquired", root=self.root, payload={"lease_id": self.lease_id})
                 locked._scope._enter_locked()
@@ -1263,7 +1280,6 @@ class PausedWorkerScope:
         return self
 
     def _enter_locked(self) -> None:
-        _i04d_call("_enter_locked")
         remaining = self._request_remaining()
         if remaining <= 0:
             # I-04-A D3: a request-stage call after the deadline is forbidden.  No
@@ -1273,9 +1289,7 @@ class PausedWorkerScope:
         try:
             status = self._worker_status(remaining)
         except BaseException as exc:
-            _i04d_call("_worker_status_raised", kind=type(exc).__name__, detail=str(exc)[:200])
             raise
-        _i04d_call("_worker_status_ok", desired=status.get("desired_state"))
         state = _read_pause_state(self.root)
         _i04d_hook(
             "enter-read",
@@ -1328,9 +1342,16 @@ class PausedWorkerScope:
         probe_timeout: float,
     ) -> None:
         desired = status.get("desired_state")
-        _i04d_call("_dispatch_locked", desired=desired, live=len(live), entries=len(state.entries))
         if desired not in {"paused", "stopped"}:
             self._fresh_cycle_locked(state, live, resume_required=False)
+            return
+        if not live and not state.resume_required and self._respect_user_pause_locked(state):
+            # ADR-8: the worker is paused, the ledger is EMPTY and nobody owes a
+            # resume, so this pause is not ours.  It is a user/external pause: leave
+            # it completely alone - no lease, no pause, no resume - and let the caller
+            # continue with the explicit opt-in the CLI already carries.
+            self.action = "respect_paused"
+            _lease_journal(self.root, "respect_paused", lease_id=self.lease_id)
             return
         if self._withdraw_orphan_pause_locked(status):
             self._fresh_cycle_locked(state, live, resume_required=False)
@@ -1354,32 +1375,79 @@ class PausedWorkerScope:
             self._join_cycle_locked(state, live)
             return
         if self._owner_lease_live(state, live):
-            # The ownership record names a holder that is NOT this incarnation while
-            # another live lease keeps the cycle alive.  We cannot attribute it, and
-            # the ADR-9b evidence ("a request of ours left a pause behind") does not
-            # apply: fail closed rather than guess.  This is the R5 terminal state,
-            # resolved by a human or by wiki-side evidence (ADR-8 / section 8 O-2).
+            # ADR-9b: a LIVE holder keeps the cycle alive, so this request JOINS it
+            # instead of stopping the worker a second time.  The cycle is already
+            # paused, so a peer's request needs no pause of its own.  (This is also what
+            # makes the mixed-fleet/foreign-live holder case safe: we add a lease and
+            # touch nothing else, and the ownership record is left exactly as found.)
+            _lease_journal(
+                self.root,
+                "joined_live_holder",
+                lease_id=self.lease_id,
+                owner=(state.owner or {}).get("lease_id"),
+                generation=state.generation,
+            )
+            self._join_cycle_locked(state, live)
+            return
+        # R4: the owner is no longer in the ledger.  Take the cycle over ONLY when
+        # BOTH hold:
+        #   (a) the ownership record belongs to THIS process lineage (same boot_uuid
+        #       and pid), i.e. it is our own crashed attempt and not a third party; and
+        #   (b) that lineage is provably dead (never a timeout guess).
+        # A foreign record that merely names a dead pid is NOT ours to close: taking it
+        # over would resume a pause this tool never created, so it stays R5 - the
+        # evidence is kept byte-for-byte and the reader is told exactly why.
+        age = self._owner_age_seconds(state)
+        claimable = (
+            self._owner_is_our_lineage(state)
+            or not state.owner
+            or not state.owner.get("lease_id")
+        )
+        if not claimable:
+            owner = state.owner or {}
             raise _LeaseScopeError(
                 "lease_conflict_unknown",
-                "the worker is paused and held by another participant "
-                f"(owner lease {(state.owner or {}).get('lease_id')}, generation "
-                f"{state.generation}); the ownership record does not name a holder we can "
-                "attribute, so nothing was written and no worker command was issued",
+                "the worker is paused and the ownership record is not attributable to this "
+                f"process lineage (owner boot_uuid={owner.get('boot_uuid')!r}, "
+                f"pid={owner.get('pid')!r}); nothing was written and no worker command "
+                "was issued. This is the fail-closed terminal state: resolve it with "
+                "`worker-resume` by hand, or let the owning tool close its own cycle",
             )
-        # R4: the owner is no longer in the ledger.  Take the cycle over ONLY on
-        # positive death evidence; otherwise fail closed (R5), because an owner we
-        # cannot prove dead is UNKNOWN, and unknown never authorises a resume.
         provably_dead, why = self._probe_owner_death(state, probe_timeout=probe_timeout)
         if not provably_dead:
             raise _LeaseScopeError(
                 "lease_conflict_unknown",
-                "the worker is paused and the ownership record is not attributable to a "
-                f"provably dead holder ({why}); nothing was written and no worker command "
+                "the worker is paused and this lineage's ownership record is not provably "
+                f"dead ({why}) after {age:.1f}s; nothing was written and no worker command "
                 "was issued. Inspect the refcount by hand before retrying",
             )
         _lease_journal(self.root, "owner_provably_dead", why=why, owner=state.owner)
         self._takeover_cycle_locked(state)
         return
+
+    def _owner_is_our_lineage(self, state: _LeaseState) -> bool:
+        """Whether the owner record is this process incarnation's own record."""
+        owner = state.owner or {}
+        return bool(
+            owner.get("boot_uuid")
+            and owner.get("boot_uuid") == _boot_uuid()
+            and isinstance(owner.get("pid"), int)
+            and owner.get("pid") == os.getpid()
+        )
+
+    def _owner_age_seconds(self, state: _LeaseState) -> float:
+        """Diagnostic only: how long the pause has been unattributed."""
+        del state  # the record carries no timestamp; the journal has the real timeline
+        return 0.0
+
+    def _respect_user_pause_locked(self, state: _LeaseState) -> bool:
+        """ADR-8: paused with no tool-held lease, no obligation and no owner record.
+
+        The owner RECORD (not the marker file) is the authority (ADR-5 W1): if a record
+        exists we treat the cycle as a crashed one of ours and recover it instead of
+        silently adopting a human's pause.
+        """
+        return not state.entries and not state.owner
 
     def _owner_lease_live(self, state: _LeaseState, live: list[dict[str, Any]]) -> bool:
         owner_lease = (state.owner or {}).get("lease_id")
@@ -1414,7 +1482,6 @@ class PausedWorkerScope:
     def _fresh_cycle_locked(
         self, state: _LeaseState, live: list[dict[str, Any]], *, resume_required: bool
     ) -> None:
-        _i04d_call("_fresh_cycle_locked", live=len(live))
         """T5: a brand-new pause cycle with a fresh generation (ADR-12)."""
         state.generation = state.generation + 1
         state.entries = list(live) + [
@@ -1550,7 +1617,6 @@ class PausedWorkerScope:
     # -- exit ------------------------------------------------------------
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        _i04d_call("__exit__", action=self.action, lease_held=self.lease_held)
         # I-04-A D5: the pause outcome is reported even when no cleanup is owed.
         started = time.monotonic()
         self._cleanup_started = started
@@ -1696,9 +1762,27 @@ class PausedWorkerScope:
             reason = "inherited_obligation"
         else:
             provably_dead, why = self._probe_owner_death(state, probe_timeout=self._cleanup_remaining())
-            if provably_dead:
-                # R4: the owner is provably dead, so closing the cycle is ours to do.
+            if provably_dead and self._owner_is_our_lineage(state):
+                # R4: our own lineage's owner is provably dead, so closing the cycle
+                # (and stating why) is ours to do.
                 reason = why
+            elif provably_dead:
+                # The record names a provably dead holder that is NOT ours: the pause
+                # may belong to a user or another tool, so R5 keeps the evidence and
+                # does not resume.  This is the F-L8d cell of the branch table.
+                state.entries = []
+                self._persist_locked(state, resume_required=False)
+                self._release_done = True
+                self.action = "released_owner_changed"
+                self._cleanup_failure = f"failed:owner_evidence_changed:{why}:foreign_lineage"
+                _lease_journal(
+                    self.root,
+                    "released_owner_changed",
+                    lease_id=self.lease_id,
+                    why=why,
+                    owner=state.owner,
+                )
+                return
             elif why in {"owner_record_missing", "owner_record_has_no_pid"}:
                 # No ownership evidence at all: the worker is paused, the ledger is
                 # empty and nothing says this pause was ours.  That is R5 - fail

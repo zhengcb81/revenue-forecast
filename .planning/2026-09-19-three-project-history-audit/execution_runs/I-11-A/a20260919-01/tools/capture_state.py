@@ -63,6 +63,25 @@ def dir_inventory(root: str):
     return out
 
 
+def reviews_listing(root: str):
+    """Full recursive listing of the read-only reviews tree, not a truncated sample."""
+    out = []
+    for base, dirs, files in os.walk(root):
+        for f in sorted(files):
+            p = os.path.join(base, f)
+            try:
+                st = os.stat(p)
+            except OSError:
+                continue
+            out.append({
+                "path": os.path.relpath(p, root).replace("\\", "/"),
+                "byte_size": st.st_size,
+                "mtime_local": datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+            })
+    out.sort(key=lambda e: e["path"])
+    return out
+
+
 def main() -> int:
     attempt, phase = sys.argv[1], sys.argv[2]
     record = {
@@ -89,11 +108,28 @@ def main() -> int:
         record["key_files"][p] = {"sha256": sha256(p), "byte_size": os.path.getsize(p)}
     if os.path.isdir(REVIEWS):
         st = os.stat(REVIEWS)
+        listing = reviews_listing(REVIEWS)
+        newest = max(listing, key=lambda e: e["mtime_local"]) if listing else None
         record["plan_reviews"] = {
             "path": REVIEWS,
             "mtime_local": datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
-            "entries": sorted(os.listdir(REVIEWS))[:20],
+            "file_count": len(listing),
+            "newest_file": newest,
+            "entries": listing,
+            "listing_note": ("full recursive listing (path/byte_size/mtime_local); earlier captures "
+                             "recorded only the first 20 directory names, which did not match the "
+                             "claimed 285-file enumeration - see review finding P2-9"),
         }
+    record["capture_timeline"] = {
+        "captured_at_utc": record["captured_at_utc"],
+        "attempt_dir_created_local": datetime.fromtimestamp(os.path.getctime(attempt)).strftime(
+            "%Y-%m-%d %H:%M:%S"),
+        "note": ("This capture is a read-only snapshot taken during this attempt's own work. Because "
+                 "the card writes nothing to the production repositories, a capture cannot be an "
+                 "'before any work started' baseline for this card; before/after here means 'the state "
+                 "recorded twice during the work', and the load-bearing claim (production untouched) "
+                 "rests on independent third-party review, not on this pair alone."),
+    }
     record["attempt_inventory"] = dir_inventory(attempt)
     record["attempt_file_count"] = len(record["attempt_inventory"])
     out_path = os.path.join(attempt, "evidence", "I-11-A", "state_%s.json" % phase)

@@ -250,6 +250,42 @@
     "status_after_round_2": "review_pending (unchanged); no third adversarial round is required per the reviewer's precommitment, provided the 4 items landed as appended errata - which is what this pass did"
   },
 
+  "review_round_3": {
+    "verdict": "changes_required (narrow: exactly 2 TEXT items, R-1 and R-2, closable by appended errata; no re-run, no in-place edit of any frozen line)",
+    "reviewer_wrote_the_ruling_into_review_md": {
+      "section": "## R. 独立 reviewer 最终裁决（round 3，2026-09-20）, subsections R.0..R.5, starting at review.md line 163",
+      "review_md_sha256_before": "9faa0990d7ffd4e2504af96c6eb4fa62d3f333e41dc58117fc8460fe063e541d (16292 B)",
+      "review_md_sha256_after": "d831f6146b011afb9b6a31c0623488535aa77d6474afb564995051c15b3887c6 (26220 B)",
+      "appended_block_sha256": "244d035d39887e4fd7b0fe22e5ce9a0931e680dea604c98558c8afedf142dfe9",
+      "implementer_independent_check": "recomputed here: sha256(first 16292 bytes) = 9faa0990d7ffd4e2504af96c6eb4fa62d3f333e41dc58117fc8460fe063e541d (identical to the pre-existing file hash) and sha256(appended 9928 bytes) = 244d035d39887e4fd7b0fe22e5ce9a0931e680dea604c98558c8afedf142dfe9 - the reviewer's append was a pure byte concatenation and the implementer touched none of it"
+    },
+    "endorsed_after_recomputation": [
+      "oracle.md d7f6b102... byte-identical to round 2 => no further in-place edit",
+      "decision.md 4a8cc048..., handoff.json f7eece90..., binding.json / commands.json / open_items.md unchanged",
+      "decision.md line 16's '5 items block' statement holds",
+      "oracle.md section 9's last line was NOT reverted; 178 lines and 'exactly one in-place edit' both hold",
+      "ZERO evidence re-runs: 10/10 probe hashes identical to round 1",
+      "check_errata_integrity.py's CAPABILITY_LIMIT disclosure is good",
+      "all four unclosed_gaps entries hold",
+      "no production repo write, no PLAN/reviews write, no self-acceptance",
+      "changes.diff / after/product_hashes.txt are self-referential, so point-in-time readings differ from final bytes - EXPECTED"
+    ],
+    "findings": {
+      "R-1": "P3 SELF-REPORT MISMATCH - closed by an appended note, NOT by rewriting E-11. Verified by the implementer: the corrected 132/126 provenance wording actually landed at review.md:123 (section 6-C), while review.md:80 (the section 4 data-table row) STILL carries the old wording ('two retained snapshot files') and still cites after/git_status_after.txt (now 270 lines) as the source of '132 lines / 126 real entries'. E-11's claim, and the matching text in this file's review_round_2.findings.E-11, therefore overstated the landing point. errata.md's appended section R-1 states this verbatim, declares review.md:80 UNFIXED, and lists it under known_gaps below. Minimum fix if the owner permits editing review.md: change only the source column of :80.",
+      "R-2": "P3 STRUCTURE - errata.md had a duplicate heading '## §U 未验证项（原样承接复核清单）' at line 195 AND line 236; the L195 heading was misplaced (the text beneath it is the P2-3 counterexample + C-13 spec supplement whose own subheading was lost when E-10..E-13 were inserted), and L236 is the only valid section U. errata.md's appended section R-2 states this verbatim; the heading was NOT edited in place (append-only boundary).",
+      "optional_observation_not_required": "the two 'SELF-REFERENCE (not declarable here)' lines still carry STALE sizes (declared 10843 vs actual 10940; declared 32732 vs actual 33655). The hex is already withdrawn so no integrity claim is affected. Accepted as a follow-up improvement: write size as n/a on the next generation. NOT changed this round, to avoid churning generated artifacts again."
+    },
+    "known_gaps": [
+      "review.md:80 still pairs '132 lines / 126 real entries' with a source file that now holds 270 lines; declared UNFIXED by errata.md section R-1 and left to the owner (fixing it would require editing bytes the reviewer owns)",
+      "errata.md line 195 still carries a misplaced '## §U' heading; the authoritative reading is given by errata.md section R-2",
+      "the two self-reference lines still print stale sizes (cosmetic, non-blocking)"
+    ],
+    "newly_introduced_this_round": "R-1 and R-2 are defects introduced by the round-2 closing action itself (a self-report landing-point mismatch and a duplicated heading); they are NOT a reversal of E-10..E-13, all of which the reviewer confirms landed substantively",
+    "status_after_round_3_closure": "review_pending; the reviewer may re-classify to accepted_scoped on a TEXT-ONLY re-check with NO fourth round required, once R-1/R-2 are recorded as appended errata - which is what this pass did (errata.md appended sections R-1 and R-2; review.md untouched)",
+    "scope_if_accepted": "ONLY 'design/contract-layer record completeness'. NOT granted: product implementation, transaction/fault recovery, signature/trust, cross-repo consumer, deployment, forecast formula/accuracy. disclosure_adaptation stays unmapped and accuracy stays unproven. OPEN-I09A-1..6 ALL remain UNADJUDICATED - the reviewer's per-item opinions are suggestions only, and this card has not self-decided any of them (the reviewer confirmed errata.md's and this file's owner_decision_suggestions are consistent with the plan-level OWNER_DECISIONS.md).",
+    "accepted_by_reviewer": {"C-13": "accepted", "I-08-A_section7_reorder": "approved"}
+  },
+
   "evidence_paths": [
     "binding.json",
     "oracle.md",

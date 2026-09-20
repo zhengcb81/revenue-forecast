@@ -4,11 +4,11 @@
  "purpose": "prove the runner's exit code carries the verdict: corrupt a COPY of the frozen expectation, of a negative assertion, or of a declared expectation, and show the runner turns red, then show green returns on the uncorrupted copy",
  "scratch_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\selfcheck",
  "scratch_scope": "recovery/selfcheck only; the frozen evidence was never written to",
- "runner_sha256": "5307d2cc31bad5731585d2f503341fe2b3d61425f369289eed261568883cbf05",
+ "runner_sha256": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252",
  "exit_code_contract": {
   "0": "pass",
   "1": "harness error",
-  "2": "no verdict (missing expectation or fidelity mismatch)",
+  "2": "no verdict: a frozen expectation is missing or unusable (positive expectations, or any case's declared 'expected' in cases.json), or the output shape cannot be compared",
   "3": "negative verdict, including a negative case that was not rejected with the exact type name declared in cases.json"
  },
  "valid_optional_driver_used_to_neuter_N04": "milestone_revenue",
@@ -50,14 +50,16 @@
     "not_rejected": 0,
     "wrong_exception_type": 0,
     "import_or_file_error": 0,
-    "declared_expectation_mismatch": 0
+    "declared_expectation_mismatch": 0,
+    "declared_expectation_not_met": 0,
+    "declared_expectation_missing_in_cases_json": 0
    },
    "failed_negatives_in_result_file": [],
    "verdict_reasons_in_result_file": [
     "positive_out_of_tolerance"
    ],
    "stdout_tail": [
-    "negative summary: {'total': 11, 'passed': 11, 'failed': [], 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'import_or_file_errors_never_pass': True}",
+    "negative summary: {'total': 11, 'passed': 11, 'not_judged': [], 'failed': [], 'verdicts_are_mutually_exclusive': True, 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'declared_expectations_usable': True, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True}",
     "verdict: fail exit_code: 3",
     "printed_matches_evidence_file: True (re-read run_result_A_corrupted_positive_expectation.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)"
    ],
@@ -102,17 +104,18 @@
     "not_rejected": 1,
     "wrong_exception_type": 0,
     "import_or_file_error": 0,
-    "declared_expectation_mismatch": 1
+    "declared_expectation_mismatch": 0,
+    "declared_expectation_not_met": 1,
+    "declared_expectation_missing_in_cases_json": 0
    },
    "failed_negatives_in_result_file": [
     "N04"
    ],
    "verdict_reasons_in_result_file": [
-    "negatives_not_rejected:N04",
-    "declared_expectation_mismatch:1"
+    "negatives_not_rejected:N04"
    ],
    "stdout_tail": [
-    "negative summary: {'total': 11, 'passed': 10, 'failed': ['N04'], 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'import_or_file_errors_never_pass': True}",
+    "negative summary: {'total': 11, 'passed': 10, 'not_judged': [], 'failed': ['N04'], 'verdicts_are_mutually_exclusive': True, 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'declared_expectations_usable': True, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True}",
     "verdict: fail exit_code: 3",
     "printed_matches_evidence_file: True (re-read run_result_B_neutered_negative_case.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)"
    ],
@@ -155,14 +158,16 @@
     "not_rejected": 0,
     "wrong_exception_type": 0,
     "import_or_file_error": 0,
-    "declared_expectation_mismatch": 0
+    "declared_expectation_mismatch": 0,
+    "declared_expectation_not_met": 0,
+    "declared_expectation_missing_in_cases_json": 0
    },
    "failed_negatives_in_result_file": [],
    "verdict_reasons_in_result_file": [
     "output_fidelity_mismatch"
    ],
    "stdout_tail": [
-    "negative summary: {'total': 11, 'passed': 11, 'failed': [], 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'import_or_file_errors_never_pass': True}",
+    "negative summary: {'total': 11, 'passed': 11, 'not_judged': [], 'failed': [], 'verdicts_are_mutually_exclusive': True, 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'declared_expectations_usable': True, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True}",
     "verdict: no_verdict exit_code: 2",
     "printed_matches_evidence_file: True (re-read run_result_C_corrupted_expectation_length.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)"
    ],
@@ -240,17 +245,18 @@
     "not_rejected": 0,
     "wrong_exception_type": 0,
     "import_or_file_error": 0,
-    "declared_expectation_mismatch": 1
+    "declared_expectation_mismatch": 1,
+    "declared_expectation_not_met": 1,
+    "declared_expectation_missing_in_cases_json": 0
    },
    "failed_negatives_in_result_file": [
     "N02"
    ],
    "verdict_reasons_in_result_file": [
-    "negatives_not_rejected:N02",
-    "declared_expectation_mismatch:1"
+    "declared_expectation_mismatch:N02"
    ],
    "stdout_tail": [
-    "negative summary: {'total': 11, 'passed': 10, 'failed': ['N02'], 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError', 'ValueError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'import_or_file_errors_never_pass': True}",
+    "negative summary: {'total': 11, 'passed': 10, 'not_judged': [], 'failed': ['N02'], 'verdicts_are_mutually_exclusive': True, 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError', 'ValueError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'declared_expectations_usable': True, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True}",
     "verdict: fail exit_code: 3",
     "printed_matches_evidence_file: True (re-read run_result_F_tampered_declared_expectation.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)"
    ],
@@ -266,6 +272,58 @@
     "why": "the case still raises ModelRegistryError, but the declaration says ValueError; ModelRegistryError is a ValueError subclass, so an isinstance comparison would pass silently. The runner must compare the EXACT type name and report the mismatch"
    },
    "expected_rc": 3
+  },
+  {
+   "label": "G_missing_declared_expectation",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py",
+    "--card",
+    "M17",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\selfcheck",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\selfcheck\\run_result_G_missing_declared_expectation.json"
+   ],
+   "raw_returncode": 2,
+   "verdict_in_result_file": "no_verdict",
+   "exit_code_in_result_file": 2,
+   "negative_counts_in_result_file": {
+    "total": 11,
+    "rejected_with_ModelRegistryError": 11,
+    "not_rejected": 0,
+    "wrong_exception_type": 0,
+    "import_or_file_error": 0,
+    "declared_expectation_mismatch": 0,
+    "declared_expectation_not_met": 0,
+    "declared_expectation_missing_in_cases_json": 1
+   },
+   "failed_negatives_in_result_file": [],
+   "verdict_reasons_in_result_file": [
+    "cases_json_declared_expectation_missing:N02"
+   ],
+   "stdout_tail": [
+    "negative summary: {'total': 11, 'passed': 10, 'not_judged': ['N02'], 'failed': [], 'verdicts_are_mutually_exclusive': True, 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError', 'None'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'declared_expectations_usable': False, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True}",
+    "verdict: no_verdict exit_code: 2",
+    "printed_matches_evidence_file: True (re-read run_result_G_missing_declared_expectation.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)"
+   ],
+   "stdout_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\selfcheck\\stdout_G_missing_declared_expectation.txt",
+   "stderr_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\selfcheck\\stderr_G_missing_declared_expectation.txt",
+   "result_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\selfcheck\\run_result_G_missing_declared_expectation.json",
+   "mutation": {
+    "file": "evidence/M17/cases.json",
+    "case": "N02",
+    "field": "expected",
+    "action": "key removed",
+    "from": "ModelRegistryError",
+    "why": "the frozen expectation for this case is unusable, so no judgement is possible: the runner must refuse a verdict (rc=2) instead of reporting a negative verdict"
+   },
+   "expected_rc": 2
   },
   {
    "label": "E_uncorrupted_copy",
@@ -293,12 +351,14 @@
     "not_rejected": 0,
     "wrong_exception_type": 0,
     "import_or_file_error": 0,
-    "declared_expectation_mismatch": 0
+    "declared_expectation_mismatch": 0,
+    "declared_expectation_not_met": 0,
+    "declared_expectation_missing_in_cases_json": 0
    },
    "failed_negatives_in_result_file": [],
    "verdict_reasons_in_result_file": [],
    "stdout_tail": [
-    "negative summary: {'total': 11, 'passed': 11, 'failed': [], 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'import_or_file_errors_never_pass': True}",
+    "negative summary: {'total': 11, 'passed': 11, 'not_judged': [], 'failed': [], 'verdicts_are_mutually_exclusive': True, 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'declared_expectations_usable': True, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True}",
     "verdict: pass exit_code: 0",
     "printed_matches_evidence_file: True (re-read run_result_E_uncorrupted_copy.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)"
    ],
@@ -312,5 +372,5 @@
   }
  ],
  "all_mutations_produced_the_expected_exit_code": true,
- "red_then_green": "A/B/C/D/F are red (rc != 0) and E is green (rc = 0) only if all_mutations_produced_the_expected_exit_code is true"
+ "red_then_green": "A/B/C/D/F/G are red (rc != 0) and E is green (rc = 0) only if all_mutations_produced_the_expected_exit_code is true"
 }

@@ -1,12 +1,16 @@
-"""Generate handoff.json for one M29/M30/M31 attempt from the evidence on disk.
+"""!!! STALE SOURCE WARNING (bounded-text pass, 2026-09-20T03:38:51.970887+00:00) !!!
 
-Every field is read back from files produced by the attempt itself: the run result, the frozen
-oracle, the mutation self-check, the registry enumeration, the pre-registered command record and
-the pipeline driver.  Nothing is transcribed from prose, and the status is 'review_pending'
-because the implementer never signs its own card.
+This file already ran for attempt a20260919-01.  It is kept for provenance and for the record
+of HOW the evidence was produced, but it MUST NOT be re-run against this attempt:
 
-Usage:
-  python -X utf8 -B write_handoff.py --card M29 --attempt-root <attempt>
+  * re-running it would rewrite evidence/<CARD>/source_manifest.json from values measured now,
+  * and the pack's own oracle_document wording was corrected after the independent reviewer
+    found the original freshness wording self-contradictory (finding F-04 / residual R-4), so a
+    re-run would re-emit corrected wording over an attempt whose evidence was already sealed.
+
+The sealed evidence under evidence/<CARD>/ is the record; scripts/verify_remediation.py is the
+read-only re-check; recovery/remediation_r2.json and the errata section of oracle.md list what
+was corrected.
 """
 
 from __future__ import annotations
@@ -160,12 +164,11 @@ def main() -> int:
             {"id": "OQ-03", "title": "card business negative the calculator cannot fully enforce",
              "requires_ruling_from": "industry/accounting reviewer (I-10-A / D)",
              "evidence": "evidence/%s/oq_rulings.json" % card},
-            {"id": "OQ-04", "title": "numerical domain / boundary observations incl. the M31 card-text "
-                                     "divergence on net_revenue_per_unit",
+            {"id": "OQ-04", "title": "numerical domain / boundary observations of this model",
              "requires_ruling_from": "independent reviewer",
              "evidence": "evidence/%s/oq_rulings.json + extra_probes.json + binding.json" % card},
-            {"id": "OQ-05", "title": "oracle.md was restored after the run (content unchanged) and its "
-                                     "present mtime is later than the product stdout",
+            {"id": "OQ-05", "title": "oracle.md's present mtime is a post-hoc value and is NOT pre-run "
+                                     "evidence (measured: oracle_md_mtime < product_stdout_mtime)",
              "requires_ruling_from": "independent reviewer (accept the recorded freshness claim or "
                                      "demand a fresh attempt)",
              "evidence": "evidence/%s/source_manifest.json oracle_document.freshness_claim" % card},

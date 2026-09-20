@@ -15,12 +15,21 @@ card_id: I-11-A · attempt_id: a20260919-01 · 生成者：实现者（弱模型
 | `approved_frozen` | **0** | `validation_report.counts.states`（oracle O-8 要求为 0） |
 | 来源类型：company_disclosure / management_target | 7 / 1 | `validation_report.counts.source_types` |
 | independence_group | ZIJIN-AR2025 4；ZIJIN-MGMT-PLAN-2026 1；MSFT-10K-FY2026 3 | `validation_report.counts.independence_groups` |
-| falsifier 阈值依据：算术恒等式 / 需专业审定 | 4 / 4 | `validation_report.counts.threshold_bases` |
+| falsifier 阈值依据：算术恒等式 / 需专业审定 / 披露定义 | 4 / 3 / 1 | `validation_report.counts.threshold_bases` |
 | `refuted_by` 条目总数 | 24 | `validation_report.counts.refuted_by_total` |
 | 参数（含附加）总数 | 14 | `validation_report.counts.parameters` |
 | 引用原值条目总数 | 46 | `source_map.counts.cited_values_total` |
 | 本 attempt 不可读的来源 | 1（HK-XIAOMI-AR2025） | `source_map.counts.sources_not_readable` |
-| 反例套件 | 14 例，14 例按预期被拒 | `validation_report.counterexample_summary` |
+| 反例套件 | 21 例，21 例按预期被拒（R2 由 14 例扩充） | `validation_report.counterexample_summary` |
+
+> **R2 修订说明（2026-09-20，独立复核后）**：独立 reviewer 判定 `accepted_scoped` 并携带 3 项必修
+> （见 `review.md` §5）。本文件已按意见更正：(a) 小米不可读的**理由**改为实测事实（415 个经典页对象、
+> 30 页内容流 30 条可解、抽样页 0 字符、5 个经典字体中仅 1 个带 /ToUnicode 引用、pdftotext 乱码），
+> 结论方向不变（P1-3）；(b) 「每 +1 吨/千克 ≈ 10,670.9 元/吨」改写为「系数 +1 吨/千克 ⇒ 当量分母
+> +83,161 吨 ⇒ 单位收入 −10,670.89 元/吨」并注明这是**两点差分不是偏导**（P2-6）；
+> (c) 命题 3 的阈值不再依赖未披露的「期初库存」，改为可用现有披露判定的形式，并把跨期可得性
+> 登记为需行业 reviewer 确认（P2-8）；(d) 校验器补齐 4 项机器检查、反例套件由 14 例扩到 21 例
+> （P2-5，oracle §7 的 R2 扩充）。以上修订只**新增**字段与说明，未删除任何 reviewer 已复核的引用原值。
 
 ---
 
@@ -121,16 +130,21 @@ card_id: I-11-A · attempt_id: a20260919-01 · 生成者：实现者（弱模型
 
 ## 5. 已知限制（reviewer 必须知道，且不得当作已解决）
 
-1. **HK-XIAOMI-AR2025 在本 attempt 不可读**（判定依据：oracle O-7）。
-   - 标准库路径：该文件是对象流型 PDF（`source_probe.json` 统计到 423 处 `/ObjStm`）；
-     本 attempt 的取文器按经典 xref 扫描只找到 3 个页对象（obj 1/5/9），且这 3 页输出 0 字符
-     （`P1_xiaomi.stdout.txt`、`P1_xiaomi_probe.json`）。原始字节探测同时显示该文件有 420 处
-     `/Type /Page` 与 423 处 `/ObjStm`，即页对象全部位于对象流内，印证"扫描不到"是工具能力边界
-     而非文件损坏。
-   - 独立路径 `pdftotext` 退出码 0，但输出为乱码（`P2_xiaomi_probe.txt` 前 200 字节可复核），
-     无法据此引用任何原文串。
+1. **HK-XIAOMI-AR2025 在本 attempt 不可读**（判定依据：oracle O-7；理由已按 review P1-3 改写）。
+   - 标准库路径：`tools/probe_xiaomi.py` 实测**可以**枚举出 **415 个经典 /Type /Page 对象**
+     （原始字节扫描到 420 处 `/Type /Page`，差额为 `/Pages` 树节点），所以"枚举不到页对象"不是障碍；
+     前 30 页的 `/Contents` 流 30 条全部可解压（0 条缺失），其中含 3,264 个字面串与 2,756 个十六进制串，
+     但 `Page.fragments()` 对每个抽样页都返回 **0 字符**；全文件 5 个经典字体对象中只有 1 个带
+     `/ToUnicode` 引用（对应原始字节里唯一一处 `/ToUnicode`），解码后 4 个 CMap 流含 bfchar/bfrange 块，
+     而本读取器无法把它们与页面内容流里的字形码对上（工作字体是嵌入式子集、无可用映射）。
+   - 独立路径 `pdftotext` 退出码 0，但输出为 Adobe-CNS1 乱码：已归档的第 1–12 页输出
+     （`P2_xiaomi_probe.txt`，12,145 字节）不含 `小米`/`收入`/`年度報告` 任一字符串；
+     reviewer 另跑全文件得 998,598 字节乱码输出，该次运行**未在本 attempt 归档**，只作为复核方证据转述。
    - 因此该来源标 `STOP_EVIDENCE`，**没有**任何来自小米年报的数值进入 `hypotheses.json`。
      不得用任何二手转述（含 revenue-forecast 审计目录中的研究稿）替代原文。→ OPEN-5。
+   - **R2 更正登记**：初稿此处曾写"423 /ObjStm、0 个经典页对象"且 `binding.json` 写"352→0"
+     （352 是紫金的页数）。该措辞错误由独立 reviewer 指出（P1-3），现已按上面的实测重写；
+     当时被抽样的 3 页（obj 1/5/9）各 0 字符这一事实仍然成立，只是它**不是**因为枚举不到页对象。
 2. **MSFT 的 FY2027 口径存在 as_of 之后的重大不确定性**：10-K（2026-07-29）仍按 PBP/IC/MPC 三报告
    分部编制，10-K 内 `Agents and Infra` / `Devices and Consumer` 出现 0 次；而审计目录中的研究稿
    （非本卡证据）记载 2026-09-02 的 8-K 披露了重分类与八条业务曲线。该 8-K 原文在本 attempt
@@ -149,8 +163,19 @@ card_id: I-11-A · attempt_id: a20260919-01 · 生成者：实现者（弱模型
 7. **与 oracle O-6 的方法学冲突（如实登记）**：`oracle.md` §2 的 O-6 用了 prior artifact 的**页号**
    去取 P1 文本，而当时的 offset 尚未测定；实测 offset = +1（prior 页号 = PDF 物理页 − 1），
    本节 §6 的交叉核对已按实测偏移进行，**O-6 的原始措辞在页号上不成立**。
-   登记为 OPEN-8，请 reviewer 裁定是修订 O-6 措辞（属 oracle 修订，需按 R2 附录追加）
-   还是接受"以 P1_vs_prior_offset.json 的择优规则为准"。本 attempt 未回改 oracle 正文。
+   登记为 OPEN-8；独立 reviewer 的裁定意见是"接受以择优规则为准、不回改 oracle 正文"
+   （如需留痕按 R2 附录加一行）。本次按该意见处理：oracle 正文未改。
+8. **校验器强度是有限的（R2 新增披露，review 发现 P2-5）**：首版 `validate_hypotheses.py` 对
+   oracle §3.3 的机制链末环语义、§3.4 的观察日、O-11 的"一个 parameter_id 只对应一条命题"、
+   以及 `threshold_basis` 的诚实性**没有机器检查**；reviewer 自造的 7 个清单外变异中有 5 个
+   当时未被拒绝（`approved_frozen` + 编造 reviewer 名、`threshold_basis` 冒充 `arithmetic_identity`、
+   `refuted_by=["","   "]`、`mechanism_chain=['a','b','c']`、`observation_date="TBD"`、
+   两条同 parameter_id 的相同命题）。R2 已补齐这四项检查并把反例套件由 14 例扩到 **21 例**
+   （新增 7 例全部按预期被拒）。**但这仍不是完备性证明**：校验器只覆盖已写下来的规则。
+9. **命题 3 的阈值原本不可观测（R2 已改，review 发现 P2-8）**：初稿阈值用了"期初库存"，
+   而年报产销量表只披露**期末**库存量与三项同比变动；阈值已改写为"由上一期披露的期末库存
+   取得期初库存 + 与库存量同比变动方向一致"的判定式，并把跨期可得性登记为待行业 reviewer
+   确认的事项（不阻塞本卡）。若上一期数据缺失，该式不可判定，转 `STOP_DISCLOSURE_ADAPTATION`。
 
 ---
 
@@ -179,7 +204,7 @@ card_id: I-11-A · attempt_id: a20260919-01 · 生成者：实现者（弱模型
 | 编号 | 问题 | 裁定人 | 阻塞本卡签收？ |
 |---|---|---|---|
 | OPEN-1 | 是否允许在卡内使用仓库外的控制台工具 `pdftotext.exe`（Git for Windows 自带）作为第二条独立取文路径？本次使用已如实登记 argv/hash/输出 | PLAN owner（或环境规范制定者） | 不阻塞（作为已知方法登记）；若 owner 否决，需在 I-11-B 前改用别的独立路径 |
-| OPEN-2 | 紫金矿产品单位实现收入的"铜当量换算系数"从何而来（披露/外部可比/专业假设）？结论对该系数高度敏感（每 +1 吨/千克 ≈ 10,670.9 元/吨铜当量） | 会计 reviewer + 矿业行业 reviewer | 不阻塞本卡（命题仍为 pending）；**阻塞 I-11-B 对该参数的幅度校准** |
+| OPEN-2 | 紫金矿产品单位实现收入的"铜当量换算系数"从何而来（披露/外部可比/专业假设）？结论对该系数高度敏感：系数 +1 吨/千克 ⇒ 当量分母 +83,161 吨 ⇒ 单位收入 **−10,670.89 元/吨铜当量**（两点差分，非偏导；见 hypotheses H-CN-ZIJIN-SEG-02 的 conversion_formula） | 会计 reviewer + 矿业行业 reviewer | 不阻塞本卡（命题仍为 pending）；**阻塞 I-11-B 对该参数的幅度校准** |
 | OPEN-3 | FY2027 起微软的建模分部是否仍为 PBP/IC/MPC？（as_of=2026-09-18 之后的 8-K 重分类未进入本地可核来源） | 行业 reviewer（软件与云）+ 会计 reviewer | 不阻塞本卡（命题 6 已声明失效条件）；**阻塞 I-11-B/I-07-E 的微软分部选择** |
 | OPEN-4 | 位置口径 `pdf_leaf_1based` / `table_index_0based` 是否需成为披露字段的规范枚举值（schema 层） | schema owner（I-10-A/I-07-E 的接口 owner） | 不阻塞本卡；阻塞跨卡页码复用 |
 | OPEN-5 | HK-XIAOMI-AR2025 的原文可读性由谁解决（对象流解析能力/离线 PDF 库/合规的外部工具） | 环境/依赖 owner（I-00-B 侧）+ 行业 reviewer | 不阻塞本卡（该来源已判 STOP_EVIDENCE）；**阻塞任何港股份部的命题与 I-11-B 的港股参数** |
@@ -187,16 +212,18 @@ card_id: I-11-A · attempt_id: a20260919-01 · 生成者：实现者（弱模型
 | OPEN-7 | 命题 1/6 的分部集合是否就是 FY2027 的最小建模块（分部生命周期与并购范围可能变化） | 行业 reviewer | 不阻塞本卡 |
 | OPEN-8 | oracle O-6 的措辞用了未测定的 prior 页号（实测 offset = +1）；是修订 oracle 正文（R2 附录）还是以择优规则为准 | 独立 reviewer（读 oracle 的人） | 不阻塞本卡；若不裁定，会让后续读者以为 O-6 的页号可直接使用 |
 | OPEN-9 | I-11 参数模板是否升级为本卡的超集字段 | `common_research_cards.md` owner | 不阻塞本卡；影响跨卡 schema 一致性 |
-| OPEN-10 | `PLAN/reviews` 的 LastWriteTime 实测 `2026-09-19 09:14:20`，与任务说明的 `10:05` 不符（本 attempt 未写入该目录） | PLAN owner | 不阻塞本卡；影响后续卡对 reviews 只读基线的判断 |
+| OPEN-10 | `PLAN/reviews` 的 LastWriteTime 实测 `2026-09-19 09:14:20`，与任务说明的 `10:05` 不符（本 attempt 未写入该目录）。reviewer 补充核实：目录内**最新文件** mtime 为 `2026-09-19 10:05:32`（`second_wave/final_review_checks.json`），两个口径都对、不矛盾，建议后续卡采用"最新文件 mtime"口径 | PLAN owner | 不阻塞本卡；影响后续卡对 reviews 只读基线的判断 |
+| OPEN-11 | 命题 3 的库存判定式需要"上一期披露的期末库存"作为期初库存，跨期可得性由谁确认（R2 新增，review P2-8） | 矿业行业 reviewer | 不阻塞本卡；若不可得则该式不可判定，须转 STOP_DISCLOSURE_ADAPTATION |
 
 ---
 
 ## 8. 实现者给 reviewer 的最短阅读路径
 
 1. `binding.json` → 三仓只读路径、解释器、允许写目录；
-2. `oracle.md` §0–§9（先看 §7 的 14 个反例错误码）；
-3. `evidence/I-11-A/extract/commands_raw.json` → 9 条命令的 argv/退出码/输出 sha256；
+2. `oracle.md` §0–§9 + §R2 附录（先看 §7 的固定错误码，R2 已由 14 条扩到 21 条反例）；
+3. `evidence/I-11-A/extract/commands_raw.json` → 命令的 argv/退出码/输出 sha256；
 4. `evidence/I-11-A/extract/arithmetic_oracle.json` → A1–A7 的逐操作数定位结果；
 5. `evidence/I-11-A/hypotheses.json` → 8 条命题全文；
-6. `evidence/I-11-A/validation_report.json` → 正例通过 + 14/14 反例被拒 + 计数；
-7. 本文件 §2 与 §5。
+6. `evidence/I-11-A/validation_report.json` → 正例通过 + 21/21 反例被拒 + 计数；
+7. `evidence/I-11-A/extract/P1_xiaomi_content_probe.json` → 小米不可读的实测事实（P1-3）；
+8. 本文件 §2 与 §5（含 R2 修订说明）。

@@ -50,7 +50,8 @@
    "version": "pdftotext version 4.00 (Xpdf, Copyright 1996-2017 Glyph & Cog, LLC)",
    "sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
    "role": "independent second extraction path (no shared code with tools/pdf_text.py), read-only, no network",
-   "registered_as": "OPEN-1 (owner sign-off on using a repo-external console tool)"
+   "registered_as": "OPEN-1 (owner sign-off on using a repo-external console tool)",
+   "reviewer_opinion": "the independent reviewer recommends ALLOW but DOWNGRADE it to a cross-check path: fix the absolute path + sha256 here (done), never upgrade Git to obtain text-extraction capability, and note that strictly speaking it does not satisfy 'reproducible inside the isolated copy'; the restore rule in decision.md DEC-1 already handles a hash change"
   }
  },
  "allowed_write_roots": [
@@ -58,7 +59,7 @@
  ],
  "forbidden": [
   "any edit outside this attempt directory (revenue-forecast, company-wiki, filing-fetch sources untouched)",
-  "any edit under PLAN/reviews (read-only; mtime must stay 2026-09-19 10:05)",
+  "any edit under PLAN/reviews (read-only; directory mtime 2026-09-19 09:14:20, newest file inside 2026-09-19 10:05:32 - see OPEN-10)",
   "git add / commit / restore / stash anywhere",
   "network access, provider/LLM calls",
   "running card commands on the global Miniconda interpreter",
@@ -66,8 +67,9 @@
   "using the revenue-forecast audit_review research drafts as a source of record"
  ],
  "deliverables": [
-  "binding.json", "oracle.md", "decision.md", "commands.json", "review.md (implementer self-check only; no verdict)",
+  "binding.json", "oracle.md", "decision.md", "commands.json", "review.md (implementer self-check + transcribed reviewer verdict)",
   "handoff.json", "changes.diff", "before/", "after/", "evidence/I-11-A/**", "iso/**", "recovery/README.md", "tools/**"
  ],
- "reviewer_status": "PENDING (no independent verdict has been written by the implementer)"
+ "reviewer_status": "ACCEPTED_SCOPED by an independent reviewer (verdict transcribed verbatim in review.md section 5 from the review report sha256 e8b7d223e83c91128545e2b25b28b97ecba50cf2a5855e7366fabcaba16cafaf); three mandatory-fix items (P1-1/P1-2/P1-3) were dispositioned in this attempt by the implementer and must be re-verified by the reviewer",
+ "handoff_status": "review_pending (the implementer does not self-sign; handoff.json.status stays review_pending)"
 }

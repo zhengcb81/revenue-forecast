@@ -66,7 +66,7 @@
   "positive": "lost = 200 x (1 - 0.9) = 20; closing = 200 - 20 + 30 + 40 = 250 (bridge closes); revenue = 200 - 20 x 0.75 + 30 x 0.5 + 40 x 0.25 + 5 = 200 - 15 + 15 + 10 + 5 = 215",
   "continuity_fy2028": "grr = 1 -> lost = 0; closing = 250 + 0 + 0 = 250; revenue = 250 - 0 + 0 + 0 + 0 = 250",
   "defaults": "usage_revenue omitted -> 0; 200 - 15 + 15 + 10 + 0 = 210",
-  "continuity_negative_note": "the card's CONT patch also moves FY2027 closing_arr to 251, so the FY2027 balance check fires before the FY2028 continuity check; both are ModelRegistryError, the frozen requirement is the exception TYPE"
+  "continuity_negative_note": "OBSERVED (and corrected in round 3): the card's CONT patch does NOT make FY2027 fail its own balance - FY2027 closes at 200 - 20 + 30 + 40 = 250 = closing_arr[0] - so the failure is the FY2028 CROSS-YEAR ANCHORING guard, message 'opening_arr continuity failed: FY2028'. The round-2 note here claimed the FY2027 balance check fired first; that was wrong. The FY2027 balance guard IS reachable on this base via closing_arr = [251, 251] (see OBS-P3-CORR-BALANCE-REACHABLE)."
  },
  "negative_count": 11,
  "negative_ids": [

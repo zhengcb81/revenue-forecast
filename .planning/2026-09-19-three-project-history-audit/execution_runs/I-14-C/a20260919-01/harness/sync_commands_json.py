@@ -74,9 +74,12 @@ BUSINESS = {
         "iso/product_fixed (GIT_APPLY_REPRODUCES_T4 true)"
     ),
     "CMD-I14C-R5-FLAKE": (
-        "deep attempt-path basetemp: both nodes fail on BOTH trees (WinError 206 / "
-        "FileNotFoundError); short basetemp: T0 6/6, T4 4/6 - the asymmetry is noise, see "
-        "CMD-I14C-R5-FLAKE-FREQ"
+        "deep attempt-path basetemp (cwd 166/167 chars): both nodes fail on BOTH trees "
+        "(WinError 206 / FileNotFoundError) - an environment limit, not a code difference"
+    ),
+    "CMD-I14C-R5-FLAKE-SHORT": (
+        "the control: at a short %TEMP% basetemp (cwd 74/75 chars) both nodes pass on BOTH "
+        "trees, which is what separates 'path too long' from 'the card broke something'"
     ),
     "CMD-I14C-R5-FLAKE-FREQ": (
         "interleaved frequency estimate (12 runs per tree x 2 passes): the tree with more "
@@ -102,6 +105,7 @@ EXPECTED = {
     "CMD-I14C-R5-DIFF": 0,
     "CMD-I14C-R5-GITAPPLY": 0,
     "CMD-I14C-R5-FLAKE": 0,
+    "CMD-I14C-R5-FLAKE-SHORT": 0,
     "CMD-I14C-R5-FLAKE-FREQ": 0,
 }
 

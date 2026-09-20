@@ -242,16 +242,40 @@
 
 ---
 
-## 8. 下一轮 reviewer 优先攻击点
+## 7c. 第三轮定点复评的处置（P2-2 收口 + N2/N3/N4 + E30 首段）
+
+复核结论（第二轮）：**P1-1 与 P2-1 已真正闭合**、CONFLICT-1 加固已满足、全部计数与证据复现；唯一阻塞项是 **P2-2 的另一半**。
+
+| 条目 | 处置 | 证据 |
+|---|---|---|
+| **P2-2 收口（唯一阻塞项）** | 复核实测：`verify_publication_attestation` 读 `result.get("payload_sha256")`，而真实 artifact 顶层**没有**该键 ⇒ 规则从不执行。**已改为三层检查**：(2) `record["payload_sha256"]` vs 现算投影；(3) artifact **自己导出的** `result["payload_sha256"]` vs 现算投影；(4) `input_sha256`/`forecast_schema_version` vs 记录。同一码只报一次（`fail_once`）。**关键**：`run_forecast` 在签名发布时**导出** `result["payload_sha256"]`，而该键**被排除出投影**（否则自指）——这两点合起来才使"真实产物 → 篡改 → `[E16]`"**可观测**；仅按建议的一行级改法在真实产物上不可观测（真实记录的承诺必然等于其自身投影）。 | `iso/rf/scripts/attestation_protocol.py`、`iso/rf/scripts/revenue_core.py`、`after/c36_contract.stdout.txt` |
+| **新增"真实产物"用例** | `tests/test_publication_attestation_contract.py`：**10 passed, 12 subtests**。含 ①`run_forecast` 端到端签名并断言 `stated == record == receipt.validated_payload_sha256`；②**12 个被覆盖字段**逐个篡改断言**恰好** `[E16]` 且 `classify → G4`；③伪造顶层承诺 → `[E16]`；④删记录 → `E26`→G4/E27；⑤AST 守卫：只允许**一处**投影实现、禁止 verifier 依赖"键缺失即跳过"的写法 | 同上 |
+| **RED 证明（用例有约束力）** | `iso/check_red_verifier.py`：scratch 副本里**恢复修前比较并移除导出**，同一模块 **1 failed / 9 passed，rc=1**（失败的正是"变异覆盖"用例）⇒ 不是同义反复 | `after/c22_red_verifier.stdout.txt` |
+| **N2 oracle 事后编辑** | **追加式 provenance 如实登记**：`binding.json.documentation_edit_ledger`（哪些文档、何时、改了什么、期望值是否变化）；`oracle.md` 新增 **§8.9** 承认第 7/8/9 条是**复核驱动的勘误、非运行前冻结内容**，并给出两点限定（**不改变任何断言期望值**；新措辞**更弱**）；治理裁定标为 **OWNER DECISION REQUIRED**（实现者不自行裁定） | `after/c23_chronology.stdout.txt`、`after/c24_edit_ledger.stdout.txt` |
+| **N2 陈旧数字** | `oracle.md` §8.7：**13 个文件中 9 个**行尾不同（原写 12）；`handoff.json.byte_level_reproduction` 同步 | `oracle.md:259`、`after/c15_line_endings.stdout.txt` |
+| **N3 `handoff.json` 陈旧** | `changes_diff` → **13/9/4/216023**；`changed_paths` 补入 `trust_anchor.py` 并加 `counts`；`production_patch_required_later` 改为 13 files；`reviewer_must_do` 删除"eight bound commands"（不再与同文件 `commands_executed_note` 自相矛盾），并注明 `commands.json` 现为 **15 条** bound 条目 | `handoff.json` |
+| **N4 `review.md` 陈旧** | §3 的 c13 行改为 **13 文件（9 改 4 增）**；计数表补上 c1/c2/c13 与 c3/c4/c5 的最新数字（c5 现为 **22 passed + 22 subtests**） | 本文件 §3 |
+| **N5 E30 首段** | 登记：`str(AttestationError)` = `"<code>: <detail>"`，故 E30 首段变为 `"input_binding_mismatch: input binding mismatch: …"`；**历史文本仍是子串**、`exc.detail` 为逐字原消息；无消费者按首段匹配（c6/c7 复跑全绿） | `oracle.md` §8.10 |
+| **N6 `.pyc` 口径** | 两棵树现均 **0**；本卡自己的调用也产生过 47 个，已用 `iso/clean_bytecode.py` 清除（该脚本**最后**运行，避免再次产生） | `after/c20_clean_bytecode.stdout.txt`、`after/c38_finalize_all.stdout.txt` |
+| **对上游 E29/E30 口径双向登记** | **E29**：采纳"无生产调用方 ⇒ 库入口可达 + 有用例，**不是运行链路可触发**"。**E30**：接受复核的**部分反驳**——修前基线 `trust_anchor.py:26-40` 三条路径抛**裸 `ForecastInputError`（异常上无 code）**，全基线 `scripts/` 搜 `input_binding_mismatch`/`E30` **零命中** ⇒ 精确表述是"**E30 的码值从不被 raise**"。已按此措辞写入本文件 §3 与 `decision.md` D-08B-04d | 本文件 §3、`decision.md` |
+| **额外自查发现（本卡主动登记）** | ①`git_status_capture.py` 的违规检测原按 **attempt 绝对路径**匹配，而 attempt 位于产品树 `.planning/` 内 ⇒ **误报自己的证据文件为违规**；已改为按**仓库相对路径**判定（`scripts/|config/|artifacts/registry/|tests/|tools/|.github/|.planning/reviews/`），结果 **0 违规**。②`test_publication_attestation_contract` 的 `_sign_real_artifact` 与旧 `_artifact` 合成路径曾把**请求形状**的记录与**产物形状**的投影比较 ⇒ 必然 E16；现已改用**真实 `run_forecast` 产物**（`real_signed_artifact`），并把 provider **env argv 路由**（`REVENUE_ATTESTATION_PROVIDER_ARGV`）也纳入用例，使生产路由本身被覆盖 | `after/I08B-c11-git-status.stdout.txt`、`after/I08B-c3-provider-protocol.stdout.txt` |
+
+**第三轮后的计数（原始输出）**：c3 `68 passed` / c4 `18 passed` / c5 `22 passed + 22 subtests` / c6 `6 passed` / c7 `48 passed` / 契约 `10 passed + 12 subtests` / 守卫 `5 passed`；普查 before `128F/819P/315 subtests` → after **`128F/932P/349 subtests`**，**新增失败 0、消失 0**；8 条 bound 命令 **8/8 rc 0**；RED 证明 c22 rc=1（预期）。
 
 1. **E29 的设计归属**：本卡把 E29 做成 `require_legacy_exemption()` 这一**同仓入口点**。设计原文把 E29 的落地放在跨仓消费者
    （OPEN-D6）。请判定"同仓提供可抛入口 + 跨仓仍待接线"是否满足设计意图，还是必须等跨仓卡。
 2. **P2-2 的投影收宽是否够**：`payload_sha256` 现在包含式覆盖除 4 个不可承诺键之外的一切。请独立构造变异
    （例如改 `confidence`、`theme_analysis`、`historical_accuracy_records`）确认都被 E16 拦下。
-3. **E30 的兼容性**：`AttestationError` 继承 `ForecastInputError`，历史消息文本逐字保留；请确认没有任何消费者
-   按消息前缀/类型做严格匹配而受影响（本卡只在 iso 内验证）。
+3. **E30 的兼容性**：`AttestationError` 继承 `ForecastInputError`，`exc.detail` 是逐字原消息，但 `str()` **首段带上了码**（N5）。
+   请确认没有消费者按首段/正则匹配而受影响（本卡只在 iso 内验证）。
 4. **CONFLICT-1 加固是否足够**：两条新 AST 断言分别覆盖"符号"与"导入"；请判断是否还需要"不得读写文件系统/不得访问文件路径"之类的更强约束。
-5. **空承诺的最终裁决**：复核对它的接受是**有条件**的（"接受自身…但必须先修 P2-2"）。P2-2 已修，请据此复评该条件是否满足，
-   或要求设计两阶段签收据。
+5. **空承诺的最终裁决**：复核对它的接受是**有条件**的（"接受自身…但必须先修 P2-2"）。P2-2 已按本轮实现收口，
+   请复评该条件是否满足，或要求设计两阶段签收据。**请一并判定本卡的实现选择**：把 `payload_sha256` 导出到顶层
+   （并从投影中排除）以便真实产物可端到端断言，是否优于复核建议的"仅比较记录承诺"的最小改法。
 6. **`changes.diff` 复算口径**：请用归一 LF 的方式复算，或直接比对 `binding.json.post_run_measurements.artifact_hashes`。
 7. **跨仓缺口**：`is_legacy_exempt()` / `require_legacy_exemption()` 只在本仓导出，消费者接线缺失（OPEN-D6），**未闭**。
+8. **oracle 事后编辑的治理**：`binding.json.documentation_edit_ledger` 已如实登记（含时间、哈希、期望值未变）；
+   **该裁定属 owner**，实现者未作结论。
+9. **真实产物用例的时间口径**：`real_signed_artifact()` 使用生产墙钟窗（`W` 未裁决 ⇒ 约 1 小时），
+   因此那两条重放用例**不再**断言"窗口已过期"（早期版本曾在真实路径上因此误报）。窗口是否已过期的性质由
+   `T-N28/T-N29/T-R8` 的**固定锚**用例承担。请确认这一分工可接受。

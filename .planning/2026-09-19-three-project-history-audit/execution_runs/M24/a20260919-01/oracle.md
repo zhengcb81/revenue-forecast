@@ -324,3 +324,23 @@ stdout / stderr 原文：`evidence/M24/stdout.txt`（4492 字节）、`evidence/
 **本实现者的处置**（不改任何冻结输入/期望）：保留卡片原文 patch 于 `CONT-BREAK`，把它的消息要求冻结为**实测可达**的 `continuity failed: FY2028`（这正是卡片 L116 散文「两个年度各自平衡」在用例集里成为可执行事实的那条），并**移除** `CONT-BREAK-CROSSYEAR`（它只能与 CONT-BREAK 重复）。`required_message_ids` 因此为 `["NEG-CARD", "CONT-BREAK"]`，即**闸门集合的意图达成、但成员是 CONT-BREAK 而不是清单写的 CROSSYEAR**。要让 FY2027 桥平衡守卫可达，必须改一个**冻结输入定义**（`continuity_positive`）或某个冻结负例的取值，两者都越界；请复核者裁定。
 
 （自检证据：`evidence/M24/stdout.txt` 的 `negative: CONT-BREAK PASS_rejected … opening_arr continuity failed: FY2028`、`required_message_ids: ['NEG-CARD', 'CONT-BREAK'] ok= True`；另见 `recovery/selfcheck/selfcheck_result.json` 的 R4/R5 探针。）
+
+### 9. M24：冻结正文第 4/5 节与当前 `cases.json` 的**已知不一致**（round-3 登记，需 owner 裁定）
+
+第 0–12 节自 round 2 起被裁定**逐字节不得再改**，所以本轮的 `cases.json` 变更**没有**同步回正文。结果是正文里有三处与当前用例集不一致：
+
+| 正文位置 | 正文写的是 | 当前实际（`evidence/M24/cases.json`） |
+|---|---|---|
+| 第 5 节 `CONT-BREAK` 行 | 期望列只有 `ModelRegistryError`（无消息要求） | 带 `expect_message_contains = "continuity failed: FY2028"` |
+| 第 5 节 `CONT-BREAK-CROSSYEAR` 行 | 仍列该用例，值 `{"opening_arr": [200, 251], "closing_arr": [250, 251]}` | **该用例已移除**（round 3 独立判定其与 CONT-BREAK 重复，属"清单写错"而非实现错） |
+| 第 5 节「合计 **12 个负例**」 | 12 | **11** |
+
+**以 `evidence/M24/cases.json` 与本追加节为准。** 本实现者**没有**运行 `scripts/splice_oracle_md_r2.py`（已一次性退役），也未以任何其它方式改正文：四卡正文 sha256 与 round 2 记录值逐字节相同（M24 = `9c8f6b23…` / 13382 B；见 `recovery/oracle_body_hash.json` 与 `final_verify.txt` 的 `oracle_md_body_matches_recorded_frozen_body = True`）。
+
+两条口径由 owner 二选一：(a) 接受「第 5 节该三处已被本追加节取代」，正文不再改动；(b) 授权一次性正文定点修订，把该三处更新到与 `cases.json` 一致（预计正文 13382 → 13243 字节；`splice_oracle_md_r2.py` 的白名单机制可复用，但该脚本已声明退役，需 owner 明确解除）。**本实现者不自行选择。**
+
+### 10. round-3 对本实现者 round-2 陈述的两条纠正（如实登记）
+
+- **P3-CORR-1：** round-2 本追加节/`review.md` 称「FY2027 桥平衡守卫在这个两年基座上不可达、改任何 driver 都不行」——**该措辞过强**。复核者实测 `closing_arr = [251, 251]` 可达，输出 `stock-flow balance failed: FY2027`。正确表述：不改 `closing_arr[0]` 时它不可达。
+- **P3-CORR-2：** round-2 附带例证 `lost_arr_revenue_fraction[0] = 0.5` **是错的**：该输入实测**正常返回**（复核者记录 `('OK', [220.0, 250.0])`；本实现者按 FY2028 的 `closing = opening[1] - lost + exp + new` 直接求值也为 220），原因是 FY2027 的桥只用 FY2027 自己的 driver，FY2028 的 closing 由 FY2028 的 opening 推出。
+- 这两条**不影响**任何期望值、容差、用例集合或判据；已登记为纠正，未据此改动任何冻结件。其独立证据在复核者 round-3 报告第 2.3/2.4 节；本 attempt **没有**把它们冻结为观察项，理由是那会新增第 6 节表格行、从而改动 0–12 节正文（越界），见第 9 节同一约束。

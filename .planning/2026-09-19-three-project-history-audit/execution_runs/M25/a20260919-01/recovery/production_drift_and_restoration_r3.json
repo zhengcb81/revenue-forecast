@@ -1,0 +1,120 @@
+{
+ "card_id": "M25",
+ "attempt_id": "a20260919-01",
+ "record": "production drift window and its restoration (r3 closeout)",
+ "file_created_as_a_new_name_on_purpose": "the owner asked for the drift fact and the recovery fact to be kept SIDE BY SIDE without overwriting anything, so this is a new file rather than an edit of integrity.json / source_manifest.json",
+ "drift_window": {
+  "start_utc_approx": "2026-09-20 04:35:31",
+  "end_utc_approx": "2026-09-20 04:40:53",
+  "observed_by_this_attempt_at": "2026-09-20 04:5x (r3 closeout production re-check)",
+  "production_was_not_in_the_anchored_state_during_this_window": true,
+  "what_this_attempt_observed": {
+   "scripts/model_registry.py": {
+    "sha256": "1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86",
+    "size_bytes": 19703,
+    "blob": "c80075c4dadbed827aac0937ed84b8f820978c0c",
+    "mtime": "2026-09-20 04:35:32",
+    "note": "the registry had been reset to HEAD: the model_extensions wiring, the driver_bounds mechanism and this batch's four models were absent"
+   }
+  },
+  "instruction_for_downstream_readers": "any recorded production_hashes_unchanged=false / anchored_hashes_match=false inside this window is a CORRECT alarm. It must never be used to change an expectation, a threshold or a frozen artefact, and those hashes must never be adopted as a new baseline."
+ },
+ "root_cause_from_the_owner": {
+  "who": "the orchestration layer's own git gate (not the user, not this implementer, not any attempt)",
+  "what": "a pre-commit/pre-push hook exported the unstaged changes to C:\\Users\\郑曾波\\.cache\\pre-commit\\patch1789875331-33652 (557,924 B) at 04:35:31, then ran `git checkout -- .`; that command failed with 255 on three concurrently-held scratch files (`unable to unlink ... Invalid argument`), so the patch was never replayed and the worktree stayed reset to HEAD",
+  "same_second_side_effects": [
+   "scripts/revenue_core.py",
+   "scripts/contracts/constants.py",
+   "scripts/revenue_report.py",
+   "tests/test_backtest.py",
+   "SKILL.md"
+  ]
+ },
+ "restoration": {
+  "chosen_option": "option 1 - rebuild the extension-enabled state",
+  "method": "git apply --exclude=.planning/* on the SAME pre-commit patch; --check exit 0 then apply exit 0",
+  "performed_by": "the owner (parent agent); this implementer performed no production write"
+ },
+ "post_restoration_verification_by_this_attempt": {
+  "when": "2026-09-20 after 04:40:53",
+  "anchored_two_modules_match": true,
+  "other_five_files_plus_changelog_match_the_owners_reported_hashes": true,
+  "isolated_snapshot_equals_production_again": true,
+  "observed_hashes": {
+   "scripts/model_registry.py": {
+    "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "size_bytes": 26446,
+    "exists": true
+   },
+   "scripts/model_extensions.py": {
+    "sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+    "size_bytes": 14475,
+    "exists": true
+   },
+   "scripts/revenue_core.py": {
+    "sha256": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+    "size_bytes": 14136,
+    "exists": true
+   },
+   "scripts/contracts/constants.py": {
+    "sha256": "278e3e02df15e556f4851b46711a2f36aac5b7e6a9820c27e0ca31b02858d0ae",
+    "size_bytes": 5063,
+    "exists": true
+   },
+   "scripts/revenue_report.py": {
+    "sha256": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+    "size_bytes": 69765,
+    "exists": true
+   },
+   "tests/test_backtest.py": {
+    "sha256": "d0972e238066f40e4c52d25806683749ddfa2c84e7f6652f38ff44f3b7efc16e",
+    "size_bytes": 17665,
+    "exists": true
+   },
+   "SKILL.md": {
+    "sha256": "45e4e343eba4f6e766cdb163d21c35a7f7beeb603d3c8b237339de440dc47806",
+    "size_bytes": 26378,
+    "exists": true
+   },
+   "CHANGELOG.md": {
+    "sha256": "bcba3dd50278b677ef0af63725a5d635763a40bd9f92089dfc37ff17529c0a8e",
+    "size_bytes": 19601,
+    "exists": true
+   }
+  },
+  "isolated_snapshots": {
+   "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+  }
+ },
+ "effect_on_the_cards": {
+  "reviewer_invalidation_condition": "iso/checkout_scripts/{model_registry,model_extensions}.py must always equal production 9ec65295.../9939480b...",
+  "condition_was_triggered_during_the_window": true,
+  "condition_is_cleared_again": true,
+  "verdict_effect": "the r2 accepted_scoped verdicts remain in force; no blocked reclassification is needed",
+  "status_unchanged": "review_pending",
+  "implementer_still_does_not_sign": true
+ },
+ "frozen_artefacts_untouched_by_all_of_this": {
+  "hash_at_r2": {
+   "input.json": "4cacbf92a6883d3a688a61d68f565b3c33134fe12c3bf07fd5f8613e4a02a592",
+   "oracle.json": "35f1dba3ccb0a067dd16476c2a855eb6f945bf231a7111d2bbaf28d6fd9b5311",
+   "cases.json": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+   "run_result.json": "e90b65da1f15c075e0e74a361989dbbec433039c725751f6932d1cfe827680fb"
+  },
+  "hash_now": {
+   "input.json": "4cacbf92a6883d3a688a61d68f565b3c33134fe12c3bf07fd5f8613e4a02a592",
+   "oracle.json": "35f1dba3ccb0a067dd16476c2a855eb6f945bf231a7111d2bbaf28d6fd9b5311",
+   "cases.json": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+   "run_result.json": "e90b65da1f15c075e0e74a361989dbbec433039c725751f6932d1cfe827680fb"
+  },
+  "identical": true,
+  "statement": "no expectation, threshold or frozen artefact was changed to accommodate the drift; the drift was recorded, escalated and then removed externally"
+ },
+ "residual_risk": {
+  "scripts/model_extensions.py_is_still_untracked": true,
+  "why_it_matters": "model_registry.py imports it from the worktree, so half of the extension wiring is still outside version control; another `git checkout -- .` / `reset --hard` / `clean` could repeat this failure",
+  "recommendation": "the owner should bring model_extensions.py under version control together with its wiring lines; this implementer did NOT run git add (out of scope)"
+ },
+ "lesson_for_this_batch": "a card whose acceptance rests on a PRODUCTION FILE HASH is resting on a quantity that an external git operation can change without warning. On mismatch: record the drift and its time window, escalate to the orchestration layer for a ruling, and never adapt by editing expectations or frozen artefacts."
+}

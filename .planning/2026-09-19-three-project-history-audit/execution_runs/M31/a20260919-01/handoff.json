@@ -530,15 +530,31 @@
   },
   {
    "id": "OQ-04",
-   "title": "numerical domain / boundary observations incl. the M31 card-text divergence on net_revenue_per_unit",
+   "title": "numerical domain / boundary observations of this model",
    "requires_ruling_from": "independent reviewer",
-   "evidence": "evidence/M31/oq_rulings.json + extra_probes.json + binding.json"
+   "evidence": "evidence/M31/oq_rulings.json + extra_probes.json + binding.json",
+   "withdrawn_claim": {
+    "applied_utc": "2026-09-20T03:38:58.563523+00:00",
+    "finding": "F-02 (independent reviewer) via residual R-1",
+    "withdrawal": "the M31 card text and the registry agree on all seven drivers; there is no divergence and no owner ruling is required for one",
+    "superseded_by": [
+     "evidence/M31/binding.json errata",
+     "evidence/M31/oq_rulings.json rulings[OQ-04].withdrawn_claim",
+     "oracle.md errata r1 section E-2"
+    ]
+   }
   },
   {
    "id": "OQ-05",
-   "title": "oracle.md was restored after the run (content unchanged) and its present mtime is later than the product stdout",
+   "title": "oracle.md's present mtime is a post-hoc value and is NOT pre-run evidence (measured: oracle_md_mtime < product_stdout_mtime)",
    "requires_ruling_from": "independent reviewer (accept the recorded freshness claim or demand a fresh attempt)",
-   "evidence": "evidence/M31/source_manifest.json oracle_document.freshness_claim"
+   "evidence": "evidence/M31/source_manifest.json oracle_document.freshness_claim",
+   "ruling": {
+    "ruled_by": "independent reviewer (OQ-05 ruling, report section 2.3)",
+    "ruling": "oracle.md's present mtime is a POST-HOC value and is not offered as pre-run evidence in either direction; what was anchored before the generator ran is the generator code scripts/oracle_M31.py (sha256 3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e), and oracle.md is outside the anchor scope and carries no gating expectation",
+    "does_not_block": "the formula signature (owner claims formula only)",
+    "boundary": "if the owner wants oracle.md treated as pre-run frozen evidence, this attempt is NOT sufficient and a re-run is required"
+   }
   }
  ],
  "blocked_by": [],
@@ -731,5 +747,146 @@
   "rule": "the difference is recorded, NOT retro-applied: no historical rc in any earlier batch is rewritten, and readers must not compare rc meaning across batches without this table"
  },
  "evidence_hashes_note": "evidence/M31/evidence_hashes.json was written at pack time and therefore does not cover the files changed by this remediation (review.md, handoff.json, oracle.md, binding.json, source_manifest.json, oq_rulings.json); the authoritative post-remediation ledger is after/final_deliverable_hashes.json, and this remediation's own report lists the before/after sha256 of every file it touched.",
- "remediation_utc": "2026-09-20T03:20:49.039865+00:00"
+ "remediation_utc": "2026-09-20T03:20:49.039865+00:00",
+ "live_record_corrections": {
+  "R-1": {
+   "applied_utc": "2026-09-20T03:38:58.563523+00:00",
+   "finding": "R-1 (independent reviewer, bounded-text confirmation)",
+   "what_was_wrong": "the live OQ-04 title still asserted the M31 card-text divergence",
+   "superseded_title": "numerical domain / boundary observations incl. the M31 card-text divergence on net_revenue_per_unit",
+   "corrected_to": "numerical domain / boundary observations of this model",
+   "withdrawal_evidence": "evidence/M31/binding.json card_text_required_list_vs_registry.errata.superseded_values"
+  },
+  "R-3": {
+   "applied_utc": "2026-09-20T03:38:58.563523+00:00",
+   "finding": "R-3 (independent reviewer, bounded-text confirmation)",
+   "what_was_wrong": "the live OQ-05 title said the present mtime is later than the product stdout, contradicting the same attempt's source_manifest.oracle_document.oracle_md_provenance",
+   "superseded_title": "oracle.md was restored after the run (content unchanged) and its present mtime is later than the product stdout",
+   "corrected_to": "oracle.md's present mtime is a post-hoc value and is NOT pre-run evidence (measured: oracle_md_mtime < product_stdout_mtime)",
+   "measured": "oracle_md_mtime < product_stdout_mtime, re-derived from evidence/M31/source_manifest.json mtime_ordering"
+  }
+ },
+ "git_writes": {
+  "statement": "this attempt executed no git write command: no add, commit, restore, stash, checkout or reset was run by any command of this card; the only git invocation in the whole attempt is the read-only `git status --porcelain` inside hash_state.py",
+  "what_is_NOT_claimed": "it is NOT claimed that no commit happened in revenue-forecast during this window. The repository is shared and the orchestration layer committed concurrently (observed: 66bd75f1 at 04:20:08 and cc78c529 at 04:27:52, the latter containing this batch's execution_runs/M29|M30|M31 handoff.json / oracle.md / verdict_transcription_check.txt). Those commits were not made by this attempt.",
+  "evidence": [
+   "binding.json forbidden list",
+   "integrity.json",
+   "before/ and after/ git status --porcelain captures",
+   "evidence/M31/runs/G0-state-before/rc.json and evidence/M31/runs/G1-state-after/rc.json"
+  ]
+ },
+ "integrity_statement_scope": "production_repos_untouched refers to FILE WRITES BY THIS ATTEMPT only, measured by the before/after source hashes; it is not a claim about the repository's commit history",
+ "source_drift_observed_after_review": {
+  "observed_utc": "2026-09-20T03:41:40.235674+00:00",
+  "finding": "F-DRIFT-1 (a transient production-source change observed by the implementer)",
+  "status": "TRANSIENT - resolved before this record was written; the production file is back at the anchored revision",
+  "timeline": [
+   {
+    "when": "binding and every measurement of this attempt",
+    "state": "scripts/model_registry.py = 26,446 bytes, sha256 9ec65295... (= the anchored 31-model revision)"
+   },
+   {
+    "when": "2026-09-20 04:35:32",
+    "state": "scripts/model_registry.py was observed at 19,703 bytes, sha256 prefix 1f2639e1d44df679..., and the live registry exposed 23 models with this card's model absent; at that moment the live registry could not even import because model_extensions was missing from the scripts directory. This is consistent with a temporary checkout of the file from HEAD by a concurrent actor (HEAD stores the 23-model blob) while other card work proceeds in the same shared tree."
+   },
+   {
+    "when": "2026-09-20T03:41:40.235674+00:00",
+    "state": "scripts/model_registry.py is back at sha256 9ec65295... (see watched_files.sha256_at_observation below)"
+   }
+  ],
+  "watched_files": {
+   "scripts/model_registry.py": {
+    "anchored_sha256_at_binding": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "sha256_at_observation": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "unchanged_at_observation": true
+   },
+   "scripts/model_extensions.py": {
+    "anchored_sha256_at_binding": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+    "sha256_at_observation": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+    "unchanged_at_observation": true
+   },
+   "scripts/forecast/segments.py": {
+    "anchored_sha256_at_binding": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd",
+    "sha256_at_observation": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd",
+    "unchanged_at_observation": true
+   }
+  },
+  "live_registry_probe": {
+   "method": "temp-dir copy of the three live modules, never written into the repo",
+   "models": 31,
+   "contains_this_card_model": true
+  },
+  "head_revision_blob": {
+   "argv": [
+    "rev-parse",
+    "HEAD:scripts/model_registry.py"
+   ],
+   "raw_returncode": 0,
+   "stdout": [
+    "c80075c4dadbed827aac0937ed84b8f820978c0c"
+   ]
+  },
+  "head_blob_matches_the_anchored_revision": true,
+  "effect_on_this_attempt": "NONE on the frozen evidence: every measurement in this attempt used iso/checkout_scripts, which is byte-identical to the anchored revision, and input.json / oracle.json / cases.json were never touched",
+  "effect_on_the_qualification": "the formula qualification is scoped to the anchored revision. While the transient 22-model state lasted, the live tree did not contain this card's model at all, so the qualification must be read as a statement about the anchored revision only",
+  "why_it_matters": "a concurrent actor switched the shared working tree to a different revision of the very file this qualification is about, for a period long enough for the implementer to observe it. Any consumer that assumed the live tree is stationary between review and publication should stop and re-derive its hashes",
+  "recommended_owner_action": "treat this as the START_HERE drift branch: before any card is closed on the strength of a production-file claim, re-check the live hashes; and decide whether the formula qualification is to be carried to the revision that actually ships",
+  "implementer_write_check": "this attempt executed no git write command and wrote no file under the production tree at any point; the drift was observed, not caused",
+  "git_evidence": [
+   {
+    "argv": [
+     "log",
+     "--oneline",
+     "-3"
+    ],
+    "raw_returncode": 0,
+    "stdout": [
+     "cc78c529 audit(planning): round-3 continued - I-11-A/I-14-A verdicts, M17-M20 r2 (metadata changes), M25-M28 r2, M21-M24 r2 + M24 deviation, I-05-A r4, I-09-A R-1/R-2 pending, cross-batch runner facts",
+     "66bd75f1 audit(planning): round-3 checkpoint - M21/M22/M23 + M29/M30/M31 accepted_scoped, M24 minimal fix, M17-M20 r2, I-14-B changes_required, bookkeeping pass, PWF + OWNER_DECISIONS",
+     "ddc81ab6 审计实施段：i-10 模型层 24 卡 + I-00-A/I-04-C/I-05-A/I-07-A/I-08-A/I-08-B/I-09-A/I-11-A/I-14-A/I-14-B/I-15-A 交付留档"
+    ]
+   },
+   {
+    "argv": [
+     "log",
+     "--oneline",
+     "-3",
+     "--",
+     "scripts/model_registry.py"
+    ],
+    "raw_returncode": 0,
+    "stdout": [
+     "4a8b454e feat: add reserve_depletion model for resource-to-revenue businesses (v3.9.0)",
+     "69df60d6 feat: release revenue forecast 3.3.0"
+    ]
+   },
+   {
+    "argv": [
+     "ls-tree",
+     "HEAD",
+     "scripts/model_registry.py"
+    ],
+    "raw_returncode": 0,
+    "stdout": [
+     "100644 blob c80075c4dadbed827aac0937ed84b8f820978c0c\tscripts/model_registry.py"
+    ]
+   },
+   {
+    "argv": [
+     "status",
+     "--porcelain",
+     "--",
+     "scripts/model_registry.py",
+     "scripts/forecast/segments.py"
+    ],
+    "raw_returncode": 0,
+    "stdout": [
+     "M scripts/forecast/segments.py",
+     " M scripts/model_registry.py"
+    ]
+   }
+  ]
+ },
+ "integrity_statement_scope_note": "the before/after source hashes prove THIS ATTEMPT wrote nothing; they do not prove the repository stayed still. A transient change of scripts/model_registry.py by a concurrent actor was observed and is recorded in source_drift_observed_after_review."
 }

@@ -4,8 +4,8 @@ model_id: finite_adoption
 attempt_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M30\a20260919-01
 report: C:\Users\郑曾波\AppData\Local\Temp\m2931-review-20260920-040341\REPORT.md
 report_section: 6, heading ### M30 · finite_adoption
-method: the fenced ```markdown block following that heading was extracted from the report, line endings were normalised CRLF->LF (the report is CRLF, every attempt file is LF; the verbatim requirement applies to the text), the block was appended to review.md, and the appended span was re-read from review.md and compared byte-for-byte with the extracted block.
-line_ending_normalisation: CRLF -> LF (transport only; no character of the text changed)
+method: the fenced ```markdown block following that heading was extracted from the report, line endings were normalised CRLF->LF as a defensive no-op: the report was MEASURED to contain 0 CR characters (it is LF), so this step changed nothing. the block was appended to review.md, and the appended span was re-read from review.md and compared byte-for-byte with the extracted block.
+line_ending_normalisation: CRLF -> LF as a defensive no-op (measured CR count in the report: 0); no character of the text was altered
 extracted_block_sha256_crlf_normalised: 1dd724ba247ecef65818651aa3763ebdc0268dd32e0effd1e52687d930d157da
 extracted_block_bytes: 4049
 appended_block_sha256: 1dd724ba247ecef65818651aa3763ebdc0268dd32e0effd1e52687d930d157da
@@ -22,3 +22,14 @@ appended_block_last_line_1based: 90
 assertion: appended_block_sha256 == extracted_block_sha256_crlf_normalised -> PASS
 independent_recheck_hint: verify by extracting the same fenced block from the report and comparing it with review.md lines 42-90
 note: the pre-existing review.md body above the appended block was not modified; only one blank separator line and the verbatim block were appended.
+
+correction (bounded-text pass, 2026-09-20T03:38:57.268038+00:00):
+  finding: R-0 (independent reviewer, bounded-text confirmation)
+  what_was_wrong: the original method sentence claimed the report is CRLF while the report contains 0 CR characters, so the normalisation was a no-op and the claim was wrong
+  superseded_sentences:
+    - method: the fenced ```markdown block following that heading was extracted from the report, line endings were normalised CRLF->LF (the report is CRLF, every attempt file is LF; the verbatim requirement applies to the text), the block was appended to review.md, and the appended span was re-read from review.md and compared byte-for-byte with the extracted block.
+    - line_ending_normalisation: CRLF -> LF (transport only; no character of the text changed)
+  corrected_wording: the method and line_ending_normalisation lines above
+  effect_on_the_proof: none -- byte_identical: true and the recorded hashes are unchanged
+  line_ending_normalisation_note_corrected: true
+  verdict_transcription_check_sha256_before_this_correction: e7cfb8889b8415174006f40ba5e464b96fd9e8bbde2205e34008579a80d5f32e

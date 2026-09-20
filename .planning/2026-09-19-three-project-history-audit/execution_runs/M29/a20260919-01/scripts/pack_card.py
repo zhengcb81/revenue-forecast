@@ -1,17 +1,16 @@
-"""Pack the derived evidence of one M29/M30/M31 card attempt (runs last, hashes last).
+"""!!! STALE SOURCE WARNING (bounded-text pass, 2026-09-20T03:38:51.970887+00:00) !!!
 
-Writes into <attempt>/evidence/<CARD>/:
-  source_manifest.json    hashes, verified line anchors, mtime ordering, registry contract
-  qualification.json      formula / disclosure_adaptation / accuracy (only formula is touched)
-  oq_rulings.json         open questions with counts taken from the enumeration output
-  integrity.json          production-repo integrity statement + re-checked hashes
-  revision_r2.json        r2 discipline: at most ONE r2 section, line-boundary-reproducible hash
-  evidence_hashes.json    sha256 of every evidence file (written after the rest of the pack)
+This file already ran for attempt a20260919-01.  It is kept for provenance and for the record
+of HOW the evidence was produced, but it MUST NOT be re-run against this attempt:
 
-and <attempt>/after/rerun_sha256.json.
+  * re-running it would rewrite evidence/<CARD>/source_manifest.json from values measured now,
+  * and the pack's own oracle_document wording was corrected after the independent reviewer
+    found the original freshness wording self-contradictory (finding F-04 / residual R-4), so a
+    re-run would re-emit corrected wording over an attempt whose evidence was already sealed.
 
-Usage:
-  python -X utf8 -B pack_card.py --card M29 --attempt-root <attempt>
+The sealed evidence under evidence/<CARD>/ is the record; scripts/verify_remediation.py is the
+read-only re-check; recovery/remediation_r2.json and the errata section of oracle.md list what
+was corrected.
 """
 
 from __future__ import annotations

@@ -27,7 +27,8 @@
   },
   "threshold_bases": {
    "arithmetic_identity": 4,
-   "professional_judgement_required": 4
+   "professional_judgement_required": 3,
+   "disclosure_definition": 1
   },
   "refuted_by_total": 24,
   "falsifier_candidates_total": 16,
@@ -94,7 +95,8 @@
    "expected_code": "E_MISSING_FALSIFIER",
    "note": "falsifier threshold removed",
    "observed_codes": [
-    "E_MISSING_FALSIFIER"
+    "E_MISSING_FALSIFIER",
+    "E_THRESHOLD_BASIS_INCONSISTENT"
    ],
    "rejected": true
   },
@@ -155,11 +157,67 @@
     "E_LISTED_VALUE_NOT_IN_EVIDENCE"
    ],
    "rejected": true
+  },
+  {
+   "expected_code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+   "note": "approved_frozen with a short invented reviewer name (was accepted before R2)",
+   "observed_codes": [
+    "E_STATE_APPROVED_BY_IMPLEMENTER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_THRESHOLD_BASIS_INCONSISTENT",
+   "note": "threshold_basis claims arithmetic_identity for a judgement threshold (was accepted before R2)",
+   "observed_codes": [
+    "E_THRESHOLD_BASIS_INCONSISTENT"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_EMPTY_FIELD",
+   "note": "refuted_by entries are blank but the list is non-empty (was accepted before R2)",
+   "observed_codes": [
+    "E_EMPTY_FIELD"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_CHAIN_END_SEMANTICS",
+   "note": "mechanism chain is placeholder letters (was accepted before R2)",
+   "observed_codes": [
+    "E_CHAIN_END_SEMANTICS"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_OBSERVATION_DATE_UNRESOLVED",
+   "note": "observation_date is a placeholder (was accepted before R2)",
+   "observed_codes": [
+    "E_OBSERVATION_DATE_UNRESOLVED"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_DUPLICATE_PARAMETER",
+   "note": "two propositions share a parameter_id but state different observations (was accepted before R2)",
+   "observed_codes": [
+    "E_DUPLICATE_PARAMETER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_THRESHOLD_BASIS_UNKNOWN",
+   "note": "threshold_basis outside the closed set",
+   "observed_codes": [
+    "E_THRESHOLD_BASIS_UNKNOWN"
+   ],
+   "rejected": true
   }
  ],
  "counterexample_summary": {
-  "cases": 14,
-  "rejected_as_expected": 14,
+  "cases": 21,
+  "rejected_as_expected": 21,
   "accepted_by_mistake": 0
  },
  "qualification_boundary": {

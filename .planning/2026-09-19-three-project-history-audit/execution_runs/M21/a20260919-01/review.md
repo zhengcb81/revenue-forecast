@@ -117,6 +117,7 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 
 `frozen_hashes_unchanged` = `True`. Full record:
 `recovery/selfcheck/selfcheck_result.json`.
+
 <!-- BEGIN independent-review verdict (round 2, transcribed verbatim) -->
 
 > **独立复核裁决（revision r2 后）：`accepted_scoped`（仅 formula）。维持不变。**
@@ -126,4 +127,14 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 > 签收边界：**仅 `formula`**。`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`；不得由此外推到其他 30 个模型。
 > 遗留时间性事项（不阻塞签收）：P3-1 建议在第 12 节标题下补一句"本节于运行后加入，0–11 节未改"；P3-2 建议把"未对本分辨率做数值探针"保留为显式限制。
 
-<!-- END independent-review verdict -->
+<!-- END independent-review verdict (round 2) -->
+
+<!-- BEGIN independent-review verdict (round 3, transcribed verbatim) -->
+
+> **独立复核裁决（round 3 终裁）：`accepted_scoped`（仅 formula）。**
+>
+> 本卡 formula 资格**签收**。依据：①独立重跑冻结夹具 rc=0、stderr 0 字节、正例/连续性/defaults 与 11/11 负例全部符合冻结预期；②`oracle.md` 0–12 节自 round 2 起**逐字节未改**（冻结体 `0a1b9a2b…`/12234 B），未触及"第三轮再改正文即 blocked"的阈值；③`verify_prefix_chain.py` 四卡 ALL-OK；④本卡未冻结任何消息要求，`required_message_ids` 为空集合，NEG-CARD 依"异常类型 + 2 年路径 FY2028 值域守卫消息"判定（我独立复现 `must be between 0.0 and 1.0: FY2028`）。
+>
+> 签收边界：**仅 `formula`**。`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`；不得据此外推到其他 30 个模型、其他公司或行业。建议（不阻塞）：删掉空的 `required_message_ids` 或注明"故意为空"，以免被误读为闸门存在；`before/run_card_preround2.py` 留档内容有误（实测等于新 runner），可择机重归档。
+
+<!-- END independent-review verdict (round 3) -->

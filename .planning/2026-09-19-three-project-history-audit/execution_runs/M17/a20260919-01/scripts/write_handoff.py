@@ -1,4 +1,4 @@
-"""Generate handoff.json for one attempt from the evidence actually on disk.
+﻿"""Generate handoff.json for one attempt from the evidence actually on disk.
 
 Nothing here is transcribed by hand: hashes come from the evidence files, exit codes come
 from the rc records, and the open questions come from oq_rulings.json.
@@ -21,7 +21,7 @@ import card_units
 PROCESS = {
     "M17": {
         "measurement_executions": 3,
-        "closing_executions": 6,
+        "closing_executions": 7,
         "c2_origin": ("a unit ADDED during this attempt after measurement pass 1 (it did not exist in "
                       "the first pass)"),
         "detail": ("pass 1 = 13 units before C2 existed; pass 2 = 14 units with the probe constant "
@@ -30,7 +30,7 @@ PROCESS = {
     },
     "M18": {
         "measurement_executions": 1,
-        "closing_executions": 6,
+        "closing_executions": 7,
         "c2_origin": ("an EXISTING unit of this attempt's unit list, delivered byte-identically from "
                       "the M17 attempt (it was not added after a first pass)"),
         "detail": ("the single measurement pass ran 14 units; the post-review fixes re-executed B, C2, "
@@ -40,6 +40,14 @@ PROCESS = {
 PROCESS["M19"] = {**PROCESS["M18"]}
 PROCESS["M20"] = {**PROCESS["M18"]}
 
+
+
+def atomic_dump(path, doc):
+    """Write JSON through a temp file + os.replace so an interrupted write cannot truncate it."""
+    tmp = path + ".tmp-atomic"
+    with open(tmp, "w", encoding="utf-8") as handle:
+        json.dump(doc, handle, ensure_ascii=False, indent=1)
+    os.replace(tmp, path)
 
 def sha256(path):
     with open(path, "rb") as handle:
@@ -123,7 +131,7 @@ def main() -> int:
                                      "The card states these do not block the A-C formula dispatch and "
                                      "must not be filled in speculatively"),
             "E_historical_mapping_probe": ("NOT done - E is [executable_after_D] and belongs to the "
-                                           "I-10-A先行 work; inventing a probe here would be a "
+                                           "I-10-A鍏堣 work; inventing a probe here would be a "
                                            "fabricated scenario set"),
             "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist",
         },
@@ -245,8 +253,7 @@ def main() -> int:
                      else "r1"),
     }
     out = os.path.join(attempt, "handoff.json")
-    with open(out, "w", encoding="utf-8") as handle:
-        json.dump(doc, handle, ensure_ascii=False, indent=1)
+    atomic_dump(out, doc)
     print("handoff written", out)
     print("status", doc["status"], "next_step_number", doc["next_step_number"])
     print("positive", doc["positive_actual"], "negatives", doc["negative_case_summary"])

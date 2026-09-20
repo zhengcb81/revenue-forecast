@@ -14,6 +14,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import sys
 
 # --- frozen registry copied from execution_v2/model_cards.md (model_id -> required/optional drivers)
@@ -76,6 +77,15 @@ REGISTERED = {
 SOURCE_TYPES = {"company_disclosure", "independent_observation", "management_target",
                 "analyst_assumption", "synthetic"}
 LOCATION_BASES = {"pdf_leaf_1based", "table_index_0based"}
+# R2 additions (review finding P2-5): the first version of this validator had no
+# machine check for the honesty of threshold_basis, for the mechanism chain's last
+# link, for a placeholder observation date, or for the "one parameter, one
+# proposition" rule of oracle O-11.
+THRESHOLD_BASES = {"arithmetic_identity", "professional_judgement_required",
+                   "disclosure_definition"}
+CHAIN_END_MARKERS = ("收入确认", "确认收入", "确认", "期间归属", "履约义务", "交付", "control")
+OBSERVATION_DATE_OK = re.compile(r"\d{4}\s*[-/年]\s*\d{1,2}")
+OBSERVATION_DATE_BAD = {"tbd", "tba", "n/a", "na", "?", "未知", "待定", "以后", "未来", ""}
 # groups that are declared management-target groups; a management_target must live
 # in one of these and a company_disclosure must not
 MGMT_GROUPS = {"ZIJIN-MGMT-PLAN-2026"}
@@ -186,13 +196,21 @@ def validate(hypotheses, source_map, attempt, doc_texts):
                 continue
             if p in seen_params:
                 prev = seen_params[p]
-                if (prev["model_id"], prev["driver_name"], prev["effective_period"]) != \
-                        (model, driver, pm.get("effective_period")):
+                same_driver = (prev["model_id"], prev["driver_name"], prev["effective_period"]) == \
+                    (model, driver, pm.get("effective_period"))
+                # O-11 (R2, review finding P2-5): one parameter_id must denote ONE
+                # proposition. Re-using an id on a different driver/period, or on two
+                # different propositions with the same driver, is a duplicate.
+                same_prop = prev.get("claim") == h.get("claim") and \
+                    prev.get("observation") == h.get("observation")
+                if not same_driver or not same_prop:
                     err("E_DUPLICATE_PARAMETER",
-                        "parameter_id %s reused with a different driver/period" % p)
+                        "parameter_id %s reused: same_driver=%s same_proposition=%s"
+                        % (p, same_driver, same_prop))
             else:
                 seen_params[p] = {"model_id": model, "driver_name": driver,
-                                  "effective_period": pm.get("effective_period")}
+                                  "effective_period": pm.get("effective_period"),
+                                  "claim": h.get("claim"), "observation": h.get("observation")}
         for f in ("unit", "original_value", "effective_period", "conversion_formula"):
             if not pm.get(f):
                 err("E_EMPTY_FIELD", "parameter_mapping.%s empty" % f)
@@ -201,6 +219,45 @@ def validate(hypotheses, source_map, attempt, doc_texts):
         for k in FALSIFIER_KEYS:
             if not fz.get(k):
                 err("E_MISSING_FALSIFIER", "falsifier.%s empty" % k)
+        # -- R2 checks (review finding P2-5) -------------------------------------
+        tb = fz.get("threshold_basis")
+        if tb not in THRESHOLD_BASES:
+            err("E_THRESHOLD_BASIS_UNKNOWN",
+                "threshold_basis=%r not in %s" % (tb, sorted(THRESHOLD_BASES)))
+        if tb == "arithmetic_identity":
+            # an arithmetic-identity threshold must be a decidable equality statement
+            thr = str(fz.get("threshold", ""))
+            if not re.search(r"0|差|等于|=|≤", thr):
+                err("E_THRESHOLD_BASIS_INCONSISTENT",
+                    "threshold_basis=arithmetic_identity but the threshold text is not an equality: %r" % thr)
+        if tb == "professional_judgement_required":
+            if h.get("state") not in ("pending_professional_decision",):
+                err("E_THRESHOLD_BASIS_INCONSISTENT",
+                    "a professional_judgement_required threshold must keep the proposition pending "
+                    "(state=%r)" % h.get("state"))
+        if tb == "disclosure_definition":
+            # R2: a disclosure-driven threshold must actually talk about the disclosure
+            thr = str(fz.get("threshold", ""))
+            if not re.search(r"披露|拆分|映射|口径|disclos", thr):
+                err("E_THRESHOLD_BASIS_INCONSISTENT",
+                    "threshold_basis=disclosure_definition but the threshold text does not reference "
+                    "the disclosure: %r" % thr)
+        chain = h.get("mechanism_chain") or []
+        if chain:
+            last = str(chain[-1])
+            if len(last.strip()) < 8 or not any(m in last for m in CHAIN_END_MARKERS):
+                err("E_CHAIN_END_SEMANTICS",
+                    "mechanism_chain must end in revenue-recognition/period semantics, got %r" % last)
+            for link in chain:
+                if len(str(link).strip()) < 6:
+                    err("E_CHAIN_END_SEMANTICS", "mechanism_chain link too short to be a mechanism: %r" % link)
+        od = str(fz.get("observation_date", "")).strip().lower()
+        if od in OBSERVATION_DATE_BAD or not OBSERVATION_DATE_OK.search(od):
+            err("E_OBSERVATION_DATE_UNRESOLVED",
+                "observation_date carries no resolvable date anchor: %r" % fz.get("observation_date"))
+        for rb in h.get("refuted_by", []):
+            if not str(rb).strip():
+                err("E_EMPTY_FIELD", "refuted_by contains a blank entry")
         if not h.get("refuted_by"):
             err("E_MISSING_REFUTED_BY", "refuted_by empty")
         if not h.get("double_count_exclusion"):
@@ -233,10 +290,16 @@ def validate(hypotheses, source_map, attempt, doc_texts):
                         "narrative fact %r not found in %s" % (cv["raw"], npath))
 
         if h.get("state") == "approved_frozen":
-            rev = str(h.get("reviewer", ""))
-            if rev in IMPLEMENTER_MARKERS or not rev:
+            rev = str(h.get("reviewer", "")).strip()
+            # R2 (review finding P2-5): the first version only rejected a name
+            # blacklist, so "approved_frozen" plus any invented reviewer passed.
+            # The identity must now be substantive and the decision must be sealed.
+            if rev in IMPLEMENTER_MARKERS or len(rev) < 8:
                 err("E_STATE_APPROVED_BY_IMPLEMENTER",
-                    "approved_frozen requires a named independent reviewer, got %r" % rev)
+                    "approved_frozen requires a substantive independent reviewer identity, got %r" % rev)
+            if not h.get("decision", {}).get("decision_sha256"):
+                err("E_STATE_APPROVED_BY_IMPLEMENTER",
+                    "approved_frozen requires decision.decision_sha256 to seal the review record")
     return errors
 
 
@@ -304,6 +367,32 @@ def make_counterexamples(hypotheses):
     h_c["anchor_text"] = "counterexample value"
     cases.append(("E_LISTED_VALUE_NOT_IN_EVIDENCE", "cited value absent from evidence",
                   [h_c]))
+
+    # ---- R2 cases: the five mutations the independent reviewer found un-rejected
+    # (finding P2-5). Each is now a frozen counterexample with a fixed error code.
+    patch(lambda h: h.update({"state": "approved_frozen", "reviewer": "某审阅人"}),
+          "E_STATE_APPROVED_BY_IMPLEMENTER",
+          "approved_frozen with a short invented reviewer name (was accepted before R2)")
+    patch(lambda h: h["falsifier"].update({"threshold": "relative drift beyond +/-7%",
+                                           "threshold_basis": "arithmetic_identity"}),
+          "E_THRESHOLD_BASIS_INCONSISTENT",
+          "threshold_basis claims arithmetic_identity for a judgement threshold (was accepted before R2)")
+    patch(lambda h: h.update({"refuted_by": ["", "   "]}), "E_EMPTY_FIELD",
+          "refuted_by entries are blank but the list is non-empty (was accepted before R2)")
+    patch(lambda h: h.update({"mechanism_chain": ["a", "b", "c"]}), "E_CHAIN_END_SEMANTICS",
+          "mechanism chain is placeholder letters (was accepted before R2)")
+    patch(lambda h: h["falsifier"].update({"observation_date": "TBD"}),
+          "E_OBSERVATION_DATE_UNRESOLVED",
+          "observation_date is a placeholder (was accepted before R2)")
+    h_d = copy.deepcopy(base[0])
+    h_d["additional_parameters"] = []
+    h_e = copy.deepcopy(base[0])
+    h_e["observation"] = {"raw_value": "different", "raw_unit": "x", "period": "FY2025", "scope": "y"}
+    cases.append(("E_DUPLICATE_PARAMETER",
+                  "two propositions share a parameter_id but state different observations "
+                  "(was accepted before R2)", [h_d, h_e]))
+    patch(lambda h: h["falsifier"].update({"threshold_basis": "made_up_basis"}),
+          "E_THRESHOLD_BASIS_UNKNOWN", "threshold_basis outside the closed set")
     return cases
 
 

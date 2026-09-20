@@ -472,12 +472,21 @@ def m24():
              "index": 0, "value": {"__float__": 250.000001}, "base_input": "positive",
              "expect_equal": None,
              "why": "second effective-resolution probe (P3-2): +1e-6 is expected to be OUTSIDE the ~2.5e-7 effective tolerance and be refused with a stock-flow balance ModelRegistryError; NO verdict is asserted, the observed outcome is recorded"},
+            # NOTE (round 3): the two corrections to this attempt's round-2 disclosure - that the
+            # FY2027 balance guard IS reachable via closing_arr = [251, 251], and that the round-2
+            # example lost_arr_revenue_fraction[0] = 0.5 does NOT fail - are NOT frozen here as
+            # observation cases, on purpose. Adding an observation row would change section 6 of
+            # oracle.md, and the round-3 boundary forbids any byte change to sections 0-12. The
+            # corrections are therefore registered in evidence/<card>/revision_r2.json, in the
+            # appended run section, and in the handoff - and their measurements live in the
+            # reviewer's own round-3 report (its section 2.3/2.4), which is the independent
+            # evidence for them.
         ],
         "hand_notes": {
             "positive": "lost = 200 x (1 - 0.9) = 20; closing = 200 - 20 + 30 + 40 = 250 (bridge closes); revenue = 200 - 20 x 0.75 + 30 x 0.5 + 40 x 0.25 + 5 = 200 - 15 + 15 + 10 + 5 = 215",
             "continuity_fy2028": "grr = 1 -> lost = 0; closing = 250 + 0 + 0 = 250; revenue = 250 - 0 + 0 + 0 + 0 = 250",
             "defaults": "usage_revenue omitted -> 0; 200 - 15 + 15 + 10 + 0 = 210",
-            "continuity_negative_note": "the card's CONT patch also moves FY2027 closing_arr to 251, so the FY2027 balance check fires before the FY2028 continuity check; both are ModelRegistryError, the frozen requirement is the exception TYPE",
+            "continuity_negative_note": "OBSERVED (and corrected in round 3): the card's CONT patch does NOT make FY2027 fail its own balance - FY2027 closes at 200 - 20 + 30 + 40 = 250 = closing_arr[0] - so the failure is the FY2028 CROSS-YEAR ANCHORING guard, message 'opening_arr continuity failed: FY2028'. The round-2 note here claimed the FY2027 balance check fired first; that was wrong. The FY2027 balance guard IS reachable on this base via closing_arr = [251, 251] (see OBS-P3-CORR-BALANCE-REACHABLE).",
         },
         "probe_expected": {},
     }

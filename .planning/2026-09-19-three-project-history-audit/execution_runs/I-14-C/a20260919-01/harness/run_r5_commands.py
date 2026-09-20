@@ -270,16 +270,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     print(transcript[-1], flush=True)
 
-    # 9b) the union analysis, from the same captured stdout files -----------------------
-    record(
-        "CMD-I14C-R5-COMPAT-ANALYSIS",
-        "r5: per-run failure sets and per-tree unions for the compat control",
-        [python, "-X", "utf8", "-B", str(harness / "analyze_compat_control.py"),
-         "--attempt", str(attempt), "--out", str(r5 / "compat-control-analysis.json")],
-        cwd=attempt,
-        stdout_path=r5 / "compat-control-analysis.txt",
-        expected=0,
-    )
+    # 9b) the union/T4-only analysis runs AFTER the frequency measurement (step 14), because it
+    # uses that evidence to check any node that happens to fail only on T4 in these few runs.
 
     # 10) guard refusal matrix ----------------------------------------------------------
     record(
@@ -331,6 +323,19 @@ def main(argv: list[str] | None = None) -> int:
         expected=0,
     )
 
+    # 13b) the same two nodes at a SHORT %TEMP% basetemp: the control that separates "path too
+    # long" from "the card broke something" (both nodes pass on both trees).
+    record(
+        "CMD-I14C-R5-FLAKE-SHORT",
+        "r5: flake control at a short %TEMP% basetemp (cwd 74/75 chars)",
+        [python, "-X", "utf8", "-B", str(harness / "run_flake_evidence.py"),
+         "--attempt", str(attempt), "--python", python, "--repo", str(repo),
+         "--basetemp-root", "%TEMP%/i14c-flake-short",
+         "--out-root", str(r5 / "flake-evidence" / "short-basetemp")],
+        cwd=attempt,
+        stdout_path=r5 / "flake-evidence" / "short-basetemp.stdout.txt",
+        expected=0,
+    )
     # 14) flake frequency, interleaved, at a short basetemp -----------------------------
     record(
         "CMD-I14C-R5-FLAKE-FREQ",
@@ -342,6 +347,19 @@ def main(argv: list[str] | None = None) -> int:
          "--out", str(r5 / "flake-evidence" / "frequency-child_without_runtime.json")],
         cwd=attempt,
         stdout_path=r5 / "flake-evidence" / "frequency-child_without_runtime.txt",
+        expected=0,
+    )
+
+    # 15) compat attribution: unions + T0 evidence for any node that only failed on T4 -------
+    record(
+        "CMD-I14C-R5-COMPAT-ANALYSIS",
+        "r5: attribute the compat failures - per-run sets, unions, and T0 evidence for any "
+        "T4-only node taken from the interleaved frequency measurement above",
+        [python, "-X", "utf8", "-B", str(harness / "analyze_compat_control.py"),
+         "--attempt", str(attempt), "--out", str(r5 / "compat-control-analysis.json"),
+         "--frequency", str(r5 / "flake-evidence" / "frequency-child_without_runtime.json")],
+        cwd=attempt,
+        stdout_path=r5 / "compat-control-analysis.txt",
         expected=0,
     )
 

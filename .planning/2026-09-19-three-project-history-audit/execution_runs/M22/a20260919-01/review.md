@@ -116,6 +116,7 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 
 `frozen_hashes_unchanged` = `True`. Full record:
 `recovery/selfcheck/selfcheck_result.json`.
+
 <!-- BEGIN independent-review verdict (round 2, transcribed verbatim) -->
 
 > **独立复核裁决（revision r2 后）：`accepted_scoped`（仅 formula）。由 `changes_required` 转正。**
@@ -126,4 +127,18 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 > 签收边界：**仅 `formula`**。`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`。
 > 遗留（时间性，不阻塞）：消息要求目前可被"删除字段"绕过（我实测删掉后 rc 回到 0）；建议加 `required_message_ids` 使闸门闭合。第 12 节关于本卡的 `not_applicable_with_reason` 判断正确。
 
-<!-- END independent-review verdict -->
+<!-- END independent-review verdict (round 2) -->
+
+<!-- BEGIN independent-review verdict (round 3, transcribed verbatim) -->
+
+> **独立复核裁决（round 3 终裁）：`accepted_scoped`（仅 formula）。由 `changes_required` 转正并终裁。**
+>
+> 上轮唯一阻塞项已关闭并经我独立验证：NEG-CARD 现为 `royalty_rate = [1.01]`（= 卡片 `card_M22.md:38` 原文），实测 `driver milestone_royalty.royalty_rate must be between 0.0 and 1.0: FY2027`（**值域守卫**，非长度守卫）；通过判据已冻结为 `expect_message_contains`，runner 按消息子串判定。我做的三个变异探针（`expected`→`ValueError`、消息要求→不可能子串、消息要求→长度守卫措辞）全部 rc=3，证明该控制有区分度。
+>
+> 追加闸门已闭合：`required_message_ids = ["NEG-CARD"]` 冻结进 `cases.json`；我实测"保留闸门但删掉 `expect_message_contains`"→rc=3、"把成员要求置空"→rc=3、"连闸门字段一起删"→rc=3。11 个用例输入互不相同（我按 `cases.json` 重建并做 canonical sha256，无重复）。
+>
+> `oracle.md` 0–12 节自 round 2 起逐字节未改（`88de6bf9…`/10026 B）；`final_verify.txt` False 计数 0；`verify_prefix_chain.py` ALL-OK。
+>
+> 签收边界：**仅 `formula`**；`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`。
+
+<!-- END independent-review verdict (round 3) -->

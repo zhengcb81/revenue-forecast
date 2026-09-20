@@ -5,13 +5,13 @@
  "card_title": "customer flow and time exposure",
  "status": "review_pending",
  "implementer_is_not_the_reviewer": true,
- "generated_utc": "2026-09-20T03:16:28.178237+00:00",
+ "generated_utc": "2026-09-20T03:40:36.114670+00:00",
  "completed_steps": {
   "A_binding": "done - binding.json binds the attempt-local interpreter, the read-only isolated snapshot, the model contract read back from that snapshot and the write allowlist",
   "B_positive_run": "done - positive [195.0] vs independent oracle [195.0]; continuity [195.0, 240.0] vs [195.0, 240.0]; defaults [220.0] vs [220.0] (defaults are recorded, not gating)",
   "C_negative_run": "done - 11/11 negatives rejected with ModelRegistryError; each case ran on a fresh in-memory deepcopy",
   "D_disclosure_mapping": "NOT done - the card marks D [professional_decision_required]; no disclosure mapping, accounting_decision.md, historical_reconciliation.json or forecast_integration.json was produced. The card states these do not block the A-C formula dispatch and must not be filled in speculatively",
-  "E_historical_mapping_probe": "NOT done - E is [executable_after_D] and belongs to the I-10-A先行 work; inventing a probe here would be a fabricated scenario set",
+  "E_historical_mapping_probe": "NOT done - E is [executable_after_D] and belongs to the I-10-A鍏堣 work; inventing a probe here would be a fabricated scenario set",
   "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist"
  },
  "completed_steps_list": [
@@ -27,10 +27,10 @@
   "evidence/M20/cases.json": "d6eb0119ab9ae19509299ec1d37beafccef22be8a20cc313c21039d5422a8f86",
   "oracle.md": "b43abd8dafe0f5812cfdbd6847fbf332384840982960874f29967657c776672a",
   "scripts/oracle_M20.py": "495573f90fa85907e8c27639684c5e2538573afe9bdfe24ea355bee7197b271a",
-  "scripts/run_card.py": "5307d2cc31bad5731585d2f503341fe2b3d61425f369289eed261568883cbf05"
+  "scripts/run_card.py": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252"
  },
  "current_source_hashes": {
-  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_registry.py": "1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86",
   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
   "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
   "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
@@ -59,8 +59,10 @@
   "F-write-commands",
   "G-pack-evidence",
   "P-write-process-history",
+  "T-transcribe-review-verdict",
   "H-write-handoff",
-  "Z-close-attempt"
+  "Z-close-attempt",
+  "V-verify-hash-tables"
  ],
  "raw_exit_codes": {
   "A0-iso-venv-create": 0,
@@ -78,8 +80,10 @@
   "F-write-commands": 0,
   "G-pack-evidence": 0,
   "P-write-process-history": 0,
+  "T-transcribe-review-verdict": 0,
   "H-write-handoff": 0,
-  "Z-close-attempt": 0
+  "Z-close-attempt": 0,
+  "V-verify-hash-tables": 0
  },
  "expected_exit_codes": {
   "A0-iso-venv-create": 0,
@@ -97,8 +101,10 @@
   "F-write-commands": 0,
   "G-pack-evidence": 0,
   "P-write-process-history": 0,
+  "T-transcribe-review-verdict": 0,
   "H-write-handoff": 0,
-  "Z-close-attempt": 0
+  "Z-close-attempt": 0,
+  "V-verify-hash-tables": 0
  },
  "product_run_returncode": 0,
  "positive_actual": [
@@ -117,13 +123,17 @@
  "negative_case_summary": {
   "total": 11,
   "passed": 11,
+  "not_judged": [],
   "failed": [],
+  "verdicts_are_mutually_exclusive": true,
   "target_exception": "model_registry.ModelRegistryError",
   "declared_expectations_in_cases_json": [
    "ModelRegistryError"
   ],
   "declared_expectation_comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
   "declared_expectations_enforced": true,
+  "declared_expectations_usable": true,
+  "classification_is_mutually_exclusive": true,
   "import_or_file_errors_never_pass": true
  },
  "observation_summary": [
@@ -213,6 +223,12 @@
     "verdict": "fail"
    },
    {
+    "label": "G_missing_declared_expectation",
+    "raw_rc": 2,
+    "expected_rc": 2,
+    "verdict": "no_verdict"
+   },
+   {
     "label": "E_uncorrupted_copy",
     "raw_rc": 0,
     "expected_rc": 0,
@@ -229,7 +245,7 @@
   ],
   "comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
   "declared_expectation_mismatches": 0,
-  "runner_sha256": "5307d2cc31bad5731585d2f503341fe2b3d61425f369289eed261568883cbf05",
+  "runner_sha256": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252",
   "independent_review_basis": "independent review P2-1: the previous runner did not compare cases.json's per-case 'expected'; this runner compares the raised exception's exact type name and refuses the case on mismatch (never by isinstance, because ModelRegistryError is a ValueError subclass)"
  },
  "open_questions": [
@@ -238,7 +254,7 @@
   "OQ-03 (card business negative that the calculator cannot enforce) - NOT runtime-enforceable: the registry default for timing_factor is 1.0 (not a mid-year 0.5), and cohort splitting is a disclosure/adaptation question; status=registered_not_fixed; requires_ruling_from=industry/accounting reviewer (I-10-A / D)",
   "OQ-04 (numerical domain / boundary observations of this model) -  the customer bridge IS enforced: the intra-year balance (opening + new - churned == ending) and the cross-year continuity (opening == prior ending) are both checked with math.isclose(rel_tol=1e-9, abs_tol=1e-9); the frozen CONT-BREAK case (opening 121 vs prior closing 120) is rejected, and the exposure guard is 'exposure < 0', so exposure of exactly 0 is accepted (OBS-ZERO-CUSTOMERS expects 7); status=registered_not_fixed; requires_ruling_from=independent reviewer (accept / amend / reject)",
   "OQ-05 (process history of this attempt (repeated executions of one argv)) - this card's measurement pipeline was executed 1 time(s) and the closing sequence 6 time(s); the capture wrapper overwrites runs/<UNIT>/rc.json on every execution, so the byte-level records can only prove the LAST execution of each unit. The C2 extra-boundary-probe unit is an EXISTING unit of this attempt's unit list, delivered byte-identically from the M17 attempt (it was not added after a first pass).; status=registered_not_fixed; requires_ruling_from=independent reviewer (accept / amend / reject)",
-  "OQ-05 (process, per card, parameterised after independent review P2-2): THIS card's measurement pipeline was executed 1 time(s) and the closing sequence was executed 6 times. The C2 extra-boundary-probe unit is an EXISTING unit of this attempt's unit list, delivered byte-identically from the M17 attempt (it was not added after a first pass). Superseded executions rewrote the same files, so the byte-level records only prove the LAST execution of each unit; the declared pass structure and the honest gaps are in process_history.json, and review.md states the same facts for this card. The frozen oracle expectations were never modified by any later pass"
+  "OQ-05 (process, per card, parameterised after independent review P2-2): THIS card's measurement pipeline was executed 1 time(s) and the closing sequence was executed 7 times. The C2 extra-boundary-probe unit is an EXISTING unit of this attempt's unit list, delivered byte-identically from the M17 attempt (it was not added after a first pass). Superseded executions rewrote the same files, so the byte-level records only prove the LAST execution of each unit; the declared pass structure and the honest gaps are in process_history.json, and review.md states the same facts for this card. The frozen oracle expectations were never modified by any later pass"
  ],
  "blocked_by": [],
  "stop_conditions_hit": [
@@ -260,6 +276,7 @@
   "evidence/M20/evidence_hashes.json",
   "evidence/M20/extra_probes.json",
   "evidence/M20/formula_result.json",
+  "evidence/M20/hash_table_selfcheck.json",
   "evidence/M20/input.json",
   "evidence/M20/integrity.json",
   "evidence/M20/mutation_selfcheck.json",
@@ -320,18 +337,25 @@
   "evidence/M20/runs/P-write-process-history/rc.json",
   "evidence/M20/runs/P-write-process-history/stderr.txt",
   "evidence/M20/runs/P-write-process-history/stdout.txt",
+  "evidence/M20/runs/T-transcribe-review-verdict/rc.json",
+  "evidence/M20/runs/T-transcribe-review-verdict/stderr.txt",
+  "evidence/M20/runs/T-transcribe-review-verdict/stdout.txt",
+  "evidence/M20/runs/V-verify-hash-tables/rc.json",
+  "evidence/M20/runs/V-verify-hash-tables/stderr.txt",
+  "evidence/M20/runs/V-verify-hash-tables/stdout.txt",
   "evidence/M20/runs/Z-close-attempt/rc.json",
   "evidence/M20/runs/Z-close-attempt/stderr.txt",
   "evidence/M20/runs/Z-close-attempt/stdout.txt",
   "evidence/M20/source_manifest.json",
   "evidence/M20/stderr.txt",
-  "evidence/M20/stdout.txt"
+  "evidence/M20/stdout.txt",
+  "evidence/M20/transcription_proof.json"
  ],
  "reviewer_status": "r1 reviewed by an independent session; verdict accepted_scoped (formula qualification only). The implementer has NOT signed anything as accepted. Post-review P2/P3 dispositions are recorded in review.md (r2 section) and the batches' rc/qualification semantics in the batch handoff. formula remains review_pending until the reviewer confirms the r2 fixes.",
  "process_history_pointer": "process_history.json",
  "process_history_summary": {
   "measurement_pipeline_executions_declared": 1,
-  "closing_executions_declared": 6,
+  "closing_executions_declared": 7,
   "c2_unit_origin": "an EXISTING unit of this attempt's unit list, delivered byte-identically from the M17 attempt (it was not added after a first pass)",
   "detail": "the single measurement pass ran 14 units; the post-review fixes re-executed B, C2, E and the pack for this card once more.",
   "observed_records_prove": "only the LAST execution of each unit (see process_history.json)"

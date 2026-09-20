@@ -73,61 +73,75 @@ not truncation (34 ≪ 200) and **not introduced by r3/r4** — `iso/product_r2`
 `harness/run_flake_evidence.py` now writes stdout, the raw return code and a verdict per run.
 The captured result **contradicts** the r4 sentence, which is therefore retracted:
 
-| node | basetemp | T0 pristine | T4 fixed |
+| node | basetemp (cwd length) | T0 pristine | T4 fixed |
 |---|---|---|---|
-| `child_without_runtime_session...` | deep attempt path (`r5/flake-evidence/...`, cwd ≈167 chars) | **failed 3/3** | **failed 3/3** |
-| `logon_wrapper_detaches_a_live_supervisor_with_quoted_paths` | same | **failed 3/3** | **failed 3/3** |
-| both nodes | short basetemp (`%TEMP%\i14c-flake-short\...`) | **6/6 passed** | **4/6 passed** |
+| `child_without_runtime_session...` | deep attempt path, cwd 167 chars | **failed 3/3** | **failed 3/3** |
+| `logon_wrapper_detaches_a_live_supervisor_with_quoted_paths` | deep attempt path, cwd 166 chars | **failed 3/3** | **failed 3/3** |
+| `child_without_runtime_session...` | short `%TEMP%\i14c-flake-short`, cwd 75 chars | **passed 3/3** | **passed 3/3** |
+| `logon_wrapper_detaches_a_live_supervisor_with_quoted_paths` | short `%TEMP%\i14c-flake-short`, cwd 74 chars | **passed 3/3** | **passed 3/3** |
 
-Captured failure text: deep path → `WinError 206 文件名或扩展名太长` (path too long) and a
-downstream `FileNotFoundError` for `worker_launcher_events.jsonl`; short basetemp → T4
-`child_without_runtime` runs 1 and 2 fail on
-`assert len([e for e in events if e["status"] == "child_started"]) == 2` with **`assert 3 == 2`**
-(a third `child_started` event, i.e. the supervisor restarted the child once more) and run 3
-passes.
+Both placements are regenerable by the same script (`--basetemp-root` / `--out-root`), so this
+table is not a one-off observation: the deep path fails 12/12 on both trees with
+`WinError 206 文件名或扩展名太长` (path too long) and a downstream `FileNotFoundError` for
+`worker_launcher_events.jsonl`, and the short path passes 12/12 on both trees.
 
-The 2-of-3 asymmetry is noise, and r5 measured it instead of reporting it as a finding. A first
-frequency pass (`harness/run_flake_frequency.py`, 12 runs per tree, short basetemp
-`%TEMP%\i14c-flake-freq`) gave T0 6/12 failed vs T4 5/12; an immediate re-run of the same command
-gave T0 0/12 vs T4 7/12. Because that first version ran all T0 runs and then all T4 runs, a
-change in machine load mid-pass could masquerade as a tree difference, so the script now
-**interleaves** (one T0 run, one T4 run, repeating) and reports each pass separately:
+The two failure signatures are different and both are environmental. At the deep basetemp the
+failure is the path limit itself (`WinError 206`, then a `FileNotFoundError` for
+`worker_launcher_events.jsonl`). At the short basetemp the failure is timing:
+`assert len([e for e in events if e["status"] == "child_started"]) == 2` with **`assert 3 == 2`** —
+a third `child_started` event, i.e. the supervisor restarted the child one extra time.
+
+That timing failure is what motivated a proper measurement, because during the investigation an
+ad-hoc short-basetemp capture happened to show it on T4 in 2 of 3 runs and never on T0, which
+would have looked like a card-caused regression. It is not: a first frequency pass
+(`harness/run_flake_frequency.py`, 12 runs per tree, short basetemp `%TEMP%\i14c-flake-freq`) gave
+T0 6/12 vs T4 5/12 and an immediate re-run of the same command gave T0 0/12 vs T4 7/12 — the 2-of-3
+observation was noise, and the ordering (all T0 runs, then all T4 runs) let machine-load drift
+masquerade as a tree difference. The script therefore now **interleaves** (one T0 run, one T4 run,
+repeating) and reports each pass separately. Final recorded run
+(`r5/flake-evidence/frequency-child_without_runtime.json`):
 
 | pass | T0 pristine | T4 fixed |
 |---|---|---|
-| pass 1 (12 runs each, interleaved) | 6/12 failed | 2/12 failed |
-| pass 2 (12 runs each, interleaved) | 2/12 failed | 4/12 failed |
-| pooled (24 runs each) | **8/24 failed** | **6/24 failed** |
+| pass 1 (12 runs each, interleaved) | 1/12 failed | 2/12 failed |
+| pass 2 (12 runs each, interleaved) | 5/12 failed | 3/12 failed |
+| pooled (24 runs each) | **6/24 failed** | **5/24 failed** |
 
 Every failure is the same `assert 3 == 2` on `child_started`, and **the tree with more failures
-flips between passes** — which is what a noise-dominated ~30 % flake looks like. So the node is
-timing-flaky in the product's own test at roughly that rate on both trees, and the card cannot
-have caused it: the only `worker.py` hunks in this diff are the `observability` import line and
+flips between passes** (and flipped the other way in the preceding pass: T0 2/12 vs T4 4/12) —
+which is exactly what a noise-dominated ~25 % flake looks like. So the node is timing-flaky in
+the product's own test at roughly that rate on both trees, and the card cannot have caused it:
+the only `worker.py` hunks in this diff are the `observability` import line and
 `_write_unhandled_exception_event` (see `r5-changes.diff`), neither of which is on that node's
 path. Evidence: `r5/flake-evidence/summary.json` and
 `r5/flake-evidence/frequency-child_without_runtime.json`.
 
-### The compat suite does not fail with a stable set either — the criterion is the union
+### The compat suite does not fail with a stable set — so the criterion is the union plus T0 evidence
 
 r4's compat control claimed "both trees: 4 failed / 27 passed with the IDENTICAL failure set".
-r5 re-ran the same suite five times (twice on T0, twice on T4, plus the plain delivered run) and
-the failing **count** was 3, 4, 4, 5, 5, because two restart nodes are timing-flaky. Per-run set
-identity is therefore the wrong criterion, and r4's claim is not reproducible as stated. The
-criterion that survives flakiness is **set equality of the unions**, computed mechanically by
-`harness/analyze_compat_control.py` (`r5/compat-control-analysis.json`):
+r5 ran the same suite five times (twice on T0, twice on T4, plus the plain delivered run). In the
+final recorded pass every one of the five runs failed exactly 4 of 31, and the four stable node
+ids were the same on both trees:
 
 | run | failing node ids |
 |---|---|
-| T0-1 (4) | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…`, `logon_wrapper…quoted_paths` |
-| T0-2 (5) | the same four **plus** `child_without_runtime…` |
-| T4-1 (4) | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…`, `logon_wrapper…quoted_paths` |
-| T4-2 (5) | the same four **plus** `child_without_runtime…` |
-| T4 plain (3) | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…` |
+| T0-1, T0-2, T4-1, T4-2 (4 each) | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…`, `logon_wrapper…quoted_paths` |
+| T4 plain (4) | the same four |
+| an earlier pass (not the recorded one) | counts 3, 4, 4, 5, 5 — the extra/missing node was always `child_without_runtime…` |
 
-**Union T0 == Union T4 (5 node ids), `only_on_T4` empty**: every node that fails on the fixed
-tree also fails on the pristine tree, and three of them fail in *every* run. Two of the five are
-the restart-timing nodes above and one is the path-length node, i.e. the same environment
-classes as the flake family. No compat failure is attributable to this card.
+So in this pass the T0 and T4 unions *are* equal; but an earlier pass produced a T4-only node
+(`test_child_without_runtime_session_is_terminated_and_restarted`) purely because the flaky nodes
+drop in and out. Two runs per tree are far too few samples for a ~25 % flake, so
+`harness/analyze_compat_control.py` (`r5/compat-control-analysis.json`) checks every T4-only node
+against the dedicated interleaved T0 evidence instead of trusting the union: that node fails on
+the **pristine T0 tree in 6 of 24 runs** with the identical `assert 3 == 2` on `child_started`.
+Recorded verdict: *"no card-specific compat failure: every T4 failure also occurs on T0"*,
+`unproven_t4_only_nodes` empty, rc 0.
+
+Three notes for the reviewer: (1) the per-run count `4 failed / 27 passed` should not be quoted
+as a fixed expectation — the flake band observed at r5 is 3–5 failures; (2) two of the varying
+nodes are restart-timing nodes and one of the stable four is the path-length node above, i.e. the
+same environment classes; (3) no compat failure has a fixed-tree-only signature in any pass.
 
 ### F-I14C-R4-04 (P3, patch not consumable) — FIXED and verified by `git apply`
 

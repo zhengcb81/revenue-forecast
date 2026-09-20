@@ -1,21 +1,369 @@
 {
   "card": "I-14-B",
   "attempt_id": "a20260919-01",
+  "revision": "r2 (adds the commands of the changes_required fix; the r1 command set is preserved unchanged below)",
   "python": "<attempt>\\iso\\venv\\Scripts\\python.exe (3.13.9, pytest 9.1.1)",
   "network": "disabled for every command",
   "binding_status": "bound",
   "product_code_changed": false,
   "note": "Every command writes only inside its own evidence directory. raw_returncode is the observed value; expected_returncode is frozen separately. Before/after use the SAME runner, the SAME 20 frozen cases, the SAME hand-written expectations and the SAME SUT path token (--sut <attempt>/iso/natural_window.py); only the file content behind that path changed, plus the output directory.",
-
+  "r2_commands": [
+    {
+      "id": "CMD-I14B-R2-ARCHIVE",
+      "purpose": "archive every r1 file the reviewer verified BEFORE the fix touches anything (17 files, byte-identical copies + MANIFEST)",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/archive_r1.py"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/harness/archive"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "17 archived, all_byte_identical true",
+      "evidence": "harness/archive/MANIFEST.json sha256 deb3a31921d7468491c8332225b8a52303a5f40d637627da7d6984bdf79b4f60"
+    },
+    {
+      "id": "CMD-I14B-R2-FREEZE",
+      "purpose": "freeze the r2 oracle (34 cases + hand-derived expectations with append-only errata) BEFORE any r2 run",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/freeze_r2.py"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/harness"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "cases.r2.json 34 cases c00a3a00...; frozen_expectations.r2.json 6f814d0a...; superseded key recorded for W1.computed.union_seconds",
+      "evidence": "harness/cases.r2.json, harness/frozen_expectations.r2.json"
+    },
+    {
+      "id": "CMD-I14B-R2-CASES-before-r1sut",
+      "purpose": "RED for the fix: the REVIEWED r1 revision (495a4411...) against the r2 oracle",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_cases.py",
+        "--sut",
+        "<attempt>/harness/archive/natural_window.after-r1.py",
+        "--cases",
+        "<attempt>/harness/cases.r2.json",
+        "--expectations",
+        "<attempt>/harness/frozen_expectations.r2.json",
+        "--out-dir",
+        "<attempt>/before/cmd-CASES-r2-r1sut",
+        "--label",
+        "before-r2-r1sut"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 1,
+      "raw_returncode": 1,
+      "observed_business_result": "mismatch 49, accepted_ineligible 8 = X1,X2,X3,X4,X6,X7,X8,X11; expectations_sha256 embedded = 6f814d0a...",
+      "evidence": "before/cmd-CASES-r2-r1sut/cases_report.json sha256 207e502de30ad66e7d93be2dc77df65501e968c04414f70422754ecdf0690af2"
+    },
+    {
+      "id": "CMD-I14B-R2-CASES-before-baseline",
+      "purpose": "RED for the whole r2 set against the original BEFORE revision",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_cases.py",
+        "--sut",
+        "<attempt>/before/natural_window.baseline.py",
+        "--cases",
+        "<attempt>/harness/cases.r2.json",
+        "--expectations",
+        "<attempt>/harness/frozen_expectations.r2.json",
+        "--out-dir",
+        "<attempt>/before/cmd-CASES-r2-baseline",
+        "--label",
+        "before-r2-baseline"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 1,
+      "raw_returncode": 1,
+      "observed_business_result": "mismatch 452, accepted_ineligible 20",
+      "evidence": "before/cmd-CASES-r2-baseline/cases_report.json sha256 bb158005b82633eb79ea4922ead3564c663cee90fb7f068ce95f8e89550f75d4"
+    },
+    {
+      "id": "CMD-I14B-R2-CASES-after",
+      "purpose": "GREEN for the fix: the r2 revision against the r2 oracle (identical runner, only --sut/--out-dir differ)",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_cases.py",
+        "--sut",
+        "<attempt>/iso/natural_window.py",
+        "--cases",
+        "<attempt>/harness/cases.r2.json",
+        "--expectations",
+        "<attempt>/harness/frozen_expectations.r2.json",
+        "--out-dir",
+        "<attempt>/after/cmd-CASES-r2",
+        "--label",
+        "after-r2"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "case_count 34, mismatch 0, accepted_ineligible 0, sut_sha256 7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
+      "evidence": "after/cmd-CASES-r2/cases_report.json sha256 06f93668098556430919bc5a30632bc966798fa2b6df0e4832b261fda551a9a9"
+    },
+    {
+      "id": "CMD-I14B-R2-SUITE-before",
+      "purpose": "RED: the r2 suite (18 tests) against the reviewed r1 revision",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/harness/scratch/pytest-r2-before",
+        "-q",
+        "<attempt>/harness/tests/test_i14b_natural_window_r2.py"
+      ],
+      "env": {
+        "I14B_SUT": "<attempt>/harness/archive/natural_window.after-r1.py"
+      },
+      "timeout_seconds": 420,
+      "expected_returncode": 1,
+      "raw_returncode": 1,
+      "observed_business_result": "14 failed, 4 passed",
+      "evidence": "before/cmd-SUITE-r2-r1sut/stdout.txt sha256 bf6c28a66cf3a20afdce6e036c31dd082143f9a89cf5655f71e56443eb58a289"
+    },
+    {
+      "id": "CMD-I14B-R2-SUITE-after",
+      "purpose": "GREEN: the r2 suite against the r2 revision",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/harness/scratch/pytest-r2",
+        "-q",
+        "<attempt>/harness/tests/test_i14b_natural_window_r2.py"
+      ],
+      "env": {
+        "I14B_SUT": "<attempt>/iso/natural_window.py"
+      },
+      "timeout_seconds": 420,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "18 passed",
+      "evidence": "after/cmd-SUITE-r2/stdout.txt sha256 e60bcf6f655f3e3d431113a4a533af6797c659098c740a8d6ed6331ff9432956"
+    },
+    {
+      "id": "CMD-I14B-R2-SUITE-r1suite-vs-r2sut",
+      "purpose": "regression: the UNTOUCHED r1 suite against the r2 revision",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/harness/scratch/pytest-r2-r1suite",
+        "-q",
+        "<attempt>/harness/tests/test_i14b_natural_window.py"
+      ],
+      "env": {
+        "I14B_SUT": "<attempt>/iso/natural_window.py"
+      },
+      "timeout_seconds": 420,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "32 passed",
+      "evidence": "after/cmd-SUITE-r1suite-vs-r2sut/stdout.txt sha256 b402280b8c6d98e6276a6d920c708c5bad61445f531af2a55b008e835ea5ed8a"
+    },
+    {
+      "id": "CMD-I14B-R2-REPEAT-1..3",
+      "purpose": "flake check on the r2 set",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_cases.py",
+        "--sut",
+        "<attempt>/iso/natural_window.py",
+        "--cases",
+        "<attempt>/harness/cases.r2.json",
+        "--expectations",
+        "<attempt>/harness/frozen_expectations.r2.json",
+        "--out-dir",
+        "<attempt>/evidence/repeat-r2-<n>",
+        "--label",
+        "repeat-r2-<n>"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": [
+        0,
+        0,
+        0
+      ],
+      "observed_business_result": "mismatch 0 / accepted_ineligible 0 on all three",
+      "evidence": "evidence/repeat-r2-1..3/cases_report.json"
+    },
+    {
+      "id": "CMD-I14B-R2-MUTATE",
+      "purpose": "mutation proof r2: 20 single-judgement reverts, including the five new judgements",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/mutate.r2.py",
+        "--out",
+        "<attempt>/evidence/mutations.r2.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/harness/scratch/mutants-r2",
+        "<attempt>/evidence/mutations-r2"
+      ],
+      "timeout_seconds": 600,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "20/20 mutants red again; MUT-15->X1..X4, MUT-16->W1,X5,X6,X7, MUT-17->X8,X9, MUT-18->X10,X11, MUT-19->X14",
+      "evidence": "evidence/mutations.r2.json sha256 ba100928f04d5213c1ad5cced92553847cb928bdcb4b93d95b2111422fcfe985"
+    },
+    {
+      "id": "CMD-I14B-R2-TOLERANCE-SWEEP",
+      "purpose": "re-run the login tolerance sweep after the fix (login path untouched)",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/tolerance_sweep.py",
+        "--out",
+        "<attempt>/evidence/tolerance_sweep.r2.json"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "identical to r1: L1 always accept; L2 first accept at 87 s; L2b/L3/L4/L5 never accepted in the sweep",
+      "evidence": "evidence/tolerance_sweep.r2.json sha256 016804f9d15d4ccb270d81eb6d3518a80569bba102b32f1eb0ed963ff0357eb6"
+    },
+    {
+      "id": "CMD-I14B-R2-CALENDAR-MAP",
+      "purpose": "regenerate the calendar mapping with the reviewer-suggested CAL-13 blocked_reason",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/calendar_map.py",
+        "--out",
+        "<attempt>/evidence/calendar_mapping.json"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "17 rows, 0 anchors missing, all pending, CAL-13 blocked_reason set",
+      "evidence": "evidence/calendar_mapping.json sha256 e3a734b3253716cb68e18483fba5fe3df8eb857ee7ad76e2961ca48ae487bf02 (r1 archived at harness/archive/calendar_mapping.r1.json)"
+    },
+    {
+      "id": "CMD-I14B-R2-MAKE-DIFF",
+      "purpose": "generate changes.r2.diff (r1 -> r2) without touching changes.diff",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/make_diff_r2.py"
+      ],
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "+71 -13 lines, 8836 bytes, sha256 660bc943187db1c083ef8f04b3c642f3917a3040a5eae376c4fcbbb7ef2c2104",
+      "evidence": "changes.r2.diff"
+    },
+    {
+      "id": "CMD-I14B-R2-SNAPSHOT",
+      "purpose": "final read-only witness after the fix",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/capture_baseline.py",
+        "--out",
+        "<attempt>/evidence/baseline_repos.r2-after.json",
+        "--label",
+        "r2-after"
+      ],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "observed_business_result": "all 7 read anchors byte-identical to the r1 snapshots; catalog 49,677,344,768 B / mtime 2026-09-19T06:31:35Z / -wal 0 B; reviews mtime unchanged; company-wiki porcelain unchanged; RF HEAD advanced again by the owner (66bd75f1...)",
+      "evidence": "evidence/baseline_repos.r2-after.json"
+    }
+  ],
+  "r2_intermediate_note": "Two r2 harness-only stumbles are recorded rather than hidden: (1) the first r2 suite file was named test_i14b_natural_window.r2.py, which pytest cannot import as a module (dotted name) -> collection error rc 2; it was renamed to test_i14b_natural_window_r2.py. (2) the first run of the renamed suite had 1 failure caused by a bug in MY TEST (it compared the cases pre-image hash with the expectations pre-image hash, which are different by construction); the test was corrected to verify each recorded pre-image hash against its archived file's actual sha256 -> 18 passed. Both intermediate stdout files were written to the same path and were overwritten by the final green run; the SUT was never changed for either.",
+  "r2_raw_vs_expected_note": "every r2 command matched its expected return code. The r2 oracle expectation_sha256 embedded in all r2 reports is 6f814d0af6a8ffd006dd12751463740a5e6aa151c9d1b5ebe885c96caa9328d3, i.e. the expectations were frozen before the runs.",
   "commands": [
     {
       "id": "CMD-I14B-CASES-before",
       "purpose": "RED: frozen 20-case gate against the BEFORE revision (the accounting the audit found in the history)",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_cases.py",
-               "--sut", "<attempt>/iso/natural_window.py",
-               "--out-dir", "<attempt>/before/cmd-CASES-r1", "--label", "before"],
-      "allowed_write_roots": ["<attempt>/before/cmd-CASES-r1"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_cases.py",
+        "--sut",
+        "<attempt>/iso/natural_window.py",
+        "--out-dir",
+        "<attempt>/before/cmd-CASES-r1",
+        "--label",
+        "before"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/before/cmd-CASES-r1"
+      ],
       "timeout_seconds": 300,
       "expected_returncode": 1,
       "raw_returncode": 1,
@@ -27,9 +375,19 @@
       "id": "CMD-I14B-CASES-before-r0",
       "purpose": "exploratory RED before the frozen output-shape check was added; kept, not overwritten",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_cases.py",
-               "--sut", "<attempt>/iso/natural_window.py",
-               "--out-dir", "<attempt>/before/cmd-CASES-r0", "--label", "before"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_cases.py",
+        "--sut",
+        "<attempt>/iso/natural_window.py",
+        "--out-dir",
+        "<attempt>/before/cmd-CASES-r0",
+        "--label",
+        "before"
+      ],
       "expected_returncode": 1,
       "raw_returncode": 1,
       "observed_business_result": "mismatch_count 57, accepted_ineligible_count 12",
@@ -39,11 +397,27 @@
       "id": "CMD-I14B-SUITE-before",
       "purpose": "RED: the hand-written acceptance suite against the BEFORE revision",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/harness/scratch/pytest-before", "-q",
-               "<attempt>/harness/tests/test_i14b_natural_window.py"],
-      "env": {"I14B_SUT": "<attempt>/before/natural_window.baseline.py"},
-      "allowed_write_roots": ["<attempt>/harness/scratch", "<attempt>/before/cmd-SUITE"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/harness/scratch/pytest-before",
+        "-q",
+        "<attempt>/harness/tests/test_i14b_natural_window.py"
+      ],
+      "env": {
+        "I14B_SUT": "<attempt>/before/natural_window.baseline.py"
+      },
+      "allowed_write_roots": [
+        "<attempt>/harness/scratch",
+        "<attempt>/before/cmd-SUITE"
+      ],
       "timeout_seconds": 420,
       "expected_returncode": 1,
       "raw_returncode": 1,
@@ -55,9 +429,18 @@
       "id": "CMD-I14B-CA206REPRO",
       "purpose": "RED witness on PRODUCTION code: the CA-206 acceptance function scores the C1 attack ledger (7 distinct ids, one future instant, empty evidence hashes) as complete",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/reproduce_ca206_acceptance.py",
-               "--out", "<attempt>/before/cmd-CA206REPRO"],
-      "allowed_write_roots": ["<attempt>/before/cmd-CA206REPRO"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/reproduce_ca206_acceptance.py",
+        "--out",
+        "<attempt>/before/cmd-CA206REPRO"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/before/cmd-CA206REPRO"
+      ],
       "timeout_seconds": 300,
       "expected_returncode": 0,
       "raw_returncode": 0,
@@ -69,10 +452,22 @@
       "id": "CMD-I14B-CASES-after",
       "purpose": "GREEN: the identical frozen gate against the AFTER revision",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_cases.py",
-               "--sut", "<attempt>/iso/natural_window.py",
-               "--out-dir", "<attempt>/after/cmd-CASES", "--label", "after"],
-      "allowed_write_roots": ["<attempt>/after/cmd-CASES"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_cases.py",
+        "--sut",
+        "<attempt>/iso/natural_window.py",
+        "--out-dir",
+        "<attempt>/after/cmd-CASES",
+        "--label",
+        "after"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/after/cmd-CASES"
+      ],
       "timeout_seconds": 300,
       "expected_returncode": 0,
       "raw_returncode": 0,
@@ -84,11 +479,27 @@
       "id": "CMD-I14B-SUITE-after",
       "purpose": "GREEN: the hand-written acceptance suite against the AFTER revision",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/harness/scratch/pytest-after", "-q",
-               "<attempt>/harness/tests/test_i14b_natural_window.py"],
-      "env": {"I14B_SUT": "<attempt>/iso/natural_window.py"},
-      "allowed_write_roots": ["<attempt>/harness/scratch", "<attempt>/after/cmd-SUITE"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/harness/scratch/pytest-after",
+        "-q",
+        "<attempt>/harness/tests/test_i14b_natural_window.py"
+      ],
+      "env": {
+        "I14B_SUT": "<attempt>/iso/natural_window.py"
+      },
+      "allowed_write_roots": [
+        "<attempt>/harness/scratch",
+        "<attempt>/after/cmd-SUITE"
+      ],
       "timeout_seconds": 420,
       "expected_returncode": 0,
       "raw_returncode": 0,
@@ -100,12 +511,26 @@
       "id": "CMD-I14B-REPEAT-1..3",
       "purpose": "flake check: the whole frozen gate repeated three times with the identical argv shape",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_cases.py",
-               "--sut", "<attempt>/iso/natural_window.py",
-               "--out-dir", "<attempt>/evidence/repeat<n>", "--label", "repeat<n>"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_cases.py",
+        "--sut",
+        "<attempt>/iso/natural_window.py",
+        "--out-dir",
+        "<attempt>/evidence/repeat<n>",
+        "--label",
+        "repeat<n>"
+      ],
       "timeout_seconds": 300,
       "expected_returncode": 0,
-      "raw_returncode": [0, 0, 0],
+      "raw_returncode": [
+        0,
+        0,
+        0
+      ],
       "observed_business_result": "mismatch_count 0 and accepted_ineligible_count 0 on every repeat; identical sut_sha256 495a4411…",
       "evidence": "evidence/repeat1/cases_report.json, evidence/repeat2/cases_report.json, evidence/repeat3/cases_report.json"
     },
@@ -113,9 +538,19 @@
       "id": "CMD-I14B-MUTATE",
       "purpose": "mutation proof: revert ONE judgement at a time in a scratch copy and show the matching counterexample turns red again",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/mutate.py",
-               "--out", "<attempt>/evidence/mutations.json"],
-      "allowed_write_roots": ["<attempt>/harness/scratch/mutants", "<attempt>/evidence/mutations"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/mutate.py",
+        "--out",
+        "<attempt>/evidence/mutations.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/harness/scratch/mutants",
+        "<attempt>/evidence/mutations"
+      ],
       "timeout_seconds": 600,
       "expected_returncode": 0,
       "raw_returncode": 0,
@@ -127,9 +562,18 @@
       "id": "CMD-I14B-TOLERANCE-SWEEP",
       "purpose": "algorithm-level login tolerance sweep on synthetic inputs (NOT the real UI trial): shows where each login case flips",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/tolerance_sweep.py",
-               "--out", "<attempt>/evidence/tolerance_sweep.json"],
-      "allowed_write_roots": ["<attempt>/evidence"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/tolerance_sweep.py",
+        "--out",
+        "<attempt>/evidence/tolerance_sweep.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/evidence"
+      ],
       "timeout_seconds": 300,
       "expected_returncode": 0,
       "raw_returncode": 0,
@@ -141,9 +585,18 @@
       "id": "CMD-I14B-UI-CAPABILITY",
       "purpose": "capability probe for the real 30/60/120 s immediate-UI check (read-only)",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/probe_ui_capture.py",
-               "--out", "<attempt>/evidence/ui_capability_probe.json"],
-      "allowed_write_roots": ["<attempt>/evidence"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/probe_ui_capture.py",
+        "--out",
+        "<attempt>/evidence/ui_capability_probe.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/evidence"
+      ],
       "timeout_seconds": 300,
       "expected_returncode": 0,
       "raw_returncode": 0,
@@ -155,9 +608,18 @@
       "id": "CMD-I14B-CALENDAR-MAP",
       "purpose": "map natural day/week/month requirement ids to the I-17 calendar and re-read the existing real assurance manifests (read-only)",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/calendar_map.py",
-               "--out", "<attempt>/evidence/calendar_mapping.json"],
-      "allowed_write_roots": ["<attempt>/evidence"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/calendar_map.py",
+        "--out",
+        "<attempt>/evidence/calendar_mapping.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/evidence"
+      ],
       "timeout_seconds": 300,
       "expected_returncode": 0,
       "raw_returncode": 0,
@@ -169,9 +631,17 @@
       "id": "CMD-I14B-CLI-CONTRACT",
       "purpose": "negative control for the SUT CLI exit contract: malformed input must fail closed with rc 2",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/iso/natural_window.py",
-               "--cases", "<attempt>/harness/scratch/malformed2.json",
-               "--report", "<attempt>/after/cmd-CLI-CONTRACT/malformed2_report.json"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/natural_window.py",
+        "--cases",
+        "<attempt>/harness/scratch/malformed2.json",
+        "--report",
+        "<attempt>/after/cmd-CLI-CONTRACT/malformed2_report.json"
+      ],
       "expected_returncode": 2,
       "raw_returncode": 2,
       "observed_business_result": "{\"ok\": false, \"error\": \"malformed_input\"} for both a BOM-prefixed file and a truncated-JSON file",
@@ -181,11 +651,23 @@
       "id": "CMD-I14B-SNAPSHOT-before / -after",
       "purpose": "binding-time and final read-only witness: repo heads, porcelain, catalog invariants, reviews mtime, anchor hashes",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/capture_baseline.py",
-               "--out", "<attempt>/evidence/baseline_repos.<label>.json", "--label", "<before|after>"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/capture_baseline.py",
+        "--out",
+        "<attempt>/evidence/baseline_repos.<label>.json",
+        "--label",
+        "<before|after>"
+      ],
       "timeout_seconds": 300,
       "expected_returncode": 0,
-      "raw_returncode": [0, 0],
+      "raw_returncode": [
+        0,
+        0
+      ],
       "observed_business_result": "catalog 49,677,344,768 B / mtime 2026-09-19T06:31:35Z / wal 0 B; reviews mtime unchanged; all cited anchors byte-identical; RF product porcelain identical (45 lines); RF HEAD changed by the audit owner's own commit, not this attempt",
       "evidence": "evidence/baseline_repos.before.json (sha256 44f8deefcfdf945d925b7ea0cdfd100ed1c7b8662e617f45068790f4b72f9a18), evidence/baseline_repos.after.json (sha256 1ff0a1cec771ead4c2f057b62e19ab8d819f38bd1390148f2cf53e4ea64cc394)"
     },
@@ -193,7 +675,13 @@
       "id": "CMD-I14B-MAKE-DIFF",
       "purpose": "regenerate changes.diff deterministically from the two SUT revisions",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/make_diff.py"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/make_diff.py"
+      ],
       "timeout_seconds": 120,
       "expected_returncode": 0,
       "raw_returncode": 0,
@@ -201,7 +689,6 @@
       "evidence": "changes.diff"
     }
   ],
-
   "raw_exit_codes": {
     "CMD-I14B-CASES-before-r0": 1,
     "CMD-I14B-CASES-before": 1,
@@ -219,7 +706,23 @@
     "CMD-I14B-CLI-CONTRACT": 2,
     "CMD-I14B-SNAPSHOT-before": 0,
     "CMD-I14B-SNAPSHOT-after": 0,
-    "CMD-I14B-MAKE-DIFF": 0
+    "CMD-I14B-MAKE-DIFF": 0,
+    "CMD-I14B-R2-ARCHIVE": 0,
+    "CMD-I14B-R2-FREEZE": 0,
+    "CMD-I14B-R2-CASES-before-r1sut": 1,
+    "CMD-I14B-R2-CASES-before-baseline": 1,
+    "CMD-I14B-R2-CASES-after": 0,
+    "CMD-I14B-R2-SUITE-before": 1,
+    "CMD-I14B-R2-SUITE-after": 0,
+    "CMD-I14B-R2-SUITE-r1suite-vs-r2sut": 0,
+    "CMD-I14B-R2-REPEAT-1": 0,
+    "CMD-I14B-R2-REPEAT-2": 0,
+    "CMD-I14B-R2-REPEAT-3": 0,
+    "CMD-I14B-R2-MUTATE": 0,
+    "CMD-I14B-R2-TOLERANCE-SWEEP": 0,
+    "CMD-I14B-R2-CALENDAR-MAP": 0,
+    "CMD-I14B-R2-MAKE-DIFF": 0,
+    "CMD-I14B-R2-SNAPSHOT": 0
   },
   "expected_exit_codes": {
     "CMD-I14B-CASES-before-r0": 1,
@@ -235,7 +738,23 @@
     "CMD-I14B-CALENDAR-MAP": 0,
     "CMD-I14B-CLI-CONTRACT": 2,
     "CMD-I14B-SNAPSHOT-before / -after": 0,
-    "CMD-I14B-MAKE-DIFF": 0
+    "CMD-I14B-MAKE-DIFF": 0,
+    "CMD-I14B-R2-ARCHIVE": 0,
+    "CMD-I14B-R2-FREEZE": 0,
+    "CMD-I14B-R2-CASES-before-r1sut": 1,
+    "CMD-I14B-R2-CASES-before-baseline": 1,
+    "CMD-I14B-R2-CASES-after": 0,
+    "CMD-I14B-R2-SUITE-before": 1,
+    "CMD-I14B-R2-SUITE-after": 0,
+    "CMD-I14B-R2-SUITE-r1suite-vs-r2sut": 0,
+    "CMD-I14B-R2-REPEAT-1": 0,
+    "CMD-I14B-R2-REPEAT-2": 0,
+    "CMD-I14B-R2-REPEAT-3": 0,
+    "CMD-I14B-R2-MUTATE": 0,
+    "CMD-I14B-R2-TOLERANCE-SWEEP": 0,
+    "CMD-I14B-R2-CALENDAR-MAP": 0,
+    "CMD-I14B-R2-MAKE-DIFF": 0,
+    "CMD-I14B-R2-SNAPSHOT": 0
   },
   "sut_cli_exit_contract_as_built": {
     "0": "report written and every case decided",
@@ -248,5 +767,6 @@
     "no real natural day/week/month window (all rows pending; I-17-A owns the clock)",
     "no worker/scheduler/background process of any kind",
     "no network command"
-  ]
+  ],
+  "r2_raw_exit_codes_all_match_expected": true
 }

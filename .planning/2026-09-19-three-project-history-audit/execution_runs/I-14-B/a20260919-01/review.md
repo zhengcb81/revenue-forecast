@@ -309,3 +309,67 @@ runner 两版之间除 `REQUIRED_KEYS` 外是否还有差异（无旧版源码�
 ## 12.5 状态
 
 仍为 **`review_pending`**；请独立 reviewer 做**第三轮复核**（重点：X1–X14 的期望是否独立于实现、J15/J4b/J10c 是否越权、W1 期望更正的前像链是否完整、`changes.r2.diff` 是否只含 P1/P2 相关改动）。实现者未自签。
+
+---
+
+# §5-b 第三轮独立 reviewer 裁决（r2 修复验证，独立 reviewer session）
+
+> 本节由**独立 reviewer session**（DSH agent session `session-b0e4a430ca7d`，父 `session-bfecd191-fbc3-4a66-8ed1-6562479bf102`；
+> 审阅时刻 `2026-09-20T03:4xZ`）追加于本轮实现者自述（§12）之后。
+> **只追加，不改既有字节**：以本轮实现者版 `review.md`（sha256 `febc52e741bca4a4239eb171fc6791a9bab65fc3891e2a4d6f29066d224653ef`，311 行）为基准，
+> 追加后 `identical prefix lines = 311 / 311`、`differing = []`。完整证据见 reviewer 报告 `REPORT-r3.md`。
+
+## 结论：`accepted_scoped`
+
+**P1、P2 两个阻断项经独立攻击电池确认已闭合**，无新增阻断项；按第 1 轮口径解除 `changes_required`。
+
+**授予（范围）：** ①计时/时间字段分列口径与"重叠取并集、不相加"；②**J16** `claim.basis` 封闭枚举（未登记/空串/`null`/缺键 ⇒ `R-BASIS-UNKNOWN`）；
+③**P2 甲案**（自然观察区间只由观察阶段构成，quick_check 永不入并集）＋**J15**（已声明观察窗覆盖 quick_check ⇒ `R-QC-IN-OBS`）；
+④**J4b**（无观察区间却主张 0 s ⇒ `R-NO-INTERVAL`）；⑤**J10c**（同 UTC 日第二条 daily 忽略并计数）——**接受该行为变更**；
+⑥合成用例 1740/480/2220（29≠37）；⑦`R-SUM-OVERLAP`/`R-NO-SAMPLES`/`R-SAMPLE-OUTSIDE`（含 ±1 s 边界）；
+⑧容差在 tol∈[1 s, 86 s] 稳定区间内的行为（D-1 已在 `oracle.md` §6.1 冻结为 **5 s**，本轮复核未被改动）；
+⑨日历 17 行映射与全部 `pending`；⑩D-4/D-5/D-6 复核维持；⑪生产零改动、冻结时序、变异 20/20 单行回退、归档 17/17 byte-identical、oracle/review 只追加。
+
+**不授予：** ①**真实自然观察资格**（无任何自然周期被观察；17 行全 pending）；②**真实 UI 即时性资格**——维持 `blocked`
+（**容差已冻结 ≠ 可以开跑**：仍缺预布置记录器 0/4002 与 owner 显式授权，且真实窗口须另开 attempt + 另开 binding）；
+③SLO/性能资格（I-14-A/I-16 范围）；④`disclosure_adaptation` / `accuracy`（按原登记 NOT ADDRESSED）；
+⑤任何生产树写入权（D-6）；⑥I-17-A 范围。
+
+## 独立复算要点（不采信自述）
+
+- 声称的 10 个哈希**全部对得上**（`7fff6f0c…` / `660bc943…` / `c00a3a00…` / `6f814d0a…` / `ba100928…` / `207e502d…` / `06f93668…` / `deb3a319…` / `bdd0407a…` / `febc52e7…`）。
+- **P1**：用我第 2 轮的原始 probe（脚本未改一字）⇒ `B1 basis='wall_clock'`、`B2 basis=''`、`B3` 缺键、`B4 basis=None` **全部由 accept 转为 `R-BASIS-UNKNOWN`**；负对照 `B5 command_total` 仍报 `R-TOTAL-AS-OBS`。
+- **P2**：同一 probe ⇒ 无 `windows[]` 时 **union=1740**（不再等于 2220）；`P1`（主张 2220）→`R-CLAIM-EXCEEDS`；`P2`（诚实 1740）→**accept（方向倒置消除）**；`P4/P5`（quick_check 改名为第二窗）→`R-QC-IN-OBS`；`P6` 负对照仍拒。
+- **自造新攻击电池 10 条（R1–R10，非冻结 case）全部按 oracle 判定**：R1 多报 1 s 拒、R2 越界 1 s（quick_check 内 60 s）拒、R3 观察窗落在 quick_check 内拒、R4 影子窗拒、R5 低报 600 拒、R6 未登记 basis 拒、R8/R9 正对照接受、R10 无观察窗却主张 480 拒。
+- **红→绿**：r1 SUT 在 r2 门下 `rc 1 / mismatch 49 / ineligible 8`；r2 SUT 在 r2 门下 `rc 0 / 0 / 0 / 34`；r1 套件对 r2 SUT **32 passed**；r2 套件对 r2 SUT **18 passed**、对 r1 SUT **14 failed/4 passed**。
+- **变异**：20 条**全部**重算为"scratch 副本上的字面单行回退"（src_hits=1、与源文件恰差 1 行、sha256 与 manifest 一致），并把 20 条**全部重跑 r2 门**，结果逐例与 `mutations.r2.json` 一致（**20/20 AGREE**）⇒ r2 套件的 18 passed 确实绑住 J15/J16/J4b/J10c。
+- **前像链完整**：20 条预冻结 case 的期望**只动了 1 个数值**（`W1.computed.union_seconds` 2220→1740），旧值存于 `expected_superseded`（`pre_image_sha256=3ba2bb17…`），并有 `errata[0].diff_from_r1_expected_map`（182 行机械 diff）；r1 原位文件 6/6 未改；归档 17/17 与 manifest 的 `copy_sha256` 逐字节相同。J10c 的 X14 我独立手算（丢弃 1 条、`best_chain=6`），X12/X13 陈旧度我独立手算（13.935 d>7 d；80.914 d>35 d）均与期望一致。
+- **只追加**：以我第 2 轮 post-fill 版 `oracle.md`（`f8082205…`，209 行）为基准 `identical 209/209, differing=[]`，**L128–131 的 D-1 四行逐行完好**；以本轮实现者版 `review.md`（`febc52e7…`，311 行）为基准 `identical 311/311, differing=[]`。
+- **诚实性**：`handoff.json.status` 仍 `review_pending`，`reviewer_status` 明写未自签且需第三轮；`open_questions` 主动登记了 r2 时序偏差（先改实现后冻结期望）、J10c 越权变更、J4b 为自己发现、中间波折被覆盖——**披露属实**。
+
+## 新增发现（均非阻断）
+
+- **P4（新增，非阻断）**：`basis` 为 **list/dict** 时 `basis not in BASIS_REGISTRY`（set 成员测试）抛 `TypeError: unhashable type` ⇒ SUT **rc 4、不产出报告**；标量（如 `5`）则正常 `R-BASIS-UNKNOWN`。同类容器型字段（`windows`/`sampled_at` 为 dict、`claim` 为 list、`ledger.daily` 为 dict）亦 rc 4。**判定非阻断**：任何不合规主张都**未被 accept**（rc 4 路径上本卡核心失败语义不可能发生，是 fail-closed），且 rc 4 是 §8 已登记契约；相对 r1（**曾接受**）是净改善。
+  **最小修法（一行）**：`BASIS_REGISTRY` 由 `set` 改 `tuple`（或在 J16 前加 `isinstance(basis, str)` 守卫）；并在 oracle §11 明确"字段类型错误"属 schema 级 rc 2 还是 per-case 拒绝。
+- **P5（事实澄清，非缺陷）**：r1 套件对 r2 SUT 仍 32 passed 为真，但**r1 的冻结 case 门**现在是 **rc 1 / mismatch 1 / ineligible 0**，唯一差异 `W1.computed.union_seconds: expected=2220 got=1740.0`。这是 **P2 甲案的必然且已声明的后果**（该期望正是我要求更正的数），r1 的 verdict/refusals/其余 computed 键 20/20 不变。**要求**：r2 自述须显式写出"r1 冻结门现为 rc 1，唯一差异 W1.union_seconds"，以免后人误判 r1 门仍全绿。
+- **P3-g（复核通过）**：我第 2 轮的 P3-a（同日不同 run_id 静默重置链）已由 J10c 改为"忽略并报告"（`daily_same_day_runs_dropped`），**接受**；建议把该字段纳入 gate 形状检查。
+- **P3-h（轻微）**：`evidence/calendar_mapping.json` 被重生成（`6f3ebd99…`→`e3a734b3…`），**17 行 status/started_at/due_at/measured_here/锚点 0 差异**，唯一新增是 `CAL-13.blocked_reason`（正确反映 D-1 已签 + D-2 未授权）；但 CAL-13 的 `why` 仍写 "no frozen tolerance"，**容差现已冻结**，该短语过时，建议改为指向 `blocked_reason`。
+
+## 12.5-bis r2 自述五个优先项的逐项答复
+
+1. **X1–X14 的期望是否独立于实现**：部分独立。`B1–B5`/`P1–P6`/`Q1–Q4` 的事实与拒绝理由由我第 2 轮原始输出独立给出，其期望可由此推出；我另用**自造 R1–R10** 交叉复验同一批判据。但 X 期望确在**我的报告之后**写成，残余风险不能排除——这正是前像链＋机械 diff＋归档必须留档的理由。
+2. **J15/J4b/J10c 是否越权**：**J15 不越权**（它正是我 P2 要求的"改名变体"补丁；我实测 R4 影子窗、R3 观察窗落在 quick_check 内均被它挡住）。**J4b 不越权**（同族漏洞，方向更保守，且实现者主动登记为自己发现）。**J10c 确属超出我 P1/P2 指派的行为变更**，但它 (a) 在 `handoff.json.open_questions` 主动请打、(b) 更贴合"7 consecutive Daily"原文、(c) 修掉了我第 2 轮 P3-a 的"静默"缺陷（改为忽略**并计数**）、(d) 有独立反例 X14 与变异 MUT-19 钉住 ⇒ **我接受**，不要求改回。
+3. **`changes.r2.diff` 是否只含 P1/P2 相关改动**：是。我实测 `+71 −13`（与声称一致），`+++` 头只有 `iso/natural_window.py` 一个文件；改动内容包括 J16、P2 区间构造、J15、J4b、J10c 与相应输出字段——**J4b/J10c 属"同族/相邻"扩展而非无关改动**，且均已单独声明。
+4. **r2 套件的约束力**：**成立**。18 passed 由 18 条具名测试构成，其中 `test_unregistered_basis_is_refused[X1..X4]` 绑 J16、`test_w1_union_excludes_quick_check` 与 `test_thirty_seven_minutes_cannot_be_claimed_as_the_observation` 绑 P2、`test_a_window_that_copies_the_quick_check_span_is_refused` 绑 J15、`test_absent_observation_interval_is_unmeasured[X10,X11]` 绑 J4b、`test_second_run_on_the_same_utc_day_is_ignored_and_reported` 绑 J10c；配合 20/20 变异（4 条新判据各有对应变异重新变红）形成双向约束。
+5. **真实 30/60/120 是否仍须 blocked**：**是，必须**。容差已冻结只清掉 (a)；仍缺预布置记录器（我复跑探测 0/4002）与 owner 授权，且真实窗口须另开 attempt + 另开 binding。本 attempt 的 blocked 记录不得改写。
+
+## reviewer 未能验证
+
+①"生产三仓零写入/无 commit"无法由瞬时快照证明——我能证明的是引用的 6/6 锚点、catalog、`worker_control.json`、`PLAN\reviews` mtime **全部未变**，且产物都在 attempt 内；另 **RF HEAD 已由 `cc78c529…` 再变**（owner `2026-09-20T04:27:52+01:00` 提交），RF 非 `.planning` porcelain 行数由我第 2 轮测的 **45 降到 18**，属并发 session/owner 活动的口径漂移。②实现者两次中间失败的原始 stdout 已被同路径终态运行覆盖、文件不存在，**无法逐字节复核**。③`oracle.md` 追加前那一次写入是否"只追加"（无写入前副本；仅能证以我 post-fill 版为基准 209/209 只追加）。④物理机真实截图能力（本轮同样未运行 ffmpeg/playwright、非交互会话）。⑤`catalog.sqlite3` 完整 sha256（46.3 GB 超 `Get-FileHash` 时限）。⑥X1–X14 期望"独立于实现"的强度（见上文第 1 项）。
+
+## 待 owner / 其他 reviewer
+
+1. **owner**：D-2 是否投入建设 UI 捕获路径（含显式授权启动 worker/UI 窗口）；**在此之前真实 30/60/120 保持 blocked**。
+2. **I-17-A reviewer**：D-3——哪些原自然窗口保留；现存 `assurance/runs/*`（最新 daily `ok=false`）不得当周期完成。
+3. **实现者（非阻断建议）**：P4 的 `BASIS_REGISTRY` 一行修法 + oracle 明确字段类型错误归属；P5 补写 r1 门现为 rc 1；P3-h 清理 CAL-13 `why` 措辞。
+4. **owner/后续卡**：`iso/natural_window.py` 提升进生产树（D-6 明确不属本卡）；`R-CLAIM-EXCEEDS` 拆分（P3-c）。

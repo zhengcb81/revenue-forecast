@@ -60,3 +60,14 @@ payability 归属、不可识别模型参数、样本与统计阈值、部署迁
 `open_questions` 列出的 OQ-01…OQ-05（共 5 条）即本节升级给 owner 的事项；`blocked_by` 为空（本卡无被阻断
 项），`stop_conditions_hit` 记录 `STOP_DISCLOSURE_ADAPTATION` 与 `STOP_ACCURACY`（均按卡片要求停在该资格，
 不改成整体 PASS）。
+
+## 独立复核者对上述开放项的意见（**不是本实现者的决定**）
+
+以下为 2026-09-20 独立复核转达的**复核者立场**，原样承接，**未由实现者采纳为决定**；owner 需据此自行
+裁定（复核者对 OQ-02 / OQ-03 明确表示「同意登记、反对在本批修」）：
+
+- OQ-01 (binding): the independent reviewer accepted this attempt's handling - the code under test is byte-identical to production and the isolation semantics were measured to hold - and characterises the residual question as provenance DOCUMENTATION: the owner should state in writing either (a) that a self-built read-only snapshot byte-identical to production is accepted as equivalent to the I-00-B binding, or (b) that I-00-B must add a materialisation step and later cards must reference its output. The implementer does NOT adopt this as a decision; it is the reviewer's opinion, carried for the owner.
+- OQ-02 (silent zero-fill): the reviewer AGREES to register it and OPPOSES fixing it in this batch; the reviewer's own independent enumeration found the same surface (31 optional driver slots without an explicit default across 24 models) and suggests the owner require an explicit value or an explicit null at the D (disclosure-adaptation) stage instead of changing the formula-layer semantics.
+- OQ-03 (signed driver vs the non-negative revenue check): the reviewer AGREES to register and OPPOSES fixing it in this batch. The reviewer adds that the check is PER ROW, so a single negative year during a clawback refuses the whole row, while the correct accounting treatment depends on the presentation convention (net presentation vs separate lines) - an accounting reviewer's remit. Both sides were measured (recovery/probes/signed_driver_probe.json: performance_fee_revenue = -100 -> refused by the non-negative-revenue check).
+- OQ-04 (invalid frozen observation OBS-SIGNED-PERF-FEE): the reviewer judged the handling ACCEPTABLE - do not repack the frozen fixture, keep the invalid observation and answer the factual question with a labelled post-hoc probe - and asked for the invalid observation to be marked inside cases.json, which revision r3 did with an append-only annotation whose only difference is proven by evidence/M13/cases_annotation_repack.json.
+- OQ-05 (pytest / historical suite): the reviewer AGREES that this card does not need it: the batch's evidence chain is a single standard-library-only runner plus frozen JSON, and the historical 97 tests / 216 subtests are not part of it. If the owner requires a re-run it should be registered as a SEPARATE regression gate, not folded into the formula sign-off conditions.

@@ -112,3 +112,95 @@ mtime"；r2 追加节另提供截断复现证据）；④ M05–M08 结论未评
 ---
 
 本文件由 M17–M20 attempt 的实施 session 编写；**不构成任何 acceptance**，也未替 owner 作任何决定。
+
+---
+
+## 8. r2 复核结论（独立 reviewer，原文转录）
+
+四卡 r2 判定：**changes_required**，范围**严格限定**于 r2 交付物中的审计元数据，
+**不涉及公式**。公式证据经 r2 复核未变且成立（12 个冻结文件 hash 与 r1 逐一相同；rc=0、11/11、
+declared_expectation_mismatch=0；runner 5307d2cc… 经注入证明按精确类型名比较声明）。
+完成 P2-A（两张 hash 清单表重生成并让"drift=0"成为被测量的输出）、
+P2-B（rc_namespace.json 修为合法 JSON + 自检）、P2-C（修正 pack_card.py:160 与
+append_oracle_addendum.py:155 后重生成两个 M17 追加记录；oracle.md 保持 c9971428… 不变）
+以及 §3 的 P3-1…P3-6 后，四卡 formula 可签 `accepted_scoped`（仅 formula），**无需重跑任何产品测量**。
+本表第 1 节的 rc 命名空间规则**有效且必须继续遵守**；但请注意：rc_namespace.json 当前无法被
+JSON 解析器读取（P2-B），在修好之前请只使用本文件第 1 节的人读表格。
+本表第 3 节把 after/final_deliverable_hashes.json 描述为"全部产物 hash"——该表当前有 24–25 条
+与磁盘不符（P2-A），修好前不得据此宣称"产物复算 0 drift"。
+未授予：disclosure_adaptation = unmapped（零产出）；accuracy = unproven。
+
+
+### 实现者附注（非 reviewer 文字，另起一段以便区分）
+
+本段由 M17-M20 attempt 的实现 session 追加，**不是** reviewer 的原文。第 8 节的 rc 命名空间规则继续
+有效；`rc_namespace.json` 已修为**合法 JSON**（由 `scripts/batch_tools.py write-rc-namespace` 生成，
+并对批次目录 + 四卡 attempt 的全部 `.json` 做解析回读自检，实测失败数见
+`batch_json_validation.json`）。`after/final_deliverable_hashes.json` 与
+`evidence/<CARD>/evidence_hashes.json` 现均带 `drift_count`/`verified_utc`，并由收尾后的
+`V-verify-hash-tables` 单元再测一次；修好之前的"产物复算 0 drift"主张**已撤回**（见各卡 review.md 的
+r2 处置节）。
+
+另：第 6 节末行"收尾序列共执行 6 趟"是**当时**的数字；r2 定点再复核之后又执行了第 7 趟
+（单元 `R2b,R2c,G,P,T,H,Z,V`），`process_history.json.declared_execution_history.closing_passes`
+已含第 7 趟，并对 03:17:53 那一代写入登记了 `additional_unnamed_generations = 1` 的 honest_gap。
+
+---
+
+## 9. 实现者附注之二：冻结基线的源码漂移（**不是**本批写入，需 owner 处置）
+
+本节由 M17-M20 attempt 的实现 session 追加（append-only）。它**不是** reviewer 的原文，也不构成任何
+acceptance。
+
+**事实**：生产仓库 `C:\Users\郑曾波\Projects\revenue-forecast\scripts\model_registry.py` 在
+**2026-09-20 04:35:32（本地时间）** 被改写为
+
+```
+sha256 1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86   (19703 bytes)
+```
+
+而本批绑定的锚点是 `9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f`。
+`scripts/model_extensions.py` 仍等于锚点 `9939480b…`。
+
+**不是本批所为的证据**：①四卡 attempt 的 `before/state.json` 与 `after/state.json` 中
+`watched_hashes["scripts/model_registry.py"]` **都**等于锚点；②四卡的
+`iso/checkout_scripts/model_registry.py` 仍是逐字节等于锚点的只读副本，而本批**全部**产品测量都跑在
+这份副本上；③本批的写入范围限于自己的 attempt 目录（见各卡 `binding.json` 的 allowlist 与
+`changes.diff`）。
+
+**后果与边界**：
+1. 本批四卡的全部测量证据对**锚点版本**成立（隔离副本 hash 可核）；本批**不主张**对
+   `1f2639e1…` 成立。
+2. 按 `START_HERE.md` 的源码漂移分支，任何**新的**卡运行必须重新绑定新 hash，并重核 oracle、负例与
+   `registry_enumeration.json`（枚举结果可能因这次产品改动而变化）。
+3. 下游卡（I-10-A / I-11 / I-12 及各消费 M17-M20 的卡）接手前应确认自己引用的是哪个修订。
+4. 各卡 `evidence/<CARD>/integrity.json` 中"生产 hash 等于锚点"是 **pack 时刻**的事实陈述，现已过期；
+   该文件**未被改写**（不改历史记录），其时间范围由该文件的 `packed_utc` 与本节共同界定。
+5. 本批**无法确定**这次生产改动由谁、依据哪张卡执行（本 session 未参与，也不做推测性归因）。
+
+### 9.1 追加更正（同一日的复查，append-only）
+
+上一段的漂移是**暂时性**的：本 session 在 **2026-09-20 04:40:53（本地）** 复查时，
+`scripts/model_registry.py` 已回到锚点
+
+```
+sha256 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f   (26446 bytes, mtime 2026-09-20 04:40:53)
+```
+
+**观察记录（两个状态都留档，不删改上文）**：
+
+| 观察时刻（本地） | sha256 | 字节数 |
+|---|---|---|
+| 本批 before/after 捕获（卡运行期间） | `9ec65295…`（锚点） | 26446 |
+| 2026-09-20 04:35:32 | `1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86` | 19703 |
+| 2026-09-20 04:40:53 | `9ec65295…`（锚点，等于本批绑定值） | 26446 |
+
+**结论**：本批绑定的**锚点**在最终验证时刻重新成立，因此 §9 第 1 条的"证据对锚点版本成立"
+不留悬置；但生产仓的 `model_registry.py` 在这段时间内**被改写过至少两次**（写、回退），
+说明该文件**正在被别的 session 改动**。这不是本批写入（证据见 §9），但它是**批次级风险**：
+
+- 任何**新的**运行仍必须按 `START_HERE.md` 重新绑定 hash 并重核 oracle/负例/枚举；
+- 引用"M17-M20 的测量"时，必须同时写明被测副本的 hash（本批 = 上面那一行的锚点值）；
+- 本批的 hash 清单表（`after/final_deliverable_hashes.json`、`evidence/<CARD>/evidence_hashes.json`）
+  只覆盖**本 attempt 目录内**的文件，**不**覆盖生产仓；生产仓的状态由本节与各卡
+  `before/`+`after/state.json` 记录。

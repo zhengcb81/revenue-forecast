@@ -188,6 +188,27 @@
   "OQ-REVIEWER-OPINIONS (recorded, NOT adopted as decisions): on OQ-01 the reviewer accepts the existing isolation approach and recommends the owner ratify the equivalence explicitly; on OQ-M25M28-01 the reviewer does not block these cards and recommends fixing it with explicit defaults metadata rather than a behaviour change; on OQ-M25M28-02 the reviewer does not block and asks for the exception label; on provenance the reviewer does not block formula acceptance but requires the P2-2 narrative correction and the 'v1 source/traceback not preserved' statement - both applied. The reviewer explicitly declines to adopt the stronger mtime rule and leaves that to the owner."
  ],
  "blocked_by": [],
+ "production_drift_window_and_restoration": {
+  "both_facts_kept_side_by_side": true,
+  "fact_1_drift": {
+   "window_utc_approx": "2026-09-20 04:35:31 - 04:40:53",
+   "production_was_not_in_the_anchored_state": true,
+   "observed_here": "scripts/model_registry.py = 1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86 (19703 B, HEAD blob c80075c4...), i.e. the model_extensions wiring, the driver_bounds mechanism and this batch's four models were absent",
+   "alarm_correctness": "any production_hashes_unchanged=false recorded inside this window is a CORRECT alarm and must not be used to change an expectation, threshold or frozen artefact"
+  },
+  "fact_2_restored": {
+   "restored_after_utc": "2026-09-20 04:40:53",
+   "method": "owner replayed the pre-commit patch patch1789875331-33652 with `git apply --exclude=.planning/*` (check and apply both exit 0)",
+   "reverified_here": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f (26446 B) and iso/checkout_scripts/* equals production again; the reviewer's invalidation condition is cleared and no blocked reclassification is needed",
+   "evidence": "recovery/production_drift_and_restoration_r3.json"
+  },
+  "residual_risk": "scripts/model_extensions.py is still UNTRACKED while model_registry.py imports it from the worktree; another `git checkout -- .` / `reset --hard` could repeat this. Owner should bring it under version control; this implementer did not run git add."
+ },
+ "lesson_recorded": {
+  "id": "LESSON-production-hash-as-a-live-quantity",
+  "statement": "any card whose acceptance rests on a PRODUCTION FILE HASH is resting on a quantity that an external git operation can change without warning. On mismatch: record the drift and its time window, escalate to the orchestration layer for a ruling, and NEVER adapt by editing expectations or frozen artefacts.",
+  "applied_here": "the drift was recorded (INCIDENT.md + recovery/production_drift_and_restoration_r3.json), escalated, and removed externally; not one expectation, threshold or frozen artefact was touched while the production state was wrong"
+ },
  "stop_conditions_hit": [
   "STOP_ACCURACY (no I-12 frozen design)",
   "STOP_DISCLOSURE_ADAPTATION (no signed per-driver mapping / no adapted disclosure)",
@@ -206,6 +227,7 @@
   "commands.json",
   "decision.md",
   "evidence/M25/accounting_decision.md",
+  "evidence/M25/append_record_r3.json",
   "evidence/M25/cases.json",
   "evidence/M25/command_manifest.json",
   "evidence/M25/disclosure_mapping.json",
@@ -224,6 +246,7 @@
   "evidence/M25/oracle_selfcheck.json",
   "evidence/M25/qualification.json",
   "evidence/M25/revision_r2.json",
+  "evidence/M25/revision_r3.json",
   "evidence/M25/run_result.json",
   "evidence/M25/source_manifest.json",
   "evidence/M25/stderr.txt",
@@ -237,7 +260,7 @@
   "review.md",
   "scripts/"
  ],
- "reviewer_status": "r1 reviewed: four cards accepted_scoped (formula only), P1 = 0, with mandatory findings P2-1 and P2-2 and observations P3-1..P3-8. Both mandatory findings were handled in this revision and returned for point review; the implementer still does not sign accepted.",
- "revision": "r2 (single revision section; see evidence/M25/revision_r2.json)",
+ "reviewer_status": "r1 reviewed: four cards accepted_scoped (formula only), P1 = 0, with mandatory findings P2-1 and P2-2 and observations P3-1..P3-8. Both mandatory findings were handled in r2 and returned for point review; r2 point review returned accepted_scoped for all four cards (P1 = 0, no new P2) and its verdict text was transcribed APPEND-ONLY into review.md (block at lines 83-131). The r2 acceptance was briefly invalidated by an external production rollback and restored by the owner (see production_drift_window_and_restoration). The implementer still does not sign accepted.",
+ "revision": "r3 (r2 verdict transcribed append-only into review.md; P3-A..P3-D corrections recorded in evidence/M25/revision_r3.json; production drift + restoration in recovery/production_drift_and_restoration_r3.json)",
  "disclosure_impact_note": "not applicable: no real-company disclosure was adapted by this attempt"
 }

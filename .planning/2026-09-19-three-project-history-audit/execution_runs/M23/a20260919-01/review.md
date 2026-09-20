@@ -118,6 +118,7 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 
 `frozen_hashes_unchanged` = `True`. Full record:
 `recovery/selfcheck/selfcheck_result.json`.
+
 <!-- BEGIN independent-review verdict (round 2, transcribed verbatim) -->
 
 > **独立复核裁决（revision r2 后）：`accepted_scoped`（仅 formula）。由 `changes_required` 转正。**
@@ -128,4 +129,16 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 > 签收边界：**仅 `formula`**。`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`。第 12 节写"本卡不是存量桥，桥平衡比较不适用"——与第 1 节 `not_applicable_with_reason` 自洽 ✓。
 > 遗留（时间性）：同 M22 的消息闸门完整性。
 
-<!-- END independent-review verdict -->
+<!-- END independent-review verdict (round 2) -->
+
+<!-- BEGIN independent-review verdict (round 3, transcribed verbatim) -->
+
+> **独立复核裁决（round 3 终裁）：`accepted_scoped`（仅 formula）。由 `changes_required` 转正并终裁。**
+>
+> 同 M22：NEG-CARD 现为 `timing_factor = [1.1]`，我独立构造并调用隔离快照得到 `driver insurance_service.timing_factor must be between 0.0 and 1.0: FY2027`（值域守卫）；我另在 2 年路径上双向证实守卫可达（`[1.1,0.5]`→FY2027、`[0.5,1.1]`→FY2028、`[1,1]`→通过 `[210.0, 300.0]`）。三个变异探针全部 rc=3。
+>
+> 闸门 `required_message_ids = ["NEG-CARD"]` 已闭合（三种破坏方式我均实测 rc=3）；11 个用例输入互不相同；`oracle.md` 0–12 节自 round 2 起逐字节未改（`ccd6fb67…`/10481 B）；`final_verify.txt` False 计数 0；`verify_prefix_chain.py` ALL-OK。
+>
+> 签收边界：**仅 `formula`**；`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`。
+
+<!-- END independent-review verdict (round 3) -->

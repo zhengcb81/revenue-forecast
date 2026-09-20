@@ -55,9 +55,11 @@ def main() -> int:
         # itself or its parent (both invocations exist in this attempt's history).
         own = rel.split("/", 1)[1] if "/" in rel else rel
         if rel in SELF_REFERENTIAL or own in SELF_REFERENTIAL:
+            # size omitted on purpose (round-3 optional observation): both files
+            # are regenerated after every edit, so a printed size would be stale.
             lines.append(
-                "SELF-REFERENCE (not declarable here)  %s  %d"
-                % (rel, path.stat().st_size)
+                "SELF-REFERENCE (not declarable here)  %s  size n/a "
+                "(read it from the filesystem)" % rel
             )
         else:
             lines.append("%s  %s  %d" % (sha256(path), rel, path.stat().st_size))
