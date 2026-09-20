@@ -1,0 +1,34 @@
+{
+  "description": "Second reuse proof: same demand → zero additional production",
+  "card_requirement": "原 request 再跑证明复用零补产",
+  "test": "test_second_run_zero_production",
+  "scenario": {
+    "first_run": {
+      "requested_roles": ["sections"],
+      "normalized_status": "valid (reusable)",
+      "sections_status": "missing",
+      "artifact_read": ["normalized"],
+      "producer_events": ["sections"],
+      "producer_calls": 1
+    },
+    "second_run": {
+      "requested_roles": ["sections"],
+      "normalized_status": "valid (reusable)",
+      "sections_status": "valid (reusable, produced in first run)",
+      "artifact_read": ["normalized", "sections"],
+      "producer_events": [],
+      "producer_calls": 0
+    }
+  },
+  "total_producer_calls_across_both_runs": 1,
+  "verified": true,
+  "io_evidence": {
+    "test": "test_full_sections_pipeline",
+    "verify_artifact_reads_after_production": {
+      "verified_read_events": 2,
+      "failed_read_events": 0,
+      "sections_bytes_read": "matches produced content",
+      "sections_sha256": "matches produced hash"
+    }
+  }
+}

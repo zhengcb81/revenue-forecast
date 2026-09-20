@@ -1,0 +1,112 @@
+{
+  "card_id": "I-05-C",
+  "attempt_id": "a20260919-01",
+  "oracle_cases": {
+    "W05C-P1": {
+      "type": "positive",
+      "description": "sections-only, normalized valid, sections missing",
+      "tests": [
+        "test_select_only_produces_requested_missing",
+        "test_produce_sections_one_call",
+        "test_produce_no_parser_no_llm_for_sections",
+        "test_second_run_zero_production"
+      ],
+      "all_passed": true,
+      "oracle_match": "producer_events=['sections'] only; parser_calls=1, llm_calls=0; second run producer_events=[]"
+    },
+    "W05C-P2": {
+      "type": "positive",
+      "description": "summary-only, normalized valid, summary missing",
+      "tests": [
+        "test_select_summary_only",
+        "test_produce_summary_calls_only_summary_producer"
+      ],
+      "all_passed": true,
+      "oracle_match": "producer_events=['summary'] only; no markdown/sections/consumer_analysis produced"
+    },
+    "W05C-N1": {
+      "type": "negative",
+      "description": "document hash changed",
+      "tests": [
+        "test_hash_change_invalidates_old_artifacts",
+        "test_only_rebuild_needed_roles"
+      ],
+      "all_passed": true,
+      "oracle_match": "only requested roles + needed ancestors rebuilt; total_calls=2 for sections+normalize"
+    },
+    "W05C-N2": {
+      "type": "negative",
+      "description": "LLM fails first succeeds second / parser fails",
+      "tests": [
+        "test_llm_fails_first_succeeds_second",
+        "test_parser_fails_no_artifact",
+        "test_retry_count_vs_artifact_count_diverge"
+      ],
+      "all_passed": true,
+      "oracle_match": "invocation count=retry attempts (not artifact INSERT count); failed attempts recorded"
+    },
+    "W05C-N3": {
+      "type": "negative",
+      "description": "no producer / unsupported",
+      "tests": [
+        "test_missing_producer_returns_explicit_status",
+        "test_unsupported_document_type",
+        "test_no_completed_placeholder_inserted"
+      ],
+      "all_passed": true,
+      "oracle_match": "explicit missing/unsupported status; no completed placeholder inserted"
+    },
+    "W05C-N4": {
+      "type": "negative",
+      "description": "summary changed but normalized/sections unchanged",
+      "tests": [
+        "test_normalized_sections_still_valid",
+        "test_only_produce_requested_invalidated"
+      ],
+      "all_passed": true,
+      "oracle_match": "normalized/sections still valid; only invalidated requested role produced"
+    },
+    "Integration": {
+      "type": "integration",
+      "description": "full pipeline: select→produce→verify with invocation tracking",
+      "tests": [
+        "test_full_sections_pipeline",
+        "test_invocation_trace_accuracy",
+        "test_dag_compliance_new_active_dag"
+      ],
+      "all_passed": true,
+      "oracle_match": "full pipeline verifies artifact read after production; trace captures all attempts"
+    }
+  },
+  "regression": {
+    "w05b": {
+      "file": "test_w05b_verified_artifact_read.py",
+      "before": "20 passed",
+      "after": "20 passed",
+      "no_regression": true
+    },
+    "fc904": {
+      "file": "tests/test_fc904_artifact_selection.py",
+      "before": "11 passed",
+      "after": "11 passed",
+      "no_regression": true
+    }
+  },
+  "mutation_proof": {
+    "artifact_dag_summary_dependency": {
+      "before": "summary → [markdown]",
+      "after": "summary → [normalized]",
+      "effect": "summary no longer depends on retired markdown producer"
+    },
+    "select_artifact_roles_ancestor_check": {
+      "before": "only checked reusability of directly requested roles",
+      "after": "checks all roles in request closure (requested + ancestors)",
+      "effect": "valid ancestors included in artifact_read; producer_events scoped to requested only"
+    },
+    "select_artifact_roles_producer_scope": {
+      "before": "producer_events = full DAG closure of all missing roles",
+      "after": "producer_events = missing requested + non-reusable ancestors only",
+      "effect": "unrequested downstream dependents not produced"
+    }
+  }
+}

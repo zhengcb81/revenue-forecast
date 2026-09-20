@@ -1,0 +1,63 @@
+# I-05-C Changes Diff
+# Generated: 2026-09-19
+
+## CW:src/company_wiki/source_catalog/artifact_dag.py
+## SHA256 BEFORE: 13E02211CA9F6EEF251ACD33C1BE75DB3112D1E4A7ACF0B3739B23C955FBF505
+## SHA256 AFTER:  0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1
+
+--- a/artifact_dag.py
++++ b/artifact_dag.py
+@@ -10,7 +10,7 @@
+ ROLE_DEPENDENCIES: dict[str, list[str]] = {
+     "normalized": [],
+     "markdown": ["normalized"],
+-    "summary": ["markdown"],
++    "summary": ["normalized"],    # D-W05: direct from normalized, not markdown
+     "sections": ["normalized"],
+     "consumer_analysis": ["summary"],
+ }
+
+## RF:scripts/company_wiki_source.py
+## SHA256 BEFORE: A034CF08FB6881BA3A78515B3601DFFEFAAFCFBAB418F9A8905A07CB7F42C8B1
+## SHA256 AFTER:  225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294
+
+--- a/company_wiki_source.py (select_artifact_roles)
++++ b/company_wiki_source.py (select_artifact_roles)
+@@ -174,20 +174,34 @@
+     reusable: set[str] = set()
+-    for role in roles:
++    # W05-C fix: check ALL roles in the request closure (requested roles AND
++    # their transitive ancestors), not just the directly requested roles.
++    all_roles_to_check = sorted({
++        r for role in roles for r in ([role] + _dag_ancestors(role))
++    })
++    for role in all_roles_to_check:
+         if not _artifact_reusable(bundle, role):
+             continue
+         if role == "consumer_analysis" and expected_provenance is not None:
+             artifact = bundle["valid_handles"][role]
+             if not _analysis_provenance_matches(artifact, expected_provenance):
+                 continue
+         reusable.add(role)
+     # DAG gate (AR-03): a role is READ only when its whole ancestor chain is
+     # reusable — a dependent derived from an invalidated input is not trusted.
++    # W05-C: include valid ancestors in artifact_read too.
+     artifact_read = sorted(
+-        role for role in roles
++        role for role in all_roles_to_check
+         if role in reusable
+         and all(ancestor in reusable for ancestor in _dag_ancestors(role))
+     )
+-    missing = [role for role in roles if role not in artifact_read]
+-    producer_events = sorted({r for role in missing for r in _dag_closure(role)})
++    # W05-C fix: producer_events = only what's needed for requested missing roles.
++    # NOT the full downstream closure of unrequested dependents.
++    missing_requested = [role for role in roles if role not in artifact_read]
++    needed_for_production: set[str] = set()
++    for role in missing_requested:
++        needed_for_production.add(role)
++        for ancestor in _dag_ancestors(role):
++            if ancestor not in reusable:
++                needed_for_production.add(ancestor)
++    producer_events = sorted(needed_for_production)
+     return artifact_read, producer_events

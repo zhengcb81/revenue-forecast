@@ -1,0 +1,34 @@
+{
+  "description": "Proof that retry count (invocation count) diverges from artifact INSERT count",
+  "card_requirement": "Real call counts cannot be inferred from artifact INSERT alone",
+  "test_cases": [
+    {
+      "scenario": "LLM fails once, succeeds on retry",
+      "test": "test_llm_fails_first_succeeds_second",
+      "retry_count": 2,
+      "artifact_insert_count": 1,
+      "divergence": true,
+      "old_broken_inference": "artifact INSERTs = 1 would report llm_calls = 1",
+      "correct_tracking": "invocation events = 2 (1 failed + 1 success)"
+    },
+    {
+      "scenario": "Parser fails 3 times (all retries exhausted)",
+      "test": "test_parser_fails_no_artifact",
+      "retry_count": 3,
+      "artifact_insert_count": 0,
+      "divergence": true,
+      "old_broken_inference": "artifact INSERTs = 0 would report parser_calls = 0",
+      "correct_tracking": "invocation events = 3 (all failed)"
+    },
+    {
+      "scenario": "LLM fails 3 times, succeeds on 4th",
+      "test": "test_retry_count_vs_artifact_count_diverge",
+      "retry_count": 4,
+      "artifact_insert_count": 1,
+      "divergence": true,
+      "old_broken_inference": "artifact INSERTs = 1 would report llm_calls = 1",
+      "correct_tracking": "invocation events = 4 (3 failed + 1 success)"
+    }
+  ],
+  "conclusion": "InvocationTracker event log is the authoritative source for call counts, not artifact INSERTs"
+}

@@ -1,0 +1,42 @@
+{
+  "description": "Matrix of requested roles vs their DAG ancestors and dependents in the new active DAG",
+  "active_dag": {
+    "normalized": [],
+    "summary": ["normalized"],
+    "sections": ["normalized"],
+    "consumer_analysis": ["summary"]
+  },
+  "historical_compatibility": {
+    "markdown": ["normalized"]
+  },
+  "matrix": {
+    "sections": {
+      "ancestors": ["normalized"],
+      "dependents": [],
+      "request_only_sections": {
+        "artifact_read": ["normalized"],
+        "producer_events": ["sections"],
+        "explanation": "normalized is valid ancestor → read; sections missing → produce"
+      }
+    },
+    "summary": {
+      "ancestors": ["normalized"],
+      "dependents": ["consumer_analysis"],
+      "request_only_summary": {
+        "artifact_read": ["normalized"],
+        "producer_events": ["summary"],
+        "explanation": "normalized is valid → read; summary missing → produce; consumer_analysis NOT requested → not produced"
+      }
+    },
+    "consumer_analysis": {
+      "ancestors": ["summary", "normalized"],
+      "dependents": [],
+      "request_only_consumer_analysis": {
+        "artifact_read_includes": ["normalized"],
+        "producer_events_includes": ["summary", "consumer_analysis"],
+        "explanation": "normalized valid → read; summary missing → produce; consumer_analysis missing → produce"
+      }
+    }
+  },
+  "key_fix": "Old code produced full downstream closure of missing roles; new code produces only requested missing + non-reusable ancestors"
+}

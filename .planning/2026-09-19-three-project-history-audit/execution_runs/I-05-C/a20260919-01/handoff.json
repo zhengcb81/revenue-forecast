@@ -1,0 +1,135 @@
+{
+  "card_id": "I-05-C",
+  "attempt_id": "a20260919-01",
+  "status": "review_pending",
+  "implementer": "subagent",
+  "reviewer_status": "pending",
+  "bookkeeping": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true
+  },
+  "completed_steps": [
+    "1. Read card text, START_HERE, common_wiki_cards, review_and_handoff",
+    "2. Read all source files referenced by card (artifact_dag.py, company_wiki_source.py, service.py, normalizer.py, section_extractor.py, llm_summarizer.py, processing_demand.py, source_preparation.py)",
+    "3. Read I-05-B handoff/oracle/binding/case_results for dependency context",
+    "4. Create attempt directory structure",
+    "5. Write binding.json with hashes, paths, rulings",
+    "6. Write decision.md (D-W05 active DAG, select_artifact_roles fix, invocation tracking)",
+    "7. Freeze oracle.md before implementation",
+    "8. Write test_w05c_minimal_production.py with 19 tests (7 classes)",
+    "9. Run initial tests: 9 RED, 10 GREEN",
+    "10. Fix artifact_dag.py: summary→[normalized] instead of summary→[markdown]",
+    "11. Fix select_artifact_roles: ancestor check + scoped producer_events",
+    "12. Fix test mocks: ProduceForDemand retry logic",
+    "13. Run tests: 19/19 GREEN",
+    "14. Run I-05-B regression: 20/20 GREEN (no regression)",
+    "15. Run FC-904 regression: 11/11 GREEN (no regression)",
+    "16. Pack evidence: all JSON files, diff, hashes"
+  ],
+  "next_step_number": 17,
+  "next_action": "Independent reviewer reads evidence, verifies RED→GREEN mutation, checks oracle match, writes review.md",
+  "input_hashes": {
+    "card_I-05-C.md": "read at runtime",
+    "START_HERE.md": "read at runtime",
+    "common_wiki_cards.md": "read at runtime",
+    "review_and_handoff.md": "read at runtime"
+  },
+  "current_source_hashes": {
+    "RF:scripts/company_wiki_source.py": "225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294",
+    "CW:src/company_wiki/source_catalog/artifact_dag.py": "0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1"
+  },
+  "changed_paths": [
+    "CW:src/company_wiki/source_catalog/artifact_dag.py",
+    "RF:scripts/company_wiki_source.py"
+  ],
+  "new_files": [
+    "test_w05c_minimal_production.py"
+  ],
+  "commands_executed": [
+    {
+      "id": "w05c-main-tests",
+      "returncode": 0,
+      "result": "19 passed in 0.88s"
+    },
+    {
+      "id": "w05b-regression",
+      "returncode": 0,
+      "result": "20 passed in 0.58s"
+    },
+    {
+      "id": "w05c-regression-fc904",
+      "returncode": 0,
+      "result": "11 passed in 0.85s"
+    }
+  ],
+  "raw_exit_codes": [0, 0, 0],
+  "expected_exit_codes": [0, 0, 0],
+  "open_questions": [
+    "service.py produce_for_demand: current implementation is test-only mock (InvocationTracker + ProduceForDemand). Production implementation needs CatalogConfig/CatalogStore integration — blocked by D-W05 producer entry approval.",
+    "consumer_analysis producer: no real owner entry exists. W05C-N3 tests prove missing/unsupported handling, but real LLM capability is not verified.",
+    "InvocationTracker schema: reviewer needs to approve the event schema for production use (role/producer_name/call_status/attempt_number/error/artifact_id)."
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "binding.json",
+    "decision.md",
+    "oracle.md",
+    "commands.json",
+    "changes.diff",
+    "case_results.json",
+    "requested-role-dag-matrix.json",
+    "producer-invocations.json",
+    "retry-count-vs-artifact-count.json",
+    "second-reuse.json",
+    "before/test_results.json",
+    "after/test_results.json",
+    "after/source_hashes.json",
+    "handoff.json"
+  ],
+  "rulings_applied": {
+    "W05-1": "选 A: historical sections only get source-window binding, no per-slice hash depth",
+    "D-W05_active_dag": "normalized→summary, normalized→sections, summary→consumer_analysis; historical markdown compatibility only"
+  },
+  "mutation_proof": {
+    "artifact_dag_summary_dependency": {
+      "before_sha": "13E02211CA9F6EEF251ACD33C1BE75DB3112D1E4A7ACF0B3739B23C955FBF505",
+      "after_sha": "0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1",
+      "change": "summary → [normalized] (was [markdown])"
+    },
+    "select_artifact_roles_ancestor_check": {
+      "before_sha": "A034CF08FB6881BA3A78515B3601DFFEFAAFCFBAB418F9A8905A07CB7F42C8B1",
+      "after_sha": "225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294",
+      "changes": [
+        "all_roles_to_check includes ancestors of requested roles",
+        "artifact_read includes valid ancestors (not just requested roles)",
+        "producer_events scoped to missing requested + non-reusable ancestors"
+      ]
+    }
+  },
+  "boundaries": {
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "self_sign": false,
+    "production_repos_read_only": true
+  },
+  "remaining_gaps": [
+    {
+      "id": "GAP-1",
+      "severity": "P2",
+      "description": "produce_for_demand production implementation: mock-only in tests. Real implementation needs CW service.py integration with CatalogConfig/CatalogStore and actual producers.",
+      "status": "blocked on D-W05 producer entry approval"
+    },
+    {
+      "id": "GAP-2",
+      "severity": "P2",
+      "description": "consumer_analysis producer does not exist. Tests prove missing/unsupported handling. Real LLM capability not verified.",
+      "status": "blocked on RF consumer_analysis owner providing entry"
+    },
+    {
+      "id": "GAP-3",
+      "severity": "P3",
+      "description": "InvocationTracker event schema needs reviewer approval for production persistence.",
+      "status": "pending reviewer decision"
+    }
+  ]
+}

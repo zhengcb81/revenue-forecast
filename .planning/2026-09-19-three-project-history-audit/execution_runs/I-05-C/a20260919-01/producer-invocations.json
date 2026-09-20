@@ -1,0 +1,47 @@
+{
+  "description": "Producer invocation tracking — events, not artifact INSERTs",
+  "mechanism": "InvocationTracker records each producer call attempt as an event with role, producer_name, call_status, attempt_number, error",
+  "test_evidence": {
+    "sections_produce_once": {
+      "test": "test_produce_sections_one_call",
+      "producer_calls": 1,
+      "events": [
+        {"role": "sections", "producer_name": "sections_extractor", "call_status": "success", "attempt_number": 1}
+      ],
+      "parser_calls": 1,
+      "llm_calls": 0
+    },
+    "summary_produce_once": {
+      "test": "test_produce_summary_calls_only_summary_producer",
+      "producer_calls": 1,
+      "events": [
+        {"role": "summary", "producer_name": "llm_summarizer", "call_status": "success", "attempt_number": 1}
+      ],
+      "parser_calls": 0,
+      "llm_calls": 1
+    },
+    "llm_retry_2_attempts": {
+      "test": "test_llm_fails_first_succeeds_second",
+      "producer_calls": 2,
+      "events": [
+        {"role": "summary", "call_status": "failed", "attempt_number": 1, "error": "simulated_failure_attempt_1"},
+        {"role": "summary", "call_status": "success", "attempt_number": 2}
+      ],
+      "artifact_inserts": 1,
+      "invocation_count": 2,
+      "key_divergence": "invocation_count(2) != artifact_insert_count(1)"
+    },
+    "parser_always_fail": {
+      "test": "test_parser_fails_no_artifact",
+      "producer_calls": 3,
+      "events": [
+        {"role": "sections", "call_status": "failed", "attempt_number": 1},
+        {"role": "sections", "call_status": "failed", "attempt_number": 2},
+        {"role": "sections", "call_status": "failed", "attempt_number": 3}
+      ],
+      "artifact_inserts": 0,
+      "invocation_count": 3,
+      "key_divergence": "invocation_count(3) != artifact_insert_count(0)"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "card_id": "I-05-C",
+  "phase": "before_modification",
+  "total": 19,
+  "passed": 10,
+  "failed": 9,
+  "failures": [
+    "TestW05CP1SectionsOnly::test_select_only_produces_requested_missing — select_artifact_roles doesn't check ancestors of non-reusable requested roles",
+    "TestW05CP1SectionsOnly::test_second_run_zero_production — same root cause",
+    "TestW05CP2SummaryOnly::test_select_summary_only — same root cause",
+    "TestW05CN1DocumentHashChanged::test_hash_change_invalidates_old_artifacts — same root cause (sections not in valid_handles)",
+    "TestW05CN2FailureRetry::test_llm_fails_first_succeeds_second — ProduceForDemand doesn't retry; also MockProducer.produce called once",
+    "TestW05CN2FailureRetry::test_retry_count_vs_artifact_count_diverge — same retry issue",
+    "TestW05CN4SelectiveInvalidation::test_normalized_sections_still_valid — same ancestor-check root cause",
+    "TestW05CIntegration::test_full_sections_pipeline — same ancestor-check root cause",
+    "TestW05CIntegration::test_invocation_trace_accuracy — same retry issue"
+  ],
+  "root_causes": [
+    {
+      "id": "RC-1",
+      "description": "select_artifact_roles only checks reusability of directly requested roles, not their ancestors. When a requested role (sections) is not in valid_handles, its valid ancestor (normalized) is never evaluated → not in reusable → sections fails DAG gate → empty artifact_read.",
+      "affected_tests": 6,
+      "fix_location": "RF:scripts/company_wiki_source.py:select_artifact_roles"
+    },
+    {
+      "id": "RC-2",
+      "description": "ProduceForDemand.produce calls each mock producer once. For retry testing, the orchestrator or producer needs retry logic. The mock's fail_count simulates the producer's internal retry, but the orchestrator doesn't trigger retries.",
+      "affected_tests": 3,
+      "fix_location": "test mock design — make ProduceForDemand retry on failure"
+    }
+  ]
+}
