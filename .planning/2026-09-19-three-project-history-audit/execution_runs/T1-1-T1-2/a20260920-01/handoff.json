@@ -1,0 +1,155 @@
+{
+  "card_id": "T1-1 / T1-2",
+  "attempt_id": "a20260920-01",
+  "parent": "OWNER_DECISIONS.md section 13 (TIER-1 batch)",
+  "card_title": "Independent verification that the T1-1 / T1-2 rulings are landed",
+  "nature": "RULING-LANDING VERIFICATION. Not an implementation. Not a promotion. Not a countersignature.",
+
+  "status_note": "This card does NOT change any product-card status. I-06-A remains blocked; the rev2 candidate remains UNRATIFIED.",
+
+  "what_the_rulings_say": {
+    "T1-1": "D-W06 OPEN-2 option A -- the idempotency key MUST include the request identity (source_sha256 + review_policy + role_set + request identity, where request identity covers as_of_date / target / payload digest). Option B (keep the key, fail-closed on same-key-different-payload) is REJECTED.",
+    "T1-2": "D-W06 OPEN-1 option A -- single persistent owner is the CW store (src/company_wiki/source_catalog/store.py, catalog.sqlite3, additive tables via the existing _apply_additive_migrations). The attempt's option-B shape (separate internal SQLite file) is NOT adopted. OPEN-3 -- claim(owner, lease_seconds) stays an explicit single-shot authorisation; workers are not auto-resumed.",
+    "still_other_parties": "OPEN-4 (review method / reviewer binding / receipt invalidation) -- wiki source-review owner + security reviewer. OPEN-5 (consumer & recovery interface) -- RF consumer owner. OPEN-6 (not_detected vs detected_and_ignored ownership) -- security reviewer. These are NOT decided by this card and NOT decided by T1-1/T1-2."
+  },
+
+  "finding": "The rulings were ALREADY LANDED at round 41, inside I-06-A/a20260919-01. No T1-1/T1-2 card directory existed, but the revised candidate, a pre-frozen oracle, an independent verifier, a 28/28 result and a mutation arm were all present. The correct action was therefore to VERIFY that landing independently, not to re-implement it.",
+
+  "why_this_matters": "A ruling authorises work; it does not assert the work is outstanding. Conversely, the existence of a deliverable does not make the deliverable correct. 'Authorised', 'carded', 'present' and 'correct' are four separate judgements and each was made separately here.",
+
+  "propositions": {
+    "P-1_ruling_names_the_decision": {"holds": true},
+    "P-2_rev2_key_contains_request_identity": {"holds": true},
+    "P-3_oracle_is_independent_not_derived": {"holds": true},
+    "P-4_result_28_of_28_reproduces_from_bytes": {"holds": true},
+    "P-5_mutation_arm_is_real_and_minimal": {"holds": true},
+    "P-6_ruling_landed_not_inflated_into_implementation": {"holds": true},
+    "P-7_the_measured_defect_is_on_disk": {"holds": true}
+  },
+  "overall": "PASS",
+
+  "key_measurements": {
+    "rev2_candidate": {
+      "path": "execution_runs/I-06-A/a20260919-01/iso/candidate/processing_demand_store_rev2.py",
+      "bytes": 21290,
+      "sha256": "b3eafcfaaf529bdb16054b0e4d30c3add6eeb8f77caf09152baca7499113faf2",
+      "reproduced_against_constant": true
+    },
+    "mutation_evidence": {
+      "path": "execution_runs/I-06-A/a20260919-01/evidence_rev2_mutant_key_dropped.py",
+      "bytes": 21726,
+      "sha256": "fe6acfd43147e963a167eb410a5a0a3303635e35fa8dc9084eae1fe6d29e4d5b",
+      "reproduced_against_constant": true,
+      "mutation_is": "exactly two deleted lines: the \"key_version\": DEMAND_SCHEMA_VERSION and \"request_identity\": identity members of the key dict -- i.e. the key reverts to the v1 (source_sha256, review_policy, role_set) triple",
+      "deleted_line_count": 2
+    },
+    "key_members_measured": ["key_version", "request_identity", "review_policy", "role_set"],
+    "request_identity_members_measured": ["as_of_date", "payload_sha256", "target"],
+    "target_members_measured": ["document_kind", "entity"],
+    "key_version_constant": "2.0.0",
+    "verification_result": {"total": 28, "failed": 0},
+    "mutation_re_run_this_card": {
+      "method": "re-ran the existing verifier against the mutant in a temporary copy; the real candidate was not touched",
+      "observed_raw_exit_code": 3,
+      "observed_red_check_count": 10,
+      "recorded_red_check_count": 10,
+      "observed_red_set_equals_recorded_normalised": true,
+      "normalisation": "trailing parenthetical stripped: the recorded list abbreviates the KEY-SHAPE check name"
+    }
+  },
+
+  "negative_controls_run": [
+    {
+      "direction": "must go red",
+      "setup": "swap the subject to the mutant (whose key lacks request_identity), everything else unchanged",
+      "observed": "P-2 FAIL with key_members=['review_policy','role_set'] -- exactly the two mutated members missing; P-4 FAIL (sha mismatch); overall FAIL",
+      "meaning": "the verifier is sensitive to a substantive change in the subject"
+    },
+    {
+      "direction": "must not pass everything",
+      "setup": "feed the normaliser a recorded set whose numeric value was corrupted (rows == 2 -> == 9)",
+      "observed": "normalised comparison still False; and observed_red_check_count == 10 is an independent second gate",
+      "meaning": "the normalisation absorbs formatting differences only, not substantive ones"
+    }
+  ],
+
+  "cards_authored_by_this_card": [],
+
+  "cards_the_rulings_authorise_that_this_card_did_not_build": [
+    "None pending. T1-1/T1-2 are landed; nothing further is owed under them. What remains is held by OTHER parties (OPEN-4/5/6) and by I-06-A's own status."
+  ],
+
+  "self_inflicted_criterion_errors_recorded": [
+    {
+      "id": 1,
+      "error": "guessed the interface signature: called demand_key(request={...}) expecting a dict back",
+      "symptom": "TypeError: demand_key() got an unexpected keyword argument 'request'",
+      "actual_signature": "demand_key(*, source_sha256, review_policy, role_set, identity: dict) -> str; identity is built by the separate request_identity() function and the return value is a hex digest",
+      "fix": "read the source to establish the real signature rather than bending the subject to my guess; and since a digest exposes no members, read the key's members from demand_key's source literal while also running a behavioural check",
+      "lesson": "#23 in this project's series -- a criterion must be written to the subject's REAL shape, and the only reliable source of that shape is the subject's own source, not my impression of it"
+    },
+    {
+      "id": 2,
+      "error": "transcription passed off as verification, and then a text comparison tripped on formatting",
+      "symptom": "(a) P-5 initially only read failed == 10 out of provenance.json; (b) after making it really run, observed_matches_recorded_red_set came out False while the red SETS were identical in case, count and order",
+      "root_cause": "(a) re-reading a number out of a record proves the record contains that text, not that the mutation turns anything red; (b) sorted() over raw strings was tripped by one incidental omission of a parenthetical suffix",
+      "fix": "(a) actually re-run the mutation and observe; (b) compare a normalised form and state why the normalisation is legitimate, then prove with negative controls that it still rejects a substantive difference",
+      "lesson": "#24 in this project's series -- when a gate goes red, classify it: is the DATA wrong or the CRITERION wrong? Fix the right one and say which. Do not delete the check to get green, and do not loosen it silently."
+    },
+    {
+      "id": 3,
+      "error": "a misleading field name",
+      "details": "a field named recorded_mutant_passed actually asserted that the recorded `passed` COUNT equalled 18 -- i.e. it read as the opposite of what it asserted",
+      "fix": "removed in the rewrite",
+      "lesson": "a field name is part of the criterion; a name that reverses the meaning will lead the next reader to the wrong conclusion"
+    }
+  ],
+
+  "boundaries": {
+    "product_files_changed": 0,
+    "product_files_evidence": "git diff HEAD --name-only -- . ':(exclude).planning' -> empty",
+    "deletions": 0,
+    "deletion_note": "the only file this card removed is its own temporary negative-control script (.planning/_pwf_tmp/_ctl_t12.py), which was created this turn, carries no measurement, and is not part of any evidence chain",
+    "countersignature": "none -- no TIER-2 item was decided or signed",
+    "status_transitions": 0,
+    "promotions": 0,
+    "frozen_evidence_writes": 0,
+    "frozen_evidence_note": "OWNER_DECISIONS.md, review.md, oracle*.json, rev2_provenance.json, rev2_verification_result.json, the candidate and the mutant were all READ ONLY; 0 bytes written inside I-06-A/a20260919-01",
+    "production_anchor": {
+      "path": "scripts/model_registry.py",
+      "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "matches_expected": true
+    }
+  },
+
+  "artefacts": {
+    "verifier": {
+      "path": "execution_runs/T1-1-T1-2/a20260920-01/scripts/verify_t1_1_t1_2.py",
+      "bytes": 22505,
+      "sha256": "92761ae8ef3298b54d02f39cc0dc51a4f0f93785fe26785b7d3a4b72e7d1d3ae"
+    },
+    "verification_result": {
+      "path": "execution_runs/T1-1-T1-2/a20260920-01/t1_1_t1_2_verification.json",
+      "bytes": 6289,
+      "sha256": "f93a183232e77216f56b61de86e71977dde7ec29e3b6e4de0c8c6792125cd417",
+      "idempotent": "two consecutive runs produce the same sha256"
+    },
+    "decision": {
+      "path": "execution_runs/T1-1-T1-2/a20260920-01/decision.md",
+      "bytes": 10816,
+      "sha256": "bb585b872d42e8e363a9e71034bc04ace525d0b72d30b1d6261e1ca945e3a3d6"
+    }
+  },
+
+  "exit_code_legend_used": {
+    "0": "PASS -- all seven propositions hold",
+    "1": "harness failure (a required file was missing)",
+    "3": "a proposition is FALSE"
+  },
+
+  "next_actions_for_other_parties": [
+    "OPEN-4 / OPEN-5 / OPEN-6 remain with the wiki source-review owner, the security reviewer and the RF consumer owner. Request letter A (outward_requests/A_DW06_OPEN-4-5-6.md) already covers them; this card does not alter or resend it.",
+    "I-06-A stays blocked and the rev2 candidate stays UNRATIFIED. No later card may promote it.",
+    "If a later card wants to promote the candidate, the key-shape check in this card (P-2) and the mutation arm (P-5) are the criteria it must keep passing."
+  ]
+}
