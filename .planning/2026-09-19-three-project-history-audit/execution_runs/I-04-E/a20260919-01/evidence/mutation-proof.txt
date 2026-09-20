@@ -1,0 +1,20 @@
+﻿=== M2 Mutation Proof ===
+Mutation: reverted close-gap handler to gap_not_closed
+Test: test_close_gap_timeout_preserved
+Result: FAILED - 'gap_not_closed' != 'upstream_error'
+Proof: The test calls _close_gap_and_return_handle with a mocked timeout response.
+       Current code derives upstream_error from status. Reverting to gap_not_closed
+       causes the assertion exc.code == 'upstream_error' to fail.
+
+=== M3 Mutation Proof ===
+Mutation: removed failure-path download event recording in resolve_filing
+Test: test_failure_path_preserves_download_events
+Result: FAILED - 0 != 1
+Proof: The test calls resolve_filing with a mocked subprocess returning
+       download_events=1 + empty matches (validation fails). Current code
+       records events before re-raising. Removing the recording leaves
+       stats['downloads'] at 0.
+
+=== Final Test Results ===
+Combined: 139 passed, 1 deselected, 39 subtests passed
+Production unchanged: YES
