@@ -1,0 +1,95 @@
+﻿....................................................FF.....              [100%]
+================================== FAILURES ===================================
+______ TestPB2JSONWriteFailure.test_output_write_failure_prevents_commit ______
+
+self = <test_i09b_commit_protocol.TestPB2JSONWriteFailure object at 0x00000136C4375BD0>
+tmp_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/scratch/tpub-after6/test_output_write_failure_prev0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000136C508E5D0>
+
+    def test_output_write_failure_prevents_commit(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("REVENUE_PUBLICATION_REGISTRY", str(tmp_path / "registry.jsonl"))
+        result = run_forecast(forecast_document())
+    
+        # The JSON path is a directory (will fail to write)
+        bad_path = tmp_path / "output.json"
+        bad_path.mkdir()
+    
+        with pytest.raises(RegistryError, match="missing members"):
+>           commit_publication(result, {"output_json": bad_path})
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-B\a20260919-01\iso\rf\tests\test_i09b_commit_protocol.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-B\a20260919-01\iso\rf\scripts\publication_registry.py:407: in commit_publication
+    member_hashes[role] = hashlib.sha256(path.read_bytes()).hexdigest()
+                                         ^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/scratch/tpub-after6/test_output_write_failure_prev0/output.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       PermissionError: [Errno 13] Permission denied: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-B\\a20260919-01\\scratch\\tpub-after6\\test_output_write_failure_prev0\\output.json'
+
+C:\Miniconda\Lib\pathlib\_local.py:537: PermissionError
+____ TestPB3MarkdownWriteFailure.test_partial_member_write_prevents_commit ____
+
+self = <test_i09b_commit_protocol.TestPB3MarkdownWriteFailure object at 0x00000136C4375D10>
+tmp_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/scratch/tpub-after6/test_partial_member_write_prev0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000136C50C5550>
+
+    def test_partial_member_write_prevents_commit(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("REVENUE_PUBLICATION_REGISTRY", str(tmp_path / "registry.jsonl"))
+        result = run_forecast(forecast_document())
+    
+        json_path = tmp_path / "forecast.json"
+        json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    
+        # Markdown path is a directory (will fail)
+        bad_md = tmp_path / "report.md"
+        bad_md.mkdir()
+    
+        with pytest.raises(RegistryError, match="missing members"):
+>           commit_publication(result, {"output_json": json_path, "output_markdown": bad_md})
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-B\a20260919-01\iso\rf\tests\test_i09b_commit_protocol.py:161: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-B\a20260919-01\iso\rf\scripts\publication_registry.py:407: in commit_publication
+    member_hashes[role] = hashlib.sha256(path.read_bytes()).hexdigest()
+                                         ^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/scratch/tpub-after6/test_partial_member_write_prev0/report.md')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       PermissionError: [Errno 13] Permission denied: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-B\\a20260919-01\\scratch\\tpub-after6\\test_partial_member_write_prev0\\report.md'
+
+C:\Miniconda\Lib\pathlib\_local.py:537: PermissionError
+=========================== short test summary info ===========================
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/iso/rf/tests/test_i09b_commit_protocol.py::TestPB2JSONWriteFailure::test_output_write_failure_prevents_commit
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/iso/rf/tests/test_i09b_commit_protocol.py::TestPB3MarkdownWriteFailure::test_partial_member_write_prevents_commit
+2 failed, 57 passed in 3.87s

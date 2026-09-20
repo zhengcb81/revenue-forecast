@@ -1,0 +1,44 @@
+{
+  "description": "Race condition tests proving that file changes between selection and read are detected. This addresses the TOCTOU (Time-of-Check-Time-of-Use) gap between select_artifact_roles and verify_artifact_reads.",
+  "cases": [
+    {
+      "test": "test_select_then_tamper_then_verify",
+      "scenario": "File content changes between select (T1) and verify (T3)",
+      "steps": {
+        "T1_select": "select_artifact_roles returns ['normalized']",
+        "T2_tamper": "artifact file overwritten with different content (BETA=29)",
+        "T3_verify": "verify_artifact_reads detects content_sha256_mismatch"
+      },
+      "result": "FAILED_READ with reason=content_sha256_mismatch",
+      "verdict": "old hash success NOT paired with new bytes"
+    },
+    {
+      "test": "test_select_then_delete_then_verify",
+      "scenario": "File deleted between select and verify",
+      "steps": {
+        "T1_select": "select_artifact_roles returns ['normalized']",
+        "T2_delete": "artifact file deleted from filesystem",
+        "T3_verify": "verify_artifact_reads detects artifact_file_missing"
+      },
+      "result": "FAILED_READ with reason=artifact_file_missing",
+      "verdict": "deleted file cannot be served"
+    },
+    {
+      "test": "test_replaced_artifact_detected",
+      "scenario": "Artifact replaced with BETA content after selection",
+      "steps": {
+        "T1_create": "artifact with ALPHA=17 content and correct SHA256",
+        "T2_select": "select_artifact_roles returns ['normalized'] with ALPHA's SHA256",
+        "T3_replace": "artifact file overwritten with BETA=29 content",
+        "T4_verify": "verify_artifact_reads reads BETA bytes, computes BETA SHA256, compares with ALPHA SHA256"
+      },
+      "result": "FAILED_READ with reason=content_sha256_mismatch",
+      "detail": {
+        "declared_sha256": "ALPHA's hash",
+        "actual_sha256": "BETA's hash",
+        "bytes_read": 7
+      }
+    }
+  ],
+  "key_invariant": "verify_artifact_reads reads the file ONCE at the time of verification and computes the SHA256 of the ACTUAL bytes read. It does not trust the declared hash from the selection phase. This is the core safety property: the digest is always over the buffer that is returned."
+}

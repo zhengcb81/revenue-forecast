@@ -1,0 +1,128 @@
+{
+  "tag": "run1",
+  "timestamp": "2026-09-20T11:08:12.437897+00:00",
+  "cases": {
+    "P1_clean_scan_and_receipt": {
+      "scan_status": "not_detected",
+      "scan_matches": [],
+      "scan_ruleset_hash": "19ace502ee7c13027f43ee82d33944fec84c1296976bc86ce6c8d5869abb962b",
+      "receipt_written": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "zr302-test",
+        "reviewed_at": "2026-09-19T12:00:00Z",
+        "evidence_sha256": "8f5cb2c0479d04d2d8d06f0c3add3fe1c9d00ce6b86c22343a1f52ba28d3a341",
+        "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+        "policy_hash": "19ace502ee7c13027f43ee82d33944fec84c1296976bc86ce6c8d5869abb962b"
+      },
+      "receipt_read_back": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "zr302-test",
+        "reviewed_at": "2026-09-19T12:00:00Z",
+        "evidence_sha256": "8f5cb2c0479d04d2d8d06f0c3add3fe1c9d00ce6b86c22343a1f52ba28d3a341",
+        "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+        "policy_hash": "19ace502ee7c13027f43ee82d33944fec84c1296976bc86ce6c8d5869abb962b"
+      },
+      "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+      "evidence_sha256": "8f5cb2c0479d04d2d8d06f0c3add3fe1c9d00ce6b86c22343a1f52ba28d3a341",
+      "verdict": "PASS"
+    },
+    "P2_cache_hit_reuse": {
+      "evaluation": {
+        "status": "not_detected",
+        "cache_state": "hit",
+        "reason": "receipt fresh and bound"
+      },
+      "verdict": "PASS"
+    },
+    "N1_inject_detection": {
+      "scan_status": "detected_and_ignored",
+      "scan_matches": [
+        "ignore_previous_instructions",
+        "exfiltration"
+      ],
+      "receipt_status": "detected_and_ignored",
+      "verdict": "PASS"
+    },
+    "N1b_empty_text": {
+      "scan_status": "not_detected",
+      "scan_matches": [],
+      "verdict": "PASS"
+    },
+    "N1c_unknown_ruleset": {
+      "error": "unknown ruleset hash 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' (fail closed)",
+      "verdict": "PASS"
+    },
+    "N2_tampered_source": {
+      "evaluation": {
+        "status": "not_reviewed",
+        "cache_state": "tampered",
+        "reason": "source bytes changed since review"
+      },
+      "verdict": "PASS"
+    },
+    "N2b_ignored_policy": {
+      "evaluation": {
+        "status": "not_reviewed",
+        "cache_state": "ignored",
+        "reason": "policy ruleset changed since review"
+      },
+      "verdict": "PASS"
+    },
+    "N2c_expired": {
+      "evaluation": {
+        "status": "not_reviewed",
+        "cache_state": "expired",
+        "reason": "review older than 3600s TTL"
+      },
+      "verdict": "PASS"
+    },
+    "N3_fake_receipt_bad_evidence": {
+      "error": "evidence_sha256 must be a lowercase SHA-256",
+      "verdict": "PASS"
+    },
+    "N3b_fake_receipt_no_reviewer": {
+      "error": "reviewer must be non-empty",
+      "verdict": "PASS"
+    },
+    "N3c_fake_receipt_bad_status": {
+      "error": "status must be one of ['detected_and_ignored', 'not_detected'], got 'totally_safe'",
+      "verdict": "PASS"
+    },
+    "N3d_absent_document": {
+      "evaluation": {
+        "status": "not_reviewed",
+        "cache_state": "absent"
+      },
+      "verdict": "PASS"
+    },
+    "W06_1_idempotency": {
+      "key_a": "1601c4254382734b70eb3b74535ee26090088752f26a618698077663f202ff6d",
+      "key_b": "cf51e6f3e9813a819a4d14f0235c22039f3b9c73bf556a407690b3eca4b4882c",
+      "key_c": "f0e10abf4cbdb69d2136efb2eb2fec898c6e2bdd0d7708872cf49db222ecee47",
+      "keys_differ_a_b": true,
+      "keys_differ_a_c": true,
+      "same_request_reuse": true,
+      "same_key_diff_payload_rejected": true,
+      "violation_error": "Same idempotency key 1601c4254382734b... but different payload (stored=53a23a68572eb0cd..., new=6c2941daa5237604...). FAIL-CLOSED: must reject.",
+      "verdict": "PASS"
+    },
+    "STALE_byte_change": {
+      "original_hash": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+      "stale_hash": "dbace6f29f9d316f4ab2215f787c84dd613b943282d3e444c4863d9ac77cf89a",
+      "evaluation": {
+        "status": "not_reviewed",
+        "cache_state": "tampered",
+        "reason": "source bytes changed since review"
+      },
+      "verdict": "PASS"
+    }
+  },
+  "summary": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "all_passed": true
+  }
+}

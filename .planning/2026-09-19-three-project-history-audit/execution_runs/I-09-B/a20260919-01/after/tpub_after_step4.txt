@@ -1,0 +1,43 @@
+﻿..............................................F.                         [100%]
+================================== FAILURES ===================================
+_____________ test_c2_registry_failure_exits_without_half_output ______________
+
+tmp_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/scratch/tpub-after4/test_c2_registry_failure_exits0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001E45F57C950>
+
+    def test_c2_registry_failure_exits_without_half_output(tmp_path, monkeypatch):
+        """Registry append failure is injected IN-PROCESS via main() (a
+        subprocess would re-import the real _append)."""
+        sys.path.insert(0, str(ROOT / "tests"))
+        from test_recognition_bridge import forecast_document
+    
+        input_file = tmp_path / "input.json"
+        input_file.write_text(json.dumps(forecast_document()), encoding="utf-8")
+        out_file = tmp_path / "out.json"
+        monkeypatch.setenv("REVENUE_PUBLICATION_REGISTRY", str(tmp_path / "publications.jsonl"))
+        monkeypatch.setattr(
+            sys, "argv",
+            ["revenue_forecast.py", str(input_file), "--output", str(out_file)],
+        )
+    
+        import publication_registry
+    
+        def boom_append(entry):  # noqa: ARG001
+            raise RegistryError("injected registry failure")
+    
+        monkeypatch.setattr(publication_registry, "_append", boom_append)
+        rc = revenue_forecast.main()
+        assert rc == 2
+        # registry failure precedes the output write: no half-written output,
+        # no registry file
+>       assert not out_file.exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/scratch/tpub-after4/test_c2_registry_failure_exits0/out.json').exists
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-B\a20260919-01\iso\rf\tests\test_zr710_publication_txn.py:118: AssertionError
+---------------------------- Captured stderr call -----------------------------
+error: injected registry failure
+=========================== short test summary info ===========================
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/iso/rf/tests/test_zr710_publication_txn.py::test_c2_registry_failure_exits_without_half_output
+1 failed, 47 passed in 2.43s

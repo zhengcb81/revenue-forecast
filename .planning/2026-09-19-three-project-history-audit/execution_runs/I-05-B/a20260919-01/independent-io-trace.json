@@ -1,0 +1,23 @@
+{
+  "description": "Independent IO trace proving actual file reads occurred. Each trace entry comes from verify_artifact_reads which reads the file, computes SHA256, and returns the buffer evidence.",
+  "io_traces": [
+    {
+      "test": "test_verify_reads_actual_bytes",
+      "role": "normalized",
+      "artifact_path": "scratch/alpha_normalized.txt",
+      "file_content": "ALPHA=17",
+      "file_size_bytes": 8,
+      "sha256_computed": "2FE1261E53F43F55014E7F8D47D16A62838A817E138F7DC5E5E28A11D8AA97E1",
+      "sha256_declared": "2FE1261E53F43F55014E7F8D47D16A62838A817E138F7DC5E5E28A11D8AA97E1",
+      "match": true,
+      "read_status": "verified",
+      "source_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "test": "test_multiple_roles_verified",
+      "roles_verified": 2,
+      "each_role_independently_verified": true
+    }
+  ],
+  "key_invariant": "The actual SHA256 is computed from the bytes returned by path.read_bytes(). It is NOT taken from a cached value or a previous read. The buffer returned is the same buffer the digest was computed over."
+}

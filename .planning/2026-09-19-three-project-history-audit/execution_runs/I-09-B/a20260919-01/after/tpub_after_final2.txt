@@ -1,0 +1,55 @@
+﻿....................................................FF.....              [100%]
+================================== FAILURES ===================================
+______ TestPB2JSONWriteFailure.test_output_write_failure_prevents_commit ______
+
+self = <test_i09b_commit_protocol.TestPB2JSONWriteFailure object at 0x00000225E1189A90>
+tmp_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/scratch/tpub-after7/test_output_write_failure_prev0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000225E1EC64E0>
+
+    def test_output_write_failure_prevents_commit(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("REVENUE_PUBLICATION_REGISTRY", str(tmp_path / "registry.jsonl"))
+        result = run_forecast(forecast_document())
+    
+        # The JSON path is a directory (will fail to write)
+        bad_path = tmp_path / "output.json"
+        bad_path.mkdir()
+    
+        with pytest.raises(RegistryError, match="missing members"):
+            commit_publication(result, {"output_json": bad_path})
+    
+        # No registry entries
+>       assert not is_registered(result["input_sha256"])
+E       AssertionError: assert not True
+E        +  where True = is_registered('f5a8413ec0238fef016fba5ae9d88a58fcba3504bf6ab6d99da7cdbdae0f0b9d')
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-B\a20260919-01\iso\rf\tests\test_i09b_commit_protocol.py:138: AssertionError
+____ TestPB3MarkdownWriteFailure.test_partial_member_write_prevents_commit ____
+
+self = <test_i09b_commit_protocol.TestPB3MarkdownWriteFailure object at 0x00000225E1189BD0>
+tmp_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/scratch/tpub-after7/test_partial_member_write_prev0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000225E1EFF4D0>
+
+    def test_partial_member_write_prevents_commit(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("REVENUE_PUBLICATION_REGISTRY", str(tmp_path / "registry.jsonl"))
+        result = run_forecast(forecast_document())
+    
+        json_path = tmp_path / "forecast.json"
+        json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    
+        # Markdown path is a directory (will fail)
+        bad_md = tmp_path / "report.md"
+        bad_md.mkdir()
+    
+        with pytest.raises(RegistryError, match="missing members"):
+            commit_publication(result, {"output_json": json_path, "output_markdown": bad_md})
+    
+        # No registry entries — half-package is not committed
+>       assert not is_registered(result["input_sha256"])
+E       AssertionError: assert not True
+E        +  where True = is_registered('f5a8413ec0238fef016fba5ae9d88a58fcba3504bf6ab6d99da7cdbdae0f0b9d')
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-B\a20260919-01\iso\rf\tests\test_i09b_commit_protocol.py:164: AssertionError
+=========================== short test summary info ===========================
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/iso/rf/tests/test_i09b_commit_protocol.py::TestPB2JSONWriteFailure::test_output_write_failure_prevents_commit
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-09-B/a20260919-01/iso/rf/tests/test_i09b_commit_protocol.py::TestPB3MarkdownWriteFailure::test_partial_member_write_prevents_commit
+2 failed, 57 passed in 3.99s

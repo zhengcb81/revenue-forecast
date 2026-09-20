@@ -1,0 +1,39 @@
+[
+  {
+    "id": "CMD-W06B-REVIEW",
+    "purpose": "Execute the full review lifecycle: scan → record receipt → evaluate cache → idempotency key validation",
+    "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-B\\a20260919-01",
+    "argv": [
+      "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-B\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+      "-X", "utf8", "-B",
+      "scripts/w06b_review_harness.py",
+      "run1"
+    ],
+    "config_paths": [],
+    "allowed_write_roots": ["PLAN/execution_runs/I-06-B/a20260919-01/**"],
+    "network": "disabled",
+    "timeout_seconds": 60,
+    "expected_returncode": 0,
+    "expected_business_result": "14/14 cases PASS: P1(clean scan+receipt), P2(cache hit reuse), N1(inject detection), N1b(empty), N1c(unknown ruleset), N2(tampered), N2b(ignored), N2c(expired), N3(fake bad evidence), N3b(no reviewer), N3c(bad status), N3d(absent), W06_1(idempotency), STALE(byte change)",
+    "before_after_evidence": ["before/ (N/A - first run)", "after/review-logs/run1_results.json"],
+    "binding_status": "bound"
+  },
+  {
+    "id": "CMD-W06B-ZR507-PROBE",
+    "purpose": "Verify the processing_demand module works in isolation",
+    "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-B\\a20260919-01",
+    "argv": [
+      "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-B\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+      "-X", "utf8", "-B",
+      "scripts/test_pd.py"
+    ],
+    "config_paths": [],
+    "allowed_write_roots": ["PLAN/execution_runs/I-06-B/a20260919-01/**"],
+    "network": "disabled",
+    "timeout_seconds": 30,
+    "expected_returncode": 0,
+    "expected_business_result": "ZR-507 direct test: PASS (enqueue, claim, complete lifecycle verified)",
+    "before_after_evidence": [],
+    "binding_status": "bound"
+  }
+]

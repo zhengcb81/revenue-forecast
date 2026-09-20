@@ -1,0 +1,83 @@
+{
+  "card_id": "I-06-B",
+  "attempt_id": "a20260919-01",
+  "description": "Matrix of review invalidation scenarios: when does an existing receipt become invalid?",
+  "invalidation_scenarios": [
+    {
+      "id": "INV-1",
+      "scenario": "Source bytes changed (1+ byte)",
+      "cache_state": "tampered",
+      "status": "not_reviewed",
+      "action_required": "Re-scan and re-review; old receipt cannot be trusted",
+      "test_case": "STALE (p.15→p.16)",
+      "evidence": "run1_results.json.STALE_byte_change",
+      "verdict": "VERIFIED"
+    },
+    {
+      "id": "INV-2",
+      "scenario": "Policy/ruleset hash changed",
+      "cache_state": "ignored",
+      "status": "not_reviewed",
+      "action_required": "Re-scan with new ruleset; old receipt from different ruleset must not be trusted",
+      "test_case": "N2b (policy_hash='c'*64)",
+      "evidence": "run1_results.json.N2b_ignored_policy",
+      "verdict": "VERIFIED"
+    },
+    {
+      "id": "INV-3",
+      "scenario": "Receipt older than TTL",
+      "cache_state": "expired",
+      "status": "not_reviewed",
+      "action_required": "Re-scan; time-based expiry ensures freshness",
+      "test_case": "N2c (TTL=3600s, reviewed_at=2026-08-01, now=2026-12-01)",
+      "evidence": "run1_results.json.N2c_expired",
+      "verdict": "VERIFIED"
+    },
+    {
+      "id": "INV-4",
+      "scenario": "No receipt exists",
+      "cache_state": "absent",
+      "status": "not_reviewed",
+      "action_required": "Must perform initial review before consumption",
+      "test_case": "N3d (doc-nonexistent)",
+      "evidence": "run1_results.json.N3d_absent_document",
+      "verdict": "VERIFIED"
+    },
+    {
+      "id": "INV-5",
+      "scenario": "Malformed receipt (bad schema/status)",
+      "cache_state": "absent",
+      "status": "not_reviewed",
+      "action_required": "Malformed receipt treated as absent (fail closed)",
+      "test_case": "Existing CW test (test_evaluate_malformed_receipt_fails_closed)",
+      "evidence": "cw_test_prompt_injection_guard.py",
+      "verdict": "VERIFIED (existing test)"
+    },
+    {
+      "id": "INV-6",
+      "scenario": "Legacy unbound receipt (no source_sha256/policy_hash)",
+      "cache_state": "tampered",
+      "status": "not_reviewed",
+      "action_required": "Legacy receipt cannot be proven fresh → fail closed, treat as tampered",
+      "test_case": "Existing CW test (test_evaluate_legacy_unbound_receipt_is_tampered_not_hit)",
+      "evidence": "cw_test_prompt_injection_guard.py",
+      "verdict": "VERIFIED (existing test)"
+    },
+    {
+      "id": "INV-7",
+      "scenario": "Same idempotency key, different payload",
+      "cache_state": "N/A (pre-receipt)",
+      "status": "MUST REJECT",
+      "action_required": "Fail-closed: do not merge different requests under same key",
+      "test_case": "W06_1 (key_a with req_b payload)",
+      "evidence": "run1_results.json.W06_1_idempotency",
+      "verdict": "VERIFIED"
+    }
+  ],
+  "summary": {
+    "total_scenarios": 7,
+    "verified": 7,
+    "all_fail_closed": true,
+    "no_faked_green_in_any_scenario": true
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "card_id": "I-06-B",
+  "attempt_id": "a20260919-01",
+  "description": "Original request resume evidence — demonstrates what is resumable vs blocked",
+  "status": "PARTIALLY_BLOCKED",
+  "blocker": "I-06-A is blocked (D-W06 unsigned). The persistent demand store and original-request resume CLI do not exist in production. The review receipt lifecycle (scan → record → evaluate → cache hit) IS fully functional.",
+  "what_works": {
+    "scan_text": {
+      "status": "VERIFIED",
+      "evidence": "14/14 cases in review harness, including CLEAN, INJECT, empty, unknown ruleset",
+      "module": "prompt_injection_guard.py"
+    },
+    "record_prompt_injection_review": {
+      "status": "VERIFIED",
+      "evidence": "Receipts written with source_sha256 + policy_hash binding, read back correctly",
+      "module": "prompt_injection.py"
+    },
+    "evaluate_review": {
+      "status": "VERIFIED",
+      "evidence": "5 cache states tested: hit, tampered, ignored, expired, absent",
+      "module": "prompt_injection_guard.py"
+    },
+    "idempotency_key": {
+      "status": "VERIFIED (new implementation)",
+      "evidence": "W06-1 选 A: same request → reuse; same key + different payload → fail-closed rejection",
+      "module": "w06b_review_harness.py::ReviewIdempotencyStore"
+    },
+    "processing_demand": {
+      "status": "VERIFIED",
+      "evidence": "ZR-507 lifecycle (enqueue→claim→complete) works in isolation",
+      "module": "processing_demand.py"
+    }
+  },
+  "what_is_blocked": {
+    "persistent_demand_store": {
+      "reason": "D-W06 OPEN-1 unsigned; no production DB table/migration/API",
+      "dependency": "I-06-A blocked"
+    },
+    "original_request_resume_cli": {
+      "reason": "D-W06 OPEN-5 unsigned; no demand→source_preparation resume interface",
+      "dependency": "I-06-A blocked, D-W06 unsigned"
+    },
+    "cross_process_demand_query": {
+      "reason": "DemandQueue is pure memory; cannot verify cross-process persistence",
+      "dependency": "I-06-A blocked"
+    },
+    "full_source_preparation_chain": {
+      "reason": "Requires real CW catalog DB + filing-fetch + network",
+      "dependency": "I-07-A (not started)"
+    }
+  },
+  "conclusion": "The review RECEIPT LIFECYCLE (scan → record → evaluate → cache) is fully functional and verified. The INTEGRATION with persistent demands and original-request resume is blocked by D-W06 / I-06-A."
+}

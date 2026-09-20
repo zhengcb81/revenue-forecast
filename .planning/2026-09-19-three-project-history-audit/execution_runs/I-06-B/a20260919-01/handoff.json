@@ -1,0 +1,133 @@
+{
+  "card_id": "I-06-B",
+  "parent": "I-06",
+  "attempt_id": "a20260919-01",
+  "card_title": "执行真实审核并从原请求恢复",
+  "status": "review_pending",
+  "reviewer_status": "PENDING independent review — 实现者未自签",
+  "owner": "来源安全 reviewer 冻结方法 / 独立 reviewer 验收",
+  "completed_steps": [
+    "1 领取: card_I-06-B + parent I-06 原文 + START_HERE + common_wiki_cards + review_and_handoff 已读",
+    "2 绑定: binding.json 写入（prod source hashes、interpreter、allowed_write_roots、network=disabled）",
+    "3 读证据: prompt_injection.py / prompt_injection_guard.py / processing_demand.py / test_prompt_injection_guard.py / source_preparation.py / I-06-A decision+oracle+handoff 全部完整读取",
+    "4 冻结预期: oracle.md（P1/P2/N1/N1b/N1c/N2/N2b/N2c/N3/N3b/N3c/N3d/W06-1/STALE 共 14 判据），冻结于运行前",
+    "5 修改前检查: production source hashes 已记录（CW 全部与 binding 一致；RF source_preparation.py hash 变更由其他卡引起，非本 attempt）",
+    "6 最小修改: 新增 w06b_review_harness.py（review lifecycle + W06-1 idempotency key 实现）+ test_pd.py（ZR-507 direct probe）；零生产仓改动",
+    "7 修改后检查: 14/14 review lifecycle cases PASS（run1）；ZR-507 direct test PASS；production CW hashes unchanged",
+    "8 交审: 所有证据文件写入 after/，handoff.json 为 review_pending",
+    "9 接续: 待独立 reviewer 验收"
+  ],
+  "next_step_number": 10,
+  "next_action": "独立 reviewer 读 evidence 并复验：(a) 重算至少一个 key hash 或 scan 结果；(b) 验证 production repos 未被修改；(c) 判定 blocked 项的接受条件",
+  "frozen_vs_measured": {
+    "P1_clean_scan_and_receipt": {
+      "expected": "scan not_detected + receipt with source_sha256/policy_hash binding + read-back matches",
+      "measured": "scan_status=not_detected, receipt_written=true, receipt_read_back with all 7 fields, verdict=PASS",
+      "verdict": "PASS"
+    },
+    "P2_cache_hit_reuse": {
+      "expected": "evaluate_review returns cache_state=hit, status=not_detected",
+      "measured": "cache_state=hit, status=not_detected, reason='receipt fresh and bound'",
+      "verdict": "PASS"
+    },
+    "N1_inject_detection": {
+      "expected": "scan returns detected_and_ignored with ignore_previous_instructions and exfiltration matches; receipt records detected_and_ignored",
+      "measured": "scan matches=['ignore_previous_instructions','exfiltration'], receipt_status=detected_and_ignored",
+      "verdict": "PASS"
+    },
+    "N1c_unknown_ruleset": {
+      "expected": "PromptInjectionGuardError('unknown ruleset hash')",
+      "measured": "exact match",
+      "verdict": "PASS"
+    },
+    "N2_tampered_source": {
+      "expected": "evaluate_review returns cache_state=tampered, status=not_reviewed",
+      "measured": "cache_state=tampered, reason='source bytes changed since review'",
+      "verdict": "PASS"
+    },
+    "N2b_ignored_policy": {
+      "expected": "evaluate_review returns cache_state=ignored, status=not_reviewed",
+      "measured": "cache_state=ignored, reason='policy ruleset changed since review'",
+      "verdict": "PASS"
+    },
+    "N2c_expired": {
+      "expected": "evaluate_review returns cache_state=expired, status=not_reviewed",
+      "measured": "cache_state=expired, reason='review older than 3600s TTL'",
+      "verdict": "PASS"
+    },
+    "N3_fake_receipt_bad_evidence": {
+      "expected": "PromptInjectionReviewError('evidence_sha256 must be a lowercase SHA-256')",
+      "measured": "exact match",
+      "verdict": "PASS"
+    },
+    "W06_1_idempotency": {
+      "expected": "different entity/as_of_date → different keys; same request → reuse; same key + different payload → fail-closed reject",
+      "measured": "key_a=1601c425..., key_b=cf51e6f3..., key_c=f0e10abf...; keys_differ_a_b=true, keys_differ_a_c=true, same_request_reuse=true, same_key_diff_payload_rejected=true",
+      "verdict": "PASS"
+    },
+    "STALE_byte_change": {
+      "expected": "evaluate_review with stale hash returns tampered, status=not_reviewed",
+      "measured": "cache_state=tampered, reason='source bytes changed since review'",
+      "verdict": "PASS"
+    }
+  },
+  "input_hashes": {
+    "CW/src/company_wiki/source_catalog/prompt_injection.py": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+    "CW/src/company_wiki/source_catalog/prompt_injection_guard.py": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+    "CW/src/company_wiki/source_catalog/processing_demand.py": "90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b",
+    "CW/tests/unit/test_prompt_injection_guard.py": "c05e25fb4f2e3e1c72143ee3a7c56eccf8a7bddf750efb0394984561484f9bae",
+    "RF/scripts/source_preparation.py (at binding time)": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46"
+  },
+  "current_source_hashes": {
+    "CW/src/company_wiki/source_catalog/prompt_injection.py": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618 (UNCHANGED)",
+    "CW/src/company_wiki/source_catalog/prompt_injection_guard.py": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08 (UNCHANGED)",
+    "CW/src/company_wiki/source_catalog/processing_demand.py": "90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b (UNCHANGED)",
+    "RF/scripts/source_preparation.py (post-run)": "8070d60df1d730a400f76d7031011f8d0f51ea73dcab224aa0d4a9524ed131e7 (CHANGED BY ANOTHER CARD, not this attempt)",
+    "prod_repos_modified_by_this_attempt": "NONE"
+  },
+  "changed_paths": [
+    "execution_runs/I-06-B/a20260919-01/scripts/w06b_review_harness.py (NEW: review lifecycle + W06-1 idempotency)",
+    "execution_runs/I-06-B/a20260919-01/scripts/test_pd.py (NEW: ZR-507 direct probe)"
+  ],
+  "prod_repos_modified": "NONE (CW porcelain unchanged except pre-existing CLAUDE.md/README.md; RF changes by other cards only)",
+  "commands_executed": "see commands.json (CMD-W06B-REVIEW, CMD-W06B-ZR507-PROBE)",
+  "raw_exit_codes": {
+    "CMD-W06B-REVIEW": 0,
+    "CMD-W06B-ZR507-PROBE": 0
+  },
+  "expected_exit_codes": {
+    "CMD-W06B-REVIEW": 0,
+    "CMD-W06B-ZR507-PROBE": 0
+  },
+  "open_questions": [
+    "D-W06 OPEN-1: persistent demand store location (blocks full original-request resume)",
+    "D-W06 OPEN-4: reviewer identity binding (blocks reviewer credential verification)",
+    "D-W06 OPEN-5: demand→source_preparation resume interface (blocks full end-to-end)",
+    "D-W06 OPEN-6: detected_and_ignored attribution policy",
+    "RF source_preparation.py hash drift: changed by another card during this attempt (pre-bind: 5ec16eaf..., post-run: 8070d60d...)"
+  ],
+  "blocked_by": [
+    "I-06-A blocked (D-W06 unsigned) — persistent demand store and original-request resume CLI unavailable",
+    "D-W06 OPEN-1..OPEN-6 unsigned — full end-to-end review→demand→resume chain cannot be product-implemented"
+  ],
+  "evidence_paths": [
+    "execution_runs/I-06-B/a20260919-01/binding.json",
+    "execution_runs/I-06-B/a20260919-01/oracle.md",
+    "execution_runs/I-06-B/a20260919-01/decision.md",
+    "execution_runs/I-06-B/a20260919-01/commands.json",
+    "execution_runs/I-06-B/a20260919-01/scripts/w06b_review_harness.py",
+    "execution_runs/I-06-B/a20260919-01/scripts/test_pd.py",
+    "execution_runs/I-06-B/a20260919-01/after/review-logs/run1_results.json",
+    "execution_runs/I-06-B/a20260919-01/after/review-input-and-evidence.json",
+    "execution_runs/I-06-B/a20260919-01/after/review-execution-events.json",
+    "execution_runs/I-06-B/a20260919-01/after/original-request-resume.json",
+    "execution_runs/I-06-B/a20260919-01/after/review-invalidation-matrix.json",
+    "execution_runs/I-06-B/a20260919-01/recovery/README.md",
+    "execution_runs/I-06-B/a20260919-01/handoff.json"
+  ],
+  "START_HERE_fields": {
+    "recorded_status_transition": "planned → implementing → review_pending",
+    "cannot_replace": "D-W06 签署; I-06-A 的持久需求; 完整原请求恢复 CLI",
+    "九步执行法位置": "全部 9 步完成（step 9 = 接续，待独立 reviewer）"
+  }
+}

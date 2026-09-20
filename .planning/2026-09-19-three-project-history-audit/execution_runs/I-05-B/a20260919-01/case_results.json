@@ -1,0 +1,92 @@
+{
+  "card_id": "I-05-B",
+  "attempt_id": "a20260919-01",
+  "oracle_cases": {
+    "W05B-P1": {
+      "type": "positive",
+      "description": "Read verified normalized sentinel ALPHA=17",
+      "tests": [
+        "test_select_returns_plan",
+        "test_verify_reads_actual_bytes",
+        "test_verified_events_in_receipt",
+        "test_multiple_roles_verified"
+      ],
+      "all_passed": true,
+      "oracle_match": "verified_read_events has role=normalized, bytes_read=8, sha256 matches ALPHA sentinel"
+    },
+    "W05B-P2": {
+      "type": "positive",
+      "description": "raw-only need, no parser/LLM forced",
+      "tests": ["test_raw_only_no_parser_forced"],
+      "all_passed": true,
+      "oracle_match": "only normalized selected for read, no parser/LLM invocation forced"
+    },
+    "W05B-N1": {
+      "type": "negative",
+      "description": "Select without actual read — insufficient proof",
+      "tests": [
+        "test_selection_alone_proves_nothing",
+        "test_empty_verify_without_selection",
+        "test_fake_events_cannot_be_injected"
+      ],
+      "all_passed": true,
+      "oracle_match": "artifact_read_events cannot be fabricated; selection alone proves nothing"
+    },
+    "W05B-N2": {
+      "type": "negative",
+      "description": "Replace artifact between select and read — BETA=29 tamper",
+      "tests": [
+        "test_replaced_artifact_detected",
+        "test_same_length_different_content_detected",
+        "test_old_hash_not_paired_with_new_bytes"
+      ],
+      "all_passed": true,
+      "oracle_match": "content_sha256_mismatch detected; old hash success not paired with new bytes"
+    },
+    "W05B-N3": {
+      "type": "negative",
+      "description": "denied root / missing / out-of-bounds / empty path",
+      "tests": [
+        "test_missing_file_detected",
+        "test_no_bundle_returns_empty",
+        "test_malformed_bundle_returns_empty",
+        "test_missing_role_in_bundle",
+        "test_empty_path_detected"
+      ],
+      "all_passed": true,
+      "oracle_match": "refused at read gate with appropriate reason codes"
+    },
+    "W05B-N4": {
+      "type": "negative",
+      "description": "Source hash and artifact hash never mixed",
+      "tests": ["test_source_sha_in_verified_event"],
+      "all_passed": true,
+      "oracle_match": "source_sha256 != content_sha256; separate identities"
+    },
+    "Integration": {
+      "type": "integration",
+      "description": "prepare_source receipt carries verified events",
+      "tests": ["test_prepare_source_receipt_has_verified_events"],
+      "all_passed": true,
+      "oracle_match": "receipt has artifact_read (plan) AND artifact_read_events (IO proof)"
+    },
+    "RaceCondition": {
+      "type": "negative",
+      "description": "TOCTOU: select then tamper then verify",
+      "tests": [
+        "test_select_then_tamper_then_verify",
+        "test_select_then_delete_then_verify"
+      ],
+      "all_passed": true,
+      "oracle_match": "file changes between select and verify are detected"
+    }
+  },
+  "regression": {
+    "fc904": {
+      "file": "tests/test_fc904_artifact_selection.py",
+      "before": "11 passed",
+      "after": "11 passed",
+      "no_regression": true
+    }
+  }
+}

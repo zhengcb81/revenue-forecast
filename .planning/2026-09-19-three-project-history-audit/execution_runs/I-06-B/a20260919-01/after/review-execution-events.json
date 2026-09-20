@@ -1,0 +1,121 @@
+{
+  "card_id": "I-06-B",
+  "attempt_id": "a20260919-01",
+  "description": "Ordered events from the review lifecycle execution",
+  "events": [
+    {
+      "seq": 1,
+      "event": "scan_clean",
+      "function": "scan_text",
+      "input": "CLEAN_TEXT (sha256=58e517ac...)",
+      "output": {"status": "not_detected", "matches": []},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 2,
+      "event": "record_receipt_clean",
+      "function": "record_prompt_injection_review",
+      "input": {"document_id": "doc-clean", "status": "not_detected", "reviewer": "zr302-test", "source_sha256": "58e517ac...", "policy_hash": "19ace502..."},
+      "output": {"written": true, "receipt_keys": ["schema_version", "status", "reviewer", "reviewed_at", "evidence_sha256", "source_sha256", "policy_hash"]},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 3,
+      "event": "read_receipt_clean",
+      "function": "read_prompt_injection_review",
+      "input": {"document_id": "doc-clean"},
+      "output": {"found": true, "source_sha256_bound": true, "policy_hash_bound": true},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 4,
+      "event": "evaluate_hit",
+      "function": "evaluate_review",
+      "input": {"document_id": "doc-clean", "source_sha256": "58e517ac...", "policy_hash": "19ace502...", "ttl_seconds": 2592000},
+      "output": {"status": "not_detected", "cache_state": "hit", "reason": "receipt fresh and bound"},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 5,
+      "event": "scan_inject",
+      "function": "scan_text",
+      "input": "INJECT_TEXT (sha256=a8e0f0b0...)",
+      "output": {"status": "detected_and_ignored", "matches": ["ignore_previous_instructions", "exfiltration"]},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 6,
+      "event": "record_receipt_inject",
+      "function": "record_prompt_injection_review",
+      "input": {"document_id": "doc-inject", "status": "detected_and_ignored"},
+      "output": {"written": true},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 7,
+      "event": "evaluate_tampered",
+      "function": "evaluate_review",
+      "input": {"document_id": "doc-clean", "source_sha256": "dbace6f2... (changed bytes)", "policy_hash": "19ace502..."},
+      "output": {"status": "not_reviewed", "cache_state": "tampered", "reason": "source bytes changed since review"},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 8,
+      "event": "evaluate_ignored",
+      "function": "evaluate_review",
+      "input": {"document_id": "doc-clean", "source_sha256": "58e517ac...", "policy_hash": "cccccccc... (changed policy)"},
+      "output": {"status": "not_reviewed", "cache_state": "ignored", "reason": "policy ruleset changed since review"},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 9,
+      "event": "evaluate_expired",
+      "function": "evaluate_review",
+      "input": {"document_id": "doc-clean", "now": "2026-12-01T00:00:00Z", "ttl_seconds": 3600},
+      "output": {"status": "not_reviewed", "cache_state": "expired", "reason": "review older than 3600s TTL"},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 10,
+      "event": "reject_fake_bad_evidence",
+      "function": "record_prompt_injection_review",
+      "input": {"evidence_sha256": "not-a-valid-hash"},
+      "output": {"error": "PromptInjectionReviewError: evidence_sha256 must be a lowercase SHA-256"},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 11,
+      "event": "reject_fake_no_reviewer",
+      "function": "record_prompt_injection_review",
+      "input": {"reviewer": ""},
+      "output": {"error": "PromptInjectionReviewError: reviewer must be non-empty"},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 12,
+      "event": "reject_fake_bad_status",
+      "function": "record_prompt_injection_review",
+      "input": {"status": "totally_safe"},
+      "output": {"error": "PromptInjectionReviewError: status must be one of ['detected_and_ignored', 'not_detected']"},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 13,
+      "event": "idempotency_key_same_reuse",
+      "function": "compute_idempotency_key + check_or_register",
+      "input": {"key": "1601c425...", "payload": "same as first registration"},
+      "output": {"action": "reuse", "receipt": {"status": "not_detected"}},
+      "timestamp": "2026-09-20T10:47:47Z"
+    },
+    {
+      "seq": 14,
+      "event": "idempotency_key_diff_payload_reject",
+      "function": "check_or_register",
+      "input": {"key": "1601c425...", "payload": "different entity (紫金矿业)"},
+      "output": {"error": "IdempotencyViolation: FAIL-CLOSED: must reject"},
+      "timestamp": "2026-09-20T10:47:47Z"
+    }
+  ],
+  "total_events": 14,
+  "execution_result": "14/14 PASS"
+}

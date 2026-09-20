@@ -1,0 +1,91 @@
+{
+  "test_file": "test_w05b_verified_artifact_read.py",
+  "test_file_hash": "F9845F170E0EFF4B705993A3659CC0D88EE7C476AE019641B712E4968DF9595D",
+  "run_command": "python -X utf8 -B -m pytest -p no:cacheprovider --basetemp <scratch>/pytest <attempt>/iso/tests/test_w05b_verified_artifact_read.py -v",
+  "python": "C:\\Miniconda\\python.exe",
+  "python_version": "3.13.9",
+  "pytest_version": "9.1.1",
+  "total_tests": 20,
+  "passed": 20,
+  "failed": 0,
+  "errors": 0,
+  "duration_seconds": 0.72,
+  "test_cases": {
+    "W05B-P1": {
+      "class": "TestW05BP1PositiveRead",
+      "tests": [
+        "test_select_returns_plan",
+        "test_verify_reads_actual_bytes",
+        "test_verified_events_in_receipt",
+        "test_multiple_roles_verified"
+      ],
+      "all_passed": true
+    },
+    "W05B-P2": {
+      "class": "TestW05BP2PositiveRawOnly",
+      "tests": [
+        "test_raw_only_no_parser_forced"
+      ],
+      "all_passed": true
+    },
+    "W05B-N1": {
+      "class": "TestW05BN1NegativeSelectWithoutRead",
+      "tests": [
+        "test_selection_alone_proves_nothing",
+        "test_empty_verify_without_selection",
+        "test_fake_events_cannot_be_injected"
+      ],
+      "all_passed": true
+    },
+    "W05B-N2": {
+      "class": "TestW05BN2NegativeTamperBetweenSelectAndRead",
+      "tests": [
+        "test_replaced_artifact_detected",
+        "test_same_length_different_content_detected",
+        "test_old_hash_not_paired_with_new_bytes"
+      ],
+      "all_passed": true
+    },
+    "W05B-N3": {
+      "class": "TestW05BN3NegativeSecurity",
+      "tests": [
+        "test_missing_file_detected",
+        "test_no_bundle_returns_empty",
+        "test_malformed_bundle_returns_empty",
+        "test_missing_role_in_bundle",
+        "test_empty_path_detected"
+      ],
+      "all_passed": true
+    },
+    "W05B-N4": {
+      "class": "TestW05BN4NegativeSourceBinding",
+      "tests": [
+        "test_source_sha_in_verified_event"
+      ],
+      "all_passed": true
+    },
+    "Integration": {
+      "class": "TestW05BIntegrationReceipt",
+      "tests": [
+        "test_prepare_source_receipt_has_verified_events"
+      ],
+      "all_passed": true
+    },
+    "RaceCondition": {
+      "class": "TestW05BRaceCondition",
+      "tests": [
+        "test_select_then_tamper_then_verify",
+        "test_select_then_delete_then_verify"
+      ],
+      "all_passed": true
+    }
+  },
+  "regression": {
+    "fc904_existing_tests": {
+      "file": "tests/test_fc904_artifact_selection.py",
+      "total": 11,
+      "passed": 11,
+      "failed": 0
+    }
+  }
+}

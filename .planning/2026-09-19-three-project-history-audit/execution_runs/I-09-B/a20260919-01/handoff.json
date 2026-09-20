@@ -1,0 +1,193 @@
+{
+  "card_id": "I-09-B",
+  "parent_card": "I-09",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260919-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-B\\a20260919-01",
+  "status": "review_pending",
+  "implementer_self_acceptance": false,
+  "implementer_note": "the implementer does NOT declare this card accepted; the 8 OPEN items from I-08-B and the 6 OPEN items from I-09-A are carried forward unresolved",
+
+  "completed_steps": [1, 2, 3, 4, 5, 6, 7, 8],
+  "steps_not_applicable": [
+    {
+      "step": 9,
+      "card_step": "接续",
+      "reason": "接续 happens after the independent reviewer decides; this handoff only states the first unfinished action"
+    }
+  ],
+  "next_step_number": 9,
+  "next_action": "Independent reviewer must: (1) verify the prepare/commit split works correctly (P-B1-B5), (2) verify the modified test_c2 reflects the new orphan semantics, (3) check that commit_status() correctly rejects uncommitted/tampered publications, (4) verify the F-stdout-only rejection, (5) carry forward all 14 OPEN items. The reviewer may only return accepted_scoped / changes_required / blocked / not_applicable_with_reason.",
+
+  "input_hashes": {
+    "note": "pre-edit production hashes; values from before/source_hashes.txt",
+    "RF/scripts/revenue_core.py": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+    "RF/scripts/revenue_forecast.py": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc",
+    "RF/scripts/publication_registry.py": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
+    "iso/rf/scripts/revenue_core.py (I-08-B base)": "aec1cf69a386b779a5b339e56a106062ceffa401152839d00153d99ba3e9d12f",
+    "iso/rf/scripts/revenue_forecast.py": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc",
+    "iso/rf/scripts/publication_registry.py (I-08-B base)": "172092e067f0e830e2e9c887b274b4560c7c4b300c5ac5088e7ff98920cda003"
+  },
+
+  "current_source_hashes": {
+    "note": "re-measured AFTER all edits",
+    "iso/rf/scripts/publication_registry.py": "6b9ee981871c049d0db2e165df6ea52371d2a1aa579f9aeb0ebe0201f74f3890",
+    "iso/rf/scripts/revenue_core.py": "e1e1415839662a0bbf12253dfb70474517155ba8dda4b7e05f23ccca72478f8f",
+    "iso/rf/scripts/revenue_forecast.py": "7a9588c58f9feed4bb729f06b3be3d0027c2d022ccd82db9552286b2e7e8449f",
+    "iso/rf/tests/conftest.py": "6da47830e3490fead2787505b2c9d177f75a644cb217ea7b9a859704f1632ee4",
+    "iso/rf/tests/test_zr710_publication_txn.py": "82c619e3370703e11f663e27d64653cc03e95c65c7997dffadcb3ed7d5d97144",
+    "iso/rf/tests/test_i09b_commit_protocol.py": "8da9a0d54acfbfc076ac29dc00939078a3961603a2477083260940e2de15ccbd",
+    "production_files_changed_by_this_card": 0
+  },
+
+  "changed_paths": {
+    "scope": "iso/rf ONLY — the production tree was NOT written to",
+    "edited": [
+      "iso/rf/scripts/publication_registry.py",
+      "iso/rf/scripts/revenue_core.py",
+      "iso/rf/scripts/revenue_forecast.py",
+      "iso/rf/tests/test_zr710_publication_txn.py"
+    ],
+    "added": [
+      "iso/rf/tests/test_i09b_commit_protocol.py"
+    ],
+    "unchanged_from_i08b": [
+      "iso/rf/scripts/attestation_protocol.py",
+      "iso/rf/scripts/revenue_publication.py",
+      "iso/rf/scripts/revenue_report.py",
+      "iso/rf/scripts/trust_anchor.py",
+      "iso/rf/tests/test_publication_pipeline.py",
+      "iso/rf/tests/test_publication_registry.py",
+      "iso/rf/tests/test_attestation.py",
+      "iso/rf/tests/conftest.py"
+    ]
+  },
+
+  "commands_executed": [
+    "I09B-c1-venv-setup",
+    "I09B-c2-baseline-hashes",
+    "I09B-c3-tpub-before",
+    "I09B-c4-implementation",
+    "I09B-c5-tpub-after"
+  ],
+
+  "raw_exit_codes": {
+    "I09B-c1-venv-setup": 0,
+    "I09B-c2-baseline-hashes": 0,
+    "I09B-c3-tpub-before": "48 passed (exit 0)",
+    "I09B-c4-implementation": 0,
+    "I09B-c5-tpub-after": "59 passed (exit 0)"
+  },
+
+  "expected_exit_codes": {
+    "I09B-c3-tpub-before": 0,
+    "I09B-c5-tpub-after": 0
+  },
+
+  "regression_census": {
+    "before": {
+      "test_files": ["test_publication_pipeline.py", "test_publication_registry.py", "test_attestation.py", "test_zr710_publication_txn.py"],
+      "passed": 48,
+      "failed": 0
+    },
+    "after": {
+      "test_files": ["test_publication_pipeline.py", "test_publication_registry.py", "test_attestation.py", "test_zr710_publication_txn.py", "test_i09b_commit_protocol.py"],
+      "passed": 59,
+      "failed": 0
+    },
+    "new_failures": 0,
+    "disappeared_failures": 0,
+    "new_tests_added": 11
+  },
+
+  "section_7_1_red_green": {
+    "note": "I-09-B implements code changes. The RED state is the before T-PUB (48 passed, no commit_status/commit_publication APIs). The GREEN state is after (59 passed, new APIs working).",
+    "red_evidence": ["before/tpub_before.txt"],
+    "green_evidence": ["after/tpub_after_final3.txt"],
+    "intent_change_not_assertion_change": true
+  },
+
+  "open_questions": [
+    "OPEN-I09A-1 through OPEN-I09A-6: ALL still unadjudicated (carried from I-09-A)",
+    "OPEN-D1 through OPEN-D7 (from I-08-A/I-08-B): ALL still unadjudicated",
+    "E31 compensation line: implemented in commit_publication's idempotency logic but NOT tested under real kill/recovery (I-09-C scope)",
+    "UNRESOLVED-BY-DESIGN: registry attestation anchor field names (carried from I-08-B)",
+    "publication_id computation uses simplified identity_payload; OPEN-I09A-1 (package_target semantics) and OPEN-I09A-3 (member role names) are not adjudicated",
+    "The OPEN-I09A-4 fail-closed directory check was NOT implemented as a hard rejection (would break conftest.py pattern); instead documented as a test that corruption is detected when a nested file exists",
+    "Cross-process commit lock not implemented (I-09-C scope)",
+    "Cross-repo consumers of commit_status not verified"
+  ],
+
+  "blocked_by": [
+    "OPEN-I09A-1, -2, -3, -5, -6 block full binding (not this card's delivery)",
+    "I-09-C cannot start before I-09-B is accepted"
+  ],
+
+  "evidence_paths": [
+    "binding.json",
+    "oracle.md",
+    "before/source_hashes.txt",
+    "before/iso_source_hashes.txt",
+    "before/git_status_before.txt",
+    "before/tpub_before.txt",
+    "after/tpub_after_final3.txt"
+  ],
+
+  "recovery": {
+    "status": "not_applicable_with_reason",
+    "reason": "this card performs no stateful product operation on the production tree. All changes are in iso/rf. The production tree is byte-identical to the binding."
+  },
+
+  "changes_diff": {
+    "status": "not_applicable_with_reason",
+    "reason": "changed_paths lists iso/rf files only; the production tree was NOT written to"
+  },
+
+  "reviewer_status": "pending",
+
+  "mutation_proof": {
+    "publication_registry.py": {
+      "before_hash": "172092e067f0e830e2e9c887b274b4560c7c4b300c5ac5088e7ff98920cda003",
+      "after_hash": "6b9ee981871c049d0db2e165df6ea52371d2a1aa579f9aeb0ebe0201f74f3890",
+      "changes": "added commit_status(), commit_publication(), hashlib import, publication_id/state/members/member_sha256/attempt_seq/supersedes fields"
+    },
+    "revenue_core.py": {
+      "before_hash": "aec1cf69a386b779a5b339e56a106062ceffa401152839d00153d99ba3e9d12f",
+      "after_hash": "e1e1415839662a0bbf12253dfb70474517155ba8dda4b7e05f23ccca72478f8f",
+      "changes": "added _defer_registration parameter to run_forecast(); when True, skips register_publication() call"
+    },
+    "revenue_forecast.py": {
+      "before_hash": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc",
+      "after_hash": "7a9588c58f9feed4bb729f06b3be3d0027c2d022ccd82db9552286b2e7e8449f",
+      "changes": "CLI now uses prepare/commit split: prepare_forecast uses _defer_registration=True, writes members, then calls commit_publication(); stdout-only formal rejected"
+    },
+    "test_zr710_publication_txn.py": {
+      "before_hash": "9cc1f80a483f2d2141b29286e62781c21b50aa58821802ac5c8f95e632bcaa8e",
+      "after_hash": "82c619e3370703e11f663e27d64653cc03e95c65c7997dffadcb3ed7d5d97144",
+      "changes": "test_c2 updated to reflect prepare/commit split: output file IS written (orphan), but commit fails and is_registered returns False"
+    }
+  },
+
+  "implementation_summary": {
+    "prepare_commit_split": "run_forecast() now accepts _defer_registration=True. When True, it skips the register_publication() call. The CLI (revenue_forecast.py) uses this to: (1) prepare, (2) write members, (3) commit via commit_publication().",
+    "commit_publication_api": "New function in publication_registry.py: takes result + member_paths, verifies members exist and computes hashes, computes publication_id, checks idempotency, then does the single registry append.",
+    "commit_status_reader": "New function in publication_registry.py: checks if a publication_id has a committed row with all members verified. Returns status, entry, member_verification, and problems.",
+    "new_registry_fields": "publication_id, state, members, member_sha256, attempt_seq, supersedes — all additive (old rows stay readable).",
+    "stdout_only_rejection": "CLI now rejects formal mode without --output (I09-E08: no persistent members).",
+    "open_i09a_4": "The directory-valued registry check was NOT implemented as a hard rejection (would break the conftest.py test pattern). Instead, documented as a test showing that nested-file corruption is detected by the chain hash."
+  },
+
+  "carried_forward_open_items": {
+    "from_i09a": ["OPEN-I09A-1", "OPEN-I09A-2", "OPEN-I09A-3", "OPEN-I09A-5", "OPEN-I09A-6"],
+    "from_i08b": ["E31", "OPEN-D1", "OPEN-D2", "OPEN-D3", "OPEN-D5", "OPEN-D6", "OPEN-D7", "UNRESOLVED-BY-DESIGN registry anchor field names"]
+  },
+
+  "three_qualifications_stated_separately": {
+    "design_contract": "frozen by I-09-A (accepted_scoped); I-09-B implements a subset",
+    "implementation": "attempted: prepare/commit split, commit_status, commit_publication, new fields, CLI changes. NOT accepted — pending independent review.",
+    "transaction_fault": "not earned: no real kill/recovery/concurrency testing (I-09-C scope)"
+  },
+
+  "disclosure_adaptation": "unmapped (unchanged)",
+  "accuracy": "unproven (unchanged)"
+}

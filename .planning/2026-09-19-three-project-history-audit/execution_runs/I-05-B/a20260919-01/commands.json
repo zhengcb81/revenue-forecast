@@ -1,0 +1,66 @@
+{
+  "commands": [
+    {
+      "id": "w05b-main-tests",
+      "purpose": "Run all 20 W05B verified artifact read tests",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-X", "utf8",
+        "-B",
+        "-m", "pytest",
+        "-p", "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/scratch/pytest",
+        "<attempt>/iso/tests/test_w05b_verified_artifact_read.py",
+        "-v"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/scratch"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "expected_business_result": "20 passed, 0 failed — all positive and negative cases pass",
+      "before_after_evidence": [
+        "before: no test file exists",
+        "after: 20 tests pass covering P1,P2,N1,N2,N3,N4,integration,race"
+      ],
+      "binding_status": "bound",
+      "actual_returncode": 0,
+      "actual_result": "20 passed in 0.72s"
+    },
+    {
+      "id": "w05b-regression-fc904",
+      "purpose": "Verify no regression in existing FC-904 artifact selection tests",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-X", "utf8",
+        "-B",
+        "-m", "pytest",
+        "-p", "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/scratch/pytest_fc904",
+        "tests/test_fc904_artifact_selection.py",
+        "-v"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/scratch"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "expected_business_result": "11 passed, 0 failed — all existing tests still pass",
+      "before_after_evidence": [
+        "before: 11 FC-904 tests pass",
+        "after: 11 FC-904 tests still pass with verify_artifact_reads addition"
+      ],
+      "binding_status": "bound",
+      "actual_returncode": 0,
+      "actual_result": "11 passed in 0.51s"
+    }
+  ]
+}

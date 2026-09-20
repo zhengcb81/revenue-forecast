@@ -1,0 +1,45 @@
+{
+  "description": "Demonstrates that select_artifact_roles returns a PLAN while verify_artifact_reads returns IO EVIDENCE. The two are independent: selection alone is insufficient proof.",
+  "evidence": {
+    "plan_only": {
+      "function": "select_artifact_roles",
+      "returns": ["artifact_read (list of roles)", "producer_events (list of roles)"],
+      "proves": "which roles SHOULD be read (intent)",
+      "does_not_prove": "bytes were actually consumed"
+    },
+    "io_evidence": {
+      "function": "verify_artifact_reads",
+      "returns": {
+        "verified_read_events": "list of events with role/path/hash/bytes_read/read_at",
+        "failed_read_events": "list of events with role/reason/detail"
+      },
+      "proves": "actual file bytes were read, SHA256 computed and matched"
+    },
+    "combined_receipt": {
+      "artifact_read": "PLAN from select_artifact_roles",
+      "artifact_read_events": "IO PROOF from verify_artifact_reads",
+      "artifact_failed_events": "FAILURES from verify_artifact_reads",
+      "producer_events": "PLAN for what needs production (no actual invocation)"
+    }
+  },
+  "demonstration": {
+    "alpha_sentinel": {
+      "file": "scratch/alpha_normalized.txt",
+      "content": "ALPHA=17",
+      "size_bytes": 8,
+      "sha256": "2FE1261E53F43F55014E7F8D47D16A62838A817E138F7DC5E5E28A11D8AA97E1",
+      "plan_result": ["normalized"],
+      "verified_event": {
+        "role": "normalized",
+        "read_status": "verified",
+        "bytes_read": 8,
+        "content_sha256_actual": "2FE1261E53F43F55014E7F8D47D16A62838A817E138F7DC5E5E28A11D8AA97E1",
+        "content_sha256_declared": "2FE1261E53F43F55014E7F8D47D16A62838A817E138F7DC5E5E28A11D8AA97E1"
+      }
+    },
+    "fake_event_detection": {
+      "test": "test_fake_events_cannot_be_injected",
+      "demonstrates": "real events have correct bytes_read and sha256; injected fakes would differ"
+    }
+  }
+}

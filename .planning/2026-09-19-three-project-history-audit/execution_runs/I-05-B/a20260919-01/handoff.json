@@ -1,0 +1,88 @@
+{
+  "card_id": "I-05-B",
+  "attempt_id": "a20260919-01",
+  "status": "review_pending",
+  "implementer": "subagent",
+  "reviewer_status": "not_reviewed",
+  "completed_steps": [
+    "1. Read card text and START_HERE",
+    "2. Clean up partial work and recreate attempt directory",
+    "3. Read all source files and evidence referenced by card",
+    "4. Create binding.json with hashes, paths, rulings",
+    "5. Write decision.md (W05-1=A, W05-2=A)",
+    "6. Freeze oracle.md before implementation",
+    "7. Implement verify_artifact_reads in company_wiki_source.py",
+    "8. Update source_preparation.py to use verified reads in receipt",
+    "9. Write test_w05b_verified_artifact_read.py (20 tests)",
+    "10. Run tests: 20 passed, 0 failed",
+    "11. Run regression: 11 FC-904 tests still pass",
+    "12. Pack evidence: all JSON files, diff, hashes"
+  ],
+  "next_step_number": 13,
+  "next_action": "Independent reviewer reads card, binding, oracle, diff, test results, and evidence files. Re-runs at least one negative case (e.g., tamper test). Writes review.md with accepted_scoped/changes_required/blocked verdict. NEVER self-sign.",
+  "input_hashes": {
+    "card_I-05-B.md": "read at runtime",
+    "START_HERE.md": "read at runtime",
+    "common_wiki_cards.md": "read at runtime",
+    "review_and_handoff.md": "read at runtime"
+  },
+  "current_source_hashes": {
+    "RF:scripts/company_wiki_source.py": "A55602E5C2881E64F888F39A224F82DB918190009DF3901497A5CD1E252E94AE",
+    "RF:scripts/source_preparation.py": "8070D60DF1D730A400F76D7031011F8D0F51EA73DCAB224AA0D4A9524ED131E7",
+    "CW:src/company_wiki/source_catalog/resolver.py": "783460a9f21679b439073fc6b82f4d5a43f583423d59e9ee627b0c9f149be21a",
+    "CW:src/company_wiki/source_catalog/artifact_handle.py": "3cc8fbf4f65380d17e2f0140390ef346f7cc17504854ff04b3ddf46498317b99"
+  },
+  "changed_paths": [
+    "RF:scripts/company_wiki_source.py",
+    "RF:scripts/source_preparation.py"
+  ],
+  "new_files": [
+    "test_w05b_verified_artifact_read.py"
+  ],
+  "commands_executed": [
+    {
+      "id": "w05b-main-tests",
+      "returncode": 0,
+      "result": "20 passed in 0.72s"
+    },
+    {
+      "id": "w05b-regression-fc904",
+      "returncode": 0,
+      "result": "11 passed in 0.51s"
+    }
+  ],
+  "raw_exit_codes": [0, 0],
+  "expected_exit_codes": [0, 0],
+  "open_questions": [
+    "D-W05 schema evolution: verify_artifact_reads event schema needs reviewer approval",
+    "Artifact path containment: verify_artifact_reads does not check allowed_roots (relies on validate_artifact upstream)",
+    "Producer invocation is out of scope (I-05-C); receipt carries plan only for producer_events"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "binding.json",
+    "decision.md",
+    "oracle.md",
+    "commands.json",
+    "changes.diff",
+    "case_results.json",
+    "selection-vs-read-events.json",
+    "independent-io-trace.json",
+    "sentinel-consumption.json",
+    "read-race-cases.json",
+    "before/source_hashes.json",
+    "after/source_hashes.json",
+    "after/test_results.json",
+    "handoff.json"
+  ],
+  "rulings_applied": {
+    "W05-1": "选 A: historical sections artifacts only get source-window binding, no per-slice hash depth",
+    "W05-2": "选 A: as_of_date mandatory = published_date"
+  },
+  "boundaries": {
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "self_sign": false,
+    "production_repos_read_only": true
+  }
+}
