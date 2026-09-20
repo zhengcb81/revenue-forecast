@@ -1,0 +1,64 @@
+F-LK2 RECOMPUTE (round-4 carry condition C1) - independent of prose
+generated_by: sim/verify_flk2.py
+command: & $PY -B sim/verify_flk2.py   (run from the attempt root)
+source_A: evidence/run/F-LK2-r{1..5}/ (counter.txt, payload.*.json, counter.journal.jsonl)
+source_B: evidence/lock-and-legacy.txt
+
+SOURCE B: evidence/lock-and-legacy.txt line 6 is the F-LK2 record
+  case=F-LK2 expected=200 processes=8 rounds=25 status=PASS
+  record finals            = [16, 35, 10, 56, 18]
+  record lost_updates      = [184, 165, 190, 144, 182]
+  record lost_updates_range= [144, 190]
+  record determinism       = NOT deterministic: the number of lost updates depends on scheduling; only 'updates are lost' is asserted
+
+SOURCE A: recomputed from the raw run directories
+  round       final proc rounds  useLk  parts    acq expect   lost
+  F-LK2-r1       16    8     25  false      8      0    200    184
+  F-LK2-r2       35    8     25  false      8      0    200    165
+  F-LK2-r3       10    8     25  false      8      0    200    190
+  F-LK2-r4       56    8     25  false      8      0    200    144
+  F-LK2-r5       18    8     25  false      8      0    200    182
+
+RECOMPUTE CHECKS
+  [PASS] A1 raw finals match the recorded `runs[].final`
+         detail: raw=[16, 35, 10, 56, 18] record_runs=[16, 35, 10, 56, 18]
+  [PASS] A2 raw finals match the recorded top-level `finals`
+         detail: [16, 35, 10, 56, 18]
+  [PASS] A3 raw lost_updates match the recorded `lost_updates`
+         detail: [184, 165, 190, 144, 182]
+  [PASS] A4 raw lost range matches the recorded `lost_updates_range`
+         detail: [144, 190]
+  [PASS] A5 expected total is one value and equals processes*rounds
+         detail: raw_expected=[200] record_expected=200
+  [PASS] A6 every raw round is the no-lock control (use_lock=false)
+         detail: [[false], [false], [false], [false], [false]]
+  [PASS] A7 no lock was taken in any round (control holds)
+         detail: [0, 0, 0, 0, 0]
+  [PASS] A8 each round has processes participants all reporting rounds
+         detail: [[8, 8, [25]], [8, 8, [25]], [8, 8, [25]], [8, 8, [25]], [8, 8, [25]]]
+  [PASS] B1 record arithmetic: lost_updates == expected - finals (elementwise)
+         detail: [184, 165, 190, 144, 182]
+  [PASS] B2 record arithmetic: lost_updates_range == [min, max] of lost_updates
+         detail: [144, 190]
+  [PASS] B3 record determinism field says NOT deterministic (qualitative claim)
+         detail: NOT deterministic: the number of lost updates depends on sch
+  [PASS] B4 every recorded run has lock_acquisitions == 0
+         detail: [0, 0, 0, 0, 0]
+  [PASS] C1 the STALE group printed in decision.md 13.5 / review.md P3-4 is NOT reproducible: 200 - [12,19,7,26,43] != [197,185,191,198,14]
+         detail: 200-stale_finals=[188, 181, 193, 174, 157] stale_lost=[197, 185, 191, 198, 14]
+
+STALE VS EVIDENCE
+  stale (still printed in decision.md 13.5 and review.md 1/P3-4):
+    finals       = [12, 19, 7, 26, 43]
+    lost_updates = [197, 185, 191, 198, 14]
+    => 200 - finals = [188, 181, 193, 174, 157]  (equals the printed lost_updates? False)
+  evidence truth (SOURCE A == SOURCE B):
+    finals       = [16, 35, 10, 56, 18]
+    lost_updates = [184, 165, 190, 144, 182]
+    lost_updates_range = [144, 190]
+    => 200 - finals = [184, 165, 190, 144, 182]  (equals lost_updates? True)
+  same group? False
+
+VERDICT: RECORD REPRODUCED FROM RAW EVIDENCE  (13/13 checks passed)
+TRUTH: finals [16, 35, 10, 56, 18] => lost_updates [184, 165, 190, 144, 182] (range [144, 190]), expected 200, 8 processes x 25 rounds
+CONFLICT WITH THE BRIEF: none (the brief's group [16, 35, 10, 56, 18] equals the recomputed group)

@@ -2,13 +2,17 @@
 
 Usage:
   <iso python> sim/scheduler.py list
-  <iso python> sim/scheduler.py run <case> [<case> ...] [--root <dir>] [--json <file>]
-  <iso python> sim/scheduler.py all [--root <dir>] [--json <file>]
+  <iso python> sim/scheduler.py run <case> [<case> ...] [--log FILE] [--json FILE]
+  <iso python> sim/scheduler.py all [--log FILE]
 
 Every case gets its own directory under <root>/<case>/.  Raw per-process stdout
 and stderr, the journal, the refcount/owner files and the worker action log stay
-on disk as evidence.  Exit code 0 only when every check of every selected case
-passed.
+on disk as evidence.
+
+``--log FILE`` duplicates this process's stdout into FILE with UTF-8 and NO line
+wrapping.  That matters for the evidence: PowerShell's ``>`` redirection writes
+UTF-16 and wraps long lines, which used to split the single-line JSON records and
+made an honest parse impossible (r2 F-I04C-04).
 """
 
 from __future__ import annotations
@@ -28,19 +32,38 @@ for path in (HERE,):
 import cases_core  # noqa: E402
 import cases_legacy  # noqa: E402
 import cases_ownership  # noqa: E402
+import cases_review  # noqa: E402
+import cases_timeout  # noqa: E402
 import stress  # noqa: E402
 
 CASES = {}
 CASES.update(cases_core.CASES)
 CASES.update(cases_ownership.CASES)
 CASES.update(cases_legacy.CASES)
+CASES.update(cases_review.CASES)
+CASES.update(cases_timeout.CASES)
+
+
+class Tee:
+    """Write to the real stdout and to a UTF-8 log file, without wrapping."""
+
+    def __init__(self, path):
+        self.file = open(path, "w", encoding="utf-8", newline="\n")
+
+    def write(self, text):
+        sys.__stdout__.write(text)
+        self.file.write(text)
+
+    def flush(self):
+        sys.__stdout__.flush()
+        self.file.flush()
 
 
 def run_stress(name, root):
     if name == "F-LK1":
         return stress.stress_counter(root, use_lock=True)
     if name == "F-LK2":
-        return stress.stress_counter(root, use_lock=False)
+        return stress.stress_counter(root, use_lock=False, repeat=5)
     if name == "F-LK3":
         return stress.holder_crash(root)
     if name == "F-L1-nolock-guard":
@@ -64,6 +87,7 @@ def main(argv):
     names = []
     root = os.path.join(ATTEMPT, "evidence", "run")
     out_json = None
+    log_path = None
     index = 0
     while index < len(rest):
         token = rest[index]
@@ -75,6 +99,10 @@ def main(argv):
             out_json = rest[index + 1]
             index += 2
             continue
+        if token == "--log":
+            log_path = rest[index + 1]
+            index += 2
+            continue
         names.append(token)
         index += 1
     if action == "all":
@@ -82,6 +110,9 @@ def main(argv):
     if not names:
         print("no cases selected", file=sys.stderr)
         return 2
+    if log_path:
+        os.makedirs(os.path.dirname(os.path.abspath(log_path)), exist_ok=True)
+        sys.stdout = Tee(log_path)
     os.makedirs(root, exist_ok=True)
     summary = []
     started = time.time()
@@ -114,6 +145,9 @@ def main(argv):
         os.makedirs(os.path.dirname(os.path.abspath(out_json)), exist_ok=True)
         with open(out_json, "w", encoding="utf-8") as handle:
             json.dump(payload, handle, indent=1, sort_keys=True)
+    if log_path:
+        sys.stdout.flush()
+        sys.stdout = sys.__stdout__
     return 0 if not payload["failures"] else 1
 
 

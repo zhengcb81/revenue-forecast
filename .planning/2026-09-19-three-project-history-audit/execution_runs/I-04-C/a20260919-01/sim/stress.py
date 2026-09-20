@@ -56,48 +56,103 @@ def worker_counter(payload_path):
     return 0
 
 
-def stress_counter(root, processes=8, rounds=25, use_lock=True, timeout=180.0):
-    h = Harness("F-LK1" if use_lock else "F-LK2", root)
-    payload_path = os.path.join(h.base, "payload.json")
-    counter = os.path.join(h.base, "counter.txt")
-    with open(counter, "w", encoding="utf-8") as handle:
-        handle.write("0")
-    procs = []
-    for index in range(processes):
-        body = {"base": h.base, "tag": f"C{index}", "rounds": rounds, "use_lock": use_lock}
-        path = os.path.join(h.base, f"payload.{index}.json")
-        with open(path, "w", encoding="utf-8") as handle:
-            json.dump(body, handle)
-        out = open(os.path.join(h.base, f"stdout.C{index}.txt"), "w", encoding="utf-8")
-        err = open(os.path.join(h.base, f"stderr.C{index}.txt"), "w", encoding="utf-8")
-        procs.append(subprocess.Popen(
-            [PYTHON, "-B", os.path.abspath(__file__), "worker-counter", path],
-            cwd=h.base, stdout=out, stderr=err, stdin=subprocess.DEVNULL))
-    codes = []
-    for proc in procs:
-        try:
-            codes.append(proc.wait(timeout=timeout))
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            codes.append("TIMEOUT")
-    with open(counter, encoding="utf-8") as handle:
-        final = int(handle.read().strip() or "0")
+def stress_counter(root, processes=8, rounds=25, use_lock=True, timeout=180.0,
+                   repeat=1):
+    """Concurrent read-modify-write on one counter file.
+
+    With ``use_lock`` the final value must be exact.  WITHOUT the lock the number
+    of lost updates depends on how the OS schedules the processes: it is a
+    QUALITATIVE result ("updates are lost"), so every repetition is reported
+    instead of a single number (r2 P3-4: the reviewer reproduced 34/200 where the
+    implementer had seen 10/200).
+    """
+    runs = []
+    h = None
+    for attempt in range(max(1, int(repeat))):
+        case_id = ("F-LK1" if use_lock else "F-LK2") + (f"-r{attempt + 1}" if repeat > 1 else "")
+        h = Harness(case_id, root)
+        payload_path = os.path.join(h.base, "payload.json")
+        counter = os.path.join(h.base, "counter.txt")
+        with open(counter, "w", encoding="utf-8") as handle:
+            handle.write("0")
+        procs = []
+        for index in range(processes):
+            body = {"base": h.base, "tag": f"C{index}", "rounds": rounds,
+                    "use_lock": use_lock}
+            path = os.path.join(h.base, f"payload.{index}.json")
+            with open(path, "w", encoding="utf-8") as handle:
+                json.dump(body, handle)
+            out = open(os.path.join(h.base, f"stdout.C{index}.txt"), "w", encoding="utf-8")
+            err = open(os.path.join(h.base, f"stderr.C{index}.txt"), "w", encoding="utf-8")
+            procs.append(subprocess.Popen(
+                [PYTHON, "-B", os.path.abspath(__file__), "worker-counter", path],
+                cwd=h.base, stdout=out, stderr=err, stdin=subprocess.DEVNULL))
+        codes = []
+        for proc in procs:
+            try:
+                codes.append(proc.wait(timeout=timeout))
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                codes.append("TIMEOUT")
+        with open(counter, encoding="utf-8") as handle:
+            final = int(handle.read().strip() or "0")
+        rows = []
+        with open(os.path.join(h.base, "counter.journal.jsonl"), encoding="utf-8") as handle:
+            for line in handle:
+                rows.append(json.loads(line))
+        runs.append({
+            "case": case_id,
+            "final": final,
+            "lost_updates": processes * rounds - final,
+            "returncodes": codes,
+            "lock_acquisitions": sum(r["lock_acquisitions"] for r in rows),
+        })
     expected = processes * rounds
-    rows = []
-    with open(os.path.join(h.base, "counter.journal.jsonl"), encoding="utf-8") as handle:
-        for line in handle:
-            rows.append(json.loads(line))
+    finals = [run["final"] for run in runs]
+    # With the lock the total must be EXACT.  Without it the file is written by
+    # several processes with no mutual exclusion at all: updates are lost AND the
+    # write itself is not atomic, so a torn/merged file can even report MORE than
+    # the number of increments (observed: 261 of 200).  The control therefore
+    # asserts only "the exact total is never reproduced".
+    ok = (all(value == expected for value in finals) if use_lock
+          else all(value != expected for value in finals))
     record = {
-        "case": h.case_id,
+        "case": "F-LK1" if use_lock else "F-LK2",
         "processes": processes,
         "rounds": rounds,
         "expected": expected,
-        "final": final,
-        "lost_updates": expected - final,
-        "returncodes": codes,
-        "lock_acquisitions": sum(r["lock_acquisitions"] for r in rows),
-        "status": "PASS" if (final == expected if use_lock else final < expected) else "FAIL",
+        "runs": runs,
+        "finals": finals,
+        "lost_updates": [run["lost_updates"] for run in runs],
+        "lost_updates_range": [min(run["lost_updates"] for run in runs),
+                               max(run["lost_updates"] for run in runs)],
+        "determinism": ("exact by construction (OS lock)" if use_lock else
+                        "NOT deterministic: the number of lost updates depends on "
+                        "scheduling; only 'updates are lost' is asserted"),
+        "status": "PASS" if ok else "FAIL",
+        "checks": [],
     }
+    if use_lock:
+        record["checks"].append({"check": "every run reaches the exact total",
+                                  "result": "PASS" if ok else "FAIL",
+                                  "detail": json.dumps(finals)})
+        record["checks"].append({"check": "one lock acquisition per increment",
+                                  "result": "PASS" if all(
+                                      run["lock_acquisitions"] == processes * rounds
+                                      for run in runs) else "FAIL",
+                                  "detail": json.dumps([run["lock_acquisitions"] for run in runs])})
+    else:
+        record["checks"].append({"check": "the exact total is never reproduced without a lock "
+                                           "(qualitative; losses and torn writes both count)",
+                                  "result": "PASS" if ok else "FAIL",
+                                  "detail": json.dumps({"finals": finals,
+                                                         "expected": expected,
+                                                         "above_expected": [v for v in finals
+                                                                             if v > expected]})})
+        record["checks"].append({"check": "no lock was ever taken (the control)",
+                                  "result": "PASS" if all(
+                                      run["lock_acquisitions"] == 0 for run in runs) else "FAIL",
+                                  "detail": json.dumps([run["lock_acquisitions"] for run in runs])})
     print(json.dumps(record, sort_keys=True))
     return 0 if record["status"] == "PASS" else 1
 
@@ -145,7 +200,17 @@ def holder_crash(root):
               "parent_wait_seconds": round(waited, 4),
               "lock_file_exists": os.path.exists(lock_path),
               "cleanup_action_required": False,
-              "status": "PASS" if ok else "FAIL"}
+              "status": "PASS" if ok else "FAIL",
+              "checks": [
+                  {"check": "the holder died without unlocking (exit 90)",
+                   "result": "PASS" if code == 90 else "FAIL", "detail": str(code)},
+                  {"check": "the kernel released the lock: the parent reacquired in <=0.5 s",
+                   "result": "PASS" if waited <= 0.5 else "FAIL",
+                   "detail": str(round(waited, 4))},
+                  {"check": "no cleanup action was needed (the lock file is never removed)",
+                   "result": "PASS" if os.path.exists(lock_path) else "FAIL",
+                   "detail": "lock_file_exists=" + str(os.path.exists(lock_path))},
+              ]}
     print(json.dumps(record, sort_keys=True))
     return 0 if ok else 1
 
@@ -176,6 +241,12 @@ def resume_race(root):
         "B": res_b["envelope"]["result"],
         "counts": counts,
         "status": "RED-CONFIRMED" if counts["resume_calls"] == 2 else "UNEXPECTED",
+        "checks": [
+            {"check": "RED: two releases each resume once because no lock serialises "
+                      "the decision",
+             "result": "PASS" if counts["resume_calls"] == 2 else "FAIL",
+             "detail": json.dumps(counts)},
+        ],
     }
     print(json.dumps(record, sort_keys=True))
     return 0

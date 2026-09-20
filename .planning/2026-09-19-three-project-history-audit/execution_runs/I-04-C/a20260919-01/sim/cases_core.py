@@ -115,12 +115,13 @@ def case_f_l1(root, verbose=False):
                           json.dumps(entered_a)))
     view3 = h.lease_view()
     c3 = h.counts()
-    checks.append(h.check("step3 A release leaves only B, with B as owner",
+    checks.append(h.check("step3 A's release leaves only B, and ownership moves to B "
+                          "(ADR-10e)",
                           view3["entries"] == [b["lease_id"]]
                           and view3["owner_lease"] == b["lease_id"], json.dumps(view3)))
-    checks.append(h.check("step3 the non-owner last participant does NOT resume; "
-                          "it hands the cycle over",
-                          released_a["action"] == "released_took_ownership",
+    checks.append(h.check("step3 the leaving owner does not resume; it hands the cycle over",
+                          released_a["action"] == "released_joined"
+                          and released_a.get("ownership_transferred_to") == b["lease_id"],
                           json.dumps(released_a)))
     checks.append(h.check("step3 resume_calls==0 after A's release",
                           c3["resume_calls"] == 0, json.dumps(c3)))
@@ -130,8 +131,9 @@ def case_f_l1(root, verbose=False):
     c4 = h.counts()
     view4 = h.lease_view()
     released_b = res_b["envelope"]["exit"]
-    checks.append(h.check("step4 B closes the handed-over cycle by resuming",
-                          released_b["action"] == "released_with_pending_resume",
+    checks.append(h.check("step4 B closes the cycle it now owns by resuming",
+                          released_b["action"] == "released_last"
+                          and released_b.get("resume_reason") == "owner_is_me",
                           json.dumps(released_b)))
     checks.append(h.check("step4 resume_calls==1", c4["resume_calls"] == 1, json.dumps(c4)))
     checks.append(h.check("step4 pause_calls==1", c4["pause_calls"] == 1, json.dumps(c4)))
@@ -170,60 +172,77 @@ def case_f_l2a(root, verbose=False):
                           raw["counts"]["resume_calls"] == 1, json.dumps(raw["counts"])))
     checks.append(h.check("the nesting cycle issues one pause in total",
                           raw["counts"]["pause_calls"] == 1, json.dumps(raw["counts"])))
-    checks.append(h.check("one lease outlives the other's release",
-                          raw["exit_first_action"] == "released_joined", json.dumps(raw)))
+    checks.append(h.check("one lease outlives the other's release, and ownership "
+                          "moves to the survivor (ADR-10e)",
+                          raw["exit_first_action"] == "released_joined"
+                          and raw["exit_first_transfer"] == "nest-scope-2"
+                          and raw["view_after_first_exit"]["entries"] == ["nest-scope-2"],
+                          json.dumps(raw["view_after_first_exit"])))
+    checks.append(h.check("the surviving scope's own release resumes once",
+                          raw["exit_second_action"] == "released_last", json.dumps(raw)))
     checks.append(h.check("state is clean after both scopes exit",
                           raw["lease_view"]["exists"] is False
                           and raw["owner_exists"] is False, json.dumps(raw)))
 
-    # (b) two same-pid leases in one refcount, released one at a time by a third
-    # process: only the requested lease_id may disappear.  Two physical processes
-    # share a pid in the FILE (prewritten), which is the only way this state can
-    # exist per (a).
+    # (b) same-pid INDEPENDENT release: two leases that carry the SAME pid in the
+    # file (produced by real nesting in (a), prewritten here so the schedule is
+    # deterministic).  Only the requested lease_id may disappear -- a pid-wide
+    # delete is exactly the v1 defect (see F-L2a-legacy for the port that does it).
     h2 = Harness("F-L2a-b", root, verbose=verbose,
                  worker_initial={"desired_state": "paused", "runtime_state": "running"})
-    prewrite_lease(h2, "pair-lease-a", 8101, "5000")
-    with open(h2.refcount_path, encoding="utf-8") as handle:
-        seeded = json.load(handle)
-    seeded["entries"].append({"pid": 8101, "boot_uuid": "seedboot2",
-                              "os_start_time": "5000", "lease_id": "pair-lease-b",
-                              "invocations": 1})
-    prewrite_refcount(h2, seeded)
-    seed_probe = {"8101": {"alive": True, "start_time": "5000"}}
+    seed_pid = 8101
+    seed_probe = {str(seed_pid): {"alive": True, "start_time": "5000"}}
+    prewrite_refcount(h2, {
+        "schema": SCHEMA, "generation": 1,
+        "entries": [
+            {"pid": seed_pid, "boot_uuid": "seedboot1", "os_start_time": "5000",
+             "lease_id": "pair-lease-a", "invocations": 1},
+            {"pid": seed_pid, "boot_uuid": "seedboot1", "os_start_time": "5000",
+             "lease_id": "pair-lease-b", "invocations": 2},
+        ],
+        "resume": {"required": False},
+        "owner": {"lease_id": "pair-lease-a", "generation": 1,
+                  "pid": seed_pid, "boot_uuid": "seedboot1", "os_start_time": "5000"},
+    })
+    with open(h2.owner_path, "w", encoding="utf-8") as handle:
+        handle.write("filing-fetch")
     exit_1 = h2.run(h2.payload("o1", phase="exit", lease_id="pair-lease-a",
                                probe=seed_probe))
-    checks.append(h2.check("releasing one lease keeps the other",
+    checks.append(h2.check("releasing one lease keeps the other (no pid-wide delete)",
                            h2.lease_view()["entries"] == ["pair-lease-b"],
+                           json.dumps(h2.lease_view())))
+    checks.append(h2.check("the leaving owner hands ownership to the survivor (ADR-10e)",
+                           h2.lease_view()["owner_lease"] == "pair-lease-b",
                            json.dumps(h2.lease_view())))
     checks.append(h2.check("first release did not resume",
                            h2.counts()["resume_calls"] == 0, json.dumps(h2.counts())))
     exit_2 = h2.run(h2.payload("o2", phase="exit", lease_id="pair-lease-b",
                                probe=seed_probe))
-    checks.append(h2.check("the last non-owner release takes the cycle over "
-                           "instead of resuming (ADR-10)",
-                           exit_2["envelope"]["result"]["action"] == "released_took_ownership",
+    checks.append(h2.check("the surviving owner's release resumes exactly once",
+                           exit_2["envelope"]["result"]["action"] == "released_last"
+                           and h2.counts()["resume_calls"] == 1,
                            json.dumps(exit_2["envelope"]["result"])))
-    checks.append(h2.check("the obligation is now owned by the surviving releaser",
-                           h2.lease_view()["owner_lease"] == "pair-lease-b"
-                           and h2.lease_view()["resume_required"] is True,
-                           json.dumps(h2.lease_view())))
-    exit_3 = h2.run(h2.payload("o3", phase="exit", lease_id="pair-lease-b",
-                               probe=seed_probe))
-    checks.append(h2.check("the owner's own release resumes exactly once",
-                           exit_3["envelope"]["result"]["action"] == "released_last"
-                           and h2.counts()["resume_calls"] == 1, json.dumps(h2.counts())))
-    checks.append(h2.check("no pid-wide delete: the first release was not enough",
-                           exit_1["envelope"]["result"]["action"] == "released_joined",
-                           json.dumps(exit_1["envelope"]["result"])))
     checks.append(h2.check("state cleaned up after the cycle closes",
                            not h2.lease_view()["exists"], json.dumps(h2.lease_view())))
 
-    # (c) the join path, reachable with a paused worker that still reports
-    # runtime_state=running (decision.md ADR-9)
+    # (c) the join path against a prewritten cycle (paused worker, live lease):
+    # the joiner appends itself and the seed lease survives the joiner's release.
+    # A genuinely paused worker (runtime_state=stopped) with a LIVE lease: this is
+    # the join path.  (paused + runtime_state=running would instead be the ADR-9b
+    # recovery window, which F-L2d/F-L2e cover.)
     h3 = Harness("F-L2a-c", root, verbose=verbose,
-                 worker_initial={"desired_state": "paused", "runtime_state": "running"})
-    prewrite_lease(h3, "seed-lease-0001", 8102, "", marker=False)
-    other = h3.run(h3.payload("other", request_budget=100.0, probe={"8102": {"alive": True}}))
+                 worker_initial={"desired_state": "paused", "runtime_state": "stopped"})
+    prewrite_refcount(h3, {
+        "schema": SCHEMA, "generation": 1,
+        "entries": [{"pid": 8102, "boot_uuid": "seedboot9", "os_start_time": "",
+                     "lease_id": "seed-lease-0001", "invocations": 1}],
+        "resume": {"required": False},
+        "owner": {"lease_id": "seed-lease-0001", "generation": 1, "pid": 8102,
+                  "boot_uuid": "seedboot9", "os_start_time": ""},
+    })
+    other = h3.run(h3.payload("other", request_budget=100.0,
+                              status={"desired_state": "paused", "runtime_state": "stopped"},
+                              probe={"8102": {"alive": True}}))
     checks.append(h3.check("a new participant joins the existing pause cycle",
                            other["envelope"]["result"]["action"] == "joined",
                            json.dumps(other["envelope"]["result"])))
@@ -241,8 +260,7 @@ def case_f_l2a(root, verbose=False):
                            json.dumps(h3.lease_view())))
     return h.finish(checks, {"nesting_probe": raw, "second_base": h2.base,
                              "pair_result": [exit_1["envelope"]["result"],
-                                             exit_2["envelope"]["result"],
-                                             exit_3["envelope"]["result"]],
+                                             exit_2["envelope"]["result"]],
                              "join_result": other["envelope"]["result"]})
 
 
@@ -396,9 +414,10 @@ def case_f_l2d(root, verbose=False):
                           h.counts()["resume_calls"] == 1
                           and exit_actions.count("released_last") == 1,
                           json.dumps({"counts": h.counts(), "exits": exit_actions})))
-    checks.append(h.check("the other seven releases are join/transfer only",
-                          all(a in {"released_joined", "released_took_ownership",
-                                    "released_with_pending_resume"} for a in exit_actions),
+    checks.append(h.check("every release but the last only removes its own lease",
+                          exit_actions.count("released_last") == 1
+                          and all(a == "released_joined" for a in exit_actions
+                                  if a != "released_last"),
                           json.dumps(exit_actions)))
     checks.append(h.check("exactly one release is the resuming one",
                           exit_actions.count("released_last") == 1, json.dumps(exit_actions)))

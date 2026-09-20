@@ -48,27 +48,76 @@ def exit_of(harness, tag, lease_id, **overrides):
 
 
 def case_f_l4a(root, verbose=False):
-    """owner evidence changed while we are inside the release critical section."""
+    """F-L4a: the user pauses the worker DURING our scope.
+
+    The card asks for this window (r2: the v1 case never produced a result because
+    its victim payload was missing phase="exit" -- harness defect F-I04C-05).  What
+    this case records is the measured, documented limitation: with the current
+    company-wiki API the tool CANNOT tell "the user also pressed pause" from "our
+    own cycle is still the pauser" (control.py only exposes desired_state), so the
+    owner's release resumes and thereby undoes the user's pause.  The case asserts
+    that measured behaviour and the recorded dependency; it does NOT claim the
+    user's intent is protected.
+
+    The protected variant -- where the pause is NOT attributable to us -- is
+    F-W7 / V4-e / V4-f (owner evidence changed => fail closed, never resume).
+    """
     h = Harness("F-L4a", root, verbose=verbose)
+    checks = []
+    a = h.payload("A", phase="enter", request_budget=100.0)
+    res_a = h.run(a)
+    checks.append(h.check("A opened the pause cycle alone",
+                          res_a["envelope"]["result"]["action"] == "paused_by_us",
+                          json.dumps(res_a["envelope"]["result"])))
+
+    # the user presses pause while our scope is open (idempotent at the CLI level)
+    external = h.worker("worker-pause", "user")
+    checks.append(h.check("the external worker-pause succeeded (idempotent)",
+                          external["returncode"] == 0, json.dumps(external)))
+    checks.append(h.check("the API still reports the same state (no provenance)",
+                          h.counts()["desired_state"] == "paused",
+                          json.dumps(h.counts())))
+
+    res_exit = h.run(h.payload("A-exit", phase="exit", lease_id=a["lease_id"]))
+    result = res_exit["envelope"]["result"]
+    checks.append(h.check("A's release resumes (owner_is_me): the user's pause is "
+                          "indistinguishable and is undone",
+                          result["action"] == "released_last"
+                          and result.get("resume_reason") == "owner_is_me",
+                          json.dumps(result)))
+    checks.append(h.check("worker ends enabled (the documented limitation)",
+                          h.counts()["desired_state"] == "enabled", json.dumps(h.counts())))
+    checks.append(h.check("state cleaned up by our own cycle",
+                          not h.lease_view()["exists"] and not h.owner_exists(),
+                          json.dumps(h.lease_view())))
+    return h.finish(checks, {
+        "LIMITATION": "a user pause issued while a filing-fetch cycle is open is "
+                      "resumed by that cycle's close; distinguishing it needs "
+                      "pause-origin evidence from company-wiki (registered as O-2 "
+                      "and as an I-04-D dependency in handoff.json)",
+    })
+
+
+def case_f_l4a_foreign(root, verbose=False):
+    """F-L4a-foreign: the same window, but the owner evidence is a THIRD PARTY.
+
+    Here the pause is demonstrably not ours, so the release must fail closed.
+    """
+    h = Harness("F-L4a-foreign", root, verbose=verbose)
     checks = []
     a = h.payload("A", phase="enter", request_budget=100.0)
     h.run(a)
     b_payload = h.payload("B", request_budget=100.0)
-    res_b = h.run(b_payload)
-    view_b = h.lease_view()
-    checks.append(h.check("both leases registered",
-                          view_b["entries"] == sorted([a["lease_id"], b_payload["lease_id"]]),
-                          json.dumps(view_b)))
-
+    h.run(b_payload)
     third = "third-party-owner-0001"
-    victim = h.payload("B-exit", request_budget=100.0,
-                       wait_for=h.gate_wait("release_before_decision"))
+    victim = h.payload("B-exit", phase="exit", lease_id=b_payload["lease_id"],
+                       wait_for=h.gate_wait("release_before_decision", tag="B-exit"))
     proc = h.spawn(victim)
-    h.wait_reached("release_before_decision")
+    h.wait_reached("release_before_decision", timeout=60, tag="B-exit")
     state = json.loads(open(h.refcount_path, encoding="utf-8").read())
     state["owner"] = {"lease_id": third, "generation": state["generation"]}
     write_state(h, state)
-    h.open_fence("release_before_decision")
+    h.open_fence("release_before_decision", tag="B-exit")
     res = h.collect(proc)
     result = res["envelope"]["result"]
     checks.append(h.check("owner change detected",
@@ -76,11 +125,12 @@ def case_f_l4a(root, verbose=False):
     checks.append(h.check("no resume on changed ownership", h.counts()["resume_calls"] == 0,
                           json.dumps(h.counts())))
     checks.append(h.check("cleanup_status records the reason",
-                          result["cleanup_status"] == "failed:owner_evidence_changed",
+                          str(result["cleanup_status"]).startswith(
+                              "failed:owner_evidence_changed"),
                           json.dumps(result)))
     after = h.lease_view()
     checks.append(h.check("evidence preserved (state file kept, our lease gone)",
-                          after["exists"] and a["lease_id"] in after["entries"]
+                          after["exists"] and b_payload["lease_id"] not in after["entries"]
                           and third == after["owner_lease"], json.dumps(after)))
     checks.append(h.check("owner marker still present", h.owner_exists()))
     return h.finish(checks)
@@ -129,27 +179,20 @@ def case_f_l4c(root, verbose=False):
 
 
 def case_f_l4d(root, verbose=False):
-    """Resume fails: keep the obligation, do not claim restored; later takeover."""
+    """F-L4d: the resume itself fails -> keep the obligation, never claim restored.
+
+    r2 schedule: A is the only participant of its cycle, so its release really does
+    reach the resume step; the resume is injected to fail.  A later participant must
+    then inherit the obligation and finish the recovery.
+    """
     h = Harness("F-L4d", root, verbose=verbose)
     checks = []
     a = h.payload("A", phase="enter", request_budget=100.0)
-    h.run(a)
-    b = h.payload("B", phase="enter", request_budget=100.0)
-    res_b = h.run(b)
-    result_b = res_b["envelope"]["result"]
-    checks.append(h.check("B joined and recorded the window lease",
-                          result_b["action"] == "joined", json.dumps(result_b)))
+    res_a = h.run(a)
+    checks.append(h.check("A opened the cycle alone",
+                          res_a["envelope"]["result"]["action"] == "paused_by_us",
+                          json.dumps(res_a["envelope"]["result"])))
 
-    # B is the first releaser and is not the cycle owner: it hands the obligation
-    # over (ADR-10) so the owner's exit can resume it.
-    exit_b = h.payload("B-exit", phase="exit", lease_id=b["lease_id"])
-    res_exit_b = h.run(exit_b)
-    checks.append(h.check("B's release hands the cycle over rather than resuming",
-                          res_exit_b["envelope"]["result"]["action"]
-                          == "released_took_ownership",
-                          json.dumps(res_exit_b["envelope"]["result"])))
-
-    # A is the cycle owner AND now the last participant: its resume fails.
     exit_a = h.payload("A-exit", phase="exit", lease_id=a["lease_id"],
                        resume_error={"error": "injected resume failure"})
     res = h.run(exit_a)
@@ -212,54 +255,48 @@ def case_f_l4e(root, verbose=False):
 
 
 def case_f_w1(root, verbose=False):
-    """W1: refcount written, owner marker not written, first participant dies.
+    """W1: the participant dies between the refcount write and the owner marker.
 
-    The crash lands in the W2 window (registered + owner written + pause done,
-    then dead before the release), because the frozen protocol writes the owner
-    marker while still holding the lock.  What matters is measured here: the
-    missing-owner state must never be read as a user pause, and the dead lease
-    must be reclaimed rather than silently dropped.
+    The crash point is the real injection inside the fresh-cycle critical section
+    (``after-refcount-before-owner``), so the surviving state really is "lease
+    present, owner marker absent, worker still running".  The next participant must
+    NOT read that missing marker as a user pause: it reclaims the dead lease, sees
+    the worker is running (nothing to resume), and opens exactly one cycle.
     """
     h = Harness("F-W1", root, verbose=verbose)
     checks = []
     a = h.payload("A", phase="enter", request_budget=100.0,
-                  exit_at="after-pause-before-confirm",
-                  wait_for=h.gate_wait("enter_registered"))
-    proc = h.spawn(a)
-    h.wait_reached("enter_registered")
-    checks.append(h.check("owner marker is durable before the pause returns",
-                          h.owner_exists()))
-    h.open_fence("enter_registered")
-    res_a = h.collect(proc)
+                  exit_at="after-refcount-before-owner")
+    res_a = h.run(a)
     checks.append(h.check("A crashed with the exit code we injected",
                           res_a["returncode"] == 90, str(res_a["returncode"])))
     checks.append(h.check("the crashed invocation's liveness record is dropped",
                           bool(h.kill_declared("A"))))
     view = h.lease_view()
-    checks.append(h.check("A's lease is durable", view["entries"] == [a["lease_id"]],
-                          json.dumps(view)))
-    checks.append(h.check("worker is paused at the crash point",
-                          h.counts()["desired_state"] == "paused", json.dumps(h.counts())))
-
-    # deliberate W1 variant: remove the owner marker to recreate "lease, no owner"
-    os.unlink(h.owner_path)
-    checks.append(h.check("W1 window recreated: lease present, owner absent",
-                          h.lease_view()["entries"] == [a["lease_id"]]
-                          and not h.owner_exists(), json.dumps(h.lease_view())))
+    checks.append(h.check("the W1 window: lease durable, owner marker absent",
+                          view["entries"] == [a["lease_id"]] and not h.owner_exists(),
+                          json.dumps(view) + f" owner={h.owner_exists()}"))
+    checks.append(h.check("worker still running (the pause never happened)",
+                          h.counts()["desired_state"] == "enabled", json.dumps(h.counts())))
 
     b = h.payload("B", phase="enter", request_budget=100.0)
     res_b = h.run(b)
     result = res_b["envelope"]["result"]
     checks.append(h.check("B does NOT mistake the missing owner for a user pause",
-                          result["action"] in {"joined", "fresh_after_stale", "paused_by_us"},
+                          result["action"] == "paused_by_us", json.dumps(result)))
+    checks.append(h.check("B reclaims the dead lease and opens its own cycle",
+                          "resume_skipped_worker_running" in result.get("actions", [])
+                          or "takeover_resumed" in result.get("actions", []),
                           json.dumps(result)))
     after = h.lease_view()
-    checks.append(h.check("B reclaimed the dead lease (A's entry is gone, B's is present)",
+    checks.append(h.check("A's dead lease is gone, B's is present",
                           b["lease_id"] in after.get("entries", [])
                           and a["lease_id"] not in after.get("entries", []),
                           json.dumps(after)))
     checks.append(h.check("only one pause reached the worker",
                           h.counts()["pause_calls"] == 1, json.dumps(h.counts())))
+    checks.append(h.check("no resume was sent to a running worker",
+                          h.counts()["resume_calls"] == 0, json.dumps(h.counts())))
     res_exit_b = exit_of(h, "B-exit", b["lease_id"])
     checks.append(h.check("B's release closes the cycle with one resume",
                           h.counts()["resume_calls"] == 1, json.dumps(h.counts())))
@@ -277,7 +314,7 @@ def case_f_w2(root, verbose=False):
     h = Harness("F-W2", root, verbose=verbose)
     checks = []
     a = h.payload("A", phase="enter", request_budget=100.0,
-                  exit_at="after-pause-before-confirm",
+                  exit_at="after-pause-confirm",
                   wait_for=h.gate_wait("enter_registered"))
     proc = h.spawn(a)
     h.wait_reached("enter_registered")
@@ -296,14 +333,15 @@ def case_f_w2(root, verbose=False):
     b = h.payload("B", phase="enter", request_budget=100.0)
     res_b = h.run(b)
     result = res_b["envelope"]["result"]
-    checks.append(h.check("next participant finds the orphaned pause and handles it "
-                          "(takeover resume, or join the cycle it becomes the owner of)",
-                          result["action"] in {"takeover_resumed", "joined"},
+    checks.append(h.check("next participant takes the orphaned pause over and re-opens it",
+                          result["action"] == "paused_by_us"
+                          and "takeover_resumed" in result.get("actions", []),
                           json.dumps(result)))
     checks.append(h.check("the orphaned pause was resumed exactly once",
                           h.counts()["resume_calls"] == 1, json.dumps(h.counts())))
-    checks.append(h.check("no second pause was issued",
-                          h.counts()["pause_calls"] == 1, json.dumps(h.counts())))
+    checks.append(h.check("the orphaned cycle was closed and exactly one further "
+                          "pause opened B's own cycle",
+                          h.counts()["pause_calls"] == 2, json.dumps(h.counts())))
     res_exit_b = exit_of(h, "B-exit", b["lease_id"])
     checks.append(h.check("B's own cycle closes with the second resume",
                           h.counts()["resume_calls"] == 2, json.dumps(h.counts())))
@@ -386,7 +424,10 @@ def case_f_w4b(root, verbose=False):
                           "opened a NEW cycle instead of resuming again",
                           result_b["action"] == "paused_by_us"
                           and result_b.get("resume_calls") == 0
-                          and result_b.get("generation") == 2, json.dumps(result_b)))
+                          and result_b.get("generation") == 1, json.dumps(result_b)))
+    checks.append(h.check("the new cycle starts at generation 1 again (ADR-12: the "
+                          "counter is per file, not global)",
+                          result_b.get("generation") == 1, json.dumps(result_b)))
     checks.append(h.check("one resume at the handover, one pause by B",
                           h.counts()["resume_calls"] == 1
                           and h.counts()["pause_calls"] == 2, json.dumps(h.counts())))

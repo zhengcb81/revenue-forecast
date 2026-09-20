@@ -15,7 +15,7 @@
 ## 0. 计数与判定口径（全程固定）
 
 - `lease_set`：任一步骤后，refcount 中 lease 的**有序集合**（按 `lease_id` 排序）；`[]` 表示空。
-- `owner`：`{generation, owner_lease}`；`gen` 单调不减，每次"从无到有"的新周期 +1。
+- `owner`：`{generation, owner_lease, pid, boot_uuid, os_start_time}`（v1.3 更正：字段在 r2 扩展）；`generation` 是**每文件**计数器，每次"从无到有"的新周期 +1，文件被收尾删除后下一周期从 1 重新开始（**不是**全局单调；见 decision.md ADR-12 与 §R2-1、证据 `evidence/run/F-GEN/`）。
 - `action`：`disabled | no_status | worker_stopped | respect_paused | joined | paused_by_us | takeover_resumed | released_joined | released_last | released_owner_changed | pause_failed | lease_fail_closed*`。
 - **`pause_calls` / `resume_calls`：真实跨进程调用次数**（由 worker stub 侧的 journal 统计，不由被测返回值自报）。
 - 每个"subprocess 退出码"与"业务判定"分开记录（START_HERE 要求）。
@@ -97,7 +97,7 @@ B 退出时 `empty=True` ⇒ `resume_calls` 最终 **2**（多一次 resume）�
 | 项 | 冻结期望 |
 |---|---|
 | 探针上限 | 每个探针预算 `min(20, 5, 相位预算)` ⇒ **≤20**（I-04-B F-B4B-01 的 `_PID_PROBE_MAX_SECONDS=20` 不被放松）；本卡只在探针上再收紧到 5 |
-| 锁等待 | `min(10, 相位预算)`；请求段相位预算无下限（I-04-A D3/F-D2），`≤0` 时不得加锁（模拟中 `request_budget=0` ⇒ `lease_lock_timeout`） |
+| 锁等待 | `lock_budget_for(相位预算) = min(相位预算, 60)`（v1.3 更正：旧文本写 `min(10, …)`；上限常数 60 = OPEN-3，见 decision.md §8 O-3 与 §14）；请求段相位预算无下限（I-04-A D3/F-D2），`≤0` 时不得加锁（模拟中 `request_budget=0` ⇒ `lease_lock_timeout`） |
 | 清理预算 | resume 用 `C = max(30, 2×resume_wait + graceful)`；`cleanup_budget=30` 时 resume 延迟 0.3 s 应成功，`resume_budget=0.05` 才超时 |
 | 相位墙 | **只报告**（记录 journal 首末 monotonic），**不设**验收上限（I-04-B carry 3） |
 | 计数分账 | lease 动作不计入 `calls`（非 CLI）；探针计 `liveness_calls`、resume 计 `cleanup_calls`（本卡只做模拟层分账声明，产品字段归 I-04-E） |
@@ -123,4 +123,104 @@ B 退出时 `empty=True` ⇒ `resume_calls` 最终 **2**（多一次 resume）�
 - **不覆盖**：真实 wiki/provider/worker、真实 PID 复用（`GetProcessTimes` 探针未实测）、SMB/POSIX 锁、
   同进程多线程并发 scope、生产移植后的集成（I-04-D）。
 - 结论只能支持"规则在调度表下的行为与冻结预期一致"，**不能**支持"真实并发概率已量化"。
+
+---
+
+# oracle r2 追加（v1.2；**只追加，不改上面任何冻结正文**）
+
+复审 changes_required 要求的新增/更正期望。上面 §1–§8 的**语义**继续有效（谁该 resume、什么必须 fail closed、
+空 refcount 不授权 resume）；下面记录 r2 新冻结的**动作名、分支与新增 case**。
+
+## R2-1 动作名与分支（替代 §1–§5 里的旧名）
+
+| 旧（v1/v1.1） | 新（v1.2） | 含义 |
+|---|---|---|
+| `released_took_ownership` + `deferred:ownership_transfer` | **不存在**；改为 `released_joined` + `ownership_transferred_to=<lease>`（ADR-10e）或 R5 的 `released_owner_changed` | 离开者若是 owner 则**移交**给存活 lease，不再"认领周期" |
+| `released_with_pending_resume` | `released_last` + `resume_reason=inherited_obligation` | 接手别人写下的义务（R3） |
+| `fresh_after_stale` | `fresh_cycle_recovering` | 有 lease 但 worker 在跑 ⇒ 保留 lease 开新周期（ADR-9b） |
+| （无） | `resume_skipped_worker_running` | 接管时 worker 根本没暂停 ⇒ 不发多余的 resume（ADR-10d） |
+| （无） | `owner_evidence_foreign` | owner 不可归因 ⇒ fail closed，不写不发（ADR-10 R5 / V4-f） |
+| （无） | `released_owner_changed` | 收尾时 owner 不是自己且不可证死亡 ⇒ 不 resume、不改写证据（R5 / V4-e / F-W7） |
+| `resume_reason` | 新字段：`owner_is_me` / `inherited_obligation` / `owner_probe:*` / `owner_pruned:*` | 收尾理由可审计 |
+
+## R2-2 新增 case（复审要求，全部已跑通）
+
+| case | 期望（冻结） | 对应发现 |
+|---|---|---|
+| **V4-a** | owner 死在义务写入临界区（`entries=[]`, `resume.required=true`, owner=已死 A）：终态**可以被下一个参与者关掉**——它 `takeover_resumed` 后拥有自己的新周期；`pause_calls=2`（A 的 + B 的）、最终 `resume_calls=2`、状态清空 | F-I04C-01 |
+| **V4-e** | 我的 lease + 第三方 owner：`released_owner_changed`、`resume_calls=0`、**owner 记录逐字段不变**、不写义务 | F-I04C-02 |
+| **V4-f** | 下游新参与者遇第三方 owner：`owner_evidence_foreign`、零写零 CLI、owner 标记保留 | F-I04C-02 |
+| **F-W7** | 收尾临界区内 owner 被外部改写：`released_owner_changed`、不 resume、证据保留（ADR-5 W7/T10） | F-I04C-02 |
+| **F-L2c-dead** | "死 lease + 无 marker + 非空 entries" **不是**用户暂停：接管并 resume 一次，之后自建周期 | F-I04C-06 |
+| **F-L2e-stale** | v1 形状（锁外读状态）在既定交错下 **pause 两次**（RED 确认） | F-I04C-07 |
+| **F-L2e-fixed** | 冻结形状同交错：B **join**、`pause_calls=1`、`resume_calls=1`、无 gate 超时 | F-I04C-07 |
+| **F-GEN** | 两个连续周期的 generation **各自为 1**（跨文件不单调） | F-I04C-03 |
+| **F-L4a** | scope 中用户再次 pause：API 无来源信息 ⇒ 我们的收尾会 resume（**记录为限制**，写入 `LIMITATION` 与 I-04-D 依赖） | 卡片第 5 条 |
+| **F-L2a-legacy** | 现行机制：公开入口在 paused worker 上返回 `worker_stopped`（refcount 路径在生产不可达）；其 unregister 原子按 pid 删掉两条同 pid lease 并 unlink owner 标记 | ADR-1/ADR-4 反例 |
+| **F-Lgw1** | 现行 register 原子：死 pid 列表被当作"无人"⇒ 再 pause 一次，并**静默丢弃**死条目（v1 说"prune 不落盘"是错的，已更正） | ADR-4 反例 |
+
+## R2-3 判活模型（更正与范围，r2 P3-2）
+
+- 判活优先级：① 本进程世系；② payload 注入答案（合成 pid）；③ **DECLARED 申报模型**：参与者启动写
+  `alive.<pid>.<holder>.<tag>.json`、正常返回删除、崩溃留下，且 **OS 也必须认为该 pid 存在**；
+  ④ 真实 OS 探针；⑤ `unknown` ⇒ fail closed。
+- **不授予**"DECLARED 与真实探针等价"。**I-04-D 强制前置**：用真实探针或以 `lifetime` 单进程模式重跑
+  全部并发 case（本轮 F-L1/F-L2d/F-L2e-*/F-W7/V4-a 已用 lifetime 模式；仍属模拟，不构成生产资格）。
+
+## R2-4 计数口径（r2 F-I04C-04）
+
+- 判定与计数一律以 `sim/parse_run.py` 的输出为准：它输出 `cases_in_log / pass / fail / harness_error / failing_checks`，
+  并把每条 `{"case": …}` 与 `{"case": …, "error": …}` 都计入；以 `{"case","exit","seconds"}` 开头的
+  scheduler SUMMARY 行**不算** case 记录。
+- v1 的"10 PASS / 6 failing"作废（解析器漏读以非 `case` 键开头的记录并跳过 harness-error）。
+  真实计数见 `decision.md` §13.7。
+- **无锁对照 F-LK2 的数字是定性的**：同一配置连续 5 次 finals `[16, 35, 10, 56, 18]`（⇒ lost `[184, 165, 190, 144, 182]`，与 finals 相容；来源 `evidence/lock-and-legacy.txt` 的 F-LK2 记录），复审独立复跑得 34
+  ⇒ 只有"无锁必然丢更新"可作断言，任何单一数字不得写成结论。
+
+## R2-5 相位墙（r2 P3-5）
+
+- 仍**只报告不设上限**；`evidence/phase-wall.txt` 给出每 case 的 `phase_wall_seconds` 与 `max_lock_wait_seconds`。
+- 注意读法：F-L1 的 21.25 s、F-L2e-fixed 的约 1 s 等**包含测试栅栏（人为等待）时间**，不是协议延迟；
+  协议侧的可归因指标是 `max_lock_wait_seconds`（本轮全部 < 9.2 s，且在相位预算内）。
+
+---
+
+# oracle r3 追加（v1.3；**只追加，不改上面任何已冻结正文**）
+
+## R3-1 锁超时的冻结期望（对齐错误码；F-I04C-11）
+
+- **错误码唯一**：锁等待超时一律是 **`lease_lock_timeout`**（**不是**通用 `lock_timeout`）。
+  请求段 ⇒ `code=lease_lock_timeout` + `action=lease_lock_timeout`；
+  清理段 ⇒ `action=release_fail_closed` + `cleanup_status=failed:lease_lock_timeout`。
+- **零副作用**：超时**不写** refcount/owner、**不发**任何 CLI；lease 状态文件字节不变；等待受相位预算钳制；
+  journal 记 `{"event":"lock_timeout","name":"lease","code":"lease_lock_timeout","budget":…}`。
+- **预算 0**：`request_budget <= 0`（deadline 已过，I-04-A D3）⇒ **根本不尝试加锁**（journal 无 `lock_acq`）。
+- 新增 case 与期望：
+  | case | 冻结期望 | checks |
+  |---|---|---|
+  | **F-T1** | 外部进程真持锁 + `request_budget=0.05` ⇒ `lease_lock_timeout`、零写零 CLI、状态字节不变、等待有界 | 7 |
+  | **F-T2** | 同上但 `request_budget=0` ⇒ 同上，且**未尝试加锁** | 3 |
+  | **F-T3** | 请求已 `paused_by_us`；外部先占锁再放行清理段（`cleanup_budget=0.3`）⇒ 请求结果不变、`release_fail_closed`、`cleanup_status=failed:lease_lock_timeout`、义务与 owner 证据保留、worker 仍 paused | 6 |
+  | **F-T4** | 6 个 enter-only 参与者、注入保持 H=0.4 s、锁预算 1.0 s ⇒ ≥1 个 `lease_lock_timeout` 且零写；成功者集合 = refcount 的 lease 集合；超时者绝不出现在 refcount；成功者释放后无悬挂 lease/义务 | 8 |
+- 证据：`evidence/run/F-T1/` … `evidence/run/F-T4/`（每 case 含 journal、参与者 stdout/stderr、状态快照）。
+
+## R3-2 排队代价（F-I04C-12）
+
+- 排队等待 ≈ **(N−1)·H**（H = 单次临界区保持时间，含 `worker-status` 子进程与最长 graceful 5 s 的 `worker-pause`）。
+- **N·H > 锁上限（`LOCK_MAX_SECONDS=60`，或更小的相位预算）⇒ 队尾参与者 fail closed**（`lease_lock_timeout`，
+  零写、可安全重试）。F-T4 即该边界的确定性 case。
+- **排队在消耗下载预算**：`lock_wait` 属于请求段；F-T4 报告 `budget_consumed_by_queueing`，
+  F-L2d 的 8 并发实测最大等待 9.87 s、整相位墙 13.2 s。**这是协议的真实代价**，
+  **不得**通过放宽锁或跳过互斥来规避（缓解手段是重试/降并发）。
+
+## R3-3 OPEN-3 的读法（采纳复核建议，待 owner 确认）
+
+`LOCK_MAX_SECONDS = 60` 是**本卡新增的等待上限常数**（防病态等待），**不是新预算**：
+请求段相位预算（默认 900 s）通常远大于 60，故不构成额外约束；它实际封顶的是
+**清理段（`C` 可达 85 s）与短 deadline**，且 `≤0` 时拒绝等待（F-T2 已证）。
+与 I-04-A v2 三条已签值（探针 `min(20,相位,5)`、请求段无下限、清理段独立 `C`）无冲突。
+**待裁**：① 命名与边界验收的确认；② 是否允许 `worker-pause` 留在锁内（本卡维持锁内，
+否则两个参与者可能同时自认首参与者）。
+
+
 

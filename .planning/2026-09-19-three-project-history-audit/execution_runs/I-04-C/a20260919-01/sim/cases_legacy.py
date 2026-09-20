@@ -14,6 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
+import kernel  # noqa: E402
 from harness import Harness, banner  # noqa: E402
 
 SCHEMA = "filing-fetch.pause-refcount/2"
@@ -70,55 +71,80 @@ def case_f_l1_nolock(root, verbose=False):
 
 
 def case_f_l2a_legacy(root, verbose=False):
-    """Current _unregister deletes by pid: nested scopes resume twice."""
-    h = Harness("F-L2a-legacy", root, verbose=verbose)
+    """The CURRENT machinery under a paused worker, measured two ways (r2).
+
+    (1) Through its public entry: the legacy guard checks runtime_state FIRST, so a
+        paused worker is reported as `worker_stopped` and the refcount bookkeeping
+        never runs at all.  That is the production behaviour and it is the reason
+        the frozen design moves the paused branch in front of the guard (ADR-9).
+    (2) Its unregister atom, called directly (no guard): it deletes EVERY entry with
+        the caller's pid, so a second, still-active lease of the same process is
+        removed and the worker is resumed while that scope is still running.
+    """
+    h = Harness("F-L2a-legacy", root, verbose=verbose,
+                worker_initial={"desired_state": "paused", "runtime_state": "stopped"})
     checks = []
-    res = h.run(h.payload("nested", mode="legacy", two_scopes=True), argv=["--two-scopes"])
-    env = res["envelope"]
-    leases = [e["lease_id"] for e in env["enters"]]
-    checks.append(h.check("both scopes registered under one pid",
-                          len(leases) == 2 and len(h.lease_view()["entries"]) == 2,
-                          json.dumps(h.lease_view())))
-    first_exit = env["exits"][0]
-    checks.append(h.check("first exit reports 'last' and resumes (WRONG: the second "
-                          "scope is still in flight)",
-                          first_exit["action"] == "released_last"
-                          and first_exit["resume_calls"] == 1, json.dumps(first_exit)))
-    checks.append(h.check("second scope's lease was deleted by the pid-wide filter",
-                          not h.lease_view()["exists"], json.dumps(h.lease_view())))
-    second_exit = env["exits"][1]
-    checks.append(h.check("second exit resumes AGAIN (double resume)",
-                          second_exit["resume_calls"] == 1
-                          and h.counts()["resume_calls"] == 2, json.dumps(h.counts())))
-    return h.finish(checks)
+
+    # (1) public entry point: the guard short-circuits
+    res = h.run(h.payload("legacy", mode="legacy", request_budget=100.0,
+                          status={"desired_state": "paused", "runtime_state": "stopped"}))
+    checks.append(h.check("the legacy/public guard reports worker_stopped for a paused "
+                          "worker (the refcount path is unreachable in production)",
+                          res["envelope"]["result"]["action"] == "worker_stopped",
+                          json.dumps(res["envelope"]["result"])))
+
+    # (2) the unregister atom with two same-pid leases in the file
+    entries = [{"pid": os.getpid(), "joined": True}, {"pid": os.getpid(), "joined": True}]
+    with open(h.refcount_path, "w", encoding="utf-8") as handle:
+        json.dump(entries, handle)
+    with open(h.owner_path, "w", encoding="utf-8") as handle:
+        handle.write("filing-fetch")
+    payload = h.payload("legacy-unregister", mode="legacy", request_budget=50.0,
+                        probe={str(os.getpid()): {"alive": True}})
+    empty = kernel.legacy_unregister(payload)
+    checks.append(h.check("legacy _unregister deletes BOTH same-pid leases (pid-wide delete)",
+                          empty is True and not os.path.exists(h.refcount_path),
+                          json.dumps({"file_exists": os.path.exists(h.refcount_path),
+                                      "empty": empty})))
+    checks.append(h.check("...and it also unlinks the owner marker, so the pause it "
+                          "did not finish is nobody's obligation",
+                          not h.owner_exists()))
+    return h.finish(checks, {"documented_as": "ADR-1/ADR-4 counterexample (why removal "
+                                             "must be by lease_id)"})
 
 
 def case_f_lgw1(root, verbose=False):
-    """Current code never persists the prune: a dead lease keeps the worker paused."""
+    """The CURRENT prune never persists: a dead lease survives in the file (r2).
+
+    The legacy register atom is called directly (the public entry is blocked by the
+    guard, see F-L2a-legacy): it prunes dead pids into a LOCAL list, so the file
+    keeps the dead entry and a later process sees a stale participant forever.
+    """
     h = Harness("F-Lgw1", root, verbose=verbose,
                 worker_initial={"desired_state": "paused", "runtime_state": "stopped"})
     checks = []
     stale = [{"pid": 55555, "joined": True}]
     with open(h.refcount_path, "w", encoding="utf-8") as handle:
         json.dump(stale, handle)
-    with open(h.owner_path, "w", encoding="utf-8") as handle:
-        handle.write("filing-fetch")
-    b = h.payload("B", mode="legacy", request_budget=100.0,
-                  probe={"55555": {"alive": False, "start_time": None}})
-    res = h.run(b)
-    result = res["envelope"]["result"]
-    checks.append(h.check("B joined but was treated as a fresh pause",
-                          result["action"] == "paused_by_us" or result["action"] == "joined",
-                          json.dumps(result)))
-    checks.append(h.check("another pause was issued on an already paused worker",
-                          h.counts()["pause_calls"] == 1, json.dumps(h.counts())))
-    checks.append(h.check("the dead lease was silently dropped from the file "
-                          "(no diagnosis kept)",
-                          legacy_pids(h) == [result["pid"]],
-                          json.dumps({"file_pids": legacy_pids(h), "result": result})))
-    checks.append(h.check("owner marker still present; no owner change recorded",
-                          h.owner_exists()))
-    return h.finish(checks)
+    payload = h.payload("legacy-register", mode="legacy", request_budget=50.0,
+                        probe={"55555": {"alive": False}})
+    first = kernel.legacy_register(payload)
+    checks.append(h.check("a dead-only refcount is read as 'nobody is here' (first=True), "
+                          "so the caller pauses an already-paused worker again",
+                          first is True, str(first)))
+    checks.append(h.check("the dead participant is dropped from the file with no trace",
+                          legacy_pids(h) == [os.getpid()],
+                          json.dumps({"file_pids": legacy_pids(h), "me": os.getpid()})))
+    checks.append(h.check("no diagnosis of the dead participant is kept anywhere",
+                          not any(e.get("event") == "pruned" for e in h.journal_events()),
+                          json.dumps(h.journal_events())))
+    return h.finish(checks, {
+        "documented_as": "why the frozen design validates the owner before claiming a "
+                         "cycle and journals every reclaim",
+        "v1_claim_corrected": "the v1 text claimed 'the prune is never persisted'; that is "
+                              "FALSE for the register path (it writes prune()+self). The "
+                              "measured defect is the silent drop plus the extra pause.",
+    })
 
 
 CASES = {

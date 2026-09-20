@@ -51,3 +51,12 @@
 - 计划细化必须区分case资格：31模型公式验收不能依赖后继准确性，否则与正式预测/评估形成循环；实际采用模型的披露适配是公司case前置，未用模型不阻塞该case。
 - 当前SLO脚本的catalog参数只检存在、实际入口依config；bundle是exact延迟副本。I14新增实际目标一致性与真实bundle测量要求，不把代理计时写作真实消费SLO。
 
+## 隔离巡检（2026-09-20 父代理，逐条附证据）
+
+- **越界写 1（我方，已处置）**：`revenue-forecast\prereg_expectations.json`（M05–M08 复核脚本以相对路径写、进程 cwd 恰为生产仓库根；sha256 `35fbc83ded27…a03a9f`，mtime `2026-09-20 02:59:55`）。先保全副本于 `execution_runs/_isolation_incidents/20260920-prereg-expectations-leak/`，再从生产树删除；删除后 porcelain 不再出现该条目。
+- **越界写 2（我方，已处置）**：`filing-fetch\git_filing-fetch.txt`（I-00-A 采集命令的输出重定向落到生产仓库根，内容自指 `?? git_filing-fetch.txt`；sha256 `43b964e376e7…c160c`，mtime `2026-09-19 11:05:23`）。attempt 目录已有逐字节相同副本，直接从生产树删除；`filing-fetch` porcelain 现为**空**。这也解释了该仓 I-00-A `dirty_evidence` 的来历。
+- **不可归因的生产树变化（未回退）**：`revenue-forecast\assurance\runs\daily_alert.jsonl` 新增一行（`run_id 20260919T210001Z`、`at_utc 2026-09-19T21:00:48Z`），格式与 run_id 口径即本仓每日告警作业自身；I-08-A 的 `after/git_status_after.txt`（mtime `2026-09-20 01:19:23`）中该条**已是 ` M`**，早于任何本计划卡触碰该路径。无卡被允许写 `assurance/`，故**不归因于本次审计**，且**不回退**（可能是用户自有自动化产物）。
+- **provenance gap（登记不解释）**：`revenue-forecast` 既有脏文件 `CHANGELOG.md`/`SKILL.md`/`references/*`/`assurance/runs/daily_alert.jsonl` 的 mtime 在 `2026-09-20 02:24:00` 被批量刷新，恰在 `02:23:50 reset: moving to HEAD`、`02:23:58 commit 7d7ea1e` 前后。**内容未变的证据**：`SKILL.md` 磁盘 sha256 `45e4e343eba4…c47806`（26378 B）与 I-00-A 冻结基线登记值**完全相同**；其余文件无基线 hash，只能证明 porcelain 条目与基线逐条相同、`git diff` 仍只显示用户既有改动——**不声称字节未变**。已排除 `git stash`（list 为空）、`.git/hooks` 与 `.githooks` 内无 `stash` 调用，工作区未被回退。当前值已落盘于 INCIDENT.md 表格供今后比对。
+- **生产不可变量测（同轮）**：`company-wiki` porcelain 仅 ` M CLAUDE.md`/` M README.md`；三模块磁盘 sha256 `e83179915333…`/`a73826aa10c9…`/`fad88c60294a…` 与 I-14-C 收尾实测一致（CRLF 工作区，故 HEAD blob 的 `git hash-object` 天然不同：`5d700302ca4b`/`d9ce30dfeb14`/`c5038a9db4ec`）；`.source_catalog\catalog.sqlite3` 49,677,344,768 B、mtime `2026-09-19T06:31:35Z`、`-wal` 0 B；`-shm` mtime `2026-09-20T02:25:33Z`（并发卡只读触达）。
+- **I-04-C C1 父代理验收**：`verify_flk2.py` 独立复算 13/13；`decision.md`/`review.md`/`handoff.json`/`evidence/hashes.txt` 改后 hash 与实现者报告逐一相符；`verify_r4_appendonly.py` 证明"删去插入块后重建 sha256 与改前逐字相等"（原文未删）。真实 F-LK2 组 `[16,35,10,56,18] ⇒ lost [184,165,190,144,182]`；旧组 `[12,19,7,26,43]` 与 `expected=200` 自不相容（`200−finals=[188,181,193,174,157]`）。**C1 关闭由父代理验证，非 reviewer 复签**——如需 reviewer 级复签应在下次复核中补。
+

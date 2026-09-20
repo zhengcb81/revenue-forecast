@@ -31,8 +31,15 @@ def walk(root):
 
 def main():
     lines = []
+    # The manifest cannot contain its own hash (r2 P3-3): hashes.txt and
+    # run-summary.json are the two files this tool writes, so they are listed as
+    # documented exclusions instead of being hashed from the previous run.
+    lines.append("# EXCLUDED from this manifest (written by this tool, so a self-hash "
+                 "would describe the previous run): evidence/hashes.txt, "
+                 "evidence/run-summary.json")
     # 1. the frozen design inputs
-    for relative in ("binding.json", "oracle.md", "decision.md", "commands.json"):
+    for relative in ("binding.json", "oracle.md", "decision.md", "commands.json",
+                     "review.md", "handoff.json", "recovery/README.md"):
         path = os.path.join(ATTEMPT, relative)
         if os.path.exists(path):
             lines.append(f"{sha256(path)}  {relative}")
@@ -46,6 +53,8 @@ def main():
     evidence = os.path.join(ATTEMPT, "evidence")
     for path in walk(evidence):
         if os.sep + "run" + os.sep in path:
+            continue
+        if os.path.basename(path) in {"hashes.txt", "run-summary.json"}:
             continue
         lines.append(f"{sha256(path)}  evidence/{os.path.relpath(path, evidence).replace(os.sep, '/')}")
     # 4. the production truth
@@ -61,6 +70,7 @@ def main():
         "production_hash": production_hash,
         "production_unchanged": production_hash == EXPECTED_PRODUCTION,
         "artifacts_hashed": len(lines) - 2,
+        "excluded_from_manifest": ["evidence/hashes.txt", "evidence/run-summary.json"],
     }
     with open(os.path.join(evidence, "run-summary.json"), "w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=1, sort_keys=True)

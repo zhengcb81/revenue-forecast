@@ -1,35 +1,18 @@
 {
- "card_id": "I-04-C",
  "attempt_id": "a20260919-01",
- "status": "review_pending",
- "scope": "DESIGN card: freeze the cross-process lease / ownership / recovery protocol for the pause refcount and prove the frozen rules with simulations. No product code was changed anywhere; the protocol exists only as the simulated kernel sim/kernel.py plus decision.md.",
- "reviewer_status": "PENDING (implementer wrote no verdict; review.md section 4 is empty for the independent reviewer)",
- "completed_steps": [
-  "1 lingqu (card bound: gate I-04-A accepted, I-04-B accepted_scoped; scope = design + simulation only)",
-  "2 binding (binding.json: anchors re-verified at 046cc7dc...088, per-attempt iso venv with pytest 9.1.1, allowed write roots, forbidden list)",
-  "3 du zhengju (read fetch_filing.py L380-660 refcount machinery, CHANGELOG v1.4.0, tests L2630-2810, company-wiki control.py pause/resume/status)",
-  "4 dongjie yuqi (oracle.md: F-L1..F-W5 schedules, lock-stress expectations, budget composition, simulation qualification - written BEFORE any run)",
-  "5 yunxing xiugaiqian jiancha (no pre-fix RED applicable: this card changes no product code; the RED evidence is instead the deterministic legacy counterexample F-L1-nolock)",
-  "6 zuixiao xiugai (zero production changes; the only writes are sim/** and evidence/** inside this attempt)",
-  "7 xiuhou jiancha (protocol suite + lock stress + legacy counterexamples + iso regression on the byte-identical source: 8 passed / 109 deselected)",
-  "8 jiaoshen (this package; independent review PENDING)",
-  "9 jiexu (handoff.json below)"
+ "blocked_by": [],
+ "card_id": "I-04-C",
+ "carries": [
+  "I-04-D MANDATORY PRECONDITION (O-9): rerun every concurrent case with the real OS probe or in lifetime mode; the DECLARED liveness model used here is a simulation input and its equivalence to a real probe is NOT granted",
+  "I-04-D: ship the manual release guidance for the R5 terminal state (paused with no attributable obligation): a doctor/stderr instruction plus the raw owner record it must print, so a human can resolve it without guessing",
+  "I-04-D: keep ADR-10e as an explicit invariant -- after an ownership transfer the owner record must still be provably dead-able; a transfer that points at a lease which is about to exit is a protocol defect and must fail closed (R5)",
+  "I-04-D (O-2): if the owner wants user pauses protected, company-wiki must expose a pause-origin signal (pause_origin); until then the F-L4a LIMITATION stands",
+  "I-04-D: unique .tmp name for the refcount write (O-5)",
+  "I-04-E: the product envelope still lacks probe elapsed and the cleanup PHASE wall clock",
+  "standing rule: the cleanup PHASE wall clock is reported, never bounded by an acceptance cap",
+  "DOWNSTREAM BINDING: revenue-forecast HEAD moved 4753fda -> 7d7ea1e; any downstream card bound to 4753fda must be REBOUND before it runs",
+  "any change to the I-04-A frozen values (C, epsilon, B) requires returning to I-04-A"
  ],
- "next_step_number": "independent review of decision.md + evidence, then I-04-D (port the accepted protocol into the isolated copy)",
- "next_action": "Independent reviewer reads decision.md (ADR-1..ADR-11), oracle.md, evidence/failures.txt, evidence/lock-and-legacy.txt and settles the six open questions listed in review.md section 2; then the owner decides whether I-04-D ports the protocol. Any change to the I-04-A D1-D5 frozen values still requires returning to I-04-A.",
- "input_hashes": {
-  "card": "execution_v2/card_I-04-C.md",
-  "dependency_I-04-A": "execution_runs/I-04-A/a20260919-01/{decision.md,oracle.md} (v2 SIGNED)",
-  "dependency_I-04-B": "execution_runs/I-04-B/a20260919-01/{review.md,handoff.json,iso_patching.md,changes.diff}",
-  "ground_truth": "C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py @ 046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088"
- },
- "current_source_hashes": {
-  "production_scripts_fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
-  "production_unchanged_after_attempt": true,
-  "filing_fetch_HEAD": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
-  "iso_scripts_fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
-  "attempt_artifacts": "evidence/hashes.txt (38 artifacts)"
- },
  "changed_paths": [
   "execution_runs/I-04-C/a20260919-01/binding.json",
   "execution_runs/I-04-C/a20260919-01/oracle.md",
@@ -37,60 +20,59 @@
   "execution_runs/I-04-C/a20260919-01/commands.json",
   "execution_runs/I-04-C/a20260919-01/review.md",
   "execution_runs/I-04-C/a20260919-01/handoff.json",
-  "execution_runs/I-04-C/a20260919-01/sim/** (kernel, participant, stub_worker, harness, cases_core, cases_ownership, cases_legacy, scheduler, parse_run, freeze_evidence, nesting_probe, stress)",
-  "execution_runs/I-04-C/a20260919-01/evidence/** (raw logs, per-case run dirs, hashes.txt)"
+  "execution_runs/I-04-C/a20260919-01/sim/**",
+  "execution_runs/I-04-C/a20260919-01/evidence/**",
+  "execution_runs/I-04-C/a20260919-01/recovery/**"
  ],
- "product_changed_paths": [],
  "commands_executed": [
   "I04C-01-compile-sim",
   "I04C-02-protocol-suite",
   "I04C-03-lock-and-legacy",
   "I04C-04-parse",
-  "I04C-05-freeze",
-  "I04C-06-iso-regression"
+  "I04C-05-static-adr11",
+  "I04C-06-phase-wall",
+  "I04C-07-freeze",
+  "I04C-08-iso-regression",
+  "I04C-09-flk2-recompute"
  ],
- "raw_exit_codes": [0, 1, 1, 0, 0, 0],
- "expected_exit_codes": [0, "0 iff every case passes", "0 iff atomicity cases and RED counterexamples reproduce", 0, 0, 0],
- "results": {
-  "protocol_suite": "16 selected, 10 PASS / 6 with failing checks (raw: evidence/run-all.txt, parsed: evidence/failures.txt)",
-  "protocol_passed": ["F-L1", "F-L2b", "F-L2c", "F-L3a", "F-L3b", "F-L3c", "F-L4b", "F-L4c", "F-L4e", "F-W4", "F-W5"],
-  "protocol_with_failures": ["F-L2a", "F-L2d", "F-L4a", "F-L4d", "F-W1", "F-W2", "F-W4b"],
-  "lock_atomicity": {
-   "F-LK1_locked": "final=200/200, lost_updates=0, 200 lock acquisitions",
-   "F-LK2_unlocked": "final=10/200, lost_updates=190",
-   "F-LK3_holder_crash": "parent reacquired in 0.0004 s after the holder died with exit 90; no cleanup action needed"
-  },
-  "red_counterexamples": {
-   "F-L1-nolock": "lost update reproduced deterministically (a stale snapshot overwrote the other participant's lease; both processes recorded first=true)",
-   "F-L1-nolock-guard": "no-lock decision race reproduced",
-   "F-L2a-legacy": "legacy port stops at its own runtime guard (worker_stopped) - recorded, not a defect claim",
-   "F-Lgw1": "legacy port stops at its own runtime guard (worker_stopped) - recorded, not a defect claim"
-  },
-  "iso_regression": "pytest -k 'pause or resume' on the byte-identical iso source: 8 passed, 109 deselected"
+ "completed_steps": [
+  "1 lingqu (card bound; gate I-04-A accepted, I-04-B accepted_scoped; scope = design + simulation only)",
+  "2 binding (binding.json: anchors re-verified at 046cc7dc...088, per-attempt iso venv with pytest 9.1.1)",
+  "3 du zhengju (fetch_filing.py L380-660 refcount machinery, CHANGELOG v1.4.0, tests L2630-2810, company-wiki control.py pause/resume/status)",
+  "4 dongjie yuqi (oracle.md frozen BEFORE any run; r2 revisions appended as section R2, never rewriting the frozen body)",
+  "5 yunxing xiugaiqian jiancha (this card changes no product code; the RED evidence is the deterministic counterexamples F-L1-nolock and the legacy atoms)",
+  "6 zuixiao xiugai (zero production changes; writes confined to sim/** and evidence/** inside this attempt)",
+  "7 xiuhou jiancha (r2 protocol suite 24 PASS / 0 FAIL / 0 harness-error / 0 failing checks; lock+legacy 7 PASS / 0 FAIL; static ADR-11 proof; phase-wall report; iso regression 8 passed / 109 deselected)",
+  "8 jiaoshen (this package; round-2 independent review PENDING)",
+  "9 jiexu (handoff below)"
+ ],
+ "current_source_hashes": {
+  "attempt_artifacts": "evidence/hashes.txt",
+  "company_wiki_porcelain": "M CLAUDE.md, M README.md (pre-existing: mtime 2026-09-19 11:20, before this card's work began, and this card never wrote to company-wiki)",
+  "filing_fetch_HEAD": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+  "filing_fetch_porcelain": "?? git_filing-fetch.txt (pre-existing, not produced by this card)",
+  "production_scripts_fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+  "production_unchanged_after_attempt": true,
+  "revenue_forecast_porcelain": "only .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/** (this attempt); nothing under PLAN/reviews was modified"
  },
  "decisions_frozen": {
-  "ADR-1": "OS byte-range lock on a never-unlinked lock file (msvcrt.locking / fcntl.flock); crash release is a kernel fact",
-  "ADR-2": "lock path .source_catalog/filing_fetch_pause.lock; one non-nested lock; budget = min(phase budget, 60) read once at the critical-section entry; timeout => fail closed",
-  "ADR-3": "the last release and the resume decision happen inside ONE critical section; resume is never authorised by an empty refcount alone",
-  "ADR-4": "lease_id (uuid4) + process incarnation (pid, os_start_time, boot_uuid); removal only by lease_id, never by pid; unknown liveness => fail closed",
-  "ADR-5": "crash windows W1-W8 with fail-closed handling; corrupt/legacy/ambiguous state is never read as an empty list",
-  "ADR-6": "no new budget: the lease layer only consumes phase budget; C, epsilon and B are untouched",
-  "ADR-7": "owner marker format unchanged; refcount schema filing-fetch.pause-refcount/2; legacy list => fail closed unless the documented migration switch is on",
-  "ADR-8": "user pause intent wins; respect_paused writes nothing and never resumes",
-  "ADR-9": "(measured) the paused branch is evaluated before the runtime_state guard, otherwise the join/takeover path is unreachable in production",
-  "ADR-9b": "(measured) live leases also route to the join branch when the status still says enabled; pause exactly once per cycle",
-  "ADR-9c": "(measured) reclaim dead leases FIRST and decide on what survives",
-  "ADR-10": "(measured) handover chain: owner-last resumes; non-owner-last with an obligation resumes; otherwise it claims the cycle instead of leaving a paused worker with nobody obliged",
-  "ADR-11": "(measured) re-read status and lease inside the critical section; the pre-lock read can be arbitrarily stale"
+  "ADR-1": "OS byte-range lock on a never-unlinked lock file; crash release is a kernel fact",
+  "ADR-10": "R1-R5 branch table for the last release (including the cell v1 left undefined); no path silently rewrites an unattributable obligation",
+  "ADR-10d": "a takeover is a complete cycle: resume (only if the worker is actually paused), then open our own pause",
+  "ADR-10e": "a leaving owner transfers ownership to a surviving lease",
+  "ADR-11": "the whole acquire path is ONE critical section: status + lease are read inside it and the branch helpers hold no lock",
+  "ADR-12": "generation is a per-file counter and restarts at 1; authority is owner evidence + obligation + liveness",
+  "ADR-2": "one non-nested lock; lock_budget_for(x)=min(x,60) consumes (never creates) phase budget; timeout => fail closed; the stale min(10,...) text is corrected; constant 60 = OPEN-3 for the owner",
+  "ADR-3": "the last release and the resume decision happen inside ONE critical section; an empty refcount alone never authorises a resume",
+  "ADR-4": "lease_id + process incarnation; removal only by lease_id, never by pid; unknown liveness => fail closed",
+  "ADR-5": "crash windows W1-W8 with fail-closed handling; the W1/W2/W3 descriptions are corrected in v1.2",
+  "ADR-6": "no new budget: the lease layer only consumes phase budget; C, epsilon and B untouched",
+  "ADR-7": "owner marker unchanged; refcount schema filing-fetch.pause-refcount/2; legacy list => fail closed",
+  "ADR-8": "user pause intent wins for pauses that are NOT attributable to us; the indistinguishable case is recorded as a LIMITATION (F-L4a) with an I-04-D dependency",
+  "ADR-9": "the paused/lease branch is evaluated before the runtime_state guard",
+  "ADR-9b": "live leases route to the same branch even when the status still says enabled; one pause per cycle",
+  "ADR-9c": "reclaim dead leases first and decide on what survives"
  },
- "open_questions": [
-  "review.md section 2 lists the six attack points the reviewer should settle first (handover chain, resume-obligation persistence point, classify() fail-closed behaviour on real hosts, zombie leases under ADR-9b, the lock budget formula, upgrade compatibility)",
-  "six cases still have failing checks (F-L2a, F-L2d, F-L4a, F-L4d, F-W1, F-W2, F-W4b) - each is listed with the implementer's provisional judgement in review.md section 1",
-  "the liveness probe in these runs is DECLARED, not the real OS probe (oracle.md section 8); the reviewer may require the lifetime-mode rerun",
-  "I-04-B's fixes still live only in the I-04-B iso copy; the production source still uses max(10.0, ...) in _remaining()",
-  "I-04-C grants no production, POSIX, SMB, PID-reuse-probe or multi-threaded-scope qualification"
- ],
- "blocked_by": [],
  "evidence_paths": [
   "execution_runs/I-04-C/a20260919-01/decision.md",
   "execution_runs/I-04-C/a20260919-01/oracle.md",
@@ -101,14 +83,209 @@
   "execution_runs/I-04-C/a20260919-01/evidence/failures.txt",
   "execution_runs/I-04-C/a20260919-01/evidence/lock-and-legacy.txt",
   "execution_runs/I-04-C/a20260919-01/evidence/lock-and-legacy-failures.txt",
+  "execution_runs/I-04-C/a20260919-01/evidence/static-adr11.txt",
+  "execution_runs/I-04-C/a20260919-01/evidence/phase-wall.txt",
   "execution_runs/I-04-C/a20260919-01/evidence/hashes.txt",
   "execution_runs/I-04-C/a20260919-01/recovery/README.md",
-  "execution_runs/I-04-C/a20260919-01/evidence/run/"
+  "execution_runs/I-04-C/a20260919-01/evidence/run/",
+  "execution_runs/I-04-C/a20260919-01/evidence/flk2-recompute.txt"
  ],
- "carries": [
-  "I-04-D: port the accepted protocol into the isolated copy, add the unique .tmp name (O-5), and use a real-process harness for the PID-reuse probe (O-3)",
-  "I-04-E: the product envelope still lacks probe elapsed and the cleanup PHASE wall clock (unchanged I-04-B carry)",
-  "standing rule: the cleanup PHASE wall clock is reported, never bounded by an acceptance cap",
-  "any change to the I-04-A frozen values (C, epsilon, B) requires returning to I-04-A"
- ]
+ "expected_exit_codes": [
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "input_hashes": {
+  "card": "execution_v2/card_I-04-C.md",
+  "dependency_I-04-A": "execution_runs/I-04-A/a20260919-01/{decision.md,oracle.md} (v2 SIGNED)",
+  "dependency_I-04-B": "execution_runs/I-04-B/a20260919-01/{review.md,handoff.json,iso_patching.md,changes.diff}",
+  "ground_truth": "C:/Users/\u90d1\u66fe\u6ce2/Projects/filing-fetch/scripts/fetch_filing.py @ 046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088"
+ },
+ "next_action": "Round-3 confirmation by the reviewer (three still-required items disposed, see review.md section 6). Then I-04-D ports the protocol and MUST carry: (1) O-9 real-probe or lifetime rerun of every concurrent case; (2) the R5 terminal state manual-release guidance (doctor/stderr + the raw owner record it must print); (3) the ADR-10e invariant 'a transferred owner must remain provably dead-able'; (4) O-2 pause-origin signal from company-wiki if user pauses are to be protected; (5) the OPEN-3 decision (60 s waiting cap naming, and whether worker-pause may stay inside the lock). Also rebind any downstream card pinned to revenue-forecast 4753fda: HEAD is now 7d7ea1e. ROUND 4 (2026-09-20, append-only correction): C1 is CLOSED -- the stale F-LK2 numbers in decision.md section 13.5 and review.md section 1/P3-4 were corrected additively against the recomputed truth (finals [16,35,10,56,18] => lost [184,165,190,144,182]; see evidence/flk2-recompute.txt). C2 (OPEN-3) is registered as an owner gate (review_carry_conditions.C2_OPEN3_owner_gate, owner_gates[0], decision.md sections 8 O-3 and 12) and does NOT block the accepted_scoped sign-off.",
+ "next_step_number": "independent review round 2 of decision.md v1.2 + oracle.md R2 + evidence, then I-04-D",
+ "not_granted": [
+  "production implementation (this is a design card; I-04-D ports it)",
+  "real provider / real worker / real wiki concurrency",
+  "the DECLARED liveness model's equivalence to a real OS probe (see the I-04-D preconditions)",
+  "POSIX (fcntl.flock) and SMB/NFS lock semantics (never exercised)",
+  "real PID-reuse detection via GetProcessTimes (never exercised)",
+  "multi-threaded scopes inside one process",
+  "any claim that a user pause issued during our scope is protected (see O-2 / F-L4a LIMITATION)",
+  "the transferred-owner invariant in ADR-10e has NOT been proven under a concurrent release; it is an obligation for I-04-D (see carries)"
+ ],
+ "open_questions": [
+  "OPEN-3 (owner): confirm the naming of LOCK_MAX_SECONDS=60 as 'the waiting cap constant introduced by this card' (it is not a new budget; it caps the cleanup segment and short deadlines and refuses to wait at <=0), and decide whether worker-pause may stay inside the lock (this card keeps it inside: otherwise two participants could both believe they are the first pauser)",
+  "O-1: with no next participant a crashed obligation leaves the worker paused; recovery needs a later acquire or a human; I-04-D must ship the manual release steps",
+  "O-2 / F-L4a: with the current company-wiki API a user pause issued during our scope is indistinguishable and our cycle close resumes it; needs a wiki-side pause-origin signal",
+  "O-5: unique .tmp name for the refcount write (I-04-D minimal change)",
+  "O-9: the DECLARED liveness model must be replaced by the real probe (or lifetime mode) before I-04-D can claim any concurrency qualification",
+  "OPEN-3 (registered in round 4 as the C2 OWNER GATE, see review_carry_conditions.C2_OPEN3_owner_gate and owner_gates[0]): the record above is unchanged; this entry only makes the registration explicit. Two rulings are pending: (a) the naming/boundary acceptance of the 60 s waiting cap; (b) whether worker-pause may stay inside the lock. THIS DOES NOT BLOCK THE accepted_scoped SIGN-OFF: it is an owner ruling item, not an implementation item, and no ADR text is changed by registering it (until the ruling the implementation uses 60)."
+ ],
+ "owner_gates": [
+  {
+   "blocks": [],
+   "blocks_signoff": false,
+   "carry_condition": "C2",
+   "cross_refs": [
+    "decision.md section 8 O-3",
+    "decision.md section 12 (ADR-2 lock budget v1.2 and OPEN-3)",
+    "decision.md section 14 (OPEN-3 review advice)",
+    "review.md section 6 (OPEN-3 row)"
+   ],
+   "does_not_block": "does not block the accepted_scoped sign-off; it is an owner ruling item, not an implementation item",
+   "fallback_until_ruled": "the implementation uses 60 (the kernel froze the value and it is recorded in the run logs)",
+   "gate": "OPEN-3",
+   "owner_action_required": true,
+   "registered_in_round": "round 4 (2026-09-20, append-only registration)",
+   "summary": "(a) name/accept the waiting cap constant 60 (lock_budget_for(x)=min(x,60)); (b) decide whether worker-pause may stay inside the lock (this card keeps it inside)"
+  }
+ ],
+ "product_changed_paths": [],
+ "r2_dispositions": {
+  "F-I04C-01": "DISPOSED: ADR-10 rewritten as the R1-R5 branch table (the previously undefined 'last releaser is not owner and resume.required=False' cell is now R4/R5); V4-a added and passing",
+  "F-I04C-02": "DISPOSED: owner_resumable() requires owner_is_me / owner_alive_in_cycle / owner_pruned:{dead,pid_reuse} / owner_probe:{dead,pid_reuse}; otherwise released_owner_changed (release) or owner_evidence_foreign (acquire); V4-e, V4-f, F-W7 passing with the owner record byte-unchanged",
+  "F-I04C-03": "DISPOSED: ADR-12 added (generation is a per-file counter, restarts at 1); F-GEN added and passing; the 'monotonic' wording removed from the frozen text",
+  "F-I04C-04": "DISPOSED: parse_run.py rewritten (line-based, counts harness errors and zero-check records, cross-checks the SUMMARY); the scheduler writes its own UTF-8 unwrapped log; all counts corrected; review.md section 2 keeps the wrong v1 statements with explicit corrections",
+  "F-I04C-05": "DISPOSED: F-L4a rewritten and now produces a real result (user pause during our scope, recorded as a LIMITATION with the I-04-D dependency)",
+  "F-I04C-06": "DISPOSED: 'entries existed' now counts as tool evidence, so 'dead lease + no marker' is never read as a user pause; F-L2c-dead added and passing",
+  "F-I04C-07": "DISPOSED: the whole acquire path is ONE critical section (status read inside it) and the branch helpers take no lock; static_check.py proves it and F-L2e-stale vs F-L2e-fixed is the runtime pair",
+  "F-I04C-08": "DISPOSED: F-W1 = evidence defect (dead injection point), F-W2 = wrong assertion (a second pause is required), F-W4b = assertion vs ADR-12; re-classified in decision.md section 12",
+  "F-I04C-10": "DISPOSED (text) + OPEN-3 (owner): one formula lock_budget_for(x)=min(x,60); the stale min(10,...) text is corrected in place; the new constant 60 is registered as OPEN-3",
+  "P3-1": "DISPOSED: O-1 rewritten - with no next participant the worker STAYS paused; recovery only happens on a later acquire or by hand",
+  "P3-2": "DISPOSED: DECLARED liveness and the mandatory lifetime/real-probe rerun are in not_granted and in the I-04-D preconditions",
+  "P3-3": "DISPOSED: freeze_evidence.py excludes its own two outputs and states the exclusion in the manifest",
+  "P3-4": "DISPOSED: F-LK2 runs 5 times and reports the whole distribution plus a determinism field; the conclusion is qualitative",
+  "P3-5": "DISPOSED: sim/phase_wall.py reports per-case phase wall and max lock wait"
+ },
+ "r3_dispositions": {
+  "OPEN-3_adopted": "ADOPTED as advised: LOCK_MAX_SECONDS=60 is kept but renamed to 'the waiting cap constant introduced by this card'; it is not a new budget (the request-phase budget is normally 900 s), its real effect is to cap the cleanup segment (C up to 85 s) and short deadlines, and a non-positive budget refuses to wait (proven by F-T2). Listed for the owner together with 'may worker-pause stay inside the lock?'.",
+  "still_required_1_error_code": "DISPOSED: FileLock now takes a `code` parameter; lease_lock() passes `lease_lock_timeout`, so the request phase reports code/action lease_lock_timeout and the cleanup phase reports cleanup_status=failed:lease_lock_timeout (sim/kernel.py). Four real timeout cases added: F-T1 (request phase, external holder really holds the lock), F-T2 (budget 0 => the lock is never attempted), F-T3 (cleanup phase), F-T4 (queue crosses the budget). The three doc sites (ADR-2, T13/code table, oracle sections) were already frozen with lease_lock_timeout and now match the implementation.",
+  "still_required_2_queue_boundary": "DISPOSED: F-T4 is the deterministic queue-crosses-budget case (6 enter-only participants, injected critical-section hold H=0.4 s, lock budget 1.0 s => 4 participants fail closed with lease_lock_timeout and zero writes; the winners' set equals the refcount set; no dangling lease or obligation afterwards). The (N-1)*H model and the fact that queueing consumes the download budget are now in decision.md ADR-2/section 14 F-I04C-12 and oracle.md R3-2, and F-T4 reports `budget_consumed_by_queueing`.",
+  "still_required_3_hygiene": "DISPOSED: decision.md ADR-6 table and section 6 summary now use lock_budget_for(x)=min(x,60); the section 10 ADR-10 row is marked superseded by the section 12 R1-R5 table; the claim 'never leaves a paused worker with nobody obliged' is formally withdrawn (R5 allows that fail-closed terminal state); oracle.md section 0 says the generation is a per-file counter (not monotonic) and section 7 uses min(phase budget, 60); the F-LK2 numbers are unified to the measured group finals [16,35,10,56,18] => lost [184,165,190,144,182] from evidence/lock-and-legacy.txt. Applied by sim/patch_r3_docs.py."
+ },
+ "raw_exit_codes": [
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "results": {
+  "iso_regression": "pytest -k 'pause or resume' on the byte-identical iso source: 8 passed, 109 deselected",
+  "lock_atomicity": {
+   "F-LK1_locked": "final=200/200 in 1 run, lost_updates=0, 200 lock acquisitions",
+   "F-LK2_unlocked": "5 runs, finals [16, 35, 10, 56, 18], lost [184, 165, 190, 144, 182] (final evidence round); reviewer rerun 34/200; an earlier round even produced 261/200 because the unlocked write is itself non-atomic -- QUALITATIVE only",
+   "F-LK3_holder_crash": "parent reacquired in 0.0004 s after the holder died with exit 90; no cleanup action needed",
+   "F_LK3_holder_crash": "parent reacquired in 0.0004 s after the holder died with exit 90; no cleanup action needed (re-verified in the r3 run)"
+  },
+  "lock_timeout_boundary": {
+   "F-T1": "request phase, external process really holds the lease lock, request_budget=0.05 => code/action lease_lock_timeout, zero writes, zero CLI, state file byte-identical, wait bounded",
+   "F-T2": "request_budget=0 => same fail-closed outcome and the lock is never even attempted (no lock_acq journal entry)",
+   "F-T3": "cleanup phase => action release_fail_closed with cleanup_status=failed:lease_lock_timeout, obligation and owner evidence preserved, worker still paused",
+   "F-T4": "queue crosses the budget (H=0.4 s, budget 1.0 s, 6 participants) => 4 participants fail closed with lease_lock_timeout and zero writes; successful set == refcount set; no dangling lease or obligation at the end"
+  },
+  "phase_wall": "evidence/phase-wall.txt (reported, never bounded); max_lock_wait_seconds < 9.2 s in the 8-way contention case",
+  "protocol_passed": [
+   "F-L1",
+   "F-L2a",
+   "F-L2b",
+   "F-L2c",
+   "F-L2c-dead",
+   "F-L2d",
+   "F-L3",
+   "F-L4a",
+   "F-L4b",
+   "F-L4c",
+   "F-L4d",
+   "F-L4e",
+   "F-W1",
+   "F-W2",
+   "F-W4",
+   "F-W4b",
+   "F-W5",
+   "V4-a",
+   "V4-e",
+   "V4-f",
+   "F-W7",
+   "F-L2e-stale",
+   "F-L2e-fixed",
+   "F-GEN",
+   "F-T1",
+   "F-T2",
+   "F-T3",
+   "F-T4"
+  ],
+  "queue_cost": "queue wait ~ (N-1)*H; F-T4 reports budget_consumed_by_queueing (P0 0.000 s, P2 0.571 s); F-L2d's 8-way run reported max_lock_wait 9.87 s and a 13.2 s phase wall",
+  "red_counterexamples": {
+   "F-L1-nolock": "lost update reproduced deterministically (a stale snapshot overwrote the other participant's lease; both recorded first=true)",
+   "F-L2a-legacy": "the CURRENT guard reports worker_stopped for a paused worker (the refcount path is unreachable in production); its unregister atom deletes BOTH same-pid leases and unlinks the owner marker",
+   "F-Lgw1": "the CURRENT register atom reads a dead-only list as 'nobody here' (first=true, extra pause) and silently drops the dead participant with no diagnosis -- and the v1 claim 'the prune is never persisted' was FALSE (corrected)"
+  }
+ },
+ "review_carry_conditions": {
+  "C1_stale_FLK2_numbers": {
+   "append_only_proof": "sim/verify_r4_appendonly.py: deleting exactly the inserted blocks reproduces the pre-change sha256 of decision.md (bb9bb0f401e573409842afd7bfc7a17eb3d5dd52b79e134f41417f1aa0a6f479) and review.md (8cc116bced471b721bf28f1a15f9daf3e875e720ad9cb3e7eb0ebd3966289a57)",
+   "authoritative_evidence": [
+    "evidence/lock-and-legacy.txt line 6 (the F-LK2 record: finals / lost_updates / lost_updates_range / determinism)",
+    "evidence/run/F-LK2-r{1..5}/counter.txt (raw final counter per round: 16, 35, 10, 56, 18)",
+    "evidence/run/F-LK2-r{1..5}/payload.{0..7}.json (8 participants x 25 rounds, use_lock=false)",
+    "evidence/run/F-LK2-r{1..5}/counter.journal.jsonl (lock_acquisitions=0 for every participant)"
+   ],
+   "closed_in": "round 4 (append-only text/evidence correction; no design change)",
+   "condition": "C1 (must close): decision.md section 13.5 and review.md section 1 / P3-4 still printed the STALE F-LK2 group finals [12, 19, 7, 26, 43] => lost_updates [197, 185, 191, 198, 14], while the final evidence round recorded a different group.",
+   "correction_sites": [
+    "decision.md section 13.5 item 5: correction block appended after the stale sentence (the sentence itself is byte-identical)",
+    "review.md section 1 P3-4 row: correction block appended after the table (the row itself is byte-identical)",
+    "decision.md section 14 F-I04C-13 table: closure note appended (the r3 patch had only reached oracle.md section 7)"
+   ],
+   "history_preserved": "the stale group [12,19,7,26,43] stays verbatim in the decision.md section 14 F-I04C-13 row and inside both correction quotes; the earlier-round 261/200 torn-write narrative is history (it is not part of the final evidence round) and was NOT touched",
+   "recompute_command": "& $PY -B sim/verify_flk2.py",
+   "recompute_output": "evidence/flk2-recompute.txt (13/13 checks PASS: A1-A8 recompute every round from the raw run directories and compare with the record fields, B1-B4 recheck the record's own arithmetic, C1 shows the stale group is impossible for expected=200)",
+   "scope_limits": "numbers and registration only: no ADR text, no assertion strength and no frozen oracle expectation was changed (there is no implementation item in C1)",
+   "stale_group_is_self_inconsistent": "expected - [12,19,7,26,43] = [188,181,193,174,157], which is NOT the [197,185,191,198,14] printed next to it",
+   "status": "closed",
+   "true_values": "finals [16, 35, 10, 56, 18] => lost_updates [184, 165, 190, 144, 182]; lost_updates_range [144, 190]; expected 200 (8 processes x 25 rounds); lock_acquisitions 0 in all five rounds"
+  },
+  "C2_OPEN3_owner_gate": {
+   "condition": "C2 (register only, no design change): OPEN-3 -- the naming/acceptance of the 60 s waiting cap (lock_budget_for(x)=min(x,60)) and whether worker-pause may stay inside the lock.",
+   "does_not_block": "this does NOT block the accepted_scoped sign-off; no ADR text changes because of it, and until the owner rules the implementation uses 60 as already frozen in the kernel",
+   "items": [
+    "confirm the naming and the boundary acceptance of LOCK_MAX_SECONDS=60 as 'the waiting cap constant introduced by this card' (not a new budget: the request-phase budget is normally 900 s; its real effect is to cap the cleanup segment C<=85 s and short deadlines; a non-positive budget refuses to wait, proven by F-T2)",
+    "decide whether worker-pause may stay inside the lock (this card keeps it inside: otherwise two participants could both believe they are the first pauser; see decision.md section 14 F-I04C-12)"
+   ],
+   "kind": "OWNER RULING item, not an implementation item",
+   "registered_locations": [
+    "handoff.json.review_carry_conditions.C2_OPEN3_owner_gate",
+    "handoff.json.owner_gates[0]",
+    "handoff.json.open_questions (the original OPEN-3 entry plus the appended C2 registration entry)",
+    "decision.md section 8 O-3 (appended registration block)",
+    "decision.md section 12 'ADR-2 lock budget (v1.2) and OPEN-3' (appended cross-reference)",
+    "decision.md section 14 'OPEN-3 (review advice)' (round-3 text, unchanged)",
+    "review.md section 6 OPEN-3 row (round-3 text, unchanged)"
+   ],
+   "status": "open_owner_ruling"
+  },
+  "source": "round-2 review verdict accepted_scoped carried two conditions; round 3 disposed the three still-required items but left the C1 residue in decision.md section 13.5 and review.md section 1"
+ },
+ "reviewer_status": "Round 1 = changes_required -> r2 revision -> Round 2 = ACCEPTED_SCOPED with 3 still-required items (error-code/timeout case; queue-crosses-budget boundary + queue cost; stale text and F-LK2 numbers) -> r3 revision (this package). The implementer wrote no verdict; review.md section 5 stays empty for the reviewer. Round 4 is an implementer text/evidence correction round only: it reopens no verdict and claims none (review.md section 5 stays empty for the reviewer); C1 is closed and C2 is registered as an owner gate.",
+ "revision": "v1.3 (r3: the round-2 review returned accepted_scoped with 3 still-required items; all three are disposed) + round 4 append-only correction (C1 closed with a recomputed F-LK2 truth; C2/OPEN-3 registered as an owner gate; no design, assertion or oracle change)",
+ "scope": "DESIGN card: freeze the cross-process lease / ownership / recovery protocol for the pause refcount and prove the frozen rules with simulations. No product code was changed anywhere; the protocol exists only as the simulated kernel sim/kernel.py plus decision.md.",
+ "status": "review_pending",
+ "true_counts": {
+  "F_LK2": "5 runs, finals [16, 35, 10, 56, 18], lost [184, 165, 190, 144, 182] (final evidence round); reviewer rerun 34/200; an earlier round even produced 261/200 because the unlocked write is itself non-atomic -- QUALITATIVE only",
+  "lock_and_legacy_suite": "cases_in_log=7 pass=7 fail=0 harness_error=0 failing_checks=0 (evidence/lock-and-legacy-failures.txt)",
+  "protocol_suite": "cases_in_log=28 pass=28 fail=0 harness_error=0 failing_checks=0 (evidence/failures.txt)",
+  "static_adr11": "S1-S4 all PASS (evidence/static-adr11.txt)",
+  "superseded_counts": "v1 '10 PASS / 6 failing' and the v1.2 '24 PASS' figures are superseded by the r3 counts above; review.md section 2(a) keeps the original wrong sentence with its correction"
+ }
 }

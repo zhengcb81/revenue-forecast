@@ -30,6 +30,21 @@ def emit(kind, payload):
     sys.stdout.flush()
 
 
+def run_enter(payload, mode):
+    """Dispatch the acquire path for the requested mode (r2)."""
+    if mode == "protocol_stale_v1":
+        return kernel.run_protocol_stale_v1(payload)
+    if mode == "protocol":
+        return kernel.run_protocol(payload)
+    return kernel.run_legacy(payload)
+
+
+def run_release(payload, mode):
+    if mode in {"protocol", "protocol_stale_v1"}:
+        return kernel.run_protocol_exit(payload)
+    return kernel.run_legacy_exit(payload)
+
+
 def lease_variants(base):
     return [f"{base}-1", f"{base}-2"]
 
@@ -45,8 +60,7 @@ def run_two_scopes(payload, mode):
         scoped["invocations"] = index
         scoped["phase"] = "enter"
         scoped["mode"] = mode
-        result = kernel.run_protocol(scoped) if mode == "protocol" else kernel.run_legacy(scoped)
-        enters.append(result)
+        enters.append(run_enter(scoped, mode))
     if payload.get("stop_after_enter"):
         emit("two-scopes", {"enters": enters, "exits": []})
         return 0
@@ -57,10 +71,7 @@ def run_two_scopes(payload, mode):
         scoped["invocations"] = index
         scoped["phase"] = "exit"
         scoped["mode"] = mode
-        result = (
-            kernel.run_protocol_exit(scoped) if mode == "protocol" else kernel.run_legacy_exit(scoped)
-        )
-        exits.append(result)
+        exits.append(run_release(scoped, mode))
         if payload.get("stop_after_first_exit"):
             break
     scopes.append({"lease_ids": variants})
@@ -97,16 +108,12 @@ def run_lifetime(payload, mode):
     injected liveness model exact: the alive file exists exactly while the
     participant is in its scope.
     """
-    entered = kernel.run_protocol(payload) if mode == "protocol" else kernel.run_legacy(payload)
+    entered = run_enter(payload, mode)
     kernel.gate(payload, "lifetime_hold")
     kernel.maybe_exit_at(payload, "lifetime_crash")
     exit_payload = dict(payload)
     exit_payload["phase"] = "exit"
-    released = (
-        kernel.run_protocol_exit(exit_payload)
-        if mode == "protocol"
-        else kernel.run_legacy_exit(exit_payload)
-    )
+    released = run_release(exit_payload, mode)
     emit("lifetime", {"result": entered, "exit": released, "lease_id": payload["lease_id"]})
     return 0
 
@@ -127,13 +134,9 @@ def main(argv):
             return run_two_scopes(payload, mode)
         phase = payload.get("phase", "enter")
         if phase == "enter":
-            result = kernel.run_protocol(payload) if mode == "protocol" else kernel.run_legacy(payload)
+            result = run_enter(payload, mode)
         else:
-            result = (
-                kernel.run_protocol_exit(payload)
-                if mode == "protocol"
-                else kernel.run_legacy_exit(payload)
-            )
+            result = run_release(payload, mode)
         emit(phase, {"result": result, "lease_id": payload["lease_id"]})
         return 0
     finally:

@@ -1,13 +1,36 @@
 {
- "note": "Every command bound by this attempt. cwd is absolute; argv[0] is the attempt-local interpreter; each run writes its own raw log. expected_returncode is the TEST-FRAMEWORK expectation, raw_returncode is what actually happened; the business verdict lives in the parsed evidence file. START_HERE: a runner exit 0 never overrides a failing sub-case.",
+ "note": "Every command bound by this attempt (v1.2). cwd is absolute; argv[0] is the attempt-local interpreter; each run writes its own raw log through the scheduler's --log (UTF-8, no line wrapping -- PowerShell redirection used to split the single-line JSON records). expected_returncode is the TEST-FRAMEWORK expectation, raw_returncode is what actually happened; the business verdict lives in the parsed evidence file (sim/parse_run.py), never in the runner exit alone. START_HERE: a runner exit 0 never overrides a failing sub-case. (v1.3: the protocol suite now includes the r3 lock-timeout/queue cases F-T1..F-T4; the lease lock reports code `lease_lock_timeout`.)",
  "commands": [
   {
    "id": "I04C-01-compile-sim",
    "purpose": "Syntax/import check of the whole simulation harness before any run",
    "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
-   "argv": ["iso/venv/Scripts/python.exe", "-B", "-m", "py_compile", "sim/kernel.py", "sim/participant.py", "sim/stub_worker.py", "sim/harness.py", "sim/cases_core.py", "sim/cases_ownership.py", "sim/cases_legacy.py", "sim/stress.py", "sim/scheduler.py"],
+   "argv": [
+    "iso/venv/Scripts/python.exe",
+    "-B",
+    "-m",
+    "py_compile",
+    "sim/kernel.py",
+    "sim/participant.py",
+    "sim/stub_worker.py",
+    "sim/hold_lock.py",
+    "sim/harness.py",
+    "sim/cases_core.py",
+    "sim/cases_ownership.py",
+    "sim/cases_legacy.py",
+    "sim/cases_review.py",
+    "sim/cases_timeout.py",
+    "sim/stress.py",
+    "sim/scheduler.py",
+    "sim/parse_run.py",
+    "sim/static_check.py",
+    "sim/phase_wall.py",
+    "sim/freeze_evidence.py"
+   ],
    "config_paths": [],
-   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01"],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01"
+   ],
    "network": "disabled",
    "timeout_seconds": 120,
    "expected_returncode": 0,
@@ -16,54 +39,163 @@
   },
   {
    "id": "I04C-02-protocol-suite",
-   "purpose": "F-L1/F-L2a-d/F-L3/F-L4a-e/F-W1-W5 protocol simulations (state machine, ownership, crash windows, fail closed)",
+   "purpose": "F-L1..F-W5 + V4-a/V4-e/V4-f/F-W7/F-L2e-stale/F-L2e-fixed/F-GEN/F-L2c-dead protocol simulations (state machine, ownership, crash windows, fail closed, ADR-11 pair) + the r3 lock-timeout/queue cases (F-T1..F-T4)",
    "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
-   "argv": ["iso/venv/Scripts/python.exe", "-B", "sim/scheduler.py", "run", "F-L1", "F-L2a", "F-L2b", "F-L2c", "F-L2d", "F-L3", "F-L4a", "F-L4b", "F-L4c", "F-L4d", "F-L4e", "F-W1", "F-W2", "F-W4", "F-W4b", "F-W5"],
+   "argv": [
+    "iso/venv/Scripts/python.exe",
+    "-B",
+    "sim/scheduler.py",
+    "run",
+    "F-L1",
+    "F-L2a",
+    "F-L2b",
+    "F-L2c",
+    "F-L2c-dead",
+    "F-L2d",
+    "F-L3",
+    "F-L4a",
+    "F-L4b",
+    "F-L4c",
+    "F-L4d",
+    "F-L4e",
+    "F-W1",
+    "F-W2",
+    "F-W4",
+    "F-W4b",
+    "F-W5",
+    "V4-a",
+    "V4-e",
+    "V4-f",
+    "F-W7",
+    "F-L2e-stale",
+    "F-L2e-fixed",
+    "F-GEN",
+    "F-T1",
+    "F-T2",
+    "F-T3",
+    "F-T4",
+    "--log",
+    "evidence/run-all.txt"
+   ],
    "config_paths": [],
-   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence/run"],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01/evidence"
+   ],
    "network": "disabled",
    "timeout_seconds": 900,
-   "expected_returncode": "0 when every selected case passes, 1 when any case has a failing check",
-   "expected_business_result": "see oracle.md sections 1-5 and 7",
-   "raw_returncode": 1,
+   "expected_returncode": "0 when every selected case passes (0 in this run)",
+   "expected_business_result": "see oracle.md sections 1-5, 7 and R2-1..R2-2",
+   "raw_returncode": 0,
    "raw_log": "evidence/run-all.txt",
-   "parsed": "evidence/failures.txt"
+   "parsed": "evidence/failures.txt",
+   "parsed_counts": "cases_in_log=28 pass=28 fail=0 harness_error=0 failing_checks=0"
   },
   {
    "id": "I04C-03-lock-and-legacy",
-   "purpose": "F-LK1/LK2/LK3 lock atomicity and crash-release; F-L1-nolock deterministic lost update; F-L2a-legacy / F-Lgw1 legacy counterexamples",
+   "purpose": "F-LK1/LK2/LK3 lock atomicity and crash-release; F-L1-nolock deterministic lost update; F-L2a-legacy / F-Lgw1 direct counterexamples of the CURRENT machinery",
    "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
-   "argv": ["iso/venv/Scripts/python.exe", "-B", "sim/scheduler.py", "run", "F-LK1", "F-LK2", "F-LK3", "F-L1-nolock-guard", "F-L1-nolock", "F-L2a-legacy", "F-Lgw1"],
+   "argv": [
+    "iso/venv/Scripts/python.exe",
+    "-B",
+    "sim/scheduler.py",
+    "run",
+    "F-LK1",
+    "F-LK2",
+    "F-LK3",
+    "F-L1-nolock-guard",
+    "F-L1-nolock",
+    "F-L2a-legacy",
+    "F-Lgw1",
+    "--log",
+    "evidence/lock-and-legacy.txt"
+   ],
    "config_paths": [],
-   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence/run"],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01/evidence"
+   ],
    "network": "disabled",
    "timeout_seconds": 900,
-   "expected_returncode": "0 when the atomicity cases and the RED counterexamples reproduce",
-   "expected_business_result": "F-LK1 final=200/200; F-LK2 final<200 (lost updates); F-LK3 parent reacquires in <0.5 s with no cleanup action; F-L1-nolock shows exactly one lease after two registrations",
-   "raw_returncode": 1,
+   "expected_returncode": "0 when the atomicity cases pass and the RED counterexamples reproduce (0 in this run)",
+   "expected_business_result": "F-LK1 exact 200/200; F-LK2 lost updates in every one of 5 repeats (qualitative, values vary); F-LK3 parent reacquires in <0.5 s with no cleanup action; F-L1-nolock lost update reproduced; F-L2a-legacy/F-Lgw1 measured directly on the ported atoms",
+   "raw_returncode": 0,
    "raw_log": "evidence/lock-and-legacy.txt",
-   "parsed": "evidence/lock-and-legacy-failures.txt"
+   "parsed": "evidence/lock-and-legacy-failures.txt",
+   "parsed_counts": "cases_in_log=7 pass=7 fail=0 harness_error=0 failing_checks=0"
   },
   {
    "id": "I04C-04-parse",
-   "purpose": "Turn the raw scheduler logs into a per-case failing-check report (the logs are UTF-16 from PowerShell redirection, so encoding is detected)",
+   "purpose": "Honest per-case report: counts every case record (including harness errors) and cross-checks the scheduler SUMMARY",
    "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
-   "argv": ["iso/venv/Scripts/python.exe", "-B", "sim/parse_run.py", "evidence/run-all.txt", "evidence/failures.txt"],
+   "argv": [
+    "iso/venv/Scripts/python.exe",
+    "-B",
+    "sim/parse_run.py",
+    "evidence/run-all.txt",
+    "evidence/failures.txt"
+   ],
    "config_paths": [],
-   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence"],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01/evidence"
+   ],
    "network": "disabled",
    "timeout_seconds": 120,
    "expected_returncode": 0,
-   "expected_business_result": "one report line per case with its failing checks",
+   "expected_business_result": "one report line per case with its failing checks, plus the true totals",
    "raw_returncode": 0
   },
   {
-   "id": "I04C-05-freeze",
-   "purpose": "Hash every artifact and re-verify that the production fetch_filing.py still has the card hash",
+   "id": "I04C-05-static-adr11",
+   "purpose": "Static proof of ADR-11: the default path reads the status only inside the lease critical section, the branch helpers take no lock, the stale variant exists and is unreferenced, no duplicate function definitions",
    "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
-   "argv": ["iso/venv/Scripts/python.exe", "-B", "sim/freeze_evidence.py"],
+   "argv": [
+    "iso/venv/Scripts/python.exe",
+    "-B",
+    "sim/static_check.py"
+   ],
    "config_paths": [],
-   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence"],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01/evidence"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 120,
+   "expected_returncode": 0,
+   "expected_business_result": "S1-S4 all PASS",
+   "raw_returncode": 0,
+   "raw_log": "evidence/static-adr11.txt"
+  },
+  {
+   "id": "I04C-06-phase-wall",
+   "purpose": "Report the phase wall clock per case (reported, never bounded; acceptance stays per subcall)",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
+   "argv": [
+    "iso/venv/Scripts/python.exe",
+    "-B",
+    "sim/phase_wall.py"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01/evidence"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 300,
+   "expected_returncode": 0,
+   "expected_business_result": "one JSON line per case with phase_wall_seconds and max_lock_wait_seconds",
+   "raw_returncode": 0,
+   "raw_log": "evidence/phase-wall.txt"
+  },
+  {
+   "id": "I04C-07-freeze",
+   "purpose": "Hash every artifact (excluding the two files this tool writes) and re-verify that production fetch_filing.py still has the card hash",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
+   "argv": [
+    "iso/venv/Scripts/python.exe",
+    "-B",
+    "sim/freeze_evidence.py"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01/evidence"
+   ],
    "network": "disabled",
    "timeout_seconds": 300,
    "expected_returncode": 0,
@@ -71,17 +203,60 @@
    "raw_returncode": 0
   },
   {
-   "id": "I04C-06-iso-regression",
-   "purpose": "Frozen-file guard: the pause-around tests of the unmodified iso copy still pass, proving the design card changed no behaviour that the existing contract covers",
+   "id": "I04C-08-iso-regression",
+   "purpose": "Frozen-file guard: the pause/resume contract tests of the unmodified iso copy still pass, proving this design card changed no existing behaviour",
    "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/iso/filing-fetch",
-   "argv": ["../../venv/Scripts/python.exe", "-X", "utf8", "-B", "-m", "pytest", "tests/test_fetch_filing.py", "-q", "-p", "no:cacheprovider", "-k", "pause or resume", "--basetemp=../../evidence/pytest-basetemp"],
-   "config_paths": ["iso/filing-fetch/pyproject.toml"],
-   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence/pytest-basetemp"],
+   "argv": [
+    "../../venv/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "-m",
+    "pytest",
+    "tests/test_fetch_filing.py",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "-k",
+    "pause or resume",
+    "--basetemp=../../evidence/pytest-basetemp"
+   ],
+   "config_paths": [
+    "iso/filing-fetch/pyproject.toml"
+   ],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01/evidence/pytest-basetemp"
+   ],
    "network": "disabled",
    "timeout_seconds": 600,
    "expected_returncode": 0,
-   "expected_business_result": "the pause/resume contract tests still pass on the byte-identical source",
-   "binding_status": "bound"
+   "expected_business_result": "8 passed / 109 deselected on the byte-identical source",
+   "raw_returncode": 0
+  },
+  {
+   "id": "I04C-09-timeout-boundary",
+   "purpose": "r3 F-I04C-11/12: lock-timeout and queue-crosses-budget boundary. An external process really holds the lease lock; request phase (budget 0.05), budget 0, cleanup phase and 6-way queue contention.",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
+   "argv": [
+    "iso/venv/Scripts/python.exe",
+    "-B",
+    "sim/scheduler.py",
+    "run",
+    "F-T1",
+    "F-T2",
+    "F-T3",
+    "F-T4"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "execution_runs/I-04-C/a20260919-01/evidence"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 600,
+   "expected_returncode": 0,
+   "expected_business_result": "code/action lease_lock_timeout in the request phase, cleanup_status=failed:lease_lock_timeout in the cleanup phase, no wait at all when the budget is 0, and the queue tail failing closed with zero writes",
+   "raw_returncode": 0,
+   "raw_log": "evidence/run-all.txt (the same run that carries the protocol suite)"
   }
  ]
 }

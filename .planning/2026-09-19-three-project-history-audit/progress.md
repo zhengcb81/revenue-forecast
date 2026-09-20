@@ -1,5 +1,18 @@
 # Progress
 
+## 2026-09-20 — 实施段续二：接受 +6（**28/86**）、I-04-C C1 关闭 / C2 入 owner 门、隔离巡检
+
+- **本段接受的卡（+6，累计 28/86）**：
+  - **I-04-C（设计，accepted_scoped）**：三轮复审（r1 1P1×2+多 P2 → r2 → r3 签收）。随签 **C1 已关闭**：`decision.md` §13.5 与 `review.md` §1 P3-4 的 F-LK2 过时组 `[12,19,7,26,43] ⇒ lost [197,185,191,198,14]` 自身与 `expected=200` 不相容（`200−finals=[188,181,193,174,157]`）；真值 `[16,35,10,56,18] ⇒ lost [184,165,190,144,182]`、`range [144,190]`，由 `sim/verify_flk2.py` 从 `evidence/run/F-LK2-r{1..5}/` 逐轮复算 **13/13 PASS**；更正为**追加式**（`sim/verify_r4_appendonly.py` 证明删去插入块后重建 sha256 与改前逐字相等），原文与"261/200 撕裂写"历史叙述均保留。**父代理独立验收**：四个文件改后 hash 与实现者报告逐一相符（`decision.md f1a2396c…`、`review.md d416b73a…`、`handoff.json ac418ac6…`、`evidence/hashes.txt 698d6f71…`）。**C2**=OPEN-3（`lock_budget_for(x)=min(x,60)` 的命名/边界 + `worker-pause` 是否留在锁内）= **owner 裁定项**，`handoff.json.review_carry_conditions.C2_OPEN3_owner_gate` 明写不阻塞签收。
+  - **I-07-A（accepted_scoped）**：更正 `config.legal_fifth_root` 为 planned（bound 9/planned 15/blocked 5/NA 0）、census LIMIT-20 低估 172×（真值 **3440** 组）、iso catalog 禁止事项、`future_lake` 实为 **1** 行 location（`README.md` 545 B）。
+  - **I-14-A（accepted_scoped，仅隔离测量修复）**：D1 未签 ⇒ **不提升进 `RF/tools/`**；bundle 未被测量时恒 **exit 2**（对 D1/D3 的契约变更，须明示）；旧探针基线为父进程 `UnicodeDecodeError: 0xd4`（rc 不可观测）；tree-sum 高估约 11 MB；`calls.failed` 实为 6。
+  - **M05 subscription / M06 usage_platform / M07 services（仅 formula 资格，accepted_scoped）**：冻结期望与 reviewer 预注册 `2a6398ed…` 逐一相等、负例 11/11、`oracle.json` 重生成逐字节相同、`run_card.py` 未漂移。
+  - **M08 project_backlog = blocked**：`card_M08.md` L42 印出算式 `100+40−5−10+−15−60` 与上游"`+ 合同变更`"符号冲突；唯一出路 = owner 三步（裁定读法 C 权威 → owner 更正索引 → 同 `code_root 9ec65295…` 复跑留档）。复核另提出 **F-M08-06**（四份 `oracle.md` 各有两段重复 r2 节，第二段"追加前 hash"在任何行边界都复现不出）、**-07**（`oq_rulings.json` 计数错：ratio 驱动 41 非 40、不在 [0,1] 的 4 非 3，漏 `direct_growth.growth_rate=(-1,inf)`；且把 reviewer 署名为作者）、**-08**（重打包改了 `cases.json`/`run_result.json`/`negative_results.json` 的 hash，"冻结件未改"需限定说明）、**-09**（DEC-M08-1 仍 r1 措辞）。四项修复在办。
+- **在跑（13 条）**：I-14-C r4 独立复核（r3 新 P1 **F-I14C-08** 重复 key 已修，`iso/product_fixed/observability.py 049f5d5b…`；**保真判据**已进 `run_rule_table.py`/`run_diagnostic_table.py`，任一不符 rc=2 —— r3 标本 T3 = `0 leaks` 且 **24** 条保真失败，修复树 T4 = 0/0；套件 76 passed；**C12 硬前置**：F-07 阻塞用例实测挂起 >90 s，产品测试必须加 `pytest-timeout` 或子进程硬超时；**C13** 裸值贪婪语义登记不改）；I-08-B 独立复核（CONFLICT-1 `subprocess` 豁免集、CONFLICT-2 `golden_behavior_hashes.json` 刷新待裁）；I-05-A r2 复评；I-07-A/I-14-A r2 证据复读；M05–M08 四缺陷修复；M09–M12 / M13–M16 / M17–M20 / M21–M24 / M25–M28 五批公式卡；I-09-A、I-11-A 设计卡。
+- **隔离巡检（父代理，见 findings.md「隔离巡检」节与 `execution_runs/_isolation_incidents/20260920-prereg-expectations-leak/INCIDENT.md`）**：处置两处**我方越界写**（`revenue-forecast\prereg_expectations.json`、`filing-fetch\git_filing-fetch.txt`，均先保全再从生产树删除；filing-fetch porcelain 现为空）；登记一处**不可归因**生产变化（`assurance/runs/daily_alert.jsonl` 新增一行，格式与 run_id 口径为本仓每日告警作业自身，01:19 前已脏）**未回退**；一处 provenance gap（既有脏文件 mtime 于 02:24:00 批量刷新，`SKILL.md` sha256 与基线完全相同，其余如实声明无法证明）。生产不变量复测通过：company-wiki 三模块 `e8317991…/a73826aa…/fad88c60…`、catalog 49,677,344,768 B / `-wal` 0 B、porcelain 仅 2 条用户改动。
+- **owner 待裁（累积，均不阻塞当前并行）**：D-W05（I-05-A OPEN-1/7）、D-W06（I-06-A OPEN-2 幂等键缺请求身份）、D-W15（I-15-A 生产 prune 五项）、I-04-C C2（OPEN-3）、M08 三步、M02-01（被忽略字段仍受域约束）、I-08-B CONFLICT-1/2、I-14-A D1/D2/D3、I-14-C C12 产品前置。
+- **资格口径不变**：所有接受均为 **iso 副本 / 实施声明范围内**的 accepted_scoped；无生产代码合并、无生产部署、无真实 provider、无准确性资格。
+
 ## 2026-09-20 — 实施段：并行推进 I-08-A / M01–M04 / I-14-C / I-15-A / I-04-C（4 张接受、2 张返工）
 
 - **接受（+7 卡，累计 22/86）**：

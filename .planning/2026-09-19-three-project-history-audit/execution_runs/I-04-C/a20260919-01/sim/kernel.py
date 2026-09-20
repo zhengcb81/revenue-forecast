@@ -75,7 +75,8 @@ def _payload_b64(payload):
 
 
 class FileLock:
-    def __init__(self, path, budget, poll=LOCK_POLL_SECONDS, payload=None, name="lock"):
+    def __init__(self, path, budget, poll=LOCK_POLL_SECONDS, payload=None, name="lock",
+                 code="lock_timeout"):
         self.path = path
         self.budget = max(0.0, float(budget))
         self.poll = poll
@@ -83,6 +84,12 @@ class FileLock:
         self.waited = 0.0
         self.payload = payload
         self.name = name
+        # r3 F-I04C-11: the error CODE is a parameter.  The lease lock reports
+        # `lease_lock_timeout` (the code the frozen decision/oracle text uses and
+        # the one the request-phase action mapping knows); the journal lock keeps
+        # the generic `lock_timeout`.  Before r3 the lease lock raised the generic
+        # code, so the documented timeout never appeared in any envelope.
+        self.code = code
 
     def _try(self):
         if os.name == "nt":
@@ -117,9 +124,10 @@ class FileLock:
                 self.handle = None
                 if self.payload is not None:
                     journal(self.payload, {"event": "lock_timeout", "name": self.name,
-                                           "budget": self.budget})
+                                           "code": self.code, "budget": self.budget})
                 raise ScopeError(
-                    "lock_timeout", f"lock {os.path.basename(self.path)} wait > {self.budget}s"
+                    self.code,
+                    f"lock {os.path.basename(self.path)} wait > {self.budget}s",
                 )
             time.sleep(self.poll)
 
@@ -211,7 +219,12 @@ def lock_budget_for(phase_budget):
 
 
 def lease_lock(payload, budget):
-    return FileLock(lock_path(payload), budget, payload=payload, name="lease")
+    """The ONE lease critical-section lock.
+
+    r3 F-I04C-11: it raises `lease_lock_timeout` (the code the frozen text uses).
+    """
+    return FileLock(lock_path(payload), budget, payload=payload, name="lease",
+                    code="lease_lock_timeout")
 
 
 def journal(payload, event):
@@ -388,24 +401,11 @@ def declared_liveness(payload, pid):
     return True
 
 
-def classify(payload, entry):
-    """Return 'alive' | 'dead' | 'pid_reuse' | 'unknown' (unknown => fail closed).
-
-    Order matters:
-      1. our own incarnation is alive by definition (no probe needed);
-      2. a SCRIPTED answer (synthetic pid) wins over everything else -- tests use
-         it to model a dead holder or a pid-reuse collision;
-      3. otherwise the DECLARED liveness model when the run enables it, then the
-         REAL OS answer: dead => reclaimable, live => alive, cannot-tell =>
-         unknown (fail closed).
-
-    ``pid_reuse`` requires both a recorded and an observed creation time; a
-    recorded time with no observable timer is UNKNOWN, never "alive enough".
-    """
-    if entry.get("pid") == os.getpid() and entry.get("boot_uuid") == BOOT_UUID:
+def classify_pid(payload, pid, boot_uuid=None, recorded_start=None):
+    """Same precedence as classify() but for a bare pid (owner evidence, r2)."""
+    if pid == os.getpid() and (boot_uuid is None or boot_uuid == BOOT_UUID):
         return "alive"
-    pid = entry.get("pid")
-    recorded = entry.get("os_start_time") or ""
+    recorded = recorded_start or ""
     scripted = (decode_b64(payload, "probe_b64") or {}).get(str(pid))
     if scripted is not None:
         if scripted.get("error"):
@@ -427,6 +427,26 @@ def classify(payload, entry):
     if recorded and not observed:
         return "unknown"
     return "alive"
+
+
+def classify(payload, entry):
+    """Return 'alive' | 'dead' | 'pid_reuse' | 'unknown' (unknown => fail closed).
+
+    Order matters:
+      1. our own incarnation is alive by definition (no probe needed);
+      2. a SCRIPTED answer (synthetic pid) wins over everything else -- tests use
+         it to model a dead holder or a pid-reuse collision;
+      3. otherwise the DECLARED liveness model when the run enables it, then the
+         REAL OS answer: dead => reclaimable, live => alive, cannot-tell =>
+         unknown (fail closed).
+
+    ``pid_reuse`` requires both a recorded and an observed creation time; a
+    recorded time with no observable timer is UNKNOWN, never "alive enough".
+    """
+    if entry.get("pid") == os.getpid() and entry.get("boot_uuid") == BOOT_UUID:
+        return "alive"
+    return classify_pid(payload, entry.get("pid"), entry.get("boot_uuid"),
+                        entry.get("os_start_time"))
 
 
 def prune(payload, entries):
@@ -518,6 +538,12 @@ class Client:
 
     def worker_pause(self):
         self.pause_calls += 1
+        # r3: an injected per-pause cost makes the queue-crosses-budget boundary
+        # deterministic.  The pause happens INSIDE the lease critical section, so
+        # this value IS the "critical-section hold time" of the ADR-2 analysis.
+        hold = float(self.payload.get("pause_hold_seconds", 0.0) or 0.0)
+        if hold:
+            time.sleep(hold)
         answers = decode_b64(self.payload, "probe_b64") or {}
         answer = answers.get("worker-pause")
         if answer is not None and answer.get("error"):
@@ -548,72 +574,119 @@ class Client:
 
 # --------------------------------------------------------------------------
 # protocol mode: acquire path (T0-T7)
+#
+# v1.2 (r2) structure: the WHOLE acquire path runs inside ONE lease critical
+# section.  The worker status is read inside it (ADR-11), the lease is read
+# inside it, the decision is taken on that same snapshot, and the mutation
+# (prune / register / owner marker / pause) happens in the same hold.  There is
+# no pre-lock read whose staleness could be used as a criterion (see
+# run_protocol_stale_v1 for the deliberately wrong v1 shape that this replaces).
 # --------------------------------------------------------------------------
+
+
+def _owner_record(payload, generation):
+    """Owner evidence: enough to decide later whether this pause is OURS.
+
+    v1.2 adds pid/boot_uuid/os_start_time so a later participant can prove the
+    owner is gone instead of having to guess from a lease_id alone (r2 F-I04C-01).
+    """
+    return {
+        "lease_id": payload["lease_id"],
+        "generation": generation,
+        "pid": os.getpid(),
+        "boot_uuid": BOOT_UUID,
+        "os_start_time": str(payload.get("fake_start_time") or ""),
+    }
+
+
+def owner_resumable(payload, owner, pruned, kept):
+    """May this participant resume a pause that the refcount says is ours?
+
+    Returns (True/False, reason).  A pause is resumable ONLY on evidence:
+      owner_is_me          -- the recorded owner lease is the caller's own;
+      owner_alive_in_cycle -- the owner is a living lease in the same refcount;
+      owner_pruned:<why>   -- the owner lease was reclaimed as dead/pid_reuse;
+      owner_probe:<why>    -- the owner record carries a pid the probe says is gone.
+    Anything else (foreign owner, owner record with no lease_id, unverifiable
+    owner) is NOT resumable: the caller must fail closed and must not rewrite the
+    owner evidence (r2 F-I04C-02; ADR-5 W7/T10, ADR-8).
+    """
+    lease = owner.get("lease_id") if isinstance(owner, dict) else None
+    if not lease:
+        return False, "owner_absent"
+    if lease == payload["lease_id"]:
+        return True, "owner_is_me"
+    if any(e.get("lease_id") == lease for e in kept):
+        return True, "owner_alive_in_cycle"
+    if lease in pruned and pruned[lease] in {"dead", "pid_reuse"}:
+        return True, f"owner_pruned:{pruned[lease]}"
+    pid = owner.get("pid") if isinstance(owner, dict) else None
+    if isinstance(pid, int):
+        verdict = classify_pid(payload, pid, owner.get("boot_uuid"),
+                               owner.get("os_start_time"))
+        if verdict in {"dead", "pid_reuse"}:
+            return True, f"owner_probe:{verdict}"
+        if verdict == "unknown":
+            return False, "owner_probe_unknown"
+    return False, "owner_unproven"
 
 
 def run_protocol(payload):
     client = Client(payload)
     out = {"mode": "protocol", "pid": os.getpid(), "lease_id": payload["lease_id"],
            "phase": "enter", "action": None, "pause_calls": 0, "resume_calls": 0,
-           "cleanup_status": "not_needed", "writes": 0, "code": None, "error": None}
+           "cleanup_status": "not_needed", "writes": 0, "code": None, "error": None,
+           "actions": []}
     try:
         if not payload.get("enabled", True):
             out["action"] = "disabled"
-            return out
-        try:
-            status = client.worker_status()
-        except ScopeError as exc:
-            out["action"] = "no_status"
-            out["note"] = str(exc)
             return out
 
         request_budget = max(0.0, float(payload.get("request_budget", 100.0)))
         cleanup_budget = max(0.0, float(payload.get("cleanup_budget", 30.0)))
         lock_budget = lock_budget_for(request_budget)
-        probe_budget = min(20.0, PROBE_MAX_SECONDS, request_budget)
 
-        # ADR-11 (measured, this card): the first status read can be arbitrarily
-        # stale -- another participant may pause between it and lock acquisition,
-        # and acting on a stale "enabled/running" is exactly what produces a second
-        # pause for one cycle.  Re-read the status and the lease INSIDE the critical
-        # section and branch on that.
         lock = lease_lock(payload, lock_budget)
         lock.acquire()
         out["lock_wait"] = round(lock.waited, 6)
         try:
             gate(payload, "enter_lock_held")
-            fresh = client.worker_status()
+            try:
+                status = client.worker_status()
+            except ScopeError as exc:
+                out["action"] = "no_status"
+                out["note"] = str(exc)
+                return out
+            out["lock_status"] = status
             state = read_lease(payload)
             verdicts = [(e, classify(payload, e)) for e in state["entries"]]
-            out["lock_status"] = fresh
             out.update(read_view(payload))
+            if any(verdict == "unknown" for _, verdict in verdicts):
+                # ADR-5 W6: an unverifiable participant is NEVER treated as gone,
+                # and never silently joined with.
+                out["action"] = "lease_conflict_unknown"
+                out["code"] = "lease_conflict_unknown"
+                out["error"] = json.dumps(
+                    [{"lease_id": e.get("lease_id"), "pid": e.get("pid"), "verdict": v}
+                     for e, v in verdicts if v == "unknown"])
+                return out
+            paused = status.get("desired_state") == "paused"
+            has_state = bool(state["entries"]) or bool(
+                (state["resume"] or {}).get("required")) or marker_present(payload)
+            if paused or has_state:
+                handled, _needs_fresh = protocol_paused_branch(
+                    payload, client, out, status, state, verdicts, cleanup_budget)
+                if handled:
+                    return out
+                _fresh_cycle_locked(payload, client, out, state, verdicts, recovering=True)
+                return out
+            if status.get("runtime_state") != "running":
+                out["action"] = "worker_stopped"
+                return out
+            _fresh_cycle_locked(payload, client, out, state, verdicts, recovering=False)
+            return out
         finally:
             lock.release()
-        if any(verdict == "unknown" for _, verdict in verdicts):
-            # ADR-5 W6: an unverifiable participant is NEVER treated as gone, and
-            # never silently joined with.
-            out["action"] = "lease_conflict_unknown"
-            out["code"] = "lease_conflict_unknown"
-            out["error"] = json.dumps(
-                [{"lease_id": e.get("lease_id"), "pid": e.get("pid"), "verdict": v}
-                 for e, v in verdicts if v == "unknown"])
-            return out
-        if fresh.get("desired_state") == "paused" or verdicts:
-            # ADR-9: the paused branch is evaluated BEFORE the runtime_state guard.
-            # Checking runtime_state first makes the join/takeover path unreachable
-            # in production, because our own pause sets runtime_state=stopped
-            # before anyone can join it.
-            # ADR-9b: live leases also route here even when the status still says
-            # enabled, so a cycle whose pause has not landed yet is joined or
-            # recovered instead of starting a second pause.
-            done, needs_fresh = protocol_paused_branch(
-                payload, client, out, fresh, state, verdicts, lock_budget)
-            if done:
-                return out
-        elif fresh.get("runtime_state") != "running":
-            out["action"] = "worker_stopped"
-            return out
-        return protocol_fresh_cycle(payload, client, out, lock_budget, cleanup_budget)
     except ScopeError as exc:
         out["code"] = exc.code
         out["error"] = str(exc)
@@ -626,175 +699,243 @@ def run_protocol(payload):
         return out
 
 
-def protocol_paused_branch(payload, client, out, status, state, verdicts, lock_budget):
-    """The paused-worker branch.  Returns (handled, needs_fresh_cycle).
+def protocol_paused_branch(payload, client, out, status, state, verdicts, cleanup_budget):
+    """The paused / tool-evidence branch.  Returns (handled, recovering).
 
-    The lease read and the status read both come from the ADR-11 critical section
-    in run_protocol; this function only re-takes the lock to mutate.
+    PRECONDITION (r2 F-I04C-07): the caller HOLDS the lease lock, and `status`,
+    `state` and `verdicts` were all read inside that same hold.  This function
+    must not take the lock and must not re-read the status.
     """
-    lock = lease_lock(payload, lock_budget)
-    lock.acquire()
-    out["lock_wait"] = round(lock.waited, 6)
-    try:
-        gate(payload, "enter_paused_branch")
-        # Reclaim dead leases FIRST and decide on what actually survives (ADR-9c):
-        # deciding on the pre-prune list is what lets a participant "join" a cycle
-        # whose only lease is dead -- and then walk away from a paused worker with
-        # an empty refcount and nobody obliged to resume it.
-        kept, pruned = prune(payload, state["entries"])
-        if pruned:
-            journal(payload, {"event": "pruned", "items": pruned})
-        if (state["resume"] or {}).get("required"):
-            action = "takeover_resume"
-        elif not kept and marker_present(payload):
-            # A paused worker with an owner marker and no surviving lease is an
-            # orphaned cycle (its only participant died between the pause and the
-            # release).  It must be taken over and resumed, never mistaken for a
-            # user pause (ADR-5 W3).
-            action = "takeover_resume"
-        elif kept:
-            action = "joined"
-        else:
-            action = "respect_paused"
-        out["action"] = action
-        if action == "respect_paused":
+    kept, pruned_list = prune(payload, state["entries"])
+    pruned = {p["lease_id"]: p["reason"] for p in pruned_list}
+    if pruned_list:
+        journal(payload, {"event": "pruned", "items": pruned_list})
+    owner = state.get("owner") or {}
+    marker = marker_present(payload)
+    required = bool((state["resume"] or {}).get("required"))
+    had_entries = bool(state["entries"])
+    out["owner_verdict"] = owner_resumable(payload, owner, pruned, kept)[1]
+
+    if required:
+        return _takeover_cycle(payload, client, out, state, "recorded_obligation", status)
+
+    if not kept:
+        tool_evidence = marker or had_entries
+        if not tool_evidence:
+            # No lease, no marker, no obligation: this really is the user's pause.
+            out["action"] = "respect_paused"
             return True, False
-        if action == "joined":
-            if status.get("runtime_state") == "running":
-                # ADR-9b (measured): leases exist but the worker is not paused, so
-                # that cycle's pause never landed.  Clear any stray pause and open
-                # a fresh cycle that KEEPS the live leases; pause exactly once.
-                journal(payload, {"event": "stale_running_cycle",
-                                  "kept": [e.get("lease_id") for e in kept]})
-                try:
-                    client.worker_resume()   # best effort; a no-op when enabled
-                except ScopeError as exc:
-                    journal(payload, {"event": "stale_resume_noop", "error": str(exc)})
-                out["action"] = "fresh_cycle_recovering"
-                return False, True
-            kept = kept + [entry(payload, payload.get("invocations", 1))]
-            if not marker_present(payload):
-                maybe_exit_at(payload, "after-refcount-before-owner")
-                write_atomic(payload, owner_path(payload), OWNER_MARKER, "owner")
-            write_lease(payload, state["generation"], kept, state["resume"],
-                        state.get("owner") or {}, "join")
-            out["writes"] += 1
-            gate(payload, "enter_registered")
+        resumable, why = owner_resumable(payload, owner, pruned, kept)
+        if not resumable:
+            # r2 F-I04C-02: never resume (nor rewrite) a pause we cannot attribute.
+            out["action"] = "owner_evidence_foreign"
+            out["code"] = "owner_evidence_foreign"
+            out["cleanup_status"] = f"failed:owner_evidence_foreign:{why}"
             return True, False
-        # takeover_resume (W4): the orphaned pause is resumed under the lock, and
-        # this participant then opens the pause cycle it actually needs (ADR-10d:
-        # a takeover is a COMPLETE cycle, never a passive lease on a running
-        # worker).
-        generation = state["generation"]
-        owner = {"lease_id": payload["lease_id"], "generation": generation}
-        entries = [entry(payload, payload.get("invocations", 1))]
-        reclaimed = [{"lease_id": e.get("lease_id"), "reason": v}
-                     for e, v in verdicts if v != "alive"]
-        if reclaimed:
-            journal(payload, {"event": "pruned", "items": reclaimed})
-        write_lease(payload, generation, entries,
-                    {"required": True, "generation": generation,
-                     "lease_id": payload["lease_id"], "phase": "takeover"},
-                    owner, "takeover")
-        out["writes"] += 1
+        return _takeover_cycle(payload, client, out, state, why, status)
+
+    resumable, why = owner_resumable(payload, owner, pruned, kept)
+    if owner and not resumable:
+        out["action"] = "owner_evidence_foreign"
+        out["code"] = "owner_evidence_foreign"
+        out["cleanup_status"] = f"failed:owner_evidence_foreign:{why}"
+        return True, False
+    if status.get("runtime_state") == "running":
+        # ADR-9b: leases exist but the pause never landed.  Clear any stray pause,
+        # keep the live leases and open one fresh cycle (still one pause per cycle).
+        journal(payload, {"event": "stale_running_cycle",
+                          "kept": [e.get("lease_id") for e in kept]})
+        try:
+            client.worker_resume()   # best effort; a no-op when already enabled
+        except ScopeError as exc:
+            journal(payload, {"event": "stale_resume_noop", "error": str(exc)})
+        return False, True
+    # join the running cycle
+    kept = kept + [entry(payload, payload.get("invocations", 1))]
+    if not marker:
+        maybe_exit_at(payload, "after-refcount-before-owner")
+        write_atomic(payload, owner_path(payload), OWNER_MARKER, "owner")
+    write_lease(payload, state["generation"], kept, state["resume"], owner, "join")
+    out["writes"] += 1
+    out["action"] = "joined"
+    out["actions"].append("joined")
+    gate(payload, "enter_registered")
+    return True, False
+
+
+def _takeover_cycle(payload, client, out, state, why, status=None):
+    """Close somebody else's dangling pause and open OUR cycle, under the lock.
+
+    ADR-10d: a takeover is a COMPLETE cycle (resume, then our own pause), never a
+    passive lease on a worker we just woke up.  If the worker is not actually
+    paused there is nothing to restore, so the resume is skipped instead of being
+    sent (and refused) for nothing.
+    """
+    generation = state["generation"]
+    owner = _owner_record(payload, generation)
+    mine = [entry(payload, payload.get("invocations", 1))]
+    write_lease(payload, generation, mine,
+                {"required": True, "generation": generation,
+                 "lease_id": payload["lease_id"], "phase": f"takeover:{why}"},
+                owner, "takeover")
+    out["writes"] += 1
+    out["takeover_reason"] = why
+    paused = status is not None and status.get("desired_state") == "paused"
+    if paused:
         maybe_exit_at(payload, "wm-takeover-before-resume")
         gate(payload, "takeover_before_resume")
         try:
             client.worker_resume()
         except ScopeError as exc:
-            write_lease(payload, generation, [],
-                        {"required": True, "generation": generation,
-                         "lease_id": payload["lease_id"], "phase": "takeover_failed"},
-                        owner, "takeover_failed")
-            out["writes"] += 1
+            # Keep the obligation AND our lease so the next participant (or our own
+            # release step) can finish the recovery honestly.
+            out["resume_calls"] = client.resume_calls
             out["cleanup_status"] = f"failed:{exc.code}"
             out["code"] = "lease_resume_takeover_failed"
             out["error"] = str(exc)
-            out["resume_calls"] = client.resume_calls
+            out["action"] = "takeover_failed"
+            out["actions"].append("takeover_failed")
             out.update(read_view(payload))
             return True, False
         out["resume_calls"] = client.resume_calls
-        out["cleanup_status"] = "restored"
+        out["actions"].append("takeover_resumed")
         out["action"] = "takeover_resumed"
-        # A takeover is a phase, not the final action: the participant then opens
-        # its own pause cycle, and the envelope reports the sequence.
-        out.setdefault("actions", []).append("takeover_resumed")
-        out.update(read_view(payload))
-        return False, True
-    finally:
-        lock.release()
+    else:
+        # Nothing to undo: the worker is already running, the dangling state was
+        # only the refcount (ADR-5 W2).
+        out["actions"].append("resume_skipped_worker_running")
+    out["cleanup_status"] = "restored"
+    # The pause is closed; now open OUR cycle in the same critical section.  The
+    # state is re-read so the fresh cycle sees exactly what the takeover wrote.
+    return _fresh_cycle_locked(payload, client, out, read_lease(payload), None,
+                               recovering=False, keep=mine)
 
 
-def protocol_fresh_cycle(payload, client, out, lock_budget, cleanup_budget):
-    """T5: fresh cycle.  The lock spans registration, owner sentinel and pause."""
-    lock = lease_lock(payload, lock_budget)
-    lock.acquire()
-    out["lock_wait"] = round(lock.waited, 6)
+def _fresh_cycle_locked(payload, client, out, state, verdicts, recovering,
+                        keep=None):
+    """Open a fresh cycle while already holding the lock.
+
+    Idempotent about our own entry so the takeover path can hand its lease over.
+    """
+    kept, pruned_list = prune(payload, state["entries"])
+    if pruned_list:
+        journal(payload, {"event": "pruned", "items": pruned_list})
+    generation = int(state.get("generation", 0) or 0) + 1
+    mine = keep if keep is not None else []
+    entries = list(mine) + [e for e in kept
+                            if e.get("lease_id") not in {m.get("lease_id") for m in mine}]
+    if not any(e.get("lease_id") == payload["lease_id"] for e in entries):
+        entries = entries + [entry(payload, payload.get("invocations", 1))]
+    write_lease(payload, generation, entries, {"required": False},
+                _owner_record(payload, generation), "fresh")
+    out["writes"] += 1
+    maybe_exit_at(payload, "after-refcount-before-owner")
+    # Compat sentinel only; the refcount remains the authority (ADR-5 W1).
+    write_atomic(payload, owner_path(payload), OWNER_MARKER, "owner")
+    gate(payload, "before_pause")
+    maybe_exit_at(payload, "after-owner-before-pause")
     error = None
     try:
-        gate(payload, "enter_lock_held")
-        state = read_lease(payload)
-        kept, pruned = prune(payload, state["entries"])
-        if pruned:
-            journal(payload, {"event": "pruned", "items": pruned})
-        generation = state["generation"] + 1
-        entries = kept
-        if not any(e.get("lease_id") == payload["lease_id"] for e in entries):
-            entries = kept + [entry(payload, payload.get("invocations", 1))]
-        write_lease(payload, generation, entries, {"required": False},
-                    {"lease_id": payload["lease_id"], "generation": generation}, "fresh")
-        out["writes"] += 1
-        maybe_exit_at(payload, "after-refcount-before-owner")
-        # Compat sentinel only; the refcount remains the authority (ADR-5 W1).
-        write_atomic(payload, owner_path(payload), OWNER_MARKER, "owner")
-        gate(payload, "before_pause")
-        maybe_exit_at(payload, "after-owner-before-pause")
-        try:
-            client.worker_pause()
-        except ScopeError as exc:
-            error = exc
-        out["pause_calls"] = client.pause_calls
-        out["generation"] = generation
-        out.update(read_view(payload))
-        # The gate fires only once this participant's registration AND the pause
-        # it owns are both on disk (still inside the critical section).
-        gate(payload, "enter_registered")
-        maybe_exit_at(payload, "after-pause-before-confirm")
-    finally:
-        lock.release()
+        client.worker_pause()
+    except ScopeError as exc:
+        error = exc
+    out["pause_calls"] = client.pause_calls
+    out["generation"] = generation
+    out.update(read_view(payload))
     if error is not None:
         out["action"] = "pause_failed"
         out["error"] = str(error)
-        cleanup_after_failed_pause(payload, client, cleanup_budget, out)
-        out["resume_calls"] = client.resume_calls
+        _withdraw_after_failed_pause(payload, client, out)
+        return True, False
+    out["action"] = "paused_by_us"
+    out["actions"].append("paused_by_us")
+    # The gate fires once our registration AND the pause we own are both on disk.
+    gate(payload, "enter_registered")
+    maybe_exit_at(payload, "after-pause-confirm")
+    return True, False
+
+
+def _withdraw_after_failed_pause(payload, client, out):
+    """T7: withdraw our own lease (lock already held); resume only if last."""
+    state = read_lease(payload)
+    entries = [e for e in state["entries"] if e.get("lease_id") != payload["lease_id"]]
+    owner = state.get("owner") or {}
+    if entries:
+        write_lease(payload, state["generation"], entries, state["resume"], owner, "pf")
+        out["writes"] += 1
+        out.update(read_view(payload))
+        return
+    resumable, why = owner_resumable(payload, owner, {}, entries)
+    if not resumable:
+        # Fail closed: remove our lease, keep the owner evidence untouched.
+        write_lease(payload, state["generation"], [], {"required": False}, owner, "pf")
+        out["writes"] += 1
+        out["cleanup_status"] = f"failed:owner_evidence_foreign:{why}"
+        out.update(read_view(payload))
+        return
+    write_lease(payload, state["generation"], [],
+                {"required": True, "generation": state["generation"],
+                 "lease_id": payload["lease_id"], "phase": "pause_failed"}, owner, "pf")
+    out["writes"] += 1
+    try:
+        client.worker_resume()
+    except ScopeError as exc:
+        out["cleanup_status"] = f"failed:{exc.code}"
+        out.update(read_view(payload))
+        return
+    out["cleanup_status"] = "restored"
+    write_lease(payload, state["generation"], [], {"required": False}, {}, "pf")
+    out["writes"] += 1
+    unlink_quiet(refcount_path(payload))
+    unlink_quiet(owner_path(payload))
+    out.update(read_view(payload))
+
+
+def run_protocol_stale_v1(payload):
+    """DELIBERATELY WRONG (v1 shape): read the status BEFORE the lock and use that
+    snapshot as the branch criterion.  Only used by the F-L2e pair to show what
+    ADR-11 removes; never used by any other case.
+    """
+    client = Client(payload)
+    out = {"mode": "protocol_stale_v1", "pid": os.getpid(),
+           "lease_id": payload["lease_id"], "phase": "enter", "action": None,
+           "pause_calls": 0, "resume_calls": 0, "cleanup_status": "not_needed",
+           "writes": 0, "code": None, "error": None, "actions": []}
+    request_budget = max(0.0, float(payload.get("request_budget", 100.0)))
+    cleanup_budget = max(0.0, float(payload.get("cleanup_budget", 30.0)))
+    lock_budget = lock_budget_for(request_budget)
+    try:
+        stale = client.worker_status()          # <-- outside the lock (the bug)
+        out["prelock_status"] = stale
+        gate(payload, "stale_prelock_read")
+        lock = lease_lock(payload, lock_budget)
+        lock.acquire()
+        out["lock_wait"] = round(lock.waited, 6)
+        try:
+            gate(payload, "enter_lock_held")
+            state = read_lease(payload)
+            verdicts = [(e, classify(payload, e)) for e in state["entries"]]
+            out.update(read_view(payload))
+            if stale.get("desired_state") == "paused" or state["entries"]:
+                handled, _recovering = protocol_paused_branch(
+                    payload, client, out, stale, state, verdicts, cleanup_budget)
+                if handled:
+                    return out
+                _fresh_cycle_locked(payload, client, out, state, verdicts, recovering=True)
+                return out
+            if stale.get("runtime_state") != "running":
+                out["action"] = "worker_stopped"
+                return out
+            _fresh_cycle_locked(payload, client, out, state, verdicts, recovering=False)
+            return out
+        finally:
+            lock.release()
+    except ScopeError as exc:
+        out["code"] = exc.code
+        out["error"] = str(exc)
+        out["action"] = "lease_fail_closed"
         out.update(read_view(payload))
         return out
-    out["action"] = "paused_by_us"
-    return out
-
-
-def cleanup_after_failed_pause(payload, client, cleanup_budget, out):
-    """T7: withdraw our own lease, then resume only if we were the last one."""
-    with lease_lock(payload, lock_budget_for(cleanup_budget)):
-        state = read_lease(payload)
-        entries = [e for e in state["entries"] if e.get("lease_id") != payload["lease_id"]]
-        owner = state.get("owner") or {}
-        if entries:
-            write_lease(payload, state["generation"], entries, state["resume"], owner, "pf")
-            out["writes"] += 1
-            return
-        write_lease(payload, state["generation"], [],
-                    {"required": True, "generation": state["generation"],
-                     "lease_id": payload["lease_id"], "phase": "pause_failed"}, owner, "pf")
-        out["writes"] += 1
-        try:
-            client.worker_resume()
-        except ScopeError as exc:
-            out["cleanup_status"] = f"failed:{exc.code}"
-            return
-        out["cleanup_status"] = "restored"
-        unlink_quiet(refcount_path(payload))
-        unlink_quiet(owner_path(payload))
 
 
 # --------------------------------------------------------------------------
@@ -806,7 +947,8 @@ def run_protocol_exit(payload):
     client = Client(payload)
     out = {"mode": "protocol", "pid": os.getpid(), "lease_id": payload["lease_id"],
            "phase": "exit", "action": None, "resume_calls": 0,
-           "cleanup_status": "not_needed", "writes": 0, "code": None, "error": None}
+           "cleanup_status": "not_needed", "writes": 0, "code": None, "error": None,
+           "actions": []}
     cleanup_budget = max(0.0, float(payload.get("cleanup_budget", 30.0)))
     try:
         with lease_lock(payload, lock_budget_for(cleanup_budget)) as held:
@@ -817,79 +959,94 @@ def run_protocol_exit(payload):
             entries = [e for e in state["entries"] if e.get("lease_id") != payload["lease_id"]]
             owner = state.get("owner") or {}
             generation = state["generation"]
+            required = bool((state["resume"] or {}).get("required"))
             out["generation"] = generation
             out["owner_lease"] = owner.get("lease_id")
             out["lease_set"] = sorted(e.get("lease_id") for e in entries)
             if entries:
+                # ADR-10e (r2): if WE are the recorded owner and we are leaving
+                # while others stay, ownership must move to a surviving lease --
+                # otherwise the owner record names a participant that is no longer
+                # in the refcount, and the eventual last releaser would have to
+                # guess (or fail closed) instead of resuming the cycle it owns.
+                if owner.get("lease_id") == payload["lease_id"]:
+                    successor = sorted(entries, key=lambda e: e.get("lease_id") or "")[0]
+                    owner = {
+                        "lease_id": successor.get("lease_id"),
+                        "generation": generation,
+                        "pid": successor.get("pid"),
+                        "boot_uuid": successor.get("boot_uuid"),
+                        "os_start_time": successor.get("os_start_time", ""),
+                    }
+                    out["ownership_transferred_to"] = owner["lease_id"]
                 write_lease(payload, generation, entries, state["resume"], owner, "rel")
                 out["writes"] += 1
                 out["action"] = "released_joined"
+                out["actions"].append("released_joined")
+                out.update(read_view(payload))
+                out["pause_calls"] = 0
+                out["attempted_resumes"] = client.resume_calls
+                return out
+            # We emptied the refcount UNDER THE LOCK, so nothing can slip between
+            # "empty" and the resume decision (ADR-3).  Whether we may CLOSE the
+            # cycle is an evidence question (r2 F-I04C-01/02):
+            pruned = {payload["lease_id"]: "self_release"}
+            resumable, why = owner_resumable(payload, owner, pruned, entries)
+            if required:
+                reason = "inherited_obligation"
             elif owner.get("lease_id") == payload["lease_id"]:
-                # ADR-3/ADR-10: we emptied the refcount UNDER THE LOCK, so no new
-                # participant can slip in between "empty" and "resume"; and because
-                # we are the recorded owner we resume the pause we opened.
-                # Persist the recovery obligation BEFORE acting on it.
-                write_lease(payload, generation, [],
-                            {"required": True, "generation": generation,
-                             "lease_id": payload["lease_id"], "phase": "resume_pending"},
-                            owner, "rel")
-                out["writes"] += 1
-                maybe_exit_at(payload, "wm-release-before-resume")
-                gate(payload, "before_resume")
-                try:
-                    client.worker_resume()
-                except ScopeError as exc:
-                    out["resume_calls"] = client.resume_calls
-                    out["cleanup_status"] = f"failed:{exc.code}"
-                    out["action"] = "released_last_resume_failed"
-                    out["code"] = "lease_resume_failed"
-                    out["error"] = str(exc)
-                    # keep resume.required + owner marker: never claim restored
-                    out.update({k: v for k, v in read_view(payload).items()})
-                    return out
-                out["resume_calls"] = client.resume_calls
-                out["cleanup_status"] = "restored"
-                out["action"] = "released_last"
-                maybe_exit_at(payload, "wm-resume-crash")
-                # Neutral residue: no owner, no obligation, no lease.
-                write_lease(payload, generation, [], {"required": False}, {}, "rel")
-                out["writes"] += 1
-                unlink_quiet(refcount_path(payload))
-                unlink_quiet(owner_path(payload))
-            elif (state["resume"] or {}).get("required"):
-                # ADR-10 recovery: the cycle owner already exited and left this
-                # participant the pending obligation.  Resume it ourselves and
-                # close the cycle instead of walking away from a paused worker.
-                out["action"] = "released_with_pending_resume"
-                gate(payload, "before_resume")
-                try:
-                    client.worker_resume()
-                except ScopeError as exc:
-                    out["resume_calls"] = client.resume_calls
-                    out["cleanup_status"] = f"failed:{exc.code}"
-                    out["action"] = "released_last_resume_failed"
-                    out["code"] = "lease_resume_failed"
-                    out["error"] = str(exc)
-                    out.update({k: v for k, v in read_view(payload).items()})
-                    return out
-                out["resume_calls"] = client.resume_calls
-                out["cleanup_status"] = "restored"
-                write_lease(payload, generation, [], {"required": False}, {}, "rel")
-                out["writes"] += 1
-                unlink_quiet(refcount_path(payload))
-                unlink_quiet(owner_path(payload))
+                reason = "owner_is_me"
+            elif resumable:
+                reason = why
             else:
-                # ADR-10: we are the last lease but we are NOT the cycle owner, so
-                # the pause would be left running with nobody obliged to resume it.
-                # Take the cycle over and keep the obligation rather than resume.
-                transfer = {"required": True, "generation": generation,
-                            "lease_id": payload["lease_id"], "phase": "ownership_transfer"}
-                write_lease(payload, generation, [], transfer,
-                            {"lease_id": payload["lease_id"], "generation": generation}, "rel")
+                reason = None
+            out["resume_reason"] = reason
+            if reason is None:
+                # F-I04C-02: the recorded owner is foreign/unproven.  Remove our
+                # own lease, keep the owner evidence EXACTLY as it was, never
+                # claim the cycle and never resume (ADR-5 W7/T10, ADR-8).
+                write_lease(payload, generation, [], {"required": False}, owner, "rel")
                 out["writes"] += 1
-                out["action"] = "released_took_ownership"
-                out["cleanup_status"] = "deferred:ownership_transfer"
-            out.update({k: v for k, v in read_view(payload).items()})
+                out["action"] = "released_owner_changed"
+                out["actions"].append("released_owner_changed")
+                out["cleanup_status"] = f"failed:owner_evidence_changed:{why}"
+                out.update(read_view(payload))
+                out["pause_calls"] = 0
+                out["attempted_resumes"] = client.resume_calls
+                return out
+            # Persist the recovery obligation BEFORE acting on it (ADR-3).
+            write_lease(payload, generation, [],
+                        {"required": True, "generation": generation,
+                         "lease_id": payload["lease_id"], "phase": f"resume_pending:{reason}"},
+                        owner, "rel")
+            out["writes"] += 1
+            maybe_exit_at(payload, "wm-release-before-resume")
+            gate(payload, "before_resume")
+            try:
+                client.worker_resume()
+            except ScopeError as exc:
+                out["resume_calls"] = client.resume_calls
+                out["cleanup_status"] = f"failed:{exc.code}"
+                out["action"] = "released_last_resume_failed"
+                out["actions"].append("released_last_resume_failed")
+                out["code"] = "lease_resume_failed"
+                out["error"] = str(exc)
+                out.update(read_view(payload))
+                out["pause_calls"] = 0
+                out["attempted_resumes"] = client.resume_calls
+                return out
+            out["resume_calls"] = client.resume_calls
+            out["cleanup_status"] = "restored"
+            out["action"] = "released_last"
+            out["actions"].append("released_last")
+            maybe_exit_at(payload, "wm-resume-crash")
+            # Neutral residue, then remove the files: the next cycle starts at
+            # generation 1 again (documented in decision.md ADR-12).
+            write_lease(payload, generation, [], {"required": False}, {}, "rel")
+            out["writes"] += 1
+            unlink_quiet(refcount_path(payload))
+            unlink_quiet(owner_path(payload))
+            out.update(read_view(payload))
     except ScopeError as exc:
         out["code"] = exc.code
         out["error"] = str(exc)
@@ -898,8 +1055,9 @@ def run_protocol_exit(payload):
     out["pause_calls"] = 0
     out["attempted_resumes"] = client.resume_calls
     return out
+    client = Client(payload)
 
-
+# --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # legacy mode: faithful port of the current production machinery
 # --------------------------------------------------------------------------
@@ -969,7 +1127,8 @@ def run_legacy(payload):
            "phase": "enter", "action": None, "pause_calls": 0, "resume_calls": 0,
            "writes": 0, "code": None, "error": None}
     request_budget = max(0.0, float(payload.get("request_budget", 100.0)))
-    mutex = FileLock(lock_path(payload), min(LOCK_MAX_SECONDS, request_budget))
+    mutex = FileLock(lock_path(payload), min(LOCK_MAX_SECONDS, request_budget),
+                     payload=payload, name="lease", code="lease_lock_timeout")
     use_lock = bool(payload.get("use_lock"))
     try:
         if not payload.get("enabled", True):
@@ -1035,7 +1194,6 @@ def run_legacy(payload):
         out["action"] = "legacy_error"
         return out
 
-
 def run_legacy_exit(payload):
     client = Client(payload)
     out = {"mode": "legacy", "pid": os.getpid(), "lease_id": payload["lease_id"],
@@ -1079,6 +1237,10 @@ def main(argv):
     mode = payload.get("mode", "protocol")
     if mode == "protocol":
         result = run_protocol(payload) if phase == "enter" else run_protocol_exit(payload)
+    elif mode == "protocol_stale_v1":
+        # deliberately wrong v1 shape, used only by the F-L2e pair
+        result = (run_protocol_stale_v1(payload) if phase == "enter"
+                  else run_protocol_exit(payload))
     else:
         result = run_legacy(payload) if phase == "enter" else run_legacy_exit(payload)
     result["tag"] = payload.get("tag")

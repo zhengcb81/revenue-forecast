@@ -1,80 +1,24 @@
-# I-04-C 恢复边界与回退配方
+"""Append the round-4 recovery section to recovery/README.md.
 
-本卡是**设计卡**：没有改任何产品代码，所以"回退"只涉及本次尝试目录内的产物。
+Kept in recovery/ (which is not part of the hashes.txt manifest) on purpose: the
+section documents how this round was produced, and the file it edits is itself
+hashed by sim/freeze_evidence.py.  Line endings are preserved (this file is LF).
 
-## 0. 恢复边界（卡片原文 + 本卡实际做法）
+Idempotent: stops if the section marker is already present.
+Run:  & $PY -B recovery/round4-append-readme.py
+"""
 
-- **不迁移生产 lease 文件**：`.source_catalog/filing_fetch_pause.*` 一个字节都没动；
-  本卡从未读写 `C:/Users/郑曾波/Projects/{filing-fetch,company-wiki,revenue-forecast}` 下的任何运行期状态。
-- **决策不成立则保留旧问题未关闭**：若独立 reviewer 判 `changes_required` 或 `blocked`，
-  本卡不产生任何"已修"结论；问题回到 I-04 原义务，由 owner 决定是否进 I-04-D。
-- 生产核查：`evidence/hashes.txt` 里 `PRODUCTION_UNCHANGED=true`，
-  `filing-fetch` 工作树在本卡期间只有既有的未跟踪文件 `git_filing-fetch.txt`（非本卡产生）。
+from __future__ import annotations
 
-## 1. 复现本次全部证据（从零）
+import io
+import os
+import sys
 
-```powershell
-$A = "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-04-C\a20260919-01"
-$PY = "$A\iso\venv\Scripts\python.exe"
+ATTEMPT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+README = os.path.join(ATTEMPT, "recovery", "README.md")
+MARKER = "## 5. 第 4 轮（2026-09-20）"
 
-# 1) 编译检查
-& $PY -B -m py_compile "$A\sim\kernel.py" "$A\sim\participant.py" "$A\sim\stub_worker.py" `
-    "$A\sim\harness.py" "$A\sim\cases_core.py" "$A\sim\cases_ownership.py" `
-    "$A\sim\cases_legacy.py" "$A\sim\stress.py" "$A\sim\scheduler.py"
-
-# 2) 协议套件（每 case 前会自动清空自己的目录）
-& $PY -B "$A\sim\scheduler.py" run F-L1 F-L2a F-L2b F-L2c F-L2d F-L3 F-L4a F-L4b F-L4c F-L4d F-L4e `
-    F-W1 F-W2 F-W4 F-W4b F-W5 > "$A\evidence\run-all.txt" 2>&1
-& $PY -B "$A\sim\parse_run.py" "$A\evidence\run-all.txt" "$A\evidence\failures.txt"
-
-# 3) 锁原子性 + RED 反例
-& $PY -B "$A\sim\scheduler.py" run F-LK1 F-LK2 F-LK3 F-L1-nolock-guard F-L1-nolock F-L2a-legacy F-Lgw1 `
-    > "$A\evidence\lock-and-legacy.txt" 2>&1
-& $PY -B "$A\sim\parse_run.py" "$A\evidence\lock-and-legacy.txt" "$A\evidence\lock-and-legacy-failures.txt"
-
-# 4) 冻结哈希（并复核生产 hash）
-& $PY -B "$A\sim\freeze_evidence.py"
-```
-
-预期（与 `evidence/` 的现状一致）：步骤 2 退出码 1（有 6 个 case 带失败检查），
-步骤 3 退出码 1（两个 legacy 反例停在它自己的运行期守卫上），步骤 1/4 退出码 0。
-
-## 2. 回退本次尝试
-
-本卡的**唯一**写入范围是 `execution_runs/I-04-C/a20260919-01/**`。整体回退：
-
-```powershell
-Remove-Item -Recurse -Force "…\execution_runs\I-04-C\a20260919-01"
-```
-
-回退后需要检查的外部事实（应全部保持原样）：
-
-```powershell
-(Get-FileHash 'C:\Users\郑曾波\Projects\filing-fetch\scripts\fetch_filing.py' -Algorithm SHA256).Hash
-# 期望：046CC7DC4E3FF2F4F59BE05DEF8961A85A12E6290ADEF43A3C53103C63B9D088
-git -C 'C:\Users\郑曾波\Projects\filing-fetch' status --porcelain
-# 期望：只有既有的未跟踪文件（本卡不产生任何条目）
-```
-
-## 3. 部分回退
-
-- **只回退模拟内核的某条规则**：`sim/kernel.py` 是唯一实现点；`decision.md` 的 ADR 编号与
-  `sim/kernel.py` 的注释一一对应（ADR-9/9b/9c/10/11、`lock_budget_for`）。改动后必须整跑步骤 2，
-  不允许只跑单个 case 就宣布通过（隔离与一致性由调度器保证）。
-- **只重跑单个 case**：`& $PY -B "$A\sim\scheduler.py" run <case>`；它会先删除
-  `evidence/run/<case>`，所以单跑**不会**污染其它 case 的原始证据。
-- **不确定的现场**：不要删 `evidence/run/<case>/`；里面有 journal、refcount/owner 快照与
-  参与者的原始 stdout/stderr，是判定"规则缺口 vs 调度缺口"的唯一依据。
-
-## 4. 已知的失败重跑风险
-
-- F-L2d 的并发计数依赖机器负载（临界区里有一次 `worker-status` 子进程）。若重跑时
-  `pause_calls` 数量变化，先看 `evidence/run/F-L2d/journal.jsonl` 的 `lock_acq.waited`，
-  再判断是调度问题还是规则问题 —— **不要**通过调大 `request_budget` 或放宽断言来"修"它。
-- `evidence/run/**` 里的 `alive.<pid>.<holder>.<tag>.json` 是**判活申报**文件：
-  有残留说明该参与者是被 crash 注入杀死的（或重跑前未清目录）。调度器每次都会清目录，
-  手工调试时才会看到残留。
-
+SECTION = """
 ## 5. 第 4 轮（2026-09-20）：C1 追加式更正 + C2 登记（本轮只动文本/证据账）
 
 ### 5.1 改了什么、为什么
@@ -84,7 +28,7 @@ P3-4 行仍印着**过时的 F-LK2 数值**；**C2（只登记）** —— OPEN-
 的命名/边界验收，以及 `worker-pause` 是否留在锁内，属 **owner 裁定项**。
 
 本轮只做数值与登记层面的**追加式**更正：**不改任何设计结论、不放宽任何断言、不改冻结 oracle 的期望值**；
-`PLAN\reviews\` 一个字节未动，三个生产仓库只读（无 `git add`、无 commit）。
+`PLAN\\reviews\\` 一个字节未动，三个生产仓库只读（无 `git add`、无 commit）。
 
 ### 5.2 C1 的真值（自己从证据复算，不采信正文）
 
@@ -101,19 +45,19 @@ P3-4 行仍印着**过时的 F-LK2 数值**；**C2（只登记）** —— OPEN-
 
 ```powershell
 # 1) 复算 F-LK2 真值（读原始 run 目录 + 记录；输出 evidence/flk2-recompute.txt）
-& $PY -B "$A\sim\verify_flk2.py"            # 13/13 PASS，退出码 0
+& $PY -B "$A\\sim\\verify_flk2.py"            # 13/13 PASS，退出码 0
 
 # 2) 追加式更正两份文本（幂等：第二次运行全部 SKIP）
-& $PY -B "$A\sim\patch_r4_docs.py"
+& $PY -B "$A\\sim\\patch_r4_docs.py"
 
 # 3) handoff.json：C1 -> closed、C2 -> owner gate
-& $PY -B "$A\sim\patch_r4_handoff.py"
+& $PY -B "$A\\sim\\patch_r4_handoff.py"
 
 # 4) 证明"只增不改"：删掉插入块后重建的 sha256 == 改前 sha256
-& $PY -B "$A\sim\verify_r4_appendonly.py"    # APPEND-ONLY CONFIRMED，退出码 0
+& $PY -B "$A\\sim\\verify_r4_appendonly.py"    # APPEND-ONLY CONFIRMED，退出码 0
 
 # 5) 冻结哈希账（排除自身与 run-summary.json，按本目录既有口径）
-& $PY -B "$A\sim\freeze_evidence.py"
+& $PY -B "$A\\sim\\freeze_evidence.py"
 ```
 
 ### 5.3 更正落在哪（追加式，原文一字未删、未静默改写）
@@ -139,7 +83,7 @@ P3-4 行仍印着**过时的 F-LK2 数值**；**C2（只登记）** —— OPEN-
 | `evidence/hashes.txt` | `6b61e8da55cbdf2590c55007c0617fa2b9d0de68b914f8c4a73c169013f520d1` | 见 `recovery/round4-post-hashes.txt`（**自指不可能**：`hashes.txt` 由 `sim/freeze_evidence.py` 写，按 P3-3 的既有口径排除自身与 `run-summary.json`） |
 | `recovery/README.md`（本文件） | `804b2dc938f866d8355d920a7ef3e2fd15850e9c104ca248123a79c462aa1930` | 见 `recovery/round4-post-hashes.txt` 与 `evidence/hashes.txt`（本文件不能自指） |
 
-`recovery/round4-pre-hashes.txt` 是**改前**快照（含 `PLAN\reviews\` 的 mtime 普查指纹
+`recovery/round4-pre-hashes.txt` 是**改前**快照（含 `PLAN\\reviews\\` 的 mtime 普查指纹
 `6152372047dcbe9e363182240c03a9845c9213bd72fb85bf2468c4632b27672d`，285 个文件）；
 `recovery/round4-post-hashes.txt` 在最后一次冻结之后捕获，两者对照即可看出本轮到底动了哪些字节。
 
@@ -150,7 +94,7 @@ P3-4 行仍印着**过时的 F-LK2 数值**；**C2（只登记）** —— OPEN-
    与 §5.4 的"改前"列逐字相等）。
 3. **幂等**：重跑 `patch_r4_docs.py` / `patch_r4_handoff.py` 必须全部 SKIP，且四个被改文件哈希不变。
 4. **哈希账**：`freeze_evidence.py` 退出码 0，`evidence/hashes.txt` 末行 `PRODUCTION_UNCHANGED=true`。
-5. **边界**：本轮**不得**改动任何 ADR 文本、`oracle.md` 的期望值、`PLAN\reviews\**`、三个生产仓库
+5. **边界**：本轮**不得**改动任何 ADR 文本、`oracle.md` 的期望值、`PLAN\\reviews\\**`、三个生产仓库
    （`recovery/round4-p*-hashes.txt` 的对照与 `PRODUCTION_UNCHANGED=true` 是这条的证据）。
 
 ### 5.6 本轮**未**做（留给 reviewer / owner / 后续卡）
@@ -160,3 +104,22 @@ P3-4 行仍印着**过时的 F-LK2 数值**；**C2（只登记）** —— OPEN-
 - `review.md` §0/§5 的 reviewer 区未动（实施者不得代填判决）。
 - PLAN 根级 `progress.md`/`task_plan.md` 里"I-04-C 返工中 / changes_required"的旧计数**不在本卡写入范围**
   （只允许写 attempt 目录），未改 —— 需要 PLAN 级同步时由父代理处理。
+"""
+
+
+def main():
+    with io.open(README, "r", encoding="utf-8", newline="") as handle:
+        text = handle.read()
+    if MARKER in text:
+        print("SKIP already applied")
+        return 0
+    if not text.endswith("\n"):
+        text += "\n"
+    with io.open(README, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text + SECTION)
+    print("appended recovery section 5 (%d chars)" % len(SECTION))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

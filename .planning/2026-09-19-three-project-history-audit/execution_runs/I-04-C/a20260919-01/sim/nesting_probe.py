@@ -1,15 +1,12 @@
-"""F-L2a probe: can two PausedWorkerScopes of ONE process nest at all?
+"""F-L2a probe: two leases of ONE process (real nesting), r2 kernel API.
 
-The frozen protocol's own status guard (mirroring fetch_filing.py L528-L529:
-"runtime_state != running => worker_stopped") runs on every entry, and the first
-scope pauses the worker.  This probe measures what a nested second entry sees,
-inside one process, using two threads so the overlap is real.
+The frozen protocol's status guard runs on every entry and the first scope pauses
+the worker; a second scope of the SAME process that enters afterwards reads
+`desired_state=paused` inside its critical section and joins the live cycle
+(ADR-9/9b), so two leases from one pid coexist and are released independently --
+only the lease_id is ever removed, never the pid.
 
-It also shows the protocol-level fact that the second registration, if it exists
-in the refcount (produced by another process sharing the pid), is never removed
-by the pid-wide filter.
-
-Read-only apart from its own evidence directory.
+Runs ENTIRELY in one process and writes only inside its own evidence directory.
 """
 
 from __future__ import annotations
@@ -43,29 +40,36 @@ def main():
         "cleanup_budget": 30.0,
         "probe_b64": b64({}),
         "status_b64": b64({"desired_state": "enabled", "runtime_state": "running"}),
+        "declared_liveness": True,
     }
-    first = dict(base, lease_id="nest-scope-1", invocations=1)
-    second = dict(base, lease_id="nest-scope-2", invocations=2)
+    first = dict(base, lease_id="nest-scope-1", invocations=1, tag="nested-scope1")
+    second = dict(base, lease_id="nest-scope-2", invocations=2, tag="nested-scope2")
     results = {}
 
     def run_second():
         time.sleep(0.30)  # let scope 1 finish its pause
         results["second"] = kernel.run_protocol(second)
-        kernel.run_protocol_exit(dict(second, tag="nested-exit2"))
 
     thread = threading.Thread(target=run_second)
     thread.start()
     results["first"] = kernel.run_protocol(first)
     thread.join(timeout=30)
+    # scope 1 leaves first while scope 2 is still inside its scope
     exit_first = kernel.run_protocol_exit(dict(first, tag="nested-exit1"))
+    view_after_first = h.lease_view()
+    exit_second = kernel.run_protocol_exit(dict(second, tag="nested-exit2"))
 
     record = {
         "case": "F-L2a-nesting",
         "first_action": results["first"]["action"],
         "second_action": results["second"]["action"],
+        "second_actions": results["second"].get("actions"),
         "second_writes": results["second"]["writes"],
         "second_lease_set": results["second"].get("lease_set"),
         "exit_first_action": exit_first["action"],
+        "exit_first_transfer": exit_first.get("ownership_transferred_to"),
+        "exit_second_action": exit_second["action"],
+        "view_after_first_exit": view_after_first,
         "counts": h.counts(),
         "lease_view": h.lease_view(),
         "owner_exists": h.owner_exists(),
