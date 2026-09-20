@@ -1,5 +1,17 @@
 # Progress
 
+## 2026-09-20 — 第四轮（round 34）：I-07-A 完成 + 失败子代理重启 + 当前状态
+
+- **I-07-A r3 re-read 完成**：reviewer 亲自追加亲笔 r3 段（`review.md:221-289`），三个 r2 缺陷全部关闭（P1 `decision.md` 附录、P2 F-I07A-06 "six"→"seven rows"、P3 F-I07A-01 "0 location rows"→"exactly 1"）。载体由父 agent 落定：`handoff.status=accepted_scoped`、`qualification.formula=accepted_scoped`。已提交 `c1338445` 并推送（GREEN）。**I-07-A 成为第 57 张 accepted 卡**。
+- **失败子代理重启**：I-04-E（1900 文件/无交付物）、I-05-B（1392 文件/无交付物）的尝试目录已清理；三个任务重新派发：
+  - `e24b335f` — I-05-B 实现
+  - `66f6374a` — I-06-B 实现
+  - `ec5082b4` — I-09-B 实现
+  - I-04-E 尚未重启（需单独处理）。
+- **当前 accepted 总数**：57/86。剩余 ≈24 张卡按依赖链排队。
+- **进度统计**：目标 60 轮，已用 34 轮。剩余 ≈24 张卡 + 10 张新卡待建。
+
+
 ## 2026-09-20 — Owner 裁定落地：第 16 项 + M08 三步①②完成 + 第③步复核通过
 
 - **Owner 原话（逐字）**：「16 照建议；W05-1 A；W05-2 A；W06-1 A；M08 三步照办；I-04-D R2-3 选 LIMITATION；I-14-A D1/D2 指派运维与 SLO owner；I-11-A OPEN-2/3/5/6 指派会计+行业 reviewer；新立卡全部照建议开；I-08-B CONFLICT、I-00-B 追认、三条口径确认：同意。」——已逐字写入 `OWNER_DECISIONS.md §十`（含逐条执行动作表与解锁映射），未列出的项保持未决原状。
