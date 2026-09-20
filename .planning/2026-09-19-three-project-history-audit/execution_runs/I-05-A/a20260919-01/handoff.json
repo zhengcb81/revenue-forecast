@@ -3,10 +3,10 @@
   "parent": "I-05",
   "attempt_id": "a20260919-01",
   "card_title": "默认产物与验证器共用契约，sections 不能绕过资格",
-  "status": "review_pending",
+  "status": "accepted_scoped",
   "r2_status": "复审返回 changes_required（F-I05A-01..09）；r2 已逐条处置（F-I05A-09 被复审判为合法更正）并复验。实现者未自签；accepted_scoped 的登记权在 reviewer。",
   "owner": "wiki producer 实施者（本 attempt）",
-  "reviewer_status": "PENDING independent review — 实现者未自签，未使用 accepted/passed 标签；r2 disposition 见 review_r2_disposition.md",
+  "reviewer_status": "accepted_scoped by the independent reviewer (round 4). The implementer did not sign; the verdict text is transcribed verbatim into review.md and its carrier is evidence/I-05-A/qualification.json.",
   "objective": "让 sections 消费者与默认 bundle 共用同一把资格门，并让被验证的字节就是被服务的字节；无效 section 无旁路。",
   "completed_steps": [
     "1 领取: card_I-05-A + parent I-05 原文 + audit_report 第 55 行 + D-W05 共用规则 + 已接受依赖 I-02-E/I-02-A 的 review/handoff 已读",
@@ -393,6 +393,98 @@
     "c14_evidence": {
       "expected": "a GREEN run of the final bytes",
       "measured": "25 passed, rc=0 (the stale 18-passed claim and the stale RED file are both corrected)"
+    }
+  },
+  "status_before_bookkeeping_fix": "review_pending",
+  "accepted_scoped_scope": {
+    "granted": [
+      "sections 消费者资格门（FROZEN-1/2）＋反例闭合：c0–c8、n2a/n2c、p2、n3；m1/m2/m2b/m2c/m3/m3b/m4/m4b/m7；被审方 I1/I2/I3；reviewer 自造 only_second / midline / fabricated / plus1_content / roleswap",
+      "reviewer 原话：第三轮的 P1-A/P1-B/P1-C（同一根因：记录偏移从未与内容强制比对）经独立复算确认已关闭"
+    ],
+    "not_granted": [
+      "D-W05 OPEN-1..7 的一切决策（含历史无哈希工件的回填/重算、as_of_date 口径）",
+      "I-05-B / I-05-C 不得据此开工",
+      "disclosure_adaptation / accuracy 按原登记另行验收"
+    ],
+    "disclosed_limits": [
+      "偏移 +1 且内容不变的声明仍可被解释为另一个合法 origin（文本完全相同，非内容旁路），故 char_start 不应被当作精确索引",
+      "role/title 不参与绑定校验（roleswap2 会把另一节文本以本节的 role/title 服务），这是设计边界而非本次缺陷；SectionEntry 文档与附录应写明 'role/title 由 index 声明、不参与绑定校验'"
+    ],
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven"
+  },
+  "reviewer_findings_open": {
+    "P3_non_blocking": [
+      {
+        "id": "P3-1",
+        "reviewer_text": "oracle 附录 C 的前像字节数 14924 B 有误（实测 r3 末态 23204 B）",
+        "disposition": "corrected by append (oracle 附录 D)；C 正文未改",
+        "owner_item": false
+      },
+      {
+        "id": "P3-2",
+        "reviewer_text": "after/prod-anchor-hashes-after.json.attempt_fixed 由 r3 的三元组变为 null",
+        "disposition": "r4 三元组已补写回该字段（追加式：旧值保留在 attempt_fixed_before_bookkeeping_fix）",
+        "owner_item": false
+      },
+      {
+        "id": "P3-3",
+        "reviewer_text": "evidence/p1-mutations.json 键名 I1_offsets_plus_one 对应 delta=2",
+        "disposition": "键名注记追加进 evidence/README.md 与 oracle 附录 D",
+        "owner_item": false
+      },
+      {
+        "id": "P3-4",
+        "reviewer_text": "binding.json 仍记旧 RF HEAD 7d7ea1ed…（影响为零）",
+        "disposition": "HEAD 补记追加进 binding.json.downstream_head_note（不改既有键）+ oracle 附录 D",
+        "owner_item": false
+      }
+    ],
+    "owner_items_undecided": [
+      {
+        "id": "OWNER-1",
+        "question": "C13 是否立卡",
+        "status": "UNDECIDED — owner 裁定；实现者未代裁",
+        "reviewer_position": "不阻塞其判定"
+      },
+      {
+        "id": "OWNER-2",
+        "question": "~25% 抖动是否立卡",
+        "status": "UNDECIDED — owner 裁定；实现者未代裁",
+        "reviewer_position": "不阻塞其判定"
+      },
+      {
+        "id": "OWNER-3",
+        "question": "深路径 WinError 206 是否改短 basetemp 约定",
+        "status": "UNDECIDED — owner 裁定；实现者未代裁",
+        "reviewer_position": "不阻塞其判定"
+      },
+      {
+        "id": "OWNER-4",
+        "question": "C12 形式",
+        "status": "UNDECIDED — owner 裁定；实现者未代裁",
+        "reviewer_position": "不阻塞其判定"
+      }
+    ],
+    "unsigned_gates_preserved": {
+      "section_extractor": "iso/fixed/section_extractor.py 仍只有 sec.status='completed'（328/341），无 generator 版本比较",
+      "decision_md": "D-W05 OPEN-1..5 未签、§7 OPEN-7 仍在",
+      "blocked_by": "D-W05 七项专业决策未签：I-05-B/I-05-C 在签名前不得开工"
+    }
+  },
+  "carrier": {
+    "qualification_json": "execution_runs/I-05-A/a20260919-01/evidence/I-05-A/qualification.json",
+    "reviewer_report_card_copy": "execution_runs/I-05-A/a20260919-01/evidence/I-05-A/reviewer_report_r4.md",
+    "reviewer_report_sha256": "d95677137b6db3815f96810e076de48abef0702493e6d21df5fd6cc46d5d9010",
+    "verdict_block_in_review_md": {
+      "start_byte_offset": 9213,
+      "start_line_1based": 104,
+      "block_sha256": "4c00007c65d3c01cdf0ff9ee3333522add00206ec93bc1932320bff9f2da1b98",
+      "review_md_before_sha256": "2f8824dc55c9f5466b4e1b3f0f2343567682dd81fc04449814c9da8ff669c0a5",
+      "review_md_after_sha256": "08e153a367ac6c406628413e8acf457bf1ab9f835af801740483e0a978dd4f3c",
+      "old_bytes_are_exact_prefix": true,
+      "stop_byte_offset": 13030,
+      "stop_line_1based": 116
     }
   }
 }

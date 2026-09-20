@@ -92,3 +92,26 @@
 6. **c0 常数修正**：判断 §3.1.2 的自我披露是否足以接受，或应记为 `changes_required`。
 7. **B10 ratchet 的诚实性**：确认 `section_query.py` 的 parse 站点仍落在 `list_sections` 内、
    `_qualification_failure` 不再触碰该列（本 attempt 因此**没有**改 `read_chain.py` 的基线表）。
+
+---
+
+# r5 — 独立复审（第四轮）裁决转录（**载体落定，非实现者自签**）
+
+以下裁决正文由独立 reviewer 撰写、经父 agent 授权转录；转录方式为**逐字节追加**，
+不改写本文件既有字节。来源报告卡内副本：`evidence/I-05-A/reviewer_report_r4.md`。
+
+<!-- BEGIN REVIEWER VERDICT (verbatim, byte-exact) -->
+## ④ 可粘贴进 `review.md` 的裁决正文
+
+> **独立复审（第四轮）结论：`accepted_scoped`。**
+> 第三轮的 P1-A/P1-B/P1-C（同一根因：记录偏移从未与内容强制比对）经我独立复算确认**已关闭**。
+> **证据（我方自建树，非采信自述）**：修复前字节 `iso/prefix_r3/section_query.py = 5fbbe49a…cac1` 上，I1（双偏移 +2）、I2（+5）、I3（`normalized` 全部 `failed`）三例均 `returned`（`substring_only`/`no_source` 当时是**通过**标签）；修复后 `iso/fixed/section_query.py = 06a1a6ea…ebceb7` 上同一批注入分别被 `sections_binding_error`×2 与 `sections_no_normalized_source` 拒绝。
+> **per-origin 强制**：我另造三类注入——①只把**第二条**偏移 +3（第一条不动）；②偏移 +1 **且**内容同时平移一位；③把切片替换为**行内**（非行边界）等长片段——三者全部被拒；接受路径上不再出现 `substring_only`/`no_source`（我逐例核对：所有 `returned` 用例的每个条目 `window_match == "source_window"`）。无窗口对齐约束时差一 origin 会吸收伪造偏移，该约束确属判据的一部分。
+> **fail-closed**：`normalized` 行置 `failed` 与整行删除两种注入都得到新原因码 `sections_no_normalized_source`，不再以 `no_source` 放行。
+> **未过度收紧**：`c0` 正例（含前导/尾随换行、跨行切片）两片 `source_window`、`window_positions=[0,1]`；25 例套件 `25 passed` rc=0；7 文件隔离回归 `88 passed, 1 deselected` rc=0（含 b10 读链与复杂度 ratchet）；`section_query.py` 最高函数复杂度按仓库自带度量 **11 ≤ 冻结 12**（r2=10、prefix_r3=9）。
+> **记录与留痕**：C14 已改为"18 passed (r2, superseded) / measured_now 25 passed"，原值保留在 `declared_r2`；`evidence/p1-mutations.json` 记录了 pre/post 两次查询的 `module_sha256` 断言（`5fbbe49a…` → `06a1a6ea…`）；`changes.diff` 860 行仅两文件；探针 9/11 拒绝（m6 回退旧 VALID 行、m5 死锁不计）。`oracle.md` 仅追加附录 C（我以字节前缀比对证明 `r4[:23204] == r3 全文`，正文与附录 A/B 一字未改），C 内明确宣告 B.1/B.2 的相关表述过时。旧 RED 字节（r2 阶段 `3 failed / 15 passed`）确已因 A2 重跑覆盖而丢失，**如实登记为不可复算缺口且未补造**（oracle C.4 + handoff + disposition §r4.6），`iso/prefix_r3/` 冻结保留。
+> **生产与门**：CW HEAD 未变、porcelain 仍仅两行、13/13 锚点匹配；RF 自 `7d7ea1ed` 起的三段提交（8702/7420/0 文件）**均无非 `.planning/` 路径**，本卡 porcelain 无非 `.planning` 增删；filing-fetch porcelain 空；`PLAN\reviews` 目录 mtime 与最新文件 mtime 均停在 2026-09-19，**无 ≥2026-09-20 02:00 的文件**；状态 `review_pending`（未自签）；`section_extractor` 仍无版本比较，D-W05 OPEN-1..7 保持未签，I-05-B/C 不得据此开工。
+> **已披露边界（不阻塞，供消费方注意）**：①偏移 +1 且内容不变的声明仍可被解释为另一个合法 origin（文本完全相同，非内容旁路），故 `char_start` 不应被当作精确索引；②`role/title` 不参与绑定校验（我构造的 `roleswap2` 会把另一节文本以本节的 role/title 服务），这是设计边界而非本次缺陷。
+> **遗留 P3（不阻塞，建议随下一卡追加更正）**：oracle 附录 C 的前像字节数 14924 B 有误（实测 r3 末态 23204 B，且追加性已由前缀比对独立证明）；`after/prod-anchor-hashes-after.json.attempt_fixed` 由 r3 的三元组变为 `null`；`evidence/p1-mutations.json` 键名 `I1_offsets_plus_one` 对应 `delta=2`；`binding.json` 仍记旧 RF HEAD `7d7ea1ed…`（live `cc78c529…`，影响为零）。
+
+<!-- END REVIEWER VERDICT -->

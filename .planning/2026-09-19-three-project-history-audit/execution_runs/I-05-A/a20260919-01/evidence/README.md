@@ -24,3 +24,9 @@
 
 期望（修复后）：三条全部 `refused`，原因码分别为 `sections_binding_error`×2 与
 `sections_no_normalized_source`；修复前三条全部 `returned`。
+
+## 键名注记（第四轮复审 P3-3）
+
+`p1-mutations.json` 的键名 `I1_offsets_plus_one` 实际对应 `mutation_detail.delta = 2`。
+原因：冻结的 trim 语义会剥掉边界换行符，+1 位移在修复后仍可能复现同一段文本；
+因此取 +2 作为决定性伪造。键名不改（避免破坏既有字据的稳定引用）。

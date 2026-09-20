@@ -355,3 +355,37 @@ body[origin + char_start : origin + char_end].strip("\n") == fragment.strip("\n"
   has no attribute 'get'` @ `section_query.py:190`），但**原始文件不可复算**，登记为证据缺口。
 - **历史 sections 工件无 per-slice 哈希**且提取器不重算 ⇒ 只享受源窗口绑定。是否回填/重算
   交 D-W05 OPEN-1，未做批量迁移。
+
+---
+
+# 附录 D（追加式，2026-09-19 第四轮复审后；**不修改正文、附录 A/B/C**）
+
+本附录只做**记账更正**，不改写任何已冻结正文。第四轮复审裁决 `accepted_scoped`，
+以下 4 项为其"不阻塞、建议随下一卡追加更正"的 P3。
+
+## D.1 P3-1 附录 C 的前像字节数更正
+
+附录 C 开头写"`oracle.md` 在 r3 结尾时为 14924 B"。**该数字有误**：复审实测 r3 末态为
+**23204 B**（附录 A 起点 16119、B 起点 20726、C 起点 23212）；14924 落在正文 §5
+"未签专业决策"之内。**C 正文不改**，以本条为准。追加性本身已由复审以字节前缀比对独立证明
+（`r4[:23204] == r3 全文`）。
+
+## D.2 P3-2 `attempt_fixed` 字段补写
+
+`after/prod-anchor-hashes-after.json.attempt_fixed` 在 r3 曾是三元组，r4 一度变成 `null`。
+现已**追加式补回** r4 的三元组（`section_query.py` = `06a1a6ea…ebceb7`、
+`section_extractor.py` = `0f201c68…39f3f0`、`max_function_complexity_section_query` = `11`），
+旧值（`null`）保留在同文件的 `attempt_fixed_before_bookkeeping_fix`。
+
+## D.3 P3-3 键名注记
+
+`evidence/p1-mutations.json` 的键名 `I1_offsets_plus_one` 实际对应
+`mutation_detail.delta = 2`（+1 位移在冻结 trim 语义下仍可能复现同一段文本，故取 +2 作为决定性伪造）。
+键名**不改**（改键会破坏既有字据的稳定引用），注记见 `evidence/README.md` 与 `evidence/p1-mutations.json.key_naming_note`。
+
+## D.4 P3-4 HEAD 补记
+
+`binding.json` 仍记 attempt 开始时的 RF HEAD `7d7ea1ed…`；该值作为**历史绑定**保留不改。
+live HEAD 已多次推进（复审实测 `cc78c5298acd5a5ff8b898d9aa237fc5a8559979`；
+本记账时刻实测见 `after/r4_seal.json` 的 `seal_reference`），影响为零：
+本卡只做只读 git 查询。
