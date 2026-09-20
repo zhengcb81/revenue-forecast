@@ -298,3 +298,29 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 **产物**：`decision.md`（5982 B / `6fb01437…`）、`t19_changes.diff`（2213 B / `8b0becfc…`）、`t19_rc_table_verification.json`（2037 B / `265258c6…`）、`handoff.json`（`2b68e778…`）、`scripts/verify_t19.py`（8603 B / `e6887e59…`）。**边界**：**未新撰任何编辑**；**未回改历史 rc / `commands.json` / `case_results.json` / 冻结证据**；未做 `status` 转移；未代签；产品文件改动 0 条；全部 JSON 可解析且与 `handoff.json` 登记哈希**零失配**。
 
 **⚠️ 移交编排层的提示（本卡不做）**：追加节 C-3 提到的 **T1-8 四项前置**之一 —— 「`cases.json` 缺 `expected` 时的归类现为 `rc=3`、登记口径写 `rc=2`，须先按本表统一到 `rc=2`」 —— **仍未完成**。本卡**只登记**该要求，**不执行**统一（属 T1-8 授权范围）。
+
+**Round 48（2026-09-20）新增：T1-20 卡内完成 —— I-00-B 绑定范围的**书面追认**，**结论为「已核查、追认描述在盘上为真」**（**未修改任何被追认的载体**）。落点 `execution_runs/T1-20/a20260920-01/`：
+
+**裁定**（`OWNER_DECISIONS.md` §13 **T1-20**，TIER-1）：**书面追认**：『**物化由各 attempt 完成并记录来源 hash**』（各批实测快照与生产逐字节相同）。
+
+**起因（事实链）**：`execution_runs/M17-M20/a20260919-01/batch_handoff.md:68-71` 载**独立复核者**意见 —— 直读 I-00-B 的 `binding.json`，其中**只有** `isolated_binding_plan` 与 `command_binding_rule`，**无任何 checkout 路径或物化副本 hash**，而卡片 L49 写「从 I-00-B 读取 isolated checkout」。复核给了**两条路**：**(a) 书面追认既有的职责划分**，或 **(b) 以 I-00-B checkout 重跑 B/C/E**。**T1-20 选 (a)。**
+
+**为何 (a) 更慎重（本卡判断）**：**(b) 要重做三张已封盘的 attempt** —— 会产生**新证据世代**、使既有哈希登记失效，而**被测量的代码字节完全相同**（R-4 已证）。**为消除一个纯文书缺口而重跑已验收的证据，是用高风险手段解决低风险问题。**
+
+⇒ **追认的前提是「被追认的那句话必须为真」。** 故本卡的全部工作是**证明它为真**，而不是把它抄一遍。追认句拆三半，逐半可验：
+
+| # | 子句 | 命题 | 实测 |
+|---|---|---|---|
+| ① | I-00-B 绑**方案**、**非物化副本** | **R-1** | 载 `isolated_binding_plan`=T、`command_binding_rule`=T；**提及 checkout 路径=F**；文件内 8 个 64-hex **全是 `source_anchors_sha256`（锚点非副本）**；**载物化副本 hash=F** |
+| ② | **物化由各 attempt 完成** | **R-2** | **10/10** 张受影响卡（M13、M14、M17–M24）**均自行物化** `iso/checkout_scripts/` |
+| ③ | 记录**来源 hash**；实测快照**与生产逐字节相同** | **R-3/R-4** | **10/10** 记录 `iso/checkout_scripts/<file>` → 64-hex；**10/10** 快照的 `model_registry.py` 重算 == 生产锚点 **`9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f`** |
+
+**`overall = PASS`，`exit = 0`。** 追认句「**各批实测快照与生产逐字节相同**」**不是声明、是实测**。
+
+**`M24/binding.json:11` 的原文即追认句的逐字实现**：*"I-00-B does not materialise a checkout tree; it binds the isolation plan and the two-stage command rule. This attempt therefore materialises its own read-only snapshot (`iso/checkout_scripts`) and records the production hashes it was copied from."* ⇒ **该职责划分是各 attempt 自己先写下的，owner 只是追认它。**
+
+**为何不把追认写进 I-00-B 自己的目录**：owner 的裁定是「**书面追认**」。在 I-00-B attempt 的**冻结件**里写入，会**事后改变 reviewer 被要求审的东西**（该 attempt 已验收）——**追认的正确载体是编排层的记录，不是被追认的 attempt 自己的证据目录**。与 **T1-14**「`binding.json` 是冻结件，写入会改变 reviewer 要审的对象」**同一理由**。
+
+**⚠️ 如实登记的限度**：R-2/R-3/R-4 抽查**复核者点名的 10 张**，**未穷举全计划每一张卡**。追认句说「**各 attempt**」；本卡证明的是**被点名的这些成立**，**更强的「所有 attempt 皆成立」未被本方法证明**。限度写入 JSON `limits` 字段 —— **声称不得多于方法所能支持**。
+
+**产物**：`decision.md`（5906 B / `5cce4c83…`）、`t20_binding_scope_ratification.json`（3858 B / `c002d2d0…`）、`handoff.json`（`103c613e…`）、`scripts/verify_t20.py`（9298 B / `875cdb1e…`）。**边界**：**被追认载体写入 0 次**（I-00-B `binding.json`、全部 M 卡 `binding.json`、全部 `iso/` 快照均未改）；**未重跑 B/C/E**；**未产生新证据世代**；未做 `status` 转移；未代签；产品文件 **0 条**；全部 JSON 可解析且登记哈希**零失配**。

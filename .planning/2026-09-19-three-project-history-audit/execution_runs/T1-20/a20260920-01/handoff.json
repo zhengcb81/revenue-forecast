@@ -1,0 +1,65 @@
+{
+  "card": "T1-20",
+  "attempt": "a20260920-01",
+  "kind": "written_ratification_and_verification",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 T1-20",
+    "tier": "TIER-1",
+    "ruling": "written ratification: materialisation is done by each attempt and records the source hash (each batch's measured snapshot is byte-identical to production)",
+    "owner_text": "书面追认：「物化由各 attempt 完成并记录来源 hash」（各批实测快照与生产逐字节相同）。"
+  },
+  "origin": {
+    "raised_by": "independent reviewer",
+    "recorded_at": "execution_runs/M17-M20/a20260919-01/batch_handoff.md:68-71",
+    "finding": "I-00-B's binding.json binds only isolated_binding_plan and command_binding_rule; it has no checkout path and no materialised-copy hash, while card text at M17-M20 line 49 says 'read the isolated checkout from I-00-B'.",
+    "reviewer_options": [
+      "(a) owner ratifies in writing that materialisation is per-attempt and records the source hash",
+      "(b) re-run B/C/E so I-00-B actually materialises a checkout"
+    ],
+    "option_taken": "a",
+    "why_option_a": "Option (b) would re-run three already-sealed attempts, creating a new evidence generation and invalidating existing hash registrations, while the measured code bytes are identical. Burning high-risk means on a pure documentation gap is the wrong trade; option (a) only requires describing the existing, already-verified division of labour truthfully."
+  },
+  "deliverable": {
+    "conclusion": "the ratified sentence is true on disk; this card issues the ratification record and proves the three halves",
+    "ratification_text": "I-00-B binds the isolation plan and the two-stage command rule; it does not materialise a checkout tree. Materialisation is performed by each attempt, which materialises its own read-only snapshot (iso/checkout_scripts) and records the production hashes it was copied from. Each attempt's measured snapshot is byte-identical to production.",
+    "artifacts": [
+      {"path": "decision.md", "bytes": 5906, "sha256": "5cce4c83e9fa30631c7311265a461f36d77bdf655bb247ca66fb609b0d4aa606"},
+      {"path": "t20_binding_scope_ratification.json", "bytes": 3858, "sha256": "c002d2d054944c2e1e3b9a5b72bdfb94d18a9026845b43befd95417a0bf8c2a5"},
+      {"path": "scripts/verify_t20.py", "bytes": 9298, "sha256": "875cdb1e179d0a449922f3bdbd16fe612978e978887d4908302f564bfcbbbdb9"}
+    ]
+  },
+  "verification_summary": {
+    "overall": "PASS",
+    "exit_code": 0,
+    "propositions": {
+      "R-1": {"claim": "the factual basis holds: I-00-B binds the plan but contains no checkout path and no materialised-copy hash", "holds": true},
+      "R-2": {"claim": "each affected attempt materialises its own read-only snapshot", "holds": true, "evidence": "10/10 cards have iso/checkout_scripts"},
+      "R-3": {"claim": "each affected attempt records the source hash it copied from", "holds": true, "evidence": "10/10 cards record iso/checkout_scripts/<file> -> 64-hex"},
+      "R-4": {"claim": "the recorded snapshots equal production byte-for-byte", "holds": true, "evidence": "10/10 snapshots' model_registry.py recompute to 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f, the production anchor"}
+    }
+  },
+  "key_findings": [
+    "F-T20-1: the ratification's premise is true - I-00-B binds the isolation plan and the two-stage command rule, has no checkout path, and its only 64-hex strings are source_anchors_sha256 (anchors, not copies).",
+    "F-T20-2: all 10 affected cards (M13, M14, M17-M24) materialise their own iso/checkout_scripts snapshot; the ratified division of labour is real.",
+    "F-T20-3: all 10 record the production hashes they copied from, and every snapshot's model_registry.py recomputes to the production anchor 9ec65295..., so 'byte-identical to production' is measured, not asserted.",
+    "F-T20-4: M24/binding.json:11 already carries the ratification sentence verbatim in English - the per-attempt materialisation note was written by the attempts themselves before the owner ratified it."
+  ],
+  "limits": [
+    "R-2/R-3/R-4 sample the 10 cards the reviewer named. They do not exhaustively prove the stronger claim 'every attempt in the plan does this'. The ratified sentence says 'each attempt'; what is proven is that it holds for the named attempts. Claiming more than the method supports is the overreach this project's discipline forbids."
+  ],
+  "boundaries": {
+    "ratified_carriers_written": 0,
+    "i00b_binding_json_modified": false,
+    "m_card_binding_json_modified": false,
+    "iso_snapshots_modified": false,
+    "bce_reruns_performed": 0,
+    "new_evidence_generations_created": 0,
+    "status_transitions_performed": 0,
+    "signatures_forged": false,
+    "product_files_changed": [],
+    "all_json_parseable": true
+  },
+  "why_not_write_the_ratification_into_i00b": "The owner's ruling is a written ratification. Writing it into I-00-B's attempt directory would post-hoc change what the reviewer was asked to review - that attempt is already accepted. The correct carrier of a ratification is the orchestrator's record, not the ratified attempt's own evidence directory. Same reason as T1-14 (binding.json is a frozen artifact under review_pending).",
+  "next_action": "commit this card; no carrier was written and no re-run was performed"
+}
