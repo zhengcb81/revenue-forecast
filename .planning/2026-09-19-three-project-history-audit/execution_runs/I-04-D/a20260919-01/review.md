@@ -34,7 +34,7 @@
 6. `evidence/run/<case>/summary.json` — **19 例调度器主证据**（`I04D-CASE-F-L5`、`F-L6`、`F-L6b`、`F-L7`、`F-L7b`、`F-L7c`、`F-L8a-W1`、`F-L8a-W1b`、`F-L8b-W2`、`F-L8c-W4`、`F-L8d`、`F-L8g-UNKNOWN`、`F-L8h-WRITEFAIL`、`F-L9a`、`F-L9c`、`F-LK-TIMEOUT`、`F-LK-TIMEOUT-ZERO`、`F-LK-HOLDER-CRASH`、`F-LK-NEVER-UNLINK`）；同目录还有 `report.<tag>.json`、`worker.jsonl`、`worker_state.json`，两个有诊断的案例另有 `hook-probe.log`，以及每例 wiki 树。
 7. `oracle.md` 的**追加区 `# 追加 R1`**（第 294–367 行；冻结正文第 1–290 行未改）—— 实施逼出的两处"设计沉默处"显式化：**R1-3**（R4 接管必须同时要求"同一进程世系"与该世系可证死亡）与 **R1-4**（存活的第三方 owner 归 ADR-9b"加入"，不归 R5"拒绝"）、R1-5（崩溃用例实测表）、R1-6（变异未做）、R1-7（套件 18/3 的诚实状态）。这两条正是 §5(c) 与 §5(d) 的攻击点，**必须先读**。当前 `oracle.md` 367 行，sha256 `f8f648da17b05cd6b3a2699a265e765a3d7e088e4e585e3657ca24e41adbe68b`（注意 `evidence/hashes.txt` 里记的是追加前的 `e2b9029f…b690`，两个都对，只是时点不同）。
 8. `commands.json` — 本 attempt 的命令登记表：8 条已跑命令的 argv/cwd/`expected_returncode`/`raw_returncode`/产物，另有 `not_run` 里的变异证明（未跑）。已核对：7 条 raw==expected，唯一不一致的是 `I04D-06-t-filing-green`（expected 0 / raw 1）。
-9. `changes.diff` — iso/ 相对 I-04-B 基线的完整 delta（179449 bytes；added=4 removed=0 modified=1；路径为 attempt 根的 POSIX 相对路径，**不含任何生产仓文件**）。生成命令 `I04D-07-changes-diff`（`scratch/make_diff.py`，rc=0）。
+9. `changes.diff` — iso/ 相对 I-04-B 基线的完整 delta（180917 bytes；added=4 removed=0 modified=1；路径为 attempt 根的 POSIX 相对路径，**不含任何生产仓文件**）。生成命令 `I04D-07-changes-diff`（`scratch/make_diff.py`，rc=0）。
 10. `handoff.json` — 九步、命令与原始/期望退出码、`measured_results`、`carries_disposition`、`not_granted`。
 11. `recovery/README.md` — 回滚/恢复配方（含 scratch-only 变异配方与 pid 处置规则）。
 12. `scratch/REPORT.md` — 同级实现者摘要（说明 `decision.md` 应由并行 agent 产出；见 §5(m)）。
@@ -166,7 +166,7 @@
 - **不授予真实 provider / 真实 company-wiki worker / 真实 catalog / 网络资格**：fake worker 只改一个 JSON 文件。
 - **不授予"用户在我们 scope 中按下暂停会被保护"的资格**：`pause_origin` 缺失（carry 4，跨仓依赖，company-wiki `control.py` 无来源信号，只做只读检查）。
 - **不授予 I-04-E 的任何结论**：本卡只登记它需要的字段名。
-- **不授予 `decision.md` 所述内容与 `changes.diff` 的资格**：`decision.md` 在本 attempt 未产出（§5(i)），其对 R4/ADR-9b 的"正式登记"缺失；`changes.diff` 已产出（179449 bytes，added=4 removed=0 modified=1，只覆盖 iso/），但**未经 reviewer 复算**，其"仅 allowlist 内改动"的结论仍待直读确认。
+- **不授予 `decision.md` 所述内容与 `changes.diff` 的资格**：`decision.md` 在本 attempt 未产出（§5(i)），其对 R4/ADR-9b 的"正式登记"缺失；`changes.diff` 已产出（180917 bytes，added=4 removed=0 modified=1，只覆盖 iso/），但**未经 reviewer 复算**，其"仅 allowlist 内改动"的结论仍待直读确认。
 - **不授予 13 条负例全部通过的资格**：§4 已逐条标注证据状态（6 条实测、4 条部分、3 条无原始记录）。
 - **不授予生产路径语义同源资格**：iso 基线是 I-04-B 的 iso 产物，生产仍是 `max(10.0, …)`（binding.json ADR-6 依赖声明）。
 

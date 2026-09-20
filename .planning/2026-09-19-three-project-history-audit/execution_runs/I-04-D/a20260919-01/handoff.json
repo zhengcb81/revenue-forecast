@@ -51,14 +51,14 @@
   "iso_new_test_test_fetch_filing_lease_py": "097d9e84ed205fd1c80546830fdc1f8e96aceed4ee28ee927ddc7b6100b8127b",
   "patch_generator": "scratch/patch_i04d.py @ a730362caa3f7d136a4a074cefd120da557157b4ace5e561b1f1a4929191d46b (idempotent; refuses to patch unless the baseline hash matches)",
   "before_i04d_red_txt": "ff6e526fd260b343dd8af24ff777a80c2b2f4f56665c4bd98f9499dd67b0e92f",
-  "after_i04d_green_txt": "fd9497716293a35d12967cadee52ca33493fa8efedbb31e15b928bed25e56127",
+  "after_i04d_green_txt": "f8220c7d29c8a35d12967cadee52ca33493fa8efedbb31e15b928bed25e56127",
   "before_00_git_heads_txt": "e6de9955703db4e5aa4636c38b08221ae94a761ece93042f380f180dabc3ea47",
   "before_01_anchor_hashes_txt": "3a1e5e686980763b2e68685cc9ac0c1a1b8fdfaa2e3669186cedc9fb56b09632",
   "before_02_catalog_invariant_txt": "89f33862e48fd58bcfd6eddd2fb697a3011214f48f1b9fa29864db5faaa5ceb2",
   "oracle_md_current_sha256_after_R1_append": "f8f648da17b05cd6b3a2699a265e765a3d7e088e4e585e3657ca24e41adbe68b (367 lines; 追加区 R1 在实施后加入，冻结正文未改)",
   "commands_json_sha256": "8e864c5e6f4f64e49d14e721e58cbc6ed992cb640571d9076175c0ca905bef6d",
   "changes_diff_sha256": "7fdb0c27adb7cfb32872a8de63fff8399ab2d76e17eb4629f40b25cf19ca93fd",
-  "changes_diff_summary": "179449 bytes；added=4 removed=0 modified=1（4 个新增 = i04d_fake_worker.py / i04d_participant.py / i04d_schedule.py / tests/test_fetch_filing_lease.py；1 个修改 = scripts/fetch_filing.py dc593a75cae9 -> 5ac2a50a847c）；差分只覆盖 iso/，不含生产仓",
+  "changes_diff_summary": "180917 bytes；added=4 removed=0 modified=1（4 个新增 = i04d_fake_worker.py / i04d_participant.py / i04d_schedule.py / tests/test_fetch_filing_lease.py；1 个修改 = scripts/fetch_filing.py dc593a75cae9 -> 5ac2a50a847c）；差分只覆盖 iso/，不含生产仓",
   "evidence_hashes_txt_sha256_current": "fa4a39a1b996021b3f60afe7294d5d467a5d241be51048804c6ae3c99b178c2d (hashes.txt 在追加产物后已由并行 agent 更新；以盘上文件为准)",
   "hash_manifest_note": "evidence/hashes.txt 在 4:47 被更新过，其中 oracle.md 一行记的是追加 R1 之前的 hash e2b9029ff…b690；盘上当前 oracle.md 的 hash 见 oracle_md_current_sha256_after_R1_append。两者都对，只是时点不同。",
   "hash_manifest": "evidence/hashes.txt",
@@ -177,7 +177,7 @@
    "expected_returncode": 0,
    "expected_business_result": "RED 时 17 failed 的套件应变绿",
    "observed": "18 passed, 3 failed；3 个失败是 harness 的顺序敏感快照断言，不是协议失败（同用例在调度器层通过）",
-   "raw_log": "after/i04d-green.txt (sha256 fd9497716293a35d12967cadee52ca33493fa8efedbb31e15b928bed25e56127)",
+   "raw_log": "after/i04d-green.txt (sha256 f8220c7d29c8a35d12967cadee52ca33493fa8efedbb31e15b928bed25e56127)",
    "note": "expected_returncode 与 raw_exit_code 不一致：这是本卡唯一一处未达预期退出码的命令，已在 review.md §3/§5(a) 公开为待攻击点。"
   },
   {
@@ -189,7 +189,7 @@
    "network": "disabled",
    "raw_exit_code": 0,
    "expected_returncode": 0,
-   "expected_business_result": "changes.diff 179449 bytes；added=4 removed=0 modified=1；不含任何生产仓文件"
+   "expected_business_result": "changes.diff 180917 bytes；added=4 removed=0 modified=1；不含任何生产仓文件"
   },
   {
    "id": "I04D-08-hashes",
@@ -359,3 +359,20 @@
 
  "not_granted_summary": "见上方 not_granted 数组（FACTS §8 的完整清单：无 mutation proof、POSIX 分支未跑、无真实 worker/catalog/provider/网络、生产仓字节未动）。"
 }
+
+## r2 更正（追加；不得改写上文既有字节）
+
+- **F7 更正**：上文中若干处声称 `decision.md` 不存在 —— 那是**时序误判**。该文件实际存在，
+  写于 03:50:35，**早于** `review.md`/`handoff.json` 约一小时；当时那份 31332 B /
+  `c3b8633615f1df60c5abab206fef1a5de3ae892555b22443d5d32f1c771ac8aa` 的副本就是交付版。
+  carry 2 / carry 6 / R4 世系登记**都有正式落点**。
+- **R1-9 的缺陷**（释放路径 R5 兜底格把"存活第三方 owner"当成可 resume）已修复，
+  缺陷台账因此是 **10 条**，不是 9 条。
+- **封盘纪律（reviewer 要求）**：宣布完成后**不再写入 attempt 目录**；此后再写入即判定本轮
+  失效，需重新点审。本轮返工（r2）完成时以本文件末尾的 `sealed_at` 与 `final_hashes` 封盘。
+- **编码声明**：`evidence/negative-case-*.txt` 为 **UTF-16LE**（PowerShell 5.1 重定向默认），
+  读取时请指定该编码。
+- **pid 边界**：`participants.<tag>.pid` 是 venv **启动器** pid（reviewer 实测启动器 37284 对
+  子进程 18548），所以"只 kill 已记录 pid"的准确含义是"只 kill 该启动器进程树"。
+- **HEAD 漂移**：`binding.json` 的 revenue-forecast `1ac01f0` 是**绑定时**捕获值；本次返工收尾
+  又观察到 `569d113e`，下一卡必须重新绑定。
