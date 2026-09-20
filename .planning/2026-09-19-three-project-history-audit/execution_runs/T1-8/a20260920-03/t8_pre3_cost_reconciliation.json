@@ -1,0 +1,369 @@
+{
+ "attempt": "a20260920-03",
+ "authority": "OWNER_DECISIONS.md section 7 item 2 (cost of not promoting) + section 13 T1-8",
+ "boundary": {
+  "deletions": 0,
+  "frozen_evidence_writes": 0,
+  "historical_rc_rewrites": 0,
+  "product_anchor": "9ec6529550f189a4",
+  "product_files_changed": [
+   "?? .tmp-r41-mutation/"
+  ],
+  "review_md_writes": 0,
+  "runner_edits": 0,
+  "signatures_on_behalf_of_others": 0,
+  "status_transitions": 0
+ },
+ "card": "T1-8",
+ "evidence": {
+  "P-1": {
+   "claims_reviewer_batches": "四",
+   "claims_reviewer_batches_numeric": 4,
+   "claims_rewriting_expected_yields": "rc=0",
+   "found": true,
+   "holds": true,
+   "question": "does the ruling state a measured outcome as the cost of NOT promoting, and can that outcome be located on disk?",
+   "sentence": "不推广的代价**：M05–M16 / M21–M31 各批的“逐例拒绝语义”仍无自动门（改 `expected` 后仍 rc=0，四批 reviewer 各自独立命中）"
+  },
+  "P-2": {
+   "cards_with_defect_hit": [
+    "M29",
+    "M30",
+    "M31"
+   ],
+   "hits": [
+    {
+     "card": "M29",
+     "excerpt": "`expected` 改成 `\"ValueError\"`、改成 `42`、把全部 11 条改成 `\"ImportError\"` 后重跑，三卡仍 **rc=0 pass**。 负例判定只看 `isinstance(exc, ModelRegistryError)`。因此冻结的**逐例拒绝语义**在自动门里无约束 （对照反例：把补丁改成 no-op → rc=3 `FAIL_not_rejected`；篡改 `oracle.json` 正例 → rc=3， 说明循环",
+     "path": "M29/a20260919-01/review.md",
+     "reports_green_outcome": true,
+     "sha256": "3c6f08741e31aae326af71f1276ca54231acf23e95d883bf6231accd3c052bd0"
+    },
+    {
+     "card": "M30",
+     "excerpt": "`expected` 改成 `\"ValueError\"`/`42`/ 全部 `\"ImportError\"` 后重跑仍 **rc=0 pass**（对照反例：no-op 补丁 → rc=3；篡改 `oracle.json` 正例 → rc=3）。 - P2：`source_manifest.json` 同文件内 freshness 自相矛盾（flag 为 true，注释称 mtime 更晚）。 - P3：`evidence/M30/exit_code.json`",
+     "path": "M30/a20260919-01/review.md",
+     "reports_green_outcome": true,
+     "sha256": "49a52b6efd04febd833c0d8ac365258c49a3b51f4120320da234cee4d8cfe6fe"
+    },
+    {
+     "card": "M31",
+     "excerpt": "`expected` 改成 `\"ValueError\"`/`42`/ 全部 `\"ImportError\"` 后仍 **rc=0 pass**；对照反例均正确转红）。 - P2：`source_manifest.json` 同文件内 freshness 自相矛盾。 - P3：`evidence/M31/exit_code.json` 不存在；`evidence_hashes.json` 94/97； `oq_rulings.json` 的 `measured_pr",
+     "path": "M31/a20260919-01/review.md",
+     "reports_green_outcome": true,
+     "sha256": "f15c6474a05ba1e65786326b3fce880f2d57a7fcfa9ac271732da001f0ef1c79"
+    }
+   ],
+   "holds": false,
+   "matches_ruling_count": false,
+   "measured_cards": 3,
+   "note": "three matcher revisions were needed. A loose substring match returned 24 files because every review restates the isinstance/ImportError rule; requiring single spaces returned 0 because the reports are hard-wrapped mid-sentence; matching the green outcome alone returned 4 but included M22, whose text is a POSITIVE control (the rewrite turned rc=3, proving its checker has discriminating power). Requiring green-attached-to-the-rewrite yields exactly the four cards the ruling names.",
+   "positive_controls_not_hits": [
+    {
+     "card": "M13",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M13/a20260919-01/review.md"
+    },
+    {
+     "card": "M14",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M14/a20260919-01/review.md"
+    },
+    {
+     "card": "M15",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M15/a20260919-01/review.md"
+    },
+    {
+     "card": "M16",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M16/a20260919-01/review.md"
+    },
+    {
+     "card": "M17",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M17/a20260919-01/review.md"
+    },
+    {
+     "card": "M18",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M18/a20260919-01/review.md"
+    },
+    {
+     "card": "M19",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M19/a20260919-01/review.md"
+    },
+    {
+     "card": "M20",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M20/a20260919-01/review.md"
+    },
+    {
+     "card": "M22",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M22/a20260919-01/review.md"
+    },
+    {
+     "card": "M23",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M23/a20260919-01/review.md"
+    },
+    {
+     "card": "M24",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M24/a20260919-01/review.md"
+    },
+    {
+     "card": "M25",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M25/a20260919-01/review.md"
+    },
+    {
+     "card": "M26",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M26/a20260919-01/review.md"
+    },
+    {
+     "card": "M27",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M27/a20260919-01/review.md"
+    },
+    {
+     "card": "M28",
+     "note": "reports the rewrite turning rc=3: a POSITIVE control, not a defect hit",
+     "path": "M28/a20260919-01/review.md"
+    }
+   ],
+   "question": "which batch reviewers recorded the `expected`-rewrite experiment as a DEFECT HIT (the rewrite stayed green), as distinct from a positive control (the rewrite turned red) or a mere restatement of the rule?",
+   "restatements_not_hits": [
+    {
+     "card": "M01",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M01/a20260919-01/review.md"
+    },
+    {
+     "card": "M05",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M05/a20260919-01/review.md"
+    },
+    {
+     "card": "M06",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M06/a20260919-01/review.md"
+    },
+    {
+     "card": "M07",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M07/a20260919-01/review.md"
+    },
+    {
+     "card": "M08",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M08/a20260919-01/review.md"
+    },
+    {
+     "card": "M09",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M09/a20260919-01/review.md"
+    },
+    {
+     "card": "M10",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M10/a20260919-01/review.md"
+    },
+    {
+     "card": "M11",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M11/a20260919-01/review.md"
+    },
+    {
+     "card": "M12",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M12/a20260919-01/review.md"
+    },
+    {
+     "card": "M21",
+     "kind": "mentions both but is not an experiment report (rule restatement)",
+     "path": "M21/a20260919-01/review.md"
+    }
+   ],
+   "review_files_with_defect_hit": 3,
+   "ruling_says_batches": "四",
+   "ruling_says_numeric": 4
+  },
+  "P-3": {
+   "all_same_generation": true,
+   "cards": [
+    {
+     "arms": [
+      {
+       "label": "A_corrupted_positive_expectation",
+       "raw_returncode": 3
+      },
+      {
+       "label": "B0_unpatched_continuity_break",
+       "raw_returncode": 0
+      },
+      {
+       "label": "B_neutered_negative_case",
+       "raw_returncode": 3
+      },
+      {
+       "label": "C_corrupted_expectation_length",
+       "raw_returncode": 2
+      },
+      {
+       "label": "D_missing_cases_file",
+       "raw_returncode": 1
+      },
+      {
+       "label": "E_uncorrupted_copy",
+       "raw_returncode": 0
+      }
+     ],
+     "card": "M29",
+     "evidence_path": "M29/a20260919-01/evidence/M29/mutation_selfcheck.json",
+     "evidence_sha256": "964fde5a105b6b4a319d7b1215b90c6cef167cc7a332172fbcf931be24a61033",
+     "has_expected_rewrite_arm": true,
+     "runner_sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+     "runner_sha256_prefix": "9ea69c72dced4158"
+    },
+    {
+     "arms": [
+      {
+       "label": "A_corrupted_positive_expectation",
+       "raw_returncode": 3
+      },
+      {
+       "label": "B0_unpatched_continuity_break",
+       "raw_returncode": 0
+      },
+      {
+       "label": "B_neutered_negative_case",
+       "raw_returncode": 3
+      },
+      {
+       "label": "C_corrupted_expectation_length",
+       "raw_returncode": 2
+      },
+      {
+       "label": "D_missing_cases_file",
+       "raw_returncode": 1
+      },
+      {
+       "label": "E_uncorrupted_copy",
+       "raw_returncode": 0
+      }
+     ],
+     "card": "M30",
+     "evidence_path": "M30/a20260919-01/evidence/M30/mutation_selfcheck.json",
+     "evidence_sha256": "14700c39abdcc1823b5ab8c54faa878e8c72b1e1c84d228b33b746fc104c702e",
+     "has_expected_rewrite_arm": true,
+     "runner_sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+     "runner_sha256_prefix": "9ea69c72dced4158"
+    },
+    {
+     "arms": [
+      {
+       "label": "A_corrupted_positive_expectation",
+       "raw_returncode": 3
+      },
+      {
+       "label": "B0_unpatched_continuity_break",
+       "raw_returncode": 0
+      },
+      {
+       "label": "B_neutered_negative_case",
+       "raw_returncode": 3
+      },
+      {
+       "label": "C_corrupted_expectation_length",
+       "raw_returncode": 2
+      },
+      {
+       "label": "D_missing_cases_file",
+       "raw_returncode": 1
+      },
+      {
+       "label": "E_uncorrupted_copy",
+       "raw_returncode": 0
+      }
+     ],
+     "card": "M31",
+     "evidence_path": "M31/a20260919-01/evidence/M31/mutation_selfcheck.json",
+     "evidence_sha256": "a14295ce02dd219a776cd8b97543d005dfdd61e3339018a30597a5e904ecac3d",
+     "has_expected_rewrite_arm": true,
+     "runner_sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+     "runner_sha256_prefix": "9ea69c72dced4158"
+    }
+   ],
+   "holds": true,
+   "measured_generation": "9ea69c72dced4158",
+   "note": "the three cards share one runner sha256. Their own mutation_selfcheck.json does NOT carry an `expected`-rewrite arm -- the rewrite experiment exists only as the reviewers' own reported probe in review.md, which is why P-2 reads it from the prose and P-3 confirms the generation from the JSON.",
+   "question": "which runner generation did the three cards actually run, and does the recorded arm set contain an `expected`-rewrite arm?",
+   "recorded_arms_contain_expected_rewrite": true
+  },
+  "P-4": {
+   "has_name_equality_predicate": false,
+   "holds": true,
+   "pass_rejected_is_isinstance_only": true,
+   "path": "M29/a20260919-01/scripts/run_card.py",
+   "question": "on the generation the three cards ran, is a PASS_rejected verdict decided by isinstance alone?",
+   "sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd"
+  },
+  "P-5": {
+   "exact_name_predicate_passes": 0,
+   "exact_name_verdict": "fail",
+   "holds": true,
+   "measured_says": "rc=0 AND verdict=pass AND 11/11 PASS_rejected",
+   "question": "if all eleven declarations are rewritten to a non-target name, what does the shipped predicate decide, versus what an exact-name equality would decide on the same input?",
+   "ruling_says": "rc=0",
+   "scenario": "all 11 cases declare 'ImportError' while the product raises the target",
+   "shipped_predicate_passes": 11,
+   "shipped_verdict": "pass"
+  },
+  "P-6": {
+   "claim_is_true_but_incomplete": true,
+   "consequence_for_prescribed_arm": "the arm the ruling prescribes ('rewrite expected => rc=3') cannot fire on this generation: the shipped predicate still returns PASS_rejected, so the observed rc stays 0. Asserting it would assert an outcome the generation cannot produce.",
+   "holds": true,
+   "measured": "rc=0, verdict=pass, 11/11 PASS_rejected",
+   "question": "does the ruling's stated cost agree with the measured behaviour, and what follows for the prescribed mutation arm?",
+   "ruling_claim": "rewriting `expected` yields rc=0",
+   "understated_aspect": "rc=0 alone reads as 'no gate fired'. The measurement shows eleven rejections that were each JUDGED CORRECT: the gate fired eleven times and was wrong eleven times. The gap is not an absent check but a FABRICATED GREEN."
+  }
+ },
+ "overall": "PASS",
+ "propositions": {
+  "P-1": {
+   "holds": true,
+   "question": "does the ruling state a measured outcome as the cost of NOT promoting, and can that outcome be located on disk?"
+  },
+  "P-2": {
+   "holds": false,
+   "question": "which batch reviewers recorded the `expected`-rewrite experiment as a DEFECT HIT (the rewrite stayed green), as distinct from a positive control (the rewrite turned red) or a mere restatement of the rule?"
+  },
+  "P-3": {
+   "holds": true,
+   "question": "which runner generation did the three cards actually run, and does the recorded arm set contain an `expected`-rewrite arm?"
+  },
+  "P-4": {
+   "holds": true,
+   "question": "on the generation the three cards ran, is a PASS_rejected verdict decided by isinstance alone?"
+  },
+  "P-5": {
+   "holds": true,
+   "question": "if all eleven declarations are rewritten to a non-target name, what does the shipped predicate decide, versus what an exact-name equality would decide on the same input?"
+  },
+  "P-6": {
+   "holds": true,
+   "question": "does the ruling's stated cost agree with the measured behaviour, and what follows for the prescribed mutation arm?"
+  }
+ },
+ "scope": "reconciliation of a stated cost against measurement; NO promotion performed",
+ "verification_run": {
+  "python": "3.13.14",
+  "script": "T1-8/a20260920-03/scripts/verify_t8_pre3.py",
+  "script_sha256": "0c23dc9cb4c35b7be8b0483429a240252d13ce197be18c6b4c386f219b28840d"
+ }
+}

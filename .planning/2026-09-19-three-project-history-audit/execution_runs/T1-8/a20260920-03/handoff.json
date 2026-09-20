@@ -1,0 +1,269 @@
+{
+ "artefacts": [
+  {
+   "bytes": 20904,
+   "path": "scripts/verify_t8_pre3.py",
+   "sha256": "0c23dc9cb4c35b7be8b0483429a240252d13ce197be18c6b4c386f219b28840d"
+  },
+  {
+   "bytes": 14693,
+   "path": "t8_pre3_cost_reconciliation.json",
+   "sha256": "fe77d938068707d5726a13bfbf3cca5c28d7c5dd4ada75251239a150624cc8be"
+  },
+  {
+   "bytes": 13470,
+   "path": "decision.md",
+   "sha256": "90e80565fe4ff1d30df3dbd788010e047e08b6dcb1c6147c8477b37cd8c80d9d"
+  },
+  {
+   "bytes": 1211,
+   "path": "append_only_proof_round59.json",
+   "sha256": "0a89e8ee39e31f50f54ff649d19c2aa6a52ff24078ab4d2f4f117cabd793f080"
+  }
+ ],
+ "attempt": "a20260920-03",
+ "authority": {
+  "document": "OWNER_DECISIONS.md",
+  "promotion_performed": false,
+  "promotion_permitted_now": false,
+  "sections": [
+   "7 item 2 (the cost of NOT promoting)",
+   "13 T1-8 (TIER-1)"
+  ]
+ },
+ "boundary": {
+  "deletions": 0,
+  "frozen_evidence_writes": 0,
+  "historical_rc_rewrites": 0,
+  "product_anchor": "9ec6529550f189a4",
+  "product_anchor_unchanged": true,
+  "product_files_changed": [],
+  "product_files_changed_note": "`git status --porcelain -- . ':(exclude).planning'` reports exactly one entry, `?? .tmp-r41-mutation/` -- a pre-existing T1-5 scratch tree, untouched and undeleted by this card.",
+  "review_md_writes": 0,
+  "runner_edits": 0,
+  "signatures_on_behalf_of_others": 0,
+  "status_transitions": 0
+ },
+ "card": "T1-8",
+ "closure_addendum": {
+  "defect": {
+   "character": "an unintended write-back to frozen evidence; unintended or not, the effect is the same as a deliberate one -- the round-58 pre-image was erased",
+   "correction_of_my_own_earlier_reading": "last round I explained the resulting `pre_image_constant_reproduced = false` away as 'expected behaviour, not a defect'. That CONCLUSION was right (append-onlyness was in fact intact) but the ATTRIBUTION was incomplete: the real defect was that the file should never have been overwritten at all, not merely that a constant had gone stale.",
+   "file": "execution_runs/T1-8/a20260920-02/append_only_proof_round58.json",
+   "observed": "on disk it held round 59's figures; git status showed ' M ' against a committed file",
+   "root_cause": "the previous round's proof script hard-coded ITS OWN output path to the round-58 filename, so reusing that script for round 59 overwrote the round-58 evidence"
+  },
+  "new_guard_and_its_own_bug": {
+   "first_version_bug": "the guard searched the RAW TEXT for 'round59' / 'ROUND 59', but its own output spells the fact as `\"round\": 59` -- a space and two quotes away. It therefore rejected its own output.",
+   "fix": "parse the JSON and read the `round` / `target` fields; refuse to write if unparseable",
+   "generalisation": "a guard must itself be tested for FALSE POSITIVES (positive sample) and for DISCRIMINATION (negative sample). A guard that always passes and a guard that always refuses behave IDENTICALLY under the positive test.",
+   "lesson": "when the fact under test has a definite STRUCTURAL position in a file, the judge must read that position, not its spelling. This is the same family as lesson 15 ('a change of spelling is not a change of shape'); here it is 'reading the spelling is not reading the shape'.",
+   "purpose": "refuse to write a round's proof into a path that records a DIFFERENT round",
+   "tests_run": {
+    "negative_discrimination": "forcing round 60 into round 59's file -> exit=1, file untouched  OK",
+    "positive_idempotence": "same-round rerun -> identical sha256  OK"
+   }
+  },
+  "remedy": [
+   "restored append_only_proof_round58.json to its HEAD pre-image via `git show HEAD:<path>` (NOT `git checkout --`, which would have disturbed the rest of the working tree); verified with an empty `git diff`",
+   "created a separate append_only_proof_round59.json INSIDE this card's own directory",
+   "parameterised the script as .planning/_pwf_tmp/verify_append_only.py (--round / --out / --attempt / --expect-bytes / --expect-sha256); default output path is round-specific; a missing constant is recorded as null rather than as a false negative",
+   "kept the original script in place -- nothing was deleted"
+  ],
+  "round58_proof_restored_sha256": "26d811612d0d748ca70ef73829c5af547d1dadc0d9ae11bfafe4e47812dce842",
+  "round59_proof": {
+   "APPEND_ONLY": true,
+   "idempotence": "repeated runs give the identical sha256 (0a89e8ee39e31f50f54ff649d19c2aa6a52ff24078ab4d2f4f117cabd793f080)",
+   "path": "append_only_proof_round59.json",
+   "post_image_bytes": 141422,
+   "post_image_sha256": "e9d29a90e50234c4297d128729b6736fcf04e20647d3dc62fa9e22878bf051b1",
+   "pre_image_bytes": 133308,
+   "pre_image_constant_reproduced": true,
+   "pre_image_sha256": "f4dbd83b8a24d1a57e1158e9c9483fafa1a698ae449fd91dbcc47b767ad254b4",
+   "route_1_difflib": {
+    "deleted_chars": 0,
+    "inserted_chars": 4600,
+    "opcodes": [
+     "equal",
+     "insert"
+    ]
+   },
+   "route_2_raw_prefix": {
+    "common_prefix_bytes": 133308,
+    "prefix_is_the_entire_pre_image": true
+   }
+  },
+  "series_lesson": "this project's judge-mismatch series now reads: #6 face, #11 separability != same code, #12 no-op, #13 guards must be fatal not noisy, #14 totality, #15 byte domain / spelling, #16 DIRECTION, #17 SCOPE, #18 reading-spelling-vs-reading-structure.",
+  "why": "during closure, a check of the working tree showed that an ALREADY-COMMITTED proof file had been rewritten with this round's data"
+ },
+ "control_finding": {
+  "cards_with_defect_hit": [
+   "M29",
+   "M30",
+   "M31"
+  ],
+  "cards_with_defect_hit_count": 3,
+  "cards_with_positive_control": [
+   "M13",
+   "M14",
+   "M15",
+   "M16",
+   "M17",
+   "M18",
+   "M19",
+   "M20",
+   "M22",
+   "M23",
+   "M24",
+   "M25",
+   "M26",
+   "M27",
+   "M28"
+  ],
+  "cards_with_positive_control_count": 15,
+  "discrepancy": "the ruling counts four batches; three cards carry a defect hit",
+  "does_the_discrepancy_matter": "no -- it does not affect the substance (not promoting does have a cost). Recorded for accuracy only.",
+  "files_that_only_restate_the_rule": 10,
+  "measured_defect_hit_cards": 3,
+  "note": "M22 was initially mis-classified as a hit. Its text is a POSITIVE control: it reports the rewrite turning rc=3, i.e. proving its own checker HAS discriminating power. See matcher_revisions.",
+  "ruling_says_reviewer_batches": 4
+ },
+ "counterfactual": {
+  "exact_name_predicate": {
+   "of": 11,
+   "passes": 0,
+   "verdict": "fail"
+  },
+  "reading": "same input, same product behaviour, opposite verdicts -- this is the blind spot precondition (1) exists to close, quantified for the first time here",
+  "scenario": "all 11 cases declare 'ImportError' while the product raises the target exception",
+  "shipped_predicate": {
+   "of": 11,
+   "passes": 11,
+   "verdict": "pass"
+  }
+ },
+ "evidence": {
+  "cross_validation": {
+   "agreement": "the two independent routes agree",
+   "claim": "the defect-hit set coincides with the isinstance-only set",
+   "path_a": "a20260920-02 derived the predicate from the runner CODE TEXT",
+   "path_b": "this card derives it from reviewer PROSE about observed behaviour",
+   "value": "the change-2 classification is corroborated by evidence that never read the classification"
+  },
+  "defect_hits": [
+   {
+    "card": "M29",
+    "excerpt": "P2：`run_card.py` **从不比较** `cases.json[*].expected`。我把 NEG-CARD 的 `expected` 改成 `\"ValueError\"`、改成 `42`、把全部 11 条改成 `\"ImportError\"` 后重跑，三卡仍 **rc=0 pass**。负例判定只看 `isinstance(exc, ModelRegistryError)`。……（对照反例：把补丁改成 no-op → rc=3 `FAIL_not_rejected`；篡改 `oracle.json` 正例 → rc=3，说明循环本身对输入与 oracle 敏感，缺的只是\"错误类型/原因\"的绑定）",
+    "path": "M29/a20260919-01/review.md",
+    "runner_sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+    "section": "P2"
+   },
+   {
+    "card": "M30",
+    "excerpt": "P2：`run_card.py` 不比较 `cases.json[*].expected`。把逐例 `expected` 改成 `\"ValueError\"`/`42`/ 全部 `\"ImportError\"` 后重跑仍 **rc=0 pass**（对照反例：no-op 补丁 → rc=3；篡改 `oracle.json` 正例 → rc=3）。",
+    "path": "M30/a20260919-01/review.md",
+    "runner_sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+    "section": "P2"
+   },
+   {
+    "card": "M31",
+    "excerpt": "P2：`run_card.py` 不比较 `cases.json[*].expected`（把逐例 `expected` 改成 `\"ValueError\"`/`42`/ 全部 `\"ImportError\"` 后仍 **rc=0 pass**；对照反例均正确转红）。",
+    "path": "M31/a20260919-01/review.md",
+    "runner_sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+    "section": "P2"
+   }
+  ],
+  "predicate_of_that_generation": {
+   "consistent_with_change_2_classification": "M29-M31 was classified isinstance-only in a20260920-02",
+   "has_name_equality_predicate": false,
+   "pass_rejected_is_isinstance_only": true,
+   "path": "M29/a20260919-01/scripts/run_card.py"
+  },
+  "runner_generation_derived_from_json_not_prose": {
+   "M29": "9ea69c72dced4158",
+   "M30": "9ea69c72dced4158",
+   "M31": "9ea69c72dced4158",
+   "all_same_generation": true,
+   "method": "read runner_sha256 from each card's evidence/<CARD>/mutation_selfcheck.json",
+   "recorded_arm_returncodes": [
+    3,
+    0,
+    3,
+    2,
+    1,
+    0
+   ]
+  },
+  "the_arm_is_absent_from_the_cards_own_evidence": {
+   "has_expected_rewrite_arm_in_mutation_selfcheck": false,
+   "note": "the rewrite experiment exists only as the reviewers' own reported probe in review.md. That is why P-2 reads it from the prose and P-3 re-derives the generation from the JSON rather than trusting the prose."
+  }
+ },
+ "handoff_to_orchestration_layer": [
+  {
+   "id": "T1-8-pre1b-H1",
+   "item": "OWNER_DECISIONS.md section 7 item 2's parenthetical needs an append-only erratum (T1-12 (1) form; do NOT rewrite the text): '改 `expected` 后仍 rc=0' should read '改 `expected` 后仍 rc=0 且 verdict=pass、11/11 PASS_rejected -- 即拒绝逐条开火且被逐条判为正确，属伪造的绿，不是缺失的门'. Also suggest correcting '四批 reviewer' to three cards (M29/M30/M31).",
+   "performed_by_this_card": false
+  },
+  {
+   "id": "T1-8-pre1b-H2",
+   "item": "The promotion's mutation-arm acceptance criterion must be restated as 'observe rc=3', not 'observe rc=0'. On an isinstance-only batch the arm must turn the run RED; if it does not, the arm itself is inert. This is the same request as a20260920-02's handoff item 2 (the arm cannot fire on M25-M28 either) and should be issued together.",
+   "performed_by_this_card": false
+  },
+  {
+   "id": "T1-8-pre1b-H3",
+   "item": "M29/M30/M31's mutation_selfcheck.json does not contain an `expected`-rewrite arm (their six arms are A/B0/B/C/D/E). If the promotion requires every batch to gain that arm, these three must add it. Suggest the batch adds it after the ruling's clarification.",
+   "performed_by_this_card": false
+  }
+ ],
+ "kind": "verification_and_factual_reconciliation",
+ "matcher_revisions": {
+  "final_criterion": "green outcome ATTACHED to the rewrite; rc=3 on the rewrite disqualifies",
+  "final_result_files": 3,
+  "general_lesson": "a criterion that matches PROSE has a scope problem, not merely a keyword problem: the same token may belong to another clause, and the same sentence stops being one sentence under hard wrapping. Recorded as trap 17 -- the criterion's SCOPE is part of the object's shape (change 6 erred on the FACE, change 16 on the DIRECTION, this one on the SCOPE).",
+  "positive_practice": "normalise whitespace first; bind the verdict token to its real subject; and run the criterion against REVERSE samples (positive controls and rule restatements) as a false-positive test -- here M22 was exactly that reverse sample",
+  "revisions": [
+   {
+    "criterion": "`expected` 改成 ... and ImportError present",
+    "fault": "TOO LOOSE: every review restates the rule 'PASS_rejected requires isinstance, ImportError counts as FAIL', which is not an experiment report",
+    "fix": "require a green outcome token",
+    "n": 1,
+    "result_files": 24
+   },
+   {
+    "criterion": "same, with single spaces spanning the phrase",
+    "fault": "TOO STRICT: the reports are HARD-WRAPPED mid-sentence ('...改成\\n  `\"ValueError\"`、...仍 **rc=0 pass**'), so a single-space anchor cannot cross the wrap",
+    "fix": "normalise whitespace before matching",
+    "n": 2,
+    "result_files": 0
+   },
+   {
+    "criterion": "rewrite followed by a green outcome",
+    "fault": "FALSE POSITIVE on M22: its rc=0 belongs to a LATER clause, while the rewrite itself turned rc=3 (a positive control). The matcher read the neighbouring clause's outcome as the rewrite's outcome",
+    "fix": "bind the outcome token to the rewrite; treat rc=3 on the rewrite as disqualifying",
+    "n": 3,
+    "result_files": 4
+   }
+  ],
+  "why_recorded": "the whole finding is a regex over prose; a regex over prose has a SCOPE problem, so the revisions are part of the evidence, not incidental debugging"
+ },
+ "overall": "PASS",
+ "ruling_claim": {
+  "claims_reviewer_batches": "四",
+  "claims_reviewer_batches_numeric": 4,
+  "claims_rewriting_expected_yields": "rc=0",
+  "sentence": "不推广的代价：M05–M16 / M21–M31 各批的\"逐例拒绝语义\"仍无自动门（改 `expected` 后仍 rc=0，四批 reviewer 各自独立命中）",
+  "via": "OWNER_DECISIONS.md section 7 item 2"
+ },
+ "self_hash_note": "this file does not record its own sha256 (self-reference); it is recorded in task_plan.md",
+ "supersedes_nothing": "this card is additive to a20260920-02; it does not amend or retract it",
+ "verdict": {
+  "claim_is_false": false,
+  "claim_is_true_but_incomplete": true,
+  "detail": "rc=0 does occur. But it is not the symptom the parenthetical implies.",
+  "measured": "rc=0 AND verdict=pass AND 11/11 PASS_rejected",
+  "understated_aspect": "rc=0 alone reads as 'no gate fired'. The measurement shows eleven rejections that were each JUDGED CORRECT: the gate fired eleven times and was wrong eleven times. The gap is not an absent check but a FABRICATED GREEN.",
+  "why_the_direction_matters": "the false reading ('the gate is merely missing') invites a promotion whose acceptance criterion is 'observe rc=3'. Installed on an isinstance-only generation, that arm would keep observing rc=0 / PASS_rejected and thus keep failing -- so the current behaviour read as 'still rc=0' hides the reason the prescribed arm cannot fire."
+ },
+ "why_this_check": "a20260920-02 made precondition (1) decidable and reported the result, but did not check the one thing a promotion decision turns on: the ruling justifies promoting by stating what NOT promoting COSTS. That cost is written as a measured outcome ('after rewriting `expected`, still rc=0'), and an assertion about an outcome is only usable if the outcome it names is the one that actually occurs."
+}
