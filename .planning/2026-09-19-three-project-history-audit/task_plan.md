@@ -273,3 +273,28 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 **产物**：`decision.md`（9174 B / `3ee8892b…`）、`t13_changes.diff`（1817 B / `6f513476…`，**owner 明文要求的附件**）、`t13_line80_verification.json`（3263 B / `5f97d54f…`）、`handoff.json`（10020 B / `ba4da2ce…`）、`scripts/verify_t13.py`（11463 B / `e3d291fb…`）。**边界**：**未新撰任何编辑**（所核验编辑系既存）；**未回改冻结证据**；未做任何 `status` 转移；未代签；`git diff HEAD --name-only` **全部在 `.planning/` 内、0 条产品文件**。
 
 **⚠️ 给 reviewer 的提示（本卡不做，因超 T1-13 授权范围）**：`errata.md §R-1` 的 known-gap 条目与 `handoff.json.review_round_3.known_gaps[0]` 现描述的是一个**已被修复**的缺陷 ⇒ 二者均已过时。按 **T1-12 ① 形态**应以**追加式 note 取代**（`superseded_*` 标记、**不得回改**原字节）。
+
+**Round 47（2026-09-20）新增：T1-19 卡内完成 —— 冻结 rc 码表写入 `START_HERE.md`，**结论为「已核查、要求已在盘上成立」**（**未新撰编辑**；所核验的写入**此前已存在于工作树**）。落点 `execution_runs/T1-19/a20260920-01/`：
+
+**裁定**（`OWNER_DECISIONS.md` §13 **T1-19**，TIER-1）：**授权冻结一个码表**写入 `START_HERE.md`，各批带自描述 `exit_code_legend`，**不回改历史 rc**。
+
+**开卡实测与预期不同（先查、不假设）**：`execution_v2/START_HERE.md` 的 `## rc 码表（冻结；owner 裁定 T1-19 / §13）` 一节**早已存在于工作树**（第 90–115 行），但**不在 `HEAD` 中** —— `git diff HEAD` 为 **`28 0`**（**纯追加、零删除**）；即一次**已发生、未提交、无 attempt 记录**的改动。⇒ **本卡角色不是执行写入，而是核验 + 补证据**，与同批 **T1-13 完全同构**（本批**第二次**命中「授权去做某事」≠「某事尚未做」）。
+
+**被核验的改动**：前像（`git show HEAD:`）= **8353 B / `4efb7d9e3293d39a7d474a1c3300ef759ff4b02ecdb8d3e9e7a82f942faed2d4`**；后像（盘上）= **9895 B / `1bdfbd9190d6ae956d6ad025792a4ffa487f0e41258f80922c752f783cf22835`**；`delta = +1542 B`（**+28 行 / −0 行**）。
+
+**四条命题全成立（`scripts/verify_t19.py`，`overall = PASS` / exit 0）**：
+
+| # | 命题 | 结果 | 证据 |
+|---|---|---|---|
+| **C-1** | 该节是**纯追加** | **holds** | `prefix_bytes_preserved = True`（后像前 8353 B == 前像）；`pre_lines_all_preserved = True`；`section_is_new = True` |
+| **C-2** | 冻结表载**恰好四个 rc 值**且语义正确 | **holds** | 解析得 `{0: 通过, 1: harness 失败, 2: 无裁决 / 预期拒绝, 3: 未达预期}`；`rc=2` 覆盖「无裁决」与「预期拒绝」两个合法来源 |
+| **C-3** | 追加**同时**载明裁定另一半：自描述 `exit_code_legend` + **不回改历史 rc** | **holds** | `exit_code_legend` 出现；含「历史 rc …一律不动」；并登记「已知的历史偏差」两类批 |
+| **C-4** | **未触碰任何历史 rc 证据** | **holds** | 产品文件改动 **0 条**；`.planning/` 之外 **0 条**；目标为 `.md` 文档 |
+
+**为何判据这样切（形态匹配，第 7 次同源教训）**：**C-1 用「前缀字节保全 + 逐行前缀判定」而非「纯插入」** —— 追加式编辑的**已知常量**（前像长度与 hash）**直接作常量校验**，不用算术推导边界；逐行判定允许「旧行作为某新行前缀」这一形态（`task_plan.md` Round 44 曾被「纯插入」判据误判）。**C-4 为何不只看 `git status`**：本仓库 `core.autocrlf = true`，`' M'` **不是**内容差异证据（round 36 实测 146 条中 79 条为 index 陈旧伪差异），故用 `git diff HEAD --name-only` 真实改动集并**正面断言**产品文件集合为空。
+
+**合法性判断**：与 T1-13 不同（编辑 reviewer 字节，须先证前像确有缺陷），**`START_HERE.md` 是编排层自己的导航文档**，其改动**不需要方向性信任论证** —— 只要**确为纯追加、未回改历史内容**（C-1/C-4 已证）即成立。
+
+**产物**：`decision.md`（5982 B / `6fb01437…`）、`t19_changes.diff`（2213 B / `8b0becfc…`）、`t19_rc_table_verification.json`（2037 B / `265258c6…`）、`handoff.json`（`2b68e778…`）、`scripts/verify_t19.py`（8603 B / `e6887e59…`）。**边界**：**未新撰任何编辑**；**未回改历史 rc / `commands.json` / `case_results.json` / 冻结证据**；未做 `status` 转移；未代签；产品文件改动 0 条；全部 JSON 可解析且与 `handoff.json` 登记哈希**零失配**。
+
+**⚠️ 移交编排层的提示（本卡不做）**：追加节 C-3 提到的 **T1-8 四项前置**之一 —— 「`cases.json` 缺 `expected` 时的归类现为 `rc=3`、登记口径写 `rc=2`，须先按本表统一到 `rc=2`」 —— **仍未完成**。本卡**只登记**该要求，**不执行**统一（属 T1-8 授权范围）。

@@ -1,0 +1,71 @@
+{
+  "card": "T1-19",
+  "attempt": "a20260920-01",
+  "kind": "verification_and_ratification",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 T1-19",
+    "tier": "TIER-1",
+    "ruling": "freeze one rc code table into START_HERE.md; each batch carries a self-describing exit_code_legend; historical rc is not rewritten",
+    "owner_text": "授权冻结一个码表写入 START_HERE.md，各批带自描述 exit_code_legend，不回改历史 rc。"
+  },
+  "deliverable": {
+    "conclusion": "already satisfied on disk; this card verifies it and supplies the evidence rather than performing the write",
+    "artifact_under_verification": {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_v2/START_HERE.md",
+      "pre_sha256": "4efb7d9e3293d39a7d474a1c3300ef759ff4b02ecdb8d3e9e7a82f942faed2d4",
+      "pre_bytes": 8353,
+      "post_sha256": "1bdfbd9190d6ae956d6ad025792a4ffa487f0e41258f80922c752f783cf22835",
+      "post_bytes": 9895,
+      "delta_bytes": 1542,
+      "delta_lines": {"added": 28, "deleted": 0},
+      "edit_form": "pure append (new section '## rc 码表' appended at end of file)",
+      "written_by_this_attempt": false,
+      "note": "the edit was already present in the working tree, uncommitted and without an attempt record"
+    },
+    "frozen_table": {
+      "0": "通过",
+      "1": "harness 失败",
+      "2": "无裁决 / 预期拒绝",
+      "3": "未达预期"
+    },
+    "artifacts": [
+      {"path": "decision.md", "bytes": 5982, "sha256": "6fb01437c8d190d3afadb3f11af91566d30cb0f04b91e77dddcac70e16148169"},
+      {"path": "t19_changes.diff", "bytes": 2213, "sha256": "8b0becfc83b412dac30fb498e550fe902d1dd9de421823f19609af210c820447"},
+      {"path": "t19_rc_table_verification.json", "bytes": 2037, "sha256": "265258c66831be84181e24f2e7ccdea335b3111cee9f6b160642a7b9bf03ee7b"},
+      {"path": "scripts/verify_t19.py", "bytes": 8603, "sha256": "e6887e596486f5af79b89af2abb2f9a1543619ceffae63a85aba90f8312fa390"}
+    ]
+  },
+  "verification_summary": {
+    "overall": "PASS",
+    "exit_code": 0,
+    "propositions": {
+      "C-1": {"claim": "the rc section is a pure append", "holds": true},
+      "C-2": {"claim": "the frozen table carries exactly the four rc values the ruling fixed, with correct semantics", "holds": true},
+      "C-3": {"claim": "the append also carries the other half of the ruling: self-describing exit_code_legend and no rewriting of historical rc", "holds": true},
+      "C-4": {"claim": "no historical rc evidence was touched; no product file changed", "holds": true}
+    }
+  },
+  "key_findings": [
+    "F-T19-1: like T1-13, the edit already existed in the working tree but was uncommitted and had no attempt record; the card's real role is verification plus evidence, not execution.",
+    "F-T19-2: the append is exactly 28 added lines and 0 deleted lines; the pre-image (8353 B) survives verbatim as the post-image prefix.",
+    "F-T19-3: the frozen table parses to exactly {0: pass, 1: harness failure, 2: no verdict or expected rejection, 3: did not meet expectation} - the four values the ruling fixed.",
+    "F-T19-4: the section also honours the ruling's second half: it requires a self-describing exit_code_legend per batch and registers the known historical batch deviations without rewriting them.",
+    "F-T19-5: the T1-8 prerequisite recorded inside the appended section (normalising cases.json missing-expected classification from rc=3 to rc=2) is still outstanding; this card only registers it, since executing it belongs to T1-8's authority."
+  ],
+  "judgement_form_note": {
+    "C-1": "uses prefix-byte preservation plus per-line prefix matching rather than a naive 'pure insertion' test - the 7th instance of the same-class lesson in this project (task_plan.md Round 44 was once mis-judged by a pure-insertion criterion).",
+    "C-4": "uses git diff HEAD --name-only rather than git status, because this repo has core.autocrlf=true and git status ' M' is not evidence of content difference (round 36 measured 79 of 146 as stale-index phantom differences)."
+  },
+  "boundaries": {
+    "new_edits_authored": false,
+    "historical_rc_modified": false,
+    "frozen_evidence_modified": false,
+    "status_transitions_performed": 0,
+    "signatures_forged": false,
+    "product_files_changed": [],
+    "changed_files_outside_planning": [],
+    "all_json_parseable": true
+  },
+  "next_action": "commit this card together with the verified START_HERE.md append; the T1-8 prerequisite recorded in the appended section remains for T1-8's own card"
+}
