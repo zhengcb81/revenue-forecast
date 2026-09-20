@@ -1,0 +1,38 @@
+{
+  "card": "T1-26",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_confirmation_of_a_HALF_AUTHORISATION",
+  "ruling_source": "OWNER_DECISIONS.md §13 T1-26 (TIER-1)",
+  "ruling_verbatim": "owner 层面放行：授权将该补丁的晋升流程启动，但 D1/D2/D3 的专业签字仍属他方（见 TIER-2）。未获该三方签字前仍禁止把 iso/slo_probe_patched.py 拷进 RF/tools/；I-16 实测前必须先提供 bundle 测量文件。",
+  "why_this_is_not_a_plain_confirmation": "The ruling does two things in one line and they point in opposite directions: it GRANTS a permission (start the promotion process) and WITHHOLDS the thing that would make the permission effective (the three specialist signatures), while restating a standing ban. A permission to start a process has no disk effect, so the card cannot verify it 'was done'. The only verifiable content is: the permission left no artifact, the withheld signatures are still withheld, the ban is on disk, the ban is obeyed, and the pending-party rows still say 'pending party' rather than 'owner decided'.",
+  "the_failure_mode_this_card_exists_to_catch": "Reading 'owner 层面放行' as if it lifted the ban or supplied the three signatures, and therefore promoting iso/slo_probe_patched.py into tools/slo_probe.py. That is the '「总的批准」不得膨胀为「所有的结论」' collapse in its most concrete form.",
+  "propositions": {
+    "V-1": "granted half is a permission and left no disk effect",
+    "V-2": "withheld half is still withheld (D1/D2/D3 each still owned by the other party; no carrier reads as signed)",
+    "V-2b": "the V-2 criterion is responsive (self-test: it fires on synthetic claims, not on signing vocabulary)",
+    "V-3": "the ban is on disk and names RF/tools/ explicitly",
+    "V-4": "the ban is obeyed -- production tools/slo_probe.py IS the pre-patch content and the patch is only in the attempt",
+    "V-5": "the TIER-2 rows still say pending-party, and the execution-discipline clause is present"
+  },
+  "load_bearing_leg": "V-4 -- a ban is real only if the file really is not there",
+  "provenance_constants": {
+    "production_tools_slo_probe_sha256_LF": "0c9d4a2d911b906ed92dbf31d0f66600d7ad865e4b0021a2bbe0fbd3c0616f86",
+    "production_tools_slo_probe_git_blob": "413aad5f788732520ace76acbaebcf06633f34d5",
+    "frozen_pre_patch_sha256_CRLF": "f051feec00658bb5fefee8d22c2c7630e0bd348b5384ae80f0c882c822f48059",
+    "iso_patched_sha256": "14932c744839c89f8af126b8d7eba11bafe9192dd73c3b5277a41ef6aaa3540e",
+    "note": "production file is LF; the iso/before copy is CRLF. Content is identical; only newlines differ. Comparing raw sha256 across them reports a spurious difference."
+  },
+  "boundaries": {
+    "ruled_on_carriers_written": 0,
+    "status_transitions_performed": 0,
+    "promotions_performed": 0,
+    "signatures_forged": false,
+    "product_files_changed": [],
+    "real_window_opened": false
+  },
+  "what_this_card_does_NOT_authorise": {
+    "promotion_into_tools": "STILL FORBIDDEN until D1 is signed by an ops reviewer who is not the probe's author.",
+    "i16_production_measurement": "still requires a bundle measurement file first.",
+    "signing_D1_D2_D3": "belongs to the other parties (TIER-2); this card signs nothing."
+  }
+}

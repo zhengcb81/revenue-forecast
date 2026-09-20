@@ -1,0 +1,178 @@
+{
+  "card": "T1-26",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_confirmation_of_a_HALF_AUTHORISATION",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 (TIER-1 owner ruling)",
+    "tier": 1,
+    "ruling_verbatim": "owner 层面放行：授权将该补丁的晋升流程启动，但 D1/D2/D3 的专业签字仍属他方（见 TIER-2）。未获该三方签字前仍禁止把 iso/slo_probe_patched.py 拷进 RF/tools/；I-16 实测前必须先提供 bundle 测量文件。",
+    "nature": "a HALF-authorisation: it GRANTS a permission (start the promotion process) and WITHHOLDS the three specialist signatures, while restating a standing ban"
+  },
+  "why_a_permission_cannot_be_checked_for_completion": "Authorising the START of a process is a permission, not an act. A permission leaves no artifact, so 'was it done?' is a category error. What can be verified is that the permission did not overreach: no artifact appeared, the withheld signatures are still withheld, the ban is registered, the ban is obeyed, and the pending-party rows were not rewritten to 'owner decided'.",
+  "the_failure_mode_this_card_exists_to_catch": "Reading 'owner 层面放行' as if it lifted the ban or supplied the three signatures, and therefore promoting iso/slo_probe_patched.py into tools/slo_probe.py -- the concrete form of the batch rule that a general approval must not swell into all the individual conclusions.",
+  "deliverable": {
+    "conclusion": "the permission left no artifact; D1/D2/D3 are each still owned by the other party and no carrier reads as signed; the ban is on disk in four carriers and names RF/tools/; the ban is OBEYED (production tools/slo_probe.py is still the pre-patch content and the patched file exists only inside this attempt); and the TIER-2 rows still say pending-party. This card wrote nothing.",
+    "why_no_write": "the ruling orders no write. Both halves already hold on disk: the permission is inherently formless, and manufacturing an artifact for it would convert a permission into an act; the three signatures remain other parties' to give, so supplying them would be forgery.",
+    "artifacts": [
+      {
+        "path": "scripts/verify_t26.py",
+        "bytes": 24001,
+        "sha256": "c6c921b4c721aebcd9378b650e2128137819a053bde4964750ac308a71fa1d11"
+      },
+      {
+        "path": "decision.md",
+        "bytes": 11861,
+        "sha256": "a7a0deaea29ac3b445b5a8da9c0392616cac885305a19d5b7eb2b47c01c511c1"
+      },
+      {
+        "path": "t26_i14a_d1d2d3_release_scope.json",
+        "bytes": 3314,
+        "sha256": "e574097c3c7f2816f157aa9d142df0b916aa02c52eec217e47d3bba89cb27b97"
+      }
+    ],
+    "registered_artifact_count": 3,
+    "self_hash_note": "handoff.json cannot register its own hash (self-reference); it registers the three artifacts above. Its own hash is recorded in task_plan.md and the memory log only."
+  },
+  "verification_summary": {
+    "overall": "PASS",
+    "exit_code": 0,
+    "proposition_count": 6,
+    "propositions": {
+      "V-1_granted_half_is_permission_with_no_artifact": {
+        "holds": true,
+        "granted_verb_is_permission": true,
+        "promoter_named_files_under_tools": [],
+        "promoted_test_present": false,
+        "patched_file_sites": [
+          ".planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/a20260919-01/harness/slo_probe_patched.py",
+          ".planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/a20260919-01/iso/slo_probe_patched.py"
+        ],
+        "patched_only_in_attempt": true,
+        "also_present_as_iso_and_harness": true,
+        "note": "a permission that has an artifact is not a permission; the granted object is a process"
+      },
+      "V-2b_criterion_is_responsive_self_test": {
+        "holds": true,
+        "must_fire_count": 5,
+        "missed_claims_false_negatives": [],
+        "wrongly_flagged_false_positives": [],
+        "note": "a criterion that cannot fire proves nothing by not firing"
+      },
+      "V-2_withheld_half_still_withheld": {
+        "holds": true,
+        "ownership": {
+          "D1": true,
+          "D2": true,
+          "D3": true
+        },
+        "forged_signature_claims": [],
+        "d1_status_reads_UNSIGNED": true,
+        "d2_status_reads_awaiting": true,
+        "d3_status_reads_awaiting": true,
+        "criterion_responsive": true,
+        "note": "any carrier reading as 'signed' would be a forged signature; the criterion is bound to the SIGNEDNESS PREDICATE, not to the vocabulary of signing"
+      },
+      "V-3_ban_is_on_disk_and_explicit": {
+        "holds": true,
+        "carriers_with_ban": {
+          "decision.md": true,
+          "review.md": true,
+          "oracle.md": true,
+          "handoff.json": true
+        },
+        "carriers_naming_RF_tools": {
+          "decision.md": true,
+          "review.md": true,
+          "oracle.md": true,
+          "handoff.json": true
+        },
+        "handoff_signers": {
+          "D1": "ops reviewer — MUST NOT be the author of this probe",
+          "D2": "production SLO / probe owner",
+          "D3": "I-16 (because it changes the default exit semantics)"
+        },
+        "note": "the ban must name the destination explicitly, not merely say 'blocked'"
+      },
+      "V-4_ban_is_obeyed_not_promoted": {
+        "holds": true,
+        "production_tools_slo_probe_sha256": "0c9d4a2d911b906ed92dbf31d0f66600d7ad865e4b0021a2bbe0fbd3c0616f86",
+        "frozen_pre_patch_sha256": "f051feec00658bb5fefee8d22c2c7630e0bd348b5384ae80f0c882c822f48059",
+        "production_content_equals_frozen_pre_patch": true,
+        "production_byte_difference_is_only_newlines": true,
+        "iso_patched_sha256": "14932c744839c89f8af126b8d7eba11bafe9192dd73c3b5277a41ef6aaa3540e",
+        "iso_patched_is_the_patch": true,
+        "iso_patched_differs_from_production_in_content": true,
+        "production_git_blob": "413aad5f788732520ace76acbaebcf06633f34d5",
+        "head_git_blob": "413aad5f788732520ace76acbaebcf06633f34d5",
+        "working_copy_equals_HEAD": true,
+        "slo_probe_files_under_tools": [
+          "tools/slo_probe.py",
+          "tools/tests/test_slo_probe.py"
+        ],
+        "note": "this leg carries the card: the ban is real only if the file really is not there. Compared by CONTENT because iso/ is CRLF and production is LF."
+      },
+      "V-5_tier2_rows_still_say_pending_party": {
+        "holds": true,
+        "t2_rows_name_other_party": true,
+        "t2_rows_say_authorise_start": true,
+        "tier2_conclusion_smuggling": [],
+        "execution_discipline_clause_present": true,
+        "t2_rows": {
+          "T2-5": " **I-14-A D1** 50 ms 间隔是否足够、live `rss` 峰值 vs `peak_wset` 可比性、误差规则 | **非本探针作者的运维 reviewer** | 授权送签 |",
+          "T2-6": " **I-14-A D2** 生产 SLO / 探针 owner 确认（含 `catalog_dir` 标量解析器限制） | **生产 SLO / 探针 owner** | 授权送签 |",
+          "T2-7": " **I-14-A D3** 未测 bundle 时**恒 exit 2** 的契约变更 | **I-16** | 授权送签 |"
+        },
+        "note": "TIER-2 is exactly where owner authorises starting and the other party rules"
+      }
+    }
+  },
+  "error_made_and_corrected_in_this_card": [
+    {
+      "error": "V-1 first run FAIL: the criterion equated 'a file whose name contains promot' with 'a promotion artifact', and matched an unrelated subsystem's portfolio_promoter.py. A name collision, not evidence.",
+      "fixed_by": "scoping the check to the promotion's actual destination in this repo (tools/slo_probe.py), not to filename keywords.",
+      "lesson": "a criterion must be defined by the object's destination, not by vocabulary that happens to appear in its name"
+    },
+    {
+      "error": "V-2 first run FAIL (four successive drafts): (1) per-line keyword grep flagged the PROHIBITION 'must not happen until D1 is signed'; (2) paragraph co-occurrence matched unrelated 'confirmed' clauses; (3) clause-level matching still hit 'Signer:', 'fails closed', 'the D2 signature'; (4) including 'accepted' as a signature verb hit 'is not self-accepted' and the em-dash split defeated the negation guard.",
+      "fixed_by": "testing the SIGNEDNESS PREDICATE (state verb bound to a D-label) instead of the vocabulary of signing, and explicitly excluding the lexical traps; 'accepted' removed because in this corpus it means the reviewer's accepted_scoped verdict, a different predicate.",
+      "lesson": "the words 'sign', 'signer', 'signature', 'closed' all appear in text that does NOT claim signedness. Test the predicate, not the vocabulary."
+    },
+    {
+      "error": "V-4 first run FAIL -- and this one nearly produced the OPPOSITE of the truth. Raw byte sha256 said production != pre-patch, i.e. 'the patch WAS promoted'.",
+      "fixed_by": "recognising that iso/ is CRLF and production is LF so the two are byte-different but content-identical; comparing content (newline-normalised) and recording the newline-only difference explicitly.",
+      "lesson": "the comparison surface must match the question asked. 'Is this file that file' is about CONTENT. Byte hashing can systematically invert the answer in a repo with core.autocrlf=true -- this is the 6th occurrence of this family here."
+    },
+    {
+      "error": "V-5 first run FAIL: the TIER-2 preamble reads '本类不得记为 owner 已裁' -- the prohibition itself -- and the keyword grep flagged the prohibition as the violation.",
+      "fixed_by": "excluding any line carrying a prohibition/negation marker.",
+      "lesson": "third instance of negation-blindness inside this one card; same root as T1-24 Q-4 and T1-18 U-3."
+    },
+    {
+      "error": "V-2 PASS was initially unproven: a criterion that never fires proves nothing by not firing.",
+      "fixed_by": "adding proposition V-2b, a self-test feeding the criterion synthetic signed-claims (must fire) and signing-vocabulary non-claims (must not fire): 5/5 and 7/7.",
+      "lesson": "a negative result from a criterion is only as strong as the criterion's demonstrated ability to return a positive."
+    }
+  ],
+  "boundaries": {
+    "ruled_on_carriers_written": 0,
+    "status_transitions_performed": 0,
+    "promotions_performed": 0,
+    "signatures_forged": false,
+    "product_files_changed": [],
+    "real_window_or_production_measurement_opened": false,
+    "card_status_preserved": "I-14-A remains accepted_scoped (isolated fix only)",
+    "production_anchor": {
+      "path": "scripts/model_registry.py",
+      "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "source": "frozen anchor; this card did not touch it"
+    },
+    "all_json_parseable": true
+  },
+  "what_this_card_does_NOT_authorise": {
+    "promotion_into_tools": "STILL FORBIDDEN until D1 is signed by an ops reviewer who is NOT this probe's author.",
+    "i16_production_measurement": "still requires a bundle measurement file to be supplied first.",
+    "signing_D1_D2_D3": "belongs to the other parties (TIER-2): ops reviewer / production SLO-probe owner / I-16. This card signs nothing."
+  },
+  "next_action": "No follow-up is required for T1-26 itself. The three signatures remain with the TIER-2 parties; until D1 is signed the promotion prohibition stands and the tool stays in iso/. See handoff.json of I-14-A for the ordered next steps (sign D1 -> confirm D2 -> decide D3 -> only then a separate change-window card may promote)."
+}
