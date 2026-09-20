@@ -128,6 +128,14 @@ applicable" (V-check 3 and V-check 7 both pass with `not_applicable == 0`).
 
 ---
 
+
+> **Attribution marker, added by the independent reviewer on 2026-09-20 (APPEND-ONLY; nothing above
+> or below was reworded).** The r2 disposition block below, the `### r2 follow-up (P1–P3)` subsection
+> and the `handoff.json` fields that describe "the r2 re-read" are **not reviewer-authored text**:
+> they were transcribed from the reviewer's reports by the implementer/bookkeeping pass. The reviewer
+> has confirmed the substance of those claims (see the r3 section appended at the end of this file),
+> but a successor must not cite this block as the independent reviewer's own words. No
+> reviewer-authored r3 block existed in this file until that append.
 ## r2 — disposition of the independent review's findings (APPEND-ONLY)
 
 The independent review returned **accepted_scoped** with six non-blocking corrections. All six are
@@ -207,3 +215,75 @@ V-checks still pass except `V6_generality_cell`, which is `blocked` by design.
 |---|---|---|---|
 | V7 | `harness/i07a_r2_review_facts.py` → `after/r2_review_facts.json` (read-only; `mode=ro` + `PRAGMA query_only=ON`) | **0** | roots SQL (4 rows), per-root location counts, CN location SQL (3 rows incl. two `original_primary`), multi-root totals 3440 / 3436, untruncated top-5; catalog `(bytes, mtime, wal)` unchanged |
 | V5′ | `harness/i07a_helpers.py snapshot --out after` (re-run after V7) | **0** | anchors, heads and product-only porcelain still identical to V0 |
+
+---
+
+## r3 — reviewer's re-read of the document-consistency fixes, and the verdict I actually sign (APPEND-ONLY)
+
+**Written and appended by the independent reviewer on 2026-09-20.** Nothing above was edited, reworded
+or deleted; the attribution marker inserted before the r2 block is a pure insertion and this section is
+a pure append.
+
+### 1. Object, identity and time anchor
+
+Attempt `I-07-A/a20260919-01`, re-read read-only at 2026-09-20 ~04:35 local (UTC+0 on this host).
+Frozen inputs recomputed and unchanged versus this attempt's own `after/snapshot.json`:
+`PLAN/implementation_plan.md`, `PLAN/audit_report.md`, `PLAN/execution_v2/card_I-07-A.md`,
+`PLAN/execution_v2/card_I-14-A.md`, `PLAN/execution_v2/sample_manifest.json` — 5/5 match, so the card
+text and plan behind this re-read are the frozen ones.
+
+### 2. The three r2 defects — closure check
+
+| # | r2 defect | what I measured now | verdict |
+|---|---|---|---|
+| **P1** | `decision.md` carried no r2 record and its §J2 still asserted the fifth root "counts as `bound`", so a successor reading `decision.md` first would find the opposite of the card's conclusion | `decision.md` sha256 `e57b7fae3068368d1377e20e630680e42de5d6336da78fb49f5379efeaa32fc0`, 64 lines. The original §J1–§J4 text is **still present verbatim** (including the withdrawn sentence "**J2 — the fifth root counts as `bound` at existence + declaration level.**"), and an append-only section after a `---` states: **"OVERRULED — this `bound` claim was rejected by the review."**, `config.legal_fifth_root` is **`planned`**, and **"§J2 above must not be cited as the card's conclusion."** Counts line: "bound 9 / planned 15 / blocked 5 / not_applicable 0 (the r1 figure was bound 10 / planned 14)" | **CLOSED** |
+| **P2** | the F-I07A-06 row said "six plan dimensions", contradicting `state_matrix.json:dimension_alignment` (7 rows) and `state_matrix.md` ("8 dimensions") | the row now reads "The plan's table at `implementation_plan.md:131-139` has **seven rows** … the r1 wording \"six plan dimensions\" was wrong. Line 141 adds an eighth family, `generality` … Implemented: **8 dimension families, 29 cells**." I reproduced `plan_table_rows.count = 7`, `implemented_dimension_count = 8`, `extra = generality`, and recounted the matrix myself: **8 dimensions / 29 cells** | **CLOSED** |
+| **P3** | the F-I07A-01 row quoted the review's "*0* location rows" claim without the correction already present in `state_matrix.md` | the row now states the correction inline: **exactly 1** (`future_lake/README.md`, 545 B, `observed_size 545`, `document_kind broker_research`), with the "0" retained only as a quoted-and-corrected claim, plus "the disposition never depended on it" | **CLOSED** |
+
+### 3. What this verdict covers, by my own recount
+
+I recomputed the invariants rather than reading them: `after/state_matrix.json` sha256
+`dc72776f6c6324ae627b601e8734cb809b9d0680091833afd7eca23c01032253` → **8 dimension families, 29 cells**;
+statuses recounted from the cells themselves = **bound 9 / planned 15 / blocked 5 / not_applicable 0**
+(exactly the declared counts); `config.legal_fifth_root = planned`; `isolated_catalog_prohibition`
+present; the five blocked cells unchanged; V-checks `V1–V5, V7 = pass`, `V6 = blocked` by design. The
+r2 correction artifacts still carry the values they claim: `multi_root_same_bytes_total = 3440`,
+`multi_root_same_document_total = 3436`, `future_lake` location count = 1, CN location rows = 3,
+`catalog_identity_unchanged = true`.
+
+### 4. One residue, accepted as-is (not a blocker)
+
+The word "six" still appears inside the frozen r1 text at `oracle.md:211` and `review.md:133`, where it
+counts **findings**, not dimensions (the r2 block made six corrections). The frozen bodies may not be
+rewritten, so the correction lives in `oracle.md` §8's third row, which now states explicitly that "six"
+there means F-I07A-01…06 and that for any dimension question §8 and
+`state_matrix.json:dimension_alignment` are authoritative. That is the correct treatment of an
+append-only frozen text; nothing is left ambiguous for a successor who reads §8.
+
+### 5. Verdict
+
+**`accepted_scoped`.** Granted scope: **only** the frozen sample matrix (dimension → cells with
+bound/planned/blocked and a concrete reason each) and the precondition-state archive, with the sample
+identities established by hash and by a read-only catalog observation. This grants **no** resolve
+behaviour, **no** download, **no** artifact recomputation, **no** prediction and **nothing** about
+production catalog health; the five blocked cells remain blocked and must not be re-labelled
+not-applicable.
+
+`handoff.json:status` staying `review_pending` is correct and is not a contradiction: `accepted_scoped`
+is the reviewer's qualification of this card's evidence scope, not a promotion and not a self-signature.
+For I-07-B the binding constraint is unchanged: `iso/catalog/catalog.sqlite3` is a 5-table minimal
+schema and **must not** be reused — I-07-B must first bind a production-isomorphic or table-filtered
+catalog.
+
+### 6. Not verified by me (coverage ends at §2–§3)
+
+1. All eight items in `handoff.json:reviewer_unverified_list_carried_forward` still stand; none is
+   established by this re-read.
+2. The r1 re-runs (the four review-time probes) were **not** repeated here; they remain valid only
+   because the relevant bytes are unchanged, and the anchors were re-hashed in this pass.
+3. This re-read covers **only** the three r2 defects and the matrix invariants in §3. It does **not**
+   endorse any other sentence inside the transcribed r2 block.
+4. I did not observe the writing of the r2/follow-up text, so I can attest only that it is not mine —
+   not who produced it or when.
+
+**Appended by the independent reviewer on 2026-09-20.** Coverage ends at the measurements in §2 and §3.
