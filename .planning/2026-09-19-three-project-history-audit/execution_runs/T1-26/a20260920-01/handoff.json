@@ -167,7 +167,8 @@
       "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
       "source": "frozen anchor; this card did not touch it"
     },
-    "all_json_parseable": true
+    "all_json_parseable": true,
+    "iso_copy_tracking_note": "The two files V-4 relies on (iso/slo_probe_patched.py and iso/tool_prod/slo_probe.py) are deliberately NOT tracked by git: execution_runs/.gitignore line 17 excludes '*/a*/iso/' as 'venvs and byte-identical product copies (rebuilt from HEAD + changes.diff)'. So they exist on disk only, which is why V-4 verified them by on-disk sha256 rather than via a HEAD blob. The production tools/slo_probe.py IS tracked, and its working-copy git blob equals HEAD:tools/slo_probe.py (413aad5f...), which is the tracked half of the comparison. Note: git rev-parse HEAD:<untracked path> does not fail -- it echoes the literal path back -- so a blob==disk comparison against an untracked path is meaningless and must not be read as drift."
   },
   "what_this_card_does_NOT_authorise": {
     "promotion_into_tools": "STILL FORBIDDEN until D1 is signed by an ops reviewer who is NOT this probe's author.",
