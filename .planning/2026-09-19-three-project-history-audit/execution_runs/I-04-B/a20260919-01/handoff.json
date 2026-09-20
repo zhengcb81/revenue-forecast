@@ -1,0 +1,108 @@
+{
+ "card_id": "I-04-B",
+ "attempt_id": "a20260919-01",
+ "status": "accepted_scoped",
+ "scope": "isolated copy only: iso/filing-fetch/scripts/fetch_filing.py + tests/test_fetch_filing.py; production filing-fetch untouched (sha256 046cc7dc...088)",
+ "reviewer_status": "round1 changes_required (1xP1/4xP2/5xlow) -> revised -> round2 accepted_scoped with 2 non-blocking conditions (C1/C2, both now disposed) and 3 carries",
+ "reviewer_agent_id": "1a721c67-3f05-4b98-8e87-6afd565cec6c",
+ "completed_steps": [
+  "1 领取 (card bound; gate: I-04-A accepted_scoped satisfied)",
+  "2 绑定 (binding.json: anchors re-verified; per-attempt iso venv with pytest 9.1.1)",
+  "3 读证据 (fetch_filing.py regions + pure_probes.json read-only; card + I-04-A decision v2/oracle v2)",
+  "4 冻结预期 (oracle.md: F-B1/B2a/B2b/B3/B5 model clock, F-B4/F-B4b/F-B4c real process)",
+  "5 修前 RED (5 failed/2 passed; reasons measured, not asserted)",
+  "6 最小修改 (20 iso patches + regression fix; no production write)",
+  "7 修后 GREEN (10 new cases; T-FILING 126 passed/1 deselected/41 subtests)",
+  "8 交审 (round1 changes_required -> review fixes -> round2 pending)",
+  "9 接续 (handoff below)"
+ ],
+ "next_step_number": "I-04-C step 1 (design the cross-process lease/ownership protocol)",
+ "next_action": "Run I-04-C (freeze the cross-process lease/ownership/recovery protocol) next.  Carry into it: the probe cap and the read-budget-once rule must survive any lease rework; envelope fields for probe elapsed / phase wall belong to I-04-E; any change to the I-04-A D1-D5 frozen values requires returning to I-04-A.",
+ "input_hashes": {
+  "card": "execution_v2/card_I-04-B.md",
+  "dependency": "execution_runs/I-04-A/a20260919-01/{decision.md,oracle.md,handoff.json}",
+  "historical_probe_readonly": "reviews/filing/tests/pure_probes.json"
+ },
+ "current_source_hashes": {
+  "production_scripts_fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+  "production_tests_test_fetch_filing.py": "3087daf0da23df0e",
+  "iso_scripts_fetch_filing.py": "dc593a75cae991b1",
+  "iso_tests_test_fetch_filing.py": "b2d5fd84911e368d",
+  "filing_fetch_HEAD": "d35b6f5"
+ },
+ "changed_paths": [
+  "execution_runs/I-04-B/a20260919-01/iso/filing-fetch/scripts/fetch_filing.py",
+  "execution_runs/I-04-B/a20260919-01/iso/filing-fetch/tests/test_fetch_filing.py",
+  "execution_runs/I-04-B/a20260919-01/{binding.json,oracle.md,commands.json,iso_patching.md,decision.md,changes.diff,review.md,handoff.json}",
+  "execution_runs/I-04-B/a20260919-01/{before,after,scripts,recovery}/**"
+ ],
+ "product_changed_paths": [],
+ "commands_executed": [
+  "I04B-T-FILING-baseline",
+  "I04B-i04b-cases-RED",
+  "I04B-i04b-cases-GREEN",
+  "I04B-T-FILING-after",
+  "I04B-real-timing-and-epsilon",
+  "I04B-epsilon-session-quiet",
+  "I04B-epsilon-session-load",
+  "I04B-epsilon-merge",
+  "I04B-phase-wall-reported"
+ ],
+ "raw_exit_codes": [
+  0,
+  1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "expected_exit_codes": [
+  0,
+  1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "budget_values": {
+  "epsilon_signed_s": 0.57,
+  "epsilon_note": "two signings: first program 0.57; revised two-invocation program pooled 0.38; the conservative maximum (0.57) is retained so a protocol improvement cannot read as a loosening",
+  "cleanup_budget_C": "max(30.0, 2*resume_wait + graceful)",
+  "pid_probe_cap_s": 20.0,
+  "B_request_segment_s": 20
+ },
+ "open_questions": [
+  "probe elapsed + cleanup phase wall are NOT in the product envelope (registered carry -> I-04-E)",
+  "cross-process lease/refcount concurrency is I-04-C/D; this card proves the single-process path only",
+  "the deselected live case (test_cli_stdin_accepts_utf8_chinese_query) remains excluded by -k, not by an environment skip"
+ ],
+ "blocked_by": [],
+ "evidence_paths": [
+  "execution_runs/I-04-B/a20260919-01/before/t-filing-baseline.txt",
+  "execution_runs/I-04-B/a20260919-01/before/i04b-red.txt",
+  "execution_runs/I-04-B/a20260919-01/after/i04b-green.txt",
+  "execution_runs/I-04-B/a20260919-01/after/t-filing.txt",
+  "execution_runs/I-04-B/a20260919-01/after/i04b-phase-wall-reported.txt",
+  "execution_runs/I-04-B/a20260919-01/after/epsilon_session1.json",
+  "execution_runs/I-04-B/a20260919-01/after/epsilon_session2.json",
+  "execution_runs/I-04-B/a20260919-01/after/i04b_real_timing.json",
+  "execution_runs/I-04-B/a20260919-01/changes.diff",
+  "execution_runs/I-04-B/a20260919-01/iso_patching.md",
+  "execution_runs/I-04-B/a20260919-01/after/i04b-phase-wall-reported.txt"
+ ],
+ "conditions": {
+  "C1": "DISPOSED: the guard->_register double-read race is closed (the caller reads the budget once and passes it in); the boundary sub-case is in test_i04b_f_b4e (three-value clock).",
+  "C2": "DISPOSED: commands.json rewritten with all 8 bound commands, refreshed observations and the transient-basetemp note; iso_patching.md round-1 figures annotated."
+ },
+ "carries": [
+  "I-04-E: the product envelope still lacks probe elapsed and the cleanup PHASE wall clock (this card reports only the subcall time and probe counters)",
+  "I-04-C/D: cross-process lease/refcount concurrency (this card proves the single-process path only)",
+  "standing rule for later cards: the cleanup PHASE wall clock is reported, never bounded by an acceptance cap; acceptance is per subcall (worker-resume <= C+epsilon; each probe <= min(20, phase budget))"
+ ]
+}

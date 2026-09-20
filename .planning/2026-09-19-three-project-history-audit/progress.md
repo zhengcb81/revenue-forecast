@@ -1,5 +1,13 @@
 # Progress
 
+## 2026-09-19 — 实施段续：I-04-B（filing-fetch 预算修复**实施卡**，两轮复审后 accepted_scoped）
+
+- **产出**（execution_runs/I-04-B/a20260919-01/）：iso 副本（scripts+tests）、binding.json、oracle.md、commands.json（8 条命令全绑定）、iso_patching.md、decision.md（NA→I-04-A）、recovery/README.md、changes.diff（48 hunks）、before/after 证据、review.md（两轮）、handoff.json（accepted_scoped）。**生产零改动**（`fetch_filing.py` sha256 `046cc7dc…088`、tests `3087daf0…`、HEAD `d35b6f5` 每轮复核）。
+- **修的是什么**：① 退避改用**子调用返回后**重算的剩余预算（原来用调用前的过期值：9 s 调用 + 5 s 退避 = t=14 > deadline 10，即 `pure_probes.json` 记录的历史事故）；② 删除 `_remaining()` 的 `max(10.0,…)` 下限，请求阶段预算无下限、截止后**零请求调用**；③ 清理用**独立预算** `C=max(30, 2×resume_wait+graceful)` 并单列 `cleanup_calls/cleanup_elapsed_seconds/cleanup_status`；④ pid 存活探测（原硬编码 20 s、不计账）改为 `min(20, 相位预算)` 且现读、计 `liveness_calls`/`liveness_probe_failed`；⑤ 信封新增 `request_deadline/request_elapsed/pause_action` 等分账字段。
+- **证据链**：修前 RED **5 failed / 2 passed**（失败原因是实测 `[call(5.0)] != [call(1.0)]`、截止后仍以 `timeout=10.0` 发 worker-status、`10.0 > 0.2`、真进程 3 s 桩未被杀）→ 修后 **10 passed**；T-FILING **116 passed（基线）→ 126 passed / 1 deselected / 41 subtests**，被触碰的两个既有用例**断言与生产逐字节相同**（只改时钟脚本）。ε 按 I-04-A 预承诺程序重测（两次独立进程调用、原始样本留档）：第一版 0.57、修订版池化 0.38，**签名取最大值 0.57**（避免协议改进被读成放宽）。
+- **两轮独立复审**（同一只读子代理，零写入）：r1 **changes_required**（**1×P1** 探测未按签署 `min(20,·)` 封顶，实测误授 44.9998/85.0；+4×P2 取证/接续 +5×low）→ 全部处置 → r2 **accepted_scoped**；随签 2 项非阻断条件 **C1**（守卫与 `_register` 双重读取的微秒竞态 → 已改为"只读一次"，并加三值时钟边界子案）与 **C2**（命令记录陈旧 → commands.json 重写 + iso_patching 旧数字标注）**均已处置**；3 项 carry 记入 handoff（信封探测耗时/相位墙 → I-04-E；跨进程 lease → I-04-C/D；相位墙只报告不设上限为持续口径）。
+- **资格**：accepted_scoped=隔离副本内的预算规则修复；**不授予**真实 provider/worker（I-07/I-16）与跨进程并发（I-04-C/D）。**16/86 卡完成**；下一卡 I-04-C（冻结跨进程 lease/所有权/恢复协议）。
+
 ## 2026-09-19 — 实施段续：I-04-A（deadline/清理预算/计时 oracle **设计卡**，两轮复审后 accepted_scoped）
 
 - **产出**（execution_runs/I-04-A/a20260919-01/）：binding.json（锚点 sha256 `046cc7dc…` 复验一致）、decision.md **v2**、oracle.md **v2**、commands.json（仅 2 条设计测量，无产品命令）、两份设计测量、review.md（两轮全文）、handoff.json。生产零改动；FF 树未动。

@@ -1,0 +1,48 @@
+{
+ "card": "I-04-B",
+ "attempt": "a20260919-01",
+ "date": "2026-09-19",
+ "title": "修复退避旧预算和 worker 最小10秒越界（实施卡）",
+ "implementer": "authoring session",
+ "independent_reviewer": "fresh read-only subagent (id in review.md)",
+ "dependency_receipts": {
+  "I-04-A": "execution_runs/I-04-A/a20260919-01/ (accepted_scoped; decision.md v2 signed B/C/epsilon)",
+  "I-00-C": "execution_runs/I-00-C/a20260919-01/ (accepted_scoped)",
+  "I-00-B": "execution_runs/I-00-B/a20260919-01/binding.json (source anchor sha256)"
+ },
+ "gate_check": "card execution gate: prerequisite cards independently accepted -> satisfied (I-04-A re-signed accepted_scoped 2026-09-19)",
+ "source_anchors_verified": {
+  "filing-fetch/scripts/fetch_filing.py": {
+   "production_sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+   "bytes": 48392,
+   "card_anchor_match": true,
+   "iso_copy_pre_patch_sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+   "production_head": "d35b6f5",
+   "production_touched": false
+  }
+ },
+ "iso": {
+  "root": "execution_runs/I-04-B/a20260919-01/iso/filing-fetch",
+  "created_from": "C:/Users/郑曾波/Projects/filing-fetch (scripts, tests, config, references, tools, pyproject.toml, SKILL.md, CHANGELOG.md)",
+  "interpreter": "execution_runs/I-04-B/a20260919-01/iso/venv/Scripts/python.exe (pytest 9.1.1 installed from cache; NOT the global Miniconda interpreter)",
+  "run_env": {"PYTHONPATH": "<iso>/scripts", "PYTHONIOENCODING": "utf-8"},
+  "patched_paths": ["iso/filing-fetch/scripts/fetch_filing.py", "iso/filing-fetch/tests/test_fetch_filing.py"]
+ },
+ "allowed_write_roots": [
+  "execution_runs/I-04-B/a20260919-01/",
+  "iso/filing-fetch/scripts/fetch_filing.py (isolated copy only)",
+  "iso/filing-fetch/tests/test_fetch_filing.py (isolated copy only)"
+ ],
+ "forbidden": [
+  "production filing-fetch files (the card allows the ISOLATED scripts/tests copy only)",
+  "real wiki/provider/worker contact; the only real subprocesses are stub scripts in temp dirs",
+  "running the historical pure_probes.py in place (read-only extraction only)",
+  "editing anything under reviews/",
+  "unbound command execution"
+ ],
+ "budget_values_signed_by_I04A": {
+  "epsilon_s": "0.4 (interim) -> re-measured by this card's pre-committed program (see after/i04b_real_timing.json)",
+  "cleanup_budget_C": "max(30.0, 2*resume_wait + graceful)",
+  "B_request_segment_s": 20
+ }
+}

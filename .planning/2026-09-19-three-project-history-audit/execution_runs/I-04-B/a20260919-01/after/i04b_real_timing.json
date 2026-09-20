@@ -1,0 +1,67 @@
+{
+  "artifact": "I-04-B real-process timing + epsilon re-measurement (merged)",
+  "interpreter": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-04-B\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "sessions": [
+    {
+      "session": "quiet",
+      "started_utc": "2026-09-19T23:51:36Z",
+      "started_monotonic": 433237.877,
+      "n_per_case": 50
+    },
+    {
+      "session": "load",
+      "started_utc": "2026-09-19T23:54:31Z",
+      "started_monotonic": 433413.112,
+      "n_per_case": 50
+    }
+  ],
+  "p95_definition": "sorted ascending, index int(0.95*(n-1)); no interpolation",
+  "pooled": {
+    "startup_s": {
+      "n": 100,
+      "p95": 0.1653
+    },
+    "cli_import_s": {
+      "n": 100,
+      "p95": 0.1907
+    },
+    "sleep_overshoot_s": {
+      "n": 100,
+      "p95": 0.1186
+    },
+    "kill_reap_overshoot_s": {
+      "n": 100,
+      "p95": 0.0285
+    }
+  },
+  "worst_p95_s": 0.1907,
+  "epsilon_re_measured_s": 0.38,
+  "epsilon_rule": "epsilon := 2*max(p95 over every case and session), capped at 2 s; the re-signing trigger is this pre-committed program, never a failed test, and no further loosening is allowed",
+  "trajectory": {
+    "request_segment": {
+      "budget_s": 0.6,
+      "start_monotonic": 433419.282013,
+      "end_monotonic": 433419.906104,
+      "observed_s": 0.6241,
+      "action": "no_status"
+    },
+    "cleanup_subcall": {
+      "cleanup_elapsed_seconds": 0.453,
+      "cleanup_calls": 1,
+      "cleanup_status": "restored",
+      "pause_action": "paused_by_us"
+    },
+    "cleanup_phase_wall": {
+      "start_monotonic": 433419.911181,
+      "end_monotonic": 433420.810439,
+      "observed_s": 0.8993,
+      "note": "the phase wall also contains one tasklist liveness probe per refcount entry; it is REPORTED and never bounded by an acceptance cap (I-04-A re-sign carry)"
+    },
+    "separation": {
+      "cleanup_elapsed_key_present": true,
+      "request_elapsed_key_present": false,
+      "note": "the unit path has no main(); the envelope-level proof of two independent keys is test_i04b_f_b4c_envelope_reports_request_and_cleanup_separately"
+    }
+  },
+  "ran_at_utc": "2026-09-19T23:54:39Z"
+}
