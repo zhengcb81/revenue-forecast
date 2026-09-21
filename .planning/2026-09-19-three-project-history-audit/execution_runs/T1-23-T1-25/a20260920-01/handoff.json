@@ -1,0 +1,193 @@
+{
+ "card": "T1-23 + T1-25",
+ "attempt": "a20260920-01",
+ "ruling_refs": [
+  "OWNER_DECISIONS.md section 13 T1-23 (section 7 item 5) -- M31 errata",
+  "OWNER_DECISIONS.md section 13 T1-25 (section 8 item 10) -- M31 close condition"
+ ],
+ "card_nature": "verification_that_the_errata_and_close_condition_are_landed",
+ "is_a_reclose": false,
+ "is_a_status_change": false,
+ "why_one_card": "T1-25's close condition exists BECAUSE of T1-23's defect: the stale record asserted a divergence, and a live record title asserting a divergence is exactly what R-1 catches. The errata and the close condition are the same cleanup from two sides.",
+ "overall": "pass",
+ "overall_means": "verification_passed -- NOT a re-close, NOT an acceptance, NOT a status change",
+ "status_moved_by_this_card": 0,
+ "artifacts": {
+  "verifier": {
+   "path": "scripts/verify_t1_23_t1_25.py",
+   "bytes": 17575,
+   "sha256": "a5eecb5b647b3219759533018a76aa5552184bdda6050bf06c89971319367e4b"
+  },
+  "result": {
+   "path": "t1_23_t1_25_verification.json",
+   "bytes": 9463,
+   "sha256": "4231bf052deecc881c48bc1601020af784c58fb7eb9fccbccf60fcee49e90611",
+   "hash_stable_across_two_runs": true
+  },
+  "decision": {
+   "path": "decision.md",
+   "bytes": 8182,
+   "sha256": "ee4b8f1977ee312705b463b218df07d3db4d33b1616466211f50028adc0ea12e"
+  }
+ },
+ "scope_guard": {
+  "anchor_file": "scripts/model_registry.py",
+  "anchor_sha256_expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "anchor_sha256_observed": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "anchor_unchanged": true,
+  "three_handoffs_present": true,
+  "product_files_changed": 0,
+  "product_files_changed_evidence": "git diff HEAD --name-only -- scripts/ returned empty"
+ },
+ "t1_23_errata": {
+  "allegation": "the M31 required list omits net_revenue_per_unit",
+  "verdict": "the allegation was a misreading; the original ruling does not hold",
+  "evidence": {
+   "card_document": "execution_v2/card_M31.md",
+   "card_line": 9,
+   "master_table": "execution_v2/model_cards.md",
+   "master_table_line": 2818,
+   "byte_identical": true,
+   "driver_count": 7,
+   "contains_net_revenue_per_unit": true
+  },
+  "applied_as": "F-02 withdrawal",
+  "form": "append-only: the superseded six-driver list is retained in each errata block",
+  "numerical_conclusions_touched": false
+ },
+ "t1_25_close_condition": {
+  "condition": "M31 may not be closed before R-1/R-2 are cleared",
+  "R-1": {
+   "site": "live OQ-04 title in the three cards' handoff.json",
+   "state": "cleared",
+   "evidence": "all three live titles now read 'numerical domain / boundary observations of this model'; reviewer_close_condition.R-1 contains 'cleared'; the superseded title is retained in live_record_corrections.R-1"
+  },
+  "R-2": {
+   "site": "the M31 constant in scripts/write_binding.py",
+   "state": "cleared",
+   "evidence": "exactly four copies (M29/M30/M31/_m2931_build) carry the correction banner; the other eight models' copies correctly do not; no copy regenerates a live false note"
+  },
+  "R-3": {
+   "state": "cleared",
+   "evidence": "live OQ-05 title corrected; superseded title kept"
+  },
+  "R-4": {
+   "state": "holds -- checked as a generator claim, which is what it is",
+   "evidence": "write_handoff.py:170-171 now emits the corrected OQ-05 title; pack_card.py measures oracle_md_precedes_product_stdout",
+   "why_not_grepped": "the stale sentence is absent from the generators precisely because it was fixed -- a literal grep would have been the wrong test"
+  },
+  "R-0": {
+   "state": "cannot be independently checked",
+   "evidence": "R-0 is not separately defined in review.md's residue list (R-1..R-4)",
+   "this_card_asserts": "nothing about R-0"
+  },
+  "satisfied": true
+ },
+ "declaration_stronger_than_registration": {
+  "observation": "each handoff.json's reviewer_close_condition says 'R-3_R-4_R-0: also corrected at the source', but live_record_corrections carries entries for R-1 and R-3 only -- there is no R-4 or R-0 entry",
+  "this_card_did_not_treat_that_as_a_defect": true,
+  "why": "a declaration is testable on its own merits; the correct move is to test it, not to assume it false or true",
+  "action_taken": "R-4 tested directly against the generators and found to hold; R-0 is not separately defined, so no assertion is made about it",
+  "note": "whether to add R-4/R-0 registration entries is the card owners' business; this card records the observation only"
+ },
+ "propositions_all_hold": true,
+ "propositions": [
+  "P-1 both rulings are as recorded",
+  "P-2 the errata target does not exist (the list has seven drivers)",
+  "P-3 the errata is applied on the claimant card and is append-only",
+  "P-4 R-1 is cleared in all three live records without erasing the old title",
+  "P-5 R-2 is fixed at source in exactly the four _m2931 copies",
+  "P-6 the R-4 generator claim holds",
+  "P-7 the close condition is satisfied",
+  "P-8 nothing was modified"
+ ],
+ "negative_controls": {
+  "principle": "a verifier that cannot go red is not a verifier",
+  "method": "mutate a COPY under .planning/_pwf_tmp/t2325_negctl/ -- the real files are never touched",
+  "controls": [
+   {
+    "id": "NC-1",
+    "pretence": "the allegation was true",
+    "expect_red": [
+     "P-2"
+    ],
+    "observed_red": [
+     "P-2"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-2",
+    "pretence": "R-1 was not cleared",
+    "expect_red": [
+     "P-4"
+    ],
+    "observed_red": [
+     "P-4"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-3",
+    "pretence": "a live title still asserts the divergence",
+    "expect_red": [
+     "P-4"
+    ],
+    "observed_red": [
+     "P-4"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-4",
+    "pretence": "the banner is on all copies, not just four",
+    "expect_red": [
+     "P-5"
+    ],
+    "observed_red": [
+     "P-5"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-5",
+    "pretence": "the generator still emits the stale wording",
+    "expect_red": [
+     "P-6"
+    ],
+    "observed_red": [
+     "P-6"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-6",
+    "pretence": "the errata is required on all three cards",
+    "expect_red": [
+     "P-3"
+    ],
+    "observed_red": [
+     "P-3"
+    ],
+    "rc": 3
+   }
+  ]
+ },
+ "errors_i_made_this_round": [
+  {
+   "error": "P-3's criterion required the errata on all three cards",
+   "symptom": "P-3 red",
+   "classification": "gate error, not data error",
+   "why": "the withdrawn allegation was made ABOUT M31's record, so only M31's binding carries an errata block. M29/M30 legitimately have none -- their records never asserted the divergence. Requiring an errata on a card that never made the claim is a criterion that cannot pass -- the same family as round 63's P-6 (skill trap #31).",
+   "correction": "require the errata on the claimant card; require the others only to be consistent",
+   "verified": "NC-6 restores the bad criterion and P-3 correctly goes red again",
+   "lesson": "'X appears in the three places that hold it' and 'X appears in the one place that produced it' are different criteria; when the former fails, it is usually not because X is missing but because X should not be in all three"
+  }
+ ],
+ "new_ruling_needs_arising_from_this_card": [],
+ "changes_to_other_rulings": [],
+ "status_transitions": [],
+ "tier2_signatures": [],
+ "deletions": 0,
+ "handoff_to": "M31's own reviewer, who owns the formal close; this card establishes only that the condition that reviewer set is now satisfied -- no TIER-2 signature is created or implied"
+}

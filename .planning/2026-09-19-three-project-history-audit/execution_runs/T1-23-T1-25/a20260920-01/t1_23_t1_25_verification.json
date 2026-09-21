@@ -1,0 +1,246 @@
+{
+ "attempt": "a20260920-01",
+ "card": "T1-23 + T1-25",
+ "close_condition": {
+  "R-1": "cleared (live OQ-04 title corrected; superseded title retained)",
+  "R-2": "cleared (four M29/M30/M31/_m2931_build copies corrected at source)",
+  "R-3": "cleared (live OQ-05 title corrected)",
+  "R-4": "the generator claim holds: write_handoff.py emits the corrected title and pack_card.py measures the ordering; note R-4/R-0 have NO live_record_corrections entry, so their correctness is established here on its own merits",
+  "condition": "M31 may not close before R-1/R-2 are cleared",
+  "ruling": "T1-25",
+  "satisfied": true
+ },
+ "errata": {
+  "allegation": "M31 required list omits net_revenue_per_unit",
+  "applied_as": "F-02 withdrawal, append-only",
+  "finding": "the allegation was a misreading; the list has seven drivers including it",
+  "ruling": "T1-23"
+ },
+ "nature": "verification that the M31 errata (T1-23) and the M31 close condition (T1-25) are landed; NOT a re-close and NOT a status change",
+ "new_ruling_needs": [],
+ "order": [
+  "P-1_both_rulings_are_as_recorded",
+  "P-2_the_errata_target_does_not_exist",
+  "P-3_the_errata_is_applied_and_append_only",
+  "P-4_R1_cleared_in_all_three_live_records",
+  "P-5_R2_fixed_at_source_in_exactly_four_copies",
+  "P-6_R4_generator_claim_holds",
+  "P-7_the_close_condition_is_satisfied",
+  "P-8_nothing_was_modified"
+ ],
+ "overall": "pass",
+ "propositions": {
+  "P-1_both_rulings_are_as_recorded": {
+   "holds": true,
+   "t1_23_authorises_pure_text_only": true,
+   "t1_23_blocks_close_until_done": true,
+   "t1_23_forbids_touching_numbers": true,
+   "t1_23_row_isolated": true,
+   "t1_23_says_errata": true,
+   "t1_23_says_original_ruling_does_not_hold": true,
+   "t1_25_blocks_until_R1_R2_cleared": true,
+   "t1_25_confirms": true,
+   "t1_25_exempts_M29_M30": true,
+   "t1_25_names_R1_site": true,
+   "t1_25_names_R2_site": true,
+   "t1_25_row_isolated": true
+  },
+  "P-2_the_errata_target_does_not_exist": {
+   "allegation_was_false": true,
+   "byte_identical": true,
+   "card_line_reproduced": "- 必填：`opening_inventory`、`saleable_production`、`purchased_units`、`scrapped_units`、`sold_units`、`closing_inventory`、`net_revenue_per_unit`；可选默认：`{}`。",
+   "contains_net_revenue_per_unit": true,
+   "driver_count": 7,
+   "holds": true,
+   "master_line_reproduced": "- 必填：`opening_inventory`、`saleable_production`、`purchased_units`、`scrapped_units`、`sold_units`、`closing_inventory`、`net_revenue_per_unit`；可选默认：`{}`。"
+  },
+  "P-3_the_errata_is_applied_and_append_only": {
+   "all_cards_consistent": true,
+   "errata_present_on_the_claimant": true,
+   "holds": true,
+   "non_claimants_correctly_carry_no_errata": true,
+   "old_six_driver_list_retained_in_errata": true,
+   "per_card": {
+    "M29": {
+     "divergence_note": null,
+     "has_errata": false,
+     "matches_registry": true,
+     "superseded_list": null
+    },
+    "M30": {
+     "divergence_note": null,
+     "has_errata": false,
+     "matches_registry": true,
+     "superseded_list": null
+    },
+    "M31": {
+     "divergence_note": null,
+     "has_errata": true,
+     "matches_registry": true,
+     "superseded_list": [
+      "opening_inventory",
+      "saleable_production",
+      "purchased_units",
+      "scrapped_units",
+      "sold_units",
+      "closing_inventory"
+     ]
+    }
+   },
+   "t1_12_append_only_form": true,
+   "the_claimant_is_M31": "the withdrawn allegation was about M31's record"
+  },
+  "P-4_R1_cleared_in_all_three_live_records": {
+   "all_R1_cleared": true,
+   "all_superseded_titles_kept": true,
+   "all_titles_corrected": true,
+   "holds": true,
+   "no_live_title_asserts_divergence": true,
+   "per_card": {
+    "M29": {
+     "R1_marked_cleared": true,
+     "live_title": "numerical domain / boundary observations of this model",
+     "superseded_title_kept": true,
+     "title_shows_corrected_form": true
+    },
+    "M30": {
+     "R1_marked_cleared": true,
+     "live_title": "numerical domain / boundary observations of this model",
+     "superseded_title_kept": true,
+     "title_shows_corrected_form": true
+    },
+    "M31": {
+     "R1_marked_cleared": true,
+     "live_title": "numerical domain / boundary observations of this model",
+     "superseded_title_kept": true,
+     "title_shows_corrected_form": true
+    }
+   }
+  },
+  "P-5_R2_fixed_at_source_in_exactly_four_copies": {
+   "banner_copies_are_exactly_the_m2931_family": true,
+   "copies_found": 12,
+   "copies_with_banner": 4,
+   "holds": true,
+   "no_copy_regenerates_a_live_false_note": true,
+   "per_copy": {
+    "M01/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": false,
+     "has_net_revenue_per_unit": false,
+     "regenerates_a_live_false_note": false
+    },
+    "M02/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": false,
+     "has_net_revenue_per_unit": false,
+     "regenerates_a_live_false_note": false
+    },
+    "M03/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": false,
+     "has_net_revenue_per_unit": false,
+     "regenerates_a_live_false_note": false
+    },
+    "M04/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": false,
+     "has_net_revenue_per_unit": false,
+     "regenerates_a_live_false_note": false
+    },
+    "M17/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": false,
+     "has_net_revenue_per_unit": false,
+     "regenerates_a_live_false_note": false
+    },
+    "M18/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": false,
+     "has_net_revenue_per_unit": false,
+     "regenerates_a_live_false_note": false
+    },
+    "M19/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": false,
+     "has_net_revenue_per_unit": false,
+     "regenerates_a_live_false_note": false
+    },
+    "M20/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": false,
+     "has_net_revenue_per_unit": false,
+     "regenerates_a_live_false_note": false
+    },
+    "M29/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": true,
+     "has_net_revenue_per_unit": true,
+     "regenerates_a_live_false_note": false
+    },
+    "M30/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": true,
+     "has_net_revenue_per_unit": true,
+     "regenerates_a_live_false_note": false
+    },
+    "M31/a20260919-01/scripts/write_binding.py": {
+     "carries_correction_banner": true,
+     "has_net_revenue_per_unit": true,
+     "regenerates_a_live_false_note": false
+    },
+    "_m2931_build/write_binding.py": {
+     "carries_correction_banner": true,
+     "has_net_revenue_per_unit": true,
+     "regenerates_a_live_false_note": false
+    }
+   }
+  },
+  "P-6_R4_generator_claim_holds": {
+   "R0_has_no_live_record_corrections_entry": true,
+   "R4_has_no_live_record_corrections_entry": true,
+   "claim_is_checked_on_its_merits_not_via_a_missing_entry": true,
+   "generator_emits_corrected_title": true,
+   "holds": true,
+   "pack_card_measures_the_ordering": true,
+   "stale_sentence_absent_from_generator": true,
+   "this_is_how_we_know_absent_means_fixed": "the sentence is absent from write_handoff.py because line 170-171 now emits the corrected OQ-05 title, not because the wording is templated elsewhere"
+  },
+  "P-7_the_close_condition_is_satisfied": {
+   "all_R1_R2_cleared": true,
+   "all_state_accepted_scoped": true,
+   "close_decision_still_belongs_to_the_reviewer": true,
+   "holds": true,
+   "implementer_never_signed_acceptance": true,
+   "per_card": {
+    "M29": {
+     "R1": "cleared (live OQ-04 title corrected, superseded title kept)",
+     "R2": "cleared (all four write_binding.py copies carry the seven-driver/True constant with no live False and a correction banner; the source was fixed, not merely annotated)",
+     "implementer_signed": false,
+     "state": "accepted_scoped",
+     "status": "accepted_scoped"
+    },
+    "M30": {
+     "R1": "cleared (live OQ-04 title corrected, superseded title kept)",
+     "R2": "cleared (all four write_binding.py copies carry the seven-driver/True constant with no live False and a correction banner; the source was fixed, not merely annotated)",
+     "implementer_signed": false,
+     "state": "accepted_scoped",
+     "status": "accepted_scoped"
+    },
+    "M31": {
+     "R1": "cleared (live OQ-04 title corrected, superseded title kept)",
+     "R2": "cleared (all four write_binding.py copies carry the seven-driver/True constant with no live False and a correction banner; the source was fixed, not merely annotated)",
+     "implementer_signed": false,
+     "state": "accepted_scoped",
+     "status": "accepted_scoped"
+    }
+   },
+   "this_card_changes_no_status": true
+  },
+  "P-8_nothing_was_modified": {
+   "holds": true,
+   "registry_sha_after_all_reads": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "registry_unchanged": true,
+   "this_card_edits_no_record": true,
+   "this_card_removes_nothing": true
+  },
+  "SCOPE": {
+   "card_docs_present": true,
+   "missing": [],
+   "registry_exists": true,
+   "registry_matches_anchor": true,
+   "three_handoffs_present": true
+  }
+ },
+ "status_moved_by_this_card": false
+}
