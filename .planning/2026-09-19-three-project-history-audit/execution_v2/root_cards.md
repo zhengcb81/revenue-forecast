@@ -203,3 +203,101 @@ Parent：I-17。依赖：I-17-A、I-07-C、I-12、I-13、I-00-C。Owner：未参
 5. 输出最终报告包含已完成、限域通过、blocked、合理退役/NA及下一动作。禁止以“全部通过，除……”掩盖阻断项。
 
 退出：结论与证据一致，失败也能如实关闭本次验收工作；产品完成资格仅授予确实满足的范围。
+
+## I-14-D — 脱敏裸值贪婪语义收窄到单 token（C13 立卡）
+
+Parent：I-14。依赖：I-00-B。Owner：日志维护者；独立 reviewer。
+
+来源：I-14-C r5 的 `decision.md` §C13。该缺陷已**冻结不改**（`test_f08_c13_multiline_loss_is_frozen_not_hidden`），
+因为它**改则破坏 E4b 的 193 字符基线**；故本卡是它独立的、有自己 oracle 的收窄卡。
+
+锚点：CW/src/company_wiki/source_catalog/redactor（`_BARE_VALUE`，源自 r1，`X+(?:\s+X+)*`）；
+I-14-C 的 `iso/product_r2` 证明该行为**继承自 r1、非 r3/r4 引入**。
+
+1. 先量出**当前**基线：裸值停止集为 `,;&"'|` 加空白，且**未加引号的值跨换行**。
+   实测（F-I14C-R4-02）：`a=1 token=<marker> b=2` → `a=1 token=<redacted>`；
+   而 `'upload failed for token=<marker> doc=17\nstage=summarize code=llm_global_failure request_id=req-1'`
+   → `'upload failed for token=<redacted>'`（reviewer 的 24 字符 marker：**112 字符进、34 字符出**，
+   `doc=17`、`stage=summarize`、`code=llm_global_failure`、`request_id=req-1` 全部丢失）。
+2. 收窄候选：裸值只吃**单个 token**（遇空白即停）。注意这不是"截断"——34 ≪ 200 的截断上限。
+3. **新 oracle 必写**：E4b 的 193 字符接受长度**正是由当前行为导出的**；收窄后该基线必然改变，
+   信封宽度也会变。新 oracle 必须在改代码**之前**冻结，且不得调用被测函数生成 expected。
+4. 负例：多行诊断（`doc=17`/`stage=`/`code=`/`request_id=`）在收窄后**必须存活**；
+   纯合成 marker 必须仍被脱敏；既有 rule table `cred-multiline-swallow` 系列需按新语义更新
+   （更新的是**语义期望**，不是把失败改绿）。
+5. 不得以"冻结测试失败"为据回退；该冻结测试的**唯一正当结局**是本卡写完新 oracle 后由 reviewer 改写它。
+
+退出：裸值不再跨行吞掉后续诊断键，且 E4b 新基线经独立 reviewer 复算。
+恢复：回退 redactor 与 rule table 到本卡前像；保留合成日志。
+
+## I-14-E — 重启节点的时序抖动（负载相关，非树差异）
+
+Parent：I-14。依赖：I-00-B。Owner：测试维护者；独立 reviewer。
+
+来源：I-14-C r5 的 `decision.md` §19-②（`OWNER_DECISIONS.md` §13 T1-7 授权立卡）。
+
+1. 观测带（已实测）：每树 12 次 × 2 轮 = 24 次运行中 **6/24 失败**。
+   关键事实：**"失败更多的那棵树"在两轮之间翻转** ⇒ 该抖动是**负载相关**，不是树差异。
+2. 因此本卡修的是**产品测试的时序假设**，不是产品实现。**不得**为让测试变绿而改产品代码。
+3. 先冻结观测：把两轮 24 次的原始记录（树、轮次、通过/失败、负载快照）写成 oracle 的一部分，
+   expected 由该原始记录**手算**，不由重跑生成。
+4. 两种重启节点分别建立可失败用例：抖动窗口以**独立测量**出的带宽为准，不得事后放宽到"刚好通过"。
+5. 若抖动可归因到某个具体资源争用（非"随机"），记录该归因；否则如实写"未定位到单一根因"。
+6. `~25%` 是观测值，**不是**冻结阈值；本卡不得把它升格为规范常量。
+
+退出：测试在负载波动下不再随机红/绿，且无需改动产品代码。
+恢复：回退测试改动；保留 24 次原始观测记录。
+
+## I-14-F — 深层 cwd 下的 WinError 206（产品侧短 basetemp 约定）
+
+Parent：I-14。依赖：I-00-B。Owner：测试维护者；独立 reviewer。
+
+来源：I-14-C r5 的 `decision.md` §19-③（`OWNER_DECISIONS.md` §13 T1-7 授权立卡）。
+
+1. 观测（已实测）：cwd 路径 166/167 字符时，两种节点**在两棵树上 3/3 全部失败**；
+   改短 basetemp（74/75 字符）后 **3/3 全部通过**。⇒ 与 cwd 深度强相关，与树无关。
+2. 这是 `WinError 206`（文件名或扩展名太长）在**产品侧**的约定问题：应为测试/子进程建立
+   **短路径 basetemp 约定**，而不是要求调用方把 cwd 挪浅。
+3. 约定须写成可判据：给定 `cwd` 与 `basetemp` 长度，何时使用短路径回退、回退到哪里、如何清理。
+4. 负例：一个故意超深的 cwd 必须**被约定接住并成功**，而不是报 206；一个正常深度的 cwd
+   不得被无谓地改道（否则掩盖真实路径问题）。
+5. 不得以"把 cwd 缩短"当作修复——那是绕开问题。也不得靠改 `pytest` 全局配置放宽。
+6. `START_HERE.md` 已有纪律：`pytest --basetemp` 只能指向**本次新建的空目录**，
+   不得指向 attempt 根、证据根或上次测试目录；本卡约定必须与该纪律一致。
+
+退出：深 cwd 下不再出现 206，且正常 cwd 行为不变。
+恢复：回退约定实现；保留 166/167 与 74/75 两组原始观测。
+
+## I-14-H — natural_window.py 的两个产品级缺陷
+
+Parent：I-14。依赖：I-00-B。Owner：观测逻辑维护者；独立 reviewer。
+
+来源：`OWNER_DECISIONS.md` §7 第 4 项 + §13 **T1-10**（授权立卡，**产品 + 计划双侧**）。
+
+锚点：I-14-B 的 `iso/natural_window.py`（`SUT_VERSION = "i14b-after-2"`；
+`BASIS_REGISTRY` 在 `:60`；`derive_window` 在 `:128`；`_claim.basis` 分发在 `:199-222`）。
+
+1. **缺陷①：`claim.basis` 无枚举校验。** 实测被 accept：`basis=''`、`basis` 缺键、`basis=None`、
+   `basis='wall_clock'` **全部被接受** ⇒ J1/J2/J3/J11 可被一个字段名绕过。
+   修复：`basis` 必须属于封闭枚举 `{sample_span, command_total, observation_plus_quick_check,
+   sum_of_windows, union_of_windows}`；未登记/空串/`null`/缺键一律**拒绝**（`R-BASIS-UNKNOWN`）。
+2. **缺陷②：`union_of_windows`/`sum_of_windows` 把 quick_check 计入自然观察时长。**
+   实测：**2220 被接受而诚实的 1740 被拒** ⇒ 方向倒置。
+   修复：自然观察区间**只由观察阶段构成**；无 `windows[]` 时 `intervals = [(started_at,
+   observation_finished_at)]`，quick_check **永不进入**；`union_seconds`/`sum_seconds` 同为观察口径。
+   并另加 J15 覆盖"把 quick_check 改名成第二个窗"的变体。
+3. **⚠ ②已烧进冻结期望。** `harness/frozen_expectations.json`（r1，sha256
+   `3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b`）中
+   `expected.W1.computed.union_seconds = 2220`。
+   修复**必须同时**以**追加式 provenance** 更正该期望（旧 2220 → 新 1740），
+   并新增锚定断言 `sum_seconds=1740`、`observation_interval_count=1`、
+   `quick_check_overlap_seconds=0`、`quick_check_in_observation_intervals=false`。
+4. **不得回改冻结正文。** 旧值必须保留于 `expected_superseded`（含 old/new/`pre_image_sha256`/时刻/原因），
+   并附 r1→r2 期望映射的机械 unified diff。**"从未有过 2220"是禁止的写法**——
+   I-14-B 已按此形态落地过 r2，本卡沿用同一形态（`oracle.md` §11.4 为范本）。
+5. 注意 I-14-B 的 r2 已**先改实现、后冻结期望**（与其 §4 理想次序相反）。本卡若沿用，
+   必须同样如实声明时序，并以 `before/cmd-CASES-r2-r1sut` 型独立复现证明期望不是"照修好的实现写"。
+6. 不得改 `SUT_VERSION` 以掩盖差异；不得以"更新期望贴合实现"代替建立新 oracle。
+
+退出：两个缺陷各有可失败用例（RED→GREEN），且期望更正以追加式 provenance 留痕。
+恢复：回退实现与期望追加节；保留 `expected_superseded` 与全部原始输出。

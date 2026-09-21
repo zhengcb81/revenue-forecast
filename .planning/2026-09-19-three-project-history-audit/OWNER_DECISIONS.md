@@ -270,3 +270,78 @@ owner 已裁，等于**伪造签名**。故本批按三类分别落地：
 > **「总的批准」不得膨胀为「所有的结论」**。owner 的总授权解除的是**启动与实施许可**；
 > 凡专业裁判属他方者（TIER-2），最终结论**必须由该方出具**。任何把 TIER-2 记为
 > 「owner 已裁」的落地，等同伪造签名。本批已按此拆分，逐项可核。
+
+---
+
+## 十四、【已裁定·第五批】R-1/R-2 清除事实确认 + M31 勘误登记（2026-09-20，编排层执行）
+
+> **性质说明**：本节不是新裁定，而是**对本表既有条目的事实更正与执行登记**。
+> §8 第 10 项与 §13 **T1-25** 曾写「**R-1/R-2 清除前不得关闭（M31）**」，
+> 并把 R-1、R-2 列为**未清除**的残项。本节核实：**两者都已在 2026-09-20T03:38:5x 清除**，
+> 时间**早于**本批（第四批）记账。原措辞是**事实滞后**，不是未完成的授权。
+
+### 14.1 R-1 —— 已清除（实测证据）
+
+**原描述**：三卡 `handoff.json` 的 live `OQ-04.title` 仍称存在 "M31 card-text divergence"。
+
+**实测（M29 / M30 / M31 三卡一致）**：
+
+| 检查点 | 实测值 |
+|---|---|
+| `open_questions[3].title`（live） | `numerical domain / boundary observations of this model` —— **已不含** divergence 措辞 |
+| `reviewer_status.reviewer_close_condition.R-1` | `cleared (live OQ-04 title corrected, superseded title kept)` |
+| `live_record_corrections.R-1.superseded_title` | `numerical domain / boundary observations incl. the M31 card-text divergence on net_revenue_per_unit` —— **旧标题完整保留**（追加式，未回改） |
+| `reviewer_status` 中的 close condition 记录 | 三卡**全部**为 `cleared` |
+
+⇒ **R-1 已清除，且符合 T1-12 的追加形态**（旧值保留在 `superseded_title`，未抹去）。
+
+### 14.2 R-2 —— 已清除（实测证据）
+
+**原描述**：`scripts/write_binding.py`（三 attempt + `_m2931_build`）的 M31 常量仍是
+6 项 / `False` / "does NOT list"（**重跑即再生成该不实记录**）。
+
+**实测（四个副本全部一致）**：
+
+| 检查点 | 实测值 |
+|---|---|
+| 文件头 banner | `!!! M31 CARD-TEXT CONSTANT CORRECTED (F-02 withdrawal, 2026-09-20T03:38:51.970887+00:00) !!!` |
+| `declared_required` | **七个** driver，含 `net_revenue_per_unit` |
+| `card_text_required_list` | **七个** driver，与 `declared_required` 同集合 |
+| `card_text_required_matches_registry` | `True`（原为 `False`） |
+| `card_text_divergence_note` | `None`（原为不实措辞） |
+| 旧值去向 | `evidence/M31/binding.json` 的 `card_text_required_list_vs_registry.errata.superseded_values`（**保留，未抹除**） |
+| 四个副本 | `M29/…/scripts/`、`M30/…/scripts/`、`M31/…/scripts/`、`_m2931_build/` —— M31 相关引用**全部为更正后版本** |
+
+⇒ **R-2 已清除**：重跑 `write_binding.py` **不会**再生成该不实记录。
+
+### 14.3 M31 勘误（T1-23）—— 事实确认
+
+**原指控**：「卡片必填清单不含 `net_revenue_per_unit`」（`binding.json` / `oracle.md` §12 / `handoff.json` OQ-04 标题）。
+
+**实测（逐字节）**：
+
+```
+card_M31.md:9        = - 必填：opening_inventory、…、closing_inventory、net_revenue_per_unit；可选默认：(空映射)
+model_cards.md:2818  = - 必填：opening_inventory、…、closing_inventory、net_revenue_per_unit；可选默认：(空映射)
+byte-identical = True
+```
+
+⇒ **两处清单都是七项、含 `net_revenue_per_unit`、且逐字节相同**。原指控为**误读**，已由 F-02 撤回。
+本项按 T1-23 记为**勘误**，**不改任何数值结论**。
+
+### 14.4 由此产生的状态更正
+
+| 项 | 原措辞 | 更正后 |
+|---|---|---|
+| §8 第 10 项「M31 的关闭条件」 | 「**R-1/R-2 清除前不得关闭**」 | **R-1/R-2 均已清除** ⇒ 该前置条件**已满足**；M31 关闭不再受此项阻塞 |
+| §13 T1-25 | 「**确认**：R-1/R-2 清除前不得关闭」 | 该**确认本身维持**（作为规则），但其**前提已达成** |
+| §13 T1-23 | 「授权做纯文字勘误；勘误完成前 M31 不得关闭」 | 勘误对象经实测验明为**误读**，勘误以本节登记**闭合**；M31 的 close 前置**满足** |
+
+> **纪律**：本节**只登记事实与更正**，**不改**任何 M/K 卡的冻结证据、不做任何 `status` 转移。
+> M31 是否正式关闭仍由该卡自己的 reviewer 按 `review_and_handoff.md` 决定；
+> 本节只证明「**阻塞它的那个前置条件已经不成立了**」。
+
+### 14.5 本节执行清单
+
+- 未修改 `write_binding.py`（四个副本）、未修改三卡 `handoff.json`、未修改任何冻结证据。
+- 本节由编排层按 owner 已授权范围（T1-23 勘误 + T1-25 关闭条件）执行，属**登记**而非裁定。

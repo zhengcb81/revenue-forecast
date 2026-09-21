@@ -18,6 +18,10 @@
 | I-14-A | I-14 | [性能测量先验证失败分支](card_I-14-A.md) | I-00-C | planned |
 | I-14-B | I-14 | [自然时间与UI观察证据](card_I-14-B.md) | I-14-A | planned |
 | I-14-C | I-14 | [在真实异常出口验证脱敏](card_I-14-C.md) | I-00-B | planned |
+| I-14-D | I-14 | [脱敏裸值贪婪语义收窄到单 token（C13 立卡）](card_I-14-D.md) | I-00-B | planned |
+| I-14-E | I-14 | [重启节点的时序抖动（负载相关，非树差异）](card_I-14-E.md) | I-00-B | planned |
+| I-14-F | I-14 | [深层 cwd 下的 WinError 206（产品侧短 basetemp 约定）](card_I-14-F.md) | I-00-B | planned |
+| I-14-H | I-14 | [natural_window.py 的两个产品级缺陷](card_I-14-H.md) | I-00-B | planned |
 | I-16-A | I-16 | [绑定拟部署完整组合](card_I-16-A.md) | I-07-E, I-07-D, I-08, I-09, I-13, I-14, I-15 | planned |
 | I-16-B | I-16 | [部署后的同入口复验](card_I-16-B.md) | I-16-A | planned |
 | I-17-A | I-17 | [按原义务积累自然观察](card_I-17-A.md) | I-16-B, I-14-B | planned |
@@ -81,6 +85,7 @@
 | M30 | I-10 | [有限市场采用](card_M30.md) | I-00-B, I-00-C | planned |
 | M31 | I-10 | [库存与销售桥](card_M31.md) | I-00-B, I-00-C | planned |
 | I-10-A | I-10 | [先行完成实际采用模型的专业披露适配](card_I-10-A.md) | I-07-B, M01, M02, M03, M04, M05, M06, M07, M08, M09, M10, M11, M12, M13, M14, M15, M16, M17, M18, M19, M20, M21, M22, M23, M24, M25, M26, M27, M28, M29, M30, M31 | planned |
+| I-10-B | I-10 | [model_registry 的静默补 0 与按名字定符号](card_I-10-B.md) | I-00-B | planned |
 | I-11-A | I-11 | [冻结定性到参数的可证伪命题](card_I-11-A.md) | I-00-B, I-00-C | planned |
 | I-11-B | I-11 | [校准参数幅度和联合情景](card_I-11-B.md) | I-11-A, I-10-A | planned |
 | I-11-C | I-11 | [独立反方审查与触发更新](card_I-11-C.md) | I-11-B | planned |
@@ -100,4 +105,7 @@
 3. 正式预测与买方质量；准确性按独立评估设计执行，不用公式通过代替。
 4. 部署与真实观察，最后按原义务终审；当前任何卡都没有已实施或已部署资格。
 
-总计86张执行卡；31模型逐项卡属于I-10，单独授予公式/披露/准确性资格。
+总计91张执行卡；31模型逐项卡属于I-10，单独授予公式/披露/准确性资格。
+owner 于 2026-09-20 总授权新立的 5 张卡（I-14-D / I-14-E / I-14-F / I-14-H / I-10-B）
+来自 OWNER_DECISIONS.md §13 T1-7 / T1-10 / T1-22；它们只登记**产品缺陷进入受控修卡流程**，
+不构成任何实施资格，也不改任何既有冻结件。
