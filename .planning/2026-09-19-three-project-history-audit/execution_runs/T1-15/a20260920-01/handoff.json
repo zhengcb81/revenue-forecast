@@ -1,0 +1,337 @@
+{
+ "card": "T1-15",
+ "attempt": "a20260920-01",
+ "ruling_refs": [
+  "OWNER_DECISIONS.md section 13 table row T1-15",
+  "OWNER_DECISIONS.md section 4 'M08 three steps' (L60)",
+  "OWNER_DECISIONS.md section 10 execution-action table (L116/L124)"
+ ],
+ "card_nature": "independent_verification_of_M08_three_step_remediation",
+ "is_a_status_change": false,
+ "is_a_re_close": false,
+ "is_a_signature": false,
+ "headline": "Of the three ruled steps, step 2 was ALREADY ON DISK when this card picked it up, step 1 is confirmed from the implementation rather than from prose, and step 3 was done by M08's own reviewer on the same code root. This card verifies; it does not execute, accept, or sign.",
+ "overall": "pass",
+ "overall_means": "verification passed -- NOT an acceptance, NOT a status change, NOT a TIER-2 signature",
+ "status_moved_by_this_card": 0,
+ "tier2_signatures_created": 0,
+ "deletions": 0,
+ "artifacts": {
+  "verifier": {
+   "path": "scripts/verify_t1_15.py",
+   "bytes": 30573,
+   "sha256": "06f91baeb9464a02e0b4bf25f02cbf2573ce90bd8b632300fedb066993cefd3c",
+   "crlf_count": 0,
+   "note": "hash computed from the working tree; the working tree is LF"
+  },
+  "result": {
+   "path": "t1_15_verification.json",
+   "bytes": 18409,
+   "sha256": "2ad2c44c7811df9a2bb64e1a82a4bb4a7ac1806fc0352004b3af0a74ff384151",
+   "hash_stable_across_two_runs": true
+  },
+  "decision": {
+   "path": "decision.md",
+   "bytes": 11957,
+   "sha256": "5a355439948ae2019ee3975f0baea8fb40bea1fbb16a45ae7038cc6f644ae696"
+  },
+  "handoff": {
+   "path": "handoff.json",
+   "sha256": null,
+   "why_null": "self-reference: a file cannot register its own hash inside itself"
+  }
+ },
+ "step_2_was_already_landed": {
+  "expected_by_this_card_on_pickup": "this card expected to PERFORM the owner-authorised index correction, because the orchestration layer had been dispatched twice and had recorded only PROVENANCE events",
+  "found": "the correction is already on disk in all four targets",
+  "evidence": {
+   "all_four_lines_carry_the_signed_form": true,
+   "bare_chain_form_count_in_every_file": 0,
+   "signed_form_count_in_every_file": 1,
+   "expected_50_untouched": true
+  },
+  "the_write_script_that_aborted": {
+   "what": "apply_t1_15_read_c_correction.py",
+   "why_it_aborted": "its pre-image guard fired: all four files matched NEITHER the frozen pre-image NOR the frozen post-image",
+   "was_the_abort_correct": true,
+   "why": "the guard did its job -- the files had moved on. But 'the frozen hashes do not match' and 'the correction is missing' are DIFFERENT facts, and conflating them would have produced a false negative. The script was rewritten as a verifier.",
+   "disposition": "retained in place as a superseded record at _pwf_tmp/t15_apply_aborted_as_superseded.py -- not deleted"
+  }
+ },
+ "step_1_reading_C": {
+  "method": "read the implementation directly; took no card prose on trust and consulted no memory",
+  "source": "scripts/model_registry.py, _project_backlog",
+  "measured": {
+   "cancellations_enter_negated": true,
+   "closing_backlog_enters_negated": true,
+   "contract_changes_enters_unnegated": true,
+   "remeasurements_enters_unnegated": true,
+   "spec_formula_string_uses_plus": true
+  },
+  "conclusion": "the negative signs sit on the NEGATIVE items (-cancellations, -closing_backlog) and the two remeasurement items enter unnegated; the spec formula string likewise reads '+ contract_changes + backlog_remeasurements'. That is reading C.",
+  "important_non_evidence": {
+   "claim": "read A and read C both yield 50 on this input",
+   "read_A_arithmetic": 50,
+   "read_C_arithmetic": 50,
+   "why_it_matters": "agreeing with the frozen expectation [50] therefore does NOT distinguish A from C. The distinguishing observation needs contract_changes = +10, under which C gives 85 and A gives 65. The two readings are NOT identical expressions."
+  }
+ },
+ "step_3_reviewer_rerun": {
+  "owned_by": "M08's independent reviewer, not this card",
+  "this_card_did": "verified that it happened and on which code root; did not re-run it",
+  "code_root_model_registry_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "same_as_live_anchor": true,
+  "evidence_file": "execution_runs/M08/a20260919-01/recovery/rerun_after_owner_correction_20260920/rerun_summary.json",
+  "raw_exit_code": 0,
+  "positive_actual": [
+   50.0
+  ],
+  "defaults": [
+   65.0
+  ],
+  "negative_cases_passed": "11/11",
+  "transcribed_into": "review.md lines 143-178",
+  "card_status": "accepted_scoped"
+ },
+ "finding": {
+  "id": "F-T1-15-01",
+  "severity": "P3",
+  "blocking": false,
+  "site": "execution_runs/M08/a20260919-01/recovery/owner_ruling_20260920_index_correction/{PROVENANCE.md, provenance.json}",
+  "what": "the PERMANENT provenance event registers sha256_before / sha256_after for the four index files, and the live files match NEITHER -- and neither do the byte-exact pre-image copies stored alongside the event in the same directory",
+  "measured_causes": [
+   "the recorded hashes are over CRLF byte streams while the committed blobs are LF (live crlf_count is 0 in every working-tree file)",
+   "three of the four files were modified again after the correcting commit, so the recorded post-image is not reconstructible from disk either"
+  ],
+  "what_is_NOT_wrong": "the correction itself is on disk and the recorded delta is exactly the 2 bytes the correction implies, on every one of the four files. This is a STALE REGISTRATION, not a lost correction.",
+  "recorded_delta_is_exactly_2_on_every_file": true,
+  "pre_image_copies_match_no_recorded_hash": true,
+  "action_taken_by_this_card": "none -- this card does not edit the provenance event",
+  "recommended_to": "the M08 owner / the author of that provenance event"
+ },
+ "observation_not_a_defect": {
+  "what": "the step-3 ruling text in review.md states the archived rerun_summary.json is 4185 B; the file on disk is 4062 B",
+  "this_card_does_not_call_it_a_defect": true,
+  "this_card_does_not_edit_the_transcript": true,
+  "belongs_to": "the transcriber of that ruling text"
+ },
+ "propositions_all_hold": true,
+ "propositions": [
+  "P-1 the three steps are as ruled",
+  "P-2 reading C is the implementation",
+  "P-3 all four targets carry reading C at the ruled lines",
+  "P-4 the expectation [50] is unchanged",
+  "P-5 the frozen provenance no longer describes the live bytes",
+  "P-6 step 3 happened on the same code root",
+  "P-7 the two JSON carriers still parse",
+  "P-8 nothing was modified"
+ ],
+ "negative_controls": {
+  "principle": "a verifier that cannot go red is not a verifier",
+  "method": "mutate a COPY under .planning/_pwf_tmp/t15_negctl/ -- the real files are never touched; each control gets its own scratch tree, and the tree directory name is the hash of the mutated script so a stale run cannot be silently re-read",
+  "controls": [
+   {
+    "id": "NC-1",
+    "pretence": "the correction was reverted",
+    "expect_red": [
+     "P-3"
+    ],
+    "observed_red": [
+     "P-3",
+     "P-5"
+    ],
+    "ok": true
+   },
+   {
+    "id": "NC-2",
+    "pretence": "the answer was changed, not the sign",
+    "expect_red": [
+     "P-4"
+    ],
+    "observed_red": [
+     "P-3",
+     "P-4",
+     "P-5"
+    ],
+    "ok": true
+   },
+   {
+    "id": "NC-3",
+    "pretence": "the signed form was applied twice",
+    "expect_red": [
+     "P-3"
+    ],
+    "observed_red": [
+     "P-3",
+     "P-5"
+    ],
+    "ok": true
+   },
+   {
+    "id": "NC-4",
+    "pretence": "the frozen registration DOES match the live bytes",
+    "expect_red": [
+     "P-5"
+    ],
+    "observed_red": [
+     "P-5"
+    ],
+    "ok": true
+   },
+   {
+    "id": "NC-5",
+    "pretence": "the sign-convention gate is replaced by a constant",
+    "expect_red": [
+     "P-2"
+    ],
+    "observed_red": [
+     "P-2"
+    ],
+    "ok": true
+   },
+   {
+    "id": "NC-6",
+    "pretence": "step 3 ran on a different code root",
+    "expect_red": [
+     "P-6"
+    ],
+    "observed_red": [
+     "P-6"
+    ],
+    "ok": true
+   },
+   {
+    "id": "NC-7",
+    "pretence": "a JSON carrier no longer parses",
+    "expect_red": [
+     "P-7"
+    ],
+    "observed_red": [
+     "P-4",
+     "P-5",
+     "P-7"
+    ],
+    "ok": true
+   },
+   {
+    "id": "NC-8",
+    "pretence": "the ruling row authorises the wrong reading",
+    "expect_red": [
+     "P-1"
+    ],
+    "observed_red": [
+     "P-1"
+    ],
+    "ok": true
+   }
+  ],
+  "all_ok": true,
+  "side_effect_worth_noting": "NC-2 and NC-7 also trip P-5, and legitimately so -- 'the live bytes changed' is precisely what P-5 asserts. That does not blunt P-5's discriminating power: NC-4 trips P-5 and nothing else."
+ },
+ "errors_i_made_this_round": [
+  {
+   "n": 1,
+   "error": "P-1's criterion demanded something the source text does not contain",
+   "symptom": "P-1 red; ruling_shows_the_bare_chain_as_what_it_replaces = False",
+   "classification": "criterion error (same family as skill trap #31)",
+   "why": "the ruling ROW prints only the signed form; the bare chain is named in section 4. Requiring the row to show the stale form asked for a fact that lives in a different place.",
+   "correction": "check the two sites separately, each for what it actually carries",
+   "verified": "P-1 green after the fix; NC-8 rewrites the row and P-1 goes red again"
+  },
+  {
+   "n": 2,
+   "error": "P-2's criterion was written from memory instead of from the source",
+   "symptom": "P-2 red; contract_changes_enters_unnegated = False and two more",
+   "classification": "criterion error (recurrence of traps #24/#27)",
+   "why": "I grepped for '+drivers[\"contract_changes\"]' from memory. The real source puts the minus on the negative items and leaves the remeasurements unnegated.",
+   "correction": "read the source, then rewrite the five legs to match its real shape",
+   "verified": "P-2 green after the fix; NC-5 replaces the gate with a constant and P-2 goes red again"
+  },
+  {
+   "n": 3,
+   "error": "P-2's holds had four legs, so killing one still left it green",
+   "symptom": "NC-5 refused to go red",
+   "classification": "redundant criterion -- the mirror image of an unfalsifiable test",
+   "why": "a proposition about the CONVENTION must be refutable by the leg that reads the CONVENTION; three arithmetic/card-text legs kept it alive",
+   "correction": "demoted those three to corroboration_* and tied holds to the source-read convention alone",
+   "verified": "NC-5 correctly goes red after the fix"
+  },
+  {
+   "n": 4,
+   "error": "P-4 / P-7 let a JSON parse error raise instead of reporting red",
+   "symptom": "NC-7 crashed the whole program with rc=1 and produced NO verdict",
+   "classification": "criterion error -- an exception is not a conclusion",
+   "why": "a crash and a red gate look alike if you only check the exit code, but the crash discards every other proposition's finding",
+   "correction": "every carrier parse is now individually guarded and its outcome recorded; P-4 and P-7 each do this",
+   "verified": "NC-7 correctly goes red after the fix (P-4, P-5 and P-7 together)"
+  },
+  {
+   "n": 5,
+   "error": "decision.md registered a verifier hash that does not belong to the file",
+   "symptom": "decision.md section 8 says scripts/verify_t1_15.py is '30573 B / cbb7e7a988073dc9...'; the file on disk is 30573 B but its sha256 is 06f91baeb9464a02...",
+   "classification": "TRANSCRIPTION error -- a carried-over value, not a mangled file",
+   "why": "the byte count is right and the hash is wrong, which means the hash was carried across an edit rather than computed. That distinction is worth recording: it rules out a corrupted file, and it is exactly the failure mode that F-T1-15-01 is about, found in this card's own paperwork.",
+   "what_this_card_did_about_it": "recorded it here as errata. decision.md is not rewritten in place -- this handoff.json is the append-only correction, and the true value is computed below, not typed.",
+   "stale_value_present_in_decision_md": true,
+   "true_value": "06f91baeb9464a02e0b4bf25f02cbf2573ce90bd8b632300fedb066993cefd3c"
+  }
+ ],
+ "negative_control_harness_hurt_itself_twice": [
+  {
+   "n": 1,
+   "error": "all eight controls shared one output path",
+   "symptom": "every control reported 'no verdict' -- because the last writer overwrote the others",
+   "reality": "the gates were firing correctly the whole time"
+  },
+  {
+   "n": 2,
+   "error": "run directories were numbered by an agent_* counter",
+   "symptom": "after editing a control and re-running, the new directory still held the OLD script, so the previous mutation was silently retested",
+   "fix": "name the directory by the hash of the script's contents, and wrap each whole run in its own runset_* directory"
+  },
+  {
+   "n": 3,
+   "error": "NC-5's first mutation was 'all([]) and all([...])'",
+   "symptom": "the control did not go red",
+   "reality": "all([]) is vacuously true, so the mutation never took effect",
+   "second_attempt": "'(False is True) or all([...])' -- the false literal is only the LEFT operand of an or, so Python evaluates the real gate anyway",
+   "fix": "'bool(0) and all([' -- a genuine constant",
+   "why_this_matters": "'the mutation did not take effect' and 'the gate does not work' look identical from the outside. This is the exact error class this card exists to catch, and the harness committed it twice before catching it."
+  }
+ ],
+ "comparison_with_ownership_notes": {
+  "the_correction_is_owned_by_the_orchestration_layer_as_the_owner_executor": true,
+  "this_card_does_not_claim_that_work": true,
+  "this_card_does_not_reopen_step_3": true
+ },
+ "scope_guard": {
+  "anchor_file": "scripts/model_registry.py",
+  "anchor_sha256_expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "anchor_sha256_observed": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "anchor_unchanged": true,
+  "product_files_changed": 0,
+  "product_files_changed_evidence": "git diff HEAD --name-only -- scripts/ returned empty for the run",
+  "execution_v2_porcelain": "empty -- the four targets were not touched by this card",
+  "edited_from_the_frozen_set": {
+   "provenance.json": false,
+   "PROVENANCE.md": false,
+   "review.md": false,
+   "handoff.json (M08)": false,
+   "qualification.json": false
+  },
+  "status_transitions": 0,
+  "tier2_signatures": 0,
+  "deletions": 0,
+  "shutil_rmtree_used": false,
+  "why_no_deletion": "the environment carries a fail-closed safe-delete shim (OSError 0x2). Rather than fight it, every probe and control tree is WRITTEN TO A FRESH DIRECTORY and left in place as an explicit record. Deleting nothing is also this batch's standing rule.",
+  "frozen_writes": 0
+ },
+ "new_ruling_needs_arising_from_this_card": [],
+ "changes_to_other_rulings": [],
+ "handoff_to": [
+  "F-T1-15-01 -> the M08 owner / provenance author (stale registration; this card does not edit it)",
+  "rerun_summary.json byte count (4185 stated vs 4062 on disk) -> the transcriber",
+  "M08's own status transition -> its independent reviewer, who already granted accepted_scoped; this card merely confirms the precondition was in place"
+ ],
+ "does_not_change_any_existing_ruling": true
+}
