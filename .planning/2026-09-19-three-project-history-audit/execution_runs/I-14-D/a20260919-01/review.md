@@ -102,3 +102,71 @@ No verdict is expressed. `status` is unchanged: the card remains `review_pending
 independent reviewer rules. The three documentary items the r2 review raised are landed as
 appended corrections (`oracle.md` CORRECTION 3, `fix_record.md` CORRECTION 3, `binding.json`
 `r3_corrections`), not as rewrites.
+
+
+---
+
+## r3 verdict (2026-09-22) — the independent reviewer returned `changes_required`
+
+**Verdict: `changes_required` — the r3 revision is NOT accepted.** The verdict is the reviewer's;
+this attempt states none of its own.
+
+**Carrier**: `reviewer_report_r3.md`, 44008 B, sha256 `c617c43a7f674b6b9098a252c10aa354f3634d4c345aa5133d75287e26aa003b` — recomputed from the bytes
+when this section was written. The report was written to this attempt as a FILE before this section
+landed, per the process requirement this project established after losing a reviewer report that
+existed only in a chat message.
+
+### What the reviewer CONFIRMED (7 of the 9 claims)
+
+The generalisation F-REV-R2-01 asked for is real and landed (the nine-word enumeration is gone, one
+RFC-7235 scheme token is consumed, the break is a run, the quoted form is tried after the break); the
+r2 reviewer's own C1-C12 matrix reproduces with r3 leaking only C10; the residual is registered on
+both instruments with the 39-char non-marker credential; the over-redaction family is registered as 9
+rows; the three false base-tree claims were false and are corrected by appended corrections with the
+original bytes kept; the design trade-off reproduces under the reviewer's own reconstruction; and no
+verdict was pre-empted.
+
+### What the reviewer REFUTED (2 of the 9)
+
+* **Claim 3 — "the residual is registered, not hidden" — REFUTED.** A leak exists that is enumerated
+  nowhere.
+* **Claim 8 — "the carrier does not overstate" — REFUTED.** See F-REV-R3-02.
+
+### The BLOCKER — F-REV-R3-01
+
+The after-break quoted alternatives are written `\"[^\"\r?\n]*\"` and `'[^'\r?\n]*'`. **Inside a
+character class `?` is a literal member of the negated set**, not the optional-`\r` metacharacter that
+`_QUOTED_VALUE` uses two lines above (`\"[^\"\r\n]*\"`). A quoted credential continuation containing
+`?` is therefore not matched by that alternative, and because a leading `"` is also a delimiter for
+`_AUTH_BARE_VALUE`, the whole scheme-split alternative fails and the credential survives:
+
+```
+redact_text('Authorization: Bot\n"<39-char credential>?x"')
+  -> 'Authorization: <redacted>\n"<39-char credential>?x"'    # credential persists
+```
+
+This was reproduced independently outside the review as well. It is **unregistered** — no oracle row
+and no rule-table row covers it — while `oracle.md` C3.4, the source comment and `handoff_r3.json`'s
+`credential_leaks_is_sound_again: true` all assert the branch is fail-closed for exactly this shape.
+That is the same structural defect F-REV-R2-01 named: a measured instance closed, a residual class
+left open, and the exit criterion offered as sound. The cause is proven by correcting the single
+character **in memory** and watching the leak close; nothing on disk was touched.
+
+### The remaining findings (registered, not reproduced here)
+
+`F-REV-R3-02` (MEDIUM) the carrier cites a verification whose overall verdict does not reproduce;
+`F-REV-R3-03` (LOW) the source comment's explanation of why the branch is safe is false and
+contradicts the next paragraph; `F-REV-R3-04` (LOW) the scheme class requires a leading letter, which
+is narrower than the ABNF it cites and is a persistence regression against `product_base` for
+non-letter-initial schemes; `F-REV-R3-05` (LOW) a value whose first character after the break is a
+value delimiter is not redacted (bounded, non-regressive); `F-REV-R3-06` to `F-REV-R3-10` (INFO).
+
+### Scope the verdict does NOT cover (the reviewer's own words)
+
+The r2 generation's own correctness beyond what r3 inherits; the copied pytest suites and the real
+worker/CLI exit, which the reviewer did not re-run; promotion, `disclosure_adaptation`, accuracy or any
+mapping question; the r2 reviewer's RULING 1 rewrite; the mutation trees M1-M3 beyond the single M4 arm
+used for the leak direction; and whether any downstream consumer depends on the deleted diagnostic key.
+
+**Status: `review_pending`.** r3 is not accepted. A fix for F-REV-R3-01 belongs to a new revision
+(r4), not to this one.

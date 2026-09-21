@@ -1,0 +1,196 @@
+{
+ "attempt": "a20260919-01",
+ "card": "I-14-D",
+ "commands": [
+  "<attempt>/iso/venv/Scripts/python.exe harness/run_i14d_oracle.py --src iso/product_narrow_r3/src --label r3-verify --out <here>/oracle_r3_rerun.json",
+  "<attempt>/iso/venv/Scripts/python.exe harness/run_rule_table_i14d.py --src iso/product_narrow_r3/src --label r3-verify --out <here>/rule_r3_rerun.json",
+  "<attempt>/iso/venv/Scripts/python.exe harness/run_i14d_oracle.py --src iso/product_base/src --label base-verify --out <here>/oracle_base_rerun.json"
+ ],
+ "dangling_reference": {
+  "exists": false,
+  "path": "r3_fix_record.md",
+  "referenced_by": "iso/product_narrow_r3/.../observability.py (the r3 comment block)"
+ },
+ "iteration": "r3",
+ "kind": "independent_state_verification",
+ "negative_controls": {
+  "NC-1 a rerun row differs": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-2 an unregistered marker leak appears": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-3 the registered residual stops leaking": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-4 the generalized token is absent": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-5 N5d actually fails on base": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-6 the binding parenthetical was fixed": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-7 an attempt file drifted": {
+   "correctly_red": true,
+   "holds": false
+  }
+ },
+ "negative_controls_all_correctly_red": true,
+ "note_on_interpreter": "the global interpreter lacks PyYAML, and the harness correctly returned rc=2 cannot_adjudicate rather than a wrong answer; the attempt's own iso venv (python 3.13.9, PyYAML 6.0.3) is what these runs use",
+ "overall": "FAIL",
+ "predicate_errors_made_and_corrected": [
+  {
+   "cause": "transposed characters: searched for '+)\"' where the source has ')+\"'",
+   "classification": "predicate error, NOT a data defect",
+   "fix": "searched for the byte order the file actually uses",
+   "predicate": "P-2 break_is_a_run_not_exactly_one",
+   "symptom": "reported False while the run-of-breaks form is present"
+  },
+  {
+   "cause": "fix_record.md is hard-wrapped -- it reads 'All\\n  three FAIL on the base tree' -- and the predicate searched the raw text without normalising whitespace",
+   "classification": "predicate error, NOT a data defect",
+   "fix": "normalise whitespace (re.sub(r'\\s+', ' ')) before matching",
+   "note": "this is lesson #17 in this project's series, re-committed here on the first run of this script and recorded rather than quietly fixed",
+   "predicate": "P-5 fix_record_still_claims_all_three_fail",
+   "symptom": "reported the claim ABSENT while it is present"
+  }
+ ],
+ "propositions": {
+  "P-1": {
+   "holds": true,
+   "oracle": {
+    "field_differences": 0,
+    "ids_in_the_same_order": true,
+    "non_row_differences": {},
+    "recorded_rows": 28,
+    "reproduced": true,
+    "rerun_rows": 28
+   },
+   "rule_table": {
+    "field_differences": 0,
+    "ids_in_the_same_order": true,
+    "non_row_differences": {},
+    "recorded_rows": 79,
+    "reproduced": true,
+    "rerun_rows": 79
+   }
+  },
+  "P-2": {
+   "break_is_a_run_not_exactly_one": true,
+   "discloses_f_rev_r2_01": true,
+   "discloses_f_rev_r2_02": true,
+   "holds": true,
+   "old_nine_word_enumeration_gone": true,
+   "quoted_value_tried_first_after_the_break": true,
+   "rfc7235_token_constant_present": true,
+   "split_references_the_token_constant": true
+  },
+  "P-3": {
+   "every_open_row_still_leaks": true,
+   "holds": true,
+   "no_unregistered_marker_leak": true,
+   "no_untouched_row_was_touched": true,
+   "oracle_has_registered_open_rows": true,
+   "oracle_open_rows_confirmed": true,
+   "oracle_registered_open": [
+    "R3a-two-token-then-wrap",
+    "R3b-quoted-two-token"
+   ],
+   "rule_table_has_registered_open_kind": true,
+   "rule_table_registered_open": [
+    "open-quoted-two-token",
+    "open-two-token-then-wrap"
+   ],
+   "the_non_marker_credential_is_the_thing_that_survives": true
+  },
+  "P-4": {
+   "fidelity_still_holds": true,
+   "holds": true,
+   "over_redaction_row_count": 9,
+   "rows": [
+    "over-auth-crlf-then-key",
+    "over-auth-generic-then-key",
+    "over-auth-obsfold-then-key",
+    "over-auth-scheme-then-key",
+    "over-auth-scheme-then-marker",
+    "over-auth-scheme-then-reqid",
+    "over-auth-scheme-then-stage",
+    "over-auth-token-then-keys",
+    "over-proxy-auth-then-key"
+   ],
+   "the_family_has_rows": true,
+   "the_rows_assert_the_loss_exactly": true
+  },
+  "P-5": {
+   "fix_record_still_claims_all_three_fail": true,
+   "holds": true,
+   "measured_on_base": {
+    "N5c-auth-scheme-lf-secret": false,
+    "N5d-auth-scheme-obsfold": true,
+    "N5e-auth-token-key-lf-secret": true
+   },
+   "oracle_md_still_claims_all_three_fail": true,
+   "r2_summary_base_failures": [
+    "N1-mine",
+    "N1-reviewer",
+    "N2-middle-line",
+    "N3-newline-then-key",
+    "N5-auth-multiline",
+    "N5c-auth-scheme-lf-secret",
+    "N5e-auth-token-key-lf-secret",
+    "N13-partial-multiword-residual"
+   ],
+   "r2_summary_still_lists_n5e_as_base_failing": true,
+   "rerun_n5c_fails_on_base": true,
+   "rerun_n5d_passes_on_base": true,
+   "rerun_n5e_passes_on_base": true
+  },
+  "P-6": {
+   "binding_still_says_scheme_branch_unreferenced": true,
+   "c22_does_not_state_both_directions": true,
+   "holds": true
+  },
+  "P-7": {
+   "handoff_predates_the_r3_artifacts": true,
+   "holds": false,
+   "review_predates_the_r3_artifacts": false
+  },
+  "P-8": {
+   "drifted": {
+    "binding.json": {
+     "measured": "2cd31277ff3a4998c6a048c12cb44ad957960826c0adc5103fc5c500c4299b79",
+     "pinned": "5fd462c93197d5d7b602a03b2ba81841917bab845aa609854e4db98c10e2d9eb"
+    },
+    "fix_record.md": {
+     "measured": "51554127d4c7a8217a4c5c59ddef27d6bcf68c4c03e0a9108d89b535cdb59b73",
+     "pinned": "68fb580001b2e798376a16b5c964fd47e08d0974555f07f37587d7c536d4055a"
+    },
+    "oracle.md": {
+     "measured": "e85cb05bc278ce4b5281f84fe7bc75330f247a73a14e040ce16347428ac2015a",
+     "pinned": "f188e853026b26d3f53dcaee81822fc75a44a257bc541219c791aa2fa23c09f2"
+    },
+    "review.md": {
+     "measured": "d9a4ef28cdb5f804b49463399dd45c85d53319864ce63f1ba2360d48715a1bea",
+     "pinned": "14b8628d13c33ffb197db29c20d9073059034875919642a7f8c99249210a0104"
+    }
+   },
+   "files_pinned": 9,
+   "holds": false
+  }
+ },
+ "reproduced_by": "re-running the attempt's own harnesses against the attempt's own tree",
+ "reviewer_items": [
+  "F-REV-R2-01 (BLOCKER)",
+  "F-REV-R2-02 (MEDIUM)",
+  "F-REV-R2-03 (LOW)",
+  "F-REV-R2-04 (INFO)"
+ ]
+}

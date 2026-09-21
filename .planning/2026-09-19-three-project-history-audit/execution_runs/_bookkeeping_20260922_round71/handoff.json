@@ -1,0 +1,122 @@
+{
+ "card": "_bookkeeping_20260922_round71",
+ "kind": "orchestrator_bookkeeping",
+ "round": 71,
+ "date": "2026-09-22",
+ "subject_card": "I-14-D",
+ "subject_attempt": "a20260919-01",
+ "subject_iteration": "r3",
+ "what_this_round_is": "the independent review of I-14-D r3 was dispatched, returned, and has been landed: the report is byte-fixed in the attempt and the verdict is appended to review.md",
+ "what_this_round_is_not": [
+  "a verdict of the orchestrator's own -- the verdict is the reviewer's",
+  "a fix for the blocker -- that belongs to a new revision (r4)",
+  "a status transition",
+  "a product change"
+ ],
+ "authority": {
+  "source": "OWNER_DECISIONS.md §13 T1-27",
+  "note": "dispatching an independent reviewer subagent is this project's established practice; the dispatcher does not review its own carrier"
+ },
+ "dispatch": {
+  "brief": "execution_runs/_review_i14d_r3_20260922/DISPATCH.md",
+  "brief_bytes": 8128,
+  "brief_sha256": "877e9e11f730202ba27be44310b4d9a9d38b30ff6ca9090ca1a1806f06cca5dd",
+  "self_contained": true,
+  "hard_constraints_given_to_the_reviewer": [
+   "the attempt is READ-ONLY; write only your report",
+   "never delete, move or clean up any file",
+   "write the report to a fixed path as a FILE before reporting back"
+  ],
+  "why_the_file_requirement_was_stated": "this project lost one reviewer report that existed only in a chat message (its temp-dir original was cleaned up), and recorded that as a process gap. Stating the requirement in the dispatch is what stopped it recurring here."
+ },
+ "verdict": {
+  "value": "changes_required",
+  "subject": "the r3 revision is NOT accepted",
+  "carrier": "reviewer_report_r3.md",
+  "carrier_bytes": 44008,
+  "carrier_sha256": "c617c43a7f674b6b9098a252c10aa354f3634d4c345aa5133d75287e26aa003b",
+  "hash_was_computed_from_the_bytes": true,
+  "claims": {"confirmed": 7, "refuted": 2, "unverifiable": 0},
+  "findings": {"blocker": 1, "medium": 1, "low": 3, "info": 5},
+  "scope_it_covers": "the r3 product copy, the two harnesses, the r3 generation carriers, the two prior verification directories, and the recorded r3 runs",
+  "scope_it_does_not_cover": "the r2 generation's own correctness beyond what r3 inherits; the copied pytest suites and the real worker/CLI exit (not re-run); promotion and any mapping question; the r2 RULING 1 rewrite; the mutation trees M1-M3 beyond M4; and whether any downstream consumer depends on the deleted diagnostic key"
+ },
+ "the_blocker": {
+  "id": "F-REV-R3-01",
+  "severity": "BLOCKER",
+  "what": "the after-break quoted alternatives are written with the optional-CR form inside a character class, where '?' is a LITERAL member of the negated set rather than a quantifier",
+  "site": "iso/product_narrow_r3/src/company_wiki/source_catalog/observability.py:320",
+  "as_written": "\"[^\"\\r?\\n]*\" and '[^'\\r?\\n]*'",
+  "for_contrast_the_correct_form_two_lines_above": "_QUOTED_VALUE = \"[^\"\\r\\n]*\"|'[^'\\r\\n]*'",
+  "consequence": "a quoted credential continuation containing '?' is not matched by that alternative; because a leading quote is also a delimiter for _AUTH_BARE_VALUE, the whole scheme-split alternative fails and the credential survives",
+  "reproduction": "redact_text('Authorization: Bot\\n\"<39-char credential>?x\"') -> 'Authorization: <redacted>\\n\"<39-char credential>?x\"'",
+  "reproduced_independently_by_the_orchestrator": true,
+  "why_it_is_a_blocker_not_a_disclosure": "it is unregistered (no oracle row, no rule-table row), while oracle.md C3.4, the source comment and handoff_r3.json's credential_leaks_is_sound_again: true all assert the branch is fail-closed for exactly this shape. Same structure F-REV-R2-01 named: a measured instance closed, a residual class left open, and the exit criterion offered as sound.",
+  "not_a_regression_against_product_base": true,
+  "fix_belongs_to": "r4 -- a new revision, not an edit to r3"
+ },
+ "the_second_refuted_claim": {
+  "claim": "Claim 8 -- the carrier does not overstate",
+  "verdict": "REFUTED",
+  "finding": "F-REV-R3-02",
+  "severity": "MEDIUM",
+  "what": "handoff_r3.json cites the round 68 state verification as 'overall PASS, idempotent'. Re-running it now gives overall FAIL, with P-7 and P-8 red, because round 70 appended to three of the files whose hashes that verifier pins.",
+  "generalisation": "citing a verification must state its reproducibility premise. A verifier pinned by hashes stops reproducing the moment the files it pins are legitimately appended to -- and it does not error, it just goes red from then on, so 'true at the time' and 'false now' end up behind the same citation."
+ },
+ "other_findings_registered": {
+  "F-REV-R3-03": "LOW -- the source comment's explanation of why the branch is safe is false and contradicts the next paragraph",
+  "F-REV-R3-04": "LOW -- the scheme token class requires a leading letter, which is narrower than the ABNF it cites and is a persistence regression against product_base for non-letter-initial schemes",
+  "F-REV-R3-05": "LOW -- a value whose first character after the break is a value delimiter is not redacted (bounded, non-regressive)",
+  "F-REV-R3-06": "INFO -- the 'quoted form is tried first' mechanism sentence describes the wrong constant",
+  "F-REV-R3-07": "INFO -- both_marker_and_non_marker promises two things; the registered-open rows deliver one",
+  "F-REV-R3-08": "INFO -- the r3 source delta has no registered diff and no invertibility test, and binding.json's append is not literally prefix-preserving",
+  "F-REV-R3-09": "INFO -- the rule-table harness can no longer return rc 0 while a registered residual exists",
+  "F-REV-R3-10": "INFO -- the byte-pin table does not cover the r3 generation's own carriers"
+ },
+ "the_methodological_lesson": {
+  "what": "rounds 68 and 69 built the reproduction from the product's OWN _AUTH_SCHEME_SPLIT constant",
+  "consequence": "that construction cannot detect a defect INSIDE that constant -- which is exactly where F-REV-R3-01 lives",
+  "generalisation": "a predicate built from a constant taken out of the object under test is immune to that constant. Such a blind spot looks entirely normal: the predicate is faithful, reproducible, and has negative controls.",
+  "evidence_that_this_matters": "the self-check reported 8 propositions and 7 negative controls all green; the independent review, on the same day, found a BLOCKER"
+ },
+ "pre_images": {
+  "review.md": {"bytes": 6586, "sha256": "d9a4ef28cdb5f804b49463399dd45c85d53319864ce63f1ba2360d48715a1bea"},
+  "task_plan.md": {"bytes": 223336, "sha256": "928a106113bb705825a18394a5f49213148f625b70ba2ad0e938821cb9e20627"},
+  "findings.md": {"bytes": 61497, "sha256": "8e1b87ae93641779357a7438e06f5c1c862258884e5c4578f31ea7d96181e154"},
+  "progress.md": {"bytes": 142026, "sha256": "80c62cfe592b12acf8bbb6c304a417977dad5d0706791edbbdd1fd42f87c1b95"},
+  "REMEDIATION_REGISTER.md": {"bytes": 34838, "sha256": "ea4331f5a00eff81ce14f38df08f681300297ed8499f395c43257eb340007202"}
+ },
+ "post_images": {
+  "review.md": {"bytes": 10630, "sha256": "4d245fbfd282c0fa90e4edf70a621bce5eaa96740bea73d9d5342323e9b8860f", "delta_bytes": 4044, "lines_added": 68, "lines_deleted": 0},
+  "task_plan.md": {"bytes": 227328, "sha256": "b472b33994d640453596e70c1b71ce12c6abfb90b90439bd82fa643867b47662", "delta_bytes": 3992, "lines_added": 54, "lines_deleted": 0},
+  "findings.md": {"bytes": 63832, "sha256": "0e37a0ba85cd76e894693b41db683e114745e93a3cf501958fb9f81e19ec05b3", "delta_bytes": 2335, "lines_added": 13, "lines_deleted": 0},
+  "progress.md": {"bytes": 144493, "sha256": "be02ffd111ad29411673bcfef83d62adc5275b1559954487665d261396eba0e7", "delta_bytes": 2467, "lines_added": 25, "lines_deleted": 0},
+  "REMEDIATION_REGISTER.md": {"bytes": 37747, "sha256": "85e7d40047a312b8535c1458bc1281b22175cf3ddb9af4814f76b22a1c839bf6", "delta_bytes": 2909, "lines_added": 21, "lines_deleted": 0}
+ },
+ "registered_in_register": ["REM-63 (closed)", "REM-65", "REM-66", "REM-67", "REM-68"],
+ "artefacts": {
+  "append_only_proof_round71_task_plan.json": {"bytes": 1722, "sha256": "737f694d15e85bb67184dfdd364ecf9403df3c7021fe2adfeaaa978a9f7de406"},
+  "append_only_proof_round71_findings.json": {"bytes": 1713, "sha256": "4e2a971d0ec7be9fcb90bb0aa7b69b00960f0bb005444bc909ea401c28a43958"},
+  "append_only_proof_round71_progress.json": {"bytes": 1718, "sha256": "97a571dfc239fc303633e47773e7abc60f0e10488d8d32bca5a79e7ab04413a0"},
+  "append_only_proof_round71_register.json": {"bytes": 1725, "sha256": "bfa708459c3d7f45eb5e3d49d25ccea773b526857952aca7be3e9cbfd1b60821"},
+  "append_only_proof_round71_i14d_review_md.json": {"bytes": 1758, "sha256": "9860cff1c926a67b1da1c57c571b853ed676a8b51fa3cfdf6a8cfcb257f3f355"},
+  "dispatch_elsewhere": {"dir": "execution_runs/_review_i14d_r3_20260922", "DISPATCH.md": {"bytes": 8128, "sha256": "877e9e11f730202ba27be44310b4d9a9d38b30ff6ca9090ca1a1806f06cca5dd"}}
+ },
+ "boundaries": {
+  "product_files_written": 0,
+  "product_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "attempt_files_written": ["review.md (appended)", "reviewer_report_r3.md (written by the reviewer)"],
+  "nothing_fixed": true,
+  "status_transitions": 0,
+  "status_remains": "review_pending",
+  "verdict_expressed_by_the_orchestrator": false,
+  "signatures_on_behalf_of_others": 0,
+  "deletions": 0
+ },
+ "next_action_for_the_owner": [
+  "REM-65 (BLOCKER): the one-character fix belongs to a new revision, r4 -- a new product copy, the two harness lines, new frozen oracle and rule-table rows for the '?' shape and for non-letter-initial schemes, and a new carrier. This round does not start it.",
+  "REM-55 I-14-E-APPLY: still terminated mid-campaign; no decision yet.",
+  "the push: 15 commits will be pending after this one; the pre-push gate's 600 s E2E cap remains below the suite's measured 861.7 s, and the gate has not been bypassed."
+ ],
+ "self_reference_note": "handoff.json does not register its own hash; it is recorded in task_plan.md's Round 71 section and in the memory file"
+}

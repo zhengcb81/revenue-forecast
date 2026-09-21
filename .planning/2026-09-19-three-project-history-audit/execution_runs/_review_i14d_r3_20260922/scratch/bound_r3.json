@@ -1,0 +1,62 @@
+{
+ "src": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-14-D/a20260919-01/iso/product_narrow_r3/src",
+ "A_unquoted_continuation_leaking_chars": [],
+ "A_unquoted_leaking_count": 0,
+ "A_examples": {},
+ "B_delimiter_initial_value": {
+  "','": {
+   "out": "Authorization: <redacted>\n,ghp_ZQ7ReviewerFakeCredential0123456789",
+   "leaks": true
+  },
+  "';'": {
+   "out": "Authorization: <redacted>\n;ghp_ZQ7ReviewerFakeCredential0123456789",
+   "leaks": true
+  },
+  "'&'": {
+   "out": "Authorization: <redacted>\n&ghp_ZQ7ReviewerFakeCredential0123456789",
+   "leaks": true
+  },
+  "'|'": {
+   "out": "Authorization: <redacted>\n|ghp_ZQ7ReviewerFakeCredential0123456789",
+   "leaks": true
+  },
+  "'\"'": {
+   "out": "Authorization: <redacted>\n\"ghp_ZQ7ReviewerFakeCredential0123456789",
+   "leaks": true
+  },
+  "\"'\"": {
+   "out": "Authorization: <redacted>\n'ghp_ZQ7ReviewerFakeCredential0123456789",
+   "leaks": true
+  }
+ },
+ "C_sameline_quoted": {
+  "no_q": {
+   "out": "Authorization: <redacted> \"ghp_ZQ7ReviewerFakeCredential0123456789\"",
+   "leaks": true
+  },
+  "with_q": {
+   "out": "Authorization: <redacted> \"ghp_ZQ7ReviewerFakeCredential0123456789?x\"",
+   "leaks": true
+  }
+ },
+ "D_cause_proof": {
+  "pattern_actually_changed": true,
+  "landed_after_break_quoted_class": "\\\"[^\\\"\\r?\\n]*\\\"",
+  "corrected_class": "\\\"[^\\\"\\r\\n]*\\\"",
+  "before_correction": {
+   "X1-dq-question": "Authorization: <redacted>\n\"ghp_ZQ7ReviewerFakeCredential0123456789?x\"",
+   "X1-sq-question": "Authorization: <redacted>\n'ghp_ZQ7ReviewerFakeCredential0123456789?x'",
+   "N5k-control": "Authorization: <redacted>"
+  },
+  "after_correction": {
+   "X1-dq-question": "Authorization: <redacted>",
+   "X1-sq-question": "Authorization: <redacted>",
+   "N5k-control": "Authorization: <redacted>"
+  },
+  "leaks_before": [
+   "X1-dq-question",
+   "X1-sq-question"
+  ],
+  "leaks_after": []
+ }
+}

@@ -1,0 +1,91 @@
+{
+ "oracle_recorded_vs_rerun": {
+  "recorded_rows": 28,
+  "rerun_rows": 28,
+  "ids_same_order": true,
+  "field_differences": [],
+  "non_row_differences": {},
+  "reproduced": true
+ },
+ "rule_recorded_vs_rerun": {
+  "recorded_rows": 79,
+  "rerun_rows": 79,
+  "ids_same_order": true,
+  "field_differences": [],
+  "non_row_differences": {},
+  "reproduced": true
+ },
+ "match_span_test": {
+  "scheme-then-key": {
+   "input": "Authorization: Bearer\ndoc=17",
+   "match0": "Authorization: Bearer\ndoc=17",
+   "key_group": "Authorization: ",
+   "value_group": "Bearer\ndoc=17",
+   "break_inside_value": true,
+   "out": "Authorization: <redacted>",
+   "doc17_survives": false
+  },
+  "scheme-then-obsfold-key": {
+   "input": "Authorization: Bearer\n  doc=17",
+   "match0": "Authorization: Bearer\n  doc=17",
+   "key_group": "Authorization: ",
+   "value_group": "Bearer\n  doc=17",
+   "break_inside_value": true,
+   "out": "Authorization: <redacted>",
+   "doc17_survives": false
+  },
+  "scheme-then-secret": {
+   "input": "Authorization: Bearer\nghp_ZQ7ReviewerFakeCredential0123456789\ndoc=17",
+   "match0": "Authorization: Bearer\nghp_ZQ7ReviewerFakeCredential0123456789",
+   "key_group": "Authorization: ",
+   "value_group": "Bearer\nghp_ZQ7ReviewerFakeCredential0123456789",
+   "break_inside_value": true,
+   "out": "Authorization: <redacted>\ndoc=17",
+   "doc17_survives": true
+  },
+  "scheme-inline-secret-then-key": {
+   "input": "Authorization: Bearer SYNTHETIC_AUDIT_TOKEN\ndoc=17\nstage=summarize",
+   "match0": "Authorization: Bearer SYNTHETIC_AUDIT_TOKEN",
+   "key_group": "Authorization: ",
+   "value_group": "Bearer SYNTHETIC_AUDIT_TOKEN",
+   "break_inside_value": false,
+   "out": "Authorization: <redacted>\ndoc=17\nstage=summarize",
+   "doc17_survives": true
+  }
+ },
+ "token_run_candidate": {
+  "oracle_failures": [
+   "N5-auth-multiline",
+   "R3a-two-token-then-wrap"
+  ],
+  "rule_failures": [
+   "cred-auth-multiline-swallow",
+   "open-two-token-then-wrap"
+  ],
+  "closes_C10": true,
+  "reviewer_matrix": {
+   "C10": {
+    "out": "Authorization: <redacted>",
+    "leaks": false
+   },
+   "C11": {
+    "out": "Authorization: <redacted>",
+    "leaks": false
+   },
+   "C12": {
+    "out": "Authorization: <redacted>",
+    "leaks": false
+   }
+  },
+  "N5_auth_multiline": {
+   "out": "Authorization: <redacted>\nstage=summarize",
+   "doc17_deleted": true
+  },
+  "OR1": "Authorization: <redacted>"
+ },
+ "landed_r3": {
+  "oracle_failures": [],
+  "rule_failures": []
+ },
+ "builder_is_faithful": true
+}

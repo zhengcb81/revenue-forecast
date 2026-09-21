@@ -1697,3 +1697,57 @@ r3 注释块明写「measured across the whole design space, **see `r3_fix_recor
 ### 下一步
 
 `I-14-D` 的 r3 **待独立复核**。r3 世代已存在 ⇒ **复核有载体可依**。**卡仍 `review_pending`**，本卡不代其收口。
+
+---
+
+## Round 71 — `I-14-D` r3 的**独立复核已回收**：`changes_required`（含一个**一字符**缺陷）
+
+**卡**：无（编排层复核落定轮次）。**性质**：**复核结果落定**。**本编排层不表达任何裁决**——裁决是 reviewer 的。
+
+**派单**：按本仓惯例由编排层创建**独立 reviewer 子代理**；派单简报 `execution_runs/_review_i14d_r3_20260922/DISPATCH.md`（**自包含**，含九项待验主张与「不得编辑 attempt」的硬约束）。
+**报告先按字节落进 attempt**（`reviewer_report_r3.md`）**再登记哈希** —— 这是本仓 Round 35 因「裁决只存在于消息里」而立的流程要求，本轮**执行到位**。
+
+### 结果
+
+| 项 | 值 |
+|---|---|
+| 裁决 | **`changes_required`** —— r3 **未被接受** |
+| 报告 | `reviewer_report_r3.md`，**44008 B / `c617c43a…`**（哈希由盘上字节**复算**，非手写） |
+| 九项主张 | **7 确认 / 2 驳倒 / 0 无法判定** |
+| 发现 | **F-REV-R3-01（BLOCKER）** + 1 MEDIUM + 3 LOW + 5 INFO |
+
+### BLOCKER `F-REV-R3-01`：**一字符缺陷，而三处记录断言了相反的事**
+
+r3 新增的「break 之后」引号分支写成 `\"[^\"\r?\n]*\"` / `'[^'\r?\n]*'`。
+**字符类里的 `?` 是字面成员**，不是可选量词——而**两行之上的 `_QUOTED_VALUE` 用的是正确的 `\"[^\"\r\n]*\"`**。
+⇒ 含 `?` 的引号续行**不被匹配**；且因前导 `"` 同时是 `_AUTH_BARE_VALUE` 的分隔符，**整条 scheme-split 分支失效**，凭据留存。
+
+**本编排层独立复现**：`Authorization: Bot\n"<39 字符凭据>?x"` → 凭据**留存**（单引号同）。
+
+**而三处记录都断言该形态 fail-closed**：`oracle.md` C3.4、源码注释、`handoff_r3.json` 的 `credential_leaks_is_sound_again: true`。
+⇒ **与 F-REV-R2-01 同一结构：被测量的实例关上了，残留的类还开着，而退出判据被当作可靠。**
+
+### 另一项被驳倒的主张（Claim 8 —— **carrier 不得夸大**）
+
+`handoff_r3.json` 把 Round 68 的状态核验引用为「overall PASS, idempotent」。**重跑给出 `overall FAIL`（P-7/P-8 红）**：
+Round 70 追加了 `oracle.md`/`review.md`/`binding.json` ⇒ **Round 68 的固定哈希与 mtime 判据自然失配**。
+⇒ **引用一个「当时为真」的结果而不注明它已不可复现，就是夸大**（`F-REV-R3-02`, MEDIUM）。
+
+### 其余发现（登记，不逐条展开）
+
+`F-REV-R3-03`（LOW）源码注释「breaks stay OUTSIDE the match」为假且与下一段自相矛盾；
+`F-REV-R3-04`（LOW）scheme 类要求**首字母**，比其所引 ABNF 窄，且对非字母开头的 scheme 是**相对 base 的回归**；
+`F-REV-R3-05`（LOW）break 后首字符为值分隔符时不脱敏（有界、非回归）；
+`F-REV-R3-06`…`F-REV-R3-10`（INFO）机制句描述错常量、`both_marker_and_non_marker` 承诺两件只交付一件、**r3 源码 delta 无登记 diff** 且 `binding.json` 的追加**不是字面前缀保全**、rule-table harness 在存在登记残留时**无法再返回 rc 0**、字节钉表**不覆盖 r3 世代自己的载体**。
+
+### ⚠️ 一条关于**我方自检**的教训（reviewer 明确指出）
+
+Round 68/69 的复现器**用盘上的 `_AUTH_SCHEME_SPLIT` 构造 pattern** ⇒ 它**无法发现 pattern 内部的缺陷**——而 F-REV-R3-01 **恰恰就在那里**。
+⇒ **「构造器忠实性」保证了「我在测盘上那个 pattern」，但**不**保证「盘上那个 pattern 是对的」。** 两件事，必须分开验。
+本轮已把该点登记为判据（见 findings.md）。
+
+### 边界
+
+**未修任何东西**（F-REV-R3-01 的修复属 **r4**，需新世代：产品副本 + 两条 harness 行 + 新冻结行 + 新载体）；
+**未改**产品副本、harness、r2/r3 记录；**未做 `status` 转移**（仍 `review_pending`）；**未代签**；**删除 0**。
+**本轮唯一写入**：`review.md` 的 `## r3 verdict` 节（**追加**，前缀保全）。

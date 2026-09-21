@@ -739,3 +739,28 @@ check-complete.sh   → [planning-with-files] Task in progress (6/7 phases compl
 **一处自伤**：`review.md` 段初稿里我为 `reviewer_report_r2.md` **手写了一个 sha256**（本仓 F-04-D「嵌合哈希」形态），**在脚本运行前发现**并改为**运行时从盘上计算**（真值 `58f92dd7…` / 39824 B）。
 
 **下一步**：r3 **待独立复核**；世代已存在 ⇒ 复核有载体可依。**卡仍 `review_pending`**。
+
+## 2026-09-22 — Round 71：`I-14-D` r3 的独立复核已回收 —— `changes_required`
+
+**派单**：编排层创建**独立 reviewer 子代理**；简报 `execution_runs/_review_i14d_r3_20260922/DISPATCH.md`（自包含，九项待验主张 + 硬约束「不得编辑 attempt、不得删除任何文件」）。
+**报告先按字节落盘再登记哈希**（Round 35 立的流程要求），本轮**执行到位**。
+
+**结果**：
+
+| 项 | 值 |
+|---|---|
+| 裁决 | **`changes_required`** —— r3 未被接受 |
+| 报告 | `reviewer_report_r3.md`，**44008 B / `c617c43a…`**（复算） |
+| 九项主张 | **7 确认 / 2 驳倒 / 0 无法判定** |
+| 发现 | **F-REV-R3-01（BLOCKER）** + 1 MEDIUM + 3 LOW + 5 INFO |
+
+**BLOCKER `F-REV-R3-01`（一字符）**：break 之后的引号分支写成 `\"[^\"\r?\n]*\"`；**字符类里的 `?` 是字面成员**，而 `_QUOTED_VALUE` 用的是正确的 `\"[^\"\r\n]*\"` ⇒ 含 `?` 的引号续行**不脱敏**，且整条 scheme-split 分支失效、凭据留存。**本编排层独立复现。**
+**而三处记录断言该形态 fail-closed**（`oracle.md` C3.4、源码注释、`handoff_r3.json` 的 `credential_leaks_is_sound_again: true`）⇒ **与 F-REV-R2-01 同一结构**。
+
+**被驳倒的第二项（Claim 8）**：`handoff_r3.json` 把 Round 68 的核验引用为「overall PASS, idempotent」，而**重跑给出 `overall FAIL`**（Round 70 追加了它钉住的三个文件）⇒ **引用「当时为真」而不注明可复现性 = 夸大**（`F-REV-R3-02`, MEDIUM）。
+
+**其余**：`F-REV-R3-03`（注释自相矛盾）、`F-REV-R3-04`（scheme 类比所引 ABNF 窄且对非字母开头是**相对 base 的回归**）、`F-REV-R3-05`（有界、非回归）、`F-REV-R3-06…10`（INFO，含「r3 源码 delta 无登记 diff」「字节钉表不覆盖 r3 自己的载体」）。
+
+**一条关于我方自检的教训**：Round 68/69 的复现器**用盘上的常量构造 pattern** ⇒ **结构上无法发现该常量内部的缺陷**，而 BLOCKER 恰在那里。**自检给了「8 命题 + 7 负控全绿」，独立复核在同一天给出了一个 BLOCKER** —— 这是「独立复核不可被自检替代」的实证。
+
+**边界**：**未修任何东西**（修复属 **r4**）；未改产品副本/harness/r2-r3 记录；**未做 `status` 转移**（仍 `review_pending`）；**未代签**；**删除 0**。本轮唯一写入 = `review.md` 的 `## r3 verdict` 节（追加）。

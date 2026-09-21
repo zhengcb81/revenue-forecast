@@ -1,0 +1,268 @@
+{
+ "attempt": "a20260919-01",
+ "attempt_scratch_scripts_are_stale": {
+  "affected": [
+   "tradeoff.py",
+   "tradeoff2.py",
+   "tradeoff3.py",
+   "last_shapes.py",
+   "final_shapes.py",
+   "minimal.py",
+   "order.py",
+   "third_alt.py",
+   "validate_final.py",
+   "final_verify.py"
+  ],
+  "disposition": "not edited; this script re-implements the measurement instead",
+  "error": "ValueError: too many values to unpack (expected 6)",
+  "what": "nine scratch scripts unpack oracle.CASES as a 6-tuple; the r3 iteration widened it to 7"
+ },
+ "builder_is_faithful": true,
+ "candidate_patterns_are_reconstructions": {
+  "applies_to": [
+   "r2-enumeration",
+   "token-run",
+   "optional-run",
+   "mandatory-token"
+  ],
+  "note": "only r3-chosen uses the product's own split verbatim. The four alternatives are re-expressed from the attempt's scratch scripts against the product's constants, so their exact bytes are this script's, not the product's; what is being compared is their BEHAVIOUR on the same case sets."
+ },
+ "candidates": {
+  "mandatory-token": {
+   "oracle_failure_count": 3,
+   "oracle_failures": [
+    "N5-auth-multiline",
+    "N5j-auth-blank-line-secret",
+    "R3a-two-token-then-wrap"
+   ],
+   "over_redaction": {
+    "OR1": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR2": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR3": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR4": {
+     "lost_a_diagnostic_key": false,
+     "out": "Authorization: <redacted>\nstage=summarize"
+    }
+   },
+   "reviewer_variants_leaking_count": 1,
+   "reviewer_variants_still_leaking": [
+    "C11"
+   ],
+   "rule_failure_count": 3,
+   "rule_failures": [
+    "cred-auth-multiline-swallow",
+    "cred-auth-blank-line-secret",
+    "open-two-token-then-wrap"
+   ]
+  },
+  "optional-run": {
+   "oracle_failure_count": 0,
+   "oracle_failures": [],
+   "over_redaction": {
+    "OR1": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR2": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR3": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR4": {
+     "lost_a_diagnostic_key": false,
+     "out": "Authorization: <redacted>\nstage=summarize"
+    }
+   },
+   "reviewer_variants_leaking_count": 1,
+   "reviewer_variants_still_leaking": [
+    "C10"
+   ],
+   "rule_failure_count": 0,
+   "rule_failures": []
+  },
+  "r2-enumeration": {
+   "oracle_failure_count": 6,
+   "oracle_failures": [
+    "N5f-auth-generic-scheme-marker",
+    "N5g-auth-generic-scheme-secret",
+    "N5h-auth-unknown-word-secret",
+    "N5i-auth-scram-scheme-marker",
+    "N5j-auth-blank-line-secret",
+    "N5k-auth-quoted-continuation"
+   ],
+   "over_redaction": {
+    "OR1": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR2": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR3": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR4": {
+     "lost_a_diagnostic_key": false,
+     "out": "Authorization: <redacted>\nstage=summarize"
+    }
+   },
+   "reviewer_variants_leaking_count": 12,
+   "reviewer_variants_still_leaking": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7",
+    "C8",
+    "C9",
+    "C10",
+    "C11",
+    "C12"
+   ],
+   "rule_failure_count": 14,
+   "rule_failures": [
+    "cred-auth-generic-negotiate-marker",
+    "cred-auth-generic-negotiate-real-secret",
+    "cred-auth-generic-aws4-real-secret",
+    "cred-auth-generic-scram-marker",
+    "cred-auth-generic-hawk-real-secret",
+    "cred-auth-generic-bot-real-secret",
+    "cred-auth-generic-mutual-real-secret",
+    "cred-auth-generic-vapid-real-secret",
+    "cred-auth-generic-hoba-real-secret",
+    "cred-auth-generic-unknown-word",
+    "cred-auth-generic-keeps-diagnostics",
+    "cred-auth-blank-line-secret",
+    "cred-auth-quoted-continuation",
+    "over-auth-generic-then-key"
+   ]
+  },
+  "r3-chosen": {
+   "oracle_failure_count": 0,
+   "oracle_failures": [],
+   "over_redaction": {
+    "OR1": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR2": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR3": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR4": {
+     "lost_a_diagnostic_key": false,
+     "out": "Authorization: <redacted>\nstage=summarize"
+    }
+   },
+   "reviewer_variants_leaking_count": 1,
+   "reviewer_variants_still_leaking": [
+    "C10"
+   ],
+   "rule_failure_count": 0,
+   "rule_failures": []
+  },
+  "token-run": {
+   "oracle_failure_count": 2,
+   "oracle_failures": [
+    "N5-auth-multiline",
+    "R3a-two-token-then-wrap"
+   ],
+   "over_redaction": {
+    "OR1": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR2": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR3": {
+     "lost_a_diagnostic_key": true,
+     "out": "Authorization: <redacted>"
+    },
+    "OR4": {
+     "lost_a_diagnostic_key": false,
+     "out": "Authorization: <redacted>\nstage=summarize"
+    }
+   },
+   "reviewer_variants_leaking_count": 0,
+   "reviewer_variants_still_leaking": [],
+   "rule_failure_count": 2,
+   "rule_failures": [
+    "cred-auth-multiline-swallow",
+    "open-two-token-then-wrap"
+   ]
+  }
+ },
+ "card": "I-14-D",
+ "iteration": "r3",
+ "kind": "design_space_reproduction",
+ "landed_pattern_difference": [],
+ "method": "rebind observability._AUTH_PATTERN in memory to each candidate, exactly as the attempt's own scratch scripts did",
+ "reproduces_the_landed_pattern": true,
+ "the_claim_in_the_comment_block": {
+  "claim_status": "REPRODUCED by this measurement, with the cost breakdown above",
+  "closed_by_token_run": true,
+  "cost_of_token_run": {
+   "OR1": {
+    "lost_a_diagnostic_key": true,
+    "out": "Authorization: <redacted>"
+   },
+   "OR2": {
+    "lost_a_diagnostic_key": true,
+    "out": "Authorization: <redacted>"
+   },
+   "OR3": {
+    "lost_a_diagnostic_key": true,
+    "out": "Authorization: <redacted>"
+   },
+   "OR4": {
+    "lost_a_diagnostic_key": false,
+    "out": "Authorization: <redacted>\nstage=summarize"
+   }
+  },
+  "oracle_failures_introduced_by_token_run": [
+   "N5-auth-multiline",
+   "R3a-two-token-then-wrap"
+  ],
+  "rule_failures_introduced_by_token_run": [
+   "cred-auth-multiline-swallow",
+   "open-two-token-then-wrap"
+  ],
+  "text": "Closing the two-token-then-wrap shape needs the scheme's own line consumed as a token run, which deletes `doc=17` from `Authorization: Bearer <marker>` + newline + `doc=17` + newline + `stage=`",
+  "the_failures_are_NOT_all_the_same_kind": {
+   "evidence_the_regressions_are_over_redaction": "OR1 `Authorization: Bearer\\ndoc=17` -> `Authorization: <redacted>`: the diagnostic key `doc=17` is deleted, which is exactly the shape the comment block names",
+   "genuine_regressions": [
+    "N5-auth-multiline",
+    "cred-auth-multiline-swallow"
+   ],
+   "registration_rows_that_would_need_re_registering": [
+    "R3a-two-token-then-wrap",
+    "open-two-token-then-wrap"
+   ],
+   "why_it_matters": "two of the four are the REGISTERED-OPEN ROWS THEMSELVES. `R3a-two-token-then-wrap` and `open-two-token-then-wrap` assert the residual output exactly; closing the leak changes that output, so they go red because the registration is doing its job, not because a defect appeared. Counting all four as 'the cost' overstates it."
+  }
+ },
+ "verdict": "see candidates",
+ "why": "r3_fix_record.md is referenced by the r3 comment block but does not exist; this re-derives the claim by measurement instead of leaving the reader pointed at a missing file"
+}
