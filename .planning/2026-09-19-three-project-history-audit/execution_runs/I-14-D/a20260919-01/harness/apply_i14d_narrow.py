@@ -97,8 +97,16 @@ SCANNER_NEW = block(
                    and not text[value_end].isspace()):
                 value_end += 1""")
 
-AUTHJOIN_NARROW_LINE = r'_AUTH_BARE_VALUE = r"[^\s,;&\"\'|]+(?:[ \t]+[^\s,;&\"\'|]+)*"'
-AUTHJOIN_MUT_LINE = r'_AUTH_BARE_VALUE = r"[^\s,;&\"\'|]+(?:\s+[^\s,;&\"\'|]+)*"'
+# the redactor's char class contains a backslash-quote then a BARE single quote
+# ([^\s,;&\"'|]) - compose the line so the quote stays bare (a raw \' would add
+# an extra backslash).
+_AUTHJOIN_CLASS = r'[^\s,;&\"' + "'" + r'|]'
+AUTHJOIN_NARROW_LINE = (
+    r'_AUTH_BARE_VALUE = r"' + _AUTHJOIN_CLASS
+    + r'+(?:[ \t]+' + _AUTHJOIN_CLASS + r'+)*"')
+AUTHJOIN_MUT_LINE = (
+    r'_AUTH_BARE_VALUE = r"' + _AUTHJOIN_CLASS
+    + r'+(?:\s+' + _AUTHJOIN_CLASS + r'+)*"')
 AUTHVALUE_NARROW_LINE = (
     r'    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" '
     r'+ _AUTH_BARE_VALUE + r")"'
@@ -111,6 +119,7 @@ AUTHVALUE_MUT_LINE = (
 OPS = {
     # op -> list of (old_block, new_block) line-sequence replacements
     "narrow": [(COMMENT_OLD, COMMENT_NEW), (SCANNER_OLD, SCANNER_NEW)],
+    "reverse": [(COMMENT_NEW, COMMENT_OLD), (SCANNER_NEW, SCANNER_OLD)],
     "mut_greedy": [(SCANNER_NEW, SCANNER_OLD)],
     "mut_authnl": [(block(AUTHJOIN_NARROW_LINE), block(AUTHJOIN_MUT_LINE))],
     "mut_auth1": [(block(AUTHVALUE_NARROW_LINE), block(AUTHVALUE_MUT_LINE))],

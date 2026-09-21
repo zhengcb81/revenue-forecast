@@ -1,0 +1,196 @@
+{
+ "card": "I-08-C",
+ "parent_card": "I-08",
+ "plan": "2026-09-19-three-project-history-audit",
+ "attempt": "a20260919-01",
+ "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-C\\a20260919-01",
+ "revision": "r3 (deliverable remediation after an independent changes_required verdict)",
+ "written_before_run": true,
+ "exit_code_legend": {
+  "source": "execution_v2/START_HERE.md, frozen rc table (owner ruling T1-19 / section 13)",
+  "0": "pass - command ended normally AND the business verdict is pass",
+  "1": "harness failure - import/fixture/path/binding error in the runner itself",
+  "2": "no verdict / correctly-rejected negative - the case is a negative and was rejected as required",
+  "3": "not as expected - positive case failed, or a negative case was NOT rejected (should-be-red was not red / should-be-green was not green)",
+  "aggregation_warning": "one pytest invocation yields ONE raw process return code for 13 nodes; the per-node business rc is classified separately in oracle.md section R3-4 and in case_results below. cross-batch rc comparisons must read this legend first."
+ },
+ "commands": [
+  {
+   "id": "I08C-c1-e4-derivation-probe",
+   "purpose": "pre-freeze INDEPENDENT re-derivation of oracle case E4 (verification_context_sha256 mutation -> ForecastInputError 'verification context mismatch'); expected values read from production source text, not produced by the receipt builder",
+   "phase": "before-freeze-derivation",
+   "cwd": "execution_runs/I-08-C/a20260919-01",
+   "argv": [
+    "C:\\Miniconda\\python.exe",
+    "scratch/e4_derivation_probe.py"
+   ],
+   "config_paths": [
+    "scripts/revenue_publication.py",
+    "scripts/revenue_report.py"
+   ],
+   "allowed_write_roots": [
+    "execution_runs/I-08-C/a20260919-01/scratch",
+    "%TEMP%/i08c_e4_*"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 300,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "expected_business_result": "E4a/E4b raise ForecastInputError 'publication_receipt verification context mismatch'; E4c independent reconstruction equals the production digest a70d6f66...; unmutated control ACCEPTED",
+   "actual_business_result": "matches expectation exactly; stdout kept at scratch/e4_derivation_probe.stdout.txt (probe revision 2; revision 1 mis-keyed the context dict and is disclosed in oracle.md R3-2)",
+   "before_after_evidence": [
+    "scratch/e4_derivation_probe.stdout.txt"
+   ],
+   "binding_status": "bound",
+   "side_effects": "imports production modules read-only; REVENUE_PUBLICATION_REGISTRY redirected to a fresh %TEMP% dir because formal run_forecast registers publications. No production file written."
+  },
+  {
+   "id": "I08C-c2-archive-exploratory",
+   "purpose": "preserve the surviving exploratory-phase and r2-verdict artefacts (pytest cache, pyc headers) before the r3 run rewrites them; reviewer unverified-list item 3",
+   "phase": "before-freeze-derivation",
+   "cwd": "execution_runs/I-08-C/a20260919-01",
+   "argv": [
+    "C:\\Miniconda\\python.exe",
+    "scratch/archive_exploratory.py"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "execution_runs/I-08-C/a20260919-01/exploratory",
+    "execution_runs/I-08-C/a20260919-01/scratch",
+    "execution_runs/I-08-C/a20260919-01/exploratory_manifest.json"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 120,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "expected_business_result": "6/6 surviving artefacts copied byte-identically with sizes, mtimes and sha256 recorded; 'not_recoverable' list written honestly",
+   "actual_business_result": "6 ARCHIVED, 0 absent; manifest at exploratory_manifest.json",
+   "before_after_evidence": [
+    "scratch/archive_exploratory.stdout.txt",
+    "exploratory_manifest.json"
+   ],
+   "binding_status": "bound",
+   "side_effects": "creates exploratory/ (copies only; nothing deleted or rewritten in place)"
+  },
+  {
+   "id": "I08C-c3-append-only-proof",
+   "purpose": "prove oracle.md r3 is append-only: bytes[0:6831] still hash to the recorded r2 digest 478bd70e...; also emit oracle.md.r2_frozen_copy.txt",
+   "phase": "before-freeze-derivation",
+   "cwd": "execution_runs/I-08-C/a20260919-01",
+   "argv": [
+    "C:\\Miniconda\\python.exe",
+    "scratch/make_frozen_copy.py"
+   ],
+   "config_paths": [
+    "oracle.md"
+   ],
+   "allowed_write_roots": [
+    "execution_runs/I-08-C/a20260919-01/oracle.md.r2_frozen_copy.txt",
+    "execution_runs/I-08-C/a20260919-01/scratch"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 120,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "expected_business_result": "append_only_proof == true (frozen body untouched, prefix intact, only a normalising newline added before the marker)",
+   "actual_business_result": "append_only_proof true; frozen body 6831 B sha256 478bd70e...; boundary bytes b'\\n'; oracle.md now 17360 B sha256 8f956a97...",
+   "before_after_evidence": [
+    "scratch/make_frozen_copy.stdout.txt",
+    "oracle.md.r2_frozen_copy.txt"
+   ],
+   "binding_status": "bound",
+   "side_effects": "writes only the frozen copy and its stdout inside the attempt"
+  },
+  {
+   "id": "I08C-c4-verdict-pytest",
+   "purpose": "r3 evidence run of the frozen 13-node matrix (card T-PUB-equivalent node: consumers must reject forged receipts, cross-payload replay and unsigned structures)",
+   "phase": "verdict",
+   "cwd": "execution_runs/I-08-C/a20260919-01",
+   "argv": [
+    "C:\\Miniconda\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "-m",
+    "pytest",
+    "test_i08c_consumer_rejection.py",
+    "-v",
+    "--basetemp=runner/tmp"
+   ],
+   "env": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "REVENUE_ATTESTATION_PROVIDER": "<unset>",
+    "REVENUE_PUBLICATION_REGISTRY": "<unset at start; redirected by the test fixture to a fresh pytest tmp dir>"
+   },
+   "config_paths": [
+    "test_i08c_consumer_rejection.py"
+   ],
+   "allowed_write_roots": [
+    "execution_runs/I-08-C/a20260919-01 (stdout, .pytest_cache, __pycache__, runner/)",
+    "%TEMP%/pytest-of-* (the fixture registry)"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 600,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "expected_business_result": "13 collected, 13 passed; E1-E10,E12 green; E11 and E13 green BY PINNING the product gaps (see oracle.md R3-4: those two are rc=3 as business verdicts and are the card's negative result)",
+   "actual_business_result": "13 passed in 2.37s; 13/13 raw return code 0; the executed test file was frozen at 10902 B / 0072b160... before the run (see binding.json test_file_under_test)",
+   "before_after_evidence": [
+    "pytest_r3_verdict.stdout.txt",
+    "runner/.rc.txt"
+   ],
+   "binding_status": "bound",
+   "side_effects": "writes the attempt-local .pytest_cache and __pycache__; MODIFIES NO production file. The formal run_forecast path registers publications, so the fixture redirects REVENUE_PUBLICATION_REGISTRY into a pytest tmp dir, keeping artifacts/registry/publications.jsonl untouched (hash verified before and after).",
+   "note_on_basetemp": "started as a freshly created empty directory (runner/tmp) -- never the attempt root, never a previous test dir"
+  },
+  {
+   "id": "I08C-c5-post-run-production-hash-check",
+   "purpose": "post-run confirmation that the r3 evidence run wrote nothing into any production repo, and that the frozen test file was the one executed",
+   "phase": "after",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+   "argv": [
+    "git",
+    "status",
+    "--porcelain",
+    "--",
+    "scripts/",
+    "artifacts/",
+    "tests/",
+    "config/"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [],
+   "network": "disabled",
+   "timeout_seconds": 120,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "expected_business_result": "empty porcelain output: no production file under scripts/, artifacts/, tests/ or config/ modified in the attempt window",
+   "actual_business_result": "empty; the four anchor hashes (revenue_publication.py 183803bb..., revenue_report.py a85fb484..., publication_registry.py 29aaae4f..., publications.jsonl bc3256bb...) are unchanged",
+   "before_after_evidence": [
+    "after/production_status.txt"
+   ],
+   "binding_status": "bound"
+  }
+ ],
+ "not_run_commands": [
+  {
+   "id": "I08C-n1-invest-star-consumers",
+   "reason": "card-declared out of scope (invest-* consumers belong to their owners). The reviewer's unverified-list item 1 stands: this card cannot claim coverage of them.",
+   "binding_status": "out_of_scope"
+  },
+  {
+   "id": "I08C-n2-cli-publish-transaction",
+   "reason": "no separate CLI publish entry point is exercised; F01/F02 are covered transitively through the dispatcher chain the CLI would call.",
+   "binding_status": "out_of_scope"
+  },
+  {
+   "id": "I08C-n3-product-remediation",
+   "reason": "binding the attestation at consumption, binding segments[i].base_revenue, and deprecating validate_publication_receipt are PRODUCT changes requiring a separate card / owner decision. This card records them as its negative result and must not implement them.",
+   "binding_status": "out_of_scope"
+  }
+ ],
+ "binding_status": "bound",
+ "bound_entry_count": 5,
+ "raw_vs_expected_note": "every raw return code matched its frozen expectation; no command was retried blindly, and no expected value was edited after the fact."
+}

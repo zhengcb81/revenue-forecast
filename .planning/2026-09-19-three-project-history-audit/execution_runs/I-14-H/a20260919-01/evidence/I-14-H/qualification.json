@@ -1,0 +1,126 @@
+{
+  "card_id": "I-14-H",
+  "attempt_id": "a20260919-01",
+  "revision": "r1",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "ACCEPT（条件式）",
+    "scope_is_conditional": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "conditional_scope": {
+    "statement": "Acceptance is CONDITIONAL. The acceptance evidence is \"12/14 frozen cases + 12-case pytest suite\", NOT 14/14. The 14-case end-to-end run_cases.py gate has NEVER passed, and H5/H6 are currently unsatisfiable. The xfail RECORDS the residual, it does not satisfy it. Until card I-14-I re-runs the full 14-case gate to rc 0 and lands cases_report.json, this card's acceptance MUST NOT be stated as end-to-end oracle consistency.",
+    "acceptance_evidence": "12/14 frozen cases + 12-case pytest suite (NOT 14/14)",
+    "end_to_end_gate": "The 14-case end-to-end run_cases.py gate has NEVER passed.",
+    "currently_unsatisfiable": "H5 and H6 frozen expectations (per-case {\"verdict\":\"reject_claim\",\"refusals\":[\"R-BASIS-UNKNOWN\"]}) are CURRENTLY UNSATISFIABLE. Container basis: list/dict -> TypeError: unhashable at iso/natural_window.py:202 -> SUT rc 4 -> batch abort, sut_report.json not written.",
+    "xfail_semantics": "The xfail at harness/test_i14h_natural_window.py:183-190 RECORDS the residual; it does NOT satisfy it.",
+    "allowed_wording_until_closed": "\"12/14 frozen cases + 12-case pytest suite\" -- and nothing stronger.",
+    "closed_by": "PLAN/execution_v2/card_I-14-I.md"
+  },
+  "carrier": {
+    "file": "review.md",
+    "path_inside_attempt": "review.md",
+    "section_heading": "# I-14-H 独立复核（independent reviewer）",
+    "section_heading_line": 1,
+    "line_range_inclusive_1_based": [
+      1,
+      193
+    ],
+    "byte_offsets": {
+      "start": 0,
+      "end_inclusive": 14689,
+      "end_exclusive": 14690
+    },
+    "region_bytes": 14690,
+    "region_sha256": "98aa37ff27a7426cffb578f46d7ae14eaa7271b0eec1800416ec4154c7247e2d",
+    "first_line_of_region": "# I-14-H 独立复核（independent reviewer）",
+    "verdict_line": 9,
+    "first_line_of_verdict": "## 结论：ACCEPT（条件式）",
+    "conditional_scope_line": 12,
+    "residual_adjudication_line": 80,
+    "unverified_list_line": 165,
+    "status_recommendation_lines": [
+      189,
+      193
+    ],
+    "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256. Because the region starts at line 1 (byte offset 0) and ends at the last content line, the region is the whole review.md minus its single trailing newline.",
+    "carrier_file_sha256": "97997d6d26af5a1fd36e486c508a027642f4492af1f5415fe3f25bc929e130b2",
+    "carrier_file_bytes": 14691,
+    "carrier_file_total_lines": 193
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer"
+  },
+  "scope": {
+    "conditional": true,
+    "acceptance_evidence": "12/14 frozen cases + 12-case pytest suite (NOT 14/14)",
+    "granted": [
+      "defect 1 (claim.basis has no enumeration check): a fail-able case exists; RED/GREEN reproduces in both directions; J16 closed basis enumeration over the five registered names; unregistered / empty-string / null / missing-key basis is refused with R-BASIS-UNKNOWN",
+      "defect 2 (quick_check counted into the natural observation duration): a fail-able case exists; RED/GREEN reproduces in both directions; observation intervals contain the observation phase only; quick_check never enters; union_seconds/sum_seconds share the observation basis; J15 renamed-window variant; direction inversion demonstrated with the measured assertion 2220.0 == 1740",
+      "the W1 append-only correction of expected union_seconds 2220 -> 1740 (expected_superseded + errata[0].diff_from_r1_expected_map); the r1 frozen body was NOT rewritten and still reads 2220",
+      "the reviewer's independent 12-case gate run: iso -> ok true, mismatch_count 0, accepted_ineligible 0, SUT rc 0; r1sut -> ok false, 27 mismatches, accepted_ineligible = H1,H2,H3,H4,H9,H10,H11",
+      "production trees untouched; frozen oracle material byte-unchanged; SUT revision identity verified by sha256 across three copies"
+    ],
+    "not_granted": [
+      "the 14-case end-to-end run_cases.py gate reaching rc 0 - NEVER PASSED and currently unsatisfiable (H5/H6)",
+      "end-to-end oracle consistency of this card as a closed claim",
+      "H5 and H6 per-case R-BASIS-UNKNOWN expectations - unsatisfiable while iso:202 raises TypeError on list/dict basis",
+      "any statement that the xfail constitutes a pass",
+      "real natural-observation eligibility (no natural cycle observed; all cases SYNTHETIC-TIMER-ONLY)",
+      "real UI-immediacy qualification - stays blocked",
+      "SLO / performance qualification (I-14-A / I-16 scope)",
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production-tree write permission",
+      "I-17-A scope",
+      "proof that iso/venv deletion occurred as described (current state is consistent-with only; no pre-delete snapshot)"
+    ]
+  },
+  "carried_findings": [
+    {
+      "id": "CF-I14H-1",
+      "class": "RIDER (MANDATORY)",
+      "summary": "Container basis crashes the batch instead of being refused per case: iso/natural_window.py:202 forces a hash evaluation on an unhashable list/dict -> TypeError -> SUT rc 4 -> batch abort. H5/H6 frozen expectations (per-case R-BASIS-UNKNOWN) are currently unsatisfiable; r1 silently accepted them. Registered as card I-14-I: add an isinstance(basis, str) guard, drop the xfail, re-run the full 14-case gate to rc 0, land cases_report.json."
+    },
+    {
+      "id": "CF-I14H-2",
+      "class": "UNDISCLOSED WEAKENING",
+      "summary": "iso:241 `quick_check_in_observation_intervals` and iso:248 `sum_used_for_natural_duration` are hardcoded literals (always False), not derived. The REQUIRED_KEYS shape gate and test_d2_observation_intervals_contain_observation_only are therefore tautological on those two keys, and the literal is contrary to fact in overlap scenarios. Real defect-2 discrimination comes from the four genuinely-computed fields union_seconds / sum_seconds / observation_interval_count / quick_check_overlap_seconds. Recommended for I-14-I: derive both keys and assert on them."
+    },
+    {
+      "id": "CF-I14H-3",
+      "class": "COVERAGE GAP",
+      "summary": "H12 (renamed window + honest 1740 claim, double refusal codes ['R-CLAIM-EXCEEDS','R-QC-IN-OBS']) has NO pytest counterpart; it is covered only by the frozen gate, which has never passed end-to-end."
+    },
+    {
+      "id": "CF-I14H-4",
+      "class": "UNPROVABLE / CONSISTENT-WITH ONLY",
+      "summary": "iso/venv/ deletion is consistent-with, not provable: no pre-delete snapshot or log exists, so neither the deletion action nor the hash-invariance claim can be verified retroactively."
+    },
+    {
+      "id": "CF-I14H-5",
+      "class": "NOT GRANTED",
+      "summary": "Real observation eligibility / real UI immediacy / SLO / accuracy remain NOT GRANTED (SYNTHETIC-TIMER-ONLY). This card added no verification of any of them."
+    }
+  ],
+  "eligibility_statement": {
+    "formula_classification": "本卡只支持计时/分类算法在合成冻结输入上的正确性证明；不涉及收入预测公式。",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "real_natural_observation": "NOT GRANTED. 全部用例为合成时间输入（SYNTHETIC-TIMER-ONLY）；未观察任何真实自然周期。",
+    "real_ui_immediacy": "NOT GRANTED -> blocked（沿用 I-14-B 状态）。",
+    "slo_performance": "NOT GRANTED (I-14-A / I-16 scope).",
+    "production_write": "NOT GRANTED. Both production trees read-only; `git status --porcelain -- scripts` in revenue-forecast is empty."
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-21",
+    "what_this_pass_did": "created this qualification record because the card had no evidence/<CARD>/qualification.json; landed the carrier fields for an already-written independent verdict; appended nothing to review.md",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "review_md_bytes_written": 0
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is CONDITIONAL: disclosure_adaptation stays unmapped and accuracy stays unproven; no product qualification is granted here; the end-to-end 14-case oracle gate remains unpassed and is owed by card I-14-I."
+}

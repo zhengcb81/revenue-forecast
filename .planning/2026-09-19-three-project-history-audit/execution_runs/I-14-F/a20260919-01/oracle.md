@@ -1,5 +1,58 @@
 # I-14-F oracle — FROZEN BEFORE ANY RUN (2026-09-19, attempt a20260919-01)
 
+> **ADDENDUM B (frozen before the adjudicating GREEN set; falsifying evidence kept).**
+> The §2 criterion constants (260/100 ⇒ threshold 160) were **FALSIFIED** by attempt evidence:
+> - `<attempt>\P0-logon_wrapper_quoted-1` (cwd 148, basetemp 155, relocated=false by the old
+>   criterion) failed with **literal WinError 206** creating `...\fake-project\company_wiki\source_catalog`
+>   (total 253 chars). Historical cmd-A5 (basetemp 147, deepest 245) had passed — so the true
+>   boundary on this box is between 245 and 253, not 260.
+> - `<attempt>\P0-child_without_runtime-1` (basetemp 156, relocated=false) never spawned a
+>   child: the launcher's `Start-Process -RedirectStandardOutput/-Error` paths reach
+>   basetemp+124 chars (redirect log ≈ 279 total) and every attempt died before writing a log —
+>   23 restarts, no logs, no runtime file. The redirect log path, not the mkdir chain, is the
+>   **longest** artifact the suite generates under basetemp: 31 (test dir) + 13 (\fake-project)
+>   + 79 (\`.source_catalog\worker_stdout-<32hex>-attempt-0001.log`) = **124 under basetemp**.
+> - Controlled envelope on this attempt (same tree, same venv): generated paths ≤ ~200 pass;
+>   ≥ 253 fail. cmd-A5's child pass at ~271 while this attempt's child fails at ~279 remains
+>   UNEXPLAINED (open question for the reviewer) — the criterion therefore stays strictly
+>   inside this attempt's own measured envelope.
+> **Recalibrated frozen constants: WIN32_PATH_LIMIT = 240** (between measured pass 200 and
+> measured fail 253), **GENERATION_RESERVE = 124** (measured longest artifact), ⇒
+> **BASETEMP_MAX_CHARS = 116**. Consequences, all frozen before the adjudicating reruns:
+> - E-G2 (no-reroute control) moves to the **boundary probe**: run dir 109, basetemp 116 under
+>   `%TEMP%\i14f-normal116\<62-char pad>` ⇒ expect relocated=false **and pass** (validates the
+>   no-reroute edge at exactly the threshold).
+> - The old NORMAL placement (attempt-root run dirs, basetemp 155/156) is re-labelled
+>   **falsified-normal**: expect relocated=true **and pass** (it failed unrouted with 206).
+>   The failed rerouted=false runs stay under `after\falsified-normal-r1\`.
+> - §4 E-G2 text and §2's correction block describing threshold 160 are superseded by this
+>   addendum; nothing else moves. E-G1 (deep) is re-run with the final constants for a
+>   coherent after-set; the earlier deep GREEN rows (relocation 174→75) remain valid evidence
+>   that relocation mechanics work — the constant change does not affect any placement with
+>   basetemp > 160, which all still relocate.
+> - §5 unit case table updated to the recalibrated constants (155/156 ⇒ relocate; 116 ⇒ no).
+
+> **ADDENDUM C (final calibration; frozen before the adjudicating after-set).**
+> Addendum B's boundary probe (run dir 109, basetemp 116 unrouted) DEGRADED: `logon_wrapper_quoted`
+> passed at 115, but `child_without_runtime` ran 19 spawn attempts — children 1–3 executed the
+> fake cli (count file = 3), attempts 4–19 never executed (0-byte logs, no runtime), launcher
+> looped to the 15 s timeout. No 206/Errno anywhere, but 116-unrouted is demonstrably not clean.
+> Final measured envelope for the launcher node family (this attempt, controlled):
+> generated-path totals ≤ ~205 → repeatedly clean (I-14-C short 12/12 ≈ 200–205; this attempt
+> 76/75-basetemp controls clean); 240 → spawn degradation; 253 → literal WinError 206; 278+ →
+> dead spawns. **Final frozen constants: WIN32_PATH_LIMIT = 210, GENERATION_RESERVE = 124, ⇒
+> BASETEMP_MAX_CHARS = 86.** 210 respects every measured-clean datapoint (81, 76/75) and stays
+> clear of the degradation onset (240). The untested band (total 210–239, i.e. basetemp
+> 87–115) is rerouted conservatively — documented as an open gap, not silently blessed.
+> - The no-reroute boundary probe moves to: root `%TEMP%\n\ppppppp` (41 chars) ⇒ run dir 68/67,
+>   **basetemp 76/75 ≤ 86 ⇒ expect relocated=false AND pass** (exactly the proven envelope).
+> - The basetemp-116 probe evidence stays under `%TEMP%\i14f-normal116\` with captures copied
+>   to `after\boundary116-captures\` — kept as the Addendum-C falsifier.
+> - SHORT control (`%TEMP%\i14f-short-green`, run dirs 75/74, basetemp 82/81): 82 ≤ 86 ⇒
+>   expect **relocated=false AND pass** — consistent with the historical clean envelope
+>   (I-14-C's own 80/81 control passed 12/12 unrouted).
+> - Unit case table updated again to 210/124/86 (155/156/116-edges ⇒ relocate; 86/81/76 ⇒ no).
+
 > **ADDENDUM A (frozen before the adjudicated runs; quarantined env-r1 evidence in
 > `before/quarantine-env-r1/`).** Three corrections, all found from failed *setup*, none from
 > observing adjudicated results:

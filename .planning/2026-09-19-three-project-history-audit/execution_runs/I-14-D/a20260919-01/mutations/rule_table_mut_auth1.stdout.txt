@@ -1,0 +1,22 @@
+{
+  "label": "mut_auth1",
+  "entries": 48,
+  "credential_leaks": [
+    "cred-header-bearer",
+    "cred-header-scheme",
+    "cred-auth-multiline-swallow",
+    "cred-auth-sameline-tail-kept"
+  ],
+  "touched_but_should_not_be": [],
+  "residuals_confirmed": [
+    "res-digest",
+    "res-flag",
+    "res-json-quoted"
+  ],
+  "fidelity_ok": false,
+  "verdict": "negative"
+}
+FIDELITY-FAIL cred-header-bearer expected 'Authorization: <redacted>' got 'Authorization: <redacted> SYNTHETIC_AUDIT_TOKEN'
+FIDELITY-FAIL cred-header-scheme expected 'authorization: <redacted>' got 'authorization: <redacted> SYNTHETIC_AUDIT_TOKEN'
+FIDELITY-FAIL cred-auth-multiline-swallow expected 'Authorization: <redacted>\ndoc=17\nstage=summarize' got 'Authorization: <redacted> SYNTHETIC_AUDIT_TOKEN\ndoc=17\nstage=summarize'
+FIDELITY-FAIL cred-auth-sameline-tail-kept expected 'Authorization: <redacted>' got 'Authorization: <redacted> SYNTHETIC_AUDIT_TOKEN rejected by provider'

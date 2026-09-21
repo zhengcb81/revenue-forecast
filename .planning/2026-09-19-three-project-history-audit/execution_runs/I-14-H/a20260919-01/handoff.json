@@ -2,10 +2,11 @@
   "card_id": "I-14-H",
   "attempt_id": "a20260919-01",
   "revision": "r1",
-  "status": "review_pending",
-  "reviewer_status": "PENDING -- no independent reviewer has reviewed this pass yet. The implementer did NOT sign; acceptance must be written by an independent reviewer (see status_authority). Prior I-14-B r2 landed the implementation side (J16/J15, accepted_scoped); this card's oracle side (failing cases + corrected frozen expectation) is what awaits review.",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "reviewer_status": "RESOLVED (conditional) -- the independent reviewer returned ACCEPT (conditional) and wrote review.md itself. Verdict: \"## 结论：ACCEPT（条件式）\" at review.md line 9; the condition is stated at line 12. Carrier: review.md sha256 97997d6d26af5a1fd36e486c508a027642f4492af1f5415fe3f25bc929e130b2 (14691 B), region = lines 1-193 (whole file), region_sha256 98aa37ff27a7426cffb578f46d7ae14eaa7271b0eec1800416ec4154c7247e2d. The verdict was written by an independent reviewer session, never by the implementer. CONDITIONAL SCOPE (binding): acceptance evidence is \"12/14 frozen cases + 12-case pytest suite\", NOT 14/14; the 14-case end-to-end run_cases.py gate has NEVER passed and is currently unsatisfiable at H5/H6; the xfail RECORDS the residual, it does not satisfy it. Mandatory RIDER registered as card I-14-I. NOT GRANTED: real natural-observation eligibility, real UI immediacy, SLO/performance, disclosure_adaptation, accuracy, any production-tree write. See status_authority for the machine-readable provenance.",
   "objective": "为 natural_window.py 的两个产品级缺陷各建立可失败用例（RED→GREEN）：缺陷① claim.basis 无枚举校验（J1/J2/J3/J11 可被一个字段绕过）；缺陷② quick_check 计入自然观察时长（2220 被接受而诚实 1740 被拒，方向倒置）。同时把烧进冻结期望的 W1 union_seconds 2220 以追加式 provenance 更正为 1740。status=review_pending，不自签。",
-  "one_observable_result": "同一测试文件 harness/test_i14h_natural_window.py（12 用例）：对缺陷版 r1sut（495a4411…）9 failed / 2 passed / 1 xfailed（rc 1，RED——含 r1 实测 union_seconds=2220.0）；对修复版 i14b-after-2（7fff6f0c…）11 passed / 1 xfailed（rc 0，GREEN）。",
+  "one_observable_result": "同一测试文件 harness/test_i14h_natural_window.py（12 用例）：对缺陷版 r1sut（495a4411…）9 failed / 2 passed / 1 xfailed（rc 1，RED——含 r1 实测 union_seconds=2220.0）；对修复版 i14b-after-2（7fff6f0c…）11 passed / 1 xfailed（rc 0，GREEN）。SCOPE CAVEAT: 这是 pytest 侧的通过证据；端到端 14-case run_cases.py 门从未通过（H5/H6 当前不可满足）。",
   "completed_steps": [
     "1 生产树搜索: revenue-forecast/scripts/ 与 filing-fetch/scripts/ 均无 natural_window.py（grep 零命中）；SUT = attempt-local 副本，锚点 I-14-B iso/natural_window.py",
     "2 SUT 身份: 三份 sha256 验证副本——iso/（修复后 7fff6f0c…）、before/i14b-after-2（同）、before/r1sut（缺陷版 495a4411…=I-14-B reviewer 核验过的 r1）；本轮运行前后逐字节不变",
@@ -15,15 +16,18 @@
     "6 GREEN: 11 passed, 1 xfailed, rc 0 -> after/cmd-PYTEST-green/stdout.txt",
     "7 RED: I14H_SUT=r1sut, 9 failed（4×d1 + 5×d2，含 union_seconds=2220.0 实测）, 2 passed（对照）, 1 xfailed, rc 1（预期）-> before/cmd-PYTEST-red-r1sut/stdout.txt",
     "8 清理: 删除前次尝试遗留的 iso/venv/（卡片禁止 venv；删除前后 iso/natural_window.py sha 不变）；本轮未建任何 venv，直接 C:\\Miniconda\\python.exe（3.13.9 + pytest 9.1.1）",
-    "9 文档: oracle.md（含 §4 追加式期望更正、§5 时序声明、§7 残留记录）+ 本 handoff.json"
+    "9 文档: oracle.md（含 §4 追加式期望更正、§5 时序声明、§7 残留记录）+ 本 handoff.json",
+    "10 独立复核（reviewer 另写 review.md，非实现者）: ACCEPT（条件式）——两份 RED/GREEN 计数独立复现（11P/1X、9F/2P/1X）、全部 sha256 逐项吻合、W1 更正形式合法、容器 basis 崩溃归因到 :202 经带 traceback 的进程内探针确认；并补跑 12-case 门（iso ok/mismatch 0/accepted_ineligible 0；r1sut 27 mismatches、accepted_ineligible 7 例）",
+    "11 账目落盘（本轮 carrier-landing，非实现者）: status review_pending -> accepted_scoped；写入 status_authority（含条件范围）+ bookkeeping；登记 4 条 carried findings；新建 I-14-I 残卡并纳入 dispatch；创建 evidence/I-14-H/qualification.json"
   ],
-  "next_step_number": 10,
-  "next_action": "独立 reviewer（非本实现者）复核：(1) oracle.md §2 的缺陷定位与 §4 的追加式更正（expected_superseded + errata[0].diff_from_r1_expected_map，r1 冻结正文 5d8c4592…/3ba2bb17… 未动）；(2) 独立重跑两条 pytest 命令复现 9F/2P/1X -> 11P/1X；(3) 裁决容器-basis 批崩溃残留（P4/T1-10 P-3，xfail 记录 + H5/H6 冻结期望）是否需要立卡修复；(4) 通过后写 review.md 并更新 status。全 14-case run_cases.py 门推迟到残留修复后运行。",
+  "next_step_number": 12,
+  "next_action": "实现强制收尾残卡 I-14-I（容器 basis 逐例拒绝），它是本卡条件式验收的唯一兑现路径。In order: (1) 在 iso/natural_window.py:202 前加类型护栏（例如 isinstance(basis, str)），使 list/dict/tuple/嵌套容器逐例得到 R-BASIS-UNKNOWN 而非整批 TypeError（当前 raw_returncode=4）；(2) 对 list / dict / set / tuple 逐一冻结期望并补阴性对照（登记过的字符串 basis 仍按实质裁决）；(3) 移除 harness/test_i14h_natural_window.py:183-190 的 xfail 并转正；(4) 用未修改的 run_cases.py（f2a07d0b…）+ 未修改的 cases.i14h.json（40260c24…）补跑全 14-case 门至 rc 0（mismatch_count=0、accepted_ineligible=0），把 cases_report.json 落到本 attempt 证据目录；(5) 顺手把 :241 quick_check_in_observation_intervals 与 :248 sum_used_for_natural_duration 由硬编码字面量 False 改为派生值，并补可失败断言（重叠情景下必须为 True）；(6) 确认 H12（改名窗 + 诚实 1740 双拒绝码）在全 14-case 门中实际通过——它没有 pytest 对应用例。在 (4) 完成前，本卡的验收陈述必须继续限定为\"12/14 冻结用例 + 12 例 pytest 套件\"。",
   "deliverables": {
     "harness/test_i14h_natural_window.py": "147cdc1c589bef458ba2d741568f22bfd56600cefcfc7757d030accc4630f935",
     "oracle.md": "written this pass; hash not self-citable (own file)",
     "before/cmd-PYTEST-red-r1sut/stdout.txt": "0342c075eca1ae6cbfbc8f14b4abd7b3e2f68ea7ad9faf2f478ee2d71a29b936",
-    "after/cmd-PYTEST-green/stdout.txt": "1329f50122cbd03deafb62edc7d259b49c294407153627f127f90bdfa869ae6f"
+    "after/cmd-PYTEST-green/stdout.txt": "1329f50122cbd03deafb62edc7d259b49c294407153627f127f90bdfa869ae6f",
+    "review.md (independent reviewer, written by that session)": "97997d6d26af5a1fd36e486c508a027642f4492af1f5415fe3f25bc929e130b2"
   },
   "reused_frozen_material_unchanged": {
     "note": "前次失败尝试冻结的 oracle 材料，本轮逐字节复核后原样复用（freeze 先于任何 SUT 运行）",
@@ -35,10 +39,21 @@
     "harness/build_cases_i14h.py": "c40fac28a3235a7151a01e6e54ca62bd7ec6d01e629186a28788692cca5aecdf",
     "harness/run_cases.py (unchanged, I-14-B r1 revision)": "f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23"
   },
+  "input_hashes": {
+    "review.md (independent reviewer verdict carrier)": "97997d6d26af5a1fd36e486c508a027642f4492af1f5415fe3f25bc929e130b2 (14691 B, 193 lines, LF-only, no BOM)",
+    "review.md carrier region (lines 1-193)": "98aa37ff27a7426cffb578f46d7ae14eaa7271b0eec1800416ec4154c7247e2d (14690 B, byte offsets 0..14689 inclusive)",
+    "iso/natural_window.py (SUT under test)": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
+    "before/natural_window.r1sut.py (RED SUT)": "495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95",
+    "harness/test_i14h_natural_window.py": "147cdc1c589bef458ba2d741568f22bfd56600cefcfc7757d030accc4630f935 (unchanged by this pass)",
+    "harness/run_cases.py": "f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23 (unchanged by this pass)",
+    "harness/cases.i14h.json": "40260c2425cbe4e708f36c294fa07fe01ac608b3c13bd1a4d3eafddd9762aeda (unchanged by this pass)",
+    "harness/frozen_expectations.i14h.json": "bffb11c2727d2227f3b1c345577f9acb7aeb2bae03949bad06741d990164d17a (unchanged by this pass)"
+  },
   "current_source_hashes": {
     "iso/natural_window.py (GREEN SUT, i14b-after-2, UNCHANGED this pass)": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
     "before/natural_window.i14b-after-2.py (byte-verified fixed pre-image)": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
-    "before/natural_window.r1sut.py (RED SUT, defective r1 revision)": "495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95"
+    "before/natural_window.r1sut.py (RED SUT, defective r1 revision)": "495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95",
+    "handoff.json / qualification.json": "own files of this pass; any value written into them is invalidated by the write itself - recompute with Get-FileHash"
   },
   "changed_paths": [
     "harness/test_i14h_natural_window.py (new, 190 lines)",
@@ -47,13 +62,20 @@
     "before/cmd-PYTEST-red-r1sut/stdout.txt (new RED evidence)",
     "after/cmd-PYTEST-green/stdout.txt (new GREEN evidence)",
     "iso/venv/** (DELETED: forbidden leftover venv of the failed prior pass; iso/natural_window.py untouched)",
-    "harness/scratch/pytest-i14h-green/**, harness/scratch/pytest-i14h-red/** (pytest basetemp, disposable)"
+    "harness/scratch/pytest-i14h-green/**, harness/scratch/pytest-i14h-red/** (pytest basetemp, disposable)",
+    "review.md (NEW, written by the independent reviewer session - not by the implementer)",
+    "handoff.json (UPDATED this carrier-landing pass: status accepted_scoped, status_authority, bookkeeping, carried findings, input_hashes)",
+    "evidence/I-14-H/qualification.json (NEW this carrier-landing pass)",
+    "PLAN/execution_v2/root_cards.md, root_cards.json, dispatch.json, dispatch.md, card_I-14-I.md (NEW card I-14-I registered; plan-side only)",
+    "PLAN/execution_v2/validation.json (regenerated by validate_execution_pack.py)"
   ],
   "changed_paths_outside_allowlist_reported": [],
-  "production_tree_writes": "NONE - both production repos read-only; searched only. SUT is attempt-local (I-14-B anchor), SUT_VERSION untouched (7fff6f0c… before and after).",
+  "production_tree_writes": "NONE - both production repos read-only; searched only. SUT is attempt-local (I-14-B anchor), SUT_VERSION untouched (7fff6f0c… before and after). Re-verified this pass: `git status --porcelain -- scripts` in revenue-forecast is EMPTY. All writes of this pass are inside .planning/** (attempt directory + execution_v2 plan registry).",
   "commands_executed": [
     "CMD-I14H-PYTEST-green: C:\\Miniconda\\python.exe -X utf8 -B -m pytest -p no:cacheprovider --basetemp harness\\scratch\\pytest-i14h-green -v harness\\test_i14h_natural_window.py",
-    "CMD-I14H-PYTEST-red-r1sut: same command with env I14H_SUT=<attempt>\\before\\natural_window.r1sut.py"
+    "CMD-I14H-PYTEST-red-r1sut: same command with env I14H_SUT=<attempt>\\before\\natural_window.r1sut.py",
+    "reviewer: CMD-I14H-REV-CASES-12 (unmodified run_cases.py, H5/H6 filtered, in %TEMP%\\i14h_rev\\; produced no attempt artifact)",
+    "carrier-landing: read-only probes re-verifying the reviewer's residual claims (container basis TypeError at iso:202; tautology of iso:241/iso:248) - outputs written to %TEMP% only"
   ],
   "raw_exit_codes": {
     "CMD-I14H-PYTEST-green": 0,
@@ -63,15 +85,67 @@
     "CMD-I14H-PYTEST-green": 0,
     "CMD-I14H-PYTEST-red-r1sut": 1
   },
-  "raw_vs_expected_note": "both matched. rc 1 on RED is the EXPECTED demonstration that the two defects are reproducible on the r1 revision; the business RED/GREEN split is the per-test verdicts recorded in the captured stdout files.",
+  "raw_vs_expected_note": "both matched. rc 1 on RED is the EXPECTED demonstration that the two defects are reproducible on the r1 revision; the business RED/GREEN split is the per-test verdicts recorded in the captured stdout files. NOTE: a runner rc 0 here is pytest-side only and does NOT mean the end-to-end 14-case oracle gate passed - that gate has never passed and currently cannot.",
   "timing_deviation_declared": "与 I-14-B r2 相同：实现（J16/J15）先于冻结期望落地。独立性证明：(a) 期望冻结时刻 2026-09-21T18:39:46Z 先于本轮任何 SUT 运行；(b) 期望由 build_cases_i14h.py 从 r1 pre-image + 卡片语义 + 手算合成，从不调用 SUT；(c) before/cmd-PYTEST-red-r1sut 用字节验证的缺陷版独立复现两缺陷（9 用例以恰好相反的裁决失败）——若期望'照修好的实现写'则不可能。",
+  "carried_findings": [
+    {
+      "id": "CF-I14H-1",
+      "class": "RIDER (MANDATORY - the reviewer's condition of acceptance)",
+      "severity": "blocking for the end-to-end oracle gate; not a correctness hole (failure direction is fail-closed)",
+      "finding": "Container basis crashes the whole batch instead of being refused per case. iso/natural_window.py:202 `if basis not in BASIS_REGISTRY:` forces a hash evaluation on an unhashable value, so a list or dict basis raises TypeError: unhashable type: 'list' / 'dict'. The 14-case run_cases.py gate therefore aborts with SUT raw_returncode=4 and never writes sut_report.json, while the frozen expectations for H5 (basis=['union_of_windows']) and H6 (basis={'kind':'union_of_windows'}) demand per-case {\"verdict\":\"reject_claim\",\"refusals\":[\"R-BASIS-UNKNOWN\"]}. Those two expectations are CURRENTLY UNSATISFIABLE. r1 (495a4411...) silently accepted both (verdict=accept_claim, refusals=[]) - an over-permissive accept.",
+      "independently_reverified_this_pass": true,
+      "evidence": "In-process probe against both SUTs: iso -> TypeError at iso/natural_window.py:202 (traceback-extracted line and source line confirmed) for list and dict; r1sut -> accept_claim/refusals=[] for list, dict and set. Set ({'union_of_windows'}) is hashable and already reaches R-BASIS-UNKNOWN, so the crash is list/dict-specific, not container-general.",
+      "disposition": "REGISTERED as plan-side card I-14-I (PLAN/execution_v2/card_I-14-I.md). The xfail in harness/test_i14h_natural_window.py:183-190 RECORDS the residual only; it does NOT satisfy it.",
+      "required_followup": "Add a type guard (e.g. isinstance(basis, str)) before the membership test so unregistered containers are refused per case with R-BASIS-UNKNOWN; freeze expectations for list/dict/set/tuple plus a negative control on a registered string basis; drop the xfail; re-run the FULL 14-case run_cases.py gate to rc 0 (mismatch_count=0, accepted_ineligible=0) and land cases_report.json in the I-14-H attempt evidence directory."
+    },
+    {
+      "id": "CF-I14H-2",
+      "class": "UNDISCLOSED WEAKENING (not disclosed by the implementer; recorded by the reviewer as unverified-list item 4)",
+      "severity": "test-strength defect - the shape gate and one d2 assertion are tautological; the literal even contradicts fact in overlap scenarios",
+      "finding": "iso/natural_window.py:241 `\"quick_check_in_observation_intervals\": False` and iso:248 `\"sum_used_for_natural_duration\": False` are HARDCODED LITERALS (always False), not derived from the interval content. Consequently run_cases.py's REQUIRED_KEYS shape gate and test_i14h_natural_window.py:141 (test_d2_observation_intervals_contain_observation_only) make assertions on those two keys that are TAUTOLOGICALLY TRUE and carry no discriminating power. WORSE: in scenarios where quick_check genuinely DOES overlap the observation intervals, the field still reports False - i.e. the reported literal is contrary to fact (measured: iso:241 stays False while union_seconds=2220, quick_check_overlap_seconds=480, observation_interval_count=2), which can give downstream readers a false assurance.",
+      "independently_reverified_this_pass": true,
+      "evidence": "Five-scenario in-process probe (honest 1740 / dishonest 2220 / renamed-window J15 trap / single merged 2220 window / sample_span): value-set size for each of the two hardcoded keys is exactly 1 (always False). The FOUR genuinely-computed fields do discriminate: union_seconds {1740.0, 2220.0}, sum_seconds {1740.0, 2220.0}, observation_interval_count {1, 2}, quick_check_overlap_seconds {0.0, 480.0}.",
+      "disposition": "Real defect-2 discrimination comes ONLY from those four genuinely-computed fields. RECOMMENDED for the residual-fix card I-14-I: derive both keys from the interval content and add failing assertions on them (must be True when quick_check overlaps).",
+      "impact_on_verdict": "Does NOT change the verdict: the two declared defects remain demonstrated by the four computed fields."
+    },
+    {
+      "id": "CF-I14H-3",
+      "class": "COVERAGE GAP",
+      "severity": "low - mitigated by the frozen gate",
+      "finding": "H12 (renamed window + honest 1740 claim, expected double refusal codes ['R-CLAIM-EXCEEDS','R-QC-IN-OBS']) has NO pytest counterpart. The pytest renamed-window variant covers only the H11 shape (dishonest 2220 claim -> single code R-QC-IN-OBS). H12 is covered ONLY by the frozen run_cases.py gate, which has never passed end-to-end.",
+      "disposition": "CONFIRMED, no action beyond I-14-I step: the full 14-case gate re-run must confirm H12 actually passes. Noted, not fixed."
+    },
+    {
+      "id": "CF-I14H-4",
+      "class": "UNPROVABLE / CONSISTENT-WITH ONLY",
+      "severity": "informational",
+      "finding": "The deletion of iso/venv/ cannot be proven after the fact: the only surviving fact is that iso/venv does not exist now. The deletion ACTION itself, and the claim that iso/natural_window.py's hash was unchanged across that deletion, cannot be verified retroactively (no pre-deletion snapshot or log).",
+      "disposition": "Current state is CONSISTENT WITH the claim but the claim is NOT PROVABLE. Recorded as such; no remediation possible."
+    },
+    {
+      "id": "CF-I14H-5",
+      "class": "NOT GRANTED (eligibility boundary, carried from I-14-B)",
+      "severity": "informational",
+      "finding": "Real observation eligibility, real UI immediacy, SLO / performance, disclosure_adaptation and accuracy remain NOT GRANTED by this card. Every case in this card is SYNTHETIC-TIMER-ONLY synthetic time input; no real natural period was observed, measured or completed. This review added no new verification of any of them and must not be read as granting them.",
+      "disposition": "Carried forward unchanged; no new card required (pre-existing I-14-A / I-16 / I-17-A ownership)."
+    }
+  ],
+  "conditional_scope_statement": {
+    "acceptance_evidence": "12/14 frozen cases + the 12-case pytest suite. NOT 14/14.",
+    "end_to_end_gate": "The 14-case end-to-end run_cases.py gate has NEVER passed.",
+    "currently_unsatisfiable": "H5 and H6 frozen expectations (per-case R-BASIS-UNKNOWN) are currently unsatisfiable: container basis (list/dict) raises TypeError: unhashable at iso/natural_window.py:202, so the SUT exits rc 4 and the batch aborts.",
+    "xfail_semantics": "The xfail RECORDS the residual; it does NOT satisfy it.",
+    "allowed_wording_until_closed": "Until the full 14-case gate passes at rc 0 with cases_report.json landed, this card's acceptance statement MUST be limited to \"12/14 frozen cases + 12-case pytest suite\". It must NOT be stated as end-to-end oracle consistency.",
+    "scope_closed_by": "card I-14-I"
+  },
   "open_questions": [
-    "容器 basis 批崩溃（reviewer P4 / T1-10 P-3）：i14b-after-2 对 list/dict basis 抛 TypeError（unhashable）使整批 rc 4 崩溃而非逐 case R-BASIS-UNKNOWN；r1 则静默 accept。已以 xfail 用例 + H5/H6 冻结期望记录，需后续实现修卡；run_cases.py 全 14-case 门推迟到该修复后。",
-    "reviewer 需裁决本卡与 I-14-B r2 的分工表述是否成立（本卡 = oracle 侧 + 期望更正留痕；实现侧已于 r2 落地）。",
-    "真实自然观察资格、真实 UI 即时性、SLO/性能、disclosure_adaptation/accuracy 均不在本卡范围（沿用 I-14-B 的 NOT GRANTED 状态）。"
+    "容器 basis 批崩溃（reviewer P4 / T1-10 P-3）：i14b-after-2 对 list/dict basis 抛 TypeError（unhashable）使整批 rc 4 崩溃而非逐 case R-BASIS-UNKNOWN；r1 则静默 accept。已以 xfail 用例 + H5/H6 冻结期望记录，需后续实现修卡；run_cases.py 全 14-case 门推迟到该修复后。 -> NOW REGISTERED as card I-14-I (the reviewer's mandatory condition, not optional).",
+    "reviewer 需裁决本卡与 I-14-B r2 的分工表述是否成立（本卡 = oracle 侧 + 期望更正留痕；实现侧已于 r2 落地）。 -> RESOLVED by the reviewer: §3/§5 accept the split; the residual is inherited from the I-14-B anchor (iso is byte-identical to before/i14b-after-2.py) and is orthogonal to both declared defects.",
+    "真实自然观察资格、真实 UI 即时性、SLO/性能、disclosure_adaptation/accuracy 均不在本卡范围（沿用 I-14-B 的 NOT GRANTED 状态）。 -> CONFIRMED; reviewer added that this card must not be read as granting them."
   ],
   "blocked_by": [
-    "独立 review 未开始（无 reviewer 指派）——status 因此保持 review_pending。"
+    "无阻塞项（status=accepted_scoped）。但条件式范围未闭环：全 14-case run_cases.py 门 rc 0 仍未达成，须由卡 I-14-I 兑现。",
+    "真实自然观察资格 / 真实 UI 即时性 / SLO / accuracy 仍为 NOT GRANTED（SYNTHETIC-TIMER-ONLY），非本卡可解除。"
   ],
   "eligibility_statement": {
     "formula_classification": "本卡只支持计时/分类算法在合成冻结输入上的正确性证明；不涉及收入预测公式。",
@@ -79,23 +153,110 @@
     "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card.",
     "real_natural_observation": "NOT GRANTED. 全部用例为合成时间输入（SYNTHETIC-TIMER-ONLY）；未观察任何真实自然周期。",
     "real_ui_immediacy": "NOT GRANTED -> blocked（沿用 I-14-B 状态）。",
-    "review_state": "UNREVIEWED - implementer did not sign; status=review_pending."
+    "slo_performance": "NOT GRANTED (I-14-A / I-16 scope).",
+    "review_state": "REVIEWED (conditional) - accepted_scoped. Verdict written by an independent reviewer, never by the implementer. Conditional scope not yet closed; see status_authority.scope and card I-14-I."
   },
   "evidence_paths": [
+    "execution_runs/I-14-H/a20260919-01/review.md",
     "execution_runs/I-14-H/a20260919-01/oracle.md",
+    "execution_runs/I-14-H/a20260919-01/handoff.json",
+    "execution_runs/I-14-H/a20260919-01/evidence/I-14-H/qualification.json",
     "execution_runs/I-14-H/a20260919-01/harness/test_i14h_natural_window.py",
     "execution_runs/I-14-H/a20260919-01/harness/cases.i14h.json",
     "execution_runs/I-14-H/a20260919-01/harness/frozen_expectations.i14h.json",
+    "execution_runs/I-14-H/a20260919-01/harness/run_cases.py",
     "execution_runs/I-14-H/a20260919-01/evidence/freeze_instant.json",
     "execution_runs/I-14-H/a20260919-01/before/cmd-PYTEST-red-r1sut/stdout.txt",
     "execution_runs/I-14-H/a20260919-01/after/cmd-PYTEST-green/stdout.txt",
     "execution_runs/I-14-H/a20260919-01/before/natural_window.r1sut.py",
-    "execution_runs/I-14-H/a20260919-01/iso/natural_window.py"
+    "execution_runs/I-14-H/a20260919-01/iso/natural_window.py",
+    "PLAN/execution_v2/card_I-14-I.md (the RIDER card registered by this pass)"
   ],
   "implementer_signed": false,
   "implementer_never_signs_acceptance": true,
   "status_authority": {
-    "status": "review_pending",
-    "authority": "acceptance must be written by an independent reviewer, never by the implementer; this handoff only requests review"
+    "verdict": "accepted_scoped",
+    "verdict_label_written_by_reviewer": "ACCEPT（条件式）",
+    "verdict_written_by": "an independent reviewer session (never by the implementer)",
+    "verdict_round_used": "round 1 of this card (single independent review round; the verdict is conditional, not clean)",
+    "scope_is_conditional": true,
+    "condition_summary": "Acceptance is granted ONLY with the conditional scope: evidence = 12/14 frozen cases + 12-case pytest suite; the 14-case end-to-end run_cases.py gate has never passed; H5/H6 are currently unsatisfiable (container basis -> TypeError unhashable at iso/natural_window.py:202 -> SUT rc 4); the xfail records the residual, it does not satisfy it. The condition is discharged only by card I-14-I re-running the full gate to rc 0 and landing cases_report.json.",
+    "carrier": {
+      "file": "review.md",
+      "path_inside_attempt": "review.md",
+      "section_heading": "# I-14-H 独立复核（independent reviewer）",
+      "section_heading_line": 1,
+      "line_range_inclusive_1_based": [
+        1,
+        193
+      ],
+      "byte_offsets": {
+        "start": 0,
+        "end_inclusive": 14689,
+        "end_exclusive": 14690
+      },
+      "region_bytes": 14690,
+      "region_sha256": "98aa37ff27a7426cffb578f46d7ae14eaa7271b0eec1800416ec4154c7247e2d",
+      "first_line_of_region": "# I-14-H 独立复核（independent reviewer）",
+      "verdict_line": 9,
+      "first_line_of_verdict": "## 结论：ACCEPT（条件式）",
+      "conditional_scope_line": 12,
+      "first_line_of_conditional_scope": "条件：**残留（容器 basis 批崩溃）必须立卡修复，且修复后必须补跑全 14-case `run_cases.py` 门**——该门从未通过，本卡的端到端 oracle 一致性尚未闭环。",
+      "residual_adjudication_line": 80,
+      "unverified_list_line": 165,
+      "status_recommendation_lines": [
+        189,
+        193
+      ],
+      "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256. Because the region starts at line 1 (byte offset 0) and ends at the last content line, the region is the whole review.md minus its single trailing newline.",
+      "carrier_file_sha256": "97997d6d26af5a1fd36e486c508a027642f4492af1f5415fe3f25bc929e130b2",
+      "carrier_file_bytes": 14691,
+      "carrier_file_total_lines": 193
+    },
+    "scope": {
+      "conditional": true,
+      "acceptance_evidence": "12/14 frozen cases + 12-case pytest suite (NOT 14/14)",
+      "granted": [
+        "defect 1 (claim.basis has no enumeration check): a fail-able case exists and RED/GREEN reproduces in both directions; J16 closed basis enumeration over the five registered names; unregistered / empty-string / null / missing-key basis is refused with R-BASIS-UNKNOWN",
+        "defect 2 (quick_check counted into the natural observation duration): a fail-able case exists and RED/GREEN reproduces in both directions; observation intervals contain the observation phase only; quick_check never enters; union_seconds/sum_seconds share the observation basis; J15 renamed-window variant; direction inversion (2220 accepted / honest 1740 refused on r1) demonstrated with the measured assertion 2220.0 == 1740",
+        "the W1 append-only correction of expected union_seconds 2220 -> 1740 (expected_superseded with old/new/pre_image_sha256/changed_at/reason, plus errata[0].diff_from_r1_expected_map); the r1 frozen body was NOT rewritten and still reads 2220",
+        "the reviewer's own 12-case gate run: iso -> ok true, mismatch_count 0, accepted_ineligible 0, SUT rc 0; r1sut -> ok false, 27 mismatches, accepted_ineligible = H1,H2,H3,H4,H9,H10,H11 (exactly the two defects' over-permissive set, which independently shows the expectations were not written to fit the fixed implementation)",
+        "production trees untouched (git-mechanically checked: `git status --porcelain -- scripts` empty in revenue-forecast; filing-fetch worktree clean; no commit in either history touches natural_window under scripts/); frozen oracle material byte-unchanged; SUT revision identity verified by sha256 across three copies"
+      ],
+      "not_granted": [
+        "the 14-case end-to-end run_cases.py gate reaching rc 0 - NEVER PASSED and currently unsatisfiable (H5/H6)",
+        "end-to-end oracle consistency of this card as a closed claim - it must be stated as \"12/14 frozen cases + 12-case pytest suite\"",
+        "H5 and H6 per-case R-BASIS-UNKNOWN expectations - unsatisfiable while iso:202 raises TypeError on list/dict basis",
+        "any statement that the xfail constitutes a pass",
+        "real natural-observation eligibility (no natural cycle observed; all cases SYNTHETIC-TIMER-ONLY)",
+        "real UI-immediacy qualification - stays blocked",
+        "SLO / performance qualification (I-14-A / I-16 scope)",
+        "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+        "any production-tree write permission",
+        "I-17-A scope",
+        "proof that iso/venv deletion occurred as described (current state is consistent-with only; no pre-delete snapshot)"
+      ],
+      "scope_closed_by": "PLAN/execution_v2/card_I-14-I.md (container basis per-case refusal; 14-case gate to rc 0; drop xfail; land cases_report.json; also derive the two hardcoded keys)"
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "reviewer_status_note": "This pass rewrote reviewer_status (which still read PENDING) because it had become stale; the reviewer's own words are preserved in review.md, which this pass did not modify (review_md_bytes_written = 0)."
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-21",
+    "what_this_pass_did": "landed the carrier fields for the reviewer's already-written conditional verdict; appended nothing to review.md and touched no production file",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "review_md_bytes_written": 0,
+    "status_transition": "review_pending -> accepted_scoped",
+    "conditional_scope_recorded_in": [
+      "handoff.json:status_authority.scope (conditional/acceptance_evidence/granted/not_granted)",
+      "handoff.json:conditional_scope_statement",
+      "evidence/I-14-H/qualification.json"
+    ],
+    "carried_findings_registered": 5,
+    "rider_card_created": "PLAN/execution_v2/card_I-14-I.md"
   }
 }

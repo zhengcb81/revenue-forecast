@@ -14,13 +14,16 @@ A root `conftest.py` in the product tree (company-wiki) owns the convention:
    from `%TEMP%\pytest-of-<user>` and is short; nothing to do). Resolve
    `effective = basetemp` if absolute else `cwd\basetemp` — the cwd enters exactly through
    resolution, which is where a deep cwd makes a relative basetemp deadly. Relocate iff
-   `len(effective) + GENERATION_RESERVE > WIN32_PATH_LIMIT`, i.e. `len > 160`.
-   Constants: `WIN32_PATH_LIMIT = 260` (classic Win32 MAX_PATH for non-`\\?\` consumers —
-   `powershell.exe`, `os.mkdir` on this box), `GENERATION_RESERVE = 100` (measured deepest
-   suffix the suite creates under basetemp: test dir 31 + `project path with spaces` 24 +
-   `fake-project` 12 + `company_wiki\source_catalog` 27 + separators ⇒ 97, +3 margin).
-   Calibration covers all four frozen datapoints: fail @ effective 173/174; pass @ 80/81
-   (I-14-C short), 147 (cmd-A5), and this attempt's 156/155 normal control.
+   `len(effective) + GENERATION_RESERVE > WIN32_PATH_LIMIT`, i.e. `len > 116`.
+   Constants (recalibrated on attempt evidence, oracle Addendum B):
+   `WIN32_PATH_LIMIT = 240` — the longest generated artifact passed at ~200 total and failed
+   at 253 total (literal WinError 206, basetemp 155) and 278 (dead launcher spawns, basetemp
+   156); 240 sits conservatively below the failure band.
+   `GENERATION_RESERVE = 124` — the longest suffix the suite builds under basetemp: the
+   launcher's redirect log `\.source_catalog\worker_stdout-<32hex>-attempt-0001.log` (79)
+   below `\fake-project` (13) below the pytest test dir (31) + separators.
+   Superseded first guess (260 classic MAX_PATH / reserve 100 / threshold 160) was falsified:
+   it let basetemp 155/156 through unrouted and both placements failed on path grounds.
 2. **Fallback target.** `%TEMP%\cw-pytest-basetemp\<UTCstamp>-<8hex>`: fresh empty dir,
    created per relocating session, owned by that session. Never an attempt/evidence root,
    never reused — same discipline as START_HERE's `--basetemp` rule.

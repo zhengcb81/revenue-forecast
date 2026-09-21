@@ -1,0 +1,72 @@
+diff --git a/src/company_wiki/source_catalog/observability.py b/src/company_wiki/source_catalog/observability.py
+index 6b7a885..842d0cf 100644
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -270,18 +270,26 @@ def key_is_credential(key: str) -> bool:
+ # linear; its timing is measured in r3/bench_*.json alongside the scanner.
+ _LEFT_ANCHOR = r"(?<![A-Za-z0-9])"
+ 
+-# A value is the whole rest of the field: a quoted string, or every space/tab
+-# separated token up to the next punctuation delimiter.  The multi-word form is
+-# required by real shapes such as ``Authorization: Bearer <secret>`` and
+-# ``Authorization: token <secret>`` - a single-token rule would redact only the
+-# scheme and leave the secret in place.
++# A value is a quoted string, or - since I-14-D narrowed the r1 greedy rule - a
++# BOUNDED run of non-delimiter tokens (delimiters: any whitespace, , ; & " ' |):
++#   _BARE_VALUE      ONE token: the assignment scanner stops at ANY whitespace,
++#                    including newlines (C13: the r1 rule crossed newlines and
++#                    deleted the whole remaining diagnostic block, 112 in -> 34 out).
++#   _AUTH_BARE_VALUE the authorization/bearer value: tokens joined by INLINE
++#                    whitespace only, so it still carries one scheme word
++#                    ("Bearer <secret>", "token <secret>") but can no longer
++#                    swallow a multi-line diagnostic block either.
++# Declared residual: a bare secret containing whitespace is redacted only up to
++# its first token ("password: iron steel" -> "password: <redacted> steel");
++# quote the value ("password: 'iron steel'") for full coverage.
+ _QUOTED_VALUE = r"\"[^\"\r\n]*\"|'[^'\r\n]*'"
+-_BARE_VALUE = r"[^\s,;&\"'|]+(?:\s+[^\s,;&\"'|]+)*"
++_BARE_VALUE = r"[^\s,;&\"'|]+"
+ _VALUE = r"(?P<value>" + _QUOTED_VALUE + r"|" + _BARE_VALUE + r")"
++_AUTH_BARE_VALUE = r"[^\s,;&\"'|]+(?:[ \t]+[^\s,;&\"'|]+)*"
+ 
+ _AUTH_PATTERN = re.compile(
+     r"(?i)(?P<key>" + _LEFT_ANCHOR + r"authorization\s*[:=]\s*|"
+-    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _BARE_VALUE + r")"
++    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_BARE_VALUE + r")"
+ )
+ 
+ # key=value / key: value forms are handled by `_redact_assignments` (single-pass
+@@ -353,23 +361,17 @@ def _redact_assignments(text: str) -> str:
+             else:
+                 value_end = closing + 1
+         else:
++            # I-14-D (C13 narrowing): the value is ONE token.  It stops at any
++            # whitespace INCLUDING newlines, so a diagnostic key after the
++            # credential (`doc=17`, `stage=...` on the next line) survives.
++            # value_end == value_start after the loop means "no value at all";
++            # the `value_end <= value_start` guard below leaves the text alone,
++            # exactly as before.
+             value_end = value_start
+-            while True:
+-                while (value_end < length
+-                       and text[value_end] not in _VALUE_STOP_CHARS
+-                       and not text[value_end].isspace()):
+-                    value_end += 1
+-                if value_end == value_start:
+-                    break                          # no value at all: leave the text alone
+-                lookahead = value_end
+-                while lookahead < length and text[lookahead].isspace():
+-                    lookahead += 1
+-                if (lookahead < length
+-                        and text[lookahead] not in _VALUE_STOP_CHARS
+-                        and not text[lookahead].isspace()):
+-                    value_end = lookahead              # multi-word value, as before
+-                else:
+-                    break
++            while (value_end < length
++                   and text[value_end] not in _VALUE_STOP_CHARS
++                   and not text[value_end].isspace()):
++                value_end += 1
+         if value_end <= value_start:
+             out.append(char)
+             index += 1

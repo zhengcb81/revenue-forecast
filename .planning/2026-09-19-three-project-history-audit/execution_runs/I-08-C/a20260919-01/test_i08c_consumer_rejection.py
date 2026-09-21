@@ -117,6 +117,56 @@ def test_e5_whole_receipt_replayed_onto_other_payload_rejected(S, S2):
         validate_publication_receipt(replayed)
 
 
+def test_e4_verification_context_mutation_rejected(S, S2):
+    """E4 (oracle r1 line 54, IMPLEMENTED in r3): mutating the signed
+    `verification_context_sha256` is rejected, and recomputing the non-secret
+    self-hashes does not repair it.  `expected` comes from the source text
+    (`revenue_publication.py:232-240`, `:85-93`); the correct value used in the
+    last case is reconstructed from literals, never read from the fixture.
+    """
+    # E4a: mutate the verification-context digest only.
+    mutated = copy.deepcopy(S)
+    mutated["publication_receipt"]["verification_context_sha256"] = "0" * 64
+    with pytest.raises(ForecastInputError, match="verification context mismatch"):
+        validate_publication_receipt(mutated)
+    with pytest.raises(ForecastInputError):
+        validate_forecast_output(mutated)
+
+    # E4b: attacker also recomputes every non-secret self-hash — still rejected.
+    rehashed = copy.deepcopy(mutated)
+    _rehash(rehashed)
+    with pytest.raises(ForecastInputError, match="verification context mismatch"):
+        validate_publication_receipt(rehashed)
+
+    # E4c: a context digest that is valid, but belongs to a DIFFERENT input.
+    foreign_context = canonical_sha256(
+        {
+            "validated_input_sha256": S2["input_sha256"],
+            "executed_gate_ids": ["output_recomputation"],
+            "validator_version": "4.1.0",
+        }
+    )
+    assert foreign_context != S["publication_receipt"]["verification_context_sha256"]
+    grafted = copy.deepcopy(S)
+    grafted["publication_receipt"]["verification_context_sha256"] = foreign_context
+    with pytest.raises(ForecastInputError, match="verification context mismatch"):
+        validate_publication_receipt(grafted)
+
+    # E4d: the correct digest is necessary AND sufficient for this gate, so the
+    # three rejections above fail for the context binding and nothing else.
+    correct_context = canonical_sha256(
+        {
+            "validated_input_sha256": S["input_sha256"],
+            "executed_gate_ids": ["output_recomputation"],
+            "validator_version": "4.1.0",
+        }
+    )
+    assert correct_context == S["publication_receipt"]["verification_context_sha256"]
+    repaired = copy.deepcopy(S)
+    repaired["publication_receipt"]["verification_context_sha256"] = correct_context
+    validate_publication_receipt(repaired)
+
+
 def test_e6_recomputed_self_hashes_do_not_repair_value_forgery(S):
     """E6: recomputing non-secret self-hashes fixes the receipt layer alone
     (limitation); the dispatcher still rejects via bound recomputation."""
