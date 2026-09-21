@@ -23,10 +23,11 @@ Acceptance is **scoped** on three recorded residuals:
    `GENERATION_RESERVE = 124` is the *child* node's longest generated suffix; the *logon*
    node's is **150**. The real unrouted maximum is therefore **236 chars**, not the
    documented 210, and the "clear of the 240 degradation onset" claim has **4–5 chars** of
-   headroom, not ~30. Not blocking (the 206 class needs ≥248 for directory creation / ≥260
-   for files; unrouted maxima measured 177 dir / 236 file), but the numbers in
-   `conftest.py`'s docstring, `decision.md`, `oracle.md` Addendum C and `handoff.json` are
-   factually wrong and must be corrected on the record.
+   headroom, not ~30. Not blocking — the 206 class needs ~248 for directory creation and
+   ~260 for files, while the unrouted maxima I measured are 159 (child) / 184 (logon) for
+   directories and 211 (child) / 236 (logon) for files — but the numbers in `conftest.py`'s
+   docstring, `decision.md`, `oracle.md` Addendum C and `handoff.json` are factually wrong
+   and must be corrected on the record.
 2. **R-2 (child-node GREEN at the frozen geometry is inferred, not demonstrated).** Under the
    *final* constants, the 3 deep child runs at 167/166 all failed with the I-14-E load-band
    signature (0/3 clean). Its clean deep passes (pad666 2/3, effective basetemp 75) come from
@@ -62,8 +63,11 @@ sequential (Addendum A #3). Consolidated record: `review/reviewer_runs.json`.
 `FileNotFound-launcher-events`; §3 shows with retained artifacts that the failure is
 nonetheless path-caused.
 
-Also re-run by me: the 13-case unit suite → **13 passed** (`review/unit-run1`), independently
-confirming the criterion table and that a relocating session of any kind cleans up.
+Also re-run by me: the 13-case unit suite → **13 passed** twice. The first invocation ran with an
+over-budget basetemp, so it relocated and cleaned up (`CW-BASETEMP-CLEANUP … removed: true`);
+the captured rerun (`review/unit-run1/stdout.txt`) used a 52-char basetemp and stayed
+**unrouted** (`relocated=false, reason=within-budget`) — a third independent no-needless-reroute
+datapoint alongside the 76/75 and 82/81 controls.
 
 ## 2. Claim-by-claim verification
 
@@ -269,6 +273,7 @@ the current cleanup design destroys exactly the evidence it will need.
 | `reviewer_compare.py` | pristine-archive vs isolated-tree byte comparison |
 | `reviewer_units.py` | extracts the unit suite's real case values via pytest collection and re-derives the criterion |
 | `reviewer_consolidate.py` | builds `reviewer_runs.json` from my own captures |
+| `reviewer_envelope.py` | walks the surviving unrelocated trees and reports the real generated-path envelope per node (basis of §3 and §5) |
 | `reviewer_runs.json` | the four verification runs with decisions, cleanup, capture hashes |
 | `captures\M-mut-*.txt` | raw mutation captures (run dirs live under `%TEMP%`) |
 | `deep\pad55\*` | raw RED and GREEN captures |

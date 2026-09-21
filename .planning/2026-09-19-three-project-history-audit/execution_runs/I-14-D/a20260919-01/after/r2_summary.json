@@ -1,0 +1,243 @@
+{
+  "revision": "r2",
+  "answers": "reviewer BLOCKER F-REV-D-01 + RULING 1 + RULING 2 (RULING 3 accepted as-is)",
+  "reviewer_report_sha256": "499d91acf06a67e2f7dd06d4a5af6569b5b92a6e4b3b77adda57b739eaa03d2b",
+  "reviewer_report_bytes": 37659,
+  "deliverable": {
+    "tree": "iso/product_narrow",
+    "observability_sha256": "2aa5ed1a219084a67f040388072aa94d7432c63414b6692060f1b4d6b4e12bde",
+    "bytes": 41432,
+    "pre_r2_state_sha256": "e8abd522b2072add062be225d7ec1ca10621ffa5be7841f99ef9fb339015cbd0",
+    "base_sha256": "c5608c4b45a55cce03df9988561e1a3ad1cab0970c51e8b3af630239fe9de35c",
+    "fix_diff": {
+      "path": "changes_r2_authsplit.diff",
+      "sha256": "40a146d4745652e63d75e7eb17787daf4c255c5544d295219cd29b342c3f18bc"
+    },
+    "deliverable_diff": {
+      "path": "changes.diff",
+      "sha256": "4c0160b888127ccbed99bce25a13bb645edd9a4c7df79541190e5cf1afdb750a"
+    }
+  },
+  "oracle": {
+    "cases_narrow": 20,
+    "narrow_must_failed_narrow": [],
+    "narrow_must_failed_base": [
+      "N1-mine",
+      "N1-reviewer",
+      "N2-middle-line",
+      "N3-newline-then-key",
+      "N5-auth-multiline",
+      "N5c-auth-scheme-lf-secret",
+      "N5e-auth-token-key-lf-secret",
+      "N13-partial-multiword-residual"
+    ],
+    "verdict_narrow": "pass",
+    "verdict_base": "RED-as-expected-pre-fix"
+  },
+  "rule_table": {
+    "entries": 55,
+    "credential_leaks_narrow": [],
+    "credential_secret_leaks_narrow": [],
+    "touched_but_should_not_be_narrow": [],
+    "fidelity_ok_narrow": true,
+    "fidelity_failures_base": [
+      "cred-line-middle-single-token",
+      "cred-multiline-swallow",
+      "cred-multiline-then-key",
+      "cred-auth-multiline-swallow",
+      "cred-auth-split-keeps-diagnostics",
+      "res-partial-multiword-secret"
+    ],
+    "auth_split_rows": [
+      "cred-auth-split-bearer-lf",
+      "cred-auth-split-bearer-crlf",
+      "cred-auth-split-bearer-obsfold",
+      "cred-auth-split-bearer-nospace",
+      "cred-auth-split-token-scheme",
+      "cred-auth-split-bearer-real-secret",
+      "cred-auth-split-keeps-diagnostics"
+    ]
+  },
+  "helper_probe": {
+    "cases": 12,
+    "leaks_narrow": [],
+    "leaks_base": [],
+    "fidelity_drift_narrow": [],
+    "fidelity_drift_base": [
+      "D1-bearer-lf",
+      "D7-embedded"
+    ]
+  },
+  "real_exit_E6": {
+    "persisted_message_redacted": "Authorization: <redacted>\ndoc=17",
+    "persisted_or_printed_hits": 0,
+    "secret_absent_ok": true,
+    "secret_len": 39,
+    "returncode": 3
+  },
+  "real_cli": {
+    "E5a": {
+      "returncode": 1,
+      "marker_hits": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "bare_traceback_on_stderr": false,
+      "structured_envelope_on_stderr": true,
+      "catalogs_created": []
+    },
+    "E5b": {
+      "returncode": 1,
+      "marker_hits": {
+        "stdout": 0,
+        "stderr": 1
+      },
+      "bare_traceback_on_stderr": false,
+      "structured_envelope_on_stderr": true,
+      "catalogs_created": []
+    }
+  },
+  "mutations": {
+    "M1": {
+      "op": "mut_greedy",
+      "tree": "product_mut_greedy",
+      "observability_sha256": "bc857d411a5363674fff93366f8e6eb717edb670cf2d95178554f81c4984738b",
+      "oracle_rc": 3,
+      "oracle_narrow_must_failed": [
+        "N1-mine",
+        "N1-reviewer",
+        "N2-middle-line",
+        "N3-newline-then-key",
+        "N13-partial-multiword-residual"
+      ],
+      "rule_table_rc": 3,
+      "credential_leaks": [],
+      "credential_secret_leaks": [],
+      "authsplit_probe_rc": 0,
+      "authsplit_probe_leaks": [],
+      "exit_probe_persisted_secret": [
+        {
+          "case": "E6-auth-scheme-newline",
+          "secret_absent_ok": true
+        }
+      ]
+    },
+    "M2": {
+      "op": "mut_authnl",
+      "tree": "product_mut_authnl",
+      "observability_sha256": "a36e90b62e2206f7017d448f8b051c56448fb24102a2c9def82f384ea39e5137",
+      "oracle_rc": 3,
+      "oracle_narrow_must_failed": [
+        "N5-auth-multiline"
+      ],
+      "rule_table_rc": 3,
+      "credential_leaks": [],
+      "credential_secret_leaks": [],
+      "authsplit_probe_rc": 0,
+      "authsplit_probe_leaks": [],
+      "exit_probe_persisted_secret": [
+        {
+          "case": "E6-auth-scheme-newline",
+          "secret_absent_ok": true
+        }
+      ]
+    },
+    "M3": {
+      "op": "mut_auth1_r2",
+      "tree": "product_mut_auth1_r2",
+      "observability_sha256": "ef450712f13274af82da244b6cea0e3294892ae8d1232ff0c57f3137cc3ecf82",
+      "oracle_rc": 3,
+      "oracle_narrow_must_failed": [
+        "N5-auth-multiline"
+      ],
+      "rule_table_rc": 3,
+      "credential_leaks": [
+        "cred-header-bearer",
+        "cred-header-scheme",
+        "cred-auth-multiline-swallow",
+        "cred-auth-sameline-tail-kept"
+      ],
+      "credential_secret_leaks": [],
+      "authsplit_probe_rc": 3,
+      "authsplit_probe_leaks": [
+        "D8-bearer-tab-sameline",
+        "D9-bearer-space-sameline"
+      ],
+      "exit_probe_persisted_secret": [
+        {
+          "case": "E6-auth-scheme-newline",
+          "secret_absent_ok": true
+        }
+      ]
+    },
+    "M4": {
+      "op": "mut_authsplit",
+      "tree": "product_mut_authsplit",
+      "observability_sha256": "e8abd522b2072add062be225d7ec1ca10621ffa5be7841f99ef9fb339015cbd0",
+      "oracle_rc": 3,
+      "oracle_narrow_must_failed": [
+        "N5c-auth-scheme-lf-secret",
+        "N5d-auth-scheme-obsfold",
+        "N5e-auth-token-key-lf-secret"
+      ],
+      "rule_table_rc": 3,
+      "credential_leaks": [
+        "cred-auth-split-bearer-lf",
+        "cred-auth-split-bearer-crlf",
+        "cred-auth-split-bearer-obsfold",
+        "cred-auth-split-bearer-nospace",
+        "cred-auth-split-token-scheme",
+        "cred-auth-split-keeps-diagnostics"
+      ],
+      "credential_secret_leaks": [
+        "cred-auth-split-bearer-real-secret"
+      ],
+      "authsplit_probe_rc": 3,
+      "authsplit_probe_leaks": [
+        "D1-bearer-lf",
+        "D2-bearer-space-lf",
+        "D3-bearer-nospace-lf",
+        "D4-token-scheme-lf",
+        "D5-bearer-crlf",
+        "D6-bearer-obsfold",
+        "D7-embedded",
+        "D10-basic-lf",
+        "M1-marker-bearer-lf",
+        "M2-marker-token-lf"
+      ],
+      "exit_probe_persisted_secret": [
+        {
+          "case": "E6-auth-scheme-newline",
+          "secret_absent_ok": false
+        }
+      ]
+    }
+  },
+  "counts": {
+    "rule_table_entries": 55,
+    "rule_table_by_kind": {
+      "credential": 42,
+      "untouched": 9,
+      "residual": 4
+    },
+    "oracle_cases": 20,
+    "oracle_narrow_must": 9,
+    "oracle_keep_must": 11,
+    "fidelity_cases": 32,
+    "exact_nodeids": 32,
+    "total_nodeids": 111,
+    "generator": "harness/report_i14d_counts.py",
+    "checks": {
+      "rule_kinds_sum_matches_entries": true,
+      "oracle_kinds_sum_matches_cases": true,
+      "fidelity_and_exact_nodeids_agree": true
+    }
+  },
+  "round_trips": {
+    "git_apply_reproduces": true,
+    "git_apply_diff_bytes": 5101,
+    "recovery_byte_identical": true,
+    "recovery_source_files_compared": 152
+  },
+  "generator": "harness/report_r2_summary.py"
+}

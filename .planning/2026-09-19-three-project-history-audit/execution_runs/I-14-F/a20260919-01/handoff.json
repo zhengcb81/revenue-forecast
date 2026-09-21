@@ -3,7 +3,8 @@
   "parent": "I-14",
   "attempt_id": "a20260919-01",
   "date": "2026-09-21 (attempt label a20260919-01 per dispatch; wall clock drifted)",
-  "status": "review_pending",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
   "implementer": "I-14-F implementer agent; NOT the reviewer",
   "objective": "Product-side short-basetemp convention: deep cwd no longer yields WinError 206 in the worker-bootstrap contract nodes; normal-depth behaviour unchanged; no cwd-shortening; no pytest-config loosening.",
   "completed_steps": [
@@ -17,16 +18,22 @@
     "8 over-deep negative: cwd 190/189, basetemp 197/196 -> relocated, 2/2 PASS",
     "9 boundary controls: no-reroute at basetemp 76/75 and 82/81 (relocated=false, logon passes; child band); falsified-normal 156/155 now relocates and logon passes (was literal 206 unrouted)",
     "10 MUTATION: same tree, same cwd 167/166, CW_SHORT_BASETEMP_DISABLE=1 -> relocated=false and BOTH nodes fail with the frozen path signatures (logon WinError 206, child Errno-2 launcher-events); convention re-enabled is the only difference vs GREEN",
-    "11 evidence pack: after/evidence_index.json (55 placement runs + 3 unit runs), commands.json (real argv/cwd/rc per run), changes.diff, after/final_hashes.json, before/after/quarantine/mutation artifacts"
+    "11 evidence pack: after/evidence_index.json (55 placement runs + 3 unit runs), commands.json (real argv/cwd/rc per run), changes.diff, after/final_hashes.json, before/after/quarantine/mutation artifacts [CORRECTED by the reviewer's F-6: commands.json contains NO argv/cwd strings; the real argv lives in each summary-placement.json. The original wording is retained here as the implementer's claim and is superseded by the reviewer's finding.]",
+    "12 independent review (separate reviewer session, NOT the implementer): reviewer_report.md (23191 B, sha256 2e6709e0c6690c76d377dceec787c8de7722bd38c0d5cabc8fc49b0a37fc2af1, 305 lines) returned ACCEPTED — SCOPED; independently re-ran RED/GREEN/MUTATION + the 13-case unit suite and re-derived the calibration; pinned in reviewer_report.sha256",
+    "13 bookkeeping landing (this carrier-landing pass, NOT the implementer and NOT the reviewer): status review_pending -> accepted_scoped; wrote status_authority + bookkeeping; registered the reviewer's carried findings R-1/R-2/R-3/F-2/F-4/F-5/F-6/F-7 plus the I-14-E cross-card note; replaced the implementer's review.md stub with the carrier-landing verdict block (stub pre-image preserved byte-for-byte at before/review-md-preimage/review.md); created evidence/I-14-F/qualification.json; corrected step 11 per F-6"
   ],
-  "next_step_number": 1,
-  "next_action": "Independent reviewer opens review.md, re-verifies at least one RED counterexample, one GREEN deep logon run, the mutation pair, and the recalibration arithmetic (210-124=86), then writes their own review.md conclusion (accepted_scoped / changes_required / blocked) — implementer must not self-sign.",
+  "next_step_number": 14,
+  "next_action": "OWNER DECISION (R-1, the only open decision this card owns): adopt GENERATION_RESERVE = 150 (=> BASETEMP_MAX_CHARS = 60) so the documented margin is the REAL margin, or keep 86 and record the true numbers (unrouted maxima 211 child / 236 logon; tested-clean envelope tops out at 231). Either way the factually wrong arithmetic must be corrected on the record in conftest.py's docstring, decision.md §1/§6, oracle.md Addendum C and this handoff.json (WARNING: editing decision.md/oracle.md rewrites frozen attempt evidence — prefer an appended erratum carrying the true numbers). Residuals to carry: R-2 (no final-era clean child pass at 167/166 — owned by I-14-E load work, which MUST retain basetemp artifacts), R-3 (amend the oracle for the >380 -> 190/189 over-deep substitution), F-2 (supersede the stale Addendum-B calibration text in decision.md), F-4 (state that cleanup is NOT guaranteed for killed sessions; consider artifact retention before cleanup), F-5 (fix the 4 misstated unit-test case-length comments and pin the 86/87 boundary pair). Nothing here is blocking: the card's 206 criterion is safe at every unrouted basetemp. No production write authority is granted by this acceptance.",
   "input_hashes": {
     "company_wiki_HEAD": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
     "CW_HEAD:src/company_wiki/source_catalog/worker.py": "e83179915333eb472807b15a0580d93dcf280caadc31b0099988a3b744c469c6",
     "CW_HEAD:tests/contract/test_source_catalog_worker_bootstrap.py": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
     "CW_HEAD:src/company_wiki/source_catalog/control.py": "553a35607be39c57460c8e781d697a60bcb627eaace0e85ad61810d3e1326bbb",
-    "I-14-C origin evidence": "execution_runs/I-14-C/a20260919-01/review.md §4a + harness/run_flake_evidence.py + OWNER_DECISIONS.md §13 T1-7 ③"
+    "I-14-C origin evidence": "execution_runs/I-14-C/a20260919-01/review.md §4a + harness/run_flake_evidence.py + OWNER_DECISIONS.md §13 T1-7 ③",
+    "reviewer_report.md (independent reviewer verdict CARRIER)": "2e6709e0c6690c76d377dceec787c8de7722bd38c0d5cabc8fc49b0a37fc2af1 (23191 B, 305 lines, LF-only, no BOM, single trailing LF)",
+    "reviewer_report.md carrier region (whole file minus the single trailing LF; verdict line 10, scope lines 20-45, disposition lines 295-305)": "baed8f8766cbdf0603194756daf4ad13e3b3f289e11e683872b1791f5778f46c (23190 B, byte offsets 0..23189 inclusive)",
+    "reviewer_report.sha256 (pin sidecar)": "24962193015b867b9e7ee4da52c9f9a916c5d65101212c0140d28e4fe58e85a1 (328 B; its 'lines: 304' field is off by one - the carrier has 305 lines; its sha256/bytes/verdict fields are correct)",
+    "review.md (implementer stub PRE-IMAGE, superseded by this landing)": "9d5207c083845a9b1be33d27c677989131975dcbba935373b8c1299371e44885 (1433 B, 21 lines); preserved byte-for-byte at before/review-md-preimage/review.md"
   },
   "current_source_hashes": {
     "iso/tree/conftest.py": "c22be9f366c5590e522b713374419e293259619ead5ee72e1adb1ee71e6f2c22",
@@ -63,12 +70,227 @@
     "green": ["after/deep/pad666/", "after/deep/pad777/", "after/over-deep/", "after/unit-P0-run4/"],
     "calibration_falsifiers": ["after/falsified-normal-r1/", "after/external-summaries/addendumC-falsifier-basetemp116.json"],
     "mutation": ["after/external-summaries/mutation-disabled-exact167-166.json", "after/mutation-captures/"],
-    "review_stub": "review.md"
+    "reviewer_report": "reviewer_report.md",
+    "reviewer_report_pin": "reviewer_report.sha256",
+    "review": "review.md",
+    "review_md_stub_preimage": "before/review-md-preimage/review.md",
+    "qualification": "evidence/I-14-F/qualification.json",
+    "reviewer_artifacts": ["review/reviewer_reverify.py", "review/reviewer_runs.json", "review/reviewer_compare.py", "review/reviewer_units.py", "review/reviewer_consolidate.py", "review/reviewer_envelope.py", "review/captures/", "review/deep/pad55/", "review/unit-run1/"]
   },
-  "reviewer_status": "pending (must be set by the independent reviewer; implementer does not self-sign)",
+  "reviewer_status": "RESOLVED (scoped) — the independent reviewer returned ACCEPTED — SCOPED and wrote reviewer_report.md; the implementer did NOT self-sign and wrote no verdict. Verdict label 'ACCEPTED — SCOPED' at reviewer_report.md line 10; scope at lines 20-45; findings F-1..F-7 at lines 236-246; recommended disposition at lines 295-305; reviewer signature at lines 304-305. Carrier: reviewer_report.md sha256 2e6709e0c6690c76d377dceec787c8de7722bd38c0d5cabc8fc49b0a37fc2af1 (23191 B, 305 lines), pinned by reviewer_report.sha256. This string was rewritten by the carrier-landing pass because it still read 'pending' and had gone stale; the reviewer's own words live in reviewer_report.md, which this pass did not modify (bytes written = 0).",
+  "carried_findings": [
+    {
+      "id": "CF-I14F-1 (reviewer R-1 / F-1)",
+      "class": "CALIBRATION ACCURACY (medium; non-blocking)",
+      "severity": "medium",
+      "finding": "GENERATION_RESERVE = 124 is the CHILD node's longest generated suffix; the LOGON node's is 150 (measured on two PASSING unrouted runs, basetemps 74 and 81: 31 test dir + 24 project path + 12 fake-project + 15 .source_catalog + 63 worker_stdout-<32hex>-attempt-0001.log + 5 separators = 150; the logon project root sits one level deeper than the child's, which the reserve omits). At the largest unrouted basetemp (86) the logon node therefore generates 236-character paths, not the documented 210. oracle.md Addendum C's claim that everything >= 211 total is 'rerouted conservatively' is FALSE for the logon node; the untested-but-allowed band is basetemps 82-86 (232-236 totals). The docstring's own arithmetic is internally inconsistent (31 + 13 + 79 = 123, not 124) and the child's true value is 125, not 124. The 'clear of the 240 degradation onset' claim has 4-5 chars of headroom, not ~30.",
+      "why_not_blocking": "Measured edges: directory creation succeeds at 247 and fails at 253 (=> ~248, MAX_PATH - 12 for 8.3 names); file creation fails at 264 (=> 260). The unrouted maxima are 159 (child) / 184 (logon) for directories and 211 (child) / 236 (logon) for files, all still clear of both edges. The card's 206 criterion (no 206 at any unrouted basetemp) is SAFE everywhere unrouted.",
+      "owner_decision_needed": "Adopt GENERATION_RESERVE = 150 (=> BASETEMP_MAX_CHARS = 60, which would start rerouting the deep-boundary controls; 76/75 and 82/81 stay fine and the two frozen deep lenses are unaffected), OR keep 86 with the true numbers recorded and accept 231-clean as the empirical envelope.",
+      "must_be_corrected_on_the_record": [
+        "iso/tree/conftest.py docstring (31+13+79=123 != 124; logon node omitted)",
+        "decision.md §1/§6",
+        "oracle.md Addendum C ('total 210-239 => rerouted conservatively' is false for the logon node)",
+        "handoff.json (this file)"
+      ],
+      "caution": "decision.md and oracle.md are FROZEN attempt evidence; prefer an appended erratum carrying the true numbers over editing the frozen body."
+    },
+    {
+      "id": "CF-I14F-2 (reviewer R-2 / gap (b))",
+      "class": "GREEN THINNESS / COVERAGE (low; non-blocking, scoped to I-14-E)",
+      "severity": "low",
+      "finding": "Under the FINAL constants at 167/166 the child node is 0/3 clean: all 3 deep child runs failed with the I-14-E load-band signature. Its clean deep passes (pad666 2/3, effective basetemp 75) come from the falsified-constant era. Relocation decision and effective path depth are identical, so they remain valid evidence for the PATH criterion, but NO final-era clean child pass at 167/166 exists. The child's deep GREEN is therefore inferred, not demonstrated.",
+      "why_not_blocking": "The child's failures at relocated deep placements are timeout15s-band / restart-band / launcher-rc1-quiet - never a path-family signature; the same band types occur at short/unrouted placements (basetemps 62-82), so the band is placement-independent; the child's RED (unrouted deep) signature is path-family 3/3. Under frozen oracle §6 only path-length signatures adjudicate this card, and that rule was frozen before the runs.",
+      "disposition": "Scoped to I-14-E (load-band work). See CF-I14F-X1: I-14-E must retain basetemp artifacts to discriminate load from path causation."
+    },
+    {
+      "id": "CF-I14F-3 (reviewer R-3 / F-3)",
+      "class": "SILENT ORACLE SUBSTITUTION (low; non-blocking)",
+      "severity": "low",
+      "finding": "Frozen oracle E-G4 specified an over-deep cwd of > 380 characters; the actual runs used 190/189 and the driver guard was re-declared to match, with NO addendum recording the deviation. A >380-char directory is not creatable on this box (the mkdir edge is ~248), so the substitution was forced - but it was silent.",
+      "disposition": "Amend oracle.md with an addendum recording the >380 -> 190/189 substitution and why it was forced. Frozen-evidence caution applies (prefer append-only erratum)."
+    },
+    {
+      "id": "CF-I14F-4 (reviewer F-2)",
+      "class": "STALE FROZEN DOCUMENT (low; non-blocking)",
+      "severity": "low",
+      "finding": "decision.md §1/§6 still presents the Addendum-B calibration as current (240 / 124 / 116: '... i.e. len > 116', 'WIN32_PATH_LIMIT = 240', and §6 'constant coherence (160 = 260 - 100)') while the shipped code and unit test use 210/124/86. It was frozen at 20:14:58, BEFORE Addendum C (20:21:45), and was never superseded in-file.",
+      "disposition": "Supersede the stale calibration text in decision.md (prefer an appended erratum that names Addendum C as current)."
+    },
+    {
+      "id": "CF-I14F-5 (reviewer F-4)",
+      "class": "OVERSTATED GUARANTEE (low; non-blocking)",
+      "severity": "low",
+      "finding": "Cleanup is guaranteed for sessions that TERMINATE (26/26 cleanup events report removed=true, including all of the reviewer's own runs) but NOT for KILLED sessions: 3 orphan %TEMP%\\cw-pytest-basetemp\\* directories remain (2 empty; the one stamped 20260921-193155-* holds 61 KB from the explicitly interrupted run). decision.md §4's claim that 'a failed session still cleans up (unconfigure always runs)' OVERSTATES this.",
+      "disposition": "Correct decision.md §4 to state that cleanup is not guaranteed for killed sessions. Related design consequence for I-14-E: relocated artifacts are deleted by design, so post-mortem of relocated runs is impossible (already disclosed in open_questions, but it is exactly the evidence I-14-E will need)."
+    },
+    {
+      "id": "CF-I14F-6 (reviewer F-5)",
+      "class": "PINNING-QUALITY DEFECT (low; non-blocking)",
+      "severity": "low",
+      "finding": "The unit-test case-table comments misstate 4 of 7 case lengths. Real collected values: 174, 154, 119, 84, 82, 360, 78 - against comments claiming 174, '155/156', '116', '86 boundary', '~81', '364'. The true boundary pair (86 => no relocate, 87 => relocate) is NOT pinned by any case; the nearest cases are 84 and 119. All 7 outcomes match their expectations (0 mismatches), so this is a pinning-quality defect, not a wrong test.",
+      "disposition": "Fix the four misstated comments and add cases pinning basetemps 86 (no relocate) and 87 (relocate)."
+    },
+    {
+      "id": "CF-I14F-7 (reviewer F-6)",
+      "class": "NARRATIVE INACCURACY (info; non-blocking)",
+      "severity": "info",
+      "finding": "handoff.json step 11 called commands.json 'real argv/cwd/rc per run', but commands.json contains NO argv/cwd strings (the real argv lives in each summary-placement.json). handoff.json's '2/7 at deep-relocated' child passes also does not match after/evidence_index.json, which shows 12 deep-relocated child runs with 3 passes.",
+      "disposition": "Step 11 corrected in place by this landing pass (original wording retained and marked superseded). Narrative only - no adjudicating claim depends on it."
+    },
+    {
+      "id": "CF-I14F-8 (reviewer F-7)",
+      "class": "DISCLOSED EVIDENCE SMEAR (info; non-blocking)",
+      "severity": "info",
+      "finding": "after/external-summaries/RED-short-control-attempt1-band.json carries a mixed row (rc=1 with signature 'pass'). Already disclosed in open_questions; the raw attempt-1 capture is preserved at before/short-control-captures/attempt1-* and the reviewer verified it independently (assert 3 == 2 restart band, not a path error).",
+      "disposition": "Already disclosed; no action. The authoritative attempt-1 evidence is the raw capture, not the summary."
+    },
+    {
+      "id": "CF-I14F-X1 (CROSS-CARD NOTE FOR I-14-E)",
+      "class": "ACTIONABLE FOR A SIBLING CARD (not this card's defect)",
+      "severity": "actionable",
+      "finding": "A timeout15s-band label ALONE cannot discriminate load from path causation for child_without_runtime. In the reviewer's mutation-disabled deep run the child surfaced as a 15 s launcher timeout rather than Errno 2, yet artifact-level measurement proved the failure was PATH-caused: under the surviving deep basetemp the directory ...\\source_catalog (247) and files cli.py (254) and worker_launcher.lock (256) existed, while worker_launcher_events.jsonl (264) and the modelled worker_stdout-<32hex>-attempt-0001.log (299) did not - i.e. the launcher's redirect log/events paths were unreachable. Whether the launcher dies instantly (Errno 2) or loops to the test's 15 s timeout (TimeoutExpired) is environment-dependent surface noise.",
+      "consequence": "The I-14-E work on the load band MUST RETAIN basetemp artifacts: the retained artifacts are the discriminator between load and path causation. Today's cleanup design deletes exactly that evidence for relocated runs (see CF-I14F-5), so I-14-E needs an artifact-retention path (or must run the band unrouted) before it can attribute the band.",
+      "owner": "I-14-E (registered here because I-14-F's cleanup design is what destroys the evidence; I-14-E currently has no handoff.json to carry this note)"
+    }
+  ],
+  "status_authority": {
+    "verdict": "accepted_scoped",
+    "verdict_label_written_by_reviewer": "ACCEPTED — SCOPED",
+    "verdict_written_by": "an independent reviewer session (never by the implementer)",
+    "verdict_round_used": "round 1 of this card (single independent review round; the verdict is SCOPED, not clean)",
+    "scope_is_conditional": false,
+    "scope_is_scoped_not_clean": true,
+    "scope_summary": "The card's exit criterion is met and independently reproduced: at the frozen deep geometry (cwd 166/167, basetemp 173/174) a pristine HEAD tree fails with the literal FileNotFoundError: [WinError 206]; the same geometry with the shipped conftest.py relocates the basetemp and passes; disabling only the convention (CW_SHORT_BASETEMP_DISABLE=1) restores the failure. Production untouched; the change is a pure addition of two files. Acceptance is SCOPED on three recorded residuals - R-1 (calibration reserve 124 is the child's suffix; the logon node's is 150, so the real unrouted max is 236 not 210 and oracle Addendum C's reroute claim is false for the logon node), R-2 (0/3 clean final-era child passes at 167/166; child GREEN inferred, load band scoped to I-14-E), R-3 (E-G4's >380 over-deep geometry silently substituted by 190/189). None blocks: the 206 criterion is SAFE at every unrouted basetemp.",
+    "carrier": {
+      "file": "reviewer_report.md",
+      "path_inside_attempt": "reviewer_report.md",
+      "section_heading": "## VERDICT: **ACCEPTED — SCOPED**",
+      "section_heading_line": 10,
+      "line_range_inclusive_1_based": [
+        1,
+        305
+      ],
+      "verdict_line_range_inclusive": [
+        10,
+        10
+      ],
+      "scope_statement_line_range_inclusive": [
+        20,
+        45
+      ],
+      "findings_table_line_range_inclusive": [
+        236,
+        246
+      ],
+      "unverified_line_range_inclusive": [
+        248,
+        266
+      ],
+      "disposition_line_range_inclusive": [
+        295,
+        305
+      ],
+      "signature_line_range_inclusive": [
+        304,
+        305
+      ],
+      "byte_offsets": {
+        "start": 0,
+        "end_inclusive": 23189,
+        "end_exclusive": 23190
+      },
+      "region_bytes": 23190,
+      "region_sha256": "baed8f8766cbdf0603194756daf4ad13e3b3f289e11e683872b1791f5778f46c",
+      "first_line_of_region": "# I-14-F independent review — reviewer_report.md",
+      "first_line_of_verdict": "## VERDICT: **ACCEPTED — SCOPED**",
+      "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT the single trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256. Because the region starts at line 1 (byte offset 0) and ends at the last content line, the region is the whole reviewer_report.md minus its single trailing LF.",
+      "carrier_file_sha256": "2e6709e0c6690c76d377dceec787c8de7722bd38c0d5cabc8fc49b0a37fc2af1",
+      "carrier_file_bytes": 23191,
+      "carrier_file_total_lines": 305,
+      "carrier_encoding": "UTF-8 without BOM; LF line endings only; single trailing LF",
+      "pin_sidecar": {
+        "file": "reviewer_report.sha256",
+        "bytes": 328,
+        "sha256": "24962193015b867b9e7ee4da52c9f9a916c5d65101212c0140d28e4fe58e85a1",
+        "discrepancy_recorded": "the sidecar states 'lines: 304'; the carrier actually has 305 lines and 305 LF bytes. The sidecar's sha256 (2e6709e0...), bytes (23191) and verdict label (ACCEPTED - SCOPED) are all correct; only its lines field is off by one."
+      },
+      "landing_file": {
+        "file": "review.md",
+        "role": "carrier-landing verdict block written by this pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - their words are in reviewer_report.md.",
+        "stub_pre_image_sha256": "9d5207c083845a9b1be33d27c677989131975dcbba935373b8c1299371e44885",
+        "stub_pre_image_bytes": 1433,
+        "stub_pre_image_preserved_at": "before/review-md-preimage/review.md"
+      }
+    },
+    "scope": {
+      "granted": [
+        "the card's exit criterion: at the frozen deep geometry (cwd 166/167, basetemp 173/174) the deep-cwd WinError 206 no longer occurs for the two bootstrap worker nodes (logon_wrapper_quoted, child_without_runtime) in the path family; RED/GREEN/MUTATION independently reproduced by the reviewer",
+        "normal-depth behaviour unchanged: the convention is strictly additive, every placement with len <= 86 keeps its exact previous basetemp and paths (no previously-working placement can regress through the criterion)",
+        "over-deep negative: cwd 190/189, basetemp 197/196 -> relocated, 2/2 PASS",
+        "no cwd shortening and no pytest-global-config loosening: the fix is attempt-local product-side test infrastructure (iso/tree/conftest.py) with a documented decision line, fallback location and cleanup",
+        "production untouched: zero writes; company-wiki HEAD f39bd5a6... unchanged; reflog/status checked before and after the reviewer's own runs; the isolated tree equals a fresh HEAD archive except the two added files (0 content-differing files, only-in-iso = exactly the two new files)",
+        "the 13-case unit suite: 13 passed, twice, under the reviewer's independent invocation"
+      ],
+      "not_granted": [
+        "the R-1 correction itself - the reserve/threshold arithmetic as shipped (210/124/86) is NOT correct for the logon node; only the card's 206 criterion is safe, not the documented margin",
+        "a final-era clean child pass at 167/166 - 0/3 clean; the child's deep GREEN remains inferred (R-2), scoped to I-14-E",
+        "any adjudication of the I-14-E load band (timeout15s-band / restart-band / launcher-rc1-quiet)",
+        "coverage of the 232-236 total band for the logon node (basetemps 82-86, unrouted and untested)",
+        "the rest of the company-wiki suite running with the new repo-global root conftest.py present - only the two card nodes plus the new unit file were exercised",
+        "cleanup guarantees for KILLED sessions (3 orphan %TEMP%\\cw-pytest-basetemp dirs remain)",
+        "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+        "any production-tree write permission",
+        "I-14-C's historical datapoints re-derived from I-14-C's own evidence tree (relied on the frozen oracle plus this attempt's passing unrouted logon artifacts)"
+      ],
+      "scope_owner_decisions": [
+        "R-1: adopt GENERATION_RESERVE = 150 (=> threshold 60) or keep 86 with the true numbers recorded",
+        "R-3/F-3: amend the oracle for the >380 -> 190/189 over-deep substitution",
+        "F-2: supersede the stale Addendum-B calibration text in decision.md",
+        "F-4: state that cleanup is not guaranteed for killed sessions; decide artifact retention"
+      ],
+      "scope_closed_by": "no closing card required for the card's own exit criterion (it is met); the residuals are carried findings, and the I-14-E load-band work owns R-2 via CF-I14F-X1"
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "reviewer_status_note": "This pass rewrote reviewer_status (which still read 'pending') because it had gone stale; the reviewer's own words are preserved in reviewer_report.md, which this pass did not modify (reviewer_report_bytes_written = 0)."
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-21",
+    "what_this_pass_did": "landed the carrier fields for the reviewer's already-written verdict; replaced the implementer's review.md stub with a carrier-landing verdict block that transcribes the reviewer's verdict and scope (stub pre-image preserved); registered the reviewer's carried findings and the I-14-E cross-card note; created evidence/I-14-F/qualification.json; corrected step 11 per the reviewer's F-6; touched no production file",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "status_transition": "review_pending -> accepted_scoped",
+    "reviewer_report_md_bytes_written": 0,
+    "frozen_evidence_bytes_written": 0,
+    "carried_findings_registered": 9,
+    "carried_findings_ids": [
+      "CF-I14F-1 (R-1/F-1, medium)",
+      "CF-I14F-2 (R-2, low)",
+      "CF-I14F-3 (R-3/F-3, low)",
+      "CF-I14F-4 (F-2, low)",
+      "CF-I14F-5 (F-4, low)",
+      "CF-I14F-6 (F-5, low)",
+      "CF-I14F-7 (F-6, info)",
+      "CF-I14F-8 (F-7, info)",
+      "CF-I14F-X1 (cross-card note for I-14-E, actionable)"
+    ],
+    "pin_discrepancy_recorded": "reviewer_report.sha256 says 'lines: 304'; the carrier has 305 lines. sha256/bytes/verdict fields in the sidecar are correct.",
+    "scope_recorded_in": [
+      "handoff.json:status_authority.scope (granted/not_granted/scope_owner_decisions)",
+      "handoff.json:carried_findings",
+      "review.md (carrier-landing verdict block)",
+      "evidence/I-14-F/qualification.json"
+    ]
+  },
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
   "scope_declaration": {
     "disclosure_adaptation": "unmapped",
     "accuracy": "unproven",
+    "formula_state": "accepted_scoped (SCOPED: see status_authority.scope - the card's 206 criterion is met and independently reproduced; the R-1 calibration arithmetic is NOT correct for the logon node and is carried as an owner decision)",
     "qualification": "test-infrastructure only (deep-cwd WinError 206 elimination for the two bootstrap nodes); no product runtime code changed; production repos untouched"
-  }
+  },
+  "note": "status = accepted_scoped was landed by a carrier-landing bookkeeping pass from the independent reviewer's byte-pinned reviewer_report.md (sha256 2e6709e0...); the implementer did not self-sign and wrote no verdict. The scope is SCOPED, not clean: R-1 (calibration reserve wrong for the logon node - owner decision required), R-2 (no final-era clean child pass at deep geometry - I-14-E load work), R-3 (silent over-deep geometry substitution). disclosure_adaptation stays unmapped and accuracy stays unproven; no production write authority is granted by this acceptance."
 }

@@ -109,26 +109,29 @@ def main(argv: list[str] | None = None) -> int:
             entry["authsplit_probe_leaks"] = data.get("credential_leaks")
             entry["authsplit_probe_verdict"] = data.get("verdict")
 
-        # the real exit, through the unchanged product doubles
+        # the real exit, through the unchanged product doubles.  The probe's run root
+        # is append-only, so a second pass may not reuse it: if it is already
+        # populated, the earlier pass's summary is the evidence and is loaded as-is.
         run_root = out_root / f"runs-{op}"
-        if not run_root.exists() or not any(run_root.iterdir()):
+        summary = out_root / f"probe_results_{op}.json"
+        if run_root.exists() and any(run_root.iterdir()):
+            entry["exit_probe_rc"] = "reused: run root already populated (append-only)"
+        else:
             proc = _run([args.python, "-X", "utf8", "-B",
                          str(HERE / "run_exit_probe.py"), "--label", op,
                          "--out", str(out_root), "--run-root", str(run_root),
                          "--python", args.python, "--src", str(src),
                          "--tests-dir", str(CW_TESTS)], ATT)
             entry["exit_probe_rc"] = proc.returncode
-            summary = out_root / f"probe_results_{op}.json"
-            if summary.is_file():
-                data = json.loads(summary.read_text(encoding="utf-8"))
-                entry["exit_probe_rows"] = [
-                    {"case": c["case_id"], "rc": c["raw_returncode"],
-                     "secret_absent_ok": c["marker_absent_ok"],
-                     "msg": c["message_redacted"]}
-                    for c in data["cases"]
-                ]
-        else:
-            entry["exit_probe_rc"] = "skipped: run root already populated"
+        if summary.is_file():
+            data = json.loads(summary.read_text(encoding="utf-8"))
+            entry["exit_probe_rows"] = [
+                {"case": c["case_id"], "rc": c["raw_returncode"],
+                 "secret_absent_ok": c["marker_absent_ok"],
+                 "persisted_or_printed_hits": c["persisted_or_printed_hits"],
+                 "msg": c["message_redacted"]}
+                for c in data["cases"]
+            ]
 
         report["mutants"][mid] = entry
         print(json.dumps({mid: {k: v for k, v in entry.items()
@@ -136,8 +139,14 @@ def main(argv: list[str] | None = None) -> int:
                          ensure_ascii=True, indent=2))
 
     out = out_root / "mutation_matrix.json"
+    # MERGE with whatever is already there: a --only run must not drop the other
+    # specimens' entries (it did once, which is why this note exists).
+    if out.is_file():
+        previous = json.loads(out.read_text(encoding="utf-8"))
+        for mid, entry in previous.get("mutants", {}).items():
+            report["mutants"].setdefault(mid, entry)
     out.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
-    print("wrote", out)
+    print("wrote", out, "mutants:", sorted(report["mutants"]))
     return 0
 
 

@@ -76,3 +76,29 @@ git apply       --whitespace=nowarn --exclude=.planning/* $patch     # exit 0
 2. 回滚窗口内是否存在**未被补丁覆盖**的第三方并发改动被一并重置，无法判定（这些改动已不可得）。
 3. 谁在何时创建了 3 个内嵌 scratch 仓库已可归属（attempt 的 diff-apply 验证），但其 `.git` 内部状态（`bad object HEAD` 的具体成因）未进一步解剖。
 4. 该 pre-commit hook 的失败模式是否还会在别的 Windows 并发场景复现，未做穷举测试；本次只做了"忽略内嵌仓库 + 提交后核对 restore 行"两项缓解。
+
+---
+
+## 第二次同类事件（2026-09-21 21:40，无损失）
+
+**现象**：pre-commit hook 的 stash/checkout/replay 周期再次失败：
+```
+[WARNING] Stashed changes conflicted with hook auto-fixes... Rolling back fixes...
+CalledProcessError: git -c submodule.recurse=0 checkout -- .
+return code: 255
+stderr: error: unable to unlink old
+  '.planning/.../execution_runs/I-14-E/a20260919-01/after/campaign-band.log': Invalid argument
+```
+
+**根因**：与 2026-09-20 事件**同一**——并发 subagent（I-14-E）正在写入该文件，git checkout -- . 无法 unlink 被占用的文件而返回 255。
+
+**本次与上次的关键差异（为什么没造成损失）**：
+1. **生产树锚点全部完好**（复算：model_registry.py 9ec65295…、model_extensions.py 9939480b…、SKILL.md 45e4e343…、evenue_core.py 1821fd2a…）——上次是 model_registry.py 被重置到 HEAD。
+2. **暂存区完好**（1219 文件仍在 index 中）。
+3. 失败补丁 patch1790023228-48668（6549 B）**只含并发新增的未跟踪文件**（B1 的 suite_fixed.stdout.txt、I-14-E 的 campaign-band.log）+ 我重建的 plan_inputs.json，**不含任何已提交内容的回退**。
+
+**新纪律（第二条时间限定规则）**：
+> **不得在并发 subagent 正在写入时提交。** 提交前先确认目标 attempt 目录**静默**（例如最近 60 s 无 mtime 变化）；若某卡正在跑测量/生成，**等它落盘后再提交**，或只提交与它无关的路径。
+> 理由：hook 的 git checkout -- . 对**被占用**文件必然失败；失败时补丁**不一定**被回放（上次就没回放）。这是**结构性**风险，不是偶发。
+
+**已验证的缓解**：本 session 每次提交后核对 hook 的 `[INFO] Restored changes from <patch>` 行 + post-push 锚点复算——该纪律在本次事件中使我**能立即判定"无损失"**而不是猜测。
