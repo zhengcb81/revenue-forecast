@@ -1501,3 +1501,79 @@ M25…M28 /recovery/selfcheck/cases/F1/evidence/M25/cases.json  {'ValueError': 1
 **产品文件 0 条**；生产锚点 `9ec6529550f189a4…` **一致**；**未接续任何卡**（I-14-D r3、I-14-E-APPLY、I-14-D 复审**均维持原状，本卡不推进**）；**未做任何 `status` 转移**；**未代签**；**删除 0** —— 含 `.tmp-r41-mutation/`、`assurance/…/plan_inputs.json.bak`、全部 scratch 与 `_pre60_tail.bin`，**一律保留**。
 
 **产物**：`execution_runs/_bookkeeping_20260921_round67/`（四个追加式证明 + 核验器 + `handoff.json`）。
+
+---
+
+## Round 68 — I-14-D **r3 的独立状态核验**：代码修复已完成且逐行可复现；三项文书要求未落地；迭代**未收口**
+
+**卡**：无（编排层核验轮次，验的是 `execution_runs/I-14-D/a20260919-01` 的 r3 迭代）。
+**性质**：**独立状态核验**。**不是** r3 的收口、**不是**验收、**不是** `status` 转移、**不是** TIER-2 签收。
+**I-14-D 是否关闭仍归其 reviewer**；本轮只回答两个问题：**r3 的测量能不能被别人复现**，以及**r2 reviewer 要求的东西哪些真在盘上**。
+
+**触发**：上一 session 中途被打断（见 Round 67）。用户在「继续做」之后，本轮先做**不需要裁定、也不改写任何既有载体**的那一步：把 r3 的真实状态测出来。
+
+### 核验方式：用 attempt 自己的 harness 打 attempt 自己的树
+
+```
+<attempt>/iso/venv/Scripts/python.exe harness/run_i14d_oracle.py     --src iso/product_narrow_r3/src --label r3-verify   --out <here>/oracle_r3_rerun.json
+<attempt>/iso/venv/Scripts/python.exe harness/run_rule_table_i14d.py --src iso/product_narrow_r3/src --label r3-verify   --out <here>/rule_r3_rerun.json
+<attempt>/iso/venv/Scripts/python.exe harness/run_i14d_oracle.py     --src iso/product_base/src      --label base-verify --out <here>/oracle_base_rerun.json
+```
+
+**解释器的一处观察（非缺陷）**：全局解释器**没有 PyYAML**，两次调用都返回 **`rc=2 cannot_adjudicate`** 并写明 `ModuleNotFoundError: No module named 'yaml'` —— 即 harness **报「判不了」而不是给一个错答案**，这正是冻结 rc 码表 `rc=2` 的语义。故一律改用 attempt 自己的 iso venv（python 3.13.9 / PyYAML 6.0.3）。
+
+### 八命题（`verify_i14d_r3_state.py`，`overall = PASS` / exit 0）
+
+| # | 命题 | 结果 | 证据 |
+|---|---|---|---|
+| **P-1** | 记录的 r3 结果**逐行可复现** | **holds** | oracle **28/28 行**、rule table **79/79 行**，**id 顺序相同、字段差异 0、非行字段差异 0** |
+| **P-2** | r3 树携带 reviewer 处方的**泛化** | **holds** | `_AUTH_SCHEME_TOKEN = r"[A-Za-z][A-Za-z0-9!#$%&'*+.^_\`|~-]*"`；`_AUTH_SCHEME_SPLIT` 引用该常量；break 由「恰好一个」改为 **run**；`_QUOTED_VALUE` 在 value 组**首位**；九词枚举**已消失**；注释同时披露 F-REV-R2-01 与 F-REV-R2-02 |
+| **P-3** | 残留**已按 reviewer 要求登记** | **holds** | oracle `registered_open = [R3a-two-token-then-wrap, R3b-quoted-two-token]` 且 `confirmed` 相同；rule table `registered_open_rows` = 同两条，**两条都仍泄漏**（`registered_open_leaking` 同集合），**泄漏的正是非 marker 凭据**（`credential_secret_leaks` 同集合）；`credential_leaks == []`；`touched_but_should_not_be == []` |
+| **P-4** | over-redaction 族**已登记** | **holds** | **9 条** `over_redaction` 行，且 `over_redaction_touched` = 同集合（**逐行断言了损失本身**），`fidelity_ok = true` |
+| **P-5** | F-REV-R2-03 的**假声明三处仍在**，且本次**独立证伪** | **holds** | `oracle.md`「On the pre-fix base tree all three FAIL」**在**；`fix_record.md`「All three FAIL on the base tree」**在**；`after/r2_summary.json` 的 `narrow_must_failed_base` **仍含 `N5e`**。而 base 树实测：`N5c` **pass=False**、`N5d` **pass=True**、`N5e` **pass=True** ⇒ **只有 N5c 在 base 上失败**，与 reviewer 的测量**一致**、与该声明**相反** |
+| **P-6** | F-REV-R2-02 的 oracle.md 一半、F-REV-R2-04 **均未落地** | **holds** | `oracle.md` 的 **C2.2 节内不含「both directions」**（该节只写泄漏方向）；`binding.json` **仍写** `scheme branch left defined but unreferenced` |
+| **P-7** | r3 **无载体** ⇒ 迭代未收口 | **holds** | `handoff.json`（21:22）与 `review.md`（21:18）**均早于** r3 产物（23:30–23:37） |
+| **P-8** | 本次核验对 attempt **零写入** | **holds** | 9 个被读文件的 sha256 与固定登记值**全部相符**（`oracle.md` `f188e853…`、`handoff.json` `c1facfb1…`、r3 `observability.py` `a551cc45…` 等） |
+
+**7 项负控全部正确转红**（内存内变异、零文件改动）：复跑行被改、出现未登记的 marker 泄漏、已登记残留不再泄漏、泛化常量被移除、N5d 被改成在 base 上失败、binding 括注被"修好"、attempt 文件漂移。
+
+### 结论（逐条，不合并）
+
+| r2 reviewer 的要求 | 盘上状态 |
+|---|---|
+| **F-REV-R2-01（BLOCKER）** 把枚举换成 RFC-7235 单 token，`_QUOTED_VALUE` 提到 break 之后 | ✅ **已落地**（`observability.py:317-320`） |
+| — 残留**必须登记**（oracle + rule-table，marker 与非 marker 凭据都要） | ✅ **已登记**（oracle 2 行 + rule table 2 行） |
+| **F-REV-R2-02（MEDIUM）** 登记 over-redaction 族 | ✅ rule-table 一半（9 行）；⛔ **oracle.md C2.2 的「双向 fail-closed」陈述未加** |
+| **F-REV-R2-03（LOW）** 更正三处假声明 | ⛔ **三处全部未改** |
+| **F-REV-R2-04（INFO）** 更正 `binding.json` 的 M3 括注 | ⛔ **未改** |
+| r3 载体（`handoff.json` / `review.md` / `decision.md` / `binding.json` 的 r3 世代） | ⛔ **不存在** |
+
+⇒ **r3 的「代码修复 + 残留登记 + 测量」这一段是完整且可复现的；未完成的是文书侧（三项非阻断 + 载体）。**
+⇒ **本卡**不**因此收口**：载体与独立复核仍是该卡自己的事，编排层不代写、不代签。
+
+### 新增发现 F-R68-01（P3，不阻断）：**悬空引用**
+
+r3 注释块明写「measured across the whole design space, **see `r3_fix_record.md`**」，
+但 **`execution_runs/I-14-D/a20260919-01/r3_fix_record.md` 不存在**（`exists = False`，已登记于核验 JSON 的 `dangling_reference`）。
+⇒ 一个**指向从未写出的记录的引用**。r3 的设计取舍（为何 two-token-then-wrap 保持 OPEN）因此**目前无书面载体**。
+**本卡不代写该文件**（它属 r3 的实现者记录）；**只登记**。
+
+### 本卡自行犯下并已修正的两项判据错误（如实登记）
+
+| # | 判据 | 症状 | 分类 | 修正 |
+|---|---|---|---|---|
+| 1 | **P-2** `break_is_a_run_not_exactly_one` | 报 False，而 run 形态**确在盘上** | **判据错** | **字符转置**：我搜 `+)"`，而源码是 `)+"`。改为按文件实际字节序搜索 |
+| 2 | **P-5** `fix_record_still_claims_all_three_fail` | 报「声明不存在」，而它**存在** | **判据错** | `fix_record.md` **硬换行**成 `All\n  three FAIL on the base tree`，裸子串搜索跨不过换行。改为**先归一化空白** |
+
+⇒ **第 2 项正是本仓陷阱 17（「先归一化空白」），且是在这个脚本的首跑上被我自己原样复踩**——
+与 `task_plan.md` Round 60 记录的那次**同源**。已按该轮立的规矩**如实登记而非静默修好**。
+⇒ **一般式（本仓第 N 次同源）**：**「闸红」必须先分类**——本轮两处红**都不是数据缺陷，而是判据缺陷**；
+**删判据求绿与不加说明地放松判据，是同一类错误的两个方向。**
+
+### 边界
+
+**产品文件 0 条**；生产锚点 `scripts/model_registry.py` = `9ec6529550f189a4…` **一致**；
+**attempt 内写入 0 字节**（P-8 以 9 个固定哈希证明）；**未改** `oracle.md` / `fix_record.md` / `binding.json` / `after/r2_summary.json` / `handoff.json` / `review.md` / r3 树；
+**未代写** `r3_fix_record.md`；**未做任何 `status` 转移**（I-14-D 维持 `review_pending`）；**未代签**；**删除 0**；**未接续 r3 到收口**。
+
+**产物**：`execution_runs/_verify_20260922_i14d_r3/` 下 `verify_i14d_r3_state.py`（**17994 B** / `531a94a5…`）、`i14d_r3_state_verification.json`（**5925 B** / `069f43b4…`，**连跑同哈希**）、三次复跑的原始输出（`oracle_r3_rerun.json` / `rule_r3_rerun.json` / `oracle_base_rerun.json`）。

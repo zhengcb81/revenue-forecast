@@ -1,0 +1,227 @@
+{
+ "artefacts": {
+  "append_only_proof_round68_findings.json": {
+   "bytes": 1713,
+   "sha256": "019ddec44275df98739ca4980de4ef97848634f5be7914fdaef4ef0af07265c0"
+  },
+  "append_only_proof_round68_progress.json": {
+   "bytes": 1718,
+   "sha256": "53f95ede2f690d9b80819bb837cfbc7779b0a6c2100b297d1a9ba08f647210ce"
+  },
+  "append_only_proof_round68_register.json": {
+   "bytes": 1725,
+   "sha256": "31275468cf40ade0e0c1df340e45dfd7b2991a47155ae2631914a2ed7d61f0e9"
+  },
+  "append_only_proof_round68_task_plan.json": {
+   "bytes": 1722,
+   "sha256": "d154d1169fc5c9a12d2b86d661889b1ab02a1f8dd36503152e8a80a0de06fa8a"
+  },
+  "verification_evidence_elsewhere": {
+   "dir": "execution_runs/_verify_20260922_i14d_r3",
+   "i14d_r3_state_verification.json": {
+    "bytes": 5925,
+    "idempotent": true,
+    "negative_controls_correctly_red": 7,
+    "overall": "PASS",
+    "propositions_holding": 8,
+    "sha256": "069f43b42bfad769f4dd4ad62ccdfb8b7159318abcfbbcb8aec806f81f78371c"
+   },
+   "oracle_base_rerun.json": {
+    "bytes": 13786,
+    "sha256": "19b803a88e8d9785ea12213266113ed7b5898ecbc242bf0e5575a63e833357bb"
+   },
+   "oracle_r3_rerun.json": {
+    "bytes": 13173,
+    "sha256": "7af5da7817c89946541c1cafe5ebf8db83322670612986aaf0965c30b6f7eb3d"
+   },
+   "rule_r3_rerun.json": {
+    "bytes": 28024,
+    "sha256": "995c9e4e9de85d1fda2af34a695d624dbd0f532f070ce5e56390028e776e1a52"
+   },
+   "verify_i14d_r3_state.py": {
+    "bytes": 17994,
+    "sha256": "531a94a5e66dc441affff4aee97a7073a332b8a38a7dd5d5c9b344e534fd66e8"
+   }
+  }
+ },
+ "authority": {
+  "note": "no owner ruling was needed for this round: it measures and registers, and writes nothing into the attempt",
+  "source": "OWNER_DECISIONS.md §13 T1-27",
+  "what_it_authorises": "the orchestrator commits .planning more frequently and verifies the hook's [INFO] Restored changes line after every commit"
+ },
+ "boundaries": {
+  "attempt_untouched_proof": "9 pinned sha256 values re-asserted; drift == {}",
+  "attempt_writes": 0,
+  "deletions": 0,
+  "files_written_into_the_attempt": [],
+  "product_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "product_files_written": 0,
+  "r3_fix_record_not_written_by_this_round": true,
+  "r3_not_carried_to_closure": true,
+  "signatures_on_behalf_of_others": 0,
+  "status_transitions": 0
+ },
+ "card": "_bookkeeping_20260922_round68",
+ "conclusion_in_one_line": "r3's code fix, residual registration and measurement are complete and exactly reproducible; what remains is the documentary side (three non-blocking items plus the carrier). The iteration is NOT closed, and this round does not close it.",
+ "date": "2026-09-21/22",
+ "findings": {
+  "F-R68-01": {
+   "consequence": "r3's most important design trade-off -- why the two-token-then-wrap shape is left OPEN rather than fixed -- currently has no written carrier at all",
+   "disposition": "registered only; the file is the r3 implementer's record and the orchestrator does not write it",
+   "generalisation": "the existence of a reference is decidable, so it must be decided. A record that outsources its key argument to 'see X' has exactly as much evidential force as X has existence.",
+   "severity": "P3",
+   "what": "the r3 comment block in iso/product_narrow_r3/.../observability.py says 'measured across the whole design space, see r3_fix_record.md', but r3_fix_record.md DOES NOT EXIST in the attempt"
+  }
+ },
+ "hash_self_correction": {
+  "detected_by": "the registered-hash check that this round runs against its own handoff.json",
+  "method": "hashlib.sha256 over the file bytes, written back; never string-replaced (F-04-D chimera-hash lesson)",
+  "right": "19b803a88e8d9785",
+  "what": "one registered sha256 was mis-transcribed by hand and has been recomputed from the bytes on disk",
+  "which": "artefacts.verification_evidence_elsewhere.oracle_base_rerun.json",
+  "wrong": "19b803a88e8d975e"
+ },
+ "how_it_was_measured": {
+  "commands": [
+   "<attempt>/iso/venv/Scripts/python.exe harness/run_i14d_oracle.py --src iso/product_narrow_r3/src --label r3-verify --out oracle_r3_rerun.json",
+   "<attempt>/iso/venv/Scripts/python.exe harness/run_rule_table_i14d.py --src iso/product_narrow_r3/src --label r3-verify --out rule_r3_rerun.json",
+   "<attempt>/iso/venv/Scripts/python.exe harness/run_i14d_oracle.py --src iso/product_base/src --label base-verify --out oracle_base_rerun.json"
+  ],
+  "interpreter_note": "the global interpreter lacks PyYAML; the harness correctly returned rc=2 cannot_adjudicate with the ModuleNotFoundError spelled out, rather than a wrong answer -- which is exactly what the frozen rc table's rc=2 means. All runs therefore use the attempt's own iso venv (python 3.13.9, PyYAML 6.0.3).",
+  "method": "re-run the attempt's OWN harnesses against the attempt's OWN r3 tree, then compare row by row against the recorded scratch results",
+  "result": {
+   "field_differences": 0,
+   "ids_in_the_same_order": true,
+   "non_row_differences": 0,
+   "oracle_rows_reproduced": 28,
+   "rule_table_rows_reproduced": 79
+  }
+ },
+ "kind": "orchestrator_bookkeeping",
+ "next_action_for_the_owner": [
+  "REM-61 I-14-D r3: the code fix, residual registration and measurement are done and reproducible; the carrier (handoff.json / review.md / decision.md / binding.json in an r3 generation) is what is missing. Carry it to closure, or abandon it -- this round does not decide.",
+  "REM-60: within that closure, land the three r2-review items -- F-REV-R2-02's oracle.md C2.2 statement, F-REV-R2-03's three false claims, F-REV-R2-04's binding.json parenthetical.",
+  "REM-59: r3_fix_record.md is referenced but absent; the design trade-off behind the registered OPEN shape has no written carrier.",
+  "REM-55 I-14-E-APPLY: still terminated mid-campaign; no decision yet.",
+  "the push: 12 commits will be pending after this one; the pre-push gate's 600 s E2E cap remains below the suite's measured 861.7 s, and the gate has not been bypassed."
+ ],
+ "post_images": {
+  "REMEDIATION_REGISTER.md": {
+   "bytes": 30525,
+   "delta_bytes": 1732,
+   "lines_added": 14,
+   "lines_deleted": 0,
+   "sha256": "642e9cb0d47ab9b09dff8929c001d31ea71a0444e37831d05963438f05724c1f"
+  },
+  "findings.md": {
+   "bytes": 56860,
+   "delta_bytes": 2471,
+   "lines_added": 14,
+   "lines_deleted": 0,
+   "sha256": "5ab716c2d64965b28ff9dde1f2d1673feb30487aa184ce8fae9ed0f3b72881a6"
+  },
+  "progress.md": {
+   "bytes": 137569,
+   "delta_bytes": 2398,
+   "lines_added": 27,
+   "lines_deleted": 0,
+   "sha256": "8b44fea11b47b688dc2772ff44eb3b1bc28b39bb5d089a34866d88a2f1e7b9a9"
+  },
+  "task_plan.md": {
+   "bytes": 214702,
+   "delta_bytes": 7908,
+   "lines_added": 76,
+   "lines_deleted": 0,
+   "sha256": "45c64ea94872cc8d5015abcb61b94fb5419ce27880d94c7b92306a412e9bb620"
+  }
+ },
+ "pre_images": {
+  "REMEDIATION_REGISTER.md": {
+   "bytes": 28793,
+   "sha256": "c4c3c3f27dda364a9ebb9c258a2ff712ec9921af8768d6a4f6728406a8eb20d0"
+  },
+  "findings.md": {
+   "bytes": 54389,
+   "sha256": "805bbe96f0c766bc537df3f3667ccccb0317a6d68ee63953a4a61a2edc9370d5"
+  },
+  "progress.md": {
+   "bytes": 135171,
+   "sha256": "b179fc6971ce34c7510d8a29b314e4ef9fc810de0b353da42363e344f6f57b2f"
+  },
+  "task_plan.md": {
+   "bytes": 206794,
+   "sha256": "94b541c0ffaa9994ad7eddcd55657c305917ef17870a34b4e57c9b573514cc42"
+  }
+ },
+ "predicate_errors_made_and_corrected": [
+  {
+   "cause": "transposed characters: searched for '+)\"' where the source has ')+\"'",
+   "classification": "predicate error, NOT a data defect",
+   "fix": "searched for the byte order the file actually uses",
+   "predicate": "P-2 break_is_a_run_not_exactly_one"
+  },
+  {
+   "cause": "fix_record.md is hard-wrapped ('All\\n  three FAIL on the base tree') and the predicate searched raw text without normalising whitespace",
+   "classification": "predicate error, NOT a data defect",
+   "fix": "normalise whitespace before matching",
+   "note": "this is lesson #17 in this project's series, re-committed on the first run of this very script and recorded rather than quietly fixed",
+   "predicate": "P-5 fix_record_still_claims_all_three_fail"
+  }
+ ],
+ "registered_in_register": [
+  "REM-59",
+  "REM-60",
+  "REM-61"
+ ],
+ "reviewer_items_status": {
+  "F-REV-R2-01": {
+   "class": "BLOCKER",
+   "evidence": "_AUTH_SCHEME_TOKEN = r\"[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*\" at observability.py:317; _AUTH_SCHEME_SPLIT references it at :318; the break is now a run, not exactly one, at :319; _QUOTED_VALUE is first in the value group at :320; the nine-word enumeration is gone",
+   "requirement": "replace the nine-word enumeration with one RFC-7235 scheme token, and try _QUOTED_VALUE after the break",
+   "status": "LANDED"
+  },
+  "F-REV-R2-02": {
+   "class": "MEDIUM",
+   "landed": "9 over_redaction rows, with over_redaction_touched equal to the same set (so the loss itself is asserted row by row)",
+   "not_landed": "oracle.md C2.2 does not state 'both directions'",
+   "requirement": "register the over-redaction family in the rule table, and state in oracle.md C2.2 that the branch is fail-closed in both directions",
+   "status": "HALF LANDED"
+  },
+  "F-REV-R2-03": {
+   "and_the_claim_is_independently_refuted": "on the base tree this round measured N5c pass=False, N5d pass=True, N5e pass=True -- only N5c fails, which agrees with the r2 reviewer and contradicts the three records",
+   "class": "LOW",
+   "evidence": "oracle.md still says 'On the pre-fix base tree all three FAIL'; fix_record.md still says 'All three FAIL on the base tree'; after/r2_summary.json still lists N5e among narrow_must_failed_base",
+   "requirement": "correct the false base-tree claim in three records",
+   "status": "NOT LANDED"
+  },
+  "F-REV-R2-04": {
+   "class": "INFO",
+   "evidence": "binding.json still says 'scheme branch left defined but unreferenced'",
+   "requirement": "correct binding.json's imprecise M3 description",
+   "status": "NOT LANDED"
+  },
+  "r3_carrier": {
+   "evidence": "handoff.json (21:22) and review.md (21:18) both predate the r3 artefacts (23:30-23:37)",
+   "status": "ABSENT"
+  },
+  "residual_registration": {
+   "class": "required by F-REV-R2-01",
+   "evidence": "oracle registered_open = [R3a-two-token-then-wrap, R3b-quoted-two-token] and confirmed identical; rule table registered_open_rows is the same pair, registered_open_leaking is the same pair, and credential_secret_leaks is the same pair -- i.e. what survives is the non-marker credential; credential_leaks == [] and touched_but_should_not_be == []",
+   "requirement": "oracle + rule-table rows, using BOTH the marker and a non-marker credential",
+   "status": "LANDED"
+  }
+ },
+ "round": 68,
+ "self_reference_note": "handoff.json does not register its own hash; it is recorded in task_plan.md's Round 68 section and in the memory file",
+ "subject_attempt": "a20260919-01",
+ "subject_card": "I-14-D",
+ "subject_iteration": "r3",
+ "trigger": "Round 67 established that the previous session was terminated mid-flight, leaving I-14-D r3 and I-14-E-APPLY half-done. The user asked to continue. This round does the part that needs no ruling and rewrites no existing carrier: measure what r3's state actually is.",
+ "what_this_round_is": "an INDEPENDENT STATE VERIFICATION of the interrupted I-14-D r3 iteration, plus the Round 68 registration of what it found",
+ "what_this_round_is_not": [
+  "the closure of I-14-D r3 (no carrier was written)",
+  "an acceptance, an approval, or a status transition",
+  "a signature on behalf of any other party",
+  "a product change"
+ ]
+}

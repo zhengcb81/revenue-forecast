@@ -659,3 +659,30 @@ check-complete.sh   → [planning-with-files] Task in progress (6/7 phases compl
 **本轮动作**：按 **T1-27** 授权提交 `.planning`（**选择性提交**，不含 `.planning/` 外那两项）；四个载体（`task_plan.md` / `findings.md` / `progress.md` / `REMEDIATION_REGISTER.md`）**纯追加**并各自出具**追加式证明**。
 
 **边界**：**未接续任何卡**（`I-14-D r3`、`I-14-E-APPLY`、`I-14-D` 复审**均维持原状**）；**未做任何 `status` 转移**；**未代签**；**删除 0**。
+
+## 2026-09-21/22 — Round 68：I-14-D **r3 的独立状态核验**（编排层，未收口该卡）
+
+**触发**：Round 67 查清上一 session 中途被打断，`I-14-D r3` 与 `I-14-E-APPLY` 停在半途。本轮先做**不需要裁定、也不改写任何既有载体**的那一步：把 r3 的真实状态**测出来**。
+
+**方式**：用 attempt 自己的两个 harness，对 attempt 自己的 r3 树（`iso/product_narrow_r3/src`）**复跑**，再逐行比对；另跑一次 base 树以独立检验 r2 reviewer 的 F-REV-R2-03。
+
+**结果（`overall = PASS`，8 命题 + 7 负控全红）**：
+
+| 项 | 状态 |
+|---|---|
+| **复现性** | oracle **28/28 行**、rule table **79/79 行** —— **id 顺序相同、字段差异 0** |
+| **F-REV-R2-01（BLOCKER）泛化** | ✅ **已落地**：`_AUTH_SCHEME_TOKEN` = RFC-7235 单 token；break 改为 run；`_QUOTED_VALUE` 提到 break 之后 |
+| **残留登记** | ✅ oracle 2 行 + rule table 2 行，**marker 与非 marker 凭据都存活**（`credential_leaks == []`） |
+| **F-REV-R2-02 的 rule-table 一半** | ✅ **9 条** `over_redaction` 行 |
+| **F-REV-R2-02 的 oracle.md 一半** | ⛔ C2.2 **未加**「双向 fail-closed」 |
+| **F-REV-R2-03** | ⛔ **三处假声明全在**；base 实测 `N5c` 失败、**`N5d`/`N5e` 通过** ⇒ 声明为假 |
+| **F-REV-R2-04** | ⛔ `binding.json` 仍写 `scheme branch left defined but unreferenced` |
+| **r3 载体** | ⛔ **不存在**（`handoff.json`/`review.md` 早于 r3 产物） |
+
+**新增发现 F-R68-01**：r3 注释块引用的 **`r3_fix_record.md` 不存在** ⇒ r3 的关键设计取舍（为何 `two-token-then-wrap` 保持 OPEN）**无书面载体**。
+
+**解释器观察（非缺陷）**：全局解释器缺 PyYAML ⇒ harness 返回 **`rc=2 cannot_adjudicate`**（fail-closed 正确），故改用 attempt 的 iso venv。
+
+**自伤登记**：核验器首跑 **P-2 / P-5 两处红，均为判据错、非数据错**（①字符转置；②未归一化空白 —— **陷阱 17 的原样复踩**）。已修判据并如实登记，**未删判据求绿**。
+
+**边界**：**attempt 内写入 0 字节**（9 个固定哈希证明）；**未代写** `r3_fix_record.md`；**未做 `status` 转移**（I-14-D 维持 `review_pending`）；**未代签**；**删除 0**；**未把 r3 推进到收口**。产品文件 **0** 条；锚点 `9ec6529550f189a4…` **一致**。
