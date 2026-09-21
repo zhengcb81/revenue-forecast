@@ -1,0 +1,165 @@
+{
+ "card_id": "I-10-B",
+ "attempt": "a20260919-01",
+ "title": "model_registry 的静默补 0 与按名字定符号",
+ "status": "planned",
+ "status_note": "本卡未落地生产、未获独立验收，status 保持 planned，不自我升格。",
+ "source": {
+  "owner_decisions": "OWNER_DECISIONS.md §5 第 1/2 项 + §13 T1-22（授权立卡，两项同卡）",
+  "card_text": "execution_v2/card_I-10-B.md",
+  "parent": "I-10",
+  "depends_on": "I-00-B"
+ },
+ "code_root_anchor": {
+  "rule": "卡文第 6 点：每次复算，不一致即停止并登记漂移",
+  "recomputed_at": "2026-09-20",
+  "files": {
+   "scripts/model_registry.py": {
+    "bytes": 26446,
+    "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "role": "BEFORE（生产前像，修复未落地）",
+    "matches_bound_value": true
+   },
+   "scripts/model_extensions.py": {
+    "bytes": 14475,
+    "sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+    "role": "未改动",
+    "matches_bound_value": true
+   }
+  },
+  "drift_detected": false
+ },
+ "isolation": {
+  "candidate_isolation_root": "iso/rf/scripts/",
+  "iso_model_registry.py": {
+   "bytes": 30116,
+   "sha256": "62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081"
+  },
+  "iso_model_extensions.py": {
+   "bytes": 14475,
+   "sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+   "note": "与生产逐字节相同，未改"
+  },
+  "before_variant": {
+   "source": "工作树生产文件（前像）的 attempt-local 副本 _scratch_import/before/",
+   "model_registry.py_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f"
+  },
+  "before_after_are_distinct": true,
+  "product_files_touched": 0
+ },
+ "frozen_artifacts_touched": 0,
+ "product_implementation_promoted": false,
+ "status_transitions_made": 0,
+ "defects_addressed": [
+  {
+   "id": "defect-1",
+   "name": "model_registry.py:335 静默补 0",
+   "locus": "model_registry.py 原 :334-337（values = drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))）",
+   "observed_scale": {
+    "models": 31,
+    "optional_without_default_slots": 31,
+    "models_affected": 24,
+    "matches_card_text": true
+   },
+   "fix": "省缺即抛 ModelRegistryError；仅在 spec.defaults 有显式值时才允许省缺",
+   "rejected_alternative": "把隐式 0 变显式 0 —— 仍无法区分『没找到』，故不采用",
+   "negative_case_1": "只有 optional driver 且无显式 default 的模型，省缺时必须抛（R-B1-N1）",
+   "negative_case_3": "名不在任何角色表里的新 driver 不得静默获得按名字猜测的符号（R-B2-N2）"
+  },
+  {
+   "id": "defect-2",
+   "name": "_SIGNED_DRIVERS 按名字定符号",
+   "locus": "model_registry.py 的 _SIGNED_DRIVERS 与 driver_value_bounds",
+   "fix": "改为基于语义角色的规则",
+   "rule": {
+    "dimensions_intersect": ["backlog", "revenue", "reserve_volume", "aum_fee"],
+    "drivers_intersect": [
+     "contract_changes", "franchise_system_sales", "supply_revenue",
+     "recognized_performance_fees", "usage_revenue", "other_revenue",
+     "fixed_revenue", "ancillary_revenue", "milestone_revenue",
+     "royalty_revenue", "service_revenue", "performance_fee_revenue",
+     "fee_revenue", "backlog_remeasurements", "reserve_revisions"
+    ],
+    "predicate": "_is_reversal_capable(driver, dimension) => dimension in _REVERSAL_CAPABLE_DIMENSIONS and driver in _REVERSAL_CAPABLE_DRIVERS",
+    "deprecated_alias": "_SIGNED_DRIVERS = _REVERSAL_CAPABLE_DRIVERS（仅供导入兼容）"
+   },
+   "negative_case_2": "franchise_system_sales 传负值必须被接受（R-B2-N1）",
+   "name_hardcoding_evidence": {
+    "note": "缺陷②之『名字与语义不符』的实测证据：以下三个 driver 均不在 _SIGNED_DRIVERS，却早经 driver_bounds 元数据到达 (-inf, inf)",
+    "drivers": ["recognized_performance_fees", "reserve_revisions", "backlog_remeasurements"]
+   }
+  }
+ ],
+ "compatibility_declaration": {
+  "card_text_clause": "卡文第 3 点：25 个既有 driver 的边界是否受影响须逐个列出；任何边界变化都要附『哪个 M 卡的哪个用例会受影响』",
+  "bound_cells_total": 165,
+  "changed_cell_count": 5,
+  "changed_cells": [
+   {"model": "cohort_subscription", "driver": "usage_revenue", "before": "[0.0, inf)", "after": "[-inf, inf)"},
+   {"model": "retail_franchise", "driver": "franchise_system_sales", "before": "[0.0, inf)", "after": "[-inf, inf)"},
+   {"model": "retail_franchise", "driver": "supply_revenue", "before": "[0.0, inf)", "after": "[-inf, inf)"},
+   {"model": "subscription", "driver": "usage_revenue", "before": "[0.0, inf)", "after": "[-inf, inf)"},
+   {"model": "subscription_arr_bridge", "driver": "usage_revenue", "before": "[0.0, inf)", "after": "[-inf, inf)"}
+  ],
+  "all_changes_are_lower_bound_widening": true,
+  "upper_bound_changes": 0,
+  "drivers_unchanged_count": 126,
+  "verdict_path_a_value_widening": {
+   "question": "值域放宽是否改变任何冻结用例判定？",
+   "answer": "否 —— 零个",
+   "evidence": "全 M01-M31 证据树 1579 个 JSON 全量扫描：CASE_TARGET 17 个（values 全为正数或类型/长度类负例）、VALUE_BEARING 含负值仅 1 个且该件自述 'NOT a frozen case, NOT the oracle'、REFERENCE_ONLY 47 个"
+  },
+  "verdict_path_b_omission": {
+   "question": "省缺即抛是否影响依赖旧静默补 0 的冻结相位？",
+   "answer": "是 —— 四张卡各一个相位（defaults）翻转",
+   "affected": [
+    {"card": "M05", "model": "subscription", "phase": "defaults", "before": "ok [600.0]", "after": "ModelRegistryError: missing driver for subscription: usage_revenue has no explicit default"},
+    {"card": "M14", "model": "retail_franchise", "phase": "defaults", "before": "ok [50.0]", "after": "ModelRegistryError: missing driver for retail_franchise: franchise_system_sales has no explicit default"},
+    {"card": "M20", "model": "cohort_subscription", "phase": "defaults", "before": "ok [220.0]", "after": "ModelRegistryError: missing driver for cohort_subscription: usage_revenue has no explicit default"},
+    {"card": "M24", "model": "subscription_arr_bridge", "phase": "defaults", "before": "ok [210.0]", "after": "ModelRegistryError: missing driver for subscription_arr_bridge: usage_revenue has no explicit default"}
+   ],
+   "unaaffected_phases": "四张卡的 positive 与 continuity_positive 相位全部逐一未变",
+   "root_cause": "四张卡的 defaults 输入块都省略了至少一个『optional 且无显式默认』的 driver；其冻结期望成立恰恰依赖缺陷①的静默补 0",
+   "written_self_evidence": "M24 evidence/M24/oracle.json -> hand_notes.defaults: 'usage_revenue omitted -> 0; 200 - 15 + 15 + 10 + 0 = 210'"
+  }
+ },
+ "errata_pending": {
+  "rule": "依 T1-12 ① 形态（追加新节 + 行级『已过时，以本节为准』标注），禁止回改",
+  "card_5_constraint": "卡文第 5 点：不得为本卡扩大 allowlist 去改 31 张 M 卡的正文或证据",
+  "this_card_registers_no_edits": true,
+  "pending_items": [
+   {"id": "E-1", "carrier": "M05 evidence/M05/oracle.json defaults"},
+   {"id": "E-2", "carrier": "M14 evidence/M14/oracle.json defaults"},
+   {"id": "E-3", "carrier": "M20 evidence/M20/oracle.json defaults"},
+   {"id": "E-4", "carrier": "M24 evidence/M24/oracle.json defaults + hand_notes.defaults"},
+   {"id": "E-5", "carrier": "M14 evidence/M14/cases.json extra_observations[OBS-SUPPLY-BOUND]"},
+   {"id": "E-6", "carrier": "M14 evidence/M14/oq_rulings.json open_questions_mirroring_handoff[OQ-03]"},
+   {"id": "E-7", "carrier": "M14 recovery/probes/signed_driver_probe.json"}
+  ]
+ },
+ "exit_criteria": {
+  "omission_no_longer_silently_zeroed": true,
+  "sign_by_semantic_role": true,
+  "compatibility_listed_item_by_item": true
+ },
+ "verification": {
+  "before_phase": {"total": 6, "passed": 6, "note": "缺陷可见（RED 基线）"},
+  "after_phase": {"total": 7, "passed": 7, "raw_rc": 0},
+  "rerun_reproduced": true
+ },
+ "artifacts": {
+  "oracle.md": {"bytes": 5703, "sha256": "011f9cf0689cc2a9da808e3c2d21ecd90607eaa6a0cbf002d9bf0d1a79b353fe"},
+  "verification_before.json": {"bytes": 1551, "sha256": "46e8758b5d980fa19fcbad50f40db7a6dbe50be5714993e416e7902649a2f95a"},
+  "verification_after.json": {"bytes": 1766, "sha256": "b7a925f5b5a9e4af4cf77532999521427b79edbc6c51c7bd1aaf2a03c270da86"},
+  "compatibility_impact.md": {"bytes": 14457, "sha256": "ab09422e5621b3f85cea259d85ff41f625879936bfc81093b9aaf7ce1a0b4e72"},
+  "compatibility_cells.json": {"bytes": 6070, "sha256": "358eea92305102aae1d7b6fb310b85694387bd4a4555a9df944d3e7be2985f97"},
+  "frozen_impact_scan.json": {"bytes": 25287, "sha256": "d9e665cb1cb20620bababadab34281413f24677ec20dccdb86a9badc6fabdb01"},
+  "frozen_regression_rerun.json": {"bytes": 4580, "sha256": "1ceb9e430ef02a468ca1665eddd3a85a5af234bbe0907b5ecb0746ab977814dd"}
+ },
+ "scripts": {
+  "scripts/verify_i10b.py": {"bytes": 7717, "sha256": "8822a927a6cb2ac874421e6a6d8d0e3d1fe83e3cef247d876d8fa8b4870d7bed"},
+  "scripts/compute_compat.py": {"bytes": 5866, "sha256": "6542d2db915890e54561773462696519695890ed95946828e02dd3c33a0f9147"},
+  "scripts/scan_frozen_impact.py": {"bytes": 4984, "sha256": "d035b2e24d7b2d74777d6ef08e7d3160c9f6bfbbea66a747153bf8ad635b1af1"},
+  "scripts/frozen_regression_rerun.py": {"bytes": 4436, "sha256": "27b8cdb249478b77ed69e410e63e53b32e3016c3eb7f3d2d3e8b9000afb4d55b"}
+ }
+}

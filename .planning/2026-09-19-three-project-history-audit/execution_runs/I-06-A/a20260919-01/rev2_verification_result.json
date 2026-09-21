@@ -1,0 +1,237 @@
+{
+  "subject_sha256": "b3eafcfaaf529bdb16054b0e4d30c3add6eeb8f77caf09152baca7499113faf2",
+  "checks": [
+    {
+      "case": "R2-P1",
+      "check": "first registration created",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "R2-P1",
+      "check": "second registration NOT created",
+      "kind": "positive",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "case": "R2-P1",
+      "check": "demand_id identical across identical resubmit",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "R2-N1",
+      "check": "demand_key differs when as_of_date differs",
+      "kind": "negative",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "case": "R2-N1",
+      "check": "demand_id differs when as_of_date differs",
+      "kind": "negative",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "case": "R2-N1",
+      "check": "second registration DID create a new row",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "R2-N1",
+      "check": "rows for this source == 2 (no silent merge)",
+      "kind": "negative",
+      "expected": 2,
+      "actual": 2,
+      "ok": true
+    },
+    {
+      "case": "R2-N2",
+      "check": "demand_id differs when target differs",
+      "kind": "negative",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "case": "R2-N2",
+      "check": "third registration DID create a new row",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "R2-N2",
+      "check": "rows for this source == 3",
+      "kind": "negative",
+      "expected": 3,
+      "actual": 3,
+      "ok": true
+    },
+    {
+      "case": "R2-N3",
+      "check": "demand_id differs when an unlisted field is added",
+      "kind": "negative",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "case": "R2-N3",
+      "check": "payload_sha256 covers unlisted fields",
+      "kind": "negative",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "KEY-SHAPE",
+      "check": "request_identity has as_of_date",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "KEY-SHAPE",
+      "check": "request_identity has target",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "KEY-SHAPE",
+      "check": "request_identity has payload_sha256",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "KEY-SHAPE",
+      "check": "key_version recorded",
+      "kind": "positive",
+      "expected": "2.0.0",
+      "actual": "2.0.0",
+      "ok": true
+    },
+    {
+      "case": "KEY-SHAPE",
+      "check": "v2 key is NOT the bare v1 triple (the insufficient shape)",
+      "kind": "positive",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "case": "R2-P2",
+      "check": "first attempt_number",
+      "kind": "positive",
+      "expected": 1,
+      "actual": 1,
+      "ok": true
+    },
+    {
+      "case": "R2-P2",
+      "check": "second attempt_number",
+      "kind": "positive",
+      "expected": 2,
+      "actual": 2,
+      "ok": true
+    },
+    {
+      "case": "R2-P2",
+      "check": "FAILED call (no artifact) IS counted — attempts not derived from artifacts",
+      "kind": "positive",
+      "expected": [
+        "error",
+        null
+      ],
+      "actual": [
+        "error",
+        null
+      ],
+      "ok": true
+    },
+    {
+      "case": "R2-P2",
+      "check": "unknown call_status is refused",
+      "kind": "negative",
+      "expected": "ValueError",
+      "actual": "ValueError",
+      "ok": true
+    },
+    {
+      "case": "OPEN-3",
+      "check": "claim returns a row when a pending demand exists",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "OPEN-3",
+      "check": "claimed demand is the oldest pending one",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "OPEN-3",
+      "check": "claimed row is now status=running (not auto-completed)",
+      "kind": "positive",
+      "expected": "running",
+      "actual": "running",
+      "ok": true
+    },
+    {
+      "case": "OPEN-3",
+      "check": "exactly one pending demand was consumed by the claim",
+      "kind": "positive",
+      "expected": 1,
+      "actual": 1,
+      "ok": true
+    },
+    {
+      "case": "OPEN-3",
+      "check": "second explicit claim serves the next pending demand",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "case": "W06A-N2",
+      "check": "unwritable store raises DemandStoreUnavailable",
+      "kind": "negative",
+      "expected": "DemandStoreUnavailable",
+      "actual": "DemandStoreUnavailable",
+      "ok": true
+    },
+    {
+      "case": "W06A-N2",
+      "check": "no silent in-memory fallback occurred",
+      "kind": "positive",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    }
+  ],
+  "total": 28,
+  "failed": 0
+}

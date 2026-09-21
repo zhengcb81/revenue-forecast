@@ -35,7 +35,7 @@ CodeGraph可查询，但filing/company索引新鲜度不足以证明匹配这些
 | `completion_audit.md` | 9,916 | `90cd878206c548693ad176b1427064e8689169b7bb2eae0d492f06f3f24012fe` |
 | `current_state_audit.md` | 10,068 | `fc7552617f80ff13565db79ea6cca2413009b205a8b066be3b80ffef7a1a77d9` |
 | `findings.md` | 19,499 | `af6d64bc97f47daff8b2e02dfe608cf8fd9eb36b104a26a82ef6971fa45b6ae5` |
-| `input_snapshot.md` | 5,154 | `18ce4be32fbab9c689469a70938277c3190eefcc699585b6157d9fb90a0d60cc` |
+| `input_snapshot.md` | 5,154 | `e3d47cf879ada34f13cc55e8aa601d3c58a350d6235bb4dce47f98f66a3249a0` |
 | `legacy_fc_status_registry.md` | 5,649 | `fa38c1e727ca6982fc911688a4db87bacfcfa65389ed1f949c1a6f77946ddc44` |
 | `legacy_transition_matrix.md` | 8,805 | `cfd0de189c801564c65e8361106b8f915873593c2d1fa00e95ced163836cc34e` |
 | `plan_self_audit.md` | 7,202 | `cfa336073a9a1c424e0e819f7a38a2abc5d4299e0b363fc033b0ade86a6907ad` |

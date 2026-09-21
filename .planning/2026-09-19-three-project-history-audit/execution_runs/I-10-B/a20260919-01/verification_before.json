@@ -1,0 +1,61 @@
+{
+  "phase": "before",
+  "checks": [
+    {
+      "case": "R-B1-N1",
+      "check": "BASELINE: omitted optional driver is SILENTLY filled (defect must be visible)",
+      "kind": "negative",
+      "expected": "silent fill (no raise)",
+      "actual": "no raises",
+      "ok": true
+    },
+    {
+      "case": "R-B1-N3",
+      "check": "explicit 0.0 for that driver is still ACCEPTED",
+      "kind": "positive",
+      "expected": "no raises",
+      "actual": "no raises",
+      "ok": true
+    },
+    {
+      "case": "R-B1-P1",
+      "check": "omit default-bearing optional driver (unit_sales.timing_factor) stays legal",
+      "kind": "positive",
+      "expected": "no raises",
+      "actual": "no raises",
+      "ok": true
+    },
+    {
+      "case": "R-B2-N1",
+      "check": "BASELINE: franchise_system_sales is [0,inf) => negative injected must be REFUSED",
+      "kind": "negative",
+      "expected": "refused",
+      "actual": "refused",
+      "ok": true
+    },
+    {
+      "case": "R-B2-P1",
+      "check": "quantity driver closing_stores keeps [0, inf)",
+      "kind": "positive",
+      "expected": [
+        0.0,
+        Infinity
+      ],
+      "actual": [
+        0.0,
+        Infinity
+      ],
+      "ok": true
+    },
+    {
+      "case": "R-B2-N2",
+      "check": "unknown driver name raises (never gains a guessed sign)",
+      "kind": "negative",
+      "expected": "ModelRegistryError",
+      "actual": "ModelRegistryError",
+      "ok": true
+    }
+  ],
+  "total": 6,
+  "failed": 0
+}

@@ -1,0 +1,130 @@
+--- _scratch_import/before/model_registry.py	2026-09-20 16:34:40.307211600 +0100
++++ _scratch_import/after/model_registry.py	2026-09-20 19:22:26.439945300 +0100
+@@ -262,12 +262,62 @@
+ })
+ 
+ 
+-_SIGNED_DRIVERS = frozenset({
+-    "contract_changes", "other_revenue", "fixed_revenue", "ancillary_revenue",
+-    "milestone_revenue", "royalty_revenue", "service_revenue",
+-    "performance_fee_revenue", "fee_revenue",
++# --- I-10-B defect 2 fix (T1-22) -------------------------------------------
++# Sign is decided by SEMANTIC ROLE derived from declared metadata, never by the
++# driver's NAME.  `_SIGNED_DRIVERS` (a hard-coded name set) is kept ONLY as a
++# deprecated alias for callers that referenced it; it is no longer consulted
++# when computing bounds, so a driver's sign can no longer depend on its spelling.
++#
++# Role precedence in driver_value_bounds(), in order:
++#   1. explicit spec.driver_bounds[driver] metadata      (most specific, wins)
++#   2. growth_rate                                       (fixed semantic role)
++#   3. _REVERSAL_CAPABLE_DIMENSIONS + role table         (semantic, not name)
++#   4. dimension == "ratio"                              (probability-like)
++#   5. default                                           (non-negative)
++_REVERSAL_CAPABLE_DIMENSIONS = frozenset({
++    "backlog", "revenue", "reserve_volume", "aum_fee",
+ })
+ 
++# Declared role table: a driver listed here is reversal-capable (may be
++# NEGATIVE) because the BUSINESS ROLE says amounts already recognised can be
++# reversed.  Membership is by declared semantic role, not by name pattern.
++# NOTE: this table is reached only via the dimension gate above, so adding a
++# driver here cannot leak signedness into quantities or ratios.
++_REVERSAL_CAPABLE_DRIVERS = frozenset({
++    "contract_changes",
++    "franchise_system_sales",
++    "supply_revenue",
++    "recognized_performance_fees",
++    "usage_revenue",
++    "other_revenue",
++    "fixed_revenue",
++    "ancillary_revenue",
++    "milestone_revenue",
++    "royalty_revenue",
++    "service_revenue",
++    "performance_fee_revenue",
++    "fee_revenue",
++    "backlog_remeasurements",
++    "reserve_revisions",
++})
++
++
++def _is_reversal_capable(driver: str, dimension: str) -> bool:
++    """Semantic-role decision — deliberately NOT a name-only test.
++
++    A driver is treated as reversal-capable only when BOTH hold:
++      * its declared dimension is one where reversal is a meaningful business
++        event (see _REVERSAL_CAPABLE_DIMENSIONS), AND
++      * it carries the declared reversal-capable role bit.
++    A driver that carries neither can never acquire a sign by name guessing.
++    """
++    return dimension in _REVERSAL_CAPABLE_DIMENSIONS and driver in _REVERSAL_CAPABLE_DRIVERS
++
++
++# Deprecated alias kept for back-compatibility of imports only.  It is NOT read
++# by driver_value_bounds(); see the semantic role table above.
++_SIGNED_DRIVERS = _REVERSAL_CAPABLE_DRIVERS
++
+ 
+ def driver_value_bounds(model_id: str, driver: str) -> tuple[float, float]:
+     """Return shared inclusive semantic bounds for calculation and sensitivity.
+@@ -275,6 +325,9 @@
+     A ratio dimension alone does not imply a probability: bank interest rates
+     may be negative and retention/expansion ratios may exceed one. Explicit
+     model metadata takes precedence over conservative default domains.
++
++    I-10-B (T1-22): the sign is decided by SEMANTIC ROLE (declared dimension +
++    declared reversal-capable role bit), never by the driver's name.
+     """
+     try:
+         spec = MODEL_REGISTRY[model_id]
+@@ -286,13 +339,26 @@
+         return (-math.inf if lower is None else float(lower), math.inf if upper is None else float(upper))
+     if driver == "growth_rate":
+         return (-1.0, math.inf)
+-    if driver in _SIGNED_DRIVERS:
++    if _is_reversal_capable(driver, dimension):
+         return (-math.inf, math.inf)
+     if dimension == "ratio":
+         return (0.0, 1.0)
+     return (0.0, math.inf)
+ 
+ 
++def _signed_driver_names_for_audit() -> frozenset[str]:
++    """Names that would be reversal-capable under the semantic rule.
++
++    Exposed for the I-10-B compatibility listing; not used for bounds.
++    """
++    names = set()
++    for spec in MODEL_REGISTRY.values():
++        for driver, dimension in spec.dimensions.items():
++            if _is_reversal_capable(driver, dimension):
++                names.add(driver)
++    return frozenset(names)
++
++
+ def _finite_model_number(value: object, field_name: str) -> float:
+     if isinstance(value, bool) or not isinstance(value, (int, float)):
+         raise ModelRegistryError(f"{field_name} must be numeric")
+@@ -332,7 +398,21 @@
+         raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+     normalized: dict[str, list[float]] = {}
+     for driver in spec.required + spec.optional:
+-        values = drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
++        # --- I-10-B defect 1 fix (T1-22) ------------------------------------
++        # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
++        # That silently filled any optional driver lacking an explicit default
++        # with 0.0, encoding "absent" and "not found" as the SAME input.
++        # Now: an omitted driver is legal ONLY when spec.defaults carries an
++        # explicit value for it.  Note we deliberately do NOT substitute an
++        # explicit 0.0 — that would still fail to distinguish "not found".
++        if driver not in drivers:
++            if driver not in spec.defaults:
++                raise ModelRegistryError(
++                    f"missing driver for {model_id}: {driver} has no explicit default"
++                )
++            values: object = [spec.defaults[driver]] * len(years)
++        else:
++            values = drivers[driver]
+         if not isinstance(values, (list, tuple)) or len(values) != len(years):
+             raise ModelRegistryError(f"driver {model_id}.{driver} must contain one value per forecast year")
+         lower, upper = driver_value_bounds(model_id, driver)

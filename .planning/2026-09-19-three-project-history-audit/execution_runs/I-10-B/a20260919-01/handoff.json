@@ -1,0 +1,97 @@
+{
+ "card_id": "I-10-B",
+ "attempt": "a20260919-01",
+ "title": "model_registry 的静默补 0 与按名字定符号",
+ "status": "planned",
+ "status_note": "未落地生产、未获独立验收；不自我升格。",
+ "owner": "模型注册维护者",
+ "independent_reviewer": "未指派（TIER-2，须他方出具结论）",
+ "source": "OWNER_DECISIONS.md §5 第 1/2 项 + §13 T1-22（授权立卡，两项同卡）",
+ "parent": "I-10",
+ "depends_on": "I-00-B",
+
+ "headline": "两项修复在隔离副本内均已完成并通过负例；值域变更恰好 5 个 cell；兼容性双路径判定完成，其中省缺即抛导致四张卡各一个 defaults 相位翻转，已按 T1-12 产出待登记勘误清单、未回改任何冻结件。",
+
+ "work_done": {
+  "A_isolated_workspace": "done (iso/rf/scripts/ 两个文件；model_extensions.py 与生产逐字节相同未改)",
+  "B_production_anchor_recompute": "done (26446 / 9ec65295… ; 14475 / 9939480b… —— 与绑定值一致，无漂移)",
+  "C_defect1_fix": "done (省缺即抛 ModelRegistryError；仅在 spec.defaults 有显式值时才允许省缺)",
+  "D_defect2_fix": "done (_REVERSAL_CAPABLE_DIMENSIONS + _REVERSAL_CAPABLE_DRIVERS + _is_reversal_capable；_SIGNED_DRIVERS 降为废弃别名)",
+  "E_before_phase_verification": "done (6/6 —— 缺陷在修复前可见)",
+  "F_after_phase_verification": "done (7/7, raw rc = 0；本轮重跑复现一致)",
+  "G_bound_differential": "done (165 cell 中恰好 5 个变化；全部下界放宽；126 个 driver 未变)",
+  "H_frozen_impact_scan": "done (1579 个 JSON；CASE_TARGET 17 / 负值命中 1（非冻结探针）/ REFERENCE_ONLY 47)",
+  "I_four_card_phase_replay": "done (M05/M14/M20/M24 × 3 相位；defaults 四卡全翻；positive 与 continuity 全未变)",
+  "J_compatibility_impact_md": "done (compatibility_impact.md, 14457 B)",
+  "K_decision_record": "done (decision.md, DEC-I10B-1..5)",
+  "L_artifacts": "done (binding.json / commands.json / changes.diff / handoff.json)"
+ },
+
+ "not_done": {
+  "product_promotion": "未落地生产 —— scripts/model_registry.py 仍为前像 26446 B / 9ec65295…",
+  "frozen_artifact_edits": "未做任何编辑（卡文第 5 点禁止；且 T1-12 要求追加式形态）",
+  "status_transitions": "0 次",
+  "independent_acceptance": "未取得 —— TIER-2，须独立 reviewer"
+ },
+
+ "key_findings": [
+  {
+   "id": "F-I10B-1",
+   "severity": "high",
+   "finding": "缺陷①的修复（省缺即抛）使 M05 / M14 / M20 / M24 四张卡的 defaults 相位全部从 ok 翻转为 ModelRegistryError。",
+   "why_it_matters": "这四张卡的 defaults 冻结期望成立，恰恰依赖缺陷①的静默补 0（M24 oracle.json hand_notes.defaults 明写『usage_revenue omitted -> 0』）。",
+   "disposition": "非缺陷，是修复的预期后果。按 T1-12 追加式勘误，不回改。清单见 compatibility_impact.md §5（E-1…E-4）。",
+   "affected_phases": "四卡的 positive 与 continuity_positive 均未变，只有 defaults 变。"
+  },
+  {
+   "id": "F-I10B-2",
+   "severity": "info",
+   "finding": "值域放宽（缺陷②）零个冻结判定受影响。",
+   "evidence": "1579 个 JSON 全量扫描；唯一负值命中件自述 'NOT a frozen case, NOT the oracle'；M14 两处旧行为记录均自带『不门禁 / 未决 D/E 决策』声明。",
+   "disposition": "无需勘误；但 M14 OBS-SUPPLY-BOUND 与 OQ-03 建议登记（E-5/E-6）以免后人误读为现行契约。"
+  },
+  {
+   "id": "F-I10B-3",
+   "severity": "medium",
+   "finding": "首版边界判据（『最终下界是否为 -inf』）错误；修复前就已有 37 个 cell 在 [-inf, inf)。",
+   "why_it_matters": "该判据同时夸大波及面并掩盖真实变更集。",
+   "fix": "改为对 (lo, hi) 对做 BEFORE/AFTER 差分（compute_compat.py）。",
+   "lesson": "判据必须匹配被判定对象的形态 —— 值域变更用差分、不用终态。本项为该同源教训的第 6 次实例。"
+  },
+  {
+   "id": "F-I10B-4",
+   "severity": "info",
+   "finding": "缺陷②的『名字硬编码任意性』有实测证据：recognized_performance_fees / reserve_revisions / backlog_remeasurements 均不在 _SIGNED_DRIVERS，却早已经 driver_bounds 元数据到达 (-inf, inf)。",
+   "disposition": "记录为缺陷②的举证；不需勘误。"
+  },
+  {
+   "id": "F-I10B-5",
+   "severity": "info",
+   "finding": "基线实测 31 个模型 / 31 个 optional-without-default 槽位 / 24 个受影响模型，与卡文所述数字完全吻合。",
+   "disposition": "无。"
+  }
+ ],
+
+ "next_action": "编排层：①按 T1-12 ① 形态落地 E-1…E-7 追加式勘误（本卡不得自行改冻结件）；②决定 I-10-B 是否落地生产并派独立 reviewer 验收（TIER-2）；③随后可推进 T1-6（M24 跨年用例，reviewer 已给可达值 {\"opening_arr\":[200,250],\"closing_arr\":[251,251]} ⇒ 'stock-flow balance failed: FY2027'）与其余 TIER-1 追认项。",
+
+ "artifacts": {
+  "changes.diff": "隔离副本(vs 生产前像)的统一 diff，两处修复各一个 hunk",
+  "binding.json": "锚点、隔离、缺陷、兼容性声明、待登记勘误、退出判据",
+  "commands.json": "10 条命令（全部 attempt-local，0 条触产品树）",
+  "decision.md": "DEC-I10B-1..5",
+  "compatibility_impact.md": "卡文第 3 点硬要求：5 个变化 cell + 双路径判定 + 126 个未变 driver + E-1..E-7 清单",
+  "oracle.md": "冻结预期（含 baseline 实测 31 槽位 / 24 模型）",
+  "compatibility_cells.json": "165 cell 的全量差分数据",
+  "frozen_impact_scan.json": "1579 个 JSON 的分类结果",
+  "frozen_regression_rerun.json": "四卡三相位 BEFORE/AFTER 实跑对照"
+ },
+
+ "integrity": {
+  "frozen_artifacts_touched": 0,
+  "product_files_written": 0,
+  "product_tree_commands": 0,
+  "status_transitions_made": 0,
+  "candidate_promoted_to_product": false,
+  "signed_on_behalf_of_others": false
+ }
+}

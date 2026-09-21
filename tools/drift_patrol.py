@@ -128,10 +128,13 @@ def check_schema_drift() -> list[str]:
 
 
 def check_manifest_drift() -> list[str]:
-    """Referenced-file hashes must match the machine manifest (uc)."""
+    """Referenced-file hashes must match the machine manifest (uc).
+    Uses --mtime off (clean-checkout mode) because git operations on Windows
+    touch file mtimes without changing content, causing false positives."""
     uc_root = ROOT / "assurance" / "unified_completion"
     completed = _run(
-        [sys.executable, "-m", "uc.cli", "manifest-verify"], uc_root
+        [sys.executable, "-m", "uc.cli", "manifest-verify", "--mtime", "off"],
+        uc_root,
     )
     if completed.returncode != 0:
         return ["machine manifest drift:" + (completed.stderr or completed.stdout)[-300:]]

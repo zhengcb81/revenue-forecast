@@ -1,0 +1,118 @@
+{
+ "card_id": "I-10-B",
+ "attempt": "a20260919-01",
+ "note": "全部命令都在 attempt-local 工作区执行。未在产品树内运行任何命令，未写入任何产品文件。",
+ "cwd_rule": "卡文第 1 点：运行 cwd 必须由 I-00-B 绑定；本 attempt 使用 execution_runs/I-10-B/a20260919-01/ 作为工作根，产品文件只读复制。",
+ "commands": [
+  {
+   "seq": 1,
+   "purpose": "生产锚点复核（卡文第 6 点）",
+   "command": "python -c \"import hashlib,pathlib; [print(p, pathlib.Path(p).stat().st_size, hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()) for p in ['scripts/model_registry.py','scripts/model_extensions.py']]\"",
+   "cwd": "<repo root>",
+   "observed": {
+    "scripts/model_registry.py": "26446 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "scripts/model_extensions.py": "14475 9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+   },
+   "result": "一致，无漂移",
+   "writes": "无"
+  },
+  {
+   "seq": 2,
+   "purpose": "建立隔离副本，并把生产前像复制为 attempt-local 的 before 变体",
+   "command": "cp scripts/model_registry.py iso/rf/scripts/model_registry.py && cp scripts/model_extensions.py iso/rf/scripts/model_extensions.py",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "result": "iso 副本建立；before 变体由 compute_compat.py 在 _scratch_import/before/ 内复制",
+   "writes": "iso/rf/scripts/model_registry.py, iso/rf/scripts/model_extensions.py"
+  },
+  {
+   "seq": 3,
+   "purpose": "应用缺陷①修复（省缺即抛）到隔离副本",
+   "command": "<file-edit: iso/rf/scripts/model_registry.py 原 :334-337>",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "result": "normalized 循环中的 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) 替换为显式缺省判定，无显式 default 时抛 ModelRegistryError",
+   "writes": "iso/rf/scripts/model_registry.py"
+  },
+  {
+   "seq": 4,
+   "purpose": "应用缺陷②修复（语义角色符号规则）到隔离副本",
+   "command": "<file-edit: iso/rf/scripts/model_registry.py — 替换 _SIGNED_DRIVERS 与 driver_value_bounds>",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "result": "新增 _REVERSAL_CAPABLE_DIMENSIONS / _REVERSAL_CAPABLE_DRIVERS / _is_reversal_capable()；_SIGNED_DRIVERS 降为仅供导入的废弃别名",
+   "writes": "iso/rf/scripts/model_registry.py"
+  },
+  {
+   "seq": 5,
+   "purpose": "before 相位验证（RED 基线，证明缺陷可见）",
+   "command": "python scripts/verify_i10b.py before",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {"total": 6, "passed": 6, "note": "缺陷在修复前可见"},
+   "result": "6/6",
+   "writes": "verification_before.json"
+  },
+  {
+   "seq": 6,
+   "purpose": "after 相位验证（GREEN）",
+   "command": "python scripts/verify_i10b.py after",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {"total": 7, "passed": 7, "failed": 0, "raw_rc": 0},
+   "result": "7/7，含 R-B1-N1 / R-B1-N3 / R-B1-P1 / R-B1-P1b / R-B2-N1 / R-B2-P1 / R-B2-N2",
+   "writes": "verification_after.json"
+  },
+  {
+   "seq": 7,
+   "purpose": "after 相位复现（本轮重跑，确认可重复）",
+   "command": "python scripts/verify_i10b.py after",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {"total": 7, "passed": 7, "failed": 0},
+   "result": "与 seq 6 一致，可复现",
+   "writes": "无"
+  },
+  {
+   "seq": 8,
+   "purpose": "值域变更全清单（BEFORE/AFTER 差分）",
+   "command": "python scripts/compute_compat.py",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {
+    "models": "31 / 31",
+    "cells": "165 / 165",
+    "cell_keys_identical": true,
+    "changed_cell_count": 5,
+    "drivers_unchanged_count": 126
+   },
+   "result": "恰好 5 个 cell 变化，全部为下界放宽（[0.0, inf) -> [-inf, inf)）",
+   "writes": "compatibility_cells.json, _scratch_import/before/**, _scratch_import/after/**"
+  },
+  {
+   "seq": 9,
+   "purpose": "全 M01-M31 证据树冻结件影响扫描",
+   "command": "python scripts/scan_frozen_impact.py",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {
+    "files_scanned": 1579,
+    "CASE_TARGET": 17,
+    "VALUE_BEARING_negative": 1,
+    "VALUE_BEARING_non_negative": 81,
+    "REFERENCE_ONLY": 47
+   },
+   "result": "唯一负值命中为 M14 recovery/probes/signed_driver_probe.json，该件自述非冻结用例",
+   "writes": "frozen_impact_scan.json"
+  },
+  {
+   "seq": 10,
+   "purpose": "四卡三相位回归对照（值域与省缺两条路径分开判定）",
+   "command": "python scripts/frozen_regression_rerun.py",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {
+    "M05": "positive ok/ok, continuity ok/ok, defaults ok -> raised (FLIPPED)",
+    "M14": "positive ok/ok, continuity ok/ok, defaults ok -> raised (FLIPPED)",
+    "M20": "positive ok/ok, continuity ok/ok, defaults ok -> raised (FLIPPED)",
+    "M24": "positive ok/ok, continuity ok/ok, defaults ok -> raised (FLIPPED)",
+    "any_phase_flipped": true
+   },
+   "result": "四卡 defaults 相位全部翻转；positive 与 continuity_positive 全部未变",
+   "writes": "frozen_regression_rerun.json"
+  }
+ ],
+ "commands_that_touch_product_tree": [],
+ "commands_that_write_product_files": []
+}
