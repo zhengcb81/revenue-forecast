@@ -1,0 +1,100 @@
+{
+  "card": "I-14-D",
+  "attempt_id": "a20260919-01",
+  "date_utc": "2026-09-19",
+  "objective": "Narrow the redactor's bare-value greedy semantics to a single token on the assignment path and bound the authorization path to one line, so an unquoted credential no longer deletes the multi-line diagnostic block after it; freeze the new E4b baseline for independent re-derivation.",
+  "parent": "I-14",
+  "source_of_card": "I-14-C r5 decision.md section C13 + OWNER DECISION 1 (I-14-C handoff open_questions); card text PLAN/execution_v2/card_I-14-D.md",
+  "dependencies": {
+    "I-00-A": {
+      "receipt": "../../I-00-A/a20260919-01/iso/venv (template venv, copied unmodified into this attempt's iso/venv)",
+      "status_at_read": "present"
+    },
+    "I-00-B": {
+      "receipt": "../../I-00-B/a20260919-01/binding.json (two-stage command binding rule, run-cwd rule)",
+      "status_at_read": "present, via I-14-C binding.json which consumed it"
+    },
+    "I-14-C": {
+      "receipt": "../../I-14-C/a20260919-01/ (decision.md C13, oracle.md R4/R5 addenda, r5/final_hashes.json, iso/product_fixed r5-final tree, frozen harness+suite)",
+      "status_at_read": "accepted_scoped (r5); used here READ-ONLY: every file this attempt took from I-14-C was copied, never edited in place",
+      "copy_verification": {
+        "iso/product_base/observability.py": "c5608c4b45a55cce03df9988561e1a3ad1cab0970c51e8b3af630239fe9de35c == r5/final_hashes.json iso_trees.product_fixed.observability.py",
+        "iso/product_base/worker.py": "120561f5994e0ae0515c715359a1a870b8014804c3c2e35c6773b87bc1d581e9 == r5 record",
+        "iso/product_base/cli.py": "4087c17230fc8ca716a2f8ec261a90c285aae82e7428a3f865a0fd8fc9764bd7 == r5 record",
+        "harness/tests/test_i14c_real_exit_redaction.py": "672b88de585046759f4ef29ce008fdbff9fa76404446ff7ae7317ddf539cce15 == r5 harness record (byte-identical copy)"
+      }
+    }
+  },
+  "interpreter": {
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "copied_from_template": "I-00-A/a20260919-01/iso/venv (robocopy /E, rc=1 success)",
+    "version": "3.13.9 (Anaconda packaging), same as I-14-C's iso venv",
+    "installed_into_venv": ["pytest==9.1.1", "pyyaml==6.0.3", "requests==2.34.2 (inherited, nothing installed by this attempt)"],
+    "network": "disabled for all card commands; no downloads, no provider calls"
+  },
+  "run_cwd_rule": "every run command executes with workdir = this attempt dir (or a scratch dir under it); never a production repo root",
+  "isolation_rule": {
+    "product_code_copies": {
+      "iso/product_base": "T4-base = byte copy of I-14-C r5-final iso/product_fixed (the BEFORE tree; hash-verified, never edited)",
+      "iso/product_narrow": "T5 = T4-base + this card's narrowing (the AFTER tree)",
+      "iso/product": "T0 pristine copy (E5 before-arm for the copied suite; untouched)",
+      "iso/product_swapped": "order-swap control copy (copied-suite control test; untouched)",
+      "iso/product_mut_greedy": "M1 = T5 with the scanner multi-word loop restored",
+      "iso/product_mut_authnl": "M2 = T5 with the auth token join back to \\s+",
+      "iso/product_mut_auth1": "M3 = T5 with the auth value reduced to a strict single token"
+    },
+    "production_tree": "READ-ONLY. No edit, no write, no run against C:\\Users\\...\\company-wiki\\src. I-14-C's attempt dir is likewise READ-ONLY for this attempt."
+  },
+  "product_import": {
+    "mode": "sys.path injection of an iso tree's src, no install, no editable install",
+    "src_default": "<attempt>/iso/product_narrow/src",
+    "env": {"PYTHONDONTWRITEBYTECODE": "1", "PYTHONUTF8": "1", "I14C_RUN_ROOT": "<pytest basetemp parent, declared per run>"}
+  },
+  "source_anchors_sha256_verified_this_attempt": {
+    "iso/product_base/src/company_wiki/source_catalog/observability.py": {
+      "sha256_crlf": "c5608c4b45a55cce03df9988561e1a3ad1cab0970c51e8b3af630239fe9de35c",
+      "anchors": {
+        "_BARE_VALUE": "observability.py:279 (r1 greedy `X+(?:\\s+X+)*`, the C13 root)",
+        "_AUTH_PATTERN": "observability.py:282-285 (auth/bearer path, same greedy value)",
+        "_redact_assignments multi-word loop": "observability.py:356-372 (scanner half of the greedy semantics)",
+        "_find_closing_quote": "observability.py:389",
+        "redact_and_truncate": "observability.py:399-404"
+      }
+    }
+  },
+  "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D\\a20260919-01\\"
+  ],
+  "allowed_product_edits": [
+    "iso/product_narrow:src/company_wiki/source_catalog/observability.py (the redactor: _BARE_VALUE, new _AUTH_BARE_VALUE, _AUTH_PATTERN value group, scanner value loop)",
+    "attempt-scoped harness only: harness/run_rule_table_i14d.py (new), harness/run_i14d_oracle.py (new), harness/report_i14d_counts.py (new), harness/tests/test_i14d_single_token.py (new), harness/tests/conftest.py (one-line tree-pointing change, recorded in changes.diff scope note)",
+    "NOT edited: every other product file; the copied I-14-C suite test_i14c_real_exit_redaction.py stays BYTE-IDENTICAL; I-14-C's attempt dir; production repos"
+  ],
+  "forbidden": [
+    "running the real worker against a real catalog",
+    "reading or printing any real secret, .env, or environment variable value",
+    "writing to production logs / .source_catalog / raw / catalog.sqlite3",
+    "network or provider calls",
+    "git add/commit/restore/stash in company-wiki, revenue-forecast, filing-fetch",
+    "editing anything under execution_runs/I-14-C/**",
+    "editing PLAN/reviews/**, PLAN/audit_report.md, PLAN/implementation_plan.md",
+    "rewriting the frozen I-14-C C13 test (card clause 5: that rewrite belongs to the independent reviewer)",
+    "generating any `expected` value by calling the function under test"
+  ],
+  "oracle_freeze_order": "oracle.md was written BEFORE any harness script ran and BEFORE iso/product_narrow was edited; the hand-computed expectations in oracle.md section 2 were derived from the frozen semantics text, not from executing the redactor",
+  "two_stage_binding": {
+    "stage_1_pre_implementation": "commands.json listed every planned command with binding_status=planned before the first run",
+    "stage_2_post_implementation": "commands.json re-synced after the runs with the real argv, raw exit codes and output paths (binding_status=bound); the sync is recorded in recovery/commands_sync_note.json"
+  },
+  "negative_binding_test": {
+    "id": "I14D-neg-bind-1",
+    "purpose": "a run whose run_dir is under a production tree must be refused by the copied guard",
+    "expected": "exit 97 BINDING-REFUSED, no work performed"
+  },
+  "production_repos_read_only": {
+    "company-wiki": {"head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939", "branch": "fcap", "porcelain_before": [" M CLAUDE.md", " M README.md"]},
+    "revenue-forecast": {"head": "2c5384bb0133c4e19c3d6049449b32469e14b09b", "branch": "fcap"},
+    "filing-fetch": {"head": "d35b6f5b09f1a7dad37d226504bf998802a852d7", "branch": "fcap"},
+    "note": "same heads as I-14-C's binding recorded; this attempt runs no git command in any production repo and writes nothing outside its allowed_write_roots"
+  }
+}

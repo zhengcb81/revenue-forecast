@@ -1,38 +1,75 @@
 {
  "card_id": "I-10-B",
+ "attempt_id": "a20260919-01",
  "attempt": "a20260919-01",
  "title": "model_registry 的静默补 0 与按名字定符号",
- "status": "planned",
- "status_note": "未落地生产、未获独立验收；不自我升格。",
+ "status": "review_pending",
+ "status_note": "正反例、变异证明、复现、差异证据齐全（review_pending 的进入依据）。实现者不自签 accepted；独立验收须 TIER-2 reviewer 出具。未落地生产。",
  "owner": "模型注册维护者",
  "independent_reviewer": "未指派（TIER-2，须他方出具结论）",
  "source": "OWNER_DECISIONS.md §5 第 1/2 项 + §13 T1-22（授权立卡，两项同卡）",
  "parent": "I-10",
  "depends_on": "I-00-B",
 
- "headline": "两项修复在隔离副本内均已完成并通过负例；值域变更恰好 5 个 cell；兼容性双路径判定完成，其中省缺即抛导致四张卡各一个 defaults 相位翻转，已按 T1-12 产出待登记勘误清单、未回改任何冻结件。",
+ "headline": "两项修复在隔离副本内均已完成并通过负例，本轮补齐隔离 venv、四象限 RED→GREEN 重跑、变异自检与确定性复现：值域变更恰好 5 个 cell；兼容性双路径判定完成，省缺即抛导致四张卡各一个 defaults 相位翻转，E-1…E-7 勘误清单待编排层按 T1-12 落地；未回改任何冻结件，未落地生产。",
 
- "work_done": {
-  "A_isolated_workspace": "done (iso/rf/scripts/ 两个文件；model_extensions.py 与生产逐字节相同未改)",
-  "B_production_anchor_recompute": "done (26446 / 9ec65295… ; 14475 / 9939480b… —— 与绑定值一致，无漂移)",
-  "C_defect1_fix": "done (省缺即抛 ModelRegistryError；仅在 spec.defaults 有显式值时才允许省缺)",
-  "D_defect2_fix": "done (_REVERSAL_CAPABLE_DIMENSIONS + _REVERSAL_CAPABLE_DRIVERS + _is_reversal_capable；_SIGNED_DRIVERS 降为废弃别名)",
-  "E_before_phase_verification": "done (6/6 —— 缺陷在修复前可见)",
-  "F_after_phase_verification": "done (7/7, raw rc = 0；本轮重跑复现一致)",
-  "G_bound_differential": "done (165 cell 中恰好 5 个变化；全部下界放宽；126 个 driver 未变)",
-  "H_frozen_impact_scan": "done (1579 个 JSON；CASE_TARGET 17 / 负值命中 1（非冻结探针）/ REFERENCE_ONLY 47)",
-  "I_four_card_phase_replay": "done (M05/M14/M20/M24 × 3 相位；defaults 四卡全翻；positive 与 continuity 全未变)",
-  "J_compatibility_impact_md": "done (compatibility_impact.md, 14457 B)",
-  "K_decision_record": "done (decision.md, DEC-I10B-1..5)",
-  "L_artifacts": "done (binding.json / commands.json / changes.diff / handoff.json)"
- },
+ "completed_steps": [
+  "A_isolated_workspace：iso/rf/scripts/ 两文件；model_extensions.py 与生产逐字节相同未改；iso/venv 自 I-00-A a20260919-01/iso/venv 复制（seq 12），seq 13-15 均以该解释器执行",
+  "B_production_anchor_recompute：26446 / 9ec65295… 与 14475 / 9939480b… 在开工日与复跑日（seq 11）两次复算均与绑定值一致，无漂移（含 2026-09-20 04:35-04:40 生产回退-恢复事件后的时点核对，见 _isolation_incidents/20260920-model-registry-extension-rollback §7.4）",
+  "C_defect1_fix：省缺即抛 ModelRegistryError；仅在 spec.defaults 有显式值时才允许省缺（iso/rf/scripts/model_registry.py :401-415）",
+  "D_defect2_fix：_REVERSAL_CAPABLE_DIMENSIONS + _REVERSAL_CAPABLE_DRIVERS + _is_reversal_capable() 双闸门；_SIGNED_DRIVERS 降为仅供导入兼容的废弃别名，driver_value_bounds() 不再读它（:265-346）",
+  "E_before_phase_verification：6/6 —— 缺陷在修复前可见（冻结件 verification_before.json）",
+  "F_after_phase_verification：7/7, raw rc = 0（冻结件 verification_after.json）",
+  "G_bound_differential：165 cell 中恰好 5 个变化；全部下界放宽；126 个 driver 未变（compatibility_cells.json，seq 15 逐字节复现）",
+  "H_frozen_impact_scan：1579 个 JSON；CASE_TARGET 17 / 负值命中 1（自述非冻结探针）/ REFERENCE_ONLY 47（frozen_impact_scan.json，时点件，seq 15 载明不重跑理由）",
+  "I_four_card_phase_replay：M05/M14/M20/M24 × 3 相位；defaults 四卡全翻；positive 与 continuity 全未变（frozen_regression_rerun.json，seq 15 逐字节复现）",
+  "J_compatibility_impact_md：5 个变化 cell + 双路径判定 + 126 个未变 driver + E-1..E-7 待登记清单",
+  "K_decision_record：decision.md DEC-I10B-1..5",
+  "L_mutation_proof（本轮新增）：control 7/7；MUT-1（回退补0）被 R-B1-N1 击杀；MUT-2（回退按名字定符号）被 R-B2-N1 击杀；MUT-3（去 dimension 闸门）为当前注册表上的等价变异体，SURVIVED 如实登记（command_runs/r2-mutation/mutation_proof.json）",
+  "M_red_green_quadrant（本轮新增）：after 期望 × BEFORE 注册表 = RED rc=3（恰 R-B1-N1/R-B2-N1 两负例失败）；before 期望 × BEFORE = 7/7；before 期望 × AFTER = rc=3 反向翻转；after 期望 × AFTER = GREEN 7/7 rc=0 且与冻结件逐字节相同（sha b7a925f5…）（command_runs/r2-*）",
+  "N_hash_verification（本轮新增）：binding.json 在册 11 件工件 + 3 份隔离副本全部 match；两项确定性工件备份后重跑逐字节复现（command_runs/r2-repro-compat/）"
+ ],
 
- "not_done": {
-  "product_promotion": "未落地生产 —— scripts/model_registry.py 仍为前像 26446 B / 9ec65295…",
-  "frozen_artifact_edits": "未做任何编辑（卡文第 5 点禁止；且 T1-12 要求追加式形态）",
-  "status_transitions": "0 次",
-  "independent_acceptance": "未取得 —— TIER-2，须独立 reviewer"
+ "next_step_number": 1,
+ "next_action": "编排层（reviewer 接手第一步）：指派 TIER-2 独立 reviewer 复验本 attempt——按 review_and_handoff.md 固定操作，至少复算一个专属 oracle（建议从 command_runs/r2-red_afterexp_before_reg 的 RED 臂或 mutation_proof.json 的 MUT-1/MUT-2 臂入手），核对 5 个变化 cell 与 E-1…E-7 勘误清单；随后按 T1-12 ① 形态落地 E-1…E-7 追加式勘误（本卡不得自行改冻结件），再裁定 I-10-B 是否落地生产。",
+
+ "input_hashes": {
+  "production_scripts/model_registry.py": {"bytes": 26446, "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f", "role": "BEFORE 前像（= 修复未落地）", "recomputed_at_resume": "一致"},
+  "production_scripts/model_extensions.py": {"bytes": 14475, "sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911", "role": "未改动", "recomputed_at_resume": "一致"},
+  "M05_input.json": "execution_runs/M05/a20260919-01/evidence/M05/input.json（mtime 15:52:40，早于冻结输出 19:32:39，未变）",
+  "M14_input.json": "execution_runs/M14/a20260919-01/evidence/M14/input.json（mtime 15:54:13，未变）",
+  "M20_input.json": "execution_runs/M20/a20260919-01/evidence/M20/input.json（mtime 15:55:29，未变）",
+  "M24_input.json": "execution_runs/M24/a20260919-01/evidence/M24/input.json（mtime 15:56:16，未变）"
  },
+ "current_source_hashes": {
+  "iso/rf/scripts/model_registry.py": {"bytes": 30116, "sha256": "62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081"},
+  "iso/rf/scripts/model_extensions.py": {"bytes": 14475, "sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"},
+  "_scratch_import/before/model_registry.py": {"bytes": 26446, "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f"},
+  "_scratch_import/after/model_registry.py": {"bytes": 30116, "sha256": "62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081"},
+  "interpreter": "iso/venv/Scripts/python.exe（Python 3.13.9，自 I-00-A 复制）"
+ },
+ "changed_paths": [
+  "iso/rf/scripts/model_registry.py（attempt 内唯一被修改的代码文件；changes.diff 两个 hunk）",
+  "iso/venv/**（自 I-00-A 复制的隔离解释器）",
+  "command_runs/**（本轮新增的独立 command-run 证据目录）",
+  "scripts/recheck_anchors.py、scripts/mutation_selfcheck.py（本轮新增 attempt 工具）"
+ ],
+
+ "commands_executed": 16,
+ "commands_detail": "commands.json seq 1-15（seq 14 含四个 command-run 目录）；全部 attempt-local，0 条触产品树，0 条写产品文件",
+ "raw_exit_codes": {
+  "seq5_verify_before_frozen": 0,
+  "seq6_verify_after_frozen": 0,
+  "seq11_recheck_anchors": 0,
+  "seq13_mutation_selfcheck": 0,
+  "seq14_r2-red_afterexp_before_reg": 3,
+  "seq14_r2-char_beforeexp_before_reg": 0,
+  "seq14_r2-xcheck_beforeexp_after_reg": 3,
+  "seq14_r2-verify-after": 0,
+  "seq15_compute_compat": 0,
+  "seq15_frozen_regression_rerun": 0
+ },
+ "expected_exit_codes_note": "rc 表依 START_HERE 冻结码表。两个 rc=3 均为刻意反向臂：r2-red（应绿未绿 → RED 证明）与 r2-xcheck（before 期望 × AFTER 注册表，同两例反向翻转）；非意外失败。r2-char 的 7/7 较冻结 before 件（6/6）多出 R-B1-P1b，系冻结 before 运行时脚本尚无该用例；六格共有用例结论逐一相同（command_runs/r2-char_beforeexp_before_reg）。",
 
  "key_findings": [
   {
@@ -40,8 +77,7 @@
    "severity": "high",
    "finding": "缺陷①的修复（省缺即抛）使 M05 / M14 / M20 / M24 四张卡的 defaults 相位全部从 ok 翻转为 ModelRegistryError。",
    "why_it_matters": "这四张卡的 defaults 冻结期望成立，恰恰依赖缺陷①的静默补 0（M24 oracle.json hand_notes.defaults 明写『usage_revenue omitted -> 0』）。",
-   "disposition": "非缺陷，是修复的预期后果。按 T1-12 追加式勘误，不回改。清单见 compatibility_impact.md §5（E-1…E-4）。",
-   "affected_phases": "四卡的 positive 与 continuity_positive 均未变，只有 defaults 变。"
+   "disposition": "非缺陷，是修复的预期后果。按 T1-12 追加式勘误，不回改。清单见 compatibility_impact.md §5（E-1…E-4）。"
   },
   {
    "id": "F-I10B-2",
@@ -54,9 +90,8 @@
    "id": "F-I10B-3",
    "severity": "medium",
    "finding": "首版边界判据（『最终下界是否为 -inf』）错误；修复前就已有 37 个 cell 在 [-inf, inf)。",
-   "why_it_matters": "该判据同时夸大波及面并掩盖真实变更集。",
    "fix": "改为对 (lo, hi) 对做 BEFORE/AFTER 差分（compute_compat.py）。",
-   "lesson": "判据必须匹配被判定对象的形态 —— 值域变更用差分、不用终态。本项为该同源教训的第 6 次实例。"
+   "lesson": "判据必须匹配被判定对象的形态 —— 值域变更用差分、不用终态。"
   },
   {
    "id": "F-I10B-4",
@@ -69,29 +104,83 @@
    "severity": "info",
    "finding": "基线实测 31 个模型 / 31 个 optional-without-default 槽位 / 24 个受影响模型，与卡文所述数字完全吻合。",
    "disposition": "无。"
+  },
+  {
+   "id": "F-I10B-6",
+   "severity": "medium",
+   "finding": "变异自检：MUT-1（回退缺陷①修复）被 R-B1-N1 击杀、MUT-2（回退为原始 9 名 _SIGNED_DRIVERS 按名字定符号）被 R-B2-N1 击杀；MUT-3（仅去掉 _is_reversal_capable 的 dimension 闸门）在当前注册表上是等价变异体——角色表 15 个 driver 今日全部只声明于 {backlog, revenue, reserve_volume, aum_fee} 之内，无任何注册表层观察可将其区分。",
+   "why_it_matters": "dimension 闸门目前不可观察，属纵深防御：只有当未来某 driver 以角色表内名字声明到不合格 dimension 时才产生行为差异。R-B2-N2（未知名必抛）已覆盖『凭名字获得符号』的主通道。",
+   "disposition": "如实登记 SURVIVED；建议 reviewer 把『MUT-3 等价性』作为已知边界接受，或在后续卡中补一个『角色表名字 × 不合格 dimension』的声明级负例。mutation_proof_valid=true（两个真回归均被冻结 oracle 击杀）。"
+  },
+  {
+   "id": "F-I10B-7",
+   "severity": "info",
+   "finding": "复现性实测：verification_after.json、compatibility_cells.json、frozen_regression_rerun.json 三件在独立 venv 重跑下逐字节复现（sha256 与 binding 在册值相同）；scan_frozen_impact.py 为时点件，因证据树种群增长（本轮新增 command_runs/**）刻意不重跑。",
+   "disposition": "无。"
   }
  ],
 
- "next_action": "编排层：①按 T1-12 ① 形态落地 E-1…E-7 追加式勘误（本卡不得自行改冻结件）；②决定 I-10-B 是否落地生产并派独立 reviewer 验收（TIER-2）；③随后可推进 T1-6（M24 跨年用例，reviewer 已给可达值 {\"opening_arr\":[200,250],\"closing_arr\":[251,251]} ⇒ 'stock-flow balance failed: FY2027'）与其余 TIER-1 追认项。",
+ "not_done": {
+  "product_promotion": "未落地生产 —— scripts/model_registry.py 仍为前像 26446 B / 9ec65295…（seq 11 复算证实）",
+  "frozen_artifact_edits": "未做任何编辑（卡文第 5 点禁止；E-1…E-7 交编排层按 T1-12 ① 形态落地）",
+  "independent_acceptance": "未取得 —— TIER-2，须独立 reviewer 出具；本 handoff 置 review_pending，实现者不自签"
+ },
 
- "artifacts": {
-  "changes.diff": "隔离副本(vs 生产前像)的统一 diff，两处修复各一个 hunk",
-  "binding.json": "锚点、隔离、缺陷、兼容性声明、待登记勘误、退出判据",
-  "commands.json": "10 条命令（全部 attempt-local，0 条触产品树）",
-  "decision.md": "DEC-I10B-1..5",
-  "compatibility_impact.md": "卡文第 3 点硬要求：5 个变化 cell + 双路径判定 + 126 个未变 driver + E-1..E-7 清单",
-  "oracle.md": "冻结预期（含 baseline 实测 31 槽位 / 24 模型）",
-  "compatibility_cells.json": "165 cell 的全量差分数据",
-  "frozen_impact_scan.json": "1579 个 JSON 的分类结果",
-  "frozen_regression_rerun.json": "四卡三相位 BEFORE/AFTER 实跑对照"
+ "open_questions": [
+  "OQ-I10B-1：MUT-3（dimension 闸门）的等价变异体地位是否可接受，或需后续卡补『角色表名字 × 不合格 dimension』声明级负例？",
+  "OQ-I10B-2：M14 OQ-03（内部冲减是否需要 signed 约定）原文自述属 D/E 决策——本卡缺陷②已按 T1-22 授权裁定注册层规则，D/E 层是否追认由 owner 决定。",
+  "OQ-I10B-3：scripts/model_extensions.py 仍为 untracked（见隔离事件 §7.5 残余风险），挂载关系的另一半不受版本控制；建议 owner 纳管（本卡不代为 git add）。"
+ ],
+ "blocked_by": [],
+
+ "evidence_paths": [
+  "binding.json",
+  "commands.json",
+  "oracle.md（开工时冻结，mtime 先于全部验证输出）",
+  "decision.md（DEC-I10B-1..5）",
+  "changes.diff",
+  "compatibility_impact.md",
+  "compatibility_cells.json",
+  "frozen_impact_scan.json",
+  "frozen_regression_rerun.json",
+  "verification_before.json",
+  "verification_after.json",
+  "command_runs/r2-mutation/mutation_proof.json",
+  "command_runs/r2-red_afterexp_before_reg/",
+  "command_runs/r2-char_beforeexp_before_reg/",
+  "command_runs/r2-xcheck_beforeexp_after_reg/",
+  "command_runs/r2-verify-after/",
+  "command_runs/r2-repro-compat/",
+  "t16_reachability_probe.json（供编排层推进 T1-6 参考）"
+ ],
+
+ "new_artifact_hashes": {
+  "scripts/recheck_anchors.py": {"bytes": 2990, "sha256": "dc26dbecaf467d04e3836f3c642bee73427f420294dd3c93098e828f7b458274"},
+  "scripts/mutation_selfcheck.py": {"bytes": 10622, "sha256": "9d40527198e07d13fe3b5e9a794c2e3a214d61d3d41f635e2d4798ded9de231f"},
+  "command_runs/r2-mutation/mutation_proof.json": {"bytes": 4896, "sha256": "d74e26588e4eeb5fe56e806deb5708d07bc18f13b31b5f2d2fdd82590a134bd5"},
+  "command_runs/r2-red_afterexp_before_reg/verification_after.json": {"bytes": 1758, "sha256": "87693527d4ae6bff1671598cbdc71179ff87f85ef5cdf21cb3158f0c917573aa"},
+  "command_runs/r2-char_beforeexp_before_reg/verification_before.json": {"bytes": 1787, "sha256": "22a12b4748a8fd914ec2658c519bb45ac5ca54dfa0f7e8dd00537f7eb5d8aea8"},
+  "command_runs/r2-xcheck_beforeexp_after_reg/verification_before.json": {"bytes": 1799, "sha256": "d074572fec208f008f5114ab8894a26fd65fda9bb6cafc630073344f81ab6805"},
+  "command_runs/r2-verify-after/verification_after.json": {"bytes": 1766, "sha256": "b7a925f5b5a9e4af4cf77532999521427b79edbc6c51c7bd1aaf2a03c270da86"}
  },
 
  "integrity": {
   "frozen_artifacts_touched": 0,
   "product_files_written": 0,
   "product_tree_commands": 0,
-  "status_transitions_made": 0,
+  "status_transitions_made": "1 —— 本 handoff 由实现者按九步法第 8 步置 review_pending（证据齐全的进入动作，非验收）；accepted 保留给独立 reviewer",
   "candidate_promoted_to_product": false,
   "signed_on_behalf_of_others": false
+ },
+
+ "errata_pending": {
+  "rule": "依 T1-12 ① 形态（追加新节 + 行级『已过时，以本节为准』标注），禁止回改；本卡不执行，清单见 compatibility_impact.md §5",
+  "items": ["E-1 M05 oracle.json defaults", "E-2 M14 oracle.json defaults", "E-3 M20 oracle.json defaults", "E-4 M24 oracle.json defaults + hand_notes.defaults", "E-5 M14 cases.json OBS-SUPPLY-BOUND", "E-6 M14 oq_rulings.json OQ-03", "E-7 M14 recovery/probes/signed_driver_probe.json"]
+ },
+
+ "qualifications": {
+  "registry_layer_contract": "isolated 内成立（隔离副本验证，正负例+变异证明齐全）",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
  }
 }

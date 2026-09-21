@@ -1,9 +1,22 @@
 {
   "card_id": "I-05-C",
   "attempt_id": "a20260919-01",
-  "status": "review_pending",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "source": "review.md",
+    "verdict_block_line_range": "11-59",
+    "body_line_range": "17-58",
+    "body_description": "Lines 17-58 of review.md (Verdict through Unverified list, excluding fence comments and closing fence), joined by LF",
+    "review_md_sha256": "076195CFA8FE88A9A8F7327F18CDF5BB2D2F6ABB26597AD018AE7E2641038950",
+    "review_md_bytes": 3664,
+    "review_md_lines": 66,
+    "body_sha256": "4D5CF8C93D35C237D4A2FE3DE4CEEDB420D30F295551D406B9B3C7F777366963",
+    "byte_proof": "Verdict block body (lines 17-58 of review.md, joined by LF) has SHA256 first-8-hex = 4d5cf8c9, matching the prefix-hash in the block header at line 13. Full file sha256: 076195CF...41038950 (3664 bytes, 66 lines).",
+    "prefix_hash_verified": "4d5cf8c9"
+  },
   "implementer": "subagent",
-  "reviewer_status": "pending",
+  "reviewer_status": "accepted_scoped",
   "bookkeeping": {
     "implementer_signed": false,
     "implementer_never_signs_acceptance": true
@@ -24,10 +37,12 @@
     "13. Run tests: 19/19 GREEN",
     "14. Run I-05-B regression: 20/20 GREEN (no regression)",
     "15. Run FC-904 regression: 11/11 GREEN (no regression)",
-    "16. Pack evidence: all JSON files, diff, hashes"
+    "16. Pack evidence: all JSON files, diff, hashes",
+    "17. Independent review: accepted_scoped",
+    "18. Carrier landing: transcribe verdict into review.md, update handoff.json, create qualification.json"
   ],
-  "next_step_number": 17,
-  "next_action": "Implementer: apply the D-W05 producer-entry approval (approved 2026-09-20) by replacing the mock-only produce_for_demand with a real implementation wired to the existing CW producers via service.py (CatalogConfig/CatalogStore), keeping invocation events at the actual call boundary. GAP-2 stays blocked until the RF consumer_analysis owner supplies an entry -- do not fabricate a green sample. Then an independent reviewer reads evidence, verifies the RED->GREEN mutation, checks oracle match, and writes review.md.",
+  "next_step_number": 19,
+  "next_action": "Card I-05-C fully landed. Status accepted_scoped (scoped acceptance). Carried findings P2-1/P2-2/P3-1/P3-2/P3-3 remain open as scoped-out work -- see review.md and carried_findings.",
   "input_hashes": {
     "card_I-05-C.md": "read at runtime",
     "START_HERE.md": "read at runtime",
@@ -92,7 +107,9 @@
     "before/test_results.json",
     "after/test_results.json",
     "after/source_hashes.json",
-    "handoff.json"
+    "handoff.json",
+    "review.md",
+    "evidence/I-05-C/qualification.json"
   ],
   "rulings_applied": {
     "W05-1": "选 A: historical sections only get source-window binding, no per-slice hash depth",
@@ -115,6 +132,58 @@
       ]
     }
   },
+  "carried_findings": [
+    {
+      "id": "P2-1",
+      "severity": "P2",
+      "title": "produce_for_demand is mock-only; D-W05 producer-entry approval not yet applied",
+      "file": "test_w05c_minimal_production.py",
+      "description": "produce_for_demand exists as a test-only mock (InvocationTracker + ProduceForDemand). Owner D-W05 approval (2026-09-20) authorizes the real implementation wired to the existing CW producers via service.py (CatalogConfig/CatalogStore), invocation events recorded at the actual call boundary, no duplicate parser. Not yet implemented.",
+      "minimum_fix": "Implement real produce_for_demand per the D-W05 approval; keep invocation events at the actual call boundary, never inferred from artifact INSERT counts.",
+      "append_only": true,
+      "frozen_artifact_touched": false
+    },
+    {
+      "id": "P2-2",
+      "severity": "P2",
+      "title": "consumer_analysis producer absent; real LLM capability unverified",
+      "file": "test_w05c_minimal_production.py",
+      "description": "W05C-N3 tests prove missing_producer/unsupported handling only; no real consumer_analysis owner entry or verified real LLM capability exists. The role stays explicitly blocked and no green sample may be fabricated.",
+      "minimum_fix": "RF consumer_analysis owner supplies an entry; then wire and verify against real capability, or keep the role explicitly blocked.",
+      "append_only": true,
+      "frozen_artifact_touched": false
+    },
+    {
+      "id": "P3-1",
+      "severity": "P3",
+      "title": "InvocationTracker event schema needs reviewer approval for production persistence",
+      "file": "test_w05c_minimal_production.py",
+      "description": "Event schema (role/producer_name/call_status/attempt_number/error/artifact_id) is proven in tests but not approved for production persistence (GAP-3).",
+      "minimum_fix": "Independent reviewer approves the event schema before production persistence.",
+      "append_only": true,
+      "frozen_artifact_touched": false
+    },
+    {
+      "id": "P3-2",
+      "severity": "P3",
+      "title": "Shared audit-harness limitation carried from plan findings.md P2-1: run_card.py never validates cases.json expected",
+      "file": "PLAN/findings.md (P2-1); scripts/run_card.py",
+      "description": "The audit's shared runner copies cases.json `expected` into results without validating it, so negative-case expected fields are unconstrained text; the mutation proof holds only for input tampering. Per plan disposition: fix only in batches still being reworked; frozen attempts are not re-opened.",
+      "minimum_fix": "Add the expected-type tamper probe (rc=3) in batches still being reworked; register as a known shared-harness limitation elsewhere.",
+      "append_only": true,
+      "frozen_artifact_touched": false
+    },
+    {
+      "id": "P3-3",
+      "severity": "P3",
+      "title": "Evidence provenance: reviewer's full report not archived in attempt directory",
+      "file": "review.md",
+      "description": "review.md is the carrier-landing transcription of the owner-relayed signed verdict (accepted_scoped, 2026-09-20); the reviewer's original full report is not on disk in this attempt directory.",
+      "minimum_fix": "Archive the reviewer's original report or the owner relay record alongside review.md when available.",
+      "append_only": true,
+      "frozen_artifact_touched": false
+    }
+  ],
   "boundaries": {
     "disclosure_adaptation": "unmapped",
     "accuracy": "unproven",

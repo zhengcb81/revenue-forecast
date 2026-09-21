@@ -111,6 +111,70 @@
    },
    "result": "四卡 defaults 相位全部翻转；positive 与 continuity_positive 全部未变",
    "writes": "frozen_regression_rerun.json"
+  },
+  {
+   "seq": 11,
+   "purpose": "恢复执行时的锚点与全部在册工件哈希复算（卡文第 6 点：每次复算）",
+   "command": "<venv-python> -X utf8 -B scripts/recheck_anchors.py",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {
+    "production_anchor_drift": false,
+    "binding_recorded_artifacts": "11/11 match",
+    "isolated_copies": "3/3 match",
+    "all_match": true
+   },
+   "result": "生产前像与在册证据无任何漂移",
+   "writes": "无（只读）"
+  },
+  {
+   "seq": 12,
+   "purpose": "隔离 venv 落地（九步法第 2 步：自 I-00-A a20260919-01/iso/venv 复制）",
+   "command": "Copy-Item I-00-A/a20260919-01/iso/venv -> iso/venv（递归复制）",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {"python": "3.13.9 (Anaconda, MSC v.1929 x64)", "interpreter": "iso/venv/Scripts/python.exe 可用"},
+   "result": "seq 13-15 全部命令以该解释器执行",
+   "writes": "iso/venv/**"
+  },
+  {
+   "seq": 13,
+   "purpose": "变异自检（证明冻结 after-oracle 能侦测两项修复的回归）",
+   "command": "<venv-python> -X utf8 -B scripts/mutation_selfcheck.py",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {
+    "control": "7/7 pass（harness 自检）",
+    "MUT-1_revert_silent_zero": "KILLED by R-B1-N1",
+    "MUT-2_revert_name_sign": "KILLED by R-B2-N1",
+    "MUT-3_drop_dimension_gate": "SURVIVED —— 当前注册表上的等价变异体（角色表 15 个 driver 今日全部只声明于合格 dimension），如实登记"
+   },
+   "result": "mutation_proof_valid = true，raw rc = 0",
+   "writes": "command_runs/r2-mutation/mutation_proof.json 及 arms/**"
+  },
+  {
+   "seq": 14,
+   "purpose": "RED→GREEN 四象限重跑（期望方向 × 注册表变体 各自独立 command-run 目录，均不触碰 attempt 根的冻结 verification_*.json）",
+   "command": "<venv-python> -X utf8 -B scripts/verify_i10b.py <phase>",
+   "cwd": "execution_runs/I-10-B/a20260919-01/command_runs/<run-id>/",
+   "observed": {
+    "r2-red_afterexp_before_reg": "after 期望 × BEFORE 注册表 → rc=3，恰好 R-B1-N1（静默补0未抛）与 R-B2-N1（负值被拒）两例失败 = RED",
+    "r2-char_beforeexp_before_reg": "before 期望 × BEFORE 注册表 → rc=0，7/7（缺陷在基线可见；较冻结版多出 R-B1-P1b 且通过）",
+    "r2-xcheck_beforeexp_after_reg": "before 期望 × AFTER 注册表 → rc=3，同两例反向翻转",
+    "r2-verify-after": "after 期望 × AFTER 注册表 → rc=0，7/7；输出与冻结 verification_after.json 逐字节相同（sha256 b7a925f5…）= GREEN 且可复现"
+   },
+   "result": "RED→GREEN 成立；两个 rc=3 均为刻意的反向证明臂，非意外失败",
+   "writes": "command_runs/r2-*/verification_*.json, stdout.txt"
+  },
+  {
+   "seq": 15,
+   "purpose": "确定性工件复现（compute_compat / frozen_regression_rerun；先备份后重跑再比对）",
+   "command": "<venv-python> -X utf8 -B scripts/compute_compat.py && <venv-python> -X utf8 -B scripts/frozen_regression_rerun.py",
+   "cwd": "execution_runs/I-10-B/a20260919-01/",
+   "observed": {
+    "compatibility_cells.json": "逐字节复现（358eea92…，5 变化 cell / 165 / 126 未变 driver）",
+    "frozen_regression_rerun.json": "逐字节复现（1ceb9e43…，M05/M14/M20/M24 defaults 翻转）",
+    "scan_frozen_impact.py": "刻意不重跑 —— 证据树种群已增长（本次新增 command_runs/**），1579 件扫描是时点陈述；不覆盖冻结件"
+   },
+   "result": "两项确定性证据完全可复现；扫描件按冻结口径保留",
+   "writes": "compatibility_cells.json / frozen_regression_rerun.json（内容与冻结版逐字节相同）; 备份存 command_runs/r2-repro-compat/"
   }
  ],
  "commands_that_touch_product_tree": [],

@@ -1,0 +1,57 @@
+{
+  "card": "I-14-F",
+  "parent": "I-14",
+  "attempt": "a20260919-01",
+  "date": "2026-09-19",
+  "implementer": "I-14-F implementer agent (test-maintainer role); independent reviewer NOT this agent",
+  "card_objective": "Product-side short-basetemp convention so a deep cwd no longer yields WinError 206 in the worker-bootstrap contract nodes, while a normal-depth cwd is not needlessly rerouted.",
+  "repos_bound": {
+    "revenue-forecast (RF)": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+    "filing-fetch (FF)": "C:\\Users\\郑曾波\\Projects\\filing-fetch",
+    "company-wiki (CW)": "C:\\Users\\郑曾波\\Projects\\company-wiki"
+  },
+  "production_repos": "READ-ONLY for this card; zero writes performed or permitted. All edits happen in the attempt-isolated tree below.",
+  "company_wiki_head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+  "isolated_tree": {
+    "path": "<attempt>\\iso\\tree",
+    "provenance": "git -C company-wiki archive --format=tar HEAD, extracted with Python tarfile (1913 members, 0 failures). NOTE: production working tree carries pre-existing user modifications (CLAUDE.md, README.md, src/company_wiki/source_catalog/artifact_dag.py) which are deliberately EXCLUDED; the tree is the committed HEAD only.",
+    "line_endings_note": "Raw bytes of scripts/source_catalog_worker.ps1 and pytest.ini differ from the production working tree by line endings only (git archive CRLF vs working-tree LF, core.autocrlf=true); filtered blob hashes equal HEAD blobs for both (pytest.ini f6674a7b..., ps1 6981c4c2...), so tree content == HEAD logically."
+  },
+  "source_anchors_sha256": {
+    "CW_HEAD:src/company_wiki/source_catalog/worker.py": "e83179915333eb472807b15a0580d93dcf280caadc31b0099988a3b744c469c6",
+    "CW_HEAD:tests/contract/test_source_catalog_worker_bootstrap.py": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+    "CW_HEAD:src/company_wiki/source_catalog/control.py": "553a35607be39c57460c8e781d697a60bcb627eaace0e85ad61810d3e1326bbb",
+    "CW_HEAD:scripts/source_catalog_worker.ps1": "blob-6981c4c2104203b24105ee752df7aaf0c0410acf (raw sha256 differs from working tree by CRLF only)",
+    "CW_HEAD:pytest.ini": "blob-f6674a7b778fa9c8a21e4fc88f8e2e79aef0b352 (raw sha256 differs from working tree by CRLF only)"
+  },
+  "interpreter": {
+    "python": "<attempt>\\iso\\venv\\Scripts\\python.exe",
+    "version": "3.13.9 (Anaconda, MSC v.1929 64 bit) — same interpreter line as the I-14-C r5 flake runs",
+    "provenance": "copied from I-00-A a20260919-01 iso venv template (pip only), then pip-installed",
+    "packages": {"pytest": "9.1.1", "pluggy": "1.6.0", "iniconfig": "2.3.0", "packaging": "26.3", "colorama": "0.4.6", "Pygments": "2.21.0", "PyYAML": "6.0.3"},
+    "version_parity": "identical pytest/pluggy/iniconfig/packaging/colorama/PyYAML versions to I-14-C r5 recorded pip list; requests/urllib3 not needed by the two target nodes (worker.py needs yaml only)"
+  },
+  "run_binding": {
+    "cwd_rule": "every pytest run gets its own freshly created run dir inside the attempt (or, for the mutation A/B, a padded dir under %TEMP% with captures copied back); NEVER a repo root",
+    "basetemp_rule": "basetemp = <run_dir>\\pytest, newly created empty dir per run, never the attempt root, evidence root, or a previous run's dir (START_HERE discipline)",
+    "env": "stripped env as in I-14-C r5 run_flake_evidence.py: PYTHONDONTWRITEBYTECODE, PYTHONUTF8, PYTHONPATH=<tree>\\src, PATH, SYSTEMROOT, TEMP, TMP only",
+    "network": "disabled"
+  },
+  "allowed_write_roots": [
+    "<attempt> (all phases)",
+    "%TEMP%\\cw-pytest-basetemp\\<session-unique-dir> (created and removed by the product-side conftest convention itself, after implementation)",
+    "%TEMP%\\i14f-short, %TEMP%\\i14f-mutation-deep (short/mutation placement run dirs; captures copied back into <attempt>)"
+  ],
+  "input_evidence_refs": {
+    "origin_decision": "I-14-C a20260919-01 decision.md + OWNER_DECISIONS.md §13 T1-7 item ③ (short-path basetemp convention authorized product-side)",
+    "origin_observations": "I-14-C a20260919-01 review.md §4a: deep placement (cwd 166/167) 2 nodes x 2 trees x 3 runs = 12/12 fail; short placement (cwd 74/75) 12/12 pass; error text FileNotFoundError [WinError 206] / [Errno 2] worker_launcher_events.jsonl",
+    "origin_driver": "I-14-C a20260919-01 harness/run_flake_evidence.py (argv/env/verdict pattern reused here)"
+  },
+  "binding_status": "bound-implementation-stage (RED runs permitted on pristine tree; post-implementation runs re-bound after real files exist)",
+  "forbidden": [
+    "writes to production repos (RF/FF/CW)",
+    "shortening cwd as the fix",
+    "loosening global/pytest.ini config to widen limits",
+    "self-signing review (status stays review_pending)"
+  ]
+}

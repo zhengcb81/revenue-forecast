@@ -1,0 +1,371 @@
+{
+  "card": "I-14-H",
+  "authored": "BEFORE any run; hand-derived from oracle.md sections 3-5, the card I-14-H prescribed fix semantics (closed basis enum -> R-BASIS-UNKNOWN; observation-phase-only intervals; J15 rename variant) and hand arithmetic (1740/480/2220). No SUT call produced any expected value. The 19 non-W1 entries carried from the r1 pre-image are unchanged by this fix (reviewer r3 verified exactly one numeric value differs across I-14-B's r1->r2); W1 is corrected per card item 3.",
+  "frozen_now_utc": "2026-09-20T02:56:38Z",
+  "default_inputs": {
+    "label_offset_tolerance_seconds": 5,
+    "capture_latency_tolerance_seconds": 5,
+    "note": "reviewer-frozen D-1 values (I-14-B oracle.md L128-131); carried unchanged; input parameters only, not re-frozen by I-14-H"
+  },
+  "expected": {
+    "W1": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "sample_count": 30,
+        "quick_check_seconds": 480,
+        "command_total_seconds": 2220,
+        "overlap_seconds": 0,
+        "union_seconds": 1740,
+        "sum_seconds": 1740,
+        "observation_interval_count": 1,
+        "quick_check_overlap_seconds": 0,
+        "quick_check_in_observation_intervals": false
+      }
+    },
+    "W2": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-TOTAL-AS-OBS"
+      ],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "command_total_seconds": 2220
+      }
+    },
+    "W3": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "quick_check_seconds": 480
+      }
+    },
+    "W4": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SUM-OVERLAP"
+      ],
+      "computed": {
+        "union_seconds": 2400,
+        "sum_seconds": 2940,
+        "overlap_seconds": 540
+      }
+    },
+    "W5": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "union_seconds": 2400,
+        "sum_seconds": 2940,
+        "overlap_seconds": 540
+      }
+    },
+    "W6": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-NO-SAMPLES"
+      ],
+      "computed": {
+        "observation_span_seconds": null,
+        "sample_count": 1
+      }
+    },
+    "W7": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SAMPLE-OUTSIDE"
+      ],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "samples_outside_window": 1
+      }
+    },
+    "C1": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-EMPTY-EVIDENCE",
+        "R-FUTURE-CLOCK",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "window_status": "pending"
+      }
+    },
+    "C2": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 5,
+        "window_status": "pending"
+      }
+    },
+    "C3": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 7,
+        "window_status": "complete"
+      }
+    },
+    "C4": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "daily_count": 6,
+        "window_status": "pending"
+      }
+    },
+    "C5": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SIMULATED-CLOCK"
+      ],
+      "computed": {
+        "daily_count": 7,
+        "window_status": "complete"
+      }
+    },
+    "C6": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-DUP-RUN-ID"
+      ],
+      "computed": {
+        "daily_count": 6,
+        "window_status": "pending"
+      }
+    },
+    "C7": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-EMPTY-EVIDENCE"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "window_status": "pending"
+      }
+    },
+    "L1": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0
+      }
+    },
+    "L2": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          29,
+          88,
+          207
+        ],
+        "label_offset_max_error_seconds": 87
+      }
+    },
+    "L2b": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR",
+        "R-POSTHOC-CAPTURE"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          29,
+          88,
+          207
+        ],
+        "label_offset_max_error_seconds": 87
+      }
+    },
+    "L3": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-POSTHOC-CAPTURE"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0
+      }
+    },
+    "L4": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          30,
+          30
+        ],
+        "label_offset_max_error_seconds": 90
+      }
+    },
+    "L5": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-ANCHOR-NOT-SHARED"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0
+      }
+    },
+    "H1": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {}
+    },
+    "H2": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {}
+    },
+    "H3": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {}
+    },
+    "H4": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {}
+    },
+    "H5": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {}
+    },
+    "H6": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {}
+    },
+    "H7": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-TOTAL-AS-OBS"
+      ],
+      "computed": {
+        "command_total_seconds": 2220
+      }
+    },
+    "H8": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "union_seconds": 1740
+      }
+    },
+    "H9": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "union_seconds": 1740
+      }
+    },
+    "H10": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "sum_seconds": 1740
+      }
+    },
+    "H11": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "quick_check_overlap_seconds": 480,
+        "union_seconds": 2220
+      }
+    },
+    "H12": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "quick_check_overlap_seconds": 480,
+        "union_seconds": 2220
+      }
+    }
+  },
+  "revision": "i14h-corrected-1",
+  "r1_pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+  "expected_superseded": {
+    "W1": {
+      "computed.union_seconds": {
+        "old": 2220,
+        "new": 1740,
+        "pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+        "changed_at_utc": "2026-09-21T18:39:46.645567Z",
+        "reason": "Card I-14-H item 3: the r1 frozen value 2220 was itself part of defect 2 (union_of_windows/sum_of_windows counted the quick_check interval into the natural observation duration, so 2220 was accepted while the honest 1740 was rejected -- direction inverted). Fix option jia (observation-phase-only intervals, quick_check never enters) was chosen and accepted_scoped by the independent reviewer of I-14-B r2; the W1 union_seconds expectation is corrected 2220 -> 1740 with anchored assertions sum_seconds=1740, observation_interval_count=1, quick_check_overlap_seconds=0, quick_check_in_observation_intervals=false. The old value is preserved here; it was never absent and is not being erased. Pre-image: r1 harness/frozen_expectations.json sha256 3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b."
+      }
+    }
+  },
+  "errata": [
+    {
+      "id": "ERR-I14H-01",
+      "target": "expected.W1.computed.union_seconds",
+      "old_value": 2220,
+      "new_value": 1740,
+      "pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+      "changed_at_utc": "2026-09-21T18:39:46.645567Z",
+      "reason": "Card I-14-H item 3: the r1 frozen value 2220 was itself part of defect 2 (union_of_windows/sum_of_windows counted the quick_check interval into the natural observation duration, so 2220 was accepted while the honest 1740 was rejected -- direction inverted). Fix option jia (observation-phase-only intervals, quick_check never enters) was chosen and accepted_scoped by the independent reviewer of I-14-B r2; the W1 union_seconds expectation is corrected 2220 -> 1740 with anchored assertions sum_seconds=1740, observation_interval_count=1, quick_check_overlap_seconds=0, quick_check_in_observation_intervals=false. The old value is preserved here; it was never absent and is not being erased. Pre-image: r1 harness/frozen_expectations.json sha256 3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b.",
+      "anchored_assertions_added": {
+        "computed.sum_seconds": 1740,
+        "computed.observation_interval_count": 1,
+        "computed.quick_check_overlap_seconds": 0,
+        "computed.quick_check_in_observation_intervals": false
+      },
+      "diff_from_r1_expected_map": "--- expected.r1 (frozen_expectations.json 3ba2bb17...)\n+++ expected.i14h (frozen_expectations.i14h.json)\n@@ -8,7 +8,11 @@\n       \"quick_check_seconds\": 480,\n       \"command_total_seconds\": 2220,\n       \"overlap_seconds\": 0,\n-      \"union_seconds\": 2220\n+      \"union_seconds\": 1740,\n+      \"sum_seconds\": 1740,\n+      \"observation_interval_count\": 1,\n+      \"quick_check_overlap_seconds\": 0,\n+      \"quick_check_in_observation_intervals\": false\n     }\n   },\n   \"W2\": {\n@@ -225,5 +229,102 @@\n       ],\n       \"label_offset_max_error_seconds\": 0\n     }\n+  },\n+  \"H1\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-BASIS-UNKNOWN\"\n+    ],\n+    \"computed\": {}\n+  },\n+  \"H2\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-BASIS-UNKNOWN\"\n+    ],\n+    \"computed\": {}\n+  },\n+  \"H3\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-BASIS-UNKNOWN\"\n+    ],\n+    \"computed\": {}\n+  },\n+  \"H4\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-BASIS-UNKNOWN\"\n+    ],\n+    \"computed\": {}\n+  },\n+  \"H5\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-BASIS-UNKNOWN\"\n+    ],\n+    \"computed\": {}\n+  },\n+  \"H6\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-BASIS-UNKNOWN\"\n+    ],\n+    \"computed\": {}\n+  },\n+  \"H7\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-TOTAL-AS-OBS\"\n+    ],\n+    \"computed\": {\n+      \"command_total_seconds\": 2220\n+    }\n+  },\n+  \"H8\": {\n+    \"verdict\": \"accept_claim\",\n+    \"refusals\": [],\n+    \"computed\": {\n+      \"union_seconds\": 1740\n+    }\n+  },\n+  \"H9\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-CLAIM-EXCEEDS\"\n+    ],\n+    \"computed\": {\n+      \"union_seconds\": 1740\n+    }\n+  },\n+  \"H10\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-CLAIM-EXCEEDS\"\n+    ],\n+    \"computed\": {\n+      \"sum_seconds\": 1740\n+    }\n+  },\n+  \"H11\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-QC-IN-OBS\"\n+    ],\n+    \"computed\": {\n+      \"quick_check_overlap_seconds\": 480,\n+      \"union_seconds\": 2220\n+    }\n+  },\n+  \"H12\": {\n+    \"verdict\": \"reject_claim\",\n+    \"refusals\": [\n+      \"R-CLAIM-EXCEEDS\",\n+      \"R-QC-IN-OBS\"\n+    ],\n+    \"computed\": {\n+      \"quick_check_overlap_seconds\": 480,\n+      \"union_seconds\": 2220\n+    }\n   }\n }\n"
+    }
+  ]
+}
