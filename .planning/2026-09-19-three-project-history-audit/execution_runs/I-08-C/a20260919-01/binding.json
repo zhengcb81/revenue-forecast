@@ -1,0 +1,165 @@
+{
+ "card": "I-08-C",
+ "parent_card": "I-08",
+ "plan": "2026-09-19-three-project-history-audit",
+ "attempt": "a20260919-01",
+ "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-C\\a20260919-01",
+ "revision": "r3 — deliverable remediation after an independent changes_required verdict; the r1/r2 artifacts are preserved and the r3 additions are additive",
+ "date": "2026-09-19 (card date); r3 written 2026-09-21",
+ "title": "consumers must reject forged receipts, cross-payload replay and unsigned structures (card I-08-C, T-PUB-equivalent pytest node)",
+ "implementer": "delegated implementer session (does NOT self-sign accepted)",
+ "independent_reviewer": "separate session; verdict review.md sha256 c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3 = changes_required",
+ "execution_gate": {
+  "card_requires": "I-08-B independently accepted before execution; no self-selected protocol",
+  "I-08-B": "execution_runs/I-08-B/a20260919-01/ (attestation provider protocol + publication_attestation contract implemented there)",
+  "status": "satisfied as recorded by the r1 attempt; r3 does not re-open the gate",
+  "note": "r3 changes no product expectation and no production file, so the gate state carried from r1/r2 still holds"
+ },
+ "design_inputs": {
+  "execution_v2/card_I-08-C.md": "4232 bytes — read in full; allowlist = isolated revenue publication/attestation/pipeline tests",
+  "execution_v2/START_HERE.md": "rc table + nine-step method; exit_code_legend reproduced in commands.json",
+  "execution_v2/review_and_handoff.md": "deliverable minimum directory + handoff field list; r3 adds the previously absent binding.json / commands.json / decision.md / changes.diff",
+  "review.md": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
+  "note": "the card's four source anchors are re-verified below at their CURRENT hashes; the r3 bindings use the current files, not the frozen anchors"
+ },
+ "interpreter": {
+  "path": "C:\\Miniconda\\python.exe",
+  "version": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+  "pytest": "9.1.1",
+  "venv_created": false,
+  "venv_policy_note": "NO isolated venv and NO isolated repo copy were used, in this revision or the previous ones. The attempt runs the frozen test file from the attempt directory and imports the production tree by absolute path (sys.path.insert of <repo>/scripts and <repo>/tests), exactly as recorded in the r1 handoff. This is a KNOWN ISOLATION WEAKNESS relative to START_HERE step 2 / review_and_handoff step 7: it is disclosed here rather than silently upgraded, because creating an isolated tree now would invalidate the reviewer's already-CONFIRMED hashes for review.md, oracle.md, pytest_verdict.stdout.txt and the test file. Production is protected by measurement, not by an isolation boundary: every write path is redirected (REVENUE_PUBLICATION_REGISTRY -> temp) and the post-run git/hash check is recorded in after/production_status.txt. A future card that requires a hard isolation boundary must budget the re-binding.",
+  "network": "disabled for every bound command"
+ },
+ "code_roots": {
+  "revenue_forecast_production": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "filing_fetch_production": "C:\\Users\\郑曾波\\Projects\\filing-fetch",
+  "company_wiki_production": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "repos_copied": "none",
+  "production_write_policy": "ZERO writes in all three repos. No git add/commit/restore/stash/checkout. No write under .planning/reviews/**."
+ },
+ "allowed_write_roots": [
+  "execution_runs/I-08-C/a20260919-01/** (this attempt: oracle, handoff, test file, evidence, exploratory/, runner/, after/, scratch/)",
+  "%TEMP%/pytest-of-* (the redirect target of REVENUE_PUBLICATION_REGISTRY, created by the test fixture)",
+  "%TEMP%/i08c_e4_* (probe-only temp registries)"
+ ],
+ "forbidden": [
+  "any write to C:\\Users\\郑曾波\\Projects\\revenue-forecast (production)",
+  "any write to C:\\Users\\郑曾波\\Projects\\filing-fetch or C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "writing .planning/reviews/**",
+  "modifying the r1/r2 frozen oracle body or any frozen expectation",
+  "implementing any of product findings F1-F4 (separate card / owner decision required)",
+  "editing review.md (the reviewer's artifact)"
+ ],
+ "test_file_under_test": {
+  "rel": "test_i08c_consumer_rejection.py",
+  "bytes": 10902,
+  "sha256": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5",
+  "nodes": 13,
+  "frozen_before_run": true,
+  "pre_r3_revision": {
+   "bytes": 8542,
+   "sha256": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f",
+   "note": "the r2 revision the independent reviewer confirmed; preserved as an immutable hash record, not as a file"
+  },
+  "node_ids": [
+   "test_e1_legit_signed_package_passes_repeatably",
+   "test_e2_forged_payload_with_original_receipt_rejected",
+   "test_e3_forged_gate_ids_and_context_rejected",
+   "test_e5_whole_receipt_replayed_onto_other_payload_rejected",
+   "test_e4_verification_context_mutation_rejected",
+   "test_e6_recomputed_self_hashes_do_not_repair_value_forgery",
+   "test_e13_segment_base_revenue_not_bound_by_output_gates",
+   "test_e7_registry_anchor_does_not_admit_forged_package",
+   "test_e8_old_verification_context_on_other_input_rejected",
+   "test_e9_draft_package_rejected_by_formal_consumer",
+   "test_e10_result_without_receipt_rejected",
+   "test_e11_host_signed_label_flip_is_not_bound_at_consumption",
+   "test_e12_registry_fail_closed_on_corruption"
+  ],
+  "e4_implementation": "r3 adds test_e4_verification_context_mutation_rejected (E4a-E4d). r1 froze E4 but the test file had only 12 nodes; reviewer item (1). Disposition chosen: IMPLEMENT (oracle.md R3-1), not withdraw."
+ },
+ "production_anchors_verified_pre_run": {
+  "scripts/revenue_publication.py": {
+   "sha256": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+   "card_anchor": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+   "match": true,
+   "function_under_test": "validate_publication_receipt (line 185)"
+  },
+  "scripts/revenue_report.py": {
+   "sha256": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+   "card_anchor": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+   "match": true,
+   "functions_under_test": "validate_published_forecast (1196) / validate_forecast_output (1239)"
+  },
+  "scripts/publication_registry.py": {
+   "sha256": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344",
+   "card_anchor": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
+   "match": false,
+   "note": "F4 — pre-existing drift from commit 1dbae639 (feat ZR-701). is_registered is still at line 188 with the same fail-closed contract; drift reported, not repaired."
+  },
+  "artifacts/registry/publications.jsonl": {
+   "sha256": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+   "note": "unchanged before and after the r3 run; formal run_forecast registers publications, so the fixture redirects REVENUE_PUBLICATION_REGISTRY to a temp file"
+  },
+  "tests/test_recognition_bridge.py": {
+   "sha256": "187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5",
+   "role": "source of the synthetic forecast_document() fixture"
+  },
+  "tests/test_data_contract.py": {
+   "sha256": "1f0002354e4b0c43d5ade2988d3150a16f96c2f4bf51766042ae6e01961ebbed",
+   "role": "source of finalize_contract()"
+  }
+ },
+ "input_hashes": {
+  "card": "execution_v2/card_I-08-C.md",
+  "reviewer_verdict": "review.md c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
+  "r2_oracle_body": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90 (6831 bytes, byte-frozen)",
+  "r2_test_file": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f (8542 bytes)"
+ },
+ "post_run_hashes": {
+  "oracle.md": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3 (22335 bytes)",
+  "oracle.md.r2_frozen_copy.txt": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90 (6831 bytes)",
+  "test_i08c_consumer_rejection.py": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5 (10902 bytes)",
+  "pytest_r3_verdict.stdout.txt": "b3a7d8b9317a2475e9f5811e7d4c10fe46a96a1b0d2cf1d1f66bebbf43e7a611 (5238 bytes)",
+  "pytest_verdict.stdout.txt": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d (5052 bytes, r2 — NOT overwritten)",
+  "commands.json": "0946255a31d31ed295848200dfd35530d43d2340b5e50d81cf01ec66e80e0ead (9397 bytes)",
+  "decision.md": "5092802fa237baa09b78810fc933c281db8a7020b8dd0d43da59e9aaab958d14 (14746 bytes)",
+  "changes.diff": "102a7ad8860ae7167edec8309c0b01715773ce8c4f16660ea67b6136b140a89c (14452 bytes)",
+  "exploratory_log.md": "7d427e45b96cae146821e4e7c436257113c07b5ae9e404bd5434b7a600c9e7a1 (6418 bytes)",
+  "exploratory_manifest.json": "371af534d56fbffea87d3af1e36da713269cfa3c930299864c6d9ec47b598f33 (4479 bytes)",
+  "after/production_status.txt": "62fd97212c5e189debd822591ee961d3e98928516b1191b9c6644ce5a64cc4c6 (byte count intentionally not quoted: it is volatile; hash is authoritative)"
+ },
+ "isolation_env": {
+  "isolated_repo_copy": "none (see interpreter.venv_policy_note)",
+  "production_registry_redirect": "REVENUE_PUBLICATION_REGISTRY -> pytest tmp dir (test fixture) / %TEMP%/i08c_e4_* (probe)",
+  "attestation_provider": "sys.executable ONLY inside the S fixture, then popped; unset for every other node and for the probe",
+  "bytecode": "-B plus PYTHONDONTWRITEBYTECODE=1 on the r3 run, so no .pyc was regenerated and the archived r2 bytecode headers survive as timeline evidence",
+  "basetemp": "runner/tmp, created empty immediately before the run; never the attempt root and never a previous test dir",
+  "temp_side_effects": [
+   "%TEMP%/pytest-of-*/ (fixture registry)",
+   "%TEMP%/i08c_e4_* (probe registries, 3 dirs)"
+  ]
+ },
+ "git_baseline": {
+  "head_at_production_check": "4bc77f8f827e93dae4fbbff9a68922a79fcdd684",
+  "head_after_parent_commit": "ab20cebea21fa2e540ad5bab15a00ad116d28e14",
+  "head_change_provenance": "NOT caused by this card. The parent orchestrator committed the plan tree while this remediation was running: commit ab20cebe 'audit(planning): I-14-H carrier landed (conditional scope 12/14), RIDER card I-14-I opened, I-08-C changes_required dispatched' at 2026-09-21 20:29:27 +0100, i.e. AFTER the r3 run and AFTER after/production_status.txt was written. This card executed ZERO git write commands (no add/commit/restore/stash/checkout). Consequence for readers: `.planning/**` files edited after that commit show as ' M' in `git status --porcelain -- .planning/`, which is expected and is not an unreported change by this card.",
+  "status_porcelain_scope": "scripts/ artifacts/ tests/ config/",
+  "status_porcelain_result": "EMPTY (rc 0), re-measured after the r3 run and again after the parent commit",
+  "git_write_commands_executed": "none"
+ },
+ "frozen_before_implementation": true,
+ "frozen_before_run": {
+  "oracle_r3_spec": "E4 contract + 13-node map (oracle.md R3-3/R3-4) written before the test file was edited",
+  "test_file": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5, recorded before the r3 run",
+  "derivation_probe": "scratch/e4_derivation_probe.py rc 0 recorded before the freeze; probe revision 1's key error is disclosed in oracle.md R3-2",
+  "note": "the reviewer should verify freeze order from filesystem mtimes plus these recorded hashes; E4's expectation text is unchanged from the r1 freeze (oracle.md line 54)"
+ },
+ "binding_status": "bound",
+ "bound_entry_count": 5,
+ "open_questions": [
+  "Is the r1/r2 attempt's lack of an isolated repo copy / venv acceptable for this card, or must a future card re-bind with a hard isolation boundary? (disclosed, not self-adjudicated)",
+  "Should E13's expectation be re-derived from code reading and re-frozen, given it was originally pinned empirically? (left as-is; re-pinning would change a frozen expectation)",
+  "Does the owner want F1-F4 grouped into one product card or split three ways?"
+ ]
+}

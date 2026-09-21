@@ -192,5 +192,22 @@
  ],
  "binding_status": "bound",
  "bound_entry_count": 5,
- "raw_vs_expected_note": "every raw return code matched its frozen expectation; no command was retried blindly, and no expected value was edited after the fact."
+ "raw_vs_expected_note": "every raw return code matched its frozen expectation; no command was retried blindly, and no expected value was edited after the fact.",
+ "evidence_text_encoding_note": "stdout files written through the PowerShell pipeline (pytest_r3_verdict.stdout.txt, scratch/*.stdout.txt, runner/.rc.txt is ASCII) are UTF-16LE with a BOM, matching the pre-existing convention of pytest_verdict.stdout.txt and reviewer_rerun_stdout.txt in this attempt. Read them with an explicit utf-16 decode; a byte-oriented reader will see the BOM as 0xFF 0xFE and may report them as binary. This is a readability convenience, not a defect, and it is declared here so no reader mistakes it for corruption.",
+ "self_check": {
+  "script": "scratch/selfcheck.py",
+  "stdout": "scratch/selfcheck.stdout.txt",
+  "raw_returncode": 0,
+  "checks": [
+   "every JSON under the attempt parses",
+   "all 19 non-self hashes quoted in handoff.json deliverables match the files on disk",
+   "oracle.md byte count and sha256 match handoff.append_only_proof",
+   "the r1/r2 frozen body is still a hash-matching prefix of oracle.md",
+   "the executed test file is still 10902 B / 0072b160...",
+   "E11 and E13 are still classified business rc=3 and the matrix is still 13 cases",
+   "status and reviewer_verdict are both changes_required and implementer_self_acceptance is false",
+   "required_by_reviewer carries items 1-4"
+  ],
+  "result": "self_check = PASS, errors = []"
+ }
 }

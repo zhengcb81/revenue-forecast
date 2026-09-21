@@ -90,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
         "tree": str(tree),
         "root": str(root),
         "suite": str(suite_path),
-        "extra_env": dict(args.env),
+        "extra_env": dict(item.partition("=")[::2] for item in args.env),
         "guard": guard,
         "results": [],
     }

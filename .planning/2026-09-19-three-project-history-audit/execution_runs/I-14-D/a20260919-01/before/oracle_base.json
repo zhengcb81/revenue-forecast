@@ -2,13 +2,15 @@
   "label": "base",
   "src": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D\\a20260919-01\\iso\\product_base\\src",
   "helper_present": true,
-  "cases": 17,
+  "cases": 20,
   "narrow_must_failed": [
     "N1-mine",
     "N1-reviewer",
     "N2-middle-line",
     "N3-newline-then-key",
     "N5-auth-multiline",
+    "N5c-auth-scheme-lf-secret",
+    "N5e-auth-token-key-lf-secret",
     "N13-partial-multiword-residual"
   ],
   "keep_must_failed": [],
@@ -18,6 +20,8 @@
     "N2-middle-line",
     "N3-newline-then-key",
     "N5-auth-multiline",
+    "N5c-auth-scheme-lf-secret",
+    "N5e-auth-token-key-lf-secret",
     "N13-partial-multiword-residual"
   ],
   "rows": [
@@ -83,6 +87,45 @@
       "expect_len": 48,
       "exact_ok": false,
       "contains_ok": false,
+      "len_ok": false,
+      "pass": false
+    },
+    {
+      "id": "N5c-auth-scheme-lf-secret",
+      "kind": "narrow_must",
+      "in": "Authorization: Bearer\nSYNTHETIC_AUDIT_TOKEN\ndoc=17",
+      "expected": "Authorization: <redacted>\ndoc=17",
+      "out": "Authorization: <redacted>",
+      "out_len": 25,
+      "expect_len": 34,
+      "exact_ok": false,
+      "contains_ok": false,
+      "len_ok": false,
+      "pass": false
+    },
+    {
+      "id": "N5d-auth-scheme-obsfold",
+      "kind": "narrow_must",
+      "in": "Authorization: Bearer\n  SYNTHETIC_AUDIT_TOKEN",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>",
+      "out_len": 25,
+      "expect_len": 25,
+      "exact_ok": true,
+      "contains_ok": true,
+      "len_ok": true,
+      "pass": true
+    },
+    {
+      "id": "N5e-auth-token-key-lf-secret",
+      "kind": "narrow_must",
+      "in": "authorization: token\nSYNTHETIC_AUDIT_TOKEN",
+      "expected": "authorization: <redacted>",
+      "out": "authorization: <redacted>",
+      "out_len": 25,
+      "expect_len": 21,
+      "exact_ok": true,
+      "contains_ok": true,
       "len_ok": false,
       "pass": false
     },

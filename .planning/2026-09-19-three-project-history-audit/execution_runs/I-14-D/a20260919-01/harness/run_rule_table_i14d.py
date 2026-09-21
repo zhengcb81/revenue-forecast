@@ -17,6 +17,12 @@ Changes vs I-14-C's table (everything else is byte-for-byte the same content):
   * NEW cred-partial-multiword-secret (the narrowing's declared residual).
   * NEW cred-quoted-multiword-full (quoting still gives full coverage).
 
+r2 (review F-REV-D-01 / reviewer RULING 2) adds the `cred-auth-split-*` family:
+a KNOWN scheme word followed by a line break puts the secret on a line that has
+no `key=` prefix, so the pre-r2 rule persisted it in plaintext.  Each row asserts
+the marker is ABSENT; the shared secret here is the 39-char credential the
+reviewer measured with (`authsplit_probe.py` carries that exact string).
+
     python run_rule_table_i14d.py --src <iso>/<tree>/src --label <tree> --out <json>
 """
 
@@ -29,6 +35,9 @@ from pathlib import Path
 
 MARKER = "SYNTHETIC_AUDIT_TOKEN"
 R = "<redacted>"
+# the reviewer's own synthetic 39-char secret (no whitespace); kept separate from
+# MARKER so a row can distinguish "the marker leaked" from "a real credential leaked"
+REVIEWER_SECRET = "ghp_ZQ7ReviewerFakeCredential0123456789"
 
 # (id, input, expected output, kind)
 TABLE = [
@@ -98,6 +107,29 @@ TABLE = [
     # I-14-D NEW: single-line auth tails are still consumed (I-14-C E1 baseline kept).
     ("cred-auth-sameline-tail-kept", "Authorization: Bearer " + MARKER
      + " rejected by provider", "Authorization: " + R, "credential"),
+    # r2 / F-REV-D-01 NEW: a KNOWN scheme word followed by a line break.  The secret
+    # sits on a line with no `key=` prefix, so before this fix the rule table's
+    # `credential_leaks` list was structurally blind to it.  Redacted = closed.
+    ("cred-auth-split-bearer-lf", "Authorization: Bearer\n" + MARKER,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-split-bearer-crlf", "Authorization: Bearer\r\n" + MARKER,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-split-bearer-obsfold", "Authorization: Bearer\n  " + MARKER,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-split-bearer-nospace", "Authorization:Bearer\n" + MARKER,
+     "Authorization:" + R, "credential"),
+    ("cred-auth-split-token-scheme", "authorization: token\n" + MARKER,
+     "authorization: " + R, "credential"),
+    # ... and the same shape with a REAL-looking credential instead of the marker:
+    # a marker-only table cannot see a rule that redacts the marker but not a
+    # 39-char token, so this row is the one that would have caught F-REV-D-01.
+    ("cred-auth-split-bearer-real-secret", "Authorization: Bearer\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    # ... plus the diagnostics-kept form: the card's goal and its negative clause
+    # must hold TOGETHER on this input, which is what the r1 tree could not do.
+    ("cred-auth-split-keeps-diagnostics", "Authorization: Bearer\n" + MARKER
+     + "\ndoc=17\nstage=summarize",
+     "Authorization: " + R + "\ndoc=17\nstage=summarize", "credential"),
     # a rejected key must not eat the pair that follows it (declared r3 behaviour)
     ("cred-after-url", "url=https://example/x?token=" + MARKER,
      "url=https://example/x?token=" + R, "credential"),
@@ -159,12 +191,16 @@ def main(argv: list[str] | None = None) -> int:
             "id": case_id, "kind": kind, "in": text, "expected": expected, "out": out,
             "fidelity_ok": out == expected,
             "marker_survives": MARKER in out,
+            # r2: the marker is 21 chars; a rule can be blind to a credential that is
+            # not the marker.  This is the fact that would have caught F-REV-D-01.
+            "secret_survives": REVIEWER_SECRET in out,
         })
 
     credentials = [r for r in rows if r["kind"] == "credential"]
     untouched = [r for r in rows if r["kind"] == "untouched"]
     residuals = [r for r in rows if r["kind"] == "residual"]
     leaks = [r["id"] for r in credentials if r["marker_survives"]]
+    secret_leaks = [r["id"] for r in rows if r["secret_survives"]]
     touched = [r["id"] for r in untouched if r["out"] != r["in"]]
     report = {
         "label": args.label,
@@ -172,20 +208,28 @@ def main(argv: list[str] | None = None) -> int:
         "helper_present": True,
         "entries": len(rows),
         "credential_leaks": leaks,
+        "credential_secret_leaks": secret_leaks,
         "touched_but_should_not_be": touched,
-        "residuals_confirmed": [r["id"] for r in residuals if r["marker_survives"]],
+        # F-REV-D-06: the old key name under-reported the residual inventory (it was
+        # filtered on `marker_survives`, so the marker-free residual row was invisible).
+        # Both facts are now emitted under names that say what they measure.
+        "residuals_with_marker_surviving": [r["id"] for r in residuals
+                                            if r["marker_survives"]],
+        "residual_rows": [r["id"] for r in residuals],
         "fidelity_failures": [{"id": r["id"], "expected": r["expected"], "out": r["out"]}
                               for r in rows if not r["fidelity_ok"]],
         "fidelity_ok": all(r["fidelity_ok"] for r in rows),
         "rows": rows,
     }
-    negative = (not report["fidelity_ok"]) or bool(leaks) or bool(touched)
+    negative = ((not report["fidelity_ok"]) or bool(leaks) or bool(secret_leaks)
+                or bool(touched))
     report["verdict"] = "negative" if negative else "pass"
     Path(args.out).write_text(json.dumps(report, indent=2, ensure_ascii=True),
                               encoding="utf-8")
     print(json.dumps({k: report[k] for k in
                       ("label", "entries", "credential_leaks",
-                       "touched_but_should_not_be", "residuals_confirmed",
+                       "credential_secret_leaks", "touched_but_should_not_be",
+                       "residuals_with_marker_surviving", "residual_rows",
                        "fidelity_ok", "verdict")}, ensure_ascii=True, indent=2))
     for failure in report["fidelity_failures"]:
         print("FIDELITY-FAIL", failure["id"], "expected", repr(failure["expected"]),

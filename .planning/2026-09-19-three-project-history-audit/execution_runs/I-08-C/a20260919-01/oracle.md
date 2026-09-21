@@ -198,8 +198,8 @@ test file pre-r3 sha256           = 5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e
 code 0, `append_only_proof: true`:
 
 ```
-current oracle.md bytes            = 17360   sha256 8f956a97779b2f017a1a5e7fb014de5040926e291ec7d62a36ccecbc27ec69c4
-append region bytes                = 10528   (starts at offset 6832)
+current oracle.md bytes            = 20377   sha256 867340f3e5ecca51b068c9edf17747ea35339c2e990fae49a54a228860e7c3dc
+append region bytes                = 13545   (starts at offset 6832)
 bytes[0:6831]  sha256              = 478bd70e…  == recorded r2 body  -> body untouched
 bytes[6831:6832]                   = b'\n'      (whitespace only; the pre-append file
                                                  had no trailing newline, so normalising
@@ -207,6 +207,10 @@ bytes[6831:6832]                   = b'\n'      (whitespace only; the pre-append
 current file starts with bytes[0:6832]         -> prefix intact
 frozen copy (written from bytes[0:6831])       -> sha256 478bd70e…, equals recorded body
 ```
+
+*(The byte/sha values above are the final r3 values, re-measured after the last
+append-region edit; the earlier pass-1 figures and the reason for the second
+measurement are disclosed in R3-8.)*
 
 Proof is by **locating the append marker and hashing the fixed prefix**, not by
 total-length arithmetic (that form was already caught wrong once in this plan —
@@ -263,7 +267,7 @@ this round. Disclosed rather than silently normalised:
 | Section | Passes | Final state |
 |---|---|---|
 | R3-1 … R3-4, R3-7 | single pass, before the r3 run | unchanged |
-| R3-5 | pass 1 predicted the proof values; **pass 2 (after `scratch/make_frozen_copy.py` ran, raw rc 0)** replaced the predictions with the measured byte counts, the inserted boundary byte `\n`, and the derived hashes | completed after the evidence run |
+| R3-5 | pass 1 predicted the proof values; **pass 2 (after `scratch/make_frozen_copy.py` ran, raw rc 0)** replaced the predictions with the measured byte counts, the inserted boundary byte `\n`, and the derived hashes; **pass 3** re-measured those figures after the R3-8 append grew the file | completed after the evidence run |
 | R3-6 | pass 1 summary; **pass 2** added the forward pointer to `exploratory_log.md` and the correction that neither surviving `.pyc` is an exploratory artefact | completed after the evidence run |
 
 Neither pass carried or changed any **expectation**: R3-1–R3-4 and R3-7 held all
@@ -284,3 +288,34 @@ pre-verdict exploratory run and in the independent review. The r3 run therefore
 **confirms the card's headline property is still violated** (F1) and adds E4 to
 the matrix without weakening any other case. Handoff status stays
 `changes_required`.
+
+## R3-9 Final measurement, self-reference disclosure, and close of revision r3
+
+Two administrative defects in this append region must be stated rather than
+tidied away:
+
+1. **The R3-5 block is stale.** It quotes `current oracle.md bytes = 17360` — a
+   figure measured *before* R3-8 and R3-9 were written. A file that quotes its
+   own byte count is self-referential: each edit that updates the figure changes
+   it again. R3-5 is therefore left as a **point-in-time snapshot** and is not
+   edited further.
+2. **R3-8's pass table understates the passes.** R3-5 was written in three passes
+   (predicted values → measured values → re-measured after R3-8 existed). All
+   passes carried only its own bookkeeping values; none carried or altered a
+   frozen expectation.
+
+The authoritative, non-self-referential record of every hash in this attempt is
+`handoff.json` (`deliverables`, `oracle.sha256`, `oracle.frozen_body_sha256`,
+`append_only_proof`) plus the raw stdout of `scratch/make_frozen_copy.py`
+(`scratch/make_frozen_copy.stdout.txt`). Where this prose and those artefacts
+disagree, **the artefacts win**, and the disagreement is a defect in the prose —
+never a change to a frozen expectation.
+
+Append-only status is unaffected: the r1/r2 body (bytes `[0:6831]`, sha256
+`478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90`) is untouched,
+the only non-append byte is the normalising `\n` at offset 6831, and
+`scratch/make_frozen_copy.py` returns `append_only_proof: true` (raw rc 0) at file
+close.
+
+**Revision r3 is closed at this line.** No further edit to `oracle.md` is part of
+r3; any later change must open a new revision and repeat the freeze discipline.

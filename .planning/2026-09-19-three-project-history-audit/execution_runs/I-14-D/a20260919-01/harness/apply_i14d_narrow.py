@@ -8,6 +8,17 @@ occurs exactly once before writing.  Operations:
     mut_authnl M2: from narrow, auth token join back to \\s+
     mut_auth1  M3: from narrow, auth value reduced to a strict single token
 
+r2 (review F-REV-D-01 / reviewer RULING 2) adds the scheme-aware fail-closed auth
+value.  Three more operations, all from the r2 narrow tree:
+
+    mut_authsplit M4: remove the `_AUTH_SCHEME_SPLIT` branch from the auth value
+                      group (and its comment block).  This is the tree that
+                      re-opens the auth newline-split credential leak, so the
+                      M4 arm covers the LEAK direction the M1/M2/M3 plan missed.
+    authsplit / collapse_authsplit
+                      the two halves of that edit, kept separate so the fix and
+                      its mutant are built from the same text (see OPS).
+
     python apply_i14d_narrow.py --op narrow --tree <iso>/<tree>
 """
 
@@ -97,10 +108,55 @@ SCANNER_NEW = block(
                    and not text[value_end].isspace()):
                 value_end += 1""")
 
+# ------------------------------------------------ r2: scheme-aware fail-closed
+
 # the redactor's char class contains a backslash-quote then a BARE single quote
 # ([^\s,;&\"'|]) - compose the line so the quote stays bare (a raw \' would add
 # an extra backslash).
 _AUTHJOIN_CLASS = r'[^\s,;&\"' + "'" + r'|]'
+
+# The comment + definition block inserted ahead of _AUTH_PATTERN.  It has to sit
+# between `_AUTH_BARE_VALUE` and `_AUTH_PATTERN` (not before the former) because
+# the M2 anchor is the `_AUTH_BARE_VALUE` line itself and must keep matching.
+AUTHSCHEME_NEW = [
+    "# A value may still cross ONE line break, but only behind a *known* scheme word.",
+    "# A wrapped header (`Authorization: Bearer` then the secret on the next line) or",
+    "# an RFC-7230 obs-fold puts the secret on a line that carries no `key=` prefix,",
+    "# so once the scheme word alone is consumed neither this pattern nor the",
+    "# assignment scanner can see it.  Fail CLOSED: after a known scheme word and",
+    "# exactly one line break, the first token is redacted.  The break and any",
+    "# indentation stay OUTSIDE the match, so the diagnostic keys on the following",
+    "# lines survive (the C13 half this card fixes).  The value delimiters are the",
+    "# same as _AUTH_BARE_VALUE.  Measured as review finding F-REV-D-01: without",
+    "# this branch the full credential is persisted in the append-only event log.",
+    '_AUTH_SCHEME_SPLIT = (r"(?:bearer|token|basic|digest|oauth|jwt|apikey|api_key|sso)"',
+    '                      r"[ \\t]*\\r?\\n[ \\t]*' + _AUTHJOIN_CLASS + '+")',
+]
+
+# NB: the tree keeps `_AUTH_PATTERN`'s value group on ONE physical line, so the
+# anchors below are single-element blocks (the implicit string concatenation is
+# only how this file spells that long line).
+AUTHVALUE_NARROW_OLD = [
+    '    + _LEFT_ANCHOR + r"bearer\\s+)(?P<value>" + _QUOTED_VALUE + r"|" '
+    '+ _AUTH_BARE_VALUE + r")"',
+]
+
+AUTHVALUE_NARROW_NEW = [
+    '    + _LEFT_ANCHOR + r"bearer\\s+)(?P<value>" + _QUOTED_VALUE + r"|" '
+    '+ _AUTH_SCHEME_SPLIT + r"|" + _AUTH_BARE_VALUE + r")"',
+]
+
+# the value group with the scheme branch removed again (M4 specimen)
+AUTHVALUE_NOSCHEME = AUTHVALUE_NARROW_OLD
+
+# Insertion pair for the new block.  The anchor is the `_AUTH_PATTERN = re.compile(`
+# line (unique in the file); the block is inserted AHEAD of it, after the blank line
+# that already separates it from `_AUTH_BARE_VALUE`.  That keeps the file's blank-line
+# layout and leaves every other op's anchors - in particular M2's `_AUTH_BARE_VALUE`
+# line - exactly where they were.
+AUTHPATTERN_HEAD = ["_AUTH_PATTERN = re.compile("]
+AUTHSCHEME_INSERT = AUTHSCHEME_NEW + AUTHPATTERN_HEAD
+
 AUTHJOIN_NARROW_LINE = (
     r'_AUTH_BARE_VALUE = r"' + _AUTHJOIN_CLASS
     + r'+(?:[ \t]+' + _AUTHJOIN_CLASS + r'+)*"')
@@ -123,6 +179,21 @@ OPS = {
     "mut_greedy": [(SCANNER_NEW, SCANNER_OLD)],
     "mut_authnl": [(block(AUTHJOIN_NARROW_LINE), block(AUTHJOIN_MUT_LINE))],
     "mut_auth1": [(block(AUTHVALUE_NARROW_LINE), block(AUTHVALUE_MUT_LINE))],
+    # r2 fix (reviewer RULING 2) and its mutant specimen.  `authsplit` inserts the
+    # `_AUTH_SCHEME_SPLIT` block (the M2 `_AUTH_BARE_VALUE` anchor is untouched) and
+    # then re-orders the value group.  `collapse_authsplit` only undoes the second
+    # half, which leaves an unused-but-defined constant and re-opens the leak: it is
+    # a knife-edge specimen, NOT used by the mutation plan.  `mut_authsplit` undoes
+    # both halves, i.e. it is the r2 tree as if the fix had never been written.
+    "authsplit": [
+        (AUTHPATTERN_HEAD, AUTHSCHEME_INSERT),
+        (AUTHVALUE_NARROW_OLD, AUTHVALUE_NARROW_NEW),
+    ],
+    "collapse_authsplit": [(AUTHVALUE_NARROW_NEW, AUTHVALUE_NOSCHEME)],
+    "mut_authsplit": [
+        (AUTHSCHEME_INSERT, AUTHPATTERN_HEAD),
+        (AUTHVALUE_NARROW_NEW, AUTHVALUE_NOSCHEME),
+    ],
 }
 
 

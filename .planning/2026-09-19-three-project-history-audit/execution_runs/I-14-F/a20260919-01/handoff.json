@@ -1,0 +1,74 @@
+{
+  "card_id": "I-14-F",
+  "parent": "I-14",
+  "attempt_id": "a20260919-01",
+  "date": "2026-09-21 (attempt label a20260919-01 per dispatch; wall clock drifted)",
+  "status": "review_pending",
+  "implementer": "I-14-F implementer agent; NOT the reviewer",
+  "objective": "Product-side short-basetemp convention: deep cwd no longer yields WinError 206 in the worker-bootstrap contract nodes; normal-depth behaviour unchanged; no cwd-shortening; no pytest-config loosening.",
+  "completed_steps": [
+    "1 claim: attempt dir + binding.json (implementation-stage)",
+    "2 isolated env: iso venv copied from I-00-A template; packages pinned to the I-00-B/I-14-C recorded set (pytest 9.1.1 pluggy 1.6.0 iniconfig 2.3.0 packaging 26.3 colorama 0.4.6 Pygments 2.21.0 PyYAML 6.0.3 requests 2.34.2 urllib3 2.8.0 certifi 2026.7.22 charset-normalizer 3.5.1 idna 3.20)",
+    "3 isolated tree: git archive of company-wiki HEAD f39bd5a64224cd0c7aa098f23f64bf3811fa8939 (1913 members; production dirty files excluded); tree verified equal to HEAD blobs",
+    "4 oracle.md frozen BEFORE runs (Addendum A: env+arithmetic corrections; Addendum B: first recalibration after falsification; Addendum C: final calibration 210/124/86)",
+    "5 RED: deep 167/166 x {child,logon} x 3 runs = 6/6 rc=1 (logon 3/3 literal WinError 206; child 3/3 FileNotFoundError launcher-events); short control passed on the §6 rerun (attempt-1 was the load band, kept)",
+    "6 implementation: iso/tree/conftest.py (criterion+relocation+cleanup+decision records) + iso/tree/tests/contract/test_short_basetemp_convention.py (13 unit tests); changes.diff = pure additions",
+    "7 GREEN: relocation fired in every over-budget run; zero path-family errors in every post-fix run; logon_wrapper 10/10 pass across deep/normal/boundary/over-deep/short placements; child_without_runtime passes when the load band allows (2/7 at deep-relocated, 1/1 over-deep) and its failures are all band signatures (non-adjudicating per oracle §6)",
+    "8 over-deep negative: cwd 190/189, basetemp 197/196 -> relocated, 2/2 PASS",
+    "9 boundary controls: no-reroute at basetemp 76/75 and 82/81 (relocated=false, logon passes; child band); falsified-normal 156/155 now relocates and logon passes (was literal 206 unrouted)",
+    "10 MUTATION: same tree, same cwd 167/166, CW_SHORT_BASETEMP_DISABLE=1 -> relocated=false and BOTH nodes fail with the frozen path signatures (logon WinError 206, child Errno-2 launcher-events); convention re-enabled is the only difference vs GREEN",
+    "11 evidence pack: after/evidence_index.json (55 placement runs + 3 unit runs), commands.json (real argv/cwd/rc per run), changes.diff, after/final_hashes.json, before/after/quarantine/mutation artifacts"
+  ],
+  "next_step_number": 1,
+  "next_action": "Independent reviewer opens review.md, re-verifies at least one RED counterexample, one GREEN deep logon run, the mutation pair, and the recalibration arithmetic (210-124=86), then writes their own review.md conclusion (accepted_scoped / changes_required / blocked) — implementer must not self-sign.",
+  "input_hashes": {
+    "company_wiki_HEAD": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+    "CW_HEAD:src/company_wiki/source_catalog/worker.py": "e83179915333eb472807b15a0580d93dcf280caadc31b0099988a3b744c469c6",
+    "CW_HEAD:tests/contract/test_source_catalog_worker_bootstrap.py": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+    "CW_HEAD:src/company_wiki/source_catalog/control.py": "553a35607be39c57460c8e781d697a60bcb627eaace0e85ad61810d3e1326bbb",
+    "I-14-C origin evidence": "execution_runs/I-14-C/a20260919-01/review.md §4a + harness/run_flake_evidence.py + OWNER_DECISIONS.md §13 T1-7 ③"
+  },
+  "current_source_hashes": {
+    "iso/tree/conftest.py": "c22be9f366c5590e522b713374419e293259619ead5ee72e1adb1ee71e6f2c22",
+    "iso/tree/tests/contract/test_short_basetemp_convention.py": "b0402b5693c1d5b13bb8c26225ac9da422f18bc428d0aee4ca80758830c74e7e",
+    "harness/run_placement.py": "9508c3fd108c93ac90a305b9ed7ccb28cdb180955b1fda40eaf981f84568414f",
+    "changes.diff": "a4c48acbf8706b74add97bc2391487d407edfd72f4c15ace8742876501d659b1",
+    "after/evidence_index.json": "131a0bde097eb0091ce667abe429b9ac238d86e7ba54aa2a33674416f2b6c78d"
+  },
+  "changed_paths": [
+    "iso/tree/conftest.py (ADDED)",
+    "iso/tree/tests/contract/test_short_basetemp_convention.py (ADDED)",
+    "harness/run_placement.py + harness/pack_evidence.py (attempt-local harness, not product)"
+  ],
+  "commands_executed": 55,
+  "raw_exit_codes": "see commands.json (per-run raw rc; pytest rc 0/1; driver guard rc 97 on my own geometry-arithmetic misses — kept as evidence the guard works)",
+  "expected_exit_codes": "RED deep=1; GREEN over-budget=0 with relocated=true; controls unrouted logon=0; mutation disabled deep=1",
+  "open_questions": [
+    "Calibration is machine/era-specific: the first frozen guess (260/100=160) was falsified (literal 206 at basetemp 155; dead launcher spawns at 156), the second (240/124=116) degraded at its boundary probe; final 210/124=86 is conservative. The TRUE degradation edge between basetemp 87 and 155 is unmeasured — rerouting there is deliberately conservative (documented, not silent).",
+    "child_without_runtime (I-14-E scope) showed a ~50% restart-band TODAY (vs 25% in I-14-E) — confounded by concurrent heavy pytest campaigns observed on this machine (PIDs recorded in evidence_index.json.notes). Its GREEN evidence is therefore thin (3 clean deep passes + over-deep pass); the card's path-family criterion is fully adjudicated, the band is not.",
+    "Historical anomaly unresolved: I-14-C cmd-A5 passed child_without_runtime at redirect paths ~271 while this attempt saw dead spawns at ~278-279; the convention stays inside this attempt's own measured envelope, so the anomaly does not affect the threshold, but the owner may want a dedicated measurement card.",
+    "RED-short-control-attempt1 rows in external-summaries carry a stale-mixed signature label (summary overwritten by the rerun); the authoritative attempt-1 evidence is before/short-control-captures/attempt1-* (3==2 band) and %TEMP%\\i14f-short-attempt1-kept.",
+    "cleanup removes relocated basetemp artifacts by design (card requires a defined cleanup), so post-mortem of band-failed relocated runs cannot inspect tmp artifacts; if the reviewer wants artifact-preserving diagnostics, that is a follow-up owner decision."
+  ],
+  "blocked_by": [],
+  "evidence_paths": {
+    "oracle": "oracle.md",
+    "decision": "decision.md",
+    "binding": "binding.json",
+    "commands": "commands.json",
+    "changes": "changes.diff",
+    "index": "after/evidence_index.json",
+    "hashes": "after/final_hashes.json",
+    "red": ["before/deep/pad55/", "before/short-control-captures/", "before/quarantine-env-r1/"],
+    "green": ["after/deep/pad666/", "after/deep/pad777/", "after/over-deep/", "after/unit-P0-run4/"],
+    "calibration_falsifiers": ["after/falsified-normal-r1/", "after/external-summaries/addendumC-falsifier-basetemp116.json"],
+    "mutation": ["after/external-summaries/mutation-disabled-exact167-166.json", "after/mutation-captures/"],
+    "review_stub": "review.md"
+  },
+  "reviewer_status": "pending (must be set by the independent reviewer; implementer does not self-sign)",
+  "scope_declaration": {
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "qualification": "test-infrastructure only (deep-cwd WinError 206 elimination for the two bootstrap nodes); no product runtime code changed; production repos untouched"
+  }
+}

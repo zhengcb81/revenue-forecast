@@ -231,6 +231,11 @@ def test_f07_rejected_key_does_not_swallow_a_later_pair():
 # for a 24-entry table, and the same wrong number had been copied into four other documents.
 # The block also gained multi-line cases (C13), which was the direction the fidelity
 # criterion was blind to.
+#
+# r2 (I-14-D): I-14-D's narrowing changed three expectations, and the reviewer's RULING 1
+# additionally required the auth newline-split family (review finding F-REV-D-01), so this
+# table is no longer byte-identical to I-14-C's.  The pair count is still bound mechanically
+# to r5/counts.json, which harness/report_i14d_counts.py regenerates from this table.
 # ---------------------------------------------------------------------------
 
 FIDELITY_CASES = [
@@ -246,21 +251,30 @@ FIDELITY_CASES = [
     ("client_secret=" + MARKER, "client_secret=<redacted>"),
     ("password: '" + MARKER + "'", "password: <redacted>"),
     ("token = " + MARKER, "token = <redacted>"),
-    # greedy value (r1 `_BARE_VALUE` semantics, kept - see carry C13):
-    ("a=1 token=" + MARKER + " b=2", "a=1 token=<redacted>"),
+    # r2/REVIEWER RULING 1: the value is ONE token (I-14-D narrowed the r1 greedy
+    # `_BARE_VALUE`), so a same-line middle token no longer eats the tail ` b=2`.
+    ("a=1 token=" + MARKER + " b=2", "a=1 token=<redacted> b=2"),
     ("a=1 token=" + MARKER + "; b=2", "a=1 token=<redacted>; b=2"),
-    # C13, the real worst case: the value crosses the newline, so the whole remaining
-    # diagnostic block is deleted (112 chars in, 34 out).  Frozen as CURRENT BEHAVIOUR so
-    # the criterion is not blind in this direction any more.
+    # r2/REVIEWER RULING 1: C13 closed - a credential value stops at the NEWLINE, so
+    # the remaining diagnostic block survives (was: whole tail deleted, 112 in / 34 out).
     ("upload failed for token=" + MARKER
      + " doc=17\nstage=summarize code=llm_global_failure request_id=req-1",
-     "upload failed for token=<redacted>"),
+     "upload failed for token=<redacted>"
+     + " doc=17\nstage=summarize code=llm_global_failure request_id=req-1"),
     # ... and the boundary: a value delimiter before the newline protects the tail
     ("failed for token=" + MARKER + "; see log\nstage=summarize code=llm_global_failure",
      "failed for token=<redacted>; see log\nstage=summarize code=llm_global_failure"),
-    ("token=" + MARKER + "\nnext=1", "token=<redacted>"),
+    ("token=" + MARKER + "\nnext=1", "token=<redacted>\nnext=1"),
     ("GET /x?token=" + MARKER + "&page=2", "GET /x?token=<redacted>&page=2"),
     ("Authorization: Bearer " + MARKER, "Authorization: <redacted>"),
+    # r2/REVIEWER RULING 1 (required addition): a KNOWN scheme word followed by a line
+    # break.  The secret's line carries no `key=` prefix, so this family was the blind
+    # spot behind review finding F-REV-D-01; the marker must be ABSENT and the line
+    # break must survive.
+    ("Authorization: Bearer\n" + MARKER, "Authorization: <redacted>"),
+    ("Authorization: Bearer\r\n" + MARKER, "Authorization: <redacted>"),
+    ("Authorization: Bearer\n  " + MARKER, "Authorization: <redacted>"),
+    ("authorization: token\n" + MARKER, "authorization: <redacted>"),
     ("upload failed for token=" + MARKER, "upload failed for token=<redacted>"),
     ("url=https://example/x?token=" + MARKER,
      "url=https://example/x?token=<redacted>"),
@@ -282,7 +296,10 @@ def test_f08_fidelity_pair_count_matches_the_mechanical_count():
     """F-I14C-R4-01: the pair count must not be hand-written anywhere.
 
     `harness/report_counts.py` computes this number from the table itself and writes
-    `r5/counts.json`; the r4 documents said "23" for a 24-entry table.
+    `r5/counts.json`; the r4 documents said "23" for a 24-entry table.  Adding the
+    r2/REVIEWER RULING 1 auth rows therefore means re-running
+    `harness/report_i14d_counts.py` and regenerating `r5/counts.json` - the assertion
+    below is the mechanism that forces that, and it is meant to fail loudly otherwise.
     """
     counts_path = ATTEMPT_ROOT / "r5" / "counts.json"
     assert counts_path.is_file(), "run harness/report_counts.py to produce r5/counts.json"
@@ -291,14 +308,16 @@ def test_f08_fidelity_pair_count_matches_the_mechanical_count():
     assert counts["fidelity_cases"] == counts["exact_nodeids"]
 
 
-def test_f08_c13_multiline_loss_is_frozen_not_hidden():
-    """C13, r5: the criterion must not be blind to multi-line inputs.
+def test_f08_c13_multiline_diagnostics_survive():
+    """C13, r2: the criterion must not be blind to multi-line inputs.
 
-    This asserts the CURRENT (accepted) behaviour explicitly, including that the loss is
-    silent diagnostic deletion and NOT a truncation artefact.  Lengths are computed from the
-    inputs, not transcribed: the r5 draft of this test hard-coded the reviewer's 112 and
-    failed with this attempt's shorter marker - the same hand-typed-number failure mode as
-    F-I14C-R4-01.
+    Reviewer RULING 1 renamed this from `test_f08_c13_multiline_loss_is_frozen_not_hidden`:
+    that name asserted the OLD greedy behaviour, which I-14-D removed.  It now asserts the
+    NARROWED behaviour explicitly - the credential is still redacted, the diagnostic block
+    survives, and the surviving block is NOT a truncation artefact (98 chars, well under
+    the 200 cap).  Lengths are computed from the inputs, not transcribed: the r5 draft of
+    this test hard-coded the reviewer's 112 and failed with this attempt's shorter marker -
+    the same hand-typed-number failure mode as F-I14C-R4-01.
     """
     sys.path.insert(0, str(PRODUCT_SRC))
     from company_wiki.source_catalog.observability import redact_and_truncate
@@ -308,14 +327,16 @@ def test_f08_c13_multiline_loss_is_frozen_not_hidden():
     for marker in (MARKER, review_marker):
         text = "upload failed for token=" + marker + tail
         out = redact_and_truncate(text)
-        assert out == "upload failed for token=<redacted>"
-        assert len(out) == 34, "well below the 200-char limit, so this is not truncation"
-        assert len(text) > len(out) + 60, "most of the message is gone"
-        for lost in ("doc=17", "stage=summarize", "code=llm_global_failure",
+        assert out == "upload failed for token=<redacted>" + tail
+        assert len(out) == 98, "well below the 200-char limit, so this is not truncation"
+        assert len(out) > 90, "the multi-line diagnostics must survive"
+        assert marker not in out, "the marker must still be redacted"
+        for kept in ("doc=17", "stage=summarize", "code=llm_global_failure",
                      "request_id=req-1"):
-            assert lost not in out, f"C13 no longer deletes {lost!r}: update the carry text"
-    # the reviewer's exact reproduction: 24-char marker -> 112 chars in, 34 out
+            assert kept in out, f"C13 narrowing lost the diagnostic key {kept!r}"
+    # the reviewer's exact reproduction: 24-char marker -> 112 chars in, 98 out
     assert len("upload failed for token=" + review_marker + tail) == 112
+    assert len("upload failed for token=" + MARKER + tail) == 109
 
 
 @pytest.mark.parametrize("text,expected", FIDELITY_CASES)

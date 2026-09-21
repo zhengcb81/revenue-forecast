@@ -4,95 +4,402 @@
  "plan": "2026-09-19-three-project-history-audit",
  "attempt_id": "a20260919-01",
  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-C\\a20260919-01",
- "status": "review_pending",
+ "revision": "r3 — deliverable-side remediation after the independent verdict; r1/r2 artifacts preserved, r3 additions additive",
+ "status": "changes_required",
+ "reviewer_verdict": "changes_required",
  "implementer_self_acceptance": false,
- "implementer_note": "implementer does NOT declare acceptance; two consumption-gate gaps (E11 label not bound, E13 segment base unbound) plus receipt-layer limitation and one card-anchor drift are handed to the reviewer",
- "interpreter": {
-  "path": "C:\\Miniconda\\python.exe",
-  "version": "3.13.9",
-  "pytest": "9.1.1",
-  "venv_created": false,
-  "network": "none used"
+ "status_note": "the PREVIOUS handoff.json said status=review_pending because it was written BEFORE the reviewer's verdict. It is superseded by this file. The implementer still does NOT self-sign accepted; changes_required stands until an independent reviewer says otherwise.",
+ "implementer_note": "DELIVERABLE-side defects from the review are fixed (E4 implemented, exploratory phase preserved, oracle re-frozen append-only, F1-F4 recorded as the card's legitimate NEGATIVE RESULT). The card's HEADLINE TRUST PROPERTY STILL FAILS against the product: attestation_status is not verified at consumption (F1), segments[i].base_revenue is a presentation-field coverage gap (F3). The product fixes are out of scope here and require a separate card / owner decision.",
+
+ "verdict_summary": {
+  "verdict": "changes_required",
+  "headline": "the card's headline property FAILS — consumers verify attestation NOT AT ALL",
+  "reviewer_confirmed": "12/12 tests passed, production untouched, pre-registration legitimate (no violation)",
+  "review_artifact": "review.md",
+  "review_sha256": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3"
  },
- "command": "C:\\\\Miniconda\\\\python.exe -m pytest <attempt>/test_i08c_consumer_rejection.py -v",
- "test_results": {
-  "passed": 12,
-  "failed": 0,
-  "runtime_seconds": 1.43,
-  "evidence": "pytest_verdict.stdout.txt"
- },
- "oracle": {
-  "file": "oracle.md",
-  "sha256": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
-  "provenance": "r1 frozen pre-run from code reading only; exploratory run 8/12 passed (fixture mechanics + E6 vector under-bound); r2 re-frozen BEFORE verdict run; verdict run 12/12 against r2"
- },
- "deliverables": {
-  "oracle.md": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
-  "handoff.json": "self (written last)",
-  "test_i08c_consumer_rejection.py": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f",
-  "pytest_verdict.stdout.txt": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d"
- },
- "test_file_lines": 199,
- "production_read_only": {
-  "revenue_publication.py": {
-   "sha256": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
-   "card_anchor": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
-   "match": true
-  },
-  "revenue_report.py": {
-   "sha256": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
-   "card_anchor": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
-   "match": true
-  },
-  "publication_registry.py": {
-   "sha256": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344",
-   "card_anchor": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
-   "match": false,
-   "note": "drift pre-existing (commit 1dbae639 feat ZR-701); function is_registered still at line 188 with same contract; card executed against current file"
-  },
-  "artifacts/registry/publications.jsonl": {
-   "sha256": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
-   "note": "identical to I-08-B pre-edit binding bc3256bb... — test redirected REVENUE_PUBLICATION_REGISTRY to a temp file because formal run_forecast registers publications"
-  },
-  "git_status_scripts": "clean; no production file modified by this card"
- },
- "consumer_entries_exercised": {
-  "validate_publication_receipt": "revenue_publication.py:185 (receipt/hash layer)",
-  "validate_forecast_output / validate_published_forecast": "revenue_report.py:1239/1196 (strong dispatcher, embedded-input recomputation)",
-  "is_registered": "publication_registry.py:188 (registry authority, fail-closed)",
-  "not_exercised": "invest-* consumers (out of scope, owner cards); CLI publish txn (F01/F02 exercised via the dispatcher chain those entries call)"
- },
- "findings_for_reviewer": [
+
+ "deliverable_fixes_applied": [
   {
-   "id": "I08C-F1",
-   "case": "E11/A-C2",
-   "severity": "high",
-   "finding": "attestation_status is a plain label: U + attestation_status=host_signed with recomputed self-hashes passes BOTH validate_publication_receipt and validate_forecast_output; capability gate exists only at issuance (revenue_core.py:167, attestation_capability()). Trusted-formal consumption gate absent in production tree — matches the I-08-B iso/rf surface not yet applied to the product repo."
+   "id": "DF-1",
+   "reviewer_item": "(1) E4 absent from the frozen test file with no stated reason",
+   "resolution": "IMPLEMENTED, not withdrawn. New node test_e4_verification_context_mutation_rejected with four frozen sub-assertions E4a-E4d. E4's expectation text is UNCHANGED from the r1 freeze (oracle.md line 54); this adds detail and a derivation record only.",
+   "why_implement": "the field exists on every formal receipt and the validator has a dedicated gate (revenue_publication.py:232-240), so the case is testable in one node; withdrawing would knowingly drop a card-mandated A-C3 case from the matrix",
+   "derivation": "expected read from production SOURCE TEXT, not produced by the receipt builder. Probe scratch/e4_derivation_probe.py rc 0 -> scratch/e4_derivation_probe.stdout.txt. Probe revision 1 mis-keyed the context dict (gate_ids instead of executed_gate_ids) and is disclosed in oracle.md R3-2.",
+   "test_file_before": "8542 bytes / 5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f (12 nodes)",
+   "test_file_after": "10902 bytes / 0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5 (13 nodes)"
   },
   {
-   "id": "I08C-F2",
-   "case": "E6/A-C3",
-   "severity": "medium",
-   "finding": "receipt layer is hash-consistency only: attacker-recomputed validated_payload_sha256/receipt_sha256/result_sha256 pass validate_publication_receipt; only the strong dispatcher (output recomputation from embedded input) rejects. Consumers MUST call the strong dispatcher; the receipt validator alone is not a security gate."
+   "id": "DF-2",
+   "reviewer_item": "(2) exploratory 8/12 run left no preserved log",
+   "resolution": "preserved everything that exists and named everything that does not. 6 surviving artifacts archived byte-identically under exploratory/ with sizes, mtimes and sha256 in exploratory_manifest.json; full inventory plus the 'not recoverable' list in exploratory_log.md; summary appended to oracle.md R3-6.",
+   "honest_gaps": [
+    "the exploratory run's STDOUT does not exist anywhere — it was never written to a file; no log was fabricated",
+    "per-test pass/fail detail of the 8/12 run is unrecoverable (only the prose count survives)",
+    "the exploratory source revision of the test file was replaced in place",
+    "the exploratory node-id list and lastfailed set were already overwritten by the r2 verdict run BEFORE this round — that loss pre-dates the remediation"
+   ],
+   "correction_recorded": "NEITHER surviving .pyc is an exploratory artifact: both carry the r2 source id (field1=1790017267 = 2026-09-21T19:01:07Z, field2=8542 bytes). Claiming otherwise would have been wrong."
   },
   {
-   "id": "I08C-F3",
-   "case": "E13",
-   "severity": "medium",
-   "finding": "segments[i].base_revenue (direct_revenue) is bound by NO output gate: self-hash-consistent forgery passes even validate_forecast_output (empirical DID-NOT-RAISE, pinned by test_e13). Field renders into official report segment tables (render_markdown)."
+   "id": "DF-3",
+   "reviewer_item": "(4) re-freeze the oracle with E4 either implemented or explicitly withdrawn",
+   "resolution": "oracle.md APPEND-ONLY revision r3 (sections R3-1..R3-9). The r1/r2 body (bytes[0:6831], sha256 478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90) is byte-untouched; see append_only_proof.",
+   "disclosure": "appending necessarily inserted ONE non-append byte: a normalising '\\n' at offset 6831, because the pre-append file had no trailing newline. Whitespace only; the r1/r2 body hash is unchanged.",
+   "honest_blemish": "oracle.md R3-5 quotes 'current oracle.md bytes = 17360', a figure measured before R3-8/R3-9 existed. R3-5 is left as a point-in-time snapshot; R3-8 and R3-9 disclose the further passes. The authoritative hashes are in this file and in scratch/make_frozen_copy.stdout.txt — if the prose disagrees with them, the artifacts win. No frozen expectation was ever relaxed."
   },
   {
-   "id": "I08C-F4",
-   "case": "anchors",
-   "severity": "low",
-   "finding": "card anchor for publication_registry.py drifted (44662744 -> 29aaae4f) due to commit 1dbae639 after card freeze; contract unchanged, card executable."
+   "id": "DF-4",
+   "reviewer_item": "(3) record the product findings as the card's legitimate negative result",
+   "resolution": "F1-F4 recorded verbatim (with the reviewer's scope-narrowing for F3) in decision.md section 2 and in product_findings below. NOT repaired."
+  },
+  {
+   "id": "DF-5",
+   "reviewer_item": "review_and_handoff.md minimum deliverable directory",
+   "resolution": "binding.json, commands.json, decision.md and changes.diff were ABSENT from the r1 package and are added in r3. changes.diff records the modification set as the EMPTY SET, with the anchor hashes and the empty 'git status --porcelain' as evidence, plus a verbatim full-content dump of the primary anchor file for byte inspection."
   }
  ],
- "scope_notes": [
-  "production repos READ-ONLY: no writes; registry redirected via env var",
-  "no venv created; C:\\\\Miniconda\\\\python.exe used directly",
-  "no repos copied; production files referenced by path",
-  "test file is a new isolated node in the attempt dir, not added to production tests/"
+
+ "product_findings": [
+  {
+   "id": "F1",
+   "severity": "HIGH",
+   "case": "E11 / card A-C2",
+   "title": "attestation_status='host_signed' is a plain label — consumers verify it NOT AT ALL",
+   "mechanism": "label set from a boolean at revenue_core.py:167 (attestation_status = 'host_signed' if attestation_capability() else 'unattested'); attestation_capability() at revenue_core.py:113-125 returns True if the REVENUE_ATTESTATION_PROVIDER path EXISTS AS A FILE (no key, no issuer, no signature, no provider invocation); consumption is set membership only at revenue_publication.py:222-226 (require(attestation in (None, 'host_signed', 'unattested'), ...)). No signature/issuer/publication_attestation check exists anywhere in scripts/.",
+   "reviewer_new_material_finding": "pointing REVENUE_ATTESTATION_PROVIDER at a 5-byte plain .txt yields attestation_capability() == True -> a FORMAL publication is stamped host_signed with NO signature or issuer field -> the strong dispatcher ACCEPTS it. Any operator can mint 'host-signed' artifacts with an env var aimed at a text file.",
+   "also": "the honest unmodified 'unattested' package is likewise accepted by every consumer entry point in this repo: consumers do not under-verify, they do not verify.",
+   "pinned_in_this_card_by": "test_e11_host_signed_label_flip_is_not_bound_at_consumption (rc=3 as a business verdict — the gap, not a pass)",
+   "evidence": "review.md 'F1' section; oracle.md E11 (r1, predicted from code reading); decision.md section 2 F1",
+   "repair_status": "NOT REPAIRED — product change, out of scope (see out_of_scope_note)"
+  },
+  {
+   "id": "F2",
+   "severity": "MEDIUM",
+   "case": "E6 / card A-C3",
+   "title": "the receipt layer is hash-consistency only; the strong dispatcher alone rejects",
+   "mechanism": "after recomputing validated_payload_sha256 / receipt_sha256 / result_sha256, a mutated top-level value passes validate_publication_receipt and is rejected only by validate_forecast_output (genuine recomputation failure, not input-binding failure).",
+   "mitigating_fact_recorded": "both public consumers in this repo run the strong path (validate_forecast_output, and render_markdown which calls it at revenue_report.py:1278), which is why severity is medium and not high.",
+   "pinned_in_this_card_by": "test_e6_recomputed_self_hashes_do_not_repair_value_forgery",
+   "repair_status": "NOT REPAIRED — product change, out of scope (see out_of_scope_note)"
+  },
+  {
+   "id": "F3",
+   "severity": "MEDIUM (scope-narrowed by the reviewer; the implementer's original wording overstated it)",
+   "case": "E13",
+   "title": "segments[i].base_revenue is a PRESENTATION-FIELD coverage gap, not a route to a forged company total",
+   "mechanism": "a self-hash-consistent forgery of segments[0].base_revenue is accepted by the receipt layer AND the strong dispatcher and renders into the official 分部表 (render_markdown).",
+   "reviewer_scope_narrowing": "company totals do NOT move: base_revenue and consolidated_forecast[scenario].annual_revenue are independently validated by _recompute_consolidated_paths (revenue_report.py:65-155). A coherent full-story forgery that also moves the reported total and historicals is caught by validate_base_reconciliation (contracts/document.py:955) and by the receipt's validated_input_sha256. NOT a route to a forged total.",
+   "pinned_in_this_card_by": "test_e13_segment_base_revenue_not_bound_by_output_gates (rc=3 as a business verdict — the gap, not a pass)",
+   "repair_status": "NOT REPAIRED — product change, out of scope (see out_of_scope_note)"
+  },
+  {
+   "id": "F4",
+   "severity": "LOW",
+   "case": "card anchor drift",
+   "title": "publication_registry.py anchor drifted 44662744... -> 29aaae4f... (commit 1dbae639, feat ZR-701); contract intact",
+   "detail": "is_registered is still at line 188 (lookup at 183) with the same fail-closed contract, so the card remains executable against the current file. Reported, not repaired, per scope.",
+   "repair_status": "reported only"
+  }
  ],
- "next_action": "HANDOVER to independent reviewer: verify oracle r2 freeze order, re-run the pytest node, adjudicate I08C-F1..F4; scope-external consumers (invest-*) remain unverified and must not be marked complete."
+
+ "out_of_scope_note": "The three reviewer-recommended PRODUCT fixes REQUIRE A SEPARATE CARD / OWNER DECISION and this card MUST NOT implement them: (a) bind attestation at consumption — either carry a publication_attestation binding record (issuer/key/domain, per I-08-A E27/G4) and require it whenever attestation_status == 'host_signed', or declare the label non-evidentiary and require an explicit verified-signature field, and stop treating file existence as signing capability (attestation_capability()); (b) bind segments[i].base_revenue into reconciliation (cross-check against base_revenue_parameter_id in the embedded input, or fold it into the incremental_contribution reconciliation that already runs); (c) document or deprecate validate_publication_receipt as a non-security hash-consistency check and state that consumers must call validate_forecast_output. Reasons they are not mine: each touches production scripts/ outside this card's allowlist; F1's decisive consumer lives in a DIFFERENT repo (~/.claude/skills/invest-core/scripts/invest_contracts.py:1130-1142) owned by another card; a consumption-side trust gate changes the publication contract for cross-repo consumers and therefore needs professional design adjudication; and the card's own failure-stop condition forbids claiming the property is wired when only a helper was tested. Sequencing: these are PROPOSALS recorded in decision.md section 2, not adopted changes.",
+
+ "required_by_reviewer": [
+  {
+   "n": 1,
+   "from_review": "What would close this card (1)",
+   "severity": "BLOCKING",
+   "item": "Bind attestation at consumption (F1): the label must not be accepted on set membership. Either (a) carry the binding record (publication_attestation with issuer/key/domain, per I-08-A E27/G4) and require it whenever attestation_status == 'host_signed', or (b) declare the label non-evidentiary and make trusted-formal consumers require an explicit verified-signature field. Also fix attestation_capability() so existence of a file is not treated as signing capability.",
+   "owner": "product owner / separate card — NOT this card",
+   "status": "OPEN — product change, deliberately not implemented"
+  },
+  {
+   "n": 2,
+   "from_review": "What would close this card (2)",
+   "severity": "MEDIUM",
+   "item": "Bind segments[i].base_revenue (F3): cross-check it against the segment's base_revenue_parameter_id in the embedded input, or include it in the incremental_contribution reconciliation that already runs.",
+   "owner": "product owner / separate card — NOT this card",
+   "status": "OPEN — product change, deliberately not implemented"
+  },
+  {
+   "n": 3,
+   "from_review": "What would close this card (3)",
+   "severity": "MEDIUM",
+   "item": "Document or deprecate validate_publication_receipt (F2): state in its docstring/API that it is a hash-consistency check and not a security gate, and that consumers must call validate_forecast_output.",
+   "owner": "product owner / separate card — NOT this card",
+   "status": "OPEN — product change, deliberately not implemented"
+  },
+  {
+   "n": 4,
+   "from_review": "What would close this card (4)",
+   "severity": "DELIVERABLE",
+   "item": "Re-freeze the oracle with E4 either implemented or explicitly withdrawn, and preserve the exploratory run log.",
+   "owner": "implementer (this card)",
+   "status": "DONE in r3 — E4 implemented (DF-1, DF-3); exploratory phase preserved and inventoried (DF-2). E4's expectation text unchanged from the r1 freeze."
+  }
+ ],
+
+ "review_items_addressed_this_round": {
+  "deliverable": ["(1) E4 absent", "(2) exploratory log not preserved", "(4) re-freeze oracle / preserve exploratory log", "(3) record findings as the negative result"],
+  "product": "NONE — F1-F4 are recorded, not repaired, by design",
+  "open_after_this_round": ["(1) bind attestation at consumption", "(2) bind segments[i].base_revenue", "(3) deprecate/document validate_publication_receipt"]
+ },
+
+ "reviewer_unverified_items_carried_forward": [
+  "invest-* consumers were NOT executed by the reviewer and are NOT executed here (card-declared out of scope). The attestation_status == 'host_signed' gate at ~/.claude/skills/invest-core/scripts/invest_contracts.py:1130-1142 is cited read-only from the I-08-A record. I-08-C cannot be closed as covering these.",
+  "No CLI / transaction entry point was exercised; F01/F02 are covered transitively through the dispatcher chain.",
+  "The exploratory 8/12 run's stdout is unrecoverable (preserved-so-far inventory in exploratory_log.md).",
+  "E4 was absent from the r2 test file; its mechanism was covered inside test_e3 but never independently asserted. NOW independently asserted by test_e4 (r3).",
+  "is_registered's RegistryError fail-closed behaviour was exercised in-harness only (test_e12 against a temp registry), not against an independently corrupted registry copy outside the harness."
+ ],
+
+ "evidence_paths": {
+  "binding": "binding.json",
+  "decisions": "decision.md",
+  "commands": "commands.json",
+  "oracle": "oracle.md (r1/r2 body + append-only revision r3)",
+  "oracle_frozen_body_copy": "oracle.md.r2_frozen_copy.txt",
+  "changes": "changes.diff (modification set = EMPTY; contains the full-content dump of the primary anchor)",
+  "verdict_run_stdout_r3": "pytest_r3_verdict.stdout.txt",
+  "verdict_run_rc_r3": "runner/.rc.txt",
+  "verdict_run_stdout_r2": "pytest_verdict.stdout.txt",
+  "reviewer_rerun_stdout": "reviewer_rerun_stdout.txt",
+  "reviewer_verdict": "review.md",
+  "exploratory_inventory": "exploratory_log.md",
+  "exploratory_manifest": "exploratory_manifest.json",
+  "exploratory_copies": "exploratory/**",
+  "post_run_production_status": "after/production_status.txt",
+  "probe_stdout": "scratch/e4_derivation_probe.stdout.txt",
+  "append_only_proof_stdout": "scratch/make_frozen_copy.stdout.txt",
+  "archive_stdout": "scratch/archive_exploratory.stdout.txt"
+ },
+
+ "commands_executed": [
+  "I08C-c1-e4-derivation-probe",
+  "I08C-c2-archive-exploratory",
+  "I08C-c3-append-only-proof",
+  "I08C-c4-verdict-pytest",
+  "I08C-c5-post-run-production-hash-check"
+ ],
+ "raw_exit_codes": {
+  "I08C-c1-e4-derivation-probe": 0,
+  "I08C-c2-archive-exploratory": 0,
+  "I08C-c3-append-only-proof": 0,
+  "I08C-c4-verdict-pytest": 0,
+  "I08C-c5-post-run-production-hash-check": 0
+ },
+ "expected_exit_codes": {
+  "I08C-c1-e4-derivation-probe": 0,
+  "I08C-c2-archive-exploratory": 0,
+  "I08C-c3-append-only-proof": 0,
+  "I08C-c4-verdict-pytest": 0,
+  "I08C-c5-post-run-production-hash-check": 0
+ },
+ "raw_vs_expected_note": "all five commands matched their frozen expectation on the first execution; nothing was retried blindly and no expected value was edited after the fact",
+
+ "test_results": {
+  "r3": {
+   "collected": 13,
+   "passed": 13,
+   "failed": 0,
+   "runtime_seconds": 2.37,
+   "raw_returncode": 0,
+   "evidence": "pytest_r3_verdict.stdout.txt"
+  },
+  "r2": {
+   "collected": 12,
+   "passed": 12,
+   "runtime_seconds": 1.43,
+   "raw_returncode": 0,
+   "evidence": "pytest_verdict.stdout.txt",
+   "note": "this file is NOT overwritten by r3, so the reviewer's independently CONFIRMED digest cb81112d... remains valid"
+  },
+  "exploratory_pre_r2": {
+   "collected": 12,
+   "passed": 8,
+   "evidence": "NONE — stdout was never preserved; see exploratory_log.md section 3",
+   "corroboration": "disclosed prose in oracle.md revision r2 + .pytest_cache creation 18:53:35 UTC + lastfailed write 18:56:19 UTC + r2 freeze 18:58:33 UTC preceding verdict stdout 18:58:47 UTC; reviewer adjudicated 'no pre-registration violation'"
+  }
+ },
+
+ "case_results": [
+  {"case": "E1", "node": "test_e1_legit_signed_package_passes_repeatably", "expected": "accepted (positive)", "observed": "accepted", "business_rc": 0},
+  {"case": "E2", "node": "test_e2_forged_payload_with_original_receipt_rejected", "expected": "validated_payload_sha256 mismatch", "observed": "raised as expected", "business_rc": 2},
+  {"case": "E3", "node": "test_e3_forged_gate_ids_and_context_rejected", "expected": "gate_ids mismatch / verification context mismatch", "observed": "raised as expected", "business_rc": 2},
+  {"case": "E4", "node": "test_e4_verification_context_mutation_rejected", "expected": "verification context mismatch (a/b/c), ACCEPTED for the correct value (d)", "observed": "exactly as frozen", "business_rc": 2, "new_in": "r3"},
+  {"case": "E5", "node": "test_e5_whole_receipt_replayed_onto_other_payload_rejected", "expected": "publication_receipt mismatch", "observed": "raised as expected", "business_rc": 2},
+  {"case": "E6", "node": "test_e6_recomputed_self_hashes_do_not_repair_value_forgery", "expected": "receipt layer passes (F2 limitation); strong dispatcher rejects", "observed": "as frozen", "business_rc": 2},
+  {"case": "E7", "node": "test_e7_registry_anchor_does_not_admit_forged_package", "expected": "is_registered True but dispatcher rejects", "observed": "as frozen", "business_rc": 2},
+  {"case": "E8", "node": "test_e8_old_verification_context_on_other_input_rejected", "expected": "validated_input_sha256 mismatch", "observed": "raised as expected", "business_rc": 2},
+  {"case": "E9", "node": "test_e9_draft_package_rejected_by_formal_consumer", "expected": "gate_ids mismatch; dispatcher raises", "observed": "raised as expected", "business_rc": 2},
+  {"case": "E10", "node": "test_e10_result_without_receipt_rejected", "expected": "missing field: publication_receipt", "observed": "raised as expected", "business_rc": 2},
+  {"case": "E11", "node": "test_e11_host_signed_label_flip_is_not_bound_at_consumption", "expected": "PROPERTY VIOLATED — both layers ACCEPT the flip (F1)", "observed": "accepted (gap reproduces)", "business_rc": 3, "meaning": "green pytest node, failed business verdict: this is the card's negative result, NOT a pass"},
+  {"case": "E12", "node": "test_e12_registry_fail_closed_on_corruption", "expected": "RegistryError (fail-closed)", "observed": "raised as expected", "business_rc": 2},
+  {"case": "E13", "node": "test_e13_segment_base_revenue_not_bound_by_output_gates", "expected": "GAP PINNED — even the strong dispatcher ACCEPTS (F3)", "observed": "accepted (gap reproduces)", "business_rc": 3, "meaning": "green pytest node, failed business verdict: negative result, NOT a pass"}
+ ],
+ "exit_code_legend": {
+  "source": "execution_v2/START_HERE.md frozen rc table (owner ruling T1-19 / section 13)",
+  "0": "pass",
+  "1": "harness failure",
+  "2": "no verdict / correctly-rejected negative",
+  "3": "not as expected (positive failed, or a negative was not rejected)",
+  "aggregation_warning": "one pytest process returns ONE rc for 13 nodes; a reader must not infer '13 passed => card accepted'. E11 and E13 are rc=3 as business verdicts."
+ },
+
+ "current_source_hashes": {
+  "scripts/revenue_publication.py": {"sha256": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba", "card_anchor": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba", "match": true},
+  "scripts/revenue_report.py": {"sha256": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f", "card_anchor": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f", "match": true},
+  "scripts/publication_registry.py": {"sha256": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344", "card_anchor": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa", "match": false, "note": "F4 pre-existing drift; is_registered still at line 188"},
+  "artifacts/registry/publications.jsonl": {"sha256": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91", "note": "unchanged through the r3 run"}
+ },
+ "git_head": "ab20cebea21fa2e540ad5bab15a00ad116d28e14",
+ "git_head_at_evidence_time": "4bc77f8f827e93dae4fbbff9a68922a79fcdd684",
+ "git_head_provenance_note": "HEAD moved 4bc77f8f -> ab20cebe because the PARENT ORCHESTRATOR committed the plan tree at 2026-09-21 20:29:27 +0100 ('... I-08-C changes_required dispatched'), after the r3 run. This card executed no git write command. Files under .planning/** edited after that commit therefore show as ' M' in git status -- expected, and not an unreported change by this card.",
+ "production_read_only": {
+  "policy": "ZERO writes in all three production repos; no git write command executed",
+  "git_status_porcelain_scope": "scripts/ artifacts/ tests/ config/",
+  "git_status_porcelain_result": "EMPTY",
+  "evidence": "after/production_status.txt",
+  "registry_protection": "REVENUE_PUBLICATION_REGISTRY redirected to a pytest tmp dir because the formal run_forecast path registers publications"
+ },
+
+ "changed_paths": {
+  "production": [],
+  "attempt_dir_added_or_modified": [
+   "oracle.md (append-only revision r3; r1/r2 body byte-untouched)",
+   "oracle.md.r2_frozen_copy.txt (new — byte copy of the r2 frozen body)",
+   "test_i08c_consumer_rejection.py (12 -> 13 nodes; E4 added)",
+   "pytest_r3_verdict.stdout.txt (new; the r2 file is untouched)",
+   "exploratory_log.md (new)",
+   "exploratory_manifest.json (new)",
+   "exploratory/** (new — 6 archived pre-run artifacts)",
+   "binding.json (new)",
+   "commands.json (new)",
+   "decision.md (new)",
+   "changes.diff (new)",
+   "after/production_status.txt (new)",
+   "runner/.rc.txt, runner/tmp/ (new)",
+   "scratch/e4_derivation_probe.py, scratch/e4_derivation_probe.stdout.txt (new)",
+   "scratch/archive_exploratory.py, scratch/archive_exploratory.stdout.txt (new)",
+   "scratch/make_frozen_copy.py, scratch/make_frozen_copy.stdout.txt (new)",
+   "scratch/prod_baseline_full.diff, scratch/prod_baseline_stat.txt (new — inputs to changes.diff)",
+   ".pytest_cache/v/cache/nodeids (rewritten by the r3 run; the r2 version is preserved in exploratory/)",
+   "handoff.json (this file, rewritten)"
+  ],
+  "reviewer_artifacts_untouched": ["review.md", "reviewer_rerun_stdout.txt"]
+ },
+
+ "append_only_proof": {
+  "method": "locate the append marker and hash the fixed prefix — never total-length-minus-append-length arithmetic",
+  "script": "scratch/make_frozen_copy.py",
+  "stdout": "scratch/make_frozen_copy.stdout.txt",
+  "raw_returncode": 0,
+  "append_only_proof": true,
+  "oracle_bytes": 22335,
+  "oracle_sha256": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3",
+  "frozen_body_bytes": 6831,
+  "frozen_body_sha256_on_disk_now": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
+  "frozen_body_sha256_recorded_r2": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
+  "frozen_body_untouched": true,
+  "append_marker_offset": 6832,
+  "non_append_bytes": "exactly one whitespace byte, b'\\n' at offset 6831, from normalising the pre-append file's missing trailing newline",
+  "append_region_bytes": 15503,
+  "frozen_copy_file": "oracle.md.r2_frozen_copy.txt",
+  "frozen_copy_sha256": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90"
+ },
+
+ "input_hashes": {
+  "card": "execution_v2/card_I-08-C.md",
+  "reviewer_verdict": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
+  "r2_oracle_body": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
+  "r2_test_file": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f",
+  "r2_verdict_stdout": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d"
+ },
+ "deliverables": {
+  "oracle.md": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3",
+  "oracle.md.r2_frozen_copy.txt": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
+  "test_i08c_consumer_rejection.py": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5",
+  "pytest_r3_verdict.stdout.txt": "b3a7d8b9317a2475e9f5811e7d4c10fe46a96a1b0d2cf1d1f66bebbf43e7a611",
+  "pytest_verdict.stdout.txt": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d",
+  "reviewer_rerun_stdout.txt": "fdb9866ec7dbfbffff4b2f485c990ed45cd813ad9c9a34b28c9a16784879c4de",
+  "review.md": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
+  "binding.json": "self (not hashed; hash it on receipt)",
+  "commands.json": "0946255a31d31ed295848200dfd35530d43d2340b5e50d81cf01ec66e80e0ead",
+  "decision.md": "5092802fa237baa09b78810fc933c281db8a7020b8dd0d43da59e9aaab958d14",
+  "changes.diff": "102a7ad8860ae7167edec8309c0b01715773ce8c4f16660ea67b6136b140a89c",
+  "exploratory_log.md": "7d427e45b96cae146821e4e7c436257113c07b5ae9e404bd5434b7a600c9e7a1",
+  "exploratory_manifest.json": "371af534d56fbffea87d3af1e36da713269cfa3c930299864c6d9ec47b598f33",
+  "after/production_status.txt": "62fd97212c5e189debd822591ee961d3e98928516b1191b9c6644ce5a64cc4c6",
+  "scratch/e4_derivation_probe.py": "784046ad1d5cf4f9db527f12b4de0615c74290db771272b918bacc4b5f29ff48",
+  "scratch/e4_derivation_probe.stdout.txt": "6f8d1e660601debbe5ab1ce1ad1ff5184ac6cd9f9efbace484512a3a1a0e8118",
+  "scratch/make_frozen_copy.py": "bd680e276c07128d52cbf5dbd056e45e99eac698395a230557cd56683dbbf9bb",
+  "scratch/make_frozen_copy.stdout.txt": "9b89e42a6f22cc7fd5e62e29de7e1abf62284b20165b4c73e0bc787f98ef4fcd",
+  "scratch/archive_exploratory.py": "a3364a2d920fe5a641d0ce7f8e0e67c9710d076271393b56c4e22e88c2fa0fc3",
+  "scratch/archive_exploratory.stdout.txt": "b9a48ab955d8b55234316d3dbea890c1d7f6a00d5906e6a78bf289e72d26086f",
+  "handoff.json": "self (written last; hash it on receipt)"
+ },
+
+ "completed_steps": [
+  "card allowlist and boundaries re-read; production kept read-only",
+  "E4 disposition decided (implement) and its contract frozen before the test edit",
+  "E4 independently re-derived from source text via a probe whose expectations do not come from the receipt builder",
+  "oracle.md re-frozen append-only with the r1/r2 body hash-proved untouched",
+  "test file extended 12 -> 13 nodes and frozen at 0072b160... before the r3 run",
+  "exploratory-phase artifacts archived and inventoried, with the unrecoverable set named",
+  "r3 evidence run executed: 13 collected / 13 passed, raw rc 0",
+  "post-run production hash check: git porcelain empty, all anchors unchanged",
+  "F1-F4 recorded as the card's legitimate negative result",
+  "reviewer items (1)-(4) enumerated for the next reviewer, three of them still open on the product side"
+ ],
+ "steps_not_applicable": [
+  "recovery/: this card performs no stateful product operation (no transaction, lock, registry write or migration), so there is no crash-recovery case to demonstrate. The registry redirect exists precisely so the attempt cannot leave production state to recover.",
+  "iso/ (isolated repo copy / venv): not created — see binding.json interpreter.venv_policy_note; disclosed as a known weakness rather than silently upgraded, because creating it now would invalidate the reviewer's already-confirmed hashes.",
+  "before/ (pre-change product logs): the modification set is empty, so there is no product before/after pair; changes.diff records that with evidence."
+ ],
+ "next_step_number": 10,
+ "next_action": "OWNER DECISION REQUIRED, then a NEW CARD. Step 1: the owner decides whether to open a product card for F1 (bind attestation at consumption; fix attestation_capability()), with F2 and F3 either folded in or split out, and assigns the invest-core consumer side to its own owner. Step 2: implement that card against the frozen anchors in binding.json, with a consumption-side trust gate and its own oracle. Do NOT re-open I-08-C for product changes, and do NOT mark I-08-C accepted: its headline property is still violated (E11/E13, rc=3).",
+ "blocked_by": [
+  "F1 (blocking) requires an owner decision and a product card: the label is not bound at consumption and attestation_capability() treats file existence as signing capability",
+  "F1's decisive consumer lives in another repo (invest-core) and needs that repo's owner",
+  "F3 and F2 need the same design adjudication before their small fixes are applied"
+ ],
+ "open_questions": [
+  "One product card for F1-F3, or three? (owner)",
+  "Is a hard isolation boundary (isolated repo copy + venv) required for the follow-up card, given this attempt ran against the production tree with write redirection only?",
+  "Should E13's originally-empirical expectation be re-derived from code reading in a later revision? Re-pinning it would change a frozen expectation, so it is left as-is and labelled."
+ ],
+ "reviewer_status": {
+  "verdict": "changes_required",
+  "verdict_artifact": "review.md",
+  "verdict_sha256": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
+  "implementer_self_acceptance": false,
+  "what_is_now_fixed": "the two DELIVERABLE defects (E4 absent; exploratory log not preserved), the oracle re-freeze, and the missing minimum-directory files",
+  "what_is_still_broken": "the card's headline trust property, on the product side (F1; F2/F3 as recorded)",
+  "reviewer_must_do": [
+   "re-verify the append-only proof by locating the marker at offset 6832 and hashing bytes[0:6831] -> expect 478bd70e...",
+   "re-run the r3 node: expect 13 collected / 13 passed with raw rc 0, and confirm the executed file hashes to 0072b160...",
+   "adjudicate E4's four sub-assertions (a-d) and confirm that E4's expectation text is unchanged from the r1 freeze",
+   "confirm the exploratory-phase inventory is honest — in particular that the missing stdout is disclosed rather than reconstructed",
+   "confirm that F1-F4 are recorded as the negative result and were NOT implemented, and that out_of_scope_note is accurate",
+   "decide whether the disclosed isolation weakness (no isolated repo copy / venv) changes the verdict for this card"
+  ]
+ },
+ "closed_by_this_card": [
+  "the r1/r2 oracle-to-test mapping gap for E4 (implemented and asserted)",
+  "the absence of any preserved exploratory-phase evidence",
+  "the absence of binding.json / commands.json / decision.md / changes.diff from the deliverable directory"
+ ],
+ "still_open_and_not_closed": [
+  "F1 (blocking, product): attestation is not bound at consumption — E11 rc=3",
+  "F3 (medium, product): segments[i].base_revenue presentation-field coverage gap — E13 rc=3",
+  "F2 (medium, product): validate_publication_receipt is hash-consistency only",
+  "F4 (low): publication_registry.py card-anchor drift",
+  "invest-* consumers unverified (out of scope)",
+  "no CLI publish transaction exercised",
+  "the exploratory run's stdout is permanently unrecoverable"
+ ],
+ "disclosure_adaptation": "unmapped",
+ "accuracy": "unproven",
+ "accuracy_note": "nothing in this card is evidence of forecast accuracy or of disclosure adaptation; this card tests consumer rejection behaviour only"
 }

@@ -18,7 +18,8 @@ FILES = {
     "iso_trees": {
         f"iso/{tree}/{rel}": ATT / "iso" / tree / rel
         for tree in ("product_base", "product_narrow", "product_mut_greedy",
-                     "product_mut_authnl", "product_mut_auth1")
+                     "product_mut_authnl", "product_mut_auth1",
+                     "product_mut_authsplit")
         for rel in ("src/company_wiki/source_catalog/observability.py",
                     "src/company_wiki/source_catalog/worker.py",
                     "src/company_wiki/source_catalog/cli.py")
@@ -38,6 +39,9 @@ FILES = {
         "harness/run_i14d_oracle.py": HERE / "run_i14d_oracle.py",
         "harness/run_rule_table_i14d.py": HERE / "run_rule_table_i14d.py",
         "harness/report_i14d_counts.py": HERE / "report_i14d_counts.py",
+        # r2 additions (review F-REV-D-01 / RULING 2)
+        "harness/authsplit_probe.py": HERE / "authsplit_probe.py",
+        "harness/build_authsplit_proto.py": HERE / "build_authsplit_proto.py",
     },
     "documents_and_evidence": {
         "oracle.md": ATT / "oracle.md",
@@ -45,6 +49,8 @@ FILES = {
         "decision.md": ATT / "decision.md",
         "commands.json": ATT / "commands.json",
         "changes.diff": ATT / "changes.diff",
+        "reviewer_report.md": ATT / "reviewer_report.md",
+        "fix_record.md": ATT / "fix_record.md",
         "after/counts.json": ATT / "after" / "counts.json",
         "after/oracle_narrow.json": ATT / "after" / "oracle_narrow.json",
         "after/rule_table_narrow.json": ATT / "after" / "rule_table_narrow.json",
@@ -52,11 +58,17 @@ FILES = {
         "before/rule_table_base.json": ATT / "before" / "rule_table_base.json",
         "before/probe_results_base.json": ATT / "before" / "probe_results_base.json",
         "after/probe_results_narrow.json": ATT / "after" / "probe_results_narrow.json",
+        "after/authsplit_probe_narrow.json": ATT / "after" / "authsplit_probe_narrow.json",
+        "before/authsplit_probe_base.json": ATT / "before" / "authsplit_probe_base.json",
         "mutations/oracle_mut_greedy.json": ATT / "mutations" / "oracle_mut_greedy.json",
         "mutations/rule_table_mut_greedy.json": ATT / "mutations" / "rule_table_mut_greedy.json",
         "mutations/oracle_mut_authnl.json": ATT / "mutations" / "oracle_mut_authnl.json",
         "mutations/rule_table_mut_auth1.json": ATT / "mutations" / "rule_table_mut_auth1.json",
         "mutations/probe_results_mut_greedy.json": ATT / "mutations" / "probe_results_mut_greedy.json",
+        "mutations/oracle_mut_authsplit.json": ATT / "mutations" / "oracle_mut_authsplit.json",
+        "mutations/rule_table_mut_authsplit.json": ATT / "mutations" / "rule_table_mut_authsplit.json",
+        "mutations/authsplit_probe_mut_authsplit.json":
+            ATT / "mutations" / "authsplit_probe_mut_authsplit.json",
         "after/git_apply_verification.json": ATT / "after" / "git_apply_verification.json",
         "r5/counts.json": ATT / "r5" / "counts.json",
     },

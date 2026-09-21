@@ -3,6 +3,11 @@
 Every expected value here was hand-computed in oracle.md section 2 BEFORE this
 attempt ran anything; nothing is derived from the function under test.
 
+r2 (review F-REV-D-01 / reviewer RULING 2) adds N5c/N5d, the auth newline-split
+family the pre-fix rule left in the clear.  They are hand-computed too: the
+`_AUTH_SCHEME_SPLIT` alternative consumes the scheme word, the line break and the
+secret token but NOT the break or the indentation, so those stay in the output.
+
     python run_i14d_oracle.py --src <iso>/<tree>/src --label <label> --out <json>
 
 Exit codes (run_card.py convention): 0 = pass, 2 = cannot adjudicate (helper
@@ -45,6 +50,26 @@ CASES = [
      "Authorization: Bearer " + M + "\ndoc=17\nstage=summarize",
      "Authorization: " + R + "\ndoc=17\nstage=summarize",
      ["doc=17", "stage=summarize"], 48),
+    # r2 / F-REV-D-01: the scheme word and the secret are on DIFFERENT lines.  The
+    # secret's line has no `key=` prefix, so this is the family the frozen oracle,
+    # the rule table and M1..M3 all missed.  Fail closed: redact the first token
+    # after the break, keep the break and the diagnostics.
+    ("N5c-auth-scheme-lf-secret", "narrow_must",
+     "Authorization: Bearer\n" + M + "\ndoc=17",
+     "Authorization: " + R + "\ndoc=17",
+     ["doc=17"], 32),
+    # ... obs-fold variant (RFC 7230 folded header: the continuation is indented).
+    # The indentation is NOT part of the match, so it survives; the secret does not.
+    ("N5d-auth-scheme-obsfold", "narrow_must",
+     "Authorization: Bearer\n  " + M,
+     "Authorization: " + R,
+     [], 25),
+    # ... and the same hole reachable through the `authorization: <scheme>` key
+    # alternative (scheme word `token`) rather than the `bearer` key alternative.
+    ("N5e-auth-token-key-lf-secret", "narrow_must",
+     "authorization: token\n" + M,
+     "authorization: " + R,
+     [], 25),
     ("N13-partial-multiword-residual", "narrow_must",
      "password: iron steel",
      "password: " + R + " steel",

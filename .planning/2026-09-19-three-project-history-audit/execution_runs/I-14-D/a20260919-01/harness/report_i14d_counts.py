@@ -71,6 +71,10 @@ def main(argv: list[str] | None = None) -> int:
         "oracle_kinds_sum_matches_cases": (
             counts["oracle_narrow_must"] + counts["oracle_keep_must"]
             == oracle_cases),
+        # r2: the count assertion in the copied suite compares both keys against the
+        # table it can see; the shim must therefore never drift from that table.
+        "fidelity_and_exact_nodeids_agree": (
+            counts["fidelity_cases"] == counts["exact_nodeids"]),
     }
     counts["checks"] = checks
     out = Path(args.out)

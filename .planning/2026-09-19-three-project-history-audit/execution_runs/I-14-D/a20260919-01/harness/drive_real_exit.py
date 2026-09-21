@@ -26,9 +26,21 @@ from run_guard import REFUSAL_EXIT, guard_run_dir
 RE_RAISED_SENTINEL = 3
 MISSING_CAUSE_SENTINEL = 4
 
+# r2: the reviewer's synthetic credential (39 chars, no whitespace).  Kept in one
+# place so the scenario, the oracle (N5c/N5d), the rule table and the probe agree.
+_REVIEWER_SECRET = "ghp_ZQ7ReviewerFakeCredential0123456789"
+
 SCENARIOS = {
     # name: (top message, optional cause message, optional middle cause message)
     "token-in-message": ("Authorization: Bearer SYNTHETIC_AUDIT_TOKEN rejected by provider", None, None),
+    # r2 (review F-REV-D-01): the scheme word and the credential are on DIFFERENT
+    # lines, which is what a wrapped Authorization header really looks like.  This is
+    # the shape that persisted the credential in plaintext before the RULING-2 fix,
+    # and the shape whose diagnostics the pre-fix base tree deleted.  The credential
+    # is the reviewer's synthetic 39-char one (no whitespace); it is obviously fake by
+    # construction, and run_exit_probe.py greps for its absence in every produced file.
+    "bearer-newline": ("Authorization: Bearer\n" + _REVIEWER_SECRET + "\ndoc=17",
+                       None, None),
     "nested-cause": (
         "stage=summarize code=llm_global_failure request_id=req-SYNTH-0001",
         "Authorization: Bearer SYNTHETIC_AUDIT_TOKEN",

@@ -28,6 +28,10 @@ PRODUCT_SRC = Path(os.environ.get(
 CW = Path(os.environ.get("I14C_CW_ROOT", r"C:\Users\郑曾波\Projects\company-wiki"))
 PRODUCT_TESTS = Path(os.environ.get("I14C_TESTS_DIR", str(CW / "tests" / "contract")))
 
+# r2: the reviewer's synthetic 39-char credential, the same literal the oracle (N5c/N5d),
+# the rule table (cred-auth-split-*) and drive_real_exit.py's `bearer-newline` scenario use.
+REVIEWER_SECRET = "ghp_ZQ7ReviewerFakeCredential0123456789"
+
 NARROW_MUST = [c for c in CASES if c[1] == "narrow_must"]
 KEEP_MUST = [c for c in CASES if c[1] == "keep_must"]
 
@@ -126,4 +130,26 @@ def test_i14d_e4b_real_exit_new_baseline_200(tmp_path):
     # 195..200 are the first 6 y's (an earlier draft asserted 7 y's).
     assert msg[193] == " ", "char 194 is the space that followed the value"
     assert msg.endswith(" " + "y" * 6), "chars 195..200 must be the first 6 y's"
+    assert case["returncode"] == 3, "the exception must still be re-raised"
+
+
+# ---------------------------------------------------------------------------
+# r2 / review F-REV-D-01: the auth newline-split family at the REAL exit
+# ---------------------------------------------------------------------------
+
+def test_i14d_auth_scheme_newline_real_exit_keeps_secret_out_and_diagnostics_in(tmp_path):
+    """The r1 tree persisted the wrapped credential; the r1 base tree deleted `doc=17`.
+
+    Both halves of the card's exit clause have to hold on this input at once, and it has
+    to hold at the REAL worker exit (`worker.py` -> `redact_and_truncate`), not only in
+    the helper.  The credential is the reviewer's synthetic 39-char one, which shares no
+    substring with this attempt's marker, so a marker-only grep cannot pass this test.
+    """
+    case = _run_real_exit(tmp_path, "bearer-newline")
+    event = next(e for e in case["events"] if e.get("event") == "unhandled_exception")
+    msg = event["message_redacted"]
+    assert REVIEWER_SECRET not in msg, "the wrapped credential was persisted in plaintext"
+    assert REVIEWER_SECRET[:12] not in msg, "credential prefix survived"
+    assert msg == "Authorization: " + R + "\ndoc=17"
+    assert "doc=17" in msg, "C13 half: the diagnostic key must survive the credential"
     assert case["returncode"] == 3, "the exception must still be re-raised"
