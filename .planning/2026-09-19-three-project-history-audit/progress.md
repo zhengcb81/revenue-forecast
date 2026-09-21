@@ -686,3 +686,31 @@ check-complete.sh   → [planning-with-files] Task in progress (6/7 phases compl
 **自伤登记**：核验器首跑 **P-2 / P-5 两处红，均为判据错、非数据错**（①字符转置；②未归一化空白 —— **陷阱 17 的原样复踩**）。已修判据并如实登记，**未删判据求绿**。
 
 **边界**：**attempt 内写入 0 字节**（9 个固定哈希证明）；**未代写** `r3_fix_record.md`；**未做 `status` 转移**（I-14-D 维持 `review_pending`）；**未代签**；**删除 0**；**未把 r3 推进到收口**。产品文件 **0** 条；锚点 `9ec6529550f189a4…` **一致**。
+
+## 2026-09-22 — Round 69：r3 设计取舍被复现；REM-59/60/61 收敛为「r3 世代从未写出」
+
+**触发**：Round 68 发现 r3 注释块引用的 `r3_fix_record.md` 不存在（F-R68-01）。本轮把该引用**背后的实质**独立测出来。
+
+**做法**：把 `observability._AUTH_PATTERN` 在内存里重绑为每个候选（与 attempt 自己的 scratch 脚本同法），对**当前的** 28 例 oracle、79 行 rule table、r2 reviewer 的 C1–C12 矩阵逐一测量。
+
+**结果**：
+
+| 候选 | oracle 失败 | rule 失败 | 仍泄漏 |
+|---|---|---|---|
+| **r3-chosen（盘上）** | **0** | **0** | `['C10']` |
+| r2-enumeration（被否） | 6 | 14 | **C1–C12 全部** |
+| **token-run（关掉 C10）** | **2** | **2** | **`[]`** |
+| optional-run | 0 | 0 | `['C10']` |
+| mandatory-token | 3 | 3 | `['C11']` |
+
+**注释块的断言被复现**：token-run 下 `Authorization: Bearer\ndoc=17` → `Authorization: <redacted>`（`doc=17` 被删）。
+**但 4 项失败要分类**：**真回归 2 项**（`N5-auth-multiline`、`cred-auth-multiline-swallow`）+ **登记行本身 2 项**（`R3a-two-token-then-wrap`、`open-two-token-then-wrap`，它们断言的就是那个残留）。**把 4 项一律计入代价会高估。**
+
+**构造器忠实性**：首版用重打的字面量构造，与盘上差几个字符 ⇒ 测的不是盘上那个 pattern。改为**直接用盘上常量**，并单独断言「喂盘上的 split 必须逐字节重建盘上的 pattern」——成立。
+
+**附带发现**：attempt 自己的 **10 个设计探索脚本已全部失效**（`oracle.CASES` 由 6 元组加宽为 7 ⇒ `ValueError`）。**不修它们**，本轮测量是**重实现**。
+
+**关于 REM-59/60/61**：`oracle.md`/`fix_record.md`/`binding.json` 的哈希**都登记在** `after/final_hashes.json` ⇒ 任何更正**必然**改变哈希 ⇒ 三项文书更正**属于 r3 世代**，而 **r3 世代 = 载体 = 不存在**。
+⇒ **三项收敛为一条：`I-14-D` 的 r3 世代从未被写出。**
+
+**边界**：**未代写** `r3_fix_record.md`（悬空引用**不用替代品去填**）；**未修**那 10 个脚本；**未改**四个 r2 世代记录；**attempt 内写入 0 字节**；**未做 `status` 转移**；**未代签**；**删除 0**。产品文件 **0**；锚点 `9ec6529550f189a4…` **一致**。

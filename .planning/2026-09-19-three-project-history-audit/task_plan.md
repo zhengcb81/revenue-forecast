@@ -1577,3 +1577,74 @@ r3 注释块明写「measured across the whole design space, **see `r3_fix_recor
 **未代写** `r3_fix_record.md`；**未做任何 `status` 转移**（I-14-D 维持 `review_pending`）；**未代签**；**删除 0**；**未接续 r3 到收口**。
 
 **产物**：`execution_runs/_verify_20260922_i14d_r3/` 下 `verify_i14d_r3_state.py`（**17994 B** / `531a94a5…`）、`i14d_r3_state_verification.json`（**5925 B** / `069f43b4…`，**连跑同哈希**）、三次复跑的原始输出（`oracle_r3_rerun.json` / `rule_r3_rerun.json` / `oracle_base_rerun.json`）。
+
+---
+
+## Round 69 — r3 的**设计取舍被复现**；并查清 REM-59/60/61 其实是**同一个缺口**
+
+**卡**：无（编排层核验轮次）。**性质**：**独立测量 + 事实登记**。**不改 attempt 一个字节、不代写任何实现者记录、不做 `status` 转移。**
+
+**触发**：Round 68 发现 r3 注释块引用的 `r3_fix_record.md` 不存在（F-R68-01）。本轮把那句话**背后的实质**独立测出来。
+
+### 先说一件**不做**的事（本轮的判断）
+
+**`r3_fix_record.md` 不由编排层代写。**
+一条**悬空引用**是**显式损坏**的——读者立刻知道「那份记录不在」。而一份**替换品**看起来权威，却**不是作者本要写的那份**。
+⇒ **用一个像样的替代品去填一个洞，比留着洞更危险**：前者会被下游当作原始记录引用。
+本轮提供的是**独立测量**（任何人可复跑），**不是**那份文件的替身。
+
+### 测量（`r3_design_space_reprobe.py`，证据 JSON 连跑同哈希）
+
+把 `observability._AUTH_PATTERN` 在内存里**重新绑定**为每个候选（与 attempt 自己的 scratch 脚本同法），
+对**当前的** 28 例 oracle、79 行 rule table、以及 r2 reviewer 的 C1–C12 矩阵逐一测量：
+
+| 候选 | oracle 失败 | rule 失败 | 仍泄漏的 reviewer 变体 |
+|---|---|---|---|
+| **r3-chosen（盘上那个）** | **0** | **0** | `['C10']` |
+| r2-enumeration（被 reviewer 否决） | 6 | 14 | **C1–C12 全部** |
+| **token-run（关掉 C10）** | **2** | **2** | **`[]`** |
+| optional-run | 0 | 0 | `['C10']` |
+| mandatory-token | 3 | 3 | `['C11']` |
+
+**构造器忠实性（先证工具、再证结论）**：把**盘上自己的** `_AUTH_SCHEME_SPLIT` 喂给构造器，必须**逐字节**重建盘上的 `_AUTH_PATTERN` —— **成立**（`builder_is_faithful = True`，差异表为空）。
+**首版是错的**：我用**重打的**字面量构造，得到的字符串与盘上差几个字符 ⇒ 复现测的**不是盘上那个 pattern**。改为**直接用盘上的常量**。
+
+### 注释块的断言**被复现**，但代价**必须按类别拆开算**
+
+注释说：关掉 two-token-then-wrap 需要把 scheme 自己那行当作 token run 消费掉，而**那会删掉 `doc=17`**。
+**成立**：token-run 下 `Authorization: Bearer\ndoc=17` → `Authorization: <redacted>`，`doc=17` **被删**。
+
+**但那 4 项失败不是同一类**：
+
+| 类别 | 项 | 含义 |
+|---|---|---|
+| **真回归（2）** | `N5-auth-multiline`、`cred-auth-multiline-swallow` | 过度脱敏，**这就是注释所说的代价** |
+| **登记行本身（2）** | `R3a-two-token-then-wrap`、`open-two-token-then-wrap` | 它们**断言的就是那个残留输出**；关掉泄漏它们**自然转红**——**这是登记在正常工作，不是缺陷** |
+
+⇒ **把 4 项一律计入「代价」会高估它。** 真实代价是 **2 项过度脱敏回归 + 2 行登记需重签**。
+⇒ **一般式：失败的「条数」不是代价的度量——必须先分类，再计数。**（与「闸红要先分类：数据错还是判据错」同族。）
+
+### 附带发现：attempt 自己的设计探索脚本**已全部失效**
+
+`tradeoff.py`/`tradeoff2.py`/`tradeoff3.py`/`last_shapes.py`/`final_shapes.py`/`minimal.py`/`order.py`/`third_alt.py`/`validate_final.py`/`final_verify.py`
+—— 全部以 **6 元组**解包 `oracle.CASES`，而 r3 把它**加宽为 7**（`..., expect_len, declared_residual`）
+⇒ **全部 `ValueError: too many values to unpack (expected 6)`**。
+**本卡不修它们**（属 attempt 内产物，且修了会改变其哈希）；本轮的测量是**重实现**，不是重跑。
+⇒ **一般式：脚本是「当时那套接口」的化石。** 接口一变，`scratch/` 里的一切就同时失效——而**没人会收到通知**。
+
+### 关于 REM-59 / REM-60 / REM-61：**它们是同一个缺口**
+
+实测：`oracle.md`（`f188e853…`）、`fix_record.md`（`68fb5800…`）、`binding.json`（`5fd462c9…`）的哈希
+**全部登记在** `after/final_hashes.json` ⇒ **任何**更正都**必然**改变它们的哈希。
+⇒ 三项文书更正**不能在 r2 世代内落地**——它们**属于 r3 世代**；而 **r3 世代 = 载体**，**载体不存在**。
+
+> **⇒ REM-59 / REM-60 / REM-61 收敛为一条：`I-14-D` 的 r3 世代从未被写出。**
+> 编排层**可以**供应测量（本轮已供应），**不能**伪造实现者的记录，**更不能**伪造 reviewer 的裁决。
+
+### 边界
+
+**产品文件 0 条**；生产锚点 `scripts/model_registry.py` = `9ec6529550f189a4…` **一致**；
+**attempt 内写入 0 字节**；**未代写** `r3_fix_record.md`；**未修** 那 10 个失效脚本；**未改** `oracle.md`/`fix_record.md`/`binding.json`/`after/r2_summary.json`；
+**未做任何 `status` 转移**（I-14-D 维持 `review_pending`）；**未代签**；**删除 0**。
+
+**产物**：`execution_runs/_r3_design_reprobe_20260922/` 下 `r3_design_space_reprobe.py`（**13290 B** / `0ec5c00d…`）与 `r3_design_space_reprobe.json`（**8130 B** / `8e007a6f…`，**连跑同哈希**）。

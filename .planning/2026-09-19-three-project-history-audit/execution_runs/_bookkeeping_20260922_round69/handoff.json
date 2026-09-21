@@ -1,0 +1,208 @@
+{
+ "card": "_bookkeeping_20260922_round69",
+ "kind": "orchestrator_bookkeeping",
+ "round": 69,
+ "date": "2026-09-22",
+ "subject_card": "I-14-D",
+ "subject_attempt": "a20260919-01",
+ "subject_iteration": "r3",
+ "what_this_round_is": "an independent REPRODUCTION of the r3 design trade-off, so that the substance behind the dangling r3_fix_record.md reference is readable without substituting for it",
+ "what_this_round_is_not": [
+  "the closure of I-14-D r3",
+  "an acceptance, an approval, or a status transition",
+  "a signature on behalf of any other party",
+  "a product change",
+  "a substitute for r3_fix_record.md"
+ ],
+ "authority": {
+  "source": "OWNER_DECISIONS.md §13 T1-27",
+  "note": "no owner ruling was needed: this round measures and registers, and writes nothing into the attempt"
+ },
+ "trigger": "Round 68 found F-R68-01: the r3 comment block in observability.py says 'see r3_fix_record.md' and that file does not exist.",
+ "the_decision_this_round_makes_explicit": {
+  "decision": "r3_fix_record.md is NOT written by the orchestrator",
+  "reason": "a dangling reference is EXPLICITLY BROKEN -- the reader knows the record is absent and goes looking. A substitute looks authoritative but is not the document the author meant, so downstream readers cite it as the original and the hole is permanently covered.",
+  "generalisation": "filling a missing carrier is only safe when the carrier is reconstructible FROM MEASUREMENT. When it is not, leaving the hole and supplying the substance is better than manufacturing a plausible stand-in.",
+  "what_is_supplied_instead": "an independent reproduction of the trade-off, runnable by anyone"
+ },
+ "measurement": {
+  "script": "execution_runs/_r3_design_reprobe_20260922/r3_design_space_reprobe.py",
+  "method": "rebind observability._AUTH_PATTERN in memory to each candidate, exactly as the attempt's own scratch scripts did, then measure against the CURRENT 28-case oracle, the CURRENT 79-row rule table, and the r2 reviewer's C1-C12 matrix",
+  "builder_faithfulness": {
+   "question": "is the pattern builder faithful?",
+   "test": "feed it the product's OWN _AUTH_SCHEME_SPLIT and require it to rebuild the product's OWN _AUTH_PATTERN byte for byte",
+   "result": "True, difference table empty",
+   "why_it_was_needed": "the first version re-typed the RFC-7235 token class and the tails as literals; the resulting string differed from the landed one by a few characters, so that reproduction measured a pattern that is NOT the pattern on disk. Fixed by using the module's own constant and asserting faithfulness separately."
+  },
+  "candidates": {
+   "r3-chosen (as landed)": {
+    "oracle_failures": 0,
+    "rule_failures": 0,
+    "reviewer_variants_leaking": ["C10"]
+   },
+   "r2-enumeration (rejected by the reviewer)": {
+    "oracle_failures": 6,
+    "rule_failures": 14,
+    "reviewer_variants_leaking": ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12"]
+   },
+   "token-run (closes C10)": {
+    "oracle_failures": 2,
+    "rule_failures": 2,
+    "reviewer_variants_leaking": []
+   },
+   "optional-run": {
+    "oracle_failures": 0,
+    "rule_failures": 0,
+    "reviewer_variants_leaking": ["C10"]
+   },
+   "mandatory-token": {
+    "oracle_failures": 3,
+    "rule_failures": 3,
+    "reviewer_variants_leaking": ["C11"]
+   }
+  },
+  "the_comment_blocks_claim_is_reproduced": {
+   "claim": "closing the two-token-then-wrap shape needs the scheme's own line consumed as a token run, which deletes doc=17",
+   "closed_by_token_run": true,
+   "over_redaction_measured": "Authorization: Bearer newline doc=17 becomes Authorization: <redacted>, i.e. doc=17 is deleted",
+   "status": "REPRODUCED"
+  },
+  "but_the_cost_must_be_classified_before_it_is_counted": {
+   "why": "four failures appear (2 oracle + 2 rule), and they are NOT all the same kind. Two of them ARE the registered-open rows: R3a-two-token-then-wrap and open-two-token-then-wrap assert the residual output exactly, so closing the leak turns them red because the registration is working, not because a defect appeared.",
+   "genuine_regressions": ["N5-auth-multiline", "cred-auth-multiline-swallow"],
+   "registration_rows_that_would_need_re_registering": ["R3a-two-token-then-wrap", "open-two-token-then-wrap"],
+   "consequence": "counting all four as 'the cost' overstates it; the real cost is 2 over-redaction regressions plus 2 rows to re-register"
+  }
+ },
+ "incidental_finding": {
+  "F-R69-01": {
+   "severity": "P3",
+   "what": "all ten of the attempt's own design-exploration scratch scripts are now unrunnable",
+   "which": ["tradeoff.py", "tradeoff2.py", "tradeoff3.py", "last_shapes.py", "final_shapes.py", "minimal.py", "order.py", "third_alt.py", "validate_final.py", "final_verify.py"],
+   "cause": "they unpack oracle.CASES as a 6-tuple; the r3 iteration widened it to 7 (..., expect_len, declared_residual)",
+   "error": "ValueError: too many values to unpack (expected 6)",
+   "disposition": "not edited (they are attempt artefacts and editing them changes their hashes); this round re-implements the measurement instead",
+   "generalisation": "a script is a fossil of the interface it was written against. When the interface moves, everything under scratch/ breaks at once and nobody is notified. 'It ran then' and 'it still runs' are two different claims."
+  }
+ },
+ "the_three_register_items_collapse_into_one": {
+  "measurement": "oracle.md (f188e853...), fix_record.md (68fb5800...) and binding.json (5fd462c9...) all have their hashes registered in after/final_hashes.json",
+  "consequence": "ANY correction to them -- append-only included -- necessarily changes their hashes, so the three documentary corrections cannot land inside the r2 generation",
+  "therefore": "REM-59, REM-60 and REM-61 are three faces of ONE gap: I-14-D's r3 generation was never written. Registered as REM-62.",
+  "what_the_orchestrator_supplies": "measurement (this round does)",
+  "what_the_orchestrator_does_not_supply": [
+   "r3_fix_record.md itself",
+   "the implementer's records",
+   "the reviewer's verdict"
+  ]
+ },
+ "pre_images": {
+  "task_plan.md": {
+   "bytes": 214702,
+   "sha256": "45c64ea94872cc8d5015abcb61b94fb5419ce27880d94c7b92306a412e9bb620"
+  },
+  "findings.md": {
+   "bytes": 56860,
+   "sha256": "5ab716c2d64965b28ff9dde1f2d1673feb30487aa184ce8fae9ed0f3b72881a6"
+  },
+  "progress.md": {
+   "bytes": 137569,
+   "sha256": "8b44fea11b47b688dc2772ff44eb3b1bc28b39bb5d089a34866d88a2f1e7b9a9"
+  },
+  "REMEDIATION_REGISTER.md": {
+   "bytes": 30525,
+   "sha256": "642e9cb0d47ab9b09dff8929c001d31ea71a0444e37831d05963438f05724c1f"
+  }
+ },
+ "post_images": {
+  "task_plan.md": {
+   "bytes": 219822,
+   "sha256": "8d0fd979334114f1add4f199be476d2c2d11a1e98d68ad8ce0919ae8e0c83efe",
+   "delta_bytes": 5120,
+   "lines_added": 71,
+   "lines_deleted": 0
+  },
+  "findings.md": {
+   "bytes": 59323,
+   "sha256": "b8b331503d2fb33416e454c70dc9a0017281c4aced9f7fb1dff01ceb4f2f267a",
+   "delta_bytes": 2463,
+   "lines_added": 15,
+   "lines_deleted": 0
+  },
+  "progress.md": {
+   "bytes": 139904,
+   "sha256": "5b14e60d8f2d4d4e894cd019d5a3ceac33e353b336522b4bab94559f84b16a78",
+   "delta_bytes": 2335,
+   "lines_added": 28,
+   "lines_deleted": 0
+  },
+  "REMEDIATION_REGISTER.md": {
+   "bytes": 32759,
+   "sha256": "8073e99ff1c33c5498dd37c4c935e8a890bd9253f7379567c8b7fd2e4db492ba",
+   "delta_bytes": 2234,
+   "lines_added": 31,
+   "lines_deleted": 0
+  }
+ },
+ "registered_in_register": ["REM-62"],
+ "register_items_superseded_in_classification": ["REM-59", "REM-60", "REM-61"],
+ "artefacts": {
+  "append_only_proof_round69_task_plan.json": {
+   "bytes": 1722,
+   "sha256": "464aaa0e88f09dafe8d2b85d6de3c5492b7f7a5de04f84e27ecc1d06ce370ee5"
+  },
+  "append_only_proof_round69_findings.json": {
+   "bytes": 1713,
+   "sha256": "5a4b0dff8cf2d3d56218a6fa3e4207c04568414e269da1f3848cf3fbfa4597bd"
+  },
+  "append_only_proof_round69_progress.json": {
+   "bytes": 1718,
+   "sha256": "84f73a266e31862f2d0c97ba8da1ba384045e856ae8a5c7fd647818089a26041"
+  },
+  "append_only_proof_round69_register.json": {
+   "bytes": 1725,
+   "sha256": "240eed4dd10eded9541be81eda1f7f39ae14fc0406df7cafb48e06d222605ed5"
+  },
+  "design_reprobe_elsewhere": {
+   "dir": "execution_runs/_r3_design_reprobe_20260922",
+   "r3_design_space_reprobe.py": {
+    "bytes": 13290,
+    "sha256": "0ec5c00d39ce1d6cf929527a4e950bbb8d0324809f9215d9cf1430c6e8c3104c"
+   },
+   "r3_design_space_reprobe.json": {
+    "bytes": 8130,
+    "sha256": "8e007a6f961c41080c05b082558345e9ace2c05cec2fa01b7b0cd447290b6685",
+    "idempotent": true
+   }
+  }
+ },
+ "boundaries": {
+  "product_files_written": 0,
+  "product_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "attempt_writes": 0,
+  "r3_fix_record_not_written": true,
+  "stale_scratch_scripts_not_repaired": true,
+  "r2_generation_records_not_edited": ["oracle.md", "fix_record.md", "binding.json", "after/r2_summary.json"],
+  "status_transitions": 0,
+  "signatures_on_behalf_of_others": 0,
+  "deletions": 0
+ },
+ "self_inflicted_errors_recorded": [
+  {
+   "what": "the first version of the reprobe re-typed the RFC-7235 token class as a literal instead of using the module's constant",
+   "effect": "the reproduced pattern differed from the landed one, so that run measured the wrong pattern",
+   "fix": "use ob._AUTH_SCHEME_SPLIT verbatim and assert builder faithfulness separately"
+  },
+  {
+   "what": "handoff.json was written with Python-style implicit string concatenation",
+   "effect": "invalid JSON; a naive repair regex then absorbed the following key into the previous string",
+   "fix": "the file was rewritten with every string on a single line, and json.load was re-run"
+  }
+ ],
+ "next_action_for_the_owner": [
+  "REM-62 / REM-61: I-14-D's r3 generation was never written. The code fix, the residual registration and the measurement are done and reproducible; the carrier is what is missing, and with it the landing place for F-REV-R2-01 and for the F-REV-R2-02/03/04 corrections and r3_fix_record.md. Carry it to closure, or abandon it -- this round does not decide.",
+  "REM-55 I-14-E-APPLY: still terminated mid-campaign; no decision yet.",
+  "the push: 13 commits will be pending after this one; the pre-push gate's 600 s E2E cap remains below the suite's measured 861.7 s, and the gate has not been bypassed."
+ ],
+ "self_reference_note": "handoff.json does not register its own hash; it is recorded in task_plan.md's Round 69 section and in the memory file"
+}
