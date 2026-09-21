@@ -1,0 +1,113 @@
+{
+  "card_id": "I-10-B",
+  "attempt_id": "a20260919-01",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_source": "independent_review",
+    "reviewer_signed": true,
+    "implementer_signed": false,
+    "scope": "isolated-copy registry-layer contract ONLY: omission raises ModelRegistryError (defect 1) and sign is decided by semantic role, not by driver name (defect 2)",
+    "note": "carrier-landing executor transcribed an independently produced verdict; the implementer never self-signs acceptance"
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "carrier": {
+    "file": "review.md",
+    "path_inside_attempt": "review.md",
+    "section_heading": "## §2 裁决块（独立 reviewer 原样转录；**非执行器所写**）",
+    "section_heading_line": 22,
+    "line_range_inclusive_1_based": [22, 66],
+    "byte_offsets": {
+      "start": 2155,
+      "end_inclusive": 5221,
+      "end_exclusive": 5222
+    },
+    "region_bytes": 3067,
+    "region_sha256": "fb80b77c658dc76ba6e59da89c7791f9cbbd78c7d03f3ec24b3bc41d111d69cf",
+    "first_line_of_region": "## §2 裁决块（独立 reviewer 原样转录；**非执行器所写**）",
+    "verdict_line": 25,
+    "first_line_of_verdict": "reviewer_verdict:            accepted_scoped",
+    "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256",
+    "carrier_file_sha256": "d5b2a61611388054a2bc89d7bae4c223b2d6b7e0883bb1975fee1d676632019f",
+    "carrier_file_bytes": 9078,
+    "carrier_created_by_this_pass": true,
+    "carrier_preexisting": false
+  },
+  "verified_items": {
+    "count": 7,
+    "items": [
+      "(1) both isolated-copy fixes hold the card's negative cases: R-B1-N1 / R-B2-N1 kill the two real regressions; R-B1-N3 / R-B1-P1 / R-B1-P1b / R-B2-P1 / R-B2-N2 stay green",
+      "(2) verification_after.json = 7/7, raw rc = 0",
+      "(3) mutation self-check: control 7/7; MUT-1 (revert silent zero) and MUT-2 (revert name-based sign) killed by the frozen oracle; MUT-3 (drop dimension gate) SURVIVED and is registered truthfully as an equivalent mutant",
+      "(4) RED->GREEN four-quadrant replay holds; both rc=3 arms are deliberate reverse arms",
+      "(5) domain change is exactly 5 cells, all lower-bound widenings; 126 drivers unchanged",
+      "(6) two deterministic artifacts (verification_after.json, compatibility_cells.json) reproduce byte-for-byte under the isolated venv",
+      "(7) nothing promoted to production, no frozen artifact edited, model_extensions.py byte-identical to production"
+    ]
+  },
+  "minor_findings": [
+    {
+      "id": "F-R1",
+      "severity": "minor",
+      "blocking": false,
+      "finding": "command_runs/r2-verify-before/ exists on disk (verification_before.json 1799 B / d074572fec208f008f5114ab8894a26fd65fda9bb6cafc630073344f81ab6805, stdout.txt, iso/rf/scripts/**, scripts/verify_i10b.py) but is NOT listed in handoff.json.evidence_paths and is referenced by no raw_exit_codes key: an unregistered command-run directory",
+      "nature": "bookkeeping gap, not a conclusion gap",
+      "executor_recheck": "CONFIRMED on disk. command_runs/ holds 7 subdirectories while evidence_paths lists 6; r2-verify-before/ is the missing one. Its two artifacts are byte-identical to r2-xcheck_beforeexp_after_reg/verification_before.json and r2-verify-after/verification_after.json respectively, i.e. it is the raw run record of a duplicated arm and carries no new conclusion.",
+      "disposition": "registered in handoff.json carried_findings; not repaired by rewriting the implementer's evidence list beyond appending this finding"
+    },
+    {
+      "id": "F-R2",
+      "severity": "minor",
+      "blocking": false,
+      "finding": "the equivalent-mutant status of MUT-3 (dropping the dimension gate) was not independently enumerated by the reviewer: the declaration space of 'role-table name x non-qualifying dimension' was not walked to confirm no counterexample exists, so the equivalence argument is accepted but its completeness was not independently reproduced",
+      "nature": "accepted known boundary, disclosed by the implementer",
+      "executor_recheck": "Consistent with handoff.json F-I10B-6 (MUT-3 ... SURVIVED, mutation_proof_valid=true) and with OQ-I10B-1: the limitation was disclosed, not concealed.",
+      "disposition": "carried forward as OQ-I10B-1 for a later card"
+    }
+  ],
+  "scope": {
+    "granted": [
+      "formula ONLY, scoped to the isolated copy: the registry-layer contract holds (omission raises; sign decided by semantic role)"
+    ],
+    "not_granted": [
+      "disclosure_adaptation = NOT granted (stays unmapped)",
+      "accuracy = NOT granted (stays unproven)",
+      "production promotion: NOT authorized. Writing the iso fix into production RF/scripts/model_registry.py is a SEPARATE OWNER DECISION; this card's accepted_scoped does not authorize it",
+      "E-1..E-7 errata: PENDING-orchestration, NOT landed by this card",
+      "OQ-I10B-1 / OQ-I10B-2 / OQ-I10B-3: NOT resolved by this card"
+    ]
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "verdict_is_relayed": true,
+    "verdict_not_backed_by_byte_fixed_report": true,
+    "relayed_verdict_note": "The reviewer's own report was NOT found as a byte-fixed artifact anywhere on this machine during the landing pass (searched %TEMP%, C:\\*-rv*, execution_runs/_isolation_incidents, reviews/, and the whole attempt tree). The verdict therefore reached this executor through the orchestration layer and is transcribed as relayed; it lacks the sha256-pinned report form that I-11-A (e8b7d223...) and M09-M12 (5a44fd4e...) carry. Every claim that is checkable on disk was rechecked and is recorded in review.md section 3."
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-21",
+    "what_this_pass_did": "created the carrier review.md (it did not previously exist), landed handoff.status/reviewer_status/status_authority/bookkeeping plus carried findings, and created this qualification.json",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "review_md_created_not_appended": true,
+    "product_files_written": 0,
+    "frozen_artifacts_touched": 0
+  },
+  "errata_pending_orchestration": {
+    "rule": "T1-12 form (1): append a new section plus a line-level 'superseded, this section prevails' marker; editing in place is forbidden. This card does not execute it.",
+    "items": [
+      "E-1 M05 oracle.json defaults",
+      "E-2 M14 oracle.json defaults",
+      "E-3 M20 oracle.json defaults",
+      "E-4 M24 oracle.json defaults + hand_notes.defaults",
+      "E-5 M14 cases.json OBS-SUPPLY-BOUND",
+      "E-6 M14 oq_rulings.json OQ-03",
+      "E-7 M14 recovery/probes/signed_driver_probe.json"
+    ],
+    "status": "PENDING-orchestration"
+  },
+  "note": "Created by the carrier-landing pass. disclosure_adaptation stays unmapped and accuracy stays unproven; only the scoped formula qualification is recorded. Production promotion remains a separate owner decision."
+}

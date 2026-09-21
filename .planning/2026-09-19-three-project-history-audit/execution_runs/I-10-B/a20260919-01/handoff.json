@@ -3,10 +3,11 @@
  "attempt_id": "a20260919-01",
  "attempt": "a20260919-01",
  "title": "model_registry 的静默补 0 与按名字定符号",
- "status": "review_pending",
- "status_note": "正反例、变异证明、复现、差异证据齐全（review_pending 的进入依据）。实现者不自签 accepted；独立验收须 TIER-2 reviewer 出具。未落地生产。",
+ "status": "accepted_scoped",
+ "status_before_bookkeeping_fix": "review_pending",
+ "status_note": "独立 reviewer 已出具 accepted_scoped（**限定范围**：隔离副本内的注册层契约 —— 省缺即抛 + 按语义角色定符号）。本字段由 carrier-landing 记账执行器落定，**不是**实现者自签；实现者从不签署验收（`implementer_signed: false`）。生产晋升是独立的 owner 决策 —— 本卡的验收**不授权**把该修复写入生产。",
  "owner": "模型注册维护者",
- "independent_reviewer": "未指派（TIER-2，须他方出具结论）",
+ "independent_reviewer": "独立 reviewer（未参与本卡实现；裁决经编排层转达并由 carrier-landing 记账执行器转录，见 review.md §2）",
  "source": "OWNER_DECISIONS.md §5 第 1/2 项 + §13 T1-22（授权立卡，两项同卡）",
  "parent": "I-10",
  "depends_on": "I-00-B",
@@ -30,8 +31,10 @@
   "N_hash_verification（本轮新增）：binding.json 在册 11 件工件 + 3 份隔离副本全部 match；两项确定性工件备份后重跑逐字节复现（command_runs/r2-repro-compat/）"
  ],
 
+ "reviewer_status": "ACCEPTED_SCOPED（独立 reviewer；7 项 verified、2 项 minor 非阻断发现 F-R1/F-R2）。裁决经编排层转达，由 carrier-landing 记账执行器转录进 `review.md` §2「裁决块」（byte offset 2155，region 3067 B / `fb80b77c658dc76ba6e59da89c7791f9cbbd78c7d03f3ec24b3bc41d111d69cf`；载体内 verdict 行 = 25）。**实现者未写任何裁决、未改结论文字、未自签**（`implementer_signed: false`）。随签携带 **5 项**未解除项：OQ-I10B-1 / OQ-I10B-2 / OQ-I10B-3 / F-R1 / F-R2。**注意**：该 reviewer 的原始报告**未在本机找到逐字节留档**，故本卡不具备 I-11-A（`e8b7d223…`）那类「报告按字节固化」的证明形态 —— 可在盘复核的部分逐条登记于 `review.md` §3。",
+
  "next_step_number": 1,
- "next_action": "编排层（reviewer 接手第一步）：指派 TIER-2 独立 reviewer 复验本 attempt——按 review_and_handoff.md 固定操作，至少复算一个专属 oracle（建议从 command_runs/r2-red_afterexp_before_reg 的 RED 臂或 mutation_proof.json 的 MUT-1/MUT-2 臂入手），核对 5 个变化 cell 与 E-1…E-7 勘误清单；随后按 T1-12 ① 形态落地 E-1…E-7 追加式勘误（本卡不得自行改冻结件），再裁定 I-10-B 是否落地生产。",
+ "next_action": "编排层接手（本卡已 accepted_scoped，实现者不自签、生产未落地）：①按 T1-12 ① 形态**追加式**落地 E-1…E-7 勘误（本卡不得自行改冻结件）—— 清单见 compatibility_impact.md §5 与 handoff.errata_pending_orchestration；②裁定 5 项随签未解除项 OQ-I10B-1 / OQ-I10B-2 / OQ-I10B-3 / F-R1 / F-R2（见 carried_findings）；③**生产晋升为独立的 owner 决策**：是否把 iso 修复写入生产 RF/scripts/model_registry.py，本卡的 acceptance **不构成**该授权。",
 
  "input_hashes": {
   "production_scripts/model_registry.py": {"bytes": 26446, "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f", "role": "BEFORE 前像（= 修复未落地）", "recomputed_at_resume": "一致"},
@@ -123,7 +126,8 @@
  "not_done": {
   "product_promotion": "未落地生产 —— scripts/model_registry.py 仍为前像 26446 B / 9ec65295…（seq 11 复算证实）",
   "frozen_artifact_edits": "未做任何编辑（卡文第 5 点禁止；E-1…E-7 交编排层按 T1-12 ① 形态落地）",
-  "independent_acceptance": "未取得 —— TIER-2，须独立 reviewer 出具；本 handoff 置 review_pending，实现者不自签"
+  "independent_acceptance": "**已取得**（限定范围）—— 独立 reviewer 出具 `accepted_scoped`，但**不授予生产资格**；裁决经编排层转达并由 carrier-landing 记账执行器转录（载体 `review.md` §2 为**本执行器所创建**，此前不存在）。**实现者未自签**（`implementer_signed: false`、`implementer_never_signs_acceptance: true`）。未在本机找到该 reviewer 报告的逐字节留档，已如实登记于 `evidence/I-10-B/qualification.json` 的 `declarations.relayed_verdict_note`。",
+  "errata_landing": "**未落地（PENDING-orchestration）** —— E-1…E-7 仍待编排层按 T1-12 ① 形态追加式落地（见 `errata_pending_orchestration`）。"
  },
 
  "open_questions": [
@@ -175,12 +179,86 @@
 
  "errata_pending": {
   "rule": "依 T1-12 ① 形态（追加新节 + 行级『已过时，以本节为准』标注），禁止回改；本卡不执行，清单见 compatibility_impact.md §5",
-  "items": ["E-1 M05 oracle.json defaults", "E-2 M14 oracle.json defaults", "E-3 M20 oracle.json defaults", "E-4 M24 oracle.json defaults + hand_notes.defaults", "E-5 M14 cases.json OBS-SUPPLY-BOUND", "E-6 M14 oq_rulings.json OQ-03", "E-7 M14 recovery/probes/signed_driver_probe.json"]
+  "items": ["E-1 M05 oracle.json defaults", "E-2 M14 oracle.json defaults", "E-3 M20 oracle.json defaults", "E-4 M24 oracle.json defaults + hand_notes.defaults", "E-5 M14 cases.json OBS-SUPPLY-BOUND", "E-6 M14 oq_rulings.json OQ-03", "E-7 M14 recovery/probes/signed_driver_probe.json"],
+  "landed_by_this_card": false,
+  "status": "PENDING-orchestration"
+ },
+
+ "status_authority": {
+  "verdict": "accepted_scoped",
+  "verdict_round_used": "independent reviewer（唯一一轮；未参与本卡实现）",
+  "verdict_written_by": "an independent reviewer (never by the implementer)",
+  "verdict_conveyed_through": "编排层（父 agent）转达 → carrier-landing 记账执行器转录",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer",
+  "carrier": {
+   "file": "review.md",
+   "path_inside_attempt": "review.md",
+   "section_heading": "## §2 裁决块（独立 reviewer 原样转录；**非执行器所写**）",
+   "section_heading_line": 22,
+   "line_range_inclusive_1_based": [22, 66],
+   "byte_offsets": {"start": 2155, "end_inclusive": 5221, "end_exclusive": 5222},
+   "region_bytes": 3067,
+   "region_sha256": "fb80b77c658dc76ba6e59da89c7791f9cbbd78c7d03f3ec24b3bc41d111d69cf",
+   "first_line_of_region": "## §2 裁决块（独立 reviewer 原样转录；**非执行器所写**）",
+   "verdict_line": 25,
+   "first_line_of_verdict": "reviewer_verdict:            accepted_scoped",
+   "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; 1-based lines / 0-based byte offsets, against the file at the recorded sha256",
+   "carrier_file_sha256": "d5b2a61611388054a2bc89d7bae4c223b2d6b7e0883bb1975fee1d676632019f",
+   "carrier_file_bytes": 9078,
+   "carrier_created_by_this_pass": true,
+   "carrier_preexisting": false
+  },
+  "reviewer_report": {
+   "path": null,
+   "exists": false,
+   "byte_fixed_copy_found": false,
+   "searched": ["%TEMP%", "C:\\*-rv*", "execution_runs/_isolation_incidents", "execution_runs/** (whole I-10-B attempt tree)", "reviews/"],
+   "note": "The reviewer's own report was NOT found as a byte-fixed artifact on this machine. The verdict is therefore recorded as RELAYED (through the orchestration layer) and lacks the sha256-pinned report form that I-11-A (e8b7d223...) and M09-M12 (5a44fd4e...) carry. Every on-disk-checkable claim was rechecked and is recorded in review.md §3."
+  },
+  "verified_items_count": 7,
+  "minor_findings_count": 2,
+  "scope": {
+   "granted": ["formula ONLY, scoped to the isolated copy: registry-layer contract holds (defect 1 omission raises; defect 2 sign decided by semantic role)"],
+   "not_granted": [
+    "disclosure_adaptation = NOT granted (stays unmapped)",
+    "accuracy = NOT granted (stays unproven)",
+    "production promotion: NOT authorized — writing the iso fix into production RF/scripts/model_registry.py is a SEPARATE OWNER DECISION",
+    "E-1..E-7 errata: PENDING-orchestration, not landed by this card",
+    "OQ-I10B-1 / OQ-I10B-2 / OQ-I10B-3: NOT resolved by this card"
+   ]
+  }
+ },
+
+ "carried_findings": [
+  {"id": "OQ-I10B-1", "severity": "medium", "kind": "open_question", "finding": "MUT-3（去 dimension 闸门）在当前注册表上是等价变异体（角色表 15 个 driver 今日全部只声明于 {backlog, revenue, reserve_volume, aum_fee} 之内）。是否接受该等价性，或需后续卡补一个「角色表名字 × 不合格 dimension」的声明级负例？", "status": "carried_not_resolved", "executor_note": "Reviewer 记 F-R2：并未独立枚举该声明空间来复现其完备性 —— 接受论证但未独立复现。"},
+  {"id": "OQ-I10B-2", "severity": "medium", "kind": "open_question", "finding": "M14 OQ-03：内部冲减是否需要 signed 约定（原文自述属 D/E 决策）。本卡缺陷②已按 T1-22 授权裁定注册层规则，D/E 层是否**追认**由 owner 决定。", "status": "carried_not_resolved", "executor_note": "属 TIER-2；须该当事方出具，本卡不代为裁定。"},
+  {"id": "OQ-I10B-3", "severity": "medium", "kind": "open_question", "finding": "scripts/model_extensions.py 仍为 untracked（隔离事件 §7.5 残余风险）：挂载关系的另一半不受版本控制。建议 owner 纳管（本卡不代为 git add）。", "status": "carried_not_resolved", "executor_note": "另见 progress.md：`scripts/model_extensions.py` 已纳入版本控制、`model_registry.py` 锚定版已入库（提交 `5db4734a`）—— 建议 owner 以此为准复核本项是否仍成立。"},
+  {"id": "F-R1", "severity": "minor", "kind": "reviewer_finding", "blocking": false, "finding": "未登记的 command-run 目录：command_runs/r2-verify-before/ 存在（verification_before.json 1799 B / d074572fec208f008f5114ab8894a26fd65fda9bb6cafc630073344f81ab6805、stdout.txt、iso/rf/scripts/**、scripts/verify_i10b.py），但未被 evidence_paths 列出、也不被任何 raw_exit_codes 键引用。", "status": "carried_not_resolved", "executor_recheck": "CONFIRMED 在盘：command_runs/ 实有 7 个子目录而 evidence_paths 只列 6 个。该目录两件产物分别与 r2-xcheck_beforeexp_after_reg/verification_before.json、r2-verify-after/verification_after.json 同哈希 ⇒ 是重复臂的原始运行记录，不含新结论（记账缺口，非结论缺口）。"},
+  {"id": "F-R2", "severity": "minor", "kind": "reviewer_finding", "blocking": false, "finding": "MUT-3 的等价变异体地位未被独立枚举（未独立走查「角色表名字 × 不合格 dimension」的声明空间）。", "status": "carried_not_resolved", "executor_recheck": "与 F-I10B-6（MUT-3 … SURVIVED、mutation_proof_valid=true）及 OQ-I10B-1 一致 ⇒ 属**如实披露**，非隐瞒。"},
+  {"id": "E-1..E-7", "severity": "info", "kind": "errata", "finding": "勘误清单 E-1…E-7（M05/M14/M20/M24 defaults 相位翻转 + M14 三处旧行为记录）。", "status": "PENDING-orchestration", "executor_note": "**本卡未落地**；禁改冻结件，须由编排层按 T1-12 ① 追加式形态落地。详见 errata_pending_orchestration。"}
+ ],
+
+ "bookkeeping": {
+  "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-21",
+  "what_this_pass_did": "created the carrier review.md (it did NOT previously exist — this was a create, not an append), appended the independent verdict block as §2, landed handoff.status / status_before_bookkeeping_fix / reviewer_status / status_authority / bookkeeping, registered the 5 carried findings, and created evidence/I-10-B/qualification.json",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer",
+  "status_transitions_made": "1 — review_pending → accepted_scoped, landed by the carrier-landing executor on the strength of an independently produced verdict relayed by the orchestration layer; the implementer made no transition and signed nothing",
+  "review_md_created_not_appended": true,
+  "review_md_bytes_written": 9078,
+  "product_files_written": 0,
+  "frozen_artifacts_touched": 0
  },
 
  "qualifications": {
-  "registry_layer_contract": "isolated 内成立（隔离副本验证，正负例+变异证明齐全）",
+  "registry_layer_contract": "isolated 内成立（隔离副本验证，正负例+变异证明齐全）—— 独立 reviewer 已出具 `accepted_scoped`（**限定范围**）",
+  "formula": "accepted_scoped（仅此一项；范围＝隔离副本内的注册层契约）",
   "disclosure_adaptation": "unmapped",
-  "accuracy": "unproven"
+  "accuracy": "unproven",
+  "production_promotion": "NOT granted —— **生产晋升是独立的 owner 决策**；本卡的 acceptance **不授权**把 iso 修复写入生产 `RF/scripts/model_registry.py`",
+  "dedicated_qualification_file": "evidence/I-10-B/qualification.json（本次记账创建）"
  }
 }

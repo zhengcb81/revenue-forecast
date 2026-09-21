@@ -118,7 +118,7 @@ OPS = {
 
 
 def apply_op(lines: list[str], op: str) -> list[str]:
-    eol = "\r\n" if lines and lines[0].endswith("\r") else "\n"
+    eol = "\r\n" if lines and lines[0].endswith("\r\n") else "\n"
     for old_block, new_block in OPS[op]:
         old = [ln + eol for ln in old_block]
         new = [ln + eol for ln in new_block]

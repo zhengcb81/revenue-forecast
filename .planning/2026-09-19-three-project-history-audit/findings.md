@@ -1,5 +1,19 @@
 # Findings
 
+## 【流程缺口·重复出现】reviewer 裁决未落盘为定字节报告（2026-09-21 登记）
+
+**现象**：独立 reviewer 以 subagent 形式派发时，其裁决经**消息**返回父 agent，**不写盘**。载体落定执行器随后把该裁决转录为 `review.md`，并如实标注 `verdict_is_relayed = true` / `reviewer_report.exists = false`。**已确认至少两例**：
+- **I-10-B**：执行器穷尽搜索 `%TEMP%`、`C:\*-rv*`、`execution_runs/_isolation_incidents`、`reviews/` 及整个 attempt 树，**未找到任何定字节 reviewer 报告**；`qualification.json.declarations.verdict_is_relayed = true`、`reviewer_report.exists = false`，`review.md §2` 自述为"relay transcript, not a reviewer-authored block"。对比**正常形态**：I-11-A 携 `e8b7d223…`、M09–M12 携 `5a44fd4e…`（定字节报告）。
+- **I-05-C**：同一执行器把它登记为 **P3-3**（`review.md` 为转录、原始 reviewer 报告未归档）。
+
+**影响**：①裁决的**原始字节**不可复核，只能复核转录（内容经父 agent 转述，链条多一跳）；②与 M09–M12/I-11-A 的"定字节报告 + 哈希"标准形态不一致，跨卡对账时形态参差。
+
+**父 agent 处置**：**不伪造**报告路径或哈希（执行器正确地拒绝了这条路）；按"relayed"形态如实登记，并把**后续所有 reviewer 派单**改为要求其**先把报告写入 attempt 内固定文件**（建议 `<A>\reviewer_report.md`）再回报，使载体可携定字节哈希。**已发生的两例不回改**（attempt 已封盘），作为**已披露的历史形态限制**保留。
+
+## 【已失效·核对记录】OQ-I10B-3（`model_extensions.py` untracked）已于 2026-09-20 解决
+
+I-10-B 载体执行器正确地**标记而非静默关闭**该 OQ（"progress.md 称该文件已被纳管，该开放项可能已陈旧"）。父 agent 实测确认：`git ls-files --error-unmatch scripts/model_extensions.py` → **tracked**；`git cat-file -e HEAD:scripts/model_extensions.py` → **在 HEAD 中**；引入提交 **`5db4734a owner-authorized: bring the extension model registry under version control`**；工作树 blob `9a40b464099a64b7c1522ac32f6f1842954aa20d` **== HEAD blob**。⇒ **OQ-I10B-3 已失效**（不再构成残余风险），但**不改 I-10-B 的封盘载体**，只在本文件登记失效事实。
+
 ## 最终判定（覆盖前期“待确认”状态）
 
 审计正文范围已闭合：769候选路径中766全文语义审查，2份同源混合清单仅工程部分，1份误命中raw新闻排除。详见README及master_coverage；这些数字是覆盖，不是通过率。

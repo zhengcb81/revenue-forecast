@@ -196,19 +196,3 @@ updated rule table**, not a pass.
    updated expectations FAIL (RED), which is what makes the update semantic.
 5. The frozen I-14-C C13 test keeps its RED state at handoff; its rewrite belongs
    to the reviewer (card clause 5).
-
-
----
-
-# CORRECTION 1 (2026-09-19, appended after the first A5 run; original bytes above unchanged)
-
-Section N4, last row of the hand computation, contained an off-by-one: I wrote
-"the last 7 persisted chars are `yyyyyyy`". Wrong: char 194 of the persisted
-message is the SPACE that separated the value from the y-run, so chars 195..200
-are the first **6** y's. The persisted tail is `" yyyyyy"` (space + 6 y's).
-Everything else in N4 is confirmed by the A3/A5 runs exactly as frozen:
-len(S) 325, greedy 193, narrow pre-truncation 314, persisted 200, prefix
-`"start-"+x*170+" token=<redacted>"` occupying chars 1..193, marker and M[:8]
-absent. The A5 failure this explains was a transcription error of the frozen
-text into the test, not a redactor defect; the probe (A3) had already shown the
-true tail (`...cted> yyyyyy`).

@@ -1,0 +1,98 @@
+{
+ "card_id": "I-08-C",
+ "parent_card": "I-08",
+ "plan": "2026-09-19-three-project-history-audit",
+ "attempt_id": "a20260919-01",
+ "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-C\\a20260919-01",
+ "status": "review_pending",
+ "implementer_self_acceptance": false,
+ "implementer_note": "implementer does NOT declare acceptance; two consumption-gate gaps (E11 label not bound, E13 segment base unbound) plus receipt-layer limitation and one card-anchor drift are handed to the reviewer",
+ "interpreter": {
+  "path": "C:\\Miniconda\\python.exe",
+  "version": "3.13.9",
+  "pytest": "9.1.1",
+  "venv_created": false,
+  "network": "none used"
+ },
+ "command": "C:\\\\Miniconda\\\\python.exe -m pytest <attempt>/test_i08c_consumer_rejection.py -v",
+ "test_results": {
+  "passed": 12,
+  "failed": 0,
+  "runtime_seconds": 1.43,
+  "evidence": "pytest_verdict.stdout.txt"
+ },
+ "oracle": {
+  "file": "oracle.md",
+  "sha256": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
+  "provenance": "r1 frozen pre-run from code reading only; exploratory run 8/12 passed (fixture mechanics + E6 vector under-bound); r2 re-frozen BEFORE verdict run; verdict run 12/12 against r2"
+ },
+ "deliverables": {
+  "oracle.md": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
+  "handoff.json": "self (written last)",
+  "test_i08c_consumer_rejection.py": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f",
+  "pytest_verdict.stdout.txt": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d"
+ },
+ "test_file_lines": 199,
+ "production_read_only": {
+  "revenue_publication.py": {
+   "sha256": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+   "card_anchor": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+   "match": true
+  },
+  "revenue_report.py": {
+   "sha256": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+   "card_anchor": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+   "match": true
+  },
+  "publication_registry.py": {
+   "sha256": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344",
+   "card_anchor": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
+   "match": false,
+   "note": "drift pre-existing (commit 1dbae639 feat ZR-701); function is_registered still at line 188 with same contract; card executed against current file"
+  },
+  "artifacts/registry/publications.jsonl": {
+   "sha256": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+   "note": "identical to I-08-B pre-edit binding bc3256bb... — test redirected REVENUE_PUBLICATION_REGISTRY to a temp file because formal run_forecast registers publications"
+  },
+  "git_status_scripts": "clean; no production file modified by this card"
+ },
+ "consumer_entries_exercised": {
+  "validate_publication_receipt": "revenue_publication.py:185 (receipt/hash layer)",
+  "validate_forecast_output / validate_published_forecast": "revenue_report.py:1239/1196 (strong dispatcher, embedded-input recomputation)",
+  "is_registered": "publication_registry.py:188 (registry authority, fail-closed)",
+  "not_exercised": "invest-* consumers (out of scope, owner cards); CLI publish txn (F01/F02 exercised via the dispatcher chain those entries call)"
+ },
+ "findings_for_reviewer": [
+  {
+   "id": "I08C-F1",
+   "case": "E11/A-C2",
+   "severity": "high",
+   "finding": "attestation_status is a plain label: U + attestation_status=host_signed with recomputed self-hashes passes BOTH validate_publication_receipt and validate_forecast_output; capability gate exists only at issuance (revenue_core.py:167, attestation_capability()). Trusted-formal consumption gate absent in production tree — matches the I-08-B iso/rf surface not yet applied to the product repo."
+  },
+  {
+   "id": "I08C-F2",
+   "case": "E6/A-C3",
+   "severity": "medium",
+   "finding": "receipt layer is hash-consistency only: attacker-recomputed validated_payload_sha256/receipt_sha256/result_sha256 pass validate_publication_receipt; only the strong dispatcher (output recomputation from embedded input) rejects. Consumers MUST call the strong dispatcher; the receipt validator alone is not a security gate."
+  },
+  {
+   "id": "I08C-F3",
+   "case": "E13",
+   "severity": "medium",
+   "finding": "segments[i].base_revenue (direct_revenue) is bound by NO output gate: self-hash-consistent forgery passes even validate_forecast_output (empirical DID-NOT-RAISE, pinned by test_e13). Field renders into official report segment tables (render_markdown)."
+  },
+  {
+   "id": "I08C-F4",
+   "case": "anchors",
+   "severity": "low",
+   "finding": "card anchor for publication_registry.py drifted (44662744 -> 29aaae4f) due to commit 1dbae639 after card freeze; contract unchanged, card executable."
+  }
+ ],
+ "scope_notes": [
+  "production repos READ-ONLY: no writes; registry redirected via env var",
+  "no venv created; C:\\\\Miniconda\\\\python.exe used directly",
+  "no repos copied; production files referenced by path",
+  "test file is a new isolated node in the attempt dir, not added to production tests/"
+ ],
+ "next_action": "HANDOVER to independent reviewer: verify oracle r2 freeze order, re-run the pytest node, adjudicate I08C-F1..F4; scope-external consumers (invest-*) remain unverified and must not be marked complete."
+}
