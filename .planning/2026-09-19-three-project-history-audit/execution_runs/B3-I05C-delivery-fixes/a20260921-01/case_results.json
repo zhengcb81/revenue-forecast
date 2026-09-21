@@ -1,0 +1,201 @@
+{
+  "card_id": "B3-I05C-delivery-fixes",
+  "parent_card": "I-05-C",
+  "attempt_id": "a20260921-01",
+  "exit_code_legend": {
+    "0": "passed (business verdict: pass)",
+    "1": "harness failure OR intentional RED mutation run",
+    "2": "no verdict / expected rejection",
+    "3": "did not meet expectation"
+  },
+  "findings": {
+    "REM-11": {
+      "severity": "P2",
+      "title": "bundle=None path returned the full downstream closure of the requested roles",
+      "fix": "both branches now share _production_scope: requested missing roles + their non-reusable ancestors",
+      "oracle_case": "every single-role request row in oracle.md",
+      "red_evidence": {
+        "run": "CTRL-C-prod-w05c (unfixed production bytes)",
+        "result": "8 failed, 27 passed in 17.44s",
+        "red_nodes": [
+          "TestW05CXBundleNoneScoping::test_no_bundle_normalized_only_produces_normalized_only",
+          "TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[normalized|markdown|summary|sections|consumer_analysis]",
+          "TestW05CXBundleNoneScoping::test_no_bundle_subset_never_exceeds_request_closure"
+        ]
+      },
+      "green_evidence": {
+        "run": "CTRL-A-fixed-w05c",
+        "result": "35 passed in 24.08s"
+      },
+      "mutation": {
+        "run_id": "M1-rem11",
+        "raw_returncode": 1,
+        "summary_line": "9 failed, 26 passed in 25.38s",
+        "failed_nodes": [
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_default_request_is_universe_scope",
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_explicit_all_roles_matches_default",
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_normalized_only_produces_normalized_only",
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[consumer_analysis]",
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[markdown]",
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[normalized]",
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[sections]",
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[summary]",
+          "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_subset_never_exceeds_request_closure"
+        ],
+        "purpose": "mutation: REM-11 reverted -> W05C must go RED"
+      },
+      "fc904_conflict": false
+    },
+    "REM-12": {
+      "severity": "P2",
+      "title": "w05b-regression bound the I-05-B attempt's stale iso bytes (A55602E5) instead of production",
+      "fix": "re-pointed at the bytes under test by explicit file location; provenance asserted in-test",
+      "red_evidence": {
+        "run": "M4a-rem12-stale (binding reverted to the stale iso)",
+        "result": "2 failed, 21 passed in 8.36s",
+        "red_nodes": [
+          "TestB3W05BProductionBinding::test_binding_is_not_the_stale_i05b_iso_copy",
+          "TestB3W05BProductionBinding::test_binding_matches_the_declared_selector"
+        ]
+      },
+      "green_evidence": {
+        "production_bytes": {
+          "run_id": "CTRL-E-prod-w05b",
+          "raw_returncode": 0,
+          "summary_line": "23 passed in 16.83s",
+          "failed_nodes": [],
+          "purpose": "after: W05B regression on production bytes (REM-12 re-point)"
+        },
+        "fixed_bytes": {
+          "run_id": "CTRL-F-fixed-w05b",
+          "raw_returncode": 0,
+          "summary_line": "23 passed in 16.25s",
+          "failed_nodes": [],
+          "purpose": "after: W05B regression on the fixed bytes"
+        }
+      },
+      "vacuity_proof": {
+        "run": "M4b-vacuity-stale-iso",
+        "result": "probe: 2 passed in 0.97s | carrier: 20 passed in 4.13s",
+        "bound_bytes": {
+          "bound_file": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-B\\a20260919-01\\iso\\checkout_scripts\\company_wiki_source.py",
+          "bound_sha256": "A55602E5C2881E64F888F39A224F82DB918190009DF3901497A5CD1E252E94AE",
+          "stale_i05b_iso_sha256": "A55602E5C2881E64F888F39A224F82DB918190009DF3901497A5CD1E252E94AE",
+          "production_sha256": "225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294",
+          "is_stale": true
+        },
+        "reading": "the same 20 carrier tests pass on the stale bytes, so the I-05-C record was vacuous as evidence about production; it is now accompanied by a binding assertion that cannot pass on the stale bytes"
+      }
+    },
+    "REM-13": {
+      "severity": "P3",
+      "title": "select_artifact_roles docstring described the old downstream-closure semantics",
+      "fix": "docstring rewritten to the implemented rule, including the bundle=None rule",
+      "red_evidence": {
+        "run": "CTRL-C-prod-w05c (unfixed production bytes)",
+        "red_nodes": [
+          "TestW05CXDocstringMatchesBehaviour::test_docstring_matches_scoped_semantics"
+        ]
+      },
+      "green_evidence": {
+        "run": "CTRL-A-fixed-w05c",
+        "result": "35 passed in 24.08s"
+      },
+      "mutation": {
+        "run_id": "M2-rem13",
+        "raw_returncode": 1,
+        "summary_line": "1 failed, 34 passed in 22.64s",
+        "failed_nodes": [
+          "tests/test_w05c_minimal_production.py::TestW05CXDocstringMatchesBehaviour::test_docstring_matches_scoped_semantics"
+        ],
+        "purpose": "mutation: REM-13 reverted -> W05C must go RED"
+      }
+    },
+    "REM-14": {
+      "severity": "P3",
+      "title": "retry-count-vs-artifact-count.json row 3 named the diverge test but reported test_invocation_trace_accuracy's numbers",
+      "fix": "row 3 test field corrected to test_invocation_trace_accuracy (4 calls / 1 artifact kept); a 4th row added for the diverge test's own 3 calls / 1 artifact",
+      "red_evidence": {
+        "run": "CTRL-C-prod-w05c (frozen JSON)",
+        "red_nodes": [
+          "TestW05CXRetryEvidenceAttribution::test_retry_evidence_json_rows_match_named_tests"
+        ]
+      },
+      "green_evidence": {
+        "run": "CTRL-A-fixed-w05c",
+        "result": "35 passed in 24.08s"
+      },
+      "mutation": {
+        "run_id": "M3-rem14",
+        "raw_returncode": 1,
+        "summary_line": "2 failed, 33 passed in 6.97s",
+        "failed_nodes": [
+          "tests/test_w05c_minimal_production.py::TestW05CXRetryEvidenceAttribution::test_retry_evidence_json_rows_match_named_tests",
+          "tests/test_w05c_minimal_production.py::TestW05CXRetryEvidenceAttribution::test_retry_evidence_row3_reports_four_calls"
+        ],
+        "purpose": "mutation: REM-14 reverted -> W05C must go RED"
+      },
+      "test_code_changed": false
+    }
+  },
+  "regression": {
+    "fc904": {
+      "file": "tests/test_fc904_artifact_selection.py (production, sha256 8C0B8E39...46BF3F, UNMODIFIED)",
+      "before": "11 passed (production bytes)",
+      "after": "16 passed (11 frozen + 5 B3)",
+      "no_regression": true,
+      "frozen_assertions_edited": false
+    },
+    "w05b": {
+      "file": "I-05-B carrier sha256 F9845F17...F9595D + 3 B3 binding tests",
+      "before": "20 passed against the stale I-05-B iso bytes (vacuous)",
+      "after": "23 passed against production bytes AND 23 passed against the fixed bytes",
+      "no_regression": true
+    },
+    "w05c": {
+      "file": "I-05-C carrier sha256 D13BF505...7AAB82 + 16 B3 tests",
+      "before": "19 passed (production bytes)",
+      "after": "35 passed (fixed bytes); the 19 carrier tests also still pass on production bytes",
+      "no_regression": true
+    },
+    "zr706_fc905b": {
+      "files": [
+        "tests/test_zr706_selector_contract.py (production, unmodified)",
+        "tests/test_fc905b_trusted_receipt.py (production, unmodified)"
+      ],
+      "why": "a grep for select_artifact_roles found these two production suites outside the card's named set; they cover the same contract, so they were added as regression coverage",
+      "before": "10 passed / 6 passed (production bytes)",
+      "after": "10 passed / 6 passed (fixed bytes) - identical",
+      "no_regression": true
+    }
+  },
+  "before_after_control": {
+    "note": "CTRL-C/CTRL-D run the SAME new tests against the unfixed production bytes, so the RED->GREEN change is attributable to the fix and not to test-only edits",
+    "CTRL-C-prod-w05c": {
+      "run_id": "CTRL-C-prod-w05c",
+      "raw_returncode": 1,
+      "summary_line": "8 failed, 27 passed in 17.44s",
+      "failed_nodes": [
+        "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_normalized_only_produces_normalized_only",
+        "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[consumer_analysis]",
+        "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[markdown]",
+        "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[normalized]",
+        "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[sections]",
+        "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[summary]",
+        "tests/test_w05c_minimal_production.py::TestW05CXBundleNoneScoping::test_no_bundle_subset_never_exceeds_request_closure",
+        "tests/test_w05c_minimal_production.py::TestW05CXDocstringMatchesBehaviour::test_docstring_matches_scoped_semantics"
+      ],
+      "purpose": "before-control: W05C suite on UNFIXED production bytes"
+    },
+    "CTRL-D-prod-fc904": {
+      "run_id": "CTRL-D-prod-fc904",
+      "raw_returncode": 1,
+      "summary_line": "1 failed, 15 passed in 15.82s",
+      "failed_nodes": [
+        "tests/test_fc904_artifact_selection.py::TestB3ProductionProvenance::test_fc904_no_bundle_assertion_is_the_unchanged_default_scope"
+      ],
+      "purpose": "before-control: FC-904 suite on UNFIXED production bytes"
+    }
+  },
+  "production_repos_written": false
+}

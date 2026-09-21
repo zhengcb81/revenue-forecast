@@ -1,0 +1,925 @@
+# B1-I08C-product-fixes / a20260921-01 — changes.diff
+#
+# Left side  : iso/rf/scripts/**   (byte-identical copy of the production tree;
+#              the copy integrity is recorded in before/iso_tree_manifest.json and
+#              re-printed at run time by scratch/probe_defects.py)
+# Right side : iso/fixed/rf/scripts/**  (the fixed tree)
+#
+# Production itself is NOT modified by this card. This diff is the change set
+# a promotion would apply; promotion is a separate owner decision.
+#
+# Only scripts/ is diffed: tests/ and config/ are byte-identical between the two
+# trees (the card adds its own test file at the attempt root, not inside the tree).
+
+==============================================================================
+# scripts/revenue_core.py
+#   production: sha256 1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae (14136 bytes)
+#   fixed     : sha256 8a761498f5eb729e4f4227f2a315d709253f8b96acf7baa7253ab425e73ac883 (25842 bytes)
+==============================================================================
+--- a/scripts/revenue_core.py
++++ b/scripts/revenue_core.py
+@@ -2,10 +2,15 @@
+ 
+ from __future__ import annotations
+ 
+ import copy
++import hashlib
++import json
+ import os
++import re
++import secrets
+ import shutil
++import subprocess
+ from pathlib import Path
+ from typing import Any
+ 
+ from model_registry import (  # noqa: E402  re-export
+@@ -110,20 +115,304 @@
+     return result
+ 
+ 
+ def attestation_capability() -> bool:
+-    """True when an external attestation provider is configured and runnable.
+-
+-    The provider is named by the ``REVENUE_ATTESTATION_PROVIDER`` environment
+-    variable (a command on PATH or an absolute path to an executable).  Without
+-    a runnable provider the runtime can only publish ``"unattested"`` formal
+-    artifacts, which invest-* consumers reject by default (R2.1).
++    """True only when an attestation provider has PROVEN signing capability.
++
++    (B1 / REM-01(b), I-08-A rule R-PROV-1.)  File existence is explicitly **not**
++    capability: a plain ``.txt``, a bare ``.py`` with no protocol response, or
++    ``sys.executable`` all resolve to existing files and all grant nothing.  The
++    provider is named by ``REVENUE_ATTESTATION_PROVIDER`` (a command on PATH or
++    an absolute path) and must complete a bounded one-shot handshake — one JSON
++    request on stdin, exactly one JSON response on stdout — whose ``fingerprint``
++    resolves in the trust domain and whose Ed25519 signature verifies over the
++    echoed request.  Without that, the runtime can only publish ``"unattested"``
++    formal artifacts.
++
++    The provider file is never read, imported or executed as a script by the
++    host; it is only spawned, and only when the path exists.  A module-level
++    diagnostic is exposed by :func:`attestation_last_failure`.
++    """
++    global _ATTESTATION_LAST_FAILURE
++    _ATTESTATION_LAST_FAILURE = None
++    from revenue_publication import (
++        publication_attestation_request,
++    )
++
++    request = publication_attestation_request(
++        request_id=secrets.token_hex(32),
++        payload_sha256=hashlib.sha256(b"capability-probe").hexdigest(),
++    )
++    response = _run_attestation_provider(request)
++    if response is None:
++        return False
++    try:
++        _validate_attestation_response(request, response)
++    except ForecastInputError as exc:
++        _record_attestation_failure(str(exc))
++        return False
++    return True
++
++
++def attestation_last_failure() -> dict[str, str] | None:
++    """Diagnostic for the most recent capability/signing failure, or None.
++
++    Read-only reporting aid: it carries no authority and is never consulted by a
++    validation path.  Its presence never decides a label by itself.
++    """
++    return dict(_ATTESTATION_LAST_FAILURE) if _ATTESTATION_LAST_FAILURE else None
++
++
++# --- Provider handshake (B1 / REM-01) ---------------------------------------
++# `T` (timeout) and `L` (stdout bound) are PARAMETERS, not frozen constants:
++# I-08-A OPEN-D7 owns their values.  These two are this implementation's
++# defaults, recorded in this attempt's binding.json and NOT claimed normative.
++ATTESTATION_PROVIDER_TIMEOUT_SECONDS = 10.0
++ATTESTATION_PROVIDER_MAX_STDOUT_BYTES = 65536
++
++ATTESTATION_RESPONSE_FIELDS = (
++    "attestation_response_schema_version",
++    "request_id",
++    "payload_sha256",
++    "domain_separator",
++    "issuer",
++    "key_id",
++    "fingerprint",
++    "algorithm",
++    "signature",
++    "signed_at",
++)
++
++_ATTESTATION_LAST_FAILURE: dict[str, str] | None = None
++
++
++def _record_attestation_failure(message: str) -> None:
++    """Store ``{"code": <I-08-A code>, "message": <str>}`` for a coded message."""
++    global _ATTESTATION_LAST_FAILURE
++    failure = parse_attestation_failure(message)
++    _ATTESTATION_LAST_FAILURE = failure
++
++
++def parse_attestation_failure(message: str) -> dict[str, str]:
++    """Split a coded rejection message into ``{"code", "message"}``."""
++    match = re.match(r"^([a-z][a-z0-9_]*):\s*(.*)$", message, re.DOTALL)
++    if match is None:
++        return {"code": "provider_protocol_violation", "message": message}
++    return {"code": match.group(1), "message": match.group(2).strip()}
++
++
++def _run_attestation_provider(request: dict[str, Any]) -> dict[str, Any] | None:
++    """One-shot provider handshake.  Returns the response object, or None.
++
++    Every failure path records a coded diagnostic and returns None; nothing here
++    raises, because a publication that cannot be signed must degrade to an honest
++    ``unattested`` publication rather than fail the research result.
+     """
+     provider = os.environ.get("REVENUE_ATTESTATION_PROVIDER")
+     if not provider:
+-        return False
++        _record_attestation_failure(
++            "provider_absent: REVENUE_ATTESTATION_PROVIDER is not set"
++        )
++        return None
+     resolved = shutil.which(provider) or Path(provider).expanduser()
+-    return resolved is not None and os.path.isfile(resolved)
++    if resolved is None or not os.path.isfile(resolved):
++        _record_attestation_failure(
++            f"provider_path_unopenable: {provider!r} does not resolve to a file"
++        )
++        return None
++    try:
++        completed = subprocess.run(
++            [str(resolved)],
++            input=json.dumps(request, sort_keys=True).encode("utf-8"),
++            capture_output=True,
++            timeout=ATTESTATION_PROVIDER_TIMEOUT_SECONDS,
++            check=False,
++        )
++    except subprocess.TimeoutExpired:
++        _record_attestation_failure(
++            "provider_timeout: provider exceeded "
++            f"{ATTESTATION_PROVIDER_TIMEOUT_SECONDS}s and was terminated"
++        )
++        return None
++    except OSError as exc:
++        _record_attestation_failure(f"provider_path_unopenable: {exc}")
++        return None
++    if completed.returncode != 0:
++        detail = completed.stderr.decode("utf-8", "replace").strip()[:200]
++        if "cannot sign" in detail or "no private key" in detail:
++            _record_attestation_failure(
++                f"provider_signing_unavailable: {detail or 'provider refused to sign'}"
++            )
++        else:
++            _record_attestation_failure(
++                f"provider_exit_nonzero: exit code {completed.returncode}; {detail}"
++            )
++        return None
++    raw = completed.stdout
++    if len(raw) > ATTESTATION_PROVIDER_MAX_STDOUT_BYTES:
++        _record_attestation_failure(
++            "provider_output_too_large: provider wrote "
++            f"{len(raw)} bytes, above the {ATTESTATION_PROVIDER_MAX_STDOUT_BYTES} "
++            "byte bound"
++        )
++        return None
++    text = raw.decode("utf-8", "replace").strip()
++    if not text:
++        _record_attestation_failure(
++            "provider_protocol_violation: provider wrote no response"
++        )
++        return None
++    try:
++        response = json.loads(text)
++    except json.JSONDecodeError as exc:
++        _record_attestation_failure(f"provider_invalid_json: {exc}")
++        return None
++    if not isinstance(response, dict):
++        _record_attestation_failure(
++            "provider_schema_mismatch: response must be a single JSON object"
++        )
++        return None
++    _ATTESTATION_LAST_FAILURE = None
++    return response
++
++
++def _validate_attestation_response(
++    request: dict[str, Any], response: dict[str, Any]
++) -> dict[str, str]:
++    """Validate one provider response; raise ``ForecastInputError`` if untrusted.
++
++    Returns the identity fields on success so the caller can assemble the
++    binding record.
++    """
++    from revenue_publication import (
++        PUBLICATION_ATTESTATION_ALGORITHM,
++        PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        verify_ed25519_signature,
++    )
++
++    missing = [field for field in ATTESTATION_RESPONSE_FIELDS if field not in response]
++    extra = sorted(set(response) - set(ATTESTATION_RESPONSE_FIELDS))
++    if missing or extra:
++        raise ForecastInputError(
++            "provider_schema_mismatch: response field set mismatch "
++            f"(missing={missing}, extra={extra})"
++        )
++    if (
++        response["attestation_response_schema_version"]
++        != PUBLICATION_ATTESTATION_SCHEMA_VERSION
++    ):
++        raise ForecastInputError(
++            "provider_schema_mismatch: attestation_response_schema_version mismatch"
++        )
++    for field in ("request_id", "payload_sha256", "domain_separator"):
++        if response[field] != request[field]:
++            raise ForecastInputError(
++                f"provider_binding_mismatch: response.{field} does not echo the request"
++            )
++    if response["algorithm"] != PUBLICATION_ATTESTATION_ALGORITHM:
++        raise ForecastInputError(
++            "provider_schema_mismatch: response.algorithm must be "
++            f"{PUBLICATION_ATTESTATION_ALGORITHM!r}"
++        )
++    for field in ("issuer", "key_id"):
++        if not isinstance(response[field], str) or not response[field].strip():
++            raise ForecastInputError(
++                f"provider_schema_mismatch: response.{field} must be a non-empty string"
++            )
++    if (
++        not isinstance(response["fingerprint"], str)
++        or re.fullmatch(r"[0-9a-f]{32}", response["fingerprint"]) is None
++    ):
++        raise ForecastInputError(
++            "provider_schema_mismatch: response.fingerprint must be 32 lowercase hex"
++        )
++    if not isinstance(response["signature"], str) or not response["signature"]:
++        raise ForecastInputError(
++            "attestation_missing_signature: provider returned no signature (E12)"
++        )
++    if re.fullmatch(r"[0-9a-f]{128}", response["signature"]) is None:
++        raise ForecastInputError(
++            "attestation_malformed_signature: response.signature must be 128 "
++            "lowercase hex (E13)"
++        )
++    if (
++        not isinstance(response["signed_at"], str)
++        or re.fullmatch(
++            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", response["signed_at"]
++        )
++        is None
++    ):
++        raise ForecastInputError(
++            "provider_schema_mismatch: response.signed_at must be RFC3339 UTC 'Z'"
++        )
++    # The signing target is the request object as the provider received it, so a
++    # signature cannot be moved onto a different request.
++    message = canonical_sha256(request).encode("ascii")
++    verify_ed25519_signature(
++        response["fingerprint"], response["signature"], message
++    )
++    return {
++        "issuer": response["issuer"],
++        "key_id": response["key_id"],
++        "fingerprint": response["fingerprint"],
++        "signature": response["signature"],
++        "signed_at": response["signed_at"],
++    }
++
++
++def request_publication_attestation(
++    result: dict[str, Any],
++) -> dict[str, Any] | None:
++    """Run the provider handshake for a concrete publication.
++
++    Returns the binding record to attach to the receipt, or ``None`` when the
++    publication cannot be attested (the caller then publishes ``"unattested"``).
++    The record deliberately omits the result digest and the receipt's own hash:
++    both cover the receipt, which contains the record, so citing them inside the
++    record would be a fixpoint.  The artifact is still bound — see
++    ``revenue_publication.publication_attestation_request``.
++    """
++    from revenue_publication import (
++        PUBLICATION_ATTESTATION_ALGORITHM,
++        PUBLICATION_ATTESTATION_DOMAIN,
++        PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        publication_attestation_request,
++    )
++
++    request = publication_attestation_request(
++        request_id=secrets.token_hex(32),
++        payload_sha256=canonical_sha256(
++            {
++                key: value
++                for key, value in result.items()
++                if key not in ("result_sha256", "publication_receipt")
++            }
++        ),
++    )
++    response = _run_attestation_provider(request)
++    if response is None:
++        return None
++    try:
++        identity = _validate_attestation_response(request, response)
++    except ForecastInputError as exc:
++        # A response that cannot be trusted means "not attested", not "fail the
++        # publication": the research result is still valid, and a bare label is
++        # exactly what this fix removes.
++        _record_attestation_failure(str(exc))
++        return None
++    _ATTESTATION_LAST_FAILURE = None
++    return {
++        "attestation_payload_schema_version": PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        "domain_separator": PUBLICATION_ATTESTATION_DOMAIN,
++        "issuer": identity["issuer"],
++        "key_id": identity["key_id"],
++        "algorithm": PUBLICATION_ATTESTATION_ALGORITHM,
++        "fingerprint": identity["fingerprint"],
++        "request_id": request["request_id"],
++        "payload_sha256": request["payload_sha256"],
++        "signed_at": identity["signed_at"],
++        "signature": identity["signature"],
++    }
+ 
+ 
+ def run_forecast(data: dict[str, Any], *, mode: str = "formal") -> dict[str, Any]:
+     """Run the complete revenue forecast and return the published result.
+@@ -137,10 +426,13 @@
+     but the result is returned with ``formal_output_mode="draft"``).
+     invest-* consumers must only accept ``"formal"`` artifacts.
+ 
+     Formal publications carry an ``attestation_status`` (R2.1): ``"host_signed"``
+-    only when an external attestation provider is configured, otherwise
+-    ``"unattested"`` (rejected by invest-* consumers by default).
++    only when a provider completed a verified signing handshake (B1 / REM-01),
++    otherwise ``"unattested"``.  The label is never set from a boolean: it is set
++    only when :func:`request_publication_attestation` returned a record whose
++    signature verifies against the trust domain, and that record is attached to
++    the receipt.
+     """
+     from revenue_publication import (
+         build_publication_receipt,
+         build_draft_receipt,
+@@ -161,13 +453,20 @@
+             "formal publication gates passed; draft mode requested"
+         )
+         result["publication_receipt"] = build_draft_receipt(result)
+     else:
+-        # R2.1: host_signed requires a configured, runnable attestation
+-        # provider; otherwise the publication is explicitly unattested.
+-        attestation_status = "host_signed" if attestation_capability() else "unattested"
++        # R2.1 + B1/REM-01: host_signed requires a completed, trust-verified
++        # signing handshake.  A configured-but-unproven provider yields an
++        # honest `unattested` publication, never a bare label.
++        attestation_record = request_publication_attestation(result)
++        attestation_status = (
++            "host_signed" if attestation_record is not None else "unattested"
++        )
+         result["publication_receipt"] = build_publication_receipt(
+-            result, context, attestation_status=attestation_status
++            result,
++            context,
++            attestation_status=attestation_status,
++            publication_attestation=attestation_record,
+         )
+     result["result_sha256"] = canonical_sha256(result)
+     if mode == "formal":
+         validate_publication_receipt(result)
+
+==============================================================================
+# scripts/revenue_publication.py
+#   production: sha256 183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba (10681 bytes)
+#   fixed     : sha256 bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0 (24917 bytes)
+==============================================================================
+--- a/scripts/revenue_publication.py
++++ b/scripts/revenue_publication.py
+@@ -19,20 +19,48 @@
+   ``VerificationContext`` returned by ``validate_published_forecast``; the
+   validator recomputes it so a receipt built from a weaker or fabricated
+   context is rejected.
+ * This module never re-runs the revenue model — it only hashes and validates.
++
++SECURITY BOUNDARY (B1 / REM-02): two different things live in this module.
++
++* ``validate_publication_receipt`` is a **hash-consistency check on one artifact**
++  and **NOT a security boundary** (see its docstring and
++  :class:`PublicationReceiptOnlyWarning`).
++* ``validate_forecast_output`` in :mod:`revenue_report` is the consumer entry
++  point: it re-runs the bounded input-gated recomputations and the attestation
++  binding.  **Consumers must call ``validate_forecast_output``**, never
++  ``validate_publication_receipt`` alone.
++
++Attestation (B1 / REM-01): a receipt claiming ``attestation_status ==
++"host_signed"`` must carry a ``publication_attestation`` binding record that
++verifies against the trust domain, per I-08-A E27 (``attestation_missing_record``).
++The label is never accepted on set membership.
+ """
+ 
+ from __future__ import annotations
+ 
++import re
+ from typing import Any
+ 
++from contracts.evidence import ForecastInputError
+ from revenue_core import (
+     ENGINE_VERSION,
+     PUBLICATION_RECEIPT_SCHEMA_VERSION,
+     canonical_sha256,
+     require,
+ )
++
++
++class PublicationReceiptOnlyWarning(UserWarning):
++    """Marker: ``validate_publication_receipt`` is NOT a security boundary.
++
++    Exported so a caller (and a test) can see the limitation without reading the
++    source.  The function checks only that a receipt's self-hashes, gate set and
++    verification context are internally consistent with the artifact they travel
++    with; a fully-recomputed forgery satisfies all of them.  Use
++    ``revenue_report.validate_forecast_output`` for consumer-side validation.
++    """
+ 
+ 
+ # Gates certified by the strong validator (validate_published_forecast) when
+ # the artifact carries sensitivity results.
+@@ -115,25 +143,246 @@
+ 
+ 
+ ATTESTATION_STATUSES = {"host_signed", "unattested"}
+ 
++# --- Publication attestation binding record (B1 / REM-01, I-08-A E27) -------
++# The record is the thing that makes the `host_signed` label evidentiary.  Its
++# field set is CLOSED: an extra or missing key is a rejection, so a record can
++# never be given a meaning by a later reader that this validator did not check.
++PUBLICATION_ATTESTATION_DOMAIN = "revenue-forecast/publication-attestation/v1"
++PUBLICATION_ATTESTATION_SCHEMA_VERSION = "1.0"
++PUBLICATION_ATTESTATION_ALGORITHM = "ed25519"
++PUBLICATION_ATTESTATION_FIELDS = frozenset(
++    {
++        "attestation_payload_schema_version",
++        "domain_separator",
++        "issuer",
++        "key_id",
++        "algorithm",
++        "fingerprint",
++        "request_id",
++        "payload_sha256",
++        "signed_at",
++        "signature",
++    }
++)
++
++_HEX32 = re.compile(r"[0-9a-f]{32}")
++_HEX64 = re.compile(r"[0-9a-f]{64}")
++_HEX128 = re.compile(r"[0-9a-f]{128}")
++_RFC3339_Z = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
++
++# The request's `result_sha256` member exists so the provider sees an
++# unambiguous binding target, but its VALUE cannot be part of the signed record:
++# `result_sha256` covers the receipt, and the receipt contains the record.  The
++# record therefore carries no result digest, and this sentinel is what both the
++# provider request and the reconstruction use, so the signature covers exactly
++# the fields the record can bind.
++SIGNED_RESULT_SHA256_SENTINEL = "0" * 64
++
++
++def verify_ed25519_signature(
++    fingerprint: str, signature: str, message: bytes
++) -> None:
++    """Verify an Ed25519 signature against a fingerprint in the trust domain.
++
++    Fail-closed on every axis: unknown fingerprint, unavailable crypto library,
++    malformed key, malformed signature, or a verification failure all raise.
++    The trust domain is read from :func:`contracts.evidence._trusted_signer_public_keys`
++    so there is exactly one loader (missing file ⇒ zero trusted signers).
++    """
++    from contracts.evidence import _trusted_signer_public_keys
++
++    trusted = _trusted_signer_public_keys()
++    require(
++        fingerprint in trusted,
++        f"provider_key_untrusted: attestation signer {fingerprint[:12]} is not "
++        "trusted (E20)",
++    )
++    try:
++        from cryptography.exceptions import InvalidSignature
++        from cryptography.hazmat.primitives.asymmetric.ed25519 import (
++            Ed25519PublicKey,
++        )
++    except ImportError as exc:  # pragma: no cover - optional dependency
++        raise ForecastInputError(
++            "attestation_signature_invalid: attestation signature verification "
++            "unavailable"
++        ) from exc
++    try:
++        public_key = Ed25519PublicKey.from_public_bytes(trusted[fingerprint])
++        public_key.verify(bytes.fromhex(signature), message)
++    except (InvalidSignature, ValueError) as exc:
++        raise ForecastInputError(
++            "attestation_signature_invalid: attestation signature verification "
++            "failed (E14)"
++        ) from exc
++
++
++def validate_publication_attestation(
++    result: dict[str, Any], receipt: dict[str, Any]
++) -> None:
++    """Validate the ``publication_attestation`` binding record (B1 / REM-01).
++
++    Raises with the I-08-A code spelling in the message so a caller can classify
++    the rejection without parsing prose:
++
++    * ``attestation_missing_record`` (E27) — ``host_signed`` with no record.
++    * ``attestation_missing_signature`` (E12) / ``attestation_malformed_signature``
++      (E13) — absent or malformed signature.
++    * ``attestation_domain_mismatch`` (E17) — wrong domain separator.
++    * ``attestation_payload_hash_mismatch`` (E16) — the record does not bind the
++      live payload / result / receipt.
++    * ``provider_key_untrusted`` (E20) / ``issuer_key_binding_mismatch`` (E21) —
++      trust-domain failures.
++    * ``attestation_signature_invalid`` (E14) — Ed25519 verification failed.
++    """
++    record = receipt.get("publication_attestation")
++    claims_signed = receipt.get("attestation_status") == "host_signed"
++    if record is None:
++        if claims_signed:
++            # I-08-A §6.2 G3b: a package that CLAIMS a signature and cannot
++            # produce the record is rejected.  Never silently downgraded.
++            raise ForecastInputError(
++                "attestation_missing_record: publication_receipt claims "
++                "attestation_status='host_signed' but carries no "
++                "publication_attestation record (E27)"
++            )
++        return
++    require(
++        isinstance(record, dict),
++        "attestation_missing_record: publication_attestation must be an object",
++    )
++    missing = PUBLICATION_ATTESTATION_FIELDS - set(record)
++    extra = set(record) - PUBLICATION_ATTESTATION_FIELDS
++    require(
++        not missing and not extra,
++        "attestation_payload_fields: publication_attestation field set mismatch "
++        f"(missing={sorted(missing)}, extra={sorted(extra)})",
++    )
++    require(
++        record["attestation_payload_schema_version"]
++        == PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        "attestation_payload_fields: publication_attestation schema version mismatch",
++    )
++    require(
++        record["domain_separator"] == PUBLICATION_ATTESTATION_DOMAIN,
++        "attestation_domain_mismatch: publication_attestation domain_separator "
++        f"must be {PUBLICATION_ATTESTATION_DOMAIN!r}",
++    )
++    require(
++        record["algorithm"] == PUBLICATION_ATTESTATION_ALGORITHM,
++        "attestation_payload_fields: publication_attestation algorithm must be "
++        f"{PUBLICATION_ATTESTATION_ALGORITHM!r}",
++    )
++    for field in ("issuer", "key_id"):
++        require(
++            isinstance(record[field], str) and record[field].strip(),
++            f"attestation_payload_fields: publication_attestation.{field} is required",
++        )
++    require(
++        isinstance(record["fingerprint"], str)
++        and _HEX32.fullmatch(record["fingerprint"]) is not None,
++        "attestation_payload_fields: publication_attestation.fingerprint must be "
++        "32 lowercase hex",
++    )
++    require(
++        isinstance(record["request_id"], str)
++        and _HEX64.fullmatch(record["request_id"]) is not None,
++        "attestation_payload_fields: publication_attestation.request_id must be "
++        "64 lowercase hex",
++    )
++    require(
++        isinstance(record["signed_at"], str)
++        and _RFC3339_Z.fullmatch(record["signed_at"]) is not None,
++        "attestation_payload_fields: publication_attestation.signed_at must be "
++        "RFC3339 UTC 'Z'",
++    )
++    require(
++        isinstance(record["signature"], str) and record["signature"],
++        "attestation_missing_signature: publication_attestation.signature is "
++        "required (E12)",
++    )
++    require(
++        _HEX128.fullmatch(record["signature"]) is not None,
++        "attestation_malformed_signature: publication_attestation.signature must "
++        "be 128 lowercase hex (E13)",
++    )
++    # Binding to the live artifact: the record must describe THIS publication.
++    # The record binds the two fields that are knowable BEFORE the receipt
++    # exists: the payload digest (everything except `result_sha256` and
++    # `publication_receipt`) and the one-shot request id.  `result_sha256` and
++    # the receipt's own hash are deliberately NOT record fields — a receipt
++    # cannot contain its own hash (no fixpoint), and `result_sha256` covers the
++    # receipt, which contains this record.  Nothing is left unbound: the
++    # signature is over `request`, and `request` is reconstructed from the
++    # record's bound fields, so any change to a bound value breaks the signature.
++    require(
++        record["payload_sha256"] == receipt.get("validated_payload_sha256"),
++        "attestation_payload_hash_mismatch: publication_attestation.payload_sha256 "
++        "does not match the receipt's validated payload (E16)",
++    )
++    # The signed message is rebuilt from the record's fields and the record's
++    # signature is verified against it, so a record cannot be assembled from a
++    # signature issued for some other request.
++    request = publication_attestation_request(
++        request_id=record["request_id"],
++        payload_sha256=record["payload_sha256"],
++        result_sha256=SIGNED_RESULT_SHA256_SENTINEL,
++    )
++    message = canonical_sha256(request).encode("ascii")
++    verify_ed25519_signature(record["fingerprint"], record["signature"], message)
++
++
++def publication_attestation_request(
++    *,
++    request_id: str,
++    payload_sha256: str,
++    result_sha256: str = SIGNED_RESULT_SHA256_SENTINEL,
++) -> dict[str, Any]:
++    """The exact object a provider signs over (B1 §3.4, oracle revisions r3/r4).
++
++    ``canonical_payload_sha256`` is a redundant, explicitly-named copy of
++    ``payload_sha256`` so the signing target is unambiguous at the provider; the
++    signing target is the whole object including it.
++
++    ``result_sha256`` is present so the request names the artifact it is for, but
++    it is fixed to :data:`SIGNED_RESULT_SHA256_SENTINEL`: a real result digest
++    covers the receipt, and the receipt contains this record, so signing the real
++    value would be a fixpoint.  The artifact is nevertheless bound — the payload
++    digest in this request covers every result field except ``result_sha256`` and
++    ``publication_receipt``, and a change to either of those changes
++    ``validated_payload_sha256``/``receipt_sha256``, which the receipt checks.
++    """
++    return {
++        "attestation_request_schema_version": PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        "domain_separator": PUBLICATION_ATTESTATION_DOMAIN,
++        "request_id": request_id,
++        "payload_sha256": payload_sha256,
++        "result_sha256": result_sha256,
++        "canonical_payload_sha256": payload_sha256,
++    }
++
+ 
+ def build_publication_receipt(
+     result: dict[str, Any],
+     verification_context: VerificationContext | None = None,
+     *,
+     attestation_status: str = "unattested",
++    publication_attestation: dict[str, Any] | None = None,
+ ) -> dict[str, Any]:
+     """Build a publication receipt from a strong-validation verification context.
+ 
+     Without a ``VerificationContext`` the receipt cannot certify the strong
+     gates, so the call fails closed (RED: the public API must never hand back a
+     pass receipt before strong validation has run).
+ 
+     *attestation_status* records whether the host attestation was actually
+-    signed (R2.1): ``"host_signed"`` requires an external attestation provider
+-    to be configured; without one the runtime can only produce ``"unattested"``
+-    publications, which invest-* consumers reject by default.
++    signed (R2.1): ``"host_signed"`` requires a **verified**
++    ``publication_attestation`` binding record produced by a completed provider
++    handshake (B1 / REM-01); without one the runtime can only produce
++    ``"unattested"`` publications.  Passing ``"host_signed"`` without a record
++    fails closed here, so a caller cannot mint the label directly.
+     """
+     if not isinstance(verification_context, VerificationContext):
+         raise TypeError(
+             "build_publication_receipt requires a VerificationContext produced "
+@@ -141,8 +390,14 @@
+         )
+     if attestation_status not in ATTESTATION_STATUSES:
+         raise ValueError(
+             f"attestation_status must be one of {sorted(ATTESTATION_STATUSES)}"
++        )
++    if attestation_status == "host_signed":
++        require(
++            isinstance(publication_attestation, dict),
++            "attestation_missing_record: attestation_status='host_signed' "
++            "requires a publication_attestation record (E27)",
+         )
+     receipt = {
+         "receipt_schema_version": PUBLICATION_RECEIPT_SCHEMA_VERSION,
+         "schema_version": result["schema_version"],
+@@ -155,8 +410,17 @@
+         "formal_output_mode": "formal",
+         "freeform_override_allowed": False,
+         "attestation_status": attestation_status,
+     }
++    if publication_attestation is not None:
++        publication_attestation = dict(publication_attestation)
++        publication_attestation["payload_sha256"] = receipt[
++            "validated_payload_sha256"
++        ]
++        # The record must name THIS publication; the caller cannot know the
++        # receipt's own hash before it exists, and the receipt cannot contain a
++        # hash of itself, so the binding is re-checked at validation time.
++        receipt["publication_attestation"] = publication_attestation
+     receipt["receipt_sha256"] = _receipt_sha256(receipt)
+     return receipt
+ 
+ 
+@@ -182,13 +446,41 @@
+     return receipt
+ 
+ 
+ def validate_publication_receipt(result: dict[str, Any]) -> None:
+-    """Validate the publication receipt bound to a published forecast result.
+-
+-    Recomputes the expected verification context from the result content, so a
+-    receipt whose ``gate_ids`` do not match the gates the strong validator would
+-    execute (forged sensitivity without shock recomputation) is rejected.
++    """Hash-consistency check on one publication receipt — **NOT a security boundary**.
++
++    (B1 / REM-02.)  Read this before using the function as a gate.
++
++    What this function DOES check: that the receipt travels with an artifact it
++    is internally consistent with — its schema/engine/input anchors, its
++    ``validated_payload_sha256`` recomputed from the result payload, the gate set
++    the strong validator would execute for this content, the verification-context
++    digest those gates and that input imply, the draft/formal mode consistency,
++    and its own ``receipt_sha256``.
++
++    What this function does **NOT** check, and cannot: whether the artifact is
++    authentic.  Every value it compares is either recomputed from the artifact
++    itself or a public, non-secret hash, so an artifact whose values and hashes
++    were all recomputed together after a mutation satisfies every comparison.
++    That is by construction: it never re-runs an input-gated recomputation and
++    (except for the attestation record below) it never consults an
++    artifact-external authority.
++
++    The one exception is the attestation binding: a receipt claiming
++    ``attestation_status == "host_signed"`` must carry a verifying
++    ``publication_attestation`` record, and a present record is always verified
++    (see :func:`validate_publication_attestation`).  That closes the
++    label-forgery path (I-08-A E27); it does not turn the rest of this function
++    into an authenticity check.
++
++    **Consumers must call** ``revenue_report.validate_forecast_output`` (or, with
++    the original input in hand, ``revenue_report.validate_published_forecast``).
++    Those entry points re-run the bounded input-gated recomputations from the
++    embedded/validated input and are the security boundary.  This function is
++    retained for callers that only need a cheap self-consistency assertion; it
++    emits no runtime warning because the strong validator itself calls it on
++    every validation (see :class:`PublicationReceiptOnlyWarning`).
+     """
+     require(
+         "publication_receipt" in result,
+         "forecast output missing field: publication_receipt",
+@@ -258,4 +550,10 @@
+     require(
+         receipt.get("receipt_sha256") == _receipt_sha256(receipt),
+         "publication_receipt receipt_sha256 mismatch",
+     )
++    # B1 / REM-01: the label is not accepted on set membership.  A `host_signed`
++    # claim without a verifying record is rejected (I-08-A E27 / G3b), and a
++    # record that IS present is verified even when the label is `unattested`,
++    # so a record can never be present-but-ignored.
++    if receipt.get("formal_output_mode") == "formal":
++        validate_publication_attestation(result, receipt)
+
+==============================================================================
+# scripts/revenue_report.py
+#   production: sha256 a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f (69765 bytes)
+#   fixed     : sha256 212f00598feca408dc429d4c7a5332131ce25f1165b079347e4b295345df7d3b (73973 bytes)
+==============================================================================
+--- a/scripts/revenue_report.py
++++ b/scripts/revenue_report.py
+@@ -24,8 +24,9 @@
+     calculate_sensitivities,
+     build_workflow_compliance_receipt,
+     canonical_sha256,
+     parse_iso_date,
++    period_year,
+     referenced_parameter_ids,
+     require,
+     validate_growth_driver_tree,
+     validate_source_capture,
+@@ -152,8 +153,91 @@
+                 abs_tol=1e-9,
+             ),
+             f"incremental contribution mismatch in {scenario}",
+         )
++
++
++def _validate_segment_opening_bases(
++    result: Any, parameter_index: Any, years: Any  # noqa: ARG001 - years for parity
++) -> None:
++    """Bind ``segments[i].base_revenue`` to its source parameter (B1 / REM-03).
++
++    Two independent gates, both on pre-existing result fields:
++
++    * **per-segment identity** — the segment's ``base_revenue_parameter_id`` must
++      resolve in ``parameter_trace`` (which the strong path already requires to
++      equal the validated input's parameter list) to a revenue-dimension
++      parameter for the base year whose value equals ``base_revenue``.  This is
++      the same lookup the engine itself performs in
++      ``forecast.segments.calculate_segment_forecasts``, so an honest artifact
++      can never fail it.
++    * **opening-base reconciliation** — the segment opening bases must sum to the
++      reported company base within the artifact's declared
++      ``reconciliation_tolerance``, mirroring ``contracts.document``'s
++      ``validate_base_reconciliation`` on the output side.  A segment without a
++      ``base_revenue_parameter_id`` still enters this sum.
++
++    Scope: this binds the per-segment opening base (a presentation field in the
++    分部表).  Company totals were already bound by
++    ``_recompute_consolidated_paths``; this gate adds no claim about them.
++    """
++    segments = result.get("segments")
++    require(isinstance(segments, list) and segments, "segments must be a non-empty list")
++    base_year = result.get("base_year")
++    for position, segment in enumerate(segments):
++        require(
++            isinstance(segment, dict), f"segments[{position}] must be an object"
++        )
++        require(
++            "base_revenue" in segment,
++            f"segments[{position}].base_revenue is required",
++        )
++        observed = float(segment["base_revenue"])
++        parameter_id = segment.get("base_revenue_parameter_id")
++        if parameter_id is None:
++            continue
++        name = segment.get("name")
++        parameter = parameter_index.get(parameter_id)
++        require(
++            isinstance(parameter, dict),
++            "segment base revenue mismatch: "
++            f"{name} references unknown base_revenue_parameter_id {parameter_id!r}",
++        )
++        require(
++            parameter.get("dimension") == "revenue",
++            "segment base revenue mismatch: "
++            f"{parameter_id} must use the revenue dimension",
++        )
++        require(
++            period_year(parameter.get("period"), f"{parameter_id}.period") == base_year,
++            "segment base revenue mismatch: "
++            f"{parameter_id} must be a FY{base_year} parameter",
++        )
++        require(
++            math.isclose(
++                float(parameter["value"]),
++                observed,
++                rel_tol=1e-9,
++                abs_tol=1e-9,
++            ),
++            "segment base revenue mismatch: "
++            f"{name} opening base {observed} does not match {parameter_id} "
++            f"({parameter['value']})",
++        )
++    reported_base = float(result["base_revenue"])
++    opening_total = sum(
++        float(segment["base_revenue"])
++        for segment in segments
++        if isinstance(segment.get("base_revenue"), (int, float))
++        and not isinstance(segment.get("base_revenue"), bool)
++    )
++    tolerance = float(result.get("reconciliation_tolerance", 1e-6))
++    allowed = max(1.0, abs(reported_base)) * tolerance
++    require(
++        abs(opening_total - reported_base) <= allowed,
++        "segment opening base does not reconcile: "
++        f"segments={opening_total}, reported={reported_base}",
++    )
+ 
+ 
+ def _validate_confidence_block(confidence: Any) -> None:
+     """Recompute confidence score/rating/gates (FC-1204-b)."""
+@@ -475,8 +559,17 @@
+                 <= segment["scenarios"]["base"]["recognized_revenue"][year]
+                 <= segment["scenarios"]["high"]["recognized_revenue"][year],
+                 f"segment scenario ordering mismatch: {segment['name']}/{year}",
+             )
++
++    # B1 / REM-03: `segments[i].base_revenue` is the opening base of the
++    # per-segment 分部表 column.  It was bound by NO output gate — the model
++    # recomputation only checks `modeled_activity`, and the company totals only
++    # check `annual_revenue` — so a self-hash-consistent forgery of the
++    # presentation field survived every gate and rendered into the official
++    # report.  Two gates now bind it, using pre-existing fields only so the
++    # signed payload domain of honest artifacts is unchanged.
++    _validate_segment_opening_bases(result, parameter_index, years)
+ 
+     current_constraint_contract = (
+         result["schema_version"],
+         result["engine_version"],
+
+# ------------------------------------------------
+# files changed : 3
+#   M scripts/revenue_core.py
+#   M scripts/revenue_publication.py
+#   M scripts/revenue_report.py
+# files identical: 40
+#
+# No production file was written.

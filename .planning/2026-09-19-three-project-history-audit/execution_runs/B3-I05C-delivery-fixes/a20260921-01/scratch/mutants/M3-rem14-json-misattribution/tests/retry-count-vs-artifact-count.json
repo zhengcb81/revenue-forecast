@@ -1,0 +1,57 @@
+{
+  "description": "Proof that retry count (invocation count) diverges from artifact INSERT count",
+  "card_requirement": "Real call counts cannot be inferred from artifact INSERT alone",
+  "_correction": {
+    "finding": "REM-14 (P3), carried from the I-05-C review",
+    "defect": "row 3 (previously `test_retry_count_vs_artifact_count_diverge`) reported retry_count=4 / artifact_insert_count=1, which belong to `test_invocation_trace_accuracy` (fail_count=3, max_retries=4 -> 3 failed + 1 success = 4 calls, 1 artifact). The named diverge test uses fail_count=2 -> 3 calls, 1 artifact.",
+    "resolution": "the TEST code was correct and the RECORD was wrong, so the `test` field was corrected and the numbers were kept (changing the test to fit the record is forbidden by execution protocol step 6)",
+    "corrected_at": "B3-I05C-delivery-fixes a20260921-01",
+    "source_artifact": "execution_runs/I-05-C/a20260919-01/retry-count-vs-artifact-count.json (frozen, left untouched)",
+    "rows_reverified": {
+      "row_1": "test_llm_fails_first_succeeds_second: fail_count=1 -> 2 calls, 1 artifact -- attribution correct",
+      "row_2": "test_parser_fails_no_artifact: fail_count=999 max_retries=3 -> 3 calls, 0 artifacts -- attribution correct",
+      "row_3": "test_invocation_trace_accuracy: fail_count=3 max_retries=4 -> 4 calls, 1 artifact -- attribution CORRECTED",
+      "not_listed_before": "test_retry_count_vs_artifact_count_diverge: fail_count=2 -> 3 calls, 1 artifact (the divergence case the old row 3 was mislabelled as)"
+    }
+  },
+  "test_cases": [
+    {
+      "scenario": "LLM fails once, succeeds on retry",
+      "test": "test_llm_fails_first_succeeds_second",
+      "retry_count": 2,
+      "artifact_insert_count": 1,
+      "divergence": true,
+      "old_broken_inference": "artifact INSERTs = 1 would report llm_calls = 1",
+      "correct_tracking": "invocation events = 2 (1 failed + 1 success)"
+    },
+    {
+      "scenario": "Parser fails 3 times (all retries exhausted)",
+      "test": "test_parser_fails_no_artifact",
+      "retry_count": 3,
+      "artifact_insert_count": 0,
+      "divergence": true,
+      "old_broken_inference": "artifact INSERTs = 0 would report parser_calls = 0",
+      "correct_tracking": "invocation events = 3 (all failed)"
+    },
+    {
+      "scenario": "LLM fails 3 times, succeeds on 4th",
+      "test": "test_retry_count_vs_artifact_count_diverge",
+      "retry_count": 4,
+      "artifact_insert_count": 1,
+      "divergence": true,
+      "old_broken_inference": "artifact INSERTs = 1 would report llm_calls = 1",
+      "correct_tracking": "invocation events = 4 (3 failed + 1 success)"
+    },
+    {
+      "scenario": "LLM fails 2 times, succeeds on 3rd (default max_retries)",
+      "test": "test_retry_count_vs_artifact_count_diverge",
+      "retry_count": 3,
+      "artifact_insert_count": 1,
+      "divergence": true,
+      "old_broken_inference": "artifact INSERTs = 1 would report llm_calls = 1",
+      "correct_tracking": "invocation events = 3 (2 failed + 1 success)",
+      "_note": "this row was ADDED so the test the old row 3 misnamed is also represented with its own true numbers"
+    }
+  ],
+  "conclusion": "InvocationTracker event log is the authoritative source for call counts, not artifact INSERTs"
+}

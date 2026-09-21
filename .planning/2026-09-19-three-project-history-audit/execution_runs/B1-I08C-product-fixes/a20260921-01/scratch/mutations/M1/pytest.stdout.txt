@@ -1,0 +1,70 @@
+F.....F.....                                                             [100%]
+================================== FAILURES ===================================
+__________________ test_rem01_a_label_only_flip_is_rejected ___________________
+
+    def test_rem01_a_label_only_flip_is_rejected():
+        """Card case A-C2 on the product: the label must not be accepted on set
+        membership.  Honest `unattested` package, ONLY the label flipped, every
+        non-secret self-hash recomputed."""
+        honest = _unattested_package()
+        assert _receipt_of(honest)["attestation_status"] == "unattested"
+        assert "publication_attestation" not in _receipt_of(honest)
+    
+        flipped = _rehash(copy.deepcopy(honest))
+        flipped["publication_receipt"]["attestation_status"] = "host_signed"
+        _rehash(flipped)
+    
+>       with pytest.raises(ForecastInputError, match="attestation_missing_record"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ForecastInputError
+
+test_b1_rem.py:279: Failed
+__________________ test_rem01_g_replayed_record_is_rejected ___________________
+
+fake_provider = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6524/b1_work0/fake_attestation_provider.cmd')
+trusted_domain = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6524/b1_work0/trusted_signer_public_keys.json')
+
+    def test_rem01_g_replayed_record_is_rejected(fake_provider, trusted_domain):
+        """A record that does not describe the live artifact must be rejected.
+    
+        Two distinct attacker moves, each measured on its own so the node cannot be
+        satisfied (or broken) for the wrong reason:
+    
+        * (a) mutate a bound field and recompute every OTHER self-hash, leaving the
+          record untouched — the signature is now over a request that no longer
+          matches the receipt (E16), and would also fail Ed25519 verification since
+          the request object is rebuilt from the record's own fields.
+        * (b) ALSO refresh the record's own `payload_sha256` copy — the strongest
+          hash-recomputing move available — which is caught by the artifact binding
+          (`publication_attestation.result_sha256` does not match the artifact).
+        """
+        _with_provider(fake_provider)
+        os.environ["REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS"] = str(trusted_domain)
+        try:
+            package = run_forecast(forecast_document())
+            assert _receipt_of(package)["attestation_status"] == "host_signed"
+    
+            # (a) record left untouched
+            forged = copy.deepcopy(package)
+            forged["confidence"]["score"] = float(forged["confidence"]["score"]) + 0.5
+            _rehash(forged)
+>           with pytest.raises(ForecastInputError) as excinfo:
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ForecastInputError
+
+test_b1_rem.py:394: Failed
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[plain_txt]
+PASSED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[bare_py]
+PASSED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[sys_executable]
+PASSED test_b1_rem.py::test_rem01_e_trusted_provider_yields_verifiable_record
+PASSED test_b1_rem.py::test_rem01_f_untrusted_provider_is_not_host_signed
+PASSED test_b1_rem.py::test_rem01_h_signed_record_is_repeatable_and_stable
+PASSED test_b1_rem.py::test_rem02_receipt_layer_is_documented_as_non_security
+PASSED test_b1_rem.py::test_rem03_forged_segment_base_revenue_is_rejected
+PASSED test_b1_rem.py::test_rem03_honest_package_still_accepted
+PASSED test_b1_rem.py::test_rem03_moving_base_and_total_together_is_still_rejected
+FAILED test_b1_rem.py::test_rem01_a_label_only_flip_is_rejected - Failed: DID...
+FAILED test_b1_rem.py::test_rem01_g_replayed_record_is_rejected - Failed: DID...
+2 failed, 10 passed in 18.48s

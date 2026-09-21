@@ -1,0 +1,134 @@
+{
+ "card_id": "B1",
+ "card_title": "I-08-C product defects REM-01/02/03",
+ "plan": "2026-09-19-three-project-history-audit",
+ "attempt_id": "a20260921-01",
+ "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B1-I08C-product-fixes\\a20260921-01",
+ "implementer": "delegated implementer session (does NOT self-sign accepted)",
+ "independent_reviewer": "NOT YET ASSIGNED — review.md is the reviewer's artifact and is ABSENT by design at handoff time",
+
+ "task": "Fix the three product defects REM-01 (HIGH) / REM-02 (MEDIUM) / REM-03 (MEDIUM) confirmed by the I-08-C independent review (F1/F2/F3), in an isolated copy only.",
+
+ "execution_gate": {
+  "source_findings": {
+   "review.md": "execution_runs/I-08-C/a20260919-01/review.md sha256 c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3 (VERDICT changes_required)",
+   "handoff.json": "execution_runs/I-08-C/a20260919-01/handoff.json (product_findings F1-F4, out_of_scope_note, required_by_reviewer 1-3)"
+  },
+  "design_provenance": "execution_runs/I-08-A/a20260919-01/{decision.md,oracle.md} — R-PROV-1, E01-E32 code table, trust-domain identity triple, §4.3 signature construction, §6.1/§6.2 G3a/G3b/G4, §7.1 false-green precondition",
+  "allowlist": "execution_v2/card_I-08-C.md line 20: only the entry points I-08-A already approved. I-08-A §7 lists revenue_core.py, revenue_publication.py, revenue_report.py (plus evidence.py and publication_registry.py — see handoff.json execution_gate.card_document for why those two needed no edit and what remains open)"
+ },
+
+ "interpreter": {
+  "path": "C:\\Miniconda\\python.exe",
+  "version": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+  "pytest": "9.1.1",
+  "cryptography": "50.0.1",
+  "network": "disabled for every bound command",
+  "venv_created": false,
+  "venv_policy_note": "Isolation is by REPO COPY (iso/rf for the unfixed tree, iso/fixed/rf for the fixed tree, scratch/mutations/M*/rf for reverted trees), selected by the B1_REPO_ROOT environment variable, plus registry redirection. A venv would not change which tree is imported, and each command's stdout prints the three primary source hashes at run time so the reviewer can confirm the executed bytes without trusting this field."
+ },
+
+ "code_roots": {
+  "revenue_forecast_production": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "production_write_policy": "ZERO writes anywhere under the production tree; no git write command (add/commit/restore/stash/checkout) was executed by this card",
+  "isolated_unfixed_tree": "<ATTEMPT>\\iso\\rf",
+  "isolated_fixed_tree": "<ATTEMPT>\\iso\\fixed\\rf",
+  "mutation_trees": "<ATTEMPT>\\scratch\\mutations\\M1..M5\\rf"
+ },
+
+ "allowed_write_roots": [
+  "<ATTEMPT>/** (this attempt only)",
+  "%TEMP%/pytest-of-* (pytest tmp dirs created by the bound commands)",
+  "<ATTEMPT>/runner/registry/** (the redirected REVENUE_PUBLICATION_REGISTRY)"
+ ],
+
+ "forbidden": [
+  "any write under C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "any write under execution_runs/I-08-A/** or execution_runs/I-08-C/** (other cards' attempts and frozen artifacts)",
+  "any git write command",
+  "writing review.md (the reviewer's artifact)",
+  "adding or modifying config/trusted_signer_public_keys.json anywhere (I-08-A R-PROV-2)"
+ ],
+
+ "production_anchors_verified_pre_fix": {
+  "scripts/revenue_publication.py": {"sha256": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba", "bytes": 10681, "card_anchor": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba", "match": true},
+  "scripts/revenue_report.py": {"sha256": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f", "bytes": 69765, "card_anchor": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f", "match": true},
+  "scripts/revenue_core.py": {"sha256": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae", "bytes": 14136, "note": "not a card anchor; hashed as the third file this card edits"},
+  "scripts/contracts/evidence.py": {"sha256": "054e364a7a5c428f43c6378f795429751b26f24af8de07e22da4b3d0ac8a4561", "bytes": 15232, "note": "REUSED UNCHANGED by the fix (trust-domain loader + host-signature construction)"},
+  "scripts/publication_registry.py": {"sha256": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344", "bytes": 10599, "card_anchor": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa", "match": false, "note": "F4 pre-existing drift carried from I-08-C; NOT repaired here and NOT touched"},
+  "scripts/contracts/document.py": {"sha256": "c2df0a229116392968152ee547818567ab40ba3813a270f68fabbfb9ea207c0d", "bytes": 45380, "note": "the existing input-side base reconciliation (validate_base_reconciliation) that scopes REM-03; read-only reference"},
+  "scripts/forecast/segments.py": {"sha256": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd", "bytes": 27697, "note": "source of the engine's own base_revenue_parameter_id lookup that the REM-03 gate mirrors; read-only"},
+  "artifacts/registry/publications.jsonl": {"sha256": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91", "bytes": 46369},
+  "config/trusted_signer_public_keys.json": {"exists": false, "note": "ABSENT — the correct fail-closed default, preserved in both iso copies and NOT created by this card"},
+  "full_table": "before/production_anchors.json"
+ },
+
+ "isolated_copy_integrity": {
+  "method": "robocopy /E from production scripts/, tests/ and config/, excluding __pycache__",
+  "files": 174,
+  "manifest": "before/iso_tree_manifest.json",
+  "run_time_proof": "scratch/probe_defects.py prints the sha256 of the three primary source files from the tree it actually imported; before/probe_unfixed.txt shows the PRODUCTION-identical hashes, after/probe_fixed.txt shows the fixed ones"
+ },
+
+ "fixed_tree_delta": {
+  "files_changed_relative_to_production": [
+   "scripts/revenue_core.py",
+   "scripts/revenue_publication.py",
+   "scripts/revenue_report.py"
+  ],
+  "all_other_files": "byte-identical to production",
+  "diff_artifact": "changes.diff"
+ },
+
+ "frozen_artifacts": {
+  "oracle.md_r1": {"bytes": 27697, "sha256": "81af124047eef968d6db84b8f4c1c1b22e77a5f4781b2664d2ca6e8555f74281"},
+  "oracle.md_current": {"bytes": 39287, "sha256": "fadf8a5ebfdb7ca771031790e0fa1701a31fedf15becbf6da8c9cbaf5460fbae"},
+  "test_b1_rem.py_r1": {"bytes": 18236, "sha256": "e6c0949c3b7d0d9c3bad101dc90a62cb8702dc4616715adfc2227dda60aa8f75"},
+  "test_b1_rem.py_current": {"bytes": 20631, "sha256": "636b43c8d8e1dc59ccfa36d7c71125ea9b8665222f587510444a3656b6700c16"},
+  "conftest.py": "125d550e596ee11f3eb55630b770b1c991f187a8e602106206ec0d9e75817267",
+  "scratch/probe_defects.py": "d7198d01f2bdafe2b5e98a542726043dc878129a3e1c8549284cca793ab3b745",
+  "scratch/mutation_proof.py": "66953d3d6c3fa5b7bb8bbf1fde405c2d58d03e6ea7e3e833cc486648ac54f2b2",
+  "runner/run.ps1": "18c01fdd6a8e56372b51661b891a8797c9dbaf4e7f2af0f43147a2025e67c8fd",
+  "runner/run_suite.ps1": "9d327115ae6e62914f88e8f2e73bc37742765534195ccfecb1eb7984993ff140",
+  "changes.diff": {"bytes": 41639, "sha256": "203ea42b405678070c88c1ebacb99e29c24bb9b3ccacc219ddb860d623ec68e4"},
+  "decision.md": {"bytes": 14988, "sha256": "recorded in after/frozen_artifacts_r3.json (rewritten after the final edit; that file is authoritative)"},
+  "full_table": "after/frozen_artifacts_r3.json",
+  "frozen_before_implementation": true,
+  "frozen_before_run": true,
+  "freeze_order_evidence": "the r1 oracle and r1 test file were written and hashed into before/frozen_artifacts.json before before/b1_unfixed.* existed; the r1 RED stdout is preserved and was not overwritten"
+ },
+
+ "oracle_revisions": {
+  "policy": "append-only with a byte-level prefix proof; the r1 body must remain hash-stable at every revision",
+  "r2": {"reason": "one RED expectation was imprecise (node R8 passed trivially on the unfixed tree); R8 was strengthened to assert the record, which the r1 prose already required", "proof": "scratch/append_oracle_r2.stdout.json", "frozen_body_untouched": true},
+  "r3": {"reason": "attestation-record fixpoint corrections: `receipt_sha256` and `result_sha256` removed from the record because a receipt cannot contain its own hash and result_sha256 covers the receipt; the record has 10 closed fields and the binding argument is recorded", "proof": "scratch/append_oracle_r3.stdout.json", "frozen_prefix_untouched": true},
+  "r4": {"reason": "R7 strengthened from one conflated case into two separately asserted attacker moves, so the mutation proof can ask the narrower question; the r1 §5 M1 row is amended accordingly (M1 declares R7 red because M1 reverts the whole record check, not only E27); B1-c0 command-id correction", "proof": "scratch/append_oracle_r4.stdout.json", "frozen_prefix_untouched": true},
+  "r1_body_recheck_after_all_appends": "sha256(oracle.md[0:27697]) == 81af124047eef968d6db84b8f4c1c1b22e77a5f4781b2664d2ca6e8555f74281"
+ },
+
+ "measured_results": {
+  "red": {"r1": "10 failed / 2 passed (rc 1)", "r2": "11 failed / 1 passed (rc 1)", "r3_final_test_revision": "11 failed / 1 passed (rc 1)"},
+  "green": "12 passed, raw rc 0 (after/b1_fixed.*)",
+  "regression": {"unfixed": "100 passed (rc 0)", "fixed": "99 passed / 1 expected failure (rc 1)"},
+  "mutation_isolation": "ALL MUTATIONS ISOLATED: True — declared red sets equal observed red sets exactly: M1 {R1,R7}, M2 {R2x3,R6}, M3 {R10,R12}, M4 {R9}, M5 {R7}",
+  "production": "all anchors unchanged; `git status --porcelain -- scripts tests config artifacts` EMPTY"
+ },
+
+ "provider_parameters": {
+  "T_timeout_seconds": 10.0,
+  "L_stdout_bound_bytes": 65536,
+  "normative": false,
+  "note": "I-08-A OPEN-D7 owns these values. They are this implementation's defaults, recorded here so a reviewer can see them, and are explicitly NOT claimed as the frozen numbers."
+ },
+
+ "case_matrix": "see oracle.md section 4 (r1) plus revisions r2/r3; node outcomes in before/b1_unfixed*.stdout.txt and after/b1_fixed.stdout.txt",
+
+ "binding_status": "bound",
+  "bound_entry_count": 6,
+ "open_questions": [
+  "Is the deliberately reduced provider protocol acceptable for this card, or must E18/E19/E22/E23/E24/E25 be implemented before acceptance?",
+  "Is a publication_receipt schema-version bump required before consumers rely on publication_attestation (I-08-A OPEN-D4)?",
+  "Who owns re-freezing the I-08-C oracle now that its gap pins (test_e11/test_e13) necessarily fail against the fixed tree?",
+  "Who owns rewriting tests/test_attestation.py::test_configured_provider_means_host_signed_publication, which I-08-A §7.1 assigns to I-08-B and which this card deliberately left untouched?"
+ ]
+}

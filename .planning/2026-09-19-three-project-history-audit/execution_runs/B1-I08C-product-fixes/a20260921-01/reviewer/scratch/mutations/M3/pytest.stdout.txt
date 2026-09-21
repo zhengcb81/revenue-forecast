@@ -1,0 +1,52 @@
+.........F.F                                                             [100%]
+================================== FAILURES ===================================
+_____________ test_rem03_forged_segment_base_revenue_is_rejected ______________
+
+    def test_rem03_forged_segment_base_revenue_is_rejected():
+        """segments[i].base_revenue must be bound: a self-consistent forgery that
+        renders into the official 分部表 must be rejected by the consumer."""
+        honest = _unattested_package()
+        validate_forecast_output(honest)
+        forged = _forge_segment_base(honest)
+        # the forgery is fully self-consistent at the hash layer (that is the point)
+        validate_publication_receipt(forged)
+>       with pytest.raises(ForecastInputError, match="segment base revenue mismatch"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ForecastInputError
+
+test_b1_rem.py:490: Failed
+_________ test_rem03_moving_base_and_total_together_is_still_rejected _________
+
+    def test_rem03_moving_base_and_total_together_is_still_rejected():
+        """A forgery that also moves `result["base_revenue"]` by the same amount
+        (so a naive sum-vs-total check would pass) must still be caught by the
+        per-segment parameter binding."""
+        honest = _unattested_package()
+        forged = copy.deepcopy(honest)
+        forged["segments"][0]["base_revenue"] = (
+            float(forged["segments"][0]["base_revenue"]) + 1000.0
+        )
+        forged["base_revenue"] = float(forged["base_revenue"]) + 1000.0
+        _rehash(forged)
+>       with pytest.raises(ForecastInputError, match="segment base revenue mismatch"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'segment base revenue mismatch'
+E         Actual message: 'CAGR mismatch in low'
+
+test_b1_rem.py:512: AssertionError
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED test_b1_rem.py::test_rem01_a_label_only_flip_is_rejected
+PASSED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[plain_txt]
+PASSED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[bare_py]
+PASSED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[sys_executable]
+PASSED test_b1_rem.py::test_rem01_e_trusted_provider_yields_verifiable_record
+PASSED test_b1_rem.py::test_rem01_f_untrusted_provider_is_not_host_signed
+PASSED test_b1_rem.py::test_rem01_g_replayed_record_is_rejected
+PASSED test_b1_rem.py::test_rem01_h_signed_record_is_repeatable_and_stable
+PASSED test_b1_rem.py::test_rem02_receipt_layer_is_documented_as_non_security
+PASSED test_b1_rem.py::test_rem03_honest_package_still_accepted
+FAILED test_b1_rem.py::test_rem03_forged_segment_base_revenue_is_rejected - F...
+FAILED test_b1_rem.py::test_rem03_moving_base_and_total_together_is_still_rejected
+2 failed, 10 passed in 15.25s

@@ -51,4 +51,6 @@ proof = {
     "r1_frozen_oracle_sha256": PRE_SHA,
 }
 OUT.write_text(json.dumps(proof, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-print(json.dumps
+print(json.dumps(proof, indent=1, sort_keys=True))
+if not proof["frozen_body_untouched"]:
+    raise SystemExit("APPEND-ONLY PROOF FAILED")

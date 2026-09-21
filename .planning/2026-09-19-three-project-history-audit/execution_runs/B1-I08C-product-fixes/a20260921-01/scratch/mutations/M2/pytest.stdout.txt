@@ -1,0 +1,133 @@
+.FFF.F......                                                             [100%]
+================================== FAILURES ===================================
+____ test_rem01_b_to_d_file_existence_is_not_signing_capability[plain_txt] ____
+
+kind = 'plain_txt'
+workdir = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6525/b1_work0')
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x000001B463136520>, _basetemp=WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6525'), _retention_count=3, _retention_policy='all')
+
+    @pytest.mark.parametrize(
+        "kind",
+        ["plain_txt", "bare_py", "sys_executable"],
+    )
+    def test_rem01_b_to_d_file_existence_is_not_signing_capability(
+        kind, workdir, tmp_path_factory
+    ):
+        """REM-01(b): a path that EXISTS but has no proven signing capability must
+        grant no capability and must not yield a `host_signed` label."""
+        if kind == "plain_txt":
+            target = workdir / "provider_is_just_text.txt"
+            target.write_text("hello", encoding="utf-8")  # 5 bytes, exactly the reviewer's proof
+            assert target.stat().st_size == 5
+        elif kind == "bare_py":
+            target = workdir / "provider_is_bare_script.py"
+            target.write_text("print('not a provider')\n", encoding="utf-8")
+        else:
+            target = Path(sys.executable)
+            assert target.is_file()
+    
+        _with_provider(target)
+        try:
+>           assert attestation_capability() is False
+E           assert True is False
+E            +  where True = attestation_capability()
+
+test_b1_rem.py:307: AssertionError
+_____ test_rem01_b_to_d_file_existence_is_not_signing_capability[bare_py] _____
+
+kind = 'bare_py'
+workdir = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6525/b1_work0')
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x000001B463136520>, _basetemp=WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6525'), _retention_count=3, _retention_policy='all')
+
+    @pytest.mark.parametrize(
+        "kind",
+        ["plain_txt", "bare_py", "sys_executable"],
+    )
+    def test_rem01_b_to_d_file_existence_is_not_signing_capability(
+        kind, workdir, tmp_path_factory
+    ):
+        """REM-01(b): a path that EXISTS but has no proven signing capability must
+        grant no capability and must not yield a `host_signed` label."""
+        if kind == "plain_txt":
+            target = workdir / "provider_is_just_text.txt"
+            target.write_text("hello", encoding="utf-8")  # 5 bytes, exactly the reviewer's proof
+            assert target.stat().st_size == 5
+        elif kind == "bare_py":
+            target = workdir / "provider_is_bare_script.py"
+            target.write_text("print('not a provider')\n", encoding="utf-8")
+        else:
+            target = Path(sys.executable)
+            assert target.is_file()
+    
+        _with_provider(target)
+        try:
+>           assert attestation_capability() is False
+E           assert True is False
+E            +  where True = attestation_capability()
+
+test_b1_rem.py:307: AssertionError
+_ test_rem01_b_to_d_file_existence_is_not_signing_capability[sys_executable] __
+
+kind = 'sys_executable'
+workdir = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6525/b1_work0')
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x000001B463136520>, _basetemp=WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6525'), _retention_count=3, _retention_policy='all')
+
+    @pytest.mark.parametrize(
+        "kind",
+        ["plain_txt", "bare_py", "sys_executable"],
+    )
+    def test_rem01_b_to_d_file_existence_is_not_signing_capability(
+        kind, workdir, tmp_path_factory
+    ):
+        """REM-01(b): a path that EXISTS but has no proven signing capability must
+        grant no capability and must not yield a `host_signed` label."""
+        if kind == "plain_txt":
+            target = workdir / "provider_is_just_text.txt"
+            target.write_text("hello", encoding="utf-8")  # 5 bytes, exactly the reviewer's proof
+            assert target.stat().st_size == 5
+        elif kind == "bare_py":
+            target = workdir / "provider_is_bare_script.py"
+            target.write_text("print('not a provider')\n", encoding="utf-8")
+        else:
+            target = Path(sys.executable)
+            assert target.is_file()
+    
+        _with_provider(target)
+        try:
+>           assert attestation_capability() is False
+E           assert True is False
+E            +  where True = attestation_capability()
+
+test_b1_rem.py:307: AssertionError
+_____________ test_rem01_f_untrusted_provider_is_not_host_signed ______________
+
+fake_provider = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6525/b1_work0/fake_attestation_provider.cmd')
+workdir = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6525/b1_work0')
+
+    def test_rem01_f_untrusted_provider_is_not_host_signed(fake_provider, workdir):
+        """A provider that answers correctly but whose key is NOT in the trust
+        domain must not yield `host_signed` (or must yield a record that the
+        consumer rejects)."""
+        _with_provider(fake_provider)
+        os.environ.pop("REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS", None)  # zero trusted keys
+        try:
+>           assert attestation_capability() is False
+E           assert True is False
+E            +  where True = attestation_capability()
+
+test_b1_rem.py:357: AssertionError
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED test_b1_rem.py::test_rem01_a_label_only_flip_is_rejected
+PASSED test_b1_rem.py::test_rem01_e_trusted_provider_yields_verifiable_record
+PASSED test_b1_rem.py::test_rem01_g_replayed_record_is_rejected
+PASSED test_b1_rem.py::test_rem01_h_signed_record_is_repeatable_and_stable
+PASSED test_b1_rem.py::test_rem02_receipt_layer_is_documented_as_non_security
+PASSED test_b1_rem.py::test_rem03_forged_segment_base_revenue_is_rejected
+PASSED test_b1_rem.py::test_rem03_honest_package_still_accepted
+PASSED test_b1_rem.py::test_rem03_moving_base_and_total_together_is_still_rejected
+FAILED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[plain_txt]
+FAILED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[bare_py]
+FAILED test_b1_rem.py::test_rem01_b_to_d_file_existence_is_not_signing_capability[sys_executable]
+FAILED test_b1_rem.py::test_rem01_f_untrusted_provider_is_not_host_signed - a...
+4 failed, 8 passed in 17.37s

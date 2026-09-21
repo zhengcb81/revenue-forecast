@@ -1,0 +1,191 @@
+### RF:scripts/company_wiki_source.py
+# before 225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294
+# after  7D1BD8F9D9122DC4A99465A8F9201E855417A5D0756F5BFDD6D404F7CA9E48CE
+--- a/RF:scripts/company_wiki_source.py
++++ b/RF:scripts/company_wiki_source.py
+@@ -105,25 +105,6 @@
+     return isinstance(artifact, dict) and artifact.get("reusable") is True
+ 
+ 
+-def _dag_closure(role: str) -> list[str]:
+-    """Transitive dependents of ``role`` (including itself) over the frozen
+-    ROLE_DEPENDENCIES, IMPORTED from company-wiki's artifact_dag — the single
+-    source of truth; no second copy can drift."""
+-    from company_wiki.source_catalog.artifact_dag import ROLE_DEPENDENCIES
+-
+-    result: list[str] = []
+-    frontier = [role]
+-    while frontier:
+-        current = frontier.pop()
+-        if current in result:
+-            continue
+-        result.append(current)
+-        for candidate, parents in ROLE_DEPENDENCIES.items():
+-            if current in parents:
+-                frontier.append(candidate)
+-    return result
+-
+-
+ def _dag_ancestors(role: str) -> list[str]:
+     """Transitive inputs of ``role`` (roles it derives from) over the same
+     imported ROLE_DEPENDENCIES: ROLE_DEPENDENCIES[role] IS the direct parent
+@@ -142,6 +123,32 @@
+         result.append(current)
+         frontier.extend(ROLE_DEPENDENCIES.get(current, ()))
+     return result
++
++
++def _production_scope(
++    roles: tuple[str, ...],
++    reusable: set[str],
++    artifact_read: list[str],
++) -> list[str]:
++    """The roles that must be (re)produced for THIS request: every requested
++    role that is not readable, plus every non-reusable ancestor those roles
++    need.  Never the downstream closure of the requested roles — an
++    unrequested dependent is not produced (I-05-C step 2: 不盲补所有下游).
++
++    Shared by BOTH ``select_artifact_roles`` branches: the bundle-present path
++    passes the roles the bundle proved reusable, the ``bundle=None`` path
++    passes an empty set (nothing can be proven reusable without a bundle), so
++    the two branches cannot drift into different "what must be produced"
++    rules again (REM-11)."""
++    needs: set[str] = set()
++    for role in roles:
++        if role in artifact_read:
++            continue
++        needs.add(role)
++        for ancestor in _dag_ancestors(role):
++            if ancestor not in reusable:
++                needs.add(ancestor)
++    return sorted(needs)
+ 
+ 
+ def select_artifact_roles(
+@@ -155,20 +162,35 @@
+ 
+     Returns ``(artifact_read, producer_events)``:
+ 
+-    - ``artifact_read`` — roles whose verified artifact is in the envelope
+-      bundle's ``valid_handles`` (provenance-matched for consumer_analysis);
+-      these are read, their producers do NOT run (parser/LLM=0).
+-    - ``producer_events`` — roles that must be (re)produced = the DAG closure
+-      (role + transitive dependents over ROLE_DEPENDENCIES) of the
+-      non-reusable roles — never a blind full recompute (AR-02/AR-03).
+-
+-    ``bundle=None`` (bundle_status=unavailable) → artifact_read=[], every
+-    role needs production — honest, never faked.  A malformed bundle raises
+-    (fail closed), never silently trusted.
++    - ``artifact_read`` — roles that may be READ: the role has a verified
++      artifact in the envelope bundle's ``valid_handles`` AND every transitive
++      ancestor is also reusable (AR-03: a dependent derived from an invalidated
++      input is not trusted).  ``consumer_analysis`` additionally requires a
++      full provenance match when ``expected_provenance`` is given.  Role
++      reusability is evaluated over the REQUEST closure (the requested roles
++      plus their transitive ancestors), so a valid ancestor is still reported
++      when its dependent is missing from the bundle.  Read roles' producers do
++      NOT run (parser/LLM=0).
++    - ``producer_events`` — roles that must be (re)produced for THIS request:
++      each requested role that is not readable, plus every ancestor of those
++      roles that is not reusable.  It is NOT the downstream closure of the
++      requested roles — an unrequested dependent is never produced
++      (AR-02/AR-03, I-05-C step 2).
++
++    ``bundle=None`` (bundle_status=unavailable) → ``artifact_read=[]`` (nothing
++    can be proven reusable, never faked) and ``producer_events`` follows the
++    SAME request-scoped rule with an empty reusable set: the requested roles
++    plus all their transitive ancestors.  So a ``normalized``-only request
++    produces only ``normalized``, while a request naming all roles still
++    produces all of them.  A malformed bundle raises (fail closed), never
++    silently trusted.
+     """
+     bundle = _bundle_from_handle(handle)
+     if bundle is None:
+-        return [], sorted({r for role in roles for r in _dag_closure(role)})
++        # REM-11: request-scoped, exactly like the bundle-present branch below.
++        # The old downstream closure of `roles` meant a normalized-only request
++        # scheduled every role, contradicting the "ONLY requested" contract.
++        return [], _production_scope(roles, set(), [])
+     if not isinstance(bundle, dict):
+         raise CompanyWikiSourceError("bundle must be an object (fail closed)")
+     reusable: set[str] = set()
+@@ -197,18 +219,12 @@
+         if role in reusable
+         and all(ancestor in reusable for ancestor in _dag_ancestors(role))
+     )
+-    # W05-C fix: producer_events must contain ONLY what's needed to produce
+-    # the requested missing roles — the missing role itself plus any ancestors
+-    # that are not reusable. NOT the full downstream closure of unrequested
+-    # dependents (which was the old bug).
+-    missing_requested = [role for role in roles if role not in artifact_read]
+-    needed_for_production: set[str] = set()
+-    for role in missing_requested:
+-        needed_for_production.add(role)
+-        for ancestor in _dag_ancestors(role):
+-            if ancestor not in reusable:
+-                needed_for_production.add(ancestor)
+-    producer_events = sorted(needed_for_production)
++    # producer_events must contain ONLY what's needed to produce the REQUESTED
++    # missing roles — the missing role itself plus any ancestors that are not
++    # reusable.  NOT the full downstream closure of unrequested dependents
++    # (which was the old bug).  Same helper the bundle=None branch uses, so the
++    # two paths cannot diverge (REM-11).
++    producer_events = _production_scope(roles, reusable, artifact_read)
+     return artifact_read, producer_events
+ 
+ 
+
+### CW:src/company_wiki/source_catalog/artifact_dag.py
+# before 0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1
+# after  0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1
+
+### I-05-C:retry-count-vs-artifact-count.json
+# before A3DD418F31B75753FB60F5C1E00AE386C4F33FBF02E6F72A5D74807C794FE326
+# after  F3B9A9B22BBAA869B21C4E7871BB74C06F747EEB69F6063C9648622437B58531
+--- a/I-05-C:retry-count-vs-artifact-count.json
++++ b/I-05-C:retry-count-vs-artifact-count.json
+@@ -1,6 +1,19 @@
+ {
+   "description": "Proof that retry count (invocation count) diverges from artifact INSERT count",
+   "card_requirement": "Real call counts cannot be inferred from artifact INSERT alone",
++  "_correction": {
++    "finding": "REM-14 (P3), carried from the I-05-C review",
++    "defect": "row 3 (previously `test_retry_count_vs_artifact_count_diverge`) reported retry_count=4 / artifact_insert_count=1, which belong to `test_invocation_trace_accuracy` (fail_count=3, max_retries=4 -> 3 failed + 1 success = 4 calls, 1 artifact). The named diverge test uses fail_count=2 -> 3 calls, 1 artifact.",
++    "resolution": "the TEST code was correct and the RECORD was wrong, so the `test` field was corrected and the numbers were kept (changing the test to fit the record is forbidden by execution protocol step 6)",
++    "corrected_at": "B3-I05C-delivery-fixes a20260921-01",
++    "source_artifact": "execution_runs/I-05-C/a20260919-01/retry-count-vs-artifact-count.json (frozen, left untouched)",
++    "rows_reverified": {
++      "row_1": "test_llm_fails_first_succeeds_second: fail_count=1 -> 2 calls, 1 artifact -- attribution correct",
++      "row_2": "test_parser_fails_no_artifact: fail_count=999 max_retries=3 -> 3 calls, 0 artifacts -- attribution correct",
++      "row_3": "test_invocation_trace_accuracy: fail_count=3 max_retries=4 -> 4 calls, 1 artifact -- attribution CORRECTED",
++      "not_listed_before": "test_retry_count_vs_artifact_count_diverge: fail_count=2 -> 3 calls, 1 artifact (the divergence case the old row 3 was mislabelled as)"
++    }
++  },
+   "test_cases": [
+     {
+       "scenario": "LLM fails once, succeeds on retry",
+@@ -22,12 +35,22 @@
+     },
+     {
+       "scenario": "LLM fails 3 times, succeeds on 4th",
+-      "test": "test_retry_count_vs_artifact_count_diverge",
++      "test": "test_invocation_trace_accuracy",
+       "retry_count": 4,
+       "artifact_insert_count": 1,
+       "divergence": true,
+       "old_broken_inference": "artifact INSERTs = 1 would report llm_calls = 1",
+       "correct_tracking": "invocation events = 4 (3 failed + 1 success)"
++    },
++    {
++      "scenario": "LLM fails 2 times, succeeds on 3rd (default max_retries)",
++      "test": "test_retry_count_vs_artifact_count_diverge",
++      "retry_count": 3,
++      "artifact_insert_count": 1,
++      "divergence": true,
++      "old_broken_inference": "artifact INSERTs = 1 would report llm_calls = 1",
++      "correct_tracking": "invocation events = 3 (2 failed + 1 success)",
++      "_note": "this row was ADDED so the test the old row 3 misnamed is also represented with its own true numbers"
+     }
+   ],
+   "conclusion": "InvocationTracker event log is the authoritative source for call counts, not artifact INSERTs"
+

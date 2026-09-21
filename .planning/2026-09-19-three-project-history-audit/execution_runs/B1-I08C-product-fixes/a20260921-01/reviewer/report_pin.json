@@ -1,0 +1,49 @@
+{
+ "artifact": "reviewer_report.md",
+ "attempt": "execution_runs/B1-I08C-product-fixes/a20260921-01",
+ "card": "B1 — I-08-C product defects REM-01/02/03",
+ "role": "independent reviewer",
+ "verdict": "accepted_with_conditions",
+ "pin": {
+  "sha256": "73feb0593b44ffeb448bc5f5b1cea9800f4cc9fb59f40ca19e9aae8038c104fa",
+  "bytes_hashed": 37086,
+  "bytes_on_disk": 37224,
+  "rule": "sha256 over reviewer_report.md with its final REPORT_SHA256 line reduced to the sentinel `REPORT_SHA256: ` + backtick-PENDING-backtick. Substituting the real 64-hex digest is the only difference between the hashed bytes and the bytes on disk (49 bytes longer).",
+  "verify": "$t=[IO.File]::ReadAllText('<ATTEMPT>\\reviewer_report.md'); $p=(Get-Content '<ATTEMPT>\\reviewer\\REPORT_PIN_VALUE.txt').Trim(); $r=$t -replace ('REPORT_SHA256: `'+[regex]::Escape($p)+'`[^\\r\\n]*'),'REPORT_SHA256: `PENDING`'; $tmp=[IO.Path]::GetTempFileName(); [IO.File]::WriteAllText($tmp,$r,(New-Object Text.UTF8Encoding($false))); [BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash([IO.File]::ReadAllBytes($tmp))).Replace('-','').ToLower()  # must print $p"
+ },
+ "reviewer_evidence": {
+  "reviewer/RED.stdout.txt": "33dd115e7313839cbe081e5ae7cf2b99c1d863a5cf2c342175664cbd7701d8c1",
+  "reviewer/GREEN.stdout.txt": "b9fb998f60e00fe7eb57247bf8d6f1653b4ef23441cb54329ad4730c7558a6ad",
+  "reviewer/SUITE_unfixed.stdout.txt": "70a7d3b2f7275e5c11cb74be9bbac7e71264e1c52534a416d7015e3687ec5069",
+  "reviewer/SUITE_fixed.stdout.txt": "bbd57e5fe5b087faf2886d23666515c85dc3b1ee9692f035727bb4382869fb93",
+  "reviewer/test_r13_reviewer_node.py": "90abc1dd02088f00082a6bd2d2aacbfae5d7cd31d3e67186f816daa6f76a8f17",
+  "reviewer/scratch/mutations/reviewer_mutation_proof.json": "e872e9d2381b32c62e779b1b2c2a44220833127f72fd4b903d0cb1989a92aa37",
+  "reviewer/scratch/probe_gates.py": "e8f7bb19cede94d56bc4259ebbf4595325626acaf9b9116e932fc28c13d62d27",
+  "reviewer/scratch/probe_rebase.py": "a0b0ecf61acae7a2e1593e5bf19a40696104a5fc14fa3cf50e062e40b8585664",
+  "reviewer/scratch/probe_attest.py": "2d4c7d17c600f349e7f9095beec99368d540d476decfb9b95b070c26b6064238",
+  "reviewer/scratch/probe_mutations.py": "f39ff9e6bc1577c192ea2234b1b198959594223cefdf32c1a96fc624a4be61b3",
+  "reviewer/scratch/probe_negative.py": "not pinned; blocked mid-run by model_registry's non-negative base guard (finding recorded in the report)"
+ },
+ "reviewer_runs": {
+  "RED": "iso/rf -> 11 failed, 1 passed, rc 1",
+  "GREEN": "iso/fixed/rf -> 12 passed, rc 0",
+  "suite_unfixed": "100 passed, rc 0",
+  "suite_fixed": "1 failed, 99 passed, rc 1 (the required I-08-A 7.1 false-green break)",
+  "mutations": "M1..M5 declared==observed; M6 (reviewer-authored) -> {} on the frozen set, {R13} on the reviewer node"
+ },
+ "production_zero_write_reverified_after_review": {
+  "scripts/revenue_publication.py": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+  "scripts/revenue_report.py": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+  "scripts/revenue_core.py": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+  "scripts/contracts/evidence.py": "054e364a7a5c428f43c6378f795429751b26f24af8de07e22da4b3d0ac8a4561",
+  "scripts/publication_registry.py": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344",
+  "artifacts/registry/publications.jsonl": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+  "config/trusted_signer_public_keys.json": "ABSENT",
+  "git_status_porcelain_untracked_all_scripts_tests_config_artifacts": "EMPTY (0 entries)"
+ },
+ "notes": [
+  "reviewer writes are confined to <ATTEMPT>/reviewer/** and reviewer_report.md",
+  "no production file and no git write command was executed by this review",
+  "this card is NOT accepted as closing I-08-C; promotion of the three fixed scripts is a separate owner decision"
+ ]
+}

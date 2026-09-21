@@ -1,0 +1,119 @@
+{
+ "frozen_test_file": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B1-I08C-product-fixes\\a20260921-01\\test_b1_rem.py",
+ "frozen_test_file_sha256": "636b43c8d8e1dc59ccfa36d7c71125ea9b8665222f587510444a3656b6700c16",
+ "method": "for each mutation: fresh copy of the reference tree, one exact literal revert (verified present first), run the SAME unmodified frozen test file, compare the observed red set against the declared red set exactly",
+ "mutations": [
+  {
+   "declared_red": [
+    "test_rem01_a_label_only_flip_is_rejected",
+    "test_rem01_g_replayed_record_is_rejected"
+   ],
+   "evidence": "scratch/mutations/M1/pytest.stdout.txt + rc.txt",
+   "file": "scripts/revenue_publication.py",
+   "fix_reverted": "REM-01(a) \u2014 the label requires a verifying binding record",
+   "id": "M1",
+   "isolation_of_proof_ok": true,
+   "missing_red": [],
+   "observed_red": [
+    "test_rem01_a_label_only_flip_is_rejected",
+    "test_rem01_g_replayed_record_is_rejected"
+   ],
+   "patched_from_sha256": "bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0",
+   "patched_to_sha256": "d21f9bac460ee89ca334aa611a9bda9ea8d19067efa21eee62d5cbf874bd57ae",
+   "pytest_raw_rc": 1,
+   "unexpected_red": [],
+   "why": "R1 is the label-forgery node. R7 is red as a DECLARED DEPENDENCY, not as collateral: reverting the whole validate_publication_attestation call removes every record check, so the replayed/forged record is no longer rejected either. The capability nodes stay green because M1 does not touch the issuance side \u2014 that is what proves the two halves of REM-01 are separately load-bearing."
+  },
+  {
+   "declared_red": [
+    "test_rem01_b_to_d_file_existence_is_not_signing_capability[bare_py]",
+    "test_rem01_b_to_d_file_existence_is_not_signing_capability[plain_txt]",
+    "test_rem01_b_to_d_file_existence_is_not_signing_capability[sys_executable]",
+    "test_rem01_f_untrusted_provider_is_not_host_signed"
+   ],
+   "evidence": "scratch/mutations/M2/pytest.stdout.txt + rc.txt",
+   "file": "scripts/revenue_core.py",
+   "fix_reverted": "REM-01(b) \u2014 file existence is not signing capability",
+   "id": "M2",
+   "isolation_of_proof_ok": true,
+   "missing_red": [],
+   "observed_red": [
+    "test_rem01_b_to_d_file_existence_is_not_signing_capability[bare_py]",
+    "test_rem01_b_to_d_file_existence_is_not_signing_capability[plain_txt]",
+    "test_rem01_b_to_d_file_existence_is_not_signing_capability[sys_executable]",
+    "test_rem01_f_untrusted_provider_is_not_host_signed"
+   ],
+   "patched_from_sha256": "8a761498f5eb729e4f4227f2a315d709253f8b96acf7baa7253ab425e73ac883",
+   "patched_to_sha256": "2a8a906b3d9f0df6e9c9643d65fd144b927184458d01abb849e2910d4301e3ff",
+   "pytest_raw_rc": 1,
+   "unexpected_red": [],
+   "why": "the three capability nodes are the direct measurement. R6 is a DECLARED DEPENDENCY: it asserts both that capability is False AND that the recorded failure code is provider_key_untrusted, and with file-existence capability the host never reaches the trust check. R1/R7/R5/R8 stay green, proving the consumption-side binding is independent of the issuance gate."
+  },
+  {
+   "declared_red": [
+    "test_rem03_forged_segment_base_revenue_is_rejected",
+    "test_rem03_moving_base_and_total_together_is_still_rejected"
+   ],
+   "evidence": "scratch/mutations/M3/pytest.stdout.txt + rc.txt",
+   "file": "scripts/revenue_report.py",
+   "fix_reverted": "REM-03 \u2014 segments[i].base_revenue is bound by an output gate",
+   "id": "M3",
+   "isolation_of_proof_ok": true,
+   "missing_red": [],
+   "observed_red": [
+    "test_rem03_forged_segment_base_revenue_is_rejected",
+    "test_rem03_moving_base_and_total_together_is_still_rejected"
+   ],
+   "patched_from_sha256": "212f00598feca408dc429d4c7a5332131ce25f1165b079347e4b295345df7d3b",
+   "patched_to_sha256": "c63d5d7339f4cb311705787fef65dc5eb083fe7db72fb721747b4532cfa986c3",
+   "pytest_raw_rc": 1,
+   "unexpected_red": [],
+   "why": "exactly the two REM-03 nodes; the honest positive control R11 and every REM-01/REM-02 node stay green."
+  },
+  {
+   "declared_red": [
+    "test_rem02_receipt_layer_is_documented_as_non_security"
+   ],
+   "evidence": "scratch/mutations/M4/pytest.stdout.txt + rc.txt",
+   "file": "scripts/revenue_publication.py",
+   "fix_reverted": "REM-02 \u2014 the receipt layer is documented as non-security",
+   "id": "M4",
+   "isolation_of_proof_ok": true,
+   "missing_red": [],
+   "observed_red": [
+    "test_rem02_receipt_layer_is_documented_as_non_security"
+   ],
+   "patched_from_sha256": "bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0",
+   "patched_to_sha256": "071bd93292e38c7d1c285a1f6815720fca889cb7ad1273f01c6631a4347f33fb",
+   "pytest_raw_rc": 1,
+   "unexpected_red": [],
+   "why": "exactly the REM-02 node; every other node stays green, including the two nodes that assert the receipt layer still enforces the attestation binding."
+  },
+  {
+   "declared_red": [
+    "test_rem01_g_replayed_record_is_rejected"
+   ],
+   "evidence": "scratch/mutations/M5/pytest.stdout.txt + rc.txt",
+   "file": "scripts/revenue_publication.py",
+   "fix_reverted": "REM-01(a) \u2014 a PRESENT record is actually verified",
+   "id": "M5",
+   "isolation_of_proof_ok": true,
+   "missing_red": [],
+   "observed_red": [
+    "test_rem01_g_replayed_record_is_rejected"
+   ],
+   "patched_from_sha256": "bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0",
+   "patched_to_sha256": "7f6aedd7c91b977fdeefb7f759e0fb8bee69f45304b6681c8f12f4db77e0a1e0",
+   "pytest_raw_rc": 1,
+   "unexpected_red": [],
+   "why": "exactly the replay/forgery node. R1 stays green because E27 is a different require() in the same function, and R5/R8 stay green because they assert the record's presence and field set, which M5 leaves intact."
+  }
+ ],
+ "reference_hashes": {
+  "scripts/contracts/evidence.py": "054e364a7a5c428f43c6378f795429751b26f24af8de07e22da4b3d0ac8a4561",
+  "scripts/revenue_core.py": "8a761498f5eb729e4f4227f2a315d709253f8b96acf7baa7253ab425e73ac883",
+  "scripts/revenue_publication.py": "bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0",
+  "scripts/revenue_report.py": "212f00598feca408dc429d4c7a5332131ce25f1165b079347e4b295345df7d3b"
+ },
+ "reference_tree": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B1-I08C-product-fixes\\a20260921-01\\iso\\fixed\\rf"
+}

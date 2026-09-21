@@ -72,8 +72,6 @@ ATTESTATION_FIELDS = {
     "fingerprint",
     "request_id",
     "payload_sha256",
-    "result_sha256",
-    "receipt_sha256",
     "signed_at",
     "signature",
 }
@@ -102,8 +100,9 @@ def main() -> int:
         return 11
     private = Ed25519PrivateKey.from_private_bytes(b"\\x07" * 32)
     public = private.public_key().public_bytes_raw()
-    payload = {k: v for k, v in request.items() if k != "canonical_payload_sha256"}
-    signature = private.sign(canonical(payload).encode("ascii")).hex()
+    # The signing target is the WHOLE request object, including the redundant
+    # `canonical_payload_sha256` member (B1 oracle r1 §3.4 + revision r3 R3-2).
+    signature = private.sign(canonical(request).encode("ascii")).hex()
     response = {
         "attestation_response_schema_version": "1.0",
         "request_id": request["request_id"],
@@ -163,10 +162,24 @@ def workdir(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def fake_provider(workdir):
-    """A real one-shot provider process; its private key never leaves the fixture."""
-    path = workdir / "fake_attestation_provider.py"
-    path.write_text(FAKE_PROVIDER_SOURCE, encoding="utf-8")
-    return path
+    """A real one-shot provider process; its private key never leaves the fixture.
+
+    The provider script is a plain ``.py`` file (the host only SPAWNS it, it never
+    imports or reads it).  On Windows a ``.py`` file is not itself a valid Win32
+    image, so the spawn target is a ``.cmd`` launcher next to it; that launcher is
+    the fixture's, not the product's.
+    """
+    script = workdir / "fake_attestation_provider.py"
+    script.write_text(FAKE_PROVIDER_SOURCE, encoding="utf-8")
+    if os.name == "nt":
+        launcher = workdir / "fake_attestation_provider.cmd"
+        launcher.write_text(
+            "@echo off\r\n"
+            f'"{sys.executable}" -B -X utf8 "%~dp0fake_attestation_provider.py" %*\r\n',
+            encoding="ascii",
+        )
+        return launcher
+    return script
 
 
 @pytest.fixture(scope="module")
@@ -205,27 +218,25 @@ def trusted_domain(workdir, public_key_bytes):
 # Helpers
 # ---------------------------------------------------------------------------
 def _rehash(pkg):
-    """Attacker move: recompute every NON-SECRET self-hash, keep the signed domain."""
+    """Attacker move: recompute every NON-SECRET self-hash, keep the signed domain.
+
+    The record's ``payload_sha256`` is refreshed too, because it is a copy of a
+    public digest — refreshing it is the strongest thing a hash-recomputing
+    attacker can do, and the Ed25519 signature must still reject the result.
+    """
     receipt = pkg["publication_receipt"]
     receipt["validated_payload_sha256"] = canonical_sha256(
         {k: v for k, v in pkg.items() if k not in ("result_sha256", "publication_receipt")}
     )
     record = receipt.get("publication_attestation")
     if isinstance(record, dict):
-        # the attacker cannot forge the signature; updating the record's own
-        # payload copies is exactly the "recompute what you can" move.
         record["payload_sha256"] = receipt["validated_payload_sha256"]
-        record["result_sha256"] = "pending"
     receipt["receipt_sha256"] = canonical_sha256(
         {k: v for k, v in receipt.items() if k != "receipt_sha256"}
     )
-    if isinstance(record, dict):
-        record["receipt_sha256"] = receipt["receipt_sha256"]
     pkg["result_sha256"] = canonical_sha256(
         {k: v for k, v in pkg.items() if k != "result_sha256"}
     )
-    if isinstance(record, dict):
-        record["result_sha256"] = pkg["result_sha256"]
     return pkg
 
 
@@ -329,8 +340,6 @@ def test_rem01_e_trusted_provider_yields_verifiable_record(
         assert re.fullmatch(r"[0-9a-f]{32}", record["fingerprint"])
         assert re.fullmatch(r"[0-9a-f]{128}", record["signature"])
         assert record["payload_sha256"] == receipt["validated_payload_sha256"]
-        assert record["result_sha256"] == package["result_sha256"]
-        assert record["receipt_sha256"] == receipt["receipt_sha256"]
         validate_publication_receipt(package)
         validate_forecast_output(package)
     finally:
@@ -359,19 +368,56 @@ def test_rem01_f_untrusted_provider_is_not_host_signed(fake_provider, workdir):
 
 
 def test_rem01_g_replayed_record_is_rejected(fake_provider, trusted_domain):
-    """A record that does not match the live payload/result/receipt must be
-    rejected even when every self-hash the attacker can recompute is repaired."""
+    """A record that does not describe the live artifact must be rejected.
+
+    Two distinct attacker moves, each measured on its own so the node cannot be
+    satisfied (or broken) for the wrong reason:
+
+    * (a) mutate a bound field and recompute every OTHER self-hash, leaving the
+      record untouched — the signature is now over a request that no longer
+      matches the receipt (E16), and would also fail Ed25519 verification since
+      the request object is rebuilt from the record's own fields.
+    * (b) ALSO refresh the record's own `payload_sha256` copy — the strongest
+      hash-recomputing move available — which is caught by the artifact binding
+      (`publication_attestation.result_sha256` does not match the artifact).
+    """
     _with_provider(fake_provider)
     os.environ["REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS"] = str(trusted_domain)
     try:
         package = run_forecast(forecast_document())
         assert _receipt_of(package)["attestation_status"] == "host_signed"
+
+        # (a) record left untouched
         forged = copy.deepcopy(package)
         forged["confidence"]["score"] = float(forged["confidence"]["score"]) + 0.5
         _rehash(forged)
         with pytest.raises(ForecastInputError) as excinfo:
             validate_publication_receipt(forged)
         assert "attestation" in str(excinfo.value)
+
+        # (b) record's own digest copies refreshed too
+        forged_b = copy.deepcopy(package)
+        forged_b["confidence"]["score"] = float(forged_b["confidence"]["score"]) + 0.5
+        receipt = forged_b["publication_receipt"]
+        receipt["validated_payload_sha256"] = canonical_sha256(
+            {
+                k: v
+                for k, v in forged_b.items()
+                if k not in ("result_sha256", "publication_receipt")
+            }
+        )
+        receipt["publication_attestation"]["payload_sha256"] = receipt[
+            "validated_payload_sha256"
+        ]
+        receipt["receipt_sha256"] = canonical_sha256(
+            {k: v for k, v in receipt.items() if k != "receipt_sha256"}
+        )
+        forged_b["result_sha256"] = canonical_sha256(
+            {k: v for k, v in forged_b.items() if k != "result_sha256"}
+        )
+        with pytest.raises(ForecastInputError) as excinfo_b:
+            validate_publication_receipt(forged_b)
+        assert "attestation" in str(excinfo_b.value)
     finally:
         _clear_provider()
         os.environ.pop("REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS", None)
