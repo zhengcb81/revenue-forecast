@@ -1648,3 +1648,52 @@ r3 注释块明写「measured across the whole design space, **see `r3_fix_recor
 **未做任何 `status` 转移**（I-14-D 维持 `review_pending`）；**未代签**；**删除 0**。
 
 **产物**：`execution_runs/_r3_design_reprobe_20260922/` 下 `r3_design_space_reprobe.py`（**13290 B** / `0ec5c00d…`）与 `r3_design_space_reprobe.json`（**8130 B** / `8e007a6f…`，**连跑同哈希**）。
+
+---
+
+## Round 70 — `I-14-D` 的 **r3 世代已写出**（REM-62 落地）
+
+**卡**：无（编排层载体落定轮次）。**性质**：**载体落定**。**不是**验收、**不是** `status` 转移、**不是**代签。
+**署名与依据**：编排层作为**载体落定执行器**撰写，**依据是它自己复现的测量**（Round 68 的可复现性核验 + Round 69 的设计空间复现）。
+**本文件不表达任何裁决**：独立复核仍欠，卡保持 `review_pending`。
+
+### 落了什么（四个既有载体**全部为前缀保全的追加**）
+
+| 载体 | before | after | 形式 |
+|---|---|---|---|
+| `oracle.md` | 21799 / `f188e853…` | **27119 / `e85cb05b…`** | `# CORRECTION 3`（该文件已有 CORRECTION 1/2 先例） |
+| `fix_record.md` | 10352 / `68fb5800…` | **12045 / `51554127…`** | `# CORRECTION 3` |
+| `binding.json` | 10139 / `5fd462c9…` | **10888 / `2cd31277…`** | 新增顶层键 `r3_corrections` |
+| `review.md` | 4938 / `14b8628d…` | **6586 / `d9a4ef28…`** | `## r3` 节（顶部状态行由该节取代） |
+
+**新增** `handoff_r3.json`（r3 世代的载体；**不登记自身哈希**）。
+
+**`binding.json` 为何必须**文本插入**而非 `json.dumps` 往返**：往返会**重排全文**、摧毁前缀 ⇒ 逐字节前缀保全**无从证明**。
+本轮的插入点在末尾 `}` 之前，实测**其余 20 个键逐项相同且顺序不变**。
+
+### r2 reviewer 四项要求的最终状态
+
+| 项 | 状态 |
+|---|---|
+| **F-REV-R2-01（BLOCKER）** 泛化 scheme 分支 | ✅ **已落地**（`observability.py:317-323`），并**新增 6 条冻结行** `N5f`–`N5k` |
+| 残留**必须登记**（marker + 非 marker 凭据） | ✅ oracle `R3a`/`R3b` + rule table `registered_open` 同两条；**两条都载 39 字符凭据** ⇒ `credential_leaks == []` **重新具备证据力** |
+| **F-REV-R2-02** | ✅ **两半都落**：9 条 `over_redaction` 行 + `oracle.md` **C3.4 的双向 fail-closed** 陈述 |
+| **F-REV-R2-03** | ✅ 三处**全部以追加式更正**落地（`oracle.md` C3.5、`fix_record.md` C3.6、C3.7），**原字节保留并标注「已过时」** |
+| **F-REV-R2-04** | ✅ `binding.json` 的 `r3_corrections`，**原字符串保留** |
+
+### 未做（边界）
+
+- **未**写 `r3_fix_record.md` —— Round 69 的判断**维持**：悬空引用**不用替代品去填**。其**实质**由 `_r3_design_reprobe_20260922/` 的复现供应。
+- **未**改 `after/final_hashes.json` —— 它是 **r2 世代**的哈希表。重写它会**抹掉世代边界**；**r3 世代的哈希表就是 `handoff_r3.json`**。
+- **未**改 `handoff.json`（r2 世代的 handoff）、`after/r2_summary.json`、`decision.md`、`commands.json`、`changes.diff`、r2 树。
+- **未**做 `status` 转移；**未**表达裁决；**未**代签；**删除 0**。
+
+### 一处自伤（如实登记）
+
+`review.md` 段的初稿里，我为 `reviewer_report_r2.md` **手写了一个 sha256** —— 那是一个**从未由任何字节产生过的值**（本仓 F-04-D「嵌合哈希」的形态）。
+**在脚本运行前发现**，改为**运行时从盘上计算**（真值 `58f92dd7e3a3f666…` / **39824 B**）。
+⇒ **一般式：文书里的哈希只能是算出来的，不能是写出来的。** 一个手写的哈希与真哈希**外观完全相同**，直到有人去复算。
+
+### 下一步
+
+`I-14-D` 的 r3 **待独立复核**。r3 世代已存在 ⇒ **复核有载体可依**。**卡仍 `review_pending`**，本卡不代其收口。

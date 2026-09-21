@@ -361,3 +361,91 @@ arm that proves the new rows are load-bearing.
   attempt (other cards' carriers), so `binding.json`'s recorded HEAD is stale. Not
   this attempt's doing; noted, not "fixed".
 
+
+
+# CORRECTION 3 (2026-09-22, appended for the r3 revision; original bytes above unchanged)
+
+Appended, not a rewrite: every byte above this line belongs to the r2 generation and is left
+exactly as it was. This section answers the three items the r2 independent review left open
+(F-REV-R2-01 / F-REV-R2-02 / F-REV-R2-03) and names the lines above that it supersedes.
+
+## C3.1 The auth newline-split branch is GENERALISED (F-REV-R2-01, the r2 BLOCKER)
+
+The r2 branch consumed a **nine-word enumeration** of scheme words. Its coverage was exactly as
+wide as the list: `Authorization: Negotiate` + newline, `AWS4-HMAC-SHA256`, `SCRAM-SHA-256`,
+`Hawk`, `Bot`, `Mutual`, `vapid`, `HOBA`, or any arbitrary word still persisted the credential —
+measured by the reviewer as C1-C9 of `reviewer_report_r2.md` section 2.3, and by this attempt as
+its own synthetic marker surviving in the append-only event log.
+
+The r3 branch consumes **one RFC-7235 scheme token** and a **run** of line breaks, and tries the
+quoted form after the break. Landed at
+`iso/product_narrow_r3/src/company_wiki/source_catalog/observability.py`:
+
+```
+:317  _AUTH_SCHEME_TOKEN = r"[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*"
+:318  _AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_SCHEME_TOKEN + r")[ \t]*"
+:319                        r"(?:(?:\r?\n)[ \t]*)+"
+:320                        r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r?\n]*\"|'[^'\r?\n]*')")
+:323  the value group is _QUOTED_VALUE | _AUTH_SCHEME_SPLIT | _AUTH_BARE_VALUE,
+      i.e. _QUOTED_VALUE is tried FIRST, so a quoted continuation is reached through the break
+```
+
+The nine-word enumeration is gone. `|` is kept inside the token class because the value
+delimiter class used everywhere else already stops at `|`, so nothing gains a delimiter by the
+widening.
+
+## C3.2 New frozen rows (hand-computed, as section 2 above requires)
+
+| id | kind | input | expected | len | contains |
+|---|---|---|---|---|---|
+| `N5f-auth-generic-scheme-marker` | narrow_must | `Authorization: Negotiate\nSYNTHETIC_AUDIT_TOKEN\ndoc=17` | `Authorization: <redacted>\ndoc=17` | 32 | `doc=17` |
+| `N5g-auth-generic-scheme-secret` | narrow_must | `Authorization: AWS4-HMAC-SHA256\n<39-char credential>\ndoc=17` | `Authorization: <redacted>\ndoc=17` | 32 | `doc=17` |
+| `N5h-auth-unknown-word-secret` | narrow_must | `Authorization: Zzz\n<39-char credential>\ndoc=17` | `Authorization: <redacted>\ndoc=17` | 32 | `doc=17` |
+| `N5i-auth-scram-scheme-marker` | narrow_must | `Authorization: SCRAM-SHA-256\nSYNTHETIC_AUDIT_TOKEN\ndoc=17` | `Authorization: <redacted>\ndoc=17` | 32 | `doc=17` |
+| `N5j-auth-blank-line-secret` | narrow_must | `Authorization: Hawk\n\n<39-char credential>` | `Authorization: <redacted>` | 25 | — |
+| `N5k-auth-quoted-continuation` | narrow_must | `Authorization: Bot\n"<39-char credential>"` | `Authorization: <redacted>` | 25 | — |
+
+`<39-char credential>` is `ghp_ZQ7ReviewerFakeCredential0123456789`, the string the r2 reviewer
+measured with. `N5j` is the blank-line variant; `N5k` is the quoted continuation the reviewer's
+C12 asked for.
+
+## C3.3 The residual is REGISTERED, not hidden (required by F-REV-R2-01)
+
+| id | kind | input | declared residual |
+|---|---|---|---|
+| `R3a-two-token-then-wrap` | registered_open | `Authorization: Bearer abc\n<39-char credential>` | `Authorization: <redacted>\n<39-char credential>` |
+| `R3b-quoted-two-token` | registered_open | `Authorization: Bearer abc "<39-char credential>"` | `Authorization: <redacted> "<39-char credential>"` |
+
+Both rows carry the credential in the declaration, so the oracle confirms the survival rather
+than merely tolerating it. The rule table registers the same pair as kind `registered_open`, and
+`credential_leaks == []` is therefore sound again: what survives is enumerated, not omitted.
+
+## C3.4 C2.2 restated — the branch is fail-closed in BOTH directions (F-REV-R2-02)
+
+C2.2 above states the leak direction. It is now stated in both:
+
+* **leak direction**: after a scheme token and one or more line breaks, the next token — or a
+  quoted string reached through the same break run — is redacted;
+* **over-redaction direction**: the branch cannot tell a wrapped credential from a diagnostic
+  key, so `Authorization: Bearer` + newline **DELETES** the following key. Measured:
+  `Authorization: Bearer\ndoc=17` becomes `Authorization: <redacted>`. This is deliberate and
+  fail-closed (never leak rather than never over-redact).
+
+The cost is **registered**, not merely described: the rule table carries **9** rows of kind
+`over_redaction`, each asserting the loss exactly, so a record can no longer claim
+`fidelity_drift == []` while the branch deletes a diagnostic key.
+
+## C3.5 Line 272 above is SUPERSEDED (F-REV-R2-03)
+
+Line 272 reads: *"On the pre-fix base tree all three FAIL, and on M4 (below) all three fail
+again"*. **The base-tree half is false.** Measured on `iso/product_base`:
+
+```
+N5c-auth-scheme-lf-secret      pass=False
+N5d-auth-scheme-obsfold        pass=True
+N5e-auth-token-key-lf-secret   pass=True
+```
+
+Only `N5c` fails on the base tree; `N5d`/`N5e` **pass** there, because the greedy swallow happens
+to produce the expected string. All three fail only on **M4**, which is the arm that matters —
+so the sentence is true of M4 and false of the base tree. **第 272 行已过时，以本节为准。**

@@ -1,0 +1,30 @@
+{
+ "A_bytes_before_the_insertion_identical": true,
+ "B_bytes_from_the_insertion_identical": true,
+ "CHANGE_IS_A_CLEAN_KEY_INSERTION": true,
+ "C_all_other_keys_identical_and_in_the_same_order": true,
+ "D_the_only_added_key_is_the_expected_one": true,
+ "change_kind": "top_level_key_insertion",
+ "head_commit": "9eb9b64a48d13961a19d52652032f014a4b02184",
+ "insertion_offset_bytes": 10136,
+ "keys_after": 21,
+ "keys_before": 20,
+ "marker_offset_bytes": 10137,
+ "post_image_bytes": 10888,
+ "post_image_sha256": "2cd31277ff3a4998c6a048c12cb44ad957960826c0adc5103fc5c500c4299b79",
+ "pre_image_blob": "17ea436eb7dde700666de372f626febb298ea180",
+ "pre_image_bytes": 10139,
+ "pre_image_sha256": "5fd462c93197d5d7b602a03b2ba81841917bab845aa609854e4db98c10e2d9eb",
+ "pre_image_source": "git blob at HEAD",
+ "predicate_error_recorded": {
+  "cause": "the inserted text begins with a comma, so post[:idx] ends with ',' where pre[:idx] ends with a newline; the comparison was off by that one byte",
+  "classification": "predicate error, NOT a data defect",
+  "first_version": "compared post[:idx] against pre[:idx] where idx is the marker's offset",
+  "fix": "compare at the pre-image's own final newline-brace-newline, and assert the comma separately",
+  "predicate": "A_bytes_before_the_insertion_identical",
+  "symptom": "reported False while the edit is clean"
+ },
+ "round": 70,
+ "target": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-14-D/a20260919-01/binding.json",
+ "why_the_append_only_proof_does_not_apply": "a key can only be added before the final brace, so the change is not a suffix append; the byte-prefix instrument would flag a correct edit as a violation"
+}

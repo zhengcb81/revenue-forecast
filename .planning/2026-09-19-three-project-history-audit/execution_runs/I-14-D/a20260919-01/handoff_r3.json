@@ -1,0 +1,139 @@
+{
+ "card": "I-14-D",
+ "attempt_id": "a20260919-01",
+ "iteration": "r3",
+ "date_utc": "2026-09-22",
+ "kind": "implementer_side_handoff",
+ "status": "review_pending",
+ "what_this_file_is": "the r3 generation's carrier: what r3 changed, what it measured, and what is registered. It was missing when the previous session was killed (REM-62), which left F-REV-R2-01's landing and the three r2-review corrections with nowhere to be recorded.",
+ "who_wrote_it_and_on_what_basis": {
+  "author": "the orchestrator, acting as carrier-landing executor",
+  "basis": "measurement it reproduced itself; nothing here is taken from a session transcript",
+  "independent_evidence": [
+   "execution_runs/_verify_20260922_i14d_r3/i14d_r3_state_verification.json -- 8 propositions, 7 negative controls, overall PASS, idempotent",
+   "execution_runs/_r3_design_reprobe_20260922/r3_design_space_reprobe.json -- the design-space reproduction, idempotent"
+  ],
+  "it_states_no_verdict": true,
+  "why": "a verdict is the independent reviewer's to give. This file records what was done and what was measured; it does not say the card is accepted."
+ },
+ "what_r3_is": {
+  "trigger": "reviewer_report_r2.md returned changes_required with one BLOCKER-class residual: the r2 fix closed the measured instance (the nine enumerated scheme words) but not the class (any other scheme word still persisted the credential).",
+  "remedy_as_given_by_the_reviewer": "replace the enumerated group with one RFC-7235 scheme token, keeping the rest of _AUTH_SCHEME_SPLIT identical, and try _QUOTED_VALUE after the break; the residual must be registered in the oracle and the rule table using both the marker and a non-marker credential before credential_leaks == [] can be offered as exit-criterion evidence again."
+ },
+ "what_changed": {
+  "product_copy": {
+   "path": "iso/product_narrow_r3/src/company_wiki/source_catalog/observability.py",
+   "bytes": 42839,
+   "sha256": "a551cc45efcd11925d6c647dec0564d5d0684ce5c675794136f465d33dc22fda",
+   "lines": {
+    "317": "_AUTH_SCHEME_TOKEN = r\"[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*\"",
+    "318_320": "_AUTH_SCHEME_SPLIT = one scheme token, then a RUN of line breaks, then the value group",
+    "323": "the value group is _QUOTED_VALUE | _AUTH_SCHEME_SPLIT | _AUTH_BARE_VALUE, so the quoted form is tried first and is reached through the break"
+   },
+   "the_nine_word_enumeration_is_gone": true
+  },
+  "harness": {
+   "harness/run_i14d_oracle.py": {"bytes": 11043, "sha256": "f7c94c60ce8dffda8d58786d6b20787ff11e4c5c22f06ec1ba1e0307d96a4fe2"},
+   "harness/run_rule_table_i14d.py": {"bytes": 19378, "sha256": "01a3187e9d5062db316fa89e3fc0feb40f862c782a7ce782aa458c6a0f4f7ed6"},
+   "harness/apply_i14d_narrow.py": {"bytes": 19773, "sha256": "8204b2f971aedd69231e697e580dc93e77f4a597b6c7a1d9c55a3c91ec23bae5"},
+   "harness/authsplit_probe.py": {"bytes": 5699, "sha256": "649d55277870bd844c13d461088986a2ca4efc9edea0db13003a3b91dd50b151"}
+  }
+ },
+ "measurement": {
+  "recorded_runs": {
+   "scratch/oracle_r3.json": {"bytes": 13316, "sha256": "c436d62159c5a19b7fa8d2afe6f0aac9c265af98a52c6a669b0a327b69217cf1"},
+   "scratch/rule_r3.json": {"bytes": 28167, "sha256": "11f5cb18024e00ed77b25976c1b121613ecf098e330df86ac7c6b468912f4130"}
+  },
+  "reproduced_independently": {
+   "oracle": {"rows_recorded": 28, "rows_rerun": 28, "ids_in_the_same_order": true, "field_differences": 0, "verdict": "pass"},
+   "rule_table": {"rows_recorded": 79, "rows_rerun": 79, "ids_in_the_same_order": true, "field_differences": 0, "verdict": "negative", "credential_leaks": []}
+  },
+  "why_the_rule_table_verdict_is_negative_and_that_is_correct": "the verdict is computed over ALL rows' secret-survival, and the only rows where the reviewer's credential survives are the two registered_open rows. The verdict is reporting the registered residual honestly, not reporting a failure.",
+  "base_tree_rerun": {
+   "purpose": "to test F-REV-R2-03's claim independently",
+   "result": {"N5c-auth-scheme-lf-secret": false, "N5d-auth-scheme-obsfold": true, "N5e-auth-token-key-lf-secret": true},
+   "reading": "only N5c fails on the base tree; N5d and N5e pass there. The claim 'all three FAIL on the base tree' is therefore false."
+  }
+ },
+ "the_r2_review_items": {
+  "F-REV-R2-01": {
+   "class": "BLOCKER",
+   "status": "LANDED",
+   "where": "iso/product_narrow_r3/.../observability.py:317-323",
+   "new_frozen_rows": ["N5f-auth-generic-scheme-marker", "N5g-auth-generic-scheme-secret", "N5h-auth-unknown-word-secret", "N5i-auth-scram-scheme-marker", "N5j-auth-blank-line-secret", "N5k-auth-quoted-continuation"]
+  },
+  "residual_registration": {
+   "required_by": "F-REV-R2-01",
+   "status": "LANDED",
+   "oracle_rows": ["R3a-two-token-then-wrap", "R3b-quoted-two-token"],
+   "rule_table_kind": "registered_open, the same two ids",
+   "both_marker_and_non_marker": "the rows carry the 39-char credential in their declarations, so the survival is confirmed rather than tolerated",
+   "credential_leaks_is_sound_again": true
+  },
+  "F-REV-R2-02": {
+   "class": "MEDIUM",
+   "status": "LANDED",
+   "rule_table_half": "9 rows of kind over_redaction, with over_redaction_touched equal to the same set",
+   "oracle_md_half": "oracle.md CORRECTION 3, section C3.4 states the branch is fail-closed in BOTH directions and records the measured cost"
+  },
+  "F-REV-R2-03": {
+   "class": "LOW",
+   "status": "LANDED as appended corrections",
+   "sites": [
+    "oracle.md line 272 -- superseded by CORRECTION 3 section C3.5",
+    "fix_record.md line 86 -- superseded by CORRECTION 3 section C3.6",
+    "after/r2_summary.json oracle.narrow_must_failed_base -- superseded by CORRECTION 3 section C3.7"
+   ],
+   "note": "the original bytes are left in place and annotated as superseded, per T1-12 (1); nothing is rewritten"
+  },
+  "F-REV-R2-04": {
+   "class": "INFO",
+   "status": "LANDED",
+   "where": "binding.json, appended key r3_corrections; the original string is left in place"
+  }
+ },
+ "the_design_trade_off_and_its_reproduction": {
+  "what_the_source_comment_claims": "closing the two-token-then-wrap shape needs the scheme's own line consumed as a token run, which deletes doc=17",
+  "reproduced_by": "execution_runs/_r3_design_reprobe_20260922/r3_design_space_reprobe.py",
+  "result": {
+   "r3-chosen": {"oracle_failures": 0, "rule_failures": 0, "leaking": ["C10"]},
+   "token-run": {"oracle_failures": 2, "rule_failures": 2, "leaking": []},
+   "r2-enumeration": {"oracle_failures": 6, "rule_failures": 14, "leaking": "C1-C12 all"}
+  },
+  "the_cost_classified": {
+   "genuine_regressions": ["N5-auth-multiline", "cred-auth-multiline-swallow"],
+   "registration_rows_that_would_need_re_registering": ["R3a-two-token-then-wrap", "open-two-token-then-wrap"],
+   "reading": "two of the four are the registered-open rows asserting the residual output, so they go red because the registration is working. The real cost is two over-redaction regressions plus two rows to re-register."
+  },
+  "dangling_reference": {
+   "in_the_source": "the r3 comment block in observability.py ends with 'measured across the whole design space, see r3_fix_record.md'",
+   "r3_fix_record_md_exists": false,
+   "disposition": "NOT substituted. A dangling reference is explicitly broken; a stand-in looks authoritative and is not the document the author meant. The substance is supplied by the reproduction above instead, and the source comment is owed a correction in the next source generation."
+  }
+ },
+ "generation_carriers": {
+  "oracle.md": {"before_bytes": 21799, "before_sha256": "f188e853026b26d3f53dcaee81822fc75a44a257bc541219c791aa2fa23c09f2", "after_bytes": 27119, "after_sha256": "e85cb05bc278ce4b5281f84fe7bc75330f247a73a14e040ce16347428ac2015a"},
+  "fix_record.md": {"before_bytes": 10352, "before_sha256": "68fb580001b2e798376a16b5c964fd47e08d0974555f07f37587d7c536d4055a", "after_bytes": 12045, "after_sha256": "51554127d4c7a8217a4c5c59ddef27d6bcf68c4c03e0a9108d89b535cdb59b73"},
+  "binding.json": {"before_bytes": 10139, "before_sha256": "5fd462c93197d5d7b602a03b2ba81841917bab845aa609854e4db98c10e2d9eb", "after_bytes": 10888, "after_sha256": "2cd31277ff3a4998c6a048c12cb44ad957960826c0adc5103fc5c500c4299b79", "all_other_keys_identical_and_in_order": true},
+  "review.md": {"before_bytes": 4938, "before_sha256": "14b8628d13c33ffb197db29c20d9073059034875919642a7f8c99249210a0104", "after_bytes": 6586, "after_sha256": "d9a4ef28cdb5f804b49463399dd45c85d53319864ce63f1ba2360d48715a1bea"},
+  "all_four_are_prefix_preserving_appends": true,
+  "note_on_the_r2_hash_table": "after/final_hashes.json registers the r2 generation's hashes and is therefore now superseded for these four files. This file is the r3 generation's hash table; final_hashes.json is deliberately NOT edited (it is the r2 record, and rewriting it would erase the generation boundary)."
+ },
+ "boundaries": {
+  "product_repo_written": 0,
+  "production_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "status_transitions": 0,
+  "status_remains": "review_pending",
+  "verdict_expressed": false,
+  "signatures_on_behalf_of_others": 0,
+  "deletions": 0,
+  "not_written": ["r3_fix_record.md", "after/final_hashes.json"],
+  "not_edited": ["handoff.json (the r2 generation's handoff)", "after/r2_summary.json", "decision.md", "commands.json", "changes.diff", "iso/product_narrow (the r2 tree)"]
+ },
+ "what_is_still_owed": [
+  "an independent review of r3 -- this file states no verdict and the card stays review_pending",
+  "a correction to the source comment's dangling r3_fix_record.md reference, in the next source generation",
+  "the promotion decision, which is the owner's and is not requested here"
+ ],
+ "self_reference_note": "handoff_r3.json does not register its own hash"
+}

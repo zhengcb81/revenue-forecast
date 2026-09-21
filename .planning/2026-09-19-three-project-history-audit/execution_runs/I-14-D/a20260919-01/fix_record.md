@@ -157,3 +157,33 @@ renamed here and both lists are now emitted, which is a reporting clarification,
 a fix to the rule), F-REV-D-07 (external `revenue-forecast` HEAD drift). F-REV-D-02
 is flagged in `decision.md` as a **promotion hazard**: do not tidy `_VALUE` and
 assume the narrowing is what protects the assignment path.
+
+
+# CORRECTION 3 (2026-09-22, appended for the r3 revision; original bytes above unchanged)
+
+Appended, not a rewrite. This answers F-REV-R2-03 (the remaining two sites) and F-REV-R2-04.
+
+## C3.6 Line 86 above is SUPERSEDED (F-REV-R2-03, site 2)
+
+Line 86 reads *"All three FAIL on the base tree, on M4, and pass on the fixed tree."*
+The base-tree half is false: measured on `iso/product_base`, `N5c` fails while **`N5d` and `N5e`
+pass**. All three fail only on M4. **第 86 行已过时，以本节为准。**
+
+## C3.7 `after/r2_summary.json` is SUPERSEDED (F-REV-R2-03, site 3)
+
+`oracle.narrow_must_failed_base` lists `N5c-auth-scheme-lf-secret` **and**
+`N5e-auth-token-key-lf-secret`. Measured: `N5e` **passes** on the base tree, so the list
+over-reports by one. It also omits `N5d`, which is internally inconsistent with the other two
+records. The list is a hand-assembled prediction contradicting the machine record.
+**该字段已过时，以本节与 `oracle.md` C3.5 为准。**
+
+## C3.8 `binding.json`'s M3 parenthetical is corrected (F-REV-R2-04)
+
+`binding.json → isolation_rule.product_code_copies["iso/product_mut_auth1_r2"]` describes M3 as
+*"M3-r2 = T5-r2 with the auth value reduced to a strict single token (scheme branch left defined
+but unreferenced)"*. **The parenthetical is wrong**: `_AUTH_SCHEME_SPLIT` **is still referenced**
+in the value group. M3's one-line edit is `_AUTH_BARE_VALUE` → `_BARE_VALUE`. The described
+intent — a naive single-token narrowing — is what the tree does.
+
+The correction is recorded in `binding.json` under the appended key `r3_corrections`; the
+original string is **left in place** (per T1-12 (1), old values are kept, not rewritten).

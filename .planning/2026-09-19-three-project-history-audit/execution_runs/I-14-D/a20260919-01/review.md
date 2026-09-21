@@ -71,3 +71,34 @@ answer to the BLOCKER), `commands.json` (raw rcs) and `handoff.json`.
    F-REV-D-02/03/04 — whether they belong on a follow-up card or must block this one.
 7. Scope/authorization notes: `decision.md` D1-r2, the declared residual N13, and
    `r5/README.txt` explaining the counts-shim directory.
+
+
+---
+
+## r3 (2026-09-22) — the status line at the top of this file is SUPERSEDED by this section
+
+**Status: revision r3 submitted, RE-REVIEW REQUIRED.** The implementer writes no verdict here;
+the r2 verdict below is the reviewer's and is not inherited by r3.
+
+### Verdict history, continued
+
+| round | reviewer verdict | artifact |
+|---|---|---|
+| r2 | **`changes_required`** — one BLOCKER-class residual (`F-REV-R2-01`: the fix closed the measured *instance*, not the *class*), plus `F-REV-R2-02` (MEDIUM), `F-REV-R2-03` (LOW), `F-REV-R2-04` (INFO) | `reviewer_report_r2.md`, 39824 B, sha256 `58f92dd7e3a3f66639dbdab4743455a878c4122500ac2d8d132e2eae2bee6c2c` — both recomputed from disk when this section was written |
+| r3 | *pending* | this attempt after the r3 revision |
+
+### What r3 changed
+
+`_AUTH_SCHEME_SPLIT` was generalised from a nine-word enumeration of scheme words to one
+RFC-7235 scheme token, with a run of line breaks and the quoted form tried after the break
+(`iso/product_narrow_r3/src/company_wiki/source_catalog/observability.py:317-323`).
+The residual that the generalised branch cannot close is **registered** rather than hidden
+(oracle rows `R3a`/`R3b`; rule-table kind `registered_open`). The over-redaction cost is
+**registered** as 9 rule-table rows of kind `over_redaction`.
+
+### What r3 did NOT do
+
+No verdict is expressed. `status` is unchanged: the card remains `review_pending` until an
+independent reviewer rules. The three documentary items the r2 review raised are landed as
+appended corrections (`oracle.md` CORRECTION 3, `fix_record.md` CORRECTION 3, `binding.json`
+`r3_corrections`), not as rewrites.

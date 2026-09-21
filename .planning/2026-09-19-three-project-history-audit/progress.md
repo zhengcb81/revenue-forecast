@@ -714,3 +714,28 @@ check-complete.sh   → [planning-with-files] Task in progress (6/7 phases compl
 ⇒ **三项收敛为一条：`I-14-D` 的 r3 世代从未被写出。**
 
 **边界**：**未代写** `r3_fix_record.md`（悬空引用**不用替代品去填**）；**未修**那 10 个脚本；**未改**四个 r2 世代记录；**attempt 内写入 0 字节**；**未做 `status` 转移**；**未代签**；**删除 0**。产品文件 **0**；锚点 `9ec6529550f189a4…` **一致**。
+
+## 2026-09-22 — Round 70：`I-14-D` 的 r3 世代已写出（REM-62 落地）
+
+**性质**：**载体落定**。**不是**验收、**不是** `status` 转移、**不是**代签。署名与依据：编排层作为载体落定执行器，**依据是自己复现的测量**（Round 68 + Round 69）。**不表达任何裁决。**
+
+**四个既有载体，全部为前缀保全的追加**：
+
+| 载体 | before | after |
+|---|---|---|
+| `oracle.md` | 21799 / `f188e853…` | **27119 / `e85cb05b…`**（`# CORRECTION 3`） |
+| `fix_record.md` | 10352 / `68fb5800…` | **12045 / `51554127…`**（`# CORRECTION 3`） |
+| `binding.json` | 10139 / `5fd462c9…` | **10888 / `2cd31277…`**（新顶层键 `r3_corrections`） |
+| `review.md` | 4938 / `14b8628d…` | **6586 / `d9a4ef28…`**（`## r3` 节） |
+
+**新增** `handoff_r3.json`（r3 世代载体，不登记自身哈希）。
+
+**`binding.json` 用文本插入**：`json.dumps` 往返会重排全文、摧毁前缀 ⇒ 无法证明前缀保全。实测其余 20 键**逐项相同、顺序不变**。
+
+**r2 四项要求**：F-REV-R2-01 ✅ 落地（+ 6 条新冻结行 N5f–N5k）；残留登记 ✅（oracle `R3a`/`R3b` + rule table `open-*`，**两条都载 39 字符凭据**）；F-REV-R2-02 ✅ 两半（9 条 `over_redaction` + C3.4 双向陈述）；F-REV-R2-03 ✅ 三处追加式更正（C3.5/C3.6/C3.7）；F-REV-R2-04 ✅（`r3_corrections`）。
+
+**未做**：未写 `r3_fix_record.md`（悬空引用不代填）；**未改** `after/final_hashes.json`（r2 世代哈希表，重写会抹掉世代边界）；未改 r2 世代的 `handoff.json`/`r2_summary.json`/`decision.md`/`commands.json`/`changes.diff`/r2 树；未做 `status` 转移；未表达裁决；未代签；**删除 0**。
+
+**一处自伤**：`review.md` 段初稿里我为 `reviewer_report_r2.md` **手写了一个 sha256**（本仓 F-04-D「嵌合哈希」形态），**在脚本运行前发现**并改为**运行时从盘上计算**（真值 `58f92dd7…` / 39824 B）。
+
+**下一步**：r3 **待独立复核**；世代已存在 ⇒ 复核有载体可依。**卡仍 `review_pending`**。
