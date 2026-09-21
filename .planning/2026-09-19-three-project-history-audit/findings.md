@@ -391,3 +391,22 @@ B 仍把「不同请求」表达为「同键异载荷」，属把业务语义错
 **新增纪律第 7 条**：「总的批准」不得膨胀为「所有的结论」。owner 的总授权解除的是
 **启动与实施许可**；凡专业裁判属他方者（TIER-2），最终结论**必须由该方出具**。
 把 TIER-2 记为「owner 已裁」等同**伪造签名**。
+
+
+---
+
+## 【收尾】2026-09-21 —— 推送被 E2E 超时阻塞的定位结论
+
+**现象**：`git push` 连续失败，报 `PUSH BLOCKED by pre-push gate (CI root-fix protocol)`，内层为
+`subprocess.TimeoutExpired: pytest -q --tb=short tests/test_zr803_chaos_recovery.py tests/test_zr1103_journey_reverify.py tests/test_ca203_weekly_t3.py tests/test_fc1101_ci_manifest.py tests/test_compatibility_manifest.py tests/test_fc1002_three_process_e2e.py tests/test_ca302_three_journeys.py timed out after 600 seconds`。
+
+**已排除的假设**（逐条实测）：
+1. ~~门红~~ —— `drift_patrol` 七项 **ALL_GREEN**（含 `installation`/`manifest`，均已修根因）
+2. ~~本地与远端分叉~~ —— `ahead=8 behind=0`
+3. ~~自身并发负载~~ —— 机器降到 **2 个 python 进程**后**仍然超时**；故负载只是加剧因素，**不是**根因
+4. ~~规格漂移~~ —— `input_snapshot.md`/`PLAN_MANIFEST.md`/`plan_inputs.json` 已修并**已提交**
+
+**结论（已精确定位）**：七个 E2E 文件**全部通过**（55 passed / 0 failed），但**总墙钟 ≈861.7 s > 门的 600 s 子进程上限** ⇒ 推送必被拦。罪魁是 `tests/test_ca203_weekly_t3.py`（**387.1 s**，占 45%）。故根因是**门的超时配置**，不是测试失败、不是分叉、也不（仅）是并发负载——机器降到 2 个 python 进程后**仍然超时**，负载只是加剧因素。逐文件耗时表见 `REMEDIATION_REGISTER.md §十`。需要 owner 决定：①在更快或空载机器上推送；②提高门的 E2E 超时上限（改门属产品变更，须独立卡 + 红绿）；③拆分该套件以支持增量运行。
+**纪律遵守**：**未绕过门**。8 个本地提交完好，工作全部落盘。
+
+**方法教训（已写入事件记录）**：推送失败时**必须先看完整原始输出**——我此前用 `Select-String` 过滤，把 `TimeoutExpired` 与 `PUSH BLOCKED ... do not bypass` 滤掉，据此误判为"门红/规格漂移"，白花三轮。

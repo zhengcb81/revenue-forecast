@@ -1383,3 +1383,52 @@ M25…M28 /recovery/selfcheck/cases/F1/evidence/M25/cases.json  {'ValueError': 1
 3. **M08 自身的 `status` 转移不归本卡**；其 `accepted_scoped` 系其独立 reviewer 所授，**本卡只核验该授予的前置已就绪**。
 
 **新增裁定需求：无。** **不改变任何既有裁定效力。**
+
+
+---
+
+## 【收尾·最终状态】2026-09-21 —— 本 session 结束时的权威快照
+
+> 本节由编排层在用户指示「把手头的任务做完，并更新 planning-with-files 所有文档，然后停止」后写入。
+> **本节取代其上所有 `Next Step` 表述**；其上的历史记录保留为审计轨迹，不再更新。
+
+### 进度（以盘上载体为准）
+
+| 指标 | 值 |
+|---|---|
+| 卡片文本总数 | **92**（原 86 + 本轮 owner 授权新卡：I-14-I RIDER 等） |
+| 盘上 `accepted_scoped` | **≈66** |
+| `review_pending`（在审/在修） | I-14-D(r3 泛化修复)、I-14-E-APPLY、I-14-I(已落定)、B1、B3、B5 |
+| `blocked` | I-06-A（D-W15 生产 prune 未签，owner 明示暂不签） |
+| 未开工 | I-07-B…E、I-09-C、I-10-A、I-11-B/C、I-12-A…E、I-13-A…C、I-16-A/B、I-17-A/B |
+
+### 本 session 完成的关键卡（含独立复核）
+
+- **M08** 三步（读法 C / 索引更正 / 同 code_root 复跑）→ `accepted_scoped`
+- **I-04-E / I-05-B / I-05-C / I-06-B / I-07-A / I-09-B / I-10-B / I-14-F / I-14-H / I-14-I** → `accepted_scoped`
+- **I-08-C** → `changes_required`（核心属性失败：消费者**完全不验签**）+ 三项产品缺陷修复卡 **B1** 完成并 `accepted_with_conditions`
+- **I-14-D** → 已到 **r3**（r1 阻断"凭据泄漏"→ r2 修好但只关"家族"未关"类" → r3 泛化 scheme）
+- **B5+B6** 跨批 runner 推广 + rc 码表冻结（纯追加）
+
+### 唯一未推送事项
+
+**`git push` 被 pre-push 门的 E2E 套件超时阻塞**（7 个 E2E 文件含三进程旅程 > 600 s 上限）；**未绕过门**（门自身提示 `do not bypass`）。
+本地已有 **8 个提交**待推送，**全部工作安全落盘**。定位卡住文件的诊断见 `findings.md` 收尾节。
+
+### 需要 owner 的下一批决定（详见 `OWNER_DECISIONS.md`）
+
+1. **I-08-C 两项下游**：重冻其 oracle（其 gap 使 `test_e11/e13` 必然 FAIL，属预期）；**invest-core 消费者卡**（另一仓，REM-01 的决定性消费方）
+2. **生产晋升（promotion）**：所有修复均在隔离副本（B1/B3/I-14-D/I-14-F/I-14-I 等），**晋升是独立 owner 决定**，本 session **零生产合并**
+3. **I-14-F R-1**：`GENERATION_RESERVE` 取 150（阈值 60）还是保留 86 并记录真实数字
+4. **B1 复审要求的晋升前置**：F1（oracle r5 更正）、F2（补 R13 节点 + M6）、F3（E21 或撤回声明）、F7（REM-02 记为"已文档化限制、消费侧护栏未就位"）
+
+### 权威文件索引
+
+| 文件 | 内容 |
+|---|---|
+| `REMEDIATION_REGISTER.md` | **46 项**已发现待修/已修问题登记（REM-01…REM-46）+ 父 agent 裁定 |
+| `OWNER_DECISIONS.md` | 第一至十四节：owner 全部签字记录 |
+| `findings.md` | 跨批共享缺陷、流程缺口、隔离事件 |
+| `progress.md` | 逐轮 session 日志 |
+| `task_plan.md` | 本文件 |
+| `execution_runs/_isolation_incidents/` | 三次事件记录（生产回滚、pre-commit stash、推送超时） |

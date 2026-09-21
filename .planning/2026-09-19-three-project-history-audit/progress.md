@@ -611,3 +611,29 @@ check-complete.sh   → [planning-with-files] Task in progress (6/7 phases compl
 - 最后按顺序生成逐卡/调度、核对v2依赖/来源hash/链接/抽取正文，重建全局交付绑定及独立元数据复算。v1旧验证结果保存在execution_v2/prior_delivery，不将旧终审用于新文档。
 - 全部产品卡planned，实际产品执行0，弱模型实施pilot=not_run。本轮未改产品、生产配置、原件或历史审计证据；只维护本命名计划及辅助文档脚本。
 
+
+
+---
+
+## 【收尾】2026-09-21 —— 本 session 结束
+
+**用户指示**：「把手头的任务做完，并更新 planning-with-files 所有文档，然后停止」。
+
+**已完成**：
+- 停止派发新任务；回收在飞结果（B1 复审 = `accepted_with_conditions`、I-14-I 载体落定、B3/I-14-E 交付、B5 交付）
+- 三项 PWF 文档（`task_plan.md` / `findings.md` / `progress.md`）已加收尾节
+- `REMEDIATION_REGISTER.md` 扩至 **46 项**
+
+**本 session 累计产出**：
+- **≈66/92 卡 `accepted_scoped`**（含本轮 M08、I-04-E、I-05-B/C、I-06-B、I-07-A、I-09-B、I-10-B、I-14-F/H/I）
+- **一个 owner 授权的生产提交**（`5db4734a`：扩展模型纳管——把 31 张模型卡的验收基准纳入版本控制）
+- **零生产代码合并**（所有修复在隔离副本；晋升待 owner）
+- **三次事件记录**：生产树回滚（已恢复）、pre-commit stash 失败（无损失）、推送 E2E 超时（未绕过）
+- **多项产品级缺陷定性**：I-08-C F1（attestation 标签纯装饰，消费者完全不验）、I-14-D 凭据泄漏（r1 阻断→r3 泛化）、I-14-H 硬编码派生键（与事实相反）、I-10-B 静默补 0
+
+**未完成（交下一 session / owner）**：
+1. **推送**：8 个提交待推，阻塞于 E2E 600 s 超时（需 owner 选路径，见 `findings.md` 收尾节）
+2. **I-14-D r3** 复审、**I-14-E-APPLY** 复审、**B3 复审**、**B5 复审**（均已派，结果未回收）
+3. **生产晋升决定**（所有修复卡）
+4. **I-08-C 两项下游**（oracle 重冻 + invest-core 消费者卡）
+5. **未开工 19 张卡**（依赖链 + owner 门）
