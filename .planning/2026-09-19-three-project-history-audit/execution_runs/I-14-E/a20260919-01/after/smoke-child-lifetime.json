@@ -1,0 +1,102 @@
+{
+  "script": "harness/measure_child_lifetime.py",
+  "card": "I-14-E",
+  "attempt": "a20260919-01",
+  "method": "popen",
+  "condition": "quiet",
+  "load": {
+    "kind": "quiet",
+    "burners": 0,
+    "spawn_storm": false,
+    "seconds": 68.0
+  },
+  "python": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "tree_src": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\iso\\T0\\src",
+  "fixture_builder": "C:\\Users\\郑曾波\\Projects\\company-wiki\\tests\\contract\\test_source_catalog_worker_bootstrap.py::_prepare_fake_launcher_project",
+  "test_file_sha256": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+  "behaviors": [
+    {
+      "sleep_seconds": 5,
+      "exit_code": 0
+    },
+    {
+      "exit_code": 0
+    }
+  ],
+  "hang_timeout_seconds": 0.5,
+  "child_poll_milliseconds": 100,
+  "note": "Q1 = launch -> fake child's first side effect (behaviour selector); Q2 = launch -> exit for a child already selecting the immediate-exit behaviour. 'popen' excludes, 'startproc' includes the PowerShell Start-Process overhead the supervisor itself pays.  No supervisor and no watchdog are involved.",
+  "samples": [
+    {
+      "time_to_first_side_effect_seconds": 0.953,
+      "warm_child_kill_seconds": 0.981,
+      "count_file_after_warmup": "2",
+      "immediate_exit_lifetime_seconds": 0.696,
+      "q2_detail": {
+        "exit_code": 0,
+        "timed_out": false
+      },
+      "load_probe": {
+        "sleep20_overshoot_ms": 12.874,
+        "cpu_loop_300k_ms": 69.207,
+        "blackhole": 44999850000
+      },
+      "sample": 1,
+      "condition": "quiet",
+      "method": "popen",
+      "project": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i14e-smoke-ma2\\sample-001\\fake-project",
+      "captured_at": "2026-09-21T21:13:26"
+    },
+    {
+      "time_to_first_side_effect_seconds": 0.965,
+      "warm_child_kill_seconds": 0.999,
+      "count_file_after_warmup": "2",
+      "immediate_exit_lifetime_seconds": 0.631,
+      "q2_detail": {
+        "exit_code": 0,
+        "timed_out": false
+      },
+      "load_probe": {
+        "sleep20_overshoot_ms": 0.66,
+        "cpu_loop_300k_ms": 102.017,
+        "blackhole": 44999850000
+      },
+      "sample": 2,
+      "condition": "quiet",
+      "method": "popen",
+      "project": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i14e-smoke-ma2\\sample-002\\fake-project",
+      "captured_at": "2026-09-21T21:13:28"
+    }
+  ],
+  "failures": [],
+  "stats": {
+    "q1_time_to_first_side_effect": {
+      "n": 2,
+      "min": 0.953,
+      "p25": 0.953,
+      "median": 0.959,
+      "p75": 0.965,
+      "p90": 0.965,
+      "p95": 0.965,
+      "p99": 0.965,
+      "max": 0.965,
+      "count_ge_050": 2,
+      "count_ge_060": 2,
+      "count_ge_080": 2
+    },
+    "q2_immediate_exit_lifetime": {
+      "n": 2,
+      "min": 0.631,
+      "p25": 0.631,
+      "median": 0.6635,
+      "p75": 0.696,
+      "p90": 0.696,
+      "p95": 0.696,
+      "p99": 0.696,
+      "max": 0.696,
+      "count_ge_050": 2,
+      "count_ge_060": 2,
+      "count_ge_080": 0
+    }
+  }
+}

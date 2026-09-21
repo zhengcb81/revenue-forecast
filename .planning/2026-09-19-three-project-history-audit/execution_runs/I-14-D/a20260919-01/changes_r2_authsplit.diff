@@ -1,0 +1,27 @@
+diff --git a/src/company_wiki/source_catalog/observability.py b/src/company_wiki/source_catalog/observability.py
+index 842d0cf..25a73c5 100644
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -287,9 +287,21 @@ _BARE_VALUE = r"[^\s,;&\"'|]+"
+ _VALUE = r"(?P<value>" + _QUOTED_VALUE + r"|" + _BARE_VALUE + r")"
+ _AUTH_BARE_VALUE = r"[^\s,;&\"'|]+(?:[ \t]+[^\s,;&\"'|]+)*"
+ 
++# A value may still cross ONE line break, but only behind a *known* scheme word.
++# A wrapped header (`Authorization: Bearer` then the secret on the next line) or
++# an RFC-7230 obs-fold puts the secret on a line that carries no `key=` prefix,
++# so once the scheme word alone is consumed neither this pattern nor the
++# assignment scanner can see it.  Fail CLOSED: after a known scheme word and
++# exactly one line break, the first token is redacted.  The break and any
++# indentation stay OUTSIDE the match, so the diagnostic keys on the following
++# lines survive (the C13 half this card fixes).  The value delimiters are the
++# same as _AUTH_BARE_VALUE.  Measured as review finding F-REV-D-01: without
++# this branch the full credential is persisted in the append-only event log.
++_AUTH_SCHEME_SPLIT = (r"(?:bearer|token|basic|digest|oauth|jwt|apikey|api_key|sso)"
++                      r"[ \t]*\r?\n[ \t]*[^\s,;&\"'|]+")
+ _AUTH_PATTERN = re.compile(
+     r"(?i)(?P<key>" + _LEFT_ANCHOR + r"authorization\s*[:=]\s*|"
+-    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_BARE_VALUE + r")"
++    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_SCHEME_SPLIT + r"|" + _AUTH_BARE_VALUE + r")"
+ )
+ 
+ # key=value / key: value forms are handled by `_redact_assignments` (single-pass

@@ -2,7 +2,7 @@
   "card": "I-14-D",
   "attempt_id": "a20260919-01",
   "date_utc": "2026-09-19",
-  "objective": "Narrow the redactor's bare-value greedy semantics to a single token on the assignment path and bound the authorization path to one line, so an unquoted credential no longer deletes the multi-line diagnostic block after it; freeze the new E4b baseline for independent re-derivation.",
+  "objective": "Narrow the redactor's bare-value greedy semantics to a single token on the assignment path and bound the authorization path to one line, so an unquoted credential no longer deletes the multi-line diagnostic block after it; freeze the new E4b baseline for independent re-derivation. r2 (after review F-REV-D-01) additionally makes the authorization path scheme-aware and fail-closed, so a wrapped/folded header redacts its credential AND keeps the diagnostics.",
   "parent": "I-14",
   "source_of_card": "I-14-C r5 decision.md section C13 + OWNER DECISION 1 (I-14-C handoff open_questions); card text PLAN/execution_v2/card_I-14-D.md",
   "dependencies": {
@@ -39,9 +39,10 @@
       "iso/product_narrow": "T5 = T4-base + this card's narrowing (the AFTER tree)",
       "iso/product": "T0 pristine copy (E5 before-arm for the copied suite; untouched)",
       "iso/product_swapped": "order-swap control copy (copied-suite control test; untouched)",
-      "iso/product_mut_greedy": "M1 = T5 with the scanner multi-word loop restored",
-      "iso/product_mut_authnl": "M2 = T5 with the auth token join back to \\s+",
-      "iso/product_mut_auth1": "M3 = T5 with the auth value reduced to a strict single token"
+      "iso/product_mut_greedy": "M1 = T5-r2 with the scanner multi-word loop restored",
+      "iso/product_mut_authnl": "M2 = T5-r2 with the auth token join back to \\s+",
+      "iso/product_mut_auth1_r2": "M3-r2 = T5-r2 with the auth value reduced to a strict single token (scheme branch left defined but unreferenced)",
+      "iso/product_mut_authsplit": "M4 (r2) = T5-r2 with the _AUTH_SCHEME_SPLIT branch removed from the value group; collapses byte-for-byte onto the pre-r2 T5 tree (observability.py e8abd522...), i.e. it is F-REV-D-01 re-opened by construction"
     },
     "production_tree": "READ-ONLY. No edit, no write, no run against C:\\Users\\...\\company-wiki\\src. I-14-C's attempt dir is likewise READ-ONLY for this attempt."
   },
@@ -66,9 +67,11 @@
     "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D\\a20260919-01\\"
   ],
   "allowed_product_edits": [
-    "iso/product_narrow:src/company_wiki/source_catalog/observability.py (the redactor: _BARE_VALUE, new _AUTH_BARE_VALUE, _AUTH_PATTERN value group, scanner value loop)",
-    "attempt-scoped harness only: harness/run_rule_table_i14d.py (new), harness/run_i14d_oracle.py (new), harness/report_i14d_counts.py (new), harness/tests/test_i14d_single_token.py (new), harness/tests/conftest.py (one-line tree-pointing change, recorded in changes.diff scope note)",
-    "NOT edited: every other product file; the copied I-14-C suite test_i14c_real_exit_redaction.py stays BYTE-IDENTICAL; I-14-C's attempt dir; production repos"
+    "iso/product_narrow:src/company_wiki/source_catalog/observability.py (the redactor: _BARE_VALUE, new _AUTH_BARE_VALUE, _AUTH_PATTERN value group, scanner value loop; r2 adds _AUTH_SCHEME_SPLIT and the value-group order per reviewer RULING 2)",
+    "attempt-scoped harness only: harness/run_rule_table_i14d.py (new), harness/run_i14d_oracle.py (new), harness/report_i14d_counts.py (new), harness/tests/test_i14d_single_token.py (new), harness/apply_i14d_narrow.py, harness/authsplit_probe.py (r2), harness/build_authsplit_proto.py (r2 scratch builder), harness/run_mutations_i14d.py (r2), harness/report_final_hashes_i14d.py",
+    "harness/tests/conftest.py: BYTE-IDENTICAL copy of I-14-C's (sha256 783b1774ec2115eea0b2c3c92b6572842bb41eeda08054d69ec625fbcafbb7a9, 275 B). r2/F-REV-D-05 correction: an earlier version of this line claimed it carried a 'one-line tree-pointing change'. It never did - it only adds harness/ to sys.path, and the tree under test comes from I14C_PRODUCT_SRC. The untrue statement is removed here; the file is untouched.",
+    "harness/tests/test_i14c_real_exit_redaction.py: NO LONGER byte-identical to I-14-C's. The r1 pass left it byte-identical (sha256 672b88de...) as card clause 5 requires; r2 applies the independent reviewer's own RULING 1 rewrite to it (1 renamed nodeid + 3 changed FIDELITY_CASES expectations + 4 REQUIRED new auth newline-split rows, per reviewer_report.md section 5). The rewrite text is the reviewer's; the implementer only transcribed it. Every other line of the file is unchanged.",
+    "NOT edited: every other product file; I-14-C's attempt dir; production repos"
   ],
   "forbidden": [
     "running the real worker against a real catalog",
@@ -78,7 +81,7 @@
     "git add/commit/restore/stash in company-wiki, revenue-forecast, filing-fetch",
     "editing anything under execution_runs/I-14-C/**",
     "editing PLAN/reviews/**, PLAN/audit_report.md, PLAN/implementation_plan.md",
-    "rewriting the frozen I-14-C C13 test (card clause 5: that rewrite belongs to the independent reviewer)",
+    "AUTHORING a rewrite of the frozen I-14-C C13 test (card clause 5: the rewrite belongs to the independent reviewer). r2 does not author one: it transcribes the reviewer's RULING 1 text under the reviewer's own re-review instruction, and records that act explicitly in handoff.json / oracle.md CORRECTION 2 so it can be audited or reverted.",
     "generating any `expected` value by calling the function under test"
   ],
   "oracle_freeze_order": "oracle.md was written BEFORE any harness script ran and BEFORE iso/product_narrow was edited; the hand-computed expectations in oracle.md section 2 were derived from the frozen semantics text, not from executing the redactor",
@@ -93,8 +96,19 @@
   },
   "production_repos_read_only": {
     "company-wiki": {"head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939", "branch": "fcap", "porcelain_before": [" M CLAUDE.md", " M README.md"]},
-    "revenue-forecast": {"head": "2c5384bb0133c4e19c3d6049449b32469e14b09b", "branch": "fcap"},
+    "revenue-forecast": {"head": "2c5384bb0133c4e19c3d6049449b32469e14b09b", "branch": "fcap", "note_r2": "r2/F-REV-D-07: the reviewer measured HEAD ab20cebea21fa2e540ad5bab15a00ad116d28e14 on 2026-09-21 - the plan tree lives inside this checkout and other cards' carriers landed since the r1 binding was written. External drift, not this attempt's doing; the recorded head is left as the r1 binding value and the drift is disclosed rather than silently updated."},
     "filing-fetch": {"head": "d35b6f5b09f1a7dad37d226504bf998802a852d7", "branch": "fcap"},
     "note": "same heads as I-14-C's binding recorded; this attempt runs no git command in any production repo and writes nothing outside its allowed_write_roots"
+  },
+  "reviewer_report_byte_pin": {
+    "path": "reviewer_report.md",
+    "sha256": "499d91acf06a67e2f7dd06d4a5af6569b5b92a6e4b3b77adda57b739eaa03d2b",
+    "bytes": 37659,
+    "verdict": "changes_required",
+    "blocker": "F-REV-D-01 (credential-persistence regression on the authorization path)",
+    "rulings": ["RULING 1: the 4 frozen nodeids rewrite, accepted conditional on the fix",
+                "RULING 2: scheme-aware fail-closed auth value (_AUTH_SCHEME_SPLIT); D1 overturned",
+                "RULING 3: assignment-path residual N13 accepted as declared"],
+    "verified_this_attempt": "hash and byte count recomputed by this attempt before reading; both match"
   }
 }

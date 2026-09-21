@@ -185,17 +185,18 @@ OPS = {
     "mut_greedy": [(SCANNER_NEW, SCANNER_OLD)],
     "mut_authnl": [(block(AUTHJOIN_NARROW_LINE), block(AUTHJOIN_MUT_LINE))],
     "mut_auth1": [(block(AUTHVALUE_NARROW_LINE), block(AUTHVALUE_MUT_LINE))],
-    # r2 fix (reviewer RULING 2) and its mutant specimens.  `authsplit` inserts the
-    # `_AUTH_SCHEME_SPLIT` block (the M2 `_AUTH_BARE_VALUE` anchor is untouched) and
-    # then re-orders the value group.  `collapse_authsplit` only undoes the second
-    # half, which leaves an unused-but-defined constant and re-opens the leak: it is
-    # a knife-edge specimen, NOT used by the mutation plan.  `mut_authsplit` undoes
-    # both halves, i.e. it is the r2 tree as if the fix had never been written.
+    # `authsplit` = the r2 fix; `reverse_authsplit` = its exact inverse (byte-identical
+    # to the pre-r2 tree, `observability.py` sha256 e8abd522...); `mut_authsplit` is the
+    # same end state reached by separate ops, so the M4 specimen and the "as if the fix
+    # had never been written" tree are provably the same tree.
     "authsplit": [
         (AUTHPATTERN_HEAD, AUTHSCHEME_INSERT),
         (AUTHVALUE_NARROW_OLD, AUTHVALUE_NARROW_NEW),
     ],
-    "collapse_authsplit": [(AUTHVALUE_NARROW_NEW, AUTHVALUE_NOSCHEME)],
+    "reverse_authsplit": [
+        (AUTHSCHEME_INSERT, AUTHPATTERN_HEAD),
+        (AUTHVALUE_NARROW_NEW, AUTHVALUE_NOSCHEME),
+    ],
     # r2 version of M3, for trees that already carry the scheme branch: `_AUTH_SCHEME_SPLIT`
     # stays defined but is no longer referenced, which is the naive-narrowing specimen.
     "mut_auth1_r2": [(AUTHVALUE_NARROW_NEW, block(AUTHVALUE_SPLIT_MUT_LINE))],

@@ -1,0 +1,94 @@
+{
+  "purpose": "r2 recovery rule: reverse-apply changes.diff (base -> narrow r2) to the narrow tree and require byte-identity with product_base across every file.",
+  "steps": [
+    {
+      "argv": [
+        "git",
+        "init",
+        "-q",
+        "."
+      ],
+      "rc": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "rc": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "config",
+        "core.safecrlf",
+        "false"
+      ],
+      "rc": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "-A"
+      ],
+      "rc": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "user.email=i14d@local",
+        "-c",
+        "user.name=i14d",
+        "commit",
+        "-q",
+        "-m",
+        "narrow-r2"
+      ],
+      "rc": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "-R",
+        "--check",
+        "-p1",
+        "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D\\a20260919-01\\changes.diff"
+      ],
+      "rc": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "-R",
+        "-p1",
+        "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D\\a20260919-01\\changes.diff"
+      ],
+      "rc": 0,
+      "stderr": ""
+    }
+  ],
+  "mismatches": [],
+  "missing_from_recovered": [],
+  "recovered_observability_sha256": "c5608c4b45a55cce03df9988561e1a3ad1cab0970c51e8b3af630239fe9de35c",
+  "base_observability_sha256": "c5608c4b45a55cce03df9988561e1a3ad1cab0970c51e8b3af630239fe9de35c",
+  "files_compared": 202,
+  "RECOVERY_BYTE_IDENTICAL": true,
+  "comparison_scope": "every non-__pycache__ file under src/ (the .pyc caches are build artefacts that pre-existed this attempt's runs and are excluded, exactly as after/final_hashes.json excludes them)",
+  "source_files_compared": 152,
+  "mismatches_excluding_pycache": [],
+  "missing_from_recovered_excluding_pycache": [],
+  "pyc_cache_bytes_differing_count": 50,
+  "pyc_cache_differences_note": "The .pyc caches under iso/*/src/.../__pycache__ are NOT part of the deliverable and are not covered by after/final_hashes.json. They differ between trees because each tree was imported by a different tree's runs; the reviewer disclosed the same effect."
+}

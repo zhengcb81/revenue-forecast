@@ -1,0 +1,113 @@
+--- a/iso/natural_window.py (pre-fix, sha256 7fff6f0c...)
++++ b/iso/natural_window.py (fixed, I-14-I)
+@@ -29,14 +29,38 @@
+   J14 a post-hoc log is not an immediate capture               (# J14)
+   J15 a declared window may not cover the quick_check interval  (# J15)
+   J16 the claim's basis must belong to a closed enumeration     (# J16)
++  J16b a non-string basis is unregistered by construction        (# J16b)
++
++r3 (I-14-I, the rider card discharging I-14-H's conditional acceptance) changes
++exactly two things and touches nothing else:
++
++  1. J16b: the membership test used to evaluate `basis not in BASIS_REGISTRY`
++     directly, which hashes `basis`.  An unhashable basis (list or dict) raised
++     `TypeError: unhashable type: 'list'` AT THAT LINE and aborted the WHOLE
++     batch (CLI rc 4, no report written) instead of refusing the one case.
++     `_basis_kind` guards the test, so every non-string basis is refused PER CASE
++     with R-BASIS-UNKNOWN -- fail closed, never r1's silent acceptance of an
++     unrecognised basis.
++  2. Two output keys used to be hardcoded `False` literals, which made every
++     assertion about them tautological and, in overlap scenarios, contrary to
++     fact.  They are now DERIVED:
++       quick_check_in_observation_intervals = (quick_check_overlap_seconds > 0)
++         -- do the intervals just measured as observation overlap quick_check?
++       sum_used_for_natural_duration = the claim's basis actually consumed
++         `sum_seconds` as the natural duration (basis == "sum_of_windows")
++         -- so the forbidden sum is still reported as `sum_seconds`, but a reader
++         can no longer mistake it for the natural duration.
++     Neither flag implies the other: a sum-of-windows claim over disjoint windows
++     is (False, True).
+ 
+ Deliberately separated outputs: scheduled_at / started_at / first-last sampled_at
+ / observation_finished_at / quick_check_seconds / command_total_seconds.  The
+ natural duration is taken over OBSERVATION intervals only; quick_check is never
+-one of them and is reported separately (`quick_check_in_observation_intervals`
+-=false).  The forbidden sum is reported only as `sum_seconds` +
+-`sum_used_for_natural_duration` = false, so no reader can mistake it for the
+-natural duration.
++counted into them.
++
++SUT_VERSION is deliberately NOT bumped: this rider is confined to the type guard
++and the two derived keys, so the frozen material can still tell whether the SUT
++under test is the same revision it was frozen against.
+ 
+ CLI:  natural_window.py --cases <in.json> --report <out.json>
+       [--tolerance-seconds N] [--capture-tolerance-seconds N] [--frozen-now ISO]
+@@ -89,6 +113,36 @@
+     return _parse(value) if value else None
+ 
+ 
++def _basis_kind(basis) -> str:
++    """Classify a claim's basis by kind, WITHOUT hashing it.  (J16b)
++
++    The registry membership test needs a hashable value; a list or a dict is not,
++    and evaluating `basis not in BASIS_REGISTRY` on one raises
++    `TypeError: unhashable type` -- which used to abort the entire batch rather
++    than refuse the single case that carried it.  Kind is decided by type first,
++    so no unhashable value is ever hashed.
++    """
++    if isinstance(basis, str):
++        return "str"
++    if basis is None:
++        return "none"
++    if isinstance(basis, (list, tuple, set, frozenset, dict)):
++        return "container"
++    return "other"
++
++
++def _basis_repr(basis):
++    """A JSON-native echo of a basis value for the report.
++
++    Only a string passes through verbatim.  Anything else is reported as its
++    type name, so the report stays serialisable no matter what the claim carried
++    (a `set` basis would otherwise make json.dumps raise, breaking the run at the
++    WRITE step even after the verdict was decided correctly) and so no raw
++    non-string value can masquerade as a registered basis downstream.
++    """
++    return basis if isinstance(basis, str) else f"<non-string basis: {type(basis).__name__}>"
++
++
+ def _measure_union(intervals: list[tuple[datetime, datetime]]) -> float:
+     if not intervals:
+         return 0.0
+@@ -198,8 +252,9 @@
+ 
+     basis = (fields.get("_claim") or {}).get("basis")
+     wanted = (fields.get("_claim") or {}).get("natural_observation_seconds")
++    basis_kind = _basis_kind(basis)
+     allowed = None
+-    if basis not in BASIS_REGISTRY:  # J16 / P1
++    if basis_kind != "str" or basis not in BASIS_REGISTRY:  # J16 / J16b
+         refusals.append("R-BASIS-UNKNOWN")
+     elif basis == "sample_span":
+         allowed = span
+@@ -238,14 +293,15 @@
+             [a.isoformat().replace("+00:00", "Z"), b.isoformat().replace("+00:00", "Z")]
+             for a, b in intervals
+         ],
+-        "quick_check_in_observation_intervals": False,
++        "quick_check_in_observation_intervals": qc_overlap_seconds > 0,
+         "quick_check_overlap_seconds": qc_overlap_seconds,
+         "union_seconds": union,
+         "sum_seconds": sum_seconds,
+         "overlap_seconds": overlap,
+-        "basis": basis,
+-        "basis_registered": basis in BASIS_REGISTRY,
+-        "sum_used_for_natural_duration": False,
++        "basis": _basis_repr(basis),
++        "basis_kind": basis_kind,
++        "basis_registered": basis_kind == "str" and basis in BASIS_REGISTRY,
++        "sum_used_for_natural_duration": basis_kind == "str" and basis == "sum_of_windows",
+     }
+     return computed, refusals
+ 

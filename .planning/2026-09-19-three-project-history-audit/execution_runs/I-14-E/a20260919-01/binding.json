@@ -1,0 +1,102 @@
+{
+  "card": "I-14-E",
+  "card_title": "重启节点的时序抖动（负载相关，非树差异）",
+  "parent": "I-14",
+  "attempt_id": "a20260919-01",
+  "date_utc": "2026-09-21",
+  "activity": "measure-only (no product edit, no product test edit)",
+  "objective": "Characterise the load-dependent timing jitter band of the two worker-restart bootstrap nodes and test the hypothesis 'the flake is load-related, not a tree difference'; do NOT relax the product test's timing assumption and do NOT change product code.",
+  "dependencies": {
+    "I-00-B": {
+      "receipt": "../../I-00-B/a20260919-01/binding.json",
+      "used_for": "two-stage command binding rule, per-attempt iso interpreter (global Miniconda FORBIDDEN for card runs), production repos read-only"
+    },
+    "I-14-C": {
+      "receipt": "../../I-14-C/a20260919-01/handoff.json",
+      "frozen_band": "../../I-14-C/a20260919-01/r5/flake-evidence/frequency-child_without_runtime.json",
+      "used_for": "the 12 runs x 2 rounds x 2 trees observation that the card quotes; the T0/T4 tree bytes; the launcher-event raw record"
+    },
+    "I-14-F": {
+      "receipt": "../../I-14-F/a20260919-01/handoff.json",
+      "evidence_index": "../../I-14-F/a20260919-01/after/evidence_index.json",
+      "used_for": "same-band observation on the same two nodes (3==2 / 8==2 / 15 s timeout signatures) explicitly scoped to this card; iso venv template"
+    },
+    "OWNER_DECISIONS": "OWNER_DECISIONS.md §13 T1-7 ② (owner authorises this card: fix the product test's timing assumption, not the product implementation)"
+  },
+  "source_anchors_sha256_verified_this_attempt": {
+    "CW/src tree": {
+      "note": "read-only; per-file manifest in evidence/binding_hashes.json",
+      "head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+      "branch": "fcap",
+      "known_dirty_vs_HEAD": {
+        "src/company_wiki/source_catalog/artifact_dag.py": "worktree hash-object bb7381b3... != HEAD blob 1bbbf7c8...; pre-existing user state, untouched by this attempt; irrelevant to the two launcher nodes (fake child resolves company_wiki from the tmp project, and neither node imports artifact_dag)"
+      }
+    },
+    "CW/tests/contract/test_source_catalog_worker_bootstrap.py": {
+      "sha256": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+      "role": "the SUT of this card: node child_without_runtime (line 893) and node logon_wrapper_quoted (line 1039)",
+      "agrees_with": "I-14-C binding.json, I-14-F handoff.json"
+    },
+    "CW/scripts/source_catalog_worker.ps1": {
+      "sha256": "5c12cd740cc36abf95f3b9559485472d9d9a760143d27de46e3aaa7b4bbbc311",
+      "note": "hash recomputed in this attempt; equals the launcher_source_hashes.supervisor_ps1 recorded inside the frozen band's own events"
+    },
+    "CW/scripts/source_catalog_worker_at_logon.ps1": {
+      "sha256": "70b4d7d7128567c0a753e684c3d4e8359c6a93bdc3dbefc7c5f93feaadbe5a1c",
+      "note": "equals launcher_source_hashes.logon_ps1 recorded inside the frozen band's own events"
+    }
+  },
+  "interpreter": {
+    "path": "iso/venv/Scripts/python.exe",
+    "version": "3.13.9 (Anaconda packaging) - identical to the runner that produced the frozen band",
+    "provenance": "byte copy of I-14-F/a20260919-01/iso/venv (itself copied from the I-00-A template); pip freeze verified equal to I-14-C's runner venv, see iso/venv-pip-list.txt and evidence/binding_hashes.json",
+    "global_miniconda_python": "used only for glue scripts that never import company_wiki (hashing, extraction, reporting); never as pytest runner or child interpreter"
+  },
+  "run_cwd_rule": "every card command runs with cwd inside this attempt (or inside the short %TEMP% scratch root the frozen band itself used); never the company-wiki repo root, never C:/Miniconda",
+  "isolation": {
+    "product_tree": "READ-ONLY. This card writes nothing into company-wiki, revenue-forecast or filing-fetch.",
+    "trees": {
+      "iso/T0/src": "byte copy of I-14-C iso/product/src (the frozen band's tree T0); manifest dca36d3beeab52db...",
+      "iso/T4/src": "byte copy of I-14-C iso/product_fixed/src (the frozen band's tree T4); manifest 808a0dfa2f39e739...",
+      "iso/T0b/src": "second, byte-identical copy of T0: the identity control (manifest == T0)",
+      "T0 vs T4": "differ ONLY in company_wiki/source_catalog/{cli.py,observability.py,worker.py} (the I-14-C redaction fix)"
+    },
+    "test_collection": "pytest collects CW/tests/contract/test_source_catalog_worker_bootstrap.py (read-only) exactly as in the frozen band; -p no:cacheprovider + PYTHONDONTWRITEBYTECODE=1 so no bytecode/cache lands in the production repo",
+    "basetemp": "per-run fresh empty dir under a short %TEMP% scratch root (the frozen band used %TEMP%/i14c-flake-freq; this attempt uses %TEMP%/i14e-*), never the attempt root, never a previous run's dir",
+    "network": "disabled"
+  },
+  "structural_precondition_recorded_before_running": {
+    "claim": "neither node's outcome can depend on the tree variant",
+    "evidence": [
+      "node child_without_runtime imports nothing from company_wiki (test body lines 893-917 use only stdlib helpers); the child is the fake cli.py written into the tmp project by the test, resolved from cwd, and the supervisor is CW/scripts/source_catalog_worker.ps1 - identical for both trees",
+      "node logon_wrapper_quoted imports company_wiki.source_catalog.control (process_identity, terminate_matching_process); control.py is byte-identical in T0 and T4",
+      "sys.executable (the child interpreter) is the same iso venv python for both trees"
+    ],
+    "status": "to be tested empirically anyway (a measured difference between two byte-identical trees, T0 vs T0b, would falsify the tree-difference reading directly)"
+  },
+  "allowed_write_roots": [
+    "execution_runs/I-14-E/a20260919-01/",
+    "%TEMP%/i14e-* (short-path scratch roots for per-run basetemp and load probes)"
+  ],
+  "forbidden": [
+    "editing the product test's timing assumptions in CW/tests/** (out of this attempt's scope per the owner boundary: production repos read-only)",
+    "editing any product source, config, policy or launcher",
+    "running the full contract suite or any node other than the two restart nodes",
+    "network / provider calls",
+    "git add|commit|restore|stash in any production repo"
+  ],
+  "environment": {
+    "logical_processors": 12,
+    "visible_memory_gb": 15.8,
+    "shared_machine": "other sessions/agents may run concurrently; ambient load is sampled per run and reported honestly (the frozen band recorded no load snapshot - that gap is part of what this card closes)"
+  },
+  "sample_hashes": {
+    "frozen_band_frequency_json_sha256": "recorded in evidence/binding_hashes.json",
+    "frozen_band_raw_record": "evidence/frozen_band_raw_record.json (48/48 runs; surviving scratch stdout byte-identical to the frozen captures for all 48 runs; 48/48 launcher_events.jsonl present)"
+  },
+  "scope_declaration": {
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "qualification": "test-timing measurement only"
+  }
+}

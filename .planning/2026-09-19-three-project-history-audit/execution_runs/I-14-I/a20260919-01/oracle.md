@@ -154,3 +154,86 @@ I-14-H 的 xfail 原始记录**保留**，作为"修复前确实过不了"的证
 - 真实自然观察 / 真实 UI 即时性 / SLO-性能：**NOT GRANTED**（沿用 I-14-B/I-14-H）。
 - 本卡**未**改 `SUT_VERSION`；**未**回改任何冻结正文；**未**触碰生产树。
 - 实现者**不**自签：status=review_pending，等独立 reviewer 复算。
+
+---
+
+## 9. 冻结后实测结果（AS-OF 记录，非预测；本节在期望冻结之后追加）
+
+本节只**记录**第 3/4/5/6 节预测与实测的对照。**期望本身未做任何修改**（追加式纪律）；
+`oracle.md` 正文第 1–8 节即冻结时内容，其 sha256 见 `evidence/freeze_instant.json`
+（冻结时刻 `2026-09-21T19:59:53Z`，冻结时 `iso/natural_window.py` 仍为修复前 `7fff6f0c…`）。
+本次追加后 oracle.md 的 sha256 会变，属**追加式**记录，不是回改。
+
+### 9.1 修复后 SUT 身份
+
+`iso/natural_window.py` 修复后 sha256 = `9edb95155202432ed01b2c68d06f74a00882287e934cda6cead0e14140493b04`
+（23162 B，修复前 `7fff6f0c…` / 20293 B）。`before/natural_window.i14b-after-2.py`
+运行前后逐字节不变（`7fff6f0c…`），即 RED 臂的被测物仍是原版。
+
+### 9.2 第 5 节（全 14-case 门）实测 —— **达成**
+
+| 量 | 修复前 | 修复后（CMD-I14I-GATE-CASES14） | 第 5 节预测 |
+|---|---|---|---|
+| 门 runner rc | 1 | **0** | 0 ✓ |
+| `sut_raw_returncode` | **4** | **0** | 0 ✓ |
+| `mismatch_count` | 字段不存在（整批中止） | **0** | 0 ✓ |
+| `accepted_ineligible_count` | — | **0** | 0 ✓ |
+| `ok` | false | **true** | true ✓ |
+| `case_count` | 14 | 14 | 14 ✓ |
+| `sut_report.json` | **未生成** | 已生成（21416 B） | — ✓ |
+| `sut_version` | — | `i14b-after-2` | 未改 ✓ |
+
+重复运行（`CMD-I14I-GATE-CASES14-REPEAT`，**全新 out-dir**）得到**完全相同**的数字与
+**相同** `sut_sha256` ⇒ 判定可重复、幂等。
+
+**H12（第 5 节点名确认项）实测通过**：`verdict=reject_claim`、
+`refusals=['R-CLAIM-EXCEEDS','R-QC-IN-OBS']`、`computed.union_seconds=2220.0`、
+`computed.quick_check_overlap_seconds=480.0`。见 `after/CMD-I14I-AUDIT-POSTFIX/stdout.txt`
+（44 项检查全过）。
+
+### 9.3 第 4 节（派生键）实测 —— 达成，且判别力落在**冻结门自己**的用例上
+
+修复后全 14-case 报告里，两键不再是常量：
+
+| 用例 | `quick_check_in_observation_intervals` | `sum_used_for_natural_duration` | 与第 4 节预测 |
+|---|---|---|---|
+| W1 | `False` | `False` | (F,F) ✓ |
+| H10（`sum_of_windows`） | `False` | **`True`** | (F,T) —— **键确实被派生** |
+| H11 / H12（改名窗，overlap 480） | **`True`** | `False` | (T,F) ✓ |
+| H5 / H6（容器 basis） | `False` | `False` | (F,F) ✓ |
+
+⇒ **在冻结期望所覆盖的 14 个用例内部**，两个键各自都取到了两个不同值。
+修复前它们在全部 14 例中恒为 `False`（取值集合大小 = 1，reviewer 实测），
+故"形状门恒真"这一弱化**已在门本身之内**被消除，不只靠新增 pytest 用例。
+
+### 9.4 第 3 节（矩阵）与第 6 节（pytest）实测
+
+- **GREEN**（修复版，`after/CMD-I14I-GREEN-SUITE`）：**45 passed, 0 failed, 0 xfailed**，rc 0。
+  其中容器矩阵 12 例 ×2 组（裁决 + 可序列化）全过，另有"一个毒例不拖垮整批"用例。
+- **RED-前缀**（`before/natural_window.i14b-after-2.py`）：**25 failed / 20 passed**，rc 1。
+  失败**精确**落在两类：(a) 含 list/dict 的容器行（`TypeError`），
+  (b) 5 个 d3 派生键用例（`AssertionError`，实测字面量 `False` 与事实相反）。
+  **`set` / `tuple` / `int` / `float` / `bool` 的裁决行在此臂 PASS** —— 与第 1 节的
+  "崩溃是 list/dict 专属"实测**逐项吻合**；但它们的"可序列化"行**FAIL**（`set`），
+  即第 1.1 节的附属缺陷被这套件抓住。
+- **RED-r1**（`before/natural_window.r1sut.py`）：**43 failed / 2 passed**，rc 1。
+  容器行失败原因是 **r1 静默 `accept_claim`**（越权方向，卡片第 3 条禁止回退到的那一支）；
+  `test_d1_registered_string_basis_not_over_refused` 亦失败，原因是 r1 把诚实的 1740
+  union 主张 **reject**（缺陷②的方向倒置）—— 与本卡无关但同向佐证。
+- **xfail 解除的直接证据**（`after/CMD-I14I-GREEN-I14HSUITE`）：把 I-14-H 的套件
+  **原样**（保留 xfail）跑在修复版上，得到 **11 passed, 1 xpassed**，rc 0。
+  即 `test_container_basis_refused_per_case` 从"记录残留的 xfail"变为**真通过**；
+  本卡在自己的套件里把该 `xfail` 装饰器**删除并升级为 12 行矩阵**，
+  故 GREEN 计数为 `45 passed / 0 xfailed`，没有任何 xfail 残留。
+
+### 9.5 落盘与只读核对
+
+- `cases_report.json` 已落到 **I-14-H attempt 的证据目录**：
+  `execution_runs/I-14-H/a20260919-01/evidence/I-14-I/`，并附 `sut_report.json` 与
+  `sut_cli.*`（runner 原生产物）。卡片的"退出"条目要求"落到 I-14-H attempt 的证据目录
+  （新增 attempt 或 `after/` 子目录）"，此处取"新增子目录"一支。该目录**新增**，未改动
+  I-14-H 任何既有文件。
+- 生产树只读：`git -C <revenue-forecast> status --porcelain -- scripts` 输出 **0 字节**（空）。
+- 冻结材料在本次运行前后逐字节不变：`cases.i14h.json` `40260c24…`、
+  `frozen_expectations.i14h.json` `bffb11c2…`、`run_cases.py` `f2a07d0b…`、
+  `cases.json` `5d8c4592…`、`frozen_expectations.json` `3ba2bb17…`（后者正文仍为 2220）。

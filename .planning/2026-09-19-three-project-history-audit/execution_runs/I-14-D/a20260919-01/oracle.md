@@ -212,3 +212,152 @@ len(S) 325, greedy 193, narrow pre-truncation 314, persisted 200, prefix
 absent. The A5 failure this explains was a transcription error of the frozen
 text into the test, not a redactor defect; the probe (A3) had already shown the
 true tail (`...cted> yyyyyy`).
+
+
+---
+
+# CORRECTION 2 (2026-09-21, appended after the independent review; original bytes above unchanged)
+
+The independent reviewer's report is byte-pinned in `reviewer_report.md`
+(sha256 `499d91ac…`, 37659 bytes). Verdict: **CHANGES_REQUIRED** — one BLOCKER
+(**F-REV-D-01**, credential-persistence regression on the authorization path) plus
+five recorded findings and two rulings. This correction records what the review
+overturned, and what section 1/2 of this oracle now means. Nothing above is edited;
+everything below is additive.
+
+## C2.1 The exit criterion was UNSOUND on the auth path (why this oracle missed it)
+
+Section 2's N5 froze the auth value as a run of tokens joined by inline whitespace
+only. That closes C13 — a value can no longer cross a newline — but it also means
+that when a line break separates the **scheme word** from the **secret**, the rule
+consumes the scheme word alone and the next line is never seen:
+
+* `"Authorization: Bearer\n<SECRET>\ndoc=17"` — the r1 greedy rule persisted
+  `"Authorization: <redacted>"` (secret gone, diagnostics gone);
+* the r1 tree (this card, before the fix) persisted
+  `"Authorization: <redacted>\n<SECRET>\ndoc=17"` — **the full credential written to
+  the append-only event log** (diagnostics kept).
+
+The secret's line has no `key=` prefix, so `_redact_assignments` cannot see it
+either. The reviewer confirmed this helper-level across 10 variants (LF, CRLF,
+RFC-7230 obs-fold, no-space, embedded, `token` scheme, `basic` scheme, marker and a
+real-shaped 39-char credential) **and end-to-end through the real worker exit**
+(`worker.py` → `redact_and_truncate`). Section 2's N5, N5b, the updated rule table's
+48 rows, the copied suite's auth rows and mutations M1/M2/M3 were all blind to it:
+no row exercised `scheme␊secret`, and the section 4 mutation plan only tested
+whether the line bound *carries* the C13 fix (M2) or whether a *different* candidate
+rule leaks (M3).
+
+Consequence for section 6 exit criterion 2: `credential_leaks == []` was **not
+sufficient evidence** on the auth path. That is now fixed, and the criterion is
+strengthened so this class of blind spot cannot recur (see C2.3).
+
+## C2.2 The auth newline-split family, frozen (new oracle rows N5c/N5d/N5e)
+
+Semantics frozen by the reviewer's RULING 2 and implemented as
+`_AUTH_SCHEME_SPLIT`: **after a *known* scheme word** (`bearer`, `token`, `basic`,
+`digest`, `oauth`, `jwt`, `apikey`, `api_key`, `sso`) **and exactly one line break,
+the first token is redacted (fail closed)**, and the line break plus any indentation
+stay OUTSIDE the match. Hand-computed expectations, all three added to
+`harness/run_i14d_oracle.py` as NARROW-MUST:
+
+| id | input (M = 21-char marker) | narrow output | len |
+|---|---|---|---|
+| N5c | `"Authorization: Bearer\n" + M + "\ndoc=17"` | `"Authorization: <redacted>\ndoc=17"` | 32 |
+| N5d | `"Authorization: Bearer\n  " + M` (obs-fold) | `"Authorization: <redacted>"` | 25 |
+| N5e | `"authorization: token\n" + M` | `"authorization: <redacted>"` | 25 |
+
+N5c is the pair the card's two clauses have to satisfy **together** (secret gone,
+`doc=17` kept); N5d/N5e cover the indented continuation and the second key
+alternative. On the pre-fix base tree all three FAIL, and on M4 (below) all three
+fail again — so they are load-bearing in the leak direction, which the first pass's
+oracle was not.
+
+Same-line controls are unchanged by the fix (verified): `"Authorization: Bearer " + M`
+→ 25 chars, `"Authorization: Bearer\t" + M` → 25 chars, `"Authorization: Bearer " + M
++ "\ndoc=17\nstage=summarize"` → 48 chars (N5).
+
+## C2.3 N13's auth-path note was MIS-CLASSIFIED — it is a credential-leak regression
+
+Section 2 N13 said the auth-path analogue of the multiword residual "loses only its
+continuation" (`"Authorization: Bearer ab\ncd"` → `"Authorization: <redacted>\ncd"`)
+and classified it with the assignment-path residual. **That classification is wrong
+and is withdrawn.** With a real wrapped header the whole credential survives where the
+pre-fix tree redacted it, which is a regression, not a residual: different class,
+different severity, and it sat inside the card's own negative clause (纯合成 marker
+必须仍被脱敏). It is re-labelled here as **F-REV-D-01, credential-leak regression**, and
+it now has rule-table rows (`cred-auth-split-*`, 7 rows including one carrying a
+39-char non-marker credential rather than the marker) and oracle rows N5c/N5d/N5e.
+
+The **assignment-path** N13 residual itself (`"password: iron steel"` →
+`"password: <redacted> steel"`) stands unchanged and **accepted** by the reviewer
+(RULING 3); the two must not be merged in the record.
+
+## C2.4 The four frozen nodeids (REVIEWER RULING 1) — rewrite landed, count moved
+
+Per RULING 1, and conditional on fixing the BLOCKER (now fixed), the reviewer's own
+rewrite is applied to the copied suite:
+
+* `test_f08_c13_multiline_loss_is_frozen_not_hidden` → renamed
+  `test_f08_c13_multiline_diagnostics_survive`, loop INVERTED (`doc=17`,
+  `stage=summarize`, `code=llm_global_failure`, `request_id=req-1` must now be IN the
+  output), `len(out) == 34` → `== 98`, plus `len(out) < 200` / `> 90`, marker absent,
+  and the two input lengths kept (112 for the 24-char reviewer marker, 109 for the
+  21-char marker);
+* the three `FIDELITY_CASES` parameters take the narrowed expectations;
+* the stale "greedy value (r1 `_BARE_VALUE` semantics, kept - see carry C13)" and
+  "Frozen as CURRENT BEHAVIOUR" comments are rewritten to the narrowed semantics;
+* the reviewer's **required addition**: new `FIDELITY_CASES` rows for
+  `Authorization: Bearer\n<marker>`, `…\r\n<marker>`, obs-fold `…\n  <marker>` and
+  `authorization: token\n<marker>`, each asserting the marker is ABSENT.
+
+Because rows were added, the section 6 criterion "the copied suite's only failures
+are the four named nodeids" is superseded: after the rewrite the copied suite is
+**86 passed / 0 failed** on the fixed tree, and `r5/counts.json` was regenerated from
+the tables (`fidelity_cases` 28 → **32**). All previously published counts that moved
+are restated in `handoff.json`.
+
+## C2.5 Mutation plan: M4 added (this is the arm that was missing)
+
+The first pass's plan could not detect that the *chosen* rule leaks. RULING 2's
+family is now covered by a fourth specimen, derived from the r2 tree by a single
+localized edit:
+
+| id | specimen | tree | expected |
+|---|---|---|---|
+| M1 | scanner loop un-narrowed | `iso/product_mut_greedy` | assignment-path C13 family RED |
+| M2 | auth join `[ \t]+` → `\s+` | `iso/product_mut_authnl` | auth line-bound is load-bearing |
+| M3 | auth value = strict single token | `iso/product_mut_auth1_r2` | naive narrowing LEAKS |
+| **M4** | **`_AUTH_SCHEME_SPLIT` removed from the value group** | **`iso/product_mut_authsplit`** | **the r2 fix LEAKS in the newline-split direction** |
+
+M4 collapses byte-for-byte onto the pre-r2 narrow tree
+(`observability.py` sha256 `e8abd522…`), so it is exactly "the r2 tree as if the fix
+had never been written" — it is F-REV-D-01 re-opened by construction, and it is the
+arm that proves the new rows are load-bearing.
+
+## C2.6 Recorded, deliberately NOT fixed (reviewer's instruction)
+
+* **F-REV-D-02 (MEDIUM)** — `_VALUE` is dead code in both trees; the headline
+  `_BARE_VALUE` narrowing has no runtime effect. The assignment-path change is the
+  scanner-loop hunk alone (M1 shows the loop is what moves E4b). **Promotion hazard:**
+  a promoter who tidies the dead constant and believes the fix is intact is wrong.
+  Recorded in `decision.md`; not touched here.
+* **F-REV-D-03 (MEDIUM)** — the narrowing unmasks an atom-table gap:
+  `token=<A> token2=<B>` leaves `<B>` in the clear (`token2`/`secret2`/`password2`/
+  `api_key2` are not credential keys). Pre-existing, previously masked by the greedy
+  swallow. Needs a rule-table row and a follow-up card; not fixed here.
+* **F-REV-D-04 (LOW)** — a value-less `Authorization:` followed by a newline still
+  takes the next token as its value. The narrowing improves it (one of two keys now
+  survives) but does not close it. Open C13 sub-case.
+* **F-REV-D-05 (LOW)** — `binding.json → allowed_product_edits` claimed
+  `harness/tests/conftest.py` carries a one-line tree-pointing change; it is
+  byte-identical to I-14-C's (`783b1774…`). Corrected in `binding.json` (documentation
+  fix only, explicitly permitted by the reviewer); the file itself is untouched.
+* **F-REV-D-06 (LOW)** — `residuals_confirmed` (3) vs `rule_kinds.residual` (4).
+  The key is renamed `residuals_with_marker_surviving` and the full residual list is
+  emitted as `residual_rows`, because a key name that under-reports an inventory is
+  the same failure mode this card exists to avoid.
+* **F-REV-D-07 (INFO)** — external drift: `revenue-forecast` HEAD moved under the
+  attempt (other cards' carriers), so `binding.json`'s recorded HEAD is stale. Not
+  this attempt's doing; noted, not "fixed".
+
