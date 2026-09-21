@@ -1144,3 +1144,56 @@ M25…M28 /recovery/selfcheck/cases/F1/evidence/M25/cases.json  {'ValueError': 1
 **产物**：`scripts/verify_t1_22.py`（**15992 B** / `cca9026a410897fa08482dbe42d36c489bf7b5893bfadfe7370dd9ba70f76c52`）、`t1_22_defect_characterisation.json`（**5228 B** / `21fbab3da6263b7c6edcd4e27829767b966bd5e3d970b13305abab9ebf7ada1c`）、`decision.md`（**15447 B** / `6c360104077a2fb46cefdb7397a537c5896bdaddd078d0529a7b61b5006fe17b`）、`handoff.json`（**10392 B** / **不登记自身哈希，自指**）。**幂等**：验证结果连跑同哈希。
 
 **移交**：**新增裁定需求：无**。`I-22-A` 的**派发**属编排层；本卡**不认领修复**。
+
+---
+
+## Round 64 — 落地未提交的 §14，并独立核验它的每一项事实主张（提交 `8be10f4f`）
+
+**发现**：`OWNER_DECISIONS.md` 盘上有一份 **未提交** 的 **§14「已裁定·第五批」**（+75 行），与 8 个 `execution_v2/` 文件**同一秒**（`2026-09-21 00:58:28`）由**编排层**一次写出。它登记的正是 **T1-23 / T1-25 一直在等的东西**：**R-1 / R-2 已清除**、**M31 阻塞前提已解除**。
+**在未提交之前，它对做卡工作是「不可见」的** —— 这是一个应当被记录的状态事实。
+
+> **纪律**：**「授权去做某事」≠「某事尚未做」**；**「任务已登记」≠「交付物已在盘」**；**「交付物已在盘」≠「交付物是对的」**。
+> 本节新增第四条：**「交付物已在盘」≠「交付物已入库」** —— 盘上有、版本控制里没有，等于**对后续读者不存在**。
+
+### 我没有采信 §14 的任何一句话，逐项独立核验
+
+| §14 的主张 | 我的独立核验 | 结论 |
+|---|---|---|
+| **14.1 R-1 已清除**（三卡 live `OQ-04.title` 已更正） | 三卡 **live** `handoff.json` 的 `open_questions[3].title` **均为**「numerical domain / boundary observations of this model」（**不含** divergence）；`reviewer_close_condition.R-1` **三卡均为** `cleared` | **成立** |
+| **14.1 旧值未抹除**（追加形态） | `live_record_corrections.R-1.superseded_title` **保留**旧标题全文（含 "the M31 card-text divergence on net_revenue_per_unit"） | **成立**（符合 T1-12 追加规则） |
+| **14.2 R-2 已清除** | `write_binding.py`：**恰为** M29 / M30 / M31 / `_m2931_build` **四个**副本带更正 banner；其余 **8 个**模型（M01–M04、M17–M20）的副本**正确不带**（该常量与它们无关） | **成立** |
+| **14.3 M31 指控为误读** | `card_M31.md:9` 与 `model_cards.md:2818` **逐字节相同**、**七项**、含 `net_revenue_per_unit` | **成立** |
+| **14.2 旧值去向** | `binding.json` 的 `card_text_required_list_vs_registry.errata.superseded_values` **保留**旧六项清单 | **成立** |
+
+### §14 **没有写出来**、而我在独立核验中发现的一点（**机制**）
+
+**remediation 前的记录**里 `card_text_required_list` 是 **六项**，而**卡片文件** `card_M31.md:9` **一直是七项**（今天实测逐字节仍为七项）。
+⇒ **当时记录的「卡片 vs 注册表分歧」，其真实分歧是「记录 vs 两者」** —— **陈旧的是记录，不是卡片**。
+§14 的结论（原指控为误读）**是对的**；它**未点明这个机制**。这一点解释了「为什么 F-02 撤回是正确的」，也说明**记录本身才是那个应当被怀疑的对象**。
+
+### 一并入库的 5 张新卡（owner 总授权，来源 §13 T1-7 / T1-10 / T1-22）
+
+`I-14-D`（C13 单 token）、`I-14-E`（重启时序抖动）、`I-14-F`（深层 cwd 的 WinError 206）、`I-14-H`（`natural_window.py` 两缺陷）、**`I-10-B`（= T1-22 的子卡）**。
+
+**`I-10-B` 与 Round 63 的对接**：它**引用了我 Round 63 的发现**（「31 个槽位 / 24 个模型」、「`:335`」），**引用准确**。我另核了它**自己新增**的两条主张：
+
+| 主张 | 实测 | 结论 |
+|---|---|---|
+| `usage_revenue` 非 signed 而 `other_revenue` signed（**同 dimension `revenue`**） | `usage_revenue` = `(0.0, inf)`；`other_revenue` = `(-inf, inf)`；**二者 dimension 均为 `revenue`** | **成立**（正是缺陷②的形态） |
+| `franchise_system_sales` / `supply_revenue` 属「可冲回」却在 `[0, inf)` | 二者均 = `(0.0, inf)` | **成立** |
+
+**一处不精确（记录，不代改 —— 修卡是卡主的事）**：`I-10-B` 把 `recognized_performance_fees` 与上述两个驱动**并列**为「被错钉在 `[0, inf)`」。实测该驱动**已经是** `(-inf, inf)`，但它是靠**显式 `driver_bounds` 声明**取得、**不是靠名字表**。
+⇒ 卡的**结论（需改语义角色规则）不受影响**，但该并列**把「名字表受害者」的数目多算了一个**。**此点已写入提交信息，供卡主取用。**
+
+### hook 行为的一处**非违例**观察（避免误判为 T1-27 红）
+
+本次提交（`8be10f4f`）的 hook 输出**没有** `[INFO] Stashing` / `[INFO] Restored changes from` 两行。**这在本例中是正确行为，不是红**：
+**stash 只在有「未暂存改动」时才介入**；本次**全部改动已 `git add`**（提交后工作树为 clean），pre-commit **无可 stash**，故直接进入检查。
+**判据（补充）**：**T1-27 的红是「只见 `Stashing` 不见 `Restored`」**，**不是「两行都缺席」** —— 两行都缺席表示**根本没有 stash 动作**。
+
+### 边界
+
+**产品文件 0 条**；锚点 `9ec6529550f189a4…` **一致**；**未改**任何冻结件；**未做任何 `status` 转移**（M31 是否关闭仍归其 reviewer）；**未代签**；**删除 0**；`task_plan.md` **176279 → 见下**（双路追加式证明）。
+
+**提交**：`8be10f4f`（14 files / 15461 insertions / 14805 deletions；其中 `dispatch.json` 的大幅行数来自**重新生成**，非内容重写）。
+**移交**：**M31 关闭**仍待其 reviewer；**T1-23 / T1-25 的阻塞前提已由 §14 解除**（本节完成核验）—— 二者**不再受 R-1/R-2 阻塞**。
