@@ -1,0 +1,50 @@
+--- a/scripts/publication_registry.py
++++ b/scripts/publication_registry.py
+@@ -124,6 +124,29 @@
+     )
+ 
+ 
++def attestation_anchor(result: dict[str, Any]) -> dict[str, Any]:
++    """The I-08-B attestation anchor appended to a registration row.
++
++    ``decision.md`` section 6.4 records that the registry could not prove whether
++    a historical publication had ever been signed, because rows carry no
++    attestation field at all.  These two keys are ADDITIVE: old rows simply lack
++    them and stay readable (readers must use ``.get()``), so no historical row is
++    rewritten.  The exact field names remain registered as an open point in the
++    design; this card does not claim they are settled.
++    """
++    record = result.get("publication_attestation")
++    status = None
++    receipt = result.get("publication_receipt")
++    if isinstance(receipt, dict):
++        status = receipt.get("attestation_status")
++    return {
++        "publication_attestation_status": status,
++        "publication_attestation_sha256": (
++            canonical_sha256(record) if isinstance(record, dict) else None
++        ),
++    }
++
++
+ def register_publication(
+     result: dict[str, Any],
+     *,
+@@ -139,6 +162,9 @@
+     validated receipt anchor) from Formal artifacts (``"validated"`` —
+     strong-validated publication).  The key is additive: pre-ZR-701 lines
+     simply lack it and stay readable.
++
++    I-08-B: the row additionally carries the attestation anchor (see
++    :func:`attestation_anchor`).
+     """
+     receipt = result.get("publication_receipt")
+     _append(
+@@ -155,6 +181,7 @@
+             "artifact_id": artifact_id,
+             "note": note,
+             "validation_status": validation_status,
++            **attestation_anchor(result),
+         }
+     )
+ 
