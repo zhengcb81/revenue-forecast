@@ -1,0 +1,166 @@
+{
+ "card": "_bookkeeping_20260921_round67",
+ "kind": "orchestrator_bookkeeping",
+ "round": 67,
+ "date": "2026-09-21",
+ "authority": {
+  "source": "OWNER_DECISIONS.md §13 T1-27",
+  "what_it_authorises": "the orchestrator commits .planning more frequently, so that append blocks do not live only in the working tree; and verifies the hook's [INFO] Restored changes from <patch> line after every commit",
+  "what_it_does_not_authorise": [
+   "resuming any card (I-14-D r3, I-14-E-APPLY and the I-14-D review all stay exactly as they were)",
+   "any status transition",
+   "any signature on behalf of another party",
+   "any product change",
+   "deleting or cleaning anything"
+  ]
+ },
+ "trigger": {
+  "user_instruction": "read the planning-with-files skill docs and this project's planning carriers; then '继续做，不要停，不要清理项目或删除文件，更新planning-with-files的各项文档'",
+  "scope_of_this_round": "register the interrupted-session facts on disk and normalise the four carriers; append-only, zero deletions"
+ },
+ "pre_images": {
+  "task_plan.md": {
+   "bytes": 201797,
+   "sha256": "f83a39aaae89df06aa4a28dc6eda3d6b365095895aab50b205f2efaf7ba1fa6d"
+  },
+  "findings.md": {
+   "bytes": 51679,
+   "sha256": "664ba7a8d32a04bd2df5eb16d3fe877a8e56b692cbb6290b9ff4d10e265e090a"
+  },
+  "progress.md": {
+   "bytes": 133304,
+   "sha256": "ff66d0acd51a78a8c0c2a78ab46854150b95df17f3815275bd3adbbfccc635fb"
+  },
+  "REMEDIATION_REGISTER.md": {
+   "bytes": 26856,
+   "sha256": "11327a8b300af286229b2e9d4823e8eb749993d7f2f0a47f52f095737ac0ef0b"
+  },
+  "note": "all four were byte-identical to HEAD when the append ran; the pre-image is the HEAD blob, and each append proof re-verified the constant before writing"
+ },
+ "post_images": {
+  "task_plan.md": {
+   "bytes": 206794,
+   "sha256": "94b541c0ffaa9994ad7eddcd55657c305917ef17870a34b4e57c9b573514cc42",
+   "delta_bytes": 4997,
+   "lines_added": 69,
+   "lines_deleted": 0
+  },
+  "findings.md": {
+   "bytes": 54389,
+   "sha256": "805bbe96f0c766bc537df3f3667ccccb0317a6d68ee63953a4a61a2edc9370d5",
+   "delta_bytes": 2710,
+   "lines_added": 11,
+   "lines_deleted": 0
+  },
+  "progress.md": {
+   "bytes": 135171,
+   "sha256": "b179fc6971ce34c7510d8a29b314e4ef9fc810de0b353da42363e344f6f57b2f",
+   "delta_bytes": 1867,
+   "lines_added": 22,
+   "lines_deleted": 0
+  },
+  "REMEDIATION_REGISTER.md": {
+   "bytes": 28793,
+   "sha256": "c4c3c3f27dda364a9ebb9c258a2ff712ec9921af8768d6a4f6728406a8eb20d0",
+   "delta_bytes": 1937,
+   "lines_added": 15,
+   "lines_deleted": 0
+  }
+ },
+ "findings_registered": {
+  "F-R67-1": {
+   "severity": "P3",
+   "what": "the previous session did not stop cleanly -- it was terminated mid-flight. task_plan.md's closing section describes I-14-D(r3) and I-14-E-APPLY as 'dispatched, results not yet collected', which reads as 'running elsewhere'.",
+   "evidence": "I-14-E-APPLY/a20260921-01/after/bench.log last arm line EXIT=3221225786 (= 0xC000013A STATUS_CONTROL_C_EXIT, i.e. terminated, NOT a business failure); the next line starts arm B4-nonvacuity-quiet whose log is 0 bytes; no write for the following 8 minutes; no live python process",
+   "generalisation": "'results not yet collected' != 'results being produced' -- the two are indistinguishable from the wording alone, so a closing claim that something is in flight must be checked against a production path (live process / growing log / on-disk intermediate)"
+  },
+  "F-R67-2": {
+   "severity": "P2",
+   "what": "execution_runs/B5-plan-level-remediation/ was UNTRACKED AS A WHOLE DIRECTORY, containing the 34764 B reviewer_report.md that is the sole carrier of the B5 review verdict",
+   "why_worse_than_the_known_mode": "T1-27's registered failure mode is 'an append block lives only in the working tree' -- but an append block at least has a COMMITTED BASE to replay from. An untracked directory has no base at all.",
+   "disposition": "committed this round under T1-27"
+  },
+  "F-R67-3": {
+   "severity": "P3",
+   "what": "the closing section records 8 unpushed commits; the measured value is 10 (two more landed after the section was written: 6d62b046, 1bddfc1e)",
+   "reading_discipline": "the unpushed count must be recomputed on the spot with git rev-list --left-right --count <upstream>...HEAD; it is independent of how far progress.md has been written, so the ledger's position cannot be used to infer it"
+  },
+  "F-R67-4": {
+   "severity": "P3",
+   "what": "STATUS_CONTROL_C_EXIT (3221225786) is not a failure code",
+   "generalisation": "it only says someone terminated the process; reading it as 'the test failed' attributes a failure to an arm that never finished. Correct conclusion is 'not completed', not 'not passed' -- the same distinction the frozen rc table draws between rc=2 (no verdict) and rc=3 (judged and failed)."
+  }
+ },
+ "registered_in_register": ["REM-54", "REM-55", "REM-56", "REM-57", "REM-58"],
+ "artefacts": {
+  "scripts/verify_round67.py": {
+   "bytes": 11713,
+   "sha256": "94fe284c63f857f9941dbbd1a484401cf9461103c5b96d43c645dc9f9ec69bbc"
+  },
+  "round67_verification.json": {
+   "bytes": 4408,
+   "sha256": "8a44501f83f5e02d1b7544688f6e76ff500c47809d7b80b10145ac9f3b08859e",
+   "idempotent": true,
+   "note": "two consecutive runs produced the same sha256"
+  },
+  "append_only_proof_round67_task_plan.json": {
+   "bytes": 1722,
+   "sha256": "f858048052ca348e8006567c1bbbaaef54b0d84c7274c108e301c002bb2ab6f7"
+  },
+  "append_only_proof_round67_findings.json": {
+   "bytes": 1713,
+   "sha256": "2948d6f7384f84944ac948619527fd12a3765b814914e1d4e3ebf4efc59d4cd1"
+  },
+  "append_only_proof_round67_progress.json": {
+   "bytes": 1718,
+   "sha256": "97780047c45224eb804ff48fb964b160f0a12b3eab43590df082a9a83ee7bfde"
+  },
+  "append_only_proof_round67_register.json": {
+   "bytes": 1725,
+   "sha256": "3d4346494149cf8585260154ae862579e21bb2cdbfa86e7b3b329e43b33e7d24"
+  }
+ },
+ "helpers_written_this_round": {
+  ".planning/_pwf_tmp/append_round67.py": "appends the four sections; re-verifies each pre-image constant before writing",
+  ".planning/_pwf_tmp/verify_append_only_multi.py": {
+   "what": "generalises verify_append_only.py to any --target",
+   "disclosed_method_change": "route 1 is now LINE-granular difflib, not character-granular. The character-granular SequenceMatcher is O(n*m) and on task_plan.md (202 KB) did not finish within 5 minutes -- it had not completed the first of four targets. The line-granular form asserts the same thing (no deletion, only insertion) and stays independent of the byte-prefix route, which can only speak about the prefix.",
+   "field_names_carry_the_unit": "route 1 reports deleted_lines / inserted_lines / inserted_chars; route 2 reports common_prefix_bytes"
+  }
+ },
+ "verification": {
+  "overall": "PASS",
+  "propositions": {
+   "P-1": "the interruption is reproducible from disk bytes (not inferred) -- holds",
+   "P-2": "no artefact in the interrupted attempt postdates the abort -- holds",
+   "P-3": "neither I-14-D nor I-14-E-APPLY has an r3 / APPLY-era carrier -- holds",
+   "P-4": "all four carriers' appends are append-only, per their own independent proofs -- holds",
+   "P-5": "the product anchor is unchanged and no product file outside .planning is modified -- holds",
+   "P-6": "nothing was deleted: every must-preserve path is still present -- holds"
+  },
+  "negative_controls": "8/8 correctly red (exit code mutated to a business failure; B4 log given content; an artefact made to postdate the abort; the carrier made newer than the artefacts; a proof made to report a deletion; the anchor drifted; a product file modified; a must-preserve path removed)",
+  "responsiveness_note": "a predicate that cannot fail is not a predicate; each one was fed a synthetic mutated input and had to go red"
+ },
+ "boundaries": {
+  "product_files_written": 0,
+  "product_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged, matches the bound value",
+  "status_transitions": 0,
+  "signatures_on_behalf_of_others": 0,
+  "deletions": 0,
+  "cards_resumed": [],
+  "not_touched": [
+   ".tmp-r41-mutation/ (kept, untracked, outside .planning)",
+   "assurance/unified_completion/manifests/plan_inputs.json.bak (kept, untracked, outside .planning)",
+   ".planning/_pwf_tmp/_pre60_tail.bin (kept)",
+   ".git/COMMIT_MSG_R58.txt, _R59.txt, _R59b.txt, _T17.txt (kept)",
+   "I-14-D r3 artefacts (left exactly as found, not carried forward)",
+   "I-14-E-APPLY artefacts (left exactly as found, not re-run)"
+  ]
+ },
+ "next_action_for_the_owner": [
+  "REM-56 I-14-D r3: the r3 artefacts are on disk (scratch/oracle_r3.json, scratch/rule_r3.json, three harness scripts) but handoff.json (21:22) and review.md (21:18) are still r2-era. Decide whether to carry r3 to completion or abandon it.",
+  "REM-55 I-14-E-APPLY: the benchmark campaign was terminated at arm B5-clockmut-cpu8 and arm B4-nonvacuity-quiet never produced output. Decide whether to re-run that arm.",
+  "the push is still blocked: the pre-push gate's 600 s E2E cap is below the suite's measured 861.7 s. Three options were registered in findings.md's closing section; the gate was not bypassed."
+ ],
+ "self_reference_note": "handoff.json does not register its own hash; it is recorded in task_plan.md's Round 67 section and in the memory file"
+}

@@ -1,0 +1,381 @@
+{
+ "batch": "M29-M31",
+ "cards": [
+  "M29",
+  "M30",
+  "M31"
+ ],
+ "runner_before": {
+  "path": "execution_runs/B5-plan-level-remediation/a20260921-01/M29-M31/run_card_before.py",
+  "sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+  "bytes": 28242,
+  "identical_to_historical": true,
+  "historical_paths_sha256": {
+   "M29": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+   "M30": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+   "M31": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd"
+  }
+ },
+ "runner_after": {
+  "path": "M29-M31/run_card.py",
+  "sha256": "e1e1e9ed4e738f388208c490f3c48e289f93385d8593761a48838f0fa78bf175",
+  "bytes": 36027
+ },
+ "diff_path": "M29-M31/runner.diff",
+ "diff_stats": {
+  "added_lines": 133,
+  "removed_lines": 13
+ },
+ "cards_cases_sha256": {
+  "M29": "82fb576b1f2f58b134228144d17633b98209e35fb3b0445390bb7edbebae680f",
+  "M30": "d3ceb03a75f5ba788cf35514bf758ba9699e82250264b370153fbbe1e609adb7",
+  "M31": "6063b2a876863d291f4d6833b428399ae11431bf9a01d879f01295b3b72948d1"
+ },
+ "frozen_inputs_sha256": {
+  "M29": {
+   "input.json": "8accf2a5d80709dedf2a6ef0c9159f87f83701219e47dfdc2a3a03d0427c828c",
+   "cases.json": "82fb576b1f2f58b134228144d17633b98209e35fb3b0445390bb7edbebae680f",
+   "oracle.json": "6aa74c4b7067dbad443fe7d3e856161805fc9efe72283a89e32123039b48b007",
+   "negative_results.json": "b3e632f9f14613c01189a9fc8b40f408c8b26ac682582549e5607244287e38bc"
+  },
+  "M30": {
+   "input.json": "b3c73bd4e3c9524312831060ae92ef79f88071a52bbbce07565a0ab6b495a798",
+   "cases.json": "d3ceb03a75f5ba788cf35514bf758ba9699e82250264b370153fbbe1e609adb7",
+   "oracle.json": "6112393b7ceb23decc7d7fadf9fcb46ab89a63baec712c63c25f46cdfbdde0fe",
+   "negative_results.json": "b17c4aef66b8c77f19a1daea06d61c95a813c5c2163434d957b2dda49bb5dbd7"
+  },
+  "M31": {
+   "input.json": "c4982ecf5d435b6d58550225f206a95bff3ea2cb626a32ec01df0237366409a3",
+   "cases.json": "6063b2a876863d291f4d6833b428399ae11431bf9a01d879f01295b3b72948d1",
+   "oracle.json": "bd92d54021acf0a2d9fdc2486366a3bf54440454a25efa1b1bfcabbf670a29e7",
+   "negative_results.json": "a97110dd5d93f3c7343476b6587ee3580642d1a40acd5b70772684cc1f5ee05c"
+  }
+ },
+ "insertion_points": [
+  {
+   "file": "run_card.py",
+   "line": 404,
+   "what": "before any case is judged: the per-set declared-expectation usability gate. Collects every case whose frozen cases.json 'expected' is missing or not a non-empty string into unusable_declared / cases_declared_ok (this is the rc=2 prerequisite, evaluated BEFORE case judging)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 458,
+   "what": "the new enforcement itself: declared_ok = (raised_name == declared), i.e. type(exc).__name__ == case[\"expected\"] EXACT type-name equality. isinstance() is deliberately NOT used because ModelRegistryError subclasses ValueError"
+  },
+  {
+   "file": "run_card.py",
+   "line": 470,
+   "what": "new per-case verdict label: an exception WAS raised, it WAS the target type, but its exact name != the declared expectation -> FAIL_declared_expectation_mismatch"
+  },
+  {
+   "file": "run_card.py",
+   "line": 456,
+   "what": "new per-case verdict label for a case whose declaration is unusable: judged=False, NOT a mismatch; such a case can never by itself produce rc=3"
+  },
+  {
+   "file": "run_card.py",
+   "line": 526,
+   "what": "rc=2 reason naming the unusable cases: cases_json_declared_expectation_missing:<ids>"
+  },
+  {
+   "file": "run_card.py",
+   "line": 540,
+   "what": "precedence: rc=2 is decided before the rc=3 reason list, so an unusable declaration yields no_verdict rather than a mismatch red"
+  },
+  {
+   "file": "run_card.py",
+   "line": 565,
+   "what": "exit_code_semantics gains cases_json_declared_expectations_usable, declared_expectation_mismatch_case_ids, not_judged_case_ids and the reason_namespace note that FAIL_wrong_exception_type is a SUBSET of declared_expectation_mismatch when the declaration is usable"
+  }
+ ],
+ "patch_items": [
+  "item 1_docstring              anchor_line=26 old_lines=4 new_lines=18",
+  "item 2_negative_loop          anchor_line=388 old_lines=26 new_lines=86",
+  "item 3_summary_and_counts     anchor_line=475 old_lines=17 new_lines=35",
+  "item 4_verdict_and_rc         anchor_line=518 old_lines=23 new_lines=33",
+  "item 5_exit_code_semantics    anchor_line=555 old_lines=11 new_lines=20",
+  "item 6_negative_results_doc   anchor_line=586 old_lines=2 new_lines=7",
+  "item 7_stdout_emit            anchor_line=634 old_lines=1 new_lines=5"
+ ],
+ "mutation_target": {
+  "rule": "first negative case of the frozen cases array whose frozen expected is ModelRegistryError",
+  "case_id_by_card": {
+   "M29": "NEG-CARD",
+   "M30": "NEG-CARD",
+   "M31": "NEG-CARD"
+  },
+  "frozen_index_by_card": {
+   "M29": 0,
+   "M30": 0,
+   "M31": 0
+  },
+  "decoy_value": "ValueError",
+  "decoy_rationale": "ModelRegistryError subclasses ValueError (model_registry.py line 13), so a declared 'ValueError' is exactly the value an isinstance() check would silently accept",
+  "contract_deviation": "PROPAGATION_CONTRACT.md section 5 says 'first negative case (lowest id)'. On these cards those two clauses disagree: under real ASCII ordering '-' (0x2D) < '0' (0x30) < 'A', so sorted(ids)[0] is 'CONT-BREAK' ('N' 0x4E > 'C' 0x43), not 'NEG-CARD'. The primary clause - the FIRST negative case in the frozen cases array, i.e. the order the runner judges them in and the case the M29 reviewer mutated in review.md P2 - was used, giving NEG-CARD (index 0) on all three cards. Both candidates declare and raise ModelRegistryError, so either exercises the delta.",
+  "lexicographic_first_eligible_id_by_card": {
+   "M29": "CONT-BREAK",
+   "M30": "CONT-BREAK",
+   "M31": "CONT-BREAK"
+  }
+ },
+ "arms": {
+  "E": {
+   "runner": "run_card.py",
+   "rc": 0,
+   "rc_by_card": {
+    "M29": 0,
+    "M30": 0,
+    "M31": 0
+   },
+   "verdict": "pass",
+   "verdict_by_card": {
+    "M29": "pass",
+    "M30": "pass",
+    "M31": "pass"
+   },
+   "declared_expectation_mismatch": 0,
+   "declared_expectation_mismatch_by_card": {
+    "M29": 0,
+    "M30": 0,
+    "M31": 0
+   },
+   "mutated_case": null,
+   "mutated_case_by_card": null,
+   "cases_json_sha256_by_card": {
+    "M29": "82fb576b1f2f58b134228144d17633b98209e35fb3b0445390bb7edbebae680f",
+    "M30": "d3ceb03a75f5ba788cf35514bf758ba9699e82250264b370153fbbe1e609adb7",
+    "M31": "6063b2a876863d291f4d6833b428399ae11431bf9a01d879f01295b3b72948d1"
+   },
+   "note": "green control: new runner on the UNMODIFIED frozen cases.json. rc=0, all 11 negatives PASS_rejected on each card, declared_expectation_mismatch=0, declared_expectation_missing=0"
+  },
+  "F": {
+   "runner": "run_card.py",
+   "rc": 3,
+   "rc_by_card": {
+    "M29": 3,
+    "M30": 3,
+    "M31": 3
+   },
+   "verdict": "fail",
+   "verdict_by_card": {
+    "M29": "fail",
+    "M30": "fail",
+    "M31": "fail"
+   },
+   "declared_expectation_mismatch": 1,
+   "declared_expectation_mismatch_by_card": {
+    "M29": 1,
+    "M30": 1,
+    "M31": 1
+   },
+   "mutated_case": "NEG-CARD",
+   "mutated_case_by_card": {
+    "M29": "NEG-CARD",
+    "M30": "NEG-CARD",
+    "M31": "NEG-CARD"
+   },
+   "cases_json_sha256_by_card": {
+    "M29": "5c9c23d07b9d8afff420777bf45bf9dd4767879a6f22589aab60c139a7ed7252",
+    "M30": "691c2bb022b4392df22fc06e5899393e9da5206729cbb7299f64301196a0fd56",
+    "M31": "f56d3429e48e4a1199ea7aeb0fbc1d3349bc6f866a5a90e0126aa06820484e64"
+   },
+   "note": "the deliverable: first negative case's declared expected rewritten to the decoy 'ValueError' (a real superclass of ModelRegistryError, so an isinstance() check would have let it through). New runner reports rc=3 with verdict FAIL_declared_expectation_mismatch and reason declared_expectation_mismatch:NEG-CARD",
+   "mismatch_case_ids": [
+    "NEG-CARD"
+   ],
+   "verdict_reasons": [
+    "declared_expectation_mismatch:NEG-CARD"
+   ],
+   "comparison_string": "raised exact type name 'ModelRegistryError' vs declared 'ValueError' (exact-name comparison, not isinstance)",
+   "is_target_type_still_true": true,
+   "isinstance_would_have_passed": true,
+   "isinstance_would_have_passed_note": "the measured entry has is_target_type=True AND declared_expectation_ok=False: the case IS an instance of model_registry.ModelRegistryError yet the declared 'ValueError' does not match its exact type name, which is precisely why isinstance() must not be used"
+  },
+  "B": {
+   "runner": "run_card_before.py",
+   "rc": 0,
+   "rc_by_card": {
+    "M29": 0,
+    "M30": 0,
+    "M31": 0
+   },
+   "verdict": "pass",
+   "verdict_by_card": {
+    "M29": "pass",
+    "M30": "pass",
+    "M31": "pass"
+   },
+   "declared_expectation_mismatch": null,
+   "declared_expectation_mismatch_by_card": {
+    "M29": null,
+    "M30": null,
+    "M31": null
+   },
+   "mutated_case": "NEG-CARD",
+   "mutated_case_by_card": {
+    "M29": "NEG-CARD",
+    "M30": "NEG-CARD",
+    "M31": "NEG-CARD"
+   },
+   "cases_json_sha256_by_card": {
+    "M29": "5c9c23d07b9d8afff420777bf45bf9dd4767879a6f22589aab60c139a7ed7252",
+    "M30": "691c2bb022b4392df22fc06e5899393e9da5206729cbb7299f64301196a0fd56",
+    "M31": "f56d3429e48e4a1199ea7aeb0fbc1d3349bc6f866a5a90e0126aa06820484e64"
+   },
+   "note": "inertness control / the fabricated green the owner ruling names: the OLD runner (byte copy of the historical run_card.py) on the SAME mutated cases.json as F still reports rc=0 pass, 11/11 PASS_rejected, because it never reads case['expected']. This reproduces the M29 review.md P2 defect measurement with a fresh process. NOTE: this rc is a MEASUREMENT, not a prediction - per the delegating agent's correction, arm B's rc is reported exactly as the real process returned it (rc=0 on all three cards). Had the historical runner already gated, rc=3 would have been recorded here unchanged.",
+   "old_runner_reads_expected_field": "reporting only; never compared",
+   "old_runner_mismatch_counters_present": false,
+   "old_runner_passed": "11/11",
+   "reproduces_historical_defect": "M29 review.md P2 (rc=0 pass on mutated expected)",
+   "rc_is_measured_not_predicted": true,
+   "interpretation": "rc=0 => the historical runner did NOT gate on the declared expectation; recorded as measured, corroborating the reviewers' P2 finding with a fresh process. No value was adjusted to fit any prediction."
+  },
+  "G": {
+   "runner": "run_card.py",
+   "rc": 2,
+   "rc_by_card": {
+    "M29": 2,
+    "M30": 2,
+    "M31": 2
+   },
+   "verdict": "no_verdict",
+   "verdict_by_card": {
+    "M29": "no_verdict",
+    "M30": "no_verdict",
+    "M31": "no_verdict"
+   },
+   "declared_expectation_mismatch": 0,
+   "declared_expectation_mismatch_by_card": {
+    "M29": 0,
+    "M30": 0,
+    "M31": 0
+   },
+   "mutated_case": "NEG-CARD",
+   "mutated_case_by_card": {
+    "M29": "NEG-CARD",
+    "M30": "NEG-CARD",
+    "M31": "NEG-CARD"
+   },
+   "cases_json_sha256_by_card": {
+    "M29": "99a8366dffd4e180d30ed96db319a2d77af12784211a7ab361b09ad1b498ff2c",
+    "M30": "a0795f05943d5401340777efdc35e914d6a9ef99d30f586c946953bc7123d4e8",
+    "M31": "6d746a5ab1bdce9aef88aaa768dbfd060d4c8ae191ce08be22160f2d9c70e5ce"
+   },
+   "note": "rc-classification arm: the first negative case's 'expected' KEY is deleted, so the frozen declaration itself is unusable. rc=2, verdict=no_verdict, reason cases_json_declared_expectation_missing:NEG-CARD, that case is NOT_JUDGED_declaration_unusable with judged=false and declared_expectation_mismatch=false, so it is NOT counted as a mismatch",
+   "verdict_reasons": [
+    "cases_json_declared_expectation_missing:NEG-CARD"
+   ],
+   "not_judged_case_ids": [
+    "NEG-CARD"
+   ],
+   "declared_expectation_missing_in_cases_json": 1,
+   "counted_as_mismatch": false
+  },
+  "H_blanket_extra": {
+   "runner": "run_card_before.py (OLD)",
+   "mutation": "EVERY one of the 11 cases' expected rewritten to 'ImportError'",
+   "rc_by_card": {
+    "M29": 0,
+    "M30": 0,
+    "M31": 0
+   },
+   "verdict_by_card": {
+    "M29": "pass",
+    "M30": "pass",
+    "M31": "pass"
+   },
+   "passed": "11/11",
+   "note": "this is the experiment the M29 reviewer reported (review.md line 87: all 11 cases -> 'ImportError' still rc=0 pass). Reproduced. The historical mutation_selfcheck.json has NO expected-rewrite arm at all - its A-D arms mutate oracle.json positive/tolerances and delete cases.json, and its B arm neuters a case by changing the INPUT (CONT-BREAK 2029 -> 2028), never the 'expected' declaration - which is why the fabricated green survived that self-check",
+   "historical_mutation_selfcheck_arms": [
+    "A_corrupted_positive_expectation",
+    "B0_unpatched_continuity_break",
+    "B_neutered_negative_case",
+    "C_corrupted_expectation_length",
+    "D_missing_cases_file",
+    "E_uncorrupted_copy"
+   ],
+   "historical_mutation_selfcheck_has_expected_rewrite_arm": false
+  }
+ },
+ "rc_codes_after": {
+  "0": "pass",
+  "1": "harness error (unusable environment / missing evidence file, product import failure)",
+  "2": "no verdict, issued BEFORE any case can be judged: the frozen per-case declaration itself is missing/unusable (reason cases_json_declared_expectation_missing:<ids>), or the positive frozen expectation is missing / output fidelity cannot be compared",
+  "3": "a judgement WAS possible and did not hold: nothing raised, wrong exception type, or the raised exact type name != the declaration in cases.json",
+  "precedence": "1 > 2 > 3 > 0 (unchanged)",
+  "rc_values_changed_by_this_batch": false,
+  "note": "EXIT_PASS=0 / EXIT_HARNESS=1 / EXIT_NO_VERDICT=2 / EXIT_NEGATIVE=3 were already present in the frozen runner (lines 59-62) and are byte-identical after the patch"
+ },
+ "historical_runner_already_gated": false,
+ "historical_gate_derivation": {
+  "derived_from": "code inspection of run_card_before.py (NOT from b5_scan.json)",
+  "b5_scan_compares_raised_to_expected_flag": "UNRELIABLE per the delegating agent (naive regex, false for all 8 batches including the reference M17-M20); ignored",
+  "historical_runner_declares_expected_per_case": true,
+  "historical_runner_reads_declared_expected_into_entry_line": [
+   379
+  ],
+  "historical_runner_exact_type_name_comparison_lines": [],
+  "historical_runner_gate_consumer_lines": [],
+  "historical_runner_compares_raised_to_expected": false,
+  "historical_runner_already_gated": false,
+  "historical_runner_already_gated_evidence": "the OLD runner copies case['expected'] into the per-case entry for reporting only (entry = {..., \"expected\": case[\"expected\"], ...}) and then decides the negative verdict SOLELY from isinstance(exc, model_registry.ModelRegistryError) / isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError)). It contains NO comparison of the raised type name against the declared string: the only substring 'is_target' occurs as is_target_type, and the strings expected_type_matches_raised / FAIL_expected_type_mismatch / declared_expectation_mismatch do not occur anywhere in the file. Confirmed by measurement: arm B rc=0 on the mutated cases.json with 11/11 PASS_rejected, and arm H_blanket rc=0 with all 11 declarations rewritten to a wrong type. This CORROBORATES the M29 review.md P2 finding with a fresh process, and contradicts the overstated 'only M17-M20 compares expected' premise only in that the premise does not hold for this batch either.",
+  "measured_arm_b_rc": {
+   "M29": 0,
+   "M30": 0,
+   "M31": 0
+  },
+  "measured_arm_h_blanket_rc": {
+   "M29": 0,
+   "M30": 0,
+   "M31": 0
+  },
+  "conclusion": "arm B rc=0 on all three cards => the historical M29-M31 runner did NOT gate; this batch's patch is what introduces the per-case enforcement"
+ },
+ "arm_b_is_a_measurement_not_a_prediction": true,
+ "arm_b_measured_rc": {
+  "M29": 0,
+  "M30": 0,
+  "M31": 0
+ },
+ "isolated_code_root_sha256": {
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f"
+ },
+ "isolated_interpreter": {
+  "path": "execution_runs\\M29\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "version": "3.13.9",
+  "note": "-X utf8 -B used for every invocation; no __pycache__ created anywhere"
+ },
+ "invocation": {
+  "shape": "<iso python> -X utf8 -B <runner> --card <CARD> --attempt <arm dir> --code-root <arm dir>/code_root --out ... --run-result-out ... --negative-out ...",
+  "bound_unit": "B-product-run of evidence/batch_invocations.json key 'M29'",
+  "optional_flags_used": [
+   "--out",
+   "--run-result-out",
+   "--negative-out"
+  ],
+  "optional_flags_match_bound_argv": true,
+  "attempt_argument_redirected_to": "_scratch/M29-M31/<arm> (scratch root, reads <root>/evidence/<CARD>/*)",
+  "raw_rc_source": "subprocess returncode of the real child process (captured, not inferred)"
+ },
+ "historical_writes": [],
+ "historical_read_only_check": {
+  "frozen_evidence_sha256_unchanged_after_runs": true,
+  "historical_runner_sha256_unchanged": true,
+  "no_file_under_M29_M30_M31_written_in_last_3h": true,
+  "no___pycache___beside_checkout_scripts": true,
+  "checkout_scripts_contents": [
+   "model_extensions.py",
+   "model_registry.py"
+  ],
+  "production_repo_touched": false
+ },
+ "boundaries_respected": true,
+ "unmet_prerequisites": [],
+ "open_issues": [
+  "CONTRACT DEVIATION (mutation-case selection): see mutation_target.contract_deviation - the contract's 'first negative case (lowest id)' is internally contradictory on these cards; array order (NEG-CARD) was used and the lexicographic alternative (CONT-BREAK) is recorded for the reviewer.",
+  "COSMETIC: in arm G the new key negative_summary.declared_expectations_in_cases_json is computed as sorted({str(c.get('expected')) ...}), so the deleted declaration surfaces as the string 'None' in that informational list. It does not affect the rc (measured 2) or the mismatch count (measured 0); the authoritative signal is cases_json_unusable_declared_expectations=['NEG-CARD'] and negative_counts.declared_expectation_missing_in_cases_json=1.",
+  "NOT SELF-SIGNED: this batch reports review_pending. Every rc above was read from a real child process, but acceptance requires an independent reviewer."
+ ],
+ "verdict_status": "review_pending"
+}

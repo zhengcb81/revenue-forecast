@@ -1,0 +1,808 @@
+{
+ "batches": {
+  "M05-M08": {
+   "new_sha256": "489ba7e35592241b91ecf393b515df2111bc4996298274226e0e1012deff230b",
+   "new_bytes": 20804,
+   "old_sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "old_bytes": 14758,
+   "historical_sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "historical_bytes": 14758,
+   "old_equals_historical_bytes": true,
+   "isinstance_lines": [
+    {
+     "line": 30,
+     "text": "EQUALITY, never ``isinstance()``: ``ModelRegistryError`` is a subclass of"
+    },
+    {
+     "line": 32,
+     "text": "``isinstance`` check. Precedence: a missing/unusable declaration is decided"
+    },
+    {
+     "line": 59,
+     "text": "if isinstance(spec, dict):"
+    },
+    {
+     "line": 84,
+     "text": "if isinstance(value, dict) and \"__bool__first__\" in value:"
+    },
+    {
+     "line": 123,
+     "text": "# Comparison is EXACT TYPE-NAME EQUALITY. isinstance() must NOT be used:"
+    },
+    {
+     "line": 125,
+     "text": "# would silently pass under isinstance()."
+    },
+    {
+     "line": 127,
+     "text": "if not (isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip())]"
+    },
+    {
+     "line": 134,
+     "text": "if isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip()})"
+    },
+    {
+     "line": 282,
+     "text": "is_target = isinstance(exc, model_registry.ModelRegistryError)"
+    },
+    {
+     "line": 283,
+     "text": "is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError))"
+    },
+    {
+     "line": 286,
+     "text": "declared_usable = isinstance(declared, str) and bool(declared.strip())"
+    },
+    {
+     "line": 305,
+     "text": "+ \" (exact type name; NOT isinstance)\")"
+    },
+    {
+     "line": 329,
+     "text": "\"(NOT isinstance)\"),"
+    }
+   ],
+   "equality_lines": [
+    {
+     "line": 128,
+     "text": "cases_declared_ok = not unusable_declared"
+    },
+    {
+     "line": 299,
+     "text": "declared_ok = (entry[\"raised\"] == declared)  # exact type-name equality"
+    }
+   ],
+   "return_literals_old": [],
+   "return_literals_new": [],
+   "rc_consts_old": {},
+   "rc_consts_new": {},
+   "rc_consts_renumbered": {},
+   "exit_code_semantics_exit_code_assignments": [],
+   "old_exit_code_assignments": [],
+   "required_fields_present": {
+    "declared": true,
+    "raised": true,
+    "declared_expectation_ok": true,
+    "declared_expectation_mismatch": true,
+    "declared_expectation_not_met": true,
+    "declared_expectation_comparison": true,
+    "judged": true,
+    "declared_expectations_in_cases_json": true,
+    "declared_expectations_enforced": true,
+    "cases_json_declared_expectations_usable": true,
+    "declared_expectation_mismatch_case_ids": true,
+    "reason_namespace": true
+   },
+   "all_required_present": true,
+   "diff_present": true,
+   "evidence_present": true
+  },
+  "M09-M12": {
+   "new_sha256": "5835b2591f3f21562547de57e2ecfd61889e59ebcf1f6350196562d958f43cff",
+   "new_bytes": 39812,
+   "old_sha256": "997c553b0b9e6452e9edfeb8bfec3a40ff55d10f2646e562456913feb9332fce",
+   "old_bytes": 28912,
+   "historical_sha256": "997c553b0b9e6452e9edfeb8bfec3a40ff55d10f2646e562456913feb9332fce",
+   "historical_bytes": 28912,
+   "old_equals_historical_bytes": true,
+   "isinstance_lines": [
+    {
+     "line": 34,
+     "text": "EXACT exception type-name equality (``type(exc).__name__ == declared``).  isinstance() must never"
+    },
+    {
+     "line": 36,
+     "text": "would silently pass under isinstance()."
+    },
+    {
+     "line": 81,
+     "text": "if isinstance(spec, dict):"
+    },
+    {
+     "line": 106,
+     "text": "if isinstance(value, dict) and \"__bool__first__\" in value:"
+    },
+    {
+     "line": 134,
+     "text": "\"is_builtin_list\": isinstance(value, list),"
+    },
+    {
+     "line": 135,
+     "text": "\"length\": len(value) if isinstance(value, (list, tuple)) else None,"
+    },
+    {
+     "line": 137,
+     "text": "\"length_equals_years\": (isinstance(value, (list, tuple)) and len(value) == len(years)),"
+    },
+    {
+     "line": 138,
+     "text": "\"element_types\": sorted({type(v).__name__ for v in value}) if isinstance(value, (list, tuple)) else None,"
+    },
+    {
+     "line": 139,
+     "text": "\"element_type_set\": sorted({type(v).__name__ for v in value}) if isinstance(value, (list, tuple)) else None,"
+    },
+    {
+     "line": 140,
+     "text": "\"all_elements_float\": (isinstance(value, (list, tuple))"
+    },
+    {
+     "line": 141,
+     "text": "and all(isinstance(v, float) for v in value)),"
+    },
+    {
+     "line": 142,
+     "text": "\"all_elements_finite\": (isinstance(value, (list, tuple))"
+    },
+    {
+     "line": 143,
+     "text": "and all(isinstance(v, float) and math.isfinite(v) for v in value)),"
+    },
+    {
+     "line": 160,
+     "text": "checks[\"ok\"] = all(v[\"ok\"] for v in checks.values() if isinstance(v, dict))"
+    },
+    {
+     "line": 419,
+     "text": "# compared against the exception's EXACT type name.  isinstance() must NOT be used for that"
+    },
+    {
+     "line": 421,
+     "text": "# would silently pass under isinstance()."
+    },
+    {
+     "line": 428,
+     "text": "if not (isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip())]"
+    },
+    {
+     "line": 439,
+     "text": "declared_usable = isinstance(declared, str) and bool(declared.strip())"
+    },
+    {
+     "line": 453,
+     "text": "\"NOT isinstance)\" % (declared,))"
+    },
+    {
+     "line": 476,
+     "text": "is_target = isinstance(exc, model_registry.ModelRegistryError)"
+    },
+    {
+     "line": 477,
+     "text": "is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError,"
+    },
+    {
+     "line": 485,
+     "text": "\"raised exact type name %r vs declared %r (exact-name comparison, not isinstance)\""
+    },
+    {
+     "line": 534,
+     "text": "\"'expected' string (NOT isinstance)\"),"
+    }
+   ],
+   "equality_lines": [
+    {
+     "line": 34,
+     "text": "EXACT exception type-name equality (``type(exc).__name__ == declared``).  isinstance() must never"
+    },
+    {
+     "line": 429,
+     "text": "cases_declared_ok = not unusable_declared"
+    },
+    {
+     "line": 483,
+     "text": "entry[\"raised_matches_expected_name\"] = (entry[\"raised\"] == declared)"
+    },
+    {
+     "line": 499,
+     "text": "declared_ok = entry[\"raised_matches_expected_name\"]"
+    }
+   ],
+   "return_literals_old": [],
+   "return_literals_new": [],
+   "rc_consts_old": {
+    "PASS": "0",
+    "HARNESS": "1",
+    "NO_VERDICT": "2",
+    "NEGATIVE": "3"
+   },
+   "rc_consts_new": {
+    "PASS": "0",
+    "HARNESS": "1",
+    "NO_VERDICT": "2",
+    "NEGATIVE": "3"
+   },
+   "rc_consts_renumbered": {},
+   "exit_code_semantics_exit_code_assignments": [],
+   "old_exit_code_assignments": [],
+   "required_fields_present": {
+    "declared": true,
+    "raised": true,
+    "declared_expectation_ok": true,
+    "declared_expectation_mismatch": true,
+    "declared_expectation_not_met": true,
+    "declared_expectation_comparison": true,
+    "judged": true,
+    "declared_expectations_in_cases_json": true,
+    "declared_expectations_enforced": true,
+    "cases_json_declared_expectations_usable": true,
+    "declared_expectation_mismatch_case_ids": true,
+    "reason_namespace": true
+   },
+   "all_required_present": true,
+   "diff_present": true,
+   "evidence_present": true
+  },
+  "M13-M16": {
+   "new_sha256": "986893c6c83fa4551564b80f40efbf54bf12e5a5a42c78cb875496916dba6434",
+   "new_bytes": 45588,
+   "old_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
+   "old_bytes": 32038,
+   "historical_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
+   "historical_bytes": 32038,
+   "old_equals_historical_bytes": true,
+   "isinstance_lines": [
+    {
+     "line": 40,
+     "text": "revision r1 of this runner decided a negative case purely by ``isinstance(exc,"
+    },
+    {
+     "line": 56,
+     "text": "EQUALITY, never ``isinstance()``. ``ModelRegistryError`` is a subclass of ``ValueError``, so a"
+    },
+    {
+     "line": 57,
+     "text": "declared ``\"ValueError\"`` would silently pass under ``isinstance()``. A judged case whose raised"
+    },
+    {
+     "line": 120,
+     "text": "if isinstance(spec, dict):"
+    },
+    {
+     "line": 145,
+     "text": "if isinstance(value, dict) and \"__bool__first__\" in value:"
+    },
+    {
+     "line": 172,
+     "text": "``isinstance(exc, ModelRegistryError)`` and never read ``case[\"expected\"]``, and it never"
+    },
+    {
+     "line": 181,
+     "text": "if not isinstance(cases, list) or not cases:"
+    },
+    {
+     "line": 222,
+     "text": "if not (isinstance(declared, str) and declared.strip()):"
+    },
+    {
+     "line": 257,
+     "text": "if not isinstance(value, list):"
+    },
+    {
+     "line": 266,
+     "text": "if isinstance(item, bool) or not isinstance(item, float):"
+    },
+    {
+     "line": 270,
+     "text": "if not isinstance(shape, dict):"
+    },
+    {
+     "line": 375,
+     "text": "entry[\"actual\"] = [float(v) for v in actual] if isinstance(actual, list) else None"
+    },
+    {
+     "line": 379,
+     "text": "if isinstance(actual, list) and all("
+    },
+    {
+     "line": 380,
+     "text": "isinstance(v, float) and not isinstance(v, bool) for v in actual):"
+    },
+    {
+     "line": 405,
+     "text": "\"actual\": [float(v) for v in dactual] if isinstance(dactual, list) else None,"
+    },
+    {
+     "line": 408,
+     "text": "if isinstance(dactual, list) else False,"
+    },
+    {
+     "line": 433,
+     "text": "entry[\"actual\"] = [float(v) for v in value] if isinstance(value, list) else None"
+    },
+    {
+     "line": 468,
+     "text": "# isinstance() must NOT be used, because ModelRegistryError is a subclass of ValueError and a"
+    },
+    {
+     "line": 473,
+     "text": "if not (isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip())]"
+    },
+    {
+     "line": 495,
+     "text": "declared_usable = isinstance(declared, str) and bool(declared.strip())"
+    },
+    {
+     "line": 509,
+     "text": "is_target = isinstance(exc, model_registry.ModelRegistryError)"
+    },
+    {
+     "line": 510,
+     "text": "is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError))"
+    },
+    {
+     "line": 513,
+     "text": "declared_usable = isinstance(declared, str) and bool(declared.strip())"
+    },
+    {
+     "line": 515,
+     "text": "\"raised exact type name %r vs declared %r (exact-name equality, NOT isinstance)\""
+    },
+    {
+     "line": 579,
+     "text": "\"counting_rule\": \"only isinstance(exc, ModelRegistryError) counts as PASS; \""
+    },
+    {
+     "line": 587,
+     "text": "\"'expected' string (NOT isinstance)\"),"
+    }
+   ],
+   "equality_lines": [
+    {
+     "line": 474,
+     "text": "cases_declared_ok = not unusable_declared"
+    },
+    {
+     "line": 530,
+     "text": "declared_ok = (raised_name == declared)"
+    },
+    {
+     "line": 622,
+     "text": "cases_declared_ok = result.get(\"cases_json_declared_expectations_usable\", True)"
+    }
+   ],
+   "return_literals_old": [],
+   "return_literals_new": [],
+   "rc_consts_old": {
+    "PASS": "0",
+    "HARNESS": "1",
+    "NO_VERDICT": "2",
+    "NEGATIVES": "3"
+   },
+   "rc_consts_new": {
+    "PASS": "0",
+    "HARNESS": "1",
+    "NO_VERDICT": "2",
+    "NEGATIVES": "3"
+   },
+   "rc_consts_renumbered": {},
+   "exit_code_semantics_exit_code_assignments": [],
+   "old_exit_code_assignments": [],
+   "required_fields_present": {
+    "declared": true,
+    "raised": true,
+    "declared_expectation_ok": true,
+    "declared_expectation_mismatch": true,
+    "declared_expectation_not_met": true,
+    "declared_expectation_comparison": true,
+    "judged": true,
+    "declared_expectations_in_cases_json": true,
+    "declared_expectations_enforced": true,
+    "cases_json_declared_expectations_usable": true,
+    "declared_expectation_mismatch_case_ids": true,
+    "reason_namespace": true
+   },
+   "all_required_present": true,
+   "diff_present": true,
+   "evidence_present": true
+  },
+  "M21-M24": {
+   "new_sha256": "0004eda499ed6ac9583f0b8ddb9f209f13d3846697b975a8583d73beb5612f28",
+   "new_bytes": 29849,
+   "old_sha256": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+   "old_bytes": 20133,
+   "historical_sha256": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+   "historical_bytes": 20133,
+   "old_equals_historical_bytes": true,
+   "isinstance_lines": [
+    {
+     "line": 32,
+     "text": "``type(exc).__name__`` and the case's frozen ``expected`` string. ``isinstance()``"
+    },
+    {
+     "line": 34,
+     "text": "``expected`` was edited to ``\"ValueError\"`` would silently pass under isinstance()."
+    },
+    {
+     "line": 88,
+     "text": "if isinstance(spec, dict):"
+    },
+    {
+     "line": 113,
+     "text": "if isinstance(value, dict) and \"__bool__first__\" in value:"
+    },
+    {
+     "line": 283,
+     "text": "if not (isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip())]"
+    },
+    {
+     "line": 288,
+     "text": "\"type(exc).__name__ and that string (isinstance() is NOT used, because \""
+    },
+    {
+     "line": 294,
+     "text": "if isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip()}),"
+    },
+    {
+     "line": 312,
+     "text": "elif not isinstance(required_ids, list):"
+    },
+    {
+     "line": 352,
+     "text": "entry[\"declared_usable\"] = isinstance(declared, str) and bool(declared.strip())"
+    },
+    {
+     "line": 369,
+     "text": "is_target = isinstance(exc, model_registry.ModelRegistryError)"
+    },
+    {
+     "line": 370,
+     "text": "is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError))"
+    },
+    {
+     "line": 374,
+     "text": "# EXACT TYPE-NAME EQUALITY; isinstance() must never be used here because"
+    },
+    {
+     "line": 378,
+     "text": "declared_usable = isinstance(declared, str) and bool(declared.strip())"
+    },
+    {
+     "line": 432,
+     "text": "if isinstance(e.get(\"declared\"), str) and e[\"declared\"].strip()}),"
+    },
+    {
+     "line": 434,
+     "text": "\"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\"),"
+    },
+    {
+     "line": 436,
+     "text": "\"verdict_rule\": \"PASS_rejected requires isinstance(ModelRegistryError) AND the raised \""
+    }
+   ],
+   "equality_lines": [
+    {
+     "line": 284,
+     "text": "cases_declared_ok = not unusable_declared"
+    },
+    {
+     "line": 377,
+     "text": "entry[\"expected_type_matches_raised\"] = (raised_name == declared)"
+    },
+    {
+     "line": 381,
+     "text": "declared_ok = (raised_name == declared)"
+    },
+    {
+     "line": 386,
+     "text": "\"raised %r == declared %r -> %s (exact exception type name)\""
+    }
+   ],
+   "return_literals_old": [],
+   "return_literals_new": [],
+   "rc_consts_old": {},
+   "rc_consts_new": {},
+   "rc_consts_renumbered": {},
+   "exit_code_semantics_exit_code_assignments": [],
+   "old_exit_code_assignments": [],
+   "required_fields_present": {
+    "declared": true,
+    "raised": true,
+    "declared_expectation_ok": true,
+    "declared_expectation_mismatch": true,
+    "declared_expectation_not_met": true,
+    "declared_expectation_comparison": true,
+    "judged": true,
+    "declared_expectations_in_cases_json": true,
+    "declared_expectations_enforced": true,
+    "cases_json_declared_expectations_usable": true,
+    "declared_expectation_mismatch_case_ids": true,
+    "reason_namespace": true
+   },
+   "all_required_present": true,
+   "diff_present": true,
+   "evidence_present": true
+  },
+  "M25-M28": {
+   "new_sha256": "71033142f061128b984f916fce9b22d379ea43e6ad9bc415ee06fc494a781f4b",
+   "new_bytes": 36199,
+   "old_sha256": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+   "old_bytes": 22720,
+   "historical_sha256": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+   "historical_bytes": 22720,
+   "old_equals_historical_bytes": true,
+   "isinstance_lines": [
+    {
+     "line": 32,
+     "text": "``isinstance()`` must NOT be used, because ``ModelRegistryError`` is a subclass"
+    },
+    {
+     "line": 34,
+     "text": "``isinstance``. Precedence: a missing/unusable declaration is decided BEFORE any"
+    },
+    {
+     "line": 72,
+     "text": "if isinstance(spec, dict):"
+    },
+    {
+     "line": 97,
+     "text": "if isinstance(value, dict) and \"__bool__first__\" in value:"
+    },
+    {
+     "line": 162,
+     "text": "# Comparison is EXACT TYPE-NAME EQUALITY. isinstance() must NOT be used:"
+    },
+    {
+     "line": 164,
+     "text": "# would silently pass under isinstance()."
+    },
+    {
+     "line": 166,
+     "text": "if not (isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip())]"
+    },
+    {
+     "line": 424,
+     "text": "is_target = isinstance(exc, model_registry.ModelRegistryError)"
+    },
+    {
+     "line": 425,
+     "text": "is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError))"
+    },
+    {
+     "line": 428,
+     "text": "declared_usable = isinstance(declared, str) and bool(declared.strip())"
+    },
+    {
+     "line": 430,
+     "text": "\"raised exact type name %r vs declared %r (exact-name comparison, NOT isinstance)\""
+    },
+    {
+     "line": 488,
+     "text": "if isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip()}),"
+    },
+    {
+     "line": 490,
+     "text": "\"'expected' string (NOT isinstance)\"),"
+    }
+   ],
+   "equality_lines": [
+    {
+     "line": 167,
+     "text": "cases_declared_ok = not unusable_declared"
+    },
+    {
+     "line": 444,
+     "text": "declared_ok = (raised_name == declared)  # exact type-name equality"
+    }
+   ],
+   "return_literals_old": [
+    "1"
+   ],
+   "return_literals_new": [
+    "1"
+   ],
+   "rc_consts_old": {},
+   "rc_consts_new": {},
+   "rc_consts_renumbered": {},
+   "exit_code_semantics_exit_code_assignments": [],
+   "old_exit_code_assignments": [],
+   "required_fields_present": {
+    "declared": true,
+    "raised": true,
+    "declared_expectation_ok": true,
+    "declared_expectation_mismatch": true,
+    "declared_expectation_not_met": true,
+    "declared_expectation_comparison": true,
+    "judged": true,
+    "declared_expectations_in_cases_json": true,
+    "declared_expectations_enforced": true,
+    "cases_json_declared_expectations_usable": true,
+    "declared_expectation_mismatch_case_ids": true,
+    "reason_namespace": true
+   },
+   "all_required_present": true,
+   "diff_present": true,
+   "evidence_present": true
+  },
+  "M29-M31": {
+   "new_sha256": "e1e1e9ed4e738f388208c490f3c48e289f93385d8593761a48838f0fa78bf175",
+   "new_bytes": 36027,
+   "old_sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+   "old_bytes": 28242,
+   "historical_sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+   "historical_bytes": 28242,
+   "old_equals_historical_bytes": true,
+   "isinstance_lines": [
+    {
+     "line": 37,
+     "text": "isinstance() must NOT be used for this comparison: ModelRegistryError is a subclass"
+    },
+    {
+     "line": 38,
+     "text": "of ValueError, so a declared \"ValueError\" would silently pass under isinstance()."
+    },
+    {
+     "line": 92,
+     "text": "if isinstance(spec, dict):"
+    },
+    {
+     "line": 117,
+     "text": "if isinstance(value, dict) and \"__bool__first__\" in value:"
+    },
+    {
+     "line": 147,
+     "text": "is_seq = isinstance(value, (list, tuple))"
+    },
+    {
+     "line": 155,
+     "text": "isinstance(v, (int, float)) and not isinstance(v, bool) for v in elements),"
+    },
+    {
+     "line": 157,
+     "text": "isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)"
+    },
+    {
+     "line": 168,
+     "text": "expectations_present = (isinstance(expected, list) and len(expected) > 0"
+    },
+    {
+     "line": 169,
+     "text": "and isinstance(years, list) and len(years) > 0)"
+    },
+    {
+     "line": 170,
+     "text": "described[\"expected_length\"] = len(expected) if isinstance(expected, list) else None"
+    },
+    {
+     "line": 171,
+     "text": "described[\"years_length\"] = len(years) if isinstance(years, list) else None"
+    },
+    {
+     "line": 172,
+     "text": "described[\"length_equals_years\"] = (length is not None and isinstance(years, list)"
+    },
+    {
+     "line": 174,
+     "text": "described[\"length_equals_expected\"] = (length is not None and isinstance(expected, list)"
+    },
+    {
+     "line": 300,
+     "text": "expectations_present = (isinstance(exp, list) and len(exp) > 0"
+    },
+    {
+     "line": 301,
+     "text": "and isinstance(tol, list) and len(tol) == len(exp)"
+    },
+    {
+     "line": 302,
+     "text": "and isinstance(years, list) and len(years) > 0)"
+    },
+    {
+     "line": 328,
+     "text": "cwithin = bool(isinstance(cexp, list) and len(cexp) > 0"
+    },
+    {
+     "line": 333,
+     "text": "\"expectation_present\": isinstance(cexp, list) and len(cexp) > 0,"
+    },
+    {
+     "line": 339,
+     "text": "\"expectation_present\": isinstance(cexp, list)}"
+    },
+    {
+     "line": 348,
+     "text": "\"ok\": bool(isinstance(dexp, list) and within([float(v) for v in dactual], dexp)),"
+    },
+    {
+     "line": 392,
+     "text": "# compared against the exception's EXACT type name.  isinstance() must NOT be used for"
+    },
+    {
+     "line": 405,
+     "text": "if not (isinstance(c.get(\"expected\"), str) and c[\"expected\"].strip())]"
+    },
+    {
+     "line": 418,
+     "text": "\"raised exact type name %r vs declared %r (exact-name comparison, not isinstance)\""
+    },
+    {
+     "line": 438,
+     "text": "is_target = isinstance(exc, model_registry.ModelRegistryError)"
+    },
+    {
+     "line": 439,
+     "text": "is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError))"
+    },
+    {
+     "line": 442,
+     "text": "declared_usable = isinstance(declared, str) and bool(declared.strip())"
+    },
+    {
+     "line": 444,
+     "text": "\"raised exact type name %r vs declared %r (exact-name comparison, not isinstance)\""
+    },
+    {
+     "line": 458,
+     "text": "declared_ok = (raised_name == declared)  # EXACT type-name equality, never isinstance"
+    },
+    {
+     "line": 489,
+     "text": "\"'expected' string (NOT isinstance)\"),"
+    }
+   ],
+   "equality_lines": [
+    {
+     "line": 406,
+     "text": "cases_declared_ok = not unusable_declared"
+    },
+    {
+     "line": 458,
+     "text": "declared_ok = (raised_name == declared)  # EXACT type-name equality, never isinstance"
+    }
+   ],
+   "return_literals_old": [],
+   "return_literals_new": [],
+   "rc_consts_old": {
+    "PASS": "0",
+    "HARNESS": "1",
+    "NO_VERDICT": "2",
+    "NEGATIVE": "3"
+   },
+   "rc_consts_new": {
+    "PASS": "0",
+    "HARNESS": "1",
+    "NO_VERDICT": "2",
+    "NEGATIVE": "3"
+   },
+   "rc_consts_renumbered": {},
+   "exit_code_semantics_exit_code_assignments": [],
+   "old_exit_code_assignments": [],
+   "required_fields_present": {
+    "declared": true,
+    "raised": true,
+    "declared_expectation_ok": true,
+    "declared_expectation_mismatch": true,
+    "declared_expectation_not_met": true,
+    "declared_expectation_comparison": true,
+    "judged": true,
+    "declared_expectations_in_cases_json": true,
+    "declared_expectations_enforced": true,
+    "cases_json_declared_expectations_usable": true,
+    "declared_expectation_mismatch_case_ids": true,
+    "reason_namespace": true
+   },
+   "all_required_present": true,
+   "diff_present": true,
+   "evidence_present": true
+  }
+ }
+}

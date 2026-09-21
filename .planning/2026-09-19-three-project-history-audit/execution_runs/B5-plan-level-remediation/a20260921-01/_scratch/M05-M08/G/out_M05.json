@@ -1,0 +1,374 @@
+{
+ "card_id": "M05",
+ "model_id": "subscription",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root",
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "registry_metadata": {
+  "model_id": "subscription",
+  "required": [
+   "average_customers",
+   "revenue_per_customer"
+  ],
+  "optional": [
+   "timing_factor",
+   "usage_revenue"
+  ],
+  "defaults": {
+   "timing_factor": 1.0
+  },
+  "dimensions": {
+   "average_customers": "quantity",
+   "revenue_per_customer": "revenue_per_unit",
+   "timing_factor": "ratio",
+   "usage_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "timing_factor"
+  ],
+  "driver_bounds": {},
+  "formula": "revenue = average_customers * revenue_per_customer * timing_factor + usage_revenue"
+ },
+ "positive": {
+  "raised": null,
+  "actual": [
+   620.0
+  ],
+  "actual_repr": [
+   "620.0"
+  ],
+  "length": 1
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   550.0,
+   880.0
+  ],
+  "expected": [
+   550.0,
+   880.0
+  ],
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   600.0
+  ],
+  "expected": [
+   600.0
+  ],
+  "ok": true
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "rowwise calculator discards base_revenue; design observation only, not a pass condition",
+   "raised": null,
+   "actual": [
+    620.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    620.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-ALT-CONV",
+   "expectation": null,
+   "kind": "input_replay",
+   "why": "replays the frozen card input so the runner's own reading is reproducible",
+   "raised": null,
+   "actual": [
+    620.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    620.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  }
+ ],
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [200], 'revenue_per_customer': [3], 'timing_factor': {'__float__': 1.5}, 'usage_revenue': [20]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver subscription.timing_factor must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver subscription.timing_factor must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [True], 'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "subscription.average_customers.FY2027 must be numeric",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: subscription.average_customers.FY2027 must be numeric\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [nan], 'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "subscription.average_customers.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: subscription.average_customers.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [inf], 'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "subscription.average_customers.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: subscription.average_customers.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [-inf], 'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "subscription.average_customers.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: subscription.average_customers.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [], 'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver subscription.average_customers must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver subscription.average_customers must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for subscription: average_customers",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for subscription: average_customers\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [200], 'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "unsupported drivers for subscription: unknown_driver",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for subscription: unknown_driver\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [200], 'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "subscription.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: subscription.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_customers': [200], 'revenue_per_customer': [3], 'timing_factor': [1], 'usage_revenue': [20]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "subscription.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: subscription.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "declared_expectation_comparison": "raised=ModelRegistryError vs declared='ModelRegistryError' (exact type name; NOT isinstance)",
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "expected": null,
+   "declared": null,
+   "base_input": "continuity_positive",
+   "mutated_input_repr": "{'average_customers': [180, 220], 'revenue_per_customer': [3, 4], 'timing_factor': [1, 1], 'usage_revenue': [10, 0]} years=[2027, 2029] base=0",
+   "raised": "ModelRegistryError",
+   "message": "subscription.years must be consecutive and increasing",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 269, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M05-M08\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M05-M08\\code_root\\model_registry.py\", line 324, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must be consecutive and increasing\")\nmodel_registry.ModelRegistryError: subscription.years must be consecutive and increasing\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_ok": null,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": null,
+   "declared_expectation_comparison": "declaration unusable (cases.json 'expected'=None); raised=ModelRegistryError - not compared",
+   "judged": false,
+   "verdict": "NOT_JUDGED_declaration_unusable"
+  }
+ ],
+ "tolerances_ok": true,
+ "defaults_ok": true,
+ "length_ok": true,
+ "per_value_checks": [
+  {
+   "index": 0,
+   "year": 2027,
+   "actual": 620.0,
+   "expected": 620.0,
+   "tolerance": 6.2e-07,
+   "abs_diff": 0.0,
+   "ok": true
+  }
+ ],
+ "negative_counts": {
+  "declared_expectation_mismatch": 0,
+  "declared_expectation_not_met": 0,
+  "declared_expectation_missing_in_cases_json": 1
+ },
+ "negative_summary": {
+  "total": 11,
+  "passed": 10,
+  "failed": [
+   "CONT-BREAK"
+  ],
+  "declared_expectations_in_cases_json": [
+   "ModelRegistryError"
+  ],
+  "declared_expectation_comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+  "declared_expectations_enforced": true,
+  "not_judged": [
+   "CONT-BREAK"
+  ],
+  "judged": 10
+ },
+ "no_verdict_reason": "cases_json_declared_expectation_missing:CONT-BREAK",
+ "exit_code_semantics": {
+  "harness_incomplete": false,
+  "positive_ok": true,
+  "continuity_ok": true,
+  "negatives_ok": true,
+  "defaults_ok_not_gating": true,
+  "verdict": "no_verdict",
+  "exit_code": 2,
+  "cases_json_declared_expectations_usable": false,
+  "declared_expectation_mismatch_case_ids": [],
+  "declared_expectation_not_met_case_ids": [],
+  "declaration_unusable_case_ids": [
+   "CONT-BREAK"
+  ],
+  "reason_namespace": "FAIL_wrong_exception_type is a SUBSET of declared_expectation_mismatch when the declaration is usable; NOT_JUDGED_declaration_unusable is an unusable-declaration outcome (rc=2, no verdict) and is NOT a mismatch and NOT part of declared_expectation_mismatch_case_ids."
+ }
+}

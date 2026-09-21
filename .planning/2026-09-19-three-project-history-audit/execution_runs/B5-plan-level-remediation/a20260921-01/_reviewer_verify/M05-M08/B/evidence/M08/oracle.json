@@ -1,0 +1,116 @@
+{
+ "card_id": "M08",
+ "model_id": "project_backlog",
+ "generated_by": "scripts/oracle_M08.py (stdlib only, no product import)",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "50"
+  ],
+  "expected_float": [
+   50.0
+  ],
+  "tolerances": [
+   5e-08
+  ],
+  "hand_work": [
+   "100 + 40 - 5 - 10 + -15 - 60"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "50",
+   "0"
+  ],
+  "expected_float": [
+   50.0,
+   0.0
+  ],
+  "tolerances": [
+   5e-08,
+   1e-09
+  ],
+  "hand_work": [
+   "100 + 40 - 5 - 10 + -15 - 60",
+   "60 + 0 - 0 - 0 + 0 - 60"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "65"
+  ],
+  "expected_float": [
+   65.0
+  ],
+  "tolerances": [
+   6.5e-08
+  ],
+  "hand_work": [
+   "100 + 40 - 5 - 10 + 0 - 60"
+  ]
+ },
+ "defaults_expected_float": [
+  65.0
+ ],
+ "observation_expected": {},
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "reading_A_card_arithmetic": {
+  "desc": "card line 42 arithmetic: subtract the magnitude 10 and subtract the -15",
+  "source": "card_M08.md L42",
+  "positive_expected": "50"
+ },
+ "reading_B_card_formula_string": {
+  "desc": "card line 42 symbols (- contract_changes) over the frozen signed convention",
+  "source": "card_M08.md L8 and L42",
+  "positive_expected": "70"
+ },
+ "reading_C_upstream_and_implementation": {
+  "desc": "+ contract_changes over signed amounts",
+  "source": "docs/buy_side_model_audit_2026-09-18.md:42 and scripts/model_registry.py:228",
+  "positive_expected": "50"
+ },
+ "secondary_readings": {
+  "reading_B_positive": "70",
+  "reading_C_positive": "50",
+  "reading_C_formula_string": "100 + 40 - 5 + -10 + -15 - 60",
+  "reading_B_continuity": [
+   "70",
+   "0"
+  ],
+  "reading_C_continuity": [
+   "50",
+   "0"
+  ],
+  "reading_B_defaults": "85",
+  "reading_C_defaults": "65",
+  "sign_probe_reading_A": "65",
+  "sign_probe_reading_B": "65",
+  "sign_probe_reading_C": "85",
+  "sign_probe_neg_reading_A": "55",
+  "sign_probe_neg_reading_B": "95",
+  "sign_probe_neg_reading_C": "55"
+ }
+}

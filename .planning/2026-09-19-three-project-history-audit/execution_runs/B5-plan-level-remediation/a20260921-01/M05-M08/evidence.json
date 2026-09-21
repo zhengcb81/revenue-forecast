@@ -1,0 +1,243 @@
+{
+ "batch": "M05-M08",
+ "cards": ["M05", "M06", "M07", "M08"],
+ "remediation": "REM-21 / B5 propagation (OWNER_DECISIONS.md §13 T1-8, TIER-1)",
+ "contract": "execution_runs/B5-plan-level-remediation/a20260921-01/PROPAGATION_CONTRACT.md",
+ "reference_implementation": {
+  "path": "execution_runs/M17/a20260919-01/scripts/run_card.py",
+  "sha256": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252",
+  "bytes": 36744,
+  "note": "Semantics copied (exact type-name equality, unusable-declaration precedence). The superseded r2-generation hash 5307d2cc is recorded here as a discrepancy per contract §1 and was NOT 'fixed' in any historical file."
+ },
+ "runner_before": {
+  "path": "execution_runs/M05/a20260919-01/scripts/run_card.py",
+  "sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+  "bytes": 14758,
+  "card_equivalence_verified": {
+   "M05": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "M06": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "M07": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "M08": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
+  },
+  "bytes_verified": 14758,
+  "local_byte_copy": "M05-M08/run_card_before.py",
+  "local_byte_copy_sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
+ },
+ "runner_after": {
+  "path": "execution_runs/B5-plan-level-remediation/a20260921-01/M05-M08/run_card.py",
+  "sha256": "489ba7e35592241b91ecf393b515df2111bc4996298274226e0e1012deff230b",
+  "bytes": 20804
+ },
+ "diff_path": "execution_runs/B5-plan-level-remediation/a20260921-01/M05-M08/runner.diff",
+ "diff_sha256": "93afffbf157a816ada0a21f87d3ee06860049cfd72d30a5f539079000dc70c28",
+ "diff_stats": {"added_lines": 110, "removed_lines": 11, "context_lines": 3, "total_lines": 189},
+ "cards_cases_sha256": {
+  "_convention": "raw on-disk bytes (LF line endings) of execution_runs/<CARD>/a20260919-01/evidence/<CARD>/cases.json, as read by the runner",
+  "M05": "2a7ece2fcaaeba5922d88b3e7789365d47f2a29edc359c62a8bc7046e8251b45",
+  "M06": "2ffe08f90b9e17be97f002df2dae38e12587d71e6903e92f69b749e4e62014de",
+  "M07": "8d90810a77a1d602c13b3501392e7eb6ab699b551e3162de5c9e714f0311c603",
+  "M08": "cc3055fa0fb2ab485c5a379b473f718fef756ec14aa851aa356c7a041042416e"
+ },
+ "cards_cases_sha256_ledger_r3_crlf_normalized": {
+  "_note": "PRE-EXISTING discrepancy, fully explained, NOT introduced and NOT repaired by this batch. The r3 evidence_hashes.json ledgers of all four cards record the CRLF-normalized hash of cases.json; the stored files carry LF line endings. Every ledger value reproduces EXACTLY under the single transform LF->CRLF (measured: sha256(raw.replace(b'\\n', b'\\r\\n'))), and raw-vs-ledger differs for all four cards. Content is additionally proven identical to the frozen run_result.json: (id, kind, expected) triples of cases.json == the 'negatives' array of the frozen run_result.json for all four cards (11/11 cases each). No historical file was modified (see historical_writes and the mtime evidence).",
+  "M05": "7e1f2edd118b987461dec8c7950221f3e7ecc93adb750326e6c73ca0011bbe07",
+  "M06": "a635939117af6cacb7defda2b695fc521283276b4354b579655eb5679aa47890",
+  "M07": "36f15c119a44ec9d09c867282f3b8ac26e2c71efb08f9f5740936dc0dc2fae8d",
+  "M08": "57459a8f5ea298e1bf56371175f62b298171ca07439d6d3b67ad911b829add5e"
+ },
+ "insertion_points": [
+  {"file": "run_card.py", "line": 13, "lines": "13-32", "what": "Module docstring 'Exit codes' section rewritten: rc=2 now also covers a missing/unusable frozen per-case 'expected' declaration decided BEFORE any case is judged (verdict \"no_verdict\"); rc=3 now also covers a raised exception whose exact type name != declared 'expected'. Adds the REM-21/M17-M20 propagation note stating isinstance() must NOT be used."},
+  {"file": "run_card.py", "line": 121, "lines": "121-134", "what": "NEW frozen-declaration precondition, evaluated immediately after cases.json is loaded and BEFORE the product import and any case judging: unusable_declared = ids whose 'expected' is not a non-empty string; cases_declared_ok = not unusable_declared; no_verdict_reason = 'cases_json_declared_expectation_missing:<ids>'; declared_expectations_cases_json = sorted distinct declarations."},
+  {"file": "run_card.py", "line": 261, "lines": "261-263", "what": "Per-case loop: declared = case.get('expected') replaces the hard subscripts case['expected'] (so a DELETED key is survivable and yields a no-verdict instead of a KeyError crash); entry gains the raw 'declared' key while keeping the existing 'expected' key unchanged."},
+  {"file": "run_card.py", "line": 270, "lines": "270-277", "what": "Non-raising branch now also emits declared_expectation_ok=None, declared_expectation_mismatch=False, declared_expectation_not_met=None, declared_expectation_comparison, judged=True, keeping the existing verdict 'FAIL_not_rejected'."},
+  {"file": "run_card.py", "line": 286, "lines": "286-297", "what": "NEW unusable-declaration branch (precedence): declared_usable=False -> judged=False and verdict 'NOT_JUDGED_declaration_unusable'; declared_expectation_mismatch is explicitly False so an unusable declaration can never be counted as a mismatch."},
+  {"file": "run_card.py", "line": 299, "lines": "299-312", "what": "NEW gating comparison: declared_ok = (entry['raised'] == declared), i.e. EXACT exception type-name equality, never isinstance(). Verdict precedence FAIL_wrong_exception_type (raised type is not ModelRegistryError) -> FAIL_declared_expectation_mismatch (right type, wrong declared name) -> PASS_rejected."},
+  {"file": "run_card.py", "line": 315, "lines": "315-321", "what": "NEW result['negative_counts'] with declared_expectation_mismatch, declared_expectation_not_met, declared_expectation_missing_in_cases_json."},
+  {"file": "run_card.py", "line": 322, "lines": "322-333", "what": "result['negative_summary'] extended ADDITIVELY (total/passed/failed unchanged in name and meaning) with declared_expectations_in_cases_json, declared_expectation_comparison, declared_expectations_enforced=true, not_judged, judged."},
+  {"file": "run_card.py", "line": 367, "lines": "367-371", "what": "Stdout: prints negative counts, enforcement flag and the no_verdict reason (existing print lines left intact)."},
+  {"file": "run_card.py", "line": 373, "lines": "373-412", "what": "Exit-code classification: unusable declaration takes PRECEDENCE over case judging (verdict 'no_verdict', rc=2); negatives_ok is computed over JUDGED cases only so a NOT_JUDGED case can never by itself produce rc=3; rc=0/3 unchanged otherwise (this runner still has NO rc=1). result['no_verdict_reason'] added; exit_code_semantics gains cases_json_declared_expectations_usable, declared_expectation_mismatch_case_ids, declared_expectation_not_met_case_ids, declaration_unusable_case_ids and the reason_namespace note."}
+ ],
+ "rc_codes_after": {
+  "0": "pass - positive matched the independent oracle within tolerance AND the continuity positive passed AND every JUDGED negative case was rejected with ModelRegistryError and its raised exact type name equals the case's declared 'expected'",
+  "2": "no verdict, issued BEFORE any case can be judged: the frozen cases.json declaration itself is missing/unusable (reason 'cases_json_declared_expectation_missing:<ids>'), or the positive path raised so there is nothing to compare",
+  "3": "a judgement WAS possible and did not hold: positive mismatch, continuity failure, an unrejected negative, a wrong exception type, or a raised type name that does not equal the declared 'expected'",
+  "note": "This runner has no rc=1 (verified: no rc=1 branch exists in run_card_before.py or run_card.py). Exit-code NUMBERS were deliberately NOT renumbered; the only new behaviour is that a per-case 'expected' mismatch reaches the pre-existing rc=3 negative path, while an unusable declaration reaches rc=2 before judging."
+ },
+ "arms": {
+  "E": {
+   "rc": 0,
+   "runner": "M05-M08/run_card.py (new)",
+   "cases_json": "frozen, unmodified (sha256 M05 2a7ece2f..., identical to the frozen file)",
+   "verdict": "pass",
+   "declared_expectation_mismatch": 0,
+   "mutated_case": null,
+   "note": "Green control. Ran on ALL FOUR cards; identical result on each: raw rc=0, verdict 'pass', 11/11 negatives PASS_rejected, negative_counts.declared_expectation_mismatch=0, declared_expectations_in_cases_json=['ModelRegistryError']. Patch is inert on the frozen declarations."
+  },
+  "F": {
+   "rc": 3,
+   "runner": "M05-M08/run_card.py (new)",
+   "cases_json": "one negative case's 'expected' changed 'ModelRegistryError' -> 'ValueError'",
+   "verdict": "fail",
+   "declared_expectation_mismatch": 1,
+   "mutated_case": "CONT-BREAK",
+   "note": "THE DELIVERABLE. Ran on ALL FOUR cards; identical result on each: raw rc=3, verdict 'fail', target verdict 'FAIL_declared_expectation_mismatch', declared='ValueError', raised='ModelRegistryError', declared_expectation_ok=false, declared_expectation_mismatch=true, judge=True, negative_counts.declared_expectation_mismatch=1, exit_code_semantics.declared_expectation_mismatch_case_ids=['CONT-BREAK']. Value of declared_expectation_not_met is FALSE on purpose: the raised type IS ModelRegistryError, so the failure is purely a declaration mismatch - this proves the gate is exact type-NAME equality and not isinstance()."
+  },
+  "B": {
+   "rc": 0,
+   "runner": "M05-M08/run_card_before.py (byte copy of the historical runner, sha256 fd3a11c9...)",
+   "cases_json": "byte-identical to arm F (sha256 equality verified per card)",
+   "verdict": "pass",
+   "declared_expectation_mismatch": null,
+   "mutated_case": "CONT-BREAK",
+   "note": "INERTNESS CONTROL - rc=0 is a MEASUREMENT (raw process return code), not an assumed expectation. It came out 0 on all four cards, which means the historical runner did NOT gate on the declared 'expected' - this batch is the 'fabricated green' case the owner ruling names. Detail: raw rc=0, verdict 'pass', 11/11 PASS_rejected, even though CONT-BREAK declares 'ValueError' while ModelRegistryError is raised. The old runner emits no 'declared' key, no negative_counts and no declared_expectations_enforced, and its exit_code_semantics.cases_json_declared_expectations_usable is absent. The 'expected' string is copied into its output record and never compared against anything (see arm_B_rc_basis.independent_source_level_derivation). This is the exact before/after delta the remediation closes."
+  },
+  "G": {
+   "rc": 2,
+   "runner": "M05-M08/run_card.py (new)",
+   "cases_json": "that negative case's 'expected' KEY DELETED",
+   "verdict": "no_verdict",
+   "declared_expectation_mismatch": 0,
+   "mutated_case": "CONT-BREAK",
+   "reason": "cases_json_declared_expectation_missing:CONT-BREAK",
+   "note": "rc-CLASSIFICATION ARM (prereq 2). Ran on ALL FOUR cards; identical result on each: raw rc=2, verdict 'no_verdict', no_verdict_reason='cases_json_declared_expectation_missing:CONT-BREAK', target verdict 'NOT_JUDGED_declaration_unusable', target judged=false, target declared_expectation_ok=null and declared_expectation_mismatch=FALSE (so the unusable case is NOT counted as a mismatch), negative_counts.declared_expectation_mismatch=0, declared_expectation_missing_in_cases_json=1, exit_code_semantics.declaration_unusable_case_ids=['CONT-BREAK']. The other 10 cases were still judged (negative_summary.judged=10, not_judged=['CONT-BREAK']), which demonstrates the precedence rule: the 2 is issued for the declaration and not by the NOT_JUDGED case."
+  }
+ },
+ "historical_runner_already_gated": false,
+ "arm_B_rc_basis": {
+  "measured_raw_rc": 0,
+  "measured_on_all_four_cards": true,
+  "per_contract_correction": "Arm B's rc is a MEASUREMENT, not a fixed expectation. Reported exactly as the real process returned it: 0 on every card. No value was adjusted to fit a prediction and neither the historical runner nor the patch was altered to influence this measurement.",
+  "interpretation": "rc=0 means the historical runner did NOT gate its verdict on the declared 'expected' -> this batch IS the 'fabricated green' case the owner ruling names.",
+  "independent_source_level_derivation": {
+   "method": "Re-derived from the historical runner's own source, NOT from the correction's premise and NOT from evidence/b5_scan.json (whose compares_raised_to_expected flag is declared unreliable).",
+   "gate_symbols_found": {"M05": 0, "M06": 0, "M07": 0, "M08": 0},
+   "symbols_searched": ["expected_type_matches_raised", "expected_type", "declared_ok", "raised_name", "declared_expectation"],
+   "isinstance_on_declared_expected": 0,
+   "the_single_reference_to_the_declaration": "line 233 (before-patch numbering): entry = {... \"expected\": case[\"expected\"], ...} - the declared value is copied into the output record for reporting and then never consulted again.",
+   "the_actual_verdict_computation": ["line 246: is_target = isinstance(exc, model_registry.ModelRegistryError)", "line 248: entry[\"is_target_type\"] = is_target", "line 250: entry[\"verdict\"] = (\"PASS_rejected\" if is_target else (\"FAIL_wrong_exception_type\" if not is_import_or_file else \"FAIL_import_or_file_error\"))"],
+   "conclusion": "The historical verdict depends ONLY on isinstance(exc, ModelRegistryError) plus an import/file-error guard. The declared 'expected' string is never read by any comparison, so a case declaring the superclass 'ValueError' still records PASS_rejected.",
+   "corroboration_from_the_frozen_records": "The frozen run_result.json of all four cards contains ZERO expected-vs-raised comparison fields among the negative-entry keys (base_input, expected, id, is_import_or_file_error, is_target_type, kind, message, mutated_input_repr, raised, traceback, verdict, why). If the historical runner had gated, it would have had to emit a comparison field. It did not."
+  },
+  "empirical_proof_from_arm_B": "With cases.json mutated so CONT-BREAK declares 'ValueError' while the product raises ModelRegistryError, the historical runner still returned rc=0, verdict 'pass', 11/11 PASS_rejected in all four cards."
+ },
+ "arm_card_matrix": {
+  "_note": "Every arm was run against ALL FOUR cards with real processes; the raw rc was read from the child process return code for each individual run. All four cards produced the contract-mandated value on every arm.",
+  "E": {"M05": 0, "M06": 0, "M07": 0, "M08": 0},
+  "F": {"M05": 3, "M06": 3, "M07": 3, "M08": 3},
+  "B": {"M05": 0, "M06": 0, "M07": 0, "M08": 0},
+  "G": {"M05": 2, "M06": 2, "M07": 2, "M08": 2}
+ },
+ "arm_invocation": {
+  "interpreter": "execution_runs/M05/a20260919-01/iso/venv/Scripts/python.exe",
+  "interpreter_version": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+  "argv_template": ["<iso venv python>", "-X", "utf8", "-B", "<runner>", "--card", "<CARD>", "--attempt", "<scratch>/<arm>", "--code-root", "<scratch>/code_root", "--out", "<scratch>/<arm>/out_<CARD>.json", "--run-result-out", "<scratch>/<arm>/formula_result_<CARD>.json"],
+  "optional_flags_match_bound_B_unit": true,
+  "bound_B_unit_flags": ["--out", "--run-result-out"],
+  "bound_B_unit_evidence": "evidence/batch_invocations.json key \"M05\" (units B-M05, B-M06, B-M07, B-M08)",
+  "note": "The argv reproduces the batch's own bound B unit exactly, with --attempt/--code-root/--out/--run-result-out redirected into this batch's _scratch tree. -B was passed on every invocation; the historical --attempt was never used as a write target."
+ },
+ "mutated_case_selection": {
+  "rule": "first negative case (lowest id) whose frozen expected is 'ModelRegistryError'",
+  "id": "CONT-BREAK",
+  "kind": "set_years (M05/M06/M07) | set_driver_multi (M08)",
+  "raised_in_all_cards": "ModelRegistryError",
+  "decoy": "ValueError",
+  "decoy_justification": "model_registry.py line 13 declares 'class ModelRegistryError(ValueError)', so an isinstance()-based check would silently accept a declared 'ValueError'. Measured, not assumed.",
+  "decoy_is_empirically_required_here": "Sharpest form of the probe for THIS batch: the historical runner's only test is isinstance(exc, ModelRegistryError), so the ValueError decoy is precisely the value it cannot distinguish. Arm B returning rc=0 on that exact mutation is direct evidence of the un-gated hole.",
+  "id_order_note": "Sorted by id as strings, 'CONT-BREAK' sorts before 'NEG-CARD' (ASCII uppercase prefix comparison). It is the lowest id and its frozen expected is 'ModelRegistryError', so it satisfies the contract rule."
+ },
+ "isolated_code_root_sha256": {
+  "source": "execution_runs/M05/a20260919-01/iso/checkout_scripts",
+  "copy": "_scratch/M05-M08/code_root",
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "model_registry_py_expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_registry_py_matches_contract": true,
+  "files_copied": 2,
+  "note": "The iso checkout_scripts directory also contains a pre-existing __pycache__/ (model_registry.cpython-313.pyc, model_extensions.cpython-313.pyc, mtime 2026-09-20T03:07:30, i.e. present BEFORE this batch). It was deliberately NOT copied; code_root contains exactly the 2 .py files, and -B guaranteed no new __pycache__ was created anywhere."
+ },
+ "no_pycache_created": {
+  "pycache_dirs_under_attempt": 0,
+  "pyc_files_under_attempt": 0,
+  "checked": "recursive scan of execution_runs/B5-plan-level-remediation/a20260921-01"
+ },
+ "historical_writes": [],
+ "boundaries_respected": true,
+ "boundary_evidence": {
+  "wrote_only_under": [
+   "execution_runs/B5-plan-level-remediation/a20260921-01/M05-M08/",
+   "execution_runs/B5-plan-level-remediation/a20260921-01/_scratch/M05-M08/"
+  ],
+  "historical_runner_hash_recheck_after_runs": {
+   "M05": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "M06": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "M07": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "M08": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
+  },
+  "mtime_sweep": "No file under execution_runs/M05, M06, M07, M08 has an mtime newer than 2026-09-20T15:53:17; the newest mtime per card is its review.md/run_card.py from the historical run. This batch ran on 2026-09-21T21:32Z-local, so it provably wrote nothing there.",
+  "production_repo_scripts_touched": false,
+  "historical_files_edited": [],
+  "miniconda_python_used": false,
+  "frozen_originals_edited": false,
+  "frozen_originals_copied_into": ["_scratch/M05-M08/E", "_scratch/M05-M08/F", "_scratch/M05-M08/B", "_scratch/M05-M08/G"]
+ },
+ "additive_field_check": {
+  "method": "For each new-runner output the contract-required keys were asserted present, and the pre-existing keys of the historical run_result.json (card_id, model_id, code_root, model_registry_file, entry_point, registry_metadata, positive, continuity_positive, defaults, observations, negatives, tolerances_ok, defaults_ok, negative_summary.total/passed/failed, exit_code_semantics.harness_incomplete/positive_ok/continuity_ok/negatives_ok/defaults_ok_not_gating/verdict/exit_code, length_ok, per_value_checks) were asserted still present and unchanged in name and meaning.",
+  "pre_existing_fields_removed_or_renamed": 0,
+  "negative_entries_keep_expected_key": true
+ },
+ "unmet_prerequisites": [],
+ "open_issues": [
+  {
+   "issue": "PRE-EXISTING (not caused by this batch, not repaired by it): the r3 evidence_hashes.json ledgers of M05/M06/M07/M08 record CRLF-normalized hashes for evidence/<CARD>/cases.json, while the stored files have LF line endings.",
+   "severity": "informational - content is proven equivalent",
+   "evidence": "Each ledger value reproduces exactly under sha256(raw.replace(b'\\n', b'\\r\\n')) for all four cards (measured); and cases.json (id, kind, expected) triples equal the frozen run_result.json 'negatives' triples for 11/11 cases on all four cards.",
+   "action_taken": "none - historical files were read only. Recorded here rather than hand-edited, per contract §0.2 and the §1 instruction to record hash discrepancies instead of 'fixing' historical files."
+  },
+  {
+   "issue": "The contract's §6 example shows 'mutated_case':'N01' for arms F/B/G; this batch's lowest-id negative case is CONT-BREAK, so CONT-BREAK is what all three arms used.",
+   "severity": "informational",
+   "evidence": "Mutated case recorded per arm; CONT-BREAK frozen expected is 'ModelRegistryError' and it raises ModelRegistryError in all four cards.",
+   "action_taken": "Followed the normative §5 selection rule (lowest id with frozen expected 'ModelRegistryError'); the §6 value was an illustrative example."
+  },
+  {
+   "issue": "ARM B MEASURED rc=0 (NOT the corrected rc=3 case): this batch's historical runner did NOT already gate, so what the patch ADDS here is the whole declaration gate, not merely a precedence refinement.",
+   "severity": "finding - recorded as measured, no value adjusted to fit a prediction",
+   "measured_rc": {"M05": 0, "M06": 0, "M07": 0, "M08": 0},
+   "what_was_ALREADY_there_in_the_historical_runner": [
+    "a per-case ModelRegistryError rejection test via isinstance(exc, model_registry.ModelRegistryError), producing verdicts PASS_rejected / FAIL_wrong_exception_type / FAIL_import_or_file_error",
+    "reporting the declared value into the output record as the 'expected' key - copied for the record only, never compared",
+    "rc 0 = pass, rc 2 = harness/bookkeeping could not produce a verdict, rc 3 = negative verdict. No rc=1."
+   ],
+   "what_this_patch_ADDS": [
+    "the declaration gate itself: declared_ok = (raised exact type name == cases.json 'expected'), evaluated per case (run_card.py lines 299-312) - previously the declared value had NO effect on any verdict",
+    "the new verdict label FAIL_declared_expectation_mismatch (line 310) for the right-type/wrong-declaration case that used to be silently PASS_rejected",
+    "the rc=2 declaration-usability PRECEDENCE decided before any case is judged, plus the no_verdict_reason string 'cases_json_declared_expectation_missing:<ids>' (lines 121-134, 373-384)",
+    "the NOT_JUDGED_declaration_unusable verdict and judged=false for a case whose declaration is unusable, explicitly excluded from negative_counts.declared_expectation_mismatch (lines 286-297, 377-378)",
+    "tolerance of a DELETED 'expected' key (case.get instead of case['expected'], line 261) - previously a KeyError crash rather than a clean no-verdict",
+    "the required counters and summary fields: negative_counts.declared_expectation_mismatch / declared_expectation_not_met / declared_expectation_missing_in_cases_json (lines 315-321); negative_summary.declared_expectations_in_cases_json / declared_expectation_comparison / declared_expectations_enforced / not_judged / judged (lines 322-333)",
+    "exit_code_semantics additions: cases_json_declared_expectations_usable, declared_expectation_mismatch_case_ids, declared_expectation_not_met_case_ids, declaration_unusable_case_ids, and the reason_namespace note (lines 399-411)"
+   ],
+   "action_taken": "Reported rc=0 unchanged and set historical_runner_already_gated=false. Neither the historical runner nor the patch was weakened, reverted or altered to influence this measurement. The gate question was re-derived from the historical runner's own source (arm_B_rc_basis.independent_source_level_derivation), because evidence/b5_scan.json's compares_raised_to_expected flag is declared unreliable."
+  },
+  {
+   "issue": "CONTRACT DEVIATION NOTED (correction received and applied): the original PROPAGATION_CONTRACT.md §3 table described this batch's existing 'expected' handling as 'none' and §5 fixed arm B at rc=0. The correction states arm B's rc is a MEASUREMENT. This batch measured 0, consistent with both the original table and the source-level re-derivation.",
+   "severity": "informational",
+   "evidence": "arm_B_rc_basis.measured_raw_rc=0 on all four cards; independent_source_level_derivation found 0 gate symbols in all four historical runners.",
+   "action_taken": "Recorded both the measurement and its basis; applied the correction's reporting requirements (arm B rc reported as measured, historical_runner_already_gated set, this open_issues entry added)."
+  }
+ ],
+ "verification": {
+  "verify_script": "_scratch/M05-M08/verify_arms.py",
+  "assertions_checked": 140,
+  "problems": 0,
+  "final_check_script": "_scratch/M05-M08/final_check.py",
+  "final_check_problems": 0,
+  "what_was_asserted": "per-arm/per-card raw rc; target-case verdict label; target declared/raised/judged/mismatch values; aggregate negative_counts; exit_code_semantics fields; no_verdict_reason prefix; not_judged/judged split in arm G; the old runner's absence of every new field in arm B; byte-identity of the mutated cases.json between arms B and F; and that the mutation actually landed (E cases.json != F cases.json). final_check.py additionally re-hashes runner_before/runner_after/runner.diff against evidence.json, re-hashes all four historical runners and the frozen cases.json files, re-hashes the isolated code root, asserts zero .pyc/__pycache__ under the attempt root, and asserts that no file under execution_runs/M05..M08 has an mtime at or after 2026-09-21.",
+  "gate_question_re_derived_from_source": "yes - evidence/b5_scan.json's compares_raised_to_expected flag was NOT used (declared unreliable by the contract correction); the gate question was re-derived by grepping the historical runners for gate symbols and by reading their verdict computation, which depends only on isinstance(exc, ModelRegistryError)."
+ },
+ "review_status": "review_pending",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "authority": "acceptance must be written by an independent reviewer, not by the implementer"
+}

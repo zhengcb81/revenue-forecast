@@ -1,0 +1,144 @@
+{
+ "card": "_bookkeeping_20260921_round67",
+ "negative_controls": {
+  "NC-1 exit code was a business failure": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-2 B4 arm log had content": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-3 an artifact postdates the abort": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-4 the carrier is newer than the artifacts": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-5 a proof reports a deletion": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-6 the anchor drifted": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-7 a product file was modified": {
+   "correctly_red": true,
+   "holds": false
+  },
+  "NC-8 something was deleted": {
+   "correctly_red": true,
+   "holds": false
+  }
+ },
+ "negative_controls_all_correctly_red": true,
+ "overall": "PASS",
+ "propositions": {
+  "P-1": {
+   "b4_arm_log_bytes": 0,
+   "b4_arm_log_is_empty": true,
+   "bench_tail_3_lines": [
+    "[23:38:02]   B5-clockmut-cpu8| cpu p1 T0 run1 rc=1 failed wall=31.19s starts=1 hang=900 kills=0 E               subprocess.TimeoutExpired: Command '['powershell.exe', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-proj",
+    "[23:38:02] ARM B5-clockmut-cpu8 EXIT=3221225786",
+    "[23:38:02] ARM B4-nonvacuity-quiet START node=non_vacuity cond=quiet runs=2 passes=2"
+   ],
+   "holds": true,
+   "last_arm_exit_code": 3221225786,
+   "last_arm_exit_is_status_control_c": true,
+   "last_line_is_a_new_arm_start": true
+  },
+  "P-2": {
+   "abort_minute_boundary": "2026-09-21 23:39:00",
+   "holds": true,
+   "newest_artifact": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-14-E-APPLY/a20260921-01/after/bench.log",
+   "newest_mtime_in_attempt": "2026-09-21 23:38:02.774892",
+   "newest_precedes_boundary": true
+  },
+  "P-3a": {
+   "carrier": "I-14-D/.../handoff.json",
+   "carrier_mtime": "2026-09-21 21:22:53.884658",
+   "carrier_predates_the_newest_artifact": true,
+   "holds": true,
+   "newest_artifact_mtime": "2026-09-21 23:37:56.656781"
+  },
+  "P-3b": {
+   "carrier": "I-14-D/.../review.md",
+   "carrier_mtime": "2026-09-21 21:18:02.308691",
+   "carrier_predates_the_newest_artifact": true,
+   "holds": true,
+   "newest_artifact_mtime": "2026-09-21 23:37:56.656781"
+  },
+  "P-3c": {
+   "apply_dir_has_handoff_json": false,
+   "apply_dir_has_review_md": false,
+   "holds": true
+  },
+  "P-4": {
+   "all_ok": true,
+   "holds": true,
+   "per_target": {
+    "REMEDIATION_REGISTER.md": {
+     "APPEND_ONLY": true,
+     "byte_delta": 1937,
+     "deleted_lines": 0,
+     "ok": true,
+     "pre_image_constant_reproduced": true,
+     "prefix_is_the_entire_pre_image": true
+    },
+    "findings.md": {
+     "APPEND_ONLY": true,
+     "byte_delta": 2710,
+     "deleted_lines": 0,
+     "ok": true,
+     "pre_image_constant_reproduced": true,
+     "prefix_is_the_entire_pre_image": true
+    },
+    "progress.md": {
+     "APPEND_ONLY": true,
+     "byte_delta": 1867,
+     "deleted_lines": 0,
+     "ok": true,
+     "pre_image_constant_reproduced": true,
+     "prefix_is_the_entire_pre_image": true
+    },
+    "task_plan.md": {
+     "APPEND_ONLY": true,
+     "byte_delta": 4997,
+     "deleted_lines": 0,
+     "ok": true,
+     "pre_image_constant_reproduced": true,
+     "prefix_is_the_entire_pre_image": true
+    }
+   }
+  },
+  "P-5": {
+   "anchor_bytes": 26446,
+   "anchor_expected_bytes": 26446,
+   "anchor_expected_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "anchor_matches": true,
+   "anchor_rel": "scripts/model_registry.py",
+   "anchor_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "holds": true,
+   "modified_paths_outside_planning": [],
+   "no_product_file_modified": true
+  },
+  "P-6": {
+   "absent": [],
+   "all_present": true,
+   "holds": true,
+   "paths_checked": {
+    ".git/COMMIT_MSG_R58.txt": true,
+    ".git/COMMIT_MSG_R59.txt": true,
+    ".git/COMMIT_MSG_R59b.txt": true,
+    ".git/COMMIT_MSG_T17.txt": true,
+    ".planning/_pwf_tmp/_pre60_tail.bin": true,
+    ".tmp-r41-mutation": true,
+    "assurance/unified_completion/manifests/plan_inputs.json.bak": true
+   }
+  }
+ },
+ "round": 67
+}

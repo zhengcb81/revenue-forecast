@@ -1,0 +1,129 @@
+{
+ "card_id": "M14",
+ "model_id": "retail_franchise",
+ "generated_by": "scripts/oracle_M14.py (standard library only, no product import)",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "65.00"
+  ],
+  "expected_float": [
+   65.0
+  ],
+  "tolerances": [
+   6.5e-08
+  ],
+  "hand_work": [
+   "10 x 5 + 200 x 0.04 + 7"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "65.00",
+   "84.800"
+  ],
+  "expected_float": [
+   65.0,
+   84.8
+  ],
+  "tolerances": [
+   6.5e-08,
+   8.48e-08
+  ],
+  "hand_work": [
+   "10 x 5 + 200 x 0.04 + 7",
+   "12 x 5.5 + 240 x 0.045 + 8"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "50"
+  ],
+  "expected_float": [
+   50.0
+  ],
+  "tolerances": [
+   5e-08
+  ],
+  "hand_work": [
+   "10 x 5 + 0 x 0 + 0"
+  ]
+ },
+ "defaults_expected_float": [
+  50.0
+ ],
+ "observation_expected": {
+  "OBS-BOUND-INCLUSIVE": {
+   "years": [
+    2027
+   ],
+   "expected": [
+    "257"
+   ],
+   "expected_float": [
+    257.0
+   ],
+   "tolerances": [
+    2.57e-07
+   ],
+   "hand_work": [
+    "10 x 5 + 200 x 1 + 7"
+   ]
+  }
+ },
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "expected_output_shape": {
+  "positive": {
+   "container": "list",
+   "length": 1,
+   "element_type": "float",
+   "all_finite": true,
+   "years": [
+    2027
+   ]
+  },
+  "continuity_positive": {
+   "container": "list",
+   "length": 2,
+   "element_type": "float",
+   "all_finite": true,
+   "years": [
+    2027,
+    2028
+   ]
+  },
+  "defaults": {
+   "container": "list",
+   "length": 1,
+   "element_type": "float",
+   "all_finite": true,
+   "years": [
+    2027
+   ]
+  }
+ },
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "fidelity_rule": "container=list, length=len(years)=frozen length, element_type=float, all elements finite, years equal to the frozen years"
+}

@@ -1,0 +1,330 @@
+{
+  "batch": "M21-M24",
+  "cards": [
+    "M21",
+    "M22",
+    "M23",
+    "M24"
+  ],
+  "runner_before": {
+    "path": "execution_runs/M21/a20260919-01/scripts/run_card.py",
+    "sha256": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+    "bytes": 20133,
+    "byte_identical_across_cards": true,
+    "card_sha256": {
+      "M21": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+      "M22": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+      "M23": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+      "M24": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3"
+    },
+    "matches_contract_claim": true
+  },
+  "runner_after": {
+    "path": "M21-M24/run_card.py",
+    "sha256": "0004eda499ed6ac9583f0b8ddb9f209f13d3846697b975a8583d73beb5612f28",
+    "bytes": 29849
+  },
+  "runner_before_copy_sha256": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+  "diff_path": "M21-M24/runner.diff",
+  "diff_sha256": "1b8cd77ac6a2b610c6cb2ae5d05f52039ce4969e85307891aa1002681c0c0051",
+  "diff_stats": {
+    "added_lines": 160,
+    "removed_lines": 12
+  },
+  "cards_cases_sha256": {
+    "M21": "db79c9eb69a1f38f3ced3d2ca41220bee64c60edc16b2202053528d710d68c37",
+    "M22": "3342f4c4e4870e229d1a70ad0f06f48e76f461cb268a975f893cb46e6e155ac9",
+    "M23": "688fd0a861f2fa5004e9be35738598413537267c252bacd598aaa97dc4939444",
+    "M24": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f"
+  },
+  "insertion_points": [
+    {
+      "file": "run_card.py",
+      "line": 282,
+      "what": "NEW frozen-declaration gate evaluated BEFORE any case is judged: `unusable_declared` = ids whose cases.json `expected` is absent or not a non-empty string; `cases_declared_ok` = not unusable_declared"
+    },
+    {
+      "file": "run_card.py",
+      "line": 285,
+      "what": "NEW result[\"frozen_declaration_assertion\"] with cases_json_declared_expectations_usable, unusable_declared_ids, declared_expectations_in_cases_json, no_verdict_reason (\"cases_json_declared_expectation_missing:<ids>\")"
+    },
+    {
+      "file": "run_card.py",
+      "line": 341,
+      "what": "`declared = case.get(\"expected\")` replaces the bare `case[\"expected\"]` index so a DELETED key cannot raise KeyError"
+    },
+    {
+      "file": "run_card.py",
+      "line": 344,
+      "what": "entry gains the contract section 2 keys `declared` (raw value, verbatim)"
+    },
+    {
+      "file": "run_card.py",
+      "line": 373,
+      "what": "raised_name = type(exc).__name__; expected_type_matches_raised computed against `declared` (EXACT TYPE-NAME EQUALITY, never isinstance)"
+    },
+    {
+      "file": "run_card.py",
+      "line": 377,
+      "what": "per-case declared_expectation_ok / _mismatch / _not_met / _comparison / judged; unusable declaration -> NOT_JUDGED_declaration_unusable, judged=False and mismatch=False (never a mismatch)"
+    },
+    {
+      "file": "run_card.py",
+      "line": 397,
+      "what": "verdict chain now starts with `if not declared_usable: NOT_JUDGED_declaration_unusable`, so the exact-name comparison GATES the verdict; FAIL_expected_type_mismatch is unchanged for usable declarations"
+    },
+    {
+      "file": "run_card.py",
+      "line": 443,
+      "what": "NEW result[\"negative_counts\"] with declared_expectation_mismatch, declared_expectation_not_met, declared_expectation_missing_in_cases_json, not_judged"
+    },
+    {
+      "file": "run_card.py",
+      "line": 513,
+      "what": "rc classification: `if harness_incomplete or not cases_declared_ok: exit_code = 2` plus `verdict = \"no_verdict\"`; the unusable-declaration case is evaluated before case judging and wins over rc=3"
+    },
+    {
+      "file": "run_card.py",
+      "line": 525,
+      "what": "exit_code_semantics gains cases_json_declared_expectations_usable, declared_expectation_mismatch_case_ids, declared_expectation_mismatch_ids, not_judged_declaration_unusable_case_ids, no_verdict_reason, reason_namespace"
+    }
+  ],
+  "rc_codes_after": {
+    "0": "pass",
+    "2": "no_verdict: the frozen declaration is unusable (reason cases_json_declared_expectation_missing:<ids>) or the positive path raised; issued BEFORE any case can be judged",
+    "3": "a judgement was possible and did not hold",
+    "note": "this runner has NO rc=1 (plain integer exit codes near the file's end; rc 0/2/3 only) -- NOT renumbered"
+  },
+  "arms": {
+    "E": {
+      "rc": 0,
+      "rc_per_card": {
+        "M21": 0,
+        "M22": 0,
+        "M23": 0,
+        "M24": 0
+      },
+      "verdict": "pass",
+      "verdict_per_card": {
+        "M21": "pass",
+        "M22": "pass",
+        "M23": "pass",
+        "M24": "pass"
+      },
+      "declared_expectation_mismatch": 0,
+      "declared_expectation_mismatch_per_card": {
+        "M21": 0,
+        "M22": 0,
+        "M23": 0,
+        "M24": 0
+      },
+      "mutated_case": null,
+      "runner_file": "run_card.py",
+      "runner_sha256": "0004eda499ed6ac9583f0b8ddb9f209f13d3846697b975a8583d73beb5612f28",
+      "note": "green control on the FROZEN cases.json (11/11 expected = ModelRegistryError). rc=0, verdict=pass, 11/11 PASS_rejected, declared_expectation_mismatch=0. No mutation applied, so `mutated_case` is null and the arm ran the new runner.",
+      "verdict_detail": "pass"
+    },
+    "F": {
+      "rc": 3,
+      "rc_per_card": {
+        "M21": 3,
+        "M22": 3,
+        "M23": 3,
+        "M24": 3
+      },
+      "verdict": "fail",
+      "verdict_per_card": {
+        "M21": "fail",
+        "M22": "fail",
+        "M23": "fail",
+        "M24": "fail"
+      },
+      "declared_expectation_mismatch": 1,
+      "declared_expectation_mismatch_per_card": {
+        "M21": 1,
+        "M22": 1,
+        "M23": 1,
+        "M24": 1
+      },
+      "mutated_case": "NEG-CARD",
+      "runner_file": "run_card.py",
+      "runner_sha256": "0004eda499ed6ac9583f0b8ddb9f209f13d3846697b975a8583d73beb5612f28",
+      "note": "mutation arm: first negative case NEG-CARD's `expected` changed ModelRegistryError -> ValueError. rc=3, verdict=fail, NEG-CARD = FAIL_expected_type_mismatch with declared_expectation_mismatch=true, judged=true. This is the batch's equivalent mismatch label.",
+      "stdout_tail": [
+        "required_message_ids: [] ok= True problems= []",
+        "frozen_declaration_assertion: usable= True declared= ['ModelRegistryError', 'ValueError'] unusable_ids= [] no_verdict_reason= None",
+        "verdict: fail exit_code: 3"
+      ]
+    },
+    "B": {
+      "rc": 3,
+      "rc_per_card": {
+        "M21": 3,
+        "M22": 3,
+        "M23": 3,
+        "M24": 3
+      },
+      "verdict": "fail",
+      "verdict_per_card": {
+        "M21": "fail",
+        "M22": "fail",
+        "M23": "fail",
+        "M24": "fail"
+      },
+      "declared_expectation_mismatch": null,
+      "declared_expectation_mismatch_per_card": {
+        "M21": null,
+        "M22": null,
+        "M23": null,
+        "M24": null
+      },
+      "mutated_case": "NEG-CARD",
+      "runner_file": "run_card_before.py",
+      "runner_sha256": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+      "note": "inertness control with the BYTE-IDENTICAL historical runner (run_card_before.py, sha256 a5ee7599c37e...) on the SAME mutated cases.json as F. MEASURED rc=3, NOT the rc=0 that contract section 5 predicts: this runner already gates on the exact type name (lines 312-313), so the mutation fires in the old bytes too. reported as measured, not adjusted to fit the contract. The old runner emits no declared_expectation_* counters or negative_counts, hence null.",
+      "stdout_tail": [
+        "negative summary: {'total': 11, 'passed': 10, 'failed': ['NEG-CARD'], 'expected_type_mismatch_cases': ['NEG-CARD'], 'message_mismatch_cases': [], 'message_requirements_checked': [], 'required_message_ids_ok': True, 'verdict_rule': 'PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message. Additionally the whole run fails if the frozen `required_message_ids` gate does not hold.'}",
+        "required_message_ids: [] ok= True problems= []",
+        "verdict: fail exit_code: 3"
+      ]
+    },
+    "G": {
+      "rc": 2,
+      "rc_per_card": {
+        "M21": 2,
+        "M22": 2,
+        "M23": 2,
+        "M24": 2
+      },
+      "verdict": "no_verdict",
+      "verdict_per_card": {
+        "M21": "no_verdict",
+        "M22": "no_verdict",
+        "M23": "no_verdict",
+        "M24": "no_verdict"
+      },
+      "declared_expectation_mismatch": 0,
+      "declared_expectation_mismatch_per_card": {
+        "M21": 0,
+        "M22": 0,
+        "M23": 0,
+        "M24": 0
+      },
+      "mutated_case": "NEG-CARD",
+      "runner_file": "run_card.py",
+      "runner_sha256": "0004eda499ed6ac9583f0b8ddb9f209f13d3846697b975a8583d73beb5612f28",
+      "note": "rc-classification arm: NEG-CARD's `expected` KEY DELETED. rc=2, verdict=no_verdict, reason=cases_json_declared_expectation_missing:NEG-CARD, cases_json_declared_expectations_usable=false, the case is NOT_JUDGED_declaration_unusable and declared_expectation_mismatch=0 (not counted as a mismatch). The pre-existing required_message_ids gate still ran and still passed.",
+      "stdout_tail": [
+        "required_message_ids: [] ok= True problems= []",
+        "frozen_declaration_assertion: usable= False declared= ['ModelRegistryError'] unusable_ids= ['NEG-CARD'] no_verdict_reason= cases_json_declared_expectation_missing:NEG-CARD",
+        "verdict: no_verdict exit_code: 2"
+      ]
+    }
+  },
+  "arms_extra": {
+    "F2": {
+      "rc": 3,
+      "rc_per_card": {
+        "M21": 3,
+        "M22": 3,
+        "M23": 3,
+        "M24": 3
+      },
+      "verdict": "fail",
+      "verdict_per_card": {
+        "M21": "fail",
+        "M22": "fail",
+        "M23": "fail",
+        "M24": "fail"
+      },
+      "declared_expectation_mismatch": 1,
+      "declared_expectation_mismatch_per_card": {
+        "M21": 1,
+        "M22": 1,
+        "M23": 1,
+        "M24": 1
+      },
+      "mutated_case": "CONT-BREAK",
+      "runner_file": "run_card.py",
+      "runner_sha256": "0004eda499ed6ac9583f0b8ddb9f209f13d3846697b975a8583d73beb5612f28",
+      "note": "same mutation applied to the OTHER reading of contract section 5's 'first negative case (lowest id)': CONT-BREAK is the ordinal minimum id ('-' = 0x2D sorts below the digits) while NEG-CARD is first in file order. runner=run_card.py. Identical rc/verdict outcome to the F/B pairing, so the choice of reading does not change any result."
+    },
+    "B2": {
+      "rc": 3,
+      "rc_per_card": {
+        "M21": 3,
+        "M22": 3,
+        "M23": 3,
+        "M24": 3
+      },
+      "verdict": "fail",
+      "verdict_per_card": {
+        "M21": "fail",
+        "M22": "fail",
+        "M23": "fail",
+        "M24": "fail"
+      },
+      "declared_expectation_mismatch": null,
+      "declared_expectation_mismatch_per_card": {
+        "M21": null,
+        "M22": null,
+        "M23": null,
+        "M24": null
+      },
+      "mutated_case": "CONT-BREAK",
+      "runner_file": "run_card_before.py",
+      "runner_sha256": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+      "note": "same mutation applied to the OTHER reading of contract section 5's 'first negative case (lowest id)': CONT-BREAK is the ordinal minimum id ('-' = 0x2D sorts below the digits) while NEG-CARD is first in file order. runner=run_card_before.py. Identical rc/verdict outcome to the F/B pairing, so the choice of reading does not change any result."
+    }
+  },
+  "isolated_code_root_sha256": {
+    "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+  },
+  "isolated_interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "bound_argv_source": "evidence/batch_invocations.json key \"M21\", unit \"B-M21-product-run\" (optional flags --out and --run-result-out, both redirected into the arm dir)",
+  "historical_writes": [],
+  "boundaries_respected": true,
+  "unmet_prerequisites": [],
+  "open_issues": [
+    {
+      "id": "OI-1",
+      "severity": "contract_contradiction",
+      "status": "reported_measured_not_fitted",
+      "what": "PROPAGATION_CONTRACT.md section 5 requires arm B (byte-identical historical runner) to return rc=0 as proof the OLD runner did not fire; and section 3 records this batch's runner as computing expected_type_matches_raised \"but does not gate on it\".",
+      "measured": "run_card_before.py (sha256 a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3, byte-identical to execution_runs/M21..M24/a20260919-01/scripts/run_card.py) returns rc=3 on the mutated cases.json for all four cards, with NEG-CARD = FAIL_expected_type_mismatch.",
+      "root_cause": "the historical runner ALREADY gates at lines 312-313 (`elif not entry[\"expected_type_matches_raised\"]: entry[\"verdict\"] = \"FAIL_expected_type_mismatch\"`), so PASS_rejected at line 317 was already conditional. Its historical run_result.json is self-consistent (exit_code 0 with expected_type_matches_raised=true for all 11 cases), so the recorded green was not fabricated by an ignored comparison.",
+      "impact": "for M21-M24 the owner-named 'fabricated green' defect does not exist; the genuine additions are the rc=2 declaration-usability precedence, the NOT_JUDGED verdict that keeps an unusable declaration out of the mismatch count, and the section 2 counters/fields.",
+      "cross_batch_warning": "evidence/b5_scan.json runner_scan records \"compares_raised_to_expected\": false for ALL SEVEN batches, including M17-M20 whose r3-accepted runner section 1 cites as the reference that DOES gate. That flag is unreliable, so other batches' arm B may also come back rc=3."
+    },
+    {
+      "id": "OI-2",
+      "severity": "informational",
+      "status": "not_a_defect",
+      "what": "contract section 3 states all 347 frozen cases declare the bare type name ModelRegistryError, so exact-equality cannot produce a false red.",
+      "measured": "re-verified for M21-M24: 11/11 cases per card, zero compound, zero missing, zero non-string, all exactly 'ModelRegistryError'. No false red from exact-equality here. Note the frozen M21-M24 cases are NOT a single uniform set: required_message_ids is [] for M21 but ['NEG-CARD'] for M22/M23 and ['NEG-CARD','CONT-BREAK'] for M24, which is why the arm cases were built per card rather than from M21 alone."
+    },
+    {
+      "id": "OI-3",
+      "severity": "informational",
+      "status": "honest_limitation",
+      "what": "The old runner writes `expected` but has no `declared` key, so for arm B the declared_expectation_mismatch counter is null rather than 0 - the historical bytes emit no such field by construction.",
+      "measured": "arm B out_M21.json negative_counts absent; failed=['NEG-CARD'] with FAIL_expected_type_mismatch, which is the old runner's equivalent signal."
+    },
+    {
+      "id": "OI-4",
+      "severity": "environment",
+      "status": "pre_existing_not_caused_by_this_batch",
+      "what": "execution_runs/M25..M31 iso/venv/Lib/site-packages contain __pycache__ directories.",
+      "measured": "none under M21..M24 is outside a venv, and none anywhere under M21..M24 has an mtime after the batch cutoff; all runs used -B with PYTHONDONTWRITEBYTECODE=1. Left untouched - historical dirs are read-only."
+    }
+  ],
+  "mutation_target_ambiguity": {
+    "file_order_first_negative": "NEG-CARD",
+    "ordinal_min_id": "CONT-BREAK",
+    "used_for_F_B_G": "NEG-CARD",
+    "both_readings_equivalent": true,
+    "evidence": "arms F2/B2 exercise CONT-BREAK and return the same rc (3) and verdict (fail) as F/B on NEG-CARD; the product raises ModelRegistryError for both, so a ValueError declaration mismatches either way."
+  },
+  "review_status": "review_pending"
+}

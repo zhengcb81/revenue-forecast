@@ -113,3 +113,111 @@
 `expected` 只能是**裸类型名**（如 `'ModelRegistryError'`）；复合写法（如
 `"ModelRegistryError/continuity"`）会假红。当前 `cases.json` 缺 `expected` 时的归类
 （现为 `rc=3`，而登记口径写 `rc=2`）须先按本表**统一到 `rc=2`**，再推广 runner。
+
+---
+
+## rc 码表·实测各批码位登记（REM-22 / B5+B6 追加节；owner 裁定 T1-19）
+
+> **本节为追加节，不修改上方任何字节。** 上方「rc 码表（冻结；owner 裁定 T1-19 / §13）」是
+> **唯一规范值**；本节只做三件事：①按**实测**逐一登记各批 runner 真正发出的码位（含 `file:line`）；
+> ②给出历史偏差 → 冻结码表的**映射**并重申**不回改**；③登记本轮实测到的规范性歧义。
+> 登记依据（只读扫描，非推断）：`execution_runs/B5-plan-level-remediation/a20260921-01/evidence/`
+> 下的 `b5_scan.json` 与 `rc_return_paths.json`——8 个批次 runner 的 sha256 与码位分支**全量复算**。
+
+### 一、实测：各批 runner 真正发出的码位
+
+| 批次 | runner sha256（前 12） | 字节 | 实测发出的 rc | rc=1（harness） | 证据（`file:line`） |
+|---|---|---|---|---|---|
+| M01–M04 | `b5fcc68563f5` | 12222 | 0=pass、**2=harness_incomplete（无裁决）**、3=negative | **缺失** | `M01/a20260919-01/scripts/run_card.py:251-255` |
+| M05–M08 | `fd3a11c9226a` | 14758 | 0=pass、**2=harness/簿记无法给出裁决**、3=negative | **缺失** | `M05/…/scripts/run_card.py:299-304`；自述 docstring `:13-21` |
+| M09–M12 | `997c553b0b9e` | 28912 | `EXIT_PASS=0`／`EXIT_HARNESS=1`／`EXIT_NO_VERDICT=2`／`EXIT_NEGATIVE=3` | 有 | `M09/…/scripts/run_card.py:48-51` |
+| M13–M16 | `9e4a6450d6ab` | 32038 | `RC_PASS=0`／`RC_HARNESS=1`／`RC_NO_VERDICT=2`／`RC_NEGATIVES=3` | 有 | `M13/…/scripts/run_card.py:62-65`；`commands.json.exit_code_semantics.runner` |
+| M17–M20 | `94619a98f576` | 36744 | `EXIT_PASS=0`／`EXIT_HARNESS=1`／`EXIT_NO_VERDICT=2`／`EXIT_NEGATIVE=3` | 有 | `M17/…/scripts/run_card.py:69-72` |
+| M21–M24 | `a5ee7599c37e` | 20133 | 0=pass、**2=harness/簿记无法给出裁决**、3=negative | **缺失** | `M21/…/scripts/run_card.py:384-389`；自述 docstring `:29-36` |
+| M25–M28 | `eab0116220df` | 22720 | 0=pass、**1=未设防的 harness 缺陷**、2=harness/簿记无法给出裁决、3=negative | 有 | `M25/…/scripts/run_card.py:418-423`、`:168`、`:466`；自述 docstring `:13-20` |
+| M29–M31 | `9ea69c72dced` | 28242 | `EXIT_PASS=0`／`EXIT_HARNESS=1`／`EXIT_NO_VERDICT=2`／`EXIT_NEGATIVE=3` | 有 | `M29/…/scripts/run_card.py:59-62` |
+
+### 二、历史偏差 → 冻结码表映射（legacy；**一律不回改**）
+
+| 历史批 | 历史 rc | 历史自述含义 | 冻结码表下的归属 | 处置 |
+|---|---|---|---|---|
+| M01–M04 | `2` | harness_incomplete（正例抛错 ⇒ 无物可比） | 冻结 `2`（无裁决） | **不回改**；跨批聚合前读该批 `exit_code_legend` |
+| M05–M08 | `2` | harness/簿记无法给出裁决 | 冻结 `2`（无裁决） | 同上 |
+| M21–M24 | `2` | harness/簿记无法给出裁决 | 冻结 `2`（无裁决） | 同上 |
+| M01–M04／M05–M08／M21–M24 | （不发出） | 该三批**不存在** rc=1 | 冻结 `1` 在该三批**不可达** | **不回改**；不得据"未见 rc=1"推断"无 harness 失败" |
+
+> **更正流传说法（实测）**：§5.3 与 §13 T1-19 记「M05–M08 用 `2 = harness`」——实测成立，
+> 但其 `2` 的确切自述是"harness/簿记**无法给出裁决**"（no verdict），不是"runner 自身出错"。
+> 同时 **M01–M04、M21–M24 同属该形态**（原简报未列）；而 **M25–M28 已含真正的 rc=1**，
+> 与冻结码表一致，**不应**与上述三批混为一类。
+
+### 三、冻结码表（本节重申；**唯一规范值**）
+
+| rc | 含义 | 判据 |
+|---|---|---|
+| `0` | 通过 | 命令正常结束且业务判定通过 |
+| `1` | harness 失败 | 测试/运行器自身出错：导入失败、夹具错误、期望文件缺失、路径未绑定 |
+| `2` | 无裁决 | 冻结期望本身缺失/不可用，**在任何用例被判定之前**发出；或该命令不产生裁决 |
+| `3` | 未达预期 | 判定**可能**且不成立：正例未通过、负例未被拒绝、或声明期望不符 |
+
+**今后各批必须**：①在自身证据里带自描述 `exit_code_legend`；②凡发出 `2` 者，须在
+`exit_code_semantics` 写明触发条件与 reason；③跨批聚合前先读该批 legend，不得假设码表一致。
+
+### 四、已登记的规范性歧义（**只登记，不改正文**）
+
+冻结码表 `2` 的判据原文含「用例是负例且业务上被正确拒绝」。该表述是**逐例**口径，
+而 rc 是**逐次运行**口径：参考实现（`94619a98`）在全部负例被正确拒绝时发 `rc=0`，
+只有"冻结期望不可用/缺失"才发 `rc=2`。⇒ 聚合方**不得**把「负例被正确拒绝」读成 rc=2。
+本节只登记该歧义，正文按 owner 追加纪律**不动**；如需消歧应由 owner 另行裁定。
+
+### 五、与 runner 推广（T1-8）四项前置的实测关系
+
+| 前置 | 实测状态 |
+|---|---|
+| ① 不退回 `isinstance` | 参考实现按 `type(exc).__name__ == declared` **精确等值**；推广后须逐批复核 |
+| ② 登记 schema 约束「`expected` 只能是裸类型名」 | 已由上方冻结节登记；本轮**实测复核**：31 张卡 `cases.json` 共 **347** 例，复合写法 **0**、缺失 **0**、非字符串 **0** ⇒ 严格等值不产生假红 |
+| ③ 先修 rc 归类与「期望缺失」口径 | **已由参考实现闭合**：声明不可用 ⇒ `rc=2`（no_verdict）且**先于**逐例判定；声明不符 ⇒ `rc=3` |
+| ④ 逐批按 runner sha256 登记命名空间 | 见本节第一表（8 批全量复算） |
+
+> **sha256 更正登记（追加式）**：§7 第 2 项与 §13 T1-8／T1-12 引用的参考 runner `5307d2cc…`
+> 是 **r2 世代**值（`execution_runs/M17/a20260919-01/review.md:162/339/348`），
+> 已被该 reviewer 自己的 **r3** 判定取代：`review.md:409`「M17–M20 修复后 runner sha256 = `94619a98…`」、
+> `:422`「新 runner `94619a98…`」、`:518`「以保持 reviewer 已验证的 runner sha `94619a98…` 不变」。
+> 四卡自带证据（`handoff.json`、`after/final_deliverable_hashes.json`、
+> `evidence/M17/evidence_hashes.json`、`after/hash_table_verification.json`）**一致**记为 `94619a98…`。
+> ⇒ **权威参考值为 `94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252`**；
+> `5307d2cc…` **不回改**、保留为 superseded 值。凡按 `5307d2cc…` 登记过的命名空间须以本行为准。
+
+---
+
+## rc 码表·追加节 2：`expected` 缺失的实测归类更正（B5+B6；owner 裁定 T1-19）
+
+> **本节为追加节，不修改上方任何字节**（含其上的「实测各批码位登记」节）。触发：B5+B6 各批
+> 变异臂 G 的实测，见 `execution_runs/B5-plan-level-remediation/a20260921-01/`。
+
+**上方冻结节（第 111–115 行）记**：「当前 `cases.json` 缺 `expected` 时的归类（**现为 `rc=3`**，
+而登记口径写 `rc=2`）须先按本表**统一到 `rc=2`**，再推广 runner。」
+
+**实测更正**：该「**现为 `rc=3`**」**不成立**。在**尚未打补丁**的历史 runner 上删除某例的
+`expected` 键，得到的**既不是 rc=2 也不是 rc=3**：
+
+| 批次 | 历史 runner 对「缺 `expected`」的实际反应 | 实测 rc |
+|---|---|---|
+| M09-M12 | `case["expected"]` 系**硬下标** → **未捕获的 `KeyError`**，**不产生任何证据文件** | **1** |
+| M05-M08 | 同上（硬下标） | **1**（`KeyError`） |
+
+⇒ 「期望缺失」在这些批次上的历史归类是 **`rc=1`（harness 失败）**，不是 rc=3。
+就冻结码表的判据而言，`rc=1` 本就含「**期望文件缺失**」，故**实测与冻结码表一致**，
+而上方冻结节所记的 `rc=3` **与实测不一致**。
+
+**处置**
+1. **不回改**上方正文（owner 追加纪律）；本节只登记。
+2. 本卡各批副本按前置③统一为 **`rc=2`（无裁决）**，reason
+   `cases_json_declared_expectation_missing:<ids>`——理由是「声明不可用」须**先于**任何用例判定
+   给出裁决；若沿用 `rc=1`，聚合方会把它误读为「runner 自身出错」。
+3. **跨批聚合方不得假设「缺 `expected` = rc=3」**；历史值一律以 `rc=1`（KeyError）为准，
+   且**不回改**。
+
+**「裸类型名」schema 约束（重述，含缺失情形）**：`expected` **只能是裸异常类型名**
+（如 `'ModelRegistryError'`）；复合写法（如 `"ModelRegistryError/continuity"`）会**假红**；
+**该键缺失**同样不是合法输入（历史上表现为 harness 崩溃 rc=1，今后应表现为无裁决 rc=2）。

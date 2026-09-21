@@ -1,0 +1,263 @@
+{
+ "card_id": "M12",
+ "model_id": "bank_revenue",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M09-M12\\code_root",
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M09-M12\\code_root\\model_registry.py",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "target_exception": "ModelRegistryError",
+ "registry_metadata": {
+  "model_id": "bank_revenue",
+  "required": [
+   "average_earning_assets",
+   "asset_yield",
+   "average_interest_bearing_liabilities",
+   "funding_cost",
+   "fee_revenue"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "declared_defaults": {},
+  "dimensions": {
+   "average_earning_assets": "monetary_balance",
+   "asset_yield": "ratio",
+   "average_interest_bearing_liabilities": "monetary_balance",
+   "funding_cost": "ratio",
+   "fee_revenue": "revenue",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "asset_yield",
+   "funding_cost"
+  ],
+  "explicit_driver_bounds": {
+   "asset_yield": [
+    null,
+    null
+   ],
+   "funding_cost": [
+    null,
+    null
+   ]
+  },
+  "formula": "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue"
+ },
+ "contract_check": {
+  "formula": {
+   "observed": "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue",
+   "expected": "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue",
+   "ok": true
+  },
+  "required": {
+   "observed": [
+    "asset_yield",
+    "average_earning_assets",
+    "average_interest_bearing_liabilities",
+    "fee_revenue",
+    "funding_cost"
+   ],
+   "expected": [
+    "asset_yield",
+    "average_earning_assets",
+    "average_interest_bearing_liabilities",
+    "fee_revenue",
+    "funding_cost"
+   ],
+   "ok": true
+  },
+  "optional": {
+   "observed": [
+    "other_revenue"
+   ],
+   "expected": [
+    "other_revenue"
+   ],
+   "ok": true
+  },
+  "dimensions": {
+   "observed": {
+    "average_earning_assets": "monetary_balance",
+    "asset_yield": "ratio",
+    "average_interest_bearing_liabilities": "monetary_balance",
+    "funding_cost": "ratio",
+    "fee_revenue": "revenue",
+    "other_revenue": "revenue"
+   },
+   "expected": {
+    "average_earning_assets": "monetary_balance",
+    "asset_yield": "ratio",
+    "average_interest_bearing_liabilities": "monetary_balance",
+    "funding_cost": "ratio",
+    "fee_revenue": "revenue",
+    "other_revenue": "revenue"
+   },
+   "ok": true
+  },
+  "ok": true
+ },
+ "positive": {
+  "raised": null,
+  "actual": [
+   34.0
+  ],
+  "actual_repr": [
+   "34.0"
+  ],
+  "length": 1,
+  "structure": {
+   "container_type": "list",
+   "is_builtin_list": true,
+   "length": 1,
+   "years_length": 1,
+   "length_equals_years": true,
+   "element_types": [
+    "float"
+   ],
+   "element_type_set": [
+    "float"
+   ],
+   "all_elements_float": true,
+   "all_elements_finite": true,
+   "year_field_echo": false,
+   "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check",
+   "ok": true
+  }
+ },
+ "per_value_checks": [
+  {
+   "index": 0,
+   "year": 2027,
+   "actual": 34.0,
+   "expected": 34.0,
+   "tolerance": 3.4e-08,
+   "abs_diff": 0.0,
+   "ok": true
+  }
+ ],
+ "length_and_year_check": {
+  "oracle_years": [
+   2027
+  ],
+  "input_years": [
+   2027
+  ],
+  "years_match": true,
+  "oracle_length": 1,
+  "input_years_length": 1,
+  "lengths_match": true
+ },
+ "fidelity_checks": {
+  "missing_expected": false,
+  "positive_structure_ok": true,
+  "positive_values_ok": true,
+  "contract_ok": true,
+  "years_match": true,
+  "lengths_match": true
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   34.0,
+   38.0
+  ],
+  "expected": [
+   34.0,
+   38.0
+  ],
+  "per_value_checks": [
+   {
+    "index": 0,
+    "actual": 34.0,
+    "expected": 34.0,
+    "tolerance": 3.4e-08,
+    "abs_diff": 0.0,
+    "ok": true
+   },
+   {
+    "index": 1,
+    "actual": 38.0,
+    "expected": 38.0,
+    "tolerance": 3.8e-08,
+    "abs_diff": 0.0,
+    "ok": true
+   }
+  ],
+  "structure": {
+   "container_type": "list",
+   "is_builtin_list": true,
+   "length": 2,
+   "years_length": 2,
+   "length_equals_years": true,
+   "element_types": [
+    "float"
+   ],
+   "element_type_set": [
+    "float"
+   ],
+   "all_elements_float": true,
+   "all_elements_finite": true,
+   "year_field_echo": false,
+   "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check",
+   "ok": true
+  },
+  "ok": true,
+  "ran_before_negative_patch": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   32.0
+  ],
+  "expected": [
+   32.0
+  ],
+  "per_value_checks": [
+   {
+    "index": 0,
+    "actual": 32.0,
+    "expected": 32.0,
+    "tolerance": 3.2e-08,
+    "abs_diff": 0.0,
+    "ok": true
+   }
+  ],
+  "structure": {
+   "container_type": "list",
+   "is_builtin_list": true,
+   "length": 1,
+   "years_length": 1,
+   "length_equals_years": true,
+   "element_types": [
+    "float"
+   ],
+   "element_type_set": [
+    "float"
+   ],
+   "all_elements_float": true,
+   "all_elements_finite": true,
+   "year_field_echo": false,
+   "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check",
+   "ok": true
+  },
+  "ok": true
+ },
+ "defaults_ok": true,
+ "exit_code_semantics": {
+  "verdict": "negative_failed",
+  "exit_code": 3,
+  "positive_ok": true,
+  "contract_ok": true,
+  "continuity_ok": true,
+  "defaults_ok": true,
+  "fidelity_ok": true,
+  "negatives_ok": false,
+  "harness_error": false,
+  "missing_expectations": {
+   "positive": false,
+   "continuity_positive": false,
+   "defaults": false
+  },
+  "precedence": "1 harness > 2 no-verdict/fidelity > 3 negative > 0 pass"
+ },
+ "harness_errors": []
+}

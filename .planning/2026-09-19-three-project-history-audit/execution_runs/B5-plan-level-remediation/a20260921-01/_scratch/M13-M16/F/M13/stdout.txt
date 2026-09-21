@@ -1,0 +1,62 @@
+card_id: M13
+model_id: asset_management
+code_root: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-plan-level-remediation\a20260921-01\_scratch\M13-M16\code_root
+model_registry_file: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-plan-level-remediation\a20260921-01\_scratch\M13-M16\code_root\model_registry.py
+imported_module_sha256: {'model_registry.py': '9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f', 'model_extensions.py': '9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911'}
+frozen_input_sha256: {'input.json': 'f4700cc24dd8d3f8df2660ff614bd7a6e92b44068c71f326a50fd4f03ce4e64d', 'oracle.json': 'ab3a1f30fbad93da34a8786cdf3b4d532bca394ffc7ca1beb7214d6703a0e7b3', 'cases.json': '8af6508c7075a97faed276fb73405595c8f4712a48dfbee57c54a522c667b9f2'}
+registry formula: revenue = average_aum * management_fee_rate + performance_fee_revenue + other_revenue
+registry required: ['average_aum', 'management_fee_rate']
+registry optional: ['performance_fee_revenue', 'other_revenue']
+registry defaults: {}
+registry ratio_drivers: ['management_fee_rate']
+registry driver_bounds: {}
+positive raised: None
+positive actual: [25.0]
+positive expected: [25.0]
+positive tolerances: [2.5e-08]
+positive value_ok: True
+positive fidelity_ok: True
+positive fidelity_problems: []
+positive years_match_frozen: True
+continuity_positive raised: None
+continuity_positive actual: [25.0, 35.0]
+continuity_positive expected: [25.0, 35.0]
+continuity_positive tolerances: [2.5e-08, 3.5e-08]
+continuity_positive value_ok: True
+continuity_positive fidelity_ok: True
+continuity_positive fidelity_problems: []
+continuity_positive years_match_frozen: True
+defaults actual: [20.0]
+defaults expected: [20.0]
+defaults ok (not gating): True
+observation: OBS-BASE-IGNORED raised=None actual=[25.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None 
+observation: OBS-BOUND-INCLUSIVE raised=None actual=[2005.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
+observation: OBS-SIGNED-PERF-FEE raised=KeyError actual=None matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=None 'performance_fee_revenue'
+expectation_consistency: ok=True gap_count=0 facts={'case_count': 11, 'case_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'oracle_negative_count': 11, 'oracle_negative_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'declared_expectations_in_cases_json': ['ModelRegistryError', 'ValueError'], 'target_exception': 'ModelRegistryError'}
+negative: NEG-CARD declared_expected=ValueError verdict=FAIL_declared_expectation_mismatch raised=ModelRegistryError - driver asset_management.management_fee_rate must be between 0.0 and 1.0: FY2027
+negative-declared-expectation: NEG-CARD judged=True declared=ValueError raised=ModelRegistryError declared_expectation_ok=False declared_expectation_mismatch=True comparison=raised exact type name 'ModelRegistryError' vs declared 'ValueError' (exact-name equality, NOT isinstance)
+negative: N01a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.average_aum.FY2027 must be numeric
+negative-declared-expectation: N01a judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N01b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.average_aum.FY2027 must be finite
+negative-declared-expectation: N01b judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N01c declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.average_aum.FY2027 must be finite
+negative-declared-expectation: N01c judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N01d declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.average_aum.FY2027 must be finite
+negative-declared-expectation: N01d judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N02 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - driver asset_management.average_aum must contain one value per forecast year
+negative-declared-expectation: N02 judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N03 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - missing drivers for asset_management: average_aum
+negative-declared-expectation: N03 judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N04 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - unsupported drivers for asset_management: unknown_driver
+negative-declared-expectation: N04 judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N05a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.years must contain fiscal years
+negative-declared-expectation: N05a judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N05b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.years must contain fiscal years
+negative-declared-expectation: N05b judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: CONT-BREAK declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.years must be consecutive and increasing
+negative-declared-expectation: CONT-BREAK judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative summary: total=11 passed=10 failed=['NEG-CARD']
+negative declared-expectation counts: mismatch=1 not_met=0 missing_in_cases_json=0 not_judged=[] declared_expectations=['ModelRegistryError', 'ValueError'] enforced=True comparison=exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)
+exit_code triggered: ['negative_case_not_rejected', 'declared_expectation_mismatch:NEG-CARD']
+cases_json_declared_expectations_usable: True unusable=[]
+verdict: fail exit_code: 3

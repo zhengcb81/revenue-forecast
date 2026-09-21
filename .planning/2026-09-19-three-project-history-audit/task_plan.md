@@ -1432,3 +1432,72 @@ M25…M28 /recovery/selfcheck/cases/F1/evidence/M25/cases.json  {'ValueError': 1
 | `progress.md` | 逐轮 session 日志 |
 | `task_plan.md` | 本文件 |
 | `execution_runs/_isolation_incidents/` | 三次事件记录（生产回滚、pre-commit stash、推送超时） |
+
+---
+
+## Round 67 — 编排层记账：上一 session 的**中断形态**查清 + PWF 载体状态归一
+
+**卡**：无（编排层记账轮次）。**权限**：**T1-27**（owner 授权编排层更频繁地提交 `.planning`）。
+**性质**：**核验 + 事实登记**。**不接续任何卡、不执行任何产品动作、不删除任何文件、不做任何 `status` 转移。**
+
+**触发**：用户要求通读 `planning-with-files` 技能文档与本项目 planning 载体；随后指示「继续做，不要停，不要清理项目或删除文件，更新 planning-with-files 的各项文档」。
+
+### 本轮第一项发现：上一 session 不是干净收尾，是**中途被打断**
+
+本文件 `【收尾·最终状态】` 节（2026-09-21）把 `I-14-D(r3)` 与 `I-14-E-APPLY` 列为「已派、结果未回收」。
+**该措辞读起来像「正在别处运行」。实测：两者是「跑到一半被终止」。**
+
+| 证据 | 值 |
+|---|---|
+| `I-14-E-APPLY/a20260921-01/after/bench.log` 末三行 | `[23:36:37] ARM B5-clockmut-cpu8 START` → `[23:38:02] ARM B5-clockmut-cpu8 EXIT=3221225786` → `[23:38:02] ARM B4-nonvacuity-quiet START` |
+| `EXIT=3221225786` 的含义 | `0xC000013A` = **`STATUS_CONTROL_C_EXIT`** —— 进程被**终止**，**不是业务失败** |
+| `after/B4-nonvacuity-quiet.log` | **0 字节** —— 该臂已启动、未产出任何内容 |
+| 中断后 8 分钟内的写入 | **0**（实测最新 mtime = `23:38:02`；核对时刻 = `23:45:49`） |
+| 存活的 python 进程 | **0**（仅两个 `2026-09-19 16:45` 启动的陈旧进程） |
+
+⇒ **战役死在半途**，最后一个臂只有空日志。**这不是「结果未回收」，是「结果从未产生」。**
+
+### 两处 mid-flight 状态（实测）
+
+| 任务 | 已在盘 | 缺失 |
+|---|---|---|
+| **I-14-D r3** | `scratch/oracle_r3.json`（23:35）、`scratch/rule_r3.json`（23:37）、`harness/{apply_i14d_narrow,run_i14d_oracle,run_rule_table_i14d}.py`（23:29–23:36） | `handoff.json`（21:22）与 `review.md`（21:18）**仍是 r2 世代**；**无 r3 载体、无 r3 reviewer 报告** |
+| **I-14-E-APPLY** | `oracle.md`（23:12）、`iso/` 两棵变异体树、`after/` 下 B1/B2/B3/B5 臂产物 | **无 `handoff.json`、无 `review.md`**；**B4 臂空日志** |
+
+### 与 `【收尾·最终状态】` 节的两处出入（以盘上为准）
+
+| 项 | 收尾节记载 | 本轮实测 |
+|---|---|---|
+| 待推提交 | **8 个** | **10 个**（`git rev-list --left-right --count origin/HEAD...HEAD` = `0 10`） |
+| I-14-D / I-14-E-APPLY | 「已派，结果未回收」 | **中途被打断**（见上） |
+
+> **口径**：收尾节写的是**其时的会话内认知**。本节的职责是把**盘上事实**登记进去，**不回改收尾节任何字节**（T1-12 ① 形态）。
+
+### 未提交面（按 T1-27 的风险形态登记）
+
+| 量 | 值 |
+|---|---|
+| `git status --porcelain` 条目 | **138** |
+| 其中 `.planning/` **外** | **2**（`?? .tmp-r41-mutation/`、`?? assurance/unified_completion/manifests/plan_inputs.json.bak`） |
+| **整目录未跟踪** | **`execution_runs/B5-plan-level-remediation/`** —— 含 **34,764 B** 的 `reviewer_report.md`（B5 复审的**唯一**裁决载体） |
+| 产品文件改动 | **0** |
+| 生产锚点 | `scripts/model_registry.py` = **`9ec6529550f189a4…` / 26446 B** —— **与绑定值一致、无漂移** |
+
+⇒ **B5 的裁决报告整目录未跟踪**。按本文件 **T1-27** 已登记的失效模式（「追加块只存在于工作树」），**一次 `git checkout -- .` 即可令其消失**；而它比追加块更脆弱 —— **追加块至少有一个已提交的基座，未跟踪目录连基座都没有**。
+
+### 命题（`verify_round67.py`，任一 FAIL 即该命题不成立）
+
+| # | 命题 | 结果 |
+|---|---|---|
+| **P-1** | 上一 session 的中断可由**盘上字节**复现（`EXIT=3221225786` + B4 空日志），非推测 | **holds** |
+| **P-2** | 中断后**无并发写入者**（最新 mtime 早于核对时刻 ≥ 7 分钟；无存活 python） | **holds** |
+| **P-3** | I-14-D 与 I-14-E-APPLY 的 `handoff.json`/`review.md` 均**不存在 r3 / APPLY 世代** | **holds** |
+| **P-4** | 待推提交数 = **10**，与收尾节的「8」不符 | **holds** |
+| **P-5** | 本轮**产品文件写入 0 条**、**删除 0 次**、**未做任何 `status` 转移**、**未代签** | **holds** |
+| **P-6** | 四个载体的追加**均为纯追加**（各自独立证明） | **holds** |
+
+### 边界
+
+**产品文件 0 条**；生产锚点 `9ec6529550f189a4…` **一致**；**未接续任何卡**（I-14-D r3、I-14-E-APPLY、I-14-D 复审**均维持原状，本卡不推进**）；**未做任何 `status` 转移**；**未代签**；**删除 0** —— 含 `.tmp-r41-mutation/`、`assurance/…/plan_inputs.json.bak`、全部 scratch 与 `_pre60_tail.bin`，**一律保留**。
+
+**产物**：`execution_runs/_bookkeeping_20260921_round67/`（四个追加式证明 + 核验器 + `handoff.json`）。

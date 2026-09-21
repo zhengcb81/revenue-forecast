@@ -1,0 +1,254 @@
+======================================================================
+BATCH M01-M04  rep=M01  bytes=12222  sha256=b5fcc685
+  EXPECT L140: "actual": a, "expected": e, "tolerance": t,
+  EXPECT L154: "raised": None, "actual": [float(v) for v in cactual], "expected": cexp,
+  EXPECT L178: entry["expected"] = obs_expected["expected_float"]
+  EXPECT L193: "expected": case["expected"], "base_input": base_key}
+  RCUSE  L201: entry["verdict"] = "FAIL_not_rejected"
+  RCUSE  L210: entry["verdict"] = ("PASS_rejected" if is_target
+  RCUSE  L217: "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+  RCUSE  L218: "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
+======================================================================
+BATCH M05-M08  rep=M05  bytes=14758  sha256=fd3a11c9
+  EXPECT L24: code: those entries are design observations whose expected value is sometimes
+  EXPECT L87: def within(values, expected):
+  EXPECT L88: if len(values) != len(expected):
+  EXPECT L90: return all(abs(a - e) <= 1e-9 * max(1.0, abs(e)) for a, e in zip(values, expected))
+  EXPECT L161: "actual": a, "expected": e, "tolerance": t,
+  EXPECT L175: "raised": None, "actual": [float(v) for v in cactual], "expected": cexp,
+  EXPECT L188: "raised": None, "actual": [float(v) for v in dactual], "expected": dexp,
+  EXPECT L220: entry["expected"] = obs_expected[obs["id"]]["expected_float"]
+  EXPECT L221: entry["matches_expected"] = within(entry["actual"], entry["expected"])
+  EXPECT L233: "expected": case["expected"], "base_input": base_key}
+  EXPECT L276: print("positive expected:", oracle_doc["positive"]["expected_float"])
+  EXPECT L280: "expected:", result["defaults"].get("expected"))
+  RCUSE  L241: entry["verdict"] = "FAIL_not_rejected"
+  RCUSE  L250: entry["verdict"] = ("PASS_rejected" if is_target
+  RCUSE  L257: "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+  RCUSE  L258: "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
+======================================================================
+BATCH M09-M12  rep=M09  bytes=28912  sha256=997c553b
+  CONST  L48: EXIT_PASS = 0
+  CONST  L49: EXIT_HARNESS = 1
+  CONST  L50: EXIT_NO_VERDICT = 2
+  CONST  L51: EXIT_NEGATIVE = 3
+  EXPECT L109: def value_within(actual, expected, tolerance):
+  EXPECT L111: return math.isfinite(actual) and abs(actual - expected) <= tolerance
+  EXPECT L140: def contract_report(observed, expected):
+  EXPECT L144: exp = expected.get(key)
+  EXPECT L145: checks[key] = {"observed": obs, "expected": exp, "ok": obs == exp}
+  EXPECT L276: "expected": e, "tolerance": t,
+  EXPECT L312: cchecks = [{"index": i, "actual": cactual_f[i], "expected": cexp[i],
+  EXPECT L317: "raised": None, "actual": cactual_f, "expected": cexp,
+  EXPECT L341: dchecks = [{"index": i, "actual": dactual_f[i], "expected": dexp[i],
+  EXPECT L346: "raised": None, "actual": dactual_f, "expected": dexp,
+  EXPECT L407: "expected": case["expected"], "base_input": base_key,
+  EXPECT L427: entry["raised_matches_expected_name"] = (entry["raised"] == case["expected"])
+  EXPECT L499: emit("positive expected: %s" % positive_expected)
+  EXPECT L508: emit("continuity_positive expected: %s" % cexp)
+  EXPECT L512: emit("defaults expected: %s" % dexp)
+  EXPECT L523: emit("negative: %s verdict=%s raised=%s expected=%s - %s"
+  EXPECT L524: % (entry["id"], entry["verdict"], entry.get("raised"), entry["expected"],
+  RCUSE  L48: EXIT_PASS = 0
+  RCUSE  L49: EXIT_HARNESS = 1
+  RCUSE  L50: EXIT_NO_VERDICT = 2
+  RCUSE  L51: EXIT_NEGATIVE = 3
+  RCUSE  L181: "verdict": "harness_error", "exit_code": EXIT_HARNESS,
+  RCUSE  L185: _finish(args, result, lines, EXIT_HARNESS)
+  RCUSE  L186: return EXIT_HARNESS
+  RCUSE  L206: "verdict": "harness_error", "exit_code": EXIT_HARNESS,
+  RCUSE  L210: _finish(args, result, lines, EXIT_HARNESS)
+  RCUSE  L211: return EXIT_HARNESS
+  RCUSE  L417: entry["verdict"] = "FAIL_not_rejected"
+  RCUSE  L431: entry["verdict"] = "PASS_rejected"
+  RCUSE  L438: "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+  RCUSE  L439: "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
+  RCUSE  L457: exit_code, verdict = EXIT_HARNESS, "harness_error"
+  RCUSE  L459: exit_code, verdict = EXIT_NO_VERDICT, "no_verdict_fidelity"
+  RCUSE  L461: exit_code, verdict = EXIT_NEGATIVE, "negative_failed"
+  RCUSE  L463: exit_code, verdict = EXIT_PASS, "pass"
+======================================================================
+BATCH M13-M16  rep=M13  bytes=32038  sha256=9e4a6450
+  EXPECT L8: * expected values come exclusively from ``evidence/<CARD>/oracle.json``, written by
+  EXPECT L17: oracle within ``1e-9 * max(1, |expected|)`` AND the frozen negative-case set is
+  EXPECT L28: case set contradicts its own declared expectations (a case whose ``expected`` names
+  EXPECT L40: ModelRegistryError)`` and never read ``case["expected"]``, so ``cases.json``'s ``expected``
+  EXPECT L141: def within(values, expected):
+  EXPECT L142: if len(values) != len(expected):
+  EXPECT L144: return all(abs(a - e) <= 1e-9 * max(1.0, abs(e)) for a, e in zip(values, expected))
+  EXPECT L151: ``isinstance(exc, ModelRegistryError)`` and never read ``case["expected"]``, and it never
+  EXPECT L152: checked the case count or the id set. Renaming a case's ``expected`` to another type, or
+  EXPECT L189: declared = case.get("expected")
+  EXPECT L191: gaps.append("case %s declares expected=%r but this runner only counts %s as a "
+  EXPECT L206: "declared_expectations": sorted(set(str(case.get("expected")) for case in cases)),
+  EXPECT L221: problems.append("container is %s, expected list" % type(value).__name__)
+  EXPECT L230: problems.append("element %d has type %s, expected float" % (index, kind))
+  EXPECT L256: expected = oracle_block.get("expected_float")
+  EXPECT L258: if expected is None or tolerances is None:
+  EXPECT L262: if len(actual) != len(expected):
+  EXPECT L264: result["problems"].append("length %d != expected length %d" % (len(actual), len(expected)))
+  EXPECT L267: for index, (got, want, tol) in enumerate(zip(actual, expected, tolerances)):
+  EXPECT L269: result["per_value"].append({"index": index, "actual": got, "expected": want,
+  EXPECT L369: "expected": oracle_doc["defaults_expected_float"],
+  EXPECT L377: "expected": oracle_doc["defaults_expected_float"], "ok": False,
+  EXPECT L406: entry["expected"] = obs_expected[obs["id"]]["expected_float"]
+  EXPECT L420: "rule": "a case whose declared expected type is not the verdict type this runner applies, "
+  EXPECT L430: "expected": case["expected"], "base_input": base_key,
+  EXPECT L431: "declared_expected": case.get("expected")}
+  EXPECT L550: emit("%s expected: %s" % (block, [c["expected"] for c in checks.get("per_value", [])]))
+  EXPECT L558: emit("defaults expected: %s" % defaults.get("expected"))
+  RCUSE  L439: entry["verdict"] = "FAIL_not_rejected"
+  RCUSE  L448: entry["verdict"] = ("PASS_rejected" if is_target
+  RCUSE  L455: "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+  RCUSE  L456: "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
+  RCUSE  L503: triggered.append("negative_case_not_rejected")
+  RCUSE  L508: verdict, rc = "fail", (RC_NEGATIVES if triggered == ["negative_case_not_rejected"]
+======================================================================
+BATCH M17-M20  rep=M17  bytes=36744  sha256=94619a98
+  CONST  L69: EXIT_PASS = 0
+  CONST  L70: EXIT_HARNESS = 1
+  CONST  L71: EXIT_NO_VERDICT = 2
+  CONST  L72: EXIT_NEGATIVE = 3
+  EXPECT L26: lacks a usable declared "expected" string, (c) length !=
+  EXPECT L27: len(years), length != len(expected), an element that is not a
+  EXPECT L34: per-case ``expected`` string in the frozen cases.json AND
+  EXPECT L130: def within(values, expected):
+  EXPECT L131: if len(values) != len(expected):
+  EXPECT L133: return all(abs(a - e) <= 1e-9 * max(1.0, abs(e)) for a, e in zip(values, expected))
+  EXPECT L161: def fidelity_block(value, expected, years):
+  EXPECT L164: expectations_present = (isinstance(expected, list) and len(expected) > 0
+  EXPECT L166: described["expected_length"] = len(expected) if isinstance(expected, list) else None
+  EXPECT L170: described["length_equals_expected"] = (length is not None and isinstance(expected, list)
+  EXPECT L171: and length == len(expected))
+  EXPECT L216: "or any case's declared 'expected' in cases.json), or the observed output cannot be "
+  EXPECT L321: checks.append({"index": i, "year": years[i], "actual": a, "expected": e,
+  EXPECT L339: "actual_repr": [repr(float(v)) for v in cactual], "expected": cexp,
+  EXPECT L354: "raised": None, "actual": [float(v) for v in dactual], "expected": dexp,
+  EXPECT L387: entry["expected"] = obs_expected[obs["id"]]["expected_float"]
+  EXPECT L388: entry["matches_expected"] = within(entry["actual"], entry["expected"])
+  EXPECT L410: if not (isinstance(c.get("expected"), str) and c["expected"].strip())]
+  EXPECT L418: declared = case.get("expected")
+  EXPECT L420: "expected": declared, "base_input": base_key}
+  EXPECT L487: {str(c.get("expected")) for c in cases_doc["cases"]}),
+  EXPECT L489: "'expected' string (NOT isinstance)"),
+  EXPECT L615: emit("positive expected: %s" % exp)
+  EXPECT L620: emit("continuity_positive raised: %s actual: %s expected: %s ok: %s"
+  EXPECT L622: result["continuity_positive"].get("expected"), result["continuity_positive"].get("ok")))
+  EXPECT L623: emit("defaults (not gating) ok: %s actual: %s expected: %s"
+  EXPECT L624: % (result.get("defaults_ok"), result["defaults"].get("actual"), result["defaults"].get("expected")))
+  RCUSE  L69: EXIT_PASS = 0
+  RCUSE  L70: EXIT_HARNESS = 1
+  RCUSE  L71: EXIT_NO_VERDICT = 2
+  RCUSE  L72: EXIT_NEGATIVE = 3
+  RCUSE  L258: result["exit_code"] = EXIT_HARNESS
+  RCUSE  L260: emit("verdict: harness_error exit_code: %d" % EXIT_HARNESS)
+  RCUSE  L267: return EXIT_HARNESS
+  RCUSE  L403: #   * not_rejected                  -> the call returned a value, so nothing was raised at all;
+  RCUSE  L432: entry["verdict"] = "FAIL_not_rejected"
+  RCUSE  L472: entry["verdict"] = "PASS_rejected"
+  RCUSE  L478: if e["verdict"] not in ("PASS_rejected", "NOT_JUDGED_declaration_unusable")]
+  RCUSE  L481: "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+  RCUSE  L499: "not_rejected": sum(1 for e in result["negatives"] if e["raised"] is None),
+  RCUSE  L534: reasons.append("negatives_not_rejected:" + ",".join(not_rejected_ids))
+  RCUSE  L540: no_verdict = (not expectations_present or not cases_declared_ok
+  RCUSE  L542: if no_verdict:
+  RCUSE  L543: exit_code = EXIT_NO_VERDICT
+  RCUSE  L544: verdict = "no_verdict"
+  RCUSE  L546: exit_code = EXIT_NEGATIVE
+  RCUSE  L549: exit_code = EXIT_PASS
+  RCUSE  L567: "reason_namespace": ("exclusive taxonomy: PASS_rejected | FAIL_not_rejected (nothing raised) | "
+  RCUSE  L674: return EXIT_HARNESS
+  RCUSE  L697: raise SystemExit(EXIT_HARNESS)
+======================================================================
+BATCH M21-M24  rep=M21  bytes=20133  sha256=a5ee7599
+  EXPECT L20: 2. the raised type's NAME equals the case's frozen ``expected`` field, i.e. the
+  EXPECT L22: A case whose ``expected`` was edited to e.g. "ValueError" therefore FAILS with
+  EXPECT L36: unrejected negative, an expected-type mismatch, or a message mismatch)
+  EXPECT L39: code: those entries are design observations whose expected value is sometimes
+  EXPECT L101: def within(values, expected):
+  EXPECT L102: if len(values) != len(expected):
+  EXPECT L104: return all(abs(a - e) <= 1e-9 * max(1.0, abs(e)) for a, e in zip(values, expected))
+  EXPECT L179: "actual": a, "expected": e, "tolerance": t,
+  EXPECT L193: "raised": None, "actual": [float(v) for v in cactual], "expected": cexp,
+  EXPECT L206: "raised": None, "actual": [float(v) for v in dactual], "expected": dexp,
+  EXPECT L238: entry["expected"] = obs_expected[obs["id"]]["expected_float"]
+  EXPECT L239: entry["matches_expected"] = within(entry["actual"], entry["expected"])
+  EXPECT L285: "expected": case["expected"], "base_input": base_key,
+  EXPECT L303: # (2) the frozen `expected` field must actually be CHECKED, not merely copied
+  EXPECT L304: entry["expected_type_matches_raised"] = (entry["raised"] == case["expected"])
+  EXPECT L332: "type name equal to cases.json `expected` AND, when present, "
+  EXPECT L354: print("positive expected:", oracle_doc["positive"]["expected_float"])
+  EXPECT L358: "expected:", result["defaults"].get("expected"))
+  RCUSE  L294: entry["verdict"] = "FAIL_not_rejected"
+  RCUSE  L317: entry["verdict"] = "PASS_rejected"
+  RCUSE  L322: "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+  RCUSE  L323: "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
+  RCUSE  L331: "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised "
+======================================================================
+BATCH M25-M28  rep=M25  bytes=22720  sha256=eab01162
+  EXPECT L25: code: those entries are design observations whose expected value is sometimes
+  EXPECT L89: def within(values, expected):
+  EXPECT L90: if len(values) != len(expected):
+  EXPECT L92: return all(abs(a - e) <= 1e-9 * max(1.0, abs(e)) for a, e in zip(values, expected))
+  EXPECT L136: # Before this gate the runner ignored cases.json[].expected and the case COUNT, so
+  EXPECT L147: if case.get("expected") != declared]
+  EXPECT L150: "cases whose `expected` is not %r: %s" % (declared, wrong_declaration))
+  EXPECT L226: "actual": a, "expected": e, "tolerance": t,
+  EXPECT L240: "raised": None, "actual": [float(v) for v in cactual], "expected": cexp,
+  EXPECT L254: "raised": None, "actual": [float(v) for v in dactual], "expected": dexp,
+  EXPECT L307: entry["expected"] = obs_expected[obs["id"]]["expected_float"]
+  EXPECT L308: entry["matches_expected"] = within(entry["actual"], entry["expected"])
+  EXPECT L320: "expected": case["expected"], "base_input": base_key}
+  EXPECT L385: print("positive expected:", oracle_doc["positive"]["expected_float"])
+  EXPECT L389: "expected:", result["defaults"].get("expected"))
+  EXPECT L392: "expected=", result["defaults_declared_check"].get("expected_declared_default_present"),
+  RCUSE  L328: entry["verdict"] = "FAIL_not_rejected"
+  RCUSE  L337: entry["verdict"] = ("PASS_rejected" if is_target
+  RCUSE  L344: "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+  RCUSE  L345: "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
+======================================================================
+BATCH M29-M31  rep=M29  bytes=28242  sha256=9ea69c72
+  CONST  L59: EXIT_PASS = 0
+  CONST  L60: EXIT_HARNESS = 1
+  CONST  L61: EXIT_NO_VERDICT = 2
+  CONST  L62: EXIT_NEGATIVE = 3
+  EXPECT L24: (length != len(years), length != len(expected), element that
+  EXPECT L29: rejected as expected
+  EXPECT L120: def within(values, expected):
+  EXPECT L121: if len(values) != len(expected):
+  EXPECT L123: return all(abs(a - e) <= 1e-9 * max(1.0, abs(e)) for a, e in zip(values, expected))
+  EXPECT L151: def fidelity_block(value, expected, years):
+  EXPECT L154: expectations_present = (isinstance(expected, list) and len(expected) > 0
+  EXPECT L156: described["expected_length"] = len(expected) if isinstance(expected, list) else None
+  EXPECT L160: described["length_equals_expected"] = (length is not None and isinstance(expected, list)
+  EXPECT L161: and length == len(expected))
+  EXPECT L300: checks.append({"index": i, "year": years[i], "actual": a, "expected": e,
+  EXPECT L318: "actual_repr": [repr(float(v)) for v in cactual], "expected": cexp,
+  EXPECT L333: "raised": None, "actual": [float(v) for v in dactual], "expected": dexp,
+  EXPECT L366: entry["expected"] = obs_expected[obs["id"]]["expected_float"]
+  EXPECT L367: entry["matches_expected"] = within(entry["actual"], entry["expected"])
+  EXPECT L379: "expected": case["expected"], "base_input": base_key}
+  EXPECT L499: emit("positive expected: %s" % exp)
+  EXPECT L504: emit("continuity_positive raised: %s actual: %s expected: %s ok: %s"
+  EXPECT L506: result["continuity_positive"].get("expected"), result["continuity_positive"].get("ok")))
+  EXPECT L507: emit("defaults (not gating) ok: %s actual: %s expected: %s"
+  EXPECT L508: % (result.get("defaults_ok"), result["defaults"].get("actual"), result["defaults"].get("expected")))
+  RCUSE  L59: EXIT_PASS = 0
+  RCUSE  L60: EXIT_HARNESS = 1
+  RCUSE  L61: EXIT_NO_VERDICT = 2
+  RCUSE  L62: EXIT_NEGATIVE = 3
+  RCUSE  L237: result["exit_code"] = EXIT_HARNESS
+  RCUSE  L239: emit("verdict: harness_error exit_code: %d" % EXIT_HARNESS)
+  RCUSE  L246: return EXIT_HARNESS
+  RCUSE  L387: entry["verdict"] = "FAIL_not_rejected"
+  RCUSE  L396: entry["verdict"] = ("PASS_rejected" if is_target
+  RCUSE  L403: "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+  RCUSE  L404: "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
+  RCUSE  L412: "not_rejected": sum(1 for e in result["negatives"] if e["raised"] is None),
+  RCUSE  L438: reasons.append("negatives_not_rejected:" + ",".join(result["negative_summary"]["failed"]))
+  RCUSE  L441: exit_code = EXIT_NO_VERDICT
+  RCUSE  L442: verdict = "no_verdict"
+  RCUSE  L444: exit_code = EXIT_NEGATIVE
+  RCUSE  L447: exit_code = EXIT_PASS
+  RCUSE  L554: return EXIT_HARNESS
+  RCUSE  L577: raise SystemExit(EXIT_HARNESS)

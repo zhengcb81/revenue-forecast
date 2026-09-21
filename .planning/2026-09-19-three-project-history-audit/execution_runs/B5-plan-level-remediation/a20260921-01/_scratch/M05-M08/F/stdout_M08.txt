@@ -1,0 +1,32 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-plan-level-remediation\a20260921-01\_scratch\M05-M08\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-plan-level-remediation\a20260921-01\_scratch\M05-M08\code_root\model_registry.py
+registry formula: revenue = opening_backlog + bookings - cancellations + contract_changes + backlog_remeasurements - closing_backlog
+registry required: ['opening_backlog', 'bookings', 'cancellations', 'contract_changes', 'closing_backlog']
+registry optional: ['backlog_remeasurements']
+registry defaults: {}
+registry driver_bounds: {'backlog_remeasurements': [None, None]}
+positive raised: None
+positive actual: [50.0]
+positive expected: [50.0]
+tolerances_ok: True
+continuity_positive ok: True
+defaults ok: True actual: [65.0] expected: [65.0]
+observation: OBS-BASE-IGNORED raised= None actual= [50.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-SIGN-B raised= None actual= [85.0] matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None 
+observation: OBS-SIGN-NEG raised= None actual= [55.0] matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None 
+observation: OBS-REMEASURE-USED raised= None actual= [65.0] matches_compared= False expect_equal= None matches_expected_relation= True matches_expected= None 
+negative: NEG-CARD PASS_rejected ModelRegistryError - calculated revenue cannot be negative: project_backlog
+negative: N01a PASS_rejected ModelRegistryError - project_backlog.opening_backlog.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - project_backlog.opening_backlog.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - project_backlog.opening_backlog.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - project_backlog.opening_backlog.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver project_backlog.opening_backlog must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for project_backlog: opening_backlog
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for project_backlog: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - project_backlog.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - project_backlog.years must contain fiscal years
+negative: CONT-BREAK FAIL_declared_expectation_mismatch ModelRegistryError - project backlog continuity failed: FY2028
+negative summary: {'total': 11, 'passed': 10, 'failed': ['CONT-BREAK'], 'declared_expectations_in_cases_json': ['ModelRegistryError', 'ValueError'], 'declared_expectation_comparison': "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)", 'declared_expectations_enforced': True, 'not_judged': [], 'judged': 11}
+negative counts: {'declared_expectation_mismatch': 1, 'declared_expectation_not_met': 0, 'declared_expectation_missing_in_cases_json': 0}
+declared expectations enforced: True cases_json_declared_expectations_usable: True
+verdict: fail exit_code: 3

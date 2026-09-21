@@ -1,0 +1,308 @@
+{
+ "card_id": "M10",
+ "model_id": "reserve_depletion",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "target_exception": "ModelRegistryError",
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver",
+   "why": "card-specific negative named in the card body",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "stock-flow balance guard: 1000+100-50-200 = 850 != 851",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [1000], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [851], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "reserve stock-flow balance failed: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 185, in _reserve_depletion\n    raise ModelRegistryError(f\"reserve stock-flow balance failed: FY{year}\")\nmodel_registry.ModelRegistryError: reserve stock-flow balance failed: FY2027\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [True], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "reserve_depletion.opening_reserves.FY2027 must be numeric",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: reserve_depletion.opening_reserves.FY2027 must be numeric\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [nan], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "reserve_depletion.opening_reserves.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: reserve_depletion.opening_reserves.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [inf], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "reserve_depletion.opening_reserves.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: reserve_depletion.opening_reserves.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [-inf], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "reserve_depletion.opening_reserves.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: reserve_depletion.opening_reserves.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver reserve_depletion.opening_reserves must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver reserve_depletion.opening_reserves must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for reserve_depletion: opening_reserves",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for reserve_depletion: opening_reserves\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [1000], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "unsupported drivers for reserve_depletion: unknown_driver",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for reserve_depletion: unknown_driver\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [1000], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "reserve_depletion.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: reserve_depletion.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "guard_hint": "",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [1000], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "reserve_depletion.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: reserve_depletion.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "guard_hint": "cross-year continuity guard: opening[2028]=851 != closing[2027]=850; each year balances on its own",
+   "fresh_deepcopy": true,
+   "mutated_input_repr": "{'opening_reserves': [1000, 851], 'additions': [100, 0], 'reserve_revisions': [-50, 0], 'depletion': [200, 0], 'closing_reserves': [850, 851], 'recovery_rate': [0.8, 0.8], 'realized_price': [3, 3], 'other_revenue': [10, 0]} years=[2027, 2028] base=0",
+   "raised": "ModelRegistryError",
+   "message": "reserve continuity failed: FY2028",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 415, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 187, in _reserve_depletion\n    raise ModelRegistryError(f\"reserve continuity failed: FY{year}\")\nmodel_registry.ModelRegistryError: reserve continuity failed: FY2028\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "raised_matches_expected_name": true,
+   "verdict": "PASS_rejected"
+  }
+ ],
+ "negative_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": [],
+  "import_or_file_errors": []
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "driver": null,
+   "base_input": "positive",
+   "why": "the reserve bridge discards base_revenue; design observation only",
+   "gating": false,
+   "mutated_drivers_repr": "{'opening_reserves': [1000], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=999",
+   "raised": null,
+   "actual": [
+    490.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    490.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true,
+   "expectation_recorded": {
+    "expected_float": [
+     490.0
+    ]
+   },
+   "matches_expected": true
+  },
+  {
+   "id": "OBS-DEFAULT-EQUIV",
+   "kind": "set_driver_multi",
+   "driver": null,
+   "base_input": "defaults",
+   "why": "explicit 0/0 equals the omitted optional drivers; makes the documented default falsifiable",
+   "gating": false,
+   "mutated_drivers_repr": "{'opening_reserves': [1000], 'additions': [100], 'depletion': [250], 'closing_reserves': [850], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [0], 'reserve_revisions': [0]} years=[2027] base=0",
+   "raised": null,
+   "actual": [
+    600.0
+   ],
+   "compared_to": "defaults",
+   "compared_actual": [
+    600.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true,
+   "expectation_recorded": {
+    "expected_float": [
+     600.0
+    ]
+   },
+   "matches_expected": true
+  },
+  {
+   "id": "OBS-REVISION-POS",
+   "kind": "set_driver_multi",
+   "driver": null,
+   "base_input": "positive",
+   "why": "a positive revision keeps the balance (1000+100+50-200=950) and must not change revenue: revisions enter the stock bridge only",
+   "gating": false,
+   "mutated_drivers_repr": "{'opening_reserves': [1000], 'additions': [100], 'reserve_revisions': [50], 'depletion': [200], 'closing_reserves': [950], 'recovery_rate': [0.8], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": null,
+   "actual": [
+    490.0
+   ],
+   "expectation_recorded": {
+    "expected_float": [
+     490.0
+    ]
+   },
+   "matches_expected": true
+  },
+  {
+   "id": "OBS-RECOVERY-GT1",
+   "kind": "set_driver",
+   "driver": "recovery_rate",
+   "base_input": "positive",
+   "why": "records that recovery_rate keeps the ratio default bound [0, 1] (it has no explicit driver_bounds entry)",
+   "gating": false,
+   "mutated_drivers_repr": "{'opening_reserves': [1000], 'additions': [100], 'reserve_revisions': [-50], 'depletion': [200], 'closing_reserves': [850], 'recovery_rate': [1.5], 'realized_price': [3], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver reserve_depletion.recovery_rate must be between 0.0 and 1.0: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 374, in main\n    value = call_product(model_registry, mutated)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\scripts\\run_card.py\", line 104, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver reserve_depletion.recovery_rate must be between 0.0 and 1.0: FY2027\n",
+   "expectation_recorded": {
+    "expected_raised": "ModelRegistryError"
+   },
+   "matches_expected": true
+  }
+ ],
+ "exit_code_semantics": {
+  "verdict": "pass",
+  "exit_code": 0,
+  "positive_ok": true,
+  "contract_ok": true,
+  "continuity_ok": true,
+  "defaults_ok": true,
+  "fidelity_ok": true,
+  "negatives_ok": true,
+  "harness_error": false,
+  "missing_expectations": {
+   "positive": false,
+   "continuity_positive": false,
+   "defaults": false
+  },
+  "precedence": "1 harness > 2 no-verdict/fidelity > 3 negative > 0 pass"
+ },
+ "harness_errors": []
+}

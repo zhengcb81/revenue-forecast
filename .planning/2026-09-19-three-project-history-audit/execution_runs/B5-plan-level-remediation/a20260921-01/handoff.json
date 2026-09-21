@@ -1,0 +1,417 @@
+{
+ "card": "B5+B6",
+ "title": "REM-21 cross-batch runner propagation / REM-22 rc code table freeze",
+ "attempt": "a20260921-01",
+ "attempt_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01",
+ "status": "review_pending",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "authority": {
+  "document": "OWNER_DECISIONS.md",
+  "sections": [
+   "13 T1-8 (REM-21, TIER-1)",
+   "13 T1-19 (REM-22, TIER-1)"
+  ],
+  "tier": "TIER-1",
+  "owner_authorized_form_REM_21": "propagate the exact-type-name comparison; only each batch's own copy; before/ keeps the old version; do NOT retro-change historical rc; do NOT touch frozen evidence; add a mutation arm per batch",
+  "owner_authorized_form_REM_22": "freeze one rc code table into START_HERE.md; each batch carries a self-describing exit_code_legend; historical rc is not rewritten"
+ },
+ "summary": {
+  "REM_22": "START_HERE.md already carried the frozen table (written before this card, verified by T1-19/a20260920-01). This card APPENDED a measured registry of the real per-batch rc codes with file:line evidence, the legacy deviation mapping, and one normative ambiguity. Pure append: +74/-0 lines, frozen text intact.",
+  "REM_21": "Exact-type-name per-case enforcement propagated into the copies of 6 batches. Measured result: 4 batches genuinely lacked the gate (M05-M08, M13-M16, M25-M28, M29-M31) and 2 already had it (M09-M12, M21-M24); the latter received prerequisite 3 (the rc=2 declaration-usability precedence) and the required counters, not a gate fix.",
+  "prerequisites_all_four": "satisfied; none unmet"
+ },
+ "deliverables": [
+  {
+   "path": "oracle.md",
+   "description": "frozen expectations, with an appended Erratum 1 for the falsified arm-B prediction",
+   "bytes": 12148,
+   "sha256": "c2c247e729a0f48f289a5e6eb6635fb90d884c4da68b51ccf36aa0df424c2897"
+  },
+  {
+   "path": "binding.json",
+   "description": "pre-run binding: repos, anchors, per-batch interpreters/code roots, hashes",
+   "bytes": 20819,
+   "sha256": "06ff80641682d526c0b87f0ac153a60a1995fcd5c3bcf8acf98dd0d2c30ecb73"
+  },
+  {
+   "path": "commands.json",
+   "description": "every unit with its real raw rc and the frozen exit_code_legend",
+   "bytes": 45696,
+   "sha256": "6972783f7b007cd31a256b3835a5c596f141b5f4ece50e99bc0c241bbeef429a"
+  },
+  {
+   "path": "changes.diff",
+   "description": "START_HERE.md append + the six runner diffs (regenerated from byte copies)",
+   "bytes": 114623,
+   "sha256": "1b5fef4975b3b78327781c1d32638e3e38f8d662320f8ee4ffdaad741bb35843"
+  },
+  {
+   "path": "decision.md",
+   "description": "decision record incl. the corrected REM-21 scope (D-9)",
+   "bytes": 22626,
+   "sha256": "2ffa5d05a28a8ba223ae90f87f71282e12fe9a469ea35c7623f3c5d62df1d282"
+  },
+  {
+   "path": "PROPAGATION_CONTRACT.md",
+   "description": "the normative contract fixed before the batch workers were dispatched",
+   "bytes": 13956,
+   "sha256": "b0802e30838eb2eca89fb8e62c4c5f7669998d7cec73d213154b7c78ed1d7409"
+  }
+ ],
+ "evidence": {
+  "start_here_append_proof": {
+   "path": "evidence/start_here_append_proof.json",
+   "description": "APPEND_ONLY=true, difflib ['equal','insert'], +74/-0",
+   "bytes": 2052,
+   "sha256": "ffa79db663155ded6e812b106d4a4fad739fb3c5deab102c7424d72cce2c7fe8"
+  },
+  "boundary_verification": {
+   "path": "evidence/boundary_verification.json",
+   "description": "68/68 runner copies and 31/31 cases.json unchanged; 0 of 37,323 historical files touched",
+   "bytes": 575,
+   "sha256": "15137b07831925b91348deef319f4a1b049f64da6631c4a1927f35c0fe2b0e51"
+  },
+  "ast_gate_analysis": {
+   "path": "evidence/ast_gate_analysis.json",
+   "description": "AST analysis with positive control M17-M20 and negative control M29-M31; self-test PASS",
+   "bytes": 5586,
+   "sha256": "798abab17d871055a7ce9374c9b3d55e37bc0cd93c6904ba7549b4c3c7b8bd7c"
+  },
+  "b5_scan": {
+   "path": "evidence/b5_scan.json",
+   "description": "8 runners + all 31 frozen cases.json (347 cases)",
+   "bytes": 54322,
+   "sha256": "78a1bfbf4c3d5fdc2f91d7733ac94a559df89137b50bc3229e8c010155a9008d"
+  },
+  "rc_return_paths": {
+   "path": "evidence/rc_return_paths.json",
+   "description": "real rc branches per batch",
+   "bytes": 8148,
+   "sha256": "7126c57e300693c71ebd077fefe47d216eae0d6e1c5fb633854355de828ae2d2"
+  },
+  "batch_invocations": {
+   "path": "evidence/batch_invocations.json",
+   "description": "bound B-unit argv per batch",
+   "bytes": 23218,
+   "sha256": "c5902e596f81f5c8242baee6a3947068e63ce98a03590430b25390c05fa26606"
+  }
+ },
+ "propagation": {
+  "M05-M08": {
+   "cards": [
+    "M05",
+    "M06",
+    "M07",
+    "M08"
+   ],
+   "runner_before": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+   "runner_after": "489ba7e35592241b91ecf393b515df2111bc4996298274226e0e1012deff230b",
+   "already_gated_before_this_card": false,
+   "arms_rc": {
+    "E": 0,
+    "F": 3,
+    "B": 0,
+    "G": 2
+   },
+   "arms_per_card": {
+    "E": null,
+    "F": null,
+    "B": null,
+    "G": null
+   },
+   "arms_expected": {
+    "E": 0,
+    "F": 3,
+    "B": "measured (unconstrained)",
+    "G": 2
+   },
+   "arms_match": true,
+   "arm_b_measured_rc": 0,
+   "historical_runner_already_gated_field": false,
+   "arm_card_matrix": {
+    "_note": "Every arm was run against ALL FOUR cards with real processes; the raw rc was read from the child process return code for each individual run. All four cards produced the contract-mandated value on every arm.",
+    "E": {
+     "M05": 0,
+     "M06": 0,
+     "M07": 0,
+     "M08": 0
+    },
+    "F": {
+     "M05": 3,
+     "M06": 3,
+     "M07": 3,
+     "M08": 3
+    },
+    "B": {
+     "M05": 0,
+     "M06": 0,
+     "M07": 0,
+     "M08": 0
+    },
+    "G": {
+     "M05": 2,
+     "M06": 2,
+     "M07": 2,
+     "M08": 2
+    }
+   },
+   "mutated_case": "CONT-BREAK",
+   "unmet_prerequisites": [],
+   "open_issues_count": 4,
+   "boundaries_respected": true,
+   "historical_writes": []
+  },
+  "M09-M12": {
+   "cards": [
+    "M09",
+    "M10",
+    "M11",
+    "M12"
+   ],
+   "runner_before": "997c553b0b9e6452e9edfeb8bfec3a40ff55d10f2646e562456913feb9332fce",
+   "runner_after": "5835b2591f3f21562547de57e2ecfd61889e59ebcf1f6350196562d958f43cff",
+   "already_gated_before_this_card": true,
+   "arms_rc": {
+    "E": 0,
+    "F": 3,
+    "B": 3,
+    "G": 2
+   },
+   "arms_per_card": {
+    "E": null,
+    "F": null,
+    "B": null,
+    "G": null
+   },
+   "arms_expected": {
+    "E": 0,
+    "F": 3,
+    "B": "measured (unconstrained)",
+    "G": 2
+   },
+   "arms_match": true,
+   "arm_b_measured_rc": 3,
+   "historical_runner_already_gated_field": true,
+   "arm_card_matrix": null,
+   "mutated_case": "NEG-CARD",
+   "unmet_prerequisites": [],
+   "open_issues_count": 4,
+   "boundaries_respected": true,
+   "historical_writes": []
+  },
+  "M13-M16": {
+   "cards": [
+    "M13",
+    "M14",
+    "M15",
+    "M16"
+   ],
+   "runner_before": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
+   "runner_after": "986893c6c83fa4551564b80f40efbf54bf12e5a5a42c78cb875496916dba6434",
+   "already_gated_before_this_card": false,
+   "arms_rc": {
+    "E": 0,
+    "F": 3,
+    "B": 2,
+    "G": 2
+   },
+   "arms_per_card": {
+    "E": {
+     "M13": 0,
+     "M14": 0,
+     "M15": 0,
+     "M16": 0
+    },
+    "F": {
+     "M13": 3,
+     "M14": 3,
+     "M15": 3,
+     "M16": 3
+    },
+    "B": {
+     "M13": 2,
+     "M14": 2,
+     "M15": 2,
+     "M16": 2
+    },
+    "G": {
+     "M13": 2,
+     "M14": 2,
+     "M15": 2,
+     "M16": 2
+    }
+   },
+   "arms_expected": {
+    "E": 0,
+    "F": 3,
+    "B": "measured (unconstrained)",
+    "G": 2
+   },
+   "arms_match": true,
+   "arm_b_measured_rc": 2,
+   "historical_runner_already_gated_field": false,
+   "arm_card_matrix": null,
+   "mutated_case": null,
+   "unmet_prerequisites": [],
+   "open_issues_count": 8,
+   "boundaries_respected": true,
+   "historical_writes": []
+  },
+  "M21-M24": {
+   "cards": [
+    "M21",
+    "M22",
+    "M23",
+    "M24"
+   ],
+   "runner_before": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+   "runner_after": "0004eda499ed6ac9583f0b8ddb9f209f13d3846697b975a8583d73beb5612f28",
+   "already_gated_before_this_card": true,
+   "arms_rc": {
+    "E": 0,
+    "F": 3,
+    "B": 3,
+    "G": 2
+   },
+   "arms_per_card": {
+    "E": null,
+    "F": null,
+    "B": null,
+    "G": null
+   },
+   "arms_expected": {
+    "E": 0,
+    "F": 3,
+    "B": "measured (unconstrained)",
+    "G": 2
+   },
+   "arms_match": true,
+   "arm_b_measured_rc": 3,
+   "historical_runner_already_gated_field": null,
+   "arm_card_matrix": null,
+   "mutated_case": "NEG-CARD",
+   "unmet_prerequisites": [],
+   "open_issues_count": 4,
+   "boundaries_respected": true,
+   "historical_writes": []
+  },
+  "M25-M28": {
+   "cards": [
+    "M25",
+    "M26",
+    "M27",
+    "M28"
+   ],
+   "runner_before": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+   "runner_after": "71033142f061128b984f916fce9b22d379ea43e6ad9bc415ee06fc494a781f4b",
+   "already_gated_before_this_card": false,
+   "arms_rc": {
+    "E": 0,
+    "F": 3,
+    "B": 1,
+    "G": 2
+   },
+   "arms_per_card": {
+    "E": null,
+    "F": null,
+    "B": null,
+    "G": null
+   },
+   "arms_expected": {
+    "E": 0,
+    "F": 3,
+    "B": "measured (unconstrained)",
+    "G": 2
+   },
+   "arms_match": true,
+   "arm_b_measured_rc": 1,
+   "historical_runner_already_gated_field": false,
+   "arm_card_matrix": null,
+   "mutated_case": "NEG-CARD",
+   "unmet_prerequisites": [],
+   "open_issues_count": 6,
+   "boundaries_respected": true,
+   "historical_writes": []
+  },
+  "M29-M31": {
+   "cards": [
+    "M29",
+    "M30",
+    "M31"
+   ],
+   "runner_before": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+   "runner_after": "e1e1e9ed4e738f388208c490f3c48e289f93385d8593761a48838f0fa78bf175",
+   "already_gated_before_this_card": false,
+   "arms_rc": {
+    "E": 0,
+    "F": 3,
+    "B": 0,
+    "G": 2
+   },
+   "arms_per_card": {
+    "E": null,
+    "F": null,
+    "B": null,
+    "G": null
+   },
+   "arms_expected": {
+    "E": 0,
+    "F": 3,
+    "B": "measured (unconstrained)",
+    "G": 2
+   },
+   "arms_match": true,
+   "arm_b_measured_rc": 0,
+   "historical_runner_already_gated_field": false,
+   "arm_card_matrix": null,
+   "mutated_case": "NEG-CARD",
+   "unmet_prerequisites": [],
+   "open_issues_count": 3,
+   "boundaries_respected": true,
+   "historical_writes": []
+  }
+ },
+ "key_findings": [
+  "F-B5-1 (premise overstated): OWNER_DECISIONS 7.2 / 13 T1-8 call M17-M20 the ONLY batch that compares cases.json[*].expected. Measured: M09-M12 (run_card.py:427 + :430-431) and M21-M24 (:304 + :312-313) ALREADY gate the verdict on the exact exception type name. Of the six authorized batches only four (M05-M08, M13-M16, M25-M28, M29-M31) genuinely lacked the gate. The ruling's COUNT of four matches the measured non-complying count; its implied batch LABELS do not.",
+  "F-B5-2 (ghost reference hash): the runner sha256 5307d2cc… quoted in 7.2 / 13 T1-8 does not correspond to any file on this machine (all 68 copies re-hashed). It is an r2-generation value (M17 review.md:162/339/348) superseded by the same reviewer's r3 verdict (review.md:409, :422, :518) and by the four cards' own evidence, which all record 94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252. Kept as a superseded value; nothing was rewritten.",
+  "F-B5-3 (rc deviation set is larger than the brief says): the brief names M05-M08 as using 2=harness. Measured, M01-M04 and M21-M24 also emit NO rc=1 at all (0/2/3 only), so the cross-batch aggregation hazard covers three batches, not one. M25-M28 in contrast ALREADY has a real rc=1 (run_card.py:168, :466) and already matches the frozen table.",
+  "F-B5-4 (normative ambiguity, registered not rewritten): the frozen rc=2 gloss 'a negative case correctly rejected' is a per-CASE statement inside a per-RUN code table; the reference runner emits rc=0 when all negatives are correctly rejected. Aggregators must not read 'correctly rejected' as rc=2.",
+  "F-B5-5 (orchestrator self-caught defect): this card's first-pass scan flag `compares_raised_to_expected` returned false for all 8 batches, including the reference M17-M20 which provably compares - a guard indistinguishable from a correct discriminator until tested against a positive control. Replaced by an AST analysis that self-tests against M17-M20 (true) and M29-M31 (false).",
+  "F-B5-6 (M25-M28: a THIRD arm-B behaviour, and a partial gate): the historical M25-M28 runner reacts to a single-case `expected` mutation by ABORTING with rc=1 - its whole-set `case_contract` gate (run_card_before.py:140-168, `wrong_declaration` -> `return 1`), not rc=0 and not rc=3. Consequences: (a) that set-level gate is only PARTIALLY effective - it catches a one-case mutation but is blind to a blanket one (M29-M31's H_blanket arm, all 11 declarations -> 'ImportError', still measured rc=0 on that generation); (b) under the frozen rc table a declaration mismatch is 'judgement did not hold' (rc=3), not 'harness failure' (rc=1), so the historical classification is arguably wrong - registered, not retro-changed.",
+  "F-B5-7 (anchor conflict inside a frozen artifact; reported, NOT rewritten): M25-M28's FROZEN cases.json carries a `case_contract.rule` string stating that a differing `expected` makes the harness 'refuse to issue a verdict (rc=1)'. That frozen text conflicts BOTH with the frozen rc table (a declaration mismatch is rc=3) AND with REM-21's mandatory per-case form. Resolving it would require editing a frozen artifact, which T1-11 forbids; it is recorded here for reviewer/owner adjudication.",
+  "F-B5-8 (mutation-target ambiguity in the contract, immaterial): the contract's rule 'the first negative case (lowest id)' is self-contradictory where ids mix a hyphen with letters, because ASCII '-' (0x2D) < '0' < 'A', so `sorted(ids)[0]` is CONT-BREAK while file order gives NEG-CARD. Batches that tested both readings (M21-M24 arms F2/B2) measured IDENTICAL rc, so the ambiguity cannot change any result.",
+  "F-B5-9 (a second correction to the frozen rc registry; appended as START_HERE 'append 2'): the earlier frozen section states that a missing cases.json `expected` currently classifies as rc=3. MEASURED on the unpatched runners: deleting the key produced NEITHER rc=2 NOR rc=3 but an UNCAUGHT KeyError (the code used the hard subscript case['expected']) -> raw rc=1, with no evidence file written at all (M09-M12; M05-M08 identical crash). So the historical classification is rc=1, which the frozen table's own rc=1 criterion ('expectation file missing') actually covers. Registered append-only; nothing rewritten.",
+  "F-B5-10 (arm B spans ALL FOUR rc values): measured 0 (M05-M08, M29-M31 - the true 'fabricated green'), 1 (M25-M28 - whole-set case_contract abort), 2 (M13-M16 - set-level blanket comparison that never reads the raised exception) and 3 (M09-M12, M21-M24 - already per-case exact-name gated). Any cross-batch aggregation that assumes a single arm-B behaviour would be wrong on four of the six batches."
+ ],
+ "boundaries": {
+  "historical_artifacts_modified": [],
+  "historical_runner_copies_verified_unchanged": 68,
+  "historical_cases_json_verified_unchanged": 31,
+  "historical_files_modified_after_card_start": 0,
+  "historical_files_scanned_for_mtime": 37323,
+  "historical_rc_values_rewritten": 0,
+  "frozen_evidence_modified": false,
+  "production_repo_writes": 0,
+  "production_anchors": {
+   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+  },
+  "other_cards_attempts_modified": [],
+  "status_transitions_performed": 0,
+  "signatures_forged": false,
+  "miniconda_python_used_for_card_runners": false
+ },
+ "reviewer_must_do": [
+  "Independently re-read each of the six patched runners and confirm the comparison is EXACT type-name equality and never isinstance (the ValueError decoy is the discriminating probe).",
+  "Re-run at least one arm per batch from your own copy and confirm the raw rc; do not accept this card's recorded rc.",
+  "Adjudicate F-B5-1: whether the two already-gating batches should keep the added prerequisite-3 changes or be reverted to byte-identical historical copies.",
+  "Adjudicate F-B5-2: whether the superseded 5307d2cc… needs any further archaeology.",
+  "Adjudicate F-B5-4: whether the frozen rc=2 wording requires an owner desambiguation.",
+  "Confirm the START_HERE.md append is a pure append by your own two-route test.",
+  "Confirm nothing under the historical M-card trees was written (this card reports 0 of 37,323)."
+ ],
+ "next_action": "Independent reviewer: adjudicate the six patched runner copies and the two corrections (F-B5-1 scope, F-B5-2 ghost hash) recorded in decision.md D-9 and D-3. The first unfinished card action is the reviewer signature; the implementer must not self-sign.",
+ "all_arms_as_expected": true,
+ "all_boundaries_respected": true
+}

@@ -1,0 +1,34 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-plan-level-remediation\a20260921-01\_scratch\M25-M28\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-plan-level-remediation\a20260921-01\_scratch\M25-M28\code_root\model_registry.py
+registry formula: revenue = (opening_aum + inflows*inflow_revenue_fraction - outflows*outflow_lost_fraction + market_change*market_change_revenue_fraction) * management_fee_rate + recognized_performance_fees
+registry required: ['opening_aum', 'inflows', 'outflows', 'market_change', 'closing_aum', 'inflow_revenue_fraction', 'outflow_lost_fraction', 'market_change_revenue_fraction', 'management_fee_rate']
+registry optional: ['recognized_performance_fees']
+registry defaults: {}
+registry driver_bounds: {'market_change': [None, None], 'recognized_performance_fees': [None, None]}
+positive raised: None
+positive actual: [11.5]
+positive expected: [11.5]
+tolerances_ok: True
+continuity_positive ok: True
+defaults ok: True actual: [9.5] expected: [9.5]
+defaults declared check: recognized_performance_fees declared= False expected= False matches= True registry_defaults= {}
+observation: OBS-BASE-IGNORED raised= None actual= [11.5] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-PERF-OMITTED raised= None actual= [9.5] matches_compared= False expect_equal= None matches_expected_relation= True matches_expected= None 
+negative: NEG-CARD FAIL_declared_expectation_mismatch ModelRegistryError - opening_aum stock-flow balance failed: FY2027
+negative: N01a PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver aum_fee_bridge.opening_aum must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for aum_fee_bridge: opening_aum
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for aum_fee_bridge: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - aum_fee_bridge.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - aum_fee_bridge.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - opening_aum continuity failed: FY2028
+negative summary: {'total': 11, 'passed': 10, 'failed': ['NEG-CARD'], 'failed_judged': ['NEG-CARD'], 'not_judged': [], 'judged': 11, 'declared_expectations_in_cases_json': ['ModelRegistryError', 'ValueError'], 'declared_expectation_comparison': "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)", 'declared_expectations_enforced': True, 'declared_expectations_usable': True, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True, 'target_exception': 'model_registry.ModelRegistryError'}
+neg_card_mechanism matched: True expected_substring= opening_aum stock-flow balance failed: FY2027 observed= opening_aum stock-flow balance failed: FY2027
+negative counts: {'declared_expectation_mismatch': 1, 'declared_expectation_not_met': 1, 'declared_expectation_missing_in_cases_json': 0}
+declared expectations enforced: True cases_json_declared_expectations_usable: True
+set-level case_contract declaration violations (non-gating): ["cases whose `expected` is not 'ModelRegistryError': ['NEG-CARD']"]
+verdict: fail exit_code: 3
+declared expectation enforcement: usable=True mismatch_ids=['NEG-CARD'] not_judged_ids=[] mismatch_count=1

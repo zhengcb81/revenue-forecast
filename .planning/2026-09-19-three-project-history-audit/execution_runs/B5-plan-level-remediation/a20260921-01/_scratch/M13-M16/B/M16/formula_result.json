@@ -1,0 +1,492 @@
+{
+ "card_id": "M16",
+ "model_id": "real_estate_rental",
+ "code_root": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root",
+ "entry_point": "model_registry.calculate_registered_model(model_id, base_revenue, drivers, years)",
+ "attempt": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\B",
+ "python_version": "3.13.9",
+ "python_executable": "C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+ "registry_metadata": {
+  "model_id": "real_estate_rental",
+  "required": [
+   "average_occupied_area",
+   "rent_per_area"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "average_occupied_area": "area",
+   "rent_per_area": "revenue_per_area",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [],
+  "driver_bounds": {},
+  "formula": "revenue = average_occupied_area * rent_per_area + other_revenue"
+ },
+ "positive": {
+  "block": "positive",
+  "years": [
+   2027
+  ],
+  "raised": null,
+  "actual": [
+   32.0
+  ],
+  "actual_repr": "[32.0]",
+  "fidelity": {
+   "ok": true,
+   "problems": [],
+   "facts": {
+    "container": "list",
+    "length": 1,
+    "element_types": [
+     "float"
+    ]
+   }
+  },
+  "value_checks": {
+   "label": "positive",
+   "ok": true,
+   "expectation_present": true,
+   "length_ok": true,
+   "per_value": [
+    {
+     "index": 0,
+     "actual": 32.0,
+     "expected": 32.0,
+     "tolerance": 3.2e-08,
+     "abs_diff": 0.0,
+     "ok": true
+    }
+   ],
+   "problems": []
+  },
+  "years_match_frozen": true,
+  "ok": true
+ },
+ "continuity_positive": {
+  "block": "continuity_positive",
+  "years": [
+   2027,
+   2028
+  ],
+  "raised": null,
+  "actual": [
+   32.0,
+   41.4
+  ],
+  "actual_repr": "[32.0, 41.4]",
+  "fidelity": {
+   "ok": true,
+   "problems": [],
+   "facts": {
+    "container": "list",
+    "length": 2,
+    "element_types": [
+     "float",
+     "float"
+    ]
+   }
+  },
+  "value_checks": {
+   "label": "continuity_positive",
+   "ok": true,
+   "expectation_present": true,
+   "length_ok": true,
+   "per_value": [
+    {
+     "index": 0,
+     "actual": 32.0,
+     "expected": 32.0,
+     "tolerance": 3.2e-08,
+     "abs_diff": 0.0,
+     "ok": true
+    },
+    {
+     "index": 1,
+     "actual": 41.4,
+     "expected": 41.4,
+     "tolerance": 4.14e-08,
+     "abs_diff": 0.0,
+     "ok": true
+    }
+   ],
+   "problems": []
+  },
+  "years_match_frozen": true,
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   30.0
+  ],
+  "expected": [
+   30.0
+  ],
+  "ok": true,
+  "gating": false,
+  "why": "documents the documented zero default for the optional drivers; non-gating"
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "the rowwise calculator discards base_revenue; design observation only, not a pass condition",
+   "gating": false,
+   "raised": null,
+   "actual": [
+    32.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    32.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-BOUND-INCLUSIVE",
+   "expectation": null,
+   "kind": "set_driver_element",
+   "why": "the area domain is INCLUSIVE at the lower edge (0 is accepted, -1 is refused by NEG-CARD); records the edge, does not gate",
+   "gating": false,
+   "raised": null,
+   "actual": [
+    2.0
+   ],
+   "expected": [
+    2.0
+   ],
+   "matches_expected": true
+  },
+  {
+   "id": "OBS-SIGNED-OTHER",
+   "expectation": null,
+   "kind": "set_driver_element",
+   "why": "other_revenue is a signed driver: a negative other amount is admitted and still leaves total revenue non-negative; records the contract boundary, does not gate",
+   "gating": false,
+   "raised": null,
+   "actual": [
+    29.0
+   ],
+   "expected": [
+    29.0
+   ],
+   "matches_expected": true
+  }
+ ],
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "why": "card-specific negative (card_M16.md L35): average occupied area is negative, below its lower domain bound",
+   "expected": "ValueError",
+   "base_input": "positive",
+   "declared_expected": "ValueError",
+   "mutated_input_repr": "{'average_occupied_area': [-1.0], 'rent_per_area': [0.03], 'other_revenue': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver real_estate_rental.average_occupied_area must be between 0.0 and inf: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver real_estate_rental.average_occupied_area must be between 0.0 and inf: FY2027\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [True], 'rent_per_area': [0.03], 'other_revenue': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "real_estate_rental.average_occupied_area.FY2027 must be numeric",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: real_estate_rental.average_occupied_area.FY2027 must be numeric\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [nan], 'rent_per_area': [0.03], 'other_revenue': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "real_estate_rental.average_occupied_area.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: real_estate_rental.average_occupied_area.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [inf], 'rent_per_area': [0.03], 'other_revenue': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "real_estate_rental.average_occupied_area.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: real_estate_rental.average_occupied_area.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [-inf], 'rent_per_area': [0.03], 'other_revenue': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "real_estate_rental.average_occupied_area.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: real_estate_rental.average_occupied_area.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [], 'rent_per_area': [0.03], 'other_revenue': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver real_estate_rental.average_occupied_area must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver real_estate_rental.average_occupied_area must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'rent_per_area': [0.03], 'other_revenue': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for real_estate_rental: average_occupied_area",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for real_estate_rental: average_occupied_area\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [1000], 'rent_per_area': [0.03], 'other_revenue': [2], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "unsupported drivers for real_estate_rental: unknown_driver",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for real_estate_rental: unknown_driver\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [1000], 'rent_per_area': [0.03], 'other_revenue': [2]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "real_estate_rental.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: real_estate_rental.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [1000], 'rent_per_area': [0.03], 'other_revenue': [2]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "real_estate_rental.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: real_estate_rental.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "why": "continuity break for this card: FY2028 is missing, so the years are not consecutive (the two-year positive is run first)",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "declared_expected": "ModelRegistryError",
+   "mutated_input_repr": "{'average_occupied_area': [1000, 1200], 'rent_per_area': [0.03, 0.032], 'other_revenue': [2, 3]} years=[2027, 2029] base=0",
+   "raised": "ModelRegistryError",
+   "message": "real_estate_rental.years must be consecutive and increasing",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M13-M16\\run_card_before.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py\", line 324, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must be consecutive and increasing\")\nmodel_registry.ModelRegistryError: real_estate_rental.years must be consecutive and increasing\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  }
+ ],
+ "harness_error": null,
+ "evidence_dir": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\B\\evidence\\M16",
+ "frozen_input_sha256": {
+  "input.json": "641b938b767bd22318572db0e1dc11e964fa106ba5d5419760b8288f71670e07",
+  "oracle.json": "2f300c78acd0035a09f1005957a5a97a7698d15fb8ee0b660bcaa6acfb228c92",
+  "cases.json": "ad3753bf081629033b9a2710fd7a0f01799d3540a86f0abc3956e294184f92fe"
+ },
+ "model_registry_file": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py",
+ "imported_module_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "code_root_on_sys_path": true,
+ "expectation_consistency": {
+  "ok": false,
+  "gaps": [
+   "case NEG-CARD declares expected='ValueError' but this runner only counts ModelRegistryError as a refusal verdict"
+  ],
+  "facts": {
+   "case_count": 11,
+   "case_ids": [
+    "NEG-CARD",
+    "N01a",
+    "N01b",
+    "N01c",
+    "N01d",
+    "N02",
+    "N03",
+    "N04",
+    "N05a",
+    "N05b",
+    "CONT-BREAK"
+   ],
+   "oracle_negative_count": 11,
+   "oracle_negative_ids": [
+    "NEG-CARD",
+    "N01a",
+    "N01b",
+    "N01c",
+    "N01d",
+    "N02",
+    "N03",
+    "N04",
+    "N05a",
+    "N05b",
+    "CONT-BREAK"
+   ],
+   "declared_expectations": [
+    "ModelRegistryError",
+    "ValueError"
+   ],
+   "target_exception": "ModelRegistryError"
+  },
+  "rule": "a case whose declared expected type is not the verdict type this runner applies, or a case count / id set that disagrees with oracle.json, is an expectation gap and yields rc=2 - never a silent pass"
+ },
+ "negative_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": [],
+  "target_exception": "ModelRegistryError",
+  "counting_rule": "only isinstance(exc, ModelRegistryError) counts as PASS; ImportError/ModuleNotFoundError/FileNotFoundError are recorded as FAIL",
+  "expectation_consistency_ok": false,
+  "expectation_gaps": [
+   "case NEG-CARD declares expected='ValueError' but this runner only counts ModelRegistryError as a refusal verdict"
+  ]
+ },
+ "verdict": {
+  "verdict": "fail",
+  "exit_code": 2
+ },
+ "exit_code": 2,
+ "exit_code_semantics": {
+  "0": "pass: faithful positive + continuity and every negative rejected with the target exception",
+  "1": "harness error: no observation could be set up; never a pass",
+  "2": "no verdict: expectation missing or the output is not faithful to the frozen oracle",
+  "3": "verdict negative: at least one negative case was not rejected with the target exception",
+  "precedence": "1 > 2 > 3",
+  "triggered": [
+   "expectation_declaration_inconsistent"
+  ],
+  "expectation_missing": [],
+  "expectation_declaration_gaps": [
+   "case NEG-CARD declares expected='ValueError' but this runner only counts ModelRegistryError as a refusal verdict"
+  ],
+  "fidelity_problems": [],
+  "value_problems": [],
+  "negative_failures": []
+ },
+ "printed_lines": [
+  "card_id: M16",
+  "model_id: real_estate_rental",
+  "code_root: C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root",
+  "model_registry_file: C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M13-M16\\code_root\\model_registry.py",
+  "imported_module_sha256: {'model_registry.py': '9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f', 'model_extensions.py': '9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911'}",
+  "frozen_input_sha256: {'input.json': '641b938b767bd22318572db0e1dc11e964fa106ba5d5419760b8288f71670e07', 'oracle.json': '2f300c78acd0035a09f1005957a5a97a7698d15fb8ee0b660bcaa6acfb228c92', 'cases.json': 'ad3753bf081629033b9a2710fd7a0f01799d3540a86f0abc3956e294184f92fe'}",
+  "registry formula: revenue = average_occupied_area * rent_per_area + other_revenue",
+  "registry required: ['average_occupied_area', 'rent_per_area']",
+  "registry optional: ['other_revenue']",
+  "registry defaults: {}",
+  "registry ratio_drivers: []",
+  "registry driver_bounds: {}",
+  "positive raised: None",
+  "positive actual: [32.0]",
+  "positive expected: [32.0]",
+  "positive tolerances: [3.2e-08]",
+  "positive value_ok: True",
+  "positive fidelity_ok: True",
+  "positive fidelity_problems: []",
+  "positive years_match_frozen: True",
+  "continuity_positive raised: None",
+  "continuity_positive actual: [32.0, 41.4]",
+  "continuity_positive expected: [32.0, 41.4]",
+  "continuity_positive tolerances: [3.2e-08, 4.14e-08]",
+  "continuity_positive value_ok: True",
+  "continuity_positive fidelity_ok: True",
+  "continuity_positive fidelity_problems: []",
+  "continuity_positive years_match_frozen: True",
+  "defaults actual: [30.0]",
+  "defaults expected: [30.0]",
+  "defaults ok (not gating): True",
+  "observation: OBS-BASE-IGNORED raised=None actual=[32.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None ",
+  "observation: OBS-BOUND-INCLUSIVE raised=None actual=[2.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True ",
+  "observation: OBS-SIGNED-OTHER raised=None actual=[29.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True ",
+  "expectation_consistency: ok=False gap_count=1 facts={'case_count': 11, 'case_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'oracle_negative_count': 11, 'oracle_negative_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'declared_expectations': ['ModelRegistryError', 'ValueError'], 'target_exception': 'ModelRegistryError'}",
+  "expectation_gap: case NEG-CARD declares expected='ValueError' but this runner only counts ModelRegistryError as a refusal verdict",
+  "negative: NEG-CARD declared_expected=ValueError verdict=PASS_rejected raised=ModelRegistryError - driver real_estate_rental.average_occupied_area must be between 0.0 and inf: FY2027",
+  "negative: N01a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be numeric",
+  "negative: N01b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite",
+  "negative: N01c declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite",
+  "negative: N01d declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite",
+  "negative: N02 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - driver real_estate_rental.average_occupied_area must contain one value per forecast year",
+  "negative: N03 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - missing drivers for real_estate_rental: average_occupied_area",
+  "negative: N04 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - unsupported drivers for real_estate_rental: unknown_driver",
+  "negative: N05a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must contain fiscal years",
+  "negative: N05b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must contain fiscal years",
+  "negative: CONT-BREAK declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must be consecutive and increasing",
+  "negative summary: total=11 passed=11 failed=[]",
+  "exit_code triggered: ['expectation_declaration_inconsistent']",
+  "verdict: fail exit_code: 2"
+ ],
+ "printed_sha256": "fe2bf64de356c838396e3b2907abe48ac971b6fd40697c1c91d3f4bfc6ad06e0",
+ "print_vs_file_rule": "stdout.txt is the raw OS-level capture of this process's stdout; scripts/verify_card.py re-reads this file and asserts that its lines equal printed_lines and that printed_sha256 matches, so a printed number can never disagree with the recorded evidence."
+}

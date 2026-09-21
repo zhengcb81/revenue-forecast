@@ -1,0 +1,197 @@
+{
+ "card_id": "M24",
+ "first_required_driver": "opening_arr",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "required_message_ids": [
+  "NEG-CARD",
+  "CONT-BREAK"
+ ],
+ "required_message_ids_rule": "the runner asserts, before running any negative, that each of these ids exists in `cases` and carries a non-empty `expect_message_contains`; a missing id or an empty requirement makes the run red (rc=3). This closes the hole where DELETING a message requirement silently disabled the check (independent review round 2, item 3).",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver",
+   "base_input": "positive",
+   "why": "card-specific negative (oracle.md section 5)",
+   "driver": "closing_arr",
+   "expect_message_contains": "stock-flow balance failed: FY2027",
+   "expect_message_basis": "the type-only assertion is too weak for this case: a length/lookup guard could raise the same exception class for the wrong reason, so the refusal MESSAGE is frozen too and the runner fails the case if the message does not contain this substring",
+   "value": [
+    251
+   ]
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "driver": "opening_arr",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   }
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01b: non-finite value nan",
+   "driver": "opening_arr",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   }
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01c: non-finite value inf",
+   "driver": "opening_arr",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   }
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01d: non-finite value -inf",
+   "driver": "opening_arr",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   }
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "driver": "opening_arr",
+   "value": []
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "driver": "opening_arr"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ]
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "driver": null,
+   "value": []
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "driver": null,
+   "value": {
+    "__bool__first__": true
+   }
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "driver": null,
+   "expect_message_contains": "continuity failed: FY2028",
+   "expect_message_basis": "the type-only assertion is too weak for this case: a length/lookup guard could raise the same exception class for the wrong reason, so the refusal MESSAGE is frozen too and the runner fails the case if the message does not contain this substring",
+   "value": {
+    "opening_arr": [
+     200,
+     251
+    ],
+    "closing_arr": [
+     250,
+     251
+    ]
+   }
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "the ARR bridge ignores base_revenue at this entry point; design observation only, not a pass condition"
+  },
+  {
+   "id": "OBS-DEFAULT-EQUIV",
+   "kind": "set_driver",
+   "driver": "usage_revenue",
+   "value": [
+    0
+   ],
+   "base_input": "defaults",
+   "compare_to": "defaults",
+   "expect_equal": true,
+   "why": "explicit 0 equals the omitted optional usage_revenue; makes the documented default falsifiable"
+  },
+  {
+   "id": "OBS-GRR-ONE-SECOND-YEAR",
+   "kind": "input_replay",
+   "input": "continuity_positive",
+   "compare_to": "continuity_positive",
+   "expect_equal": true,
+   "why": "records whether gross_retention_rate = 1 on the FY2028 slot is accepted (the retained-ARR guard: opening_arr * grr == 0 and expansion_arr > 0); NO expectation and NO verdict is asserted"
+  },
+  {
+   "id": "OBS-BRIDGE-TOL-1E-7",
+   "kind": "set_driver_element",
+   "driver": "closing_arr",
+   "index": 0,
+   "value": {
+    "__float__": 250.0000001
+   },
+   "base_input": "positive",
+   "expect_equal": null,
+   "why": "effective-resolution probe required by the review (P3-2): the bridge compares with math.isclose(rel_tol=1e-9, abs_tol=1e-9), whose effective absolute tolerance at |closing_arr| = 250 is about 2.5e-7, so +1e-7 is expected to be INSIDE tolerance and the call to return a value; NO verdict is asserted, the observed outcome is recorded"
+  },
+  {
+   "id": "OBS-BRIDGE-TOL-1E-6",
+   "kind": "set_driver_element",
+   "driver": "closing_arr",
+   "index": 0,
+   "value": {
+    "__float__": 250.000001
+   },
+   "base_input": "positive",
+   "expect_equal": null,
+   "why": "second effective-resolution probe (P3-2): +1e-6 is expected to be OUTSIDE the ~2.5e-7 effective tolerance and be refused with a stock-flow balance ModelRegistryError; NO verdict is asserted, the observed outcome is recorded"
+  }
+ ],
+ "probe_expected": {}
+}

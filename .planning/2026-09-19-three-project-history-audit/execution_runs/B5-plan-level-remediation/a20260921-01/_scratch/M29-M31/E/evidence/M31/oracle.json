@@ -1,0 +1,143 @@
+{
+ "card_id": "M31",
+ "model_id": "inventory_sellthrough",
+ "generated_by": "scripts/oracle_M31.py (stdlib only, no product import)",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "160"
+  ],
+  "expected_float": [
+   160.0
+  ],
+  "tolerances": [
+   1.6e-07
+  ],
+  "hand_work": [
+   "100 + 60 + 10 - 5 - 80 = 85; 80 x 2"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "160",
+   "0"
+  ],
+  "expected_float": [
+   160.0,
+   0.0
+  ],
+  "tolerances": [
+   1.6e-07,
+   1e-09
+  ],
+  "hand_work": [
+   "100 + 60 + 10 - 5 - 80 = 85; 80 x 2",
+   "85 + 0 + 0 - 0 - 0 = 85; 0 x 2"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "160"
+  ],
+  "expected_float": [
+   160.0
+  ],
+  "tolerances": [
+   1.6e-07
+  ],
+  "hand_work": [
+   "100 + 60 + 10 - 5 - 80 = 85; 80 x 2"
+  ]
+ },
+ "defaults_expected_float": [
+  160.0
+ ],
+ "observation_expected": {
+  "OBS-SCRAP-NOT-REVENUE": {
+   "years": [
+    2027
+   ],
+   "expected": [
+    "0"
+   ],
+   "expected_float": [
+    0.0
+   ],
+   "tolerances": [
+    1e-09
+   ],
+   "hand_work": [
+    "0 x 2 (sold_units = 0; scrapped 100 is not revenue)"
+   ]
+  },
+  "OBS-SOLD-ONLY": {
+   "years": [
+    2027
+   ],
+   "expected": [
+    "200"
+   ],
+   "expected_float": [
+    200.0
+   ],
+   "tolerances": [
+    2e-07
+   ],
+   "hand_work": [
+    "100 x 2"
+   ]
+  },
+  "OBS-BASE-IGNORED": {
+   "years": [
+    2027
+   ],
+   "expected": [
+    "160"
+   ],
+   "expected_float": [
+    160.0
+   ],
+   "tolerances": [
+    1.6e-07
+   ],
+   "hand_work": [
+    "100 + 60 + 10 - 5 - 80 = 85; 80 x 2"
+   ]
+  }
+ },
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "fidelity_rule": "len(output) must equal len(years) and len(expected); every element must be a plain finite number; year labels are not observable from the returned list, so length is the only year-linked observable",
+ "model_has_no_optional_drivers": true,
+ "continuity_case_source": {
+  "card": "card_M31.md L55-113 (two-year continuity case, printed in the card itself)",
+  "hand_work_second_year": "year 2 has no production / purchase / scrap / sale flow and opening = prior closing (85), so the bridge balances at 85 and revenue is 0 x 2 = 0",
+  "expected_negative": "ModelRegistryError/continuity; each year balances on its own, but year 2 opening is 1 higher than year 1 closing",
+  "frozen_continuity_expected": [
+   "160",
+   "0"
+  ]
+ }
+}

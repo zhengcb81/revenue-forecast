@@ -1,0 +1,441 @@
+{
+ "card_id": "M27",
+ "model_id": "renewable_generation",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root",
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "registry_metadata": {
+  "model_id": "renewable_generation",
+  "required": [
+   "average_commissioned_mw",
+   "period_hours",
+   "pre_curtailment_capacity_factor",
+   "curtailment_rate",
+   "contracted_share",
+   "contract_price_per_mwh",
+   "merchant_price_per_mwh"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "average_commissioned_mw": "quantity",
+   "period_hours": "activity",
+   "pre_curtailment_capacity_factor": "ratio",
+   "curtailment_rate": "ratio",
+   "contracted_share": "ratio",
+   "contract_price_per_mwh": "revenue_per_unit",
+   "merchant_price_per_mwh": "revenue_per_unit",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "contracted_share",
+   "curtailment_rate",
+   "pre_curtailment_capacity_factor"
+  ],
+  "driver_bounds": {
+   "contract_price_per_mwh": [
+    null,
+    null
+   ],
+   "merchant_price_per_mwh": [
+    null,
+    null
+   ],
+   "other_revenue": [
+    null,
+    null
+   ]
+  },
+  "formula": "revenue = average_commissioned_mw * period_hours * pre_curtailment_capacity_factor * (1-curtailment_rate) * (contracted_share*contract_price_per_mwh + (1-contracted_share)*merchant_price_per_mwh) + other_revenue"
+ },
+ "positive": {
+  "raised": null,
+  "actual": [
+   264000.0
+  ],
+  "actual_repr": [
+   "264000.0"
+  ],
+  "length": 1
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   264000.0,
+   564100.2000000001
+  ],
+  "expected": [
+   264000.0,
+   564100.2
+  ],
+  "length_ok": true,
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   262800.0
+  ],
+  "expected": [
+   262800.0
+  ],
+  "ok": true
+ },
+ "defaults_declared_check": {
+  "driver": "other_revenue",
+  "registry_declared_defaults": {},
+  "declared_default_present": false,
+  "declared_default_value": null,
+  "expected_declared_default_present": false,
+  "matches_expected": true,
+  "why": "card_M27.md L9 declares other_revenue default 0, but the registry implementation declares defaults = {} while keeping other_revenue optional; the library therefore zero-fills it silently. This is the same silent-zero-fill class recorded as OQ-04 in the accepted M05-M08 attempts, and it is checked here to keep the omission visible.",
+  "gating": false
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "rowwise calculator discards base_revenue; design observation only, not a pass condition",
+   "raised": null,
+   "actual": [
+    264000.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    264000.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-NEG-PRICE",
+   "expectation": null,
+   "kind": "set_driver_element",
+   "why": "card_M27.md L54 says a negative power price may be entered; the registry declares merchant_price_per_mwh = (None, None). The probe records whether the blended price path accepts it, with NO expectation and NO verdict asserted on the price.",
+   "raised": null,
+   "actual": [
+    88800.0
+   ]
+  }
+ ],
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [2], 'period_hours': [0], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "period_hours must be positive: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_extensions.py\", line 156, in calculate\n    output = calculator(rows, years, error)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_extensions.py\", line 86, in _renewable\n    raise error(f\"period_hours must be positive: FY{year}\")\nmodel_registry.ModelRegistryError: period_hours must be positive: FY2027\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [True], 'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "renewable_generation.average_commissioned_mw.FY2027 must be numeric",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: renewable_generation.average_commissioned_mw.FY2027 must be numeric\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [nan], 'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "renewable_generation.average_commissioned_mw.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: renewable_generation.average_commissioned_mw.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [inf], 'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "renewable_generation.average_commissioned_mw.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: renewable_generation.average_commissioned_mw.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [-inf], 'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "renewable_generation.average_commissioned_mw.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: renewable_generation.average_commissioned_mw.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [], 'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver renewable_generation.average_commissioned_mw must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver renewable_generation.average_commissioned_mw must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for renewable_generation: average_commissioned_mw",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for renewable_generation: average_commissioned_mw\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [2], 'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "unsupported drivers for renewable_generation: unknown_driver",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for renewable_generation: unknown_driver\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [2], 'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "renewable_generation.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: renewable_generation.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [2], 'period_hours': [8760], 'pre_curtailment_capacity_factor': [0.5], 'curtailment_rate': [0], 'contracted_share': [0.5], 'contract_price_per_mwh': [40], 'merchant_price_per_mwh': [20], 'other_revenue': [1200]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "renewable_generation.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: renewable_generation.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "expected": "ModelRegistryError",
+   "declared": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "mutated_input_repr": "{'average_commissioned_mw': [2, 5], 'period_hours': [8760, 8760], 'pre_curtailment_capacity_factor': [0.5, 0.45], 'curtailment_rate': [0, 0.1], 'contracted_share': [0.5, 0.4], 'contract_price_per_mwh': [40, 42], 'merchant_price_per_mwh': [20, 25], 'other_revenue': [1200, 0]} years=[2027, 2029] base=0",
+   "raised": "ModelRegistryError",
+   "message": "renewable_generation.years must be consecutive and increasing",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 407, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\M25-M28\\run_card.py\", line 109, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01\\_scratch\\M25-M28\\code_root\\model_registry.py\", line 324, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must be consecutive and increasing\")\nmodel_registry.ModelRegistryError: renewable_generation.years must be consecutive and increasing\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, NOT isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  }
+ ],
+ "tolerances_ok": true,
+ "defaults_ok": true,
+ "harness_incomplete": false,
+ "case_contract_check": {
+  "declared_expected_exception": "ModelRegistryError",
+  "expected_count": 11,
+  "expected_ids": [
+   "NEG-CARD",
+   "N01a",
+   "N01b",
+   "N01c",
+   "N01d",
+   "N02",
+   "N03",
+   "N04",
+   "N05a",
+   "N05b",
+   "CONT-BREAK"
+  ],
+  "cases_whose_expected_differs_from_declaration": [],
+  "set_level_declaration_violations": [],
+  "structural_problems": [],
+  "structural_gate_gating": true,
+  "set_level_declaration_gating": false,
+  "note": "whole-set gate retained for fidelity with the frozen cases.json case_contract; per-case enforcement (exact type-name equality) is the authority that drives rc=3"
+ },
+ "case_contract_problems": [],
+ "cases_json_declared_expectations_usable": true,
+ "cases_json_unusable_declared_expectations": [],
+ "length_ok": true,
+ "per_value_checks": [
+  {
+   "index": 0,
+   "year": 2027,
+   "actual": 264000.0,
+   "expected": 264000.0,
+   "tolerance": 0.000264,
+   "abs_diff": 0.0,
+   "ok": true
+  }
+ ],
+ "negative_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": [],
+  "failed_judged": [],
+  "not_judged": [],
+  "judged": 11,
+  "declared_expectations_in_cases_json": [
+   "ModelRegistryError"
+  ],
+  "declared_expectation_comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+  "declared_expectations_enforced": true,
+  "declared_expectations_usable": true,
+  "classification_is_mutually_exclusive": true,
+  "import_or_file_errors_never_pass": true,
+  "target_exception": "model_registry.ModelRegistryError"
+ },
+ "negative_counts": {
+  "declared_expectation_mismatch": 0,
+  "declared_expectation_not_met": 0,
+  "declared_expectation_missing_in_cases_json": 0
+ },
+ "neg_card_mechanism_check": {
+  "declared": "period_hours=[0]: the activity dimension gets the CLOSED interval [0, inf) from driver_value_bounds, so 0 passes the bound check and the refusal comes from the calculator's own positivity check (`period_hours must be positive: FY2027`)",
+  "observed_message": "period_hours must be positive: FY2027",
+  "expected_substring": "period_hours must be positive: FY2027",
+  "matched": true,
+  "gating": true,
+  "why": "the card-specific negative must be refused by the CARD-SPECIFIC guard, not by the generic per-year length/type guard; otherwise the oracle.md coverage claim is unsupported. A declaration without exactly one backticked message fragment is itself a contract violation."
+ },
+ "verdict": "pass",
+ "no_verdict_reason": null,
+ "verdict_reasons": [],
+ "exit_code_semantics": {
+  "harness_incomplete": false,
+  "positive_ok": true,
+  "continuity_ok": true,
+  "negatives_ok": true,
+  "neg_card_mechanism_ok": true,
+  "defaults_ok_not_gating": true,
+  "defaults_declared_check_not_gating": true,
+  "cases_json_declared_expectations_usable": true,
+  "declaration_unusable_case_ids": [],
+  "declared_expectation_mismatch_case_ids": [],
+  "declared_expectation_mismatch_ids": [],
+  "declared_expectation_not_met_case_ids": [],
+  "not_judged_case_ids": [],
+  "reason_namespace": "PASS_rejected | FAIL_not_rejected (nothing raised) | FAIL_wrong_exception_type | FAIL_import_or_file_error | FAIL_declared_expectation_mismatch | NOT_JUDGED_declaration_unusable. FAIL_wrong_exception_type is a SUBSET of declared_expectation_mismatch when the declaration is usable; NOT_JUDGED_declaration_unusable is an unusable-declaration outcome (rc=2, no verdict) and is NOT a mismatch and NOT part of declared_expectation_mismatch_case_ids.",
+  "verdict_reasons": [],
+  "no_verdict_reason": null,
+  "verdict": "pass",
+  "exit_code": 0
+ }
+}

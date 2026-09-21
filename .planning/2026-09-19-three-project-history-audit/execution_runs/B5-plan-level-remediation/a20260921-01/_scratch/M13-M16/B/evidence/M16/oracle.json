@@ -1,0 +1,146 @@
+{
+ "card_id": "M16",
+ "model_id": "real_estate_rental",
+ "generated_by": "scripts/oracle_M16.py (standard library only, no product import)",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "32.00"
+  ],
+  "expected_float": [
+   32.0
+  ],
+  "tolerances": [
+   3.2e-08
+  ],
+  "hand_work": [
+   "1000 x 0.03 + 2"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "32.00",
+   "41.400"
+  ],
+  "expected_float": [
+   32.0,
+   41.4
+  ],
+  "tolerances": [
+   3.2e-08,
+   4.14e-08
+  ],
+  "hand_work": [
+   "1000 x 0.03 + 2",
+   "1200 x 0.032 + 3"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "30.00"
+  ],
+  "expected_float": [
+   30.0
+  ],
+  "tolerances": [
+   3e-08
+  ],
+  "hand_work": [
+   "1000 x 0.03 + 0"
+  ]
+ },
+ "defaults_expected_float": [
+  30.0
+ ],
+ "observation_expected": {
+  "OBS-BOUND-INCLUSIVE": {
+   "years": [
+    2027
+   ],
+   "expected": [
+    "2.00"
+   ],
+   "expected_float": [
+    2.0
+   ],
+   "tolerances": [
+    2e-09
+   ],
+   "hand_work": [
+    "0 x 0.03 + 2"
+   ]
+  },
+  "OBS-SIGNED-OTHER": {
+   "years": [
+    2027
+   ],
+   "expected": [
+    "29.00"
+   ],
+   "expected_float": [
+    29.0
+   ],
+   "tolerances": [
+    2.9e-08
+   ],
+   "hand_work": [
+    "1000 x 0.03 + -1"
+   ]
+  }
+ },
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "expected_output_shape": {
+  "positive": {
+   "container": "list",
+   "length": 1,
+   "element_type": "float",
+   "all_finite": true,
+   "years": [
+    2027
+   ]
+  },
+  "continuity_positive": {
+   "container": "list",
+   "length": 2,
+   "element_type": "float",
+   "all_finite": true,
+   "years": [
+    2027,
+    2028
+   ]
+  },
+  "defaults": {
+   "container": "list",
+   "length": 1,
+   "element_type": "float",
+   "all_finite": true,
+   "years": [
+    2027
+   ]
+  }
+ },
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "fidelity_rule": "container=list, length=len(years)=frozen length, element_type=float, all elements finite, years equal to the frozen years"
+}

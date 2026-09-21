@@ -637,3 +637,25 @@ check-complete.sh   → [planning-with-files] Task in progress (6/7 phases compl
 3. **生产晋升决定**（所有修复卡）
 4. **I-08-C 两项下游**（oracle 重冻 + invest-core 消费者卡）
 5. **未开工 19 张卡**（依赖链 + owner 门）
+
+## 2026-09-21 — Round 67：上一 session 的中断形态查清 + PWF 载体状态归一（编排层记账）
+
+**触发**：用户要求通读 `planning-with-files` 技能文档与本项目 planning 载体；随后指示「继续做，不要停，不要清理项目或删除文件，更新 planning-with-files 的各项文档」。
+
+**本轮第一项工作是核验「上一 session 到底停在哪」** —— 收尾节称 `I-14-D(r3)` / `I-14-E-APPLY`「已派、结果未回收」，而盘上事实是**跑到一半被终止**：
+
+- `I-14-E-APPLY/…/after/bench.log` 末三行：`B5-clockmut-cpu8 START` → `EXIT=3221225786` → `B4-nonvacuity-quiet START`；
+- `B4-nonvacuity-quiet.log` = **0 字节**；
+- 核对时刻 `23:45:49`，最新写入 `23:38:02` —— 间隔 **> 7 分钟**；存活 python 进程 **0**。
+
+⇒ **战役死在半途**，最后一个臂只有空日志。
+
+**两处 mid-flight**：`I-14-D r3`（`oracle_r3.json` 23:35 / `rule_r3.json` 23:37 已生成，但 `handoff.json` 21:22 与 `review.md` 21:18 **仍是 r2 世代**）；`I-14-E-APPLY`（无 `handoff.json`/`review.md`）。
+
+**计数更正**：待推提交 **10 个**（收尾节记 8）。
+
+**未提交面**：**138** 项，其中 `.planning/` 外 **2** 项；**`execution_runs/B5-plan-level-remediation/` 整目录未跟踪**（含 34,764 B 裁决报告）。产品文件 **0** 条；生产锚点 `9ec6529550f189a4…` **一致**。
+
+**本轮动作**：按 **T1-27** 授权提交 `.planning`（**选择性提交**，不含 `.planning/` 外那两项）；四个载体（`task_plan.md` / `findings.md` / `progress.md` / `REMEDIATION_REGISTER.md`）**纯追加**并各自出具**追加式证明**。
+
+**边界**：**未接续任何卡**（`I-14-D r3`、`I-14-E-APPLY`、`I-14-D` 复审**均维持原状**）；**未做任何 `status` 转移**；**未代签**；**删除 0**。

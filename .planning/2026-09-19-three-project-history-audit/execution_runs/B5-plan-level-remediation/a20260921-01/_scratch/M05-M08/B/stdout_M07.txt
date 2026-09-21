@@ -1,0 +1,28 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-plan-level-remediation\a20260921-01\_scratch\M05-M08\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-plan-level-remediation\a20260921-01\_scratch\M05-M08\code_root\model_registry.py
+registry formula: revenue = billable_capacity * utilization * billing_rate * timing_factor + other_revenue
+registry required: ['billable_capacity', 'utilization', 'billing_rate']
+registry optional: ['timing_factor', 'other_revenue']
+registry defaults: {'timing_factor': 1.0}
+registry driver_bounds: {}
+positive raised: None
+positive actual: [122.0]
+positive expected: [122.0]
+tolerances_ok: True
+continuity_positive ok: True
+defaults ok: True actual: [120.0] expected: [120.0]
+observation: OBS-BASE-IGNORED raised= None actual= [122.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-DEFAULT-EQUIV raised= None actual= [120.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= True 
+negative: NEG-CARD PASS_rejected ModelRegistryError - driver services.utilization must be between 0.0 and 1.0: FY2027
+negative: N01a PASS_rejected ModelRegistryError - services.billable_capacity.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - services.billable_capacity.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - services.billable_capacity.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - services.billable_capacity.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver services.billable_capacity must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for services: billable_capacity
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for services: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - services.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - services.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - services.years must be consecutive and increasing
+negative summary: {'total': 11, 'passed': 11, 'failed': []}
+verdict: pass exit_code: 0

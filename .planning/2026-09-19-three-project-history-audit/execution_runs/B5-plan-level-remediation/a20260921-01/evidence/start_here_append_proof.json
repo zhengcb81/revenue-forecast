@@ -1,0 +1,56 @@
+{
+ "target": "execution_v2/START_HERE.md",
+ "chain": [
+  {
+   "step": "PRE",
+   "sha256": "1bdfbd9190d6ae956d6ad025792a4ffa487f0e41258f80922c752f783cf22835",
+   "bytes": 9895,
+   "source": "T1-19 handoff.json artifact_under_verification.pre_sha256 (verified before this card)"
+  },
+  {
+   "step": "POST1",
+   "sha256": "e7cb90fc5c4cc51f2dfe97f1bfef55750ee1459e07bf3078890d227b1c441557",
+   "bytes": 16314,
+   "source": "this card's append 1: measured per-batch rc registry"
+  },
+  {
+   "step": "POST2",
+   "sha256": "a9cb5a4a34929fb21d43b3f8308c36b03440d73c43325b8952e81fe130f64caf",
+   "bytes": 18452,
+   "source": "this card's append 2: missing-expected classification erratum"
+  }
+ ],
+ "append_1_check_vs_PRE": {
+  "prefix_ends_at_line_boundary": true,
+  "prefix_sha256_matches_recorded": true,
+  "opcodes": [
+   "equal",
+   "insert"
+  ],
+  "non_equal_opcode_count": 1,
+  "only_opcode_is_single_insert": true,
+  "deleted_lines": 0,
+  "inserted_lines": 108,
+  "appended_region_head": "\n---\n\n## rc 码表·实测"
+ },
+ "append_2_check_vs_POST1": {
+  "prefix_ends_at_line_boundary": true,
+  "prefix_sha256_matches_recorded": true,
+  "opcodes": [
+   "equal",
+   "insert"
+  ],
+  "non_equal_opcode_count": 1,
+  "only_opcode_is_single_insert": true,
+  "deleted_lines": 0,
+  "inserted_lines": 34,
+  "appended_region_head": "\n---\n\n## rc 码表·追加"
+ },
+ "read_this_correctly": "Both checks compare the CURRENT (POST2) file against a recorded prefix, so each reports the CUMULATIVE suffix from that prefix onward. 'append_1_check_vs_PRE' therefore inserts 108 lines = append 1 (74) + append 2 (34); 'append_2_check_vs_POST1' isolates append 2 (34). The two numbers are consistent; do not read 108 as append 1's size. The decisive per-step facts are `prefix_sha256_matches_recorded` in each check and `deleted_lines == 0` in both.",
+ "content_checks": {
+  "frozen_original_lines_all_intact": true,
+  "append_1_content_present": true,
+  "append_2_content_present": true
+ },
+ "APPEND_ONLY": true
+}

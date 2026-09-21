@@ -1,0 +1,298 @@
+{
+ "batch": "M25-M28",
+ "cards": [
+  "M25",
+  "M26",
+  "M27",
+  "M28"
+ ],
+ "attempt": "execution_runs/B5-plan-level-remediation/a20260921-01",
+ "human_review_status": "review_pending",
+ "self_signed": false,
+ "runner_before": {
+  "path": "execution_runs/M25/a20260919-01/scripts/run_card.py",
+  "sha256": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+  "bytes": 22720,
+  "identity": "byte copy of the historical M25 runner; sha256 and byte count confirmed equal to the bound value for all of M25..M28",
+  "bound_sha256_all_four_cards": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+  "bound_bytes_all_four_cards": 22720
+ },
+ "runner_after": {
+  "path": "M25-M28/run_card.py",
+  "sha256": "71033142f061128b984f916fce9b22d379ea43e6ad9bc415ee06fc494a781f4b",
+  "bytes": 36199
+ },
+ "diff_path": "M25-M28/runner.diff",
+ "diff_stats": {
+  "added_lines": 228,
+  "removed_lines": 22,
+  "hunks": 9
+ },
+ "cards_cases_sha256": {
+  "M25": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+  "M26": "f3e86ef0eed59fd9a4e2cc4ace408859458c793a1b15fd52deadb926d241b1e1",
+  "M27": "482a4f160d384e16887bf7ff3fc1180eb1ae8004c445d24e1b105cd926dec4de",
+  "M28": "64a8a3374b7e6c72dc92f5d65c5245e01b5355de5681856ac3182d0e48ccc82f"
+ },
+ "historical_runner_unchanged_sha256": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+ "insertion_points": [
+  {
+   "file": "run_card.py",
+   "line": 165,
+   "what": "pre-judgement extraction of the frozen per-case declaration: unusable_declared / cases_declared_ok, evaluated BEFORE any case is judged"
+  },
+  {
+   "file": "run_card.py",
+   "line": 185,
+   "what": "set-level case_contract gate split into structural_problems (still rc=1) and set_level_declaration_violations (recorded, non-gating); the rc=1 abort at line 212 now fires only on a STRUCTURAL violation"
+  },
+  {
+   "file": "run_card.py",
+   "line": 242,
+   "what": "new result block case_contract_check / case_contract_problems / cases_json_declared_expectations_usable / cases_json_unusable_declared_expectations"
+  },
+  {
+   "file": "run_card.py",
+   "line": 399,
+   "what": "per-case negative loop: declared = case.get(\"expected\") with `declared` mirroring `expected`"
+  },
+  {
+   "file": "run_card.py",
+   "line": 428,
+   "what": "declared_usable check -> NOT_JUDGED_declaration_unusable branch (rc=2 precondition, never a mismatch)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 444,
+   "what": "ENFORCEMENT: declared_ok = (raised_name == declared) - exact exception type name equality, NOT isinstance; drives FAIL_declared_expectation_mismatch"
+  },
+  {
+   "file": "run_card.py",
+   "line": 476,
+   "what": "negative_counts: declared_expectation_mismatch / _not_met / _missing_in_cases_json"
+  },
+  {
+   "file": "run_card.py",
+   "line": 483,
+   "what": "negative_summary: not_judged / judged / declared_expectations_in_cases_json / declared_expectation_comparison / declared_expectations_enforced"
+  },
+  {
+   "file": "run_card.py",
+   "line": 570,
+   "what": "negatives_ok now ignores NOT_JUDGED cases so an unusable declaration can never by itself produce rc=3"
+  },
+  {
+   "file": "run_card.py",
+   "line": 577,
+   "what": "precedence: unusable declaration -> verdict no_verdict + rc=2 before any case judging; rc=0/3 table otherwise unchanged"
+  },
+  {
+   "file": "run_card.py",
+   "line": 609,
+   "what": "exit_code_semantics gains cases_json_declared_expectations_usable, declared_expectation_mismatch_case_ids, declaration_unusable_case_ids, not_judged_case_ids and the reason_namespace note"
+  }
+ ],
+ "arms": {
+  "E": {
+   "rc": 0,
+   "rc_per_card": {
+    "M25": 0,
+    "M26": 0,
+    "M27": 0,
+    "M28": 0
+   },
+   "verdict": "pass",
+   "declared_expectation_mismatch": 0,
+   "mutated_case": null,
+   "runner": "M25-M28/run_card.py",
+   "runner_role": "new",
+   "cases_variant": "frozen",
+   "cases_json_sha256": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+   "frozen_cases_json_sha256": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+   "out_json_written": true,
+   "note": "green control: frozen cases.json unmodified; all 11 negatives PASS_rejected on all four cards, declared_expectation_mismatch=0, exit_code_semantics.verdict=pass"
+  },
+  "F": {
+   "rc": 3,
+   "rc_per_card": {
+    "M25": 3,
+    "M26": 3,
+    "M27": 3,
+    "M28": 3
+   },
+   "verdict": "fail",
+   "declared_expectation_mismatch": 1,
+   "mutated_case": "NEG-CARD",
+   "runner": "M25-M28/run_card.py",
+   "runner_role": "new",
+   "cases_variant": "mutated_value",
+   "cases_json_sha256": "1ef008f79e7c3749deedbebefc97b8ad18d685a047650bc5d5b7ab2b89b54216",
+   "frozen_cases_json_sha256": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+   "out_json_written": true,
+   "note": "deliverable: first negative NEG-CARD's expected -> \"ValueError\" (a superclass of ModelRegistryError, so isinstance() would have let it through). Raised exact type name is still ModelRegistryError, so per-case enforcement reports declared_expectation_mismatch=True and verdict FAIL_declared_expectation_mismatch -> rc=3. The set-level gate ALSO observed the difference but was recorded non-gating."
+  },
+  "B": {
+   "rc": 1,
+   "rc_per_card": {
+    "M25": 1,
+    "M26": 1,
+    "M27": 1,
+    "M28": 1
+   },
+   "verdict": null,
+   "declared_expectation_mismatch": null,
+   "mutated_case": "NEG-CARD",
+   "runner": "M25-M28/run_card_before.py",
+   "runner_role": "old",
+   "cases_variant": "mutated_value",
+   "cases_json_sha256": "1ef008f79e7c3749deedbebefc97b8ad18d685a047650bc5d5b7ab2b89b54216",
+   "frozen_cases_json_sha256": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+   "out_json_written": false,
+   "note": "MEASURED, not predicted. The historical runner did NOT return rc=0 here: it aborted with rc=1 at its WHOLE-SET case_contract gate, stderr \"cases whose `expected` is not 'ModelRegistryError': ['NEG-CARD']\". That is a third, different mechanism from the M21-M24 exact-name gate: it is a pre-judgement set-level abort, so no verdict and no output JSON are produced at all. It therefore does NOT demonstrate a per-case gate, and it is also NOT the fabricated green the ruling describes."
+  },
+  "G": {
+   "rc": 2,
+   "rc_per_card": {
+    "M25": 2,
+    "M26": 2,
+    "M27": 2,
+    "M28": 2
+   },
+   "verdict": "no_verdict",
+   "declared_expectation_mismatch": 0,
+   "mutated_case": "NEG-CARD",
+   "runner": "M25-M28/run_card.py",
+   "runner_role": "new",
+   "cases_variant": "deleted_key",
+   "cases_json_sha256": "dae3b2facff9b9e906437e07bf9302f888dd505fee2839899007e264b6051b5d",
+   "frozen_cases_json_sha256": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+   "out_json_written": true,
+   "note": "rc-classification: NEG-CARD's expected KEY deleted. Per-case layer sees an unusable declaration, issues NOT_JUDGED_declaration_unusable (judged=False), verdict=no_verdict, no_verdict_reason=cases_json_declared_expectation_missing:NEG-CARD -> rc=2 BEFORE any case judging; declared_expectation_mismatch stays 0"
+  }
+ },
+ "arms_supplementary": {
+  "B0": {
+   "rc": 0,
+   "rc_per_card": {
+    "M25": 0,
+    "M26": 0,
+    "M27": 0,
+    "M28": 0
+   },
+   "runner": "M25-M28/run_card_before.py",
+   "cases_variant": "frozen",
+   "stderr_head": "",
+   "conclusion": "control for arm B: the SAME old runner on the FROZEN cases.json returns rc=0 with empty stderr, so the old runner still behaves exactly as the historical evidence records"
+  },
+  "B1": {
+   "rc": 1,
+   "rc_per_card": {
+    "M25": 1,
+    "M26": 1,
+    "M27": 1,
+    "M28": 1
+   },
+   "runner": "M25-M28/run_card_before.py",
+   "cases_variant": "extra_unknown_id",
+   "stderr_head": "HARNESS ERROR (rc=1): frozen case contract violated:\n  - case count 12 != declared 11\n  - case id list ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK', 'N99-EXTRA-STRUCTURAL'] != declared ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK']\n  - unexpected negative ids: ['N99-EXTRA-STRUCTURAL']\n",
+   "conclusion": "isolation control: the old runner on a cases.json with one extra unknown case id returns rc=1 from its STRUCTURAL checks (case count / id list / unknown ids), proving its three gate families are distinct and that arm B's rc=1 came from the whole-set declaration comparison, not from the structural checks"
+  }
+ },
+ "rc_codes_after": {
+  "0": "pass (positive in tolerance, continuity positive matched, NEG-CARD mechanism matched, every judged negative PASS_rejected)",
+  "1": "unguarded harness defect / unusable environment, or a STRUCTURAL frozen case_contract violation (case_contract block missing, case count, case id list, unknown ids) - fail loud",
+  "2": "NO VERDICT, issued BEFORE any case can be judged: the frozen per-case declaration itself is missing/unusable (reason cases_json_declared_expectation_missing:<ids>), or the positive path raised",
+  "3": "a judgement WAS possible and did not hold: positive mismatch, continuity failure, an unrejected negative, or a raised exception whose exact type name != the case's declared expected"
+ },
+ "rc_codes_unchanged": true,
+ "rc_values_changed_by_this_patch": [],
+ "per_case_fields_emitted": [
+  "declared",
+  "raised",
+  "declared_expectation_ok",
+  "declared_expectation_mismatch",
+  "declared_expectation_not_met",
+  "declared_expectation_comparison",
+  "judged"
+ ],
+ "per_case_fields_verified_present_on_all_negatives": true,
+ "negatives_per_card": 11,
+ "declared_expectations_in_cases_json": [
+  "ModelRegistryError"
+ ],
+ "declared_expectation_comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+ "declared_expectations_enforced": true,
+ "f_arm_exact_comparison_evidence": {
+  "case_id": "NEG-CARD",
+  "declared": "ValueError",
+  "raised": "ModelRegistryError",
+  "is_target_type_via_isinstance": true,
+  "declared_expectation_ok": false,
+  "declared_expectation_mismatch": true,
+  "verdict": "FAIL_declared_expectation_mismatch",
+  "why_this_matters": "ModelRegistryError subclasses ValueError, so an isinstance-based comparison would have PASSED this case; exact type-name equality is what turns it red"
+ },
+ "g_arm_exact_comparison_evidence": {
+  "case_id": "NEG-CARD",
+  "declared": null,
+  "raised": "ModelRegistryError",
+  "judged": false,
+  "verdict": "NOT_JUDGED_declaration_unusable",
+  "declared_expectation_mismatch": false,
+  "no_verdict_reason": "cases_json_declared_expectation_missing:NEG-CARD"
+ },
+ "isolated_code_root_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_code_root_expected_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "interpreter": "execution_runs/M25/a20260919-01/iso/venv/Scripts/python.exe",
+ "interpreter_version": "3.13.9",
+ "invocation_flags": [
+  "-X",
+  "utf8",
+  "-B"
+ ],
+ "bound_b_unit_argv_reproduced": {
+  "card": "M25",
+  "unit": "B-M25-product-positive-defaults-continuity-negatives",
+  "optional_flags_used": [
+   "--out",
+   "--run-result-out"
+  ],
+  "redirected_into_scratch": true,
+  "note": "the batch's own B unit used --out evidence/M25/run_result.json and --run-result-out evidence/M25/formula_result.json; both were reproduced with every path inside _scratch. --case-override/--attempt-dir were NOT needed: each arm gets its own scratch root with its own cases.json copy."
+ },
+ "historical_runner_already_gated": false,
+ "historical_runner_already_gated_note": "Arm B returned rc=1, which is neither 0 nor 3. The historical M25-M28 runner DOES inspect per-case `expected`, but only through its pre-judgement WHOLE-SET gate (every case's expected must equal case_contract.declared_expected_exception); a single mutated case trips that gate and aborts with rc=1 and NO output JSON, so a per-case verdict is never issued. This differs from M21-M24, whose historical runner compares raised vs expected per case INSIDE the judging loop.",
+ "negative_results_sha256": {
+  "M25": "3dca24ebd63d809591458aab16b4e6d96f2b668b40b2b3d55647fae9cec84b00",
+  "M26": "0c9d334e697b38d8d90cd2564b64362c06ccaf7660ba5b577c3a988528392d89",
+  "M27": "8ec795c3de4af6fddb877e1c5c8a8debd687215fbacf580f0c62c68553aea350",
+  "M28": "6e2156254918271b314143f881b07c6940736fd35cd06d2a895dabcda1061f7f"
+ },
+ "historical_writes": [],
+ "historical_paths_verified_clean": {
+  "method": "git status --porcelain over .planning/.../execution_runs/M25..M28 in the production repo returned EMPTY for all four cards (pre-existing git index, read-only use); no file under execution_runs/<CARD>/ was created, modified or deleted by this batch",
+  "cards_checked": [
+   "M25",
+   "M26",
+   "M27",
+   "M28"
+  ],
+  "result": "clean"
+ },
+ "boundaries_respected": true,
+ "unmet_prerequisites": [],
+ "open_issues": [
+  "ARM B FIRED A THIRD GATE, NOT rc=0 AND NOT rc=3 (measured rc=1). Gate that fired: the historical runner's WHOLE-SET case_contract gate (run_card_before.py lines 140-168, `wrong_declaration` -> contract_problems -> return 1). stderr: \"cases whose `expected` is not 'ModelRegistryError': ['NEG-CARD']\". Consequence: the historical runner aborts BEFORE judging, so it produces no verdict and no output JSON - it is neither the fabricated green of the owner ruling nor evidence of a per-case gate. Arm B0 (same old runner, frozen cases.json) returns rc=0, and arm B1 (extra unknown case id) returns rc=1 from the structural case-count/id checks, isolating the three gate families.",
+  "DEVIATION from contract section 'keep the set-level gate': keeping that gate AS AN rc=1 ABORT makes arm F impossible, because the first negative case's mutation trips the set-level gate before any per-case judging (measured: rc=1). The set-level declaration comparison is therefore still EVALUATED and REPORTED verbatim in case_contract_check.set_level_declaration_violations and case_contract_problems, but it no longer drives the exit code; the structural half of the same gate still drives rc=1 unchanged. This is an ordering change inside one interlocked pair, not a change to any rc value: 0/1/2/3 keep their frozen meanings.",
+  "ANCHOR-CONFLICT WITH THE FROZEN cases.json case_contract.rule, reported not fixed: the frozen rule text says a differing `expected` makes the harness 'refuse to issue a verdict (rc=1)'. The owner's T1-11 append-only ruling forbids editing cases.json, so that sentence is now saturated by this patch's behaviour. The frozen file is byte-unchanged (sha256 recorded in cards_cases_sha256); the divergence is recorded here for the reviewer rather than silently re-frozen.",
+  "HISTORICAL cases.json CARRIES A STALE-SEMANTICS RULE STRING, not a defect in this patch: `case_contract.rule` still describes the whole-set behaviour. Downstream readers should treat case_contract_check as the authoritative record.",
+  "NEG-CARD's message-prefix mechanism check stays gating and still matched in arms E and G (the G arm's NEG-CARD is NOT_JUDGED but its raised message is unchanged), so the card-specific coverage claim is unaffected by this patch.",
+  "ARM F/G MUTATE ONLY THE FIRST NEGATIVE CASE (NEG-CARD, the lowest id) as the contract directs; the other ten negatives declare ModelRegistryError in every arm and keep PASS_rejected, so the mismatch signal is attributable to exactly one case."
+ ]
+}

@@ -3,8 +3,23 @@
   "attempt_id": "a20260919-01",
   "revision": "r1",
   "parent": "I-14",
-  "status": "review_pending",
-  "reviewer_status": "PENDING - no independent reviewer has read this attempt yet. The implementer has NOT signed and will not sign (implementer_never_signs_acceptance). This card must not be read as accepted, and in particular must not be read as closing I-14-H's conditional scope, until an independent reviewer re-derives the gate result per next_action. Reviewer inputs are enumerated in next_action (six re-computations); the gate carrier to re-run is execution_runs/I-14-H/a20260919-01/evidence/I-14-I/cases_report.json.",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "acceptance_author": "independent reviewer (NOT the implementer)",
+    "carrier": "reviewer_report.md",
+    "carrier_sha256": "525dbb138643d7a775142688ed4068519cd942e706ad7ad14403cf19224cbf71",
+    "carrier_bytes": 32218,
+    "verdict_label": "ACCEPT（条件式，`accepted_scoped`）",
+    "verdict_label_in_english": "ACCEPT (conditional) - accepted_scoped",
+    "verdict_line": 10,
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "statement": "The acceptance was written by an independent reviewer. The implementer did not sign it, and the carrier-landing bookkeeping executor that transcribed it into review.md/qualification.json wrote no verdict of its own and is not a signatory either.",
+    "landing_pass": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-21 22:43 local / 2026-09-21T21:43:10Z"
+  },
+  "reviewer_status": "COMPLETE - an independent reviewer has read and adjudicated this attempt and returned ACCEPT (conditional) = accepted_scoped. All of the card's exit criteria were upheld by independent re-derivation: the full 14-case gate reaches rc 0 with mismatch_count=0 / accepted_ineligible=0 / SUT rc 0, the xfail discharge is a TRUE pass (I-14-H's byte-unchanged suite goes XFAIL -> XPASS with the SUT as the only variable), both RED arms are bidirectionally fail-able, :241/:248 are genuinely derived, and the frozen bodies and production tree are byte-unchanged. The acceptance is CONDITIONAL on wording, not on unmet criteria: 9 of the implementer's 10 declarations hold outright and 1 (declaration 4's second half, 'discrimination is visible inside the frozen gate') was FALSIFIED by mutation testing and must be corrected downstream (F-1). Six mandatory follow-ups attach (reviewer_report.md §8). I-14-H's conditional scope is dischargeable on the merits - see i14h_discharge_flag - but updating I-14-H's carriers was NOT done here.",
+  "reviewer_status_before_bookkeeping_fix": "PENDING - no independent reviewer has read this attempt yet. The implementer has NOT signed and will not sign (implementer_never_signs_acceptance). This card must not be read as accepted, and in particular must not be read as closing I-14-H's conditional scope, until an independent reviewer re-derives the gate result per next_action. Reviewer inputs are enumerated in next_action (six re-computations); the gate carrier to re-run is execution_runs/I-14-H/a20260919-01/evidence/I-14-I/cases_report.json.",
   "implementer_signed": false,
   "implementer_never_signs_acceptance": true,
   "objective": "兑现 I-14-H 独立 reviewer 的强制收尾条件（RIDER）：(1) 在 iso/natural_window.py:202 的 basis 成员测试前加类型护栏，使 list/dict/tuple/set/嵌套容器逐例得到 R-BASIS-UNKNOWN 而非整批崩溃（修复前 raw_returncode=4）；(2) 不得退化为 r1 的静默 accept；(3) 对 list/dict/set/tuple/嵌套容器逐个冻结期望并补阴性对照（登记字符串 basis 不被类型护栏误拒）；(4) 解除 I-14-H 测试文件的 xfail 并转正；(5) 用未修改的 run_cases.py + 未修改的 i14h 冻结期望补跑全 14-case 门至 rc 0（mismatch_count=0、accepted_ineligible=0），把 cases_report.json 落到 I-14-H attempt 的证据目录；(6) 把 :241 quick_check_in_observation_intervals 与 :248 sum_used_for_natural_duration 由硬编码字面量 False 改为派生值并补可失败断言；(7) 确认 H12 在全 14-case 门中实际通过。",
@@ -25,14 +40,16 @@
     "13 全 14-case 门（退出判据）: 未修改的 run_cases.py + 未修改的 i14h 冻结材料 -> ok=true / case_count=14 / mismatch_count=0 / accepted_ineligible_count=0 / sut_raw_returncode=0，rc 0 -> after/CMD-I14I-GATE-CASES14/",
     "14 门重复运行: 全新 out-dir 再跑一次，数字与 sut_sha256 完全相同 -> after/CMD-I14I-GATE-CASES14-REPEAT/",
     "15 H12 与派生键的定点核对: harness/audit_postfix.py 对门产出的 sut_report.json 做 44 项检查全过；H12 verdict=reject_claim / refusals=[R-CLAIM-EXCEEDS,R-QC-IN-OBS] / union_seconds=2220.0 / quick_check_overlap_seconds=480.0 -> after/CMD-I14I-AUDIT-POSTFIX/",
-    "16 派生键判别力落在冻结门自身: 门报告内 W1=(False,False)、H10=(False,True)、H11/H12=(True,False) —— 两键在冻结期望覆盖的 14 例内部各自取到两个值",
+    "16 派生键在门报告内的取值（原表述已按 reviewer F-1 更正）: 门报告内 W1=(False,False)、H10=(False,True)、H11/H12=(True,False) —— 两键在冻结期望覆盖的 14 例内部各自取到两个值。**但这只是门报告里的可观察取值，不参与门的 pass/fail**：`run_cases.py:177-180` 对 REQUIRED_KEYS 只做存在性检查，`sum_used_for_natural_duration` 在 14 例中无任何取值约束，故**判别力不在冻结门内**，而在 rider 套件（变异体在门内 rc 0、在 rider 套件 4 failed）。原表述 \"派生键判别力落在冻结门自身\" 系过度陈述，已废止并保留于下：",
+    "16_superseded: 派生键判别力落在冻结门自身: 门报告内 W1=(False,False)、H10=(False,True)、H11/H12=(True,False) —— 两键在冻结期望覆盖的 14 例内部各自取到两个值",
     "17 修复后复探: 同一 18 值探测在修复版上 0 崩溃、18 行全部有裁决、全部 computed 可 JSON 序列化 -> after/CMD-I14I-POSTFIX-PROBE/",
     "18 落盘（卡片第 5 条）: cases_report.json 落到 execution_runs/I-14-H/a20260919-01/evidence/I-14-I/（新增子目录），并附 runner 原生的 sut_report.json 与 sut_cli.*；未改动 I-14-H 任何既有文件",
     "19 文档与恢复: oracle.md 追加 §9 AS-OF 结果对照（第 1-8 节正文未改，冻结 sha256 已先记于 freeze_instant.json）+ recovery/README.md（含回退清单与实测回退臂）+ evidence/artifact_hashes.txt",
     "20 只读核对: git status --porcelain -- scripts 输出 0 字节；冻结材料运行前后逐字节不变（cases.i14h.json / frozen_expectations.i14h.json / run_cases.py / cases.json / frozen_expectations.json 五个哈希均与 I-14-H 记录一致）"
   ],
   "next_step_number": 21,
-  "next_action": "交独立 reviewer 复算。具体请复算（不得由实现者自签）：(1) 用未修改的 run_cases.py f2a07d0b… + cases.i14h.json 40260c24… + frozen_expectations.i14h.json bffb11c2… 对 iso/natural_window.py 9edb9515… 独立重跑全 14-case 门，确认 rc 0 / mismatch_count 0 / accepted_ineligible 0，并与已落盘的 execution_runs/I-14-H/a20260919-01/evidence/I-14-I/cases_report.json 逐字段对照；(2) 独立复算 H12 的双拒绝码与 union_seconds=2220 / quick_check_overlap_seconds=480；(3) 独立复算两个派生键：在门报告内确认 quick_check_in_observation_intervals == (quick_check_overlap_seconds > 0) 且 sum_used_for_natural_duration == (basis=='sum_of_windows' 且已登记)，并确认修复前它们在 14 例中恒为 False（取值集合大小 1）；(4) 复核 RED 两臂：确认 25 failed 恰好落在 list/dict 容器行与派生键用例，且 set/tuple/标量的裁决行在前缀臂 PASS（证明未过拟合），r1 臂的容器行失败原因是静默 accept（证明未退化）；(5) 复核 xfail 确已从 harness/test_i14i_natural_window.py 移除（grep '@pytest.mark.xfail' 零命中）且 after/CMD-I14I-GREEN-I14HSUITE 显示原 xfail 用例已 XPASS；(6) 复核生产树只读与冻结材料未被回改。另请裁决本卡引入的一处**超出卡片明示范围**的改动（见 carried_findings CF-I14I-2：basis 回填改经 _basis_repr）是否应留在本卡或另立卡。",
+  "next_action": "COMPLETED - the independent review has been performed. The reviewer re-derived all six requested re-computations (R1-R15 in reviewer_report.md §1) and returned ACCEPT (conditional) = accepted_scoped. The implementer's request to the reviewer is retained verbatim below as next_action_superseded. THE REVIEWER'S RULINGS: (i) CF-I14I-2 stays INSIDE this card, with two conditions - (a) the wording must be corrected (the fix covers computed['basis'] only; classify() still echoes the raw claim at iso:502, so a non-JSON-native basis still makes the in-process report unserialisable; this path is gate-unreachable and the failure mode was NOT completely eliminated) and (b) the claim echo must NOT be widened here - that needs its own card. (ii) SUT_VERSION correctly was NOT bumped, but because the field reads i14b-after-2 for BOTH revisions it carries zero revision information; sut_sha256=9edb95155202432ed01b2c68d06f74a00882287e934cda6cead0e14140493b04 and revision=\"r3\" are now recorded in evidence/I-14-I/qualification.json and in sut_identity below. THE SIX MANDATORY FOLLOW-UPS (reviewer_report.md §8) are registered in reviewer_findings / wordings_requiring_append_only_correction. I-14-H's discharge condition is MET on the merits (14/14 gate rc 0) but updating I-14-H's own carriers is a SEPARATE bookkeeping act, flagged in i14h_discharge_flag and NOT performed here.",
+  "next_action_superseded": "交独立 reviewer 复算。具体请复算（不得由实现者自签）：(1) 用未修改的 run_cases.py f2a07d0b… + cases.i14h.json 40260c24… + frozen_expectations.i14h.json bffb11c2… 对 iso/natural_window.py 9edb9515… 独立重跑全 14-case 门，确认 rc 0 / mismatch_count 0 / accepted_ineligible 0，并与已落盘的 execution_runs/I-14-H/a20260919-01/evidence/I-14-I/cases_report.json 逐字段对照；(2) 独立复算 H12 的双拒绝码与 union_seconds=2220 / quick_check_overlap_seconds=480；(3) 独立复算两个派生键：在门报告内确认 quick_check_in_observation_intervals == (quick_check_overlap_seconds > 0) 且 sum_used_for_natural_duration == (basis=='sum_of_windows' 且已登记)，并确认修复前它们在 14 例中恒为 False（取值集合大小 1）；(4) 复核 RED 两臂：确认 25 failed 恰好落在 list/dict 容器行与派生键用例，且 set/tuple/标量的裁决行在前缀臂 PASS（证明未过拟合），r1 臂的容器行失败原因是静默 accept（证明未退化）；(5) 复核 xfail 确已从 harness/test_i14i_natural_window.py 移除（grep '@pytest.mark.xfail' 零命中）且 after/CMD-I14I-GREEN-I14HSUITE 显示原 xfail 用例已 XPASS；(6) 复核生产树只读与冻结材料未被回改。另请裁决本卡引入的一处**超出卡片明示范围**的改动（见 carried_findings CF-I14I-2：basis 回填改经 _basis_repr）是否应留在本卡或另立卡。 [SUPERSEDED - the reviewer answered (3) with a correction and (6) with the CF-I14I-2 ruling; see next_action.]",
   "key_hashes": {
     "iso/natural_window.py (FIXED SUT, this card's output)": "9edb95155202432ed01b2c68d06f74a00882287e934cda6cead0e14140493b04",
     "before/natural_window.i14b-after-2.py (pre-fix pre-image, UNCHANGED)": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
@@ -120,8 +137,12 @@
       "new_output_key": "basis_kind in {'str','none','container','other'}"
     },
     "failable_assertions_added": "7 tests in the rider suite covering all four (qc_in, sum_used) combinations: (F,F) W1 shape, (T,T) overlapping sum claim, (T,F) overlapping union claim, (F,T) disjoint sum claim, plus a non-registered-sum-basis case and a strict bool-type check",
-    "discrimination_inside_the_frozen_gate": "In the 14-case gate report itself: W1=(False,False), H10=(False,True), H11/H12=(True,False). Pre-fix all 14 were False. So the shadowed (tautological) shape gate is repaired inside the gate, not only in new tests.",
-    "reviewer_regression_note": "The two d3 tests asserting True are RED on the pre-fix revision (before/CMD-I14I-RED-SUITE-PREFIX: 5 derived-key AssertionErrors), which is the required evidence that they can fail."
+    "discrimination_inside_the_frozen_gate": "CORRECTED BY THE CARRIER-LANDING PASS per reviewer finding F-1 (MEDIUM, wording correction required). CORRECT STATEMENT: the two derived keys' FAIL-ABLE CRITERION lives in the RIDER SUITE (4 tests covering all four (qc_in, sum_used) combinations), NOT in the frozen gate. The frozen gate does NOT validate the values of these two keys, so the gate's rc 0 must NOT be read as 'the derivation is gate-proven'. In the 14-case gate report the two keys do take three different combinations - W1=(False,False), H10=(False,True), H11/H12=(True,False) - but those are merely OBSERVABLE values in the report: they do not participate in the gate's pass/fail. run_cases.py:177-180 checks REQUIRED_KEYS for PRESENCE ONLY (`if key not in computed`), never the value; quick_check_in_observation_intervals is constrained in exactly one frozen case (W1 = False) and sum_used_for_natural_duration is constrained in NONE. The gate therefore never had discriminating power over these keys, before or after the fix. PROOF (F-1, independently reproduced by the landing pass): a mutant with the two keys reverted to hardcoded False, all else byte-identical (sha256 2265bd0d7fe4a950d737e77ef6409991d9d30978b4eb61a54b33cb0cb71944f0), still passes the UNMODIFIED 14-case gate at rc 0 / mismatch_count 0; the same mutant fails exactly 4 tests in the rider suite. The pre-fix gate never passed for exactly one reason - the batch abort (SUT rc 4) - not key discrimination. The earlier wording is retained verbatim in the field below and is SUPERSEDED.",
+    "discrimination_inside_the_frozen_gate_superseded": "In the 14-case gate report itself: W1=(False,False), H10=(False,True), H11/H12=(True,False). Pre-fix all 14 were False. So the shadowed (tautological) shape gate is repaired inside the gate, not only in new tests.",
+    "discrimination_inside_the_frozen_gate_status": "SUPERSEDED - FALSIFIED BY MUTATION TESTING (reviewer F-1). Retained for the record; do not carry this reading forward.",
+    "where_discrimination_actually_lives": "the rider suite harness/test_i14i_natural_window.py - the reviewer's mutant fails exactly 4 tests there: test_d3_renamed_window_reports_quick_check_inside_observation, test_d3_overlapping_sum_claim_reports_both_keys_true, test_d3_overlapping_union_claim_reports_overlap_only, test_d3_disjoint_sum_claim_reports_sum_used_without_overlap (covering (F,F)/(T,T)/(T,F)/(F,T)). Independently reproduced by the landing pass: 4 failed, 41 passed.",
+    "reviewer_regression_note": "The two d3 tests asserting True are RED on the pre-fix revision (before/CMD-I14I-RED-SUITE-PREFIX: 5 derived-key AssertionErrors), which is the required evidence that they can fail.",
+    "reviewer_regression_note_correction": "REVIEWER FINDING F-1 (MEDIUM): the two d3 tests asserting True are RED on the pre-fix revision - that part stands. What does NOT stand is any implication that the frozen gate supplies the same discrimination. It does not; it never did. See discrimination_inside_the_frozen_gate above."
   },
   "input_hashes": {
     "note": "all copied verbatim from the I-14-H attempt and re-measured in this attempt; every value matches the I-14-H handoff record",
@@ -218,12 +239,19 @@
     },
     {
       "id": "CF-I14I-2",
-      "class": "NEW FINDING, disclosed - ancillary defect found while bounding the rider; fixed here, flagged for the reviewer to rule on scope",
+      "class": "IN-SCOPE CONSEQUENCE of card item 1 (reviewer ruling, reviewer_report.md §3) - fixed here, with two conditions attached",
+      "class_before_bookkeeping_fix": "NEW FINDING, disclosed - ancillary defect found while bounding the rider; fixed here, flagged for the reviewer to rule on scope",
       "severity": "low-medium: it defeated the card's own goal (per-case decision) at the WRITE step",
       "finding": "computed['basis'] echoed the claim's raw basis value. When the basis was a `set` (hashable, so it reached the R-BASIS-UNKNOWN branch and decided correctly), json.dumps(report) then raised 'TypeError: Object of type set is not JSON serializable' - so the batch still aborted, just at a later line. 'Per-case refusal' is only real if the report can be written. This was NOT in I-14-H's carried findings: the reviewer concluded set was 'accidentally correct', which is true of the VERDICT and not of the RUN.",
       "evidence": "before/CMD-I14I-PREFIX-PROBE/stdout.txt row set_of_one_str: verdict=reject_claim refusals=['R-BASIS-UNKNOWN'] but computed_json_serialisable = \"TypeError: Object of type set is not JSON serializable\". Found because the probe itself aborted on that row.",
       "disposition": "FIXED in the same hunk as the derived keys: computed['basis'] now goes through _basis_repr(), so only a string passes through verbatim and any other value is echoed as '<non-string basis: TYPENAME>'. Pinned by 12 report-serialisation tests plus an explicit JSON round-trip check in harness/audit_postfix.py.",
       "why_it_might_be_out_of_scope": "The card's item 1 authorises a type guard at the membership test; it does not literally authorise changing the `basis` output field. It was changed because leaving it would have left the batch-abort defect half-fixed for a set basis, i.e. the card's stated purpose unachieved. The reviewer should confirm this belongs to I-14-I or should be split into its own card.",
+      "reviewer_ruling": "KEEP inside I-14-I - do not split (reviewer_report.md §3, lines 213-243). The reviewer held this self-limitation to be OVER-CONSERVATIVE: card item 1's observable goal is a per-case decision with no batch abort, and a set basis aborted the batch at the json.dumps step, so fixing _basis_repr was a NECESSARY step to actually achieve item 1 rather than a scope expansion. Externality is zero (basis carries no value constraint in any of the 14 frozen cases) and the direction is fail-closed.",
+      "reviewer_conditions": [
+        "(a) WORDING CORRECTION (mandatory): the acceptance text must state that this fix covers computed['basis'] only, that classify() STILL echoes the raw claim at iso/natural_window.py:502, that a non-JSON-native basis therefore still makes the IN-PROCESS whole-batch report unserialisable (reviewer finding F-2), that this path is unreachable inside the gate and does not affect this card's exit criteria, and that THE FAILURE MODE WAS NOT COMPLETELY ELIMINATED. The original sentence in this entry ('computed['basis'] echoed the raw claim value ... so json.dumps(report) raised') is IMPRECISE and must not be carried forward unqualified: there were TWO sources of the pre-fix serialisation failure and only one was fixed.",
+        "(b) NO SCOPE WIDENING: this card does NOT authorise changing the claim echo. Doing that is a NEW CARD because it changes the public shape of verdict and needs its own expectations and red/green evidence. Registered as F-2 (latent hardening item)."
+      ],
+      "corrected_summary_of_this_finding": "PARTIALLY FIXED. computed['basis'] now goes through _basis_repr() so it is always serialisable and can never impersonate a registered basis. The claim echo at iso:502 is UNCHANGED, so {set, frozenset, bytes, object} bases still break the WRITE step in-process (the decision itself is correct: R-BASIS-UNKNOWN). Gate-unreachable, therefore not an in-card defect.",
       "does_not_widen_anything": "No frozen expectation covers computed['basis'] for H1-H12 (their expected computed maps are empty) and the r1 pre-image material is untouched; 14-case gate reproduction is the proof (mismatch_count 0)."
     },
     {
@@ -239,7 +267,7 @@
       "class": "NOT VERIFIED BY THE IMPLEMENTER (must be re-derived independently)",
       "severity": "informational",
       "finding": "Every numeric claim in this handoff (mismatch_count 0, H12's codes, the derived-key agreement table, the RED/GREEN counts) was produced by this attempt's own commands. The implementer cannot independently verify its own oracle.",
-      "disposition": "Explicitly handed to the independent reviewer; next_action enumerates the six re-computations requested. status stays review_pending."
+      "disposition": "DISCHARGED - the independent review was performed and returned ACCEPT (conditional) = accepted_scoped. The reviewer independently re-derived all six requested re-computations plus nine more (R1-R15). See reviewer_findings for the outcome; status is no longer review_pending."
     },
     {
       "id": "CF-I14I-5",
@@ -256,7 +284,194 @@
     "real_natural_observation": "NOT GRANTED. All cases are synthetic time input (SYNTHETIC-TIMER-ONLY).",
     "real_ui_immediacy": "NOT GRANTED.",
     "slo_performance": "NOT GRANTED.",
-    "review_state": "review_pending - handed to an independent reviewer; the implementer does not sign acceptance."
+    "review_state": "accepted_scoped - acceptance was written by an independent reviewer, not by the implementer (implementer_signed=false / implementer_never_signs_acceptance=true)."
+  },
+  "sut_identity": {
+    "sut_path_inside_attempt": "iso/natural_window.py",
+    "sut_sha256": "9edb95155202432ed01b2c68d06f74a00882287e934cda6cead0e14140493b04",
+    "sut_bytes": 23162,
+    "revision": "r3",
+    "revision_scope": "SUT revision identity, NOT the card revision (the card's own revision is r1, see the top-level revision field). Recorded here per the reviewer's SUT_VERSION ruling (reviewer_report.md §4).",
+    "sut_version_string": "i14b-after-2",
+    "sut_version_string_carries_zero_revision_information": true,
+    "why": "SUT_VERSION reads 'i14b-after-2' for BOTH r3 (fixed, 9edb9515...) and its pre-image (7fff6f0c...); r1 read 'i14b-after-1'. Card item 7 forbids bumping it to mask differences, so the machine-checkable discriminator is sha256, not the version string. The gate report's sut_version field therefore tells a downstream reader NOTHING about whether r3 is applied; run_cases.py:121 already records sut_sha256 independently, so the gate artifact always could distinguish the revisions - what was missing was a machine-checkable field for downstream, which is now sut_identity + evidence/I-14-I/qualification.json.sut_identity.",
+    "pre_fix_sha256": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
+    "r1_sha256": "495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95",
+    "r3_marker_text_exists_in": "changes.diff and the SUT source comment ('r3 (I-14-I...)'), but was not previously in any machine-checkable field"
+  },
+  "i14h_discharge_flag": {
+    "condition_met_on_the_merits": true,
+    "evidence": "the full 14-case end-to-end gate reaches rc 0 / ok=true / case_count=14 / mismatch_count=0 / accepted_ineligible_count=0 / sut_raw_returncode=0, and cases_report.json is landed at execution_runs/I-14-H/a20260919-01/evidence/I-14-I/cases_report.json (sha256 e8925fdcf3a99727b63401b29fe893588a1777e4a7361c6f8d66cdcfc327a288, 1647 B), byte-identical to after/CMD-I14I-GATE-CASES14/gate/cases_report.json. Re-verified byte-for-byte by the landing pass.",
+    "what_it_discharges": "exactly one thing - the conditional-scope wording I-14-H's review.md imposes at lines 192-193: '在补跑完成前，本卡的验收陈述须限定为\"12/14 冻结用例 + 12 例 pytest 套件\"'",
+    "what_it_does_not_discharge": "I-14-H's other NOT GRANTED items (real natural observation / real UI immediacy / SLO / disclosure_adaptation / accuracy) are unchanged by this card",
+    "ACTION_REQUIRED_SEPARATELY": "Updating I-14-H's OWN carriers - its handoff.json and evidence/I-14-H/qualification.json (formula.state, the conditional_scope block, the '12/14 ...' strings in scope.granted, and the matching not_granted entries) - is a SEPARATE bookkeeping act that must be its own carrier-landing pass against the I-14-H attempt. FLAGGED AND REQUESTED, NOT PERFORMED HERE. No file of the I-14-H attempt was written by this pass.",
+    "i14h_carrier_untouched": "I-14-H/a20260919-01/review.md re-hashed by the landing pass: 97997d6d26af5a1fd36e486c508a027642f4492af1f5415fe3f25bc929e130b2 (14691 B), unchanged"
+  },
+  "reviewer_findings": [
+    {
+      "id": "F-1",
+      "class": "WORDING CORRECTION REQUIRED / CAPABILITY MISATTRIBUTION",
+      "severity": "medium",
+      "source": "reviewer_report.md §2 F-1 (lines 76-106)",
+      "finding": "The claim that derived-key discrimination is repaired 'inside the frozen gate' is FALSE. A mutant with the two keys reverted to hardcoded False, all else byte-identical (sha256 2265bd0d7fe4a950d737e77ef6409991d9d30978b4eb61a54b33cb0cb71944f0), STILL PASSES the UNMODIFIED 14-case gate at rc 0. run_cases.py:177-180 checks REQUIRED_KEYS for PRESENCE ONLY, and sum_used_for_natural_duration is constrained in NO frozen case (quick_check_in_observation_intervals is constrained once, W1=False). The gate never had discriminating power over these keys - pre-fix it failed only because of the batch abort (SUT rc 4). The real fail-able criterion lives in the RIDER suite, where the same mutant fails 4 tests.",
+      "required_wording": "The derived keys' fail-able criterion lives in the rider suite (4 tests covering all four combinations). The frozen gate does NOT validate the values of these two keys; the gate's rc 0 proves only that the remaining 14 cases are end-to-end consistent and that the batch no longer aborts. 'Gate rc 0' must NOT be read as 'the derivation is gate-proven'.",
+      "forbidden_wording": "any downstream text asserting the derived-key discrimination is now inside/within the frozen gate",
+      "landing_pass_independent_reproduction": "REPRODUCED. The landing pass rebuilt the mutant from the fixed SUT and obtained a byte-identical sha256; the unmodified gate returned rc 0 / mismatch_count 0 / ok=true (sut_report.json 21419 B, ab2c4b7b...); the rider suite returned 4 failed / 41 passed with exactly the four reviewer-named test ids; run_cases.py:177-180 and the frozen constraint set were read at source.",
+      "disposition": "CORRECTED IN PLACE in this handoff (derived_keys_discharge.discrimination_inside_the_frozen_gate; completed_steps item 16) with the original wording retained and marked superseded. oracle.md §9.3 still carries the falsified sentence and is registered as OPEN for an append-only erratum in wordings_requiring_append_only_correction - this pass did NOT rewrite the hash-pinned oracle.",
+      "blocks_acceptance": false
+    },
+    {
+      "id": "F-2",
+      "class": "LATENT HARDENING ITEM - REQUIRES ITS OWN CARD (do not widen here)",
+      "severity": "low-medium",
+      "source": "reviewer_report.md §2 F-2 (lines 108-143)",
+      "finding": "CF-I14I-2's fix is only half complete: classify() still echoes the raw claim at iso/natural_window.py:502, so a non-JSON-native basis still makes the whole report unserialisable. Measured on the FIXED SUT: dumps(computed)=ok for all types but dumps(full verdict)=RAISE for set / frozenset / bytes / object. The decision is correct (R-BASIS-UNKNOWN); only the WRITE fails.",
+      "boundary_do_not_widen": "Structurally unreachable inside the gate (JSON input cannot express set/frozenset/bytes/object; H5/H6 carry list/dict which serialise), so the gate's rc 0 and this card's exit criteria are unaffected. Reachable only by calling classify() in-process. LATENT, not an in-card defect, NOT grounds for rejection.",
+      "landing_pass_independent_reproduction": "REPRODUCED on the fixed SUT across nine basis shapes; iso:502 read at source and confirmed to be `\"claim\": case.get(\"claim\"),`.",
+      "required_action": "register as its own card (or fold into a downstream hardening card): a non-JSON-native basis must not abort the batch on ANY report-write path, with its own red/green evidence. Explicitly NOT authorised by card I-14-I (reviewer ruling §3 condition (b)).",
+      "disposition": "REGISTERED as a latent hardening item requiring a NEW CARD. Also see carried_findings[CF-I14I-2].reviewer_conditions for the mandatory wording correction.",
+      "blocks_acceptance": false
+    },
+    {
+      "id": "F-3",
+      "class": "CONFIRMATION (information)",
+      "severity": "info",
+      "source": "reviewer_report.md §2 F-3 (lines 145-161)",
+      "finding": "The 'list/dict-specific crash' attribution is exactly right, and the reviewer narrowed it: the crash is UNHASHABLE-specific; list/dict are merely its only JSON-reachable forms. ('union_of_windows',) does not crash; (['union_of_windows'],) does. The fixed type guard (kind before registry) covers both.",
+      "disposition": "NO ACTION - recorded.",
+      "blocks_acceptance": false
+    },
+    {
+      "id": "F-4",
+      "class": "CONFIRMATION (information)",
+      "severity": "info",
+      "source": "reviewer_report.md §2 F-4 (lines 163-170)",
+      "finding": "The set/tuple anti-overfitting proof holds: of the pre-fix arm's 25 failures, 7 are list/dict container decision rows, 12 are serialisation rows, 5 are d3 derived-key rows and 1 is the poison-case row; the set/tuple/int/float/bool decision rows all PASS. The type guard neither over-fits (registered strings still decided on the merits) nor under-fits. The reviewer calls this the best-designed part of the card.",
+      "disposition": "NO ACTION - recorded.",
+      "blocks_acceptance": false
+    },
+    {
+      "id": "F-5",
+      "class": "CONFIRMATION (information)",
+      "severity": "info",
+      "source": "reviewer_report.md §2 F-5 (lines 172-182)",
+      "finding": "H12 passes as specified: verdict=reject_claim, refusals=['R-CLAIM-EXCEEDS','R-QC-IN-OBS'], union_seconds=2220.0, quick_check_overlap_seconds=480.0, basis='union_of_windows' - all three card-item-5 quantities match item by item. H12's pytest-coverage gap (I-14-H CF-I14H-3) persists but is now covered by the genuinely-passing frozen gate.",
+      "disposition": "NO ACTION - recorded.",
+      "blocks_acceptance": false
+    },
+    {
+      "id": "F-6",
+      "class": "SCENARIO-NAMING AMBIGUITY (information)",
+      "severity": "info",
+      "source": "reviewer_report.md §2 F-6 (lines 184-201) and §6.5",
+      "finding": "Derived semantics are correct and all four combinations are present and separately fail-able. BUT oracle.md §4 names the (True,True)/(True,False) scenarios 'W4'/'W5', and W4/W5 are NOT in the 14-case frozen gate - the gate is W1 + H1..H12 + C2 (independently confirmed by the landing pass), while W4/W5 belong to the r1 pre-image cases.json 20-case set. §4 does not assert (True,True) for W4/W5, so this is NOT an expectation error; it is a naming ambiguity that invites downstream to believe (T,T) already occurs inside the gate. It does not.",
+      "disposition": "OPEN - oracle.md §4 should stop reusing the ids 'W4'/'W5' and use descriptive scenario keys, by APPEND-ONLY annotation; the frozen §3/§4 tables must NOT be rewritten. Registered in wordings_requiring_append_only_correction for a separate erratum act.",
+      "blocks_acceptance": false
+    },
+    {
+      "id": "F-7",
+      "class": "STALE LINE POINTERS (information) - downstream must point by SYMBOL NAME",
+      "severity": "info",
+      "source": "reviewer_report.md §2 F-7 (lines 203-209)",
+      "finding": "The card's and oracle's line pointers (:202 guard, :241/:248 derived keys) are stale in the fixed revision. Measured by the landing pass on the fixed SUT (9edb9515..., 554 lines): guard at :257, quick_check_in_observation_intervals at :296, sum_used_for_natural_duration at :304, _basis_kind/_basis_repr at :116/:134. :202 in the fixed file is 'if qc_started is not None and qc_finished is not None:'. changes.diff's hunk headers (@@ -198,8 +252,9 @@, @@ -238,14 +293,15 @@) already reflect the new numbering - stale card prose, not an implementation defect.",
+      "reviewer_numbers_are_themselves_inexact": "The reviewer's replacement values (:252, :291, :298) do not land on the constructs: :252 and :293 are changes.diff hunk-region starts, and :291/:298 are observation_interval_count and union_seconds. The reviewer's own recommended remedy - point by symbol name - is therefore the correct one.",
+      "disposition": "ADOPTED - this handoff and review.md point by symbol name as primary and record the exact measured line numbers.",
+      "blocks_acceptance": false
+    },
+    {
+      "id": "CF-I14I-3",
+      "class": "SELF-REPORTED ONLY / UNVERIFIABLE AFTER THE FACT",
+      "severity": "info",
+      "source": "reviewer_report.md §6.2 (lines 286-289)",
+      "finding": "The implementer's own auditor (harness/audit_postfix.py) had a transient Python operator-precedence bug: 'qc_in != (qc_ovl or 0) > 0' parses as '(qc_ovl or 0)', so it reported two false failures (H11/H12) although the SUT was correct. It was corrected to 'bool(qc_ovl is not None and qc_ovl > 0)' and re-run; the final auditor reports 44 checks / 0 failures. The defective run was replaced in place, so it is NOT in the evidence tree: the defect's occurrence is SELF-REPORTED WITH NO SURVIVING EVIDENCE.",
+      "reviewer_verification": "The reviewer ran the current auditor (sha256 67f2f30b0bc510cdc3bfcb574c027667e5a15e91227515fe61d8876ab57684d8) against their OWN gate product and got checks=44 / failures=0. Only the corrected version is verifiable.",
+      "impact_on_verdict": "NONE - the auditor is a convenience checker; the gate is the unmodified run_cases.py. Same class as I-14-H's CF-I14H-4 ('unprovable / consistent-with only').",
+      "disposition": "REGISTERED as self-reported / unverifiable-after-the-fact. No action available.",
+      "blocks_acceptance": false
+    }
+  ],
+  "reviewer_rulings": {
+    "cf_i14i_2_scope": {
+      "ruling": "KEEP inside card I-14-I - do not split",
+      "source": "reviewer_report.md §3 (lines 213-243)",
+      "conditions": [
+        "(a) WORDING CORRECTION (mandatory): state that CF-I14I-2 fixed computed['basis']; that classify() still echoes claim verbatim; that a non-JSON-native basis therefore still makes the IN-PROCESS whole-batch report unserialisable (F-2); that this path is unreachable inside the gate and does not affect this card; and that the failure mode was NOT completely eliminated.",
+        "(b) NO SCOPE WIDENING: this card does NOT authorise changing the claim echo; doing so is a NEW CARD because it changes the public shape of verdict and needs its own expectations and red/green evidence."
+      ],
+      "reason_1_in_scope": "It falls INSIDE card item 1's authorisation, not outside: item 1's observable goal is a per-case decision with no batch abort, and a set basis aborted the batch at the json.dumps step, so fixing _basis_repr was a necessary step to actually achieve item 1. The handoff's own why_it_might_be_out_of_scope was OVER-CONSERVATIVE self-limitation.",
+      "reason_2_zero_externality": "Only W1/C2 constrain computed.basis in the frozen expectations and both are strings/null; basis has NO value constraint across the 14 cases; the r1 pre-image material is untouched.",
+      "reason_3_minimal_fail_closed": "_basis_repr backfills non-strings as '<non-string basis: T>', which cannot let a non-string value impersonate a registered basis downstream.",
+      "preferred_finding_class_wording": "keep the finding id, change the class from 'NEW FINDING, disclosed' to 'IN-SCOPE CONSEQUENCE of card item 1'. APPLIED in carried_findings[CF-I14I-2] with the original class retained as class_before_bookkeeping_fix."
+    },
+    "sut_version": {
+      "ruling": "NOT bumping is correct, but an explicit machine-checkable r3 identity is required",
+      "source": "reviewer_report.md §4 (lines 247-260)",
+      "risk_recorded": "the gate report's sut_version field carries ZERO information about whether r3 is applied; a downstream reader who looks only at that field would treat the pre-fix and fixed revisions as the same revision. This is precisely what card item 7 set out to prevent, and it still occurred.",
+      "remedy_adopted": "leave SUT_VERSION unchanged; write sut_sha256=9edb95155202432ed01b2c68d06f74a00882287e934cda6cead0e14140493b04 and revision='r3' into evidence/I-14-I/qualification.json and into sut_identity above. run_cases.py:121 already records sut_sha256 independently, so the gate artifact always could distinguish the revisions; only the downstream default habit was missing."
+    }
+  },
+  "reviewer_self_corrections": [
+    {
+      "id": "SC-1",
+      "what": "A withdrawn arithmetic errata against oracle.md §4's W4/W5 row (2940 / 3480 / 540 / 480)",
+      "detail": "The reviewer's draft asserted that quick_check_overlap_seconds and overlap_seconds were transposed in that row and wrote an erratum request into §8. The assertion was WRONG: hand-recomputation from §4's own windows ([00:00-00:29], [00:20-00:49]) plus quick_check 00:29-00:37 gives sum=3480, two-window overlap=540, union=2940, quick_check cap observation=480 - matching the row item by item. The reviewer withdrew the claim in three places (F-6, §6.5, §8.3) and replaced it with a scenario-naming ambiguity only.",
+      "consequence_for_downstream": "DO NOT act on a non-existent errata requirement against oracle.md §4's numbers. The numbers are correct."
+    },
+    {
+      "id": "SC-2",
+      "what": "An initial over-statement of F-2's severity",
+      "detail": "The reviewer's first probe called json.dumps on the ENTIRE classify() return value, conflating the claim-echo failure with the computed failure, and briefly suggested that a set basis still aborts the whole batch after the fix. After checking the real serialisation object of this card's exit criterion - which is computed - the reviewer narrowed F-2 to latent / gate-unreachable.",
+      "consequence_for_downstream": "F-2 must be qualified as latent and gate-unreachable: not an in-card defect and not grounds for rejection."
+    },
+    {
+      "note": "reviewer_report.md §10 (lines 405-416) preserves both corrections deliberately rather than silently overwriting them. BOTH CORRECTIONS WEAKEN THE REVIEWER'S OWN ACCUSATIONS, which is why they are recorded here: they calibrate the report's direction of error. The F-1 finding, by contrast, was NOT withdrawn after independent reproduction."
+    }
+  ],
+  "wordings_requiring_append_only_correction": [
+    {
+      "id": "WC-1",
+      "target": "oracle.md §9.3 (heading at line 194; the falsified sentence at lines 205-207)",
+      "class": "FALSIFIED STATEMENT (reviewer F-1) - correction owed",
+      "current_text": "heading: '### 9.3 第 4 节（派生键）实测 —— 达成，且判别力落在**冻结门自己**的用例上'; body lines 205-207: '⇒ **在冻结期望所覆盖的 14 个用例内部**，两个键各自都取到了两个不同值。修复前它们在全部 14 例中恒为 `False`（取值集合大小 = 1，reviewer 实测），故\"形状门恒真\"这一弱化**已在门本身之内**被消除，不只靠新增 pytest 用例。'",
+      "required_replacement": "'### 9.3 第 4 节（派生键）实测 —— 达成；判别力在 rider 套件，不在冻结门内（F-1 更正）' and: '⇒ 门报告内两键取到三个不同组合，但这只是**可观察取值**，不参与门的 pass/fail：`run_cases.py:177-180` 对 REQUIRED_KEYS 只做存在性检查，`sum_used_for_natural_duration` 在 14 例中无任何取值约束。故\"形状门恒真\"这一弱化**并未在门本身之内被消除**：真正可失败的判据在 rider 套件（4 例覆盖四组合），门 rc 0 只证明其余 14 例端到端一致且批不再中止。'",
+      "status": "OPEN",
+      "why_not_applied_here": "oracle.md is a hash-pinned artifact: §1-§8 were frozen at 2026-09-21T19:59:53Z and its current sha256 3842f2d4... (17246 B) is recorded in this handoff. Rewriting it is outside this bookkeeping pass's mandate and would change a recorded hash. The correction must be applied as an APPEND-ONLY erratum by a separate act (precedent: the I-14-F landing registered its frozen-document corrections as OPEN rather than rewriting them).",
+      "authoritative_text_lives_in": "review.md (this attempt) and handoff.json.derived_keys_discharge.discrimination_inside_the_frozen_gate"
+    },
+    {
+      "id": "WC-2",
+      "target": "oracle.md §4 (scenario ids W4/W5)",
+      "class": "SCENARIO-NAMING AMBIGUITY (reviewer F-6) - correction recommended",
+      "current_text": "§4 names the overlapping-sum / overlapping-union scenarios 'W4'/'W5', but those ids belong to the r1 pre-image cases.json 20-case set and are NOT in the 14-case frozen gate.",
+      "required_replacement": "stop reusing the ids 'W4'/'W5'; use descriptive scenario keys such as '重叠窗求和 / 重叠窗并集', by APPEND-ONLY annotation. The frozen §3/§4 tables must NOT be rewritten.",
+      "status": "OPEN",
+      "why_not_applied_here": "same as WC-1 - oracle.md is hash-pinned and the change is append-only discipline, not a bookkeeping transcription."
+    }
+  ],
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-21 22:43 local (2026-09-21T21:43:10Z)",
+    "what_this_pass_did": "verified the reviewer's byte pin and independently re-derived its §7 hash table (14/14 matched) and its two load-bearing findings (F-1 rebuilt the mutant byte-identically and re-ran BOTH the unmodified gate and the rider suite; F-2 probed classify() in-process on the fixed SUT); set status to accepted_scoped; created review.md's verdict block; created evidence/I-14-I/qualification.json; created the reviewer_report.sha256 pin sidecar; corrected the F-1 wording in place with the superseded text retained; applied the reviewer's preferred CF-I14I-2 class wording; registered F-1..F-7, CF-I14I-3, both rulings, both reviewer self-corrections, the SUT r3 identity, and the I-14-H discharge flag",
+    "status_transition": "review_pending -> accepted_scoped",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "acceptance_author": "independent reviewer (not the implementer, not this bookkeeping pass)",
+    "reviewer_report_bytes_written": 0,
+    "oracle_md_bytes_written": 0,
+    "changes_diff_bytes_written": 0,
+    "commands_json_bytes_written": 0,
+    "binding_json_bytes_written": 0,
+    "iso_or_harness_bytes_written": 0,
+    "before_or_after_evidence_bytes_written": 0,
+    "i14h_attempt_bytes_written": 0,
+    "production_bytes_written": 0,
+    "files_written": [
+      "review.md (NEW - the attempt had no review.md before this pass, so there is no pre-image)",
+      "handoff.json (CORRECTED IN PLACE - all superseded wording retained)",
+      "evidence/I-14-I/qualification.json (NEW)",
+      "reviewer_report.sha256 (NEW pin sidecar - this attempt had none, unlike I-14-F; purely additive, every value independently recomputed)"
+    ],
+    "verification_scratch_outside_attempt": "%TEMP%\\i14i-carrierland-verify\\ (mutant, gate outputs, pytest basetemp) - nothing written into the attempt by the verification runs",
+    "carrier_reverified_after_pass": "reviewer_report.md = 525dbb138643d7a775142688ed4068519cd942e706ad7ad14403cf19224cbf71 / 32218 B, unchanged"
   },
   "evidence_paths": [
     "execution_runs/I-14-I/a20260919-01/binding.json",
@@ -285,16 +500,25 @@
     "execution_runs/I-14-H/a20260919-01/evidence/I-14-I/cases_report.json (THE LANDED GATE REPORT)",
     "execution_runs/I-14-H/a20260919-01/evidence/I-14-I/sut_report.json",
     "execution_runs/I-14-H/a20260919-01/evidence/I-14-I/cases_report.repeat.json",
-    "execution_runs/I-14-H/a20260919-01/review.md (the RIDER's carrier, sha256 97997d6d...)"
+    "execution_runs/I-14-H/a20260919-01/review.md (the RIDER's carrier, sha256 97997d6d...)",
+    "execution_runs/I-14-I/a20260919-01/reviewer_report.md (THE VERDICT CARRIER, sha256 525dbb13..., 32218 B - written by the independent reviewer)",
+    "execution_runs/I-14-I/a20260919-01/reviewer_report.sha256 (pin sidecar, NEW in this landing pass)",
+    "execution_runs/I-14-I/a20260919-01/review.md (carrier-landing verdict block, NEW in this landing pass - the attempt had no review.md before)",
+    "execution_runs/I-14-I/a20260919-01/evidence/I-14-I/qualification.json (NEW in this landing pass)"
   ],
   "open_questions": [
-    "CF-I14I-2 scope: is fixing the `basis` output echo (set basis broke report serialisation) inside I-14-I's remit, or should it be its own card? It was fixed here because otherwise the card's stated purpose (per-case decision instead of batch abort) is only half achieved for a set basis.",
-    "Should SUT_VERSION have been bumped for the fix? Deliberately NOT bumped, per card item 7, so the frozen material can still identify the revision. The fixed file is distinguished by sha256 9edb9515... rather than by the version string. Reviewer may prefer an explicit r3 marker.",
-    "I-14-H review.md's conditional-scope wording ('acceptance must remain 12/14 frozen cases + 12-case pytest suite until the full gate passes') is discharged by the landed cases_report.json, but updating I-14-H's own handoff/qualification carriers is a bookkeeping act for a carrier-landing pass, not for this implementer (implementer_never_signs_acceptance).",
-    "CF-I14I-3: the auditor's transient precedence bug is disclosed here; the reviewer may wish to re-run harness/audit_postfix.py to confirm 44 checks / 0 failures independently."
+    "ANSWERED (reviewer ruling §3): CF-I14I-2 stays inside I-14-I - do not split. The reviewer held the implementer's self-limitation to be over-conservative, because card item 1's observable goal (per-case decision, no batch abort) is unachievable for a set basis without fixing _basis_repr. Two conditions attach - mandatory wording correction, and NO widening to the claim echo.",
+    "ANSWERED (reviewer ruling §4): SUT_VERSION correctly was NOT bumped, but because it reads i14b-after-2 for BOTH the fixed and pre-fix revisions it carries zero revision information. Resolved by recording sut_sha256=9edb9515... and revision='r3' in evidence/I-14-I/qualification.json and in sut_identity.",
+    "ANSWERED (reviewer ruling §6.6 / §8.5): I-14-H's conditional-scope wording IS discharged on the merits by the landed cases_report.json. Updating I-14-H's own carriers remains a SEPARATE bookkeeping act - flagged in i14h_discharge_flag, NOT performed by this pass.",
+    "ANSWERED (reviewer §6.2): the auditor's transient precedence bug cannot be independently verified after the fact; the reviewer re-ran the corrected auditor against their own gate product and confirmed 44 checks / 0 failures. Registered as self-reported-only (reviewer_findings CF-I14I-3).",
+    "OPEN (reviewer §8.2, F-2): the claim echo at iso/natural_window.py:502 needs its own card - a non-JSON-native basis must not abort the batch on ANY report-write path. NOT authorised by I-14-I.",
+    "OPEN (reviewer §8.1, F-1): a NEW CARD may optionally append H10/H11 expectations for the two derived keys to frozen_expectations.i14h.json so the gate acquires discriminating power - append-only provenance required; this card must NOT rewrite the frozen body.",
+    "OPEN (reviewer §8.3, F-6): oracle.md §4's reuse of the 'W4'/'W5' ids should be replaced with descriptive scenario keys by append-only annotation.",
+    "OPEN (this pass, WC-1/WC-2): the two append-only oracle.md corrections above are outside a bookkeeping pass's mandate because oracle.md is hash-pinned; they need a separate erratum act."
   ],
   "blocked_by": [
-    "No blockers. status=review_pending awaiting an independent reviewer.",
-    "Real natural-observation eligibility / real UI immediacy / SLO / disclosure_adaptation / accuracy remain NOT GRANTED (SYNTHETIC-TIMER-ONLY); not dischargeable by this card."
+    "No blockers. status=accepted_scoped - the independent review is complete and the card's exit criteria were upheld by independent re-derivation.",
+    "Real natural-observation eligibility / real UI immediacy / SLO / disclosure_adaptation / accuracy remain NOT GRANTED (SYNTHETIC-TIMER-ONLY); not dischargeable by this card.",
+    "NOT a blocker, but owed elsewhere: I-14-H's carrier update (i14h_discharge_flag), the claim-echo hardening card (F-2), and the two append-only oracle.md errata (WC-1/WC-2)."
   ]
 }
