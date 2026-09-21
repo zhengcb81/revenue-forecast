@@ -1,0 +1,97 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-305",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "bc0a0dd2f9c37002ec8f4a3762c3c0b288441d13",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "500f79b75c4c0087780038cbfe42c22117dc86e0"
+  },
+  "result_triplet": {
+    "revenue": "bc0a0dd2f9c37002ec8f4a3762c3c0b288441d13",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "34adc53a903680de9fc8271bd71936006db32fa4"
+  },
+  "plan_sha256": "158fc1e1e4231e3c2dc71822a58931fdca64eff79fc0d4e27b8276a397f4c78a",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "company-wiki/src/company_wiki/source_catalog/scanner.py",
+    "company-wiki/tests/contract/test_scanner_cutover.py"
+  ],
+  "changed_files": [
+    "company-wiki/src/company_wiki/source_catalog/scanner.py",
+    "company-wiki/tests/contract/test_scanner_cutover.py"
+  ],
+  "dependency_receipts": [
+    "company-wiki/assurance/fc/FC-304/11_implementer_receipt.json (accepted 2026-08-10)"
+  ],
+  "command_registry_sha256": "215b8077169126b2c4a5eca9d8d6237f291757c2559f6ae6e0ae8ff1c806b089",
+  "scenario_results": [
+    {
+      "id": "EX-08",
+      "status": "passed",
+      "note": "cutover_decision reads the snapshot v2_scan_shadow flag (per-cohort v2 enablement); v1 stays read-only fallback"
+    },
+    {
+      "id": "SPI-03",
+      "status": "passed",
+      "note": "root_fingerprint (path+size+content hash) identical across v1/v2 cutover on the same root"
+    },
+    {
+      "id": "OPS-01",
+      "status": "passed",
+      "note": "gate_production_dry_shadow requires two consecutive zero-diff rounds; one round or any diff fails the gate; scan_catalog refuses v2 dry shadow without the gate (CutoverGateError)"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python -m pytest tests/contract/test_scanner_cutover.py -q",
+      "exit_code": 0,
+      "result": "5 passed",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "2063 passed / 2 pre-existing PORT-01 failures (test_check_unique_test_symbols, FC-1205); +6 FC-305 tests, zero new failures",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/scanner.py tests/contract/test_scanner_cutover.py",
+      "exit_code": 0,
+      "result": "All checks passed",
+      "cwd": "company-wiki"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0
+  },
+  "codegraph": {
+    "production_callers_before": 0,
+    "production_callers_after": 1,
+    "note": "gate_production_dry_shadow: 1 production caller (scan_catalog v2 dry-shadow gate). cutover_decision/root_fingerprint exercised by contract tests only (reviewer FIND-305-3 corrected at closure); the production per-cohort decision point is scan_root_strategy's v2_scan_shadow seam."
+  },
+  "mutation": {
+    "id": "FC-305-M",
+    "killed": true,
+    "details": "2 mutations killed: drop-two-round-gate (v2 dry shadow allowed without the two-round gate), gate-accepts-one-round (single round passes the gate)."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Additive gate functions + tests; v1 scanner path untouched; revert = revert commit."
+  },
+  "review": {
+    "reviewer": "reviewer-fc305-independent",
+    "reviewer_receipt_sha256": "8bdf75ae05f8b8c0f306219df45db07c6246f1c252a4288355683ff63ace4a3d",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-10",
+    "note": "Independent reviewer (clean worktree c742cb2, distinct identity) verified triplets, sealing hashes, diff scope, replayed focused + full suite (2063 passed / 2 pre-existing PORT-01), 2 mutations killed (two-round gate drop, single-round acceptance), independently reproduced the fingerprint invariant on an own-constructed root; verdict accepted. Codegraph note corrected at closure per FIND-305-3 (only gate_production_dry_shadow has a production caller)."
+  },
+  "provisional_note": "result_triplet to be sealed after commit."
+}

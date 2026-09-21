@@ -1,0 +1,61 @@
+# Local pre-commit gate mirroring the CI quality workflow's fast checks.
+# Pins match CI exactly (ruff 0.15.18, mypy 1.19.0 via the local system).
+# Full regression stays manual: run the affected pytest suites before push.
+#
+#   pre-commit install   # once per clone (installs .git/hooks/pre-commit)
+#   pre-commit run --all-files   # full gate on demand
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff check (WU-1.2, mirrors CI)
+        entry: ruff check
+        language: system
+        types: [python]
+        # CI scope: ruff check src tests/unit tests/contract scripts
+        files: ^(src/|tests/unit/|tests/contract/|scripts/).*\.py$
+
+      - id: mypy-contract
+        name: mypy contract modules (FC-1204-c, mirrors CI)
+        entry: >-
+          python -m mypy
+          src/company_wiki/source_catalog/artifact_handle.py
+          src/company_wiki/source_catalog/source_bundle.py
+          src/company_wiki/source_catalog/runtime_policy.py
+          src/company_wiki/source_catalog/activation.py
+          src/company_wiki/source_catalog/close_gap.py
+          src/company_wiki/source_catalog/policy_2x.py
+          src/company_wiki/source_catalog/canary_registry.py
+          src/company_wiki/source_catalog/normalized_meta.py
+          src/company_wiki/source_catalog/flags.py
+          src/company_wiki/source_catalog/policy.py
+          src/company_wiki/source_catalog/restore.py
+        language: system
+        pass_filenames: false
+        # Run only when one of the checked modules is staged.
+        files: >-
+          ^src/company_wiki/source_catalog/
+          (artifact_handle|source_bundle|runtime_policy|activation|close_gap|
+          policy_2x|canary_registry|normalized_meta|flags|policy|restore)\.py$
+
+      - id: config-doctor
+        name: config doctor (WU-7.1, mirrors CI)
+        entry: >-
+          python -c "import sys, runpy; sys.path.insert(0, 'src');
+          runpy.run_path('scripts/config_doctor.py', run_name='__main__')"
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # FC-1307-a: the host-assumption classes that passed every local hook and
+      # broke CI (findings F-B01-9) - a host path baked into a test, an unguarded
+      # capability call, a machine-scoped digest frozen as a constant.  It scans
+      # tests/ and src/ (not the whole tree) and takes no filenames; rule 1 is
+      # scoped to tests/ on purpose, see the script's docstring for the honest
+      # scope (it does NOT cover assertion-layer host dependence).
+      - id: host-assumption-guard
+        name: host assumption guard (FC-1307-a, mirrors the CI contract test)
+        entry: python scripts/host_assumption_guard.py
+        language: system
+        pass_filenames: false
+        files: ^(tests/|src/).*\.py$

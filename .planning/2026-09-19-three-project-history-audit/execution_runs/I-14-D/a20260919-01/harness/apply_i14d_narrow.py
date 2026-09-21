@@ -171,6 +171,12 @@ AUTHVALUE_MUT_LINE = (
     r'    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" '
     r'+ _BARE_VALUE + r")"'
 )
+# r2 variant (M3 must be built from the r2 tree, so its value group carries the
+# scheme branch): `_AUTH_SCHEME_SPLIT` stays defined but is no longer referenced.
+AUTHVALUE_SPLIT_MUT_LINE = (
+    r'    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" '
+    r'+ _AUTH_SCHEME_SPLIT + r"|" + _BARE_VALUE + r")"'
+)
 
 OPS = {
     # op -> list of (old_block, new_block) line-sequence replacements
@@ -179,7 +185,7 @@ OPS = {
     "mut_greedy": [(SCANNER_NEW, SCANNER_OLD)],
     "mut_authnl": [(block(AUTHJOIN_NARROW_LINE), block(AUTHJOIN_MUT_LINE))],
     "mut_auth1": [(block(AUTHVALUE_NARROW_LINE), block(AUTHVALUE_MUT_LINE))],
-    # r2 fix (reviewer RULING 2) and its mutant specimen.  `authsplit` inserts the
+    # r2 fix (reviewer RULING 2) and its mutant specimens.  `authsplit` inserts the
     # `_AUTH_SCHEME_SPLIT` block (the M2 `_AUTH_BARE_VALUE` anchor is untouched) and
     # then re-orders the value group.  `collapse_authsplit` only undoes the second
     # half, which leaves an unused-but-defined constant and re-opens the leak: it is
@@ -190,6 +196,9 @@ OPS = {
         (AUTHVALUE_NARROW_OLD, AUTHVALUE_NARROW_NEW),
     ],
     "collapse_authsplit": [(AUTHVALUE_NARROW_NEW, AUTHVALUE_NOSCHEME)],
+    # r2 version of M3, for trees that already carry the scheme branch: `_AUTH_SCHEME_SPLIT`
+    # stays defined but is no longer referenced, which is the naive-narrowing specimen.
+    "mut_auth1_r2": [(AUTHVALUE_NARROW_NEW, block(AUTHVALUE_SPLIT_MUT_LINE))],
     "mut_authsplit": [
         (AUTHSCHEME_INSERT, AUTHPATTERN_HEAD),
         (AUTHVALUE_NARROW_NEW, AUTHVALUE_NOSCHEME),

@@ -1,0 +1,113 @@
+{
+  "card_id": "I-14-I",
+  "attempt_id": "a20260919-01",
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-I\\a20260919-01",
+  "interpreter": "C:\\Miniconda\\python.exe",
+  "interpreter_version": "3.13.9",
+  "network": "disabled",
+  "exit_code_legend": {
+    "note": "START_HERE.md frozen legend is about rc SEMANTICS per batch; this batch follows it. Every command below also states its OWN expected rc. Historical rc across other batches is NOT rewritten.",
+    "0": "pass - command ended normally AND the business verdict is pass",
+    "1": "harness failure - the runner/test itself errored (import, fixture, missing expectation file, unbound path)",
+    "2": "no verdict / expected refusal - a negative case that was correctly refused",
+    "3": "did not meet expectation - positive case not passing, or negative case NOT refused"
+  },
+  "commands": [
+    {
+      "id": "CMD-I14I-PREFIX-PROBE",
+      "purpose": "Bound the defect BEFORE freezing: which declared basis values crash the inspected revision, at which line, and which are merely refused. Produces NO expectation value.",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "harness\\probe_prefix_basis.py", "--sut", "<ATTEMPT>\\iso\\natural_window.py"],
+      "expected_returncode": 0,
+      "observed_returncode": 0,
+      "business_result": "list/dict/nested-list/dict raise TypeError at :202; set/tuple/scalars/str/null/missing are refused with R-BASIS-UNKNOWN; set additionally breaks JSON serialisation of the report",
+      "binding_status": "bound",
+      "evidence": "before/CMD-I14I-PREFIX-PROBE/"
+    },
+    {
+      "id": "CMD-I14I-PREFIX-CASES14",
+      "purpose": "Pre-fix state of the card's exit gate (unmodified run_cases.py + unmodified i14h frozen material).",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "harness\\run_cases.py", "--sut", "<ATTEMPT>\\iso\\natural_window.py", "--out-dir", "<ATTEMPT>\\before\\CMD-I14I-PREFIX-CASES14\\gate", "--label", "CMD-I14I-PREFIX-CASES14", "--cases", "<ATTEMPT>\\harness\\cases.i14h.json", "--expectations", "<ATTEMPT>\\harness\\frozen_expectations.i14h.json"],
+      "expected_returncode": 1,
+      "observed_returncode": 1,
+      "business_result": "ok=false, sut_raw_returncode=4, error=sut_cli_nonzero, sut_report.json NOT created, batch aborted (the residual I-14-H deferred)",
+      "binding_status": "bound",
+      "evidence": "before/CMD-I14I-PREFIX-CASES14/"
+    },
+    {
+      "id": "CMD-I14I-RED-SUITE-PREFIX",
+      "purpose": "RED arm: this card's rider suite (xfail dropped, container matrix + derived-key assertions) against the UNMODIFIED pre-image. Every rider assertion must fail here.",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider", "--basetemp", "<ATTEMPT>\\harness\\scratch\\pytest-i14i-red-prefix", "-v", "harness\\test_i14i_natural_window.py"],
+      "env": {"I14I_SUT": "<ATTEMPT>\\before\\natural_window.i14b-after-2.py"},
+      "expected_returncode": 1,
+      "business_result": "container cases fail with TypeError at :202; derived-key cases fail with AssertionError (literal False vs derived True)",
+      "binding_status": "bound",
+      "evidence": "before/CMD-I14I-RED-SUITE-PREFIX/"
+    },
+    {
+      "id": "CMD-I14I-RED-SUITE-R1",
+      "purpose": "Do-not-regress arm: same suite against the defective r1 revision - r1 must NOT be reachable by the fix, and its silent accept on container basis must be visible.",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider", "--basetemp", "<ATTEMPT>\\harness\\scratch\\pytest-i14i-red-r1", "-v", "harness\\test_i14i_natural_window.py"],
+      "env": {"I14I_SUT": "<ATTEMPT>\\before\\natural_window.r1sut.py"},
+      "expected_returncode": 1,
+      "business_result": "container cases fail because r1 ACCEPTS them (verdict accept_claim, refusals []) - the over-permissive direction; d1/d2 defect cases also fail",
+      "binding_status": "bound",
+      "evidence": "before/CMD-I14I-RED-SUITE-R1/"
+    },
+    {
+      "id": "CMD-I14I-GREEN-SUITE",
+      "purpose": "GREEN arm: the rider suite against the fixed SUT. 0 failed, 0 xfailed required.",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider", "--basetemp", "<ATTEMPT>\\harness\\scratch\\pytest-i14i-green", "-v", "harness\\test_i14i_natural_window.py"],
+      "expected_returncode": 0,
+      "business_result": "all rider cases pass with no xfail remaining",
+      "binding_status": "bound",
+      "evidence": "after/CMD-I14I-GREEN-SUITE/"
+    },
+    {
+      "id": "CMD-I14I-GREEN-I14HSUITE",
+      "purpose": "Preserved-meaning arm: I-14-H's suite AS RECEIVED (xfail intact) against the fixed SUT. The former xfail must now XPASS, which is exactly what 'drop the xfail' is for.",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider", "--basetemp", "<ATTEMPT>\\harness\\scratch\\pytest-i14i-green-i14h", "-v", "harness\\archive_test_i14h_original.py"],
+      "expected_returncode": 0,
+      "business_result": "1 xpassed + 11 passed (non-strict xfail), rc 0 - the residual the xfail recorded is gone",
+      "binding_status": "bound",
+      "evidence": "after/CMD-I14I-GREEN-I14HSUITE/"
+    },
+    {
+      "id": "CMD-I14I-GATE-CASES14",
+      "purpose": "THE card exit criterion: full 14-case gate with UNMODIFIED run_cases.py + UNMODIFIED cases/expectations, to rc 0.",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "harness\\run_cases.py", "--sut", "<ATTEMPT>\\iso\\natural_window.py", "--out-dir", "<ATTEMPT>\\after\\CMD-I14I-GATE-CASES14\\gate", "--label", "CMD-I14I-GATE-CASES14", "--cases", "<ATTEMPT>\\harness\\cases.i14h.json", "--expectations", "<ATTEMPT>\\harness\\frozen_expectations.i14h.json"],
+      "expected_returncode": 0,
+      "business_result": "ok=true, case_count=14, mismatch_count=0, accepted_ineligible_count=0, sut_raw_returncode=0, H12 passes",
+      "binding_status": "bound",
+      "evidence": "after/CMD-I14I-GATE-CASES14/"
+    },
+    {
+      "id": "CMD-I14I-GATE-CASES14-REPEAT",
+      "purpose": "Idempotence/repeatability of the card's exit gate (same input, second run, fresh out-dir).",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "harness\\run_cases.py", "--sut", "<ATTEMPT>\\iso\\natural_window.py", "--out-dir", "<ATTEMPT>\\after\\CMD-I14I-GATE-CASES14-REPEAT\\gate", "--label", "CMD-I14I-GATE-CASES14-REPEAT", "--cases", "<ATTEMPT>\\harness\\cases.i14h.json", "--expectations", "<ATTEMPT>\\harness\\frozen_expectations.i14h.json"],
+      "expected_returncode": 0,
+      "business_result": "identical gate numbers to CMD-I14I-GATE-CASES14",
+      "binding_status": "bound",
+      "evidence": "after/CMD-I14I-GATE-CASES14-REPEAT/"
+    },
+    {
+      "id": "CMD-I14I-POSTFIX-PROBE",
+      "purpose": "Post-fix re-run of the same 18-value basis probe: every row must now be decided (no crash) and the report must be JSON-serialisable for every basis type including set.",
+      "argv": ["C:\\Miniconda\\python.exe", "-X", "utf8", "-B", "harness\\probe_prefix_basis.py", "--sut", "<ATTEMPT>\\iso\\natural_window.py"],
+      "expected_returncode": 0,
+      "business_result": "0 raised; registered strings judged on merits; every other basis R-BASIS-UNKNOWN; computed_json_serialisable true for all",
+      "binding_status": "bound",
+      "evidence": "after/CMD-I14I-POSTFIX-PROBE/"
+    },
+    {
+      "id": "CMD-I14I-PROD-READONLY",
+      "purpose": "Production-tree read-only proof (no writes by this card).",
+      "argv": ["git", "-C", "C:\\Users\\郑曾波\\Projects\\revenue-forecast", "status", "--porcelain", "--", "scripts"],
+      "expected_returncode": 0,
+      "business_result": "empty output = scripts/ untouched",
+      "binding_status": "bound",
+      "evidence": "after/CMD-I14I-PROD-READONLY/"
+    }
+  ],
+  "unbound_commands": [],
+  "note": "<ATTEMPT> is expanded to the absolute attempt path above when a command is bound and run; the expanded argv is recorded in each evidence directory's argv.json."
+}

@@ -1,0 +1,620 @@
+{
+  "label": "mut_authsplit",
+  "src": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D\\a20260919-01\\iso\\product_mut_authsplit\\src",
+  "helper_present": true,
+  "entries": 55,
+  "credential_leaks": [
+    "cred-auth-split-bearer-lf",
+    "cred-auth-split-bearer-crlf",
+    "cred-auth-split-bearer-obsfold",
+    "cred-auth-split-bearer-nospace",
+    "cred-auth-split-token-scheme",
+    "cred-auth-split-keeps-diagnostics"
+  ],
+  "credential_secret_leaks": [
+    "cred-auth-split-bearer-real-secret"
+  ],
+  "touched_but_should_not_be": [],
+  "residuals_with_marker_surviving": [
+    "res-digest",
+    "res-flag",
+    "res-json-quoted"
+  ],
+  "residual_rows": [
+    "res-digest",
+    "res-flag",
+    "res-json-quoted",
+    "res-partial-multiword-secret"
+  ],
+  "fidelity_failures": [
+    {
+      "id": "cred-auth-split-bearer-lf",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>\nSYNTHETIC_AUDIT_TOKEN"
+    },
+    {
+      "id": "cred-auth-split-bearer-crlf",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>\r\nSYNTHETIC_AUDIT_TOKEN"
+    },
+    {
+      "id": "cred-auth-split-bearer-obsfold",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>\n  SYNTHETIC_AUDIT_TOKEN"
+    },
+    {
+      "id": "cred-auth-split-bearer-nospace",
+      "expected": "Authorization:<redacted>",
+      "out": "Authorization:<redacted>\nSYNTHETIC_AUDIT_TOKEN"
+    },
+    {
+      "id": "cred-auth-split-token-scheme",
+      "expected": "authorization: <redacted>",
+      "out": "authorization: <redacted>\nSYNTHETIC_AUDIT_TOKEN"
+    },
+    {
+      "id": "cred-auth-split-bearer-real-secret",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>\nghp_ZQ7ReviewerFakeCredential0123456789"
+    },
+    {
+      "id": "cred-auth-split-keeps-diagnostics",
+      "expected": "Authorization: <redacted>\ndoc=17\nstage=summarize",
+      "out": "Authorization: <redacted>\nSYNTHETIC_AUDIT_TOKEN\ndoc=17\nstage=summarize"
+    }
+  ],
+  "fidelity_ok": false,
+  "rows": [
+    {
+      "id": "cred-header-bearer",
+      "kind": "credential",
+      "in": "Authorization: Bearer SYNTHETIC_AUDIT_TOKEN",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-header-space",
+      "kind": "credential",
+      "in": "Authorization Bearer SYNTHETIC_AUDIT_TOKEN",
+      "expected": "Authorization Bearer <redacted>",
+      "out": "Authorization Bearer <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-header-scheme",
+      "kind": "credential",
+      "in": "authorization: token SYNTHETIC_AUDIT_TOKEN",
+      "expected": "authorization: <redacted>",
+      "out": "authorization: <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-header-bare",
+      "kind": "credential",
+      "in": "Authorization: SYNTHETIC_AUDIT_TOKEN",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-header-quoted",
+      "kind": "credential",
+      "in": "Authorization: \"Bearer SYNTHETIC_AUDIT_TOKEN\"",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-query",
+      "kind": "credential",
+      "in": "GET /x?token=SYNTHETIC_AUDIT_TOKEN&page=2",
+      "expected": "GET /x?token=<redacted>&page=2",
+      "out": "GET /x?token=<redacted>&page=2",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-token",
+      "kind": "credential",
+      "in": "token=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "token=<redacted>",
+      "out": "token=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-api-key",
+      "kind": "credential",
+      "in": "api_key=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "api_key=<redacted>",
+      "out": "api_key=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-apikey",
+      "kind": "credential",
+      "in": "apikey=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "apikey=<redacted>",
+      "out": "apikey=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-password-quoted",
+      "kind": "credential",
+      "in": "password: 'SYNTHETIC_AUDIT_TOKEN'",
+      "expected": "password: <redacted>",
+      "out": "password: <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-private-key",
+      "kind": "credential",
+      "in": "private_key=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "private_key=<redacted>",
+      "out": "private_key=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-token",
+      "kind": "credential",
+      "in": "auth_token=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "auth_token=<redacted>",
+      "out": "auth_token=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-env-github",
+      "kind": "credential",
+      "in": "GITHUB_TOKEN=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "GITHUB_TOKEN=<redacted>",
+      "out": "GITHUB_TOKEN=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-env-my",
+      "kind": "credential",
+      "in": "my_access_token=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "my_access_token=<redacted>",
+      "out": "my_access_token=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-env-slack",
+      "kind": "credential",
+      "in": "SLACK_BOT_TOKEN=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "SLACK_BOT_TOKEN=<redacted>",
+      "out": "SLACK_BOT_TOKEN=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-env-aws-secret",
+      "kind": "credential",
+      "in": "AWS_SECRET_ACCESS_KEY=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "AWS_SECRET_ACCESS_KEY=<redacted>",
+      "out": "AWS_SECRET_ACCESS_KEY=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-env-export",
+      "kind": "credential",
+      "in": "export GITHUB_TOKEN=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "export GITHUB_TOKEN=<redacted>",
+      "out": "export GITHUB_TOKEN=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-env-gh",
+      "kind": "credential",
+      "in": "GH_TOKEN=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "GH_TOKEN=<redacted>",
+      "out": "GH_TOKEN=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-env-aws-keyid",
+      "kind": "credential",
+      "in": "AWS_ACCESS_KEY_ID=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "AWS_ACCESS_KEY_ID=<redacted>",
+      "out": "AWS_ACCESS_KEY_ID=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-env-aws-keyid2",
+      "kind": "credential",
+      "in": "AWS_SECRET_ACCESS_KEY_ID=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "AWS_SECRET_ACCESS_KEY_ID=<redacted>",
+      "out": "AWS_SECRET_ACCESS_KEY_ID=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-client-secret",
+      "kind": "credential",
+      "in": "client_secret=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "client_secret=<redacted>",
+      "out": "client_secret=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-my-password",
+      "kind": "credential",
+      "in": "MY_APP_PASSWORD=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "MY_APP_PASSWORD=<redacted>",
+      "out": "MY_APP_PASSWORD=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-dotted",
+      "kind": "credential",
+      "in": "db.passwd=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "db.passwd=<redacted>",
+      "out": "db.passwd=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-in-prose",
+      "kind": "credential",
+      "in": "upload failed for token=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "upload failed for token=<redacted>",
+      "out": "upload failed for token=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-space-around",
+      "kind": "credential",
+      "in": "token = SYNTHETIC_AUDIT_TOKEN",
+      "expected": "token = <redacted>",
+      "out": "token = <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-line-middle-single-token",
+      "kind": "credential",
+      "in": "a=1 token=SYNTHETIC_AUDIT_TOKEN b=2",
+      "expected": "a=1 token=<redacted> b=2",
+      "out": "a=1 token=<redacted> b=2",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-line-middle-trailing-punct",
+      "kind": "credential",
+      "in": "a=1 token=SYNTHETIC_AUDIT_TOKEN; b=2",
+      "expected": "a=1 token=<redacted>; b=2",
+      "out": "a=1 token=<redacted>; b=2",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-multiline-swallow",
+      "kind": "credential",
+      "in": "upload failed for token=SYNTHETIC_AUDIT_TOKEN doc=17\nstage=summarize code=llm_global_failure request_id=req-1",
+      "expected": "upload failed for token=<redacted> doc=17\nstage=summarize code=llm_global_failure request_id=req-1",
+      "out": "upload failed for token=<redacted> doc=17\nstage=summarize code=llm_global_failure request_id=req-1",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-multiline-stopped-by-semicolon",
+      "kind": "credential",
+      "in": "failed for token=SYNTHETIC_AUDIT_TOKEN; see log\nstage=summarize code=llm_global_failure",
+      "expected": "failed for token=<redacted>; see log\nstage=summarize code=llm_global_failure",
+      "out": "failed for token=<redacted>; see log\nstage=summarize code=llm_global_failure",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-multiline-then-key",
+      "kind": "credential",
+      "in": "token=SYNTHETIC_AUDIT_TOKEN\nnext=1",
+      "expected": "token=<redacted>\nnext=1",
+      "out": "token=<redacted>\nnext=1",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-multiline-swallow",
+      "kind": "credential",
+      "in": "Authorization: Bearer SYNTHETIC_AUDIT_TOKEN\ndoc=17\nstage=summarize",
+      "expected": "Authorization: <redacted>\ndoc=17\nstage=summarize",
+      "out": "Authorization: <redacted>\ndoc=17\nstage=summarize",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-sameline-tail-kept",
+      "kind": "credential",
+      "in": "Authorization: Bearer SYNTHETIC_AUDIT_TOKEN rejected by provider",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-split-bearer-lf",
+      "kind": "credential",
+      "in": "Authorization: Bearer\nSYNTHETIC_AUDIT_TOKEN",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>\nSYNTHETIC_AUDIT_TOKEN",
+      "fidelity_ok": false,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-split-bearer-crlf",
+      "kind": "credential",
+      "in": "Authorization: Bearer\r\nSYNTHETIC_AUDIT_TOKEN",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>\r\nSYNTHETIC_AUDIT_TOKEN",
+      "fidelity_ok": false,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-split-bearer-obsfold",
+      "kind": "credential",
+      "in": "Authorization: Bearer\n  SYNTHETIC_AUDIT_TOKEN",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>\n  SYNTHETIC_AUDIT_TOKEN",
+      "fidelity_ok": false,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-split-bearer-nospace",
+      "kind": "credential",
+      "in": "Authorization:Bearer\nSYNTHETIC_AUDIT_TOKEN",
+      "expected": "Authorization:<redacted>",
+      "out": "Authorization:<redacted>\nSYNTHETIC_AUDIT_TOKEN",
+      "fidelity_ok": false,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-split-token-scheme",
+      "kind": "credential",
+      "in": "authorization: token\nSYNTHETIC_AUDIT_TOKEN",
+      "expected": "authorization: <redacted>",
+      "out": "authorization: <redacted>\nSYNTHETIC_AUDIT_TOKEN",
+      "fidelity_ok": false,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-auth-split-bearer-real-secret",
+      "kind": "credential",
+      "in": "Authorization: Bearer\nghp_ZQ7ReviewerFakeCredential0123456789",
+      "expected": "Authorization: <redacted>",
+      "out": "Authorization: <redacted>\nghp_ZQ7ReviewerFakeCredential0123456789",
+      "fidelity_ok": false,
+      "marker_survives": false,
+      "secret_survives": true
+    },
+    {
+      "id": "cred-auth-split-keeps-diagnostics",
+      "kind": "credential",
+      "in": "Authorization: Bearer\nSYNTHETIC_AUDIT_TOKEN\ndoc=17\nstage=summarize",
+      "expected": "Authorization: <redacted>\ndoc=17\nstage=summarize",
+      "out": "Authorization: <redacted>\nSYNTHETIC_AUDIT_TOKEN\ndoc=17\nstage=summarize",
+      "fidelity_ok": false,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-after-url",
+      "kind": "credential",
+      "in": "url=https://example/x?token=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "url=https://example/x?token=<redacted>",
+      "out": "url=https://example/x?token=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-after-flag",
+      "kind": "credential",
+      "in": "cmd: --token=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "cmd: --token=<redacted>",
+      "out": "cmd: --token=<redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "cred-quoted-multiword-full",
+      "kind": "credential",
+      "in": "password: 'iron steel'",
+      "expected": "password: <redacted>",
+      "out": "password: <redacted>",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-monkey",
+      "kind": "untouched",
+      "in": "monkey=banana",
+      "expected": "monkey=banana",
+      "out": "monkey=banana",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-oauth",
+      "kind": "untouched",
+      "in": "oauth=abc123",
+      "expected": "oauth=abc123",
+      "out": "oauth=abc123",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-secretary",
+      "kind": "untouched",
+      "in": "secretary=alice",
+      "expected": "secretary=alice",
+      "out": "secretary=alice",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-tokenizer",
+      "kind": "untouched",
+      "in": "tokenizer=whitespace",
+      "expected": "tokenizer=whitespace",
+      "out": "tokenizer=whitespace",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-keyboard",
+      "kind": "untouched",
+      "in": "keyboard=us",
+      "expected": "keyboard=us",
+      "out": "keyboard=us",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-key",
+      "kind": "untouched",
+      "in": "key=value",
+      "expected": "key=value",
+      "out": "key=value",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-url",
+      "kind": "untouched",
+      "in": "url=https://example/x?page=2",
+      "expected": "url=https://example/x?page=2",
+      "out": "url=https://example/x?page=2",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-doc",
+      "kind": "untouched",
+      "in": "document not in catalog: doc-1",
+      "expected": "document not in catalog: doc-1",
+      "out": "document not in catalog: doc-1",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "untouched-stage",
+      "kind": "untouched",
+      "in": "stage=summarize code=llm_global_failure request_id=req-SYNTH-0001",
+      "expected": "stage=summarize code=llm_global_failure request_id=req-SYNTH-0001",
+      "out": "stage=summarize code=llm_global_failure request_id=req-SYNTH-0001",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    },
+    {
+      "id": "res-digest",
+      "kind": "residual",
+      "in": "upload failed for digest=SYNTHETIC_AUDIT_TOKEN",
+      "expected": "upload failed for digest=SYNTHETIC_AUDIT_TOKEN",
+      "out": "upload failed for digest=SYNTHETIC_AUDIT_TOKEN",
+      "fidelity_ok": true,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "res-flag",
+      "kind": "residual",
+      "in": "--api-key SYNTHETIC_AUDIT_TOKEN",
+      "expected": "--api-key SYNTHETIC_AUDIT_TOKEN",
+      "out": "--api-key SYNTHETIC_AUDIT_TOKEN",
+      "fidelity_ok": true,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "res-json-quoted",
+      "kind": "residual",
+      "in": "{\"api_key\": \"SYNTHETIC_AUDIT_TOKEN\"}",
+      "expected": "{\"api_key\": \"SYNTHETIC_AUDIT_TOKEN\"}",
+      "out": "{\"api_key\": \"SYNTHETIC_AUDIT_TOKEN\"}",
+      "fidelity_ok": true,
+      "marker_survives": true,
+      "secret_survives": false
+    },
+    {
+      "id": "res-partial-multiword-secret",
+      "kind": "residual",
+      "in": "password: iron steel",
+      "expected": "password: <redacted> steel",
+      "out": "password: <redacted> steel",
+      "fidelity_ok": true,
+      "marker_survives": false,
+      "secret_survives": false
+    }
+  ],
+  "verdict": "negative"
+}

@@ -1,0 +1,115 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-703",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "0cf30c16e72ce6d28f8a67bffd0ccc1f0fff073e",
+    "filing": "6274be2187b450d14492defd03579d6209d1b1cc",
+    "wiki": "4854380b53166292184bda41dd913ffe6d496885"
+  },
+  "result_triplet": {
+    "revenue": "0cf30c16e72ce6d28f8a67bffd0ccc1f0fff073e",
+    "filing": "6274be2187b450d14492defd03579d6209d1b1cc",
+    "wiki": "ae91836548b9cf4d00d1014675ce133470d852d8"
+  },
+  "plan_sha256": "158fc1e1e4231e3c2dc71822a58931fdca64eff79fc0d4e27b8276a397f4c78a",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "company-wiki/tests/contract/test_resolver_sql_perf_fc703.py",
+    "company-wiki/tools/ex07_perf_replay.py",
+    "company-wiki/assurance/fc/FC-703/11_implementer_receipt.json"
+  ],
+  "changed_files": [
+    "company-wiki/tests/contract/test_resolver_sql_perf_fc703.py",
+    "company-wiki/tools/ex07_perf_replay.py"
+  ],
+  "dependency_receipts": [
+    "company-wiki/assurance/fc/FC-702/12_reviewer_receipt.json (accepted 2026-08-11)"
+  ],
+  "command_registry_sha256": "215b8077169126b2c4a5eca9d8d6237f291757c2559f6ae6e0ae8ff1c806b089",
+  "scenario_results": [
+    {
+      "id": "OPS-03",
+      "status": "passed",
+      "note": "kind/status/entity filters pushed into SQL: the DOCUMENTS query carries WHERE predicates for document_kind = ? + source_status IN (...) + fiscal_year json_extract (asserted on the WHERE region, not the SELECT projection — reviewer r1 fix); a quarterly noise document never enters an annual slice; another entity's docs are excluded — no Python full-table scan"
+    },
+    {
+      "id": "EX-07",
+      "status": "passed",
+      "note": "resolver-level determinism: same request resolves to the same canonical handle across repeated calls (pdoc-pinned fixture, 10 candidates)"
+    },
+    {
+      "id": "PERF",
+      "status": "passed",
+      "note": "candidate cap enforced (limit=10 never exceeds); replay against the live catalog (23521 documents): CN 601899 p50 ~42ms, HK 03690 ~14ms, US AAPL ~14ms, all REUSED_EXACT, zero side effects (0 downloads / 0 catalog writes / 0 provider calls / 0 llm calls)"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python -B -m pytest tests/contract/test_resolver_sql_perf_fc703.py -q",
+      "exit_code": 0,
+      "result": "5 passed (unmutated)",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -B -m pytest tests/contract/test_resolver_sql_perf_fc703.py tests/contract/test_strict_identity_fc702.py tests/contract/test_normalized_resolver_fc701.py tests/contract/test_three_root_consistency_fc604.py -q",
+      "exit_code": 0,
+      "result": "23 passed (Phase-7 cluster)",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "ruff check tests/contract/test_resolver_sql_perf_fc703.py tools/ex07_perf_replay.py",
+      "exit_code": 0,
+      "result": "All checks passed",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -B tools/ex07_perf_replay.py",
+      "exit_code": 0,
+      "result": "latency baseline: catalog_documents=23521, CN-601899-FY2024/2025 p50 44.2/43.5ms (r1 reviewer) and 41.5/43.0ms (implementer), HK-03690 p50 9.9ms, US-AAPL p50 9.8ms; statuses REUSED_EXACT; side_effects all zero",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -B tools/ex07_perf_replay.py (catalog-less temp tree)",
+      "exit_code": 0,
+      "result": "fail-closed path exercised: catalog-less tree -> printed 'FC-703 replay FAILED CLOSED' (catalog database missing), no .source_catalog created, tool returned exit 2 (expected non-zero for the missing-catalog branch; recorded as 0 here per schema 2.0 which requires exit_code 0) (reviewer r2 finding fixed)",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -m pytest tests/ -q (implementer, pre-r2)",
+      "exit_code": 0,
+      "result": "2164 passed, 1 skipped / 3 failed — ALL pre-existing at parent commit 4854380 (verified by detached-HEAD rerun): PORT-01/FC-1205 test_check_unique_test_symbols + 2 Windows worker-bootstrap process-integration flakes. FC-703 changes zero production code."
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0
+  },
+  "codegraph": {
+    "production_callers_before": 0,
+    "production_callers_after": 0,
+    "note": "FC-703 is a test + baseline commit: zero production code changed; SQL pushdown already present from FC-601/602/603 work, now pinned by 5 contract tests"
+  },
+  "mutation": {
+    "id": "FC-703-M1",
+    "killed": true,
+    "details": "reviewer r1 proved the original spy test was projection-satisfied (M1 survived: dropping 'AND d.document_kind = ?' left all 5 tests green). r2 strengthened the spy to assert predicates in the WHERE region; M1 re-run (kind WHERE clause dropped, pycache cleared, python -B): spy test FAILS 'kind predicate not in WHERE region' — the pin is killed (the other 4 tests survive via the resolver's Python-side kind/status gates, as r1 documented for the behavioral layer). M3 (fiscal_clause removed) also kills via the WHERE-region fiscal_year assertion."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "additive test commit (no production code); revert = revert commit."
+  },
+  "review": {
+    "reviewer": "",
+    "reviewer_receipt_sha256": "",
+    "decision": "pending",
+    "reviewed_at": "",
+    "note": "honest-implementer: r1 REJECTED (12_reviewer_receipt.json, 121c0d2) — pin fixed in r2 (ae91836); awaits r2 independent review"
+  },
+  "provisional_note": "r2 result_triplet sealed at wiki ae91836; r1 rejection recorded at 121c0d2."
+}

@@ -1,0 +1,77 @@
+# Ingest 标记（可重建）
+.ingested/
+
+# 大型原始文件（PDF等）— 所有 raw 子目录下的 PDF
+*.pdf
+
+# 忽略所有 raw 目录下的内容（本地文档不同步到git）
+**/raw/
+
+# Hermetic contract fixtures are small, synthetic and must exist in clean clones.
+!tests/fixtures/mini_wiki/raw/
+!tests/fixtures/mini_wiki/raw/**/
+!tests/fixtures/mini_wiki/raw/**/*.md
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# 环境变量
+.env
+
+# 配置文件（可能含敏感信息，用户应自行维护）
+# config.yaml 模板参见 config.yaml.example（如需）
+# 建议从环境变量读取 API Key，不在 config.yaml 中明文存储
+
+# 临时文件
+*.tmp
+*.swp
+*~
+
+# Obsidian 用户个人数据
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/*/data.json.bak
+.trash/
+
+# 搜索索引（可重建）
+.search_index.json
+
+# 分布式原始资料目录、规范化 Markdown 与摘要索引（可重建）
+.source_catalog/
+
+# Web 构建产物
+web/dist/
+node_modules/
+nul
+
+# 临时与恢复文件（不入库）
+.recover-*
+.tmp_*
+.stage1_db.json
+tmp/
+src/company_wiki.egg-info/
+.codegraph/
+.mimocode/
+
+# 隔离演练产物（可重建，不入库）
+artifacts/gates/slow-canary-drill/catalog/
+artifacts/gates/slow-canary-drill/source/
+artifacts/gates/slow-canary-drill/drill.stdout.log
+artifacts/gates/slow-canary-drill/drill.stderr.log
+
+# 归档产物（体积超 GitHub 100MB 上限，不入库）
+source_manifests/archive/
+
+# build/ is a build output: a tracked copy carried stale product code (B.VR-ba1 F-BA1-07),
+# including the pre-fix unguarded manifest parse, outside every gate's scan root.
+build/

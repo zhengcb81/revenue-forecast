@@ -1,0 +1,113 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-401",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "25c5435cd086af5c840671cc4a2c566fdcbcde74",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "36cd215b045b89796e2bfb60fe5bba88bf03488f"
+  },
+  "result_triplet": {
+    "revenue": "25c5435cd086af5c840671cc4a2c566fdcbcde74",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "3d00d6d45693758c5cfca8997574df03b264ccb7"
+  },
+  "plan_sha256": "158fc1e1e4231e3c2dc71822a58931fdca64eff79fc0d4e27b8276a397f4c78a",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "company-wiki/src/company_wiki/source_catalog/migration.py",
+    "company-wiki/tests/contract/test_migration_engine_fc401.py"
+  ],
+  "changed_files": [
+    "company-wiki/src/company_wiki/source_catalog/migration.py",
+    "company-wiki/tests/contract/test_migration_engine_fc401.py"
+  ],
+  "dependency_receipts": [
+    "company-wiki/assurance/fc/FC-305/11_implementer_receipt.json (accepted 2026-08-10)"
+  ],
+  "command_registry_sha256": "215b8077169126b2c4a5eca9d8d6237f291757c2559f6ae6e0ae8ff1c806b089",
+  "scenario_results": [
+    {
+      "id": "MIG-01",
+      "status": "passed",
+      "note": "dry-run unchanged (existing WU-901 mode); batch bounded (test_batch_stays_bounded: batch_size rows per pass, no full-table load)"
+    },
+    {
+      "id": "MIG-02",
+      "status": "passed",
+      "note": "resume unchanged (existing); cancel after partial batches leaves exactly the committed boundary (test_cancel_after_partial_batches_resumes_cleanly)"
+    },
+    {
+      "id": "MIG-03",
+      "status": "passed",
+      "note": "idempotency unchanged (ON CONFLICT DO NOTHING); cancel=True produces zero writes"
+    },
+    {
+      "id": "MIG-04",
+      "status": "passed",
+      "note": "rollback_batch: assertions flip to shadow (invisible) but NOT deleted; rollback journal recorded; unknown batch fails closed (KeyError)"
+    },
+    {
+      "id": "MIG-07",
+      "status": "passed",
+      "note": "cancel aborts before any batch writes land (atomic failure); copy validation on a temp copy before apply"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python -m pytest tests/contract/test_migration_engine_fc401.py -q",
+      "exit_code": 0,
+      "result": "7 passed",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_migration_tool.py tests/contract/test_migration_drill.py tests/contract/test_cw_228_backfill.py tests/contract/test_backfill_v2.py tests/contract/test_migration_engine_fc401.py -q",
+      "exit_code": 0,
+      "result": "42 passed",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "2069 passed / 2 pre-existing PORT-01 (test_check_unique_test_symbols, FC-1205) + 1 worker-bootstrap timing flake (passes in isolation); +7 FC-401 tests, zero FC-401 failures",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/migration.py tests/contract/test_migration_engine_fc401.py",
+      "exit_code": 0,
+      "result": "All checks passed",
+      "cwd": "company-wiki"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0
+  },
+  "codegraph": {
+    "production_callers_before": 1,
+    "production_callers_after": 1,
+    "note": "migration_start/rollback_batch: caller set unchanged by the FC-401 diff (WU-906 drill harness + tests; no src/ production caller at base or result — corrected at closure per reviewer FIND-401-3; production wiring deferred to Phase 4 exit gate authorization)."
+  },
+  "mutation": {
+    "id": "FC-401-M",
+    "killed": true,
+    "details": "3 mutations killed: drop-cancel (zero writes guaranteed), drop-copy-validation (copy-before-apply), drop-rollback-write (activated assertions flip back to shadow)."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "rollback_batch is itself the rollback mechanism (MIG-04): batch assertions flip to shadow, records kept, rollback journal recorded; copy-validation runs before apply."
+  },
+  "review": {
+    "reviewer": "reviewer-fc401-independent",
+    "reviewer_receipt_sha256": "f6e1043291cbc12dffed342db373f70b127d3a676285df5f122c11a51ccc77b7",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-10",
+    "note": "Independent reviewer (clean worktree 8bae485, distinct identity) verified triplets, sealing hashes, diff scope, replayed focused + migration suite + full suite (2070 passed / 2 pre-existing PORT-01), 3 mutations killed (cancel guard, copy validation, rollback UPDATE), codegraph note corrected at closure per FIND-401-3; verdict accepted."
+  },
+  "provisional_note": "result_triplet to be sealed after commit."
+}

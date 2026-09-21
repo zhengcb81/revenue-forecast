@@ -1,0 +1,618 @@
+{
+  "ok": true,
+  "sut_version": "i14b-after-2",
+  "case_count": 14,
+  "tolerance_seconds_input": 5.0,
+  "capture_tolerance_seconds_input": 5.0,
+  "frozen_now_utc": "2026-09-20T02:56:38Z",
+  "trusted_clock_sources": [
+    "scheduler_trusted",
+    "system_utc"
+  ],
+  "verdicts": [
+    {
+      "case_id": "W1",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "sample_span",
+        "basis_kind": "str",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "sample_span"
+      },
+      "note": "card oracle: observation 00:00-00:29 then quick_check 8 min -> observation is 29 min, NOT 37"
+    },
+    {
+      "case_id": "H1",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "wall_clock",
+        "basis_kind": "str",
+        "basis_registered": false,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": "wall_clock"
+      },
+      "note": "defect-1 scalar: unregistered basis name must be refused (R-BASIS-UNKNOWN)"
+    },
+    {
+      "case_id": "H2",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "",
+        "basis_kind": "str",
+        "basis_registered": false,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 99999,
+        "basis": ""
+      },
+      "note": "defect-1 scalar: empty-string basis must be refused (R-BASIS-UNKNOWN)"
+    },
+    {
+      "case_id": "H3",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "<non-string basis: NoneType>",
+        "basis_kind": "none",
+        "basis_registered": false,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 99999
+      },
+      "note": "defect-1 scalar: missing basis key must be refused (R-BASIS-UNKNOWN)"
+    },
+    {
+      "case_id": "H4",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "<non-string basis: NoneType>",
+        "basis_kind": "none",
+        "basis_registered": false,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": null
+      },
+      "note": "defect-1 scalar: null basis must be refused (R-BASIS-UNKNOWN)"
+    },
+    {
+      "case_id": "H5",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "<non-string basis: list>",
+        "basis_kind": "container",
+        "basis_registered": false,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 99999,
+        "basis": [
+          "union_of_windows"
+        ]
+      },
+      "note": "defect-1 container: list basis must be refused PER CASE; pre-fix r1 accepted it, inherited i14b-after-2 crashed the whole batch (rc 4, reviewer P4 / T1-10 P-3)"
+    },
+    {
+      "case_id": "H6",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "<non-string basis: dict>",
+        "basis_kind": "container",
+        "basis_registered": false,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": {
+          "kind": "union_of_windows"
+        }
+      },
+      "note": "defect-1 container: dict basis must be refused PER CASE (same residual as H5)"
+    },
+    {
+      "case_id": "H7",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-TOTAL-AS-OBS"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "command_total",
+        "basis_kind": "str",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": "command_total"
+      },
+      "note": "defect-1 negative control: a REGISTERED basis is still judged on its merits (command total is not the observation -> R-TOTAL-AS-OBS); must stay red-refused both before and after the fix"
+    },
+    {
+      "case_id": "H8",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "union_of_windows",
+        "basis_kind": "str",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "union_of_windows"
+      },
+      "note": "defect-2: HONEST 1740 s union claim must be ACCEPTED (pre-fix r1 rejected it: direction inversion, card I-14-H item 2)"
+    },
+    {
+      "case_id": "H9",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "union_of_windows",
+        "basis_kind": "str",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": "union_of_windows"
+      },
+      "note": "defect-2: dishonest 2220 s union claim must be REJECTED (pre-fix r1 accepted it)"
+    },
+    {
+      "case_id": "H10",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "sum_of_windows",
+        "basis_kind": "str",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": true
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": "sum_of_windows"
+      },
+      "note": "defect-2: dishonest 2220 s sum claim must be REJECTED (pre-fix r1 accepted it)"
+    },
+    {
+      "case_id": "H11",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 2,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ],
+          [
+            "2026-09-19T00:29:00Z",
+            "2026-09-19T00:37:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": true,
+        "quick_check_overlap_seconds": 480.0,
+        "union_seconds": 2220.0,
+        "sum_seconds": 2220.0,
+        "overlap_seconds": 0.0,
+        "basis": "union_of_windows",
+        "basis_kind": "str",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": "union_of_windows"
+      },
+      "note": "defect-2 J15 rename variant: window B copies the quick_check span; the 2220 s union claim must be refused with R-QC-IN-OBS (overlap 480 s)"
+    },
+    {
+      "case_id": "H12",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-H#1,#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 2,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ],
+          [
+            "2026-09-19T00:29:00Z",
+            "2026-09-19T00:37:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": true,
+        "quick_check_overlap_seconds": 480.0,
+        "union_seconds": 2220.0,
+        "sum_seconds": 2220.0,
+        "overlap_seconds": 0.0,
+        "basis": "union_of_windows",
+        "basis_kind": "str",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "union_of_windows"
+      },
+      "note": "defect-2 J15 companion: declared windows union to 2220, so even the honest 1740 s claim is refused (R-CLAIM-EXCEEDS) AND the window covering quick_check is refused (R-QC-IN-OBS) -- mirrors I-14-B X9"
+    },
+    {
+      "case_id": "C2",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 5,
+        "daily_same_day_runs_dropped": 0,
+        "weekly_count": 1,
+        "monthly_count": 0,
+        "alert_count": 0,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "pending",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "honest but incomplete: 5 of 7 daily, claim stays pending"
+    }
+  ],
+  "accepted_claim_count": 3,
+  "refusal_code_count": 12
+}

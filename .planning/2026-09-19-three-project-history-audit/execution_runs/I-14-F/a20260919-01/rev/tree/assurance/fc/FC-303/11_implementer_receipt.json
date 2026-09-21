@@ -1,0 +1,100 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-303",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "709119b85c8b98552d854511826cc0f5b0ba3bab",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "061302685fb946edcba1010c3b59d2adc2f61a15"
+  },
+  "result_triplet": {
+    "revenue": "709119b85c8b98552d854511826cc0f5b0ba3bab",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "bfac6f30640cf36483f95849379634d49f390622"
+  },
+  "plan_sha256": "158fc1e1e4231e3c2dc71822a58931fdca64eff79fc0d4e27b8276a397f4c78a",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "company-wiki/src/company_wiki/source_catalog/shadow_parity.py",
+    "company-wiki/src/company_wiki/source_catalog/scanner.py",
+    "company-wiki/tests/contract/test_shadow_parity_runner.py"
+  ],
+  "changed_files": [
+    "company-wiki/src/company_wiki/source_catalog/shadow_parity.py",
+    "company-wiki/src/company_wiki/source_catalog/scanner.py",
+    "company-wiki/tests/contract/test_shadow_parity_runner.py"
+  ],
+  "dependency_receipts": [
+    "company-wiki/assurance/fc/FC-302/11_implementer_receipt.json (accepted 2026-08-10)"
+  ],
+  "command_registry_sha256": "215b8077169126b2c4a5eca9d8d6237f291757c2559f6ae6e0ae8ff1c806b089",
+  "scenario_results": [
+    {
+      "id": "EX-08",
+      "status": "passed",
+      "note": "future root with configured adapter dispatches via adapter in v2 path; unresolvable route fails closed; mutation (future root falls back to legacy v1) KILLED"
+    },
+    {
+      "id": "SPI-03",
+      "status": "passed",
+      "note": "content-hash accuracy: v2 declared content_sha256 must equal on-disk file hash; tampered declared hash caught as blocker"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python -m pytest tests/contract/test_shadow_parity_runner.py -q",
+      "exit_code": 0,
+      "result": "7 passed",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_shadow_parity_runner.py tests/contract/test_adapter_production_dispatch.py tests/contract/test_resolver_shadow_gate.py tests/contract/test_adapter_conformance.py -q",
+      "exit_code": 0,
+      "result": "26 passed",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "2053 passed / 2 pre-existing PORT-01 failures (test_check_unique_test_symbols, FC-1205); +8 FC-303 tests +1 EX-08 guard test, zero new failures",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/shadow_parity.py tests/contract/test_shadow_parity_runner.py",
+      "exit_code": 0,
+      "result": "All checks passed",
+      "cwd": "company-wiki"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0
+  },
+  "codegraph": {
+    "production_callers_before": 0,
+    "production_callers_after": 0,
+    "note": "shadow_parity is a shadow-gate tool: run_root_shadow_parity called from tests/CI (FC-303 shadow diff gate). It consumes the production adapter dispatch (scan_root_strategy v2 branch) and the v1 scanner — the shadow comparison seam itself."
+  },
+  "mutation": {
+    "id": "FC-303-M",
+    "killed": true,
+    "details": "EX-08 mutations KILLED (both blunt fallback to v1 AND narrow fallback on adapter error); hash tamper (declared vs disk) caught as blocker; phantom ledger rule rejected. Resubmission after reviewer changes_required (F1): adapter_for spy + adapter-error fail-closed guard added — both fallback classes now killed by the NAMED tests."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Additive shadow-gate module + tests; revert = revert commit."
+  },
+  "review": {
+    "reviewer": "reviewer-fc303-r2",
+    "reviewer_receipt_sha256": "a88bf56271be7bd7e6338c05983bf656b7b5c59754d197c1a5fb694a2304ab0e",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-10",
+    "note": "Re-review after changes_required (F1): adapter_for spy + adapter-error fail-closed guard added; both blunt and narrow fallback mutations now killed by the NAMED EX-08 tests; 4 mutations killed total; full suite 2053 passed / 2 pre-existing PORT-01. Reviewer-fc303-r2 accepted. allowed_files corrected at closure to include scanner.py (F1 fix touched it)."
+  },
+  "provisional_note": "result_triplet to be sealed after commit."
+}

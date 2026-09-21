@@ -1,0 +1,88 @@
+# ============================================
+# 上市公司知识库 — 运维配置
+# ============================================
+# 业务数据（公司、行业、主题、拓扑关系）在 graph.yaml 中。
+# 本文件只包含 API 密钥、调度、路径等运维设置。
+
+# ── 调度配置 ──────────────────────────────
+schedule:
+  news_collection: "daily"
+  report_check: "weekly"
+  lint: "weekly"
+  maintenance: "weekly"    # 运行 python scripts/maintenance.py --all
+
+# ── LLM 配置 ──────────────────────────────
+# 密钥只从环境变量读取，严禁在 YAML 中设置 api_key
+llm:
+  provider: "minimax"
+  model: "MiniMax-M3"
+  base_url: "https://api.minimaxi.com/v1"
+  max_tokens: 8192
+  max_document_chars: 800000  # ~1M tokens，用于整篇文档分析
+  temperature: 1.0
+  reasoning_split: true
+  fallback:
+    provider: "mimo"
+    model: "mimo-v2.5-pro"
+    base_url: "https://token-plan-cn.xiaomimimo.com/v1"
+    enabled: true
+    # Human Owner 明确决定允许其作为通用次模型，包含研究工作负载。
+    usage_scope: "general"
+
+# ── 搜索配置 ──────────────────────────────
+# tavily_api_key 从环境变量 TAVILY_API_KEY 读取，不在此处设置
+search:
+  engine: "tavily"
+  results_per_query: 8
+  language: "zh"
+  max_age_days: 7
+
+# ── StockInfoDownloader 配置 ──────────────
+report_downloader:
+  tool_path: "~/StockInfoDownloader"
+  save_dir: "~/company-wiki/companies"
+  browser_strategy: "playwright"
+  pages:
+    - name: "定期报告"
+      suffix: "periodicReports"
+      allowed_keywords: null
+      blocked_keywords: ["摘要"]
+      max_pages: 10
+    - name: "招股说明书"
+      suffix: "latestAnnouncement"
+      allowed_keywords: ["招股说明书", "上市招股说明书"]
+      max_pages: 3
+      reverse_order: true
+    - name: "投资者关系"
+      suffix: "research"
+      allowed_keywords: ["投资者关系活动记录表", "投资者关系管理信息", "调研活动"]
+      max_pages: 10
+
+# ── 进化机制 ──────────────────────────────
+evolution:
+  auto_discover_topics: true
+  suggest_companies: true
+  evolve_questions: true
+
+# ── 投资判断配置 ──────────────────────────
+judgment:
+  enabled: true
+  pages: ["valuation", "catalyst", "risk"]  # 生成的页面类型
+  auto_update: true                          # 调度时自动更新
+
+# ── 交叉验证配置 ──────────────────────────
+cross_verify:
+  enabled: true
+  similarity_threshold: 0.6                  # 事件聚类相似度阈值
+  auto_report: true                          # 自动生成报告
+
+# ── 审核队列配置 ──────────────────────────
+review_queue:
+  enabled: true                              # 启用审核队列
+  auto_approve_low: true                     # 低风险操作自动批准
+  auto_approve_medium: false                 # 中风险操作需审核
+  auto_approve_high: false                   # 高风险操作需审核
+
+# ── 路径配置 ──────────────────────────────
+paths:
+  wiki_root: "~/company-wiki"
