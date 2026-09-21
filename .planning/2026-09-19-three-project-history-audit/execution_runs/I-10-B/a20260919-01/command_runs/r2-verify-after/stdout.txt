@@ -1,0 +1,24 @@
+﻿# defect-1 probe model = unit_sales, optional driver without default = other_revenue
+[PASS] R-B1-N1 · omitted optional driver now RAISES ModelRegistryError
+        expected='ModelRegistryError'
+        actual  ='ModelRegistryError'
+[PASS] R-B1-N3 · explicit 0.0 for that driver is still ACCEPTED
+        expected='no raises'
+        actual  ='no raises'
+[PASS] R-B1-P1 · omit default-bearing optional driver (unit_sales.timing_factor default=1.0) stays legal
+        expected='no raises'
+        actual  ='no raises'
+[PASS] R-B1-P1b · the declared default is the value actually used (omitted == explicit)
+        expected=True
+        actual  =True
+[PASS] R-B2-N1 · franchise_system_sales accepted NEGATIVE (reversal-capable role)
+        expected='accepted (lower=-inf)'
+        actual  ='accepted'
+[PASS] R-B2-P1 · quantity driver closing_stores keeps [0, inf)
+        expected=(0.0, inf)
+        actual  =(0.0, inf)
+[PASS] R-B2-N2 · unknown driver name raises (never gains a guessed sign)
+        expected='ModelRegistryError'
+        actual  ='ModelRegistryError'
+
+phase = after | total = 7 | passed = 7 | failed = 0
