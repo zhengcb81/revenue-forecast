@@ -70,7 +70,7 @@ def _safe_console() -> None:
 
 
 def _run(
-    cmd: list[str], label: str, timeout: int = 600, *, blocking: bool = True
+    cmd: list[str], label: str, timeout: int = 1200, *, blocking: bool = True
 ) -> int:
     print(f"\n=== {label} ===")
     proc = subprocess.run(

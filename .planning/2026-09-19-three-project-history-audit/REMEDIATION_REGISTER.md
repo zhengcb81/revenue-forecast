@@ -359,3 +359,127 @@ Round 68/69 的复现器**用盘上的 `_AUTH_SCHEME_SPLIT` 构造被测 pattern
 | **REM-80** | `I-14-D` r6 | — | **r6 待独立复核**：载体已存在（`handoff_r6.json` + `oracle.md` CORRECTION 6 + `review.md` 的 `## r6` 节），`verdict_expressed: false`、`status: review_pending` | **待复核** |
 
 > **边界**：本节**只登记**。**未做 `status` 转移**；**未代签**；**删除 0**。
+
+---
+
+## 十一、【Round 78 批次】新发现登记（2026-09-22）
+
+| ID | 来源 | 严重度 | 问题 | 状态 |
+|---|---|---|---|---|
+| **REM-80** | B5-fix 实测（超授权发现） | MEDIUM | **M01-M04 四批从无逐例精确名门**：实测 **E=0 / F=0 / B=0 / G=1** —— F 臂（改 expected）是**假绿**（无门可红），删除 `expected` 则硬下标 `KeyError` 崩溃 rc=1（与未打补丁的历史形态逐字一致）。该四批**不在** T1-8/REM-21 授权的六批（M05–M16、M21–M31）之内，M17–M20 参照批有门（E0/F3/B3/G2）⇒ 全 31 卡上"统一 E0/F3/G2"**字面为假，实为 27/31**。B5-fix **只测未改**（越权不改，已如实上报） | **待 owner 追认**：①把传播授权扩到 M01–M04（同四前置形态），或②裁定冻结 rc 表的门要求覆盖全部 8 批并立卡；在此之前四批的 F 臂结果**不得**被引用为门证据 |
+| **REM-81** | I-14-D r6 复审（`changes_required`） | 2×MEDIUM + 1×LOW | F-REV-R6-01：**未登记的、对 base 回归的凭据持久化族**（(a) 换行头**第 3 行**裸凭据 `Authorization: Bearer\nfoo\n<marker>`；(b) pre-break 位控制空白 `\r \v \f`）——在 r1/M4、r2、r3、r4、r5、**r6 全部卡树**上持久化 marker 而 `product_base` 脱敏，**两台仪器 0 行覆盖**（域：复审在 6 树实测）；F-REV-R6-02：**头条全称句 3 处（review.md:349、oracle.md:649-651、task_plan.md:1994）同轮未带同域**——正是该轮自己立法的 REM-79，**该物种第四代且发生在立法当轮**（域：空白字符 `	   \f \n` 在 r6 同样泄漏，无域时全称句为假）；F-REV-R6-03：**`16` 应为 `18`**（r4 泄漏字符数；域：可打印 ASCII、shape `Bo<c>t\n`、r4 树）——`r6_measurement.json` 钉的是 18、复审独立探针实测 18，16 无法从任何钉存证据重建，且**印在 oracle C6.1 表、handoff_r6、task_plan R76 三处** | **r7 修正中**（`807189a7` 派单：①按 C10 先例给 (a)(b) 上 oracle+rule 双仪器行、marker 与 39 字符双载荷、kind=registered_open 声明开放；②三处同域补正（卡内两处 + 父代理已直接改 task_plan:1991/1994）；③16→18 三处；④补行后重跑两台 harness 并如实记 rc —— **注意 rule 表自 r3 起 rc=3 verdict=negative 属设计，禁止引用"91 行 rc 0"**） |
+| **REM-82** | I-14-D r6 复审 INFO | INFO | F-REV-R6-04：rule 表 harness 在自身交付物上 rc=3（`credential_secret_leaks` 对全部 kind 计算，把两条 registered_open 行计入）——r3 起即如此，钉存证据如实记 `negative`；F-REV-R6-05：C10 行只带 39 字符凭据、不带 marker 形态（沿袭 F-REV-R5-08，已随 r7 一并补双载荷） | 已知，随 r7 处理 |
+
+## 十二、父 agent 本轮直接动作（不派单）
+
+| 动作 | 详情 |
+|---|---|
+| task_plan.md 两处更正 | L1991 `16 个`→`18 个`（带 F-REV-R6-03 域注）；L1994 全称句**原行内补域**（95 可打印 ASCII @ pre-break、shape `Bo<c>t\n`、树 r4/r5/r6、空白字符在外且同样泄漏）。计划文件归编排层唯一写，worker 不改——故此两处由父代理直接落，不等 r7 |
+| ⚠️ 提交禁令 | `GATE-TIMEOUT-1200` 卡**红臂窗口内** `tools/pre_push_gate.py` 处于原 600 状态；卡方明确要求 **GREEN 报回前不得提交该文件**（终态应回到 1200=`cf09ade8…`）。叠加并发写入禁提交纪律，本轮不 commit |
+| 嵌套 gitlink 修复 | 4 个 mode-160000 条目已 `rm --cached`（索引清零、磁盘在），.gitignore 补 3 条 r2 规则；**4 条暂存删除待安静窗口提交，且编排层 `git reset -q` 习惯会取消它们——下次提交须重新执行**（见 findings Round 77 补记） |
+
+---
+
+## 十三、【Round 79 批次】B5-fix 收尾发现（2026-09-22）
+
+| ID | 来源 | 严重度 | 问题 | 状态 |
+|---|---|---|---|---|
+| **REM-83** | B5-fix 只读发现⑤ | MEDIUM | **B5 封存件内部不一致**：B5 attempt 的 `binding.json` 实际 = `96733875…`/22652 B，而其**自己的 handoff 记录** = `06ff8064…`/20819 B —— 要么文件在记录之后被改过、要么记录从未正确。属"陈旧载体记录"同物种。B5-fix **只读发现未修**（边界守住） | **待处置**（建议：在 B5 的 handoff 以 superseded 留存式更正为实测值 + 登记漂移原因；已随 B5-fix 复审一并**交 reviewer 裁定哪一侧是陈旧的**，不得静默改封存件） |
+| **REM-84** | B5-fix 缺口② | LOW | START_HERE 的 `append 2`（"缺 expected ⇒ KeyError rc=1"）**过度概括**——M25-M28 的历史 rc=1 实为**整集 case_contract 闸门**（`run_card_before.py:140-168`），非 KeyError。需一次 **append-3** 澄清（结论不变），但 START_HERE 是**冻结协议文件** | **待 owner 授权 append-3**（与 REM-80 同批答复即可） |
+| **—（已登记为 REM-80）** | B5-fix 复测 | — | M01-M04 四批 E=0/F=0/B=0/G=1 复测一致（B5-fix 二次独立测量确认），仍只测未改 | 待 owner 追认（①扩权传播 / ②追认豁免） |
+
+## B5-fix 关键交付摘要（供复审与后续引用）
+
+- **G1-a 路由**：结构→rc=1 不变；声明不可用→**rc=2+no_verdict、在任何用例判定之前求值**（`unusable_declared` 判定源前置 + 最终裁决分支最高优先级）；可用但不同→**rc=3**，由逐例精确名判定与 `set_level_forces_fail` **双通道**共同决定退出码（集合级闸门 load-bearing）。**rc 常量零重编号、冻结件零编辑**。M25-M28 实测：E=0/0/0/0、F=3/3/3/3(route=3)、B=1/1/1/1（历史原样）、G=2/2/2/2（no_verdict，`cases_json_declared_expectation_missing:NEG-CARD`）、S=1/1/1/1。
+- **128 次真实子进程裸 rc**：六批 23 卡 E0/F3/G2 统一；M17-M20 参照 0/3/2 ⇒ **27/31**；五批回归复测与 B5 记录逐一相同。
+- **G3 双键读者实证**（`g3_reader_proof.json` PASS）：从历史 M14 `consolidated_report.py:75` 字节正则抽取真实表达式后 eval —— 冻结基线 ✅、**B5 补丁输出复现 KeyError**（F-1 断裂实证）❌、本卡输出 E/F/G×M13-16 共 12 份双键同值 ✅、arm B 历史字节仅旧键（历史形态未动）。附带更正：B5「M05-M08 同办」说法不实（其 runner 无 `expectation_consistency.facts` 块），已登记。
+- **G2 留置**：`no_precedence_asserted: true`（decision.md D-F3、report §G2、handoff `g2_conflict_record`、runner `frozen_rule_text_conflict` 四处，复核 grep 仅否定句出现该措辞）。
+- **边界 OVERALL PASS**：68/68 历史 runner、31/31 冻结 cases.json（347 例）、START_HERE 自 B5 起零变化（`a9cb5a4a…`）、生产锚不变、M01..M31 `git status` = 0 行、B5 attempt 零写入。
+- **F-3/F-7 已修**（arms 真实填充无 null；append 证明 APPEND_ONLY=true、19 锚句、去重、链证复跑）；**F-4/F-5/F-6 已登记**；F-8 未处置（字节纯追加已被链证覆盖，缺口④）。
+
+---
+
+## 十四、【状态刷新·Round 2（goal）】已确证条目的状态更新（2026-09-22，追加式：只列新状态，不改上方任何旧行）
+
+> 依据 = 各卡实测交付与独立复核结论；**未列入者维持原状态**（我不在没有证据时改状态）。
+
+### 已修复于隔离副本（完成修复、**待 owner 晋升**）
+
+| REM | 修复卡 | 复核结论 | 证据要点 |
+|---|---|---|---|
+| **REM-11**（bundle=None 全闭包） | B3 | **ACCEPT** | `_production_scope` 双分支共用；RED 8 失败→GREEN 35 通过；M1 变异 9 红 |
+| **REM-12**（w05b-regression 陈旧绑定） | B3 | **ACCEPT** | 重指生产字节（非刷新 iso）：生产 23 通过 + 修复树 23 通过；**M4b 空洞证明被复审加强**（同一 carrier 对 `A55602E5` 与 `225FECDD` 均 20/20 ⇒ 原记录确为空洞） |
+| **REM-13**（docstring 旧语义） | B3 | **ACCEPT** | RED/GREEN 同跑；M2 变异恰 1 红 |
+| **REM-14**（证据行错配） | B3 | **ACCEPT** | 修记录非修测试（冻结测试仍断言旧错配 = 追加式）；M3 变异 2 红 |
+| **REM-50**（G3 键改名破坏读者） | B5-fix | **待复审**（`f1df69db` 在跑） | 双键同值；三腿读者实证：历史基线✓/B5 补丁 KeyError✗/本卡 12 份✓；arm B 历史形态未动 |
+| **REM-51**（G1 集级闸门静默重语义化） | B5-fix | **待复审** | G1-a 路由：结构 rc=1 / 声明不可用 rc=2+no_verdict（判定前置）/ 可用不同 rc=3（双通道）；128 次裸 rc，23 卡 E0/F3/G2 统一，rc 常量零重编号、冻结件零编辑 |
+
+### 已裁定/已登记（关闭或转 owner）
+
+| REM | 结论 |
+|---|---|
+| **REM-52**（G2 冻结件锚冲突） | **owner 裁定留置**：冲突永久登记、不断优先级（`no_precedence_asserted: true` 四载体落账）；T1-11 零编辑 |
+| **REM-53**（G4 rc=2 语义） | **已裁定**：attempt 读法正确（31/31 冻结卡唯一 rc=0 且负例全过 ⇒ 正确拒绝负例是 rc=0）；冻结正文不动 |
+| **REM-15**（reviewer 报告未落盘） | **已缓解**（新流程强制定字节 `reviewer_report.md` + `.sha256`；I-14-F/I-14-D/I-14-I/B5-fix 已遵此形）；历史 I-05-C/I-10-B 两例留档为已披露限制 |
+| **REM-46**（F7 REM-02 裁定） | 已裁定可接受；残留（无运行时信号）须跟踪为"已文档化限制、消费侧护栏未就位" |
+| **REM-04**（I-14-D 凭据泄漏） | r6 代码修复**经复审认可**（`[^\s]+` 关闭 F-REV-R5-01，95 可打印 ASCII 域内复算）；记录三处由 **r7 修正中** |
+| **REM-55**（I-14-E-APPLY 中断） | **重跑中**（campaign_v2 日志在写，4 臂+逐次落盘设计） |
+
+### 仍开放（明确未关闭）
+
+| REM | 状态 |
+|---|---|
+| **REM-40/41/42/43/44**（B1 复审 F1–F5，晋升前置） | **待修**：oracle r5 更正、R13 节点+M6 入表、E21、r1 RED 证据、冻结顺序 |
+| **REM-45**（F6 result_sha256 不可绑定） | 已登记为永久限制（可证不可绑定） |
+| **REM-47/48/49**（B3 复审 RF-1/RF-5/CF-1） | **待修**：conftest 绑定守卫顺序反了、`NOT_REHASHED` 与"每哈希都比"矛盾、source_preparation 注释双重错误（晋升前必修） |
+| **REM-79**（带域断言机制化） | 仍欠"做成生成脚本里的检查"（散文形态已被证伪四代） |
+| **REM-80 / REM-84** | **待 owner**（M01-M04 扩权或豁免；START_HERE append-3 授权） |
+| REM-01/02/03（I-08-C 安全三项） | B1 已修于隔离副本 + 复审 accepted_with_conditions ⇒ 修复完成**待晋升**；I-08-C 自身 oracle 重冻在跑 |
+| 其余未在本节列出者 | **维持原状态** |
+
+---
+
+## 十五、【B5-fix 复审裁定与登记】2026-09-22
+
+### B5-fix-g1a-g3 = **accepted_scoped**（独立复审 `69ea3b03…`/16710 B，已定字节落盘）
+
+复审采样式复执行（33 次新子进程、零写入 PLAN/attempt/生产/git）：
+- **G1-a 路由**：从头复跑 M25-M28 全批（自有副本）：**E=0×4 / F=3×4(route=3) / G=2×4(no_verdict, route=2) / S=1×4 / B=1×4** —— 20/20 裸 rc 与声称一致，集级闸门在观测行为上 load-bearing。
+- **G3 三腿**：从**历史字节**抽取 `consolidated_report.py:75` 表达式后 eval —— 冻结基线 OK、B5 补丁输出**复现 KeyError**、复审自产 M14 输出双 `facts` 键同值 OK。
+- **G2**：四载体**零肯定性优先级断言**（该词仅出现在否定句中；肯定出现处均为既有 rc 图例 "1>2>3"、内部分支序注释、无关复制文本）。
+- **F-3 / F-7 / 边界**：8/8 批 evidence 无 null（128 `raw_rc` 记录）；`APPEND_ONLY=true`、19/19 互异锚句、START_HERE 盘上仍 `a9cb5a4a…`；5/5 抽样 cases 哈希、2/2 runner 字节对、生产锚、M01..M31 `git status`=0 行、17/17 本卡 pin 复算 OK。
+- **M01-M04 复测确认**（REM-80 依据坐实）：字节副本历史 runner `b5fcc685…` ⇒ **E=0×4 / F=0×4（伪造绿）/ G=1×4（stderr `KeyError: 'expected'`）** ⇒ 27/31 统一性成立；改不改 M01-M04 = owner 之权。
+
+### 裁定的发现 ⑤（B5 封存件漂移）—— 处置已采纳
+
+**复审判定**：B5 handoff 的 binding 记录**陈旧**（`06ff8064…`/20819 B @21:51:06；盘上 `binding.json` 末次写 21:52:21 = `96733875…`/22652 B，+75 s +1833 B）；B5 自己的 `deliverable_consistency.json`（21:52:29）记**新**值却报 `PASS/problems:[]` ⇒ **B5 的一致性检查器只算哈希、从未交叉核对 handoff 声明的摘要**（`changes.diff` 摘要匹配，分歧仅限 binding 条目）。
+**父代理采纳**：**不改 B5**；外部 **superseded-retention 勘误**标记该条目 `STALE-SUPERSEDED`（双值 + 时间线），权威 = 盘上 `binding.json` + `deliverable_consistency.json`；登记两条 B5 期流程缺陷：**封存后载体被改写**、**一致性检查器覆盖缺口**。残留不确定性（复审声明在先）：旧 20819 B 字节不可恢复，"写入时正确"系 mtime 顺序推断。
+
+### 新增 informational（各登记一条，不设修卡）
+
+| ID | 内容 |
+|---|---|
+| **CF-B5FIX-2** | `START_HERE.md` mtime **2026-09-21T23:19:55** 晚于 B5 append 证明（21:45:50）与其复审报告（23:00:40），但**内容仍 = 记录的 POST2 `a9cb5a4a…`** ⇒ 一次**内容无变化的触碰**，非 B5-fix 所为（本卡写入均 09-22 08:31+）。内容有钉即无补救；**归属待问**（谁在 23:19 触碰） |
+| **CF-B5FIX-3** | F-8（追加节重复冻结表表头）不在本卡清单未处置；字节纯追加已被链证覆盖 |
+| **CF-B5FIX-1** | 即上文发现 ⑤ 的处置条目（载体落定时写入 handoff） |
+
+**载体落定派单**：`B5-fix 载体落定`（把 verdict 转录进 `review.md`、handoff status→accepted_scoped、qualification 落 `formula.state=accepted_scoped`、三条 CF 登记；非自签）。
+
+---
+
+## 十六、【E1E7 勘误卡收口 + 父代理四项裁定】2026-09-22
+
+**REM-18 = 已完成**（E1E7-ERRATA-LANDING，`review_pending` 待复审）：4/4 卡追加成功、0 跳过 0 中断；每卡前缀证明 PASS（`sha256(after[:N])==before` 逐字节）+ 冻结体 pin PASS + difflib {equal, insert} 纯插入；独立复核进程复验 4/4 + mtime 扫描确认**只有 4 个 oracle.md 被写**；零期望/status/资格变更、零 JSON、零产品文件、零 pytest、零 git 写。
+
+**逐卡前后（前 16 位 sha / 字节）**：M05 `081a206b…/14790`→`a1402ed8…/18889`(+4099) ｜ M14 `c2f7cc4e…/19339`→`80bba367…/28088`(+8749) ｜ M20 `b43abd8d…/13074`→`50e22567…/17692`(+4618) ｜ M24 `67c3cae6…/26216`→`7ec4c278…/31200`(+4984)。源 = I-10-B handoff `867d59b8…` 的 `errata_pending.items`（正文于 `compatibility_impact.md §5` + `DEC-I10B-5`），T1-12 ① 形态，含"非晋升/不改现行期望/status/资格"统一措辞与行级「已过时，以本节为准」注记（旧行字节未动）。
+
+### 父代理四项裁定（回应卡方 GAP/F 项，均不追加第二轮）
+
+| # | 卡方提请 | 裁定 | 理由 |
+|---|---|---|---|
+| **F2/GAP-1** | 追加节写"于 2026-09-21 追加"（取自 attempt id），机器时钟实为 09-22 | **留置登记，不追加第二轮更正** | 内容（E 条目）正确、日期归属已在 `evidence/provenance_time_note.json` + `decision.md DEC-E1E7-5` + `commands.json` 三处如实披露并附机器时钟证据；为一天的标签差再触碰**四个已封存 M 卡**四次，风险大于收益 |
+| **GAP-2** | E 条目未进 JSON 载体（`oracle.json`/`cases.json` 等） | **不授权 JSON 修改轮** | JSON 无合法行内追加形态，改写会破其字节 pin；原指令即只落 `oracle.md`；E 清单的权威载体本就在 I-10-B 自己的 handoff/compatibility_impact；**若晋升决策需要 JSON 内也带 E 条目，随晋升卡一起做** |
+| **GAP-4** | M05 的 LF 归一化发现只在本卡披露，未进 M05 oracle | **留置登记，不追加** | 该发现关乎 M05 handoff 记账陈旧，已完整存于 `DEC-E1E7-1a` + `binding.json targets.M05.pin_check`；内容同一性已实证（重建 `7fda03b1…/14844B` 精确复现） |
+| **GAP-5** | I-10-B handoff 的 `next_action` 引用错键名（`errata_pending_orchestration` vs 实际 `errata_pending`） | **登记为已过时引用**，不回改 I-10-B | E 事项已由本卡完成（本条即其收口），该 next_action 已失去意义；回改已封存载体只为改一个键名不值当 |
+
+**另注 F1（已解）**：M05 handoff 的 oracle pin 与盘不符之谜 = git `.gitattributes *.md text eol=lf` 把 r2/r3 追加区 54 个 CR 归一为 LF（重建后精确复现 `7fda03b1…/14844B`）⇒ 内容同一、PINNED_OK；但**该 pin 对整文件而言已因本次追加再陈旧一次**（记账行，未改 M05）。

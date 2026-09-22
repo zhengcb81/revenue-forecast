@@ -1988,10 +1988,10 @@ r6, line 329   _AUTH_PREBREAK_TOKEN = r"[^\s]+"
 | 候选 | oracle 失败 | rule 失败 | 仍泄漏的单字符 |
 |---|---|---|---|
 | r5 的 value-token 类 | 0 | 0 | `' '` `'"'` `&` `'` `,` `;` `\|` |
-| r4 的 tchar 类 | 4 | 4 | 16 个 |
+| r4 的 tchar 类 | 4 | 4 | 18 个（F-REV-R6-03 更正：域=95 个可打印 ASCII @ pre-break 位、shape `Bo<c>t\n`、r4 树；原写 16 为错，`r6_measurement.json` 与复审独立探针均为 18） |
 | **`[^\s]+`** | **0** | **0** | **仅 `' '`** |
 
-`[^\s]+` 关闭了 **r4 与 r5 关闭过的每一个字符、以及两者泄漏过的每一个字符**，**只剩空格**——而该位置的空格意味着值是**多 token 串**，即**已登记的 `C10` OPEN 形态**，不是 token 类的问题。
+`[^\s]+` 关闭了 **r4 与 r5 关闭过的每一个字符、以及两者泄漏过的每一个字符**，**只剩空格**（**域：95 个可打印 ASCII 字符 @ pre-break 位，shape `Bo<c>t\n`，树 r4/r5/r6；空白字符 `\t \r \v \f \n` 不在该域内且同样泄漏——见 F-REV-R6-02；本域限定由 r6 复审提出、父代理直接落于本行**）——而该位置的空格意味着值是**多 token 串**，即**已登记的 `C10` OPEN 形态**，不是 token 类的问题。
 
 **逐字符实测**（`Authorization: Bo<c>t` + 换行 + marker）：
 
@@ -2024,3 +2024,41 @@ rule table, 91 rows   credential_leaks []   touched_but_should_not_be []   fidel
 **未处理**：`F-REV-R3-02/03/05/06…10`、`F-REV-R4-02`、`F-REV-R5-03…08`。
 
 **产物**：`iso/product_narrow_r6/`、两条 r6 harness、`handoff_r6.json`（5907 B）、`oracle.md` CORRECTION 6、`review.md` 的 `## r6` 节、`execution_runs/_r6_measure_20260922/`。
+
+---
+
+## Round 77 — Owner 第六、七批裁定落档；B 的无-bug 前置确认；五卡齐发
+
+**卡**：多卡派发轮。**权限**：OWNER_DECISIONS §15/§16（原话逐字已入档）。**性质**：执行 owner 裁定 + 登记，不表达新裁决。
+
+### B 的前置条件（owner 明令"先确认测试本身没有bug"）—— 已确认满足
+
+| 检查 | 结果 |
+|---|---|
+| 静态：`xfail` / `time.sleep`（7 个 E2E 文件） | **0 处** |
+| 静态：条件 `pytest.skip` | 4 处（"production catalog unavailable" ×3、"company-wiki resolver unavailable" ×1），**本次全部未触发** |
+| 实测汇总 | **55 passed, 0 skipped, 0 xfailed**，419.34 s（轻载） |
+| 最慢单测 | 70.25 s（`test_c3_amendment_downloads_only_missing_new_period`）；top-20 无挂死离群 |
+| 与 600 s 上限的关系 | 轻载 419 s 可过；**负载敏感**（会话负载下曾超 600 s：`TimeoutExpired` 记录在案；顺序逐文件在载下合计 861.7 s） |
+
+⇒ 测试真跑、真过、无静默跳过、无人工 sleep。**owner 的 B=a（600→1200，立卡红绿）条件成熟，已执行。**
+
+### 本轮派发（5 卡 + 1 项指示更正）
+
+| 卡 | 依据 | 要点 |
+|---|---|---|
+| `GATE-TIMEOUT-1200` | §16 B=a | 一行改 `_run()` 默认 600→1200；红臂=8 burner 下 600 必超（一次有界尝试，不复现则诚实降级为历史记录）；绿臂=同载 1200 全过；**不变量：55 个测试仍全部跑（0 新跳过）**；不提交（父 agent 提交） |
+| `I-08-C` refreeze | §16 A-2 批准 | oracle **追加式 r3**：e11/e13 由"缺口在册"翻为"攻击必拒"（superseded 记录 + 字节前缀证明）；对 B1 固定树 13/13 绿 + 对未修树仍显缺口（反空洞）+ 变异体回红；handoff `changes_required → review_pending` |
+| `I-14-F-R1` | §16 E-1=**150/60**（与编排层建议相反，按 owner） | 阈值 60、保留量 150；**边界对 86/87 → 60/61 必须 pin**；**61–86 改为重定位 ⇒ 69/76/82 三个"无需重定位"对照点预期须显式翻转（不得静默）**；R-1 薄边距问题由结构消除（未重定位路径 ≤210）；F-2..F-4/F-6 以追加勘误登记 |
+| `INVEST-CORE-ATTEST-GATE` | §16 E-3=立卡 | 跨仓消费者护栏（`invest_contracts.py:1130-1142`）；补丁+红绿**只在 iso/ 交付**，**合入待 invest-core owner**；防御纵深价值独立于 B1 晋升（生产今日仍能铸造标签） |
+| `I-14-E-APPLY` re-run | §16 E-2=重跑 | v2 战役：**4 臂 ≈22 次**（修后静音 / 修后负载 / **非空洞-挂死子仍被抓** / 变异体负载必红）；**逐次落盘 JSONL**（中断最多丢 1 次）；保留 basetemp 工件（CF-I14F-X1）；v1 中断日志保留为披露历史 |
+| → `B5-fix` 指示更正 | §16 D-G2=**留置** | **推翻**编排层的"优先级勘误"建议：冲突**永久留置登记**，owner 不裁定哪个冻结件优先；实现只依据 G1-a 执行裁定 |
+
+### 附带核验：I-06-A 的阻断原因与 A-1 的关系
+
+`handoff.blocked_reason` 实测 = **D-W06 OPEN-4/5/6 未签且属于他方**（wiki 来源审核 owner + 安全 reviewer + RF 消费 owner；owner 总授权只授权**联系**，不构成他们的裁决）。
+⇒ **A-1b（授权修 prune 代码）不解开 I-06-A**；19 张卡链的真正门是**函 A 的 TIER-2 外部回执**。E-4「维持暂不签」不改变该链状态。已登记，避免误报解锁。
+
+### 推送计划（owner C）
+
+第 1 批 = 当前 20 个提交（已收口的 4 张 + 记账），**待门超时卡绿臂通过、父 agent 提交该行后即推**；第 2 批 = B1 / B3 / I-14-D 收口后。

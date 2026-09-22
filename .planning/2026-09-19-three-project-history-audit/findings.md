@@ -544,3 +544,77 @@ B 仍把「不同请求」表达为「同键异载荷」，属把业务语义错
   - **⇒ 判据（REM-78）**：**含「只有 / 全部 / 没有 / 整个族 / 零代价」的句子，必须带可解析的域字段；生成载体的脚本断言该字段存在，缺失即拒写。**
 - **【正面】第四代出现了「严格更好」的形态。** r4 关掉 16−3 个字符但漏 `?`；r5 关掉 `?` 但重开 3 个；**r6 在全部被测字符上都通过**，且 oracle/rule **零失败**、过度脱敏**不变**。
   ⇒ **这轮之所以能做到，是因为判据从「一个字符」换成了「两个差集」——判据换了，结论才换了。**
+
+---
+
+## Round 77（补记）— 嵌套 gitlink 隐患修复 + 并发写入期的索引处置
+
+**性质**：只读审计 → 纯索引维护。**产品文件 0 条**；锚点不动；**无 hook 触发**（全部操作为读 + `git rm --cached` + .gitignore 追加，均为不触发 pre-commit 的安全类别）。
+
+### 发现：4 个 mode-160000 嵌套 gitlink（反复制造提交噪音 + 既有事故同一物种）
+
+`git ls-files -s | grep 160000` 全仓清点 = **恰 4 个**，全部在 `I-14-D/a20260919-01` 内：
+
+| 路径 | 指针 |
+|---|---|
+| `recovery/recovery-tree-r2` | `f8e73fd5…` |
+| `scratch/apply-check` | `3b638854…` |
+| `scratch/diff-repo` | `587a6223…` |
+| `scratch/diff-repo-r2` | `63c1069f…` |
+
+**为何危险（两重）**：
+1. 这是**已登记事故的同一物种**——"`/​.planning` 下嵌套 `.git` 破坏父仓 git 操作"（曾致 `fatal: bad object HEAD`、`git status` 失败）。
+2. 每次提交它们都显示为 **M 噪音**，迫使编排层逐次做路径过滤（`--ignore-errors` + 按路径 add），是"选择性提交"纪律被反复消耗的原因之一。
+
+**旧 .gitignore 只盖 r5 路径**（`*/a*/r5/diff-apply-check/`、`*/a*/r5/diff-repo/`），未盖 r2 世代的 `scratch/apply-check`、`scratch/diff-repo*`、`recovery/recovery-tree-r2` ⇒ 修复 = 补 3 条规则（已在 `execution_runs/.gitignore`，2656 B）+ `git rm -r --cached` 移除 4 个索引条目。
+
+**处置后实测**：`gitlinks_in_index=0`；**4 个磁盘目录全部 EXISTS**（内容未动，仅停止对其 .git 元数据做版本化）；这些路径不再出现在 `git status` 修改列表。
+
+### 待办（明确登记，避免遗失）
+
+- **4 条暂存删除（`D`）当前挂在索引里**，将随下一个提交落地；⚠️ 编排层自己的提交习惯是 `git reset -q` 后选择性 add —— **该习惯会把这 4 条暂存取消掉**。⇒ 下次安静窗口提交时须**显式重新执行**：
+  `git rm -r --cached --ignore-unmatch` 上述 4 路径（或用 `git add -A -- <execution_runs/.gitignore>` + 该 4 路径）再提交。
+- **不删除任何磁盘内容**：这些嵌套仓库是卡的验证证据（apply/diff/recovery 往返），其哈希由 attempt 自身证据记录；只停止"对 .git 元数据版本化"。
+
+### 并发期纪律复述（本轮实测背景）
+
+8 个子代理同时 running ⇒ **本轮刻意不做任何 commit**（pre-commit hook 的 stash/checkout/replay 会在任一并发写入者持有的文件上失败，已是第三次登记的失效模式）。本轮全部操作限定在：读、findings 写、.gitignore 追加、纯索引 `rm --cached`。
+
+---
+
+## Round 78（补记 2）— 两条同 session 内即应验的预警
+
+**① gitlink 暂存删除被并发会话的 `git reset` 取消（预警当日应验）**
+Round 77 补记刚写下"编排层 `git reset -q` 习惯会取消这 4 条暂存"，数轮内即实测发生：`staged_deletions` 4→**0**。已重新执行 `git rm -r --cached`（现 `staged_deletions=4`、`gitlinks_in_index=0`）。
+**新纪律（第三条）**：暂存类索引修复**必须在提交前的最后一刻重放**，不能提前暂存——本 session 内该操作已执行 2 次，每次提交前须先跑：
+`git ls-files -s | grep ^160000`（期望 0，否则重做 `git rm -r --cached` 上述 4 路径）。
+
+**② 门卡红臂窗口的回退方案（防子代理中途死亡把门留在 600）**
+`GATE-TIMEOUT-1200` 红臂期间 `tools/pre_push_gate.py` 被临时还原为 **600 版（`0d290326…`）**，终态应回到 **1200 版（`cf09ade8…`）**。本 session 已多次发生子代理空消息死亡 / 上下文耗尽死亡（`eface8c5`、`807189a7` 等先例）⇒ 若该卡死在红臂窗口，门将**永久留在 600**，第 1 批推送再次被 600 s 卡死。
+**回退方案（父代理自救，一行）**：`_run()` 签名行 `timeout: int = 600` → `timeout: int = 1200`（行 73），改后复算 sha 应 = `cf09ade8164e89d79237ff5a8409496ab1ae2a9c5f3ee2c253ccad20ef06df0b`；红臂证据则退回历史记录形态（`TimeoutExpired … 600 seconds` 已在 PUSH_TIMEOUT_INCIDENT.md 与 findings 收尾节在案）。**不绕门**：绿臂须在 1200 下完整跑一遍留证。
+
+**红臂实测进度（08:36–08:42 观测）**：第 1–8 步全 `ok`（ruff/compileall/unique-symbols/host-guard/mypy/meta-binding/BOM/install-sync），卡在 `real-roots E2E` 步等子进程；real-data（600 s 超时目标步）在其后。**结论尚未产生，勿把 455 B 的中间文件当红臂结果引用。**
+
+---
+
+## Round 80 — 绿臂#1 分诊：机制闭环（非超时、非回归，是载荷撑爆内部超时）
+
+**结果**：绿臂#1 跑完 real-data（**1159.84 s < 1200 ⇒ 超时修复本身已被证明有效**，`HAS_TIMEOUTEXPIRED=False`），前 9 步全 ok（含 real-roots）；但 real-data **1 failed / 63 passed / 1 xfailed** ⇒ 按预注册 oracle 记 FAIL（gate exit 1）。
+
+**失败用例**：`tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f2_missing_samples_fails`。
+
+**三步分诊（全部实测）**：
+
+| # | 检查 | 结果 | 排除什么 |
+|---|---|---|---|
+| 1 | 低载单跑该测试（5 python 进程） | **1 passed / 46.34 s / rc=0**；卡方独立复核 44.0 s 通过 | 排除**确定性回归** |
+| 2 | `git diff origin/main..HEAD -- scripts/ tests/` | **空**（20 个待推送提交零产品文件改动） | 排除**本批引入回归** |
+| 3 | 失败机制 | 该测试**内部 subprocess timeout=120 s**；高载（09:13 实测 34 python 进程 + 16 burner：本卡 8 + I-14-E-APPLY 战役 8）把 44 s 撑过 120 s | 定性为**载荷诱发**（域：34 进程 + 16 burner 并发；轻载下不发生） |
+
+**附带核实**：1 xfailed = `test_fc1001_isolated_lake.py:146` 的**既有静态标记**，非新增；real-data 65 = 1+63+1 ✓。real-data 命令本身**无 per-test pytest-timeout**（`pytest -q --tb=line *REAL_DATA_TESTS`），120 s 是测试内部值 ⇒ 机制成立。
+
+**证据保全**：`after/gate_green_1200.txt`（2743 B）原样保留未覆盖；卡方负载快照 `evidence/load_snapshot_green*_*.json`（start/mid/end）；我的诊断与卡方独立复核一致（双方都各自单跑过该测试）。
+
+**处置**：卡方已启动**绿臂#2 同域对照**（8 burner、ambient≈3 ≈ 红臂域，捕获 `after/gate_green_1200_attempt2_samedomain.txt`）⇒ 若过，红/绿在**匹配域**内成对成立，推第 1 批；fc1105 的载荷敏感性作为独立发现登记（不属超时卡范围，若绿臂#2 过则转 REM 待修项跟踪）。
+
+**历史备注（顺带）**：green 驱动日志出现 `.planning/…/reviews/revenue/scratch/pytest/` 与 `.tmp-zr408-unit*` 的 `Permission denied` 警告——与既有 ACL 拒绝记录同源，预存在、非本卡产生。
