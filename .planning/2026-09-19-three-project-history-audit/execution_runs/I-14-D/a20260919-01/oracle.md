@@ -619,3 +619,97 @@ rule table, 87 rows   credential_leaks []   touched_but_should_not_be []   fidel
 `harness/run_i14d_oracle_r5.py` and `harness/run_rule_table_i14d_r5.py`. It is **not** a claim
 about all inputs. The F-REV-R4-05 family is closed **on the four shapes registered in C5.2**;
 the registered `C10` residual remains by design.
+
+
+# CORRECTION 6 (2026-09-22, appended for the r6 revision; original bytes above unchanged)
+
+Appended, not a rewrite. This answers the two MEDIUM findings of the r5 independent review.
+
+## C6.1 F-REV-R5-01 — the pre-break token is now ANY NON-WHITESPACE RUN
+
+r5's class was a **swap, not a widening**. The r5 review swept every printable character at the
+pre-break position and measured `r4 \ r5 = ['&', "'", '|']`: `Authorization: Bo&t` + newline +
+the card's marker **redacted on r4 and persisted on r5**. The hole had been moved, not removed.
+
+```
+r5, line 324   _AUTH_PREBREAK_TOKEN = r"[^\s,;&\"'|]+"
+r6, line 329   _AUTH_PREBREAK_TOKEN = r"[^\s]+"
+```
+
+**Judged by BOTH differences, which is the criterion r5's failure produced.** Every widening
+before r6 was checked by "does the character that was pointed at now pass" — only one of the two
+differences that matter. Swept over every printable ASCII at this position:
+
+| candidate | oracle failures | rule-table failures | single characters still leaking |
+|---|---|---|---|
+| r5's value-token class | 0 | 0 | `' '`, `'"'`, `&`, `'`, `,`, `;`, `\|` |
+| r4's tchar class | 4 | 4 | 16 characters |
+| **`[^\s]+`** | **0** | **0** | **`' '` only** |
+
+`[^\s]+` closes **every character r4 or r5 closed and every character either of them leaked,
+except the space** — and a space here means the value is a multi-token run, which is the
+registered OPEN shape, not a token-class question.
+
+Per-character, on `Authorization: Bo<c>t` + newline + the marker:
+
+```
+r4   ? LEAK   & ok    ' ok    | ok    / LEAK   : LEAK   @ LEAK
+r5   ? ok     & LEAK  ' LEAK  | LEAK  / ok     : ok     @ ok
+r6   ? ok     & ok    ' ok    | ok    / ok     : ok     @ ok
+```
+
+## C6.2 New frozen rows (hand-derived before the run)
+
+| id | kind | input | expected | len |
+|---|---|---|---|---|
+| `N5t-auth-ampersand-marker` | narrow_must | `Authorization: Bo&t\nSYNTHETIC_AUDIT_TOKEN` | `Authorization: <redacted>` | 25 |
+| `N5u-auth-apostrophe-marker` | narrow_must | `Authorization: Bo't\nSYNTHETIC_AUDIT_TOKEN` | `Authorization: <redacted>` | 25 |
+| `N5v-auth-pipe-marker` | narrow_must | `Authorization: Bo\|t\nSYNTHETIC_AUDIT_TOKEN` | `Authorization: <redacted>` | 25 |
+| `N5w-auth-ampersand-secret` | narrow_must | `Authorization: Bo&t\n<39-char credential>\ndoc=17` | `Authorization: <redacted>\ndoc=17` | 32 |
+
+## C6.3 **C5.1 ABOVE IS SUPERSEDED — it claimed more than its measurement supports** (F-REV-R5-02)
+
+C5.1 says the widening "**closes the whole family** at **zero cost**".
+
+**That is false as written.** It is priced by `measure_r5.py`'s **19 probes, of which 4 are
+members of that family**, against a family the r5 reviewer measured at **31 base-regressive
+shapes** — and the sweep in C6.1 shows the r5 class still leaked seven characters. **第 C5.1 节
+该句已过时，以本节为准。**
+
+The corrected form, with its domain attached:
+
+> On the 19 probes reported in C5.1, the r5 class closed the shapes those probes contain. It did
+> **not** close the family: on a full printable sweep at that position, seven single characters
+> still let the credential through, and three of them (`&`, `'`, `|`) had been closed by r4.
+
+**This is the third generation of the same species**: r3's carrier cited a verification that no
+longer reproduced; r4's record turned a 19-probe result into a general claim; r5's record turned
+a 19-probe result, four of them family members, into "closes the whole family" — **written one
+paragraph above C5.3, which declares the structurally identical C4.5 sentence false.**
+
+**A rule that lives only in prose has now been falsified three times.** The response is a
+mechanism, not another sentence: **any claim of the form only / all / none / whole family / zero
+cost must carry a parseable domain field on the same line, and the script that generates a
+carrier must assert that the field exists.** Registered as REM-78.
+
+## C6.4 The r6 measurement, with its domain
+
+`iso/product_narrow_r6/src/.../observability.py` = 43746 B, sha256
+`2f6449949c76b97c636d5d50e2ca848403116a85a1858bb9ba8f5a2808362464`. It differs from r5 in the
+class line and the comment block; **inverting those regions reproduces r5 byte for byte** and the
+file stays uniformly CRLF (CR 909 = LF 909).
+
+```
+oracle, 40 cases      verdict pass       narrow_must_failed []   keep_must_failed []
+rule table, 91 rows   credential_leaks []   touched_but_should_not_be []   fidelity_ok true
+```
+
+**Domain**: the 40 frozen oracle cases and the 91 rule-table rows in
+`harness/run_i14d_oracle_r6.py` and `harness/run_rule_table_i14d_r6.py`, **plus** the printable
+sweep in C6.1. It is **not** a claim about all inputs: the registered `C10` residual (a
+multi-token value that then wraps) remains by design, and the space is the character that
+separates it from the rest.
+
+## C6.5 Generation isolation
+
+r6 has its **own** harness files; the r3, r4 and r5 harnesses are byte-identical to their pins.

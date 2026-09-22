@@ -1,0 +1,134 @@
+{
+ "candidates": {
+  "non-whitespace": {
+   "class_def": "[^\\s]+",
+   "leaking_single_chars": [
+    " "
+   ],
+   "oracle_failures": [],
+   "over_redaction": {
+    "OR1": "Authorization: <redacted>",
+    "OR2": "Authorization: <redacted>",
+    "OR3": "Authorization: <redacted>",
+    "OR4": "Authorization: <redacted>\nghp_ZQ7ReviewerFakeCredential0123456789"
+   },
+   "rule_failures": []
+  },
+  "r4-tchar": {
+   "class_def": "[A-Za-z0-9!#$%&'*+.^_`|~-]+",
+   "leaking_single_chars": [
+    " ",
+    "\"",
+    "(",
+    ")",
+    ",",
+    "/",
+    ":",
+    ";",
+    "<",
+    "=",
+    ">",
+    "?",
+    "@",
+    "[",
+    "\\",
+    "]",
+    "{",
+    "}"
+   ],
+   "oracle_failures": [
+    "N5p-auth-nontchar-question-marker",
+    "N5q-auth-nontchar-slash-secret",
+    "N5r-auth-nontchar-colon-marker",
+    "N5s-auth-nontchar-equals-marker"
+   ],
+   "over_redaction": {
+    "OR1": "Authorization: <redacted>",
+    "OR2": "Authorization: <redacted>",
+    "OR3": "Authorization: <redacted>",
+    "OR4": "Authorization: <redacted>\nghp_ZQ7ReviewerFakeCredential0123456789"
+   },
+   "rule_failures": [
+    "cred-auth-nontchar-question",
+    "cred-auth-nontchar-slash",
+    "cred-auth-nontchar-colon",
+    "cred-auth-nontchar-equals"
+   ]
+  },
+  "r5-value-token": {
+   "class_def": "[^\\s,;&\\\"'|]+",
+   "leaking_single_chars": [
+    " ",
+    "\"",
+    "&",
+    "'",
+    ",",
+    ";",
+    "|"
+   ],
+   "oracle_failures": [],
+   "over_redaction": {
+    "OR1": "Authorization: <redacted>",
+    "OR2": "Authorization: <redacted>",
+    "OR3": "Authorization: <redacted>",
+    "OR4": "Authorization: <redacted>\nghp_ZQ7ReviewerFakeCredential0123456789"
+   },
+   "rule_failures": []
+  }
+ },
+ "card": "I-14-D",
+ "differences": {
+  "nonwhitespace_minus_r4": [
+   "\"",
+   "(",
+   ")",
+   ",",
+   "/",
+   ":",
+   ";",
+   "<",
+   "=",
+   ">",
+   "?",
+   "@",
+   "[",
+   "\\",
+   "]",
+   "{",
+   "}"
+  ],
+  "nonwhitespace_minus_r5": [
+   "\"",
+   "&",
+   "'",
+   ",",
+   ";",
+   "|"
+  ],
+  "r4_minus_r5 (chars r5 closed that r4 leaked)": [
+   "&",
+   "'",
+   "|"
+  ],
+  "r5_minus_r4 (chars r4 redacted that r5 re-opened)": [
+   "(",
+   ")",
+   "/",
+   ":",
+   "<",
+   "=",
+   ">",
+   "?",
+   "@",
+   "[",
+   "\\",
+   "]",
+   "{",
+   "}"
+  ]
+ },
+ "iteration": "r6",
+ "question": "which pre-break token class closes both families -- '?' AND '&' \" ' '|'?",
+ "sweep_space": "every printable ASCII at the pre-break position, one credential-persistence probe each",
+ "the_rule_applied": "both differences: old \\ new AND new \\ old (REM-79)"
+}

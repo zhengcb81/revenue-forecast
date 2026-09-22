@@ -334,3 +334,35 @@ untouched.
 
 **Status: `review_pending`.** A fix for `F-REV-R5-01` and a correction of `F-REV-R5-02` belong
 to a new revision (r6), not to edits of r5.
+
+
+---
+
+## r6 (2026-09-22) — submitted, RE-REVIEW REQUIRED
+
+**Status: revision r6 submitted.** The implementer writes no verdict here.
+
+### What r6 changed
+
+| finding | response | site |
+|---|---|---|
+| `F-REV-R5-01` (MEDIUM) | **fixed**: the pre-break token is now `[^\s]+` — any non-whitespace run. The r5 class was a swap that re-opened `&`, `'` and `|`; `[^\s]+` closes every character r4 or r5 closed and every character either leaked, except the space (which is the registered OPEN shape) | `observability.py:329` |
+| `F-REV-R5-02` (MEDIUM) | **corrected by supersession**: `oracle.md` CORRECTION 6 C6.3 states that C5.1's sentence is false as written and gives the corrected form **with its domain** | `oracle.md` C6.3 |
+| the comment block | rewritten again: the four widenings, the swap that r5 was, and the two-difference criterion the failure produced | `observability.py:290-327` |
+
+Four new frozen oracle rows (`N5t`-`N5w`) and four new rule-table rows register the family. r6
+has its **own** harness files; the r3, r4 and r5 harnesses are byte-identical to their pins.
+
+### What r6 did NOT do
+
+`F-REV-R3-02`, `-03`, `-05`, `-06` to `-10`, `F-REV-R4-02` and `F-REV-R5-03` to `-08` remain
+registered and unaddressed. The r5 carrier `handoff_r5.json` is left exactly as it was.
+
+### The mechanism this round is supposed to start using
+
+`F-REV-R5-02` was the third generation of the same species — a conclusion carried on a
+measurement set that does not contain its own counterexamples — and it was written one paragraph
+above the correction that declares the structurally identical sentence false. **Writing the rule
+down has now failed three times.** r6's own record is written to the rule: every claim of the form
+only / all / none / whole family / zero cost carries its domain on the same line. Registered as
+REM-78, to be turned into a check in the carrier-generating script rather than another sentence.

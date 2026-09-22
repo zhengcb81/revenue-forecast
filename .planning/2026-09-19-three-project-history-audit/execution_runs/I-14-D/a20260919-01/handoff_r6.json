@@ -1,0 +1,147 @@
+{
+ "attempt_id": "a20260919-01",
+ "boundaries": {
+  "deletions": 0,
+  "product_repo_written": 0,
+  "production_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "r3_r4_r5_harnesses_untouched": true,
+  "r5_carrier_untouched": true,
+  "status_transitions": 0,
+  "verdict_expressed": false
+ },
+ "card": "I-14-D",
+ "date_utc": "2026-09-22",
+ "generation_carriers": {
+  "oracle.md": {
+   "after_bytes": 41469,
+   "after_sha256": "468fb300a76d00a87dab7fe94d2c64b825ce72ec03fabc00a034dc32e6501694",
+   "before_bytes": 36533,
+   "before_sha256": "e666b637ad3468b79803102b87b31641b102a91936dfa9731567a1abdd45e9c1",
+   "delta_bytes": 4936,
+   "prefix_preserved": true
+  },
+  "review.md": {
+   "after_bytes": 22100,
+   "after_sha256": "8a2ff101b5501a9de93651ff1988fab339d76af779982cbe1c398b734fc28ae7",
+   "before_bytes": 20173,
+   "before_sha256": "8428383f5a997c91a9de676836ed610577bc2038a9bd321d49a45c201a6b242e",
+   "delta_bytes": 1927,
+   "prefix_preserved": true
+  }
+ },
+ "harness_generation": {
+  "r3_r4_r5_harnesses_untouched": true,
+  "r6_oracle_harness": {
+   "bytes": 14243,
+   "sha256": "8b47e0b7da821eb5342eed369c96727aae6a6d3554ff0a150aab186b73836658"
+  },
+  "r6_rule_table_harness": {
+   "bytes": 21175,
+   "sha256": "c7ea6efd5a687c4ca63a3e387c3915d6fbfb1894a52d60e278c54db25eda8bb7"
+  }
+ },
+ "iteration": "r6",
+ "kind": "implementer_side_handoff",
+ "measurement": {
+  "domain": "the 40 frozen oracle cases, the 91 rule-table rows, AND the printable sweep in oracle.md C6.1. NOT a claim about all inputs: the registered C10 residual (a multi-token value that then wraps) remains by design.",
+  "evidence": {
+   "oracle_r6_harness.json": {
+    "bytes": 18362,
+    "sha256": "c77dd90b62b9a2b1c815ab9bdcbe3357c674b373614cd3365697b28b4af6f0f6"
+   },
+   "r6_measurement.json": {
+    "bytes": 2651,
+    "sha256": "6b43cd43ebb25c5d46b314d288b991feb148dcd9516857af130cef9b9362f05f"
+   },
+   "rule_r6_harness.json": {
+    "bytes": 32249,
+    "sha256": "3c969983c9b5e31eba5b5324c1da395ec67759a6c61068fc4d96f7180db1ebd1"
+   }
+  },
+  "oracle": {
+   "cases": 40,
+   "keep_must_failed": [],
+   "narrow_must_failed": [],
+   "verdict": "pass"
+  },
+  "rule_table": {
+   "credential_leaks": [],
+   "fidelity_ok": true,
+   "rows": 91,
+   "touched_but_should_not_be": []
+  }
+ },
+ "new_frozen_rows": {
+  "oracle": [
+   "N5t-auth-ampersand-marker",
+   "N5u-auth-apostrophe-marker",
+   "N5v-auth-pipe-marker",
+   "N5w-auth-ampersand-secret"
+  ],
+  "rule_table": [
+   "cred-auth-ampersand",
+   "cred-auth-apostrophe",
+   "cred-auth-pipe",
+   "cred-auth-ampersand-with-key"
+  ]
+ },
+ "product_copy": {
+  "bytes": 43746,
+  "differs_from_r5_in": "the class line and the comment block",
+  "inverse_reconstruction_reproduces_r5": "byte for byte",
+  "path": "iso/product_narrow_r6/src/company_wiki/source_catalog/observability.py",
+  "sha256": "2f6449949c76b97c636d5d50e2ca848403116a85a1858bb9ba8f5a2808362464",
+  "uniformly_crlf": "CR 909 = LF 909"
+ },
+ "responses": {
+  "F-REV-R5-01": {
+   "change": "the pre-break token is now any non-whitespace run",
+   "class": "MEDIUM",
+   "judged_by_BOTH_differences": "the criterion r5's failure produced (REM-79): old \\ new AND new \\ old, swept over every printable ASCII at that position",
+   "r5": "_AUTH_PREBREAK_TOKEN = r\"[^\\s,;&\\\"'|]+\"",
+   "r6": "_AUTH_PREBREAK_TOKEN = r\"[^\\s]+\"",
+   "response": "FIXED",
+   "site": "observability.py:329",
+   "sweep_result": {
+    "over_redaction_unchanged": true,
+    "r4_class_leaking_count": 16,
+    "r5_class_leaking": [
+     " ",
+     "\"",
+     "&",
+     "'",
+     ",",
+     ";",
+     "|"
+    ],
+    "r6_class_leaking": [
+     " "
+    ],
+    "r6_oracle_failures": 0,
+    "r6_rule_failures": 0
+   },
+   "the_remaining_space": "a space at that position means the value is a multi-token run, which is the registered C10 OPEN shape, not a token-class question",
+   "what_was_wrong": "the r5 class was a SWAP, not a widening: r4 \\ r5 = ['&', \"'\", '|'], so it closed '?' and re-opened three characters r4 had redacted"
+  },
+  "F-REV-R5-02": {
+   "change": "oracle.md CORRECTION 6 C6.3 states that C5.1's sentence is false as written, gives the corrected form with its domain, and records that this is the third generation of the species",
+   "class": "MEDIUM",
+   "response": "CORRECTED BY SUPERSESSION",
+   "the_corrected_form": "On the 19 probes reported in C5.1, the r5 class closed the shapes those probes contain. It did NOT close the family: on a full printable sweep, seven single characters still let the credential through, three of them closed by r4."
+  }
+ },
+ "self_reference_note": "handoff_r6.json does not register its own hash",
+ "status": "review_pending",
+ "the_mechanism_this_round_starts_using": {
+  "still_to_do": "REM-78 -- turn it into a check in the carrier-generating script rather than another sentence",
+  "what": "every claim of the form only / all / none / whole family / zero cost in this carrier carries its domain on the same line",
+  "why": "F-REV-R5-02 was the third generation of the same species, written one paragraph above the correction declaring the structurally identical sentence false. Writing the rule down has now failed three times."
+ },
+ "trigger": "reviewer_report_r5.md returned changes_required, refuting Claim 2 (the family is closed) and Claim 9 (r5's own record does not overstate).",
+ "what_this_file_is": "the r6 generation's carrier: the response to the two MEDIUM findings of the r5 review, and the measurement",
+ "who_wrote_it_and_on_what_basis": {
+  "author": "the orchestrator, acting as implementer and carrier-landing executor",
+  "basis": "measurement it ran itself; every hash here is computed from the bytes",
+  "it_states_no_verdict": true
+ }
+}
