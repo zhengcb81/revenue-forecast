@@ -1,0 +1,74 @@
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -287,35 +287,42 @@
+ _VALUE = r"(?P<value>" + _QUOTED_VALUE + r"|" + _BARE_VALUE + r")"
+ _AUTH_BARE_VALUE = r"[^\s,;&\"'|]+(?:[ \t]+[^\s,;&\"'|]+)*"
+ 
+-# A value may still cross line breaks, but only behind a single RFC-7235 scheme
+-# token (r3).  The pre-break token used to be a nine-word enumeration, whose
+-# coverage was exactly as wide as the list: `Authorization: Negotiate` + newline,
+-# or any other scheme word, still persisted the credential - measured as
+-# F-REV-R2-01, where the leaked string was this card's own synthetic marker.
+-# It is now ONE RFC-7235 scheme token: `scheme = 1*<any CHAR except CTLs or
+-# separators>`, which always begins with a letter, so the class starts with
+-# `[A-Za-z]`; `|` is kept in it because the value delimiter class used everywhere
+-# else already stops at `|`, so nothing can gain a delimiter by this widening.
+-# A wrapped header (`Authorization: Bearer` then the secret on the next line) or
+-# an RFC-7230 obs-fold puts the secret on a line that carries no `key=` prefix,
+-# so once the scheme word alone is consumed neither this pattern nor the
+-# assignment scanner can see it.  Fail CLOSED: after a scheme token and one or
+-# more line breaks (a blank line included), the next token - or a quoted string,
+-# reached through the same break run - is redacted.  The breaks and any
+-# indentation stay OUTSIDE the match, so the diagnostic keys on the following
+-# lines survive (the C13 half this card fixes).
+-# The value delimiters are the same class `_AUTH_BARE_VALUE` uses.  Measured as
+-# review findings F-REV-D-01 / F-REV-R2-01: without this branch the full
+-# credential is persisted in the append-only event log.
+-# Deliberate, registered cost (F-REV-R2-02): it cannot tell a wrapped credential
+-# from a diagnostic key, so `Authorization: Bearer` + newline DELETES `doc=17`.
+-# One shape stays OPEN and is registered rather than hidden: a TWO-token value
+-# that then wraps (`Authorization: Bearer abc` + newline + secret).  Closing it
+-# needs the scheme's own line consumed as a token run, which deletes `doc=17`
+-# from `Authorization: Bearer <marker>` + newline + `doc=17` + newline + `stage=`
+-# - measured across the whole design space, see r3_fix_record.md.
+-_AUTH_SCHEME_TOKEN = r"[A-Za-z0-9!#$%&'*+.^_`|~-]+"
+-_AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_SCHEME_TOKEN + r")[ \t]*"
++# A value may still cross line breaks, but only behind one PRE-BREAK TOKEN.  That
++# token has been widened three times, each time because a measured family leaked:
++#   r2  a nine-word enumeration of scheme words (F-REV-R2-01: coverage was exactly
++#       as wide as the list);
++#   r3  one RFC 7235 scheme token, `[A-Za-z]...` (F-REV-R3-01: the after-break
++#       quoted alternatives carried an optional-CR form inside a character class,
++#       where `?` is a literal member of the negated set);
++#   r4  the full RFC 7230 tchar class (F-REV-R3-04: a non-letter-initial scheme
++#       leaked where the base tree redacted);
++#   r5  THE VALUE-TOKEN CLASS this pattern already uses elsewhere (F-REV-R4-05: a
++#       token containing a non-tchar character, e.g. `Bo?t`, leaked too).
++# No RFC scheme production is claimed any more.  The scheme word is not what makes
++# a header wrap, so restricting this token to scheme-shaped words bought nothing and
++# cost a leak each time; the token is now whatever the value grammar calls a token.
++# `|` is not in the class because the value delimiter class used everywhere else
++# already stops at `|`, so nothing can gain a delimiter by this widening.
++# A wrapped header (`Authorization: Bearer` then the secret on the next line) or an
++# RFC-7230 obs-fold puts the secret on a line that carries no `key=` prefix, so once
++# the pre-break token alone is consumed neither this pattern nor the assignment
++# scanner can see it.  Fail CLOSED: after that token and one or more line breaks (a
++# blank line included), the next token - or a quoted string reached through the same
++# break run - is redacted.  Measured as F-REV-D-01 / F-REV-R2-01 / F-REV-R3-01:
++# without this branch the full credential is persisted in the append-only event log.
++# Deliberate, registered cost (F-REV-R2-02): it cannot tell a wrapped credential from
++# a diagnostic key, so `Authorization: Bearer` + newline DELETES `doc=17`.  The
++# breaks are consumed by the match; the indentation and the keys on the lines AFTER
++# the redacted one are not.
++# One shape stays OPEN and is registered rather than hidden: a TWO-token value that
++# then wraps (`Authorization: Bearer abc` + newline + secret).  Closing it needs the
++# whole first line consumed as a token run, which deletes `doc=17` from
++# `Authorization: Bearer <marker>` + newline + `doc=17` + newline + `stage=` -
++# reproduced in `_r3_design_reprobe_20260922/`.  The companion that reproduction
++# names, `r3_fix_record.md`, was never written and is deliberately NOT substituted
++# for; the reproduction is where the substance lives.
++_AUTH_PREBREAK_TOKEN = r"[^\s,;&\"'|]+"
++_AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_PREBREAK_TOKEN + r")[ \t]*"
+                       r"(?:(?:\r?\n)[ \t]*)+"
+                       r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r\n]*\"|'[^'\r\n]*')")
+ _AUTH_PATTERN = re.compile(

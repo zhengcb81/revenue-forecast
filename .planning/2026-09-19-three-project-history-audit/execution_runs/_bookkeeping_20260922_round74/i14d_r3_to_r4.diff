@@ -1,0 +1,15 @@
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -314,10 +314,10 @@
+ # needs the scheme's own line consumed as a token run, which deletes `doc=17`
+ # from `Authorization: Bearer <marker>` + newline + `doc=17` + newline + `stage=`
+ # - measured across the whole design space, see r3_fix_record.md.
+-_AUTH_SCHEME_TOKEN = r"[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*"
++_AUTH_SCHEME_TOKEN = r"[A-Za-z0-9!#$%&'*+.^_`|~-]+"
+ _AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_SCHEME_TOKEN + r")[ \t]*"
+                       r"(?:(?:\r?\n)[ \t]*)+"
+-                      r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r?\n]*\"|'[^'\r?\n]*')")
++                      r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r\n]*\"|'[^'\r\n]*')")
+ _AUTH_PATTERN = re.compile(
+     r"(?i)(?P<key>" + _LEFT_ANCHOR + r"authorization\s*[:=]\s*|"
+     + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_SCHEME_SPLIT + r"|" + _AUTH_BARE_VALUE + r")"

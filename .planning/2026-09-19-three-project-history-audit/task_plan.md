@@ -1856,3 +1856,57 @@ r4 的行落在 `harness/run_i14d_oracle_r4.py` 与 `harness/run_rule_table_i14d
 
 **未修任何东西**（`F-REV-R4-05` 与 `F-REV-R4-06` 的修复属 **r5**）；**未改**产品副本、harness、r3/r4 记录；
 **未做 `status` 转移**（仍 `review_pending`）；**未代签**；**删除 0**。**本轮唯一写入**：`review.md` 的 `## r4 verdict` 节（追加）。
+
+---
+
+## Round 74 — `I-14-D` **r5 已实现、已测量、已落载体**；并**更正上一轮那句夸大**（其副本之一就在本文件）
+
+**卡**：无（编排层实施 + 载体落定轮次）。**性质**：**实施 + 测量 + 载体落定**。**不表达任何裁决。**
+
+### ⚠️ 先更正本文件 Round 72 里的一句（**F-REV-R4-06**）
+
+Round 72 节写：「两处修复都不改变任何既有行、都不改变过度脱敏族」，以及引用 `oracle.md` C4.5 的「`fix_A_and_B` leaves only the registered `C10` residual」。
+**后者作为普遍断言是假的**：它**只对那一节报告的 19 个探针成立**。r4 reviewer 实测出**另外 31 个**同样留存凭据的形态（`F-REV-R4-05` 族）。
+⇒ **Round 72 节该句已过时，以本节为准。** 同一句的另外两处副本（`oracle.md` C4.5、remediation register §16）也已分别以追加方式更正。
+
+**更正的写法（带域）**：**在 Round 72 报告的那 19 个探针上，`fix_A_and_B` 仅剩登记的 `C10` 残留**——**这不是关于该族的普遍陈述**。
+⇒ **这是 `F-REV-R3-02` 隔一代的复发**：**记录声称的比测量支持的更多**。**一次夸大，三处副本。**
+
+### r5 的四项应对
+
+| 发现 | 应对 | 站点 |
+|---|---|---|
+| **F-REV-R4-05（MEDIUM）** | **已修**：pre-break token 由 RFC 7230 tchar 类**放宽为值 token 类**；常量**改名** `_AUTH_SCHEME_TOKEN` → `_AUTH_PREBREAK_TOKEN` | `observability.py:317` |
+| **F-REV-R4-01（LOW）** | **已修**：注释块重写（三次放宽及各自背后的发现、不再声称任何 RFC scheme 产生式、删掉已被证伪的「always begins with a letter」、更正「breaks stay OUTSIDE the match」、把悬空的 `r3_fix_record.md` 引用换成**明说该文件从未写出且不代填**的指针） | `observability.py:290-325` |
+| **F-REV-R4-06（MEDIUM）** | **以取代方式更正**：`oracle.md` CORRECTION 5 的 C5.3 明写 C4.5 那句**按字面为假**，给出带域的更正写法，并登记这是 F-REV-R3-02 的复发 | `oracle.md` C5.3 |
+| **F-REV-R4-02（LOW）** | **登记而不改**：r4 测量记录的哈希**被 r4 载体钉住**，改写会抹掉世代边界；矛盾已登记 | `oracle.md` C5.5 |
+
+### 先定价、再动手
+
+**放宽到值 token 类是零代价的**（`_r5_measure_20260922/measure_r5.py`）：oracle **0** 失败、rule table **0** 失败、**过度脱敏族完全不变**（`Authorization: Bearer` + 换行仍删 `doc=17`；`Authorization: 2024-01-01` + 换行两边都脱敏）。
+⇒ **所以是「修」而不是「登记」**——**同一族的另一种应对（登记为 open 残留）代价更高，且不必。**
+
+### 测量（**带域**）
+
+```
+oracle, 36 cases      verdict pass       narrow_must_failed []   keep_must_failed []
+rule table, 87 rows   credential_leaks []   touched_but_should_not_be []   fidelity_ok true
+```
+
+**该断言的域**：r5 harness 里的 **36 条冻结 oracle 用例**与 **87 行 rule table**。**这不是关于一切输入的陈述。**
+F-REV-R4-05 族**在 C5.2 登记的四个形态上**关闭；登记的 `C10` 残留**按设计保留**。
+
+**r5 树**：43362 B / `ca13fb81…`，与 r4 差**注释块 + 两行代码**；**逆重建逐字节还原 r4**，且文件**保持一致 CRLF**（CR 904 = LF 904）。
+**世代隔离**：r5 用**新** harness 文件；**r3 与 r4 的 harness 逐字节未动**。
+
+### 本轮两处自伤（如实登记）
+
+1. **首次 r5 构建在注释块上匹配到 0 个站点** —— 模板写成 LF 而文件是 **CRLF**。构建改为**按文件实际行尾**构造，结果以**逆替换**为证明。
+2. **构建自己的判据错**：断言「CR 数不变」，而在**正确**的重建上转红 —— 注释块**合法地变长**，CR 数必须随之增长。判据改为「文件保持**一致 CRLF**（CR == LF）」。
+
+### 边界
+
+**产品仓 0 条**；锚点 `9ec65295…` **一致**；**r3/r4 harness 与 r4 载体未触碰**；**r4 测量记录未改**（哈希被钉）；**未做 `status` 转移**；**未表达裁决**；**未代签**；**删除 0**。
+**未处理**：`F-REV-R3-02/03/05/06…10`。
+
+**产物**：`iso/product_narrow_r5/`、两条 r5 harness、`handoff_r5.json`（6960 B）、`oracle.md` CORRECTION 5、`review.md` 的 `## r5` 节、`execution_runs/_r5_measure_20260922/`。

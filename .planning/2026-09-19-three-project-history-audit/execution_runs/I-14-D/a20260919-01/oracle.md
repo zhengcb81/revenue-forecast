@@ -523,3 +523,99 @@ rule table, 83 rows   credential_leaks []   touched_but_should_not_be []   fidel
 Both fixes measured separately: `fix_A_only` closes the `?` leak and leaves the non-letter
 family leaking; `fix_A_and_B` leaves only the registered `C10` residual. **Neither changes any
 pre-existing row and neither changes the over-redaction family.**
+
+
+# CORRECTION 5 (2026-09-22, appended for the r5 revision; original bytes above unchanged)
+
+Appended, not a rewrite. This answers the four findings of the r3... correction: the r4
+independent review. Three are fixed here; one is corrected in place in this section.
+
+## C5.1 F-REV-R4-05 — the pre-break token is now the VALUE-token class
+
+r4 restricted the pre-break token to the RFC 7230 tchar set. A token containing a **non-tchar
+character** is still a token, so `Authorization: Bo?t` + newline + credential persisted the
+credential, where the pre-fix base tree redacted it — 31 unregistered, base-regressive shapes.
+
+```
+r4, line 317   _AUTH_SCHEME_TOKEN = r"[A-Za-z0-9!#$%&'*+.^_`|~-]+"
+r5, line 317   _AUTH_PREBREAK_TOKEN = r"[^\s,;&\"'|]+"
+```
+
+The constant is **renamed**: after this change it is not an RFC scheme token, and a name that
+outlives its meaning is how the previous comment block went wrong.
+
+**Priced before it was taken** (`_r5_measure_20260922/measure_r5.py`): widening to the value
+token closes the whole family at **zero cost** — oracle 0 failures, rule table 0 failures, and
+the over-redaction family **unchanged** (`Authorization: Bearer` + newline still deletes
+`doc=17`; `Authorization: 2024-01-01` + newline is redacted in both).
+
+## C5.2 New frozen rows (hand-derived before the run)
+
+For `Authorization: <token>` + newline + `<credential>`, the key group consumes
+`Authorization: `, the split consumes the token plus the break run, and the tail consumes the
+credential, so the whole match becomes `<redacted>`. Where a `doc=17` line follows, the break
+before it is **not** part of the match, so `doc=17` survives.
+
+| id | kind | input | expected | len |
+|---|---|---|---|---|
+| `N5p-auth-nontchar-question-marker` | narrow_must | `Authorization: Bo?t\nSYNTHETIC_AUDIT_TOKEN` | `Authorization: <redacted>` | 25 |
+| `N5q-auth-nontchar-slash-secret` | narrow_must | `Authorization: Bo/t\n<39-char credential>\ndoc=17` | `Authorization: <redacted>\ndoc=17` | 32 |
+| `N5r-auth-nontchar-colon-marker` | narrow_must | `Authorization: Bo:t\nSYNTHETIC_AUDIT_TOKEN` | `Authorization: <redacted>` | 25 |
+| `N5s-auth-nontchar-equals-marker` | narrow_must | `Authorization: Bo=t\nSYNTHETIC_AUDIT_TOKEN` | `Authorization: <redacted>` | 25 |
+
+## C5.3 **C4.5 ABOVE IS SUPERSEDED — it claimed more than its measurement supports** (F-REV-R4-06)
+
+C4.5 says: *"Both fixes measured separately: ... `fix_A_and_B` leaves only the registered `C10`
+residual."*
+
+**That is false as written.** It is true **only of the 19-probe set that section reports**, and
+the sentence does not say so. The r4 reviewer measured 31 further shapes of the F-REV-R4-05
+family that also persisted a credential. **第 C4.5 节该句已过时，以本节为准。**
+
+The corrected form, with its domain attached:
+
+> On the 19 probes reported in C4.5, `fix_A_and_B` leaves only the registered `C10` residual.
+> It is **not** a statement about the family in general; the general statement is now measured
+> in C5.6 below, on a 36-row oracle and an 87-row rule table.
+
+**This is `F-REV-R3-02` recurring one generation later.** The lesson, recorded because it has
+now cost two generations: **a conclusion sentence must carry its measurement set inside the
+sentence.** An unqualified negative claim is to be treated as unverified.
+
+## C5.4 F-REV-R4-01 — the source comment now says what the code does
+
+The comment block was byte-identical to r3 and still asserted *"`scheme = 1*<any CHAR except
+CTLs or separators>`, which always begins with a letter"* — a claim the r3 review had already
+falsified — and it contradicted r4:317, which had widened the class. It also ended by pointing
+at `r3_fix_record.md`, a file that does not exist.
+
+r5 rewrites the block: it names the three widenings and the finding behind each, states that no
+RFC scheme production is claimed any more, corrects the "breaks stay OUTSIDE the match" claim
+(they are consumed; the indentation and the following lines are not), and replaces the dangling
+reference with a pointer to `_r3_design_reprobe_20260922/` — while saying explicitly that
+`r3_fix_record.md` was never written and is **not** substituted for.
+
+## C5.5 F-REV-R4-02 — the r4 measurement record contradicts itself: registered, not edited
+
+`_r4_measure_20260922/measure_r4.py`'s docstring and `r4_measurement.json`'s key
+`fix_b_measured_but_not_applied` say fix B is not in the tree; the same file's `main()` says the
+opposite. **The r4 measurement record is NOT edited here**: its hashes are pinned by the r4
+carrier, and rewriting them would erase the generation boundary. The correction is registered
+here and in the remediation register; a corrected restatement lives in `_r5_measure_20260922/`.
+
+## C5.6 The r5 measurement
+
+`iso/product_narrow_r5/src/.../observability.py` = 43362 B, sha256
+`ca13fb81aa2a1234ba760f49576a6409bbd3b1397f921f2e73311f90a263fc45`. It differs from r4 in the
+comment block and two code lines; **inverting those regions reproduces r4 byte for byte** and
+the file stays uniformly CRLF (CR 904 = LF 904).
+
+```
+oracle, 36 cases      verdict pass       narrow_must_failed []   keep_must_failed []
+rule table, 87 rows   credential_leaks []   touched_but_should_not_be []   fidelity_ok true
+```
+
+**Domain of that statement**: the 36 frozen oracle cases and the 87 rule-table rows in
+`harness/run_i14d_oracle_r5.py` and `harness/run_rule_table_i14d_r5.py`. It is **not** a claim
+about all inputs. The F-REV-R4-05 family is closed **on the four shapes registered in C5.2**;
+the registered `C10` residual remains by design.

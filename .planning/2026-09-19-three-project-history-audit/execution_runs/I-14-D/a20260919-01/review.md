@@ -260,3 +260,36 @@ CLI exit, promotion, or any mapping question.
 
 **Status: `review_pending`.** A fix for `F-REV-R4-05` and a correction of `F-REV-R4-06` belong
 to a new revision (r5), not to edits of r4.
+
+
+---
+
+## r5 (2026-09-22) — submitted, RE-REVIEW REQUIRED
+
+**Status: revision r5 submitted.** The implementer writes no verdict here.
+
+### What r5 changed
+
+| finding | response | site |
+|---|---|---|
+| `F-REV-R4-05` (MEDIUM) | **fixed**: the pre-break token widened from the RFC 7230 tchar class to the value-token class; the constant renamed `_AUTH_PREBREAK_TOKEN` | `observability.py:317` |
+| `F-REV-R4-01` (LOW) | **fixed**: the comment block rewritten to say what the code does, the false "always begins with a letter" claim removed, and the dangling `r3_fix_record.md` reference replaced with a pointer that says the file was never written | `observability.py:290-325` |
+| `F-REV-R4-06` (MEDIUM) | **corrected by supersession**: `oracle.md` CORRECTION 5 C5.3 states that C4.5's sentence is false as written, gives the corrected form with its domain, and records that this is `F-REV-R3-02` recurring | `oracle.md` C5.3 |
+| `F-REV-R4-02` (LOW) | **registered, not edited**: the r4 measurement record's hashes are pinned by the r4 carrier, so it is left as it is and the contradiction is registered | `oracle.md` C5.5 |
+
+Four new frozen oracle rows (`N5p`-`N5s`) and four new rule-table rows register the family. r5
+has its **own** harness files; the r3 and r4 harnesses are byte-identical to their pins.
+
+### What r5 did NOT do
+
+`F-REV-R3-02`, `-03`, `-05`, `-06` to `-10` remain registered and unaddressed. The r4 carrier
+`handoff_r4.json` is left exactly as it was.
+
+### One self-inflicted error, recorded
+
+The first r5 tree build matched the comment block at **zero sites** because the templates were
+written with LF while the file is CRLF. The build was made line-ending aware and the result is
+proved by inverting the replacements. Separately, the first version of the build's own check
+asserted "the CR count is unchanged", which went red on a correct rebuild — the comment block
+legitimately grows, so the count must grow with it; the check is now "the file stays uniformly
+CRLF".
