@@ -1030,3 +1030,37 @@ REM-80（M01-M04 扩权或豁免）、REM-84（START_HERE append-3 授权）。
 - **REM79-MECHANIZATION 复审 = `accepted_scoped`**：三段前缀链复算、三轮 `PROTOCOL_SATISFIED`、naive 臂 grep 证零域逻辑、引用小 GREEN+X3 诚实档、214→48→2 链与两份裁处转录一致、终 2 条内容对读 R-D/R-E 合规（**计划目录载体 vs 仓根副本不同文件**、归属不误记）、工具冒烟一次（stdlib、版本 sha 符账）、其自报告 REM-79 自扫首跑 18 修后 rc0；5 发现无阻断（F1=轮3 RED 7 vs 14 + §7 缺取代句=低优先 follow-up）；六条范围条件（§4）齐。报告 `0562158d…`/18393 B+sidecar；**载体落定 `601bd836` 在跑**。
 - **B1-r2 装配尾声**：SRC r7（47538→57911 B）、两轮 final_integrity、changes.diff 206219 B、binding 19461 B、README/SUMS 反复再生成=完整性自检循环；handoff 已带 r2 块（35537 B→后续更新）。**完整回报未达——下轮即 ping**。
 - **计分**：四系 B3✅ B5✅ REM79（落定中）B1⏳；8/8+I-09-C✅；批次 2 前置 I-14-D✅/B3✅/B5✅/B1⏳；**待 owner 2 项（REM-80/84）**；19 卡待函 A。
+
+---
+
+## 2026-09-22 — Round 89：批次 2 提交落地 `3861f08d`，推送在跑
+
+- **B1-PREREQ 载体落定完成**（三件套：`review.md` `240aa2ff…`/20464 B、`handoff` `058dffd…`→`28a17532…`/56130 B（status_history 含 r1 changes_required→r2 accepted_scoped、三陈旧字段 supersede、SC-1..SC-7+CF-R2-01 入 carried）、`qualification` `46e1b94f…`/21480 B）；**落定方亲核父登记册四处引用**（§二十二 L597/补1 L621/§二十六 L717 含裁定2+F6 澄清/§二十八 L765+fix-kept L775+cosmetic L782）；r1 报告 0 字节保持。**批次 2 四前置（I-14-D/B3/B5/B1）全齐。**
+- **四步序列执行**：
+  1. 索引卫生：gitlinks=0、staged=0 ✓
+  2. 分类：25 tracked（PWF 3 + 已定卡 22，写入者全收工）+ 85 未跟踪证据条目
+  3a. **暂存健全性**：首扫 7957 文件 → 亮灯两组：**`b3_reference/iso/` 21 条**（gitignore `*/a*/iso/` 盖不到非标准深度=同政策类漏网）→ 补规则 `*/b3_reference/iso/` + 取消暂存；**basetemp 命名 82 条** → 定性为三组刻意保留浅层证据（I-09-C T-PUB 产物 36、I-14-E-APPLY zip 化留存 29=CF-I14F-X1 的 MAX_PATH 安全设计、I-14-F-R1 工件 16）→ **保留**。终检：7937 文件、iso/venv/nested 四指标全 0、unstaged_tracked=0
+  3b. **提交 `3861f08d`**（rc=0）：commit 信息全录四系统哈希链、REM-40..44 关闭、勘误范围收窄裁定、新 gitignore 规则；**hook 无 stash 周期**（unstaged=0 ⇒ 正确路径，`.cache/pre-commit` 最新 patch 仍为 batch-1 的 09:59）
+  4. 推送后台在跑（`git push origin HEAD:main`，全量捕获 `dsh-push-batch2-*.log`，门在 hook 内实跑）
+- **提交后小观察（不阻塞）**：2 个1字节 INVEST-CORE roundtrip 标记显示 M（mtime 昨晚未变，行尾/过滤器差异）——留工作树噪声、不入批，登记备查。
+- **计分**：五系全闭环（8/8+I-09-C、B3、B5、REM79、B1）；批次 2 推送中；**待 owner 2 项（REM-80/84）**；19 卡待函 A；E21 产品卡=新轨道。
+
+---
+
+## 2026-09-22 — Round 90：🎯 目标② 完全达成（批次 2 推送成功 + post-push 全绿）
+
+**推送**：`pre-push gate GREEN`（10/10 步含 real-roots + real-data）→ `6f74b056..3861f08d HEAD -> main`，push_rc=0。轻载下门总时长 ~7.5 min（步1-9 约4 min + real-data ~3.5 min——1200 预算充裕的再证）。
+
+**post-push 四步复算（全绿）**：①ahead=0/behind=0、HEAD==origin/main==`3861f08d`；②四锚 disk==HEAD（`9ec65295…`/`9939480b…`/`45e4e343…`/`1821fd2a…`）；③scripts porcelain CLEAN、门=`cf09ade8…`；④**批次 2 零产品文件改动**（scripts/tests/tools/config 全 NONE），7937 文件/+1439472 行=纯 .planning。
+
+**两批全景（目标②存档）**：
+- batch-1 `ab20cebe..6f74b056`：门超时行（600→1200 活体红绿对）+ 4 嵌套 gitlink 解除 + PWF 五件；门绿、四锚过。
+- batch-2 `6f74b056..3861f08d`：四系统全闭环证据（B3/B5/REM79/B1 复审-落定全链哈希）+ 8/8 目标卡与 I-09-C/I-14-E-APPLY/DW15/GATE/INVEST/E1E7/I-14-F-R1 全部复审报告与载体 + PWF（REM-01…86、§18-28、Rounds 84-89）；新 gitignore 规则 `*/b3_reference/iso/`；门绿 10/10、四锚过。
+
+**目标余项盘点（全部为 owner/外部闸）**：
+1. **owner 两问**：REM-80（M01-M04 扩权/豁免）、REM-84（START_HERE append-3 授权）
+2. **owner 晋升决定**（修复全在 iso、生产零合并——两批已把证据全部入史，晋升随时可执行）：B1 系（I-08-C 安全三项）、B3 系（含 REM-49 硬前置已满足）、I-14-D `[^\s]+`、I-14-F-R1 150/60、DW15 prune 修复、INVEST-CORE 补丁（+其合入权=invest-core owner）、I-14-F/I-14-I/I-10-B 等既有 accepted 项
+3. **外部**：函 A（TIER-2 三外部方回执 → I-06-A → **19 卡链**）；INVEST 测试设计卡（随合入）
+4. **新轨道（非本池）**：E21 产品卡（loader 身份+两比较点+锚部署）
+
+**仓内自主可推进项 = 已全部完成**（五系闭环、两批推送、登记册 REM-01…86 逐项处置完毕、PWF 同步至 Round 90、I-09-C 九步收口、REM79 机制化+工具转常规自检）。下轮拟产出**汇总式 owner 决策备忘**（把 1+2 全部待决项一次列齐，供一次答复解锁）。

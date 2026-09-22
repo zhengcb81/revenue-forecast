@@ -784,3 +784,37 @@ SRC oracle r7：47538/`a8f192f1…` → **57911/`6e344a20…`**（marker@47539=4
 **载体落定已派**（7 条范围条件含 register_closure 并行执行的交叉引用）。**批次 2：I-14-D ✅ / B3 ✅ / B5 ✅ / B1 落定中 → 三前置即将全齐。**
 
 **待 owner 不变 2 项**：REM-80、REM-84；外加 REM-42 的 E21 产品卡（新轨道，非本计划卡池）。
+
+---
+
+## 三十、【PROMOTION-PREP 交付 + 父抽验闭环 + B-6b 解谜】2026-09-22
+
+### 清单交付
+
+`execution_runs/PROMOTION-PREP/a20260922-01/promotion_batch_manifest.md` = **19190 B / sha256 `6759d1eb7044a3a4e5af75ffecd35fb612a2d9b26f0f361b15d5dcdee2073aac`**；六行 B-1..B-6 全、每格哈希现盘实测（Get-FileHash）、UNRESOLVED 格按规不猜；收尾件 binding/decision/commands/recovery README 齐；oracle 先冻结（来源=卡方载体+现盘重算、禁记忆构造）。`handoff` 骨架 review_pending（本卡为备料，非验收对象——是否复审由父定，默认免复审入册为工具性产物，其正确性由父抽验+owner 晋升时逐格再核双重把关）。
+
+**过程披露**：前手读卡期被父 interrupt（误判竞态，见 Round 71）后由重派者增量续做；一次编辑曾吞 B-2 标题，读回自检发现并改正（六 `## B-` 现全在）。
+
+### 父抽验（3/3，其一为我的路径猜错）
+
+| 格 | 结果 |
+|---|---|
+| B-1 `iso/fixed/rf/scripts/revenue_publication.py` | ✅ `bc2bb4a3…`/24917 = 清单 |
+| B-2 `iso/fixed/rf_scripts/company_wiki_source.py` | ✅ `7d1bd8f9…`/20545 = 清单（=iso 源，非生产——**清单纠正我的提示正确**） |
+| B-5 DW15 prune | ✅ 实路径 `iso/fixed/company_wiki/source_catalog/…` = `0c99bbe0…`/23115、baseline `2358c73b…`/4658=生产前像；我抽验时用平铺路径误报 MISSING，清单 changes.diff 两节本就正确 |
+
+### 纪律事件（正例入册）
+
+**提示被当主张重测**：我在派单里给的"生产 `7D1BD8F9`"是错的（那是 iso/fixed 源）；卡方未沿用、现盘实测 live 生产=`225fecdd…`/19364 并按卡载体为准 —— 与「禁记忆构造哈希」同源。**父抽验亦独立复现此纠正。**
+
+### B-6b 解谜（UNRESOLVED → 解析为耦合项）
+
+`card_I-14-I:13` 明写锚点 = **I-14-B 的 `iso/natural_window.py`（SUT_VERSION=i14b-after-2）**；父全盘探测（Projects 全树 + .agents/.codex/.claude skills 根）**无任何活体 `natural_window.py`** ⇒ 生产目标不存在 = **新文件**，且必须**经 I-14-B 晋升才被创建** ⇒ **B-6b 耦合 I-14-B（B-6d"更早项"的具体化）：晋升波次须 I-14-B 在前（或同波），I-14-I 随后**。清单该格从 UNRESOLVED-path 升级为 `new-file, inherits-from I-14-B promotion`（本条即其父侧解析记录，不改清单——清单为卡方冻结产物，如需回写由下一轮追加）。
+
+### 其余 UNRESOLVED 格的处置
+
+B-6d"(及更早项)"无对象 = 清单如实留空 ✓（B-6b 解析后其唯一实质缺口=I-14-B 入列）；全部 `git apply --check` 行按 step5 标 UNRESOLVED-verification ✓——**owner 批 B 组任一项时，执行者在真晋升日对所批项补做 apply-check 即可**（执行日校验优于备料日校验）。
+
+### B 组就绪状态
+
+**B-1/B-2/B-3/B-5/B-6c 源→目标→约束全备**（可即批即行）；B-4 双目标=新增文件+广套件采样义务在册；B-6a 明确**不晋升**（被 R1 取代）；B-6b/I-14-B 耦合入波次。**待 owner：A-1/A-2 + B 组批复 + C 函件状态。**

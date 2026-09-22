@@ -1,0 +1,17 @@
+{
+  "card": "PROMOTION-PREP",
+  "attempt_id": "a20260922-01",
+  "note": "Read-only assembly card. Commands below are the command CLASSES actually issued this attempt (PowerShell via harness, fresh process each call); no test or git-write command was run.",
+  "commands": [
+    {"id": "C1", "argv": "New-Item -ItemType Directory -Force <ATTEMPT>; Set-Content oracle.md; Set-Content handoff.json", "purpose": "create attempt dir + freeze oracle + handoff skeleton (first call)"},
+    {"id": "C2", "argv": "grep '第三批待决汇总' + read OWNER_DECISIONS.md offset 382 limit 35", "purpose": "read §十七 B-table only"},
+    {"id": "C3", "argv": "pwsh: Get-ChildItem <PLAN>\\execution_runs -Directory; recursive -Filter binding.json", "purpose": "locate card carriers (glob tool hit ACL-denied scratch dirs)"},
+    {"id": "C4", "argv": "read/grep tools on each card's binding.json, changes.diff (^diff/^---/^+++), handoff.json (scope|gap|condition|promot)", "purpose": "carrier extraction, section greps only"},
+    {"id": "C5", "argv": "Get-FileHash -Algorithm SHA256 <each source> <each target>", "purpose": "LIVE hash of every cited path (B-1 ×6, B-2 ×5, B-3 ×7, B-4 ×6, B-5 ×6, B-6 ×8 incl. probes)", "cwd": "session workspace", "network": "none"},
+    {"id": "C6", "argv": "pwsh: Get-ChildItem -Recurse -Filter natural_window.py (CW src + RF scripts; then both repos)", "purpose": "B-6b target path probe -> ABSENT => UNRESOLVED cell"},
+    {"id": "C7", "argv": "write/edit promotion_batch_manifest.md after each item (incremental save)", "purpose": "manifest assembly, 6 rows"},
+    {"id": "C8", "argv": "Set-Content binding.json/decision.md/commands.json/recovery/README.md; Get-FileHash promotion_batch_manifest.md", "purpose": "finish + manifest sha256"}
+  ],
+  "explicitly_not_run": ["pytest (any)", "git apply/--check (skipped per step 5 -> UNRESOLVED-verification)", "any git write", "any production write"],
+  "reproduction": "Re-run C5 against the paths listed in promotion_batch_manifest.md; expected post-promotion target hashes are stated per row."
+}
