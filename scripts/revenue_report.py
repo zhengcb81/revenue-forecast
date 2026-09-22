@@ -25,6 +25,7 @@ from revenue_core import (
     build_workflow_compliance_receipt,
     canonical_sha256,
     parse_iso_date,
+    period_year,
     referenced_parameter_ids,
     require,
     validate_growth_driver_tree,
@@ -153,6 +154,89 @@ def _recompute_consolidated_paths(
             ),
             f"incremental contribution mismatch in {scenario}",
         )
+
+
+def _validate_segment_opening_bases(
+    result: Any, parameter_index: Any, years: Any  # noqa: ARG001 - years for parity
+) -> None:
+    """Bind ``segments[i].base_revenue`` to its source parameter (B1 / REM-03).
+
+    Two independent gates, both on pre-existing result fields:
+
+    * **per-segment identity** — the segment's ``base_revenue_parameter_id`` must
+      resolve in ``parameter_trace`` (which the strong path already requires to
+      equal the validated input's parameter list) to a revenue-dimension
+      parameter for the base year whose value equals ``base_revenue``.  This is
+      the same lookup the engine itself performs in
+      ``forecast.segments.calculate_segment_forecasts``, so an honest artifact
+      can never fail it.
+    * **opening-base reconciliation** — the segment opening bases must sum to the
+      reported company base within the artifact's declared
+      ``reconciliation_tolerance``, mirroring ``contracts.document``'s
+      ``validate_base_reconciliation`` on the output side.  A segment without a
+      ``base_revenue_parameter_id`` still enters this sum.
+
+    Scope: this binds the per-segment opening base (a presentation field in the
+    分部表).  Company totals were already bound by
+    ``_recompute_consolidated_paths``; this gate adds no claim about them.
+    """
+    segments = result.get("segments")
+    require(isinstance(segments, list) and segments, "segments must be a non-empty list")
+    base_year = result.get("base_year")
+    for position, segment in enumerate(segments):
+        require(
+            isinstance(segment, dict), f"segments[{position}] must be an object"
+        )
+        require(
+            "base_revenue" in segment,
+            f"segments[{position}].base_revenue is required",
+        )
+        observed = float(segment["base_revenue"])
+        parameter_id = segment.get("base_revenue_parameter_id")
+        if parameter_id is None:
+            continue
+        name = segment.get("name")
+        parameter = parameter_index.get(parameter_id)
+        require(
+            isinstance(parameter, dict),
+            "segment base revenue mismatch: "
+            f"{name} references unknown base_revenue_parameter_id {parameter_id!r}",
+        )
+        require(
+            parameter.get("dimension") == "revenue",
+            "segment base revenue mismatch: "
+            f"{parameter_id} must use the revenue dimension",
+        )
+        require(
+            period_year(parameter.get("period"), f"{parameter_id}.period") == base_year,
+            "segment base revenue mismatch: "
+            f"{parameter_id} must be a FY{base_year} parameter",
+        )
+        require(
+            math.isclose(
+                float(parameter["value"]),
+                observed,
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            ),
+            "segment base revenue mismatch: "
+            f"{name} opening base {observed} does not match {parameter_id} "
+            f"({parameter['value']})",
+        )
+    reported_base = float(result["base_revenue"])
+    opening_total = sum(
+        float(segment["base_revenue"])
+        for segment in segments
+        if isinstance(segment.get("base_revenue"), (int, float))
+        and not isinstance(segment.get("base_revenue"), bool)
+    )
+    tolerance = float(result.get("reconciliation_tolerance", 1e-6))
+    allowed = max(1.0, abs(reported_base)) * tolerance
+    require(
+        abs(opening_total - reported_base) <= allowed,
+        "segment opening base does not reconcile: "
+        f"segments={opening_total}, reported={reported_base}",
+    )
 
 
 def _validate_confidence_block(confidence: Any) -> None:
@@ -476,6 +560,15 @@ def _validate_forecast_output(
                 <= segment["scenarios"]["high"]["recognized_revenue"][year],
                 f"segment scenario ordering mismatch: {segment['name']}/{year}",
             )
+
+    # B1 / REM-03: `segments[i].base_revenue` is the opening base of the
+    # per-segment 分部表 column.  It was bound by NO output gate — the model
+    # recomputation only checks `modeled_activity`, and the company totals only
+    # check `annual_revenue` — so a self-hash-consistent forgery of the
+    # presentation field survived every gate and rendered into the official
+    # report.  Two gates now bind it, using pre-existing fields only so the
+    # signed payload domain of honest artifacts is unchanged.
+    _validate_segment_opening_bases(result, parameter_index, years)
 
     current_constraint_contract = (
         result["schema_version"],

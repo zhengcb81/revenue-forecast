@@ -105,25 +105,6 @@ def _artifact_reusable(bundle: dict[str, Any], role: str) -> bool:
     return isinstance(artifact, dict) and artifact.get("reusable") is True
 
 
-def _dag_closure(role: str) -> list[str]:
-    """Transitive dependents of ``role`` (including itself) over the frozen
-    ROLE_DEPENDENCIES, IMPORTED from company-wiki's artifact_dag — the single
-    source of truth; no second copy can drift."""
-    from company_wiki.source_catalog.artifact_dag import ROLE_DEPENDENCIES
-
-    result: list[str] = []
-    frontier = [role]
-    while frontier:
-        current = frontier.pop()
-        if current in result:
-            continue
-        result.append(current)
-        for candidate, parents in ROLE_DEPENDENCIES.items():
-            if current in parents:
-                frontier.append(candidate)
-    return result
-
-
 def _dag_ancestors(role: str) -> list[str]:
     """Transitive inputs of ``role`` (roles it derives from) over the same
     imported ROLE_DEPENDENCIES: ROLE_DEPENDENCIES[role] IS the direct parent
@@ -144,6 +125,32 @@ def _dag_ancestors(role: str) -> list[str]:
     return result
 
 
+def _production_scope(
+    roles: tuple[str, ...],
+    reusable: set[str],
+    artifact_read: list[str],
+) -> list[str]:
+    """The roles that must be (re)produced for THIS request: every requested
+    role that is not readable, plus every non-reusable ancestor those roles
+    need.  Never the downstream closure of the requested roles — an
+    unrequested dependent is not produced (I-05-C step 2: 不盲补所有下游).
+
+    Shared by BOTH ``select_artifact_roles`` branches: the bundle-present path
+    passes the roles the bundle proved reusable, the ``bundle=None`` path
+    passes an empty set (nothing can be proven reusable without a bundle), so
+    the two branches cannot drift into different "what must be produced"
+    rules again (REM-11)."""
+    needs: set[str] = set()
+    for role in roles:
+        if role in artifact_read:
+            continue
+        needs.add(role)
+        for ancestor in _dag_ancestors(role):
+            if ancestor not in reusable:
+                needs.add(ancestor)
+    return sorted(needs)
+
+
 def select_artifact_roles(
     handle: dict[str, Any],
     roles: tuple[str, ...] = ("normalized", "markdown", "summary",
@@ -155,20 +162,35 @@ def select_artifact_roles(
 
     Returns ``(artifact_read, producer_events)``:
 
-    - ``artifact_read`` — roles whose verified artifact is in the envelope
-      bundle's ``valid_handles`` (provenance-matched for consumer_analysis);
-      these are read, their producers do NOT run (parser/LLM=0).
-    - ``producer_events`` — roles that must be (re)produced = the DAG closure
-      (role + transitive dependents over ROLE_DEPENDENCIES) of the
-      non-reusable roles — never a blind full recompute (AR-02/AR-03).
+    - ``artifact_read`` — roles that may be READ: the role has a verified
+      artifact in the envelope bundle's ``valid_handles`` AND every transitive
+      ancestor is also reusable (AR-03: a dependent derived from an invalidated
+      input is not trusted).  ``consumer_analysis`` additionally requires a
+      full provenance match when ``expected_provenance`` is given.  Role
+      reusability is evaluated over the REQUEST closure (the requested roles
+      plus their transitive ancestors), so a valid ancestor is still reported
+      when its dependent is missing from the bundle.  Read roles' producers do
+      NOT run (parser/LLM=0).
+    - ``producer_events`` — roles that must be (re)produced for THIS request:
+      each requested role that is not readable, plus every ancestor of those
+      roles that is not reusable.  It is NOT the downstream closure of the
+      requested roles — an unrequested dependent is never produced
+      (AR-02/AR-03, I-05-C step 2).
 
-    ``bundle=None`` (bundle_status=unavailable) → artifact_read=[], every
-    role needs production — honest, never faked.  A malformed bundle raises
-    (fail closed), never silently trusted.
+    ``bundle=None`` (bundle_status=unavailable) → ``artifact_read=[]`` (nothing
+    can be proven reusable, never faked) and ``producer_events`` follows the
+    SAME request-scoped rule with an empty reusable set: the requested roles
+    plus all their transitive ancestors.  So a ``normalized``-only request
+    produces only ``normalized``, while a request naming all roles still
+    produces all of them.  A malformed bundle raises (fail closed), never
+    silently trusted.
     """
     bundle = _bundle_from_handle(handle)
     if bundle is None:
-        return [], sorted({r for role in roles for r in _dag_closure(role)})
+        # REM-11: request-scoped, exactly like the bundle-present branch below.
+        # The old downstream closure of `roles` meant a normalized-only request
+        # scheduled every role, contradicting the "ONLY requested" contract.
+        return [], _production_scope(roles, set(), [])
     if not isinstance(bundle, dict):
         raise CompanyWikiSourceError("bundle must be an object (fail closed)")
     reusable: set[str] = set()
@@ -197,18 +219,12 @@ def select_artifact_roles(
         if role in reusable
         and all(ancestor in reusable for ancestor in _dag_ancestors(role))
     )
-    # W05-C fix: producer_events must contain ONLY what's needed to produce
-    # the requested missing roles — the missing role itself plus any ancestors
-    # that are not reusable. NOT the full downstream closure of unrequested
-    # dependents (which was the old bug).
-    missing_requested = [role for role in roles if role not in artifact_read]
-    needed_for_production: set[str] = set()
-    for role in missing_requested:
-        needed_for_production.add(role)
-        for ancestor in _dag_ancestors(role):
-            if ancestor not in reusable:
-                needed_for_production.add(ancestor)
-    producer_events = sorted(needed_for_production)
+    # producer_events must contain ONLY what's needed to produce the REQUESTED
+    # missing roles — the missing role itself plus any ancestors that are not
+    # reusable.  NOT the full downstream closure of unrequested dependents
+    # (which was the old bug).  Same helper the bundle=None branch uses, so the
+    # two paths cannot diverge (REM-11).
+    producer_events = _production_scope(roles, reusable, artifact_read)
     return artifact_read, producer_events
 
 

@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
 import os
+import re
+import secrets
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -111,18 +116,302 @@ def _build_forecast_draft(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def attestation_capability() -> bool:
-    """True when an external attestation provider is configured and runnable.
+    """True only when an attestation provider has PROVEN signing capability.
 
-    The provider is named by the ``REVENUE_ATTESTATION_PROVIDER`` environment
-    variable (a command on PATH or an absolute path to an executable).  Without
-    a runnable provider the runtime can only publish ``"unattested"`` formal
-    artifacts, which invest-* consumers reject by default (R2.1).
+    (B1 / REM-01(b), I-08-A rule R-PROV-1.)  File existence is explicitly **not**
+    capability: a plain ``.txt``, a bare ``.py`` with no protocol response, or
+    ``sys.executable`` all resolve to existing files and all grant nothing.  The
+    provider is named by ``REVENUE_ATTESTATION_PROVIDER`` (a command on PATH or
+    an absolute path) and must complete a bounded one-shot handshake — one JSON
+    request on stdin, exactly one JSON response on stdout — whose ``fingerprint``
+    resolves in the trust domain and whose Ed25519 signature verifies over the
+    echoed request.  Without that, the runtime can only publish ``"unattested"``
+    formal artifacts.
+
+    The provider file is never read, imported or executed as a script by the
+    host; it is only spawned, and only when the path exists.  A module-level
+    diagnostic is exposed by :func:`attestation_last_failure`.
+    """
+    global _ATTESTATION_LAST_FAILURE
+    _ATTESTATION_LAST_FAILURE = None
+    from revenue_publication import (
+        publication_attestation_request,
+    )
+
+    request = publication_attestation_request(
+        request_id=secrets.token_hex(32),
+        payload_sha256=hashlib.sha256(b"capability-probe").hexdigest(),
+    )
+    response = _run_attestation_provider(request)
+    if response is None:
+        return False
+    try:
+        _validate_attestation_response(request, response)
+    except ForecastInputError as exc:
+        _record_attestation_failure(str(exc))
+        return False
+    return True
+
+
+def attestation_last_failure() -> dict[str, str] | None:
+    """Diagnostic for the most recent capability/signing failure, or None.
+
+    Read-only reporting aid: it carries no authority and is never consulted by a
+    validation path.  Its presence never decides a label by itself.
+    """
+    return dict(_ATTESTATION_LAST_FAILURE) if _ATTESTATION_LAST_FAILURE else None
+
+
+# --- Provider handshake (B1 / REM-01) ---------------------------------------
+# `T` (timeout) and `L` (stdout bound) are PARAMETERS, not frozen constants:
+# I-08-A OPEN-D7 owns their values.  These two are this implementation's
+# defaults, recorded in this attempt's binding.json and NOT claimed normative.
+ATTESTATION_PROVIDER_TIMEOUT_SECONDS = 10.0
+ATTESTATION_PROVIDER_MAX_STDOUT_BYTES = 65536
+
+ATTESTATION_RESPONSE_FIELDS = (
+    "attestation_response_schema_version",
+    "request_id",
+    "payload_sha256",
+    "domain_separator",
+    "issuer",
+    "key_id",
+    "fingerprint",
+    "algorithm",
+    "signature",
+    "signed_at",
+)
+
+_ATTESTATION_LAST_FAILURE: dict[str, str] | None = None
+
+
+def _record_attestation_failure(message: str) -> None:
+    """Store ``{"code": <I-08-A code>, "message": <str>}`` for a coded message."""
+    global _ATTESTATION_LAST_FAILURE
+    failure = parse_attestation_failure(message)
+    _ATTESTATION_LAST_FAILURE = failure
+
+
+def parse_attestation_failure(message: str) -> dict[str, str]:
+    """Split a coded rejection message into ``{"code", "message"}``."""
+    match = re.match(r"^([a-z][a-z0-9_]*):\s*(.*)$", message, re.DOTALL)
+    if match is None:
+        return {"code": "provider_protocol_violation", "message": message}
+    return {"code": match.group(1), "message": match.group(2).strip()}
+
+
+def _run_attestation_provider(request: dict[str, Any]) -> dict[str, Any] | None:
+    """One-shot provider handshake.  Returns the response object, or None.
+
+    Every failure path records a coded diagnostic and returns None; nothing here
+    raises, because a publication that cannot be signed must degrade to an honest
+    ``unattested`` publication rather than fail the research result.
     """
     provider = os.environ.get("REVENUE_ATTESTATION_PROVIDER")
     if not provider:
-        return False
+        _record_attestation_failure(
+            "provider_absent: REVENUE_ATTESTATION_PROVIDER is not set"
+        )
+        return None
     resolved = shutil.which(provider) or Path(provider).expanduser()
-    return resolved is not None and os.path.isfile(resolved)
+    if resolved is None or not os.path.isfile(resolved):
+        _record_attestation_failure(
+            f"provider_path_unopenable: {provider!r} does not resolve to a file"
+        )
+        return None
+    try:
+        completed = subprocess.run(
+            [str(resolved)],
+            input=json.dumps(request, sort_keys=True).encode("utf-8"),
+            capture_output=True,
+            timeout=ATTESTATION_PROVIDER_TIMEOUT_SECONDS,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        _record_attestation_failure(
+            "provider_timeout: provider exceeded "
+            f"{ATTESTATION_PROVIDER_TIMEOUT_SECONDS}s and was terminated"
+        )
+        return None
+    except OSError as exc:
+        _record_attestation_failure(f"provider_path_unopenable: {exc}")
+        return None
+    if completed.returncode != 0:
+        detail = completed.stderr.decode("utf-8", "replace").strip()[:200]
+        if "cannot sign" in detail or "no private key" in detail:
+            _record_attestation_failure(
+                f"provider_signing_unavailable: {detail or 'provider refused to sign'}"
+            )
+        else:
+            _record_attestation_failure(
+                f"provider_exit_nonzero: exit code {completed.returncode}; {detail}"
+            )
+        return None
+    raw = completed.stdout
+    if len(raw) > ATTESTATION_PROVIDER_MAX_STDOUT_BYTES:
+        _record_attestation_failure(
+            "provider_output_too_large: provider wrote "
+            f"{len(raw)} bytes, above the {ATTESTATION_PROVIDER_MAX_STDOUT_BYTES} "
+            "byte bound"
+        )
+        return None
+    text = raw.decode("utf-8", "replace").strip()
+    if not text:
+        _record_attestation_failure(
+            "provider_protocol_violation: provider wrote no response"
+        )
+        return None
+    try:
+        response = json.loads(text)
+    except json.JSONDecodeError as exc:
+        _record_attestation_failure(f"provider_invalid_json: {exc}")
+        return None
+    if not isinstance(response, dict):
+        _record_attestation_failure(
+            "provider_schema_mismatch: response must be a single JSON object"
+        )
+        return None
+    _ATTESTATION_LAST_FAILURE = None
+    return response
+
+
+def _validate_attestation_response(
+    request: dict[str, Any], response: dict[str, Any]
+) -> dict[str, str]:
+    """Validate one provider response; raise ``ForecastInputError`` if untrusted.
+
+    Returns the identity fields on success so the caller can assemble the
+    binding record.
+    """
+    from revenue_publication import (
+        PUBLICATION_ATTESTATION_ALGORITHM,
+        PUBLICATION_ATTESTATION_SCHEMA_VERSION,
+        verify_ed25519_signature,
+    )
+
+    missing = [field for field in ATTESTATION_RESPONSE_FIELDS if field not in response]
+    extra = sorted(set(response) - set(ATTESTATION_RESPONSE_FIELDS))
+    if missing or extra:
+        raise ForecastInputError(
+            "provider_schema_mismatch: response field set mismatch "
+            f"(missing={missing}, extra={extra})"
+        )
+    if (
+        response["attestation_response_schema_version"]
+        != PUBLICATION_ATTESTATION_SCHEMA_VERSION
+    ):
+        raise ForecastInputError(
+            "provider_schema_mismatch: attestation_response_schema_version mismatch"
+        )
+    for field in ("request_id", "payload_sha256", "domain_separator"):
+        if response[field] != request[field]:
+            raise ForecastInputError(
+                f"provider_binding_mismatch: response.{field} does not echo the request"
+            )
+    if response["algorithm"] != PUBLICATION_ATTESTATION_ALGORITHM:
+        raise ForecastInputError(
+            "provider_schema_mismatch: response.algorithm must be "
+            f"{PUBLICATION_ATTESTATION_ALGORITHM!r}"
+        )
+    for field in ("issuer", "key_id"):
+        if not isinstance(response[field], str) or not response[field].strip():
+            raise ForecastInputError(
+                f"provider_schema_mismatch: response.{field} must be a non-empty string"
+            )
+    if (
+        not isinstance(response["fingerprint"], str)
+        or re.fullmatch(r"[0-9a-f]{32}", response["fingerprint"]) is None
+    ):
+        raise ForecastInputError(
+            "provider_schema_mismatch: response.fingerprint must be 32 lowercase hex"
+        )
+    if not isinstance(response["signature"], str) or not response["signature"]:
+        raise ForecastInputError(
+            "attestation_missing_signature: provider returned no signature (E12)"
+        )
+    if re.fullmatch(r"[0-9a-f]{128}", response["signature"]) is None:
+        raise ForecastInputError(
+            "attestation_malformed_signature: response.signature must be 128 "
+            "lowercase hex (E13)"
+        )
+    if (
+        not isinstance(response["signed_at"], str)
+        or re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", response["signed_at"]
+        )
+        is None
+    ):
+        raise ForecastInputError(
+            "provider_schema_mismatch: response.signed_at must be RFC3339 UTC 'Z'"
+        )
+    # The signing target is the request object as the provider received it, so a
+    # signature cannot be moved onto a different request.
+    message = canonical_sha256(request).encode("ascii")
+    verify_ed25519_signature(
+        response["fingerprint"], response["signature"], message
+    )
+    return {
+        "issuer": response["issuer"],
+        "key_id": response["key_id"],
+        "fingerprint": response["fingerprint"],
+        "signature": response["signature"],
+        "signed_at": response["signed_at"],
+    }
+
+
+def request_publication_attestation(
+    result: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Run the provider handshake for a concrete publication.
+
+    Returns the binding record to attach to the receipt, or ``None`` when the
+    publication cannot be attested (the caller then publishes ``"unattested"``).
+    The record deliberately omits the result digest and the receipt's own hash:
+    both cover the receipt, which contains the record, so citing them inside the
+    record would be a fixpoint.  The artifact is still bound — see
+    ``revenue_publication.publication_attestation_request``.
+    """
+    from revenue_publication import (
+        PUBLICATION_ATTESTATION_ALGORITHM,
+        PUBLICATION_ATTESTATION_DOMAIN,
+        PUBLICATION_ATTESTATION_SCHEMA_VERSION,
+        publication_attestation_request,
+    )
+
+    request = publication_attestation_request(
+        request_id=secrets.token_hex(32),
+        payload_sha256=canonical_sha256(
+            {
+                key: value
+                for key, value in result.items()
+                if key not in ("result_sha256", "publication_receipt")
+            }
+        ),
+    )
+    response = _run_attestation_provider(request)
+    if response is None:
+        return None
+    try:
+        identity = _validate_attestation_response(request, response)
+    except ForecastInputError as exc:
+        # A response that cannot be trusted means "not attested", not "fail the
+        # publication": the research result is still valid, and a bare label is
+        # exactly what this fix removes.
+        _record_attestation_failure(str(exc))
+        return None
+    _ATTESTATION_LAST_FAILURE = None
+    return {
+        "attestation_payload_schema_version": PUBLICATION_ATTESTATION_SCHEMA_VERSION,
+        "domain_separator": PUBLICATION_ATTESTATION_DOMAIN,
+        "issuer": identity["issuer"],
+        "key_id": identity["key_id"],
+        "algorithm": PUBLICATION_ATTESTATION_ALGORITHM,
+        "fingerprint": identity["fingerprint"],
+        "request_id": request["request_id"],
+        "payload_sha256": request["payload_sha256"],
+        "signed_at": identity["signed_at"],
+        "signature": identity["signature"],
+    }
 
 
 def run_forecast(data: dict[str, Any], *, mode: str = "formal") -> dict[str, Any]:
@@ -138,8 +427,11 @@ def run_forecast(data: dict[str, Any], *, mode: str = "formal") -> dict[str, Any
     invest-* consumers must only accept ``"formal"`` artifacts.
 
     Formal publications carry an ``attestation_status`` (R2.1): ``"host_signed"``
-    only when an external attestation provider is configured, otherwise
-    ``"unattested"`` (rejected by invest-* consumers by default).
+    only when a provider completed a verified signing handshake (B1 / REM-01),
+    otherwise ``"unattested"``.  The label is never set from a boolean: it is set
+    only when :func:`request_publication_attestation` returned a record whose
+    signature verifies against the trust domain, and that record is attached to
+    the receipt.
     """
     from revenue_publication import (
         build_publication_receipt,
@@ -162,11 +454,18 @@ def run_forecast(data: dict[str, Any], *, mode: str = "formal") -> dict[str, Any
         )
         result["publication_receipt"] = build_draft_receipt(result)
     else:
-        # R2.1: host_signed requires a configured, runnable attestation
-        # provider; otherwise the publication is explicitly unattested.
-        attestation_status = "host_signed" if attestation_capability() else "unattested"
+        # R2.1 + B1/REM-01: host_signed requires a completed, trust-verified
+        # signing handshake.  A configured-but-unproven provider yields an
+        # honest `unattested` publication, never a bare label.
+        attestation_record = request_publication_attestation(result)
+        attestation_status = (
+            "host_signed" if attestation_record is not None else "unattested"
+        )
         result["publication_receipt"] = build_publication_receipt(
-            result, context, attestation_status=attestation_status
+            result,
+            context,
+            attestation_status=attestation_status,
+            publication_attestation=attestation_record,
         )
     result["result_sha256"] = canonical_sha256(result)
     if mode == "formal":

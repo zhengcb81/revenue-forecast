@@ -135,7 +135,7 @@ def prepare_source(
     # bundle (FC-902) via the selector — the unsourced
     # payload.get("selected_artifacts") path is removed.  artifact_read =
     # roles with a verified artifact (producers do not run); producer_events =
-    # the DAG closure of the non-reusable roles (never a blind full recompute).
+    # requested missing roles + their non-reusable ancestors (never a blind full recompute).
     artifact_read, producer_events = (
         company_wiki_source.select_artifact_roles(handle))
     # W05-B: verify the ACTUAL artifact reads.  artifact_read is the PLAN;
