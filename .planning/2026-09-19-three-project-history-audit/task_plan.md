@@ -1807,3 +1807,52 @@ r4 的行落在 `harness/run_i14d_oracle_r4.py` 与 `harness/run_rule_table_i14d
 **未处理**：`F-REV-R3-02`（r3 载体的夸大）、`F-REV-R3-03`、`F-REV-R3-05`、`F-REV-R3-06…10` —— 已登记，不在 r4 范围。
 
 **产物**：`iso/product_narrow_r4/`、两条 r4 harness、`handoff_r4.json`（6606 B）、`oracle.md` CORRECTION 4、`review.md` 的 `## r4` 节、`execution_runs/_r4_measure_20260922/`。
+
+---
+
+## Round 73 — `I-14-D` r4 的**独立复核已回收**：`changes_required`，而**十一项主张全部 CONFIRMED**
+
+**卡**：无（编排层复核落定轮次）。**性质**：**复核结果落定**。**本编排层不表达任何裁决。**
+
+### 结果
+
+| 项 | 值 |
+|---|---|
+| 裁决 | **`changes_required`** —— r4 **按交付**不被接受 |
+| 报告 | `reviewer_report_r4.md`，**51860 B / `f27a85a5…`**（由字节复算） |
+| 十一项主张 | **11 CONFIRMED / 0 REFUTED / 0 UNVERIFIABLE** |
+| 发现 | **2 MEDIUM + 2 LOW**（均属阻断） |
+
+### 这个裁决的**不寻常形态**（必须写清楚）
+
+**十一项主张全部被确认**——修复是真的：r4 与 r3 恰好差那 4 个字节区、逆重建逐字节还原 r3；
+`?` 泄漏**在类层面**被关掉（break 之后的引号分支现已与 `_QUOTED_VALUE` **逐字节相同**，200 探针字符扫描只剩 `\n`/`\r`）；
+非字母族被关掉且 **r4 优于 `product_base`（0 对 3）**；八条新行在 r3 树上**全部转红**；既有行**零移动**；登记哈希全部复现。
+
+**但裁决仍是 `changes_required`——因为失败的**不是修复，是记录与登记**。**
+
+### 两条 MEDIUM（**本编排层均已亲自复现**）
+
+- **`F-REV-R4-05`（MEDIUM）** —— **未登记**的凭据留存族：`Authorization: <非 tchar token>\n<凭据>`。
+  实测：`Authorization: Bo?t\n<本卡自己的 marker>` 在 r4 上**留存 marker**，而 `product_base` **脱敏**；共 **31 个未登记的、相对 base 回归的形态**。
+  **r4 没有引入它**（r2/r3 同样泄漏，且 r4 严格缩小了该族），**但它未登记**——而这张卡的整段历史就是关于「未登记的族」的。
+- **`F-REV-R4-06`（MEDIUM）** —— **记录夸大**。`oracle.md` C4.5 写「`fix_A_and_B` leaves only the registered `C10` residual」。
+  实测：该结论**只对那一节报告的 19 个探针成立**；作为普遍断言它**是假的**。同一句还出现在 remediation register 与 task_plan Round 72。
+  ⇒ **这正是 `F-REV-R3-02` 那个物种又出现了一次**：上一位 reviewer 就 r3 载体提的同一件事，**隔一代又发生**。
+
+### 两条 LOW
+
+- **`F-REV-R4-01`**：`observability.py:295-298` 的源码注释**与 r3 逐字节相同**，仍写着已被证伪的「always begins with a letter」，且**与已放宽的第 317 行自相矛盾**。
+- **`F-REV-R4-02`**：`measure_r4.py` 的 docstring 与 `r4_measurement.json` 的键 `fix_b_measured_but_not_applied` 说 fix B 不在树里，而**同一文件的 `main()` 说相反**——**测量记录自相矛盾**。
+
+### ⚠️ 本轮必须记住的一条（关于**我自己**）
+
+**这是同一个错误在相邻两代里出现两次**：r3 载体的「引用一个已不可复现的验证」，与 r4 记录的「用一个 19 探针的结论去下普遍断言」，
+**形态不同、物种相同**——**记录声称的比测量支持的更多**。
+⇒ **判据（建议）**：**凡写结论句，必须把它的「测量集」写进句子里**（「在本节报告的 N 个探针上，仅剩 C10」），
+否则**下一代的读者会把它当成普遍命题**——**而作者与读者都会以为那是同一句话。**
+
+### 边界
+
+**未修任何东西**（`F-REV-R4-05` 与 `F-REV-R4-06` 的修复属 **r5**）；**未改**产品副本、harness、r3/r4 记录；
+**未做 `status` 转移**（仍 `review_pending`）；**未代签**；**删除 0**。**本轮唯一写入**：`review.md` 的 `## r4 verdict` 节（追加）。

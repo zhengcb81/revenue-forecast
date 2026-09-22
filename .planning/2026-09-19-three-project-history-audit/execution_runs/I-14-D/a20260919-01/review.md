@@ -207,3 +207,56 @@ record of what was claimed at the time, and the correction belongs to this gener
    module's global pattern ran first, so the "tree as it stands" candidate read that same rebound
    pattern — and the report said fix B changed nothing when in fact it closes the non-letter
    family. The import-time pattern is now captured before any candidate runs.
+
+
+---
+
+## r4 verdict (2026-09-22) — the independent reviewer returned `changes_required`, with all eleven claims CONFIRMED
+
+**Verdict: `changes_required` — the r4 revision is not accepted as delivered.** The verdict is
+the reviewer's; this attempt states none of its own.
+
+**Carrier**: `reviewer_report_r4.md`, 51860 B, sha256 `f27a85a51596075b795d885a5ca5120bcd4ccbf057ce9c3d9f9075ff9d294bc6` — recomputed from the bytes
+when this section was written. The report was written to this attempt as a FILE before this
+section landed.
+
+### The unusual shape of this verdict, stated plainly
+
+**All eleven claims the reviewer was asked to test came back CONFIRMED, and none were refuted.**
+The fixes are real: r4 differs from r3 in exactly the four byte regions the carrier names, and
+inverting those regions reproduces r3 byte for byte; the `?` leak is closed **at the class
+level** (the after-break quoted alternatives are now byte-identical to `_QUOTED_VALUE`, and a
+200-probe character sweep leaves only `\n`/`\r`); the non-letter family is closed and r4 beats
+`product_base` (0 leaks against 3); all eight new rows go red on the r3 tree; no pre-existing row
+moved; every registered hash reproduces.
+
+**The verdict is nevertheless `changes_required`, because what fails is not the fix but the
+record and the registration.** Two MEDIUM and two LOW findings:
+
+* **`F-REV-R4-05` (MEDIUM)** — an **unregistered** credential-persistence family:
+  `Authorization: <non-tchar-token>\n<credential>`. `redact_text('Authorization: Bo?t\n<the
+  card's own marker>')` persists the marker on r4, while `product_base` redacts it. 31
+  unregistered base-regressive shapes. **Reproduced independently outside the review as well.**
+  Not introduced by r4 (r2 and r3 leak it too, and r4 strictly reduces the family), but it is
+  unregistered, and this card's whole history is about unregistered families.
+* **`F-REV-R4-06` (MEDIUM)** — **the record overstates.** `oracle.md` C4.5 says "`fix_A_and_B`
+  leaves only the registered `C10` residual". That is true **only of the 19-probe measurement
+  set** the section reports; as written it is a general claim, and it is false. The same sentence
+  is repeated in the remediation register and in task_plan.md Round 72. **This is the
+  `F-REV-R3-02` species recurring** — the previous reviewer raised exactly this about the r3
+  carrier, and it has happened again one generation later.
+* **`F-REV-R4-01` (LOW)** — the source comment at `observability.py:295-298` is byte-identical to
+  r3: it still asserts the false "always begins with a letter" ABNF, and it now contradicts line
+  317, which the fix widened.
+* **`F-REV-R4-02` (LOW)** — `measure_r4.py`'s docstring and `r4_measurement.json`'s key
+  `fix_b_measured_but_not_applied` say fix B is not in the tree; the same file's `main()` says
+  the opposite. The measurement record contradicts itself.
+
+### Scope the verdict covers, and what it does not
+
+It covers the r4 product copy, both r4 harnesses, the r3 harnesses' byte-pins, the r4 carriers,
+and the r4 measurement directory. It does not cover the copied pytest suites, the real worker or
+CLI exit, promotion, or any mapping question.
+
+**Status: `review_pending`.** A fix for `F-REV-R4-05` and a correction of `F-REV-R4-06` belong
+to a new revision (r5), not to edits of r4.

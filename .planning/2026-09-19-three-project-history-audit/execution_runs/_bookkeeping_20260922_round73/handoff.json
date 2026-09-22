@@ -1,0 +1,111 @@
+{
+ "card": "_bookkeeping_20260922_round73",
+ "kind": "orchestrator_bookkeeping",
+ "round": 73,
+ "date": "2026-09-22",
+ "subject_card": "I-14-D",
+ "subject_attempt": "a20260919-01",
+ "subject_iteration": "r4",
+ "what_this_round_is": "the independent review of I-14-D r4 was dispatched, returned, and has been landed: the report is byte-fixed in the attempt and the verdict is appended to review.md",
+ "what_this_round_is_not": [
+  "a verdict of the orchestrator's own -- the verdict is the reviewer's",
+  "a fix for the findings -- they belong to r5",
+  "a status transition",
+  "a product change"
+ ],
+ "authority": {
+  "source": "OWNER_DECISIONS.md §13 T1-27",
+  "note": "dispatching an independent reviewer subagent is this project's established practice; the dispatcher does not review its own carrier"
+ },
+ "dispatch": {
+  "brief": "execution_runs/_review_i14d_r4_20260922/DISPATCH.md",
+  "brief_bytes": 8536,
+  "brief_sha256": "466b076b2887f6f31592b34fe8896b65c0728883679eeb2d1ae3003c272a9963",
+  "self_contained": true,
+  "explicitly_disclosed_to_the_reviewer": "the four new oracle rows' expected strings were observed from the r4 tree and then frozen, which is weaker than the hand-computation the oracle's own section 2 requires; the reviewer was asked to test whether they are genuinely derivable independently of the code"
+ },
+ "verdict": {
+  "value": "changes_required",
+  "subject": "the r4 revision is not accepted as delivered",
+  "carrier": "reviewer_report_r4.md",
+  "carrier_bytes": 51860,
+  "carrier_sha256": "f27a85a51596075b795d885a5ca5120bcd4ccbf057ce9c3d9f9075ff9d294bc6",
+  "hash_was_computed_from_the_bytes": true,
+  "claims": {"confirmed": 11, "refuted": 0, "unverifiable": 0},
+  "findings": {"medium": 2, "low": 2},
+  "the_unusual_shape_of_this_verdict": "ALL ELEVEN CLAIMS CONFIRMED and NONE REFUTED, yet the verdict is changes_required -- because what fails is not the fix but the record and the registration. What the reviewer verified: r4 differs from r3 in exactly the four byte regions the carrier names and inverting them reproduces r3 byte for byte; the '?' leak is closed AT THE CLASS LEVEL (the after-break quoted alternatives are now byte-identical to _QUOTED_VALUE, and a 200-probe character sweep leaves only \\n and \\r); the non-letter family is closed and r4 beats product_base (0 leaks against 3); all eight new rows go red on the r3 tree; no pre-existing row moved; every registered hash reproduces; handoff_r4.json overstates nothing.",
+  "and_the_evidence_standard_question_was_answered": "the four new expectations ARE genuinely derivable from the specification -- each is a pre-existing frozen row (N5k / N5c) with one substitution whose semantics the corresponding fix states"
+ },
+ "the_blocking_findings": {
+  "F-REV-R4-05": {
+   "severity": "MEDIUM",
+   "what": "an UNREGISTERED credential-persistence family: Authorization: <non-tchar-token> newline <credential>",
+   "reproduction": "redact_text('Authorization: Bo?t\\n<the card's own marker>') persists the marker on r4, while product_base redacts it",
+   "scale": "31 unregistered base-regressive shapes (r4's 32 minus the registered C10)",
+   "reproduced_independently_by_the_orchestrator": true,
+   "not_introduced_by_r4": "r2 and r3 leak it too, and r4 strictly reduces the family",
+   "why_it_still_blocks": "it is unregistered, and this card's whole history is about unregistered families"
+  },
+  "F-REV-R4-06": {
+   "severity": "MEDIUM",
+   "what": "the record overstates: oracle.md C4.5 says 'fix_A_and_B leaves only the registered C10 residual', which is true only of the 19-probe measurement set the section reports; as written it is a general claim and it is false",
+   "reproduced_independently_by_the_orchestrator": true,
+   "copies_of_the_same_sentence": ["oracle.md C4.5", "REMEDIATION_REGISTER.md section 16 (REM-67 item 2)", "task_plan.md Round 72"],
+   "species": "this is F-REV-R3-02 recurring -- the previous reviewer raised exactly this about the r3 carrier, and it has happened again one generation later"
+  },
+  "F-REV-R4-01": {
+   "severity": "LOW",
+   "what": "the source comment at observability.py:295-298 is byte-identical to r3, still asserts the false 'always begins with a letter' ABNF, and now contradicts line 317 which the fix widened"
+  },
+  "F-REV-R4-02": {
+   "severity": "LOW",
+   "what": "measure_r4.py's docstring and r4_measurement.json's key fix_b_measured_but_not_applied say fix B is not in the tree; the same file's main() says the opposite. The measurement record contradicts itself."
+  }
+ },
+ "the_methodological_lesson": {
+  "what": "the same species of error occurred in two adjacent generations",
+  "detail": "r3's carrier cited a verification that no longer reproduced (F-REV-R3-02); r4's record turned a 19-probe result into a general claim (F-REV-R4-06). Different shapes, same species: the record claims more than the measurement supports.",
+  "generalisation": "a conclusion sentence must carry its measurement set inside the sentence. Write 'on the N probes this section reports, only C10 remains' rather than 'only C10 remains'. The difference costs nothing at write time and is unrecoverable at read time -- the next reader takes the latter as a universal proposition, and both author and reader believe they are the same sentence.",
+  "a_second_lesson": "fixing the branch that was pointed at is not the same as closing the family. r4 closed the non-letter branch while '?' -- also a non-tchar character -- kept leaking; both are the same family ('the token class does not match'), and only one branch was registered. When the fix is 'widen a class', the boundary of the family is where the class ends, so the class's COMPLEMENT must be swept too -- and per position, because the same class has different reachability at the scheme position, the value position and the after-break position."
+ },
+ "pre_images": {
+  "review.md": {"bytes": 12541, "sha256": "b78c77d76b34dbea48f29fcc512e7ffdf5f5cfaa6082ffc57b24d0dd40948c49"},
+  "task_plan.md": {"bytes": 231650, "sha256": "df47b9ab1ef747cf7e598828d6fc494153ddc9999f684a6654e86615be44c125"},
+  "findings.md": {"bytes": 66163, "sha256": "c0effbc217f32dee37f984b56e5e9e4c37728276a10b393efe7e6731e2723de4"},
+  "progress.md": {"bytes": 146305, "sha256": "ae2b28ed7d0c61abc174de817870932915ed91ef30cf23ad978701c8ff7bcaaf"},
+  "REMEDIATION_REGISTER.md": {"bytes": 39433, "sha256": "a746f2e7f958800cc9d19fabbb748c49dde11b2559275d12f8a5b700d1c00f71"}
+ },
+ "post_images": {
+  "review.md": {"bytes": 15865, "sha256": "1af2058f947c8832de0ff6b36f498f6b8dee0adb4ecf4248b2e3d4ac637c06a4", "delta_bytes": 3324, "lines_added": 53, "lines_deleted": 0},
+  "task_plan.md": {"bytes": 235199, "sha256": "d0d95c5acc541fa4b1aa92df73148f21e40ea7e166f21e2b4ed7014a47bf1b2e", "delta_bytes": 3549, "lines_added": 49, "lines_deleted": 0},
+  "findings.md": {"bytes": 68606, "sha256": "e9e26fb4d512d06a29e7dba6a84994ce17dc5180f31472cf7df75c518266ee07", "delta_bytes": 2443, "lines_added": 13, "lines_deleted": 0},
+  "progress.md": {"bytes": 148159, "sha256": "4f4025d03fdfdc97493a95c024f37c470ecc2a03728543e2c2f33e4f9bb37920", "delta_bytes": 1854, "lines_added": 18, "lines_deleted": 0},
+  "REMEDIATION_REGISTER.md": {"bytes": 41779, "sha256": "f60a86d0a398815a992ee078eec54a21bd9ba3e865f3cc375502f85eddfda568", "delta_bytes": 2346, "lines_added": 20, "lines_deleted": 0}
+ },
+ "registered_in_register": ["REM-69 (closed)", "REM-71", "REM-72", "REM-73", "REM-74"],
+ "artefacts": {
+  "append_only_proof_round73_task_plan.json": {"bytes": 1722, "sha256": "df34ad54257fd33589795f5a81603324de099a25f16b5f4af309064245e307d8"},
+  "append_only_proof_round73_findings.json": {"bytes": 1713, "sha256": "e334501872548ff6f5b9df9273c42e45aa61353ba8010d74d2bfcf661d780629"},
+  "append_only_proof_round73_progress.json": {"bytes": 1718, "sha256": "8f580872263ffba4193578719f3c1b03717777224efd402d44a355d6efeef601"},
+  "append_only_proof_round73_register.json": {"bytes": 1725, "sha256": "018e2ad8a758d74f2ed34eb673dbf9114e04abe27b300729a03dd99a56c1fd67"},
+  "append_only_proof_round73_i14d_review_md.json": {"bytes": 1762, "sha256": "dc1c28928443cb97d22a64acf86136784a6297f8f29f333b14e8d70b3b0d0675"},
+  "dispatch_elsewhere": {"dir": "execution_runs/_review_i14d_r4_20260922", "DISPATCH.md": {"bytes": 8536, "sha256": "466b076b2887f6f31592b34fe8896b65c0728883679eeb2d1ae3003c272a9963"}}
+ },
+ "boundaries": {
+  "product_files_written": 0,
+  "product_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "attempt_files_written": ["review.md (appended)", "reviewer_report_r4.md (written by the reviewer)"],
+  "nothing_fixed": true,
+  "status_transitions": 0,
+  "status_remains": "review_pending",
+  "verdict_expressed_by_the_orchestrator": false,
+  "signatures_on_behalf_of_others": 0,
+  "deletions": 0
+ },
+ "next_action_for_the_owner": [
+  "REM-71 and REM-72 belong to r5: register the non-tchar-token family (or fix it), and correct the overstated sentence at its three copies. REM-73 and REM-74 are the two LOW items and also belong to r5.",
+  "REM-55 I-14-E-APPLY: still terminated mid-campaign; no decision yet.",
+  "the push: 17 commits will be pending after this one; the pre-push gate's 600 s E2E cap remains below the suite's measured 861.7 s, and the gate has not been bypassed."
+ ],
+ "self_reference_note": "handoff.json does not register its own hash; it is recorded in task_plan.md's Round 73 section and in the memory file"
+}

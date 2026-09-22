@@ -1,0 +1,79 @@
+{
+ "candidates": {
+  "fix_A_and_B": {
+   "leak_map": {
+    "C1": false,
+    "C10": true,
+    "C11": false,
+    "C12": false,
+    "C2": false,
+    "C3": false,
+    "C4": false,
+    "C5": false,
+    "C6": false,
+    "C7": false,
+    "C8": false,
+    "C9": false,
+    "dq-no-question-mark": false,
+    "dq-with-question-mark": false,
+    "letter-scheme": false,
+    "non-letter-bang-scheme": false,
+    "non-letter-digit-scheme": false,
+    "non-letter-marker": false,
+    "sq-with-question-mark": false
+   },
+   "leaking": [
+    "C10"
+   ],
+   "oracle_failures": [],
+   "over_redaction": {
+    "OR1": "Authorization: <redacted>",
+    "OR2": "Authorization: <redacted>"
+   },
+   "rule_failures": [],
+   "token_class": null
+  },
+  "fix_A_only": {
+   "leak_map": {
+    "C1": false,
+    "C10": true,
+    "C11": false,
+    "C12": false,
+    "C2": false,
+    "C3": false,
+    "C4": false,
+    "C5": false,
+    "C6": false,
+    "C7": false,
+    "C8": false,
+    "C9": false,
+    "dq-no-question-mark": false,
+    "dq-with-question-mark": false,
+    "letter-scheme": false,
+    "non-letter-bang-scheme": true,
+    "non-letter-digit-scheme": true,
+    "non-letter-marker": true,
+    "sq-with-question-mark": false
+   },
+   "leaking": [
+    "C10",
+    "non-letter-bang-scheme",
+    "non-letter-digit-scheme",
+    "non-letter-marker"
+   ],
+   "oracle_failures": [],
+   "over_redaction": {
+    "OR1": "Authorization: <redacted>",
+    "OR2": "Authorization: <redacted>"
+   },
+   "rule_failures": [],
+   "token_class": "[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*"
+  }
+ },
+ "card": "I-14-D",
+ "fix_a": "F-REV-R3-01: the two '?' characters removed from the after-break character classes",
+ "fix_b_measured_but_not_applied": "F-REV-R3-04: scheme token class widened from [A-Za-z]...* to the full tchar class",
+ "iteration": "r4",
+ "method": "for the widened candidate the pattern is rebuilt in memory from the product's own constants; the tree is untouched",
+ "tree": "iso/product_narrow_r4"
+}
