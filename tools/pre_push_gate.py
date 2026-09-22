@@ -196,6 +196,7 @@ def _real_data() -> int:
     return _run(
         [sys.executable, "-m", "pytest", "-q", "--tb=line", *REAL_DATA_TESTS],
         "real-data suite (production catalog; CI needs a self-hosted runner)",
+        timeout=1800,
     )
 
 

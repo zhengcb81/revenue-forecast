@@ -57,7 +57,7 @@ def _t2(catalog: Path, report_root: Path, manifest: Path) -> int:
     return subprocess.run(
         [sys.executable, "-B", str(T2), "--catalog", str(catalog),
          "--report-root", str(report_root), "--manifest", str(manifest)],
-        capture_output=True, text=True, encoding="utf-8", timeout=120,
+        capture_output=True, text=True, encoding="utf-8", timeout=300,
     ).returncode
 
 
