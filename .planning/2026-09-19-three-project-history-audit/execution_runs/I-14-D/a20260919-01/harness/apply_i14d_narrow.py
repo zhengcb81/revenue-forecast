@@ -11,13 +11,24 @@ occurs exactly once before writing.  Operations:
 r2 (review F-REV-D-01 / reviewer RULING 2) adds the scheme-aware fail-closed auth
 value.  Three more operations, all from the r2 narrow tree:
 
-    mut_authsplit M4: remove the `_AUTH_SCHEME_SPLIT` branch from the auth value
-                      group (and its comment block).  This is the tree that
-                      re-opens the auth newline-split credential leak, so the
-                      M4 arm covers the LEAK direction the M1/M2/M3 plan missed.
-    authsplit / collapse_authsplit
-                      the two halves of that edit, kept separate so the fix and
-                      its mutant are built from the same text (see OPS).
+    authsplit         insert the r2 `_AUTH_SCHEME_SPLIT` branch (a nine-word
+                      enumeration) + its comment block, and reorder the value group
+    reverse_authsplit the exact inverse; also what builds the M4 specimen
+    mut_auth1_r2      M3 from the r2 tree
+
+r3 (review F-REV-R2-01) generalizes that branch from the nine-word enumeration to a
+single RFC-7235 scheme token and tries `_QUOTED_VALUE` after the break.  Three more
+operations, all from the r3 narrow tree:
+
+    genericscheme     replace the enumerated pre-break group by the RFC-7235 token,
+                      allow a run of line breaks, and put `_QUOTED_VALUE` first in
+                      the value group (it must be tried after the break, and it is
+                      required to be non-empty there)
+    reverse_genericscheme
+                      the exact inverse; lands on the r2 tree byte-for-byte
+    mut_auth1_r3      M3 from the r3 tree
+    mut_authsplit_r3  M4 from the r3 tree: the whole scheme branch removed, which
+                      collapses onto the pre-r2 narrow tree (the leak direction)
 
     python apply_i14d_narrow.py --op narrow --tree <iso>/<tree>
 """
@@ -149,6 +160,89 @@ AUTHVALUE_NARROW_NEW = [
 # the value group with the scheme branch removed again (M4 specimen)
 AUTHVALUE_NOSCHEME = AUTHVALUE_NARROW_OLD
 
+# ------------------------------------------- r3: generic RFC-7235 scheme token
+
+# The r2 branch enumerated nine scheme words, so its coverage was exactly as wide
+# as the list: `Authorization: Negotiate\n<secret>` (and every other scheme word,
+# including an arbitrary one) still persisted the credential - measured as
+# F-REV-R2-01, with the card's own synthetic marker among the leaked strings.
+# r3 replaces the enumeration by one RFC-7235 `token`:
+#
+#   scheme = 1*<any CHAR except CTLs or separators>
+#   separators = ()<>@,;:\"/[]?={} SP HT
+#
+# i.e. `[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*`; a scheme token always starts with a
+# letter (`token` excludes a leading digit), and `|` is kept in the class because
+# the value delimiters already stop at it.  Four further r3 changes, so that every
+# residual variant the re-review measured actually closes:
+#   * a RUN of line breaks rather than exactly one, so the blank-line shape
+#     (`Authorization: Bearer\n\n<secret>`) is covered too;
+#   * the split branch's own quoted alternative, so the quoted continuation
+#     (`Authorization: Bearer\n"<secret>"`) is covered - and ONLY after a break,
+#     which is what keeps `Authorization: "Bearer <M>"` on its existing path;
+#   * ONE optional bare token allowed on the scheme's own line, so a two-token
+#     value that then wraps (`Authorization: Bearer abc\n<secret>`) is covered;
+#   * the tail token is tried after a further run of line breaks, so the credential
+#     that follows a blank line is covered as well.
+# The value group itself keeps the r2 order: `_QUOTED_VALUE` is still tried before
+# the split branch (it cannot swallow the break because its character class
+# excludes \r and \n), and `_AUTH_SCHEME_SPLIT` is still tried before
+# `_AUTH_BARE_VALUE`.
+#
+# Cost: the branch redacts the first token after ANY word that can be read as a
+# scheme, so `Authorization: Bearer\ndoc=17` loses `doc=17`.  That direction is
+# fail-closed (never leak rather than never over-redact) and was already disclosed
+# and accepted for the nine enumerated words; r3 adds no new class of cost, only
+# more instances of it.  The instances are REGISTERED in the rule table under kind
+# `over_redaction` (F-REV-R2-02) so they are measured rather than invisible, and
+# oracle N5f freezes the semantics.
+# The token literal, assembled so this file needs no quote-escaping of its own.
+AUTHSCHEME3_NEW_TEMPLATE = [
+'# A value may still cross line breaks, but only behind a single RFC-7235 scheme',
+'# token (r3).  The pre-break token used to be a nine-word enumeration, whose',
+'# coverage was exactly as wide as the list: `Authorization: Negotiate` + newline,',
+'# or any other scheme word, still persisted the credential - measured as',
+"# F-REV-R2-01, where the leaked string was this card's own synthetic marker.",
+'# It is now ONE RFC-7235 scheme token: `scheme = 1*<any CHAR except CTLs or',
+'# separators>`, which always begins with a letter, so the class starts with',
+'# `[A-Za-z]`; `|` is kept in it because the value delimiter class used everywhere',
+'# else already stops at `|`, so nothing can gain a delimiter by this widening.',
+'# A wrapped header (`Authorization: Bearer` then the secret on the next line) or',
+'# an RFC-7230 obs-fold puts the secret on a line that carries no `key=` prefix,',
+'# so once the scheme word alone is consumed neither this pattern nor the',
+'# assignment scanner can see it.  Fail CLOSED: after a scheme token and one or',
+'# more line breaks (a blank line included), the next token - or a quoted string,',
+'# reached through the same break run - is redacted.  The breaks and any',
+'# indentation stay OUTSIDE the match, so the diagnostic keys on the following',
+'# lines survive (the C13 half this card fixes).',
+'# The value delimiters are the same class `_AUTH_BARE_VALUE` uses.  Measured as',
+'# review findings F-REV-D-01 / F-REV-R2-01: without this branch the full',
+'# credential is persisted in the append-only event log.',
+'# Deliberate, registered cost (F-REV-R2-02): it cannot tell a wrapped credential',
+'# from a diagnostic key, so `Authorization: Bearer` + newline DELETES `doc=17`.',
+'# One shape stays OPEN and is registered rather than hidden: a TWO-token value',
+'# that then wraps (`Authorization: Bearer abc` + newline + secret).  Closing it',
+"# needs the scheme's own line consumed as a token run, which deletes `doc=17`",
+'# from `Authorization: Bearer <marker>` + newline + `doc=17` + newline + `stage=`',
+'# - measured across the whole design space, see r3_fix_record.md.',
+'_AUTH_SCHEME_TOKEN = r"[A-Za-z][A-Za-z0-9!#$%&\'*+.^_`|~-]*"',
+'_AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_SCHEME_TOKEN + r")[ @T@]*"',
+'                      r"(?:(?:@N@)[ @T@]*)+"',
+'                      r"(?:" + _AUTH_SCHEME_DELIMS + r"+|\\"[^\\"@N@]*\\"|\'[^\'@N@]*\')")',
+]
+# The block is checked against the product once, here, so a placeholder that
+# cannot be resolved is a hard failure rather than a silently wrong pattern.
+_AUTHSCHEME3_PLACEHOLDERS = {
+    "@T@": chr(92) + "t",
+    "@N@": chr(92) + "r?" + chr(92) + "n",
+}
+AUTHSCHEME3_NEW = [
+    ln.replace("_AUTH_SCHEME_DELIMS", "_AUTH_BARE_VALUE")
+      .replace("@T@", _AUTHSCHEME3_PLACEHOLDERS["@T@"])
+      .replace("@N@", _AUTHSCHEME3_PLACEHOLDERS["@N@"])
+    for ln in AUTHSCHEME3_NEW_TEMPLATE
+]
+
 # Insertion pair for the new block.  The anchor is the `_AUTH_PATTERN = re.compile(`
 # line (unique in the file); the block is inserted AHEAD of it, after the blank line
 # that already separates it from `_AUTH_BARE_VALUE`.  That keeps the file's blank-line
@@ -178,6 +272,28 @@ AUTHVALUE_SPLIT_MUT_LINE = (
     r'+ _AUTH_SCHEME_SPLIT + r"|" + _BARE_VALUE + r")"'
 )
 
+# ---- r3 anchors -----------------------------------------------------------------
+# The r3 edit is ONE definition, replaced in place: the value group, `_AUTH_BARE_VALUE`,
+# `_QUOTED_VALUE` and the `_AUTH_PATTERN` line are all untouched, so the deliverable
+# delta stays a single localized hunk (the re-review's "same shape as the current
+# branch").  `_AUTHJOIN_CLASS` is reused, so the char class cannot drift from the value
+# delimiters.
+AUTHSCHEME_R2 = AUTHSCHEME_NEW                    # the r2 definition + its comments
+AUTHSCHEME_R3 = AUTHSCHEME3_NEW                   # the r3 definition + its comments
+AUTHSCHEME_R2_BLOCK = AUTHSCHEME_R2
+AUTHSCHEME_R3_BLOCK = AUTHSCHEME_R3
+
+# M3-r3: the r3 value group with `_AUTH_BARE_VALUE` swapped for the strict single
+# token, i.e. the naive narrowing applied to the r3 tree.
+AUTHVALUE_R3_LINE = (
+    r'    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" '
+    r'+ _AUTH_SCHEME_SPLIT + r"|" + _AUTH_BARE_VALUE + r")"'
+)
+AUTHVALUE_R3_MUT_LINE = (
+    r'    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" '
+    r'+ _AUTH_SCHEME_SPLIT + r"|" + _BARE_VALUE + r")"'
+)
+
 OPS = {
     # op -> list of (old_block, new_block) line-sequence replacements
     "narrow": [(COMMENT_OLD, COMMENT_NEW), (SCANNER_OLD, SCANNER_NEW)],
@@ -203,6 +319,23 @@ OPS = {
     "mut_authsplit": [
         (AUTHSCHEME_INSERT, AUTHPATTERN_HEAD),
         (AUTHVALUE_NARROW_NEW, AUTHVALUE_NOSCHEME),
+    ],
+    # ---- r3 / review F-REV-R2-01: generalize the pre-break token -----------------
+    # `genericscheme` is the r3 fix (r2 tree -> r3 tree); `reverse_genericscheme` is its
+    # exact inverse (r3 tree -> the r2 tree byte-for-byte).  Both act on one block, so
+    # the fix and its inverse are the same text read in opposite directions - the same
+    # construction r2 used, and what makes the mutation arm provable.
+    "genericscheme": [(AUTHSCHEME_R2_BLOCK, AUTHSCHEME_R3_BLOCK)],
+    "reverse_genericscheme": [(AUTHSCHEME_R3_BLOCK, AUTHSCHEME_R2_BLOCK)],
+    # M3-r3: naive single-token narrowing, derived from the r3 tree.
+    "mut_auth1_r3": [(block(AUTHVALUE_R3_LINE), block(AUTHVALUE_R3_MUT_LINE))],
+    # M4-r3: the WHOLE scheme branch removed again (definition + comments, and the
+    # value group back to the pre-r2 form).  This collapses onto the pre-r2 narrow
+    # tree: it is "the r3 tree as if no scheme branch had ever been written", which is
+    # the leak direction F-REV-D-01 and F-REV-R2-01 both live in.
+    "mut_authsplit_r3": [
+        (AUTHSCHEME_R3_BLOCK, []),
+        (AUTHVALUE_R3_LINE, AUTHVALUE_NOSCHEME),
     ],
 }
 

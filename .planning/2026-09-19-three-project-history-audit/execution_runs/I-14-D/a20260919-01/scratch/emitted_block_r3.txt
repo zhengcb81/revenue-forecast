@@ -1,0 +1,32 @@
+# A value may still cross line breaks, but only behind a single RFC-7235 scheme
+# token (r3: this was a nine-word enumeration, whose coverage was exactly as
+# wide as the list - every other scheme word, `Negotiate`, `AWS4-HMAC-SHA256`,
+# an arbitrary one, still persisted the credential; F-REV-R2-01).  An RFC-7235
+# scheme token is `1*<any CHAR except CTLs or separators>` and always begins
+# with a letter; the class below is that token (`|` is kept in it because the
+# value delimiters already stop at `|`).
+# A wrapped header (`Authorization: Bearer` then the secret on the next line) or
+# an RFC-7230 obs-fold puts the secret on a line that carries no `key=` prefix,
+# so once the scheme word alone is consumed neither this pattern nor the
+# assignment scanner can see it.  Fail CLOSED: after a scheme token and a RUN of
+# line breaks (a blank line included), the first token - or a quoted string - is
+# redacted.  The break and any indentation stay OUTSIDE the match, so the
+# diagnostic keys on the following lines survive (the C13 half this card fixes).
+# The value delimiters are the same as _AUTH_BARE_VALUE.  Measured as review
+# findings F-REV-D-01 / F-REV-R2-01: without this branch the full credential is
+# persisted in the append-only event log.
+# Deliberate, registered cost (F-REV-R2-02): it cannot tell a wrapped credential
+# from a diagnostic key, so `Authorization: Bearer` + newline DELETES `doc=17`.
+# The pre-break token used to be a nine-word enumeration, whose coverage was
+# exactly as wide as the list: `Authorization: Negotiate` + newline, or any other
+# scheme word, still persisted the credential (F-REV-R2-01, where the leaked
+# string was this card's own synthetic marker).  It is now ONE RFC-7235 scheme
+# token: `scheme = 1*<any CHAR except CTLs or separators>`, which always begins
+# with a letter, so the class starts with `[A-Za-z]`; `|` is kept in it because
+# the value delimiter class used everywhere else already stops at `|`, so nothing
+# can gain a delimiter by this widening.
+# _AUTH_SCHEME_TOKEN = r"[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*"
+_AUTH_SCHEME_TOKEN = r"[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*"
+_AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_SCHEME_TOKEN + r")[ \t]*"
+                      r"(?:\r?\n[ \t]*)(?:[^\s,;&\"'|][ \t]*\r?\n[ \t]*)*"
+                      r"(?:" + _AUTHJOIN_CLASS + r"+|\"[^\"\r\n]*\"|'[^'\r\n]*')")

@@ -1,0 +1,144 @@
+{
+ "card": "_bookkeeping_20260922_round72",
+ "kind": "orchestrator_bookkeeping",
+ "round": 72,
+ "date": "2026-09-22",
+ "subject_card": "I-14-D",
+ "subject_attempt": "a20260919-01",
+ "subject_iteration": "r4",
+ "what_this_round_is": "the r4 revision was implemented, measured and carried: the two code fixes the r3 review required, the rows that register them, and the generation record",
+ "what_this_round_is_not": [
+  "an acceptance, an approval, or a status transition",
+  "a signature on behalf of any other party",
+  "a product-repo change",
+  "the closure of I-14-D"
+ ],
+ "authority": {
+  "source": "OWNER_DECISIONS.md §13 T1-27",
+  "note": "no owner ruling was needed: this round implements the reviewer's own two findings and lands the carriers from its own measurement"
+ },
+ "attribution": {
+  "author": "the orchestrator, acting as implementer and carrier-landing executor",
+  "basis": "measurement it ran itself; every hash here is computed from the bytes",
+  "verdict_expressed": false,
+  "status_left_at": "review_pending"
+ },
+ "fixes": {
+  "F-REV-R3-01": {
+   "severity": "BLOCKER",
+   "site": "observability.py:320",
+   "change": "the optional-CR form inside the after-break character classes replaced by \\r\\n",
+   "bytes_changed": 2,
+   "line_319_deliberately_untouched": "its \\r?\\n sits in (?:\\r?\\n), outside any character class, where ? really is the quantifier"
+  },
+  "F-REV-R3-04": {
+   "severity": "LOW",
+   "site": "observability.py:317",
+   "change": "the scheme token class widened from [A-Za-z]...* to the full RFC 7230 tchar",
+   "not_a_departure_from_the_r2_remedy": "that remedy asked for an HTTP token, and the full tchar class is what an HTTP token is"
+  }
+ },
+ "product_copy": {
+  "path": "iso/product_narrow_r4/src/company_wiki/source_catalog/observability.py",
+  "bytes": 42829,
+  "sha256": "15446f4da6ba256f039e684eaa4bd0c6f45889dc86a624717c6a0ec836e3f2a1",
+  "differs_from_r3_in_exactly": "4 byte regions",
+  "inverse_reconstruction_reproduces_r3": "byte for byte, line endings included (CR 897 in both)"
+ },
+ "new_frozen_rows": {
+  "oracle": ["N5l-auth-dq-question-mark", "N5m-auth-sq-question-mark",
+             "N5n-auth-nonletter-scheme-marker", "N5o-auth-nonletter-scheme-secret"],
+  "rule_table": ["cred-auth-dq-question-mark", "cred-auth-sq-question-mark",
+                 "cred-auth-nonletter-digit", "cred-auth-nonletter-bang"]
+ },
+ "harness_generation_isolation": {
+  "r4_uses_new_files": true,
+  "r4_oracle_harness": {"path": "harness/run_i14d_oracle_r4.py", "bytes": 12316, "sha256": "240d181c9fb8f21c42d2d4aaa364936b0fabde7d23dedf0bdd356d497765d13f"},
+  "r4_rule_table_harness": {"path": "harness/run_rule_table_i14d_r4.py", "bytes": 20006, "sha256": "610ce4b84903d224aef60a54dd4a5f46872efadeddad869989d86e0418e45aa5"},
+  "r3_harnesses_untouched": true,
+  "why": "the r3 carrier pins the r3 harnesses; adding rows in place would invalidate both pins and silently change what reproducing the r3 run means",
+  "registered_as": "REM-70 -- the r2 -> r3 step extended in place, so the r2 generation's reproduction basis is already gone and cannot be recovered"
+ },
+ "measurement": {
+  "oracle_r4_harness": {"cases": 32, "verdict": "pass", "narrow_must_failed": [], "keep_must_failed": []},
+  "rule_table_r4_harness": {"rows": 83, "credential_leaks": [], "touched_but_should_not_be": [], "fidelity_ok": true},
+  "fixes_measured_apart": {
+   "fix_A_only": {"oracle_failures": 0, "rule_failures": 0, "leaking": ["C10", "non-letter-bang-scheme", "non-letter-digit-scheme", "non-letter-marker"]},
+   "fix_A_and_B": {"oracle_failures": 0, "rule_failures": 0, "leaking": ["C10"]},
+   "pre_existing_rows_changed": 0,
+   "over_redaction_unchanged": true
+  }
+ },
+ "generation_carriers": {
+  "oracle.md": {"before_bytes": 27119, "after_bytes": 30955, "after_sha256": "9941e31d885bf53b627bc943aa752c507db8e5f211020b008b38c952481c9d4b", "lines_added": 74, "lines_deleted": 0},
+  "review.md": {"before_bytes": 10630, "after_bytes": 12541, "after_sha256": "b78c77d76b34dbea48f29fcc512e7ffdf5f5cfaa6082ffc57b24d0dd40948c49", "lines_added": 37, "lines_deleted": 0},
+  "handoff_r4.json": {"bytes": 6606, "sha256": "ea6ad25bbaed63b6a29079a31ab62d96980e30024f42914cc1db470083595cef", "registers_its_own_hash": false}
+ },
+ "self_inflicted_errors_recorded": [
+  {
+   "what": "the r4 product tree was corrupted by a text-mode round trip",
+   "detail": "Path.read_text/write_text doubled every carriage return (CR 897 -> 1794, i.e. CRCRLF) while leaving the content correct, so a diff with CR stripped showed only the intended changes and looked entirely normal",
+   "fix": "rebuilt on bytes, with the inverse reconstruction as the proof",
+   "generalisation": "text-mode round trips are the wrong instrument for a file whose line endings are part of its identity -- and in this repo they are, because the tree's sha256 is registered"
+  },
+  {
+   "what": "the first r4 measurement leaked state between candidates",
+   "detail": "the candidate that rebinds the module's global pattern ran first, so the tree-as-it-stands candidate read that same rebound pattern; the report therefore said fix B changed nothing when in fact it closes the non-letter family",
+   "fix": "the import-time pattern is captured before any candidate runs",
+   "generalisation": "sharing a mutable global across a set of candidates silently merges the control with the treatment, and it does not error -- it produces a table that looks discriminating and is not"
+  },
+  {
+   "what": "the first r4 harness build used write_text and rewrote every line ending",
+   "detail": "source CR=0, output CR=251",
+   "fix": "write bytes, never through text mode",
+   "caught_by": "the prefix check"
+  }
+ ],
+ "pre_images": {
+  "task_plan.md": {"bytes": 227328, "sha256": "b472b33994d640453596e70c1b71ce12c6abfb90b90439bd82fa643867b47662"},
+  "findings.md": {"bytes": 63832, "sha256": "0e37a0ba85cd76e894693b41db683e114745e93a3cf501958fb9f81e19ec05b3"},
+  "progress.md": {"bytes": 144493, "sha256": "be02ffd111ad29411673bcfef83d62adc5275b1559954487665d261396eba0e7"},
+  "REMEDIATION_REGISTER.md": {"bytes": 37747, "sha256": "85e7d40047a312b8535c1458bc1281b22175cf3ddb9af4814f76b22a1c839bf6"}
+ },
+ "post_images": {
+  "task_plan.md": {"bytes": 231650, "sha256": "df47b9ab1ef747cf7e598828d6fc494153ddc9999f684a6654e86615be44c125", "delta_bytes": 4322, "lines_added": 56, "lines_deleted": 0},
+  "findings.md": {"bytes": 66163, "sha256": "c0effbc217f32dee37f984b56e5e9e4c37728276a10b393efe7e6731e2723de4", "delta_bytes": 2331, "lines_added": 15, "lines_deleted": 0},
+  "progress.md": {"bytes": 146305, "sha256": "ae2b28ed7d0c61abc174de817870932915ed91ef30cf23ad978701c8ff7bcaaf", "delta_bytes": 1812, "lines_added": 18, "lines_deleted": 0},
+  "REMEDIATION_REGISTER.md": {"bytes": 39433, "sha256": "a746f2e7f958800cc9d19fabbb748c49dde11b2559275d12f8a5b700d1c00f71", "delta_bytes": 1686, "lines_added": 20, "lines_deleted": 0}
+ },
+ "registered_in_register": ["REM-65 (landed in r4)", "REM-67 item 2 (landed in r4)", "REM-69 (r4 awaits review)", "REM-70 (harness generation isolation)"],
+ "artefacts": {
+  "append_only_proof_round72_task_plan.json": {"bytes": 1722, "sha256": "beb4f82029ab734d04f8cc198f3ad91cc284e02d411e519eca4bae0139aa62f5"},
+  "append_only_proof_round72_findings.json": {"bytes": 1713, "sha256": "bbc6acc86aed732dcfb4e4f5203f1aa630e4621d4e38cdf14c5c49cf1ed58ac8"},
+  "append_only_proof_round72_progress.json": {"bytes": 1718, "sha256": "f074f1a6654fc3be5d75e9f9e8cce2ccb3163d77dcc67e87be0d6cfe3431f7d7"},
+  "append_only_proof_round72_register.json": {"bytes": 1725, "sha256": "a0ffa230bf3cfae0aa40b385c1ab1627e722b82e3fe2dee045677019d31ed7b2"},
+  "append_only_proof_round72_i14d_oracle_md.json": {"bytes": 1755, "sha256": "bfb36e81430e4f981164d588849bc7647a11dff0ec29edce59ecaec3efdf187f"},
+  "append_only_proof_round72_i14d_review_md.json": {"bytes": 1755, "sha256": "99a3cc03dc71ab92a41ab4d325f2539a86121441ea4b55bdd9f9b52417bc0ba8"},
+  "measurement_elsewhere": {
+   "dir": "execution_runs/_r4_measure_20260922",
+   "r4_measurement.json": {"bytes": 2047, "sha256": "17f9ba52cc8a622cc187a4b5b290ded940d5e683c7a5e300683aaadb1f371a5a"},
+   "oracle_r4_harness.json": {"bytes": 14946, "sha256": "39826ee903a0f175af2553711e4fd5263577b567d4972e7ec76a8cd558544045"},
+   "rule_r4_harness.json": {"bytes": 29444, "sha256": "c8bc263013e649168c5aaa6e7d2c7ec25ffbcb4baa92907a495efbe2647b9d08"}
+  }
+ },
+ "boundaries": {
+  "product_repo_written": 0,
+  "product_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "r3_harnesses_untouched": true,
+  "r3_carrier_untouched": true,
+  "r2_generation_records_untouched": true,
+  "status_transitions": 0,
+  "verdict_expressed": false,
+  "signatures_on_behalf_of_others": 0,
+  "deletions": 0
+ },
+ "not_addressed_in_r4": ["F-REV-R3-02", "F-REV-R3-03", "F-REV-R3-05",
+                          "F-REV-R3-06", "F-REV-R3-07", "F-REV-R3-08",
+                          "F-REV-R3-09", "F-REV-R3-10"],
+ "next_action_for_the_owner": [
+  "REM-69: I-14-D r4 awaits an independent review. The carrier exists (handoff_r4.json, oracle.md CORRECTION 4, review.md section '## r4'), so a review has something to work from.",
+  "REM-55 I-14-E-APPLY: still terminated mid-campaign; no decision yet.",
+  "the push: 16 commits will be pending after this one; the pre-push gate's 600 s E2E cap remains below the suite's measured 861.7 s, and the gate has not been bypassed."
+ ],
+ "self_reference_note": "handoff.json does not register its own hash; it is recorded in task_plan.md's Round 72 section and in the memory file"
+}

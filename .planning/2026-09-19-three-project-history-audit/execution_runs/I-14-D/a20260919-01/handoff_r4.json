@@ -1,0 +1,180 @@
+{
+ "attempt_id": "a20260919-01",
+ "boundaries": {
+  "deletions": 0,
+  "product_repo_written": 0,
+  "production_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "r3_carrier_untouched": true,
+  "r3_harnesses_untouched": true,
+  "status_transitions": 0,
+  "verdict_expressed": false
+ },
+ "card": "I-14-D",
+ "date_utc": "2026-09-22",
+ "fixes": {
+  "F-REV-R3-01": {
+   "bytes_changed": 2,
+   "line_319_left_alone": "its \\r?\\n sits in (?:\\r?\\n), outside any character class, where ? really is the quantifier",
+   "r3": "r\"(?:\" + _AUTH_BARE_VALUE + r\"+|\\\"[^\\\"\\r?\\n]*\\\"|'[^'\\r?\\n]*')\"",
+   "r4": "r\"(?:\" + _AUTH_BARE_VALUE + r\"+|\\\"[^\\\"\\r\\n]*\\\"|'[^'\\r\\n]*')\"",
+   "severity": "BLOCKER",
+   "site": "observability.py:320",
+   "what": "the optional-CR form inside the after-break character classes, where '?' is a literal member of the negated set rather than a quantifier"
+  },
+  "F-REV-R3-04": {
+   "not_a_departure_from_the_r2_remedy": "that remedy asked for an HTTP token, and the full tchar class is what an HTTP token is",
+   "r3": "r\"[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*\"",
+   "r4": "r\"[A-Za-z0-9!#$%&'*+.^_`|~-]+\"",
+   "severity": "LOW",
+   "site": "observability.py:317",
+   "what": "the scheme token class required a leading letter, narrower than the RFC 7230 tchar production the comment cites, and a persistence regression against product_base for non-letter-initial schemes"
+  }
+ },
+ "generation_carriers": {
+  "oracle.md": {
+   "after_bytes": 30955,
+   "after_sha256": "9941e31d885bf53b627bc943aa752c507db8e5f211020b008b38c952481c9d4b",
+   "before_bytes": 27119,
+   "before_sha256": "e85cb05bc278ce4b5281f84fe7bc75330f247a73a14e040ce16347428ac2015a",
+   "delta_bytes": 3836,
+   "prefix_preserved": true
+  },
+  "review.md": {
+   "after_bytes": 12541,
+   "after_sha256": "b78c77d76b34dbea48f29fcc512e7ffdf5f5cfaa6082ffc57b24d0dd40948c49",
+   "before_bytes": 10630,
+   "before_sha256": "4d245fbfd282c0fa90e4edf70a621bce5eaa96740bea73d9d5342323e9b8860f",
+   "delta_bytes": 1911,
+   "prefix_preserved": true
+  }
+ },
+ "harness_generation": {
+  "r3_harnesses_untouched": {
+   "run_i14d_oracle.py": {
+    "bytes": 11043,
+    "sha256": "f7c94c60ce8dffda8d58786d6b20787ff11e4c5c22f06ec1ba1e0307d96a4fe2"
+   },
+   "run_rule_table_i14d.py": {
+    "bytes": 19378,
+    "sha256": "01a3187e9d5062db316fa89e3fc0feb40f862c782a7ce782aa458c6a0f4f7ed6"
+   }
+  },
+  "r4_oracle_harness": {
+   "bytes": 12316,
+   "sha256": "240d181c9fb8f21c42d2d4aaa364936b0fabde7d23dedf0bdd356d497765d13f"
+  },
+  "r4_rule_table_harness": {
+   "bytes": 20006,
+   "sha256": "610ce4b84903d224aef60a54dd4a5f46872efadeddad869989d86e0418e45aa5"
+  },
+  "why_new_files": "the r3 carrier pins the r3 harnesses; adding rows in place would invalidate both pins and silently change what reproducing the r3 run means"
+ },
+ "iteration": "r4",
+ "kind": "implementer_side_handoff",
+ "measurement": {
+  "evidence": {
+   "oracle_r4_harness.json": {
+    "bytes": 14946,
+    "sha256": "39826ee903a0f175af2553711e4fd5263577b567d4972e7ec76a8cd558544045"
+   },
+   "r4_measurement.json": {
+    "bytes": 2047,
+    "sha256": "17f9ba52cc8a622cc187a4b5b290ded940d5e683c7a5e300683aaadb1f371a5a"
+   },
+   "rule_r4_harness.json": {
+    "bytes": 29444,
+    "sha256": "c8bc263013e649168c5aaa6e7d2c7ec25ffbcb4baa92907a495efbe2647b9d08"
+   }
+  },
+  "fixes_measured_apart": {
+   "fix_A_and_B": {
+    "leaking": [
+     "C10"
+    ],
+    "oracle_failures": 0,
+    "rule_failures": 0
+   },
+   "fix_A_only": {
+    "leaking": [
+     "C10",
+     "non-letter-bang-scheme",
+     "non-letter-digit-scheme",
+     "non-letter-marker"
+    ],
+    "oracle_failures": 0,
+    "rule_failures": 0
+   },
+   "over_redaction_unchanged": true,
+   "pre_existing_rows_changed": 0
+  },
+  "oracle": {
+   "cases": 32,
+   "keep_must_failed": [],
+   "narrow_must_failed": [],
+   "verdict": "pass"
+  },
+  "rule_table": {
+   "credential_leaks": [],
+   "fidelity_ok": true,
+   "rows": 83,
+   "touched_but_should_not_be": []
+  }
+ },
+ "new_frozen_rows": {
+  "oracle": [
+   "N5l-auth-dq-question-mark",
+   "N5m-auth-sq-question-mark",
+   "N5n-auth-nonletter-scheme-marker",
+   "N5o-auth-nonletter-scheme-secret"
+  ],
+  "rule_table": [
+   "cred-auth-dq-question-mark",
+   "cred-auth-sq-question-mark",
+   "cred-auth-nonletter-digit",
+   "cred-auth-nonletter-bang"
+  ]
+ },
+ "not_addressed_here": [
+  "F-REV-R3-02",
+  "F-REV-R3-03",
+  "F-REV-R3-05",
+  "F-REV-R3-06",
+  "F-REV-R3-07",
+  "F-REV-R3-08",
+  "F-REV-R3-09",
+  "F-REV-R3-10"
+ ],
+ "product_copy": {
+  "bytes": 42829,
+  "differs_from_r3_in_exactly": "4 byte regions",
+  "inverse_reconstruction_reproduces_r3": "byte for byte, line endings included",
+  "path": "iso/product_narrow_r4/src/company_wiki/source_catalog/observability.py",
+  "sha256": "15446f4da6ba256f039e684eaa4bd0c6f45889dc86a624717c6a0ec836e3f2a1"
+ },
+ "self_inflicted_errors_recorded": [
+  {
+   "detail": "Path.read_text/write_text doubled every carriage return (CR 897 -> 1794, i.e. CRCRLF) while leaving the content correct, so a diff with CR stripped showed only the intended changes",
+   "fix": "rebuilt on bytes; the inverse reconstruction is the proof",
+   "what": "the r4 product tree was corrupted by a text-mode round trip"
+  },
+  {
+   "detail": "the candidate that rebinds the module's global pattern ran first, so the tree-as-it-stands candidate read that same rebound pattern and the report said fix B changed nothing",
+   "fix": "the import-time pattern is captured before any candidate runs",
+   "what": "the first r4 measurement leaked state between candidates"
+  },
+  {
+   "detail": "source CR=0, output CR=251; the prefix check caught it",
+   "fix": "write bytes, never through text mode",
+   "what": "the first r4 harness build used write_text and rewrote every line ending"
+  }
+ ],
+ "self_reference_note": "handoff_r4.json does not register its own hash",
+ "status": "review_pending",
+ "trigger": "reviewer_report_r3.md returned changes_required with F-REV-R3-01 (BLOCKER) and F-REV-R3-04 (LOW).",
+ "what_this_file_is": "the r4 generation's carrier: the two fixes the r3 review required, the rows that register them, and the measurement",
+ "who_wrote_it_and_on_what_basis": {
+  "author": "the orchestrator, acting as implementer and carrier-landing executor",
+  "basis": "measurement it ran itself; every hash here is computed from the bytes",
+  "it_states_no_verdict": true
+ }
+}

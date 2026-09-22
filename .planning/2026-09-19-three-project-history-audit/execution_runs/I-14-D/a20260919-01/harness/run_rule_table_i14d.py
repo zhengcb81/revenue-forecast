@@ -137,6 +137,80 @@ TABLE = [
     # I-14-D NEW: quoting still gives full multi-word coverage.
     ("cred-quoted-multiword-full", "password: 'iron steel'",
      "password: " + R, "credential"),
+
+    # ---- r3 / F-REV-R2-01: schemes OUTSIDE the r2 nine-word enumeration --------
+    # The r2 branch enumerated nine scheme words, so its coverage was exactly as wide
+    # as the list; these rows are the ones that would have caught F-REV-R2-01, and two
+    # of them carry a 39-char NON-marker credential rather than the marker, because a
+    # marker-only table cannot distinguish "redacts the marker" from "redacts a
+    # credential".
+    ("cred-auth-generic-negotiate-marker", "Authorization: Negotiate\n" + MARKER,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-negotiate-real-secret",
+     "Authorization: Negotiate\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-aws4-real-secret",
+     "Authorization: AWS4-HMAC-SHA256\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-scram-marker", "Authorization: SCRAM-SHA-256\n" + MARKER,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-hawk-real-secret",
+     "Authorization: Hawk\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-bot-real-secret", "Authorization: Bot\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-mutual-real-secret",
+     "Authorization: Mutual\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-vapid-real-secret", "Authorization: vapid\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-hoba-real-secret", "Authorization: HOBA\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-unknown-word", "Authorization: Zzz\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-generic-keeps-diagnostics",
+     "Authorization: Negotiate\n" + REVIEWER_SECRET + "\ndoc=17\nstage=summarize",
+     "Authorization: " + R + "\ndoc=17\nstage=summarize", "credential"),
+    # ... the blank-line shape (one break RUN) and the quoted continuation:
+    ("cred-auth-blank-line-secret", "Authorization: Hawk\n\n" + REVIEWER_SECRET,
+     "Authorization: " + R, "credential"),
+    ("cred-auth-quoted-continuation", 'Authorization: Bot\n"' + REVIEWER_SECRET + '"',
+     "Authorization: " + R, "credential"),
+
+    # ---- r3 / F-REV-R2-02: OVER-REDACTION, registered so it is measured --------
+    # The branch cannot tell a wrapped credential from a diagnostic key, so the first
+    # token after a scheme word and a line break is DELETED.  This is the fail-closed
+    # direction and it was disclosed in decision.md, but until r3 no row measured it:
+    # every matrix row put a credential after the scheme word, so `fidelity_drift []`
+    # could not see the cost.  These rows assert the cost exactly.
+    ("over-auth-scheme-then-key", "Authorization: Bearer\ndoc=17",
+     "Authorization: " + R, "over_redaction"),
+    ("over-auth-scheme-then-reqid", "Authorization: Bearer\nrequest_id=req-1",
+     "Authorization: " + R, "over_redaction"),
+    ("over-auth-scheme-then-stage", "Authorization: Bearer\nstage=summarize",
+     "Authorization: " + R, "over_redaction"),
+    ("over-auth-token-then-keys", "Authorization: token\ndoc=17\nstage=summarize",
+     "Authorization: " + R + "\nstage=summarize", "over_redaction"),
+    ("over-auth-crlf-then-key", "Authorization: Bearer\r\ndoc=17",
+     "Authorization: " + R, "over_redaction"),
+    ("over-auth-obsfold-then-key", "Authorization: Bearer\n  doc=17",
+     "Authorization: " + R, "over_redaction"),
+    ("over-proxy-auth-then-key", "proxy-authorization: Bearer\ndoc=17",
+     "proxy-authorization: " + R, "over_redaction"),
+    ("over-auth-scheme-then-marker", "Authorization: Bearer\n" + MARKER,
+     "Authorization: " + R, "over_redaction"),
+    ("over-auth-generic-then-key", "Authorization: Negotiate\ndoc=17",
+     "Authorization: " + R, "over_redaction"),
+
+    # ---- r3 REGISTERED OPEN RESIDUAL ------------------------------------------
+    # A two-token value that then wraps is the ONE shape the generalized branch cannot
+    # reach without deleting `doc=17` from `cred-auth-split-keeps-diagnostics`; it is
+    # registered here as kind `registered_open` so `credential_leaks` cannot silently
+    # absorb it (that list is filtered to kind `credential`).
+    ("open-two-token-then-wrap", "Authorization: Bearer abc\n" + REVIEWER_SECRET,
+     "Authorization: " + R + "\n" + REVIEWER_SECRET, "registered_open"),
+    ("open-quoted-two-token", 'Authorization: Bearer abc "' + REVIEWER_SECRET + '"',
+     "Authorization: " + R + ' "' + REVIEWER_SECRET + '"', "registered_open"),
     # must NOT be touched
     ("untouched-monkey", "monkey=banana", "monkey=banana", "untouched"),
     ("untouched-oauth", "oauth=abc123", "oauth=abc123", "untouched"),
@@ -199,6 +273,8 @@ def main(argv: list[str] | None = None) -> int:
     credentials = [r for r in rows if r["kind"] == "credential"]
     untouched = [r for r in rows if r["kind"] == "untouched"]
     residuals = [r for r in rows if r["kind"] == "residual"]
+    over = [r for r in rows if r["kind"] == "over_redaction"]
+    opened = [r for r in rows if r["kind"] == "registered_open"]
     leaks = [r["id"] for r in credentials if r["marker_survives"]]
     secret_leaks = [r["id"] for r in rows if r["secret_survives"]]
     touched = [r["id"] for r in untouched if r["out"] != r["in"]]
@@ -216,6 +292,18 @@ def main(argv: list[str] | None = None) -> int:
         "residuals_with_marker_surviving": [r["id"] for r in residuals
                                             if r["marker_survives"]],
         "residual_rows": [r["id"] for r in residuals],
+        # r3 / F-REV-R2-02: the over-redaction family is now REGISTERED, so the cost of
+        # the fail-closed branch is a measured fact instead of an invisible one.  These
+        # rows assert the loss exactly, so they are `fidelity_ok` and do not affect the
+        # verdict; what changes is that the record can no longer claim
+        # `fidelity_drift == []` while the branch deletes a diagnostic key.
+        "over_redaction_rows": [r["id"] for r in over],
+        "over_redaction_touched": [r["id"] for r in over if r["out"] != r["in"]],
+        # r3 / F-REV-R2-01: the shape the generalized branch cannot close.  Kept in its
+        # own kind so it can never be absorbed into an empty `credential_leaks`.
+        "registered_open_rows": [r["id"] for r in opened],
+        "registered_open_leaking": [r["id"] for r in opened
+                                    if r["marker_survives"] or r["secret_survives"]],
         "fidelity_failures": [{"id": r["id"], "expected": r["expected"], "out": r["out"]}
                               for r in rows if not r["fidelity_ok"]],
         "fidelity_ok": all(r["fidelity_ok"] for r in rows),
@@ -230,6 +318,8 @@ def main(argv: list[str] | None = None) -> int:
                       ("label", "entries", "credential_leaks",
                        "credential_secret_leaks", "touched_but_should_not_be",
                        "residuals_with_marker_surviving", "residual_rows",
+                       "over_redaction_rows", "over_redaction_touched",
+                       "registered_open_rows", "registered_open_leaking",
                        "fidelity_ok", "verdict")}, ensure_ascii=True, indent=2))
     for failure in report["fidelity_failures"]:
         print("FIDELITY-FAIL", failure["id"], "expected", repr(failure["expected"]),

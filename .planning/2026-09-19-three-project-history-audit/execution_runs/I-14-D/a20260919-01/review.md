@@ -170,3 +170,40 @@ used for the leak direction; and whether any downstream consumer depends on the 
 
 **Status: `review_pending`.** r3 is not accepted. A fix for F-REV-R3-01 belongs to a new revision
 (r4), not to this one.
+
+
+---
+
+## r4 (2026-09-22) — submitted, RE-REVIEW REQUIRED
+
+**Status: revision r4 submitted.** The implementer writes no verdict here.
+
+### What r4 changed
+
+Two code fixes, both from the r3 review, plus the rows that register them:
+
+| finding | fix | site |
+|---|---|---|
+| `F-REV-R3-01` (BLOCKER) | the optional-CR form inside the after-break character classes is replaced by `\r\n` — exactly two bytes | `observability.py:320` |
+| `F-REV-R3-04` (LOW) | the scheme token class is widened from `[A-Za-z]…*` to the full RFC 7230 tchar | `observability.py:317` |
+
+Four new frozen oracle rows (`N5l`-`N5o`) and four new rule-table rows register both families.
+r4 has its **own** harness files; the r3 harnesses are byte-identical to their pins.
+
+### What r4 did NOT do
+
+`F-REV-R3-02` (the r3 carrier's overstatement), `F-REV-R3-03`, `F-REV-R3-05` and `F-REV-R3-06`
+to `F-REV-R3-10` are **not** addressed here; they are registered in the remediation register.
+The r3 carrier `handoff_r3.json` is left exactly as it was — its overstatement is a historical
+record of what was claimed at the time, and the correction belongs to this generation.
+
+### Two self-inflicted errors, recorded rather than quietly fixed
+
+1. **The r4 product tree was corrupted by a text-mode round trip.** `Path.read_text`/`write_text`
+   doubled every carriage return (CR 897 -> 1794, i.e. `\r\r\n`) while leaving the content
+   correct, so a diff with `\r` stripped showed only the intended changes. Rebuilt on bytes, with
+   the inverse reconstruction as the proof.
+2. **The first r4 measurement leaked state between candidates.** The candidate that rebinds the
+   module's global pattern ran first, so the "tree as it stands" candidate read that same rebound
+   pattern — and the report said fix B changed nothing when in fact it closes the non-letter
+   family. The import-time pattern is now captured before any candidate runs.

@@ -449,3 +449,77 @@ N5e-auth-token-key-lf-secret   pass=True
 Only `N5c` fails on the base tree; `N5d`/`N5e` **pass** there, because the greedy swallow happens
 to produce the expected string. All three fail only on **M4**, which is the arm that matters —
 so the sentence is true of M4 and false of the base tree. **第 272 行已过时，以本节为准。**
+
+
+# CORRECTION 4 (2026-09-22, appended for the r4 revision; original bytes above unchanged)
+
+Appended, not a rewrite. This answers the two code findings of the r3 independent review:
+**F-REV-R3-01** (BLOCKER) and **F-REV-R3-04** (LOW).
+
+## C4.1 F-REV-R3-01 — the two `?` characters are gone (BLOCKER)
+
+The r3 after-break quoted alternatives carried the optional-CR form **inside a character
+class**, where `?` is a literal member of the negated set rather than a quantifier:
+
+```
+r3, line 320   r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r?\n]*\"|'[^'\r?\n]*')"
+                                          ^^^^^^^^^^^^        ^^^^^^^^^^
+r4, line 320   r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r\n]*\"|'[^'\r\n]*')"
+```
+
+Line 319's `\r?\n` is **correct and untouched**: it sits in `(?:\r?\n)`, outside any
+character class, where `?` really is the quantifier. Exactly two bytes changed.
+
+## C4.2 F-REV-R3-04 — the scheme token class is now the full RFC 7230 tchar
+
+r3 used `[A-Za-z][A-Za-z0-9!#$%&'*+.^_\`|~-]*`. The comment justified the leading letter with
+"`scheme = 1*<any CHAR except CTLs or separators>`, which always begins with a letter" — but
+that production is RFC 7230's `token` (`1*tchar`), and `tchar` includes DIGIT and the specials,
+so it does **not** require a leading letter. The r3 review measured the consequence: a
+non-letter-initial scheme leaked where the pre-fix base tree redacted.
+
+r4 uses the full tchar class:
+
+```
+r3, line 317   _AUTH_SCHEME_TOKEN = r"[A-Za-z][A-Za-z0-9!#$%&'*+.^_`|~-]*"
+r4, line 317   _AUTH_SCHEME_TOKEN = r"[A-Za-z0-9!#$%&'*+.^_`|~-]+"
+```
+
+This is not a departure from the r2 remedy: that remedy asked for "an HTTP `token`", and the
+full tchar class is what an HTTP token is.
+
+## C4.3 New frozen rows (hand-computed before the run, as section 2 requires)
+
+| id | kind | input | expected | len |
+|---|---|---|---|---|
+| `N5l-auth-dq-question-mark` | narrow_must | `Authorization: Bot\n"<39-char credential>?x"` | `Authorization: <redacted>` | 25 |
+| `N5m-auth-sq-question-mark` | narrow_must | `Authorization: Bot\n'<39-char credential>?x'` | `Authorization: <redacted>` | 25 |
+| `N5n-auth-nonletter-scheme-marker` | narrow_must | `Authorization: 2foo\nSYNTHETIC_AUDIT_TOKEN\ndoc=17` | `Authorization: <redacted>\ndoc=17` | 32 |
+| `N5o-auth-nonletter-scheme-secret` | narrow_must | `Authorization: !foo\n<39-char credential>\ndoc=17` | `Authorization: <redacted>\ndoc=17` | 32 |
+
+## C4.4 The r4 harness is a NEW FILE, and the r3 one is untouched
+
+r4's rows live in `harness/run_i14d_oracle_r4.py` and `harness/run_rule_table_i14d_r4.py`.
+The r3 harnesses (`run_i14d_oracle.py` `f7c94c60…`, `run_rule_table_i14d.py` `01a3187e…`) are
+**byte-identical to what the r3 carrier pins**.
+
+Why this matters: adding rows to the r3 files in place would invalidate both pins AND silently
+change what "reproducing the r3 run" means — the r3 tree would then fail rows that did not exist
+when it was measured. (The r2 -> r3 step extended in place, so the r2 generation's reproduction
+basis is already gone; that is registered rather than repeated.)
+
+## C4.5 Measured result
+
+`iso/product_narrow_r4/src/.../observability.py` = 42829 B, sha256
+`15446f4da6ba256f039e684eaa4bd0c6f45889dc86a624717c6a0ec836e3f2a1`.
+The tree differs from r3 in **exactly four byte regions**; inverting those regions reproduces r3
+byte for byte, line endings included (CR 897 in both).
+
+```
+oracle, 32 cases      verdict pass       narrow_must_failed []   keep_must_failed []
+rule table, 83 rows   credential_leaks []   touched_but_should_not_be []   fidelity_ok true
+```
+
+Both fixes measured separately: `fix_A_only` closes the `?` leak and leaves the non-letter
+family leaking; `fix_A_and_B` leaves only the registered `C10` residual. **Neither changes any
+pre-existing row and neither changes the over-redaction family.**
