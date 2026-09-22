@@ -1,0 +1,320 @@
+target product module: C:\Users\郑曾波\Projects\company-wiki\src\company_wiki\source_catalog\prompt_injection.py
+sha256: 7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618
+REMEDIATION_REGISTER.md:592 claim under test: 「复审自 grep iso+生产两树 零 lock 原语」
+
+=== Phase A: 8 concurrent single writes, same document_id='doc-race' ===
+    {"owner": "w0", "mode": "single", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "w1", "mode": "single", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "w2", "mode": "single", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "w3", "mode": "single", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "w4", "mode": "single", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "w5", "mode": "single", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "w6", "mode": "single", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "w7", "mode": "single", "writes": 1, "errors": [], "rc": 0}
+    final row: {"metadata_json": {"prompt_injection_review": {"schema_version": "1.0", "status": "not_detected", "reviewer": "w0", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "762036e1ef0cea7232acd90a28bde9177f7a48a74143f27ad78cadd89bffc467"}}, "receipt": {"schema_version": "1.0", "status": "not_detected", "reviewer": "w0", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "762036e1ef0cea7232acd90a28bde9177f7a48a74143f27ad78cadd89bffc467"}, "receipt_key_count": 1}
+
+=== Phase A2: 8 concurrent writes, connect timeout=0.0 (lock exposed) ===
+    {"owner": "w0", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "rc": 0}
+    {"owner": "w1", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "rc": 0}
+    {"owner": "w2", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "rc": 0}
+    {"owner": "w3", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "rc": 0}
+    {"owner": "w4", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "rc": 0}
+    {"owner": "w5", "mode": "tight", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "w6", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "rc": 0}
+    {"owner": "w7", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "rc": 0}
+    final row: {"metadata_json": {"prompt_injection_review": {"schema_version": "1.0", "status": "not_detected", "reviewer": "w5", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "bb349f269976d971294e3cdd5847b128917eb85d2834cc5320a5142f8cc579b8"}}, "receipt": {"schema_version": "1.0", "status": "not_detected", "reviewer": "w5", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "bb349f269976d971294e3cdd5847b128917eb85d2834cc5320a5142f8cc579b8"}, "receipt_key_count": 1}
+
+=== Phase B: 4 writers + 4 readers interleaved on 'doc-mix' ===
+    {"owner": "m0", "mode": "mix", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "m1", "mode": "mix", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "m2", "mode": "mix", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "m3", "mode": "mix", "writes": 1, "errors": [], "rc": 0}
+    {"owner": "r0", "reads": 170, "none_results": 61, "receipt_results": 109, "errors": [], "rc": 0}
+    {"owner": "r1", "reads": 170, "none_results": 52, "receipt_results": 118, "errors": [], "rc": 0}
+    {"owner": "r2", "reads": 164, "none_results": 58, "receipt_results": 106, "errors": [], "rc": 0}
+    {"owner": "r3", "reads": 154, "none_results": 52, "receipt_results": 102, "errors": [], "rc": 0}
+    final row: {"metadata_json": {"prompt_injection_review": {"schema_version": "1.0", "status": "not_detected", "reviewer": "m1", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "ca0df2c95aa144c1d0ff2ff3c8f967fdc1de9ef0c4120b3726416701b519d619"}}, "receipt": {"schema_version": "1.0", "status": "not_detected", "reviewer": "m1", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "ca0df2c95aa144c1d0ff2ff3c8f967fdc1de9ef0c4120b3726416701b519d619"}, "receipt_key_count": 1}
+
+=== SUMMARY ===
+{
+  "P6-A": {
+    "processes": [
+      {
+        "owner": "w0",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "w1",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "w2",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "w3",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "w4",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "w5",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "w6",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "w7",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      }
+    ],
+    "successful_writes": 8,
+    "lock_errors": [],
+    "other_errors": [],
+    "final_state": {
+      "metadata_json": {
+        "prompt_injection_review": {
+          "schema_version": "1.0",
+          "status": "not_detected",
+          "reviewer": "w0",
+          "reviewed_at": "2026-09-22T00:00:00Z",
+          "evidence_sha256": "762036e1ef0cea7232acd90a28bde9177f7a48a74143f27ad78cadd89bffc467"
+        }
+      },
+      "receipt": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "w0",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "762036e1ef0cea7232acd90a28bde9177f7a48a74143f27ad78cadd89bffc467"
+      },
+      "receipt_key_count": 1
+    },
+    "lost_write_count": 7,
+    "semantics": "single metadata key => last-writer-wins OVERWRITE (7/8 writes are silently displaced, by design of the storage shape)",
+    "uncaught_lock_exception": false,
+    "receipt_row_survivors": 1
+  },
+  "P6-A2": {
+    "processes": [
+      {
+        "owner": "w0",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "rc": 0
+      },
+      {
+        "owner": "w1",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "rc": 0
+      },
+      {
+        "owner": "w2",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "rc": 0
+      },
+      {
+        "owner": "w3",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "rc": 0
+      },
+      {
+        "owner": "w4",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "rc": 0
+      },
+      {
+        "owner": "w5",
+        "mode": "tight",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "w6",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "rc": 0
+      },
+      {
+        "owner": "w7",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "rc": 0
+      }
+    ],
+    "successful_writes": 1,
+    "lock_errors": [
+      "OperationalError: database is locked",
+      "OperationalError: database is locked",
+      "OperationalError: database is locked",
+      "OperationalError: database is locked",
+      "OperationalError: database is locked",
+      "OperationalError: database is locked",
+      "OperationalError: database is locked"
+    ],
+    "final_state": {
+      "metadata_json": {
+        "prompt_injection_review": {
+          "schema_version": "1.0",
+          "status": "not_detected",
+          "reviewer": "w5",
+          "reviewed_at": "2026-09-22T00:00:00Z",
+          "evidence_sha256": "bb349f269976d971294e3cdd5847b128917eb85d2834cc5320a5142f8cc579b8"
+        }
+      },
+      "receipt": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "w5",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "bb349f269976d971294e3cdd5847b128917eb85d2834cc5320a5142f8cc579b8"
+      },
+      "receipt_key_count": 1
+    },
+    "note": "with timeout=0 the writer has NO lock handling — 'database is locked' escapes as a raw sqlite3.OperationalError",
+    "uncaught_lock_exception": true
+  },
+  "P6-B": {
+    "writers": [
+      {
+        "owner": "m0",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "m1",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "m2",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "m3",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "rc": 0
+      }
+    ],
+    "readers": [
+      {
+        "owner": "r0",
+        "reads": 170,
+        "none_results": 61,
+        "receipt_results": 109,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r1",
+        "reads": 170,
+        "none_results": 52,
+        "receipt_results": 118,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r2",
+        "reads": 164,
+        "none_results": 58,
+        "receipt_results": 106,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r3",
+        "reads": 154,
+        "none_results": 52,
+        "receipt_results": 102,
+        "errors": [],
+        "rc": 0
+      }
+    ],
+    "final_state": {
+      "metadata_json": {
+        "prompt_injection_review": {
+          "schema_version": "1.0",
+          "status": "not_detected",
+          "reviewer": "m1",
+          "reviewed_at": "2026-09-22T00:00:00Z",
+          "evidence_sha256": "ca0df2c95aa144c1d0ff2ff3c8f967fdc1de9ef0c4120b3726416701b519d619"
+        }
+      },
+      "receipt": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "m1",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "ca0df2c95aa144c1d0ff2ff3c8f967fdc1de9ef0c4120b3726416701b519d619"
+      },
+      "receipt_key_count": 1
+    },
+    "torn_or_crashing_reads": [],
+    "readers_saw_only_complete_receipts": true
+  }
+}
+
+alignment with REMEDIATION_REGISTER.md:592 「零 lock 原语」: CONFIRMED — no lock primitives in the writer; contention surfaces as raw sqlite errors / silent overwrite displacement

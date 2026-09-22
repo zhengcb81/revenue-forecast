@@ -834,3 +834,234 @@ B-6d"(及更早项)"无对象 = 清单如实留空 ✓（B-6b 解析后其唯一
 **结论**：三检出全部合规、**零真阳**；封轮纪律维持（不开 CORRECTION 3，词表 v2 冻结态不变）；工具按设计持续服务新写作（exit 1 = 候选交人裁，本轮 1 分钟内闭环）。
 
 **REM-79 工具使用状态**：常规自检路径 = `python <attempt>/tools/check_domain_assertions.py <文件...>`，exit 0/1 + `file:line:[markers]` + `--json`；父裁处权保留（历史三轮 + 本轮）。
+
+---
+
+## 三十二、【REM79 实战第 2 跑（R92/R93 新文本）+ 终裁 + blocked 前的条件冻结】2026-09-22
+
+工具自查三文件 = 4 检出：3 条已终裁（R-D/R-E/progress:1060 句内主语）+ **1 条新**（`findings.md:684`「批次 3 产品面=NONE」）→ **终裁合规**：句内主语「批次 3 产品面」即域（=该批提交在 scripts/tests/tools/config 四路径面的实测结果，`git diff --name-only 3861f08d..4b1c690b` 空）。**四轮实战累计真阳 = 0**；封轮维持、词表 v2 冻结。
+
+**blocked 前条件冻结（供目标工具与读者）**：仓内自主项全部完成——三批推送至 `origin/main=4b1c690b`（门各绿、gitlinks=0、四锚 disk==HEAD、零产品面）、五系闭环、验收 80、登记册 REM-01…86+§18–32、19 卡门核验全 gated、PROMOTION-PREP 清单 `6759d1eb…` 即批即行、REM79 工具四跑零真阳。**唯一剩余门 = owner 四答（A-1/A-2/B/C）+ 外部两候（函 A 三外部方回执→I-06-A→19 卡链；INVEST 合入=invest-core owner）——同一阻断条件自 Round 63 起连续存在已远超 3 轮门槛。**
+
+---
+
+## 三十三、【REM-84 关闭 + 第四批执行启动】2026-09-22
+
+**REM-84 = 关闭（交付完成）**：owner「A-2: 授权」→ 父代理当轮执行 `START_HERE.md` **append-3**（T1-12 ① 形态）：追加前 18452 B / sha256 `a9cb5a4a34929fb21d43b3f8308c36b03440d73c43325b8952e81fe130f64caf`，追加后 **前缀证明复算 = True**、+1984 B → 20436 B / `5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318`。勘误内容五点：rc=3 从未因缺 expected 出现（T1-8 `rc3_classification_observed=[]`）；硬下标世代=rc=1 KeyError；打补丁世代=rc=2+no_verdict（B5-fix 128 裸 rc）；**术语区分**（L100「期望文件缺失」=文件缺→rc=1 vs cases.json 键缺失=声明不可用→rc=2）；「统一到 rc=2 再推广」方向维持。不动 L90-115 与既有追加节任何字节。
+
+**第四批执行（owner 四答全部启动）**：
+- A-1① → `M01-M04-PROPAGATE`（08e56200）
+- B 全批 → `PROMOTION-EXEC`（5ed7f075，按 `6759d1eb…` 清单逐行、B-6a 不动、B-6b 卡内解耦合、**父保留分仓提交权**）+ `GATE-OQ-FIX`（4e29afc4，OQ-01 real-data 步 1200→1800、OQ-02 f2 timeout 120→300、诚实声明负载侧 GREEN 留待 batch-4 实跑）
+- C → `OUTWARD-LETTERS-UPDATE`（ea7ecf69，原文逐字节+追加式更新段+前缀证明入 `_provenance.json`；**送达仍归 owner**）
+- A-2 → ✅ 已完成（上）
+- OWNER_DECISIONS **§十八**（四答原话+执行映射）入册。
+
+**执行序**：四卡并行 → 各自复审 → 晋升后父分仓提交（RF/CW）→ batch-4 提交+推送（门实跑 = OQ-01/02 的负载侧 GREEN 验证）→ 批量关闭 REM-80/晋升相关登记行。
+
+---
+
+## 三十四、【Owner 四答执行批启动 + REM79 扩用自检备注】2026-09-22 晚
+
+### 第四批执行在飞（owner 2026-09-22 四答后）
+
+| 卡 | 裁定 | 状态（启动记录） |
+|---|---|---|
+| `M01-M04-PROPAGATE`（08e56200） | A-1=①扩权 | 同四前置形态；预期臂 E=0/F=3/G=2/S=1；历史 runner/rc 零回改 |
+| `PROMOTION-EXEC`（5ed7f075） | B=全批 | 按 `promotion_batch_manifest.md`（`6759d1eb…`）逐行；B-6a 不动、B-6b/I-14-B 卡内解耦合、**分仓提交权=父** |
+| `OUTWARD-LETTERS-UPDATE`（ea7ecf69） | C=更新函件 | 三函原文逐字节+追加式更新段+前缀证明入 provenance；**送达仍归 owner** |
+| `GATE-OQ-FIX`（4e29afc4） | B-7（OQ-01/02） | before 前像×2→oracle 冻结→两处 timeout 修改（1200→1800 仅 real-data 步、f2 120→300）→changes.diff 已出→收尾中；负载侧 GREEN 留 batch-4 实跑 |
+
+**A-2 = ✅ 完成**（START_HERE append-3 前缀证明 True、REM-84 关闭 §三十三）。**§十八 四答原文入册。**
+
+### REM79 检查器扩用自检（新文件域）
+
+- `OWNER_DECISIONS.md`（含 §18 新文本）：**0 检出** ✓
+- `START_HERE.md` L170「**只有**"冻结期望不可用/缺失"**才**发 rc=2」：**1 检出 → 终裁合规**——条件本体同行在位；属**条件式 `只有…才` 变体**（词表 b3 只冻「只有…时」形、未冻无「时」变体）⇒ 与 R-A/R-D 同族的封轮子形外误报，**真阳 0**。**形态备注（本条）即其登记**：`只有…才`（无时）为已知豁免形态，后续父裁处直接引用本节、不开 CORRECTION 3。
+- 至此 REM79 工具**五轮实战、累计真阳 0**（R-D、R-E、progress:1060、findings:684、START_HERE:170）。
+
+### 执行序（不变）
+
+四卡交付 → 各派独立复审 → 落定 → **父分仓提交（RF + CW）** → batch-4 提交+推送（门实跑 = OQ 负载侧 GREEN）→ 批量关闭 REM-80/REM-84/晋升相关登记行。
+
+---
+
+## 三十五、【C 裁定执行完毕：三函更新落定 + 父三处校正】2026-09-22
+
+### 三函更新（bottom-append、纯字节追加、UTF-8 无 BOM）
+
+| 函 | 前缀证明（执行者算+**父独立复算**） | 新 sha / 字节 | 追加 |
+|---|---|---|---|
+| A（OPEN-4/5/6） | `87d44316…2b1` 前后一致 ✓ | `cd88bd4c…cde2` / 11546 B | +2426 B / 20 行 |
+| B（签名/信任域） | `84a7988d…52ed` ✓ | `f494ac3d…e57d` / 15946 B | +3437 B / 26 行 |
+| C（gap2/gap3） | `b0ef5fda…6450` ✓ | `73fb856e…aee3` / 11673 B | +2949 B / 20 行 |
+
+父复算 = `ALL_PREFIX_PROOFS_OK`；README +1 行（前缀 True）；`_provenance.json` 增 `updates_2026_09_22`（原键全保、`delivery: NOT sent`）。三函**原请求项未动**；**送达仍归 owner**。
+
+### 父派单错误被执行者拦截（正例入册）
+
+1. **GAP 混淆**：我派单写「gap 已在代码中处理」——执行者查证 **GAP-2/GAP-3 状态零变更**（§12 仍 GAP-2=阻塞/GAP-3=待裁），**拒绝在对外函中写假话**，改为：可证的 REM-11…14 修复状态 + **显式边界**（REM-11…14 是交付面缺陷、≠ GAP-2/3）+ 敬请收方自裁句。**教训**：对外文本的每一断言须先在登记册找到状态行；派单模板中的"结论句"不得直接落函。
+2. **「永设绕过旗标」缺字歧义**：父 §17 B-8 继承了卡片笔误。**裁定（据 `INVEST-CORE handoff:304` 原文 disposition + 括注）**：括注「warn-only / 降级 / env bypass 都会换名重造 REM-01」把三种旁路机制全判死 ⇒ 真实意图 = **永不设（可）绕过旗标**；卡片原文「永设 bypass flag」漏「不」。函 B **逐字引用+起草方不作解释性改写 = 最安全外发处置**（不引入我方改写）；如 owner 需要，可在送函前加一行括注说明（**是否加 = 你定**）。
+3. **fail-closed 未决**：函 §5 α/β 仍留给收方，执行者只写缺文件+P1 一致、**不预判** ✓。
+4. **登记册重复编号缺陷**：执行者发现 register 存在**重复 §11–§20 编号系**（两套并行）——已记本条；引用一律带节标题消歧（各函引用已如此做）。
+
+### 四答执行进度
+
+A-2 ✅ · **C ✅（更新毕，送=你）** · A-1/B 两卡在飞（M01-M04-PROPAGATE、PROMOTION-EXEC、GATE-OQ-FIX handoff 收尾中）。**三函新哈希已报 owner，等你送函指令。**
+
+---
+
+## 三十六、【三交付+首复审 verdict：GATE-OQ accepted + 复审抓父两错】2026-09-22 晚
+
+### GATE-OQ-FIX 复审 = accepted_scoped（11 发现无阻断）
+
+复审者独立复算全绿：冻结时序以**其自测**为准（oracle→freeze 记录 +10 s→首目标写 +47 s；before/*.orig=预冻结只读快照，冻结规则如文成立）；diff 外科（gate 仅 `_real_data()` +1 行 1800、默认仍 1200；test L60 120→300、L158 60 未动）；`cf09ade8`=**三批 push 同钉 gate blob（rev-parse 法，五提交全中）**；证据诚实（ast rc1 原始保留）；f2 59.69 s + mutation 59.45 s 字节等 before 证 TRUE；无负载伪造；边界（reflog 窗口零条目、index 空、HEAD 未动）；14/14 交付哈希复算 0 失配。**F-8（minor）**=handoff U 项缺三字面数字（正文/oracle §6 有、无夸大）→ 落定时一行补齐（已入落定派单）。报告 `478ef11d…`/18628 B+sidecar、REM-79 自扫 0。
+
+### 复审抓出的父两处错误（如实入册）
+
+1. **跨卡时序数字混贴**：我在 GATE-OQ 复审派单里引用了「oracle 19:38:36=最早、binding +0.6 s」——那是 **PROMOTION-EXEC** 的测量值。复审者点名纠正并给出 GATE-OQ 实测。**教训：派单引用他卡实测必须标卡名**（与"禁记忆构造哈希"同族：数字也要带出处）。
+2. （前轮已记）派单结论句「gap 已在代码中处理」被函件卡拦下（GAP-2/3 状态未变）。
+
+### 三交付复审在途
+
+| 卡 | 交付要点 | 复审 |
+|---|---|---|
+| GATE-OQ-FIX | 两文件外科+U 诚实档 | ✅ accepted → 落定 `601bd836`-系已派（本轮） |
+| PROMOTION-EXEC | B-1/2/3/4/5 晋升+13 节点绿、B-6c STOP+REVERT、B-6b 无目标 SKIP、B-6a 未动 | `3c0d294a` 读验中 |
+| M01-M04-PROPAGATE | 20/20 臂符冻结、7722 文件三时点 0 变更、补丁镜像六批形态 | `b9bb9d80` 读验中 |
+| MODEL-ORACLE-ALIGN | （解锁 B-6c）RED→对齐→双树绿→生产落 | `b44863d5` 读卡中 |
+
+**分仓提交预备（等各复审 accepted+落定后执行，按卡精确范围、禁 `git add -A`）**：RF = GATE-OQ 两文件 + PROMOTION 五脚本（+MODEL 对齐后两文件）；CW = 3 改 2 新（dirty-3 不入批）。
+
+---
+
+## 三十七、【REM-80 关闭（A-1①臂表证据齐）+ 三复审 accepted 全数】2026-09-22 晚
+
+### REM-80 = 关闭（父=登记册权，复审明示其为父权、臂表即证据）
+
+**臂表（`M01-M04-PROPAGATE` 复审 accepted_scoped，报告 `3217a506…`/24604 B + sidecar）**：E=0 / F=3（反假绿）/ G=2+`cases_json_declared_expectation_missing`（反 KeyError）/ S=1（族适配：无 id 门源证 → 缺 `kind` 成员→硬下标 KeyError @L244，oracle §4 预注册）/ B=0（对照再测），**四批 20/20 全符冻结、60/60 深检**；复审者亲跑 F/G 两 fresh spot（rc=3/rc=2、断言 10/10、全落 %TEMP%）。**历史零触**：7722 文件/99,931,221 B 三时点清单字节同（`a0352536…`/验 `77a2f6b3…`）+3 文件活体 spot；`b5fcc685` 8/8 副本核。**REM-80 所涉四批门缺口自此补齐**（正式 31/31 追认亦以此臂表为据，随行登记）；M01-M04 副本内 runner 改动的**生产性推广仍=owner 决定**（本卡只交证据，零 git 写）。**复审两 minor 处置**：F-1=落定时更正 arms_summary 内嵌陈旧 manifest 哈希（旧值留 sibling 键+改交付账）；F-2=`__pycache__` 全称**定域改写**（零新增/域=7722 清单/attempt 内 0；原句留存；**oracle 冻结不碰**、其 L124 经 handoff 定域）。
+
+### 三复审 accepted 全数（第四线=MODEL 对齐卡执行中）
+
+| 卡 | 复审 verdict | 要点 |
+|---|---|---|
+| GATE-OQ-FIX | ✅ `accepted_scoped`（`478ef11d…`/18628 B，11 发现无阻断） | 抓父跨卡数字混贴（已入册 §三十六）；F-8 U 项三数字→落定补 |
+| PROMOTION-EXEC | ✅ `accepted_scoped`（`E2A42D2D…`/20561 B，6+8） | 31 败算术分解 6+25、29/29 tracebacks@:410、9 前像符、四 M-oracle blob==HEAD 证前翻转 INACTIVE、13 节点字面 ×2、REM-49 平价 1085/1085、B3 零写 spot 46 文件 |
+| M01-M04-PROPAGATE | ✅ `accepted_scoped`（`3217a506…`/24604 B，2 minor+1 pass） | 见上 |
+
+**落定在飞**：GATE-OQ（`c0ea5386`）、PROMOTION（`7a493d14`）、M01-M04（本轮派）；MODEL-ORACLE-ALIGN 执行中（357+ 文件）。**下一步**：三落定齐 → 按卡精确范围**分仓提交**（RF=GATE-OQ 2 文件+PROMOTION 5 脚本；CW=3 改 2 新，dirty-3 排除）→ MODEL 卡齐后并入 → **batch-4 推送**（门实跑=OQ 负载 GREEN）。**待 owner：三函送否（新哈希 `cd88bd4c…`/`f494ac3d…`/`73fb856e…`）。**
+
+---
+
+## 三十八、【三函全部签发（owner 原话「全部签发」）+ 四复审全数落定】2026-09-22
+
+### 签发记账
+
+owner 原话：「全部签发」→ 三函内容定稿并授权发送：A=`cd88bd4c…`/11546 B、B=`f494ac3d…`/15946 B、C=`73fb856e…`/11673 B（签发前复算三函哈希均符）。`_provenance.json` 增 `issuance_2026_09_22`（含签发意义=内容定稿+授权递送、收方仍在自己卡上签、**实际传递=未执行（代理无会话外发通道）、由 owner 自渠道递送**）；旧 `delivery: NOT sent` 注记保留为前阶段。README +1 行。**发送后的回执仍归 owner**（三外部方回复→I-06-A→19 卡链）。
+
+### 四复审 + 三落定全数 + 两提交
+
+- 复审全 accepted：GATE-OQ(`478ef11d…`)、PROMOTION(`E2A42D2D…`)、M01-M04(`3217a506…`)、MODEL(在飞 `50397574`)。
+- 落定完成：GATE-OQ(review `7352b029…`/handoff `25a15093…`/qual `6854b5fc…`)、PROMOTION(`e13a87d9…`/`c99bcf71…`/`590e0921…`，含行数 257vs260=CP936 解码伪影披露)、M01-M04(`29b72756…`/`ccdc7f50…`/`a86fef7b…`，F-1/F-2 修正落、oracle 冻结未动)。
+- 提交已行：**RF `95df2661`**（GATE-OQ 两文件）、**RF `ec307d20`**（PROMOTION 五脚本，770+/64−）、**CW 首提因被门拒**（该仓 host-assumption-guard 报 120 违规/24 新增，与它的预存脏文件同域、非本批新增→**待定域归属后重提**）。RF ahead=2。
+
+---
+
+## 三十九、【三函递交回执（owner 原话）+ 边界声明】2026-09-22
+
+owner 原话：「**给你回执**」→ **三函递交=已完成**（owner 自有渠道，`_provenance.json.issuance_2026_09_22.physical_transmission` 已改记 owner-confirmed delivered、原话引用在案）。
+
+**边界（防误读，必须并记）**：此为**送达回执，非裁定回复**——TIER-2 三方对 **OPEN-4/5/6 的裁定尚未收到**；每方回复到达时**在其自己的卡载体上签**（函上永不签）。**下一步触发器**：任一方裁定送达 → 登记其载体（接收记录+哈希）→ I-06-B 可写可失败测试 / I-06-A 实施 → **19 卡链（I-07-B 起）按九步逐张执行**；三齐则 I-06-A 收口、链上全解。
+
+**仓内收尾链并行中**：MODEL 落定（`a402077a`，O1 归因已更正为 `95df2661` hook 回放）→ RF 第三提交（`62f864b9`+`89a76809`）→ CW 域归属+重提 → batch-4（门实跑=OQ 负载 GREEN）→ 批量关行。RF ahead=2。
+
+---
+
+## 三十九、【Owner 裁定「fail 的全部要修复」+ P1 FAIL 全录 + 修复卡开工】2026-09-22 晚
+
+**owner 原话**：「**fail 的全部要修复**」→ 探针实证的全部 FAIL 项一律修复（副本内修、before/ 留旧、红绿可证、复审后按既定模式晋升/落定）。
+
+### P1 = FAIL（additive migration 升级路径断裂）——探针 `evidence/01_additive_migration.txt`（13419 B）全录
+
+| 子项 | 结果 |
+|---|---|
+| 全新库 migrate | ✅ rc=0 |
+| 重复 migrate 幂等 | ✅ |
+| **N-1 表升级（缺 request_sha256/lease_* 等 6 列）** | ❌ `_initialize` 静默 rc=0 不补列（CREATE TABLE IF NOT EXISTS 空转）→ `register()` 炸「no column named request_sha256」、`claim()` **裸抛**「no such column: lease_until」（未包 DemandStoreUnavailable） |
+| 旧行保留 | ✅ |
+
+⇒ 存疑 1 由「未验证」升级为**实证 FAIL**；候选迁移仅全新库成立；附带发现错误契约缺口（claim 裸抛）。
+
+### 修复卡 FIX-W06-GAPS 已开工（P1 范围）
+
+修复面 = **I-06-A iso/candidate/processing_demand_store.py**（副本内修、原件字节不动）：①真 additive migrator（列内省+ALTER TABLE ADD COLUMN 补缺、幂等、旧行保）②错误契约补齐（claim/register/complete/fail 的 sqlite 错误统一包 DemandStoreUnavailable/DemandStateError）③同族相邻未包装错误一并修。红绿+mutation+fresh-DB 无回归。**P2–P6 FAIL 增量并入**（探针 P2 evidence 已落 22591 B、P3–P6 执行中）。
+
+### 三方存疑全景（更新）
+
+已解除 11（OPEN-4#2/#5/#6/#8、OPEN-5#3/#4/#5/**#6 终格**、OPEN-6#1/#2/#5）· 部分解除 1（OPEN-6#8 限缩）· 设计性/结构性 3（OPEN-4#1/#7、OPEN-6#7）· **在途 = P2–P6 FAIL 修复并入 + 两官收尾**（OPEN-4#6 落定回执、边界 4 条补记）。OPEN-5 边界补充记 5–7 条已成联署共识件（含 C7 同词异义定夺=优先改名、冻结冲突则断言字段兜底）。
+
+---
+
+## 四十、【转达层勘误错指被裁定官 grep 反查纠正（第 7 例自纠）+ P5 敞口三连证实处置】2026-09-22 晚
+
+### 勘误错指事件（如实入档）
+
+探针 P4 表③行原文=「裁定文本其实**没**点名 `cases_json_declared_expectation_missing`」；**父转达时方向转反**、写成「OPEN-5 裁定引此串需澄清」。OPEN-5 裁定官**不盲认、当场 grep 反查**：该串其裁定文件 0 命中 ⇒ 勘误对象错指、无需澄清；真实出处=登记册 :393/:941（M01-M04 runner 语境）。**教训（与 :921 跨卡数字混贴同族）：跨载体引用/勘误必须先在目标文件 grep 定位**。至此本日转达-测量类自纠共 7 例（假披露转述 GAP 混淆、跨卡时序数字混贴、平铺路径误报、PS 伪影 ×3、本例勘误错指），全部被复核层/执行层/裁定官独立抓出并入档。
+
+### P5 敞口三连证实 + 处置（owner「fail 的全部要修复」）
+
+| 探针 | 结果 | 处置 |
+|---|---|---|
+| P5-a 格式合法虚构 evidence_sha256 | **ACCEPTED+可读回**=假回执面实锤（N3 只拦格式非法成立未收窄） | **修**：evidence 载荷绑定（payload 重算==evidence_sha256）；残余面=任意载荷可造任意哈希，完整堵法=授权元组+签名（OPEN-6 C1/C2、owner 终确后实施） |
+| P5-b reviewer 冒名 | **ACCEPTED**=身份可冒用实锤 | **暂缓登记 BLOCKED-on-external**：完整修复=OPEN-4b 信任根（函 B 未决），无根时身份校验=伪修复；临时缓解=审计注记（明示不构成身份） |
+| P5-c 无双绑定写 detected_and_ignored | **ACCEPTED**=写入侧敞口实锤（OPEN-6 C2 吻合） | **修**：record 写入侧双绑定强制化（与读取侧 tampered fail-closed 同向）+ 产品调用点普查 |
+| P5-d 对照 'ABC' | PASS（精确错误命中） | — |
+
+**修复卡 FIX-W06-GAPS 增量面终表**：P1 迁移断裂（3 条）+ P2-B 定义拒绝 + P3-A/B（显式 expire+过期定义拒绝）+ P4-SCOPE（文案钉住 4 形态）+ P5-a 载荷绑定 + P5-c 双绑定强制 = **8 组修复面**；P5-b 挂外部。P6（并发写回执）evidence 已落待报告。
+
+---
+
+## 四十一、【Owner 裁定「发现的缺陷都要全部修复」——P5-b 升级真修、修面终表 12 组】2026-09-22 晚
+
+**owner 原话**：「**发现的缺陷都要全部修复**」（覆盖面=全部缺陷，含此前暂缓的 P5-b）。处置：
+
+1. **P5-b 升级真修（不等函 B）= 处置闸 fail-closed**：`detected_and_ignored` 写入须 授权元组完整+信任根在位+签名验过 三全，缺任一=定义拒绝；**信任根未建时该状态恒拒**（=OPEN-6 C3 机械形态、零伪修复）。`not_detected` reviewer 自由串保留但审计化（writer 元数据、明示不构成身份），完整身份=函 B 后启用（PARTIAL-fix-pending-external）。
+2. **P5-a 升级=record 侧扫描复验**：载荷绑定（payload 重算==evidence_sha256）+ **内部重跑 scan_text 要求声明状态==扫描事实**——虚构「已扫清」回执而原文含注入 ⇒ 拒。规则无关收紧。
+3. **P4-SCOPE 增补=漂移面单源收敛**（OPEN-6 官联署建议）：阻断句 2 手抄副本引源不手抄/等值断言钉死。
+4. **边界如实**：P3 resume/complete 缺席=**未建接口**（「不得假装存在」正确缺席、非缺陷）——建造=I-06-B 九步卡（终确后按 OPEN-5 §4 契约）；P3-A 显式 expire+P3-B 过期定义拒绝=缺陷照修。
+
+**修面终表 12 组**：P1 迁移×3、P2-B 定义拒绝、P3-A 显式 expire、P3-B 过期定义拒绝、P4-SCOPE 钉住+单源、P5-a 载荷+复验、P5-b 处置闸、P6-A 并发写定义化、P6-B 锁错误包装。探针终报证据锚：01=9a41c4de…/02=bd8cad3e…/03=e5f99847…/04=c1cba4d4…/05=6dd180bb…/06=ce83826e…。
+
+---
+
+## 四十二、【所有存疑确认收口账 + call-site 审计 + TTL 选项呈裁】2026-09-22 晚
+
+### 一、本轮实证关闭（3 条）
+
+1. **「调用方喂入=全字节而非角色切片」= 确认（call-site 审计 50 处）**：产品侧 `scan_text`/`record`/`evaluate_review` 全部调用点审计——生产调用仅 `readiness_graph.py:96`（evaluate 包装、整文档入参）；`record_prompt_injection_review` **生产调用点=0**（仅契约测试+FC-905 文档——写入面本就待 I-06-B 接口实施）；其余全为测试整文本入参；`secret_audit.py` 的 scan_text 是**同名异函**（secrets 域、不同签名，无涉）。guard/测试均零角色切片逻辑（与 OPEN-4 五点实证互证）⇒ **今日全部调用=整字节、无切片喂入**；未来 I-06-B 实施面挂 C1 检验。**三官共同留置小项就此确认关闭**。
+2. **OPEN-6#7（I-05-B 入口未读）= 确认缺席（by-design）**：探针+grep 双证产品无 consume/resume CLI（handoff L240「不得假装存在」）⇒ 疑点本体（"入口未读"）确认=**入口实为不存在**；C4 实例化=未来实施工作、非存疑。
+3. **OPEN-6#8（role_set 可篡改面）= 确认前瞻**：RF+CW 双仓生产码零引用（grep 双证）⇒ 现行零敞口、实施期 C5 约束生效即防——**终态=已解除（前瞻约束）**。
+
+### 二、随修复落定自动关闭（在飞，13 组修面）
+
+P6-A/B 落定验证 → OPEN-6#4 终格「已解除」；P4-SCOPE 落定 → C8 钉住=OPEN-5#2 残余收口；C7-SCOPE 落定 → 同词异义消歧留置关闭；FIX 全体复审后 → 三官「实证 FAIL→已修复」终表并入。
+
+### 三、须 owner 一票（2 项——**这两条确认在你**）
+
+**（甲）TTL 数值裁定**（OPEN-4#7/OPEN-6#6 相关：数值纪律=须你定值；C6 机制已裁=「TTL 上限由 policy_hash 绑定策略固定、调用方 now/ttl 只可收紧」——**只差上限值**）：
+- 实测用值全景：产品**无策略默认值**（guard 纯调用方参数、仅校验 ≥0）；测试用 30d(86400×30)/1d(86400)/1h(3600)；候选 3600=夹具值（OPEN-5 已拒其为默认）。
+- **选项 A = 30 天**（测试主用值、年报审核周期、最宽松）｜**选项 B = 7 天**（中）｜**选项 C = 1 天**（已测值中最严）｜**选项 D = 你给其他值**。选定后随 C6 机制落产品策略（修复卡可并）。
+
+**（乙）终确三裁定**（OPEN-4#1 于你确认那一下闭合）：OPEN-4/5/6 = CONDITIONAL + 边界补充记 7 条、C1–C8 全集、22 条存疑终态、修复终表——回「接受/驳回/附改」即闭 #1 并转正式回执（RESPONSES.md 一行/函 + 卡载体转录）。
+
+### 四、22 条存疑终态汇总
+
+已确认关闭 **17**（含本轮 3 + 三官解析态 14）· 随修复落定自动关 **3**（OPEN-6#4、C8 钉住、消歧）· **待你 2**（TTL 值、终确=#1）· OPEN-4#7 与 TTL 同票。**零无主存疑。**
+
+---
+
+## 四十三、【终确落地：OPEN-4#1 闭合 + TTL=A + 生效链启动】2026-09-22 晚
+
+- **owner「全部接受」**（§十九）⇒ 三裁定生效、**OPEN-4#1（模拟性质）闭合**、22 条存疑终态表封存（19 关闭确认+3 随修复关）。
+- **TTL = A（30 天 policy 上限）**，C6 机制落产品策略待修复卡/实施面并（调用方只可收紧）。
+- **生效链**：转录卡在办（RESPONSES.md 三行 + I-06-A/I-06-B rulings_transcribed，字节保真）→ I-06-A 首条解除 → I-06-A/B 九步 → 19 卡链开闸。FIX-W06-GAPS（13 组修面）继续在飞、复审后并终表。
+- **并行轨**：FIX 落定→复审；batch-4（PWF+载体+修复提交）推送评估；函 A 的真实外部回执若未来到达，仍以其本人卡载体签收为准（本记录不冒名）。

@@ -1,0 +1,139 @@
+=== P3-0 candidate API surface (resume search) ===
+{
+  "public_methods_of_DurableDemandStore": [
+    "_connect",
+    "_initialize",
+    "claim",
+    "list_active",
+    "register"
+  ],
+  "module_level_functions": [
+    "canonical_sha256",
+    "demand_key",
+    "main",
+    "read_worker_control"
+  ],
+  "cli_commands": [
+    "\"list\", \"claim\""
+  ],
+  "occurrences_of_resume_in_source": [
+    "line 18:   * a paused worker is REPORTED, never resumed or started.",
+    "line 282:     \"\"\"Read-only view of the worker control file (never resumes anything).\"\"\""
+  ],
+  "occurrences_of_complete_in_source": []
+}
+
+registered demand_id=demand-0a1d2e615ae745fa
+[P3-a claim(w1, lease_seconds=1.0)] rc=0 -> {'demand_id': 'demand-0a1d2e615ae745fa', 'demand_key': 'f9b81f1e32964b0c93b1683b0d0e83a0b8a6a20cba9c2dae3f882c7b338906e8', 'kind': 'review', 'status': 'running', 'source_id': 'src-lease', 'source_sha256': 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'review_policy': 'p', 'role_set': 'normalized,sections', 'gaps': [], 'request_sha256': '118a8288edc54166c2b79bcf60483561b781a12d3728921e1afc9de26724f914', 'attempts': 0, 'lease_owner': 'w1', 'lease_until': 1790110261.9548745, 'created_at': 1790110260.9219105, 'updated_at': 1790110260.9548745, 'candidate_marker': 'candidate-unratified-I-06-A-a20260919-01'}
+    lease_until=1790110261.9548745 (wall clock now=1790110260.982)
+[P3-a] sleeping 1.4s past lease expiry ...
+    wall clock now=1790110262.384 (lease expired)
+[P3-a resume() after expiry (C5 must REJECT)] rc=1 EXC=AttributeError: 'DurableDemandStore' object has no attribute 'resume'
+[P3-a re-claim by SAME owner after expiry] rc=0 -> None
+[P3-a re-claim by THIRD party after expiry] rc=0 -> None
+[P3-a complete() existence on candidate] rc=1 EXC=AttributeError: 'DurableDemandStore' object has no attribute 'complete'
+    db rows now: [{"demand_id": "demand-0a1d2e615ae745fa", "status": "running", "lease_owner": "w1", "lease_until": 1790110261.9548745}]
+
+[P3-b] claimed at now=0.0 lease_until=1.0
+[P3-b complete() at now=2.0 (> lease_until=1.0)] rc=1 EXC=DemandStateError: lease expired
+[P3-b heartbeat() at now=2.0] rc=1 EXC=DemandStateError: lease expired
+[P3-b complete() by WRONG owner inside lease] rc=1 EXC=DemandStateError: lease owned by 'w1'
+[P3-b explicit expire(now=2.0)] rc=0 -> 1
+    after expire: [('pd-0', 'pending', None)]
+[P3-b explicit re-claim after expire (must be explicit)] rc=0 -> ProcessingDemand(demand_id='pd-0', key='k-lease', kind='review', priority=0, status='running', attempts=0, lease_owner='w2', lease_until=3.0, retry_at=None, created_at=0.0, updated_at=2.0)
+
+=== SUMMARY ===
+{
+  "P3-0-resume-api-existence": {
+    "surface": {
+      "public_methods_of_DurableDemandStore": [
+        "_connect",
+        "_initialize",
+        "claim",
+        "list_active",
+        "register"
+      ],
+      "module_level_functions": [
+        "canonical_sha256",
+        "demand_key",
+        "main",
+        "read_worker_control"
+      ],
+      "cli_commands": [
+        "\"list\", \"claim\""
+      ],
+      "occurrences_of_resume_in_source": [
+        "line 18:   * a paused worker is REPORTED, never resumed or started.",
+        "line 282:     \"\"\"Read-only view of the worker control file (never resumes anything).\"\"\""
+      ],
+      "occurrences_of_complete_in_source": []
+    },
+    "resume_api_exists": false,
+    "verdict": "ABSENT-implement-first",
+    "checked_paths": [
+      "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\iso\\candidate\\processing_demand_store.py",
+      "I-06-B attempt: scripts/w06b_review_harness.py, after/*, commands.json (review lifecycle only — no demand resume entry)"
+    ]
+  },
+  "P3-a-candidate-store": {
+    "claim_rc": 0,
+    "lease_seconds_fixture": 1.0,
+    "lease_until": 1790110261.9548745,
+    "resume_rc": 1,
+    "resume_result": "AttributeError: 'DurableDemandStore' object has no attribute 'resume'",
+    "reclaim_same_owner_after_expiry": {
+      "rc": 0,
+      "result": null
+    },
+    "reclaim_third_party_after_expiry": {
+      "rc": 0,
+      "result": null
+    },
+    "complete_exists": false,
+    "db_rows": [
+      {
+        "demand_id": "demand-0a1d2e615ae745fa",
+        "status": "running",
+        "lease_owner": "w1",
+        "lease_until": 1790110261.9548745
+      }
+    ],
+    "c5_expected": "resume after expiry ⇒ REJECT",
+    "c5_actual": "no resume surface at all (AttributeError) ⇒ C5 untestable on the candidate",
+    "stranded_running_expired_lease": true,
+    "stranded_note": "claim() only selects status IN ('pending','failed') — a 'running' row with an expired lease is NEVER selectable again; the demand is stranded"
+  },
+  "P3-b-in-memory-queue": {
+    "module": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-B\\a20260919-01\\iso\\cw\\src\\company_wiki\\source_catalog\\processing_demand.py",
+    "lease_seconds_fixture": 1.0,
+    "complete_after_expiry": {
+      "rc": 1,
+      "result": "DemandStateError: lease expired"
+    },
+    "heartbeat_after_expiry": {
+      "rc": 1,
+      "result": "DemandStateError: lease expired"
+    },
+    "complete_wrong_owner_in_lease": {
+      "rc": 1,
+      "result": "DemandStateError: lease owned by 'w1'"
+    },
+    "explicit_expire": {
+      "rc": 0,
+      "result": 1
+    },
+    "reclaim_after_expire": {
+      "rc": 0,
+      "result": "ProcessingDemand(demand_id='pd-0', key='k-lease', kind='review', priority=0, status='running', attempts=0, lease_owner='w2', lease_until=3.0, retry_at=None, created_at=0.0, updated_at=2.0)"
+    },
+    "rejection_texts": [
+      "DemandStateError: lease expired",
+      "DemandStateError: lease expired",
+      "DemandStateError: lease owned by 'w1'"
+    ],
+    "c5_expected": "resume-equivalent (complete/heartbeat) after expiry ⇒ REJECT",
+    "c5_met": true
+  }
+}
+P3 OVERALL C5 on candidate: no resume surface at all (AttributeError) ⇒ C5 untestable on the candidate
+P3 OVERALL C5 on memory queue: PASS (REJECT)

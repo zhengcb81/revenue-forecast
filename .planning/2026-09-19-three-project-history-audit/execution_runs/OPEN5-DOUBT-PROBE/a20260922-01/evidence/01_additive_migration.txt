@@ -1,0 +1,292 @@
+candidate src : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-06-A\a20260919-01\iso\candidate\processing_demand_store.py
+candidate sha256: 7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f
+temp copy     : C:\Users\郑曾波\AppData\Local\Temp\open5-doubt-probe\p1\processing_demand_store.py
+
+[P1-a first _initialize on fresh DB] rc=0
+--- schema dump [P1-a after] (a_fresh.sqlite3) ---
+    index idx_processing_demands_key :: CREATE INDEX idx_processing_demands_key
+    ON processing_demands(demand_key, status)
+    index sqlite_autoindex_processing_demands_1 :: None
+    table processing_demands :: CREATE TABLE processing_demands (
+    demand_id TEXT PRIMARY KEY,
+    demand_key TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    status TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    source_sha256 TEXT NOT NULL,
+    review_policy TEXT NOT NULL,
+    role_set TEXT NOT NULL,
+    gaps_json TEXT NOT NULL,
+    request_sha256 TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    candidate_marker TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    lease_owner TEXT,
+    lease_until REAL,
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+)
+
+[P1-b seed one row via register()] rc=0
+[P1-b re-run _initialize (2nd)] rc=0
+[P1-b re-run _initialize (3rd)] rc=0
+--- schema dump [P1-b after 3 migrations] (a_fresh.sqlite3) ---
+    index idx_processing_demands_key :: CREATE INDEX idx_processing_demands_key
+    ON processing_demands(demand_key, status)
+    index sqlite_autoindex_processing_demands_1 :: None
+    table processing_demands :: CREATE TABLE processing_demands (
+    demand_id TEXT PRIMARY KEY,
+    demand_key TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    status TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    source_sha256 TEXT NOT NULL,
+    review_policy TEXT NOT NULL,
+    role_set TEXT NOT NULL,
+    gaps_json TEXT NOT NULL,
+    request_sha256 TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    candidate_marker TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    lease_owner TEXT,
+    lease_until REAL,
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+)
+
+[P1-b2 build N-1 DB with 2 existing rows] rc=0
+--- schema dump [P1-b2 N-1 before migrate] (c_nminus1.sqlite3) ---
+    index sqlite_autoindex_processing_demands_1 :: None
+    table processing_demands :: CREATE TABLE processing_demands (demand_id TEXT PRIMARY KEY,demand_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL,source_sha256 TEXT NOT NULL,review_policy TEXT NOT NULL,role_set TEXT NOT NULL,gaps_json TEXT NOT NULL,created_at REAL NOT NULL,updated_at REAL NOT NULL)
+[P1-b2 migrate N-1 (1st _initialize)] rc=0
+[P1-b2 migrate N-1 (2nd _initialize, idempotency)] rc=0
+--- schema dump [P1-b2 N-1 after migrate] (c_nminus1.sqlite3) ---
+    index idx_processing_demands_key :: CREATE INDEX idx_processing_demands_key
+    ON processing_demands(demand_key, status)
+    index sqlite_autoindex_processing_demands_1 :: None
+    table processing_demands :: CREATE TABLE processing_demands (demand_id TEXT PRIMARY KEY,demand_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL,source_sha256 TEXT NOT NULL,review_policy TEXT NOT NULL,role_set TEXT NOT NULL,gaps_json TEXT NOT NULL,created_at REAL NOT NULL,updated_at REAL NOT NULL)
+--- rows after migrate (2) ---
+    {"created_at": 1.0, "demand_id": "demand-n1-1", "demand_key": "k1", "gaps_json": "[]", "kind": "review", "review_policy": "p1", "role_set": "normalized,sections", "source_id": "s1", "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "status": "pending", "updated_at": 1.0}
+    {"created_at": 2.0, "demand_id": "demand-n1-2", "demand_key": "k2", "gaps_json": "[]", "kind": "review", "review_policy": "p1", "role_set": "normalized,sections", "source_id": "s2", "source_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "status": "pending", "updated_at": 2.0}
+[P1-c register() against migrated N-1 DB] rc=1 EXC=DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256
+Traceback (most recent call last):
+  File "C:\Users\郑曾波\AppData\Local\Temp\open5-doubt-probe\p1\processing_demand_store.py", line 195, in register
+    connection.execute(
+    ~~~~~~~~~~~~~~~~~~^
+        "INSERT INTO processing_demands(demand_id,demand_key,kind,status,"
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<19 lines>...
+        ),
+        ^^
+    )
+    ^
+sqlite3.OperationalError: table processing_demands has no column named request_sha256
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\OPEN5-DOUBT-PROBE\a20260922-01\scripts\p1_additive_migration.py", line 46, in step
+    value = fn()
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\OPEN5-DOUBT-PROBE\a20260922-01\scripts\p1_additive_migration.py", line 217, in <lambda>
+    lambda: Store(db_n1).register(
+            ~~~~~~~~~~~~~~~~~~~~~^
+        kind="review",
+        ^^^^^^^^^^^^^^
+    ...<5 lines>...
+        request={"as_of_date": "2026-09-22"},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ),
+    ^
+  File "C:\Users\郑曾波\AppData\Local\Temp\open5-doubt-probe\p1\processing_demand_store.py", line 224, in register
+    raise DemandStoreUnavailable(
+        f"demand store write failed: {type(exc).__name__}: {exc}"
+    ) from exc
+pds_p1.DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256
+
+[P1-c claim() against migrated N-1 DB (uses new columns)] rc=1 EXC=OperationalError: no such column: lease_until
+Traceback (most recent call last):
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\OPEN5-DOUBT-PROBE\a20260922-01\scripts\p1_additive_migration.py", line 46, in step
+    value = fn()
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\OPEN5-DOUBT-PROBE\a20260922-01\scripts\p1_additive_migration.py", line 229, in <lambda>
+    lambda: Store(db_n1).claim(owner="w1", lease_seconds=300.0),
+            ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\郑曾波\AppData\Local\Temp\open5-doubt-probe\p1\processing_demand_store.py", line 257, in claim
+    row = connection.execute(
+          ~~~~~~~~~~~~~~~~~~^
+        "SELECT * FROM processing_demands WHERE status IN ('pending','failed') "
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        (stamp,),
+        ^^^^^^^^^
+    ).fetchone()
+    ^
+sqlite3.OperationalError: no such column: lease_until
+
+--- rows after register+claim (2) ---
+    {"created_at": 1.0, "demand_id": "demand-n1-1", "demand_key": "k1", "gaps_json": "[]", "kind": "review", "review_policy": "p1", "role_set": "normalized,sections", "source_id": "s1", "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "status": "pending", "updated_at": 1.0}
+    {"created_at": 2.0, "demand_id": "demand-n1-2", "demand_key": "k2", "gaps_json": "[]", "kind": "review", "review_policy": "p1", "role_set": "normalized,sections", "source_id": "s2", "source_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "status": "pending", "updated_at": 2.0}
+
+=== SUMMARY ===
+{
+  "P1-a": {
+    "rc": 0,
+    "schema_before": [],
+    "schema_after": [
+      [
+        "index",
+        "idx_processing_demands_key",
+        "CREATE INDEX idx_processing_demands_key\n    ON processing_demands(demand_key, status)"
+      ],
+      [
+        "index",
+        "sqlite_autoindex_processing_demands_1",
+        null
+      ],
+      [
+        "table",
+        "processing_demands",
+        "CREATE TABLE processing_demands (\n    demand_id TEXT PRIMARY KEY,\n    demand_key TEXT NOT NULL,\n    kind TEXT NOT NULL,\n    status TEXT NOT NULL,\n    source_id TEXT NOT NULL,\n    source_sha256 TEXT NOT NULL,\n    review_policy TEXT NOT NULL,\n    role_set TEXT NOT NULL,\n    gaps_json TEXT NOT NULL,\n    request_sha256 TEXT NOT NULL,\n    request_json TEXT NOT NULL,\n    candidate_marker TEXT NOT NULL,\n    attempts INTEGER NOT NULL DEFAULT 0,\n    lease_owner TEXT,\n    lease_until REAL,\n    created_at REAL NOT NULL,\n    updated_at REAL NOT NULL\n)"
+      ]
+    ],
+    "table_created": true,
+    "index_created": true,
+    "verdict_expect": "rc=0 + table + index",
+    "ok": true
+  },
+  "P1-b": {
+    "register_rc": 0,
+    "rows_before_re_migrate": 1,
+    "second_migrate_rc": 0,
+    "third_migrate_rc": 0,
+    "rows_after_re_migrate": 1,
+    "schema_stable": true,
+    "verdict_expect": "re-migrate rc=0, no duplicate rows, schema unchanged",
+    "ok": true
+  },
+  "P1-b2": {
+    "build_n1_rc": 0,
+    "migrate_1st_rc": 0,
+    "migrate_2nd_rc": 0,
+    "schema_before": [
+      [
+        "index",
+        "sqlite_autoindex_processing_demands_1",
+        null
+      ],
+      [
+        "table",
+        "processing_demands",
+        "CREATE TABLE processing_demands (demand_id TEXT PRIMARY KEY,demand_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL,source_sha256 TEXT NOT NULL,review_policy TEXT NOT NULL,role_set TEXT NOT NULL,gaps_json TEXT NOT NULL,created_at REAL NOT NULL,updated_at REAL NOT NULL)"
+      ]
+    ],
+    "schema_after": [
+      [
+        "index",
+        "idx_processing_demands_key",
+        "CREATE INDEX idx_processing_demands_key\n    ON processing_demands(demand_key, status)"
+      ],
+      [
+        "index",
+        "sqlite_autoindex_processing_demands_1",
+        null
+      ],
+      [
+        "table",
+        "processing_demands",
+        "CREATE TABLE processing_demands (demand_id TEXT PRIMARY KEY,demand_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL,source_sha256 TEXT NOT NULL,review_policy TEXT NOT NULL,role_set TEXT NOT NULL,gaps_json TEXT NOT NULL,created_at REAL NOT NULL,updated_at REAL NOT NULL)"
+      ]
+    ],
+    "physical_columns_after": [
+      "created_at",
+      "demand_id",
+      "demand_key",
+      "gaps_json",
+      "kind",
+      "review_policy",
+      "role_set",
+      "source_id",
+      "source_sha256",
+      "status",
+      "updated_at"
+    ],
+    "new_columns_added": [],
+    "new_columns_missing": [
+      "attempts",
+      "candidate_marker",
+      "lease_owner",
+      "lease_until",
+      "request_json",
+      "request_sha256"
+    ],
+    "verdict_expect": "migration adds the new columns additively (or fails loudly)",
+    "ok": false,
+    "schema_changed_additively": false
+  },
+  "P1-c": {
+    "rows_after_migrate": [
+      {
+        "demand_id": "demand-n1-1",
+        "demand_key": "k1",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "s1",
+        "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps_json": "[]",
+        "created_at": 1.0,
+        "updated_at": 1.0
+      },
+      {
+        "demand_id": "demand-n1-2",
+        "demand_key": "k2",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "s2",
+        "source_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps_json": "[]",
+        "created_at": 2.0,
+        "updated_at": 2.0
+      }
+    ],
+    "register_rc": 1,
+    "register_result": "DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256",
+    "claim_rc": 1,
+    "claim_result": "OperationalError: no such column: lease_until",
+    "rows_after_register_claim": [
+      {
+        "demand_id": "demand-n1-1",
+        "demand_key": "k1",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "s1",
+        "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps_json": "[]",
+        "created_at": 1.0,
+        "updated_at": 1.0
+      },
+      {
+        "demand_id": "demand-n1-2",
+        "demand_key": "k2",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "s2",
+        "source_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps_json": "[]",
+        "created_at": 2.0,
+        "updated_at": 2.0
+      }
+    ],
+    "old_rows_preserved": true,
+    "old_rows_defaults_ok": true,
+    "verdict_expect": "old rows preserved + new columns default sensibly + current code works",
+    "ok": false
+  }
+}
+P1 OVERALL (fresh/idempotent/N-1-additive/preserve): FAIL

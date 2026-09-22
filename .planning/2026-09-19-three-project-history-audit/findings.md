@@ -665,3 +665,35 @@ Round 77 补记刚写下"编排层 `git reset -q` 习惯会取消这 4 条暂存
 第一次四锚校验里 `model_extensions.py` 报 **FAIL** —— 根因是**我在校验脚本里拼造了期望全哈希**：记录中只有 16 位前缀 `9939480b717d5a49…`，我从记忆补全了后 48 位（伪造值），前缀与长度都对得上、后缀对不上 ⇒ 假 FAIL。**若未复查，这会被误报为"锚点漂移/生产被改"**。
 - 纠正：改用 `git show HEAD:…` blob 做权威比对 ⇒ 四锚全部 disk==HEAD；真实全哈希 = `9939480b717d5a49**523b0d5af73211e5813a78e8436d08864ae6c8562089b911**`。
 - **新纪律（第 5 条）**：**永远不得从记忆构造完整哈希**——期望值只能来自 git（HEAD blob/commit）或已钉存的 pin 文件；只有 16 位前缀时，校验必须写"前缀比对"并显式标注 `prefix-only`，或先取权威全值。
+
+---
+
+## Round 92：批次 3 三连提交 + **gitlink 物种第 6/7 例（batch-2 带病推送的发现与修复）**
+
+- **诚实披露**：batch-2（`3861f08d`，**已推送**）把 INVEST-CORE 的两个**内嵌 scratch git 仓**提交成了 mode-160000（`scratch/roundtrip/{gen,verify}`，盘上=含 .git 的目录）。**根因=我的健全性模式缺口**：查了 `diff-repo|apply-check|recovery-tree`、**漏 `roundtrip/*`**——与已处置的 4 gitlink、20260920 内嵌 .git 事故同物种第 6/7 例。风险窗口（batch-2 push → 本次修复）内未发作（内嵌 HEAD 恰与索引一致故 hook stash/checkout 正常）——属运气非护栏。
+- **处置（同既定形态）**：`git rm -r --cached` ×2（磁盘实体保留=True）+ gitignore 新规则 `*/a*/scratch/roundtrip/*/`（盖子目录仓库、roundtrip 下散文件仍可版本化）→ **batch-3c `4b1c690b`**，`gitlinks_in_index=0` 复归 ✓。
+- **批次 3 三连**：batch-3a `17565057`（OWNER §十七 备忘 + PROMOTION-PREP 全套 + 登记册 §29/30 + 保护性）→ batch-3b `60489e34`（R91 19 卡门核验 + REM79 工具首战 + 登记册 §30/31 收口尾）→ batch-3c `4b1c690b`（gitlink 修复）。**推送后台在跑**（`pwsh-*`、门实跑、全量捕获）。
+- **护栏补强（入册为纪律）**：今后任何批次的暂存健全性检查，嵌套仓模式必须覆盖 **全仓 `git ls-files -s | grep ^160000` 计数=0**（终检项，不再依赖路径关键词枚举——枚举注定漏新形态）。
+
+---
+
+## Round 93：🎯 三批推送全景达成（批次 3 门绿 + post-push 全绿）
+
+**批次 3 推送**：`pre-push gate GREEN`（10/10）→ `3861f08d..4b1c690b HEAD -> main`，push_rc=0。
+
+**post-push 复算全绿（新纪律首跑）**：ahead=0/behind=0、HEAD==origin_main==`4b1c690b`；**`gitlinks_total=0` 全量计数终检 ✓**（取代关键词枚举）；四锚 disk==HEAD；scripts porcelain CLEAN、门=`cf09ade8…`；批次 3 产品面=NONE。
+
+**三批全景（会话推送存档）**：
+| 批 | 范围 | 门 |
+|---|---|---|
+| batch-1 `ab20cebe..6f74b056` | 门 600→1200 行 + 4 gitlink 解除 + PWF 五件 | 绿（hook 内实跑） |
+| batch-2 `6f74b056..3861f08d` | 四系统闭环全证据 + 8/8 卡报告载体 + 7937 文件 | 绿 10/10 |
+| batch-3 `3861f08d..4b1c690b` | OWNER §十七 备忘 + PROMOTION-PREP + R91 门核验 + 工具首战 + **2 gitlink 修复** | 绿 10/10 |
+
+**带病披露已随批3修复**：batch-2 曾含 2 内嵌仓 gitlink（Round 92 登记）→ batch-3c 解除跟踪、盘保留、计数归零、**并已推送治愈远端历史**（新提交删除 mode-160000 条目，旧提交仍在历史中但工作树/最新树健康——与前4个同处置形态）。
+
+**目标全景（Round 93 时点）**：
+- ① 8/8 ✅ ② 三批全推 ✅ ③ REM-01…86 处置毕（闭环/在册/待owner/待外部四态）✅ ④ 19 卡核验全 gated、枢纽=I-06-A ✅ ⑤ PWF 同步 R93、gitlink 终检纪律升级 ✅
+- **仓内自主项 = 枯竭**（此后每轮仅边际审计直到答复）
+- **待 owner 四答**：A-1、A-2、B 组、C 函件状态 —— 答复即入 §十八 并触发 B 组晋升执行
+- **待外部**：函 A 三外部方回执（→19 卡链）、INVEST 合入（invest-core owner + 测试设计卡）

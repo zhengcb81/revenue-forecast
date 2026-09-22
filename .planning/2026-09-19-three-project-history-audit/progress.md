@@ -1074,3 +1074,37 @@ REM-80（M01-M04 扩权或豁免）、REM-84（START_HERE append-3 授权）。
 - **batch-3a 保护性提交 `17565057`**（rc=0，10 文件）：OWNER_DECISIONS §十七（A/B/C 备忘持久化）、登记册 §29/30、progress、**PROMOTION-PREP 全套六件入史**（未跟踪载体防失纪律）、2 个 INVEST 1 字节标记。**ahead=1 但攒推**——与 owner 答复同批走四步序列。
 - **PROMOTION-PREP 要点**（已入登记册 §三十）：六行全、父抽验 3/3、我的两处错误被卡方/实测纠正（提示 7D1BD8F9→live 225fecdd；我抽验平铺路径→实际嵌套路径）、B-6b 解谜为 I-14-B 耦合新文件波次、B-6a 明确不晋升（被 R1 取代）、apply-check 留执行日。
 - **待 owner 四答不变**：A-1、A-2、B 组（可"B 全批"）、C 函件状态。
+
+---
+
+## 2026-09-22 — Round 95：连续性交接注记（轮次临近上限的保险记录）
+
+**背景**：owner 四答已到（§十八 原话：「A-1: 1, A-2: 授权, B: 全批， C:更新函件」）；A-2 已完成（START_HERE append-3 前缀证明 True → `5c6e111f…`，REM-84 关闭见登记册 §三十三）；第四批四卡在飞（19:16 派、经 5h 会话挂起后 19:27 恢复执行），goal 轮次临近上限。本注记 = 若后续轮次/会话接手时的**精确续作步骤**。
+
+### 在飞四卡（交付信号=各自 attempt/a20260922-01/handoff.json 出现 status）
+
+| 卡 / subagent-id | 任务 | 交付后必须做的事 |
+|---|---|---|
+| `GATE-OQ-FIX` / 4e29afc4 | OQ-01：`tools/pre_push_gate.py` real-data 步 timeout 1200→1800（仅该步）；OQ-02：`tests/test_fc1105_fault_injection.py` 内部 timeout 120→300。**已改两文件（RF dirty 即此二文件）**、验证输出齐、handoff 未落 | ①核其 oracle 冻结先于改动、before 前像在；②派独立复审 → accepted 则落定三件套；③**父提交此二文件进 batch-4**（这是 owner 授权的产品改动）；负载侧 GREEN 由 batch-4 push 的门实跑充当 |
+| `PROMOTION-EXEC` / 5ed7f075 | B 全批：按 `PROMOTION-PREP/.../promotion_batch_manifest.md`（`6759d1eb…`）逐行 源→目标+验证；B-6a 不动、B-6b 耦合 I-14-B 卡内解、**I-08-C 13 节点套件对晋升后生产树应 13/13 绿** | ①派复审 → 落定；②**父分仓提交**：RF `scripts/{revenue_core,revenue_publication,revenue_report,company_wiki_source,model_registry}` + CW `src/.../{observability,prune,archive}.py` + `source_preparation.py`(37a3eeae 所在仓以实测为准) + CW 仓根 `conftest.py`+`tests/contract/test_short_basetemp_convention.py`(新增) + I-14-B/I-14-I natural_window(卡内解耦合后)；**CW 的 3 个预存脏文件不入批**；复审不过的行按其 recovery 回滚 |
+| `M01-M04-PROPAGATE` / 08e56200 | A-1①：M01-M04 门传播（同四前置、历史零回改），预期臂 E=0/F=3/G=2/S=1 | ①派复审 → 落定；②**关闭登记行 REM-80**（附臂表） |
+| `OUTWARD-LETTERS-UPDATE` / ea7ecf69 | C：三函追加式更新段+前缀证明入 provenance，原文零字节 | ①核三函前缀证明；②**把三份新哈希+更新段摘要报 owner，送不送仍归 owner**（本 agent 无外发能力） |
+
+### 批次 4（所有复审落定 + 父分仓提交后）
+
+1. PWF 四件 + 各卡载体 + RF/CW 晋升改动分仓提交（RF 侧含 GATE-OQ 两文件）；2. 四步序列（gitlinks **全量计数=0** 终检已升级纪律、静默窗、hook 回放核对）；3. `git push origin HEAD:main` 后台全量捕获——**门实跑 = batch-4 唯一的 OQ 负载侧 GREEN**；4. post-push 四锚+porcelain 复算；5. 批量关闭登记行（REM-80、晋升各行、OQ-01/02）。
+
+### 此后仅余
+
+**owner 送达三函**（→ 三外部方 TIER-2 回执 → I-06-A 解锁 → **19 卡链**按九步逐张执行）+ **INVEST 合入**（invest-core owner + 测试设计卡欠账）+ batch-2 晋升已在 B 全批内消化。盘上验收 80；origin/main=`4b1c690b`。
+
+**接手动作口诀**：先 `list_agents` 查四卡状态（running 勿重派防双写）→ 收交付→派复审（先写 reviewer_report+.sha256 再回报）→ 落定三件套 → 父分仓提交 → batch-4 → 关行。
+
+---
+
+## 2026-09-22 — Round 92：终确生效 + CW 入史 + 批次4 开推
+
+- **owner「全部接受」终确**（OWNER_DECISIONS §十九）：三 T2 裁定生效（OPEN-4#1 闭合、TTL=A 30天上限）、RESPONSES/卡载体转录在办、I-06-A 首条 blocked_by 解除、**19 卡链开闸**（首卡 I-06-A/a20260922-02 已派）。
+- **22 条存疑收口账**（登记册 §四十二）：19 关闭确认 + 3 随修复自动关 + 零无主。
+- **CW 仓入史 `ac4ebd0`**（5 文件 1347+/107−）：PROMOTION B3/B4/B5 行 + 两处**如实披露的后晋升适配**（conftest 守卫+计算化夹具+删未用 import `40babe33→dfb7c6cd`；observability 死赋值删 `2f644994→edcbeccb`，交付字节从未过该仓 ruff）；host-guard new=0、15/15 过；dirty-3 排除未动。前次被拒=门(new=0)后 **ruff F841/F401**——两修均行为中性。
+- **RF 侧**：GATE-OQ `95df2661`、PROMOTION 五脚本 `ec307d20`、MODEL `5fd82de7` 三提交待 batch-4 推；登记册至 §43、探针 6/6 终报、修复卡 FIX-W06-GAPS（13 组）+ 转录 + I-06-A **在飞排除于本批**。

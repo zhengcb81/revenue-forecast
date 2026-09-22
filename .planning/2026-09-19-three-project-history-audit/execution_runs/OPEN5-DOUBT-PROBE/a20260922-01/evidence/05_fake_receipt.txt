@@ -1,0 +1,50 @@
+target product module: C:\Users\郑曾波\Projects\company-wiki\src\company_wiki\source_catalog\prompt_injection.py
+sha256: 7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618
+fabricated evidence_sha256 (format-valid, no scan backing): ffa4c89b84f64b1ac7a3b059e439fbcf0c9d0c6b10d4a2f4b298e74c746c3fd5
+
+[P5-a fabricated evidence_sha256 (status=not_detected)] rc=0 (ACCEPTED) -> {"schema_version": "1.0", "status": "not_detected", "reviewer": "scanner-bot-v1", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "ffa4c89b84f64b1ac7a3b059e439fbcf0c9d0c6b10d4a2f4b298e74c746c3fd5"}
+    read-back receipt: {"schema_version": "1.0", "status": "not_detected", "reviewer": "scanner-bot-v1", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "ffa4c89b84f64b1ac7a3b059e439fbcf0c9d0c6b10d4a2f4b298e74c746c3fd5"}
+
+[P5-b reviewer='zr302-test-FAKE' free string] rc=0 (ACCEPTED) -> {"schema_version": "1.0", "status": "not_detected", "reviewer": "zr302-test-FAKE", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "8f06d9d458185a12f364ca57051f7b00562871fe4d479cd681311733eb1d044d"}
+
+[P5-c detected_and_ignored WITHOUT source_sha256/policy_hash] rc=0 (ACCEPTED) -> {"schema_version": "1.0", "status": "detected_and_ignored", "reviewer": "zr302-test-FAKE", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "a8273fe4e6be3a60616f6e7f036e0a137af54742b937b17e252c23302c2ddf8a"}
+
+[P5-d format-illegal evidence_sha256='ABC' (control)] rc=1 (REJECTED) EXC=PromptInjectionReviewError: evidence_sha256 must be a lowercase SHA-256
+
+=== SUMMARY ===
+{
+  "P5-a": {
+    "rc": 0,
+    "result": "ACCEPTED",
+    "read_back": {
+      "schema_version": "1.0",
+      "status": "not_detected",
+      "reviewer": "scanner-bot-v1",
+      "reviewed_at": "2026-09-22T00:00:00Z",
+      "evidence_sha256": "ffa4c89b84f64b1ac7a3b059e439fbcf0c9d0c6b10d4a2f4b298e74c746c3fd5"
+    },
+    "interpretation": "ACCEPTED => forgery face CONFIRMED; I-06-B N3 'only blocks format-illegal' stands (NOT narrowed)"
+  },
+  "P5-b": {
+    "rc": 0,
+    "result": "ACCEPTED",
+    "interpretation": "ACCEPTED => reviewer identity is a spoofable free string"
+  },
+  "P5-c": {
+    "rc": 0,
+    "result": "ACCEPTED",
+    "interpretation": "ACCEPTED => dual binding optional at write time = write-side gap CONFIRMED (matches OPEN-6 C2-described face)"
+  },
+  "P5-d": {
+    "rc": 1,
+    "result": "PromptInjectionReviewError: evidence_sha256 must be a lowercase SHA-256",
+    "expected_rejection_text": "evidence_sha256 must be a lowercase SHA-256",
+    "exact_text_match": true,
+    "ok": true
+  }
+}
+
+P5-a verdict: FORGERY-FACE-CONFIRMED
+P5-b verdict: SPOOFABLE
+P5-c verdict: WRITE-SIDE-GAP-CONFIRMED
+P5-d verdict: PASS
