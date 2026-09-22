@@ -293,3 +293,44 @@ proved by inverting the replacements. Separately, the first version of the build
 asserted "the CR count is unchanged", which went red on a correct rebuild — the comment block
 legitimately grows, so the count must grow with it; the check is now "the file stays uniformly
 CRLF".
+
+
+---
+
+## r5 verdict (2026-09-22) — the independent reviewer returned `changes_required`; 11 of 13 claims confirmed, 2 refuted
+
+**Verdict: `changes_required`.** The verdict is the reviewer's; this attempt states none of its own.
+
+**Carrier**: `reviewer_report_r5.md`, 49279 B, sha256 `9f8fdba98c473ec9510d53e4a605fba4072cf8e276485c5c091f83e7683311d5` — recomputed from the bytes
+when this section was written.
+
+### The two refuted claims, and the two MEDIUM findings
+
+* **Claim 2 refuted / `F-REV-R5-01` (MEDIUM) — the new class is a SWAP, not a widening.**
+  Sweeping all printable characters at the pre-break position gives `r4 \ r5 = ['&', "'", '|']`.
+  `Authorization: Bo&t` + newline + the card's marker **redacts on r4 and persists on r5**; six
+  credential-persistence shapes that r4 redacted are re-opened, and none is registered. Not
+  base-regressive (`product_base` leaks them too), hence MEDIUM rather than BLOCKER.
+  **Reproduced independently outside the review as well.**
+  ⇒ **Claim 2's "the family is closed" holds only for r4's leak set**, which is exactly why
+  Claim 3 fails: the widening moved the hole rather than removing it.
+
+* **Claim 9 refuted / `F-REV-R5-02` (MEDIUM) — r5's own record overstates, one paragraph above
+  the correction that declares the structurally identical sentence false.** `oracle.md` C5.1
+  says the widening "**closes the whole family** at **zero cost**". It is priced by
+  `measure_r5.py`'s 19 probes, of which **4** are family members, against a family of **31
+  base-regressive shapes**. This is the `F-REV-R4-06` species — a universal carried on a
+  measurement set that does not contain its own counterexamples — recurring **one paragraph
+  above C5.3**, which declares C4.5's structurally identical sentence false.
+
+Non-blocking: `F-REV-R5-03`, `-04`, `-05` (LOW) and `-06`, `-07`, `-08` (INFO).
+
+### What held
+
+All 24 registered hashes reproduce from bytes; the r3 and r4 harnesses are byte-identical to
+their pins; generation isolation holds; the over-redaction family and the registered `C10`
+residual are unchanged; five of the reviewer's negative controls went red; the attempt was left
+untouched.
+
+**Status: `review_pending`.** A fix for `F-REV-R5-01` and a correction of `F-REV-R5-02` belong
+to a new revision (r6), not to edits of r5.

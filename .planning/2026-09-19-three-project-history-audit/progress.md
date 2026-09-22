@@ -818,3 +818,22 @@ check-complete.sh   → [planning-with-files] Task in progress (6/7 phases compl
 **两处自伤**：①LF 模板搜 CRLF 文件 ⇒ **0 命中**（靠「匹配数必须恰为 1」的断言变成致命错误而非静默 no-op）；②构建判据断言「CR 数不变」而在正确重建上转红（注释块**合法变长**）⇒ 改为「保持一致 CRLF」。
 
 **边界**：产品仓 **0**；锚点一致；**r3/r4 harness 与 r4 载体未触碰**；**r4 测量记录未改**；未做 `status` 转移；未表达裁决；未代签；**删除 0**。
+
+## 2026-09-22 — Round 75：`I-14-D` r5 的独立复核已回收 —— `changes_required`（11 确认 / 2 驳倒）；本 session 停止
+
+**派单**：编排层创建**独立 reviewer 子代理**；简报 `execution_runs/_review_i14d_r5_20260922/DISPATCH.md`（自包含，十三项待验主张）。报告**先按字节落盘**再登记哈希。
+
+**结果**：裁决 **`changes_required`**；报告 `reviewer_report_r5.md` **49279 B / `9f8fdba9…`**；**11 CONFIRMED / 2 REFUTED**；**2 MEDIUM（阻断）** + 3 LOW + 3 INFO。
+
+**两条被驳倒的（均已亲自复现）**：
+- **`F-REV-R5-01`**：新类是**置换**不是放宽——`r4 \ r5 = ['&', "'", '|']`；`Authorization: Bo&t\n<marker>` 在 r4 脱敏、在 r5 **留存**；**六个 r4 原脱敏的形态被重开且未登记**。非 base 回归 ⇒ MEDIUM。
+- **`F-REV-R5-02`**：`oracle.md` C5.1 的「closes the whole family at zero cost」由 **19 探针（仅 4 个属该族）**定价，而该族有 **31 个 base 回归形态**——**写在 C5.3 之上一个段落**，而 C5.3 正宣布结构相同的 C4.5 句为假。
+
+**成立**：24 个登记哈希全复现；**r3/r4 harness 逐字节等于其钉**；世代隔离成立；过度脱敏族与 `C10` 残留未变；reviewer 负控 5 项转红；**attempt 全程只读**。
+
+**⚠️ 该物种的第三代**：r3「引用不可复现的验证」→ r4「19 探针下普遍断言」→ r5「19 探针（4 个属该族）下『整个族已关闭』」。
+⇒ **「写进规则」不等于「下一次会照做」**；**规则必须从散文变成机制**（含域字段 + 生成时断言）。
+
+**边界**：**未修任何东西**（属 r6）；未改产品副本/harness/r3-r5 记录；未做 `status` 转移；未代签；**删除 0**。本轮唯一写入 = `review.md` 的 `## r5 verdict` 节。
+
+**本 session 到此停止。** 交接状态见 `task_plan.md` Round 75 节。

@@ -1,0 +1,108 @@
+{
+ "card": "_bookkeeping_20260922_round75",
+ "kind": "orchestrator_bookkeeping",
+ "round": 75,
+ "date": "2026-09-22",
+ "subject_card": "I-14-D",
+ "subject_attempt": "a20260919-01",
+ "subject_iteration": "r5",
+ "what_this_round_is": "the independent review of I-14-D r5 was dispatched, returned, and has been landed; this session then stops",
+ "what_this_round_is_not": [
+  "a verdict of the orchestrator's own -- the verdict is the reviewer's",
+  "a fix for the findings -- they belong to r6",
+  "a status transition",
+  "a product change"
+ ],
+ "dispatch": {
+  "brief": "execution_runs/_review_i14d_r5_20260922/DISPATCH.md",
+  "brief_bytes": 8473,
+  "brief_sha256": "a990affb5b45a1fc0a2561f28f72a5dd9c19cc7dbd4c88561f12d602cbf4ec0f",
+  "self_contained": true,
+  "note": "the brief explicitly flagged claim 9 as the one to try hardest on, because the record-overstates species had already recurred once and r5's record was the newest, least-scrutinised artefact"
+ },
+ "verdict": {
+  "value": "changes_required",
+  "carrier": "reviewer_report_r5.md",
+  "carrier_bytes": 49279,
+  "carrier_sha256": "9f8fdba98c473ec9510d53e4a605fba4072cf8e276485c5c091f83e7683311d5",
+  "hash_was_computed_from_the_bytes": true,
+  "claims": {"confirmed": 11, "refuted": 2, "unverifiable": 0},
+  "refuted_claims": ["Claim 2 (the family is closed)", "Claim 9 (r5's own record does not overstate)"],
+  "findings": {"medium": 2, "low": 3, "info": 3},
+  "what_held": "all 24 registered hashes reproduce from bytes; the r3 and r4 harnesses are byte-identical to their pins; generation isolation holds; the over-redaction family and the registered C10 residual are unchanged; five of the reviewer's negative controls went red; the attempt was left untouched"
+ },
+ "the_blocking_findings": {
+  "F-REV-R5-01": {
+   "severity": "MEDIUM",
+   "what": "the new class is a SWAP, not a widening",
+   "reproduction": "sweeping all printable characters at the pre-break position gives r4 \\ r5 = ['&', \"'\", '|']; redact_text('Authorization: Bo&t\\n<the card's own marker>') redacts on r4 and PERSISTS on r5",
+   "scale": "six credential-persistence shapes that r4 redacted are re-opened, none registered",
+   "reproduced_independently_by_the_orchestrator": true,
+   "not_base_regressive": "product_base leaks them too, hence MEDIUM rather than BLOCKER",
+   "why_it_matters": "the hole was moved, not removed -- which is exactly why Claim 2's 'the family is closed' holds only for r4's leak set"
+  },
+  "F-REV-R5-02": {
+   "severity": "MEDIUM",
+   "what": "r5's OWN record overstates, one paragraph above the correction that declares the structurally identical sentence false",
+   "the_sentence": "oracle.md C5.1: the widening 'closes the whole family at zero cost'",
+   "why_false": "priced by measure_r5.py's 19 probes, of which 4 are family members, against a family of 31 base-regressive shapes",
+   "reproduced_independently_by_the_orchestrator": true,
+   "species": "F-REV-R4-06 recurring -- a universal carried on a measurement set that does not contain its own counterexamples"
+  }
+ },
+ "the_species_now_has_three_generations": {
+  "r3": "the carrier cited a verification that no longer reproduced (F-REV-R3-02)",
+  "r4": "a 19-probe result was turned into a general claim (F-REV-R4-06)",
+  "r5": "a 19-probe result, of which only 4 were family members, was turned into 'closes the whole family' (F-REV-R5-02) -- written one paragraph above the correction declaring the structurally identical sentence false",
+  "generalisation": "writing a rule into a document does not make it take effect the next time text is generated. The previous round's rule was followed to the letter in C5.3 and violated in the paragraph above it.",
+  "the_rule_must_become_a_mechanism": "any sentence containing only / all / none / whole family / zero cost must carry a parseable domain field on the same line, and the carrier-generating script must assert that the field exists -- a rule that lives only in prose has now been falsified three times",
+  "second_mechanism_needed": "for a change to a character class, the criterion is BOTH differences old \\ new and new \\ old, not 'the character that was pointed at now passes'"
+ },
+ "pre_images": {
+  "review.md": {"bytes": 17860, "sha256": "0edecc129eec1ca5dc44a2cf79d13fdc590fb58bc86fd5f5da1837df895014a3"},
+  "task_plan.md": {"bytes": 239561, "sha256": "1b8e3f51bb7a0c4192eb3a2b6da23a620c616464eb592ebcb039237733011471"},
+  "findings.md": {"bytes": 70696, "sha256": "8d5228175b91b3e0590eedfd7397c54ac443166e9df77862a453ffb95e91b08f"},
+  "progress.md": {"bytes": 150092, "sha256": "101337c0c68455328183791267e712563de63c170594d12ed8675dc4eaf11116"},
+  "REMEDIATION_REGISTER.md": {"bytes": 43806, "sha256": "0710834e2650de722e8525628f3c9e39ca5ad08e1b2cfc770132201ed53ffb42"}
+ },
+ "post_images": {
+  "review.md": {"bytes": 20173, "sha256": "8428383f5a997c91a9de676836ed610577bc2038a9bd321d49a45c201a6b242e", "delta_bytes": 2313, "lines_added": 41, "lines_deleted": 0},
+  "task_plan.md": {"bytes": 243551, "sha256": "9e14e7750ab934796307d4a944ab8807da6c5a32793484f5aa86bbee056f335b", "delta_bytes": 3990, "lines_added": 54, "lines_deleted": 0},
+  "findings.md": {"bytes": 72922, "sha256": "118c818d72e5424fb7a326c7d2e099cde5c884d6235ae6bda648910479901b70", "delta_bytes": 2226, "lines_added": 13, "lines_deleted": 0},
+  "progress.md": {"bytes": 151997, "sha256": "2a57fdfdff3af51fd5b8934c61a0ee90a59b3cb467ba8db3c53215faf81fe27a", "delta_bytes": 1905, "lines_added": 19, "lines_deleted": 0},
+  "REMEDIATION_REGISTER.md": {"bytes": 45662, "sha256": "8048de172dd1aab59833ed4396e3c8b59e46ff00c769aa15958fd97229fee9b0", "delta_bytes": 1856, "lines_added": 14, "lines_deleted": 0}
+ },
+ "registered_in_register": ["REM-75 (closed)", "REM-76", "REM-77", "REM-78", "REM-79"],
+ "artefacts": {
+  "append_only_proof_round75_task_plan.json": {"bytes": 1722, "sha256": "4e5af106aa4342e9eb518b6f7369b07d79ee22a6d3324affe63afaaf3947bd87"},
+  "append_only_proof_round75_findings.json": {"bytes": 1713, "sha256": "ce74f98cc3c174e311e337f9f01cbaa99ca23c4e3559c153ebda397aaebb9b99"},
+  "append_only_proof_round75_progress.json": {"bytes": 1718, "sha256": "5a0292bcb08f46d1e5bceeb60d522c3963cdf4921dbe3a6c98063b8a5476b431"},
+  "append_only_proof_round75_register.json": {"bytes": 1725, "sha256": "1104dd33dca5a421cdd2da14003c9d89bd42006370b2b8e43c3033ec2efb85dd"},
+  "append_only_proof_round75_i14d_review_md.json": {"bytes": 1762, "sha256": "2c01d66613000551370c0b5d3f259a8d62324e08d5fe970768b9d39d7b233045"},
+  "dispatch_elsewhere": {"dir": "execution_runs/_review_i14d_r5_20260922", "DISPATCH.md": {"bytes": 8473, "sha256": "a990affb5b45a1fc0a2561f28f72a5dd9c19cc7dbd4c88561f12d602cbf4ec0f"}}
+ },
+ "boundaries": {
+  "product_files_written": 0,
+  "product_anchor": "scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B -- unchanged",
+  "attempt_files_written": ["review.md (appended)", "reviewer_report_r5.md (written by the reviewer)"],
+  "nothing_fixed": true,
+  "status_transitions": 0,
+  "status_remains": "review_pending",
+  "verdict_expressed_by_the_orchestrator": false,
+  "signatures_on_behalf_of_others": 0,
+  "deletions": 0
+ },
+ "session_close_state": {
+  "I-14-D": "r5 implemented, measured, carried and reviewed -> changes_required; r6 is the next step (fix the F-REV-R5-01 swap, correct F-REV-R5-02)",
+  "unaddressed_and_registered": ["F-REV-R3-02", "F-REV-R3-03", "F-REV-R3-05", "F-REV-R3-06", "F-REV-R3-07", "F-REV-R3-08", "F-REV-R3-09", "F-REV-R3-10", "F-REV-R4-02", "F-REV-R5-03", "F-REV-R5-04", "F-REV-R5-05", "F-REV-R5-06", "F-REV-R5-07", "F-REV-R5-08"],
+  "awaiting_owner": ["REM-55 I-14-E-APPLY still terminated mid-campaign", "the push: 19 commits pending; the pre-push gate's 600 s E2E cap remains below the suite's measured 861.7 s, and the gate has not been bypassed"],
+  "this_session_commits": ["b9433dee", "898e74fa", "9eb9b64a", "3269c5cb", "5cf547fb", "7fc8a0c3", "2f5ad151", "93e54dbf", "this round"]
+ },
+ "next_action_for_the_owner": [
+  "REM-76 and REM-77 belong to r6: fix the swap (the class change must be judged by BOTH old \\ new and new \\ old) and correct the C5.1 sentence.",
+  "REM-78 and REM-79 are plan-level and mechanistic: the domain-field rule and the two-difference rule must stop being prose.",
+  "REM-55 I-14-E-APPLY: still terminated mid-campaign.",
+  "the push: 19 commits will be pending after this one."
+ ],
+ "self_reference_note": "handoff.json does not register its own hash; it is recorded in task_plan.md's Round 75 section and in the memory file"
+}
