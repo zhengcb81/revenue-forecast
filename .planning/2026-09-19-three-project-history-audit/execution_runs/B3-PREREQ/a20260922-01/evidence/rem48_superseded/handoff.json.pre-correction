@@ -1,0 +1,358 @@
+{
+  "card_id": "B3-I05C-delivery-fixes",
+  "parent_card": "I-05-C",
+  "attempt_id": "a20260921-01",
+  "status": "review_pending",
+  "status_authority": {
+    "note": "Set by the implementer to review_pending only. Acceptance is the independent reviewer's decision; the implementer never signs acceptance (review_and_handoff.md).",
+    "implementer_signed_acceptance": false,
+    "reviewer_verdict": null,
+    "verdict_artifact": null
+  },
+  "implementer": "subagent",
+  "reviewer_status": "not_yet_reviewed",
+  "source_findings": {
+    "review": "execution_runs/I-05-C/a20260919-01/review.md (sha256 076195CFA8FE88A9A8F7327F18CDF5BB2D2F6ABB26597AD018AE7E2641038950, 3664 bytes)",
+    "handoff": "execution_runs/I-05-C/a20260919-01/handoff.json",
+    "verdict": "accepted_scoped",
+    "items_in_scope": ["REM-11 (P2)", "REM-12 (P2)", "REM-13 (P3)", "REM-14 (P3)"]
+  },
+
+  "what_was_fixed": {
+    "REM-11": {
+      "severity": "P2",
+      "finding": "the bundle=None branch of select_artifact_roles returned the downstream closure of the requested roles, so a normalized-only request scheduled all five roles",
+      "fix": "extracted _production_scope(roles, reusable, artifact_read) and called it from BOTH branches; bundle=None passes reusable=set() so the result is the requested roles plus their transitive ancestors",
+      "files": ["iso/fixed/rf_scripts/company_wiki_source.py"],
+      "removed_dead_code": "_dag_closure became unreferenced after the change and was deleted (private helper, absent from __all__, no importer in RF or CW)",
+      "new_tests": "TestW05CXBundleNoneScoping (8 test cases incl. the review's exact normalized-only counterexample and a 31-subset exhaustiveness invariant)"
+    },
+    "REM-12": {
+      "severity": "P2",
+      "finding": "the w05b-regression command bound the I-05-B attempt's frozen isolated company_wiki_source.py (A55602E5, 18651 bytes) instead of production (225FECDD, 19364 bytes), so 20/20 was not regression evidence",
+      "fix": "re-pointed at production rather than refreshing frozen material: the untouched I-05-B carrier is re-hosted in this attempt and the module under test is bound by explicit file location (importlib spec_from_file_location), with the bound file path and sha256 asserted in-test",
+      "files": ["iso/fixed/tests/test_w05b_verified_artifact_read.py"],
+      "new_tests": "TestB3W05BProductionBinding (3 tests) + zero edits to the 20 carrier tests",
+      "evidence": "after/test_results.json runs CTRL-E (production bytes) and CTRL-F (fixed bytes); scratch/module_provenance.json records the resolved module paths and hashes"
+    },
+    "REM-13": {
+      "severity": "P3",
+      "finding": "the select_artifact_roles docstring still described the pre-I-05-C downstream-closure semantics",
+      "fix": "docstring rewritten to the implemented rule (request closure evaluated for readability; producer_events = requested missing + non-reusable ancestors) and extended to state the REM-11 bundle=None rule so it cannot go stale again",
+      "files": ["iso/fixed/rf_scripts/company_wiki_source.py"],
+      "new_tests": "TestW05CXDocstringMatchesBehaviour (2 tests: no stale wording, and every docstring claim re-verified against behaviour)",
+      "out_of_scope_carried": "CF-1: the identical stale comment at RF:scripts/source_preparation.py:134-138 is NOT fixed (REM-13 names the docstring only; widening the allowlist is forbidden)"
+    },
+    "REM-14": {
+      "severity": "P3",
+      "finding": "retry-count-vs-artifact-count.json row 3 named test_retry_count_vs_artifact_count_diverge but reported test_invocation_trace_accuracy's numbers (4 calls / 1 artifact); the real diverge test is fail_count=2 -> 3 calls",
+      "fix": "the RECORD was corrected (row 3 test field -> test_invocation_trace_accuracy, numbers kept) and a 4th row added carrying the diverge test's own true numbers; the frozen test code was NOT touched",
+      "files": ["iso/fixed/tests/retry-count-vs-artifact-count.json"],
+      "frozen_source_untouched": true,
+      "new_tests": "TestW05CXRetryEvidenceAttribution (3 tests: every row's numbers re-derived from the named test's fail_count/max_retries, the specific row-3/4-call assertion, and a check that the frozen I-05-C JSON still carries the original misattribution)"
+    }
+  },
+
+  "fc904_conflict_resolution": {
+    "question": "does FC-904's test_no_bundle_all_produced genuinely conflict with the I-05-C scoping rule?",
+    "verdict": "NO genuine conflict - the two requirements coincide",
+    "reasoning_frozen_before_implementation": "FC-904 requests the DEFAULT role tuple, which names all five roles. The new request-scoped rule produces requested roles + ancestors, which for the full tuple is still all five. The assertion read == [] and produced == sorted(ALL_ROLES) therefore holds UNEDITED. The reviewer's counterexample was a SUBSET request, which the old code got wrong in both directions (summary-only returned an unrequested downstream dependent and omitted its ancestor; normalized-only returned all five).",
+    "residual_semantic_shift_recorded_not_hidden": "the JUSTIFICATION changes: pre-fix the result was independent of `roles` (a global produce-everything constant); post-fix it is a function of `roles`. The FC-904 assertions cannot distinguish the two, which is exactly why the subset counterexample was the finding that caught it. Documented in oracle.md (D1a), decision.md (D1a) and in the test test_no_bundle_default_request_is_universe_scope.",
+    "what_would_have_been_a_real_conflict": "narrowing the default roles tuple to the 4 active-DAG roles would drop compatibility-only markdown and turn test_no_bundle_all_produced RED. That option was rejected in advance (decision.md D1 alternative 2) because it breaks a frozen acceptance test to fix a bug that does not require breaking it.",
+    "frozen_fc904_edits": 0,
+    "frozen_fc904_sha256_reverified": "8C0B8E390307C33B8C03D51FD742CA984BA6774B84638500FD8D7CDD7D46BF3F (unchanged)"
+  },
+
+  "red_green": {
+    "fixed_bytes": {
+      "CTRL-A-fixed-w05c": {"result": "35 passed", "raw_rc": 0, "note": "19 frozen I-05-C carrier + 16 B3 tests"},
+      "CTRL-B-fixed-fc904": {"result": "16 passed", "raw_rc": 0, "note": "11 frozen FC-904 + 5 B3 provenance/scoping tests"},
+      "CTRL-F-fixed-w05b": {"result": "23 passed", "raw_rc": 0, "note": "20 frozen I-05-B carrier + 3 B3 binding tests"}
+    },
+    "production_bytes_control": {
+      "CTRL-C-prod-w05c": {"result": "8 failed, 27 passed", "raw_rc": 1, "note": "the 19 carrier tests still pass on unfixed production; exactly the 8 new REM-11/REM-13 tests are RED"},
+      "CTRL-D-prod-fc904": {"result": "1 failed, 15 passed", "raw_rc": 1, "note": "all 11 frozen FC-904 tests pass on unfixed production; only the B3 subset-scope test is RED"},
+      "CTRL-E-prod-w05b": {"result": "23 passed", "raw_rc": 0, "note": "REM-12 re-pointed regression against production bytes"}
+    },
+    "extra_selector_regression": {
+      "why": "a grep for select_artifact_roles found two MORE production suites outside the card's named set that cover the same contract: tests/test_zr706_selector_contract.py and tests/test_fc905b_trusted_receipt.py. Both were vendored read-only and run against both byte sets.",
+      "CTRL-G-prod-zr706_selector_contract": {"result": "10 passed", "raw_rc": 0},
+      "CTRL-G-prod-fc905b_trusted_receipt": {"result": "6 passed", "raw_rc": 0},
+      "CTRL-H-fixed-zr706_selector_contract": {"result": "10 passed", "raw_rc": 0},
+      "CTRL-H-fixed-fc905b_trusted_receipt": {"result": "6 passed", "raw_rc": 0},
+      "reading": "16/16 identical on both byte sets, so the fix introduces no behaviour drift on the two sibling selector suites"
+    },
+    "before_baseline": {
+      "note": "the pristine carriers copied into before/tests ran pre-change against untouched production: W05C 19 passed, FC-904 11 passed, W05B 20 passed - the same numbers the I-05-C attempt recorded, so the starting point is reproduced",
+      "command_id": "before-baseline"
+    },
+    "reading": "because CTRL-C/CTRL-D run the SAME new tests against the unfixed production bytes, the RED->GREEN change is attributable to the source fix, not to test-only edits"
+  },
+
+  "mutation_proof": {
+    "method": "each fix reverted by ONE exact literal string replacement in a separate copy under scratch/mutants/<id>/ (the fixed tree is never mutated); the declared RED set is compared against the observed RED set",
+    "M1-rem11": {
+      "revert": "bundle=None branch back to sorted({r for role in roles for r in _dag_closure(role)})",
+      "reverted_file_sha256": "3CBE7BF47BBD23ECFEB98233FF66999DC9FC720EEE1F05F2DE16A0FBB8794A54",
+      "observed": "9 failed, 26 passed (raw rc 1)",
+      "red_nodes": [
+        "TestW05CXBundleNoneScoping::test_no_bundle_normalized_only_produces_normalized_only",
+        "TestW05CXBundleNoneScoping::test_no_bundle_scope_is_request_closure[normalized|markdown|summary|sections|consumer_analysis]",
+        "TestW05CXBundleNoneScoping::test_no_bundle_subset_never_exceeds_request_closure",
+        "TestW05CXBundleNoneScoping::test_no_bundle_default_request_is_universe_scope",
+        "TestW05CXBundleNoneScoping::test_no_bundle_explicit_all_roles_matches_default"
+      ],
+      "note": "the last two go RED too, and that is honest rather than collateral: reverting to the closure makes the result independent of (not a function of) `roles`, which is precisely the D1a semantic shift being pinned. The two tests document the reading, so they are expected to fail under the revert."
+    },
+    "M2-rem13": {
+      "revert": "docstring back to the old DAG-closure wording",
+      "reverted_file_sha256": "7CE5038B9C6DBEC55915E293F43E40A73997DFD9AD61546324763F196B066966",
+      "observed": "1 failed, 34 passed (raw rc 1)",
+      "red_nodes": ["TestW05CXDocstringMatchesBehaviour::test_docstring_matches_scoped_semantics"],
+      "isolation": "exactly one node - the docstring fix has no behavioural side effects"
+    },
+    "M3-rem14": {
+      "revert": "row 3 test field back to test_retry_count_vs_artifact_count_diverge",
+      "reverted_file_sha256": "F0C9339FCE31CB4D750F0423FDA6F590DA99F5AB65C85C5011CF94B64786D3C9",
+      "observed": "2 failed, 33 passed (raw rc 1)",
+      "red_nodes": [
+        "TestW05CXRetryEvidenceAttribution::test_retry_evidence_json_rows_match_named_tests",
+        "TestW05CXRetryEvidenceAttribution::test_retry_evidence_row3_reports_four_calls"
+      ]
+    },
+    "M4a-rem12": {
+      "revert": "the regression re-pointed back at the I-05-B stale iso copy (the exact binding the I-05-C run used)",
+      "reverted_file_sha256": "F6C820F08C97C76386604A6536B0419C34C74C90915CAA4FF2BCA50D560FEEE0",
+      "observed": "2 failed, 21 passed (raw rc 1)",
+      "red_nodes": [
+        "TestB3W05BProductionBinding::test_binding_is_not_the_stale_i05b_iso_copy",
+        "TestB3W05BProductionBinding::test_binding_matches_the_declared_selector"
+      ]
+    },
+    "M4b_vacuity_proof": {
+      "purpose": "demonstrate that the ORIGINAL evidence was vacuous, i.e. that the same 20 carrier tests pass on the stale bytes",
+      "bound_bytes": {
+        "bound_file": "execution_runs/I-05-B/a20260919-01/iso/checkout_scripts/company_wiki_source.py",
+        "bound_sha256": "A55602E5C2881E64F888F39A224F82DB918190009DF3901497A5CD1E252E94AE",
+        "production_sha256": "225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294",
+        "is_stale": true
+      },
+      "probe_pass": "2 passed (asserts the stale bytes really are bound)",
+      "carrier_pass": "20 passed (raw rc 0)",
+      "reading": "20/20 on A55602E5 proves nothing about production. The I-05-C record is therefore confirmed vacuous as it stood, and the replacement carries a binding assertion that cannot pass on the stale bytes."
+    }
+  },
+
+  "changed_paths": {
+    "production": [],
+    "attempt_dir": [
+      "binding.json",
+      "decision.md",
+      "oracle.md (frozen before implementation; never edited afterwards - see after/evidence_hashes.json)",
+      "commands.json",
+      "changes.diff",
+      "case_results.json",
+      "handoff.json (this file)",
+      "iso/pristine/** (reverted copies for the diff)",
+      "iso/fixed/rf_scripts/company_wiki_source.py (REM-11 + REM-13)",
+      "iso/fixed/rf_scripts/{source_preparation,processing_demand,filing_fetch_client}.py (verbatim support copies, no edits)",
+      "iso/fixed/cw_source_catalog/artifact_dag.py (verbatim, unchanged)",
+      "iso/fixed/company_wiki/** (verbatim package skeleton)",
+      "iso/fixed/tests/test_w05c_minimal_production.py (carrier + 16 B3 tests)",
+      "iso/fixed/tests/test_fc904_artifact_selection.py (carrier + 5 B3 tests)",
+      "iso/fixed/tests/test_w05b_verified_artifact_read.py (carrier + 3 B3 tests)",
+      "iso/fixed/tests/retry-count-vs-artifact-count.json (REM-14 correction)",
+      "iso/conftest.py",
+      "before/** (pristine carriers, pre-change production copies)",
+      "after/** (source_hashes.json, test_results.json, integrity.json, evidence_hashes.json)",
+      "scratch/** (run_matrix.py, build_mutants.py, build_records.py, build_evidence.py, build_vacuity.py, mutants/**, vacuity/**, runs/**)"
+    ],
+    "card_allowlist_note": "card I-05-C allows CW:artifact_dag.py, CW:service.py, CW:processing_demand.py, RF:company_wiki_source.py, RF:source_preparation.py and the count/DAG tests. Only RF:company_wiki_source.py and the tests/evidence JSON were changed; artifact_dag.py was copied unchanged and deliberately NOT edited (summary->[normalized] was already landed by I-05-C)."
+  },
+
+  "current_source_hashes": {
+    "PRODUCTION_RF:scripts/company_wiki_source.py": "225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294",
+    "PRODUCTION_CW:src/company_wiki/source_catalog/artifact_dag.py": "0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1",
+    "PRODUCTION_RF:tests/test_fc904_artifact_selection.py": "8C0B8E390307C33B8C03D51FD742CA984BA6774B84638500FD8D7CDD7D46BF3F",
+    "FIXED_RF:scripts/company_wiki_source.py": "7D1BD8F9D9122DC4A99465A8F9201E855417A5D0756F5BFDD6D404F7CA9E48CE",
+    "FIXED_retry-count-vs-artifact-count.json": "F3B9A9B22BBAA869B21C4E7871BB74C06F747EEB69F6063C9648622437B58531",
+    "FROZEN_I05C_retry-count-vs-artifact-count.json": "A3DD418F31B75753FB60F5C1E00AE386C4F33FBF02E6F72A5D74807C794FE326",
+    "note": "no PRODUCTION_* hash differs from the value recorded in the I-05-C handoff; production was read-only for this card"
+  },
+
+  "frozen_artifacts_untouched": {
+    "I-05-C:oracle.md": "E4004563B8BBC403D7C8E3856A5FCB95AC3107E57FE891D7B848C5E9834CB34B",
+    "I-05-C:retry-count-vs-artifact-count.json": "A3DD418F31B75753FB60F5C1E00AE386C4F33FBF02E6F72A5D74807C794FE326",
+    "I-05-B:iso/tests/test_w05b_verified_artifact_read.py": "F9845F170E0EFF4B705993A3659CC0D88EE7C476AE019641B712E4968DF9595D",
+    "I-05-B:iso/checkout_scripts/company_wiki_source.py": "A55602E5C2881E64F888F39A224F82DB918190009DF3901497A5CD1E252E94AE",
+    "verification": "after/integrity.json compares every frozen hash against its recorded expectation; all matched at the end of the run. Nothing under execution_runs/I-05-C/** or execution_runs/I-05-B/** was written."
+  },
+
+  "commands_executed": [
+    "before-baseline",
+    "CTRL-A-fixed-w05c",
+    "CTRL-B-fixed-fc904",
+    "CTRL-C-prod-w05c",
+    "CTRL-D-prod-fc904",
+    "CTRL-E-prod-w05b",
+    "CTRL-F-fixed-w05b",
+    "M1-rem11",
+    "M2-rem13",
+    "M3-rem14",
+    "M4a-rem12-stale",
+    "M4b-vacuity-stale-iso",
+    "CTRL-G-prod-zr706_selector_contract",
+    "CTRL-G-prod-fc905b_trusted_receipt",
+    "CTRL-H-fixed-zr706_selector_contract",
+    "CTRL-H-fixed-fc905b_trusted_receipt"
+  ],
+  "raw_exit_codes": {
+    "before-baseline": 0,
+    "CTRL-A-fixed-w05c": 0,
+    "CTRL-B-fixed-fc904": 0,
+    "CTRL-C-prod-w05c": 1,
+    "CTRL-D-prod-fc904": 1,
+    "CTRL-E-prod-w05b": 0,
+    "CTRL-F-fixed-w05b": 0,
+    "M1-rem11": 1,
+    "M2-rem13": 1,
+    "M3-rem14": 1,
+    "M4a-rem12-stale": 1,
+    "M4b-vacuity-stale-iso": 0,
+    "CTRL-G-prod-zr706_selector_contract": 0,
+    "CTRL-G-prod-fc905b_trusted_receipt": 0,
+    "CTRL-H-fixed-zr706_selector_contract": 0,
+    "CTRL-H-fixed-fc905b_trusted_receipt": 0
+  },
+  "expected_exit_codes": {
+    "before-baseline": 0,
+    "CTRL-A-fixed-w05c": 0,
+    "CTRL-B-fixed-fc904": 0,
+    "CTRL-C-prod-w05c": 1,
+    "CTRL-D-prod-fc904": 1,
+    "CTRL-E-prod-w05b": 0,
+    "CTRL-F-fixed-w05b": 0,
+    "M1-rem11": 1,
+    "M2-rem13": 1,
+    "M3-rem14": 1,
+    "M4a-rem12-stale": 1,
+    "M4b-vacuity-stale-iso": 0,
+    "CTRL-G-prod-zr706_selector_contract": 0,
+    "CTRL-G-prod-fc905b_trusted_receipt": 0,
+    "CTRL-H-fixed-zr706_selector_contract": 0,
+    "CTRL-H-fixed-fc905b_trusted_receipt": 0
+  },
+  "raw_vs_expected_note": "every raw rc matched its frozen expectation. pytest returns 1 for both 'tests failed' and 'harness failed', so the per-node outcomes in after/test_results.json are the authoritative business verdict. The M* runs are INTENTIONALLY RED. No expected value was edited after a run.",
+
+  "completed_steps": [
+    "1. Read the I-05-C review/handoff, card I-05-C, START_HERE, review_and_handoff",
+    "2. Verified all bound source hashes against the I-05-C handoff (no drift)",
+    "3. Reproduced the pre-change baseline on untouched production: W05C 19, FC-904 11, W05B 20 passed",
+    "4. Created the attempt directory plus iso/pristine, iso/fixed, before/, after/, recovery/, scratch/",
+    "5. Froze oracle.md BEFORE any edit, including the bundle=None scoping decision and the FC-904 conflict verdict (D1a)",
+    "6. Wrote binding.json and decision.md (D1 REM-11, D1a FC-904, D2 REM-12, D3 REM-13, D4 REM-14, CF-1..CF-4)",
+    "7. Implemented REM-11 (shared _production_scope, dead _dag_closure removed) and REM-13 (docstring) in iso/fixed",
+    "8. Corrected REM-14 in iso/fixed/tests/retry-count-vs-artifact-count.json (frozen source untouched)",
+    "9. Re-pointed REM-12: re-hosted the untouched I-05-B carrier and bound the module under test by explicit file location with in-test hash proof",
+    "10. Added 16 new W05C tests, 5 new FC-904 tests, 3 new W05B binding tests",
+    "11. Ran all three suites GREEN on the fixed bytes (35 / 16 / 23)",
+    "12. Ran the production-bytes control (8 RED / 27 green; 1 RED / 15 green) proving the RED->GREEN attribution",
+    "13. Built 4 single-revert mutants and recorded the exact RED node sets",
+    "14. Built the stale-iso vacuity harness and proved 20/20 passes on A55602E5",
+    "15. Generated changes.diff, commands.json, case_results.json, after/source_hashes.json, after/test_results.json, after/integrity.json",
+    "16. Found and ran the two OTHER production suites that call select_artifact_roles (zr706 selector contract, fc905b trusted receipt) on both byte sets: 16/16 identical, no behaviour drift",
+    "17. Re-verified production and frozen-attempt hashes after all runs"
+  ],
+  "next_step_number": 18,
+  "next_action": "Assign an independent reviewer to execution_runs/B3-I05C-delivery-fixes/a20260921-01 per review_and_handoff.md, starting from reviewer_requests. The implementer does NOT mark this accepted, and promotion of iso/fixed/rf_scripts/company_wiki_source.py into the production RF repo is a SEPARATE OWNER DECISION that must not be performed as part of the verdict.",
+
+  "reviewer_requests": [
+    "Confirm the production repos are byte-identical to the recorded hashes and that nothing outside this attempt directory was written (after/integrity.json).",
+    "Confirm oracle.md was frozen before the first edit: after/evidence_hashes.json records its hash, and changes.diff contains no oracle.md hunk.",
+    "Adjudicate D1a: is the FC-904 verdict ('no genuine conflict; the default request is the universe request') correct, or does the residual semantic shift require an owner ruling?",
+    "Re-run the three fixed-byte suites independently: W05C 35 passed, FC-904 16 passed, W05B 23 passed.",
+    "Re-run CTRL-C/CTRL-D and confirm the RED nodes are exactly the 8 + 1 new tests and that all frozen assertions still pass on unfixed production.",
+    "Choose a mutation this oracle did NOT list (for example: make _production_scope skip ancestors for `sections` only, or make the artifact_read ancestor gate ignore `markdown`) and declare the expected RED set BEFORE running it.",
+    "Confirm the vacuity reading: is 20/20 on A55602E5 sufficient to call the original w05b-regression evidence vacuous, and is the replacement (explicit binding + in-test hash assertion) adequate regression evidence?",
+    "Decide whether CF-1 (source_preparation.py:134-138 comment) must be fixed before this batch closes."
+  ],
+
+  "blocked_by": [],
+  "open_questions": [
+    "Promotion decision: the fixed company_wiki_source.py lives only in this attempt (sha256 7D1BD8F9...). Who lands it into RF:scripts and re-binds the production tests?",
+    "CF-1: RF:scripts/source_preparation.py lines 134-138 repeat the same stale 'producer_events = the DAG closure of the non-reusable roles' wording. Out of REM-13's named scope, deliberately not fixed.",
+    "CF-2 (inherited, NOT closed by this card): produce_for_demand is still mock-only in tests (GAP-1), consumer_analysis has no real producer (GAP-2), and the InvocationTracker schema is unapproved for production persistence (GAP-3).",
+    "CF-3 (inherited P3-2): the shared audit harness scripts/run_card.py never validates cases.json `expected`.",
+    "CF-4 (inherited P3-3): the reviewer's original I-05-C report is still not archived; review.md remains a carrier-landing transcription.",
+    "REM-11's fix is only exercised through the selector's unit surface. The live path source_preparation.prepare_source() calls select_artifact_roles(handle) with default roles, where the new rule agrees with the old one - so no receipt-level behaviour change is claimed, and no test asserts one."
+  ],
+
+  "input_hashes": {
+    "card_I-05-C.md": "execution_v2/card_I-05-C.md (read at runtime)",
+    "START_HERE.md": "execution_v2/START_HERE.md (read at runtime)",
+    "review_and_handoff.md": "execution_v2/review_and_handoff.md (read at runtime)",
+    "I-05-C:review.md": "076195CFA8FE88A9A8F7327F18CDF5BB2D2F6ABB26597AD018AE7E2641038950",
+    "I-05-C:handoff.json": "read at runtime",
+    "I-05-C:iso/tests/test_w05c_minimal_production.py": "D13BF505E49D9DC1A49907EAE9BDA4590692E2EECFC331CD5D9053C5917AAB82",
+    "I-05-B:iso/tests/test_w05b_verified_artifact_read.py": "F9845F170E0EFF4B705993A3659CC0D88EE7C476AE019641B712E4968DF9595D"
+  },
+
+  "boundaries": {
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "self_sign": false,
+    "production_repos_read_only": true,
+    "production_writes": 0,
+    "other_cards_attempts_touched": "NONE written. execution_runs/I-05-C/** and execution_runs/I-05-B/** were read (or copied) only.",
+    "qualification_impact": "none - this card fixes delivery/evidence gaps in the I-05-C package; it does not change the qualification state, which remains formula.state=accepted_scoped, disclosure_adaptation=unmapped, accuracy=unproven. No qualification.json is produced by this attempt (consistent with the sibling B1-I08C-product-fixes attempt)."
+  },
+
+  "evidence_paths": [
+    "binding.json",
+    "oracle.md",
+    "decision.md",
+    "commands.json",
+    "changes.diff",
+    "case_results.json",
+    "handoff.json",
+    "after/source_hashes.json",
+    "after/test_results.json",
+    "after/integrity.json",
+    "after/evidence_hashes.json",
+    "before/company_wiki_source.py",
+    "before/artifact_dag.py",
+    "before/tests/test_w05c_minimal_production.py",
+    "before/tests/test_w05b_verified_artifact_read.py",
+    "before/tests/test_fc904_artifact_selection.py",
+    "iso/fixed/rf_scripts/company_wiki_source.py",
+    "iso/fixed/tests/retry-count-vs-artifact-count.json",
+    "scratch/run_matrix.json",
+    "scratch/extra_regression.json",
+    "scratch/module_provenance.json",
+    "scratch/vacuity/bound_bytes.json",
+    "scratch/build_mutants.py",
+    "scratch/run_matrix.py"
+  ],
+
+  "isolation": {
+    "unfixed_copy": "iso/pristine/** (byte-identical copies of the production files before any edit)",
+    "fixed_copy": "iso/fixed/** (the only tree this card edited)",
+    "mutation_copies": "scratch/mutants/M1..M4/** (one literal revert each)",
+    "vacuity_copy": "scratch/vacuity/** (the I-05-B frozen checkout + the untouched I-05-B carrier)",
+    "how_binding_is_proven": "the module under test is loaded with importlib.util.spec_from_file_location and its __file__ + sha256 are asserted inside the test session; scratch/module_provenance.json and scratch/vacuity/bound_bytes.json record the resolved bytes per run",
+    "why_not_sys_path": "sys.path ordering was found to be unreliable for this name (an earlier resolution can leave the fallback winning), which is the same silent wrong-bytes failure REM-12 reports; explicit location loading removes search order from the equation. This is disclosed as an implementation choice, not hidden."
+  },
+
+  "interpreter": {
+    "python": "C:\\Miniconda\\python.exe",
+    "version": "3.13.9",
+    "pytest": "9.1.1",
+    "flags": ["-X", "utf8", "-B", "-p", "no:cacheprovider"],
+    "network": "disabled - no bound command reaches the network"
+  },
+
+  "recovery": {
+    "applicable": false,
+    "reason": "every change in this card is a pure-source change in an isolated copy; there is no stateful product operation, transaction, lock, migration or registry write to recover. The mutation and vacuity harnesses operate on throwaway copies, so a failed run leaves production and the fixed tree untouched."
+  }
+}

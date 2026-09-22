@@ -1,0 +1,17 @@
+{
+  "card_id": "E1E7-ERRATA-LANDING",
+  "attempt_id": "a20260921-01",
+  "what": "追加节内的日期标签与本机实际执行时钟不一致",
+  "label_in_appended_text": "2026-09-21（取自父卡指定的 attempt id a20260921-01；每张 M 卡追加节首段与本卡 oracle.md 冻结时间行）",
+  "actual_execution_clock": {
+    "local": "2026-09-22 09:2x:xx +01:00",
+    "timezone": "GMT Standard Time",
+    "utc": "2026-09-22 08:2x:xx",
+    "observed_via": "Get-Date / ToUniversalTime（commands.json seq 15 前后）；4 个 oracle.md 的 mtime = 2026-09-22T09:25:23"
+  },
+  "disposition": "不回改已追加文字 —— 回改违反 append-only 与 T1-12 ①。真实时间以本文件、commands.json、decision.md DEC-E1E7-5、handoff.json 为准。",
+  "escalation": "若编排层要求在 M 卡内就地更正日期，只能另起一轮 T1-12 ① 追加（新 append 节），不得就地编辑；本卡不自行追加第二轮。",
+  "same_family_findings": [
+    "M05 oracle.md 整文件 hash 与 handoff.input_hashes_current 不符：git `.gitattributes: *.md text eol=lf` 把 r2/r3 追加区 54 个 CR 归一化为 LF（14844→14790 B）；LF→CRLF 还原后 sha256 精确等于 pin 值 7fda03b1… ⇒ 内容同一、判定 PINNED_OK（见 binding.json targets.M05.pin_check）"
+  ]
+}

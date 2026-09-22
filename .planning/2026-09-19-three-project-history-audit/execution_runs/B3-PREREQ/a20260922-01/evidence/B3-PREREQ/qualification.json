@@ -1,0 +1,145 @@
+{
+  "card_id": "B3-PREREQ",
+  "attempt_id": "a20260922-01",
+  "revision": "r1",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session; never the implementer)",
+    "scope_is_scoped_not_clean": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "transcribed_scope": {
+    "REM-47_RF1_fixed": "guard order = single prefix assignment + origin check (expected origin per mode, sys.path[0] check in fixed mode); provenance refuses last-writer-wins (conflict=true, FIRST write kept, full writes history); reviewer re-ran the guard property test: RED baseline P2+P3 (2 failed / 2 passed) / GREEN fixed conftest (4 passed), provenance half by code read + MUT-2 evidence; C2 non-claim present in all 3 required carriers (iso/conftest.py docstring L36-38 + L84-85, decision.md D1 L49-53, handoff.json line 19)",
+    "REM-48_RF5_fixed_with_premise_correction": "claim-at-handoff correction: the 'every hash compared' claim is at handoff.json:188, NOT decision.md (decision.md greps: 0 matches); after/integrity.json = 4 expected_frozen / exactly 1 NOT_REHASHED (line 23, I-05-C:oracle.md), flag kept and quoted; superseded CEE4B0DD157A6ED2F322C40258534414C0C64187D3F2C3E9EA3F3DFF7DEC171D -> E33D82A9E418A7CDFE04FE17CE435FF2F48EA06C27CAF096A9AB590C4683A493, both recomputed by the reviewer; reviewer ALSO re-derived the I-05-C oracle re-hash E4004563B8BBC403D7C8E3856A5FCB95AC3107E57FE891D7B848C5E9834CB34B + git-clean + empty 'git diff 8b7229c3 HEAD' => closes handoff gap 3",
+    "REM-49_CF1_fixed": "source_preparation.py:138 comment-only edit with the reviewer's verbatim operative phrase; byte diff = exactly 1 differing line pair (L138), both sides '#'; ast.dump identical; compile() OK on both; FC-904 parity JSON + both junit XMLs consistent (16 testcases / 1 failure each, same RF-3 node TestB3ProductionProvenance::test_module_under_test_is_the_bound_copy, 15 passed / 1 failed both sides, per_node_identical=true); line 379 location assertion confirmed present and unedited",
+    "mutations": "3 declared shapes match evidence: MUT-1 2 failed (P2+P3), MUT-2 1 failed (conflict not flagged), MUT-3 3 failed (C0/C1/C4); restore hashes recomputed by the reviewer: 7437BA9D8810BD016602B45710916FA8F83F0926DE265E12AE152558473F057D (iso/conftest.py) and 91A6DC32466E9D67B9D034AC345349EE683F6D5FD9486A67CD3ADE009C6EBF4D (fixed2 SP); final suite 11 passed, rc=0 (read, not re-run); 0 of 3 mutations re-executed by the reviewer",
+    "boundaries": "b3_reference/iso vs delivered iso byte-exact 21/21 files, 0 mismatches, 0 extras either direction; iso/fixed2 vs iso/fixed = 1 differing file (source_preparation.py); production pins recomputed (225FECDD / 8C0B8E39 / 0C8B1D6D / prod SP 37A3EEAE == B3-fixed SP => REM-49 not in production); pathscoped git status -- scripts tests empty; no git-writes by this attempt (all 17 commands.json entries attempt-scoped or read-only); CW never written this attempt",
+    "superseded_runs_honesty": "all 4 superseded/aborted runs (R6a, R7a, MUT-1a, MUT-2a) listed in commands.json.superseded_or_aborted_runs outside the authoritative commands array, each with why + observed outcome; no superseded run cited as evidence",
+    "F1_wording_correction": "'git status shows exactly that one M' restated DIRECTORY-SCOPED: scoped to execution_runs/B3-I05C-delivery-fixes/ = exactly 1 M; repo-wide at review time = 24 M, 23 from concurrent plan activity, none traceable to this attempt's 17 commands.json entries; original phrasing preserved byte-exact in handoff.json boundaries_observed.only_out_of_attempt_write_historical_pre_verdict (REM-83 species, preserved proactively); same uncorrected phrasing also in binding.json (untouched - only 3 files written)"
+  },
+  "scope_notes_baked_into_acceptance": [
+    "REM-47/48/49 register closure + B3 batch-2 promotion are parent/owner calls - the review accepts the attempt, not register closure, and authorizes no promotion (carrier L185)",
+    "RF-3's location-dependent assertion is still present in the carrier (test_fc904:379) - P4, owned by RF-3, fails identically in any relocated tree, correctly not edited here (carrier L186)",
+    "W05B/W05C vendored suites were not re-run in this review (carrier L187, report §6.4)",
+    "REM-49 deliberately not landed in production (prod SP == B3-accepted 37A3EEAE...); landing it is a separate production change if ever desired (carrier L188)"
+  ],
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "verdict_line": 3,
+    "verdict_line_text": "**Verdict: `accepted_scoped`** — with one non-blocking wording finding (F-1).",
+    "line_range_inclusive_1_based": [1, 189],
+    "verdict_line_range_inclusive": [3, 3],
+    "claim_line_ranges_inclusive": {
+      "claim1_REM47_RF1": [30, 58],
+      "claim2_REM48_RF5": [60, 87],
+      "claim3_REM49_CF1": [89, 106],
+      "claim4_mutations": [108, 122],
+      "claim5_boundaries": [124, 132],
+      "claim6_superseded_runs": [134, 143],
+      "F1_wording_finding": [145, 160],
+      "unverified_list": [162, 169],
+      "review_side_effects": [171, 174],
+      "rem79_self_check": [176, 181],
+      "scope_notes": [183, 189]
+    },
+    "byte_offsets": {"start": 0, "end_inclusive": 15543, "end_exclusive": 15544},
+    "carrier_file_sha256": "F367984B6BA6A8793C5A3F598686077CAF8AFCF413FE6356B69B47D4B7B23C53",
+    "carrier_file_sha256_lowercase": "f367984b6ba6a8793c5a3f598686077caf8afcf413fe6356b69b47d4b7b23c53",
+    "carrier_file_bytes": 15544,
+    "carrier_file_total_lines": 189,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+    "verdict_line_byte_region": {"start": 60, "end_inclusive": 138, "length": 79, "sha256": "2b5d869fb94dcb9451439a347b52b68e30ddf0876e3c57d8ecc3bf28523785b9"},
+    "claim1_byte_region_L30_L58": {"start": 1774, "end_inclusive": 3906, "length": 2133, "sha256": "d9631f9f4779d96badf8f9f946ec4b1f3d8e8d90522ffc7db1ae603e4b1ab19d"},
+    "claim2_byte_region_L60_L87": {"start": 3909, "end_inclusive": 6070, "length": 2162, "sha256": "2982493d5a0bae7666c64102d70783c2ae9410e7b5f44c726df419c3a80607cd"},
+    "claim3_byte_region_L89_L106": {"start": 6073, "end_inclusive": 7508, "length": 1436, "sha256": "4aa24741b2985a6a1d9703b6c54441345047679f772f577ad515b81e4a229cbf"},
+    "claim4_byte_region_L108_L122": {"start": 7511, "end_inclusive": 8762, "length": 1252, "sha256": "8bbc8989b64aa397993b8d65921c6191562dc342ad201a17a92052fd1731f839"},
+    "claim5_byte_region_L124_L132": {"start": 8765, "end_inclusive": 10665, "length": 1901, "sha256": "21d13e6de32108329ddb25ed027447c4b8f2383c25b1f53eba6d26fb8b56ef12"},
+    "claim6_byte_region_L134_L143": {"start": 10668, "end_inclusive": 11476, "length": 809, "sha256": "fd897dc2730427d36e5e1094494645ef3a4e663d747e7975435d86c1b10a5985"},
+    "F1_byte_region_L145_L160": {"start": 11479, "end_inclusive": 12846, "length": 1368, "sha256": "1904fa604705e64d66a4695d36ec4b5ed1fec5061c4b783f423b2fb279e505e2"},
+    "unverified_byte_region_L162_L169": {"start": 12849, "end_inclusive": 13798, "length": 950, "sha256": "42618992c07c135c41ca88cd749cd3b5a143d66c6660a02cc5201a2dd2ec4bbe"},
+    "scope_notes_byte_region_L183_L189": {"start": 14767, "end_inclusive": 15542, "length": 776, "sha256": "81266a39ad5fca5f6396b7bf00f9fcfadd8bc0ce35b25a36ff9fe39ecbcc7a9e"},
+    "whole_file_minus_trailing_lf": {"length": 15543, "sha256": "af402840c4d52458034f4368e4a73b2b71bb6e931594bd6ad0e679c5192cb6e4"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at carrier_file_sha256; region lengths exclude the terminating LF",
+    "pin_sidecar": {
+      "file": "reviewer_report.md.sha256",
+      "present": true,
+      "bytes": 84,
+      "sha256": "e5852d16205ad11f3055a32762bfd275ffa5bdb0dd681eb67522e724544fa655",
+      "content": "F367984B6BA6A8793C5A3F598686077CAF8AFCF413FE6356B69B47D4B7B23C53  reviewer_report.md",
+      "verified": "read-only re-hash of reviewer_report.md at landing == sidecar == dispatch pin; measured 15544 B / 189 lines; verdict line 3 greps to accepted_scoped; 1 non-blocking finding F-1"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by the bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核) at reviewer_report.md line 3, not by the implementer",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_transcription_adds_no_acceptance": true,
+    "no_production_writes": true,
+    "production_bytes_written": 0,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "git_writes": 0,
+    "signatures_produced": 0
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "REM-47/RF-1 fixed: single prefix assignment + origin check, provenance refuses last-writer-wins, guard property test RED-on-baseline (P2+P3) / GREEN-on-fixed (4 passed) re-run by the reviewer, C2 non-claim in all 3 carriers",
+      "REM-48/RF-5 fixed with premise correction: claim located at handoff:188 not decision.md; 4 expected_frozen / 1 NOT_REHASHED with the flag kept; superseded CEE4B0DD -> E33D82A9 both recomputed; reviewer additionally re-derived E4004563 + empty git diff 8b7229c3..HEAD, closing handoff gap 3",
+      "REM-49/CF-1 fixed: comment-only L138, ast.dump identical, compile OK both, FC-904 parity JSON + junit XMLs consistent (16/1, same RF-3 node), line-379 location assertion confirmed unedited",
+      "3 mutations' declared shapes match evidence with restore hashes recomputed (7437BA9D / 91A6DC32); final suite 11 passed (read)",
+      "boundaries: 21/21 byte-exact b3_reference, fixed2-vs-fixed = 1 file, production pins recomputed (prod SP 37A3EEAE == B3 fixed => REM-49 not in production), no git-writes; 4 superseded runs honestly labeled"
+    ],
+    "not_granted": [
+      "REM-47/48/49 register-row closure - PARENT/OWNER call",
+      "B3 batch-2 promotion - PARENT/OWNER call",
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production-tree write permission (production writes by this landing: 0; REM-49 deliberately not landed in production)",
+      "resolution of RF-3's P4 location-dependent assertion (owned by RF-3, still present at test_fc904:379)",
+      "re-run claims for W05B/W05C vendored suites, the 3 mutations, FC-904, or the final 11-test suite - none re-executed by the reviewer"
+    ]
+  },
+  "carried_findings": [
+    {"id": "F-1", "severity": "P4 informational, non-blocking", "kind": "wording_scope_precision", "origin": "reviewer_report.md L145-L160", "finding": "'git status shows exactly that one M' is scope-dependent: true only scoped to B3-I05C-delivery-fixes/ (1 M); repo-wide at review time = 24 M, 23 from concurrent plan activity, none traceable to this attempt's 17 commands.json entries", "disposition": "corrected in place in handoff.json to the directory-scoped form; original phrasing preserved under *_historical_pre_verdict; binding.json untouched (3-file landing limit); citation hygiene only, not a defect in the REM-48 correction", "status": "corrected_in_place_carried"},
+    {"id": "U-1", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md §6.1 (L162-L169)", "finding": "mutations not re-executed (0/3) - evidence-file reading + recomputed restore hashes only", "disposition": "declared boundary; carried unresolved by design", "status": "carried_declared_boundary"},
+    {"id": "U-2", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md §6.2 (L162-L169)", "finding": "FC-904 suite not re-run - parity-JSON consistency, junit-XML parsing, line-379 source read only", "disposition": "declared boundary; carried unresolved by design", "status": "carried_declared_boundary"},
+    {"id": "U-3", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md §6.3 (L162-L169)", "finding": "final 11-test property suite not re-run - final_full_suite_GREEN.txt read only (21-file manifest verified 21/21)", "disposition": "declared boundary; carried unresolved by design", "status": "carried_declared_boundary"},
+    {"id": "U-4", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md §6.4 (L162-L169) + scope note L187", "finding": "W05B/W05C vendored suites not re-run in the attempt nor by the reviewer", "disposition": "declared boundary; carried unresolved by design", "status": "carried_declared_boundary"},
+    {"id": "U-5", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md §6.5 (L162-L169)", "finding": "dirty-file attribution (other 23 repo-dirty tracked files) is inference from mtimes + command inventory, not proven file-by-file", "disposition": "declared boundary; carried unresolved by design", "status": "carried_declared_boundary"},
+    {"id": "U-6", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md §6.6 (L162-L169)", "finding": "oracle freeze ordering procedurally attested (in-file amendment + commands.json sequencing), not re-derivable by hashing alone", "disposition": "declared boundary; carried unresolved by design", "status": "carried_declared_boundary"}
+  ],
+  "eligibility_statement": {
+    "formula_classification": "No revenue-forecast formula work qualified by this card: it closed the three promotion-prerequisite findings REM-47/REM-48/REM-49 (RF-1/RF-5/CF-1) in a fresh copy of B3's iso tree with property tests, three mutations, and a record correction with superseded retention. No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "production_write": "NOT GRANTED by this landing. The attempt's changes were made inside the attempt tree (copies); REM-49 deliberately not landed in production. This landing pass wrote 0 production bytes.",
+    "git": "NOT written by this landing (read-only hashing and file reads only); the attempt executed no git write either."
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "verified the carrier read-only (f367984b...7b23c53 / 15544 B == sidecar == dispatch pin F367984B...B23C53; verdict line 3 = accepted_scoped; 1 non-blocking finding F-1), created review.md with the transcribed verdict block (no acceptance of its own), set status + status_before_bookkeeping_fix + status_authority + bookkeeping, appended 7 carried findings (F-1, U-1..U-6), corrected the F-1 wording in place with *_historical_pre_verdict preservation, superseded 2 stale pre-verdict gaps_remaining entries with preservation, created this qualification record; wrote 0 bytes to reviewer_report.md and its sidecar, 0 production bytes, 0 git writes",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "status_transition": "review_pending -> accepted_scoped",
+    "pre_image_handoff": {"bytes": 7813, "sha256": "d6f63633f0678c1ac6bebf35b19264161229b4009bf3d26886bcbc0e38db8778"},
+    "files_written": [
+      "review.md (created)",
+      "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping + 7 carried findings appended + F-1 wording corrected in place with *_historical_pre_verdict preservation + 2 stale gaps_remaining entries superseded; pre-existing content otherwise untouched; pre-image 7813 B / sha256 d6f63633f0678c1ac6bebf35b19264161229b4009bf3d26886bcbc0e38db8778)",
+      "evidence/B3-PREREQ/qualification.json (created, this file)"
+    ],
+    "exactly_three_files_written": true
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven; REM-47/48/49 register closure + B3 batch-2 promotion stay parent/owner calls; RF-3's P4 location-dependent assertion stays owned by RF-3 (still present at test_fc904:379); W05B/W05C stay un-re-run; REM-49 stays deliberately out of production (prod SP 37A3EEAE == B3-fixed). The verdict lives in reviewer_report.md (sha256 F367984B6BA6A8793C5A3F598686077CAF8AFCF413FE6356B69B47D4B7B23C53, 15544 B, pinned by reviewer_report.md.sha256) at line 3 and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own."
+}

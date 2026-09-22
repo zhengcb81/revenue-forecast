@@ -1,0 +1,4074 @@
+{
+  "PC1-E1_write": {
+    "case_id": "PC1-E1_write",
+    "card_point": "OSError@write",
+    "f_row": "F3",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stdout": "",
+      "stderr": "error: [Errno 28] I-09-C injected open/write failure: 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\I-09-C\\\\a20260922-01\\\\evidence\\\\cases\\\\PC1-E1_write\\\\state\\\\p1.json.11024.tmp'"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_raw_returncode",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 3.07
+  },
+  "F1_invalid_input": {
+    "case_id": "F1_invalid_input",
+    "card_point": "prepare 前输入强验证失败",
+    "f_row": "F1",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stdout": "",
+      "stderr": "error: missing required field: schema_version"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_raw_returncode",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc_fails_closed",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": "request is invalid / registry corrupt: recovery must fail closed"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc_fails_closed",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "registry_unchanged_by_failed_recoveries",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "no history line may be deleted (stop-condition guard)"
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 2.83
+  },
+  "PC1-K1_prepare_before": {
+    "case_id": "PC1-K1_prepare_before",
+    "card_point": "prepare前",
+    "f_row": "F1/F2 区（kill 形态）",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 19980, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 5.53
+  },
+  "PC1-K2_prepare_after": {
+    "case_id": "PC1-K2_prepare_after",
+    "card_point": "prepare后",
+    "f_row": "F6（prepare 已完成、成员未写）",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 37340, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 5.02
+  },
+  "PC1-K3_json_before": {
+    "case_id": "PC1-K3_json_before",
+    "card_point": "JSON写前",
+    "f_row": "F3 区（kill 形态）",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 36092, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.67
+  },
+  "PC1-K3b_json_tmp_opened": {
+    "case_id": "PC1-K3b_json_tmp_opened",
+    "card_point": "JSON写中（try块内，finally不运行的直接证据）",
+    "f_row": "F3 区（finally 证明点）",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 10540, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "tmp_leftover_present",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill inside try-block => finally did NOT run => .tmp survives"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.61
+  },
+  "PC1-K4_json_done": {
+    "case_id": "PC1-K4_json_done",
+    "card_point": "JSON完成",
+    "f_row": "F3/F4 之间（半包风险点）",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 40520, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.51
+  },
+  "PC1-K5_markdown_done": {
+    "case_id": "PC1-K5_markdown_done",
+    "card_point": "Markdown完成",
+    "f_row": "F6（成员齐备、append 前）",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 37520, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "orphan_prepare_members_on_disk",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": "members exist but no committed row => explicitly non-consumable"
+      },
+      {
+        "item": "orphan_prepare_not_consumable",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.53
+  },
+  "PC1-K6_commit_before": {
+    "case_id": "PC1-K6_commit_before",
+    "card_point": "commit前",
+    "f_row": "F6",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 27488, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "orphan_prepare_members_on_disk",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": "members exist but no committed row => explicitly non-consumable"
+      },
+      {
+        "item": "orphan_prepare_not_consumable",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.65
+  },
+  "PC1-K6b_registry_before_append": {
+    "case_id": "PC1-K6b_registry_before_append",
+    "card_point": "registry持久化前",
+    "f_row": "F6",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 10372, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "orphan_prepare_members_on_disk",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": "members exist but no committed row => explicitly non-consumable"
+      },
+      {
+        "item": "orphan_prepare_not_consumable",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 5.25
+  },
+  "PC1-K7_registry_after_append": {
+    "case_id": "PC1-K7_registry_after_append",
+    "card_point": "registry持久化后",
+    "f_row": "F8（append+fsync 完成、回报前崩溃）",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 5312, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.85
+  },
+  "PC2-K8_commit_after_response_lost": {
+    "case_id": "PC2-K8_commit_after_response_lost",
+    "card_point": "commit后（响应丢失）",
+    "f_row": "F8/F10 + P-C2 幂等重试",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 11200, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.64
+  },
+  "PC1-K9_return_before": {
+    "case_id": "PC1-K9_return_before",
+    "card_point": "返回前",
+    "f_row": "F10",
+    "rc_expectation_vs_raw": {
+      "expected": "kill",
+      "raw": 4242,
+      "stdout": "",
+      "stderr": ""
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "kill point hit in the writer process"
+      },
+      {
+        "item": "kill_target_registered_in_manifest",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stop condition: only new_run manifest PIDs may be killed"
+      },
+      {
+        "item": "kill_executed_on_registered_pid",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "{'ok': True, 'pid': 8840, 'exit_code_set': 4242}"
+      },
+      {
+        "item": "writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "writer_exited_<pid>.json ABSENT => normal exit/finally did NOT run"
+      },
+      {
+        "item": "target_process_gone_after_kill",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "raw_returncode_vs_expected_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "expected kill(4242); raw=4242; F-table rc(A)= '— (kill)'; raw and expected are recorded separately"
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.75
+  },
+  "PC1-E2_flush": {
+    "case_id": "PC1-E2_flush",
+    "card_point": "OSError@flush",
+    "f_row": "F3",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stdout": "",
+      "stderr": "error: [Errno 5] I-09-C injected flush failure: 'member flush'"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_raw_returncode",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 3.52
+  },
+  "PC1-E3_fsync": {
+    "case_id": "PC1-E3_fsync",
+    "card_point": "OSError@fsync",
+    "f_row": "F3",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stdout": "",
+      "stderr": "error: [Errno 5] I-09-C injected fsync failure: 'fsync'"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_raw_returncode",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 3.5
+  },
+  "PC1-E4_replace": {
+    "case_id": "PC1-E4_replace",
+    "card_point": "OSError@replace",
+    "f_row": "F3",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stdout": "",
+      "stderr": "error: [Errno 13] I-09-C injected replace failure: 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\I-09-C\\\\a20260922-01\\\\evidence\\\\cases\\\\PC1-E4_replace\\\\state\\\\p1.json'"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_raw_returncode",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 3.53
+  },
+  "PC1-E4b_replace_markdown": {
+    "case_id": "PC1-E4b_replace_markdown",
+    "card_point": "OSError@replace(Markdown)",
+    "f_row": "F4",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stdout": "",
+      "stderr": "error: [Errno 13] I-09-C injected replace failure: 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\I-09-C\\\\a20260922-01\\\\evidence\\\\cases\\\\PC1-E4b_replace_markdown\\\\state\\\\p1.md'"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_raw_returncode",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.09
+  },
+  "PC1-E5_registry": {
+    "case_id": "PC1-E5_registry",
+    "card_point": "OSError@registry",
+    "f_row": "F9",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stdout": "",
+      "stderr": "error: [Errno 13] I-09-C injected registry failure: 'registry append'"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_raw_returncode",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.38
+  },
+  "F2_prepare_mid": {
+    "case_id": "F2_prepare_mid",
+    "card_point": "prepare 中失败",
+    "f_row": "F2",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stdout": "",
+      "stderr": "error: [Errno 5] I-09-C injected prepare failure: 'run_forecast'"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "P0 must publish cleanly first"
+      },
+      {
+        "item": "p0_consumable_after_seed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_absent_after_seed",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_raw_returncode",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_fault",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "P-C1: only P0 or full P1"
+      },
+      {
+        "item": "p1_committed_rows_after_fault",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_mixed_package",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_fault",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "P-C2: logical P1 == 1 regardless of history rows"
+      },
+      {
+        "item": "p0_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "[]"
+      },
+      {
+        "item": "audit_problems_after_recovery1",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": "allowed history rows must not be misreported as duplicate bug"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "idempotent"
+      },
+      {
+        "item": "p1_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": "P0 must survive untouched"
+      }
+    ],
+    "all_ok": true,
+    "harness_problems": [],
+    "elapsed_seconds": 4.27
+  },
+  "PC4a_kill_during_recovery": {
+    "case_id": "PC4a_kill_during_recovery",
+    "card_point": "恢复中再次kill",
+    "f_row": "F11 + P-C4",
+    "rc_expectation_vs_raw": {
+      "expected": "kill(4242) then clean 0/0",
+      "raw_fault": 4242,
+      "raw_recovery_killed": 4242,
+      "raw_recovery1": 0,
+      "raw_recovery2": 0
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "barrier_reached_before_kill",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "kill_target_registered",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "initial_kill_executed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "initial_writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "orphan_prepare_non_consumable",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery_kill_registered",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery_kill_executed",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery_writer_died_for_real",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "still_non_consumable_after_killed_recovery",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_not_fabricated_rows",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_killed_recovery",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "second recovery idempotent"
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_intact",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_consumable_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      }
+    ],
+    "all_ok": true,
+    "elapsed_seconds": 6.49
+  },
+  "PC4b_corrupt_member": {
+    "case_id": "PC4b_corrupt_member",
+    "card_point": "损坏成员hash、完整P0存在",
+    "f_row": "P-C4",
+    "rc_expectation_vs_raw": {
+      "expected": "0 / 0 / 0",
+      "raw_pub": 0,
+      "raw_recovery1": 0,
+      "raw_recovery2": 0
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_committed_before_corruption",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "corrupted_p1_fails_closed",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "member hash mismatch"
+      },
+      {
+        "item": "product_commit_status_not_committed",
+        "expected": "not_committed",
+        "actual": "not_committed",
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "diagnostics_retained",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "fail closed AND keep diagnostics (P-C4)"
+      },
+      {
+        "item": "p0_still_consumable",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_bytes_untouched_by_corruption",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery1_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_consumable_after_recovery1",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery1",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": "no fabricated P1"
+      },
+      {
+        "item": "recovery2_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p1_logical_commits_after_recovery2",
+        "expected": 1,
+        "actual": 1,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok_after_recovery2",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "audit_problems_after_recovery2",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "p0_not_deleted_or_rewritten",
+        "expected": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "actual": {
+          "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+          "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+        },
+        "ok": true,
+        "why": ""
+      }
+    ],
+    "all_ok": true,
+    "elapsed_seconds": 3.7
+  },
+  "F7_torn_line": {
+    "case_id": "F7_torn_line",
+    "card_point": "append 写了一半（torn line）",
+    "f_row": "F7",
+    "rc_expectation_vs_raw": {
+      "expected": 2,
+      "raw": 2,
+      "stderr": "error: registry line 2: invalid JSON: Unterminated string starting at: line 1 column 76 (char 75)\n"
+    },
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "fault_rc",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": "append pre-check reads the chain first -> fail closed"
+      },
+      {
+        "item": "chain_detected_broken",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "reader must see the torn line, not a partial accept"
+      },
+      {
+        "item": "product_reader_fails_closed",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": "RegistryError: registry line 2: invalid JSON: Unterminated string starting at: line 1 column 76 (char 75)"
+      },
+      {
+        "item": "p1_not_consumable",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery1_rc_fail_closed",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "recovery2_rc_fail_closed",
+        "expected": 2,
+        "actual": 2,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "registry_bytes_unchanged_no_history_deletion",
+        "expected": "7fcd282b0352a0ae6ac1432e4856cf8e6d0079a2c8fd74536ddea8bd6645bd7f",
+        "actual": "7fcd282b0352a0ae6ac1432e4856cf8e6d0079a2c8fd74536ddea8bd6645bd7f",
+        "ok": true,
+        "why": "stop condition: needing to delete history lines would trip"
+      }
+    ],
+    "all_ok": true,
+    "recovery_action_frozen": "人工介入/从备份修复 (F7)",
+    "elapsed_seconds": 2.88
+  },
+  "F5_lock_not_implemented": {
+    "case_id": "F5_lock_not_implemented",
+    "card_point": "registry 锁获取失败",
+    "f_row": "F5",
+    "frozen_expectation_A": "无 committed 行; rc=2; 恢复=超时后重试",
+    "constructed": false,
+    "reason": "no cross-process commit lock exists in the implementation under test; a lock-acquisition failure cannot be produced without inventing a lock (forbidden: 自行补选/绕过产品入口)",
+    "code_scan": {
+      "file": "iso/rf/scripts/publication_registry.py",
+      "lock_keywords_found": [],
+      "_append": "read-tail then append, no lock (I-09-A F-1)"
+    },
+    "disposition": "signed as uncovered GAP -> report to I-09-B (product scope); concurrency case P-C3 records the same absence with live evidence",
+    "counts_as_fault_table_signing": true,
+    "is_a_passing_fault_test": false,
+    "not_a_pass": true,
+    "all_ok": true,
+    "checks": [],
+    "elapsed_seconds": 0.0
+  },
+  "F12_stdout_pipe": {
+    "case_id": "F12_stdout_pipe",
+    "card_point": "stdout 输送失败",
+    "f_row": "F12",
+    "rc_expectation_vs_raw": {
+      "expected": "0 or 2",
+      "raw": 120
+    },
+    "deviation_note": "MEASURED DEVIATION (kept, not amended): raw rc = 120 is CPython's stdio-flush failure exit code and lies OUTSIDE the frozen numeric range {0,2} recorded in I-09-A F12. The frozen SUBSTANTIVE expectation — no guarantee / unreachable — is confirmed by exactly this unpredictability; no cross-terminal rollback is claimed. Numeric range amendment is an owner/oracle-erratum decision, not this card's.",
+    "checks": [
+      {
+        "item": "seed_p0_rc",
+        "expected": 0,
+        "actual": 0,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "rc_in_0_or_2",
+        "expected": true,
+        "actual": false,
+        "ok": false,
+        "why": "frozen numeric range {0,2} — recorded as measured, NOT amended; a miss here is reported as a deviation, never re-labelled a pass"
+      },
+      {
+        "item": "p0_still_consumable",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "chain_ok",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": ""
+      },
+      {
+        "item": "no_rollback_claim",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "why": "stdout failure is an unreachable guarantee (C-12/D-3): we record it, we do NOT claim cross-terminal transaction rollback"
+      }
+    ],
+    "all_ok": false,
+    "elapsed_seconds": 1.36
+  }
+}

@@ -1,0 +1,169 @@
+{
+ "card_id": "M06",
+ "source": "enumerated by the implementer of attempt a20260919-01 from that attempt's isolated registry copy (iso/checkout_scripts, sha256 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f); the OQ-02 and OQ-04 rulings were reviewed and countersigned by the independent reviewer of the same attempt",
+ "source_original_r2": "independent reviewer of attempt a20260919-01",
+ "enumerated_by": "implementer of attempt a20260919-01 (re-enumerated for finding F-M08-07)",
+ "reviewed_by": "independent reviewer of attempt a20260919-01 (point review of the r2 response; the OQ rulings below are the reviewer's, the enumeration is not)",
+ "enumeration_command": "iso venv python -X utf8 -B recovery/docfix-r3/f07_enumerate.py > recovery/docfix-r3/f07_enumerate.out.txt",
+ "enumeration_evidence": "evidence/M06/oq_rulings_enumeration.json",
+ "enumeration_evidence_sha256": "95ed73fbce1d26d9084c4db0cdf7b822b6bc2ecc01269344630c7668da6e6e6d",
+ "OQ_02": {
+  "ruling": "NOT a contract gap; a naming ambiguity only",
+  "ruled_by": "independent reviewer of attempt a20260919-01",
+  "reviewer_basis": "the implementer enumerated the whole registry and the independent reviewer checked the enumeration. Every driver whose dimension is revenue_per_activity or revenue_per_unit carries the (0, inf) default and none is in [0,1]. Only the ratio dimension defaults to [0,1]: 41 ratio drivers in total, of which 37 take the [0,1] default and 4 do not -- bank_revenue.asset_yield and bank_revenue.funding_cost both declared (-inf, inf) because interest and funding rates may be negative, store_cohorts.new_store_productivity declared (0, inf), and direct_growth.growth_rate hard-coded (-1, inf) in driver_value_bounds because a growth rate may be a contraction. Two further priced-volume drivers (renewable_generation.contract_price_per_mwh and renewable_generation.merchant_price_per_mwh) are declared (-inf, inf) but are not ratio-dimensioned. The r2 count of 40 ratio drivers with 3 exceptions was therefore wrong by one on both numbers; the ruling itself is unaffected",
+  "reviewer_basis_original_r2": "enumerated the whole registry: every driver whose dimension is revenue_per_activity or revenue_per_unit has no [0,1] bound, only the ratio dimension defaults to [0,1], and the handful of exceptions each have a documented reason",
+  "enumeration_performed": {
+   "enumerated_by": "implementer of attempt a20260919-01",
+   "code_root": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/M06/a20260919-01/iso/checkout_scripts",
+   "model_registry_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "models_total": 31,
+   "drivers_total": 165,
+   "ratio_drivers_total": 41,
+   "ratio_drivers_taking_the_0_1_default": 37,
+   "ratio_drivers_not_in_0_1_total": 4,
+   "ratio_drivers_not_in_0_1": [
+    {
+     "driver": "bank_revenue.asset_yield",
+     "bounds": [
+      null,
+      null
+     ],
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+    },
+    {
+     "driver": "bank_revenue.funding_cost",
+     "bounds": [
+      null,
+      null
+     ],
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+    },
+    {
+     "driver": "direct_growth.growth_rate",
+     "bounds": [
+      -1.0,
+      null
+     ],
+     "declared_bounds": null,
+     "reason": "hard-coded domain (-1, inf) in driver_value_bounds because a growth rate can legitimately be a contraction"
+    },
+    {
+     "driver": "store_cohorts.new_store_productivity",
+     "bounds": [
+      0.0,
+      null
+     ],
+     "declared_bounds": [
+      0.0,
+      null
+     ],
+     "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+    }
+   ],
+   "revenue_per_activity_and_per_unit_drivers_total": 23,
+   "revenue_per_activity_and_per_unit_default_bounds": [
+    0.0,
+    null
+   ],
+   "revenue_per_activity_and_per_unit_exceptions": [
+    {
+     "driver": "renewable_generation.contract_price_per_mwh",
+     "bounds": [
+      null,
+      null
+     ]
+    },
+    {
+     "driver": "renewable_generation.merchant_price_per_mwh",
+     "bounds": [
+      null,
+      null
+     ]
+    }
+   ],
+   "usage_platform.monetization_rate_bounds": [
+    0.0,
+    null
+   ],
+   "subscription.timing_factor_bounds": [
+    0.0,
+    1.0
+   ],
+   "services.utilization_bounds": [
+    0.0,
+    1.0
+   ],
+   "explicit_driver_bounds_sets": [
+    "aum_fee_bridge",
+    "bank_revenue",
+    "project_backlog",
+    "renewable_generation",
+    "reserve_depletion",
+    "store_cohorts"
+   ],
+   "growth_rate_bounds": [
+    -1.0,
+    null
+   ]
+  },
+  "consequence": "`usage_platform.monetization_rate` behaving as money-per-activity is CORRECT per the registry contract. If anything is to change it is the attribute NAME (which invites a probability reading), not the bound. No product change was made.",
+  "observed_probe": {
+   "OBS-RATE-GT1": {
+    "input": "monetization_rate=1.5",
+    "actual": 753.0,
+    "interpretation": "consistent with the enumerated contract"
+   }
+  }
+ },
+ "OQ_04": {
+  "ruling": "UPHELD - silent zero-fill is real",
+  "mechanism": "scripts/model_registry.py:335 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+  "verified_instances": {
+   "subscription.usage_revenue": "omitted -> 0.0",
+   "usage_platform.fixed_revenue": "omitted -> 0.0",
+   "services.other_revenue": "omitted -> 0.0",
+   "project_backlog.backlog_remeasurements": "omitted -> 0.0; NAMED RISK: 'no remeasurement' and 'remeasurement not found' become indistinguishable, and the unknown is turned into recognised revenue"
+  },
+  "action": "registered, NOT fixed; no product change"
+ },
+ "corrections_applied": [
+  {
+   "finding": "F-M08-07",
+   "field": "OQ_02.enumeration_performed.ratio_drivers_total",
+   "was": 40,
+   "now": 41,
+   "why": "the registry has 41 ratio-dimensioned drivers; the r2 count dropped direct_growth.growth_rate"
+  },
+  {
+   "finding": "F-M08-07",
+   "field": "OQ_02.enumeration_performed.ratio_drivers_not_in_0_1",
+   "was": [
+    "bank_revenue.asset_yield",
+    "bank_revenue.funding_cost",
+    "store_cohorts.new_store_productivity"
+   ],
+   "now": [
+    "bank_revenue.asset_yield",
+    "bank_revenue.funding_cost",
+    "direct_growth.growth_rate",
+    "store_cohorts.new_store_productivity"
+   ],
+   "why": "direct_growth.growth_rate has dimension ratio but the hard-coded (-1, inf) domain, so it is a fourth ratio driver outside [0,1]"
+  },
+  {
+   "finding": "F-M08-07",
+   "field": "source / reviewer_basis",
+   "was": "the independent reviewer was named as the author, in the first person ('enumerated the whole registry')",
+   "now": "third person; states that the implementer enumerated and the independent reviewer reviewed and countersigned",
+   "why": "attribution must not credit the reviewer with the implementer's enumeration; both originals are preserved verbatim under source_original_r2 and reviewer_basis_original_r2"
+  }
+ ]
+}

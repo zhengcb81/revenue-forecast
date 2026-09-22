@@ -1,0 +1,25 @@
+{
+ "card_id": "M01",
+ "model_id": "direct_growth",
+ "entry_point": "scripts/forecast/segments.py calculate_model_path(model, base_revenue, driver_ids, parameter_index, years, scenario)",
+ "source_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\forecast\\segments.py",
+ "source_sha256": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd",
+ "how_observed": "read-only source inspection of the call site during this attempt",
+ "was_it_run": false,
+ "was_it_imported": false,
+ "observed_facts": [
+  "calculate_model_path validates model membership against MODEL_SPECS and the scenario against SCENARIOS",
+  "it collects required and optional driver parameter IDs and rejects missing/extra drivers",
+  "it resolves driver series from the parameter index per year and scenario, then calls calculate_registered_model(model, base_revenue, drivers, years)",
+  "ModelRegistryError raised by the model layer is re-wrapped as ForecastInputError, so a formula rejection surfaces as a forecast-input rejection rather than an unhandled error",
+  "it re-checks finite and non-negative revenue for every year before returning annual_revenue keyed by year",
+  "it returns the formula string, annual_revenue and the resolved driver values, i.e. the path is traceable back to parameter IDs"
+ ],
+ "why_it_was_not_run": [
+  "card step B/C scope is calculate_registered_model only",
+  "running the production forecast entry point belongs to I-10-A step E (I-10-A is a separate card and is explicitly NOT a dependency of the M cards)",
+  "no I-11 parameter calibration exists yet, so a production run would have no reviewed inputs"
+ ],
+ "consequence_for_this_card": "the field -> parameter -> model -> output wiring claim is limited to calculate_registered_model; the production forecast entry-point mapping stays unverified and is carried in handoff.json as an I-10-A obligation",
+ "reviewer": "PENDING_INDEPENDENT_REVIEW"
+}

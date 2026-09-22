@@ -1,0 +1,313 @@
+{
+  "schema": "rem79-verify-summary/1",
+  "verified_at": "2026-09-22T10:21:35.574787+00:00",
+  "tag": "round3",
+  "red": {
+    "arm": "RED",
+    "variant": "naive_marker_only",
+    "text_stdout_rc": 1,
+    "json_stdout_rc": 1,
+    "mismatch_count": 1,
+    "mismatches": {
+      "corpus/neg_domain_lines.md": {
+        "oracle_expected": [],
+        "naive_reported": [
+          4,
+          6,
+          12,
+          18,
+          22,
+          26,
+          30
+        ]
+      }
+    },
+    "false_positive_files": {
+      "corpus/neg_domain_lines.md": [
+        4,
+        6,
+        12,
+        18,
+        22,
+        26,
+        30
+      ]
+    },
+    "caught_all_oracle_positives": true,
+    "verdict": "RED_FAILS_ORACLE_AS_REQUIRED",
+    "oracle_requirement": true
+  },
+  "green": {
+    "arm": "GREEN",
+    "variant": "check_domain_assertions",
+    "json_rc": 1,
+    "expect_json_rc": 1,
+    "rc_ok": true,
+    "total_violations": 4,
+    "expect_total_violations": 4,
+    "total_ok": true,
+    "line_mismatches": {},
+    "per_file": {
+      "corpus/pos_i14d_review_L349.md": {
+        "rc": 1,
+        "expect_rc": 1,
+        "reported": [
+          4
+        ],
+        "expect": [
+          4
+        ],
+        "rc_ok": true,
+        "lines_ok": true
+      },
+      "corpus/pos_round76_original.md": {
+        "rc": 1,
+        "expect_rc": 1,
+        "reported": [
+          4
+        ],
+        "expect": [
+          4
+        ],
+        "rc_ok": true,
+        "lines_ok": true
+      },
+      "corpus/pos_synth_frev_r406.md": {
+        "rc": 1,
+        "expect_rc": 1,
+        "reported": [
+          4
+        ],
+        "expect": [
+          4
+        ],
+        "rc_ok": true,
+        "lines_ok": true
+      },
+      "corpus/pos_synth_frev_r502.md": {
+        "rc": 1,
+        "expect_rc": 1,
+        "reported": [
+          4
+        ],
+        "expect": [
+          4
+        ],
+        "rc_ok": true,
+        "lines_ok": true
+      },
+      "corpus/neg_domain_lines.md": {
+        "rc": 0,
+        "expect_rc": 0,
+        "reported": [],
+        "expect": [],
+        "rc_ok": true,
+        "lines_ok": true
+      },
+      "corpus/neg_no_marker_lines.md": {
+        "rc": 0,
+        "expect_rc": 0,
+        "reported": [],
+        "expect": [],
+        "rc_ok": true,
+        "lines_ok": true
+      }
+    },
+    "verdict": "GREEN_MATCHES_ORACLE_EXACTLY"
+  },
+  "mutations": {
+    "a_strip_domain": {
+      "declared_expect": [
+        4
+      ],
+      "reported": [
+        4
+      ],
+      "rc": 1,
+      "verdict": "MUT_A_PASS"
+    },
+    "b_add_domain": {
+      "declared_expect": [],
+      "reported": [],
+      "rc": 0,
+      "verdict": "MUT_B_PASS"
+    },
+    "c_offbyone": {
+      "oracle_baseline": [
+        4
+      ],
+      "declared_reported": [
+        5
+      ],
+      "reported": [
+        5
+      ],
+      "report_mismatches_oracle_baseline": true,
+      "verdict": "MUT_C_PASS"
+    }
+  },
+  "commands_run": [
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "harness/naive_checker_marker_only.py",
+        "corpus/pos_i14d_review_L349.md",
+        "corpus/pos_round76_original.md",
+        "corpus/pos_synth_frev_r406.md",
+        "corpus/pos_synth_frev_r502.md",
+        "corpus/neg_domain_lines.md",
+        "corpus/neg_no_marker_lines.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "harness/naive_checker_marker_only.py",
+        "--json",
+        "corpus/pos_i14d_review_L349.md",
+        "corpus/pos_round76_original.md",
+        "corpus/pos_synth_frev_r406.md",
+        "corpus/pos_synth_frev_r502.md",
+        "corpus/neg_domain_lines.md",
+        "corpus/neg_no_marker_lines.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "corpus/pos_i14d_review_L349.md",
+        "corpus/pos_round76_original.md",
+        "corpus/pos_synth_frev_r406.md",
+        "corpus/pos_synth_frev_r502.md",
+        "corpus/neg_domain_lines.md",
+        "corpus/neg_no_marker_lines.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "corpus/pos_i14d_review_L349.md",
+        "corpus/pos_round76_original.md",
+        "corpus/pos_synth_frev_r406.md",
+        "corpus/pos_synth_frev_r502.md",
+        "corpus/neg_domain_lines.md",
+        "corpus/neg_no_marker_lines.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "corpus/pos_i14d_review_L349.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "corpus/pos_round76_original.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "corpus/pos_synth_frev_r406.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "corpus/pos_synth_frev_r502.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "corpus/neg_domain_lines.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 0
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "corpus/neg_no_marker_lines.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 0
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "mutations/a_strip_domain.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "mutations/b_add_domain.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 0
+    },
+    {
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-B",
+        "tools/check_domain_assertions.py",
+        "--json",
+        "mutations/c_offbyone.md"
+      ],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\REM79-MECHANIZATION\\a20260922-01",
+      "rc": 1
+    }
+  ],
+  "overall": "PROTOCOL_SATISFIED"
+}

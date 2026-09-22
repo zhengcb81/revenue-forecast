@@ -1,0 +1,157 @@
+{
+ "card_id": "M16",
+ "first_required_driver": "average_occupied_area",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "base_input": "positive",
+   "driver": "average_occupied_area",
+   "index": 0,
+   "value": {
+    "__float__": -1
+   },
+   "why": "card-specific negative (card_M16.md L35): average occupied area is negative, below its lower domain bound"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "base_input": "positive",
+   "driver": "average_occupied_area",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "common negative N01a: bool is not a numeric driver value"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "base_input": "positive",
+   "driver": "average_occupied_area",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   },
+   "expected": "ModelRegistryError",
+   "why": "common negative N01b: non-finite value nan"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "base_input": "positive",
+   "driver": "average_occupied_area",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "common negative N01c: non-finite value inf"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "base_input": "positive",
+   "driver": "average_occupied_area",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "common negative N01d: non-finite value -inf"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "base_input": "positive",
+   "driver": "average_occupied_area",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "base_input": "positive",
+   "driver": "average_occupied_area",
+   "expected": "ModelRegistryError",
+   "why": "common negative N03: first required driver deleted (missing required field)"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "base_input": "positive",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ],
+   "expected": "ModelRegistryError",
+   "why": "common negative N04: unknown_driver added (unsupported driver)"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "base_input": "positive",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "common negative N05a: years = [] (fiscal-year domain)"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "base_input": "positive",
+   "value": {
+    "__bool__first__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "base_input": "continuity_positive",
+   "value": [
+    2027,
+    2029
+   ],
+   "expected": "ModelRegistryError",
+   "why": "continuity break for this card: FY2028 is missing, so the years are not consecutive (the two-year positive is run first)"
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "the rowwise calculator discards base_revenue; design observation only, not a pass condition"
+  },
+  {
+   "id": "OBS-BOUND-INCLUSIVE",
+   "kind": "set_driver_element",
+   "driver": "average_occupied_area",
+   "index": 0,
+   "value": {
+    "__float__": 0.0
+   },
+   "base_input": "positive",
+   "why": "the area domain is INCLUSIVE at the lower edge (0 is accepted, -1 is refused by NEG-CARD); records the edge, does not gate"
+  },
+  {
+   "id": "OBS-SIGNED-OTHER",
+   "kind": "set_driver_element",
+   "driver": "other_revenue",
+   "index": 0,
+   "value": {
+    "__float__": -1
+   },
+   "base_input": "positive",
+   "why": "other_revenue is a signed driver: a negative other amount is admitted and still leaves total revenue non-negative; records the contract boundary, does not gate"
+  }
+ ]
+}

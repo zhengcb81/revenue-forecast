@@ -1,0 +1,139 @@
+{
+  "case_id": "PC4b_corrupt_member",
+  "card_point": "损坏成员hash、完整P0存在",
+  "f_row": "P-C4",
+  "rc_expectation_vs_raw": {
+    "expected": "0 / 0 / 0",
+    "raw_pub": 0,
+    "raw_recovery1": 0,
+    "raw_recovery2": 0
+  },
+  "checks": [
+    {
+      "item": "seed_p0_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_committed_before_corruption",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "corrupted_p1_fails_closed",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": "member hash mismatch"
+    },
+    {
+      "item": "product_commit_status_not_committed",
+      "expected": "not_committed",
+      "actual": "not_committed",
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "diagnostics_retained",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": "fail closed AND keep diagnostics (P-C4)"
+    },
+    {
+      "item": "p0_still_consumable",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p0_bytes_untouched_by_corruption",
+      "expected": {
+        "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+        "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+      },
+      "actual": {
+        "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+        "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+      },
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "chain_ok",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "recovery1_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_consumable_after_recovery1",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_logical_commits_after_recovery1",
+      "expected": 1,
+      "actual": 1,
+      "ok": true,
+      "why": "no fabricated P1"
+    },
+    {
+      "item": "recovery2_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_logical_commits_after_recovery2",
+      "expected": 1,
+      "actual": 1,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "chain_ok_after_recovery2",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "audit_problems_after_recovery2",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p0_not_deleted_or_rewritten",
+      "expected": {
+        "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+        "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+      },
+      "actual": {
+        "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+        "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+      },
+      "ok": true,
+      "why": ""
+    }
+  ],
+  "all_ok": true,
+  "elapsed_seconds": 3.7
+}

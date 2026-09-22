@@ -1,0 +1,59 @@
+{
+ "card_id": "M07",
+ "purpose": "READ-ONLY inspection of the production forecast entry point; this is NOT an adaptation, NOT a scenario set and NOT accuracy evidence",
+ "entry_point_read": {
+  "path": "scripts/forecast/segments.py",
+  "line": 61,
+  "function": "calculate_model_path(model, base_revenue, driver_ids, parameter_index, years, scenario)",
+  "sha256_at_inspection": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd",
+  "what_it_does": "validates model/scenario, resolves each required and optional driver from registered parameter IDs into a per-year series, then feeds the same registry calculator that calculate_registered_model uses",
+  "scenario_keys": [
+   "low",
+   "base",
+   "high"
+  ]
+ },
+ "what_was_exercised": "nothing was executed through this entry point; only its source was read",
+ "registry_metadata_observed": {
+  "model_id": "services",
+  "required": [
+   "billable_capacity",
+   "utilization",
+   "billing_rate"
+  ],
+  "optional": [
+   "timing_factor",
+   "other_revenue"
+  ],
+  "defaults": {
+   "timing_factor": 1.0
+  },
+  "dimensions": {
+   "billable_capacity": "activity",
+   "utilization": "ratio",
+   "billing_rate": "revenue_per_activity",
+   "timing_factor": "ratio",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "timing_factor",
+   "utilization"
+  ],
+  "driver_bounds": {},
+  "formula": "revenue = billable_capacity * utilization * billing_rate * timing_factor + other_revenue"
+ },
+ "silent_zero_fill_hazard": {
+  "mechanism": "scripts/model_registry.py:335 uses drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)); when an optional driver is omitted AND is absent from spec.defaults, its series silently becomes 0.0 rather than raising",
+  "optional_drivers_with_NO_explicit_default": [
+   "other_revenue"
+  ],
+  "required_drivers_absent_from_defaults_for_this_model": [
+   "billable_capacity",
+   "utilization",
+   "billing_rate"
+  ],
+  "why_it_matters_here": "other_revenue silently becomes 0 when omitted",
+  "status": "OPEN QUESTION for the owner / professional reviewer (OQ-04); no product change was made and no position is asserted"
+ },
+ "status": "unmapped (D is not granted); recorded for the I-10-A successor only"
+}

@@ -1,0 +1,50 @@
+card_id: M10
+model_id: reserve_depletion
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M09-M12\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M09-M12\code_root\model_registry.py
+registry formula: revenue = depletion * recovery_rate * realized_price + other_revenue
+registry required: ['opening_reserves', 'additions', 'depletion', 'closing_reserves', 'recovery_rate', 'realized_price']
+registry optional: ['other_revenue', 'reserve_revisions']
+registry declared_defaults: {}
+registry ratio_drivers: ['recovery_rate']
+registry explicit_driver_bounds: {'reserve_revisions': [None, None]}
+contract_check ok: True
+contract_check formula ok=True observed=revenue = depletion * recovery_rate * realized_price + other_revenue
+contract_check required ok=True observed=['additions', 'closing_reserves', 'depletion', 'opening_reserves', 'realized_price', 'recovery_rate']
+contract_check optional ok=True observed=['other_revenue', 'reserve_revisions']
+contract_check dimensions ok=True observed={'opening_reserves': 'reserve_volume', 'additions': 'reserve_volume', 'depletion': 'reserve_volume', 'closing_reserves': 'reserve_volume', 'reserve_revisions': 'reserve_volume', 'recovery_rate': 'ratio', 'realized_price': 'revenue_per_unit', 'other_revenue': 'revenue'}
+positive raised: None
+positive actual: [490.0]
+positive actual_repr: ['490.0']
+positive expected: [490.0]
+positive tolerance: [4.9e-07]
+positive length: 1 (years length 1, year direction [2027])
+positive structure: {"container_type": "list", "is_builtin_list": true, "length": 1, "years_length": 1, "length_equals_years": true, "element_types": ["float"], "element_type_set": ["float"], "all_elements_float": true, "all_elements_finite": true, "year_field_echo": false, "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check", "ok": true}
+per_value_checks: [{"index": 0, "year": 2027, "actual": 490.0, "expected": 490.0, "tolerance": 4.9e-07, "abs_diff": 0.0, "ok": true}]
+positive_ok: True
+continuity_positive raised: None
+continuity_positive actual: [490.0, 0.0]
+continuity_positive expected: [490.0, 0.0]
+continuity_positive ok: True
+defaults raised: None
+defaults actual: [600.0]
+defaults expected: [600.0]
+defaults ok: True
+observation: OBS-BASE-IGNORED gating=False raised=None actual=[490.0] expectation={"expected_float": [490.0]} matches_expected=True matches_compared=True expect_equal=None matches_expected_relation=True 
+observation: OBS-DEFAULT-EQUIV gating=False raised=None actual=[600.0] expectation={"expected_float": [600.0]} matches_expected=True matches_compared=True expect_equal=None matches_expected_relation=True 
+observation: OBS-REVISION-POS gating=False raised=None actual=[490.0] expectation={"expected_float": [490.0]} matches_expected=True matches_compared=None expect_equal=None matches_expected_relation=None 
+observation: OBS-RECOVERY-GT1 gating=False raised=ModelRegistryError actual=None expectation={"expected_raised": "ModelRegistryError"} matches_expected=True matches_compared=None expect_equal=None matches_expected_relation=None driver reserve_depletion.recovery_rate must be between 0.0 and 1.0: FY2027
+negative: NEG-CARD verdict=FAIL_wrong_exception_type raised=ModelRegistryError expected=ValueError - reserve stock-flow balance failed: FY2027
+negative: N01a verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - reserve_depletion.opening_reserves.FY2027 must be numeric
+negative: N01b verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - reserve_depletion.opening_reserves.FY2027 must be finite
+negative: N01c verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - reserve_depletion.opening_reserves.FY2027 must be finite
+negative: N01d verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - reserve_depletion.opening_reserves.FY2027 must be finite
+negative: N02 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - driver reserve_depletion.opening_reserves must contain one value per forecast year
+negative: N03 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - missing drivers for reserve_depletion: opening_reserves
+negative: N04 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - unsupported drivers for reserve_depletion: unknown_driver
+negative: N05a verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - reserve_depletion.years must contain fiscal years
+negative: N05b verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - reserve_depletion.years must contain fiscal years
+negative: CONT-BREAK verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - reserve continuity failed: FY2028
+negative_summary: {"total": 11, "passed": 10, "failed": ["NEG-CARD"], "import_or_file_errors": []}
+fidelity_checks: {"missing_expected": false, "positive_structure_ok": true, "positive_values_ok": true, "contract_ok": true, "years_match": true, "lengths_match": true}
+verdict: negative_failed exit_code: 3

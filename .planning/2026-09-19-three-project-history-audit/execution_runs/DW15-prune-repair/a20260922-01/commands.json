@@ -1,0 +1,159 @@
+{
+  "card": "DW15-REPAIR",
+  "attempt_id": "a20260922-01",
+  "note": "All commands run with workdir = this attempt dir. PYTHONDONTWRITEBYTECODE=1 on every pytest run. Authoritative (final) runs are marked final=true; earlier runs superseded by instrument fixes are listed with their reason.",
+  "commands": [
+    {
+      "id": "CMD-DW15-01",
+      "purpose": "create attempt structure; robocopy production src/company_wiki -> iso/baseline and iso/fixed (excl. __pycache__)",
+      "exit_code": 0,
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-02",
+      "purpose": "build iso/venv from I-00-A template + offline site-packages delta from I-15-A venv (pytest/pyyaml/requests); first attempt failed rc=1 because robocopy was pointed at file 'py.py' (exit 16), retried with file-aware copy",
+      "exit_code": 0,
+      "final": true,
+      "verification": "python -c 'import pytest, yaml, requests' -> pytest 9.1.1 | yaml+requests ok"
+    },
+    {
+      "id": "CMD-DW15-03",
+      "purpose": "py_compile of the two repaired scripts",
+      "exit_code": 0,
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-04",
+      "purpose": "RED run: DW15_VARIANT=iso/baseline python -m pytest tests -q --tb=short (first build-up iteration; t_d5_1 failed via wrapper TypeError — harness bug, fixed)",
+      "exit_code": 1,
+      "final": false,
+      "superseded_by": "CMD-DW15-06"
+    },
+    {
+      "id": "CMD-DW15-05",
+      "purpose": "GREEN run: DW15_VARIANT=iso/fixed python -m pytest tests -q --tb=short (14 passed, 1 failed: source scan matched the repaired module's own docstring wording 'datetime.now' — docstring reworded, scan kept strict)",
+      "exit_code": 1,
+      "final": false,
+      "superseded_by": "CMD-DW15-07"
+    },
+    {
+      "id": "CMD-DW15-06",
+      "purpose": "RED run (final): DW15_VARIANT=iso/baseline python -m pytest tests -q --tb=no",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "15 failed / 0 passed",
+      "evidence": "evidence/red_baseline_stdout.txt (sha256 b035696acb9c76cc5eded60a58ea80cf1d33723f4d1f8f906a5ea0641ad9ec41)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-07",
+      "purpose": "GREEN run (final): DW15_VARIANT=iso/fixed python -m pytest tests -q --tb=short",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "15 passed / 0 failed",
+      "evidence": "evidence/green_fixed_stdout.txt (sha256 bb2b060278f644a5d86bc196a8a2f3e470a2811bf63b62471ecd57e9572a2fff)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-08",
+      "purpose": "python harness/make_mutants.py — build mutants/m1..m5 as fresh copies of iso/fixed with one exact-string revert each (every anchor asserted to match exactly once)",
+      "exit_code": 0,
+      "result": "m1: 5 edits, m2: 3 edits, m3: 2 edits, m4: 2 edits, m5: 4 edits",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-09a",
+      "purpose": "mutation run m1: DW15_VARIANT=mutants/m1 pytest -q --tb=no",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "3 failed (declared set matched)",
+      "evidence": "evidence/mutant_m1_stdout.txt (sha256 fd56c3e6556d37f4ce5005bf793b0dda0f3d7c4eed248394268eb8b8882d0efd)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-09b",
+      "purpose": "mutation run m2: DW15_VARIANT=mutants/m2 pytest -q --tb=no (after receipts_for glob widened from 'prune-retired-*.json' to 'prune-retired*.json' so the instrument observes the reverted fixed receipt name; declared sets unchanged)",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "2 failed (declared set matched)",
+      "evidence": "evidence/mutant_m2_stdout.txt (sha256 830c0a8b690ab10115823da4d55d870cf50d4fe410609679153fdfa4f10533fc)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-09c",
+      "purpose": "mutation run m3: DW15_VARIANT=mutants/m3 pytest -q --tb=no",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "3 failed (declared set matched)",
+      "evidence": "evidence/mutant_m3_stdout.txt (sha256 26e004ac7b5112b6185f971b235ac0570e1e39413b636e662504e56c6c71f143)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-09d",
+      "purpose": "mutation run m4: DW15_VARIANT=mutants/m4 pytest -q --tb=no",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "2 failed (declared set matched)",
+      "evidence": "evidence/mutant_m4_stdout.txt (sha256 2df701aef19249a514977a011706448e2ca0ae73585b09c714516389ebb0540b)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-09e",
+      "purpose": "mutation run m5: DW15_VARIANT=mutants/m5 pytest -q --tb=no",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "3 failed (declared set matched)",
+      "evidence": "evidence/mutant_m5_stdout.txt (sha256 df08ac5e18633d29a159dd07d21c9d8a395583b47646b2ff813035ab5c905666)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-10",
+      "purpose": "mutation matrix assembly: declared (frozen oracle.md §3) vs observed FAILED ids per mutant + baseline/fixed",
+      "exit_code": 0,
+      "result": "m1..m5 declared_eq_observed = true (all five); baseline observed = all 15; fixed observed = none",
+      "evidence": "evidence/mutation_matrix.json (sha256 50716b9b0036505e50e79e7e50748cbe781ea9d756ba79405512812d5fd159d4; BOM stripped + re-serialized for cross-tool validity, content unchanged)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-11",
+      "purpose": "byte-compare iso/baseline vs iso/fixed (146 files) + SHA-256 of both scripts in production repo, review snapshot, baseline and fixed; worker_control.json hash; git heads of the three product repos (read-only)",
+      "exit_code": 0,
+      "result": "differing=2 (exactly the two target scripts); production and review-snapshot hashes identical to I-15-A's declared originals; worker_control hash unchanged",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-12",
+      "purpose": "python harness/_gen_diff.py — unified changes.diff (difflib) for the two scripts",
+      "exit_code": 0,
+      "result": "changes.diff 38637 bytes / 904 lines (sha256 62bb12363c5eaa64a8e0c0c931ef4c566fb3b287fa0f61a278fa37157170f965)",
+      "final": true
+    },
+    {
+      "id": "CMD-DW15-NEG",
+      "purpose": "negative binding guard (guard_scratch) — exercised on every fixture build; refuses any path outside %TEMP%/this attempt or containing .source_catalog",
+      "exit_code": 0,
+      "result": "never tripped during the card because all fixtures were synthetic under %TEMP% by construction; the guard's refusal path is a hard SystemExit(BINDING-REFUSED)",
+      "final": true
+    }
+  ],
+  "python_runs": {
+    "pytest_total_tests": 15,
+    "test_ids": [
+      "test_d1_empty_old_directory_authorises_nothing",
+      "test_d1_snapshot_without_manifest_authorises_nothing",
+      "test_d1_manifest_with_broken_snapshot_authorises_nothing",
+      "test_d1_deletes_exactly_the_verified_set",
+      "test_d2_two_archive_runs_in_the_same_instant_both_survive",
+      "test_d2_two_prune_applies_in_the_same_second_keep_separate_receipts",
+      "test_d3_repaired_sources_never_read_the_system_clock",
+      "test_d3_recent_verified_completion_stays_inside_the_window",
+      "test_d3_ancient_directory_name_is_not_the_clock",
+      "test_d3_archive_date_directory_follows_injected_now",
+      "test_d4_row_mutation_after_plan_freeze_refuses_the_whole_apply",
+      "test_d4_status_flip_after_plan_freeze_refuses_the_whole_apply",
+      "test_d5_killed_snapshot_write_publishes_no_truncated_snapshot",
+      "test_d5_kill_after_pending_receipt_before_first_delete",
+      "test_d5_kill_after_first_batch_commit_leaves_an_exact_receipt"
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+﻿COMMAND: B3P_GUARD_CONFTEST=b3_reference/iso/conftest.py python -X utf8 -B -m pytest -q -p no:cacheprovider tests/test_rem47_guard_order.py
+rc=1
+..FF                                                                     [100%]
+================================== FAILURES ===================================
+___________ test_p2_actual_sys_path_head_matches_the_claimed_order ____________
+
+    def test_p2_actual_sys_path_head_matches_the_claimed_order():
+        out = _run_probe()
+        expected = [out["fixed_cw"], out["fixed_rf"], out["rf_scripts"], out["cw_src"]]
+        actual = out["sys_path_head"][:4]
+>       assert [_norm(p) for p in actual] == [_norm(p) for p in expected], (
+            "docstring != reality: claimed order [FIXED_CW, FIXED_RF, RF/scripts, CW/src] "
+            f"but sys.path head is {actual}")
+E       AssertionError: docstring != reality: claimed order [FIXED_CW, FIXED_RF, RF/scripts, CW/src] but sys.path head is ['C:\\Users\\郑曾波\\Projects\\company-wiki\\src', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\b3_reference\\iso\\fixed\\rf_scripts', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\b3_reference\\iso\\fixed\\cw_source_catalog']
+E       assert ['c:\\users\\...urce_catalog'] == ['c:\\users\\...ny-wiki\\src']
+E         
+E         At index 0 diff: 'c:\\users\\郑曾波\\projects\\company-wiki\\src' != 'c:\\users\\郑曾波\\projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\b3-prereq\\a20260922-01\\b3_reference\\iso\\fixed\\cw_source_catalog'
+E         Use -v to get more diff
+
+tests\test_rem47_guard_order.py:79: AssertionError
+___________________ test_p3_fixed_copy_wins_the_import_race ___________________
+
+    def test_p3_fixed_copy_wins_the_import_race():
+        out = _run_probe()
+        expected_origin = _norm(str(Path(out["fixed_rf"]) / "company_wiki_source.py"))
+        assert out["origin"] is not None, "company_wiki_source not importable at all"
+>       assert _norm(out["origin"]) == expected_origin, (
+            "the fixed copy does NOT win: importer resolves company_wiki_source to "
+            f"{out['origin']} instead of {expected_origin} (production bytes would run)")
+E       AssertionError: the fixed copy does NOT win: importer resolves company_wiki_source to C:\Users\郑曾波\Projects\revenue-forecast\scripts\company_wiki_source.py instead of c:\users\郑曾波\projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\b3-prereq\a20260922-01\b3_reference\iso\fixed\rf_scripts\company_wiki_source.py (production bytes would run)
+E       assert 'c:\\users\\郑...iki_source.py' == 'c:\\users\\郑...iki_source.py'
+E         
+E         - c:\users\郑曾波\projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\b3-prereq\a20260922-01\b3_reference\iso\fixed\rf_scripts\company_wiki_source.py
+E         + c:\users\郑曾波\projects\revenue-forecast\scripts\company_wiki_source.py
+
+tests\test_rem47_guard_order.py:88: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_rem47_guard_order.py::test_p2_actual_sys_path_head_matches_the_claimed_order
+FAILED tests/test_rem47_guard_order.py::test_p3_fixed_copy_wins_the_import_race
+2 failed, 2 passed in 3.53s
+

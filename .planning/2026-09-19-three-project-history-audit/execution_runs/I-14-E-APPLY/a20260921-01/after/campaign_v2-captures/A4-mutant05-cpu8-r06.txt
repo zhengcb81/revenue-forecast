@@ -1,0 +1,34 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_______ test_child_without_runtime_session_is_terminated_and_restarted ________
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/i14eapply-v2/A4-mutant05-cpu8-r06/pytest/test_child_without_runtime_ses0')
+
+    @pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell launcher integration")
+    def test_child_without_runtime_session_is_terminated_and_restarted(tmp_path):
+        project = _prepare_fake_launcher_project(
+            tmp_path,
+            [
+                {"sleep_seconds": 5, "exit_code": 0},
+                {"exit_code": 0},
+            ],
+        )
+    
+        # R4 MUTATION: revert to the pre-fix hard-coded constant.
+        hang_timeout_seconds = 0.5
+        completed = _run_real_worker_launcher(
+            project,
+            timeout=15,
+            worker_hang_timeout_seconds=hang_timeout_seconds,
+            child_poll_milliseconds=100,
+        )
+    
+>       assert completed.returncode == 0, completed.stderr
+E       AssertionError: 
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['powershell.exe', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', 'C:\\...econds', '0', '-WorkerHangTimeoutSeconds', '0.5', '-ChildPollMilliseconds', '100'], returncode=1, stdout='', stderr='').returncode
+
+C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-APPLY\a20260921-01\iso\mutant-derivation-0.5\tests\contract\test_source_catalog_worker_bootstrap.py:1046: AssertionError
+=========================== short test summary info ===========================
+FAILED ..\..\..\..\..\..\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-APPLY\a20260921-01\iso\mutant-derivation-0.5\tests\contract\test_source_catalog_worker_bootstrap.py::test_child_without_runtime_session_is_terminated_and_restarted
+1 failed in 15.36s

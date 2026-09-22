@@ -1,0 +1,146 @@
+{
+ "batch": "M01-M04",
+ "cards": [
+  "M01",
+  "M02",
+  "M03",
+  "M04"
+ ],
+ "fix_card": "B5-fix-g1a-g3",
+ "scope_note": "this batch carries NO REM-21 patch (it is outside the six T1-8-authorized batches): both runner roles are byte-copies of the historical file; arms are MEASUREMENT ONLY and were reported to the owner as a scope finding",
+ "runner_before": {
+  "path": "execution_runs/M01/a20260919-01/scripts/run_card.py",
+  "sha256": "b5fcc68563f563924529e06e2aeeba06938dcf51bd48b14f553f580191601816",
+  "bytes": 12222,
+  "byte_identical_to_historical": true
+ },
+ "runner_after": {
+  "path": "execution_runs/B5-fix-g1a-g3/a20260922-01/M01-M04/run_card.py",
+  "sha256": "b5fcc68563f563924529e06e2aeeba06938dcf51bd48b14f553f580191601816",
+  "bytes": 12222,
+  "identical_to_historical": true
+ },
+ "diff_path": null,
+ "diff_stats": {
+  "added_lines": 0,
+  "removed_lines": 0
+ },
+ "cards_cases_sha256": {
+  "M01": "462ea30cfbb714a0be309af95cfe6427a0ed3b6b221c440ff60693c4ebc7e5b3",
+  "M02": "b02423dd9adfe871b2bed6e5246f3b45afde8307e37a3ddb04a1871e91813015",
+  "M03": "62d5b69f7af7fe0357d3fb02df6b4bb0e791d3f1240ca621fb6868894dff8443",
+  "M04": "d515e1b7095b28222e6fadbfda2fcbb77b4decd49ff7bb2696044b0de7a905a4"
+ },
+ "insertion_points": [],
+ "arms": {
+  "E": {
+   "rc": 0,
+   "rc_per_card": {
+    "M01": 0,
+    "M02": 0,
+    "M03": 0,
+    "M04": 0
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M01": null,
+    "M02": null,
+    "M03": null,
+    "M04": null
+   },
+   "mutated_case": null,
+   "out_written_all": true,
+   "note": "green control: patched runner + frozen cases.json",
+   "expected_rc": 0,
+   "meets_expectation": true
+  },
+  "F": {
+   "rc": 0,
+   "rc_per_card": {
+    "M01": 0,
+    "M02": 0,
+    "M03": 0,
+    "M04": 0
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M01": null,
+    "M02": null,
+    "M03": null,
+    "M04": null
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "owner-mandated mutation arm: usable-but-different `expected` -> rc=3 (the arm that was previously unreachable on M25-M28)",
+   "expected_rc": 3,
+   "meets_expectation": false
+  },
+  "B": {
+   "rc": 0,
+   "rc_per_card": {
+    "M01": 0,
+    "M02": 0,
+    "M03": 0,
+    "M04": 0
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M01": null,
+    "M02": null,
+    "M03": null,
+    "M04": null
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "historical byte-copy runner on the same mutated cases; rc is a MEASUREMENT and must not change vs B5's recorded value",
+   "b5_recorded_rc": null,
+   "unchanged_vs_b5_recorded": true
+  },
+  "G": {
+   "rc": 1,
+   "rc_per_card": {
+    "M01": 1,
+    "M02": 1,
+    "M03": 1,
+    "M04": 1
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M01": null,
+    "M02": null,
+    "M03": null,
+    "M04": null
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": false,
+   "note": "declaration unusable (expected key deleted) -> rc=2 + no_verdict; the mutated case is NOT_JUDGED, never counted as a mismatch",
+   "expected_rc": 2,
+   "meets_expectation": false
+  }
+ },
+ "extra_arms": {},
+ "rc_codes_after": {
+  "0": "pass",
+  "2": "no verdict (harness_incomplete)",
+  "3": "negative",
+  "1": "only via an uncaught crash (no rc=1 branch in the runner)"
+ },
+ "isolated_code_root_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "historical_writes": [],
+ "boundaries_respected": true,
+ "unmet_prerequisites": [],
+ "open_issues": [
+  "SCOPE FINDING (reported to owner): measured E=0/F=0/B=0/G=1 on all four cards - no per-case gate was ever propagated here (F is a fabricated green) and a deleted `expected` crashes rc=1 (hard subscript). Out of this card's authorization to patch; measurement only."
+ ]
+}

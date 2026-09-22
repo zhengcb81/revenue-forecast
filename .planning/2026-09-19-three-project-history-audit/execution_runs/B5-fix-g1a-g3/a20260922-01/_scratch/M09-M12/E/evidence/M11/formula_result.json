@@ -1,0 +1,233 @@
+{
+ "card_id": "M11",
+ "model_id": "infrastructure",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\checkout_scripts",
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "target_exception": "ModelRegistryError",
+ "registry_metadata": {
+  "model_id": "infrastructure",
+  "required": [
+   "billable_volume",
+   "tariff"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "declared_defaults": {},
+  "dimensions": {
+   "billable_volume": "activity",
+   "tariff": "revenue_per_activity",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [],
+  "explicit_driver_bounds": {},
+  "formula": "revenue = billable_volume * tariff + other_revenue"
+ },
+ "contract_check": {
+  "formula": {
+   "observed": "revenue = billable_volume * tariff + other_revenue",
+   "expected": "revenue = billable_volume * tariff + other_revenue",
+   "ok": true
+  },
+  "required": {
+   "observed": [
+    "billable_volume",
+    "tariff"
+   ],
+   "expected": [
+    "billable_volume",
+    "tariff"
+   ],
+   "ok": true
+  },
+  "optional": {
+   "observed": [
+    "other_revenue"
+   ],
+   "expected": [
+    "other_revenue"
+   ],
+   "ok": true
+  },
+  "dimensions": {
+   "observed": {
+    "billable_volume": "activity",
+    "tariff": "revenue_per_activity",
+    "other_revenue": "revenue"
+   },
+   "expected": {
+    "billable_volume": "activity",
+    "tariff": "revenue_per_activity",
+    "other_revenue": "revenue"
+   },
+   "ok": true
+  },
+  "ok": true
+ },
+ "positive": {
+  "raised": null,
+  "actual": [
+   210.0
+  ],
+  "actual_repr": [
+   "210.0"
+  ],
+  "length": 1,
+  "structure": {
+   "container_type": "list",
+   "is_builtin_list": true,
+   "length": 1,
+   "years_length": 1,
+   "length_equals_years": true,
+   "element_types": [
+    "float"
+   ],
+   "element_type_set": [
+    "float"
+   ],
+   "all_elements_float": true,
+   "all_elements_finite": true,
+   "year_field_echo": false,
+   "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check",
+   "ok": true
+  }
+ },
+ "per_value_checks": [
+  {
+   "index": 0,
+   "year": 2027,
+   "actual": 210.0,
+   "expected": 210.0,
+   "tolerance": 2.1e-07,
+   "abs_diff": 0.0,
+   "ok": true
+  }
+ ],
+ "length_and_year_check": {
+  "oracle_years": [
+   2027
+  ],
+  "input_years": [
+   2027
+  ],
+  "years_match": true,
+  "oracle_length": 1,
+  "input_years_length": 1,
+  "lengths_match": true
+ },
+ "fidelity_checks": {
+  "missing_expected": false,
+  "positive_structure_ok": true,
+  "positive_values_ok": true,
+  "contract_ok": true,
+  "years_match": true,
+  "lengths_match": true
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   210.0,
+   300.0
+  ],
+  "expected": [
+   210.0,
+   300.0
+  ],
+  "per_value_checks": [
+   {
+    "index": 0,
+    "actual": 210.0,
+    "expected": 210.0,
+    "tolerance": 2.1e-07,
+    "abs_diff": 0.0,
+    "ok": true
+   },
+   {
+    "index": 1,
+    "actual": 300.0,
+    "expected": 300.0,
+    "tolerance": 3e-07,
+    "abs_diff": 0.0,
+    "ok": true
+   }
+  ],
+  "structure": {
+   "container_type": "list",
+   "is_builtin_list": true,
+   "length": 2,
+   "years_length": 2,
+   "length_equals_years": true,
+   "element_types": [
+    "float"
+   ],
+   "element_type_set": [
+    "float"
+   ],
+   "all_elements_float": true,
+   "all_elements_finite": true,
+   "year_field_echo": false,
+   "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check",
+   "ok": true
+  },
+  "ok": true,
+  "ran_before_negative_patch": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   200.0
+  ],
+  "expected": [
+   200.0
+  ],
+  "per_value_checks": [
+   {
+    "index": 0,
+    "actual": 200.0,
+    "expected": 200.0,
+    "tolerance": 2e-07,
+    "abs_diff": 0.0,
+    "ok": true
+   }
+  ],
+  "structure": {
+   "container_type": "list",
+   "is_builtin_list": true,
+   "length": 1,
+   "years_length": 1,
+   "length_equals_years": true,
+   "element_types": [
+    "float"
+   ],
+   "element_type_set": [
+    "float"
+   ],
+   "all_elements_float": true,
+   "all_elements_finite": true,
+   "year_field_echo": false,
+   "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check",
+   "ok": true
+  },
+  "ok": true
+ },
+ "defaults_ok": true,
+ "exit_code_semantics": {
+  "verdict": "pass",
+  "exit_code": 0,
+  "positive_ok": true,
+  "contract_ok": true,
+  "continuity_ok": true,
+  "defaults_ok": true,
+  "fidelity_ok": true,
+  "negatives_ok": true,
+  "harness_error": false,
+  "missing_expectations": {
+   "positive": false,
+   "continuity_positive": false,
+   "defaults": false
+  },
+  "precedence": "1 harness > 2 no-verdict/fidelity > 3 negative > 0 pass"
+ },
+ "harness_errors": []
+}

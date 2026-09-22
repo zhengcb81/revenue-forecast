@@ -199,6 +199,37 @@ CASES = [
     ("N5w-auth-ampersand-secret", "narrow_must",
      "Authorization: Bo&t\n" + S39 + "\ndoc=17", "Authorization: " + R + "\ndoc=17",
      ["doc=17"], 32, ""),
+    # ---- r7 (F-REV-R6-01): two base-regressive shapes OUTSIDE the registered C10
+    # input shape, registered the way R3a/R3b were: kind `registered_open`, each row
+    # declaring the exact string it expects to leak, so a pass means "leaks precisely
+    # what the record names".  On product_narrow_r6 each of these four rows survives
+    # with BOTH the marker and the 39-char credential (that is the declaration below);
+    # iso/product_base turns the same four inputs into `Authorization: <redacted>` --
+    # evidence: scratch/r7_shape_probe.json.  Domain of that base-regression claim:
+    # card trees r1/M4, r2, r3, r4, r5, r6 persist the marker on these exact inputs,
+    # iso/product_base redacts them (reviewer F-REV-R6-01, confirmed by the r7 probe).
+    # r7 is a record fix: no product code changed (domain: this revision's sites --
+    # these two harness row lists, oracle.md, review.md, handoff_r6.json).
+    ("R7a-line3-bare-credential", "registered_open",
+     "Authorization: Bearer\nfoo\n" + S39 + "\n" + M,
+     "Authorization: " + R + "\n" + S39 + "\n" + M,
+     [S39, M], 87,
+     "Authorization: " + R + "\n" + S39 + "\n" + M),
+    ("R7b-prebreak-cr", "registered_open",
+     "Authorization: Bo\rt\n" + M + "\n" + S39,
+     "Authorization: " + R + "\rt\n" + M + "\n" + S39,
+     [M, S39], 89,
+     "Authorization: " + R + "\rt\n" + M + "\n" + S39),
+    ("R7c-prebreak-vtab", "registered_open",
+     "Authorization: Bo\vt\n" + M + "\n" + S39,
+     "Authorization: " + R + "\vt\n" + M + "\n" + S39,
+     [M, S39], 89,
+     "Authorization: " + R + "\vt\n" + M + "\n" + S39),
+    ("R7d-prebreak-ff", "registered_open",
+     "Authorization: Bo\ft\n" + M + "\n" + S39,
+     "Authorization: " + R + "\ft\n" + M + "\n" + S39,
+     [M, S39], 89,
+     "Authorization: " + R + "\ft\n" + M + "\n" + S39),
 ]
 
 

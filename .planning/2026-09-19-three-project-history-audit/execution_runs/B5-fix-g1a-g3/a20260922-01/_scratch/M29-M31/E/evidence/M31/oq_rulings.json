@@ -1,0 +1,161 @@
+{
+ "card_id": "M31",
+ "model_id": "inventory_sellthrough",
+ "document_author": "the implementing session of attempt a20260919-01, which also wrote oracle.md, run_card.py and this record",
+ "adjudicated_by": "PENDING - no entry below has been ruled on by the independent reviewer; the reviewer is a separate party who may accept, amend or reject each entry",
+ "no_first_person_authorship_claim": true,
+ "enumerated_by": "scripts/enumerate_registry.py",
+ "enumeration_raw_output": {
+  "path": "evidence/M31/registry_enumeration.json",
+  "sha256": "bfe03cc7e722608a3f2f281e062074e873352a6e203209ad7fa58df70e47ed82",
+  "script_sha256": "9457e003e540d06945dba7d29278321a3b687d81db480bce3216073bcf30c5c9",
+  "raw_stdout": "evidence/M31/runs/C-registry-enumeration/stdout.txt",
+  "raw_stdout_sha256": "cad8ac8e7ead088bd3255b282f9cbec415d709a07f9b810dded3ab2547777327",
+  "raw_returncode": 0,
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts"
+ },
+ "enumeration_counts": {
+  "models": 31,
+  "required_drivers": 125,
+  "optional_drivers": 40,
+  "ratio_drivers": 41,
+  "revenue_per_activity_and_per_unit_drivers": 23,
+  "optional_drivers_absent_from_declared_defaults": 31
+ },
+ "card_registry_facts": {
+  "model_id": "inventory_sellthrough",
+  "card_document": "execution_v2/card_M31.md",
+  "required_as_enumerated_from_the_isolated_copy": [
+   "opening_inventory",
+   "saleable_production",
+   "purchased_units",
+   "scrapped_units",
+   "sold_units",
+   "closing_inventory",
+   "net_revenue_per_unit"
+  ],
+  "optional_as_enumerated_from_the_isolated_copy": [],
+  "defaults_as_enumerated_from_the_isolated_copy": {},
+  "ratio_drivers": [],
+  "driver_effective_bounds": {
+   "opening_inventory": [
+    0.0,
+    "inf"
+   ],
+   "saleable_production": [
+    0.0,
+    "inf"
+   ],
+   "purchased_units": [
+    0.0,
+    "inf"
+   ],
+   "scrapped_units": [
+    0.0,
+    "inf"
+   ],
+   "sold_units": [
+    0.0,
+    "inf"
+   ],
+   "closing_inventory": [
+    0.0,
+    "inf"
+   ],
+   "net_revenue_per_unit": [
+    0.0,
+    "inf"
+   ]
+  },
+  "card_text_required_list": [
+   "opening_inventory",
+   "saleable_production",
+   "purchased_units",
+   "scrapped_units",
+   "sold_units",
+   "closing_inventory",
+   "net_revenue_per_unit"
+  ]
+ },
+ "rulings": [
+  {
+   "id": "OQ-01",
+   "scope": "shared by all three cards of this batch (M29-M31)",
+   "title": "isolation binding provenance",
+   "status": "registered_not_fixed",
+   "observation": "the cards require the run cwd to come from I-00-B, while I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree",
+   "what_this_attempt_did": "materialised its own read-only snapshot at iso/checkout_scripts and recorded that its two files hash equal to the production files",
+   "consequence": "if the intended binding is an I-00-B-materialised checkout, the provenance chain differs; the code under test is byte-identical either way",
+   "requires_ruling_from": "owner (dispatch/binding)"
+  },
+  {
+   "id": "OQ-02",
+   "scope": "shared by all three cards of this batch (M29-M31)",
+   "title": "these three models declare NO optional driver and NO default, so the silent zero-fill path cannot be reached through them",
+   "status": "registered_not_fixed",
+   "mechanism": "calculate_registered_model resolves a missing driver as drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)); the three cards of this batch declare optional=() and defaults={}, so every one of their drivers is required and an omitted driver is refused instead of being filled with 0.0",
+   "enumerated_registry_wide_count": 31,
+   "enumerated_for_this_model": [],
+   "enumerated_this_model_optional_drivers": [],
+   "consequence": "the N03 case (delete the first required driver) is refused for these models by the missing-driver check, and the card's own 'no optional default' text agrees with the enumerated contract",
+   "action_this_attempt": "registered, NOT fixed; no product file was modified",
+   "requires_ruling_from": "independent reviewer (accept / amend / reject)"
+  },
+  {
+   "id": "OQ-03",
+   "title": "card business negative that the calculator cannot fully enforce",
+   "status": "registered_not_fixed",
+   "card_text": "card_M31.md L51: company inventory and channel inventory belong to different entities and may not be mixed; shipment does not necessarily transfer control; scrapping is not negative revenue",
+   "finding": "PARTLY runtime-enforceable. The inventory bridge (closing = opening + production + purchased - scrapped - sold) and the cross-year continuity ARE enforced, and the revenue line follows sold_units only, so scrapping cannot become negative revenue (measured by OBS-SCRAP-NOT-REVENUE). Entity boundaries and control transfer are disclosure questions",
+   "consequence": "STOP_DISCLOSURE_ADAPTATION remains in force; a number is not an adaptation",
+   "requires_ruling_from": "industry/accounting reviewer (I-10-A / D)"
+  },
+  {
+   "id": "OQ-04",
+   "title": "numerical domain / boundary observations of this model (the card-text divergence claim was withdrawn by F-02)",
+   "status": "registered_not_fixed",
+   "finding": " the inventory bridge is enforced: the intra-year balance and the cross-year continuity are both checked with math.isclose(rel_tol=1e-9, abs_tol=1e-9); the frozen CONT-BREAK case (year-2 opening 86 vs year-1 closing 85) is rejected while a 1e-10 imbalance is tolerated (PROBE-CONTINUITY-TOLERANCE)",
+   "derived_from": "the effective bounds enumerated by scripts/enumerate_registry.py (evidence/M31/registry_enumeration.json)",
+   "measured_probes": [
+    {
+     "id": "PROBE-SCRAP-EXCEEDS-OPENING",
+     "raised": "ModelRegistryError",
+     "actual": null,
+     "measured_matches": {}
+    },
+    {
+     "id": "PROBE-SOLD-EXCEEDS-OPENING",
+     "raised": "ModelRegistryError",
+     "actual": null,
+     "measured_matches": {}
+    },
+    {
+     "id": "PROBE-CONTINUITY-TOLERANCE",
+     "raised": null,
+     "actual": [
+      160.0,
+      0.0
+     ],
+     "measured_matches": {}
+    }
+   ],
+   "probe_provenance": "evidence/M31/extra_probes.json; the probes are NON-GATING and sit outside oracle.json and outside the runner's exit code",
+   "requires_ruling_from": "independent reviewer (accept / amend / reject)",
+   "withdrawn_claim": {
+    "applied_utc": "2026-09-20T03:20:49.039865+00:00",
+    "finding": "F-02 (independent reviewer, M31)",
+    "superseded_title": "numerical domain / boundary observations of this model",
+    "why": "the claim that card_M31.md omits net_revenue_per_unit is false; the card lists all seven drivers and agrees with the registry, so no owner ruling about a divergence is required",
+    "byte_level_check": "card_M31.md L9 and model_cards.md L2818 both contain net_revenue_per_unit and are byte-identical lines",
+    "kept": "the seven-driver required list and the effective bounds recorded in this file were already correct and are unchanged"
+   }
+  }
+ ],
+ "counts_provenance_rule": "every number in enumeration_counts comes from the raw output of scripts/enumerate_registry.py; none is transcribed from prose",
+ "text_corrections": {
+  "F-04": {
+   "applied_utc": "2026-09-20T03:20:49.039865+00:00",
+   "statement": "the mtime comparison in evidence/M31/source_manifest.json is a POST-HOC stat comparison, not a pre-freeze claim; the anchored object is the generator code scripts/oracle_M31.py (sha256 3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e), and oracle.md is outside the anchor scope and carries no gating expectation"
+  }
+ }
+}

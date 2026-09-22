@@ -1,0 +1,71 @@
+{
+  "case_id": "F7_torn_line",
+  "card_point": "append 写了一半（torn line）",
+  "f_row": "F7",
+  "rc_expectation_vs_raw": {
+    "expected": 2,
+    "raw": 2,
+    "stderr": "error: registry line 2: invalid JSON: Unterminated string starting at: line 1 column 76 (char 75)\n"
+  },
+  "checks": [
+    {
+      "item": "seed_p0_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "fault_rc",
+      "expected": 2,
+      "actual": 2,
+      "ok": true,
+      "why": "append pre-check reads the chain first -> fail closed"
+    },
+    {
+      "item": "chain_detected_broken",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": "reader must see the torn line, not a partial accept"
+    },
+    {
+      "item": "product_reader_fails_closed",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": "RegistryError: registry line 2: invalid JSON: Unterminated string starting at: line 1 column 76 (char 75)"
+    },
+    {
+      "item": "p1_not_consumable",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "recovery1_rc_fail_closed",
+      "expected": 2,
+      "actual": 2,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "recovery2_rc_fail_closed",
+      "expected": 2,
+      "actual": 2,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "registry_bytes_unchanged_no_history_deletion",
+      "expected": "7fcd282b0352a0ae6ac1432e4856cf8e6d0079a2c8fd74536ddea8bd6645bd7f",
+      "actual": "7fcd282b0352a0ae6ac1432e4856cf8e6d0079a2c8fd74536ddea8bd6645bd7f",
+      "ok": true,
+      "why": "stop condition: needing to delete history lines would trip"
+    }
+  ],
+  "all_ok": true,
+  "recovery_action_frozen": "人工介入/从备份修复 (F7)",
+  "elapsed_seconds": 2.88
+}

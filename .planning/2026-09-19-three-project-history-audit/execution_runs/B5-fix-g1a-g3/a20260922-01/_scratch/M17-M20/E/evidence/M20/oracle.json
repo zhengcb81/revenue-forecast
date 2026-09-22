@@ -1,0 +1,108 @@
+{
+ "card_id": "M20",
+ "model_id": "cohort_subscription",
+ "generated_by": "scripts/oracle_M20.py (stdlib only, no product import)",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "195.00"
+  ],
+  "expected_float": [
+   195.0
+  ],
+  "tolerances": [
+   1.95e-07
+  ],
+  "hand_work": [
+   "((100 + 40 x 0.25 - 20 x 0.75)) x 2 x 1 + 5"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "195.00",
+   "240.00"
+  ],
+  "expected_float": [
+   195.0,
+   240.0
+  ],
+  "tolerances": [
+   1.95e-07,
+   2.4e-07
+  ],
+  "hand_work": [
+   "((100 + 40 x 0.25 - 20 x 0.75)) x 2 x 1 + 5",
+   "((120 + 0 x 0.25 - 0 x 0.75)) x 2 x 1 + 0"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "220.0"
+  ],
+  "expected_float": [
+   220.0
+  ],
+  "tolerances": [
+   2.2e-07
+  ],
+  "hand_work": [
+   "((100 + 40 x 0.5 - 20 x 0.5)) x 2 x 1 + 0"
+  ]
+ },
+ "defaults_expected_float": [
+  220.0
+ ],
+ "observation_expected": {
+  "OBS-ZERO-CUSTOMERS": {
+   "years": [
+    2027
+   ],
+   "expected": [
+    "7.0"
+   ],
+   "expected_float": [
+    7.0
+   ],
+   "tolerances": [
+    7e-09
+   ],
+   "hand_work": [
+    "((0 + 0 x 0.5 - 0 x 0.5)) x 2 x 1 + 7"
+   ]
+  }
+ },
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "fidelity_rule": "len(output) must equal len(years) and len(expected); every element must be a plain finite number; year labels are not observable from the returned list, so length is the only year-linked observable",
+ "continuity_case_source": {
+  "card": "card_M20.md L59-125 (two-year continuity case, printed in the card itself)",
+  "hand_work_second_year": "year 2 has no new/churned/usage flow, opening = prior closing; exposure 120 x 2 x 1 + 0 = 240",
+  "expected_negative": "ModelRegistryError/continuity; each year balances on its own, but year 2 opening is 1 higher than year 1 closing",
+  "frozen_continuity_expected": [
+   "195.00",
+   "240.00"
+  ]
+ }
+}

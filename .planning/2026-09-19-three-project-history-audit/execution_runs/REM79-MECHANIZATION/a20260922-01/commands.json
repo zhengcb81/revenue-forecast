@@ -1,0 +1,208 @@
+{
+  "schema": "rem79-commands/1",
+  "card_id": "REM79-MECHANIZATION",
+  "attempt_id": "a20260922-01",
+  "cwd_always": ".planning/2026-09-19-three-project-history-audit/execution_runs/REM79-MECHANIZATION/a20260922-01",
+  "network": "disabled",
+  "units": [
+    {
+      "unit_id": "C1-build-corpus",
+      "purpose": "extract the frozen corpus from live carriers (extraction + hashing only; no check logic)",
+      "argv": ["python", "-X", "utf8", "-B", "harness/build_corpus.py"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "stdout": "evidence/build_corpus.stdout.txt",
+      "artifacts": ["corpus/*.md (6 files)", "evidence/corpus_manifest.json"]
+    },
+    {
+      "unit_id": "C2-freeze-oracle",
+      "purpose": "write the freeze record AFTER corpus + oracle_table.json + oracle.md existed and BEFORE any checker code existed (self-audit: 0 marker lines in oracle.md lack a domain)",
+      "argv": ["python", "-X", "utf8", "-B", "-c", "<inline: audit oracle.md against its own frozen lexicon; write evidence/freeze_record.json>"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "stdout": "evidence/freeze_record.json (oracle_md_sha256=6faa0ae9…241f, oracle_table_json_sha256=366b1825…edae7, checker_existed_at_freeze=false)",
+      "note": "run twice: first pass found 15 self-inconsistent marker lines in the pre-freeze draft (all fixed by appending same-line domain notes), second pass found 0 and declared the freeze"
+    },
+    {
+      "unit_id": "C3-write-checkers",
+      "purpose": "post-freeze code: the RED variant (marker-only, no domain requirement) and the GREEN checker implementing the frozen rule",
+      "argv": ["(file writes, not a run)", "harness/naive_checker_marker_only.py", "tools/check_domain_assertions.py"],
+      "raw_rc": null,
+      "expected_rc": null
+    },
+    {
+      "unit_id": "C4-build-mutations",
+      "purpose": "materialize the three mutations whose red sets were already declared in the frozen oracle_table.json",
+      "argv": ["python", "-X", "utf8", "-B", "harness/make_mutations.py"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "artifacts": ["mutations/a_strip_domain.md", "mutations/b_add_domain.md", "mutations/c_offbyone.md", "mutations/manifest.json"]
+    },
+    {
+      "unit_id": "C5-protocol-verify-round1",
+      "purpose": "round 1: run RED (naive vs frozen table, must FAIL it), GREEN (real vs frozen table, must match exactly), and the 3 mutations; preserve all raw outputs",
+      "argv": ["python", "-X", "utf8", "-B", "harness/verify.py"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "driver_stdout": "evidence/verify_driver.stdout.txt",
+      "rollup": "evidence/verify_summary.json",
+      "subprocesses": "evidence/commands_run.json",
+      "raw_outputs": ["evidence/red/*", "evidence/green/*", "evidence/mutations/*", "evidence/corpus_hash_guard.json"],
+      "expected_business_result": "RED_FAILS_ORACLE_AS_REQUIRED; GREEN_MATCHES_ORACLE_EXACTLY (4 violations, per-file exits 1/1/1/1/0/0); MUT_A [4]; MUT_B []; MUT_C [5] != baseline [4]"
+    },
+    {
+      "unit_id": "L1-live-scan-round1-json",
+      "purpose": "record-only round-1 live scan of the three plan carriers (owners decide; no edit)",
+      "argv": ["python", "-X", "utf8", "-B", "tools/check_domain_assertions.py", "--json", "../../../task_plan.md", "../../../findings.md", "../../../progress.md"],
+      "raw_rc": 1,
+      "expected_rc": 1,
+      "stdout": "evidence/live/live_scan.json (+ live_scan.txt twin)",
+      "result": "214 violations (task_plan 131 / findings 37 / progress 46); adjudicated by the parent as true-positive 0 — evidence/live/parent_adjudication_r1.md"
+    },
+    {
+      "unit_id": "L2-oracle-selfscan-round1",
+      "purpose": "the frozen oracle must obey its own rule (v1.0.0 lexicon)",
+      "argv": ["python", "-X", "utf8", "-B", "tools/check_domain_assertions.py", "oracle.md"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "stdout": "evidence/live/selfscan_oracle.txt (0 violations)"
+    },
+    {
+      "unit_id": "B1-utf8-normalize",
+      "purpose": "bookkeeping: six shell-redirected evidence files were UTF-16LE (PowerShell '>' / Tee-Object); re-encoded to UTF-8, content unchanged",
+      "argv": ["python", "-X", "utf8", "-B", "harness/utf8_normalize.py"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "report": "evidence/utf8_normalize_report.json"
+    },
+    {
+      "unit_id": "B2-pack-evidence",
+      "purpose": "compact file:line findings list + marker histogram + RED->GREEN changes.diff",
+      "argv": ["python", "-X", "utf8", "-B", "harness/pack_evidence.py"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "artifacts": ["evidence/live/findings_file_line_list.txt", "evidence/live/summary.json", "changes.diff"],
+      "note": "re-run after CORRECTION 1 so changes.diff reflects the current checker pair (round-1 list/summary are re-derived from the untouched round-1 JSON, byte-identical output)"
+    },
+    {
+      "unit_id": "R1-correction1-append",
+      "purpose": "append CORRECTION 1 to oracle.md per the parent's instruction (D8 count, D9 subject/enum, D10 identifier+quote rules) with an append-only prefix proof; self-audit of the appended text against the OLD lexicon ran until 0 inconsistent lines",
+      "argv": ["python", "-X", "utf8", "-B", "-c", "<inline: audit correction text; verify sha256(bytes[:13029]) == frozen pre-sha; write evidence/oracle_correction1_ledger.json>"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "artifacts": ["oracle.md CORRECTION 1 (post-sha c8a6f20931bbf92aea96b5ea2be9ece19f977bc2f778dcd22a2f1f00c83be824)", "evidence/oracle_correction1_ledger.json", "evidence/live/parent_adjudication_r1.md (ruling transcription)", "evidence/live/round1_findings_214.txt (snapshot)"],
+      "prefix_proof": "sha256(oracle.md[:13029]) == 6faa0ae90a0693ffeb03f9b63a811d4832d12f0e598f1699dcaf29462bdc241f == the frozen round-1 oracle"
+    },
+    {
+      "unit_id": "R2-implement-correction1",
+      "purpose": "implement D8/D9 domain patterns and D10a EN marker boundaries in the checker (v1.1.0-correction1); mirror D10a boundaries in the RED variant so both arms share one marker lexicon; oracle_table.json untouched",
+      "argv": ["(file edits, not a run)", "tools/check_domain_assertions.py", "harness/naive_checker_marker_only.py", "harness/verify.py (round-tag parameter added: evidence/<tag>/… so round-1 raw evidence is preserved)"],
+      "raw_rc": null,
+      "expected_rc": null
+    },
+    {
+      "unit_id": "R3-protocol-verify-round2",
+      "purpose": "re-run RED + GREEN + all three mutations under CORRECTION 1 (parent: mutations all re-run preferred), writing to evidence/round2/ so round-1 evidence stays raw",
+      "argv": ["python", "-X", "utf8", "-B", "harness/verify.py", "round2"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "driver_stdout": "evidence/verify_round2_driver.stdout.txt",
+      "rollup": "evidence/round2/verify_summary.json",
+      "raw_outputs": ["evidence/round2/red/*", "evidence/round2/green/*", "evidence/round2/mutations/*", "evidence/round2/corpus_hash_guard.json"],
+      "expected_business_result": "RED still FAILS the frozen table (domain-blind, unaffected by D8/D9 — argued in oracle CORRECTION 1 §C1.4); GREEN still exact 4/0 with unchanged oracle_table.json; all 3 mutations re-pass"
+    },
+    {
+      "unit_id": "R4-live-scan-round2",
+      "purpose": "round-2 live scan with the corrected checker + old/new diff with per-line cause labels",
+      "argv": ["python", "-X", "utf8", "-B", "harness/live_round2.py"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "artifacts": ["evidence/live/round2_live_scan.json", "evidence/live/round2_live_scan.txt", "evidence/live/round2_diff.txt", "evidence/live/round2_summary.json"],
+      "result": "214 -> 48 (task_plan 28 / findings 10 / progress 10); disappeared 167 (D8=136, D9=5, D10a=26); remained 47; new 1 (attributed to owner edits to progress.md between scans — evidence/live/round2_new1_attribution.md)",
+      "note": "one spawn-encoding fix (PYTHONUTF8 for the child process) and one list-comprehension typo were corrected before this unit's successful rc=0"
+    },
+    {
+      "unit_id": "R5-oracle-selfscan-round2",
+      "purpose": "the corrected oracle (with CORRECTION 1) must still obey its own rule",
+      "argv": ["python", "-X", "utf8", "-B", "tools/check_domain_assertions.py", "oracle.md"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "stdout": "evidence/live/selfscan_oracle_round2.txt (0 violations)"
+    },
+    {
+      "unit_id": "R6-attribution-note",
+      "purpose": "explain the single NEW round-2 finding (progress.md:990) as owner file drift, with byte-stability proof for task_plan/findings",
+      "argv": ["(file write, not a run)"],
+      "artifacts": ["evidence/live/round2_new1_attribution.md"]
+    },
+    {
+      "unit_id": "X1-correction2-append",
+      "purpose": "FINAL lexicon iteration: append CORRECTION 2 (D8b count/noun pairing incl. Chinese numerals; D10b hyphen/flag/code-call marker skips superseding the §3 boundary note; D11 quoted-line skip) with append-only prefix proof; 22 self-audit lines patched with on-line domain notes; pre-correction byte count corrected to the true C1-final 19324 before the final ledger",
+      "argv": ["python", "-X", "utf8", "-B", "-c", "<inline: append/patch/audit oracle.md; verify sha256(bytes[:19324]) == C1 post-sha; write evidence/oracle_correction2_ledger.json>"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "artifacts": ["oracle.md CORRECTION 2 (post-sha 94306a4340e5ee6155629e1e2df06a08313f3e8d2326995935e7948d8535c830, 26285 bytes)", "evidence/oracle_correction2_ledger.json", "evidence/live/parent_adjudication_r2_and_c2.md"],
+      "prefix_proof": "sha256(oracle.md[:19324]) == c8a6f20931bbf92aea96b5ea2be9ece19f977bc2f778dcd22a2f1f00c83be824 == the CORRECTION-1-final state",
+      "note": "first ledger attempt used the pre-C1-patch byte count (19228) and correctly failed its own prefix check; corrected to 19324 (the C1 ledger's post_bytes) and re-proved — the failed attempt is preserved in this note rather than hidden"
+    },
+    {
+      "unit_id": "X2-implement-correction2",
+      "purpose": "implement D8b domain pattern + D10b marker boundary/code-call skip + D11 quote/line-start suppression in the checker (v1.2.0-correction2); mirror the marker-side changes in the RED variant (v1.0.2-red-correction2) so both arms share one marker-occurrence lexicon",
+      "argv": ["(file edits, not a run)", "tools/check_domain_assertions.py", "harness/naive_checker_marker_only.py"],
+      "raw_rc": null,
+      "expected_rc": null
+    },
+    {
+      "unit_id": "X3-quote-sample-mini-green",
+      "purpose": "parent-ordered small GREEN for D11 (detection-surface narrowing): declared sample file + expected flags [12,14] frozen in oracle C2.3 BEFORE the sample existed",
+      "argv": ["python", "-X", "utf8", "-B", "harness/verify_correction2.py"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "artifacts": ["evidence/correction2/quote_samples.md", "evidence/correction2/quote_samples_verdict.json", "evidence/correction2/quote_samples_json.json", "evidence/correction2/quote_samples_text_stdout.txt"],
+      "result": "C2_MINI_GREEN_PASS: reported [12,14] == declared, controls [4,6,8,10] unflagged, rc 1",
+      "note": "first run reported [11,13]: the sample file was missing the declared blank line 2 (layout, not logic); the sample layout was corrected to the frozen declaration and re-run PASS — the first run's outputs are kept inside the same evidence dir overwritten only by this unit's final pass, and the layout miss is recorded here"
+    },
+    {
+      "unit_id": "X4-protocol-verify-round3",
+      "purpose": "re-run RED + GREEN + all three mutations under CORRECTION 2 (parent exempted these but allowed re-run; raw evidence preferred), writing to evidence/round3/",
+      "argv": ["python", "-X", "utf8", "-B", "harness/verify.py", "round3"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "driver_stdout": "evidence/verify_round3_driver.stdout.txt",
+      "rollup": "evidence/round3/verify_summary.json",
+      "expected_business_result": "RED_FAILS_ORACLE_AS_REQUIRED; GREEN_MATCHES_ORACLE_EXACTLY against the unchanged oracle_table.json (4/0); all 3 mutations re-pass ([4], [], [5])"
+    },
+    {
+      "unit_id": "X5-live-scan-round3",
+      "purpose": "round-3 live scan with the v2 lexicon + full cause-labelled diff vs round-1 (214) and disposition of the round-2 48",
+      "argv": ["python", "-X", "utf8", "-B", "harness/live_round3.py"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "artifacts": ["evidence/live/round3_live_scan.json", "evidence/live/round3_live_scan.txt", "evidence/live/round3_diff.txt", "evidence/live/round3_summary.json"],
+      "result": "214 -> 48 -> 2 (task_plan 1 / findings 1 / progress 0); round-2 cleared 46/48; new_vs_r1 = 0; residuals = task_plan.md:1630 and findings.md:633, handed to the parent for item-by-item ruling — NO CORRECTION 3 opened"
+    },
+    {
+      "unit_id": "X6-oracle-selfscan-round3",
+      "purpose": "the v2 oracle (with CORRECTION 1+2) must still obey its own rule",
+      "argv": ["python", "-X", "utf8", "-B", "tools/check_domain_assertions.py", "oracle.md"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "stdout": "evidence/live/selfscan_oracle_round3.txt (0 violations)"
+    },
+    {
+      "unit_id": "X7-pack-evidence-final",
+      "purpose": "refresh changes.diff with the final checker pair (round-1 lists/summary re-derived byte-identically from the untouched round-1 JSON)",
+      "argv": ["python", "-X", "utf8", "-B", "harness/pack_evidence.py"],
+      "raw_rc": 0,
+      "expected_rc": 0
+    },
+    {
+      "unit_id": "B3-final-hashes",
+      "purpose": "sha256 ledger of every deliverable (excluding the ledger itself); re-run after round-2 updates",
+      "argv": ["python", "-X", "utf8", "-B", "-c", "<inline: sha256 all deliverables into evidence/final_hashes.json>"],
+      "raw_rc": 0,
+      "expected_rc": 0,
+      "artifacts": ["evidence/final_hashes.json"]
+    }
+  ]
+}

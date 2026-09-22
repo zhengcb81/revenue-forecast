@@ -1,0 +1,68 @@
+{
+ "card_id": "M17",
+ "model_id": "licensing_commercial",
+ "action": "append-only r2 correction of one descriptive row in section 1",
+ "executed_utc": "2026-09-20T03:11:42.645559+00:00",
+ "oracle_md_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\oracle.md",
+ "oracle_md_sha256_before_addendum": "9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69",
+ "oracle_md_sha256_after_addendum": "c99714285fe031301d9e46c2bd4e179f21a5d850866f6ce10683fd83fb780b9f",
+ "declared_pre_append_hash_matched": true,
+ "r2_sections_before": 0,
+ "r2_sections_after": 1,
+ "added_section_header_line": "## 13. 修订 r2（仅更正描述行，不动任何期望值）",
+ "added_section_header_byte_offset": 11770,
+ "added_section_header_line_number": 186,
+ "boundary_byte_offset": 11768,
+ "boundary_is_a_real_line_boundary": true,
+ "boundary_semantics": "boundary_byte_offset is the offset of the FIRST APPENDED BYTE; since the pre-append file ended with a newline, that offset is the start of the blank separator line preceding the appended section header",
+ "truncated_prefix_sha256": "9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69",
+ "truncated_prefix_equals_pre_append_hash": true,
+ "frozen_expectations_unchanged": true,
+ "expectation_values_touched": [],
+ "repair_history": {
+  "first_execution_raw_rc": 3,
+  "first_execution_stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2-append-oracle-addendum\\first_execution_failed\\stdout.txt",
+  "reason": "the first execution appended correctly (truncation reproduced the pre-append hash) but compared the wrong byte range when computing the line-boundary flag, so it returned rc=3; the append was undone with --repair-restore, which verifies the current file against the recorded post-append hash and the truncated prefix against the recorded pre-append hash, and then this second execution re-appended with the corrected comparison",
+  "restore_verified_by_hashes": true,
+  "preserved_failure_artifacts": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2-append-oracle-addendum\\first_execution_failed",
+  "original_repair_invocation_recorded": false,
+  "original_repair_invocation": {
+   "argv": [
+    "<attempt venv python>",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\append_oracle_addendum.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--repair-restore"
+   ],
+   "observed_raw_rc": 0,
+   "capture_status": "honest_gap: this destructive-on-success invocation was run in the interactive session BEFORE the R2 unit became a captured unit, so no rc.json/stdout was preserved for it. A safe, non-writing replay is recorded as the unit R2b-repair-restore-dry-run.",
+   "effect_on_oracle_md": "truncated oracle.md back to the recorded pre-append bytes; the truncated result's sha256 equalled the recorded pre-append hash, and the file was then re-appended by the corrected R2 unit"
+  }
+ },
+ "scope_note": "only M17; the section-1 domain rows of M18/M19/M20 were verified correct and are not modified",
+ "product_files_changed": [],
+ "record_rebuilt_utc": "2026-09-20T03:33:42.380590+00:00",
+ "record_rebuilt_reason": "P2-C of the r2 independent review: two metadata values were computed with the wrong comparison / the wrong line-count basis; oracle.md itself was NOT touched by this rebuild",
+ "boundary_metadata_correction": {
+  "source": "independent review r2, finding P2-C",
+  "previous_values": {
+   "added_section_header_line": "## 13. 修订 r2（仅更正描述行，不动任何期望值）",
+   "added_section_header_byte_offset": 11770,
+   "added_section_header_line_number": 184,
+   "boundary_is_a_real_line_boundary": true
+  },
+  "corrected_values": {
+   "added_section_header_line": "## 13. 修订 r2（仅更正描述行，不动任何期望值）",
+   "added_section_header_byte_offset": 11770,
+   "added_section_header_line_number": 186,
+   "boundary_is_a_real_line_boundary": true
+  },
+  "oracle_md_untouched": true,
+  "oracle_md_sha256_now": "c99714285fe031301d9e46c2bd4e179f21a5d850866f6ce10683fd83fb780b9f"
+ }
+}

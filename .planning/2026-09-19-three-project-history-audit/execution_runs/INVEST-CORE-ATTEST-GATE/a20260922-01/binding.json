@@ -1,0 +1,57 @@
+{
+  "card_id": "INVEST-CORE-ATTEST-GATE",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260922-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\INVEST-CORE-ATTEST-GATE\\a20260922-01",
+  "status": "review_pending",
+  "merge_authority": "invest-core owner — NOT yet approved; this card delivers a patch, not a merge",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "inputs_pinned": {
+    "owner_ruling": "execution_runs/OWNER_DECISIONS.md §16 (read-only): verbatim 「E-3: 立卡」 + row | E-3 = 立卡 | invest-core 消费者卡（跨仓）| 与建议一致（补丁+红绿在隔离副本，合入待该仓 owner）| 派卡 |",
+    "b1_reviewer_report": "execution_runs/B1-I08C-product-fixes/a20260921-01/reviewer_report.md — byte-pinned per its own §10 protocol: final-byte-form sha256 73feb0593b44ffeb448bc5f5b1cea9800f4cc9fb59f40ca19e9aae8038c104fa (37135 bytes with REPORT_SHA256 line = PENDING)",
+    "consumer_source": "sha256 9ad8a146ab1535555b7fd74a14acbb8280c21d4eb22e3e92da3ab2965ba3cc45 — identical in .agents/.claude/.codex skill installs AND Projects\\invest-skills (HEAD 0ee17137f8575b48064051a5ed951073c717cb42)",
+    "record_shape_source": "B1 iso/fixed/rf/scripts/revenue_publication.py lines 147-333 (E27/G4), read-only",
+    "runtime_anchors": "before/production_anchors.json (RF runtime files identical across install skill, Projects repo and iso copy; registry bc3256bb…; trust ABSENT everywhere)"
+  },
+  "frozen_before_any_run": {
+    "before/frozen_artifacts.json": {
+      "oracle.md_r1": {"bytes": 16936, "sha256": "7eaf81b925f21c21ba3f320111f3ea57c54dd74292a4ec5697111d0476f47796"},
+      "test_invest_attest.py_r1": {"bytes": 15346, "sha256": "81555f4e6148992998780942df674bb3ca1d78c69a454643c6f90d642b5d08e0"},
+      "conftest.py": {"bytes": 1210, "sha256": "9697c7a2cd52f14a030c6233f659aff8d0f81344e0e02fdd4d50c08163a25e69"},
+      "before/production_anchors.json": {"bytes": 2593, "sha256": "c9c77e1e1f0ee4ef4020cd5d34357066525ce9e61fab87bfd0e84caff18789b6"},
+      "order_statement": "hashed at IC-c0, before before/RED_unfixed.stdout.txt (the first run) existed"
+    }
+  },
+  "oracle_revisions": {
+    "r2_append_only": {
+      "scratch/append_oracle_r2.json": "r1_prefix_sha256_after_append == r1 frozen sha (r1_untouched true); oracle after r2: 20557 bytes / 8a38a403d2aa505f9bb9708520d1ed2c762abfc7cd101bf72e482e48bf0c36a6",
+      "scratch/oracle_revision_r2.md": "the exact appended text"
+    }
+  },
+  "artifacts": {
+    "changes.diff": {"sha256": "009debc218447e36616fb9f127782031e542ecb68381692c3f2905fcfa92181a", "bytes": 10372, "roundtrip": "byte-exact on scratch/roundtrip/verify (sha256 d59d579c…)"},
+    "iso/invest-core/scripts/invest_contracts.py": {"role": "pristine UNFIXED (RED arm)", "sha256": "9ad8a146ab1535555b7fd74a14acbb8280c21d4eb22e3e92da3ab2965ba3cc45"},
+    "iso/invest-core-fixed/scripts/invest_contracts.py": {"role": "FIXED (GREEN arm, patch source)", "sha256": "d59d579ce12e5e844d5cb67c202d4cf58800c413f65d69284606f48d72e17ad8"},
+    "iso/invest-core-mutant/scripts/invest_contracts.py": {"role": "M1 mutant (fixed minus the guard)", "sha256": "recorded in scratch/mutations/mutation_proof.json"},
+    "iso/revenue-forecast": {"role": "attempt-local revenue runtime", "pinned_files": "before/frozen_artifacts.json (8 files, byte-identical to source)"}
+  },
+  "evidence": {
+    "red": "before/RED_unfixed.stdout.txt (7 failed / 3 passed, rc 1, declared==observed)",
+    "green": "after/GREEN_fixed.stdout.txt (10 passed, rc 0)",
+    "regression": ["before/suite_pristine.stdout.txt (6/35/1, pre-existing clean-env failures — oracle r2.1)", "after/suite_fixed.stdout.txt (9/32/1 = 6 + 3 fix-attributable — oracle r2.2)", "after/tests_identity.json (5/5 test files byte-identical across arms)"],
+    "mutation": "scratch/mutations/mutation_proof.json (declared==observed, isolated)",
+    "roundtrip": "scratch/roundtrip/roundtrip_proof.json",
+    "zero_write": ["before/production_anchors.json", "after/production_anchors.json (byte-identical tables, empty porcelains)"],
+    "decision": "decision.md",
+    "commands": "commands.json"
+  },
+  "final_hash_table": "after/frozen_artifacts_final.json",
+  "boundaries": {
+    "repos_and_install_surfaces": "READ-ONLY — zero writes; no git write command anywhere",
+    "fix_lives_only_in": ["iso/invest-core-fixed/", "iso/invest-core-mutant/", "changes.diff", "attempt documents"],
+    "self_signing": "never — only ephemeral fixture signatures inside pytest tmp dirs (decision.md §5); no production trust anchor exists or was created",
+    "merge": "NOT performed — merge_authority reserved to the invest-core owner"
+  },
+  "reviewer_status": {"verdict": null, "implementer_self_acceptance": false, "requested_of_the_reviewer": "see handoff.json reviewer_status.requested_of_the_reviewer"}
+}

@@ -1,0 +1,83 @@
+{
+ "card_id": "M31",
+ "model_id": "inventory_sellthrough",
+ "gating": false,
+ "purpose": "measured boundary observations of the documented domains; they are NOT part of the frozen oracle and NOT part of the runner's exit code",
+ "expectation_rule": "each expectation is computed by plain arithmetic in this file before the call and never taken from the product",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts",
+ "probes": [
+  {
+   "id": "PROBE-SCRAP-EXCEEDS-OPENING",
+   "why": "scrapped_units has no cross-driver guard of its own; this probe measures whether a scrap larger than the opening inventory is accepted as long as the closing balance is stated consistently (domain check only)",
+   "expectation_source": "no cross-driver guard is declared, but closing_inventory is a quantity with lower bound 0, so a negative closing balance must be refused by the domain check",
+   "expected_if_domain_only": "ModelRegistryError",
+   "expected_if_scrap_guard": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "scrapped_units": [
+     200.0
+    ],
+    "closing_inventory": [
+     -30.0
+    ]
+   },
+   "mutated_input_repr": "{'opening_inventory': [100], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [200.0], 'sold_units': [80], 'closing_inventory': [-30.0], 'net_revenue_per_unit': [2]} years=[2027]",
+   "raised": "ModelRegistryError",
+   "message": "driver inventory_sellthrough.closing_inventory must be between 0.0 and inf: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\scripts\\probe_extra.py\", line 143, in main\n    value = model_registry.calculate_registered_model(\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver inventory_sellthrough.closing_inventory must be between 0.0 and inf: FY2027\n"
+  },
+  {
+   "id": "PROBE-SOLD-EXCEEDS-OPENING",
+   "why": "sold_units = 200 exceeds opening 100 while the bridge still balances (100 + 0 + 0 - 0 - 200 = -100), which would require a negative closing balance; the closing_inventory domain must refuse it",
+   "expectation_source": "quantity domain lower bound 0 on closing_inventory",
+   "expected_if_domain_only": "ModelRegistryError",
+   "expected_if_sold_guard": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "sold_units": [
+     200.0
+    ],
+    "saleable_production": [
+     0.0
+    ],
+    "purchased_units": [
+     0.0
+    ],
+    "scrapped_units": [
+     0.0
+    ],
+    "closing_inventory": [
+     -100.0
+    ]
+   },
+   "mutated_input_repr": "{'opening_inventory': [100], 'saleable_production': [0.0], 'purchased_units': [0.0], 'scrapped_units': [0.0], 'sold_units': [200.0], 'closing_inventory': [-100.0], 'net_revenue_per_unit': [2]} years=[2027]",
+   "raised": "ModelRegistryError",
+   "message": "driver inventory_sellthrough.closing_inventory must be between 0.0 and inf: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\scripts\\probe_extra.py\", line 143, in main\n    value = model_registry.calculate_registered_model(\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver inventory_sellthrough.closing_inventory must be between 0.0 and inf: FY2027\n"
+  },
+  {
+   "id": "PROBE-CONTINUITY-TOLERANCE",
+   "why": "the cross-year continuity check uses math.isclose(rel_tol=1e-9, abs_tol=1e-9), so a 1e-10 imbalance in a balancing year must be tolerated while the 1.0 imbalance of CONT-BREAK is rejected; this probe measures the tolerant side",
+   "expectation_source": "math.isclose(rel_tol=1e-9, abs_tol=1e-9)",
+   "expected_if_tolerant": "accepted",
+   "expected_if_exact": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "patch": {
+    "opening_inventory": [
+     100,
+     85.0000000001
+    ],
+    "closing_inventory": [
+     85,
+     85.0000000001
+    ]
+   },
+   "mutated_input_repr": "{'opening_inventory': [100, 85.0000000001], 'saleable_production': [60, 0], 'purchased_units': [10, 0], 'scrapped_units': [5, 0], 'sold_units': [80, 0], 'closing_inventory': [85, 85.0000000001], 'net_revenue_per_unit': [2, 2]} years=[2027, 2028]",
+   "raised": null,
+   "actual": [
+    160.0,
+    0.0
+   ]
+  }
+ ]
+}

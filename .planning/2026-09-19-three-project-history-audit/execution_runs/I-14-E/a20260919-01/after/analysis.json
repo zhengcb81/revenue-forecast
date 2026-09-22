@@ -1,0 +1,3597 @@
+{
+  "card": "I-14-E",
+  "attempt": "a20260919-01",
+  "criteria_source": "oracle.md sections 3/5 (frozen 2026-09-21T20:09:21Z) + oracle-addendum-A (run counts) + oracle-addendum-B (artifact discrimination, concurrent activity, determinism verdict)",
+  "pilot_note": "smoke/pilot artefacts (after/smoke-*.json, TEMP/i14e-pilot-probe) were design probes taken before the full campaign; they are reported separately and never used as expected values",
+  "ambient": {
+    "before": {
+      "spawn_python_pass_ms": [
+        514.3,
+        355.5,
+        469.3
+      ],
+      "tasklist_lines": 350
+    },
+    "after": {
+      "spawn_python_pass_ms": [
+        332.2,
+        580.7,
+        473.3
+      ],
+      "tasklist_lines": 357
+    },
+    "source": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\after\\campaign.log"
+  },
+  "frozen_band": {
+    "source": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r5\\flake-evidence\\frequency-child_without_runtime.json",
+    "source_sha256": "68d4e63e64744f099504ee4fa02cb299caa9c404978275ea8f884fbb92763e42",
+    "completeness": {
+      "rows": 48,
+      "events_present": 48,
+      "stdout_matches_frozen_capture": 48
+    },
+    "tally": {
+      "pass1/T0": {
+        "runs": 12,
+        "failed": 3,
+        "hist": {
+          "2": 9,
+          "3": 3
+        }
+      },
+      "pass1/T4": {
+        "runs": 12,
+        "failed": 2,
+        "hist": {
+          "2": 10,
+          "3": 2
+        }
+      },
+      "pass2/T0": {
+        "runs": 12,
+        "failed": 3,
+        "hist": {
+          "3": 3,
+          "2": 9
+        }
+      },
+      "pass2/T4": {
+        "runs": 12,
+        "failed": 4,
+        "hist": {
+          "4": 2,
+          "2": 8,
+          "3": 2
+        }
+      }
+    },
+    "totals_by_tree": {
+      "T0": {
+        "runs": 24,
+        "failed": 6
+      },
+      "T4": {
+        "runs": 24,
+        "failed": 6
+      }
+    },
+    "flip": {
+      "pass1_more_failing_tree": "T0",
+      "pass2_more_failing_tree": "T4"
+    },
+    "failure_instances": {
+      "second_attempt_kill_uptimes": {
+        "n": 12,
+        "min": 0.507,
+        "median": 0.537,
+        "max": 0.588,
+        "values": [
+          0.544,
+          0.513,
+          0.553,
+          0.588,
+          0.512,
+          0.574,
+          0.51,
+          0.507,
+          0.515,
+          0.533,
+          0.541,
+          0.58
+        ]
+      },
+      "passing_runs_final_attempt_exit_uptimes": {
+        "note": "uptime_seconds of the attempt that exited cleanly (behaviour 2 = immediate exit); this is the quantity the test's 0.5 s hang timeout must exceed",
+        "all": {
+          "n": 48,
+          "min": 0.113,
+          "median": 0.172,
+          "max": 0.622
+        },
+        "passed_runs": {
+          "n": 36,
+          "min": 0.113,
+          "median": 0.2245,
+          "max": 0.622
+        },
+        "failed_runs": {
+          "n": 12,
+          "min": 0.116,
+          "median": 0.1495,
+          "max": 0.579
+        }
+      }
+    },
+    "assertions": [
+      "E   AssertionError: assert 3 == 2",
+      "E   AssertionError: assert 4 == 2"
+    ]
+  },
+  "m_a_window": {
+    "popen-quiet": {
+      "condition": "quiet",
+      "method": "popen",
+      "load": {
+        "kind": "quiet",
+        "burners": 0,
+        "spawn_storm": false,
+        "seconds": 180.0
+      },
+      "n": 30,
+      "q1_time_to_first_side_effect": {
+        "n": 30,
+        "min": 0.402,
+        "p25": 0.456,
+        "median": 0.5805,
+        "p75": 0.9,
+        "p90": 1.072,
+        "p95": 1.772,
+        "p99": 2.05,
+        "max": 2.05,
+        "count_ge_050": 18,
+        "count_ge_060": 14,
+        "count_ge_080": 11
+      },
+      "q2_immediate_exit_lifetime": {
+        "n": 30,
+        "min": 0.44,
+        "p25": 0.511,
+        "median": 0.6905,
+        "p75": 0.852,
+        "p90": 1.426,
+        "p95": 1.545,
+        "p99": 1.721,
+        "max": 1.721,
+        "count_ge_050": 24,
+        "count_ge_060": 16,
+        "count_ge_080": 11
+      },
+      "failures": []
+    },
+    "popen-cpu8": {
+      "condition": "cpu",
+      "method": "popen",
+      "load": {
+        "kind": "cpu",
+        "burners": 8,
+        "spawn_storm": false,
+        "seconds": 160.0
+      },
+      "n": 25,
+      "q1_time_to_first_side_effect": {
+        "n": 25,
+        "min": 0.656,
+        "p25": 1.036,
+        "median": 1.287,
+        "p75": 1.577,
+        "p90": 2.133,
+        "p95": 2.413,
+        "p99": 2.486,
+        "max": 2.486,
+        "count_ge_050": 25,
+        "count_ge_060": 25,
+        "count_ge_080": 23
+      },
+      "q2_immediate_exit_lifetime": {
+        "n": 25,
+        "min": 0.753,
+        "p25": 1.213,
+        "median": 1.351,
+        "p75": 1.532,
+        "p90": 2.059,
+        "p95": 2.148,
+        "p99": 2.303,
+        "max": 2.303,
+        "count_ge_050": 25,
+        "count_ge_060": 25,
+        "count_ge_080": 24
+      },
+      "failures": []
+    },
+    "popen-cpu12": {
+      "condition": "cpu",
+      "method": "popen",
+      "load": {
+        "kind": "cpu",
+        "burners": 12,
+        "spawn_storm": false,
+        "seconds": 140.0
+      },
+      "n": 20,
+      "q1_time_to_first_side_effect": {
+        "n": 20,
+        "min": 0.576,
+        "p25": 0.749,
+        "median": 0.8225,
+        "p75": 1.083,
+        "p90": 1.341,
+        "p95": 1.51,
+        "p99": 1.696,
+        "max": 1.696,
+        "count_ge_050": 20,
+        "count_ge_060": 18,
+        "count_ge_080": 11
+      },
+      "q2_immediate_exit_lifetime": {
+        "n": 20,
+        "min": 0.569,
+        "p25": 0.814,
+        "median": 0.9075,
+        "p75": 1.084,
+        "p90": 1.542,
+        "p95": 1.941,
+        "p99": 2.083,
+        "max": 2.083,
+        "count_ge_050": 20,
+        "count_ge_060": 19,
+        "count_ge_080": 15
+      },
+      "failures": []
+    },
+    "startproc-quiet": {
+      "condition": "quiet",
+      "method": "startproc",
+      "load": {
+        "kind": "quiet",
+        "burners": 0,
+        "spawn_storm": false,
+        "seconds": 92.0
+      },
+      "n": 8,
+      "q1_time_to_first_side_effect": {
+        "n": 8,
+        "min": 0.508,
+        "p25": 0.533,
+        "median": 0.541,
+        "p75": 0.673,
+        "p90": 0.743,
+        "p95": 1.415,
+        "p99": 1.415,
+        "max": 1.415,
+        "count_ge_050": 8,
+        "count_ge_060": 3,
+        "count_ge_080": 1
+      },
+      "q2_immediate_exit_lifetime": {
+        "n": 8,
+        "min": 0.8,
+        "p25": 0.85,
+        "median": 0.954,
+        "p75": 1.047,
+        "p90": 1.117,
+        "p95": 1.164,
+        "p99": 1.164,
+        "max": 1.164,
+        "count_ge_050": 8,
+        "count_ge_060": 8,
+        "count_ge_080": 8
+      },
+      "failures": []
+    },
+    "startproc-cpu8": {
+      "condition": "cpu",
+      "method": "startproc",
+      "load": {
+        "kind": "cpu",
+        "burners": 8,
+        "spawn_storm": false,
+        "seconds": 92.0
+      },
+      "n": 8,
+      "q1_time_to_first_side_effect": {
+        "n": 8,
+        "min": 0.642,
+        "p25": 0.778,
+        "median": 0.8495,
+        "p75": 1.18,
+        "p90": 1.604,
+        "p95": 2.109,
+        "p99": 2.109,
+        "max": 2.109,
+        "count_ge_050": 8,
+        "count_ge_060": 8,
+        "count_ge_080": 5
+      },
+      "q2_immediate_exit_lifetime": {
+        "n": 8,
+        "min": 1.012,
+        "p25": 1.03,
+        "median": 1.13,
+        "p75": 1.192,
+        "p90": 1.436,
+        "p95": 1.762,
+        "p99": 1.762,
+        "max": 1.762,
+        "count_ge_050": 8,
+        "count_ge_060": 8,
+        "count_ge_080": 8
+      },
+      "failures": []
+    }
+  },
+  "m_b_bands": {
+    "child-quiet": {
+      "node": "child_without_runtime",
+      "condition": "quiet",
+      "load": {
+        "kind": "quiet",
+        "burners": 0,
+        "spawn_storm": false,
+        "seconds": 123.0
+      },
+      "passes": 2,
+      "runs_per_tree_pass": 3,
+      "overall": {
+        "runs": 18,
+        "failed": 17,
+        "passed": 1,
+        "failure_rate": 0.9444,
+        "wilson95": [
+          0.7424,
+          0.9901
+        ]
+      },
+      "by_pass": {
+        "1": {
+          "runs": 9,
+          "failed": 9,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.7008,
+            1.0
+          ]
+        },
+        "2": {
+          "runs": 9,
+          "failed": 8,
+          "passed": 1,
+          "failure_rate": 0.8889,
+          "wilson95": [
+            0.565,
+            0.9801
+          ]
+        }
+      },
+      "by_tree": {
+        "T0": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T4": {
+          "runs": 6,
+          "failed": 5,
+          "passed": 1,
+          "failure_rate": 0.8333,
+          "wilson95": [
+            0.4365,
+            0.9699
+          ]
+        }
+      },
+      "by_pass_tree": {
+        "pass1/T0": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass1/T0b": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass1/T4": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass2/T0": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass2/T0b": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass2/T4": {
+          "runs": 3,
+          "failed": 2,
+          "passed": 1,
+          "failure_rate": 0.6667,
+          "wilson95": [
+            0.2077,
+            0.9385
+          ]
+        }
+      },
+      "wall_seconds": {
+        "median": 22.6425,
+        "max": 26.865
+      },
+      "load_probe_medians": {
+        "sleep20_overshoot_ms": 5.055,
+        "cpu_loop_300k_ms": 68.286
+      },
+      "failure_classes": {
+        "outer-15s-TimeoutExpired": 15,
+        "assert-child_started-count(8)": 1,
+        "assert-child_started-count(7)": 1,
+        "passed": 1
+      },
+      "failure_rungs": {
+        "rung2: 15s timeout after repeated watchdog kills": 15,
+        "rung1: extra child_started (assert == 2)": 2,
+        "passed": 1
+      },
+      "spawn_latency_by_pass": {
+        "1": {
+          "spawn_python_pass_ms": [
+            291.7,
+            543.0,
+            816.6
+          ],
+          "spawn_python_pass_ms_median": 543.0
+        },
+        "2": {
+          "spawn_python_pass_ms": [
+            295.1,
+            235.8,
+            256.6
+          ],
+          "spawn_python_pass_ms_median": 256.6
+        }
+      },
+      "child_started_histogram": {
+        "11": 3,
+        "12": 2,
+        "8": 2,
+        "14": 3,
+        "13": 4,
+        "7": 1,
+        "15": 1,
+        "2": 1,
+        "16": 1
+      },
+      "mechanism": [
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 11,
+          "child_unresponsive_count": 11,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.613,
+            0.538,
+            0.546,
+            0.562,
+            0.586,
+            0.619,
+            0.619,
+            0.556,
+            0.56,
+            0.579,
+            0.563
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 12,
+          "child_unresponsive_count": 11,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.679,
+            0.554,
+            0.61,
+            0.572,
+            0.593,
+            0.517,
+            0.932,
+            0.588,
+            0.588,
+            0.607,
+            0.549
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.9090909090909091,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 11,
+          "child_unresponsive_count": 10,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.603,
+            0.6,
+            0.571,
+            0.602,
+            0.573,
+            0.557,
+            0.579,
+            0.6,
+            0.58,
+            0.571
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 8,
+          "child_unresponsive_count": 7,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.659,
+            0.7,
+            0.527,
+            0.544,
+            0.529,
+            0.53,
+            0.653
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung1: extra child_started (assert == 2)",
+          "failure_class": "assert-child_started-count(8)",
+          "child_started_count": 8,
+          "child_unresponsive_count": 7,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.532,
+            0.566,
+            0.542,
+            0.573,
+            0.504,
+            0.52,
+            0.557
+          ],
+          "clean_exit": true,
+          "clean_exit_uptimes": [
+            0.483
+          ],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": true
+        },
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 14,
+          "child_unresponsive_count": 14,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.622,
+            0.506,
+            0.553,
+            0.505,
+            0.529,
+            0.617,
+            0.526,
+            0.602,
+            0.62,
+            0.553,
+            0.504,
+            0.553,
+            0.57,
+            0.584
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 14,
+          "child_unresponsive_count": 14,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.626,
+            0.541,
+            0.561,
+            0.618,
+            0.583,
+            0.558,
+            0.571,
+            0.613,
+            0.601,
+            0.519,
+            0.557,
+            0.577,
+            0.516,
+            0.555
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 13,
+          "child_unresponsive_count": 13,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.553,
+            0.547,
+            0.521,
+            0.55,
+            0.523,
+            0.509,
+            0.602,
+            0.597,
+            0.585,
+            0.601,
+            0.558,
+            0.528,
+            0.553
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 12,
+          "child_unresponsive_count": 12,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.72,
+            0.507,
+            0.588,
+            0.56,
+            0.607,
+            0.521,
+            0.502,
+            0.551,
+            0.587,
+            0.662,
+            0.512,
+            0.55
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.9166666666666666,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 2,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung1: extra child_started (assert == 2)",
+          "failure_class": "assert-child_started-count(7)",
+          "child_started_count": 7,
+          "child_unresponsive_count": 6,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.548,
+            0.56,
+            0.55,
+            0.542,
+            0.546,
+            0.557
+          ],
+          "clean_exit": true,
+          "clean_exit_uptimes": [
+            0.578
+          ],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": true
+        },
+        {
+          "condition": "quiet",
+          "pass": 2,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 14,
+          "child_unresponsive_count": 13,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.518,
+            0.557,
+            0.564,
+            0.503,
+            0.603,
+            0.712,
+            0.521,
+            0.54,
+            0.667,
+            0.537,
+            0.566,
+            0.606,
+            0.563
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.9230769230769231,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 13,
+          "child_unresponsive_count": 13,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.519,
+            0.502,
+            0.55,
+            0.542,
+            0.532,
+            0.615,
+            0.549,
+            0.54,
+            0.583,
+            0.526,
+            0.515,
+            0.549,
+            0.605
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 2,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 13,
+          "child_unresponsive_count": 12,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.508,
+            0.58,
+            0.612,
+            0.559,
+            0.595,
+            0.543,
+            0.544,
+            0.576,
+            0.613,
+            0.509,
+            0.555,
+            0.529
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 2,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 15,
+          "child_unresponsive_count": 14,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.599,
+            0.557,
+            0.565,
+            0.598,
+            0.513,
+            0.592,
+            0.631,
+            0.53,
+            0.585,
+            0.53,
+            0.638,
+            0.522,
+            0.522,
+            0.539
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 13,
+          "child_unresponsive_count": 12,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.581,
+            0.553,
+            0.537,
+            0.51,
+            0.615,
+            0.556,
+            0.523,
+            0.599,
+            0.567,
+            0.542,
+            0.735,
+            0.614
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.9166666666666666,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 2,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 11,
+          "child_unresponsive_count": 11,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.595,
+            0.51,
+            0.529,
+            0.531,
+            0.535,
+            0.55,
+            0.6,
+            0.549,
+            0.59,
+            0.577,
+            0.682
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "quiet",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 16,
+          "child_unresponsive_count": 15,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.595,
+            0.514,
+            0.503,
+            0.559,
+            0.568,
+            0.542,
+            0.583,
+            0.516,
+            0.531,
+            0.528,
+            0.645,
+            0.603,
+            0.617,
+            0.502,
+            0.543
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        }
+      ],
+      "mechanism_summary": {
+        "failed_runs": 17,
+        "failed_runs_with_at_least_one_watchdog_kill": 17,
+        "all_kills_gt_0.5s_in_runs_that_had_kills": true,
+        "all_reasons_session_start_timeout": true,
+        "rung1_clean_final_exit_present": 2,
+        "distinct_failure_classes": [
+          "assert-child_started-count(7)",
+          "assert-child_started-count(8)",
+          "outer-15s-TimeoutExpired"
+        ],
+        "distinct_rungs": [
+          "rung1: extra child_started (assert == 2)",
+          "rung2: 15s timeout after repeated watchdog kills"
+        ]
+      }
+    },
+    "child-cpu8": {
+      "node": "child_without_runtime",
+      "condition": "cpu",
+      "load": {
+        "kind": "cpu",
+        "burners": 8,
+        "spawn_storm": false,
+        "seconds": 123.0
+      },
+      "passes": 2,
+      "runs_per_tree_pass": 3,
+      "overall": {
+        "runs": 18,
+        "failed": 18,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.8241,
+          1.0
+        ]
+      },
+      "by_pass": {
+        "1": {
+          "runs": 9,
+          "failed": 9,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.7008,
+            1.0
+          ]
+        },
+        "2": {
+          "runs": 9,
+          "failed": 9,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.7008,
+            1.0
+          ]
+        }
+      },
+      "by_tree": {
+        "T0": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T4": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        }
+      },
+      "by_pass_tree": {
+        "pass1/T0": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass1/T0b": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass1/T4": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass2/T0": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass2/T0b": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass2/T4": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        }
+      },
+      "wall_seconds": {
+        "median": 30.609,
+        "max": 180.171
+      },
+      "load_probe_medians": {
+        "sleep20_overshoot_ms": 10.7945,
+        "cpu_loop_300k_ms": 156.1005
+      },
+      "failure_classes": {
+        "outer-15s-TimeoutExpired": 14,
+        "driver-guard-timeout": 4
+      },
+      "failure_rungs": {
+        "rung2: 15s timeout after repeated watchdog kills": 12,
+        "rung3: 15s timeout with <=1 child cycle completed": 2,
+        "rung4: pytest process itself did not return (driver guard fired)": 4
+      },
+      "spawn_latency_by_pass": {
+        "1": {
+          "spawn_python_pass_ms": [
+            1407.2,
+            1042.8,
+            472.3
+          ],
+          "spawn_python_pass_ms_median": 1042.8
+        },
+        "2": {
+          "spawn_python_pass_ms": [
+            882.0,
+            1135.3,
+            710.9
+          ],
+          "spawn_python_pass_ms_median": 882.0
+        }
+      },
+      "child_started_histogram": {
+        "11": 2,
+        "9": 3,
+        "4": 1,
+        "1": 2,
+        "10": 2,
+        "6": 1,
+        "7": 2,
+        "2": 2,
+        "3": 2,
+        "8": 1
+      },
+      "mechanism": [
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 11,
+          "child_unresponsive_count": 10,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.58,
+            0.587,
+            0.587,
+            0.633,
+            0.537,
+            0.503,
+            0.53,
+            0.599,
+            0.614,
+            0.552
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 9,
+          "child_unresponsive_count": 8,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.771,
+            0.571,
+            0.578,
+            0.589,
+            0.557,
+            0.564,
+            0.556,
+            0.516
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.875,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 4,
+          "child_unresponsive_count": 4,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.922,
+            0.833,
+            0.635,
+            0.513
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.5,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung3: 15s timeout with <=1 child cycle completed",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 1,
+          "child_unresponsive_count": 0,
+          "reasons": [],
+          "kill_uptimes": [],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": false,
+          "kills_le_070_fraction": null,
+          "all_reasons_session_start_timeout": false,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 10,
+          "child_unresponsive_count": 10,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.612,
+            0.546,
+            0.627,
+            0.554,
+            0.551,
+            0.566,
+            0.556,
+            0.602,
+            0.591,
+            0.627
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "timeout",
+          "rung": "rung4: pytest process itself did not return (driver guard fired)",
+          "failure_class": "driver-guard-timeout",
+          "child_started_count": 9,
+          "child_unresponsive_count": 9,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.651,
+            0.535,
+            0.591,
+            0.535,
+            0.568,
+            0.633,
+            0.553,
+            0.503,
+            0.607
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 6,
+          "child_unresponsive_count": 5,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.793,
+            0.609,
+            0.501,
+            0.688,
+            0.606
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.8,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 7,
+          "child_unresponsive_count": 6,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.817,
+            0.526,
+            0.503,
+            0.637,
+            0.537,
+            0.513
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.8333333333333334,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 2,
+          "child_unresponsive_count": 1,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.514
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "timeout",
+          "rung": "rung4: pytest process itself did not return (driver guard fired)",
+          "failure_class": "driver-guard-timeout",
+          "child_started_count": 3,
+          "child_unresponsive_count": 3,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.597,
+            0.83,
+            1.134
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.3333333333333333,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 10,
+          "child_unresponsive_count": 9,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.67,
+            0.548,
+            0.632,
+            0.648,
+            0.616,
+            0.514,
+            0.518,
+            0.618,
+            0.559
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "timeout",
+          "rung": "rung4: pytest process itself did not return (driver guard fired)",
+          "failure_class": "driver-guard-timeout",
+          "child_started_count": 8,
+          "child_unresponsive_count": 8,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.746,
+            0.557,
+            0.534,
+            0.551,
+            0.516,
+            0.62,
+            0.591,
+            0.503
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.875,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 3,
+          "child_unresponsive_count": 2,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.656,
+            0.589
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 2,
+          "child_unresponsive_count": 1,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.769
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung3: 15s timeout with <=1 child cycle completed",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 1,
+          "child_unresponsive_count": 1,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.521
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 9,
+          "child_unresponsive_count": 9,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.846,
+            0.617,
+            0.562,
+            0.606,
+            0.587,
+            0.583,
+            0.508,
+            0.622,
+            0.53
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.8888888888888888,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "timeout",
+          "rung": "rung4: pytest process itself did not return (driver guard fired)",
+          "failure_class": "driver-guard-timeout",
+          "child_started_count": 11,
+          "child_unresponsive_count": 11,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.774,
+            0.62,
+            0.595,
+            0.59,
+            0.597,
+            0.505,
+            0.509,
+            0.554,
+            0.563,
+            0.604,
+            0.581
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.9090909090909091,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 7,
+          "child_unresponsive_count": 6,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.768,
+            0.556,
+            0.891,
+            0.818,
+            0.614,
+            0.635
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.5,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        }
+      ],
+      "mechanism_summary": {
+        "failed_runs": 18,
+        "failed_runs_with_at_least_one_watchdog_kill": 17,
+        "all_kills_gt_0.5s_in_runs_that_had_kills": true,
+        "all_reasons_session_start_timeout": true,
+        "rung1_clean_final_exit_present": 0,
+        "distinct_failure_classes": [
+          "driver-guard-timeout",
+          "outer-15s-TimeoutExpired"
+        ],
+        "distinct_rungs": [
+          "rung2: 15s timeout after repeated watchdog kills",
+          "rung3: 15s timeout with <=1 child cycle completed",
+          "rung4: pytest process itself did not return (driver guard fired)"
+        ]
+      }
+    },
+    "child-spawn": {
+      "node": "child_without_runtime",
+      "condition": "spawn",
+      "load": {
+        "kind": "spawn",
+        "burners": 8,
+        "spawn_storm": true,
+        "seconds": 91.5
+      },
+      "passes": 1,
+      "runs_per_tree_pass": 3,
+      "overall": {
+        "runs": 9,
+        "failed": 9,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.7008,
+          1.0
+        ]
+      },
+      "by_pass": {
+        "1": {
+          "runs": 9,
+          "failed": 9,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.7008,
+            1.0
+          ]
+        }
+      },
+      "by_tree": {
+        "T0": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "T4": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        }
+      },
+      "by_pass_tree": {
+        "pass1/T0": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass1/T0b": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "pass1/T4": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        }
+      },
+      "wall_seconds": {
+        "median": 27.112,
+        "max": 35.651
+      },
+      "load_probe_medians": {
+        "sleep20_overshoot_ms": 12.705,
+        "cpu_loop_300k_ms": 165.578
+      },
+      "failure_classes": {
+        "outer-15s-TimeoutExpired": 9
+      },
+      "failure_rungs": {
+        "rung3: 15s timeout with <=1 child cycle completed": 2,
+        "rung2: 15s timeout after repeated watchdog kills": 7
+      },
+      "spawn_latency_by_pass": {
+        "1": {
+          "spawn_python_pass_ms": [
+            1793.6,
+            2232.0,
+            1357.5
+          ],
+          "spawn_python_pass_ms_median": 1793.6
+        }
+      },
+      "child_started_histogram": {
+        "1": 1,
+        "0": 1,
+        "5": 2,
+        "9": 1,
+        "6": 1,
+        "7": 1,
+        "10": 1,
+        "11": 1
+      },
+      "mechanism": [
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung3: 15s timeout with <=1 child cycle completed",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 1,
+          "child_unresponsive_count": 0,
+          "reasons": [],
+          "kill_uptimes": [],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": false,
+          "kills_le_070_fraction": null,
+          "all_reasons_session_start_timeout": false,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung3: 15s timeout with <=1 child cycle completed",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 0,
+          "child_unresponsive_count": 0,
+          "reasons": [],
+          "kill_uptimes": [],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": false,
+          "kills_le_070_fraction": null,
+          "all_reasons_session_start_timeout": false,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 5,
+          "child_unresponsive_count": 5,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.643,
+            0.555,
+            0.54,
+            0.601,
+            0.553
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 5,
+          "child_unresponsive_count": 4,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.698,
+            0.58,
+            0.602,
+            0.512
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 9,
+          "child_unresponsive_count": 9,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.657,
+            0.575,
+            0.583,
+            0.695,
+            0.596,
+            0.591,
+            0.675,
+            0.546,
+            0.581
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 6,
+          "child_unresponsive_count": 5,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.506,
+            0.6,
+            0.532,
+            0.605,
+            0.504
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 7,
+          "child_unresponsive_count": 7,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            2.426,
+            0.509,
+            0.527,
+            0.532,
+            0.591,
+            0.628,
+            0.528
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.8571428571428571,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 10,
+          "child_unresponsive_count": 10,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.764,
+            0.595,
+            0.501,
+            0.511,
+            0.536,
+            0.558,
+            0.546,
+            0.567,
+            0.548,
+            0.599
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.9,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "spawn",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 11,
+          "child_unresponsive_count": 10,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.736,
+            0.505,
+            0.601,
+            0.513,
+            0.531,
+            0.621,
+            0.546,
+            0.516,
+            0.571,
+            0.582
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.9,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        }
+      ],
+      "mechanism_summary": {
+        "failed_runs": 9,
+        "failed_runs_with_at_least_one_watchdog_kill": 7,
+        "all_kills_gt_0.5s_in_runs_that_had_kills": true,
+        "all_reasons_session_start_timeout": true,
+        "rung1_clean_final_exit_present": 0,
+        "distinct_failure_classes": [
+          "outer-15s-TimeoutExpired"
+        ],
+        "distinct_rungs": [
+          "rung2: 15s timeout after repeated watchdog kills",
+          "rung3: 15s timeout with <=1 child cycle completed"
+        ]
+      }
+    },
+    "logon-quiet": {
+      "node": "logon_wrapper_quoted",
+      "condition": "quiet",
+      "load": {
+        "kind": "quiet",
+        "burners": 0,
+        "spawn_storm": false,
+        "seconds": 156.0
+      },
+      "passes": 1,
+      "runs_per_tree_pass": 4,
+      "overall": {
+        "runs": 8,
+        "failed": 0,
+        "passed": 8,
+        "failure_rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.3244
+        ]
+      },
+      "by_pass": {
+        "1": {
+          "runs": 8,
+          "failed": 0,
+          "passed": 8,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3244
+          ]
+        }
+      },
+      "by_tree": {
+        "T0": {
+          "runs": 4,
+          "failed": 0,
+          "passed": 4,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4899
+          ]
+        },
+        "T4": {
+          "runs": 4,
+          "failed": 0,
+          "passed": 4,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4899
+          ]
+        }
+      },
+      "by_pass_tree": {
+        "pass1/T0": {
+          "runs": 4,
+          "failed": 0,
+          "passed": 4,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4899
+          ]
+        },
+        "pass1/T4": {
+          "runs": 4,
+          "failed": 0,
+          "passed": 4,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4899
+          ]
+        }
+      },
+      "wall_seconds": {
+        "median": 21.405,
+        "max": 25.129
+      },
+      "load_probe_medians": {
+        "sleep20_overshoot_ms": 2.899,
+        "cpu_loop_300k_ms": 55.631
+      },
+      "failure_classes": {
+        "passed": 8
+      },
+      "failure_rungs": {
+        "passed": 8
+      },
+      "spawn_latency_by_pass": {
+        "1": {
+          "spawn_python_pass_ms": [
+            260.8,
+            263.3,
+            557.4
+          ],
+          "spawn_python_pass_ms_median": 263.3
+        }
+      },
+      "child_started_histogram": {
+        "1": 8
+      }
+    },
+    "logon-cpu8": {
+      "node": "logon_wrapper_quoted",
+      "condition": "cpu",
+      "load": {
+        "kind": "cpu",
+        "burners": 8,
+        "spawn_storm": false,
+        "seconds": 156.0
+      },
+      "passes": 1,
+      "runs_per_tree_pass": 4,
+      "overall": {
+        "runs": 8,
+        "failed": 0,
+        "passed": 8,
+        "failure_rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.3244
+        ]
+      },
+      "by_pass": {
+        "1": {
+          "runs": 8,
+          "failed": 0,
+          "passed": 8,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3244
+          ]
+        }
+      },
+      "by_tree": {
+        "T0": {
+          "runs": 4,
+          "failed": 0,
+          "passed": 4,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4899
+          ]
+        },
+        "T4": {
+          "runs": 4,
+          "failed": 0,
+          "passed": 4,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4899
+          ]
+        }
+      },
+      "by_pass_tree": {
+        "pass1/T0": {
+          "runs": 4,
+          "failed": 0,
+          "passed": 4,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4899
+          ]
+        },
+        "pass1/T4": {
+          "runs": 4,
+          "failed": 0,
+          "passed": 4,
+          "failure_rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.4899
+          ]
+        }
+      },
+      "wall_seconds": {
+        "median": 39.629000000000005,
+        "max": 43.151
+      },
+      "load_probe_medians": {
+        "sleep20_overshoot_ms": 8.552,
+        "cpu_loop_300k_ms": 113.76050000000001
+      },
+      "failure_classes": {
+        "passed": 8
+      },
+      "failure_rungs": {
+        "passed": 8
+      },
+      "spawn_latency_by_pass": {
+        "1": {
+          "spawn_python_pass_ms": [
+            1242.8,
+            632.9,
+            572.3
+          ],
+          "spawn_python_pass_ms_median": 632.9
+        }
+      },
+      "child_started_histogram": {
+        "1": 8
+      }
+    }
+  },
+  "load_crosstab_child_node": {
+    "probe": "cpu_loop_300k_ms (per-run, higher = more loaded)",
+    "quartiles": {
+      "q1": {
+        "runs": 12,
+        "cpu_loop_median_ms": 59.9,
+        "cpu_loop_range_ms": [
+          45.7,
+          73.2
+        ],
+        "failed": 11,
+        "passed": 1,
+        "failure_rate": 0.9167,
+        "wilson95": [
+          0.6461,
+          0.9851
+        ]
+      },
+      "q2": {
+        "runs": 11,
+        "cpu_loop_median_ms": 81.4,
+        "cpu_loop_range_ms": [
+          75.5,
+          104.9
+        ],
+        "failed": 11,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.7412,
+          1.0
+        ]
+      },
+      "q3": {
+        "runs": 11,
+        "cpu_loop_median_ms": 142.6,
+        "cpu_loop_range_ms": [
+          107.9,
+          168.9
+        ],
+        "failed": 11,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.7412,
+          1.0
+        ]
+      },
+      "q4": {
+        "runs": 11,
+        "cpu_loop_median_ms": 192.1,
+        "cpu_loop_range_ms": [
+          171.9,
+          716.6
+        ],
+        "failed": 11,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.7412,
+          1.0
+        ]
+      }
+    }
+  },
+  "m_c_wrapper_window": {
+    "quiet": {
+      "condition": "quiet",
+      "load": {
+        "kind": "quiet",
+        "burners": 0,
+        "spawn_storm": false,
+        "seconds": 220.0
+      },
+      "budgets": {
+        "wrapper_timeout_seconds": 15.0,
+        "events_budget_seconds": 15.0,
+        "exit_budget_seconds": 20.0
+      },
+      "stats": {
+        "wrapper_seconds": {
+          "n": 8,
+          "min": 3.254,
+          "median": 4.721,
+          "max": 5.734,
+          "count_ge_budget": 0
+        },
+        "events_seconds": {
+          "n": 8,
+          "min": 5.657,
+          "median": 8.48,
+          "max": 9.386,
+          "count_ge_budget": 0
+        },
+        "exit_seconds": {
+          "n": 8,
+          "min": 15.548,
+          "median": 19.379,
+          "max": 21.486,
+          "count_ge_budget": 4
+        }
+      },
+      "status_sequences": [
+        [
+          "starting",
+          "child_started",
+          "exited"
+        ]
+      ],
+      "wrapper_timeouts": 0
+    },
+    "cpu8": {
+      "condition": "cpu",
+      "load": {
+        "kind": "cpu",
+        "burners": 8,
+        "spawn_storm": false,
+        "seconds": 220.0
+      },
+      "budgets": {
+        "wrapper_timeout_seconds": 15.0,
+        "events_budget_seconds": 15.0,
+        "exit_budget_seconds": 20.0
+      },
+      "stats": {
+        "wrapper_seconds": {
+          "n": 8,
+          "min": 3.88,
+          "median": 9.687000000000001,
+          "max": 10.921,
+          "count_ge_budget": 0
+        },
+        "events_seconds": {
+          "n": 8,
+          "min": 9.556,
+          "median": 15.0245,
+          "max": 15.075,
+          "count_ge_budget": 6
+        },
+        "exit_seconds": {
+          "n": 2,
+          "min": 21.194,
+          "median": 21.3935,
+          "max": 21.593,
+          "count_ge_budget": 2
+        }
+      },
+      "status_sequences": [
+        [
+          "starting",
+          "child_started",
+          "exited"
+        ],
+        [
+          "starting"
+        ],
+        []
+      ],
+      "wrapper_timeouts": 0
+    }
+  },
+  "concurrent_activity": {
+    "samples": 70,
+    "window": [
+      "2026-09-21T21:44:58",
+      "2026-09-21T22:24:37"
+    ],
+    "other_session_pytest_campaigns": [
+      [
+        "C:\\Miniconda\\python.exe -X utf8 -B -m pytest -p no:cacheprovider --basetemp C:\\Users\\郑曾波\\Projects\\revenue-fore",
+        54
+      ],
+      [
+        "C:\\Miniconda\\python.exe -m pytest -q --tb=short tests/test_zr803_chaos_recovery.py tests/test_zr1103_journey_r",
+        51
+      ],
+      [
+        "C:\\Miniconda\\python.exe -X utf8 -B -m pytest -p no:cacheprovider -q --no-header -rA C:\\Users\\郑曾波\\Projects\\reve",
+        34
+      ],
+      [
+        "C:\\Miniconda\\python.exe -m pytest -q --timeout=180 tests/test_zr901_pr_fanout.py tests/test_compatibility_mani",
+        6
+      ],
+      [
+        "C:\\Miniconda\\python.exe -m company_wiki.source_catalog.cli --config C:\\Users\\郑曾波\\AppData\\Local\\Temp\\pytest-of-",
+        4
+      ],
+      [
+        "\"C:\\Miniconda\\python.exe\" -X utf8 -B -m pytest -p no:cacheprovider -q --no-header -rA C:\\Users\\郑曾波\\Projects\\re",
+        4
+      ]
+    ],
+    "other_session_python_processes": [
+      [
+        "\"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D",
+        146
+      ],
+      [
+        "\"C:\\Users\\郑曾波\\AppData\\Local\\uv\\cache\\archive-v0\\GRMqv62T7EHIukVVMX_Fj\\Scripts\\python.exe\" \"C:\\Users\\郑曾波\\AppDat",
+        142
+      ],
+      [
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-D\\",
+        107
+      ],
+      [
+        "C:\\Miniconda\\python.exe C:/Users/郑曾波/Projects/revenue-forecast/tools/pre_push_gate.py",
+        61
+      ],
+      [
+        "\"C:\\Miniconda\\python.exe\" -X utf8 -B C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project",
+        59
+      ],
+      [
+        "C:\\Miniconda\\python.exe -X utf8 -B -m pytest -p no:cacheprovider --basetemp C:\\Users\\郑曾波\\Projects\\revenue-fore",
+        54
+      ]
+    ],
+    "top_cpu_consumers": [
+      [
+        "chrome-headless-shell",
+        142
+      ],
+      [
+        "chrome",
+        38
+      ],
+      [
+        "node",
+        14
+      ],
+      [
+        "Taskmgr",
+        6
+      ],
+      [
+        "python",
+        4
+      ],
+      [
+        "ChatGPT",
+        3
+      ]
+    ],
+    "note": "concurrent pytest campaigns and a persistent chrome-headless-shell load were present during the arms; this is the load-side evidence addendum B2 asks for, and it is why the 'quiet' arm is not an idle machine"
+  },
+  "hypotheses": {
+    "H1": {
+      "statement": "node-1 failure rate rises with load",
+      "quiet": {
+        "runs": 18,
+        "failed": 17,
+        "passed": 1,
+        "failure_rate": 0.9444,
+        "wilson95": [
+          0.7424,
+          0.9901
+        ]
+      },
+      "cpu8": {
+        "runs": 18,
+        "failed": 18,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.8241,
+          1.0
+        ]
+      },
+      "spawn": {
+        "runs": 9,
+        "failed": 9,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.7008,
+          1.0
+        ]
+      },
+      "verdict": "ceiling: both arms are saturated (>=90% failures), so this contrast cannot separate the arms; load-dependence is carried by the measured window (M-A) and by the frozen-band cross-era comparison instead",
+      "load_dependence_evidence": {
+        "within_this_attempt": {
+          "q2_immediate_exit_lifetime_quiet": {
+            "n": 30,
+            "min": 0.44,
+            "p25": 0.511,
+            "median": 0.6905,
+            "p75": 0.852,
+            "p90": 1.426,
+            "p95": 1.545,
+            "p99": 1.721,
+            "max": 1.721,
+            "count_ge_050": 24,
+            "count_ge_060": 16,
+            "count_ge_080": 11
+          },
+          "q2_immediate_exit_lifetime_cpu8": {
+            "n": 25,
+            "min": 0.753,
+            "p25": 1.213,
+            "median": 1.351,
+            "p75": 1.532,
+            "p90": 2.059,
+            "p95": 2.148,
+            "p99": 2.303,
+            "max": 2.303,
+            "count_ge_050": 25,
+            "count_ge_060": 25,
+            "count_ge_080": 24
+          },
+          "reading": "the measured quantity the test's 0.5 s assumption bounds shifts right when this attempt adds load (median 0.691 s -> 1.351 s, launch-to-first-side-effect median 0.581 s -> 1.287 s)"
+        },
+        "cross_era": {
+          "frozen_band_same_quantity_passing_runs": {
+            "note": "uptime_seconds of the attempt that exited cleanly (behaviour 2 = immediate exit); this is the quantity the test's 0.5 s hang timeout must exceed",
+            "all": {
+              "n": 48,
+              "min": 0.113,
+              "median": 0.172,
+              "max": 0.622
+            },
+            "passed_runs": {
+              "n": 36,
+              "min": 0.113,
+              "median": 0.2245,
+              "max": 0.622
+            },
+            "failed_runs": {
+              "n": 12,
+              "min": 0.116,
+              "median": 0.1495,
+              "max": 0.579
+            }
+          },
+          "this_attempt_outcome": "43/45 node-1 runs failed",
+          "reading": "the same test file and byte-identical trees produced 6/24 failures when the measured lifetime sat mostly below 0.5 s, and ~100% failures when it sat above"
+        }
+      },
+      "caveat": "the machine's ambient load was already high (see ambient + addendum A1), so the 'quiet' arm means 'no load added by this attempt', not an idle machine; within this attempt the failure rate is saturated in every arm, so the load-dependence rests on the measured window and the cross-era contrast"
+    },
+    "H2": {
+      "statement": "the jitter is not a tree difference",
+      "by_tree_quiet": {
+        "T0": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T4": {
+          "runs": 6,
+          "failed": 5,
+          "passed": 1,
+          "failure_rate": 0.8333,
+          "wilson95": [
+            0.4365,
+            0.9699
+          ]
+        }
+      },
+      "by_tree_cpu8": {
+        "T0": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T4": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        }
+      },
+      "byte_identical_pair_quiet": {
+        "T0": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "difference": 0.0
+      },
+      "verdict": "supported (byte-identical T0/T0b behave the same; see also the structural argument in binding.json)"
+    },
+    "H3": {
+      "statement": "failures are the immediate-exit child crossing the 0.5 s watchdog boundary, not another resource or a tree difference",
+      "artifact_discrimination": {
+        "child-quiet": {
+          "startup-latency(child alive past the 0.5 s watchdog)": 17,
+          "passed": 1
+        },
+        "child-cpu8": {
+          "startup-latency(child alive past the 0.5 s watchdog)": 17,
+          "no-watchdog-kill-observed": 1
+        },
+        "child-spawn": {
+          "no-watchdog-kill-observed": 1,
+          "supervisor-start-latency(no child_started seen)": 1,
+          "startup-latency(child alive past the 0.5 s watchdog)": 7
+        }
+      },
+      "node1_watchdog_kills_by_band": {
+        "child-quiet": {
+          "failed_runs": 17,
+          "with_watchdog_kill": 17,
+          "all_kills_gt_0.5s": true
+        },
+        "child-cpu8": {
+          "failed_runs": 18,
+          "with_watchdog_kill": 17,
+          "all_kills_gt_0.5s": true
+        },
+        "child-spawn": {
+          "failed_runs": 9,
+          "with_watchdog_kill": 7,
+          "all_kills_gt_0.5s": true
+        }
+      },
+      "mechanism_summary": {
+        "failed_runs": 18,
+        "failed_runs_with_at_least_one_watchdog_kill": 17,
+        "all_kills_gt_0.5s_in_runs_that_had_kills": true,
+        "all_reasons_session_start_timeout": true,
+        "rung1_clean_final_exit_present": 0,
+        "distinct_failure_classes": [
+          "driver-guard-timeout",
+          "outer-15s-TimeoutExpired"
+        ],
+        "distinct_rungs": [
+          "rung2: 15s timeout after repeated watchdog kills",
+          "rung3: 15s timeout with <=1 child cycle completed",
+          "rung4: pytest process itself did not return (driver guard fired)"
+        ]
+      },
+      "verdict": "dominant mechanism supported: 17/18 failed runs show the session_start_timeout watchdog kill; the rest are launcher-level startup-latency timeouts (no child cycle completed) - same resource, different rung, and no run shows the artifact-absence path signature",
+      "note": "rung1 (assert N == 2) is the only rung where a clean final exit is expected; rungs 2-4 end in the test's own 15 s subprocess timeout or in the driver's guard, by construction, so 'clean final exit in every failure' is not the right criterion for them",
+      "detail": [
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 11,
+          "child_unresponsive_count": 10,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.58,
+            0.587,
+            0.587,
+            0.633,
+            0.537,
+            0.503,
+            0.53,
+            0.599,
+            0.614,
+            0.552
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 9,
+          "child_unresponsive_count": 8,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.771,
+            0.571,
+            0.578,
+            0.589,
+            0.557,
+            0.564,
+            0.556,
+            0.516
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.875,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 4,
+          "child_unresponsive_count": 4,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.922,
+            0.833,
+            0.635,
+            0.513
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.5,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung3: 15s timeout with <=1 child cycle completed",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 1,
+          "child_unresponsive_count": 0,
+          "reasons": [],
+          "kill_uptimes": [],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": false,
+          "kills_le_070_fraction": null,
+          "all_reasons_session_start_timeout": false,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 10,
+          "child_unresponsive_count": 10,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.612,
+            0.546,
+            0.627,
+            0.554,
+            0.551,
+            0.566,
+            0.556,
+            0.602,
+            0.591,
+            0.627
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "timeout",
+          "rung": "rung4: pytest process itself did not return (driver guard fired)",
+          "failure_class": "driver-guard-timeout",
+          "child_started_count": 9,
+          "child_unresponsive_count": 9,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.651,
+            0.535,
+            0.591,
+            0.535,
+            0.568,
+            0.633,
+            0.553,
+            0.503,
+            0.607
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 6,
+          "child_unresponsive_count": 5,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.793,
+            0.609,
+            0.501,
+            0.688,
+            0.606
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.8,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 7,
+          "child_unresponsive_count": 6,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.817,
+            0.526,
+            0.503,
+            0.637,
+            0.537,
+            0.513
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.8333333333333334,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 2,
+          "child_unresponsive_count": 1,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.514
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "timeout",
+          "rung": "rung4: pytest process itself did not return (driver guard fired)",
+          "failure_class": "driver-guard-timeout",
+          "child_started_count": 3,
+          "child_unresponsive_count": 3,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.597,
+            0.83,
+            1.134
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.3333333333333333,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 10,
+          "child_unresponsive_count": 9,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.67,
+            0.548,
+            0.632,
+            0.648,
+            0.616,
+            0.514,
+            0.518,
+            0.618,
+            0.559
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "timeout",
+          "rung": "rung4: pytest process itself did not return (driver guard fired)",
+          "failure_class": "driver-guard-timeout",
+          "child_started_count": 8,
+          "child_unresponsive_count": 8,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.746,
+            0.557,
+            0.534,
+            0.551,
+            0.516,
+            0.62,
+            0.591,
+            0.503
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.875,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 3,
+          "child_unresponsive_count": 2,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.656,
+            0.589
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 2,
+          "child_unresponsive_count": 1,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.769
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "rung": "rung3: 15s timeout with <=1 child cycle completed",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 1,
+          "child_unresponsive_count": 1,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.521
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 1.0,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": false,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 9,
+          "child_unresponsive_count": 9,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.846,
+            0.617,
+            0.562,
+            0.606,
+            0.587,
+            0.583,
+            0.508,
+            0.622,
+            0.53
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.8888888888888888,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "timeout",
+          "rung": "rung4: pytest process itself did not return (driver guard fired)",
+          "failure_class": "driver-guard-timeout",
+          "child_started_count": 11,
+          "child_unresponsive_count": 11,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.774,
+            0.62,
+            0.595,
+            0.59,
+            0.597,
+            0.505,
+            0.509,
+            0.554,
+            0.563,
+            0.604,
+            0.581
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.9090909090909091,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        },
+        {
+          "condition": "cpu",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "rung": "rung2: 15s timeout after repeated watchdog kills",
+          "failure_class": "outer-15s-TimeoutExpired",
+          "child_started_count": 7,
+          "child_unresponsive_count": 6,
+          "reasons": [
+            "session_start_timeout"
+          ],
+          "kill_uptimes": [
+            0.768,
+            0.556,
+            0.891,
+            0.818,
+            0.614,
+            0.635
+          ],
+          "clean_exit": false,
+          "clean_exit_uptimes": [],
+          "all_kills_gt_050": true,
+          "kills_le_070_fraction": 0.5,
+          "all_reasons_session_start_timeout": true,
+          "a_ge2_unresponsive": true,
+          "c_clean_final_exit": false
+        }
+      ]
+    },
+    "H4": {
+      "statement": "an independently measured window explains the frozen 25% band",
+      "quiet_q2": {
+        "n": 30,
+        "min": 0.44,
+        "p25": 0.511,
+        "median": 0.6905,
+        "p75": 0.852,
+        "p90": 1.426,
+        "p95": 1.545,
+        "p99": 1.721,
+        "max": 1.721,
+        "count_ge_050": 24,
+        "count_ge_060": 16,
+        "count_ge_080": 11
+      },
+      "frozen_passing_runs_max": null,
+      "verdict": "supported: the measured lifetime distribution straddles 0.5 s"
+    },
+    "H5": {
+      "statement": "node 2's budgets (15 s wrapper / 15 s events / 20 s exit) with the measured margins",
+      "quiet": {
+        "runs": 8,
+        "failed": 0,
+        "passed": 8,
+        "failure_rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.3244
+        ]
+      },
+      "cpu8": {
+        "runs": 8,
+        "failed": 0,
+        "passed": 8,
+        "failure_rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.3244
+        ]
+      },
+      "wrapper_window": {
+        "quiet": {
+          "condition": "quiet",
+          "load": {
+            "kind": "quiet",
+            "burners": 0,
+            "spawn_storm": false,
+            "seconds": 220.0
+          },
+          "budgets": {
+            "wrapper_timeout_seconds": 15.0,
+            "events_budget_seconds": 15.0,
+            "exit_budget_seconds": 20.0
+          },
+          "stats": {
+            "wrapper_seconds": {
+              "n": 8,
+              "min": 3.254,
+              "median": 4.721,
+              "max": 5.734,
+              "count_ge_budget": 0
+            },
+            "events_seconds": {
+              "n": 8,
+              "min": 5.657,
+              "median": 8.48,
+              "max": 9.386,
+              "count_ge_budget": 0
+            },
+            "exit_seconds": {
+              "n": 8,
+              "min": 15.548,
+              "median": 19.379,
+              "max": 21.486,
+              "count_ge_budget": 4
+            }
+          },
+          "status_sequences": [
+            [
+              "starting",
+              "child_started",
+              "exited"
+            ]
+          ],
+          "wrapper_timeouts": 0
+        },
+        "cpu8": {
+          "condition": "cpu",
+          "load": {
+            "kind": "cpu",
+            "burners": 8,
+            "spawn_storm": false,
+            "seconds": 220.0
+          },
+          "budgets": {
+            "wrapper_timeout_seconds": 15.0,
+            "events_budget_seconds": 15.0,
+            "exit_budget_seconds": 20.0
+          },
+          "stats": {
+            "wrapper_seconds": {
+              "n": 8,
+              "min": 3.88,
+              "median": 9.687000000000001,
+              "max": 10.921,
+              "count_ge_budget": 0
+            },
+            "events_seconds": {
+              "n": 8,
+              "min": 9.556,
+              "median": 15.0245,
+              "max": 15.075,
+              "count_ge_budget": 6
+            },
+            "exit_seconds": {
+              "n": 2,
+              "min": 21.194,
+              "median": 21.3935,
+              "max": 21.593,
+              "count_ge_budget": 2
+            }
+          },
+          "status_sequences": [
+            [
+              "starting",
+              "child_started",
+              "exited"
+            ],
+            [
+              "starting"
+            ],
+            []
+          ],
+          "wrapper_timeouts": 0
+        }
+      },
+      "verdict": "no jitter band observed end-to-end under the measured conditions",
+      "discrepancy": "the direct window probe did cross the 15 s events budget in 6/8 loaded samples while the end-to-end node passed 16/16; both are reported, neither is dropped"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "baseline_file": "rem49_fc904_baseline.xml",
+  "fixed2_file": "rem49_fc904_fixed2.xml",
+  "baseline_counts": {
+    "failed": 1,
+    "passed": 15
+  },
+  "fixed2_counts": {
+    "failed": 1,
+    "passed": 15
+  },
+  "per_node_identical": true,
+  "baseline_nodes": {
+    "test_fc904_artifact_selection::test_ar01_valid_roles_read": "passed",
+    "test_fc904_artifact_selection::test_ar02_only_summary_missing": "passed",
+    "test_fc904_artifact_selection::test_ar03_normalized_missing_dag_invalidation": "passed",
+    "test_fc904_artifact_selection::test_ar04_nothing_reusable": "passed",
+    "test_fc904_artifact_selection::test_ar05_tampered_not_read_fail_closed": "passed",
+    "test_fc904_artifact_selection::test_ar06_consumer_analysis_provenance_mismatch": "passed",
+    "test_fc904_artifact_selection::test_ar08_legacy_unbound_not_reused": "passed",
+    "test_fc904_artifact_selection::test_no_bundle_all_produced": "passed",
+    "test_fc904_artifact_selection::test_malformed_bundle_raises": "passed",
+    "test_fc904_artifact_selection::test_prepare_source_receipt_sourced_from_bundle": "passed",
+    "test_fc904_artifact_selection::test_prepare_source_unavailable_envelope_all_produced": "passed",
+    "TestB3ProductionProvenance::test_module_under_test_is_the_bound_copy": "failed",
+    "TestB3ProductionProvenance::test_bound_bytes_match_the_declared_hash": "passed",
+    "TestB3ProductionProvenance::test_source_preparation_uses_the_bound_module": "passed",
+    "TestB3ProductionProvenance::test_production_fc904_file_was_not_edited": "passed",
+    "TestB3ProductionProvenance::test_fc904_no_bundle_assertion_is_the_unchanged_default_scope": "passed"
+  },
+  "fixed2_nodes": {
+    "test_fc904_artifact_selection::test_ar01_valid_roles_read": "passed",
+    "test_fc904_artifact_selection::test_ar02_only_summary_missing": "passed",
+    "test_fc904_artifact_selection::test_ar03_normalized_missing_dag_invalidation": "passed",
+    "test_fc904_artifact_selection::test_ar04_nothing_reusable": "passed",
+    "test_fc904_artifact_selection::test_ar05_tampered_not_read_fail_closed": "passed",
+    "test_fc904_artifact_selection::test_ar06_consumer_analysis_provenance_mismatch": "passed",
+    "test_fc904_artifact_selection::test_ar08_legacy_unbound_not_reused": "passed",
+    "test_fc904_artifact_selection::test_no_bundle_all_produced": "passed",
+    "test_fc904_artifact_selection::test_malformed_bundle_raises": "passed",
+    "test_fc904_artifact_selection::test_prepare_source_receipt_sourced_from_bundle": "passed",
+    "test_fc904_artifact_selection::test_prepare_source_unavailable_envelope_all_produced": "passed",
+    "TestB3ProductionProvenance::test_module_under_test_is_the_bound_copy": "failed",
+    "TestB3ProductionProvenance::test_bound_bytes_match_the_declared_hash": "passed",
+    "TestB3ProductionProvenance::test_source_preparation_uses_the_bound_module": "passed",
+    "TestB3ProductionProvenance::test_production_fc904_file_was_not_edited": "passed",
+    "TestB3ProductionProvenance::test_fc904_no_bundle_assertion_is_the_unchanged_default_scope": "passed"
+  },
+  "failed_nodes_baseline": [
+    "TestB3ProductionProvenance::test_module_under_test_is_the_bound_copy"
+  ],
+  "failed_nodes_fixed2": [
+    "TestB3ProductionProvenance::test_module_under_test_is_the_bound_copy"
+  ],
+  "rf3_known_failure_in_both": true,
+  "note": "The only failing node in BOTH runs is RF-3's location-dependent assertion (test_fc904_artifact_selection.py:379 requires the directory basename 'B3-I05C-delivery-fixes'; this attempt relocates the carrier). It is P4, owned by RF-3, not by REM-49, and it fails IDENTICALLY before and after the comment fix \u2014 which is exactly the declared zero-behaviour-delta criterion."
+}

@@ -1,0 +1,123 @@
+ "r7": {
+  "iteration": "r7",
+  "date_utc": "2026-09-22",
+  "what_this_block_is": "the r7 record-fix overlay on this r6 carrier: reviewer_report_r6.md returned changes_required with section 9 as the fix list; r7 is record-only -- no product code changed and production stayed READ-ONLY (domain: this revision's sites -- the two r6 harness row lists, oracle.md, review.md, this file)",
+  "status": "review_pending",
+  "verdict_expressed": false,
+  "boundaries": {
+    "product_repo_written": 0,
+    "git_writes": 0,
+    "status_transitions": 0,
+    "verdict_expressed": false,
+    "note": "the only in-place substitutions of r7 are oracle.md's 16->18 cell and this file's r4_class_leaking_count line; every other byte change is a pure append or an insertion after the last r6 row"
+  },
+  "self_reference": "this file still registers no hash of itself, and no verdict of its own (domain: this r7 block -- status and verdict_expressed are stated, not signed)",
+  "old_values_retained_as_superseded": {
+    "measurement.oracle.cases": 40,
+    "measurement.rule_table.rows": 91,
+    "counts_note": "the r6 counts above stay recorded as the r6 measurement; the r7 re-run counts are in harness_rerun below",
+    "harness_generation.r6_oracle_harness.sha256": "8b47e0b7da821eb5342eed369c96727aae6a6d3554ff0a150aab186b73836658",
+    "harness_generation.r6_rule_table_harness.sha256": "c7ea6efd5a687c4ca63a3e387c3915d6fbfb1894a52d60e278c54db25eda8bb7",
+    "responses.F-REV-R5-01.sweep_result.r4_class_leaking_count": 16
+  },
+  "responses": {
+    "F-REV-R6-01": {
+      "class": "MEDIUM",
+      "response": "REGISTERED in both instruments as kind registered_open (declared-open; template C10's R3a/R3b)",
+      "new_oracle_rows": [
+        "R7a-line3-bare-credential",
+        "R7b-prebreak-cr",
+        "R7c-prebreak-vtab",
+        "R7d-prebreak-ff"
+      ],
+      "new_rule_table_rows": [
+        "open-line3-bare-credential",
+        "open-prebreak-cr",
+        "open-prebreak-vtab",
+        "open-prebreak-ff"
+      ],
+      "each_row_carries": "the 21-char marker SYNTHETIC_AUDIT_TOKEN AND the 39-char non-marker credential ghp_ZQ7ReviewerFakeCredential0123456789, in input and in declaration",
+      "shape_a": "bare credential on line 3 of a wrapped header: Authorization: Bearer\\nfoo\\n<credential>",
+      "shape_b": "control whitespace \\r \\v \\f at the pre-break position, input shape Bo<c>t\\n",
+      "domain": "域=r1/M4,r2,r3,r4,r5,r6 树上持久化 marker，iso/product_base 脱敏 ⇒ 声明开放的 base 回归，非按设计",
+      "family_named_in": "oracle.md C7.1-C7.2 (C6-style paragraph, domain on the same line)",
+      "probe_evidence": "scratch/r7_shape_probe.json (2700 B, sha256 9989714df0b87f7a3a2435819fec41e041b3134eb020d0a257bc527400e0b63b): all four registered inputs leak marker+credential on product_narrow_r6 and redact to Authorization: <redacted> on product_base"
+    },
+    "F-REV-R6-02": {
+      "class": "MEDIUM",
+      "response": "CORRECTED BY SUPERSESSION at both sites r7 owns; the domain now sits on the same line as the universal",
+      "sites_owned": [
+        "review.md ## r7 appended (## r6 line 349 byte-untouched; prefix proof: sha256(first 22100 B) = 8a2ff101b5501a9de93651ff1988fab339d76af779982cbe1c398b734fc28ae7 unchanged)",
+        "oracle.md C7.3 appended (C6.1 lines 649-651 byte-untouched, inside segment [37676,41469) whose sha256 02645f3a091abbadfcdc1dc7c9b2ec002d0b3315105db689d1d37682643ec2a9 is unchanged)"
+      ],
+      "site_not_owned": "task_plan.md Round 76 line 1994 -- the parent agent's file, not touched by r7; its exact old->new text is in the r7 report to the parent",
+      "domain_text": "域=95 个可打印 ASCII @ pre-break 位、shape Bo<c>\\n/Bo<c>t\\n、树 r4/r5/r6；空白字符 \\t \\r \\v \\f \\n 不在该域内且同样泄漏"
+    },
+    "F-REV-R6-03": {
+      "class": "LOW",
+      "response": "CORRECTED 16 -> 18 at both sites r7 owns; the old value is retained as superseded (this block's old_values_retained_as_superseded, the r4_class_leaking_count_r6_record field, and oracle.md C7.4)",
+      "sites": {
+        "oracle.md C6.1 cell": "| r4's tchar class | 4 | 4 | 16 characters | -> | r4's tchar class | 4 | 4 | 18 characters | (supersession recorded in C7.4)",
+        "handoff_r6.json": "responses.F-REV-R5-01.sweep_result.r4_class_leaking_count: 16 -> 18, with r4_class_leaking_count_r6_record: 16 kept alongside",
+        "task_plan.md Round 76 line 1991": "the parent agent's file, not touched by r7; its exact old->new text is in the r7 report to the parent"
+      },
+      "domain": "95 printable ASCII at the pre-break position, shape Bo<c>t\\n, r4 tree (18 of those 95 leak)",
+      "source": "execution_runs/_r6_measure_20260922/r6_measurement.json -> candidates.r4-tchar.leaking_single_chars has 18 entries"
+    },
+    "F-REV-R6-04": {
+      "class": "INFO",
+      "response": "ACKNOWLEDGED, caveat honored: the r6 rule-table harness exits rc 3 with verdict negative BY DESIGN since r3 -- its verdict aggregates secret survival over all 95 rows of the table and the six registered_open rows survive as declared; r7 reports those counts with their rc and claims no rc 0 for the rule table"
+    },
+    "F-REV-R6-05": {
+      "class": "INFO",
+      "response": "CARRIED UNCHANGED, registered-unaddressed: the two C10 rows still carry only the 39-char form (domain: exactly R3a/R3b and open-two-token-then-wrap/open-quoted-two-token); r7's four rows carry both credentials for their own family only (domain: the four r7 rows)"
+    }
+  },
+  "harness_rerun": {
+    "how": "iso/venv/Scripts/python.exe -B with PYTHONDONTWRITEBYTECODE=1, --src iso/product_narrow_r6/src --label r7, run after the row additions",
+    "outputs_dir": "execution_runs/_r7_measure_20260922/",
+    "oracle": {
+      "cases": 44,
+      "rc": 0,
+      "verdict": "pass",
+      "narrow_must_failed": [],
+      "keep_must_failed": [],
+      "registered_open": 6,
+      "registered_open_confirmed": 6,
+      "output": "oracle_r7_harness.json (21452 B, sha256 1a859a5c9af2a4e3f60faa5eaea018d1e2e475c26153f18dd5810925723fbe37)"
+    },
+    "rule_table": {
+      "rows": 95,
+      "rc": 3,
+      "verdict": "negative -- BY DESIGN since r3 (F-REV-R6-04); the registered_open rows leak as declared, so this is not a failure signal and is not reported as rc 0",
+      "credential_leaks": [],
+      "touched_but_should_not_be": [],
+      "fidelity_ok": true,
+      "registered_open_rows": 6,
+      "registered_open_leaking": 6,
+      "output": "rule_r7_harness.json (34610 B, sha256 405abfaaae041aa9aba1d395cac25769faf03a457435320a008dcdda1ae18690)"
+    }
+  },
+  "carriers": {
+    "oracle.md": {
+      "old": "41469 B, sha256 468fb300a76d00a87dab7fe94d2c64b825ce72ec03fabc00a034dc32e6501694 (r6 pin, re-verified by r7 before editing)",
+      "new": "49714 B, sha256 cfc09f99de99f1c5675340faf7a8f56752806cf56f1efd9a669dbd5e3432fbef",
+      "append_proof": "sha256(first 41469 B) = 02248237e563cb68ca2c92d71f138fc827e28449907e96f888d608f5e4d52007 both before and after the CORRECTION 7 append; the sole in-place change is the 2-byte cell 16->18 at K1=37674, and re-substituting 16 over [0,41469) reproduces the r6 pin exactly (details in oracle.md C7.5)"
+    },
+    "review.md": {
+      "old": "22100 B, sha256 8a2ff101b5501a9de93651ff1988fab339d76af779982cbe1c398b734fc28ae7 (r6 pin, re-verified by r7 before editing)",
+      "new": "26172 B, sha256 163cb939a11da0f245823ad24bb3ad1949890c02afced41ea53308343a58f373",
+      "append_proof": "sha256(first 22100 B) still = 8a2ff101b5501a9de93651ff1988fab339d76af779982cbe1c398b734fc28ae7 after the append -- a pure append; the ## r5 and ## r6 sections are byte-untouched"
+    },
+    "harness_files": {
+      "run_i14d_oracle_r6.py": "14243 B sha256 8b47e0b7da821eb5342eed369c96727aae6a6d3554ff0a150aab186b73836658 -> 15958 B sha256 12d9cb2b843f54dbf34861f0d9d2002fcd0357d3d9279f5ff33642e527cad66c (4 registered_open rows inserted after the last r6 row; every r6 row byte-untouched)",
+      "run_rule_table_i14d_r6.py": "21175 B sha256 c7ea6efd5a687c4ca63a3e387c3915d6fbfb1894a52d60e278c54db25eda8bb7 -> 22707 B sha256 2d9eaaa386bf67827af77b03b0013dfaeec12be2fa511e662954eb20af072337 (4 registered_open rows inserted after the last r6 row; every r6 row byte-untouched)"
+    },
+    "r3_r4_r5_harnesses_untouched": true
+  },
+  "who_wrote_it_and_on_what_basis": {
+    "author": "the r7 record-fix subagent, parent session-bfecd191-fbc3-4a66-8ed1-6562479bf102",
+    "basis": "reviewer_report_r6.md section 9 as the fix list; a read-only probe it ran (scratch/r7_shape_probe.json); two harness re-runs it executed; every hash here computed from the bytes",
+    "it_states_no_verdict": true
+  }
+ },

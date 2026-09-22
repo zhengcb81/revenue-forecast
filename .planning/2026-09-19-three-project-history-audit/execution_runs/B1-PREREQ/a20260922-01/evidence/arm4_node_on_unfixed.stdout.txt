@@ -1,0 +1,66 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+____ test_rem41_a_present_record_is_verified_even_when_label_is_unattested ____
+
+fake_provider = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6618/b1_work0/fake_attestation_provider.cmd')
+trusted_domain = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6618/b1_work0/trusted_signer_public_keys.json')
+
+    def test_rem41_a_present_record_is_verified_even_when_label_is_unattested(
+        fake_provider, trusted_domain
+    ):
+        """REM-41: a record that does NOT verify must be rejected even when the
+        label says `unattested` — present-but-ignored is forbidden (B1 oracle r1
+        §3.1). RED under mutation M6, GREEN on the fixed tree."""
+        _with_provider(fake_provider)
+        os.environ["REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS"] = str(trusted_domain)
+        try:
+            signed = run_forecast(forecast_document())
+            status = _receipt_of(signed)["attestation_status"]
+            assert status == "host_signed", (
+                f"setup failed: label={status!r} "
+                f"provider={os.environ.get('REVENUE_ATTESTATION_PROVIDER')!r} "
+                f"trust={os.environ.get('REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS')!r} "
+                f"last_failure={getattr(__import__('revenue_core'), 'attestation_last_failure', lambda: None)()!r}"
+            )
+>           assert isinstance(_record_of(signed), dict), (
+                "a host_signed package must carry a record before this node can "
+                "measure record VERIFICATION (absence means the tree under test "
+                "is the unfixed one, or issuance failed)"
+            )
+E           AssertionError: a host_signed package must carry a record before this node can measure record VERIFICATION (absence means the tree under test is the unfixed one, or issuance failed)
+E           assert False
+E            +  where False = isinstance(None, dict)
+E            +    where None = _record_of({'company_name': 'Test Co', 'as_of_date': '2026-07-12', 'currency': 'USD', 'unit': 'million', ...})
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\B1-PREREQ\a20260922-01\test_r13_equiv_rem41.py:84: AssertionError
+______ test_rem41b_positive_control_valid_record_unattested_is_accepted _______
+
+fake_provider = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6618/b1_work0/fake_attestation_provider.cmd')
+trusted_domain = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6618/b1_work0/trusted_signer_public_keys.json')
+
+    def test_rem41b_positive_control_valid_record_unattested_is_accepted(
+        fake_provider, trusted_domain
+    ):
+        """Positive control: the SAME shape with a valid signature and consistent
+        hashes is accepted with label `unattested`, so node (a) measures record
+        verification and not the label itself. Stays GREEN under M6 by design
+        (M6 only SKIPS verification; the honest path never depended on it)."""
+        _with_provider(fake_provider)
+        os.environ["REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS"] = str(trusted_domain)
+        try:
+            signed = run_forecast(forecast_document())
+            ok = copy.deepcopy(signed)
+            ok["publication_receipt"]["attestation_status"] = "unattested"
+            _rehash(ok)
+            validate_publication_receipt(ok)  # must not raise
+            assert _receipt_of(ok)["attestation_status"] == "unattested"
+>           assert isinstance(_record_of(ok), dict)
+E           AssertionError: assert False
+E            +  where False = isinstance(None, dict)
+E            +    where None = _record_of({'company_name': 'Test Co', 'as_of_date': '2026-07-12', 'currency': 'USD', 'unit': 'million', ...})
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\B1-PREREQ\a20260922-01\test_r13_equiv_rem41.py:123: AssertionError
+=========================== short test summary info ===========================
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/B1-PREREQ/a20260922-01/test_r13_equiv_rem41.py::test_rem41_a_present_record_is_verified_even_when_label_is_unattested
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/B1-PREREQ/a20260922-01/test_r13_equiv_rem41.py::test_rem41b_positive_control_valid_record_unattested_is_accepted
+2 failed in 1.65s

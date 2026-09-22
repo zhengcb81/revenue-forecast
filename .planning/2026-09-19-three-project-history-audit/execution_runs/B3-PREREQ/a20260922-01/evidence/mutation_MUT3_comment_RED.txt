@@ -1,0 +1,69 @@
+﻿MUTATION MUT-3 (REM-49): restore the original doubly-wrong comment in iso/fixed2/rf_scripts/source_preparation.py
+anchor replaced: 1; file restored after run
+pre-mutation sha256  = 91A6DC32466E9D67B9D034AC345349EE683F6D5FD9486A67CD3ADE009C6EBF4D
+post-restore sha256  = 91A6DC32466E9D67B9D034AC345349EE683F6D5FD9486A67CD3ADE009C6EBF4D
+restored identical   = True
+COMMAND: python -X utf8 -B -m pytest -q -p no:cacheprovider tests/test_rem49_comment_fix.py
+rc=1  (expected NONZERO = RED; the AST/tokenize/compile checks stay green by construction - the RED must come from 'the comment is corrected')
+
+FF..F                                                                    [100%]
+================================== FAILURES ===================================
+__________________ test_c0_the_comment_fix_changed_the_file ___________________
+
+    def test_c0_the_comment_fix_changed_the_file():
+        assert BASELINE.is_file() and SUBJECT.is_file()
+>       assert BASELINE.read_bytes() != SUBJECT.read_bytes(), (
+            "no change at all: the REM-49 comment fix is missing")
+E       AssertionError: no change at all: the REM-49 comment fix is missing
+E       assert b'"""WU-1000: the single production orchestration entry \xe2\x80\x94 source preparation.\n\nFrom a FilingRequest, this... indent=2))\n    sys.stdout.write("\\n")\n    return 0\n\n\nif __name__ == "__main__":\n    raise SystemExit(main())\n' != b'"""WU-1000: the single production orchestration entry \xe2\x80\x94 source preparation.\n\nFrom a FilingRequest, this... indent=2))\n    sys.stdout.write("\\n")\n    return 0\n\n\nif __name__ == "__main__":\n    raise SystemExit(main())\n'
+E        +  where b'"""WU-1000: the single production orchestration entry \xe2\x80\x94 source preparation.\n\nFrom a FilingRequest, this... indent=2))\n    sys.stdout.write("\\n")\n    return 0\n\n\nif __name__ == "__main__":\n    raise SystemExit(main())\n' = read_bytes()
+E        +    where read_bytes = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/B3-PREREQ/a20260922-01/b3_reference/iso/fixed/rf_scripts/source_preparation.py').read_bytes
+E        +  and   b'"""WU-1000: the single production orchestration entry \xe2\x80\x94 source preparation.\n\nFrom a FilingRequest, this... indent=2))\n    sys.stdout.write("\\n")\n    return 0\n\n\nif __name__ == "__main__":\n    raise SystemExit(main())\n' = read_bytes()
+E        +    where read_bytes = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/B3-PREREQ/a20260922-01/iso/fixed2/rf_scripts/source_preparation.py').read_bytes
+
+tests\test_rem49_comment_fix.py:36: AssertionError
+_________________ test_c1_every_changed_line_is_comment_only __________________
+
+    def test_c1_every_changed_line_is_comment_only():
+        base = BASELINE.read_text(encoding="utf-8").splitlines(keepends=True)
+        subj = SUBJECT.read_text(encoding="utf-8").splitlines(keepends=True)
+        changes = 0
+        for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, base, subj).get_opcodes():
+            if tag == "equal":
+                continue
+            changes += 1
+            for line in base[i1:i2] + subj[j1:j2]:
+                assert line.strip().startswith("#"), (
+                    f"non-comment line touched ({tag}): {line!r}")
+>       assert changes > 0, "expected at least one changed hunk"
+E       AssertionError: expected at least one changed hunk
+E       assert 0 > 0
+
+tests\test_rem49_comment_fix.py:51: AssertionError
+____________________ test_c4_comment_wording_is_corrected _____________________
+
+    def test_c4_comment_wording_is_corrected():
+        base_src = BASELINE.read_text(encoding="utf-8")
+        subj_src = SUBJECT.read_text(encoding="utf-8")
+        assert OLD_PHRASE in base_src, "fixture broken: baseline lost the old wording"
+>       assert OLD_PHRASE not in subj_src, (
+            "REM-49 not fixed: the doubly-wrong wording is still present")
+E       AssertionError: REM-49 not fixed: the doubly-wrong wording is still present
+E       assert 'the DAG clo...usable roles' not in '"""WU-1000:...it(main())\n'
+E         
+E         'the DAG closure of... non-reusable roles' is contained here:
+E           s =
+E               # the DAG closure of the non-reusable roles (never a blind full recompute).
+E               artifact_read, producer_events = (
+E                   company_wiki_source.select_artifact_roles(handle))
+E               # W05-B: verify the ACTUAL artifact reads.  artifact_read is the PLAN;...
+E         
+E         ...Full output truncated (90 lines hidden), use '-vv' to show
+
+tests\test_rem49_comment_fix.py:81: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_rem49_comment_fix.py::test_c0_the_comment_fix_changed_the_file
+FAILED tests/test_rem49_comment_fix.py::test_c1_every_changed_line_is_comment_only
+FAILED tests/test_rem49_comment_fix.py::test_c4_comment_wording_is_corrected
+3 failed, 2 passed in 1.06s
+

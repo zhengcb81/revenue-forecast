@@ -1,0 +1,114 @@
+{
+ "card_id": "M09",
+ "model_id": "resource",
+ "generated_by": "scripts/oracle_cards_M09_M12.py --card M09 (stdlib only, no product import)",
+ "contract": {
+  "formula": "revenue = saleable_volume * realized_price + other_revenue",
+  "required": [
+   "realized_price",
+   "saleable_volume"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "dimensions": {
+   "saleable_volume": "quantity",
+   "realized_price": "revenue_per_unit",
+   "other_revenue": "revenue"
+  },
+  "effective_defaults_expected": {
+   "other_revenue": 0.0
+  },
+  "declared_defaults_expected": {},
+  "declared_defaults_note": "the card states the optional default, but the registry declares no default for these drivers; the stated behaviour is realised by the implicit zero-fill at scripts/model_registry.py:335. The gating check is the behavioural defaults case, not the declared defaults mapping (oracle.md section 7; OQ-1).",
+  "output_container": "list",
+  "output_element_types": [
+   "float"
+  ]
+ },
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "122"
+  ],
+  "expected_float": [
+   122.0
+  ],
+  "tolerances": [
+   1.22e-07
+  ],
+  "hand_work": [
+   "30 x 4 + 2"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "122",
+   "225"
+  ],
+  "expected_float": [
+   122.0,
+   225.0
+  ],
+  "tolerances": [
+   1.22e-07,
+   2.25e-07
+  ],
+  "hand_work": [
+   "30 x 4 + 2",
+   "45 x 5 + 0"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "120"
+  ],
+  "expected_float": [
+   120.0
+  ],
+  "tolerances": [
+   1.2e-07
+  ],
+  "hand_work": [
+   "30 x 4 + 0"
+  ]
+ },
+ "defaults_expected_float": [
+  120.0
+ ],
+ "observation_expected": {
+  "OBS-BASE-IGNORED": {
+   "expected_float": [
+    122.0
+   ]
+  },
+  "OBS-PRICE-NEG": {
+   "expected_raised": "ModelRegistryError"
+  }
+ },
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "structure_rule": "positive output must be a builtin list whose length equals len(years), whose elements are all float instances and all finite, and the registry contract (formula string, required set, optional set, dimensions) must equal oracle.contract"
+}

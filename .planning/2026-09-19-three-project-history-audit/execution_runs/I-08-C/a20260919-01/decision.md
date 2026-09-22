@@ -235,3 +235,141 @@ card's legitimate negative result.
    registry copy outside the harness.
 6. Per this card's scope, `disclosure_adaptation = unmapped` and
    `accuracy = unproven`; nothing here is evidence of forecast accuracy.
+
+---
+
+# Fix round `I-08-C-REFREEZE` — decision record (appended after r3 closed)
+
+## 6. WHY this re-freeze exists (the owner ruling, verbatim)
+
+Owner ruling, `OWNER_DECISIONS.md` §16 (file 53286 B, sha256
+`4c9acf9ec95c8ec028b6e77719ddf32dbbbc1fb545c91cb702521d65a70aa2f3`):
+
+- 原话 (line 365): 「A-1: b（允许修 prune 代码，不授权执行 prune）
+  **A-2: 批准** B: a（提高门超时到 1200，立卡红绿） C: 先推已收口的 4 张，
+  B1/B3/I-14-D 攒第二批 D-G1: a D-G2: 留置/（或给取舍） E-1: 150/60
+  E-2: 重跑 E-3: 立卡 E-4: 维持暂不签」
+- 裁定表 (line 370): 「**A-2 批准** | I-08-C oracle 追加式重冻
+  （E11/E13 由"缺口在册"翻转为"攻击必拒"），收口归其 reviewer |
+  与建议一致 | 已派 `I-08-C` refreeze 卡」
+
+**The core reason, in one paragraph.** I-08-C's frozen oracle pinned **E11**
+(attestation-label flip) and **E13** (forged `segments[i].base_revenue`) as
+EXPECTED GAPS: the attack passed, recorded as green nodes with business rc=3.
+Card **B1** closed both gaps — and the e1 collateral (file-existence is no
+longer signing capability) — in an isolated tree
+(`B1-I08C-product-fixes\a20260921-01\iso\fixed\rf`). Against that tree the
+pinned-gap expectation necessarily FAILS. That failure is **expected, not a
+regression**: it is exactly why the owner approved this re-freeze (A-2: 批准).
+Keeping the pin would have made the frozen expectation wrong about the tree it
+describes; flipping it to "attack MUST be rejected" makes the suite a real gate
+again. 收口 (closure) stays with the reviewer — this round never self-signs.
+
+## 7. Decisions taken this round (each with reason, counter-case, boundary)
+
+### D-08C-RF-01 — number this append **r4**, not "r3"
+
+- **Choice.** The fix-round card says "append-only oracle revision r3"; the file
+  already contains a **closed** r3 whose closing line forbids further r3 edits
+  ("any later change must open a new revision"). Appended as **Revision r4**,
+  labelled in its header as "fix-round instruction label: r3".
+- **Why not follow the instruction's number literally.** It would either
+  duplicate a revision id or violate the file's own append-only rule; the
+  instruction's substance (one new append-only revision, same form) is fully
+  satisfied, and `handoff.json`'s fix-record points at "revision r4 (instruction
+  label: r3)" so no reader can lose the thread.
+
+### D-08C-RF-02 — superseded-record form for E11/E13, and for the E1 collateral
+
+- **Choice.** Flip E11/E13 to rejection with B1's exact reasons
+  (`attestation_missing_record` / `segment base revenue mismatch`); preserve
+  each old expectation **verbatim** as a superseded record with reason +
+  provenance — the same shape as I-14-H's W1 2220→1740 correction.
+- **Why not simply rewrite.** The r1/r3 pins are part of the historical record
+  (they were the card's legitimate negative result); the supersession must show
+  *what* changed, *why*, and *on whose authority* — otherwise a re-freeze is
+  indistinguishable from fitting expectations to a green run.
+- **The E1 collateral (counter-case handled).** The disclosed exploratory run
+  showed E1 failing on the fixed tree: B1 REM-01(b) retired
+  "file existence == capability", so the honest fixture stamped with
+  `sys.executable` is now truthfully `unattested`. Asserting `== "host_signed"`
+  unconditionally would pin the I-08-A §7.1 **false-green** as an expected value
+  — the same staleness class as E11/E13, in the positive direction. Decision:
+  make the label assertion **tree-conditional** (fixed tree → `unattested` +
+  no record; any other tree → the original `host_signed` assertion, byte-for-byte
+  the r1 check), keep the validators-pass-twice property unconditional, and
+  supersede the old line in oracle R4-2/S-3 with B1's probe as provenance. The
+  alternative — building a working fake provider so S is genuinely
+  `host_signed` everywhere — was rejected as a much larger test rewrite whose
+  fixture machinery would be copied from B1's attempt.
+
+### D-08C-RF-03 — env-var import-root override, hashed in three stages
+
+- **Choice.** `REPO = Path(os.environ.get("RF_IMPORT_ROOT") or <production>)`;
+  unset ⇒ byte-identical default to every prior run. Recorded hashes: r3 file
+  `10902 B / 0072b160…` → override-only interim `11360 B / 61ef2b67…`
+  (exploratory only) → **r4 frozen `13152 B / 3f83fdf2…`**.
+- **Reason.** The suite bound production by fixed path; pointing it at B1's
+  isolated trees requires a root override. Defaulting to production keeps the
+  r3 evidence runs reproducible.
+
+### D-08C-RF-04 — node ids renamed for the flipped cases only
+
+- **Choice.** E11 → `…_is_rejected_at_consumption`, E13 →
+  `…_forgery_is_rejected_by_output_gates`; every other id untouched; old→new
+  mapping recorded in oracle R4-3.
+- **Reason.** The old names *asserted the retired gap*; keeping them would make
+  a green node read as a red claim. Renaming any other node would have churned
+  cross-card references (B1 quotes the old ids) for no gain.
+
+### D-08C-RF-05 — freeze order, with the exploratory run disclosed rather than hidden
+
+- **Order:** env-override edit (hashed) → exploratory run vs the fixed tree
+  (disclosed; revealed the E1 collateral; stdout archived) → r4 test file frozen
+  (hashed) → oracle r4 appended (prefix-proved) → the four evidence runs.
+- **Counter-case handled.** Because the exploratory run observed the fixed-tree
+  outcome first, the r4 expectations are *corroborated* by it; their primary
+  derivation is B1's `after/probe_fixed.txt` (written before this card) plus the
+  fixed source lines, and the falsifiable half of the contract (unfixed trees and
+  the mutation must go RED, frozen in oracle R4-4 **before** those runs ran) is
+  what prevents circularity. Recorded in oracle R4-6.
+
+### D-08C-RF-06 — three discriminating runs, all matching the frozen contract
+
+| Run | Tree | Frozen in R4-4 | Observed |
+|---|---|---|---|
+| RUN-A | B1 `iso/fixed/rf` | 13 passed, rc 0 | **13 passed, rc 0** ✓ |
+| RUN-B | production (unfixed, override unset) | exactly {e11,e13} failed, rc 1 | **exactly {e11,e13} failed, rc 1** ✓ |
+| RUN-B2 | B1 `iso/rf` (production-identical) | exactly {e11,e13} failed, rc 1 | **exactly {e11,e13} failed, rc 1** ✓ |
+| RUN-M | fixed tree + superseded-expectation mutation file (`12976 B / eb19e628…`) | exactly {e11,e13} failed, rc 1 | **exactly {e11,e13} failed, rc 1** ✓ |
+
+RUN-B/B2 are the anti-vacuity proof (the gap still reproduces on unfixed
+bytes ⇒ the flip is load-bearing); RUN-M is the mutation proof (the old
+pinned-gap expectation cannot pass against the fix ⇒ the flip is not vacuous).
+
+### D-08C-RF-07 — status `changes_required` → `review_pending`, never self-signed
+
+- **Choice.** `handoff.json.status = review_pending`,
+  `implementer_self_acceptance = false`, `ready_for_re_review = true`, with a
+  fix-record pointing at oracle r4.
+- **Reason.** Owner ruling: 收口归其 reviewer. This card re-freezes the oracle
+  and readies re-review; the verdict is the reviewer's to give.
+- **Two separate steps remain, stated in the handoff too:** (1) promotion of
+  B1's fix into production is an owner decision not taken here (production stays
+  byte-identical, verified after every run); (2) I-08-C's acceptance is a future
+  reviewer verdict on this re-frozen package. Neither is implied by this round.
+
+### Boundaries re-asserted this round
+
+- Production READ-ONLY: anchor hashes unchanged
+  (`183803bb…` / `1821fd2a…` / `a85fb484…` / `29aaae4f…` /
+  `bc3256bb…`), `git status --porcelain -- scripts tests config artifacts`
+  empty (rc 0) after all four runs; no git write command executed.
+- B1's attempt READ-ONLY: executed from only, with `-B` +
+  `PYTHONDONTWRITEBYTECODE=1` + `-p no:cacheprovider` + `--basetemp` inside this
+  attempt; after the runs the newest mtime under B1's tree is still
+  `2026-09-21 23:14:47` (B1's own files) and its three fixed hashes are unchanged.
+- Oracle change APPEND-ONLY: `sha256(bytes[0:22335])` still
+  `94a853e9…` and `sha256(bytes[0:6831])` still `478bd70e…`
+  (`scratch/fixround/prefix_proof.json`, `append_only_proof: true`, rc 0).
+- `disclosure_adaptation = unmapped`, `accuracy = unproven` unchanged.

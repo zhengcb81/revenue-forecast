@@ -1,0 +1,63 @@
+card_id: M16
+model_id: real_estate_rental
+code_root: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M13-M16\code_root
+model_registry_file: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M13-M16\code_root\model_registry.py
+imported_module_sha256: {'model_registry.py': '9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f', 'model_extensions.py': '9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911'}
+frozen_input_sha256: {'input.json': '641b938b767bd22318572db0e1dc11e964fa106ba5d5419760b8288f71670e07', 'oracle.json': '2f300c78acd0035a09f1005957a5a97a7698d15fb8ee0b660bcaa6acfb228c92', 'cases.json': 'bf41728f4ab5f7dd43de365a4731f14204f22a9889b6bbce541f599128781705'}
+registry formula: revenue = average_occupied_area * rent_per_area + other_revenue
+registry required: ['average_occupied_area', 'rent_per_area']
+registry optional: ['other_revenue']
+registry defaults: {}
+registry ratio_drivers: []
+registry driver_bounds: {}
+positive raised: None
+positive actual: [32.0]
+positive expected: [32.0]
+positive tolerances: [3.2e-08]
+positive value_ok: True
+positive fidelity_ok: True
+positive fidelity_problems: []
+positive years_match_frozen: True
+continuity_positive raised: None
+continuity_positive actual: [32.0, 41.4]
+continuity_positive expected: [32.0, 41.4]
+continuity_positive tolerances: [3.2e-08, 4.14e-08]
+continuity_positive value_ok: True
+continuity_positive fidelity_ok: True
+continuity_positive fidelity_problems: []
+continuity_positive years_match_frozen: True
+defaults actual: [30.0]
+defaults expected: [30.0]
+defaults ok (not gating): True
+observation: OBS-BASE-IGNORED raised=None actual=[32.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None 
+observation: OBS-BOUND-INCLUSIVE raised=None actual=[2.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
+observation: OBS-SIGNED-OTHER raised=None actual=[29.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
+expectation_consistency: ok=False gap_count=1 facts={'case_count': 11, 'case_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'oracle_negative_count': 11, 'oracle_negative_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'declared_expectations': ['ModelRegistryError', 'None'], 'declared_expectations_in_cases_json': ['ModelRegistryError', 'None'], 'target_exception': 'ModelRegistryError'}
+expectation_gap: case NEG-CARD declares an unusable expected=None (expected a non-empty exception type name)
+negative: NEG-CARD declared_expected=None verdict=NOT_JUDGED_declaration_unusable raised=ModelRegistryError - driver real_estate_rental.average_occupied_area must be between 0.0 and inf: FY2027
+negative-declared-expectation: NEG-CARD judged=False declared=None raised=ModelRegistryError declared_expectation_ok=None declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared None (exact-name equality, NOT isinstance)
+negative: N01a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be numeric
+negative-declared-expectation: N01a judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N01b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
+negative-declared-expectation: N01b judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N01c declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
+negative-declared-expectation: N01c judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N01d declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
+negative-declared-expectation: N01d judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N02 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - driver real_estate_rental.average_occupied_area must contain one value per forecast year
+negative-declared-expectation: N02 judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N03 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - missing drivers for real_estate_rental: average_occupied_area
+negative-declared-expectation: N03 judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N04 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - unsupported drivers for real_estate_rental: unknown_driver
+negative-declared-expectation: N04 judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N05a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must contain fiscal years
+negative-declared-expectation: N05a judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: N05b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must contain fiscal years
+negative-declared-expectation: N05b judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative: CONT-BREAK declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must be consecutive and increasing
+negative-declared-expectation: CONT-BREAK judged=True declared=ModelRegistryError raised=ModelRegistryError declared_expectation_ok=True declared_expectation_mismatch=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name equality, NOT isinstance)
+negative summary: total=11 passed=10 failed=[]
+negative declared-expectation counts: mismatch=0 not_met=0 missing_in_cases_json=1 not_judged=['NEG-CARD'] declared_expectations=['ModelRegistryError', 'None'] enforced=True comparison=exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)
+exit_code triggered: ['expectation_declaration_inconsistent', 'cases_json_declared_expectation_missing:NEG-CARD']
+cases_json_declared_expectations_usable: False unusable=['NEG-CARD']
+verdict: no_verdict exit_code: 2

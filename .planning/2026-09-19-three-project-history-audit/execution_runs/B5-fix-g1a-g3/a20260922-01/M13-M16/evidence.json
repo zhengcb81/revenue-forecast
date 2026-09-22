@@ -1,0 +1,467 @@
+{
+ "batch": "M13-M16",
+ "cards": [
+  "M13",
+  "M14",
+  "M15",
+  "M16"
+ ],
+ "fix_card": "B5-fix-g1a-g3",
+ "scope_note": "runner patch scope: B5+this-card",
+ "runner_before": {
+  "path": "execution_runs/M13/a20260919-01/scripts/run_card.py",
+  "sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
+  "bytes": 32038,
+  "byte_identical_to_historical": true
+ },
+ "runner_after": {
+  "path": "execution_runs/B5-fix-g1a-g3/a20260922-01/M13-M16/run_card.py",
+  "sha256": "69370109561c395f7d93f36ea034d06f523b1b98f784122421adad57cd4dccc9",
+  "bytes": 46099,
+  "identical_to_historical": false
+ },
+ "diff_path": "M13-M16/runner.diff",
+ "diff_stats": {
+  "added_lines": 219,
+  "removed_lines": 23
+ },
+ "cards_cases_sha256": {
+  "M13": "54399cd26596421ebae22b6efbdf7be19ea1af576ae0f69b8c193ba524702fb0",
+  "M14": "ba998e44e0b7e8ca2f7789f748a5c59149e7c93d02e97e0cf6e81af308dcb28b",
+  "M15": "4371f2eeb729de6329dbafdd35aecb123e3f99d68586ae69f1de1eee23dd3b90",
+  "M16": "fffb558223238091b4920e29d194f3c4b04f030d491cba8552ea8065873b2a70"
+ },
+ "insertion_points": [
+  {
+   "file": "run_card.py",
+   "line": 46,
+   "what": "docstring: records the delta, the exact-equality rule and the rc precedence"
+  },
+  {
+   "file": "run_card.py",
+   "line": 211,
+   "what": "expectation_gaps(): the old `declared != TARGET_EXCEPTION` set-level proxy is narrowed to a structural usability gap, so a usable-but-different declared name is decided per case"
+  },
+  {
+   "file": "run_card.py",
+   "line": 472,
+   "what": "run_all(): frozen per-case declaration precondition (unusable/missing -> rc=2 before any case is judged)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 527,
+   "what": "run_all(): an unusable declaration is NOT JUDGED - explicitly not a mismatch"
+  },
+  {
+   "file": "run_card.py",
+   "line": 530,
+   "what": "run_all(): THE DELTA - exact type-name equality type(exc).__name__ == case['expected']"
+  },
+  {
+   "file": "run_card.py",
+   "line": 550,
+   "what": "run_all(): not-judged / judged-failed partition so rc=3 can never come from an unjudged case"
+  },
+  {
+   "file": "run_card.py",
+   "line": 557,
+   "what": "run_all(): additive declared-expectation counters"
+  },
+  {
+   "file": "run_card.py",
+   "line": 622,
+   "what": "decide(): rc=2 is decided before any case judging; every triggered condition is listed"
+  },
+  {
+   "file": "run_card.py",
+   "line": 683,
+   "what": "decide(): exit_code_semantics additions + reason_namespace subset note"
+  },
+  {
+   "file": "run_card.py",
+   "line": 242,
+   "what": "B5-fix F-1/G3: emit BOTH facts keys - declared_expectations (historical, read by M14 recovery/consolidated_report.py:75) AND declared_expectations_in_cases_json (contract §2 name), same value computed once"
+  }
+ ],
+ "arms": {
+  "E": {
+   "rc": 0,
+   "rc_per_card": {
+    "M13": 0,
+    "M14": 0,
+    "M15": 0,
+    "M16": 0
+   },
+   "rc_uniform": true,
+   "verdict": "pass",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M13": [],
+    "M14": [],
+    "M15": [],
+    "M16": []
+   },
+   "mutated_case": null,
+   "out_written_all": true,
+   "note": "green control: patched runner + frozen cases.json",
+   "expected_rc": 0,
+   "meets_expectation": true
+  },
+  "F": {
+   "rc": 3,
+   "rc_per_card": {
+    "M13": 3,
+    "M14": 3,
+    "M15": 3,
+    "M16": 3
+   },
+   "rc_uniform": true,
+   "verdict": "fail",
+   "declared_expectation_mismatch": 1,
+   "mismatch_ids_per_card": {
+    "M13": [
+     "NEG-CARD"
+    ],
+    "M14": [
+     "NEG-CARD"
+    ],
+    "M15": [
+     "NEG-CARD"
+    ],
+    "M16": [
+     "NEG-CARD"
+    ]
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "owner-mandated mutation arm: usable-but-different `expected` -> rc=3 (the arm that was previously unreachable on M25-M28)",
+   "expected_rc": 3,
+   "meets_expectation": true
+  },
+  "B": {
+   "rc": 2,
+   "rc_per_card": {
+    "M13": 2,
+    "M14": 2,
+    "M15": 2,
+    "M16": 2
+   },
+   "rc_uniform": true,
+   "verdict": "fail",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M13": null,
+    "M14": null,
+    "M15": null,
+    "M16": null
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "historical byte-copy runner on the same mutated cases; rc is a MEASUREMENT and must not change vs B5's recorded value",
+   "b5_recorded_rc": 2,
+   "unchanged_vs_b5_recorded": true
+  },
+  "G": {
+   "rc": 2,
+   "rc_per_card": {
+    "M13": 2,
+    "M14": 2,
+    "M15": 2,
+    "M16": 2
+   },
+   "rc_uniform": true,
+   "verdict": "no_verdict",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M13": [],
+    "M14": [],
+    "M15": [],
+    "M16": []
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "declaration unusable (expected key deleted) -> rc=2 + no_verdict; the mutated case is NOT_JUDGED, never counted as a mismatch",
+   "expected_rc": 2,
+   "meets_expectation": true
+  }
+ },
+ "extra_arms": {},
+ "rc_codes_after": {
+  "0": "pass: faithful positive + continuity and every negative rejected with the target exception",
+  "1": "harness error: no observation could be set up; never a pass",
+  "2": "no verdict: an oracle expectation is missing or the output is not faithful to the frozen oracle, or the frozen per-case `expected` declaration is itself missing/unusable (decided BEFORE any case is judged)",
+  "3": "verdict negative: at least one negative case was not rejected with the target exception, or was rejected with an exception whose exact type name does not equal that case's declared `expected`",
+  "precedence": "1 > 2 > 3",
+  "rc_constants": {
+   "RC_PASS": 0,
+   "RC_HARNESS": 1,
+   "RC_NO_VERDICT": 2,
+   "RC_NEGATIVES": 3
+  },
+  "rc_values_changed_by_rem21": false,
+  "rc_names_changed_by_rem21": false,
+  "note": "this runner's rc table ALREADY matched the frozen table, so REM-21 changed no rc value and no RC_* name; only the classification inside the table was made finer (rc=2 decided before any case is judged; rc=3 for a judged per-case declared-expectation mismatch)"
+ },
+ "isolated_code_root_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "historical_writes": [],
+ "boundaries_respected": true,
+ "unmet_prerequisites": [],
+ "open_issues": [
+  "carried from B5 attempt (read-only): ARM B MEASURED rc=2, NOT THE CONTRACT'S PREDICTED 0. Reported exactly as measured (verdict fail, trigger expectation_declaration_inconsistent, all four cards). The historical M13-M16 runner therefore does NOT fabricate a green on this mutation - but it fires its SET-LEVEL blanket comparison `declared != TARGET_EXCEPTION` (historical lines 189-192/200) and refuses to judge (rc=2); it never reads the raised exception. historical_runner_already_gated=false: the measured rc is 2, not 3, so the historical runner had no per-case gate.",
+  "carried from B5 attempt (read-only): WHAT THE PATCH ADDS versus what was already present. ALREADY PRESENT in the historical runner: a set-level check that every case declares the one type the runner hard-codes, and an isinstance()-based per-case verdict. ADDED by this patch: (a) the per-case comparison `type(exc).__name__ == case['expected']` (exact equality, NOT isinstance), which the historical runner never performed - proven by the V1-all-valueerror probe, where the old runner stamped all 11 cases PASS_rejected/raised=ModelRegistryError while they declared ValueError, and the new runner judged all 11 as FAIL_declared_expectation_mismatch (rc=3); (b) a genuine usability gate that makes an unusable declaration rc=2 BEFORE any case is judged and marks such a case NOT_JUDGED_declaration_unusable rather than mismatched; (c) the contract-mandated additive counters/fields; (d) a finer rc classification that keeps rc=2 and rc=3 distinguishable and never lets an unjudged case produce rc=3.",
+  "carried from B5 attempt (read-only): DEVIATION FROM CONTRACT section 5's LITERAL ARM B EXPECTATION (rc=0), with its reason, per contract section 6/7. Arm B is reported as rc=2. Nothing was weakened or reverted to move it: the OLD runner is a byte copy (sha256 9e4a6450d6ab...ac0194, unchanged) and the mutation is the contract-mandated one. The contract's arm-B premise ('if the historical runner produces rc=0 the mutation is silently tolerated') does not hold for M13-M16 because this runner's set-level check happens to catch a changed declaration TEXT - which is a different property from judging each case against the exception it raised.",
+  "carried from B5 attempt (read-only): DEVIATION FROM 'keep the existing set-level check' (batch note), with its reason. The legacy set-level condition was `declared != TARGET_EXCEPTION` -> gap -> rc=2. Retained unbounded, it makes the contract's arm F IMPOSSIBLE for this batch: a usable declaration of \"ValueError\" would short-circuit to rc=2 before the per-case comparison could run, so rc=3 (section 5's required arm-F observation, and the frozen table's 'a judgement WAS possible and did not hold') could never occur. The check is therefore RETAINED but narrowed to the part only it can answer - a declaration that is missing or not a non-empty string is a structural gap - while a usable declaration that disagrees with the raised exact type name is decided per case at rc=3 (strictly stronger: previously such a case was never judged at all). All existing keys are kept; the `expectation_consistency` block still fires on the deletion arm, with the same key names and gap strings, for exactly the declarations that are unusable.",
+  "carried from B5 attempt (read-only): KEY RENAME, declared rather than hidden: `expectation_consistency.facts.declared_expectations` -> `declared_expectations_in_cases_json`. The contract section 2 requires that exact name in `negative_summary`; keeping the old name in `facts` would put two names on one concept. One key, one meaning, no stale duplicate; the sibling M05-M08 batch renamed it the same way.",
+  "carried from B5 attempt (read-only): `negative_summary.failed` now lists only JUDGED failures (it never contains a NOT_JUDGED_declaration_unusable case). The key is kept and the old expression 'verdict != PASS_rejected' is unchanged whenever declarations are usable - i.e. on arms E, F and B - so nothing downstream changes there. It differs only on arm G, and deliberately: on arm G the unjudged case would otherwise also raise the separate trigger negative_case_not_rejected alongside the declaration gap, and contract section 1 requires rc=2 (no verdict) to be decided before any case is judged and forbids a NOT_JUDGED case from producing rc=3 by itself.",
+  "carried from B5 attempt (read-only): No rc VALUE and no RC_* name was changed: this runner's table already equalled the frozen table (RC_PASS=0/RC_HARNESS=1/RC_NO_VERDICT=2/RC_NEGATIVES=3). Only the classification inside the table was refined; `exit_code_semantics.rc_table_unchanged_by_rem21=true` records that on every run.",
+  "carried from B5 attempt (read-only): evidence/negative_results.json was NOT copied into the scratch evidence dirs: this runner reads only input.json/oracle.json/cases.json and has no --negative-out flag. The historical negative_results.json in evidence/M13 was produced downstream by pack_evidence.py, so no runner input was withheld and no frozen file was touched.",
+  "G3/F-1 fixed: BOTH facts keys emitted. Correction recorded: B5 implementer's claim 'M05-M08 did the same thing' was INACCURATE - M05-M08's runner has NO expectation_consistency.facts block at all; none was added there.",
+  "F-3 fixed: arms.{E,F,B,G} in this evidence.json are populated from real runs (B5's copy had all-null arm fields)."
+ ],
+ "g3_both_keys": {
+  "patched_runner_outputs_have_both_keys": true,
+  "arm_b_historical_outputs_have_old_key_only": true,
+  "reader_proof": "evidence/g3_reader_proof.json (M14 consolidated_report.py:75)",
+  "per_output": {
+   "E/M13": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "E/M14": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "E/M15": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "E/M16": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "F/M13": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "F/M14": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "F/M15": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "F/M16": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "B/M13": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": false,
+    "keys_equal_when_both_present": false,
+    "runner_role": "old"
+   },
+   "B/M14": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": false,
+    "keys_equal_when_both_present": false,
+    "runner_role": "old"
+   },
+   "B/M15": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": false,
+    "keys_equal_when_both_present": false,
+    "runner_role": "old"
+   },
+   "B/M16": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": false,
+    "keys_equal_when_both_present": false,
+    "runner_role": "old"
+   },
+   "G/M13": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "G/M14": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "G/M15": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   },
+   "G/M16": {
+    "facts_keys": [
+     "case_count",
+     "case_ids",
+     "declared_expectations",
+     "declared_expectations_in_cases_json",
+     "oracle_negative_count",
+     "oracle_negative_ids",
+     "target_exception"
+    ],
+    "old_key_present": true,
+    "new_key_present": true,
+    "keys_equal_when_both_present": true,
+    "runner_role": "new"
+   }
+  }
+ }
+}

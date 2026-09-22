@@ -1,0 +1,44 @@
+{
+ "card_id": "M06",
+ "label": "historical reconciliation attempt (closed period)",
+ "produced_by": "implementer (NOT the independent reviewer)",
+ "status": "blocked",
+ "blocked_reason": "the issuer discloses the BASES (percentage of transaction value; gross-vs-net policy) but no numeric activity volume and no numeric rate, so both required drivers stay missing",
+ "closed_period": "FY2025 (closed and reported)",
+ "source_documents": [
+  "hkexnews:00700:2025年年度报告"
+ ],
+ "mapped_parameters": [
+  {
+   "parameter_id": "usage_platform.eligible_activity",
+   "value": "MISSING (no absolute activity volume disclosed)",
+   "page": 167,
+   "reported_derived_assumed": "missing"
+  },
+  {
+   "parameter_id": "usage_platform.monetization_rate",
+   "value": "MISSING (basis disclosed, percentage not disclosed)",
+   "page": 167,
+   "reported_derived_assumed": "missing"
+  },
+  {
+   "parameter_id": "usage_platform.fixed_revenue",
+   "value": "MISSING (no separate fixed-fee revenue line)",
+   "page": 167,
+   "reported_derived_assumed": "missing"
+  },
+  {
+   "parameter_id": "usage_platform.gross_net_policy",
+   "value": "DISCLOSED POLICY (qualitative)",
+   "page": 167,
+   "reported_derived_assumed": "reported"
+  }
+ ],
+ "constructive_identity_warning": "dividing a disclosed output by a disclosed input and then reading the same rate back into the formula reproduces the disclosed number by construction; that is NOT reconciliation and NOT accuracy evidence",
+ "result": {
+  "conclusion": "NOT reconciled: neither the activity volume nor the monetization rate is disclosed for any closed period",
+  "disclosed_instead": "the BASIS of the commission (a percentage of each transaction's value) and the principal/agent policy that decides gross-vs-net presentation",
+  "why_not_a_reconciliation": "there is no disclosed input pair to reconcile; back-solving the rate from revenue would be circular",
+  "not_an_accuracy_statement": true
+ }
+}

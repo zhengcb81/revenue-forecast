@@ -1,0 +1,68 @@
+{
+ "card_id": "M02",
+ "model_id": "direct_revenue",
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "positive": {
+  "expected": [
+   "80",
+   "0",
+   "120"
+  ],
+  "expected_float": [
+   80.0,
+   0.0,
+   120.0
+  ],
+  "length": 3,
+  "years": [
+   2027,
+   2028,
+   2029
+  ],
+  "tolerances": [
+   8e-08,
+   1e-09,
+   1.2e-07
+  ],
+  "hand_arithmetic": [
+   "copy 80",
+   "copy 0 (must stay 0, not defaulted)",
+   "copy 120"
+  ]
+ },
+ "continuity_positive": {
+  "expected": [
+   "50",
+   "60"
+  ],
+  "expected_float": [
+   50.0,
+   60.0
+  ],
+  "years": [
+   2027,
+   2028
+  ]
+ },
+ "base_independence": {
+  "expected_same_as_positive": true,
+  "expected_float": [
+   80.0,
+   0.0,
+   120.0
+  ],
+  "why": "card_M02.md line 8: R[t] = direct_revenue[t]; base_revenue is not a term"
+ },
+ "disclosure_arithmetic": {
+  "entity": "紫金矿业集团股份有限公司",
+  "reconciliation_is_constructive": true,
+  "note": "Filling the disclosed FY2025 revenue into the revenue driver reproduces it exactly, so the residual is trivially zero. This proves only that the copy step is right; it proves nothing about the source, period, gross/net basis or forecast usefulness of the revenue figure.",
+  "input_revenue_cny": "349079082852",
+  "float_exactness": {
+   "value": "349079082852",
+   "float_roundtrip_exact": true,
+   "note": "349,079,082,852 < 2**53 so IEEE754 double represents it exactly; no rounding is introduced by using float inputs"
+  }
+ },
+ "not_from_product_code": true
+}

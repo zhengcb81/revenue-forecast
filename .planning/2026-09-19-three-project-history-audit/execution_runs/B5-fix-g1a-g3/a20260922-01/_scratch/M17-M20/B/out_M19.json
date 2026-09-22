@@ -1,0 +1,493 @@
+{
+ "card_id": "M19",
+ "attempt_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\B",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root",
+ "product_entry_point": "model_registry.calculate_registered_model(**input)",
+ "only_product_function_called": "calculate_registered_model",
+ "registry_metadata": {
+  "model_id": "gaming",
+  "required": [
+   "active_users",
+   "payer_conversion",
+   "revenue_per_payer"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "active_users": "quantity",
+   "payer_conversion": "ratio",
+   "revenue_per_payer": "revenue_per_unit",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "payer_conversion"
+  ],
+  "declared_driver_bounds": {},
+  "formula": "revenue = active_users * payer_conversion * revenue_per_payer + other_revenue",
+  "effective_bounds": {
+   "active_users": [
+    0.0,
+    "inf"
+   ],
+   "payer_conversion": [
+    0.0,
+    1.0
+   ],
+   "revenue_per_payer": [
+    0.0,
+    "inf"
+   ],
+   "other_revenue": [
+    "-inf",
+    "inf"
+   ]
+  }
+ },
+ "positive": {
+  "raised": null,
+  "actual": [
+   1010.0
+  ],
+  "actual_repr": [
+   "1010.0"
+  ],
+  "length": 1
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   1010.0,
+   1584.0
+  ],
+  "actual_repr": [
+   "1010.0",
+   "1584.0"
+  ],
+  "expected": [
+   1010.0,
+   1584.0
+  ],
+  "expectation_present": true,
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   1000.0
+  ],
+  "expected": [
+   1000.0
+  ],
+  "ok": true
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "the rowwise calculator discards base_revenue; design observation only, not a pass condition",
+   "raised": null,
+   "actual": [
+    1010.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    1010.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-DEFAULT-EQUIV",
+   "expectation": null,
+   "kind": "set_driver",
+   "why": "writing the omitted optional driver explicitly as 0 reproduces the omitted-input result",
+   "raised": null,
+   "actual": [
+    1000.0
+   ],
+   "compared_to": "defaults",
+   "compared_actual": [
+    1000.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-PAYER-BOUNDARY",
+   "expectation": "payer_conversion = 1.0 is inside the frozen [0,1] ratio domain, so it must be accepted: 1000 x 1.0 x 20 + 10 = 20010",
+   "kind": "set_driver_element",
+   "why": "probes whether the ratio bound is inclusive at its upper edge (recorded under observation_expected)",
+   "raised": null,
+   "actual": [
+    20010.0
+   ],
+   "expected": [
+    20010.0
+   ],
+   "matches_expected": true
+  }
+ ],
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "expected": "ValueError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [1000], 'payer_conversion': [1.1], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver gaming.payer_conversion must be between 0.0 and 1.0: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver gaming.payer_conversion must be between 0.0 and 1.0: FY2027\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ValueError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": false,
+   "declared_expectation_mismatch": true,
+   "declared_expectation_not_met": true,
+   "judged": true,
+   "expectation_not_met_reason": "raised exact type name 'ModelRegistryError' != declared 'ValueError'",
+   "verdict": "FAIL_declared_expectation_mismatch"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [True], 'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "gaming.active_users.FY2027 must be numeric",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: gaming.active_users.FY2027 must be numeric\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [nan], 'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "gaming.active_users.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: gaming.active_users.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [inf], 'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "gaming.active_users.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: gaming.active_users.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [-inf], 'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "gaming.active_users.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: gaming.active_users.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [], 'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver gaming.active_users must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver gaming.active_users must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for gaming: active_users",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for gaming: active_users\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [1000], 'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "unsupported drivers for gaming: unknown_driver",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for gaming: unknown_driver\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [1000], 'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "gaming.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: gaming.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'active_users': [1000], 'payer_conversion': [0.05], 'revenue_per_payer': [20], 'other_revenue': [10]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "gaming.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: gaming.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "mutated_input_repr": "{'active_users': [1000, 1200], 'payer_conversion': [0.05, 0.06], 'revenue_per_payer': [20, 22], 'other_revenue': [10, 0]} years=[2027, 2029] base=0",
+   "raised": "ModelRegistryError",
+   "message": "gaming.years must be consecutive and increasing",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 426, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\M17-M20\\run_card_before.py\", line 125, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py\", line 324, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must be consecutive and increasing\")\nmodel_registry.ModelRegistryError: gaming.years must be consecutive and increasing\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "declared_expectation_comparison": "raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)",
+   "declared_expectation_ok": true,
+   "declared_expectation_mismatch": false,
+   "declared_expectation_not_met": false,
+   "judged": true,
+   "verdict": "PASS_rejected"
+  }
+ ],
+ "fidelity": {
+  "python_type": "list",
+  "is_flat_sequence": true,
+  "length": 1,
+  "element_types": [
+   "float"
+  ],
+  "all_elements_plain_number": true,
+  "all_elements_finite": true,
+  "container_has_extra_fields": false,
+  "year_labels_observable": false,
+  "year_linked_observable": "length only: len(output) must equal len(years)",
+  "expected_length": 1,
+  "years_length": 1,
+  "length_equals_years": true,
+  "length_equals_expected": true,
+  "expectations_present": true,
+  "structure_ok": true,
+  "fidelity_ok": true
+ },
+ "tolerances_ok": true,
+ "defaults_ok": true,
+ "exit_code_semantics": {
+  "0": "pass",
+  "1": "harness error",
+  "2": "no verdict: the frozen expectation is missing or unusable (positive expectations, or any case's declared 'expected' in cases.json), or the observed output cannot be faithfully compared with the frozen shape",
+  "3": "negative verdict: a judgement was possible and did not hold - positive raised/out of tolerance, continuity positive did not match, a negative case raised nothing, or a negative case raised an exception whose exact type name is not the declared one",
+  "precedence": "1 > 2 > 3 > 0",
+  "declared_expectation_comparison": "each negative case must raise the exact exception type name declared in the frozen cases.json (compared by type name, never by isinstance)",
+  "delta_vs_M05_M08_runner": "M05-M08 used 2=harness failure and 3=negative verdict, and did NOT enforce the per-case declared expectation; this runner moves harness failure to 1, reserves 2 for 'no verdict could be issued', and enforces the declared expectation by exact type name. rc values are therefore NOT comparable across runner versions without naming the runner sha256",
+  "positive_raised": false,
+  "expectations_present": true,
+  "cases_json_declared_expectations_usable": true,
+  "fidelity_ok": true,
+  "positive_ok": true,
+  "continuity_ok": true,
+  "negatives_ok": false,
+  "defaults_ok_not_gating": true,
+  "not_rejected_case_ids": [],
+  "declared_expectation_mismatch_case_ids": [
+   "NEG-CARD"
+  ],
+  "not_judged_case_ids": [],
+  "reason_namespace": "exclusive taxonomy: PASS_rejected | FAIL_not_rejected (nothing raised) | FAIL_wrong_exception_type | FAIL_import_or_file_error | FAIL_declared_expectation_mismatch | NOT_JUDGED_declaration_unusable. wrong_exception_type is a SUBSET of declared_expectation_mismatch when the declaration is usable",
+  "verdict": "fail",
+  "exit_code": 3
+ },
+ "model_id": "gaming",
+ "input_hashes_source": {
+  "evidence/M19/input.json": "8607dcc40a87ca364ec6ecc6ddd52aafc195fd6a33241fbc8dcab725cad3cad7",
+  "evidence/M19/oracle.json": "9c066d1664f55c613ae159f1a1fe8c73dc715daa49f6a5771ab9eeb4df100e1c",
+  "evidence/M19/cases.json": "d9b9b06b0e20b130102109a1b33dc5b062021400fcebe4a7e47995e86375fe7c"
+ },
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py",
+ "expectations_present": true,
+ "per_value_checks": [
+  {
+   "index": 0,
+   "year": 2027,
+   "actual": 1010.0,
+   "expected": 1010.0,
+   "tolerance": 1.01e-06,
+   "abs_diff": 0.0,
+   "ok": true
+  }
+ ],
+ "defaults_gating": false,
+ "cases_json_declared_expectations_usable": true,
+ "cases_json_unusable_declared_expectations": [],
+ "negative_summary": {
+  "total": 11,
+  "passed": 10,
+  "not_judged": [],
+  "failed": [
+   "NEG-CARD"
+  ],
+  "verdicts_are_mutually_exclusive": true,
+  "target_exception": "model_registry.ModelRegistryError",
+  "declared_expectations_in_cases_json": [
+   "ModelRegistryError",
+   "ValueError"
+  ],
+  "declared_expectation_comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+  "declared_expectations_enforced": true,
+  "declared_expectations_usable": true,
+  "classification_is_mutually_exclusive": true,
+  "import_or_file_errors_never_pass": true
+ },
+ "negative_counts": {
+  "total": 11,
+  "rejected_with_ModelRegistryError": 11,
+  "not_rejected": 0,
+  "wrong_exception_type": 0,
+  "import_or_file_error": 0,
+  "declared_expectation_mismatch": 1,
+  "declared_expectation_not_met": 1,
+  "declared_expectation_missing_in_cases_json": 0
+ },
+ "verdict": "fail",
+ "exit_code": 3,
+ "verdict_reasons": [
+  "declared_expectation_mismatch:NEG-CARD"
+ ],
+ "printed_summary": {
+  "lines": [
+   "card: M19 model_id: gaming",
+   "code_root: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root",
+   "model_registry_file: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01\\_scratch\\M17-M20\\code_root\\model_registry.py",
+   "registry formula: revenue = active_users * payer_conversion * revenue_per_payer + other_revenue",
+   "registry required: ['active_users', 'payer_conversion', 'revenue_per_payer']",
+   "registry optional: ['other_revenue']",
+   "registry defaults: {}",
+   "registry declared_driver_bounds: {}",
+   "registry effective_bounds: {'active_users': [0.0, 'inf'], 'payer_conversion': [0.0, 1.0], 'revenue_per_payer': [0.0, 'inf'], 'other_revenue': ['-inf', 'inf']}",
+   "positive raised: None",
+   "positive actual: [1010.0]",
+   "positive expected: [1010.0]",
+   "positive tolerances: [1.01e-06]",
+   "positive fidelity: {'python_type': 'list', 'is_flat_sequence': True, 'length': 1, 'element_types': ['float'], 'all_elements_plain_number': True, 'all_elements_finite': True, 'container_has_extra_fields': False, 'year_labels_observable': False, 'year_linked_observable': 'length only: len(output) must equal len(years)', 'expected_length': 1, 'years_length': 1, 'length_equals_years': True, 'length_equals_expected': True, 'expectations_present': True, 'structure_ok': True, 'fidelity_ok': True}",
+   "per_value_checks: [{'index': 0, 'year': 2027, 'actual': 1010.0, 'expected': 1010.0, 'tolerance': 1.01e-06, 'abs_diff': 0.0, 'ok': True}]",
+   "tolerances_ok: True",
+   "continuity_positive raised: None actual: [1010.0, 1584.0] expected: [1010.0, 1584.0] ok: True",
+   "defaults (not gating) ok: True actual: [1000.0] expected: [1000.0]",
+   "observation: OBS-BASE-IGNORED raised=None actual=[1010.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None",
+   "observation: OBS-DEFAULT-EQUIV raised=None actual=[1000.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None",
+   "observation: OBS-PAYER-BOUNDARY raised=None actual=[20010.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True",
+   "negative: NEG-CARD FAIL_declared_expectation_mismatch ModelRegistryError - driver gaming.payer_conversion must be between 0.0 and 1.0: FY2027",
+   "negative: N01a PASS_rejected ModelRegistryError - gaming.active_users.FY2027 must be numeric",
+   "negative: N01b PASS_rejected ModelRegistryError - gaming.active_users.FY2027 must be finite",
+   "negative: N01c PASS_rejected ModelRegistryError - gaming.active_users.FY2027 must be finite",
+   "negative: N01d PASS_rejected ModelRegistryError - gaming.active_users.FY2027 must be finite",
+   "negative: N02 PASS_rejected ModelRegistryError - driver gaming.active_users must contain one value per forecast year",
+   "negative: N03 PASS_rejected ModelRegistryError - missing drivers for gaming: active_users",
+   "negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for gaming: unknown_driver",
+   "negative: N05a PASS_rejected ModelRegistryError - gaming.years must contain fiscal years",
+   "negative: N05b PASS_rejected ModelRegistryError - gaming.years must contain fiscal years",
+   "negative: CONT-BREAK PASS_rejected ModelRegistryError - gaming.years must be consecutive and increasing",
+   "negative declared-expectation comparison: exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+   "negative declared-expectation mismatches: 1",
+   "negative summary: {'total': 11, 'passed': 10, 'not_judged': [], 'failed': ['NEG-CARD'], 'verdicts_are_mutually_exclusive': True, 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError', 'ValueError'], 'declared_expectation_comparison': \"exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)\", 'declared_expectations_enforced': True, 'declared_expectations_usable': True, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True}",
+   "verdict: fail exit_code: 3",
+   "printed_matches_evidence_file: True (re-read out_M19.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)"
+  ],
+  "note": "printed lines are byte-identical to stdout.txt"
+ },
+ "printed_values_match_evidence_file": true
+}

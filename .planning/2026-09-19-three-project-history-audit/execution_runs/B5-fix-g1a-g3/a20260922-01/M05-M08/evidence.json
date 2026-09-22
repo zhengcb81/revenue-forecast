@@ -1,0 +1,219 @@
+{
+ "batch": "M05-M08",
+ "cards": [
+  "M05",
+  "M06",
+  "M07",
+  "M08"
+ ],
+ "fix_card": "B5-fix-g1a-g3",
+ "scope_note": "runner patch scope: B5",
+ "runner_before": {
+  "path": "execution_runs/M05/a20260919-01/scripts/run_card.py",
+  "sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+  "bytes": 14758,
+  "byte_identical_to_historical": true
+ },
+ "runner_after": {
+  "path": "execution_runs/B5-fix-g1a-g3/a20260922-01/M05-M08/run_card.py",
+  "sha256": "489ba7e35592241b91ecf393b515df2111bc4996298274226e0e1012deff230b",
+  "bytes": 20804,
+  "identical_to_historical": false
+ },
+ "diff_path": "M05-M08/runner.diff",
+ "diff_stats": {
+  "added_lines": 111,
+  "removed_lines": 12
+ },
+ "cards_cases_sha256": {
+  "M05": "2a7ece2fcaaeba5922d88b3e7789365d47f2a29edc359c62a8bc7046e8251b45",
+  "M06": "2ffe08f90b9e17be97f002df2dae38e12587d71e6903e92f69b749e4e62014de",
+  "M07": "8d90810a77a1d602c13b3501392e7eb6ab699b551e3162de5c9e714f0311c603",
+  "M08": "cc3055fa0fb2ab485c5a379b473f718fef756ec14aa851aa356c7a041042416e"
+ },
+ "insertion_points": [
+  {
+   "file": "run_card.py",
+   "line": 13,
+   "lines": "13-32",
+   "what": "Module docstring 'Exit codes' section rewritten: rc=2 now also covers a missing/unusable frozen per-case 'expected' declaration decided BEFORE any case is judged (verdict \"no_verdict\"); rc=3 now also covers a raised exception whose exact type name != declared 'expected'. Adds the REM-21/M17-M20 propagation note stating isinstance() must NOT be used."
+  },
+  {
+   "file": "run_card.py",
+   "line": 121,
+   "lines": "121-134",
+   "what": "NEW frozen-declaration precondition, evaluated immediately after cases.json is loaded and BEFORE the product import and any case judging: unusable_declared = ids whose 'expected' is not a non-empty string; cases_declared_ok = not unusable_declared; no_verdict_reason = 'cases_json_declared_expectation_missing:<ids>'; declared_expectations_cases_json = sorted distinct declarations."
+  },
+  {
+   "file": "run_card.py",
+   "line": 261,
+   "lines": "261-263",
+   "what": "Per-case loop: declared = case.get('expected') replaces the hard subscripts case['expected'] (so a DELETED key is survivable and yields a no-verdict instead of a KeyError crash); entry gains the raw 'declared' key while keeping the existing 'expected' key unchanged."
+  },
+  {
+   "file": "run_card.py",
+   "line": 270,
+   "lines": "270-277",
+   "what": "Non-raising branch now also emits declared_expectation_ok=None, declared_expectation_mismatch=False, declared_expectation_not_met=None, declared_expectation_comparison, judged=True, keeping the existing verdict 'FAIL_not_rejected'."
+  },
+  {
+   "file": "run_card.py",
+   "line": 286,
+   "lines": "286-297",
+   "what": "NEW unusable-declaration branch (precedence): declared_usable=False -> judged=False and verdict 'NOT_JUDGED_declaration_unusable'; declared_expectation_mismatch is explicitly False so an unusable declaration can never be counted as a mismatch."
+  },
+  {
+   "file": "run_card.py",
+   "line": 299,
+   "lines": "299-312",
+   "what": "NEW gating comparison: declared_ok = (entry['raised'] == declared), i.e. EXACT exception type-name equality, never isinstance(). Verdict precedence FAIL_wrong_exception_type (raised type is not ModelRegistryError) -> FAIL_declared_expectation_mismatch (right type, wrong declared name) -> PASS_rejected."
+  },
+  {
+   "file": "run_card.py",
+   "line": 315,
+   "lines": "315-321",
+   "what": "NEW result['negative_counts'] with declared_expectation_mismatch, declared_expectation_not_met, declared_expectation_missing_in_cases_json."
+  },
+  {
+   "file": "run_card.py",
+   "line": 322,
+   "lines": "322-333",
+   "what": "result['negative_summary'] extended ADDITIVELY (total/passed/failed unchanged in name and meaning) with declared_expectations_in_cases_json, declared_expectation_comparison, declared_expectations_enforced=true, not_judged, judged."
+  },
+  {
+   "file": "run_card.py",
+   "line": 367,
+   "lines": "367-371",
+   "what": "Stdout: prints negative counts, enforcement flag and the no_verdict reason (existing print lines left intact)."
+  },
+  {
+   "file": "run_card.py",
+   "line": 373,
+   "lines": "373-412",
+   "what": "Exit-code classification: unusable declaration takes PRECEDENCE over case judging (verdict 'no_verdict', rc=2); negatives_ok is computed over JUDGED cases only so a NOT_JUDGED case can never by itself produce rc=3; rc=0/3 unchanged otherwise (this runner still has NO rc=1). result['no_verdict_reason'] added; exit_code_semantics gains cases_json_declared_expectations_usable, declared_expectation_mismatch_case_ids, declared_expectation_not_met_case_ids, declaration_unusable_case_ids and the reason_namespace note."
+  }
+ ],
+ "arms": {
+  "E": {
+   "rc": 0,
+   "rc_per_card": {
+    "M05": 0,
+    "M06": 0,
+    "M07": 0,
+    "M08": 0
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M05": [],
+    "M06": [],
+    "M07": [],
+    "M08": []
+   },
+   "mutated_case": null,
+   "out_written_all": true,
+   "note": "green control: patched runner + frozen cases.json",
+   "expected_rc": 0,
+   "meets_expectation": true
+  },
+  "F": {
+   "rc": 3,
+   "rc_per_card": {
+    "M05": 3,
+    "M06": 3,
+    "M07": 3,
+    "M08": 3
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": 1,
+   "mismatch_ids_per_card": {
+    "M05": [
+     "NEG-CARD"
+    ],
+    "M06": [
+     "NEG-CARD"
+    ],
+    "M07": [
+     "NEG-CARD"
+    ],
+    "M08": [
+     "NEG-CARD"
+    ]
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "owner-mandated mutation arm: usable-but-different `expected` -> rc=3 (the arm that was previously unreachable on M25-M28)",
+   "expected_rc": 3,
+   "meets_expectation": true
+  },
+  "B": {
+   "rc": 0,
+   "rc_per_card": {
+    "M05": 0,
+    "M06": 0,
+    "M07": 0,
+    "M08": 0
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M05": null,
+    "M06": null,
+    "M07": null,
+    "M08": null
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "historical byte-copy runner on the same mutated cases; rc is a MEASUREMENT and must not change vs B5's recorded value",
+   "b5_recorded_rc": 0,
+   "unchanged_vs_b5_recorded": true
+  },
+  "G": {
+   "rc": 2,
+   "rc_per_card": {
+    "M05": 2,
+    "M06": 2,
+    "M07": 2,
+    "M08": 2
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M05": [],
+    "M06": [],
+    "M07": [],
+    "M08": []
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "declaration unusable (expected key deleted) -> rc=2 + no_verdict; the mutated case is NOT_JUDGED, never counted as a mismatch",
+   "expected_rc": 2,
+   "meets_expectation": true
+  }
+ },
+ "extra_arms": {},
+ "rc_codes_after": {
+  "0": "pass - positive matched the independent oracle within tolerance AND the continuity positive passed AND every JUDGED negative case was rejected with ModelRegistryError and its raised exact type name equals the case's declared 'expected'",
+  "2": "no verdict, issued BEFORE any case can be judged: the frozen cases.json declaration itself is missing/unusable (reason 'cases_json_declared_expectation_missing:<ids>'), or the positive path raised so there is nothing to compare",
+  "3": "a judgement WAS possible and did not hold: positive mismatch, continuity failure, an unrejected negative, a wrong exception type, or a raised type name that does not equal the declared 'expected'",
+  "note": "This runner has no rc=1 (verified: no rc=1 branch exists in run_card_before.py or run_card.py). Exit-code NUMBERS were deliberately NOT renumbered; the only new behaviour is that a per-case 'expected' mismatch reaches the pre-existing rc=3 negative path, while an unusable declaration reaches rc=2 before judging."
+ },
+ "isolated_code_root_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "historical_writes": [],
+ "boundaries_respected": true,
+ "unmet_prerequisites": [],
+ "open_issues": [
+  "carried from B5 attempt (read-only): {'issue': 'PRE-EXISTING (not caused by this batch, not repaired by it): the r3 evidence_hashes.json ledgers of M05/M06/M07/M08 record CRLF-normalized hashes for evidence/<CARD>/cases.json, while the stored files have LF line endings.', 'severity': 'informational - content is proven equivalent', 'evidence': \"Each ledger value reproduces exactly under sha256(raw.replace(b'\\\\n', b'\\\\r\\\\n')) for all four cards (measured); and cases.json (id, kind, expected) triples equal the frozen run_result.json 'negatives' triples for 11/11 cases on all four cards.\", 'action_taken': \"none - historical files were read only. Recorded here rather than hand-edited, per contract §0.2 and the §1 instruction to record hash discrepancies instead of 'fixing' historical files.\"}",
+  "carried from B5 attempt (read-only): {'issue': \"The contract's §6 example shows 'mutated_case':'N01' for arms F/B/G; this batch's lowest-id negative case is CONT-BREAK, so CONT-BREAK is what all three arms used.\", 'severity': 'informational', 'evidence': \"Mutated case recorded per arm; CONT-BREAK frozen expected is 'ModelRegistryError' and it raises ModelRegistryError in all four cards.\", 'action_taken': \"Followed the normative §5 selection rule (lowest id with frozen expected 'ModelRegistryError'); the §6 value was an illustrative example.\"}",
+  "carried from B5 attempt (read-only): {'issue': \"ARM B MEASURED rc=0 (NOT the corrected rc=3 case): this batch's historical runner did NOT already gate, so what the patch ADDS here is the whole declaration gate, not merely a precedence refinement.\", 'severity': 'finding - recorded as measured, no value adjusted to fit a prediction', 'measured_rc': {'M05': 0, 'M06': 0, 'M07': 0, 'M08': 0}, 'what_was_ALREADY_there_in_the_historical_runner': ['a per-case ModelRegistryError rejection test via isinstance(exc, model_registry.ModelRegistryError), producing verdicts PASS_rejected / FAIL_wrong_exception_type / FAIL_import_or_file_error', \"reporting the declared value into the output record as the 'expected' key - copied for the record only, never compared\", 'rc 0 = pass, rc 2 = harness/bookkeeping could not produce a verdict, rc 3 = negative verdict. No rc=1.'], 'what_this_patch_ADDS': [\"the declaration gate itself: declared_ok = (raised exact type name == cases.json 'expected'), evaluated per case (run_card.py lines 299-312) - previously the declared value had NO effect on any verdict\", 'the new verdict label FAIL_declared_expectation_mismatch (line 310) for the right-type/wrong-declaration case that used to be silently PASS_rejected', \"the rc=2 declaration-usability PRECEDENCE decided before any case is judged, plus the no_verdict_reason string 'cases_json_declared_expectation_missing:<ids>' (lines 121-134, 373-384)\", 'the NOT_JUDGED_declaration_unusable verdict and judged=false for a case whose declaration is unusable, explicitly excluded from negative_counts.declared_expectation_mismatch (lines 286-297, 377-378)', \"tolerance of a DELETED 'expected' key (case.get instead of case['expected'], line 261) - previously a KeyError crash rather than a clean no-verdict\", 'the required counters and summary fields: negative_counts.declared_expectation_mismatch / declared_expectation_not_met / declared_expectation_missing_in_cases_json (lines 315-321); negative_summary.declared_expectations_in_cases_json / declared_expectation_comparison / declared_expectations_enforced / not_judged / judged (lines 322-333)', 'exit_code_semantics additions: cases_json_declared_expectations_usable, declared_expectation_mismatch_case_ids, declared_expectation_not_met_case_ids, declaration_unusable_case_ids, and the reason_namespace note (lines 399-411)'], 'action_taken': \"Reported rc=0 unchanged and set historical_runner_already_gated=false. Neither the historical runner nor the patch was weakened, reverted or altered to influence this measurement. The gate question was re-derived from the historical runner's own source (arm_B_rc_basis.independent_source_level_derivation), because evidence/b5_scan.json's compares_raised_to_expected flag is declared unreliable.\"}",
+  "carried from B5 attempt (read-only): {'issue': \"CONTRACT DEVIATION NOTED (correction received and applied): the original PROPAGATION_CONTRACT.md §3 table described this batch's existing 'expected' handling as 'none' and §5 fixed arm B at rc=0. The correction states arm B's rc is a MEASUREMENT. This batch measured 0, consistent with both the original table and the source-level re-derivation.\", 'severity': 'informational', 'evidence': 'arm_B_rc_basis.measured_raw_rc=0 on all four cards; independent_source_level_derivation found 0 gate symbols in all four historical runners.', 'action_taken': \"Recorded both the measurement and its basis; applied the correction's reporting requirements (arm B rc reported as measured, historical_runner_already_gated set, this open_issues entry added).\"}",
+  "F-6 (informational): B5's arm runs mutated CONT-BREAK (last case) instead of the contract's first/lowest-id NEG-CARD, and did not declare the deviation. THIS card's runs use NEG-CARD (first case in file order whose frozen expected is ModelRegistryError): E=0/F=3/B=0/G=2 identical, so no result changes; the reviewer's independent NEG-CARD re-run agrees."
+ ]
+}

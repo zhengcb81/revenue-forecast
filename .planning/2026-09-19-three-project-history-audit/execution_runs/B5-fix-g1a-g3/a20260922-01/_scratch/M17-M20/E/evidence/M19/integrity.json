@@ -1,0 +1,42 @@
+{
+ "card_id": "M19",
+ "production_repos_untouched": true,
+ "statement": "no file under any production repository was created, modified, added, committed, restored or stashed by this attempt",
+ "production_hashes_rechecked_after_the_run": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "anchored_hashes_as_given_by_the_task": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "observed_matches_task_anchor_by_file": {
+  "scripts/model_registry.py": true,
+  "scripts/model_extensions.py": true
+ },
+ "anchored_hashes_match": true,
+ "anchored_hashes_match_rule": "COMPUTED by comparing the observed production hashes with the task anchors; never asserted as a constant",
+ "anchored_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "anchored_hash_claim_is_time_scoped": {
+  "observed_at_pack_utc": "2026-09-20T03:55:23.189597+00:00",
+  "rule": "A production file hash is an EXTERNALLY CHANGEABLE quantity, not a constant of this attempt: git operations run by other sessions/agents (stash, checkout, pre-commit patch export/replay) can change the working tree between the binding and any later check. Therefore: (1) every claim about a production hash is time-scoped and carries its observation time; (2) an observed mismatch is recorded as drift with its timestamp and escalated to the orchestration layer - it is a CORRECT warning and is never suppressed; (3) expectations, frozen oracle files and rejection criteria are NEVER adjusted to accommodate a drifted production tree; a drifted tree means new runs must re-bind, not that the oracle must move.",
+  "incident_reference": "execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md",
+  "known_external_risk": "the repository's own pre-commit/pre-push gate exports unstaged changes to a patch, runs `git checkout -- .`, and replays the patch afterwards; if the replay step is skipped (observed once: `git checkout -- .` returned 255 on files held by concurrent writers) the production working tree is left reset to HEAD, so a hash check taken inside that window legitimately reads a different revision",
+  "if_false_then": "record the drift with its timestamp, escalate to the orchestration layer, and re-bind before any NEW run; never adjust the frozen expectations to accommodate the drifted tree"
+ },
+ "product_runs_used": "--code-root <attempt>/iso/checkout_scripts (byte-identical read-only snapshot); the production scripts directory was never on sys.path for any card run",
+ "network_calls": "none",
+ "llm_or_provider_calls": "none",
+ "write_allowlist_observed": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M19\\a20260919-01"
+ ],
+ "notes": [
+  "revenue-forecast already had pre-existing dirty files (including the user-owned SKILL.md / references / CHANGELOG.md / assurance / e2e expected files); git status --porcelain was captured into before/ and after/ so the pre-existing dirt stays attributable to its owner",
+  ".planning/reviews was never written to",
+  "this attempt wrote only inside its own attempt directory; no other attempt directory was created or overwritten"
+ ],
+ "packed_utc": "2026-09-20T03:55:23.189597+00:00"
+}

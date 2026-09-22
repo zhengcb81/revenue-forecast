@@ -1,0 +1,286 @@
+﻿--- diff 1: B3 accepted iso/conftest.py (b3_reference copy) -> this attempt iso/conftest.py  [REM-47 guard order + origin check + conflict-aware provenance] ---
+diff --git "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\b3_reference\\iso\\conftest.py" "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\iso\\conftest.py"
+index 8b2bc78..7edfa13 100644
+--- "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\b3_reference\\iso\\conftest.py"
++++ "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\iso\\conftest.py"
+@@ -1,43 +1,95 @@
+-"""B3 — I-05-C delivery fixes: path binding + production-provenance record.
+-
+-This conftest makes the point of REM-12 enforceable: the regression suites must
+-run against the bytes the evidence claims.  It (a) prepends the two production
+-repos to ``sys.path`` so no test file's own ``ISO_ROOT/checkout_scripts`` entry
+-can silently win, and (b) writes the resolved module paths and hashes to
+-``scratch/module_provenance.json`` so every run carries machine-checkable proof
+-of WHICH bytes executed.
++"""B3-PREREQ (a20260922-01) — REM-47: fixed binding guard + conflict-aware provenance.
++
++This is the FIXED revision of B3's ``iso/conftest.py``, living in this attempt's
++fresh copy of B3's iso tree.  B3's original stays byte-identical under
++``b3_reference/iso/conftest.py`` (sha256 pinned in ``binding.json``) and is the
++read-only RED baseline for the property tests.
++
++What this conftest does — and this time the code does what the words say:
++
++  (a) PATH ORDER = the order this comment claims: attempt-local fixed sources
++      **first** (``B3_BYTES=fixed``, the default — so the FIXED run exercises the
++      remediation), then the production repos; in ``B3_BYTES=production`` mode the
++      production entries are bound first.  The order is applied as ONE prefix
++      assignment (``sys.path[:0] = [...]``), never as a per-entry ``insert(0)``
++      loop — REM-47/RF-1 showed that B3's per-entry prepend left production
++      *ahead* of the fixed copy, the inverse of its own stated intent.
++      Claim in the words: "attempt-local fixed sources first … then the
++      production repos".  Property test: ``tests/test_rem47_guard_order.py``.
++
++  (b) The collection guard CHECKS what it claims: ``find_spec_origin`` must equal
++      the mode's expected ``company_wiki_source.py`` (fixed copy first in fixed
++      mode), instead of merely "the fixed directory is somewhere on sys.path".
++      B3's guard recorded the origin but never compared it (RF-1).
++
++  (c) ``scratch/module_provenance.json`` is written through
++      ``record_module_provenance()``, which refuses silent last-writer-wins: a
++      second write of DIFFERENT bytes for the same module is flagged
++      (``"conflict": true``), the FIRST write stays the reported value, and every
++      write is retained under ``writes``.  B3's delivered record silently reported
++      the PRODUCTION bytes as the fixed copy's provenance because the last
++      conftest-loaded run was the production control (RF-1).  Property test:
++      ``tests/test_rem47_provenance_conflict.py``.
++
++SCOPE OF THIS GUARD — reviewer condition C2, recorded verbatim in the code's own
++terms: this guard is a runtime binding check for the suites hosted in THIS
++attempt.  It is **NOT** the REM-12 prevention mechanism and must never be
++presented as "the mechanism that prevents REM-12 recurring".  The operative
++REM-12 byte proof is the in-test explicit binding + hash assertions inside the
++carriers themselves; this conftest only fails a session loudly when the
++sys.path-level binding it manages has drifted.
+ 
+ Run bound commands with ``cwd`` set to the ``iso/`` directory: pytest then loads
+ this file as ``rootdir`` conftest *before* collecting test modules, so the path
+-binding wins the import race.  The corresponding ASSERTION lives in the test
+-files (``TestProductionProvenance`` in ``tests/test_b3_production_provenance.py``),
+-so reverting this binding makes a real test go RED instead of silently recording
+-the drift.
++binding wins the import race.
+ """
+ from __future__ import annotations
+ 
+ import hashlib
+ import json
++import os
+ import sys
+ from pathlib import Path
+ 
+ import pytest
+ 
+ ATTEMPT_ROOT = Path(__file__).resolve().parents[1]
+-FIXED_RF = ATTEMPT_ROOT / "iso" / "fixed" / "rf_scripts"
+-FIXED_CW = ATTEMPT_ROOT / "iso" / "fixed" / "cw_source_catalog"
++FIXED_RF = ATTEMPT_ROOT / "iso" / "fixed2" / "rf_scripts"
++FIXED_CW = ATTEMPT_ROOT / "iso" / "fixed2" / "cw_source_catalog"
+ RF_ROOT = Path("C:/Users/郑曾波/Projects/revenue-forecast")
+ CW_ROOT = Path("C:/Users/郑曾波/Projects/company-wiki")
+ 
+-# Order matters: attempt-local fixed sources first (so the FIXED run exercises
+-# the remediation), then the production repos.  The I-05-B / I-05-C frozen
+-# checkout copies are deliberately never inserted — that stale entry is exactly
+-# the REM-12 defect.
+-for _entry in (str(FIXED_CW), str(FIXED_RF), str(RF_ROOT / "scripts"),
+-               str(CW_ROOT / "src")):
++MODE = os.environ.get("B3_BYTES", "fixed").strip().lower()
++if MODE not in ("fixed", "production"):
++    raise RuntimeError(f"B3_BYTES must be 'fixed' or 'production', got {MODE!r}")
++
++# The claim this comment makes is the claim the code implements (REM-47):
++# attempt-local fixed sources first (fixed mode), then the production repos.
++if MODE == "production":
++    PATH_ORDER = (str(RF_ROOT / "scripts"), str(CW_ROOT / "src"))
++else:
++    PATH_ORDER = (str(FIXED_CW), str(FIXED_RF),
++                  str(RF_ROOT / "scripts"), str(CW_ROOT / "src"))
++
++_ALL_BOUND = (str(FIXED_CW), str(FIXED_RF),
++              str(RF_ROOT / "scripts"), str(CW_ROOT / "src"))
++for _entry in _ALL_BOUND:
+     while _entry in sys.path:
+         sys.path.remove(_entry)
+-    sys.path.insert(0, _entry)
++# One prefix assignment: the tuple's first element ends up at sys.path[0].
++# A per-entry insert(0) loop would REVERSE the tuple (that was the RF-1 defect).
++sys.path[:0] = list(PATH_ORDER)
++
++# The I-05-B / I-05-C frozen checkout copies are deliberately never inserted —
++# that stale entry is exactly the REM-12 defect.  (Recorded here as history, not
++# as a claim that this file prevents REM-12: see the C2 note in the module docstring.)
++
++
++def _expected_origin() -> Path:
++    """The company_wiki_source.py this mode claims the importer will find."""
++    if MODE == "production":
++        return RF_ROOT / "scripts" / "company_wiki_source.py"
++    return FIXED_RF / "company_wiki_source.py"
+ 
+ 
+ def _sha256(path: Path) -> str:
+@@ -54,9 +106,12 @@ def _binding_state() -> dict:
+     fixed_cws = FIXED_RF / "company_wiki_source.py"
+     spec = importlib.util.find_spec("company_wiki_source")
+     origin = Path(spec.origin).resolve() if spec and spec.origin else None
++    expected = _expected_origin()
+     return {
++        "mode": MODE,
+         "sys_path_head": sys.path[:8],
+         "find_spec_origin": str(origin) if origin else None,
++        "expected_origin": str(expected.resolve()),
+         "fixed_rf": str(FIXED_RF),
+         "fixed_rf_on_path": str(FIXED_RF) in sys.path,
+         "fixed_cws_exists": fixed_cws.is_file(),
+@@ -66,22 +121,101 @@ def _binding_state() -> dict:
+ @pytest.hookimpl(tryfirst=True)
+ def pytest_collection(session):  # noqa: ARG001
+     """Record the binding *before* any test module is imported, and fail the
+-    session if the fixed sources are not the ones the importer will find.
++    session if the module the importer will find is not the mode's expected bytes.
+ 
+-    This is the loud guard for REM-12: if the binding silently degrades (wrong
+-    cwd, dropped prepend), collection stops here instead of producing a green
+-    run against the wrong bytes."""
++    REM-47/RF-1 fix: the previous guard only asserted "FIXED dir in sys.path" and
++    file existence while *computing* the origin and never checking it — and its
++    prepend order left production ahead of the fixed copy, so the un-checked
++    origin was in fact production.  Now the check is on the resolved origin."""
+     state = _binding_state()
+     scratch = ATTEMPT_ROOT / "scratch"
+     scratch.mkdir(parents=True, exist_ok=True)
+     (scratch / "binding_state.json").write_text(
+         json.dumps(state, indent=2), encoding="utf-8")
+-    if str(FIXED_RF) not in sys.path:
+-        raise RuntimeError(
+-            f"B3 binding lost: {FIXED_RF} missing from sys.path")
+-    if not state["fixed_cws_exists"]:
++
++    expected = Path(state["expected_origin"])
++    origin = Path(state["find_spec_origin"]) if state["find_spec_origin"] else None
++    if MODE == "fixed":
++        if str(FIXED_RF) not in sys.path:
++            raise RuntimeError(
++                f"B3 binding lost: {FIXED_RF} missing from sys.path")
++        if not state["fixed_cws_exists"]:
++            raise RuntimeError(
++                f"B3 binding lost: {FIXED_RF / 'company_wiki_source.py'} missing")
++        if str(PATH_ORDER[0]) != sys.path[0]:
++            raise RuntimeError(
++                f"B3 binding lost: sys.path[0] is {sys.path[0]!r}, expected the "
++                f"fixed copy first: {PATH_ORDER[0]!r} (docstring = reality)")
++    if origin is None or origin.resolve() != expected.resolve():
+         raise RuntimeError(
+-            f"B3 binding lost: {FIXED_RF / 'company_wiki_source.py'} missing")
++            f"B3 binding lost: company_wiki_source resolves to {origin}, "
++            f"expected {expected} (B3_BYTES={MODE})")
++
++
++def _write_entry(entry: dict) -> dict:
++    return {key: entry[key] for key in ("file", "sha256", "bytes") if key in entry}
++
++
++def record_module_provenance(path: Path, record: dict) -> dict:
++    """REM-47/RF-1: merge provenance writes; refuse silent last-writer-wins.
++
++    - first write for a module: recorded normally (with its ``writes`` history);
++    - a later write with the SAME sha256: history appended, no conflict;
++    - a later write with a DIFFERENT sha256: ``conflict = true`` is set, the
++      FIRST write stays the reported value (production bytes can never silently
++      masquerade as the fixed copy's provenance, in either write order), and all
++      distinct writes are retained under ``writes`` — nothing is deleted.
++    """
++    prior = None
++    if path.exists():
++        try:
++            prior = json.loads(path.read_text(encoding="utf-8"))
++        except (json.JSONDecodeError, UnicodeDecodeError):
++            prior = {"unreadable_prior_record": True}
++    prior_modules: dict = {}
++    if isinstance(prior, dict) and isinstance(prior.get("modules"), dict):
++        prior_modules = prior["modules"]
++
++    conflict = False
++    modules: dict = {}
++    for name, entry in record.get("modules", {}).items():
++        entry = dict(entry)
++        old = prior_modules.get(name)
++        if old is None:
++            entry["writes"] = [_write_entry(entry)]
++            modules[name] = entry
++            continue
++        old_writes = old.get("writes") if isinstance(old, dict) else None
++        if not isinstance(old_writes, list) or not old_writes:
++            old_writes = [_write_entry(old)] if isinstance(old, dict) else []
++        new_writes = old_writes + [_write_entry(entry)]
++        distinct = {write.get("sha256") for write in new_writes}
++        if len(distinct) > 1:
++            conflict = True
++            kept = dict(old)          # FIRST write stays the reported value
++            kept["writes"] = new_writes
++            kept["conflict"] = True
++            kept["conflicting_writes"] = len(distinct)
++            modules[name] = kept
++        else:
++            entry["writes"] = new_writes
++            modules[name] = entry
++    for name, old in prior_modules.items():   # never drop an earlier record
++        if name not in modules:
++            modules[name] = old
++            if isinstance(old, dict) and old.get("conflict"):
++                conflict = True
++
++    merged = {
++        "schema": "b3prereq.module_provenance.v2",
++        "mode": MODE,
++        "conflict": conflict,
++        "sys_path_head": record.get("sys_path_head", []),
++        "modules": modules,
++    }
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(merged, indent=2), encoding="utf-8")
++    return merged
+ 
+ 
+ def pytest_sessionfinish(session, exitstatus):  # noqa: ARG001
+@@ -103,6 +237,4 @@ def pytest_sessionfinish(session, exitstatus):  # noqa: ARG001
+             "bytes": path.stat().st_size,
+         }
+     scratch = ATTEMPT_ROOT / "scratch"
+-    scratch.mkdir(parents=True, exist_ok=True)
+-    (scratch / "module_provenance.json").write_text(
+-        json.dumps(record, indent=2), encoding="utf-8")
++    record_module_provenance(scratch / "module_provenance.json", record)
+
+--- diff 2: B3 accepted iso/fixed/** (b3_reference copy) -> this attempt iso/fixed2/**  [REM-49 comment-only fix in source_preparation.py; all other files byte-identical] ---
+diff --git "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\b3_reference\\iso\\fixed/rf_scripts/source_preparation.py" "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\iso\\fixed2/rf_scripts/source_preparation.py"
+index 9b5ebd4..3626da2 100644
+--- "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\b3_reference\\iso\\fixed/rf_scripts/source_preparation.py"
++++ "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\iso\\fixed2/rf_scripts/source_preparation.py"
+@@ -135,7 +135,7 @@ def prepare_source(
+     # bundle (FC-902) via the selector — the unsourced
+     # payload.get("selected_artifacts") path is removed.  artifact_read =
+     # roles with a verified artifact (producers do not run); producer_events =
+-    # the DAG closure of the non-reusable roles (never a blind full recompute).
++    # requested missing roles + their non-reusable ancestors (never a blind full recompute).
+     artifact_read, producer_events = (
+         company_wiki_source.select_artifact_roles(handle))
+     # W05-B: verify the ACTUAL artifact reads.  artifact_read is the PLAN;
+
+--- diff 3: B3 handoff.json superseded -> corrected  [REM-48 record correction with superseded retention] ---
+diff --git "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\evidence\\rem48_superseded\\handoff.json.pre-correction" "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-I05C-delivery-fixes\\a20260921-01\\handoff.json"
+index 703ed70..da9c135 100644
+--- "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\evidence\\rem48_superseded\\handoff.json.pre-correction"
++++ "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-I05C-delivery-fixes\\a20260921-01\\handoff.json"
+@@ -185,7 +185,7 @@
+     "I-05-C:retry-count-vs-artifact-count.json": "A3DD418F31B75753FB60F5C1E00AE386C4F33FBF02E6F72A5D74807C794FE326",
+     "I-05-B:iso/tests/test_w05b_verified_artifact_read.py": "F9845F170E0EFF4B705993A3659CC0D88EE7C476AE019641B712E4968DF9595D",
+     "I-05-B:iso/checkout_scripts/company_wiki_source.py": "A55602E5C2881E64F888F39A224F82DB918190009DF3901497A5CD1E252E94AE",
+-    "verification": "after/integrity.json compares every frozen hash against its recorded expectation; all matched at the end of the run. Nothing under execution_runs/I-05-C/** or execution_runs/I-05-B/** was written."
++    "verification": "CORRECTED 2026-09-22 by B3-PREREQ a20260922-01 (REM-48/RF-5; superseded wording retained at execution_runs/B3-PREREQ/a20260922-01/evidence/rem48_superseded/handoff.json.pre-correction): after/integrity.json RECORDS 4 expected_frozen entries; 3 were compared against their recorded expectation and matched at the end of the run; the 4th, I-05-C:oracle.md, carries the literal NOT_REHASHED and was NOT re-hashed by this attempt (flag at after/integrity.json:23) — the reviewer independently re-hashed it as E4004563B8BBC403D7C8E3856A5FCB95AC3107E57FE891D7B848C5E9834CB34B, matching, and git-clean since 8b7229c3. Nothing under execution_runs/I-05-C/** or execution_runs/I-05-B/** was written."
+   },
+ 
+   "commands_executed": [
+
+--- (no other file was modified anywhere: see evidence/tree_integrity.txt and evidence/production_readonly_check.txt) ---

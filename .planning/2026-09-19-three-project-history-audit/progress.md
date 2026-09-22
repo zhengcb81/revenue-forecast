@@ -924,3 +924,109 @@ F2 日期标签差一天 → **留置**（内容正确+三处披露，不为一�
 ### 六、待 owner（仅两问，不阻塞）
 
 REM-80（M01-M04 扩权或豁免）、REM-84（START_HERE append-3 授权）。
+
+---
+
+## 2026-09-22 — Round 82：第 1 批推送完成（目标②前半达成）
+
+- **推送成功**：`ab20cebe..6f74b056 HEAD -> main`（21 提交），门在真实推送 hook 内 **GREEN（10 步全 ok）**，`push_rc=0`；post-push 四步全过（ahead=0、四锚 disk==HEAD、scripts clean、门=1200 态）。
+- **本批内容**：门超时 600→1200（活体红绿对，owner §16-B）、4 个嵌套 gitlink 解除跟踪、PWF 五件（§15/§16 原话、REM-01…86、findings/progress Round 77–82、task_plan Round 77）。
+- **8/8 目标卡状态词全收**；载体落定 6/8 完成，INVEST（写第 2/3 件）与 I-14-D 两路在跑；GATE 复审精简重派（`88d462a5`，前一复审上下文耗尽）。
+- **I-09-C** 在九步执行（裁决 B：EOL 锚点 proceed-with-disclosure）。
+- **第 2 批（B1/B3/I-14-D 攒批）**：B1 需先补 REM-40…44 五项晋升前置、B3 需先修 REM-47/48/49；I-14-D 已 accepted_scoped（r7）待载体落定即入批。
+- 待 owner 两问不变：REM-80（M01-M04 扩权/豁免）、REM-84（START_HERE append-3）。
+
+---
+
+## 2026-09-22 — Round 83：载体 7/8、第 2 批前置双卡与 REM-79 机制化开卡
+
+- **GATE-TIMEOUT-1200 复审 = `accepted_scoped`**（12/12 字节级检查，pin `2a66abae…`；复审还抓出**父代理派单简报的哈希后缀笔误 f594→c594**——证据自身一致，笔误在简报）。范围句带 REM-79 域：仅在实测域内证明（8 burner、green2 ambient 2/12/2、GREEN 1336.7 s）；极端 ambient 下 real-data 1182.3 s vs 1200 仅 18 s 边距且内部测试已在其自身 120 s 超时上失败 ⇒ 极端 ambient 仍可能超 1200 = **owner 权、§16-B 外 / OQ-01**。其载体落定在跑。
+- **I-14-D r7 载体落定完成**（`handoff_r6.json` → accepted_scoped；review.md 纯追加 `## r7 verdict` L396-416、前 26172 B 前缀证明不变；3 处 `verdict_expressed:false` 注记不删；两份 `it_states_no_verdict` 与 `self_reference` 均 superseded 留存）。⚠️ 计分口径：I-14-D 现役载体是 `handoff_r6.json` 而非 `handoff.json`（后者为 r1 时代旧件）——**7/8 落定**，仅 GATE 在飞。
+- **INVEST-CORE 载体落定完成**（三件套；6 处 pre-verdict 陈旧字段封存；8 条随行 findings 三处镜像；merge_authority 原文未动）。
+- **第 2 批前置双卡开卡**：**B1-PREREQ**（REM-40…44：oracle r5 字段数追加更正、R13 等价节点覆盖 M6、E21 绑定可行性结论、新 RED/GREEN 裸 stdout 保留协议+r1 失口登记为不可闭合历史、mtime 冻结序→哈希钉序）；**B3-PREREQ**（REM-47 conftest 守卫顺序实修+provenance 冲突拒写、明记不冒充 REM-12 预防；REM-48 `NOT_REHASHED` 矛盾按实修正旗标不删；REM-49 `source_preparation.py:134-138` 注释双错实修+行为零变化证明——**不修则晋升带 REM-13 缺陷类**）。各带属性测试与 3 变异。
+- **REM-79 机制化开卡**（目标③欠账）：把"带域断言"从散文变为**自动检查器**（CJK/EN 双语 universal 词表 + 同行域限定启发式、exit 0/1 + --json）；oracle 先冻结词表与语料哈希；**RED=朴素版必须漏检、GREEN=真版精确命中、3 变异**（剥域→必flag、加域→必clean、行号偏移→必失配）；历史被证伪句（F-REV-R4-06/R5-02/R6-02 形态）作必须检出的正样本；**对 live 计划文件只扫描不修改**（发现交父代理）。
+- 推送后状态：ahead=0、四锚 disk==HEAD、scripts clean、门=1200 态；第 2 批候选 = I-14-D（就绪）+ B1/B3（前置卡在跑）。
+
+---
+
+## 2026-09-22 — Round 12：🎯 目标① 完成（8/8 载体落定 accepted_scoped）
+
+**磁盘复核（handoff 状态直读，I-14-D 读其现役 `handoff_r6.json`）**：
+
+| # | 卡 | 落定载体（节选） |
+|---|---|---|
+| 1 | **GATE-TIMEOUT-1200** | accepted_scoped（8/8 最后一件，10:22:32 写毕；`reports=1`，复审 `2a66abae…`） |
+| 2 | DW15-REPAIR | accepted_scoped（`a9b9076f…` 裁决段 + 四分范围） |
+| 3 | B5-fix-g1a-g3 | accepted_scoped（`69ea3b03…`） |
+| 4 | I-08-C（oracle 重冻 r4） | accepted_scoped（`ee5046a5…`；解锁 I-09-C 已生效） |
+| 5 | I-14-F-R1（150/60） | accepted_scoped（`8ce87ef6…` + 失真字段 supersede） |
+| 6 | INVEST-CORE-ATTEST-GATE | accepted_scoped（`09b4e13e…` 重钉版 + 6 字段封存 + 8 CF 镜像） |
+| 7 | I-14-E-APPLY（campaign v2） | accepted_scoped（`feaec562…`，Q1=选项ii + 7 点范围逐字） |
+| 8 | I-14-D（r7 记录修正轮） | accepted_scoped（`cc6da8d3…`，`handoff_r6` 落定 + qualification `8242fbf7…`） |
+
+**协议完整性**：8/8 均经独立 reviewer 判定（其中 2 位曾给"全验证但无状态词"，由父代理发裁决请求补得三态词）、8/8 载体转录非自签（`verdict_is_transcribed_not_authored:true`）、8/8 qualification 三资格原值（`disclosure_adaptation=unmapped`、`accuracy=unproven`）、陈旧 pre-verdict 字段全部 superseded 留存（REM-83 物种零遗留）、**零生产合并、零冻结件改动**。
+
+**同轮其他**：I-09-C 九步执行活跃（5 s 前写入）；B1-PREREQ / B3-PREREQ / REM79-MECHANIZATION 三卡读卡期（0 文件、无死亡通知——先例：I-09-C 亦读了 12 分钟才建目录；下轮无产出即 ping）。
+
+**目标余项**：② 第 1 批 ✅（第 2 批等 B1/B3 前置卡）；③ 10 组闭环/4 组在修/2 待 owner/2 待外部；④ I-09-C 执行中、19 卡待函 A；⑤ 持续遵守。
+
+---
+
+## 2026-09-22 — Round 84：I-09-C 矩阵画像与两次披露干预、REM79 冻结复核
+
+**I-09-C（九步执行中）**：
+- 矩阵 `fault_matrix_summary.json` = **24 条：22 真 / 1 假 / 1 如实不可构造**。假 = **F12_stdout_pipe**（冻结行 expected {0,2}，raw=120，其余检查全绿）；不可构造 = **F5_lock_not_implemented**（`constructed:false`，原因原文 "no cross-process commit lock exists in the implementation under test" —— 被测实现无跨进程提交锁，锁获取失败无法构造）。
+- **执行障碍（卡方披露、非静默）**：Windows venv `python.exe` 为 launcher → 再起子解释器 ⇒ `Popen.pid` ≠ 实际代码 PID，前 3 个 kill 臂找错 PID 各卡 180 s 超时；修复 = manifest 同登 `os.getpid()+parent_pid`、orchestrator 改「扫 barrier→读 pid→验在 manifest→只杀该 PID」、kill 判据链 = barrier 到达 + manifest 登记 + kill 执行 + `writer_exited_<pid>.json` 缺席 + 进程消失 + raw/expected 分列。
+- **父代理两点干预（Round 18 发出，待应答）**：① K1/K2/K3 首轮 false verdict 盘上零留存（全扩展名递归搜证）——自报"如实保留"须成立：另给存档路径，或写 `k_arms_first_attempt_supersession.md`（旧字节不可恢复须如实披露、不许伪造）入 carried findings；② **F12 不得重跑到绿**——先定性 raw=120 是产品真实退出码（⇒ 按卡面退回 I-09-B、登记产品发现、不改冻结期望迁就）还是 harness 产物（⇒ 修后重跑 + supersession）。
+
+**REM79-MECHANIZATION（oracle 已冻结，写检查器前）**：`oracle.md` `6faa0ae9…`、`oracle_table.json` `366b1825…`、`evidence/freeze_record.json`；语料 6 文件哈希全钉（4 正：review.md:349 原行 / Round76 L1994 重建 / R4-06 与 R5-02 合成镜像；14 同行域负（含其 oracle 自载 2 行）；13 无标记负）；词表 CJK 7 + EN 6（letter-boundary）+ 域模式 D1–D7；exit 0/1/2 与 3 变异红集冻结。**父代理已复算两 pin 均 PIN-OK**。下一步 RED→GREEN→变异→live 扫描。
+
+**其余卡**：B1-PREREQ 227 文件（iso/venv 构建期）、B3-PREREQ 62 文件（rem49 测试+实修）、GATE/DW15/B5/I08C/I14FR1/INVEST/E-APPLY/I14D 八卡落定维持（目标① 完成态）。
+
+---
+
+## 2026-09-22 — Round 85：三重卡交付 + 三路复审 + REM79 词表更正进行中
+
+**交付批（全部 review_pending、零自签）**：
+- **B1-PREREQ**（REM-40…44 全修）：B1 oracle **追加 r5/r6**（四前缀证明 r1–r4 全匹配；post r5 `910ca4a8…`、post r6 `a8f192f1…`）；R13 等价节点四臂原始字节（arm1 fixed 2/2 绿、arm2 M6 主红+对照绿、arm3 冻结 12 节点@M6 盲区复现 12/12、arm4 对照偏离**未回改冻结 oracle**地披露）；E21 探针（loader 丢 issuer/key_id ⇒ 无物可比、issuer 改名两层被接受、坏签名 REJECT E14、不可绑三因+可绑三步入 decision 留产品卡）；F4 证据协议（raw 逐臂、标签撞名 exit99、SUMS 31 项）+ **r1 证据永久不可闭合**；F5 **24 条 hash 冻结链**跑后复验 14/14 + 未来冻结 hash-pin 政策。**附带发现 F6 复现分歧**（`validate_forecast_output` REJECT "forecast result hash mismatch" ⇒ B1-F6"both ACCEPTED"不成立）待复审裁定勘误。
+- **B3-PREREQ**（REM-47/48/49 全修）：守卫单前缀赋值+provenance 冲突拒写+C2 非主张三处入档（两属性测试 B3 基线 RED→GREEN、FC-904 真跑复现）；NOT_REHASHED 普查 1/4、前提修正（主张在 handoff:188）、原位修正留 superseded、**唯一越卡写入已披露**；注释-only 零行为差异四证 + FC-904 双侧逐节点恒等（共失败=RF-3 已声明）；3 变异红+恢复哈希+终轮 11 passed；4 被取代尝试诚实入 commands。
+- **I-09-C**（九步全量）：**24 例故障矩阵**（其自报 23 绿 vs 父实测 22 true+12 假+1 不可构造——计数口径差交复审）；11 真实 kill 臂 raw 全 **4242**（每杀先核 barrier+manifest、`writer_exited` 缺席=finally 未跑、K3b `.tmp` 存活证据）+ 7 OSError 臂 raw 全 2（明确标注不替代 kill）；P-C2 重试同 publication_id logical=1；P-C4 恢复中再 kill+损坏成员 fail-closed；双恢复幂等（P0 字节级不变）；P-C3 并发 12/12（reader 258 采样 0 断链、无 lock token=缺口活体证据、单轮限制登记）；P-C5 矩阵 27/27（stdout-only 与 markdown-无-output 显式拒绝 rc=2、validate-only 零写）；T-PUB run1 环境缺陷（缺 `_cffi_backend`）保留→run2 48 passed+新节点 11 passed；**四停止条件全未触发带证**；**F12 归因闭环**（A=0/B=120/C=0 ⇒ rc=120 为产品 CLI 自身退出码，数值域修订归 owner/I-09-A 勘误、断管归一化归 I-09-B，两者本卡未做）；9 carried findings + hook 表 H1–H6 + 产品零 diff。
+- **父代理两点干预均入账**：F-4（K 臂 supersession 记录，旧字节不可恢复如实披露）、F-1/F12（不重跑到绿+归因链）、F-8（rf 锚 EOL 裁决 B 四项硬要求全落）。
+
+**复审三路在飞**：B1 `591592b5`、B3 `7afb7e3b`、I-09-C `c25e33ad`（精简重派——首派者死于调用不存在工具）。
+
+**REM79 CORRECTION 1 进行中**：oracle 追加 +6295 B（13029→19324）+ `oracle_correction1_ledger.json`；我的 214 条裁处已存档 `live/parent_adjudication_r1.md`、轮1清单存为 `round1_findings_214.txt`；下步重跑 GREEN+live ⇒ `round2_diff`（残留=缩小真阳候选集）。
+
+**登记表**：§十八（10 组闭环/4 在修/2 待 owner/2 待外部）→ §十九（214 裁处）→ §二十（双前置卡交付、REM-40…44/47…49 → 待独立复核）。
+
+---
+
+## 2026-09-22 — Round 86：I-09-C 全收口、B3 复审过、REM79 封轮落盘、盘上计数 75
+
+- **I-09-C（目标④首开卡）三件套齐全 = accepted_scoped 落定完成**：复审 `673c10bc…`（86 行；PC2-K8 全链复算精确一致、PC1-K6 五环抽验、F12/F5 双裁定、双 supersession 核毕、四停止条件带证、7 条 void-without 范围携带）→ 载体三文件（`review.md` `d3299484…`/14192 B、`handoff` `31caacf7…`→`fa5c456b…`/34036 B、`qualification` `8d972ddb…`/20325 B）；**F12/F5 标 `OPEN_IN_ACCEPTED_SCOPE`**、SC-1..SC-7 入 carried（现 16 条）+ 顶层 `accepted_scope_carry`（`verdict_is_void_without_all_seven=true`）、4 个 pre-verdict 字段 supersede（REM-83 物种）、映射注记（复审 6 项 vs 派单 7 项同实质）。载体 0 字节、`git status -- scripts/` 空。
+- **B3-PREREQ 复审 = `accepted_scoped`**（pin `F367984B…`；复审自跑守卫属性 RED/GREEN、前提修正自 grep 复证、**顺带复推 `E4004563…` 再哈希与 `git diff 8b7229c3 HEAD` 空**关闭其 gap 3、恢复哈希独立复算；1 非阻断 F-1「exactly one M」须带目录域——repo-wide 24 M 中 23 属并发活动）。载体落定在跑（含 F-1 措辞主动纠正）。
+- **REM79 封轮 CORRECTION 2 落盘**：oracle 19324→**25537 B**（+6213；D8b 中文数词/D10b 连字符旗标代码/D11 引用跳过）；我的 round1（214 条）与 round2（48 条）裁处均已由卡方存档（`parent_adjudication_r1/r2_and_c2.md`）；下一步 round3 扫描（预期趋近 0，**不开 CORRECTION 3**）。
+- **盘上重算（目标进度指标）**：handoff 108 份 = **accepted_scoped 75** + review_pending 11 + 无 status 键（T1 协议卡）14 + planned 5 + blocked 1（I-06-A 待函 A）。⚠️ 三张**原始卡**（B1-I08C-product-fixes / B3-I05C-delivery-fixes / B5-plan-level-remediation）handoff 仍 `review_pending`——其条件已由本轮三修复卡关闭，**原始卡状态回填 = 父/owner 权**，等 B3/B1 落定齐后启动（计划入册）。
+- **在飞**：B1 复审（~19 min，最大证据集；**再无回执即 ping**）、B3 落定、REM79 round3。
+- **待 owner 不变 2 项**：REM-80（M01-M04 扩权/豁免）、REM-84（START_HERE append-3）。
+
+---
+
+## 2026-09-22 — Round 87：B1 假披露阻断、REM79 三轮终局、B3 全线收口、双原始卡回填
+
+- **B1-PREREQ 复审 = `changes_required`**（`e25a2c83…`/25883 B）。**唯一阻断 F-REV-B1P-01 = 卡的 F4 披露为假**：所谓"不可恢复的 r1 RED stdout"其实完好存活（`SRC/before/b1_unfixed.stdout.txt` `58863ffb…`=UTF-16LE 解码即 `10 failed, 2 passed in 8.18s`；git 单次添加 `980c9b7a` 未动；mtime 早于 r2 修订 23 s；行号 +6 对齐已丢失 r1 测试文件 18236 B）⇒ 真 11/1 是 `b1_unfixed_r2/_r3`；**源头是 B1 源复审 F4（L388-401）照抄未重测**；真永久缺口=**仅 r1 测试文件**；**无伪造——真件被说成丢失**。其余 F1/F2/F3/F5+全边界独立复算 CONFIRMED（四前缀/marker/M6 174v174 恰 1 文件/probe 原文/freeze 24 条全量+SUMS 31 条 0 不符）。**F6 裁定 = no erratum**（程序不匹配：F6 原文"recomputing it consistently"在先；卡探针变体(a)未重算；登记澄清=未重算任意值被 forecast 层拒 ⇒ F6 更强）。LOW：B1P-04（冻结时序 mtime 级披露携带）、B1P-05（diff 注释引烧毁标签）。
+- **动作链**：登记册勘误 §二十二+补1（覆盖**源头源复审 F4**、B1 封存不动、B1 自记 handoff L137 与源 F4 自相矛盾被复审解开、**REM-43 r2 过审前不得 closed**）→ **r2 修正轮 `42ffbb3b`**（F4 撤回 superseded 留存、**SRC oracle 追加 Revision r7**、F6 程序域措辞、探针 docstring、B1P-05、B1P-04 携带）→ 复审二轮。
+- **REM79 三轮终局**：214 → 48 → **2**（D8/D9/D10→D8b/D10b/D11 两轮 CORRECTION；`cleared_since_r1=212`、`new_vs_r1=0` 单调性全程、`correction3_opened=false` 封轮遵守、checker `1.2.0-correction2`）。**终裁 2/2 合规真阳 0**（R-D 节头主语承接、R-E 跨语言配对误报）⇒ **REM-79 机制化完成**，live 扫描转为未来 PWF 常规自检工具。REM79 收口中（final_hashes/decision/README 已落，待最终报告→派复审）。
+- **B3-PREREQ 全线收口**：复审 `accepted_scoped`（`F367984B…`，复审自跑守卫属性 RED/GREEN、复推 `E4004563` 与 `git diff 8b7229c3 HEAD` 空）→ 载体三件套（`36939b18…`/`ce815a52…`/`47374014…`，F-1 就地目录域纠正、两 pre-verdict gap supersede）→ **父执行登记关闭 REM-47/48/49**（§二十四：状态=修复+验收+落定；**≠晋升**；REM-49 晋升硬前置满足于 fixed2、生产特意未落）。
+- **双原始卡回填**（记账转录、非自签）：**B3 原始卡 `e9cba919`**（原 ACCEPT+三条件→条件关闭映射→accepted_scoped 转录）；**B5 原始卡 `98b176da`**（⚠️原判定 NOT-AS-IS=changes_required，**忠实转录为 changes_required、禁止发明接受**；条件处置 G1/G3→B5-fix 收口、G2→owner 留置原话核验、superseded_by 指针）。
+- **批次 2 前置**：I-14-D ✅、B3-PREREQ ✅、B1-PREREQ ⏳（r2→复审二轮）。**待你 2 项不变（REM-80/84）**。
+
+---
+
+## 2026-09-22 — Round 88：B5/B3 双系全套闭环、REM79 复审 accepted、B1-r2 装配尾声
+
+- **B3 系全套闭环**：B3-PREREQ（复审 `accepted_scoped` `F367984B…` + 载体三件套 `36939b18…`/`ce815a52…`/`47374014…`）+ B3 原始卡回填（原 ACCEPT L18-19 逐字转录 `3B8A9167…` 载体；review `928139C8…`/handoff `597FDAF7…` 47407 B/qual `4FE9D36E…` 24897 B）+ **追加更正两笔**（矢真句就地改+`-ceq` 逐字留存；CF-1 登记行 `§二十四` 交叉引用时序如实）+ **父执行登记关闭 REM-47/48/49**（§二十四，≠晋升、REM-49 生产特意未落）。
+- **B5 系全套闭环**：B5-fix（accepted 落定，早前完成）+ B5 原始卡忠实回填——原裁决 L13「NOT ACCEPTED AS-IS」逐字转录（carrier `0324bfdc…` 34764 B、**内嵌自排除 pin 复算 PIN OK**、无 sidecar 属该 attempt 形态）；三件套 `f4935c77…`/`ca69b8f4…` 31133 B（**status=changes_required**）/`a28efda0…` 11844 B；**全文件零 accepted_scoped**（每处显式标注修复卡状态）；G2 留置三处原话核验=**裁定关闭非修复**；`superseded_by`→B5-fix。父两裁定入册 §二十五（缺省资格字段补 canonical+pre_image 注记=合规；F-3 内部不一致如实转录不代裁、本体已由 B5-fix 关闭）。
+- **REM79-MECHANIZATION 复审 = `accepted_scoped`**：三段前缀链复算、三轮 `PROTOCOL_SATISFIED`、naive 臂 grep 证零域逻辑、引用小 GREEN+X3 诚实档、214→48→2 链与两份裁处转录一致、终 2 条内容对读 R-D/R-E 合规（**计划目录载体 vs 仓根副本不同文件**、归属不误记）、工具冒烟一次（stdlib、版本 sha 符账）、其自报告 REM-79 自扫首跑 18 修后 rc0；5 发现无阻断（F1=轮3 RED 7 vs 14 + §7 缺取代句=低优先 follow-up）；六条范围条件（§4）齐。报告 `0562158d…`/18393 B+sidecar；**载体落定 `601bd836` 在跑**。
+- **B1-r2 装配尾声**：SRC r7（47538→57911 B）、两轮 final_integrity、changes.diff 206219 B、binding 19461 B、README/SUMS 反复再生成=完整性自检循环；handoff 已带 r2 块（35537 B→后续更新）。**完整回报未达——下轮即 ping**。
+- **计分**：四系 B3✅ B5✅ REM79（落定中）B1⏳；8/8+I-09-C✅；批次 2 前置 I-14-D✅/B3✅/B5✅/B1⏳；**待 owner 2 项（REM-80/84）**；19 卡待函 A。

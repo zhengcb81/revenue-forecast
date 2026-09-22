@@ -1,0 +1,103 @@
+{
+  "executed_source_sha256": {
+    "scripts/contracts/evidence.py": "054e364a7a5c428f43c6378f795429751b26f24af8de07e22da4b3d0ac8a4561",
+    "scripts/revenue_core.py": "8a761498f5eb729e4f4227f2a315d709253f8b96acf7baa7253ab425e73ac883",
+    "scripts/revenue_publication.py": "bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0",
+    "scripts/revenue_report.py": "212f00598feca408dc429d4c7a5332131ce25f1165b079347e4b295345df7d3b"
+  },
+  "probe": "REM-42/E21 + result_sha256 binding feasibility (read-only)",
+  "q1_loader_shape": {
+    "conclusion": "loader returns fingerprint->public-key bytes only; the identity bytes exist in the trust FILE but are dropped by the loader, so an E21 comparison has nothing to read",
+    "entry_count": 1,
+    "issuer_present_in_loader_output": false,
+    "key_id_present_in_loader_output": false,
+    "keys_are_32hex": true,
+    "return_type": "dict",
+    "trust_file_entry_keys": [
+      "fingerprint",
+      "issuer",
+      "key_id",
+      "name",
+      "public_key"
+    ],
+    "trust_file_has_issuer_and_key_id": true,
+    "values_type": [
+      "bytes"
+    ]
+  },
+  "q2_identity_binding": {
+    "honest_signed__validate_forecast_output": {
+      "message": null,
+      "verdict": "ACCEPTED"
+    },
+    "honest_signed__validate_publication_receipt": {
+      "message": null,
+      "verdict": "ACCEPTED"
+    },
+    "issuer_rename__validate_forecast_output": {
+      "message": null,
+      "verdict": "ACCEPTED"
+    },
+    "issuer_rename__validate_publication_receipt": {
+      "message": null,
+      "verdict": "ACCEPTED"
+    },
+    "issuer_renamed_to": "revenue-forecast/evil",
+    "key_id_rename__validate_publication_receipt": {
+      "message": null,
+      "verdict": "ACCEPTED"
+    },
+    "key_id_renamed_to": "evil-key-id",
+    "negative_control_corrupt_signature__validate_publication_receipt": {
+      "error_type": "ForecastInputError",
+      "message": "attestation_signature_invalid: attestation signature verification failed (E14)",
+      "verdict": "REJECTED"
+    }
+  },
+  "q3_result_sha256": {
+    "original_result_sha256": "84e2ceceb6981175683b39963d98f7126cee9ca82e14ad11c80d4eb5c990622e",
+    "variant_a_arbitrary_rewrite": {
+      "new_value": "abababababababababababababababababababababababababababababababab",
+      "validate_forecast_output": {
+        "error_type": "ForecastInputError",
+        "message": "forecast result hash mismatch",
+        "verdict": "REJECTED"
+      },
+      "validate_publication_receipt": {
+        "message": null,
+        "verdict": "ACCEPTED"
+      }
+    },
+    "variant_b_restored_value": {
+      "note": "same package with result_sha256 restored (control)",
+      "validate_forecast_output": {
+        "message": null,
+        "verdict": "ACCEPTED"
+      },
+      "validate_publication_receipt": {
+        "message": null,
+        "verdict": "ACCEPTED"
+      }
+    },
+    "why_the_record_cannot_bind_it": "the record's signed request pins result_sha256 to SIGNED_RESULT_SHA256_SENTINEL ('0'*64) and the record carries no result_sha256 field (r3 fixpoint: result_sha256 covers the receipt, which contains the record)"
+  },
+  "setup": {
+    "attestation_status": "host_signed",
+    "issuer": "revenue-forecast/host-b1",
+    "key_id": "rf-b1-test-key",
+    "record_field_count": 10,
+    "record_fields": [
+      "algorithm",
+      "attestation_payload_schema_version",
+      "domain_separator",
+      "fingerprint",
+      "issuer",
+      "key_id",
+      "payload_sha256",
+      "request_id",
+      "signature",
+      "signed_at"
+    ]
+  },
+  "tree_under_test": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B1-I08C-product-fixes\\a20260921-01\\iso\\fixed\\rf"
+}

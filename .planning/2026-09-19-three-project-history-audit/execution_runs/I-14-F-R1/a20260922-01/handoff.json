@@ -1,0 +1,125 @@
+{
+  "card_id": "I-14-F-R1",
+  "parent": "I-14-F",
+  "attempt_id": "a20260922-01",
+  "date": "2026-09-22",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "line_ranges": "verdict L16; scoped residuals L35-L48; Gap-5 ruling L143-L163; findings L165-L174; signature L202-L211",
+    "sha256": "8ce87ef6d31087da65e556be4736a8c8f7734594575cf868149df383e5f62a1c",
+    "byte_proof": "reviewer_report.md re-hashed at carrier landing: 15841 B, digest equals the reviewer_report.sha256 sidecar (sha256 8ce87ef6…, bytes 15841, verdict accepted_scoped, pinned_at_local 2026-09-22T09:29:07+01:00); sidecar present and matching",
+    "verdict_is_transcribed_not_authored": true
+  },
+  "bookkeeping": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "field_correction_1": {
+      "scope": "handoff.json + evidence/I-14-F-R1/qualification.json only — review.md and reviewer_report.md not rewritten, no production writes",
+      "what": "superseded two implementer-era fields that became false the moment the verdict landed (same species as REM-83/CF-B5FIX-1: stale field cited as live): reviewer_status and scope_declaration.formula_state; both prior strings preserved byte-for-byte in *_historical_pre_verdict keys",
+      "before_sha256": {
+        "handoff.json": "af1874ecfb473cc134815f66c48ccc1611a955ce144521b34a4d44b75e8d0678",
+        "evidence/I-14-F-R1/qualification.json": "84aff187ba1bce9f5d319c003bc73eaee045532a4a98b801d2cdecc961aa6bd0"
+      },
+      "after_sha256": {
+        "handoff.json": "recorded in evidence/I-14-F-R1/qualification.json → field_correction.after_sha256[\"handoff.json\"] (a file cannot contain its own digest)",
+        "evidence/I-14-F-R1/qualification.json": "self-referential — not embeddable; reported in the carrier-landing reply"
+      },
+      "preserved_boundaries": "scope_declaration.disclosure_adaptation=unmapped and accuracy=unproven unchanged"
+    }
+  },
+  "implementer": "I-14-F-R1 implementer agent; NOT the reviewer",
+  "objective": "Apply owner §16 E-1 (verbatim 「E-1: 150/60」: GENERATION_RESERVE=150 ⇒ threshold 60 — the conservative-reroute option that overrides the orchestrator's keep-86 recommendation, adopted without second-guessing) to the product-side short-basetemp convention in a NEW attempt; pin boundary 60/61; flip I-14-F's 61–86-band no-reroute controls explicitly with written reasons; re-run RED/GREEN/mutation; correct the docstring arithmetic to the reviewer-measured figures; register append-only errata for I-14-F's sealed F-2/F-3/F-4/F-6 doc defects.",
+  "ruling_authority": "OWNER_DECISIONS.md §16 (2026-09-22), 原话逐字: 「E-1: 150/60」; ruling row: GENERATION_RESERVE=150 ⇒ 阈值 60; relation: 不同于建议 (owner chose the conservative full reroute over the orchestrator's keep-86+docs recommendation); dispatch: 派 I-14-F-R1 卡 with the explicit flip-discipline requirement",
+  "completed_steps": [
+    "1 attempt dir + binding.json (implementation-stage); I-14-F a20260919-01 read first (reviewer_report.md R-1 + handoff.json CF-I14F-1..8/X1) and kept READ-ONLY throughout (byte-verified: after/readonly-check.txt)",
+    "2 isolated env: iso/venv copied from I-14-F's sealed attempt (pinned pip set; verified runnable, Python 3.13.9); iso/tree copied from I-14-F's iso/tree (pre-edit hashes verified: conftest c22be9f3…, unit test b0402b56…); iso/red-tree = same copy minus the 2 added files = pristine CW HEAD (3 source anchors re-verified True against I-14-F binding.json); production company-wiki READ-ONLY (HEAD f39bd5a6 unchanged, only the 3 pre-existing user modifications)",
+    "3 oracle.md FROZEN before any run: sha256 b5fee00f52334122bded8758aae6a584a7e2d07f5327a7037670137cc7b6ec2a (13851 B) pinned in oracle.sha256 at 2026-09-22T08:35:44+01:00 — carries the three invariants (INV-1 boundary 60/61 both pinned; INV-2 61–86 relocate with verbatim flip reason; INV-3 structural ≤210 unrouted max) + expected unit results (15) + expected RED/GREEN/mutation/sweep tables",
+    "4 implementation in iso/tree only: conftest.py GENERATION_RESERVE=150, threshold derived >60, docstring rewritten with the TRUE figures (logon reserve 150 segment breakdown; child 125; old 31+13+79=123≠124 called out; Addendum-C ≥211-reroute claim false-for-logon noted; structural ≤210 margin); unit file 13→15 tests: 3 explicit expectation flips (84/82/78 + decide 64) each inline-reasoned 'owner §16 E-1 chose 150/60; this control's unrouted expectation is superseded', boundary 60+61 cases added (fixes F-5 unpinned boundary), all 4 misstated comments corrected to real lengths (fixes F-5 comments)",
+    "5 UNIT: adjudicating run after/unit-run3 = 15 passed, rc 0 (boundary 60/61 pinned, constants 210/150/60). Two earlier attempts retained with causes: unit-run1 rc1 = harness-invocation defect (basetemp parent missing → pytest mkdir fails), unit-run2 rc1 = my test-construction bug (pathlib join len 63 vs oracle-frozen 64; test construction corrected to realize FROZEN lengths — oracle not edited)",
+    "6 RED: pristine red-tree at frozen deep geometry (padded root 140 → cwd 166/167, basetemp 173/174, guard 6/6) → 6/6 rc=1; logon 3/3 literal WinError 206; child 1/3 surface path-family + runs 2/3 timeout-band artifact-adjudicated PATH-CAUSED (events file ~264 ≥ edge 260 missing, lock 256/cli 254 created, 0 worker logs; before/artifact-measure/red-child-artifacts.txt); zero CW-BASETEMP-DECISION lines (oracle §5)",
+    "7 GREEN: 150/60 tree, same geometry → relocated=true 7/7 (incl. the once-rerun), cleanup removed=true 7/7, generation_reserve=150/threshold=60 in every decision, ZERO path-family signatures; logon 3/3 rc=0; child 3×timeout15s-band = non-adjudicating (oracle §9) → rerun ONCE kept alongside (after/deep-rerun; also band, but on the relocated 75-char ProjectRoot ⇒ load-caused) (oracle §6)",
+    "8 MUTATION: CW_SHORT_BASETEMP_DISABLE=1, same tree/cwd → 2/2 rc=1, relocated=false reason=disabled-by-env; logon literal WinError 206; child timeout-band surface artifact-adjudicated PATH-CAUSED (disabled ⇒ no cleanup ⇒ artifacts survived, as pre-registered) (oracle §7)",
+    "9 SIZE SWEEP (logon; exact-length absolute basetemp under %TEMP%, length guard): 40→false(pass), 60→false(pass) [INV-1 lower], 61→true(pass) [INV-1 upper], 69→true(pass), 76→true(pass), 82→true(pass), 86→true(pass) — 7/7 matches oracle §8; guards 7/7 ok (this closes INV-3's moot 82–86 band with real runs)",
+    "10 evidence pack: after/evidence_index.json + commands.json (22 placement rows, EVERY row carries real argv + cwd — F-6/CF-I14F-7 corrected for this attempt) + changes.diff (2 all-additions) + after/final_hashes.json + after/readonly-check.txt",
+    "11 decision.md: applied logic + corrected doc figures + control-flip list with verbatim reasons + ERRATA REGISTRY for I-14-F's sealed defects (ERR-I14FR1-F2/CF-I14F-4, ERR-I14FR1-F3/CF-I14F-3, ERR-I14FR1-F4/CF-I14F-5, ERR-I14FR1-F6/CF-I14F-7) + disclosed process anomalies (§6) + remaining gaps (§9)",
+    "12 handoff.json status=review_pending; review.md left as unsigned stub; implementer did NOT self-sign"
+  ],
+  "expected_vs_actual": {
+    "unit": {"expected": "15 passed rc 0 (oracle §4)", "actual": "15 passed rc 0 (unit-run3)", "match": true},
+    "red": {"expected": "6/6 rc=1; logon literal 206 3/3; child path-family or artifact-adjudicated path-caused; no decision lines (oracle §5)", "actual": "6/6 rc=1; logon 3/3 WinError206; child 1/3 surface + 3/3 artifact path-caused; 0 decision lines; guard 6/6", "match": true},
+    "green": {"expected": "relocated 6/6, logon 3/3 rc=0, cleanup ok, zero path-family; child band non-adjudicating, rerun once kept (oracle §6)", "actual": "relocated 7/7 incl rerun; logon 3/3 rc=0; cleanup 7/7; 0 path-family; child 4×timeout15s-band, rerun kept", "match": true},
+    "mutation": {"expected": "2/2 rc=1, disabled-by-env, frozen signatures; child artifact rule (oracle §7)", "actual": "2/2 rc=1, disabled-by-env; logon literal 206; child artifact path-caused (264)", "match": true},
+    "sweep": {"expected": "40,60 unrelocated; 61,69,76,82,86 relocated AND pass (oracle §8)", "actual": "exactly that; 7/7 guard ok", "match": true}
+  },
+  "carried_findings": [
+    {"id": "CF-I14FR1-1 (inherits CF-I14F-2 / R-2)", "severity": "low", "scope": "I-14-E", "finding": "Still NO clean child_without_runtime pass at deep geometry: this attempt shows 4× timeout15s-band at the relocated deep placement (path criterion fully green: relocated, cleanup ok, zero path-family; rerun's ProjectRoot was the short 75-char fallback ⇒ load-caused). The load band remains out of scope and unadjudicated (oracle §9)."},
+    {"id": "CF-I14FR1-2 (inherits CF-I14F-5 / F-4)", "severity": "low", "scope": "this attempt ships the same design", "finding": "Cleanup is not guaranteed for KILLED sessions (3 orphan %TEMP%\\cw-pytest-basetemp dirs from I-14-F still exist and were NOT touched). The 150/60 change is constants-only, so this caveat ships unchanged with this attempt's conftest — registered via ERR-I14FR1-F4, not a new defect."},
+    {"id": "CF-I14FR1-3 (new, informational)", "severity": "info", "scope": "promotion", "finding": "The hook is repo-global: with threshold 60, ANY company-wiki pytest session passing an explicit basetemp > 60 chars now relocates. Only the two card nodes + the unit file were exercised under the hook here (same coverage caveat as I-14-F §10.4). A promotion card should run a broader suite sample before merge."},
+    {"id": "CF-I14FR1-4 (new, informational)", "severity": "info", "scope": "sweep design", "finding": "Integration sweep covers logon only (child excluded by frozen oracle §8 to keep 'relocate AND pass' free of the load band); flip-control values 68/75/81 verified by the pure criterion/unit tests rather than dedicated runs."},
+    {"id": "CF-I14FR1-3 / Gap-5 (reviewer-adjudicated: NOT blocking)", "severity": "info", "scope": "promotion", "finding": "Repo-global hook + threshold 60 relocates ANY explicit basetemp >60 in normal use; only 2 nodes + the unit file were exercised under the hook ⇒ promotion-time sampling obligation: the separate, ungranted promotion card must sample a broader company-wiki suite before merge. Rationale: constants-only widening of an already-accepted hook; the 61–86 band was actually sampled. Carrier: reviewer_report.md L143-L163 (§6 explicit ruling), L37-L40."},
+    {"id": "R-2 stands (I-14-E scope, reviewer-adjudicated)", "severity": "low", "scope": "I-14-E", "finding": "No clean deep child_without_runtime pass under the load band (4× timeout15s-band); the path criterion is fully green (relocated, cleanup ok, zero path-family); the load band is unadjudicated by design per frozen oracle §9. Carrier: reviewer_report.md L41-L43, L183-L185."},
+    {"id": "N-1", "severity": "low", "scope": "decision.md §4", "finding": "Flip reason recorded once at the §4 table head (rows reference it: 'reason above' / 'inline reason'), not restated in-row for 76/82/86; oracle wording satisfied at section level and per-case in the unit file. Suggest per-row restatement when the promotion card re-records these controls. Carrier: reviewer_report.md L169."},
+    {"id": "N-2", "severity": "info", "scope": "commands.json", "finding": "commands.json has argv+cwd (22 rows verified) but not per-row env — a rerunner must read harness/run_placement.py for PYTHONPATH=<tree>\\src and the stripped env (the reviewer's own first RED failed on exactly this). Evidence-completeness note, not a claim failure. Carrier: reviewer_report.md L170."},
+    {"id": "N-3", "severity": "info", "scope": "iso/ import asymmetry", "finding": "tree-vs-red-tree import asymmetry without PYTHONPATH (ModuleNotFoundError only on red-tree; root conftest.py presence is the only difference found); immaterial — the harness always sets PYTHONPATH and all cited runs used that env. Carrier: reviewer_report.md L171."},
+    {"id": "reviewer-disclosed: retained unit-run1/run2 failures", "severity": "info", "scope": "after/unit-run1, after/unit-run2", "finding": "unit-run1/run2 failures retained on disk and disclosed: harness-invocation defect (basetemp parent missing ⇒ pytest mkdir fails) and pathlib 63-vs-64 test-construction bug. The TEST construction was fixed, not the oracle; the oracle was not edited to paper over them — mtime ordering oracle 08:34:24 < pin 08:35:44 < first run 08:42:11; adjudicating run is unit-run3. Carrier: reviewer_report.md L129-L141."},
+    {"id": "promotion-of-iso (ungranted)", "severity": "info", "scope": "promotion", "finding": "Promotion of the iso/ fix to any production tree is a separate owner decision, explicitly ungranted. Carrier: reviewer_report.md L37-L40, L161-L163."}
+  ],
+  "errata_registry": {
+    "location": "decision.md §7 (append-only; I-14-F's frozen bodies untouched byte-for-byte)",
+    "entries": [
+      "ERR-I14FR1-F2 → cites CF-I14F-4 (reviewer F-2): I-14-F decision.md §1/§6 stale Addendum-B calibration presented as current; superseded — shipped was 210/124/86, current of record is 210/150/60",
+      "ERR-I14FR1-F3 → cites CF-I14F-3 (R-3/F-3): I-14-F oracle E-G4 >380 geometry silently run as 190/189; readers must read E-G4 as the 190/189 geometry; oracle amendment is that card's owner/reviewer call (append-only)",
+      "ERR-I14FR1-F4 → cites CF-I14F-5 (F-4): I-14-F decision.md §4 overstates cleanup; true guarantee = unconfigure-time cleanup only, KILLED sessions leave orphans; caveat applies to this attempt's conftest too (same mechanism)",
+      "ERR-I14FR1-F6 → cites CF-I14F-7 (F-6): I-14-F commands.json has no argv/cwd (it is a summary-index; real argv in its summary-placement.json files; '2/7' count mismatch recorded); THIS attempt's commands.json carries argv+cwd per row (verified 22/22)"
+    ],
+    "fixed_directly_here_instead": "F-5 (4 misstated comments + unpinned boundary) and F-1/R-1 (docstring figures + constants) are corrected in this attempt's own tree files — no erratum needed for them"
+  },
+  "next_step_number": 13,
+  "next_action": "INDEPENDENT REVIEW (implementer must not self-sign): re-pin oracle.sha256 vs run mtimes; re-derive len+150>210 ⇔ len>60 from iso/tree/conftest.py; re-run the 15-case unit suite; re-run RED/GREEN/mutation at cwd 166/167 (driver --target-root-len 140); check after/sizes against oracle §8; verify zero writes to production and to I-14-F's sealed attempt; verify commands.json argv/cwd; then write the verdict (never the implementer). Promotion to production remains a separate, ungranted step.",
+  "commands_executed": 25,
+  "raw_exit_codes": "unit-run1 rc=1 (harness invocation), unit-run2 rc=1 (test construction), unit-run3 rc=0; RED driver rc=0 (6 pytest runs all rc=1 as expected); GREEN driver rc=0 (logon rc=0×3, child rc=1×3 band); GREEN rerun driver rc=0 (pytest rc=1 band); MUTATION driver rc=0 (pytest rc=1×2 as expected); sweep driver rc=0 ×7 (pytest rc=0 ×7); pack rc=0. NO rc=97 (geometry/length guards all ok).",
+  "expected_exit_codes": "RED deep=1 each; GREEN logon=0 child band=1(non-adjudicating); mutation deep=1 each; sweep=0 each; unit adjudicating run=0",
+  "open_questions": [
+    "R-2/CF-I14F-2 stands: when will a clean deep child pass exist? Owner already ruled E-2 = 重跑 for I-14-E-APPLY — that card must retain basetemp artifacts (CF-I14F-X1) because cleanup destroys them for relocated runs.",
+    "Artifact retention vs cleanup-by-design (CF-I14F-5 + CF-I14F-X1): still an owner call; not changed here (constants-only card).",
+    "Promotion scope: repo-global hook + threshold 60 will relocate far more sessions in normal developer use (any explicit basetemp >60); the promotion card should decide whether that is the intended developer experience.",
+    "Calibration is machine-specific (I-14-F's standing caveat): 150/60 relies on this box's measured edges (dir ~248, file 260); other machines need their own envelope before trusting 210."
+  ],
+  "blocked_by": [],
+  "evidence_paths": {
+    "oracle": "oracle.md",
+    "oracle_pin": "oracle.sha256",
+    "decision": "decision.md",
+    "binding": "binding.json",
+    "commands": "commands.json (real argv+cwd per row)",
+    "changes": "changes.diff",
+    "index": "after/evidence_index.json",
+    "hashes": "after/final_hashes.json",
+    "readonly_check": "after/readonly-check.txt",
+    "unit": ["after/unit-run1/ (harness-invocation defect, kept)", "after/unit-run2/ (test-construction defect, kept)", "after/unit-run3/ (ADJUDICATING: 15 passed)"],
+    "red": ["before/deep/ (6 runs)", "before/artifact-measure/red-child-artifacts.txt"],
+    "green": ["after/deep/ (6 runs)", "after/deep-rerun/ (frozen once-rerun, kept)"],
+    "mutation": ["after/mut/ (2 runs)", "after/mut/child-artifacts.txt"],
+    "sweep": ["after/sizes/n40..n86/summary-placement.json", "after/sizes/caps/ (stdout+decision copies)"],
+    "review_stub": "review.md",
+    "length_tool": "harness/check_lengths.py (correction marked inline)",
+    "artifact_tool": "harness/measure_artifacts.py (CF-I14F-X1 method)",
+    "driver": "harness/run_placement.py (--target-root-len, --basetemp-len guards)",
+    "packer": "harness/pack_evidence.py"
+  },
+  "reviewer_status": "accepted_scoped — verdict by 独立复核, see status_authority + review.md verdict block + reviewer_report.md (8ce87ef6d31087da65e556be4736a8c8f7734594575cf868149df383e5f62a1c)",
+  "reviewer_status_historical_pre_verdict": "pending — no review has been performed; no verdict exists anywhere in this attempt; the implementer did not sign and cannot",
+  "superseded_reason": "implementer-era text asserted no verdict exists; false after landing",
+  "scope_declaration": {
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "formula_state": "accepted_scoped (transcribed from reviewer_report.md 8ce87ef6d31087da65e556be4736a8c8f7734594575cf868149df383e5f62a1c; see status_authority)",
+    "formula_state_historical_pre_verdict": "unreviewed (implementation complete, evidence frozen, awaiting independent review)",
+    "qualification": "test-infrastructure only; constants+docs change in an isolated tree; no product runtime code changed; production untouched; promotion separate and NOT granted"
+  },
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "note": "status = review_pending was set by the implementer and must only change when an independent reviewer writes a verdict (or a carrier landing transcribes a byte-pinned reviewer report). Owner §16 E-1 was applied verbatim without second-guessing; all expectation flips carry the written reason 'owner §16 E-1 chose 150/60; this control's unrouted expectation is superseded'; the 52-char datapoint deliberately does NOT flip. I-14-F's sealed attempt and both production repos received zero writes."
+}

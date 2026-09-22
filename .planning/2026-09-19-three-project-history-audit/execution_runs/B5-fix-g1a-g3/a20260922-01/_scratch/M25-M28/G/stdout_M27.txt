@@ -1,0 +1,35 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M25-M28\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M25-M28\code_root\model_registry.py
+registry formula: revenue = average_commissioned_mw * period_hours * pre_curtailment_capacity_factor * (1-curtailment_rate) * (contracted_share*contract_price_per_mwh + (1-contracted_share)*merchant_price_per_mwh) + other_revenue
+registry required: ['average_commissioned_mw', 'period_hours', 'pre_curtailment_capacity_factor', 'curtailment_rate', 'contracted_share', 'contract_price_per_mwh', 'merchant_price_per_mwh']
+registry optional: ['other_revenue']
+registry defaults: {}
+registry driver_bounds: {'contract_price_per_mwh': [None, None], 'merchant_price_per_mwh': [None, None], 'other_revenue': [None, None]}
+positive raised: None
+positive actual: [264000.0]
+positive expected: [264000.0]
+tolerances_ok: True
+continuity_positive ok: True
+defaults ok: True actual: [262800.0] expected: [262800.0]
+defaults declared check: other_revenue declared= False expected= False matches= True registry_defaults= {}
+observation: OBS-BASE-IGNORED raised= None actual= [264000.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-NEG-PRICE raised= None actual= [88800.0] matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None 
+negative: NEG-CARD NOT_JUDGED_declaration_unusable ModelRegistryError - period_hours must be positive: FY2027
+negative: N01a PASS_rejected ModelRegistryError - renewable_generation.average_commissioned_mw.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - renewable_generation.average_commissioned_mw.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - renewable_generation.average_commissioned_mw.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - renewable_generation.average_commissioned_mw.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver renewable_generation.average_commissioned_mw must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for renewable_generation: average_commissioned_mw
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for renewable_generation: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - renewable_generation.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - renewable_generation.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - renewable_generation.years must be consecutive and increasing
+negative summary: {'total': 11, 'passed': 10, 'failed': ['NEG-CARD'], 'failed_judged': [], 'not_judged': ['NEG-CARD'], 'judged': 10, 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)", 'declared_expectations_enforced': True, 'declared_expectations_usable': False, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True, 'target_exception': 'model_registry.ModelRegistryError'}
+neg_card_mechanism matched: True expected_substring= period_hours must be positive: FY2027 observed= period_hours must be positive: FY2027
+negative counts: {'declared_expectation_mismatch': 0, 'declared_expectation_not_met': 0, 'declared_expectation_missing_in_cases_json': 1}
+declared expectations enforced: True cases_json_declared_expectations_usable: False
+set-level case_contract declaration violations (G1-a routed, route_rc=2): ["cases whose `expected` is not 'ModelRegistryError': ['NEG-CARD']"]
+verdict: no_verdict exit_code: 2
+declared expectation enforcement: usable=False mismatch_ids=[] not_judged_ids=['NEG-CARD'] mismatch_count=0
+no_verdict reason: cases_json_declared_expectation_missing:NEG-CARD

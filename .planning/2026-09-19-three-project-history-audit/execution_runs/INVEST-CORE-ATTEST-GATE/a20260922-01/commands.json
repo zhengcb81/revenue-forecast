@@ -1,0 +1,87 @@
+{
+  "card_id": "INVEST-CORE-ATTEST-GATE",
+  "attempt": "a20260922-01",
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\INVEST-CORE-ATTEST-GATE\\a20260922-01",
+  "rc_legend": "pytest: 0 = all collected passed, 1 = at least one failed (per oracle §9); pwsh commands: 0 = success",
+  "network": "no command reaches the network",
+  "commands": [
+    {
+      "id": "IC-c0",
+      "purpose": "create attempt dirs; robocopy consumer + revenue runtime into iso/; hash before-anchors; FREEZE oracle.md + test_invest_attest.py + conftest.py (before/frozen_artifacts.json)",
+      "command": "robocopy <.agents\\skills\\invest-core> iso\\invest-core /E /XD __pycache__ …; robocopy <.agents\\skills\\revenue-forecast> iso\\revenue-forecast /E …; Get-Sha256 over all anchors; ConvertTo-Json -> before\\production_anchors.json + before\\frozen_artifacts.json",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "outputs": ["before/production_anchors.json", "before/frozen_artifacts.json"]
+    },
+    {
+      "id": "IC-c1",
+      "purpose": "RED — frozen test file against the UNFIXED consumer",
+      "command": "$env:INVEST_CORE_DIR='iso\\invest-core'; $env:REVENUE_FORECAST_DIR='iso\\revenue-forecast'; python -X utf8 -B -m pytest -p no:cacheprovider -q --no-header -rA test_invest_attest.py",
+      "expected_rc": 1,
+      "raw_rc": 1,
+      "observed": "7 failed / 3 passed (declared red set == observed red set)",
+      "outputs": ["before/RED_unfixed.stdout.txt", "before/RED_unfixed.rc.txt"]
+    },
+    {
+      "id": "IC-c2",
+      "purpose": "GREEN — same frozen test file against the FIXED consumer (guard implemented between IC-c1 and IC-c2, only under iso/invest-core-fixed)",
+      "command": "$env:INVEST_CORE_DIR='iso\\invest-core-fixed'; … python -X utf8 -B -m pytest -p no:cacheprovider -q --no-header -rA test_invest_attest.py",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "observed": "10 passed",
+      "outputs": ["after/GREEN_fixed.stdout.txt", "after/GREEN_fixed.rc.txt"]
+    },
+    {
+      "id": "IC-c3",
+      "purpose": "regression — invest-core's own 4-file suite on the pristine (unfixed) arm",
+      "command": "python -X utf8 -B -m pytest -p no:cacheprovider -q --no-header -rA iso\\invest-core\\tests",
+      "expected_rc": "0 primary, 1 under the pre-registered oracle §5 contingency",
+      "raw_rc": 1,
+      "observed": "6 failed / 35 passed / 1 skipped — six PRE-EXISTING clean-env unattested failures; contingency executed and disclosed in oracle r2.1",
+      "outputs": ["before/suite_pristine.stdout.txt", "before/suite_pristine.rc.txt"]
+    },
+    {
+      "id": "IC-c4",
+      "purpose": "regression — same suite on the fixed arm",
+      "command": "python -X utf8 -B -m pytest -p no:cacheprovider -q --no-header -rA iso\\invest-core-fixed\\tests",
+      "expected_rc": 1,
+      "raw_rc": 1,
+      "observed": "9 failed / 32 passed / 1 skipped = 6 pre-existing + exactly 3 fix-attributable E27 failures (r1 declared 2; third disclosed via oracle r2.2); tests byte-identical across arms",
+      "outputs": ["after/suite_fixed.stdout.txt", "after/suite_fixed.rc.txt", "after/tests_identity.json"]
+    },
+    {
+      "id": "IC-c5",
+      "purpose": "mutation M1 — remove the guard from a fresh copy of the fixed arm, re-run the same frozen test file",
+      "command": "robocopy iso\\invest-core-fixed iso\\invest-core-mutant /E; <exact literal revert of the verify_host_signed_attestation call + guard + comment>; $env:INVEST_CORE_DIR='iso\\invest-core-mutant'; … pytest test_invest_attest.py",
+      "expected_rc": 1,
+      "raw_rc": 1,
+      "observed": "7 failed / 3 passed — declared red set == observed red set; iso/invest-core-fixed re-hashed byte-stable (d59d579c…)",
+      "outputs": ["scratch/mutations/mutation_proof.json", "scratch/mutations/M1/pytest.stdout.txt", "scratch/mutations/M1/pytest.rc.txt"]
+    },
+    {
+      "id": "IC-c6",
+      "purpose": "changes.diff generation + round-trip proof on copies",
+      "command": "robocopy Projects\\invest-skills scratch\\roundtrip\\gen /E; overlay fixed file; git -C gen --output=changes.diff diff -- invest-core/scripts/invest_contracts.py; robocopy … scratch\\roundtrip\\verify; git -C verify apply -p1 --check changes.diff; git -C verify apply -p1 changes.diff; sha256 applied file; git apply -p1 --check at each skills root (check only); git -C Projects\\invest-skills status",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "observed": "check 0, apply 0, applied file sha256 d59d579c… byte-exact; skills-root --check 0/0/0; real repo porcelain empty",
+      "outputs": ["changes.diff", "scratch/roundtrip/roundtrip_proof.json"]
+    },
+    {
+      "id": "IC-c7",
+      "purpose": "post-run zero-write re-hash of every production/install anchor + both git porcelains + iso arm hashes",
+      "command": "Get-Sha256 over the anchor table; git status --porcelain on both repos; compare with before/production_anchors.json",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "observed": "NO DIFFERENCES — every anchor byte-stable, both porcelains empty, trust anchors still ABSENT, iso pristine still source bytes",
+      "outputs": ["after/production_anchors.json"]
+    }
+  ],
+  "interruptions_disclosed": [
+    "the first IC-c0 attempt failed at its first statement (a function named H collided with PowerShell's Get-History alias); NO file was written by that attempt — the anchor script was re-run with the function renamed to Get-Sh and its successful output is what before/production_anchors.json contains",
+    "the first oracle-r2 append attempt failed at parse time (pwsh here-string terminator error); NO bytes were appended to oracle.md — the append was re-executed reading the revision from scratch/oracle_revision_r2.md, and scratch/append_oracle_r2.json proves the r1 prefix untouched (r1_untouched true), so no partial/double append exists",
+    "the first IC-c5 attempt failed BEFORE python ran (Tee-Object target directory scratch/mutations/M1 did not exist; PowerShell rc -1 was a harness artifact, no pytest executed, no result produced); the directory was created and IC-c5 re-run cleanly — the recorded M1 result is from the clean run only",
+    "oracle r2 (append-only) was written after IC-c3/IC-c4 per the pre-registered §5 contingency + declared-set under-count disclosure — see scratch/append_oracle_r2.json; no expectation was edited in place",
+    "JSON note: handoff.json/commands.json/binding.json are strict UTF-8 JSON, verified by scratch/validate_json.py (rc 0); Windows PowerShell's ConvertFrom-Json mis-decodes their non-ASCII bytes in this environment (same artifact B1's handoff.json shows) — validators should read them as UTF-8"
+  ]
+}

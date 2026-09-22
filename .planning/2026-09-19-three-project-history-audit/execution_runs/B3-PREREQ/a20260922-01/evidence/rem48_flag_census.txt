@@ -1,0 +1,22 @@
+﻿=== REM-48 flag census over B3 attempt *.json/*.md (excluding review report text) ===
+after\integrity.json:23: "I-05-C:oracle.md": "NOT_REHASHED",
+reviewer_report.md:399: string `"NOT_REHASHED"` — recorded but never compared. Minor in effect: I re-hashed it
+TOTAL_NOT_REHASHED_OCCURRENCES=2
+
+=== expected_frozen entries in after/integrity.json ===
+I-05-C:oracle.md = NOT_REHASHED
+I-05-C:retry-count-vs-artifact-count.json = A3DD418F31B75753FB60F5C1E00AE386C4F33FBF02E6F72A5D74807C794FE326
+I-05-B:iso/tests/test_w05b_verified_artifact_read.py = F9845F170E0EFF4B705993A3659CC0D88EE7C476AE019641B712E4968DF9595D
+I-05-B:iso/checkout_scripts/company_wiki_source.py (stale) = A55602E5C2881E64F888F39A224F82DB918190009DF3901497A5CD1E252E94AE
+EXPECTED_FROZEN_COUNT=1 1 1 1
+MATCHED_ENTRIES=3
+NOT_REHASHED_ENTRIES=1
+
+=== premise check: does decision.md carry an every-hash claim? ===
+decision.md matches=0 (claim actually lives in handoff.json:188 per RF-5)
+
+=== the claim being corrected (handoff.json:188) ===
+    "verification": "after/integrity.json compares every frozen hash against its recorded expectation; all matched at the end of the run. Nothing under execution_runs/I-05-C/** or execution_runs/I-05-B/** was written."
+
+handoff.json sha256 BEFORE correction = CEE4B0DD157A6ED2F322C40258534414C0C64187D3F2C3E9EA3F3DFF7DEC171D
+superseded copy retained at evidence/rem48_superseded/handoff.json.pre-correction (bytes=25580)

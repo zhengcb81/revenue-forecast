@@ -1,0 +1,65 @@
+{
+  "schema": "rem79-binding/1",
+  "card_id": "REM79-MECHANIZATION",
+  "attempt_id": "a20260922-01",
+  "binding_status": "bound",
+  "parent_agent_id": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102",
+  "plan": ".planning/2026-09-19-three-project-history-audit",
+  "created": "2026-09-22",
+  "freeze_order": "corpus built (extraction only, no check logic) -> oracle_table.json -> oracle.md FROZEN -> naive checker written -> RED -> real checker written -> GREEN -> mutations -> live scan",
+  "frozen_inputs": {
+    "oracle.md": "round-1 frozen body sha256 6faa0ae90a0693ffeb03f9b63a811d4832d12f0e598f1699dcaf29462bdc241f (bytes[:13029]); + CORRECTION 1 (bytes[:19324] sha256 c8a6f20931bbf92aea96b5ea2be9ece19f977bc2f778dcd22a2f1f00c83be824 — ledger evidence/oracle_correction1_ledger.json); + CORRECTION 2 FINAL lexicon iteration (whole-file sha256 94306a4340e5ee6155629e1e2df06a08313f3e8d2326995935e7948d8535c830, 26285 bytes — ledger evidence/oracle_correction2_ledger.json). Both stages prefix-provable; lexicon v2 FROZEN, no CORRECTION 3.",
+    "oracle_table.json": "366b18253c973306fc1a8ea237c377551bc3be68243e6fc83cf5f247a87edae7 (UNCHANGED by both corrections — expectations were never edited)",
+    "corpus/pos_i14d_review_L349.md": "3d02e4c39f15a796dd8ba015f6c31588ba385a35b462af5982e572fb64728844",
+    "corpus/pos_round76_original.md": "09892ab4351fc219e356667485055bb32746227874721d739f208e8b9e94ec43",
+    "corpus/pos_synth_frev_r406.md": "4279c6957aa6cf792056062edd79d10c29689124bb3b0d1ef4401dc4d45ebbec",
+    "corpus/pos_synth_frev_r502.md": "087011fa33587b9526d73d649045d3f074adbb2f8f941bc763057d2d2850b55d",
+    "corpus/neg_domain_lines.md": "5312e2211aa65f213d46c4a249d21377c9290798930ac565ca02b1a876de3e9c",
+    "corpus/neg_no_marker_lines.md": "b38ae80ad07146f83b3c4692216dd67c57da5aa05232993e1fefebb9800d0fa1",
+    "freeze_record": "evidence/freeze_record.json (freeze timestamp + re-statement of the same hashes; corpus_hash_guard.json re-verifies them before every proof run)"
+  },
+  "tool_hashes": {
+    "tools/check_domain_assertions.py": "v1.2.0-correction2 (lexicon v2 final; sha256 in evidence/final_hashes.json — supersedes the round-1/round-2 entries below)",
+    "tools/check_domain_assertions.py@round2": "v1.1.0-correction1 (produced evidence/round2 and evidence/live/round2_*; sha256 in evidence/final_hashes.json of the r2 pack — superseded)",
+    "tools/check_domain_assertions.py@round1": "0b43191a923378d23213ee782cf57c9e4003999a39d42201c021e8d4688b072f (v1.0.0 — produced evidence/red, evidence/green, evidence/live/live_scan.json)",
+    "harness/naive_checker_marker_only.py": "v1.0.2-red-correction2 (marker lexicon synced: D10a+D10b+D11; still no domain logic; sha256 in evidence/final_hashes.json)",
+    "harness/naive_checker_marker_only.py@round1": "60166b8105f5f582fb954e3efb22b435b9cf830aa4584554de3b722c23448a9e (v1.0.0-red)",
+    "harness/build_corpus.py": "6213d91dc67ff2c980f22fc344c0c16c39754d75b5829745a7fb695d8664bed9 (unchanged all rounds)",
+    "harness/verify.py": "round-tag parameter (evidence/<tag>/…) so raw round-1 evidence is preserved; current sha256 in evidence/final_hashes.json",
+    "harness/verify.py@round1": "38c666f23a297f753dc499a561d94c5fba25523420bd4f49f46cb11a1e623cd1",
+    "harness/make_mutations.py": "1e45b62d13ed5c3403494d08b8237ebe3d73b8d9f3cbcfd78215eecdf3b5c3dd (unchanged all rounds)",
+    "harness/pack_evidence.py": "cda136bcc715368e837ee4c301565dd6d961d6a7835ed3c742ccde3d38d5ba6d (unchanged)",
+    "harness/utf8_normalize.py": "c2210d5711de26c43883a896d1d6bd0765c0ee860d7f7d9a72d47cdeb9e2482b (unchanged)",
+    "harness/live_round2.py": "round-2 live scan + diff (sha256 in evidence/final_hashes.json)",
+    "harness/live_round3.py": "round-3 live scan + full diff with C1/C2 cause labels (sha256 in evidence/final_hashes.json)",
+    "harness/verify_correction2.py": "C2.3-declared quote-sample mini-GREEN runner (sha256 in evidence/final_hashes.json)"
+  },
+  "read_only_sources": {
+    "note": "sha256 at corpus-extraction time; live values drift as owners edit these files (see evidence/corpus_manifest.json for full records)",
+    "task_plan.md": "4096a44d69061cef60a61c2479ccebeabc3d4c24faea0e0d36b72c001bc687bf",
+    "findings.md": "5a6acccca01ac02e274e0570811c165544a7e9778bfe752f5206da572cfc8f5a",
+    "progress.md": "e86b91cc052e1d0cc6f103b3ad6e21b96abdbe0a2d615268b2c77e440bcb43a2",
+    "REMEDIATION_REGISTER.md": "fe6203f61e4a356920177f1f1e46d8e155b68d8d083ed08b174e916bdac2fc7b",
+    "execution_runs/I-14-D/a20260919-01/review.md": "87519be026e5395174b791eb5fe497ad2edaca1db05f2adf4c19485fbf19dd4f"
+  },
+  "interpreter": {
+    "path": "system python (C:\\Miniconda\\python.exe on PATH)",
+    "version": "Python 3.13.9",
+    "flags": ["-X", "utf8", "-B"],
+    "deps": "stdlib only; no venv, no pytest, no third-party packages",
+    "network": "disabled (no network calls exist in any tool of this attempt)"
+  },
+  "allowed_write_roots": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/REM79-MECHANIZATION/a20260922-01"
+  ],
+  "forbidden": [
+    "writing anywhere outside this attempt directory",
+    "editing plan files (task_plan.md / findings.md / progress.md / REMEDIATION_REGISTER.md) — they are owners' files; findings are reported, not fixed",
+    "editing product code or any other attempt",
+    "git add/commit/checkout/stash in any repo (no git writes at all)",
+    "network calls of any kind",
+    "silently widening or narrowing the frozen lexicon after freeze (corrections only, appended and labelled — oracle.md §11)",
+    "self-signing any verdict or acceptance"
+  ],
+  "evidence_root": "execution_runs/REM79-MECHANIZATION/a20260922-01/evidence"
+}

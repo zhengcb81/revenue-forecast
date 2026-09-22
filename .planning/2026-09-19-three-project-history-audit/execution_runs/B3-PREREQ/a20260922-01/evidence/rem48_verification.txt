@@ -1,0 +1,15 @@
+﻿=== REM-48 verification after correction ===
+handoff.json parses as valid JSON: PASS
+NOT_REHASHED occurrences in records (excluding reviewer report) = 2  [MUST stay >= 1: no silent deletion]
+  after\integrity.json:23: "I-05-C:oracle.md": "NOT_REHASHED",
+  handoff.json:188: "verification": "CORRECTED 2026-09-22 by B3-PREREQ a20260922-01 (REM-48/RF-5; superseded wording retained at execution_runs/B3-PREREQ/a20260922-01/evidence/rem48_superseded/handoff.json.pre-correction): after/integrity.json RECORDS 4 expected_frozen entries; 3 were compared against their recorded expectation and matched at the end of the run; the 4th, I-05-C:oracle.md, carries the literal NOT_REHASHED and was NOT re-hashed by this attempt (flag at after/integrity.json:23) — the reviewer independently re-hashed it as E4004563B8BBC403D7C8E3856A5FCB95AC3107E57FE891D7B848C5E9834CB34B, matching, and git-clean since 8b7229c3. Nothing under execution_runs/I-05-C/** or execution_runs/I-05-B/** was written."
+corrected wording present (CORRECTED 2026-09-22 by B3-PREREQ): True
+false claim 'compares every frozen hash' still present: False  [MUST be False]
+4 expected_frozen / 3 matched / 1 NOT_REHASHED stated in corrected text: True
+handoff.json sha256 BEFORE = CEE4B0DD157A6ED2F322C40258534414C0C64187D3F2C3E9EA3F3DFF7DEC171D
+handoff.json sha256 AFTER  = E33D82A9E418A7CDFE04FE17CE435FF2F48EA06C27CAF096A9AB590C4683A493
+changed lines between superseded and corrected = 2 (expected 1: line 188 only)
+  => "verification": "CORRECTED 2026-09-22 by B3-PREREQ a20260922-01 (REM-48/RF-5; superseded wording retained at execution_r...
+  <= "verification": "after/integrity.json compares every frozen hash against its recorded expectation; all matched at the en...
+
+NOTE on 'changed lines = 2': Compare-Object reports one removed + one added instance of the SAME line (line 188); exactly ONE line of handoff.json changed (confirmed by changes.diff diff 3).

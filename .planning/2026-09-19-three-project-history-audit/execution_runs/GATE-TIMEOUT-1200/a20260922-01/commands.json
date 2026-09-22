@@ -1,0 +1,134 @@
+{
+  "card_id": "GATE-TIMEOUT-1200",
+  "attempt_id": "a20260922-01",
+  "schema": "command ledger: every command this attempt executed that had side effects or produced evidence, with expected/raw rc; shell = Windows PowerShell 5.1 unless noted; gate runs used C:\\Miniconda\\python.exe",
+  "units": [
+    {
+      "unit_id": "A0-freeze-oracle",
+      "argv_summary": "(pwsh) sha256 oracle.md + sha256 tools/pre_push_gate.py; write evidence/oracle_freeze.json",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "result": "oracle sha256=112fbe37049fca51330f744d36d23aec7e4b072a00cac6a08c34a4d1a3f4b562; gate_untouched_at_freeze=true (0d290326...); oracle_frozen_utc=2026-09-22T07:26:09.8465022Z",
+      "side_effects": "attempt dir creation + before/pre_push_gate.py.orig snapshot; NO production write"
+    },
+    {
+      "unit_id": "A1-apply-one-line",
+      "argv_summary": "(edit tool) tools/pre_push_gate.py: 'timeout: int = 600' -> 'timeout: int = 1200' in _run() signature, line 73",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "result": "after sha256=cf09ade8164e89d79237ff5a8409496ab1ae2a9c5f3ee2c253ccad20ef06df0b; git diff --numstat='1 1'; changes.diff written; evidence/line_change.json written",
+      "side_effects": "THE one authorized production change (owner section 16 B)"
+    },
+    {
+      "unit_id": "A2-green-state-reconstruction-check",
+      "argv_summary": "(pwsh) anchor copy + .Replace(600-line -> 1200-line) into %TEMP%, sha256 compare vs after hash",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "result": "MATCHES_AFTER=True (proves run_green.ps1 reconstruction produces byte-identical authorized state)"
+    },
+    {
+      "unit_id": "R0-driver-attempt1-FAILED-encoding",
+      "argv_summary": "& scripts/run_red.ps1 (first version, non-ASCII literals)",
+      "expected_rc": 0,
+      "raw_rc": 1,
+      "result": "FAILED before any work: BOM-less .ps1 decoded as ANSI by PS 5.1 -> mangled paths -> gate-hash check aborted script (FATAL). gate file untouched, 0 burners started, gate NOT run => does not consume the single bounded RED gate attempt. Log: after/red_driver_log_attempt1_FAILED_encoding.txt. Fix: drivers rewritten ASCII-only, $PSScriptRoot derivation, byte-verified 0 non-ASCII.",
+      "side_effects": "none (failed early)"
+    },
+    {
+      "unit_id": "R1-red-arm",
+      "argv_summary": "& scripts/run_red.ps1 -> gate restored to anchor bytes -> 8x Start-Process python cpu_burner.py -> python -u scripts/timed_gate_run.py <repo> after/gate_red_600.txt after/step_times_red_600.json",
+      "driver_expected_rc": 0,
+      "driver_raw_rc": 0,
+      "gate_argv": ["C:\\Miniconda\\python.exe", "-u", "tools/pre_push_gate.py"],
+      "gate_flags": [],
+      "gate_expected_rc": 1,
+      "gate_raw_rc": 1,
+      "gate_duration_s": 675.582,
+      "window_utc": "2026-09-22T07:35:16.856Z -> 07:46:32.438Z",
+      "result": "RED (oracle satisfied LIVE): steps 1-8 ok; E2E step TimeoutExpired 'timed out after 600 seconds' naming all 7 REAL_ROOTS_TESTS files; no GREEN line",
+      "load": "8 burners (pids 18300,31612,28716,26064,12776,29000,46120,30964; 8/8 alive; 0 survivors) + ambient ~2-5 python",
+      "evidence": ["after/gate_red_600.txt", "after/step_times_red_600.json", "evidence/burners_red.json", "evidence/burners_red_stopped.json", "evidence/git_status_before_red.txt", "evidence/red_gate_numstat_at_start.txt"]
+    },
+    {
+      "unit_id": "G1-green-attempt1",
+      "argv_summary": "& scripts/run_green.ps1 -> gate set to authorized 1200 bytes (hash-verified) -> 8 burners -> timed_gate_run.py after/gate_green_1200.txt after/step_times_green_1200.json",
+      "driver_expected_rc": 0,
+      "driver_raw_rc": 0,
+      "gate_argv": ["C:\\Miniconda\\python.exe", "-u", "tools/pre_push_gate.py"],
+      "gate_flags": [],
+      "gate_expected_rc": 0,
+      "gate_raw_rc": 1,
+      "gate_duration_s": 1924.684,
+      "window_utc": "2026-09-22T07:47:30.351Z -> 08:19:35.035Z",
+      "result": "FAIL per oracle (NOT a timeout): steps 1-9 ok (E2E 687.506 s ok; real-data completed 1182.3 s wall / pytest 1159.84 s < 1200) but real-data had 1 failed, 63 passed, 1 xfailed -> GATE RED at real-data",
+      "load_domain": "this card 8 burners + ambient python 20 at 08:08:35Z snapshot (incl. burners) / orchestration-measured 34 at 08:13:29Z incl. other sessions campaigns; ambient 3 after stop (08:20:17Z)",
+      "evidence": ["after/gate_green_1200.txt", "after/step_times_green_1200.json", "evidence/burners_green.json", "evidence/burners_green_stopped.json", "evidence/load_snapshot_green_live.json", "evidence/green_gate_numstat_at_end.txt", "evidence/git_status_after_green.txt"]
+    },
+    {
+      "unit_id": "G1a-f2-standalone-characterization",
+      "argv_summary": "python -m pytest -q --tb=short tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f2_missing_samples_fails (light load)",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "result": "1 passed in 44.00s (53.3 s wall) => the GREEN#1 failure is load-induced, not deterministic",
+      "evidence": "evidence/f2_standalone_lightload.txt"
+    },
+    {
+      "unit_id": "G2-green-attempt2-samedomain",
+      "argv_summary": "& scripts/run_green2.ps1 -> gate re-verified at authorized 1200 bytes -> 8 burners (fresh, same config) -> timed_gate_run.py after/gate_green_1200_attempt2_samedomain.txt after/step_times_green_1200_attempt2.json",
+      "driver_expected_rc": 0,
+      "driver_raw_rc": 0,
+      "gate_argv": ["C:\\Miniconda\\python.exe", "-u", "tools/pre_push_gate.py"],
+      "gate_flags": [],
+      "gate_expected_rc": 0,
+      "gate_raw_rc": 0,
+      "gate_duration_s": 1336.734,
+      "window_utc": "2026-09-22T08:24:55.688Z -> 08:47:12.422Z",
+      "result": "GREEN: all 10 steps ok, final line 'pre-push gate GREEN - safe to push (then self-monitor CI).', no FAILED, no TimeoutExpired; gate final sha256=cf09ade8...6df0b",
+      "per_step_wall_s": {"ruff": 2.05, "compileall": 1.32, "unique_symbols": 1.54, "host_guard": 9.35, "mypy": 3.52, "meta_tests": 33.82, "bom_scan": 0.41, "install_check": 3.89, "real_roots_e2e": 588.64, "real_data": 691.71, "total": 1336.73},
+      "load_domain": "RED-comparable: ambient 2 before burners, mid snapshot python=12 (=8 burners+gate+pytest+ambient 2), ambient 2 after stop; 8 burners pids 46696,9724,23124,40356,22888,16644,40160,28904, 0 survivors",
+      "evidence": ["after/gate_green_1200_attempt2_samedomain.txt", "after/step_times_green_1200_attempt2.json", "evidence/burners_green2.json", "evidence/burners_green2_stopped.json", "evidence/load_snapshot_green2_start.json", "evidence/load_snapshot_green2_mid.json", "evidence/load_snapshot_green2_end.json"]
+    },
+    {
+      "unit_id": "I1-invariant-count-e2e",
+      "argv_summary": "python -m pytest -q --tb=short <the same 7 REAL_ROOTS_TESTS files> (exact gate argv; gate discards successful output, so counts reproduced standalone)",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "duration_s": 190.8,
+      "result": "55 passed in 185.96s, NO skipped line => 55 passed, 0 skipped (invariant I-2 live)",
+      "load": "ambient 2 python, no burners (08:48:26Z -> 08:51Z)",
+      "evidence": "evidence/invariant_e2e_55_count_check.txt"
+    },
+    {
+      "unit_id": "I2-invariant-count-realdata",
+      "argv_summary": "python -m pytest -q --tb=line <the same 10 REAL_DATA_TESTS files>",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "duration_s": 251.6,
+      "result": "64 passed, 1 xfailed, 2 warnings in 246.64s => 65 total, 0 skipped; the xfail is the pre-existing static marker tests/test_fc1001_isolated_lake.py:146",
+      "load": "ambient 2 python, no burners (-> 08:55:49Z)",
+      "evidence": "evidence/invariant_realdata_count_check.txt"
+    },
+    {
+      "unit_id": "B1-binding-written-utc-fix",
+      "argv_summary": "(pwsh) replace placeholder written_utc with binding.json actual mtime; JSON re-parse check",
+      "expected_rc": 0,
+      "raw_rc": 0,
+      "result": "written_utc=2026-09-22T07:36:00.8751898Z (i.e. during RED arm, as its disclosure text states); JSON parse ok"
+    },
+    {
+      "unit_id": "Z-close-final-hashes",
+      "argv_summary": "(pwsh) sha256 every deliverable -> after/final_deliverable_hashes.json",
+      "expected_rc": 0,
+      "raw_rc": null,
+      "note": "runs as the LAST write of this attempt; its own output is the ledger (not self-hashed)"
+    }
+  ],
+  "forbidden_operations_check": {
+    "git_add_commit_push": "none executed by this attempt (only read-only git status / diff / rev-parse / numstat)",
+    "gate_flags_passed": "none (no --skip-*, no -k, no --deselect, no -x, in any arm)",
+    "production_lines_changed": "exactly 1 (tools/pre_push_gate.py line 73, owner section 16 B)",
+    "test_or_e2e_files_changed": "none (git status --porcelain shows only M tools/pre_push_gate.py)",
+    "load_faked": "no; burners are the recorded PIDs of real busy-loop processes, started/stopped by the drivers"
+  },
+  "python_flags_note": "gate invoked with -u (line-unbuffered stdout) so step-banner timestamps are truthful; capture-fidelity only, no gate logic change; disclosed in oracle.md section 6"
+}

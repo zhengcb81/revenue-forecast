@@ -1,0 +1,37 @@
+card: M31 model_id: inventory_sellthrough
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M29-M31\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M29-M31\code_root\model_registry.py
+registry formula: revenue = sold_units * net_revenue_per_unit; closing_inventory = opening_inventory + saleable_production + purchased_units - scrapped_units - sold_units
+registry required: ['opening_inventory', 'saleable_production', 'purchased_units', 'scrapped_units', 'sold_units', 'closing_inventory', 'net_revenue_per_unit']
+registry optional: []
+registry defaults: {}
+registry declared_driver_bounds: {}
+registry effective_bounds: {'opening_inventory': [0.0, 'inf'], 'saleable_production': [0.0, 'inf'], 'purchased_units': [0.0, 'inf'], 'scrapped_units': [0.0, 'inf'], 'sold_units': [0.0, 'inf'], 'closing_inventory': [0.0, 'inf'], 'net_revenue_per_unit': [0.0, 'inf']}
+positive raised: None
+positive actual: [160.0]
+positive expected: [160.0]
+positive tolerances: [1.6e-07]
+positive fidelity: {'python_type': 'list', 'is_flat_sequence': True, 'length': 1, 'element_types': ['float'], 'all_elements_plain_number': True, 'all_elements_finite': True, 'container_has_extra_fields': False, 'year_labels_observable': False, 'year_linked_observable': 'length only: len(output) must equal len(years)', 'expected_length': 1, 'years_length': 1, 'length_equals_years': True, 'length_equals_expected': True, 'expectations_present': True, 'structure_ok': True, 'fidelity_ok': True}
+per_value_checks: [{'index': 0, 'year': 2027, 'actual': 160.0, 'expected': 160.0, 'tolerance': 1.6e-07, 'abs_diff': 0.0, 'ok': True}]
+tolerances_ok: True
+continuity_positive raised: None actual: [160.0, 0.0] expected: [160.0, 0.0] ok: True
+defaults (not gating) ok: True actual: [160.0] expected: [160.0]
+observation: OBS-BASE-IGNORED raised=None actual=[160.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=True
+observation: OBS-SCRAP-NOT-REVENUE raised=None actual=[0.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True
+observation: OBS-SOLD-ONLY raised=None actual=[200.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True
+negative: NEG-CARD FAIL_declared_expectation_mismatch ModelRegistryError - opening_inventory stock-flow balance failed: FY2027
+negative: N01a PASS_rejected ModelRegistryError - inventory_sellthrough.opening_inventory.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - inventory_sellthrough.opening_inventory.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - inventory_sellthrough.opening_inventory.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - inventory_sellthrough.opening_inventory.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver inventory_sellthrough.opening_inventory must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for inventory_sellthrough: opening_inventory
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for inventory_sellthrough: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - inventory_sellthrough.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - inventory_sellthrough.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - opening_inventory continuity failed: FY2028
+negative declared-expectation comparison: exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)
+negative declared-expectation mismatches: 1
+negative summary: {'total': 11, 'passed': 10, 'not_judged': [], 'failed': ['NEG-CARD'], 'verdicts_are_mutually_exclusive': True, 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError', 'ValueError'], 'declared_expectation_comparison': "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)", 'declared_expectations_enforced': True, 'declared_expectations_usable': True, 'classification_is_mutually_exclusive': True, 'import_or_file_errors_never_pass': True}
+verdict: fail exit_code: 3
+printed_matches_evidence_file: True (re-read out_M31.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)

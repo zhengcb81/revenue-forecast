@@ -1,0 +1,57 @@
+{
+ "card_id": "M03",
+ "revision": "r2",
+ "generated_at_utc": "2026-09-20T00:45:03Z",
+ "production_repos_written": false,
+ "items": {
+  "F-M01-02": {
+   "change": "run_card.py / run_M01.py now return 0 only when positive tolerance, continuity and all negatives pass; 2 = harness incomplete; 3 = negative verdict",
+   "rerun_raw_returncode": 0,
+   "expected_returncode": 0,
+   "exit_code_semantics": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "verdict": "pass",
+    "exit_code": 0
+   },
+   "negative_summary": {
+    "total": 13,
+    "passed": 13,
+    "failed": []
+   },
+   "positive_actual": [
+    305.0
+   ],
+   "unchanged_product_call": "the same calculate_registered_model path was re-run unchanged; only the harness exit code changed"
+  },
+  "pack_evidence": {
+   "raw_returncode": 0,
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M03\\a20260919-01\\scripts\\pack_evidence.py:14: SyntaxWarning: invalid escape sequence '\\C'\r\n  --attempt <attempt_dir> --out-dir <evidence\\CARD> \\\r\n"
+  },
+  "F-M03-01": {
+   "stale_rebuild": "528,681,308,161.71",
+   "stale_gap": "88,700,626,838.29",
+   "corrected_rebuild": "528,684,368,999.31",
+   "corrected_gap": "88,697,566,000.69",
+   "source_of_truth": "evidence/M03/oracle.json disclosure_arithmetic.mapping_2_scope_residual (full-precision unit price 123,751.503986712)",
+   "files_corrected": [
+    "oracle.md",
+    "evidence\\M03\\historical_reconciliation.json",
+    "evidence\\M03\\disclosure_mapping.json",
+    "evidence\\M03\\accounting_decision.md"
+   ],
+   "conclusion_unchanged": true,
+   "gap_pct_unchanged": "14.3667"
+  }
+ },
+ "corrections_in_r3": {
+  "rc2_reachability": {
+   "earlier_claim": "rc=2 is not yet reachable in practice",
+   "corrected": "rc=2 IS reachable: a corrupted positive input makes the product raise, so no verdict exists (case D). Case B (case-plan defect outside the guard) exits 1, not 2.",
+   "disproved_by": "the point reviewer deleted growth_rate from the positive input and measured rc=2",
+   "recorded_in": "recovery/r2_exit_code_selfcheck/selfcheck_result.json case D"
+  }
+ }
+}

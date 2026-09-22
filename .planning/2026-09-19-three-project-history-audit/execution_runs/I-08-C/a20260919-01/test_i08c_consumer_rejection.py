@@ -13,7 +13,13 @@ from pathlib import Path
 
 import pytest
 
-REPO = Path(r"C:\Users\郑曾波\Projects\revenue-forecast")
+# Import-root override (fix-round addition, owner-approved re-freeze card
+# I-08-C-REFREEZE).  RF_IMPORT_ROOT unset => the ORIGINAL production path
+# below, byte-identical to every prior run of this file.  Set it to a tree
+# root containing scripts/ + tests/ to run this SAME suite against that tree
+# (e.g. B1's isolated fixed copy iso/fixed/rf).  Recorded with before/after
+# file hashes in binding.json / handoff.json.
+REPO = Path(os.environ.get("RF_IMPORT_ROOT") or r"C:\Users\郑曾波\Projects\revenue-forecast")
 sys.path.insert(0, str(REPO / "scripts"))
 sys.path.insert(0, str(REPO / "tests"))
 
@@ -84,7 +90,25 @@ def S2(readonly_env):  # different input anchor, formal
 # --- A-C1: legit signed package passes, repeatably -----------------------------
 
 def test_e1_legit_signed_package_passes_repeatably(S):
-    assert S["publication_receipt"]["attestation_status"] == "host_signed"
+    """E1 positive control (r4 re-freeze, owner A-2).
+
+    The LABEL assertion is now tree-conditional: B1 REM-01(b) retired
+    "file existence == signing capability", so on the fixed tree an honest
+    formal package issued with a provider that cannot complete the signing
+    handshake (sys.executable) carries the truthful `unattested` label and
+    no attestation record. The r1 assertion `== "host_signed"` pinned the
+    I-08-A §7.1 false-green shape and is superseded (oracle R4-2, E1).
+    What must hold on EITHER tree: the honest package passes both consumer
+    entry points, twice.
+    """
+    import revenue_publication as _rp
+
+    receipt = S["publication_receipt"]
+    if hasattr(_rp, "validate_publication_attestation"):  # B1 fixed tree
+        assert receipt["attestation_status"] == "unattested"
+        assert "publication_attestation" not in receipt
+    else:  # production / production-identical unfixed bytes: legacy issuance
+        assert receipt["attestation_status"] == "host_signed"
     validate_publication_receipt(S)
     validate_forecast_output(S)
     validate_publication_receipt(S)  # repeated read still passes
@@ -178,14 +202,21 @@ def test_e6_recomputed_self_hashes_do_not_repair_value_forgery(S):
         validate_forecast_output(forged)
 
 
-def test_e13_segment_base_revenue_not_bound_by_output_gates(S):
-    """E13 (pinned gap, oracle): self-hash-consistent segment base forgery
-    passes even the strong dispatcher (empirical, reported to reviewer)."""
+def test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates(S):
+    """E13 (r4 re-freeze, owner A-2): a self-hash-consistent forgery of
+    `segments[0].base_revenue` MUST be rejected by the strong dispatcher.
+    B1 REM-03 implements the gate; frozen rejection reason:
+    `segment base revenue mismatch`. The receipt layer still ACCEPTS it —
+    that F2/REM-02 limitation (hash-consistency only, documentation fix) is
+    unchanged and stays pinned as a limitation, not a security claim.
+    Node id renamed from `..._not_bound_by_output_gates` (oracle R4-3).
+    """
     forged = copy.deepcopy(S)
     forged["segments"][0]["base_revenue"] = forged["segments"][0]["base_revenue"] + 1
     _rehash(forged)
-    validate_publication_receipt(forged)
-    validate_forecast_output(forged)  # pinned: accepted by current gates
+    validate_publication_receipt(forged)  # F2 limitation: receipt layer is hash-consistency only
+    with pytest.raises(ForecastInputError, match="segment base revenue mismatch"):
+        validate_forecast_output(forged)
 
 
 def test_e7_registry_anchor_does_not_admit_forged_package(S):
@@ -223,16 +254,24 @@ def test_e10_result_without_receipt_rejected():
         validate_publication_receipt(bare)
 
 
-def test_e11_host_signed_label_flip_is_not_bound_at_consumption(U):
-    """KNOWN GAP (oracle E11): the label is only set-membership checked; no
-    consumption-side attestation verification exists in this tree."""
+def test_e11_host_signed_label_flip_is_rejected_at_consumption(U):
+    """E11 (r4 re-freeze, owner A-2): a self-hash-consistent package that
+    CLAIMS `attestation_status='host_signed'` while carrying no
+    `publication_attestation` binding record MUST be rejected by BOTH consumer
+    entry points. B1 REM-01(a) implements the gate; frozen rejection reason:
+    `attestation_missing_record` (E27). Node id renamed from
+    `..._is_not_bound_at_consumption`, whose name asserted the retired gap
+    (oracle R4-3).
+    """
     assert attestation_capability() is False  # issuance gate present
     flipped = copy.deepcopy(U)
     assert flipped["publication_receipt"]["attestation_status"] == "unattested"
     flipped["publication_receipt"]["attestation_status"] = "host_signed"
     _rehash(flipped)
-    validate_publication_receipt(flipped)  # GAP: label forgery accepted at receipt layer
-    validate_forecast_output(flipped)  # GAP: strong dispatcher does not bind the label
+    with pytest.raises(ForecastInputError, match="attestation_missing_record"):
+        validate_publication_receipt(flipped)
+    with pytest.raises(ForecastInputError, match="attestation_missing_record"):
+        validate_forecast_output(flipped)
 
 
 # --- registry fail-closed (A-C4 integrity precondition) ------------------------

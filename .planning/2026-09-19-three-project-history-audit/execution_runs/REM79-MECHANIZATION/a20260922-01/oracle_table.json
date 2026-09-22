@@ -1,0 +1,123 @@
+{
+  "schema": "rem79-oracle-table/1",
+  "card": "REM79-MECHANIZATION",
+  "attempt": "a20260922-01",
+  "frozen_before_checker_written": true,
+  "frozen_at": "2026-09-22",
+  "freeze_note": "This machine-readable expectation table was hand-declared from the frozen lexicon in oracle.md BEFORE any checker (naive or real) was written. Extraction of corpus lines ran no check logic.",
+  "files": {
+    "corpus/pos_i14d_review_L349.md": {
+      "role": "positive_historical",
+      "known_false_case": "F-REV-R6-02 site 1 (I-14-D review.md r6-era L349)",
+      "expect_flagged_lines": [4],
+      "expect_not_flagged_lines": [1, 2, 3],
+      "expect_exit_code": 1
+    },
+    "corpus/pos_round76_original.md": {
+      "role": "positive_historical",
+      "known_false_case": "F-REV-R6-02 site 3 (task_plan.md Round 76 sentence, pre-fix reconstruction)",
+      "expect_flagged_lines": [4],
+      "expect_not_flagged_lines": [1, 2, 3],
+      "expect_exit_code": 1
+    },
+    "corpus/pos_synth_frev_r406.md": {
+      "role": "positive_synthetic",
+      "known_false_case": "F-REV-R4-06 sentence shape ('leaves only the registered C10 residual')",
+      "expect_flagged_lines": [4],
+      "expect_not_flagged_lines": [1, 2, 3],
+      "expect_exit_code": 1
+    },
+    "corpus/pos_synth_frev_r502.md": {
+      "role": "positive_synthetic",
+      "known_false_case": "F-REV-R5-02 sentence shape ('closes the whole family at zero cost')",
+      "expect_flagged_lines": [4],
+      "expect_not_flagged_lines": [1, 2, 3],
+      "expect_exit_code": 1
+    },
+    "corpus/neg_domain_lines.md": {
+      "role": "negative_with_same_line_domain",
+      "expect_flagged_lines": [],
+      "expect_not_flagged_lines": [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30],
+      "expect_exit_code": 0
+    },
+    "corpus/neg_no_marker_lines.md": {
+      "role": "negative_no_universal_marker",
+      "expect_flagged_lines": [],
+      "expect_not_flagged_lines": [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28],
+      "expect_exit_code": 0
+    }
+  },
+  "combined_run": {
+    "files_in_order": [
+      "corpus/pos_i14d_review_L349.md",
+      "corpus/pos_round76_original.md",
+      "corpus/pos_synth_frev_r406.md",
+      "corpus/pos_synth_frev_r502.md",
+      "corpus/neg_domain_lines.md",
+      "corpus/neg_no_marker_lines.md"
+    ],
+    "expect_exit_code": 1,
+    "expect_total_violations": 4,
+    "expect_violation_lines": {
+      "corpus/pos_i14d_review_L349.md": [4],
+      "corpus/pos_round76_original.md": [4],
+      "corpus/pos_synth_frev_r406.md": [4],
+      "corpus/pos_synth_frev_r502.md": [4]
+    }
+  },
+  "red_arm_contract": {
+    "red": {
+      "variant": "naive_marker_only",
+      "definition": "flags every line containing a universal marker, with NO domain requirement",
+      "must_fail_oracle": true,
+      "why": "it flags all 14 negative_with_same_line_domain payloads (expect_flagged=[]), i.e. it cannot satisfy the frozen table"
+    },
+    "green": {
+      "variant": "check_domain_assertions",
+      "definition": "marker AND missing same-line domain qualifier",
+      "must_match_oracle_exactly": true
+    }
+  },
+  "mutations": {
+    "declared_before_runs": true,
+    "a_strip_domain": {
+      "source": "corpus/neg_domain_lines.md",
+      "target": "mutations/a_strip_domain.md",
+      "operation": "delete the substring （**域：…落于本行**） from payload line 4 only (all other bytes unchanged)",
+      "expect_flagged_lines": [4],
+      "expect_exit_code": 1,
+      "red_set_if_not_flagged": "checker fails mutation A (misses an un-scoped universal after its domain is stripped)"
+    },
+    "b_add_domain": {
+      "source": "corpus/pos_synth_frev_r406.md",
+      "target": "mutations/b_add_domain.md",
+      "operation": "append ' (domain: 19-probe measurement set)' to payload line 4 only (all other bytes unchanged)",
+      "expect_flagged_lines": [],
+      "expect_exit_code": 0,
+      "red_set_if_flagged": "checker fails mutation B (still flags a line that now carries its domain)"
+    },
+    "c_offbyone": {
+      "source": "corpus/pos_synth_frev_r502.md",
+      "target": "mutations/c_offbyone.md",
+      "operation": "insert one empty line at the top of the file (payload moves from line 4 to line 5)",
+      "oracle_baseline_payload_line": 4,
+      "expect_reported_payload_line": 5,
+      "criterion": "the reported line number must MISMATCH the oracle baseline line 4 (a match would mean the report carries a stale/wrong line number)",
+      "red_set_if_reported_equals_baseline": "checker fails mutation C (report line number does not track the file)"
+    }
+  },
+  "exit_semantics": {
+    "0": "clean: zero violations in every input file",
+    "1": "violations found: file:line:[markers] excerpts printed on stdout (--json carries structured records)",
+    "2": "usage or I/O error (missing file, bad arguments): message on stderr"
+  },
+  "live_scan": {
+    "files": [
+      "<PLAN>/task_plan.md",
+      "<PLAN>/findings.md",
+      "<PLAN>/progress.md"
+    ],
+    "no_oracle_expectation": true,
+    "policy": "record-only: report every file:line finding and the total count to the parent; this attempt edits NO plan file"
+  }
+}

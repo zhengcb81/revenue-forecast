@@ -1,0 +1,182 @@
+{
+ "card_id": "M03",
+ "model_id": "unit_sales",
+ "attempt_id": "a20260919-01",
+ "produced_by": "implementer (NOT the independent reviewer)",
+ "qualification_scope": "formula-stage evidence only; disclosure_adaptation stays unmapped; accuracy stays unproven",
+ "read_only_sources": true,
+ "network_calls": "none",
+ "read_only_source_documents": [
+  {
+   "doc_id": "cninfo:1222881496",
+   "role": "FY2024 annual report: confirms sales volume, revenue by product and the automobile segment revenue line",
+   "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\比亚迪\\raw\\financial_reports\\annual\\2025-03-24_cninfo_1222881496_2024年年度报告.pdf",
+   "pdf_sha256": "e9c2d7fdd088e151ccb6c8ad3d95587b2b014b10f2c9731508d23ce07fde4de3",
+   "sidecar_sha256": "6944220a358f8df1ba312b5baf2eff1585f6eb64697224a8fc5ccd93fb6fb407",
+   "bytes": 10092140,
+   "publisher_reported_content_sha256": "e9c2d7fdd088e151ccb6c8ad3d95587b2b014b10f2c9731508d23ce07fde4de3",
+   "local_hash_matches_publisher_receipt": true,
+   "provider": "cninfo (sidecar adapter stockinfo-cninfo 1.1.0)",
+   "source_url": "https://www.cninfo.com.cn/new/disclosure/detail?stockCode=002594&announcementId=1222881496&announcementTime=2025-03-24%2016:00",
+   "filing_date": "2025-03-24",
+   "fiscal_year": 2024,
+   "http_status_in_receipt": 200,
+   "retrieved_at": "2026-07-25T19:29:58Z",
+   "page_count": 290,
+   "pages_used": [3, 14, 23, 24, 25],
+   "how_read": "read-only PyMuPDF text extraction into before/probe01_byd.json and before/probe02_byd.json; no download, no network"
+  }
+ ],
+ "per_driver_disclosure_mapping": [
+  {
+   "parameter_id": "unit_sales.units",
+   "role": "required driver: confirmed sales volume (units sold), quantity",
+   "driver_or_field": "units",
+   "entity_id": "比亚迪股份有限公司",
+   "market": "CN",
+   "segment": "passenger_vehicles (乘用车)",
+   "source_doc_id": "cninfo:1222881496",
+   "page": 23,
+   "table": "新能源汽车整车及零部件的生产经营情况",
+   "span": "行「乘用车」，列「快报销量」",
+   "published_at": "2025-03-24T16:00:00+08:00",
+   "available_at": "2025-03-25T00:00:00+08:00",
+   "retrieved_at": "2026-07-25T19:29:58Z",
+   "as_of": "2024-12-31",
+   "fiscal_period_start": "2024-01-01",
+   "fiscal_period_end": "2024-12-31",
+   "currency": "CNY",
+   "scale": "1",
+   "physical_unit": "vehicles (辆)",
+   "raw_label": "快报销量",
+   "raw_value": "4,250,370",
+   "raw_unit": "辆",
+   "normalized_value": 4250370,
+   "conversion_formula": "identity (辆 -> 件)",
+   "gross_net": "units sold (volume), i.e. the quantity denominator of the revenue cell in the same table",
+   "tax": "not_applicable to a physical volume",
+   "ownership": "group brands consolidated (比亚迪/方程豹/腾势/仰望); the same row's revenue column uses the same boundary",
+   "consolidation_scope": "the same disclosure table's own boundary; this table is a production/sales operating disclosure, not a segment note",
+   "reported_derived_assumed": "reported",
+   "assumption_reason": "",
+   "restatement_mapping": "not restated in this document; FY2023 comparatives for the same table are also printed on page 23",
+   "reviewer": "PENDING_INDEPENDENT_REVIEW",
+   "range": "single disclosed value",
+   "unit_dimension_check": "quantity; multiplied by unit_revenue (CNY/unit) and a dimensionless ratio, the product has the dimension of CNY"
+  },
+  {
+   "parameter_id": "unit_sales.unit_revenue",
+   "role": "required driver: net revenue per sold unit",
+   "driver_or_field": "unit_revenue",
+   "entity_id": "比亚迪股份有限公司",
+   "market": "CN",
+   "segment": "passenger_vehicles (乘用车)",
+   "source_doc_id": "cninfo:1222881496",
+   "page": 23,
+   "table": "新能源汽车整车及零部件的生产经营情况",
+   "span": "行「乘用车」，列「销售收入（元）」/ 同表「快报销量」",
+   "published_at": "2025-03-24T16:00:00+08:00",
+   "available_at": "2025-03-25T00:00:00+08:00",
+   "retrieved_at": "2026-07-25T19:29:58Z",
+   "as_of": "2024-12-31",
+   "fiscal_period_start": "2024-01-01",
+   "fiscal_period_end": "2024-12-31",
+   "currency": "CNY",
+   "scale": "1",
+   "physical_unit": "CNY per vehicle",
+   "raw_label": "销售收入（元）",
+   "raw_value": "525,989,680,000.00",
+   "raw_unit": "元",
+   "normalized_value": 123751.503987229,
+   "conversion_formula": "525,989,680,000.00 / 4,250,370 = 123,751.503987229 CNY per vehicle",
+   "gross_net": "the table labels the column 销售收入 (sales revenue); it is not separately labelled gross or net of returns/rebates, so the net-price question is an OPEN special-review item (SR-M03-B)",
+   "tax": "presentation basis not stated in that table; PRC revenue presentation is net of VAT but the table does not say so explicitly - OPEN item",
+   "ownership": "same row and same table as units, so numerator and denominator share one boundary",
+   "consolidation_scope": "same as units",
+   "reported_derived_assumed": "derived",
+   "assumption_reason": "The issuer does not print a per-vehicle price. It is derived by dividing the row's own revenue cell by the row's own volume cell. This is the weakest link of the mapping and is flagged for the reviewer: it must NOT be described as independently sourced net pricing.",
+   "restatement_mapping": "n/a (derived)",
+   "reviewer": "PENDING_INDEPENDENT_REVIEW",
+   "range": "single derived value",
+   "unit_dimension_check": "CNY/unit; quantity x CNY/unit = CNY"
+  },
+  {
+   "parameter_id": "unit_sales.timing_factor",
+   "role": "optional driver, default 1.0",
+   "driver_or_field": "timing_factor",
+   "normalized_value": 1.0,
+   "reported_derived_assumed": "assumed",
+   "assumption_reason": "「快报销量」is the full-year realised volume, so the annual exposure is already contained in units and the timing fraction must be exactly 1. Any value below 1 here would double-count time (card_M03.md line 40 forbids repeated time scaling).",
+   "reviewer": "PENDING_INDEPENDENT_REVIEW",
+   "unit_dimension_check": "dimensionless ratio in [0,1]",
+   "range": "single value 1.0"
+  },
+  {
+   "parameter_id": "unit_sales.other_revenue",
+   "role": "optional driver, default 0.0",
+   "driver_or_field": "other_revenue",
+   "normalized_value": 0.0,
+   "reported_derived_assumed": "missing",
+   "assumption_reason": "NOT disclosed in the mapped table, so the field is left as missing rather than filled with an invented number. The documented default of 0.0 is used only to evaluate the synthetic positive case; it is NOT an authorisation to zero out undisclosed revenue (common_model_cards.md line 22).",
+   "reviewer": "PENDING_INDEPENDENT_REVIEW",
+   "unit_dimension_check": "amount (CNY), signed",
+   "range": "no disclosed range"
+  }
+ ],
+ "disclosure_provenance_and_scope": {
+  "auto_business_revenue_line_check": {
+   "page": 24,
+   "table": "营业收入构成",
+   "raw_label": "汽车、汽车相关产品及其他产品（分产品）",
+   "raw_value": "617,381,935,000.00",
+   "also_confirmed_at_page": [3, 14],
+   "why_it_matters": "the segment line is BROADER than the vehicle production/sales table: it also contains secondary rechargeable batteries, vehicle parts and other products, so it must not be equated with vehicle unit sales x unit price"
+  },
+  "mix_evidence_page_23": {
+   "sedan_units_sold": "1,610,694",
+   "suv_units_sold": "1,300,396",
+   "mpv_units_sold": "122,572",
+   "commercial_units_sold": "11,569",
+   "other_units_sold": "6,864",
+   "why_it_matters": "a single unit price hides material mix differences between sedan / SUV / MPV / commercial"
+  }
+ },
+ "closed_period_reconciliation": {
+  "period": "FY2024 (closed, already disclosed)",
+  "frozen_tolerance": {"relative_pct_mapping_1": 0.05, "relative_pct_mapping_2": 2.0},
+  "mapping_1_result": {
+   "units": "4,250,370",
+   "unit_revenue_cny": "123,751.503987229",
+   "timing_factor": 1.0,
+   "other_revenue": 0.0,
+   "rebuild_cny": "525,989,680,000.00",
+   "disclosed_cny": "525,989,680,000.00",
+   "residual_cny": "0.00",
+   "is_constructive_identity": true,
+   "warning": "unit_revenue was derived from the same row's revenue, so this zero residual proves dimensional wiring only. It is NOT independent verification and NOT accuracy evidence (I-10-A item 3 forbids back-solving a parameter from revenue and then calling the same-formula result verification)."
+  },
+  "mapping_2_result": {
+   "segment_revenue_cny": "617,381,935,000.00",
+   "rebuild_using_total_vehicle_units_at_pv_unit_price_cny": "528,684,368,999.31",
+   "gap_cny": "88,697,566,000.69",
+   "gap_pct": "14.3667",
+   "verdict": "far outside the frozen 2% tolerance, and this is the INFORMATIVE result",
+   "interpretation": "the automobile segment revenue cannot be rebuilt from vehicle volume x unit price; the difference is batteries, parts and other products that unit_sales cannot identify. Per card_M03.md line 40 and the I-10 production/sales/inventory bridge requirement, this difference must be bridged with real evidence and must never be booked as unexplained residual revenue."
+  }
+ },
+ "status": {
+  "disclosure_adaptation": "unmapped",
+  "unmapped_reasons": [
+   "unit_revenue is DERIVED from the same disclosed revenue cell; an independent net-price source (price list, mix-weighted ASP disclosure, or a reconciled bridge) is still missing.",
+   "The gross/net and tax presentation of the 销售收入 column is not stated in the mapped table (special review SR-M03-B).",
+   "The production/shipment/confirmed-sales and channel-inventory bridge does not exist yet, so the 14.37% scope gap is unexplained.",
+   "No production forecast entry point was exercised or reviewed; D requires an independent reviewer's signature."
+  ],
+  "accuracy": "unproven",
+  "accuracy_reasons": [
+   "F requires the I-12 frozen design; it does not exist.",
+   "The zero residual in mapping 1 is a constructive identity, so it cannot support any accuracy claim.",
+   "Formula qualification plus one company's mapping must never be escalated into industry-wide accuracy."
+  ]
+ }
+}

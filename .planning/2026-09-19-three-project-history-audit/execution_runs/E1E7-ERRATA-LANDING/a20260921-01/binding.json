@@ -1,0 +1,114 @@
+{
+  "card_id": "E1E7-ERRATA-LANDING",
+  "attempt_id": "a20260921-01",
+  "created_before_touching_any_m_card_oracle": true,
+  "created_at_utc_date": "2026-09-21",
+  "rule": "4 张 M 卡 oracle.md 的 append 前整文件 sha256/bytes（本卡唯一的『前像』基准）；追加后 sha256(after[:len(before)]) 必须等于这里的 sha256_before",
+
+  "source_of_truth": {
+    "I-10-B handoff.json": {
+      "path": "execution_runs/I-10-B/a20260919-01/handoff.json",
+      "bytes": 23563,
+      "sha256": "867d59b82a60544a8d7156ca0c3dbef9a9706ede6d82ede7ea50be0e181b54f4",
+      "e_list_key": "errata_pending.items",
+      "e_list_cross_keys": ["carried_findings[id=\"E-1..E-7\"]", "compatibility_impact.md §5 表", "decision.md DEC-I10B-5"]
+    },
+    "I-10-B compatibility_impact.md": {
+      "path": "execution_runs/I-10-B/a20260919-01/compatibility_impact.md",
+      "bytes": 14457,
+      "sha256": "ab09422e5621b3f85cea259d85ff41f625879936bfc81093b9aaf7ce1a0b4e72"
+    },
+    "I-10-B decision.md": {
+      "path": "execution_runs/I-10-B/a20260919-01/decision.md",
+      "bytes": 8384,
+      "sha256": "6fcf99900249189e86e2fd9685f95c7cd44c3e58355ba7c7ba21548339a505e1"
+    },
+    "OWNER_DECISIONS.md §13 T1-12": "一律采用 ① 形态（追加新节 + 行级『第 X 行已过时，以本节为准』标注）；不外扩就地编辑授权",
+    "fix_location_not_promoted": "execution_runs/I-10-B/a20260919-01/iso/rf/scripts/（model_registry.py 30116 B / 62f864b9…；生产 scripts/model_registry.py 仍为前像 26446 B / 9ec65295…）"
+  },
+
+  "targets": {
+    "M05": {
+      "file": "execution_runs/M05/a20260919-01/oracle.md",
+      "attempt_is_only_attempt": true,
+      "exists_before": true,
+      "sha256_before": "081a206b072303314140eb3e69dfe1b04de400bddd89dc7b1b17c167dfada555",
+      "bytes_before": 14790,
+      "pin_check": {
+        "verdict": "PINNED_OK",
+        "frozen_body_prefix_bytes": 8774,
+        "frozen_body_sha256_expected": "ae1986f61c03daa6ac633ffcc9eaf36060de08f1f39bf8f8c90e5315fe4e943a",
+        "frozen_body_sha256_actual": "ae1986f61c03daa6ac633ffcc9eaf36060de08f1f39bf8f8c90e5315fe4e943a",
+        "frozen_body_match": true,
+        "handoff_recorded_whole_file_sha256_current": "7fda03b153fd9a3707fba3a1057c9eb2ed6d2f772cdd79b6c1a33de9bb639320",
+        "handoff_recorded_whole_file_bytes": 14844,
+        "whole_file_match": false,
+        "drift_explained": "内容同一，行尾被 git 归一化：`.gitattributes` 有 `*.md text eol=lf`（该文件 tracked），r2/r3 追加区的 54 个 CR 被移除 ⇒ 14844-54=14790 B。把 append 区（offset 8774 之后）的 LF 还原为 CRLF 后逐字节复现 pin 值 7fda03b1…/14844 B（sha256 匹配=True）。v1 冻结体 8774 B 逐字节匹配。",
+        "line_ending_reconstruction_sha256": "7fda03b153fd9a3707fba3a1057c9eb2ed6d2f772cdd79b6c1a33de9bb639320",
+        "line_ending_reconstruction_match": true,
+        "pin_key_in_handoff": "handoff.input_hashes['oracle.md'] + handoff.oracle_md_hash_ledger + handoff.input_hashes_current['oracle.md']",
+        "handoff_sha256": "b804abcce2efdf9a24e83f22f18c37174f40b8eac12d1b0c8f71dd32876c8dd9"
+      },
+      "e_item": "E-1 M05 oracle.json defaults"
+    },
+    "M14": {
+      "file": "execution_runs/M14/a20260919-01/oracle.md",
+      "attempt_is_only_attempt": true,
+      "exists_before": true,
+      "sha256_before": "c2f7cc4e1337552a2f89aa427d6a3bd00c020d6f91f47fb42ea0a790e2da0988",
+      "bytes_before": 19339,
+      "pin_check": {
+        "verdict": "PINNED_OK",
+        "frozen_body_prefix_bytes": 9367,
+        "frozen_body_sha256_expected": "8d74e94fb4771123b5de49fde34d0501d9cfe41e3f6fdf7b824754ca4809bf8f",
+        "frozen_body_sha256_actual": "8d74e94fb4771123b5de49fde34d0501d9cfe41e3f6fdf7b824754ca4809bf8f",
+        "frozen_body_match": true,
+        "pin_key_in_handoff": "handoff.input_hashes['oracle.md:frozen_body_sha256']（= before/oracle_md_v1.json：9367 B / 8d74e94f…，recorded_before_any_product_run=true）",
+        "handoff_sha256": "13a6cb0960ea303bc0d2a3b6dfff47ad1c63d4d7dbaf87e80452c8a8081fa4cf"
+      },
+      "e_items": ["E-2 M14 oracle.json defaults", "E-5 M14 cases.json OBS-SUPPLY-BOUND", "E-6 M14 oq_rulings.json OQ-03", "E-7 M14 recovery/probes/signed_driver_probe.json"]
+    },
+    "M20": {
+      "file": "execution_runs/M20/a20260919-01/oracle.md",
+      "attempt_is_only_attempt": true,
+      "exists_before": true,
+      "sha256_before": "b43abd8dafe0f5812cfdbd6847fbf332384840982960874f29967657c776672a",
+      "bytes_before": 13074,
+      "pin_check": {
+        "verdict": "PINNED_OK",
+        "whole_file_match": true,
+        "handoff_recorded_whole_file_sha256": "b43abd8dafe0f5812cfdbd6847fbf332384840982960874f29967657c776672a",
+        "pin_key_in_handoff": "handoff.input_hashes['oracle.md']（r1 值 = 现行整文件值，revision: r1）",
+        "handoff_sha256": "9a27a99d72f4c8424e889f06160247a1fe3bc6ff8d1d07f8327b1fab79323865"
+      },
+      "e_item": "E-3 M20 oracle.json defaults"
+    },
+    "M24": {
+      "file": "execution_runs/M24/a20260919-01/oracle.md",
+      "attempt_is_only_attempt": true,
+      "exists_before": true,
+      "sha256_before": "67c3cae63bb679e2fca3956271d32d6dfcbbf82847295bc904036da6418771ca",
+      "bytes_before": 26216,
+      "pin_check": {
+        "verdict": "PINNED_OK",
+        "frozen_body_prefix_bytes": 13382,
+        "frozen_body_sha256_expected": "9c8f6b238d38841704acd7de305038190b18b93062eaff55fe74bb6bf41b3e9f",
+        "frozen_body_sha256_actual": "9c8f6b238d38841704acd7de305038190b18b93062eaff55fe74bb6bf41b3e9f",
+        "frozen_body_match": true,
+        "pin_key_in_handoff": "handoff.oracle_freeze / input_hashes['oracle.md_frozen_body']（13382 B / 9c8f6b23…）",
+        "handoff_sha256": "2fa0fe92e5c605a6416cdfc04c4e4b4057f5120aa8ef4b25fbe63ec87fbd150f"
+      },
+      "e_item": "E-4 M24 oracle.json defaults + hand_notes.defaults"
+    }
+  },
+
+  "hard_rules": {
+    "append_only": "sha256(after[:bytes_before]) == sha256_before，逐卡各出一份证明；失败即 STOP 该卡",
+    "insertion_only_diff": "difflib 操作码 ⊆ {equal, insert}",
+    "zero_expectation_change": "不改任何期望 / status / 资格",
+    "no_product_files": true,
+    "no_pytest": true,
+    "no_git_write": true,
+    "never_self_sign": true
+  }
+}

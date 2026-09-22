@@ -1,0 +1,45 @@
+{
+ "card_id": "M05",
+ "label": "historical reconciliation attempt (closed period)",
+ "produced_by": "implementer (NOT the independent reviewer)",
+ "status": "blocked",
+ "blocked_reason": "neither required driver can be normalized from this issuer's own disclosure without the period-end-for-average substitution the card explicitly refuses",
+ "closed_period": "FY2024 (closed and reported)",
+ "source_documents": [
+  "company-wiki:芒果超媒:2024年年度报告"
+ ],
+ "mapped_parameters": [
+  {
+   "parameter_id": "subscription.average_customers",
+   "value": "MISSING (period-end stock only)",
+   "page": 13,
+   "reported_derived_assumed": "missing"
+  },
+  {
+   "parameter_id": "subscription.revenue_per_customer",
+   "value": "MISSING (numerator disclosed, denominator missing)",
+   "page": 13,
+   "reported_derived_assumed": "missing"
+  },
+  {
+   "parameter_id": "subscription.usage_revenue",
+   "value": "MISSING (not separately disclosed)",
+   "page": 13,
+   "reported_derived_assumed": "missing"
+  },
+  {
+   "parameter_id": "subscription.timing_factor",
+   "value": "MISSING as a driver; the ACCOUNTING POLICY itself IS disclosed",
+   "page": 98,
+   "reported_derived_assumed": "missing"
+  }
+ ],
+ "constructive_identity_warning": "dividing a disclosed output by a disclosed input and then reading the same rate back into the formula reproduces the disclosed number by construction; that is NOT reconciliation and NOT accuracy evidence",
+ "result": {
+  "conclusion": "NOT reconciled: the issuer discloses YEAR-END members and FULL-YEAR membership revenue; the model needs the year AVERAGE, which is not disclosed",
+  "period_end_members": "73310000",
+  "membership_revenue_cny": "5148000000",
+  "why_not_a_reconciliation": "average_customers is missing, so there is no independent input series to run the model on; any 'match' would be obtained by defining the rate as revenue / period-end members (a constructive identity)",
+  "not_an_accuracy_statement": true
+ }
+}

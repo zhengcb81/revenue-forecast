@@ -1,0 +1,154 @@
+{
+ "card_id": "M03",
+ "first_required_driver": "units",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "extra_observations": [
+  {
+   "id": "DEFAULTS-CASE",
+   "input": "defaults_case",
+   "expectation": "output [30] proving the documented optional defaults"
+  },
+  {
+   "id": "ZERO-UNITS",
+   "input": "zero_units_with_other",
+   "expectation": "output [5]; zero volume is data, not a missing field"
+  },
+  {
+   "id": "OBS-NEG-OTHER",
+   "kind": "set_driver",
+   "driver": "other_revenue",
+   "value": [
+    -10
+   ],
+   "expectation": "recorded as a design observation: other_revenue is a signed driver, but a negative net revenue result must still be refused; NOT counted as pass/fail"
+  }
+ ],
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver",
+   "driver": "units",
+   "value": [
+    -1
+   ],
+   "why": "negative confirmed sales volume; returns must already be netted into units or unit_revenue"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "driver": "units",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "bool is not numeric"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "driver": "units",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "driver": "units",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "driver": "units",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "driver": "units",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "path length 0 != len(years)=1"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "driver": "units",
+   "expected": "ModelRegistryError",
+   "why": "required driver missing"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ],
+   "expected": "ModelRegistryError",
+   "why": "unknown driver"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "empty fiscal-year list"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "value": {
+    "__bool__first__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "True is not a fiscal year"
+  },
+  {
+   "id": "R7-TIMING",
+   "kind": "set_driver",
+   "driver": "timing_factor",
+   "value": [
+    1.5
+   ],
+   "expected": "ModelRegistryError",
+   "why": "timing_factor is a ratio and must stay in [0,1]"
+  },
+  {
+   "id": "R8-NET-NEG",
+   "kind": "set_driver",
+   "driver": "other_revenue",
+   "value": [
+    -400
+   ],
+   "expected": "ModelRegistryError",
+   "why": "signed other_revenue may be negative but the resulting revenue cannot be negative"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "value": [
+    2027,
+    2029
+   ],
+   "base_input": "continuity_positive",
+   "expected": "ModelRegistryError",
+   "why": "fiscal years must be consecutive"
+  }
+ ]
+}

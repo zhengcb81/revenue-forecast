@@ -1,0 +1,57 @@
+{
+  "card_id": "DW15-REPAIR",
+  "attempt_id": "a20260922-01",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "state_authority": "transcribed from the independent reviewer's three-state ruling; not authored here"
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "carrier": {
+    "file": "execution_runs/DW15-prune-repair/a20260922-01/reviewer_report.md",
+    "sha256": "a9b9076f731b8395c6f8a6fabcd90c835ea8a68a00cc7ffac7c9f14014b0801e",
+    "supersedes_pin": "7944b17f… (pre-ruling addendum pin)",
+    "pin_file": "reviewer_report.sha256",
+    "pin_verified": true,
+    "bytes": 19466,
+    "ruling_line_range": "L24-L60",
+    "ruling_heading": "## RULING (reviewer, three-state): `accepted_scoped`",
+    "reviewer": "独立复核"
+  },
+  "declarations": {
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_nature": "bookkeeping transcription, adds no acceptance of its own",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "carrier_never_self_signs": true,
+    "accepted_scope": "iso/fixed repair code only — prune 0c99bbe0…/23115 B, archive bbe855e4…/9894 B as verified D1-D5 fixes plus its evidence chain (oracle pin 003f48da31f1…, RED 15F/rc1 -> GREEN 15P/rc0, M1-M5 declared==observed, M5 reviewer-re-run); code correctness of the isolated copy against this frozen oracle, and only that",
+    "explicitly_out": [
+      "(a) production prune/archive EXECUTION, dry-run included: UNAUTHORIZED (owner §15/§16 A-1, §16 E-4)",
+      "(b) promotion of iso/fixed into company-wiki: separate, undone owner decision",
+      "(c) data-recovery re-sign: UNSIGNED — precondition of a future execution card, NOT of this card's acceptance (reviewer's explicit argument, recorded as theirs: making it an acceptance precondition would make the card permanently unaccept-able, contradicting owner A-1)",
+      "(d) handoff status transcription: carrier step, not part of the ruling"
+    ],
+    "acceptance_conditions": "none blocking; F1/F2 carried, not gating",
+    "production_writes": "none"
+  },
+  "carried_findings_non_blocking": [
+    { "id": "F1", "summary": "multi-batch D4 \"0 deleted\" narrow window (drift in a later in-transaction batch; >1 batch only, untested)", "severity": "LOW" },
+    { "id": "F2", "summary": "conflicting-digest order dependence in _build_plan (refuse-to-guess order-dependent)", "severity": "LOW" },
+    { "id": "F3", "summary": "RED evidence captured with --tb=no; decision.md quotes not sourced from that file (quotes verified accurate by reviewer's --tb=line re-run)", "severity": "documentation" },
+    { "id": "F4", "summary": "no directory fsync -> power-loss durability unproven (process-kill safety test-proven)", "severity": "LOW" },
+    { "id": "F5", "summary": "evidence file UTF-16LE, plain-text readers report as binary", "severity": "documentation" },
+    { "id": "F6", "summary": "freeze ordering evidenced by mtimes + hash pin only", "severity": "provenance" }
+  ],
+  "carried_unverified": [
+    { "id": "U1", "summary": "true temporal freeze of oracle.md before any run (mtime + pin only)" },
+    { "id": "U2", "summary": "no other card's attempt/frozen artifact modified — spot-checked, not exhaustive" },
+    { "id": "U3", "summary": "dry-run never opened the production catalog at syscall level (no tracing performed)" },
+    { "id": "U4", "summary": "behaviour at production scale (25.7M rows / 49.7 GB) untested" },
+    { "id": "U5", "summary": "receipt-durability medium + catalog_identity binding depth — reserved for data-recovery reviewer" },
+    { "id": "U6", "summary": "mutants M1-M4 observed sets accepted from hash-pinned evidence; only M5 re-run by reviewer" },
+    { "id": "U7", "summary": "product's own contract tests not run (encode the wrong oracle per I-15-A; deliberately untouched)" },
+    { "id": "U8", "summary": "I-15-A W15-R1..R8 rules not re-derived line-by-line; D1-D5 frozen oracle was the basis" }
+  ],
+  "carried_items_note": "F1-F6 registered, non-blocking; U1-U8 registered — suggested as future execution-card entry conditions, NOT conditions of this card's acceptance."
+}

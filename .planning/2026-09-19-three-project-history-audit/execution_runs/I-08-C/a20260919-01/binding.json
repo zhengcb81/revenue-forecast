@@ -4,11 +4,12 @@
  "plan": "2026-09-19-three-project-history-audit",
  "attempt": "a20260919-01",
  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-C\\a20260919-01",
- "revision": "r3 — deliverable remediation after an independent changes_required verdict; the r1/r2 artifacts are preserved and the r3 additions are additive",
- "date": "2026-09-19 (card date); r3 written 2026-09-21",
+ "revision": "r3 (deliverable remediation) + FIX ROUND I-08-C-REFREEZE: owner-approved A-2 append-only oracle re-freeze (E11/E13 gap pins -> attack-must-be-rejected), evidence run against B1's fixed tree, anti-vacuity runs against both unfixed trees, mutation run; handoff moved changes_required -> review_pending",
+ "date": "2026-09-19 (card date); r3 written 2026-09-21; fix round executed in this session (evidence under scratch/fixround/)",
  "title": "consumers must reject forged receipts, cross-payload replay and unsigned structures (card I-08-C, T-PUB-equivalent pytest node)",
  "implementer": "delegated implementer session (does NOT self-sign accepted)",
- "independent_reviewer": "separate session; verdict review.md sha256 c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3 = changes_required",
+ "independent_reviewer": "separate session; verdict review.md sha256 c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3 = changes_required (the PREVIOUS review; still the only verdict on record)",
+ "re_review_status": "requested: fix-round package is ready_for_re_review=true; NO new verdict exists, and none is self-signed",
  "execution_gate": {
   "card_requires": "I-08-B independently accepted before execution; no self-selected protocol",
   "I-08-B": "execution_runs/I-08-B/a20260919-01/ (attestation provider protocol + publication_attestation contract implemented there)",
@@ -52,10 +53,28 @@
  ],
  "test_file_under_test": {
   "rel": "test_i08c_consumer_rejection.py",
-  "bytes": 10902,
-  "sha256": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5",
+  "bytes": 13152,
+  "sha256": "3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb",
   "nodes": 13,
   "frozen_before_run": true,
+  "frozen_before_run_note": "the fix-round r4 file was hashed BEFORE RUN-A/RUN-B/RUN-B2/RUN-M; all three stage hashes are in oracle.md R4-5",
+  "fix_round_revisions": {
+   "pre_fix_round_r3": {
+    "bytes": 10902,
+    "sha256": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5",
+    "note": "the r3-frozen 13-node file (also executed read-only by B1 as before/i08c13_unfixed); preserved as an immutable hash record AND re-derived byte-exactly by scratch/fixround/make_changes_diff.py (its reconstruction hashed to this value)"
+   },
+   "interim_override_only": {
+    "bytes": 11360,
+    "sha256": "61ef2b67bdb048664c9b752606d195b43528f622b256f099b7e0d4072eeaa9f1",
+    "note": "RF_IMPORT_ROOT override only; used solely by the DISCLOSED exploratory run (scratch/fixround/exploratory_fixed.stdout.txt)"
+   },
+   "r4_final": {
+    "bytes": 13152,
+    "sha256": "3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb",
+    "note": "exactly four edits vs r3 (import-root override, e11 flip+rename, e13 flip+rename, e1 tree-conditional label assertion) — oracle.md R4-5; full unified diff in changes.diff"
+   }
+  },
   "pre_r3_revision": {
    "bytes": 8542,
    "sha256": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f",
@@ -68,15 +87,16 @@
    "test_e5_whole_receipt_replayed_onto_other_payload_rejected",
    "test_e4_verification_context_mutation_rejected",
    "test_e6_recomputed_self_hashes_do_not_repair_value_forgery",
-   "test_e13_segment_base_revenue_not_bound_by_output_gates",
+   "test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates",
    "test_e7_registry_anchor_does_not_admit_forged_package",
    "test_e8_old_verification_context_on_other_input_rejected",
    "test_e9_draft_package_rejected_by_formal_consumer",
    "test_e10_result_without_receipt_rejected",
-   "test_e11_host_signed_label_flip_is_not_bound_at_consumption",
+   "test_e11_host_signed_label_flip_is_rejected_at_consumption",
    "test_e12_registry_fail_closed_on_corruption"
   ],
-  "e4_implementation": "r3 adds test_e4_verification_context_mutation_rejected (E4a-E4d). r1 froze E4 but the test file had only 12 nodes; reviewer item (1). Disposition chosen: IMPLEMENT (oracle.md R3-1), not withdraw."
+  "e4_implementation": "r3 adds test_e4_verification_context_mutation_rejected (E4a-E4d). r1 froze E4 but the test file had only 12 nodes; reviewer item (1). Disposition chosen: IMPLEMENT (oracle.md R3-1), not withdraw.",
+  "r4_flips": "fix round: test_e11 -> MUST reject (attestation_missing_record, B1 REM-01(a)) and test_e13 -> dispatcher MUST reject (segment base revenue mismatch, B1 REM-03), node ids renamed; e1's label assertion made tree-conditional (B1 REM-01(b) collateral). Authority: owner A-2 批准 (oracle.md R4 header / decision.md §6)."
  },
  "production_anchors_verified_pre_run": {
   "scripts/revenue_publication.py": {
@@ -114,20 +134,47 @@
   "card": "execution_v2/card_I-08-C.md",
   "reviewer_verdict": "review.md c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
   "r2_oracle_body": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90 (6831 bytes, byte-frozen)",
-  "r2_test_file": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f (8542 bytes)"
+  "r2_test_file": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f (8542 bytes)",
+  "fix_round_authority": "OWNER_DECISIONS.md 4c9acf9ec95c8ec028b6e77719ddf32dbbbc1fb545c91cb702521d65a70aa2f3 (53286 bytes) — §16 line 365 owner 原话 「... A-2: 批准 ...」 + line 370 ruling row (both quoted verbatim in oracle.md R4 header and decision.md §6)",
+  "fix_round_r3_oracle_preimage": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3 (22335 bytes = oracle.md bytes[0:22335] after the append)",
+  "fix_round_r3_test_file": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5 (10902 bytes)",
+  "b1_fixed_probe": "execution_runs/B1-I08C-product-fixes/a20260921-01/after/probe_fixed.txt 9ade20c2e0d34f33ac68cdef7e96420aa8984793ebde1170e405c3e8817643b3 (1629 bytes) — primary derivation of the e11/e13 rejection reasons",
+  "b1_handoff": "execution_runs/B1-I08C-product-fixes/a20260921-01/handoff.json c5696e780a9470cf22dd41333e05c24a82783080b7fd006862e181c25e624259 (26788 bytes) — records this round's expected collateral",
+  "b1_oracle": "execution_runs/B1-I08C-product-fixes/a20260921-01/oracle.md fadf8a5ebfdb7ca771031790e0fa1701a31fedf15becbf6da8c9cbaf5460fbae (39287 bytes)"
  },
  "post_run_hashes": {
-  "oracle.md": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3 (22335 bytes)",
-  "oracle.md.r2_frozen_copy.txt": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90 (6831 bytes)",
-  "test_i08c_consumer_rejection.py": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5 (10902 bytes)",
-  "pytest_r3_verdict.stdout.txt": "b3a7d8b9317a2475e9f5811e7d4c10fe46a96a1b0d2cf1d1f66bebbf43e7a611 (5238 bytes)",
-  "pytest_verdict.stdout.txt": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d (5052 bytes, r2 — NOT overwritten)",
-  "commands.json": "0946255a31d31ed295848200dfd35530d43d2340b5e50d81cf01ec66e80e0ead (9397 bytes)",
-  "decision.md": "5092802fa237baa09b78810fc933c281db8a7020b8dd0d43da59e9aaab958d14 (14746 bytes)",
-  "changes.diff": "102a7ad8860ae7167edec8309c0b01715773ce8c4f16660ea67b6136b140a89c (14452 bytes)",
-  "exploratory_log.md": "7d427e45b96cae146821e4e7c436257113c07b5ae9e404bd5434b7a600c9e7a1 (6418 bytes)",
-  "exploratory_manifest.json": "371af534d56fbffea87d3af1e36da713269cfa3c930299864c6d9ec47b598f33 (4479 bytes)",
-  "after/production_status.txt": "62fd97212c5e189debd822591ee961d3e98928516b1191b9c6644ce5a64cc4c6 (byte count intentionally not quoted: it is volatile; hash is authoritative)"
+  "current_after_fix_round": {
+   "oracle.md": "8143362f1eb065bdac8580a6a2b431b144a02da4fa6d9b42c953ba2c5a0b885c (40311 bytes; append-only revision r4; pre-append 22335 B / 94a853e9... proven by scratch/fixround/prefix_proof.json)",
+   "test_i08c_consumer_rejection.py": "3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb (13152 bytes, 13 nodes, frozen before all four fix-round runs)",
+   "commands.json": "800661b045cf652834d1c37950b7a5355ed6f072518c1aca2028be948d7f5d9a (24924 bytes)",
+   "decision.md": "705973bf652cfb695635f722513d7a2f7a8034bffdd8687c4da28b316e6f5b6b (23049 bytes)",
+   "changes.diff": "a01dbbb45b79ad818ae7aec3ca2782b0389d1f6b4242ff0e0f33cda8e4fde679 (22954 bytes; r3 content preserved + fix-round addendum with the verified r3->r4 unified diff)",
+   "scratch/fixround/prefix_proof.json": "2eb744e01953fbbe38481ec126a2031a18f415d9089e21596d1fbd1267d6259c (838 bytes; append_only_proof true)",
+   "scratch/fixround/prefix_proof.py": "6910cb7d2bf7b75f067ead7a77857c17e1375859bd8368ca133b6e052dfa93d5 (2152 bytes)",
+   "scratch/fixround/runA_fixed.stdout.txt": "d81622087047ffd3ffd7a671df0412840ebef931ebc1450eb6b9ac56603e0e53 (104 bytes; RUN-A 13 passed, rc 0)",
+   "scratch/fixround/runB_production.stdout.txt": "2d246aee978e53496dc4cc94decf910e15e840cae3bf9c6b983f17eb74265f37 (3152 bytes; RUN-B exactly e11+e13 red, rc 1)",
+   "scratch/fixround/runB2_b1unfixed.stdout.txt": "b1b4a3f2eca9bcd3755c49bd5318eafba702b760e56d14b9493ce7b4ea55c4fe (3152 bytes; RUN-B2 exactly e11+e13 red, rc 1)",
+   "scratch/fixround/runM_mutation.stdout.txt": "22c383d9ff741815edd28d830f9768c07f1d2af4969a9e2cfaeb731cb746b493 (7624 bytes; RUN-M exactly e11+e13 red, rc 1)",
+   "scratch/fixround/rcs.txt": "b8a149f9bd67dea4604e1844fa5086537d1d9d9a593ec23458faa4e7614ccc39 (RUN-A=0 RUN-B=1 RUN-B2=1 RUN-M=1)",
+   "scratch/fixround/exploratory_fixed.stdout.txt": "f9d650eb5a47b95a9a1b8a30cdc62aaa4c4ca4064b16bf3f3aff0a947cfb4ac0 (7358 bytes; disclosed exploratory: 3 failed incl. e1)",
+   "scratch/fixround/exploratory_fixed.rc.txt": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04 (3 bytes; rc 1)",
+   "scratch/fixround/mutation/test_i08c_mutation_pinned_gap.py": "eb19e62846ed7e03f5fe74aee5a5debca9f84cf0a790df5d1e24d089f04d0858 (12976 bytes)",
+   "scratch/fixround/make_mutation.py": "15fd13f9a0a57795e1d314bfeb38ef31dbb65953d77c21f5f0e03fe99dd29f7c (3534 bytes)",
+   "scratch/fixround/make_mutation.stdout.txt": "bbc47a0061dbe58556e3140a0d5361415d3ea99cbb099dbfb12d78e5ff93d6c1 (742 bytes)",
+   "scratch/fixround/make_changes_diff.py": "eabc65ba00592c9c1ae5d1869292f202da8cc0d9dd66f7cd0accf296acc550fb (13164 bytes)",
+   "scratch/fixround/make_changes_diff.stdout.txt": "13a190e2da02c5cdf8982c6f012d140568e06e56b9bd163884d69c4d29110ff7 (512 bytes)"
+  },
+  "r3_records_historical": {
+   "oracle.md at r3 close": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3 (22335 bytes) — now provable as byte prefix [0:22335]",
+   "oracle.md.r2_frozen_copy.txt": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90 (6831 bytes) — file untouched this round",
+   "test file at r3 freeze": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5 (10902 bytes) — re-derived byte-exactly in changes.diff fix-round addendum",
+   "pytest_r3_verdict.stdout.txt": "b3a7d8b9317a2475e9f5811e7d4c10fe46a96a1b0d2cf1d1f66bebbf43e7a611 (5238 bytes) — untouched",
+   "pytest_verdict.stdout.txt": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d (5052 bytes, r2) — untouched",
+   "exploratory_log.md": "7d427e45b96cae146821e4e7c436257113c07b5ae9e404bd5434b7a600c9e7a1 (6418 bytes) — untouched",
+   "exploratory_manifest.json": "371af534d56fbffea87d3af1e36da713269cfa3c930299864c6d9ec47b598f33 (4479 bytes) — untouched",
+   "after/production_status.txt": "62fd97212c5e189debd822591ee961d3e98928516b1191b9c6644ce5a64cc4c6 — untouched; this round's production re-check is recorded in commands.json I08C-RF-c9",
+   "commands.json/decision.md/changes.diff at r3 close": "0946255a... (9397 B) / 5092802f... (14746 B) / 102a7ad8... (14452 B) — extended in place this round (decision.md and changes.diff APPENDED; commands.json entries added with r3 entries kept verbatim)"
+  }
  },
  "isolation_env": {
   "isolated_repo_copy": "none (see interpreter.venv_policy_note)",
@@ -138,6 +185,44 @@
   "temp_side_effects": [
    "%TEMP%/pytest-of-*/ (fixture registry)",
    "%TEMP%/i08c_e4_* (probe registries, 3 dirs)"
+  ]
+ },
+ "fix_round": {
+  "card": "I-08-C-REFREEZE (fix round inside attempt a20260919-01)",
+  "authority": "OWNER_DECISIONS.md §16: owner 原话 「... A-2: 批准 ...」 + ruling row 「A-2 批准 | I-08-C oracle 追加式重冻（E11/E13 由\"缺口在册\"翻转为\"攻击必拒\"），收口归其 reviewer | 与建议一致 | 已派 I-08-C refreeze 卡」 — quoted verbatim in oracle.md R4 header and decision.md §6",
+  "oracle_revision": "append-only Revision r4 (the card instruction called it 'r3'; the file already contained a CLOSED r3 whose closing rule requires a new number — disclosed in the R4 header and in decision.md D-08C-RF-01)",
+  "prefix_proof": {
+   "method": "sha256 over fixed byte prefixes, no length arithmetic",
+   "pre_append_bytes": 22335,
+   "pre_append_sha256_recorded_before_append": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3",
+   "prefix_recheck_after_append": "MATCH (both [0:22335] and the r2 body [0:6831] re-matched)",
+   "r2_body_sha256": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
+   "evidence": "scratch/fixround/prefix_proof.json (append_only_proof: true, raw rc 0)",
+   "append_region_bytes": 17976,
+   "append_region_sha256": "ccd029e31ba819977d757c8c4ab0db0c2453e303613026cf2557d8d02b7efb2d"
+  },
+  "trees": {
+   "fixed": "B1-I08C-product-fixes/a20260921-01/iso/fixed/rf — revenue_publication bc2bb4a3... / revenue_core 8a761498... / revenue_report 212f0059... (only these three differ from production)",
+   "unfixed_isolated": "B1-I08C-product-fixes/a20260921-01/iso/rf — verified byte-identical to production for all six checked files (revenue_publication, revenue_core, revenue_report, publication_registry, tests/test_recognition_bridge.py, tests/test_data_contract.py)",
+   "unfixed_production": "RF_IMPORT_ROOT unset -> C:\\Users\\郑曾波\\Projects\\revenue-forecast (I-08-C's original r1/r2/r3 binding target; production-identical unfixed bytes)",
+   "b1_attempt_access": "READ-ONLY: executed-from only; -B + PYTHONDONTWRITEBYTECODE=1 + -p no:cacheprovider + attempt-local --basetemp; after the runs the newest mtime under B1's tree is still 2026-09-21 23:14:47 (B1's own files) and the three fixed hashes are unchanged"
+  },
+  "runs": {
+   "RUN-A": {"tree": "iso/fixed/rf", "result": "13 collected / 13 passed / 0 failed", "raw_rc": 0, "evidence": "scratch/fixround/runA_fixed.stdout.txt"},
+   "RUN-B": {"tree": "production (override unset)", "result": "exactly {test_e11..., test_e13...} failed, 11 passed", "raw_rc": 1, "evidence": "scratch/fixround/runB_production.stdout.txt", "meaning": "anti-vacuity: the gap still reproduces on the unfixed bytes => the flip is load-bearing"},
+   "RUN-B2": {"tree": "B1 iso/rf", "result": "exactly {test_e11..., test_e13...} failed, 11 passed", "raw_rc": 1, "evidence": "scratch/fixround/runB2_b1unfixed.stdout.txt"},
+   "RUN-M": {"tree": "iso/fixed/rf + superseded-expectation mutation file", "result": "exactly {test_e11..., test_e13...} failed, 11 passed", "raw_rc": 1, "evidence": "scratch/fixround/runM_mutation.stdout.txt", "meaning": "mutation: the old pinned-gap expectation cannot pass against the fix"},
+   "all_matched_oracle_R4-4": true
+  },
+  "e1_collateral": "B1 REM-01(b) retired file-existence capability, so the honest fixture (provider=sys.executable) is stamped 'unattested' on the fixed tree; e1's r1 label assertion was superseded (oracle R4-2/S-3) with a tree-conditional assertion instead — the alternative (a working fake-provider fixture copied from B1) was considered and rejected as a larger rewrite; disclosed in decision.md D-08C-RF-02",
+  "freeze_order": "env-override edit (11360 B / 61ef2b67...) -> DISCLOSED exploratory run (revealed the e1 collateral) -> r4 test file frozen (13152 B / 3f83fdf2...) -> oracle r4 appended (prefix-proved) -> RUN-A/B/B2/M; primary derivation of expectations = B1 probe + fixed source, corroborated by the exploratory run (oracle R4-6)",
+  "production_write_policy_this_round": "ZERO writes: five anchor hashes unchanged, git status --porcelain -- scripts tests config artifacts EMPTY (rc 0) after all four runs; no git write command executed",
+  "out_of_scope_reasserted": [
+   "promotion of B1's fix to production (owner decision; not performed, not implied)",
+   "I-08-C acceptance (reviewer verdict; not self-signed — ready_for_re_review only)",
+   "F2 documentation gap and F4 anchor drift (unchanged status)",
+   "invest-* consumers and CLI publish transaction (still unverified, card-declared out of scope)",
+   "disclosure_adaptation = unmapped, accuracy = unproven (unchanged)"
   ]
  },
  "git_baseline": {
@@ -153,7 +238,13 @@
   "oracle_r3_spec": "E4 contract + 13-node map (oracle.md R3-3/R3-4) written before the test file was edited",
   "test_file": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5, recorded before the r3 run",
   "derivation_probe": "scratch/e4_derivation_probe.py rc 0 recorded before the freeze; probe revision 1's key error is disclosed in oracle.md R3-2",
-  "note": "the reviewer should verify freeze order from filesystem mtimes plus these recorded hashes; E4's expectation text is unchanged from the r1 freeze (oracle.md line 54)"
+  "note": "the reviewer should verify freeze order from filesystem mtimes plus these recorded hashes; E4's expectation text is unchanged from the r1 freeze (oracle.md line 54)",
+  "fix_round_freeze": {
+   "test_file": "3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb, hashed before RUN-A/B/B2/M",
+   "oracle_r4_expectations": "E11/E13 rejection contracts + E1 tree-conditional assertion + the R4-4 run contract written and prefix-proved BEFORE the four runs",
+   "mutation_file": "eb19e62846ed7e03f5fe74aee5a5debca9f84cf0a790df5d1e24d089f04d0858, built and hashed before RUN-M",
+   "derivation": "expectations derived from B1 after/probe_fixed.txt (recorded before this card) + fixed source lines; the disclosed exploratory run corroborates them (oracle R4-6) and was run before, not after, the freeze"
+  }
  },
  "binding_status": "bound",
  "bound_entry_count": 5,

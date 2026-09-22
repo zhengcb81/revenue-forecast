@@ -7,7 +7,7 @@ $py = Join-Path $attempt 'iso\venv\Scripts\python.exe'
 $T0 = Join-Path $attempt 'iso\T0\src'
 $T4 = Join-Path $attempt 'iso\T4\src'
 $T0b = Join-Path $attempt 'iso\T0b\src'
-$repo = 'C:\Users\郑曾波\Projects\company-wiki'
+$repo = Join-Path $env:USERPROFILE 'Projects\company-wiki'
 $after = Join-Path $attempt 'after'
 New-Item -ItemType Directory -Force -Path $after | Out-Null
 

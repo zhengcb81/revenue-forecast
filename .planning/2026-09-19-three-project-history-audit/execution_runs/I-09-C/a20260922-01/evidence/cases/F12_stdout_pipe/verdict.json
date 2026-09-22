@@ -1,0 +1,49 @@
+{
+  "case_id": "F12_stdout_pipe",
+  "card_point": "stdout 输送失败",
+  "f_row": "F12",
+  "rc_expectation_vs_raw": {
+    "expected": "0 or 2",
+    "raw": 120
+  },
+  "deviation_note": "MEASURED DEVIATION (kept, not amended): raw rc = 120 is CPython's stdio-flush failure exit code and lies OUTSIDE the frozen numeric range {0,2} recorded in I-09-A F12. The frozen SUBSTANTIVE expectation — no guarantee / unreachable — is confirmed by exactly this unpredictability; no cross-terminal rollback is claimed. Numeric range amendment is an owner/oracle-erratum decision, not this card's.",
+  "checks": [
+    {
+      "item": "seed_p0_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "rc_in_0_or_2",
+      "expected": true,
+      "actual": false,
+      "ok": false,
+      "why": "frozen numeric range {0,2} — recorded as measured, NOT amended; a miss here is reported as a deviation, never re-labelled a pass"
+    },
+    {
+      "item": "p0_still_consumable",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "chain_ok",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "no_rollback_claim",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": "stdout failure is an unreachable guarantee (C-12/D-3): we record it, we do NOT claim cross-terminal transaction rollback"
+    }
+  ],
+  "all_ok": false,
+  "elapsed_seconds": 1.36
+}

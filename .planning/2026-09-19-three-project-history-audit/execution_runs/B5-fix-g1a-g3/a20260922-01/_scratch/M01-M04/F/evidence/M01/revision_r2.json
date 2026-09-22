@@ -1,0 +1,118 @@
+{
+ "card_id": "M01",
+ "revision": "r2",
+ "generated_at_utc": "2026-09-20T00:44:58Z",
+ "production_repos_written": false,
+ "items": {
+  "F-M01-01": {
+   "revision": "r2",
+   "review_item": "F-M01-01",
+   "subject": "the first product run's stderr was overwritten by the successful re-run",
+   "honest_status": "NOT RECOVERABLE as a file. The first B run wrote evidence/M01/stderr.txt; the corrected re-run redirected stderr to the same path and overwrote it. No copy was made, and python was invoked with -B so no __pycache__ bytecode record of the pre-fix oracle exists either (verified by directory search).",
+   "what_is_still_verifiable": {
+    "first_run_command": [
+     "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "-X",
+     "utf8",
+     "-B",
+     "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\scripts\\run_M01.py",
+     "--attempt",
+     "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01",
+     "--code-root",
+     "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\iso\\checkout_scripts",
+     "--out",
+     "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\evidence\\M01\\run_result.json"
+    ],
+    "first_run_raw_returncode": 1,
+    "first_run_executed": false,
+    "first_run_problem": "the harness raised KeyError: 'continuity' before executing any case, because the case plan referred to base_input 'continuity' while input.json keys that block 'continuity_positive'",
+    "captured_traceback_excerpt": [
+     "Traceback (most recent call last):",
+     "  File \"...\\scripts\\run_M01.py\", line 192, in <module>",
+     "    raise SystemExit(main())",
+     "  File \"...\\scripts\\run_M01.py\", line 150, in main",
+     "    base = copy.deepcopy(input_doc[base_key])",
+     "                         ~~~~~~~~~^^^^^^^^^^",
+     "KeyError: 'continuity'"
+    ],
+    "capture_provenance": "The excerpt above is transcribed from this implementer session's tool output for the first B invocation. It is a session-transcript capture, NOT a surviving original artefact, and it is labelled as such so a reviewer cannot mistake it for untouched raw output.",
+    "mtimes_supporting_the_sequence": {
+     "oracle.md": "2026-09-20 01:15:15",
+     "scripts/oracle_M01.py (post-fix)": "2026-09-20 01:18:22",
+     "evidence/M01/stderr.txt (re-run, now 0 bytes)": "2026-09-20 01:18:24"
+    },
+    "sequence_implied_by_mtimes": "oracle.md was on disk before the oracle script edit, which preceded the re-run; the re-run's stderr is the empty file left on disk because a successful run writes nothing."
+   },
+   "oracle_version_provenance": {
+    "v1_reconstructed_path": "scripts/oracle_M01.v1.reconstructed.py",
+    "v1_reconstructed_sha256": "cc6f554afd68b3e44aaf8c3cf6231a38e9e05318c930035fcc5645b914323fc7",
+    "v1_status": "RECONSTRUCTED by reversing the single documented token change (\"continuity_positive\" -> \"continuity\"); the original v1 bytes were not retained and this artefact must never be presented as the original file",
+    "v2_shipped_path": "scripts/oracle_M01.py",
+    "v2_shipped_sha256": "92629b5b18eb3a9397c1037cff25c2327f4c8830ce104cc53e96067923e78e48",
+    "oracle_md_path": "oracle.md",
+    "oracle_md_sha256_at_review": "88635eb46df3c3d13f6ac0bc9af884d1b8d92aac50c6f7703c2f29a7a227d99f",
+    "oracle_md_sha256_at_first_freeze": "NOT RECORDED - source_manifest.json was generated only after the re-run, so the only hash it bound was the final oracle.md. This is the substantive part of F-M01-01 and is recorded here rather than papered over.",
+    "oracle_md_mtime": "2026-09-20 01:15:15",
+    "oracle_md_amended_in_r2": "yes - a revision r2 section was APPENDED; the frozen sections were left byte-for-byte unchanged, and the pre-append hash is recorded here so the append is verifiable"
+   },
+   "process_improvement_for_future_cards": [
+    "write every oracle artefact version to a versioned filename and hash it before the first run",
+    "do not let a re-run redirect stderr onto a previous run's stderr path; use run-scoped filenames",
+    "do not use -B during harness debugging, or copy the stderr aside before any re-run"
+   ]
+  },
+  "F-M01-02": {
+   "change": "run_card.py / run_M01.py now return 0 only when positive tolerance, continuity and all negatives pass; 2 = harness incomplete; 3 = negative verdict",
+   "rerun_raw_returncode": 0,
+   "expected_returncode": 0,
+   "exit_code_semantics": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "verdict": "pass",
+    "exit_code": 0
+   },
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   },
+   "positive_actual": [
+    220.00000000000003,
+    110.00000000000001,
+    0.0
+   ],
+   "unchanged_product_call": "the same calculate_registered_model path was re-run unchanged; only the harness exit code changed",
+   "exit_code_selfcheck": {
+    "evidence": "recovery/r2_exit_code_selfcheck/selfcheck_result.json",
+    "A_corrupted_oracle": {
+     "raw_returncode": 3,
+     "expected": 3
+    },
+    "B_corrupted_case_plan": {
+     "raw_returncode": 1,
+     "expected": "non-zero",
+     "residual": "rc=1 with an unhandled KeyError; the intended clean rc=2 path is not reachable for this corruption class"
+    },
+    "C_uncorrupted_card": {
+     "raw_returncode": 0,
+     "expected": 0
+    },
+    "frozen_evidence_touched": false
+   }
+  },
+  "pack_evidence": {
+   "raw_returncode": 0,
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\scripts\\pack_evidence.py:14: SyntaxWarning: invalid escape sequence '\\C'\r\n  --attempt <attempt_dir> --out-dir <evidence\\CARD> \\\r\n"
+  }
+ },
+ "corrections_in_r3": {
+  "rc2_reachability": {
+   "earlier_claim": "rc=2 is not yet reachable in practice",
+   "corrected": "rc=2 IS reachable: a corrupted positive input makes the product raise, so no verdict exists (case D). Case B (case-plan defect outside the guard) exits 1, not 2.",
+   "disproved_by": "the point reviewer deleted growth_rate from the positive input and measured rc=2",
+   "recorded_in": "recovery/r2_exit_code_selfcheck/selfcheck_result.json case D"
+  }
+ }
+}

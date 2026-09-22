@@ -1,0 +1,64 @@
+{
+ "card_id": "M27",
+ "attempt_id": "a20260919-01",
+ "revision": "r3",
+ "operation": "APPEND-ONLY transcription of the independent reviewer's r2 verdict into review.md (reviewer REPORT-r2.md section 8.1, placeholders filled from section 8.2)",
+ "review_md": {
+  "sha256_before": "03ce281b293a37d2f81dd3313e2c273d0493591bbf6b54eb4a5c2e8eb92214b3",
+  "size_bytes_before": 10500,
+  "sha256_after": "073fc1b282070d1d006659fb6d1c89bf34cdabff540e54f0f6d32e0eec8c20ce",
+  "size_bytes_after": 16350,
+  "grew_by_bytes": 5850,
+  "append_started_at_line": 83,
+  "appended_block_lines": 49,
+  "new_file_has_old_file_as_exact_prefix": true,
+  "prefix_sha256_declared_by_the_reviewer": "03ce281b293a37d2f81dd3313e2c273d0493591bbf6b54eb4a5c2e8eb92214b3",
+  "prefix_size_declared_by_the_reviewer": 10500,
+  "prefix_matched_the_declared_value_before_appending": true,
+  "append_method": "open(path, 'ab') binary append; no seek, no truncate, no rewrite",
+  "appended_bytes_sha256": "b7a47eaf79381e327c4abd180ab97e2efebf793325363161a98ceacb27a9205a",
+  "appended_bytes_size": 5850
+ },
+ "prefix_proof_method": "the OLD file bytes are read before the append and the NEW file bytes are read after it; the proof is the measured predicate new_bytes.startswith(old_bytes), not an assertion",
+ "frozen_four_piece_unchanged_after_append": {
+  "before": {
+   "input.json": "44f217af85a25c688aad12940abc38d175eedbb505cea0612df6f38956e23223",
+   "oracle.json": "00cbaab6992ad1da5e572052fbb78db1515707406bfec57d41d7c40e31fd531e",
+   "cases.json": "482a4f160d384e16887bf7ff3fc1180eb1ae8004c445d24e1b105cd926dec4de",
+   "run_result.json": "f7287494fd2830277d3784fce693b6e7268b02da5c700dc3721ef8cbd6fe3a2c"
+  },
+  "after": {
+   "input.json": "44f217af85a25c688aad12940abc38d175eedbb505cea0612df6f38956e23223",
+   "oracle.json": "00cbaab6992ad1da5e572052fbb78db1515707406bfec57d41d7c40e31fd531e",
+   "cases.json": "482a4f160d384e16887bf7ff3fc1180eb1ae8004c445d24e1b105cd926dec4de",
+   "run_result.json": "f7287494fd2830277d3784fce693b6e7268b02da5c700dc3721ef8cbd6fe3a2c"
+  },
+  "identical": true
+ },
+ "reference_hashes_at_transcription_time": {
+  "scripts/run_card.py": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+  "scripts/oracle_M25_M28.py": "d092ab16f050401ea05931cda34dc01251ef729f3123d65ec8385a101aa0f0de",
+  "production scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "production scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "not_signed_by_the_implementer": true,
+ "implementer_note": "transcription only; the verdict is the reviewer's. status remains review_pending and the implementer does not sign accepted.",
+ "reassembly_r3": {
+  "why": "the doc generator once rewrote review.md and truncated the reviewer block; the base was recovered byte-exactly and the append replayed deterministically",
+  "base_source": "review_base.md on disk",
+  "base_sha256": "03ce281b293a37d2f81dd3313e2c273d0493591bbf6b54eb4a5c2e8eb92214b3",
+  "base_size_bytes": 10500,
+  "block_sha256": "39946c515394eabc77d2fb80ef1c1d5bf8b99464dd3479421eefd7d6c04e72ae",
+  "block_size_bytes": 7279,
+  "review_md_sha256_after_reassembly": "70e88a39dbad7e93ab4db5d582634b8c7b04aa3af6c57ac734fdb8556fb33dad",
+  "review_md_size_bytes_after_reassembly": 17779,
+  "state_of_review_md_before_reassembly": "OTHER (will be replaced by the canonical base+block)",
+  "canonical_has_base_as_exact_prefix": true,
+  "appended_block_lines": [
+   83,
+   144
+  ],
+  "generator_fix": "write_docs.py now writes the base to review_base.md ONLY and leaves review.md alone; review.md is assembled by apply_review_r3.py / this script, so the append cannot be truncated again",
+  "frozen_artefacts_touched": false
+ }
+}

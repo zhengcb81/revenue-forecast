@@ -1,0 +1,106 @@
+{
+ "card_id": "M27",
+ "attempt_id": "a20260919-01",
+ "model_id": "renewable_generation",
+ "card_title": "M27 · renewable_generation · 发电量与电价",
+ "entry_point": "scripts/model_registry.py calculate_registered_model(model_id, base_revenue, drivers, years)",
+ "registration_site": "scripts/model_extensions.py build_extension_specs(...)",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes_at_binding_and_after_run": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_equals_production": true,
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "note": "attempt-local venv created with `python -m venv` from the I-00-A template venv; pytest installed offline from the local pip cache",
+  "global_python_used_for": "nothing in this card (no PDF extraction was needed)"
+ },
+ "card_script_hashes": {
+  "scripts/run_card.py": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+  "scripts/oracle_M25_M28.py": "d092ab16f050401ea05931cda34dc01251ef729f3123d65ec8385a101aa0f0de",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "recovery/selfcheck/make_mutations.py": "ace6d72002fb871ad18401a4f6c4bd94149f39a37755910d6f143a6100996dc3",
+  "recovery/selfcheck/naive_oracle.py": "c81b682f9091850d52c954e1abf03c32badaad8d05b8d44c5898544f9e43f1fa"
+ },
+ "oracle_document": {
+  "path": "oracle.md",
+  "sha256_now": "aa2cd2abcf6d2148286bb44b5116e73a81719af01af7eb9312fa1e600ae8d0c8",
+  "sha256_before_the_definitive_product_run": null,
+  "honest_gap": "oracle.md was written before the DEFINITIVE product run and its frozen body (sections 0-11) was NOT modified afterwards; only APPENDED revision sections were added (the r2 section). The expected values were frozen in evidence/<card>/oracle.json by the independent stdlib generator. The generator is reproducible byte-for-byte (proved by the self-check G regeneration in evidence/<card>/oracle_selfcheck.json). Three provenance facts are recorded rather than hidden: (1) the v1 generation had a defect which was corrected before the definitive run - the only expectation that ever changed is M25's NON-GATING defaults block, and the timeline is in evidence/<card>/revision_r2.json; (2) the v1 generator SOURCE and the M27 crash traceback were never persisted, so that accident is not reproducible (provenance gap); (3) the M26/M27/M28 NEG-CARD patch was corrected under review finding P2-1 and cases.json was re-frozen before the definitive run. commands.json records argv and raw exit codes ONLY and does NOT carry an oracle.md hash.",
+  "mtime_ordering": {
+   "oracle_json_mtime": 1789874272.384318,
+   "input_json_mtime": 1789874272.38179,
+   "oracle_md_mtime": 1789874273.397408,
+   "first_ever_product_run_stdout_mtime": 1789872192.499478,
+   "definitive_product_stdout_mtime": 1789874273.396139,
+   "oracle_json_precedes_the_definitive_run": true,
+   "oracle_json_precedes_the_first_ever_run": false,
+   "note": "r2 re-froze cases.json and re-ran the product, so the ORACLE.JSON mtime is later than the first ever run of this attempt. What the mtime ordering does establish is the pair that matters for the verdict: the frozen evidence and oracle.md both precede the DEFINITIVE run that produced evidence/<card>/stdout.txt."
+  },
+  "oracle_script_selfcheck": "evidence/M27/oracle_selfcheck.json records the generator's import list, product_import_present=false and the byte-identical regeneration hashes"
+ },
+ "evidence_input_hashes": {
+  "evidence/M27/input.json": "44f217af85a25c688aad12940abc38d175eedbb505cea0612df6f38956e23223",
+  "evidence/M27/oracle.json": "00cbaab6992ad1da5e572052fbb78db1515707406bfec57d41d7c40e31fd531e",
+  "evidence/M27/cases.json": "482a4f160d384e16887bf7ff3fc1180eb1ae8004c445d24e1b105cd926dec4de"
+ },
+ "registry_metadata_observed_from_the_isolated_copy": {
+  "model_id": "renewable_generation",
+  "required": [
+   "average_commissioned_mw",
+   "period_hours",
+   "pre_curtailment_capacity_factor",
+   "curtailment_rate",
+   "contracted_share",
+   "contract_price_per_mwh",
+   "merchant_price_per_mwh"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "average_commissioned_mw": "quantity",
+   "period_hours": "activity",
+   "pre_curtailment_capacity_factor": "ratio",
+   "curtailment_rate": "ratio",
+   "contracted_share": "ratio",
+   "contract_price_per_mwh": "revenue_per_unit",
+   "merchant_price_per_mwh": "revenue_per_unit",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "contracted_share",
+   "curtailment_rate",
+   "pre_curtailment_capacity_factor"
+  ],
+  "driver_bounds": {
+   "contract_price_per_mwh": [
+    null,
+    null
+   ],
+   "merchant_price_per_mwh": [
+    null,
+    null
+   ],
+   "other_revenue": [
+    null,
+    null
+   ]
+  },
+  "formula": "revenue = average_commissioned_mw * period_hours * pre_curtailment_capacity_factor * (1-curtailment_rate) * (contracted_share*contract_price_per_mwh + (1-contracted_share)*merchant_price_per_mwh) + other_revenue"
+ },
+ "network_calls": "none",
+ "llm_or_provider_calls": "none"
+}

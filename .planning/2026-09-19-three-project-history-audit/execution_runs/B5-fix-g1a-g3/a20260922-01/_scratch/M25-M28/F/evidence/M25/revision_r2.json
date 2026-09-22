@@ -1,0 +1,120 @@
+{
+ "card_id": "M25",
+ "revision": "r2",
+ "structure_note": "exactly ONE revision section is recorded in this file (the r2 section of oracle.md); the r1 pass and the P2/P3 response are both described inside it rather than as separate sections",
+ "trigger": "independent review of attempt a20260919-01 returned accepted_scoped (formula only) with mandatory findings P2-1 (NEG-CARD coverage claim) and P2-2 (self-contradictory oracle-accident narrative), plus P3 observations",
+ "review_verdict_received": "accepted_scoped (formula qualification only)",
+ "frozen_expectations_final": {
+  "positive_expected_float": [
+   300.0
+  ],
+  "continuity_positive_expected_float": [
+   300.0,
+   330.0
+  ],
+  "defaults_expected_float": [
+   0.0
+  ]
+ },
+ "no_gate_expectation_was_ever_rewritten": {
+  "statement": "no expectation that gates the verdict (positive, continuity_positive, cases[].expected) was changed after it was first written. The only expectation ever changed is M25's NON-GATING defaults block.",
+  "evidence": "the first product run's run_result.json (recovery/precorrection/run_result.json) carries per_value_checks[].expected and continuity_positive.expected; the reviewer compared them against the frozen oracle.json per card and found them identical, and the four cases.json v1 files are byte-identical to the frozen ones"
+ },
+ "product_files_changed": [],
+ "correction": "THE ONLY CARD WITH A REAL PRE-CORRECTION DIFFERENCE. The v1 generation set the defaults expectation to the positive value 300 while the frozen defaults INPUT was the all-zero identity case whose hand value is 0. The first product run then reported `defaults ok: False actual: [0.0] expected: [300.0]` - the mismatch was caught by the run itself, NOT by a frozen gate - and the generator was re-run so the defaults expectation became 0.",
+ "timeline_as_observed": {
+  "v1_generation_input_cases_oracle_mtime": 1789872115.720444,
+  "oracle_md_mtime": 1789874273.341153,
+  "first_ever_product_run_stdout_mtime": 1789872191.932641,
+  "v2_frozen_evidence_mtime": 1789874272.327332,
+  "definitive_product_run_stdout_mtime": 1789874273.339585,
+  "what_is_actually_supported": "1) the GATING expectations were in place before the FIRST product run (see no_gate_expectation_was_ever_rewritten); 2) the M25 DEFAULTS block (non-gating) was corrected AFTER the first product run and BEFORE the definitive run; 3) the definitive run happened after the frozen evidence was written. The earlier claim 'the correction was applied BEFORE oracle.md was written' is NOT supported by mtime and has been withdrawn: the final generator's mtime (03:43:34) is LATER than all four oracle.md files (03:42:24-03:43:07) and later than the first product run (03:43:11-12).",
+  "v1_run_used_the_frozen_gating_expectations": "the precorrection stdout.txt records `positive expected [264000.0]`, `defaults [262800.0]`, 11/11 negatives and rc=0 for M27, matching the frozen oracle.json"
+ },
+ "p2_1_cases_json_refreeze": {
+  "status": "applied to M26, M27 and M28; NOT needed for M25 (its NEG-CARD uses set_driver_multi and never had the defect - the reviewer confirmed M25's documentation was already accurate)",
+  "defect": "NEG-CARD used kind=set_driver with value={\"__float__\": X}. apply_case assigns the value as a whole for set_driver (only set_driver_element unwraps build_mutation_value), so the driver became a dict and the generic per-year length/type guard at model_registry.py:336 refused the case before the card-specific guard was evaluated",
+  "fix": "value -> one-element list; kind unchanged; cases.json re-frozen; product re-run once",
+  "expectations_changed": false,
+  "rerun_mechanism_observed": {
+   "declared": "retired_units=[201] exceeds opening_installed_units=[200]; the bridge 200+40-201=39 is deliberately kept consistent, so the ONLY guard that can refuse this case is the retired-cohort upper bound, which raises `retired_units exceeds opening installed cohort: FY2027`",
+   "observed_message": "retired_units exceeds opening installed cohort: FY2027",
+   "expected_substring": "retired_units exceeds opening installed cohort: FY2027",
+   "matched": true,
+   "gating": true,
+   "why": "the card-specific negative must be refused by the CARD-SPECIFIC guard, not by the generic per-year length/type guard; otherwise the oracle.md coverage claim is unsupported. A declaration without exactly one backticked message fragment is itself a contract violation."
+  },
+  "cases_json_sha256": {
+   "v1_before_the_fix": "3cdad23bc476f3f30e6a0714be3a0aa02512ff856b9f0e4bd3272164c240e33b",
+   "frozen_after_the_fix": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+   "changed": true
+  },
+  "runner_gate_added": "cases.json.case_contract.neg_card_declared_mechanism is now verified by run_card.py at verdict time; a mismatch or a missing declaration is a harness defect (rc=1). Validated by self-check cases F1/F2 and by mutation-proof case D."
+ },
+ "p3_2_runner_case_contract": {
+  "finding": "the runner used to ignore cases.json[].expected and the case count: rewriting a declaration or deleting a negative still returned rc=0",
+  "fix": "run_card.py now verifies declared_expected_exception, expected_count and expected_ids before issuing a verdict",
+  "self_check": {
+   "F1_rewritten_declaration": 1,
+   "F2_deleted_case_N04": 1
+  },
+  "scope": "fixed in this batch only; no other card's frozen runner was touched"
+ },
+ "p3_3_line_endings": {
+  "finding": ".gitattributes declares `*.json text eol=lf`, so r1's CRLF worktree JSON did not hash like its git blob",
+  "fix": "every JSON artefact of this attempt is now written with newline=\"\\n\"",
+  "consequence": "the JSON evidence hashes changed from r1; the NUMBERS did not",
+  "sidecar": "evidence/M25/line_ending_and_blob_hashes.json"
+ },
+ "p3_5_pack_reruns": {
+  "finding": "only one pack_stdout.txt survived (03:50:24) while pack_stderr.txt showed an earlier 03:46:39 stamp, so at least two packs happened and the earlier stdout is not visible",
+  "fix": "pack stdout is now kept under recovery/precorrection/pack_runs/ with an explicit run index and the inference is written down"
+ },
+ "p3_7_precorrection_is_not_uniform": {
+  "this_card": "REAL pre-correction content",
+  "v1_vs_frozen": {
+   "evidence/M25/oracle.json": {
+    "v1_sha256": "bbe21218bd97f8891d60c35cc1eca024b4c2b8f0c07c25ae0bafdb3b5ae69986",
+    "frozen_sha256": "35f1dba3ccb0a067dd16476c2a855eb6f945bf231a7111d2bbaf28d6fd9b5311",
+    "identical": false
+   },
+   "evidence/M25/cases.json": {
+    "v1_sha256": "3cdad23bc476f3f30e6a0714be3a0aa02512ff856b9f0e4bd3272164c240e33b",
+    "frozen_sha256": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+    "identical": false
+   },
+   "evidence/M25/input.json": {
+    "v1_sha256": "9e5d08e1753840803d3661d9da275b939dc00e778439f238acac7c8d4409b07a",
+    "frozen_sha256": "4cacbf92a6883d3a688a61d68f565b3c33134fe12c3bf07fd5f8613e4a02a592",
+    "identical": false
+   }
+  }
+ },
+ "v1_generator_source": {
+  "script_sha256_recorded_by_v1_selfcheck": "d443b5d5bcf5f49f8f442df71b99f774a74422d393f038b9dca14bbe9a6a6e5e",
+  "script_sha256_of_the_version_on_disk_now": "d092ab16f050401ea05931cda34dc01251ef729f3123d65ec8385a101aa0f0de",
+  "v1_source_persisted": false,
+  "v1_traceback_persisted": false,
+  "search_performed": "a sha256 sweep of every *.py under PLAN\\execution_runs (excluding iso\\venv) found NO file with the v1 hash; a text search found no file containing the TypeError traceback",
+  "consequence": "the v1 generator source and the M27 crash traceback are NOT reproducible and NOT independently auditable. Only these facts remain checkable: v1 differed from the final version (different selfcheck hash), v1 wrote all 16 artefacts for the four cards, and M25's v1 oracle.json carried the wrong non-gating defaults expectation.",
+  "status": "recorded as a provenance gap, not as an explained event"
+ },
+ "reviewer_opinions_received_not_adopted_as_decisions": {
+  "note": "the independent reviewer gave positions on the open questions. They are RECORDED here for the owner; the implementer does not adopt them as decisions.",
+  "OQ-01_binding_scope": "reviewer ACCEPTS the existing approach (isolation contract = deterministic bytes under test + cwd outside the repo root; snapshot 8/8 byte-identical to production) and recommends the owner explicitly ratify that equivalence",
+  "OQ-M25M28-01_silent_zero_fill": "reviewer: does NOT block these four cards (only M27 other_revenue and M28 recognized_performance_fees are hit, and 0 is semantically neutral / the card text declares 0); recommends the registry owner fix it with explicit defaults metadata rather than a behaviour change",
+  "OQ-M25M28-02_productivity_bound": "reviewer: does NOT block; asks for the exception to be labelled in the metadata/docs (P3-6)",
+  "provenance": "reviewer: does NOT block formula acceptance, but requires the P2-2 narrative correction and an explicit 'v1 source / traceback not preserved' statement - both applied here",
+  "stronger_mtime_rule": "reviewer explicitly does NOT adopt the stronger rule 'oracle.json must predate ANY product run'; if the owner insists on it, the owner rules on it - the reviewer does not treat it as a technical blocker"
+ },
+ "precorrection_preserved_at": "recovery/precorrection/",
+ "first_product_run_preserved_at": "recovery/precorrection/stdout.txt",
+ "stdout_reencoding": {
+  "what_happened": "the very first capture of evidence/<card>/stdout.txt used PowerShell redirection, which wrote UTF-16LE on Windows PowerShell 5.1. It was re-captured as UTF-8 (BOM) by re-running the SAME bound argv, so the stdout.txt in evidence/ is the definitive run's output in the same encoding as the rest of the evidence set.",
+  "frozen_numbers_unchanged": true,
+  "proof": "the re-run produced a byte-identical run_result.json (recovery/rerun_check/rerun_check.json: byte_identical = true) and the printed values in stdout.txt match the evidence files (printed_value_checks all true)",
+  "raw_rc_of_the_reencoding_run": 0,
+  "rerun_check": "recovery/rerun_check/rerun_check.json",
+  "rerun_check_unit": "R-M25-independent-rerun-check"
+ }
+}

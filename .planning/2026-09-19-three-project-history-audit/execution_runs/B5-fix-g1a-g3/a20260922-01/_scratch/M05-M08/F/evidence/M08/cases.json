@@ -1,0 +1,191 @@
+{
+ "card_id": "M08",
+ "first_required_driver": "opening_backlog",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "expected": "ValueError",
+   "base_input": "positive",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "driver": "closing_backlog",
+   "index": 0,
+   "value": {
+    "__float__": 500
+   }
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "driver": "opening_backlog",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   }
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01b: non-finite value nan",
+   "driver": "opening_backlog",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   }
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01c: non-finite value inf",
+   "driver": "opening_backlog",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   }
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01d: non-finite value -inf",
+   "driver": "opening_backlog",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   }
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "driver": "opening_backlog",
+   "value": []
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "driver": "opening_backlog"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ]
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "driver": null,
+   "value": []
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "driver": null,
+   "value": {
+    "__bool__first__": true
+   }
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "driver": null,
+   "value": {
+    "opening_backlog": [
+     100,
+     61
+    ],
+    "closing_backlog": [
+     60,
+     61
+    ]
+   }
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "the backlog bridge ignores base_revenue at this entry point; design observation only"
+  },
+  {
+   "id": "OBS-SIGN-B",
+   "kind": "set_driver_element",
+   "driver": "contract_changes",
+   "index": 0,
+   "value": {
+    "__float__": 10
+   },
+   "base_input": "defaults",
+   "compare_to": null,
+   "expect_equal": null,
+   "why": "sign probe with contract_changes = +10: reading A gives 65, reading B gives 65, reading C gives 85; NO expectation and NO verdict is asserted",
+   "base_input_meaning": "the omission-of-remeasurement input (backlog_remeasurements absent), NOT the frozen positive; on the frozen positive input these probes would read 70.0 and 40.0 respectively for reading C because the positive carries backlog_remeasurements = -15",
+   "expected_under_each_reading_on_this_base": {
+    "A": 65.0,
+    "B": 65.0,
+    "C": 85.0
+   }
+  },
+  {
+   "id": "OBS-SIGN-NEG",
+   "kind": "set_driver_element",
+   "driver": "contract_changes",
+   "index": 0,
+   "value": {
+    "__float__": -20
+   },
+   "base_input": "defaults",
+   "compare_to": null,
+   "expect_equal": null,
+   "why": "second sign probe with contract_changes = -20: reading A gives 55, reading B gives 95, reading C gives 55 - this probe separates reading B from A/C; NO expectation and NO verdict is asserted",
+   "base_input_meaning": "the omission-of-remeasurement input (backlog_remeasurements absent), NOT the frozen positive; on the frozen positive input these probes would read 70.0 and 40.0 respectively for reading C because the positive carries backlog_remeasurements = -15",
+   "expected_under_each_reading_on_this_base": {
+    "A": 55.0,
+    "B": 95.0,
+    "C": 55.0
+   }
+  },
+  {
+   "id": "OBS-REMEASURE-USED",
+   "kind": "input_replay",
+   "input": "defaults",
+   "compare_to": "positive",
+   "expect_equal": false,
+   "why": "omitting backlog_remeasurements changes the result, so the remeasurement term is really used"
+  }
+ ]
+}

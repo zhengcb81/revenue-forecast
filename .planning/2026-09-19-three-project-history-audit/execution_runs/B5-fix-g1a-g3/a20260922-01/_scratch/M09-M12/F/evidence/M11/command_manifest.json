@@ -1,0 +1,424 @@
+{
+ "card_id": "M11",
+ "attempt_id": "a20260919-01",
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+ "rules": [
+  "every product invocation used --code-root <attempt>/iso/checkout_scripts",
+  "raw exit codes are recorded as returned and expected exit codes are separate fields",
+  "skip / timeout / not-collected is never recorded as a pass"
+ ],
+ "units": [
+  {
+   "unit_id": "A0-M11-iso-venv-create",
+   "purpose": "create the attempt-local isolated interpreter from the I-00-A template venv",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "venv",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "the global Miniconda python is forbidden for card runs"
+  },
+  {
+   "unit_id": "A1-M11-pytest-offline-install",
+   "purpose": "attempt the offline pytest install into the venv (environment record only)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "pip",
+    "install",
+    "--no-index",
+    "pytest"
+   ],
+   "network": "disabled",
+   "raw_rc": 1,
+   "expected_rc": 0,
+   "note": "recorded as an environment fact only; no A-C card result depends on pytest, and a failed install is NOT counted as a pass anywhere"
+  },
+  {
+   "unit_id": "A2-M11-isolated-snapshot",
+   "purpose": "materialise the read-only isolated code snapshot and hash-compare it to production",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\model_registry.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\checkout_scripts\\model_registry.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "hashes": {
+    "production_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "production_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+    "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+   }
+  },
+  {
+   "unit_id": "A3-M11-oracle-generate",
+   "purpose": "generate the frozen oracle/input/cases from the independent stdlib generator",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\oracle_cards_M09_M12.py",
+    "--card",
+    "M11",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "writes evidence/M11/{input,oracle,cases,observation_expected,oracle_selfcheck}.json"
+  },
+  {
+   "unit_id": "A4-M11-oracle-regenerate-compare",
+   "purpose": "re-generate the frozen expectations into a scratch root and byte-compare",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\oracle_cards_M09_M12.py",
+    "--card",
+    "M11",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\recovery\\regenerate"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "proves evidence/M11/oracle.json is reproducible byte for byte"
+  },
+  {
+   "unit_id": "B-M11-product-run",
+   "purpose": "run the product entry point against the frozen oracle (positive, continuity, defaults, observations, 11 negatives)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\evidence\\M11\\run_result.json",
+    "--formula-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\evidence\\M11\\formula_result.json",
+    "--negative-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\evidence\\M11\\negative_results.json",
+    "--stdout-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\evidence\\M11\\stdout.txt",
+    "--stderr-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\evidence\\M11\\stderr.txt"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "raw rc is the verdict-carrying exit code of the runner; see evidence/M11/run_result.json exit_code_semantics"
+  },
+  {
+   "unit_id": "C-M11-registry-enumeration",
+   "purpose": "read-only registry contract enumeration (no revenue calculation)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\enumerate_registry_facts.py",
+    "--card",
+    "M11",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\evidence\\M11\\registry_enumeration.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "G-M11-mutation-selfcheck",
+   "purpose": "exit-code mutation self-check: corrupted expectations must go red (rc 2/3)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\selfcheck_mutations.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--python",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "writes recovery/selfcheck_result.json; the frozen evidence is never mutated"
+  },
+  {
+   "unit_id": "F-M11-consistency-verify",
+   "purpose": "cross-check every printed value against the evidence files",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\verify_consistency.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "writes evidence/M11/consistency_check.json"
+  },
+  {
+   "unit_id": "N-M11-narrative-pack",
+   "purpose": "write the narrative files (review.md, decision.md, accounting_decision.md, changes.diff, recovery/README.md, before/README.md, handoff.json) from the evidence",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_narrative.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "E-M11-evidence-pack",
+   "purpose": "pack the mechanical evidence files (manifests, qualifications, hashes, survey)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_evidence.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+    "--regen-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\recovery\\regenerate"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "O-M11-oq-rulings",
+   "purpose": "write evidence/M11/oq_rulings.json from the enumerated registry facts",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_oq_rulings.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "F-M11-consistency-verify",
+   "purpose": "cross-check every printed value against the evidence files",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\verify_consistency.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "writes evidence/M11/consistency_check.json"
+  },
+  {
+   "unit_id": "N2-M11-narrative-refresh",
+   "purpose": "refresh handoff.json so its raw_exit_codes include E and F",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_narrative.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "Z1-M11-ledger-finalize",
+   "purpose": "finalize pass: rewrite commands.json / command_manifest.json / hashes from the ledger",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_evidence.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+    "--finalize"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "Z2-M11-ledger-finalize-refresh",
+   "purpose": "second finalize pass so that Z1's own raw exit code appears in commands.json",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_evidence.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+    "--finalize"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "commands.json is written by this unit, so this unit's own exit code cannot be inside it; it is recorded in after/rc_ledger.txt and in after/console_Z2-M11-ledger-finalize-refresh_M11.txt"
+  },
+  {
+   "unit_id": "Z3-M11-hash-refresh",
+   "purpose": "third finalize pass so the hash snapshot covers Z2's console and the final ledger",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_evidence.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+    "--finalize"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "commands.json is written by this unit as well; see the Z4 row for the last pass"
+  },
+  {
+   "unit_id": "Z5-M11-hash-refresh",
+   "purpose": "finalize pass after the narrative refresh",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_evidence.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+    "--finalize"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "commands.json is written by this unit as well; see the Z6 row for the last pass"
+  },
+  {
+   "unit_id": "Z6-M11-hash-refresh",
+   "purpose": "last finalize pass: manifest covers every artefact except the three self-referential hash files and the trailing artefacts named inside evidence_hashes.json",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01\\scripts\\pack_evidence.py",
+    "--card",
+    "M11",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M11\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+    "--finalize"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "this is the last unit of the attempt; its console and its own ledger line, plus after/final_audit.txt, are the artefacts written after the snapshot and are named in evidence_hashes.json -> trailing_artifacts_written_after_this_snapshot"
+  }
+ ],
+ "runner_verdict_exit_code": 0,
+ "runner_verdict": "pass",
+ "ledger_vs_run_result_rc": {
+  "ledger_b_unit_rc": 0,
+  "run_result_exit_code": 0,
+  "match": true
+ }
+}

@@ -1,0 +1,163 @@
+{
+ "card_id": "M19",
+ "model_id": "gaming",
+ "first_required_driver": "active_users",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "base_input": "positive",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "driver": "payer_conversion",
+   "index": 0,
+   "value": {
+    "__float__": 1.1
+   }
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "driver": "active_users",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   }
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01b: non-finite value nan",
+   "driver": "active_users",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   }
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01c: non-finite value inf",
+   "driver": "active_users",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   }
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01d: non-finite value -inf",
+   "driver": "active_users",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   }
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "driver": "active_users",
+   "value": []
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "driver": "active_users"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ]
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "driver": null,
+   "value": []
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "driver": null,
+   "value": {
+    "__bool__first__": true
+   }
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "driver": null,
+   "value": [
+    2027,
+    2029
+   ]
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "the rowwise calculator discards base_revenue; design observation only, not a pass condition"
+  },
+  {
+   "id": "OBS-DEFAULT-EQUIV",
+   "kind": "set_driver",
+   "driver": "other_revenue",
+   "value": [
+    0
+   ],
+   "base_input": "defaults",
+   "compare_to": "defaults",
+   "expect_equal": true,
+   "why": "writing the omitted optional driver explicitly as 0 reproduces the omitted-input result"
+  },
+  {
+   "id": "OBS-PAYER-BOUNDARY",
+   "kind": "set_driver_element",
+   "driver": "payer_conversion",
+   "index": 0,
+   "value": {
+    "__float__": 1.0
+   },
+   "base_input": "positive",
+   "expectation": "payer_conversion = 1.0 is inside the frozen [0,1] ratio domain, so it must be accepted: 1000 x 1.0 x 20 + 10 = 20010",
+   "why": "probes whether the ratio bound is inclusive at its upper edge (recorded under observation_expected)"
+  }
+ ]
+}

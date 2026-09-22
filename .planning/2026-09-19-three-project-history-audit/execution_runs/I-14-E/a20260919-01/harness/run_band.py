@@ -89,7 +89,8 @@ def sweep_leftovers(root: Path) -> list[int]:
     root_text = str(root)
     killed: list[int] = []
     query = ("Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "
-             f"'-ProjectRoot*' -and $_.CommandLine -like '*{root_text}*' }} | "
+             f"'*{root_text}*' -and ($_.CommandLine -like '*-File*source_catalog_worker.ps1*' "
+             "-or $_.CommandLine -like '*-m company_wiki.source_catalog.cli*') } | "
              "Select-Object -ExpandProperty ProcessId")
     probe = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
                             query], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,

@@ -1,0 +1,431 @@
+{
+  "card_id": "B1-PREREQ",
+  "card_title": "Close B1 review findings F1-F5 (REM-40...44) before batch-2 promotion",
+  "parent_card": "B1 (accepted_with_conditions review, reviewer_report.md F1-F5 = REMEDIATION_REGISTER REM-40...44)",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260922-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B1-PREREQ\\a20260922-01",
+  "implementer": "delegated prereq session (does NOT self-sign accepted)",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_history": [
+    {"round": 1, "verdict": "changes_required", "carrier": "reviewer_report.md", "bytes": 25883, "sha256": "e25a2c837009aebf4be542a89cafa13e78a0dae59b3556a7766ae8bb397376f6", "pinned_by": "reviewer_report.md.sha256", "sole_blocker": "F-REV-B1P-01 (the false 'r1 RED stdout lost / surviving file is the final 11/1 / unclosable' disclosure and its location note)", "preservation": "round-1 report UNTOUCHED on disk: re-hashed read-only at carrier landing == its sidecar content; the changes_required history is retained here and in review.md, never overwritten"},
+    {"round": 2, "verdict": "accepted_scoped", "carrier": "reviewer_report_r2.md", "verdict_line": 18, "bytes": 28775, "sha256": "50437289bc5b83d76c5adbb34b4481008498cb47125bd02b62fa9676b33aa558", "pinned_by": "reviewer_report_r2.sha256", "blocker_F_REV_B1P_01": "closed", "findings": "1 cosmetic (F-REV-B1P-R2-01) + 6 confirmed (F-REV-B1P-R2-02..07)", "rulings": ["(i) corrected erratum scope — location dispute resolved; SRC oracle pre-r7 / SRC decision / SRC handoff EXONERATED (carrier section 4)", "(ii) probe-docstring chain deviation does NOT block (carrier section 5)"], "scope_conditions": 7, "reviewer": "独立复核 (round-2 delegated independent review session; the reviewer self-signed no accepted status — verdict returned to the parent, carrier lines 12-14)"},
+    {"round": "bookkeeping carrier landing (this pass)", "verdict": null, "note": "pure transcription of the round-2 carrier verdict into review.md / this file; adds no acceptance of its own; verdict_is_transcribed_not_authored=true"}
+  ],
+  "implementer_self_acceptance": false,
+  "note_on_status": "SUPERSEDED at carrier landing: the round-2 independent reviewer (独立复核) has ruled accepted_scoped — authority in status_authority (carrier reviewer_report_r2.md, sha256 50437289bc5b83d76c5adbb34b4481008498cb47125bd02b62fa9676b33aa558, 28775 B, verdict line 18); the original pre-verdict text is retained verbatim in note_on_status_historical_pre_verdict. Still true from the original: this card does NOT authorize promoting B1's iso fix (batch 2 = separate owner decision, scope condition SC-4) and does not re-adjudicate F6/F7. This bookkeeping transcription adds no acceptance of its own.",
+  "note_on_status_historical_pre_verdict": "status=review_pending only. No file or field in this package claims `accepted`. This card closed five prerequisite findings; it does NOT authorize promoting B1's iso fix (batch 2 remains a separate owner decision) and does not re-adjudicate F6/F7.",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "source_findings": {
+    "reviewer_report.md": "execution_runs/B1-I08C-product-fixes/a20260921-01/reviewer_report.md, on-disk sha256 6bfd2922cdf3418416731e62098567d20ab1dcdc98429d8cc1e899e721e7951b (37224 B), self-pinned final-byte digest 73feb0593b44ffeb448bc5f5b1cea9800f4cc9fb59f40ca19e9aae8038c104fa, findings F1-F5 at lines 323-421, required-before-promotion at section 9",
+    "REMEDIATION_REGISTER.md": "entries REM-40..REM-44 at lines 68-72; summary row line 432"
+  },
+  "findings": {
+    "F1/REM-40": {
+      "disposition": "fixed",
+      "closure_check_before_work": "OPEN (verified, not assumed): SRC oracle contained revisions r2/r3/r4 only; r3 R3-2/R3-3 '11 fields / 11 members' was the live frozen text; grep for r5 found only the reviewer's prescription (reviewer_report.md:353,538)",
+      "fix": "append-only SRC oracle.md Revision r5: executed record set is exactly 10 fields (no result_sha256), with the fixpoint explanation of why r3's '11' was wrong",
+      "proofs": [
+        "scratch/append_oracle_r5.stdout.json (marker 39288 = 39287+1; frozen_prefix_untouched true; prefixes 27697/31081/35840/39287 all match)",
+        "evidence/append_r5.stdout.txt + .rc (0)",
+        "post-r5 oracle 43298 B / 910ca4a8109b28afb739f4a7463dbf26e13fe85c296e115d806768bcb3bd3231",
+        "10-field truth measured 3 ways: static AST of PUBLICATION_ATTESTATION_FIELDS, static AST of frozen test ATTESTATION_FIELDS, runtime record_field_count=10 (evidence/probe_e21.stdout.txt, evidence/final_integrity_check_v2.stdout.txt)",
+        "changes.diff section 1 (pre-r5 -> post-r6 append delta)"
+      ]
+    },
+    "F2/REM-41": {
+      "disposition": "fixed",
+      "closure_check_before_work": "OPEN: SRC/test_b1_rem.py still exactly 12 nodes (10 defs, one parametrized x3), no node covers 'present record verified under unattested label'",
+      "fix": "R13-equivalent node test_r13_equiv_rem41.py (frozen in this attempt's oracle + freeze.json BEFORE running; imports B1's frozen fixtures so the 12-node file stays byte-pinned at 636b43c8...) + M6 added to the section-5 mutation lineage via append-only SRC oracle Revision r6",
+      "proofs": [
+        "freeze.json entry my_node_r13_equiv_rem41 (frozen pre-run)",
+        "oracle.md section 3.2 (four arms + M6 mutation bytes pre-registered)",
+        "evidence/arm1_node_on_fixed.* : 2 passed rc 0 (GREEN, as frozen)",
+        "evidence/arm2_node_on_m6.* : 1 failed (DID NOT RAISE) + 1 passed (control) rc 1 (RED on M6 gate, as frozen)",
+        "evidence/arm3_frozen12_on_m6.* : 12 passed rc 0 -> blind spot re-measured, declared {} == observed {}",
+        "evidence/arm4_node_on_unfixed.* : 2 failed rc 1 -> node(a) as frozen; CONTROL DEVIATED (see deviations.arm4_control)",
+        "scratch/append_oracle_r6.stdout.json (marker 43299 = 43298+1; frozen_prefix_untouched true); post-r6 oracle 47538 B / a8f192f10215642d7df2d8ace240d074f3bf50671cd4f51920b35434ebcf972d",
+        "scratch/mutations/m6_proof.json (pre bc2bb4a3... -> post ffc782ac77caf83995373659d69b157ed7c1b146d223fc2987428bcff83c2ab4) + scratch/mutations/m6_delta_proof.json (197 vs 197 files, exactly one changed)",
+        "evidence/m6_build.*",
+        "declared red set on the 14-node surface under M6 = {test_rem41_a_present_record_is_verified_even_when_label_is_unattested} == observed"
+      ]
+    },
+    "F3/REM-42": {
+      "disposition": "fixed (closed as documented-not-bindable-here with evidence; the E21 implementation itself is a product card, deliberately NOT performed)",
+      "closure_check_before_work": "OPEN: E21/issuer_key_binding_mismatch appears in iso/fixed only in the docstring (revenue_publication.py:235); _trusted_signer_public_keys() -> dict[str,bytes] drops issuer/key_id",
+      "evidence": [
+        "evidence/probe_e21.stdout.txt (rc 0; executed source hashes printed): Q1 loader has NO issuer/key_id while the trust FILE entry does have them; Q2 issuer rename ACCEPTED at validate_publication_receipt AND validate_forecast_output, key_id rename ACCEPTED, negative control (corrupt signature) REJECTED E14"
+      ],
+      "why_not_bindable_here": "binding needs (1) a loader that returns identity per fingerprint (contracts/evidence.py:242-267 returns fingerprint->bytes only), (2) comparison sites in revenue_core._validate_attestation_response (issuance E21) and/or revenue_publication.validate_publication_attestation (consumption), (3) a real trust anchor carrying issuer/key_id (config/trusted_signer_public_keys.json ABSENT by design; I-08-A 12-field schema declared NOT closed in SRC oracle section 7.3). All three are product changes; this card is read-only on product (and #3 is a capability grant, not a fix).",
+      "what_would_bind_it": "see decision.md F3: versioned loader return carrying the identity triple + fail-closed E21 at both comparison sites + an owner-approved trust anchor whose entries carry issuer/key_id",
+      "impact_bound_as_reviewer_said": "label forgery still impossible (fingerprint trust-domain + Ed25519 hold; probe negative control); residual is rename-by-an-existing-trusted-key-holder"
+    },
+    "F4/REM-43": {
+      "disposition__superseded": {
+        "superseded_reason": "partially refuted by reviewer F-REV-B1P-01 with byte evidence — the 'historical r1 loss ... UNCLOSABLE' scope is false for the stdout",
+        "superseded_on": "r2 record-only correction round",
+        "original_text_verbatim": "fixed (evidence protocol established) with the historical r1 loss recorded as DISCLOSED, UNCLOSABLE — not claimed closed"
+      },
+      "disposition": "r2 CORRECTED: fixed (evidence protocol established) — CONFIRMED by review section 4.4; historical gap RE-SCOPED — only the r1 test file (18236 B / e6c0949c...) is genuinely lost; the r1 RED stdout SURVIVES (see unclosable_historical_gap below)",
+      "protocol": "every new RED/GREEN arm preserves raw stdout/stderr/rc byte-for-byte under evidence/<label>.* via raw cmd /c redirection; labels write-once (run_arm.ps1 exits 99 on collision); re-runs need a new label + disclosure; evidence/SHA256SUMS.txt pins every byte stream; frozen in oracle.md section 3.4 before any run",
+      "labels": ["arm1_node_on_fixed", "arm2_node_on_m6", "arm3_frozen12_on_m6", "arm4_node_on_unfixed", "probe_e21", "append_r5", "append_r6", "m6_build", "final_integrity_check", "final_integrity_check_v2"],
+      "disclosed_label_events": [
+        "label final_integrity_check burned by the FROZEN tool's own defect (ast.literal_eval on a frozenset(...) call node): rc 1 + traceback preserved verbatim; successor ran under NEW label final_integrity_check_v2 (14/14 checks ok, rc 0) — never an overwrite",
+        "arm4 NOT re-run after its control deviation (write-once evidence + frozen node pin)"
+      ],
+      "unclosable_historical_gap__superseded": {
+        "superseded_reason": "refuted by reviewer F-REV-B1P-01 with byte evidence",
+        "superseded_on": "r2 record-only correction round",
+        "original_key": "unclosable_historical_gap",
+        "original_text_verbatim": "B1's r1 RED stdout ('10 failed / 2 passed', the warrant for oracle r2) and the r1 test file (18236 B / e6c0949c...) were overwritten/removed before archiving and cannot be recreated by any later card; the surviving before/b1_unfixed.stdout.txt (30580 B / 58863ffb..., pinned in freeze.json) is the final 11/1 output, not r1's. REM-43 closes the PROTOCOL half only; the loss stays open.",
+        "retention_note": "kept verbatim, never deleted; the same sentence is quoted verbatim as superseded in SRC oracle.md Revision r7 section R7-2 item 6 and in decision.md section r2"
+      },
+      "unclosable_historical_gap": "r2 CORRECTED (reviewer F-REV-B1P-01, independently re-measured in evidence/r2/): the r1 RED stdout was NOT lost — before/b1_unfixed.stdout.txt is 30580 B / 58863ffbca21c72350b868e9b344cc7e5a1651060f6ccb5bb1fcd3f796701335, UTF-16LE+BOM, decoding to 10 FAILED / 2 PASSED with summary '10 failed, 2 passed in 8.18s' and no '11 failed, 1 passed' anywhere — i.e. it IS r1's RED stdout (the warrant for oracle r2). Git history of the path is the single commit 980c9b7a (2026-09-21 21:16:24) whose blob equals HEAD and the working bytes, so since 21:16:24 the path never held an 11/1 output; provenance: stdout mtime 21:15:12, run stderr 21:14:45, r2 warrant written 21:15:35; B1's sealed handoff.json lines 137/198/110 agree ('preserved and was NOT overwritten'). The ONLY genuinely lost artifact, within the reviewer's scanned domains (report 4.4 / 5.3), is the r1 test file: 18236 B / e6c0949c3b7d0d9c3bad101dc90a62cb8702dc4616715adfc2227dda60aa8f75 — absent from the working tree, from every reachable commit (reachable blobs: 18611 B / da3d29bf... then 20631 B / 636b43c8...), and by size from the 1294 reflog-unreachable blobs the reviewer scanned.",
+      "rem43_rescope_r2": "PROTOCOL half: CLOSED (established + evidenced: write-once labels, raw byte capture, 31-entry SHA256SUMS recomputed by the reviewer). HISTORICAL gap: r1 test file ONLY (18236 B / e6c0949c...). No unclosable-stdout claim stands anywhere in this record.",
+      "correction_carriers": [
+        "decision.md section r2 (this attempt; section F4 above kept verbatim, superseded there)",
+        "handoff.json (this block)",
+        "SRC oracle.md Revision r7 (append-only, section 9 convention; R7-2 quotes every false sentence verbatim as superseded)"
+      ],
+      "verification_evidence_r2": [
+        "evidence/r2/r2_01_b1_unfixed_stdout_facts.json (30580 B / 58863ffb..., UTF-16LE, 10 FAILED / 2 PASSED, '10 failed, 2 passed in 8.18s', no 11/1)",
+        "evidence/r2/r2_01b_stdout_line_refs.json (r1 test-file refs 268,296,323,348,372,407,438,460)",
+        "evidence/r2/r2_02_git_history_b1_unfixed_stdout.json + r2_02c_reachable_blob_states.json (single commit 980c9b7a; blob == HEAD == working; only reachable byte-state)",
+        "evidence/r2/r2_03_provenance.json (mtimes 21:14:45 / 21:15:12 / 21:15:35; B1 handoff lines 110/137/198)",
+        "evidence/r2/r2_06_false_claim_locations.json (where the false sentence actually lives)"
+      ]
+    },
+    "F5/REM-44": {
+      "disposition": "fixed",
+      "closure_check_before_work": "OPEN: no hash-pin freeze.json existed; ordering rested on mtimes; decision.md had no freeze-time hash",
+      "fix": "freeze.json hash-pin chain: 24 entries, each committing to the previous entry's canonical JSON (genesis 64 zeros); ordering derives from hashes, timestamps declared non-normative; frozen BEFORE every pytest/probe execution (final build, chain head 8f3d35ccaf503cb918a9b5881f3f401212f7920b1869457677b771bab82d9b4b)",
+      "proofs": [
+        "freeze.json + evidence/final_integrity_check_v2.stdout.txt check freeze_chain_verifies: ok=true (chain re-verified AFTER all runs)",
+        "oracle.md section 3.5 policy: future freezes in the B1 line must be hash-pin based; mtime/'written-before' prose alone no longer accepted as ordering evidence",
+        "decision.md's own hash pinned by binding.json at write completion (no post-hoc gap)",
+        "freeze build history (3 pre-execution builds, superseded for disclosed reasons) recorded in decision.md D-3"
+      ]
+    },
+    "F6": {
+      "disposition": "not in this card's five findings; MEASUREMENT DIVERGENCE recorded (pre-registered both readings)",
+      "divergence__superseded": {
+        "superseded_reason": "over-claim corrected per reviewer F-REV-B1P-02 — the old wording compared two DIFFERENT procedures (rewrite-only vs rewrite+consistent-recompute) without carrying the procedure domain (REM-79)",
+        "superseded_on": "r2 record-only correction round",
+        "original_key": "divergence",
+        "original_text_verbatim": "arbitrary result_sha256 rewrite: receipt layer ACCEPTED (as F6 said) but validate_forecast_output REJECTED 'forecast result hash mismatch' (revenue_report.py:507-509,343-347 pins result_sha256 == canonical(everything-but-itself)) — F6's 'both ACCEPTED' does not reproduce for the arbitrary rewrite; restored-value control accepted at both layers. The record/attestation layer genuinely cannot bind the live result digest (sentinel fixpoint; record has no result_sha256 field, runtime-confirmed 10 fields). evidence/probe_e21.stdout.txt. F6's 'no action required' stands; its claim should be read receipt-layer-only."
+      },
+      "divergence": "r2 CORRECTED, procedure domain carried (REM-79): 本卡探针变体(a)=不重算任意改写 ⇒ receipt ACCEPTED / forecast REJECTED（revenue_report.py:343-347 + 507-509）；F6 原测量 = 改写+一致重算（其原文 \"recomputing it consistently\"）⇒ both ACCEPTED，本卡未复测该变体；不重算者被拒=对 F6 的附加强化而非反证。 English gloss: the card's probe variant (a) is an UNRECOMPUTED arbitrary rewrite; F6's original measurement rewrote result_sha256 AND recomputed it consistently (probe_attest.py:227-229, 'a fully-informed attacker recomputes it, so emulate the strongest real move') and got both ACCEPTED — this card did NOT re-measure that variant. The rejection of the unrecomputed value is strictly ADDITIONAL strength, not a refutation. What remains true: the record/attestation layer cannot bind the live result digest (sentinel fixpoint; record has no result_sha256 field, runtime-confirmed 10 fields). Raw bytes: evidence/probe_e21.stdout.txt (r1 evidence, untouched).",
+      "erratum_ruling": "Reviewer's explicit ruling (report section 3/5): NO erratum to B1's F6 record is warranted — B1 stays sealed; F6's conclusion and 'no action required' disposition stand unchanged.",
+      "clarification_for_register": "Clarification (not an erratum), for the parent to register in the plan register: an UNRECOMPUTED arbitrary result_sha256 is accepted at the receipt layer but REJECTED by validate_forecast_output — a case F6 did not state; the fully-informed (consistently-recomputing) attacker case is exactly as F6 described.",
+      "verification_evidence_r2": "evidence/r2/r2_05_f6_procedure_sources.json (this probe lines 225-251; SRC probe_attest.py:225-231 rewrite+recompute; revenue_report.py:343-347 + 507-509)"
+    },
+    "F7": {
+      "disposition": "out of scope — untouched; REM-02 caller-trap (a)/(b)/(c) decision stays with its owner exactly as the review prescribed"
+    }
+  },
+  "deviations": {
+    "arm4_control": {
+      "frozen_expectation": "arm4 (node on unfixed iso/rf): 1 failed + 1 passed, rc 1",
+      "observed": "2 failed, rc 1 — node(a) failed for the frozen structural reason (host_signed carries no record on the unfixed tree); the POSITIVE CONTROL also failed because it asserts isinstance(_record_of(ok), dict), a fixed-tree-only property (on the unfixed tree the REM-01 defect itself means no record exists)",
+      "disposition": "disclosed here + decision.md F2; corrected expectation: arm4 = node RED (structural) + control RED (record absent), rc 1. NOT appended to oracle.md (byte-frozen at freeze.json; chain re-verifiability outranks an in-oracle fix of a bonus arm); evidence preserved raw; node NOT edited or re-run; control's intended job demonstrated in arm2 (node RED + control GREEN side by side). Arms 1-3 (the REM-41 evidence) matched the freeze exactly.",
+      "class": "test-strength defect in my control for the bonus arm, discovered by the run — same class as B1's oracle r2"
+    },
+    "freeze_build_history": "freeze.json was built 3 times, all before any pytest/probe execution (v1 e177d719.. -> capture method finalized; v2 eb90c1a0.. -> preceded r5/r6 appends + M6 patch; v3/final 8f3d35cc.. -> after run_arm.ps1 became encoding-independent, precedes every execution). Full account: decision.md D-3. Expected outcomes never changed across builds."
+  },
+  "boundaries": {
+    "production_write_policy": "ZERO writes in production; re-verified post-run: git status --porcelain --untracked-files=all -- scripts tests config artifacts EMPTY; all four production anchors unchanged; trust file still ABSENT",
+    "b1_attempt_writes": "ONLY oracle.md (append-only Revisions r5+r6, commissioned); test_b1_rem.py, binding.json, handoff.json, decision.md, before/, after/, reviewer/, scratch/ of B1 UNTOUCHED (re-hashed post-run: all pins match)",
+    "product_files": "iso/fixed/rf/** and iso/rf/** READ-ONLY — re-hashed post-run, all four pins match; the M6 mutant exists only under this attempt's scratch/",
+    "git": "no git write of any kind; only read-only 'git status' and difflib-based diff generation",
+    "frozen_before_untouched": true
+  },
+  "isolation": {
+    "mutation_copy": "scratch/mutations/M6/rf — attempt-local copy of SRC/iso/fixed/rf; exactly one file differs (scripts/revenue_publication.py); SRC tree byte-stable (verified post-run)",
+    "interpreter": "C:\\Miniconda\\python.exe 3.13.9 (the interpreter B1 bound); no separate venv — same justification as B1: the tree under test is selected by B1_REPO_ROOT and asserted at run time by printed source hashes (probe) and by B1's own pins",
+    "registry_redirection": "every run_forecast redirected attempt-locally (conftest.py, run_arm.ps1, probe); production artifacts/registry/publications.jsonl untouched (bc3256bb.. unchanged, porcelain empty)",
+    "trust_fixture_isolation": "provider private key exists only in pytest tmp dirs and scratch/probe_work/; config/trusted_signer_public_keys.json absent in production and both iso trees",
+    "network": "disabled for every bound command"
+  },
+  "interpreter": {
+    "path": "C:\\Miniconda\\python.exe",
+    "version": "3.13.9",
+    "note": "same interpreter/pytest as B1's binding; argv shape copied from B1 (-X utf8 -B -m pytest -p no:cacheprovider -q --no-header -rA)"
+  },
+  "freeze": {
+    "file": "freeze.json",
+    "chain_head": "8f3d35ccaf503cb918a9b5881f3f401212f7920b1869457677b771bab82d9b4b",
+    "entry_count": 24,
+    "ordering": "hash chain only; mtimes non-normative",
+    "reverified_after_all_runs": "evidence/final_integrity_check_v2.stdout.txt -> freeze_chain_verifies ok=true"
+  },
+  "case_results": [
+    {"case": "arm1_node_on_fixed", "expected": "2 passed rc 0", "observed": "2 passed rc 0", "rc": 0, "verdict": "as_frozen"},
+    {"case": "arm2_node_on_m6", "expected": "1 failed + 1 passed rc 1", "observed": "1 failed (DID NOT RAISE) + 1 passed rc 1", "rc": 1, "verdict": "as_frozen"},
+    {"case": "arm3_frozen12_on_m6", "expected": "12 passed rc 0 ({} == {})", "observed": "12 passed rc 0", "rc": 0, "verdict": "as_frozen"},
+    {"case": "arm4_node_on_unfixed", "expected": "1 failed + 1 passed rc 1", "observed": "2 failed rc 1", "rc": 1, "verdict": "deviation_disclosed (control only; see deviations.arm4_control)"},
+    {"case": "probe_e21", "expected": "rc 0; Q1 no identity in loader; Q2 renames ACCEPTED + corrupt-sig REJECTED; Q3 both readings measured", "observed": "exactly that, with Q3 variant(a) forecast-layer REJECTED (F6 divergence recorded)", "rc": 0, "verdict": "as_frozen"},
+    {"case": "append_r5 / append_r6", "expected": "markers at pre+1, frozen_prefix_untouched", "observed": "39288 and 43299, both untouched=true", "rc": 0, "verdict": "as_frozen"},
+    {"case": "m6_build", "expected": "pre-hash match, single-file delta", "observed": "bc2bb4a3.. pre ok; exactly 1 of 197 files changed", "rc": 0, "verdict": "as_frozen"},
+    {"case": "final_integrity_check (frozen tool)", "expected": "rc 0 all ok", "observed": "rc 1 — tool defect (literal_eval on frozenset call), traceback preserved under burned label", "rc": 1, "verdict": "tool_deviation_disclosed; successor under NEW label"},
+    {"case": "final_integrity_check_v2", "expected": "rc 0 all ok", "observed": "rc 0, 14/14 checks ok (incl. production porcelain empty, 10-field measurement, freeze chain)", "rc": 0, "verdict": "as_frozen_in_PR-c9"}
+  ],
+  "regression": "NOT run: this card changes no product byte (zero product diff by design), so B1's 100-module regression subset has nothing new to measure; boundary integrity is re-hashed instead (final_integrity_check_v2).",
+  "evidence_paths": {
+    "oracle_this_attempt": "oracle.md (frozen pre-run; freeze.json entry my_oracle_md)",
+    "src_oracle_appended": "../B1-I08C-product-fixes/a20260921-01/oracle.md (Revisions r5+r6)",
+    "src_oracle_append_proofs": "scratch/append_oracle_r5.stdout.json, scratch/append_oracle_r6.stdout.json",
+    "decision": "decision.md",
+    "commands": "commands.json (byte-frozen at freeze)",
+    "changes": "changes.diff",
+    "binding": "binding.json",
+    "freeze": "freeze.json",
+    "raw_arms_and_probes": "evidence/*.stdout.txt|.stderr.txt|.rc.txt (write-once labels)",
+    "evidence_manifest": "evidence/SHA256SUMS.txt",
+    "m6_proofs": "scratch/mutations/m6_proof.json, scratch/mutations/m6_delta_proof.json",
+    "integrity": "evidence/final_integrity_check.stdout.txt (burned-label tool defect, disclosed), evidence/final_integrity_check_v2.stdout.txt (14/14 ok)",
+    "evidence_r2": "evidence/r2/** (r2 correction round: verification outputs of the reviewer's facts, r7 dry-run/append proofs, preserved frozen probe bytes, two-point boundary re-checks; own manifest evidence/r2/SHA256SUMS_r2.txt)"
+  },
+  "requested_of_the_reviewer": [
+    "verify SRC oracle.md appends: markers at 39288 and 43299, prefixes 27697/31081/35840/39287 unchanged (scratch/append_oracle_r{5,6}.stdout.json + evidence/final_integrity_check_v2.stdout.txt)",
+    "verify no product byte moved: four fixed-tree pins + four production pins + porcelain empty (evidence/final_integrity_check_v2.stdout.txt)",
+    "re-run or re-read the four arms from raw evidence; adjudicate the arm4 control deviation disclosure (decision.md F2)",
+    "adjudicate the F3 disposition: is documented-not-bindable-here an acceptable closure for REM-42 given the three product-change prerequisites, or does the owner want a product card scheduled first?",
+    "adjudicate the F6 divergence record (probe Q3) — does the review's F6 sentence need an erratum?",
+    "confirm freeze.json's chain (not mtimes) is accepted as the ordering evidence for this line going forward (policy frozen in oracle.md section 3.5)",
+    "promotion of iso/fixed/rf/scripts/** (batch 2): still a separate owner decision — this handoff does not propose its bytes"
+  ],
+  "completed_steps": [
+    "read F1-F7 from reviewer_report.md by finding header (not whole file) and re-verified REM-40..44 against the register",
+    "closure check: proved all five findings still open (no r5 in SRC oracle, 12 nodes, E21 docstring-only, no evidence protocol, no hash-pin freeze)",
+    "created this attempt; wrote oracle.md with the five fixes + all expected outcomes (incl. F2's four arm expectations + M6 bytes) BEFORE any run",
+    "wrote node/runner/probe/patch/append/check tools + commands.json + evidence protocol README; froze all of them in freeze.json (hash chain) before any execution",
+    "appended SRC oracle Revision r5 (F1) and r6 (F2/M6 table row + node pointer) with prefix proofs; r1-r4 bytes untouched",
+    "built the M6 mutant attempt-locally with pre-hash assertion and single-file-delta proof",
+    "ran arms 1-4 and the E21 probe under write-once raw-byte evidence labels",
+    "ran the boundary/integrity check (frozen tool defect disclosed under burned label; v2 successor 14/14 ok)",
+    "generated changes.diff (SRC append delta + all authored files), evidence/SHA256SUMS.txt, decision.md, recovery/README.md, this handoff, binding.json"
+  ],
+  "steps_not_applicable": [
+    "recovery/ (stateless attempt — see recovery/README.md)",
+    "regression subset (zero product bytes changed)",
+    "E21 implementation (product change, forbidden here — documented with the exact bytes it would need)",
+    "recreating B1's r1 RED stdout (impossible; disclosed as an unclosable historical gap)"
+  ],
+  "next_action": "Carrier landing DONE: verdict accepted_scoped landed from reviewer_report_r2.md (sha256 50437289bc5b83d76c5adbb34b4481008498cb47125bd02b62fa9676b33aa558, 28775 B, pinned by reviewer_report_r2.sha256; verdict line 18) — see status_authority and review.md; every item of requested_of_the_reviewer was adjudicated across round 1 (changes_required) and round 2 (accepted_scoped; carrier section 3 checklist, lines 235-247, marks each required change landed). Still owed to OTHERS (this card authorizes none of it): (1) REM-40...44 register closure — EXECUTED BY THE PARENT in REMEDIATION_REGISTER §二十八 (scope condition SC-1; the register erratum carrier for the sealed SRC reviewer F4 sentence is the parent's §二十二/补1, scope narrowed per ruling (i)); (2) F6 = clarification NOT an erratum, text registered by the parent in §二十六 (SC-2; B1 stays sealed); (3) E21 implementation = separate product card (SC-3); (4) batch-2 promotion of B1's iso fix = owner decision (SC-4), no iso/fixed/rf/scripts/** byte proposed or authorized here; (5) probe freeze-pin: single stale pin disclosed, owner chose FIX-KEPT (parent ruling §二十六 裁定2, reaffirmed §二十八: keep the docstring fix, do not roll back; rollback copy on file at evidence/r2/probe_e21_binding.py.frozen_pre_r2_5c9f4508.py; r2_12 chain deviation documented; strict-chain dissent recorded) (SC-5); (6) r1 test file 18236 B / e6c0949c… = the only permanent gap (SC-6); (7) R7-2 item-7 one-word cosmetic diff 'their' vs 'its' registered, not fixed (SC-7). disclosure_adaptation stays unmapped, accuracy stays unproven. Original pre-verdict text preserved verbatim in next_action_historical_pre_verdict.",
+  "next_action_historical_pre_verdict": "Independent reviewer adjudicates findings F1-F5 closures per requested_of_the_reviewer; only then may the owner decide on promoting B1's iso fix as batch 2. The implementer does NOT mark anything accepted.",
+  "r2": {
+    "round": "record-only correction round closing the reviewer's changes_required verdict (blocker F-REV-B1P-01 + F-REV-B1P-02 F6 wording + F-REV-B1P-03 probe docstring; F-REV-B1P-04 disclosure carried; F-REV-B1P-05 comment fix)",
+    "reviewer_report": "reviewer_report.md, 25883 B, sha256 e25a2c837009aebf4be542a89cafa13e78a0dae59b3556a7766ae8bb397376f6 (also pinned by reviewer_report.md.sha256); verdict changes_required; F1/REM-40, F2/REM-41, F3/REM-42, F5/REM-44 CONFIRMED",
+    "status": "SUPERSEDED at carrier landing (post-verdict): the round-2 independent reviewer returned accepted_scoped — authority in status_authority (carrier reviewer_report_r2.md line 18). As of when this r2 record-fix record was written, status was review_pending, nothing was self-signed, and this round closed nothing on its own; that pre-verdict text is retained verbatim in r2.status_historical_pre_verdict. implementer_self_acceptance stays false.",
+    "status_historical_pre_verdict": "review_pending — UNCHANGED; never self-signed; implementer_self_acceptance stays false; this round closes nothing on its own",
+    "boundaries_reasserted": {
+      "product": "READ-ONLY: zero writes to production scripts/tests/config/artifacts, iso/fixed/rf/**, iso/rf/** — git porcelain re-checked empty inside evidence/r2/r2_11 and r2_12 (check production_git_porcelain_empty ok=true)",
+      "git": "read-only subcommands only (log/ls-tree/cat-file/hash-object/status/rev-list); no git write of any kind",
+      "b1_attempt": "ONLY the commissioned append-only oracle.md Revision r7; B1's sealed handoff.json (line 137 etc.), test_b1_rem.py, reviewer_report.md and before/* cited read-only and untouched",
+      "f1_f2_f3_f5": "confirmed by the review and NOT touched: freeze.json, commands.json, this attempt's oracle.md, the node, the runner, and every r1 evidence label stay byte-identical",
+      "no_reruns": "no arm and no probe was re-executed; every r2 output is a re-measurement of existing bytes (plus the two disclosed boundary-tool invocations under evidence/r2/ labels)"
+    },
+    "findings": {
+      "F-REV-B1P-01": {
+        "action": "retracted and corrected the F4 'unclosable r1 stdout' disclosure; superseded retention everywhere (findings.F4.unclosable_historical_gap__superseded, findings.F4.disposition__superseded, decision.md section r2 over section F4, SRC oracle Revision r7 section R7-2)",
+        "corrected_disclosure": "the genuinely lost artifact is ONLY the r1 test file (18236 B / e6c0949c...); the r1 RED stdout SURVIVES at before/b1_unfixed.stdout.txt (30580 B / 58863ffb..., UTF-16LE+BOM, 10 failed / 2 passed in 8.18s, git single commit 980c9b7a whose blob equals HEAD and the working bytes)",
+        "src_oracle_r7": {
+          "before": "47538 B / a8f192f10215642d7df2d8ace240d074f3bf50671cd4f51920b35434ebcf972d",
+          "after": "57911 B / 6e344a208f8fc43992d339693d74c51122b505d17c368a67f5899dbd43a222dc",
+          "marker": "## Revision r7 at byte 47539 = 47538 + 1, occurs exactly once",
+          "dry_run": "evidence/r2/r2_07_append_r7_dryrun.json (dry_run_would_pass true; no write)",
+          "append_proof": "scratch/append_oracle_r7.stdout.json, copied to evidence/r2/r2_08_append_r7_proof.json",
+          "four_prefix_recompute_post_append": "27697=81af1240..., 31081=60ecbca7..., 35840=231e7976..., 39287=fadf8a5e... all match; plus 43298=910ca4a8... (post-r5) and 47538=a8f192f1... (post-r6 / freeze-time state) — r1-r6 pins intact (evidence/r2/r2_09_post_append_verification.json, all_checks_pass true)",
+          "freeze_chain_after_r7": "evidence/r2/r2_11_final_integrity_check_post_r7_prefixefix.json: rc 0, all_ok true, all 14 checks incl. freeze_chain_verifies ok — the r7 append breaks no F5 check (chain entry src_oracle_pre_r5 verifies by its prefix pin)",
+          "revision_text": "scratch/oracle_revision_r7.md (10372 B / c99bc69e...)"
+        },
+        "register_actions_owner": [
+          "erratum/annotation for the sealed SRC reviewer_report.md F4 refuted sentence in REMEDIATION_REGISTER.md (review required correction #3)",
+          "REM-40...44 closure rows: REM-43 = protocol CLOSED + historical gap = r1 test file only"
+        ]
+      },
+      "F-REV-B1P-02": "F6 wording re-scoped to its procedure domain (findings.F6.divergence with superseded retention of the old over-claim); explicit NO-erratum ruling registered (findings.F6.erratum_ruling); one-line clarification text registered for the parent (findings.F6.clarification_for_register); sources verified in evidence/r2/r2_05_f6_procedure_sources.json",
+      "F-REV-B1P-03": "probe module docstring line 19 fixed: old '(b) full self-consistent recompute of every self-hash chain.' -> new '(b) the original value restored — a control, NOT a recompute (oracle §3.3).'; byte history: frozen/executed 10365 B / 5c9f4508... (= freeze.json my_probe_e21, preserved byte-exact at evidence/r2/probe_e21_binding.py.frozen_pre_r2_5c9f4508.py) -> r2 10383 B / 5f53f5bb...; docstring-only delta proven (evidence/r2/r2_10_probe_docstring_fix.json, no_other_byte_changed true, file still parses); consequence disclosed in freeze_chain_disclosure_r2",
+      "F-REV-B1P-04": "disclosure carried in freeze_ordering_disclosure_F_REV_B1P_04 below — no action, as commissioned",
+      "F-REV-B1P-05": "changes.diff boundary comment corrected in scratch/make_changes_diff.py: '(see evidence/final_integrity_check.stdout.txt)' (burned label: empty stdout, rc 1) -> '(see evidence/final_integrity_check_v2.stdout.txt: 14/14 ok ...'; Section-1 header also updated to include Revision r7; changes.diff regenerated by the script (generated artifact; recorded in decision.md r2.5)"
+    },
+    "freeze_chain_disclosure_r2": "The ONE deliberate freeze-pin divergence of this round: freeze.json entry my_probe_e21 pins the pre-fix probe bytes (10365 / 5c9f4508...), so a re-run of the boundary tool now reports exactly one mismatch — evidence/r2/r2_12_final_integrity_check_post_docstring_fix.json: failures=['freeze_chain_verifies'], detail 'my_probe_e21: live 5f53f5bb... != 5c9f4508...'; the other 13 checks pass (production porcelain empty, fixed-tree + SRC pins, 10-field checks, runtime record). Contrast evidence/r2/r2_11_final_integrity_check_post_r7_prefixefix.json (probe at pinned bytes): all_ok=true. The pinned bytes are preserved byte-exact in evidence/r2/ and restorable if the owner prefers strict chain re-verification over the docstring fix. SRC oracle r7 does NOT break the chain (prefix special-case, verified in r2_11).",
+    "freeze_ordering_disclosure_F_REV_B1P_04": "This attempt's freeze-before-run ordering rests on mtimes + decision.md D-3 prose: the hash chain proves content integrity and entry order, not that freeze.json existed before the runs (superseded freeze builds 1/2 exist only in prose, no artifact). Accepted as disclosed for this attempt; the fix class is the oracle.md section 3.5 policy binding FUTURE freezes (hash-pin / self-timing mechanism). No action taken in r2, as commissioned.",
+    "superseded_statements": [
+      {
+        "carrier": "handoff.json findings.F4.unclosable_historical_gap",
+        "retained_at": "findings.F4.unclosable_historical_gap__superseded.original_text_verbatim",
+        "superseded_reason": "refuted by reviewer F-REV-B1P-01 with byte evidence"
+      },
+      {
+        "carrier": "handoff.json findings.F4.disposition",
+        "retained_at": "findings.F4.disposition__superseded.original_text_verbatim",
+        "superseded_reason": "partially refuted by reviewer F-REV-B1P-01 with byte evidence (the UNCLOSABLE-gap scope)"
+      },
+      {
+        "carrier": "handoff.json findings.F6.divergence",
+        "retained_at": "findings.F6.divergence__superseded.original_text_verbatim",
+        "superseded_reason": "procedure-mismatched over-claim corrected per reviewer F-REV-B1P-02 (REM-79)"
+      },
+      {
+        "carrier": "handoff.json steps_not_applicable item 'recreating B1's r1 RED stdout (impossible; disclosed as an unclosable historical gap)'",
+        "retained_at": "unchanged in place (array not edited) — listed here because the r1 stdout SURVIVES, so 'impossible/unclosable' is refuted for it; the r1 test file remains genuinely lost",
+        "superseded_reason": "refuted by reviewer F-REV-B1P-01 with byte evidence"
+      },
+      {
+        "carrier": "decision.md section F4, and this attempt's frozen oracle.md section 1/2/3.4/4 (frozen pre-run; editing them would destroy the F5 chain)",
+        "retained_at": "verbatim in place, quoted verbatim as superseded in SRC oracle.md Revision r7 section R7-2 and in decision.md section r2",
+        "superseded_reason": "refuted by reviewer F-REV-B1P-01 with byte evidence"
+      },
+      {
+        "carrier": "evidence/README.md lines 5 and 23-30 ('its stdout was overwritten before archiving' / 'is the final 11-failed/1-passed output, not r1's' / 'No later card can recreate those bytes')",
+        "retained_at": "unchanged in place — FREEZE-PINNED (entry my_evidence_readme) and pinned in evidence/SHA256SUMS.txt, so editing it would destroy the F5 chain; superseded by decision.md section r2 + SRC oracle.md Revision r7",
+        "superseded_reason": "refuted by reviewer F-REV-B1P-01 with byte evidence",
+        "measurement": "evidence/r2/r2_14_false_carrier_addendum.json"
+      },
+      {
+        "carrier": "recovery/README.md lines 29-35 (r1 bytes 2008 / 6fe88d7b...)",
+        "retained_at": "old wording kept VERBATIM inside the corrected section as a quoted superseded note; file corrected in place in r2 (not freeze-pinned); r1 pin retained under binding.json r2_rebinding.r1_pins_superseded_for, r2 pin added",
+        "superseded_reason": "refuted by reviewer F-REV-B1P-01 with byte evidence"
+      },
+      {
+        "carrier": "binding.json open_disclosures item 'B1 r1 RED stdout + r1 test file unclosable historical gap (F4/REM-43)'",
+        "retained_at": "unchanged in place; superseded with verbatim retention in binding.json r2_rebinding.superseded_binding_state.open_disclosures_item_superseded",
+        "superseded_reason": "refuted by reviewer F-REV-B1P-01 with byte evidence"
+      },
+      {
+        "carrier": "changes.diff diff-context echoes of the above (generated artifact)",
+        "retained_at": "the regenerated changes.diff shows both the old text (as diff context of superseded carriers) and the corrected text",
+        "superseded_reason": "regenerated after the corrections; boundary comment itself fixed per F-REV-B1P-05"
+      }
+    ],
+    "scope_notes_review_section_6": {
+      "rem_40_44_closure": "parent/owner register update — this card cannot write REMEDIATION_REGISTER.md; REM-43 may now be recorded as protocol closed + historical gap = r1 test file only",
+      "e21_implementation": "separate product card (loader identity return + two comparison sites + owner-approved trust anchor); this card is read-only on product by design",
+      "b1_promotion_batch2": "owner decision, unchanged; this round proposes and authorizes no iso/fixed/rf/scripts/** byte"
+    },
+    "files_touched_before_after": {
+      "SRC oracle.md": "47538 / a8f192f10215642d7df2d8ace240d074f3bf50671cd4f51920b35434ebcf972d -> 57911 / 6e344a208f8fc43992d339693d74c51122b505d17c368a67f5899dbd43a222dc (append-only Revision r7)",
+      "scratch/probe_e21_binding.py": "10365 / 5c9f4508198963d225eb4331734629210105dbcbd985decb4409d7524ef70bb7 -> 10383 / 5f53f5bbdbb439d5422da354ae6771d4541ebf9afeda716d64f5701a690b22b7 (docstring line 19 only)",
+      "scratch/make_changes_diff.py": "2961 / 8167bbfe9a9cd32f2bbd81a31de5b4bc87b58a3ca5fcff66e373b5383404db6b -> 3776 / f7be074e7e493c83de02dfd1a89a8ef74bee9a3517bfd22a44564691f6c155c1",
+      "decision.md": "16330 / 1a295207f70e4a5fbe3e9aa97ca58f8e1cb11e27896084d6cfcb6fbe0c6ba480 -> section r2 appended (final sha pinned in binding.json r2_rebinding)",
+      "handoff.json": "19073 / 4460c91ea0974a56f44c548e01277b9a4bf94b911221a226d6a4db32e28ca865 -> r2 fields appended (final sha pinned in binding.json r2_rebinding)",
+      "changes.diff": "135696 / 844b3c72e1e35c46edcbf1b7365578c7e1b2ea562f9895f7978709dbabc41812 -> regenerated (final sha pinned in binding.json r2_rebinding)",
+      "recovery/README.md": "2008 / 6fe88d7b8078ede4fab1b4daefe12be36b49ba9d1f49d712e9e91c7b3109052e -> 3240 / ff08665f1c20253d1e82878e1498b3e3f1dab913c361321ab17328022a196aa9 (F4 gap section corrected in place; old wording retained verbatim inside the file; r1 pin retained in binding.json r2_rebinding.r1_pins_superseded_for)",
+      "binding.json": "10789 / dd11d8537a615c5530179e3b4cb8ce667cf7fa5657bc7101571eb09c3b9ad902 -> r2_rebinding appended (binding never self-signed)",
+      "new_files": "scratch/oracle_revision_r7.md, scratch/r2_verify.py, scratch/r2_append_r7_dryrun.py, scratch/r2_post_append.py, scratch/r2_fix_probe_docstring.py, scratch/r2_run_check.py, evidence/r2/** (manifest evidence/r2/SHA256SUMS_r2.txt)"
+    },
+    "json_revalidated_after_edit": "handoff.json, binding.json, freeze.json and commands.json all re-parsed as valid JSON at the end of this round (python json.load); binding.json carries the final after-hashes"
+  },
+  "carried_findings": [
+    {"id": "SC-1", "class": "SCOPE-CARRY 1/7", "carrier": "reviewer_report_r2.md §7 lines 368-372", "verdict_void_without_this": true, "text": "REM-40…44 register closure = parent/owner register update (this card cannot write REMEDIATION_REGISTER.md). With the corrected scope: REM-43 may be recorded as protocol ✅ closed; historical gap = the r1 test file (18236 B / e6c0949c…) only; the register erratum for the sealed SRC reviewer report F4 sentence (ruling (i), carrier #1) is likewise the owner's — SRC's oracle/decision/handoff need no erratum (exonerated).", "parent_annotation": "register_closure_executed_by_parent: \"REMEDIATION_REGISTER §二十八\" (register line 765ff: REM-40/41/42/43/44 closure rows); erratum carrier = parent §二十二 (line 597) + §二十二·补1 (line 621), scope narrowed per ruling (i); verified read-only at landing"},
+    {"id": "SC-2", "class": "SCOPE-CARRY 2/7", "carrier": "reviewer_report_r2.md §7 lines 373-374", "verdict_void_without_this": true, "text": "F6: clarification, NOT an erratum, for the parent's plan register (text under handoff.json findings.F6.clarification_for_register); B1 stays sealed.", "parent_annotation": "clarification text registered by the parent in REMEDIATION_REGISTER §二十六 裁定3 (register lines 726-727, the F6-澄清 row: 不出勘误、B1 记录保持 sealed)"},
+    {"id": "SC-3", "class": "SCOPE-CARRY 3/7", "carrier": "reviewer_report_r2.md §7 line 375", "verdict_void_without_this": true, "text": "E21 implementation = separate product card; this card is read-only on product."},
+    {"id": "SC-4", "class": "SCOPE-CARRY 4/7", "carrier": "reviewer_report_r2.md §7 lines 376-377", "verdict_void_without_this": true, "text": "Batch-2 promotion = owner decision; no iso/fixed/rf/scripts/** byte proposed or authorized here."},
+    {"id": "SC-5", "class": "SCOPE-CARRY 5/7", "carrier": "reviewer_report_r2.md §7 lines 378-381 + ruling (ii) dissent lines 326-329", "verdict_void_without_this": true, "text": "Single stale probe-pin disclosed: freeze.json my_probe_e21 live 5f53f5bb… != pinned 5c9f4508… after the commissioned docstring fix; restoration copy on file at evidence/r2/probe_e21_binding.py.frozen_pre_r2_5c9f4508.py (byte-exact, re-hashed by the reviewer); owner chooses fix-kept (re-pin) vs rollback; r2_12 chain deviation documented (sole failing check, 13/14 pass); strict-chain dissent recorded in carrier §5.", "parent_annotation": "owner chose FIX-KEPT — parent ruling REMEDIATION_REGISTER §二十六 裁定2 (register line 725: keep the docstring fix, deviation explicitly disclosed, rollback copy on file), reaffirmed in §二十八 item 1 (register line 775: 维持保留 … 不回滚)"},
+    {"id": "SC-6", "class": "SCOPE-CARRY 6/7", "carrier": "reviewer_report_r2.md §7 lines 382-383", "verdict_void_without_this": true, "text": "r1 test file = the ONLY permanent gap (within round 1's scanned domains §4.4/§5.3): 18236 B / e6c0949c…; the r1 RED stdout survives and is auditable (58863ffb…, UTF-16LE, git 980c9b7a)."},
+    {"id": "SC-7", "class": "SCOPE-CARRY 7/7", "carrier": "reviewer_report_r2.md §7 lines 384-385 + finding lines 33-44", "verdict_void_without_this": true, "text": "Cosmetic note for the register: R7-2 item 7's \"verbatim\" quote differs from the sealed source by one word (their vs its) — F-REV-B1P-R2-01.", "parent_annotation": "registered-not-fixed per REMEDIATION_REGISTER §二十八 item 3 (register line 782: 记入不修)"},
+    {"id": "CF-R2-01", "class": "COSMETIC, quote accuracy, NON-BLOCKING", "carrier": "reviewer_report_r2.md lines 33-44 (F-REV-B1P-R2-01)", "finding": "SRC oracle.md Revision r7 §R7-2 item 7 labels the sealed SRC reviewer_report.md F4 excerpt \"key sentences verbatim\"; the only textual delta vs the live sealed report is \"record their mtime\" (r7) vs \"record its mtime\" (source). Sealed source untouched and separately hash-pinned (6bfd2922…, 37224 B = round-1's pin) ⇒ verifiability intact; the deviation is a transcription inflection in a lead-in clause, not in any refuted proposition.", "disposition": "registered for the parent register (记入不修); no fix demanded; does not affect the verdict"}
+  ],
+  "status_authority": {
+    "verdict": "accepted_scoped",
+    "verdict_round": 2,
+    "verdict_written_by": "独立复核 (round-2 delegated independent reviewer session; sibling of the implementer; the implementer did not self-sign and the reviewer self-signed no accepted status — carrier lines 12-14: the verdict is returned to the parent, whose call it is)",
+    "verdict_label_as_written_by_reviewer": "accepted_scoped",
+    "carrier": {
+      "file": "reviewer_report_r2.md",
+      "path_inside_attempt": "reviewer_report_r2.md",
+      "line_range_inclusive_1_based": [1, 411],
+      "verdict_line": 18,
+      "verdict_line_range_inclusive": [18, 18],
+      "first_line_of_verdict": "## 1. Verdict: **accepted_scoped**",
+      "verdict_section_line_range_inclusive": [18, 27],
+      "findings_section_line_range_inclusive": [31, 231],
+      "cosmetic_F_REV_B1P_R2_01_line_range_inclusive": [33, 44],
+      "round1_required_vs_landed_checklist_line_range_inclusive": [235, 247],
+      "ruling_i_line_range_inclusive": [250, 289],
+      "ruling_ii_line_range_inclusive": [293, 329],
+      "unverified_section_line_range_inclusive": [333, 362],
+      "scope_conditions_line_range_inclusive": [366, 387],
+      "rem79_self_check_line_range_inclusive": [391, 407],
+      "closing_verdict_line_range_inclusive": [409, 411],
+      "round1_verdict_reference_line_range_inclusive": [6, 8],
+      "reviewer_no_self_sign_line_range_inclusive": [12, 14],
+      "sha256": "50437289bc5b83d76c5adbb34b4481008498cb47125bd02b62fa9676b33aa558",
+      "bytes": 28775,
+      "total_lines": 411,
+      "encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+      "byte_proof": {
+        "verdict_line": {"start": 1072, "end_inclusive": 1105, "length": 34, "sha256": "c2046ad4ec8c29a77652acd72853f9b6e0ad029eaa3dd620279e4b05ecd4413a"},
+        "verdict_section": {"lines": [18, 27], "start": 1072, "end_inclusive": 1726, "length": 655, "sha256": "dc7e4b3ba3489c1a002911bee8d64086aac56ec639fb4b2fd379bf6e3fa650c1"},
+        "findings_section": {"lines": [31, 231], "start": 1734, "end_inclusive": 16878, "length": 15145, "sha256": "60bd6bccfc3db4b943faa25f121bd27ef1c7d6b4561a8c7034d59a27f2ae7e21"},
+        "cosmetic_F_REV_B1P_R2_01": {"lines": [33, 44], "start": 1799, "end_inclusive": 2751, "length": 953, "sha256": "2014a3ca5073d603eafdfdb50084d025844efd365df2bfd18e690eb5bbf2e25f"},
+        "ruling_i": {"lines": [250, 289], "start": 18183, "end_inclusive": 20838, "length": 2656, "sha256": "83ba4c16cca4856c27b55737dbf00005a3b091cd52abd8aa03ae98c50754f694"},
+        "ruling_ii": {"lines": [293, 329], "start": 20846, "end_inclusive": 23529, "length": 2684, "sha256": "fc786f1d52647c8536d46e7750a9fcae28524ab9768db063a725acfa3c9d2f66"},
+        "unverified_section": {"lines": [333, 362], "start": 23537, "end_inclusive": 25662, "length": 2126, "sha256": "ad3ec4784b72b347af4dbf4b29400eb0f4bd450b197b7bd2ab99d314692f12f2"},
+        "scope_conditions_section": {"lines": [366, 387], "start": 25670, "end_inclusive": 27313, "length": 1644, "sha256": "96274c97e0fab429c65be6e84c82a2afeaab7bbce18f866237595b7592e899b2"},
+        "closing_verdict": {"lines": [409, 411], "start": 28545, "end_inclusive": 28773, "length": 229, "sha256": "c4aca33f024fd64f88214b92ba2e3f5e97efc80a8a8ff1af2399c799bf6722b8"},
+        "round1_verdict_reference": {"lines": [6, 8], "start": 317, "end_inclusive": 524, "length": 208, "sha256": "3631fde8c9180f39c96619286b0b224cb14671285e2cd5a228029745851aac0d"},
+        "reviewer_no_self_sign": {"lines": [12, 14], "start": 796, "end_inclusive": 1064, "length": 269, "sha256": "a3581faf810334c9fb1ea6628162e76b14a6b0cfd22b3f9c5ba3a9dcd4667029"},
+        "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; multi-line regions include internal LFs and exclude the final LF"
+      },
+      "pin_sidecar": {
+        "file": "reviewer_report_r2.sha256",
+        "present": true,
+        "bytes": 87,
+        "sha256": "f3e7bd696429016636c9642cfd5f47d7516e01cb77473e99c22ff6b79a6c6e47",
+        "content": "50437289bc5b83d76c5adbb34b4481008498cb47125bd02b62fa9676b33aa558  reviewer_report_r2.md",
+        "verified": "sidecar sha matches an independent read-only re-hash of reviewer_report_r2.md at landing time (28775 B, 411 lines) and the dispatch-pinned value (expected content starts 50437289bc5b83d76c5adbb34b4481008498cb47125bd02b62fa9676b33aa558); 0 bytes written by this pass"
+      },
+      "round1_carrier_preserved_as_history": {
+        "file": "reviewer_report.md",
+        "verdict": "changes_required",
+        "bytes": 25883,
+        "sha256": "e25a2c837009aebf4be542a89cafa13e78a0dae59b3556a7766ae8bb397376f6",
+        "total_lines": 391,
+        "pin_sidecar": {"file": "reviewer_report.md.sha256", "bytes": 84, "sha256": "bc111bb7006408f106ee1e35e3ef62076d16fe2fa0ea7e6fb59dfe0315e6a420", "content": "e25a2c837009aebf4be542a89cafa13e78a0dae59b3556a7766ae8bb397376f6  reviewer_report.md", "verified": "re-hashed read-only at landing == sidecar; file untouched"},
+        "status_at_landing": "untouched — 0 bytes written; kept as history per the dispatch"
+      },
+      "landing_file": {
+        "file": "review.md",
+        "role": "carrier-landing verdict block written by this bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md — the reviewer's words are in reviewer_report_r2.md, which this pass did not modify.",
+        "pre_image": "none — review.md did not previously exist in this attempt (no implementer stub)"
+      }
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核) in reviewer_report_r2.md line 18 (re-stated lines 409-411), not by the implementer; this handoff only transcribes it",
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_transcription_adds_no_acceptance_of_its_own": true
+  },
+  "bookkeeping": {
+    "recorded_by": "B1-PREREQ implementer (pre-verdict fields) / carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "review_pending_is_not_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "verdict_author": "独立复核 (round-2 independent reviewer) — in reviewer_report_r2.md line 18 (and closing lines 409-411), not in any file this pass wrote",
+    "bookkeeping_transcription_adds_no_acceptance_of_its_own": true,
+    "r2_block_reference": "handoff.json key \"r2\" (this file) is the implementer's round-2 record-fix record: r2.round, r2.reviewer_report (round-1 carrier + verdict changes_required), r2.findings F-REV-B1P-01..05, r2.freeze_chain_disclosure_r2, r2.freeze_ordering_disclosure_F_REV_B1P_04, r2.superseded_statements, r2.scope_notes_review_section_6, r2.files_touched_before_after; only its stale r2.status prose was superseded by this pass (retained verbatim in r2.status_historical_pre_verdict) — the r2 block is otherwise untouched",
+    "status_transition": "review_pending -> accepted_scoped (bookkeeping transcription of the reviewer's line-18 verdict; implemented by this landing pass on the parent's dispatch, never by the implementer)",
+    "carrier_landing_what_this_pass_did": "verified both carriers read-only (r2: 28775 B / 411 lines / sha256 50437289…a558 == dispatch pin == reviewer_report_r2.sha256 sidecar; verdict line 18 = accepted_scoped; r1: 25883 B / e25a2c83…76f6 == its sidecar, untouched); set status accepted_scoped + status_before_bookkeeping_fix review_pending + status_history (round-1 changes_required preserved); appended status_authority (line ranges + sha256 + byte proofs), bookkeeping, and 8 carried findings (SC-1..SC-7 scope conditions + CF-R2-01 cosmetic); superseded three stale pre-verdict fields byte-exact under *_historical_pre_verdict: note_on_status, next_action, r2.status; created review.md (transcribed verdict block, no acceptance of its own) and evidence/B1-PREREQ/qualification.json; verified the parent register citations read-only (§二十二 L597, §二十二·补1 L621, §二十六 L717 incl. 裁定2 L725 and F6 clarification L726-727, §二十八 L765ff); wrote 0 bytes to either reviewer report or sidecar, 0 bytes to SRC, 0 production bytes, 0 git writes; wrote no verdict of its own",
+    "reviewer_report_r2_bytes_written": 0,
+    "reviewer_r2_sidecar_bytes_written": 0,
+    "reviewer_report_r1_bytes_written": 0,
+    "reviewer_r1_sidecar_bytes_written": 0,
+    "src_bytes_written": 0,
+    "production_bytes_written": 0,
+    "git_writes": 0,
+    "disclosure_adaptation": "unmapped (untouched)",
+    "accuracy": "unproven (untouched)",
+    "stale_fields_superseded_byte_exact": ["note_on_status -> note_on_status_historical_pre_verdict", "next_action -> next_action_historical_pre_verdict", "r2.status -> r2.status_historical_pre_verdict"],
+    "carried_findings_appended": 8,
+    "carried_findings_appended_ids": ["SC-1", "SC-2", "SC-3", "SC-4", "SC-5", "SC-6", "SC-7", "CF-R2-01"],
+    "carried_findings_key_pre_existing": false,
+    "pre_existing_keys_otherwise_untouched": true,
+    "files_written": ["review.md (created)", "handoff.json (status + status_before_bookkeeping_fix + status_history + status_authority + bookkeeping + carried_findings appended + 3 stale-field supersessions; pre-existing content otherwise untouched)", "evidence/B1-PREREQ/qualification.json (created)"],
+    "handoff_pre_image": "37668 B / sha256 058dffdcb12570e30d0dadbbefebd42cbc7696bad90ed25337b4f077be214a67 (before this pass's edits)"
+  }
+}

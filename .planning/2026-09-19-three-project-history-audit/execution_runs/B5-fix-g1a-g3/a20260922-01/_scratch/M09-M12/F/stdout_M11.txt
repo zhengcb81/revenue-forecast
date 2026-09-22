@@ -1,0 +1,62 @@
+card_id: M11
+model_id: infrastructure
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M09-M12\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M09-M12\code_root\model_registry.py
+registry formula: revenue = billable_volume * tariff + other_revenue
+registry required: ['billable_volume', 'tariff']
+registry optional: ['other_revenue']
+registry declared_defaults: {}
+registry ratio_drivers: []
+registry explicit_driver_bounds: {}
+contract_check ok: True
+contract_check formula ok=True observed=revenue = billable_volume * tariff + other_revenue
+contract_check required ok=True observed=['billable_volume', 'tariff']
+contract_check optional ok=True observed=['other_revenue']
+contract_check dimensions ok=True observed={'billable_volume': 'activity', 'tariff': 'revenue_per_activity', 'other_revenue': 'revenue'}
+positive raised: None
+positive actual: [210.0]
+positive actual_repr: ['210.0']
+positive expected: [210.0]
+positive tolerance: [2.1e-07]
+positive length: 1 (years length 1, year direction [2027])
+positive structure: {"container_type": "list", "is_builtin_list": true, "length": 1, "years_length": 1, "length_equals_years": true, "element_types": ["float"], "element_type_set": ["float"], "all_elements_float": true, "all_elements_finite": true, "year_field_echo": false, "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check", "ok": true}
+per_value_checks: [{"index": 0, "year": 2027, "actual": 210.0, "expected": 210.0, "tolerance": 2.1e-07, "abs_diff": 0.0, "ok": true}]
+positive_ok: True
+continuity_positive raised: None
+continuity_positive actual: [210.0, 300.0]
+continuity_positive expected: [210.0, 300.0]
+continuity_positive ok: True
+defaults raised: None
+defaults actual: [200.0]
+defaults expected: [200.0]
+defaults ok: True
+observation: OBS-BASE-IGNORED gating=False raised=None actual=[210.0] expectation={"expected_float": [210.0]} matches_expected=True matches_compared=True expect_equal=None matches_expected_relation=True 
+observation: OBS-TARIFF-NEG gating=False raised=ModelRegistryError actual=None expectation={"expected_raised": "ModelRegistryError"} matches_expected=True matches_compared=None expect_equal=None matches_expected_relation=None driver infrastructure.tariff must be between 0.0 and inf: FY2027
+negative: NEG-CARD verdict=FAIL_declared_expectation_mismatch raised=ModelRegistryError expected=ValueError - driver infrastructure.billable_volume must be between 0.0 and inf: FY2027
+negative_declaration: NEG-CARD declared=ValueError raised_matches_declared=False judged=True declared_expectation_ok=False declared_expectation_mismatch=True declared_expectation_not_met=True comparison=raised exact type name 'ModelRegistryError' vs declared 'ValueError' (exact-name comparison, not isinstance)
+negative: N01a verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - infrastructure.billable_volume.FY2027 must be numeric
+negative_declaration: N01a declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: N01b verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - infrastructure.billable_volume.FY2027 must be finite
+negative_declaration: N01b declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: N01c verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - infrastructure.billable_volume.FY2027 must be finite
+negative_declaration: N01c declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: N01d verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - infrastructure.billable_volume.FY2027 must be finite
+negative_declaration: N01d declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: N02 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - driver infrastructure.billable_volume must contain one value per forecast year
+negative_declaration: N02 declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: N03 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - missing drivers for infrastructure: billable_volume
+negative_declaration: N03 declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: N04 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - unsupported drivers for infrastructure: unknown_driver
+negative_declaration: N04 declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: N05a verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - infrastructure.years must contain fiscal years
+negative_declaration: N05a declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: N05b verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - infrastructure.years must contain fiscal years
+negative_declaration: N05b declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative: CONT-BREAK verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - infrastructure.years must be consecutive and increasing
+negative_declaration: CONT-BREAK declared=ModelRegistryError raised_matches_declared=True judged=True declared_expectation_ok=True declared_expectation_mismatch=False declared_expectation_not_met=False comparison=raised exact type name 'ModelRegistryError' vs declared 'ModelRegistryError' (exact-name comparison, not isinstance)
+negative_summary: {"total": 11, "passed": 10, "failed": ["NEG-CARD"], "not_judged": [], "import_or_file_errors": [], "target_exception": "model_registry.ModelRegistryError", "declared_expectations_in_cases_json": ["ModelRegistryError", "ValueError"], "declared_expectation_comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)", "declared_expectations_enforced": true, "declared_expectations_usable": true, "verdicts_are_mutually_exclusive": true, "classification_is_mutually_exclusive": true, "import_or_file_errors_never_pass": true}
+negative_counts: {"total": 11, "rejected_with_ModelRegistryError": 11, "not_rejected": 0, "wrong_exception_type": 0, "import_or_file_error": 0, "declared_expectation_mismatch": 1, "declared_expectation_not_met": 1, "declared_expectation_missing_in_cases_json": 0}
+cases_json_declared_expectations_usable: True
+fidelity_checks: {"missing_expected": false, "positive_structure_ok": true, "positive_values_ok": true, "contract_ok": true, "years_match": true, "lengths_match": true}
+verdict_reasons: ["declared_expectation_mismatch:NEG-CARD"]
+verdict: negative_failed exit_code: 3

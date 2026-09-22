@@ -4,19 +4,108 @@
  "plan": "2026-09-19-three-project-history-audit",
  "attempt_id": "a20260919-01",
  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-C\\a20260919-01",
- "revision": "r3 — deliverable-side remediation after the independent verdict; r1/r2 artifacts preserved, r3 additions additive",
- "status": "changes_required",
- "reviewer_verdict": "changes_required",
+ "revision": "r3 (deliverable remediation) + FIX ROUND I-08-C-REFREEZE: append-only oracle revision r4 re-freezes E11/E13 (gap pins -> attack-must-be-rejected, owner A-2 批准), the 13-node suite is re-evidenced against B1's fixed tree (13/13 green) with anti-vacuity runs on both unfixed trees and a mutation run; this file transitions status changes_required -> review_pending",
+ "status": "accepted_scoped",
+ "status_before_bookkeeping_fix": "review_pending",
+ "status_history": [
+  {"round": 1, "status": "changes_required", "authority": "review.md round-1 section (lines 9-237 of the pre-append file), sha256 c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3; re-verified after the round-2 append as the byte prefix review.md[0:13700] of the same hash, untouched"},
+  {"round": "fix round FIX-I08C-REFREEZE-1", "status": "review_pending", "authority": "handoff.json fix_record (verdict_claimed: null, self_sign: false, ready_for_re_review: true); verified by reviewer_report_r2.md finding 7"},
+  {"round": 2, "status": "accepted_scoped", "authority": "reviewer_report_r2.md line 10 — TRANSCRIBED into this file by bookkeeping, NOT authored here"}
+ ],
+ "status_authority": {
+  "carrier_file": "reviewer_report_r2.md",
+  "carrier_sha256": "ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a",
+  "carrier_bytes": 13285,
+  "carrier_pin_file": "reviewer_report_r2.md.sha256",
+  "carrier_pin_content": "ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a  reviewer_report_r2.md (88 bytes, present and matching)",
+  "line_ranges": {
+   "verdict": "L10 (## VERDICT: accepted_scoped)",
+   "scope_accepted": "L12",
+   "explicitly_out_of_scope": "L14-L19",
+   "adjudication_three_options": "L21-L25",
+   "numbered_findings": "L27-L38",
+   "parent_requested_adjudications": "L40-L43",
+   "unverified_list": "L45-L54",
+   "authorship_footer": "L57"
+  },
+  "byte_proof": "re-hashed read-only this session: reviewer_report_r2.md = 13285 bytes and sha256 ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a = the value pinned in reviewer_report_r2.md.sha256; verdict line L10 reads accepted_scoped",
+  "verdict_is_transcribed_not_authored": true,
+  "reviewer": "独立复核 (independent round-2 re-reviewer; report footer states the implementer did not author, edit, or approve any sentence in it)",
+  "scope_accepted": "verification/evidence + append-only oracle re-freeze (r4) + round-1 items (1)-(3) as implemented in B1's ISOLATED tree (iso/fixed/rf), behaviorally re-verified",
+  "explicitly_out_of_scope": [
+   "production promotion (owner decision; production revenue_publication.py still 183803bb…; RUN-B red on {e11,e13} reproduces the live F1/F3 product defect)",
+   "F2 production doc fix (document/deprecate validate_publication_receipt)",
+   "F4 anchor drift (publication_registry.py 44662744… -> 29aaae4f…)",
+   "invest-* consumers (INVEST-CORE card owns that site)",
+   "CLI transactions (no CLI publish transaction exercised)",
+   "disclosure_adaptation = unmapped and accuracy = unproven are unchanged"
+  ],
+  "note": "this status value is bookkeeping transcription of the carrier verdict; it grants nothing the reviewer did not scope and adds no acceptance of its own"
+ },
+ "bookkeeping": {
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "written_by": "implementer — carrier verification + transcription only; no verdict, approval or acceptance sentence authored here",
+  "review_md_append": "round-2 transcription block appended after line 237 of review.md; round-1 prefix review.md[0:13700] re-hashed to c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3 (unchanged)",
+  "ready_for_re_review": "field above kept as-is (historical, true); annotated satisfied by the round-2 carrier verdict reviewer_report_r2.md L10",
+  "production_writes": "none"
+ },
+ "carried_findings": [
+  "CF-I08C-1: production promotion NOT done — the security fix lives only in B1's iso/fixed/rf; live product defect (RUN-B {e11,e13} red) persists until owner promotes B1 (batch 2 candidate).",
+  "CF-I08C-2: F2 (receipt layer = hash-consistency only, documented limitation) stays pinned as accepted-by-design limitation; F4 (anchor drift 44662744… -> 29aaae4f…) open.",
+  "CF-I08C-3: invest-* consumers unverified here — the INVEST-CORE card (in review) owns that site.",
+  "CF-I08C-4: S-3 upheld — E1's tree-conditional assertion is a forced collateral of B1 REM-01(b) (validators stay unconditional on both trees; non-blocking caveat: branch couples expectation to a feature flag).",
+  "CF-I08C-5: oracle numbering r3->r4 deviation accepted (reusing a closed revision would violate the file's own rule; prefix-proved; disclosed in R4 header + handoff fix_record).",
+  "carried, not numbered: the reviewer's 8-item unverified list (reviewer_report_r2.md L45-L54) and the round-1 exploratory 8/12 stdout (permanently lost — old loss) remain carried forward unchanged."
+ ],
+ "reviewer_verdict": "changes_required — the PREVIOUS review's verdict on the r3 package (review.md, sha256 c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3); it remains the only verdict on record and is NOT overwritten. A NEW reviewer verdict on the re-frozen package is required; none exists yet.",
+ "reviewer_verdict_r1_superseded_by": "reviewer_report_r2.md L10 (accepted_scoped, 13285 B, sha256 ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a); the round-1 changes_required text above is retained verbatim as the historical verdict, not as the current one",
  "implementer_self_acceptance": false,
- "status_note": "the PREVIOUS handoff.json said status=review_pending because it was written BEFORE the reviewer's verdict. It is superseded by this file. The implementer still does NOT self-sign accepted; changes_required stands until an independent reviewer says otherwise.",
- "implementer_note": "DELIVERABLE-side defects from the review are fixed (E4 implemented, exploratory phase preserved, oracle re-frozen append-only, F1-F4 recorded as the card's legitimate NEGATIVE RESULT). The card's HEADLINE TRUST PROPERTY STILL FAILS against the product: attestation_status is not verified at consumption (F1), segments[i].base_revenue is a presentation-field coverage gap (F3). The product fixes are out of scope here and require a separate card / owner decision.",
+ "ready_for_re_review": true,
+ "status_note": "changes_required -> review_pending via fix round I-08-C-REFREEZE. review_pending means: the fix-round deliverables are complete for their declared scope — oracle revision r4 appended with byte-prefix proof, RUN-A 13/13 green on B1's fixed tree, RUN-B/RUN-B2/RUN-M exactly {e11,e13} red on the two unfixed trees and on the superseded-expectation mutation — and the package is AWAITING an independent reviewer. The implementer does NOT self-sign accepted, does NOT issue a verdict, and does NOT claim the headline property holds against PRODUCTION: production still contains F1/F3 until B1's fix is promoted (a separate owner decision).",
+ "implementer_note": "r3 closed the deliverable-side review defects (E4 implemented, exploratory phase preserved, oracle re-frozen append-only, F1-F4 recorded as the negative result). FIX ROUND: F1 and F3 are FIXED IN B1'S ISOLATED TREE (iso/fixed/rf, not promoted), and this card's oracle is re-frozen append-only (revision r4) so E11/E13 now assert attack-must-be-rejected with B1's exact reasons — attestation_missing_record (E27) and segment base revenue mismatch. The suite is GREEN on the fixed tree (RUN-A 13/13, rc 0) and RED exactly on {e11,e13} against production (RUN-B), against B1's unfixed iso/rf (RUN-B2) and with the old pinned-gap expectation restored on the fixed tree (RUN-M). STILL TRUE against production: the headline trust property remains violated until promotion; F2 and F4 remain open; invest-* consumers remain unverified; disclosure_adaptation=unmapped; accuracy=unproven.",
 
  "verdict_summary": {
+  "scope": "HISTORICAL — this block describes the r3 package and the PREVIOUS review; the fix round re-opened exactly the expectations the owner authorised (A-2) and awaits a new verdict",
   "verdict": "changes_required",
-  "headline": "the card's headline property FAILS — consumers verify attestation NOT AT ALL",
+  "headline": "the card's headline property FAILS against production — consumers verify attestation NOT AT ALL (F1); B1 has fixed F1 and F3 in an isolated tree, promotion pending",
   "reviewer_confirmed": "12/12 tests passed, production untouched, pre-registration legitimate (no violation)",
   "review_artifact": "review.md",
   "review_sha256": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3"
+ },
+
+ "fix_record": {
+  "id": "FIX-I08C-REFREEZE-1",
+  "card": "I-08-C-REFREEZE (fix round inside this attempt)",
+  "authority": "OWNER_DECISIONS.md §16 A-2 「批准」 — owner 原话 「... A-2: 批准 ...」; ruling row 「A-2 批准 | I-08-C oracle 追加式重冻（E11/E13 由\"缺口在册\"翻转为\"攻击必拒\"），收口归其 reviewer | 与建议一致 | 已派 I-08-C refreeze 卡」 (file sha256 4c9acf9ec95c8ec028b6e77719ddf32dbbbc1fb545c91cb702521d65a70aa2f3)",
+  "points_at": "oracle.md revision r4 (the fix-round card instruction called this 'revision r3'; the file already contained a CLOSED r3 whose closing rule requires a new revision number — disclosed in the R4 header and decision.md D-08C-RF-01)",
+  "why": "B1 closed gaps F1/F3 in an isolated tree; against that tree the frozen pinned-gap expectation for E11/E13 necessarily FAILS. That failure is expected, not a regression — it is exactly why the owner approved this re-freeze.",
+  "what_changed": [
+   "E11 superseded-record flip: gap pin -> BOTH entry points MUST raise ForecastInputError matching attestation_missing_record (E27); B1 REM-01(a) is the fix",
+   "E13 superseded-record flip: gap pin -> dispatcher MUST raise ForecastInputError matching segment base revenue mismatch; B1 REM-03 is the fix; receipt-layer acceptance stays pinned as the unchanged F2/REM-02 (documentation-only) limitation",
+   "E1 collateral, disclosed: label assertion made tree-conditional because B1 REM-01(b) retired file-existence capability (superseded record S-3; provenance = B1 probe P2_sys_executable_capability=False + the disclosed exploratory run)",
+   "node ids renamed: ..._is_not_bound_at_consumption -> ..._is_rejected_at_consumption; ..._not_bound_by_output_gates -> ..._forgery_is_rejected_by_output_gates (mapping in oracle R4-3)",
+   "RF_IMPORT_ROOT import-root override added to the suite (unset = production path, byte-identical default)",
+   "all superseded expectations preserved VERBATIM in oracle.md R4-2 in the I-14-H W1 shape: old (verbatim) + new + reason + provenance"
+  ],
+  "prefix_proof": "sha256(oracle.md bytes[0:22335]) == 94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3 (the pre-append hash, recorded BEFORE the append) AND sha256(bytes[0:6831]) == 478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90 (r2 frozen body) — evidence scratch/fixround/prefix_proof.json, append_only_proof: true, raw rc 0",
+  "evidence": {
+   "RUN-A fixed tree": "13 collected / 13 passed / 0 failed, raw rc 0 -> scratch/fixround/runA_fixed.stdout.txt",
+   "RUN-B production (unfixed, override unset)": "exactly {e11, e13} failed, 11 passed, raw rc 1 -> scratch/fixround/runB_production.stdout.txt",
+   "RUN-B2 B1 iso/rf (unfixed, production-identical)": "exactly {e11, e13} failed, 11 passed, raw rc 1 -> scratch/fixround/runB2_b1unfixed.stdout.txt",
+   "RUN-M superseded expectation restored on the fixed tree": "exactly {e11, e13} failed, 11 passed, raw rc 1 -> scratch/fixround/runM_mutation.stdout.txt",
+   "frozen contract all four runs were measured against": "oracle.md R4-4 (written and prefix-proved before the runs)",
+   "disclosed exploratory": "scratch/fixround/exploratory_fixed.stdout.txt — 3 failed {e1, e11, e13} with the override-only interim file; revealed the E1 collateral before the freeze (oracle R4-6)"
+  },
+  "anti_vacuity": "RUN-B and RUN-B2 prove the flip is load-bearing (the gap still reproduces on unfixed bytes); RUN-M proves the flip is not vacuous (the old pinned-gap expectation cannot pass against the fix)",
+  "test_file_stages": "10902 B / 0072b160... (r3) -> 11360 B / 61ef2b67... (override only, exploratory) -> 13152 B / 3f83fdf2... (r4 final, frozen before all four runs); full unified diff in changes.diff, built from a reconstruction that hashed back to 0072b160...",
+  "ready_for_re_review": true,
+  "verdict_claimed": null,
+  "self_sign": false,
+  "two_separate_steps_still_open": [
+   "PROMOTION of B1's iso/fixed/rf fix (revenue_publication/revenue_core/revenue_report) into production — owner decision; NOT performed and NOT implied here; production anchors unchanged",
+   "ACCEPTANCE of I-08-C — the reviewer's verdict on this re-frozen package; this card only re-freezes the oracle and readies re-review (owner: 收口归其 reviewer)"
+  ]
  },
 
  "deliverable_fixes_applied": [
@@ -172,7 +261,21 @@
   "post_run_production_status": "after/production_status.txt",
   "probe_stdout": "scratch/e4_derivation_probe.stdout.txt",
   "append_only_proof_stdout": "scratch/make_frozen_copy.stdout.txt",
-  "archive_stdout": "scratch/archive_exploratory.stdout.txt"
+  "archive_stdout": "scratch/archive_exploratory.stdout.txt",
+  "fix_round_oracle_revision": "oracle.md revision r4 (append-only; header notes the card instruction's 'r3' label)",
+  "fix_round_prefix_proof": "scratch/fixround/prefix_proof.json + scratch/fixround/prefix_proof.py",
+  "fix_round_runA_fixed_stdout": "scratch/fixround/runA_fixed.stdout.txt",
+  "fix_round_runB_production_stdout": "scratch/fixround/runB_production.stdout.txt",
+  "fix_round_runB2_b1_unfixed_stdout": "scratch/fixround/runB2_b1unfixed.stdout.txt",
+  "fix_round_runM_mutation_stdout": "scratch/fixround/runM_mutation.stdout.txt",
+  "fix_round_rcs": "scratch/fixround/rcs.txt",
+  "fix_round_exploratory_stdout": "scratch/fixround/exploratory_fixed.stdout.txt",
+  "fix_round_mutation_file": "scratch/fixround/mutation/test_i08c_mutation_pinned_gap.py",
+  "fix_round_mutation_builder": "scratch/fixround/make_mutation.py + make_mutation.stdout.txt",
+  "fix_round_changes_diff_builder": "scratch/fixround/make_changes_diff.py + make_changes_diff.stdout.txt",
+  "fix_round_selfcheck": "scratch/fixround/selfcheck.py + selfcheck.stdout.txt (run after this file was written; hash on receipt)",
+  "recovery_readme": "recovery/README.md",
+  "owner_ruling": "../OWNER_DECISIONS.md section 16 (sha256 4c9acf9ec95c8ec028b6e77719ddf32dbbbc1fb545c91cb702521d65a70aa2f3)"
  },
 
  "commands_executed": [
@@ -180,25 +283,69 @@
   "I08C-c2-archive-exploratory",
   "I08C-c3-append-only-proof",
   "I08C-c4-verdict-pytest",
-  "I08C-c5-post-run-production-hash-check"
+  "I08C-c5-post-run-production-hash-check",
+  "I08C-RF-c0-pre-edit-hashes",
+  "I08C-RF-c1-exploratory-fixed-tree",
+  "I08C-RF-c2-final-test-freeze",
+  "I08C-RF-c3-prefix-proof-r4",
+  "I08C-RF-c4-build-mutation",
+  "I08C-RF-c5-runA-fixed",
+  "I08C-RF-c6-runB-production",
+  "I08C-RF-c7-runB2-b1-unfixed",
+  "I08C-RF-c8-runM-mutation",
+  "I08C-RF-c9-post-run-integrity",
+  "I08C-RF-c10-changes-diff",
+  "I08C-RF-c11-post-write-selfcheck"
  ],
  "raw_exit_codes": {
   "I08C-c1-e4-derivation-probe": 0,
   "I08C-c2-archive-exploratory": 0,
   "I08C-c3-append-only-proof": 0,
   "I08C-c4-verdict-pytest": 0,
-  "I08C-c5-post-run-production-hash-check": 0
+  "I08C-c5-post-run-production-hash-check": 0,
+  "I08C-RF-c0-pre-edit-hashes": 0,
+  "I08C-RF-c1-exploratory-fixed-tree": 1,
+  "I08C-RF-c2-final-test-freeze": 0,
+  "I08C-RF-c3-prefix-proof-r4": 0,
+  "I08C-RF-c4-build-mutation": 0,
+  "I08C-RF-c5-runA-fixed": 0,
+  "I08C-RF-c6-runB-production": 1,
+  "I08C-RF-c7-runB2-b1-unfixed": 1,
+  "I08C-RF-c8-runM-mutation": 1,
+  "I08C-RF-c9-post-run-integrity": 0,
+  "I08C-RF-c10-changes-diff": 0,
+  "I08C-RF-c11-post-write-selfcheck": 0
  },
  "expected_exit_codes": {
   "I08C-c1-e4-derivation-probe": 0,
   "I08C-c2-archive-exploratory": 0,
   "I08C-c3-append-only-proof": 0,
   "I08C-c4-verdict-pytest": 0,
-  "I08C-c5-post-run-production-hash-check": 0
+  "I08C-c5-post-run-production-hash-check": 0,
+  "I08C-RF-c0-pre-edit-hashes": 0,
+  "I08C-RF-c1-exploratory-fixed-tree": 1,
+  "I08C-RF-c2-final-test-freeze": 0,
+  "I08C-RF-c3-prefix-proof-r4": 0,
+  "I08C-RF-c4-build-mutation": 0,
+  "I08C-RF-c5-runA-fixed": 0,
+  "I08C-RF-c6-runB-production": 1,
+  "I08C-RF-c7-runB2-b1-unfixed": 1,
+  "I08C-RF-c8-runM-mutation": 1,
+  "I08C-RF-c9-post-run-integrity": 0,
+  "I08C-RF-c10-changes-diff": 0,
+  "I08C-RF-c11-post-write-selfcheck": 0
  },
- "raw_vs_expected_note": "all five commands matched their frozen expectation on the first execution; nothing was retried blindly and no expected value was edited after the fact",
+ "raw_vs_expected_note": "all five r3 commands matched their frozen expectation on the first execution; nothing was retried blindly and no expected value was edited after the fact. Fix round: all 12 RF commands matched oracle R4-4 / commands.json expectations on first execution too (A=0, B=1, B2=1, M=1, scripts=0); the exploratory run's rc 1 was only partly pre-registered — e11/e13 were predicted by B1's handoff, the e1 failure was a discovery disclosed in oracle R4-6 rather than folded into a pre-run claim.",
 
  "test_results": {
+  "fix_round": {
+   "RUN-A_fixed_tree": {"tree": "B1 iso/fixed/rf", "collected": 13, "passed": 13, "failed": 0, "raw_returncode": 0, "contract": "oracle R4-4 RUN-A", "evidence": "scratch/fixround/runA_fixed.stdout.txt", "executed_test_file": "13152 B / 3f83fdf2..."},
+   "RUN-B_production_unfixed": {"tree": "production (RF_IMPORT_ROOT unset)", "collected": 13, "passed": 11, "failed": ["test_e11_host_signed_label_flip_is_rejected_at_consumption", "test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates"], "failure_mode": "DID NOT RAISE ForecastInputError — the gap still reproduces on production bytes (anti-vacuity)", "raw_returncode": 1, "evidence": "scratch/fixround/runB_production.stdout.txt"},
+   "RUN-B2_b1_iso_rf_unfixed": {"tree": "B1 iso/rf (verified production-identical)", "collected": 13, "passed": 11, "failed": ["test_e11_host_signed_label_flip_is_rejected_at_consumption", "test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates"], "raw_returncode": 1, "evidence": "scratch/fixround/runB2_b1unfixed.stdout.txt"},
+   "RUN-M_mutation_on_fixed": {"tree": "B1 iso/fixed/rf + superseded-expectation mutation file", "collected": 13, "passed": 11, "failed": ["test_e11_host_signed_label_flip_is_rejected_at_consumption", "test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates"], "failure_mode": "the fixed tree RAISED where the restored pinned-gap expectation expected acceptance", "raw_returncode": 1, "mutation_file": "scratch/fixround/mutation/test_i08c_mutation_pinned_gap.py (12976 B / eb19e628...)", "evidence": "scratch/fixround/runM_mutation.stdout.txt"},
+   "exploratory_disclosed": {"collected": 13, "passed": 10, "failed": ["test_e1_legit_signed_package_passes_repeatably", "test_e11_host_signed_label_flip_is_rejected_at_consumption", "test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates"], "raw_returncode": 1, "file": "override-only interim (11360 B / 61ef2b67...)", "note": "e11/e13 failures were predicted by B1's handoff; the e1 failure was the DISCOVERED REM-01(b) collateral and is superseded in oracle R4-2/S-3 — this run is disclosed as exploratory (oracle R4-6)", "evidence": "scratch/fixround/exploratory_fixed.stdout.txt"},
+   "rcs_file": "scratch/fixround/rcs.txt (RUN-A=0 RUN-B=1 RUN-B2=1 RUN-M=1)"
+  },
   "r3": {
    "collected": 13,
    "passed": 13,
@@ -224,7 +371,7 @@
  },
 
  "case_results": [
-  {"case": "E1", "node": "test_e1_legit_signed_package_passes_repeatably", "expected": "accepted (positive)", "observed": "accepted", "business_rc": 0},
+  {"case": "E1", "node": "test_e1_legit_signed_package_passes_repeatably", "expected": "accepted (positive); as of r4 the label assertion is tree-conditional (superseded record R4-2/S-3): fixed tree -> unattested + no record; production/production-identical -> host_signed", "observed": "accepted on RUN-A (fixed), RUN-B (production) and RUN-B2 (iso/rf); green everywhere", "business_rc": 0},
   {"case": "E2", "node": "test_e2_forged_payload_with_original_receipt_rejected", "expected": "validated_payload_sha256 mismatch", "observed": "raised as expected", "business_rc": 2},
   {"case": "E3", "node": "test_e3_forged_gate_ids_and_context_rejected", "expected": "gate_ids mismatch / verification context mismatch", "observed": "raised as expected", "business_rc": 2},
   {"case": "E4", "node": "test_e4_verification_context_mutation_rejected", "expected": "verification context mismatch (a/b/c), ACCEPTED for the correct value (d)", "observed": "exactly as frozen", "business_rc": 2, "new_in": "r3"},
@@ -234,9 +381,9 @@
   {"case": "E8", "node": "test_e8_old_verification_context_on_other_input_rejected", "expected": "validated_input_sha256 mismatch", "observed": "raised as expected", "business_rc": 2},
   {"case": "E9", "node": "test_e9_draft_package_rejected_by_formal_consumer", "expected": "gate_ids mismatch; dispatcher raises", "observed": "raised as expected", "business_rc": 2},
   {"case": "E10", "node": "test_e10_result_without_receipt_rejected", "expected": "missing field: publication_receipt", "observed": "raised as expected", "business_rc": 2},
-  {"case": "E11", "node": "test_e11_host_signed_label_flip_is_not_bound_at_consumption", "expected": "PROPERTY VIOLATED — both layers ACCEPT the flip (F1)", "observed": "accepted (gap reproduces)", "business_rc": 3, "meaning": "green pytest node, failed business verdict: this is the card's negative result, NOT a pass"},
+  {"case": "E11", "node": "test_e11_host_signed_label_flip_is_rejected_at_consumption (renamed in r4 from test_e11_host_signed_label_flip_is_not_bound_at_consumption)", "expected": "r4: BOTH entry points raise ForecastInputError matching attestation_missing_record (E27) — B1 REM-01(a); the superseded r1/r3 gap-pin expectation is preserved verbatim in oracle R4-2/S-1", "observed": "RUN-A (fixed): rejected as expected, node green; RUN-B/RUN-B2 (unfixed): DID NOT RAISE — node RED, business rc 3, the gap still reproduces in production; RUN-M (mutation): node RED", "business_rc": "2 on a tree with B1's fix / 3 on unfixed trees"},
   {"case": "E12", "node": "test_e12_registry_fail_closed_on_corruption", "expected": "RegistryError (fail-closed)", "observed": "raised as expected", "business_rc": 2},
-  {"case": "E13", "node": "test_e13_segment_base_revenue_not_bound_by_output_gates", "expected": "GAP PINNED — even the strong dispatcher ACCEPTS (F3)", "observed": "accepted (gap reproduces)", "business_rc": 3, "meaning": "green pytest node, failed business verdict: negative result, NOT a pass"}
+  {"case": "E13", "node": "test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates (renamed in r4 from test_e13_segment_base_revenue_not_bound_by_output_gates)", "expected": "r4: receipt layer still ACCEPTS (F2/REM-02 documentation-only limitation, unchanged); dispatcher raises ForecastInputError matching segment base revenue mismatch — B1 REM-03; superseded r1/r3 gap-pin preserved verbatim in oracle R4-2/S-2", "observed": "RUN-A (fixed): rejected as expected, node green; RUN-B/RUN-B2 (unfixed): dispatcher did not raise — node RED, business rc 3; RUN-M (mutation): node RED", "business_rc": "2 on a tree with B1's fix / 3 on unfixed trees"}
  ],
  "exit_code_legend": {
   "source": "execution_v2/START_HERE.md frozen rc table (owner ruling T1-19 / section 13)",
@@ -244,7 +391,7 @@
   "1": "harness failure",
   "2": "no verdict / correctly-rejected negative",
   "3": "not as expected (positive failed, or a negative was not rejected)",
-  "aggregation_warning": "one pytest process returns ONE rc for 13 nodes; a reader must not infer '13 passed => card accepted'. E11 and E13 are rc=3 as business verdicts."
+  "aggregation_warning": "one pytest process returns ONE rc for 13 nodes; a reader must not infer '13 passed => card accepted'. FIX-ROUND semantics shift (oracle R4-3): with r4, on a tree carrying B1's fix E11/E13 are ordinary correctly-rejected negatives (business rc 2, node green); on the UNFIXED trees they are genuine pytest FAILURES (raw rc 1) carrying business rc 3. RUN-A's 13-passed means 'the re-frozen oracle holds against the fixed tree', NOT 'card accepted' — acceptance is the reviewer's verdict, and promotion of the fix is a separate owner decision."
  },
 
  "current_source_hashes": {
@@ -285,28 +432,47 @@
    "scratch/make_frozen_copy.py, scratch/make_frozen_copy.stdout.txt (new)",
    "scratch/prod_baseline_full.diff, scratch/prod_baseline_stat.txt (new — inputs to changes.diff)",
    ".pytest_cache/v/cache/nodeids (rewritten by the r3 run; the r2 version is preserved in exploratory/)",
-   "handoff.json (this file, rewritten)"
+   "handoff.json (this file, extended again in the fix round)",
+   "FIX ROUND: oracle.md (append-only revision r4; bytes[0:22335] unchanged, prefix-proved)",
+   "FIX ROUND: test_i08c_consumer_rejection.py (4 disclosed edits; 10902 -> 13152 bytes; e11/e13 node ids renamed)",
+   "FIX ROUND: binding.json / commands.json / decision.md / changes.diff (extended; decision.md and changes.diff appended, commands.json r3 entries kept verbatim)",
+   "FIX ROUND: recovery/README.md (new)",
+   "FIX ROUND: scratch/fixround/** (new: prefix_proof.*, make_mutation.*, make_changes_diff.*, four run stdouts, rcs.txt, disclosed exploratory stdout/rc, mutation/)",
+   "FIX ROUND: runner/fixround/tmpA|tmpB|tmpB2|tmpM (new, disposable pytest basetemps)",
+   "FIX ROUND: .pytest_cache NOT touched (cacheprovider disabled so the r3 cache evidence survives)"
   ],
   "reviewer_artifacts_untouched": ["review.md", "reviewer_rerun_stdout.txt"]
  },
 
  "append_only_proof": {
-  "method": "locate the append marker and hash the fixed prefix — never total-length-minus-append-length arithmetic",
-  "script": "scratch/make_frozen_copy.py",
-  "stdout": "scratch/make_frozen_copy.stdout.txt",
+  "revision": "r4 (fix round) — method unchanged: hash the FIXED byte prefixes directly, never total-length arithmetic",
+  "script": "scratch/fixround/prefix_proof.py",
+  "stdout": "scratch/fixround/prefix_proof.json",
   "raw_returncode": 0,
   "append_only_proof": true,
-  "oracle_bytes": 22335,
-  "oracle_sha256": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3",
+  "pre_append_bytes": 22335,
+  "pre_append_sha256_recorded_before_append": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3",
+  "pre_append_prefix_sha256_after_append": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3 (MATCH — bytes[0:22335] still hash to the pre-image)",
+  "oracle_bytes_now": 40311,
+  "oracle_sha256_now": "8143362f1eb065bdac8580a6a2b431b144a02da4fa6d9b42c953ba2c5a0b885c",
+  "r4_append_region_starts_at_offset": 22335,
+  "r4_append_region_bytes": 17976,
+  "r4_append_region_sha256": "ccd029e31ba819977d757c8c4ab0db0c2453e303613026cf2557d8d02b7efb2d",
+  "boundary_byte_note": "the r3 file already ended with 0x0A, so the r4 append added NO boundary/normalisation byte (unlike r1->r3, which added exactly one b'\\n' at offset 6831)",
   "frozen_body_bytes": 6831,
   "frozen_body_sha256_on_disk_now": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
   "frozen_body_sha256_recorded_r2": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
   "frozen_body_untouched": true,
-  "append_marker_offset": 6832,
-  "non_append_bytes": "exactly one whitespace byte, b'\\n' at offset 6831, from normalising the pre-append file's missing trailing newline",
-  "append_region_bytes": 15503,
-  "frozen_copy_file": "oracle.md.r2_frozen_copy.txt",
-  "frozen_copy_sha256": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90"
+  "r3_history_preserved": {
+   "script": "scratch/make_frozen_copy.py (r3 round)",
+   "stdout": "scratch/make_frozen_copy.stdout.txt",
+   "r3_oracle_bytes": 22335,
+   "r3_oracle_sha256": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3",
+   "r3_append_marker_offset": 6832,
+   "r3_non_append_bytes": "exactly one whitespace byte, b'\\n' at offset 6831, from normalising the pre-append file's missing trailing newline",
+   "frozen_copy_file": "oracle.md.r2_frozen_copy.txt",
+   "frozen_copy_sha256": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90"
+  }
  },
 
  "input_hashes": {
@@ -314,20 +480,37 @@
   "reviewer_verdict": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
   "r2_oracle_body": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
   "r2_test_file": "5dd5a96c415307e6abd1cc5eb2e1c05df3f35d1c929e5f098b672fa68a00864f",
-  "r2_verdict_stdout": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d"
+  "r2_verdict_stdout": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d",
+  "fix_round_owner_ruling": "../OWNER_DECISIONS.md 4c9acf9ec95c8ec028b6e77719ddf32dbbbc1fb545c91cb702521d65a70aa2f3 (section 16, A-2 批准)",
+  "fix_round_r3_oracle_preimage": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3 (22335 bytes = bytes[0:22335] after the r4 append)",
+  "fix_round_r3_test_file": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5 (10902 bytes; re-derived byte-exactly in the changes.diff builder)",
+  "fix_round_b1_probe": "B1 after/probe_fixed.txt 9ade20c2e0d34f33ac68cdef7e96420aa8984793ebde1170e405c3e8817643b3 (primary derivation of the e11/e13 rejection reasons)",
+  "fix_round_b1_handoff": "B1 handoff.json c5696e780a9470cf22dd41333e05c24a82783080b7fd006862e181c25e624259 (records this round's expected collateral)"
  },
  "deliverables": {
-  "oracle.md": "94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3",
+  "oracle.md": "8143362f1eb065bdac8580a6a2b431b144a02da4fa6d9b42c953ba2c5a0b885c (40311 bytes; r3 value was 94a853e9... / 22335 bytes — now provable as the prefix [0:22335])",
   "oracle.md.r2_frozen_copy.txt": "478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90",
-  "test_i08c_consumer_rejection.py": "0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5",
+  "test_i08c_consumer_rejection.py": "3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb (13152 bytes, 13 nodes; r3 value 0072b160... / 10902 bytes preserved as a hash record and re-derived byte-exactly in changes.diff)",
   "pytest_r3_verdict.stdout.txt": "b3a7d8b9317a2475e9f5811e7d4c10fe46a96a1b0d2cf1d1f66bebbf43e7a611",
   "pytest_verdict.stdout.txt": "cb81112d80cad5f90fa30aea19e1eba29a99b8114795c1d0cc8e14e16ff9487d",
   "reviewer_rerun_stdout.txt": "fdb9866ec7dbfbffff4b2f485c990ed45cd813ad9c9a34b28c9a16784879c4de",
   "review.md": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
-  "binding.json": "self (not hashed; hash it on receipt)",
-  "commands.json": "0946255a31d31ed295848200dfd35530d43d2340b5e50d81cf01ec66e80e0ead",
-  "decision.md": "5092802fa237baa09b78810fc933c281db8a7020b8dd0d43da59e9aaab958d14",
-  "changes.diff": "102a7ad8860ae7167edec8309c0b01715773ce8c4f16660ea67b6136b140a89c",
+  "binding.json": "d60ce5e1ee27f770861f467a0adf256e01cc53b13610b00de97bbb2ff0b8ba29 (23484 bytes)",
+  "commands.json": "800661b045cf652834d1c37950b7a5355ed6f072518c1aca2028be948d7f5d9a (24924 bytes)",
+  "decision.md": "705973bf652cfb695635f722513d7a2f7a8034bffdd8687c4da28b316e6f5b6b (23049 bytes)",
+  "changes.diff": "a01dbbb45b79ad818ae7aec3ca2782b0389d1f6b4242ff0e0f33cda8e4fde679 (22954 bytes; r3 content preserved + fix-round addendum)",
+  "recovery/README.md": "e9aa08a32f4eeca078cb38281180b14ba2ae04562eb9bee41d62a16c2207ad89 (4078 bytes)",
+  "scratch/fixround/prefix_proof.json": "2eb744e01953fbbe38481ec126a2031a18f415d9089e21596d1fbd1267d6259c",
+  "scratch/fixround/prefix_proof.py": "6910cb7d2bf7b75f067ead7a77857c17e1375859bd8368ca133b6e052dfa93d5",
+  "scratch/fixround/runA_fixed.stdout.txt": "d81622087047ffd3ffd7a671df0412840ebef931ebc1450eb6b9ac56603e0e53",
+  "scratch/fixround/runB_production.stdout.txt": "2d246aee978e53496dc4cc94decf910e15e840cae3bf9c6b983f17eb74265f37",
+  "scratch/fixround/runB2_b1unfixed.stdout.txt": "b1b4a3f2eca9bcd3755c49bd5318eafba702b760e56d14b9493ce7b4ea55c4fe",
+  "scratch/fixround/runM_mutation.stdout.txt": "22c383d9ff741815edd28d830f9768c07f1d2af4969a9e2cfaeb731cb746b493",
+  "scratch/fixround/rcs.txt": "b8a149f9bd67dea4604e1844fa5086537d1d9d9a593ec23458faa4e7614ccc39",
+  "scratch/fixround/exploratory_fixed.stdout.txt": "f9d650eb5a47b95a9a1b8a30cdc62aaa4c4ca4064b16bf3f3aff0a947cfb4ac0",
+  "scratch/fixround/mutation/test_i08c_mutation_pinned_gap.py": "eb19e62846ed7e03f5fe74aee5a5debca9f84cf0a790df5d1e24d089f04d0858",
+  "scratch/fixround/make_mutation.py": "15fd13f9a0a57795e1d314bfeb38ef31dbb65953d77c21f5f0e03fe99dd29f7c",
+  "scratch/fixround/make_changes_diff.py": "eabc65ba00592c9c1ae5d1869292f202da8cc0d9dd66f7cd0accf296acc550fb",
   "exploratory_log.md": "7d427e45b96cae146821e4e7c436257113c07b5ae9e404bd5434b7a600c9e7a1",
   "exploratory_manifest.json": "371af534d56fbffea87d3af1e36da713269cfa3c930299864c6d9ec47b598f33",
   "after/production_status.txt": "62fd97212c5e189debd822591ee961d3e98928516b1191b9c6644ce5a64cc4c6",
@@ -337,6 +520,8 @@
   "scratch/make_frozen_copy.stdout.txt": "9b89e42a6f22cc7fd5e62e29de7e1abf62284b20165b4c73e0bc787f98ef4fcd",
   "scratch/archive_exploratory.py": "a3364a2d920fe5a641d0ce7f8e0e67c9710d076271393b56c4e22e88c2fa0fc3",
   "scratch/archive_exploratory.stdout.txt": "b9a48ab955d8b55234316d3dbea890c1d7f6a00d5906e6a78bf289e72d26086f",
+  "scratch/fixround/selfcheck.py": "hash on receipt (it is written and run AFTER this file)",
+  "scratch/fixround/selfcheck.stdout.txt": "hash on receipt",
   "handoff.json": "self (written last; hash it on receipt)"
  },
 
@@ -350,54 +535,76 @@
   "r3 evidence run executed: 13 collected / 13 passed, raw rc 0",
   "post-run production hash check: git porcelain empty, all anchors unchanged",
   "F1-F4 recorded as the card's legitimate negative result",
-  "reviewer items (1)-(4) enumerated for the next reviewer, three of them still open on the product side"
+  "reviewer items (1)-(4) enumerated for the next reviewer, three of them still open on the product side",
+  "FIX ROUND: owner ruling A-2 (批准) read verbatim from OWNER_DECISIONS.md section 16 and recorded in oracle R4 header + decision.md section 6",
+  "FIX ROUND: import-root override added (RF_IMPORT_ROOT; default = production) and recorded in three stage hashes",
+  "FIX ROUND: disclosed exploratory run against the fixed tree measured collateral {e1, e11, e13} before any freeze",
+  "FIX ROUND: r4 test file frozen at 13152 B / 3f83fdf2... BEFORE the four evidence runs",
+  "FIX ROUND: oracle revision r4 appended with superseded records S-1/S-2/S-3 and the R4-4 run contract; prefix proof run (append_only_proof true, rc 0)",
+  "FIX ROUND: mutation file built and hashed (12976 B / eb19e628...)",
+  "FIX ROUND: RUN-A 13/13 green on B1's fixed tree (rc 0); RUN-B and RUN-B2 exactly {e11,e13} red on unfixed trees (rc 1); RUN-M exactly {e11,e13} red on the fixed tree with the superseded expectation (rc 1) — all four matched R4-4 on first execution",
+  "FIX ROUND: post-run integrity — five production anchors unchanged, git porcelain empty, B1's tree byte-stable (newest mtime still 2026-09-21 23:14:47)",
+  "FIX ROUND: changes.diff extended with a VERIFIED unified diff (r3 test file reconstructed and hash-checked to 0072b160...)",
+  "FIX ROUND: recovery/README.md written; handoff transitioned changes_required -> review_pending with fix_record and ready_for_re_review=true, never self-signed"
  ],
  "steps_not_applicable": [
-  "recovery/: this card performs no stateful product operation (no transaction, lock, registry write or migration), so there is no crash-recovery case to demonstrate. The registry redirect exists precisely so the attempt cannot leave production state to recover.",
-  "iso/ (isolated repo copy / venv): not created — see binding.json interpreter.venv_policy_note; disclosed as a known weakness rather than silently upgraded, because creating it now would invalidate the reviewer's already-confirmed hashes.",
-  "before/ (pre-change product logs): the modification set is empty, so there is no product before/after pair; changes.diff records that with evidence."
+  "recovery/: this card performs no stateful product operation (no transaction, lock, registry write or migration), so there is no crash-recovery case to demonstrate. The registry redirect exists precisely so the attempt cannot leave production state to recover. recovery/README.md (fix round) documents what interruption-recovery WOULD look like for the attempt's own evidence and why no product recovery applies.",
+  "iso/ (isolated repo copy / venv): not created in r1-r3 — see binding.json interpreter.venv_policy_note; the FIX ROUND narrows this weakness by running against B1's isolated trees via RF_IMPORT_ROOT (fixed AND unfixed isolated copies both exercised), but this attempt still created no isolation of its own and production runs still use write-redirect protection only. Disclosed, not silently upgraded.",
+  "before/ (pre-change product logs): the modification set is empty, so there is no product before/after pair; changes.diff records that with evidence (fix-round addendum re-checked it after all four runs)."
  ],
- "next_step_number": 10,
- "next_action": "OWNER DECISION REQUIRED, then a NEW CARD. Step 1: the owner decides whether to open a product card for F1 (bind attestation at consumption; fix attestation_capability()), with F2 and F3 either folded in or split out, and assigns the invest-core consumer side to its own owner. Step 2: implement that card against the frozen anchors in binding.json, with a consumption-side trust gate and its own oracle. Do NOT re-open I-08-C for product changes, and do NOT mark I-08-C accepted: its headline property is still violated (E11/E13, rc=3).",
+ "next_step_number": 11,
+ "next_action": "ASSIGN AN INDEPENDENT REVIEWER for the fix round (fix_record FIX-I08C-REFREEZE-1; ready_for_re_review=true), starting from reviewer_status.reviewer_must_do_re_review below. In parallel, TWO separate decisions remain OUTSIDE this card: (1) PROMOTION of B1's iso/fixed/rf fix (revenue_publication / revenue_core / revenue_report) into production — owner decision, not performed or implied here, because production still exhibits the gaps (RUN-B red on {e11,e13}); (2) ACCEPTANCE of I-08-C — the reviewer's verdict after re-review. Do NOT mark I-08-C accepted on the strength of RUN-A: 13/13 green proves the re-frozen oracle holds against the FIXED tree only.",
  "blocked_by": [
-  "F1 (blocking) requires an owner decision and a product card: the label is not bound at consumption and attestation_capability() treats file existence as signing capability",
-  "F1's decisive consumer lives in another repo (invest-core) and needs that repo's owner",
-  "F3 and F2 need the same design adjudication before their small fixes are applied"
+  "an independent reviewer's verdict on the fix round (this card never self-signs; status stays review_pending until then)",
+  "promotion of B1's fix is a separate owner decision — until it happens, production still exhibits F1/F3 (RUN-B red on exactly {e11,e13})",
+  "F2 (document validate_publication_receipt as non-security) and F4 (publication_registry.py card-anchor drift) remain open product items",
+  "F1's invest-core consumer side lives in another repo and still needs that repo's owner (owner item E-3: 立卡)"
  ],
  "open_questions": [
-  "One product card for F1-F3, or three? (owner)",
-  "Is a hard isolation boundary (isolated repo copy + venv) required for the follow-up card, given this attempt ran against the production tree with write redirection only?",
-  "Should E13's originally-empirical expectation be re-derived from code reading in a later revision? Re-pinning it would change a frozen expectation, so it is left as-is and labelled."
+  "One product card for F1-F3, or three? (owner) — now partially answered: B1 implemented F1+F3+documentation-F2 together in an isolated tree; does that settle the grouping question for promotion?",
+  "Should promotion of B1's fix happen BEFORE or AFTER I-08-C's re-review? (owner/reviewer — this card took no position beyond recording that both are separate)",
+  "Is a hard isolation boundary (isolated repo copy + venv) required for this card, given r1-r3 ran against production with write redirection only? The fix round exercised B1's isolated trees but created no isolation of its own.",
+  "E13's superseded expectation was originally empirical; the r4 replacement IS source-derived (revenue_report.py:215-225). Does the reviewer accept the pair (empirical old preserved verbatim, derived new) as sufficient provenance?"
  ],
  "reviewer_status": {
-  "verdict": "changes_required",
+  "verdict": "changes_required — HISTORICAL: the PREVIOUS review's verdict on the r3 package; still the only verdict on record, not overwritten",
   "verdict_artifact": "review.md",
   "verdict_sha256": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
+  "current_status": "review_pending (fix round complete, ready_for_re_review=true; a NEW verdict is awaited and NOT self-signed)",
   "implementer_self_acceptance": false,
-  "what_is_now_fixed": "the two DELIVERABLE defects (E4 absent; exploratory log not preserved), the oracle re-freeze, and the missing minimum-directory files",
-  "what_is_still_broken": "the card's headline trust property, on the product side (F1; F2/F3 as recorded)",
-  "reviewer_must_do": [
-   "re-verify the append-only proof by locating the marker at offset 6832 and hashing bytes[0:6831] -> expect 478bd70e...",
-   "re-run the r3 node: expect 13 collected / 13 passed with raw rc 0, and confirm the executed file hashes to 0072b160...",
-   "adjudicate E4's four sub-assertions (a-d) and confirm that E4's expectation text is unchanged from the r1 freeze",
-   "confirm the exploratory-phase inventory is honest — in particular that the missing stdout is disclosed rather than reconstructed",
-   "confirm that F1-F4 are recorded as the negative result and were NOT implemented, and that out_of_scope_note is accurate",
-   "decide whether the disclosed isolation weakness (no isolated repo copy / venv) changes the verdict for this card"
-  ]
+  "what_is_now_fixed": "r3 fixed the two DELIVERABLE defects (E4 absent; exploratory log not preserved) plus the oracle re-freeze and the missing minimum-directory files; the FIX ROUND re-froze the E11/E13/E1 expectations under owner A-2 with superseded records and re-evidenced the whole 13-node matrix against B1's fixed tree and both unfixed trees",
+  "what_is_still_broken": "against PRODUCTION: F1/F3 until B1's fix is promoted (RUN-B still red on {e11,e13}); F2 documentation gap and F4 anchor drift unchanged; invest-* consumers still unverified",
+  "reviewer_must_do_re_review": [
+   "re-verify BOTH append-only proofs: sha256(bytes[0:22335]) == 94a853e9... and sha256(bytes[0:6831]) == 478bd70e... (scratch/fixround/prefix_proof.json; method = fixed prefixes, no length arithmetic)",
+   "adjudicate the three superseded records in oracle R4-2 (S-1 e11, S-2 e13, S-3 e1): is the I-14-H W1 shape followed — old expectation verbatim + reason + provenance — and is the E1 collateral genuinely forced by B1 REM-01(b)?",
+   "confirm the numbering disclosure: the instruction said 'revision r3' but the file already held a closed r3; r4 was used per the file's own rule (decision.md D-08C-RF-01)",
+   "re-run RUN-A: expect 13/13 green rc 0 with the file at 13152 B / 3f83fdf2... pointed at B1 iso/fixed/rf via RF_IMPORT_ROOT",
+   "re-run RUN-B (RF_IMPORT_ROOT unset) and RUN-B2 (B1 iso/rf): expect exactly {e11,e13} red, rc 1 — if MORE nodes are red, the flip broke something else; if e11/e13 are green there, the suite silently bound the fixed tree twice",
+   "re-run RUN-M with scratch/fixround/mutation/test_i08c_mutation_pinned_gap.py on the fixed tree: expect exactly {e11,e13} red, rc 1",
+   "verify the changes.diff fix-round addendum honestly: the reconstructed r3 test file must hash to 0072b160... (the builder refuses otherwise)",
+   "confirm production is untouched (five anchors + empty git porcelain) and that NOTHING was written into B1's attempt (newest mtime 2026-09-21 23:14:47)",
+   "confirm the disclosed exploratory run (e1 collateral discovery) is honestly recorded and was NOT used as a pre-run expectation",
+   "decide the verdict for the re-frozen package — and note that promotion of B1's fix and acceptance of I-08-C are SEPARATE decisions; neither is implied by the other"
+  ],
+  "reviewer_must_do_from_r3_still_applicable": [
+   "re-verify the r3-phase items where still relevant: E4's four sub-assertions, the exploratory-phase inventory honesty, F1-F4 recorded-not-repaired, the disclosed isolation weakness"
+   ]
  },
  "closed_by_this_card": [
   "the r1/r2 oracle-to-test mapping gap for E4 (implemented and asserted)",
   "the absence of any preserved exploratory-phase evidence",
-  "the absence of binding.json / commands.json / decision.md / changes.diff from the deliverable directory"
+  "the absence of binding.json / commands.json / decision.md / changes.diff from the deliverable directory",
+  "FIX ROUND: the stale E11/E13 pinned-gap expectations (superseded under owner A-2 with provenance; replaced by attack-must-be-rejected contracts evidenced on both sides of the fix)"
  ],
  "still_open_and_not_closed": [
-  "F1 (blocking, product): attestation is not bound at consumption — E11 rc=3",
-  "F3 (medium, product): segments[i].base_revenue presentation-field coverage gap — E13 rc=3",
-  "F2 (medium, product): validate_publication_receipt is hash-consistency only",
-  "F4 (low): publication_registry.py card-anchor drift",
+  "F1 vs PRODUCTION (blocking until promotion): attestation is not bound at consumption in the production tree — RUN-B still red on e11 (business rc 3 there); FIXED in B1's iso/fixed/rf (RUN-A green), promotion is a separate owner decision",
+  "F3 vs PRODUCTION: segments[i].base_revenue presentation-field coverage gap — RUN-B2 still red on e13 on unfixed bytes; FIXED in B1's iso/fixed/rf (RUN-A green), promotion pending",
+  "F2 (medium, product): validate_publication_receipt is hash-consistency only — unchanged by B1 (REM-02 was documentation); still pinned as a limitation in E13's r4 expectation",
+  "F4 (low): publication_registry.py card-anchor drift — unchanged",
   "invest-* consumers unverified (out of scope)",
   "no CLI publish transaction exercised",
-  "the exploratory run's stdout is permanently unrecoverable"
+  "the r1-r2 exploratory run's stdout is permanently unrecoverable (a different, earlier loss than this round's DISCLOSED exploratory, whose stdout IS preserved)",
+  "I-08-C acceptance itself: no verdict exists on the re-frozen package; status review_pending"
  ],
  "disclosure_adaptation": "unmapped",
  "accuracy": "unproven",

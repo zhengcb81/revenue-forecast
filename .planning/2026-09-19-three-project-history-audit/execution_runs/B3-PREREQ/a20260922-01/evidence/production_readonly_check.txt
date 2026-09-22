@@ -1,0 +1,28 @@
+﻿=== PRODUCTION READ-ONLY CHECK ===
+repo root = C:\Users\郑曾波\Projects\revenue-forecast
+RF git status -- scripts tests (repo-root pathspecs):
+  (clean: no tracked file under scripts/ or tests/ modified by this attempt)
+CW git status (whole repo):
+  M CLAUDE.md
+   M README.md
+   M src/company_wiki/source_catalog/artifact_dag.py
+  (reviewer_report §7: CW's only dirty file is a PRE-EXISTING 2-line comment change unrelated to B3; this attempt never wrote CW — no path under CW was opened for write)
+RF git status -- this attempt dir (writes inside the attempt are expected; iso/ is gitignored by plan policy):
+  ?? .planning/2026-09-19-three-project-history-audit/execution_runs/B3-PREREQ/
+RF:scripts/company_wiki_source.py         = 225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294  == pinned 225FECDD...: True
+RF:tests/test_fc904_artifact_selection.py = 8C0B8E390307C33B8C03D51FD742CA984BA6774B84638500FD8D7CDD7D46BF3F  == pinned 8C0B8E39...: True
+CW:src/.../artifact_dag.py                = 0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1  == pinned 0C8B1D6D...: True
+RF:scripts/source_preparation.py (prod)   = 37A3EEAEC73ED0124AC1E549BD4EECB49537676DC3BA9DAC6F003496D0E6E2A7
+B3 accepted fixed SP copy                 = 37A3EEAEC73ED0124AC1E549BD4EECB49537676DC3BA9DAC6F003496D0E6E2A7
+production SP == B3 accepted fixed SP (REM-49 fix NOT landed in production, as required): True
+=== OUT-OF-ATTEMPT WRITES: the single deliberate record correction (REM-48) ===
+RF git status -- B3 attempt dir:
+  M .planning/2026-09-19-three-project-history-audit/execution_runs/B3-I05C-delivery-fixes/a20260921-01/handoff.json
+  (expected exactly: M handoff.json — the REM-48 correction; iso/ is gitignored by plan policy so B3 iso/** shows nothing)
+
+=== CW dirty-file timestamps (context: this attempt performed NO write in CW) ===
+  CLAUDE.md  LastWriteTime=2026-09-19 11:20:45
+  README.md  LastWriteTime=2026-09-19 11:20:31
+  src/company_wiki/source_catalog/artifact_dag.py  LastWriteTime=2026-09-20 12:48:46
+  this attempt ran on 2026-09-22; B3 ran 2026-09-21; reviewer attested artifact_dag.py's change as pre-existing (§7).
+

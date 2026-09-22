@@ -1,0 +1,92 @@
+{
+ "card_id": "M25",
+ "attempt_id": "a20260919-01",
+ "model_id": "installed_base_aftermarket",
+ "card_title": "M25 · installed_base_aftermarket · 装机存量售后",
+ "entry_point": "scripts/model_registry.py calculate_registered_model(model_id, base_revenue, drivers, years)",
+ "registration_site": "scripts/model_extensions.py build_extension_specs(...)",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes_at_binding_and_after_run": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_equals_production": true,
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "note": "attempt-local venv created with `python -m venv` from the I-00-A template venv; pytest installed offline from the local pip cache",
+  "global_python_used_for": "nothing in this card (no PDF extraction was needed)"
+ },
+ "card_script_hashes": {
+  "scripts/run_card.py": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+  "scripts/oracle_M25_M28.py": "d092ab16f050401ea05931cda34dc01251ef729f3123d65ec8385a101aa0f0de",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "recovery/selfcheck/make_mutations.py": "ace6d72002fb871ad18401a4f6c4bd94149f39a37755910d6f143a6100996dc3",
+  "recovery/selfcheck/naive_oracle.py": "c81b682f9091850d52c954e1abf03c32badaad8d05b8d44c5898544f9e43f1fa"
+ },
+ "oracle_document": {
+  "path": "oracle.md",
+  "sha256_now": "f35df0d0b3444bea908daf178702ca7b0e74781e4619a61903e3db6adc82200c",
+  "sha256_before_the_definitive_product_run": null,
+  "honest_gap": "oracle.md was written before the DEFINITIVE product run and its frozen body (sections 0-11) was NOT modified afterwards; only APPENDED revision sections were added (the r2 section). The expected values were frozen in evidence/<card>/oracle.json by the independent stdlib generator. The generator is reproducible byte-for-byte (proved by the self-check G regeneration in evidence/<card>/oracle_selfcheck.json). Three provenance facts are recorded rather than hidden: (1) the v1 generation had a defect which was corrected before the definitive run - the only expectation that ever changed is M25's NON-GATING defaults block, and the timeline is in evidence/<card>/revision_r2.json; (2) the v1 generator SOURCE and the M27 crash traceback were never persisted, so that accident is not reproducible (provenance gap); (3) the M26/M27/M28 NEG-CARD patch was corrected under review finding P2-1 and cases.json was re-frozen before the definitive run. commands.json records argv and raw exit codes ONLY and does NOT carry an oracle.md hash.",
+  "mtime_ordering": {
+   "oracle_json_mtime": 1789874272.327332,
+   "input_json_mtime": 1789874272.32533,
+   "oracle_md_mtime": 1789874273.341153,
+   "first_ever_product_run_stdout_mtime": 1789872191.932641,
+   "definitive_product_stdout_mtime": 1789874273.339585,
+   "oracle_json_precedes_the_definitive_run": true,
+   "oracle_json_precedes_the_first_ever_run": false,
+   "note": "r2 re-froze cases.json and re-ran the product, so the ORACLE.JSON mtime is later than the first ever run of this attempt. What the mtime ordering does establish is the pair that matters for the verdict: the frozen evidence and oracle.md both precede the DEFINITIVE run that produced evidence/<card>/stdout.txt."
+  },
+  "oracle_script_selfcheck": "evidence/M25/oracle_selfcheck.json records the generator's import list, product_import_present=false and the byte-identical regeneration hashes"
+ },
+ "evidence_input_hashes": {
+  "evidence/M25/input.json": "4cacbf92a6883d3a688a61d68f565b3c33134fe12c3bf07fd5f8613e4a02a592",
+  "evidence/M25/oracle.json": "35f1dba3ccb0a067dd16476c2a855eb6f945bf231a7111d2bbaf28d6fd9b5311",
+  "evidence/M25/cases.json": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb"
+ },
+ "registry_metadata_observed_from_the_isolated_copy": {
+  "model_id": "installed_base_aftermarket",
+  "required": [
+   "opening_installed_units",
+   "new_installed_units",
+   "retired_units",
+   "closing_installed_units",
+   "new_unit_revenue_fraction",
+   "retirement_lost_fraction",
+   "attach_rate",
+   "annual_revenue_per_attached_unit"
+  ],
+  "optional": [],
+  "defaults": {},
+  "dimensions": {
+   "opening_installed_units": "quantity",
+   "new_installed_units": "quantity",
+   "retired_units": "quantity",
+   "closing_installed_units": "quantity",
+   "new_unit_revenue_fraction": "ratio",
+   "retirement_lost_fraction": "ratio",
+   "attach_rate": "ratio",
+   "annual_revenue_per_attached_unit": "revenue_per_unit"
+  },
+  "ratio_drivers": [
+   "attach_rate",
+   "new_unit_revenue_fraction",
+   "retirement_lost_fraction"
+  ],
+  "driver_bounds": {},
+  "formula": "revenue = (opening_installed_units + new_installed_units*new_unit_revenue_fraction - retired_units*retirement_lost_fraction) * attach_rate * annual_revenue_per_attached_unit"
+ },
+ "network_calls": "none",
+ "llm_or_provider_calls": "none"
+}

@@ -1,0 +1,279 @@
+{
+  "card_id": "I-09-C",
+  "parent_card": "I-09",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260922-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-C\\a20260922-01",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority_note": "status authority = status_authority (bottom of this file): the independent reviewer (独立复核) wrote accepted_scoped at reviewer_report.md line 9 (sha256 673c10bc24a2f093e152f464a6fe6ce9c6b0c07a8d1bc1a087b41362f1929b94, 13666 B, pinned by reviewer_report.sha256). This field only points at that carrier; this landing pass transcribes and does not self-sign. The pre-verdict implementer text is retained verbatim in status_authority_note_historical_pre_verdict.",
+  "status_authority_note_historical_pre_verdict": "the implementer executed steps 1-8 and does NOT declare this card accepted; only an independent reviewer may return accepted_scoped / changes_required / blocked / not_applicable_with_reason",
+  "implementer_self_acceptance": false,
+  "implementer_never_signs_acceptance": true,
+
+  "completed_steps": [1, 2, 3, 4, 5, 6, 7, 8],
+  "steps_not_applicable": [
+    {"step": 6, "card_step": "最小修改", "reason": "NO product modification was needed or made: allowlist used = isolated publication-transaction tests + this fault harness only (hooks live in harness/, product and iso trees byte-identical — see after/production_and_iso_hashes_after.txt)"},
+    {"step": 9, "card_step": "接续", "reason": "接续 now proceeds WITHIN the accepted scope: the independent reviewer has decided accepted_scoped (carrier reviewer_report.md line 9; see status_authority). The pre-verdict wording is retained verbatim in reason_historical_pre_verdict.", "reason_historical_pre_verdict": "接续 happens after the independent reviewer decides; this handoff states the first unfinished action"}
+  ],
+  "next_step_number": 9,
+  "next_action": "DONE by the independent reviewer (verdict accepted_scoped, carrier = reviewer_report.md line 9, sha256 673c10bc…1929b94; authority in status_authority). All six reviewer sub-steps were performed and adjudicated; this landing only transcribes. Still open WITHIN the accepted scope (owner-tracked, none of them re-openable by this bookkeeping pass): (a) F12 retained failure — I-09-B product fix for broken-pipe exit normalization and/or owner/I-09-A oracle-erratum for the numeric domain {0,2}; (b) F5 signed gap — cross-process commit lock design belongs to I-09-B; (c) repeated/high-overlap concurrency stress beyond the single P-C3 run; (d) production I-16 / I-17 per the card's closure criteria, plus production promotion (CF-I08C-1); (e) upstream OPEN-I09A-1..6 / OPEN-D1..D7 / attestation anchor field names / E31 semantics / cross-repo commit_status consumers; (f) reviewer's minor defect probe_f12.py:65 rides the F12 track. Pre-verdict reviewer-instruction text retained verbatim in next_action_historical_pre_verdict.",
+  "next_action_historical_pre_verdict": "Independent reviewer: (1) recompute at least one card-specific oracle from raw evidence (suggest PC2-K8: expected raw=4242, post-fault p1 committed_rows=1/logical=1, audit=0 — all in evidence/cases/PC2-K8_commit_after_response_lost/); (2) verify hook positions in evidence/hook_positions.md against after/ production+iso hashes (zero product diff); (3) spot-check ONE kill arm end-to-end: pid_*.json manifest -> barrier_*.json -> fault.json(kill.ok, no writer_exited_<target>.json, raw=4242) -> hook_trace_*.jsonl; (4) adjudicate the two retained deviations: F12_stdout_pipe (frozen {0,2} vs measured 120, attribution in pipe_controls.json) and F5_lock_not_implemented (signed UNCOVERED GAP, not a pass); (5) verify both supersession disclosures are on disk (k_arms_first_attempt_supersession.md, evidence/tpub/README.md); (6) then return exactly one of accepted_scoped / changes_required / blocked / not_applicable_with_reason. Production I-16/I-17 remain separately pending per the card's closure criteria.",
+
+  "results_digest": {
+    "fault_matrix": {
+      "cases": 24,
+      "all_ok": 23,
+      "failing": ["F12_stdout_pipe (retained as a TRUE failure — see carried_findings F-1)"],
+      "signed_as_gap": ["F5_lock_not_implemented (all_ok=true as a signing record; is_a_passing_fault_test=false)"],
+      "pc1_real_kills": 11,
+      "pc1_oserror_arms": 7,
+      "pc4_arms": 2,
+      "other_f_rows": ["F1 invalid input rc=2", "F7 torn line rc=2 fail-closed, registry bytes unchanged", "F12 stdout pipe rc=120 (deviation)"],
+      "raw_vs_expected_kill": "every kill arm: raw_returncode=4242 (this card's TerminateProcess code) vs frozen rc(A)='— (kill)'; barrier reached, PID manifest-verified, no writer_exited record, target process gone",
+      "raw_vs_expected_errno": "E1/E2/E3/E4/E4b/E5/F2: raw=2 == frozen rc(A)=2 for F2/F3/F4/F9",
+      "fresh_reader_per_point": "each point observed by a NEW reader process (evidence/cases/<case>/reader_after_fault.json) recomputing chain independently + product commit_status cross-check; never the writer's return value",
+      "double_recovery": "every arm: two NEW recovery processes (recovery1.json/recovery2.json) + fresh readers after each; logical commits stayed 1, chain ok, audit problems 0, P0 byte-identical (p0_not_deleted_or_rewritten checks)"
+    },
+    "P_C2": "PC2-K8_commit_after_response_lost: after kill rows=2 (p0+p1 committed, p1 consumable=True although writer died) -> recovery2 rows=4, distinct committed publication_id for p1 = 1 (c84a8ec8...), audit_problems=0 (allowed history rows not misreported as duplicate bug)",
+    "P_C3": "12 checks / 0 failed; two identical + two different concurrent publications; continuous consumer sampled 258 times with 0 broken-chain accepts; final rows=4, chain_ok=true, logical p0=1/p1=1, audit=0; NO lock token exists in publication_registry.py (F5 gap confirmed live)",
+    "P_C4": "PC4a (recovery killed again at registry:before_append: barrier+manifest kill, exit record absent) + PC4b (corrupted member hash): both all_ok (21/16 checks) — idempotent re-recovery, hash chain intact, P0 never deleted/rewritten, orphan prepare explicitly non-consumable until a clean recovery commits it, corrupted member failed closed WITH diagnostics",
+    "P_C5": "27 checks / 0 failed; M1 JSON+Markdown rc=0 committed+consumable; M2 stdout-only formal explicitly rejected rc=2 ('requires --output', 0 rows); M3 markdown-without-output same rejection, no file written; M4 library API row has publication_id=null -> commit_status identity_unknown (not commit-qualified); M5/M6 validate-only zero-write (0 rows, no files even with --output); M7 snapshot compat: 2 rows (forecast+snapshot), snapshot row without validation_status, chain ok, audit 0",
+    "T_PUB": "template 4 files: run1 exit=1 8failed/40passed (THIS CARD's venv missing _cffi_backend — preserved), run2 exit=0 48 passed (matches I-09-B census); new node tests/test_i09b_commit_protocol.py: exit=0 11 passed"
+  },
+
+  "stop_condition_log": {
+    "note": "the card lists four stop conditions; NONE tripped, each with evidence",
+    "test_kill_involving_unregistered_pid": "NOT tripped — every kill first matched barrier_<pid>.json AND pid_<pid>.json (new_run manifest, which registers both os.getpid() and the venv launcher parent_pid); fault.json records registered_in_manifest=true and kill.ok=true for all 11+2 kills; unregistered kills = 0. The one time the barrier/PID could not be verified (round-1 launcher-PID defect) the process was deliberately NOT killed and the case was recorded as a harness failure.",
+    "underlying_persistence_below_claimed_platform_guarantee": "NOT tripped — kills before the registry append left zero committed rows readable by fresh readers; kills after append+fsync (K7/K8/K9) left rows that fresh independent chain recomputation verified; os.replace/fsync errno arms behaved as the claimed failure semantics (rc=2, no partial member visible). No evidence contradicted the claimed Windows guarantees (same-volume os.replace atomicity, file fsync; directory fsync not claimed — per I-09-A C-11).",
+    "needing_to_delete_history_lines": "NOT tripped — F7 torn-line case: two recovery attempts left the tampered registry BYTE-IDENTICAL (check registry_bytes_unchanged_no_history_deletion); no registry line was deleted anywhere in this card. (Case-scratch resets between --force reruns are disclosed in recovery/README.md + k_arms_first_attempt_supersession.md; they are isolated scratch, not history deletion.)",
+    "testing_only_exceptions_not_real_exits": "NOT tripped — 13 real process terminations executed (raw 4242, writer_exited record absent, target process gone; K3b's leftover p1.json.<pid>.tmp is direct proof Python finally did NOT run); the 7 OSError arms are explicitly labeled exception-path-only and are never used as a substitute for the kill arms (per card input rule)."
+  },
+
+  "carried_findings": [
+    "F-1 (RETAINED FAILURE, status @ accepted_scoped landing = OPEN_IN_ACCEPTED_SCOPE): F12_stdout_pipe — frozen I-09-A F12 row records rc {0 or 2}; measured raw=120. Attribution chain: probe_f12.py A(pipe with reader)=0, B(pipe with no reader)=120, C(stdout to file)=0 under identical harness; harness reserves only 4242 and never rewrites child rc => rc=120 is the PRODUCT CLI's own exit code (CPython stdio flush failure at finalization on a broken stdout pipe; stderr shows 'Exception ignored on flushing sys.stdout: OSError [Errno 22]'). Frozen expectation NOT amended, case NOT rerun to green (verdict all_ok=false). Substance of F12 ('无保证 / unreachable guarantee') is confirmed by exactly this unpredictability; no cross-terminal rollback is claimed. Disposition: if the frozen numeric range must hold, normalizing broken-pipe handling is a PRODUCT fix for I-09-B; amending the frozen numeric range is an owner / I-09-A oracle-erratum decision. Neither was done here. [status @ accepted_scoped landing: OPEN_IN_ACCEPTED_SCOPE — stays OPEN inside the accepted scope, per carrier scope item 2 (reviewer_report.md line 14); see accepted_scope_carry / SC-2].",
+    "F-2 (SIGNED GAP, not a pass, status @ accepted_scoped landing = OPEN_IN_ACCEPTED_SCOPE): F5 registry-lock acquisition failure cannot be constructed — the implementation under test has NO cross-process commit lock (code scan: zero lock tokens; I-09-B handoff lists 'Cross-process commit lock not implemented'; frozen F5 E-column already reads n/a(锁未实现)). Signed as UNCOVERED with is_a_passing_fault_test=false; live concurrency evidence (P-C3) recorded the same absence. Product scope -> I-09-B. [status @ accepted_scoped landing: OPEN_IN_ACCEPTED_SCOPE — stays OPEN inside the accepted scope, per carrier scope item 3 (reviewer_report.md line 15); zero lock primitives confirmed by the reviewer's own grep of iso AND production trees; see accepted_scope_carry / SC-3].",
+    "F-3 (OBSERVATION): attempt_seq is not monotonic across repeated retries — PC2 reader_after_recovery2 shows p1 attempt_seqs=[1,2,2] because commit_publication derives attempt_seq from the FIRST matching committed row rather than the max, so a third attempt re-claims 2. Logical commit count (=1), audit (=0) and chain are unaffected; the frozen P-C2 expectations all pass. Evidence: evidence/cases/PC2-K8_commit_after_response_lost/reader_after_recovery2.json. Minor bookkeeping defect -> report to I-09-B; not part of the frozen oracle, registered as an observation only.",
+    "F-4 (DISCLOSURE): K1/K2/K3 first-round verdicts (all_ok=false, ~182s each, venv-launcher PID defect) were OVERWRITTEN by --force reruns; original bytes unrecoverable. Full disclosure + transcription of the values observed pre-overwrite: evidence/k_arms_first_attempt_supersession.md (referenced by this handoff as required).",
+    "F-5 (DISCLOSURE): T-PUB run1 (8 failed/40 passed) was an environment defect of this card's merged venv (missing _cffi_backend binary), NOT a product/test failure; run1 output preserved verbatim, rerun = 48 passed. Evidence: evidence/tpub/README.md + tpub_template.txt + tpub_template_rerun.txt.",
+    "F-6 (SCOPE): P-C3 concurrency is a single run without forced lock-step overlap; it shows chain integrity held under natural overlap, NOT that the absent lock is safe (frozen F5 gap stands). Repeated/high-overlap stress remains open.",
+    "F-7 (SCOPE): everything tested is the I-09-B ISOLATED tree (iso/rf, 6/6 hashes verified); production promotion is still not done (context: CF-I08C-1) and production I-16/I-17 remain separately pending per the card's closure criteria.",
+    "F-8 (PREFLIGHT, adjudicated): scripts/revenue_forecast.py:55 anchor differs from the card value and had no registered drift -> STOP rule triggered, lifted by parent adjudication B (proceed-with-disclosure); this card registers the anchor as a same-class EOL-render drift instance (content identical modulo CRLF/LF, LF->CRLF render reproduces 6b3d960e exactly). Evidence: preflight_anchors.md §4/§6, binding.json.source_anchor_check, evidence/eol_reconstruction.txt. Root cause of registered drift CF-I08C-2 located as the same EOL-render class.",
+    "F-9 (CARRIED, unchanged): OPEN-I09A-1..6, OPEN-D1..D7, UNRESOLVED-BY-DESIGN registry attestation anchor field names, E31 compensation semantics beyond these kill/recovery arms, and cross-repo consumers of commit_status remain unresolved and owned upstream; disclosure_adaptation=unmapped, accuracy=unproven.",
+
+    "SC-1 (SCOPE-CARRY 1/7, carrier reviewer_report.md line 13 — verdict void without it): 一切被测内容 = I-09-B ISOLATED 树（iso/rf，6/6 hash 与 I-09-B handoff 一致，见 after/production_and_iso_hashes_after.txt）；生产 promotion 未做（context CF-I08C-1），本卡不构成任何生产等价声明。",
+    "SC-2 (SCOPE-CARRY 2/7, carrier line 14 — verdict void without it): F12 保留失败（F-1/F12）仍为 OPEN：frozen {0,2} 数值域未改、未 retry-to-green、case 保持 red（verdict all_ok=false）；归属 I-09-B 产品修复轨（broken-pipe 退出码规范化的产品修复）与 owner/I-09-A oracle-erratum 轨（数值域 {0,2} 勘误），二者本卡均未执行。",
+    "SC-3 (SCOPE-CARRY 3/7, carrier line 15 — verdict void without it): F5 签名缺口（F-2/F5）仍为 OPEN：signed UNCOVERED GAP（is_a_passing_fault_test=false），产品范围归 I-09-B；零锁原语由 reviewer 亲自 grep iso 树与生产树双确认；P-C3 单跑不构成“并发安全”。",
+    "SC-4 (SCOPE-CARRY 4/7, carrier line 16 — verdict void without it): F-6 并发单跑限制：P-C3 仅单次无强制 lock-step 重叠运行，重复/高压重叠压力测试仍开放。",
+    "SC-5 (SCOPE-CARRY 5/7, carrier line 17 first half — verdict void without it): 生产侧 I-16 / I-17 按本卡关闭标准另行 pending。",
+    "SC-6 (SCOPE-CARRY 6/7, carrier line 17 second half — verdict void without it): disclosure_adaptation=unmapped、accuracy=unproven 不变。",
+    "SC-7 (SCOPE-CARRY 7/7, carrier line 18 — verdict void without it): 机制域限定（REM-79 句式）：本卡的“生产零改动”结论成立于 git status --porcelain -- scripts/ 为空 + 6 个生产锚点 hash 等于 preflight 实测值（HEAD 6f74b056…）+ hooks 仅存在于本 attempt harness/ 且 --fault none 时不安装这一域内；不是无域全称断言。"
+  ],
+
+  "input_hashes": {
+    "note": "full set pinned in binding.json BEFORE any run",
+    "execution_v2/card_I-09-C.md": "59e9d71df2100c226e4b37880105e85df37681f6592db16856ee8a117baf23c3",
+    "execution_v2/START_HERE.md": "a9cb5a4a34929fb21d43b3f8308c36b03440d73c43325b8952e81fe130f64caf",
+    "execution_v2/common_filing_cards.md": "c54f583976519c66b1b9425fc03a18ec5620bc4d662d5f2f2e0ed184006b325b",
+    "execution_v2/review_and_handoff.md": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9",
+    "I-09-A decision.md (F1-F12 frozen fault/rc oracle)": "94a27b8ae31cb7467bf9910714e90777a1cec7790e3d6bca364c9e4062db8a57",
+    "I-09-A oracle.md": "D7F6B102ECC99A564FF6977B69A7B5E8FE6AF9EDCC4AE356C041426891E6DC8D",
+    "I-09-A oracle_addendum.md": "DE7FA1F335E4C4054E6CCCDB7D8C25160518BEE0EFC50BC1091DE9392715BCB5",
+    "I-09-B handoff.json": "00dd5018ff825ebadafe5fca62f6b908319721fe2316b21325afcdd34977c0b6",
+    "I-08-C qualification.json": "6171417578cb9ac6cacacc2b7d7f3723ecb1dd672ab6da4a8aa8be75bd47ddc2",
+    "shared inputs P0/P1/invalid": "evidence/shared_inputs/hashes.json (byte-identical across every fault point, per card rule '每个故障点独立新目录与同一P0/P1输入')"
+  },
+
+  "current_source_hashes": {
+    "production_scripts/publication_registry.py": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344 (= HEAD blob; card value 44662744... is its CRLF render; registered drift CF-I08C-2)",
+    "production_scripts/revenue_forecast.py": "2a2dfede7941b0facc972d802d25eb71f798c1ebdb83226bbf8528481b9669e36 (= HEAD blob; card value 6b3d960e... is its CRLF render; :55 = def main() -> int:)",
+    "production_unchanged_by_this_card": true,
+    "iso/rf/scripts/publication_registry.py": "6b9ee981871c049d0db2e165df6ea52371d2a1aa579f9aeb0ebe0201f74f3890 (== I-09-B handoff)",
+    "iso/rf/scripts/revenue_core.py": "e1e1415839662a0bbf12253dfb70474517155ba8dda4b7e05f23ccca72478f8f (== I-09-B handoff)",
+    "iso/rf/scripts/revenue_forecast.py": "7a9588c58f9feed4bb729f06b3be3d0027c2d022ccd82db9552286b2e7e8449f (== I-09-B handoff)",
+    "iso/rf/tests/conftest.py": "6da47830e3490fead2787505b2c9d177f75a644cb217ea7b9a859704f1632ee4 (== I-09-B)",
+    "iso/rf/tests/test_zr710_publication_txn.py": "82c619e3370703e11f663e27d64653cc03e95c65c7997dffadcb3ed7d5d97144 (== I-09-B)",
+    "iso/rf/tests/test_i09b_commit_protocol.py": "8da9a0d54acfbfc076ac29dc00939078a3961603a2477083260940e2de15ccbd (== I-09-B)"
+  },
+
+  "changed_paths": {
+    "scope": "attempt directory ONLY (allowed_write_roots = this attempt); production tree, real registry, user packages, reviews/: zero writes; no git writes",
+    "added_or_written": [
+      "binding.json, preflight_anchors.md, oracle.md, commands.json, decision.md, changes.diff, handoff.json (this file)",
+      "evidence/eol_reconstruction.txt, evidence/hook_positions.md, evidence/results_summary.json, evidence/k_arms_first_attempt_supersession.md",
+      "evidence/shared_inputs/* (P0/P1/invalid + hashes.json)",
+      "evidence/cases/<24 fault/CLI/concurrency cases>/** (per-case seed/fault/readers/recoveries/verdicts)",
+      "evidence/tpub/* (run1 preserved, run2, i09b node, README)",
+      "harness/{common,i09c_hooks,writer,reader,reader_loop,run_fault_matrix,run_concurrency,run_cli_matrix,probe_f12}.py",
+      "iso/rf (byte-copy of I-09-B accepted tree, zero edits, 6/6 hashes verified), iso/venv (attempt-level venv)",
+      "before/(empty-by-design: pre-modification state is preflight_anchors.md+binding.json, no product modification existed to snapshot), after/production_and_iso_hashes_after.txt, after/git_status_after_full.txt, recovery/README.md"
+    ],
+    "product_files_changed": [],
+    "full_inventory": "changes.diff (header declares product zero-diff; body lists every file this card wrote under the attempt root)"
+  },
+
+  "commands_executed": [
+    "i09c-c1-eol-reconstruction", "i09c-c2-input-pin-hashes",
+    "i09c-c3-iso-venv-setup-r1", "i09c-c3-iso-venv-setup-r2", "i09c-c3-iso-venv-setup-r3",
+    "i09c-c4-fault-matrix-inv1..inv7 (7 invocations)",
+    "i09c-c5-f12-attribution-probe", "i09c-c6-pc3-concurrency", "i09c-c7-pc5-cli-matrix",
+    "i09c-c8-tpub-template-r1", "i09c-c8-tpub-template-r2", "i09c-c9-tpub-i09b-node",
+    "i09c-c10-after-hashes"
+  ],
+  "raw_exit_codes": {
+    "i09c-c1": 0, "i09c-c2": 0,
+    "i09c-c3-r1": 1, "i09c-c3-r2": 0, "i09c-c3-r3": 0,
+    "i09c-c4-inv1": "TIMEOUT@600s (stdout uncaptured)", "i09c-c4-inv2": 3, "i09c-c4-inv3": 0,
+    "i09c-c4-inv4": 3, "i09c-c4-inv5": 0, "i09c-c4-inv6": 3, "i09c-c4-inv7": 3,
+    "i09c-c5-probe": 0, "i09c-c6-pc3": 0, "i09c-c7-pc5": 0,
+    "i09c-c8-tpub-r1": 1, "i09c-c8-tpub-r2": 0, "i09c-c9-tpub-i09b": 0, "i09c-c10": 0,
+    "producer_rc_kill_arms": 4242,
+    "producer_rc_errno_and_f1_f7_arms": 2,
+    "producer_rc_f12_arm": 120
+  },
+  "expected_exit_codes": {
+    "harness_invocations": "0 (3 = a frozen expectation failed — reached only for F12 in inv6/inv7, and for harness defects in inv1/inv2/inv4, each disclosed in commands.json)",
+    "pytest": 0,
+    "producer_kill_arms": "'— (kill)' per frozen F-table; realized as 4242",
+    "producer_errno_f1_f7": 2,
+    "producer_f12": "0 or 2 per frozen F12 row — MEASURED 120 (retained deviation, see carried_findings F-1)"
+  },
+
+  "open_questions": [
+    "F12: who amends the frozen numeric range {0,2} — owner/I-09-A oracle erratum, or should I-09-B normalize the CLI's broken-pipe exit code? This card did neither and keeps the case red.",
+    "F5/lock: I-09-B (or an owner card) must decide the cross-process commit lock design before any 'concurrency safe' claim; P-C3's single clean run does not close it.",
+    "attempt_seq monotonicity on >2 attempts (F-3): fix in I-09-B or accept as documented behavior?",
+    "All upstream OPEN items (OPEN-I09A-1..6, OPEN-D1..D7, attestation anchor field names, cross-repo commit_status consumers) remain unadjudicated."
+  ],
+  "blocked_by": [],
+
+  "evidence_paths": [
+    "binding.json", "preflight_anchors.md", "oracle.md", "commands.json", "decision.md", "changes.diff",
+    "evidence/eol_reconstruction.txt", "evidence/hook_positions.md", "evidence/results_summary.json",
+    "evidence/k_arms_first_attempt_supersession.md", "evidence/shared_inputs/hashes.json",
+    "evidence/cases/*/verdict.json (24 fault/CLI/concurrency cases + PC3 + PC5)",
+    "evidence/cases/*/fault.json, reader_after_fault.json, recovery1.json, reader_after_recovery1.json, recovery2.json, reader_after_recovery2.json",
+    "evidence/cases/F12_stdout_pipe/pipe_controls.json",
+    "evidence/tpub/{tpub_template.txt, tpub_template_rerun.txt, tpub_i09b.txt, README.md}",
+    "after/production_and_iso_hashes_after.txt", "after/git_status_after_full.txt", "recovery/README.md"
+  ],
+
+  "recovery": {
+    "status": "performed (not applicable only to 'post-exception stateful recovery of THIS card's own writes' — the card's recovery requirement was executed for every arm)",
+    "double_recovery_per_arm": "two NEW recovery processes per fault point + a fresh reader after each; results in each case's recovery1.json/recovery2.json + reader_after_recovery1/2.json",
+    "boundary": "recovery/README.md"
+  },
+
+  "changes_diff": "changes.diff — allowlist-conformant: isolated publication-transaction tests + this fault harness ONLY; product zero-diff",
+
+  "reviewer_status": "accepted_scoped — independent reviewer (独立复核) returned accepted_scoped in reviewer_report.md (line 9; sha256 673c10bc24a2f093e152f464a6fe6ce9c6b0c07a8d1bc1a087b41362f1929b94, 13666 B, 86 lines, sidecar verified). Transcribed into review.md / status_authority by the carrier-landing pass; verdict is transcribed, not authored; the implementer still signs nothing.",
+  "reviewer_status_historical_pre_verdict": "pending — awaiting the independent reviewer; the implementer signed nothing",
+  "three_qualifications_stated_separately": {
+    "design_contract": "frozen by I-09-A (accepted_scoped) and consumed verbatim here — not re-adjudicated",
+    "implementation_under_test": "I-09-B's isolated tree (accepted_scoped) — verified byte-identical, not modified",
+    "transaction_fault_qualification": "EARNED ONLY AS EVIDENCE, NOT AS ACCEPTANCE: 24-case fault/concurrency/restart matrix + fresh-reader/double-recovery protocol executed; acceptance requires the independent reviewer. Two frozen expectations remain unmet (F12 numeric, F5 constructibility) and production I-16/I-17 are still separately pending. [status @ accepted_scoped landing: the independent reviewer has now returned accepted_scoped — carrier reviewer_report.md line 9, see status_authority; the two unmet expectations and I-16/I-17 remain exactly as stated above and stay OPEN_IN_ACCEPTED_SCOPE.] "
+  },
+
+  "disclosure_adaptation": "unmapped (unchanged)",
+  "accuracy": "unproven (unchanged)",
+  "git_writes": "none",
+  "production_writes": "none",
+  "real_registry_or_user_packages_touched": "never",
+
+  "accepted_scope_carry": {
+    "count": 7,
+    "carrier_line_range_inclusive": [11, 18],
+    "carrier_scope_preamble": "接受范围（scope 必须随此判决一并携带，缺一不成立）：",
+    "verdict_is_void_without_all_seven": true,
+    "mirrored_in": "carried_findings SC-1..SC-7 (appended by this landing pass) and evidence/I-09-C/qualification.json accepted_scope_carry.items",
+    "items": [
+      {"id": "SC-1", "carrier_line": 13, "text": "一切被测内容 = I-09-B ISOLATED 树（iso/rf，6/6 hash 与 I-09-B handoff 一致）；生产 promotion 未做（context CF-I08C-1），本卡不构成任何生产等价声明。"},
+      {"id": "SC-2", "carrier_line": 14, "text": "F12 保留失败（F-1/F12）仍为 OPEN：frozen {0,2} 数值域未改、未 retry-to-green、case 保持 red；归属 I-09-B 产品修复轨（broken-pipe 退出码规范化）与 owner/I-09-A oracle-erratum 轨（数值域 {0,2} 勘误），二者本卡均未执行。"},
+      {"id": "SC-3", "carrier_line": 15, "text": "F5 签名缺口（F-2/F5）仍为 OPEN：signed UNCOVERED GAP（is_a_passing_fault_test=false），产品范围归 I-09-B；零锁原语由 reviewer 亲自 grep iso 与生产树双确认；P-C3 单跑不构成“并发安全”。"},
+      {"id": "SC-4", "carrier_line": 16, "text": "F-6 并发单跑限制：P-C3 仅单次无强制 lock-step 重叠运行，重复/高压重叠压力测试仍开放。"},
+      {"id": "SC-5", "carrier_line": 17, "text": "生产侧 I-16 / I-17 按本卡关闭标准另行 pending。"},
+      {"id": "SC-6", "carrier_line": 17, "text": "disclosure_adaptation=unmapped、accuracy=unproven 不变。"},
+      {"id": "SC-7", "carrier_line": 18, "text": "机制域限定（REM-79 句式）：本卡的“生产零改动”结论成立于 git status --porcelain -- scripts/ 为空 + 6 个生产锚点 hash 等于 preflight 实测值（HEAD 6f74b056…）+ hooks 仅存在于本 attempt harness/ 且 --fault none 时不安装这一域内；不是无域全称断言。"}
+    ],
+    "mapping_note": "reviewer_report.md numbers six scope items at lines 13-18; the dispatch's seven-item enumeration is the same substance with reviewer item 5 (line 17) carrying two independent requirements (I-16/I-17 pending; disclosure_adaptation/accuracy unchanged)."
+  },
+
+  "status_authority": {
+    "verdict": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session; sibling of the implementer; the implementer did not self-sign)",
+    "verdict_label_as_written_by_reviewer": "accepted_scoped",
+    "carrier": {
+      "file": "reviewer_report.md",
+      "path_inside_attempt": "reviewer_report.md",
+      "line_range_inclusive_1_based": [1, 86],
+      "verdict_line": 9,
+      "verdict_line_range_inclusive": [9, 9],
+      "first_line_of_verdict": "## VERDICT: **accepted_scoped**",
+      "scope_section_line_range_inclusive": [11, 18],
+      "scope_numbered_items_line_range_inclusive": [13, 18],
+      "findings_section_line_range_inclusive": [22, 69],
+      "minor_defect_F7_line_range_inclusive": [68, 69],
+      "unverified_section_line_range_inclusive": [73, 81],
+      "boundary_section_line_range_inclusive": [83, 86],
+      "reviewer_role_line": 5,
+      "sha256": "673c10bc24a2f093e152f464a6fe6ce9c6b0c07a8d1bc1a087b41362f1929b94",
+      "bytes": 13666,
+      "total_lines": 86,
+      "encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+      "byte_proof": {
+        "verdict_line_bytes": {"start": 594, "end_inclusive": 624, "end_exclusive": 625, "length": 31, "sha256": "c7b900e370b4d5d2117b1bc396dab1ea0603765baf89915b28c5bab3e6b7ad57"},
+        "scope_section_bytes": {"start": 627, "end_inclusive": 1942, "end_exclusive": 1943, "length": 1316, "sha256": "a6bc7df73753237721a3cda21cb4fa6e74c7beefa3f80841efa0adab5583596c"},
+        "scope_numbered_items_bytes": {"start": 704, "end_inclusive": 1942, "end_exclusive": 1943, "length": 1239, "sha256": "52344b4196832c384bae42063b5b9ed1b7313902d4365652f695b30aedfe45aa"},
+        "findings_section_bytes": {"start": 1950, "end_inclusive": 11899, "end_exclusive": 11900, "length": 9950, "sha256": "4ebebf7c68ba258a0601c8b2069a7c86f6fc621e9969227583424ecc1c862d0b"},
+        "minor_defect_F7_bytes": {"start": 11453, "end_inclusive": 11899, "end_exclusive": 11900, "length": 447, "sha256": "523dd4efe464c6471d88349dc8781f23ccaf80fe6df317c5fc06ecc562ac8b77"},
+        "unverified_section_bytes": {"start": 11907, "end_inclusive": 13252, "end_exclusive": 13253, "length": 1346, "sha256": "335ca55dc9aae1677d87ddced66b633bcad78c968b164873c74383552e81e32b"},
+        "boundary_section_bytes": {"start": 13255, "end_inclusive": 13665, "end_exclusive": 13666, "length": 411, "sha256": "2f19f202d5304079b6e00fbef5bcfee85f51be07fa8cfbe383c4eab225e2217c"},
+        "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 13664, "end_exclusive": 13665, "length": 13665, "sha256": "cdf15a2596e052211d096419d61aa836aa82c0f4724e8c4c30e8e5b305327435"},
+        "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the terminating LF unless stated"
+      },
+      "pin_sidecar": {
+        "file": "reviewer_report.sha256",
+        "present": true,
+        "bytes": 85,
+        "sha256": "ef516577f9f05fe4075b492cd6851c661ef94c72cf4890987d921e4bc4b23410",
+        "content": "673c10bc24a2f093e152f464a6fe6ce9c6b0c07a8d1bc1a087b41362f1929b94  reviewer_report.md",
+        "verified": "sidecar sha matches an independent read-only re-hash of reviewer_report.md at landing time (13666 B, 86 lines) and the dispatch-pinned value; re-hashed before any write by this pass"
+      },
+      "landing_file": {
+        "file": "review.md",
+        "role": "carrier-landing verdict block written by this bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md — the reviewer's words are in reviewer_report.md, which this pass did not modify.",
+        "pre_image": "none — review.md did not previously exist in this attempt (no implementer stub)"
+      }
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核) in reviewer_report.md line 9, not by the implementer; this handoff only transcribes it",
+    "verdict_is_transcribed_not_authored": true
+  },
+
+  "bookkeeping": {
+    "recorded_by": "I-09-C implementer (pre-verdict fields) / carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "review_pending_is_not_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "verdict_author": "独立复核 (independent reviewer) — in reviewer_report.md line 9, not in any file this pass wrote",
+    "carrier_landing_recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "carrier_landing_what_this_pass_did": "verified the carrier read-only (13666 B / 86 lines / sha256 673c10bc…1929b94 matches both the dispatch pin and reviewer_report.sha256; verdict line 9 = accepted_scoped); set status accepted_scoped + status_before_bookkeeping_fix review_pending; appended status_authority (line ranges + sha256 + byte proofs), bookkeeping, accepted_scope_carry and 7 scope-carry entries (SC-1..SC-7) in carried_findings; marked F-1 (F12) and F-2 (F5) OPEN_IN_ACCEPTED_SCOPE; superseded four stale pre-verdict fields byte-exact under *_historical_pre_verdict / reason_historical_pre_verdict (REM-83 species): status_authority_note, next_action, reviewer_status, steps_not_applicable[step 9].reason; created review.md (transcribed verdict block, no acceptance of its own) and evidence/I-09-C/qualification.json; wrote 0 bytes to reviewer_report.md, its sidecar, iso/, or production; wrote no verdict of its own",
+    "status_transition": "review_pending -> accepted_scoped (bookkeeping transcription of the reviewer's line 9 verdict; implemented by this landing pass on the parent's dispatch, never by the implementer)",
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "iso_tree_bytes_written": 0,
+    "production_bytes_written": 0,
+    "disclosure_adaptation": "unmapped (untouched)",
+    "accuracy": "unproven (untouched)",
+    "stale_fields_superseded_byte_exact": ["status_authority_note -> status_authority_note_historical_pre_verdict", "next_action -> next_action_historical_pre_verdict", "reviewer_status -> reviewer_status_historical_pre_verdict", "steps_not_applicable[step 9].reason -> steps_not_applicable[step 9].reason_historical_pre_verdict"],
+    "carried_findings_preserved": 9,
+    "carried_findings_preserved_ids": ["F-1 (OPEN_IN_ACCEPTED_SCOPE)", "F-2 (OPEN_IN_ACCEPTED_SCOPE)", "F-3", "F-4", "F-5", "F-6", "F-7", "F-8", "F-9"],
+    "carried_findings_appended": 7,
+    "carried_findings_appended_ids": ["SC-1", "SC-2", "SC-3", "SC-4", "SC-5", "SC-6", "SC-7"],
+    "pre_existing_keys_otherwise_untouched": true,
+    "files_written": ["review.md (created)", "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping + accepted_scope_carry + 7 scope-carry entries appended + F-1/F-2 OPEN_IN_ACCEPTED_SCOPE markers + 4 stale-field supersessions; pre-existing content otherwise untouched)", "evidence/I-09-C/qualification.json (created)"],
+    "handoff_pre_image": "19339 B / sha256 31caacf72cea2ecb21c09b4f4d50464fccd648858968f49980fbc620b07821df (before this pass's edits)"
+  }
+}

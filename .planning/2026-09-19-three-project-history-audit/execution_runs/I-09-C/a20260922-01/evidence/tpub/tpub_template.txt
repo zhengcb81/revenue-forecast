@@ -1,0 +1,216 @@
+﻿........................F..FF...F.FFF.F.........                         [100%]
+================================== FAILURES ===================================
+________ AttestationTests.test_absent_trust_domain_is_legal_zero_trust ________
+
+self = <test_attestation.AttestationTests testMethod=test_absent_trust_domain_is_legal_zero_trust>
+
+    def test_absent_trust_domain_is_legal_zero_trust(self) -> None:
+        os.environ["REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS"] = str(
+            Path(self._temporary.name) / "absent.json"
+        )
+>       from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PrivateKey,
+        )
+
+..\..\..\..\I-09-B\a20260919-01\iso\rf\tests\test_attestation.py:466: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+    
+    from __future__ import annotations
+    
+    import abc
+    
+>   from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+E   ModuleNotFoundError: No module named '_cffi_backend'
+
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\asymmetric\ed25519.py:9: ModuleNotFoundError
+_____________ AttestationTests.test_forged_signature_is_rejected ______________
+
+self = <test_attestation.AttestationTests testMethod=test_forged_signature_is_rejected>
+
+    def test_forged_signature_is_rejected(self) -> None:
+>       from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PrivateKey,
+        )
+
+..\..\..\..\I-09-B\a20260919-01\iso\rf\tests\test_attestation.py:355: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+    
+    from __future__ import annotations
+    
+    import abc
+    
+>   from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+E   ModuleNotFoundError: No module named '_cffi_backend'
+
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\asymmetric\ed25519.py:9: ModuleNotFoundError
+______ AttestationTests.test_issuer_not_bound_to_the_receipt_is_rejected ______
+
+self = <test_attestation.AttestationTests testMethod=test_issuer_not_bound_to_the_receipt_is_rejected>
+
+    def test_issuer_not_bound_to_the_receipt_is_rejected(self) -> None:
+        """I-08-B: the trust domain binds issuer, not just fingerprint.
+    
+        The signature is made with the TRUSTED key, so only the issuer binding can
+        reject this receipt (the old code accepted it -- the EXP-BASE-11 gap).
+        """
+>       from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PrivateKey,
+        )
+
+..\..\..\..\I-09-B\a20260919-01\iso\rf\tests\test_attestation.py:416: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+    
+    from __future__ import annotations
+    
+    import abc
+    
+>   from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+E   ModuleNotFoundError: No module named '_cffi_backend'
+
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\asymmetric\ed25519.py:9: ModuleNotFoundError
+__________ AttestationTests.test_no_whitelist_rejects_any_signature ___________
+
+self = <test_attestation.AttestationTests testMethod=test_no_whitelist_rejects_any_signature>
+
+    def test_no_whitelist_rejects_any_signature(self) -> None:
+>       from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PrivateKey,
+        )
+
+..\..\..\..\I-09-B\a20260919-01\iso\rf\tests\test_attestation.py:399: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+    
+    from __future__ import annotations
+    
+    import abc
+    
+>   from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+E   ModuleNotFoundError: No module named '_cffi_backend'
+
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\asymmetric\ed25519.py:9: ModuleNotFoundError
+___ AttestationTests.test_provider_handshake_means_host_signed_publication ____
+
+self = <test_attestation.AttestationTests testMethod=test_provider_handshake_means_host_signed_publication>
+
+    def test_provider_handshake_means_host_signed_publication(self) -> None:
+        """host_signed now requires one successful handshake + a trusted signature."""
+>       from cryptography.hazmat.primitives import serialization
+
+..\..\..\..\I-09-B\a20260919-01\iso\rf\tests\test_attestation.py:149: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\serialization\__init__.py:8: in <module>
+    from cryptography.hazmat.primitives._serialization import (
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+    
+    from __future__ import annotations
+    
+    import abc
+    
+    from cryptography import utils
+>   from cryptography.hazmat.bindings._rust import Encoding as Encoding
+E   ModuleNotFoundError: No module named '_cffi_backend'
+
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\_serialization.py:10: ModuleNotFoundError
+________ AttestationTests.test_signature_over_stale_event_is_rejected _________
+
+self = <test_attestation.AttestationTests testMethod=test_signature_over_stale_event_is_rejected>
+
+    def test_signature_over_stale_event_is_rejected(self) -> None:
+>       from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PrivateKey,
+        )
+
+..\..\..\..\I-09-B\a20260919-01\iso\rf\tests\test_attestation.py:373: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+    
+    from __future__ import annotations
+    
+    import abc
+    
+>   from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+E   ModuleNotFoundError: No module named '_cffi_backend'
+
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\asymmetric\ed25519.py:9: ModuleNotFoundError
+____ AttestationTests.test_signed_host_receipt_verifies_against_whitelist _____
+
+self = <test_attestation.AttestationTests testMethod=test_signed_host_receipt_verifies_against_whitelist>
+
+    def test_signed_host_receipt_verifies_against_whitelist(self) -> None:
+>       from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PrivateKey,
+        )
+
+..\..\..\..\I-09-B\a20260919-01\iso\rf\tests\test_attestation.py:342: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+    
+    from __future__ import annotations
+    
+    import abc
+    
+>   from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+E   ModuleNotFoundError: No module named '_cffi_backend'
+
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\asymmetric\ed25519.py:9: ModuleNotFoundError
+_____ AttestationTests.test_trust_domain_file_invalid_is_loud_not_silent ______
+
+self = <test_attestation.AttestationTests testMethod=test_trust_domain_file_invalid_is_loud_not_silent>
+
+    def test_trust_domain_file_invalid_is_loud_not_silent(self) -> None:
+        """E25: a broken trust domain must not look like "no trusted keys"."""
+>       from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PrivateKey,
+        )
+
+..\..\..\..\I-09-B\a20260919-01\iso\rf\tests\test_attestation.py:450: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+    
+    from __future__ import annotations
+    
+    import abc
+    
+>   from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+E   ModuleNotFoundError: No module named '_cffi_backend'
+
+..\venv\Lib\site-packages\cryptography\hazmat\primitives\asymmetric\ed25519.py:9: ModuleNotFoundError
+=========================== short test summary info ===========================
+FAILED tests/test_attestation.py::AttestationTests::test_absent_trust_domain_is_legal_zero_trust
+FAILED tests/test_attestation.py::AttestationTests::test_forged_signature_is_rejected
+FAILED tests/test_attestation.py::AttestationTests::test_issuer_not_bound_to_the_receipt_is_rejected
+FAILED tests/test_attestation.py::AttestationTests::test_no_whitelist_rejects_any_signature
+FAILED tests/test_attestation.py::AttestationTests::test_provider_handshake_means_host_signed_publication
+FAILED tests/test_attestation.py::AttestationTests::test_signature_over_stale_event_is_rejected
+FAILED tests/test_attestation.py::AttestationTests::test_signed_host_receipt_verifies_against_whitelist
+FAILED tests/test_attestation.py::AttestationTests::test_trust_domain_file_invalid_is_loud_not_silent
+8 failed, 40 passed in 6.50s

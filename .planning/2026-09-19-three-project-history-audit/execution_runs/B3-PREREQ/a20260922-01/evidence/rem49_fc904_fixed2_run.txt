@@ -1,0 +1,25 @@
+﻿COMMAND (cwd=iso): B3_BYTES=fixed python -X utf8 -B -m pytest -q -p no:cacheprovider --junitxml=<attempt>/evidence/rem49_fc904_fixed2.xml fixed2/tests/test_fc904_artifact_selection.py
+rc=1
+(out below)
+...........F....                                                         [100%]
+================================== FAILURES ===================================
+_____ TestB3ProductionProvenance.test_module_under_test_is_the_bound_copy _____
+
+self = <test_fc904_artifact_selection.TestB3ProductionProvenance object at 0x000001FF8757FED0>
+
+    def test_module_under_test_is_the_bound_copy(self):
+        resolved = Path(_BOUND_CWS.__file__).resolve()
+        expected = Path(_TARGET_CWS).resolve()
+        assert resolved == expected
+>       assert "B3-I05C-delivery-fixes" in str(resolved) or _BYTES == "production"
+E       AssertionError: assert ('B3-I05C-delivery-fixes' in 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\iso\\fixed2\\rf_scripts\\company_wiki_source.py' or 'fixed' == 'production'
+E        +  where 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B3-PREREQ\\a20260922-01\\iso\\fixed2\\rf_scripts\\company_wiki_source.py' = str(WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/B3-PREREQ/a20260922-01/iso/fixed2/rf_scripts/company_wiki_source.py'))
+E         
+E         - production
+E         + fixed)
+
+fixed2\tests\test_fc904_artifact_selection.py:379: AssertionError
+=========================== short test summary info ===========================
+FAILED fixed2/tests/test_fc904_artifact_selection.py::TestB3ProductionProvenance::test_module_under_test_is_the_bound_copy
+1 failed, 15 passed in 2.93s
+

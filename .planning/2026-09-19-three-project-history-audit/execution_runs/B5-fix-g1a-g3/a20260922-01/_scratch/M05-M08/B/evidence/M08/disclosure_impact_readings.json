@@ -1,0 +1,118 @@
+{
+ "card_id": "M08",
+ "label": "disclosure-impact of the project_backlog bridge under each reading of contract_changes",
+ "correction_from": "revision r1 used reading A only (implied 36.1210, gap 2.3610 / 6.99%)",
+ "correction_reason": "the two sign probes identify reading C as the implemented reading (contract_changes=+10 -> 85.0, contract_changes=-20 -> 55.0), so the disclosure-impact statement must be anchored to C, not to A",
+ "inputs_all_disclosed": {
+  "closing_backlog_yi": "85.77",
+  "closing_growth_vs_2022_year_end": "+12.75%",
+  "opening_backlog_derived_yi": "76.0710",
+  "opening_derivation": "85.77 / 1.1275",
+  "bookings_yi": "45.82",
+  "disclosed_service_revenue_yi": "33.76"
+ },
+ "reading_table_remeasurement_0": [
+  {
+   "reading": "A_card_arithmetic",
+   "contract_changes_assumption_yi": "0 (not disclosed)",
+   "remeasurement_assumption_yi": "0",
+   "remeasurement_provenance": "card_M08.md L42 arithmetic; backlog_remeasurements is NOT disclosed for FY2023, so 0 is the only disclosure-consistent value",
+   "implied_recognition_yi": "36.1210",
+   "disclosed_service_revenue_yi": "33.76",
+   "implied_minus_disclosed_yi": "2.3610",
+   "unexplained_residual_abs_yi": "2.3610",
+   "unexplained_residual_pct_of_disclosed": "6.99"
+  },
+  {
+   "reading": "B_card_symbols_over_signed_amounts",
+   "contract_changes_assumption_yi": "0 (not disclosed)",
+   "remeasurement_assumption_yi": "0",
+   "remeasurement_provenance": "card_M08.md L8 signed-units convention",
+   "implied_recognition_yi": "36.1210",
+   "disclosed_service_revenue_yi": "33.76",
+   "implied_minus_disclosed_yi": "2.3610",
+   "unexplained_residual_abs_yi": "2.3610",
+   "unexplained_residual_pct_of_disclosed": "6.99"
+  },
+  {
+   "reading": "C_upstream_and_implementation",
+   "contract_changes_assumption_yi": "0 (not disclosed)",
+   "remeasurement_assumption_yi": "0",
+   "remeasurement_provenance": "docs/buy_side_model_audit_2026-09-18.md:42 and scripts/model_registry.py:228; this is the reading the two sign probes identify as implemented",
+   "implied_recognition_yi": "36.1210",
+   "disclosed_service_revenue_yi": "33.76",
+   "implied_minus_disclosed_yi": "2.3610",
+   "unexplained_residual_abs_yi": "2.3610",
+   "unexplained_residual_pct_of_disclosed": "6.99"
+  }
+ ],
+ "reading_table_remeasurement_probe_minus15": [
+  {
+   "reading": "A_card_arithmetic",
+   "contract_changes_assumption_yi": "0 (not disclosed)",
+   "remeasurement_assumption_yi": "-15",
+   "remeasurement_provenance": "NOT a disclosure: the synthetic value from the card's own worked example, applied here only as a sensitivity probe",
+   "implied_recognition_yi": "21.1210",
+   "disclosed_service_revenue_yi": "33.76",
+   "implied_minus_disclosed_yi": "-12.6390",
+   "unexplained_residual_abs_yi": "12.6390",
+   "unexplained_residual_pct_of_disclosed": "37.44"
+  },
+  {
+   "reading": "B_card_symbols_over_signed_amounts",
+   "contract_changes_assumption_yi": "0 (not disclosed)",
+   "remeasurement_assumption_yi": "-15",
+   "remeasurement_provenance": "NOT a disclosure: the synthetic value from the card's own worked example, applied here only as a sensitivity probe",
+   "implied_recognition_yi": "21.1210",
+   "disclosed_service_revenue_yi": "33.76",
+   "implied_minus_disclosed_yi": "-12.6390",
+   "unexplained_residual_abs_yi": "12.6390",
+   "unexplained_residual_pct_of_disclosed": "37.44"
+  },
+  {
+   "reading": "C_upstream_and_implementation",
+   "contract_changes_assumption_yi": "0 (not disclosed)",
+   "remeasurement_assumption_yi": "-15",
+   "remeasurement_provenance": "NOT a disclosure: the synthetic value from the card's own worked example, applied here only as a sensitivity probe",
+   "implied_recognition_yi": "21.1210",
+   "disclosed_service_revenue_yi": "33.76",
+   "implied_minus_disclosed_yi": "-12.6390",
+   "unexplained_residual_abs_yi": "12.6390",
+   "unexplained_residual_pct_of_disclosed": "37.44"
+  }
+ ],
+ "why_all_three_readings_show_the_same_reconciliation_number": "On the FY2023 disclosure the two drivers that could separate the readings - cancellations and contract_changes - are NOT disclosed and therefore enter as 0; with both at 0 the sign convention has nothing to bite on, so A, B and C necessarily produce the same upper bound. The readings are separated only by quantity and sign of the two undisclosed drivers; the card's frozen synthetic input, where both are known, spreads them by 20 (A 50, C 50, B 70). This is reported rather than hidden: the collapse is a property of the DISCLOSURE GAP, not evidence that the sign question is moot.",
+ "synthetic_illustration_of_the_spread": {
+  "input": {
+   "opening_backlog": 100,
+   "bookings": 40,
+   "cancellations": 5,
+   "contract_changes": -10,
+   "backlog_remeasurements": -15,
+   "closing_backlog": 60
+  },
+  "A_card_arithmetic": "100 + 40 - 5 - 10 - 15 - 60 = 50",
+  "B_card_symbols_over_signed_amounts": "100 + 40 - 5 - (-10) + (-15) - 60 = 70",
+  "C_upstream_and_implementation": "100 + 40 - 5 + (-10) + (-15) - 60 = 50",
+  "reading_spread_on_the_card_input": 20
+ },
+ "anchored_conclusion": {
+  "anchored_to": "C_upstream_and_implementation",
+  "remeasurement_assumption": "0 (not disclosed for FY2023)",
+  "implied_recognition_yi": "36.1210",
+  "implied_minus_disclosed_yi": "2.3610",
+  "unexplained_residual_abs_yi": "2.3610",
+  "unexplained_residual_pct_of_disclosed": "6.99",
+  "sensitivity_probe_remeasurement_minus15": {
+   "implied_recognition_yi": "21.1210",
+   "implied_minus_disclosed_yi": "-12.6390",
+   "unexplained_residual_abs_yi": "12.6390",
+   "unexplained_residual_pct_of_disclosed": "37.44",
+   "provenance": "the -15 is the card's synthetic remeasurement, NOT a FY2023 disclosure"
+  },
+  "statement": "On the implemented reading C the bridge implies about 36.1 亿元 of recognition for FY2023 against 33.76 亿元 of disclosed service revenue, i.e. an unexplained residual of about 2.4 亿元 (about 7%). Because backlog_remeasurements is NOT disclosed for FY2023, the sensitivity is large: if a -15 亿元 remeasurement (the card's own synthetic value) were assumed, the implied recognition drops to about 21.1 亿元 and the residual grows to about 12.6 亿元 (about 37%). The residual therefore cannot be bounded by this disclosure at all, and cancelling/contract-change/remeasurement flows are all undisclosed, so it must NOT be recognised as revenue (card_M08.md L48).",
+  "why_r1_understated_the_range": "revision r1 reported only the favourable end (reading A, remeasurement 0: 2.3610 亿元 / 6.99%). The reviewer's probe shows the same implemented reading C gives 12.6390 亿元 / 37.44% once the unknown remeasurement is non-zero, so the honest report is the RANGE 2.36 - 12.64 亿元, not a single favourable number."
+ },
+ "not_an_accuracy_statement": true,
+ "reviewer": "PENDING_INDEPENDENT_REVIEW"
+}

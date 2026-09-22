@@ -1,0 +1,2244 @@
+"""Strict read-only source resolver for query-before-download reuse."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import UTC, date, datetime
+from enum import Enum
+from functools import lru_cache
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import stat
+from typing import Any
+
+from .policy import _effective_reusable
+from .scanner import R4_PROVENANCE_KEY
+from .service import SourceCatalog
+from .store import metadata_state
+
+
+def _verified_assertion_identity(
+    store: Any,
+    source_id: str,
+    content_sha256: str,
+    document_id: str,
+    *,
+    reader: str = "v1",
+    current_epoch: str | None = None,
+    active_cohorts: tuple[str, ...] = (),
+) -> dict[str, Any] | None:
+    """Try to resolve legacy identity via a verified assertion.
+
+    Phase 15.5: assertions are matched by source_id first; when the source
+    path cannot match (placeholder documents surface source_id as NULL), fall
+    back to the document_id path.  FC-202: reads honor the pinned
+    RuntimePolicySnapshot visibility contract.
+    """
+    try:
+        from .assertion_service import (
+            get_verified_assertion,
+            get_verified_assertion_by_document,
+        )
+
+        candidates = [
+            get_verified_assertion(
+                store,
+                source_id,
+                content_sha256,
+                reader=reader,
+                current_epoch=current_epoch,
+                active_cohorts=active_cohorts,
+            )
+        ]
+        if source_id != document_id:
+            candidates.append(
+                get_verified_assertion_by_document(
+                    store,
+                    document_id,
+                    content_sha256,
+                    reader=reader,
+                    current_epoch=current_epoch,
+                    active_cohorts=active_cohorts,
+                )
+            )
+        for a in candidates:
+            if a is None:
+                continue
+            return {
+                "market": a.get("market"),
+                "security_id": a.get("security_id"),
+                "fiscal_year": a.get("fiscal_year"),
+                "fiscal_period": a.get("fiscal_period"),
+                "document_kind": a.get("document_kind"),
+                "provider": a.get("provider"),
+                "provider_document_id": a.get("provider_document_id"),
+                "source_url": a.get("source_url"),
+                "filing_date": a.get("filing_date"),
+            }
+        return None
+    except ImportError:
+        return None
+
+
+# B07 - the read contract's version policy, stated where the contract lives.
+#
+#   * This interface accepts EXACTLY this version.  An unknown version is
+#     refused EXPLICITLY: there is no N-1 rule on either side (that is a
+#     cross-repo protocol item, deliberately outside phase B) and no silent
+#     downgrade or "best effort" parse.
+#   * Failures are expressed with the operation contract's five error values
+#     (not_found / not_indexed / unavailable / blocked / ambiguous) plus a
+#     reason - never with a new status, and never with a fabricated success.
+#   * This interface has NO directory-level fallback: when no qualified copy of
+#     the REQUESTED version exists, the answer is an explicit failure
+#     (missing / not_found).  It never substitutes another revision, and it never
+#     reads a copy outside the configured roots.
+#     ONE EXCEPTION, named here because it is a real gap in the sentence above
+#     (B-VR07-01): a VERIFIED copy is required for every non-preferred copy, but
+#     the preferred one may be served on the catalog's claim (owner decision S-10
+#     rule 2: "only when no copy passes verification may ONE row be served on the
+#     catalog's declaration").  So "no qualified copy -> explicit failure" holds
+#     for *another revision* and for *out-of-root* copies, but a
+#     claimed-but-drifted preferred copy is served with an
+#     `unverified_<status>_on_pre_b02_canonical` trace entry instead of failing -
+#     read this sentence with that exception, and use read_verified_bytes when
+#     verified bytes are required.
+#
+# The consumer-side adapter conversion and the removal of any consumer-side
+# `companies` fallback are NOT part of this repository's contract (design B07
+# scope table: they belong to phase C).
+SOURCE_RESOLVER_SCHEMA_VERSION = "1.0"
+_YEAR_RE = re.compile(r"(?<!\d)(19\d{2}|20\d{2}|21\d{2})(?!\d)")
+
+
+class SourceResolutionError(ValueError):
+    """Raised when a source request violates the resolver contract."""
+
+
+class ResolutionStatus(str, Enum):
+    """Resolution outcome for query-before-download reuse.
+
+    IDENTITY_CONFLICT means a document's metadata *contradicts* the request
+    identity (market or security_id present but different), or would be
+    reusable without verifiable identity — it blocks reuse and download.  A
+    document that merely *lacks* identity metadata (missing_fail_closed, no
+    verified assertion) and has no canonical file (placeholder) is NOT a
+    conflict (Phase 15.3): it falls through the year/form/handle checks and
+    resolves MISSING, which permits a download.
+    """
+
+    REUSED_EXACT = "reused_exact"
+    REUSED_EQUIVALENT = "reused_equivalent"
+    AMBIGUOUS = "ambiguous"
+    MISSING = "missing"
+    IDENTITY_CONFLICT = "identity_conflict"
+
+
+def _required_text(value: Any, name: str) -> str:
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise SourceResolutionError(f"{name} must be non-empty trimmed text")
+    return value
+
+
+def _optional_text(value: Any, name: str) -> str | None:
+    if value is None:
+        return None
+    return _required_text(value, name)
+
+
+def _canonical_date(value: Any, name: str) -> str:
+    value = _required_text(value, name)
+    try:
+        parsed = date.fromisoformat(value)
+    except ValueError as exc:
+        raise SourceResolutionError(f"{name} must be a valid YYYY-MM-DD") from exc
+    if parsed.isoformat() != value:
+        raise SourceResolutionError(f"{name} must be canonical YYYY-MM-DD")
+    return value
+
+
+def _json_hash(value: dict[str, Any]) -> str:
+    payload = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+# --- B02 segment 3: bounded, no-network candidate verification --------------
+#
+# Status model (unchanged, five values - see the note in _select_candidate for
+# the exact reuse rule): nothing below invents a sixth state.  A candidate
+# whose bytes cannot be verified is either the REQUESTED version's preferred
+# copy (served on the catalog's claim, exactly as before B02, with the reason
+# recorded) or it is not served at all — a non-preferred copy is served only
+# when its bytes really are the requested version.
+_CANDIDATE_BYTES_CAP = 256 * 1024 * 1024
+_REQUEST_MAX_CANDIDATES = 64
+_REQUEST_MAX_BYTES = 2 * 1024 * 1024 * 1024
+# Windows cloud placeholders: FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS (0x400000),
+# FILE_ATTRIBUTE_RECALL_ON_OPEN (0x40000) and FILE_ATTRIBUTE_OFFLINE (0x1000).
+# Opening such a file downloads it; the query path must not trigger that.
+_HYDRATION_ATTRIBUTES = 0x400000 | 0x40000 | 0x1000
+
+
+def _sha256_of_file(path: Path) -> str:
+    """Stream EVERY byte of the candidate: a sampled digest can only ever
+    exclude a candidate, never prove `content_sha256` equality (B-DR3-03)."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _needs_hydration(stat_result: os.stat_result) -> bool:
+    """True for a cloud placeholder whose bytes are not local (a synced vendor
+    root that materialises files on access).  `stat` reports this without
+    reading data, so the resolver can refuse the candidate BEFORE any network
+    I/O happens — root ids stay configuration, never code (FC-1201)."""
+    attributes = getattr(stat_result, "st_file_attributes", 0)
+    return bool(attributes & _HYDRATION_ATTRIBUTES)
+
+
+@dataclass
+class _ReadBudget:
+    """Per-request read budget (L06/L12): finite resource ceiling plus
+    cancellation, with the counters kept as evidence.  One instance serves
+    exactly one ``resolve`` call."""
+
+    max_candidates: int = _REQUEST_MAX_CANDIDATES
+    max_bytes: int = _REQUEST_MAX_BYTES
+    candidates: int = 0
+    bytes_read: int = 0
+    cancelled: bool = False
+
+    def cancel(self) -> None:
+        """Caller-side cancellation: no further candidate byte is read."""
+        self.cancelled = True
+
+    def begin_request(self) -> None:
+        """Start a request on this budget.
+
+        The ceilings are PER REQUEST (design B02 rule 3), so the counters
+        restart here: a caller that injects one budget (or resolves twice on
+        one resolver) must not silently lose verification for the second
+        request.  Cancellation is sticky — it is explicit caller intent.
+        """
+        self.candidates = 0
+        self.bytes_read = 0
+
+    def take_candidate(self) -> str:
+        if self.cancelled:
+            return "cancelled"
+        if self.candidates >= self.max_candidates:
+            return "budget_exceeded"
+        self.candidates += 1
+        return ""
+
+    def charge(self, size: int) -> str:
+        if self.cancelled:
+            return "cancelled"
+        if self.bytes_read + size > self.max_bytes:
+            return "budget_exceeded"
+        self.bytes_read += size
+        return ""
+
+
+def _local_copy_probe(location: dict[str, Any]) -> tuple[str, str, int]:
+    """Cheap eligibility probe for one candidate: ``stat`` only, never a byte
+    is read (so it can neither hydrate a cloud placeholder nor meet the read
+    budget).  Returns ``("", "", size)`` for a locally readable regular file,
+    else ``(reason, detail, 0)``."""
+    path = Path(str(location["absolute_path"]))
+    try:
+        stat_result = path.stat()
+    except OSError as exc:
+        return "not_readable", exc.__class__.__name__, 0
+    if not stat.S_ISREG(stat_result.st_mode):
+        return "not_regular_file", "", 0
+    if _needs_hydration(stat_result):
+        # Bytes are not local: opening it downloads them, and segment 3
+        # forbids network I/O in the query path.
+        return "hydration_required", "", 0
+    return "", "", int(stat_result.st_size)
+
+
+def _verify_candidate(
+    location: dict[str, Any],
+    *,
+    expected_sha256: str,
+    size: int,
+    budget: _ReadBudget,
+) -> tuple[str, str]:
+    """B02 segment 3 — verify the candidate's LOCAL bytes against the
+    requested version.
+
+    Returns ``("", digest)`` when the bytes ARE the requested version, else
+    ``(reason, detail)``.  Cheap checks first (they may only exclude); the
+    qualifying decision is always a full-file digest, and sampling is never
+    used to claim equality.
+    """
+    stop = budget.take_candidate()
+    if stop:
+        return stop, ""
+    if size > _CANDIDATE_BYTES_CAP:
+        return "exceeds_candidate_cap", str(size)
+    stop = budget.charge(size)
+    if stop:
+        return stop, str(size)
+    try:
+        digest = _sha256_of_file(Path(str(location["absolute_path"])))
+    except OSError as exc:
+        return "read_failed", exc.__class__.__name__
+    if not expected_sha256 or digest != expected_sha256:
+        return "content_sha256_mismatch", digest[:12]
+    # Evidence for the consumer: this is the digest the bytes were verified
+    # against (read-path annotation only — never persisted).
+    location["verified_sha256"] = digest
+    return "", digest
+
+
+# B03 (stable read bytes) — landing point for the byte-level hard gate that
+# decision S-10 deferred to the read path: "serve the verified version's bytes
+# or fail explicitly".  The error values below are the five-value model of the
+# operation contract (A03 section 2.4: not_found / not_indexed / unavailable /
+# blocked / ambiguous).  Nothing new is invented here: retryability, budget and
+# cancellation are NOT states, so a resource stop reports `unavailable` with
+# its own reason instead of a sixth value.
+B03_ERROR_NOT_FOUND = "not_found"
+B03_ERROR_UNAVAILABLE = "unavailable"
+
+# The success value, named like the error values it sits next to (B-VR03-08:
+# a bare "verified" literal left consumers switching on this status with nothing
+# to match against).
+B03_BYTES_VERIFIED = "verified"
+# The refusal of a caller-supplied ``expected_content_sha256`` that contradicts
+# the handle's own version (B-VR03-01), and of a handle stamped with a version
+# this entry point does not implement (B-VR07-02).
+B03_REASON_EXPECTED_VERSION_MISMATCH = "expected_version_mismatch"
+B03_REASON_UNSUPPORTED_VERSION = "unsupported_version"
+
+# Which object the returned bytes came from.  Only "handle" is reachable today:
+# the design's middle tier reads an EXISTING controlled snapshot of the source
+# bytes, and this repository has no such object (every `snapshot` in it is a
+# runtime-policy / quality / page / DB-row snapshot).  Creating one is a write
+# path and is explicitly out of scope, so the tier is registered in the run
+# directory rather than faked here.
+B03_BYTES_SOURCE_HANDLE = "handle"
+B03_BYTES_SOURCE_SNAPSHOT = "snapshot"
+# Named sentinel for "no bytes were produced, so there is no source to name"
+# (B-VR03-08: the refusal path used a bare "" literal).
+B03_BYTES_SOURCE_NONE = ""
+
+_BYTE_READ_CHUNK = 1024 * 1024
+
+
+@dataclass(frozen=True)
+class ByteReadResult:
+    """B03 — the bytes of ONE requested version, or an explicit failure.
+
+    When ``ok`` is true, ``data`` is byte-for-byte the buffer the digest in
+    ``content_sha256`` was computed over: the file is read ONCE, the digest is
+    taken over that same buffer, and only then is the buffer returned.  That is
+    what a "verify the path, then let the caller open it again" design cannot
+    promise — on Windows a shared-mode open only arbitrates at open time, and an
+    existing writer handle is unaffected by a later read-only open (B-DR-07).
+    """
+
+    document_id: str
+    content_sha256: str
+    status: str
+    reason: str
+    detail: str
+    data: bytes | None
+    byte_size: int
+    bytes_source: str
+    read_at: str
+
+    @property
+    def ok(self) -> bool:
+        return self.data is not None
+
+
+def _owning_root(path: Path, roots: tuple[Any, ...]) -> Any | None:
+    """The configured root that CONTAINS ``path``, longest match winning.
+
+    Used as the FALLBACK when the handle's location row is no longer readable: the byte entry
+    point receives a HANDLE (a path plus a digest), not always a live location row, so the
+    owning root has to be derivable from the path with the same containment helper the rest of
+    the read path uses (``_inside_configured_roots``), longest configured base winning so a
+    nested root is attributed to the more specific one.
+    """
+    candidates = [root for root in roots if _inside_configured_roots(path, (root,))]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda root: len(str(getattr(root, "path", "") or "")))
+
+
+def _handle_owning_root(handle: Any, path: Path, roots: tuple[Any, ...],
+                        reader: Any | None = None) -> Any | None:
+    """The root that owns the handle's LOCATION ROW, falling back to the path.
+
+    B.VR-ba1 F-BA1-03 (P2) measured that the first version of the F-BAR-11 gate keyed on the
+    PATH-owning root while the decision path keys on the location's ``root_id``: with NESTED
+    roots holding the same file, the two disagreed and a handle the decision path elects was
+    refused ``policy_denied`` - while the code comment claimed they "can never disagree".
+
+    The authoritative key is therefore the same one the decision path uses: the root_id
+    recorded on the location the handle names.  The path is only a fallback for the case where
+    that row is gone (a handle can outlive its row); if neither resolves, the caller refuses.
+    """
+    location_id = str(getattr(handle, "canonical_location_id", "") or "")
+    if location_id and reader is not None:
+        row = reader.fetchone(
+            "SELECT root_id FROM locations WHERE location_id=?", (location_id,)
+        )
+        if row is not None:
+            root_id = str(row["root_id"])
+            for root in roots:
+                if root.root_id == root_id:
+                    return root
+    return _owning_root(path, roots)
+
+
+def _inside_configured_roots(path: Path, roots: tuple[Any, ...]) -> bool:
+    """B03/L05 — a locator may not lead the read path out of the configured
+    roots.  Compared on REAL paths (so a symlink or a junction that points
+    outside its root is refused before any byte is read) and case-insensitively
+    on Windows.
+
+    Containment uses ``commonpath``, not string prefixing: with a root
+    configured as a drive root, prefixing compares against ``"C:\\\\"`` and
+    refuses every file on that drive.  Hardlinks are NOT distinguished (the path
+    is inside the root and the bytes are still verified against the requested
+    digest) - recorded as a boundary rather than papered over.
+    """
+    target = os.path.normcase(os.path.normpath(os.path.realpath(path)))
+    for root in roots:
+        root_path = getattr(root, "path", None)
+        if not root_path:
+            continue
+        base = os.path.normcase(os.path.normpath(os.path.realpath(root_path)))
+        if target == base:
+            return True
+        try:
+            if os.path.commonpath([target, base]) == base:
+                return True
+        except ValueError:
+            continue  # different drives (or mixed absolute/relative): not inside
+    return False
+
+
+def _read_verified_bytes(
+    path: Path,
+    *,
+    expected_sha256: str,
+    budget: _ReadBudget | None,
+) -> tuple[bytes | None, str, str, str]:
+    """B03 rules R1-R4/R6: read the file ONCE and digest exactly what is
+    returned.
+
+    Returns ``(data, "", "", digest)`` on success, else
+    ``(None, status, reason, detail)``.  Every refusal happens BEFORE any byte
+    is handed out, and none of them is a status value of its own (see the error
+    model note above).
+    """
+    if budget is not None and budget.cancelled:
+        return None, B03_ERROR_UNAVAILABLE, "cancelled", ""
+    try:
+        before = path.stat()
+    except OSError as exc:
+        return None, B03_ERROR_UNAVAILABLE, "read_failed", exc.__class__.__name__
+    if not stat.S_ISREG(before.st_mode):
+        return None, B03_ERROR_UNAVAILABLE, "not_regular_file", ""
+    if _needs_hydration(before):
+        # Bytes are not local: opening it downloads them.  Refuse WITHOUT
+        # reading, exactly as the resolver's eligibility probe does.
+        return None, B03_ERROR_UNAVAILABLE, "placeholder_not_hydrated", ""
+    size = int(before.st_size)
+    if size > _CANDIDATE_BYTES_CAP:
+        return None, B03_ERROR_UNAVAILABLE, "exceeds_candidate_cap", str(size)
+    if budget is not None:
+        stop = budget.take_candidate() or budget.charge(size)
+        if stop:
+            return None, B03_ERROR_UNAVAILABLE, stop, str(size)
+    digest = hashlib.sha256()
+    chunks: list[bytes] = []
+    read = 0
+    try:
+        with path.open("rb") as handle:
+            while True:
+                if budget is not None and budget.cancelled:
+                    # Cancellation is sticky caller intent: never answer, even
+                    # with bytes that are already in hand.
+                    return None, B03_ERROR_UNAVAILABLE, "cancelled", str(read)
+                chunk = handle.read(_BYTE_READ_CHUNK)
+                if not chunk:
+                    break
+                digest.update(chunk)
+                chunks.append(chunk)
+                read += len(chunk)
+                if read > _CANDIDATE_BYTES_CAP:
+                    # Grew past the ceiling while reading: stop and refuse.
+                    return None, B03_ERROR_UNAVAILABLE, "exceeds_candidate_cap", str(read)
+    except OSError as exc:
+        return None, B03_ERROR_UNAVAILABLE, "read_failed", exc.__class__.__name__
+    if budget is not None and budget.cancelled:
+        # TAIL GUARD (B-VR03-04): the in-loop check runs BEFORE each read, so a
+        # cancellation that lands inside the read that ends the loop - the one
+        # returning b"" - was never seen and the bytes were handed over anyway.
+        # `_select_candidate` has the equivalent guard; this mirrors it.
+        return None, B03_ERROR_UNAVAILABLE, "cancelled", str(read)
+    try:
+        after = path.stat()
+    except OSError as exc:
+        return None, B03_ERROR_UNAVAILABLE, "read_failed", exc.__class__.__name__
+    if int(after.st_size) != size or int(after.st_mtime_ns) != int(before.st_mtime_ns):
+        # The file moved under the reader.  This re-check is NOT the integrity
+        # mechanism - it can be defeated (restoring mtime with os.utime was
+        # measured by the reviewer), and whenever it fires the digest comparison
+        # below would have refused the buffer anyway.  Its job is to label the
+        # refusal precisely ("the file changed while it was being read") instead
+        # of reporting a generic mismatch.  Integrity rests on the digest of the
+        # buffer that is returned (B-VR03-06).
+        return None, B03_ERROR_UNAVAILABLE, "changed_during_read", str(read)
+    computed = digest.hexdigest()
+    if not expected_sha256 or computed != expected_sha256:
+        # "Another revision" is not this version: no handle, no bytes.
+        return None, B03_ERROR_UNAVAILABLE, "content_sha256_mismatch", computed[:12]
+    return b"".join(chunks), "", "", computed
+
+
+def _is_rejections_path(relative_path: Any) -> bool:
+    """Provider-rejected paths are matched as a path SEGMENT (the adapters'
+    convention), so an unrelated name such as ``my.rejections_backup`` is not
+    treated as a rejection (B-VR02-07)."""
+    return ".rejections" in str(relative_path).replace("\\", "/").split("/")
+
+
+def _candidate_reason(location: dict[str, Any]) -> str:
+    """Name the copy AND its source group: a bare rank is ambiguous when a
+    document carries more than one source entry (B-VR02-05)."""
+    source = str(location.get("source_id") or "")
+    return f"verified_candidate_rank_{location['candidate_rank']}:{source.rsplit(':', 1)[-1][:12]}"
+
+
+@dataclass(frozen=True)
+class SourceRequest:
+    entity: str
+    document_kind: str
+    as_of_date: str
+    market: str | None = None
+    security_id: str | None = None
+    form_type: str | None = None
+    fiscal_year: int | None = None
+    fiscal_period: str | None = None
+    language: str | None = None
+    provider: str | None = None
+    provider_document_id: str | None = None
+    # WU-4.1: "exact" (default) requires fiscal_year semantics; "latest_as_of"
+    # derives the latest period from as_of_date + document_kind. Legacy callers
+    # omitting mode keep exact-any-year behavior.
+    mode: str | None = None
+    allow_download: bool = False
+    schema_version: str = SOURCE_RESOLVER_SCHEMA_VERSION
+
+    def __post_init__(self) -> None:
+        if self.schema_version != SOURCE_RESOLVER_SCHEMA_VERSION:
+            raise SourceResolutionError(
+                f"schema_version must be {SOURCE_RESOLVER_SCHEMA_VERSION}"
+            )
+        object.__setattr__(self, "entity", _required_text(self.entity, "entity"))
+        object.__setattr__(
+            self,
+            "document_kind",
+            _required_text(self.document_kind, "document_kind").lower(),
+        )
+        object.__setattr__(
+            self, "as_of_date", _canonical_date(self.as_of_date, "as_of_date")
+        )
+        market = _optional_text(self.market, "market")
+        provider = _optional_text(self.provider, "provider")
+        object.__setattr__(self, "market", market.upper() if market else None)
+        object.__setattr__(
+            self,
+            "security_id",
+            _optional_text(self.security_id, "security_id"),
+        )
+        object.__setattr__(self, "provider", provider.lower() if provider else None)
+        object.__setattr__(
+            self, "form_type", _optional_text(self.form_type, "form_type")
+        )
+        object.__setattr__(
+            self, "fiscal_period", _optional_text(self.fiscal_period, "fiscal_period")
+        )
+        object.__setattr__(self, "language", _optional_text(self.language, "language"))
+        object.__setattr__(
+            self,
+            "provider_document_id",
+            _optional_text(self.provider_document_id, "provider_document_id"),
+        )
+        if self.fiscal_year is not None:
+            if isinstance(self.fiscal_year, bool) or not isinstance(
+                self.fiscal_year, int
+            ):
+                raise SourceResolutionError("fiscal_year must be an integer or null")
+            if self.fiscal_year < 1900 or self.fiscal_year > 2200:
+                raise SourceResolutionError(
+                    "fiscal_year is outside the supported range"
+                )
+        if not isinstance(self.allow_download, bool):
+            raise SourceResolutionError("allow_download must be boolean")
+        mode = self.mode
+        if mode is not None:
+            mode = str(mode).strip().lower()
+            if mode not in {"exact", "latest_as_of"}:
+                raise SourceResolutionError(
+                    f"mode must be 'exact' or 'latest_as_of': {self.mode!r}"
+                )
+            object.__setattr__(self, "mode", mode)
+
+    def identity_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "entity": self.entity,
+            "market": self.market,
+            "security_id": self.security_id,
+            "document_kind": self.document_kind,
+            "form_type": self.form_type,
+            "fiscal_year": self.fiscal_year,
+            "fiscal_period": self.fiscal_period,
+            "language": self.language,
+            "provider": self.provider,
+            "provider_document_id": self.provider_document_id,
+            "as_of_date": self.as_of_date,
+            "mode": self.mode,
+        }
+
+    @property
+    def request_id(self) -> str:
+        return "urn:company-wiki:source-request:sha256:" + _json_hash(
+            self.identity_dict()
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {**self.identity_dict(), "allow_download": self.allow_download}
+
+
+@dataclass(frozen=True)
+class SourceHandle:
+    schema_version: str
+    document_id: str
+    source_id: str
+    entity_ids: tuple[str, ...]
+    title: str
+    source_type: str
+    document_kind: str
+    published_date: str
+    fiscal_year: int | None
+    fiscal_period: str | None
+    form_type: str | None
+    language: str | None
+    provider: str | None
+    provider_document_id: str | None
+    https_url: str | None
+    canonical_location_id: str
+    canonical_path: str
+    content_sha256: str
+    snapshot_sha256: str
+    mime_type: str
+    byte_size: int
+    retrieved_at: str
+    collector_name: str
+    collector_version: str
+    source_status: str
+    duplicate_group_id: str
+    exact_duplicate_location_count: int
+    capture_ready: bool
+    missing_capture_fields: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            **self.__dict__,
+            "entity_ids": list(self.entity_ids),
+            "missing_capture_fields": list(self.missing_capture_fields),
+        }
+
+
+@dataclass(frozen=True)
+class _Selection:
+    """B02: which candidate was selected, and why (the fall-through across
+    equivalent copies must never be a silent substitution).
+
+    ``handle`` is None when no qualified candidate could be verified; the
+    caller keeps its existing placeholder semantics, and ``reason`` plus the
+    per-candidate ``tried`` diagnostics stay in the debug trace.
+    """
+
+    handle: SourceHandle | None
+    reason: str
+    tried: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class ResolutionResult:
+    schema_version: str
+    request_id: str
+    status: ResolutionStatus
+    reason: str
+    download_required: bool
+    download_allowed: bool
+    matches: tuple[SourceHandle, ...]
+    # Phase 19.6: per-candidate exclusion reasons for diagnostics (empty when
+    # no candidate passed the entity gate and none were rejected).
+    debug_trace: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = {
+            "schema_version": self.schema_version,
+            "request_id": self.request_id,
+            "status": self.status.value,
+            "reason": self.reason,
+            "download_required": self.download_required,
+            "download_allowed": self.download_allowed,
+            "matches": [item.to_dict() for item in self.matches],
+        }
+        if self.debug_trace:
+            payload["debug_trace"] = list(self.debug_trace)
+        return payload
+
+
+def resolver_visibility(
+    snapshot: dict[str, Any],
+) -> tuple[str, str | None, tuple[str, ...], bool]:
+    """Derive (reader, current_epoch, active_cohorts, legacy_bridge_allowed)
+    from a RuntimePolicySnapshot (FC-201).  flag=false -> v1 reader, so
+    active rows are never visible (CTRL-01)."""
+    flags = snapshot.get("flags", {})
+    reader = "v2" if flags.get("v2_resolve_active") else "v1"
+    cohorts = tuple(snapshot.get("active_cohorts") or ())
+    bridge = bool(flags.get("legacy_bridge_enabled"))
+    return reader, snapshot.get("current_epoch"), cohorts, bridge
+
+
+# --- FC-704: ResolutionEnvelope + AcquisitionTrace -----------------------------
+
+RESOLUTION_ENVELOPE_SCHEMA_VERSION = "1.0"
+
+# Journal outcomes that actually fetched bytes: a download happened.
+_ENVELOPE_DOWNLOAD_OUTCOMES = frozenset(
+    {"downloaded_new", "deduplicated_after_download"}
+)
+
+# Normalize journal outcomes to the envelope taxonomy (FC-704).
+_ENVELOPE_OUTCOME_BY_JOURNAL = {
+    "reused_before_download": "reused_existing",
+    "reused_after_discovery": "reused_after_discovery",
+    "downloaded_new": "downloaded_new",
+    "deduplicated_after_download": "downloaded_new",
+    "missing": "missing",
+    "ambiguous": "ambiguous",
+    "failed": "failed",
+    "gap_plan": "gap",
+    "gap_plan_provider_unavailable": "gap",
+}
+
+# Read-only resolve performs no acquisition: the outcome is structural.
+_STRUCTURAL_OUTCOME = {
+    ResolutionStatus.REUSED_EXACT: "reused_existing",
+    ResolutionStatus.REUSED_EQUIVALENT: "reused_existing",
+    ResolutionStatus.AMBIGUOUS: "ambiguous",
+    ResolutionStatus.MISSING: "missing",
+    ResolutionStatus.IDENTITY_CONFLICT: "rejected",
+}
+
+
+# B06 (design section B06): the qualification label separates "locally readable"
+# from "a formally captured filing".  It is an ADDITIVE envelope field - the
+# consumer's validator (filing-fetch/filing_contracts.validate_resolution_envelope)
+# tolerates unknown keys and keeps envelope_schema_version "1.0".  It is also
+# where the response-level `blocked` lives: that validator's own `outcome`
+# taxonomy has no `blocked` value, so expressing it there would be an
+# upstream_error for the consumer (decision S-13 assigns this verdict here).
+QUALIFICATION_VERIFIED_INPUT = "verified_input"
+QUALIFICATION_PREVIEW = "preview"
+QUALIFICATION_BLOCKED = "blocked"
+
+# The handle's ``missing_capture_fields`` -> the qualification gap codes.  These
+# are qualification labels, NOT FC-1301 reason codes: that taxonomy gate scans
+# ``reason="..."`` literals, and this mapping is deliberately not one, so no
+# registry edit (outside this step's file scope) is needed.
+_GAP_BY_MISSING_FIELD = {
+    "https_url": "url_missing",
+    "published_date": "period_missing",
+    "snapshot_sha256": "source_missing",
+    "capture_trace": "capture_log_missing",
+}
+# A gap that makes the FORMAL contract blocked rather than merely preview.
+# "preview" is defined for a locally readable copy whose PROVENANCE has gaps -
+# it still carries a local bytes hash - so a missing identity, period or
+# source/bytes identity is blocking instead.
+_QUALIFICATION_BLOCKING_GAPS = ("identity_missing", "period_missing", "source_missing")
+
+
+def _qualification_gaps(handle: Any) -> list[str]:
+    """B06: which facts a FORMAL capture is missing, in a stable order.
+
+    Identity comes from the handle's entity ids.  The PERIOD is known only from a
+    period fact - ``fiscal_year`` or ``fiscal_period`` (B-VR06-01): a
+    ``published_date`` says when the filing was published, NOT which period it
+    covers, so a handle carrying only a filing date is period-unknown.  That
+    state is reachable through the real pipeline (``latest_as_of`` may serve a
+    document whose source carries no fiscal year, measured), so the gap code is
+    not vacuous.  The remaining gaps come from the handle's own
+    ``missing_capture_fields`` (url / capture trace / source id and bytes hash).
+    """
+    gaps: list[str] = []
+    missing = [_GAP_BY_MISSING_FIELD.get(str(name), "") for name in
+               tuple(getattr(handle, "missing_capture_fields", ()) or ())]
+    if not tuple(getattr(handle, "entity_ids", ()) or ()):
+        gaps.append("identity_missing")
+    if (
+        getattr(handle, "fiscal_year", None) is None
+        and not str(getattr(handle, "fiscal_period", "") or "").strip()
+        and "period_missing" not in missing
+    ):
+        gaps.append("period_missing")
+    for code in missing:
+        if code and code not in gaps:
+            gaps.append(code)
+    return gaps
+
+
+def _qualification_label(gaps: list[str], conflict_reason: str) -> tuple[str, str]:
+    """B06: label + human-readable reason for one served handle.
+
+    ``conflict_reason`` carries the B05 field-level conflict fact (S-13: a real
+    metadata conflict is a response-level ``blocked``, not a second opinion).
+    """
+    if conflict_reason:
+        return QUALIFICATION_BLOCKED, conflict_reason
+    if any(gap in _QUALIFICATION_BLOCKING_GAPS for gap in gaps):
+        return QUALIFICATION_BLOCKED, "identity or period is unknown: " + ", ".join(gaps)
+    if gaps:
+        return QUALIFICATION_PREVIEW, "locally readable; provenance gaps: " + ", ".join(gaps)
+    return QUALIFICATION_VERIFIED_INPUT, ""
+
+
+def _metadata_conflict_reason(store: Any, document_id: str) -> str:
+    """B06 + S-13: does the document carry a field-level conflict?
+
+    Reads B05's reserved provenance key from the shared ``metadata_json`` column
+    (read-only) and returns a reason when any field recorded a conflict - the
+    same fact the read side reports as ``metadata_status="blocked"``.
+
+    The shared column is written by several modules, so its shape is not this
+    function's to assume.  MALFORMED content is a reason, not silence
+    (b05-read-side-malformed-columns, B-VR06-02's second half): this function used to
+    answer "no conflict evidence" for unparseable JSON, a non-object payload or a
+    non-object ``fields``, which made the envelope label the document
+    ``verified_input`` while the read side raised on the very same row - the two sides
+    disagreed and this side was the fail-open one.  Both now say blocked.
+    """
+    if store is None or not document_id:
+        return ""
+    row = store.fetchone(
+        "SELECT metadata_json FROM documents WHERE document_id=?", (document_id,)
+    )
+    if row is None:
+        return ""
+    # B10-3: the parse is the single chain's reporting half (store.metadata_state), which
+    # keeps the two named states this caller reports.
+    payload, state = metadata_state(row["metadata_json"])
+    if state == "unreadable":
+        # B-VR05M-02 history: RecursionError is a RuntimeError and escaped the first
+        # version of this guard, so a deeply nested payload raised out of the envelope
+        # builder.  The chain's catch set is narrower than the old bare ValueError - the
+        # delta is documented at service._read_shared_metadata (B-VR-B10-07) and is
+        # unreachable for sqlite TEXT.
+        return "shared metadata column is not readable JSON"
+    if state == "not_object":
+        return "shared metadata column is not a JSON object"
+    reserved = payload.get(R4_PROVENANCE_KEY)
+    if reserved is None:
+        return ""
+    if not isinstance(reserved, dict):
+        return "reserved provenance key is not an object"
+    fields = reserved.get("fields")
+    if fields is None:
+        return ""
+    if not isinstance(fields, dict):
+        return "reserved provenance fields are not an object"
+    conflicted = sorted(
+        str(name)
+        for name, record in fields.items()
+        if isinstance(record, dict) and record.get("conflicts")
+    )
+    if not conflicted:
+        return ""
+    return "field conflict recorded for: " + ", ".join(conflicted)
+
+
+@dataclass(frozen=True)
+class ResolutionEnvelope:
+    """FC-704 + FC-902 + FC-905-a: handle + policy/epoch + journal-reconciled outcome
+    + snapshot-consistent SourceBundle.
+
+    The download evidence (``download_events``) comes from the acquisition
+    journal, never inferred from whether a handle was returned
+    (scenario_matrix §2).  ``bundle_status`` is "available" ONLY when a real
+    snapshot-consistent bundle dict was provided; otherwise it stays
+    "unavailable" — never a faked empty-green (FC-902 fail-closed).
+
+    ZR-404 (additive): the envelope also carries the request-pinned
+    policy/epoch/cohort consistency evidence, the per-candidate exclusion
+    trace, the canonical-location rationale (path-redacted) and the source
+    content hash.  All new fields are optional with honest defaults so
+    pre-ZR-404 consumers (filing validate_resolution_envelope N/N-1) keep
+    working; envelope_schema_version stays "1.0" (additive contract).
+    """
+
+    envelope_schema_version: str
+    outcome: str
+    download_events: int
+    policy_hash: str | None
+    activation_epoch: str | None
+    bundle_status: str
+    bundle_hash: str | None = None
+    bundle: dict[str, Any] | None = None
+    # FC-905-a: trusted capture/safety evidence — from the review receipt and
+    # the producer_events journal, never fabricated by consumers.
+    prompt_injection_status: str = "not_reviewed"
+    parser_calls: int | None = None
+    llm_calls: int | None = None
+    # ZR-404: candidate exclusion trace (why candidates were not reused),
+    # canonical-location rationale (winner + redacted path + rule), the
+    # policy-snapshot cohorts, and the matched source content hash.
+    candidate_exclusion_trace: tuple[str, ...] = ()
+    canonical_location_rationale: dict[str, Any] | None = None
+    cohorts: tuple[str, ...] | None = None
+    source_sha256: str | None = None
+    # B06: "locally readable" vs "formally captured" qualification, plus the
+    # gaps behind it.  None when there is no served handle to qualify (an
+    # MISSING/rejected answer has nothing to label) - honest default, additive.
+    qualification: dict[str, Any] | None = None
+    # F-BAR-12 fix (owner instruction 2026-09-18): `bundle_status` answers "was a real,
+    # snapshot-consistent bundle provided" - and a measured production case had it read as
+    # "the artifacts are usable" while `bundle.valid_handles` was EMPTY (every derived
+    # artifact invalid: `normalized` not completed, `summary` missing its source sha).
+    # These three fields state the artifact side explicitly instead of leaving a consumer to
+    # reach into the bundle, and they are ADDITIVE (envelope_schema_version stays "1.0", so
+    # an N-1 consumer that only knows bundle_status keeps working).
+    bundle_valid_handle_count: int = 0
+    bundle_invalid_roles: tuple[str, ...] = ()
+    bundle_usable: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "envelope_schema_version": self.envelope_schema_version,
+            "outcome": self.outcome,
+            "download_events": self.download_events,
+            "policy_hash": self.policy_hash,
+            "activation_epoch": self.activation_epoch,
+            "bundle_status": self.bundle_status,
+            "bundle_hash": self.bundle_hash,
+            "bundle": self.bundle,
+            "bundle_valid_handle_count": self.bundle_valid_handle_count,
+            "bundle_invalid_roles": list(self.bundle_invalid_roles),
+            "bundle_usable": self.bundle_usable,
+            "prompt_injection_status": self.prompt_injection_status,
+            "parser_calls": self.parser_calls,
+            "llm_calls": self.llm_calls,
+            "candidate_exclusion_trace": list(self.candidate_exclusion_trace),
+            "canonical_location_rationale": self.canonical_location_rationale,
+            "cohorts": list(self.cohorts) if self.cohorts is not None else None,
+            "source_sha256": self.source_sha256,
+            "qualification": self.qualification,
+        }
+
+
+def build_resolution_envelope(
+    resolution: ResolutionResult,
+    *,
+    policy_snapshot: dict[str, Any] | None = None,
+    journal: Any | None = None,
+    bundle: dict[str, Any] | None = None,
+    store: Any | None = None,
+    project_root: Path | None = None,
+) -> ResolutionEnvelope:
+    """FC-704 + FC-902 + FC-905-a: reconcile the resolution against the
+    acquisition journal, attach a snapshot-consistent SourceBundle when
+    available, and carry trusted capture/safety evidence.
+
+    Journal entry for ``request_id`` wins (the real outcome, e.g.
+    downloaded_new after an ensure); without an entry the outcome is
+    structural (read-only resolve never downloads).  Reads the journal
+    only — resolve stays zero-write.
+
+    ``bundle`` (a SourceBundle to_dict, FC-902): when a dict with a
+    bundle_hash is supplied the envelope reports ``bundle_status=available``
+    and carries the bundle + hash.  None keeps the honest FC-704
+    ``unavailable``.  A malformed bundle (no bundle_hash) raises — fail
+    closed, never a faked green.
+
+    ``store`` (FC-905-a, CatalogStore-compatible, read-only): when provided,
+    ``prompt_injection_status`` comes from the document's review receipt
+    (absent receipt -> explicit ``not_reviewed``) and ``parser_calls``/
+    ``llm_calls`` come from the producer_events journal.  Without a store
+    those stay ``not_reviewed`` / None — absent evidence is never fabricated.
+
+    ZR-404 (additive): ``policy_snapshot`` is validated fail-closed (dict
+    with a 64-hex ``policy_hash``, text ``current_epoch``, list/tuple-of-str
+    ``active_cohorts`` when present) and its cohorts ride the envelope;
+    ``candidate_exclusion_trace`` comes from the resolution's debug trace;
+    ``canonical_location_rationale`` records the winning canonical
+    location with a path-redacted copy (``project_root`` is replaced by
+    ``${PROJECT_ROOT}``, ``USERPROFILE`` by ``${USER_PROFILE}``);
+    ``source_sha256`` is the matched handle's content hash.  All additive —
+    pre-ZR-404 consumers keep working on the old keys.
+    """
+    if not isinstance(resolution, ResolutionResult):
+        raise TypeError("resolution must be a ResolutionResult")
+    if resolution.schema_version != SOURCE_RESOLVER_SCHEMA_VERSION:
+        # B07: unknown versions are refused explicitly rather than parsed
+        # leniently - the envelope is additive WITHIN a version, not across
+        # versions (no N-1 rule exists on either side).
+        raise ValueError(
+            "resolution schema_version must be "
+            f"{SOURCE_RESOLVER_SCHEMA_VERSION!r}, got {resolution.schema_version!r} "
+            "(unknown versions are refused; B07)"
+        )
+    outcome = _STRUCTURAL_OUTCOME.get(resolution.status)
+    if outcome is None:
+        raise ValueError(f"no structural outcome for {resolution.status}")
+    download_events = 0
+    if journal is not None:
+        # Append-only journal: the LATEST entry for the request_id is the
+        # effective outcome (later attempts supersede earlier ones).
+        for attempt in journal.read_all():
+            if attempt.request_id != resolution.request_id:
+                continue
+            outcome = _ENVELOPE_OUTCOME_BY_JOURNAL.get(attempt.outcome, attempt.outcome)
+            download_events = 1 if attempt.outcome in _ENVELOPE_DOWNLOAD_OUTCOMES else 0
+    policy_hash = None
+    activation_epoch = None
+    cohorts = None
+    if policy_snapshot is not None:
+        if not isinstance(policy_snapshot, dict):
+            raise ValueError("policy_snapshot must be a dict or None (fail closed)")
+        policy_hash = policy_snapshot.get("policy_hash")
+        if policy_hash is not None and not (
+            isinstance(policy_hash, str) and re.fullmatch(r"[0-9a-f]{64}", policy_hash)
+        ):
+            raise ValueError(
+                "policy_snapshot policy_hash must be a lowercase SHA-256 or null"
+            )
+        activation_epoch = policy_snapshot.get("current_epoch")
+        if activation_epoch is not None and not (
+            isinstance(activation_epoch, str) and activation_epoch.strip()
+        ):
+            raise ValueError("policy_snapshot current_epoch must be text or null")
+        cohorts_value = policy_snapshot.get("active_cohorts")
+        if cohorts_value is not None:
+            if not isinstance(cohorts_value, (list, tuple)) or not all(
+                isinstance(cohort, str) for cohort in cohorts_value
+            ):
+                raise ValueError(
+                    "policy_snapshot active_cohorts must be a list/tuple of "
+                    "strings or null"
+                )
+            cohorts = tuple(cohorts_value)
+    bundle_status = "unavailable"
+    bundle_hash = None
+    bundle_dict = None
+    bundle_valid_handle_count = 0
+    bundle_invalid_roles: tuple[str, ...] = ()
+    bundle_usable = False
+    if bundle is not None:
+        if not isinstance(bundle, dict) or not bundle.get("bundle_hash"):
+            raise ValueError("bundle must be a dict with a bundle_hash (fail closed)")
+        bundle_status = "available"
+        bundle_hash = bundle["bundle_hash"]
+        bundle_dict = bundle
+        # F-BAR-12: "available" is about the bundle being present and snapshot-consistent;
+        # usability is a separate, measured fact.  `valid_handles` empty means NO derived
+        # artifact may be reused, even though the bundle itself is available.
+        valid_handles = bundle.get("valid_handles") or {}
+        invalid = bundle.get("invalid") or {}
+        bundle_valid_handle_count = len(valid_handles)
+        bundle_invalid_roles = tuple(sorted(invalid))
+        bundle_usable = bundle_valid_handle_count > 0
+    prompt_injection_status = "not_reviewed"
+    parser_calls = None
+    llm_calls = None
+    if store is not None and resolution.matches:
+        from .producer_events import count_producer_events
+        from .prompt_injection import read_prompt_injection_review
+
+        document_id = resolution.matches[0].document_id
+        review = read_prompt_injection_review(store, document_id)
+        if review is not None:
+            prompt_injection_status = review["status"]
+        counts = count_producer_events(store, document_id)
+        parser_calls = counts["parser_calls"]
+        llm_calls = counts["llm_calls"]
+    source_sha256 = None
+    canonical_rationale: dict[str, Any] | None = None
+    qualification: dict[str, Any] | None = None
+    if resolution.matches:
+        handle = resolution.matches[0]
+        source_sha256 = handle.content_sha256
+        canonical_rationale = {
+            "canonical_location_id": handle.canonical_location_id,
+            "canonical_path": _redact_path(handle.canonical_path, project_root),
+            "selection": "lowest_priority_active_original_primary_then_tiebreak",
+            "source_sha256": handle.content_sha256,
+        }
+        # B06: qualify the served handle.  The conflict read is the S-13 wiring:
+        # a real field conflict (B05's reserved key) blocks the formal contract
+        # instead of being a second, weaker opinion.
+        gaps = _qualification_gaps(handle)
+        conflict_reason = _metadata_conflict_reason(store, handle.document_id)
+        label, explanation = _qualification_label(gaps, conflict_reason)
+        qualification = {
+            "label": label,
+            "gaps": gaps,
+            "reason": explanation,
+            # Whether the conflict evidence was actually consulted (B-VR06-02):
+            # without a store the envelope cannot see B05's reserved key, and
+            # saying so is more useful than implying the check happened.
+            "conflict_check": "store" if store is not None else "not_available",
+        }
+    return ResolutionEnvelope(
+        envelope_schema_version=RESOLUTION_ENVELOPE_SCHEMA_VERSION,
+        outcome=outcome,
+        download_events=download_events,
+        policy_hash=policy_hash,
+        activation_epoch=activation_epoch,
+        bundle_status=bundle_status,
+        bundle_hash=bundle_hash,
+        bundle=bundle_dict,
+        bundle_valid_handle_count=bundle_valid_handle_count,
+        bundle_invalid_roles=bundle_invalid_roles,
+        bundle_usable=bundle_usable,
+        prompt_injection_status=prompt_injection_status,
+        parser_calls=parser_calls,
+        llm_calls=llm_calls,
+        candidate_exclusion_trace=tuple(resolution.debug_trace),
+        canonical_location_rationale=canonical_rationale,
+        cohorts=cohorts,
+        source_sha256=source_sha256,
+        qualification=qualification,
+    )
+
+
+def _redact_path(path: str, project_root: Path | None) -> str:
+    """ZR-404: replace the project root and the user profile prefix with
+    stable tokens so the envelope never leaks absolute user paths."""
+    if project_root is not None:
+        try:
+            path = path.replace(str(project_root.resolve()), "${PROJECT_ROOT}")
+        except OSError:
+            path = path.replace(str(project_root), "${PROJECT_ROOT}")
+    user_profile = os.environ.get("USERPROFILE")
+    if user_profile:
+        path = path.replace(user_profile, "${USER_PROFILE}")
+    return path
+
+
+def _source_metadata(
+    document: dict[str, Any],
+    *,
+    store=None,
+    observer=None,
+    reader: str = "v1",
+    current_epoch: str | None = None,
+    active_cohorts: tuple[str, ...] = (),
+    legacy_bridge_allowed: bool = True,
+) -> dict[str, Any]:
+    """WU-801 + FC-202: v2 normalized assertion first (snapshot-gated);
+    legacy containers as bridge only when the snapshot allows it.
+
+    ``reader``/``current_epoch``/``active_cohorts`` come from the pinned
+    RuntimePolicySnapshot at request start.  ``legacy_bridge_allowed`` is
+    the snapshot's ``legacy_bridge_enabled`` flag — absent snapshot keeps
+    the pre-FC-201 production default (bridge on, v1 reader).
+
+    ``observer`` (optional MetricsCollector) records a legacy_bridge_hit
+    every time a legacy acquisition/dayu_meta container is actually read —
+    the WU-1500 observation seam.  Absent observer: behavior unchanged.
+    """
+    if store is not None:
+        source_id = document.get("source_id")
+        if source_id:
+            v2 = _v2_assertion_metadata(
+                store,
+                str(source_id),
+                reader=reader,
+                current_epoch=current_epoch,
+                active_cohorts=active_cohorts,
+            )
+            if v2:
+                return v2
+    if not legacy_bridge_allowed:
+        return {}
+    metadata = document.get("metadata")
+    if not isinstance(metadata, dict):
+        return {}
+    for key in ("acquisition", "dayu_meta"):
+        value = metadata.get(key)
+        if isinstance(value, dict) and value:
+            if observer is not None:
+                observer.record_reason("legacy_bridge_hit")
+            return value
+    return {}
+
+
+def _fiscal_year(document: dict[str, Any], metadata: dict[str, Any]) -> int | None:
+    value = metadata.get("fiscal_year")
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    years = [int(item) for item in _YEAR_RE.findall(document["title"])]
+    return years[-1] if years else None
+
+
+def _provider_identity(
+    metadata: dict[str, Any],
+) -> tuple[str | None, str | None, set[str]]:
+    provider_value = metadata.get("provider") or metadata.get("source_provider")
+    provider = str(provider_value).strip().lower() if provider_value else None
+    form_type = str(metadata.get("form_type") or "").upper()
+    if provider is None and (
+        metadata.get("accession_number") or form_type.startswith(("10-", "20-", "6-"))
+    ):
+        provider = "sec"
+    identities = {
+        str(value).strip()
+        for value in (
+            metadata.get("accession_number"),
+            metadata.get("provider_document_id"),
+            metadata.get("source_id"),
+            metadata.get("document_id"),
+        )
+        if value is not None and str(value).strip()
+    }
+    preferred = next(
+        (
+            str(value).strip()
+            for value in (
+                metadata.get("accession_number"),
+                metadata.get("provider_document_id"),
+                metadata.get("source_id"),
+                metadata.get("document_id"),
+            )
+            if value is not None and str(value).strip()
+        ),
+        None,
+    )
+    return provider, preferred, identities
+
+
+# Sentinel issuer: a token shared by more than one issuer never anchors.
+_AMBIGUOUS_ISSUER = ""
+
+
+@lru_cache(maxsize=8)
+def _load_issuer_index(
+    catalog_dir: str,
+) -> tuple[dict[str, str], dict[str, frozenset[str]]]:
+    """Build a ticker/alias -> issuer (canonical-name) index from security_master.
+
+    Phase 18.1: dual-class tickers (GOOGL/GOOG) and same-issuer names share the
+    same canonical issuer, so a request by any one ticker can reuse documents
+    filed under the issuer name.  Returns ``(token_to_issuer, issuer_tokens)``:
+    every token of every record maps to its canonical issuer, and every issuer
+    maps to the full set of its tokens (all classes, aliases, tickers).  A
+    token shared by two different issuers maps to ``_AMBIGUOUS_ISSUER`` and
+    never anchors (fail-closed).
+    """
+    from .security_identity import _normalize_text
+
+    token_to_issuer: dict[str, str] = {}
+    issuer_tokens: dict[str, set[str]] = {}
+    root = Path(catalog_dir) / "security_master"
+    for market_file in ("cn", "hk", "us"):
+        path = root / f"{market_file}.json"
+        if not path.is_file():
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        for record in payload.get("records") or []:
+            canonical = str(record.get("canonical_name") or "").strip()
+            if not canonical:
+                continue
+            issuer = _normalize_text(
+                canonical
+            )  # Phase 14 R8: same normalization as the entity gate
+            tokens = {issuer}
+            for alias in record.get("aliases") or []:
+                alias_text = str(alias).strip()
+                if alias_text:
+                    tokens.add(_normalize_text(alias_text))
+            for key in ("ticker", "security_id", "canonical_name"):
+                value = str(record.get(key) or "").strip()
+                if value:
+                    tokens.add(_normalize_text(value))
+            issuer_tokens.setdefault(issuer, set()).update(tokens)
+            for token in tokens:
+                existing = token_to_issuer.get(token)
+                if existing is None:
+                    token_to_issuer[token] = issuer
+                elif existing != issuer:
+                    token_to_issuer[token] = _AMBIGUOUS_ISSUER
+    return token_to_issuer, {
+        issuer: frozenset(values) for issuer, values in issuer_tokens.items()
+    }
+
+
+class SourceResolver:
+    """Resolve existing catalog sources without performing acquisition side effects."""
+
+    def __init__(
+        self,
+        catalog: SourceCatalog,
+        *,
+        observer=None,
+        runtime_policy: dict | None = None,
+        read_budget: "_ReadBudget | None" = None,
+    ):
+        if not isinstance(catalog, SourceCatalog):
+            raise TypeError("catalog must be SourceCatalog")
+        self.catalog = catalog
+        # WU-1500: optional legacy observation collector; absent => no-op.
+        self.observer = observer
+        # B02: optional injected read budget (tests / caller cancellation).
+        # It is consumed by ONE resolve() call — counters are per request.
+        self.read_budget = read_budget
+        # FC-202: the RuntimePolicySnapshot is pinned at request start.
+        # Absent snapshot = v1 reader with the legacy bridge on (the
+        # pre-FC-201 production default); a snapshot governs reader mode,
+        # epoch, cohorts and bridge allowance (CTRL-01/02).
+        if runtime_policy is None:
+            self.reader = "v1"
+            self.current_epoch = None
+            self.active_cohorts: tuple[str, ...] = ()
+            self.legacy_bridge_allowed = True
+        else:
+            (
+                self.reader,
+                self.current_epoch,
+                self.active_cohorts,
+                self.legacy_bridge_allowed,
+            ) = resolver_visibility(runtime_policy)
+
+    def _remediation_pending(self, source_id) -> bool:
+        """FC-701: True when a pending remediation proposal exists for the
+        source (evidence disputed; not offered for reuse)."""
+        if not source_id:
+            return False
+        row = self.catalog.reader.fetchone(
+            "SELECT 1 FROM remediation_proposals WHERE source_id=? "
+            "AND status='proposed' LIMIT 1",
+            (source_id,),
+        )
+        return row is not None
+
+    def resolve(self, request: SourceRequest) -> ResolutionResult:
+        if not isinstance(request, SourceRequest):
+            raise TypeError("request must be SourceRequest")
+        semantic: list[SourceHandle] = []
+        exact: list[SourceHandle] = []
+        future_matches = 0
+        unknown_date_matches = 0
+        identity_mismatch = 0
+        # Phase 19.6: per-candidate exclusion reasons for diagnostics, plus the
+        # count of documents rejected at the entity gate.
+        trace: list[str] = []
+        entity_gate_rejected = 0
+        # Which roots offer their already-indexed documents for reuse.  B01:
+        # this uses the SAME function the cross-repo policy export uses
+        # (`policy._effective_reusable`) rather than a second copy of the rule,
+        # so an explicit `reusable_for_filing: false` is honoured here too
+        # (owner R-2 / design P-7) and the resolver can never disagree with the
+        # exported containment policy.  `None` keeps following the kind-level
+        # `reusable_root_kinds` allowance.
+        config = self.catalog.config
+        reusable_root_ids = frozenset(
+            root.root_id for root in config.roots if _effective_reusable(root, config)
+        )
+        # WU-3.2 (F-021/F-026): SQL-pushdown candidate lookup — the full-table
+        # Python scan is replaced by a kind/status-filtered, capped query.
+        # root_ids/entity/fiscal_year are deliberately NOT pushed to SQL: the
+        # per-document gates below (entity anchoring, identity conflict before
+        # the reusable-root check, the authoritative _fiscal_year which also
+        # derives years from titles for old sidecars, form/date) are the
+        # source of truth. A generous cap keeps an older-period request
+        # visible (production active annuals are ~38; 1000 covers title-derived
+        # mixed catalogs without materializing the full table).
+        candidates = self.catalog.query_filing_candidates(
+            document_kind=request.document_kind,
+            source_statuses=("active",),
+            limit=1000,
+        )
+        # B02 段 3 预算（v0.1.3）：有限资源 + 可取消，且计数留在证据里。
+        # The ceilings are per request: begin_request() restarts the counters so
+        # an injected/reused budget cannot silently un-verify later requests
+        # (B-VR02-04).
+        budget = self.read_budget or _ReadBudget()
+        budget.begin_request()
+        for document in candidates:
+            if not self._entity_matches(request.entity, document):
+                entity_gate_rejected += 1
+                continue
+            if document["document_kind"] != request.document_kind:
+                trace.append(f"{document['title']}: document_kind_mismatch")
+                continue
+            # WU-3.1 (F-024) defense-in-depth: even if the query layer leaked
+            # a non-active document, the resolver refuses to form a handle.
+            if document["source_status"] != "active":
+                trace.append(
+                    f"{document['title']}: rejected_source_status="
+                    f"{document['source_status']}"
+                )
+                continue
+            # FC-701: a source with a pending remediation proposal is not
+            # offered for reuse — the proposal flags that the current
+            # evidence is disputed until a reviewer approves a correction.
+            if self._remediation_pending(document.get("source_id")):
+                trace.append(f"{document['title']}: remediation_pending")
+                continue
+            metadata = _source_metadata(
+                document,
+                store=self.catalog.reader,
+                observer=self.observer,
+                reader=self.reader,
+                current_epoch=self.current_epoch,
+                active_cohorts=self.active_cohorts,
+                legacy_bridge_allowed=self.legacy_bridge_allowed,
+            )
+            # --- identity-aware market/security_id filtering ---
+            market_match = self._identity_matches(request, metadata)
+            if market_match == "conflict":
+                identity_mismatch += 1
+                trace.append(
+                    f"{document['title']}: identity_conflict_market_or_security_id"
+                )
+                continue
+            if market_match == "missing_fail_closed":
+                # Try verified assertion as fallback identity source (CW-2.28 T2-11).
+                assertion = _verified_assertion_identity(
+                    self.catalog.reader,
+                    document["source_id"],
+                    document.get("content_sha256") or None,
+                    document["document_id"],
+                    reader=self.reader,
+                    current_epoch=self.current_epoch,
+                    active_cohorts=self.active_cohorts,
+                )
+                if assertion and request.market and request.security_id:
+                    a_market = (
+                        str(assertion.get("market") or "").strip().upper() or None
+                    )
+                    a_secid = str(assertion.get("security_id") or "").strip() or None
+                    if a_market and a_secid:
+                        if (
+                            request.market.upper() == a_market
+                            and request.security_id == a_secid
+                        ):
+                            market_match = "match"
+                            # Enrich metadata with assertion values
+                            if "market" not in metadata or not metadata.get("market"):
+                                metadata["market"] = a_market
+                                metadata["security_id"] = a_secid
+                                metadata["fiscal_year"] = metadata.get(
+                                    "fiscal_year"
+                                ) or assertion.get("fiscal_year")
+                # Missing identity metadata with no verified assertion is NOT a
+                # true identity conflict (Phase 15.3): the year/form/handle
+                # checks below decide whether the document satisfies the
+                # request.  A placeholder with no canonical file yields
+                # handle=None → MISSING, which permits a download.  A
+                # document that WOULD be reusable still stays fail-closed —
+                # the strict check runs after the handle is built below.
+            year = _fiscal_year(document, metadata)
+            if request.fiscal_year is not None and year != request.fiscal_year:
+                trace.append(f"{document['title']}: fiscal_year_mismatch")
+                continue
+            form_type = str(metadata.get("form_type") or "").strip() or None
+            if request.form_type and form_type != request.form_type:
+                trace.append(f"{document['title']}: form_type_mismatch")
+                continue
+            fiscal_period = str(metadata.get("fiscal_period") or "").strip() or None
+            if request.fiscal_period and fiscal_period != request.fiscal_period:
+                trace.append(f"{document['title']}: fiscal_period_mismatch")
+                continue
+            language = str(metadata.get("language") or "").strip() or None
+            if request.language and language != request.language:
+                trace.append(f"{document['title']}: language_mismatch")
+                continue
+            provider, provider_document_id, identities = _provider_identity(metadata)
+            if request.provider and provider and provider != request.provider:
+                trace.append(f"{document['title']}: provider_mismatch")
+                continue
+            strong_identity = bool(
+                request.provider_document_id
+                and request.provider_document_id in identities
+                and (not request.provider or provider == request.provider)
+            )
+            if request.provider_document_id and not strong_identity:
+                trace.append(f"{document['title']}: provider_document_id_not_strong")
+                continue
+            published = document["published_date"]
+            if not published:
+                unknown_date_matches += 1
+                trace.append(f"{document['title']}: published_date_unknown")
+                continue
+            if published > request.as_of_date:
+                future_matches += 1
+                trace.append(f"{document['title']}: published_after_as_of_date")
+                continue
+            # B02: REUSE eligibility is the qualification track, not the legacy
+            # canonical election (which may legitimately point at a
+            # provider-rejected row).  An un-annotated/legacy candidate list
+            # therefore has no reusable location at all — fail closed.
+            canonical_locations = [
+                item for item in document["locations"] if item.get("candidate_rank")
+            ]
+            if not canonical_locations:
+                if any(
+                    item.get("role") == "original_primary"
+                    and _is_rejections_path(item.get("relative_path", ""))
+                    for item in document["locations"]
+                ):
+                    trace.append(f"{document['title']}: rejections_path")
+                else:
+                    trace.append(f"{document['title']}: no_canonical_active_location")
+                continue
+            if not any(
+                item.get("root_id") in reusable_root_ids for item in canonical_locations
+            ):
+                # No canonical location under a reusable root kind: not a
+                # reusable source (add the root kind to
+                # `reusable_root_kinds` in source_catalog.yaml to reuse it).
+                trace.append(f"{document['title']}: no_reusable_root_location")
+                continue
+            selection = self._handle(
+                document,
+                metadata=metadata,
+                fiscal_year=year,
+                fiscal_period=fiscal_period,
+                form_type=form_type,
+                language=language,
+                provider=provider,
+                provider_document_id=provider_document_id,
+                budget=budget,
+                reusable_root_ids=reusable_root_ids,
+            )
+            handle = selection.handle
+            if handle is None:
+                trace.append(f"{document['title']}: {selection.reason}")
+                for attempted in selection.tried:
+                    trace.append(f"{document['title']}: candidate {attempted}")
+                continue
+            if selection.tried or not selection.reason.startswith(
+                "verified_candidate_rank_1:"
+            ):
+                # Serving anything other than the preferred copy's verified
+                # bytes — a fall-through, a claim-only preferred copy, or a
+                # resource stop — is never silent.  `tried` is emitted whenever
+                # it is non-empty, whatever the reason (B-VR02-05).
+                trace.append(f"{document['title']}: {selection.reason}")
+                for attempted in selection.tried:
+                    trace.append(f"{document['title']}: candidate {attempted}")
+            if market_match == "missing_fail_closed":
+                # Reusable, but identity is unverifiable (no metadata, no
+                # assertion): stay fail-closed for reuse (CW-3.5 strict).
+                # Only placeholders (handle=None) fall through to MISSING so
+                # an authorized download can proceed (Phase 15.3).
+                identity_mismatch += 1
+                trace.append(f"{document['title']}: identity_unverifiable_strict")
+                continue
+            if not handle.capture_ready:
+                # Phase 16.2: a capture-incomplete handle (e.g. missing
+                # https_url) cannot be consumed by filing-fetch; offering it
+                # as reusable deadlocks the download path. Treat as no match
+                # so the acquisition path proceeds to the adapter.
+                trace.append(f"{document['title']}: capture_incomplete")
+                continue
+            semantic.append(handle)
+            trace.append(f"{document['title']}: matched")
+            if strong_identity:
+                exact.append(handle)
+        if trace or entity_gate_rejected:
+            trace.insert(0, f"entity_gate_rejected: {entity_gate_rejected}")
+        debug_trace = tuple(trace)
+        if len(exact) == 1:
+            return self._result(
+                request,
+                ResolutionStatus.REUSED_EXACT,
+                "one_existing_source_matches_provider_identity",
+                (exact[0],),
+                debug_trace,
+            )
+        if len(exact) > 1:
+            if request.mode == "latest_as_of":
+                latest = self._pick_latest(exact, request.as_of_date)
+                if latest is not None:
+                    return self._result(
+                        request,
+                        ResolutionStatus.REUSED_EXACT,
+                        "latest_existing_source_matches_provider_identity",
+                        (latest,),
+                        debug_trace,
+                    )
+            return self._result(
+                request,
+                ResolutionStatus.AMBIGUOUS,
+                "multiple_existing_sources_match_provider_identity",
+                tuple(exact),
+                debug_trace,
+            )
+        if len(semantic) == 1:
+            return self._result(
+                request,
+                ResolutionStatus.REUSED_EQUIVALENT,
+                "one_existing_source_satisfies_semantic_request",
+                (semantic[0],),
+                debug_trace,
+            )
+        if len(semantic) > 1:
+            if request.mode == "latest_as_of":
+                latest = self._pick_latest(semantic, request.as_of_date)
+                if latest is not None:
+                    return self._result(
+                        request,
+                        ResolutionStatus.REUSED_EQUIVALENT,
+                        "latest_existing_source_satisfies_semantic_request",
+                        (latest,),
+                        debug_trace,
+                    )
+            return self._result(
+                request,
+                ResolutionStatus.AMBIGUOUS,
+                "multiple_existing_sources_match_semantic_request",
+                tuple(semantic),
+                debug_trace,
+            )
+        if identity_mismatch:
+            return self._result(
+                request,
+                ResolutionStatus.IDENTITY_CONFLICT,
+                "identity_mismatch_market_or_security_id",
+                (),
+                debug_trace,
+            )
+        if future_matches:
+            reason = "only_sources_published_after_as_of_date"
+        elif unknown_date_matches:
+            return self._result(
+                request,
+                ResolutionStatus.AMBIGUOUS,
+                "matching_sources_have_unknown_published_date",
+                (),
+                debug_trace,
+            )
+        else:
+            reason = "no_existing_source_satisfies_request"
+        return self._result(request, ResolutionStatus.MISSING, reason, (), debug_trace)
+
+    @staticmethod
+    def _identity_matches(request: SourceRequest, metadata: dict[str, Any]) -> str:
+        """Check market/security_id identity.
+
+        Returns:
+            "match" — identity matches or request has no identity filter
+            "conflict" — explicit identity conflict (market or security_id mismatch)
+            "missing_fail_closed" — request has identity but candidate has none
+        """
+        req_market = request.market
+        req_security_id = request.security_id
+        if not req_market and not req_security_id:
+            return "match"
+        cand_market = str(metadata.get("market") or "").strip().upper() or None
+        cand_security_id = str(metadata.get("security_id") or "").strip() or None
+        # CW-3.5: truly empty identity → fail_closed (strict).
+        # Company-name-as-security_id → soft-match (CW-2.27H).
+        if not cand_market and not cand_security_id:
+            return "missing_fail_closed"
+        if req_market and cand_market and req_market != cand_market:
+            return "conflict"
+
+        def _ticker_norm(value: str) -> str:
+            # Exchange-style tickers compare modulo leading zeros and case:
+            # HKEX "03896" == "3896", "02020" == "2020" (ADR-008 Strategy B;
+            # same normalization as the portfolio promoter).
+            return value.strip().lstrip("0").casefold()
+
+        if (
+            req_security_id
+            and cand_security_id
+            and _ticker_norm(req_security_id) != _ticker_norm(cand_security_id)
+        ):
+            # FC-702: no soft-match — a security_id that differs after
+            # normalization is a hard identity conflict, even when the
+            # candidate stores a company name (中国平安 style) instead of a
+            # ticker.  Issuer anchoring happens at the entity layer
+            # (_entity_matches / security_master), never here.
+            return "conflict"
+        return "match"
+
+    def _issuer_index(self) -> tuple[dict[str, str], dict[str, frozenset[str]]]:
+        catalog_dir = getattr(self.catalog.config, "catalog_dir", None)
+        if catalog_dir is None:
+            return {}, {}
+        return _load_issuer_index(str(catalog_dir))
+
+    def _entity_matches(self, entity: str, document: dict[str, Any]) -> bool:
+        # Phase 14 R8 fix: the entity gate must use the SAME canonical
+        # normalization as the identity layer (NFKC + casefold + alnum-only —
+        # security_identity._normalize_text).  Plain casefold left "Apple Inc."
+        # (SEC canonical, trailing period) failing against "Apple Inc", which
+        # would drop every period-terminated US issuer under bridge-off.
+        # This is normalization, not soft-matching (FC-702 semantics intact:
+        # company-name-vs-ticker still conflicts).
+        from .security_identity import _normalize_text
+
+        wanted = _normalize_text(entity)
+        doc_values = {
+            _normalize_text(str(item.get("entity_id") or ""))
+            for item in document["entities"]
+        } | {
+            _normalize_text(str(item.get("name") or ""))
+            for item in document["entities"]
+        }
+        metadata = _source_metadata(
+            document, legacy_bridge_allowed=self.legacy_bridge_allowed
+        )
+        doc_values.update(
+            _normalize_text(str(value))
+            for value in (
+                metadata.get("ticker"),
+                metadata.get("security_id"),
+                metadata.get("company_name"),
+            )
+            if value
+        )
+        doc_values.discard("")
+        if wanted in doc_values:
+            return True
+        # Phase 18.1: anchor a ticker request to its issuer (security_master
+        # canonical name) so dual-class tickers (GOOGL/GOOG) and issuer aliases
+        # match documents filed under the issuer name.  Market filtering stays
+        # strict in _identity_matches (18.0 decision 2); tokens shared by
+        # multiple issuers never anchor (fail-closed).
+        token_to_issuer, issuer_tokens = self._issuer_index()
+        issuer = token_to_issuer.get(wanted)
+        if not issuer:
+            return False
+        return bool(issuer_tokens.get(issuer, frozenset()) & doc_values)
+
+    @staticmethod
+    def _select_candidate(
+        document: dict[str, Any],
+        *,
+        budget: _ReadBudget,
+        reusable_root_ids: frozenset[str] = frozenset(),
+    ) -> tuple[dict[str, Any] | None, str, tuple[str, ...]]:
+        """B02 段 3/4 — walk the ordered qualified candidates of the REQUESTED
+        version and return the copy to serve.
+
+        Candidates are restricted to the document's own source entry (its
+        version), ordered by ``candidate_rank`` (stamped by
+        ``service._annotate_locations``), so priority/churn can only decide
+        *which copy is tried first* — never *whether a copy qualifies*.
+
+        Serving rule (narrowed twice by independent review: B-VR02-01 then
+        B-VR02R2-01/-02):
+
+        1. **a verified copy always wins**: the first candidate whose bytes
+           really are the requested version is served, whatever its rank;
+        2. only when NO candidate verifies may ONE row be served on the
+           catalog's claim: the legacy canonical, provided it is a qualified
+           candidate of the document's own version.  The reason records why
+           that row failed (``unverified_<status>_on_pre_b02_canonical``) and
+           the per-candidate diagnostics are in ``tried`` — never silent.
+           **Documented differences from pre-B02** (S-10): pre-B02 matched
+           ``.rejections`` as a substring and did not restrict the election to
+           the document's own source group, so the claim-trusted row is *not*
+           bit-for-bit the row pre-B02 would have served — it is that row
+           minus two defects (segment matching instead of substring, own
+           version only);
+        3. **every other copy needs verified bytes**; otherwise the answer is
+           no handle at all (unavailable -> MISSING), which is what keeps
+           "do not take another revision" true;
+        4. a cancelled request is never answered, even mid-read.
+
+        The byte-level hard gate for case 2 (serve verified bytes or fail
+        explicitly) belongs to the read path (B03) and is registered as the
+        S-10 deviation until then.
+        """
+        own_source_id = str(document.get("source_id") or "")
+        candidates = [
+            item
+            for item in document["locations"]
+            if item.get("candidate_rank")
+            # B01: a root whose effective `reusable_for_filing` is false is not
+            # offered for reuse AT ALL — the group-level gate alone was not
+            # enough, because the winner could still be that root's copy.
+            # Membership is REQUIRED, with no empty-set escape (B-VR01-05): an
+            # omitted or empty set has to mean "nothing qualifies", never "no
+            # filtering", or a future direct caller would silently get the
+            # fail-open behaviour back.  `resolve` guarantees a non-empty set
+            # here — its document gate rejects every candidate otherwise.
+            and str(item.get("root_id") or "") in reusable_root_ids
+            and (
+                not own_source_id
+                or str(item.get("source_id") or "") == own_source_id
+            )
+        ]
+        ordered = sorted(
+            candidates,
+            key=lambda item: (int(item["candidate_rank"]), str(item["location_id"])),
+        )
+        if not ordered:
+            return None, "placeholder_no_handle", ()
+        # The claim-trusted row: the legacy canonical, IF it is a qualified
+        # candidate of the document's own version.  `ordered` already carries
+        # role/status/.rejections/own-source, so membership is the whole test.
+        # It is NOT "the row pre-B02 would have served": the authoritative list
+        # of the deliberate differences lives in the phase-B run directory
+        # (assurance/runs/2026-09-11_r4-phase-b/evidence/b02-implementation.md
+        # section 3, decision S-10) — (a) ".rejections" is matched as a path
+        # SEGMENT, not a substring; (b) the election is restricted to the
+        # document's own source group (conditionally: see the guard above);
+        # (c) this row must additionally pass the local probe, so a cloud
+        # placeholder is refused where pre-B02 checked only `is_file()`.
+        # (a) is wider, (b) and (c) are stricter; none of them restores a
+        # defect.  Do not restate this list elsewhere — point at it.
+        pre_b02_canonical = next(
+            (item for item in ordered if item.get("is_canonical")),
+            None,
+        )
+        expected_sha256 = str(document.get("content_sha256") or "")
+        tried: list[str] = []
+        stop_status = ""
+        claimed_fallback: dict[str, Any] | None = None
+        claimed_fallback_status = ""
+        for location in ordered:
+            probe_status, _probe_detail, size = _local_copy_probe(location)
+            if probe_status:
+                tried.append(f"{location['location_id']}:{probe_status}")
+                continue
+            status, detail = _verify_candidate(
+                location,
+                expected_sha256=expected_sha256,
+                size=size,
+                budget=budget,
+            )
+            if not status:
+                if budget.cancelled:
+                    # Cancelled while reading: the bytes are complete but the
+                    # caller revoked the request (B-VR02R2-03).
+                    return None, "candidate_verification_cancelled", tuple(tried)
+                return location, _candidate_reason(location), tuple(tried)
+            tried.append(
+                f"{location['location_id']}:{status}" + (f":{detail}" if detail else "")
+            )
+            if location is pre_b02_canonical:
+                # Remember it; a later VERIFIED copy still wins (rule 1).  The
+                # reason reports why THIS row failed, not why the walk stopped
+                # (B-VR02R3-06).
+                claimed_fallback = location
+                claimed_fallback_status = status
+            if status in ("budget_exceeded", "cancelled"):
+                # A resource stop or a cancellation ends the walk: no further
+                # candidate bytes are read.
+                stop_status = status
+                break
+        if stop_status == "cancelled" or budget.cancelled:
+            return None, "candidate_verification_cancelled", tuple(tried)
+        if claimed_fallback is not None:
+            return (
+                claimed_fallback,
+                f"unverified_{claimed_fallback_status}_on_pre_b02_canonical",
+                tuple(tried),
+            )
+        if stop_status == "budget_exceeded":
+            return None, "candidate_budget_exceeded", tuple(tried)
+        return None, "no_verifiable_candidate", tuple(tried)
+
+    @staticmethod
+    def _handle(
+        document: dict[str, Any],
+        *,
+        metadata: dict[str, Any],
+        fiscal_year: int | None,
+        fiscal_period: str | None,
+        form_type: str | None,
+        language: str | None,
+        provider: str | None,
+        provider_document_id: str | None,
+        budget: _ReadBudget,
+        reusable_root_ids: frozenset[str] = frozenset(),
+    ) -> _Selection:
+        # B02: qualification (segments 1-3) is decided on the ordered
+        # candidate list; the pre-B02 code took the elected canonical and
+        # returned None when that single path was unreadable, so an
+        # equivalent copy could not take over.
+        canonical, selection_reason, tried = SourceResolver._select_candidate(
+            document, budget=budget, reusable_root_ids=reusable_root_ids
+        )
+        if canonical is None:
+            return _Selection(None, selection_reason, tried)
+        # B.VR-ba1 F-BA1-06: this guard caught only JSONDecodeError, so a DEEPLY NESTED value
+        # (RecursionError) or a non-text one (TypeError) escaped the read path - the same
+        # partial-guard shape the B10 rounds fixed elsewhere.  `metadata_state` is the single
+        # chain's parse and never raises; a value that is not an object simply means "no
+        # manifest claims to compare against", which is exactly what the old `{}` fallback
+        # meant.
+        manifest, _manifest_state = metadata_state(canonical["manifest_json"])
+        source_id = str(canonical["source_id"] or document["source_id"] or "")
+        # B02: the handle reports the digest of the bytes that were actually
+        # verified.  It equals the manifest claim in the normal case (so the
+        # resolve payload is unchanged); when a manifest claim disagrees with
+        # the bytes, the verified digest is the honest one.
+        content_sha256 = str(
+            canonical.get("verified_sha256")
+            or manifest.get("content_sha256")
+            or source_id.rsplit(":", 1)[-1]
+        )
+        url_value = metadata.get("source_url") or metadata.get("https_url")
+        https_url = str(url_value).strip() if url_value else None
+        if https_url and not https_url.startswith("https://"):
+            https_url = None
+        missing: list[str] = []
+        if not https_url:
+            missing.append("https_url")
+        if not document["published_date"]:
+            missing.append("published_date")
+        if not source_id or len(content_sha256) != 64:
+            missing.append("snapshot_sha256")
+        retrieved_at = str(manifest.get("retrieved_at") or "")
+        collector_name = str(manifest.get("collector_name") or "")
+        collector_version = str(manifest.get("collector_version") or "")
+        if not retrieved_at or not collector_name or not collector_version:
+            missing.append("capture_trace")
+        built = SourceHandle(
+            schema_version=SOURCE_RESOLVER_SCHEMA_VERSION,
+            document_id=document["document_id"],
+            source_id=source_id,
+            entity_ids=tuple(
+                sorted(item["entity_id"] for item in document["entities"])
+            ),
+            title=document["title"],
+            source_type=document["source_type"],
+            document_kind=document["document_kind"],
+            published_date=document["published_date"],
+            fiscal_year=fiscal_year,
+            fiscal_period=fiscal_period,
+            form_type=form_type,
+            language=language,
+            provider=provider,
+            provider_document_id=provider_document_id,
+            https_url=https_url,
+            canonical_location_id=canonical["location_id"],
+            canonical_path=canonical["absolute_path"],
+            content_sha256=content_sha256,
+            snapshot_sha256=content_sha256,
+            mime_type=str(manifest.get("mime_type") or "application/octet-stream"),
+            byte_size=int(manifest.get("byte_size") or canonical["observed_size"] or 0),
+            retrieved_at=retrieved_at,
+            collector_name=collector_name,
+            collector_version=collector_version,
+            source_status=document["source_status"],
+            duplicate_group_id=document["exact_duplicate_group_id"],
+            exact_duplicate_location_count=document["exact_duplicate_location_count"],
+            capture_ready=not missing,
+            missing_capture_fields=tuple(missing),
+        )
+        # B02 requirement: the result names WHICH copy was chosen (the handle
+        # fields above) and WHY it was chosen (the selection reason).
+        return _Selection(handle=built, reason=selection_reason, tried=tried)
+
+    @staticmethod
+    def _pick_latest(
+        handles: list[SourceHandle], as_of_date: str
+    ) -> SourceHandle | None:
+        """WU-4.1: latest_as_of selection — the most recent published handle
+        not after ``as_of_date``; ties broken by provider_document_id for
+        determinism (never file mtime or scan order)."""
+        eligible = [
+            h for h in handles if h.published_date and h.published_date <= as_of_date
+        ]
+        if not eligible:
+            return None
+        return max(
+            eligible,
+            key=lambda h: (
+                h.published_date,
+                h.provider_document_id or "",
+                h.source_id,
+            ),
+        )
+
+    @staticmethod
+    def _result(
+        request: SourceRequest,
+        status: ResolutionStatus,
+        reason: str,
+        matches: tuple[SourceHandle, ...],
+        debug_trace: tuple[str, ...] = (),
+    ) -> ResolutionResult:
+        return ResolutionResult(
+            schema_version=SOURCE_RESOLVER_SCHEMA_VERSION,
+            request_id=request.request_id,
+            status=status,
+            reason=reason,
+            download_required=status is ResolutionStatus.MISSING,
+            download_allowed=request.allow_download,
+            matches=matches,
+            debug_trace=debug_trace,
+        )
+
+    def read_verified_bytes(
+        self,
+        handle: SourceHandle,
+        *,
+        expected_content_sha256: str | None = None,
+        budget: _ReadBudget | None = None,
+    ) -> ByteReadResult:
+        """B03 — the read path's verified-byte entry point.
+
+        Serving the bytes means: read the file once, digest exactly the buffer
+        that is returned, compare it with the requested version's
+        ``content_sha256``, and only then hand the buffer over.  A copy that is
+        served on the catalog's claim (the pre-B02 trust level kept for the
+        preferred copy by decision S-10) therefore cannot leak drifted bytes
+        through this entry point: its digest will not match, and the answer is
+        an explicit ``unavailable`` with reason ``content_sha256_mismatch``.
+
+        Scope note, stated precisely: this is the gate for callers that ask this
+        resolver for bytes.  A consumer that keeps opening
+        ``SourceHandle.canonical_path`` by itself still bypasses it — replacing
+        those call sites is the versioned read contract's job (B07), not this
+        step's, so B03 delivers the primitive plus its acceptance and registers
+        the wiring as B07's.
+
+        Refusals before any read: a locator that resolves outside the configured
+        roots (``not_found`` / ``artifact_path_outside_allowed_root`` - the
+        registered taxonomy code for a path outside the allowed roots) and a cloud
+        placeholder whose bytes are not local
+        (``unavailable`` / ``placeholder_not_hydrated`` — opening it would
+        download).  Refusals during the read: interruption (``read_failed``),
+        the size ceiling (``exceeds_candidate_cap``), a size or mtime change
+        (``changed_during_read``) and caller cancellation (``cancelled``).
+
+        Passing the request's ``_ReadBudget`` keeps the per-request resource
+        ceiling and cancellation semantics of ``resolve``; without one the byte
+        cap still applies.
+
+        ``expected_content_sha256`` is PINNED to the handle (B-VR03-01): it may
+        only repeat the version the handle already names.  Anything else is
+        refused, because otherwise the result would carry one version's
+        ``document_id`` next to another version's bytes and digest while calling
+        itself verified - the same fail-closed rule ``reader.resolve_handle``
+        and ``reader.bundle`` apply to this parameter.
+        """
+        if not isinstance(handle, SourceHandle):
+            raise TypeError("handle must be a SourceHandle")
+        if handle.schema_version != SOURCE_RESOLVER_SCHEMA_VERSION:
+            # B-VR07-02: a handle stamped with another version must not be read
+            # through this contract at all - the bytes would be "verified"
+            # against a version semantic this entry point does not implement.
+            return ByteReadResult(
+                document_id=handle.document_id,
+                content_sha256=handle.content_sha256,
+                status=B03_ERROR_UNAVAILABLE,
+                reason=B03_REASON_UNSUPPORTED_VERSION,
+                detail=str(handle.schema_version),
+                data=None,
+                byte_size=0,
+                bytes_source=B03_BYTES_SOURCE_NONE,
+                read_at=datetime.now(UTC).isoformat(),
+            )
+        expected = expected_content_sha256 or handle.content_sha256
+        read_at = datetime.now(UTC).isoformat()
+        if expected_content_sha256 and expected_content_sha256 != handle.content_sha256:
+            return ByteReadResult(
+                document_id=handle.document_id,
+                content_sha256=expected,
+                status=B03_ERROR_UNAVAILABLE,
+                reason=B03_REASON_EXPECTED_VERSION_MISMATCH,
+                detail=str(handle.content_sha256)[:12],
+                data=None,
+                byte_size=0,
+                bytes_source=B03_BYTES_SOURCE_NONE,
+                read_at=read_at,
+            )
+        path = Path(str(handle.canonical_path))
+        # Read the path the containment check RESOLVED, not the raw locator: the
+        # check and the open must look at the same object, otherwise a link
+        # swapped in between them is never seen (B-VR03-07).  The hardlink case
+        # stays a registered limitation - realpath does not resolve hardlinks.
+        resolved = Path(os.path.realpath(path))
+        if not _inside_configured_roots(path, tuple(self.catalog.config.roots)):
+            # The reason code is the ALREADY REGISTERED one for this meaning
+            # ("artifact path outside allowed roots"), not a new one: the
+            # FC-1301 taxonomy gate fails closed on any unregistered
+            # ``reason="..."`` literal, and adding a code needs a registry edit
+            # plus a taxonomy-version bump in observability.py, which is outside
+            # this step's file scope.  The B03 plan's working name for this
+            # outcome was `path_outside_configured_roots`, and B-VR03-05 asks for
+            # the borrow to be recorded in the taxonomy follow-up (registered).
+            return ByteReadResult(
+                document_id=handle.document_id,
+                content_sha256=expected,
+                status=B03_ERROR_NOT_FOUND,
+                reason="artifact_path_outside_allowed_root",
+                detail=str(handle.canonical_location_id),
+                data=None,
+                byte_size=0,
+                bytes_source=B03_BYTES_SOURCE_NONE,
+                read_at=read_at,
+            )
+        # F-BAR-11 fix (owner instruction 2026-09-18): the deny a root can carry must bind
+        # THIS entry point too.  The decision path already refuses a root whose policy does
+        # not authorize reuse (`no_reusable_root_location`), but this primitive used to gate
+        # on containment only, so a caller that built its own handle could still be served
+        # the bytes of a denied root - measured, and registered as F-BAR-11.  The rule is the
+        # SAME function the decision path and the policy export use (``_effective_reusable``),
+        # and the root is resolved with the SAME key the decision path uses (the location's
+        # root_id, with the path only as a fallback - B.VR-ba1 F-BA1-03), so the layers cannot
+        # disagree.  The reason code is the already-registered `policy_denied` ("root policy
+        # does not authorize reuse", observability.py:51) and no new taxonomy entry is invented.
+        roots = tuple(self.catalog.config.roots)
+        owning_root = _handle_owning_root(
+            handle, path, roots, getattr(self.catalog, "reader", None)
+        )
+        reusable_root_ids = frozenset(
+            root.root_id for root in roots if _effective_reusable(root, self.catalog.config)
+        )
+        if owning_root is None or owning_root.root_id not in reusable_root_ids:
+            return ByteReadResult(
+                document_id=handle.document_id,
+                content_sha256=expected,
+                status=B03_ERROR_NOT_FOUND,
+                reason="policy_denied",
+                detail=str(owning_root.root_id if owning_root is not None
+                           else handle.canonical_location_id),
+                data=None,
+                byte_size=0,
+                bytes_source=B03_BYTES_SOURCE_NONE,
+                read_at=read_at,
+            )
+        data, status, reason, detail = _read_verified_bytes(
+            resolved, expected_sha256=expected, budget=budget
+        )
+        return ByteReadResult(
+            document_id=handle.document_id,
+            content_sha256=expected,
+            status=status or B03_BYTES_VERIFIED,
+            reason=reason,
+            detail=detail,
+            data=data,
+            byte_size=len(data) if data is not None else 0,
+            bytes_source=(
+                B03_BYTES_SOURCE_HANDLE if data is not None else B03_BYTES_SOURCE_NONE
+            ),
+            read_at=read_at,
+        )
+
+
+__all__ = [
+    "B03_BYTES_SOURCE_HANDLE",
+    "B03_BYTES_SOURCE_NONE",
+    "B03_BYTES_SOURCE_SNAPSHOT",
+    "B03_BYTES_VERIFIED",
+    "B03_ERROR_NOT_FOUND",
+    "B03_ERROR_UNAVAILABLE",
+    "B03_REASON_EXPECTED_VERSION_MISMATCH",
+    "ByteReadResult",
+    "ResolutionResult",
+    "ResolutionStatus",
+    "SOURCE_RESOLVER_SCHEMA_VERSION",
+    "SourceHandle",
+    "SourceRequest",
+    "SourceResolutionError",
+    "SourceResolver",
+]
+
+
+def _v2_assertion_metadata(
+    store,
+    source_id: str,
+    *,
+    reader: str,
+    current_epoch: str | None,
+    active_cohorts: tuple[str, ...],
+) -> dict[str, Any] | None:
+    """FC-202: read the newest visible verified v2 assertion for a source.
+
+    SQL filters decision AND visibility AND epoch AND cohort:
+
+    * v1 reader (flag off): only ``visibility_state='legacy'`` rows; an
+      active row in the database is NEVER visible (CTRL-01).
+    * v2 reader (flag on): only ``visibility_state='active'`` rows whose
+      ``activation_epoch`` equals the pinned epoch and whose ``cohort`` is
+      in the active cohort set (CTRL-02).  Empty cohort set -> no row can
+      match (fail closed).
+
+    Returns None when no assertion is visible (caller falls back to the
+    legacy container bridge only if the snapshot allows it).
+    """
+    if reader == "v1":
+        visibility = "visibility_state='legacy'"
+        params: tuple[Any, ...] = (source_id,)
+    elif reader == "v2":
+        if not current_epoch or not active_cohorts:
+            return None  # fail closed: epoch/cohort must be pinned
+        placeholders = ",".join("?" for _ in active_cohorts)
+        visibility = (
+            "visibility_state='active' AND activation_epoch=? "
+            f"AND cohort IN ({placeholders})"
+        )
+        params = (source_id, current_epoch, *active_cohorts)
+    else:
+        raise ValueError(f"unknown reader {reader!r}")
+    row = store.fetchone(
+        f"""SELECT evidence_json, fiscal_year, fiscal_period, document_kind,
+                  form_type, provider, provider_document_id, source_url,
+                  security_id, market, content_sha256
+           FROM source_metadata_assertions
+           WHERE source_id=? AND decision='verified' AND {visibility}
+           ORDER BY created_at DESC LIMIT 1""",
+        params,
+    )
+    if row is None:
+        return None
+    # B.VR-ba1 F-BA1-06: `except (TypeError, ValueError)` left RecursionError (a deeply nested
+    # value) and UnicodeDecodeError escaping; the single chain's parse never raises, so an
+    # unreadable row degrades to "no evidence metadata" exactly as the old fallback intended.
+    evidence, _evidence_state = metadata_state(row["evidence_json"])
+    metadata = {
+        "fiscal_year": row["fiscal_year"],
+        "fiscal_period": row["fiscal_period"],
+        "form_type": row["form_type"],
+        "document_kind": row["document_kind"],
+        "provider": row["provider"],
+        "provider_document_id": row["provider_document_id"],
+        "source_url": row["source_url"],
+        "security_id": row["security_id"],
+        "market": row["market"],
+        "content_sha256": row["content_sha256"],
+        "evidence": evidence,
+    }
+    return {k: v for k, v in metadata.items() if v is not None}

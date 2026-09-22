@@ -202,3 +202,61 @@ NEG-CARD 语义：`timing_factor=1.5` 使收入口径不再是"期间分摊比�
 - 产品仓零改动；`changes.diff` 仍为 NO PRODUCT CHANGE 声明。
 
 ---
+
+## 勘误追认 E-1（I-10-B E 列表 · T1-12 ① 追加式 · 前瞻披露）
+
+> 本节由编排层 `execution_runs/E1E7-ERRATA-LANDING/a20260921-01` 于 2026-09-21 **追加**；
+> 上方正文（含本节指认的各行）**逐字节未改** —— append-only，冻结正文零字节改动。
+
+### ① 源与形态（provenance）
+
+- **源 = I-10-B attempt**：`execution_runs/I-10-B/a20260919-01/handoff.json`，
+  **sha256 = `867d59b82a60544a8d7156ca0c3dbef9a9706ede6d82ede7ea50be0e181b54f4`**（23563 字节）；
+  **E 列表所在键 = `errata_pending.items`**（同文件交叉键 `carried_findings` 中 `id: "E-1..E-7"`；
+  逐条正文另见同 attempt `compatibility_impact.md` §5「追加式勘误登记」表与 `decision.md` DEC-I10B-5）。
+- **形态 = T1-12 ① 追加式**（`OWNER_DECISIONS.md` §13 T1-12：追加新节 + 行级「已过时，以本节为准」标注；
+  **不外扩**就地编辑授权）。
+
+### ② 本卡适用的 E 项（逐字抄录，一字未改）
+
+- `errata_pending.items` 原文项：**`E-1 M05 oracle.json defaults`**
+- `compatibility_impact.md` §5 表原行：
+  `| E-1 | M05 evidence/M05/oracle.json → defaults | 追加：「defaults 相位依赖旧静默补 0；缺陷①落地后该相位将抛 ModelRegistryError。已过时，以本注为准。」 |`
+- `errata_pending.rule` 原文：「依 T1-12 ① 形态（追加新节 + 行级『已过时，以本节为准』标注），禁止回改；本卡不执行，清单见 compatibility_impact.md §5」
+- 载体说明：E-1 点名的载体是 `evidence/M05/oracle.json` → `defaults`；该 JSON **一字未改**（本卡只在
+  `oracle.md` 追加披露节，JSON 不接受行内追加，且本卡无任何回改授权）。
+
+**旧值 → 新值（逐字取自 I-10-B `compatibility_impact.md` §3.4 实跑对照表）**
+
+| 卡 | 模型 | 相位 | BEFORE（修复前 = **现行**） | AFTER（修复晋升后 = **前瞻**） | 翻转 |
+|---|---|---|---|---|---|
+| M05 | `subscription` | `defaults` | `ok [600.0]` | **`ModelRegistryError`** | **是** |
+| M05 | `subscription` | `positive` | `ok [620.0]` | `ok [620.0]` | — |
+| M05 | `subscription` | `continuity_positive` | `ok [550.0, 880.0]` | `ok [550.0, 880.0]` | — |
+
+抛出消息（逐字）：`missing driver for subscription: usage_revenue has no explicit default`
+
+根因（逐字口径）：四张卡的 `defaults` 输入块**都省略了至少一个「optional 且无显式默认」的 driver**；
+M05 省略 `timing_factor`、`usage_revenue`（`timing_factor` 有默认 1.0；`usage_revenue` **无**）。
+**这些 `defaults` 相位的冻结期望成立，恰恰依赖缺陷①的「静默补 0」。**
+
+### ③ 未晋升声明（现行效力）
+
+**I-10-B 的修复（`model_registry` silent-zero-fill + sign-by-name）当前仅存在于
+`execution_runs/I-10-B/a20260919-01/iso/rf/scripts/`，未晋升到生产 —— the fix is NOT promoted。**
+
+**修复未晋升：在晋升之前，本文件的现行冻结值仍然权威（current frozen values remain authoritative until promotion）。**
+
+本条为**前瞻披露（promotion 前置知会）**，**不改变任何现行期望、不改变任何 status、不改变任何资格**。
+⇒ 本卡 `defaults` 的**现行**期望仍为 `ok [600.0]`；上表 AFTER 列在晋升发生前**不生效**。
+
+### ④ 行级标注（T1-12 ①；旧行一字未改，仅在此指认）
+
+- **第 52 行**（`## 3. 默认值案例（defaults，本卡新增要求）`）及其下 **第 62 行**（手算 `… + 0（默认） = 600`）、
+  **第 64 行**（`**期望输出 = [600]**`）：在 I-10-B 修复**晋升后**即**已过时，以本节为准**；
+  **晋升前仍以第 52 / 62 / 64行为权威**。
+- **第 167 行**（r2 节 OQ-04：「`model_registry.py:335` 静默补 0 成立；登记不改代码」）——
+  该记录在修复**晋升后**部分过时（缺陷①将改为省缺即抛），**以本节为准**；晋升前照旧有效。
+- 其余各行（正例 / 连续性 / 负例 / 容差 / 拒绝条件 / 披露数值）**不因本节产生任何变化**。
+
+---

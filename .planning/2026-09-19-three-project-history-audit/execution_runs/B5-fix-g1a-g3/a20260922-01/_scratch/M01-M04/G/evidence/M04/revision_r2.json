@@ -1,0 +1,49 @@
+{
+ "card_id": "M04",
+ "revision": "r2",
+ "generated_at_utc": "2026-09-20T00:45:04Z",
+ "production_repos_written": false,
+ "items": {
+  "F-M01-02": {
+   "change": "run_card.py / run_M01.py now return 0 only when positive tolerance, continuity and all negatives pass; 2 = harness incomplete; 3 = negative verdict",
+   "rerun_raw_returncode": 0,
+   "expected_returncode": 0,
+   "exit_code_semantics": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "verdict": "pass",
+    "exit_code": 0
+   },
+   "negative_summary": {
+    "total": 15,
+    "passed": 15,
+    "failed": []
+   },
+   "positive_actual": [
+    730.0
+   ],
+   "unchanged_product_call": "the same calculate_registered_model path was re-run unchanged; only the harness exit code changed"
+  },
+  "pack_evidence": {
+   "raw_returncode": 0,
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M04\\a20260919-01\\scripts\\pack_evidence.py:14: SyntaxWarning: invalid escape sequence '\\C'\r\n  --attempt <attempt_dir> --out-dir <evidence\\CARD> \\\r\n"
+  },
+  "F-M04-01": {
+   "file": "review.md",
+   "stale": "781,861 wafers/month",
+   "corrected": "780,860.59 wafers/month",
+   "source_of_truth": "evidence/M04/oracle.json wafer_count_reconciliation.implied_monthly_capacity_diagnostic_only = 780,860.59",
+   "note": "typo only; the other M04 files already carried the correct value"
+  }
+ },
+ "corrections_in_r3": {
+  "rc2_reachability": {
+   "earlier_claim": "rc=2 is not yet reachable in practice",
+   "corrected": "rc=2 IS reachable: a corrupted positive input makes the product raise, so no verdict exists (case D). Case B (case-plan defect outside the guard) exits 1, not 2.",
+   "disproved_by": "the point reviewer deleted growth_rate from the positive input and measured rc=2",
+   "recorded_in": "recovery/r2_exit_code_selfcheck/selfcheck_result.json case D"
+  }
+ }
+}

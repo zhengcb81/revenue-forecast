@@ -1,0 +1,86 @@
+{
+ "card_id": "M29",
+ "model_id": "commercial_launch",
+ "gating": false,
+ "purpose": "measured boundary observations of the documented domains; they are NOT part of the frozen oracle and NOT part of the runner's exit code",
+ "expectation_rule": "each expectation is computed by plain arithmetic in this file before the call and never taken from the product",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M29\\a20260919-01\\iso\\checkout_scripts",
+ "probes": [
+  {
+   "id": "PROBE-RATIO-EDGE-ONE",
+   "why": "adoption_rate carries the ratio domain [0,1]; the card-specific negative uses 1.1, so this probe measures the inclusive upper edge. Demand 1000 x 1.0 = 1000, min(1000,150) = 150, 150 x 0.5 x 4 = 300",
+   "expectation_source": "inclusive upper edge of the ratio domain",
+   "expected_if_inclusive": 300.0,
+   "expected_if_exclusive": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "adoption_rate": [
+     1.0
+    ]
+   },
+   "mutated_input_repr": "{'eligible_units': [1000], 'adoption_rate': [1.0], 'annual_supply_capacity': [150], 'commercial_year_fraction': [0.5], 'net_revenue_per_unit': [4]} years=[2027]",
+   "raised": null,
+   "actual": [
+    300.0
+   ],
+   "matches_expected_if_inclusive": true
+  },
+  {
+   "id": "PROBE-QUANTITY-EDGE-ZERO",
+   "why": "the quantity domain starts at 0; expected min(0 x 0.2, 150) x 0.5 x 4 = 0",
+   "expectation_source": "inclusive lower edge of the quantity domain",
+   "expected_if_inclusive": 0.0,
+   "expected_if_exclusive": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "eligible_units": [
+     0
+    ]
+   },
+   "mutated_input_repr": "{'eligible_units': [0], 'adoption_rate': [0.2], 'annual_supply_capacity': [150], 'commercial_year_fraction': [0.5], 'net_revenue_per_unit': [4]} years=[2027]",
+   "raised": null,
+   "actual": [
+    0.0
+   ],
+   "matches_expected_if_inclusive": true
+  },
+  {
+   "id": "PROBE-CAPACITY-EDGE-ZERO",
+   "why": "annual_supply_capacity = 0 is the lower edge of the quantity domain and the min() must then bind on the supply side: min(200, 0) x 0.5 x 4 = 0",
+   "expectation_source": "inclusive lower edge of the quantity domain",
+   "expected_if_inclusive": 0.0,
+   "expected_if_exclusive": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "annual_supply_capacity": [
+     0.0
+    ]
+   },
+   "mutated_input_repr": "{'eligible_units': [1000], 'adoption_rate': [0.2], 'annual_supply_capacity': [0.0], 'commercial_year_fraction': [0.5], 'net_revenue_per_unit': [4]} years=[2027]",
+   "raised": null,
+   "actual": [
+    0.0
+   ],
+   "matches_expected_if_inclusive": true
+  },
+  {
+   "id": "PROBE-NET-PRICE-EDGE-ZERO",
+   "why": "net_revenue_per_unit = 0 is the lower edge of the revenue_per_unit domain; expected min(200, 150) x 0.5 x 0 = 0",
+   "expectation_source": "inclusive lower edge of the revenue_per_unit domain",
+   "expected_if_inclusive": 0.0,
+   "expected_if_exclusive": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "net_revenue_per_unit": [
+     0.0
+    ]
+   },
+   "mutated_input_repr": "{'eligible_units': [1000], 'adoption_rate': [0.2], 'annual_supply_capacity': [150], 'commercial_year_fraction': [0.5], 'net_revenue_per_unit': [0.0]} years=[2027]",
+   "raised": null,
+   "actual": [
+    0.0
+   ],
+   "matches_expected_if_inclusive": true
+  }
+ ]
+}

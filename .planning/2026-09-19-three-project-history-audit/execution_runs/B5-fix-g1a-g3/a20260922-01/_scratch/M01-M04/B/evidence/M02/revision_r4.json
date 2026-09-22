@@ -1,0 +1,179 @@
+{
+ "card_id": "M02",
+ "revision": "r4",
+ "scope": "point-review bookkeeping remediation (report sections 11-12)",
+ "product_calls_rerun": false,
+ "measurements_changed": false,
+ "production_repos_written": false,
+ "items": {
+  "P1-1": {
+   "status": "fixed_by_append",
+   "option_taken": "(1) append an honest r2 index to oracle.md",
+   "oracle_md_bytes_before_r4_append": 7838,
+   "oracle_md_sha256_before_r4_append": "77dce63db21fe391f0dea0b8fb90ea71d37b2da7d3557bfa2c33fb9283031ad0",
+   "note": "r2 claimed an append that never landed; the appended section says so. MATCH in source_manifest before r4 was a by-product of never appending and must not be read as better bookkeeping."
+  },
+  "P1-2": {
+   "status": "fixed_by_option_1",
+   "detail": "each card now has its own recovery/r2_exit_code_selfcheck/selfcheck_result.json, produced by that card's own scripts/selfcheck_card.py, with harness hash and rc values",
+   "harness_sha256": "b5fcc68563f563924529e06e2aeeba06938dcf51bd48b14f553f580191601816",
+   "cases": {
+    "A": 3,
+    "B": 1,
+    "C": 0,
+    "D": 2
+   }
+  },
+  "P1-3": {
+   "status": "fixed",
+   "detail": "handoff.revision_history deduplicated to the 4 real rounds + r4 entry"
+  },
+  "P2-1": {
+   "status": "fixed",
+   "detail": "status=accepted_scoped, reviewer_status=point_review_returned, reviewer_scope=formula only, reviewer_finding added; the other two qualification columns untouched"
+  },
+  "P2-2": {
+   "status": "fixed",
+   "detail": "qualification.json.formula -> accepted_scoped, not_yet_independently_reviewed=false, independent_review block added; implementer_claim kept"
+  },
+  "P2-3": {
+   "status": "fixed",
+   "detail": "source_manifest oracle_md_versions now carries pre-append + current, with the authoritative pin pointed at revision_r3/r4 records"
+  },
+  "P3-1": {
+   "status": "fixed",
+   "detail": "self-referential hash replaced by an explicit non-claim; real value recorded in after/rerun_sha256.json.self_hashes"
+  },
+  "P3-2": {
+   "status": "fixed",
+   "detail": "review_items scoped to this card; M01-specific forensics pointer corrected on non-M01 cards"
+  },
+  "P3-3": {
+   "status": "registered",
+   "detail": "shared-copy files registered in handoff.shared_copy_registration; no per-card independence is claimed for them"
+  },
+  "M03_provenance": {
+   "status": "not_applicable"
+  }
+ },
+ "discipline_assertion": {
+  "measurements_unchanged": [
+   "[220,110,0]",
+   "[80,0,120]",
+   "[305]",
+   "[730]"
+  ],
+  "negative_counts_unchanged": {
+   "M01": 11,
+   "M02": 11,
+   "M03": 13,
+   "M04": 15
+  },
+  "tolerances_unchanged": {
+   "M03": "2%",
+   "M04": "0.5%"
+  },
+  "gaps_unchanged": {
+   "M03": "14.3667%",
+   "M04": "21.4045%"
+  },
+  "qualification_columns_untouched": [
+   "disclosure_adaptation=unmapped",
+   "accuracy=unproven"
+  ]
+ },
+ "final_hashes": {
+  "oracle.md": {
+   "sha256": "897b9a978914e9364e45d4c6a6b83d0d35b8da6e9a4f9c67e0d22a22e1dadba9",
+   "bytes": 9975
+  },
+  "review.md": {
+   "sha256": "e78fcc9dec59f94b3a4c69782c0344ffb4397b6b2c252d330753a3479bcdaee3",
+   "bytes": 17963
+  },
+  "handoff.json": {
+   "sha256": "d565f898c64e17a2e078aaa9a4c9e3daa647e3d1ad152b75f448cf25dbdc387d",
+   "bytes": 9633
+  },
+  "decision.md": {
+   "sha256": "4c3717b9b6d708498bd92858cdeee01e0995bd3c2065a5b30a715747dd69802e",
+   "bytes": 1101
+  },
+  "changes.diff": {
+   "sha256": "c60456e525791c32dce182e7674097af3c9dd1426006bd3837c7561ee6157e97",
+   "bytes": 1527
+  },
+  "recovery/README.md": {
+   "sha256": "7ec28dd345008002759369f709c75f86e4f81e7cd354b00e875a0d9fb7109944",
+   "bytes": 1023
+  },
+  "after/rerun_sha256.json": {
+   "sha256": "cd044333160a528891d77497be1442ea0573c858ea221f610f77ba1a7624e7de",
+   "bytes": 1207
+  },
+  "recovery/r2_exit_code_selfcheck/selfcheck_result.json": {
+   "sha256": "b628f8653610cc33c68074432d5fb92ec7aa371d78f0548b460b7cc565ce4c62",
+   "bytes": 3542
+  },
+  "before/git_status_revenue-forecast.txt": {
+   "sha256": "1ab2e3c3f6cd4d2f68ef6c895313affbd42ae020243108d52e9c9c1945eff6b9",
+   "bytes": 2881
+  },
+  "before/pytest_version.txt": {
+   "sha256": "3b92440fa547fe6bfad4e7cd0fea48c83e1d7853e87e11354b5b48ab1596187d",
+   "bytes": 17
+  },
+  "after/rerun_stdout.txt": {
+   "sha256": "a867c492ae4cb5ed3c99e02ffb5fb42db76aa6d29f8e596aa2c5ad3ad2c71b65",
+   "bytes": 443
+  },
+  "after/rerun_stderr.txt": {
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "bytes": 0
+  },
+  "evidence/qualification.json": {
+   "sha256": "a2108add205270a50aeea86c31b14c23d2046af2c54d30f06c7132299bc05d15",
+   "bytes": 1733
+  },
+  "evidence/source_manifest.json": {
+   "sha256": "7394214cb013c6b5e9149dac277d0b66ee05a73740ba92d9a10c405d329f8391",
+   "bytes": 6100
+  },
+  "evidence/revision_r2.json": {
+   "sha256": "b873af7e67ecff7c414c5c0bb1af56313bf2bb98313b11fd9da3b60df780fe42",
+   "bytes": 2603
+  },
+  "evidence/revision_r3.json": {
+   "sha256": "4df902c32f0f22d1da84a6d0dea837ebe64f07eafc9fd89213bf938c11bd2387",
+   "bytes": 7874
+  },
+  "evidence/revision_r4.json": {
+   "sha256": "24412d1cd0d85c28382e2890849736a2d735191d972752396e1dbf7a54e48364",
+   "bytes": 4289
+  },
+  "evidence/formula_result.json": {
+   "sha256": "0d34dc20d8edd6819ec511e029527866ca809e0d9197822b31b6589bafcfab35",
+   "bytes": 2212
+  },
+  "evidence/negative_results.json": {
+   "sha256": "a2f51f2aed9fc60dd04022bdf59cf7ea581b3631a5b03d896135bc8e286d816c",
+   "bytes": 19982
+  },
+  "evidence/run_result.json": {
+   "sha256": "f34fb2c9d22c7a963ec10d4b90d6aa9bf54cfcc9060b6042167c9f9341800c84",
+   "bytes": 24193
+  },
+  "evidence/input.json": {
+   "sha256": "8b7d9dc86578d1f6e5f3cb480cb6a8ae9512b10f728b180d3c12cff6d18ec860",
+   "bytes": 688
+  },
+  "evidence/oracle.json": {
+   "sha256": "258cd8e214e04fb7025916ce2d946177411440aadcefefc5b612f518c1bdd735",
+   "bytes": 1567
+  },
+  "evidence/cases.json": {
+   "sha256": "e10fb6c095bb16a84040548d0582456d4d0583470adbd78008d592974c930579",
+   "bytes": 2808
+  }
+ }
+}

@@ -1,0 +1,90 @@
+{
+ "card_id": "M08",
+ "attempt_id": "a20260919-01",
+ "model_id": "project_backlog",
+ "entry_point": "scripts/model_registry.py calculate_registered_model(model_id, base_revenue, drivers, years)",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes_at_binding_and_after_run": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_equals_production": true,
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "note": "attempt-local venv created with `python -m venv` from the I-00-A template venv; pytest installed offline from the local pip cache",
+  "global_python_used_for": "read-only PDF text extraction only (PyMuPDF), never for a card run"
+ },
+ "card_script_hashes": {
+  "scripts/oracle_M08.py": "3a76365b38d5833536624f9150a0b00b4ddbb1effbb181b60b31ad508fa51a38",
+  "scripts/run_card.py": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
+ },
+ "oracle_document": {
+  "path": "oracle.md",
+  "sha256_now": "2b807c4a702948b19b6178bc463536bfab2d30859f858100de24887b9e1bdd80",
+  "sha256_now_note": "whole-file hash AFTER the r3 merge; this is the value that tracks the file on disk",
+  "sha256_before_r3_dedup": "ff68cc5e01f87035e62d801727ddfa50bf9fd85bb30a4f799a4bf2eda36edbb1",
+  "sha256_at_oracle_generation": null,
+  "v1_frozen_body_sha256": "47481cab511f2bdf655ffbe3ff1f2d0b0d21c1f8c599cbb101c98124b2d57011",
+  "v1_frozen_body_prefix_bytes": 12557,
+  "v1_frozen_body_still_reproducible": true,
+  "honest_gap": "the oracle DOCUMENT was written before any product run and its frozen body was not modified afterwards. commands.json records argv and raw exit codes ONLY and does NOT carry an oracle.md hash (F-M05-01/02, F-M06-01, F-M07-01, F-M08-03); revision r1's wording claimed otherwise and is corrected here. The verifiable chain is the mtime ordering below plus evidence/<card>/oracle.json (written by the independent oracle script, standard library only) whose mtime precedes the product run's stdout.txt. Revision r2 APPENDED a response section to oracle.md, which is why oracle.md's own mtime is now later than the run: the append is after the run by construction and the frozen body above it is byte-unchanged.",
+  "honest_gap_r3_dedup_addendum": "Revision r3 FOLDED the two duplicated 'revision r2' sections into ONE and INSERTED a provenance-gap note at the folded duplicate's former position (finding F-M08-06; wording corrected under F-R3-01). The fold removed only the byte-identical duplicate section and the note went in at that position, so live = pre[:kept_prefix_bytes] + note: the kept prefix is byte-for-byte unchanged (proved in recovery/docfix-r3/f06_verify.out.txt), and therefore the v1 frozen body and every frozen expectation are still byte-identical to what the product ran against.",
+  "mtime_ordering": {
+   "oracle_json_mtime": 1789868287.795202,
+   "input_json_mtime": 1789868287.7942016,
+   "product_stdout_mtime": 1789868312.9089282,
+   "oracle_json_precedes_run": true,
+   "oracle_md_mtime_current": 1789870295.839833,
+   "oracle_md_mtime_is_later_due_to_r2_append": true,
+   "note": "mtime ordering is unchanged in substance; the r2/r3 appends are after the run by construction, which is why oracle.md's own mtime is later than the product stdout"
+  },
+  "oracle_script_selfcheck": "evidence/M08/oracle_selfcheck.json records the generator's import list and product_import_present=false",
+  "docfix_r3_ledger": "evidence/M08/docfix_r3.json"
+ },
+ "evidence_input_hashes": {
+  "evidence/M08/input.json": "5f1ab9430ed58d73a509d23ea3a846e87c71822e6294844dcd5e8da36a9e23e0",
+  "evidence/M08/oracle.json": "2264f673867f60df5a5ce6fe1c173669372d4c8c8456d33afd00f4a482389e69",
+  "evidence/M08/cases.json": "57459a8f5ea298e1bf56371175f62b298171ca07439d6d3b67ad911b829add5e"
+ },
+ "registry_metadata_observed_from_the_isolated_copy": {
+  "model_id": "project_backlog",
+  "required": [
+   "opening_backlog",
+   "bookings",
+   "cancellations",
+   "contract_changes",
+   "closing_backlog"
+  ],
+  "optional": [
+   "backlog_remeasurements"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "opening_backlog": "backlog",
+   "bookings": "backlog",
+   "cancellations": "backlog",
+   "contract_changes": "backlog",
+   "closing_backlog": "backlog",
+   "backlog_remeasurements": "backlog"
+  },
+  "ratio_drivers": [],
+  "driver_bounds": {
+   "backlog_remeasurements": [
+    null,
+    null
+   ]
+  },
+  "formula": "revenue = opening_backlog + bookings - cancellations + contract_changes + backlog_remeasurements - closing_backlog"
+ },
+ "network_calls": "none",
+ "llm_or_provider_calls": "none"
+}

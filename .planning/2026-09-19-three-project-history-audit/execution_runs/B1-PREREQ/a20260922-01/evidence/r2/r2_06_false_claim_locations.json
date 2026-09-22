@@ -1,0 +1,46 @@
+{
+  "claim": "F-REV-B1P-01 location note: which carriers actually contain the false 'r1 stdout lost / final 11/1' statement (whitespace-normalized substring scan)",
+  "scan_note": "text collapsed with re.sub(r'\\s+', ' ') before matching so wrapped sentences are found; context windows quoted verbatim",
+  "src_oracle_md": {
+    "contains": {}
+  },
+  "src_decision_md": {
+    "contains": {
+      "r1 RED stdout is preserved": "record's presence and field set — which is what r1's own prose already required — and the r1 RED stdout is preserved un-overwritten as `before/b1_unfixed.*`. Frozen in `oracle.md` revision r2. --- ## 4. Own"
+    }
+  },
+  "src_handoff_json": {
+    "contains": {
+      "r1 RED stdout is preserved": " r1 RED run) existed; filesystem mtimes plus the recorded hashes establish the order. The r1 RED stdout is preserved and was NOT overwritten by the r2 run.\" }, \"oracle_revisions\": { \"policy\": \"append-only; "
+    }
+  },
+  "src_reviewer_report_md": {
+    "contains": {
+      "final 11-failed/1-passed output": "1 run's artifact whose content is *\"10 failed / 2 passed\"*, while the file on disk is the final 11-failed/1-passed output (mtime 21:15:12, `before/b1_unfixed_r3.*` written at 21:56) — and the r1 test file (18236",
+      "cannot reproduce the disclosed r1": "le (18236 B / `e6c0949c…`) is no longer in the attempt directory or in git. I therefore **cannot reproduce the disclosed r1 \"10 failed / 2 passed, R8 passed trivially\" incident**, which is the entire stated warran",
+      "r1 RED stdout is preserved": " audit the claim was overwritten rather than preserved, contrary to `handoff.json`'s \"the r1 RED stdout is preserved and NOT overwritten\". Preserve raw run outputs under distinct labels in future attempts. "
+    }
+  },
+  "my_oracle_md": {
+    "contains": {
+      "was overwritten by a later run": "lent drop. - **F4 / REM-43 (LOW, evidence)** — the r1 RED stdout (\"10 failed / 2 passed\") was overwritten by a later run and the r1 test file (18236 B / `e6c0949c…`) is gone from disk and git ⇒ the disclosed r1",
+      "cannot be recreated by this or any later card": "and the r1 test file (`e6c0949c…`, 18236 B) were overwritten/removed before archiving and cannot be recreated by this or any later card; the surviving `before/b1_unfixed.stdout.txt` (`58863ffb…`) is the **final** 11/1 output,",
+      "remains unrecoverable": "open. - **F4**: no `evidence/`-style raw-stdout protocol exists in SRC; the r1 RED stdout remains unrecoverable ⇒ open (protocol + disclosure only; the historical loss is **unclosable** — see §4). - **",
+      "unclosable": "stdout remains unrecoverable ⇒ open (protocol + disclosure only; the historical loss is **unclosable** — see §4). - **F5**: no hash-pin `freeze.json` exists; ordering still rests on mtimes ("
+    }
+  },
+  "my_decision_md": {
+    "contains": {
+      "is the final 11/1 output": "surviving `before/b1_unfixed.stdout.txt` (30580 B / `58863ffb…`, pinned in `freeze.json`) is the final 11/1 output, not r1's. Recorded here, in `oracle.md` §3.4/§4, `handoff.json`, and the register row it",
+      "cannot be recreated by this or any later card": "nd the r1 test file (18236 B / `e6c0949c…`) were overwritten/removed before archiving and cannot be recreated by this or any later card. The surviving `before/b1_unfixed.stdout.txt` (30580 B / `58863ffb…`, pinned in `freeze.j",
+      "unclosable": "obe_e21.*`. ## F4 / REM-43 — **FIXED (protocol established) + historical gap DISCLOSED as unclosable** - Protocol frozen before any run (this attempt's `oracle.md` §3.4, `evidence/README.md`"
+    }
+  },
+  "my_handoff_json": {
+    "contains": {
+      "is the final 11/1 output": "the surviving before/b1_unfixed.stdout.txt (30580 B / 58863ffb..., pinned in freeze.json) is the final 11/1 output, not r1's. REM-43 closes the PROTOCOL half only; the loss stays open.\" }, \"F5/REM-44\": { ",
+      "unclosable": "\"arm4 NOT re-run after its control deviation (write-once evidence + frozen node pin)\" ], \"unclosable_historical_gap\": \"B1's r1 RED stdout ('10 failed / 2 passed', the warrant for oracle r2) "
+    }
+  },
+  "src_oracle_mentions_b1_unfixed_stdout": []
+}

@@ -1,0 +1,226 @@
+--- PRODUCTION tests/contract/test_source_catalog_worker_bootstrap.py
++++ ISO(FIXED) tests/contract/test_source_catalog_worker_bootstrap.py
+@@ -27,8 +27,9 @@
+ 
+ from __future__ import annotations
+ 
+ import json
++import math
+ import os
+ import shutil
+ import subprocess
+ import sys
+@@ -888,8 +889,142 @@
+     assert statuses.count("child_started") == 1
+     assert statuses.count("already_running") == 1
+ 
+ 
++# ---------------------------------------------------------------------------
++# I-14-E-APPLY: derive the watchdog hang timeout from an in-test measurement of
++# this machine's child launch latency instead of assuming it fits inside a fixed
++# constant.  Measured basis (I-14-E/a20260919-01, independent window, n=111, no
++# pytest and no watchdog): launch -> exit median 0.691 s quiet (24/30 >= 0.5 s)
++# and 1.351 s under +8 burners (25/25), with an upper tail of 1.7-2.5 s; the same
++# quantity in the frozen band was median 0.2245 s, max 0.622 s.  The 0.5 s
++# constant therefore straddles the distribution it is compared against, and only
++# the alignment of the exit with the poll boundary decides the outcome.
++#
++# The quantity the supervisor's watchdog actually compares is its own
++# ``(Get-Date) - $StartedAt``, i.e. POST-``Start-Process`` uptime, so t0 is
++# measured THROUGH the real launcher rather than by spawning the child directly.
++# This is not an assertion loosening: ``child_started == 2`` and every semantic
++# assertion of the node are unchanged, and a genuinely hung child is still
++# terminated (see test_derived_hang_timeout_still_terminates_a_genuinely_hung_child).
++# ---------------------------------------------------------------------------
++
++_LAUNCH_SAMPLES = 3
++_LAUNCH_MARGIN_FACTOR = 4.0
++_HANG_TIMEOUT_FLOOR_SECONDS = 2.0
++# Upper bound derived from the node's OWN fixture product: child #1 carries the
++# ``sleep_seconds 5`` behaviour, so the watchdog must still fire well inside that
++# sleep for the node's semantics ("a child with no runtime session is terminated")
++# to hold.  4 s leaves >= 2 s of margin against the 5 s sleep.
++_HANG_TIMEOUT_CEILING_SECONDS = 4.0
++
++
++def _child_launch_latencies(project: Path) -> list[float]:
++    """Launch -> end-of-that-child lifetimes recorded by the real launcher.
++
++    A sample ends either as ``exited`` (the child finished on its own) or as
++    ``child_unresponsive`` (the launcher's *default* 0.5 s watchdog killed it
++    first).  Both forms bound the same quantity - how long this machine takes to
++    get a child through launch to the point the watchdog is watching - so both
++    count.  Returns [] when no launcher-event timeline was produced.
++    """
++    path = project / ".source_catalog" / "worker_launcher_events.jsonl"
++    if not path.exists():
++        return []
++    latencies: list[float] = []
++    try:
++        for line in path.read_text(encoding="utf-8-sig").splitlines():
++            line = line.strip()
++            if not line:
++                continue
++            event = json.loads(line)
++            if event.get("status") == "child_unresponsive":
++                uptime = event.get("uptime_seconds")
++            elif event.get("status") == "exited":
++                uptime = event.get("uptime_seconds")
++            else:
++                continue
++            if uptime is not None:
++                latencies.append(float(uptime))
++    except (OSError, ValueError):  # pragma: no cover - a torn timeline is not a latency
++        return []
++    return latencies
++
++
++def _measure_child_launch_latency_samples(
++    tmp_path: Path, samples: int = _LAUNCH_SAMPLES
++) -> list[float]:
++    """Return the observed child launch latencies, measured in-test.
++
++    A single-behaviour (immediate exit) sentinel product is driven through the REAL
++    launcher ``samples`` times.  Each launcher invocation yields one launch -> lifetime
++    reading (either the child exited on its own, or the launcher's default 0.5 s
++    watchdog killed it first - both bound the same quantity).
++    """
++    warmup_root = tmp_path / "hang-timeout-warmup"
++    warmup_root.mkdir(parents=True, exist_ok=True)
++    warmup = _prepare_fake_launcher_project(warmup_root, [{"exit_code": 0}])
++    observed: list[float] = []
++    for _ in range(max(1, samples)):
++        # The launcher is allowed to exit on its own: with a single immediate-exit
++        # behaviour the watchdog either lets the child go or kills it and restarts,
++        # and either way the timeline records one launch -> lifetime reading.
++        _run_real_worker_launcher(warmup, timeout=15, child_poll_milliseconds=100)
++        observed.extend(_child_launch_latencies(warmup))
++    return observed
++
++
++def _measure_child_launch_latency(tmp_path: Path, samples: int = _LAUNCH_SAMPLES) -> float:
++    """t0 = the MAXIMUM observed launch latency (the conservative end of the sample:
++    a low draw here under-budgets the run that is actually asserted)."""
++    observed = _measure_child_launch_latency_samples(tmp_path, samples)
++    return max(observed) if observed else 0.0
++
++
++def _derive_worker_hang_timeout_seconds(tmp_path: Path) -> int:
++    """Derive the watchdog hang timeout from an in-test measurement (I-14-E item 1).
++
++    ``max(2.0, 4 * t0)`` with t0 measured by ``_measure_child_launch_latency``,
++    capped at the node's own semantic upper bound and rounded UP to whole seconds
++    (the launcher takes the value as a PowerShell parameter; whole seconds remove
++    any argument-formatting ambiguity, and rounding up only widens the window).
++
++    The derivation is self-evidencing: it writes the observed samples, the derived
++    value and the value the launcher is about to receive into
++    ``tmp_path/hang_timeout_derivation.json`` so that a reviewer can read the
++    measurement back from the run itself instead of trusting the log.
++    """
++    observed = _measure_child_launch_latency_samples(tmp_path)
++    t0 = max(observed) if observed else 0.0
++    derived = min(
++        _HANG_TIMEOUT_CEILING_SECONDS,
++        max(_HANG_TIMEOUT_FLOOR_SECONDS, _LAUNCH_MARGIN_FACTOR * t0),
++    )
++    hang_timeout_seconds = int(math.ceil(derived))
++    report = {
++        "node": "child_without_runtime",
++        "samples_seconds": observed,
++        "t0_seconds": t0,
++        "aggregator": "max",
++        "samples_requested": _LAUNCH_SAMPLES,
++        "samples_observed": len(observed),
++        "margin_factor": _LAUNCH_MARGIN_FACTOR,
++        "floor_seconds": _HANG_TIMEOUT_FLOOR_SECONDS,
++        "ceiling_seconds": _HANG_TIMEOUT_CEILING_SECONDS,
++        "derived_before_ceiling_seconds": derived,
++        "hang_timeout_seconds": hang_timeout_seconds,
++        "child_poll_milliseconds": 100,
++        "measured_by": "_measure_child_launch_latency (real launcher, default 0.5s watchdog)",
++    }
++    try:  # lenient: a report failure must never decide a test outcome
++        (tmp_path / "hang_timeout_derivation.json").write_text(
++            json.dumps(report, indent=2), encoding="utf-8"
++        )
++    except OSError:
++        pass
++    return hang_timeout_seconds
++
++
+ @pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell launcher integration")
+ def test_child_without_runtime_session_is_terminated_and_restarted(tmp_path):
+     project = _prepare_fake_launcher_project(
+         tmp_path,
+@@ -898,12 +1033,13 @@
+             {"exit_code": 0},
+         ],
+     )
+ 
++    hang_timeout_seconds = _derive_worker_hang_timeout_seconds(tmp_path)
+     completed = _run_real_worker_launcher(
+         project,
+         timeout=15,
+-        worker_hang_timeout_seconds=0.5,
++        worker_hang_timeout_seconds=hang_timeout_seconds,
+         child_poll_milliseconds=100,
+     )
+ 
+     assert completed.returncode == 0, completed.stderr
+@@ -914,8 +1050,55 @@
+     restarting = next(event for event in events if event["status"] == "restarting")
+     assert unresponsive["reason"] == "session_start_timeout"
+     assert restarting["reason"] == "session_start_timeout"
+     assert len([event for event in events if event["status"] == "child_started"]) == 2
++
++
++@pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell launcher integration")
++def test_derived_hang_timeout_still_terminates_a_genuinely_hung_child(tmp_path):
++    """I-14-E-APPLY non-vacuity proof: the DERIVED timeout still fires.
++
++    The node above proves termination with a child that exits on its own, so a
++    derived timeout large enough to never fire would make its assertion vacuous
++    while still looking green.  Here the child that follows the restart is a
++    genuinely hung one (``sleep_seconds 30``, no runtime session), so the watchdog
++    MUST fire twice: once for the session-less first child and once for the hung
++    child that replaced it.  That produces a THIRD ``child_started``, which is
++    exactly the condition under which the node above fails.
++    """
++    project = _prepare_fake_launcher_project(
++        tmp_path,
++        [
++            {"sleep_seconds": 5, "exit_code": 0},
++            {"sleep_seconds": 30, "exit_code": 0},
++            {"exit_code": 0},
++        ],
++    )
++
++    hang_timeout_seconds = _derive_worker_hang_timeout_seconds(tmp_path)
++    completed = _run_real_worker_launcher(
++        project,
++        timeout=15,
++        worker_hang_timeout_seconds=hang_timeout_seconds,
++        child_poll_milliseconds=100,
++    )
++
++    assert completed.returncode == 0, completed.stderr
++    events = _launcher_events(project)
++    unresponsive = [event for event in events if event["status"] == "child_unresponsive"]
++    assert unresponsive, (
++        "watchdog never fired: the derived hang timeout is vacuous "
++        f"({hang_timeout_seconds}s)"
++    )
++    assert all(event["reason"] == "session_start_timeout" for event in unresponsive)
++    # the kill must land just past the DERIVED budget, not at some unrelated value
++    for event in unresponsive:
++        assert event["uptime_seconds"] <= hang_timeout_seconds + 1.0, event
++    starts = [event for event in events if event["status"] == "child_started"]
++    assert len(starts) == 3, (
++        "the genuinely hung child was NOT terminated -> the derived timeout is "
++        f"vacuous ({hang_timeout_seconds}s, starts={len(starts)})"
++    )
+ 
+ 
+ @pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell launcher integration")
+ def test_stale_child_heartbeat_is_terminated_and_restarted(tmp_path):

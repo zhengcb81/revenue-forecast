@@ -1,0 +1,162 @@
+{
+  "card_id": "INVEST-CORE-ATTEST-GATE",
+  "attempt_id": "a20260922-01",
+  "revision": "r1",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session; never the implementer)",
+    "scope_is_scoped_not_clean": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "scope_statement": {
+    "statement": "Acceptance is SCOPED, not clean (reviewer_report.md L12 verdict; L14 CONFIRMED summary; scope statement L16-L22). In scope, accepted: the delivered patch (changes.diff -> iso/invest-core-fixed, d59d579ce12e5e844d5cb67c202d4cf58800c413f65d69284606f48d72e17ad8) and its frozen proof package, with the reviewer's OWN re-executions: RED 7 failed / 3 passed on iso/invest-core (failure set == declared set {R1a,R1b,R2,R3,R3b,R4,R5}, rc 1), GREEN 10 passed (rc 0), mutation M1 7 failed / 3 passed (declared set exact; guard revert byte-exact, mutant 03aa8bbb...), diff two-side round-trip (git apply -p1 --check rc0 + apply rc0 -> d59d579c...) on TWO independent copies, all four consumer sources still 9ad8a146ab1535555b7fd74a14acbb8280c21d4eb22e3e92da3ab2965ba3cc45, oracle r1 prefix 7eaf81b925f21c21ba3f320111f3ea57c54dd74292a4ec5697111d0476f47796 recomputed from oracle.md[0:16936], trust anchors ABSENT everywhere (re-checked after his runs), production registry bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91 unchanged, no self-sign. Explicitly NOT accepted / NOT approved: MERGE - authority = invest-core owner (this card delivers a patch, not a merge); B1 issuance-side promotion and trust-anchor deployment are separate owner decisions. Conditions: (1) the 3 shipping-test failures -> ONE test-design card (false-green rewrite = merge acceptance criterion; shared-cache deepcopy fix; test edits NOT folded into the cross-repo merge diff); (2) landing order per adjudication A - trust-anchor deployment + B1 issuance promotion -> this patch (or one coordinated window), stay fail-closed, NO bypass flag ever; (3) F9/F10/F11 carried and registered here.",
+    "why_not_blocking": "All 8 declared claims (F1-F8) were verified by the reviewer from bytes and by his own runs; F9 (LOW) wording gap was closed by the reviewer's own re-hashing of every dropped anchor key, F10 (LOW) is attributable to a concurrent card and its filter scope is now recorded here, F11 (INFO) is wording only - none impairs the patch, the frozen proof, or the zero-write boundary.",
+    "not_verified_by_review": [
+      "U-1 IC-c3/IC-c4 full regression suites not re-run - captured stdout verified line-by-line, delta arithmetic (6 pre-existing + exactly 3) checked, tests/ byte-identity recomputed instead",
+      "U-2 --check rc0 at the .claude and .codex skills roots read from the card's proof, not re-executed (.agents + repo copy were re-verified)",
+      "U-3 B1 report byte-pin 73feb059.../37135 B 'PENDING' form not recomputed (current B1 file 37224 B, final form with 6bfd2922...)",
+      "U-4 the implementer's 'no other consumer copy' sweep not repeated - only the four named locations verified",
+      "U-5 freeze order rests on file mtimes + self-reported captured_at (no external timestamp authority); consistency checks all pass",
+      "U-6 'no network' assertion taken from commands.json (not straced)",
+      "U-7 cryptography-missing branch (ImportError -> attestation_signature_invalid) is pragma: no cover and was not exercised (50.0.1 present)",
+      "U-8 no whole-tree diff of every install surface - zero-write conclusion is hash-based on all pinned anchors (re-computed after his runs)"
+    ],
+    "carried_residuals": [
+      "F9 (LOW) - anchor-table wording gap: the before/after anchor tables are neither byte-identical nor key-identical (after-table drops rf constants x2, rf SKILL.md x2, trust_iso_config, both git HEADs). Reviewer closed each dropped key himself: constants 278e3e02... (repo+install), SKILL 45e4e343... (repo+install), iso trust ABSENT, HEADs 0ee17137.../1d2288c0... unchanged. Zero-write conclusion stands; wording fixed at landing.",
+      "F10 (LOW) - revenue-forecast_git_status_product filter scope undisclosed in commands.json; real source of the dirty path M tools/pre_push_gate.py (600->1200, mtime 2026-09-22T08:47:22, inside the attempt window) = concurrent GATE-TIMEOUT-1200 card, NOT this card (its commands.json never touches tools/; tools/pre_push_gate.py now declares timeout: int = 1200). Filter scope recorded here: key covers 'product' paths only, tools/ excluded.",
+      "F11 (INFO) - oracle r2.1+r2.2 = one combined append with one prefix proof (scratch/append_oracle_r2.json), not two independent proofs; substance holds (r1 prefix 7eaf81b9... proves r1 untouched).",
+      "COND-TEST-DESIGN-CARD (adjudication B) - one test-design card owed before/at merge; false-green rewrite is a merge acceptance criterion; test edits not folded into the merge diff.",
+      "COND-LANDING-ORDER (adjudication A) - trust-anchor deployment + B1 issuance promotion -> this patch (or one window); fail-closed landing state acceptable as declared breaking change, staged by decision order; no bypass flag ever.",
+      "COND-MERGE-NOT-APPROVED - merge authority = invest-core owner; explicitly not accepted here.",
+      "COND-ISSUER-NOT-PROMOTED - B1 issuance fix not promoted: production still mints the host_signed label from a 5-byte .txt with no record today (reviewer re-reproduced R1b live in his own RED run).",
+      "U-1..U-8 - the reviewer's eight explicitly unverified items (see not_verified_by_review), carried as declared boundary."
+    ]
+  },
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "verdict_line": 12,
+    "first_line_of_verdict": "**Reviewer disposition (three-state): `accepted_scoped`.**",
+    "line_range_inclusive_1_based": [1, 162],
+    "verdict_line_range_inclusive": [12, 12],
+    "confirmed_summary_line": 14,
+    "scope_statement_line_range_inclusive": [16, 22],
+    "in_scope_accepted_line": 18,
+    "not_accepted_not_approved_line": 19,
+    "conditions_line": 20,
+    "unchanged_fields_line": 21,
+    "reexecution_table_line_range_inclusive": [24, 30],
+    "findings_F1_to_F8_line_range_inclusive": [36, 109],
+    "F9_line_range_inclusive": [100, 101],
+    "F10_line_range_inclusive": [103, 104],
+    "F11_line_range_inclusive": [106, 107],
+    "unverified_list_line_range_inclusive": [113, 122],
+    "adjudication_A_line_range_inclusive": [124, 131],
+    "adjudication_B_line_range_inclusive": [133, 144],
+    "rem79_self_audit_line_range_inclusive": [148, 153],
+    "boundaries_note_line_range_inclusive": [155, 160],
+    "reviewer_role_line": 5,
+    "byte_offsets": {
+      "start": 0,
+      "end_inclusive": 24940,
+      "end_exclusive": 24941
+    },
+    "carrier_file_sha256": "09b4e13ec1bd242114521a19af645c3c82a47724aa9acb81df3082d604f00a74",
+    "carrier_file_bytes": 24941,
+    "carrier_file_total_lines": 162,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+    "pin_supersession": "RE-PINNED: this sha256 09b4e13e... SUPERSEDES the earlier pin f0627660... (the report was re-issued with the final ruling)",
+    "verdict_line_byte_region": {"start": 895, "end_inclusive": 952, "length": 58, "sha256": "db9d71ad918a1d5b9bc0a9031d7bb859a3595285466895bcf78c1d9aa8f48b93"},
+    "verdict_section_byte_region_L10_14": {"start": 883, "end_inclusive": 1315, "length": 433, "sha256": "e2f27f742d875f4f773500d4b52e3fa9f6750de0cce4bc3bca00a9a66a1c598f"},
+    "scope_statement_byte_region_L16_22": {"start": 1318, "end_inclusive": 3520, "length": 2203, "sha256": "614ea4b997d8a97a9e2f0b654c0d15d20d6da1aca19bffb8f34489aa374bb69a"},
+    "unverified_list_byte_region_L113_122": {"start": 17382, "end_inclusive": 18628, "length": 1247, "sha256": "c0c5f9f632dcccd2cdb58c31af6734d2d8c0051dbb81a720e1bd5a81afc5d8f9"},
+    "adjudication_A_byte_region_L124_131": {"start": 18631, "end_inclusive": 20401, "length": 1771, "sha256": "df7b6999a2f94a80b3c6095641aa665a1658e33839b387037db70796a7a12cb3"},
+    "adjudication_B_byte_region_L133_144": {"start": 20404, "end_inclusive": 23041, "length": 2638, "sha256": "5b158e4d5c249684fd2af5ff1d568005c9f4e2fd86e0fd93a0c7d06900091870"},
+    "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 24939, "length": 24940, "sha256": "b463a333605999099ee58cd23d0dda8707f3ee55413209043a4196d2b3774729"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the terminating LF unless stated",
+    "pin_sidecar": {
+      "file": "reviewer_report.md.sha256",
+      "present": true,
+      "bytes": 85,
+      "sha256": "2e09db60c4078775311495452f8e6f9cf5554b2597e4de8207e7d996ac678f9c",
+      "content": "09b4e13ec1bd242114521a19af645c3c82a47724aa9acb81df3082d604f00a74  reviewer_report.md",
+      "verified": "read-only re-hash of reviewer_report.md at landing == sidecar == dispatch pin; measured 24941 B == dispatch; verdict line 12 greps to accepted_scoped"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by the bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核), not by the implementer",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_transcription_adds_no_acceptance": true,
+    "no_production_writes": true,
+    "install_surface_bytes_written": 0,
+    "invest_skills_repo_bytes_written": 0,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "signatures_produced": 0
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "the delivered patch changes.diff -> iso/invest-core-fixed (d59d579c...) and its frozen proof package, as independently re-executed by the reviewer (RED 7F/3P declared==observed, GREEN 10P, M1 7F/3P byte-exact revert, two-side diff round-trip on two independent copies)",
+      "zero-write boundary re-verified by the reviewer: four sources still 9ad8a146..., trust anchors ABSENT, production registry bc3256bb... unchanged, invest-skills HEAD 0ee17137... unchanged, no self-sign",
+      "oracle freeze + append-only r2 verified with an independent prefix-hash recomputation (r1 = 7eaf81b9...)"
+    ],
+    "not_granted": [
+      "MERGE of changes.diff into invest-core or any install surface - authority = invest-core owner; NOT approved",
+      "B1 issuance-side promotion - separate owner decision",
+      "trust-anchor deployment - separate owner decision",
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production-tree write permission (production writes by this landing: 0)",
+      "resolution of the reviewer's 8 unverified items (U-1..U-8) - carried as declared boundary"
+    ]
+  },
+  "adjudications": {
+    "A": "fail-closed-for-all-existing-host_signed is ACCEPTABLE as the declared breaking-change landing state, staged by the ORDER of owner decisions (trust-anchor deployment + B1 issuance promotion -> this patch, or one window), never by behavior-staging inside the guard; no bypass flag ever; monitor attestation_missing_record / provider_key_untrusted during the window (reviewer_report.md lines 124-131)",
+    "B": "open ONE test-design card, before/at merge; the false-green rewrite (test_current_revenue_workflow_receipt_is_transferred) is a merge acceptance criterion; the two shared-cache cascades are fixed by a deepcopy in the mutator; test edits NOT folded into the cross-repo merge diff (reviewer_report.md lines 133-144)"
+  },
+  "carried_findings": [
+    {"id": "F9", "severity": "LOW", "kind": "disclosure_wording_anchor_tables", "origin": "reviewer_report.md F9 (lines 100-101)", "finding": "『byte-identical anchor tables』 wording inaccurate - the after-table is a reduced key set (drops rf constants x2, rf SKILL.md x2, trust_iso_config, both git HEADs; adds iso arm hashes + captured_at)", "disposition": "reviewer closed each dropped key himself (constants 278e3e02..., SKILL 45e4e343..., iso trust ABSENT, HEADs 0ee17137.../1d2288c0... unchanged); zero-write conclusion STANDS; wording fixed at landing (handoff supersessions)", "status": "carried_wording_fixed_at_landing"},
+    {"id": "F10", "severity": "LOW", "kind": "scope_disclosure_git_status_filter", "origin": "reviewer_report.md F10 (lines 103-104)", "finding": "revenue-forecast_git_status_product filter scope undisclosed; dirty path M tools/pre_push_gate.py (600->1200, mtime 08:47:22, inside the attempt window) vs recorded empty string", "disposition": "real source = concurrent GATE-TIMEOUT-1200 card, NOT this card (commands.json never touches tools/ - verified at landing; pre_push_gate.py now timeout: int = 1200); filter scope recorded here (product paths only, tools/ excluded); card's own anchors verified unchanged", "status": "carried_recorded"},
+    {"id": "F11", "severity": "INFO", "kind": "append_mechanics_wording", "origin": "reviewer_report.md F11 (lines 106-107)", "finding": "r2.1+r2.2 = one combined append with one prefix proof, not two independent proofs", "disposition": "substance holds - both sections appended after the r1 byte range; r1 prefix 7eaf81b9... proves r1 untouched", "status": "carried_not_resolved"},
+    {"id": "COND-TEST-DESIGN-CARD", "severity": "condition (merge)", "kind": "adjudication_B", "origin": "reviewer_report.md line 20 cond (1) + lines 133-144", "finding": "3 shipping-test failures -> ONE test-design card; false-green rewrite = merge acceptance criterion; shared-cache deepcopy fix", "disposition": "test edits NOT folded into the cross-repo merge diff; card owed before/at merge", "status": "owed_open_one_card"},
+    {"id": "COND-LANDING-ORDER", "severity": "condition (landing)", "kind": "adjudication_A", "origin": "reviewer_report.md line 20 cond (2) + lines 124-131", "finding": "trust-anchor deployment + B1 issuance promotion -> this patch (or one window); fail-closed; no bypass flag ever", "disposition": "staged by owner decision order, not inside the guard", "status": "carried_condition"},
+    {"id": "COND-MERGE-NOT-APPROVED", "severity": "standing", "kind": "authority", "origin": "reviewer_report.md lines 14 + 19", "finding": "merge explicitly NOT accepted/NOT approved - authority = invest-core owner", "disposition": "handoff merge_authority unchanged", "status": "open_owner_decision"},
+    {"id": "COND-ISSUER-NOT-PROMOTED", "severity": "standing", "kind": "production_state", "origin": "reviewer F4/R1b (lines 66-70)", "finding": "B1 issuer fix not promoted - production still mints host_signed from a 5-byte .txt with no record today (R1b re-reproduced live by the reviewer)", "disposition": "separate owner decision; patch's defense-in-depth value stands", "status": "open_owner_decision"},
+    {"id": "U-1..U-8", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md lines 113-122", "finding": "the reviewer's 8 explicitly unverified items (full regression suites, .claude/.codex --check, B1 pin, no-other-copy sweep, freeze-order timestamps, no-network, cryptography-missing branch, whole-tree install-surface diff)", "disposition": "declared boundary with reasons; carried unresolved by design; this landing neither re-runs nor re-judges them", "status": "carried_declared_boundary"}
+  ],
+  "eligibility_statement": {
+    "formula_classification": "No revenue-forecast formula work qualified by this card: it delivers an invest-core consumer attestation gate patch (changes.diff) plus its isolated red/green proof. No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "production_write": "NOT GRANTED. Production read-only throughout; 0 production bytes written by this landing pass (3 install surfaces and Projects\\invest-skills untouched).",
+    "merge": "NOT GRANTED. changes.diff remains unapplied; four consumer copies remain 9ad8a146...; invest-skills HEAD 0ee17137... unchanged."
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "verified the re-pinned carrier read-only (24941 B / 09b4e13e... == sidecar == dispatch pin; old pin f0627660... superseded; verdict line 12 = accepted_scoped); created review.md (transcribed verdict block, no acceptance of its own); appended status_authority/bookkeeping/8 carried findings to handoff.json and superseded 6 stale pre-verdict fields byte-exact under *_historical_pre_verdict / STALE-PHRASING; created this qualification record; wrote 0 bytes to reviewer_report.md and its sidecar",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "production_bytes_written": 0,
+    "status_transition": "review_pending -> accepted_scoped",
+    "files_written": [
+      "review.md (created)",
+      "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping + 8 carried findings appended + 6 stale-field supersessions; pre-existing content otherwise untouched; pre-image 25944 B / sha256 1a6d6e74608c218ed813603bc341d3835f61e77d5fdb4b9800a5f94a917c415a)",
+      "evidence/INVEST-CORE-ATTEST-GATE/qualification.json (created, this file)"
+    ]
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven; merge, B1 issuance promotion and trust-anchor deployment stay open owner decisions. The verdict lives in reviewer_report.md (sha256 09b4e13ec1bd242114521a19af645c3c82a47724aa9acb81df3082d604f00a74, 24941 B, pinned by reviewer_report.md.sha256, superseding the earlier f0627660... pin) and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own."
+}

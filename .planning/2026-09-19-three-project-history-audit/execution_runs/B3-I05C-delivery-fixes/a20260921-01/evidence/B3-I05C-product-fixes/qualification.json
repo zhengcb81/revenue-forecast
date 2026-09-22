@@ -1,0 +1,202 @@
+{
+  "card_id": "B3-I05C-delivery-fixes",
+  "attempt_id": "a20260921-01",
+  "revision": "r1",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "ACCEPT — with one new P3 finding (RF-1) and four documentation/precision findings (RF-2..RF-5), and with CF-1 accepted only as a *registered* carry.",
+    "verdict_written_by": "independent reviewer subagent (reviewer_report.md L5: 'Reviewer: independent (not the implementer, not self-signed)'); never the implementer, never the carrier-backfill pass",
+    "verdict_location": "reviewer_report.md L18-L19 (section header §1 VERDICT at L16); one-line restatement §10 at L511-L516",
+    "scope_is_scoped_not_clean": true,
+    "status_mapping_note": "the reviewer's label is ACCEPT-with-conditions; the handoff status vocabulary records it as accepted_scoped, consistent with the sibling cards and with the conditions C1/C2 the review attached"
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "transcribed_scope": {
+    "verdict": "ACCEPT with conditions: all nine implementer claims verified by independent re-execution; the M4b vacuity proof confirmed and strengthened (20/20 carrier passes on BOTH stale A55602E5 bytes and production 225FECDD bytes, so the original I-05-C w05b-regression record was vacuous); every RED/GREEN/mutation number reproduced from scratch with identical failing-node sets",
+    "conditions_C1": "L30-L34 (blocking for promotion, not for this verdict): CF-1 must be entered in REMEDIATION_REGISTER.md before iso/fixed/rf_scripts/company_wiki_source.py (7D1BD8F9...) is promoted into RF:scripts/; the register had no CF-1 row and still listed REM-11..14 as 待修 - 'a carried finding that lives only in an attempt directory is not carried'",
+    "conditions_C2": "L35-L39 (recommended before this conftest is reused): RF-1 - the attempt's own iso/conftest.py binding guard does not check what its docstring says it checks and its sys.path prepend order is the inverse of its stated intent; contained by in-test explicit binding so no recorded result is invalidated, but it must not be carried forward as 'the mechanism that prevents REM-12 recurring'",
+    "no_promotion": "L41-L42: 'Do not promote 7D1BD8F9… from this verdict. Promotion is an owner decision; this report only adjudicates the evidence.'",
+    "RF1": "NEW P3 (L315-L356): iso/conftest.py:66-84 claims it fails the session if the fixed sources are not the ones the importer will find; it only asserts FIXED_RF in sys.path and fixed_cws_exists, and find_spec_origin is recorded but never checked; the prepend loop inserts (FIXED_CW, FIXED_RF, RF/scripts, CW/src) each at position 0 so production ends up AHEAD of the fixed copy; as delivered scratch/module_provenance.json reports the production bytes 225FECDD/19364 because it is last-writer-wins (last conftest-loaded run = production control CTRL-D)",
+    "RF5": "NEW P3 bounded (L395-L404): after/integrity.json expected_frozen for I-05-C:oracle.md is the literal NOT_REHASHED - recorded but never compared - while handoff.json:188 claimed it 'compares every frozen hash'; also integrity.json does not cover the I-05-C/**/I-05-B/** iso/** carriers at all",
+    "CF1": "carried P3 (§4 L267-L309): RF:scripts/source_preparation.py:134-138 comment is doubly wrong (producer_events is neither a downstream DAG closure nor 'of the non-reusable roles' - it is the ancestor-closure of the REQUESTED roles); ruling 'ACCEPT AS CARRIED - conditional on registration (C1). Do not require the edit now; do require it before promotion'; suggested wording L308-L309 'producer_events = requested missing roles + their non-reusable ancestors'",
+    "other_findings_not_closed": "RF-2 (L357-L362, '8 new tests' is the RED count), RF-3 (L363-L384, re-hosted FC-904 carrier not literal-verbatim + location-dependent assertion at test_fc904:379), RF-4 (L385-L394, REM-14 test re-derives from a hand-maintained duplicate), RF-6 (L405-L415, attempt directory partially committed mid-flight) - all remain as the original reviewer recorded them; B3-PREREQ closed only RF-1/RF-5/CF-1",
+    "reviewer_request_statuses": "§9 L493-L505: all 8 reviewer_requests from this handoff dispositioned CLOSED by the reviewer (including #7 CF-1: 'accept as carried, but require register entry (C1) and require the edit before promotion')",
+    "unverified_list": "§6 L418-L449: no external baseline for gitignored frozen iso/** carriers; the historical I-05-C w05b-regression invocation itself; whether A55602E5 was genuinely the I-05-B-era production pre-image; real-repo behaviour of the promoted fix (no production write, no integration/CLI path exercised)"
+  },
+  "scope_notes_baked_into_acceptance": [
+    "Condition C1 (this card, L30-L34): the CF-1 register row and REM-11..14 register closure are a parent/owner call - not taken here and not taken by the fixcard (B3-PREREQ reviewer_report.md L185 reserves register-row closure to the parent/owner)",
+    "Condition C2 (this card, L35-L39): RF-1's conftest guard must never be presented as 'the mechanism that prevents REM-12 recurring' - carried forward into this card's scope",
+    "Promotion of 7D1BD8F9... is an owner decision this review never made (L41-L42) - carried forward",
+    "RF-3's location-dependent assertion is still present in the carrier (test_fc904_artifact_selection.py:379) - P4, owned by RF-3, fails identically in any relocated tree, correctly not edited (B3-PREREQ reviewer_report.md L186)",
+    "Vendored W05B/W05C suites were not re-run in the fixcard review (B3-PREREQ L187, §6.4) and were not re-run by this landing - declared bounded gap",
+    "REM-49 remains deliberately not landed in production (production source_preparation.py 37A3EEAE... == B3-accepted 37A3EEAE...); landing it is a separate production change if ever desired (B3-PREREQ L188)"
+  ],
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "carrier_file_sha256": "3B8A9167BF0CAF163761D8702B619DFEFBE4F4EDB3EB2741EB5C58BDAB6E3DBE",
+    "carrier_file_sha256_lowercase": "3b8a9167bf0caf163761d8702b619dfebbe4f4edb3eb2741eb5c58bdab6e3dbe",
+    "carrier_file_bytes": 36110,
+    "carrier_file_total_lines": 534,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+    "verdict_lines_inclusive": [18, 19],
+    "verdict_line_text": "**ACCEPT — with one new P3 finding (RF-1) and four documentation/precision findings (RF-2..RF-5), and with CF-1 accepted only as a *registered* carry.**",
+    "line_ranges_inclusive_1_based": {
+      "meta": [1, 14],
+      "verdict_section": [16, 42],
+      "verdict_sentence": [18, 19],
+      "condition_C1": [30, 34],
+      "condition_C2": [35, 39],
+      "no_promotion": [41, 42],
+      "claim_verification": [46, 212],
+      "adjudication_FC904": [214, 263],
+      "adjudication_CF1": [267, 309],
+      "CF1_conditions": [298, 309],
+      "findings_header": [313, 313],
+      "RF1": [315, 356],
+      "RF2": [357, 362],
+      "RF3": [363, 384],
+      "RF4": [385, 394],
+      "RF5": [395, 404],
+      "RF6": [405, 415],
+      "unverified": [418, 449],
+      "negative_results": [451, 471],
+      "review_evidence": [473, 489],
+      "request_statuses": [493, 505],
+      "one_line_verdict_section": [509, 516],
+      "one_line_verdict": [511, 516],
+      "byte_pin": [520, 534]
+    },
+    "byte_offsets": {"start": 0, "end_inclusive": 36109, "end_exclusive": 36110},
+    "byte_proof": {
+      "verdict_sentence_L18_L19": {"start": 971, "end_inclusive": 1124, "length": 154, "sha256": "51ed25d9ce26ca7a3795f313b18a2b5f5dcaa2cfe4597bfac1bfc5d299dd9047"},
+      "verdict_section_L16_L42": {"start": 956, "end_inclusive": 2702, "length": 1747, "sha256": "5ba4fd6dded87762eacb1258331acea8133b0276ec4e17d326acc26b550ce41a"},
+      "conditions_block_L28_L42": {"start": 1630, "end_inclusive": 2702, "length": 1073, "sha256": "d20b0fa0e2e9981fcc24bc40a2d1868c3d9c5ef6897e68a40ce1363474b9b728"},
+      "C1_L30_L34": {"start": 1708, "end_inclusive": 2149, "length": 442, "sha256": "44cb1f1878eb767a7539e2696a2476ac942cd3a78fa2b6878f45b1ae6ac7f713"},
+      "C2_L35_L39": {"start": 2151, "end_inclusive": 2574, "length": 424, "sha256": "a2a6f13f0bece79f40c420064abaabfa10eb322e9c9910c081bd2c0e6e5efe5d"},
+      "no_promotion_L41_L42": {"start": 2577, "end_inclusive": 2702, "length": 126, "sha256": "b2b2812307cea70b8155403738fa21c3cd8b5a786cc681ebb250f398b1c71646"},
+      "CF1_section_L267_L309": {"start": 18138, "end_inclusive": 20702, "length": 2565, "sha256": "f02f7e06e4b79bdd07b3373ac2bf91d54320f047c9869cf16f4a5251477b6795"},
+      "CF1_conditions_L298_L309": {"start": 19812, "end_inclusive": 20702, "length": 891, "sha256": "417009561b8685a4299459fe91908721f9c5a23938700615b3bd5db2b1db24b5"},
+      "RF1_L315_L356": {"start": 20726, "end_inclusive": 23666, "length": 2941, "sha256": "9d87689c04b98851079517a101f38c4e9621c9fe15901c0d75604b934b4421fa"},
+      "RF5_L395_L404": {"start": 26425, "end_inclusive": 27116, "length": 692, "sha256": "d8382ed5fec71ec365190bff2953acca68f77a1b9fafda1bdce9194c2e3b61e5"},
+      "one_line_verdict_L511_L516": {"start": 34822, "end_inclusive": 35343, "length": 522, "sha256": "02005a11ee68ccfcfb3da5ed250bc3f9b31efecd2aa4bcacb44f028fceea5121"},
+      "whole_file_minus_trailing_lf": {"length": 36109, "sha256": "b76f4efccbbaa0c1d17df1623a2dcbba3a19e9ed5549efbb8131d72bff6933d7"},
+      "region_definition": "0-based byte offsets against the file as it stands at carrier_file_sha256; region lengths exclude the terminating LF"
+    },
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "present": true,
+      "bytes": 292,
+      "content": "FINAL  sha256=3B8A9167BF0CAF163761D8702B619DFEFBE4F4EDB3EB2741EB5C58BDAB6E3DBE  bytes=36110  file=reviewer_report.md\nBODY   sha256=71761E8E589C75BA89AF48DA0A5022309358ECAA2D3D0C388DF349970D9C253F  bytes=35345  file=reviewer_report.md (sections 1-10, before the BYTE PIN section was appended)",
+      "verified": "read-only re-hash of reviewer_report.md at landing == sidecar FINAL pin == 36110 B; verdict sentence greps to ACCEPT at L18-L19; 6 findings RF-1..RF-6 with RF-1/RF-5/CF-1 as pre-promotion conditions"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by the carrier-backfill bookkeeping pass; it transcribes the reviewer's verdict (L18-L19) and the RF-1/RF-5/CF-1 condition closure, and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "fixcard": {
+    "card_id": "B3-PREREQ",
+    "attempt_id": "a20260922-01",
+    "role": "closed this card's three pre-promotion findings RF-1 / RF-5 / CF-1 (fixcard remediation ids REM-47 / REM-48 / REM-49)",
+    "reviewer_report": {
+      "file": "execution_runs/B3-PREREQ/a20260922-01/reviewer_report.md",
+      "sha256": "F367984B6BA6A8793C5A3F598686077CAF8AFCF413FE6356B69B47D4B7B23C53",
+      "sha256_lowercase": "f367984b6ba6a8793c5a3f598686077caf8afcf413fe6356b69b47d4b7b23c53",
+      "bytes": 15544,
+      "lines": 189,
+      "verdict_line": 3,
+      "verdict_line_text": "**Verdict: `accepted_scoped`** — with one non-blocking wording finding (F-1).",
+      "pin_sidecar": {"file": "reviewer_report.md.sha256", "bytes": 84, "sha256": "e5852d16205ad11f3055a32762bfd275ffa5bdb0dd681eb67522e724544fa655", "content": "F367984B6BA6A8793C5A3F598686077CAF8AFCF413FE6356B69B47D4B7B23C53  reviewer_report.md"},
+      "claim_line_ranges": {"REM47_RF1": [30, 58], "REM48_RF5": [60, 87], "REM49_CF1": [89, 106], "mutations": [108, 122], "boundaries": [124, 132], "superseded_runs": [134, 143], "F1_wording": [145, 160], "unverified": [162, 169], "scope_notes": [183, 189]}
+    },
+    "carrier_landing": [
+      {"file": "execution_runs/B3-PREREQ/a20260922-01/review.md", "bytes": 14706, "sha256": "36939B189343C04FDE68EB2E8AF7D345F93A82B1B80333E403F3D945F7C8C80A"},
+      {"file": "execution_runs/B3-PREREQ/a20260922-01/evidence/B3-PREREQ/qualification.json", "bytes": 17258, "sha256": "47374014B5B7EEFD6D360F1B9D441F3D55A48BAEEB524125BB07DD0F3AB05200"}
+    ]
+  },
+  "condition_closure": {
+    "RF-1": {
+      "state": "closed_by_fixcard",
+      "original_carrier": "reviewer_report.md L315-L356; condition C2 L35-L39",
+      "closed_by": "B3-PREREQ a20260922-01, REM-47 / RF-1 (fixcard claim L30-L58)",
+      "fixcard_report_sha256": "F367984B6BA6A8793C5A3F598686077CAF8AFCF413FE6356B69B47D4B7B23C53",
+      "fixcard_verdict": "accepted_scoped (fixcard reviewer_report.md L3)",
+      "evidence": ["B3-PREREQ evidence/rem47_guard_baseline_RED.txt (RED on B3 baseline conftest: 2 failed / 2 passed - P2+P3)", "B3-PREREQ evidence/rem47_guard_fixed2_GREEN.txt (4 passed)", "B3-PREREQ evidence/rem47_provenance_baseline_RED.txt", "B3-PREREQ evidence/rem47_provenance_fixed2_GREEN.txt", "B3-PREREQ evidence/mutation_MUT1_guard_order_RED.txt", "B3-PREREQ evidence/mutation_MUT2_provenance_RED.txt"],
+      "carrier_landings": ["B3-PREREQ review.md 14706 B 36939B189343C04FDE68EB2E8AF7D345F93A82B1B80333E403F3D945F7C8C80A", "B3-PREREQ evidence/B3-PREREQ/qualification.json 17258 B 47374014B5B7EEFD6D360F1B9D441F3D55A48BAEEB524125BB07DD0F3AB05200"],
+      "carried_residual": "C2's non-claim still governs: this guard is NOT 'the mechanism that prevents REM-12 recurring'"
+    },
+    "RF-5": {
+      "state": "closed_by_fixcard",
+      "original_carrier": "reviewer_report.md L395-L404",
+      "closed_by": "B3-PREREQ a20260922-01, REM-48 / RF-5 (fixcard claim L60-L87)",
+      "fixcard_report_sha256": "F367984B6BA6A8793C5A3F598686077CAF8AFCF413FE6356B69B47D4B7B23C53",
+      "fixcard_verdict": "accepted_scoped (fixcard reviewer_report.md L3)",
+      "evidence": ["B3-PREREQ evidence/rem48_flag_census.txt (4 expected_frozen, exactly 1 NOT_REHASHED at after/integrity.json:23, flag kept)", "B3-PREREQ evidence/rem48_verification.txt", "B3-PREREQ evidence/rem48_superseded/handoff.json.pre-correction (CEE4B0DD157A6ED2F322C40258534414C0C64187D3F2C3E9EA3F3DFF7DEC171D) -> corrected handoff E33D82A9E418A7CDFE04FE17CE435FF2F48EA06C27CAF096A9AB590C4683A493", "B3-PREREQ changes.diff (diff 3, exactly line 188)", "fixcard reviewer additionally re-derived I-05-C/a20260919-01/oracle.md = E4004563B8BBC403D7C8E3856A5FCB95AC3107E57FE891D7B848C5E9834CB34B, git-clean, empty git diff 8b7229c3..HEAD"],
+      "carrier_landings": ["B3-PREREQ review.md 14706 B 36939B189343C04FDE68EB2E8AF7D345F93A82B1B80333E403F3D945F7C8C80A", "B3-PREREQ evidence/B3-PREREQ/qualification.json 17258 B 47374014B5B7EEFD6D360F1B9D441F3D55A48BAEEB524125BB07DD0F3AB05200"],
+      "carried_residual": "the coverage gap at L402-L403 (integrity.json does not cover the I-05-C/I-05-B iso/** carriers) stays a declared bounded gap in this card's §6"
+    },
+    "CF-1": {
+      "state": "finding_closed_by_fixcard_register_row_owner_call_open",
+      "original_carrier": "reviewer_report.md §4 L267-L309 (conditions L298-L309)",
+      "closed_by": "B3-PREREQ a20260922-01, REM-49 / CF-1 (fixcard claim L89-L106)",
+      "fixcard_report_sha256": "F367984B6BA6A8793C5A3F598686077CAF8AFCF413FE6356B69B47D4B7B23C53",
+      "fixcard_verdict": "accepted_scoped (fixcard reviewer_report.md L3)",
+      "evidence": ["B3-PREREQ evidence/rem49_comment_fix_GREEN.txt (5 passed)", "B3-PREREQ evidence/rem49_fc904_baseline.xml + rem49_fc904_fixed2.xml (16 testcases / 1 failure each, same RF-3 node)", "B3-PREREQ evidence/rem49_fc904_parity.json (per_node_identical=true, 15 passed / 1 failed both sides)", "B3-PREREQ evidence/mutation_MUT3_comment_RED.txt (3 failed / 2 passed as declared)", "zero-behaviour-delta: byte diff = exactly 1 differing line pair (L138), both '#'; ast.dump identical; compile() OK both"],
+      "carrier_landings": ["B3-PREREQ review.md 14706 B 36939B189343C04FDE68EB2E8AF7D345F93A82B1B80333E403F3D945F7C8C80A", "B3-PREREQ evidence/B3-PREREQ/qualification.json 17258 B 47374014B5B7EEFD6D360F1B9D441F3D55A48BAEEB524125BB07DD0F3AB05200"],
+      "carried_residual_historical_pre_verdict": "condition C1's REMEDIATION_REGISTER.md row for CF-1 (and REM-11..14 register closure) is NOT closed by the fixcard - B3-PREREQ reviewer_report.md L185 reserves register-row closure to the parent/owner; REM-49 stays deliberately out of production (prod source_preparation.py 37A3EEAE... == B3-accepted 37A3EEAE...)",
+      "carried_residual": "at backfill time (write 1) the register row was an open parent/owner call - B3-PREREQ reviewer_report.md L185 reserves register-row closure to the parent/owner; it was subsequently CLOSED BY THE PARENT on 2026-09-22, see register_row_closed_by (backfill-time text retained verbatim in carried_residual_historical_pre_verdict). Closure semantics per REMEDIATION_REGISTER section 二十四 L687: REM-47/48/49 rows = fix complete + independent review closure + carrier landing, explicitly NOT promotion; REM-49 still deliberately out of production (prod source_preparation.py 37A3EEAE... == B3-accepted 37A3EEAE...)",
+      "register_row_closed_by": "REMEDIATION_REGISTER.md §二十四 (parent, 2026-09-22)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by the independent reviewer at reviewer_report.md L18-L19 (sha256 3B8A9167BF0CAF163761D8702B619DFEFBE4F4EDB3EB2741EB5C58BDAB6E3DBE), not by the implementer and not by this pass",
+    "landing_agent": "carrier-backfill bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_transcription_adds_no_acceptance": true,
+    "no_production_writes": true,
+    "production_bytes_written": 0,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "git_writes": 0,
+    "signatures_produced": 0,
+    "files_written_by_this_pass": [
+      "review.md (created)",
+      "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping appended; reviewer_status and next_action superseded with *_historical_pre_verdict retention; pre-existing content otherwise untouched; pre-image 26076 B / sha256 E33D82A9E418A7CDFE04FE17CE435FF2F48EA06C27CAF096A9AB590C4683A493)",
+      "evidence/B3-I05C-product-fixes/qualification.json (created, this file)"
+    ],
+    "exactly_three_files_written": true
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "bookkeeping status transition review_pending -> accepted_scoped, carried from the original reviewer's ACCEPT-with-conditions verdict (reviewer_report.md L18-L19) into review.md and handoff.json",
+      "record that conditions RF-1 / RF-5 / CF-1 are CLOSED by B3-PREREQ a20260922-01 (verdict accepted_scoped, carrier sha256 F367984B...B23C53, carrier landing review.md 36939B18... + qualification.json 47374014...)",
+      "carrier-landing of this card's own verdict block and this qualification record"
+    ],
+    "not_granted": [
+      "any new acceptance - the verdict is the original independent reviewer's, cited by file + line + sha",
+      "condition C1 register-row closure for CF-1 / REM-11..14 (PARENT/OWNER call; not taken here nor by the fixcard)",
+      "promotion of iso/fixed/rf_scripts/company_wiki_source.py 7D1BD8F9... into RF:scripts/ (PARENT/OWNER call; explicitly refused at L41-L42)",
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production-tree write permission (production writes by this landing: 0)",
+      "resolution of RF-3's P4 location-dependent assertion (owned by RF-3, still present at test_fc904:379)",
+      "re-run claims for W05B/W05C vendored suites, the mutations, FC-904, or this card's suites - none re-executed by this landing"
+    ]
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-backfill bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "verified the original carrier read-only (3B8A9167...E3DBE / 36110 B == reviewer_report.sha256 FINAL pin; verdict ACCEPT at L18-L19; conditions C1/C2 at L30-L39; findings RF-1 L315-L356, RF-5 L395-L404, CF-1 section L267-L309); verified the fixcard read-only (F367984B...B23C53 / 15544 B == its sidecar == dispatch pin, verdict accepted_scoped at L3, carrier landing review.md 14706 B + qualification.json 17258 B); created review.md with the transcribed verdict block and the RF-1/RF-5/CF-1 condition-closure section (no acceptance of its own); set status + status_before_bookkeeping_fix + status_authority + bookkeeping with the condition_closure map; superseded the stale awaiting-review prose (status_authority null verdict, reviewer_status not_yet_reviewed, next_action 'assign a reviewer') with *_historical_pre_verdict retention (REM-83 species); created this qualification record; wrote 0 bytes to reviewer_report.md / reviewer_report.sha256, 0 production bytes, 0 git writes",
+    "status_transition": "review_pending -> accepted_scoped",
+    "pre_image_handoff": {"bytes": 26076, "sha256": "E33D82A9E418A7CDFE04FE17CE435FF2F48EA06C27CAF096A9AB590C4683A493"},
+    "pre_existing_fields_untouched": "all other pre-existing handoff.json keys (source_findings, what_was_fixed, fc904_conflict_resolution, red_green, mutation_proof, changed_paths, current_source_hashes, frozen_artifacts_untouched, commands_executed, raw/expected exit codes, completed_steps, next_step_number, reviewer_requests, blocked_by, open_questions, input_hashes, boundaries incl. disclosure_adaptation=unmapped and accuracy=unproven, evidence_paths, isolation, interpreter, recovery) were left byte-untouched",
+    "qualification_json_note": "R1 (2026-09-22 backfill write 1): this file is created by the parent-dispatched backfill pass, not by the original implementer run; the pre-existing handoff sentence boundaries.qualification_impact ('No qualification.json is produced by this attempt') was retained untouched as the implementer-time record of that original run, with the supersession recorded in handoff.json bookkeeping (REM-83 species). R2 (2026-09-22 parent-directed in-place correction, write 2): that sentence is now literally falsified by this file's existence, so boundaries.qualification_impact was corrected IN PLACE - original preserved verbatim at boundaries.qualification_impact_historical_pre_verdict, plus boundaries.qualification_impact_superseded_reason = 'file now exists; sentence falsified by this backfill's own third write'; this mirror note updated to match."
+  },
+  "parent_note": "2026-09-22 parent-directed correction pass (REM-83 species; still only these 3 files, 0 production writes, 0 git writes, no signature, no new verdict): (1) handoff.json boundaries.qualification_impact superseded in place - the original sentence is preserved verbatim at qualification_impact_historical_pre_verdict and the new value states that this qualification.json exists (formula.state=accepted_scoped, state_before_bookkeeping_fix=review_pending) and that the old sentence was true only before this file was created; (2) CF-1's residual owner call - the REMEDIATION_REGISTER row - was CLOSED BY THE PARENT at REMEDIATION_REGISTER.md section 二十四 (L667, '父执行登记关闭 · REM-47/48/49 + B3-PREREQ 落定入账', 2026-09-22), whose closure semantics (L687) are 'fix complete + independent review closure + carrier landing' and explicitly NOT promotion; recorded as condition_closure.CF-1.register_row_closed_by with the backfill-time state retained verbatim as carried_residual_historical_pre_verdict (time-order honest: open at backfill, closed by parent immediately after); (3) RF-2 / RF-3 / RF-4 / RF-6 and report section 6 unverified items remain OPEN exactly as recorded - untouched by this correction. The set of files written remains exactly review.md, handoff.json, evidence/B3-I05C-product-fixes/qualification.json; this pass is their second write.",
+  "note": "created by the carrier-backfill pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven; condition C1 (CF-1 register row + REM-11..14 register closure) and promotion of 7D1BD8F9... stay parent/owner calls; RF-3's P4 location-dependent assertion stays owned by RF-3 (still present at test_fc904:379); W05B/W05C stay un-re-run; REM-49 stays deliberately out of production (prod source_preparation.py 37A3EEAE... == B3-accepted 37A3EEAE...). The verdict lives in reviewer_report.md (sha256 3B8A9167BF0CAF163761D8702B619DFEFBE4F4EDB3EB2741EB5C58BDAB6E3DBE, 36110 B, pinned by reviewer_report.sha256) at L18-L19 and was written by the independent reviewer; this file and review.md transcribe it and add no acceptance of their own."
+}

@@ -1,0 +1,160 @@
+{
+  "card_id": "REM79-MECHANIZATION",
+  "attempt_id": "a20260922-01",
+  "revision": "r3 carrier landing (post independent review)",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session dispatched by parent session-bfecd191-fbc3-4a66-8ed1-6562479bf102; never the implementer)",
+    "scope_is_scoped_not_clean": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "scope_statement": {
+    "statement": "Acceptance is SCOPED, not clean (reviewer_report.md line 8 verdict; rationale line 10). The reviewer independently re-computed the three-segment frozen oracle chain, read all three verify summaries in full with raw-stdout cross-checks, ran one read-only corpus smoke test of the deliverable checker, read both archived parent adjudications and the final 2 residual lines' content, checked the honest-gap ledger for parity with the dispatch's 7 gaps, and checked the write boundaries (mtimes/hashes). Five findings are recorded; none of the 5 is blocking (F1 is a disclosed documentation nit). The six scope conditions below are binding and must be read together with the verdict.",
+    "why_not_blocking": "F1 is a disclosed documentation nit: the round-3 RED naive misreport is 7 lines instead of 14 because unit X2 mirrored the marker-side skips (D10b/D11) into the RED arm — disclosed in the handoff's round-3 RED note and consistent with oracle §C2.3's documented monotone shrink; RED still fails the frozen table as required with all 4 positives caught, and the §C1.4 domain-blind argument is grep-confirmed intact. F2-F5 are informational (wording, count superset, attribution, tooling). Nothing in the report contradicts the card's exit claims.",
+    "scope_conditions_verbatim": [
+      "1. **Lexicon ≠ semantics (词表≠语义):** the frozen marker list is not the semantics of \"universal\" — claims written with 所有 / 均 / 每次 / 一律 / always / each / both / bare `100%` pass silently by design of the frozen contract.",
+      "2. **Domain presence, not correctness:** any domain pattern anywhere on the line satisfies the check; a decorative or wrong-domain qualifier clears the line (D1 `域` … D8b all share this epistemic class).",
+      "3. **Line-splitting by design:** a domain on the adjacent line does not count, and multi-line claims are scanned as separate lines — that *is* the letter of REM-79 as mechanized, not a defect.",
+      "4. **D11 escape-hatch risk is held knowingly by the parent:** after CORRECTION 2, a genuine un-scoped claim written inside `…`/`\"…\"`/`「…」` or on a `>` line passes silently; this reverses CORRECTION 1's keep-flagged stance on the owner's explicit ruling, and the risk is recorded in `remaining_gaps_honest` for the owner to carry.",
+      "5. **The tool is a scoping-shape checker, not a truth checker:** it verifies that a same-line domain *shape* is present; it never verifies the claim's truth or the measurement behind it.",
+      "6. **Live-scan residual = 2 lines, already parent-adjudicated compliant** (R-D paragraph-subject carry on `task_plan.md:1630`; R-E cross-language bound on `findings.md:633`) — this review verified the lines' content matches those rulings and did **not** re-adjudicate them; no CORRECTION 3 exists or will be opened by this attempt (lexicon sealed at v2)."
+    ],
+    "scope_conditions_source": "reviewer_report.md 'Scope of acceptance (binding)' lines 93-100, verbatim; dispatch shorthand: 词表≠语义、域在场非正确性、按行切分设计、D11 引语逃生口风险由父知情持有、工具=形态检查器非真值检查器、live 残差 2 条父已终裁合规",
+    "not_verified_by_review": [
+      "the full RED/GREEN/mutation harness was not re-executed - summaries read in full, raw stdout cross-checked, one corpus smoke test instead",
+      "final_hashes.json spot-checked on 5 of 131 entries (5/5 exact); the other 126 were not re-hashed (corpus separately re-hashed 6/6)",
+      "the correction ledgers' self-audit claims were read but the inline audit code was not re-run",
+      "the REM79 plan-card original for the '7 gaps' enumeration was not located by grep; gap parity judged against the dispatch's substance",
+      "the 214 + 48 live detections were not re-adjudicated line-by-line (parent's domain by instruction); the rulings stand as the parent's",
+      "'0 git writes' and '0 plan-file edits by the card' are negative claims - supported, not provable to certainty from repository state",
+      "binding.json internals not parsed entry-by-entry (tool hash verified via final_hashes.json + direct disk hash)"
+    ],
+    "carried_residuals": [
+      "F1 (low, disclosed, NON-BLOCKING) - round-3 RED naive misreport = 7 lines [4,6,12,18,22,26,30] not 14; cause unit X2 mirrored D10b/D11 marker-side skips into the RED arm (v1.0.2-red-correction2); disclosed in handoff round-3 RED note + oracle §C2.3 monotone shrink; RED still RED_FAILS_ORACLE_AS_REQUIRED with all 4 positives caught; §C1.4 domain-blind argument grep-confirmed. Residual nit: frozen oracle §7 lacks an explicit supersession sentence for its '14' (contrast §3's explicit supersession in C2.2) - LOW-PRIORITY FOLLOW-UP the parent may close by a register note.",
+      "F2 (info) - '131 evidence files' precisely = 131 ledger entries = every attempt file except the ledger itself (attempt = 132 pre-review); evidence/ subtree alone = 104 files.",
+      "F3 (info) - remaining_gaps_honest has 8 entries where 7 were briefed: the 7 verbatim-in-substance plus an 8th (b2 NP-breadth trade-off); superset, parity holds.",
+      "F4 (info) - plan-carrier git ' M' flags attributed to parent/pre-existing activity (findings.md mtime 09:14:07Z pre-window; progress.md 10:31:13Z post-card; task_plan.md clean), not to REM79.",
+      "F5 (info) - grep/glob intermittently failed (permission-denied scratch dirs, one NUL path); affected claims re-verified via read + targeted pwsh; no verdict impact."
+    ]
+  },
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "verdict_line": 8,
+    "first_line_of_verdict": "## VERDICT: `accepted_scoped`",
+    "line_range_inclusive_1_based": [1, 116],
+    "verdict_line_range_inclusive": [8, 8],
+    "verdict_rationale_line": 10,
+    "handoff_unsigned_disclosure_line": 6,
+    "findings_section_line_range_inclusive": [81, 91],
+    "scope_conditions_section_line_range_inclusive": [93, 100],
+    "unverified_section_line_range_inclusive": [102, 110],
+    "reviewer_boundaries_section_line_range_inclusive": [112, 116],
+    "reviewer_signing_authority_line": 116,
+    "byte_offsets": {
+      "start": 0,
+      "end_inclusive": 18392,
+      "end_exclusive": 18393
+    },
+    "carrier_file_sha256": "0562158deac6661db2988e01e7ac505f7cc9372152838dbe043bf7b265de68c4",
+    "carrier_file_bytes": 18393,
+    "carrier_file_total_lines": 116,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only; single trailing LF; 17994 characters",
+    "dispatch_byte_figure_note": "the landing dispatch cited 18088 B; measured = 18393 bytes (17994 chars). Neither matches 18088 - recorded as a stale dispatch measurement; the pin and line-8 verdict are unaffected; no file was changed to reconcile it.",
+    "verdict_line_byte_region": {"start": 834, "end_inclusive": 862, "length": 29, "sha256": "e73c0ee633559827314c0517d1f2bd64fafe5bdf2fd2906d8f614e4cbd46b55e"},
+    "verdict_rationale_line_byte_region": {"start": 865, "end_inclusive": 1385, "length": 521, "sha256": "8bd087842a8b38fea442d38cd9ce3115a655cd4b970ce0d46b1b0b0faf498a61"},
+    "scope_conditions_heading_byte_region": {"start": 14710, "end_inclusive": 14776, "length": 67, "sha256": "ab971179fd2696f69e37f223f0d42ee37406e58c93fdcb2b74b5230aa230492b"},
+    "finding_f1_line_byte_region": {"start": 12371, "end_inclusive": 13366, "length": 996, "sha256": "a427fac23b45ff4295709d1f34ab66e111896da109d53c6a302107dadfbc82ef"},
+    "reviewer_signing_line_byte_region": {"start": 18235, "end_inclusive": 18391, "length": 157, "sha256": "710f46b696026755b32cf3058acdfcd3a4ab0262d5796e08bcaa45c60a0ed5d3"},
+    "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 18391, "length": 18392, "sha256": "5ce0a824d18a965fbc02c34cae33f0e074b968b0b7a6a883b040c6e943086e88"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the line's terminating LF unless stated",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "present": true,
+      "present_before_landing": true,
+      "written_by": "the independent reviewer (declared in its boundaries section: exactly two files written - reviewer_report.md and reviewer_report.sha256)",
+      "bytes": 85,
+      "sha256": "4a34fe58134f9de938c11c884401b2d39312d5821f6b2fb1584cbf58a8cb810c",
+      "content": "0562158deac6661db2988e01e7ac505f7cc9372152838dbe043bf7b265de68c4  reviewer_report.md",
+      "verified": "sidecar sha matches an independent re-hash of reviewer_report.md at landing time; the sidecar was NOT created, overwritten or modified by this pass (0 bytes written)"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by the bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核), not by the implementer",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "carrier_bytes_written_by_landing": 0,
+    "plan_file_bytes_written": 0,
+    "git_writes": 0
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "three-segment prefix chain independently recomputed: freeze 6faa0ae9…241f over bytes[:13029] with checker_existed_at_freeze=false; C1 c8a6f209… over bytes[:19324] == C1 post == C2 pre; C2 terminal 94306a43…5c830 @26285 B; oracle_table 366b1825…edae7 unchanged; corpus 6/6 re-hashed exact; both ledgers append-only prefix proofs",
+      "triple-run protocol PROTOCOL_SATISFIED x3 with GREEN 4/0 exact against the unchanged table, per-file exits 1/1/1/1/0/0, mutations [4]/[]/[5], oracle self-scan 0 violations each round, RED = RED_FAILS_ORACLE_AS_REQUIRED each round (14/14/7-line naive misreport; round 3 = F1)",
+      "quote-sample mini-GREEN: C2_MINI_GREEN_PASS, declared [12,14] == reported [12,14], controls [4,6,8,10] clean, rc 1, declaration-before-sample proven in oracle §C2.3, X3 honesty log present",
+      "live-scan chain 214 -> 48 -> 2 with both parent adjudications archived and read; final 2 lines' content matches rulings R-D/R-E without re-adjudication; task_plan/findings byte-identical to extraction hashes",
+      "tool smoke test (reviewer's own read-only run): rc 1 + line-4 [every] on corpus positive matching recorded behavior; VERSION 1.2.0-correction2, stdlib-only, hash == final_hashes entry; exit semantics 0/1/2 match oracle §6",
+      "honest-gap ledger parity: 8 entries carrying the 7 briefed gaps verbatim-in-substance plus one extra (F3)",
+      "boundaries on the reviewer's checks: plan-file edits by the card = 0 (supported), git writes = 0 (nothing contradicts), writes confined to the attempt, final_hashes spot-check 5/5 exact, corpus 6/6"
+    ],
+    "not_granted": [
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production write authority",
+      "full harness re-execution assurance (read summaries + one smoke run instead)",
+      "re-hash assurance for the 126 of 131 final_hashes entries not spot-checked",
+      "re-running the correction ledgers' inline self-audit code",
+      "re-adjudication of the 214 + 48 live detections or of the parent's rulings (R-D/R-E included)",
+      "opening CORRECTION 3 or editing the frozen oracle/lexicon (sealed at v2)",
+      "attribution resolution beyond what F4 records",
+      "any acceptance of this landing pass's own - it is bookkeeping transcription only"
+    ]
+  },
+  "findings_mirrored": [
+    {"id": "F1", "severity": "low, disclosed - documentation nit", "blocking": false, "line": 83, "summary": "Round-3 RED naive misreport = 7 lines [4,6,12,18,22,26,30] not 14; unit X2 mirrored marker-side skips D10b/D11 into the RED arm (v1.0.2-red-correction2); disclosed in handoff round-3 RED note + oracle §C2.3 monotone shrink; RED still RED_FAILS_ORACLE_AS_REQUIRED, all 4 positives caught; §C1.4 domain-blind grep-confirmed; residual nit = oracle §7 lacks an explicit supersession sentence for '14' (contrast §3's explicit supersession in C2.2); actual round-3 count = 7.", "disposition": "non-blocking; low-priority follow-up the parent may close by register note; no oracle edit (lexicon sealed)"},
+    {"id": "F2", "severity": "info", "blocking": false, "line": 85, "summary": "'131 evidence files' = 131 ledger entries = every attempt file except the ledger itself (attempt 132 pre-review); evidence/ subtree = 104.", "disposition": "wording recorded; no action"},
+    {"id": "F3", "severity": "info", "blocking": false, "line": 87, "summary": "remaining_gaps_honest = 8 entries vs 7 briefed: 7 verbatim-in-substance + 8th (b2 NP-breadth trade-off).", "disposition": "superset, parity holds; no action"},
+    {"id": "F4", "severity": "info", "blocking": false, "line": 89, "summary": "Plan-carrier git ' M' flags from parent/pre-existing activity (findings.md 09:14:07Z pre-window, progress.md 10:31:13Z post-card, task_plan.md clean == extraction sha), not REM79.", "disposition": "attribution recorded; no action"},
+    {"id": "F5", "severity": "info", "blocking": false, "line": 91, "summary": "grep/glob intermittent permission-denied/NUL failures; affected claims re-verified via read + targeted pwsh.", "disposition": "no verdict impact"}
+  ],
+  "carried_findings": [
+    {"id": "F1", "mirrored_from": "reviewer_report.md line 83", "blocking": false, "follow_up": "oracle §7 supersession sentence - low priority, parent may close by register note"},
+    {"id": "F2", "mirrored_from": "reviewer_report.md line 85", "blocking": false},
+    {"id": "F3", "mirrored_from": "reviewer_report.md line 87", "blocking": false},
+    {"id": "F4", "mirrored_from": "reviewer_report.md line 89", "blocking": false},
+    {"id": "F5", "mirrored_from": "reviewer_report.md line 91", "blocking": false}
+  ],
+  "eligibility_statement": {
+    "formula_classification": "Test/audit-infrastructure only: a frozen-rule domain-assertion checker for REM-79 plus its red/green/mutation proof and two append-only lexicon corrections. No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "production_write": "NOT GRANTED. Production read-only throughout; 0 production bytes written by this landing pass.",
+    "tool_class": "scoping-shape checker, NOT a truth checker (scope condition 5)"
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "verified the carrier against its pre-existing reviewer-authored sidecar; created this qualification record for the independent reviewer's byte-pinned verdict; landed the carrier fields; created review.md (transcribed verdict block, no acceptance of its own); edited handoff.json (status + status_authority + bookkeeping + 5 appended carried findings + *_historical_pre_verdict retention); wrote 0 bytes to reviewer_report.md, its sidecar, any plan file, any git state, or production",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "status_transition": "review_pending -> accepted_scoped",
+    "files_written": [
+      "review.md (created)",
+      "handoff.json (status + status_authority + bookkeeping + carried_findings F1-F5 + *_historical_pre_verdict retention; pre-existing content otherwise untouched)",
+      "evidence/REM79-MECHANIZATION/qualification.json (created)"
+    ]
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven. The verdict lives in reviewer_report.md (sha256 0562158deac6661db2988e01e7ac505f7cc9372152838dbe043bf7b265de68c4, 18393 B, 116 lines, pinned by the pre-existing reviewer-authored reviewer_report.sha256) on line 8 and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own. The dispatch's 18088-B figure for the carrier did not match disk (18393 B / 17994 chars) and was recorded as a stale measurement rather than reconciled by any write."
+}

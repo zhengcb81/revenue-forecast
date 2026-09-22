@@ -255,3 +255,129 @@ card-specific 负例用 `set_driver_element`，命中**值域守卫**而非数�
 - 产品仓零改动；`changes.diff` 仍为 NO PRODUCT CHANGE 声明。
 - `formula` 仍为 `review_pending`（实现者不自签，r3 后交回复核者点验），
   `disclosure_adaptation` 仍为 `unmapped`，`accuracy` 仍为 `unproven`。
+
+---
+
+## 勘误追认 E-2 + E-5/E-6/E-7（I-10-B E 列表 · T1-12 ① 追加式 · 前瞻披露；M14 卡专属四项）
+
+> 本节由编排层 `execution_runs/E1E7-ERRATA-LANDING/a20260921-01` 于 2026-09-21 **追加**；
+> 上方正文（含本节指认的各行）**逐字节未改** —— append-only，冻结正文零字节改动。
+
+### ① 源与形态（provenance）
+
+- **源 = I-10-B attempt**：`execution_runs/I-10-B/a20260919-01/handoff.json`，
+  **sha256 = `867d59b82a60544a8d7156ca0c3dbef9a9706ede6d82ede7ea50be0e181b54f4`**（23563 字节）；
+  **E 列表所在键 = `errata_pending.items`**（同文件交叉键 `carried_findings` 中 `id: "E-1..E-7"`；
+  逐条正文另见同 attempt `compatibility_impact.md` §5「追加式勘误登记」表、§3.2/§3.3 原文引用，
+  与 `decision.md` DEC-I10B-4/DEC-I10B-5）。
+- **形态 = T1-12 ① 追加式**（`OWNER_DECISIONS.md` §13 T1-12：追加新节 + 行级「已过时，以本节为准」标注；
+  **不外扩**就地编辑授权）。
+
+### ② 本卡适用的 E 项（逐字抄录，一字未改）
+
+`errata_pending.items` 中属 M14 的四项原文：
+
+- **`E-2 M14 oracle.json defaults`**
+- **`E-5 M14 cases.json OBS-SUPPLY-BOUND`**
+- **`E-6 M14 oq_rulings.json OQ-03`**
+- **`E-7 M14 recovery/probes/signed_driver_probe.json`**
+
+`compatibility_impact.md` §5 表原行（逐字）：
+
+- `| E-2 | M14 evidence/M14/oracle.json → defaults | 同上（franchise_system_sales 等三者无默认） |`
+- `| E-5 | M14 evidence/M14/cases.json → extra_observations[OBS-SUPPLY-BOUND] | 追加：「supply_revenue 自 I-10-B 起为语义角色可冲回 ⇒ [-inf, inf)；该 observation 描述的是修复前边界。」 |`
+- `| E-6 | M14 evidence/M14/oq_rulings.json → open_questions_mirroring_handoff["OQ-03"] | 追加：「OQ-03 已由 I-10-B 缺陷②裁定：改为语义角色规则；『NO signed/unbounded driver』不再成立。」 |`
+- `| E-7 | M14 recovery/probes/signed_driver_probe.json | 追加：「探针结论（负值被拒绝）为修复前行为；缺陷②后同输入应被接受。」**探针非冻结用例**，按 T1-24 口径处理 |`
+
+（E-2 的「同上」在 §5 表中承接 E-1 的「`defaults` 相位依赖旧静默补 0；缺陷①落地后该相位将抛
+`ModelRegistryError`。已过时，以本注为准。」）
+
+载体说明：E-2/E-5/E-6 点名的载体是 `evidence/M14/oracle.json`、`evidence/M14/cases.json`、
+`evidence/M14/oq_rulings.json`，E-7 点名 `recovery/probes/signed_driver_probe.json` ——
+**这四个文件一字未改**（本卡只在 `oracle.md` 追加披露节；JSON 不接受行内追加，且本卡无回改授权）。
+
+#### ②-a E-2 旧值 → 新值（逐字取自 I-10-B `compatibility_impact.md` §3.4 实跑对照表）
+
+| 卡 | 模型 | 相位 | BEFORE（修复前 = **现行**） | AFTER（修复晋升后 = **前瞻**） | 翻转 |
+|---|---|---|---|---|---|
+| M14 | `retail_franchise` | `defaults` | `ok [50.0]` | **`ModelRegistryError`** | **是** |
+| M14 | `retail_franchise` | `positive` | `ok [65.0]` | `ok [65.0]` | — |
+| M14 | `retail_franchise` | `continuity_positive` | `ok [65.0, 84.8]` | `ok [65.0, 84.8]` | — |
+
+抛出消息（逐字）：`missing driver for retail_franchise: franchise_system_sales has no explicit default`
+
+根因（逐字口径）：M14 的 `defaults` 块省略 `franchise_system_sales`、`recognized_fee_rate`、
+`supply_revenue` —— 三者**全无**显式默认。
+
+#### ②-b E-5 卡专属条目 `OBS-SUPPLY-BOUND`（逐字，源 = I-10-B `compatibility_impact.md` §3.3 表）
+
+> `evidence/M14/cases.json` → `extra_observations[OBS-SUPPLY-BOUND]` | `supply_revenue = -1`；
+> `why`: 「supply_revenue is **NOT** a signed driver in this registry, so a negative supply sale is
+> **refused by the driver bound (lower bound 0.0)** … **records the contract boundary, does not gate**」
+
+追加后的口径（§5 表 E-5 原文）：「`supply_revenue` 自 I-10-B 起为语义角色可冲回 ⇒ `[-inf, inf)`；
+该 observation 描述的是修复前边界。」
+I-10-B 判定：**路径 (a) 值域放宽 —— 零个冻结判定受影响**；`OBS-*` 是 observation（**不门禁**），
+故 E-5 **不是判定翻转**，只是旧行为记录的追认。
+
+#### ②-c E-6 卡专属条目 `OQ-03`（D/E 层追认）（逐字，源 = I-10-B `compatibility_impact.md` §3.3 表）
+
+> `evidence/M14/oq_rulings.json` → `open_questions_mirroring_handoff["OQ-03"]` | 「this model has
+> **NO signed/unbounded driver**, so a negative supply revenue or franchise system sale is refused by
+> the driver bound (0.0) rather than by an accounting judgement. Recorded by OBS-SUPPLY-BOUND and
+> `recovery/probes/signed_driver_probe.json`; **whether internal eliminations need a signed convention
+> is a D/E decision.**」
+
+追加后的口径（§5 表 E-6 原文）：「OQ-03 已由 I-10-B 缺陷②裁定：改为语义角色规则；
+**『NO signed/unbounded driver』不再成立。**」
+
+D/E 层追认状态（逐字，源 = I-10-B `handoff.json` → `carried_findings[OQ-I10B-2]`）：
+「M14 OQ-03：内部冲减是否需要 signed 约定（原文自述属 D/E 决策）。本卡缺陷②已按 T1-22 授权裁定
+注册层规则，**D/E 层是否追认由 owner 决定**。」`status: "carried_not_resolved"` ⇒ **本节只登记，不代裁**。
+
+#### ②-d E-7 `signed_driver_probe`（I-10-B handoff 已定义，逐字收录）
+
+- `errata_pending.items` 原文项：**`E-7 M14 recovery/probes/signed_driver_probe.json`**
+- §5 表 E-7 原文：「探针结论（负值被拒绝）为修复前行为；缺陷②后同输入应被接受。」
+  **探针非冻结用例**，按 T1-24 口径处理。
+- 探针自述（逐字，源 = `compatibility_impact.md` §3.2）：
+  > `M14/a20260919-01/recovery/probes/signed_driver_probe.json` —— 这是**探针，不是冻结用例**。
+  > 文件自身第 4 行写明：`"purpose": "post-hoc design probe (NOT a frozen case, NOT the oracle)"`。
+- 该探针在本卡 `oracle.md` 的既有记录行：**第 185 行**（`recovery/probes/signed_driver_probe.json`：
+  `franchise_system_sales = -100.0` → `raised=ModelRegistryError actual=None`）。
+
+**旧值 → 新值（E-5/E-7 所涉值域，逐字取自 `compatibility_impact.md` §1.1：165 cell 中恰好 5 个变化，全部下界放宽）**
+
+| 模型 | driver | BEFORE | AFTER | 变化方向 |
+|---|---|---|---|---|
+| `retail_franchise` | `franchise_system_sales` | `[0.0, inf)` | `[-inf, inf)` | 下界放宽 |
+| `retail_franchise` | `supply_revenue` | `[0.0, inf)` | `[-inf, inf)` | 下界放宽 |
+
+⇒ 晋升后：`supply_revenue = -1` 与 `franchise_system_sales = -100.0` 这类输入**应被接受**而非被
+`[0, inf)` 下界拒绝（缺陷②的语义角色规则）。**该后果在晋升前不生效。**
+
+### ③ 未晋升声明（现行效力）
+
+**I-10-B 的修复（`model_registry` silent-zero-fill + sign-by-name）当前仅存在于
+`execution_runs/I-10-B/a20260919-01/iso/rf/scripts/`，未晋升到生产 —— the fix is NOT promoted。**
+
+**修复未晋升：在晋升之前，本文件的现行冻结值仍然权威（current frozen values remain authoritative until promotion）。**
+
+本条为**前瞻披露（promotion 前置知会）**，**不改变任何现行期望、不改变任何 status、不改变任何资格**。
+⇒ 本卡 `defaults` 的**现行**期望仍为 `ok [50.0]`；`OBS-SUPPLY-BOUND` / `R10` 的现行记录（负值被
+`[0, inf)` 下界拒绝）与 `OQ-03` 的**未裁**状态照旧；AFTER 列在晋升发生前**不生效**。
+
+### ④ 行级标注（T1-12 ①；旧行一字未改，仅在此指认）
+
+- **第 54 行**（`## 3. 默认值案例（defaults，非 gating）`）及其下 **第 64 行**（手算 `10 × 5 + 0 × 0 + 0 = 50 + 0 + 0 = 50`）、
+  **第 65 行**（`**期望输出 = [50]**`）：在 I-10-B 修复**晋升后**即**已过时，以本节为准**；
+  **晋升前仍以第 54 / 64 / 65 行为权威**。
+- **第 108 行**（观测表 `OBS-SUPPLY-BOUND` 行）与 **第 128 行**（负例表 `R10` 行）：其
+  「负供应收入被 driver 下界 0.0 拒绝」的口径在修复**晋升后已过时，以本节 ②-b 为准**；
+  **晋升前仍以第 108 / 128 行为权威**（两者本就自述「记录事实 / 不门禁」）。
+- **第 185 行**（`signed_driver_probe` 记录）：探针结论为**修复前行为**，晋升后同输入应被接受，
+  **以本节 ②-d 为准**；晋升前照旧有效。
+- **`OQ-03`（D/E 层追认）在本节登记为 carried_not_resolved —— 未裁、不代裁**；本节不改变它的状态。
+- 其余各行（正例 / 连续性 / 负例 / 容差 / 拒绝条件 / 披露数值）**不因本节产生任何变化**。
+
+---

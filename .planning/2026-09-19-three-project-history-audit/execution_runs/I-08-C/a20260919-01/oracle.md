@@ -319,3 +319,281 @@ close.
 
 **Revision r3 is closed at this line.** No further edit to `oracle.md` is part of
 r3; any later change must open a new revision and repeat the freeze discipline.
+
+<!-- ================= APPEND-ONLY: REVISION r4 BELOW ================= -->
+
+# Revision r4 — E1/E11/E13 RE-FREEZE against B1's fixed tree (owner-approved)
+
+- Fix-round instruction label: the card `I-08-C-REFREEZE` calls this "append-only
+  oracle revision r3". The file already contains a **closed** r3 (see its closing
+  line above: "any later change must open a new revision"), so this append is
+  numbered **r4** — the instruction is satisfied in substance (one new
+  append-only revision, same form) and the numbering follows the file's own rule.
+  `handoff.json` fix-record points here as `oracle.md revision r4 (fix-round
+  instruction label: "r3")`.
+- Author of this append: I-08-C fix-round implementer (card `I-08-C-REFREEZE`).
+  **Not** the reviewer. This append readies re-review; it does not sign anything.
+- Trigger: card **B1** (`execution_runs/B1-I08C-product-fixes/a20260921-01`)
+  closed product findings F1 and F3 in an isolated tree. Against that tree the
+  r1/r2/r3 pinned-gap expectations for E11/E13 **necessarily fail**. That
+  failure is **expected, not a regression** — it is exactly what the owner
+  approved this re-freeze to resolve.
+- Authority (verbatim, `OWNER_DECISIONS.md` §16, file 53286 B, sha256
+  `4c9acf9ec95c8ec028b6e77719ddf32dbbbc1fb545c91cb702521d65a70aa2f3`):
+  - owner 原话 (line 365): 「A-1: b（允许修 prune 代码，不授权执行 prune）
+    **A-2: 批准** B: a（提高门超时到 1200，立卡红绿） C: 先推已收口的 4 张，
+    B1/B3/I-14-D 攒第二批 D-G1: a D-G2: 留置/（或给取舍） E-1: 150/60
+    E-2: 重跑 E-3: 立卡 E-4: 维持暂不签」
+  - ruling table (line 370): 「**A-2 批准** | I-08-C oracle 追加式重冻
+    （E11/E13 由"缺口在册"翻转为"攻击必拒"），收口归其 reviewer |
+    与建议一致 | 已派 `I-08-C` refreeze 卡」
+- Discipline: append-only. Everything above this marker (r1 body bytes
+  `[0:6831]` **and** the whole r3 append region) is untouched; the prefix proof
+  is in R4-8. No r1/r2/r3 expectation is rewritten — superseded expectations are
+  **preserved verbatim** in R4-2 in the superseded-record form used by I-14-H's
+  W1 2220→1740 correction (old value + new value + reason + provenance).
+
+## R4-1 Why: B1 closed the gaps, so the pinned-gap expectation is now stale
+
+- B1 fixed tree (READ-ONLY for this card):
+  `<PLAN>\execution_runs\B1-I08C-product-fixes\a20260921-01\iso\fixed\rf`.
+  Only three files differ from production-identical bytes:
+  `scripts/revenue_publication.py` `bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0`,
+  `scripts/revenue_core.py` `8a761498f5eb729e4f4227f2a315d709253f8b96acf7baa7253ab425e73ac883`,
+  `scripts/revenue_report.py` `212f00598feca408dc429d4c7a5332131ce25f1165b079347e4b295345df7d3b`.
+  This round re-verified that B1's unfixed `iso/rf` is byte-identical to
+  production for `revenue_publication.py`, `revenue_core.py`,
+  `revenue_report.py`, `publication_registry.py`,
+  `tests/test_recognition_bridge.py`, `tests/test_data_contract.py` (all six
+  hashes match), so fixed vs unfixed differ **only** by B1's three files.
+- B1's own handoff recorded this card's expected collateral verbatim
+  (`B1 handoff.json`, 26788 B, sha256
+  `c5696e780a9470cf22dd41333e05c24a82783080b7fd006862e181c25e624259`,
+  `red_green.post_change_expected_collateral`): e11 "now FAILS — it pins the gap
+  (business rc=3) and the fix necessarily invalidates it"; e13 same; verdict
+  "expected, not a regression; the I-08-C oracle must be re-frozen by its owner".
+- What B1 implements (rejection reasons this revision freezes):
+  - **REM-01(a) → E11**: a receipt claiming `attestation_status='host_signed'`
+    without a `publication_attestation` binding record is rejected with
+    `attestation_missing_record` (I-08-A E27), message "publication_receipt
+    claims attestation_status='host_signed' but carries no
+    publication_attestation record (E27)"
+    (`iso/fixed/rf/scripts/revenue_publication.py:241-249`, call site `:559`).
+  - **REM-03 → E13**: `segments[i].base_revenue` is bound to the embedded
+    parameter by an output gate; a forged opening base is rejected with
+    `segment base revenue mismatch`
+    (`iso/fixed/rf/scripts/revenue_report.py:215-225`, reached via
+    `_validate_segment_opening_bases` `:571` ← `validate_published_forecast`
+    `:1307` ← `validate_forecast_output` `:1344`).
+  - **REM-01(b) → collateral on E1**: `attestation_capability()`
+    (`iso/fixed/rf/scripts/revenue_core.py:118+`) now requires a PROVEN signing
+    handshake; file existence is no longer capability. The E1 fixture's provider
+    is `sys.executable`, which cannot complete B1's handshake, so on the fixed
+    tree the honest formal package is stamped **`unattested`** (B1 probe
+    `after/probe_fixed.txt`, 1629 B, sha256
+    `9ade20c2e0d34f33ac68cdef7e96420aa8984793ebde1170e405c3e8817643b3`:
+    `P2_sys_executable_capability = False`, `P2_sys_executable_label =
+    'unattested'`). The r1 E1 assertion `== "host_signed"` therefore encodes the
+    I-08-A §7.1 **false-green** shape (B1's regression run shows the repo's own
+    such test `tests/test_attestation.py::test_configured_provider_means_
+    host_signed_publication` is REQUIRED to break) and cannot stay unconditional
+    if the suite must be truthful on both trees.
+
+## R4-2 Superseded records (old expectation preserved verbatim; I-14-H W1 shape)
+
+Each entry: **superseded expectation (verbatim)** → **replacement expectation** →
+**reason** → **provenance**. Nothing below deletes the old text; it lives here
+and in the untouched r1/r2/r3 body above.
+
+### S-1 · E11
+
+- **Superseded expectation (verbatim, r1 body line 61 / R3-4 row):**
+  > E11 | A-C2: U with ONLY `attestation_status` flipped to `host_signed`
+  > (+ self-hashes recomputed) | **KNOWN GAP (finding, frozen pre-run):** both
+  > the receipt validator AND the strong dispatcher PASS, because the
+  > attestation label is a plain string checked only for set membership
+  > (`revenue_publication.py:222-226`); the capability gate exists only at
+  > issuance (`revenue_core.py:167`, `attestation_capability()` False without
+  > provider). Consumers requiring a *trusted formal* package have no
+  > consumption-side verification in this tree — this is the I-08-B follow-up
+  > surface, reported to the reviewer, NOT counted as a pass of the security
+  > property.
+
+  and (R3-4): "E11 … 3 — **property VIOLATED**, recorded as the card's negative
+  result F1 (not a pass)"; test body pinned acceptance with
+  `validate_publication_receipt(flipped)  # GAP…` / `validate_forecast_output(flipped)  # GAP…`.
+- **Replacement expectation (frozen now):** the SAME attacker move MUST be
+  **rejected at BOTH entry points** with the specific reason B1 implements:
+  `pytest.raises(ForecastInputError, match="attestation_missing_record")` for
+  `validate_publication_receipt(flipped)` AND for
+  `validate_forecast_output(flipped)`. Non-secret self-hashes are recomputed
+  first, so the attestation gate is the only possible rejection reason.
+- **Reason:** B1 REM-01(a) closed F1 (owner ruling A-2: 由"缺口在册"翻转为
+  "攻击必拒"). The gap no longer exists on the fixed tree; keeping the pin would
+  make the frozen expectation fail for the *right* product reason and would
+  misdescribe the tree under test.
+- **Provenance:** owner §16 A-2 (verbatim in the header); B1
+  `after/probe_fixed.txt` `P1_label_flip_receipt_layer` and
+  `P1_label_flip_strong_dispatcher` both
+  `REJECTED:attestation_missing_record: … (E27)` (recorded before this card
+  existed); fixed source `revenue_publication.py:241-249`; B1 handoff
+  `post_change_expected_collateral`. pre-image of this file at append time:
+  22335 B / `94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3`.
+
+### S-2 · E13
+
+- **Superseded expectation (verbatim, r1 body line 63 / R3-4 row):**
+  > E13 | **pinned gap:** self-hash-consistent forgery of
+  > `segments[0].base_revenue` (direct_revenue) | Receipt layer passes AND
+  > `validate_forecast_output` **ACCEPTS** — the segment-level base feeds no
+  > recomputation comparison (`revenue_report.py:442` recalculates *from* it;
+  > nothing compares it to the input or stored modeled activity). Reported to
+  > reviewer as gate-coverage finding.
+
+  and (R3-4): "E13 … 3 — **gap pinned**, recorded as F3"; test body pinned
+  acceptance with `validate_forecast_output(forged)  # pinned: accepted by current gates`.
+- **Replacement expectation (frozen now):** the receipt layer still
+  **ACCEPTS** (F2/REM-02 is documentation-only; that limitation is unchanged
+  and stays pinned as a limitation, not a security claim), and
+  `validate_forecast_output(forged)` MUST **REJECT** with
+  `pytest.raises(ForecastInputError, match="segment base revenue mismatch")`.
+- **Reason:** B1 REM-03 closed F3 by binding the segment opening base to the
+  embedded `base_revenue_parameter_id` parameter; company totals were never
+  movable (reviewer's scope-narrowing stands) — this gate covers the
+  presentation field the card's F3 named.
+- **Provenance:** owner §16 A-2; B1 `after/probe_fixed.txt`
+  `P3_receipt_layer = 'ACCEPTED'`, `P3_strong_dispatcher =
+  'REJECTED:segment base revenue mismatch: Segment A opening base 1100.0 does
+  not match segment_a_base (100)'`; fixed source `revenue_report.py:215-225`;
+  B1 mutation M3 (reverting REM-03 turns exactly R10/R12 red).
+
+### S-3 · E1 (collateral of the same fix, discovered and disclosed)
+
+- **Superseded expectation (verbatim, r1 body line 51):**
+  > E1 | A-C1: S legit, hashes/trusted domains consistent |
+  > `validate_publication_receipt(S)` passes; `validate_forecast_output(S)`
+  > passes; repeat read passes again;
+  > `S["publication_receipt"]["attestation_status"] == "host_signed"`
+- **Replacement expectation (frozen now):** validators pass twice (UNCHANGED);
+  the label assertion becomes **tree-conditional** — on a tree exposing
+  `revenue_publication.validate_publication_attestation` (B1 fixed) the honest
+  S package MUST be `unattested` with NO `publication_attestation` record
+  (sys.executable cannot prove signing); on any other tree (production /
+  production-identical bytes) the original `== "host_signed"` assertion still
+  holds. Node id unchanged.
+- **Reason:** asserting `host_signed` for a provider that cannot sign is the
+  I-08-A §7.1 false-green pinned as an expected value; B1 REM-01(b) retired
+  file-existence capability, so the old assertion would fail on the fixed tree
+  and would be *wrong* about that tree. The supersession is forced by the
+  owner-approved fix, not chosen for convenience.
+- **Provenance:** B1 probe `P2_sys_executable_capability = False`;
+  B1 regression `after/suite_fixed.stdout.txt` (the required false-green break);
+  disclosed exploratory run of this round (R4-6) observed
+  `AssertionError: assert 'unattested' == 'host_signed'` at
+  `test_i08c_consumer_rejection.py:93`.
+
+## R4-3 Frozen node map and expectations after r4 (13 nodes, ids stable except two renames)
+
+| Case | Test node (r4) | Frozen expectation (exact gate) | business rc on FIXED / on UNFIXED |
+|---|---|---|---|
+| E1 | `test_e1_legit_signed_package_passes_repeatably` | see S-3 (tree-conditional label + validators twice) | 0 / 0 |
+| E2–E10, E12 | unchanged ids, unchanged expectations | unchanged from r1/r2/r3 | as r3 |
+| **E11** | `test_e11_host_signed_label_flip_is_rejected_at_consumption` (renamed from `…_is_not_bound_at_consumption`; the old name asserted the retired gap) | BOTH entry points raise `ForecastInputError` matching `attestation_missing_record` | **2 / 3** |
+| **E13** | `test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates` (renamed from `…_not_bound_by_output_gates`) | receipt layer accepts (F2 limitation); dispatcher raises `ForecastInputError` matching `segment base revenue mismatch` | **2 / 3** |
+
+`exit_code_legend` unchanged. Note the semantic shift this revision introduces:
+under r3, E11/E13 were **green pytest nodes carrying business rc=3** (the gap,
+pinned). After r4, on a tree with B1's fix they are ordinary correctly-rejected
+negatives (business rc=2), and on the **unfixed** tree they are genuine pytest
+FAILURES (raw rc=1) — the gap now shows as red instead of as a pinned green.
+
+## R4-4 Evidence-run contract (frozen BEFORE any of these runs)
+
+| Run | Tree (RF_IMPORT_ROOT) | Frozen expectation |
+|---|---|---|
+| RUN-A (evidence) | B1 `iso/fixed/rf` | 13 collected, **13 passed, 0 failed**, raw rc **0** |
+| RUN-B (anti-vacuity) | unset → production (production-identical unfixed bytes) | 13 collected, **exactly {e11, e13} failed**, 11 passed, raw rc **1** |
+| RUN-B2 (anti-vacuity, isolated unfixed) | B1 `iso/rf` (verified production-identical) | same as RUN-B: exactly {e11, e13} failed, raw rc **1** |
+| RUN-M (mutation) | B1 `iso/fixed/rf`, mutation test file with the OLD pinned-gap bodies restored for e11/e13 | **exactly {e11, e13} failed**, raw rc **1** |
+
+RUN-B/B2 prove the flip is **load-bearing** (the gap still reproduces on the
+unfixed bytes); RUN-M proves the flip is not vacuous in the other direction
+(the old expectation cannot pass against the fix). Any deviation from these
+frozen sets must be reported as observed, never edited into the expectation.
+
+## R4-5 Test-file revisions this round (fix-round edits are allowed; all hashed)
+
+| Stage | Bytes | sha256 | Used by |
+|---|---|---|---|
+| r3 frozen file (pre-fix-round) | 10902 | `0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5` | r3 evidence run, B1's `before/i08c13_unfixed` run |
+| interim: `RF_IMPORT_ROOT` import-root override ONLY | 11360 | `61ef2b67bdb048664c9b752606d195b43528f622b256f099b7e0d4072eeaa9f1` | the disclosed exploratory run only |
+| **r4 final (frozen before all four runs above)** | 13152 | `3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb` | RUN-A, RUN-B, RUN-B2, RUN-M (mutation file is a hashed derivative) |
+
+Changes in the r4 file, complete list: (1) import-root override
+`REPO = Path(os.environ.get("RF_IMPORT_ROOT") or <production path>)` — default
+byte-equivalent to every prior run; (2) E11 body flipped to rejection +
+node renamed; (3) E13 body flipped to dispatcher rejection + node renamed;
+(4) E1 label assertion made tree-conditional (S-3). Nothing else changed.
+
+## R4-6 Freeze-order disclosure (exploratory run, before the freeze)
+
+Order of this round, disclosed rather than implied:
+1. env-override edit (hashed, R4-5); 2. **exploratory run** of the then-current
+file against the fixed tree (`scratch/fixround/exploratory_fixed.stdout.txt`,
+7358 B, sha256
+`f9d650eb5a47b95a9a1b8a30cdc62aaa4c4ca4064b16bf3f3aff0a947cfb4ac0`, raw rc 1:
+`3 failed, 10 passed`, failed = {e1, e11, e13}); 3. final test file frozen
+(hashed); 4. **this oracle append**; 5. the four evidence runs of R4-4.
+
+Honest reading of that order: the exploratory run measured the fixed-tree
+collateral (it is how E1's breakage was found rather than guessed), so the
+r4 expectations are **corroborated** by it. Their primary derivation is NOT the
+exploratory run but B1's `after/probe_fixed.txt` (written before this card) and
+the fixed source lines cited in R4-1/R4-2 — the same provenance chain I-14-H
+used for W1. The falsifiable half of the contract (RUN-B/B2/RUN-M must go RED,
+fixed before those runs) is what keeps this round honest; if RUN-B/B2 had been
+run first, the round would be circular, so they were not.
+
+## R4-7 What r4 does NOT change (scope)
+
+- **No production write.** Production stays byte-identical
+  (`revenue_publication.py` `183803bb…`, `revenue_core.py` `1821fd2a…`,
+  `revenue_report.py` `a85fb484…`); no promotion is performed or implied.
+- **B1's attempt is READ-ONLY** from this card: executed-from only, with `-B`,
+  `PYTHONDONTWRITEBYTECODE=1`, `-p no:cacheprovider`, `--basetemp` inside this
+  attempt, cwd = this attempt, so no byte in B1's tree is written.
+- **F2 limitation stays pinned** (E13 keeps asserting receipt-layer acceptance;
+  REM-02 was documentation-only), **F4** anchor drift unchanged, **invest-***
+  consumers still out of scope and unverified, **no CLI publish transaction**.
+- `disclosure_adaptation = unmapped`, `accuracy = unproven` unchanged.
+- **Two separate steps remain after this card:** (1) promotion of B1's fix to
+  production is an owner decision not taken here; (2) I-08-C's *acceptance* is
+  the reviewer's verdict on the re-frozen package — this card only re-freezes
+  the oracle and readies re-review (`ready_for_re_review=true`, never self-signed).
+- E2–E10 and E12 expectations are untouched; their r3 business rcs stand.
+
+## R4-8 Append-only prefix proof (byte-prefix form)
+
+Recorded BEFORE this append (measured on the file this text is appended to):
+
+```
+oracle.md pre-append bytes        = 22335
+oracle.md pre-append sha256       = 94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3
+r2 frozen body bytes[0:6831] sha256 (recheck target)
+                                  = 478bd70e0a1dfbfb924ebec0175bb2bdcdd199880de1c554de099d8ac8723c90
+pre-append file ended with        = 0x0A (newline), so the append needed NO
+                                    boundary-byte normalisation (unlike r1→r3)
+```
+
+Post-append verification (`scratch/fixround/prefix_proof.py` →
+`scratch/fixround/prefix_proof.json`, raw rc recorded in `commands.json`):
+`sha256(bytes[0:22335])` MUST equal `94a853e9…` and
+`sha256(bytes[0:6831])` MUST equal `478bd70e…`. Method: hash the fixed prefix
+ranges directly — never total-length arithmetic (the failure mode recorded in
+plan `findings.md` round 35). The authoritative post-append figures live in
+`prefix_proof.json`, `handoff.json` and `binding.json`; per R3-9's rule, where
+prose and artefacts disagree, **the artefacts win**.
+
+**Revision r4 is closed at this line.** No further edit to `oracle.md` is part
+of this fix round; any later change must open a new revision and repeat the
+freeze discipline.

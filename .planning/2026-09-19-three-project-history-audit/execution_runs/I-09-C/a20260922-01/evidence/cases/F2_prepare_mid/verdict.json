@@ -1,0 +1,169 @@
+{
+  "case_id": "F2_prepare_mid",
+  "card_point": "prepare 中失败",
+  "f_row": "F2",
+  "rc_expectation_vs_raw": {
+    "expected": 2,
+    "raw": 2,
+    "stdout": "",
+    "stderr": "error: [Errno 5] I-09-C injected prepare failure: 'run_forecast'"
+  },
+  "checks": [
+    {
+      "item": "seed_p0_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": "P0 must publish cleanly first"
+    },
+    {
+      "item": "p0_consumable_after_seed",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_absent_after_seed",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "fault_raw_returncode",
+      "expected": 2,
+      "actual": 2,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p0_consumable_after_fault",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_consumable_after_fault",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": "P-C1: only P0 or full P1"
+    },
+    {
+      "item": "p1_committed_rows_after_fault",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "no_mixed_package",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "chain_ok_after_fault",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": "[]"
+    },
+    {
+      "item": "recovery1_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_consumable_after_recovery1",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_logical_commits_after_recovery1",
+      "expected": 1,
+      "actual": 1,
+      "ok": true,
+      "why": "P-C2: logical P1 == 1 regardless of history rows"
+    },
+    {
+      "item": "p0_consumable_after_recovery1",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "chain_ok_after_recovery1",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": "[]"
+    },
+    {
+      "item": "audit_problems_after_recovery1",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": "allowed history rows must not be misreported as duplicate bug"
+    },
+    {
+      "item": "recovery2_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_logical_commits_after_recovery2",
+      "expected": 1,
+      "actual": 1,
+      "ok": true,
+      "why": "idempotent"
+    },
+    {
+      "item": "p1_consumable_after_recovery2",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "chain_ok_after_recovery2",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "audit_problems_after_recovery2",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p0_not_deleted_or_rewritten",
+      "expected": {
+        "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+        "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+      },
+      "actual": {
+        "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+        "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+      },
+      "ok": true,
+      "why": "P0 must survive untouched"
+    }
+  ],
+  "all_ok": true,
+  "harness_problems": [],
+  "elapsed_seconds": 4.27
+}

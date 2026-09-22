@@ -1,0 +1,29 @@
+﻿COMMAND: B3P_PROV_CONFTEST=b3_reference/iso/conftest.py python -X utf8 -B -m pytest -q -p no:cacheprovider tests/test_rem47_provenance_conflict.py
+rc=1
+.F                                                                       [100%]
+================================== FAILURES ===================================
+__ test_q1_q2_q3_conflict_is_flagged_and_both_writes_survive_in_both_orders ___
+
+    def test_q1_q2_q3_conflict_is_flagged_and_both_writes_survive_in_both_orders():
+        out = _run_probe()
+        expected_first = {
+            "fixed_then_production": out["fixed_sha"],
+            "production_then_fixed": out["prod_sha"],
+        }
+        both = {out["fixed_sha"], out["prod_sha"]}
+        for order in ORDERS:
+            record = out["orders"].get(order)
+            assert isinstance(record, dict), f"no provenance record written for {order}"
+>           assert record.get("conflict") is True, (
+                f"[{order}] conflicting writes were NOT flagged: {record.get('conflict')!r} "
+                "— last-writer-wins is refused, flagged, never silent")
+E           AssertionError: [fixed_then_production] conflicting writes were NOT flagged: None — last-writer-wins is refused, flagged, never silent
+E           assert None is True
+E            +  where None = <built-in method get of dict object at 0x000001DC037F3E00>('conflict')
+E            +    where <built-in method get of dict object at 0x000001DC037F3E00> = {'sys_path_head': ['C:\\Users\\郑曾波\\Projects\\company-wiki\\src', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts...talog\\artifact_dag.py', 'sha256': '0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1', 'bytes': 2814}}}.get
+
+tests\test_rem47_provenance_conflict.py:75: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_rem47_provenance_conflict.py::test_q1_q2_q3_conflict_is_flagged_and_both_writes_survive_in_both_orders
+1 failed, 1 passed in 2.53s
+

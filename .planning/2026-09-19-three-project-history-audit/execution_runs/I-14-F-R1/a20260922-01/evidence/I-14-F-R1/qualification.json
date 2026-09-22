@@ -1,0 +1,114 @@
+{
+  "card_id": "I-14-F-R1",
+  "attempt_id": "a20260922-01",
+  "plan": "2026-09-19-three-project-history-audit",
+  "created_by": "carrier landing (bookkeeping transcription) — 2026-09-22",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending"
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "carrier": {
+    "file": "../../reviewer_report.md",
+    "sidecar": "../../reviewer_report.sha256",
+    "bytes": 15841,
+    "sha256": "8ce87ef6d31087da65e556be4736a8c8f7734594575cf868149df383e5f62a1c",
+    "byte_proof": "re-hashed at carrier landing: 15841 B and digest both equal the reviewer_report.sha256 sidecar (sha256 8ce87ef6…, bytes 15841, verdict accepted_scoped, pinned_at_local 2026-09-22T09:29:07+01:00)",
+    "line_ranges": "verdict L16; scoped residuals L35-L48; Gap-5 ruling L143-L163; findings L165-L174; signature L202-L211"
+  },
+  "declarations": {
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_only_adds_no_acceptance": true,
+    "reviewer": "独立复核 (independent review; verdict authored solely by the independent reviewer)",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "scope_accepted": [
+      "threshold 150/60 adopted per owner §16 E-1 (GENERATION_RESERVE=150 ⇒ relocate iff len+150>210 ⇔ len>60)",
+      "boundary 60/61 pinned (60 unrelocated, 61 relocated)",
+      "size sweep 61/69/76/82/86 relocate+pass; 40/60 unrelocated (7/7 guard ok)",
+      "12 control-flip records each under the verbatim superseded reason 'owner §16 E-1 chose 150/60; this control's unrouted expectation is superseded' — 8 flip rows in decision.md §4 (basetemps 69/68, 76/75, 82/81, 86 + unit 84/82/78 + decide() 64 = 11 datapoints) plus 4 inline reason comments in the unit file; 52-char datapoint deliberately NOT flipped; reason sits at the §4 table head, not restated per row (N-1)",
+      "RED/GREEN/MUT reproduced by the reviewer in own deep-logon runs (RED rc1 literal WinError 206, no decision file; GREEN rc0 relocated=true reserve=150 threshold=60 cleanup removed=true; MUTATION rc1 disabled-by-env with WinError 206 back)",
+      "unit suite 15 passed, rc 0 (reviewer's own run)",
+      "sealed I-14-F attempt + production untouched (3 pinned files re-hash unchanged; company-wiki HEAD f39bd5a6 with only the 3 pre-existing user modifications)"
+    ],
+    "scope_limits": [
+      "promotion of iso/ fix = separate owner decision, explicitly ungranted",
+      "promotion-time sampling obligation stands (see carried_findings CF-I14FR1-3 / Gap-5)",
+      "disclosure_adaptation = unmapped; accuracy = unproven; test-infrastructure only"
+    ]
+  },
+  "carried_findings": [
+    {
+      "id": "CF-I14FR1-3 / Gap-5 (reviewer-adjudicated: NOT blocking)",
+      "severity": "info",
+      "scope": "promotion",
+      "finding": "Repo-global hook + threshold 60 relocates ANY explicit basetemp >60 in normal use; only 2 nodes + the unit file were exercised under the hook ⇒ promotion-time sampling obligation: the separate, ungranted promotion card must sample a broader company-wiki suite before merge. Rationale: constants-only widening of an already-accepted hook; the 61–86 band was actually sampled.",
+      "carrier_lines": "reviewer_report.md L143-L163, L37-L40"
+    },
+    {
+      "id": "R-2 stands (I-14-E scope, reviewer-adjudicated)",
+      "severity": "low",
+      "scope": "I-14-E",
+      "finding": "No clean deep child_without_runtime pass under the load band (4× timeout15s-band); the path criterion is fully green (relocated, cleanup ok, zero path-family); the load band is unadjudicated by design per frozen oracle §9.",
+      "carrier_lines": "reviewer_report.md L41-L43, L183-L185"
+    },
+    {
+      "id": "N-1",
+      "severity": "low",
+      "scope": "decision.md §4",
+      "finding": "Flip reason recorded once at the §4 table head (rows reference it: 'reason above' / 'inline reason'), not restated in-row for 76/82/86; oracle wording satisfied at section level and per-case in the unit file. Suggest per-row restatement when the promotion card re-records these controls.",
+      "carrier_lines": "reviewer_report.md L169"
+    },
+    {
+      "id": "N-2",
+      "severity": "info",
+      "scope": "commands.json",
+      "finding": "commands.json has argv+cwd (22 rows verified) but not per-row env — a rerunner must read harness/run_placement.py for PYTHONPATH=<tree>\\src and the stripped env. Evidence-completeness note, not a claim failure.",
+      "carrier_lines": "reviewer_report.md L170"
+    },
+    {
+      "id": "N-3",
+      "severity": "info",
+      "scope": "iso/ import asymmetry",
+      "finding": "tree-vs-red-tree import asymmetry without PYTHONPATH (ModuleNotFoundError only on red-tree); immaterial — the harness always sets PYTHONPATH and all cited runs used that env.",
+      "carrier_lines": "reviewer_report.md L171"
+    },
+    {
+      "id": "reviewer-disclosed: retained unit-run1/run2 failures",
+      "severity": "info",
+      "scope": "after/unit-run1, after/unit-run2",
+      "finding": "unit-run1/run2 failures retained on disk and disclosed: harness-invocation defect (basetemp parent missing ⇒ pytest mkdir fails) and pathlib 63-vs-64 test-construction bug. The TEST construction was fixed, not the oracle; the oracle was not edited to paper over them — mtime ordering oracle 08:34:24 < pin 08:35:44 < first run 08:42:11; adjudicating run is unit-run3.",
+      "carrier_lines": "reviewer_report.md L129-L141"
+    },
+    {
+      "id": "promotion-of-iso (ungranted)",
+      "severity": "info",
+      "scope": "promotion",
+      "finding": "Promotion of the iso/ fix to any production tree is a separate owner decision, explicitly ungranted.",
+      "carrier_lines": "reviewer_report.md L37-L40, L161-L163"
+    }
+  ],
+  "field_correction": {
+    "scope": "handoff.json + this file only — review.md and reviewer_report.md not rewritten, no production writes",
+    "what": "superseded two implementer-era fields that became false the moment the verdict landed (same species as REM-83/CF-B5FIX-1: stale field cited as live): handoff reviewer_status and handoff scope_declaration.formula_state; both prior strings preserved byte-for-byte in *_historical_pre_verdict keys",
+    "before_sha256": {
+      "handoff.json": "af1874ecfb473cc134815f66c48ccc1611a955ce144521b34a4d44b75e8d0678",
+      "evidence/I-14-F-R1/qualification.json": "84aff187ba1bce9f5d319c003bc73eaee045532a4a98b801d2cdecc961aa6bd0"
+    },
+    "after_sha256": {
+      "handoff.json": "953f2c8c32fec92c779c4fff8e9b831e563378df8ca5350fbe22845fb4396fbe",
+      "evidence/I-14-F-R1/qualification.json": "self-referential — not embeddable (a file cannot contain its own digest); reported in the carrier-landing reply"
+    },
+    "preserved_boundaries": "disclosure_adaptation=unmapped and accuracy=unproven unchanged in both files"
+  },
+  "superseded_field_mirror": {
+    "reviewer_status": "accepted_scoped — verdict by 独立复核, see status_authority + review.md verdict block + reviewer_report.md (8ce87ef6d31087da65e556be4736a8c8f7734594575cf868149df383e5f62a1c)",
+    "reviewer_status_historical_pre_verdict": "pending — no review has been performed; no verdict exists anywhere in this attempt; the implementer did not sign and cannot",
+    "superseded_reason": "implementer-era text asserted no verdict exists; false after landing",
+    "scope_declaration_formula_state": "accepted_scoped (transcribed from reviewer_report.md 8ce87ef6d31087da65e556be4736a8c8f7734594575cf868149df383e5f62a1c; see status_authority)",
+    "scope_declaration_formula_state_historical_pre_verdict": "unreviewed (implementation complete, evidence frozen, awaiting independent review)"
+  },
+  "mirrors": "carried findings are append-only and mirrored verbatim in ../../handoff.json carried_findings",
+  "production_writes": "none — this carrier landing wrote only review.md, handoff.json, and this file"
+}

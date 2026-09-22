@@ -1,0 +1,33 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\郑曾波\Projects\company-wiki
+configfile: pytest.ini
+collected 1 item
+
+..\..\..\..\..\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py F [100%]
+
+================================== FAILURES ===================================
+_______ test_child_without_runtime_session_is_terminated_and_restarted ________
+C:\Users\郑曾波\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:902: in test_child_without_runtime_session_is_terminated_and_restarted
+    completed = _run_real_worker_launcher(
+C:\Users\郑曾波\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:725: in _run_real_worker_launcher
+    return subprocess.run(
+C:\Miniconda\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\subprocess.py:1222: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\subprocess.py:1646: in _communicate
+    raise TimeoutExpired(self.args, orig_timeout)
+E   subprocess.TimeoutExpired: Command '['powershell.exe', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', 'C:\\Users\\郑曾波\\Projects\\company-wiki\\scripts\\source_catalog_worker.ps1', '-PythonExe', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\iso\\venv\\Scripts\\python.exe', '-ProjectRoot', 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i14e-band-child-quiet\\quiet-p2-T0-child_without_runtime-2\\pytest\\test_child_without_runtime_ses0\\fake-project', '-StartupDelaySeconds', '0', '-RestartBaseSeconds', '0', '-RestartMaxSeconds', '0', '-WorkerHangTimeoutSeconds', '0.5', '-ChildPollMilliseconds', '100']' timed out after 15 seconds
+============================== warnings summary ===============================
+..\..\..\..\..\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E\a20260919-01\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E\a20260919-01\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED ..\..\..\..\..\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_child_without_runtime_session_is_terminated_and_restarted
+======================== 1 failed, 1 warning in 17.88s ========================

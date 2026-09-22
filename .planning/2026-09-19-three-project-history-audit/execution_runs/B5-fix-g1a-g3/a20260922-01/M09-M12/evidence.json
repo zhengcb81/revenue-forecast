@@ -1,0 +1,239 @@
+{
+ "batch": "M09-M12",
+ "cards": [
+  "M09",
+  "M10",
+  "M11",
+  "M12"
+ ],
+ "fix_card": "B5-fix-g1a-g3",
+ "scope_note": "runner patch scope: B5",
+ "runner_before": {
+  "path": "execution_runs/M09/a20260919-01/scripts/run_card.py",
+  "sha256": "997c553b0b9e6452e9edfeb8bfec3a40ff55d10f2646e562456913feb9332fce",
+  "bytes": 28912,
+  "byte_identical_to_historical": true
+ },
+ "runner_after": {
+  "path": "execution_runs/B5-fix-g1a-g3/a20260922-01/M09-M12/run_card.py",
+  "sha256": "5835b2591f3f21562547de57e2ecfd61889e59ebcf1f6350196562d958f43cff",
+  "bytes": 39812,
+  "identical_to_historical": false
+ },
+ "diff_path": "M09-M12/runner.diff",
+ "diff_stats": {
+  "added_lines": 178,
+  "removed_lines": 13
+ },
+ "cards_cases_sha256": {
+  "M09": "d0613d34d089354cb9a416dfb044c77d64b3f8c2c1d40cd6f4f06ad4b7813597",
+  "M10": "b3dd392ac3e75a74c272e5e20437e5c8d482191046f74a82039a2e1d824b09b6",
+  "M11": "88393d3b52c004e0f252f6aa7b414e91a1eb3456b3b352d73d3b43dde2507fb8",
+  "M12": "9470b64332b0b520c31b1dd0c39faf8d410688f7d7e8659f7b31559ee56f096d"
+ },
+ "insertion_points": [
+  {
+   "file": "run_card.py",
+   "line": 31,
+   "what": "module docstring: declared-expectation contract (exact type-name equality, never isinstance; rc=2 before judging when the declaration is unusable)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 427,
+   "what": "PRE-PASS GATE: unusable_declared = [ids whose per-case 'expected' is not a non-empty string] + cases_declared_ok, recorded before the case loop runs"
+  },
+  {
+   "file": "run_card.py",
+   "line": 438,
+   "what": "declared = case.get('expected') (was case['expected'] inside the entry dict): a missing key can no longer raise an uncaught KeyError"
+  },
+  {
+   "file": "run_card.py",
+   "line": 441,
+   "what": "entry keeps the existing 'expected' key and adds 'declared' (same raw value)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 459,
+   "what": "declared_expectation_comparison + declared_expectation_ok/mismatch/not_met + judged on the nothing-raised path; unusable declaration -> NOT_JUDGED_declaration_unusable (line 464)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 483,
+   "what": "reuses the pre-existing raised_matches_expected_name as the declaration comparison (not recomputed); unusable declaration -> NOT_JUDGED (line 497)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 500,
+   "what": "declared_expectation_ok/mismatch/not_met set from that same comparison"
+  },
+  {
+   "file": "run_card.py",
+   "line": 509,
+   "what": "verdict taxonomy: FAIL_wrong_exception_type only when the raised type is not the target; is_target + name mismatch -> FAIL_declared_expectation_mismatch (line 512); PASS_rejected only when the declared name matches exactly"
+  },
+  {
+   "file": "run_card.py",
+   "line": 519,
+   "what": "not_judged_ids / judged_failed / mismatch_ids / not_rejected_ids counters; negative_summary extended (declared_expectations_in_cases_json, declared_expectation_comparison, declared_expectations_enforced, declared_expectations_usable) keeping every existing key"
+  },
+  {
+   "file": "run_card.py",
+   "line": 541,
+   "what": "negative_counts block (declared_expectation_mismatch, declared_expectation_not_met, declared_expectation_missing_in_cases_json, not_rejected, wrong_exception_type, import_or_file_error, rejected_with_ModelRegistryError)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 571,
+   "what": "verdict_reasons list incl. 'cases_json_declared_expectation_missing:<ids>' and 'declared_expectation_mismatch:<ids>'"
+  },
+  {
+   "file": "run_card.py",
+   "line": 589,
+   "what": "RC GATE: 'elif not cases_declared_ok or not fidelity_ok' -> EXIT_NO_VERDICT (2) with verdict 'no_verdict', evaluated before any negative can produce 3"
+  },
+  {
+   "file": "run_card.py",
+   "line": 596,
+   "what": "top-level result['verdict'] / result['exit_code'] / result['verdict_reasons']"
+  },
+  {
+   "file": "run_card.py",
+   "line": 613,
+   "what": "exit_code_semantics additions: cases_json_declared_expectations_usable, cases_json_unusable_declared_expectations, declared_expectation_mismatch_case_ids, declared_expectation_not_met_case_ids, not_rejected_case_ids, not_judged_case_ids, verdict_reasons, reason, reason_namespace (line 623)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 677,
+   "what": "stdout: per-case negative_declaration line + negative_counts + cases_json_declared_expectations_usable + verdict_reasons (existing emit lines unchanged)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 713,
+   "what": "_finish: negative_results.json gains negative_counts, verdict, exit_code, verdict_reasons, cases_json_declared_expectations_usable, cases_json_unusable_declared_expectations (nothing removed)"
+  }
+ ],
+ "arms": {
+  "E": {
+   "rc": 0,
+   "rc_per_card": {
+    "M09": 0,
+    "M10": 0,
+    "M11": 0,
+    "M12": 0
+   },
+   "rc_uniform": true,
+   "verdict": "pass",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M09": [],
+    "M10": [],
+    "M11": [],
+    "M12": []
+   },
+   "mutated_case": null,
+   "out_written_all": true,
+   "note": "green control: patched runner + frozen cases.json",
+   "expected_rc": 0,
+   "meets_expectation": true
+  },
+  "F": {
+   "rc": 3,
+   "rc_per_card": {
+    "M09": 3,
+    "M10": 3,
+    "M11": 3,
+    "M12": 3
+   },
+   "rc_uniform": true,
+   "verdict": "negative_failed",
+   "declared_expectation_mismatch": 1,
+   "mismatch_ids_per_card": {
+    "M09": [
+     "NEG-CARD"
+    ],
+    "M10": [
+     "NEG-CARD"
+    ],
+    "M11": [
+     "NEG-CARD"
+    ],
+    "M12": [
+     "NEG-CARD"
+    ]
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "owner-mandated mutation arm: usable-but-different `expected` -> rc=3 (the arm that was previously unreachable on M25-M28)",
+   "expected_rc": 3,
+   "meets_expectation": true
+  },
+  "B": {
+   "rc": 3,
+   "rc_per_card": {
+    "M09": 3,
+    "M10": 3,
+    "M11": 3,
+    "M12": 3
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M09": null,
+    "M10": null,
+    "M11": null,
+    "M12": null
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "historical byte-copy runner on the same mutated cases; rc is a MEASUREMENT and must not change vs B5's recorded value",
+   "b5_recorded_rc": 3,
+   "unchanged_vs_b5_recorded": true
+  },
+  "G": {
+   "rc": 2,
+   "rc_per_card": {
+    "M09": 2,
+    "M10": 2,
+    "M11": 2,
+    "M12": 2
+   },
+   "rc_uniform": true,
+   "verdict": "no_verdict",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M09": [],
+    "M10": [],
+    "M11": [],
+    "M12": []
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "declaration unusable (expected key deleted) -> rc=2 + no_verdict; the mutated case is NOT_JUDGED, never counted as a mismatch",
+   "expected_rc": 2,
+   "meets_expectation": true
+  }
+ },
+ "extra_arms": {},
+ "rc_codes_after": {
+  "0": "pass - positive/continuity/defaults fidelity held and every negative case was rejected with exactly the declared type name",
+  "1": "harness failure - unusable environment / missing or unparseable evidence file / product import failure (unchanged)",
+  "2": "no verdict - issued BEFORE any case can be judged: the frozen per-case declaration itself is missing/unusable (reason 'cases_json_declared_expectation_missing:<ids>'), or the positive-side fidelity expectation is missing/not matched. verdict='no_verdict'",
+  "3": "a judgement WAS possible and did not hold: nothing raised (FAIL_not_rejected), wrong type (FAIL_wrong_exception_type), import/file error (FAIL_import_or_file_error), or declaration mismatch (FAIL_declared_expectation_mismatch)",
+  "note": "the four rc VALUES are unchanged from the frozen historical runner (EXIT_PASS=0/EXIT_HARNESS=1/EXIT_NO_VERDICT=2/EXIT_NEGATIVE=3 at run_card.py:48-51); only the classification of a missing/unusable declaration moved from 'uncaught crash' to rc=2, and the rc=2 verdict label is now 'no_verdict' for both rc=2 triggers (was 'no_verdict_fidelity' for the fidelity trigger)."
+ },
+ "isolated_code_root_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "historical_writes": [],
+ "boundaries_respected": true,
+ "unmet_prerequisites": [],
+ "open_issues": [
+  "carried from B5 attempt (read-only): Arm B measured rc=3, not the rc=0 the contract s5 table predicts: the historical M09-M12 runner ALREADY gated its verdict (and therefore its rc) on the exact type name - it just did so under the label FAIL_wrong_exception_type and without any declared-expectation accounting. What this patch ADDS is therefore not rc-level gating of a usable declaration, but: (a) the rc=2 declaration-usability precedence that replaces an uncaught KeyError crash (measured Gpre rc=1, no evidence written), (b) NOT_JUDGED_declaration_unusable, (c) FAIL_declared_expectation_mismatch, (d) the contract s2 counters/fields/namespace, and (e) the reason strings naming the offending case id.",
+  "carried from B5 attempt (read-only): Mutation-target wording ambiguity in contract s5 ('first negative case (lowest id)'): in the frozen cases.json the array order starts with NEG-CARD while the lexicographically lowest id is CONT-BREAK. The required arms use the array-first case (NEG-CARD); the alternative reading is covered by the supplementary F2 arm, which also measured rc=3 with declared_expectation_mismatch=1 on all four cards.",
+  "carried from B5 attempt (read-only): START_HERE.md:115 registers a missing 'expected' as 'currently rc=3'; measured for M09-M12 it was neither rc=2 nor rc=3 but an uncaught KeyError -> raw rc=1 with no evidence file written (supplementary arm Gpre, old runner + G's bytes). Historical files were not changed; this is a registration note for the aggregator.",
+  "carried from B5 attempt (read-only): The rc=2 verdict label is now 'no_verdict' for BOTH rc=2 triggers (previously 'no_verdict_fidelity' for the fidelity trigger), matching the reference runner M17-M20 and the contract s6 arm-G expectation 'verdict=no_verdict'; the two triggers remain distinguishable through exit_code_semantics.reason / verdict_reasons."
+ ]
+}

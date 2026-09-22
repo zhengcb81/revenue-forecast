@@ -366,3 +366,51 @@ above the correction that declares the structurally identical sentence false. **
 down has now failed three times.** r6's own record is written to the rule: every claim of the form
 only / all / none / whole family / zero cost carries its domain on the same line. Registered as
 REM-78, to be turned into a check in the carrier-generating script rather than another sentence.
+
+---
+
+## r7 (2026-09-22) — record-only corrections, RE-REVIEW REQUIRED
+
+**Status: revision r7 record fix submitted.** The implementer writes no verdict here; `handoff_r6.json` stays `status: review_pending` with `verdict_expressed: false`.
+
+r7 changed no product code (domain: this revision's sites — the two r6 harness row lists, `oracle.md`, this file, `handoff_r6.json`), and the `## r5` / `## r6` sections above are byte-untouched: this file is a pure append — byte proof: sha256 of this file's first 22100 bytes = `8a2ff101b5501a9de93651ff1988fab339d76af779982cbe1c398b734fc28ae7`, the r6 pin in `handoff_r6.json.generation_carriers.review.md.after_sha256`, re-verified by r7 after this append.
+
+### F-REV-R6-02 — the `## r6` sentence at line 349 is SUPERSEDED; corrected form with its domain
+
+Line 349 above reads: "`[^\s]+` closes every character r4 or r5 closed and every character either leaked, except the space (which is the registered OPEN shape)" — a universal with no domain field on that line, and read unscoped it is false. The corrected form, domain on the same line as the universal:
+
+> `[^\s]+` closes **every character r4 or r5 closed and every character either of them leaked, except the space** — 域=95 个可打印 ASCII @ pre-break 位、shape `Bo<c>\n`/`Bo<c>t\n`、树 r4/r5/r6；空白字符 `\t \r \v \f \n` 不在该域内且同样泄漏 — which is the registered `C10` OPEN shape, not a token-class question.
+
+**第 349 行的该句已过时，以本节为准。** The line itself stays byte-untouched per append-only discipline. The other two carrier sites of the same finding: `oracle.md` C7.3 (appended this round) and `task_plan.md` Round 76 — the parent agent's file, corrected there, not here.
+
+### The other two findings of `reviewer_report_r6.md`, registered for the re-reviewer
+
+| finding | response | site |
+|---|---|---|
+| `F-REV-R6-01` (MEDIUM) | **registered** in both instruments as kind `registered_open`, template C10's R3a/R3b: oracle rows `R7a-line3-bare-credential`, `R7b-prebreak-cr`, `R7c-prebreak-vtab`, `R7d-prebreak-ff`; rule-table rows `open-line3-bare-credential`, `open-prebreak-cr`, `open-prebreak-vtab`, `open-prebreak-ff` — each of the four carrying the marker AND the 39-char non-marker credential. Family + domain named in `oracle.md` C7.1–C7.2. Domain of the base-regression: r1/M4, r2, r3, r4, r5, r6 persist these exact inputs while `iso/product_base` redacts them (`scratch/r7_shape_probe.json`, both trees) | `oracle.md` C7.1–C7.2; both r6 harness row lists |
+| `F-REV-R6-03` (LOW) | **corrected 16 → 18**, old value retained as superseded at both sites r7 owns: the `oracle.md` C6.1 cell (+ C7.4) and `handoff_r6.json` → `sweep_result.r4_class_leaking_count` (+ its `r7` block). Domain: 95 printable ASCII at the pre-break position, shape `Bo<c>t\n`, r4 tree — count 18 of 95, source `execution_runs/_r6_measure_20260922/r6_measurement.json` (18 entries) and the r6 reviewer's probe. Site 3 = `task_plan.md` Round 76, the parent agent's file | `oracle.md` C6.1/C7.4; `handoff_r6.json` |
+
+Both r6 harnesses re-run after the row addition (`iso/venv/Scripts/python.exe -B`, `--src iso/product_narrow_r6/src`, outputs `execution_runs/_r7_measure_20260922/`): oracle **44 cases, rc 0, verdict `pass`** (`registered_open_confirmed` = all six open rows); rule table **95 rows, rc 3, verdict `negative`** with `credential_leaks []`, `touched_but_should_not_be []`, `fidelity_ok true`. The rule table's rc 3 / `negative` is BY DESIGN since r3 (F-REV-R6-04): its verdict aggregates secret survival across all 95 rows of the table and the six `registered_open` rows survive exactly as declared — so r7 claims no rc 0 for it.
+
+Carried unchanged (recorded, not addressed, as declared): `F-REV-R6-05` and its base `F-REV-R5-08` — the two C10 rows still carry only the 39-char form (domain: exactly those two rows, `R3a`/`R3b` and `open-two-token-then-wrap`/`open-quoted-two-token`); r7's four rows close that gap for their own family only (domain: the four r7 rows, not the C10 pair).
+
+## r7 verdict (2026-09-22) — the independent reviewer returned `accepted_scoped` (transcribed, unsigned)
+
+- **verdict**: `accepted_scoped`
+- **carrier**: `reviewer_report_r7.md` — sha256 `cc6da8d3878dbd942bc6d47bdd750913d1c0646742e22c737ffe73191f610076`; pin: the sidecar `reviewer_report_r7.md.sha256` carries exactly this digest; verdict at §0 (`## 0. VERDICT`, line 9) — the verdict line is line 11, its domain lines 12–15. The r6 report stays pinned at `f1c9761d80679fb9f0258ac7eb786557fc9296762764183883e1f7b22262a74f`.
+- **reviewer**: 独立复核 — the verdict belongs to the independent r7 reviewer, not to this transcription.
+- **note**: this block is bookkeeping transcription by the carrier-landing executor; bookkeeping transcription adds no acceptance of its own. The acceptance exists only in the carrier above; `handoff_r6.json` and `evidence/I-14-D/qualification.json` mirror it without signing it.
+
+### Scope of `accepted_scoped` (the carrier's scope, each item with its domain)
+
+- The `[^\s]+` fix closes **F-REV-R5-01** (domain: 95 printable ASCII @ pre-break, shapes `Bo<c>\n`/`Bo<c>t\n`, trees r4/r5/r6); nothing here reverses the r6 grants or the r6 refusals — acceptance remains scoped as the carrier states.
+- **F-REV-R6-01 CLOSED**: 4 dual-payload `registered_open` rows registered in both instruments — each carrying the 21-char marker AND the 39-char non-marker credential in input and in declaration — with the C7.2 family+domain paragraph; the reviewer's own probe reproduces leak-on-narrow / redact-on-base for all four inputs.
+- **F-REV-R6-02 CLOSED**: same-line domains at all 3 sites (the two r7-owned sites are append-supersessions whose byte proofs hold exactly — `review.md` L349 inside the r6 prefix, `oracle.md` C6.1 lines 649–651 inside the pinned unchanged segment; site 3 is the parent agent's `task_plan.md`, corrected there).
+- **F-REV-R6-03 CLOSED**: 16 → 18, a sole 2-byte in-place cell edit, reconstructable to the r6 pin, old value retained as superseded at every site r7 owns (domain: 95 printable ASCII at the pre-break position, shape `Bo<c>t\n`, r4 tree — 18 of those 95 leak).
+- Harness counts reproduced by the reviewer's own runs: oracle **44 cases, rc 0, `pass`**, `registered_open` = 6 (confirmed 6); rule table **95 rows, rc 3, verdict `negative` BY DESIGN since r3** — rc 0 is claimed nowhere for the rule table (domain: the three r7 carriers, grep-verified by the reviewer).
+- Generation isolation proven by window-removal reconstruction (r3/r4/r5 harness pins, r3–r6 tree pins, production anchor `scripts/model_registry.py` = `9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f` / 26446 B unchanged, zero non-pyc writes under `iso/` since the r6 review).
+- **Carried list NOT closed**: `F-REV-R3-02/03/05/06..10`, `F-REV-R4-02`, `F-REV-R5-03..08` remain registered-unaddressed — no silent closure (§6: last registration at `## r6` L358, no occurrence in `## r7`).
+- The two C10 rows are still credential-only (domain: exactly `R3a`/`R3b` and `open-two-token-then-wrap`/`open-quoted-two-token`); r7's four rows close the marker gap for their own family only (domain: the four r7 rows).
+- Promotion of the `[^\s]+` fix is a separate owner decision, ungranted here — batch-2 candidate.
+- r7 round findings — all INFO, none blocking: **F-REV-R7-01**: the pre-r7 bytes of `handoff_r6.json` were never pinned, so that carrier's r6-content claim is verified field-by-field and by JSON validity, not by reconstruction (domain: that one carrier; all other carriers have pins the reviewer reproduced). **F-REV-R7-02** (record nit): the carriers' `--src iso/product_narrow_r6/src` forward-slash notation does not reproduce the pinned measure-file bytes; the pins were produced with `--src .\iso\product_narrow_r6\src` (+5 JSON bytes from escaped backslashes) — counts, rc and verdict identical either way (domain: the two files in `_r7_measure_20260922/`). **F-REV-R7-03**: `review.md ## r7` and the handoff r7 block do not restate the full carried list; it survives via the untouched `## r6` section — not a closure (domain: those two r7 texts).
+- Reviewer disclosure (§1): its first runs passed `--src` with an absolute path and then in forward-slash relative form; because the report JSON embeds `args.src` verbatim, those runs produced byte-different (count-identical) outputs and overwrote the two `_r7_measure_20260922` measure files. It then re-ran the exact invocation the pins were made with, and both files now hash byte-identically to the pins — oracle `1a859a5c9af2a4e3f60faa5eaea018d1e2e475c26153f18dd5810925723fbe37`, rule `405abfaaae041aa9aba1d395cac25769faf03a457435320a008dcdda1ae18690` — evidence restored exactly and independently regenerated (domain: the two files in `_r7_measure_20260922/`, verified by sha equality after the final run; counts, rc and verdicts were identical in every run).

@@ -1,0 +1,383 @@
+{
+ "batch": "M25-M28",
+ "cards": [
+  "M25",
+  "M26",
+  "M27",
+  "M28"
+ ],
+ "fix_card": "B5-fix-g1a-g3",
+ "scope_note": "runner patch scope: B5+this-card",
+ "runner_before": {
+  "path": "execution_runs/M25/a20260919-01/scripts/run_card.py",
+  "sha256": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+  "bytes": 22720,
+  "byte_identical_to_historical": true
+ },
+ "runner_after": {
+  "path": "execution_runs/B5-fix-g1a-g3/a20260922-01/M25-M28/run_card.py",
+  "sha256": "6d6dd6dbd2bfadc458f7572c19b7492641d6571d35802bc550c75f00f59a9873",
+  "bytes": 42825,
+  "identical_to_historical": false
+ },
+ "diff_path": "M25-M28/runner.diff",
+ "diff_stats": {
+  "added_lines": 320,
+  "removed_lines": 22
+ },
+ "cards_cases_sha256": {
+  "M25": "268c8a47b9b5cccae7053914c2dc0d6929242d18f1da63054aac76937ed936cb",
+  "M26": "f3e86ef0eed59fd9a4e2cc4ace408859458c793a1b15fd52deadb926d241b1e1",
+  "M27": "482a4f160d384e16887bf7ff3fc1180eb1ae8004c445d24e1b105cd926dec4de",
+  "M28": "64a8a3374b7e6c72dc92f5d65c5245e01b5355de5681856ac3182d0e48ccc82f"
+ },
+ "insertion_points": [
+  {
+   "file": "run_card.py",
+   "line": 165,
+   "what": "pre-judgement extraction of the frozen per-case declaration: unusable_declared / cases_declared_ok, evaluated BEFORE any case is judged"
+  },
+  {
+   "file": "run_card.py",
+   "line": 185,
+   "what": "set-level case_contract gate split into structural_problems (still rc=1) and set_level_declaration_violations (recorded, non-gating); the rc=1 abort at line 212 now fires only on a STRUCTURAL violation"
+  },
+  {
+   "file": "run_card.py",
+   "line": 242,
+   "what": "new result block case_contract_check / case_contract_problems / cases_json_declared_expectations_usable / cases_json_unusable_declared_expectations"
+  },
+  {
+   "file": "run_card.py",
+   "line": 399,
+   "what": "per-case negative loop: declared = case.get(\"expected\") with `declared` mirroring `expected`"
+  },
+  {
+   "file": "run_card.py",
+   "line": 428,
+   "what": "declared_usable check -> NOT_JUDGED_declaration_unusable branch (rc=2 precondition, never a mismatch)"
+  },
+  {
+   "file": "run_card.py",
+   "line": 444,
+   "what": "ENFORCEMENT: declared_ok = (raised_name == declared) - exact exception type name equality, NOT isinstance; drives FAIL_declared_expectation_mismatch"
+  },
+  {
+   "file": "run_card.py",
+   "line": 476,
+   "what": "negative_counts: declared_expectation_mismatch / _not_met / _missing_in_cases_json"
+  },
+  {
+   "file": "run_card.py",
+   "line": 483,
+   "what": "negative_summary: not_judged / judged / declared_expectations_in_cases_json / declared_expectation_comparison / declared_expectations_enforced"
+  },
+  {
+   "file": "run_card.py",
+   "line": 570,
+   "what": "negatives_ok now ignores NOT_JUDGED cases so an unusable declaration can never by itself produce rc=3"
+  },
+  {
+   "file": "run_card.py",
+   "line": 577,
+   "what": "precedence: unusable declaration -> verdict no_verdict + rc=2 before any case judging; rc=0/3 table otherwise unchanged"
+  },
+  {
+   "file": "run_card.py",
+   "line": 609,
+   "what": "exit_code_semantics gains cases_json_declared_expectations_usable, declared_expectation_mismatch_case_ids, declaration_unusable_case_ids, not_judged_case_ids and the reason_namespace note"
+  },
+  {
+   "file": "run_card.py",
+   "line": 220,
+   "what": "B5-fix F-2/G1-a: whole-set gate explicitly routed - structural rc=1 unchanged / declaration unusable rc=2+no_verdict before judging / usable-but-different rc=3; never non-gating, never rc=1 for a value difference"
+  },
+  {
+   "file": "run_card.py",
+   "line": 657,
+   "what": "G1-a routing is load-bearing in the final exit-code decision"
+  }
+ ],
+ "arms": {
+  "E": {
+   "rc": 0,
+   "rc_per_card": {
+    "M25": 0,
+    "M26": 0,
+    "M27": 0,
+    "M28": 0
+   },
+   "rc_uniform": true,
+   "verdict": "pass",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M25": [],
+    "M26": [],
+    "M27": [],
+    "M28": []
+   },
+   "mutated_case": null,
+   "out_written_all": true,
+   "note": "green control: patched runner + frozen cases.json",
+   "expected_rc": 0,
+   "meets_expectation": true
+  },
+  "F": {
+   "rc": 3,
+   "rc_per_card": {
+    "M25": 3,
+    "M26": 3,
+    "M27": 3,
+    "M28": 3
+   },
+   "rc_uniform": true,
+   "verdict": "fail",
+   "declared_expectation_mismatch": 1,
+   "mismatch_ids_per_card": {
+    "M25": [
+     "NEG-CARD"
+    ],
+    "M26": [
+     "NEG-CARD"
+    ],
+    "M27": [
+     "NEG-CARD"
+    ],
+    "M28": [
+     "NEG-CARD"
+    ]
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "owner-mandated mutation arm: usable-but-different `expected` -> rc=3 (the arm that was previously unreachable on M25-M28)",
+   "expected_rc": 3,
+   "meets_expectation": true
+  },
+  "B": {
+   "rc": 1,
+   "rc_per_card": {
+    "M25": 1,
+    "M26": 1,
+    "M27": 1,
+    "M28": 1
+   },
+   "rc_uniform": true,
+   "verdict": "None",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M25": null,
+    "M26": null,
+    "M27": null,
+    "M28": null
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": false,
+   "note": "historical byte-copy runner on the same mutated cases; rc is a MEASUREMENT and must not change vs B5's recorded value",
+   "b5_recorded_rc": 1,
+   "unchanged_vs_b5_recorded": true
+  },
+  "G": {
+   "rc": 2,
+   "rc_per_card": {
+    "M25": 2,
+    "M26": 2,
+    "M27": 2,
+    "M28": 2
+   },
+   "rc_uniform": true,
+   "verdict": "no_verdict",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M25": [],
+    "M26": [],
+    "M27": [],
+    "M28": []
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "declaration unusable (expected key deleted) -> rc=2 + no_verdict; the mutated case is NOT_JUDGED, never counted as a mismatch",
+   "expected_rc": 2,
+   "meets_expectation": true
+  }
+ },
+ "extra_arms": {
+  "S": {
+   "rc": 1,
+   "rc_per_card": {
+    "M25": 1,
+    "M26": 1,
+    "M27": 1,
+    "M28": 1
+   },
+   "expected_rc": 1,
+   "meets_expectation": true,
+   "note": "structural arm: one extra unknown-id case -> the structural gate still aborts at rc=1 UNCHANGED (G1-a keeps rc=1 for harness/fixture faults)"
+  }
+ },
+ "rc_codes_after": {
+  "0": "pass (positive in tolerance, continuity positive matched, NEG-CARD mechanism matched, every judged negative PASS_rejected)",
+  "1": "unguarded harness defect / unusable environment, or a STRUCTURAL frozen case_contract violation (case_contract block missing, case count, case id list, unknown ids) - fail loud",
+  "2": "NO VERDICT, issued BEFORE any case can be judged: the frozen per-case declaration itself is missing/unusable (reason cases_json_declared_expectation_missing:<ids>), or the positive path raised",
+  "3": "a judgement WAS possible and did not hold: positive mismatch, continuity failure, an unrejected negative, or a raised exception whose exact type name != the case's declared expected"
+ },
+ "isolated_code_root_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "historical_writes": [],
+ "boundaries_respected": true,
+ "unmet_prerequisites": [],
+ "open_issues": [
+  "carried from B5 attempt (read-only): ARM B FIRED A THIRD GATE, NOT rc=0 AND NOT rc=3 (measured rc=1). Gate that fired: the historical runner's WHOLE-SET case_contract gate (run_card_before.py lines 140-168, `wrong_declaration` -> contract_problems -> return 1). stderr: \"cases whose `expected` is not 'ModelRegistryError': ['NEG-CARD']\". Consequence: the historical runner aborts BEFORE judging, so it produces no verdict and no output JSON - it is neither the fabricated green of the owner ruling nor evidence of a per-case gate. Arm B0 (same old runner, frozen cases.json) returns rc=0, and arm B1 (extra unknown case id) returns rc=1 from the structural case-count/id checks, isolating the three gate families.",
+  "carried from B5 attempt (read-only): DEVIATION from contract section 'keep the set-level gate': keeping that gate AS AN rc=1 ABORT makes arm F impossible, because the first negative case's mutation trips the set-level gate before any per-case judging (measured: rc=1). The set-level declaration comparison is therefore still EVALUATED and REPORTED verbatim in case_contract_check.set_level_declaration_violations and case_contract_problems, but it no longer drives the exit code; the structural half of the same gate still drives rc=1 unchanged. This is an ordering change inside one interlocked pair, not a change to any rc value: 0/1/2/3 keep their frozen meanings.",
+  "carried from B5 attempt (read-only): ANCHOR-CONFLICT WITH THE FROZEN cases.json case_contract.rule, reported not fixed: the frozen rule text says a differing `expected` makes the harness 'refuse to issue a verdict (rc=1)'. The owner's T1-11 append-only ruling forbids editing cases.json, so that sentence is now saturated by this patch's behaviour. The frozen file is byte-unchanged (sha256 recorded in cards_cases_sha256); the divergence is recorded here for the reviewer rather than silently re-frozen.",
+  "carried from B5 attempt (read-only): HISTORICAL cases.json CARRIES A STALE-SEMANTICS RULE STRING, not a defect in this patch: `case_contract.rule` still describes the whole-set behaviour. Downstream readers should treat case_contract_check as the authoritative record.",
+  "carried from B5 attempt (read-only): NEG-CARD's message-prefix mechanism check stays gating and still matched in arms E and G (the G arm's NEG-CARD is NOT_JUDGED but its raised message is unchanged), so the card-specific coverage claim is unaffected by this patch.",
+  "carried from B5 attempt (read-only): ARM F/G MUTATE ONLY THE FIRST NEGATIVE CASE (NEG-CARD, the lowest id) as the contract directs; the other ten negatives declare ModelRegistryError in every arm and keep PASS_rejected, so the mismatch signal is attributable to exactly one case.",
+  "F-2/G1 fixed per owner ruling G1-a: whole-set gate explicitly routed (rc=1 structural / rc=2 unusable before judging / rc=3 usable-diff per case).",
+  "G2 conflict: the frozen case_contract.rule 'rc=1' text vs the frozen rc table is registered as a KNOWN CONFLICT with owner ruling 留置 (permanently registered; NO precedence between the frozen artifacts is asserted). See decision.md. No frozen file edited (T1-11).",
+  "F-4 registered: on M25-M28 a deleted `expected` historically gave rc=1 via the WHOLE-SET case_contract gate (case.get('expected') -> None != declared), NOT via a hard-subscript KeyError; no KeyError, no output JSON. START_HERE append 2 explains only the KeyError mechanism - its text is left unedited (no authorization to append to START_HERE in this card); correction carried here.",
+  "F-5 registered: arm G on M25-M28 is a SECOND semantic change (historical rc=1 from the set-level gate -> patched rc=2 + no_verdict), required for T1-19 cross-batch uniformity; registered alongside G1 rather than silently.",
+  "arm S (structural, new): rc=1 on all four cards - the structural abort is unchanged by the G1-a routing."
+ ],
+ "g1a_routing": {
+  "authority": "owner G1-a execution ruling 2026-09-22",
+  "structural_arm_S_rc": {
+   "M25": 1,
+   "M26": 1,
+   "M27": 1,
+   "M28": 1
+  },
+  "declaration_unusable_arm_G": "rc=2 + no_verdict, evaluated before judging",
+  "usable_different_arm_F": "rc=3 (load-bearing set-level route + per-case)",
+  "set_level_gate_state": "EXPLICITLY ROUTED (set_level_declaration_gating=true)",
+  "value_difference_never_rc1": true,
+  "frozen_rule_text_conflict": "known conflict, owner ruling 留置 - no precedence asserted",
+  "per_output": {
+   "E/M25": {
+    "route_rc": null,
+    "gating": true,
+    "raw_rc": 0,
+    "verdict": "pass",
+    "no_verdict_reason": null,
+    "unusable_ids": [],
+    "mismatch_ids": []
+   },
+   "E/M26": {
+    "route_rc": null,
+    "gating": true,
+    "raw_rc": 0,
+    "verdict": "pass",
+    "no_verdict_reason": null,
+    "unusable_ids": [],
+    "mismatch_ids": []
+   },
+   "E/M27": {
+    "route_rc": null,
+    "gating": true,
+    "raw_rc": 0,
+    "verdict": "pass",
+    "no_verdict_reason": null,
+    "unusable_ids": [],
+    "mismatch_ids": []
+   },
+   "E/M28": {
+    "route_rc": null,
+    "gating": true,
+    "raw_rc": 0,
+    "verdict": "pass",
+    "no_verdict_reason": null,
+    "unusable_ids": [],
+    "mismatch_ids": []
+   },
+   "F/M25": {
+    "route_rc": 3,
+    "gating": true,
+    "raw_rc": 3,
+    "verdict": "fail",
+    "no_verdict_reason": null,
+    "unusable_ids": [],
+    "mismatch_ids": [
+     "NEG-CARD"
+    ]
+   },
+   "F/M26": {
+    "route_rc": 3,
+    "gating": true,
+    "raw_rc": 3,
+    "verdict": "fail",
+    "no_verdict_reason": null,
+    "unusable_ids": [],
+    "mismatch_ids": [
+     "NEG-CARD"
+    ]
+   },
+   "F/M27": {
+    "route_rc": 3,
+    "gating": true,
+    "raw_rc": 3,
+    "verdict": "fail",
+    "no_verdict_reason": null,
+    "unusable_ids": [],
+    "mismatch_ids": [
+     "NEG-CARD"
+    ]
+   },
+   "F/M28": {
+    "route_rc": 3,
+    "gating": true,
+    "raw_rc": 3,
+    "verdict": "fail",
+    "no_verdict_reason": null,
+    "unusable_ids": [],
+    "mismatch_ids": [
+     "NEG-CARD"
+    ]
+   },
+   "G/M25": {
+    "route_rc": 2,
+    "gating": true,
+    "raw_rc": 2,
+    "verdict": "no_verdict",
+    "no_verdict_reason": "cases_json_declared_expectation_missing:NEG-CARD",
+    "unusable_ids": [
+     "NEG-CARD"
+    ],
+    "mismatch_ids": []
+   },
+   "G/M26": {
+    "route_rc": 2,
+    "gating": true,
+    "raw_rc": 2,
+    "verdict": "no_verdict",
+    "no_verdict_reason": "cases_json_declared_expectation_missing:NEG-CARD",
+    "unusable_ids": [
+     "NEG-CARD"
+    ],
+    "mismatch_ids": []
+   },
+   "G/M27": {
+    "route_rc": 2,
+    "gating": true,
+    "raw_rc": 2,
+    "verdict": "no_verdict",
+    "no_verdict_reason": "cases_json_declared_expectation_missing:NEG-CARD",
+    "unusable_ids": [
+     "NEG-CARD"
+    ],
+    "mismatch_ids": []
+   },
+   "G/M28": {
+    "route_rc": 2,
+    "gating": true,
+    "raw_rc": 2,
+    "verdict": "no_verdict",
+    "no_verdict_reason": "cases_json_declared_expectation_missing:NEG-CARD",
+    "unusable_ids": [
+     "NEG-CARD"
+    ],
+    "mismatch_ids": []
+   }
+  }
+ }
+}

@@ -1,0 +1,66 @@
+{
+ "id": "F-M08-R1",
+ "what": "execution_v2/validation.json refreshed after the owner's M08 index correction (commit b07d9b95)",
+ "why": "the 2026-09-19 snapshot still carried the pre-correction index hashes, so the delivery-gate snapshot was stale",
+ "old_snapshot": {
+  "path": "execution_v2/validation.json",
+  "sha256": "a0a7a55b2e3264986a6ec5391f1e7b8a9a36399fe580e15d8e23a9d38edf0fbf",
+  "checked_utc": "2026-09-19T09:05:30.901543+00:00",
+  "error_count": 0,
+  "preserved_copy": "recovery/validation_json_pre_m08_index_correction.json",
+  "preserved_sha256": "a0a7a55b2e3264986a6ec5391f1e7b8a9a36399fe580e15d8e23a9d38edf0fbf"
+ },
+ "new_snapshot": {
+  "path": "execution_v2/validation.json",
+  "sha256": "a2e739a5111a52836959fdb7e20e60c3c1e1b1a07a73651991e0b5abcae8e36e",
+  "checked_utc": "2026-09-20T08:25:24.292241+00:00",
+  "error_count": 2,
+  "errors": [
+   "stale extracted card source M08",
+   "source binding changed or missing: C:\\Users\\郑曾波\\Projects\\company-wiki\\src\\company_wiki\\source_catalog\\cli.py"
+  ]
+ },
+ "validator": {
+  "path": "execution_v2/validate_execution_pack.py",
+  "sha256": "7841d014384b1a41da1ae50b3eb3e5515104e7da256bf2cf17889c726c70a03d",
+  "raw_exit_code": 1,
+  "expected_exit_code": "0 when the pack is clean",
+  "command": "python -X utf8 execution_v2/validate_execution_pack.py"
+ },
+ "stale_index_hashes_that_motivated_the_refresh": {
+  "card_M08.md": {
+   "recorded": "2ed06720e45f692197a873ff652f17d47615a2fc698197b86377f332718c36b5",
+   "current": "352585e94146fd1019df3c2bd8e2923c5d152f1fa10d7c0f2077801a044786e4"
+  },
+  "model_cards.md": {
+   "recorded": "f891a6ed29ebbefefafa58d7b753fe13d4cc875ded754ef4fe0194d4d8e69e19",
+   "current": "63bca6bada3b4bf0202370b189462bd4bcd3050dfe0f217c066679afe9001710"
+  },
+  "dispatch.json": {
+   "recorded": "7c81f8ec193bdc62a7aee0d2ea22c515bc64cd62baf3f703b6b5b91611373da9",
+   "current": "0126acb61a8ef2e7d3a01185a900a67ddc5f9bea7bd91da856a465d1e8a82069"
+  },
+  "model_cards.json": {
+   "recorded": "d6faa33e82258a9a4c22d2ca47709891277a2fee940bc5e2186fbd26145d712c",
+   "current": "a9f569f2bea8b6ce316b745d49bd08ca72c9acc30249750ee71d58be553b4179"
+  }
+ },
+ "errors_reported_honestly": [
+  {
+   "error": "stale extracted card source M08",
+   "raised_by": "validate_execution_pack.py line 34",
+   "cause": "MATERIALISATION GAP, not a product or content error. The correction changed the M08 block's byte length inside model_cards.md, so the materialised section 'model_cards.md[start(M08):start(next heading)].strip() + newline' is no longer the byte string whose hash dispatch.json records. The block's TEXT is unchanged (the single-card body still equals the source section), but the trailing whitespace of the now-longer block changes the stripped section hash.",
+   "dispatch_records": "bcef9d845f7446832e128a58a69474891187d05cbbe5b98f34bfbabf2b720949",
+   "recomputed_section_sha256": "adfd9589e90c20db2fee167d2bb161f2453e6cfa51f8e893021f818e5b76a096",
+   "suggested_one_line_fix": "set dispatch.json M08.source_section_sha256 to the recomputed value; the card body and the frozen expectation [50] are unaffected",
+   "authorisation": "NOT APPLIED by the implementer: re-materialising an index value is the index owner's act, and the owner authorisation covered the four printed fragments, not this derived field. Escalated in handoff.open_questions."
+  },
+  {
+   "error": "source binding changed or missing: company-wiki/src/company_wiki/source_catalog/cli.py",
+   "raised_by": "validate_execution_pack.py line 77 (wiki_cards.json anchor, card I-02-B)",
+   "cause": "PRE-EXISTING and NOT caused by this batch: the working-tree file hashes fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b while wiki_cards.json records the planning-time 2f5c5740343697078d1e69b3a6a9ef9b0809277799c2d9c28a2d3e4048c4d512. git status for that path is clean and its last commit is bdffc546 (2026-08-18), i.e. the file was never part of this batch; only its content differs from what the plan recorded.",
+   "not_caused_by": "this batch, the M08 correction, or the M05-M08 attempts",
+   "authorisation": "NOT APPLIED: re-anchoring another card's source binding is out of this card's scope (I-02-B owns it). Escalated in handoff.open_questions."
+  }
+ ]
+}

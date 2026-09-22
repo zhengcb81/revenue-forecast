@@ -1,0 +1,32 @@
+{
+  "A_pipe_with_reader": {
+    "raw_returncode": 0,
+    "stdout": "valid\r\n",
+    "stderr": ""
+  },
+  "B_pipe_no_reader": {
+    "raw_returncode": 120,
+    "stderr": "Exception ignored on flushing sys.stdout:\r\nOSError: [Errno 22] Invalid argument\r\n",
+    "same_construction_as_arm": true
+  },
+  "C_stdout_to_file": {
+    "raw_returncode": 0,
+    "stdout_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-C\\a20260922-01\\evidence\\cases\\F12_stdout_pipe\\control_c_stdout.txt",
+    "stderr": "Exception ignored on flushing sys.stdout:\r\nOSError: [Errno 22] Invalid argument\r\n"
+  },
+  "attribution": {
+    "harness_exit_codes_reserved": {
+      "kill": 4242
+    },
+    "harness_maps_child_rc": false,
+    "mechanism": "rc=120 is CPython's standard-stream flush failure exit status, raised in the CHILD (product CLI) at interpreter finalization when sys.stdout has no reader; the harness only records Popen.returncode (GetExitCodeProcess) and never rewrites it.",
+    "isolated_variable": "only the stdout sink differs between A/B/C",
+    "conclusion_pending_measurement": false,
+    "measured": {
+      "A": 0,
+      "B": 120,
+      "C": 0
+    },
+    "verdict": "product-process exit code attributable to broken-pipe stdio flush (A=0, B=120, C=0; B differs from both baselines under identical harness)"
+  }
+}

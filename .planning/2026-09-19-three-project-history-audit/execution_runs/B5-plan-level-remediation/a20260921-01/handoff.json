@@ -3,9 +3,12 @@
  "title": "REM-21 cross-batch runner propagation / REM-22 rc code table freeze",
  "attempt": "a20260921-01",
  "attempt_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-plan-level-remediation\\a20260921-01",
- "status": "review_pending",
+ "status": "changes_required",
+ "status_before_bookkeeping_fix": "review_pending",
  "implementer_signed": false,
  "implementer_never_signs_acceptance": true,
+ "disclosure_adaptation": "unmapped",
+ "accuracy": "unproven",
  "authority": {
   "document": "OWNER_DECISIONS.md",
   "sections": [
@@ -402,7 +405,7 @@
   "signatures_forged": false,
   "miniconda_python_used_for_card_runners": false
  },
- "reviewer_must_do": [
+ "reviewer_must_do_historical_pre_verdict": [
   "Independently re-read each of the six patched runners and confirm the comparison is EXACT type-name equality and never isinstance (the ValueError decoy is the discriminating probe).",
   "Re-run at least one arm per batch from your own copy and confirm the raw rc; do not accept this card's recorded rc.",
   "Adjudicate F-B5-1: whether the two already-gating batches should keep the added prerequisite-3 changes or be reverted to byte-identical historical copies.",
@@ -411,7 +414,145 @@
   "Confirm the START_HERE.md append is a pure append by your own two-route test.",
   "Confirm nothing under the historical M-card trees was written (this card reports 0 of 37,323)."
  ],
- "next_action": "Independent reviewer: adjudicate the six patched runner copies and the two corrections (F-B5-1 scope, F-B5-2 ghost hash) recorded in decision.md D-9 and D-3. The first unfinished card action is the reviewer signature; the implementer must not self-sign.",
+ "reviewer_must_do": [
+  "POST-VERDICT: the independent review is DONE - NOT ACCEPTED AS-IS (reviewer_report.md line 13); the pre-verdict checklist is retained verbatim in reviewer_must_do_historical_pre_verdict.",
+  "POST-VERDICT: conditions G1, G3 and F-3 are closed by the fix card B5-fix-g1a-g3/a20260922-01 (accepted_scoped, carrier reviewer_report.md sha256 69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e); G2 is closed by owner ruling D-G2 留置 (OWNER_DECISIONS §16) - closure-by-ruling, the conflict stays registered with no precedence asserted.",
+  "POST-VERDICT: this attempt is NOT accepted and is not to be upgraded by bookkeeping; forward work on the card line goes through the superseding fix card or a new owner-authorized card. The implementer never signs acceptance."
+ ],
+ "next_action": "Recorded: verdict changes_required (reviewer's literal wording: NOT ACCEPTED AS-IS - \"measured core verified / 3 blocking findings\"), transcribed from reviewer_report.md line 13 into this handoff, review.md and evidence/B5-plan-level-remediation/qualification.json. Forward state of the card line = superseding fix card B5-fix-g1a-g3/a20260922-01 (accepted_scoped + landed, CF-B5FIX-1/2/3). No further action on THIS attempt.",
+ "next_action_historical_pre_verdict": "Independent reviewer: adjudicate the six patched runner copies and the two corrections (F-B5-1 scope, F-B5-2 ghost hash) recorded in decision.md D-9 and D-3. The first unfinished card action is the reviewer signature; the implementer must not self-sign.",
  "all_arms_as_expected": true,
- "all_boundaries_respected": true
+ "all_boundaries_respected": true,
+ "status_authority": {
+  "verdict": "changes_required",
+  "verdict_label_as_written_by_reviewer": "NOT ACCEPTED AS-IS — \"measured core verified / 3 blocking findings\".",
+  "verdict_label_note": "changes_required is the machine-readable rendering of the reviewer's literal NOT ACCEPTED AS-IS verdict. There is NO acceptance verdict for this card and none was invented; the acceptance for the line lives only on the superseding fix card.",
+  "verdict_written_by": "independent reviewer (not the implementer, not the orchestrator; reviewer_report.md lines 3 and 278-282: 'I did not self-sign: this card remains review_pending')",
+  "carrier": {
+   "file": "reviewer_report.md",
+   "path_inside_attempt": "reviewer_report.md",
+   "line_range_inclusive_1_based": [1, 307],
+   "verdict_section_line_range_inclusive": [11, 29],
+   "verdict_line": 13,
+   "verdict_line_range_inclusive": [13, 13],
+   "first_line_of_verdict": "**NOT ACCEPTED AS-IS — \"measured core verified / 3 blocking findings\".**",
+   "return_to_implementer_line": 15,
+   "return_to_implementer_text": "Returned to the implementer (not self-signed; this card stays `review_pending`).",
+   "blocking_findings_line": 29,
+   "blocking_findings_text": "**Blocking findings: F-1 (G3 key rename), F-2 (G1/G2 frozen-rule override without owner sign-off), F-3 (`evidence.json` schema divergence on M13-M16).**",
+   "adjudication_line_ranges": {"G1": [149, 176], "G2": [178, 192], "G3": [194, 212], "G4": [214, 228]},
+   "findings_section_line_range_inclusive": [231, 242],
+   "required_before_acceptance_line_range_inclusive": [268, 274],
+   "reviewer_independence_section_line_range_inclusive": [278, 282],
+   "sha256": "0324bfdcc2eb6443693419a9e718b241b25c6c290ff12abb5fb96de0b6d2eee0",
+   "bytes": 34764,
+   "total_lines": 307,
+   "encoding": "UTF-8 without BOM; LF line endings only; single trailing LF",
+   "byte_proof": {
+    "verdict_line_bytes": {"start": 590, "end_inclusive": 663, "end_exclusive": 664, "length": 74, "sha256": "3488d12a6d6429a8c477563cb2350b83b81f511e53a8f1a3331878168afad9b4"},
+    "return_to_implementer_line_bytes": {"start": 665, "end_inclusive": 744, "end_exclusive": 745, "length": 80, "sha256": "b684c7f3751769209bb4bf12b3e498d0f3c26b27a94cbfc41d742b0be1cef25b"},
+    "blocking_findings_line_bytes": {"start": 3102, "end_inclusive": 3253, "end_exclusive": 3254, "length": 152, "sha256": "510cc0e5325426a5caf22a504df865b7211a45c4574a81d4796f6d200e9e124f"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the line's terminating LF"
+   },
+   "pin": {
+    "kind": "embedded self-excluding pin (report §7, lines 286-307); NO reviewer_report.md.sha256 sidecar exists in this attempt",
+    "pin_sidecar_present": false,
+    "payload_definition": "every byte of reviewer_report.md before the '## 7. Report pin' section",
+    "payload_bytes": 34071,
+    "payload_sha256": "600c9e7b71ee201b6c10aab2a2ce79705f9449b96ac4535a02d3310a5c49f27d",
+    "verified": "recomputed independently at landing time: sha256(bytes before '## 7. Report pin') == payload_sha256 (pin OK; the report is unaltered since review)"
+   },
+   "landing_file": {
+    "file": "review.md",
+    "role": "verdict-backfill block written by this bookkeeping pass; it transcribes the reviewer's rejection and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md, which this pass did not modify.",
+    "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+   }
+  },
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "the rejection was written by an independent reviewer in reviewer_report.md line 13; never by the implementer and never by this pass. This handoff only transcribes it.",
+  "verdict_is_transcribed_not_authored": true
+ },
+ "condition_disposition": {
+  "note": "per-condition closure map for the ORIGINAL verdict (changes_required / NOT ACCEPTED AS-IS). Closing a condition does not retro-accept this attempt: this attempt stays changes_required. This is a faithful bookkeeping of the rejection plus its disposition, not an upgrade.",
+  "G1": {
+   "finding": "reviewer_report.md G1 (lines 149-176) + F-2: whole-set case_contract gate split - deviation FORCED, implementer's particular resolution NOT the only compliant one, owner sign-off required (options G1-a/G1-b at lines 173-174)",
+   "disposition": "closed by FIXCARD - the reviewer's preferred G1-a routing implemented (structural rc=1 unchanged / declaration unusable -> rc=2 + no_verdict decided before judging / usable-but-different -> rc=3, load-bearing in the exit decision)",
+   "closed_by": "execution_runs/B5-fix-g1a-g3/a20260922-01",
+   "accepted_via": "FIXCARD review, status accepted_scoped, carrier reviewer_report.md sha256 69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e",
+   "measurement": "G1-a routing measured over 128 raw-rc child processes (_scratch/arms_raw.json; commands.json = 'all 128 arm units with real raw rc'); fix reviewer's own fresh M25-M28 re-run: 20/20 raw rcs match (E=0, F=3, G=2 no_verdict, S=1, B=1)"
+  },
+  "G3": {
+   "finding": "reviewer_report.md G3 (lines 194-212) + F-1: M13-M16 key rename breaks M14 recovery/consolidated_report.py:75 - CONFIRMED, BLOCKING, emit both keys",
+   "disposition": "closed by FIXCARD - dual-key emission (declared_expectations + declared_expectations_in_cases_json, same value computed once)",
+   "closed_by": "execution_runs/B5-fix-g1a-g3/a20260922-01",
+   "accepted_via": "FIXCARD review, status accepted_scoped, carrier reviewer_report.md sha256 69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e",
+   "proof": "3-leg reader proof - evidence/g3_reader_proof.json sha256 3aba66d14042386ebdeb6de73d7713e2435fecb1bbeba3255cf50362e368968e, PASS=true: (1) frozen baseline run_result.json -> OK ['ModelRegistryError']; (2) B5's patched output -> KeyError: 'declared_expectations' (the original break, reproduced); (3) FIXCARD's fresh patched output -> OK with both keys present and equal"
+  },
+  "G2": {
+   "finding": "reviewer_report.md G2 (lines 178-192): anchor conflict inside a frozen artifact - NO fully compliant resolution; register as owner item, do NOT edit the frozen file",
+   "disposition": "owner ruled 留置 - CLOSURE-BY-RULING, NOT A FIX: the conflict stays permanently registered and NO precedence is asserted between the frozen case_contract.rule text and the frozen rc table",
+   "authority": "OWNER_DECISIONS.md §16, line 374: '**D-G2 = 留置** | 冲突**永久留置登记**，owner **不裁定**哪个冻结件优先' - from the owner's verbatim line 365: 'D-G2: 留置/（或给取舍）'",
+   "carrier": "FIXCARD handoff.json g2_conflict_record (status 'known conflict - owner ruling 留置 (permanently registered; unresolved by design)', no_precedence_asserted: true, precedence_claim_made_anywhere: false) and FIXCARD decision.md D-F3",
+   "state": "OPEN by design (registered, not resolved)"
+  },
+  "F-3": {
+   "finding": "evidence.json schema divergence on M13-M16 - listed among the three blocking findings at line 29; severity 'minor' in the §3 table at line 237 (both wordings retained verbatim, not adjudicated by this backfill)",
+   "disposition": "closed by FIXCARD - all six batches' evidence.json arms.{E,F,B,G} rebuilt from real runs, no nulls (FIXCARD findings_dispositions['F-3']), verified by the fix reviewer",
+   "accepted_via": "FIXCARD review, carrier sha256 69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e"
+  },
+  "F-4_F-5_F-6_F-7": "registered or fixed by the FIXCARD (handoff findings_dispositions); F-8 explicitly out of the fix card's scope (CF-B5FIX-3)",
+  "residual": "G2 stays OPEN by owner ruling (留置) - registered, not resolved, by design"
+ },
+ "superseded_by": {
+  "card": "B5-fix-g1a-g3",
+  "attempt": "a20260922-01",
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01",
+  "relative_path": "execution_runs/B5-fix-g1a-g3/a20260922-01",
+  "status_of_superseding_card": "accepted_scoped (landed: handoff carries CF-B5FIX-1/2/3) - this is the FIX CARD's status, never this card's",
+  "status_carrier_sha256": "b071ff9b85a8551a69544fca7ac380a4c853f3b587d9e05fa184eaf3681db548",
+  "accepted_carrier": {
+   "file": "reviewer_report.md",
+   "sha256": "69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e",
+   "bytes": 16710,
+   "verdict_line": 4,
+   "first_line_of_verdict": "- **Verdict**: **`accepted_scoped`**",
+   "pin_sidecar": "reviewer_report.md.sha256 (85 B, sidecar sha256 f15f60eaf40f8a9b857563e8564a0657cd88fd43528a34c7a94ba4938ec73a0b)"
+  },
+  "meaning": "the accepted continuation of this card LINE is the fix card. This attempt's own verdict is unchanged (changes_required) and is NOT upgraded by this pointer.",
+  "acceptance_written_for_this_card": false
+ },
+ "bookkeeping": {
+  "recorded_by": "verdict-backfill bookkeeping executor (delegated subagent), 2026-09-22",
+  "what_this_pass_did": "transcribed the independent reviewer's already-written NOT ACCEPTED AS-IS verdict into review.md (created) and into this handoff's status/status_authority; added condition_disposition and superseded_by; created evidence/B5-plan-level-remediation/qualification.json; superseded the stale pre-verdict prose with *_historical_pre_verdict retention; wrote no verdict of its own and no acceptance anywhere",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "verdict_is_transcribed_not_authored": true,
+  "verdict_author": "independent reviewer - in reviewer_report.md line 13, not in any file this pass wrote",
+  "status_transition": "review_pending -> changes_required (transcription of the reviewer's line-13 verdict; explicitly NOT an acceptance)",
+  "acceptance_written_anywhere_for_this_card": false,
+  "files_written": ["review.md (created)", "handoff.json (status + appended status_authority/condition_disposition/superseded_by/bookkeeping fields; pre-existing keys otherwise untouched)", "evidence/B5-plan-level-remediation/qualification.json (created)"],
+  "files_not_written": ["reviewer_report.md (34764 B) and its embedded pin", "before/", "changes.diff", "commands.json", "decision.md", "oracle.md", "PROPAGATION_CONTRACT.md", "binding.json", "pre-existing evidence/* files", "_reviewer_verify/", "_scratch/", "M** batch directories", "the fix card B5-fix-g1a-g3", "production", "git"],
+  "reviewer_report_bytes_written": 0,
+  "production_bytes_written": 0,
+  "git_writes": 0,
+  "disclosure_adaptation": "unmapped (set by this pass; the key was ABSENT from the pre-image handoff - see pre_image_notes)",
+  "accuracy": "unproven (set by this pass; the key was ABSENT from the pre-image handoff - see pre_image_notes)",
+  "pre_image": {
+   "handoff.json_sha256": "4ab0075510f77ae718da2bab9c399946533d3c1486fef90fe1d3fbc1a8830538",
+   "handoff.json_bytes": 17435,
+   "status": "review_pending",
+   "review.md": "absent (created by this pass)",
+   "evidence/B5-plan-level-remediation/qualification.json": "absent (created by this pass)"
+  },
+  "pre_image_notes": [
+   "disclosure_adaptation and accuracy were NOT present in the pre-image handoff.json; they are set here to the required values (unmapped / unproven) and appear nowhere else changed",
+   "boundaries.status_transitions_performed: 0 is a pre-image field describing the implementer-era pass; it is retained verbatim - this pass's single status transition is recorded in status_before_bookkeeping_fix and in this bookkeeping block",
+   "key_findings F-B5-6 and F-B5-7 (the G2/conflict records) and every other pre-existing field are retained byte-for-byte; no historical rc, frozen artifact or evidence file was touched"
+  ],
+  "stale_prose_superseded": [
+   "next_action (awaiting-reviewer-signature prose) -> retained verbatim as next_action_historical_pre_verdict",
+   "reviewer_must_do (pre-verdict checklist) -> retained verbatim as reviewer_must_do_historical_pre_verdict"
+  ]
+ }
 }

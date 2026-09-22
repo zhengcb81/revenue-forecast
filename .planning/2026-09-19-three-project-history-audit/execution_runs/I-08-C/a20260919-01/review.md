@@ -235,3 +235,61 @@ Correctly reported, not repaired, per scope. **Low.**
    that consumers must call `validate_forecast_output`.
 4. Re-freeze the oracle with E4 either implemented or explicitly withdrawn, and
    preserve the exploratory run log.
+
+---
+
+## Round 2 — verdict block (transcribed, appended 2026-09-22; the round-1 section above is byte-untouched)
+
+This block is a **TRANSCRIPTION** of the round-2 reviewer's verdict. It adds no
+acceptance of its own: the implementer did not author, edit, or approve it and
+does not self-sign. Every value below is copied from the carrier file.
+
+- **verdict = `accepted_scoped`**
+- **Carrier (sole authority):** `reviewer_report_r2.md` — 13285 bytes, sha256
+  `ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a`, pinned by the
+  adjacent `reviewer_report_r2.md.sha256` (88 bytes, re-hashed and matching).
+  Line ranges: verdict L10 (`## VERDICT: \`accepted_scoped\``); scope L12;
+  explicitly-out-of-scope L14–L19; three-option adjudication L21–L25; findings
+  L27–L38; parent-requested extra adjudications L40–L43; unverified list L45–L54;
+  authorship footer L57.
+- **reviewer = 独立复核** (independent round-2 re-reviewer; report footer: "The
+  implementer did not author, edit, or approve any sentence in this file.").
+- **Round-1 history preserved:** lines 1–237 of this file are the entire
+  pre-append `review.md` — the round-1 `changes_required` verdict and sha256
+  `c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3` stand unchanged
+  (re-verified as the byte prefix after this append).
+
+**Scope accepted (reviewer's own wording):** "verification/evidence + append-only
+oracle re-freeze (r4) + round-1 items (1)-(3) as implemented in B1's ISOLATED
+tree (iso/fixed/rf), behaviorally re-verified"
+
+**Explicitly OUT of scope (all still open, none implied):**
+
+1. **production promotion** — owner decision; production `revenue_publication.py`
+   still `183803bb…`; RUN-B red on {e11, e13} reproduces the live F1/F3 product
+   defect.
+2. **F2 production doc fix** (document/deprecate `validate_publication_receipt`).
+3. **F4 anchor drift** (`publication_registry.py` `44662744…` → `29aaae4f…`).
+4. **invest-\* consumers** — the INVEST-CORE card owns that site.
+5. **CLI transactions** — no CLI publish transaction exercised.
+6. `disclosure_adaptation = unmapped` and `accuracy = unproven` are unchanged.
+
+### Carried findings register (append-only; mirrored in `evidence/I-08-C/qualification.json`)
+
+- **CF-I08C-1**: production promotion NOT done — the security fix lives only in
+  B1's `iso/fixed/rf`; the live product defect (RUN-B {e11, e13} red) persists
+  until the owner promotes B1 (batch 2 candidate).
+- **CF-I08C-2**: F2 (receipt layer = hash-consistency only, documented
+  limitation) stays pinned as accepted-by-design limitation; F4 (anchor drift
+  `44662744…` → `29aaae4f…`) open.
+- **CF-I08C-3**: invest-\* consumers unverified here — the INVEST-CORE card (in
+  review) owns that site.
+- **CF-I08C-4**: S-3 upheld — E1's tree-conditional assertion is a forced
+  collateral of B1 REM-01(b) (validators stay unconditional on both trees;
+  non-blocking caveat: branch couples expectation to a feature flag).
+- **CF-I08C-5**: oracle numbering r3→r4 deviation accepted (reusing a closed
+  revision would violate the file's own rule; prefix-proved; disclosed in R4
+  header + handoff fix_record).
+- Carried, not numbered: the reviewer's 8-item unverified list
+  (`reviewer_report_r2.md` L45–L54) and the round-1 exploratory 8/12 stdout
+  (permanently lost — old loss) remain carried forward unchanged.

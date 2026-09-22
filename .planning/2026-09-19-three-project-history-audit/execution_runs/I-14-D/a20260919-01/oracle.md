@@ -643,7 +643,7 @@ differences that matter. Swept over every printable ASCII at this position:
 | candidate | oracle failures | rule-table failures | single characters still leaking |
 |---|---|---|---|
 | r5's value-token class | 0 | 0 | `' '`, `'"'`, `&`, `'`, `,`, `;`, `\|` |
-| r4's tchar class | 4 | 4 | 16 characters |
+| r4's tchar class | 4 | 4 | 18 characters |
 | **`[^\s]+`** | **0** | **0** | **`' '` only** |
 
 `[^\s]+` closes **every character r4 or r5 closed and every character either of them leaked,
@@ -713,3 +713,52 @@ separates it from the rest.
 ## C6.5 Generation isolation
 
 r6 has its **own** harness files; the r3, r4 and r5 harnesses are byte-identical to their pins.
+
+# CORRECTION 7 (2026-09-22, appended for the r7 record fix; original bytes above unchanged)
+
+Appended, not a rewrite. r7 is a record-only revision: its whole diff (domain: this revision's sites — the two r6 harness row lists, this file, `review.md`, `handoff_r6.json`) touches no product tree and no production code, and this appendix expresses no verdict; `handoff_r6.json` keeps `status: review_pending` with `verdict_expressed: false`. It registers the two base-regressive shapes the r6 review found leaking outside the registered rows (F-REV-R6-01), restates C6.1's headline sentence with its domain (F-REV-R6-02), corrects one measured number (F-REV-R6-03), and proves the append byte-for-byte (C7.5).
+
+## C7.1 F-REV-R6-01 — the two shapes are now REGISTERED in both instruments
+
+| id (oracle) | id (rule table) | kind | input | declared residual (the exact leak on `product_narrow_r6`) |
+|---|---|---|---|---|
+| `R7a-line3-bare-credential` | `open-line3-bare-credential` | registered_open | `Authorization: Bearer\nfoo\n<39-char credential>\nSYNTHETIC_AUDIT_TOKEN` | `Authorization: <redacted>\n<39-char credential>\nSYNTHETIC_AUDIT_TOKEN` |
+| `R7b-prebreak-cr` | `open-prebreak-cr` | registered_open | `Authorization: Bo\rt\nSYNTHETIC_AUDIT_TOKEN\n<39-char credential>` | `Authorization: <redacted>\rt\nSYNTHETIC_AUDIT_TOKEN\n<39-char credential>` |
+| `R7c-prebreak-vtab` | `open-prebreak-vtab` | registered_open | `Authorization: Bo\vt\nSYNTHETIC_AUDIT_TOKEN\n<39-char credential>` | `Authorization: <redacted>\vt\nSYNTHETIC_AUDIT_TOKEN\n<39-char credential>` |
+| `R7d-prebreak-ff` | `open-prebreak-ff` | registered_open | `Authorization: Bo\ft\nSYNTHETIC_AUDIT_TOKEN\n<39-char credential>` | `Authorization: <redacted>\ft\nSYNTHETIC_AUDIT_TOKEN\n<39-char credential>` |
+
+`<39-char credential>` = `ghp_ZQ7ReviewerFakeCredential0123456789`, C3.2's string. The four rows inserted after the last r6 row (the r6 rows themselves byte-untouched) each carry BOTH the 21-char marker `SYNTHETIC_AUDIT_TOKEN` and that 39-char non-marker credential, in input and in declaration — domain: exactly these four `registered_open` rows, which is the F-REV-R6-05 gap closed for this family. Oracle rows live in `harness/run_i14d_oracle_r6.py` (`CASES`), rule-table rows in `harness/run_rule_table_i14d_r6.py` (`TABLE`).
+
+These leaks can never disappear into an empty `credential_leaks`, because that list is filtered to kind `credential` while these rows are kind `registered_open` — domain: this claim's scope, the r7 rule table's 95 rows as emitted in `_r7_measure_20260922/rule_r7_harness.json`, where `registered_open_leaking` names all six open rows and `credential_leaks` stays `[]`.
+
+Re-run after the row addition (r7, `iso/venv/Scripts/python.exe -B`, `--src iso/product_narrow_r6/src`, outputs `execution_runs/_r7_measure_20260922/`): oracle **44 cases, rc 0, verdict `pass`** — `narrow_must_failed []`, `keep_must_failed []`, `registered_open_confirmed` = all six open rows; rule table **95 rows, rc 3, verdict `negative`** — `credential_leaks []`, `touched_but_should_not_be []`, `fidelity_ok true`. The rule table's rc 3 / `negative` is BY DESIGN since r3 (F-REV-R6-04): its verdict aggregates secret survival across the table's rows, and the six `registered_open` rows survive exactly as they declare — that verdict is the honest registered residual, not a failure signal, so no claim of "rc 0" is made for it.
+
+## C7.2 The family named, with its domain (F-REV-R6-01's remedy: "C6 text naming the family and its domain")
+
+Two shapes, both previously named in no carrier of this card. **(1) Line-3 bare credential (double wrap):** `Authorization: Bearer\nfoo\n<credential>` — the auth branch consumes the scheme word, the break and ONE following token (`foo`), so the credential on line 3 is left bare. **(2) Control whitespace at the pre-break position:** shape `Bo<c>t\n` with `c ∈ {\r, \v, \f}` — the `[^\s]+` value token stops at the control whitespace, the break-run does not match (`\rt` is not a line break), and the credential line is never reached by the redaction (domain: this shape on the r6 tree, all four registered inputs in `scratch/r7_shape_probe.json`).
+
+Both shapes persist the marker and the 39-char credential while the base tree redacts the same input to `Authorization: <redacted>` — 域=r1/M4,r2,r3,r4,r5,r6 树上持久化 marker，`iso/product_base` 脱敏 ⇒ 声明开放的 base 回归，非按设计。(Evidence: reviewer F-REV-R6-01 §2.4–§2.5, reproduced independently this round in `scratch/r7_shape_probe.json` for both trees and all four registered inputs.)
+
+## C7.3 C6.1's headline sentence is SUPERSEDED — restated with its domain (F-REV-R6-02)
+
+Lines 649–651 above state the universal — "closes every character r4 or r5 closed and every character either of them leaked, except the space" — with no domain field on that line, and read unscoped it is false. The corrected form, domain on the same line as the universal:
+
+> `[^\s]+` closes **every character r4 or r5 closed and every character either of them leaked, except the space** — 域=95 个可打印 ASCII @ pre-break 位、shape `Bo<c>\n`/`Bo<c>t\n`、树 r4/r5/r6；空白字符 `\t \r \v \f \n` 不在该域内且同样泄漏 — and a space here means the value is a multi-token run, which is the registered `C10` OPEN shape, not a token-class question.
+
+**第 649–651 行的该句已过时，以本节为准。** The sentence itself is left byte-untouched per append-only discipline: lines 649–651 lie inside the segment [37676, 41469) whose sha256 `02645f3a091abbadfcdc1dc7c9b2ec002d0b3315105db689d1d37682643ec2a9` is pinned in C7.5, equal before and after r7. The third carrier site, `task_plan.md` Round 76, is the parent agent's file; r7 does not touch it.
+
+## C7.4 C6.1's `16 characters` is SUPERSEDED — 18 (F-REV-R6-03)
+
+The C6.1 table cell above now reads `18 characters` — the sole in-place byte change of r7 in this file (`16`→`18`, same length, byte proof in C7.5). The old value **16** is retained here as superseded: it is contradicted by this generation's own pin `execution_runs/_r6_measure_20260922/r6_measurement.json`, whose `candidates.r4-tchar.leaking_single_chars` lists **18 entries**, and by the r6 reviewer's independent probe. 域=95 个可打印 ASCII 中 pre-break 位仍泄漏的单字符、shape `Bo<c>t\n`、r4 树 ⇒ r4 泄漏单字符数 = 18（原记 16 为错，废止保留）。
+
+The same 16→18 correction lands in `handoff_r6.json` → `responses.F-REV-R5-01.sweep_result.r4_class_leaking_count` (18, with the old 16 retained as superseded in that file's `r7` block). The third site, `task_plan.md` Round 76, belongs to the parent agent and is corrected there by r7's report, not by this file.
+
+## C7.5 Append-only proof (prefix sha)
+
+* r6 pin re-verified by r7 before any edit: `oracle.md` = 41469 B, sha256 `468fb300a76d00a87dab7fe94d2c64b825ce72ec03fabc00a034dc32e6501694` (= `handoff_r6.json.generation_carriers.oracle.md.after_sha256`).
+* Sole in-place change of r7 in this file = the two bytes at K1 = 37674 (`16` → `18`); file length unchanged at 41469 B before this append (scope of "sole": this file only, established by the reconstruction bullet below).
+* sha256(prefix bytes [0, 37674)) = `287d4006891d8f6bb14cce19ba2dc222209b1efd20397caa5ae3dcd48e6db126` — this segment hashed equal before and after the cell edit.
+* sha256(bytes [37676, 41469)) = `02645f3a091abbadfcdc1dc7c9b2ec002d0b3315105db689d1d37682643ec2a9` — this segment hashed equal before and after the cell edit.
+* Re-substituting `16` at [37674, 37676) over the first 41469 bytes reproduces the pinned sha `468fb300a76d00a87dab7fe94d2c64b825ce72ec03fabc00a034dc32e6501694` exactly — so prefix, cell and suffix are all as pinned and nothing else inside [0, 41469) moved (domain: those 41469 bytes, established by the two segment hashes and the reconstruction above).
+* Append proof: sha256 of the post-cell-fix, pre-append state's 41469 bytes = `02248237e563cb68ca2c92d71f138fc827e28449907e96f888d608f5e4d52007`; this file's first 41469 bytes still hash to `02248237e563cb68ca2c92d71f138fc827e28449907e96f888d608f5e4d52007` after this append ⇒ CORRECTION 7 is a pure append.
+

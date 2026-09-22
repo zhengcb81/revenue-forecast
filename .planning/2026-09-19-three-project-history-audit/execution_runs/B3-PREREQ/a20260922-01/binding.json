@@ -1,0 +1,93 @@
+{
+  "card": "B3-PREREQ",
+  "attempt": "a20260922-01",
+  "created": "2026-09-22",
+  "purpose": "Close REM-47/REM-48/REM-49 (B3 ACCEPT review findings RF-1/RF-5/CF-1) as promotion prerequisites for B3's iso fix (batch 2 candidate).",
+
+  "inputs_pinned": {
+    "B3_attempt_dir": ".planning/2026-09-19-three-project-history-audit/execution_runs/B3-I05C-delivery-fixes/a20260921-01",
+    "B3_reviewer_report": {
+      "sha256_final": "3B8A9167BF0CAF163761D8702B619DFEFBE4F4EDB3EB2741EB5C58BDAB6E3DBE",
+      "sha256_body_sections_1_to_10": "71761E8E589C75BA89AF48DA0A5022309358ECAA2D3D0C388DF349970D9C253F",
+      "source": "reviewer_report.sha256 (B3 attempt, read)",
+      "findings_used": ["RF-1 (=REM-47)", "RF-5 (=REM-48)", "CF-1/§4 (=REM-49)", "RF-3 (context)", "condition C2 (non-claim)"]
+    },
+    "B3_iso_conftest_sha256": "81FED78B8FF54F4A307DC93B539601AADF1B2C555770C52A4D236F42CD48A84E",
+    "B3_accepted_iso_fixed_sha256": {
+      "company_wiki/__init__.py": "39921253E7B65E89C49ECA2F8904B24C39B2425AF79FB8F1AB8EDC61E4C69AD2",
+      "company_wiki/source_catalog/__init__.py": "8474189847226AF2F9B3F50AB5694DD70EE15A18ECA62DB7AACFC7B07A813492",
+      "cw_source_catalog/artifact_dag.py": "0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1",
+      "rf_scripts/company_wiki_source.py": "7D1BD8F9D9122DC4A99465A8F9201E855417A5D0756F5BFDD6D404F7CA9E48CE",
+      "rf_scripts/filing_fetch_client.py": "B281E6D15E016DD067F21709E71638E3C052370E07381CFC7EA7CCD071DEB3BC",
+      "rf_scripts/processing_demand.py": "FCDFCAD8EBD1FC20FEBF3C157DCD20AD92708FD69D00373EF9A943E5A820AFC1",
+      "rf_scripts/source_preparation.py": "37A3EEAEC73ED0124AC1E549BD4EECB49537676DC3BA9DAC6F003496D0E6E2A7",
+      "tests/retry-count-vs-artifact-count.json": "F3B9A9B22BBAA869B21C4E7871BB74C06F747EEB69F6063C9648622437B58531",
+      "tests/test_fc904_artifact_selection.py": "70F3BF18EBDF5E61368C663531A2908202A50CD03A07435EEC1F72091CA6465F",
+      "tests/test_w05b_verified_artifact_read.py": "0CB627F3EA560AD33A25CF0E98101AC9FF3CFAEB179F9C060A1816B858507D35",
+      "tests/test_w05c_minimal_production.py": "F89C68AAF6856CC3F2256D117785D054D09C901AE6DAF306959A07F71887B720"
+    },
+    "B3_accepted_fixed_untouched_proof": "b3_reference/iso/** is a byte-exact copy of B3's delivered iso/** (21/21 files hash-equal at copy time and after all runs — evidence/tree_integrity.txt). B3's own iso/** was never opened for write."
+  },
+
+  "my_deltas": [
+    {
+      "finding": "REM-47 / RF-1 (guard order)",
+      "file": "iso/conftest.py",
+      "sha256": "7437BA9D8810BD016602B45710916FA8F83F0926DE265E12AE152558473F057D",
+      "baseline_sha256": "81FED78B8FF54F4A307DC93B539601AADF1B2C555770C52A4D236F42CD48A84E",
+      "note": "fresh copy of B3's iso tree; per-entry insert(0) loop replaced by one prefix assignment so the fixed copy is genuinely first; collection guard now compares find_spec_origin against the mode's expected origin (docstring = reality); mode-aware via B3_BYTES."
+    },
+    {
+      "finding": "REM-47 / RF-1 (provenance last-writer-wins)",
+      "file": "iso/conftest.py (record_module_provenance)",
+      "note": "conflicting writes are flagged conflict=true, FIRST write stays the reported value, all writes retained under writes; nothing deleted. Not a REM-12 prevention mechanism (condition C2 recorded in the module docstring, decision.md and handoff.json)."
+    },
+    {
+      "finding": "REM-49 / CF-1 (comment double-error)",
+      "file": "iso/fixed2/rf_scripts/source_preparation.py",
+      "sha256": "91A6DC32466E9D67B9D034AC345349EE683F6D5FD9486A67CD3ADE009C6EBF4D",
+      "baseline_sha256": "37A3EEAEC73ED0124AC1E549BD4EECB49537676DC3BA9DAC6F003496D0E6E2A7",
+      "note": "comment-only, line 138 of the copy; AST/tokenize identical; the other 10 files in fixed2/ are byte-identical to B3's iso/fixed/ (evidence/tree_integrity.txt)."
+    },
+    {
+      "finding": "REM-48 / RF-5 (record contradiction)",
+      "file": "../../B3-I05C-delivery-fixes/a20260921-01/handoff.json (line 188)",
+      "sha256_before": "CEE4B0DD157A6ED2F322C40258534414C0C64187D3F2C3E9EA3F3DFF7DEC171D",
+      "sha256_after": "E33D82A9E418A7CDFE04FE17CE435FF2F48EA06C27CAF096A9AB590C4683A493",
+      "superseded_retained_at": "evidence/rem48_superseded/handoff.json.pre-correction",
+      "note": "the ONLY write outside this attempt directory; git status shows exactly ' M .../a20260921-01/handoff.json'. The NOT_REHASHED flag in after/integrity.json:23 was NOT deleted."
+    }
+  ],
+
+  "unchanged": {
+    "iso/fixed2 minus source_preparation.py": "byte-identical to B3 iso/fixed (10/11 files, see evidence/tree_integrity.txt)",
+    "production_RF": "git-clean under scripts/ and tests/; company_wiki_source.py=225FECDD..., test_fc904=8C0B8E39..., source_preparation.py=37A3EEAE... (== B3 fixed copy: REM-49 not landed, as required)",
+    "production_CW": "never written by this attempt; artifact_dag.py=0C8B1D6D... pinned; dirty files pre-date 2026-09-22 (evidence/production_readonly_check.txt)",
+    "frozen_material": "no before/ or oracle file of any attempt was modified; B3's oracle.md untouched"
+  },
+
+  "oracle": {
+    "file": "oracle.md",
+    "sha256": "55A89D256DF6AA86C85BBF80BD207CD7C42346421BCFF48D3615E59AA109BC46",
+    "sidecar": "oracle.sha256",
+    "frozen_before_any_run": true,
+    "pre_run_amendment": "REM-49 target wording pinned to the reviewer's verbatim suggestion before any execution (recorded in-file, section 'Pre-run amendment'); oracle.sha256 recomputed after it."
+  },
+
+  "artifacts": {
+    "changes.diff": {"sha256": "453F524E5ACA605568EC4E2CC7FAAA02C1807401200528E306A826885E8B8F9B", "contents": "3 diffs: conftest, fixed->fixed2, superseded->corrected handoff"},
+    "tests/b3p_probe.py": "97D0F53E2F07807935268D7CFF5C92755DC27859DD6EC5CC431DCE6DA4F5C735",
+    "tests/test_rem47_guard_order.py": "FF1F5269DAC821E4080910952C364D70C23994222E57AB8C15F9FBCDFC1DE9F2",
+    "tests/test_rem47_provenance_conflict.py": "1F25375CD12F4CCC438F7B30E56D1C4E74BD7BF60D0B5272BE6AC86E5908EB21",
+    "tests/test_rem49_comment_fix.py": "3B7466835556A2F618E430E98FB81463B86BE92323C163159F5342564D674552",
+    "scratch/compare_fc904.py": "79670871CBDDC3E8F6AAA98ABF4BA3D421D564CBFAFCA2B0584E0305CF9D96DA",
+    "evidence_manifest": "evidence/SHA256SUMS.txt"
+  },
+
+  "production_pins_rechecked": {
+    "RF:scripts/company_wiki_source.py": "225FECDD7E48938A97C68724318F0860602A4B86A8D9E834A257243480094294",
+    "RF:tests/test_fc904_artifact_selection.py": "8C0B8E390307C33B8C03D51FD742CA984BA6774B84638500FD8D7CDD7D46BF3F",
+    "CW:src/company_wiki/source_catalog/artifact_dag.py": "0C8B1D6D1A28C94F27EA8FFE52A98D67B84F0A49653931B9C9317E27DA6C20D1",
+    "RF:scripts/source_preparation.py": "37A3EEAEC73ED0124AC1E549BD4EECB49537676DC3BA9DAC6F003496D0E6E2A7"
+  }
+}

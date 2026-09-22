@@ -1,0 +1,171 @@
+{
+ "card_id": "M14",
+ "model_id": "retail_franchise",
+ "purpose": "raw enumeration backing the counts quoted in oq_rulings.json; read-only product metadata, no calculation, no expected value",
+ "code_root": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts",
+ "model_registry_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+ "model_extensions_sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+ "registry_totals": {
+  "models": 31,
+  "drivers": 165,
+  "ratio_drivers_by_dimension": 41,
+  "ratio_drivers_by_registry_ratio_set": 40,
+  "ratio_drivers_whose_bounds_are_not_0_1": 4,
+  "optional_drivers_without_an_explicit_default_slots_total": 31,
+  "optional_drivers_without_an_explicit_default_models_total": 24
+ },
+ "ratio_driver_predicate": {
+  "authoritative": "spec.dimensions[driver] == 'ratio'",
+  "also_counted": "driver in spec.ratio_drivers (the narrower declared set)",
+  "why": "the two predicates disagree for at least one driver; the dimension predicate is the one used by driver_value_bounds' default ratio domain",
+  "authoritative_source": "M05-M08 r3 correction (docfix_r3.json: ratio_drivers_total 40 -> 41, missing_driver_added direct_growth.growth_rate with domain (-1, inf)); f07_enumerate.py:60 uses spec.dimensions",
+  "disagreements": [
+   {
+    "driver": "direct_growth.growth_rate",
+    "dimension": "ratio",
+    "in_registry_ratio_drivers_set": false,
+    "bounds": [
+     -1.0,
+     "inf"
+    ],
+    "note": "counted as a ratio driver by the dimension predicate"
+   }
+  ],
+  "disagreement_count": 1
+ },
+ "ratio_drivers_whose_bounds_are_not_0_1": [
+  {
+   "driver": "bank_revenue.asset_yield",
+   "bounds": [
+    "-inf",
+    "inf"
+   ],
+   "explicit_bound_tuple": [
+    null,
+    null
+   ],
+   "domain_is_hard_coded_in_the_module": false
+  },
+  {
+   "driver": "bank_revenue.funding_cost",
+   "bounds": [
+    "-inf",
+    "inf"
+   ],
+   "explicit_bound_tuple": [
+    null,
+    null
+   ],
+   "domain_is_hard_coded_in_the_module": false
+  },
+  {
+   "driver": "direct_growth.growth_rate",
+   "bounds": [
+    -1.0,
+    "inf"
+   ],
+   "explicit_bound_tuple": null,
+   "domain_is_hard_coded_in_the_module": true
+  },
+  {
+   "driver": "store_cohorts.new_store_productivity",
+   "bounds": [
+    0.0,
+    "inf"
+   ],
+   "explicit_bound_tuple": [
+    0.0,
+    null
+   ],
+   "domain_is_hard_coded_in_the_module": false
+  }
+ ],
+ "signed_driver_names_in_the_module": [
+  "ancillary_revenue",
+  "contract_changes",
+  "fee_revenue",
+  "fixed_revenue",
+  "milestone_revenue",
+  "other_revenue",
+  "performance_fee_revenue",
+  "royalty_revenue",
+  "service_revenue"
+ ],
+ "card_model": {
+  "required": [
+   "average_owned_stores",
+   "revenue_per_owned_store"
+  ],
+  "optional": [
+   "franchise_system_sales",
+   "recognized_fee_rate",
+   "supply_revenue"
+  ],
+  "defaults": {},
+  "explicit_driver_bounds": {},
+  "ratio_drivers": [
+   "recognized_fee_rate"
+  ],
+  "dimensions": {
+   "average_owned_stores": "quantity",
+   "revenue_per_owned_store": "revenue_per_unit",
+   "franchise_system_sales": "revenue",
+   "recognized_fee_rate": "ratio",
+   "supply_revenue": "revenue"
+  },
+  "effective_bounds": {
+   "average_owned_stores": [
+    0.0,
+    "inf"
+   ],
+   "revenue_per_owned_store": [
+    0.0,
+    "inf"
+   ],
+   "franchise_system_sales": [
+    0.0,
+    "inf"
+   ],
+   "recognized_fee_rate": [
+    0.0,
+    1.0
+   ],
+   "supply_revenue": [
+    0.0,
+    "inf"
+   ]
+  },
+  "formula": "revenue = average_owned_stores * revenue_per_owned_store + franchise_system_sales * recognized_fee_rate + supply_revenue"
+ },
+ "counts": {
+  "card_required_drivers": 2,
+  "card_optional_drivers": 3,
+  "card_optional_drivers_without_an_explicit_default": 3,
+  "card_optional_drivers_without_an_explicit_default_names": [
+   "franchise_system_sales",
+   "recognized_fee_rate",
+   "supply_revenue"
+  ],
+  "card_optional_drivers_with_an_explicit_default": {},
+  "card_drivers_signed_and_unbounded": 0,
+  "card_drivers_signed_and_unbounded_names": [],
+  "card_drivers_in_the_module_signed_set": 0,
+  "card_drivers_in_the_module_signed_set_names": [],
+  "card_drivers_with_lower_bound_exactly_zero": 5,
+  "card_drivers_with_lower_bound_exactly_zero_names": [
+   "average_owned_stores",
+   "revenue_per_owned_store",
+   "franchise_system_sales",
+   "recognized_fee_rate",
+   "supply_revenue"
+  ],
+  "card_drivers_with_inclusive_upper_bound_one": 1,
+  "card_drivers_with_inclusive_upper_bound_one_names": [
+   "recognized_fee_rate"
+  ]
+ },
+ "fill_mechanism_line": "scripts/model_registry.py:335 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+ "generated_at_unix": 1789874395.8308134,
+ "generated_at_utc": "2026-09-20T03:19:55Z",
+ "number_format_note": "non-finite bounds are written as the strings 'inf'/'-inf' because JSON has no infinity literal; finite bounds stay numbers"
+}

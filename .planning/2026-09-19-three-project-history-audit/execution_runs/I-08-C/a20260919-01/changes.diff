@@ -310,3 +310,151 @@ index 00000000..3372c5d1
 # consumption, binding segments[i].base_revenue, and deprecating
 # validate_publication_receipt are product changes requiring a separate card / owner
 # decision. This card must not implement them.
+# ===========================================================================
+# FIX-ROUND ADDENDUM (card I-08-C-REFREEZE, append-only section; everything
+# above this line is the unchanged r3 changes.diff record)
+# ===========================================================================
+#
+# 1. PRODUCTION MODIFICATION SET IS STILL THE EMPTY SET (re-checked after all
+#    four fix-round runs):
+#      git status --porcelain -- scripts/ artifacts/ tests/ config/  -> EMPTY, rc 0
+#      183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba  scripts/revenue_publication.py  OK
+#      1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae  scripts/revenue_core.py  OK
+#      a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f  scripts/revenue_report.py  OK
+#      29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344  scripts/publication_registry.py  OK
+#      bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91  artifacts/registry/publications.jsonl  OK
+#    (no git write command executed in this round either)
+#
+# 2. B1's attempt was executed-from READ-ONLY: after the runs, the newest
+#    mtime anywhere under B1-I08C-product-fixes/a20260921-01 is
+#    2026-09-21 23:14:47 (B1's own files); the fixed tree still hashes
+#    revenue_publication bc2bb4a3... / revenue_core 8a761498... /
+#    revenue_report 212f0059..., and iso/rf still equals production.
+#    Measures: -B + PYTHONDONTWRITEBYTECODE=1 (no __pycache__ writes),
+#    -p no:cacheprovider (no .pytest_cache), --basetemp inside this attempt,
+#    cwd = this attempt.
+#
+# 3. ATTEMPT-SIDE MODIFICATION SET (this round): oracle.md append-only r4,
+#    test_i08c_consumer_rejection.py (4 disclosed edits, diff below),
+#    handoff.json / binding.json / commands.json / decision.md updates,
+#    recovery/README.md new, scratch/fixround/** evidence, new run stdouts.
+#
+#    3a. oracle.md: PURE APPEND. r3 file == bytes[0:22335] (sha256
+#        94a853e978e34f522820cc2e03548fffe8ee2e599725d7a0131f872c93add8b3
+#        verified this round); appended region = 17976 bytes,
+#        sha256 ccd029e31ba819977d757c8c4ab0db0c2453e303613026cf2557d8d02b7efb2d. The full appended text lives in
+#        oracle.md itself (revision r4), so it is referenced here, not
+#        duplicated.
+#
+#    3b. test file r3 -> r4: the reconstructed r3 side below was ACCEPTED only
+#        because it hashes to 0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5
+#        (the hash recorded at the r3 freeze); the r4 side hashes to
+#        3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb.
+#        The four edits are exactly those disclosed in oracle.md R4-5.
+#
+# BEGIN UNIFIED DIFF: test file r3 -> r4 (verified reconstruction)
+--- test_i08c_consumer_rejection.py (r3 frozen, sha256 0072b16019825b46e1fa27e2decec615675cb33336eb3968fae32fb8e0dfc7f5)
++++ test_i08c_consumer_rejection.py (r4 fix-round, sha256 3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb)
+@@ -13,7 +13,13 @@
+ 
+ import pytest
+ 
+-REPO = Path(r"C:\Users\郑曾波\Projects\revenue-forecast")
++# Import-root override (fix-round addition, owner-approved re-freeze card
++# I-08-C-REFREEZE).  RF_IMPORT_ROOT unset => the ORIGINAL production path
++# below, byte-identical to every prior run of this file.  Set it to a tree
++# root containing scripts/ + tests/ to run this SAME suite against that tree
++# (e.g. B1's isolated fixed copy iso/fixed/rf).  Recorded with before/after
++# file hashes in binding.json / handoff.json.
++REPO = Path(os.environ.get("RF_IMPORT_ROOT") or r"C:\Users\郑曾波\Projects\revenue-forecast")
+ sys.path.insert(0, str(REPO / "scripts"))
+ sys.path.insert(0, str(REPO / "tests"))
+ 
+@@ -84,7 +90,25 @@
+ # --- A-C1: legit signed package passes, repeatably -----------------------------
+ 
+ def test_e1_legit_signed_package_passes_repeatably(S):
+-    assert S["publication_receipt"]["attestation_status"] == "host_signed"
++    """E1 positive control (r4 re-freeze, owner A-2).
++
++    The LABEL assertion is now tree-conditional: B1 REM-01(b) retired
++    "file existence == signing capability", so on the fixed tree an honest
++    formal package issued with a provider that cannot complete the signing
++    handshake (sys.executable) carries the truthful `unattested` label and
++    no attestation record. The r1 assertion `== "host_signed"` pinned the
++    I-08-A §7.1 false-green shape and is superseded (oracle R4-2, E1).
++    What must hold on EITHER tree: the honest package passes both consumer
++    entry points, twice.
++    """
++    import revenue_publication as _rp
++
++    receipt = S["publication_receipt"]
++    if hasattr(_rp, "validate_publication_attestation"):  # B1 fixed tree
++        assert receipt["attestation_status"] == "unattested"
++        assert "publication_attestation" not in receipt
++    else:  # production / production-identical unfixed bytes: legacy issuance
++        assert receipt["attestation_status"] == "host_signed"
+     validate_publication_receipt(S)
+     validate_forecast_output(S)
+     validate_publication_receipt(S)  # repeated read still passes
+@@ -178,14 +202,21 @@
+         validate_forecast_output(forged)
+ 
+ 
+-def test_e13_segment_base_revenue_not_bound_by_output_gates(S):
+-    """E13 (pinned gap, oracle): self-hash-consistent segment base forgery
+-    passes even the strong dispatcher (empirical, reported to reviewer)."""
++def test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates(S):
++    """E13 (r4 re-freeze, owner A-2): a self-hash-consistent forgery of
++    `segments[0].base_revenue` MUST be rejected by the strong dispatcher.
++    B1 REM-03 implements the gate; frozen rejection reason:
++    `segment base revenue mismatch`. The receipt layer still ACCEPTS it —
++    that F2/REM-02 limitation (hash-consistency only, documentation fix) is
++    unchanged and stays pinned as a limitation, not a security claim.
++    Node id renamed from `..._not_bound_by_output_gates` (oracle R4-3).
++    """
+     forged = copy.deepcopy(S)
+     forged["segments"][0]["base_revenue"] = forged["segments"][0]["base_revenue"] + 1
+     _rehash(forged)
+-    validate_publication_receipt(forged)
+-    validate_forecast_output(forged)  # pinned: accepted by current gates
++    validate_publication_receipt(forged)  # F2 limitation: receipt layer is hash-consistency only
++    with pytest.raises(ForecastInputError, match="segment base revenue mismatch"):
++        validate_forecast_output(forged)
+ 
+ 
+ def test_e7_registry_anchor_does_not_admit_forged_package(S):
+@@ -223,16 +254,24 @@
+         validate_publication_receipt(bare)
+ 
+ 
+-def test_e11_host_signed_label_flip_is_not_bound_at_consumption(U):
+-    """KNOWN GAP (oracle E11): the label is only set-membership checked; no
+-    consumption-side attestation verification exists in this tree."""
++def test_e11_host_signed_label_flip_is_rejected_at_consumption(U):
++    """E11 (r4 re-freeze, owner A-2): a self-hash-consistent package that
++    CLAIMS `attestation_status='host_signed'` while carrying no
++    `publication_attestation` binding record MUST be rejected by BOTH consumer
++    entry points. B1 REM-01(a) implements the gate; frozen rejection reason:
++    `attestation_missing_record` (E27). Node id renamed from
++    `..._is_not_bound_at_consumption`, whose name asserted the retired gap
++    (oracle R4-3).
++    """
+     assert attestation_capability() is False  # issuance gate present
+     flipped = copy.deepcopy(U)
+     assert flipped["publication_receipt"]["attestation_status"] == "unattested"
+     flipped["publication_receipt"]["attestation_status"] = "host_signed"
+     _rehash(flipped)
+-    validate_publication_receipt(flipped)  # GAP: label forgery accepted at receipt layer
+-    validate_forecast_output(flipped)  # GAP: strong dispatcher does not bind the label
++    with pytest.raises(ForecastInputError, match="attestation_missing_record"):
++        validate_publication_receipt(flipped)
++    with pytest.raises(ForecastInputError, match="attestation_missing_record"):
++        validate_forecast_output(flipped)
+ 
+ 
+ # --- registry fail-closed (A-C4 integrity precondition) ------------------------
+# END UNIFIED DIFF: test file r3 -> r4
+#
+# Modification set for this fix round outside this attempt: {} (empty).
+# Promotion of B1's fix and acceptance of I-08-C remain SEPARATE steps.

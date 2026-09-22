@@ -1,0 +1,52 @@
+
+=== ruff (CI WU-1.2 full scope) ===
+ok
+
+=== compileall ===
+ok
+
+=== unique test symbols (CI WU-1.1) ===
+ok
+
+=== host assumption guard (FC-1307-a) ===
+ok
+
+=== mypy public contracts (CI FC-1204-c set) ===
+ok
+
+=== meta/binding tests (workflow byte-binding + manifest hashes) ===
+ok
+
+=== UTF-8 BOM scan (CA-304/final_ratchet surface) ===
+ok
+
+=== installed-skill consistency (check) ===
+ok
+
+=== real-roots E2E (CI real-roots job) ===
+Traceback (most recent call last):
+  File "C:\Users\郑曾波\Projects\revenue-forecast\tools\pre_push_gate.py", line 281, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "C:\Users\郑曾波\Projects\revenue-forecast\tools\pre_push_gate.py", line 265, in main
+    rc = _real_roots()
+  File "C:\Users\郑曾波\Projects\revenue-forecast\tools\pre_push_gate.py", line 178, in _real_roots
+    return _run(
+        [sys.executable, "-m", "pytest", "-q", "--tb=short", *REAL_ROOTS_TESTS],
+        "real-roots E2E (CI real-roots job)",
+    )
+  File "C:\Users\郑曾波\Projects\revenue-forecast\tools\pre_push_gate.py", line 76, in _run
+    proc = subprocess.run(
+        cmd,
+    ...<5 lines>...
+        timeout=timeout,
+    )
+  File "C:\Miniconda\Lib\subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Miniconda\Lib\subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Miniconda\Lib\subprocess.py", line 1646, in _communicate
+    raise TimeoutExpired(self.args, orig_timeout)
+subprocess.TimeoutExpired: Command '['C:\\Miniconda\\python.exe', '-m', 'pytest', '-q', '--tb=short', 'tests/test_zr803_chaos_recovery.py', 'tests/test_zr1103_journey_reverify.py', 'tests/test_ca203_weekly_t3.py', 'tests/test_fc1101_ci_manifest.py', 'tests/test_compatibility_manifest.py', 'tests/test_fc1002_three_process_e2e.py', 'tests/test_ca302_three_journeys.py']' timed out after 600 seconds

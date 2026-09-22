@@ -262,6 +262,29 @@ TABLE = [
      "Authorization: " + R, "credential"),
     ("cred-auth-ampersand-with-key", "Authorization: Bo&t\n" + REVIEWER_SECRET + "\ndoc=17",
      "Authorization: " + R + "\ndoc=17", "credential"),
+    # ---- r7 (F-REV-R6-01): the two base-regressive shapes that had NO row in this
+    # table, registered as kind `registered_open` so `credential_leaks` (filtered to
+    # kind `credential`) cannot silently absorb them -- domain: this claim's scope,
+    # the 95 rows of the r7 table -- and `registered_open_leaking` names them instead.  Each row carries BOTH the marker and the 39-char non-marker
+    # credential, and `expected` is the exact leak observed on product_narrow_r6 --
+    # fidelity is asserted against that declared string, not against redaction.
+    # Domain of the accompanying base-regression claim: card trees r1/M4, r2, r3, r4,
+    # r5, r6 persist the marker on these exact four inputs while iso/product_base
+    # redacts them to `Authorization: <redacted>` (scratch/r7_shape_probe.json);
+    # r7 changed no product code (domain: this revision's sites -- these two harness
+    # row lists, oracle.md, review.md, handoff_r6.json).
+    ("open-line3-bare-credential",
+     "Authorization: Bearer\nfoo\n" + REVIEWER_SECRET + "\n" + MARKER,
+     "Authorization: " + R + "\n" + REVIEWER_SECRET + "\n" + MARKER, "registered_open"),
+    ("open-prebreak-cr",
+     "Authorization: Bo\rt\n" + MARKER + "\n" + REVIEWER_SECRET,
+     "Authorization: " + R + "\rt\n" + MARKER + "\n" + REVIEWER_SECRET, "registered_open"),
+    ("open-prebreak-vtab",
+     "Authorization: Bo\vt\n" + MARKER + "\n" + REVIEWER_SECRET,
+     "Authorization: " + R + "\vt\n" + MARKER + "\n" + REVIEWER_SECRET, "registered_open"),
+    ("open-prebreak-ff",
+     "Authorization: Bo\ft\n" + MARKER + "\n" + REVIEWER_SECRET,
+     "Authorization: " + R + "\ft\n" + MARKER + "\n" + REVIEWER_SECRET, "registered_open"),
 ]
 
 

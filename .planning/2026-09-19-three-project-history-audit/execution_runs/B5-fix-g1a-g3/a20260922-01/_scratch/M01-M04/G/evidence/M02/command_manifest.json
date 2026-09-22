@@ -1,0 +1,91 @@
+{
+ "card_id": "M02",
+ "note": "every product run used argv arrays; no shell string interpolation of company names",
+ "raw_exit_codes": "A=0,B=0,C=0",
+ "commands": [
+  {
+   "id": "M02-A-oracle",
+   "purpose": "compute the frozen expected values independently (stdlib only, no product import)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\scripts\\oracle_M02.py"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 300,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "expected_business_result": "oracle.json/input.json/cases.json written with hand-checked values",
+   "before_after_evidence": [
+    "evidence/M02/oracle_stdout.txt",
+    "before/oracle_stderr.txt"
+   ],
+   "binding_status": "bound"
+  },
+  {
+   "id": "M02-B-product-run",
+   "purpose": "call only calculate_registered_model(**oracle.input) and the negative cases",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\scripts\\run_M02.py",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\evidence\\M02\\run_result.json"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 300,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "expected_business_result": "positive equals the independent oracle within tolerance and every negative case raises ModelRegistryError",
+   "before_after_evidence": [
+    "evidence/M02/stdout.txt",
+    "evidence/M02/stderr.txt",
+    "evidence/M02/run_result.json"
+   ],
+   "binding_status": "bound"
+  },
+  {
+   "id": "M02-C-pytest-sanity",
+   "purpose": "confirm the isolated venv's pytest is installed and runnable (no product test suite is claimed from it)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "-m",
+    "pytest",
+    "--version"
+   ],
+   "network": "disabled",
+   "timeout_seconds": 120,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "expected_business_result": "pytest version printed; historical 97 tests/216 subtests are NOT a substitute for this card's new results",
+   "before_after_evidence": [
+    "before/pytest_version.txt"
+   ],
+   "binding_status": "bound"
+  }
+ ],
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01"
+ ],
+ "forbidden": [
+  "any write outside the attempt directory",
+  "any write under Projects\\revenue-forecast outside .planning",
+  "any write to Projects\\company-wiki or Projects\\filing-fetch",
+  "editing .planning\\reviews (read-only audit evidence)",
+  "network calls, real providers, LLM calls, publication"
+ ]
+}

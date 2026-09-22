@@ -1,0 +1,48 @@
+card_id: M09
+model_id: resource
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M09-M12\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M09-M12\code_root\model_registry.py
+registry formula: revenue = saleable_volume * realized_price + other_revenue
+registry required: ['saleable_volume', 'realized_price']
+registry optional: ['other_revenue']
+registry declared_defaults: {}
+registry ratio_drivers: []
+registry explicit_driver_bounds: {}
+contract_check ok: True
+contract_check formula ok=True observed=revenue = saleable_volume * realized_price + other_revenue
+contract_check required ok=True observed=['realized_price', 'saleable_volume']
+contract_check optional ok=True observed=['other_revenue']
+contract_check dimensions ok=True observed={'saleable_volume': 'quantity', 'realized_price': 'revenue_per_unit', 'other_revenue': 'revenue'}
+positive raised: None
+positive actual: [122.0]
+positive actual_repr: ['122.0']
+positive expected: [122.0]
+positive tolerance: [1.22e-07]
+positive length: 1 (years length 1, year direction [2027])
+positive structure: {"container_type": "list", "is_builtin_list": true, "length": 1, "years_length": 1, "length_equals_years": true, "element_types": ["float"], "element_type_set": ["float"], "all_elements_float": true, "all_elements_finite": true, "year_field_echo": false, "note": "the product contract returns a bare list[float] positionally aligned with years; there are no named output fields, so the 'field set' check is the element type set {float} plus the container type plus the length/order check", "ok": true}
+per_value_checks: [{"index": 0, "year": 2027, "actual": 122.0, "expected": 122.0, "tolerance": 1.22e-07, "abs_diff": 0.0, "ok": true}]
+positive_ok: True
+continuity_positive raised: None
+continuity_positive actual: [122.0, 225.0]
+continuity_positive expected: [122.0, 225.0]
+continuity_positive ok: True
+defaults raised: None
+defaults actual: [120.0]
+defaults expected: [120.0]
+defaults ok: True
+observation: OBS-BASE-IGNORED gating=False raised=None actual=[122.0] expectation={"expected_float": [122.0]} matches_expected=True matches_compared=True expect_equal=None matches_expected_relation=True 
+observation: OBS-PRICE-NEG gating=False raised=ModelRegistryError actual=None expectation={"expected_raised": "ModelRegistryError"} matches_expected=True matches_compared=None expect_equal=None matches_expected_relation=None driver resource.realized_price must be between 0.0 and inf: FY2027
+negative: NEG-CARD verdict=FAIL_wrong_exception_type raised=ModelRegistryError expected=ValueError - driver resource.saleable_volume must be between 0.0 and inf: FY2027
+negative: N01a verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - resource.saleable_volume.FY2027 must be numeric
+negative: N01b verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - resource.saleable_volume.FY2027 must be finite
+negative: N01c verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - resource.saleable_volume.FY2027 must be finite
+negative: N01d verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - resource.saleable_volume.FY2027 must be finite
+negative: N02 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - driver resource.saleable_volume must contain one value per forecast year
+negative: N03 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - missing drivers for resource: saleable_volume
+negative: N04 verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - unsupported drivers for resource: unknown_driver
+negative: N05a verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - resource.years must contain fiscal years
+negative: N05b verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - resource.years must contain fiscal years
+negative: CONT-BREAK verdict=PASS_rejected raised=ModelRegistryError expected=ModelRegistryError - resource.years must be consecutive and increasing
+negative_summary: {"total": 11, "passed": 10, "failed": ["NEG-CARD"], "import_or_file_errors": []}
+fidelity_checks: {"missing_expected": false, "positive_structure_ok": true, "positive_values_ok": true, "contract_ok": true, "years_match": true, "lengths_match": true}
+verdict: negative_failed exit_code: 3

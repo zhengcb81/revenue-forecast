@@ -1,0 +1,172 @@
+{
+  "card_id": "DW15-REPAIR",
+  "attempt_id": "a20260922-01",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "ruling_heading": "## RULING (reviewer, three-state): `accepted_scoped`",
+    "ruling_line_range": "L24-L60 (header scope statement L4-L17; VERDICT L19-L22; accepted item L28-L34; explicit-out four-way L35-L45; carried findings L46-L50; carried unverified L51-L55; conditions L57-L60)",
+    "sha256": "a9b9076f731b8395c6f8a6fabcd90c835ea8a68a00cc7ffac7c9f14014b0801e",
+    "supersedes_pin": "7944b17f… (pre-ruling addendum pin)",
+    "pin_file": "reviewer_report.sha256",
+    "pin_content": "a9b9076f731b8395c6f8a6fabcd90c835ea8a68a00cc7ffac7c9f14014b0801e  reviewer_report.md",
+    "byte_proof": {
+      "reviewer_report_bytes": 19466,
+      "measured_sha256": "a9b9076f731b8395c6f8a6fabcd90c835ea8a68a00cc7ffac7c9f14014b0801e",
+      "sidecar_sha256": "a9b9076f731b8395c6f8a6fabcd90c835ea8a68a00cc7ffac7c9f14014b0801e",
+      "measured_equals_sidecar": true
+    },
+    "reviewer": "独立复核",
+    "verdict_is_transcribed_not_authored": true,
+    "scope_note": "bookkeeping transcription, adds no acceptance of its own; carrier never self-signs"
+  },
+  "bookkeeping": {
+    "performed_by": "carrier landing step",
+    "nature": "bookkeeping transcription, adds no acceptance of its own",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "status_change": "review_pending -> accepted_scoped (transcribed from the reviewer's three-state ruling)",
+    "out_of_scope_states_unchanged": [
+      "production prune/archive EXECUTION (dry-run included): UNAUTHORIZED (owner §15/§16 A-1, §16 E-4)",
+      "promotion of iso/fixed into company-wiki: separate owner decision, NOT taken",
+      "data-recovery re-sign: UNSIGNED — precondition of a future execution card, not of this card's acceptance (reviewer's explicit argument, recorded as theirs)",
+      "handoff status transcription: carrier step, not part of the ruling"
+    ]
+  },
+  "objective": "Repair the five defects (空目录也删 / 同日覆写 / 时钟取目录名 / TOCTOU / 崩溃后不可恢复) in prune_retired_evidence.py and archive_retired_evidence.py in an isolated copy, per the proposal I-15-A documented. REPAIR CODE ONLY: no production prune or archive execution, no real evidence data touched, promotion and real execution remain separate owner/reviewer decisions.",
+  "owner_ruling_applied": "PLAN/OWNER_DECISIONS.md §15 (2026-09-22) verbatim 「A-1，授权\"修代码\"卡」, re-confirmed §16 as A-1 = b (允许修 prune 代码，不授权执行 prune). Grants: repair per I-15-A's documented proposal. Does NOT grant: any production execution; requires a data-recovery reviewer re-sign before any real execution — a separate future step, expected to remain outstanding.",
+  "completed_steps": [
+    "1 领取: card text + owner §15/§16 rulings + I-15-A decision.md (source of truth) + I-15-A oracle W15-R1..R8 read; scripts located by searching both product repos (company-wiki production checkout + review snapshot under revenue-forecast; filing-fetch contains neither script) and hashed",
+    "2 结构与隔离: attempt created; production src/company_wiki robocopied into iso/baseline (pristine) and iso/fixed (working copy); venv built from I-00-A template + offline site-packages delta from I-15-A venv (pytest 9.1.1); product checkouts never on sys.path",
+    "3 冻结 oracle: oracle.md written BEFORE any run — five defect properties, 15 pre-listed test expectations, declared mutation red sets (§3), side-effect expectations",
+    "4 修复: all five fixes implemented in iso/fixed (manifest-verified authorisation; unique per-run snapshot+receipt names; required injected now + manifest verified_completed_at retention clock + zero system-clock API; frozen plan + archive/row re-verification before first delete and in-transaction re-verification per batch with PruneRefused whole-plan abort; temp+fsync+verify+atomic-publish snapshots and pending/per-batch/complete receipts)",
+    "5 测试: 15 tests, SYNTHETIC fixtures only under %TEMP% via pytest tmp_path, guarded by guard_scratch (BINDING-REFUSED outside %TEMP%/attempt or .source_catalog)",
+    "6 RED→GREEN: baseline 15 failed/0 passed (rc=1) — each on its frozen behavioural assertion; fixed 15 passed/0 failed (rc=0)",
+    "7 变异证明: 5 mutants (single exact-anchor revert each, harness/make_mutants.py asserts count==1); declared red sets frozen in oracle §3 before runs; observed == declared for all five",
+    "8 交审 artifacts: handoff.json (submitted as review_pending, NOT self-signed) + binding.json + commands.json + decision.md + changes.diff + oracle.md + recovery/README.md + evidence/",
+    "9 接续: independent data-recovery reviewer reviews and re-signs; promotion of iso/fixed into company-wiki is a separate owner decision",
+    "10 carrier 落地: independent reviewer (独立复核) ruled `accepted_scoped` in reviewer_report.md L24-L60 (sha256 a9b9076f731b8395c6f8a6fabcd90c835ea8a68a00cc7ffac7c9f14014b0801e, pin verified == sidecar); carrier transcribed status review_pending -> accepted_scoped as bookkeeping only — no acceptance authored, no state released"
+  ],
+  "next_step_number": 1,
+  "next_action": "Independent data-recovery reviewer: (a) review oracle.md/decision.md/changes.diff and the RED/GREEN + mutation evidence, (b) rule on the two unsigned items this card deliberately left open (receipt durability medium: JSON-under-artifacts/gates implemented vs DB-table option; catalog_identity binding depth), (c) re-sign (or reject) — ONLY a signed reviewer verdict can release any future production execution or promotion card. Until then: no production prune, no promotion, iso/fixed stays isolated.",
+  "input_hashes": {
+    "CW/src/company_wiki/source_catalog/prune_retired_evidence.py (BEFORE)": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46",
+    "CW/src/company_wiki/source_catalog/archive_retired_evidence.py (BEFORE)": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0",
+    "review snapshot copies (BEFORE==AFTER, unchanged)": {
+      "prune": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46",
+      "archive": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0"
+    },
+    "I-15-A/decision.md": "18a12d9e564a3131cefeb2d48a12d6fbcb4c9d6e141075b9f36ae93d5500eba8",
+    "I-15-A/oracle.md": "7ad1ac77cc34e6ff34365872ca6493629fcd8ddf4c187df79f8506bd1bc24cdb",
+    "OWNER_DECISIONS.md": "4c9acf9ec95c8ec028b6e77719ddf32dbbbc1fb545c91cb702521d65a70aa2f3"
+  },
+  "current_source_hashes": {
+    "iso/fixed/.../prune_retired_evidence.py": "0c99bbe0c5f4ef16e7f84ba8aae0548ef6f59a0080274d5bd1ce83a7d37990b0 (23115 B, REPAIRED, isolated copy only)",
+    "iso/fixed/.../archive_retired_evidence.py": "bbe855e4495e82d2a40b0185c9db8efa2639449fdd5f768120538abb992b28ac (9894 B, REPAIRED, isolated copy only)",
+    "PRODUCTION after this attempt (UNCHANGED)": {
+      "prune_retired_evidence.py": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46",
+      "archive_retired_evidence.py": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0"
+    },
+    "worker_control.json (UNCHANGED)": "9fcbe233efe76222a32316c07b9273b9c5128da3af6db27d706b1759680ac7bd"
+  },
+  "changed_paths": [
+    "execution_runs/DW15-prune-repair/a20260922-01/iso/fixed/company_wiki/source_catalog/prune_retired_evidence.py",
+    "execution_runs/DW15-prune-repair/a20260922-01/iso/fixed/company_wiki/source_catalog/archive_retired_evidence.py"
+  ],
+  "changed_paths_note": "both live ONLY inside this attempt; byte-compare iso/baseline vs iso/fixed: 146 files, exactly 2 modified, 0 added, 0 deleted. Nothing in any product repo was written.",
+  "commands_executed": [
+    "CMD-DW15-01 structure + iso copies (rc=0)",
+    "CMD-DW15-02 venv from I-00-A template + offline delta (rc=0 after file-aware copy retry)",
+    "CMD-DW15-03 py_compile repaired scripts (rc=0)",
+    "CMD-DW15-06 RED: DW15_VARIANT=iso/baseline pytest (rc=1, 15 failed) FINAL",
+    "CMD-DW15-07 GREEN: DW15_VARIANT=iso/fixed pytest (rc=0, 15 passed) FINAL",
+    "CMD-DW15-08 make_mutants m1..m5 (rc=0)",
+    "CMD-DW15-09a..e mutant runs (rc=1 each) FINAL",
+    "CMD-DW15-10 mutation matrix declared==observed (rc=0)",
+    "CMD-DW15-11 hashes/byte-compare/git-heads read-only (rc=0)",
+    "CMD-DW15-12 changes.diff via difflib (rc=0)"
+  ],
+  "raw_exit_codes": {
+    "RED_final": 1,
+    "GREEN_final": 0,
+    "mutants_m1": 1,
+    "mutants_m2": 1,
+    "mutants_m3": 1,
+    "mutants_m4": 1,
+    "mutants_m5": 1
+  },
+  "expected_exit_codes": {
+    "RED_final": 1,
+    "GREEN_final": 0,
+    "mutants_m1": 1,
+    "mutants_m2": 1,
+    "mutants_m3": 1,
+    "mutants_m4": 1,
+    "mutants_m5": 1
+  },
+  "frozen_vs_measured": {
+    "baseline_all_15_red": {
+      "expected": "all 15 tests fail on the original code, each on its frozen behavioural assertion",
+      "measured": "15 failed / 0 passed",
+      "verdict": "MATCH"
+    },
+    "fixed_all_15_green": {
+      "expected": "all 15 pass on the repaired code",
+      "measured": "15 passed / 0 failed",
+      "verdict": "MATCH"
+    },
+    "mutation_matrix": {
+      "M1": {"declared": ["t_d1_1", "t_d1_2", "t_d1_3"], "observed": ["t_d1_1", "t_d1_2", "t_d1_3"], "match": true},
+      "M2": {"declared": ["t_d2_1", "t_d2_2"], "observed": ["t_d2_1", "t_d2_2"], "match": true},
+      "M3": {"declared": ["t_d3_1", "t_d3_2", "t_d3_3"], "observed": ["t_d3_1", "t_d3_2", "t_d3_3"], "match": true},
+      "M4": {"declared": ["t_d4_1", "t_d4_2"], "observed": ["t_d4_1", "t_d4_2"], "match": true},
+      "M5": {"declared": ["t_d5_1", "t_d5_2", "t_d5_3"], "observed": ["t_d5_1", "t_d5_2", "t_d5_3"], "match": true},
+      "declared_before_runs": true,
+      "all_match": true
+    },
+    "declared_not_mutation_bound_as_frozen": {
+      "t_d1_4": "RED on baseline, GREEN under all 5 mutants (verified-manifest path, outside M1) — as declared",
+      "t_d3_4": "RED on baseline, GREEN under all 5 mutants (archive-side clock, outside M3) — as declared"
+    }
+  },
+  "zero_real_data_statement": "NO production prune or archive execution of any kind (dry run included) occurred; NO real evidence row, archive file, manifest, or receipt was read, written, moved, or deleted. All fixtures were synthetic under %TEMP% behind guard_scratch. Production script hashes and worker_control.json hash are unchanged after the attempt; no git write operation; no other card's attempt or frozen artifact modified.",
+  "open_questions": [
+    "data-recovery reviewer re-sign: OUTSTANDING and expected to remain so (owner §16 E-4 keeps D-W15 production execution unsigned)",
+    "promotion of iso/fixed into company-wiki: separate owner decision, NOT taken here",
+    "receipt durability medium (JSON file implemented; DB table was the other documented option) — reserved for the reviewer per I-15-A D-W15-4",
+    "breaking API: 'now' now required, apply accepts a frozen plan; product contract tests (which encode the wrong oracle per I-15-A) untouched and need replacement at promotion",
+    "scale unproven: 5-span fixtures say nothing about 25.7M rows / 49.7 GB; plan-time manifest verification re-reads the whole snapshot",
+    "old archives without a manifest remain unusable for prune (W15-R8; no upgrade path invented)",
+    "catalog_identity binding is minimal (<db filename>:<schema version>) vs I-15-A's fuller identity proposal",
+    "no product-side restore CLI exists (restorability shown via manifest digests only)"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "execution_runs/DW15-prune-repair/a20260922-01/oracle.md",
+    "execution_runs/DW15-prune-repair/a20260922-01/decision.md",
+    "execution_runs/DW15-prune-repair/a20260922-01/binding.json",
+    "execution_runs/DW15-prune-repair/a20260922-01/commands.json",
+    "execution_runs/DW15-prune-repair/a20260922-01/changes.diff",
+    "execution_runs/DW15-prune-repair/a20260922-01/recovery/README.md",
+    "execution_runs/DW15-prune-repair/a20260922-01/evidence/red_baseline_stdout.txt",
+    "execution_runs/DW15-prune-repair/a20260922-01/evidence/green_fixed_stdout.txt",
+    "execution_runs/DW15-prune-repair/a20260922-01/evidence/mutation_matrix.json",
+    "execution_runs/DW15-prune-repair/a20260922-01/evidence/mutant_m1_stdout.txt",
+    "execution_runs/DW15-prune-repair/a20260922-01/evidence/mutant_m2_stdout.txt",
+    "execution_runs/DW15-prune-repair/a20260922-01/evidence/mutant_m3_stdout.txt",
+    "execution_runs/DW15-prune-repair/a20260922-01/evidence/mutant_m4_stdout.txt",
+    "execution_runs/DW15-prune-repair/a20260922-01/evidence/mutant_m5_stdout.txt",
+    "execution_runs/DW15-prune-repair/a20260922-01/tests/",
+    "execution_runs/DW15-prune-repair/a20260922-01/harness/make_mutants.py",
+    "execution_runs/DW15-prune-repair/a20260922-01/harness/dw15_fixtures.py",
+    "execution_runs/DW15-prune-repair/a20260922-01/iso/baseline/",
+    "execution_runs/DW15-prune-repair/a20260922-01/iso/fixed/"
+  ],
+  "reviewer_status": "VERDICT EXISTS: independent reviewer (独立复核) ruled `accepted_scoped` for THIS card (repair code only) in reviewer_report.md L24-L60, sha256 a9b9076f731b8395c6f8a6fabcd90c835ea8a68a00cc7ffac7c9f14014b0801e (pin verified). Four states remain independent and ungranted: production execution unauthorized, promotion not taken, data-recovery re-sign unsigned (future execution-card precondition, not this card's), handoff transcription is the carrier's step. Carried F1-F6 non-blocking; carried U1-U8 registered. accuracy=unproven; disclosure_adaptation=unmapped.",
+  "reviewer_status_historical_pre_verdict": "HISTORICAL (pre-verdict, retained): PENDING independent data-recovery review (implementer did NOT self-sign; accuracy=unproven; disclosure_adaptation=unmapped). Expected to remain pending: the reviewer re-sign is a separate future step under owner §15/§16 and is explicitly OUT of this card's scope.",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+}

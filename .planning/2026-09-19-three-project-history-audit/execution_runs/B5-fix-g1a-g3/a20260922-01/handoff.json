@@ -1,0 +1,234 @@
+{
+  "card": "B5-fix-g1a-g3",
+  "title": "Fix card closing B5's BLOCKING findings F-1 (G3 both-keys) and F-2 (G1-a routing) + F-3..F-7",
+  "attempt": "a20260922-01",
+  "attempt_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "authority": {
+    "document": "owner ruling 2026-09-22 (verbatim): 「D，G1-a」",
+    "g1a": "execution authorization for this card's M25-M28 routing (structural rc=1 unchanged / declaration unusable rc=2+no_verdict evaluated before any case is judged / usable-but-different rc=3 per case; set-level gate explicitly routed, never non-gating, never rc=1 for a value difference)",
+    "g2": "owner final ruling: 留置 (or give tradeoff) - the parent's earlier 'classification-precedence erratum' instruction was explicitly WITHDRAWN; see g2_conflict_record",
+    "reviewed_card": "B5-plan-level-remediation/a20260921-01 (verdict: NOT ACCEPTED AS-IS / 3 blocking findings)",
+    "reviewer_report": "execution_runs/B5-plan-level-remediation/a20260921-01/reviewer_report.md (read-only)"
+  },
+  "summary": {
+    "fix_1_F1_G3": "M13-M16 patched copy now emits BOTH keys under expectation_consistency.facts - declared_expectations (historical name+meaning, read by M14 recovery/consolidated_report.py:75) and declared_expectations_in_cases_json (contract §2 name), same value computed once. Reader expression extracted from the HISTORICAL bytes and eval'd: frozen baseline OK, B5's patched output reproduces the KeyError, all 12 patched-runner outputs (E/F/G x M13-M16) readable with both keys equal; arm B (historical byte-copy) outputs keep the historical shape (old key only).",
+    "fix_2_F2_G1a": "M25-M28 patched copy routes the whole-set gate explicitly per G1-a: structural->rc=1 unchanged, unusable declaration->rc=2+no_verdict decided before judging, usable-but-different->rc=3 (per-case judgement AND a load-bearing set_level_route_rc term in the final exit-code decision). set_level_declaration_gating changed false->true with a set_level_declaration_routing record. No rc constant renumbered.",
+    "fix_3_G2": "Recorded in decision.md D-F3 and mirrored here as g2_conflict_record: known conflict, owner ruling 留置, NO precedence asserted between the frozen case_contract.rule text and the frozen rc table; implementation basis is the independent G1-a execution ruling; zero frozen edits (T1-11 held).",
+    "fix_4": "F-3 evidence arms populated for all six batches; F-4/F-5/F-6 registered in evidence open_issues + decision.md; F-7 anchor operand corrected to 19 distinct verbatim frozen lines with distinctness+live-extraction assertions."
+  },
+  "g1a_routing": {
+    "lives_in": "execution_runs/B5-fix-g1a-g3/a20260922-01/M25-M28/run_card.py (patched copy only)",
+    "structural": "rc=1 unchanged (early abort on missing case_contract / count / id list / unknown ids)",
+    "declaration_unusable": "rc=2 + no_verdict; unusable_declared computed before the case loop; highest-precedence branch in the final exit-code decision",
+    "declaration_usable_but_different": "rc=3 via per-case exact type-name equality AND set_level_forces_fail=(set_level_route_rc==3) in the final decision",
+    "set_level_gate": "explicitly routed: set_level_declaration_gating=true, routing rule + routed ids exported in case_contract_check and exit_code_semantics",
+    "rc_constants_renumbered": 0,
+    "measured_M25_M28": {"E": [0, 0, 0, 0], "F": [3, 3, 3, 3], "B": [1, 1, 1, 1], "G": [2, 2, 2, 2], "S_structural": [1, 1, 1, 1], "F_route": 3, "G_route": 2, "G_verdict": "no_verdict", "G_reason": "cases_json_declared_expectation_missing:NEG-CARD"}
+  },
+  "g2_conflict_record": {
+    "status": "known conflict - owner ruling 留置 (permanently registered; unresolved by design)",
+    "record": "已知冲突，owner 裁定留置：M25-M28 冻结 case_contract.rule 文本写『不同 expected ⇒ 拒发裁决 rc=1』；冻结 rc 表（START_HERE L90-115）与 G1-a 裁定要求 rc=2/rc=3。owner 不裁定哪个冻结件优先，选择将该冲突永久留置登记。本卡实现按 G1-a 路由（这是独立的执行裁定）；冲突双方文本原样共存于册，T1-11 下不编辑任何冻结件（cases.json、历史 runner、before/ 一律不动）。",
+    "no_precedence_asserted": true,
+    "precedence_claim_made_anywhere": false,
+    "mirrored_in": ["decision.md D-F3", "report.md §G2-留置项", "M25-M28/evidence.json g1a_routing.frozen_rule_text_conflict", "M25-M28/run_card.py output case_contract_check.frozen_rule_text_conflict"],
+    "frozen_artifacts_edited": [],
+    "flagged_for_parent_review": true
+  },
+  "measurements": {
+    "source": "_scratch/arms_raw.json (128 real child processes; raw rc, never inferred)",
+    "matrix": "evidence/arm_matrix.json",
+    "required_scope_six_batches_23_cards": {"uniform_EFG": true, "E": 0, "F": 3, "G": 2, "all_expectations_met": true},
+    "per_batch": {
+      "M01-M04": {"cards": 4, "E": 0, "F": 0, "B": 0, "G": 1, "note": "OUT OF T1-8 SCOPE - never patched; see scope_observations"},
+      "M05-M08": {"cards": 4, "E": 0, "F": 3, "B": 0, "G": 2, "mutated_case": "NEG-CARD (contract-first; B5 used CONT-BREAK - F-6)"},
+      "M09-M12": {"cards": 4, "E": 0, "F": 3, "B": 3, "G": 2},
+      "M13-M16": {"cards": 4, "E": 0, "F": 3, "B": 2, "G": 2},
+      "M17-M20": {"cards": 4, "E": 0, "F": 3, "B": 3, "G": 2, "note": "reference batch, byte-copy runners, measurement only"},
+      "M21-M24": {"cards": 4, "E": 0, "F": 3, "B": 3, "G": 2},
+      "M25-M28": {"cards": 4, "E": 0, "F": 3, "B": 1, "G": 2, "S": 1, "note": "G1-a routing measured load-bearing"},
+      "M29-M31": {"cards": 3, "E": 0, "F": 3, "B": 0, "G": 2}
+    },
+    "uniform_cards_total": 27,
+    "uniform_of_31": false,
+    "arm_B_unchanged_vs_b5_recorded": {"M05-M08": 0, "M09-M12": 3, "M13-M16": 2, "M21-M24": 3, "M25-M28": 1, "M29-M31": 0, "all_match": true},
+    "scope_wording_correction": "the inherited expectation 'uniform E=0/F=3/G=2 on all 31 cards' does NOT hold literally: it holds on 27/31. M01-M04 (never among the six T1-8-authorized batches) measure E=0/F=0/B=0/G=1. Reported to parent; not patched (no authorization)."
+  },
+  "g3_both_keys": {
+    "patched": "M13-M16/run_card.py facts block: declared_in_cases computed once, written to both declared_expectations and declared_expectations_in_cases_json",
+    "proof": "evidence/g3_reader_proof.json PASS=true",
+    "method": "reader expression run[\"expectation_consistency\"][\"facts\"][\"declared_expectations\"] regex-extracted from the historical bytes of M14/a20260919-01/recovery/consolidated_report.py line 75, then eval'd against baseline / B5 outputs / this card's outputs",
+    "frozen_baseline": "OK",
+    "b5_patched_output_break_reproduced": "KeyError: 'declared_expectations' on B5 _scratch/M13-M16/E/M14/run_result.json",
+    "patched_runner_outputs_E_F_G_12": "all readable, both keys present and equal",
+    "arm_B_historical_outputs_4": "old key only - historical runner shape untouched"
+  },
+  "findings_dispositions": {
+    "F-1": "FIXED (both keys; proof above)",
+    "FIX_1_correction": "B5 implementer's claim 'M05-M08 did the same thing' was INACCURATE - M05-M08's runner has NO expectation_consistency.facts block; none was added; correction recorded here + decision.md D-F1",
+    "F-2": "FIXED per owner G1-a (routing above); conflict side registered under g2_conflict_record (留置)",
+    "F-3": "FIXED - all six batches' evidence.json arms.{E,F,B,G} rebuilt from real runs (rc/rc_per_card/verdict/mismatch/mutated_case/note), no nulls",
+    "F-4": "REGISTERED - M25-M28's historical missing-expected rc=1 came from the whole-set case_contract gate (case.get('expected') -> None != declared -> run_card_before.py:140-168 abort), NOT a hard-subscript KeyError; no KeyError, no output JSON. Conclusion (rc=1 not rc=3) unchanged. START_HERE append 2 text NOT edited (no authorization - see remaining_gaps).",
+    "F-5": "REGISTERED - arm G on M25-M28 is a second unregistered semantic change (historical rc=1 from the set-level gate, conforming to the frozen table's 期望文件缺失 rc=1 wording -> patched rc=2+no_verdict), required for T1-19 uniformity; registered alongside G1",
+    "F-6": "REGISTERED + re-run contract-conformant - B5 mutated CONT-BREAK (last case) instead of first/lowest-id NEG-CARD without declaring it; this card's runs use NEG-CARD: E0/F3/B0/G2 identical to B5 and to the reviewer's independent re-run => no result changes",
+    "F-7": "FIXED - scripts/verify_append_fixed.py embeds 19 distinct verbatim frozen-section lines, asserts len(set)==len, asserts the embedded operand equals the live line extraction from the byte-verified frozen prefix, checks each anchor as a full line in prefix AND current file; chain proof re-run APPEND_ONLY=true",
+    "F-8": "not in this card's finding list - untouched (its byte-level purity is covered by the re-run chain proof)"
+  },
+  "deliverables": [
+    {"path": "report.md", "description": "the required report: routing design / 31-card matrix / both-keys proof / F dispositions / remaining gaps", "bytes": 11580, "sha256": "496bd6309aedd9e0a9d9cf2ed1959e00c200a1edfa3d6e83653c4171c630ea06"},
+    {"path": "decision.md", "description": "B5's decision.md verbatim (lines 1-361, read-only copy) + this card's D-F1..D-F7 appended (incl. the G2 留置 record)", "bytes": 34046, "sha256": "4450cac0e6e167ec7b1301abc22c6c3a45127cdd3d20e59e1dadc1cccae524dc"},
+    {"path": "commands.json", "description": "all 128 arm units with real raw rc", "bytes": 223030, "sha256": "771c3ec947d59de2394490a8ed367e82fa6b2322d02ad44ebb293934997e2b84"},
+    {"path": "binding.json", "description": "pre-run anchors: historical/patched runner shas, interpreters, code roots, B5 source provenance", "bytes": 12490, "sha256": "c6ef61034a0c2f0382bdb6deb6901df8a805cbd25c4eb78e959eea5accc56136"},
+    {"path": "changes.diff", "description": "all regenerated runner diffs of this attempt vs the historical runners", "bytes": 108401, "sha256": "93753373724e74c2206130276ff68a86567c4f47ef25f41323e9de547a84e8e3"},
+    {"path": "M13-M16/run_card.py", "description": "patched copy with BOTH facts keys (F-1/G3)", "bytes": 46099, "sha256": "69370109561c395f7d93f36ea034d06f523b1b98f784122421adad57cd4dccc9"},
+    {"path": "M25-M28/run_card.py", "description": "patched copy with the G1-a explicit routing (F-2/G1)", "bytes": 42825, "sha256": "6d6dd6dbd2bfadc458f7572c19b7492641d6571d35802bc550c75f00f59a9873"}
+  ],
+  "evidence": {
+    "arm_matrix": {"path": "evidence/arm_matrix.json", "sha256": "84747aa0da12aa853a7f43217f74229dad77d462c892cf2c5b072e2a0f0f18ee", "description": "per-card E/F/B/G(+S) raw rc for all 31 cards + uniformity + expectations"},
+    "g3_reader_proof": {"path": "evidence/g3_reader_proof.json", "sha256": "3aba66d14042386ebdeb6de73d7713e2435fecb1bbeba3255cf50362e368968e", "description": "PASS=true; baseline OK, B5 break reproduced, 12 patched outputs dual-key, arm B historical shape", "PASS": true},
+    "boundary_verification": {"path": "evidence/boundary_verification.json", "sha256": "0aacaac8199975a5fc823f15aadd80f61e1c407a6f5dbc6fe9a05f73ef931ea6", "description": "68/68 runner copies, 31/31 frozen cases (347), START_HERE unchanged, production unchanged, git 0 lines", "PASS": true},
+    "append_proof_fixed": {"path": "evidence/start_here_append_proof_fixed.json", "sha256": "7c4c95dcc53e67ecf15f28f4b4318ff559fc8212b6e5a900af3261434f0f6600", "description": "F-7 corrected 19-anchor operand; APPEND_ONLY=true", "APPEND_ONLY": true},
+    "per_batch_evidence": {"M01-M04": "68be8a684624db472157431c526ffefee5b1f19eee4af954fa41e7da720b7cb5", "M05-M08": "8ee43bd5ae90cf70b518fb6838fcec66bd3c1dd537ee6367bf414102a49efbe1", "M09-M12": "8f51777e018a5d2b097ef32cd6815a0c2465ed9ce587b2c39259e8be793a9bd4", "M13-M16": "749d35b422a05aaf2f9a05660b9be899beb7392b2178f9e3b3f5b37555286f36", "M17-M20": "af4f65fd058f7144a92cd2a8a0682918f6f6e0f283cdcc0f671631174f93f8cd", "M21-M24": "2dac06c4a1e547581fc25a9f0d9eb10a40673c7105dd16a690453e53574aa83d", "M25-M28": "d4bd5410a97985cb743149a7ec8774ad7f51f9c3048eb5ef7ce72758d1ceda5c", "M29-M31": "2caaa5ce6cfabb041755deb119da34cccbff88645a29bc6d8dc2f6dc55e4924f"},
+    "raw_runs": {"path": "_scratch/arms_raw.json", "description": "128 raw child-process records (argv/cwd/raw_rc/artifact hashes/stderr tails)"}
+  },
+  "scripts": ["scripts/run_all_arms.py", "scripts/g3_reader_proof.py", "scripts/verify_append_fixed.py", "scripts/verify_boundaries.py", "scripts/build_evidence.py", "scripts/write_carriers.py"],
+  "context_copies_from_b5_read_only": ["oracle.md", "PROPAGATION_CONTRACT.md"],
+  "boundaries": {
+    "historical_artifacts_modified": [],
+    "historical_runner_copies_verified_unchanged": 68,
+    "historical_cases_json_verified_unchanged": 31,
+    "start_here_md_unchanged_since_b5": true,
+    "git_status_lines_over_M01_M31": 0,
+    "production_repo_writes": 0,
+    "production_anchors": {"scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f", "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"},
+    "b5_attempt_written_into": [],
+    "rc_values_rewritten": 0,
+    "frozen_files_edited": [],
+    "signatures_forged": false,
+    "status_transitions_performed": 0
+  },
+  "scope_observations": [
+    "M01-M04 never received the REM-21 propagation (outside the six T1-8-authorized batches): measured E=0/F=0/B=0/G=1 on all four cards - a mutated `expected` stays a fabricated green and a deleted `expected` crashes rc=1 (hard subscript). Measurement only; patching them is an owner call. This is why 'uniform on all 31 cards' resolves to 27/31.",
+    "B5's own binding.json does not match the value recorded in B5's own handoff.json (actual 96733875.../22652 B vs recorded 06ff8064.../20819 B): a pre-existing internal inconsistency inside the sealed B5 attempt, discovered read-only; not repaired by this card."
+  ],
+  "remaining_gaps": [
+    "G2 conflict stays OPEN by owner ruling (留置) - no precedence between the frozen case_contract.rule text and the frozen rc table was or will be asserted at card level",
+    "the F-4 correction is NOT appended into START_HERE.md (this card holds no append authorization for that file); if it must enter the register, owner/parent must authorize an append-3",
+    "M01-M04 remain non-conforming (see scope_observations) - out of scope for this card",
+    "F-8 (informational, repeated table header in B5's append) was not in this card's finding list and was not addressed beyond the byte-level chain proof"
+  ],
+  "reviewer_must_do": [
+    "Re-read M25-M28/run_card.py and confirm the three-way G1-a routing is load-bearing (set_level_forces_fail in the exit decision) and that no rc constant was renumbered",
+    "Re-run arms E/F/G (+B, +S) on at least M25 and M14 from your own copies; expect 0/3/1/2 and S=1 on M25, 0/3/2/2 on M14 with both facts keys",
+    "Re-run scripts/g3_reader_proof.py and confirm PASS (expression extracted from historical bytes, B5 break reproduced)",
+    "Confirm the G2 record contains NO precedence assertion (owner ruled 留置)",
+    "Re-run scripts/verify_boundaries.py and scripts/verify_append_fixed.py",
+    "Adjudicate the two scope observations (M01-M04 non-conformance; B5 binding.json handoff mismatch)"
+  ],
+  "next_action": "Independent reviewer: review this fix card. The implementer must not self-sign; status stays review_pending.",
+  "all_arms_as_required_on_required_scope": true,
+  "all_boundaries_respected": true,
+  "status_authority": {
+    "verdict": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session; sibling of the implementer; the implementer did not self-sign)",
+    "verdict_label_as_written_by_reviewer": "accepted_scoped",
+    "carrier": {
+      "file": "reviewer_report.md",
+      "path_inside_attempt": "reviewer_report.md",
+      "line_range_inclusive_1_based": [1, 122],
+      "verdict_line": 4,
+      "verdict_line_range_inclusive": [4, 4],
+      "first_line_of_verdict": "- **Verdict**: **`accepted_scoped`**",
+      "status_recommendation_line": 122,
+      "status_recommendation_text": "`status` recommendation: `accepted_scoped` — move out of `review_pending` only by the parent/owner, not by the implementer.",
+      "reviewer_role_line": 3,
+      "findings_section_line_range_inclusive": [99, 109],
+      "unverified_section_line_range_inclusive": [111, 118],
+      "finding_5_adjudication_line_range_inclusive": [72, 85],
+      "sha256": "69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e",
+      "bytes": 16710,
+      "total_lines": 122,
+      "encoding": "UTF-8 without BOM; LF line endings only; single trailing LF",
+      "byte_proof": {
+        "verdict_line_bytes": {"start": 232, "end_inclusive": 267, "end_exclusive": 268, "length": 36, "sha256": "193fab116c4e3e422f240a78183b0d48f5df4e65fdaf24a4e450b1a4c0092a82"},
+        "status_recommendation_line_bytes": {"start": 16354, "end_inclusive": 16708, "end_exclusive": 16709, "length": 355, "sha256": "bd22a92ec25017602f7b91f19fb2a4e3e35c509a2de233dcb08277dee473a03f"},
+        "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 16708, "end_exclusive": 16709, "length": 16709, "sha256": "d5f908edc97ac24559e60571091754c079fd4d9da2adedf6c8d2ca83bd2ea940"},
+        "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the line's terminating LF unless stated"
+      },
+      "pin_sidecar": {
+        "file": "reviewer_report.md.sha256",
+        "present": true,
+        "bytes": 85,
+        "sha256": "f15f60eaf40f8a9b857563e8564a0657cd88fd43528a34c7a94ba4938ec73a0b",
+        "content": "69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e  reviewer_report.md",
+        "verified": "sidecar sha matches an independent re-hash of reviewer_report.md at landing time"
+      },
+      "landing_file": {
+        "file": "review.md",
+        "role": "carrier-landing verdict block written by this bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md, which this pass did not modify.",
+        "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+      }
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核), not by the implementer; this handoff only transcribes it",
+    "verdict_is_transcribed_not_authored": true
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "landed the carrier fields for the independent reviewer's already-written byte-pinned verdict; created review.md with a transcribed verdict block; appended status_authority, bookkeeping and carried_findings here; created evidence/B5-fix/qualification.json; wrote no verdict of its own",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "verdict_author": "独立复核 (independent reviewer) - in reviewer_report.md line 4, not in any file this pass wrote",
+    "status_transition": "review_pending -> accepted_scoped (bookkeeping transcription of the reviewer's line-122 recommendation; the reviewer reserved this move to the parent/owner, never the implementer)",
+    "reviewer_report_md_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "b5_attempt_bytes_written": 0,
+    "production_bytes_written": 0,
+    "disclosure_adaptation": "unmapped (untouched)",
+    "accuracy": "unproven (untouched)",
+    "carried_findings_registered": 3,
+    "carried_findings_ids": ["CF-B5FIX-1 (stale B5 binding record, adjudicated)", "CF-B5FIX-2 (START_HERE.md content-preserving touch, informational)", "CF-B5FIX-3 (F-8 out of scope, informational)"],
+    "files_written": ["review.md (created)", "handoff.json (status + appended fields; pre-existing keys otherwise untouched)", "evidence/B5-fix/qualification.json (created)"]
+  },
+  "carried_findings": [
+    {
+      "id": "CF-B5FIX-1",
+      "origin": "reviewer finding ⑤ (reviewer_report.md §7 lines 72-85; numbered finding 6, line 106), adjudicated",
+      "class": "B5-SEALED-RECORD STALENESS (B5-internal; discovered by this fix card read-only, adjudicated by the reviewer)",
+      "severity": "informational for this card; disposition is an external erratum",
+      "finding": "B5 的封存 handoff 中 binding.json 记录已陈旧——B5 handoff 记 binding.json = 06ff8064… / 20819 B（handoff 写于 21:51:06），而 binding.json 实际最后写于 21:52:21（+75 s，现 96733875… / 22652 B）；B5 自己的 evidence/deliverable_consistency.json（21:52:29）记录的是新值 96733875… / 22652 B 却报 PASS / problems:[] ⇒ B5 的一致性检查器只计算哈希、从未交叉核对 handoff 中声明的摘要（其 changes.diff 条目匹配，故分歧仅限 binding 条目）。",
+      "disposition": "不改 B5（stale record stays stale）。以外部 superseded-retention 勘误标记 B5 handoff 的 binding 条目 STALE-SUPERSEDED（双值 06ff8064…/20819 B 与 96733875…/22652 B + 时间线 21:51:06 → 21:52:21 → 21:52:29），条目保留原文、不重写；权威内容 = 盘上 binding.json（96733875…/22652 B）+ evidence/deliverable_consistency.json（21:52:29）。复审建议、父代理采纳。",
+      "process_defects_registered": [
+        "B5 期流程缺陷 A：封存后载体被改写（binding.json 在 handoff 封存后 75 s 被重写）",
+        "B5 期流程缺陷 B：一致性检查器覆盖缺口（deliverable_consistency.json 只算哈希、不交叉核对 handoff 声明摘要，故在声明-实际不匹配上仍报 PASS/problems:[]）"
+      ],
+      "residual_uncertainty": "复审已声明：旧 20819 B 字节不可恢复，『写入时正确』系由 mtime 顺序推断，非逐字节证明。",
+      "owner": "parent register / future authorized card (NOT this card, NOT B5's sealed attempt)"
+    },
+    {
+      "id": "CF-B5FIX-2",
+      "origin": "reviewer numbered finding 7 (reviewer_report.md line 107), informational",
+      "class": "CONTENT-PRESERVING TOUCH, UNATTRIBUTED",
+      "severity": "informational",
+      "finding": "execution_v2/START_HERE.md mtime 2026-09-21T23:19:55 晚于 B5 的 append 证明（21:45:50）与其复审报告（23:00:40），但内容仍等于记录的 POST2 a9cb5a4a… ⇒ 存在一次内容无变化的触碰；非本修复卡所为（本卡写入均在 09-22 08:31+）。复审抽查域：该单文件、仅内容轴。",
+      "disposition": "内容有钉即无需补救（content unchanged; the on-disk file equals the recorded POST2 sha）。归属待问：谁在 23:19 动过该文件——复审在所抽样记录中无法确定，建议父代理追问。",
+      "owner": "parent (attribution question only; no remediation)"
+    },
+    {
+      "id": "CF-B5FIX-3",
+      "origin": "reviewer numbered finding 9 (reviewer_report.md line 109) + this card's handoff findings_dispositions['F-8']/remaining_gaps, informational",
+      "class": "OUT OF SCOPE, UNDISPOSITIONED",
+      "severity": "informational",
+      "finding": "F-8（B5 追加节中重复的冻结表表头行）不在本卡清单，未处置。",
+      "disposition": "无动作：字节纯追加已被链证覆盖（APPEND_ONLY=true，evidence/start_here_append_proof_fixed.json）。若要处置 F-8 本体，需另行授权的卡。",
+      "owner": "open / owner call"
+    }
+  ]
+}

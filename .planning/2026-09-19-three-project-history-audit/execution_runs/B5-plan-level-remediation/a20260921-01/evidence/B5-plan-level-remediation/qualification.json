@@ -1,0 +1,136 @@
+{
+  "card_id": "B5-plan-level-remediation",
+  "attempt_id": "a20260921-01",
+  "revision": "r1",
+  "formula": {
+    "state": "changes_required",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "NOT ACCEPTED AS-IS — \"measured core verified / 3 blocking findings\".",
+    "verdict_written_by": "independent reviewer (not the implementer, not the orchestrator; reviewer_report.md lines 3, 278-282)",
+    "acceptance_verdict_exists_for_this_card": false,
+    "state_note": "changes_required is the machine-readable rendering of the reviewer's literal NOT ACCEPTED AS-IS verdict. There is NO acceptance for this attempt; the acceptance for the card line lives only on the superseding fix card. This record transcribes the rejection faithfully and does NOT upgrade it."
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "verdict_line": 13,
+    "first_line_of_verdict": "**NOT ACCEPTED AS-IS — \"measured core verified / 3 blocking findings\".**",
+    "line_range_inclusive_1_based": [1, 307],
+    "verdict_line_range_inclusive": [13, 13],
+    "verdict_section_line_range_inclusive": [11, 29],
+    "return_to_implementer_line": 15,
+    "blocking_findings_line": 29,
+    "blocking_findings_text": "**Blocking findings: F-1 (G3 key rename), F-2 (G1/G2 frozen-rule override without owner sign-off), F-3 (`evidence.json` schema divergence on M13-M16).**",
+    "adjudication_line_ranges": {"G1": [149, 176], "G2": [178, 192], "G3": [194, 212], "G4": [214, 228]},
+    "findings_section_line_range_inclusive": [231, 242],
+    "required_before_acceptance_line_range_inclusive": [268, 274],
+    "reviewer_independence_section_line_range_inclusive": [278, 282],
+    "carrier_file_sha256": "0324bfdcc2eb6443693419a9e718b241b25c6c290ff12abb5fb96de0b6d2eee0",
+    "carrier_file_bytes": 34764,
+    "carrier_file_total_lines": 307,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only; single trailing LF",
+    "verdict_line_byte_region": {"start": 590, "end_inclusive": 663, "length": 74, "sha256": "3488d12a6d6429a8c477563cb2350b83b81f511e53a8f1a3331878168afad9b4"},
+    "return_to_implementer_line_byte_region": {"start": 665, "end_inclusive": 744, "length": 80, "sha256": "b684c7f3751769209bb4bf12b3e498d0f3c26b27a94cbfc41d742b0be1cef25b"},
+    "blocking_findings_line_byte_region": {"start": 3102, "end_inclusive": 3253, "length": 152, "sha256": "510cc0e5325426a5caf22a504df865b7211a45c4574a81d4796f6d200e9e124f"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the terminating LF unless stated",
+    "pin_sidecar": {
+      "file": "reviewer_report.md.sha256",
+      "present": false,
+      "note": "no sidecar exists in this attempt; the pin is the report's own embedded self-excluding pin (section 7, lines 286-307)"
+    },
+    "embedded_pin": {
+      "section": "## 7. Report pin (self-excluding), lines 286-307",
+      "payload_definition": "every byte of reviewer_report.md before that section",
+      "payload_bytes": 34071,
+      "payload_sha256": "600c9e7b71ee201b6c10aab2a2ce79705f9449b96ac4535a02d3310a5c49f27d",
+      "verified": "recomputed independently at landing time: sha256(bytes before '## 7. Report pin') == payload_sha256 (pin OK; unaltered since review)"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "verdict-backfill block written by this bookkeeping pass; it transcribes the reviewer's rejection and adds no acceptance of its own. The reviewer wrote no verdict into review.md - the reviewer's words are in reviewer_report.md, which this pass did not modify.",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "the rejection was written by an independent reviewer in reviewer_report.md line 13, never by the implementer",
+    "landing_agent": "verdict-backfill bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "acceptance_written_anywhere_for_this_card": false
+  },
+  "condition_disposition": {
+    "note": "per-condition closure map for the ORIGINAL verdict (changes_required / NOT ACCEPTED AS-IS). Closing a condition does not retro-accept this attempt.",
+    "G1": {
+      "finding": "reviewer_report.md G1 (lines 149-176) + F-2: whole-set case_contract gate split - deviation FORCED, implementer's particular resolution NOT the only compliant one, owner sign-off required",
+      "disposition": "closed by FIXCARD - the reviewer's preferred G1-a routing implemented (structural rc=1 unchanged / declaration unusable -> rc=2 + no_verdict decided before judging / usable-but-different -> rc=3)",
+      "closed_by": "execution_runs/B5-fix-g1a-g3/a20260922-01",
+      "accepted_via": "FIXCARD review, status accepted_scoped, carrier reviewer_report.md sha256 69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e",
+      "measurement": "G1-a routing measured over 128 raw-rc child processes (_scratch/arms_raw.json; commands.json = 'all 128 arm units with real raw rc'); fix reviewer's fresh M25-M28 re-run: 20/20 raw rcs match (E=0, F=3, G=2 no_verdict, S=1, B=1)"
+    },
+    "G3": {
+      "finding": "reviewer_report.md G3 (lines 194-212) + F-1: M13-M16 key rename breaks M14 recovery/consolidated_report.py:75 - CONFIRMED, BLOCKING, emit both keys",
+      "disposition": "closed by FIXCARD - dual-key emission (declared_expectations + declared_expectations_in_cases_json, same value computed once)",
+      "closed_by": "execution_runs/B5-fix-g1a-g3/a20260922-01",
+      "accepted_via": "FIXCARD review, status accepted_scoped, carrier reviewer_report.md sha256 69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e",
+      "proof": "3-leg reader proof - evidence/g3_reader_proof.json sha256 3aba66d14042386ebdeb6de73d7713e2435fecb1bbeba3255cf50362e368968e, PASS=true: (1) frozen baseline -> OK ['ModelRegistryError']; (2) B5 patched output -> KeyError: 'declared_expectations' (original break reproduced); (3) FIXCARD fresh patched output -> OK with both keys present and equal"
+    },
+    "G2": {
+      "finding": "reviewer_report.md G2 (lines 178-192): anchor conflict inside a frozen artifact - NO fully compliant resolution; register as owner item, do NOT edit the frozen file",
+      "disposition": "owner ruled 留置 - CLOSURE-BY-RULING, NOT A FIX: conflict permanently registered, NO precedence asserted between the frozen case_contract.rule text and the frozen rc table",
+      "authority": "OWNER_DECISIONS.md §16 line 374: '**D-G2 = 留置** | 冲突**永久留置登记**，owner **不裁定**哪个冻结件优先' (owner verbatim line 365: 'D-G2: 留置/（或给取舍）')",
+      "carrier": "FIXCARD handoff.json g2_conflict_record (status 'known conflict - owner ruling 留置 (permanently registered; unresolved by design)', no_precedence_asserted: true, precedence_claim_made_anywhere: false); mirrored in FIXCARD decision.md D-F3",
+      "state": "OPEN by design (registered, not resolved)"
+    },
+    "F-3": {
+      "finding": "evidence.json schema divergence on M13-M16 - among the three blocking findings at line 29; severity 'minor' in the §3 table at line 237 (both wordings retained, not adjudicated here)",
+      "disposition": "closed by FIXCARD - all six batches' evidence.json arms.{E,F,B,G} rebuilt from real runs, no nulls",
+      "accepted_via": "FIXCARD review, carrier sha256 69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e"
+    },
+    "F-4_F-5_F-6_F-7": "registered or fixed by the FIXCARD (handoff findings_dispositions); F-8 out of the fix card's scope (CF-B5FIX-3)",
+    "residual": "G2 stays OPEN by owner ruling (留置) - registered, not resolved, by design"
+  },
+  "superseded_by": {
+    "card": "B5-fix-g1a-g3",
+    "attempt": "a20260922-01",
+    "relative_path": "execution_runs/B5-fix-g1a-g3/a20260922-01",
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\B5-fix-g1a-g3\\a20260922-01",
+    "status_of_superseding_card": "accepted_scoped (landed: handoff carries CF-B5FIX-1/2/3) - this is the FIX CARD's status, never this card's",
+    "status_carrier_sha256": "b071ff9b85a8551a69544fca7ac380a4c853f3b587d9e05fa184eaf3681db548",
+    "accepted_carrier": {
+      "file": "reviewer_report.md",
+      "sha256": "69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e",
+      "bytes": 16710,
+      "verdict_line": 4,
+      "pin_sidecar": "reviewer_report.md.sha256 (85 B, sidecar sha256 f15f60eaf40f8a9b857563e8564a0657cd88fd43528a34c7a94ba4938ec73a0b)"
+    },
+    "meaning": "the accepted continuation of this card LINE is the fix card; this attempt's verdict (changes_required) is unchanged and is NOT upgraded by this pointer"
+  },
+  "eligibility_statement": {
+    "formula_classification": "Test/audit-infrastructure only: cross-batch runner propagation (REM-21) and rc-table append freeze (REM-22) reviewed. No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this backfill; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this backfill; stays unproven.",
+    "production_write": "NOT GRANTED. Production read-only throughout; 0 production bytes written, 0 git writes by this pass.",
+    "frozen_and_evidence": "reviewer_report.md (34764 B, embedded pin verified OK), before/, changes.diff, commands.json and every pre-existing evidence/* file were NOT written by this pass; only the new evidence/B5-plan-level-remediation/qualification.json was created."
+  },
+  "bookkeeping": {
+    "recorded_by": "verdict-backfill bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "created this qualification record for the independent reviewer's byte-pinned REJECTION verdict; landed the carrier fields; mirrored condition_disposition and superseded_by; created review.md (transcribed verdict block, no acceptance of its own); set handoff.json status review_pending -> changes_required with status_authority/condition_disposition/superseded_by/bookkeeping appended; wrote 0 bytes to reviewer_report.md, before/, frozen or historical artifacts",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "status_transition": "review_pending -> changes_required",
+    "pre_image": {
+      "handoff.json_sha256": "4ab0075510f77ae718da2bab9c399946533d3c1486fef90fe1d3fbc1a8830538",
+      "handoff.json_bytes": 17435,
+      "review.md": "absent",
+      "this_file": "absent"
+    },
+    "files_written": ["review.md (created)", "handoff.json (status + appended fields; pre-existing keys otherwise untouched)", "evidence/B5-plan-level-remediation/qualification.json (created, this file)"],
+    "stale_prose_superseded": ["next_action -> next_action_historical_pre_verdict", "reviewer_must_do -> reviewer_must_do_historical_pre_verdict"]
+  },
+  "note": "created by the verdict-backfill pass. formula.state = changes_required IS the original review's real verdict (NOT ACCEPTED AS-IS, measured core verified / 3 blocking findings F-1, F-2, F-3); it is transcribed, not authored, and is not an upgrade. No accepted_scoped value exists anywhere for this card - the acceptance belongs to the superseding fix card B5-fix-g1a-g3/a20260922-01 (carrier reviewer_report.md sha256 69ea3b03...). disclosure_adaptation stays unmapped and accuracy stays unproven."
+}

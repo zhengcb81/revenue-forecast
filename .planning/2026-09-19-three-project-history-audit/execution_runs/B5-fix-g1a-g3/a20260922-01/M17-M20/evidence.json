@@ -1,0 +1,160 @@
+{
+ "batch": "M17-M20",
+ "cards": [
+  "M17",
+  "M18",
+  "M19",
+  "M20"
+ ],
+ "fix_card": "B5-fix-g1a-g3",
+ "scope_note": "this batch carries NO REM-21 patch (it is outside the six T1-8-authorized batches): both runner roles are byte-copies of the historical file; arms are MEASUREMENT ONLY and were reported to the owner as a scope finding",
+ "runner_before": {
+  "path": "execution_runs/M17/a20260919-01/scripts/run_card.py",
+  "sha256": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252",
+  "bytes": 36744,
+  "byte_identical_to_historical": true
+ },
+ "runner_after": {
+  "path": "execution_runs/B5-fix-g1a-g3/a20260922-01/M17-M20/run_card.py",
+  "sha256": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252",
+  "bytes": 36744,
+  "identical_to_historical": true
+ },
+ "diff_path": null,
+ "diff_stats": {
+  "added_lines": 0,
+  "removed_lines": 0
+ },
+ "cards_cases_sha256": {
+  "M17": "e09bdc8938f1b49d9c1882bffd1ab8962cf321b54e0fb9e55c6654d32286e3a9",
+  "M18": "70250e533f39703958daf8b0ad5e554fcd22b77713782798bfc6152148417320",
+  "M19": "da78ebb1ea5c3e6e737983dffe5065e6cfff527403cbd66b7f32025a987404f6",
+  "M20": "f3a49061480baebe03f35a3128bb3c5d75ca9d03d38991f437b0b100f505d9ac"
+ },
+ "insertion_points": [],
+ "arms": {
+  "E": {
+   "rc": 0,
+   "rc_per_card": {
+    "M17": 0,
+    "M18": 0,
+    "M19": 0,
+    "M20": 0
+   },
+   "rc_uniform": true,
+   "verdict": "pass",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M17": [],
+    "M18": [],
+    "M19": [],
+    "M20": []
+   },
+   "mutated_case": null,
+   "out_written_all": true,
+   "note": "green control: patched runner + frozen cases.json",
+   "expected_rc": 0,
+   "meets_expectation": true
+  },
+  "F": {
+   "rc": 3,
+   "rc_per_card": {
+    "M17": 3,
+    "M18": 3,
+    "M19": 3,
+    "M20": 3
+   },
+   "rc_uniform": true,
+   "verdict": "fail",
+   "declared_expectation_mismatch": 1,
+   "mismatch_ids_per_card": {
+    "M17": [
+     "NEG-CARD"
+    ],
+    "M18": [
+     "NEG-CARD"
+    ],
+    "M19": [
+     "NEG-CARD"
+    ],
+    "M20": [
+     "NEG-CARD"
+    ]
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "owner-mandated mutation arm: usable-but-different `expected` -> rc=3 (the arm that was previously unreachable on M25-M28)",
+   "expected_rc": 3,
+   "meets_expectation": true
+  },
+  "B": {
+   "rc": 3,
+   "rc_per_card": {
+    "M17": 3,
+    "M18": 3,
+    "M19": 3,
+    "M20": 3
+   },
+   "rc_uniform": true,
+   "verdict": "fail",
+   "declared_expectation_mismatch": null,
+   "mismatch_ids_per_card": {
+    "M17": [
+     "NEG-CARD"
+    ],
+    "M18": [
+     "NEG-CARD"
+    ],
+    "M19": [
+     "NEG-CARD"
+    ],
+    "M20": [
+     "NEG-CARD"
+    ]
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "historical byte-copy runner on the same mutated cases; rc is a MEASUREMENT and must not change vs B5's recorded value",
+   "b5_recorded_rc": 3,
+   "unchanged_vs_b5_recorded": true
+  },
+  "G": {
+   "rc": 2,
+   "rc_per_card": {
+    "M17": 2,
+    "M18": 2,
+    "M19": 2,
+    "M20": 2
+   },
+   "rc_uniform": true,
+   "verdict": "no_verdict",
+   "declared_expectation_mismatch": 0,
+   "mismatch_ids_per_card": {
+    "M17": [],
+    "M18": [],
+    "M19": [],
+    "M20": []
+   },
+   "mutated_case": "NEG-CARD",
+   "out_written_all": true,
+   "note": "declaration unusable (expected key deleted) -> rc=2 + no_verdict; the mutated case is NOT_JUDGED, never counted as a mismatch",
+   "expected_rc": 2,
+   "meets_expectation": true
+  }
+ },
+ "extra_arms": {},
+ "rc_codes_after": {
+  "0": "EXIT_PASS",
+  "1": "EXIT_HARNESS",
+  "2": "EXIT_NO_VERDICT",
+  "3": "EXIT_NEGATIVE"
+ },
+ "isolated_code_root_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "historical_writes": [],
+ "boundaries_respected": true,
+ "unmet_prerequisites": [],
+ "open_issues": []
+}

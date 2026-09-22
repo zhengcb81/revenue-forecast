@@ -1,0 +1,138 @@
+{
+  "card_id": "GATE-TIMEOUT-1200",
+  "attempt_id": "a20260922-01",
+  "revision": "r1",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session; never the implementer)",
+    "scope_is_scoped_not_clean": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "scope_statement": {
+    "rem79_domain_sentence_verbatim": "gate timeout change proven at measured domains only (8 burners; green2 ambient 2/12/2; GREEN total 1336.7 s); extreme ambient showed real-data 1182.3 s vs 1200 s cap ≈18 s margin with an inner test already failing on its own 120 s timeout ⇒ extreme ambient can still exceed 1200 = owner call outside §16-B / OQ-01",
+    "carrier_scope_statement_L10_verbatim": "The one-line gate timeout change (600→1200) is **proven at the measured load domains only**: RED arm and GREEN arm each ran with 8 card burners, GREEN2 ambient python-proc counts ≈ 2 (before) / 12 (mid, incl. 8 burners) / 2 (after), GREEN total gate wall = 1336.7 s. **Under extreme ambient load the real-data step finished in 1182.3 s wall against the 1200 s cap (~18 s margin) while a test inside it had already failed on its own internal 120 s timeout — extreme ambient can still exceed 1200 s, which is an owner call outside §16-B (OQ-01).** This acceptance grants no disclosure_adaptation (stays unmapped) and no accuracy (stays unproven) claim.",
+    "what_12_of_12_checks_established": [
+      "one-line change only: before 0d290326200ebde819d3473589bd1aa0ed36da4806097d8a59dc8dc316fcc594 (...c594) -> after cf09ade8164e89d79237ff5a8409496ab1ae2a9c5f3ee2c253ccad20ef06df0b (...6df0b), numstat 1 1 tools/pre_push_gate.py, only production file touched",
+      "oracle frozen BEFORE the change: gate_untouched_at_freeze=true, frozen 2026-09-22T07:26:09Z, gate hash at freeze = before-hash; change applied 07:27:39Z (~90 s later)",
+      "RED live at 600 s: subprocess.TimeoutExpired 'timed out after 600 seconds'; argv = -q --tb=short + exactly the 7 REAL_ROOTS files; no skip/deselect flags; GATE_EXIT_CODE=1, HAS_TIMEOUTEXPIRED_600=True, HAS_GATE_GREEN=False, burners 8/8; RED count recorded as 'not observable (killed at 600 s)' per pre-registered oracle I-3 - never 55, never read as a skip",
+      "GREEN attempt #2 (same domain): exit 0, all 10 steps ok, 'pre-push gate GREEN - safe to push (then self-monitor CI).', total 1336.7 s, RED-comparable load domain (8 burners; ambient 2/12/2)",
+      "GREEN attempt #1 disclosed FAIL: '1 failed, 63 passed, 1 xfailed ... in 1159.84s' at real-data, FAILED test_fc1105::test_f2_missing_samples_fails (internal timeout=120), GATE RED at real-data; f2 standalone '1 passed in 44.00s' => load-induced, not code-induced",
+      "invariants: E2E 55 passed / 0 skipped (185.96 s); real-data 64 passed, 1 xfailed / 0 skipped (246.64 s); arithmetic attempt#1 1+63+1 = 65 = 64+1",
+      "live-push corroboration re-verified read-only at landing: HEAD == origin/main == 6f74b056631e0cb50a28b57bdcf979514dadb8f9; git show HEAD:tools/pre_push_gate.py contains 'timeout: int = 1200'; git diff HEAD -- tools/pre_push_gate.py empty; working-tree file sha256 == cf09ade8...6df0b"
+    ],
+    "why_not_blocking": "All 12 findings verified by the reviewer from bytes (L14-L25); GREEN attempt #1's disclosed FAIL is characterized (load-induced, standalone 44 s) and GREEN attempt #2 closes same-domain; the residual risk (extreme ambient can still exceed 1200 s) is carried as OQ-01 - an owner call outside §16-B, not a defect of the authorized one-line change.",
+    "not_verified_by_review": [
+      "U-1 the literal live-push console line 'ab20cebe..6f74b056 HEAD -> main' and the 'pre-push gate GREEN' output emitted inside that push are PARENT-SUPPLIED (corroborated by HEAD == origin/main == 6f74b056 and HEAD blob == after-image)",
+      "U-2 oracle.md / decision.md / commands.json / git_status_*.txt (>6 KB / long) verified only via targeted greps, not full reads",
+      "U-3 no RED-arm ambient python-proc snapshot exists (only burners_red.json = 8 alive); RED<->GREEN ambient comparability rests on the equal 8-burner count plus the green2 snapshots",
+      "U-4 evidence/f2_standalone_lightload.txt has no load snapshot of its own; its 'light load' characterization relies on surrounding run context",
+      "U-5 no pytest/gate execution was performed by the reviewer; all verdicts rest on recorded bytes plus live hash/git-object reads"
+    ]
+  },
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "verdict_line": 6,
+    "first_line_of_verdict": "- **Verdict: `accepted_scoped`**",
+    "line_range_inclusive_1_based": [1, 37],
+    "verdict_line_range_inclusive": [6, 6],
+    "scope_statement_line_range_inclusive": [10, 10],
+    "findings_heading_line": 12,
+    "findings_12_of_12_pass_line_range_inclusive": [14, 25],
+    "unverified_list_line_range_inclusive": [27, 33],
+    "boundary_compliance_line_range_inclusive": [35, 37],
+    "byte_offsets": {"start": 0, "end_inclusive": 7369, "end_exclusive": 7370},
+    "carrier_file_sha256": "2a66abae6f0432491bdbeb898934a07af8aeac04050011d5539e477f9f1ceb06",
+    "carrier_file_bytes": 7370,
+    "carrier_file_total_lines": 37,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+    "verdict_line_byte_region": {"start": 281, "end_inclusive": 312, "length": 32, "sha256": "bf9558d556f2359458555d0be4186ade0a5cf2aacca13bae9a1cd68758ab386e"},
+    "scope_statement_byte_region_L10": {"start": 364, "end_inclusive": 1020, "length": 657, "sha256": "6c09672bbdf7b823eb69f64b48396b801d4aff9057ec5d32649bb26e9af98fd2"},
+    "findings_byte_region_L12_L25": {"start": 1023, "end_inclusive": 6213, "length": 5191, "sha256": "31fa6e84e7b44f100d427d842437ed4c470142e0b499a5527b2afa2d178caa59"},
+    "unverified_byte_region_L27_L33": {"start": 6216, "end_inclusive": 7153, "length": 938, "sha256": "b11c44588ae36f2ea44755d0164056103238698310c7cd568b6cf7fe64981331"},
+    "boundary_byte_region_L35_L37": {"start": 7156, "end_inclusive": 7368, "length": 213, "sha256": "5184736885ac64a67b3e5cd0820172cd02c77dc56616faae90e8300e786191df"},
+    "whole_file_minus_trailing_lf": {"length": 7369, "sha256": "62e0fc6394b6ac72275ee968ad25ecb551503d4c75defcee1fad1b942185d22f"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at carrier_file_sha256; region lengths exclude the terminating LF",
+    "pin_sidecar": {
+      "file": "reviewer_report.md.sha256",
+      "present": true,
+      "bytes": 84,
+      "sha256": "38dd168b7a738a8dfca2733ae1e4d9e1475f7745b69315665a9bc1c23c026eee",
+      "content": "2a66abae6f0432491bdbeb898934a07af8aeac04050011d5539e477f9f1ceb06  reviewer_report.md",
+      "verified": "read-only re-hash of reviewer_report.md at landing == sidecar == dispatch pin; measured 7370 B; verdict line 6 greps to accepted_scoped; 12/12 findings PASS"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by the bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核) at reviewer_report.md line 6, not by the implementer",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_transcription_adds_no_acceptance": true,
+    "no_production_writes": true,
+    "production_bytes_written": 0,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "git_writes": 0,
+    "signatures_produced": 0
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "the one-line gate timeout change 600 -> 1200 in tools/pre_push_gate.py (before 0d290326...c594 -> after cf09ade8...6df0b, numstat 1 1) and its frozen RED/GREEN proof package, AS PROVEN AT THE MEASURED DOMAINS ONLY (8 burners; green2 ambient 2/12/2; GREEN total 1336.7 s)",
+      "RED live 600 s TimeoutExpired on all 7 REAL_ROOTS files with no skips and the I-3 count caveat 'not observable (killed at 600 s)'",
+      "GREEN attempt #2 same-domain exit 0 (all 10 steps ok) with GREEN attempt #1's load-induced FAIL disclosed, not hidden",
+      "count invariants 55/0-skip and 64+1x/0-skip with arithmetic 1+63+1 = 65 = 64+1"
+    ],
+    "not_granted": [
+      "any ruling on extreme ambient exceeding the 1200 s cap - OWNER CALL OUTSIDE §16-B (OQ-01)",
+      "any change to test timeouts (OQ-02 registered, not fixed - not authorized)",
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production-tree write permission (production writes by this landing: 0)",
+      "resolution of the reviewer's unverified items (U-1..U-5) - carried as declared boundary"
+    ]
+  },
+  "carried_findings": [
+    {"id": "OQ-01", "severity": "owner call (outside §16-B)", "kind": "scope_boundary_budget", "origin": "reviewer_report.md L10 + findings item 11", "finding": "real-data ≈18 s margin under extreme ambient (1182.3 s vs 1200 s cap) while an inner test already failed on its own 120 s timeout; extreme ambient can still exceed 1200", "disposition": "verdict must keep the load domain in the same sentence (REM-79); separate real-data budget / test-timeout review = owner call outside §16-B", "status": "carried_open_owner_decision"},
+    {"id": "OQ-02", "severity": "registered (not fixed)", "kind": "test_load_fragility", "origin": "reviewer_report.md findings item 11; evidence after/gate_green_1200.txt + evidence/f2_standalone_lightload.txt", "finding": "test_fc1105::f2 internal subprocess timeout=120 load fragility - failed once under heavy ambient, passes standalone 44 s", "disposition": "registered, NOT fixed (fixing tests not authorized by §16-B); load-induced, not caused by the one-line change", "status": "carried_registered_not_fixed"},
+    {"id": "OQ-03", "severity": "info", "kind": "pre_existing_warning", "origin": "reviewer_report.md findings item 11", "finding": "pre-existing GBK UnicodeDecodeError reader-thread warnings in test_install_sync_gate_detects_drift; non-fatal (suite rc=0)", "disposition": "registered gap, owner visibility only", "status": "carried_registered"},
+    {"id": "U-1..U-5", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md L27-L33", "finding": "push console line parent-supplied (corroborated by HEAD==origin/main + HEAD-blob check); >6 KB files grepped-only; no RED ambient-python-proc snapshot exists (RED<->GREEN comparability rests on equal 8-burner count); f2-standalone has no own load snapshot; no pytest/gate run by the reviewer", "disposition": "declared boundary with reasons; carried unresolved by design", "status": "carried_declared_boundary"},
+    {"id": "NOTE-PUSH-EVIDENCE", "severity": "info", "kind": "evidence_provenance", "origin": "reviewer_report.md L25 + L29", "finding": "live push 'ab20cebe..6f74b056 HEAD -> main' with 'pre-push gate GREEN' inside the hook is PARENT-SUPPLIED evidence", "disposition": "cite as parent-supplied; corroborated by HEAD == origin/main == 6f74b056631e0cb50a28b57bdcf979514dadb8f9 + HEAD blob 'timeout: int = 1200' + empty git diff HEAD on the file (re-verified read-only at landing)", "status": "carried_cited_as_parent_supplied"}
+  ],
+  "eligibility_statement": {
+    "formula_classification": "No revenue-forecast formula work qualified by this card: it raises the pre-push gate subprocess timeout 600->1200 as one authorized line (owner §16 B=a) with a live RED/GREEN pair. No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "production_write": "NOT GRANTED by this landing. The single authorized line was written by the implementer during the attempt; this landing pass wrote 0 production bytes.",
+    "git": "NOT written by this landing (read-only rev-parse/show/diff/status only); the push ab20cebe..6f74b056 was the parent's."
+  },
+  "qualification_state_alignment": {
+    "gate_timeout_change": "review_pending (retained byte-exact in handoff.qualification_state; historical annotate: satisfied by this landing - reviewer ruled accepted_scoped)",
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven"
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "verified the carrier read-only (2a66abae...ceb06 / 7370 B == sidecar == dispatch pin; verdict line 6 = accepted_scoped; 12/12 PASS), created review.md with the transcribed verdict block (no acceptance of its own), set status + status_before_bookkeeping_fix + status_authority + bookkeeping, appended 5 carried findings (OQ-01, OQ-02, OQ-03, U-1..U-5, NOTE-PUSH-EVIDENCE), superseded stale no-verdict fields under *_historical_pre_verdict (reviewer_status.state, reviewer_status.authority, next_action), annotated qualification_state.gate_timeout_change without changing its value, created this qualification record; wrote 0 bytes to reviewer_report.md and its sidecar, 0 production bytes, 0 git writes",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "status_transition": "review_pending -> accepted_scoped",
+    "pre_image_handoff": {"bytes": 11904, "sha256": "772075e35e933f00ba74125b87a077c4dcfa28ab31ee638104be12a879bd7979", "matches_final_deliverable_hashes_json": true},
+    "files_written": [
+      "review.md (created)",
+      "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping + 5 carried findings appended + stale-field supersessions; pre-existing content otherwise untouched; pre-image 11904 B / sha256 772075e35e933f00ba74125b87a077c4dcfa28ab31ee638104be12a879bd7979)",
+      "evidence/GATE-TIMEOUT-1200/qualification.json (created, this file)"
+    ],
+    "exactly_three_files_written": true
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven; extreme-ambient-exceeds-1200 stays an owner call outside §16-B (OQ-01); OQ-02 registered-not-fixed; OQ-03 registered. The verdict lives in reviewer_report.md (sha256 2a66abae6f0432491bdbeb898934a07af8aeac04050011d5539e477f9f1ceb06, 7370 B, pinned by reviewer_report.md.sha256) at line 6 and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own."
+}

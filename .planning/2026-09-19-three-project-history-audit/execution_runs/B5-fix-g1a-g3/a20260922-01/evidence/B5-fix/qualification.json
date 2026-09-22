@@ -1,0 +1,115 @@
+{
+  "card_id": "B5-fix-g1a-g3",
+  "attempt_id": "a20260922-01",
+  "revision": "r1",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session; never the implementer)",
+    "scope_is_scoped_not_clean": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "scope_statement": {
+    "statement": "Acceptance is SCOPED, not clean (reviewer_report.md line 4; status recommendation line 122). The reviewer's scope was sampled, from-scratch re-execution and targeted reads on their own copies (33 fresh child processes): full M25-M28 arm re-run proving the G1-a three-way routing load-bearing (20/20 raw rcs match: E=0, F=3, G=2 no_verdict, S=1, B=1); independent G3 reader-expression re-eval proving the F-1 break reproduced on B5's output and closed on this card's output; a 896-hit precedence grep proving zero affirmative precedence assertions (G2 stays 留置); F-3 arm parse on all 8 batch evidence files; F-7 append-proof fields; boundary spot-checks (5/5 sampled frozen cases, 2/2 runner byte-identity pairs, production anchors, git status 0 lines over M01..M31, 0 B5-attempt writes in the review window, all 17 recomputed card pins OK); and fresh M01-M04 measurement confirming uniformity stands at 27/31.",
+    "why_not_blocking": "The reviewer's numbered findings 1-5 all verify the card's claims on their sampled domains; finding 6 is B5-internal (adjudicated, external erratum); findings 7-9 are informational/owner-call. Nothing in the report contradicts the card's exit claims.",
+    "not_verified_by_review": [
+      "arm values on the six authorized batches beyond the sampled M25-M28 cards and M14 - read from evidence, not re-executed",
+      "frozen cases.json beyond 5/31 sampled; the 68-runner census beyond 2 byte-identity pairs",
+      "scripts/verify_append_fixed.py and scripts/verify_boundaries.py not re-run by the reviewer (would write into the attempt)",
+      "chain-proof prefixes PRE/POST1 accepted from the record; only the current-file endpoint re-hashed live",
+      "no exhaustive static audit of every rc literal in the patched runner",
+      "attribution of the 2026-09-21T23:19:55 content-preserving START_HERE.md touch - undetermined (CF-B5FIX-2)"
+    ],
+    "carried_residuals": [
+      "CF-B5FIX-1 (from finding ⑤, adjudicated) - B5 sealed handoff's binding.json record is stale (06ff8064…/20819 B vs actual 96733875…/22652 B, +75 s); B5's deliverable_consistency.json reported PASS over a declared-vs-actual digest mismatch. Disposition: no B5 edit; external superseded-retention erratum (STALE-SUPERSEDED, dual value + timeline); authoritative content = on-disk binding.json + deliverable_consistency.json; two B5-era process defects registered (carrier rewritten after seal; consistency-checker coverage gap). Residual uncertainty (reviewer's own): old 20819-B bytes unrecoverable; 'correct at write time' inferred from mtime ordering.",
+      "CF-B5FIX-2 (informational) - START_HERE.md mtime 2026-09-21T23:19:55 postdates B5's append proof and review report yet content still equals POST2 a9cb5a4a…: one content-unchanged touch, not by this card (its writes are 09-22 08:31+). No remediation needed (content pinned); attribution open.",
+      "CF-B5FIX-3 (informational) - F-8 (repeated frozen-table header row in B5's append) not on this card's list, undispositioned; byte-pure-append already covered by the chain proof (APPEND_ONLY=true)."
+    ]
+  },
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "verdict_line": 4,
+    "first_line_of_verdict": "- **Verdict**: **`accepted_scoped`**",
+    "line_range_inclusive_1_based": [1, 122],
+    "verdict_line_range_inclusive": [4, 4],
+    "status_recommendation_line": 122,
+    "findings_section_line_range_inclusive": [99, 109],
+    "unverified_section_line_range_inclusive": [111, 118],
+    "finding_5_adjudication_line_range_inclusive": [72, 85],
+    "byte_offsets": {
+      "start": 0,
+      "end_inclusive": 16709,
+      "end_exclusive": 16710
+    },
+    "carrier_file_sha256": "69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e",
+    "carrier_file_bytes": 16710,
+    "carrier_file_total_lines": 122,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only; single trailing LF",
+    "verdict_line_byte_region": {"start": 232, "end_inclusive": 267, "length": 36, "sha256": "193fab116c4e3e422f240a78183b0d48f5df4e65fdaf24a4e450b1a4c0092a82"},
+    "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 16708, "length": 16709, "sha256": "d5f908edc97ac24559e60571091754c079fd4d9da2adedf6c8d2ca83bd2ea940"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the terminating LF unless stated",
+    "pin_sidecar": {
+      "file": "reviewer_report.md.sha256",
+      "present": true,
+      "bytes": 85,
+      "sha256": "f15f60eaf40f8a9b857563e8564a0657cd88fd43528a34c7a94ba4938ec73a0b",
+      "content": "69ea3b033d2278977b6956b953e1f9113dc45c0ee5da0fd72fa4e8a81620130e  reviewer_report.md",
+      "verified": "sidecar sha matches an independent re-hash of reviewer_report.md at landing time"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by the bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核), not by the implementer",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "F-1/G3 fix: M13-M16 patched runner emits BOTH facts keys (declared_expectations + declared_expectations_in_cases_json), equal values; historical reader expression evaluates OK on baseline and on the reviewer's fresh output, KeyError reproduced on B5's output",
+      "F-2/G1-a fix: M25-M28 patched runner routes the whole-set gate three ways (structural rc=1 / declaration unusable rc=2+no_verdict evaluated before judging / usable-but-different rc=3), load-bearing in the exit decision, zero rc constants renumbered (20/20 raw rcs re-verified by the reviewer)",
+      "F-3/F-7 verified: evidence arms populated with real rc (no nulls in fields read); append proof 19/19 distinct anchors, APPEND_ONLY=true",
+      "boundaries on the reviewer's sample: frozen cases/runners/production anchors/git clean, 0 B5-attempt writes, all recomputed pins OK",
+      "G2 conflict correctly registered as 留置 with zero precedence assertions (owner call, stays open)"
+    ],
+    "not_granted": [
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production-tree write permission",
+      "any edit to B5's sealed attempt (CF-B5FIX-1's disposition is an EXTERNAL erratum; B5's stale record stays stale)",
+      "re-execution-based assurance for the six authorized batches' unsampled cards (read-only evidence reliance)",
+      "resolution of the START_HERE.md 23:19 touch attribution (CF-B5FIX-2) or of F-8's content (CF-B5FIX-3)",
+      "M01-M04 patching (owner call; uniformity remains 27/31)"
+    ]
+  },
+  "carried_findings": [
+    {"id": "CF-B5FIX-1", "origin": "reviewer finding ⑤ (§7), adjudicated", "severity": "informational for this card; external erratum", "summary": "B5 sealed handoff's binding.json record stale (06ff8064…/20819 B @21:51:06 vs actual 96733875…/22652 B @21:52:21, +75 s); B5's deliverable_consistency.json (21:52:29) records the new value yet reports PASS/problems:[] ⇒ B5's checker hashes but never cross-checks handoff's declared digests.", "disposition": "No B5 edit. External superseded-retention erratum: binding entry marked STALE-SUPERSEDED (dual value + timeline), retained verbatim; authoritative = on-disk binding.json + deliverable_consistency.json; two B5-era process defects registered (post-seal carrier rewrite; checker coverage gap). Residual: old 20819-B bytes unrecoverable, 'correct at write time' inferred from mtime order."},
+    {"id": "CF-B5FIX-2", "origin": "reviewer numbered finding 7", "severity": "informational", "summary": "START_HERE.md mtime 2026-09-21T23:19:55 postdates B5's append proof (21:45:50) and B5's review report (23:00:40) but content still equals POST2 a9cb5a4a… ⇒ one content-unchanged touch; not this card (its writes are 09-22 08:31+).", "disposition": "No remediation (content pinned). Attribution open - parent to ask who touched it at 23:19."},
+    {"id": "CF-B5FIX-3", "origin": "reviewer numbered finding 9 + handoff F-8", "severity": "informational", "summary": "F-8 (repeated frozen-table header row in B5's appended section) not on this card's finding list, undispositioned.", "disposition": "No action; byte-pure-append covered by the chain proof (APPEND_ONLY=true). Owner call if F-8's content is to be addressed."}
+  ],
+  "eligibility_statement": {
+    "formula_classification": "Test/audit-infrastructure only: G3 dual-key emission and G1-a three-way routing in patched runner copies + evidence arm population. No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "production_write": "NOT GRANTED. Production read-only throughout (production anchors re-asserted unchanged; 0 production bytes written by this landing pass).",
+    "b5_attempt": "NOT EDITED. B5's sealed attempt is read-only; its stale binding record stays stale and only its disposition is registered (CF-B5FIX-1)."
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "created this qualification record for the independent reviewer's byte-pinned verdict; landed the carrier fields; registered 3 carried findings; created review.md (transcribed verdict block, no acceptance of its own); appended status_authority/bookkeeping/carried_findings to handoff.json; wrote 0 bytes to reviewer_report.md and its sidecar",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "status_transition": "review_pending -> accepted_scoped"
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven. The verdict lives in reviewer_report.md (sha256 69ea3b03…, 16710 B, pinned by reviewer_report.md.sha256) and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own."
+}

@@ -1,0 +1,1162 @@
+{
+  "card": "I-14-E",
+  "attempt": "a20260919-01",
+  "status": "review_pending (implementer does not self-sign)",
+  "scope_note": "fail-able cases are reproductions of the product test's own timing assumption failing under measured load.  No product code and no product test was changed; the GREEN path is proposed, not applied.",
+  "cases": [
+    {
+      "case_id": "I-14-E-FC-1",
+      "node": "child_without_runtime",
+      "nodeid": "tests/contract/test_source_catalog_worker_bootstrap.py::test_child_without_runtime_session_is_terminated_and_restarted",
+      "timing_assumption": "-WorkerHangTimeoutSeconds 0.5 with -ChildPollMilliseconds 100: a child with no matching runtime session that is still alive at a poll boundary after 0.5 s of uptime is killed as session_start_timeout",
+      "measured_window": {
+        "quiet": {
+          "n": 30,
+          "min": 0.44,
+          "p25": 0.511,
+          "median": 0.6905,
+          "p75": 0.852,
+          "p90": 1.426,
+          "p95": 1.545,
+          "p99": 1.721,
+          "max": 1.721,
+          "count_ge_050": 24,
+          "count_ge_060": 16,
+          "count_ge_080": 11
+        },
+        "cpu8": {
+          "n": 25,
+          "min": 0.753,
+          "p25": 1.213,
+          "median": 1.351,
+          "p75": 1.532,
+          "p90": 2.059,
+          "p95": 2.148,
+          "p99": 2.303,
+          "max": 2.303,
+          "count_ge_050": 25,
+          "count_ge_060": 25,
+          "count_ge_080": 24
+        },
+        "startproc_quiet": {
+          "n": 8,
+          "min": 0.8,
+          "p25": 0.85,
+          "median": 0.954,
+          "p75": 1.047,
+          "p90": 1.117,
+          "p95": 1.164,
+          "p99": 1.164,
+          "max": 1.164,
+          "count_ge_050": 8,
+          "count_ge_060": 8,
+          "count_ge_080": 8
+        },
+        "frozen_band_same_quantity": {
+          "note": "uptime_seconds of the attempt that exited cleanly (behaviour 2 = immediate exit); this is the quantity the test's 0.5 s hang timeout must exceed",
+          "all": {
+            "n": 48,
+            "min": 0.113,
+            "median": 0.172,
+            "max": 0.622
+          },
+          "passed_runs": {
+            "n": 36,
+            "min": 0.113,
+            "median": 0.2245,
+            "max": 0.622
+          },
+          "failed_runs": {
+            "n": 12,
+            "min": 0.116,
+            "median": 0.1495,
+            "max": 0.579
+          }
+        }
+      },
+      "reproductions_this_attempt": [
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 11,
+          "wall_seconds": 24.235,
+          "kill_uptimes": [
+            0.613,
+            0.538,
+            0.546,
+            0.562,
+            0.586,
+            0.619,
+            0.619,
+            0.556,
+            0.56,
+            0.579,
+            0.563
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 12,
+          "wall_seconds": 22.858,
+          "kill_uptimes": [
+            0.679,
+            0.554,
+            0.61,
+            0.572,
+            0.593,
+            0.517,
+            0.932,
+            0.588,
+            0.588,
+            0.607,
+            0.549
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 11,
+          "wall_seconds": 22.313,
+          "kill_uptimes": [
+            0.603,
+            0.6,
+            0.571,
+            0.602,
+            0.573,
+            0.557,
+            0.579,
+            0.6,
+            0.58,
+            0.571
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 8,
+          "wall_seconds": 22.649,
+          "kill_uptimes": [
+            0.659,
+            0.7,
+            0.527,
+            0.544,
+            0.529,
+            0.53,
+            0.653
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "E   AssertionError: assert 8 == 2",
+          "child_started_count": 8,
+          "wall_seconds": 13.059,
+          "kill_uptimes": [
+            0.532,
+            0.566,
+            0.542,
+            0.573,
+            0.504,
+            0.52,
+            0.557
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 14,
+          "wall_seconds": 22.263,
+          "kill_uptimes": [
+            0.622,
+            0.506,
+            0.553,
+            0.505,
+            0.529,
+            0.617,
+            0.526,
+            0.602,
+            0.62,
+            0.553,
+            0.504,
+            0.553,
+            0.57,
+            0.584
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 14,
+          "wall_seconds": 22.636,
+          "kill_uptimes": [
+            0.626,
+            0.541,
+            0.561,
+            0.618,
+            0.583,
+            0.558,
+            0.571,
+            0.613,
+            0.601,
+            0.519,
+            0.557,
+            0.577,
+            0.516,
+            0.555
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 13,
+          "wall_seconds": 20.726,
+          "kill_uptimes": [
+            0.553,
+            0.547,
+            0.521,
+            0.55,
+            0.523,
+            0.509,
+            0.602,
+            0.597,
+            0.585,
+            0.601,
+            0.558,
+            0.528,
+            0.553
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 12,
+          "wall_seconds": 24.911,
+          "kill_uptimes": [
+            0.72,
+            0.507,
+            0.588,
+            0.56,
+            0.607,
+            0.521,
+            0.502,
+            0.551,
+            0.587,
+            0.662,
+            0.512,
+            0.55
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 2,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "E   AssertionError: assert 7 == 2",
+          "child_started_count": 7,
+          "wall_seconds": 12.709,
+          "kill_uptimes": [
+            0.548,
+            0.56,
+            0.55,
+            0.542,
+            0.546,
+            0.557
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 2,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 14,
+          "wall_seconds": 24.199,
+          "kill_uptimes": [
+            0.518,
+            0.557,
+            0.564,
+            0.503,
+            0.603,
+            0.712,
+            0.521,
+            0.54,
+            0.667,
+            0.537,
+            0.566,
+            0.606,
+            0.563
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 13,
+          "wall_seconds": 24.503,
+          "kill_uptimes": [
+            0.519,
+            0.502,
+            0.55,
+            0.542,
+            0.532,
+            0.615,
+            0.549,
+            0.54,
+            0.583,
+            0.526,
+            0.515,
+            0.549,
+            0.605
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 2,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 13,
+          "wall_seconds": 22.665,
+          "kill_uptimes": [
+            0.508,
+            0.58,
+            0.612,
+            0.559,
+            0.595,
+            0.543,
+            0.544,
+            0.576,
+            0.613,
+            0.509,
+            0.555,
+            0.529
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 2,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 15,
+          "wall_seconds": 19.736,
+          "kill_uptimes": [
+            0.599,
+            0.557,
+            0.565,
+            0.598,
+            0.513,
+            0.592,
+            0.631,
+            0.53,
+            0.585,
+            0.53,
+            0.638,
+            0.522,
+            0.522,
+            0.539
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 13,
+          "wall_seconds": 26.865,
+          "kill_uptimes": [
+            0.581,
+            0.553,
+            0.537,
+            0.51,
+            0.615,
+            0.556,
+            0.523,
+            0.599,
+            0.567,
+            0.542,
+            0.735,
+            0.614
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 2,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 11,
+          "wall_seconds": 25.014,
+          "kill_uptimes": [
+            0.595,
+            0.51,
+            0.529,
+            0.531,
+            0.535,
+            0.55,
+            0.6,
+            0.549,
+            0.59,
+            0.577,
+            0.682
+          ]
+        },
+        {
+          "band": "child-quiet",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 16,
+          "wall_seconds": 21.342,
+          "kill_uptimes": [
+            0.595,
+            0.514,
+            0.503,
+            0.559,
+            0.568,
+            0.542,
+            0.583,
+            0.516,
+            0.531,
+            0.528,
+            0.645,
+            0.603,
+            0.617,
+            0.502,
+            0.543
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 11,
+          "wall_seconds": 22.24,
+          "kill_uptimes": [
+            0.58,
+            0.587,
+            0.587,
+            0.633,
+            0.537,
+            0.503,
+            0.53,
+            0.599,
+            0.614,
+            0.552
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 9,
+          "wall_seconds": 22.554,
+          "kill_uptimes": [
+            0.771,
+            0.571,
+            0.578,
+            0.589,
+            0.557,
+            0.564,
+            0.556,
+            0.516
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 4,
+          "wall_seconds": 32.217,
+          "kill_uptimes": [
+            0.922,
+            0.833,
+            0.635,
+            0.513
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 1,
+          "wall_seconds": 28.917,
+          "kill_uptimes": []
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 10,
+          "wall_seconds": 23.953,
+          "kill_uptimes": [
+            0.612,
+            0.546,
+            0.627,
+            0.554,
+            0.551,
+            0.566,
+            0.556,
+            0.602,
+            0.591,
+            0.627
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "timeout",
+          "signature": "other",
+          "child_started_count": 9,
+          "wall_seconds": 180.171,
+          "kill_uptimes": [
+            0.651,
+            0.535,
+            0.591,
+            0.535,
+            0.568,
+            0.633,
+            0.553,
+            0.503,
+            0.607
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 6,
+          "wall_seconds": 27.164,
+          "kill_uptimes": [
+            0.793,
+            0.609,
+            0.501,
+            0.688,
+            0.606
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 7,
+          "wall_seconds": 30.158,
+          "kill_uptimes": [
+            0.817,
+            0.526,
+            0.503,
+            0.637,
+            0.537,
+            0.513
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 2,
+          "wall_seconds": 30.796,
+          "kill_uptimes": [
+            0.514
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "timeout",
+          "signature": "other",
+          "child_started_count": 3,
+          "wall_seconds": 180.116,
+          "kill_uptimes": [
+            0.597,
+            0.83,
+            1.134
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 10,
+          "wall_seconds": 44.834,
+          "kill_uptimes": [
+            0.67,
+            0.548,
+            0.632,
+            0.648,
+            0.616,
+            0.514,
+            0.518,
+            0.618,
+            0.559
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "timeout",
+          "signature": "other",
+          "child_started_count": 8,
+          "wall_seconds": 180.084,
+          "kill_uptimes": [
+            0.746,
+            0.557,
+            0.534,
+            0.551,
+            0.516,
+            0.62,
+            0.591,
+            0.503
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 3,
+          "wall_seconds": 30.422,
+          "kill_uptimes": [
+            0.656,
+            0.589
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 2,
+          "wall_seconds": 34.224,
+          "kill_uptimes": [
+            0.769
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 1,
+          "wall_seconds": 37.666,
+          "kill_uptimes": [
+            0.521
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 9,
+          "wall_seconds": 26.93,
+          "kill_uptimes": [
+            0.846,
+            0.617,
+            0.562,
+            0.606,
+            0.587,
+            0.583,
+            0.508,
+            0.622,
+            0.53
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "timeout",
+          "signature": "other",
+          "child_started_count": 11,
+          "wall_seconds": 180.102,
+          "kill_uptimes": [
+            0.774,
+            0.62,
+            0.595,
+            0.59,
+            0.597,
+            0.505,
+            0.509,
+            0.554,
+            0.563,
+            0.604,
+            0.581
+          ]
+        },
+        {
+          "band": "child-cpu8",
+          "pass": 2,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 7,
+          "wall_seconds": 28.018,
+          "kill_uptimes": [
+            0.768,
+            0.556,
+            0.891,
+            0.818,
+            0.614,
+            0.635
+          ]
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T0",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 1,
+          "wall_seconds": 33.958,
+          "kill_uptimes": []
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T4",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 0,
+          "wall_seconds": 35.651,
+          "kill_uptimes": []
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 1,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 5,
+          "wall_seconds": 30.759,
+          "kill_uptimes": [
+            0.643,
+            0.555,
+            0.54,
+            0.601,
+            0.553
+          ]
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T0",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 5,
+          "wall_seconds": 27.074,
+          "kill_uptimes": [
+            0.698,
+            0.58,
+            0.602,
+            0.512
+          ]
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T4",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 9,
+          "wall_seconds": 24.764,
+          "kill_uptimes": [
+            0.657,
+            0.575,
+            0.583,
+            0.695,
+            0.596,
+            0.591,
+            0.675,
+            0.546,
+            0.581
+          ]
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 2,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 6,
+          "wall_seconds": 31.932,
+          "kill_uptimes": [
+            0.506,
+            0.6,
+            0.532,
+            0.605,
+            0.504
+          ]
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T0",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 7,
+          "wall_seconds": 27.112,
+          "kill_uptimes": [
+            2.426,
+            0.509,
+            0.527,
+            0.532,
+            0.591,
+            0.628,
+            0.528
+          ]
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T4",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 10,
+          "wall_seconds": 26.611,
+          "kill_uptimes": [
+            0.764,
+            0.595,
+            0.501,
+            0.511,
+            0.536,
+            0.558,
+            0.546,
+            0.567,
+            0.548,
+            0.599
+          ]
+        },
+        {
+          "band": "child-spawn",
+          "pass": 1,
+          "tree": "T0b",
+          "run": 3,
+          "verdict": "failed",
+          "signature": "launcher-subprocess-TimeoutExpired(15s)",
+          "child_started_count": 11,
+          "wall_seconds": 23.995,
+          "kill_uptimes": [
+            0.736,
+            0.505,
+            0.601,
+            0.513,
+            0.531,
+            0.621,
+            0.546,
+            0.516,
+            0.571,
+            0.582
+          ]
+        }
+      ],
+      "reproduction_count": 44,
+      "minimal_command": "iso/venv/Scripts/python.exe -X utf8 harness/run_band.py --python iso/venv/Scripts/python.exe --repo <CW> --node child_without_runtime --condition quiet --trees T0=iso/T0/src --runs 1 --passes 1 --root %TEMP%/i14e-repro-child --evidence after/repro --out after/repro.json",
+      "artifact_proof": {
+        "child-quiet": {
+          "band": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\after\\band-child-quiet.json",
+          "node": "child_without_runtime",
+          "condition": "quiet",
+          "runs": 18,
+          "causation_classes": {
+            "startup-latency(child alive past the 0.5 s watchdog)": 17,
+            "passed": 1
+          },
+          "events_missing_runs": [],
+          "max_artifact_path_len_overall": 222,
+          "path_len_note": "all artifact paths must stay <= 259 chars for the launcher's redirect/events files; a missing events file WITH an existing .source_catalog is the path-cause signature"
+        },
+        "child-cpu8": {
+          "band": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\after\\band-child-cpu8.json",
+          "node": "child_without_runtime",
+          "condition": "cpu",
+          "runs": 18,
+          "causation_classes": {
+            "startup-latency(child alive past the 0.5 s watchdog)": 17,
+            "no-watchdog-kill-observed": 1
+          },
+          "events_missing_runs": [],
+          "max_artifact_path_len_overall": 219,
+          "path_len_note": "all artifact paths must stay <= 259 chars for the launcher's redirect/events files; a missing events file WITH an existing .source_catalog is the path-cause signature"
+        },
+        "child-spawn": {
+          "band": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\after\\band-child-spawn.json",
+          "node": "child_without_runtime",
+          "condition": "spawn",
+          "runs": 9,
+          "causation_classes": {
+            "no-watchdog-kill-observed": 1,
+            "supervisor-start-latency(no child_started seen)": 1,
+            "startup-latency(child alive past the 0.5 s watchdog)": 7
+          },
+          "events_missing_runs": [],
+          "max_artifact_path_len_overall": 222,
+          "path_len_note": "all artifact paths must stay <= 259 chars for the launcher's redirect/events files; a missing events file WITH an existing .source_catalog is the path-cause signature"
+        }
+      },
+      "diagnosis": "the test's 0.5 s hang timeout is compared against a quantity (fake child launch -> exit, and launch -> first side effect) whose measured distribution straddles that value: 24/30 quiet samples >= 0.5 s and 25/25 under +8 burners, with a measured upper tail of 1.7-2.5 s.  Every extra watchdog kill adds a child_started, so `assert ... == 2` fails; under heavier load the restarts continue until the test's own 15 s subprocess timeout fires",
+      "green_would_require": "a test-side change (the card forbids it here): derive the hang timeout from an in-test measurement of the child's launch latency with margin - see after/proposed-test-side-change.md"
+    },
+    {
+      "case_id": "I-14-E-FC-2",
+      "node": "logon_wrapper_quoted",
+      "nodeid": "tests/contract/test_source_catalog_worker_bootstrap.py::test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
+      "timing_assumption": "subprocess.run(wrapper, timeout=15) + a 15 s wait for the detached supervisor's first child_started + a 20 s wait for supervisor and child to disappear, against a fake child that sleeps 10 s",
+      "measured_window": {
+        "quiet": {
+          "wrapper_seconds": {
+            "n": 8,
+            "min": 3.254,
+            "median": 4.721,
+            "max": 5.734,
+            "count_ge_budget": 0
+          },
+          "events_seconds": {
+            "n": 8,
+            "min": 5.657,
+            "median": 8.48,
+            "max": 9.386,
+            "count_ge_budget": 0
+          },
+          "exit_seconds": {
+            "n": 8,
+            "min": 15.548,
+            "median": 19.379,
+            "max": 21.486,
+            "count_ge_budget": 4
+          }
+        },
+        "cpu8": {
+          "wrapper_seconds": {
+            "n": 8,
+            "min": 3.88,
+            "median": 9.687000000000001,
+            "max": 10.921,
+            "count_ge_budget": 0
+          },
+          "events_seconds": {
+            "n": 8,
+            "min": 9.556,
+            "median": 15.0245,
+            "max": 15.075,
+            "count_ge_budget": 6
+          },
+          "exit_seconds": {
+            "n": 2,
+            "min": 21.194,
+            "median": 21.3935,
+            "max": 21.593,
+            "count_ge_budget": 2
+          }
+        }
+      },
+      "measured_budgets": {
+        "wrapper_timeout_seconds": 15.0,
+        "events_budget_seconds": 15.0,
+        "exit_budget_seconds": 20.0
+      },
+      "reproductions_this_attempt": [],
+      "reproduction_count": 0,
+      "probe_level_reproductions": [
+        {
+          "probe": "wrapper-latency-cpu8",
+          "sample": 1,
+          "wrapper_seconds": 8.508,
+          "events_seconds": 15.018,
+          "statuses": null,
+          "budget_seconds": 15.0
+        },
+        {
+          "probe": "wrapper-latency-cpu8",
+          "sample": 2,
+          "wrapper_seconds": 9.477,
+          "events_seconds": 15.06,
+          "statuses": null,
+          "budget_seconds": 15.0
+        },
+        {
+          "probe": "wrapper-latency-cpu8",
+          "sample": 3,
+          "wrapper_seconds": 10.461,
+          "events_seconds": 15.022,
+          "statuses": null,
+          "budget_seconds": 15.0
+        },
+        {
+          "probe": "wrapper-latency-cpu8",
+          "sample": 4,
+          "wrapper_seconds": 10.422,
+          "events_seconds": 15.075,
+          "statuses": null,
+          "budget_seconds": 15.0
+        },
+        {
+          "probe": "wrapper-latency-cpu8",
+          "sample": 5,
+          "wrapper_seconds": 10.921,
+          "events_seconds": 15.027,
+          "statuses": null,
+          "budget_seconds": 15.0
+        },
+        {
+          "probe": "wrapper-latency-cpu8",
+          "sample": 6,
+          "wrapper_seconds": 9.171,
+          "events_seconds": 15.039,
+          "statuses": [
+            "starting"
+          ],
+          "budget_seconds": 15.0
+        }
+      ],
+      "probe_level_reproduction_count": 6,
+      "end_to_end_status": "the node itself passed 16/16 (8 quiet + 8 with +8 burners), so at the node level this attempt found NO fail-able case; the direct window probe did cross the 15 s events budget in 6/8 loaded samples.  The two disagree and are reported side by side rather than merged into one claim",
+      "minimal_command": "iso/venv/Scripts/python.exe -X utf8 harness/measure_wrapper_latency.py --python iso/venv/Scripts/python.exe --condition cpu --burners 8 --samples 8 --root %TEMP%/i14e-repro-logon --out after/repro-logon.json",
+      "artifact_proof": {
+        "logon-quiet": {
+          "band": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\after\\band-logon-quiet.json",
+          "node": "logon_wrapper_quoted",
+          "condition": "quiet",
+          "runs": 8,
+          "causation_classes": {
+            "passed": 8
+          },
+          "events_missing_runs": [],
+          "max_artifact_path_len_overall": 245,
+          "path_len_note": "all artifact paths must stay <= 259 chars for the launcher's redirect/events files; a missing events file WITH an existing .source_catalog is the path-cause signature"
+        },
+        "logon-cpu8": {
+          "band": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E\\a20260919-01\\after\\band-logon-cpu8.json",
+          "node": "logon_wrapper_quoted",
+          "condition": "cpu",
+          "runs": 8,
+          "causation_classes": {
+            "passed": 8
+          },
+          "events_missing_runs": [],
+          "max_artifact_path_len_overall": 242,
+          "path_len_note": "all artifact paths must stay <= 259 chars for the launcher's redirect/events files; a missing events file WITH an existing .source_catalog is the path-cause signature"
+        }
+      },
+      "diagnosis": "the wrapper itself keeps a 1.4x margin even under +8 burners, but the detached supervisor's first child_started did not appear inside the 15 s budget in 6/8 loaded probe samples (only `starting` was written), and the 20 s exit budget was crossed in 4/8 quiet samples by this probe's own upper-bound timing (the probe spends up to two PowerShell spawns per poll, so treat the exit numbers as upper bounds)",
+      "green_would_require": "derive all three budgets from a measured wrapper/supervisor latency instead of the fixed 15/15/20 s - see after/proposed-test-side-change.md"
+    }
+  ],
+  "determinism_verdict": {
+    "question": "can the jitter band be characterised deterministically, or is it a load-dependent distribution?",
+    "verdict": "distributional",
+    "why": [
+      "the discriminating quantity is a latency (fake child launch -> exit), and its measured distribution moves with machine load: quiet median 0.691 s vs +8 burners median 1.351 s (popen), with maxima 1.72 s / 2.30 s",
+      "the product test does not compare against the latency directly: it compares against 'still alive at a poll boundary after 0.5 s', so the effective boundary carries a ~100 ms ambiguity window from the poll cadence - the frozen band itself contains a run that exited cleanly at uptime 0.622 s and runs killed at 0.507 s",
+      "therefore no single threshold constant is stable across loads: a value that makes the node green on an idle machine still fails on a loaded one (this attempt: near-100%% failures with the same test file and byte-identical trees)"
+    ],
+    "what_is_deterministic": [
+      "the mechanism (watchdog verdict on a child that is alive at a poll boundary after 0.5 s of uptime, counted through the number of child_started events)",
+      "the direction of the load response (more load -> higher latency -> more watchdog kills -> more restarts)",
+      "the failure signature ladder: assert 3 == 2 / 4 == 2 at moderate load, then launcher-subprocess-TimeoutExpired(15 s) at heavy load"
+    ],
+    "what_is_not_deterministic": [
+      "the pass/fail outcome of any single run, which depends on where the child's exit lands relative to the poll cadence",
+      "any fixed timeout constant chosen without measuring the latency distribution on the target machine"
+    ]
+  }
+}

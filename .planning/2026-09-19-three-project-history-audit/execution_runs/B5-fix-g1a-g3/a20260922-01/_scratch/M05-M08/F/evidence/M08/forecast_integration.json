@@ -1,0 +1,63 @@
+{
+ "card_id": "M08",
+ "purpose": "READ-ONLY inspection of the production forecast entry point; this is NOT an adaptation, NOT a scenario set and NOT accuracy evidence",
+ "entry_point_read": {
+  "path": "scripts/forecast/segments.py",
+  "line": 61,
+  "function": "calculate_model_path(model, base_revenue, driver_ids, parameter_index, years, scenario)",
+  "sha256_at_inspection": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd",
+  "what_it_does": "validates model/scenario, resolves each required and optional driver from registered parameter IDs into a per-year series, then feeds the same registry calculator that calculate_registered_model uses",
+  "scenario_keys": [
+   "low",
+   "base",
+   "high"
+  ]
+ },
+ "what_was_exercised": "nothing was executed through this entry point; only its source was read",
+ "registry_metadata_observed": {
+  "model_id": "project_backlog",
+  "required": [
+   "opening_backlog",
+   "bookings",
+   "cancellations",
+   "contract_changes",
+   "closing_backlog"
+  ],
+  "optional": [
+   "backlog_remeasurements"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "opening_backlog": "backlog",
+   "bookings": "backlog",
+   "cancellations": "backlog",
+   "contract_changes": "backlog",
+   "closing_backlog": "backlog",
+   "backlog_remeasurements": "backlog"
+  },
+  "ratio_drivers": [],
+  "driver_bounds": {
+   "backlog_remeasurements": [
+    null,
+    null
+   ]
+  },
+  "formula": "revenue = opening_backlog + bookings - cancellations + contract_changes + backlog_remeasurements - closing_backlog"
+ },
+ "silent_zero_fill_hazard": {
+  "mechanism": "scripts/model_registry.py:335 uses drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)); when an optional driver is omitted AND is absent from spec.defaults, its series silently becomes 0.0 rather than raising",
+  "optional_drivers_with_NO_explicit_default": [
+   "backlog_remeasurements"
+  ],
+  "required_drivers_absent_from_defaults_for_this_model": [
+   "opening_backlog",
+   "bookings",
+   "cancellations",
+   "contract_changes",
+   "closing_backlog"
+  ],
+  "why_it_matters_here": "backlog_remeasurements silently becomes 0 when omitted - this is the exact field the card and the audit ledger require to be explicit, because on the wrong convention a missing remeasurement becomes fictitious revenue",
+  "status": "OPEN QUESTION for the owner / professional reviewer (OQ-04); no product change was made and no position is asserted"
+ },
+ "status": "unmapped (D is not granted); recorded for the I-10-A successor only"
+}

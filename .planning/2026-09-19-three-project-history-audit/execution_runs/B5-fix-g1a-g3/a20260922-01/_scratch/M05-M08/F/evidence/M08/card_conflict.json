@@ -1,0 +1,83 @@
+{
+ "card_id": "M08",
+ "model_id": "project_backlog",
+ "status": "OPEN - card stops here until adjudicated",
+ "authority_rule": "execution_v2/README.md:20 - card Markdown and the parent Plan jointly define the obligation; if they conflict, STOP the affected card and correct the index; you may not pick whichever document is easier to pass",
+ "conflicting_texts": {
+  "card": {
+   "path": "execution_v2/card_M08.md",
+   "lines": "L8 (units) and L42 (the printed worked example)",
+   "text_actually_printed_at_L42": "手算：100+40−5−10−15−60=50；−15重估必须剔除。 **期望输出：`[50]`。**",
+   "important_correction_F_M08_04": "card_M08.md L42 does NOT print a symbolic formula at all. Revision r1 quoted a symbolic '- contract_changes + backlog_remeasurements - closing' line as if it were on L42; that string is NOT in the card. The card prints only the arithmetic expression above, whose answer 50 implies subtracting the magnitude 10 of contract_changes (reading A) and which is also the answer the upstream reading C produces for this particular input.",
+   "L8_units_line": "单位/口径：订单金额全部同币种、范围、确认口径；变更与重估为带符号金额。",
+   "reading_A_is_the_literal_arithmetic": true,
+   "text_actually_printed_at_L42_sha256": "84d6013cbd1d2291d0e45bdf6ff623a72f0bb10fdc8053bbb47860c8561bb26f",
+   "card_M08_md_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_v2\\card_M08.md",
+   "card_M08_md_sha256": "2ed06720e45f692197a873ff652f17d47615a2fc698197b86377f332718c36b5",
+   "card_M08_md_line": 42
+  },
+  "upstream_audit_document": {
+   "path": "docs/buy_side_model_audit_2026-09-18.md",
+   "line": 42,
+   "text": "期初+新签−取消+合同变更+非履约重估−期末",
+   "also_quoted_verbatim_in": "reviews/revenue/model_ledger.jsonl RF-MODEL-project_backlog.original_claim"
+  },
+  "implementation": {
+   "path": "scripts/model_registry.py",
+   "line": 228,
+   "text": "revenue = opening_backlog + bookings - cancellations + contract_changes + backlog_remeasurements - closing_backlog",
+   "calculator": "scripts/model_registry.py:102 _project_backlog (math.fsum with +contract_changes)"
+  }
+ },
+ "three_readings": {
+  "A_card_arithmetic": {
+   "positive": 50,
+   "probe_plus10": 65,
+   "probe_minus20": 55
+  },
+  "B_card_formula_symbols": {
+   "positive": 70,
+   "probe_plus10": 65,
+   "probe_minus20": 95
+  },
+  "C_upstream_and_implementation": {
+   "positive": 50,
+   "probe_plus10": 85,
+   "probe_minus20": 55
+  },
+  "source_of_each_reading": {
+   "A_card_arithmetic": "card_M08.md L42 printed arithmetic 100+40-5-10-15-60=50",
+   "B_card_formula_symbols": "NOT printed on L42; derived by applying the L8 signed-units convention to the minus sign that L42's arithmetic implies",
+   "C_upstream_and_implementation": "docs/buy_side_model_audit_2026-09-18.md:42, reviews/revenue/model_ledger.jsonl line 8 original_claim, and scripts/model_registry.py:228"
+  }
+ },
+ "measured_implementation": {
+  "probe_plus10": 85.0,
+  "probe_minus20": 55.0,
+  "identified_reading": "C_upstream_and_implementation"
+ },
+ "what_the_implementer_did": [
+  "kept the card's frozen expectation [50] and ran it as-is",
+  "recorded both sign probes as non-gating observations",
+  "recorded formula as blocked in qualification.json",
+  "made NO product change and NO oracle change"
+ ],
+ "what_the_owner_must_decide": [
+  "which reading is authoritative for project_backlog.contract_changes",
+  "if reading C: correct card_M08.md L42 and the index (model_cards.md, dispatch.md)",
+  "if reading A or B: say so explicitly, because that implies an implementation change with the existing tests and the upstream audit document also needing revision"
+ ],
+ "substantive_conflict_preserved": "The substantive conflict is unchanged by this correction: the ONLY text the card prints (the arithmetic whose answer is 50) is consistent with subtracting the magnitude of contract_changes, while all three upstream/implementation texts add it as a signed amount; the two conventions disagree on any input whose contract change has a sign that the frozen example does not pin down - demonstrated by the two probes.",
+ "reviewer_verdict": {
+  "verdict": "blocked is correct; do NOT convert to reading C and re-run to a pass",
+  "date_context": "independent review of attempt a20260919-01"
+ },
+ "quotation_correction_r3": {
+  "finding": "F-M08-04 follow-up",
+  "field": "conflicting_texts.card.text_actually_printed_at_L42",
+  "was_r2": "手算：100+40−5−10−15−60=50；−15重估必须剔除。 **期望输出：[50]。**",
+  "now": "手算：100+40−5−10−15−60=50；−15重估必须剔除。 **期望输出：`[50]`。**",
+  "why": "the r2 transcription dropped the backticks around the expected output, so the quotation was still not byte-exact. The r3 value is byte-identical to card_M08.md L42 (card sha256 recorded above). The card itself is owner territory and was NOT modified.",
+  "index_observation_for_the_owner": "all four index copies print the identical reading-A rendering '100+40-5-10-15-60=50': card_M08.md:42, model_cards.md:552, model_cards.json:1930, dispatch.json:5755. The string quoted by the finding ('100+40-5-10+-15-60') appears nowhere. Under reading C the signed rendering would be '100+40-5+-10+-15-60', which is the sign-presentation correction the owner has to make (the answer 50 is unchanged)."
+ }
+}

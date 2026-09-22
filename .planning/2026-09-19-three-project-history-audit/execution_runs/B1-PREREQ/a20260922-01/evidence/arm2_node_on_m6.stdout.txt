@@ -1,0 +1,47 @@
+F.                                                                       [100%]
+================================== FAILURES ===================================
+____ test_rem41_a_present_record_is_verified_even_when_label_is_unattested ____
+
+fake_provider = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6616/b1_work0/fake_attestation_provider.cmd')
+trusted_domain = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/pytest-of-郑曾波/pytest-6616/b1_work0/trusted_signer_public_keys.json')
+
+    def test_rem41_a_present_record_is_verified_even_when_label_is_unattested(
+        fake_provider, trusted_domain
+    ):
+        """REM-41: a record that does NOT verify must be rejected even when the
+        label says `unattested` — present-but-ignored is forbidden (B1 oracle r1
+        §3.1). RED under mutation M6, GREEN on the fixed tree."""
+        _with_provider(fake_provider)
+        os.environ["REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS"] = str(trusted_domain)
+        try:
+            signed = run_forecast(forecast_document())
+            status = _receipt_of(signed)["attestation_status"]
+            assert status == "host_signed", (
+                f"setup failed: label={status!r} "
+                f"provider={os.environ.get('REVENUE_ATTESTATION_PROVIDER')!r} "
+                f"trust={os.environ.get('REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS')!r} "
+                f"last_failure={getattr(__import__('revenue_core'), 'attestation_last_failure', lambda: None)()!r}"
+            )
+            assert isinstance(_record_of(signed), dict), (
+                "a host_signed package must carry a record before this node can "
+                "measure record VERIFICATION (absence means the tree under test "
+                "is the unfixed one, or issuance failed)"
+            )
+    
+            # The attacker move: keep the (present) record, flip the label DOWN to
+            # `unattested`, break the signature, rehash every self-hash.
+            forged = copy.deepcopy(signed)
+            forged["publication_receipt"]["attestation_status"] = "unattested"
+            forged["publication_receipt"]["publication_attestation"]["signature"] = "0" * 128
+            _rehash(forged)
+    
+>           with pytest.raises(ForecastInputError) as excinfo:
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ForecastInputError
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\B1-PREREQ\a20260922-01\test_r13_equiv_rem41.py:97: Failed
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED .planning/2026-09-19-three-project-history-audit/execution_runs/B1-PREREQ/a20260922-01/test_r13_equiv_rem41.py::test_rem41b_positive_control_valid_record_unattested_is_accepted
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/B1-PREREQ/a20260922-01/test_r13_equiv_rem41.py::test_rem41_a_present_record_is_verified_even_when_label_is_unattested
+1 failed, 1 passed in 2.52s

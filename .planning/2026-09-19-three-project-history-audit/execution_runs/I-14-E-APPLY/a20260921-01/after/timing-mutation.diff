@@ -1,0 +1,19 @@
+--- iso/T0/tests/contract/test_source_catalog_worker_bootstrap.py
++++ iso/mutant-clock/tests/contract/test_source_catalog_worker_bootstrap.py
+@@ -991,13 +991,15 @@
+     The derivation is self-evidencing: it writes the observed samples, the derived
+     value and the value the launcher is about to receive into
+     ``tmp_path/hang_timeout_derivation.json`` so that a reviewer can read the
+     measurement back from the run itself instead of trusting the log.
+     """
+     observed = _measure_child_launch_latency_samples(tmp_path)
+-    t0 = max(observed) if observed else 0.0
++    # TIMING MUTATION: pretend the measured latency were 20x smaller.  The derived
++    # budget then collapses to the 2.0 s floor, which is NOT the measured tail.
++    t0 = (max(observed) if observed else 0.0) * 0.05
+     derived = min(
+         _HANG_TIMEOUT_CEILING_SECONDS,
+         max(_HANG_TIMEOUT_FLOOR_SECONDS, _LAUNCH_MARGIN_FACTOR * t0),
+     )
+     hang_timeout_seconds = int(math.ceil(derived))
+     report = {

@@ -1,0 +1,54 @@
+{
+ "card_id": "M30",
+ "model_id": "finite_adoption",
+ "gating": false,
+ "purpose": "measured boundary observations of the documented domains; they are NOT part of the frozen oracle and NOT part of the runner's exit code",
+ "expectation_rule": "each expectation is computed by plain arithmetic in this file before the call and never taken from the product",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts",
+ "probes": [
+  {
+   "id": "PROBE-OPENING-EDGE-ZERO",
+   "why": "the unserved-market quantity domain starts at 0 and the bridge must still balance; expected the same revenue line 200 x 3 = 600 with closing = 0",
+   "expectation_source": "inclusive lower edge of the quantity domain",
+   "expected_if_inclusive": 600.0,
+   "expected_if_exclusive": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "opening_unserved_market": [
+     0
+    ],
+    "closing_unserved_market": [
+     0
+    ]
+   },
+   "mutated_input_repr": "{'opening_unserved_market': [0], 'new_eligible_units': [100], 'removed_eligible_units': [50], 'adopted_units': [200], 'closing_unserved_market': [0], 'net_revenue_per_unit': [3]} years=[2027]",
+   "raised": "ModelRegistryError",
+   "message": "opening_unserved_market stock-flow balance failed: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\scripts\\probe_extra.py\", line 143, in main\n    value = model_registry.calculate_registered_model(\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 156, in calculate\n    output = calculator(rows, years, error)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 118, in _adoption\n    _bridge(rows, index, year, \"opening_unserved_market\", \"closing_unserved_market\",\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            d[\"opening_unserved_market\"] + d[\"new_eligible_units\"]\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            - d[\"removed_eligible_units\"] - d[\"adopted_units\"], error)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 34, in _bridge\n    _equal(rows[index][closing], expected_closing,\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n           f\"{opening} stock-flow balance failed: FY{year}\", error)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 29, in _equal\n    raise error(message)\nmodel_registry.ModelRegistryError: opening_unserved_market stock-flow balance failed: FY2027\n"
+  },
+  {
+   "id": "PROBE-CONTINUITY-TOLERANCE",
+   "why": "the cross-year continuity check uses math.isclose(rel_tol=1e-9, abs_tol=1e-9), so a 1e-10 imbalance in a balancing year must be tolerated while the 1.0 imbalance of CONT-BREAK is rejected; this probe measures the tolerant side",
+   "expectation_source": "math.isclose(rel_tol=1e-9, abs_tol=1e-9)",
+   "expected_if_tolerant": "accepted",
+   "expected_if_exact": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "patch": {
+    "opening_unserved_market": [
+     500,
+     350.0000000001
+    ],
+    "closing_unserved_market": [
+     350,
+     350.0000000001
+    ]
+   },
+   "mutated_input_repr": "{'opening_unserved_market': [500, 350.0000000001], 'new_eligible_units': [100, 0], 'removed_eligible_units': [50, 0], 'adopted_units': [200, 0], 'closing_unserved_market': [350, 350.0000000001], 'net_revenue_per_unit': [3, 3]} years=[2027, 2028]",
+   "raised": null,
+   "actual": [
+    600.0,
+    0.0
+   ]
+  }
+ ]
+}

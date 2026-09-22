@@ -1,0 +1,513 @@
+{
+ "card_id": "M10",
+ "target_model_id": "reserve_depletion",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts",
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M10\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "read_kind": "contract read only (MODEL_REGISTRY metadata + driver_value_bounds); calculate_registered_model was NOT called by this script",
+ "per_card": {
+  "M09": {
+   "model_id": "resource",
+   "formula": "revenue = saleable_volume * realized_price + other_revenue",
+   "required": [
+    "saleable_volume",
+    "realized_price"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "declared_defaults": {},
+   "ratio_drivers": [],
+   "explicit_driver_bounds": {},
+   "drivers": [
+    {
+     "driver": "saleable_volume",
+     "dimension": "quantity",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "realized_price",
+     "dimension": "revenue_per_unit",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "other_revenue",
+     "dimension": "revenue",
+     "role": "optional",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": "-inf",
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: signed driver list"
+    }
+   ],
+   "optional_drivers_without_declared_default": [
+    "other_revenue"
+   ]
+  },
+  "M10": {
+   "model_id": "reserve_depletion",
+   "formula": "revenue = depletion * recovery_rate * realized_price + other_revenue",
+   "required": [
+    "opening_reserves",
+    "additions",
+    "depletion",
+    "closing_reserves",
+    "recovery_rate",
+    "realized_price"
+   ],
+   "optional": [
+    "other_revenue",
+    "reserve_revisions"
+   ],
+   "declared_defaults": {},
+   "ratio_drivers": [
+    "recovery_rate"
+   ],
+   "explicit_driver_bounds": {
+    "reserve_revisions": [
+     null,
+     null
+    ]
+   },
+   "drivers": [
+    {
+     "driver": "opening_reserves",
+     "dimension": "reserve_volume",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "additions",
+     "dimension": "reserve_volume",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "depletion",
+     "dimension": "reserve_volume",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "closing_reserves",
+     "dimension": "reserve_volume",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "recovery_rate",
+     "dimension": "ratio",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": true,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": 1.0,
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "realized_price",
+     "dimension": "revenue_per_unit",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "other_revenue",
+     "dimension": "revenue",
+     "role": "optional",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": "-inf",
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: signed driver list"
+    },
+    {
+     "driver": "reserve_revisions",
+     "dimension": "reserve_volume",
+     "role": "optional",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": "-inf",
+     "effective_upper_bound": "inf",
+     "bound_source": "explicit driver_bounds"
+    }
+   ],
+   "optional_drivers_without_declared_default": [
+    "other_revenue",
+    "reserve_revisions"
+   ]
+  },
+  "M11": {
+   "model_id": "infrastructure",
+   "formula": "revenue = billable_volume * tariff + other_revenue",
+   "required": [
+    "billable_volume",
+    "tariff"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "declared_defaults": {},
+   "ratio_drivers": [],
+   "explicit_driver_bounds": {},
+   "drivers": [
+    {
+     "driver": "billable_volume",
+     "dimension": "activity",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "tariff",
+     "dimension": "revenue_per_activity",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "other_revenue",
+     "dimension": "revenue",
+     "role": "optional",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": "-inf",
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: signed driver list"
+    }
+   ],
+   "optional_drivers_without_declared_default": [
+    "other_revenue"
+   ]
+  },
+  "M12": {
+   "model_id": "bank_revenue",
+   "formula": "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue",
+   "required": [
+    "average_earning_assets",
+    "asset_yield",
+    "average_interest_bearing_liabilities",
+    "funding_cost",
+    "fee_revenue"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "declared_defaults": {},
+   "ratio_drivers": [
+    "asset_yield",
+    "funding_cost"
+   ],
+   "explicit_driver_bounds": {
+    "asset_yield": [
+     null,
+     null
+    ],
+    "funding_cost": [
+     null,
+     null
+    ]
+   },
+   "drivers": [
+    {
+     "driver": "average_earning_assets",
+     "dimension": "monetary_balance",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "asset_yield",
+     "dimension": "ratio",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": true,
+     "effective_lower_bound": "-inf",
+     "effective_upper_bound": "inf",
+     "bound_source": "explicit driver_bounds"
+    },
+    {
+     "driver": "average_interest_bearing_liabilities",
+     "dimension": "monetary_balance",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": 0.0,
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: dimension default"
+    },
+    {
+     "driver": "funding_cost",
+     "dimension": "ratio",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": true,
+     "effective_lower_bound": "-inf",
+     "effective_upper_bound": "inf",
+     "bound_source": "explicit driver_bounds"
+    },
+    {
+     "driver": "fee_revenue",
+     "dimension": "revenue",
+     "role": "required",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": "-inf",
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: signed driver list"
+    },
+    {
+     "driver": "other_revenue",
+     "dimension": "revenue",
+     "role": "optional",
+     "declared_default": null,
+     "declared_default_present": false,
+     "ratio_driver": false,
+     "effective_lower_bound": "-inf",
+     "effective_upper_bound": "inf",
+     "bound_source": "implicit: signed driver list"
+    }
+   ],
+   "optional_drivers_without_declared_default": [
+    "other_revenue"
+   ]
+  }
+ },
+ "batch_scope": [
+  "M09",
+  "M10",
+  "M11",
+  "M12"
+ ],
+ "facts": {
+  "batch_optional_driver_count": 5,
+  "batch_optional_drivers_without_declared_default": {
+   "M09": [
+    "other_revenue"
+   ],
+   "M10": [
+    "other_revenue",
+    "reserve_revisions"
+   ],
+   "M11": [
+    "other_revenue"
+   ],
+   "M12": [
+    "other_revenue"
+   ]
+  },
+  "batch_optional_drivers_without_declared_default_total": 5,
+  "registry_model_count": 31,
+  "registry_optional_drivers_without_declared_default_total": 31,
+  "registry_optional_drivers_without_declared_default_sample": [
+   "advertising.other_revenue",
+   "asset_management.other_revenue",
+   "asset_management.performance_fee_revenue",
+   "aum_fee_bridge.recognized_performance_fees",
+   "bank_revenue.other_revenue",
+   "capacity_utilization.other_revenue",
+   "cohort_subscription.usage_revenue",
+   "delivery_pipeline.other_revenue",
+   "gaming.other_revenue",
+   "infrastructure.other_revenue",
+   "insurance_service.other_revenue",
+   "licensing_commercial.milestone_revenue",
+   "licensing_commercial.royalty_revenue",
+   "licensing_commercial.service_revenue",
+   "milestone_royalty.milestone_revenue",
+   "milestone_royalty.service_revenue",
+   "project_backlog.backlog_remeasurements",
+   "real_estate_rental.other_revenue",
+   "renewable_generation.other_revenue",
+   "reserve_depletion.other_revenue",
+   "reserve_depletion.reserve_revisions",
+   "resource.other_revenue",
+   "retail_franchise.franchise_system_sales",
+   "retail_franchise.recognized_fee_rate",
+   "retail_franchise.supply_revenue",
+   "services.other_revenue",
+   "subscription.usage_revenue",
+   "subscription_arr_bridge.usage_revenue",
+   "transport.ancillary_revenue",
+   "unit_sales.other_revenue",
+   "usage_platform.fixed_revenue"
+  ],
+  "ratio_drivers_whose_effective_bounds_are_not_0_1": [
+   {
+    "driver": "bank_revenue.asset_yield",
+    "bounds": [
+     -Infinity,
+     Infinity
+    ],
+    "bound_source": "explicit driver_bounds"
+   },
+   {
+    "driver": "bank_revenue.funding_cost",
+    "bounds": [
+     -Infinity,
+     Infinity
+    ],
+    "bound_source": "explicit driver_bounds"
+   },
+   {
+    "driver": "direct_growth.growth_rate",
+    "bounds": [
+     -1.0,
+     Infinity
+    ],
+    "bound_source": "implicit"
+   },
+   {
+    "driver": "store_cohorts.new_store_productivity",
+    "bounds": [
+     0.0,
+     Infinity
+    ],
+    "bound_source": "explicit driver_bounds"
+   }
+  ],
+  "ratio_drivers_whose_effective_bounds_are_not_0_1_count": 4,
+  "revenue_per_unit_and_revenue_per_activity_default_bounds_observed": [
+   [
+    -Infinity,
+    Infinity
+   ],
+   [
+    0.0,
+    Infinity
+   ]
+  ],
+  "revenue_per_unit_and_revenue_per_activity_driver_count": 23,
+  "revenue_per_unit_and_revenue_per_activity_drivers": [
+   "advertising.revenue_per_thousand_impressions",
+   "capacity_utilization.unit_revenue",
+   "cohort_subscription.revenue_per_customer",
+   "commercial_launch.net_revenue_per_unit",
+   "delivery_pipeline.unit_revenue",
+   "finite_adoption.net_revenue_per_unit",
+   "gaming.revenue_per_payer",
+   "infrastructure.tariff",
+   "installed_base_aftermarket.annual_revenue_per_attached_unit",
+   "insurance_service.revenue_per_coverage_unit",
+   "inventory_sellthrough.net_revenue_per_unit",
+   "licensing_commercial.net_revenue_per_unit",
+   "renewable_generation.contract_price_per_mwh",
+   "renewable_generation.merchant_price_per_mwh",
+   "reserve_depletion.realized_price",
+   "resource.realized_price",
+   "retail_franchise.revenue_per_owned_store",
+   "services.billing_rate",
+   "store_cohorts.annual_revenue_per_mature_store",
+   "subscription.revenue_per_customer",
+   "transport.yield",
+   "unit_sales.unit_revenue",
+   "usage_platform.monetization_rate"
+  ],
+  "revenue_per_unit_and_revenue_per_activity_drivers_that_admit_negative_values": [
+   "renewable_generation.contract_price_per_mwh",
+   "renewable_generation.merchant_price_per_mwh"
+  ],
+  "revenue_per_unit_and_revenue_per_activity_drivers_that_admit_negative_values_count": 2,
+  "reserve_volume_drivers": [
+   {
+    "driver": "reserve_depletion.additions",
+    "bounds": [
+     0.0,
+     Infinity
+    ],
+    "bound_source": "implicit"
+   },
+   {
+    "driver": "reserve_depletion.closing_reserves",
+    "bounds": [
+     0.0,
+     Infinity
+    ],
+    "bound_source": "implicit"
+   },
+   {
+    "driver": "reserve_depletion.depletion",
+    "bounds": [
+     0.0,
+     Infinity
+    ],
+    "bound_source": "implicit"
+   },
+   {
+    "driver": "reserve_depletion.opening_reserves",
+    "bounds": [
+     0.0,
+     Infinity
+    ],
+    "bound_source": "implicit"
+   },
+   {
+    "driver": "reserve_depletion.reserve_revisions",
+    "bounds": [
+     -Infinity,
+     Infinity
+    ],
+    "bound_source": "explicit driver_bounds"
+   }
+  ],
+  "reserve_volume_drivers_non_negative_count": 4,
+  "reserve_volume_drivers_signed_count": 1
+ }
+}

@@ -1,0 +1,134 @@
+{
+  "card_id": "E1E7-ERRATA-LANDING",
+  "attempt_id": "a20260921-01",
+  "revision": "r1",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session; never the implementer)",
+    "scope_is_scoped_not_clean": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "scope_statement": {
+    "statement": "Acceptance is SCOPED, not clean (reviewer_report.md line 7 verdict; line 104 conclusion). Reviewer recomputed from disk bytes (PowerShell SHA256 + python difflib/containment, trusting no in-memory state of the audited side): 4/4 M-card oracle append-only errata landings verified - prefix proofs 4/4 (sha256(after[:bytes_before]) == binding before-hash; binding self-consistent with on-disk files), insertion-only proven 4/4 by full difflib ({equal, insert} only; zero replace/delete; insert size == after - before, appended after the frozen body), verbatim-source verified 12/12 quoted fragments (M14 E-5/E-6 focus: 10 ellipsis quotes + 2 English long quotes all hit the I-10-B source text), 5/5 compatibility_impact.md S5 table rows row-subset-of-landed, 7/7 E-labels verbatim in their cards' appended sections, source handoff pin 23563 B / 867d59b8...b54f4 matched, landed_text byte-equals the on-disk append slices (differing only by the 1 leading LF separator); zero-change discipline via mtime scan (only the 4 oracle.md files at the append instant 2026-09-22T09:25:23) + git diff + C1 prefix immutability; M05 pin-drift root cause independently reproduced (LF->CRLF restoration of 54 CRs after byte 8774 on the pre-append prefix yields exactly 14844 B / 7fda03b153fd9a3707fba3a1057c9eb2ed6d2f772cdd79b6c1a33de9bb639320, the pin value); parent's four rulings present (presence-only, not reopened): F2 date-label -> 留置 no second append round, GAP-2 -> no JSON edit pass, GAP-4 -> M05 LF disclosure stays in DEC-E1E7-1a, GAP-5 -> I-10-B stale key-name registered-not-fixed; non-promotion wording identical across all four cards (C7: the same 4 lines - NOT promoted path declaration, 修复未晋升...仍然权威...until promotion, 前瞻披露...不改变任何现行期望/不改变任何 status/不改变任何资格, subsection title - intersection 4/4).",
+    "why_not_blocking": "The reviewer's seven claims (F-OK-1..F-OK-8) all verify the card's exit claims from bytes; the four minor observations (F-MIN-1..4) are bookkeeping-wording/orchestration-awareness only and do not contradict append-only, zero expectation change, zero status change, zero qualification change; the five unverified items are declared with reasons, not inferred away.",
+    "not_verified_by_review": [
+      "U-1 pytest/mypy mtime attribution in the shared workspace - card self-reports 0 pytest, neither provable nor disprovable from bytes",
+      "U-2 full `git status` aborted on an ACL-denied .planning/.../scratch/model-tests/ directory; substitute evidence = git diff --name-only HEAD + git diff --cached + four-tree mtime scan",
+      "U-3 commands.json seq1-16 self-report has no independent cross-source; seq13 append_errata.py not replayed by the reviewer",
+      "U-4 handoff frozen-body pin values (M14 9367 B / M24 13382 B / M05 8774 B) not each traced back to the respective M-handoff bytes; binding pin_check expected values not independently sourced",
+      "U-5 M14 S3.4 before/after comparison-table cells not individually re-sourced (its source file's whole hash is pinned by binding as ab09422e..., itself a U-4-class unsourced pin)"
+    ],
+    "carried_residuals": [
+      "CF-E1E7-1 (F-MIN-1, non-blocking) - pre-freeze wording inconsistency: binding/oracle say 'frozen before touching any M-card oracle' but commands.json seq ordering shows reads (seq5/6/9) preceded the seq10 freeze; true for modify, false for read. Risk neutralized by the reviewer's independent before-image recompute; wording clarification is an orchestration-layer T1-12 (1) suggestion, this card cannot be rewritten.",
+      "CF-E1E7-2 (F-MIN-2) - failure-handling wording differs: decision.md DEC-E1E7-2 writes 回写原字节/STOP, oracle.md S2.1 writes 不回滚; moot because nothing failed (stopped_or_skipped = {}).",
+      "CF-E1E7-3 (F-MIN-3, awareness only) - 已过时 line annotations land on expectation lines while the same section declares frozen values authoritative until promotion; inherent T1-12 (1) tension, reconciled by the (4) disclaimer; not changes_required.",
+      "CF-E1E7-4 (F-MIN-4) - date label 2026-09-21 vs execution clock 2026-09-22 09:2x; already ruled 留置 by the parent (F2), registered truthfully, not reopened here.",
+      "U-1..U-5 - the reviewer's five explicitly unverified items (see not_verified_by_review), carried as declared boundary.",
+      "PARENT-RULINGS-4 - four parent rulings recorded present: no second append round for F2; no JSON edit pass (GAP-2); M05 LF disclosure stays in DEC-E1E7-1a (GAP-4); I-10-B stale key-name reference registered-not-fixed (GAP-5)."
+    ]
+  },
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "verdict_line": 7,
+    "first_line_of_verdict": "## Verdict: **accepted_scoped**",
+    "line_range_inclusive_1_based": [1, 104],
+    "verdict_line_range_inclusive": [7, 7],
+    "conclusion_section_line_range_inclusive": [102, 104],
+    "conclusion_verdict_line": 104,
+    "scope_section_line_range_inclusive": [13, 75],
+    "findings_section_line_range_inclusive": [79, 92],
+    "unverified_section_line_range_inclusive": [94, 100],
+    "minor_findings_F_MIN_1_to_4_line_range_inclusive": [89, 92],
+    "parent_rulings_presence_table_line_range_inclusive": [53, 61],
+    "reviewer_role_line": 3,
+    "reviewer_boundary_line": 5,
+    "byte_offsets": {
+      "start": 0,
+      "end_inclusive": 10675,
+      "end_exclusive": 10676
+    },
+    "carrier_file_sha256": "fb05120a0f388b18d6d301b31fcd2edc4d86d047c675ca2ad2fe2c926e9444d5",
+    "carrier_file_bytes": 10676,
+    "carrier_file_total_lines": 104,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+    "verdict_line_byte_region": {"start": 665, "end_inclusive": 695, "length": 31, "sha256": "b6787e111cf7249db03dd47bbc6cb4ddb40bfe89006d80338631b78d0969916f"},
+    "conclusion_region_byte_region": {"start": 10229, "end_inclusive": 10674, "length": 446, "sha256": "4937770f9d1f4adabacc054cac320fe616298a9fd34a86b45dc99f17fb483169"},
+    "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 10674, "length": 10675, "sha256": "4c1c36e05831b98880cd8e63ec8a90e239b1e0960eeb7ef45ba91f6db0584975"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the terminating LF unless stated",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "present": true,
+      "bytes": 97,
+      "sha256": "367f22d7c3009a52ed04e0fbf20cb5f6591e4b31e40843955137472bd51c3363",
+      "content": "fb05120a0f388b18d6d301b31fcd2edc4d86d047c675ca2ad2fe2c926e9444d5  reviewer_report.md  bytes=10676",
+      "verified": "sidecar sha matches an independent read-only re-hash of reviewer_report.md at landing time; sidecar bytes= matches the 10676-B length; both re-hashed before any write by this pass"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by the bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核), not by the implementer",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_transcription_adds_no_acceptance": true,
+    "no_production_writes": true,
+    "m_card_oracle_bytes_written": 0,
+    "reviewer_report_bytes_written": 0
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "4/4 M-card oracle.md (M05/M14/M20/M24) append-only errata landings accepted as scoped: prefix proofs 4/4 recomputed from bytes, insertion-only 4/4 by full difflib, frozen bodies byte-immutable",
+      "verbatim-source verification: 12/12 quoted fragments, 5/5 S5 table rows, 7/7 E-labels against the pinned I-10-B source handoff (867d59b8...b54f4 / 23563 B)",
+      "M05 pin-drift (LF normalization) root cause independently reproduced to the exact pin value (14844 B / 7fda03b1...)",
+      "zero-change discipline: expectations 0, statuses 0, qualifications 0, frozen-body bytes 0 (mtime + git-diff + prefix-immutability triangulation)",
+      "parent's four rulings present (F2 留置 / GAP-2 no-JSON / GAP-4 留置 / GAP-5 registered) - presence verified only, none reopened",
+      "non-promotion wording byte-identical across all four appended sections (4/4 line-set intersection)"
+    ],
+    "not_granted": [
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production-tree write permission (production writes: 0)",
+      "independent acceptance of E-1...E-7 items, production promotion, or OQ-03 D/E 追认 - these remain with 独立 reviewer / 编排层 / owner",
+      "any edit to the four M-card oracle.md files, the sealed I-10-B attempt, or any frozen/historical artifact by this landing pass",
+      "resolution of the five unverified items (U-1..U-5) - carried as declared boundary"
+    ]
+  },
+  "carried_findings": [
+    {"id": "CF-E1E7-1", "origin": "reviewer finding F-MIN-1 (reviewer_report.md line 89; section lines 89-92)", "class": "PRE-FREEZE WORDING INCONSISTENCY (bookkeeping wording)", "severity": "minor, non-blocking", "finding": "binding/oracle 声称 frozen before touching any M-card oracle，但 commands.json seq 序显示读取（seq5/6/9）先于 seq10 冻结 ⇒ 触碰对 modify 为真、对 read 为假。", "disposition": "风险已被 reviewer 独立 before-镜像复算中和（从字节重得，不采信被审方内存态）；措辞澄清属编排层将来一轮 T1-12 (1)，本卡不可回改。", "owner": "orchestration layer (future wording pass)"},
+    {"id": "CF-E1E7-2", "origin": "reviewer finding F-MIN-2 (reviewer_report.md line 90)", "class": "FAILURE-HANDLING WORDING DIVERGENCE", "severity": "minor", "finding": "decision.md DEC-E1E7-2 写『回写原字节、STOP』，oracle.md S2.1 写『停止并保留原状（不回滚重试）』。", "disposition": "moot - 本轮 stopped_or_skipped = {}，无失败触发，两条口径均未被执行；登记随行，不改任何一件。", "owner": "recorded; no action"},
+    {"id": "CF-E1E7-3", "origin": "reviewer finding F-MIN-3 (reviewer_report.md line 91)", "class": "EXPECTATION-ANNOTATION TENSION (T1-12 (1) inherent)", "severity": "minor, awareness only", "finding": "行级『已过时，以本节为准』标注落在期望输出行（M05 L62/L64、M14 L64/L65、M20 L70/L220、M24 L123/L125），而同节声明晋升前冻结值仍权威。", "disposition": "由 (4) 免责句调和；仅向编排层知会，不构成 changes_required，不改任何期望值。", "owner": "orchestration layer (awareness)"},
+    {"id": "CF-E1E7-4", "origin": "reviewer finding F-MIN-4 (reviewer_report.md line 92)", "class": "PROVENANCE DATE LABEL", "severity": "minor", "finding": "追加节日期标签 2026-09-21 vs 实机执行时钟 2026-09-22 09:2x。", "disposition": "父裁 F2 已裁定留置并如实登记（decision.md DEC-E1E7-5 + evidence/provenance_time_note.json + handoff GAP-1）；不回改、不自行第二轮；reviewer 不重开，本登记不重开。", "owner": "parent (already ruled 留置)"},
+    {"id": "U-1..U-5", "origin": "reviewer_report.md S3 lines 94-100", "class": "REVIEW UNVERIFIED BOUNDARY (declared, not inferred)", "severity": "info", "finding": "U-1 pytest/mypy mtime attribution undecidable in the shared workspace; U-2 full git status aborted on ACL-denied .planning/.../scratch/model-tests/ (substitute: git diff + mtime scan); U-3 commands.json self-report without independent cross-source, seq13 script not replayed; U-4 handoff frozen-body pin values (9367/13382/8774 B) not traced to the respective M-handoff bytes; U-5 M14 S3.4 cells not individually re-sourced.", "disposition": "reviewer declared the boundary with reasons and did not substitute inference for conclusion; carried unresolved by design; this landing neither补证 nor re-judges.", "owner": "open / declared boundary"},
+    {"id": "PARENT-RULINGS-4", "origin": "parent rulings; reviewer C5 presence table (reviewer_report.md lines 53-61)", "class": "PARENT RULINGS RECORDED", "severity": "info", "finding": "四项父裁在场：F2 日期标签 -> 留置、无第二轮 append；GAP-2 -> 不做 JSON 编辑 pass；GAP-4 -> M05 LF 披露留在 DEC-E1E7-1a；GAP-5 -> I-10-B 陈旧键名登记不改（其 handoff sha 仍 867d59b8...）。", "disposition": "recorded present; this pass transcribes only - none reopened, none re-adjudicated.", "owner": "parent (ruled)"}
+  ],
+  "eligibility_statement": {
+    "formula_classification": "No revenue-forecast formula work: append-only errata disclosure landing into four frozen oracle.md files (no code, no tests, no expectation/status/qualification change). No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "production_write": "NOT GRANTED. Production read-only throughout; 0 production bytes written by this landing pass.",
+    "m_card_oracles": "NOT WRITTEN by this landing pass (0 bytes); they were written only by the card's own append run, verified append-only by the reviewer."
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "created this qualification record for the independent reviewer's byte-pinned verdict; landed the carrier fields; registered 6 carried findings (CF-E1E7-1..4, U-1..U-5, PARENT-RULINGS-4); created review.md (transcribed verdict block, no acceptance of its own); appended status_authority/bookkeeping/carried_findings to handoff.json and superseded two stale pre-verdict fields byte-exact under *_historical_pre_verdict; wrote 0 bytes to reviewer_report.md and its sidecar",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "m_card_oracle_bytes_written": 0,
+    "production_bytes_written": 0,
+    "status_transition": "review_pending -> accepted_scoped",
+    "files_written": ["review.md (created)", "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping + carried_findings appended + 2 stale-field supersessions; pre-existing content otherwise untouched)", "evidence/E1E7-ERRATA-LANDING/qualification.json (created, this file)"]
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven. The verdict lives in reviewer_report.md (sha256 fb05120a0f388b18d6d301b31fcd2edc4d86d047c675ca2ad2fe2c926e9444d5, 10676 B, pinned by reviewer_report.sha256) and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own."
+}

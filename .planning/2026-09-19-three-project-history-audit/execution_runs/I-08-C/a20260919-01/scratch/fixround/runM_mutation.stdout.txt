@@ -1,0 +1,123 @@
+﻿......F....F.                                                            [100%]
+================================== FAILURES ===================================
+______ test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates ______
+
+S = {'company_name': 'Test Co', 'as_of_date': '2026-07-12', 'currency': 'USD', 'unit': 'million', ...}
+
+    def test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates(S):
+        """E13 (r4 re-freeze, owner A-2): a self-hash-consistent forgery of
+        `segments[0].base_revenue` MUST be rejected by the strong dispatcher.
+        B1 REM-03 implements the gate; frozen rejection reason:
+        `segment base revenue mismatch`. The receipt layer still ACCEPTS it ��
+        that F2/REM-02 limitation (hash-consistency only, documentation fix) is
+        unchanged and stays pinned as a limitation, not a security claim.
+        Node id renamed from `..._not_bound_by_output_gates` (oracle R4-3).
+        """
+        forged = copy.deepcopy(S)
+        forged["segments"][0]["base_revenue"] = forged["segments"][0]["base_revenue"] + 1
+        _rehash(forged)
+        validate_publication_receipt(forged)
+>       validate_forecast_output(forged)  # SUPERSEDED r1/r3: gap pinned as accepted
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scratch\fixround\mutation\test_i08c_mutation_pinned_gap.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\B1-I08C-product-fixes\a20260921-01\iso\fixed\rf\scripts\revenue_report.py:1344: in validate_forecast_output
+    validate_published_forecast(result, data)
+..\..\B1-I08C-product-fixes\a20260921-01\iso\fixed\rf\scripts\revenue_report.py:1307: in validate_published_forecast
+    _validate_forecast_output(result, data)
+..\..\B1-I08C-product-fixes\a20260921-01\iso\fixed\rf\scripts\revenue_report.py:571: in _validate_forecast_output
+    _validate_segment_opening_bases(result, parameter_index, years)
+..\..\B1-I08C-product-fixes\a20260921-01\iso\fixed\rf\scripts\revenue_report.py:215: in _validate_segment_opening_bases
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'segment base revenue mismatch: Segment A opening base 101.0 does not match segment_a_base (100)'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: segment base revenue mismatch: Segment A opening base 101.0 does not match segment_a_base (100)
+
+..\..\B1-I08C-product-fixes\a20260921-01\iso\fixed\rf\scripts\contracts\evidence.py:93: ForecastInputError
+_________ test_e11_host_signed_label_flip_is_rejected_at_consumption __________
+
+U = {'company_name': 'Test Co', 'as_of_date': '2026-07-12', 'currency': 'USD', 'unit': 'million', ...}
+
+    def test_e11_host_signed_label_flip_is_rejected_at_consumption(U):
+        """E11 (r4 re-freeze, owner A-2): a self-hash-consistent package that
+        CLAIMS `attestation_status='host_signed'` while carrying no
+        `publication_attestation` binding record MUST be rejected by BOTH consumer
+        entry points. B1 REM-01(a) implements the gate; frozen rejection reason:
+        `attestation_missing_record` (E27). Node id renamed from
+        `..._is_not_bound_at_consumption`, whose name asserted the retired gap
+        (oracle R4-3).
+        """
+        assert attestation_capability() is False  # issuance gate present
+        flipped = copy.deepcopy(U)
+        assert flipped["publication_receipt"]["attestation_status"] == "unattested"
+        flipped["publication_receipt"]["attestation_status"] = "host_signed"
+        _rehash(flipped)
+>       validate_publication_receipt(flipped)  # SUPERSEDED r1/r3: gap pinned as accepted
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scratch\fixround\mutation\test_i08c_mutation_pinned_gap.py:270: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\B1-I08C-product-fixes\a20260921-01\iso\fixed\rf\scripts\revenue_publication.py:559: in validate_publication_receipt
+    validate_publication_attestation(result, receipt)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+result = {'company_name': 'Test Co', 'as_of_date': '2026-07-12', 'currency': 'USD', 'unit': 'million', ...}
+receipt = {'receipt_schema_version': '1.0', 'schema_version': '3.7', 'engine_version': '4.1.0', 'validated_input_sha256': 'f5a8413ec0238fef016fba5ae9d88a58fcba3504bf6ab6d99da7cdbdae0f0b9d', ...}
+
+    def validate_publication_attestation(
+        result: dict[str, Any], receipt: dict[str, Any]
+    ) -> None:
+        """Validate the ``publication_attestation`` binding record (B1 / REM-01).
+    
+        Raises with the I-08-A code spelling in the message so a caller can classify
+        the rejection without parsing prose:
+    
+        * ``attestation_missing_record`` (E27) �� ``host_signed`` with no record.
+        * ``attestation_missing_signature`` (E12) / ``attestation_malformed_signature``
+          (E13) �� absent or malformed signature.
+        * ``attestation_domain_mismatch`` (E17) �� wrong domain separator.
+        * ``attestation_payload_hash_mismatch`` (E16) �� the record does not bind the
+          live payload / result / receipt.
+        * ``provider_key_untrusted`` (E20) / ``issuer_key_binding_mismatch`` (E21) ��
+          trust-domain failures.
+        * ``attestation_signature_invalid`` (E14) �� Ed25519 verification failed.
+        """
+        record = receipt.get("publication_attestation")
+        claims_signed = receipt.get("attestation_status") == "host_signed"
+        if record is None:
+            if claims_signed:
+                # I-08-A ��6.2 G3b: a package that CLAIMS a signature and cannot
+                # produce the record is rejected.  Never silently downgraded.
+>               raise ForecastInputError(
+                    "attestation_missing_record: publication_receipt claims "
+                    "attestation_status='host_signed' but carries no "
+                    "publication_attestation record (E27)"
+                )
+E               contracts.evidence.ForecastInputError: attestation_missing_record: publication_receipt claims attestation_status='host_signed' but carries no publication_attestation record (E27)
+
+..\..\B1-I08C-product-fixes\a20260921-01\iso\fixed\rf\scripts\revenue_publication.py:245: ForecastInputError
+=========================== short test summary info ===========================
+FAILED scratch/fixround/mutation/test_i08c_mutation_pinned_gap.py::test_e13_segment_base_revenue_forgery_is_rejected_by_output_gates
+FAILED scratch/fixround/mutation/test_i08c_mutation_pinned_gap.py::test_e11_host_signed_label_flip_is_rejected_at_consumption
+2 failed, 11 passed in 8.69s

@@ -1,0 +1,269 @@
+﻿{
+    "card":  "I-09-C",
+    "attempt":  "a20260922-01",
+    "generated":  "2026-09-22T10:52:37.7493346+01:00",
+    "exit_code_legend":  {
+                             "0":  "harness pass (all selected cases meet frozen expectation)",
+                             "1":  "harness failure (tooling/import/paths)",
+                             "2":  "no verdict",
+                             "3":  "expectation not met (a frozen expectation failed)"
+                         },
+    "fault_matrix_total":  26,
+    "fault_matrix_all_ok":  25,
+    "fault_matrix_failing":  [
+                                 "F12_stdout_pipe"
+                             ],
+    "cases":  {
+                  "PC1-K3b_json_tmp_opened":  {
+                                                  "all_ok":  true,
+                                                  "checks":  27,
+                                                  "failed":  0,
+                                                  "rc_expected":  "kill",
+                                                  "rc_raw":  4242,
+                                                  "card_point":  "JSON写中（try块内，finally不运行的直接证据）",
+                                                  "f_row":  "F3 区（finally 证明点）"
+                                              },
+                  "PC1-K2_prepare_after":  {
+                                               "all_ok":  true,
+                                               "checks":  26,
+                                               "failed":  0,
+                                               "rc_expected":  "kill",
+                                               "rc_raw":  4242,
+                                               "card_point":  "prepare后",
+                                               "f_row":  "F6（prepare 已完成、成员未写）"
+                                           },
+                  "PC4a_kill_during_recovery":  {
+                                                    "all_ok":  true,
+                                                    "checks":  21,
+                                                    "failed":  0,
+                                                    "rc_expected":  "kill(4242) then clean 0/0",
+                                                    "rc_raw":  null,
+                                                    "card_point":  "恢复中再次kill",
+                                                    "f_row":  "F11 + P-C4"
+                                                },
+                  "PC4b_corrupt_member":  {
+                                              "all_ok":  true,
+                                              "checks":  16,
+                                              "failed":  0,
+                                              "rc_expected":  "0 / 0 / 0",
+                                              "rc_raw":  null,
+                                              "card_point":  "损坏成员hash、完整P0存在",
+                                              "f_row":  "P-C4"
+                                          },
+                  "PC1-E4_replace":  {
+                                         "all_ok":  true,
+                                         "checks":  21,
+                                         "failed":  0,
+                                         "rc_expected":  2,
+                                         "rc_raw":  2,
+                                         "card_point":  "OSError@replace",
+                                         "f_row":  "F3"
+                                     },
+                  "PC1-E3_fsync":  {
+                                       "all_ok":  true,
+                                       "checks":  21,
+                                       "failed":  0,
+                                       "rc_expected":  2,
+                                       "rc_raw":  2,
+                                       "card_point":  "OSError@fsync",
+                                       "f_row":  "F3"
+                                   },
+                  "PC1-K7_registry_after_append":  {
+                                                       "all_ok":  true,
+                                                       "checks":  26,
+                                                       "failed":  0,
+                                                       "rc_expected":  "kill",
+                                                       "rc_raw":  4242,
+                                                       "card_point":  "registry持久化后",
+                                                       "f_row":  "F8（append+fsync 完成、回报前崩溃）"
+                                                   },
+                  "PC1-K6_commit_before":  {
+                                               "all_ok":  true,
+                                               "checks":  28,
+                                               "failed":  0,
+                                               "rc_expected":  "kill",
+                                               "rc_raw":  4242,
+                                               "card_point":  "commit前",
+                                               "f_row":  "F6"
+                                           },
+                  "PC2-K8_commit_after_response_lost":  {
+                                                            "all_ok":  true,
+                                                            "checks":  26,
+                                                            "failed":  0,
+                                                            "rc_expected":  "kill",
+                                                            "rc_raw":  4242,
+                                                            "card_point":  "commit后（响应丢失）",
+                                                            "f_row":  "F8/F10 + P-C2 幂等重试"
+                                                        },
+                  "PC1-K3_json_before":  {
+                                             "all_ok":  true,
+                                             "checks":  26,
+                                             "failed":  0,
+                                             "rc_expected":  "kill",
+                                             "rc_raw":  4242,
+                                             "card_point":  "JSON写前",
+                                             "f_row":  "F3 区（kill 形态）"
+                                         },
+                  "PC1-E2_flush":  {
+                                       "all_ok":  true,
+                                       "checks":  21,
+                                       "failed":  0,
+                                       "rc_expected":  2,
+                                       "rc_raw":  2,
+                                       "card_point":  "OSError@flush",
+                                       "f_row":  "F3"
+                                   },
+                  "F1_invalid_input":  {
+                                           "all_ok":  true,
+                                           "checks":  18,
+                                           "failed":  0,
+                                           "rc_expected":  2,
+                                           "rc_raw":  2,
+                                           "card_point":  "prepare 前输入强验证失败",
+                                           "f_row":  "F1"
+                                       },
+                  "PC5_cli_matrix":  {
+                                         "all_ok":  true,
+                                         "checks":  27,
+                                         "failed":  0,
+                                         "rc_expected":  null,
+                                         "rc_raw":  null,
+                                         "card_point":  "真实CLI/直接API/snapshot兼容矩阵 (P-C5)",
+                                         "f_row":  null
+                                     },
+                  "PC3_concurrency":  {
+                                          "all_ok":  true,
+                                          "checks":  12,
+                                          "failed":  0,
+                                          "rc_expected":  null,
+                                          "rc_raw":  null,
+                                          "card_point":  "两进程同时从同链尾提交；另一个reader连续读 (P-C3)",
+                                          "f_row":  "F5/F6 相邻（并发提交 + 连续 reader）"
+                                      },
+                  "PC1-E4b_replace_markdown":  {
+                                                   "all_ok":  true,
+                                                   "checks":  21,
+                                                   "failed":  0,
+                                                   "rc_expected":  2,
+                                                   "rc_raw":  2,
+                                                   "card_point":  "OSError@replace(Markdown)",
+                                                   "f_row":  "F4"
+                                               },
+                  "PC1-K1_prepare_before":  {
+                                                "all_ok":  true,
+                                                "checks":  26,
+                                                "failed":  0,
+                                                "rc_expected":  "kill",
+                                                "rc_raw":  4242,
+                                                "card_point":  "prepare前",
+                                                "f_row":  "F1/F2 区（kill 形态）"
+                                            },
+                  "PC1-E1_write":  {
+                                       "all_ok":  true,
+                                       "checks":  21,
+                                       "failed":  0,
+                                       "rc_expected":  2,
+                                       "rc_raw":  2,
+                                       "card_point":  "OSError@write",
+                                       "f_row":  "F3"
+                                   },
+                  "PC1-K9_return_before":  {
+                                               "all_ok":  true,
+                                               "checks":  26,
+                                               "failed":  0,
+                                               "rc_expected":  "kill",
+                                               "rc_raw":  4242,
+                                               "card_point":  "返回前",
+                                               "f_row":  "F10"
+                                           },
+                  "F7_torn_line":  {
+                                       "all_ok":  true,
+                                       "checks":  8,
+                                       "failed":  0,
+                                       "rc_expected":  2,
+                                       "rc_raw":  2,
+                                       "card_point":  "append 写了一半（torn line）",
+                                       "f_row":  "F7"
+                                   },
+                  "F12_stdout_pipe":  {
+                                          "all_ok":  false,
+                                          "checks":  5,
+                                          "failed":  1,
+                                          "rc_expected":  "0 or 2",
+                                          "rc_raw":  120,
+                                          "card_point":  "stdout 输送失败",
+                                          "f_row":  "F12"
+                                      },
+                  "PC1-K5_markdown_done":  {
+                                               "all_ok":  true,
+                                               "checks":  28,
+                                               "failed":  0,
+                                               "rc_expected":  "kill",
+                                               "rc_raw":  4242,
+                                               "card_point":  "Markdown完成",
+                                               "f_row":  "F6（成员齐备、append 前）"
+                                           },
+                  "PC1-K6b_registry_before_append":  {
+                                                         "all_ok":  true,
+                                                         "checks":  28,
+                                                         "failed":  0,
+                                                         "rc_expected":  "kill",
+                                                         "rc_raw":  4242,
+                                                         "card_point":  "registry持久化前",
+                                                         "f_row":  "F6"
+                                                     },
+                  "F5_lock_not_implemented":  {
+                                                  "all_ok":  true,
+                                                  "checks":  0,
+                                                  "failed":  0,
+                                                  "rc_expected":  null,
+                                                  "rc_raw":  null,
+                                                  "card_point":  "registry 锁获取失败",
+                                                  "f_row":  "F5"
+                                              },
+                  "F2_prepare_mid":  {
+                                         "all_ok":  true,
+                                         "checks":  21,
+                                         "failed":  0,
+                                         "rc_expected":  2,
+                                         "rc_raw":  2,
+                                         "card_point":  "prepare 中失败",
+                                         "f_row":  "F2"
+                                     },
+                  "PC1-K4_json_done":  {
+                                           "all_ok":  true,
+                                           "checks":  26,
+                                           "failed":  0,
+                                           "rc_expected":  "kill",
+                                           "rc_raw":  4242,
+                                           "card_point":  "JSON完成",
+                                           "f_row":  "F3/F4 之间（半包风险点）"
+                                       },
+                  "PC1-E5_registry":  {
+                                          "all_ok":  true,
+                                          "checks":  21,
+                                          "failed":  0,
+                                          "rc_expected":  2,
+                                          "rc_raw":  2,
+                                          "card_point":  "OSError@registry",
+                                          "f_row":  "F9"
+                                      }
+              },
+    "P_C3_concurrency":  {
+                             "all_ok":  true,
+                             "checks":  12,
+                             "failed":  0,
+                             "rows":  4,
+                             "chain_ok":  true
+                         },
+    "P_C5_cli_matrix":  {
+                            "all_ok":  true,
+                            "checks":  27,
+                            "failed":  0
+                        },
+    "T_PUB":  {
+                  "template_run1":  "exit=1, 8 failed/40 passed (venv missing _cffi_backend; preserved in pub_template.txt)",
+                  "template_run2":  "exit=0, 48 passed (pub_template_rerun.txt)",
+                  "i09b_node":  "exit=0, 11 passed (pub_i09b.txt)"
+              }
+}

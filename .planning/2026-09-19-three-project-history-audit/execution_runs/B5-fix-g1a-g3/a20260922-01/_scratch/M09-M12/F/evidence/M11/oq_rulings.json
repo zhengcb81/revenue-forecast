@@ -1,0 +1,241 @@
+{
+ "card_id": "M11",
+ "model_id": "infrastructure",
+ "document_kind": "open-question ruling sheet built from an enumerated registry read",
+ "enumeration_provenance": {
+  "performed_by": "the implementer session of attempt a20260919-01, by running scripts/enumerate_registry_facts.py against the attempt-local isolated copy",
+  "enumeration_script": "scripts/enumerate_registry_facts.py",
+  "machine_readable_output": "evidence/M11/registry_enumeration.json",
+  "raw_console_output": "after/console_C-M11-registry-enumeration_M11.txt",
+  "read_kind": "contract read only (MODEL_REGISTRY metadata + driver_value_bounds); calculate_registered_model was NOT called by this script",
+  "reviewed_by": "PENDING - no independent reviewer has ruled on this attempt; the card is at status review_pending, so every ruling below is an implementer-side registration, not an accepted ruling",
+  "product_change_made": false
+ },
+ "OQ_1_silent_zero_fill": {
+  "statement": "scripts/model_registry.py:335 substitutes 0.0 for an omitted optional driver that has no declared default, so the input 'the item is absent' and 'the item could not be found' become indistinguishable.",
+  "enumerated_counts": {
+   "batch_cards": [
+    "M09",
+    "M10",
+    "M11",
+    "M12"
+   ],
+   "batch_optional_driver_count": 5,
+   "batch_optional_drivers_without_a_declared_default": {
+    "M09": [
+     "other_revenue"
+    ],
+    "M10": [
+     "other_revenue",
+     "reserve_revisions"
+    ],
+    "M11": [
+     "other_revenue"
+    ],
+    "M12": [
+     "other_revenue"
+    ]
+   },
+   "batch_optional_drivers_without_a_declared_default_total": 5,
+   "registry_optional_drivers_without_a_declared_default_total": 31,
+   "this_card_optional_drivers": [
+    "other_revenue"
+   ],
+   "this_card_optional_drivers_without_a_declared_default": [
+    "other_revenue"
+   ],
+   "this_card_declared_defaults": {}
+  },
+  "why_it_matters_for_this_card": "an omitted `other_revenue` asserts 'no capacity fee and no subsidy', which is a regulatory claim, not an arithmetic one",
+  "observed_probe": "the defaults case of this card (driver omitted) is measured in evidence/M11/run_result.json -> defaults",
+  "action": "registered, NOT fixed; no product change"
+ },
+ "OQ_2_bank_totals_guard_vs_rate_domain": {
+  "applies_to_this_card": false,
+  "statement": "For bank_revenue the rejected case is a revenue-TOTAL refusal, not a rate-domain refusal: the two rate drivers keep explicit (None, None) bounds, so negative rates are accepted while a negative total is not.",
+  "enumerated_counts": {
+   "bank_revenue_rate_driver_bounds": {
+    "asset_yield": [
+     null,
+     null
+    ],
+    "funding_cost": [
+     null,
+     null
+    ]
+   },
+   "ratio_drivers_whose_effective_bounds_are_not_0_1_count": 4,
+   "ratio_drivers_whose_effective_bounds_are_not_0_1": [
+    {
+     "driver": "bank_revenue.asset_yield",
+     "bounds": [
+      -Infinity,
+      Infinity
+     ],
+     "bound_source": "explicit driver_bounds"
+    },
+    {
+     "driver": "bank_revenue.funding_cost",
+     "bounds": [
+      -Infinity,
+      Infinity
+     ],
+     "bound_source": "explicit driver_bounds"
+    },
+    {
+     "driver": "direct_growth.growth_rate",
+     "bounds": [
+      -1.0,
+      Infinity
+     ],
+     "bound_source": "implicit"
+    },
+    {
+     "driver": "store_cohorts.new_store_productivity",
+     "bounds": [
+      0.0,
+      Infinity
+     ],
+     "bound_source": "explicit driver_bounds"
+    }
+   ]
+  },
+  "observed_probes": {
+   "OBS-NEG-RATE-ACCEPTED": null,
+   "OBS-NEG-RATE-TOTAL-NEG": null,
+   "OBS-RATE-GT1": null
+  },
+  "consequence": "the card's negative must not be read as 'interest rates must be positive'. The genuine adapter limitation is that a bank year with negative total revenue cannot be represented, and common_model_cards.md L11 forbids clipping it to zero; that needs an owner ruling (see DEC-M12-3)."
+ },
+ "OQ_3_negative_price_and_tariff_not_expressible": {
+  "applies_to_this_card": true,
+  "statement": "`revenue_per_unit` and `revenue_per_activity` drivers default to [0, inf), so a negative realised price (M09) or a rebate-style negative tariff (M11) cannot be expressed at this entry point.",
+  "enumerated_counts": {
+   "drivers_with_dimension_revenue_per_unit_or_revenue_per_activity": 23,
+   "such_drivers_that_admit_negative_values": [
+    "renewable_generation.contract_price_per_mwh",
+    "renewable_generation.merchant_price_per_mwh"
+   ],
+   "such_drivers_that_admit_negative_values_count": 2,
+   "observed_default_bounds_for_that_dimension_family": [
+    [
+     -Infinity,
+     Infinity
+    ],
+    [
+     0.0,
+     Infinity
+    ]
+   ],
+   "this_card_driver_bounds": {
+    "billable_volume": [
+     0.0,
+     "inf"
+    ],
+    "tariff": [
+     0.0,
+     "inf"
+    ],
+    "other_revenue": [
+     "-inf",
+     "inf"
+    ]
+   }
+  },
+  "observed_probes": {
+   "OBS-PRICE-NEG": null,
+   "OBS-TARIFF-NEG": "driver infrastructure.tariff must be between 0.0 and inf: FY2027"
+  },
+  "consequence": "registered, not fixed: the driver-domain guard fires before the calculator, and a negative total would be refused as well. Whether the contract should admit negative prices is an owner decision; this attempt asserts no position."
+ },
+ "OQ_4_reserve_sign_routing": {
+  "applies_to_this_card": false,
+  "statement": "Within reserve_depletion the four reserve stock drivers are non-negative ([0, inf)) while `reserve_revisions` is explicitly signed ((-inf, inf)); a negative `additions` is therefore refused and every downward reserve movement must be routed through `reserve_revisions`.",
+  "enumerated_counts": {
+   "reserve_volume_driver_count": 5,
+   "reserve_volume_drivers_non_negative_count": 4,
+   "reserve_volume_drivers_signed_count": 1,
+   "reserve_volume_drivers": [
+    {
+     "driver": "reserve_depletion.additions",
+     "bounds": [
+      0.0,
+      Infinity
+     ],
+     "bound_source": "implicit"
+    },
+    {
+     "driver": "reserve_depletion.closing_reserves",
+     "bounds": [
+      0.0,
+      Infinity
+     ],
+     "bound_source": "implicit"
+    },
+    {
+     "driver": "reserve_depletion.depletion",
+     "bounds": [
+      0.0,
+      Infinity
+     ],
+     "bound_source": "implicit"
+    },
+    {
+     "driver": "reserve_depletion.opening_reserves",
+     "bounds": [
+      0.0,
+      Infinity
+     ],
+     "bound_source": "implicit"
+    },
+    {
+     "driver": "reserve_depletion.reserve_revisions",
+     "bounds": [
+      -Infinity,
+      Infinity
+     ],
+     "bound_source": "explicit driver_bounds"
+    }
+   ]
+  },
+  "observed_probe": {
+   "OBS-REVISION-POS": null,
+   "note": "a positive revision keeps the balance and does not change revenue"
+  },
+  "consequence": "registered as contract, not as a defect: the mapping must route signs correctly. No product change."
+ },
+ "OQ_5_concurrent_external_writer": {
+  "statement": "Production source files under scripts/ carry a LastWriteTime inside this attempt's window even though this attempt issued no write command against any production path; their sha256 values are byte-identical to the task anchors.",
+  "enumerated_counts": {
+   "files_with_mtime_inside_the_attempt_window": 13,
+   "file_list": [
+    "scripts/analysis/confidence.py",
+    "scripts/analysis/sensitivity.py",
+    "scripts/contracts/constants.py",
+    "scripts/contracts/document.py",
+    "scripts/forecast/calc.py",
+    "scripts/forecast/segments.py",
+    "scripts/generate_input_template.py",
+    "scripts/model_registry.py",
+    "scripts/research/targets.py",
+    "scripts/revenue_backtest.py",
+    "scripts/revenue_core.py",
+    "scripts/revenue_report.py",
+    "scripts/schema_compatibility.py"
+   ],
+   "distinct_mtimes": [
+    "2026-09-20 03:41:57"
+   ]
+  },
+  "consequence": "mtime alone cannot serve as an untouched-proof for production files in this window; the sha256 evidence can. Needs a binding ruling on how concurrent writers are treated."
+ },
+ "OQ_6_binding_provenance": {
+  "statement": "I-00-B binds the isolation plan and the two-stage command rule but materialises no checkout tree, so this attempt materialised its own read-only snapshot.",
+  "enumerated_counts": {
+   "isolated_snapshot_path": "iso/checkout_scripts",
+   "isolated_copy_equals_production": true,
+   "evidence": "evidence/M11/source_manifest.json -> isolated_copy_hashes"
+  },
+  "consequence": "the code under test is byte-identical either way; if the intended binding is a checkout materialised by I-00-B, that is a scope deviation to record."
+ }
+}

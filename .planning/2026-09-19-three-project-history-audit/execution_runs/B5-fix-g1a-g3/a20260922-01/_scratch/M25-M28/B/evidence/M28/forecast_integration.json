@@ -1,0 +1,50 @@
+{
+ "card_id": "M28",
+ "model_id": "aum_fee_bridge",
+ "status": "not_delivered_in_this_card",
+ "reason": "D/E belong to I-10-A and require a signed disclosure mapping plus a production forecast entry-point mapping reviewed independently; this attempt only owns A-C (formula) and must not fabricate D/E artefacts",
+ "what_the_implementation_offers": {
+  "opening_balance_anchor": {
+   "field": "base_aum_parameter_id",
+   "driver": "opening_aum",
+   "dimension": "monetary_balance"
+  },
+  "extension_opening_balances_in_the_isolated_copy": {
+   "subscription_arr_bridge": [
+    "base_arr_parameter_id",
+    "opening_arr",
+    "revenue"
+   ],
+   "installed_base_aftermarket": [
+    "base_installed_units_parameter_id",
+    "opening_installed_units",
+    "quantity"
+   ],
+   "store_cohorts": [
+    "base_stores_parameter_id",
+    "opening_stores",
+    "quantity"
+   ],
+   "aum_fee_bridge": [
+    "base_aum_parameter_id",
+    "opening_aum",
+    "monetary_balance"
+   ],
+   "finite_adoption": [
+    "base_unserved_market_parameter_id",
+    "opening_unserved_market",
+    "quantity"
+   ],
+   "inventory_sellthrough": [
+    "base_inventory_parameter_id",
+    "opening_inventory",
+    "quantity"
+   ]
+  }
+ },
+ "production_entry_points_read_only": [
+  "scripts/model_registry.py calculate_registered_model",
+  "scripts/forecast/segments.py calculate_model_path"
+ ],
+ "network_calls": "none"
+}

@@ -1,0 +1,160 @@
+{
+  "card": "DW15-REPAIR",
+  "attempt_id": "a20260922-01",
+  "date_utc": "2026-09-22",
+  "objective": "Repair the five defects in prune_retired_evidence.py and archive_retired_evidence.py in an isolated copy (REPAIR CODE ONLY). No production prune or archive execution of any kind; no real evidence data touched.",
+  "owner_ruling": {
+    "source": "PLAN/OWNER_DECISIONS.md §15 (2026-09-22, verbatim) and §16 re-confirmation (A-1 = b)",
+    "quote": "A-1，授权「修代码」卡",
+    "granted": "repair the two scripts per the proposal I-15-A already documented (execution_runs/I-15-A/a20260919-01/decision.md)",
+    "not_granted": [
+      "executing ANY production prune or archive run",
+      "touching real evidence data",
+      "promoting iso/fixed into the product repo (separate owner decision)",
+      "signing off this card (a data-recovery reviewer must re-sign; implementer never self-signs)"
+    ],
+    "post_repair_gate": "a data-recovery reviewer must re-sign before any real execution can happen — a separate future step, not part of this card"
+  },
+  "design_source_of_truth": {
+    "decision": {
+      "path": "execution_runs/I-15-A/a20260919-01/decision.md",
+      "sha256": "18a12d9e564a3131cefeb2d48a12d6fbcb4c9d6e141075b9f36ae93d5500eba8"
+    },
+    "i15a_oracle": {
+      "path": "execution_runs/I-15-A/a20260919-01/oracle.md",
+      "sha256": "7ad1ac77cc34e6ff34365872ca6493629fcd8ddf4c187df79f8506bd1bc24cdb"
+    },
+    "owner_decisions": {
+      "path": "PLAN/OWNER_DECISIONS.md",
+      "sha256": "4c9acf9ec95c8ec028b6e77719ddf32dbbbc1fb545c91cb702521d65a70aa2f3"
+    },
+    "frozen_rule_subset_applied": [
+      "W15-R1 authorisation only by verified archive manifest",
+      "W15-R2 per-row recoverability/digest identity",
+      "W15-R3 retention clock from verified_completed_at vs injected now",
+      "W15-R4 exact set + plan hash + TOCTOU re-verification, no silent narrowing",
+      "W15-R5 pending/per-batch receipts, crash recoverable"
+    ]
+  },
+  "dependencies": {
+    "I-00-A": {
+      "receipt": "execution_runs/I-00-A/a20260919-01/iso/venv/",
+      "used_for": "venv template (Python 3.13.9) copied into iso/venv",
+      "status_at_read": "present"
+    },
+    "I-15-A": {
+      "receipt": "execution_runs/I-15-A/a20260919-01/",
+      "used_for": "decision.md (source of truth), oracle rule set W15-R1..R8, fixed sample, harness fixture patterns (archive_verifier.py read-only), venv site-packages delta (pytest==9.1.1, pyyaml==6.0.3, requests==2.34.2 copied offline)",
+      "status_at_read": "present"
+    }
+  },
+  "interpreter": {
+    "path": "<attempt>/iso/venv/Scripts/python.exe",
+    "created_from_template": "execution_runs/I-00-A/a20260919-01/iso/venv/",
+    "version": "3.13.9 (Anaconda packaging)",
+    "offline_delta_from": "execution_runs/I-15-A/a20260919-01/iso/venv/Lib/site-packages (pytest 9.1.1, pyyaml 6.0.3, requests 2.34.2 + deps; no network used)",
+    "network": "none used"
+  },
+  "run_cwd_rule": "honest record: pytest and helper scripts were invoked with ABSOLUTE paths to this attempt's tests/ from the session working directory (the revenue-forecast checkout root) — they were NOT chdir'ed into the attempt. Consequences, disclosed: (a) the workspace-root .pytest_cache (pre-existing, gitignored) was refreshed by these runs and contains only this attempt's test node ids; (b) ALL fixture data still lives exclusively under %TEMP% (pytest tmp_path) and this attempt, enforced by guard_scratch; (c) nothing was ever opened under company-wiki/.source_catalog or the D: archive root. The company-wiki checkout, the review snapshot, and .source_catalog were never a cwd, never written, and never on sys.path.",
+  "variant_binding": {
+    "env": "DW15_VARIANT",
+    "values": {
+      "RED": "iso/baseline",
+      "GREEN": "iso/fixed",
+      "mutations": "mutants/m1 .. mutants/m5"
+    },
+    "rule": "exactly one variant tree on sys.path per pytest process; the product checkout is never imported"
+  },
+  "source_anchors_sha256": {
+    "CW/src/company_wiki/source_catalog/prune_retired_evidence.py": {
+      "sha256_before": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46",
+      "bytes_before": 4658,
+      "sha256_after_iso_fixed": "0c99bbe0c5f4ef16e7f84ba8aae0548ef6f59a0080274d5bd1ce83a7d37990b0",
+      "bytes_after_iso_fixed": 23115,
+      "matches_i15a_declared_hash": true,
+      "production_unchanged_after_this_attempt": true
+    },
+    "CW/src/company_wiki/source_catalog/archive_retired_evidence.py": {
+      "sha256_before": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0",
+      "bytes_before": 3291,
+      "sha256_after_iso_fixed": "bbe855e4495e82d2a40b0185c9db8efa2639449fdd5f768120538abb992b28ac",
+      "bytes_after_iso_fixed": 9894,
+      "matches_i15a_declared_hash": true,
+      "production_unchanged_after_this_attempt": true,
+      "note": "the cited defect instance archive_retired_evidence.py:65 gzip.open(out_path, 'wt') is gone: writes now go to a temp file that is verified and atomically published"
+    },
+    "review_snapshot_copy_equal_to_production": {
+      "path": ".review-zr407-20260818/company-wiki/src/company_wiki/source_catalog/",
+      "prune": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46",
+      "archive": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0"
+    },
+    "iso/baseline equals production (byte-verified)": {
+      "prune": true,
+      "archive": true
+    },
+    "iso/baseline vs iso/fixed tree comparison": {
+      "files_compared": 146,
+      "differing": [
+        "source_catalog/prune_retired_evidence.py",
+        "source_catalog/archive_retired_evidence.py"
+      ]
+    }
+  },
+  "neighbor_modules_read_only": {
+    "store.py": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615 (copied verbatim into iso trees, unmodified)",
+    "lock.py": "2303d3e5a4a790070b253cbf3a319b38be25d4d412da8f8e067726d0553d5b4c (copied verbatim, unmodified)",
+    "models.py": "65230572d355031d9634c9355939034d1dd8cb386bb98d1555e05184d4eb5087 (copied verbatim, unmodified)",
+    "section_query.py": "a40d54a36fe14fd0e76b322477885777ad2b3fa8b5263a2d8e726a2c63214f49 (copied verbatim, unmodified)",
+    "reconcile_retire_state.py": "b4db781af6f24f781b3ec25eaa20d7bbc7bd9da666e2356c28fd4ea4097afeb7 (copied verbatim, unmodified)"
+  },
+  "allowed_write_roots": [
+    "<attempt>/ (this attempt dir only)",
+    "%TEMP% (pytest tmp_path synthetic fixtures only)"
+  ],
+  "forbidden": [
+    "any production prune or archive execution — dry run or apply — against real data",
+    "opening the production catalog for writing (company-wiki/.source_catalog/catalog.sqlite3, 49,677,344,768 bytes)",
+    "deleting/moving/modifying any real evidence row or archive file",
+    "writing inside the product repo checkouts (company-wiki, filing-fetch) or the review snapshot",
+    "starting/resuming/steering the worker; touching worker_control.json",
+    "D: drive access, network, provider calls",
+    "git add/commit/restore/stash/switch in any repo (git diff --no-index is the only git use)",
+    "editing any other card's attempt or any frozen artifact",
+    "changing retention_days to 0 or disabling verification to make a case pass",
+    "self-signing acceptance"
+  ],
+  "negative_binding_test": {
+    "id": "DW15-neg-bind-1",
+    "implemented_in": "harness/dw15_fixtures.py guard_scratch()",
+    "purpose": "any fixture path resolving outside %TEMP% and this attempt, or containing .source_catalog, aborts with BINDING-REFUSED before anything is opened",
+    "status": "in force on every test run"
+  },
+  "production_repos_read_only_observed": {
+    "company-wiki": {
+      "head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+      "branch": "fcap",
+      "porcelain_observed_after_attempt": [
+        " M CLAUDE.md (pre-existing since before I-15-A's 2026-09-19 record)",
+        " M README.md (pre-existing since before I-15-A's 2026-09-19 record)",
+        " M src/company_wiki/source_catalog/artifact_dag.py (mtime 2026-09-20 12:48:46 — predates this 2026-09-22 attempt; another card's change, NOT written by this card)"
+      ],
+      "this_cards_operations_inside_the_repo": "robocopy READ + Get-FileHash READ of src/company_wiki only; no write of any kind",
+      "script_hashes_after_attempt": {
+        "prune": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46",
+        "archive": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0"
+      }
+    },
+    "revenue-forecast": {
+      "head_observed": "1d2288c0b1da160d331fd0927dd37a518d87e0b6",
+      "branch": "fcap",
+      "note": "this attempt performed no git write operation of any kind; head differs from I-15-A's 2026-09-19 record only due to other cards' pushes"
+    },
+    "filing-fetch": {
+      "head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+      "branch": "fcap"
+    },
+    "worker_control_sha256": "9fcbe233efe76222a32316c07b9273b9c5128da3af6db27d706b1759680ac7bd (identical to I-15-A's record; desired_state=paused, never opened for writing)"
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+}

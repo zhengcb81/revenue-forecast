@@ -1,0 +1,105 @@
+{
+ "card_id": "GATE-TIMEOUT-1200",
+ "attempt_id": "a20260922-01",
+ "card_title": "raise the pre-push gate subprocess timeout from 600s to 1200s (owner ruling section 16 B=a), with live red/green proof",
+ "binding_status": "bound",
+ "written_utc": "2026-09-22T07:36:00.8751898Z",
+ "anchor_values_established_utc": "2026-09-22T07:26:39.7407112Z",
+ "anchor_values_established_when": "at oracle.md freeze (evidence/oracle_freeze.json), BEFORE any modification to tools/pre_push_gate.py and before the RED arm started",
+ "binding_file_written_while": "the RED arm's early gate steps were already running; every anchor value below was fixed at freeze time and NONE of them was derived from any arm output. Disclosed, not hidden.",
+ "written_before_any_product_run": false,
+ "written_before_any_product_run_note": "the binding FILE landed during the RED arm; the BINDINGS (hashes, lists, environment facts) were all captured at freeze, before the change and before either arm. The freeze record is the pre-run proof.",
+ "owner_ruling": {
+  "source": "OWNER_DECISIONS.md section 16 (verbatim)",
+  "quote": "B: a（提高门超时到 1200，立卡红绿）",
+  "table_row": "| **B = a** | 门超时 600→**1200**，立卡红绿 | 与建议一致（改门不绕门，全测照跑照判） | 待无-bug 确认回来后执行 |",
+  "precondition": "section 15 B: 提高门超时，但先确认测试本身没有 bug + 确认无 bug 后才改 pre_push_gate.py，且须留红绿证据 — precondition satisfied by the given no-bug evidence (restated in oracle.md section 2)"
+ },
+ "authorized_change": {
+  "file": "tools/pre_push_gate.py",
+  "location": "function _run() signature default, line 73",
+  "before_text": "    cmd: list[str], label: str, timeout: int = 600, *, blocking: bool = True",
+  "after_text": "    cmd: list[str], label: str, timeout: int = 1200, *, blocking: bool = True",
+  "lines_changed": 1,
+  "anything_else": "NO other line of the gate may differ; changes.diff numstat must stay 1 1"
+ },
+ "hash_anchors": {
+  "tools/pre_push_gate.py before (= RED-arm state)": "0d290326200ebde819d3473589bd1aa0ed36da4806097d8a59dc8dc316fcc594",
+  "tools/pre_push_gate.py authorized after (= GREEN-arm state)": "cf09ade8164e89d79237ff5a8409496ab1ae2a9c5f3ee2c253ccad20ef06df0b",
+  "before_byte_copy": "before/pre_push_gate.py.orig",
+  "oracle_md": "112fbe37049fca51330f744d36d23aec7e4b072a00cac6a08c34a4d1a3f4b562",
+  "git_HEAD_at_freeze": "1d2288c0",
+  "git_HEAD_blob_of_gate_at_freeze": "b5725cb61d98b12a6ab9169b4556c1f2a4ab4e30",
+  "git_status_of_gate_at_freeze": "clean (empty git status --porcelain for the file)"
+ },
+ "environment": {
+  "cpu": "10 cores / 12 logical processors",
+  "ram_gb": 16,
+  "os": "Windows 11 (build 26120 family); shell: Windows PowerShell 5.1 Desktop",
+  "gate_interpreter": "C:\\Miniconda\\python.exe (Python 3.13.9)",
+  "python_flags": "-u (line-unbuffered stdout for truthful step timestamps; capture fidelity only, no gate logic change)",
+  "pre_existing_python_processes_at_freeze": 2,
+  "load": "shared machine; each arm ADDS exactly 8 cpu_burner.py busy loops (one per logical-processor budget as specified by the card)"
+ },
+ "gate_surface_read_from_source_at_freeze": {
+  "real_roots_tests_count": 7,
+  "real_roots_tests": [
+   "tests/test_zr803_chaos_recovery.py",
+   "tests/test_zr1103_journey_reverify.py",
+   "tests/test_ca203_weekly_t3.py",
+   "tests/test_fc1101_ci_manifest.py",
+   "tests/test_compatibility_manifest.py",
+   "tests/test_fc1002_three_process_e2e.py",
+   "tests/test_ca302_three_journeys.py"
+  ],
+  "real_roots_expected_test_count": "55 (given evidence; per-file sums 8+6+3+6+8+19+5 = 55 in REMEDIATION_REGISTER.md section 'E2E timeout' table)",
+  "real_data_tests_count": 10,
+  "steps_before_e2e": [
+   "ruff (CI WU-1.2 full scope)",
+   "compileall",
+   "unique test symbols (CI WU-1.1)",
+   "host assumption guard (FC-1307-a)",
+   "mypy public contracts (CI FC-1204-c set)",
+   "meta/binding tests (workflow byte-binding + manifest hashes)",
+   "UTF-8 BOM scan (CA-304/final_ratchet surface)",
+   "installed-skill consistency (check / possible sync / re-check)"
+  ],
+  "e2e_step_label": "real-roots E2E (CI real-roots job)",
+  "e2e_invocation": "pytest -q --tb=short <the 7 files> via subprocess.run(timeout=_run default)",
+  "meta_tests_own_pytest_timeout": "--timeout=180 per test (unchanged by this card)"
+ },
+ "given_no_bug_evidence": {
+  "statement": "given to this attempt as already-confirmed; restated in oracle.md section 2; NOT re-litigated here",
+  "items": [
+   "7 E2E files: NO xfail, NO time.sleep; 4 conditional pytest.skip exist, none triggered",
+   "full run 55 passed, 0 skipped, 0 xfailed in 419.34 s (light load)",
+   "slowest test 70.25 s, real work, no hang; top-20 durations show no hang-shaped outlier",
+   "under concurrent load the suite exceeded the 600 s cap: recorded TimeoutExpired artifacts (findings.md close-out; execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/PUSH_TIMEOUT_INCIDENT.md); sequential per-file under load totaled 861.7 s"
+  ]
+ },
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GATE-TIMEOUT-1200\\a20260922-01",
+  "tools/pre_push_gate.py — ONLY the single authorized line (owner section 16 B), flipped between the anchor and authorized states per arm"
+ ],
+ "disclosed_gate_side_effects_when_run_verbatim": [
+  "tools/sync_installations.py (gate step 8) may refresh stale installed skill copies under ~/.agents, ~/.claude, ~/.codex — the gate's own documented auto-sync behavior, not a change made by this card",
+  "pytest cache/temp artifacts under the repo",
+  "Python __pycache__ from compileall"
+ ],
+ "forbidden": [
+  "git add / commit / push / stash / checkout / reset / restore in any repo (the parent commits)",
+  "passing --skip-*, -k, --deselect, -x or any flag at all to the gate",
+  "changing any line of tools/pre_push_gate.py other than the one authorized line",
+  "editing tests/, e2e/, .planning/reviews, findings.md, OWNER_DECISIONS.md or any frozen audit evidence",
+  "writing under Projects/company-wiki or Projects/filing-fetch",
+  "network calls, real providers, LLM calls, publication",
+  "faking, inflating, or re-attempting the RED load (bounded to one live attempt)",
+  "self-signing acceptance (handoff stays review_pending)"
+ ],
+ "network": "disabled",
+ "qualification_state": {
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "created_during_attempt": true
+}

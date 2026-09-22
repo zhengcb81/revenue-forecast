@@ -1,0 +1,116 @@
+{
+ "card_id": "M01",
+ "first_required_driver": "growth_rate",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "driver": "growth_rate",
+   "index": 0,
+   "value": {
+    "__float__": -1.01
+   },
+   "why": "growth_rate below -1 leaves the documented [-1, inf) domain (card line 33/37)"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "driver": "growth_rate",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "bool is not a numeric ratio"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "driver": "growth_rate",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite value"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "driver": "growth_rate",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite value"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "driver": "growth_rate",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite value"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "driver": "growth_rate",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "path length 0 != len(years)=3"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "driver": "growth_rate",
+   "expected": "ModelRegistryError",
+   "why": "required driver missing"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "driver": "unknown_driver",
+   "value": [
+    1,
+    1,
+    1
+   ],
+   "expected": "ModelRegistryError",
+   "why": "unknown driver"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "empty fiscal-year list"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "value": {
+    "__bool__first__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "True is not a fiscal year"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "value": [
+    2027,
+    2029
+   ],
+   "base_input": "continuity_positive",
+   "expected": "ModelRegistryError",
+   "why": "fiscal years must be consecutive; growth compounding cannot bridge a gap year"
+  }
+ ]
+}

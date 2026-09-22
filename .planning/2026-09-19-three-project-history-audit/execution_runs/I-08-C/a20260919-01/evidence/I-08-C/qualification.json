@@ -1,0 +1,80 @@
+{
+ "card_id": "I-08-C",
+ "parent_card": "I-08",
+ "plan": "2026-09-19-three-project-history-audit",
+ "attempt_id": "a20260919-01",
+ "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-C\\a20260919-01",
+ "written": "2026-09-22 (bookkeeping landing of the round-2 reviewer verdict; no production write)",
+ "implementer_is_not_the_reviewer": true,
+ "formula": {
+  "state": "accepted_scoped",
+  "state_before_bookkeeping_fix": "review_pending",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "marker_field_note": "I-08-C has NO forecast formula. The field carries the card-level review state as a STATUS MARKER ONLY and grants no formula qualification. Formula qualification belongs to the I-10 / M01-M31 cards; disclosure_adaptation=unmapped and accuracy=unproven are unchanged by this card.",
+  "implementer_claim": "none - the implementer signed nothing",
+  "verdict_is_transcribed_not_authored": true,
+  "basis": "independent round-2 reviewer verdict carried by reviewer_report_r2.md (13285 B, sha256 ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a, pinned by reviewer_report_r2.md.sha256) and transcribed into review.md round-2 section; the round-1 section of review.md (lines 1-237 = pre-append bytes[0:13700]) is unchanged at sha256 c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3",
+  "not_yet_independently_reviewed": false,
+  "independent_review": {
+   "reviewer": "独立复核 (independent round-2 re-reviewer, read-only against production and against B1's attempt)",
+   "reviewed_at": "2026-09-22",
+   "rounds": [
+    {"round": 1, "verdict": "changes_required", "artifact": "review.md lines 9-237", "sha256": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3 (preserved verbatim as the review.md byte prefix)"},
+    {"round": 2, "verdict": "accepted_scoped", "artifact": "reviewer_report_r2.md line 10", "sha256": "ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a"}
+   ],
+   "scope_accepted": "verification/evidence + append-only oracle re-freeze (r4) + round-1 items (1)-(3) as implemented in B1's ISOLATED tree (iso/fixed/rf), behaviorally re-verified",
+   "explicitly_out_of_scope": [
+    "production promotion (owner decision; production revenue_publication.py still 183803bb…; RUN-B red on {e11,e13} reproduces the live F1/F3 product defect)",
+    "F2 production doc fix (document/deprecate validate_publication_receipt)",
+    "F4 anchor drift (publication_registry.py 44662744… -> 29aaae4f…)",
+    "invest-* consumers (INVEST-CORE card owns that site)",
+    "CLI transactions (no CLI publish transaction exercised)",
+    "disclosure_adaptation = unmapped and accuracy = unproven are unchanged"
+   ]
+  }
+ },
+ "carrier": {
+  "note": "This file TRANSCRIBES the reviewer's verdict. It is not a signature; the implementer never signs acceptance.",
+  "carrier_file": "reviewer_report_r2.md",
+  "carrier_sha256": "ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a",
+  "carrier_bytes": 13285,
+  "carrier_pin_file": "reviewer_report_r2.md.sha256",
+  "carrier_pin_content": "ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a  reviewer_report_r2.md (88 bytes, present and matching)",
+  "line_ranges": {
+   "verdict": "L10 (## VERDICT: accepted_scoped)",
+   "scope_accepted": "L12",
+   "explicitly_out_of_scope": "L14-L19",
+   "adjudication_three_options": "L21-L25",
+   "numbered_findings": "L27-L38",
+   "parent_requested_adjudications": "L40-L43",
+   "unverified_list": "L45-L54",
+   "authorship_footer": "L57"
+  },
+  "byte_proof": "re-hashed read-only during landing: 13285 bytes, sha256 ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a = the pinned value; verdict line L10 reads accepted_scoped",
+  "transcription_target": "review.md round-2 section (appended after line 237)",
+  "transcription_target_prefix_proof": "review.md[0:13700] re-hashed after the append = c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3 (round-1 section untouched)",
+  "verdict_is_transcribed_not_authored": true
+ },
+ "declarations": {
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer (独立复核), not by the implementer; this file and the review.md round-2 block carry it, they do not create it",
+  "production_writes": "none",
+  "self_signing": "none - the implementer authored no verdict, approval or acceptance sentence"
+ },
+ "disclosure_adaptation": "unmapped",
+ "accuracy": "unproven",
+ "carried_findings": [
+  "CF-I08C-1: production promotion NOT done — the security fix lives only in B1's iso/fixed/rf; live product defect (RUN-B {e11,e13} red) persists until owner promotes B1 (batch 2 candidate).",
+  "CF-I08C-2: F2 (receipt layer = hash-consistency only, documented limitation) stays pinned as accepted-by-design limitation; F4 (anchor drift 44662744… -> 29aaae4f…) open.",
+  "CF-I08C-3: invest-* consumers unverified here — the INVEST-CORE card (in review) owns that site.",
+  "CF-I08C-4: S-3 upheld — E1's tree-conditional assertion is a forced collateral of B1 REM-01(b) (validators stay unconditional on both trees; non-blocking caveat: branch couples expectation to a feature flag).",
+  "CF-I08C-5: oracle numbering r3->r4 deviation accepted (reusing a closed revision would violate the file's own rule; prefix-proved; disclosed in R4 header + handoff fix_record).",
+  "carried, not numbered: the reviewer's 8-item unverified list (reviewer_report_r2.md L45-L54) and the round-1 exploratory 8/12 stdout (permanently lost — old loss) remain carried forward unchanged."
+ ],
+ "mirrored_in": [
+  "review.md round-2 section (carried findings register, appended after line 237)",
+  "handoff.json carried_findings"
+ ]
+}

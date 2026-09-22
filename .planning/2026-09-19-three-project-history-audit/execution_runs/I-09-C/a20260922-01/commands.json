@@ -1,0 +1,211 @@
+{
+  "card_id": "I-09-C",
+  "attempt_id": "a20260922-01",
+  "exit_code_legend": {
+    "note": "self-describing legend required by START_HERE L90-115 before any cross-batch aggregation",
+    "harness_rc": {
+      "0": "harness pass — every selected case met its FROZEN expectation",
+      "1": "harness failure — tooling/import/path error (observed in i09c-c3 r1 and i09c-c4 inv-4; both are harness defects, superseded with disclosure)",
+      "2": "no verdict produced",
+      "3": "expectation not met — a frozen expectation failed (used by run_fault_matrix / run_concurrency / run_cli_matrix)"
+    },
+    "pytest_rc": "pytest's own exit code, passed through verbatim (0 = all passed, 1 = some failed)",
+    "producer_rc": "the product CLI child process exit code as observed via Popen.returncode (GetExitCodeProcess); never rewritten by this harness",
+    "kill_rc": 4242,
+    "kill_rc_meaning": "this card's TerminateProcess exit code; a raw 4242 IS the evidence of real termination (frozen F-table rc(A) for kill rows = '— (kill)')"
+  },
+  "binding": {
+    "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-C\\a20260922-01\\iso\\rf",
+    "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-C\\a20260922-01\\iso\\venv\\Scripts\\python.exe (3.13.9 Anaconda base; attempt-level venv per I-00-B; global Miniconda python never used as the run interpreter)",
+    "network": "disabled",
+    "registry_isolation": "REVENUE_PUBLICATION_REGISTRY injected per child process, always under this attempt's evidence/ tree; production registry never opened",
+    "binding_status": "bound (all entries below actually executed with these argv/cwd/env)"
+  },
+  "commands": [
+    {
+      "id": "i09c-c1-eol-reconstruction",
+      "purpose": "anchor quadruple proof (card / disk=HEAD blob / LF->CRLF render / conclusion)",
+      "cwd": "repo (read-only)",
+      "argv": ["pwsh", "-Command", "inline: Get-Sha over scripts/publication_registry.py + scripts/revenue_forecast.py, LF->CRLF render, git status/log cross-checks"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "evidence": "evidence/eol_reconstruction.txt"
+    },
+    {
+      "id": "i09c-c2-input-pin-hashes",
+      "purpose": "pin I-09-A oracle files + card/protocol/dependency receipts before any run",
+      "cwd": "repo (read-only)",
+      "argv": ["pwsh", "-Command", "inline: Get-FileHash over card/START_HERE/common_filing_cards/review_and_handoff/I-09-A(oracle,addendum,decision,handoff,review)/I-09-B(handoff,review)/I-08-C(qualification)"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "evidence": "binding.json.dependency_oracle_pins + input_hashes"
+    },
+    {
+      "id": "i09c-c3-iso-venv-setup-r1",
+      "purpose": "copy I-09-B accepted iso tree + create attempt venv + offline pytest stack",
+      "cwd": "attempt",
+      "argv": ["pwsh", "-Command", "inline: Copy-Item iso/rf; python -m venv; copy pytest/pluggy/iniconfig/packaging dirs from sibling venv"],
+      "expected_returncode": 0,
+      "raw_returncode": 1,
+      "actual_business_result": "FAILED: 'import pytest' -> ModuleNotFoundError: No module named 'py' (only directories had been copied). Harness defect; fixed in r2.",
+      "evidence": "session transcript; superseded by i09c-c3-r2"
+    },
+    {
+      "id": "i09c-c3-iso-venv-setup-r2",
+      "purpose": "complete the pure-python pytest stack merge (py.py + dist-infos)",
+      "cwd": "attempt",
+      "argv": ["pwsh", "-Command", "inline: copy *.py modules + missing dist-infos; python -c 'import pytest'"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "pytest 9.1.1 importable in the attempt venv; iso tree 6/6 hashes match I-09-B handoff"
+    },
+    {
+      "id": "i09c-c3-iso-venv-setup-r3",
+      "purpose": "copy missing cryptography binary (_cffi_backend) after T-PUB run1 exposed it",
+      "cwd": "attempt",
+      "argv": ["pwsh", "-Command", "inline: copy _cffi_backend.cp313-win_amd64.pyd; python -c 'from cryptography... import Ed25519PrivateKey'"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "ed25519 import OK"
+    },
+    {
+      "id": "i09c-c4-fault-matrix-inv1",
+      "purpose": "first full fault-matrix run (P-C1..P-C4 arms)",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_fault_matrix.py"],
+      "timeout_seconds": 600,
+      "expected_returncode": 0,
+      "raw_returncode": "TIMEOUT (outer 600s cap; stdout not captured)",
+      "actual_business_result": "stopped after K1/K2/K3 verdicts (all_ok=false, 182s each) + K3b pre-fault; cause = venv-launcher PID mismatch (barrier looked up under Popen.pid). First-round verdict bytes later overwritten by --force rerun -> disclosed in evidence/k_arms_first_attempt_supersession.md",
+      "evidence": "evidence/k_arms_first_attempt_supersession.md"
+    },
+    {
+      "id": "i09c-c4-fault-matrix-inv2",
+      "purpose": "smoke: F1 + one errno arm",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_fault_matrix.py", "--only", "F1_invalid_input", "--only", "PC1-E1_write"],
+      "expected_returncode": 0,
+      "raw_returncode": 3,
+      "actual_business_result": "seed P0 rejected: 'claim verification date is outside the allowed information set' (P0 as_of shifted BACKWARD one day is invalid). Fault arms themselves behaved (E1 rc=2 as frozen). Harness/input defect, fixed by shifting P0 as_of FORWARD (disclosed in harness/common.py comment)."
+    },
+    {
+      "id": "i09c-c4-fault-matrix-inv3",
+      "purpose": "same two arms after the as_of fix (shared inputs regenerated)",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_fault_matrix.py", "--only", "F1_invalid_input", "--only", "PC1-E1_write", "--force"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "2 cases, 39 checks, 0 failed"
+    },
+    {
+      "id": "i09c-c4-fault-matrix-inv4",
+      "purpose": "kill arms after the PID fix (first attempt)",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_fault_matrix.py", "--only", "PC1-K1_prepare_before", "--only", "PC1-K2_prepare_after", "--only", "PC1-K3_json_before", "--only", "PC1-K3b_json_tmp_opened", "--force"],
+      "expected_returncode": 0,
+      "raw_returncode": 3,
+      "actual_business_result": "harness_exception PermissionError WinError 5 on the READ-ONLY registry left by the previous round's seed (shutil.rmtree). Harness defect; fixed by chmod-before-rmtree in copy_inputs."
+    },
+    {
+      "id": "i09c-c4-fault-matrix-inv5",
+      "purpose": "same four kill arms after the rmtree fix",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_fault_matrix.py", "--only", "PC1-K1_prepare_before", "--only", "PC1-K2_prepare_after", "--only", "PC1-K3_json_before", "--only", "PC1-K3b_json_tmp_opened", "--force"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "4 cases, 105 checks, 0 failed; raw kill rc observed as 4242"
+    },
+    {
+      "id": "i09c-c4-fault-matrix-inv6",
+      "purpose": "all remaining arms",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_fault_matrix.py"],
+      "expected_returncode": 0,
+      "raw_returncode": 3,
+      "actual_business_result": "18 further arms ran; failing=2 at this point: F5_lock_not_implemented (no all_ok field yet) and F12_stdout_pipe (frozen {0,2} vs measured 120)"
+    },
+    {
+      "id": "i09c-c4-fault-matrix-inv7",
+      "purpose": "re-sign F5 as a documented gap and rerun F12 with a clean pipe construction",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_fault_matrix.py", "--only", "F5_lock_not_implemented", "--only", "F12_stdout_pipe", "--force"],
+      "expected_returncode": 0,
+      "raw_returncode": 3,
+      "actual_business_result": "F5 signed as UNCOVERED GAP (all_ok=true, is_a_passing_fault_test=false); F12 still fails the frozen numeric expectation with raw=120 -> retained as a true failure, NOT rerun to green"
+    },
+    {
+      "id": "i09c-c5-f12-attribution-probe",
+      "purpose": "isolate whether rc=120 is a product-process exit code or a harness artifact",
+      "cwd": "attempt (harness)",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\probe_f12.py"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "A (pipe with reader)=0, B (pipe with no reader)=120, C (stdout to file)=0; harness reserved code = 4242 only; conclusion: rc=120 is the product CLI child's own exit code under broken-pipe stdio flush",
+      "evidence": "evidence/cases/F12_stdout_pipe/pipe_controls.json"
+    },
+    {
+      "id": "i09c-c6-pc3-concurrency",
+      "purpose": "P-C3: two identical + two different publications with a continuously reading consumer",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_concurrency.py"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "12 checks 0 failed; registry rows=4, chain_ok=true, 258 continuous samples with 0 broken-chain accepts, logical commits p0=1/p1=1, audit problems=0, no lock token exists in publication_registry.py (F5 gap confirmed live)",
+      "evidence": "evidence/cases/PC3_concurrency/"
+    },
+    {
+      "id": "i09c-c7-pc5-cli-matrix",
+      "purpose": "P-C5: real CLI JSON+Markdown / stdout-only / markdown-without-output / library API / validate-only x2 / snapshot compat — all isolated registries",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "<attempt>\\harness\\run_cli_matrix.py"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "27 checks 0 failed; M2/M3 explicitly rejected (rc=2, 'requires --output', zero rows); M5/M6 zero-write; M7 two rows (forecast+snapshot), snapshot row without validation_status, chain ok",
+      "evidence": "evidence/cases/PC5_cli_matrix/"
+    },
+    {
+      "id": "i09c-c8-tpub-template-r1",
+      "purpose": "T-PUB (4 template test files) in the isolated checkout",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "-X", "utf8", "-B", "-m", "pytest", "tests/test_publication_pipeline.py", "tests/test_publication_registry.py", "tests/test_attestation.py", "tests/test_zr710_publication_txn.py", "-q", "-p", "no:cacheprovider", "--basetemp=<attempt>\\evidence\\tpub\\pytest-basetemp"],
+      "env": {"REVENUE_PUBLICATION_REGISTRY": "<attempt>\\evidence\\tpub\\registry\\publications.jsonl"},
+      "expected_returncode": 0,
+      "raw_returncode": 1,
+      "actual_business_result": "8 failed / 40 passed — ALL 8 = ModuleNotFoundError '_cffi_backend' in tests/test_attestation.py Ed25519 import: THIS CARD's venv merge defect, not a product/test failure. Output preserved verbatim (not overwritten).",
+      "evidence": "evidence/tpub/tpub_template.txt + evidence/tpub/README.md"
+    },
+    {
+      "id": "i09c-c8-tpub-template-r2",
+      "purpose": "T-PUB rerun after installing the missing extension binary",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "-X", "utf8", "-B", "-m", "pytest", "tests/test_publication_pipeline.py", "tests/test_publication_registry.py", "tests/test_attestation.py", "tests/test_zr710_publication_txn.py", "-q", "-p", "no:cacheprovider", "--basetemp=<attempt>\\evidence\\tpub\\pytest-basetemp-r2"],
+      "env": {"REVENUE_PUBLICATION_REGISTRY": "<attempt>\\evidence\\tpub\\registry\\publications.jsonl"},
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "48 passed (matches I-09-B's recorded 48 for these four files)",
+      "evidence": "evidence/tpub/tpub_template_rerun.txt"
+    },
+    {
+      "id": "i09c-c9-tpub-i09b-node",
+      "purpose": "the new test node bound by this card (tests/test_i09b_commit_protocol.py)",
+      "cwd": "iso/rf",
+      "argv": ["<venv>\\python.exe", "-X", "utf8", "-B", "-m", "pytest", "tests/test_i09b_commit_protocol.py", "-q", "-p", "no:cacheprovider", "--basetemp=<attempt>\\evidence\\tpub\\pytest-basetemp-i09b"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "actual_business_result": "11 passed",
+      "evidence": "evidence/tpub/tpub_i09b.txt"
+    },
+    {
+      "id": "i09c-c10-after-hashes",
+      "purpose": "post-run proof: production tree byte-identical to preflight, iso tree still = I-09-B accepted hashes",
+      "cwd": "repo (read-only)",
+      "argv": ["pwsh", "-Command", "inline: Get-FileHash over production scripts + iso files; git status --porcelain -- scripts/"],
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "evidence": "after/production_and_iso_hashes_after.txt, after/git_status_after_full.txt"
+    }
+  ],
+  "commands_executed_count": 19,
+  "unexecuted_planned": [],
+  "note": "no command in this card wrote to the production tree, the production registry, or any user package; every registry touched lives under evidence/ of this attempt"
+}

@@ -1,0 +1,115 @@
+{
+  "card_id": "E1E7-ERRATA-LANDING",
+  "attempt_id": "a20260921-01",
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "shell": "pwsh (fresh process per call) + python 3.13.9",
+  "execution_time_local": "2026-09-22 09:2x +01:00 (GMT Standard Time); UTC 2026-09-22 08:2x",
+  "time_note": "attempt id / 文件内日期标签为 2026-09-21（父卡指定）；本机实际执行时钟为 2026-09-22。差异登记见 evidence/provenance_time_note.json —— 追加节内文字不可回改（append-only）。",
+  "scope_note": "0 条触产品树，0 条写产品文件，0 条 pytest，0 条 git 写命令；全部 attempt-local 或只读",
+
+  "commands": [
+    {
+      "seq": 1,
+      "cmd": "Get-ChildItem <PLAN>/execution_runs/I-10-B/a20260919-01 ; Get-ChildItem execution_runs | Select Name",
+      "purpose": "定位 I-10-B attempt 与全部 M 卡目录（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 2,
+      "cmd": "read(handoff.json) / read(compatibility_impact.md) / read(decision.md)  [I-10-B/a20260919-01]",
+      "purpose": "读取 source of truth：E-1…E-7 清单、§3.2/§3.3/§3.4 逐条正文、DEC-I10B-1..5（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 3,
+      "cmd": "grep 'T1-12' <PLAN>/OWNER_DECISIONS.md ; read(OWNER_DECISIONS.md, offset=195, limit=55)",
+      "purpose": "读取 §13 T1-12 ① 形态要求原文（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 4,
+      "cmd": "Get-ChildItem execution_runs/{M05,M14,M20,M24}/a20260919-01",
+      "purpose": "确认四卡各只有一个 attempt 且 oracle.md 存在（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 5,
+      "cmd": "grep 'oracle' <each M-card>/handoff.json ; grep 'frozen_body|prefix_bytes|input_hashes_current' ...",
+      "purpose": "取每卡 handoff 对 oracle.md 的 pin 键与 pin 值（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 6,
+      "cmd": "Get-FileHash -Algorithm SHA256 <4×oracle.md> ; Get-FileHash I-10-B/handoff.json + compatibility_impact.md + decision.md + 4×M handoff.json",
+      "purpose": "记录 binding 前像 hash 与 source-of-truth hash（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 7,
+      "cmd": "python -c \"sha256(data[:N]) for N in (8774, 9367, 13074, 13382)\"",
+      "purpose": "pin 校验：四卡冻结体前缀 hash 逐一比对 handoff 记录值 —— 4/4 匹配（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 8,
+      "cmd": "python -c \"search all line-boundary prefixes of M05/oracle.md for handoff 7fda03b1…\" ; python -c \"rebuild = data[:8774] + data[8774:].replace(b'\\n', b'\\r\\n')\" ; git check-attr text eol -- .../M05/oracle.md ; git log --oneline -- .../M05/oracle.md",
+      "purpose": "M05 整文件 pin 值不符的归因：git `.gitattributes: *.md text eol=lf` 把 r2/r3 追加区 54 个 CR 归一化为 LF；按 LF→CRLF 还原后 sha256 = 7fda03b1… 且 14844 B —— 与 pin 值逐字节一致 ⇒ 判定 PINNED_OK（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 9,
+      "cmd": "grep 'defaults|OBS-|OQ-|210|signed_driver_probe' <4×oracle.md>",
+      "purpose": "定位每卡被指认旧行的行号（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 10,
+      "cmd": "write(E1E7-ERRATA-LANDING/a20260921-01/oracle.md)",
+      "purpose": "**开工前冻结本卡 oracle**（4 卡清单 / append-only 规则 / 前缀证明要求 / 零期望变化规则）——先于任何 M 卡 oracle 改动",
+      "rc": 0
+    },
+    {
+      "seq": 11,
+      "cmd": "write(evidence/landed_text/{M05,M14,M20,M24}.md)",
+      "purpose": "落定四份逐字追加载荷（E 项原文 + 旧/新值 + 未晋升声明 + provenance + 行级标注）",
+      "rc": 0
+    },
+    {
+      "seq": 12,
+      "cmd": "write(binding.json) —— 4 张卡的 sha256_before / bytes_before + pin 判定",
+      "purpose": "追加前冻结前像（写于触碰任何 M 卡 oracle 之后、追加之前）",
+      "rc": 0
+    },
+    {
+      "seq": 13,
+      "cmd": "python -X utf8 -B scripts/append_errata.py",
+      "purpose": "**唯一一次写 M 卡文件的命令**：逐卡 pin 复核 → 追加 → 前缀证明 → difflib 插入证明 → 出 evidence/。任一证明失败即回写原字节并 STOP 该卡",
+      "rc": 0,
+      "result": "APPENDED: M05, M14, M20, M24；stopped_or_skipped = {}"
+    },
+    {
+      "seq": 14,
+      "cmd": "python -X utf8 -B -c \"independent re-hash + exact-append match + os.walk mtime scan of the 4 attempt trees\"",
+      "purpose": "独立复核（不复用 seq13 的内存态）：4/4 prefix match、4/4 exact_append_match、且 4 棵 attempt 树中 2026-09-21 起被改动的文件**只有 4 个 oracle.md**（写 evidence/independent_verify.json）",
+      "rc": 0
+    },
+    {
+      "seq": 15,
+      "cmd": "Get-FileHash -Algorithm SHA256 <4×oracle.md>（PowerShell 侧二次复算）",
+      "purpose": "跨工具复算 after-hash，与 python 结果一致（只读）",
+      "rc": 0
+    },
+    {
+      "seq": 16,
+      "cmd": "write(decision.md) / write(handoff.json) / write(commands.json) / write(recovery/README.md)",
+      "purpose": "本 attempt 自身记账（handoff.status = review_pending；不自签）",
+      "rc": 0
+    }
+  ],
+
+  "raw_exit_codes": {"seq13_append_errata": 0, "seq14_independent_verify": 0},
+  "product_tree_commands": 0,
+  "product_files_written": 0,
+  "pytest_runs": 0,
+  "git_write_commands": 0
+}

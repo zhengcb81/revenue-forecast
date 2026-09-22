@@ -1,0 +1,169 @@
+{
+  "case_id": "PC4a_kill_during_recovery",
+  "card_point": "恢复中再次kill",
+  "f_row": "F11 + P-C4",
+  "rc_expectation_vs_raw": {
+    "expected": "kill(4242) then clean 0/0",
+    "raw_fault": 4242,
+    "raw_recovery_killed": 4242,
+    "raw_recovery1": 0,
+    "raw_recovery2": 0
+  },
+  "checks": [
+    {
+      "item": "seed_p0_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "barrier_reached_before_kill",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "kill_target_registered",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "initial_kill_executed",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "initial_writer_died_for_real",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "orphan_prepare_non_consumable",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "recovery_kill_registered",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "recovery_kill_executed",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "recovery_writer_died_for_real",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "still_non_consumable_after_killed_recovery",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_not_fabricated_rows",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "chain_ok_after_killed_recovery",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "recovery1_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_consumable_after_recovery1",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_logical_commits_after_recovery1",
+      "expected": 1,
+      "actual": 1,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "recovery2_rc",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p1_logical_commits_after_recovery2",
+      "expected": 1,
+      "actual": 1,
+      "ok": true,
+      "why": "second recovery idempotent"
+    },
+    {
+      "item": "chain_ok_after_recovery2",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "audit_problems_after_recovery2",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p0_intact",
+      "expected": {
+        "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+        "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+      },
+      "actual": {
+        "p0.json": "25a08f10962ac482cacb7b414ab0bb897968a7d8ddd400c1f2078c05807a06e0",
+        "p0.md": "de9eee949a0c669dbdd49bde14570cbb8ba4475e5636a2cc930a7a80adbea86b"
+      },
+      "ok": true,
+      "why": ""
+    },
+    {
+      "item": "p0_consumable_after_recovery2",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "why": ""
+    }
+  ],
+  "all_ok": true,
+  "elapsed_seconds": 6.49
+}

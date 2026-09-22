@@ -1,0 +1,262 @@
+{
+  "card": "I-14-E-APPLY",
+  "attempt": "execution_runs/I-14-E-APPLY/a20260921-01",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "carrier_bytes": 21411,
+    "carrier_sha256": "feaec562df3ff9a33516885c69c546a0b08d4660bcc877b349e76535c3a16ce7",
+    "carrier_sha256_pin": "reviewer_report.md.sha256 (verified equal at landing)",
+    "line_ranges": {
+      "verdict_declaration": "line 4",
+      "q1_ruling": "section 1.2, lines 16-24",
+      "scope_language_verbatim": "section 1.3, lines 26-35 (quote block 28-35)",
+      "verdict_summary_footer": "line 76"
+    },
+    "byte_proof": "21411 B and sha256 recomputed read-only at landing = pinned values; 7-point scope language copied verbatim into review.md",
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer": "独立复核",
+    "nature": "bookkeeping transcription, adds no acceptance of its own"
+  },
+  "bookkeeping": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "performed_by": "parent/owner carrier-landing bookkeeping (never the implementer), per carrier section 1.3 point 6"
+  },
+  "self_signed": false,
+  "signed_by": null,
+  "signing_rule_historical_pre_verdict": "The implementer never self-signs (oracle.md); adjudication belongs to an independent reviewer. status=review_pending means AWAITING REVIEW, not accepted - and oracle.md SS5's blocked-trigger on the non-vacuity arm is explicitly engaged, see open_questions[0].",
+  "signing_rule": "The implementer never self-signs (oracle.md). The verdict now on record is the independent reviewer's: accepted_scoped with Q1 = option (ii), conditional on the verbatim 7-point scope language in reviewer_report.md section 1.3 (reproduced in review.md). This handoff's status move is a bookkeeping transcription of that carrier verdict - verdict_is_transcribed_not_authored=true; the superseded pre-verdict text is retained as signing_rule_historical_pre_verdict.",
+  "what_this_card_is": "Apply-card for I-14-E's measured, never-applied test-side timing change (proposed-test-side-change.md, recommendation 1): derive the watchdog hang timeout from an in-test measurement of child launch latency - max(2.0, 4*t0) capped at the node's own semantic ceiling 4.0 s, rounded UP to whole seconds - instead of the fixed 0.5 s. Applied ONLY to the isolated copy under iso/; production stays read-only; assertion loosening (recommendation 3) is NOT used.",
+  "authorization": {
+    "source": "OWNER_DECISIONS.md section 16 (batch 7, verbatim)",
+    "ruling_quote": "E-2: 重跑",
+    "execution_row": "E-2 = 重跑 | I-14-E-APPLY 重跑 | 与建议一致（收缩为 4 臂 + 逐次落盘）| 派 re-run 卡",
+    "boundary": "production repos read-only in place; the change lives only under iso/ and promotion is a separate owner decision",
+    "secondary": "OWNER_DECISIONS.md section 13 T1-7 authorizes a card to fix the product test's timing assumption"
+  },
+  "oracle": {
+    "base": {
+      "path": "oracle.md",
+      "frozen_utc": "2026-09-21T23:10:00Z",
+      "role": "original frozen oracle (applied change form, R1-R4 definitions, non-vacuity node shape, no-assertion-loosening list)"
+    },
+    "addendum_A_B_provenance": {
+      "path": "execution_runs/I-14-E/a20260919-01/oracle-addendum-A.md and oracle-addendum-B.md",
+      "role": "read before this campaign as required: A = precedent for shrinking run counts without touching criteria; B = CF-I14F-X1 artifact-discrimination precondition (path vs load causation)"
+    },
+    "campaign_v2": {
+      "path": "oracle-addendum-C.md",
+      "frozen_utc": "2026-09-22T07:31:56Z",
+      "first_run_utc": "2026-09-22T07:55:53Z",
+      "frozen_before_first_run": true,
+      "sha256": "6321ae1d110ab0ea8f2a6e917f9bde370f815a2c0c5dadf8a204a17663b564e5",
+      "declares": "scope change to exactly 4 arms / 22 runs, per-run persistence, basetemp retention design, per-run self-expiring load, 180 s guard, and the pre-run-registered residual risks"
+    }
+  },
+  "campaign_v1_history": {
+    "disposition": "disclosed history - NOT deleted, NOT rewritten, not even opened for writing by this card",
+    "death": "STATUS_CONTROL_C_EXIT (0xC000013A)",
+    "evidence": [
+      "after/bench.log ends at '[23:38:02] ARM B4-nonvacuity-quiet START' with no EXIT line and no 'ALL ARMS DONE' (mtime still 2026-09-21 23:38:02)",
+      "after/arm-logs/B4-nonvacuity-quiet.log is 0 bytes (arm killed before its first line)",
+      "after/arm-logs/B5-clockmut-cpu8.log records 'ARM B5-clockmut-cpu8 EXIT=3221225786'"
+    ],
+    "v1_results_still_on_disk": {
+      "B1-fixed-quiet": "16/16 passed (after/bench-B1-fixed-quiet.json)",
+      "B2-fixed-cpu8": "15/16 passed; the single failure is subprocess.TimeoutExpired at the node's own timeout=15 with starts=1 (after/bench-B2-fixed-cpu8.json)",
+      "B3-mutant0.5-cpu8": "16/16 RED (after/bench-B3-mutant0.5-cpu8.json)",
+      "B5-clockmut-cpu8": "interrupted after run 1 (EXIT=3221225786)",
+      "B4-nonvacuity-*": "never produced a run (0-byte log)"
+    },
+    "why_v2_replaced_per_arm_persistence": "v1 batched results into one bench-*.json written at the END of each arm, so one termination zeroed the in-flight arm; v2 persists one JSON line per RUN (flush+fsync) plus an index rewrite after every append, bounding any loss to the single in-flight run."
+  },
+  "campaign_v2": {
+    "frozen_scope": "exactly 4 arms, 22 pytest node invocations (6+6+4+6); no mid-campaign expansion, no retries, no re-runs",
+    "window_utc": ["2026-09-22T07:55:53Z", "2026-09-22T08:19:57Z"],
+    "recorded": 22,
+    "planned": 22,
+    "outcomes": {"passed": 14, "failed": 7, "timeout": 1},
+    "runs_as_expected": 19,
+    "runs_not_as_expected": 3,
+    "arms": [
+      {
+        "arm": "A1-fixed-quiet",
+        "sut": "iso/T0 + iso/T0b (byte-identical, suite sha256 2719b835f968e44043f171141978a81868b050f88b241084acc47c6230fbb103), each run executes ITS OWN tree's suite",
+        "node": "test_child_without_runtime_session_is_terminated_and_restarted",
+        "condition": "quiet (card adds no load; external chrome-headless-shell load present, LoadPercentage 93-100)",
+        "N": 6, "tree_order": ["T0","T0b","T0","T0b","T0","T0b"],
+        "expect": "6/6 passed",
+        "result": "6/6 passed",
+        "as_expected": true,
+        "hang_timeouts_actually_used": [4],
+        "criterion": "R2' = 6/6 (shrunk from the frozen 8/8; 8/8 is NOT claimed)"
+      },
+      {
+        "arm": "A2-fixed-cpu8",
+        "sut": "iso/T0 + iso/T0b",
+        "node": "test_child_without_runtime_session_is_terminated_and_restarted",
+        "condition": "8 CPU burners (same shape as I-14-E and v1), warmup 1.5 s per run",
+        "N": 6, "tree_order": ["T0","T0b","T0","T0b","T0","T0b"],
+        "expect": "6/6 passed",
+        "result": "6/6 passed",
+        "as_expected": true,
+        "hang_timeouts_actually_used": [4],
+        "measured_t0_seconds": [1.895, 1.009, 0.951, 1.175, 1.154, 0.881],
+        "watchdog_kill_uptimes": [4.088, 4.046, 4.058, 4.053, 4.107, 4.003],
+        "load_pct_during_runs": [100, 82, 100, 91, 97, 91],
+        "criterion": "R1' = 6/6 - THE POINT OF THE CARD (the v1-era band failed under load; v1 B2 itself was 15/16)",
+        "note": "every run kept child_started == 2, exactly one session_start_timeout kill inside [4-0.1, 4+1.0], rc=0 - semantics preserved, assertion not loosened"
+      },
+      {
+        "arm": "A3-nonvacuity",
+        "sut": "iso/T0 + iso/T0b",
+        "node": "test_derived_hang_timeout_still_terminates_a_genuinely_hung_child",
+        "condition": "run1-2 quiet, run3-4 +8 CPU burners",
+        "N": 4,
+        "expect": "4/4 passed (PASS = the genuinely hung child WAS caught by the derived timeout)",
+        "result": "quiet 2/2 PASSED; cpu8 2/2 RED with subprocess.TimeoutExpired at the node's own outer timeout=15",
+        "as_expected": false,
+        "event_level_proof_all_4_runs": {
+          "watchdog_fired": "2 child_unresponsive per run, reason=session_start_timeout (all 4 runs)",
+          "kill_uptimes_vs_derived_4s_window_3.9_5.0": [[4.097, 4.042], [4.029, 4.088], [4.109, 4.038], [4.028, 4.016]],
+          "child_started_count": "3 in all 4 runs",
+          "verdict": "oracle.md SS5 checks (a)(b)(c) hold 4/4 - the derived timeout is NOT vacuous; the hung child was caught in every run"
+        },
+        "red_cause": "budget-RED, not vacuity-RED: the node needs 2 watchdog kills (2 x ~4 s) plus 3 child launches; under +8 burners this exceeds the node's frozen outer timeout=15, so pytest raises subprocess.TimeoutExpired BEFORE the node's assertions run. timeout=15 is frozen by oracle.md SS2.3 and was NOT touched.",
+        "criterion_status": "R3' NOT claimed as green: quiet 2/2 + event-level 4/4; oracle.md SS5's letter ('any RED => must report blocked, must not report a review_pending PASS') is EXPLICITLY ENGAGED and left to the reviewer/owner"
+      },
+      {
+        "arm": "A4-mutant05-cpu8",
+        "sut": "iso/mutant-derivation-0.5 (suite sha256 7669940109782a725ff0bb95187c9b2b19bf0dda0c77f2b4d4f0a5ccd7d66f95 = fixed tree with the derivation reverted to the literal 0.5; after/mutation.diff)",
+        "node": "test_child_without_runtime_session_is_terminated_and_restarted",
+        "condition": "8 CPU burners",
+        "N": 6,
+        "expect": "6/6 RED (test fails)",
+        "result": "5 RED + 1 guard-timeout; 0 PASSED",
+        "as_expected": false,
+        "detail": "hang_timeouts_actually_used=[0.5] in all 6 runs (mutation active); restart storms starts/kills = 8/8, 10/10, 3/2, 9/9, 9/9, 11/11; run6 red on the node's own AssertionError; run1 exceeded the 180 s per-run guard (wall 190.97 s) and was recorded as outcome=timeout and continued, per the frozen guardrail (no retry, no expansion)",
+        "criterion": "R4' - the fix is load-bearing: reverting to 0.5 yields ZERO passes under the same load (5 pytest-RED + 1 guard-timeout, formally 5/6 as-expected)"
+      }
+    ],
+    "persistence_design": {
+      "file": "after/campaign_v2.jsonl",
+      "lines": 22,
+      "torn_lines": 0,
+      "bytes": 466021,
+      "sha256": "8c227233a1a4e6c504eb704929242a20f53270cc230ac7c6a11baf6ea8677ee4",
+      "order_per_run": "run -> collect events/derivation -> reap known pids -> package retention (manifest -> flat copies -> ZIP) -> APPEND one JSON line (flush+fsync) -> atomically rewrite the index",
+      "index_file": "after/campaign_v2-index.json",
+      "index_sha256": "f8969098ebe3a12aaca862d7e12dd6b72c13cc83656e393c7eb2a22b3d6ed0fb",
+      "index_rewritten_after": "every append (atomic via temp file + os.replace), and rebuilt from the JSONL on start so the index is never ahead of the data",
+      "index_synced_with_jsonl": true,
+      "started_utc_monotonic": true,
+      "loss_upper_bound": "one in-flight run",
+      "resume_semantics": "a (arm, run) already present in the JSONL is skipped; never used this campaign (22/22 in one pass)",
+      "per_run_fields": "arm, run, outcome, returncode, wall_seconds, guard_seconds, started_utc/ended_utc, condition, tree, suite+sha256, basetemp_path, retention stats + full per-file manifest (rel/executed-abs-path/chars/bytes/sha256), events summary, derivation summary, load probe, machine load%, as_expected"
+    },
+    "retention": {
+      "rule": "CF-I14F-X1 - retain basetemp artifacts so path-vs-load causation stays auditable; today's cleanup would delete exactly that evidence",
+      "execution_basetemp": "%TEMP%\\i14eapply-v2\\<arm>-rNN\\pytest (69-72 chars; longest executed path 197-215 chars, below I-14-F's 240/241 degradation onset and far below 260)",
+      "cleanup_status": "the v2 driver contains NO rmtree of any basetemp; each run gets its own directory which pytest alone clears at that run's start; all 22 executed trees still exist in %TEMP% (basetemp_executed_tree_deleted=false x22)",
+      "zips": "after/campaign_v2-basetemps/<arm>-rNN.zip - 22/22 present, 254094 bytes, zip_entries == files_total for every run (591/591 files)",
+      "flat_copies": "after/campaign_v2-artifacts/<arm>-rNN/<idx>.<basename> - 22 dirs, 591 files, universally readable",
+      "manifest": "per-file manifest embedded in every JSONL line (relative path, executed absolute path + char count, bytes, sha256 for <=1 MiB files)",
+      "captures": "after/campaign_v2-captures/ - 60 files (per-run stdout, launcher events, derivation report)",
+      "artifact_discrimination": "worker_launcher_events.jsonl + worker_stdout-* + worker_stderr-* present in 22/22 runs => zero artifact-absence (path-causation) signatures; no failure in this campaign can be attributed to path length",
+      "why_zip_not_tree_copy": "measured BEFORE the first run: a tree copy of a run root into after/ needs 274-308 chars > MAX_PATH(260); the first PowerShell Copy-Item -Recurse died file-by-file with 'Could not find a part of the path' (itself an instance of I-14-F's path-failure family). Disclosed in oracle-addendum-C.md C4.4; my own partial copy was removed before the redo; the v1 %TEMP% originals were never touched.",
+      "v1_salvage": "after/v1-basetemps/*.zip (6 roots: B1, B2, B3, B5, smoke, iso - 129 files, ~1.45 MB, 0 errors) + after/v1-basetemps/v1-basetemp-manifest.json (760 KB per-file manifest); originals kept in %TEMP%"
+    },
+    "load_design": {
+      "shape": "8 busy loops (x=(x+1)%1000003), 1.5 s warmup, started/stopped PER RUN (harness/load_v2.py; v1's harness/load.py untouched)",
+      "self_expiring": "each burner self-terminates after guard+120 = 300 s, so even a hard kill cannot leave permanent orphans",
+      "post_campaign_check": "0 orphan burners/launchers found after the campaign (the only matches were the check's own processes)",
+      "external_load": "10 chrome-headless-shell processes present throughout; LoadPercentage 82-100 during runs - 'quiet' means 'this card adds no load', per I-14-E addendum A1's wording"
+    },
+    "guard": {"seconds": 180, "hits": 1, "hit_runs": ["A4-mutant05-cpu8 run1"], "policy": "recorded as outcome=timeout and continued; no retry, no scope expansion"},
+    "criteria_reconciliation": {
+      "R1_prime": "6/6 PASS under +8 burners - MET at the v2 (shrunk) size; the frozen 8/8 was NOT tested (declared in advance, addendum C1/C7.4)",
+      "R2_prime": "6/6 PASS quiet - MET at the v2 size; 8/8 not tested",
+      "R3_prime": "quiet 2/2 PASS; event-level (a)(b)(c) 4/4; cpu8 2/2 pytest-RED on the frozen outer timeout=15 - NOT claimed green; oracle.md SS5 blocked-trigger engaged, reviewer adjudication required",
+      "R3_prime_post_review": "SUPERSEDES the pending-adjudication clause above (pre-verdict text retained): reviewer adjudicated accepted_scoped, Q1 = option (ii); the §5/C1/C7.2 blocked-trigger is adjudicated NOT engaged for this campaign (card-specific); pytest-level R3 under cpu8 remains UNVERIFIED - see carrier reviewer_report.md section 1.3",
+      "R4_prime": "0/6 passed under the mutant (5 pytest-RED + 1 guard-timeout) - the fix is load-bearing"
+    },
+    "deviations_from_expectation": [
+      "A3 non-vacuity: 2 of 4 runs RED (both +8-burner runs) - expected 4/4 PASS",
+      "A4 mutant: 1 of 6 runs recorded as guard-timeout rather than pytest-RED - expected 6/6 RED",
+      "aggregate: 19/22 runs as-expected"
+    ]
+  },
+  "production_readonly": {
+    "tool": "harness/final_hashes.py --verify -> after/final_hashes.json",
+    "sut_repo_company_wiki": {
+      "holds": true,
+      "head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939 (unchanged)",
+      "porcelain": "exactly the 3 pre-existing modifications (CLAUDE.md, README.md, src/company_wiki/source_catalog/artifact_dag.py) - unchanged",
+      "scanned_content": "tests/contract + scripts content hash unchanged",
+      "claim": "this card wrote nothing into the production SUT repo"
+    },
+    "daily_news": {"holds": true},
+    "revenue_forecast_workspace_repo": {
+      "holds": false,
+      "diff": "git head 8431ba78 -> 1d2288c0; porcelain 157 -> 99 lines",
+      "cause": "concurrent planning commits by other rounds (rounds 67-76, author zhengcb81, 2026-09-22 00:03-07:17, e.g. 'audit(planning): round 76 - I-14-D r6 ...') between the freeze snapshot (2026-09-21 22:48+) and this verify",
+      "attributable_to_this_card": false,
+      "why": "this card ran no git write command; every write it made is inside this attempt directory",
+      "disclosure": "therefore the scanner's 3-tree assertion production_readonly_holds=false is reported VERBATIM, not hidden; the card-level claim (production SUT repo untouched) holds"
+    },
+    "verify_exit_code": 2
+  },
+  "artifacts_index": {
+    "oracle": ["oracle.md", "oracle-addendum-C.md"],
+    "v2_results": [
+      "after/campaign_v2.jsonl",
+      "after/campaign_v2-index.json",
+      "after/campaign_v2-summary.json",
+      "after/campaign_v2-analysis.md",
+      "after/campaign_v2-analysis.json",
+      "after/campaign_v2.log",
+      "after/campaign_v2-captures/ (60 files)",
+      "after/campaign_v2-artifacts/ (22 dirs, 591 files)",
+      "after/campaign_v2-basetemps/ (22 zips)"
+    ],
+    "retention_v1": ["after/v1-basetemps/ (6 zips + v1-basetemp-manifest.json)"],
+    "hashes": ["after/final_hashes.json", "before/freeze_instant.json", "before/binding_hashes.json", "before/production_readonly_snapshot.json"],
+    "fix_diffs": ["after/diff.patch (applied change, iso vs production)", "after/mutation.diff (mutant-derivation-0.5 vs iso/T0)", "after/timing-mutation.diff (unused clock mutant, v1 leftover)"],
+    "harness": ["harness/run_campaign_v2.py", "harness/load_v2.py", "harness/analyze_campaign_v2.py", "harness/archive_v1_basetemps.py"],
+    "v1_history_read_only": ["after/bench.log", "after/arm-logs/B1..B5.log", "after/bench-B1-fixed-quiet.json", "after/bench-B2-fixed-cpu8.json", "after/bench-B3-mutant0.5-cpu8.json", "after/bench-captures-*/"]
+  },
+  "open_questions": [
+    {
+      "id": "Q1",
+      "severity": "blocking-for-signature",
+      "question": "oracle.md SS5 says: if the non-vacuity arm shows ANY RED, the card must report blocked and must not report a review_pending PASS. Arm A3 has 2 REDs (both +8-burner runs), caused by the node's frozen outer timeout=15 while the events prove the watchdog fired and the hung child was caught (starts=3, 2 kills inside the derived 4 s window) in all 4 runs. Does SS5's letter apply to budget-RED, or only to vacuity-RED (watchdog never fired)?",
+      "evidence": "after/campaign_v2.jsonl arm=A3-nonvacuity (4 lines), after/campaign_v2-analysis.md section 2",
+      "options_not_taken": ["raise the node's outer timeout=15 (another test-side timing change; needs owner authorization, outside this card's frozen scope)", "judge R3 on quiet-only evidence", "rule blocked and open a follow-up card"],
+      "adjudication": "reviewer/owner - the implementer does not self-sign",
+      "post_review_annotation": "ruled_option_ii_by_reviewer (see carrier)"
+    },
+    {
+      "id": "Q2",
+      "severity": "low",
+      "question": "R1/R2 were shrunk from the frozen 8/8 to 6/6 by the owner-authorized scope change; the 8/8 claim is therefore untested in v2. Is the shrunk size acceptable for acceptance, or does the reviewer want an 8/8 top-up arm (would be a scope change requiring a new addendum)?",
+      "adjudication": "reviewer/owner",
+      "post_review_annotation": "not_blocking"
+    },
+    {
+      "id": "Q3",
+      "severity": "low",
+      "question": "final_hashes --verify returns exit 2 solely because the shared revenue-forecast workspace repo received other rounds' planning commits during the campaign window; the production SUT repo is byte-identical. Accept the per-repo split as disclosed, or re-snapshot?",
+      "post_review_annotation": "accepted_as_disclosed_with_evidence",
+      "adjudication": "reviewer"
+    }
+  ],
+  "not_done_by_design": [
+    "no production write, no promotion (promotion is a separate owner decision)",
+    "no assertion loosening (recommendation 3 explicitly not used; child_started == 2, timeout=15, poll=100 ms all unchanged)",
+    "no scope expansion, no retries, no confirmation arms (v1's confirm_arms.py not invoked)",
+    "no rewriting or deletion of the interrupted v1 logs and results",
+    "node 2 (logon wrapper) and the clock-mutant arm are out of v2 scope (declared in oracle-addendum-C.md C1)"
+  ]
+}

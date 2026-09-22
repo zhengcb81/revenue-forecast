@@ -1,0 +1,133 @@
+{
+  "card_id": "I-14-D",
+  "attempt_id": "a20260919-01",
+  "objective": "Narrow the pre-break auth-value redaction semantics to a single non-whitespace token (the [^\\s]+ change at observability.py:329) with this card's own frozen oracle and rule-table harness pair, leaving the frozen C13 multiline-loss baseline untouched; this file records the r7 bookkeeping landing of the resulting scoped acceptance.",
+  "implementer_is_not_the_reviewer": true,
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "scope": "the EVIDENCE and the CRITERIA as of the r7 review -- the r7 record fix and the r6 grants that review verified -- not the product change itself and not any promotion",
+    "scope_en": "scope = the evidence and criteria as of r7: the four items of the r6 section-9 fix list registered/corrected and reproduced by the independent reviewer's own instruments; the [^\\s]+ fix closing F-REV-R5-01 within its stated domain; harness counts (oracle 44 rc 0 pass; rule table 95 rows rc 3 negative-by-design since r3) reproduced; generation isolation proven. This is NOT an authorisation to promote: not_an_authorisation_to_promote = true, because promotion is a separate owner decision (batch-2 candidate) and the carried findings remain open.",
+    "scope_zh": "I-14-D 的证据与判据在 r7 复核时成立：r6 第 9 节修复清单四项均登记、更正并由独立复核者自有工具复现；[^\\s]+ 修复在声明域内关闭 F-REV-R5-01；oracle 44 例 rc 0 pass、规则表 95 行 rc 3 自 r3 起按设计 negative 的计数均复现；代际隔离由窗口移除重构证明。本记录不授予推广：推广是 owner 的独立决定（batch-2 候选），carried findings 仍未关闭。",
+    "not_an_authorisation_to_promote": true,
+    "promotion": "promotion of the [^\\s]+ fix is a separate owner decision, ungranted here; recorded as a batch-2 candidate",
+    "implementer_measurement": "the counts, pins and findings above were measured and verified by the independent r7 reviewer; the implementer claims nothing on its own behalf here",
+    "granted_by": "a separate independent reviewer only; the implementer never writes 'accepted'",
+    "reviewer": "独立复核",
+    "carrier": {
+      "path": "reviewer_report_r7.md",
+      "sha256": "cc6da8d3878dbd942bc6d47bdd750913d1c0646742e22c737ffe73191f610076",
+      "sidecar": "reviewer_report_r7.md.sha256 carries exactly this digest (verified at landing)",
+      "prior_round_pin": "reviewer_report_r6.md stays pinned at f1c9761d80679fb9f0258ac7eb786557fc9296762764183883e1f7b22262a74f"
+    },
+    "reviewer_verdict_location": {
+      "carrier_path": "reviewer_report_r7.md",
+      "carrier_heading": "## 0. VERDICT",
+      "carrier_verdict_line": 11,
+      "carrier_scope_lines": "12-15",
+      "verdict_text": "accepted_scoped",
+      "mirror_path": "review.md",
+      "mirror_heading": "## r7 verdict (2026-09-22) — the independent reviewer returned `accepted_scoped` (transcribed, unsigned)",
+      "mirror_block_lines": "396-416 (heading at 397)",
+      "line_numbering": "1-based"
+    },
+    "declarations": {
+      "note": "transcribed from the carrier, each with its domain; declarations are evidence statements, not new acceptance",
+      "F_REV_R5_01_closed": "[^\\s]+ closes F-REV-R5-01 (domain: 95 printable ASCII @ pre-break, shapes Bo<c>\\n / Bo<c>t\\n, trees r4/r5/r6); whitespace \\t \\r \\v \\f \\n is outside that domain and still leaks -- the registered C10 OPEN shape",
+      "F_REV_R6_01_closed": "4 dual-payload registered_open rows registered in both instruments, each carrying the 21-char marker AND the 39-char non-marker credential in input and in declaration, with the C7.2 family+domain paragraph; the reviewer's probe reproduces leak-on-narrow / redact-on-base for all four inputs",
+      "F_REV_R6_02_closed": "same-line domains at all 3 sites (the two r7-owned sites are append-supersessions whose byte proofs hold exactly; site 3 is the parent agent's task_plan.md, corrected there)",
+      "F_REV_R6_03_closed": "16 -> 18 as a sole 2-byte in-place cell edit, reconstructable to the r6 pin, old value retained as superseded at every site r7 owns (domain: 95 printable ASCII, shape Bo<c>t\\n, r4 tree -- 18 of 95 leak)",
+      "harness_oracle": "44 cases, rc 0, verdict pass, registered_open = 6 (confirmed 6) -- the reviewer's own re-run",
+      "harness_rule_table": "95 rows, rc 3, verdict negative BY DESIGN since r3 -- rc 0 is claimed nowhere for the rule table (domain: the three r7 carriers, grep-verified by the reviewer)",
+      "isolation": "generation isolation proven by window-removal reconstruction (r3/r4/r5 harness pins, r3-r6 tree pins, production anchor scripts/model_registry.py = 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f / 26446 B unchanged, zero non-pyc writes under iso/ since the r6 review)",
+      "carried_list_not_closed": "F-REV-R3-02/03/05/06..10, F-REV-R4-02, F-REV-R5-03..08 remain registered-unaddressed -- no silent closure (domain: grep across review.md and the handoff r7 block)",
+      "c10_rows": "the two C10 rows still carry only the 39-char form (domain: exactly R3a/R3b and open-two-token-then-wrap/open-quoted-two-token); r7's four rows close the marker gap for their own family only",
+      "promotion": "promotion of the fix is a separate owner decision, ungranted here (batch-2 candidate)",
+      "boundary": "this landing wrote no production file and ran no git command; the implementer never signs acceptance"
+    }
+  },
+  "disclosure_adaptation": {
+    "state": "unmapped",
+    "reasons": [
+      "this card is a redaction-contract audit card; it produces no disclosure mapping and no accounting artefact",
+      "nothing in the r7 scope addresses disclosure guidance, so this qualification was not touched by this pass"
+    ],
+    "not_granted_by_this_attempt": true,
+    "touched_by_this_pass": false
+  },
+  "accuracy": {
+    "state": "unproven",
+    "reasons": [
+      "this card audits a pre-break token redaction contract with synthetic markers; it makes no accuracy claim about any data, model or forecast",
+      "no accuracy evaluation exists in the r7 scope, so this qualification was not touched by this pass"
+    ],
+    "not_granted_by_this_attempt": true,
+    "touched_by_this_pass": false
+  },
+  "three_qualifications_are_distinct": true,
+  "mirrored_findings": {
+    "note": "mirrored from reviewer_report_r7.md sections 7 and 1 by transcription only; none is re-adjudicated, closed or downgraded here",
+    "F-REV-R7-01": {
+      "class": "INFO",
+      "text": "the pre-r7 bytes of handoff_r6.json were never pinned (the r6 report recorded no handoff sha; grep found none), so 'r6 content of that carrier untouched except the 16->18 line and the inserted r7 block' is verified only field-by-field and by JSON validity, not by reconstruction",
+      "domain": "that one carrier; all other carriers have pins the reviewer reproduced",
+      "status": "open INFO, none blocking",
+      "landing_addendum": "from this landing onward a pin exists: handoff_r6.json sha256 42b10429090237ea247e65901667f7e574d5e6107306602bfcedc0946fed6ae8 immediately before this bookkeeping edit, 98bf31aca9c672c578e34260b83044829da9272887dc679143a5e058e1e3e173 after -- it pins this landing's delta, not the pre-r7 state"
+    },
+    "F-REV-R7-02": {
+      "class": "INFO",
+      "text": "record nit: the carriers' command notation --src iso/product_narrow_r6/src (forward slashes) does not reproduce the pinned measure-file bytes; the pins were produced with --src .\\iso\\product_narrow_r6\\src (+5 JSON bytes from escaped backslashes). Counts, rc and verdict are identical either way; only byte-reproduction of the outputs needs the exact form",
+      "domain": "the two files in execution_runs/_r7_measure_20260922/",
+      "status": "open INFO, none blocking"
+    },
+    "F-REV-R7-03": {
+      "class": "INFO",
+      "text": "review.md ## r7 and the handoff r7 block do not restate the full carried list; it survives only via the untouched ## r6 section. Not a closure, but a future reader of ## r7 alone sees a shorter carried inventory",
+      "domain": "those two r7 texts (both left byte-untouched by this landing)",
+      "status": "open INFO, none blocking",
+      "landing_note": "the appended review.md '## r7 verdict' block (L396-416) restates the full carried list for future readers; this mitigates the reader gap without editing the ## r7 record-fix section the finding is about"
+    },
+    "reviewer_disclosure_measure_files": {
+      "class": "DISCLOSURE (reviewer's own, section 1)",
+      "text": "the reviewer's first runs passed --src as an absolute path and then in forward-slash relative form; because the report JSON embeds args.src verbatim, those runs produced byte-different (count-identical) outputs and overwrote the two measure files in execution_runs/_r7_measure_20260922/. It then re-ran the exact invocation the pins were made with (--src .\\iso\\product_narrow_r6\\src) and both files now hash byte-identically to the pins recorded in handoff_r6.json",
+      "restored_pins": {
+        "oracle_r7_harness.json": "1a859a5c9af2a4e3f60faa5eaea018d1e2e475c26153f18dd5810925723fbe37",
+        "rule_r7_harness.json": "405abfaaae041aa9aba1d395cac25769faf03a457435320a008dcdda1ae18690"
+      },
+      "domain": "the two files in execution_runs/_r7_measure_20260922/, verified by sha equality after the reviewer's final run",
+      "note": "counts, rc and verdicts were identical in every run; the evidence is restored exactly and independently regenerated"
+    }
+  },
+  "carries_that_do_not_block_the_scoped_acceptance": [
+    "the carried-unaddressed list F-REV-R3-02/03/05/06..10, F-REV-R4-02, F-REV-R5-03..08 (registered, not closed)",
+    "the registered C10 OPEN residual: the two C10 rows remain credential-only (domain: R3a/R3b and open-two-token-then-wrap/open-quoted-two-token)",
+    "the rule table exits rc 3 / negative by design since r3 -- never reported as rc 0",
+    "F-REV-R7-01/02/03 (INFO, none blocking) and the reviewer's section-8 unverified list",
+    "promotion into the production tree was never attempted (no production write, no git write)"
+  ],
+  "owner_decisions_carried_verbatim_not_decided_here": [
+    "whether the [^\\s]+ fix is promoted (batch-2 candidate; a separate owner decision, ungranted by this card)",
+    "whether C13's frozen multiline loss ever gets re-opened (frozen by design; would move the E4b 193 baseline)",
+    "whether task_plan.md Round 76 keeps the corrected wording (the parent agent's file; the r7 report carries its exact old->new text)",
+    "whether the rule-table rc 3 / negative-by-design semantics is ever changed (r3-era design)"
+  ],
+  "bookkeeping": {
+    "recorded_by": "the r7 carrier-landing subagent (delegated), as a transcription/bookkeeping executor only",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer; this file mirrors it",
+    "acceptance_author": "the independent r7 reviewer session (2026-09-22), report reviewer_report_r7.md, sha256 cc6da8d3878dbd942bc6d47bdd750913d1c0646742e22c737ffe73191f610076",
+    "verdict_carrier_line": "reviewer_report_r7.md line 11 (section heading line 9, scope lines 12-15)",
+    "verdict_block_in_review_md": {
+      "path": "review.md",
+      "line_start": 396,
+      "line_end": 416,
+      "line_numbering": "1-based, inclusive; heading at 397; L1-L395 byte-untouched (append-only: sha256 of the first 26172 B still = 163cb939a11da0f245823ad24bb3ad1949890c02afced41ea53308343a58f373, the pre-append pin)",
+      "appended_at_utc": "2026-09-22"
+    },
+    "scope": "bookkeeping only: review.md gained one appended section, handoff_r6.json gained status/status_before_bookkeeping_fix/status_authority/bookkeeping annotations, this file was created; disclosure_adaptation and accuracy are untouched",
+    "production_writes": 0,
+    "git_write_commands": 0,
+    "plan_reviews_touched": false
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "rem79-mutation-manifest/1",
+  "red_sets_declared_in": "oracle_table.json (frozen before these files existed)",
+  "mutations": {
+    "a_strip_domain": {
+      "source": "corpus/neg_domain_lines.md",
+      "source_sha256": "5312e2211aa65f213d46c4a249d21377c9290798930ac565ca02b1a876de3e9c",
+      "target": "mutations/a_strip_domain.md",
+      "target_sha256": "8b62f3b5d6f5693283d34dbd84705ddf417421621231fb3ec7116494f329c3fc",
+      "operation": "delete substring （**域：…落于本行**） from payload line 4 only",
+      "expect_flagged_lines": [
+        4
+      ]
+    },
+    "b_add_domain": {
+      "source": "corpus/pos_synth_frev_r406.md",
+      "source_sha256": "4279c6957aa6cf792056062edd79d10c29689124bb3b0d1ef4401dc4d45ebbec",
+      "target": "mutations/b_add_domain.md",
+      "target_sha256": "ad19b87c26b8ac7bdef3a3075a6b7dcc8afa1317f60a2f7d862f6b1df5e298cc",
+      "operation": "append ' (domain: 19-probe measurement set)' to payload line 4 only",
+      "expect_flagged_lines": []
+    },
+    "c_offbyone": {
+      "source": "corpus/pos_synth_frev_r502.md",
+      "source_sha256": "087011fa33587b9526d73d649045d3f074adbb2f8f941bc763057d2d2850b55d",
+      "target": "mutations/c_offbyone.md",
+      "target_sha256": "d6c2ba7b07dcad69fd4be6eb60399979173d0f0de57949adb5fe6adc0ec31baa",
+      "operation": "insert one empty line at the top (payload moves line 4 -> line 5)",
+      "oracle_baseline_payload_line": 4,
+      "expect_reported_payload_line": 5
+    }
+  }
+}

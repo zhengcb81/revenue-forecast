@@ -1,0 +1,238 @@
+--- M29-M31/run_card_before.py
++++ M29-M31/run_card.py (B5-fix-g1a-g3)
+@@ -25,8 +25,22 @@
+                       is not a plain finite number, non-sequence container)
+   3 = negative verdict the comparison was possible and did not hold: the positive
+                       path raised or fell outside tolerance, the continuity
+-                      positive did not match, or at least one negative case was NOT
+-                      rejected as expected
++                      positive did not match, at least one negative case was NOT
++                      rejected as expected, or a rejected case's exception type did
++                      not match the per-case expectation DECLARED in cases.json
++
++Additional per-case enforcement (REM-21 / B5 F-01)
++--------------------------------------------------
++cases.json carries a frozen per-case ``expected`` field naming the exception type
++the case must raise.  This runner ENFORCES that declaration by comparing it with
++the raised exception's EXACT type name (``type(exc).__name__ == case["expected"]``).
++isinstance() must NOT be used for this comparison: ModelRegistryError is a subclass
++of ValueError, so a declared "ValueError" would silently pass under isinstance().
++An unusable declaration (missing, or not a non-empty string) is not a judgement at
++all: it makes the declared-expectation set unusable and the run reports NO VERDICT
++(rc=2) under reason ``cases_json_declared_expectation_missing:<ids>``, evaluated
++BEFORE any case is judged.  rc=3 is used only when a judgement was possible and did
++not hold.
+ 
+ Precedence when several conditions hold at once: 1 > 2 > 3 > 0 (a harness failure
+ dominates; "no verdict could be issued" dominates "the verdict is negative").
+@@ -372,11 +386,37 @@
+         result["observations"].append(entry)
+ 
+     # ---------------- negatives ----------------
++    # REM-21 / B5 F-01: each case DECLARES its expected exception type in the frozen
++    # cases.json (written by the independent oracle script).  The runner must enforce that
++    # declaration, not merely "some ModelRegistryError was raised": the declared name is
++    # compared against the exception's EXACT type name.  isinstance() must NOT be used for
++    # this comparison, because ModelRegistryError is a subclass of ValueError and a
++    # declared expectation of "ValueError" would then silently pass.
++    #
++    # Classification is MUTUALLY EXCLUSIVE:
++    #   * not_rejected                  -> the call returned a value, so nothing was raised
++    #                                      at all; this is NOT a declared-expectation mismatch.
++    #   * declared_expectation_mismatch -> an exception WAS raised, but its exact type name
++    #                                      is not the declared one.
++    # A declaration that is missing/not a non-empty string is not a verdict at all: the
++    # declared-expectation set is unusable and the run reports NO VERDICT (rc=2) before any
++    # case is judged.
++    unusable_declared = [c.get("id") for c in cases_doc["cases"]
++                         if not (isinstance(c.get("expected"), str) and c["expected"].strip())]
++    cases_declared_ok = not unusable_declared
++    result["cases_json_declared_expectations_usable"] = cases_declared_ok
++    result["cases_json_unusable_declared_expectations"] = unusable_declared
++
+     for case in cases_doc["cases"]:
+         base_key = case.get("base_input", "positive")
+         base = copy.deepcopy(input_doc[base_key])
++        declared = case.get("expected")
+         entry = {"id": case["id"], "kind": case["kind"], "why": case["why"],
+-                 "expected": case["expected"], "base_input": base_key}
++                 "expected": declared, "base_input": base_key}
++        entry["declared"] = declared
++        entry["declared_expectation_comparison"] = (
++            "raised exact type name %r vs declared %r (exact-name comparison, not isinstance)"
++            % (None, declared))
+         try:
+             mutated = apply_case(base, case)
+             entry["mutated_input_repr"] = (repr(mutated["drivers"])[:400]
+@@ -384,25 +424,72 @@
+                                            + " base=" + repr(mutated["base_revenue"]))
+             call_product(model_registry, mutated)
+             entry["raised"] = None
++            entry["declared_expectation_ok"] = False
++            entry["declared_expectation_mismatch"] = False
++            entry["declared_expectation_not_met"] = True
++            entry["judged"] = True
++            entry["expectation_not_met_reason"] = "no exception was raised"
+             entry["verdict"] = "FAIL_not_rejected"
+         except Exception as exc:  # noqa: BLE001
+-            entry["raised"] = type(exc).__name__
++            raised_name = type(exc).__name__
++            entry["raised"] = raised_name
+             entry["message"] = str(exc)
+             entry["traceback"] = traceback.format_exc()
+             is_target = isinstance(exc, model_registry.ModelRegistryError)
+             is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError))
+             entry["is_target_type"] = is_target
+             entry["is_import_or_file_error"] = is_import_or_file
+-            entry["verdict"] = ("PASS_rejected" if is_target
+-                                else ("FAIL_wrong_exception_type" if not is_import_or_file
+-                                      else "FAIL_import_or_file_error"))
++            declared_usable = isinstance(declared, str) and bool(declared.strip())
++            entry["declared_expectation_comparison"] = (
++                "raised exact type name %r vs declared %r (exact-name comparison, not isinstance)"
++                % (raised_name, declared))
++            if not declared_usable:
++                # The frozen declaration is unusable, so this case is NOT JUDGED: it is neither
++                # a mismatch nor a rejection failure.
++                entry["declared_expectation_ok"] = None
++                entry["declared_expectation_mismatch"] = False
++                entry["declared_expectation_not_met"] = None
++                entry["judged"] = False
++                entry["expectation_not_met_reason"] = (
++                    "declared expectation is unusable (missing or not a non-empty string), so the "
++                    "case cannot be judged against it")
++                entry["verdict"] = "NOT_JUDGED_declaration_unusable"
++            else:
++                declared_ok = (raised_name == declared)  # EXACT type-name equality, never isinstance
++                entry["declared_expectation_ok"] = declared_ok
++                entry["declared_expectation_mismatch"] = not declared_ok
++                entry["declared_expectation_not_met"] = not declared_ok
++                entry["judged"] = True
++                if not declared_ok:
++                    entry["expectation_not_met_reason"] = (
++                        "raised exact type name %r != declared %r" % (raised_name, declared))
++                if not is_target:
++                    entry["verdict"] = ("FAIL_wrong_exception_type" if not is_import_or_file
++                                        else "FAIL_import_or_file_error")
++                elif not declared_ok:
++                    entry["verdict"] = "FAIL_declared_expectation_mismatch"
++                else:
++                    entry["verdict"] = "PASS_rejected"
+         result["negatives"].append(entry)
+ 
++    not_judged_ids = [e["id"] for e in result["negatives"]
++                      if e["verdict"] == "NOT_JUDGED_declaration_unusable"]
++    judged_failed = [e["id"] for e in result["negatives"]
++                     if e["verdict"] not in ("PASS_rejected", "NOT_JUDGED_declaration_unusable")]
+     result["negative_summary"] = {
+         "total": len(result["negatives"]),
+         "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
+-        "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
++        "not_judged": not_judged_ids,
++        "failed": judged_failed,
++        "verdicts_are_mutually_exclusive": True,
+         "target_exception": "model_registry.ModelRegistryError",
++        "declared_expectations_in_cases_json": sorted(
++            {str(c.get("expected")) for c in cases_doc["cases"]}),
++        "declared_expectation_comparison": ("exact exception type name == cases.json's per-case "
++                                            "'expected' string (NOT isinstance)"),
++        "declared_expectations_enforced": True,
++        "declared_expectations_usable": cases_declared_ok,
++        "classification_is_mutually_exclusive": True,
+         "import_or_file_errors_never_pass": True,
+     }
+     result["negative_counts"] = {
+@@ -414,6 +501,11 @@
+                                     if e.get("raised") is not None and not e.get("is_target_type")
+                                     and not e.get("is_import_or_file_error")),
+         "import_or_file_error": sum(1 for e in result["negatives"] if e.get("is_import_or_file_error")),
++        "declared_expectation_mismatch": sum(
++            1 for e in result["negatives"] if e.get("declared_expectation_mismatch")),
++        "declared_expectation_not_met": sum(
++            1 for e in result["negatives"] if e.get("declared_expectation_not_met")),
++        "declared_expectation_missing_in_cases_json": len(unusable_declared),
+     }
+ 
+     # ---------------- verdict ----------------
+@@ -423,21 +515,31 @@
+     continuity_ok = bool(result["continuity_positive"].get("ok"))
+     negatives_ok = result["negative_summary"]["passed"] == result["negative_summary"]["total"]
+ 
++    not_rejected_ids = [e["id"] for e in result["negatives"] if e["raised"] is None]
++    mismatch_ids = [e["id"] for e in result["negatives"] if e.get("declared_expectation_mismatch")]
+     reasons = []
+     if positive_raised:
+         reasons.append("positive_raised:%s" % result["positive"].get("raised"))
+     if not expectations_present:
+         reasons.append("frozen_expectation_missing")
++    if not cases_declared_ok:
++        reasons.append("cases_json_declared_expectation_missing:" + ",".join(unusable_declared))
+     if expectations_present and not positive_raised and not fidelity_ok:
+         reasons.append("output_fidelity_mismatch")
+     if expectations_present and not positive_raised and fidelity_ok and not tolerances_ok:
+         reasons.append("positive_out_of_tolerance")
+     if not continuity_ok:
+         reasons.append("continuity_positive_not_matched")
+-    if not negatives_ok:
+-        reasons.append("negatives_not_rejected:" + ",".join(result["negative_summary"]["failed"]))
+-
+-    if not expectations_present or (expectations_present and not positive_raised and not fidelity_ok):
++    if not_rejected_ids:
++        reasons.append("negatives_not_rejected:" + ",".join(not_rejected_ids))
++    if mismatch_ids:
++        reasons.append("declared_expectation_mismatch:" + ",".join(mismatch_ids))
++
++    # rc=2 (no verdict) before any case can be judged when the frozen declaration itself is
++    # missing or unusable; rc=3 only when a judgement was possible and did not hold.
++    no_verdict = (not expectations_present or not cases_declared_ok
++                  or (expectations_present and not positive_raised and not fidelity_ok))
++    if no_verdict:
+         exit_code = EXIT_NO_VERDICT
+         verdict = "no_verdict"
+     elif reasons:
+@@ -453,11 +555,20 @@
+     result["exit_code_semantics"].update({
+         "positive_raised": positive_raised,
+         "expectations_present": expectations_present,
++        "cases_json_declared_expectations_usable": cases_declared_ok,
+         "fidelity_ok": fidelity_ok,
+         "positive_ok": bool(tolerances_ok and fidelity_ok and not positive_raised),
+         "continuity_ok": continuity_ok,
+         "negatives_ok": negatives_ok,
+         "defaults_ok_not_gating": result.get("defaults_ok"),
++        "not_rejected_case_ids": not_rejected_ids,
++        "declared_expectation_mismatch_case_ids": mismatch_ids,
++        "not_judged_case_ids": not_judged_ids,
++        "reason_namespace": ("exclusive taxonomy: PASS_rejected | FAIL_not_rejected (nothing raised) | "
++                             "FAIL_wrong_exception_type | FAIL_import_or_file_error | "
++                             "FAIL_declared_expectation_mismatch | NOT_JUDGED_declaration_unusable. "
++                             "FAIL_wrong_exception_type is a SUBSET of declared_expectation_mismatch "
++                             "when the declaration is usable"),
+         "verdict": verdict,
+         "exit_code": exit_code,
+     })
+@@ -473,7 +584,12 @@
+             "independence": ("each case is built from a NEW deepcopy of the frozen base input, in "
+                              "memory; no case is round-tripped through a JSON parser"),
+             "first_required_driver": cases_doc.get("first_required_driver"),
+-            "frozen_expectation": "ModelRegistryError for every case",
++            "frozen_expectation": ("per-case declared expectation from the frozen cases.json: %s"
++                                   % ", ".join(result["negative_summary"][
++                                       "declared_expectations_in_cases_json"])),
++            "declared_expectations_enforced": True,
++            "declared_expectation_comparison": result["negative_summary"][
++                "declared_expectation_comparison"],
+             "continuity_first_positive": cases_doc.get("continuity_first_positive"),
+             "summary": {"total": result["negative_summary"]["total"],
+                         "passed": result["negative_summary"]["passed"],
+@@ -515,6 +631,10 @@
+     for entry in result["negatives"]:
+         emit("negative: %s %s %s - %s" % (entry["id"], entry["verdict"], entry.get("raised"),
+                                           entry.get("message", "")))
++    emit("negative declared-expectation comparison: %s"
++         % result["negative_summary"]["declared_expectation_comparison"])
++    emit("negative declared-expectation mismatches: %d"
++         % result["negative_counts"]["declared_expectation_mismatch"])
+     emit("negative summary: %s" % result["negative_summary"])
+     emit("verdict: %s exit_code: %d" % (verdict, exit_code))
+ 

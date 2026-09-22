@@ -1,0 +1,18 @@
+--- iso/T0/tests/contract/test_source_catalog_worker_bootstrap.py
++++ iso/mutant-derivation-0.5/tests/contract/test_source_catalog_worker_bootstrap.py
+@@ -1031,13 +1031,14 @@
+         [
+             {"sleep_seconds": 5, "exit_code": 0},
+             {"exit_code": 0},
+         ],
+     )
+ 
+-    hang_timeout_seconds = _derive_worker_hang_timeout_seconds(tmp_path)
++    # R4 MUTATION: revert to the pre-fix hard-coded constant.
++    hang_timeout_seconds = 0.5
+     completed = _run_real_worker_launcher(
+         project,
+         timeout=15,
+         worker_hang_timeout_seconds=hang_timeout_seconds,
+         child_poll_milliseconds=100,
+     )

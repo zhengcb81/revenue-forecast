@@ -1,0 +1,64 @@
+{
+ "card_id": "M02",
+ "revision": "r2",
+ "generated_at_utc": "2026-09-20T00:45:02Z",
+ "production_repos_written": false,
+ "items": {
+  "F-M01-02": {
+   "change": "run_card.py / run_M01.py now return 0 only when positive tolerance, continuity and all negatives pass; 2 = harness incomplete; 3 = negative verdict",
+   "rerun_raw_returncode": 0,
+   "expected_returncode": 0,
+   "exit_code_semantics": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "verdict": "pass",
+    "exit_code": 0
+   },
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   },
+   "positive_actual": [
+    80.0,
+    0.0,
+    120.0
+   ],
+   "unchanged_product_call": "the same calculate_registered_model path was re-run unchanged; only the harness exit code changed"
+  },
+  "pack_evidence": {
+   "raw_returncode": 0,
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\scripts\\pack_evidence.py:14: SyntaxWarning: invalid escape sequence '\\C'\r\n  --attempt <attempt_dir> --out-dir <evidence\\CARD> \\\r\n"
+  },
+  "F-M02-01": {
+   "status": "PENDING_OWNER_OR_SPECIALIST_RULING",
+   "self_decided": false,
+   "product_changed": false,
+   "observed": {
+    "validator_level": "base_revenue < 0 is rejected uniformly before dispatch for every model",
+    "implementation_level": "_direct_revenue deletes base_revenue; _direct_growth consumes it",
+    "base_999_replay": "output identical to the positive case",
+    "base_negative_5": "ModelRegistryError: direct_revenue.base_revenue cannot be negative"
+   },
+   "options_for_ruling": [
+    "A keep fail-closed: validate every supplied field even if unused (current behaviour, no change)",
+    "B ignore unused fields: an unused base_revenue is semantically absent and must not be validated"
+   ],
+   "recorded_in": [
+    "decision.md DEC-M02-3",
+    "evidence/M02/accounting_decision.md (r2 section)",
+    "handoff.json.open_questions"
+   ]
+  }
+ },
+ "corrections_in_r3": {
+  "rc2_reachability": {
+   "earlier_claim": "rc=2 is not yet reachable in practice",
+   "corrected": "rc=2 IS reachable: a corrupted positive input makes the product raise, so no verdict exists (case D). Case B (case-plan defect outside the guard) exits 1, not 2.",
+   "disproved_by": "the point reviewer deleted growth_rate from the positive input and measured rc=2",
+   "recorded_in": "recovery/r2_exit_code_selfcheck/selfcheck_result.json case D"
+  }
+ }
+}

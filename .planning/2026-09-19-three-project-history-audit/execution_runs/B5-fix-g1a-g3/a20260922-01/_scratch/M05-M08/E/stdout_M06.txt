@@ -1,0 +1,30 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M05-M08\code_root
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\B5-fix-g1a-g3\a20260922-01\_scratch\M05-M08\code_root\model_registry.py
+registry formula: revenue = eligible_activity * monetization_rate + fixed_revenue
+registry required: ['eligible_activity', 'monetization_rate']
+registry optional: ['fixed_revenue']
+registry defaults: {}
+registry driver_bounds: {}
+positive raised: None
+positive actual: [23.0]
+positive expected: [23.0]
+tolerances_ok: True
+continuity_positive ok: True
+defaults ok: True actual: [20.0] expected: [20.0]
+observation: OBS-BASE-IGNORED raised= None actual= [23.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-RATE-GT1 raised= None actual= [753.0] matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None 
+negative: NEG-CARD PASS_rejected ModelRegistryError - driver usage_platform.eligible_activity must be between 0.0 and inf: FY2027
+negative: N01a PASS_rejected ModelRegistryError - usage_platform.eligible_activity.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - usage_platform.eligible_activity.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - usage_platform.eligible_activity.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - usage_platform.eligible_activity.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver usage_platform.eligible_activity must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for usage_platform: eligible_activity
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for usage_platform: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - usage_platform.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - usage_platform.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - usage_platform.years must be consecutive and increasing
+negative summary: {'total': 11, 'passed': 11, 'failed': [], 'declared_expectations_in_cases_json': ['ModelRegistryError'], 'declared_expectation_comparison': "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)", 'declared_expectations_enforced': True, 'not_judged': [], 'judged': 11}
+negative counts: {'declared_expectation_mismatch': 0, 'declared_expectation_not_met': 0, 'declared_expectation_missing_in_cases_json': 0}
+declared expectations enforced: True cases_json_declared_expectations_usable: True
+verdict: pass exit_code: 0

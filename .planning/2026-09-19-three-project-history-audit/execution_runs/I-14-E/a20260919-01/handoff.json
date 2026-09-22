@@ -1,0 +1,341 @@
+{
+  "card_id": "I-14-E",
+  "card_title": "restart-node timing jitter (load-dependent, not a tree difference)",
+  "parent": "I-14",
+  "attempt_id": "a20260919-01",
+  "date_utc": "2026-09-21",
+  "status": "review_pending",
+  "implementer": "I-14-E implementer agent; NOT the reviewer",
+  "objective": "characterise the load-dependent timing jitter band of the two worker-restart bootstrap nodes, test the load-dependence and tree-independence hypotheses, and deliver fail-able cases + an unapplied test-side proposal.  No product code and no product test was changed.",
+  "completed_steps": [
+    "1 claim: attempt dir + standard structure (binding.json, oracle.md, commands.json, before/after/recovery, harness/, iso/)",
+    "2 binding: production anchors hashed (CW HEAD f39bd5a6..., test file 32515aa6..., supervisor ps1 5c12cd74..., logon ps1 70b4d7d7...); attempt iso venv (python 3.13.9, package set equal to the frozen band's runner venv)",
+    "3 trees: iso/T0 = I-14-C product/src, iso/T4 = I-14-C product_fixed/src, iso/T0b = a byte-identical second copy of T0 (identity control); T0 vs T4 differ only in cli.py/observability.py/worker.py",
+    "4 frozen band: re-extracted the 24-run x 2-round x 2-tree record from I-14-C r5 (48/48 runs: surviving stdout byte-identical to the frozen captures, 48/48 launcher event files present); expected values hand-computed from that record",
+    "5 oracle.md frozen BEFORE any measurement run (2026-09-21T20:09:21Z) with hypotheses H1-H5, the measurement plan and the pass/fail criteria",
+    "6 oracle-addendum-A (run counts reduced; ambient-load regime recorded) written BEFORE the full campaign",
+    "7 oracle-addendum-B written after the parent relayed CF-I14F-X1: artifact-presence discrimination as a measurement precondition, concurrent-activity recording, and the determinism verdict requirement",
+    "8 M-A: 111 independent samples of the two load-sensitive quantities (fake child launch->first side effect, launch->exit) across quiet/+8/+12 burners, popen and PowerShell Start-Process forms",
+    "9 M-B: 45 node-1 runs (3 trees x 2 rounds x {quiet,cpu8} + 3 trees x 1 round x spawn) and 16 node-2 runs, interleaved, per-run fresh short basetemps, per-run load probes",
+    "10 M-C: 16 direct samples of node 2's three timing budgets (wrapper / events / exit)",
+    "11 artifact capture: per-run artifact presence, path lengths and sha256 for all 61 band runs (no run shows the path/redirect absence signature)",
+    "12 concurrent-activity sampling: 70 samples over 40 minutes, capturing other sessions' pytest campaigns and the persistent chrome-headless-shell load",
+    "13 after/analysis.json + after/analysis.md (per-hypothesis verdicts), after/fail-able-cases.json (2 cases + determinism verdict), after/proposed-test-side-change.md (unapplied), after/final_hashes.json (production anchors unchanged)"
+  ],
+  "next_step_number": 1,
+  "next_action": "Independent reviewer reads oracle.md + addendum A/B, re-derives the frozen-band table from evidence/frozen_band_raw_record.json, recomputes one M-A statistic and one M-B tally from the raw JSONs, checks one failed run against its own launcher-events file, verifies that no production file changed (after/final_hashes.json), and writes the conclusion in review.md; the implementer must not self-sign.",
+  "input_hashes": {
+    "CW_HEAD": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+    "CW_test_file": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+    "CW_supervisor_ps1": "5c12cd740cc36abf95f3b9559485472d9d9a760143d27de46e3aaa7b4bbbc311",
+    "CW_logon_ps1": "70b4d7d7128567c0a753e684c3d4e8359c6a93bdc3dbefc7c5f93feaadbe5a1c",
+    "I-14-C_frozen_frequency_json": "68d4e63e64744f099504ee4fa02cb299caa9c404978275ea8f884fbb92763e42",
+    "iso_T0_manifest": "dca36d3beeab52dbcecdb72122f60e490e4d723c703983835037c3270d662d08",
+    "iso_T4_manifest": "808a0dfa2f39e7397889f2115dda077795dfeb7e506c25399c5c3b27b3ab11c8"
+  },
+  "current_source_hashes": {
+    "oracle.md": "e96f0e192e3d773f5ab3ddf1ab35573be738d48cb5eaca15d49dcf267b054776",
+    "oracle-addendum-A.md": "c3c13a52190ceadd62179a1d53c16c03852dcb7cb701e42dcdd8cb85e412e5bf",
+    "oracle-addendum-B.md": "20353bbd19d00a183dac20518fc0808eb5687250d58b48f4991ff139092aea3a",
+    "binding.json": "f4ba2320c36c21abb9b2eafd3493b2b845061322a9e852da3525358f7b50d89e",
+    "evidence/frozen_band_raw_record.json": "ea2949f366710825d03dc75cfe46d2eb8a899cee6054723efd4e08c0e058ff5c",
+    "evidence/binding_hashes.json": "81f7d50d93434eb7667a053329102a7b9fee6683c077d98a335d01af8a048108",
+    "after/analysis.json": "8689ebdd9d4e2f1d5385ee8813e38dfa5a29b70f8488debd3dc41661f6d7d301",
+    "after/analysis.md": "b0e62fcec42de96067fa459d5ae911d3353dfde8e5d031adb9e3bada31ab08df",
+    "after/fail-able-cases.json": "c7a8870bac842c9026a0adec2332ac8fb1ced4e4c6b3d7ad0379f900f967e2c1",
+    "after/final_hashes.json": "1015d0ab70259637ea0b534686abab312f97bfe6c207daf5d6e46dd791108d9a",
+    "after/proposed-test-side-change.md": "a1ea2f72ee58e01bfe4df99ae1ef86d7112c3e4a8026c70a0fb1ad72a2ad26ac",
+    "commands.json": "48281e5382eb30cfb1fbd305f92e44777be5f8deaaabf51577c30ce855d83054"
+  },
+  "changed_paths": [
+    "execution_runs/I-14-E/a20260919-01/** only (attempt-local evidence, harness, iso copies and %TEMP%/i14e-* scratch)",
+    "NO product code, NO product test, NO launcher, NO config: verified by after/final_hashes.json (production anchors byte-identical before/after)"
+  ],
+  "commands_executed": "commands.json (19 transcribed invocations; 5 of them are the superseded mangled-path invocations, marked as such)",
+  "raw_exit_codes": {
+    "collectors": "all rc=0 except the 5 superseded M-B invocations (rc=1, died in 1-4 s on the non-ASCII path literal)",
+    "node_runner_rcs": {
+      "child-quiet": {
+        "0": 1,
+        "1": 17
+      },
+      "child-cpu8": {
+        "0": 0,
+        "1": 14,
+        "driver-timeout(None)": 4
+      },
+      "child-spawn": {
+        "0": 0,
+        "1": 9
+      },
+      "logon-quiet": {
+        "0": 8
+      },
+      "logon-cpu8": {
+        "0": 8
+      }
+    }
+  },
+  "expected_exit_codes": "collectors 0; product-node rc is pytest's own: 0 = node passed, 1 = node failed (assertion or the SUT's internal 15 s subprocess timeout); rc=None in this attempt means the driver's 180 s guard fired because the pytest process never returned (rung4)",
+  "results": {
+    "frozen_band_hand_computed": {
+      "per_tree_totals": {
+        "T0": {
+          "runs": 24,
+          "failed": 6
+        },
+        "T4": {
+          "runs": 24,
+          "failed": 6
+        }
+      },
+      "flip": {
+        "pass1_more_failing_tree": "T0",
+        "pass2_more_failing_tree": "T4"
+      }
+    },
+    "node1_bands": {
+      "child-quiet": {
+        "runs": 18,
+        "failed": 17,
+        "passed": 1,
+        "failure_rate": 0.9444,
+        "wilson95": [
+          0.7424,
+          0.9901
+        ]
+      },
+      "child-cpu8": {
+        "runs": 18,
+        "failed": 18,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.8241,
+          1.0
+        ]
+      },
+      "child-spawn": {
+        "runs": 9,
+        "failed": 9,
+        "passed": 0,
+        "failure_rate": 1.0,
+        "wilson95": [
+          0.7008,
+          1.0
+        ]
+      },
+      "logon-quiet": {
+        "runs": 8,
+        "failed": 0,
+        "passed": 8,
+        "failure_rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.3244
+        ]
+      },
+      "logon-cpu8": {
+        "runs": 8,
+        "failed": 0,
+        "passed": 8,
+        "failure_rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.3244
+        ]
+      }
+    },
+    "node1_by_tree": {
+      "child-quiet": {
+        "T0": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T4": {
+          "runs": 6,
+          "failed": 5,
+          "passed": 1,
+          "failure_rate": 0.8333,
+          "wilson95": [
+            0.4365,
+            0.9699
+          ]
+        }
+      },
+      "child-cpu8": {
+        "T0": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        },
+        "T4": {
+          "runs": 6,
+          "failed": 6,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.6097,
+            1.0
+          ]
+        }
+      },
+      "child-spawn": {
+        "T0": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "T0b": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "T4": {
+          "runs": 3,
+          "failed": 3,
+          "passed": 0,
+          "failure_rate": 1.0,
+          "wilson95": [
+            0.4385,
+            1.0
+          ]
+        }
+      }
+    },
+    "hypotheses": {
+      "H1": "ceiling: both arms are saturated (>=90% failures), so this contrast cannot separate the arms; load-dependence is carried by the measured window (M-A) and by the frozen-band cross-era comparison instead",
+      "H2": "supported (byte-identical T0/T0b behave the same; see also the structural argument in binding.json)",
+      "H3": "dominant mechanism supported: 17/18 failed runs show the session_start_timeout watchdog kill; the rest are launcher-level startup-latency timeouts (no child cycle completed) - same resource, different rung, and no run shows the artifact-absence path signature",
+      "H4": "supported: the measured lifetime distribution straddles 0.5 s",
+      "H5": "no jitter band observed end-to-end under the measured conditions"
+    },
+    "determinism_verdict": {
+      "question": "can the jitter band be characterised deterministically, or is it a load-dependent distribution?",
+      "verdict": "distributional",
+      "why": [
+        "the discriminating quantity is a latency (fake child launch -> exit), and its measured distribution moves with machine load: quiet median 0.691 s vs +8 burners median 1.351 s (popen), with maxima 1.72 s / 2.30 s",
+        "the product test does not compare against the latency directly: it compares against 'still alive at a poll boundary after 0.5 s', so the effective boundary carries a ~100 ms ambiguity window from the poll cadence - the frozen band itself contains a run that exited cleanly at uptime 0.622 s and runs killed at 0.507 s",
+        "therefore no single threshold constant is stable across loads: a value that makes the node green on an idle machine still fails on a loaded one (this attempt: near-100%% failures with the same test file and byte-identical trees)"
+      ],
+      "what_is_deterministic": [
+        "the mechanism (watchdog verdict on a child that is alive at a poll boundary after 0.5 s of uptime, counted through the number of child_started events)",
+        "the direction of the load response (more load -> higher latency -> more watchdog kills -> more restarts)",
+        "the failure signature ladder: assert 3 == 2 / 4 == 2 at moderate load, then launcher-subprocess-TimeoutExpired(15 s) at heavy load"
+      ],
+      "what_is_not_deterministic": [
+        "the pass/fail outcome of any single run, which depends on where the child's exit lands relative to the poll cadence",
+        "any fixed timeout constant chosen without measuring the latency distribution on the target machine"
+      ]
+    }
+  },
+  "open_questions": [
+    "Scope conflict to be adjudicated by the owner: the card text says this card fixes the product test's timing assumption, while this attempt's boundary (production repos READ-ONLY, zero writes; 'do not change product test timing assumptions') forbids applying it.  Delivered instead: identification + fail-able cases + an unapplied proposal (after/proposed-test-side-change.md).",
+    "The card's exit criterion (tests no longer randomly red/green under load) is NOT satisfied by this attempt and is not self-signed.",
+    "The machine was NOT quiet during this attempt: two unrelated chrome-headless-shell processes held ~8.8 of 12 logical cores and other sessions ran pytest campaigns (concurrent-activity.jsonl).  The 'quiet' arm therefore means 'no load added by this attempt'; the load-dependence evidence rests on the measured window (M-A) and on the frozen-band cross-era contrast, not on an arm-to-arm failure-rate difference (both arms are saturated).",
+    "Node 2 disagrees with itself across measurement levels: end-to-end 16/16 passed, while the direct window probe missed the 15 s events budget in 6/8 loaded samples.  Reported side by side; a follow-up card would need to resolve it (e.g. by sampling the wrapper/supervisor start latency inside the node's own run).",
+    "M-C's exit_seconds is an upper bound (up to two PowerShell spawns per poll); the real 20 s margin is therefore unmeasured, only known to be small.",
+    "The true p99.9 of the child launch latency is not bounded by n=111 samples; the proposed fix derives the timeout from an in-test measurement instead of a constant precisely for that reason.",
+    "Three leftover fake-worker processes from the driver-guard (rung4) runs were found and reaped manually at ~22:3x, and one more (pid 12200, an attempt venv child of a reaped launcher) at the final sweep; run_band.sweep_leftovers was widened afterwards (mid-campaign harness change, affecting only post-timeout cleanup, not any measured quantity).  The final sweep left 0 leftover i14e launchers and 0 leftover i14e fake workers."
+  ],
+  "blocked_by": [],
+  "evidence_paths": {
+    "oracle": [
+      "oracle.md",
+      "oracle-addendum-A.md",
+      "oracle-addendum-B.md"
+    ],
+    "binding": [
+      "binding.json",
+      "evidence/binding_hashes.json",
+      "evidence/freeze_instant.json"
+    ],
+    "frozen_band": "evidence/frozen_band_raw_record.json",
+    "windows": [
+      "after/child-lifetime-popen-quiet.json",
+      "after/child-lifetime-popen-cpu8.json",
+      "after/child-lifetime-popen-cpu12.json",
+      "after/child-lifetime-startproc-quiet.json",
+      "after/child-lifetime-startproc-cpu8.json",
+      "after/wrapper-latency-quiet.json",
+      "after/wrapper-latency-cpu8.json"
+    ],
+    "bands": [
+      "after/band-child-quiet.json",
+      "after/band-child-cpu8.json",
+      "after/band-child-spawn.json",
+      "after/band-logon-quiet.json",
+      "after/band-logon-cpu8.json"
+    ],
+    "band_captures": "after/band-captures-*/ (stdout + launcher events per run)",
+    "artifact_presence": [
+      "after/artifacts-child-quiet.json",
+      "after/artifacts-child-cpu8.json",
+      "after/artifacts-child-spawn.json",
+      "after/artifacts-logon-quiet.json",
+      "after/artifacts-logon-cpu8.json",
+      "after/artifacts-*/ (copied .source_catalog artefacts)"
+    ],
+    "concurrent_activity": "after/concurrent-activity.jsonl",
+    "analysis": [
+      "after/analysis.json",
+      "after/analysis.md"
+    ],
+    "fail_able_cases": "after/fail-able-cases.json",
+    "proposal": "after/proposed-test-side-change.md",
+    "hashes": "after/final_hashes.json",
+    "logs": [
+      "after/campaign.log",
+      "after/campaign-band.log",
+      "after/finalize.log"
+    ],
+    "scratch_kept": "%TEMP%/i14e-* (deliberately not deleted; see recovery/README.md)"
+  },
+  "reviewer_status": "pending (must be set by the independent reviewer; the implementer does not self-sign)",
+  "scope_declaration": {
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "qualification": "test-timing measurement only: identification, fail-able cases and an unapplied test-side proposal; no product runtime code, no product test, production repos read-only"
+  }
+}

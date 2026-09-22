@@ -1,0 +1,132 @@
+{
+  "card_id": "I-09-C",
+  "parent_card": "I-09",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260922-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-C\\a20260922-01",
+  "date": "2026-09-22",
+
+  "execution_gate": {
+    "state": "OPEN",
+    "declared_by": "parent agent (session-bfecd191-fbc3-4a66-8ed1-6562479bf102)",
+    "rechecked_receipts": {
+      "I-09-B": "execution_runs/I-09-B/a20260919-01/handoff.json sha256=00dd5018ff825ebadafe5fca62f6b908319721fe2316b21325afcdd34977c0b6 status=accepted_scoped",
+      "I-08-C": "execution_runs/I-08-C/a20260919-01/evidence/I-08-C/qualification.json sha256=6171417578cb9ac6cacacc2b7d7f3723ecb1dd672ab6da4a8aa8be75bd47ddc2 status=accepted_scoped"
+    }
+  },
+
+  "cwd_binding": {
+    "rule_source": "I-00-B binding.json: \"cwd\": \"per-attempt iso dir; NEVER repo root for run commands\"",
+    "sibling_precedent": "I-09-B binding.json: cwd=<attempt>\\iso\\rf, interpreter=<attempt>\\iso\\venv\\Scripts\\python.exe",
+    "cwd_planned": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-C\\a20260922-01\\iso\\rf",
+    "cwd_status": "planned (created at step-2 binding; never repo root)",
+    "interpreter_planned": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-C\\a20260922-01\\iso\\venv\\Scripts\\python.exe",
+    "interpreter_status": "planned (attempt-level venv, created per card)",
+    "global_interpreter_observed_but_FORBIDDEN": "C:\\Miniconda\\python.exe (3.13.9 Anaconda) — I-00-B: global Miniconda python FORBIDDEN (editable dayu-agent hook)",
+    "allowed_write_roots": [
+      "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-C\\a20260922-01"
+    ],
+    "read_only_roots": [
+      "production tree C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts",
+      "production publication registry / user packages (NEVER touched)",
+      "PLAN\\reviews\\* historical artifacts",
+      "all other execution_runs\\* attempts"
+    ],
+    "network": "disabled",
+    "git_writes": "forbidden (read-only git status/log/show/hash-object only)",
+    "tmp": "per-attempt tmp under this attempt root, not global Temp"
+  },
+
+  "implementation_under_test": {
+    "source": "copy of I-09-B accepted iso tree (execution_runs/I-09-B/a20260919-01/iso/rf) — the only tree that carries the prepare/commit split under test",
+    "expected_hashes_from_I_09_B_handoff": {
+      "iso/rf/scripts/publication_registry.py": "6b9ee981871c049d0db2e165df6ea52371d2a1aa579f9aeb0ebe0201f74f3890",
+      "iso/rf/scripts/revenue_core.py": "e1e1415839662a0bbf12253dfb70474517155ba8dda4b7e05f23ccca72478f8f",
+      "iso/rf/scripts/revenue_forecast.py": "7a9588c58f9feed4bb729f06b3be3d0027c2d022ccd82db9552286b2e7e8449f",
+      "iso/rf/tests/conftest.py": "6da47830e3490fead2787505b2c9d177f75a644cb217ea7b9a859704f1632ee4",
+      "iso/rf/tests/test_zr710_publication_txn.py": "82c619e3370703e11f663e27d64653cc03e95c65c7997dffadcb3ed7d5d97144",
+      "iso/rf/tests/test_i09b_commit_protocol.py": "8da9a0d54acfbfc076ac29dc00939078a3961603a2477083260940e2de15ccbd"
+    },
+    "verification_status": "to be re-measured at step-2 binding (hash equality required before any run)"
+  },
+
+  "source_anchor_check": {
+    "mechanism_domain": "In the repo with core.autocrlf=true and .gitattributes '*.py text eol=lf', where disk files are LF, the card anchors are CRLF renders, and HEAD blob == disk value: both anchors are content-identical modulo EOL. This statement is scoped to that mechanism domain; it is NOT a domain-free claim that 'all anchors match'.",
+    "evidence": "evidence/eol_reconstruction.txt (raw, recomputable) + preflight_anchors.md §4/§6",
+    "anchors": [
+      {
+        "anchor": "scripts/publication_registry.py (:53/:95/:127/:188/:193)",
+        "quadruple": {
+          "card_value": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
+          "disk_value_equals_head_blob": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344",
+          "lf_to_crlf_render_rebuilt": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
+          "render_equals_card_value": true
+        },
+        "conclusion": "content-identical modulo EOL, proceed-with-disclosure",
+        "registered_drift_crossref": "CF-I08C-2 (I-08-C) registers 44662744... -> 29aaae4f... ; this card located that registered drift's root cause as an EOL render difference — content is identical. Registering that root-cause attribution here per parent adjudication B requirement 2."
+      },
+      {
+        "anchor": "scripts/revenue_forecast.py:55 (main)",
+        "quadruple": {
+          "card_value": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc",
+          "disk_value_equals_head_blob": "2a2dfede7941b0facc972d802d25eb71f798c1ebdb83226bbf8528481b9669e36",
+          "lf_to_crlf_render_rebuilt": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc",
+          "render_equals_card_value": true,
+          "line_55_on_disk": "def main() -> int:"
+        },
+        "conclusion": "content-identical modulo EOL, proceed-with-disclosure",
+        "registered_drift_crossref": "no pre-existing registered drift covered this anchor; it is a same-class (EOL render) UNREGISTERED instance, registered by THIS card per parent adjudication B requirement 2.",
+        "git_status_scripts": "clean; HEAD=1d2288c0b1da160d331fd0927dd37a518d87e0b6"
+      }
+    ],
+    "stop_criterion_record": {
+      "triggered": true,
+      "trigger_fact": "preflight measured scripts/revenue_forecast.py:55 disk=2a2dfede... which differs from BOTH the card value 6b3d960e... AND the only registered drift value (CF-I08C-2: 44662744...->29aaae4f...), which met the parent's STOP rule verbatim.",
+      "resolution": "lifted by parent adjudication B (proceed-with-disclosure with four hard requirements), delivered in-session by send_message; the criterion itself is NOT altered and this record is NOT deleted.",
+      "adjudication_basis_cited_by_parent": "disk==HEAD blob, git status clean, main still at :55, LF->CRLF render reproduces card value exactly; prior in-session precedent DEC-E1E7-1a (reconstructed pin PINNED_OK); core.autocrlf=true mechanism background"
+    }
+  },
+
+  "dependency_oracle_pins": {
+    "note": "I-09-A frozen fault-point & return-code oracle — pinned BEFORE any run",
+    "I-09-A decision.md (§7 F1-F12 fault-point/rc table)": "94a27b8ae31cb7467bf9910714e90777a1cec7790e3d6bca364c9e4062db8a57",
+    "I-09-A oracle.md": "D7F6B102ECC99A564FF6977B69A7B5E8FE6AF9EDCC4AE356C041426891E6DC8D",
+    "I-09-A oracle_addendum.md": "DE7FA1F335E4C4054E6CCCDB7D8C25160518BEE0EFC50BC1091DE9392715BCB5",
+    "I-09-A handoff.json": "816a44599270fae32492534d6928463f77d377c54efe87f3d07071803c19580d",
+    "I-09-A review.md": "9fafca93adf8820fabe60d0425dec71057f6417a35785c57506e33320d98d45c"
+  },
+
+  "input_hashes": {
+    "execution_v2/card_I-09-C.md": "59e9d71df2100c226e4b37880105e85df37681f6592db16856ee8a117baf23c3",
+    "execution_v2/START_HERE.md": "a9cb5a4a34929fb21d43b3f8308c36b03440d73c43325b8952e81fe130f64caf",
+    "execution_v2/common_filing_cards.md": "c54f583976519c66b1b9425fc03a18ec5620bc4d662d5f2f2e0ed184006b325b",
+    "execution_v2/review_and_handoff.md": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9",
+    "I-09-B handoff.json": "00dd5018ff825ebadafe5fca62f6b908319721fe2316b21325afcdd34977c0b6",
+    "I-09-B review.md": "d7c227d27173d8857cfb9484f22ed830dd4ca6f9dde524ed2181fdad9879a18f",
+    "I-08-C qualification.json": "6171417578cb9ac6cacacc2b7d7f3723ecb1dd672ab6da4a8aa8be75bd47ddc2",
+    "I-00-B binding.json": "read this session (cwd/interpreter rules quoted in preflight §3)"
+  },
+
+  "fault_hook_policy": {
+    "product_files_edited": "NONE — hooks live in this attempt's harness only (sitecustomize-style wrapper module loaded via PYTHONPATH when I09C_* env is set); product tree bytes stay identical to their sources, so 'normal commit order unchanged' is provable by zero product diff plus per-hook position list for the independent reviewer.",
+    "enabled_only_in_tests": true,
+    "kill_policy": "only PIDs registered in this run's new_run manifest are killed; kill = real process termination (TerminateProcess via os.kill SIGTERM on Windows) so Python finally does NOT run",
+    "hook_positions": "recorded per fault point under evidence/<fp>/hook_trace.json"
+  },
+
+  "allowed_changes": {
+    "scope": "isolated publication-transaction tests + this fault harness ONLY",
+    "product_problems": "report back to I-09-B; never fixed here; never bypass the product entry point to make a test pass"
+  },
+
+  "declarations": {
+    "production_writes": "none",
+    "git_writes": "none",
+    "real_registry_or_user_packages_touched": "never",
+    "self_signing": "none — implementer never signs acceptance; final status=review_pending for an independent reviewer",
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven"
+  },
+
+  "binding_status": "bound-for-step2 (iso tree + venv + harness paths bound; product commands bound per commands.json before each run)"
+}

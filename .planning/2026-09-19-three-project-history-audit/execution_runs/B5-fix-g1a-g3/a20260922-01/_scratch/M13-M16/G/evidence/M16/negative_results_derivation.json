@@ -1,0 +1,22 @@
+{
+ "card_id": "M16",
+ "derived_file": "evidence/M16/negative_results.json",
+ "derived_sha256": "880de09ee0e86b30acba5aa4283e4e04bb58d3ceb722b568003a8b9b7a793704",
+ "source_file": "evidence/M16/run_result.json",
+ "source_sha256": "c88f345c3b6ae308e8d412c25e8ddf10648eb6b9d1980134f48ea5f5d9967961",
+ "repack_scope": [
+  "cases: copied VERBATIM from run_result.json['negatives'] (no field edited)",
+  "summary: copied VERBATIM from run_result.json['negative_summary']",
+  "wrapper added: card_id, model_id, target_exception, independence, first_required_driver, frozen_expectation, counts, cases",
+  "counts: recomputed here from the copied cases, independently of the runner"
+ ],
+ "difference_is_only_the_wrapper": true,
+ "verification": "scripts/verify_card.py re-derives the projection and asserts cases == negatives, summary == negative_summary and counts == recomputed",
+ "not_repacked": [
+  "evidence/M16/input.json",
+  "evidence/M16/oracle.json",
+  "evidence/M16/cases.json",
+  "evidence/M16/run_result.json"
+ ],
+ "frozen_fixture_note": "input.json / cases.json / oracle.json are byte-frozen by scripts/oracle_M16.py and are not repacked by this step"
+}

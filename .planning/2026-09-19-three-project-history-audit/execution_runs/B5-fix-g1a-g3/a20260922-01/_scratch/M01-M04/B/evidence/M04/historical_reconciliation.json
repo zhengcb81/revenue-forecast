@@ -1,0 +1,58 @@
+{
+ "card_id": "M04",
+ "model_id": "capacity_utilization",
+ "attempt_id": "a20260919-01",
+ "scope": "minimum closed-period reconciliation requested by the task brief; NOT the full I-10-A historical reconciliation",
+ "entity": "中芯国际集成电路制造有限公司",
+ "segment": "wafer fabrication, group total, FY2024",
+ "currency": "CNY",
+ "scale": "1 (yuan) after converting the report's 千元 header",
+ "unit_dimension_check": {
+  "capacity": "8-inch-equivalent wafers per year (annualised from the disclosed period-end monthly figure)",
+  "utilization": "dimensionless ratio 0.856",
+  "yield": "1.0 - a documented scope statement, recorded as MISSING, not as a disclosure",
+  "unit_revenue": "CNY per good 8-inch-equivalent wafer (derived)",
+  "timing_factor": "1.0 - capacity is a full-year figure, so no commissioning fraction may be applied again",
+  "other_revenue": "0.0 as the documented default; recorded as missing",
+  "per_share": "not_applicable",
+  "gross_net": "consolidated operating revenue, gross of nothing at group level",
+  "period_alignment": "utilisation and capacity are as of FY2024; revenue is FY2024; the shipment volume is FY2024"
+ },
+ "reconciliation": {
+  "frozen_tolerances_before_run": {"wafer_count_relative_pct": 0.5, "revenue_relative_pct": 0.5},
+  "revenue_side": {
+   "model_output_wafers": "9,737,856",
+   "unit_revenue_cny_per_wafer_derived": "5,935.141...",
+   "rebuild_cny": "57,795,570,000",
+   "disclosed_cny": "57,795,570,000",
+   "residual_cny": "0",
+   "is_constructive_identity": true
+  },
+  "volume_side": {
+   "model_output_wafers": "9,737,856",
+   "disclosed_wafers_sold": "8,021,000",
+   "gap_wafers": "1,716,856",
+   "gap_pct": "21.4045",
+   "frozen_tolerance_pct": "0.5",
+   "verdict": "FAILS",
+   "diagnosis": "period-end monthly capacity x 12 is not the year-average available capacity; SMIC expanded through 2024",
+   "implied_available_capacity_diagnostic_only": "9,370,327.10 wafers",
+   "implied_monthly_capacity_diagnostic_only": "781,860.59 wafers/month",
+   "implied_share_of_period_end_annualised_pct": "82.3693",
+   "attribution_limit": "the gap mixes TWO effects - the wrong capacity basis and output-versus-sales - and this attempt does NOT apportion them, because no inventory/wafer-stock bridge is disclosed"
+  },
+  "cross_checks": {
+   "revenue_yoy": "FY2023 45,250,425 千元 -> FY2024 57,795,570 千元 = +27.73% (printed 27.7%)",
+   "yield_disclosure_probe": "full-text search for 良率 over 222 pages returned 2 hits, both qualitative (pages 13 and 34); no numeric yield exists in the document",
+   "revenue_line_currency_and_scale": "the main accounting data table header states 单位：千元  币种：人民币, so the raw 57,795,570 multiplies by 1000"
+  }
+ },
+ "active_stop_condition": {
+  "id": "STOP_DISCLOSURE_ADAPTATION",
+  "trigger": "the utilisation denominator (average available capacity) is not disclosed; only period-end capacity is",
+  "consequence": "no disclosure adaptation may be signed for this issuer/segment/model until an average-capacity disclosure or an audited capacity-ramp bridge exists"
+ },
+ "provenance_limit": "this PDF's sidecar is a 5-line stub with no provider receipt, no source_url and no content hash, so the local sha256 cannot be cross-checked against a publisher receipt (SR-M04-B)",
+ "not_a_forecast": "FY2024 is a closed, already-disclosed period; this is a historical mapping probe only",
+ "reviewer": "PENDING_INDEPENDENT_REVIEW"
+}

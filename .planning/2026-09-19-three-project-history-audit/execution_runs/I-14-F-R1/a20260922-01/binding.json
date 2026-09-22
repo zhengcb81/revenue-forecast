@@ -1,0 +1,78 @@
+{
+  "card": "I-14-F-R1",
+  "parent": "I-14-F",
+  "attempt": "a20260922-01",
+  "date": "2026-09-22",
+  "implementer": "I-14-F-R1 implementer agent (test-maintainer role); independent reviewer NOT this agent — no self-signing",
+  "owner_ruling": {
+    "source": "OWNER_DECISIONS.md §16 (verbatim): 「E-1: 150/60」",
+    "meaning": "adopt GENERATION_RESERVE = 150 ⇒ relocate threshold 60 (relocate iff len(resolved_basetemp) + 150 > 210, i.e. len > 60)",
+    "relation_to_recommendation": "conservative-reroute option; it OVERRIDES the orchestrator's contrary recommendation (keep 86 + fix docs); not second-guessed"
+  },
+  "card_objective": "Apply owner §16 E-1 (150/60) to the product-side short-basetemp convention in an isolated tree; pin the new boundary pair 60/61; re-run RED/GREEN/mutation; verify basetemps 61-86 relocate and pass and 40/60 stay unrelocated; correct the docstring arithmetic to the reviewer-measured figures; register append-only errata for I-14-F's sealed doc defects F-2/F-3/F-4/F-6.",
+  "repos_bound": {
+    "revenue-forecast (RF)": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+    "company-wiki (CW)": "C:\\Users\\郑曾波\\Projects\\company-wiki"
+  },
+  "production_repos": "READ-ONLY for this card; zero writes performed or permitted. The fix lives ONLY in the attempt-isolated tree below; promotion is a separate step.",
+  "prior_attempt": {
+    "path": "<PLAN>\\execution_runs\\I-14-F\\a20260919-01",
+    "status": "sealed/accepted (accepted_scoped by the independent reviewer) — READ-ONLY for this card; never written into",
+    "reviewer_report_sha256": "2e6709e0c6690c76d377dceec787c8de7722bd38c0d5cabc8fc49b0a37fc2af1",
+    "read_first": [
+      "I-14-F a20260919-01/reviewer_report.md (R-1 finding: reserve 124 is the CHILD's suffix; LOGON's true suffix is 150; Addendum C's '≥211 → rerouted conservatively' FALSE for the logon node; docstring arithmetic 31+13+79=123≠124; child's true value 125)",
+      "I-14-F a20260919-01/handoff.json (carried findings CF-I14F-1..8 + CF-I14F-X1)"
+    ]
+  },
+  "isolated_tree": {
+    "green": "<attempt>\\iso\\tree (copy of I-14-F a20260919-01 iso\\tree, which the independent reviewer verified byte-for-byte equal to a fresh `git archive` of CW HEAD f39bd5a6 + exactly the 2 added files; then EDITED here per owner §16 E-1)",
+    "red": "<attempt>\\iso\\red-tree (same copy with conftest.py + tests\\contract\\test_short_basetemp_convention.py REMOVED = pristine CW HEAD tree; 1583 files vs green 1587: conftest.py, the unit test, and their __pycache__ excluded)",
+    "provenance": "copied (read-only) from the sealed I-14-F attempt; production repo untouched — no git archive re-extraction was needed because the reviewer independently verified I-14-F's iso\\tree == fresh HEAD archive + 2 files",
+    "source_anchors_sha256": {
+      "src/company_wiki/source_catalog/worker.py": "e83179915333eb472807b15a0580d93dcf280caadc31b0099988a3b744c469c6 (re-verified True in this attempt)",
+      "tests/contract/test_source_catalog_worker_bootstrap.py": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1 (re-verified True)",
+      "src/company_wiki/source_catalog/control.py": "553a35607be39c57460c8e781d697a60bcb627eaace0e85ad61810d3e1326bbb (re-verified True)"
+    },
+    "pre_edit_hashes_match_I14F": {
+      "iso/tree/conftest.py": "c22be9f366c5590e522b713374419e293259619ead5ee72e1adb1ee71e6f2c22 (verified before editing)",
+      "iso/tree/tests/contract/test_short_basetemp_convention.py": "b0402b5693c1d5b13bb8c26225ac9da422f18bc428d0aee4ca80758830c74e7e (verified before editing)"
+    }
+  },
+  "interpreter": {
+    "python": "<attempt>\\iso\\venv\\Scripts\\python.exe",
+    "version": "3.13.9 (same interpreter line as I-14-C r5 / I-14-F)",
+    "provenance": "copied from I-14-F a20260919-01 iso\\venv (itself the I-00-A template + the pinned pip set); verified runnable after copy",
+    "packages": {"pytest": "9.1.1", "pluggy": "1.6.0", "iniconfig": "2.3.0", "packaging": "26.3", "colorama": "0.4.6", "Pygments": "2.21.0", "PyYAML": "6.0.3", "requests": "2.34.2", "urllib3": "2.8.0", "certifi": "2026.7.22", "charset-normalizer": "3.5.1", "idna": "3.20"}
+  },
+  "run_binding": {
+    "cwd_rule": "deep phases: run dirs under a driver-padded root of EXACTLY 140 chars inside the attempt (before\\deep / after\\deep / after\\mut) ⇒ cwd 166 (logon) / 167 (child), basetemp 173/174 — the frozen I-14-C/I-14-F deep geometry; sweep phase: short cwd under %TEMP%\\i14fr1sz (captures copied back). Never a repo root.",
+    "basetemp_rule": "deep/mutation phases: basetemp = <run_dir>\\pytest (fresh, never reused, never an evidence root); sweep phase: absolute basetemp = %TEMP%\\cwR1bt<pad> of EXACTLY the requested length (40..86), deleted before each run; never the attempt root or a previous run's dir",
+    "env": "stripped env (I-14-C r5 pattern): PYTHONDONTWRITEBYTECODE, PYTHONUTF8, PYTHONPATH=<tree>\\src, PATH, SYSTEMROOT, TEMP, TMP + CW_BASETEMP_DECISION_FILE + per-phase extras",
+    "network": "disabled (stripped env carries no proxy/network vars)",
+    "sequential": "all phases run strictly sequentially (no parallel-load self-contamination; Addendum-A lesson from I-14-F)"
+  },
+  "allowed_write_roots": [
+    "<attempt> (all phases)",
+    "%TEMP%\\cw-pytest-basetemp\\<session-unique-dir> (created+removed by the convention itself when relocating)",
+    "%TEMP%\\i14fr1sz\\<run dirs> and %TEMP%\\cwR1bt<pad> (sweep placements; captures copied back into <attempt>)"
+  ],
+  "design_consequences_frozen": [
+    "boundary pair moves 86/87 → 60/61: 60 → 210 unrelocated, 61 → 211 relocated — BOTH pinned by unit tests and by the integration sweep",
+    "basetemps 61–86 now relocate; I-14-F's recorded no-reroute controls (69/68, 76/75, 82/81) flip relocated=false → true with a WRITTEN reason, never silently",
+    "R-1 thin margin becomes structural: any unrelocated generated total ≤ 60 + 150 = 210 by construction (old: nominal 86+124=210 but logon actual 86+150=236)",
+    "the old untested 82–86 band is moot (it now relocates) — but verified to relocate and pass"
+  ],
+  "forbidden": [
+    "any write into <PLAN>\\execution_runs\\I-14-F\\a20260919-01 (sealed/accepted — read-only)",
+    "writes to production repos (RF/CW)",
+    "silently flipping any recorded expectation (every flip carries a written reason citing owner §16 E-1)",
+    "self-signing review (handoff status stays review_pending; implementer_signed=false)",
+    "promotion into any production tree (separate step, not this card)"
+  ],
+  "boundaries": {
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "qualification": "test-infrastructure only; no product runtime code changed; promotion separate"
+  },
+  "binding_status": "bound-implementation-stage (oracle frozen BEFORE any run; RED permitted on the pristine red-tree; post-run hashes recorded in after/final_hashes.json)"
+}

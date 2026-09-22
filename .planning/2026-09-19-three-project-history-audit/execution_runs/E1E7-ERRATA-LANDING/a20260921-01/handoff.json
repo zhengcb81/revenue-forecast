@@ -1,0 +1,266 @@
+{
+  "card_id": "E1E7-ERRATA-LANDING",
+  "attempt_id": "a20260921-01",
+  "attempt": "a20260921-01",
+  "title": "REM-18：E-1…E-7 编排层勘误落地（append-only，no code，no tests）",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_note": "状态权威见本文件 status_authority：verdict accepted_scoped 由独立复核写于 byte-pinned 载体 reviewer_report.md（sha256 fb05120a0f388b18d6d301b31fcd2edc4d86d047c675ca2ad2fe2c926e9444d5，10676 B）；本字段只转录指向、不自签。原实现者复核前期文本逐字留存于 status_note_historical_pre_verdict。",
+  "status_note_historical_pre_verdict": "由实现者按九步法第 8 步置 review_pending（证据齐全的进入动作，**不是验收**）。实现者从不签署验收：implementer_signed = false；验收须独立 reviewer / 编排层出具。",
+  "owner": "编排层（orchestration）",
+  "source": "父卡指令 E1E7-ERRATA-LANDING；来源权威 = I-10-B a20260919-01 handoff.errata_pending.items + compatibility_impact.md §5 + OWNER_DECISIONS.md §13 T1-12 ①",
+  "depends_on": "I-10-B（accepted_scoped；E 列表 status = PENDING-orchestration）",
+
+  "headline": "四张 M 卡（M05/M14/M20/M24）的冻结 oracle.md 已按 T1-12 ① 追加式落地 E-1…E-7 勘误披露节：4/4 前缀证明通过、4/4 difflib 插入证明通过、4 颗 attempt 树内仅这 4 个文件被改动；零期望变化、零 status 变化、零资格变化；修复未晋升声明逐卡写明；0 跳过、0 停止。",
+
+  "pin_verification": {
+    "method": "文件存在 + handoff 对 oracle.md 的 pin 可复现（冻结体前缀 hash 或整文件 hash）",
+    "M05": "PINNED_OK — 8774 B 前缀 = ae1986f6…（v1 冻结体）。整文件 pin 值 7fda03b1…/14844 B 与盘上 081a206b…/14790 B 的差异已归因为 git `.gitattributes: *.md text eol=lf` 对 r2/r3 追加区 54 个 CR 的归一化：LF→CRLF 还原后 sha256 精确等于 7fda03b1…（见 binding.json targets.M05.pin_check、commands.json seq 8）",
+    "M14": "PINNED_OK — 9367 B 前缀 = 8d74e94f…（before/oracle_md_v1.json，recorded_before_any_product_run）",
+    "M20": "PINNED_OK — 整文件 = b43abd8d…（13074 B，handoff.input_hashes['oracle.md']，revision r1，精确匹配）",
+    "M24": "PINNED_OK — 13382 B 前缀 = 9c8f6b23…（handoff oracle.md_frozen_body）"
+  },
+
+  "per_card_results": [
+    {
+      "card": "M05",
+      "file": "execution_runs/M05/a20260919-01/oracle.md",
+      "sha256_before": "081a206b072303314140eb3e69dfe1b04de400bddd89dc7b1b17c167dfada555",
+      "bytes_before": 14790,
+      "sha256_after": "a1402ed8d1da5218140f9952bb639019c2cff2aa99120f183bd4bffc4b4cd7b3",
+      "bytes_after": 18889,
+      "appended_bytes": 4099,
+      "prefix_proof": "PASS — sha256(after[:14790]) == 081a206b…（逐字节前缀相同）",
+      "insertion_only_proof": "PASS — difflib opcodes = {equal, insert}",
+      "e_items_landed": ["E-1 M05 oracle.json defaults"],
+      "line_annotations": ["L52/L62/L64（§3 defaults 期望 [600]）", "L167（r2 OQ-04 静默补 0 记录）"]
+    },
+    {
+      "card": "M14",
+      "file": "execution_runs/M14/a20260919-01/oracle.md",
+      "sha256_before": "c2f7cc4e1337552a2f89aa427d6a3bd00c020d6f91f47fb42ea0a790e2da0988",
+      "bytes_before": 19339,
+      "sha256_after": "80bba367e4c568d84f64c5e9e1092cf463b6f8ebbd0e1dd66aca4944d644676e",
+      "bytes_after": 28088,
+      "appended_bytes": 8749,
+      "prefix_proof": "PASS — sha256(after[:19339]) == c2f7cc4e…",
+      "insertion_only_proof": "PASS — difflib opcodes = {equal, insert}",
+      "e_items_landed": [
+        "E-2 M14 oracle.json defaults",
+        "E-5 M14 cases.json OBS-SUPPLY-BOUND",
+        "E-6 M14 oq_rulings.json OQ-03",
+        "E-7 M14 recovery/probes/signed_driver_probe.json"
+      ],
+      "line_annotations": [
+        "L54/L64/L65（§3 defaults 期望 [50]）",
+        "L108（OBS-SUPPLY-BOUND 观测行）",
+        "L128（负例表 R10 行）",
+        "L185（signed_driver_probe 记录行）"
+      ]
+    },
+    {
+      "card": "M20",
+      "file": "execution_runs/M20/a20260919-01/oracle.md",
+      "sha256_before": "b43abd8dafe0f5812cfdbd6847fbf332384840982960874f29967657c776672a",
+      "bytes_before": 13074,
+      "sha256_after": "50e22567eabfcdc1da57b69a10ffceba32ed9a3ff0e6dafe620f43b171fe2802",
+      "bytes_after": 17692,
+      "appended_bytes": 4618,
+      "prefix_proof": "PASS — sha256(after[:13074]) == b43abd8d…",
+      "insertion_only_proof": "PASS — difflib opcodes = {equal, insert}",
+      "e_items_landed": ["E-3 M20 oracle.json defaults"],
+      "line_annotations": ["L58/L70/L72（§3 defaults 期望 [220]）", "L73-L75（静默补 0 / OQ-02 说明）", "L123（OBS-DEFAULT-EQUIV）"]
+    },
+    {
+      "card": "M24",
+      "file": "execution_runs/M24/a20260919-01/oracle.md",
+      "sha256_before": "67c3cae63bb679e2fca3956271d32d6dfcbbf82847295bc904036da6418771ca",
+      "bytes_before": 26216,
+      "sha256_after": "7ec4c278c1d2a89da56ce9e19d7945300e67aadab88fb4f5a2eb1a611c8327bd",
+      "bytes_after": 31200,
+      "appended_bytes": 4984,
+      "prefix_proof": "PASS — sha256(after[:26216]) == 67c3cae6…",
+      "insertion_only_proof": "PASS — difflib opcodes = {equal, insert}",
+      "e_items_landed": ["E-4 M24 oracle.json defaults + hand_notes.defaults"],
+      "line_annotations": ["L83/L123/L125（§3 defaults 期望 ['210.000']，含 'omitted -> 0' 手算）", "L128（defaults_ok_not_gating）", "L169/L276（OBS-DEFAULT-EQUIV）", "L241（汇总表 defaults 行）"]
+    }
+  ],
+
+  "efficiency_claims": {
+    "expectations_changed": 0,
+    "statuses_changed": 0,
+    "qualifications_changed": 0,
+    "frozen_bodies_modified_bytes": 0,
+    "skips": 0,
+    "stops": 0
+  },
+
+  "non_promotion_statement_landed_per_card": "I-10-B 修复（model_registry silent-zero-fill + sign-by-name）当前仅存在于 execution_runs/I-10-B/a20260919-01/iso/rf/scripts/，未晋升；晋升前现行冻结值仍权威；本条为前瞻披露（promotion 前置知会），不改变任何现行期望、不改变任何 status、不改变任何资格。",
+
+  "provenance": {
+    "source_attempt": "execution_runs/I-10-B/a20260919-01",
+    "source_handoff_sha256": "867d59b82a60544a8d7156ca0c3dbef9a9706ede6d82ede7ea50be0e181b54f4",
+    "source_handoff_bytes": 23563,
+    "e_list_key": "errata_pending.items",
+    "e_list_cross_keys": ["carried_findings[id=\"E-1..E-7\"]", "compatibility_impact.md §5 表", "decision.md DEC-I10B-5"],
+    "form": "T1-12 ① 追加式（追加新节 + 行级『已过时，以本节为准』标注；不外扩就地编辑授权）"
+  },
+
+  "completed_steps": [
+    "read source of truth：I-10-B handoff/compatibility_impact/decision + OWNER_DECISIONS §13 T1-12 ①（逐字读取，未转述）",
+    "pin 校验：四卡 oracle.md 存在且为其 handoff 所 pin（4/4 PASS，含 M05 行尾归因）",
+    "冻结本卡 oracle.md（先于任何 M 卡 oracle 改动）",
+    "写 binding.json（4 个 before sha256/bytes + pin 判定）",
+    "落定四份逐字追加载荷 evidence/landed_text/",
+    "scripts/append_errata.py 一次执行：逐卡 pin 复核 → 追加 → 前缀证明 → difflib 插入证明 → 写 evidence/",
+    "独立复核（不复用脚本内存态）：4/4 前缀匹配、4/4 exact-append 匹配、attempt 树 mtime 扫描只有 4 个 oracle.md 被改",
+    "PowerShell 侧 Get-FileHash 二次复算 after-hash，与 python 一致"
+  ],
+
+  "evidence_paths": [
+    "oracle.md（本卡开工前冻结）",
+    "binding.json（4 个 before-hash + pin 判定）",
+    "commands.json",
+    "decision.md（DEC-E1E7-1..5）",
+    "evidence/landed_text/M05.md",
+    "evidence/landed_text/M14.md",
+    "evidence/landed_text/M20.md",
+    "evidence/landed_text/M24.md",
+    "evidence/prefix_proof/M05.json",
+    "evidence/prefix_proof/M14.json",
+    "evidence/prefix_proof/M20.json",
+    "evidence/prefix_proof/M24.json",
+    "evidence/after_hash/M05.json",
+    "evidence/after_hash/M14.json",
+    "evidence/after_hash/M20.json",
+    "evidence/after_hash/M24.json",
+    "evidence/diff_summary/M05.json",
+    "evidence/diff_summary/M14.json",
+    "evidence/diff_summary/M20.json",
+    "evidence/diff_summary/M24.json",
+    "evidence/proof_summary.json",
+    "evidence/independent_verify.json",
+    "evidence/provenance_time_note.json",
+    "scripts/append_errata.py",
+    "recovery/README.md"
+  ],
+
+  "skips": [],
+  "stops": [],
+
+  "gaps_remaining": [
+    "GAP-1 日期标签：追加节内写 2026-09-21（取自 attempt id），本机实际执行时钟为 2026-09-22 09:2x +01:00。不回改（append-only）；若须在 M 卡内更正只能再起一轮 T1-12 ① 追加 —— 待编排层裁定。见 evidence/provenance_time_note.json / decision.md DEC-E1E7-5。",
+    "GAP-2 E-1…E-7 点名的 JSON 载体（evidence/<CARD>/oracle.json、M14 cases.json / oq_rulings.json / recovery/probes/signed_driver_probe.json）**未**落 E 项：本卡指令的落点是 oracle.md，且 JSON 无合法行内追加形态、本卡无回改授权。是否另起一轮追加式 pass 由编排层决定。",
+    "GAP-3 行级『已过时，以本节为准』按 T1-12 ① 落在**追加节内**并指认旧行号；旧行本身一字未改（这是 ① 形态的定义，不是缺陷）。",
+    "GAP-4 M05 整文件 hash 与其 handoff.input_hashes_current 的差异（git LF 归一化）未在 M05 卡内披露 —— 本卡只披露 E 项，不替 M05 记账；如需在 M05 内登记，须另授权一轮追加。",
+    "GAP-5 I-10-B handoff 的 next_action/not_done 引用键名 `handoff.errata_pending_orchestration`，而实际键为 `errata_pending`（E 列表所在键）；键名不一致属 I-10-B 侧记账瑕疵，本卡未改动该 handoff。",
+    "GAP-6 E-1…E-7 的独立验收、I-10-B 修复的生产晋升、OQ-03 的 D/E 层追认 —— 均待他方，本卡不代裁、不预判。"
+  ],
+
+  "carried_findings": [
+    {"id": "GAP-1", "severity": "minor", "kind": "provenance", "finding": "追加节日期标签 2026-09-21 vs 实际执行时钟 2026-09-22", "status": "carried_not_resolved"},
+    {"id": "GAP-2", "severity": "medium", "kind": "scope", "finding": "E 项未落到 E-list 点名的 JSON 载体", "status": "carried_not_resolved"},
+    {"id": "GAP-5", "severity": "info", "kind": "upstream_bookkeeping", "finding": "I-10-B handoff 引用键名 errata_pending_orchestration 与实际键 errata_pending 不一致", "status": "carried_not_resolved"},
+    {"id": "CF-E1E7-1", "severity": "minor (non-blocking)", "kind": "wording_pre_freeze", "origin": "reviewer_report.md F-MIN-1 (line 89)", "finding": "pre-freeze 措辞不一致：binding/oracle 称 frozen before touching any M-card oracle，但 commands.json seq 序显示读取（seq5/6/9）先于 seq10 冻结 ⇒ 触碰对 modify 为真、对 read 为假", "disposition": "风险已被 reviewer 独立 before-镜像复算中和（C1 从字节重得）；措辞澄清属编排层将来一轮 T1-12 ① 建议，本卡不可回改。非阻断，登记随行。", "status": "carried_not_resolved"},
+    {"id": "CF-E1E7-2", "severity": "minor", "kind": "wording_failure_handling", "origin": "reviewer_report.md F-MIN-2 (line 90)", "finding": "失败处置口径不一：decision.md DEC-E1E7-2 写『回写原字节、STOP』，本卡 oracle.md §2.1 写『停止并保留原状（不回滚重试）』", "disposition": "moot —— 本轮 stopped_or_skipped = {}，无任何失败触发，两条口径均未被执行。", "status": "carried_not_resolved"},
+    {"id": "CF-E1E7-3", "severity": "minor (awareness only)", "kind": "expectation_annotation_tension", "origin": "reviewer_report.md F-MIN-3 (line 91)", "finding": "行级『已过时，以本节为准』标注落在期望输出行上（M05 L62/L64、M14 L64/L65、M20 L70/L220、M24 L123/L125），而同节又声明晋升前冻结值仍权威 —— T1-12 ① 形态固有张力", "disposition": "由 ④ 免责句调和；仅向编排层知会，不构成 changes_required，不改任何期望值。", "status": "carried_not_resolved"},
+    {"id": "CF-E1E7-4", "severity": "minor", "kind": "provenance_date_label", "origin": "reviewer_report.md F-MIN-4 (line 92)", "finding": "追加节日期标签 2026-09-21 vs 实机执行时钟 2026-09-22 09:2x", "disposition": "已按父裁 F2 如实登记为留置（decision.md DEC-E1E7-5 + evidence/provenance_time_note.json + GAP-1），不回改、不自行第二轮；reviewer 明示不重开，本登记同样不重开。", "status": "carried_not_resolved"},
+    {"id": "U-1..U-5", "severity": "info", "kind": "review_unverified_boundary", "origin": "reviewer_report.md §3 lines 94–100", "finding": "reviewer 明示 5 条 unverified：U-1 pytest/mypy mtime 归因在共享工作区无法判定归属（本卡自报 0 pytest，未能从字节证明或证伪）；U-2 完整 git status 因 .planning/.../scratch/model-tests/ ACL 拒绝目录中断，以 git diff + mtime 扫描替代；U-3 commands.json 自报（seq1–16）无独立旁证，seq13 append_errata.py 未被 reviewer 重放；U-4 handoff 侧 frozen-body pin 值（M14 9367 / M24 13382 / M05 8774 B）未逐一回溯源到各自 handoff 字节；U-5 M14 §3.4 实跑对照表逐格未单独回源（其源文件整体 hash 由 binding pin，但 pin 值本身同属 U-4 类未溯源项）", "disposition": "reviewer 已明示边界与原因，不以推测充作结论；本卡不补证、不改判，随行登记。", "status": "carried_not_resolved"},
+    {"id": "PARENT-RULINGS-4", "severity": "info", "kind": "parent_rulings_recorded", "origin": "父裁；reviewer C5（lines 53–61）只验在场", "finding": "四项父裁登记在场：① F2 日期标签 → 留置、不自行第二轮；② GAP-2 → 不做 JSON 编辑 pass（不落 evidence/**/*.json）；③ GAP-4 → M05 LF 披露留在 DEC-E1E7-1a、不写入 M05 卡内；④ GAP-5 → I-10-B 陈旧键名（errata_pending_orchestration vs errata_pending）登记不改，I-10-B handoff sha 仍 867d59b8… 未被改动", "disposition": "recorded present；本 pass 只转录，不重开、不重裁任何一项。", "status": "recorded_present"}
+  ],
+
+  "commands_executed": 16,
+  "raw_exit_codes": {"append_errata": 0, "independent_verify": 0},
+
+  "integrity": {
+    "frozen_bodies_byte_changed": 0,
+    "only_files_written_outside_this_attempt": "execution_runs/{M05,M14,M20,M24}/a20260919-01/oracle.md（各一次纯追加）",
+    "evidence_json_files_touched": 0,
+    "product_files_written": 0,
+    "product_tree_commands": 0,
+    "pytest_runs": 0,
+    "git_write_commands": 0,
+    "status_transitions_made": "1 —— 本 handoff 由实现者置 review_pending（进入动作，非验收）",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "signed_on_behalf_of_others": false,
+    "candidate_promoted_to_product": false,
+    "qualification_granted": "none"
+  },
+
+  "next_action": "待办①（独立复核四份 prefix_proof / after_hash / diff_summary 与 landed_text 逐字文本）已由独立复核完成并裁定 accepted_scoped —— 权威见 status_authority（carrier = reviewer_report.md，sha256 fb05120a…e9444d5，10676 B）。仍未由本卡处置者：生产晋升与 OQ-03 D/E 追认仍是独立的 owner 决策 —— 本卡不授权、不预判。原复核前期文本逐字留存于 next_action_historical_pre_verdict。",
+  "next_action_historical_pre_verdict": "独立 reviewer / 编排层：①复核四份 prefix_proof / after_hash / diff_summary 与 landed_text 逐字文本；②裁定 GAP-1（日期标签）与 GAP-2（JSON 载体是否另起追加轮）；③生产晋升与 OQ-03 D/E 追认仍是独立的 owner 决策 —— 本卡不授权、不预判。",
+
+  "bookkeeping": {
+    "recorded_by": "E1E7-ERRATA-LANDING implementer, 2026-09-21 attempt / 2026-09-22 实际时钟",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "review_pending_is_not_acceptance": true,
+    "carrier_landing_recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "carrier_landing_what_this_pass_did": "landed the carrier fields for the independent reviewer's already byte-pinned verdict; created review.md with a transcribed verdict block (no acceptance of its own); set status accepted_scoped + status_before_bookkeeping_fix review_pending; appended status_authority, bookkeeping additions and 6 carried findings here; superseded the two stale implementer-era pre-verdict fields byte-exact under *_historical_pre_verdict; created evidence/E1E7-ERRATA-LANDING/qualification.json; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "verdict_author": "独立复核 (independent reviewer) — in reviewer_report.md line 7, not in any file this pass wrote",
+    "status_transition": "review_pending -> accepted_scoped (bookkeeping transcription of the reviewer's line 7 verdict / line 104 conclusion; implemented by this landing pass on the parent's dispatch, never by the implementer)",
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "m_card_oracle_bytes_written": 0,
+    "production_bytes_written": 0,
+    "disclosure_adaptation": "unmapped (untouched)",
+    "accuracy": "unproven (untouched)",
+    "stale_fields_superseded_byte_exact": ["status_note -> status_note_historical_pre_verdict", "next_action -> next_action_historical_pre_verdict"],
+    "carried_findings_appended": 6,
+    "carried_findings_appended_ids": ["CF-E1E7-1 (pre-freeze wording, non-blocking)", "CF-E1E7-2 (failure-handling wording, moot)", "CF-E1E7-3 (已过时 annotation tension, awareness only)", "CF-E1E7-4 (date label, parent F2 留置, not reopened)", "U-1..U-5 (reviewer's 5 unverified items)", "PARENT-RULINGS-4 (F2 留置 / GAP-2 no-JSON / GAP-4 留置 / GAP-5 registered)"],
+    "pre_existing_keys_otherwise_untouched": true,
+    "files_written": ["review.md (created)", "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping additions + 6 carried findings appended + 2 stale-field supersessions; pre-existing content otherwise untouched)", "evidence/E1E7-ERRATA-LANDING/qualification.json (created)"],
+    "handoff_pre_image": "11451 B / sha256 c340891059baf1ae5f0a5ba6c0e99e9a3d090f71a8f010d02a3154c32ff55429 (before this pass's edits)"
+  },
+  "status_authority": {
+    "verdict": "accepted_scoped",
+    "verdict_written_by": "独立复核 (independent reviewer session; sibling of the implementer; the implementer did not self-sign)",
+    "verdict_label_as_written_by_reviewer": "accepted_scoped",
+    "carrier": {
+      "file": "reviewer_report.md",
+      "path_inside_attempt": "reviewer_report.md",
+      "line_range_inclusive_1_based": [1, 104],
+      "verdict_line": 7,
+      "verdict_line_range_inclusive": [7, 7],
+      "first_line_of_verdict": "## Verdict: **accepted_scoped**",
+      "conclusion_section_line_range_inclusive": [102, 104],
+      "conclusion_verdict_line": 104,
+      "scope_section_line_range_inclusive": [13, 75],
+      "findings_section_line_range_inclusive": [79, 92],
+      "unverified_section_line_range_inclusive": [94, 100],
+      "minor_findings_F_MIN_1_to_4_line_range_inclusive": [89, 92],
+      "parent_rulings_presence_table_line_range_inclusive": [53, 61],
+      "reviewer_role_line": 3,
+      "reviewer_boundary_line": 5,
+      "sha256": "fb05120a0f388b18d6d301b31fcd2edc4d86d047c675ca2ad2fe2c926e9444d5",
+      "bytes": 10676,
+      "total_lines": 104,
+      "encoding": "UTF-8 without BOM; LF line endings only; single trailing LF",
+      "byte_proof": {
+        "verdict_line_bytes": {"start": 665, "end_inclusive": 695, "end_exclusive": 696, "length": 31, "sha256": "b6787e111cf7249db03dd47bbc6cb4ddb40bfe89006d80338631b78d0969916f"},
+        "conclusion_region_bytes": {"start": 10229, "end_inclusive": 10674, "end_exclusive": 10675, "length": 446, "sha256": "4937770f9d1f4adabacc054cac320fe616298a9fd34a86b45dc99f17fb483169"},
+        "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 10674, "end_exclusive": 10675, "length": 10675, "sha256": "4c1c36e05831b98880cd8e63ec8a90e239b1e0960eeb7ef45ba91f6db0584975"},
+        "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the line's terminating LF unless stated"
+      },
+      "pin_sidecar": {
+        "file": "reviewer_report.sha256",
+        "present": true,
+        "bytes": 97,
+        "sha256": "367f22d7c3009a52ed04e0fbf20cb5f6591e4b31e40843955137472bd51c3363",
+        "content": "fb05120a0f388b18d6d301b31fcd2edc4d86d047c675ca2ad2fe2c926e9444d5  reviewer_report.md  bytes=10676",
+        "verified": "sidecar sha matches an independent read-only re-hash of reviewer_report.md at landing time, and sidecar bytes= matches the 10676-B file length"
+      },
+      "landing_file": {
+        "file": "review.md",
+        "role": "carrier-landing verdict block written by this bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md, which this pass did not modify.",
+        "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+      }
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核) in reviewer_report.md, not by the implementer; this handoff only transcribes it",
+    "verdict_is_transcribed_not_authored": true
+  }
+}
