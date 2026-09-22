@@ -22,13 +22,45 @@ from model_registry import (  # noqa: E402
 from test_models import CASES, YEARS  # noqa: E402
 
 
+# --- MODEL-ORACLE-ALIGN: I-10-B defect-1 (省缺即抛) caller-side alignment -------
+# The promoted registry no longer silently fills an optional driver that has no
+# explicit spec default with 0.0; it raises at scripts/model_registry.py:410.
+# These tests measure guardrail math / business rules, NOT the retired silent
+# fill, so every previously-implied value is now passed EXPLICITLY — identical
+# numbers on the before-image registry and on the promoted registry, therefore
+# zero business-meaning change. Never reintroduce silent-0.0 into the registry.
+# Authority: I-10-B defect-1 (T1-22) approved product semantics; forward-
+# disclosure precedent E1E7-ERRATA-LANDING a20260921-01 DEC-E1E7-4 ("caller-side
+# alignment changes no current expectation, no status, no qualification").
+# ---------------------------------------------------------------------------
+
+
+def _with_explicit_missing_defaults(model: str, drivers, years):
+    """Caller-explicit copy of ``drivers``.
+
+    Materializes every absent optional driver with exactly the value the OLD
+    registry implied: ``spec.defaults.get(driver, 0.0)``. Declared defaults are
+    materialized too (fully explicit caller); the numbers are identical to what
+    both registry versions compute, so what each test measures is unchanged.
+    """
+    spec = MODEL_REGISTRY[model]
+    explicit = dict(drivers)
+    for driver in spec.optional:
+        if driver not in explicit:
+            explicit[driver] = [spec.defaults.get(driver, 0.0)] * len(years)
+    return explicit
+
+
 class EconomicGuardrailTests(unittest.TestCase):
     def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
         for model, (drivers, expected) in CASES.items():
             with self.subTest(model=model):
-                before = copy.deepcopy(drivers)
-                actual = calculate_registered_model(model, 100.0, drivers, YEARS)
-                self.assertEqual(drivers, before)
+                # CASES omit no-default optionals; pass the formerly implied
+                # defaults explicitly (I-10-B defect-1; E1E7 precedent).
+                explicit = _with_explicit_missing_defaults(model, drivers, YEARS)
+                before = copy.deepcopy(explicit)
+                actual = calculate_registered_model(model, 100.0, explicit, YEARS)
+                self.assertEqual(explicit, before)
                 for observed, target in zip(actual, expected):
                     self.assertAlmostEqual(observed, target)
 
@@ -61,7 +93,7 @@ class EconomicGuardrailTests(unittest.TestCase):
 
     def test_overflow_and_negative_net_revenue_fail_closed(self) -> None:
         for drivers, message in (
-            ({"units": [1e308], "unit_revenue": [1e308]}, "finite"),
+            ({"units": [1e308], "unit_revenue": [1e308], "other_revenue": [0]}, "finite"),  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
             ({"units": [1], "unit_revenue": [1], "other_revenue": [-2]}, "negative"),
         ):
             with self.subTest(drivers=drivers):
@@ -78,7 +110,7 @@ class EconomicGuardrailTests(unittest.TestCase):
         drivers = {
             "average_earning_assets": [1000], "asset_yield": [-0.005],
             "average_interest_bearing_liabilities": [800], "funding_cost": [-0.01],
-            "fee_revenue": [2],
+            "fee_revenue": [2], "other_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
         }
         self.assertEqual(calculate_registered_model("bank_revenue", 0, drivers, [2026]), [5])
         self.assertEqual(driver_value_bounds("bank_revenue", "funding_cost"), (-math.inf, math.inf))
@@ -89,6 +121,7 @@ class EconomicGuardrailTests(unittest.TestCase):
             "opening_customers": [100], "new_customers": [100], "churned_customers": [0],
             "ending_customers": [200], "revenue_per_customer": [12],
             "new_customer_revenue_fraction": [1 / 12],
+            "usage_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
         }
         self.assertAlmostEqual(calculate_registered_model("cohort_subscription", 0, drivers, [2026])[0], 1300)
         drivers["new_customer_revenue_fraction"] = [0]
@@ -99,6 +132,7 @@ class EconomicGuardrailTests(unittest.TestCase):
             "opening_customers": [100], "new_customers": [0], "churned_customers": [20],
             "ending_customers": [80], "revenue_per_customer": [12],
             "churned_customer_lost_fraction": [1],
+            "usage_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
         }
         self.assertEqual(calculate_registered_model("cohort_subscription", 0, drivers, [2026]), [960])
         drivers["churned_customer_lost_fraction"] = [0]
@@ -109,6 +143,7 @@ class EconomicGuardrailTests(unittest.TestCase):
             "opening_customers": [0], "new_customers": [10], "churned_customers": [10],
             "ending_customers": [0], "revenue_per_customer": [1],
             "new_customer_revenue_fraction": [0], "churned_customer_lost_fraction": [1],
+            "usage_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
         }
         with self.assertRaisesRegex(ModelRegistryError, "time exposure"):
             calculate_registered_model("cohort_subscription", 0, drivers, [2026])
@@ -124,6 +159,7 @@ class EconomicGuardrailTests(unittest.TestCase):
         drivers = {
             "opening_backlog": [1e16], "bookings": [1], "cancellations": [0],
             "contract_changes": [0], "closing_backlog": [1e16],
+            "backlog_remeasurements": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
         }
         self.assertEqual(calculate_registered_model("project_backlog", 0, drivers, [2026]), [1])
 
@@ -131,6 +167,7 @@ class EconomicGuardrailTests(unittest.TestCase):
         drivers = {
             "opening_reserves": [100], "additions": [0], "reserve_revisions": [-20],
             "depletion": [10], "closing_reserves": [70], "recovery_rate": [0.8], "realized_price": [5],
+            "other_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
         }
         self.assertEqual(calculate_registered_model("reserve_depletion", 0, drivers, [2026]), [40])
 
