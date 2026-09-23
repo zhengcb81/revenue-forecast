@@ -1296,3 +1296,29 @@ CW commit = `prompt_injection_guard.py d7125478…` + `prompt_injection.py 88154
 - **F-EE1-FIX = accepted_scoped 落定**：复审 `588f8d95` ACCEPT(verified) → 落定三件 `3320e40d…`/`62b547b7…`/`e5611a38…`；记录修 F1（§7 新项+§4 注+**reviewer_b2_execution.json** `2ff9e69f`=复审双臂补跑实证）、F2（decision 引文归位 ENV-11 docstring :187-189；**oracle 不改写=父核准**：frozen-first 依赖字节、更正三处载明）、F3（wall-clock vs in-run 注）；`bf0c8b2` 实值入 parent_commit；完整性复验（report/sidecar/oracle/commands/recovery/diff/双 binding）全未动。
 - **欠项在册**：live S1 `downloads==1` owner 复权 · 载体 countersign · CW CLI ensure 面离线未跑。
 - 批 7 = 本册 §55–59 + progress R96 + F-EE1/I-07-B/E2E 尝试证据入史。
+
+---
+
+## 六十、【I-07-C 复审 accepted_scoped（holdout 实测双结果）+ 两下游新发现入册】2026-09-23 下午
+
+### 复审 `d5e3e661…`/40851 B 核心
+- 五格自跑全证（X04 sqlite 查询+resolve 重跑、X05 十二域独立复算0/8/17+resolve 重跑、clause3 四跑字节同、C1 四探 error=NULL、X03 普查 SQL 三数重跑=33092/3660/9853/1、23530、6411 三源一致）；零产品变更（16 锚+6 样本双时点 0 失配）。
+- **Clause-5 holdout（复审者先冻后测、禁换样）**：**洛阳钼业603993 FY2021**（`dfeb7c54…`/6,610,553 B、12 域0 命中+对照81/32/24）→ **SCAN PASS**（adapter 同路、document_id==生产 id、**entity_gate_rejected=0=无公司名硬编码**）+ **RESOLVE=先声明实测负例**（capture 门拦 cninfo http URL、resolver:1919-1925）→ 新发现 **F-REV-7**：10,596 件中「criterion-(i) 合格 ∩ https-source_url-capable = **0**」= 下游/数据缺口（非本卡面）。
+- 观察(d) 判别探针**推翻 missing-resolve 理论**（二扫触发 fingerprint+1；I-07-B 遗留 open item 线索改指 scan/ensure 触发）→ 父行动项。
+- **尺寸争议证据裁**：真值 `49,677,344,768`（live+双快照+普查+复审重跑五源一致）；`…476` 全库仅 `recovery/README.md:41` 转写错 → F-REV-3 注记修（钉前像保留）。
+
+### 两下游发现入册（修不在卡面）
+- **C1（F-REV-1）**：`adapter_dispatch._to_scanner_candidate` 丢弃 `sidecar.py:6-7` 承诺的补救原因 → `locations.error=NULL`（角色级显式、原因级不可观测）——REMEDIATION 轨道。
+- **F-REV-7**：合格非夹具公司无法达 reuse（∩https=0）——REMEDIATION/数据轨。
+- F-REV-2/3/4=落定记录修；F-REV-5 已转父（I-07-B 遗留项线索）；F-REV-6/8 info。
+
+### 状态
+落定在办 → 批 8 收口 → **I-07-D 派单（19 卡链第5张）**。欠 owner：CI §55 序列（CW 领先3）· live S1 复测授权。
+
+---
+
+## 六十一、【I-07-C 落定 + 批 8 收口】2026-09-23 晚
+
+- **I-07-C = accepted_scoped 落定**：三件 `c5021799…`/`550b489d…`/`a4d48dd3…`；F-REV-2（17 runs 计数正）、F-REV-3（README 尺寸注记修、前像 `5ca0c271` 保）、F-REV-4（NVO token 注）均留痕修；holdout SEALED→EXECUTED 双结果留痕（SCAN PASS/RESOLVE 实测负例、`dfeb7c54…`）；复审面（report/sidecar/holdout35 件）0 字节。
+- **父动作**：① 批 8 提交推送；② **I-07-D 派单（19 卡链第 5 张）**；③ C1+F-REV-7 已入 §60 台账（修非卡面）；④ **F-REV-5 改线**=I-07-B 遗留 fingerprint+1 项按"二扫/ensure 触发"查（弃 missing-resolve 理论）；⑤ %TEMP%i07c 授权清理=执行；⑥ 下游引用带三声明+overall=false（既定）。
+- 链计分：I-06-A ✅ I-06-B ✅(+新面) I-07-B ✅ I-07-C ✅ → I-07-D。

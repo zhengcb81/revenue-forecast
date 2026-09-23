@@ -1,0 +1,710 @@
+# I-07-C changes.diff (difflib-based; no git)
+# product anchors (RF/CW/FF source + production config):
+#   before=16 after=16 changed=[]
+# manifest samples (raw+sidecar): changed=[]
+# production catalog identity changed=False
+# isolation-only writes follow (config deltas vs production config)
+
+--- cell X04-multiroot (isolated root/config/catalog only) ---
+--- production/config/source_catalog.yaml (read-only reference)
+
++++ %TEMP%/i07c/cells/X04-multiroot/cwroot/config/source_catalog.yaml (ISOLATED)
+
+@@ -1,40 +1,14 @@
+
+ schema_version: "1.0"
+
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
+
+-# Root *kinds* whose indexed documents are directly reusable by filing-fetch
+
+-# (config-driven, ADR-008). company_raw is the default; adding a kind here
+
+-# makes every already-indexed document under such roots reusable without a
+
+-# download (filing-fetch path allowance must list the corresponding dirs).
+
+-#
+
+-# Privacy decision (2026-09-03, repo owner): the private_user classification
+
+-# is retired for the production catalog — all roots are public and their
+
+-# documents may be sent to external LLMs (after the GP-003 review-receipt
+
+-# gate).  The LLM exit gate code still enforces privacy_class=private_user
+
+-# when a root explicitly declares it (defense in depth for future roots).
+
+-reusable_root_kinds: [company_raw, dayu_portfolio, directory]
+
++catalog_dir: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X04-multiroot\cwroot\.source_catalog'
+
++reusable_root_kinds: [company_raw]
+
+ roots:
+
+-  - root_id: company_raw
+
++  - root_id: companies_root_a
+
+     kind: company_raw
+
+-    path: "${PROJECT_ROOT}/companies"
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X04-multiroot\cwroot\companies'
+
+     priority: 10
+
+     privacy_class: public
+
+-  - root_id: dayu_portfolio
+
+-    kind: dayu_portfolio
+
+-    path: "${PROJECT_ROOT}/../dayu-agent/workspace/portfolio"
+
++  - root_id: companies_root_b
+
++    kind: company_raw
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X04-multiroot\cwroot\companies_mirror'
+
+     priority: 20
+
+     privacy_class: public
+
+-  - root_id: dropbox_stock
+
+-    kind: directory
+
+-    path: "${USER_PROFILE}/Dropbox/Stock"
+
+-    priority: 30
+
+-    privacy_class: public
+
+-  # ZR-409 (EX-08): a future root joins by CONFIG ONLY — kind directory +
+
+-  # registered sidecar adapter, read-only, reusable.  No product code change
+
+-  # is needed for a new root (the whole point of the adapter registry).
+
+-  - root_id: future_lake
+
+-    kind: directory
+
+-    path: "${PROJECT_ROOT}/future_lake"
+
+-    adapter_id: sidecar_filing_v1
+
+-    read_only: true
+
+-    reusable_for_filing: true
+
+-    priority: 40
+
+-    privacy_class: public
+
+
+--- cell X05-fifthroot (isolated root/config/catalog only) ---
+--- production/config/source_catalog.yaml (read-only reference)
+
++++ %TEMP%/i07c/cells/X05-fifthroot/cwroot/config/source_catalog.yaml (ISOLATED)
+
+@@ -1,40 +1,36 @@
+
+ schema_version: "1.0"
+
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
+
+-# Root *kinds* whose indexed documents are directly reusable by filing-fetch
+
+-# (config-driven, ADR-008). company_raw is the default; adding a kind here
+
+-# makes every already-indexed document under such roots reusable without a
+
+-# download (filing-fetch path allowance must list the corresponding dirs).
+
+-#
+
+-# Privacy decision (2026-09-03, repo owner): the private_user classification
+
+-# is retired for the production catalog — all roots are public and their
+
+-# documents may be sent to external LLMs (after the GP-003 review-receipt
+
+-# gate).  The LLM exit gate code still enforces privacy_class=private_user
+
+-# when a root explicitly declares it (defense in depth for future roots).
+
++catalog_dir: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X05-fifthroot\cwroot\.source_catalog'
+
+ reusable_root_kinds: [company_raw, dayu_portfolio, directory]
+
+ roots:
+
+   - root_id: company_raw
+
+     kind: company_raw
+
+-    path: "${PROJECT_ROOT}/companies"
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X05-fifthroot\cwroot\companies'
+
+     priority: 10
+
+     privacy_class: public
+
+   - root_id: dayu_portfolio
+
+     kind: dayu_portfolio
+
+-    path: "${PROJECT_ROOT}/../dayu-agent/workspace/portfolio"
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X05-fifthroot\cwroot\dayu_portfolio'
+
+     priority: 20
+
+     privacy_class: public
+
+   - root_id: dropbox_stock
+
+     kind: directory
+
+-    path: "${USER_PROFILE}/Dropbox/Stock"
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X05-fifthroot\cwroot\dropbox_stock'
+
+     priority: 30
+
+     privacy_class: public
+
+-  # ZR-409 (EX-08): a future root joins by CONFIG ONLY — kind directory +
+
+-  # registered sidecar adapter, read-only, reusable.  No product code change
+
+-  # is needed for a new root (the whole point of the adapter registry).
+
+   - root_id: future_lake
+
+     kind: directory
+
+-    path: "${PROJECT_ROOT}/future_lake"
+
+     adapter_id: sidecar_filing_v1
+
+     read_only: true
+
+     reusable_for_filing: true
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X05-fifthroot\cwroot\future_lake'
+
+     priority: 40
+
+     privacy_class: public
+
++  - root_id: i07c_fifth_lake
+
++    kind: directory
+
++    adapter_id: sidecar_filing_v1
+
++    admission_profile_id: financial_evidence_v1
+
++    read_only: true
+
++    reusable_for_filing: true
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X05-fifthroot\cwroot\i07c_fifth_lake'
+
++    priority: 50
+
++    privacy_class: public
+
+
+--- cell UNK-adapter (isolated root/config/catalog only) ---
+--- production/config/source_catalog.yaml (read-only reference)
+
++++ %TEMP%/i07c/cells/UNK-adapter/cwroot/config/source_catalog.yaml (ISOLATED)
+
+@@ -1,40 +1,10 @@
+
+ schema_version: "1.0"
+
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
+
+-# Root *kinds* whose indexed documents are directly reusable by filing-fetch
+
+-# (config-driven, ADR-008). company_raw is the default; adding a kind here
+
+-# makes every already-indexed document under such roots reusable without a
+
+-# download (filing-fetch path allowance must list the corresponding dirs).
+
+-#
+
+-# Privacy decision (2026-09-03, repo owner): the private_user classification
+
+-# is retired for the production catalog — all roots are public and their
+
+-# documents may be sent to external LLMs (after the GP-003 review-receipt
+
+-# gate).  The LLM exit gate code still enforces privacy_class=private_user
+
+-# when a root explicitly declares it (defense in depth for future roots).
+
+-reusable_root_kinds: [company_raw, dayu_portfolio, directory]
+
++catalog_dir: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\UNK-adapter\cwroot\.source_catalog'
+
++reusable_root_kinds: [directory]
+
+ roots:
+
+-  - root_id: company_raw
+
+-    kind: company_raw
+
+-    path: "${PROJECT_ROOT}/companies"
+
++  - root_id: unk_adapter_root
+
++    kind: directory
+
++    adapter_id: unknown_layout_v9
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\UNK-adapter\cwroot\unk_lake'
+
+     priority: 10
+
+     privacy_class: public
+
+-  - root_id: dayu_portfolio
+
+-    kind: dayu_portfolio
+
+-    path: "${PROJECT_ROOT}/../dayu-agent/workspace/portfolio"
+
+-    priority: 20
+
+-    privacy_class: public
+
+-  - root_id: dropbox_stock
+
+-    kind: directory
+
+-    path: "${USER_PROFILE}/Dropbox/Stock"
+
+-    priority: 30
+
+-    privacy_class: public
+
+-  # ZR-409 (EX-08): a future root joins by CONFIG ONLY — kind directory +
+
+-  # registered sidecar adapter, read-only, reusable.  No product code change
+
+-  # is needed for a new root (the whole point of the adapter registry).
+
+-  - root_id: future_lake
+
+-    kind: directory
+
+-    path: "${PROJECT_ROOT}/future_lake"
+
+-    adapter_id: sidecar_filing_v1
+
+-    read_only: true
+
+-    reusable_for_filing: true
+
+-    priority: 40
+
+-    privacy_class: public
+
+
+--- cell UNK-sidecar (isolated root/config/catalog only) ---
+--- production/config/source_catalog.yaml (read-only reference)
+
++++ %TEMP%/i07c/cells/UNK-sidecar/cwroot/config/source_catalog.yaml (ISOLATED)
+
+@@ -1,40 +1,12 @@
+
+ schema_version: "1.0"
+
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
+
+-# Root *kinds* whose indexed documents are directly reusable by filing-fetch
+
+-# (config-driven, ADR-008). company_raw is the default; adding a kind here
+
+-# makes every already-indexed document under such roots reusable without a
+
+-# download (filing-fetch path allowance must list the corresponding dirs).
+
+-#
+
+-# Privacy decision (2026-09-03, repo owner): the private_user classification
+
+-# is retired for the production catalog — all roots are public and their
+
+-# documents may be sent to external LLMs (after the GP-003 review-receipt
+
+-# gate).  The LLM exit gate code still enforces privacy_class=private_user
+
+-# when a root explicitly declares it (defense in depth for future roots).
+
+-reusable_root_kinds: [company_raw, dayu_portfolio, directory]
+
++catalog_dir: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\UNK-sidecar\cwroot\.source_catalog'
+
++reusable_root_kinds: [directory]
+
+ roots:
+
+-  - root_id: company_raw
+
+-    kind: company_raw
+
+-    path: "${PROJECT_ROOT}/companies"
+
+-    priority: 10
+
+-    privacy_class: public
+
+-  - root_id: dayu_portfolio
+
+-    kind: dayu_portfolio
+
+-    path: "${PROJECT_ROOT}/../dayu-agent/workspace/portfolio"
+
+-    priority: 20
+
+-    privacy_class: public
+
+-  - root_id: dropbox_stock
+
++  - root_id: malformed_lake_root
+
+     kind: directory
+
+-    path: "${USER_PROFILE}/Dropbox/Stock"
+
+-    priority: 30
+
+-    privacy_class: public
+
+-  # ZR-409 (EX-08): a future root joins by CONFIG ONLY — kind directory +
+
+-  # registered sidecar adapter, read-only, reusable.  No product code change
+
+-  # is needed for a new root (the whole point of the adapter registry).
+
+-  - root_id: future_lake
+
+-    kind: directory
+
+-    path: "${PROJECT_ROOT}/future_lake"
+
+     adapter_id: sidecar_filing_v1
+
+     read_only: true
+
+     reusable_for_filing: true
+
+-    priority: 40
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\UNK-sidecar\cwroot\malformed_lake'
+
++    priority: 10
+
+     privacy_class: public
+
+
+--- cell UNK-kind (isolated root/config/catalog only) ---
+--- production/config/source_catalog.yaml (read-only reference)
+
++++ %TEMP%/i07c/cells/UNK-kind/cwroot/config/source_catalog.yaml (ISOLATED)
+
+@@ -1,40 +1,9 @@
+
+ schema_version: "1.0"
+
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
+
+-# Root *kinds* whose indexed documents are directly reusable by filing-fetch
+
+-# (config-driven, ADR-008). company_raw is the default; adding a kind here
+
+-# makes every already-indexed document under such roots reusable without a
+
+-# download (filing-fetch path allowance must list the corresponding dirs).
+
+-#
+
+-# Privacy decision (2026-09-03, repo owner): the private_user classification
+
+-# is retired for the production catalog — all roots are public and their
+
+-# documents may be sent to external LLMs (after the GP-003 review-receipt
+
+-# gate).  The LLM exit gate code still enforces privacy_class=private_user
+
+-# when a root explicitly declares it (defense in depth for future roots).
+
+-reusable_root_kinds: [company_raw, dayu_portfolio, directory]
+
++catalog_dir: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\UNK-kind\cwroot\.source_catalog'
+
++reusable_root_kinds: [directory]
+
+ roots:
+
+-  - root_id: company_raw
+
+-    kind: company_raw
+
+-    path: "${PROJECT_ROOT}/companies"
+
++  - root_id: unk_layout_root
+
++    kind: unknown_layout_probe
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\UNK-kind\cwroot\unk_layout'
+
+     priority: 10
+
+     privacy_class: public
+
+-  - root_id: dayu_portfolio
+
+-    kind: dayu_portfolio
+
+-    path: "${PROJECT_ROOT}/../dayu-agent/workspace/portfolio"
+
+-    priority: 20
+
+-    privacy_class: public
+
+-  - root_id: dropbox_stock
+
+-    kind: directory
+
+-    path: "${USER_PROFILE}/Dropbox/Stock"
+
+-    priority: 30
+
+-    privacy_class: public
+
+-  # ZR-409 (EX-08): a future root joins by CONFIG ONLY — kind directory +
+
+-  # registered sidecar adapter, read-only, reusable.  No product code change
+
+-  # is needed for a new root (the whole point of the adapter registry).
+
+-  - root_id: future_lake
+
+-    kind: directory
+
+-    path: "${PROJECT_ROOT}/future_lake"
+
+-    adapter_id: sidecar_filing_v1
+
+-    read_only: true
+
+-    reusable_for_filing: true
+
+-    priority: 40
+
+-    privacy_class: public
+
+
+--- cell X01-companies-only (isolated root/config/catalog only) ---
+--- production/config/source_catalog.yaml (read-only reference)
+
++++ %TEMP%/i07c/cells/X01-companies-only/cwroot/config/source_catalog.yaml (ISOLATED)
+
+@@ -1,40 +1,9 @@
+
+ schema_version: "1.0"
+
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
+
+-# Root *kinds* whose indexed documents are directly reusable by filing-fetch
+
+-# (config-driven, ADR-008). company_raw is the default; adding a kind here
+
+-# makes every already-indexed document under such roots reusable without a
+
+-# download (filing-fetch path allowance must list the corresponding dirs).
+
+-#
+
+-# Privacy decision (2026-09-03, repo owner): the private_user classification
+
+-# is retired for the production catalog — all roots are public and their
+
+-# documents may be sent to external LLMs (after the GP-003 review-receipt
+
+-# gate).  The LLM exit gate code still enforces privacy_class=private_user
+
+-# when a root explicitly declares it (defense in depth for future roots).
+
+-reusable_root_kinds: [company_raw, dayu_portfolio, directory]
+
++catalog_dir: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X01-companies-only\cwroot\.source_catalog'
+
++reusable_root_kinds: [company_raw]
+
+ roots:
+
+   - root_id: company_raw
+
+     kind: company_raw
+
+-    path: "${PROJECT_ROOT}/companies"
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X01-companies-only\cwroot\companies'
+
+     priority: 10
+
+     privacy_class: public
+
+-  - root_id: dayu_portfolio
+
+-    kind: dayu_portfolio
+
+-    path: "${PROJECT_ROOT}/../dayu-agent/workspace/portfolio"
+
+-    priority: 20
+
+-    privacy_class: public
+
+-  - root_id: dropbox_stock
+
+-    kind: directory
+
+-    path: "${USER_PROFILE}/Dropbox/Stock"
+
+-    priority: 30
+
+-    privacy_class: public
+
+-  # ZR-409 (EX-08): a future root joins by CONFIG ONLY — kind directory +
+
+-  # registered sidecar adapter, read-only, reusable.  No product code change
+
+-  # is needed for a new root (the whole point of the adapter registry).
+
+-  - root_id: future_lake
+
+-    kind: directory
+
+-    path: "${PROJECT_ROOT}/future_lake"
+
+-    adapter_id: sidecar_filing_v1
+
+-    read_only: true
+
+-    reusable_for_filing: true
+
+-    priority: 40
+
+-    privacy_class: public
+
+
+--- cell X02-dayu-only (isolated root/config/catalog only) ---
+--- production/config/source_catalog.yaml (read-only reference)
+
++++ %TEMP%/i07c/cells/X02-dayu-only/cwroot/config/source_catalog.yaml (ISOLATED)
+
+@@ -1,40 +1,9 @@
+
+ schema_version: "1.0"
+
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
+
+-# Root *kinds* whose indexed documents are directly reusable by filing-fetch
+
+-# (config-driven, ADR-008). company_raw is the default; adding a kind here
+
+-# makes every already-indexed document under such roots reusable without a
+
+-# download (filing-fetch path allowance must list the corresponding dirs).
+
+-#
+
+-# Privacy decision (2026-09-03, repo owner): the private_user classification
+
+-# is retired for the production catalog — all roots are public and their
+
+-# documents may be sent to external LLMs (after the GP-003 review-receipt
+
+-# gate).  The LLM exit gate code still enforces privacy_class=private_user
+
+-# when a root explicitly declares it (defense in depth for future roots).
+
+-reusable_root_kinds: [company_raw, dayu_portfolio, directory]
+
++catalog_dir: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X02-dayu-only\cwroot\.source_catalog'
+
++reusable_root_kinds: [dayu_portfolio]
+
+ roots:
+
+-  - root_id: company_raw
+
+-    kind: company_raw
+
+-    path: "${PROJECT_ROOT}/companies"
+
+-    priority: 10
+
+-    privacy_class: public
+
+   - root_id: dayu_portfolio
+
+     kind: dayu_portfolio
+
+-    path: "${PROJECT_ROOT}/../dayu-agent/workspace/portfolio"
+
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07c\cells\X02-dayu-only\cwroot\dayu_portfolio'
+
+     priority: 20
+
+     privacy_class: public
+
+-  - root_id: dropbox_stock
+
+-    kind: directory
+
+-    path: "${USER_PROFILE}/Dropbox/Stock"
+
+-    priority: 30
+
+-    privacy_class: public
+
+-  # ZR-409 (EX-08): a future root joins by CONFIG ONLY — kind directory +
+
+-  # registered sidecar adapter, read-only, reusable.  No product code change
+
+-  # is needed for a new root (the whole point of the adapter registry).
+
+-  - root_id: future_lake
+
+-    kind: directory
+
+-    path: "${PROJECT_ROOT}/future_lake"
+
+-    adapter_id: sidecar_filing_v1
+
+-    read_only: true
+
+-    reusable_for_filing: true
+
+-    priority: 40
+
+-    privacy_class: public
+
+
+# trees written: %TEMP%\i07c\cells\<cell>\** + this attempt dir

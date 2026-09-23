@@ -1,0 +1,150 @@
+{
+  "card": "I-07-C",
+  "card_title": "跨根与未知公司泛化",
+  "attempt_id": "a20260923-01",
+  "date_local": "2026-09-23",
+  "protocol": "START_HERE.md 固定九步执行法; step 2 (绑定) written BEFORE any judged run; oracle.md frozen at step 4 BEFORE the first judged run",
+  "objective": "Run the X01-X05 cross-root matrix cells (clause 1-4) plus the clause-5 no-hardcode proof through the REAL product scan/resolve entries on isolated roots only; per-cell conclusions; external-only stays BLOCKED; production writes = 0; real external roots read-only (this card opens NO real external root for write and, by design, scans only isolated trees).",
+
+  "dependencies": {
+    "I-00-B": {"attempt": "a20260919-01", "status": "accepted_scoped",
+               "role": "frozen argv/cwd contract: entry patterns in its binding.json old_command_notes; exact forms reused verbatim (no helper shortcuts)",
+               "contract_sha256": {
+                 "binding.json": "fdb2a59890e64c42f4a4566c8aaa6eefaec8e867c01779974178048d9fbf75f0",
+                 "commands.json": "f8a397ecd306b03f03385ad25c28667338c85e3301277414ddf4013f3c9a24df",
+                 "oracle.md": "e9c82fe46ed21cc80db7948b8872f35af7c07d994c65310501accdd615693a64"}},
+    "I-07-A": {"attempt": "a20260919-01", "status": "accepted_scoped",
+               "role": "state_matrix + precondition states (consumed read-only)",
+               "state_matrix_disk_sha256": "de784cb2f94cb2ed7a3b13a315063fb4fc7b746519db939ea58e6707abbe8684",
+               "state_matrix_inherited_pin": "dc72776f6c6324ae627b601e8734cb809b9d0680091833afd7eca23c01032253 (LF->CRLF variant of the same bytes; F5/REM-86 note inherited via I-07-B; no measurement depends on it)",
+               "blocked_cells_inherited": ["source.companies_only (CN uniqueness DISPROVED: same hash under company_raw AND dropbox_stock)",
+                                           "source.dayu_only (no frozen identity for dayu_portfolio root)",
+                                           "source.external_dir_only (EXTERNAL-ONLY unbound; deleting other copies forbidden)",
+                                           "generality.company_not_in_fixture_names (handed to I-07-C)"]},
+    "I-07-B": {"attempt": "a20260923-01", "status": "accepted_scoped",
+               "role": "direct predecessor; inherited carries read from its handoff.json + reviewer_report.md",
+               "handoff_sha256": "e43cf258e78f1ddc2085ef5e8c5d6cb3e2a730179cb18f566c6da4e15acb9e99",
+               "inherited_carries": [
+                 "F1 entry-never-scans: resolve/ensure never scan; the ONLY registration entry is `cli scan` (this card uses cli scan for registration + cli resolve for read, exactly that shape)",
+                 "F2 no structured recovery: refusals carry only error_code/error/retryable or error_type/retryable - no candidates/next_action (expected envelopes below assume the SAME shape)",
+                 "F3 no review CLI: review stage unreachable, no RevenueSourceRecord possible (NOT this card's fix surface; resolve-level reuse is what is measured here)",
+                 "exit declarations: three verbatim sentences + overall_three_market_pass=false + zero-RevenueSourceRecord fact must accompany any citing artifact"]},
+    "HIGH-LEVEL-REVIEWER adapter-support freeze": "per the card, the adapter support scope is frozen BEFORE tests; frozen from PRODUCT EVIDENCE in oracle.md §0.2 (files+lines+hashes pinned below under product_adapter_dispatch); NOT an aspirational list"
+  },
+
+  "frozen_inputs": {
+    "card_bytes": {"path": "PLAN/execution_v2/card_I-07-C.md", "sha256": "c3c3f5333a2f9fd68eb83bf17ba4a83ab700b73d8100e445ce7e288fe4704124", "lines": 14},
+    "matrix_input_X01_X05": {
+      "note": "the card's 输入：矩阵X01—X05 - LOCATED in this PLAN file (rows X01-X05 of §根目录与泛化); if it had been absent this attempt would STOP rather than invent it",
+      "path": "PLAN/execution_v2/scenario_matrix.md",
+      "sha256": "0dec23cd10f00efd6ad82cf923552bd46c1763bcf9f740422f51f4973292299f",
+      "bytes": 6219,
+      "consumed_byte_pinned": true,
+      "matches_I07B_pin": true},
+    "sample_manifest": {"path": "PLAN/execution_v2/sample_manifest.json", "sha256": "d5d0bb92da9eee92666459ccf344d549343008db8bf32fd1257dbf6f5f3ec851",
+                        "unbound_samples_that_matter_here": ["EXTERNAL-ONLY (unbound -> X03 BLOCKED)", "HELDOUT-COMPANY (unbound -> SEALED FOR REVIEWER, not read)"]},
+    "shared_docs_sha256": {
+      "START_HERE.md": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+      "common_root_cards.md": "f8127541c763859761eb6affdd9f3c898766e249205436ff164b73c2621cd260",
+      "review_and_handoff.md": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9"},
+    "oracle_frozen_before_runs": {"path": "oracle.md", "note": "written before binding/commands and before the first judged run; sha256 recorded in handoff.json; NOT edited afterwards"}
+  },
+
+  "product_adapter_dispatch": {
+    "note": "frozen BEFORE tests from product evidence (oracle.md §0.2); these hashes pin the dispatch surface the conclusions rest on",
+    "CW/src/company_wiki/source_catalog/adapter_dispatch.py": "6a72e7c552d791f23cec595fe885dd79cfbb1cc4efc082d1acebb04cd4ffbdbe",
+    "CW/src/company_wiki/source_catalog/adapters/registry.py": "33524affc460a65af9d7d500d8e90f58b0b9d6f54c0686ba7a4d1e7dc6d07a79",
+    "CW/src/company_wiki/source_catalog/config.py": "beb07a6d0e97942c81c0ab7a1f82904d0fdcb3ef5447f01659773431b2839064",
+    "CW/src/company_wiki/source_catalog/scanner.py": "f039d5f8d1360bd0e87898c059b7cce68d7ec5d0fad31c9a0196a57a6425e45e",
+    "CW/src/company_wiki/source_catalog/cli.py": "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
+    "CW/src/company_wiki/source_catalog/resolver.py": "783460a9f21679b439073fc6b82f4d5a43f583423d59e9ee627b0c9f149be21a",
+    "CW/src/company_wiki/source_catalog/store.py": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615",
+    "CW/src/company_wiki/source_catalog/adapters/sidecar.py": "101878793ca71e2842575502d36712dc8b29379544d3607d10e5fd0ea9f1e002",
+    "CW/src/company_wiki/source_catalog/adapters/dayu.py": "bdb76d9f9930013a2ffe262ac8bf127300a9a3d13f493d5e80845d5eea60354d",
+    "CW/src/company_wiki/source_catalog/adapters/company_raw.py": "65a507faa5f38ae32fe49fb560cdc647a56b9ff82492eaa73216572909cb5b89",
+    "CW/src/company_wiki/source_contract/source_manifest.py": "a7285b3401ab0bfb58bee50df27a53b964227f46609ae1fcf961ae7e1c2d0699",
+    "CW/config/source_catalog.yaml (production config, read-only reference)": "f9eb72a6c37c2dfeacf18a10df9b983dac104276efaf55b0a55b2c5c15f655df",
+    "RF/scripts/source_preparation.py (current; drifted vs I-00-B 5ec16eaf…)": "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+    "FF/scripts/fetch_filing.py (== I-00-B)": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088"
+  },
+
+  "entry_contract": {
+    "registration_stage": ["<iso-python>", "-X", "utf8", "-B", "-m", "company_wiki.source_catalog.cli", "--config", "<cell>/cwroot/config/source_catalog.yaml", "scan"],
+    "read_stage": ["<iso-python>", "-X", "utf8", "-B", "-m", "company_wiki.source_catalog.cli", "--config", "<cell>/cwroot/config/source_catalog.yaml", "resolve", "--entity", "<value from the cell's resolve_request.json>", "--document-kind", "annual_report", "--as-of-date", "2026-09-23"],
+    "derived_from": "I-00-B binding.json old_command_notes entry pattern `company_wiki.source_catalog.cli --config <yaml> <sub>` + cli.py:172-183/403-422 (real parser flags, read before binding)",
+    "not_a_helper": "every judged scan/resolve runs the product CLI itself; harness scripts only build isolated state, capture argv/stdout/stderr/rc and dump the isolated catalog with read-only SQL",
+    "no_download": "no --allow-download anywhere in this card (network disabled)"
+  },
+
+  "interpreter": {
+    "path": "<attempt>/iso/venv/Scripts/python.exe",
+    "version": "3.13.9 (Anaconda packaging)",
+    "cloned_from": "execution_runs/I-07-B/a20260923-01/iso/venv (lineage I-06-A -> I-00-A template)",
+    "company_wiki_import": "via PYTHONPATH=<CW>/src (no install, no write to CW; global site-packages not on this venv's sys.path)",
+    "global_miniconda_python_forbidden": true
+  },
+
+  "cwd": "<attempt> for every bound command; inner CLI runs with cwd=<cell>/cwroot (same as fetch_filing builds it). Never a production repo root as run cwd.",
+
+  "allowed_write_roots": [
+    "<attempt>/** (this attempt directory)",
+    "%TEMP%\\i07c\\cases\\** (per-cell isolated company-wiki roots - MAX_PATH isolation, same rationale as I-07-B)"
+  ],
+
+  "isolated_roots_before_after": {
+    "location": "%TEMP%\\i07c\\cases\\<cell>\\cwroot\\**",
+    "cells": ["X04-multiroot", "X05-fifthroot", "UNK-adapter", "UNK-sidecar", "UNK-kind", "X01-companies-only", "X02-dayu-only"],
+    "no_construction_for": "X03-external-only (BLOCKED by design; its evidence is documentary)",
+    "before": "evidence/iso_initial/*.json written by build_iso.py per cell (full file list + sha256)",
+    "after": "evidence/iso_final/*.json re-taken after all runs; plus snapshot.py after",
+    "recovery": "recovery/README.md - delete these trees + the attempt; real roots re-hash unchanged"
+  },
+
+  "real_roots_and_production": {
+    "production_writes": "ZERO (harness never opens production catalog for write; optional census uses mode=ro + PRAGMA query_only)",
+    "sample_files": {
+      "access": "READ + hash + copy into isolation only",
+      "paths_from": "sample_manifest.json (data-driven; no company literal in harness code)",
+      "before_after": "snapshot.py before/after rehashes all three raw+sidecar files against the manifest pins"
+    },
+    "real_external_roots": {
+      "dayu_portfolio": "NOT OPENED by this card (isolated construction used for X02 - see decision.md)",
+      "Dropbox/Stock": "NOT OPENED by this card",
+      "CW/companies (33k files/25GB)": "opened ONLY for the 3 manifest sample files (read)",
+      "CW/future_lake": "NOT OPENED (isolated stand-in dir used)",
+      "post_hash_verify": "evidence/snapshot_before.json vs evidence/snapshot_after.json (samples sha256 equal; production catalog identity size+mtime equal - a full 49.7GB catalog hash is NOT feasible, recorded as such)"
+    }
+  },
+
+  "network": {"default": "disabled for every bound command", "case_scoped_exceptions": [],
+              "note": "no clause of this card needs a provider: X03 external-only is BLOCKED for lack of samples, and BLOCKED is never unblocked by a download (sample_manifest rule: reviewer freezes identity/authority first; never delete production copies to manufacture absence)"},
+
+  "reviewer_holdout": {
+    "cell": "sample_manifest.unbound_live_samples['HELDOUT-COMPANY']",
+    "flag": "SEALED FOR REVIEWER",
+    "obligation_here": "company-agnostic construction only: evidence/no_hardcode_grep.txt (0 matches expected); this attempt never reads, names, targets or swaps the holdout sample",
+    "forbidden": ["peeking at the holdout identity", "swapping any sample to a previously-successful company to manufacture a green"]
+  },
+
+  "non_fixture_proof_inputs": {
+    "fifth_root_name": "i07c_fifth_lake (grep absent from PLAN/execution_v2, PLAN/execution_runs, CW/src before construction)",
+    "fifth_root_company": "诺和诺德 / Novo Nordisk (grep absent from PLAN/execution_v2, I-07-A, I-07-B, CW whole repo, filing-fetch, RF/audit_review before construction; full output in evidence/non_fixture_grep.txt)",
+    "rejected_candidates": ["贵州茅台 (appears in CW routing.py:187-189 + filing-fetch task_plan.md)", "宁德时代/300750 (filing-fixtures everywhere)", "万华化学/600309 (CW production company)", "000858/600519 (CW test_zr501 fixture ids)"]
+  },
+
+  "anchor_drift_vs_I00B": {
+    "policy": "recorded, not hidden (START_HERE step 3); no product file written by this card",
+    "known_drift_carried_from_I07B": "source_preparation 5ec16eaf->91a6dc32, revenue_forecast 6b3d960e->2a2dfede (EOL-only), CW cli 2f5c5740->fad88c60 (dispatcher must refresh I-00-B anchor table - parent action, unchanged here)"
+  },
+
+  "forbidden": [
+    "production catalog / production file WRITES (reads are identity-hash or mode=ro SELECT only)",
+    "company-wiki repo writes; revenue-forecast production writes (RF writes only under this attempt dir)",
+    "ANY write to a real external root (dayu portfolio, Dropbox/Stock, CW companies, CW future_lake)",
+    "git add/commit/restore/stash/status/diff in ANY repo (no git command in commands.json)",
+    "hand-authored green states: rows in isolated catalogs are created by the product's own scan, never INSERTed by the harness",
+    "fabricating an external-only sample or deleting other copies to manufacture exclusivity",
+    "reading / naming / targeting the HELDOUT-COMPANY reviewer sample",
+    "editing oracle.md after the first judged run"
+  ]
+}

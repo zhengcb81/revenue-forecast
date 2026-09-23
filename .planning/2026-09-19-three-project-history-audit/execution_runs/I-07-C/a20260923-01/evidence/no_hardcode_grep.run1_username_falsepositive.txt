@@ -1,0 +1,31 @@
+I-07-C no-company-hardcode grep of the test construction
+scope: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-07-C\a20260923-01\harness/*.py excluding no_hardcode_check.py (the checker itself holds the patterns; self-scan would be self-referential)
+patterns: [\u4e00-\u9fff] (any CJK) + ascii tokens derived from sample_manifest.json + inputs/fifth_root_company.json: ['0001193125-26-323660', 'isolated-i07c-0001', 'i07c-x05-0001', '12127452', '601899', '1810', 'MSFT']
+expected: 0 matches in every scanned file
+
+build_iso.py: 0 match(es)
+i07c_common.py: 3 match(es)
+    L15 [CJK] RF = Path(r"C:\Users\郑曾波\Projects\revenue-forecast")
+    L16 [CJK] CW = Path(r"C:\Users\郑曾波\Projects\company-wiki")
+    L17 [CJK] FF = Path(r"C:\Users\郑曾波\Projects\filing-fetch")
+make_changes_diff.py: 0 match(es)
+non_fixture_grep.py: 0 match(es)
+prod_census.py: 0 match(es)
+run_stage.py: 0 match(es)
+show_rows.py: 0 match(es)
+snapshot.py: 2 match(es)
+    L44 [CJK] Path(r"C:\Users\郑曾波\Projects\dayu-agent\workspace\portfolio"),
+    L45 [CJK] Path(r"C:\Users\郑曾波\Dropbox\Stock"),
+summarize_cells.py: 0 match(es)
+verify_x04.py: 0 match(es)
+
+TOTAL MATCHES: 5
+
+DISCLOSED DATA FILES (carry company identity BY DESIGN, not code):
+  - C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-07-C\a20260923-01\inputs\fifth_root_company.json (fifth-root company input data)
+  - PLAN/execution_v2/sample_manifest.json (frozen sample identities)
+  - each isolated cell's copied *.source.json / meta.json (asset bytes)
+
+Sample selection is data-driven: X04 uses min(byte_size), X01 uses
+market==CN, X02 uses market==US - no company literal selects a sample,
+so no swap to a previously-successful company is possible in code.

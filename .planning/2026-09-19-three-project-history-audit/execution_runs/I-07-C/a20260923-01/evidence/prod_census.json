@@ -1,0 +1,62 @@
+{
+ "purpose": "X03 external-only blocked proof (corroboration): verify all registered locations before anyone could ever conclude 'only'",
+ "opened": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3",
+ "mode": "ro + PRAGMA query_only (zero writes)",
+ "captured_at_utc": "2026-09-23T13:58:09.375285+00:00",
+ "external_root_ids": [
+  "dropbox_stock",
+  "future_lake"
+ ],
+ "steps": [
+  {
+   "step": "locations_per_root",
+   "sql": "SELECT root_id, COUNT(*) AS n FROM locations GROUP BY root_id ORDER BY root_id",
+   "status": "OK",
+   "rows": [
+    [
+     "company_raw",
+     33092
+    ],
+    [
+     "dayu_portfolio",
+     3660
+    ],
+    [
+     "dropbox_stock",
+     9853
+    ],
+    [
+     "future_lake",
+     1
+    ]
+   ],
+   "started_at_utc": "2026-09-23T13:58:09.375848+00:00"
+  },
+  {
+   "step": "document_total",
+   "sql": "SELECT COUNT(*) AS n FROM documents",
+   "status": "OK",
+   "rows": [
+    [
+     23530
+    ]
+   ],
+   "started_at_utc": "2026-09-23T13:58:09.720804+00:00"
+  },
+  {
+   "step": "external_only_candidates",
+   "sql": "SELECT COUNT(*) AS n FROM documents d WHERE EXISTS (SELECT 1 FROM locations l WHERE l.document_id=d.document_id) AND NOT EXISTS (SELECT 1 FROM locations l WHERE l.document_id=d.document_id AND l.root_id NOT IN ('dropbox_stock','future_lake'))",
+   "status": "OK",
+   "rows": [
+    [
+     6411
+    ]
+   ],
+   "started_at_utc": "2026-09-23T13:58:09.758031+00:00"
+  }
+ ],
+ "catalog_bytes": 49677344768,
+ "elapsed_seconds": 6.3,
+ "status": "OK",
+ "verdict_note": "This census never signs X03: sample_manifest EXTERNAL-ONLY is unbound (reviewer must freeze identity/authority first) and manufacturing exclusivity by deleting other copies is forbidden. BLOCKED stands regardless of what these steps return."
+}

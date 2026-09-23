@@ -1,0 +1,99 @@
+{
+  "card": "I-07-C",
+  "attempt_id": "a20260923-01",
+  "binding_status": "bound",
+  "cwd_default": "<attempt>",
+  "interpreter": "<attempt>/iso/venv/Scripts/python.exe",
+  "env_common": {
+    "PYTHONPATH": "<CW>/src (build + inner CLI); harness needs nothing else",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUTF8": "1",
+    "network": "disabled by construction for every command below"
+  },
+  "exit_code_legend": {
+    "self_describing": true,
+    "scope": "THIS batch only; product rcs are recorded raw and are NOT this legend",
+    "harness_rc": {
+      "0": "harness command completed and its evidence file was written (business verdict lives inside the evidence JSON)",
+      "1": "harness failure: import error, missing cell state, evidence not written",
+      "2": "no verdict: frozen expectation/dependency unavailable before judging",
+      "3": "not as expected: a harness-side assertion of this batch failed"
+    },
+    "product_rc_recorded_raw": {
+      "company_wiki cli": "0 = ok; 1 = failure — structured {status,error_type,error,retryable} envelope on stderr for errors raised inside cli.py's try (line 951+); RAW Python traceback + exit 1 for config-load errors (load_catalog_config at cli.py:868 runs BEFORE the try); resolve prints an envelope and returns 0 whether or not a source was found"
+    }
+  },
+  "commands": [
+    {"id": "CMD-I07C-SNAP-BEFORE",
+     "purpose": "step 5 pre-check: freeze product anchors, production catalog identity, and rehash the 3 manifest samples (raw+sidecar)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/snapshot.py", "before"],
+     "cwd": "<attempt>", "timeout_seconds": 600, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "evidence/snapshot_before.json"},
+
+    {"id": "CMD-I07C-BUILD-<cell>",
+     "purpose": "step 6: build ONE isolated cell tree (config + product-initialized 18-table catalog + root dirs + assets) under %TEMP%\\i07c\\cases\\<cell>",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/build_iso.py", "<cell>"],
+     "cwd": "<attempt>", "timeout_seconds": 600, "expected_returncode": 0,
+     "binding_status": "bound", "env": {"PYTHONPATH": "<CW>/src"},
+     "cells": ["X04-multiroot", "X05-fifthroot", "UNK-adapter", "UNK-sidecar", "UNK-kind", "X01-companies-only", "X02-dayu-only"],
+     "no_build_for": "X03-external-only (BLOCKED cell; building an isolated 'external-only' would be manufacturing the sample)",
+     "evidence": "evidence/iso_initial/<cell>.json"},
+
+    {"id": "CMD-I07C-SCAN-<cell>",
+     "purpose": "step 7: judged registration run of the PRODUCT's own scan entry for one cell (I-00-B argv form, no helper impersonating the entry)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_stage.py", "scan", "<cell>"],
+     "wrapper_note": "the wrapper executes the frozen inner argv recorded in evidence/<cell>/scan1/argv.json: [<iso-python>, -X, utf8, -B, -m, company_wiki.source_catalog.cli, --config, <cell>/cwroot/config/source_catalog.yaml, scan] with cwd=<cell>/cwroot",
+     "cwd": "<attempt>", "timeout_seconds": 600,
+     "expected_returncode": 0,
+     "expected_product_returncode": "0 for X04/X05/UNK-sidecar/UNK-kind/X01/X02 (oracle §1); NON-ZERO (1) with CFG-01 text for UNK-adapter — recorded raw either way",
+     "binding_status": "bound",
+     "evidence": "evidence/<cell>/scan1/{argv.json,stdout.txt,stderr.txt,product_rc.json,catalog_dump.json}"},
+
+    {"id": "CMD-I07C-RESOLVE-<cell>",
+     "purpose": "step 7: judged read run of the PRODUCT's resolve entry for one cell",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_stage.py", "resolve", "<cell>"],
+     "wrapper_note": "inner argv recorded in evidence/<cell>/resolve1/argv.json: [... -m company_wiki.source_catalog.cli --config <cfg> resolve --entity <value from cell resolve_request.json> --document-kind annual_report --as-of-date 2026-09-23] with cwd=<cell>/cwroot",
+     "cwd": "<attempt>", "timeout_seconds": 600,
+     "expected_returncode": 0,
+     "expected_product_returncode": "0 (envelope printed); business result judged from the envelope (found / not_found / blocked) per oracle §1",
+     "binding_status": "bound", "network": "disabled",
+     "evidence": "evidence/<cell>/resolve1/{argv.json,stdout.txt,stderr.txt,product_rc.json,catalog_dump.json}"},
+
+    {"id": "CMD-I07C-PROD-CENSUS",
+     "purpose": "X03 blocked-proof (best effort): read-only production location census 'verify all registered locations before ever concluding only' — mode=ro + PRAGMA query_only; NOT a verdict, never writes",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/prod_census.py"],
+     "cwd": "<attempt>", "timeout_seconds": 300,
+     "expected_returncode": 0,
+     "expected_failure_handling": "if the 49.7GB production catalog cannot answer within the bound timeout, record NOT-COMPLETED-with-reason in evidence/prod_census.json; X03 stays BLOCKED either way (the blocked proof does not depend on this query)",
+     "binding_status": "bound", "network": "disabled",
+     "evidence": "evidence/prod_census.json"},
+
+    {"id": "CMD-I07C-NOHARDCODE",
+     "purpose": "clause 5 obligation: grep THIS card's harness construction for hardcoded company identifiers; expected 0 matches",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/no_hardcode_check.py"],
+     "cwd": "<attempt>", "timeout_seconds": 120, "expected_returncode": 0,
+     "binding_status": "bound",
+     "evidence": "evidence/no_hardcode_grep.txt (+ evidence/no_hardcode_result.json)"},
+
+    {"id": "CMD-I07C-SNAP-AFTER",
+     "purpose": "post-run no-mutation witness: same anchors + sample rehash as SNAP-BEFORE",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/snapshot.py", "after"],
+     "cwd": "<attempt>", "timeout_seconds": 600, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "evidence/snapshot_after.json"},
+
+    {"id": "CMD-I07C-ISO-FINAL",
+     "purpose": "post-run isolated-tree snapshot (recovery input + before/after cell diff)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/snapshot.py", "iso"],
+     "cwd": "<attempt>", "timeout_seconds": 900, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "evidence/iso_final.json"},
+
+    {"id": "CMD-I07C-CHANGES-DIFF",
+     "purpose": "step 8: prove changes are isolated-config/root/catalog only and product anchors are identical (difflib-based; no git)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/make_changes_diff.py"],
+     "cwd": "<attempt>", "timeout_seconds": 300, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "changes.diff"}
+  ],
+  "raw_exit_codes": "filled by handoff.json from the captured runs",
+  "expected_exit_codes": "harness 0 for every command above (evidence written); product rcs recorded raw per the legend",
+  "git": "NOT USED as a bound command in this card (no git entries above)"
+}

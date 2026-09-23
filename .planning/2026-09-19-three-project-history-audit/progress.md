@@ -1149,3 +1149,12 @@ REM-80（M01-M04 扩权或豁免）、REM-84（START_HERE append-3 授权）。
 - **F-EE1 全链闭环**：根因双端（CW 双 mint 身份字典异）→ D1 修 → 复审 ACCEPT(verified) → **CW `bf0c8b2`**（四族 35 过+钩过、live `4bc65372` 符）→ 落定 + §58 跨仓映射注记。欠：live S1 复权、载体 countersign。
 - **19 卡链**：I-06-A/B、I-07-B ✅（I-07-C 门开待派）；批 6 `262659e4` 落地。
 - 欠 owner：CI §55 序列启动 · live S1 复权 · TTL/CI 相关既册项。
+
+---
+
+## 2026-09-23 — Round 97：I-07-C 落定（holdout 实测双结果）+ 批 8
+
+- **I-07-C 全链闭环**：五格分论（X04/X05 签、C1 发现、X01/X02 隔离签、X03 阻塞+普查三源同）+ 复审 clause-5 holdout 先冻后测（洛阳钼业：SCAN PASS=entity_gate_rejected0 无硬编码实证；RESOLVE 实测负例不换样 → F-REV-7 新缺口）+ 观察(d) 判别改线 + 尺寸五源证据裁。
+- 批 7 `a31fd7ed` 落地（门 10/10）；批 8 = I-07-C 全证+§60/61。
+- F-EE1 全链（CW `bf0c8b2`）、E2E-EXPAND（`262659e4`）均入史。
+- 下一步：I-07-D（第5张）· 批 8 推送 · 欠 owner=CI §55 序列+live S1 授权。
