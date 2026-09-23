@@ -275,14 +275,6 @@ class IsolatedLake:
     def _preset_v2_artifacts(self, catalog: "object") -> None:
         """INSERT v2 artifact rows (schema_version column + metadata) +
         derived files + producer_events — isomorphic to the production canary."""
-        # RF-E2E-ADAPT: the receipt is written through CW's fail-closed writer
-        # (state_domain stamping + payload/dual binding are validated AT WRITE
-        # time) — same call shape as CW tests/unit/test_prompt_injection_guard.
-        from company_wiki.source_catalog.prompt_injection import (
-            record_prompt_injection_review,
-        )
-        from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
-
         con = sqlite3.connect(catalog.config.database_path)
         con.row_factory = sqlite3.Row
         derived = catalog.config.derived_dir
@@ -338,26 +330,21 @@ class IsolatedLake:
                 # FC-905-b policy gate: consumption blocks on not_reviewed —
                 # the lake's documents carry a deterministic-policy review
                 # receipt (same contract as the FC-906-c production canary).
-                # RF-E2E-ADAPT: written through the CW receipt WRITER (the
-                # promoted GUARD-MERGE/OPEN-6 contract: state_domain + payload
-                # binding + source/policy dual binding, mirrored from CW's
-                # tests/unit/test_prompt_injection_guard.py).  A hand-shaped
-                # pre-5d72529 dict fails the reader's C7 state_domain
-                # fail-closed as not_reviewed and the chain blocks upstream.
-                source_sha = con.execute(
-                    "SELECT content_sha256 FROM sources WHERE source_id=?",
-                    (doc["primary_source_id"],),
-                ).fetchone()[0]
-                record_prompt_injection_review(
-                    con,
-                    doc["document_id"],
-                    status="not_detected",
-                    reviewer="policy-reviewer-fc1001",
-                    evidence_sha256=content_sha,
-                    now="2026-08-12T00:00:00Z",
-                    source_sha256=source_sha,
-                    policy_hash=RULESET_HASH,
-                    evidence_payload=body,
+                mrow = con.execute(
+                    "SELECT metadata_json FROM documents WHERE document_id=?",
+                    (doc["document_id"],),
+                ).fetchone()
+                metadata = json.loads(mrow["metadata_json"] or "{}") or {}
+                metadata["prompt_injection_review"] = {
+                    "schema_version": "1.0",
+                    "status": "not_detected",
+                    "reviewer": "policy-reviewer-fc1001",
+                    "reviewed_at": "2026-08-12T00:00:00Z",
+                    "evidence_sha256": content_sha,
+                }
+                con.execute(
+                    "UPDATE documents SET metadata_json=? WHERE document_id=?",
+                    (json.dumps(metadata, ensure_ascii=False), doc["document_id"]),
                 )
                 # dayu docs carry the company-name entity too (production dayu
                 # metadata infers it from source_title) — the resolver matches

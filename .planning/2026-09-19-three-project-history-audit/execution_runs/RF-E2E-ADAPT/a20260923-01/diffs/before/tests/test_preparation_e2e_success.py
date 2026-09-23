@@ -15,15 +15,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _fixture_wiki_root(tmp: Path) -> Path:
     """A temp company-wiki root with an indexed active annual report."""
-    # RF-E2E-ADAPT: the review receipt is written through CW's fail-closed
-    # writer (state_domain + payload/dual binding, the promoted 5d72529
-    # contract) — same call shape as CW tests/unit/test_prompt_injection_guard.
-    sys.path.insert(0, str(ROOT.parent / "company-wiki" / "src"))
-    from company_wiki.source_catalog.prompt_injection import (
-        record_prompt_injection_review,
-    )
-    from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
-
     catalog = tmp / ".source_catalog" / "catalog.sqlite3"
     catalog.parent.mkdir(parents=True)
     companies = tmp / "companies" / "Acme" / "raw" / "financial_reports" / "annual"
@@ -92,21 +83,17 @@ def _fixture_wiki_root(tmp: Path) -> Path:
         "form_type": "annual_report", "fiscal_year": 2025,
         "source_url": "https://example-filing.com/acme/2025",
         "provider": "example-filing", "market": "US",
-        "security_id": "SEC-US"}})
+        "security_id": "SEC-US"},
+        # FC-905: the chain blocks unreviewed sources — the fixture document
+        # carries a review receipt so the E2E chain passes the policy gate
+        "prompt_injection_review": {
+            "schema_version": "1.0", "status": "not_detected",
+            "reviewer": "fixture-reviewer",
+            "reviewed_at": "2026-01-01T00:00:00Z",
+            "evidence_sha256": "e" * 64}})
     con.execute("INSERT INTO documents VALUES ('d1', 's1', 'Acme 2025', "
                 "'active', 'file', 'annual_report', '2026-04-15', 10, ?, "
                 "'2026-01-01', '2026-01-01')", (doc_meta,))
-    # FC-905: the chain blocks unreviewed sources — the fixture document
-    # carries a review receipt so the E2E chain passes the policy gate.
-    # RF-E2E-ADAPT: written via CW's writer (state_domain stamped, evidence
-    # payload bound to the reviewed source bytes) — a hand-shaped pre-5d72529
-    # dict is fail-closed as not_reviewed by the reader's state_domain gate.
-    record_prompt_injection_review(
-        con, "d1", status="not_detected", reviewer="fixture-reviewer",
-        evidence_sha256=PDF_SHA, now="2026-01-01T00:00:00Z",
-        source_sha256=PDF_SHA, policy_hash=RULESET_HASH,
-        evidence_payload=pdf_body,
-    )
     con.execute("INSERT INTO locations VALUES ('l1', 'company_raw', "
                 "'2025_Acme_annual.pdf', ?, 's1', 'd1', 'original_primary', 'active', "
                 "100, 0, '2026-01-01', ?, ?, NULL)",

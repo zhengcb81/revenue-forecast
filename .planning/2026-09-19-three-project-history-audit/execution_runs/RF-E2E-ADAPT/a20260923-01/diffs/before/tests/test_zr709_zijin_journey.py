@@ -422,10 +422,13 @@ def _document_row(
                 "market": "US",
                 "security_id": "SEC-US",
             },
-            # RF-E2E-ADAPT: the review receipt is NOT hand-shaped here —
-            # _journey_wiki_root writes it through CW's fail-closed writer
-            # (state_domain + payload/dual binding; the promoted 5d72529
-            # contract), so the chain's reader accepts it.
+            "prompt_injection_review": {
+                "schema_version": "1.0",
+                "status": "not_detected",
+                "reviewer": "fixture-reviewer",
+                "reviewed_at": "2026-01-01T00:00:00Z",
+                "evidence_sha256": "e" * 64,
+            },
         }
     )
     location_meta = json.dumps({"acquisition": {}})
@@ -475,16 +478,6 @@ def _document_row(
 def _journey_wiki_root(tmp: Path) -> Path:
     """Fixture company-wiki root with TWO active documents: the FY2025
     annual report and a research communication (both reusable, reviewed)."""
-    # RF-E2E-ADAPT: receipts go through CW's fail-closed writer (state_domain
-    # + payload/dual binding — the promoted 5d72529 contract), same call shape
-    # as CW tests/unit/test_prompt_injection_guard.py; the chain's reader
-    # fail-closes a hand-shaped pre-contract dict as not_reviewed.
-    sys.path.insert(0, str(ROOT.parent / "company-wiki" / "src"))
-    from company_wiki.source_catalog.prompt_injection import (
-        record_prompt_injection_review,
-    )
-    from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
-
     catalog = tmp / ".source_catalog" / "catalog.sqlite3"
     catalog.parent.mkdir(parents=True)
     companies = tmp / "companies" / "Acme" / "raw" / "financial_reports"
@@ -596,14 +589,6 @@ def _journey_wiki_root(tmp: Path) -> Path:
         )
         con.execute(
             "INSERT INTO documents VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", doc_row
-        )
-        # FC-905 policy gate: reviewed fixture document via the CW writer —
-        # evidence payload bound to the reviewed source bytes (RF-E2E-ADAPT).
-        record_prompt_injection_review(
-            con, doc_id, status="not_detected", reviewer="fixture-reviewer",
-            evidence_sha256=pdf_sha, now="2026-01-01T00:00:00Z",
-            source_sha256=pdf_sha, policy_hash=RULESET_HASH,
-            evidence_payload=pdf_path.read_bytes(),
         )
         con.execute(
             "INSERT INTO locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",

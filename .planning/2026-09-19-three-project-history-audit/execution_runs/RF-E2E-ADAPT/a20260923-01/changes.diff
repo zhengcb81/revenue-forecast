@@ -1,0 +1,173 @@
+--- a/tests/e2e_support/isolated_lake.py (before, sha-pinned in binding.md)
++++ b/tests/e2e_support/isolated_lake.py
+@@ -275,6 +275,14 @@
+     def _preset_v2_artifacts(self, catalog: "object") -> None:
+         """INSERT v2 artifact rows (schema_version column + metadata) +
+         derived files + producer_events — isomorphic to the production canary."""
++        # RF-E2E-ADAPT: the receipt is written through CW's fail-closed writer
++        # (state_domain stamping + payload/dual binding are validated AT WRITE
++        # time) — same call shape as CW tests/unit/test_prompt_injection_guard.
++        from company_wiki.source_catalog.prompt_injection import (
++            record_prompt_injection_review,
++        )
++        from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
++
+         con = sqlite3.connect(catalog.config.database_path)
+         con.row_factory = sqlite3.Row
+         derived = catalog.config.derived_dir
+@@ -330,21 +338,26 @@
+                 # FC-905-b policy gate: consumption blocks on not_reviewed —
+                 # the lake's documents carry a deterministic-policy review
+                 # receipt (same contract as the FC-906-c production canary).
+-                mrow = con.execute(
+-                    "SELECT metadata_json FROM documents WHERE document_id=?",
+-                    (doc["document_id"],),
+-                ).fetchone()
+-                metadata = json.loads(mrow["metadata_json"] or "{}") or {}
+-                metadata["prompt_injection_review"] = {
+-                    "schema_version": "1.0",
+-                    "status": "not_detected",
+-                    "reviewer": "policy-reviewer-fc1001",
+-                    "reviewed_at": "2026-08-12T00:00:00Z",
+-                    "evidence_sha256": content_sha,
+-                }
+-                con.execute(
+-                    "UPDATE documents SET metadata_json=? WHERE document_id=?",
+-                    (json.dumps(metadata, ensure_ascii=False), doc["document_id"]),
++                # RF-E2E-ADAPT: written through the CW receipt WRITER (the
++                # promoted GUARD-MERGE/OPEN-6 contract: state_domain + payload
++                # binding + source/policy dual binding, mirrored from CW's
++                # tests/unit/test_prompt_injection_guard.py).  A hand-shaped
++                # pre-5d72529 dict fails the reader's C7 state_domain
++                # fail-closed as not_reviewed and the chain blocks upstream.
++                source_sha = con.execute(
++                    "SELECT content_sha256 FROM sources WHERE source_id=?",
++                    (doc["primary_source_id"],),
++                ).fetchone()[0]
++                record_prompt_injection_review(
++                    con,
++                    doc["document_id"],
++                    status="not_detected",
++                    reviewer="policy-reviewer-fc1001",
++                    evidence_sha256=content_sha,
++                    now="2026-08-12T00:00:00Z",
++                    source_sha256=source_sha,
++                    policy_hash=RULESET_HASH,
++                    evidence_payload=body,
+                 )
+                 # dayu docs carry the company-name entity too (production dayu
+                 # metadata infers it from source_title) — the resolver matches
+--- a/tests/test_preparation_e2e_success.py (before, sha-pinned in binding.md)
++++ b/tests/test_preparation_e2e_success.py
+@@ -15,6 +15,15 @@
+ 
+ def _fixture_wiki_root(tmp: Path) -> Path:
+     """A temp company-wiki root with an indexed active annual report."""
++    # RF-E2E-ADAPT: the review receipt is written through CW's fail-closed
++    # writer (state_domain + payload/dual binding, the promoted 5d72529
++    # contract) — same call shape as CW tests/unit/test_prompt_injection_guard.
++    sys.path.insert(0, str(ROOT.parent / "company-wiki" / "src"))
++    from company_wiki.source_catalog.prompt_injection import (
++        record_prompt_injection_review,
++    )
++    from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
++
+     catalog = tmp / ".source_catalog" / "catalog.sqlite3"
+     catalog.parent.mkdir(parents=True)
+     companies = tmp / "companies" / "Acme" / "raw" / "financial_reports" / "annual"
+@@ -83,17 +92,21 @@
+         "form_type": "annual_report", "fiscal_year": 2025,
+         "source_url": "https://example-filing.com/acme/2025",
+         "provider": "example-filing", "market": "US",
+-        "security_id": "SEC-US"},
+-        # FC-905: the chain blocks unreviewed sources — the fixture document
+-        # carries a review receipt so the E2E chain passes the policy gate
+-        "prompt_injection_review": {
+-            "schema_version": "1.0", "status": "not_detected",
+-            "reviewer": "fixture-reviewer",
+-            "reviewed_at": "2026-01-01T00:00:00Z",
+-            "evidence_sha256": "e" * 64}})
++        "security_id": "SEC-US"}})
+     con.execute("INSERT INTO documents VALUES ('d1', 's1', 'Acme 2025', "
+                 "'active', 'file', 'annual_report', '2026-04-15', 10, ?, "
+                 "'2026-01-01', '2026-01-01')", (doc_meta,))
++    # FC-905: the chain blocks unreviewed sources — the fixture document
++    # carries a review receipt so the E2E chain passes the policy gate.
++    # RF-E2E-ADAPT: written via CW's writer (state_domain stamped, evidence
++    # payload bound to the reviewed source bytes) — a hand-shaped pre-5d72529
++    # dict is fail-closed as not_reviewed by the reader's state_domain gate.
++    record_prompt_injection_review(
++        con, "d1", status="not_detected", reviewer="fixture-reviewer",
++        evidence_sha256=PDF_SHA, now="2026-01-01T00:00:00Z",
++        source_sha256=PDF_SHA, policy_hash=RULESET_HASH,
++        evidence_payload=pdf_body,
++    )
+     con.execute("INSERT INTO locations VALUES ('l1', 'company_raw', "
+                 "'2025_Acme_annual.pdf', ?, 's1', 'd1', 'original_primary', 'active', "
+                 "100, 0, '2026-01-01', ?, ?, NULL)",
+--- a/tests/test_zr709_zijin_journey.py (before, sha-pinned in binding.md)
++++ b/tests/test_zr709_zijin_journey.py
+@@ -422,13 +422,10 @@
+                 "market": "US",
+                 "security_id": "SEC-US",
+             },
+-            "prompt_injection_review": {
+-                "schema_version": "1.0",
+-                "status": "not_detected",
+-                "reviewer": "fixture-reviewer",
+-                "reviewed_at": "2026-01-01T00:00:00Z",
+-                "evidence_sha256": "e" * 64,
+-            },
++            # RF-E2E-ADAPT: the review receipt is NOT hand-shaped here —
++            # _journey_wiki_root writes it through CW's fail-closed writer
++            # (state_domain + payload/dual binding; the promoted 5d72529
++            # contract), so the chain's reader accepts it.
+         }
+     )
+     location_meta = json.dumps({"acquisition": {}})
+@@ -478,6 +475,16 @@
+ def _journey_wiki_root(tmp: Path) -> Path:
+     """Fixture company-wiki root with TWO active documents: the FY2025
+     annual report and a research communication (both reusable, reviewed)."""
++    # RF-E2E-ADAPT: receipts go through CW's fail-closed writer (state_domain
++    # + payload/dual binding — the promoted 5d72529 contract), same call shape
++    # as CW tests/unit/test_prompt_injection_guard.py; the chain's reader
++    # fail-closes a hand-shaped pre-contract dict as not_reviewed.
++    sys.path.insert(0, str(ROOT.parent / "company-wiki" / "src"))
++    from company_wiki.source_catalog.prompt_injection import (
++        record_prompt_injection_review,
++    )
++    from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
++
+     catalog = tmp / ".source_catalog" / "catalog.sqlite3"
+     catalog.parent.mkdir(parents=True)
+     companies = tmp / "companies" / "Acme" / "raw" / "financial_reports"
+@@ -589,6 +596,14 @@
+         )
+         con.execute(
+             "INSERT INTO documents VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", doc_row
++        )
++        # FC-905 policy gate: reviewed fixture document via the CW writer —
++        # evidence payload bound to the reviewed source bytes (RF-E2E-ADAPT).
++        record_prompt_injection_review(
++            con, doc_id, status="not_detected", reviewer="fixture-reviewer",
++            evidence_sha256=pdf_sha, now="2026-01-01T00:00:00Z",
++            source_sha256=pdf_sha, policy_hash=RULESET_HASH,
++            evidence_payload=pdf_path.read_bytes(),
+         )
+         con.execute(
+             "INSERT INTO locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+--- a/tests/test_zr803_chaos_recovery.py (before, sha-pinned in binding.md)
++++ b/tests/test_zr803_chaos_recovery.py
+@@ -116,7 +116,10 @@
+         proc = run()
+         # READ-06: the read-only journey completes in a bounded way while a
+         # writer holds its transaction — zero downloads, real record out.
+-        assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")[-400:]
++        # RF-E2E-ADAPT: the run() helper uses text=True (line 90), so
++        # proc.stderr is already str — calling .decode() here raised
++        # AttributeError and MASKED the chain's real error in the gate log.
++        assert proc.returncode == 0, proc.stderr[-400:]
+         record = json.loads(proc.stdout)
+         assert record["reuse_receipt"]["download_calls"] == 0
+         assert record["reuse_receipt"]["outcome"] == "reused_existing"

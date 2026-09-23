@@ -116,10 +116,7 @@ def test_lock_held_write_transaction_does_not_block_read_journey(tmp_path):
         proc = run()
         # READ-06: the read-only journey completes in a bounded way while a
         # writer holds its transaction — zero downloads, real record out.
-        # RF-E2E-ADAPT: the run() helper uses text=True (line 90), so
-        # proc.stderr is already str — calling .decode() here raised
-        # AttributeError and MASKED the chain's real error in the gate log.
-        assert proc.returncode == 0, proc.stderr[-400:]
+        assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")[-400:]
         record = json.loads(proc.stdout)
         assert record["reuse_receipt"]["download_calls"] == 0
         assert record["reuse_receipt"]["outcome"] == "reused_existing"

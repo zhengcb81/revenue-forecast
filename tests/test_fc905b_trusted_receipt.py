@@ -13,10 +13,17 @@ The hardcoded `prompt_injection_status="not_detected"` and
   minimal invalidation (the role is never read; DAG-minimal producer events).
 
 RED phase: the envelope fields are ignored / hardcoded values remain.
+
+FIX-W06-GAPS P4-SCOPE (iso after-copy; product edit recorded in
+changes.diff): the loose `match="not reviewed|blocked"` coverage is replaced
+with a VERBATIM pin of the full blocked sentence — a one-byte wording change
+now turns these tests red (see test_message_contract_pins.py for the
+complete pin set incl. the three-copy convergence).
 """
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -27,6 +34,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import pytest  # noqa: E402
 
 from company_wiki_source import CompanyWikiSourceError, select_artifact_roles  # noqa: E402
+
+BLOCK_SENTENCE = (
+    "prompt injection not reviewed — source preparation blocked per "
+    "policy (prompt_injection_status=not_reviewed)"
+)
 
 
 def _envelope(**overrides) -> dict:
@@ -73,7 +85,7 @@ def _run(monkeypatch, envelope, *, record_extra=None):
 
 
 def test_b1_not_reviewed_blocks(monkeypatch):
-    with pytest.raises(RuntimeError, match="not reviewed|blocked"):
+    with pytest.raises(RuntimeError, match=re.escape(BLOCK_SENTENCE)):
         _run(monkeypatch, _envelope(prompt_injection_status="not_reviewed"))
 
 
@@ -82,7 +94,7 @@ def test_b2_missing_status_blocks_defensively(monkeypatch):
     -> blocked (filing-fetch normalizes N-1 upstream; revenue never assumes)."""
     envelope = _envelope()
     del envelope["prompt_injection_status"]
-    with pytest.raises(RuntimeError, match="not reviewed|blocked"):
+    with pytest.raises(RuntimeError, match=re.escape(BLOCK_SENTENCE)):
         _run(monkeypatch, envelope)
 
 

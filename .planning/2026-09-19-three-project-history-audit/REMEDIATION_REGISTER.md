@@ -1179,3 +1179,29 @@ CW commit = `prompt_injection_guard.py d7125478…` + `prompt_injection.py 88154
 | CFI14FR1-SAMPLE | accepted_scoped **CF-I14FR1-3 discharged** | ✅（F1 引文修、A6/A7 父裁入档） |
 
 **结论面**：修复链 14 组+2 测试修全过复审；TTL=REJECT-form 定型（C6 双负例+NaN 闭）；C7=断言字段 fail-closed 四形态；CLIP-vs-REJECT 父裁定=REJECT 胜（§48）；探针六件与八缺陷类全修复+独立验证；14 条 CW 既有失败=独立债务清单（1+5+7+1）随 CFI 转结。**store UNRATIFIED 维持**（D-W06 冻结签名未在——属字母 D 轨道）。
+
+---
+
+## 五十二、【批 5 首推被门拦两轮根因修（ruff F401 + 守卫 U+FEFF/宿主字面）——零绕行】2026-09-23 凌晨
+
+批 5（`0d10ae8f`→amend `1fa090fe`）首推 **push_rc=1 门红**，逐根因修、**未绕行任何一门**：
+
+1. **ruff F401**：FIX 卡的 RF `tests/test_message_contract_pins.py:30` `import json` 未用（单文件 ruff 从未跑过=同族「交付件未过该仓 lint」）——查 0 使用→删→单文件 ruff 过+8 测过。
+2. **amend 钩 U+FEFF**：我 `Set-Content -Encoding UTF8`（PS UTF8=带 BOM）改写该文件→**BOM=我方新引入缺陷**（守卫语法错、new=1）→ Python utf-8-sig 除 BOM 重写（11515→11512）。
+3. **宿主绝对路径 new=2**：该文件 :44/:48 硬编码 `C:\Users\…` 绝对字面回退（iso 拷贝情境用）——按守卫处方**切除字面、留 ROOT 计算式+env 覆盖**（iso 情境走 `GAPS_PIN_*` env、缺 checkout 走既有 skip——docstring 已载）；:45 计算式=手审面合规。终验：守卫 **new=0 rc=0**、ruff All checks passed、8 测全过（ROOT 计算解析正确）。
+4. amend 成功 `1fa090fe`（ahead=1、gitlinks=0）→ 重推后台门。
+
+**计数**：本会话派单-测量类自纠维持 8 例（§50）；本条为**我方新引入 BOM 缺陷**（编辑工具选型错、当场自捕自修）——与既有 PS 伪影族同源，追加为**第 9 例自纠**（工具选型：Windows PS 写文件一律 Python utf-8 无 BOM 或 .NET UTF8Encoding(false)）。
+
+---
+
+## 五十三、【批 5 门第二轮红=real-roots E2E 联动缺陷根因修（RF-E2E-ADAPT ACCEPT）+ F-2 归属答复】2026-09-23 凌晨
+
+### 门第二轮红与根因（零绕行、CI root-fix 协议）
+批 5 首推 ruff F401 修后二推 **real-roots E2E RED（4F/51P）**：`5d72529` 合面读面（CW `prompt_injection.py:449-452` state_domain 闸）对 RF E2E fixture 的**旧形态回执** fail-closed → envelope `:1078` 默认 not_reviewed → RF `source_preparation:150-156` 拦 rc=3。**联动实证**：RF `fetch_filing.py:685-691` spawn `python -m company_wiki.source_catalog.cli` 解析到**活** `company-wiki\src`、fc1002:29 path-import WIKI_ROOT/src；活探针=旧键→None、加 state_domain→not_detected。
+
+### RF-E2E-ADAPT `a20260923-01`（复审 ACCEPT，4 findings 0 阻断）
+4 文件全 RF fixture 面（CW 零写、gate `3df161a7` 未动、`source_preparation` `91a6dc32` 未动）：isolated_lake `210FB643→867AC82B`（手字典→CW 真 writer 双绑定+payload，镜像 CW 单测新形）、zr803 `B426F774→17A4FAEB`（**诊断式修**：text=True 下 `.decode` 面具错，断言条件字节不动）、prep_e2e `1CECA7AB→7FA37BD6`、zr709 `1A4E0B26→2929461B`（**预捕 gate 第 7 步 real-data 两同族红**——否则下步门又红）。RED4F → **GREEN=门原 7 文件字面选择集 55 过 exit0** → 变异还原回 4F（zr803 露真错=依从性证）→ 还原复绿。zr803 判=**同族非 flake**（锁持/放两腿 rc3 字节同）。复审亲跑 fc1002/prep_e2e 各 1 绿、断言 66=66、106/106 行无夹带、host-guard new=0 零基线增、skip/xfail 0→0。
+
+### F-2 归属（复审旗：第五个 M 测试文件）
+`tests/test_fc905b_trusted_receipt.py`（`db8bbb48`、+14/−2）= **FIX-W06-GAPS P4-SCOPE 授权测试面的欠提交件**——其验收 scope 明写「RF tests **2 files** `41da045c`+`db8bbb48` → parent batch」；message-pins 已随批 5 入史、**fc905b 我漏 stage（第 10 例派单遗漏自纠）**——批 5c **明示来源并入**（非静默搭载；内容=FIX pin 分毫符）。mtime 02:22:04 落在批 5 提交窗、卡窗（02:36 后）之外=非 RF-E2E-ADAPT 所写（其「恰 4 文件」成立）。
