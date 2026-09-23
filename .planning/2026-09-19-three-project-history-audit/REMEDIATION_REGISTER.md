@@ -1273,3 +1273,26 @@ CW commit = `prompt_injection_guard.py d7125478…` + `prompt_injection.py 88154
 - findings F-RV-02..06/09..11=落定时记录修（值改+原值留痕）、F-RV-01=下游载体入本册、F-RV-07/08=注记。
 - **J-C1 三红=我 §55 归因面同物**（fc1307a 字节漂移 9294dc7c vs20c9da56、single_owner、棘轮2）——measure-only、卡写面外。
 - 落定在办 → 3 RF 文件入批 6（runner `88ac9e4a`、tests `3e2b39ee`、allowlist `ff9db8c8`）。
+
+---
+
+## 五十八、【F-EE1-FIX 复审 ACCEPT(verified) + CW 落地提交 `bf0c8b2`（跨仓映射注记）】2026-09-23 下午
+
+### 映射链（复审路线建议：CW-native parent commit + 登记册注记，不重切卡=保冻结 oracle 证据链）
+**卡 F-EE1-FIX → attempt `F-EE1-FIX/a20260923-01`（oracle `0fd9f551…` 冻结先、复审 `588f8d95…`/25635 B ACCEPT verified）→ CW 提交 `bf0c8b2`（canonical_writer 1 文件20+/3−、live after=`4bc653725febcc755e3a01ac48227a6b0799c4c262968356b356f8cb42d3c6bc`、四族 35 过+ruff 过+钩过）**。应用法：diff 标签后缀截断清理（`(live/pristine)`/`(F-EE1-FIX)`）后 `git apply`——内容与复审"应用到活字节重建 iso 逐字节同"完全一致；RF/FF 保持零字节（D3 契约）。
+
+### 复审核心（全部独立重推，非采信）
+双端 mint 复算（复审自写 %TEMP% 脚本+产品 SourceRequest）：e1=`e8177b37`==journal、e2=`47c3a925`==envelope/FF handle、identity 字节同 two_end_mints、分歧=5 字段 → `both_ends_proven` 站住；**F1 中低=四判跑 harness b2 均被 FileExistsError 中断（未披露）→ 复审亲补跑双臂、期望 HOLDS**（b2=fresh seeded catalog→reused_existing/0 journal/download_events0/FF downloads0）、F2 引文归属（ENV-11 docstring :187-189 非 scripts/:134-138 行）、F3 运行时 wall-clock vs pytest 措辞——三件随落定修正+留痕；F4 注记。变异 revert_sha==live、rc1-0-1-0 同失败集。
+
+### 后续
+- live S1 `downloads==1` 复测 = **owner 复权**（修已落=条件满足、待你点头跑一次真实下载验证）。
+- F-EE1-FIX 载体落定在办（`d57c0335`，含 F1/F2/F3 记录修+commit sha 入 bookkeeping）。
+- 落定+本注记 → 批 7 收口（含 F-EE1 尝试证据）。
+
+---
+
+## 五十九、【F-EE1-FIX 落定 + 批 7 收口】2026-09-23 下午
+
+- **F-EE1-FIX = accepted_scoped 落定**：复审 `588f8d95` ACCEPT(verified) → 落定三件 `3320e40d…`/`62b547b7…`/`e5611a38…`；记录修 F1（§7 新项+§4 注+**reviewer_b2_execution.json** `2ff9e69f`=复审双臂补跑实证）、F2（decision 引文归位 ENV-11 docstring :187-189；**oracle 不改写=父核准**：frozen-first 依赖字节、更正三处载明）、F3（wall-clock vs in-run 注）；`bf0c8b2` 实值入 parent_commit；完整性复验（report/sidecar/oracle/commands/recovery/diff/双 binding）全未动。
+- **欠项在册**：live S1 `downloads==1` owner 复权 · 载体 countersign · CW CLI ensure 面离线未跑。
+- 批 7 = 本册 §55–59 + progress R96 + F-EE1/I-07-B/E2E 尝试证据入史。

@@ -1,0 +1,164 @@
+{
+ "card": "F-EE1-FIX",
+ "attempt": "a20260923-01",
+ "created_utc": "2026-09-23T11:30:00Z",
+ "status": "accepted_scoped",
+ "status_before_bookkeeping_fix": "review_pending",
+ "status_authority": {
+  "verdict": "ACCEPT (verified)",
+  "verdict_label_as_written_by_reviewer": "ACCEPT (verified)",
+  "carrier": "review.md (this attempt dir) — bookkeeping transcription of the reviewer's verdict; it adds no acceptance of its own",
+  "carrier_sha256": "3320e40db0be73b274f1613052f518f7d7c542c18b30db7ff13c1e03f7a871b5",
+  "carrier_bytes": 17716,
+  "reviewer_report": "reviewer_report.md (this attempt dir)",
+  "reviewer_report_sha256": "588f8d955f4f06db1fc262aa3a490071604681f4f6a679dcfd65962846ecf652",
+  "reviewer_report_bytes": 25635,
+  "reviewer_report_sidecar": "reviewer_report.sha256 (86 B, sha256 855c44dbe37e900d72a39648d75f3a0630321cf475aea8f8407477538454155f) content-match: sidecar line == live re-hash of reviewer_report.md == dispatch-declared value; both untouched by this landing",
+  "reviewer_report_line_ranges": {
+   "verdict_section_0": "9-16 (verdict heading line 9; F1-closed note lines 14-16)",
+   "oracle_section_1": "18-26 (frozen-first timings + red_pre_harness_fix1 preserved)",
+   "two_end_section_2": "28-88 (every line re-read at three repos; F2 attribution slip at 84-88)",
+   "identity_section_3": "90-105 (reviewer's own re-hash of both identity dicts from raw files; both_ends_proven stands)",
+   "fix_section_4": "107-128 (byte-exact reconstruction 4bc65372…; D1 shape; manifest 635/1; pins 22/22)",
+   "cases_section_5": "130-174 (raw evidence + own re-runs both arms; F1 block 159-174)",
+   "regressions_section_6": "176-200 (raw evidence + two mandated re-runs; F3 at 196-200)",
+   "rationale_section_7": "202-227 (D1/D2/D3 quotes verbatim)",
+   "boundaries_section_8": "229-270 (RF/FF/CW porcelain + network-disabled 25/25 + read-only git; §7 defects judged)",
+   "findings_section_9": "272-279 (F1-F4 table)",
+   "unverified_section_10": "281-295",
+   "routing_section_11": "297-311",
+   "signature_section_12": "313-319 (verdict restated line 317; signed 2026-09-23 12:56 +01:00)"
+  },
+  "byte_proof": "25635 B declared by dispatch = live measured at landing = sidecar-pinned size; sha256 re-hashed live = 588f8d95… = the sidecar line; verdict string 'ACCEPT (verified)' greps at report L9 and L317; report + sidecar re-hashed after ALL landing writes = unchanged",
+  "independent_recheck_by_carrier": [
+   "reviewer_report.md live re-hash (25635 B / 588f8d95…) + sidecar content-match (86 B) = PASS",
+   "verdict string 'ACCEPT (verified)' present at report line 9 (§0) and line 317 (§12) = PASS",
+   "handoff pre-image read BEFORE any landing write = status review_pending / signed false / signatures [] / reviewer_of_record null (5477 B, sha256 c60dcc752cfffc5716aef5671b0b973facb8c0a5e187ab1e36d9d9ab6ca8e525) — implementer never self-signed",
+   "RF/tests/test_source_preparation.py:186-197 re-read live = ENV-11 docstring sentence 'may never silently claim zero downloads' at :187-189 — F2 corrected attribution confirmed by the carrier",
+   "harness/run_cases.py:95 + :364 + :377 re-read live = F1 FileExistsError mechanism confirmed (companies.mkdir without exist_ok after the b2 seed already created project/companies)",
+   "oracle.md re-measured = 11079 B / sha256 0fd9f5517850c4c13690f58765eb83e97deaf2bc2b541aa3acc71da637b646ed — untouched by this landing (frozen-first invariant; deliberately NOT edited for F2)",
+   "decision.md fix chain hashed at every step: pre-image 95eccc06… -> F1 caeb47cc… -> F2 bd6d2a71… -> F3 74f8c286… (history retained at each step)"
+  ],
+  "verdict_is_transcribed_not_authored": true
+ },
+ "signed": false,
+ "signatures": [],
+ "reviewer_of_record": "independent review subagent of session-bfecd191-fbc3-4a66-8ed1-6562479bf102 (reviewer_report.md, signed 2026-09-23 12:56 +01:00; wrote ONLY reviewer_report.md + reviewer_report.sha256 in this attempt)",
+ "reviewer_of_record__historical_pre_verdict": null,
+ "parent_reviewer_citation_historical_pre_verdict": "F-EE1 defect confirmed by reviewer de849e1a... (E2E-EXPAND acceptance, REMEDIATION_REGISTER section 57); THIS fix attempt is unsigned and awaits review",
+ "bookkeeping": {
+  "implementer_signed": false,
+  "carrier_signed": false,
+  "self_signing": "none — the only verdict authority is reviewer_report.md (sha256 588f8d955f4f06db1fc262aa3a490071604681f4f6a679dcfd65962846ecf652) signed by the independent reviewer (独立复核); this landing is bookkeeping only; the implementer never signed and this carrier signs nothing",
+  "verdict_is_transcribed_not_authored": true,
+  "status_transition": "review_pending -> accepted_scoped (bookkeeping transcription of the reviewer's ACCEPT (verified); implemented by this carrier landing on the parent's dispatch, never by the implementer)",
+  "handoff_pre_image": {"status": "review_pending", "signed": false, "signatures": [], "reviewer_of_record": null, "bytes": 5477, "sha256": "c60dcc752cfffc5716aef5671b0b973facb8c0a5e187ab1e36d9d9ab6ca8e525", "measured": "before any landing write"},
+  "record_fixes": [
+   {"id": "F1", "file": "decision.md", "fix": "recorded fix with history retention: §4 case-(b) 'PASS (5/5)' claim annotated with the b2-gap note (original claim retained, nothing deleted) + §7 new item 7 disclosing the harness defect — run_cases.py:95 FileExistsError via :377 aborted the b2 sub-check in ALL 4 judged runs (context.harness_exception in every case JSON), oracle (b)-b2 never executed in-attempt, reviewer executed b2 on BOTH arms → expectation HOLDS (fresh seeded catalog → reused_equivalent, 0 journal rows, envelope reused_existing, download_events 0, FF downloads 0)", "before_sha256": "95eccc06da95140d6699c90a0657c16291adcdb51b7e572b8f96c464484d07f6", "before_bytes": 14899, "after_sha256": "caeb47cc160f4fb07c64f905e17fd50a9a48d39b325cc55da623138da7a52068", "after_bytes": 16273, "original_retained": true},
+   {"id": "F2", "file": "decision.md", "fix": "attribution-only fix: the quoted sentence 'receipt may never silently claim zero downloads' re-attributed to tests/test_source_preparation.py:187-189 (ENV-11 test docstring) instead of scripts/source_preparation.py; mechanism citations :129-133,171-184 cited separately and unchanged (verified); original phrasing retained verbatim in the note; oracle.md §1's identical pre-run wording left byte-untouched by design (frozen-first), correction of record = decision.md + review.md + qualification mirror (carrier spot-checked :187-189 live)", "before_sha256": "caeb47cc160f4fb07c64f905e17fd50a9a48d39b325cc55da623138da7a52068", "before_bytes": 16273, "after_sha256": "bd6d2a715e906d6d2cfcb37e96c15d3914abb7c56b06880c38b05fe11c268f3b", "after_bytes": 17180, "original_retained": true},
+   {"id": "F3", "file": "decision.md", "fix": "annotation-only fix (no deletions): §4 harness runtimes labeled as in-run elapsed_ms from the case JSONs; §5 parenthesized times labeled whole-invocation wall-clock with the raw in-run pytest counterparts recorded — CW 8.26/7.79 s, RF 3.51 s, FF 16.10 s, tests file 40.20 s (commands.json already matches raw; f4 40.4 s = raw exit artifact 40438 ms)", "before_sha256": "bd6d2a715e906d6d2cfcb37e96c15d3914abb7c56b06880c38b05fe11c268f3b", "before_bytes": 17180, "after_sha256": "74f8c2869a9a1ce24c6b2c788d3a5756365a17de7fb0f59b8c6d30b8ac6a2a76", "after_bytes": 18267, "original_retained": true},
+   {"id": "F1-evidence", "file": "evidence/reviewer_b2_execution.json", "fix": "created — the reviewer's stated b2 results transcribed: BOTH arms (which-arm sha c23a9358… pristine / 4bc65372… fixed) + the four zero/holds fields (journal 0 rows, envelope reused_existing, download_events 0, FF downloads 0) + readonly_status reused_equivalent + expectation HOLDS; clearly labeled reviewer-executed post-hoc evidence with source = reviewer report sha256 588f8d95…; original decision text retained in its original_decision_text_retained block; NEW file — no pre-image", "before": null, "after_sha256": "2ff9e69f00cd9e1aae1885e780024384568504de813032cd27a973712bb22323", "after_bytes": 3616}
+  ],
+  "stale_fields_superseded_historical_pre_verdict": [
+   "parent_reviewer_citation -> parent_reviewer_citation_historical_pre_verdict (value retained byte-exact; superseded by status_authority + reviewer_of_record — the review it says 'awaits' now exists)",
+   "reviewer_of_record null -> reviewer identity (pre-verdict null retained byte-exact in reviewer_of_record__historical_pre_verdict)",
+   "unproven[3] (unsigned/awaits-acknowledgment prose) -> unproven_3_historical_pre_verdict (value retained byte-exact; superseded because reviewer_report.md §8 now judges all disclosed defects and F1 was disclosed+evidenced at landing)",
+   "open_questions -> open_questions_historical_pre_verdict (values retained byte-exact; superseded by routing_scope.parent_route — the reviewer answered the commit-route question in §11 and the parent has since committed bf0c8b2)"
+  ],
+  "parent_commit": {
+   "commit_sha": "bf0c8b2",
+   "branch": "fcap",
+   "repository": "company-wiki (live worktree)",
+   "file": "src/company_wiki/source_catalog/canonical_writer.py (1 file, 20+/3-)",
+   "before_sha256": "c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258",
+   "after_sha256": "4bc653725febcc755e3a01ac48227a6b0799c4c262968356b356f8cb42d3c6bc",
+   "after_bytes": 18380,
+   "byte_proof": "live after == iso fixed copy == iso/canonical_writer.py.fixed — matches the reviewer's diff-applied-to-live byte-exact reconstruction (4bc65372…)",
+   "hooks": "config doctor + host-guard + unique + ruff + mypy face all pass; four-file test family 35 passed + ruff rc0",
+   "application_detail_disclosed": "changes.diff carries difflib path-label suffixes '(live/pristine)' and '(F-EE1-FIX)'; git apply required truncating those suffixes on the path lines only — zero content change (hunk content unmodified)",
+   "register_annotation": {"section": "plan register §58", "status": "written by the parent", "content": "cross-repo mapping card F-EE1-FIX -> attempt a20260923-01 -> commit bf0c8b2; review route = no card re-cut (frozen oracle/evidence chain preserved)"},
+   "live_s1_reauthorize": "PENDING — owner re-authorizes the live S1 downloads==1 re-run post-landing (still owed; not granted by this landing)",
+   "source": "parent agent message received mid-landing (session-bfecd191-fbc3-4a66-8ed1-6562479bf102)",
+   "recovery": "git apply -R <ATT>\\changes.diff (byte-verified inverse per reviewer §11)"
+  },
+  "files_written_this_landing": [
+   "decision.md (record fixes F1 + F2 + F3, history-retaining)",
+   "evidence/reviewer_b2_execution.json (new — F1 attached evidence)",
+   "review.md (new — transcription carrier)",
+   "handoff.json (this file — status transition + status_authority + bookkeeping + carried_findings + routing_scope + 4 stale-field supersessions)",
+   "evidence/F-EE1-FIX/qualification.json (new — formula state carrier)"
+  ],
+  "untouched": {
+   "reviewer_report.md": {"bytes": 25635, "sha256": "588f8d955f4f06db1fc262aa3a490071604681f4f6a679dcfd65962846ecf652", "verified": "re-hashed after all landing writes = unchanged"},
+   "reviewer_report.sha256": {"bytes": 86, "sha256": "855c44dbe37e900d72a39648d75f3a0630321cf475aea8f8407477538454155f", "content_match": true},
+   "oracle.md": {"bytes": 11079, "sha256": "0fd9f5517850c4c13690f58765eb83e97deaf2bc2b541aa3acc71da637b646ed", "note": "frozen-first — deliberately NOT edited (F2 correction of record lives in decision.md/review.md/qualification)"},
+   "pre_existing_evidence_raw": "evidence/{green,mutation,red,red_pre_harness_fix1,regression,two_end,porcelain_at_close.txt} — not modified by any record fix",
+   "other_attempt_files": "oracle.md, binding_before.json, binding_after.json, commands.json, recovery.md, changes.diff, harness/*, iso/* — not modified",
+   "git": "zero git verbs executed by this landing (no git writes, no commits by this carrier)",
+   "product_repos_RF_FF_CW": "zero bytes written by this landing"
+  },
+  "json_reparse": "handoff.json and evidence/F-EE1-FIX/qualification.json re-parsed after write (ConvertFrom-Json + field readback) = OK"
+ },
+ "carried_findings": [
+  {"id": "F1", "sev": "medium-low (reviewer-closed)", "origin": "reviewer_report.md §5 lines 159-174 / §9 line 276", "finding": "Undisclosed harness defect: run_cases.py:95 companies.mkdir(parents=True) via :377 raised FileExistsError for b2_root (already created by :362-364) ⇒ oracle case (b)-b2 never executed in ANY of the 4 judged runs (context.harness_exception in every case JSON); decision §4 showed '(b) PASS (5/5)' without flagging the gap and §7 omitted the defect", "disposition": "REVIEWER-CLOSED: the reviewer executed (b)-b2 itself on BOTH arms (product APIs, harness envelope helper) → readonly_status=reused_equivalent, 0 journal rows, envelope reused_existing, download_events 0, FF downloads 0 — frozen expectation HOLDS pristine and fixed; bounded (fires after all other checks; ruling face unaffected). RECORD-FIXED during this landing: decision.md §7 item 7 disclosure + §4 '(5/5)' annotation (original retained) + attached evidence/reviewer_b2_execution.json (reviewer-executed post-hoc, source = report sha 588f8d95…)", "status": "disclosed+evidenced at landing"},
+  {"id": "F2", "sev": "low", "origin": "reviewer_report.md lines 84-88 / §9 line 277", "finding": "Quote 'receipt may never silently claim zero downloads' attributed inside the scripts/source_preparation.py:129-133,171-184 parenthetical (decision §1/§2.6 + oracle §1); the sentence actually lives in tests/test_source_preparation.py:187-189 (ENV-11 test docstring, test at :186-197); mechanism citations themselves verified correct", "disposition": "RECORD-FIXED during this landing: decision.md attribution corrected (mechanism lines retained, original phrasing retained verbatim in the note; carrier spot-checked :187-189 live); oracle §1's identical pre-run wording left byte-untouched (frozen-first invariant — oracle self-declares never-edited-after-runs and the reviewer's §1 W-time proof depends on it); correction of record = decision.md + review.md + evidence/F-EE1-FIX/qualification.json", "status": "record-fixed at landing"},
+  {"id": "F3", "sev": "low (informational)", "origin": "reviewer_report.md lines 196-200 / §9 line 278", "finding": "decision.md §4/§5 runtimes are whole-invocation wall-clock and differ from the raw files' in-run pytest self-reported times (CW 9.68/9.26 vs 8.26/7.79; RF 4.7 vs 3.51; FF 17.3 vs 16.10; tests file 41.4 vs 40.20); commands.json agrees with the raw files; no outcome impact", "disposition": "RECORD-FIXED during this landing: §4 and §5 annotated (wall-clock vs in-run, raw values 8.26/7.79, 3.51, 16.10, 40.20 recorded, commands.json matches raw) — annotation only, no number deleted", "status": "record-fixed at landing"},
+  {"id": "F4", "sev": "informational", "origin": "reviewer_report.md §8 items 3/4/5 / §9 line 279", "finding": "Disclosed §7 defects 3/4/5 (CW relative-path rc=4, Get-Content Invalid \\escape pretty-print, unexpanded $TEMP compile-check) have prose disclosure without preserved raw artifacts (superseded runs) — unverifiable by the reviewer", "disposition": "NOTED: acknowledged as F4-ACK in reviewer_report.md §8; the superseding runs carry the recorded results (23/23 absolute-path files; parsed summary.json/preflight.json valid; re-run compile ok); carried forward as a provenance nuance, nothing rewritten", "status": "noted"}
+ ],
+ "routing_scope": {
+  "transcribed_from": "reviewer_report.md §11 lines 297-311 + parent landing update (recorded in bookkeeping.parent_commit)",
+  "fix_surface": "company-wiki: ONE file src/company_wiki/source_catalog/canonical_writer.py, delivered as changes.diff (42 lines, 1 file, 2 hunks) — byte-verified: diff-applied-to-live reconstruction = 4bc65372… BYTE-EXACT (D1 shape confirmed)",
+  "parent_route": "CW-native commit by the parent + plan-register annotation mapping card F-EE1-FIX -> attempt a20260923-01 -> CW commit sha (re-cut CW-native card rejected: would orphan this attempt's frozen oracle/evidence chain; register §58 annotation written, commit bf0c8b2)",
+  "rf_ff": "RF and FF stay byte-clean by contract (D3 — consumers may not re-derive producer evidence); porcelain at close confirms zero attempt writes in both",
+  "live_s1": "post-landing owner re-authorizes the live S1 downloads==1 re-run — PENDING (offline equivalence stands until then; not granted by this landing)",
+  "countersign": "carriers countersign per plan protocol — the attempt remains implementer-unsigned (signed=false)",
+  "recovery_path": "git apply -R <ATT>\\changes.diff (byte-verified inverse)"
+ },
+ "artifact_inventory": {
+  "oracle": "oracle.md (frozen before first judged run; one pre-run addition a8 disclosed in-file)",
+  "binding": ["binding_before.json (22 live+evidence pins, iso==live 0/635)", "binding_after.json (live changed 0/22; iso mismatch exactly canonical_writer.py)"],
+  "commands": "commands.json (all executed argv incl. 4 disclosed invocation/tooling defects)",
+  "decision": "decision.md (two-end root cause with lines, D1/D2/D3 fix-direction rationale, case table, regression table, porcelain close; F1/F2/F3 record fixes applied at landing with history retention)",
+  "changes": "changes.diff (difflib, 42 lines, touched set = 1 file)",
+  "handoff": "handoff.json (this file)",
+  "review": "review.md (carrier landing: bookkeeping transcription of reviewer_report.md — adds no acceptance of its own)",
+  "qualification": "evidence/F-EE1-FIX/qualification.json (formula state carrier: accepted_scoped)",
+  "evidence_raw": {
+   "two_end_mints": "evidence/two_end/two_end_mints.json (e1_match=true, e2_match=true, both_ends_proven=true)",
+   "red": ["evidence/red/cases_red.json", "evidence/red/stdout.txt", "evidence/red/exit_code.txt"],
+   "red_pre_harness_fix1": "evidence/red_pre_harness_fix1/ (disclosed harness serialization defect)",
+   "green": ["evidence/green/cases_green.json", "evidence/green/stdout.txt", "evidence/green/exit_code.txt"],
+   "mutation": ["evidence/mutation/cases_mutation_red.json", "evidence/mutation/cases_mutation_restored_green.json", "evidence/mutation/exit_codes.txt"],
+   "regression": ["evidence/regression/cw_contract_baseline_pristine.txt", "evidence/regression/cw_contract_fixed.txt", "evidence/regression/rf_env11_family.txt", "evidence/regression/rf_env11_family_MISSING_PYTHONPATH_attempt.txt", "evidence/regression/ff_read10_family.txt", "evidence/regression/e2e_runner/summary.json", "evidence/regression/e2e_runner/preflight.json", "evidence/regression/e2e_runner_exit.txt", "evidence/regression/e2e_runner_stdout.txt", "evidence/regression/e2e_tests_file.txt"],
+   "reviewer_b2": "evidence/reviewer_b2_execution.json (reviewer-executed POST-HOC b2 on both arms — expectation HOLDS; source = reviewer report sha 588f8d95…; attached at landing per F1)",
+   "cleanliness": "evidence/porcelain_at_close.txt (porcelain + mtime attribution)"
+  },
+  "recovery": "recovery.md",
+  "iso": ["iso/venv/ (attempt venv)", "iso/cw/ (company-wiki src+tests+scripts; only canonical_writer.py differs from live)", "iso/canonical_writer.py.fixed (pinned fixed copy)"]
+ },
+ "touched_set": [
+  {
+   "file": "company-wiki/src/company_wiki/source_catalog/canonical_writer.py (ISO COPY ONLY — live untouched by the attempt)",
+   "live_sha256": "c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258",
+   "iso_fixed_sha256": "4bc653725febcc755e3a01ac48227a6b0799c4c262968356b356f8cb42d3c6bc",
+   "landed_in_live": false
+  }
+ ],
+ "unmapped": [
+  "CARD PATH PREMISE CORRECTED: the card cites 'RF scripts/resolver.py:1021-1029' and offers RF resolver / RF journal writer / FF fetch_filing as the likely fix surface. RF has NO scripts/resolver.py; the cited skip logic, both request_id mints, the journal writer and the envelope builder all live in the THIRD repo company-wiki (run by RF via PYTHONPATH=<CW>/src). Investigated and documented with lines (decision.md section 1); RF and FF were therefore left byte-untouched by design (contract-forbidden to compensate there: FF READ-10 forward-verbatim, RF ENV-11/FC-904 no-rederivation).",
+  "FIX NOT LANDED: per the read-only discipline this attempt produced the fix only in iso + changes.diff; landing requires applying changes.diff to the live company-wiki worktree (NOT one of the two named read-only sources, but kept byte-clean anyway) by the owner/next carrier after review. [Carrier note: subsequently landed by the PARENT as commit bf0c8b2 — see bookkeeping.parent_commit; the entry is retained as written because it states the attempt's own discipline accurately.]",
+  "The card's expected deliverable path 'RF resolver.py' does not exist; if the plan register expects an RF-side artifact for F-EE1-FIX, map it to this attempt's changes.diff against company-wiki instead."
+ ],
+ "unproven": [
+  "LIVE S1 downloads==1 NOT RE-EXECUTED: network is forbidden for this attempt, so E2E-EXPAND's frozen S1 branch-B1 check was not re-run live. Equivalence evidence: (i) the same false-zero defect was reproduced offline through the SAME writer paths (case a, harness ids f9f96300... vs 7e4be4ca... mirroring live e8177b37... vs 47c3a925...), (ii) the fix flips a6 (FF _record_download_events) to downloads=1, (iii) both live mints were recomputed from the frozen evidence with the product's own hash (two_end_mints.json both_ends_proven=true).",
+  "FULL CLI SUBPROCESS ensure FACE NOT RUN OFFLINE: the judged harness drives SourceAcquisitionService.ensure + build_resolution_envelope directly (cli.py:789-819 equivalents — the card's sanctioned unit-harness truth), not the company_wiki CLI end-to-end with a subprocess adapter; the offline E2E regressions cover the full chain only on the no-download paths (S2/S3/S5/S6 — all green).",
+  "RF/FF end-to-end receipt output for a downloads==1 envelope: covered transitively by RF ENV-09 (envelope events=1 -> download_calls=1) and FF READ-10 unit families (both green) rather than a live chain run.",
+  "Signature/acknowledgment state after review: the review EXISTS and verdict ACCEPT (verified) is landed (status accepted_scoped, authority in status_authority) — but implementer_signed stays false (never self-signed) and CARRIER COUNTERSIGNATURE is still pending per plan protocol; all disclosed §7 defects (items 1-6) are acknowledged/judged in reviewer_report.md §8 (ACK/ACK/F4-ACK/ACK/ACK/ACK) and F1 was disclosed + evidenced during this landing; the three test families (CW 23 / RF 11 / FF 116) were re-verified by the reviewer from RAW evidence only — it re-executed just the two mandated runs"
+ ],
+ "unproven_3_historical_pre_verdict": "This attempt is UNSIGNED: no reviewer has verified the fix attempt itself; four disclosed harness/invocation defects (decision.md section 7) await reviewer acknowledgment.",
+ "open_questions_historical_pre_verdict": [
+  "Should the fix be landed as a company-wiki commit (owner track) with this attempt's changes.diff as the review artifact, or re-cut as a company-wiki-native card? The plan register's F-EE1-FIX card text assumes RF/FF surfaces."
+ ],
+ "disclosure_adaptation": "unmapped",
+ "accuracy": "unproven"
+}

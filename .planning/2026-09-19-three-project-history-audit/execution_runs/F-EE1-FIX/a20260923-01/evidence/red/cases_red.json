@@ -1,0 +1,235 @@
+{
+  "harness": "F-EE1-FIX run_cases",
+  "generated_utc": "2026-09-23T11:14:46.812489+00:00",
+  "iso_cw_src": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\F-EE1-FIX\\a20260923-01\\iso\\cw\\src",
+  "ff_scripts": "C:\\Users\\郑曾波\\Projects\\filing-fetch\\scripts",
+  "cases": [
+    {
+      "id": "a",
+      "title": "committed download is truthful (downloads==1)",
+      "checks": [
+        {
+          "name": "a1_ensure_status_is_imported",
+          "expected": "imported",
+          "actual": "imported",
+          "ok": true
+        },
+        {
+          "name": "a1_adapter_fetch_calls",
+          "expected": 1,
+          "actual": 1,
+          "ok": true
+        },
+        {
+          "name": "a2_journal_has_one_downloaded_new",
+          "expected": 1,
+          "actual": 1,
+          "ok": true
+        },
+        {
+          "name": "a2_journal_row_keyed_to_original_request",
+          "expected": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+          "actual": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+          "ok": true
+        },
+        {
+          "name": "a3_resolution_id_matches_journal_row",
+          "expected": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+          "actual": "urn:company-wiki:source-request:sha256:7e4be4cab5755df3fb93c4fe24c1a48439c14680f7d746a4cc10b6aafac020d1",
+          "ok": false
+        },
+        {
+          "name": "a4_envelope_outcome_downloaded_new",
+          "expected": "downloaded_new",
+          "actual": "reused_existing",
+          "ok": false
+        },
+        {
+          "name": "a5_envelope_download_events",
+          "expected": 1,
+          "actual": 0,
+          "ok": false
+        },
+        {
+          "name": "a6_ff_record_download_events_downloads",
+          "expected": 1,
+          "actual": 0,
+          "ok": false
+        },
+        {
+          "name": "a7_ff_accepts_envelope",
+          "expected": true,
+          "actual": true,
+          "ok": true
+        },
+        {
+          "name": "a8_readonly_face_outcome_downloaded_new",
+          "expected": "downloaded_new",
+          "actual": "downloaded_new",
+          "ok": true
+        },
+        {
+          "name": "a8_readonly_face_download_events",
+          "expected": 1,
+          "actual": 1,
+          "ok": true
+        }
+      ],
+      "failures": [
+        "a3_resolution_id_matches_journal_row",
+        "a4_envelope_outcome_downloaded_new",
+        "a5_envelope_download_events",
+        "a6_ff_record_download_events_downloads"
+      ],
+      "pass": false
+    },
+    {
+      "id": "b",
+      "title": "genuine reuse stays an honest zero",
+      "checks": [
+        {
+          "name": "b1_second_ensure_status_reused",
+          "expected": "reused",
+          "actual": "reused",
+          "ok": true
+        },
+        {
+          "name": "b1_latest_journal_row_reused_before_download",
+          "expected": "reused_before_download",
+          "actual": "reused_before_download",
+          "ok": true
+        },
+        {
+          "name": "b1_envelope_outcome_reused_existing",
+          "expected": "reused_existing",
+          "actual": "reused_existing",
+          "ok": true
+        },
+        {
+          "name": "b1_envelope_download_events_zero",
+          "expected": 0,
+          "actual": 0,
+          "ok": true
+        },
+        {
+          "name": "b1_ff_downloads_stays_zero",
+          "expected": 0,
+          "actual": 0,
+          "ok": true
+        }
+      ],
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "c",
+      "title": "request_id equality after committed download",
+      "checks": [
+        {
+          "name": "c1_request_id_equals_journal_row_id",
+          "expected": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+          "actual": "urn:company-wiki:source-request:sha256:7e4be4cab5755df3fb93c4fe24c1a48439c14680f7d746a4cc10b6aafac020d1",
+          "ok": false
+        },
+        {
+          "name": "c2_resolution_dict_id_equals_original_request_id",
+          "expected": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+          "actual": "urn:company-wiki:source-request:sha256:7e4be4cab5755df3fb93c4fe24c1a48439c14680f7d746a4cc10b6aafac020d1",
+          "ok": false
+        },
+        {
+          "name": "c3_journal_row_id_equals_original_request_id",
+          "expected": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+          "actual": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+          "ok": true
+        },
+        {
+          "name": "c4_ff_handle_would_carry_matching_id",
+          "expected": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+          "actual": "urn:company-wiki:source-request:sha256:7e4be4cab5755df3fb93c4fe24c1a48439c14680f7d746a4cc10b6aafac020d1",
+          "ok": false
+        }
+      ],
+      "failures": [
+        "c1_request_id_equals_journal_row_id",
+        "c2_resolution_dict_id_equals_original_request_id",
+        "c4_ff_handle_would_carry_matching_id"
+      ],
+      "pass": false
+    },
+    {
+      "id": "d",
+      "title": "retry / second-resolve idempotency",
+      "checks": [
+        {
+          "name": "d2_envelope_rebuild_byte_identical",
+          "expected": "{\"activation_epoch\": null, \"bundle\": {\"bundle_hash\": \"808c7403dcbe7a2710210f5f6e0c981ecb49c8efe46be530452e409ce80d5383\", \"invalid\": {}, \"schema_version\": \"1.0\", \"source\": {\"as_of_date\": \"2026-03-20\", \"document_id\": \"urn:company-wiki:document:sha256:f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\", \"primary_source_id\": \"urn:company-wiki:source:sha256:f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\", \"source_sha256\": \"f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\"}, \"valid_handles\": {}}, \"bundle_hash\": \"808c7403dcbe7a2710210f5f6e0c981ecb49c8efe46be530452e409ce80d5383\", \"bundle_invalid_roles\": [], \"bundle_status\": \"available\", \"bundle_usable\": false, \"bundle_valid_handle_count\": 0, \"candidate_exclusion_trace\": [\"entity_gate_rejected: 0\", \"示例公司2025年年度报告: matched\"], \"canonical_location_rationale\": {\"canonical_location_id\": \"urn:company-wiki:location:sha256:f806d025378887e70eb73273e6ca1fea60a3594333fa1d69e44185d85f48675d\", \"canonical_path\": \"${PROJECT_ROOT}\\\\companies\\\\示例公司\\\\raw\\\\financial_reports\\\\annual\\\\2026-03-20_localprov_ann-9001_示例公司2025年年度报告.pdf\", \"selection\": \"lowest_priority_active_original_primary_then_tiebreak\", \"source_sha256\": \"f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\"}, \"cohorts\": null, \"download_events\": 1, \"envelope_schema_version\": \"1.0\", \"llm_calls\": 0, \"outcome\": \"downloaded_new\", \"parser_calls\": 0, \"policy_hash\": null, \"prompt_injection_status\": \"not_reviewed\", \"qualification\": {\"conflict_check\": \"store\", \"gaps\": [], \"label\": \"verified_input\", \"reason\": \"\"}, \"source_sha256\": \"f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\"}",
+          "actual": "{\"activation_epoch\": null, \"bundle\": {\"bundle_hash\": \"808c7403dcbe7a2710210f5f6e0c981ecb49c8efe46be530452e409ce80d5383\", \"invalid\": {}, \"schema_version\": \"1.0\", \"source\": {\"as_of_date\": \"2026-03-20\", \"document_id\": \"urn:company-wiki:document:sha256:f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\", \"primary_source_id\": \"urn:company-wiki:source:sha256:f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\", \"source_sha256\": \"f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\"}, \"valid_handles\": {}}, \"bundle_hash\": \"808c7403dcbe7a2710210f5f6e0c981ecb49c8efe46be530452e409ce80d5383\", \"bundle_invalid_roles\": [], \"bundle_status\": \"available\", \"bundle_usable\": false, \"bundle_valid_handle_count\": 0, \"candidate_exclusion_trace\": [\"entity_gate_rejected: 0\", \"示例公司2025年年度报告: matched\"], \"canonical_location_rationale\": {\"canonical_location_id\": \"urn:company-wiki:location:sha256:f806d025378887e70eb73273e6ca1fea60a3594333fa1d69e44185d85f48675d\", \"canonical_path\": \"${PROJECT_ROOT}\\\\companies\\\\示例公司\\\\raw\\\\financial_reports\\\\annual\\\\2026-03-20_localprov_ann-9001_示例公司2025年年度报告.pdf\", \"selection\": \"lowest_priority_active_original_primary_then_tiebreak\", \"source_sha256\": \"f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\"}, \"cohorts\": null, \"download_events\": 1, \"envelope_schema_version\": \"1.0\", \"llm_calls\": 0, \"outcome\": \"downloaded_new\", \"parser_calls\": 0, \"policy_hash\": null, \"prompt_injection_status\": \"not_reviewed\", \"qualification\": {\"conflict_check\": \"store\", \"gaps\": [], \"label\": \"verified_input\", \"reason\": \"\"}, \"source_sha256\": \"f3b388847a3871667643aa62ab0ae35da12bf28c129fd9067809052989731462\"}",
+          "ok": true
+        },
+        {
+          "name": "d3_envelope_build_does_not_write_journal",
+          "expected": "sha256:e3931a30ebbd67bae7f8c210b3c2a1c8921133912922af0552222cdd8764da62",
+          "actual": "sha256:e3931a30ebbd67bae7f8c210b3c2a1c8921133912922af0552222cdd8764da62",
+          "ok": true
+        },
+        {
+          "name": "d1_adapter_fetch_calls_still_one",
+          "expected": 1,
+          "actual": 1,
+          "ok": true
+        },
+        {
+          "name": "d1_downloaded_new_row_count",
+          "expected": 1,
+          "actual": 1,
+          "ok": true
+        },
+        {
+          "name": "d1_journal_row_count",
+          "expected": 2,
+          "actual": 2,
+          "ok": true
+        },
+        {
+          "name": "d1_journal_outcomes_deterministic",
+          "expected": [
+            "downloaded_new",
+            "reused_before_download"
+          ],
+          "actual": [
+            "downloaded_new",
+            "reused_before_download"
+          ],
+          "ok": true
+        },
+        {
+          "name": "d3_second_readonly_face_deterministic",
+          "expected": "reused_existing",
+          "actual": "reused_existing",
+          "ok": true
+        },
+        {
+          "name": "d3_second_readonly_face_zero_download_events",
+          "expected": 0,
+          "actual": 0,
+          "ok": true
+        },
+        {
+          "name": "d3_journal_unchanged_after_second_resolve_face",
+          "expected": "sha256:7a6246358368a9be75a45afe6a21f122c3a6b015d5a9bb87c8299eea080f23cb",
+          "actual": "sha256:7a6246358368a9be75a45afe6a21f122c3a6b015d5a9bb87c8299eea080f23cb",
+          "ok": true
+        }
+      ],
+      "failures": [],
+      "pass": true
+    }
+  ],
+  "context": {
+    "request_id": "urn:company-wiki:source-request:sha256:f9f963009381b3906308cbe80fc229f611b3928cabe5faad9f58aa9893dbac37",
+    "harness_exception": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\F-EE1-FIX\\a20260923-01\\harness\\run_cases.py\", line 377, in run\n    catalog2 = _make_catalog(b2_root)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\F-EE1-FIX\\a20260923-01\\harness\\run_cases.py\", line 95, in _make_catalog\n    companies.mkdir(parents=True)\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"C:\\Miniconda\\Lib\\pathlib\\_local.py\", line 722, in mkdir\n    os.mkdir(self, mode)\n    ~~~~~~~~^^^^^^^^^^^^\nFileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'C:\\\\Users\\\\郑曾波\\\\AppData\\\\Local\\\\Temp\\\\f_ee1_b2_zet7wokf\\\\project\\\\companies'\n"
+  },
+  "overall_pass": false,
+  "label": "red"
+}

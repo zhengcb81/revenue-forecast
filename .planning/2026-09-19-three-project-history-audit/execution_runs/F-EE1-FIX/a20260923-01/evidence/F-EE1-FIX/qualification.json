@@ -1,0 +1,94 @@
+{
+ "card": "F-EE1-FIX",
+ "attempt": "a20260923-01",
+ "artifact_role": "qualification record (formula-state carrier) written by the carrier landing — bookkeeping only, adds no acceptance of its own",
+ "formula": {
+  "state": "accepted_scoped",
+  "state_before": "review_pending",
+  "state_authority": "reviewer_report.md §0 line 9: 'Verdict — ACCEPT (verified)' (restated §12 line 317); transcribed via review.md",
+  "verdict_is_transcribed_not_authored": true
+ },
+ "disclosure_adaptation": "unmapped",
+ "accuracy": "unproven",
+ "carrier_mirror": {
+  "carrier_file": "review.md (attempt root)",
+  "carrier_sha256": "3320e40db0be73b274f1613052f518f7d7c542c18b30db7ff13c1e03f7a871b5",
+  "carrier_bytes": 17716,
+  "handoff_file": "handoff.json (attempt root)",
+  "handoff_sha256": "62b547b73b00b214a447acf5991643c6a94e2736d7ffd76704041bff06d182fa",
+  "handoff_bytes": 23321,
+  "handoff_status": "accepted_scoped",
+  "handoff_status_before_bookkeeping_fix": "review_pending",
+  "handoff_pre_image": {"status": "review_pending", "signed": false, "bytes": 5477, "sha256": "c60dcc752cfffc5716aef5671b0b973facb8c0a5e187ab1e36d9d9ab6ca8e525"},
+  "source_authority": {
+   "file": "reviewer_report.md",
+   "bytes": 25635,
+   "sha256": "588f8d955f4f06db1fc262aa3a490071604681f4f6a679dcfd65962846ecf652",
+   "sidecar": "reviewer_report.sha256 (86 B, sha256 855c44dbe37e900d72a39648d75f3a0630321cf475aea8f8407477538454155f) content-match",
+   "line_ranges": {
+    "verdict": "9-16 (heading line 9)",
+    "oracle_section_1": "18-26",
+    "two_end_section_2": "28-88 (F2 84-88)",
+    "identity_section_3": "90-105",
+    "fix_section_4": "107-128",
+    "cases_section_5": "130-174 (F1 159-174)",
+    "regressions_section_6": "176-200 (F3 196-200)",
+    "rationale_section_7": "202-227",
+    "boundaries_section_8": "229-270",
+    "findings": "272-279",
+    "unverified": "281-295",
+    "routing": "297-311",
+    "signature": "313-319"
+   },
+   "untouched_by_landing": true
+  },
+  "formula_state_mirror_in_handoff": true
+ },
+ "declarations": [
+  "verdict ACCEPT (verified) is transcribed, never authored here: verdict_is_transcribed_not_authored = true; this file and review.md add no acceptance of their own",
+  "no self-signing: implementer_signed = false, carrier_signed = false, signed = false, signatures = []; the only signer is the independent reviewer (独立复核) of reviewer_report.md (§12, signed 2026-09-23 12:56 +01:00); carrier countersignature per plan protocol remains the only outstanding signature step",
+  "carrier independent re-checks (独立复核) at landing: report 25635 B / 588f8d95… == dispatch pin == sidecar; verdict string at L9 + L317; handoff pre-image review_pending/unsigned (5477 B / c60dcc75…); F2 corrected attribution spot-checked live (tests/test_source_preparation.py:187-189); F1 mechanism spot-checked live (run_cases.py:95/:364/:377); oracle.md re-measured untouched (11079 B / 0fd9f551…)",
+  "record defects fixed during this landing with original values retained (history retention): F1 (decision.md §7 item 7 disclosure + §4 (5/5) annotation + attached evidence/reviewer_b2_execution.json), F2 (decision.md §1 attribution corrected, original phrasing retained in note, oracle frozen line untouched), F3 (§4/§5 runtime annotations, no number deleted); F4 noted only",
+  "evidence/reviewer_b2_execution.json = reviewer-executed POST-HOC evidence (both arms: pristine c23a9358… / fixed 4bc65372…; readonly_status reused_equivalent, journal 0 rows, envelope reused_existing, download_events 0, FF downloads 0; expectation HOLDS), source = reviewer report sha256 588f8d95…",
+  "reviewer_report.md and reviewer_report.sha256 untouched (re-hashed after all landing writes: 25635 B / 588f8d95… / sidecar match); oracle.md untouched (frozen-first)",
+  "carrier write surface = decision.md (record fixes F1/F2/F3) + evidence/reviewer_b2_execution.json (new) + review.md + handoff.json + this file; no git (zero git verbs); no product writes; no network; no other writes"
+ ],
+ "findings_mirror": [
+  {"id": "F1", "sev": "medium-low (reviewer-closed)", "disposition": "reviewer closed it by executing (b)-b2 itself on BOTH arms → expectation HOLDS (reused_equivalent / 0 journal rows / reused_existing / download_events 0 / FF downloads 0); record-fixed at landing: decision.md §7 item 7 + §4 annotation (original retained) + evidence/reviewer_b2_execution.json attached"},
+  {"id": "F2", "sev": "low", "disposition": "record-fixed at landing: decision.md §1 attribution → tests/test_source_preparation.py:187-189 (ENV-11 docstring); mechanism citations unchanged; original phrasing retained in the note; oracle §1 frozen wording byte-untouched (frozen-first), correction of record = decision.md + review.md + this file"},
+  {"id": "F3", "sev": "low (informational)", "disposition": "record-fixed at landing: decision.md §4/§5 annotated as wall-clock vs in-run pytest times (raw 8.26/7.79, 3.51, 16.10, 40.20; commands.json matches raw); annotation only, no deletions"},
+  {"id": "F4", "sev": "informational", "disposition": "noted: §7 defects 3/4/5 prose-disclosed without preserved raw artifacts (superseded runs); acknowledged F4-ACK in report §8; superseding runs carry the recorded results"}
+ ],
+ "scope_mirror": {
+  "fix_surface": "company-wiki: ONE file src/company_wiki/source_catalog/canonical_writer.py via changes.diff (42 lines, 1 file, 2 hunks) — byte-verified: diff-applied-to-live reconstruction = 4bc65372… BYTE-EXACT, D1 shape confirmed, manifest 635/1 mismatch, pins 22/22",
+  "parent_route": "CW-native commit + plan-register annotation mapping card F-EE1-FIX → attempt a20260923-01 → CW commit sha (no card re-cut — frozen oracle/evidence chain preserved)",
+  "parent_commit": {
+   "commit_sha": "bf0c8b2",
+   "branch": "fcap",
+   "before_sha256": "c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258",
+   "after_sha256": "4bc653725febcc755e3a01ac48227a6b0799c4c262968356b356f8cb42d3c6bc",
+   "after_bytes": 18380,
+   "diff_application_note": "changes.diff difflib path-label suffixes (live/pristine)/(F-EE1-FIX) truncated for git apply — path lines only, zero content change",
+   "register_annotation": "plan register §58 written (card → attempt → commit sha)",
+   "source": "parent agent message received mid-landing"
+  },
+  "rf_ff": "RF and FF stay byte-clean by contract (D3 — consumers may not re-derive producer evidence); porcelain at close confirms zero attempt writes",
+  "live_s1": "owner re-authorizes the live S1 downloads==1 re-run post-landing — PENDING; offline equivalence stands until then",
+  "countersign": "carriers countersign per plan protocol (attempt stays implementer-unsigned)",
+  "recovery_path": "git apply -R <ATT>\\changes.diff (byte-verified inverse)",
+  "unmapped_list": [
+   "CARD PATH PREMISE CORRECTED: RF has no scripts/resolver.py; skip logic, both mints, journal writer and envelope builder live in company-wiki (RF runs it via PYTHONPATH=<CW>/src); RF/FF byte-untouched by design (D3 contract-forbidden to compensate)",
+   "FIX NOT LANDED by the attempt (iso + changes.diff only, read-only discipline) — subsequently landed by the PARENT as commit bf0c8b2 (bookkeeping.parent_commit); entry retained as written",
+   "The card's expected deliverable path 'RF resolver.py' does not exist; map any register expectation to this attempt's changes.diff against company-wiki (register §58 annotation)"
+  ],
+  "unproven_list": [
+   "LIVE S1 downloads==1 NOT RE-EXECUTED (network forbidden) — offline equivalence: same-writer-path false-zero reproduction, a6 flips to 1, both live mints recomputed (two_end_mints both_ends_proven=true)",
+   "FULL CLI SUBPROCESS ensure FACE NOT RUN OFFLINE — judged harness drives ensure → writer → journal → envelope directly (card-sanctioned unit-harness truth); E2E covers no-download paths only",
+   "RF/FF end-to-end receipt for a downloads==1 envelope — covered transitively (RF ENV-09, FF READ-10 families), not by a live chain",
+   "Signature state: implementer_signed false, carrier countersignature pending; disclosed §7 defects acknowledged in report §8; test families re-verified from RAW evidence only (reviewer re-executed just the two mandated runs)"
+  ],
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven; live S1 re-authorize and carrier countersignature remain owed. The verdict lives in reviewer_report.md (sha256 588f8d955f4f06db1fc262aa3a490071604681f4f6a679dcfd65962846ecf652, 25635 B, pinned by reviewer_report.sha256) at line 9 and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own."
+}

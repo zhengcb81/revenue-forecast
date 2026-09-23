@@ -1139,3 +1139,13 @@ REM-80（M01-M04 扩权或豁免）、REM-84（START_HERE append-3 授权）。
 - **批次 5a/5b/5c 推送绿**（origin=`b0d016a6`、ahead=0、门 10/10 含 real-roots+real-data）；CW 两提交入史（`ac4ebd0`+`5d72529`）、活树首验 26/26。
 - 记账：登记册 §47–54、自纠累计 10 例（含第 9 BOM/第 10 漏 stage）、CF-I14FR1-3 discharged、14 既有债=独立清单。
 - **下一步：19 卡链 I-07-B 起**（I-06-A/B ✅ 已毕）；残余在册=D-W06/函 B/14 债/OQ-03/B-6b/M01-M04（owner/外部轨）。
+
+---
+
+## 2026-09-23 — Round 96：CI 归因闭环 + E2E 套件 + F-EE1 跨仓修复全链
+
+- **CI 连红确切原因**（owner 令查，§55）：WSL2 双臂严格重放——持续红底色=本仓固有 14 项（棘轮 ×2 定日到 9-20 两提交；余 12 待归因）+ 昨天新叠=manifest wiki 钉 9-03 旧件 × batch-5c 新 fixture → TypeError ×10 两 job；三层本地检查结构性差集（pre-commit 零 pytest/门无步9+无钩/环境与 sibling 源分歧）。修序列四步待 owner 指示。
+- **E2E-EXPAND 落地**（跨仓全链小套件、owner 四约束全证、KEEP-RED）→ 3 文件入史 `262659e4`（批 6 门 10/10 绿）。
+- **F-EE1 全链闭环**：根因双端（CW 双 mint 身份字典异）→ D1 修 → 复审 ACCEPT(verified) → **CW `bf0c8b2`**（四族 35 过+钩过、live `4bc65372` 符）→ 落定 + §58 跨仓映射注记。欠：live S1 复权、载体 countersign。
+- **19 卡链**：I-06-A/B、I-07-B ✅（I-07-C 门开待派）；批 6 `262659e4` 落地。
+- 欠 owner：CI §55 序列启动 · live S1 复权 · TTL/CI 相关既册项。

@@ -1,0 +1,189 @@
+{
+ "card": "F-EE1-FIX",
+ "attempt": "a20260923-01",
+ "oracle_frozen_before_first_judged_run": true,
+ "interpreter": "<ATT>/iso/venv/Scripts/python.exe (copy of E2E-EXPAND attempt venv; python 3.13.9; I-00-B rule 5 pattern)",
+ "global_env": "PYTHONDONTWRITEBYTECODE=1, PYTHONUTF8=1, python -B everywhere, pytest always with -p no:cacheprovider and --basetemp under %TEMP%",
+ "legend_network": "disabled = no network attempted at any point (zero probes, zero downloads)",
+ "note_argv": "argv arrays below are faithful but abbreviated where repeated quiet flags were identical across entries; every concrete path/flag that mattered is recorded",
+ "commands": [
+  {
+   "id": "ENV-01-copy-iso-venv",
+   "purpose": "attempt-level iso venv (file copy only, no pip/network)",
+   "argv": ["robocopy", "<PLAN>/execution_runs/E2E-EXPAND/a20260923-01/iso/venv", "<ATT>/iso/venv", "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/NC", "/NS", "/NP", "/R:2", "/W:1"],
+   "network": "disabled",
+   "result": "ok (robocopy rc=1 = files copied); py 3.13.9, yaml+pytest import ok"
+  },
+  {
+   "id": "ENV-02-copy-iso-cw",
+   "purpose": "iso copies of company-wiki src+tests+scripts (code under test + its contract tests); bytecode caches purged afterwards",
+   "argv": ["robocopy", "CW/src|CW/tests|CW/scripts", "<ATT>/iso/cw/...", "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/NC", "/NS", "/NP"],
+   "network": "disabled",
+   "result": "ok; 635 non-cache files compared later; __pycache__/.pytest_cache removed from iso"
+  },
+  {
+   "id": "BIND-01-before",
+   "purpose": "byte-identity of iso vs live + record 22 live/evidence pins BEFORE any run",
+   "argv": ["pwsh", "Get-FileHash SHA256 loops over CW/{src,tests,scripts} and 22 pinned files -> <ATT>/binding_before.json"],
+   "network": "disabled",
+   "result": "ok: iso_vs_live_mismatches=0/635; 22 pins recorded (binding_before.json)"
+  },
+  {
+   "id": "PROBE-01-chain-imports",
+   "purpose": "readiness probe (NOT a judged run): chain + harness APIs resolve from ISO + FF scripts",
+   "argv": ["<venv>/python", "-B", "-c", "import company_wiki.source_catalog.{cli,resolver,runtime_policy,...}; import fetch_filing; from filing_contracts import validate_resolution_envelope; assert SourceCatalog.bundle_for_resolution; assert fetch_filing._record_download_events"],
+   "network": "disabled",
+   "result": "ok rc=0: 'PROBE-01 chain imports from ISO: ok'"
+  },
+  {
+   "id": "TWO-END-verify",
+   "purpose": "freeze the root cause as executable evidence: recompute BOTH request_id mints from the frozen E2E-EXPAND s1 evidence using the product's own SourceRequest.request_id",
+   "argv": ["<venv>/python", "-B", "<ATT>/harness/verify_evidence_hashes.py", "--iso-cw-src", "<ATT>/iso/cw/src", "--evidence-dir", "<E2E-ATT>/evidence/run_live_pytest/s1", "--out", "<ATT>/evidence/two_end/two_end_mints.json"],
+   "network": "disabled",
+   "result": "rc=0: e1_match=true, e2_match=true, both_ends_proven=true; divergence fields = fiscal_period, form_type, language, provider, provider_document_id"
+  },
+  {
+   "id": "RUN-RED-attempt1",
+   "purpose": "JUDGED RED attempt 1 (unmodified iso)",
+   "argv": ["<venv>/python", "-B", "<ATT>/harness/run_cases.py", "--iso-cw-src", "<ATT>/iso/cw/src", "--ff-scripts", "<FF>/scripts", "--out", "<ATT>/evidence/red/cases_red.json", "--label", "red"],
+   "network": "disabled",
+   "result": "rc=1 but artifact write failed: TypeError 'Object of type bytes is not JSON serializable' (d3 journal-byte checks) — HARNESS defect; oracle NOT edited; evidence preserved at evidence/red_pre_harness_fix1/; harness fixed to record sha256 of bytes"
+  },
+  {
+   "id": "RUN-RED-attempt2",
+   "purpose": "JUDGED RED (effective) on unmodified iso; iso canonical_writer sha verified before and after the run",
+   "argv": ["<venv>/python", "-B", "<ATT>/harness/run_cases.py", "--iso-cw-src", "<ATT>/iso/cw/src", "--ff-scripts", "<FF>/scripts", "--out", "<ATT>/evidence/red/cases_red.json", "--label", "red"],
+   "network": "disabled",
+   "result": "rc=1, 2243 ms; (a) FAIL a3/a4/a5/a6 = fake zero reproduced (outcome reused_existing, download_events 0, FF downloads 0; ids f9f96300… vs 7e4be4ca…); (c) FAIL c1/c2/c4; (b) PASS; (d) PASS; iso sha unchanged c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258"
+  },
+  {
+   "id": "FIX-01-apply",
+   "purpose": "apply F-EE1 fix to ISO ONLY: import dataclasses.replace; IMPORTED_NEW branch returns replace(exact_resolution, request_id=request.request_id) after the unchanged REUSED_EXACT gate; self-caught restore of _remove_staged dropped by an intermediate edit",
+   "argv": ["edit", "<ATT>/iso/cw/src/company_wiki/source_catalog/canonical_writer.py"],
+   "network": "disabled",
+   "result": "ok; fixed sha256 = 4bc653725febcc755e3a01ac48227a6b0799c4c262968356b356f8cb42d3c6bc; content delivered verbatim as <ATT>/changes.diff (42 lines)"
+  },
+  {
+   "id": "COMPILE-01",
+   "purpose": "syntax gate before judged GREEN (attempt 1 used unexpanded $TEMP -> tooling slip, disclosed)",
+   "argv": ["<venv>/python", "-B", "-c", "py_compile.compile(<iso canonical_writer>, cfile=%TEMP%/f_ee1_cc_check.pyc, doraise=True)"],
+   "network": "disabled",
+   "result": "ok: 'compile ok'"
+  },
+  {
+   "id": "RUN-GREEN",
+   "purpose": "JUDGED GREEN with the fix applied",
+   "argv": ["<venv>/python", "-B", "<ATT>/harness/run_cases.py", "--iso-cw-src", "<ATT>/iso/cw/src", "--ff-scripts", "<FF>/scripts", "--out", "<ATT>/evidence/green/cases_green.json", "--label", "green"],
+   "network": "disabled",
+   "result": "rc=0, 2263 ms; (a)(b)(c)(d) all PASS incl. a3 ids match, a4 downloaded_new, a5 download_events=1, a6 FF downloads=1, a7 FF accepts envelope, a8 read-only face reports 1"
+  },
+  {
+   "id": "MUTATION-01-revert",
+   "purpose": "case (e): revert iso fix to pristine live bytes",
+   "argv": ["Copy-Item", "CW live canonical_writer.py", "<ATT>/iso/cw/src/company_wiki/source_catalog/canonical_writer.py"],
+   "network": "disabled",
+   "result": "reverted sha = c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258 (== RED-time sha == live)"
+  },
+  {
+   "id": "MUTATION-02-run",
+   "purpose": "case (e): re-run harness with fix reverted",
+   "argv": ["<venv>/python", "-B", "<ATT>/harness/run_cases.py", "--iso-cw-src", "<ATT>/iso/cw/src", "--ff-scripts", "<FF>/scripts", "--out", "<ATT>/evidence/mutation/cases_mutation_red.json", "--label", "mutation_reverted"],
+   "network": "disabled",
+   "result": "rc=1, 1977 ms; identical failure set to RED (a3/a4/a5/a6, c1/c2/c4) — non-vacuous"
+  },
+  {
+   "id": "MUTATION-03-restore",
+   "purpose": "restore the fix and confirm end state green",
+   "argv": ["Copy-Item", "<ATT>/iso/canonical_writer.py.fixed", "<ATT>/iso/cw/src/company_wiki/source_catalog/canonical_writer.py", "then RUN-GREEN argv with --out <ATT>/evidence/mutation/cases_mutation_restored_green.json"],
+   "network": "disabled",
+   "result": "restored sha = 4bc65372…; re-run rc=0 all PASS (cases_mutation_restored_green.json)"
+  },
+  {
+   "id": "REG-CW-attempt1",
+   "purpose": "CW contract regression attempt 1 (invocation defect, disclosed)",
+   "argv": ["<venv>/python", "-B", "-m pytest", "-q", "-p", "no:cacheprovider", "--basetemp", "%TEMP%/f_ee1_bt_cw", "<relative test paths>"],
+   "cwd": "session workspace (wrong)",
+   "network": "disabled",
+   "result": "rc=4 usage error: relative test paths not found ('no tests ran'); superseded by absolute-path runs below"
+  },
+  {
+   "id": "REG-CW-a-pristine",
+   "purpose": "oracle f3a: CW own contract family on PRISTINE iso (revert for the run, restore immediately after)",
+   "argv": ["<venv>/python", "-B", "-m pytest", "-q", "-p", "no:cacheprovider", "--basetemp", "%TEMP%/f_ee1_bt_cw", "<ATT>/iso/cw/tests/contract/test_source_catalog_canonical_writer.py", "<ATT>/iso/cw/tests/contract/test_resolution_envelope_fc704.py", "<ATT>/iso/cw/tests/contract/test_source_catalog_acquisition.py"],
+   "network": "disabled",
+   "result": "rc=0: 23 passed in 8.26 s; iso restored to fixed sha 4bc65372… afterwards (verified)"
+  },
+  {
+   "id": "REG-CW-b-fixed",
+   "purpose": "oracle f3b: same family on FIXED iso",
+   "argv": ["<venv>/python", "-B", "-m pytest", "-q", "-p", "no:cacheprovider", "--basetemp", "%TEMP%/f_ee1_bt_cw", "<same three files>"],
+   "network": "disabled",
+   "result": "rc=0: 23 passed in 7.79 s"
+  },
+  {
+   "id": "REG-RF-attempt1",
+   "purpose": "oracle f1 attempt (RF ENV-11 family) — invocation defect, disclosed",
+   "argv": ["<venv>/python", "-B", "-m pytest", "-q", "-p", "no:cacheprovider", "--basetemp", "%TEMP%/f_ee1_bt_rf", "tests/test_source_preparation.py"],
+   "cwd": "RF root",
+   "env": "PYTHONPATH unset",
+   "network": "disabled",
+   "result": "rc=1: 5 failed / 6 passed — ModuleNotFoundError: No module named 'company_wiki' (CI sets PYTHONPATH=company-wiki/src at quality.yml:26; omitted by me); evidence preserved as rf_env11_family_MISSING_PYTHONPATH_attempt.txt"
+  },
+  {
+   "id": "REG-RF-attempt2",
+   "purpose": "oracle f1 (effective): RF ENV-11 family, CI-faithful PYTHONPATH",
+   "argv": ["<venv>/python", "-B", "-m pytest", "-q", "-p", "no:cacheprovider", "--basetemp", "%TEMP%/f_ee1_bt_rf", "tests/test_source_preparation.py"],
+   "cwd": "RF root",
+   "env": "PYTHONPATH=C:/Users/郑曾波/Projects/company-wiki/src (quality.yml:26 form)",
+   "network": "disabled",
+   "result": "rc=0: 11 passed in 3.51 s (ENV-09..ENV-12 incl. ENV-11 fail-closed)"
+  },
+  {
+   "id": "REG-FF",
+   "purpose": "oracle f2: FF READ-10 family",
+   "argv": ["<venv>/python", "-B", "-m pytest", "-q", "-p", "no:cacheprovider", "--basetemp", "%TEMP%/f_ee1_bt_ff", "tests/test_fetch_filing.py"],
+   "cwd": "FF root",
+   "network": "disabled",
+   "result": "rc=0: 116 passed, 1 skipped, 39 subtests passed in 16.10 s"
+  },
+  {
+   "id": "REG-E2E-RUNNER",
+   "purpose": "oracle f4: E2E-EXPAND offline runner as regression (evidence into this attempt, work into %TEMP%)",
+   "argv": ["<venv>/python", "-B", "RF/e2e/run_cross_repo_chain_e2e.py", "--scenarios", "S2,S3,S5,S6,S4", "--live", "never", "--work-root", "%TEMP%/f_ee1_e2e_work", "--evidence-dir", "<ATT>/evidence/regression/e2e_runner"],
+   "env": "RF_E2E_LIVE_DOWNLOAD unset, RF_E2E_SPY_DIR unset",
+   "network": "disabled",
+   "result": "rc=0, 40438 ms; S2,S3,S5,S6,S4 all pass; live_gate=never; production_writes=0; preflight CODE_PINS drift=[] (all 8 product pins match live)"
+  },
+  {
+   "id": "REG-E2E-TESTS",
+   "purpose": "oracle f5: E2E-EXPAND tests file (default CI-step9 path)",
+   "argv": ["<venv>/python", "-B", "-m pytest", "-q", "-p", "no:cacheprovider", "--basetemp", "%TEMP%/f_ee1_bt_e2etests", "tests/test_cross_repo_chain_e2e.py"],
+   "cwd": "RF root",
+   "env": "PYTHONPATH=company-wiki/src (CI-faithful); RF_E2E_LIVE_DOWNLOAD unset",
+   "network": "disabled",
+   "result": "rc=0, 41378 ms: 2 passed, 1 skipped (live test honest-skip)"
+  },
+  {
+   "id": "DIFF-01",
+   "purpose": "changes.diff via difflib, touched set only",
+   "argv": ["<venv>/python", "-B", "-c", "difflib.unified_diff(live canonical_writer.py, iso fixed canonical_writer.py, n=3) -> <ATT>/changes.diff"],
+   "network": "disabled",
+   "result": "ok: 42 lines, single file"
+  },
+  {
+   "id": "BIND-02-after",
+   "purpose": "final iso-vs-live manifest + live pin re-hash",
+   "argv": ["pwsh", "Get-FileHash SHA256 loops -> <ATT>/binding_after.json"],
+   "network": "disabled",
+   "result": "iso mismatches = exactly 1/635 (canonical_writer.py: live c23a9358… vs iso 4bc65372…); live pins changed = 0/22"
+  },
+  {
+   "id": "PORCELAIN-01",
+   "purpose": "read-only cleanliness close for all three repos + attribution of pre-existing entries",
+   "argv": ["git", "status", "--porcelain"],
+   "cwd": "each of RF / FF / CW (read-only; no git mutations anywhere)",
+   "network": "disabled",
+   "result": "FF: empty (clean). RF: no tracked modification; untracked = my attempt dir + 2 pre-existing leftovers (.tmp-r41-mutation/ mtime 09-20, plan_inputs.json.bak mtime 09-21). CW: 3 pre-existing modifications (CLAUDE.md, README.md, artifact_dag.py; mtimes 09-23 02:13 local ≈10 h before attempt start 12:05 local) — none written by this attempt. Full text + attribution: evidence/porcelain_at_close.txt"
+  }
+ ]
+}

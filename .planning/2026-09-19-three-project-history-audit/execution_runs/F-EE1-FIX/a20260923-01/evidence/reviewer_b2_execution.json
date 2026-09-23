@@ -1,0 +1,58 @@
+{
+  "artifact": "reviewer_b2_execution",
+  "card": "F-EE1-FIX",
+  "attempt": "a20260923-01",
+  "evidence_class": "REVIEWER-EXECUTED POST-HOC EVIDENCE — NOT an in-attempt judged run; transcribed into this file by the carrier landing from the reviewer's report (values below are the reviewer's own stated results, not carrier-executed)",
+  "source": {
+    "file": "reviewer_report.md",
+    "sha256": "588f8d955f4f06db1fc262aa3a490071604681f4f6a679dcfd65962846ecf652",
+    "bytes": 25635,
+    "line_ranges": {
+      "F1_finding_and_b2_closure": "159-174",
+      "arm_shas_and_re_runs": "153-157",
+      "fix_shas": "109-114"
+    },
+    "reviewer_tool": "%TEMP%\\f_ee1_rev\\b2_independent.py (product APIs + the harness envelope helper)",
+    "executed_by": "independent reviewer (post-hoc, during review) — NOT the attempt implementer, NOT the carrier"
+  },
+  "finding_context_F1": {
+    "severity": "MEDIUM-LOW (reviewer-found, bounded, reviewer-closed)",
+    "defect": "run_cases.py:95 companies.mkdir(parents=True) (no exist_ok) raised FileExistsError when invoked via :377 _make_catalog(b2_root), because :362-364 had already created b2_root/project/companies",
+    "consequence": "oracle case (b)-b2 never executed in ANY of the 4 judged runs (red, green, mutation_red, mutation_restored_green); context.harness_exception present in every case JSON; case (b)'s 5 recorded checks are b1 alone",
+    "boundedness": "the exception fires after all (a)/(c)/(d)/(b1) checks are recorded (b2 is the last block) and the ruling face (a)/(c) is unaffected — per reviewer_report.md 159-174"
+  },
+  "b2_execution": {
+    "frozen_expectation_oracle_2b": "fresh catalog seeded by scan only (no journal download row) + read-only SourceResolver.resolve envelope: outcome == reused_existing, download_events == 0",
+    "arms": [
+      {
+        "arm": "pristine (RED arm / iso_pristine, live-sha copy)",
+        "canonical_writer_sha256": "c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258",
+        "readonly_status": "reused_equivalent",
+        "journal_rows": 0,
+        "envelope_outcome": "reused_existing",
+        "download_events": 0,
+        "ff_downloads": 0,
+        "expectation_holds": true
+      },
+      {
+        "arm": "fixed (GREEN arm / iso_fixed)",
+        "canonical_writer_sha256": "4bc653725febcc755e3a01ac48227a6b0799c4c262968356b356f8cb42d3c6bc",
+        "readonly_status": "reused_equivalent",
+        "journal_rows": 0,
+        "envelope_outcome": "reused_existing",
+        "download_events": 0,
+        "ff_downloads": 0,
+        "expectation_holds": true
+      }
+    ],
+    "stated_result_verbatim_in_source": "I executed (b)-b2 myself (…b2_independent.py, product APIs, harness envelope helper) on BOTH arms → readonly_status=reused_equivalent, journal 0 rows, envelope reused_existing, download_events 0, FF downloads 0 — b2's frozen expectation holds pristine and fixed.",
+    "verdict_on_b2": "HOLDS on both arms (b2 vacuous in-attempt per F1; executed by the reviewer, not by the attempt)"
+  },
+  "original_decision_text_retained": {
+    "location": "decision.md §4, case (b) row, RED column",
+    "original": "PASS (5/5)",
+    "handling": "retained in place; annotated in-line with the F1 b2-gap note (annotation-only, no deletion) and disclosed as §7 item 7",
+    "oracle_untouched": "oracle.md §2(b)-b2 frozen expectation left byte-untouched (frozen-first invariant)"
+  },
+  "carrier_note": "bookkeeping transcription of the reviewer's stated b2 results; adds no acceptance of its own; reviewer_report.md and reviewer_report.sha256 untouched; no self-signing"
+}
