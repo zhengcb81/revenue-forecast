@@ -1322,3 +1322,34 @@ CW commit = `prompt_injection_guard.py d7125478…` + `prompt_injection.py 88154
 - **I-07-C = accepted_scoped 落定**：三件 `c5021799…`/`550b489d…`/`a4d48dd3…`；F-REV-2（17 runs 计数正）、F-REV-3（README 尺寸注记修、前像 `5ca0c271` 保）、F-REV-4（NVO token 注）均留痕修；holdout SEALED→EXECUTED 双结果留痕（SCAN PASS/RESOLVE 实测负例、`dfeb7c54…`）；复审面（report/sidecar/holdout35 件）0 字节。
 - **父动作**：① 批 8 提交推送；② **I-07-D 派单（19 卡链第 5 张）**；③ C1+F-REV-7 已入 §60 台账（修非卡面）；④ **F-REV-5 改线**=I-07-B 遗留 fingerprint+1 项按"二扫/ensure 触发"查（弃 missing-resolve 理论）；⑤ %TEMP%i07c 授权清理=执行；⑥ 下游引用带三声明+overall=false（既定）。
 - 链计分：I-06-A ✅ I-06-B ✅(+新面) I-07-B ✅ I-07-C ✅ → I-07-D。
+
+---
+
+## 六十二、【I-07-D 复审 accepted_scoped + 两裁定 + CI 修序列三卡开跑】2026-09-23 晚
+
+### 今日 CI 失败计数（owner 问）
+**4 次**：#309(batch-5c)/#310(batch-6)/#311(batch-7)/#312(batch-8) 全 failure（总312 run、末绿仍=9-20 #287）——与 §55 归因吻合（存量债未修，每推一红）。
+
+### I-07-D 复审 `1a1d1c05…`/27858 B 两裁定
+- **R1 F-F06-audit = NON-BLOCKING(option b)**：缺陷行证（L207/216 tuple 键、L228 str、L229 永不匹配=单向假阳性发生器）+ 同 reader 矛盾实证；**复审亲算三链 3/3+4/4+4/4 hash_ok** → 行证据独立于缺陷支路 → 行 PASS、KEEP-RED 正确（I-09-C F12 姿态）、F06A/B/C=行 PASS+审计 FAIL(品)红留非阻塞 → **F-F06-audit 入台账（发布注册表轨）**。
+- **R2 F-F05-cause → 台账（CW producer 轨，summarizer:168）**：源头吞+18 表扫描 cause 零命中=真失；F05=行 PASS+clause3-cause-FAIL 记档、不阻塞不格红。
+- FR-1(P2 落定必备)：§6 误植 F06C 机制于 F04、§7.1 权威、F04 首试字节不可复=erratum 标记；FR-2 快照6锚空转（复审26 重算0 失配）；FR-3 声明差1 空格注记；FR-4 +1 vs +2 措辞注。
+- 复审边界：20/20 锚三时点同、生产库 stat-only（-shm 仅 mtime 已披露）、0 网络/0 git/0 真 worker、242/242 JSON 解析。
+
+### CI 修序列三卡（并行开跑）
+1. **CW-GATE-UNBLOCK**（`9ffdd3d5`）：门 print GBK 崩+`archive_retired_evidence.py 19>7`（B3 引入）双根因、全门步状态表、changes.diff 待父应用→commit→`fcap:master` 推 3 提交。
+2. **RF-RATCHET-FIX**（`d4773dc7`）：`confidence32>23`+`model_extensions27>10` 修码不提帽、冻表 sha 不动、红绿变异。
+3. **RF-STEP9-TRIAGE**（`276da4a2`）：余12 逐项归因（末绿锚 #286/46bd8b16 双平台对照+家族分组+范围分级：现修/子卡/owner）。
+后续：CW 推成 → manifest wiki 钉更新 → RF 推 → CI 转绿评估（棘轮+12+钉三面全清后）。
+
+---
+
+## 六十三、【I-07-D 落定 + 两品缺正式立账】2026-09-23 晚
+
+### 立账（修不在卡面；随修序列/子卡执行）
+1. **F-F06-audit（发布注册表轨）**：`scripts/publication_registry.py:229` `claimed`（str）`not in by_generation`（tuple 键空间）⇒ 单向假阳性发生器、对任何 result 文件报 "unregistered claim"，与同 fresh reader `is_registered=true/registry_path_match/chain.ok` 直接矛盾（复审行证 L207/L216/L228/L229 + 三链 3/3+4/4+4/4 亲算 hash_ok）。裁定 R1=NON-BLOCKING、行证据 PASS、KEEP-RED 正确（I-09-C F12 姿态）。**修复面=锚级成员判定改值域匹配**（应查 `result_hashes` 集合而非键空间）——归发布注册表修复批。
+2. **F-F05-cause（CW producer 轨）**：`summarizer.py:164-170` `except (OSError,UnicodeError): failed+=1` 源头吞、cause/code/retryability 零持久（复审 18 表字段扫=0 命中）⇒ 违 I-07-D clause3 原因存续。裁定 R2=台账路由、F05 行 PASS+cause-FAIL 记档。**修复面=失败行持久化 cause/error_code/retryable 三字段**（表增列走 additive）。
+
+### I-07-D 落定
+三件：review `b7dba0d4…`/handoff `82bb03ac…`（含 ruling_R1/R2+final_cell_table+FR-1..4 全留痕）/qual `167c56d4…`；复审 report/oracle/binding/commands/diff/README **0 字节**；FR-1 erratum（§6 误植、§7.1 权威、F04 首试字节不可复）按落定条件写毕。**链计分：I-06-A ✅ I-06-B ✅(+新面) I-07-B ✅ I-07-C ✅ I-07-D ✅ =5/19**（+E2E/F-EE1 插卡）。
+清理授权执行：%TEMP%\i07d + %TEMP%\i07d_review。批 9=I-07-D 全证+本册。

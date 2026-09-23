@@ -1,0 +1,23 @@
+=== RF-STEP9-TRIAGE reproducer (WSL head arm) ===
+date_utc=2026-09-23T18:41:05Z
+file=tests/test_attestation.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+PYTHONPATH=/home/zhengcb/company-wiki/src
+cmd=python3 -m pytest tests/test_attestation.py -q
+F......                                                                  [100%]
+=================================== FAILURES ===================================
+___ AttestationTests.test_configured_provider_means_host_signed_publication ____
+
+self = <test_attestation.AttestationTests testMethod=test_configured_provider_means_host_signed_publication>
+
+    def test_configured_provider_means_host_signed_publication(self) -> None:
+        os.environ["REVENUE_ATTESTATION_PROVIDER"] = sys.executable
+>       self.assertTrue(attestation_capability())
+E       AssertionError: False is not true
+
+tests/test_attestation.py:72: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_attestation.py::AttestationTests::test_configured_provider_means_host_signed_publication
+1 failed, 6 passed in 0.39s
+PYTEST_RC=1

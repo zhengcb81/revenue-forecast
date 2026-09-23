@@ -1,0 +1,49 @@
+{
+  "cell": "F03",
+  "point": "(d) DB事务内锁等待 / F03",
+  "trigger": {
+    "location": "store.py BEGIN IMMEDIATE wait (busy_timeout=30000) -> error_taxonomy catalog_busy",
+    "lock_hold": {
+      "case": "F03",
+      "catalog": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i07d\\cases\\F03\\cwroot\\.source_catalog\\catalog.sqlite3",
+      "hold_s": 75.0,
+      "started": "2026-09-23T17:29:31.740565+00:00",
+      "lock": "BEGIN EXCLUSIVE acquired (isolation-only target)",
+      "locked_at": "2026-09-23T17:29:31.742259+00:00",
+      "released": "2026-09-23T17:30:46.742966+00:00",
+      "ok": true
+    },
+    "scan_elapsed": 34.515,
+    "scan_window_utc": [
+      1790184573.695332,
+      1790184608.2103322
+    ],
+    "overlap_ok": true,
+    "error_doc": {
+      "error": "database is locked",
+      "error_type": "catalog_busy",
+      "retryable": true,
+      "status": "failed"
+    },
+    "count": 1
+  },
+  "checks": {
+    "trigger_rc1": true,
+    "trigger_lock_wait_elapsed_ge25": true,
+    "trigger_error_catalog_busy": true,
+    "lock_held_across_scan": true,
+    "no_partial_write_at_fault": true,
+    "fault_stdout_empty": true,
+    "raw_preserved": true,
+    "recovery_scan_rc0": true,
+    "recovery_registered": true,
+    "recovery_no_download": true,
+    "recovery_raw_unchanged": true
+  },
+  "all_ok": true,
+  "raw_rcs": {
+    "scan_fault": 1,
+    "scan_recovery": 0
+  },
+  "decided_at": "2026-09-23T17:46:00.825422+00:00"
+}

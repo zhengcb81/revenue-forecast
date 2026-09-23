@@ -1,0 +1,128 @@
+=== RF-STEP9-TRIAGE reproducer (WSL head arm) ===
+date_utc=2026-09-23T18:41:21Z
+file=tests/test_zr601_asset_facts.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+PYTHONPATH=/home/zhengcb/company-wiki/src
+cmd=python3 -m pytest tests/test_zr601_asset_facts.py -q
+...FF.....                                                               [100%]
+=================================== FAILURES ===================================
+___________________ test_c1_negative_asset_drivers_rejected ____________________
+
+    def test_c1_negative_asset_drivers_rejected():
+        for field in ("opening_reserves", "additions", "depletion", "closing_reserves",
+                      "realized_price"):
+            drivers = _reserve_drivers()
+            drivers[field] = list(drivers[field])
+            drivers[field][1] = -1.0
+            with pytest.raises(ForecastInputError, match="cannot be negative"):
+>               _run("reserve_depletion", drivers)
+
+tests/test_zr601_asset_facts.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_zr601_asset_facts.py:45: in _run
+    return calculate_model_path(model, 0, ids, params, YEARS, scenario)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/forecast/segments.py:98: in calculate_model_path
+    drivers[driver] = resolve_driver_series(
+scripts/forecast/calc.py:120: in resolve_driver_series
+    require(lower <= value <= upper,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+message = 'driver opening_reserves outside permitted bounds [0.0, inf]: opening_reserves_2027_base'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: driver opening_reserves outside permitted bounds [0.0, inf]: opening_reserves_2027_base
+
+scripts/contracts/evidence.py:93: ForecastInputError
+
+During handling of the above exception, another exception occurred:
+
+    def test_c1_negative_asset_drivers_rejected():
+        for field in ("opening_reserves", "additions", "depletion", "closing_reserves",
+                      "realized_price"):
+            drivers = _reserve_drivers()
+            drivers[field] = list(drivers[field])
+            drivers[field][1] = -1.0
+>           with pytest.raises(ForecastInputError, match="cannot be negative"):
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: 'cannot be negative'
+E             Actual message: 'driver opening_reserves outside permitted bounds [0.0, inf]: opening_reserves_2027_base'
+
+tests/test_zr601_asset_facts.py:91: AssertionError
+_________________ test_c1_recovery_rate_out_of_range_rejected __________________
+
+    def test_c1_recovery_rate_out_of_range_rejected():
+        drivers = _reserve_drivers()
+        drivers["recovery_rate"] = [0.9, 1.5]  # ratio driver must be in [0, 1]
+        with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
+>           _run("reserve_depletion", drivers)
+
+tests/test_zr601_asset_facts.py:99: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_zr601_asset_facts.py:45: in _run
+    return calculate_model_path(model, 0, ids, params, YEARS, scenario)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/forecast/segments.py:98: in calculate_model_path
+    drivers[driver] = resolve_driver_series(
+scripts/forecast/calc.py:120: in resolve_driver_series
+    require(lower <= value <= upper,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+message = 'driver recovery_rate outside permitted bounds [0.0, 1.0]: recovery_rate_2027_base'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: driver recovery_rate outside permitted bounds [0.0, 1.0]: recovery_rate_2027_base
+
+scripts/contracts/evidence.py:93: ForecastInputError
+
+During handling of the above exception, another exception occurred:
+
+    def test_c1_recovery_rate_out_of_range_rejected():
+        drivers = _reserve_drivers()
+        drivers["recovery_rate"] = [0.9, 1.5]  # ratio driver must be in [0, 1]
+>       with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'must be between 0 and 1'
+E         Actual message: 'driver recovery_rate outside permitted bounds [0.0, 1.0]: recovery_rate_2027_base'
+
+tests/test_zr601_asset_facts.py:98: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_zr601_asset_facts.py::test_c1_negative_asset_drivers_rejected
+FAILED tests/test_zr601_asset_facts.py::test_c1_recovery_rate_out_of_range_rejected
+2 failed, 8 passed in 0.30s
+PYTEST_RC=1

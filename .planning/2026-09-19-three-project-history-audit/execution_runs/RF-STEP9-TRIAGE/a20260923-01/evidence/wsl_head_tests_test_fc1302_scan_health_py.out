@@ -1,0 +1,92 @@
+=== RF-STEP9-TRIAGE reproducer (WSL head arm) ===
+date_utc=2026-09-23T18:41:11Z
+file=tests/test_fc1302_scan_health.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+PYTHONPATH=/home/zhengcb/company-wiki/src
+cmd=python3 -m pytest tests/test_fc1302_scan_health.py -q
+F.F                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_recurring_unchanged_errors_do_not_fail __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-zhengcb/pytest-3/test_recurring_unchanged_error0')
+
+    def test_recurring_unchanged_errors_do_not_fail(tmp_path: Path):
+        """The production case (findings 62): an empty user file re-reported
+        unchanged every scan must NOT fail the health check."""
+        m = IsolatedLake(tmp_path, seed="fc1302").build()
+        runs = tmp_path / "runs"
+        manifest = _manifest(tmp_path)
+        _inject(m.catalog_path, "completed_with_errors", {
+            "errors": 1,
+            "new_errors": 0,
+            "error_details": [
+                {"error": "SourceManifestError: source file is empty",
+                 "relative_path": "医药健康/医疗器械选股/data/Product_Revenue_Forecast_Model.xlsx",
+                 "root_id": "dropbox_stock",
+                 "unchanged": True},
+            ],
+        })
+        proc = _run(m.catalog_path, runs, manifest)
+>       assert proc.returncode == 0, f"recurring unchanged error must not fail: {proc.stdout}"
+E       AssertionError: recurring unchanged error must not fail: {
+E          "triplet": {
+E           "heads": {
+E            "revenue": "b0d016a645f52ce914197629b3ca5995609d9e89",
+E            "filing": "89c8bdb2cfba4d88720d005d0558f422957e8ade",
+E            "wiki": "5d725294304a1edb1731bd5de3720fe3608b00f4"
+E           },
+E           "manifest_missing": [
+E            "revenue"
+E           ]
+E          },
+E          "policy_freshness": {
+E           "declared": "b5143df4c833",
+E           "matches": true
+E          },
+E          "samples": {
+E           "bound_artifacts": 3,
+E           "producer_events": 6
+E          },
+E          "scan_health": {
+E           "completed_with_errors": 1,
+E           "interrupted": 0,
+E           "new_errors_24h": 0,
+E           "recurring_unchanged_runs_24h": 1
+E          },
+E          "legacy_hits": [],
+E          "latency": {
+E           "resolve_sample_sec": 0.0002
+E          },
+E          "roots_fingerprint": {
+E           "companies": 36,
+E           "dayu": -1,
+E           "dropbox": -1
+E          }
+E         }
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/usr/bin/python3', '/home/zhengcb/rf-ci-repro/tools/daily_t2_runner.py', '--catalog', '/tmp/py...es": 36,\n  "dayu": -1,\n  "dropbox": -1\n }\n}\n', stderr="PROBLEMS: manifest triplet commits missing: ['revenue']\n").returncode
+
+tests/test_fc1302_scan_health.py:79: AssertionError
+__________________ test_interrupted_delta_beyond_budget_fails __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-zhengcb/pytest-3/test_interrupted_delta_beyond_0')
+
+    def test_interrupted_delta_beyond_budget_fails(tmp_path: Path):
+        """Interrupted growth beyond the frozen budget fails via the previous
+        report comparison."""
+        m = IsolatedLake(tmp_path, seed="fc1302").build()
+        runs = tmp_path / "runs"
+        manifest = _manifest(tmp_path)
+        p1 = _run(m.catalog_path, runs, manifest)
+>       assert p1.returncode == 0
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/usr/bin/python3', '/home/zhengcb/rf-ci-repro/tools/daily_t2_runner.py', '--catalog', '/tmp/py...es": 36,\n  "dayu": -1,\n  "dropbox": -1\n }\n}\n', stderr="PROBLEMS: manifest triplet commits missing: ['revenue']\n").returncode
+
+tests/test_fc1302_scan_health.py:109: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_fc1302_scan_health.py::test_recurring_unchanged_errors_do_not_fail
+FAILED tests/test_fc1302_scan_health.py::test_interrupted_delta_beyond_budget_fails
+2 failed, 1 passed in 2.07s
+PYTEST_RC=1

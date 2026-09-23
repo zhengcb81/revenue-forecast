@@ -1,0 +1,132 @@
+{
+ "probe_invocations": "{\"scan:SourceCatalog.scan\": {\"raised\": true, \"exc\": \"AttributeError\"}, \"read:resolver._sha256_of_file\": {\"raised\": true, \"exc\": \"AttributeError\"}, \"scan:scanner.scan_catalog\": {\"raised\": true, \"exc\": \"TypeError\"}, \"read:verify_artifact_reads\": {\"raised\": true, \"exc\": \"CompanyWikiSourceError\"}, \"provider:JsonCommandAdapter.discover\": {\"raised\": true, \"exc\": \"TypeError\"}, \"provider:Session.request\": {\"raised\": true, \"exc\": \"TypeError\"}}",
+ "probe_stderr": "",
+ "probe_returncode": 0,
+ "wiring": {
+  "company_wiki.source_catalog.adapter_process.JsonCommandAdapter.discover": {
+   "status": "wrapped",
+   "counter": "provider"
+  },
+  "company_wiki.source_catalog.adapter_process.JsonCommandAdapter.fetch": {
+   "status": "wrapped",
+   "counter": "provider"
+  },
+  "company_wiki.source_catalog.dayu_cli_adapter.DayuCliDownloadAdapter.discover": {
+   "status": "wrapped",
+   "counter": "provider"
+  },
+  "company_wiki.source_catalog.dayu_cli_adapter.DayuCliDownloadAdapter.fetch": {
+   "status": "wrapped",
+   "counter": "provider"
+  },
+  "requests.sessions.Session.request": {
+   "status": "wrapped",
+   "counter": "provider"
+  },
+  "company_wiki.source_catalog.service.SourceCatalog.scan": {
+   "status": "wrapped",
+   "counter": "scan"
+  },
+  "?.<module 'company_wiki.source_catalog.scanner' from 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\src\\\\company_wiki\\\\source_catalog\\\\scanner.py'>.scan_catalog": {
+   "status": "wrapped",
+   "counter": "scan"
+  },
+  "?.<module 'company_wiki.source_catalog.resolver' from 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\src\\\\company_wiki\\\\source_catalog\\\\resolver.py'>._sha256_of_file": {
+   "status": "wrapped",
+   "counter": "read"
+  },
+  "?.<module 'company_wiki.source_catalog.resolver' from 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\src\\\\company_wiki\\\\source_catalog\\\\resolver.py'>._read_verified_bytes": {
+   "status": "wrapped",
+   "counter": "read"
+  },
+  "company_wiki.source_contract.source_manifest.SourceManifest.from_file": {
+   "status": "wrapped",
+   "counter": "read"
+  },
+  "?.<module 'company_wiki_source' from 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\scripts\\\\company_wiki_source.py'>.verify_artifact_reads": {
+   "status": "wrapped",
+   "counter": "read"
+  },
+  "company_wiki.source_catalog.service.SourceCatalog.normalize": {
+   "status": "wrapped",
+   "counter": "producer"
+  },
+  "company_wiki.source_catalog.service.SourceCatalog.extract_sections": {
+   "status": "wrapped",
+   "counter": "producer"
+  },
+  "company_wiki.source_catalog.service.SourceCatalog.summarize": {
+   "status": "wrapped",
+   "counter": "producer"
+  },
+  "?.<module 'company_wiki.source_catalog.normalizer' from 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\src\\\\company_wiki\\\\source_catalog\\\\normalizer.py'>.normalize_catalog": {
+   "status": "wrapped",
+   "counter": "producer"
+  },
+  "?.<module 'company_wiki.source_catalog.summarizer' from 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\src\\\\company_wiki\\\\source_catalog\\\\summarizer.py'>.summarize_catalog": {
+   "status": "wrapped",
+   "counter": "producer"
+  },
+  "?.<module 'company_wiki.source_catalog.section_extractor' from 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\src\\\\company_wiki\\\\source_catalog\\\\section_extractor.py'>.extract_sections_catalog": {
+   "status": "wrapped",
+   "counter": "producer"
+  },
+  "?.<module 'company_wiki.source_catalog.llm_summarizer' from 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\src\\\\company_wiki\\\\source_catalog\\\\llm_summarizer.py'>.summarize_catalog_with_llm": {
+   "status": "wrapped",
+   "counter": "producer"
+  }
+ },
+ "counter_totals_after_probe": {
+  "scan": 2,
+  "read": 2,
+  "provider": 2
+ },
+ "catalog_rowcounts_before": {
+  "activation_journal": 0,
+  "artifacts": 0,
+  "catalog_meta": 1,
+  "document_entities": 0,
+  "document_fingerprint_state": 0,
+  "document_restore_audit": 0,
+  "document_retire_audit": 0,
+  "documents": 0,
+  "entities": 0,
+  "evidence_spans": 0,
+  "llm_summary_failures": 0,
+  "locations": 0,
+  "producer_events": 0,
+  "remediation_proposals": 0,
+  "roots": 0,
+  "scan_runs": 0,
+  "source_metadata_assertions": 0,
+  "sources": 0
+ },
+ "catalog_rowcounts_after": {
+  "activation_journal": 0,
+  "artifacts": 0,
+  "catalog_meta": 1,
+  "document_entities": 0,
+  "document_fingerprint_state": 0,
+  "document_restore_audit": 0,
+  "document_retire_audit": 0,
+  "documents": 0,
+  "entities": 0,
+  "evidence_spans": 0,
+  "llm_summary_failures": 0,
+  "locations": 0,
+  "producer_events": 0,
+  "remediation_proposals": 0,
+  "roots": 0,
+  "scan_runs": 0,
+  "source_metadata_assertions": 0,
+  "sources": 0
+ },
+ "zero_insert_proof": true,
+ "verdict": {
+  "provider_wired": true,
+  "scan_wired": true,
+  "read_wired": true,
+  "producer_wired": true,
+  "producer_note": "producer entries cannot be invoked inertly without a real document; wiring is proven by wrap status, invocation proof comes from case runs (expected 0 invocations on valid reuse)"
+ }
+}

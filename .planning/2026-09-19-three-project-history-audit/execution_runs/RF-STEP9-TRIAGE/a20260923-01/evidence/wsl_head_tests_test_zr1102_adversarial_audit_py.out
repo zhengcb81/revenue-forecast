@@ -1,0 +1,59 @@
+=== RF-STEP9-TRIAGE reproducer (WSL head arm) ===
+date_utc=2026-09-23T18:41:16Z
+file=tests/test_zr1102_adversarial_audit.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+PYTHONPATH=/home/zhengcb/company-wiki/src
+cmd=python3 -m pytest tests/test_zr1102_adversarial_audit.py -q
+.....F...                                                                [100%]
+=================================== FAILURES ===================================
+_____________________ test_c4_mutation_patrol_capabilities _____________________
+
+    def test_c4_mutation_patrol_capabilities():
+        import mutation_patrol as mp
+    
+        # patrol runs and yields mutation results on the forecast receipt
+>       results = mp.patrol(seed=42, samples=3)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_zr1102_adversarial_audit.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/mutation_patrol.py:153: in patrol
+    mutant = mutate(golden, rng)
+             ^^^^^^^^^^^^^^^^^^^
+tools/mutation_patrol.py:79: in field_delete
+    return _resign(mutant)
+           ^^^^^^^^^^^^^^^
+tools/mutation_patrol.py:48: in _resign
+    result["publication_receipt"] = build_publication_receipt(
+scripts/revenue_publication.py:396: in build_publication_receipt
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+message = "attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)"
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)
+
+scripts/contracts/evidence.py:93: ForecastInputError
+=========================== short test summary info ============================
+FAILED tests/test_zr1102_adversarial_audit.py::test_c4_mutation_patrol_capabilities
+1 failed, 8 passed in 3.60s
+PYTEST_RC=1

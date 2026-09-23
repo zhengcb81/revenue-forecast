@@ -1,0 +1,220 @@
+{
+  "card": "I-07-D",
+  "attempt": "a20260923-01",
+  "date": "2026-09-23",
+  "card_source": {
+    "path": "PLAN/execution_v2/card_I-07-D.md",
+    "sha256": "b54f4bc8f3eb1810f66a6a18f37b55b85bcdc98229c5493c11d2ad326228c553",
+    "bytes": 1295,
+    "read": "verbatim; 5 clauses + 退出 rule are the acceptance face"
+  },
+
+  "input_pins": {
+    "matrix": {
+      "path": "PLAN/execution_v2/scenario_matrix.md",
+      "sha256": "0dec23cd10f00efd6ad82cf923552bd46c1763bcf9f740422f51f4973292299f",
+      "bytes": 6219,
+      "fault_section": "L47-58 「## 故障与恢复」 = F01-F06 six rows + L58 scratch-only/no-trigger-is-invalid rule",
+      "note": "same sha pinned by I-07-B and I-07-C"
+    },
+    "sample_manifest": {
+      "path": "PLAN/execution_v2/sample_manifest.json",
+      "sha256": "d5d0bb92da9eee92666459ccf344d549343008db8bf32fd1257dbf6f5f3ec851"
+    },
+    "dedicated_card_oracles": [
+      {
+        "path": "PLAN/execution_v2/card_I-09-C.md",
+        "sha256": "59e9d71df2100c226e4b37880105e85df37681f6592db16856ee8a117baf23c3",
+        "use": "primary dedicated oracle for point (f): its 「正反例与故障注入」 P-C1..P-C5 table + 按序动作 1-6 (barrier/hook per point, true process termination, fresh reader, two idempotent recoveries, kill only new_run-manifest PIDs)"
+      },
+      {
+        "path": "PLAN/execution_runs/I-09-C/a20260922-01/oracle.md",
+        "sha256": "ccd1ea510b01a9fd3d602fcda6b912631954e775e0c4305ec5d2e86389b28144",
+        "use": "I-09-A frozen fault table F1-F12 transcribed (§B) + rc semantics split (§C) + per-point evidence list (§D); consumed WITH its addendum"
+      },
+      {
+        "path": "PLAN/execution_runs/I-09-A/a20260919-01/decision.md",
+        "sha256": "94a27b8ae31cb7467bf9910714e90777a1cec7790e3d6bca364c9e4062db8a57",
+        "use": "origin of the F1-F12 fault table (§7); pinned as quoted by I-09-C oracle"
+      },
+      {
+        "path": "PLAN/execution_runs/I-09-A/a20260919-01/oracle.md",
+        "sha256": "d7f6b102ecc99a564ff6977b69a7b5e8fe6af9edcc4ae356c041426891e6dc8d"
+      },
+      {
+        "path": "PLAN/execution_runs/I-09-A/a20260919-01/oracle_addendum.md",
+        "sha256": "de7fa1f335e4c4054e6cccdb7d8c25160518bee0efc50bc1091de9392715bcb5",
+        "use": "MUST be read together with the F table (c02/c03 wording corrections, c04 frozen expectation not holding)"
+      },
+      {
+        "path": "PLAN/execution_v2/card_I-04-E.md",
+        "use": "dedicated oracle for point (a): HTTP403 fixture expectations (F-E1/F-E2) — upstream code/stage/request_id/retryable preserved verbatim, never rewritten to retryable=false (pin: see evidence/input_pins_raw.txt companion read of card; sha measured with plan inputs)"
+      },
+      {
+        "path": "PLAN/execution_runs/I-07-B/a20260923-01/oracle.md",
+        "sha256": "b92b6650d215cf8995f8fae71c3ef22ce2b5f10e2140d7f43318fd4c36c34494",
+        "use": "REGFAIL/注册失败恢复 precedent (oracle §3 REGFAIL rows, C4.3) + counter-wiring spec (§5) reused for this card's spy"
+      },
+      {
+        "path": "PLAN/execution_runs/I-07-B/a20260923-01/handoff.json",
+        "sha256": "e43cf258e78f1ddc2085ef5e8c5d6cb3e2a730179cb18f566c6da4e15acb9e99",
+        "use": "accepted_scoped carries: REGFAIL measured shape (catalog_busy rc1 elapsed 37s, recovery provider delta 0), F1 entry-never-scans gap (relevant to point b), F2 structured-recovery gap"
+      },
+      {
+        "path": "PLAN/execution_runs/I-00-B/a20260919-01/binding.json",
+        "sha256": "fdb2a59890e64c42f4a4566c8aaa6eefaec8e867c01779974178048d9fbf75f0",
+        "use": "argv/cwd/interpreter contract (frozen entry forms; NO --config invention; isolation via DI flags)"
+      },
+      {
+        "path": "PLAN/execution_runs/I-00-B/a20260919-01/commands.json",
+        "sha256": "f8a397ecd306b03f03385ad25c28667338c85e3301277414ddf4013f3c9a24df"
+      }
+    ],
+    "gate_runs": {
+      "I-07-B": {"attempt": "a20260923-01", "status": "accepted_scoped"},
+      "I-09-C": {"attempt": "a20260922-01", "status": "accepted_scoped"},
+      "I-00-B": {"attempt": "a20260919-01", "status": "accepted_scoped"}
+    }
+  },
+
+  "product_anchors_sha256": {
+    "RF/scripts/source_preparation.py": "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+    "RF/scripts/filing_fetch_client.py": "b281e6d15e016dd067f21709e71638e3c052370e07381cfc7ea7ccd071deb3bc",
+    "RF/scripts/company_wiki_source.py": "7d1bd8f9d9122dc4a99465a8f9201e855417a5d0756f5bfdd6d404f7ca9e48ce",
+    "RF/scripts/revenue_forecast.py": "2a2dfede7941b0fac972d802d25eb71f798c1ebdb83226bbf8528481b9669e36",
+    "RF/scripts/publication_registry.py": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344",
+    "RF/scripts/revenue_publication.py": "bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0",
+    "FF/scripts/fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+    "CW/source_catalog/cli.py": "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
+    "CW/source_catalog/service.py": "32b76e6d7f9879a2c7280f20180a8584c61ec11d706dbd70e3d019fd8cb48fa5",
+    "CW/source_catalog/store.py": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615",
+    "CW/source_catalog/worker.py": "e83179915333eb472807b15a0580d93dcf280caadc31b0099988a3b744c469c6",
+    "CW/source_catalog/normalizer.py": "772075ed0d1c540aeb2a0feea17d7735a28c0aba981edfbdefa7297a57a06cff",
+    "drift_note": "source_preparation/revenue_forecast/CW cli drifted vs I-00-B pins (I-07-B decision J6, EOL-only for revenue_forecast); this card binds the CURRENT values above and runs against them"
+  },
+
+  "product_fault_paths_cited": {
+    "(a) provider": [
+      "CW adapter_process.py:125 JsonCommandAdapter._run — rc!=0 parses structured stderr; :171 exc.error_code=error_obj.code, :172-174 exc.retryable, :177 fallback adapter_process_failed, :178 raise",
+      "CW acquisition_config.py:126-153 — adapter command is CONFIG (interface json_command_v1/dayu_cli_v1): a fixture script is a legitimate provider (same seam filing-fetch tests use: filing-fetch/tests/e2e_support/spy_adapter.py:40-43)",
+      "CW close_gap.py:385-405 — bounded retry reads AdapterProcessError.retryable; :397 attempts>=3 or not retryable -> _fail(journal outcome=failed)",
+      "FF fetch_filing.py:234-241 rc!=0 -> FilingFetchError(code=_classify_wiki_error(stderr), stage); :1134-1167 stdout envelope {error_code,retryable,stage,attempts,...} rc2; filing_contracts.py:63-69 retryable = code in {upstream_error,worker_paused,catalog_locked,catalog_busy,db_timeout}",
+      "RF filing_fetch_client.py:232-248 parses upstream doc preserving status/error_code/retryable/candidates into _ClientError; :270-286 _emit_error to stderr; :352-359 rc2",
+      "RF source_preparation.py:109-113 embeds client stderr tail into RuntimeError; :221-224 stderr {error_code:upstream} rc3"
+    ],
+    "(b) raw commit -> scan": [
+      "CW canonical_writer.py:181-184 raw commit (_atomic_copy + provenance) THEN :185-193 scan_catalog inside CanonicalSourceWriter.import_staged (:136) — same process, sequential: the crash window is between :184 and :185",
+      "kill consequence: wiki subprocess dies -> FF fetch_filing.py:234-241 -> RF source_preparation.py:109-113 RuntimeError -> stderr error_code=upstream rc3",
+      "recovery: next scan_catalog registers the orphan file (scanner.py:1089 locations, :1705 documents) + sha dedup canonical_writer.py:293 _existing_original"
+    ],
+    "(c) scan error": [
+      "CW scanner.py:964-976 per-file except OSError -> errors+=1, error_details, continue (scan proceeds)",
+      "CW scanner.py:1209 scan_runs.status = completed_with_errors if errors else completed; CLI rc stays 0 (cli.py:1560-1561)",
+      "readers accept both statuses: reader.py:285, store.py:831/1288"
+    ],
+    "(d) in-transaction lock wait": [
+      "CW store.py:990 sqlite3.connect(timeout=30.0) + :994 PRAGMA busy_timeout=30000; writers BEGIN IMMEDIATE via :1018 transaction() / :1038 coalesced",
+      "raw sqlite3.OperationalError('database is locked') after 30s wait -> CW error_taxonomy.py:26/39/68-70 classify -> {error_type:catalog_busy,retryable:true} emitted cli.py:1551-1559 rc1",
+      "inherited precedent: I-07-B REGFAIL-HK scan1 evidence.json rc1, elapsed 37.002s, stderr catalog_busy retryable:true, catalog_count_delta {}"
+    ],
+    "(e) producer": [
+      "CW summarizer.py:135 summarize_catalog — :144-155 SQL picks docs with normalized artifact and NO summary; :163-170 read_text of normalized artifact, except (OSError,UnicodeError): failed+=1 continue; :230-265 summary artifacts INSERT (role summary); :270 ProcessingReport(op,completed,skipped,partial,0,failed)",
+      "CW cli.py:957-969 producer subcommands normalize/summarize/extract-sections dispatch; success prints report json rc0 (cli.py:1560)",
+      "role DAG: artifact_dag.ROLE_DEPENDENCIES summary:[normalized] (I-07-B spy wiring wraps SourceCatalog.summarize/normalize/extract_sections count-on-entry)",
+      "RF side needs tracking: source_preparation.py:134-138 + company_wiki_source.py:143-151 producer_events = requested missing roles (never runs producers itself)"
+    ],
+    "(f) publish commit boundary": [
+      "RF revenue_core.py:471-483 register_publication BEFORE member writes; RegistryError -> ForecastInputError('formal publication failed: registry unavailable') -> revenue_forecast.py:120-122 rc2",
+      "RF publication_registry.py:95-113 _append (precheck _read_entries, chain hashes, write/flush/fsync :109-112); is_registered :188-190; audit conflict :207-221 / unregistered-claim :228-233; env REVENUE_PUBLICATION_REGISTRY :30/:40-46",
+      "RF revenue_forecast.py:114-115 JSON member first, :118-119 markdown member second; _atomic_write_text :22-35 (fsync :32, os.replace :33 = per-member commit); main return :123",
+      "no publication_id in production; identity = input_sha256; repeat formal run appends another line, same result_sha256 => no audit conflict; members atomically replaced",
+      "NOTE: I-09-C hook target publication_registry.commit_publication does NOT exist in current production (repo grep empty) — this card's hooks wrap only targets that exist; commit-boundary kill point = revenue_forecast.main return:before"
+    ]
+  },
+
+  "interpreter": {
+    "python": "ATT/iso/venv/Scripts/python.exe (3.13.9)",
+    "created": "python -m venv from the I-00-A iso venv template python (same recipe as I-07-B); site-packages transplanted offline from I-07-B venv (yaml 6.0.3, requests 2.34.2, pytest 9.1.1)",
+    "global_miniconda": "FORBIDDEN (editable dayu-agent hook) — not used",
+    "probe": "VENV_OK 3.13.9; yaml/requests/pytest/sqlite3 import OK"
+  },
+
+  "cwd_and_argv_contract": {
+    "entry_form_frozen_by_I-00-B": ["<PY>", "-X", "utf8", "-B", "RF/scripts/source_preparation.py", "--request-file", "<req>", "--timeout-seconds", "300", "--company-wiki-config", "<iso json>", "--filing-fetch-root", "C:/Users/郑曾波/Projects/filing-fetch", "(--allow-download)"],
+    "entry_cwd": "ATT (attempt dir), never a repo root",
+    "scan_form": ["<PY>", "-X", "utf8", "-B", "-m", "company_wiki.source_catalog.cli", "--config", "<cell>/cwroot/config/source_catalog.yaml", "scan"],
+    "producer_forms": ["<PY> ... -m company_wiki.source_catalog.cli --config <cell yaml> normalize|summarize|extract-sections"],
+    "publish_form": "harness/writer.py spawns <PY> harness/writer.py --run-dir ... --input ... --output ... --markdown ... --fault ... which runs revenue_forecast.main() with argv [revenue_forecast.py, input, --output, --markdown] inside iso/rf (I-09-C pattern)",
+    "chain_capture_forms": ["FF/scripts/fetch_filing.py --request-file/--stdin ... (direct, to capture the full envelope)", "RF/scripts/filing_fetch_client.py (direct, to capture the full client stderr doc)"],
+    "network": "disabled for every command in commands.json; provider served by frozen local fixtures only"
+  },
+
+  "isolation": {
+    "cells": "%TEMP%\\i07d\\cases\\<F-cell> — fresh per F-cell (F01..F05 cwroot; F06 sub-cases get fresh evidence/state + registry paths), MAX_PATH rationale inherited from I-07-B build_iso",
+    "cell_build": "build_iso.py: base template iso/base/cwroot (catalog created by product CatalogStore._initialize, 18 tables) + per-case copytree; raw/sidecar copies sha-verified; configs rebound (catalog_dir + single company_raw root); security_master copied verbatim",
+    "registry": "per-case publication registry at evidence/cases/<sub>/state/registry/publications.jsonl via env REVENUE_PUBLICATION_REGISTRY (I-09-C child_env)",
+    "iso_rf": "ATT/iso/rf = read-only copy of current RF scripts/+config/+references used by the publication writer (zero product edits; hooks installed in-process only)",
+    "allowed_write_roots": ["ATT/** (attempt dir)", "%TEMP%\\i07d\\**"],
+    "forbidden": ["any production write (RF/CW/FF trees, production .source_catalog catalog+derived, production artifacts/registry)", "real worker/producer process termination", "git (no git commands at all)", "network (no live provider calls)", "killing any PID not registered in this run's pid manifest"]
+  },
+
+  "spy_wiring": {
+    "mechanism": "ATT/harness/spy/sitecustomize.py FIRST on PYTHONPATH; gated by env I07D_SPY_DIR (per-case counters dir); count-on-entry wrappers fire the event BEFORE delegation (never INSERT-derived) — mechanism ported from I-07-B sitecustomize (sha 58da8b36e45a734a2ca3660345b04d95a68e7cb1bfd9fab870ad5ee8151d042b)",
+    "counters": {
+      "provider": ["JsonCommandAdapter.discover", "JsonCommandAdapter.fetch", "DayuCliDownloadAdapter.discover", "DayuCliDownloadAdapter.fetch", "requests.sessions.Session.request", "(frozen-sim replacements when I07D_SIM_FROZEN_META set)"],
+      "scan": ["service.SourceCatalog.scan", "scanner.scan_catalog"],
+      "read": ["resolver._sha256_of_file", "resolver._read_verified_bytes", "SourceManifest.from_file", "company_wiki_source.verify_artifact_reads"],
+      "producer": ["SourceCatalog.normalize/summarize/extract_sections", "normalizer.normalize_catalog", "summarizer.summarize_catalog", "section_extractor.extract_sections_catalog", "llm_summarizer.summarize_catalog_with_llm"]
+    },
+    "events": "$I07D_SPY_DIR/events.jsonl schema {counter,module,qualname,pid,t,simulated,...detail} + wiring.json status map",
+    "fault_arms_via_spy": {
+      "kill_before_scan (F04)": "armed by env I07D_FAULT=kill_before_scan: the scanner.scan_catalog wrapper writes pid_<pid>.json manifest + barrier_<pid>.json into I07D_STATE_DIR, sleeps forever; releases only if resumed (writes pid_<pid>.released.json — its ABSENCE after kill proves real termination)",
+      "arm scope": "env is set ONLY for the F04 run of the F04 cell; every other run has no arm"
+    },
+    "wprobe": "run_case.py wprobe re-run: each counter +1 on real invocation, zero_insert_proof before==after on a fresh product-schema catalog"
+  },
+
+  "per_case_snapshots": {
+    "before_all": "evidence/snapshot_before.json — 26-chain-anchor hashes + production catalog stat-only identity + 3-sample raw/sidecar rehash (snapshot.py port, anchors re-pointed to card_I-07-D inputs)",
+    "per_cell": "evidence/cases/<F>/initial_state.json — asset hashes, catalog table counts, worker-control absence, iso file snapshot (rel/bytes/sha256) taken BEFORE any judged run in that cell",
+    "per_run": "counters/before_*.json + after_*.json deltas; catalog_counts before/after; raw/sidecar/artifact rehash before/after; stdout/stderr/rc raw files per run",
+    "after_all": "evidence/snapshot_after.json (same shape; anchors + samples must equal before) + evidence/iso_final.json + per-cell after-state",
+    "no_cross_pollution_proof": "each F-cell lives in its own %TEMP%\\i07d\\cases\\<F> tree with its own catalog; initial_state.json hashes differ per cell; runs record per-cell counters dirs (no shared baseline)"
+  },
+
+  "delta_accounting_spec": {
+    "mechanism": "spy count-on-entry totals snapshotted before/after EVERY run (fault run, clear, retry) + catalog row deltas + file inventory deltas (raw/sidecar/derived/member files with sha256)",
+    "no_full_rebuild_rule": "recovery runs re-issue ONLY the original faulted entry (no bulk rebuild commands); the delta table must show: F01 recovery downloads=1 simulated & fault-run downloads=0; F02/F03/F04 recovery provider delta=0 (no re-download); F05 recovery adds ONLY the missing role (summary+1, normalized row sha/created_at unchanged); F06 recovery audit clean, is_registered true, P0/history rows never deleted, members hash-identical (history line count may grow by append-only semantics — disclosed, per I-09-C P-C2 precedent)",
+    "masking_exposure": "if recovery required rebuilding everything, the per-role/per-counter deltas would show it; any unexpected re-download or re-produce is a FINDING, never absorbed"
+  },
+
+  "kill_scope_spec": {
+    "manifest": "target process itself writes pid_<pid>.json {pid, parent_pid, argv/sys.argv, cwd, registered_at, cell} into I07D_STATE_DIR before the barrier",
+    "gate": "kill allowed ONLY when pid_<pid>.json AND barrier_<pid>.json both exist for the polled pid, AND cmdline+cwd contain the F-cell path under %TEMP%\\i07d (or ATT for entry-side children), AND the process is alive",
+    "mechanism": "hard_kill = Win32 OpenProcess(PROCESS_TERMINATE) -> TerminateProcess(handle, 4242) (KILL_EXIT_CODE=4242; any other non-zero rc is the product's own); finally blocks do NOT run",
+    "post_checks": "target gone (GetExitCodeProcess != STILL_ACTIVE); no pid_<pid>.released.json (barrier never resumed); no normal-exit record",
+    "real_worker_assertion": "process census (Win32_Process pid+cmdline) captured before/after the matrix; every killed PID ∈ this run's manifests; zero pre-existing processes from the census are dead afterwards (real workers untouched)",
+    "precedent": "I-09-C run_fault_matrix.py kill gate + writer pid manifest discipline (harness/common.py hard_kill, KILL_EXIT_CODE=4242)"
+  },
+
+  "hooks": {
+    "file": "ATT/harness/d_hooks.py (adapted from I-09-C harness/i09c_hooks.py sha bced2576f54c1d901395a5a96bf1139e2542080860b4edd3efe235f4511013b6)",
+    "design": "product files NOT edited; wraps installed in-process inside the harness writer subprocess ONLY when --fault != none; every point appends hook_trace_<pid>.jsonl; kill grammar kill:<point> (barrier+sleep), err grammar raises real OSError",
+    "wrap_targets_existing_in_current_production": ["revenue_forecast.run_forecast", "revenue_forecast.prepare_forecast", "revenue_forecast._atomic_write_text (role by call order: 1=output_json, 2=output_markdown)", "revenue_forecast.main (return:before)", "publication_registry._append"],
+    "dropped_target": "publication_registry.commit_publication — ABSENT in current production; H6 omitted (install would crash); commit-boundary point = revenue_forecast.main return:before"
+  },
+
+  "changes_policy": {
+    "allowlist": "ATT/** only (harness, iso copies, evidence, fixtures) + %TEMP%\\i07d\\**",
+    "product_diff": "expected ZERO — anchors_changed must be [] in changes.diff",
+    "config_edits": "isolated per-cell configs only (e.g. F01 cell source_acquisition.yaml command -> fixture script; F05 cell artifact row path relocation) — recorded as isolated-config diffs inside changes.diff"
+  },
+
+  "pre_binding_disclosures": [
+    "attempt dir + offline venv + harness scaffolding copies (from I-07-B/I-09-C attempts) were created BEFORE this binding file as step-1/2 setup; no product/judged run has been executed yet",
+    "evidence/input_pins_raw.txt = raw sha256 list of every pinned input",
+    "oracle.md freezes all expectations BEFORE the first judged run (step 4)"
+  ],
+
+  "binding_status": "bound"
+}

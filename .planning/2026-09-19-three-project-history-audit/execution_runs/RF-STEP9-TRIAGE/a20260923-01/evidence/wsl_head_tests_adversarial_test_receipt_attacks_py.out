@@ -1,0 +1,62 @@
+=== RF-STEP9-TRIAGE reproducer (WSL head arm) ===
+date_utc=2026-09-23T18:41:02Z
+file=tests/adversarial/test_receipt_attacks.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+PYTHONPATH=/home/zhengcb/company-wiki/src
+cmd=python3 -m pytest tests/adversarial/test_receipt_attacks.py -q
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+_ ReceiptAttackTests.test_context_fabrication_is_rejected_by_final_validation __
+
+self = <adversarial.test_receipt_attacks.ReceiptAttackTests testMethod=test_context_fabrication_is_rejected_by_final_validation>
+
+    def test_context_fabrication_is_rejected_by_final_validation(self) -> None:
+        # A VerificationContext copied from a legit run with fabricated
+        # gate_ids can produce a receipt — but the final validator recomputes
+        # the gates from the result and must reject the mismatch.
+        from revenue_report import validate_published_forecast
+    
+        result = run_forecast(forecast_document())
+        legit_context = validate_published_forecast(
+            result, result["input_document"]
+        )
+        forged_context = copy.copy(legit_context)
+        forged_context.executed_gate_ids = ["output_recomputation", "input_contract"]
+>       receipt = build_publication_receipt(
+            result, forged_context, attestation_status="host_signed"
+        )
+
+tests/adversarial/test_receipt_attacks.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/revenue_publication.py:396: in build_publication_receipt
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+message = "attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)"
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)
+
+scripts/contracts/evidence.py:93: ForecastInputError
+=========================== short test summary info ============================
+FAILED tests/adversarial/test_receipt_attacks.py::ReceiptAttackTests::test_context_fabrication_is_rejected_by_final_validation
+1 failed, 2 passed in 0.40s
+PYTEST_RC=1

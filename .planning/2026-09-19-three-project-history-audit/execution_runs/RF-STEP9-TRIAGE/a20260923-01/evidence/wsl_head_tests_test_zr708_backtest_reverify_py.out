@@ -1,0 +1,64 @@
+=== RF-STEP9-TRIAGE reproducer (WSL head arm) ===
+date_utc=2026-09-23T18:41:23Z
+file=tests/test_zr708_backtest_reverify.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+PYTHONPATH=/home/zhengcb/company-wiki/src
+cmd=python3 -m pytest tests/test_zr708_backtest_reverify.py -q
+...F...                                                                  [100%]
+=================================== FAILURES ===================================
+________________ test_c2_accuracy_record_consumed_by_confidence ________________
+
+    def test_c2_accuracy_record_consumed_by_confidence():
+        evaluation = evaluate_snapshot(
+            create_snapshot(forecast_document(), "v1"), actuals_document()
+        )
+        record = evaluation["accuracy_record"]
+        assert record["backtest_id"] == evaluation["backtest_id"]
+        assert "record_sha256" in record
+        data = forecast_document()
+        data["historical_accuracy_records"] = [record]
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests/test_zr708_backtest_reverify.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/revenue_core.py:445: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/revenue_core.py:81: in _build_forecast_draft
+    result["confidence"] = calculate_confidence(data, validated, result, sensitivities)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/analysis/confidence.py:151: in calculate_confidence
+    historical_wape, historical_observations = validate_historical_accuracy_records(
+scripts/contracts/document.py:796: in validate_historical_accuracy_records
+    require(origin < available <= cutoff,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+message = 'historical accuracy future information leak: 451a070b299e074256f0c3c9983dbe8faf92248f2d4b8f23e1c8b25cbf479cf5'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: historical accuracy future information leak: 451a070b299e074256f0c3c9983dbe8faf92248f2d4b8f23e1c8b25cbf479cf5
+
+scripts/contracts/evidence.py:93: ForecastInputError
+=========================== short test summary info ============================
+FAILED tests/test_zr708_backtest_reverify.py::test_c2_accuracy_record_consumed_by_confidence
+1 failed, 6 passed in 0.72s
+PYTEST_RC=1
