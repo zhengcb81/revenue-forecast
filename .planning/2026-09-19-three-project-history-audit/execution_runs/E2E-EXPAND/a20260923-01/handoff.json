@@ -1,0 +1,174 @@
+{
+ "card_id": "E2E-EXPAND",
+ "attempt_id": "a20260923-01",
+ "status": "accepted_scoped",
+ "status_before_bookkeeping_fix": "review_pending",
+ "status_authority": {
+  "verdict": "ACCEPTED — SCOPED",
+  "central_ruling": "KEEP-THE-RED — the frozen S1 downloads==1 check is correct against FF's documented contract (FF READ-10, fetch_filing.py:663-666); the committed download reporting 0 is product defect F-EE1, not an oracle defect; the oracle was never amended (mtime 2026-09-23T08:37:13Z < first judged run 09:31:41Z)",
+  "carrier": "review.md (this attempt dir) — bookkeeping transcription of the reviewer's verdict; it adds no acceptance of its own",
+  "carrier_sha256": "1b5b86babf305189938e6034b299b585aba252de5e54611fac57f68aedf02b68",
+  "carrier_bytes": 22325,
+  "reviewer_report": "reviewer_report.md (this attempt dir)",
+  "reviewer_report_sha256": "de849e1adfb21ea39f610eaad0e08d5df249095d29bcb7197f164bdeb6fdd423",
+  "reviewer_report_bytes": 42915,
+  "reviewer_report_sidecar": "reviewer_report.sha256 (87 B) content-match: sidecar line == live re-hash of reviewer_report.md; both untouched by this landing",
+  "reviewer_report_line_ranges": {
+   "verdict_section_0": "18-47 (verdict sentence line 20)",
+   "central_ruling_keep_the_red": "41-47 (citation fetch_filing.py:663-666 READ-09/READ-10 at lines 43-44)",
+   "findings_table_section_10": "431-447 (F-RV-01 line 435 … F-RV-11 line 445; boundary note 447-448)",
+   "unverified_section_11": "450-467",
+   "routing_section_12": "469-485",
+   "signature": "506-509 (N=1 independent reviewer signer)"
+  },
+  "byte_proof": "42915 B declared, 42915 B live re-measured at landing; sha256 re-hashed live = declared = sidecar",
+  "independent_recheck_by_carrier": [
+   "reviewer_report.md live re-hash + sidecar content-match = PASS",
+   "handoff pre-image read live = status review_pending / reviewer_status unsigned (5663 B, sha256 255d37d5115bfe8670fc1f6663ebc1d5a00a933812f3186b1a98d825e606116d) — recorded, implementer never self-signed",
+   "FF/scripts/fetch_filing.py:663-666 re-read live = READ-10 sentence verbatim",
+   "CW resolver.py:1021-1029 re-read live = download_events=0 init + request_id-mismatch continue, exactly as transcribed",
+   "oracle.md live measure = 16348 B, sha256 dfc3a6fff9e7feb1236bd1c8ce2bfa82c24c0f15f30a64770ba7ffe04ffb08e4, mtime 2026-09-23T08:37:13Z",
+   "evidence/ live count at landing = 149 files / 1763067 B (confirms F-RV-03)"
+  ],
+  "verdict_is_transcribed_not_authored": true
+ },
+ "bookkeeping": {
+  "implementer_signed": false,
+  "carrier_signed": false,
+  "self_signing": "none — the only verdict authority is reviewer_report.md signed by the independent reviewer (N=1); this landing is bookkeeping only",
+  "record_fixes": [
+   {"id": "F-RV-02", "file": "decision.md", "fix": "R3 deletion-proof sidecar pre-delete sha corrected e319f62f… → 5a02bb27… (e319f62f… is the accidental run's sidecar); original string retained in a 原值留痕 note; evidence files untouched", "before_sha256": "1b61f606cfa90c15dc22974205c1add1c0ef0c52f43c5212383b4ba87ac41600", "before_bytes": 17523, "after_sha256": "c9cc3e5b027002563a0244aad5180d99ec467f08a62ad051bee9bb66a1577958", "after_bytes": 19681, "original_retained": true},
+   {"id": "F-RV-03", "file": "decision.md", "fix": "\"Evidence footprint 148 files\" → 149 files / 1 763 067 B (reviewer live count, carrier re-counted); original 148 retained as superseded note; no number silently deleted", "before_sha256": "1b61f606cfa90c15dc22974205c1add1c0ef0c52f43c5212383b4ba87ac41600", "before_bytes": 17523, "after_sha256": "c9cc3e5b027002563a0244aad5180d99ec467f08a62ad051bee9bb66a1577958", "after_bytes": 19681, "original_retained": true},
+   {"id": "F-RV-06", "file": "decision.md", "fix": "F-EE1 evidence pointer corrected: accidental dir has the substance via s1_fetch1_stdout.txt + journal_outcomes.json, NOT the journal_rows/envelope pair; original wording retained", "before_sha256": "1b61f606cfa90c15dc22974205c1add1c0ef0c52f43c5212383b4ba87ac41600", "before_bytes": 17523, "after_sha256": "c9cc3e5b027002563a0244aad5180d99ec467f08a62ad051bee9bb66a1577958", "after_bytes": 19681, "original_retained": true},
+   {"id": "F-RV-09", "file": "decision.md", "fix": "\"82.7 s\" annotated as not-raw-derivable (closest raw = 73.322 s nested runner; reviewer re-run 44.40 s); number retained, qualitative claim re-proven", "before_sha256": "1b61f606cfa90c15dc22974205c1add1c0ef0c52f43c5212383b4ba87ac41600", "before_bytes": 17523, "after_sha256": "c9cc3e5b027002563a0244aad5180d99ec467f08a62ad051bee9bb66a1577958", "after_bytes": 19681, "original_retained": true},
+   {"id": "F-RV-10", "file": "decision.md", "fix": "\"≈8.2 MB\" annotated as double-count (unique 4.1 MB; 6.2 MB incl. the accidental J-D2 download); number retained, budget still honored", "before_sha256": "1b61f606cfa90c15dc22974205c1add1c0ef0c52f43c5212383b4ba87ac41600", "before_bytes": 17523, "after_sha256": "c9cc3e5b027002563a0244aad5180d99ec467f08a62ad051bee9bb66a1577958", "after_bytes": 19681, "original_retained": true},
+   {"id": "F-RV-05", "file": "commands.json", "fix": "RUN-R2 structured network field: string \"disabled\" (false for that execution) → truthful structured value {\"network\":\"auto\",\"consumed\":\"1 probe + 1 download (accidental, J-D2)\",\"ledger_totals_correct\":true} with __history retaining the original string; prose 2+2 ledger totals already correct and unchanged", "before_sha256": "bff6c1a97d7b103fb02a7f99a5b11ed005206d126de1a15d26af17346f33906c", "before_bytes": 10744, "after_sha256": "c341d9a2ed6ff41769b0007b3cf65117c71ebfa89f99f4c2a9ef2b173a07a528", "after_bytes": 11940, "original_retained": true},
+   {"id": "F-RV-11", "file": "commands.json", "fix": "RUN-R2b note_F_RV_11 added: final tests execution reuses this registry entry (identical argv/env); R2b's nested evidence was overwritten in place — superseded pointer: NONE (no pre-image exists)", "before_sha256": "bff6c1a97d7b103fb02a7f99a5b11ed005206d126de1a15d26af17346f33906c", "before_bytes": 10744, "after_sha256": "c341d9a2ed6ff41769b0007b3cf65117c71ebfa89f99f4c2a9ef2b173a07a528", "after_bytes": 11940, "original_retained": true},
+   {"id": "F-RV-04", "file": "binding.json", "fix": "false claim \"sha256 recorded in handoff\" rewritten: freeze proof = mtime ordering (oracle 08:37:13Z < first judged run 09:31:41Z); oracle sha NOT in handoff.input_hashes; live-measured oracle sha256 dfc3a6fff9e7feb1236bd1c8ce2bfa82c24c0f15f30a64770ba7ffe04ffb08e4 added to binding's own oracle_sha256_landing field; handoff.input_hashes NOT edited retroactively (it is the implementer's frozen pre-review input record — back-filling after review would destroy that provenance); original string retained as oracle__history_original", "before_sha256": "0a6a422108fb219ab61505eff891ca8a08dd54dd629ab799d618d0602e0b51c3", "before_bytes": 7040, "after_sha256": "cd0df94d650bbcc33d180914ad0eef3733681755e1a5129a216a9fac6c41dc3a", "after_bytes": 8076, "original_retained": true}
+  ],
+  "json_reparse": "commands.json, binding.json and this handoff.json re-parsed with ConvertFrom-Json = OK after edits",
+  "handoff_pre_image": {"status": "review_pending", "reviewer_status_field": "unsigned", "bytes": 5663, "sha256": "255d37d5115bfe8670fc1f6663ebc1d5a00a933812f3186b1a98d825e606116d", "measured": "before any landing write"},
+  "parent_commit_plan_batch_6": {
+   "action": "parent commits 3 RF files as batch-6",
+   "files": [
+    {"path": "e2e/run_cross_repo_chain_e2e.py", "sha256": "88ac9e4a4d207c02bd8163a0f3bbec743e4d28e8a32443504398637935466648"},
+    {"path": "tests/test_cross_repo_chain_e2e.py", "sha256": "3e2b39ee10947c386f21833dbf19b135619d015817c3df91757d04ef7bcc9213"},
+    {"path": "tests/contract/host_assumption_allowlist.json", "sha256": "ff9db8c8cdb11f71230de3c576b7b41e65ebf69594e5ddd52d2f712d2727c219", "note": "+11 sanctioned pins"}
+   ]
+  },
+  "f_ee1_routing": {"destination": "REMEDIATION ledger (owner)", "fix_card": "F-EE1-FIX opened by parent", "this_card": "NOT the fix surface — E2E-EXPAND carries the finding only", "authorized_live_green": "unproven pending (a) F-EE1 product fix and (b) owner re-authorization of a live run; until then the frozen S1 FAIL stands as the correct outcome"},
+  "files_written_this_landing": [
+   "decision.md (record fixes F-RV-02/03/06/09/10)",
+   "commands.json (record fixes F-RV-05/11)",
+   "binding.json (record fix F-RV-04)",
+   "review.md (new — transcription carrier)",
+   "handoff.json (this file — status transition + bookkeeping)",
+   "evidence/E2E-EXPAND/qualification.json (new — formula state carrier)"
+  ],
+  "untouched": {"reviewer_report.md": {"bytes": 42915, "sha256": "de849e1adfb21ea39f610eaad0e08d5df249095d29bcb7197f164bdeb6fdd423", "verified": "re-hashed after all landing writes = unchanged"}, "reviewer_report.sha256": {"bytes": 87, "content_match": true}, "evidence/*": "not modified by any record fix", "input_hashes": "not edited retroactively (see F-RV-04)"}
+ },
+ "carried_findings": [
+  {"id": "F-RV-01", "sev": "MAJOR (downstream product)", "finding": "F-EE1 confirmed: a committed cninfo download reports a false zero — journal request_id e8177b37… ≠ resolution request_id 47c3a925… ⇒ resolver.py:1021-1029 skip ⇒ envelope reused_existing/download_events=0 ⇒ response downloads=0, violating FF READ-10 (fetch_filing.py:663-666) and FC-704 (FF test_fetch_filing.py:315-317; RF test_source_preparation.py:159-197); replicated ×2", "disposition": "downstream carrier → REMEDIATION ledger + F-EE1-FIX card opened by parent; fix NOT this card's surface; authorized-live-green unproven until fixed + owner re-authorizes"},
+  {"id": "F-RV-02", "sev": "minor (doc)", "finding": "decision.md cited R3's sidecar pre-delete sha as e319f62f… (belongs to the accidental run's sidecar); R3 proof says 5a02bb27…", "disposition": "fixed here in decision.md during landing, original retained (原值留痕)"},
+  {"id": "F-RV-03", "sev": "minor (doc)", "finding": "decision \"Evidence footprint 148 files\" vs live count 149 files / 1 763 067 B", "disposition": "fixed here in decision.md (149), original retained as superseded note"},
+  {"id": "F-RV-04", "sev": "minor (process)", "finding": "binding claimed the oracle sha256 was recorded in handoff.input_hashes; it is not (that oracle entry is I-00-B's)", "disposition": "fixed here in binding.json: freeze proof restated as mtime ordering + live oracle sha dfc3a6ff… added to binding's own field; handoff.input_hashes deliberately not back-edited (frozen pre-review record); original string retained"},
+  {"id": "F-RV-05", "sev": "minor (ledger)", "finding": "commands.json RUN-R2 structured network:\"disabled\" false for that execution (1 probe + 1 download, prose-disclosed)", "disposition": "fixed here in commands.json with truthful structured value + __history of the original string; prose 2+2 totals already correct"},
+  {"id": "F-RV-06", "sev": "minor (doc)", "finding": "decision F-EE1 pointer claimed \"the same pair\" (journal_rows.json+envelope.json) in the accidental dir; those 2 files are absent there", "disposition": "fixed here in decision.md: substance via s1_fetch1_stdout.txt + journal_outcomes.json; original wording retained; ×2 replication upheld"},
+  {"id": "F-RV-07", "sev": "note", "finding": "protocol snapshot literal key-diff = [\"captured\"] (capture timestamp); content keys 7/7 identical", "disposition": "noted (carried) — disclosure nuance, no content drift"},
+  {"id": "F-RV-08", "sev": "note (unexercised)", "finding": "under gate=force an unreachable probe does not itself skip (runner line 686), so oracle J6's unreachable⇒skip arm is deferred to fetch classification; never fired (both authorized probes = 200)", "disposition": "noted (observed-not-fixed) — for a future attempt's oracle/code alignment pass"},
+  {"id": "F-RV-09", "sev": "unverified number", "finding": "\"tests file 82.7 s\" not raw-derivable (closest raw = 73.322 s nested; reviewer re-run 44.40 s)", "disposition": "fixed here in decision.md as annotation (number retained); qualitative 2 passed + 1 skipped rc=0 re-proven"},
+  {"id": "F-RV-10", "sev": "note", "finding": "\"≈8.2 MB real bytes touched\" double-counts the 2 filings (unique 4.1 MB; 6.2 MB incl. accidental)", "disposition": "fixed here in decision.md as annotation (number retained); budget honored by a wide margin"},
+  {"id": "F-RV-11", "sev": "note (bookkeeping)", "finding": "final tests execution has no distinct commands.json entry (re-uses RUN-R2b argv/env) and R2b's nested evidence was overwritten", "disposition": "fixed here in commands.json RUN-R2b note_F_RV_11; superseded pointer: NONE (no pre-image exists)"}
+ ],
+ "scope": {
+  "central_ruling": "KEEP-THE-RED (transcribed from reviewer_report.md lines 41-47; FF READ-10 citation fetch_filing.py:663-666)",
+  "four_constraints_proven_by_evidence": {
+   "REAL_data": "live re-hash b4f1713d/601349fd (CW raw 2 070 073 B + sidecar 3 108 B) == binding pins before and after; BOTH deletion proofs read: 15 pre_delete_inventory / 2 deleted_paths / post_absent=true / asserted=true ×2",
+   "isolated_env_restore": "drift→exit-2 gate proved empirically (rc=2 E2E-EXIT2 rebind required) + 14/14 product/data pins live + I-00-B contract 3/3 + reviewer's own snapshot content-keys 7/7 equal + production catalog stat-only ×2 with N=0 opens",
+   "small_scale": "1 company × 2 filings, 7 scenarios (cap 8), runtimes re-derived from raw ISO stamps (36.234 s / 23.988 s / 73.322 s nested / 44.40 s reviewer) with F-RV-09 and F-RV-10 nuances annotated",
+   "不大张旗鼓": "+11 allowlist literals 11/11 verbatim at the claimed runner lines, string-splitting evasion 0, 3-file diff with 0 workflow hits, quality.yml untouched, no workflow reference (0 grep hits)"
+  },
+  "commit_plan": "parent commits the 3 RF files as batch-6 (see bookkeeping.parent_commit_plan_batch_6)",
+  "f_ee1_route": "REMEDIATION ledger + F-EE1-FIX card opened by parent (not this card)",
+  "authorized_live_green": "unproven pending F-EE1 fix + owner re-authorize",
+  "unproven_carried": [
+   "test_live_download_and_delete_restore green under RF_E2E_LIVE_DOWNLOAD=1 (blocked by measured F-EE1, not by harness)",
+   "actual Linux CI run of the new tests file (skip-without-siblings path is code-honest but unexercised here)",
+   "second authorized live execution (deliberately skipped: network budget discipline)",
+   "HK/dayu + US markets (out of frozen scope: CN/cninfo only)",
+   "runner default paths (evidence dir e2e/.runs/…, default %TEMP% work root) — code-reviewed only"
+  ]
+ },
+ "disclosure_adaptation": "unmapped",
+ "accuracy": "unproven",
+ "completed_steps": [
+  "oracle frozen before first judged run (scenario table + exit/skip semantics + S1 classification + live-gate mapping)",
+  "binding: code/data/contract pins computed and preflight-verified every run (no drift: runner exit-2 gate never fired)",
+  "commands.json frozen before judged runs; every executed argv recorded incl. disclosed deviation J-D2 and harness-fix re-runs",
+  "deliverables written: e2e/run_cross_repo_chain_e2e.py + tests/test_cross_repo_chain_e2e.py (+ allowlist registration J-E2)",
+  "RUN-R1/R1b runner offline: exit 0, S2/S3/S5/S6/S4 all pass (36.2 s)",
+  "RUN-R2/R2b/R2-final tests-file step9 surface: 2 passed + 1 skipped, rc=0, network_scope none (82.7 s final)",
+  "RUN-R3 authorized live: restore assertions + S4 PASS first, S1 FAIL solely on frozen downloads==1 (F-EE1), deletion proof post_absent=true",
+  "SNAP-01/SNAP-02 protocol cross-check: DIFF_KEYS [] (production + siblings + RF untouched)",
+  "gates: ruff/compileall/host-assumption-guard(=0)/fc1307a-subset green on final code",
+  "decision.md, changes.diff, recovery/README.md written",
+  "independent reviewer signed reviewer_report.md = ACCEPTED — SCOPED (central ruling KEEP-THE-RED); report + sidecar untouched",
+  "carrier landing: F-RV-02..06/09..11 record fixes applied with history retention; review.md + handoff.json status transition + evidence/E2E-EXPAND/qualification.json written (bookkeeping only, no acceptance added)"
+ ],
+ "next_step_number": null,
+ "next_action": "parent: (1) commit the 3 RF files as batch-6 per bookkeeping.parent_commit_plan_batch_6; (2) work the F-EE1-FIX card through the REMEDIATION ledger (F-RV-01); (3) keep authorized-live-green unproven until F-EE1 is fixed and the owner re-authorizes a live run",
+ "next_action_historical_pre_verdict": "independent reviewer attacks decision.md §6 (especially: is S1's frozen downloads==1 FAIL the correct oracle outcome given F-EE1, or was the check mis-specified), verifies evidence/run_live_pytest + snapshot diffs, then signs review.md; dispatcher may rebind I-00-B anchors with the new allowlist state",
+ "reviewer_status": "signed — independent reviewer subagent signed reviewer_report.md (N=1, ACCEPTED — SCOPED); review.md is the carrier's bookkeeping transcription; implementer never self-signed (implementer_signed=false)",
+ "reviewer_status_historical_pre_verdict": "unsigned — no review.md written by this implementer; implementer does not self-accept any verdict",
+ "open_questions_historical_pre_verdict": [
+  "S1 authorized-live is red by frozen contract (F-EE1). Reviewer must rule: keep the red (product gap signal) vs amend oracle for a future attempt (never within this attempt) — RULED: keep the red (reviewer_report.md lines 41-47)",
+  "F-EE1 root cause not traced into code-path detail (journal-row request_id construction) — read/observed only per card's measure-don't-fix rule",
+  "linux step9 execution of the new tests file unproven on this Windows host (host-assumption guard rc0 + no host literals is the available evidence)"
+ ],
+ "unmapped": [
+  "card's 'junction/path-config per FF's config mechanism' — resolved WITHOUT any junction: FF's --config accepts an absolute temp company_wiki_root (documented in oracle §0 + J-notes); no junction code exists in the deliverable",
+  "card's 'filing_conventions/parser hashes' — mapped to FF scripts/filing_contracts.py (the only contract module; FF has no separate parser file) + CW source_catalog/{cli,prompt_injection}.py; no FF file named filing_conventions exists"
+ ],
+ "unproven": [
+  "test_live_download_and_delete_restore green under RF_E2E_LIVE_DOWNLOAD=1 (blocked by measured F-EE1, not by harness)",
+  "actual Linux CI run of the new tests file (skip-without-siblings path is code-honest but unexercised here)",
+  "second authorized live execution (deliberately skipped: network budget discipline)",
+  "HK/dayu + US markets (out of frozen scope: CN/cninfo only)",
+  "runner default paths (evidence dir e2e/.runs/…, default %TEMP% work root) — every judged run passed explicit dirs to protect RF invariants; defaults are code-reviewed only"
+ ],
+ "input_hashes": {
+  "RF/e2e/run_cross_repo_chain_e2e.py": "88ac9e4a4d207c02bd8163a0f3bbec743e4d28e8a32443504398637935466648",
+  "RF/tests/test_cross_repo_chain_e2e.py": "3e2b39ee10947c386f21833dbf19b135619d015817c3df91757d04ef7bcc9213",
+  "RF/tests/contract/host_assumption_allowlist.json (after)": "ff9db8c8cdb11f71230de3c576b7b41e65ebf69594e5ddd52d2f712d2727c219",
+  "RF/tests/contract/host_assumption_allowlist.json (before, reconstructed)": "bc6da8ff80bccd9093b962c5965ea9f8e2a573f43116dc831a33a45118f38424",
+  "RF/scripts/source_preparation.py": "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+  "FF/scripts/fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+  "FF/scripts/filing_contracts.py": "2d1b2e3374f1d0c255f94303d208f8657f54c9c32b3428e424f43e6a81ddc457",
+  "RF/tests/e2e_support/isolated_lake.py": "867ac82bcb48e9fd81592c2304ac390453b5b1f85bee0b8d9efa476d57aa2883",
+  "CW real raw (CATL FY2024)": "b4f1713d7b821eb076c102711d177fe942ccc2bc8dd171ae5d7a95799a65b0ad",
+  "CW real sidecar": "601349fd9334af58aff992d94795c1081ff5a47e58fa1089e4b6f866af85ba40",
+  "I-00-B contract binding": "fdb2a59890e64c42f4a4566c8aaa6eefaec8e867c01779974178048d9fbf75f0",
+  "I-00-B commands": "f8a397ecd306b03f03385ad25c28667338c85e3301277414ddf4013f3c9a24df",
+  "I-00-B oracle": "e9c82fe46ed21cc80db7948b8872f35af7c07d994c65310501accdd615693a64",
+  "I-07-B sitecustomize (technique citation)": "58da8b36e45a734a2ca3660345b04d95a68e7cb1bfd9fab870ad5ee8151d042b",
+  "__note": "F-RV-04: THIS card's oracle.md sha256 (dfc3a6fff9e7feb1236bd1c8ce2bfa82c24c0f15f30a64770ba7ffe04ffb08e4) is intentionally NOT added here — this map is the implementer's frozen pre-review record; the value lives in binding.json.oracle_sha256_landing"
+ },
+ "evidence_paths": [
+  "oracle.md",
+  "binding.json",
+  "commands.json",
+  "decision.md",
+  "changes.diff",
+  "evidence/summary-ish: evidence/run_offline/summary.json (runner offline, exit 0)",
+  "evidence/run_offline/{s2,s3,s5,s6,s4}/ (stage argv/stdout/stderr/evidence per scenario)",
+  "evidence/run_offline/pre_harness_fix1/ superseded run (honest iteration record)",
+  "evidence/run_live_pytest/ (authorized live run: summary + s1/deletion_proof.json + journal_rows.json + envelope.json)",
+  "evidence/accidental_auto_gate_run/ (disclosed deviation J-D2 record)",
+  "evidence/run_pytest_offline_nested/ (nested runner evidence from final tests run)",
+  "evidence/counters/{wiring.json,events.jsonl} inside each run dir (spy counters)",
+  "evidence/snapshot_before.json vs evidence/snapshot_after.json (protocol cross-check, DIFF_KEYS [])",
+  "evidence/preflight.json (pin verification per run)",
+  "review.md (carrier landing: bookkeeping transcription of reviewer_report.md)",
+  "evidence/E2E-EXPAND/qualification.json (formula state carrier: accepted_scoped)"
+ ]
+}

@@ -1,0 +1,95 @@
+{
+ "card": "E2E-EXPAND",
+ "attempt": "a20260923-01",
+ "date": "2026-09-23",
+ "oracle": "oracle.md (written before the first judged run; freeze proof = mtime ordering: oracle mtime 2026-09-23T08:37:13Z < first judged run preflight 2026-09-23T09:31:41Z, unchanged since; the oracle's sha256 is NOT in handoff.input_hashes — the only oracle entry there (e9c82fe4…) belongs to I-00-B. F-RV-04 correction; handoff.input_hashes is deliberately NOT edited retroactively: it is the implementer's frozen pre-review input record, and rewriting it after the fact would destroy that provenance — the live-measured value is added here in binding's own field instead)",
+ "oracle_sha256_landing": {
+  "sha256": "dfc3a6fff9e7feb1236bd1c8ce2bfa82c24c0f15f30a64770ba7ffe04ffb08e4",
+  "bytes": 16348,
+  "mtime_utc": "2026-09-23T08:37:13Z",
+  "measured": "live by the carrier during the a20260923-01 landing (F-RV-04); first judged run preflight = 2026-09-23T09:31:41Z",
+  "note": "not present in handoff.input_hashes; recorded here rather than back-filled into the frozen handoff (no retroactive edit)"
+ },
+ "oracle__history_original": "oracle.md (written before the first judged run; sha256 recorded in handoff)",
+ "interpreter": "attempt-level iso venv python (copied from I-07-B a20260923-01 iso/venv, the template that ran the full chain; pyvenv.cfg base = C:\\Miniconda, site-packages self-contained) — every judged product run + the runner + pytest execute under it; global Miniconda python NEVER used to run product commands (I-00-B oracle rule 5)",
+ "cwd_rule": "judged runs cwd = per-attempt work dir under %TEMP%\\rf_e2e_expand_a20260923-01 (runner default) or the attempt work dir; NEVER the RF repo root for chain runs, NEVER a production root",
+ "product_code_pins_sha256": {
+  "RF/scripts/source_preparation.py": "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+  "RF/scripts/filing_fetch_client.py": "b281e6d15e016dd067f21709e71638e3c052370e07381cfc7ea7ccd071deb3bc",
+  "RF/scripts/company_wiki_source.py": "7d1bd8f9d9122dc4a99465a8f9201e855417a5d0756f5bfdd6d404f7ca9e48ce",
+  "RF/tests/e2e_support/isolated_lake.py": "867ac82bcb48e9fd81592c2304ac390453b5b1f85bee0b8d9efa476d57aa2883",
+  "FF/scripts/fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+  "FF/scripts/filing_contracts.py": "2d1b2e3374f1d0c255f94303d208f8657f54c9c32b3428e424f43e6a81ddc457",
+  "FF/tests/e2e_support/isolated_wiki.py": "8966e7e1f0fee8a60c24512bebd7ce683ed0b590e65f1b52b59bd3f48b983d55",
+  "CW/src/company_wiki/source_catalog/cli.py": "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
+  "CW/src/company_wiki/source_catalog/prompt_injection.py": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33"
+ },
+ "preflight_drift_rule": "runner preflight re-verifies the product CODE pins above; any drift => runner exit 2 'rebind required' (I-00-B oracle rule 1: 任何漂移 => 受影响卡重绑), never run on old pins",
+ "data_pins_sha256": {
+  "CW/real raw (offline chain input)": {
+   "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\宁德时代\\raw\\financial_reports\\annual\\2025-03-14_cninfo_1222806982_2024年年度报告.pdf",
+   "sha256": "b4f1713d7b821eb076c102711d177fe942ccc2bc8dd171ae5d7a95799a65b0ad",
+   "bytes": 2070073,
+   "identity": "宁德时代/300750, FY2024, cninfo, provider_document_id 1222806982, filing_date 2025-03-14"
+  },
+  "CW/real sidecar": {
+   "path": "same + .source.json",
+   "sha256": "601349fd9334af58aff992d94795c1081ff5a47e58fa1089e4b6f866af85ba40",
+   "bytes": 3108
+  },
+  "CW/security_master/cn.json": "d9a4860f3b6eb407d32ae813c0d61647bfcb77b2c0d8b159c3f5fc5854ef3301",
+  "CW/config/source_catalog.yaml": "f9eb72a6c37c2dfeacf18a10df9b983dac104276efaf55b0a55b2c5c15f655df",
+  "CW/config/source_acquisition.yaml": "5b8358de96b08b94a9a67a4747b3139dfabd3548ae7013397b950530bfb0023d",
+  "CW/config/source_catalog_worker.yaml": "04fe21b45969a556437e0936d88aebcefe62692f344a56831e9060a4a87b5bf8",
+  "FF/config/company_wiki.json": "73917689a14c1b17e69066b0837b0ad3ac1062c440243bc58fef34eb3e043ab0"
+ },
+ "production_catalog_baseline_stat_only": {
+  "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3",
+  "note": "stat-only; this attempt NEVER opens the production catalog (S4 asserts size+ticks identical for .sqlite3 / -wal / -shm)",
+  "bytes": {"catalog.sqlite3": 49677344768, "catalog.sqlite3-wal": 0, "catalog.sqlite3-shm": 32768},
+  "mtime_utc_ticks": {"catalog.sqlite3": 639253962954069191, "catalog.sqlite3-wal": 639257183781138917, "catalog.sqlite3-shm": 639257449760349211}
+ },
+ "i00b_contract_pins_sha256": {
+  "I-00-B/binding.json": "fdb2a59890e64c42f4a4566c8aaa6eefaec8e867c01779974178048d9fbf75f0",
+  "I-00-B/commands.json": "f8a397ecd306b03f03385ad25c28667338c85e3301277414ddf4013f3c9a24df",
+  "I-00-B/oracle.md": "e9c82fe46ed21cc80db7948b8872f35af7c07d994c65310501accdd615693a64",
+  "note": "match I-07-B decision §5 recorded values exactly (fdb2a598 / f8a397ec / e9c82fe4) — no contract drift"
+ },
+ "technique_citations": {
+  "I-07-B sitecustomize (counter wrapper, _event BEFORE original)": {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-07-B/a20260923-01/harness/spy/sitecustomize.py",
+   "sha256": "58da8b36e45a734a2ca3660345b04d95a68e7cb1bfd9fab870ad5ee8151d042b"
+  },
+  "I-07-B run_case.py (frozen-argv runner + refusal_analysis + counter_snapshot)": ".planning/.../I-07-B/a20260923-01/harness/run_case.py",
+  "I-07-B build_iso.py (isolation builder, real-asset copy + hash check at build)": ".planning/.../I-07-B/a20260923-01/harness/build_iso.py",
+  "I-07-B reachability record shape": ".planning/.../I-07-B/a20260923-01/evidence/live/reachability.json",
+  "FF IsolatedWiki (S1 env: temp root, --config, use_production_adapters, cleanup_temporary)": "FF/tests/e2e_support/isolated_wiki.py (pinned above)",
+  "FF FC-805 two-step download contract (pre-registered branch B2)": "FF/tests/test_fc805_real_download_t3.py + FF/tests/test_fc802_gap_orchestration.py",
+  "FF real-download test + tool-path probe": "FF/tests/test_e2e_download.py (_TOOL_PATHS, CN deadline 600s, residue rules)",
+  "RF isolated_lake builder API (S2 base class)": "RF/tests/e2e_support/isolated_lake.py (pinned above)",
+  "RF prep-e2e green-fixture precedent (receipt-writer contract, NOT reused here)": "RF/tests/test_preparation_e2e_success.py",
+  "argv forms": {
+   "source_preparation": "I-00-B binding.json old_command_notes entry pattern + I-07-B evidence/cases/S-CN-1/run1/argv.json (measured): --request-file --timeout-seconds --company-wiki-config --filing-fetch-root",
+   "fetch_filing": "I-00-B old_command_notes: --request-file --timeout-seconds --debug; --config per FF fetch_filing.py:1042 argparse + FF IsolatedWiki.run_fetch; --allow-download per card S1 (fetch_filing.py:1038)"
+  }
+ },
+ "write_surface": {
+  "allowed": [
+   "RF/e2e/run_cross_repo_chain_e2e.py (new deliverable)",
+   "RF/tests/test_cross_repo_chain_e2e.py (new deliverable)",
+   "this attempt dir (evidence/protocol files)",
+   "%TEMP%\\rf_e2e_expand_a20260923-01 (runner work root) + pytest tmp_path for the tests file"
+  ],
+  "forbidden": [
+   "production catalog writes (never opened at all — stat-only)",
+   "writes into CW companies/ or CW/.source_catalog/ (READ-only sources; S4 proves byte/stat equality)",
+   "writes into FF config/ or FF real storage (S4 proves listing equality)",
+   "git commands of any kind (no add/commit/status/diff/checkout)",
+   "mocks or synthetic substitutes for any live step; synthetic filing bytes anywhere in the suite",
+   "network outside S1's one reachability probe + one real download",
+   "editing oracle.md after any run; executing unbound commands"
+  ]
+ },
+ "command_binding_rule": "commands.json frozen before the judged run; every executed argv recorded there with network flag + expectation",
+ "samples": "CATL only (1 company, ≤2 filings): offline real raw b4f1713d… (CW, read-only copy) + S1 fresh FY2025 cninfo download (deleted + deletion-proofed)"
+}

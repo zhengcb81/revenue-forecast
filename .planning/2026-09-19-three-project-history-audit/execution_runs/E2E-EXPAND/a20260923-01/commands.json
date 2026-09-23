@@ -1,0 +1,127 @@
+{
+ "card": "E2E-EXPAND",
+ "attempt": "a20260923-01",
+ "frozen_before_judged_run": true,
+ "interpreter": "<ATT>/iso/venv/Scripts/python.exe (per-attempt iso venv; global Miniconda python never runs product commands — I-00-B oracle rule 5)",
+ "legend_network": "disabled = no network attempted; S1-ONLY = the sanctioned reachability probe + one real cninfo download; none = offline",
+ "commands": [
+  {
+   "id": "ENV-01-create-iso-venv",
+   "purpose": "environment setup: copy the I-07-B a20260923-01 iso venv (template that ran the full chain) into this attempt",
+   "argv": ["robocopy", "<PLAN>/execution_runs/I-07-B/a20260923-01/iso/venv", "<ATT>/iso/venv", "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/NC", "/NS", "/NP", "/R:2", "/W:1"],
+   "network": "disabled",
+   "result": "ok (26.9 MB; python 3.13.9; yaml/requests/pytest import ok)"
+  },
+  {
+   "id": "ENV-02-copy-cn-adapter-deps",
+   "purpose": "environment setup (file copies only, NO pip/network): the stockinfo-cninfo adapter imports playwright at module load — copy playwright/playwright_stealth/greenlet/pyee/typing_extensions/selenium from the Miniconda base site-packages (same python 3.13.9) into the attempt venv",
+   "argv": ["Copy-Item/robocopy", "C:/Miniconda/Lib/site-packages/{playwright,playwright_stealth,greenlet,pyee,typing_extensions.py,selenium}(+dist-info)", "<ATT>/iso/venv/Lib/site-packages/"],
+   "network": "disabled",
+   "result": "ok — recorded as the ONLY deviation-free way to make the real adapter importable without pip; no product file touched"
+  },
+  {
+   "id": "PROBE-01-chain-imports",
+   "purpose": "offline readiness probe: company_wiki chain modules + RF chain modules import under the attempt venv (PYTHONPATH=CW/src;RF/scripts)",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "-c", "import company_wiki.source_catalog.{cli,resolver,prompt_injection,service,store,adapter_process,acquisition_config}; import company_wiki_source, processing_demand, filing_fetch_client"],
+   "network": "disabled",
+   "result": "ok rc=0"
+  },
+  {
+   "id": "PROBE-02-stockinfo-adapter-import",
+   "purpose": "offline readiness probe: the real CN adapter CLI imports under the attempt venv (before the dep copy it failed NameError: Page — playwright absent)",
+   "cwd": "Projects/StockInfoDLSimple/v2-clean-rewrite",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "-m", "src.company_wiki_adapter_cli", "--help"],
+   "network": "disabled",
+   "result": "ok rc=0 (adapter import ok: stockinfo-cninfo 1.1.0) after ENV-02"
+  },
+  {
+   "id": "GATE-01-ruff",
+   "purpose": "CI surface: ruff check on the two new files (CI step: ruff check scripts tests tools e2e)",
+   "argv": ["ruff", "check", "e2e/run_cross_repo_chain_e2e.py", "tests/test_cross_repo_chain_e2e.py"],
+   "network": "disabled",
+   "result": "rc=0 All checks passed"
+  },
+  {
+   "id": "GATE-02-host-assumption-guard",
+   "purpose": "CI surface (step9 test_fc1307a + pre-commit hook): guard over tests tools scripts e2e after registering the 11 content-hash pins in tests/contract/host_assumption_allowlist.json",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "tools/host_assumption_guard.py", "--roots", "tests", "tools", "scripts", "e2e"],
+   "network": "disabled",
+   "result": "rc=0 new(not baselined/registered)=0 registered_hashes=14"
+  },
+  {
+   "id": "GATE-03-step9-gate-subset",
+   "purpose": "CI surface: run the step9 gate/inventory tests that judge new files (fc1307a, message_contract_pins, structure_targets, golden_behavior_lock, contract_registry, compatibility_manifest, single_owner_guard)",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_fc1307a_host_assumption_gate.py", "tests/test_message_contract_pins.py", "tests/test_structure_targets.py", "tests/test_golden_behavior_lock.py", "tests/test_contract_registry.py", "tests/test_compatibility_manifest.py", "tests/test_single_owner_guard.py"],
+   "network": "disabled",
+   "result": "44 passed, 2 failed — BOTH failures pre-existing and outside my write surface (fc1307a vendored-guard byte drift: RF tools/host_assumption_guard.py 9294dc7c… vs sibling copies 20c9da56…, files I never touched, CI skips this test when siblings are absent; single_owner: scripts/revenue_core.py imports subprocess, scripts/ untouched by this card). test_fc1307a_the_repository_has_no_new_host_assumptions PASSED."
+  },
+  {
+   "id": "GATE-04-complexity-ratchet",
+   "purpose": "CI surface check (tools/tests/test_complexity_ratchet.py, runs under step9)",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "tools/tests/test_complexity_ratchet.py", "-q"],
+   "network": "disabled",
+   "result": "rc=1 PRE-EXISTING: scans scripts/ only (SRC=parents[2]/scripts) — failures are analysis/confidence.py 32>23 and model_extensions.py 27>10, files untouched by this card; e2e/ and tests/ are not in the ratchet's scope"
+  },
+  {
+   "id": "GATE-05-final-standalone",
+   "purpose": "CI surface check (final_ratchet aggregator)",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "tools/final_ratchet.py"],
+   "network": "disabled",
+   "result": "hardcode OK, legacy OK, encoding OK, type OK; complexity RED (=GATE-04 pre-existing, scripts-only), coverage RED (coverage gates need a fresh coverage run; standalone invocation by design cannot be green) — neither is caused by or affected by the two new files"
+  },
+  {
+   "id": "RUN-R1-runner-offline",
+   "purpose": "JUDGED RUN 1: the standalone runner, offline scenarios (S2 full chain, S3 second run, S5, S6, S4 restore invariants) with the live gate forced off — the CI-step9-default-equivalent path",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "e2e/run_cross_repo_chain_e2e.py", "--scenarios", "S2,S3,S5,S6,S4", "--live", "never", "--work-root", "%TEMP%/rf_e2e_expand_a20260923-01", "--evidence-dir", "<ATT>/evidence/run_offline"],
+   "network": "disabled",
+   "expected": "exit 0; every scenario pass (S1 not selected); summary.json written; production_writes=0",
+   "result_run1": "rc=1 — S4 PASS; S2 stageB/S3 stageB + counters + catalog-delta checks ALL passed; 4 scenario failures traced to TWO HARNESS defects (product behaved per oracle): (a) parse_json_docs only parsed single-line JSON but FF prints indent=2 multi-line stdout; (b) S3 lake-tree comparison included volatile sqlite/lock files (db/-shm/-wal/operation.lock.acquire) that read connections legitimately touch (I-07-B disclosed the shm advance). Harness fixed WITHOUT touching the oracle; run1 evidence preserved at evidence/run_offline.pre_harness_fix1/"
+  },
+  {
+   "id": "RUN-R1b-runner-offline-after-harness-fix",
+   "purpose": "JUDGED RUN 1b: re-run of RUN-R1 after the two harness fixes above (oracle unchanged; scenario expectations frozen)",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "e2e/run_cross_repo_chain_e2e.py", "--scenarios", "S2,S3,S5,S6,S4", "--live", "never", "--work-root", "%TEMP%/rf_e2e_expand_a20260923-01", "--evidence-dir", "<ATT>/evidence/run_offline"],
+   "network": "disabled",
+   "expected": "exit 0; S2,S3,S5,S6,S4 all pass"
+  },
+  {
+   "id": "RUN-R2-pytest-step9-surface",
+   "purpose": "JUDGED RUN 2: the deliverable tests file under the CI step9 surface with default env — offline chain test runs the nested runner with --live never; the authorized-live test must be an honest skip; the opt-in gate test must prove S1 does not run",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_cross_repo_chain_e2e.py"],
+   "env": "RF_E2E_LIVE_DOWNLOAD unset (CI default)",
+   "network": {
+    "network": "auto",
+    "consumed": "1 probe + 1 download (accidental, J-D2)",
+    "ledger_totals_correct": true,
+    "__history": "original value was the string \"disabled\" (retained here verbatim) — false for THIS execution: the first RUN-R2 execution ran the opt-in test without --live never, so the runner's default auto gate probed cninfo (200) and executed one real download, fully disclosed in the result_run1 prose of this entry. Corrected to this truthful structured value during the carrier landing (F-RV-05); the prose ledger totals (2 probes + 2 downloads) were already correct and are unchanged."
+   },
+   "expected": "2 passed + 1 skipped (skip reason = opt-in live), rc=0",
+   "result_run1": "rc=1 — DISCLOSED DEVIATION: the opt-in test invoked the runner WITHOUT --live never (code bug: the docstring promised belt-and-braces, the argv forgot it), so the runner's default auto gate PROBED cninfo (200) and EXECUTED one real download outside this registry's frozen network scope. The download itself succeeded fully (2 043 710 B FY2025 annual,24/25 S1 checks green, deletion proof post_absent=true) and exposed product finding F-EE1 (envelope outcome=reused_existing/download_events=0 vs journal downloaded_new — see decision.md). Harness/test fix: opt-in test now passes --live never; S1 evidence now captures journal ROWS + envelope fields. Full evidence of the accidental run preserved at evidence/accidental_auto_gate_run/ (16 files). Effective network consumption before the authorized R3: one probe + one download, both recorded."
+  },
+  {
+   "id": "RUN-R2b-pytest-step9-surface-after-fix",
+   "purpose": "JUDGED RUN 2b: re-run of RUN-R2 after adding --live never to the opt-in test (step9 no-network guarantee restored)",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_cross_repo_chain_e2e.py"],
+   "env": "RF_E2E_LIVE_DOWNLOAD unset (CI default)",
+   "network": "disabled",
+   "expected": "2 passed + 1 skipped, rc=0",
+   "note_F_RV_11": "Disclosed during carrier landing: the FINAL tests execution (~09:46:03–09:47:18Z, whose nested evidence survives at evidence/run_pytest_offline_nested/) has no distinct registry entry — it re-uses THIS entry (identical argv/env, so the registry rule 'every executed argv recorded' is satisfied by argv-identity). Superseded pointer: NONE — no pre-image of R2b's own nested evidence exists (overwritten in place by the final execution); only the final nested summary.json remains. Evidence-per-execution is therefore thinner for R2b than for other entries."
+  },
+  {
+   "id": "RUN-R3-pytest-live-one-download",
+   "purpose": "JUDGED RUN 3: the ONE authorized real download of this attempt, through the tests file's opt-in path (nested runner executes S1: probe + real cninfo download + verification + DELETE + verify-gone, then S4)",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_cross_repo_chain_e2e.py", "-k", "live_download_and_delete_restore"],
+   "env": "RF_E2E_LIVE_DOWNLOAD=1",
+   "network": "S1-ONLY (reachability GET https://www.cninfo.com.cn/ + one real cninfo download of 宁德时代 FY2025 annual; no credentials; header User-Agent only; target/URL recorded in evidence reachability.json)",
+   "expected": "test passes when S1 passes OR honestly skips with a provider reason; deletion_proof post_absent=true asserted by the test; evidence copied from pytest tmp into <ATT>/evidence/run_live_pytest"
+  },
+  {
+   "id": "SNAP-01-pre / SNAP-02-post",
+   "purpose": "protocol-level independent before/after snapshot (cross-check of the runner's own baseline): CW real file hashes + security master + production catalog stat-only + FF config root listing + CW entity listing + RF scripts/e2e/tests listing",
+   "argv": ["<venv>/python", "-X", "utf8", "-B", "<ATT>/evidence/snapshot.py", "<ATT>/evidence/snapshot_{before,after}.json"],
+   "network": "disabled",
+   "expected": "before == after everywhere (the deliverable files + allowlist edit were already in place BEFORE SNAP-01)",
+   "note": "a PowerShell variant was written first and abandoned: this host's pwsh ConvertTo-Json is pathologically slow (10 strings took 20s, 100 strings timed out) — recorded in decision.md; both .ps1 drafts deleted, python script is the executed SNAP command"
+  }
+ ]
+}

@@ -1,0 +1,55 @@
+# I-07-B changes.diff — isolation-only card
+# product/plan anchors identical before vs after: 20; changed: NONE
+# production catalog identity before: bytes=49677344768 mtime_ns=1789799495406919100
+# production catalog identity after : bytes=49677344768 mtime_ns=1789799495406919100
+# identical: True
+# production writes by this attempt: ZERO; CW writes: ZERO; RF product writes: ZERO
+# attempt-local (not a product change) files: see handoff.json changed_paths
+
+=== the only semantic isolation change (config copy, production file untouched) ===
+--- PRODUCTION/CW/config/source_catalog.yaml
++++ ISOLATED/C:\Users\郑曾波\AppData\Local\Temp\i07b\cases\S-CN-1\cwroot\config\source_catalog.yaml
+@@ -1,40 +1,9 @@
+ schema_version: "1.0"
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
+-# Root *kinds* whose indexed documents are directly reusable by filing-fetch
+-# (config-driven, ADR-008). company_raw is the default; adding a kind here
+-# makes every already-indexed document under such roots reusable without a
+-# download (filing-fetch path allowance must list the corresponding dirs).
+-#
+-# Privacy decision (2026-09-03, repo owner): the private_user classification
+-# is retired for the production catalog — all roots are public and their
+-# documents may be sent to external LLMs (after the GP-003 review-receipt
+-# gate).  The LLM exit gate code still enforces privacy_class=private_user
+-# when a root explicitly declares it (defense in depth for future roots).
+-reusable_root_kinds: [company_raw, dayu_portfolio, directory]
++catalog_dir: 'C:\Users\郑曾波\AppData\Local\Temp\i07b\cases\S-CN-1\cwroot\.source_catalog'
++reusable_root_kinds: [company_raw]
+ roots:
+   - root_id: company_raw
+     kind: company_raw
+-    path: "${PROJECT_ROOT}/companies"
++    path: 'C:\Users\郑曾波\AppData\Local\Temp\i07b\cases\S-CN-1\cwroot\companies'
+     priority: 10
+     privacy_class: public
+-  - root_id: dayu_portfolio
+-    kind: dayu_portfolio
+-    path: "${PROJECT_ROOT}/../dayu-agent/workspace/portfolio"
+-    priority: 20
+-    privacy_class: public
+-  - root_id: dropbox_stock
+-    kind: directory
+-    path: "${USER_PROFILE}/Dropbox/Stock"
+-    priority: 30
+-    privacy_class: public
+-  # ZR-409 (EX-08): a future root joins by CONFIG ONLY — kind directory +
+-  # registered sidecar adapter, read-only, reusable.  No product code change
+-  # is needed for a new root (the whole point of the adapter registry).
+-  - root_id: future_lake
+-    kind: directory
+-    path: "${PROJECT_ROOT}/future_lake"
+-    adapter_id: sidecar_filing_v1
+-    read_only: true
+-    reusable_for_filing: true
+-    priority: 40
+-    privacy_class: public

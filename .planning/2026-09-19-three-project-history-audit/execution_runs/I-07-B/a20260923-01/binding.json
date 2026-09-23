@@ -1,0 +1,142 @@
+{
+  "card": "I-07-B",
+  "card_title": "三市场来源链与二次复用",
+  "attempt_id": "a20260923-01",
+  "date_local": "2026-09-23",
+  "protocol": "START_HERE.md 固定九步执行法; step 2 (绑定) written BEFORE any judged run",
+  "objective": "Run the frozen scenario-matrix cases through the REAL source-preparation entry in an isolated chain, with call-level provider/scan/read/producer counters, per-stage evidence raw→注册→资格→review→适用工件→实际消费, second-run idempotency, deep value verification, honest live-provider records. Production writes = 0; CW writes = 0; no git.",
+
+  "dependencies": {
+    "I-00-B": {"attempt": "a20260919-01", "status": "accepted_scoped",
+               "role": "frozen argv/cwd entry contract (its binding.json old_command_notes entry patterns + oracle.md rule 3 + review.md P2 full-template rebinding requirement)",
+               "contract_sha256": {
+                 "binding.json": "c1a8f47a0d0d6ea3a4a02b6f2f78ff2e4bd3ee4bd7e8bd970f0e3f4bd4f5b9d3 (see evidence/snapshot_before.json.anchors — authoritative value is the snapshot, not this placeholder line)",
+                 "authoritative": "evidence/snapshot_before.json -> anchors['PLAN/execution_runs/I-00-B/a20260919-01/binding.json'] and ['PLAN/execution_runs/I-00-B/a20260919-01/commands.json']"
+               }},
+    "I-07-A": {"attempt": "a20260919-01", "status": "accepted_scoped",
+               "role": "frozen sample identities + precondition states; its isolated catalog is PROHIBITED from reuse (5 tables vs production 18)",
+               "state_matrix": "execution_runs/I-07-A/a20260919-01/after/state_matrix.json (consumed read-only; this card's scenario matrix source is the PLAN file below, byte-pinned)"},
+    "I-01..I-06": "accepted_scoped / gated handoffs read (I-01-A, I-02-A, I-03-A, I-04-A, I-05-A, I-06-A blocked-by-design, I-06-B accepted_scoped)"
+  },
+
+  "frozen_inputs": {
+    "card_bytes": {"path": "PLAN/execution_v2/card_I-07-B.md",
+                   "sha256": "bd09eb6cf263c2e38867799240d0387f1e1362ffbdc7eae57a0c4e166581f26e",
+                   "lines": 14},
+    "scenario_matrix_source": {
+      "note": "the card's 案例 clause points at execution_v2/scenario_matrix.md — the PLAN's frozen matrix file. I-07-A did NOT produce it (I-07-A produced state_matrix.json, a different artifact, pinned separately below).",
+      "path": "PLAN/execution_v2/scenario_matrix.md",
+      "sha256": "0dec23cd10f00efd6ad82cf923552bd46c1763bcf9f740422f51f4973292299f",
+      "sha256_matches_validation_json": true,
+      "consumed_byte_pinned": true,
+      "cells_used": "S-CN-1..S-US-3 (9), 重复请求 (second run of each cell), 注册失败恢复 (REGFAIL-HK/REGFAIL-US), L-CN/L-HK/L-US (blocked-unbound)"
+    },
+    "sample_manifest": {"path": "PLAN/execution_v2/sample_manifest.json",
+                        "sha256": "d5d0bb92da9eee92666459ccf344d549343008db8bf32fd1257dbf6f5f3ec851"},
+    "shared_docs_sha256": {
+      "START_HERE.md": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+      "common_root_cards.md": "f8127541c763859761eb6affdd9f3c898766e249205436ff164b73c2621cd260",
+      "review_and_handoff.md": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9"
+    },
+    "oracle_frozen_before_runs": {"path": "oracle.md",
+                                  "note": "written after isolation state construction and BEFORE the first judged entry/scan run; sha256 recorded in handoff.json"}
+  },
+
+  "entry_contract": {
+    "form": ["<iso-python>", "-X", "utf8", "-B", "<RF>/scripts/source_preparation.py",
+             "--request-file", "<case>/request.json", "--timeout-seconds", "300",
+             "--company-wiki-config", "<case>/company_wiki.json",
+             "--filing-fetch-root", "<FF>", "--allow-download (only where the frozen case authorizes it)"],
+    "derived_from": "I-00-B binding.json old_command_notes entry pattern (scripts/source_preparation.py --request-file <req> [--allow-download] --timeout-seconds N) + the frozen entry script's own two documented DI flags (--company-wiki-config/--filing-fetch-root, source_preparation.py:198-201) which are the isolation capability I-00-B's open question deferred to I-01/I-04",
+    "not_a_helper": "every judged chain run executes RF/scripts/source_preparation.py itself; helper scripts are used only for harness bookkeeping (snapshot/build/verify) and never stand in for the entry",
+    "registration_stage_command": ["<iso-python>", "-X", "utf8", "-B", "-m",
+                                   "company_wiki.source_catalog.cli", "--config",
+                                   "<case>/cwroot/config/source_catalog.yaml", "scan"],
+    "registration_stage_note": "code map Q2: neither resolve nor ensure ever scans; the ONLY registration entry in the product is `cli scan` (service.SourceCatalog.scan -> scanner.scan_catalog). This is the product's own registration entry (invoked the same way fetch_filing invokes the cli), not a helper impersonating the entry."
+  },
+
+  "interpreter": {
+    "path": "<attempt>/iso/venv/Scripts/python.exe",
+    "version": "3.13.9 (Anaconda packaging)",
+    "cloned_from": "execution_runs/I-06-A/a20260919-01/iso/venv (lineage: I-00-A template)",
+    "packages": ["yaml 6.0.3", "requests 2.34.2", "pytest", "psutil"],
+    "company_wiki_import": "via PYTHONPATH=<CW>/src (no install, no write to CW; the I-00-A global-Miniconda prohibition is respected: global site-packages is NOT on this venv's sys.path)",
+    "global_python_forbidden": true
+  },
+
+  "cwd": "<attempt> for entry runs; <case>/cwroot for the cli scan stage (fetch_filing runs the cli with cwd=root too). Never a production repo root as a run cwd.",
+  "allowed_write_roots": [
+    "<attempt>/** (this attempt directory)",
+    "%TEMP%\\i07b\\cases\\** (per-case isolated company-wiki roots — MAX_PATH: attempt path + US sample file names exceed 260 chars and the PRODUCT opens these paths with plain APIs)"
+  ],
+  "network": {
+    "default": "no network for entry/scan/verify commands (chain runs against isolated fixtures)",
+    "case_scoped_exceptions": [
+      "S-*-3(b)/(c): provider served by the harness FROZEN SIMULATION (sitecustomize replaces adapter discover/fetch; labelled simulated:true, C-level qualification only)",
+      "evidence/live/reachability.json: one HTTPS reachability probe per provider host (card clause 5 case evidence), auth targets recorded, no bodies saved"
+    ]
+  },
+
+  "counter_wiring": {
+    "mechanism": "harness/spy/sitecustomize.py on PYTHONPATH, active only when I07B_SPY_DIR is set; count-on-entry wrappers (increment BEFORE delegation); events appended to evidence/cases/<id>/counters/events.jsonl; never derived from artifact/producer_events INSERTs (oracle R4/C1)",
+    "provider": ["company_wiki.source_catalog.adapter_process.JsonCommandAdapter.discover",
+                 "company_wiki.source_catalog.adapter_process.JsonCommandAdapter.fetch",
+                 "company_wiki.source_catalog.dayu_cli_adapter.DayuCliDownloadAdapter.discover",
+                 "company_wiki.source_catalog.dayu_cli_adapter.DayuCliDownloadAdapter.fetch",
+                 "requests.sessions.Session.request (live-HTTP fallback; records auth target + header names)"],
+    "scan": ["company_wiki.source_catalog.service.SourceCatalog.scan",
+             "company_wiki.source_catalog.scanner.scan_catalog"],
+    "read": ["company_wiki.source_catalog.resolver._sha256_of_file",
+             "company_wiki.source_catalog.resolver._read_verified_bytes",
+             "company_wiki.source_contract.source_manifest.SourceManifest.from_file",
+             "company_wiki_source.verify_artifact_reads (RF entry-side artifact byte read)"],
+    "producer": ["company_wiki.source_catalog.service.SourceCatalog.normalize",
+                 "company_wiki.source_catalog.service.SourceCatalog.extract_sections",
+                 "company_wiki.source_catalog.service.SourceCatalog.summarize",
+                 "company_wiki.source_catalog.service.SourceCatalog.backfill (if present)",
+                 "company_wiki.source_catalog.normalizer.normalize_catalog",
+                 "company_wiki.source_catalog.summarizer.summarize_catalog",
+                 "company_wiki.source_catalog.section_extractor.extract_sections_catalog",
+                 "company_wiki.source_catalog.llm_summarizer.summarize_catalog_with_llm"],
+    "wiring_proof": "evidence/wprobe.json (CMD-I07B-WPROBE): each inert invocation increments its counter while a throwaway product-schema catalog's row counts stay byte-identical (zero_insert_proof=true)"
+  },
+
+  "isolation_design": {
+    "catalog": "per-case .source_catalog/catalog.sqlite3 created by the PRODUCT's own CatalogStore._initialize => 18 tables == production's 18 (I-07-A prohibition satisfied; iso/base 5-table catalog never used)",
+    "case_states": "state1 = production_observation_copy rows (CN only has any; read-only SELECTs + absolute-path relocation into the isolated root; dropbox location dropped because its root is not in the isolated config — recorded per case); state2 = identity/security-master only, 0 registration rows; state3 = raw+sidecar absent (simulated_in_isolation)",
+    "assets": "raw+sidecar copied byte-identical (hash-checked against the frozen manifest at build time)",
+    "security_master": "production .source_catalog/security_master/{cn,hk,us}.json copied read-only (identify reads these JSONs, not sqlite — code map Q1)",
+    "runtime_policy": "intentionally ABSENT in isolation => envelope uses the product's documented v1 bridge (resolver.py:1173-1174); no hand-authored policy_hash",
+    "prompt_injection_review": "NEVER authored by this attempt (R6). Production CN metadata has no prompt_injection_review receipt => not_reviewed (production fact).",
+    "worker": "no worker process; worker_control.json absent (= desired_state enabled, control.py:706-713); frozen per case in initial_state.json"
+  },
+
+  "anchor_drift_vs_I00B": {
+    "policy": "START_HERE step 3 (位置漂移时重新定位、记新hash和差异) + 无法完成时的确定动作: recorded, NOT hidden; no product file was written by this card; dispatcher must refresh the I-00-B anchor table",
+    "drifted": [
+      {"file": "RF/scripts/source_preparation.py", "i00b": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46", "current": "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d", "diff": "evidence/anchor_drift/source_preparation.py.diff (W05-B verify_artifact_reads added to the receipt)"},
+      {"file": "RF/scripts/revenue_forecast.py", "i00b": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc", "current": "2a2dfede7941b0fac972d802d25eb71f798c1ebdb83226bbf8528481b9669e36", "diff": "evidence/anchor_drift/revenue_forecast.py.diff (empty after universal-newline normalization => difference confined to line endings/BOM)"},
+      {"file": "CW/src/company_wiki/source_catalog/cli.py", "i00b": "2f5c5740343697078d1e69b3a6a9ef9b0809277799c2d9c28a2d3e4048c4d512", "current": "fad88c60294a...", "diff": "NO I-00-B-era copy available without git (git forbidden by this card's command rule) => content diff NOT reconstructable here; hash drift recorded for the dispatcher"}
+    ],
+    "unchanged": ["FF/scripts/fetch_filing.py 046cc7dc...", "CW worker.py e8317991...", "CW service.py 32b76e6d...", "CW store.py 1a783240...", "CW normalizer.py 772075ed..."],
+    "also_drifted_since_I06A_pristine_copy": ["RF/scripts/filing_fetch_client.py 9329f331d9f5->b281e6d15e01", "RF/scripts/company_wiki_source.py aeeb7b2a6304->7d1bd8f9d912 (257-line diff, verify_artifact_reads)"]
+  },
+
+  "before_after_snapshots": {
+    "before": ["evidence/snapshot_before.json (26 anchors + production catalog identity + 3/3 raw+sidecar rehash all_match=true)",
+               "evidence/iso_base.json", "evidence/cases/*/initial_state.json (11 cases)"],
+    "after": "post-run bookkeeping (filled after the runs by CMD-I07B-SNAP-AFTER / CMD-I07B-ISO-FINAL and pinned in handoff.json: evidence/snapshot_after.json, evidence/iso_final.json) — this field is a routing note, not a pre-run claim",
+    "iso_state_snapshots": "each case's initial_state.json carries its full file list + sha256 (iso_snapshot)"
+  },
+
+  "forbidden": [
+    "production catalog / production file WRITES (reads are SELECT-only or byte-hash only)",
+    "company-wiki repo writes; revenue-forecast production writes (RF writes only under this attempt dir)",
+    "git add/commit/restore/stash/status/diff in ANY repo (see decision.md J-deviation disclosure: one read-only `git diff --no-index` was run BEFORE this binding was written and its output was replaced by the difflib harness output)",
+    "hand-authored review receipts/artifacts/green states (oracle R6)",
+    "re-downloading manifest files from a provider (L cells blocked; S-3 simulation serves fixture bytes from disk)",
+    "mock-signing an unreachable live provider as live (card clause 5)",
+    "claiming an overall three-market pass while any market/real path is missing (exit declaration 2)",
+    "editing oracle.md after the first judged run"
+  ]
+}

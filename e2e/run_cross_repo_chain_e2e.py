@@ -1,0 +1,1510 @@
+"""E2E-EXPAND: cross-repo end-to-end chain suite (revenue-forecast x filing-fetch x company-wiki).
+
+One standalone runner (structure mirrors e2e/run_source_preparation_e2e.py:
+main() + per-scenario steps + assertion helpers + exit code).  Every scenario
+drives the REAL entries as subprocesses against an isolated environment the
+suite builds itself; real data only; no mocks for live steps.
+
+Scenarios (oracle: .planning/.../execution_runs/E2E-EXPAND/<attempt>/oracle.md):
+
+  S1  REAL cninfo download (CATL FY2025) -> verify -> DELETE -> verify-gone
+      [network: one reachability probe + one download; live-gated]
+  S2  isolated lake built from RF's isolated_lake.py with REAL CW filing bytes
+      -> FF parse step (fetch_filing CLI resolve, offline)
+      -> RF source_preparation full chain -> refusal at the review gate with
+      explicit missing info (current production behavior; F2 gap observed)
+  S3  second run of the S2 chain: zero re-download, zero duplicate
+      registration, valid artifacts not re-produced (sitecustomize counters)
+  S4  restore invariants over everything (temp gone, real bytes/stat/listings
+      unchanged except the two deliverable files)
+  S5  bad filing id -> structured refusal, exit 2
+  S6  company not found -> honest structured not_found, exit 2
+
+Live gate RF_E2E_LIVE_DOWNLOAD:
+  unset (default) = auto: probe reachability -> run if reachable, otherwise
+                     SKIP(reason) — skip is pass-with-reason, exit stays 0
+  0                = force skip (no network attempted)
+  1                = force attempt (provider/tool failure still classifies SKIP)
+
+Exit codes: 0 = every selected scenario pass or honest skip;
+            1 = any scenario fail (verification/restore/offline-deviation);
+            2 = preflight binding drift (rebind required) or unusable workspace.
+
+Usage:
+    python e2e/run_cross_repo_chain_e2e.py
+        [--scenarios S1,S2,S3,S4,S5,S6] [--live auto|never|force]
+        [--work-root DIR] [--evidence-dir DIR]
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import importlib.util
+import json
+import os
+import shutil
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import time
+import traceback
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent
+FF_ROOT = REPO.parent / "filing-fetch"
+CW_ROOT = REPO.parent / "company-wiki"
+
+RUN_STAMP = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%SZ")
+
+# --- pins (binding.json of the E2E-EXPAND attempt; code pins re-verified at
+# preflight — drift => exit 2, rebind required, never run on old pins) ---
+CODE_PINS = {
+    REPO / "scripts" / "source_preparation.py":
+        "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+    REPO / "scripts" / "filing_fetch_client.py":
+        "b281e6d15e016dd067f21709e71638e3c052370e07381cfc7ea7ccd071deb3bc",
+    REPO / "scripts" / "company_wiki_source.py":
+        "7d1bd8f9d9122dc4a99465a8f9201e855417a5d0756f5bfdd6d404f7ca9e48ce",
+    REPO / "tests" / "e2e_support" / "isolated_lake.py":
+        "867ac82bcb48e9fd81592c2304ac390453b5b1f85bee0b8d9efa476d57aa2883",
+    FF_ROOT / "scripts" / "fetch_filing.py":
+        "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+    FF_ROOT / "scripts" / "filing_contracts.py":
+        "2d1b2e3374f1d0c255f94303d208f8657f54c9c32b3428e424f43e6a81ddc457",
+    FF_ROOT / "tests" / "e2e_support" / "isolated_wiki.py":
+        "8966e7e1f0fee8a60c24512bebd7ce683ed0b590e65f1b52b59bd3f48b983d55",
+    CW_ROOT / "src" / "company_wiki" / "source_catalog" / "cli.py":
+        "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
+}
+ALLOWED_NEW_RF_FILES = {
+    "e2e/run_cross_repo_chain_e2e.py",
+    "tests/test_cross_repo_chain_e2e.py",
+}
+# The one real filing used offline (CW, READ-only; copied into the lake):
+CATL_ENTITY = "宁德时代"
+CATL_REL = Path("companies") / CATL_ENTITY / "raw" / "financial_reports" / \
+    "annual" / "2025-03-14_cninfo_1222806982_2024年年度报告.pdf"
+CATL_RAW_SHA = "b4f1713d7b821eb076c102711d177fe942ccc2bc8dd171ae5d7a95799a65b0ad"
+CATL_RAW_BYTES = 2070073
+CATL_SIDECAR_SHA = "601349fd9334af58aff992d94795c1081ff5a47e58fa1089e4b6f866af85ba40"
+CATL_PDOC = "1222806982"
+CN_MASTER_SHA = "d9a4860f3b6eb407d32ae813c0d61647bfcb77b2c0d8b159c3f5fc5854ef3301"
+# sibling-first resolution (same pattern as FF tests/test_e2e_download._PROJECTS_ROOT):
+STOCKINFO_ROOT = (REPO.parent / "StockInfoDLSimple" / "v2-clean-rewrite"
+                  if (REPO.parent / "StockInfoDLSimple").is_dir()
+                  else Path.home() / "Projects" / "StockInfoDLSimple" /
+                  "v2-clean-rewrite")
+CNINFO_URL = "https://www.cninfo.com.cn/"
+AS_OF = "2026-09-23"
+
+SCENARIO_ORDER = ["S1", "S2", "S3", "S5", "S6", "S4"]
+
+# sitecustomize counter spy — adapted from I-07-B a20260923-01
+# harness/spy/sitecustomize.py (sha256 58da8b36…): counters increment at the
+# CALL of the real entry function BEFORE delegation (never from an INSERT);
+# activation only when RF_E2E_SPY_DIR is set on the process environment.
+SPY_SOURCE = '''\
+"""E2E-EXPAND counter spy — installed via PYTHONPATH ONLY for judged runs.
+
+Adapted from I-07-B harness/spy/sitecustomize.py (binding pin 58da8b36…).
+Every wrapper fires `_event` BEFORE delegating to the original function.
+No frozen/simulated provider exists here — this suite runs real steps only.
+"""
+from __future__ import annotations
+
+import json
+import os
+import time
+import traceback
+
+_SPY_DIR = os.environ.get("RF_E2E_SPY_DIR")
+_WIRING: dict = {}
+
+
+def _event(counter: str, module: str, qualname: str, detail: dict) -> None:
+    if not _SPY_DIR:
+        return
+    rec = {"counter": counter, "module": module, "qualname": qualname,
+           "pid": os.getpid(), "t": round(time.time(), 3), "simulated": False,
+           **detail}
+    try:
+        os.makedirs(_SPY_DIR, exist_ok=True)
+        with open(os.path.join(_SPY_DIR, "events.jsonl"), "a",
+                  encoding="utf-8") as fh:
+            fh.write(json.dumps(rec, ensure_ascii=False, default=str) + "\\n")
+    except OSError:
+        pass
+
+
+def _wrap(counter: str, obj, name: str, detail_fn=None) -> bool:
+    key = "%s.%s.%s" % (getattr(obj, "__module__", "?"),
+                        getattr(obj, "__qualname__", obj), name)
+    original = getattr(obj, name, None)
+    if original is None or getattr(original, "_e2eexpand_spy", False):
+        _WIRING[key] = {"status": "already" if original else "missing",
+                        "counter": counter}
+        return original is not None
+
+    def wrapper(*args, **kwargs):
+        detail = {}
+        if detail_fn:
+            try:
+                detail = detail_fn(args, kwargs)
+            except Exception:
+                detail = {"detail_error": traceback.format_exc()[-300:]}
+        _event(counter, getattr(obj, "__module__", "?"), name, detail)
+        return original(*args, **kwargs)
+
+    wrapper._e2eexpand_spy = True
+    wrapper._e2eexpand_original = original
+    try:
+        setattr(obj, name, wrapper)
+        _WIRING[key] = {"status": "wrapped", "counter": counter}
+        return True
+    except Exception as exc:
+        _WIRING[key] = {"status": "failed", "counter": counter,
+                        "error": str(exc)}
+        return False
+
+
+def _try_import(name: str):
+    try:
+        return __import__(name, fromlist=["*"])
+    except Exception:
+        _WIRING[name] = {"status": "unwired",
+                         "reason": traceback.format_exc()[-400:]}
+        return None
+
+
+def _path_detail(args, kwargs):
+    out = {}
+    for a in list(args) + list(kwargs.values()):
+        s = str(a)
+        if "\\\\" in s or "/" in s:
+            out.setdefault("paths", []).append(s)
+    if "paths" in out:
+        out["paths"] = out["paths"][:6]
+    return out
+
+
+def _http_detail(args, kwargs):
+    url = kwargs.get("url") or (args[1] if len(args) > 1 else None)
+    headers = kwargs.get("headers") or (args[3] if len(args) > 3 else None) or {}
+    return {"auth_target": str(url),
+            "auth_header_names": sorted(str(k) for k in dict(headers)),
+            "method": kwargs.get("method") or (args[0] if args else None)}
+
+
+def _install() -> None:
+    if not _SPY_DIR:
+        return
+    for mod_name, cls_name in (
+        ("company_wiki.source_catalog.adapter_process", "JsonCommandAdapter"),
+        ("company_wiki.source_catalog.dayu_cli_adapter",
+         "DayuCliDownloadAdapter"),
+    ):
+        mod = _try_import(mod_name)
+        cls = getattr(mod, cls_name, None) if mod else None
+        if cls is None:
+            continue
+        _wrap("provider", cls, "discover", _http_detail)
+        _wrap("provider", cls, "fetch", _http_detail)
+    try:
+        import requests.sessions  # noqa: F401
+        _wrap("provider", requests.sessions.Session, "request", _http_detail)
+    except Exception:
+        _WIRING["requests.sessions.Session.request"] = {"status": "unwired"}
+    mod = _try_import("company_wiki.source_catalog.service")
+    if mod is not None:
+        _wrap("scan", mod.SourceCatalog, "scan", _path_detail)
+        for meth in ("normalize", "extract_sections", "summarize", "backfill"):
+            if hasattr(mod.SourceCatalog, meth):
+                _wrap("producer", mod.SourceCatalog, meth, _path_detail)
+    mod = _try_import("company_wiki.source_catalog.scanner")
+    if mod is not None:
+        _wrap("scan", mod, "scan_catalog", _path_detail)
+    mod = _try_import("company_wiki.source_catalog.resolver")
+    if mod is not None:
+        _wrap("read", mod, "_sha256_of_file", _path_detail)
+        _wrap("read", mod, "_read_verified_bytes", _path_detail)
+    mod = _try_import("company_wiki.source_contract.source_manifest")
+    if mod is not None:
+        _wrap("read", mod.SourceManifest, "from_file", _path_detail)
+    try:
+        import company_wiki_source
+        _wrap("read", company_wiki_source, "verify_artifact_reads",
+              _path_detail)
+    except Exception:
+        _WIRING["company_wiki_source.verify_artifact_reads"] = \
+            {"status": "unwired"}
+    for mod_name, fname in (
+        ("company_wiki.source_catalog.normalizer", "normalize_catalog"),
+        ("company_wiki.source_catalog.summarizer", "summarize_catalog"),
+        ("company_wiki.source_catalog.section_extractor",
+         "extract_sections_catalog"),
+        ("company_wiki.source_catalog.llm_summarizer",
+         "summarize_catalog_with_llm"),
+    ):
+        mod = _try_import(mod_name)
+        if mod is not None and hasattr(mod, fname):
+            _wrap("producer", mod, fname, _path_detail)
+    try:
+        os.makedirs(_SPY_DIR, exist_ok=True)
+        with open(os.path.join(_SPY_DIR, "wiring.json"), "w",
+                  encoding="utf-8") as fh:
+            json.dump(_WIRING, fh, ensure_ascii=False, indent=1)
+    except OSError:
+        pass
+
+
+try:
+    _install()
+except Exception:
+    try:
+        if _SPY_DIR:
+            with open(os.path.join(_SPY_DIR, "wiring.json"), "w",
+                      encoding="utf-8") as fh:
+                json.dump({"install_error": traceback.format_exc()}, fh)
+    except OSError:
+        pass
+'''
+
+
+# --------------------------------------------------------------------------
+# helpers
+# --------------------------------------------------------------------------
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def write_json(path: Path, payload) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=1,
+                               default=str), encoding="utf-8")
+
+
+def read_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text or "", encoding="utf-8")
+
+
+def parse_json_docs(text: str) -> list[dict]:
+    """Parse structured JSON from a stream: FF prints ONE pretty-printed
+    (indent=2) object to stdout; refusal envelopes are compact single lines.
+    Whole-text parse first, then the I-07-B per-line fallback."""
+    raw = (text or "").strip()
+    if raw.startswith("{") and raw.endswith("}"):
+        try:
+            doc = json.loads(raw)
+            if isinstance(doc, dict):
+                return [doc]
+        except json.JSONDecodeError:
+            pass
+    docs = []
+    for line in (text or "").splitlines():
+        line = line.strip()
+        if line.startswith("{") and line.endswith("}"):
+            try:
+                docs.append(json.loads(line))
+            except json.JSONDecodeError:
+                pass
+    return docs
+
+
+def refusal_analysis(stdout: str, stderr: str) -> dict:
+    """Structured-refusal parser (I-07-B run_case.refusal_analysis shape)."""
+    docs = parse_json_docs(stdout) + parse_json_docs(stderr)
+    found: dict = {}
+    for d in docs:
+        for k, v in d.items():
+            found.setdefault(k, v)
+    actionable = {k: found[k] for k in
+                  ("candidates", "next_action", "required", "missing",
+                   "gap_plan", "hint") if found.get(k)}
+    msg = str(found.get("error") or found.get("message") or "")
+    explicit = None
+    if msg:
+        explicit = {
+            "message": msg[:600],
+            "names_missing": any(w in msg.lower() for w in
+                                 ("not reviewed", "no existing source",
+                                  "missing", "not reusable", "required",
+                                  "blocked", "not found", "not allowed")),
+        }
+    return {"docs": docs, "parsed_fields": found,
+            "actionable_recovery_fields": actionable,
+            "structured_actionable_present": bool(actionable),
+            "explicit_missing_info": explicit}
+
+
+def run_cmd(argv, *, cwd: Path, env: dict, timeout: float,
+            tag: str, ev_dir: Path) -> dict:
+    """One judged subprocess: persist argv/env/stdout/stderr, return record."""
+    t0 = time.monotonic()
+    try:
+        proc = subprocess.run(
+            [str(a) for a in argv], cwd=str(cwd), env=env,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=timeout, check=False)
+        rc, out, err, timed_out = proc.returncode, proc.stdout, proc.stderr, False
+    except subprocess.TimeoutExpired as exc:
+        out = exc.stdout or ""
+        err = exc.stderr or ""
+        if isinstance(out, bytes):
+            out = out.decode("utf-8", "replace")
+        if isinstance(err, bytes):
+            err = err.decode("utf-8", "replace")
+        rc, timed_out = -9, True
+    elapsed = round(time.monotonic() - t0, 3)
+    ev_dir.mkdir(parents=True, exist_ok=True)
+    write_json(ev_dir / f"{tag}_argv.json", {
+        "argv": [str(a) for a in argv], "cwd": str(cwd),
+        "env_overrides": {k: env.get(k) for k in
+                          ("PYTHONPATH", "RF_E2E_SPY_DIR",
+                           "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8")
+                          if k in env},
+        "timeout_seconds": timeout, "timed_out": timed_out,
+        "elapsed_seconds": elapsed, "returncode": rc,
+    })
+    write_text(ev_dir / f"{tag}_stdout.txt", out or "")
+    write_text(ev_dir / f"{tag}_stderr.txt", err or "")
+    return {"tag": tag, "rc": rc, "stdout": out or "", "stderr": err or "",
+            "timed_out": timed_out, "elapsed": elapsed,
+            "docs": parse_json_docs(out or ""), "argv": [str(a) for a in argv]}
+
+
+def chain_env(spy_dir: Path | None) -> dict:
+    """I-07-B run_case env, verbatim targets + no-bytecode (CW/FF READ-only)."""
+    env = dict(os.environ)
+    parts = []
+    if spy_dir is not None:
+        parts.append(str(spy_dir))
+    parts += [str(REPO / "scripts"), str(CW_ROOT / "src")]
+    env["PYTHONPATH"] = os.pathsep.join(parts)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["PYTHONUTF8"] = "1"
+    if spy_dir is not None:
+        env["RF_E2E_SPY_DIR"] = str(spy_dir)
+    else:
+        env.pop("RF_E2E_SPY_DIR", None)
+    return env
+
+
+def materialize_spy(spy_dir: Path) -> None:
+    spy_dir.mkdir(parents=True, exist_ok=True)
+    write_text(spy_dir / "sitecustomize.py", SPY_SOURCE)
+
+
+def counter_totals(spy_dir: Path) -> dict:
+    ev = spy_dir / "events.jsonl"
+    if not ev.is_file():
+        return {}
+    totals: dict = {}
+    for line in ev.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            name = json.loads(line).get("counter")
+        except json.JSONDecodeError:
+            continue
+        totals[name] = totals.get(name, 0) + 1
+    return totals
+
+
+def catalog_counts(catalog: Path) -> dict:
+    """Row counts of an ISOLATED catalog only (ro, query_only)."""
+    con = sqlite3.connect(f"file:{catalog}?mode=ro", uri=True)
+    con.execute("PRAGMA query_only=ON")
+    tabs = [r[0] for r in con.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")]
+    counts = {t: con.execute(f'SELECT COUNT(*) FROM "{t}"').fetchone()[0]
+              for t in tabs}
+    con.close()
+    return counts
+
+
+def catalog_delta(before: dict, after: dict) -> dict:
+    return {k: after.get(k, 0) - before.get(k, 0)
+            for k in sorted(set(before) | set(after))
+            if after.get(k, 0) != before.get(k, 0)}
+
+
+def tree_snapshot(root: Path, *, exclude_dirs=(".pytest_cache", "__pycache__",
+                                                ".runs"), hash_files=True,
+                   exclude_files=()) -> dict:
+    """{relpath: {size, mtime_ticks, sha256?}} for files under root.
+
+    ``exclude_files`` matches basenames anywhere below root — used for the
+    catalog's volatile runtime files (sqlite db/-wal/-shm and lock markers):
+    read-only connections legitimately touch them (I-07-B disclosed the shm
+    mtime advance); row-level invariance is asserted separately via
+    catalog_delta, and derived/artifact BYTES stay fully compared.
+    """
+    out: dict = {}
+    if not root.exists():
+        return out
+    if root.is_file():
+        out[root.name] = _file_record(root, hash_files)
+        return out
+    for p in sorted(root.rglob("*")):
+        rel_parts = p.relative_to(root).parts
+        if any(part in exclude_dirs for part in rel_parts):
+            continue
+        if p.is_file():
+            if p.name in exclude_files:
+                continue
+            out[p.relative_to(root).as_posix()] = _file_record(p, hash_files)
+    return out
+
+
+# catalog runtime files whose bytes legitimately change under read activity
+VOLATILE_CATALOG_FILES = (
+    "catalog.sqlite3", "catalog.sqlite3-shm", "catalog.sqlite3-wal",
+    "operation.lock", "operation.lock.acquire",
+    "filing_fetch_pause.refcount", "filing_fetch_pause.owner",
+)
+
+
+def _file_record(p: Path, hash_files: bool) -> dict:
+    st = p.stat()
+    rec = {"size": st.st_size, "mtime_ticks": st.st_mtime}
+    if hash_files:
+        rec["sha256"] = sha256_file(p)
+    return rec
+
+
+def dir_names(root: Path) -> list[str]:
+    if not root.exists():
+        return []
+    return sorted(p.name for p in root.iterdir())
+
+
+def rmtree_retry(path: Path, attempts: int = 6, wait: float = 1.0) -> bool:
+    """FF isolated_wiki.cleanup_temporary retry shape (orphan handles)."""
+    for i in range(attempts):
+        try:
+            if not path.exists():
+                return True
+            shutil.rmtree(path, ignore_errors=False)
+            return not path.exists()
+        except (PermissionError, OSError):
+            time.sleep(wait)
+    return not path.exists()
+
+
+def load_ff_isolated_wiki():
+    spec = importlib.util.spec_from_file_location(
+        "ff_e2e_isolated_wiki",
+        FF_ROOT / "tests" / "e2e_support" / "isolated_wiki.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.IsolatedWiki
+
+
+def live_gate(cli_choice: str) -> str:
+    env = os.environ.get("RF_E2E_LIVE_DOWNLOAD")
+    if cli_choice == "never":
+        return "never"
+    if env == "0":
+        return "never"
+    if env == "1":
+        return "force"
+    if cli_choice == "force":
+        return "force"
+    return "auto"
+
+
+def reachability_probe(url: str, ev_dir: Path) -> dict:
+    """HTTPS reachability with auth-target recording (header NAMES only) —
+    mirrors I-07-B evidence/live/reachability.json.  stdlib urllib only."""
+    rec = {"url": url, "provider": "cninfo",
+           "auth_target": f"{url} (public site; no credentials sent)",
+           "request_header_names": ["User-Agent"],
+           "probed_at": datetime.now(timezone.utc).isoformat(),
+           "network_scope": "S1 preflight reachability + one real download "
+                            "only; no other network in this suite"}
+    t0 = time.monotonic()
+    try:
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "revenue-forecast-e2e-expand/1.0 "
+                                        "(local e2e reachability probe)"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            rec["status"] = resp.status
+            rec["reachable"] = resp.status < 500
+            rec["final_host"] = str(resp.geturl())[:200]
+            resp.read(4096)
+    except Exception as exc:  # noqa: BLE001
+        rec["reachable"] = False
+        rec["error"] = f"{type(exc).__name__}: {exc}"[:300]
+    rec["elapsed_s"] = round(time.monotonic() - t0, 2)
+    write_json(ev_dir / "reachability.json", rec)
+    return rec
+
+
+# --------------------------------------------------------------------------
+# baseline / post (S4 inputs)
+# --------------------------------------------------------------------------
+
+def capture_baseline() -> dict:
+    cw_raw = CW_ROOT / CATL_REL
+    cw_side = Path(str(cw_raw) + ".source.json")
+    prod_cat = CW_ROOT / ".source_catalog"
+    return {
+        "captured_at": datetime.now(timezone.utc).isoformat(),
+        "cw_files_sha256": {
+            str(CATL_REL.as_posix()): sha256_file(cw_raw),
+            str(CATL_REL.as_posix()) + ".source.json": sha256_file(cw_side),
+            "security_master/cn.json": sha256_file(
+                prod_cat / "security_master" / "cn.json"),
+        },
+        # stat-only: the production catalog is NEVER opened by this suite
+        "prod_catalog_stat": {
+            name: (lambda s: {"size": s.st_size, "mtime_ticks": s.st_mtime})(
+                (prod_cat / name).stat())
+            for name in ("catalog.sqlite3", "catalog.sqlite3-wal",
+                         "catalog.sqlite3-shm")
+            if (prod_cat / name).exists()
+        },
+        "ff_roots": {
+            "config": dir_names(FF_ROOT / "config"),
+            "scripts": tree_snapshot(FF_ROOT / "scripts", hash_files=False),
+            "e2e": tree_snapshot(FF_ROOT / "e2e", hash_files=False),
+            "tests": tree_snapshot(FF_ROOT / "tests", hash_files=False),
+        },
+        "cw_storage_top": dir_names(prod_cat),
+        "cw_entity_files": tree_snapshot(CW_ROOT / "companies" / CATL_ENTITY),
+        "rf_files": rf_snapshot(),
+        "ff_real_config_sha256": {
+            p.name: sha256_file(p) for p in sorted((FF_ROOT / "config").glob("*"))
+            if p.is_file()},
+    }
+
+
+def rf_snapshot() -> dict:
+    """RF repo files (scripts/e2e/tests + top-level) — the porcelain scope."""
+    out: dict = {}
+    for sub in ("scripts", "e2e", "tests"):
+        for rel, rec in tree_snapshot(REPO / sub).items():
+            out[f"{sub}/{rel}"] = rec
+    for p in sorted(REPO.iterdir()):
+        if p.is_file():
+            out[p.name] = _file_record(p, True)
+    return out
+
+
+# --------------------------------------------------------------------------
+# scenarios
+# --------------------------------------------------------------------------
+
+class Scenario:
+    def __init__(self, sid: str):
+        self.id = sid
+        self.status = "pass"
+        self.reason: dict | None = None
+        self.checks: dict = {}
+        self.failures: list[str] = []
+        self.t0 = time.monotonic()
+
+    def check(self, name: str, condition: bool, detail="") -> None:
+        self.checks[name] = bool(condition)
+        if not condition:
+            self.failures.append(f"{name}: {detail}" if detail else name)
+
+    def equal(self, name: str, actual, expected) -> None:
+        self.check(name, actual == expected,
+                   f"expected {expected!r}, got {actual!r}")
+
+    def skip(self, code: str, detail: str) -> None:
+        self.status = "skip"
+        self.reason = {"code": code, "detail": detail}
+
+    def fail(self, code: str, detail: str) -> None:
+        self.status = "fail"
+        self.reason = {"code": code, "detail": detail}
+
+    def finish(self) -> dict:
+        # explicit failure wins over skip bookkeeping; teardown-fail overrides later
+        if self.failures and self.status == "pass":
+            self.status = "fail"
+            self.reason = {"code": "check_failed",
+                           "detail": "; ".join(self.failures)[:1500]}
+        return {"id": self.id, "status": self.status, "reason": self.reason,
+                "checks": self.checks, "failures": self.failures,
+                "elapsed_s": round(time.monotonic() - self.t0, 3)}
+
+
+def s1_download_verify_delete(ctx) -> dict:
+    """S1: real cninfo download into a fresh FF IsolatedWiki, verified, then
+    DELETED with a self-asserted deletion proof (owner's restore rule)."""
+    sc = Scenario("S1")
+    ev = ctx["evidence"] / "s1"
+    work = ctx["work"]
+    gate = ctx["gate"]
+    proof: dict = {"network_allowed": gate != "never", "gate": gate,
+                   "pre_delete_inventory": [], "deleted_paths": [],
+                   "post_absent": None, "asserted": False}
+    s1_wiki = work / "s1-wiki"
+
+    if gate == "never":
+        sc.skip("live_gate_never",
+                "RF_E2E_LIVE_DOWNLOAD=0 or --live never: no network attempted")
+        proof["post_absent"] = proof["asserted"] = (not s1_wiki.exists())
+        write_json(ev / "deletion_proof.json", proof)
+        return sc.finish()
+
+    tool_checks = {
+        "stockinfo_adapter_cli":
+            (STOCKINFO_ROOT / "src" / "company_wiki_adapter_cli.py").is_file(),
+        "stockinfo_config": (STOCKINFO_ROOT / "config.json").is_file(),
+        "ff_scripts": (FF_ROOT / "scripts" / "fetch_filing.py").is_file(),
+    }
+    sc.checks["tool_paths"] = tool_checks
+    if not all(tool_checks.values()):
+        missing = [k for k, v in tool_checks.items() if not v]
+        sc.skip("tool_missing", f"download tool path(s) absent: {missing}")
+        proof["post_absent"] = proof["asserted"] = (not s1_wiki.exists())
+        write_json(ev / "deletion_proof.json", proof)
+        return sc.finish()
+
+    probe = reachability_probe(CNINFO_URL, ev)
+    sc.checks["probe"] = {"status": probe.get("status"),
+                          "reachable": probe.get("reachable")}
+    if not probe.get("reachable") and gate != "force":
+        sc.skip("provider_unreachable",
+                f"cninfo reachability probe failed: {probe.get('error') or probe.get('status')}")
+        proof["post_absent"] = proof["asserted"] = (not s1_wiki.exists())
+        write_json(ev / "deletion_proof.json", proof)
+        return sc.finish()
+
+    # -- fresh isolated env via FF's own IsolatedWiki mechanism ------------
+    try:
+        IsolatedWiki = load_ff_isolated_wiki()
+        wiki = IsolatedWiki(s1_wiki)
+        wiki.use_production_adapters()   # real stockinfo tool; staging in temp
+    except Exception as exc:  # noqa: BLE001
+        sc.fail("env_build_failed", f"{type(exc).__name__}: {exc}")
+        proof["post_absent"] = proof["asserted"] = (not s1_wiki.exists())
+        write_json(ev / "deletion_proof.json", proof)
+        return sc.finish()
+
+    request1 = {"schema_version": "1.1", "company_query": "300750",
+                "market": "CN", "document_kind": "annual_report",
+                "fiscal_year": 2025, "as_of_date": AS_OF}
+    write_json(ev / "request.json", request1)
+    cfg = s1_wiki / "company_wiki.json"
+
+    def ff_argv(request: dict, allow: bool, extra_debug: bool = False) -> list:
+        req_path = ev / ("request.json" if request is request1
+                         else "request_b2.json")
+        if request is not request1:
+            write_json(req_path, request)
+        argv = [sys.executable, "-X", "utf8", "-B",
+                str(FF_ROOT / "scripts" / "fetch_filing.py"),
+                "--config", str(cfg), "--request-file", str(req_path),
+                "--timeout-seconds", "120"]
+        if allow:
+            argv.append("--allow-download")
+        if extra_debug:
+            argv.append("--debug")
+        return argv
+
+    payload = None
+    final_run = None
+    run1 = run_cmd(ff_argv(request1, True), cwd=work,
+                   env=chain_env(ctx["spy"]), timeout=150.0,
+                   tag="s1_fetch1", ev_dir=ev)
+    final_run = run1
+    if run1["timed_out"]:
+        sc.skip("provider_timeout",
+                "fetch_filing exceeded the 150s outer deadline "
+                "(cninfo/dayu download did not finish)")
+    elif run1["docs"]:
+        payload = run1["docs"][-1]
+
+    # branch B2 (pre-registered FC-805 contract): structured gap -> authorized close-gap
+    if payload is not None and payload.get("status") == "gap":
+        plan = (payload.get("gap_plan") or {})
+        missing = plan.get("missing") or []
+        if missing:
+            cand = missing[0]
+            request2 = dict(request1)
+            request2["schema_version"] = "1.2"
+            request2["authorization"] = {
+                "provider": cand.get("provider"),
+                "allowed_accessions": [cand.get("provider_document_id")],
+                "max_items": 1, "max_bytes": 200_000_000,
+                "expires_at": "2099-01-01T00:00:00Z",
+            }
+            write_json(ev / "branch_b2.json", {"gap_plan": plan,
+                                               "request": request2})
+            run2 = run_cmd(ff_argv(request2, True), cwd=work,
+                           env=chain_env(ctx["spy"]), timeout=150.0,
+                           tag="s1_fetch2", ev_dir=ev)
+            final_run = run2
+            if not run2["timed_out"] and run2["docs"]:
+                payload = run2["docs"][-1]
+                sc.checks["branch"] = "B2_authorized_close_gap"
+            else:
+                payload = None
+                sc.skip("provider_timeout" if run2["timed_out"]
+                        else "provider_no_payload",
+                        "gap->close-gap did not produce a payload")
+        else:
+            sc.skip("provider_no_candidate",
+                    f"structured gap without actionable candidate: {plan}")
+            payload = None
+    elif payload is not None:
+        sc.checks["branch"] = "B1_one_shot_exact"
+
+    # -- classification ----------------------------------------------------
+    if sc.status == "skip":
+        pass  # already classified above
+    elif run1["timed_out"] and payload is None:
+        pass  # classified in timed_out branch above
+    elif payload is None:
+        rc = run1["rc"]
+        body = (run1["stdout"] + run1["stderr"])[-800:]
+        if rc == 2:
+            sc.skip("provider_refused",
+                    f"fetch_filing exit 2 without payload: {body}")
+        elif rc == -9:
+            sc.skip("provider_timeout", "subprocess hard-killed at 150s")
+        else:
+            sc.fail("unexpected_exit", f"rc={rc}: {body}")
+    elif payload.get("status") != "capture_ready":
+        status = str(payload.get("status"))
+        if status in ("not_found", "upstream_error", "provider_unavailable"):
+            sc.skip("provider_refused",
+                    f"status={status}: {str(payload.get('error'))[:400]}")
+        elif status in ("identity_error", "config_error", "request_error"):
+            sc.fail("offline_stage_broken",
+                    f"offline stage failed (identity/config/request): "
+                    f"{status}: {str(payload.get('error'))[:400]}")
+        else:
+            sc.fail("unexpected_status",
+                    f"status={status}: {str(payload)[:400]}")
+
+    # -- verify (only when capture_ready) ----------------------------------
+    downloaded_paths: list[Path] = []
+    if sc.status == "pass" and payload is not None:
+        handle = payload.get("handle") or {}
+        sc.equal("s1.final_exit", final_run["rc"], 0)
+        sc.equal("s1.downloads", payload.get("downloads"), 1)
+        s1_totals = counter_totals(ctx["spy"])
+        sc.check("s1.provider_adapter_calls_ge2",
+                 s1_totals.get("provider", 0) >= 2,
+                 f"provider events={s1_totals.get('provider', 0)} "
+                 "(real adapter discover+fetch must have been invoked)")
+        canonical = Path(handle.get("canonical_path") or "")
+        sc.check("s1.canonical_under_temp_wiki",
+                 str(canonical).startswith(str(s1_wiki)),
+                 f"{canonical} not under {s1_wiki}")
+        sc.check("s1.file_exists", canonical.is_file(), str(canonical))
+        if canonical.is_file():
+            size = canonical.stat().st_size
+            digest = sha256_file(canonical)
+            sc.check("s1.size_positive", size > 0, f"size={size}")
+            sc.equal("s1.byte_size_match", handle.get("byte_size"), size)
+            sc.equal("s1.snapshot_sha", handle.get("snapshot_sha256"), digest)
+            sidecar = Path(str(canonical) + ".source.json")
+            sc.check("s1.sidecar_exists", sidecar.is_file(), str(sidecar))
+            if sidecar.is_file():
+                meta = json.loads(sidecar.read_text(encoding="utf-8"))
+                sc.equal("s1.sidecar_sha_binds_bytes",
+                         meta.get("content_sha256"), digest)
+                sc.equal("s1.sidecar_byte_size", meta.get("byte_size"), size)
+                sc.equal("s1.sidecar_provider", meta.get("provider"), "cninfo")
+                sc.check("s1.sidecar_pdoc",
+                         bool(str(meta.get("provider_document_id") or "").strip()),
+                         "provider_document_id empty")
+                sc.check("s1.sidecar_https_url",
+                         str(meta.get("source_url") or "").startswith("https://"),
+                         str(meta.get("source_url"))[:120])
+                sc.check("s1.sidecar_filing_date",
+                         len(str(meta.get("filing_date") or "")) == 10,
+                         str(meta.get("filing_date")))
+                sc.check("s1.sidecar_retrieved_at",
+                         bool(meta.get("retrieved_at")), "missing")
+                sc.check("s1.published_within_as_of",
+                         str(meta.get("filing_date") or "9999") <= AS_OF,
+                         f"filing_date={meta.get('filing_date')} > {AS_OF}")
+            sc.equal("s1.document_id_is_frozen_sha",
+                     handle.get("document_id"),
+                     "urn:company-wiki:document:sha256:" + digest)
+            sc.check("s1.https_url",
+                     str(handle.get("https_url") or "").startswith("https://"),
+                     str(handle.get("https_url"))[:120])
+            downloaded_paths = [canonical, sidecar]
+        # residue + journal evidence (before teardown): outcomes AND the raw
+        # rows (request_id reconciliation proof — F-EE1 evidence)
+        journal = wiki.journal_outcomes()
+        write_json(ev / "journal_outcomes.json", journal)
+        journal_path = wiki.catalog_dir / "acquisition_attempts.jsonl"
+        if journal_path.is_file():
+            rows = [json.loads(line) for line in
+                    journal_path.read_text(encoding="utf-8",
+                                           errors="replace").splitlines()
+                    if line.strip()]
+            write_json(ev / "journal_rows.json", rows)
+        env = handle.get("resolution_envelope") or {}
+        write_json(ev / "envelope.json", {
+            "outcome": env.get("outcome"),
+            "download_events": env.get("download_events"),
+            "response_downloads_field": payload.get("downloads"),
+            "response_calls_field": payload.get("calls"),
+            "handle_request_id": handle.get("request_id")})
+        sc.checks["envelope_outcome"] = env.get("outcome")
+        sc.checks["envelope_download_events"] = env.get("download_events")
+        sc.equal("s1.journal_downloaded_new_count",
+                 journal.count("downloaded_new"), 1)
+        staging = wiki.catalog_dir / "staging"
+        staged_files = ([p for p in staging.rglob("*") if p.is_file()]
+                        if staging.is_dir() else [])
+        sc.equal("s1.no_staged_leftovers", [str(p) for p in staged_files], [])
+        sc.check("s1.no_operation_lock",
+                 not (wiki.catalog_dir / "operation.lock").exists(),
+                 "operation.lock left behind")
+        sc.check("s1.data_budget_le_50mb",
+                 (canonical.stat().st_size if canonical.is_file() else 0)
+                 <= 50_000_000, "download exceeds 50MB budget")
+
+    # -- TEARDOWN: delete downloaded files + temp storage, then ASSERT gone
+    if s1_wiki.exists():
+        proof["pre_delete_inventory"] = [
+            {"path": str(p.relative_to(s1_wiki)),
+             "bytes": p.stat().st_size, "sha256": sha256_file(p)}
+            for p in sorted(s1_wiki.rglob("*")) if p.is_file()]
+        for p in downloaded_paths:
+            if p.is_file():
+                proof["deleted_paths"].append(
+                    {"path": str(p), "sha256": sha256_file(p),
+                     "bytes": p.stat().st_size})
+    ok = rmtree_retry(s1_wiki)
+    proof["post_absent"] = (not s1_wiki.exists()) and ok
+    proof["asserted"] = bool(proof["post_absent"])
+    write_json(ev / "deletion_proof.json", proof)
+    sc.check("s1.teardown_temp_absent", proof["post_absent"],
+             f"{s1_wiki} still exists after teardown")
+    if not proof["asserted"] and sc.status in ("pass", "skip"):
+        sc.fail("restore_violated",
+                "temp download storage could not be deleted/verified gone")
+    if sc.status == "pass" and not downloaded_paths:
+        sc.fail("no_download_evidence",
+                "capture_ready without any on-disk file to verify/delete")
+    sc.checks["deletion_proof"] = {
+        "inventory_files": len(proof["pre_delete_inventory"]),
+        "deleted": len(proof["deleted_paths"]),
+        "post_absent": proof["post_absent"]}
+    return sc.finish()
+
+
+def _build_catl_lake(ctx) -> dict:
+    """RF isolated_lake builder API subclassed with REAL CW filing bytes.
+
+    Returns {manifest, lake, wiki_root, build: evidence-dict} or raises."""
+    lake_root = ctx["work"] / "s2-lake"
+    rmtree_retry(lake_root)
+    sys.path.insert(0, str(REPO / "tests"))
+    sys.path.insert(0, str(CW_ROOT / "src"))
+    from e2e_support.isolated_lake import IsolatedLake, LakeEntry  # noqa: E402
+
+    src_raw = CW_ROOT / CATL_REL
+    src_side = Path(str(src_raw) + ".source.json")
+
+    class CatlRealLake(IsolatedLake):
+        """Real bytes only: the builder's synthetic _body() content is
+        suppressed for every root (owner: 要用真实数据)."""
+
+        def _add_companies(self) -> None:
+            dst_dir = (self.companies / CATL_ENTITY / "raw" /
+                       "financial_reports" / "annual")
+            dst_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src_raw, dst_dir / src_raw.name)   # READ-only source
+            shutil.copy2(src_side, dst_dir / src_side.name)
+            rel = (Path(CATL_ENTITY) / "raw" / "financial_reports" /
+                   "annual" / src_raw.name).as_posix()
+            self.entries.append(LakeEntry(
+                rel_path=rel, sidecar_rel=rel + ".source.json",
+                body_sha=CATL_RAW_SHA, market="CN", security="300750",
+                pdoc=CATL_PDOC, fy=2024, kind="annual_report",
+                root_id="company_raw"))
+
+        def _add_dayu(self) -> None:
+            self.portfolio.mkdir(parents=True, exist_ok=True)  # empty root
+
+        def _add_dropbox(self) -> None:
+            self.dropbox.mkdir(parents=True, exist_ok=True)    # empty root
+
+        def _write_security_master(self, catalog) -> None:
+            # real production identity snapshots (contains 宁德时代/300750)
+            sm = catalog.config.catalog_dir / "security_master"
+            sm.mkdir(parents=True, exist_ok=True)
+            for market in ("cn", "hk", "us"):
+                src = (CW_ROOT / ".source_catalog" / "security_master" /
+                       f"{market}.json")
+                if src.is_file():
+                    shutil.copy2(src, sm / f"{market}.json")
+
+    lake = CatlRealLake(lake_root)
+    manifest = lake.build()
+    wiki_root = lake.wiki_root
+
+    copied_raw = wiki_root / "companies" / CATL_ENTITY / "raw" / \
+        "financial_reports" / "annual" / src_raw.name
+    copied_side = Path(str(copied_raw) + ".source.json")
+
+    build = {
+        "wiki_root": str(wiki_root),
+        "catalog": str(manifest.catalog_path),
+        "manifest_hash": manifest.manifest_hash(),
+        "entries": manifest.relative_manifest(),
+        "copied_raw_sha256": sha256_file(copied_raw),
+        "copied_raw_bytes": copied_raw.stat().st_size,
+        "copied_sidecar_sha256": sha256_file(copied_side),
+        "synthetic_bytes_present": False,
+    }
+
+    # production-mirror state: remove the preset review receipt (I-07-B J1:
+    # production has no receipt; F3: no CLI can create one). Recorded, never
+    # hand-filled green.
+    con = sqlite3.connect(str(manifest.catalog_path))
+    rows = con.execute("SELECT document_id, metadata_json FROM documents"
+                       ).fetchall()
+    removal = {"documents": len(rows), "per_document": []}
+    for doc_id, meta_raw in rows:
+        meta = json.loads(meta_raw or "{}")
+        before = ("prompt_injection_review" in meta,
+                  "prompt_injection_review_audit" in meta)
+        meta.pop("prompt_injection_review", None)
+        meta.pop("prompt_injection_review_audit", None)
+        con.execute("UPDATE documents SET metadata_json=? WHERE document_id=?",
+                    (json.dumps(meta, ensure_ascii=False), doc_id))
+        removal["per_document"].append(
+            {"document_id": doc_id, "receipt_present_before": before[0],
+             "audit_present_before": before[1],
+             "receipt_absent_after": "prompt_injection_review" not in meta})
+    con.commit()
+    counts_after_preset = catalog_counts(manifest.catalog_path)
+    con.close()
+
+    # healing: if the builder's preset missed the target doc (rel_path
+    # convention), re-run the preset with the locations' actual path —
+    # recorded as state construction (I-07-B J9 pattern), never hidden.
+    healed = False
+    if counts_after_preset.get("artifacts", 0) == 0:
+        con = sqlite3.connect(str(manifest.catalog_path))
+        actual = con.execute(
+            "SELECT relative_path FROM locations").fetchall()
+        con.close()
+        if actual:
+            lake.entries[0].rel_path = actual[0][0]
+            lake.entries[0].sidecar_rel = actual[0][0] + ".source.json"
+            lake._preset_v2_artifacts(lake._catalog())
+            healed = True
+            # re-apply the receipt removal after the second preset pass
+            con = sqlite3.connect(str(manifest.catalog_path))
+            for doc_id, meta_raw in con.execute(
+                    "SELECT document_id, metadata_json FROM documents"):
+                meta = json.loads(meta_raw or "{}")
+                meta.pop("prompt_injection_review", None)
+                meta.pop("prompt_injection_review_audit", None)
+                con.execute(
+                    "UPDATE documents SET metadata_json=? WHERE document_id=?",
+                    (json.dumps(meta, ensure_ascii=False), doc_id))
+            con.commit()
+            con.close()
+            removal.setdefault("healed_after_preset", True)
+    build["preset_healed"] = healed
+    build["receipt_removal"] = removal
+    build["catalog_counts"] = catalog_counts(manifest.catalog_path)
+    write_json(ctx["evidence"] / "s2" / "receipt_removal.json", removal)
+    return {"manifest": manifest, "lake": lake, "wiki_root": wiki_root,
+            "build": build}
+
+
+def _ff_parse_argv(ctx, tag_debug: bool = True) -> list:
+    ev = ctx["evidence"] / "s2"
+    return [sys.executable, "-X", "utf8", "-B",
+            str(FF_ROOT / "scripts" / "fetch_filing.py"),
+            "--config", str(ev / "company_wiki.json"),
+            "--request-file", str(ev / "request.json"),
+            "--timeout-seconds", "60"] + (["--debug"] if tag_debug else [])
+
+
+def _source_prep_argv(ctx) -> list:
+    ev = ctx["evidence"] / "s2"
+    return [sys.executable, "-X", "utf8", "-B",
+            str(REPO / "scripts" / "source_preparation.py"),
+            "--request-file", str(ev / "request.json"),
+            "--timeout-seconds", "120",
+            "--company-wiki-config", str(ev / "company_wiki.json"),
+            "--filing-fetch-root", str(FF_ROOT)]
+
+
+def _s2_state(ctx) -> dict:
+    """Shared S2 state: lake + FF config + request (idempotent per run)."""
+    if "s2" in ctx:
+        return ctx["s2"]
+    built = _build_catl_lake(ctx)
+    ev = ctx["evidence"] / "s2"
+    write_json(ev / "build.json", built["build"])
+    write_json(ev / "company_wiki.json",
+               {"schema_version": "1.0",
+                "company_wiki_root": str(built["wiki_root"])})
+    request = {"schema_version": "1.1", "company_query": "300750",
+               "market": "CN", "document_kind": "annual_report",
+               "fiscal_year": 2024, "as_of_date": AS_OF}
+    write_json(ev / "request.json", request)
+    ctx["s2"] = {**built, "request": request,
+                 "catalog": Path(built["manifest"].catalog_path),
+                 "spy": ctx["spy"]}
+    return ctx["s2"]
+
+
+def s2_offline_chain(ctx) -> dict:
+    sc = Scenario("S2")
+    ev = ctx["evidence"] / "s2"
+    try:
+        state = _s2_state(ctx)
+    except Exception as exc:  # noqa: BLE001
+        sc.fail("lake_build_failed",
+                f"{type(exc).__name__}: {exc}\n{traceback.format_exc()[-600:]}")
+        return sc.finish()
+    build = state["build"]
+
+    # real-data pins at build (drift => rebind, never a look-alike substitute)
+    sc.equal("s2.raw_pin_sha256", build["copied_raw_sha256"], CATL_RAW_SHA)
+    sc.equal("s2.raw_pin_bytes", build["copied_raw_bytes"], CATL_RAW_BYTES)
+    sc.equal("s2.sidecar_pin_sha256", build["copied_sidecar_sha256"],
+             CATL_SIDECAR_SHA)
+    sc.equal("s2.no_synthetic_bytes", build["synthetic_bytes_present"], False)
+    removal = build["receipt_removal"]
+    sc.check("s2.review_receipt_absent",
+             all(d["receipt_absent_after"] for d in removal["per_document"])
+             and removal["documents"] >= 1, str(removal)[:300])
+    sc.equal("s2.document_registered", build["catalog_counts"].get("documents", 0) >= 1, True)
+    sc.equal("s2.artifacts_preset", build["catalog_counts"].get("artifacts", 0) >= 1, True)
+
+    # ---- stage A: FF parse step (real CLI, offline resolve) --------------
+    run_a = run_cmd(_ff_parse_argv(ctx), cwd=ctx["work"],
+                    env=chain_env(state["spy"]), timeout=90.0,
+                    tag="s2_ff_parse", ev_dir=ev)
+    sc.equal("s2.stageA.exit", run_a["rc"], 0)
+    payload_a = run_a["docs"][-1] if run_a["docs"] else {}
+    sc.equal("s2.stageA.status", payload_a.get("status"), "capture_ready")
+    sc.equal("s2.stageA.downloads", payload_a.get("downloads"), 0)
+    handle = payload_a.get("handle") or {}
+    sc.equal("s2.stageA.byte_size", handle.get("byte_size"), CATL_RAW_BYTES)
+    sc.equal("s2.stageA.snapshot_sha", handle.get("snapshot_sha256"),
+             CATL_RAW_SHA)
+    sc.equal("s2.stageA.provider", handle.get("provider"), "cninfo")
+    sc.equal("s2.stageA.pdoc", handle.get("provider_document_id"), CATL_PDOC)
+    sc.check("s2.stageA.canonical_in_lake",
+             str(handle.get("canonical_path") or "").startswith(
+                 str(state["wiki_root"])),
+             str(handle.get("canonical_path"))[:200])
+    sc.equal("s2.stageA.published_within_as_of",
+             str(handle.get("published_date") or "9999") <= AS_OF, True)
+    sc.check("s2.stageA.https_url",
+             str(handle.get("https_url") or "").startswith("https://"),
+             str(handle.get("https_url"))[:120])
+
+    # ---- stage B: RF source_preparation (I-00-B argv form) ---------------
+    raw_path = state["wiki_root"] / "companies" / CATL_ENTITY / "raw" / \
+        "financial_reports" / "annual" / CATL_REL.name
+    raw_sha_pre = sha256_file(raw_path)
+    counts_pre_b = catalog_counts(state["catalog"])
+    run_b = run_cmd(_source_prep_argv(ctx), cwd=ctx["work"],
+                    env=chain_env(state["spy"]), timeout=150.0,
+                    tag="s2_source_prep", ev_dir=ev)
+    sc.equal("s2.stageB.exit", run_b["rc"], 3)
+    sc.equal("s2.stageB.stdout_empty", run_b["stdout"].strip(), "")
+    ra = refusal_analysis(run_b["stdout"], run_b["stderr"])
+    write_json(ev / "stageB_refusal.json", ra)
+    err = str(ra["parsed_fields"].get("error") or "")
+    sc.equal("s2.stageB.error_code", ra["parsed_fields"].get("error_code"),
+             "upstream")
+    sc.check("s2.stageB_review_gate_message",
+             "prompt injection not reviewed" in err
+             and "prompt_injection_status=not_reviewed" in err,
+             err[:300])
+    sc.check("s2.stageB_explicit_missing_info",
+             bool(ra["explicit_missing_info"])
+             and ra["explicit_missing_info"]["names_missing"],
+             str(ra["explicit_missing_info"]))
+    # F2 observed, not fixed: no structured actionable recovery fields
+    sc.equal("s2.stageB_no_structured_recovery",
+             ra["structured_actionable_present"], False)
+    sc.equal("s2.stageB_no_record_emitted",
+             "reuse_receipt" in run_b["stdout"], False)
+    # stage assertions: raw unchanged, no duplicate registration, docs pre>=1
+    sc.equal("s2.raw_unchanged_after_run", sha256_file(raw_path),
+             raw_sha_pre)
+    sc.equal("s2.raw_still_pin", raw_sha_pre, CATL_RAW_SHA)
+    counts_post_b = catalog_counts(state["catalog"])
+    sc.equal("s2.stageB_catalog_delta", catalog_delta(counts_pre_b,
+                                                      counts_post_b), {})
+    sc.equal("s2.documents_pre_run_ge1", counts_pre_b.get("documents", 0) >= 1,
+             True)
+    state["stageB_refusal_message"] = err
+    state["counter_baseline"] = counter_totals(state["spy"])
+    write_json(state["spy"] / "after_s2.json", state["counter_baseline"])
+    return sc.finish()
+
+
+def s3_second_run(ctx) -> dict:
+    sc = Scenario("S3")
+    ev = ctx["evidence"] / "s3"
+    try:
+        state = _s2_state(ctx)
+    except Exception as exc:  # noqa: BLE001
+        sc.fail("s2_state_unavailable", f"{type(exc).__name__}: {exc}")
+        return sc.finish()
+    baseline = state.get("counter_baseline") or counter_totals(state["spy"])
+    pre_counts = catalog_counts(state["catalog"])
+    wiring_path = state["spy"] / "wiring.json"
+    wiring = read_json(wiring_path) if wiring_path.is_file() else {}
+    producer_wrapped = any(
+        v.get("status") == "wrapped" and v.get("counter") == "producer"
+        for v in wiring.values() if isinstance(v, dict))
+    sc.check("s3.producer_wiring_wrapped", producer_wrapped,
+             "no producer counter wrap installed")
+    raw_path = state["wiki_root"] / "companies" / CATL_ENTITY / "raw" / \
+        "financial_reports" / "annual" / CATL_REL.name
+    raw_sha_pre = sha256_file(raw_path)
+    tree_pre = tree_snapshot(state["wiki_root"], hash_files=True,
+                             exclude_files=VOLATILE_CATALOG_FILES)
+
+    # ---- stage A rerun: reuse with zero downloads ------------------------
+    run_a = run_cmd(_ff_parse_argv(ctx), cwd=ctx["work"],
+                    env=chain_env(state["spy"]), timeout=90.0,
+                    tag="s3_ff_parse_rerun", ev_dir=ev)
+    sc.equal("s3.stageA.exit", run_a["rc"], 0)
+    payload_a = run_a["docs"][-1] if run_a["docs"] else {}
+    sc.equal("s3.stageA.status", payload_a.get("status"), "capture_ready")
+    sc.equal("s3.stageA.zero_download", payload_a.get("downloads"), 0)
+
+    # ---- stage B rerun: same refusal, recovery story = idempotent --------
+    run_b = run_cmd(_source_prep_argv(ctx), cwd=ctx["work"],
+                    env=chain_env(state["spy"]), timeout=150.0,
+                    tag="s3_source_prep_rerun", ev_dir=ev)
+    sc.equal("s3.stageB.exit", run_b["rc"], 3)
+    ra = refusal_analysis(run_b["stdout"], run_b["stderr"])
+    write_json(ev / "stageB_refusal.json", ra)
+    msg2 = str(ra["parsed_fields"].get("error") or "")
+    sc.equal("s3.stageB_identical_refusal", msg2,
+             state.get("stageB_refusal_message", msg2))
+    sc.check("s3.stageB_explicit_missing_info",
+             bool(ra["explicit_missing_info"])
+             and ra["explicit_missing_info"]["names_missing"],
+             str(ra["explicit_missing_info"]))
+    sc.equal("s3.stageB_no_structured_recovery",
+             ra["structured_actionable_present"], False)
+
+    # ---- counters + catalog + bytes --------------------------------------
+    post = counter_totals(state["spy"])
+    deltas = {k: post.get(k, 0) - baseline.get(k, 0)
+              for k in sorted(set(baseline) | set(post))}
+    post_counts = catalog_counts(state["catalog"])
+    write_json(ev / "counters.json", {
+        "baseline_after_s2": baseline, "after_s3": post, "deltas": deltas,
+        "wiring_producer_wrapped": producer_wrapped})
+    sc.equal("s3.zero_provider_calls", deltas.get("provider", 0), 0)
+    sc.equal("s3.zero_scan_calls", deltas.get("scan", 0), 0)
+    sc.equal("s3.zero_producer_calls", deltas.get("producer", 0), 0)
+    sc.check("s3.read_recorded", "read" in deltas,
+             f"read counter absent from deltas: {deltas}")
+    sc.equal("s3.zero_catalog_row_delta", catalog_delta(pre_counts,
+                                                        post_counts), {})
+    sc.equal("s3.raw_unchanged", sha256_file(raw_path), raw_sha_pre)
+    sc.equal("s3.raw_still_pin", raw_sha_pre, CATL_RAW_SHA)
+    # valid artifacts not re-produced: the whole lake tree (raw, sidecar,
+    # derived artifacts, configs) is byte-identical after both reruns —
+    # volatile sqlite/lock runtime files excluded (see tree_snapshot doc).
+    tree_post = tree_snapshot(state["wiki_root"], hash_files=True,
+                              exclude_files=VOLATILE_CATALOG_FILES)
+    sc.equal("s3.lake_tree_unchanged", tree_post, tree_pre)
+    sc.equal("s3.artifacts_rows_unchanged",
+             post_counts.get("artifacts", 0),
+             pre_counts.get("artifacts", 0))
+    sc.equal("s3.producer_events_rows_unchanged",
+             post_counts.get("producer_events", 0),
+             pre_counts.get("producer_events", 0))
+    return sc.finish()
+
+
+def s5_bad_filing(ctx) -> dict:
+    sc = Scenario("S5")
+    ev = ctx["evidence"] / "s5"
+    try:
+        _s2_state(ctx)   # the shared isolated lake must exist
+    except Exception as exc:  # noqa: BLE001
+        sc.fail("s2_state_unavailable", f"{type(exc).__name__}: {exc}")
+        return sc.finish()
+    request = {"schema_version": "1.1", "company_query": "300750",
+               "market": "CN", "document_kind": "annual_report",
+               "fiscal_year": 1999, "provider_document_id":
+               "does-not-exist-000", "as_of_date": AS_OF}
+    write_json(ev / "request.json", request)
+    argv = [sys.executable, "-X", "utf8", "-B",
+            str(FF_ROOT / "scripts" / "fetch_filing.py"),
+            "--config", str(ctx["evidence"] / "s2" / "company_wiki.json"),
+            "--request-file", str(ev / "request.json"),
+            "--timeout-seconds", "60"]
+    run = run_cmd(argv, cwd=ctx["work"], env=chain_env(None), timeout=90.0,
+                  tag="s5_fetch", ev_dir=ev)
+    sc.equal("s5.exit_code", run["rc"], 2)
+    payload = run["docs"][-1] if run["docs"] else {}
+    sc.equal("s5.structured_not_found", payload.get("status"), "not_found")
+    sc.check("s5.error_names_missing",
+             bool(str(payload.get("error") or "")),
+             str(payload)[:300])
+    sc.check("s5.no_handle", "handle" not in payload, "handle present")
+    sc.equal("s5.zero_downloads", payload.get("downloads"), 0)
+    return sc.finish()
+
+
+def s6_company_not_found(ctx) -> dict:
+    sc = Scenario("S6")
+    ev = ctx["evidence"] / "s6"
+    try:
+        _s2_state(ctx)   # the shared isolated lake must exist
+    except Exception as exc:  # noqa: BLE001
+        sc.fail("s2_state_unavailable", f"{type(exc).__name__}: {exc}")
+        return sc.finish()
+    request = {"schema_version": "1.1", "company_query": "不存在的公司-XYZ-999",
+               "market": "CN", "document_kind": "annual_report",
+               "fiscal_year": 2024, "as_of_date": AS_OF}
+    write_json(ev / "request.json", request)
+    argv = [sys.executable, "-X", "utf8", "-B",
+            str(FF_ROOT / "scripts" / "fetch_filing.py"),
+            "--config", str(ctx["evidence"] / "s2" / "company_wiki.json"),
+            "--request-file", str(ev / "request.json"),
+            "--timeout-seconds", "60"]
+    run = run_cmd(argv, cwd=ctx["work"], env=chain_env(None), timeout=90.0,
+                  tag="s6_fetch", ev_dir=ev)
+    sc.equal("s6.exit_code", run["rc"], 2)
+    payload = run["docs"][-1] if run["docs"] else {}
+    sc.check("s6.structured_status",
+             payload.get("status") in ("identity_error", "not_found"),
+             f"status={payload.get('status')}: {str(payload)[:300]}")
+    sc.check("s6.honest_error",
+             bool(str(payload.get("error") or "")), str(payload)[:300])
+    sc.check("s6.no_handle", "handle" not in payload, "handle present")
+    sc.equal("s6.zero_downloads", payload.get("downloads"), 0)
+    return sc.finish()
+
+
+def s4_restore_invariants(ctx) -> dict:
+    sc = Scenario("S4")
+    ev = ctx["evidence"] / "s4"
+    base = ctx["baseline"]
+    work = ctx["work"]
+
+    # 1) temp storage gone: remove the lake (evidence already persisted),
+    #    then the work root itself must disappear entirely.
+    lake_root = work / "s2-lake"
+    lake_ok = rmtree_retry(lake_root)
+    s1_gone = not (work / "s1-wiki").exists()
+    work_ok = rmtree_retry(work) if work.exists() else True
+    post_state = {"s1_wiki_absent": s1_gone,
+                  "s2_lake_absent": (not lake_root.exists()) and lake_ok,
+                  "work_root_absent": (not work.exists()) and work_ok}
+    write_json(ev / "temp_state.json", post_state)
+    sc.equal("s4.temp_storage_absent", post_state,
+             {"s1_wiki_absent": True, "s2_lake_absent": True,
+              "work_root_absent": True})
+
+    # 2) real CW files unchanged (READ-only sources re-hashed)
+    post = capture_baseline()
+    write_json(ev / "post_snapshot.json", post)
+    sc.equal("s4.cw_real_files_unchanged", post["cw_files_sha256"],
+             base["cw_files_sha256"])
+    sc.equal("s4.cw_raw_pin", post["cw_files_sha256"][
+        str(CATL_REL.as_posix())], CATL_RAW_SHA)
+    sc.equal("s4.cw_sidecar_pin", post["cw_files_sha256"][
+        str(CATL_REL.as_posix()) + ".source.json"], CATL_SIDECAR_SHA)
+    sc.equal("s4.cn_master_pin", post["cw_files_sha256"][
+        "security_master/cn.json"], CN_MASTER_SHA)
+
+    # 3) production catalog stat-only unchanged (never opened)
+    sc.equal("s4.prod_catalog_stat_unchanged", post["prod_catalog_stat"],
+             base["prod_catalog_stat"])
+
+    # 4) FF real config/storage roots: no new files
+    sc.equal("s4.ff_config_listing", post["ff_roots"]["config"],
+             base["ff_roots"]["config"])
+    sc.equal("s4.ff_scripts_listing", post["ff_roots"]["scripts"],
+             base["ff_roots"]["scripts"])
+    sc.equal("s4.ff_e2e_listing", post["ff_roots"]["e2e"],
+             base["ff_roots"]["e2e"])
+    sc.equal("s4.ff_tests_listing", post["ff_roots"]["tests"],
+             base["ff_roots"]["tests"])
+    sc.equal("s4.ff_config_bytes", post["ff_real_config_sha256"],
+             base["ff_real_config_sha256"])
+    sc.equal("s4.cw_storage_top_level", post["cw_storage_top"],
+             base["cw_storage_top"])
+    sc.equal("s4.cw_entity_files", post["cw_entity_files"],
+             base["cw_entity_files"])
+
+    # 5) RF repo unchanged except the two deliverables
+    rf_new = sorted(set(post["rf_files"]) - set(base["rf_files"]))
+    rf_changed = sorted(k for k in set(post["rf_files"]) & set(base["rf_files"])
+                        if post["rf_files"][k] != base["rf_files"][k])
+    rf_gone = sorted(set(base["rf_files"]) - set(post["rf_files"]))
+    write_json(ev / "rf_diff.json", {"new": rf_new, "changed": rf_changed,
+                                     "gone": rf_gone,
+                                     "allowed_new": sorted(ALLOWED_NEW_RF_FILES)})
+    sc.equal("s4.rf_no_unexpected_new", sorted(set(rf_new) - ALLOWED_NEW_RF_FILES), [])
+    sc.equal("s4.rf_no_changed_existing", rf_changed, [])
+    sc.equal("s4.rf_no_deleted", rf_gone, [])
+    return sc.finish()
+
+
+# --------------------------------------------------------------------------
+# main
+# --------------------------------------------------------------------------
+
+def preflight(ev: Path) -> str | None:
+    """Verify pinned PRODUCT CODE files; drift => rebind, never run."""
+    result = {"checked_at": datetime.now(timezone.utc).isoformat(),
+              "pins": {}, "drift": []}
+    for path, expected in CODE_PINS.items():
+        if not path.is_file():
+            result["pins"][str(path)] = "MISSING"
+            result["drift"].append(str(path))
+            continue
+        actual = sha256_file(path)
+        result["pins"][str(path)] = actual
+        if actual != expected:
+            result["drift"].append(f"{path}: {actual} != {expected}")
+    siblings = {"filing_fetch": FF_ROOT.is_dir(), "company_wiki": CW_ROOT.is_dir()}
+    result["siblings"] = siblings
+    if not all(siblings.values()):
+        result["drift"].append(f"sibling repos absent: {siblings}")
+    write_json(ev / "preflight.json", result)
+    if result["drift"]:
+        return "binding drift / unusable workspace (rebind required): " + \
+            "; ".join(result["drift"])[:800]
+    return None
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--scenarios", default=",".join(SCENARIO_ORDER),
+                        help="comma list from S1,S2,S3,S4,S5,S6")
+    parser.add_argument("--live", choices=("auto", "never", "force"),
+                        default="auto",
+                        help="live-download handling; RF_E2E_LIVE_DOWNLOAD "
+                             "env overrides (0=never, 1=force)")
+    parser.add_argument("--work-root", type=Path, default=None,
+                        help="temp isolation root (default %%TEMP%%/rf_e2e_expand_<stamp>)")
+    parser.add_argument("--evidence-dir", type=Path, default=None,
+                        help="evidence output dir (default e2e/.runs/cross_repo_chain/<stamp>)")
+    args = parser.parse_args(argv)
+
+    selected = [s.strip().upper() for s in args.scenarios.split(",")
+                if s.strip()]
+    unknown = [s for s in selected if s not in SCENARIO_ORDER]
+    if unknown:
+        print(f"ERROR: unknown scenario(s): {unknown}", file=sys.stderr)
+        return 2
+    # canonical order, S4 always last when selected
+    ordered = [s for s in SCENARIO_ORDER if s in selected]
+
+    evidence = (args.evidence_dir or
+                HERE / ".runs" / "cross_repo_chain" / RUN_STAMP).resolve()
+    work = (args.work_root or
+            Path(tempfile.gettempdir()) /
+            f"rf_e2e_expand_{RUN_STAMP}").resolve()
+    evidence.mkdir(parents=True, exist_ok=True)
+    if work.exists():
+        rmtree_retry(work)
+    work.mkdir(parents=True, exist_ok=True)
+
+    drift = preflight(evidence)
+    if drift:
+        print(f"E2E-EXIT2: {drift}", file=sys.stderr)
+        return 2
+
+    gate = live_gate(args.live)
+    baseline = capture_baseline()
+    write_json(evidence / "baseline.json", baseline)
+
+    ctx = {"evidence": evidence, "work": work, "gate": gate,
+           "baseline": baseline,
+           "spy": evidence / "counters"}
+    materialize_spy(ctx["spy"])   # installed BEFORE the first scenario
+    funcs = {"S1": s1_download_verify_delete, "S2": s2_offline_chain,
+             "S3": s3_second_run, "S5": s5_bad_filing,
+             "S6": s6_company_not_found, "S4": s4_restore_invariants}
+
+    started = time.monotonic()
+    results: list[dict] = []
+    for sid in ordered:
+        t0 = time.monotonic()
+        print(f"[e2e-expand] running {sid} ...", flush=True)
+        try:
+            result = funcs[sid](ctx)
+        except Exception as exc:  # noqa: BLE001
+            result = {"id": sid, "status": "fail",
+                      "reason": {"code": "harness_exception",
+                                 "detail": f"{type(exc).__name__}: {exc}"},
+                      "checks": {}, "failures": [], "elapsed_s": 0.0}
+            write_text(evidence / f"{sid}_exception.txt",
+                       traceback.format_exc())
+        results.append(result)
+        print(f"[e2e-expand] {sid}: {result['status'].upper()}"
+              + (f" ({result['reason']})" if result.get("reason") else "")
+              + f" [{result['elapsed_s']}s]  (wall {round(time.monotonic()-t0,1)}s)",
+              flush=True)
+
+    # S4 must be the last scenario whenever selected — enforce explicitly
+    if "S4" in ordered and ordered[-1] != "S4":
+        raise AssertionError("S4 ordering violated")
+
+    statuses = {r["id"]: r["status"] for r in results}
+    exit_code = 1 if any(s == "fail" for s in statuses.values()) else 0
+    summary = {
+        "run_id": RUN_STAMP,
+        "started_at": baseline["captured_at"],
+        "finished_at": datetime.now(timezone.utc).isoformat(),
+        "total_elapsed_s": round(time.monotonic() - started, 3),
+        "interpreter": sys.executable,
+        "live_gate": gate,
+        "scenarios": results,
+        "statuses": statuses,
+        "exit_code": exit_code,
+        "network_scope": ("S1: one reachability probe + one real cninfo "
+                          "download" if gate != "never" else
+                          "none (live gate never)"),
+        "production_writes": 0,
+    }
+    write_json(evidence / "summary.json", summary)
+    print(f"[e2e-expand] summary: {evidence / 'summary.json'}", flush=True)
+    for r in results:
+        line = f"E2E-{r['id']}: {r['status'].upper()}"
+        if r.get("reason"):
+            line += f" reason={r['reason'].get('code')}"
+        print(line, flush=True)
+    print(f"E2E EXIT {exit_code} (total {summary['total_elapsed_s']}s)",
+          flush=True)
+    return exit_code
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

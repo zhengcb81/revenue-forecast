@@ -1129,3 +1129,13 @@ REM-80（M01-M04 扩权或豁免）、REM-84（START_HERE append-3 授权）。
 - **CF-I14FR1-3 discharged**（268 文件/2827 节点、hook-induced=0）；14 既有失败=独立债务清单转结。
 - 批 5 收口（登记册§47–51、progress R94、三函+START_HERE append、全部新 attempt）→提交推送。
 - 下一步：**19 卡链 I-07-B 起**（I-06-A/B 已毕）；store UNRATIFIED=D-W06 轨道；14 债务清单跟踪。
+
+---
+
+## 2026-09-23 — Round 95：批次 5c 全绿 `b0d016a6`——八卡闭环+两门根因循环+终局计分册
+
+- **两轮门根因修（零绕行）**：轮 1 ruff F401+BOM+宿主字面三修；轮 2 real-roots E2E 联动缺陷（`5d72529` 合面 × RF 旧 fixture）→ RF-E2E-ADAPT 卡根因修+预捕 real-data 两同族 → GREEN。
+- **八卡全链闭环**（TTL/FIX/I-06-B双/I-06-A/GUARD-MERGE/CW-TEST-DEBT/CFI/RF-E2E-ADAPT）：每卡冻结 oracle→红绿变异→独立复审 ACCEPT→落定三件套（零自签、carrier 零动、F 系处置+父裁嵌入）。
+- **批次 5a/5b/5c 推送绿**（origin=`b0d016a6`、ahead=0、门 10/10 含 real-roots+real-data）；CW 两提交入史（`ac4ebd0`+`5d72529`）、活树首验 26/26。
+- 记账：登记册 §47–54、自纠累计 10 例（含第 9 BOM/第 10 漏 stage）、CF-I14FR1-3 discharged、14 既有债=独立清单。
+- **下一步：19 卡链 I-07-B 起**（I-06-A/B ✅ 已毕）；残余在册=D-W06/函 B/14 债/OQ-03/B-6b/M01-M04（owner/外部轨）。

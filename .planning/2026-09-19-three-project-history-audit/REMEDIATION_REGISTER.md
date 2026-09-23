@@ -1205,3 +1205,71 @@ CW commit = `prompt_injection_guard.py d7125478…` + `prompt_injection.py 88154
 
 ### F-2 归属（复审旗：第五个 M 测试文件）
 `tests/test_fc905b_trusted_receipt.py`（`db8bbb48`、+14/−2）= **FIX-W06-GAPS P4-SCOPE 授权测试面的欠提交件**——其验收 scope 明写「RF tests **2 files** `41da045c`+`db8bbb48` → parent batch」；message-pins 已随批 5 入史、**fc905b 我漏 stage（第 10 例派单遗漏自纠）**——批 5c **明示来源并入**（非静默搭载；内容=FIX pin 分毫符）。mtime 02:22:04 落在批 5 提交窗、卡窗（02:36 后）之外=非 RF-E2E-ADAPT 所写（其「恰 4 文件」成立）。
+
+---
+
+## 五十四、【批次 5c 全绿落地 `b0d016a6`——两轮门根因修循环闭环 + 终局计分册】2026-09-23 03:41
+
+**推送**：`865428f8..b0d016a6`、push_rc=0、**门 10/10 全绿**（ruff/compileall/unique/host-guard/mypy/meta/BOM/install-sync 自动同步 4 fixture/real-roots/**real-data**）。ahead=0。
+
+**两轮门根因修循环（CI root-fix 协议、零绕行）**：
+- 轮 1：ruff F401（fc 面未过该仓 lint 族）→ 我 BOM 自引入（PS 写文件选型=第 9 例自纠）→ 宿主字面切计算式+env——三修同提交。
+- 轮 2：real-roots E2E 4F = **`5d72529` 合面读面 × RF 旧形态 fixture 联动缺陷**——RF-E2E-ADAPT 卡（ACCEPT `d7e4d723`）根因修：4 RF fixture 走 CW 真 writer 新契约（业务断言 66=66 不动）、**预捕 real-data 第 7 步两同族**、GREEN=门原选择集 55 过、变异回红 zr803 露真错。
+- 附带：fc905b 欠提交明示并入（第 10 例自纠=漏 stage）。
+
+### 终局计分（本计划执行_runs 全景）
+
+| 阶段 | 状态 |
+|---|---|
+| 裁定链（三 T2 模拟+owner 终确「全部接受」+RESPONSES/转录） | ✅ |
+| 22 存疑收口（19 确认关+3 随修复关、零无主；TTL=A） | ✅ |
+| 探针 6 件（P1 FAIL…P6 CONFIRMED，证据 sha 锚全） | ✅ |
+| **修复/实施/合面/采样 8 卡全链**（TTL/FIX/I-06-B双/I-06-A/GM/CW-TEST-DEBT/CFI/RF-E2E-ADAPT：oracle 冻结→红绿变异→独立复审全 ACCEPT→落定三件套零自签） | ✅ |
+| CW 生产面两提交（`ac4ebd0` 5 文件晋升适配 + `5d72529` 合面 5 文件）+ 活树首验 26/26 | ✅ |
+| 批次 1/2/3/4/5a/5b/5c 全部推送绿（origin=`b0d016a6`） | ✅ |
+| E1E7 四翻转记账、F3 跑者归因、CF-I14FR1-3 discharged（14 既有债=独立清单转结） | ✅ |
+
+**残余在册**：store UNRATIFIED（D-W06 冻结签名=字母 D 轨道）、P5-b 完整身份链（函 B）、14 既有债清单、OQ-03（owner）、B-6b/M01-M04 推广（owner）、19 卡链余 18 张（I-06-A/B ✅ → **I-07-B 起**）。
+
+---
+
+## 五十五、【CI 连红确切原因（owner 令查）——WSL 严格双臂重放定责】2026-09-23
+
+**取证链**：GitHub Actions API（run/jobs/steps/annotations）+ WSL2 Ubuntu 原生克隆严格重放 CI 步9（`pytest tests tools/tests -q --ignore x23`，PYTHONPATH=wiki@钉）双臂对照。
+
+### 事实时间线
+- 最后一绿 = run **#287 @ 9-20 07:47Z**；其后至 #309 **连续全红**（≥2 天、跨多次推送）——**红早于昨天的提交**。
+- CI 步9 失败仅 26-30 s（早期红）；两 job：ubuntu `verify` 步9 +（#309 起）windows `real-roots` 步7。
+
+### 确切原因（双臂分离，arm1=钉件9-03 / arm2=新件5d72529）
+1. **持续红底色=本仓固有14 项**（两臂均红）：**棘轮 ×2 已定日到提交**——`scripts/model_extensions.py` 9-20 08:51 入 VCS 即 27>新文件帽10（`5db4734a`，比最后一绿晚 4 分钟）；`scripts/analysis/confidence.py` 9-20 15:04 被 `[Checkout-checkpoint] from fcap to main` 换成 32>冻结23（`70dd9f6e`）；棘轮测试 8-13 未动。余12 项（receipt_attacks/attestation/fc1102×3/fc1302×2/single_owner/zr1102/zr601×2/zr708）待逐项归因（同9-20 fcap 并入+晋升窗嫌疑）。
+2. **昨天新叠红=钉旧分歧 ×10 项**（arm1 红 arm2 消失）：manifest `compatibility/current.json` wiki 钉=`31c0afcb`（**9-03，无 evidence_payload/state_domain**——字节核 False/False vs HEAD True）× batch-5c 新 fixture 写回执带 `evidence_payload` ⇒ `TypeError: unexpected keyword argument`（isolated_lake:351 实录）⇒ zr802×7/zr805/fc1102-degraded/fc1302-new_errors 红；**windows sibling-E2E 同机制**（CI 两 job 吃钉件、不吃我本地活件）。**CW 本地 fcap 分支领先 `origin/master` 2 提交（ac4ebd0+5d72529）未推**——即便推，**不改钉 CI 仍用旧件**。
+
+### 为什么三层本地检查全没挡（结构性差集）
+| 层 | 实际覆盖 | 缺口 |
+|---|---|---|
+| RF pre-commit 钩 | 仅 ruff/mypy/host-guard **3 静态项、0 pytest**（配置自注 "Full regression stays manual"） | 设计上不可能拦测试红 |
+| 我手动 pre-push 门（10 步） | 静态+real-roots7 件+real-data10 件 | **无 CI 步9 大套件（含 tools/tests 棘轮）**；无 coverage/mutation/publication/plan-claims；`.git/hooks` **无 pre-push 钩**（纯手动调） |
+| 环境 | Windows + **本地活 sibling**（含本地新提交） | CI=ubuntu 套件 + **manifest 钉件**（旧 3 周）——同测试不同物 ⇒ 本地绿≠CI 绿 |
+
+### 修复序列（依 CI root-fix 协议、零绕行）
+① 推 CW 两提交 → manifest wiki 钉更新至 `5d72529` → RF 推（先跑 FC-1101 校验测试）= 消 10 项两 job 同修；② 棘轮两红按"修码不改帽"处理（提帽=预算裁定=owner 项，未批不动 FROZEN）；③ 余12 项逐项归因卡；④ 门补面：pre-push 步9 同选集（含 tools/tests）+ 装真 pre-push 钩 + Linux 面用 WSL 双跑或 CI 自监控强化。
+
+---
+
+## 五十六、【I-07-B 落定（19 卡链第 3 张）+ 父动作三件执行】2026-09-23
+
+- **I-07-B `a20260923-01` = accepted_scoped**：复审 `fc96bb0b`（亲跑 WPROBE 字节同+S-CN-2 全字段同+隔离库三调零变、三发现独立证、42/42 simulated、生产库 FILETIME 反推恒同）；落定三件 `c008af4c…`/`e43cf258…`/`9080cf30…`；**F5**（CRLF 变体钉、REM-86 类）以 EOL 域注记结算、原钉保留。**三声明+OVERALL=NEGATIVE 随下游携带**；F1/F2/F3=下游路由（F2→I-06-A 未签 OPEN-5 结构化恢复、F3→D-W06 review-CLI 缺口、F1→入口 vs cli-scan 注册缺口）。
+- **父动作执行**：① I-00-B 锚表刷新=追加 `I-00-B/a20260919-01/anchor_refresh_20260923.json`（旧钉冻结为史、三行 old→new+归因、复审验证背书）；② %TEMP% `i07b` 清理=已授权并执行；③ 尝试证据提交=批 6（owner 轨）。
+- **链计分**：I-06-A ✅ I-06-B ✅(+新面) **I-07-B ✅** → 下一张 I-07-C（依赖=I-07-B 现已落定）。
+- **在飞**：E2E-EXPAND 卡（跨仓全链小套件，owner 四约束）；CI 归因修复序列（§55）待 owner 按其指示启动。
+
+---
+
+## 五十七、【E2E-EXPAND 复审 ACCEPTED-SCOPED（KEEP-RED 裁定）+ F-EE1 新缺陷立卡】2026-09-23
+
+- **复审 `de849e1a…`/42915 B**：中心裁定=**KEEP THE RED**（oracle `downloads==1` 按 FF READ-10 契约 `fetch_filing.py:663-666` 规格正确；**假零=品缺**）；四 owner 约束逐条实证（REAL=双删除证据15/2/post_absent×2+CW 真字节活哈希符；隔离=drift-exit2 实证+14/14 钉+快照内容键7/7 同+生产库 stat-only N=0 开；小规模=时标重导；不大张旗鼓=+11 钉字面11/11 逐字在跑器、零 workflow 引用、quality.yml 未触）；复审自跑（pytest2p1s rc044.4s、runner exit0、三检 rc0、fc1307a3p+1预存）；tri-state 实码=J-E1 相符（F-RV-08 微差披露）；网络台账2 探针+2 下载各带删除证明。
+- **F-EE1 双端坐实**（FC-704 禁类）：journal `request_id e8177b37…` ≠ resolution `request_id 47c3a925…` → `resolver.py:1021-1029` skip → envelope `reused_existing`/`download_events=0` → FF `downloads` 假零（READ-09/10+`_record_download_events:622-629` 传播、RF ENV-11 违）——**×2 实证**。**立 `F-EE1-FIX` 修卡**（owner「缺陷全修」令覆盖；iso 红绿变异、零网络、零产写）。
+- findings F-RV-02..06/09..11=落定时记录修（值改+原值留痕）、F-RV-01=下游载体入本册、F-RV-07/08=注记。
+- **J-C1 三红=我 §55 归因面同物**（fc1307a 字节漂移 9294dc7c vs20c9da56、single_owner、棘轮2）——measure-only、卡写面外。
+- 落定在办 → 3 RF 文件入批 6（runner `88ac9e4a`、tests `3e2b39ee`、allowlist `ff9db8c8`）。
