@@ -1,0 +1,44 @@
+{
+ "card_id": "M01",
+ "model_id": "direct_growth",
+ "attempt_id": "a20260919-01",
+ "scope": "minimum closed-period reconciliation requested by the task brief; NOT the full I-10-A historical reconciliation",
+ "tolerance_frozen_before_run": {
+  "absolute_cny": 1000000.0,
+  "reason": "Holding the issuer's own printed 2-decimal growth rate fixed, a single-rate path can only reproduce the disclosed revenue to within the rounding of that printed rate; 0.01pp on a CNY 349bn base is ~CNY 34.9m, so a CNY 1m tolerance is deliberately tighter than the rounding and would flag a genuine basis error.",
+  "rounding_floor_cny": 34907908.285
+ },
+ "entity": "紫金矿业集团股份有限公司",
+ "segment": "consolidated_group_total_operating_revenue",
+ "currency": "CNY",
+ "scale": "1 (yuan)",
+ "restatement_check": {
+  "fy2024_per_FY2024_report": {"value": "303,639,957,153", "doc": "cninfo:1222870413", "page": 15, "column": "2024 年", "printed_yoy_pct": "3.49"},
+  "fy2024_per_FY2025_report_comparative": {"value": "303,639,957,153", "doc": "cninfo:1225023658", "page": 15, "column": "2024 年", "printed_yoy_pct": "14.96"},
+  "result": "identical, so this anchor is NOT restatement-contaminated and no mixed-basis bridge is needed",
+  "third_year_available": {"fy2023": "293,403,242,878", "source": "FY2024 report page 15 column 2023 年"}
+ },
+ "closed_period_probe": {
+  "base_period": "FY2024",
+  "base_revenue_cny": "303,639,957,153",
+  "target_period": "FY2025",
+  "disclosed_growth_rate_decimal": "0.1496",
+  "formula_prediction_cny": "349,064,494,744.53",
+  "disclosed_actual_cny": "349,079,082,852",
+  "residual_cny": "14,588,108.91",
+  "residual_pct_of_disclosed": "0.004179",
+  "residual_sign_convention": "disclosed minus prediction",
+  "residual_decomposition": {
+   "issuer_print_rounding": "the printed 14.96% is a 2-decimal rounding of the exact 14.9648%; this alone explains up to about CNY 16.7m of the residual",
+   "unexplained_by_the_model": "the model has no volume/price, equity-production, intercompany-elimination, M&A, FX or inventory terms, so no further decomposition is possible from this model. It is a scope limitation, not a measured driver effect."
+  },
+  "conclusion": "the single-rate path reproduces the closed period only to the precision of the issuer's printed rate; the model provides no economic decomposition. This supports a FORMULA qualification and explicitly does NOT support an accuracy claim."
+ },
+ "cross_year_continuity_check": {
+  "fy2023_to_fy2024_disclosed_pct": "3.49",
+  "fy2024_to_fy2025_disclosed_pct": "14.96",
+  "implication": "two consecutive disclosed periods use materially different rates, so a constant-CAGR reading of direct_growth is already falsified by the second period for this issuer"
+ },
+ "not_a_forecast": "both periods were already public before this attempt ran; the probe is a historical_mapping_probe and must never be described as a three-scenario forecast or as accuracy evidence",
+ "reviewer": "PENDING_INDEPENDENT_REVIEW"
+}

@@ -1,0 +1,28 @@
+{
+  "case": "F1",
+  "title": "N-1 errors surface as store-owned types (P1-e)",
+  "iso": "fixed",
+  "ruling_clause": "FIX-W06-GAPS oracle P1-e; probe01 claim bare-throw; OPEN-5 C5 error contract",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "F1_claim_store_owned",
+      "ok": true,
+      "detail": "type=DemandStoreUnavailable text='demand store write failed: OperationalError: no such column: lease_until' (bare sqlite3.OperationalError is the probe01 RED shape; expect DemandStore* with store contract text)"
+    },
+    {
+      "name": "F1_list_active_store_owned",
+      "ok": true,
+      "detail": "type=DemandStoreUnavailable text='demand store read failed: IndexError: No item with that key' (bare sqlite3.OperationalError is the probe01 RED shape; expect DemandStore* with store contract text)"
+    },
+    {
+      "name": "F1_register_store_owned",
+      "ok": true,
+      "detail": "type=DemandStoreUnavailable text='demand store write failed: OperationalError: no such column: key_version' (bare sqlite3.OperationalError is the probe01 RED shape; expect DemandStore* with store contract text)"
+    }
+  ],
+  "raw": {},
+  "error": null,
+  "seconds": 0.143,
+  "finished_at": "2026-09-23T00:05:05"
+}

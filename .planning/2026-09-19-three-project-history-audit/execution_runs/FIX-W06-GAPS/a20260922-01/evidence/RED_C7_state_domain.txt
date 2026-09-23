@@ -1,0 +1,106 @@
+target pkg-dir : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\before\cw
+    __init__.py sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    processing_demand.py sha256=90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b
+    prompt_injection.py sha256=7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618
+    prompt_injection_guard.py sha256=f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08
+    reader.py sha256=f3ff2d4ba6f9b8d581512c64129296072653463ad5df4571e0f1ec55e58cec54
+    readiness_graph.py sha256=3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc
+    source_lifecycle.py sha256=c98613301a1ae32ffa1c7b0a1ee1051841de73b34a31bdff14bed161bcb87788
+
+[N1 policy-changed evaluation] -> {"outcome": "ACCEPTED", "value": "ReviewEvaluation(status='not_reviewed', cache_state='ignored', reason='policy ruleset changed since review')"}
+[N1 read cache record as review conclusion] -> {"outcome": "REJECTED", "error_type": "AttributeError", "text": "module 'pi_pkg.prompt_injection_guard' has no attribute 'require_state_domain'"}
+
+[N2 read review record as cache state] -> {"outcome": "REJECTED", "error_type": "AttributeError", "text": "module 'pi_pkg.prompt_injection_guard' has no attribute 'require_state_domain'"}
+
+[N3 read receipt MISSING state_domain] -> {"outcome": "ACCEPTED", "value": {"schema_version": "1.0", "status": "not_detected", "reviewer": "r", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}
+[N3 guard _receipt_from_store MISSING state_domain] -> {"outcome": "ACCEPTED", "value": {"schema_version": "1.0", "status": "not_detected", "reviewer": "r", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}
+[N3 ReviewEvaluation WITHOUT state_domain] -> {"outcome": "ACCEPTED", "value": "ReviewEvaluation(status='not_reviewed', cache_state='absent', reason='')"}
+
+[N4 gate with illegal state_domain] -> {"outcome": "REJECTED", "error_type": "AttributeError", "text": "module 'pi_pkg.prompt_injection_guard' has no attribute 'require_state_domain'"}
+[N4 ReviewEvaluation with cross-domain tag] -> {"outcome": "REJECTED", "error_type": "TypeError", "text": "ReviewEvaluation.__init__() got an unexpected keyword argument 'state_domain'"}
+[N4 ReviewEvaluation with illegal tag] -> {"outcome": "REJECTED", "error_type": "TypeError", "text": "ReviewEvaluation.__init__() got an unexpected keyword argument 'state_domain'"}
+[N4 readiness _SAFETY_MAP with unknown cache_state] -> {"outcome": "REJECTED", "error_type": "KeyError", "text": "'weird-future-state'"}
+
+=== SUMMARY ===
+{
+  "C7_N1_cache_record_not_review_conclusion": {
+    "maps_c7": "dual negative ①: cache-invalidation record must not be readable as a review conclusion",
+    "policy_changed_evaluation": {
+      "outcome": "ACCEPTED",
+      "value": "ReviewEvaluation(status='not_reviewed', cache_state='ignored', reason='policy ruleset changed since review')"
+    },
+    "read_as_review": {
+      "outcome": "REJECTED",
+      "error_type": "AttributeError",
+      "text": "module 'pi_pkg.prompt_injection_guard' has no attribute 'require_state_domain'"
+    },
+    "ok": false
+  },
+  "C7_N2_review_record_not_cache_state": {
+    "maps_c7": "dual negative ②: detected_and_ignored must not be readable as cache state",
+    "read_as_cache": {
+      "outcome": "REJECTED",
+      "error_type": "AttributeError",
+      "text": "module 'pi_pkg.prompt_injection_guard' has no attribute 'require_state_domain'"
+    },
+    "vocabularies_disjoint": true,
+    "ok": false
+  },
+  "C7_N3_missing_state_domain_rejected": {
+    "maps_c7": "fail-closed negative ③: record missing state_domain => reject / strictest (receipt read -> None/not_reviewed; ReviewEvaluation construction -> TypeError)",
+    "receipt_read": {
+      "outcome": "ACCEPTED",
+      "value": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "r",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "guard_receipt_read": {
+      "outcome": "ACCEPTED",
+      "value": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "r",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "evaluation_construction": {
+      "outcome": "ACCEPTED",
+      "value": "ReviewEvaluation(status='not_reviewed', cache_state='absent', reason='')"
+    },
+    "ok": false
+  },
+  "C7_N4_illegal_value_rejected_strictest": {
+    "maps_c7": "fail-closed negative ④: illegal value => reject / strictest, never passed",
+    "gate_illegal": {
+      "outcome": "REJECTED",
+      "error_type": "AttributeError",
+      "text": "module 'pi_pkg.prompt_injection_guard' has no attribute 'require_state_domain'"
+    },
+    "evaluation_cross_domain": {
+      "outcome": "REJECTED",
+      "error_type": "TypeError",
+      "text": "ReviewEvaluation.__init__() got an unexpected keyword argument 'state_domain'"
+    },
+    "evaluation_illegal_tag": {
+      "outcome": "REJECTED",
+      "error_type": "TypeError",
+      "text": "ReviewEvaluation.__init__() got an unexpected keyword argument 'state_domain'"
+    },
+    "readiness_unknown_cache_state": {
+      "outcome": "REJECTED",
+      "error_type": "KeyError",
+      "text": "'weird-future-state'"
+    },
+    "ok": false
+  }
+}
+    C7_N1_cache_record_not_review_conclusion: FAIL
+    C7_N2_review_record_not_cache_state: FAIL
+    C7_N3_missing_state_domain_rejected: FAIL
+    C7_N4_illegal_value_rejected_strictest: FAIL
+C7 SCENARIOS: FAIL

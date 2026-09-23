@@ -1,0 +1,80 @@
+{
+  "card_id": "TTL-30D-POLICY",
+  "attempt_id": "a20260922-01",
+  "binding_rule": "every card clause binds to (a) the owner-ratified contract source, (b) the exact implementation locus, (c) the frozen oracle case(s), (d) the evidence artifact. Nothing implemented outside these rows.",
+  "rows": [
+    {
+      "id": "B-1",
+      "card_clause": "Policy constant: POLICY_RECEIPT_TTL_CAP_SECONDS = 86400 * 30 (module-level), docstring notes it is part of the policy_hash-covered contract; changing it = policy change ⇒ old receipts invalidated per OPEN-4 4c",
+      "contract_source": [
+        "OWNER_DECISIONS.md:439 (§十九, verbatim): 「TTL 定值 = 选项 A：30 天（86400×30）为 policy 上限——依 OPEN-6 C6 机制…调用方可收紧至 1d/1h 等；改值仅需 owner 一句话」",
+        "OPEN-6 ruling C6 — T2-SIM-OPEN6-SEC/a20260922-01/ruling.md:172 (verbatim): 「回执 TTL 上限由 policy_hash 绑定的策略固定；调用方传入的 now/ttl 只能收紧、不能放宽」",
+        "OPEN-4 4c — T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md:63,116-127 (policy content change ⇒ old receipts die at read time); ruling.md:137,194 states TTL 数值不由 OPEN-4 规范 ⇒ belongs to this card"
+      ],
+      "locus": "iso/prompt_injection_guard.py — module constant after CACHE_STATES (+ module docstring 'Policy surface' block + comment block naming §十九/C6/4c)",
+      "oracle_cases": ["TTL-C0"],
+      "evidence": "evidence/green_after.json results['TTL-C0'] (value==2592000, in __all__); changes.diff hunk @@ -58,6 +73,16 @@"
+    },
+    {
+      "id": "B-2",
+      "card_clause": "Enforcement in evaluate_review: caller ttl_seconds > cap ⇒ REJECT (fail-closed) — raise PromptInjectionGuardError(\"ttl_seconds exceeds policy cap of 2592000s\")",
+      "contract_source": [
+        "卡面 TTL-30D-POLICY 条 2（钦定 REJECT，「只能收紧」严格解读）",
+        "OPEN-6 C6 负例 (ruling.md:172): 「ttl=∞ … ⇒ 被拒或被策略上限截断」——本卡选 被拒",
+        "OPEN-6 现状核验 (ruling.md:215): L168 纯调用方比较、无策略侧上限 ⇒ 缺口为真"
+      ],
+      "locus": "iso/prompt_injection_guard.py evaluate_review input validation, after the pre-existing ttl<0 check and BEFORE _receipt_from_store (validation precedes receipt read, matching the existing hash checks' order); _freshness docstring records that ttl reaching it is already policy-bounded (enforcement covers the whole _freshness chain via its sole caller)",
+      "oracle_cases": ["TTL-N1", "TTL-N2", "TTL-N3", "TTL-P1", "TTL-N4"],
+      "evidence": "evidence/red_before.json (N1/N2/N3 RED: no raise, observed hit) vs evidence/green_after.json (exact message raise); changes.diff hunks @@ -187,6 +230,11 @@ and @@ -194,6 +242,11 @@"
+    },
+    {
+      "id": "B-3",
+      "card_clause": "C6 negative now-past: now < reviewed_at must NOT count as fresh; if past-now resurrects ⇒ DEFECT, fix fail-closed as tampered/clock-anomaly",
+      "contract_source": [
+        "卡面 TTL-30D-POLICY 条 2（now 过去复活 ⇒ 按 tampered/clock-anomaly fail-closed；缺陷全修）",
+        "OPEN-6 C6 负例: 「now=过去 复活已过期回执 ⇒ 被拒或被策略上限截断」",
+        "OPEN-6 ruling.md:159/:168 evidence: now is a pure caller parameter"
+      ],
+      "locus": "iso/prompt_injection_guard.py _freshness — new now_seconds < reviewed_at branch returning not_reviewed/tampered before the age>ttl comparison",
+      "oracle_cases": ["TTL-N5", "TTL-N6", "TTL-P3", "TTL-N7 (non-gating limitation probe)"],
+      "evidence": "DEFECT MEASUREMENT: evidence/red_before.json N5/N6/N7 observed cache_state=hit (resurrection confirmed on current code) -> evidence/green_after.json N5/N6 observed tampered with reason 'receipt reviewed_at is after now (clock anomaly; now may only tighten freshness)'"
+    },
+    {
+      "id": "B-4",
+      "card_clause": "NaN/inf widening bypass (derived from 「不能放宽」, pre-registered in oracle §1-4)",
+      "contract_source": ["OPEN-6 C6 「只能收紧、不能放宽」+ 卡面 ttl=∞ 负例"],
+      "locus": "iso/prompt_injection_guard.py evaluate_review — cap comparison also rejects +inf (exceeds cap); math.isfinite rejects NaN (comparisons with NaN are all False ⇒ would otherwise never expire)",
+      "oracle_cases": ["TTL-N8", "TTL-N9"],
+      "evidence": "evidence/red_before.json (NaN/inf observed hit = widening bypass) vs green_after.json (both raise PromptInjectionGuardError)"
+    },
+    {
+      "id": "B-5",
+      "card_clause": "Callers: passthrough callers inherit the cap (readiness_graph.py:115 passthrough); audit all call sites; tighten product tests ONLY if a >cap test exists",
+      "contract_source": ["卡面 TTL-30D-POLICY 条 3"],
+      "locus": "no readiness_graph.py change needed — evaluate_readiness L115 -> _safety_verdict L96-103 pass ttl straight into evaluate_review, which now raises; product tests audited: ZERO >cap call sites ⇒ ZERO product-test edits",
+      "oracle_cases": ["TTL-G1", "TTL-G2", "TTL-R1", "TTL-R2"],
+      "evidence": "evidence/caller_audit.txt (full call-site ledger with line numbers); evidence/red_before.json G1 RED (no raise) vs green_after.json G1 raise with exact message; product_tests_before/after.txt both 26 passed with ZERO test edits"
+    },
+    {
+      "id": "B-6",
+      "card_clause": "RED/GREEN/mutation: current-lacks-cap = RED on oracle cap case; fixed = GREEN; mutation (remove cap check) ⇒ RED",
+      "contract_source": ["卡面 TTL-30D-POLICY 条 4", "oracle.md §2 mutation plan"],
+      "locus": "scripts/ttl30d_probe.py (frozen-expectation probe) + mutants/m1 + mutants/m2",
+      "oracle_cases": ["full table"],
+      "evidence": "evidence/red_before.json (9 gating RED) / green_after.json (16/16) / mutation_m1_cap_removed.json (red={N1,N2,N3,N8,N9,G1}) / mutation_m2_pastnow_removed.json (red={N5,N6}) / green_confirm.json (16/16 after restore)"
+    },
+    {
+      "id": "B-7",
+      "card_clause": "Work entirely in the attempt (copy guard into iso/, edit there, run tests in %TEMP% against the iso copy); production CW/RF writes = ZERO; no git",
+      "contract_source": ["卡面 TTL-30D-POLICY 条 5"],
+      "locus": "iso/ + %TEMP%/ttl30d-a20260922-01 mirror (src+2 test files+conftests copied); production guard never opened for write",
+      "oracle_cases": [],
+      "evidence": "prod guard sha256 re-verified AFTER all runs = F900A13D7C22FE3BD742485C6B603DE11B92A56D2414A2A046216CCD3B0B9C08 (== before); commands.json git_writes='none'; changes.diff produced by python difflib, not git"
+    }
+  ],
+  "explicitly_not_bound": [
+    "llm_summarizer production-exit gap (W05 / wiki-audit.md:60) — other card, untouched",
+    "RULESET_HASH computation / putting the cap into the hash payload — card only requires the docstring declaration; hash-mechanism change is out of scope (see handoff.unproven U-2)",
+    "scripts/reviewer_gate.py evaluate_review — different function (no ttl), audit-only row"
+  ]
+}

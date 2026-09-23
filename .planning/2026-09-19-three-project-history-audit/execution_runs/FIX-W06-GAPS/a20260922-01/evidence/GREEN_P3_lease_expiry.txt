@@ -1,0 +1,150 @@
+target module : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\iso\candidate\processing_demand_store.py
+module sha256 : 1bbcf9ce727a9882cc2ca4aa2f0ab335077debee418b19d80317721cfae6be88
+
+registered demand_id=demand-2f8ac00e6a564b74
+[S-P3a claim(w1, lease_seconds=1.0)] -> {"rc": 0, "shape": "returned", "result": {"demand_id": "demand-2f8ac00e6a564b74", "demand_key": "f42267e8082e251ab23c37c1787cf4d422ef32a592d8ecb2f83e69111c7fff0d", "kind": "review", "status": "running", "source_id": "src-lease", "source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "review_policy": "p", "role_set": "normalized,sections", "gaps": [], "request_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "attempts": 0, "lease_owner": "w1", "lease_until": 1790115705.0494552, "created_at": 1790115704.0013995, "updated_at": 1790115704.0494552, "candidate_marker": "candidate-unratified-I-06-A-a20260919-01", "key_version": "request-identity-v2"}}
+    sleeping 1.4s past lease expiry ...
+[S-P3a re-claim by SAME owner after expiry] -> {"rc": 1, "shape": "exception", "code": "DemandStateError", "text": "lease expired"}
+[S-P3a re-claim by THIRD party after expiry] -> {"rc": 1, "shape": "exception", "code": "DemandStateError", "text": "lease expired"}
+    db rows now: [{"demand_id": "demand-2f8ac00e6a564b74", "status": "running", "lease_owner": "w1", "lease_until": 1790115705.0494552}]
+
+[S-P3b claim(demand_id, lease=1.0)] -> {"rc": 0, "shape": "returned", "result": {"demand_id": "demand-3f799f2fc4a84196", "demand_key": "0cc85828c5465c80125724d5ed99abc663e44fdae1580bc7ee3588d351814106", "kind": "review", "status": "running", "source_id": "s1", "source_sha256": "1111111111111111111111111111111111111111111111111111111111111111", "review_policy": "p", "role_set": "normalized,sections", "gaps": [], "request_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "attempts": 0, "lease_owner": "w1", "lease_until": 1790115706.552975, "created_at": 1790115705.519372, "updated_at": 1790115705.552975, "candidate_marker": "candidate-unratified-I-06-A-a20260919-01", "key_version": "request-identity-v2"}}
+[S-P3b claim(demand_id) INSIDE lease] -> {"rc": 1, "shape": "exception", "code": "DemandStateError", "text": "demand 'demand-3f799f2fc4a84196' is not claimable"}
+[S-P3b claim(demand_id) AFTER expiry] -> {"rc": 1, "shape": "exception", "code": "DemandStateError", "text": "lease expired"}
+
+[S-P3c explicit expire()] -> {"rc": 0, "shape": "returned", "result": 1}
+    after expire: [{"demand_id": "demand-3f799f2fc4a84196", "status": "pending", "lease_owner": null, "lease_until": null}]
+[S-P3c explicit re-claim after expire] -> {"rc": 0, "shape": "returned", "result": {"demand_id": "demand-3f799f2fc4a84196", "demand_key": "0cc85828c5465c80125724d5ed99abc663e44fdae1580bc7ee3588d351814106", "kind": "review", "status": "running", "source_id": "s1", "source_sha256": "1111111111111111111111111111111111111111111111111111111111111111", "review_policy": "p", "role_set": "normalized,sections", "gaps": [], "request_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "attempts": 0, "lease_owner": "w2", "lease_until": 1790116007.01334, "created_at": 1790115705.519372, "updated_at": 1790115707.01334, "candidate_marker": "candidate-unratified-I-06-A-a20260919-01", "key_version": "request-identity-v2"}}
+
+[S-P3d surface] ['_connect', '_initialize', 'claim', 'database_path', 'expire', 'list_active', 'register'] resume=False complete=False
+
+=== SUMMARY ===
+{
+  "P3B_expired_refusals": {
+    "maps_03": "[P3-a re-claim by SAME owner / THIRD party after expiry] (03: rc=0 -> None, row stranded running)",
+    "claim_for_reference": {
+      "rc": 0,
+      "shape": "returned",
+      "result": {
+        "demand_id": "demand-2f8ac00e6a564b74",
+        "demand_key": "f42267e8082e251ab23c37c1787cf4d422ef32a592d8ecb2f83e69111c7fff0d",
+        "kind": "review",
+        "status": "running",
+        "source_id": "src-lease",
+        "source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "review_policy": "p",
+        "role_set": "normalized,sections",
+        "gaps": [],
+        "request_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "attempts": 0,
+        "lease_owner": "w1",
+        "lease_until": 1790115705.0494552,
+        "created_at": 1790115704.0013995,
+        "updated_at": 1790115704.0494552,
+        "candidate_marker": "candidate-unratified-I-06-A-a20260919-01",
+        "key_version": "request-identity-v2"
+      }
+    },
+    "reclaim_same_owner_after_expiry": {
+      "rc": 1,
+      "shape": "exception",
+      "code": "DemandStateError",
+      "text": "lease expired"
+    },
+    "reclaim_third_party_after_expiry": {
+      "rc": 1,
+      "shape": "exception",
+      "code": "DemandStateError",
+      "text": "lease expired"
+    },
+    "db_rows": [
+      {
+        "demand_id": "demand-2f8ac00e6a564b74",
+        "status": "running",
+        "lease_owner": "w1",
+        "lease_until": 1790115705.0494552
+      }
+    ],
+    "expect": "DemandStateError(\"lease expired\") — never silent None",
+    "ok": true
+  },
+  "P3B_demand_id_refusals": {
+    "maps_03": "P3-B extension: claim(demand_id) around lease expiry (c5 family)",
+    "inside_lease_refusal": {
+      "rc": 1,
+      "shape": "exception",
+      "code": "DemandStateError",
+      "text": "demand 'demand-3f799f2fc4a84196' is not claimable"
+    },
+    "after_expiry_refusal": {
+      "rc": 1,
+      "shape": "exception",
+      "code": "DemandStateError",
+      "text": "lease expired"
+    },
+    "expect_inside": "DemandStateError(f\"demand {demand_id!r} is not claimable\")",
+    "expect_after_expiry": "DemandStateError(\"lease expired\")",
+    "ok": true
+  },
+  "P3A_explicit_expire_reclaim": {
+    "maps_03": "03 [P3-a ...] stranded_running_expired_lease=true repair: explicit expire/reclaim entry (memory queue expire() shape: after expire: [('pd-0','pending',None)])",
+    "expire": {
+      "rc": 0,
+      "shape": "returned",
+      "result": 1
+    },
+    "rows_after_expire": [
+      {
+        "demand_id": "demand-3f799f2fc4a84196",
+        "status": "pending",
+        "lease_owner": null,
+        "lease_until": null
+      }
+    ],
+    "reclaim_after_expire": {
+      "rc": 0,
+      "shape": "returned",
+      "result": {
+        "demand_id": "demand-3f799f2fc4a84196",
+        "demand_key": "0cc85828c5465c80125724d5ed99abc663e44fdae1580bc7ee3588d351814106",
+        "kind": "review",
+        "status": "running",
+        "source_id": "s1",
+        "source_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "review_policy": "p",
+        "role_set": "normalized,sections",
+        "gaps": [],
+        "request_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "attempts": 0,
+        "lease_owner": "w2",
+        "lease_until": 1790116007.01334,
+        "created_at": 1790115705.519372,
+        "updated_at": 1790115707.01334,
+        "candidate_marker": "candidate-unratified-I-06-A-a20260919-01",
+        "key_version": "request-identity-v2"
+      }
+    },
+    "expect": "expire() returns 1; row -> pending with lease cleared; explicit re-claim succeeds",
+    "ok": true
+  },
+  "P3D_interface_absence": {
+    "maps_03": "03 [P3-0 candidate API surface] resume/complete ABSENT-implement-first — parent ruling: unbuilt interfaces (handoff L240 不得假装存在), I-06-B domain, NOT built here",
+    "public_surface": [
+      "_connect",
+      "_initialize",
+      "claim",
+      "database_path",
+      "expire",
+      "list_active",
+      "register"
+    ],
+    "resume_absent": true,
+    "complete_absent": true,
+    "ok": true
+  }
+}
+P3 SCENARIOS: PASS
+    P3B_expired_refusals: PASS
+    P3B_demand_id_refusals: PASS
+    P3A_explicit_expire_reclaim: PASS
+    P3D_interface_absence: PASS

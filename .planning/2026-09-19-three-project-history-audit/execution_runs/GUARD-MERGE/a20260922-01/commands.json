@@ -1,0 +1,47 @@
+{
+  "card": "GUARD-MERGE",
+  "attempt": "a20260922-01",
+  "python": "3.13.9 (C:\\Miniconda\\python.exe), pytest 9.1.1, Windows/pwsh",
+  "note": "run_utc sequence in order; every write lands in this attempt dir or %TEMP%; -X utf8 everywhere (GBK-safe); NO git command of any kind; production trees opened READ-ONLY.",
+  "variables": {
+    "A": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/GUARD-MERGE/a20260922-01",
+    "TTL": ".../execution_runs/TTL-30D-POLICY/a20260922-01",
+    "FIX": ".../execution_runs/FIX-W06-GAPS/a20260922-01",
+    "I06A": ".../execution_runs/I-06-A/a20260922-02",
+    "I06B": ".../execution_runs/I-06-B/a20260922-02",
+    "CW": "C:/Users/郑曾波/Projects/company-wiki",
+    "RF": "C:/Users/郑曾波/Projects/revenue-forecast",
+    "MIRROR_TTL": "%TEMP%/guardmerge-ttl-mirror",
+    "MIRROR_RF": "%TEMP%/guardmerge-rf-tests",
+    "PKG_MERGED": "%TEMP%/guardmerge-merged-pkg (+ %TEMP%/guardmerge-merged-src import layout)",
+    "MIRROR_CW_ORIGSEED": "%TEMP%/guardmerge-cwtests-origseed",
+    "STATUSQUO": "%TEMP%/guardmerge-statusquo"
+  },
+  "steps": [
+    {"id": "C1", "cmd": "Get-FileHash SHA256 over all three sources' before/after faces + the 3 production files", "result": "every start-of-attempt pin == each card's binding.json (evidence/raw/live_pins_start.json); production == before pins"},
+    {"id": "C2", "cmd": "write oracle.md (composition rules verbatim + battery plan + conflict protocol + RED definition) then sha256 -> oracle_freeze.json", "result": "oracle frozen BEFORE any run: c346e4503834db3a197177acd932a093d501d232fb6a3f361c47f0ac78e552d5"},
+    {"id": "C3", "cmd": "scaffold <A>/{iso,before,evidence,scripts,recovery,sources}; copy before faces (FIX before/cw, == production) and each source's after face into sources/", "rc": 0},
+    {"id": "C4", "cmd": "compose iso/prompt_injection_guard.py = FIX face + TTL policy block + I-06-A union point (write); Copy-Item FIX prompt_injection.py + readiness_graph.py -> iso/", "result": "guard d7125478…, pi 88154de4… (==FIX), readiness 50c94de2… (==FIX); ast.parse ok"},
+    {"id": "C5", "cmd": "mirror: Remove-Item %TEMP%/guardmerge-ttl-mirror; Copy-Item -Recurse <CW>/src mirror/src; copy conftest.py, tests/conftest.py, tests/unit/{test_prompt_injection_guard,test_readiness_graph}.py; copy merged guard/pi/readiness into mirror/src/company_wiki/source_catalog/", "rc": 0},
+    {"id": "C6", "cmd": "python -X utf8 <TTL>/scripts/ttl30d_probe.py %TEMP%/guardmerge-ttl-mirror/src <A>/evidence/raw/battery_i_unmodified_conflict.json   # UNMODIFIED source script", "rc": 1, "result": "GENUINE CONFLICT C-1: PromptInjectionReviewError: evidence_payload must be provided (crash at make_store, before any case)"},
+    {"id": "C7", "cmd": "python -X utf8 <A>/scripts/_make_adapted_probe.py <TTL>/scripts/ttl30d_probe.py <A>/scripts/ttl30d_probe.py <A>/evidence/raw/battery_i_probe_fixture_adaptation.diff", "rc": 0, "result": "1 diff hunk (fixture call site only); script self-asserts all 17 check() lines byte-identical"},
+    {"id": "C8", "cmd": "python -X utf8 <A>/scripts/ttl30d_probe.py <mirror>/src <A>/evidence/raw/battery_i_adapted_probe_r1.json", "rc": 0, "result": "CONFLICT C-2: gating_failed=[TTL-G2] (safety_cache_state observed 'absent')"},
+    {"id": "C9", "cmd": "python -X utf8 <A>/scripts/_adapt_seed_fixture.py <mirror>/tests/unit/test_readiness_graph.py ... (adds receipt tag state_domain='review'); rerun probe -> battery_i_green.json", "rc": 0, "result": "GREEN battery (i): gating 16/16, failed=[], guard_sha256 in artifact == d7125478…"},
+    {"id": "C10", "cmd": "RED/GREEN: python -X utf8 <A>/scripts/red_green_status_quo.py <A>", "rc": 0, "result": "RED 4/4 gaps confirmed on before faces (over-cap accepted / detected_and_ignored accepted with zero authorization / unbound write accepted / past-now -> hit); GREEN 4/4 fail closed on merged (exact literals)"},
+    {"id": "C11", "cmd": "battery (iii): python -X utf8 <FIX>/scripts/s_c7_state_domain.py --pkg-dir <A>/iso --out <A>/evidence/raw/battery_iii_state_domain_four_negatives.txt", "rc": 0, "result": "N1..N4 all PASS, 'C7 SCENARIOS: PASS'"},
+    {"id": "C12", "cmd": "battery (ii): copy RF tests/{conftest.py,test_message_contract_pins.py,test_fc905b_trusted_receipt.py} + RF scripts/** -> %TEMP%/guardmerge-rf-tests; build %TEMP%/guardmerge-merged-pkg (prod source_catalog copy + merged 3 faces) and %TEMP%/guardmerge-merged-src import layout; $env:PYTHONPATH=%TEMP%/guardmerge-merged-src; $env:GAPS_PIN_CW_DIR=%TEMP%/guardmerge-merged-pkg; python -X utf8 -m pytest tests/test_message_contract_pins.py tests/test_fc905b_trusted_receipt.py -q --no-header -p no:cacheprovider (cwd=%TEMP%/guardmerge-rf-tests)", "rc": 0, "result": "14 passed (RF product tree never written)"},
+    {"id": "C13", "cmd": "battery (iv): Copy-Item <A>/scripts/{run_cases.py,_worker_claim.py} from I-06-B (byte-identical); Copy-Item -Recurse <I06B>/iso -> <A>/iso; overwrite iso/fixed/fixed_pi/{prompt_injection_guard,prompt_injection}.py with the merged faces; python -X utf8 <A>/scripts/run_cases.py --iso fixed --out <A>/evidence/raw/battery_iv_i06b", "rc": 0, "result": "16 GREEN / 2 RED / 18 total; the 2 = H2 + L3 (L3a now passes because the pin test landed in RF tests; L3b still fails = their frozen blocked pair)"},
+    {"id": "C14", "cmd": "battery (v) guard: python -X utf8 <A>/scripts/run_mutations_guard.py <A> %TEMP%/guardmerge-ttl-mirror", "rc": 0, "result": "v1 cap-only -> [G1,N1,N2,N3]; v1b cap+isfinite block (TTL MUT-1 exact) -> [G1,N1,N2,N3,N8,N9]; v2 past-now -> [N5,N6]; v3 isfinite -> [N8]; restored byte-identical + confirm 16/16"},
+    {"id": "C15", "cmd": "battery (v) disposal: python -X utf8 <A>/scripts/run_mutation_disposal.py <A>", "rc": 0, "result": "case J FAIL on mutant (J1/J2 red: unauthorised detected_and_ignored accepted), PASS after restore, arm pi sha256 back to 88154de4…"},
+    {"id": "C16", "cmd": "rule-4 side battery: copy I-06-A before/ + iso/ + scripts/w06a2_cases.py -> <A>/i06a_check/{before,iso,scripts}; overwrite the copy's prompt_injection_guard.py / prompt_injection.py / readiness_graph.py with the merged faces; python -X utf8 i06a_check/scripts/w06a2_cases.py --target i06a_check/iso --out evidence/raw/battery_rule4_i06a_cases_on_merged.json", "rc": 1, "result": "13 passed / 4 failed (N6 payload, N8/N8b CLIP constant+helpers, N10 state_domain_of) — every failure attributed in decision.md §4"},
+    {"id": "C17", "cmd": "informational CW unit tests on merged mirror: python -X utf8 -m pytest tests/unit/test_prompt_injection_guard.py tests/unit/test_readiness_graph.py (adapted-seed mirror) and again with the production seed -> evidence/raw/informational_*.txt", "rc": 1, "result": "11 failed/15 passed (adapted-seed mirror) and 4 failed/5 passed (production seed) = documented test-edit debt, decision.md §5"},
+    {"id": "C18", "cmd": "python -X utf8 <A>/scripts/gen_changes_diff_binding.py <A>", "rc": 0, "result": "changes.diff (difflib, 3 repo sections) + binding.json (source pins start/close, before/merged faces, dropped list, drift disclosure)"},
+    {"id": "C19", "cmd": "write decision.md / handoff.json / recovery.md / evidence/SUMMARY.md; re-hash oracle.md (must equal freeze) and the 3 production files (must equal before pins) for final_deliverable_hashes.json", "rc": 0}
+  ],
+  "read_only_respected": {
+    "company_wiki_src": "READ-ONLY (zero writes; before hashes re-verified at close)",
+    "revenue_forecast_product_tree": "READ-ONLY (tests/scripts copied to %TEMP% before running)",
+    "three_sibling_attempts": "READ-ONLY (copy-out only; I-06-A drift is ITS OWN concurrent fix round — see binding.json drift_observed)",
+    "git": "NONE — no add/commit/stash/checkout/reset/restore/status/diff was executed"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "key",
+  "flipped_guard": "compute_demand_key: OPEN-2 option A request_identity key clause",
+  "file": "cw/src/company_wiki/source_catalog/processing_demand.py",
+  "before": "    payload = {\n        \"source_sha256\": source_sha256,\n        \"review_policy\": review_policy,\n        \"role_set\": normalize_role_set(role_set),\n        \"request_identity\": identity,\n    }",
+  "after": "    payload = {\n        \"source_sha256\": source_sha256,\n        \"review_policy\": review_policy,\n        \"role_set\": normalize_role_set(role_set),\n    }",
+  "expected_red": [
+    "W06A2-N1",
+    "W06A2-P4",
+    "W06A2-N5"
+  ],
+  "expected_still_green": "all other cases",
+  "write_mode": "byte-exact (read_bytes/write_bytes; no newline translation)"
+}

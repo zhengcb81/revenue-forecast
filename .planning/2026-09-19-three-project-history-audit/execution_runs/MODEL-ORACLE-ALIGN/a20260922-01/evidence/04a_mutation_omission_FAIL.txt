@@ -1,0 +1,67 @@
+﻿F                                                                        [100%]
+================================== FAILURES ===================================
+_ EconomicGuardrailTests.test_bank_negative_rates_preserve_sign_without_probability_clamp _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_bank_negative_rates_preserve_sign_without_probability_clamp>
+
+    def test_bank_negative_rates_preserve_sign_without_probability_clamp(self) -> None:
+        drivers = {
+            "average_earning_assets": [1000], "asset_yield": [-0.005],
+            "average_interest_bearing_liabilities": [800], "funding_cost": [-0.01],
+            "fee_revenue": [2],  # MUTATION-PROBE: aligned field omitted again -> must fail at :410
+        }
+>       self.assertEqual(calculate_registered_model("bank_revenue", 0, drivers, [2026]), [5])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'bank_revenue', base_revenue = 0
+drivers = {'average_earning_assets': [1000], 'asset_yield': [-0.005], 'average_interest_bearing_liabilities': [800], 'funding_cost': [-0.01], ...}
+years = [2026]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for bank_revenue: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+=========================== short test summary info ===========================
+FAILED tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_bank_negative_rates_preserve_sign_without_probability_clamp
+1 failed in 2.31s

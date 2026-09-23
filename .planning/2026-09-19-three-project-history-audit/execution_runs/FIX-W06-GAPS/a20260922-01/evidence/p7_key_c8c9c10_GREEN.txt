@@ -1,0 +1,127 @@
+target module : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\iso\candidate\processing_demand_store.py
+module sha256 : 1bbcf9ce727a9882cc2ca4aa2f0ab335077debee418b19d80317721cfae6be88
+
+[c8 as_of_date-only difference] -> {"distinct_ids": true, "distinct_keys": true, "first": {"created": true, "demand_id": "demand-28cfe117b3d44003", "demand_key": "b1d9a570cba690062312b0a74fb0f31683d9cd41328f8b9ab71674a7241eb528", "key_version": "request-identity-v2", "request_sha256": "6ae0a3218f1c522079eb8e31f83f68887f2db5b78b9bcb2d98bb8f4ae93d42c3"}, "ok": true, "request_a": {"as_of_date": "2026-09-22", "note": "payload-v1", "target": "acme-annual-report"}, "request_b": {"as_of_date": "2026-12-31", "note": "payload-v1", "target": "acme-annual-report"}, "request_sha_a_ok": true, "request_sha_b_ok": true, "row_count": 2, "second": {"created": true, "demand_id": "demand-7768937964c44c75", "demand_key": "e9bfc4949bc3646ba899d00a747cf550532ec30ba7403a9c9e5396aa65a7e29e", "key_version": "request-identity-v2", "request_sha256": "3b697d01c2e75cd9b0a85d9687f1b72b83500bbeeae41ba2e36bdee58ae3b62b"}}
+[c9 target-only difference] -> {"distinct_ids": true, "distinct_keys": true, "first": {"created": true, "demand_id": "demand-7355018d73004071", "demand_key": "b1d9a570cba690062312b0a74fb0f31683d9cd41328f8b9ab71674a7241eb528", "key_version": "request-identity-v2", "request_sha256": "6ae0a3218f1c522079eb8e31f83f68887f2db5b78b9bcb2d98bb8f4ae93d42c3"}, "ok": true, "request_a": {"as_of_date": "2026-09-22", "note": "payload-v1", "target": "acme-annual-report"}, "request_b": {"as_of_date": "2026-09-22", "note": "payload-v1", "target": "acme-interim-report"}, "request_sha_a_ok": true, "request_sha_b_ok": true, "row_count": 2, "second": {"created": true, "demand_id": "demand-7a2601c2bc5e4a36", "demand_key": "e5af5a353f2a0d9e27f9d854a1b14eb8682377d619a9000d64017f1650257226", "key_version": "request-identity-v2", "request_sha256": "b66109dafbdef7140bc563bdb5885f0c2699d846135703cb0f4892c92681e5ec"}}
+[c10 payload-only difference] -> {"distinct_ids": true, "distinct_keys": true, "first": {"created": true, "demand_id": "demand-0438cf2ec0e047aa", "demand_key": "b1d9a570cba690062312b0a74fb0f31683d9cd41328f8b9ab71674a7241eb528", "key_version": "request-identity-v2", "request_sha256": "6ae0a3218f1c522079eb8e31f83f68887f2db5b78b9bcb2d98bb8f4ae93d42c3"}, "ok": true, "request_a": {"as_of_date": "2026-09-22", "note": "payload-v1", "target": "acme-annual-report"}, "request_b": {"as_of_date": "2026-09-22", "note": "payload-v2", "target": "acme-annual-report"}, "request_sha_a_ok": true, "request_sha_b_ok": true, "row_count": 2, "second": {"created": true, "demand_id": "demand-b04245ec1de742cf", "demand_key": "fb504f072e3040dd2b7635827a58cc288f0fddcebf28f1aec49854109a1c0e58", "key_version": "request-identity-v2", "request_sha256": "3d8feee316c625ea5dde694eb1dd8badd15ed901006baf0cf89e583ec6a537d8"}}
+
+[legacy key_version judgment] -> {"_legacy_rows": 1, "legacy_key_version": "triple-v1", "merged_silently": false, "new_register_created": true, "rows_after": 2}
+
+=== SUMMARY ===
+{
+  "P7_key_c8c9c10": {
+    "maps_p7": "c8/c9/c10 counterexample family (I-06-B use-case (a) axis): same source/policy/roles, requests differing in exactly one of as_of_date/target/payload — OLD behavior = same key, silent merge-in; expected = two keys + two demand rows + per-row request_sha256",
+    "c8_as_of_date": {
+      "request_a": {
+        "as_of_date": "2026-09-22",
+        "target": "acme-annual-report",
+        "note": "payload-v1"
+      },
+      "request_b": {
+        "as_of_date": "2026-12-31",
+        "target": "acme-annual-report",
+        "note": "payload-v1"
+      },
+      "first": {
+        "created": true,
+        "demand_id": "demand-28cfe117b3d44003",
+        "demand_key": "b1d9a570cba690062312b0a74fb0f31683d9cd41328f8b9ab71674a7241eb528",
+        "request_sha256": "6ae0a3218f1c522079eb8e31f83f68887f2db5b78b9bcb2d98bb8f4ae93d42c3",
+        "key_version": "request-identity-v2"
+      },
+      "second": {
+        "created": true,
+        "demand_id": "demand-7768937964c44c75",
+        "demand_key": "e9bfc4949bc3646ba899d00a747cf550532ec30ba7403a9c9e5396aa65a7e29e",
+        "request_sha256": "3b697d01c2e75cd9b0a85d9687f1b72b83500bbeeae41ba2e36bdee58ae3b62b",
+        "key_version": "request-identity-v2"
+      },
+      "distinct_ids": true,
+      "distinct_keys": true,
+      "row_count": 2,
+      "request_sha_a_ok": true,
+      "request_sha_b_ok": true,
+      "ok": true
+    },
+    "c9_target": {
+      "request_a": {
+        "as_of_date": "2026-09-22",
+        "target": "acme-annual-report",
+        "note": "payload-v1"
+      },
+      "request_b": {
+        "as_of_date": "2026-09-22",
+        "target": "acme-interim-report",
+        "note": "payload-v1"
+      },
+      "first": {
+        "created": true,
+        "demand_id": "demand-7355018d73004071",
+        "demand_key": "b1d9a570cba690062312b0a74fb0f31683d9cd41328f8b9ab71674a7241eb528",
+        "request_sha256": "6ae0a3218f1c522079eb8e31f83f68887f2db5b78b9bcb2d98bb8f4ae93d42c3",
+        "key_version": "request-identity-v2"
+      },
+      "second": {
+        "created": true,
+        "demand_id": "demand-7a2601c2bc5e4a36",
+        "demand_key": "e5af5a353f2a0d9e27f9d854a1b14eb8682377d619a9000d64017f1650257226",
+        "request_sha256": "b66109dafbdef7140bc563bdb5885f0c2699d846135703cb0f4892c92681e5ec",
+        "key_version": "request-identity-v2"
+      },
+      "distinct_ids": true,
+      "distinct_keys": true,
+      "row_count": 2,
+      "request_sha_a_ok": true,
+      "request_sha_b_ok": true,
+      "ok": true
+    },
+    "c10_payload": {
+      "request_a": {
+        "as_of_date": "2026-09-22",
+        "target": "acme-annual-report",
+        "note": "payload-v1"
+      },
+      "request_b": {
+        "as_of_date": "2026-09-22",
+        "target": "acme-annual-report",
+        "note": "payload-v2"
+      },
+      "first": {
+        "created": true,
+        "demand_id": "demand-0438cf2ec0e047aa",
+        "demand_key": "b1d9a570cba690062312b0a74fb0f31683d9cd41328f8b9ab71674a7241eb528",
+        "request_sha256": "6ae0a3218f1c522079eb8e31f83f68887f2db5b78b9bcb2d98bb8f4ae93d42c3",
+        "key_version": "request-identity-v2"
+      },
+      "second": {
+        "created": true,
+        "demand_id": "demand-b04245ec1de742cf",
+        "demand_key": "fb504f072e3040dd2b7635827a58cc288f0fddcebf28f1aec49854109a1c0e58",
+        "request_sha256": "3d8feee316c625ea5dde694eb1dd8badd15ed901006baf0cf89e583ec6a537d8",
+        "key_version": "request-identity-v2"
+      },
+      "distinct_ids": true,
+      "distinct_keys": true,
+      "row_count": 2,
+      "request_sha_a_ok": true,
+      "request_sha_b_ok": true,
+      "ok": true
+    },
+    "expect_key": "sha256(canonical_json({source_sha256, review_policy, role_set, request_identity{as_of_date, target, payload_digest}}))",
+    "ok": true
+  },
+  "P7_legacy_key_semantics_preserved": {
+    "maps_p7": "APPEND A item 2: legacy rows keep historical key semantics (key_version='triple-v1', never recomputed); v2 registrations never silently merge across versions (OPEN-4-style read-time judgment via key_version)",
+    "observed": {
+      "legacy_key_version": "triple-v1",
+      "new_register_created": true,
+      "merged_silently": false,
+      "rows_after": 2,
+      "_legacy_rows": 1
+    },
+    "ok": true
+  }
+}
+    P7_key_c8c9c10: PASS
+    P7_legacy_key_semantics_preserved: PASS
+P7 SCENARIOS: PASS

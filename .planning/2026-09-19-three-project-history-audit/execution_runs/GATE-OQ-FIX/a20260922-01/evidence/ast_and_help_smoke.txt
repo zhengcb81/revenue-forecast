@@ -1,0 +1,51 @@
+=== ast parse check (both target files), run 2026-09-22T18:34:59.4965773Z
+AST OK: both files parse
+=== --help invocation smoke test (no gate step executes) ===
+argv: C:\Miniconda\python.exe tools/pre_push_gate.py --help
+rc=0
+usage: pre_push_gate.py [-h] [--skip-mypy] [--skip-meta-tests]
+                        [--skip-install-sync] [--skip-real-roots]
+                        [--skip-real-data]
+
+Pre-push gate: CI-equivalent fast checks BEFORE pushing (root-cause fix).
+Recurring failure pattern (2026-09-02..09-06): commits passed local single-
+file tests and pre-commit, then CI turned red on gates the local run never
+exercised �� complexity/coverage ratchets, byte-binding contracts (zr901
+workflow hash), manifest/registry hashes, full-tree ruff, and OS-dependent
+fixtures (Windows enumeration order masked a Linux-only document-selection bug
+in wiki fixtures). This gate runs the CI-equivalent FAST surface locally so
+those failures cannot reach CI again: 1. ruff check scripts tests tools e2e
+(mirrors CI WU-1.2 scope) 2. compileall scripts tests tools e2e 3.
+tools/check_unique_test_symbols.py (mirrors CI WU-1.1) 4. mypy on the
+FC-1204-c contract set (mirrors CI exactly) 5. meta/binding tests that guard
+the surfaces most often broken: - tests/test_zr901_pr_fanout.py (workflow
+byte-binding, required-checks contract �� MUST run after ANY quality.yml
+change) - tests/test_compatibility_manifest.py (manifest + contract/scenario/
+command registry hashes �� MUST run after ANY registry/config change) 6. real-
+roots E2E (GP-006): the sibling-dependent suite that CI's blocking real-roots
+job runs on windows-latest �� same set, so gate and CI cannot diverge (skipped
+when the sibling repos are absent). 7. real-data suite (GP-006): the
+production-catalog tests that cannot run on a GitHub-hosted runner; enforced
+here on the machine that owns the catalog (skipped when the catalog is
+absent). 8. installed-skill consistency (owner requirement 2026-09-08): the
+installed copies under ~/.agents, ~/.claude, ~/.codex must equal this repo;
+stale copies are auto-synced from the repo and re-checked. CI cannot cover
+this (runners have no install roots). Exit non-zero on the first red check.
+The FULL pytest suite is NOT part of this gate: on Windows it contains a pre-
+existing hang (test_fc1103_t3_runner.test_with_force blocks on a subprocess
+I/O join that pytest-timeout cannot interrupt). Push protocol (see
+assurance/runs/2026-09-02_remaining-gap-closure/ci_root_fix.md): python
+tools/pre_push_gate.py # ~4-5 min git push ... # THEN self-monitor the GitHub
+Actions run until green; on red, fix # the ROOT CAUSE and extend this gate so
+it would have caught it. Usage: python tools/pre_push_gate.py [--skip-mypy]
+[--skip-meta-tests] [--skip-install-sync] [--skip-real-roots] [--skip-real-
+data]
+
+options:
+  -h, --help           show this help message and exit
+  --skip-mypy
+  --skip-meta-tests
+  --skip-install-sync
+  --skip-real-roots
+  --skip-real-data
+NOTE: --help is answered by argparse before any gate step runs (boundary I-3: no full gate run)

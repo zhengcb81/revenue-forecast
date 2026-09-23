@@ -1,0 +1,46 @@
+{
+ "card_id": "M03",
+ "model_id": "unit_sales",
+ "attempt_id": "a20260919-01",
+ "scope": "minimum closed-period reconciliation requested by the task brief; NOT the full I-10-A historical reconciliation",
+ "entity": "比亚迪股份有限公司",
+ "segment": "new_energy_vehicles (passenger + commercial), BYD FY2024 annual report page 23",
+ "currency": "CNY",
+ "scale": "1 (yuan)",
+ "unit_dimension_check": {
+  "quantity_x_unit_price": "4,250,370 vehicles x 123,751.503987229 CNY/vehicle = 525,989,680,000.00 CNY",
+  "timing_factor": "1.0; dimensionless, and must be 1 because the volume is a full-year realised figure",
+  "other_revenue": "0.0 as the documented default; the field is recorded as missing, NOT as a disclosed zero",
+  "per_share": "not_applicable",
+  "gross_net": "OPEN - the mapped column is labelled 销售收入 with no printed gross/net statement (SR-M03-B)",
+  "period_alignment": "FY2024 volume and FY2024 revenue are read from the same table row, so numerator and denominator share one period and one boundary"
+ },
+ "reconciliation": {
+  "frozen_tolerances_before_run": {"mapping_1_relative_pct": 0.05, "mapping_2_relative_pct": 2.0},
+  "mapping_1_same_table": {
+   "units": "4,250,370",
+   "unit_revenue_cny": "123,751.503987229",
+   "rebuild_cny": "525,989,680,000.00",
+   "disclosed_cny": "525,989,680,000.00",
+   "residual_cny": "0.00",
+   "is_constructive_identity": true,
+   "warning": "unit_revenue was derived from the same revenue cell, so this zero is an identity. It is NOT independent verification and NOT accuracy evidence."
+  },
+  "mapping_2_segment_scope": {
+   "segment_revenue_cny": "617,381,935,000.00",
+   "rebuild_using_total_vehicle_units_at_pv_unit_price_cny": "528,684,368,999.31",
+   "gap_cny": "88,697,566,000.69",
+   "gap_pct": "14.3667",
+   "verdict": "FAILS the frozen 2% tolerance - this is the informative result",
+   "interpretation": "the automobile segment revenue line also contains secondary rechargeable batteries, parts and other products that unit_sales cannot identify; the difference must be bridged with evidence and must never be booked as unexplained residual revenue"
+  },
+  "cross_checks": {
+   "production_vs_sales_gap_units": "4,281,084 produced vs 4,250,370 sold = 30,714 units (0.72%), which is exactly why production must not be used as units",
+   "revenue_yoy": "FY2023 602,315,354,000 -> FY2024 777,102,455,000 = +29.02% (printed 29.02%)",
+   "auto_business_revenue_yoy": "FY2023 483,453,318,000 -> FY2024 617,381,935,000 = +27.70% (printed 27.70%)",
+   "mix_lines_page_23": "sedan / SUV / MPV / commercial sales volumes differ materially, so one blended unit price hides real mix"
+  }
+ },
+ "not_a_forecast": "FY2024 is a closed, already-disclosed period; this is a historical mapping probe only",
+ "reviewer": "PENDING_INDEPENDENT_REVIEW"
+}

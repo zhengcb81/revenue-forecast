@@ -1,0 +1,166 @@
+{
+  "target": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\iso",
+  "passed": 13,
+  "failed": 4,
+  "results": [
+    {
+      "case": "W06A2-P1",
+      "result": "PASS",
+      "measurement": {
+        "demand_id": "demand-249ac65ee1c4a1aa",
+        "clause": "demand_queued demand_id=demand-249ac65ee1c4a1aa gaps=3 next_action=review source then re-run source preparation",
+        "cross_process": 1
+      },
+      "seconds": 1.265
+    },
+    {
+      "case": "W06A2-P2",
+      "result": "PASS",
+      "measurement": {
+        "demand_id": "demand-249ac65ee1c4a1aa",
+        "rows": 1
+      },
+      "seconds": 1.639
+    },
+    {
+      "case": "W06A2-P3",
+      "result": "PASS",
+      "measurement": {
+        "variant_a": "table added, old rows preserved, register+claim ok",
+        "variant_b": "columns backfilled ['attempts', 'created_at', 'demand_id', 'demand_key', 'gaps_json', 'kind', 'lease_owner', 'lease_until', 'next_action', 'priority', 'request_identity_json', 'request_json', 'request_sha256', 'retry_at', 'review_policy', 'role_set', 'source_id', 'source_sha256', 'status', 'terminal_reason', 'updated_at'], legacy row kept, register+claim ok"
+      },
+      "seconds": 0.971
+    },
+    {
+      "case": "W06A2-P4",
+      "result": "PASS",
+      "measurement": {
+        "events": [
+          "register",
+          "claim",
+          "complete"
+        ],
+        "terminal": "terminal_failed"
+      },
+      "seconds": 0.462
+    },
+    {
+      "case": "W06A2-N1",
+      "result": "PASS",
+      "measurement": {
+        "rows": 4,
+        "ids": [
+          "demand-249ac65ee1c4a1aa",
+          "demand-455b69d658890fc1",
+          "demand-73307ce501b7a72d",
+          "demand-c3d7e272945a2e4a"
+        ]
+      },
+      "seconds": 0.979
+    },
+    {
+      "case": "W06A2-N2",
+      "result": "PASS",
+      "measurement": {
+        "clause": "demand_store_error=DemandStoreUnavailable: OperationalError: no such table: processing_demands"
+      },
+      "seconds": 0.278
+    },
+    {
+      "case": "W06A2-N3",
+      "result": "PASS",
+      "measurement": {
+        "threads_before": [
+          "MainThread"
+        ],
+        "threads_after": [
+          "MainThread"
+        ]
+      },
+      "seconds": 0.209
+    },
+    {
+      "case": "W06A2-N4",
+      "result": "PASS",
+      "measurement": {
+        "refusals": "all coded"
+      },
+      "seconds": 0.316
+    },
+    {
+      "case": "W06A2-N5",
+      "result": "PASS",
+      "measurement": {
+        "winner": "w2",
+        "loser": "DemandStateError"
+      },
+      "seconds": 0.324
+    },
+    {
+      "case": "W06A2-N6",
+      "result": "FAIL",
+      "error": "PromptInjectionReviewError: evidence_payload must be provided (evidence_sha256 must bind the evidence bytes)",
+      "traceback": "t):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\scripts\\w06a2_cases.py\", line 970, in main\n    measurement = fn(t) or {}\n                  ~~^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\scripts\\w06a2_cases.py\", line 575, in case_n6_receipt_invalidation_independence\n    pi_mod.record_prompt_injection_review(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        conn, \"doc-1\", status=\"not_detected\", reviewer=\"zr302-test\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        evidence_sha256=\"e\" * 64, now=\"2026-09-19T00:00:00Z\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        source_sha256=source_sha, policy_hash=policy_hash,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\iso\\cw\\src\\company_wiki\\source_catalog\\prompt_injection.py\", line 315, in record_prompt_injection_review\n    raise PromptInjectionReviewError(\n        \"evidence_payload must be provided \"\n        \"(evidence_sha256 must bind the evidence bytes)\")\ncompany_wiki.source_catalog.prompt_injection.PromptInjectionReviewError: evidence_payload must be provided (evidence_sha256 must bind the evidence bytes)\n",
+      "seconds": 0.224
+    },
+    {
+      "case": "W06A2-N7",
+      "result": "PASS",
+      "measurement": {
+        "kinds": [
+          "missing",
+          "not_applicable",
+          "unsupported"
+        ]
+      },
+      "seconds": 0.242
+    },
+    {
+      "case": "W06A2-N8",
+      "result": "FAIL",
+      "error": "AttributeError: module 'company_wiki.source_catalog.prompt_injection_guard' has no attribute 'RECEIPT_TTL_POLICY_CAP_SECONDS'",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\scripts\\w06a2_cases.py\", line 970, in main\n    measurement = fn(t) or {}\n                  ~~^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\scripts\\w06a2_cases.py\", line 636, in case_n8_ttl_policy_cap\n    check(pig_mod.RECEIPT_TTL_POLICY_CAP_SECONDS == 86400 * 30,\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'company_wiki.source_catalog.prompt_injection_guard' has no attribute 'RECEIPT_TTL_POLICY_CAP_SECONDS'\n",
+      "seconds": 0.136
+    },
+    {
+      "case": "W06A2-N9",
+      "result": "PASS",
+      "measurement": {
+        "rows_after_archival": 1
+      },
+      "seconds": 0.35
+    },
+    {
+      "case": "W06A2-C8",
+      "result": "PASS",
+      "measurement": {
+        "queued_clause": "demand_queued demand_id=demand-0123456789abcdef gaps=2 next_action=review source then re-run source preparation",
+        "error_clause": "demand_store_error=DemandStoreUnavailable: sqlite3.OperationalError: database is locked"
+      },
+      "seconds": 0.107
+    },
+    {
+      "case": "W06A2-N10",
+      "result": "FAIL",
+      "error": "AttributeError: module 'company_wiki.source_catalog.prompt_injection_guard' has no attribute 'state_domain_of'",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\scripts\\w06a2_cases.py\", line 970, in main\n    measurement = fn(t) or {}\n                  ~~^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\scripts\\w06a2_cases.py\", line 748, in case_n10_state_domain_disambiguation\n    check(pig_mod.state_domain_of(\"ignored\") == pig_mod.STATE_DOMAIN_CACHE, \"ignored = cache domain\")\n          ^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'company_wiki.source_catalog.prompt_injection_guard' has no attribute 'state_domain_of'\n",
+      "seconds": 0.144
+    },
+    {
+      "case": "W06A2-N8b",
+      "result": "FAIL",
+      "error": "AttributeError: module 'company_wiki.source_catalog.prompt_injection_guard' has no attribute 'RECEIPT_TTL_POLICY_CAP_SECONDS'",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\scripts\\w06a2_cases.py\", line 970, in main\n    measurement = fn(t) or {}\n                  ~~^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GUARD-MERGE\\a20260922-01\\i06a_check\\scripts\\w06a2_cases.py\", line 787, in case_n8b_nonfinite_gate\n    reviewed_epoch = time.time() - pig_mod.RECEIPT_TTL_POLICY_CAP_SECONDS - 120\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'company_wiki.source_catalog.prompt_injection_guard' has no attribute 'RECEIPT_TTL_POLICY_CAP_SECONDS'\n",
+      "seconds": 0.204
+    },
+    {
+      "case": "W06A2-N11",
+      "result": "PASS",
+      "measurement": {
+        "partials_refused": 6,
+        "rows": 1
+      },
+      "seconds": 0.256
+    }
+  ]
+}

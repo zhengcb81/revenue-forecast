@@ -1,0 +1,160 @@
+{
+  "card": "GUARD-MERGE",
+  "attempt": "a20260922-01",
+  "authority": "U-3 = parent (OPEN-5 / OPEN-6 / TTL all three reviews: 「clip-vs-REJECT + mechanism choice = parent」)",
+  "binding_rule": "every merge decision binds to (a) the parent composition rule (oracle.md §1, verbatim), (b) the source card + its binding.json pins, (c) the frozen battery expectation, (d) the evidence artifact. Nothing composed outside these rows.",
+  "oracle": {
+    "path": "oracle.md",
+    "sha256": "c346e4503834db3a197177acd932a093d501d232fb6a3f361c47f0ac78e552d5"
+  },
+  "sources_read_only": [
+    {
+      "card": "TTL-30D-POLICY",
+      "attempt": "a20260922-01",
+      "note": "review ACCEPT scope-limited (3fda9125)",
+      "after_files": [
+        {
+          "path": "execution_runs/TTL-30D-POLICY/a20260922-01/iso/prompt_injection_guard.py",
+          "expected_from_binding": "142ae84838960d500528f2bd3bee1742758152e0518e061a67ed3997ca6dd7dd",
+          "start_of_attempt_live_sha256": "142ae84838960d500528f2bd3bee1742758152e0518e061a67ed3997ca6dd7dd",
+          "start_matched_binding": true,
+          "close_live_sha256": "142ae84838960d500528f2bd3bee1742758152e0518e061a67ed3997ca6dd7dd",
+          "close_matched_binding": true,
+          "input_used_by_this_merge": true
+        }
+      ],
+      "read_only_respected": true,
+      "live_hash_method": "Get-FileHash SHA256 / hashlib.sha256"
+    },
+    {
+      "card": "FIX-W06-GAPS",
+      "attempt": "a20260922-01",
+      "note": "review IN FLIGHT (4d710b79); GREEN evidence 12/12 mutations",
+      "after_files": [
+        {
+          "path": "execution_runs/FIX-W06-GAPS/a20260922-01/iso/pi_pkg/prompt_injection_guard.py",
+          "expected_from_binding": "17f0dc58f6530f0f0f8dbe5099cd655edfe3b7b4404300e3e594ef38534ed31b",
+          "start_of_attempt_live_sha256": "17f0dc58f6530f0f0f8dbe5099cd655edfe3b7b4404300e3e594ef38534ed31b",
+          "start_matched_binding": true,
+          "close_live_sha256": "17f0dc58f6530f0f0f8dbe5099cd655edfe3b7b4404300e3e594ef38534ed31b",
+          "close_matched_binding": true,
+          "input_used_by_this_merge": true
+        },
+        {
+          "path": "execution_runs/FIX-W06-GAPS/a20260922-01/iso/pi_pkg/prompt_injection.py",
+          "expected_from_binding": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+          "start_of_attempt_live_sha256": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+          "start_matched_binding": true,
+          "close_live_sha256": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+          "close_matched_binding": true,
+          "input_used_by_this_merge": true
+        },
+        {
+          "path": "execution_runs/FIX-W06-GAPS/a20260922-01/iso/pi_pkg/readiness_graph.py",
+          "expected_from_binding": "50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b",
+          "start_of_attempt_live_sha256": "50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b",
+          "start_matched_binding": true,
+          "close_live_sha256": "50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b",
+          "close_matched_binding": true,
+          "input_used_by_this_merge": true
+        }
+      ],
+      "read_only_respected": true,
+      "live_hash_method": "Get-FileHash SHA256 / hashlib.sha256"
+    },
+    {
+      "card": "I-06-A",
+      "attempt": "a20260922-02",
+      "note": "review = changes_required (NaN) + fix round running; its guard face SUPERSEDED by this ruling (store.py / processing_demand.py face stays its own)",
+      "after_files": [
+        {
+          "path": "execution_runs/I-06-A/a20260922-02/iso/cw/src/company_wiki/source_catalog/prompt_injection_guard.py",
+          "expected_from_binding": "cf9174b538288f71349f3d33b46f96eacb6a16f5df4906764b08439230119c03",
+          "start_of_attempt_live_sha256": "cf9174b538288f71349f3d33b46f96eacb6a16f5df4906764b08439230119c03",
+          "start_matched_binding": true,
+          "close_live_sha256": "c2af11b316c923623be9449c94f0cce9be4960bf7a463fccba61d57f5e9bd20c",
+          "close_matched_binding": false,
+          "input_used_by_this_merge": true,
+          "drift_observed": "the sibling card's OWN fix round is running concurrently (card I-06-A: review=changes_required + fix round running); mtime of the changed file is inside this attempt's window. This attempt never wrote to that path (zero writes outside GUARD-MERGE/a20260922-01 and %TEMP%). The card-pinned face (cf9174b538288f71349f3d33b46f96eacb6a16f5df4906764b08439230119c03) was live-verified at attempt start and READ for the rule-4 side-by-side before the rewrite; its bytes were then overwritten by their fix round and are no longer on disk, so the archival copy here is the POST-fix face (sources/I06A_guard_live_at_copy_c2af11b3.py = c2af11b3...). No merge decision depends on the difference: both versions carry CLIP + effective_receipt_ttl/effective_review_instant + RECEIPT_TTL_POLICY_CAP_SECONDS + state_domain default-accept (all re-verified by marker grep, decision.md §0)."
+        }
+      ],
+      "read_only_respected": true,
+      "live_hash_method": "Get-FileHash SHA256 / hashlib.sha256"
+    }
+  ],
+  "rule4_side_battery_snapshot_i06a_check": {
+    "iso/cw/src/company_wiki/source_catalog/prompt_injection_guard.py": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+    "iso/cw/src/company_wiki/source_catalog/store.py": "b8e003620a746dc5e7ae7355697005bc9324c8a047e2e2dc6887e74701b15f81",
+    "iso/cw/src/company_wiki/source_catalog/processing_demand.py": "ca19565536b2592a6faa3c579872c82017c2d307acfb7e748c0fe25070b82c0e",
+    "before/cw/src/company_wiki/source_catalog/prompt_injection_guard.py": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08"
+  },
+  "close_time_live_pins": {
+    "evidence": "evidence/raw/live_pins_start.json (start) + this file (close)",
+    "note": "re-hashed at deliverable generation"
+  },
+  "before_faces": [
+    {
+      "face": "prompt_injection_guard.py",
+      "production_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\src\\company_wiki\\source_catalog\\prompt_injection_guard.py",
+      "prod_live_sha256": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+      "attempt_before_copy": "before/prompt_injection_guard.py",
+      "attempt_before_sha256": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+      "matches_card_before_pin": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+      "production_unchanged": true
+    },
+    {
+      "face": "prompt_injection.py",
+      "production_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\src\\company_wiki\\source_catalog\\prompt_injection.py",
+      "prod_live_sha256": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+      "attempt_before_copy": "before/prompt_injection.py",
+      "attempt_before_sha256": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+      "matches_card_before_pin": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+      "production_unchanged": true
+    },
+    {
+      "face": "readiness_graph.py",
+      "production_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\src\\company_wiki\\source_catalog\\readiness_graph.py",
+      "prod_live_sha256": "3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc",
+      "attempt_before_copy": "before/readiness_graph.py",
+      "attempt_before_sha256": "3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc",
+      "matches_card_before_pin": "3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc",
+      "production_unchanged": true
+    }
+  ],
+  "merged_faces": [
+    {
+      "face": "prompt_injection_guard.py",
+      "path": "iso/prompt_injection_guard.py",
+      "sha256": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+      "bytes": 14514,
+      "provenance": "TTL-30D-POLICY/a20260922-01 (REJECT form, rule 1) + FIX-W06-GAPS/a20260922-01 (C7 state_domain face, rule 2) + I-06-A/a20260922-02 union point (rule 4)",
+      "identical_to_sibling_source": false
+    },
+    {
+      "face": "prompt_injection.py",
+      "path": "iso/prompt_injection.py",
+      "sha256": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+      "bytes": 20100,
+      "provenance": "FIX-W06-GAPS/a20260922-01 byte-identical (rule 3)",
+      "identical_to_sibling_source": true
+    },
+    {
+      "face": "readiness_graph.py",
+      "path": "iso/readiness_graph.py",
+      "sha256": "50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b",
+      "bytes": 7036,
+      "provenance": "FIX-W06-GAPS/a20260922-01 byte-identical (rule 2)",
+      "identical_to_sibling_source": true
+    }
+  ],
+  "dropped": [
+    "I-06-A CLIP line: `ttl_seconds = effective_receipt_ttl(ttl_seconds)` (rule 1/5)",
+    "I-06-A CLIP line: `now = effective_review_instant(now)` (rule 1/5)",
+    "I-06-A helpers: effective_receipt_ttl / effective_review_instant / _policy_clock / _iso_of (rule 5, no face needs them)",
+    "I-06-A constant spelling RECEIPT_TTL_POLICY_CAP_SECONDS (TTL's POLICY_RECEIPT_TTL_CAP_SECONDS is the pinned name, battery i case TTL-C0)",
+    "I-06-A helper state_domain_of (rule 5 minimality; its strictness is kept as the merged ReviewEvaluation cache_state-legal check, rule 4 union point)"
+  ],
+  "production_writes": "ZERO — company-wiki and revenue-forecast product trees were never opened for write; hashes above are live re-verified at close",
+  "git": "ZERO — no git command executed; changes.diff is python difflib",
+  "generated_utc": "2026-09-22T23:20:40.612916+00:00"
+}

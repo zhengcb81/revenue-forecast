@@ -1,0 +1,114 @@
+{
+  "RED_before": {
+    "faces": {
+      "prompt_injection_guard.py": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+      "prompt_injection.py": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618"
+    },
+    "R1_over_cap_accepted": {
+      "input": "evaluate_review(ttl_seconds=86400*365) on a fresh bound receipt",
+      "observed": {
+        "raised": null,
+        "status": "not_detected",
+        "cache_state": "hit",
+        "reason": "receipt fresh and bound"
+      },
+      "gap_red": true,
+      "expected_before": "no raise (gap) / after: raise ttl_seconds exceeds policy cap of 2592000s"
+    },
+    "R2_disposal_unguarded": {
+      "input": "record(detected_and_ignored) with NO ignore tuple, NO trust root, NO signature",
+      "observed_write": {
+        "ok": true,
+        "error": null,
+        "receipt": {
+          "status": "detected_and_ignored",
+          "state_domain": null,
+          "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "policy_hash": "19ace502ee7c13027f43ee82d33944fec84c1296976bc86ce6c8d5869abb962b"
+        }
+      },
+      "gap_red": true,
+      "expected_before": "accepted (gap) / after: refusal 'disposal authorization unavailable: ...'"
+    },
+    "R3_unbound_write_accepted": {
+      "input": "record(...) with NO source_sha256 / policy_hash (P5-c)",
+      "observed_write": {
+        "raised": null,
+        "value": {
+          "schema_version": "1.0",
+          "status": "not_detected",
+          "reviewer": "r",
+          "reviewed_at": "2026-08-01T00:00:00Z",
+          "evidence_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      },
+      "gap_red": true,
+      "expected_before": "accepted (gap) / after: 'source_sha256 must be a lowercase SHA-256'"
+    },
+    "R4_past_now_resurrect": {
+      "input": "evaluate_review(now=2026-07-30T00:00:00Z) on a receipt reviewed_at=2026-08-01T00:00:00Z, ttl==cap",
+      "observed": {
+        "raised": null,
+        "status": "not_detected",
+        "cache_state": "hit",
+        "reason": "receipt fresh and bound"
+      },
+      "gap_red": true,
+      "expected_before": "hit (gap) / after: not_reviewed/tampered (clock anomaly)"
+    }
+  },
+  "GREEN_merged": {
+    "faces": {
+      "prompt_injection_guard.py": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+      "prompt_injection.py": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+      "readiness_graph.py": "50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b"
+    },
+    "R1_over_cap_rejected": {
+      "observed": {
+        "raised": "PromptInjectionGuardError",
+        "message": "ttl_seconds exceeds policy cap of 2592000s"
+      },
+      "ok": true
+    },
+    "R2_disposal_gated": {
+      "observed_write": {
+        "ok": false,
+        "error": "PromptInjectionReviewError: disposal authorization unavailable: ignore_reason",
+        "receipt": null
+      },
+      "ok": true
+    },
+    "R3_unbound_write_rejected": {
+      "observed_write": {
+        "raised": "PromptInjectionReviewError",
+        "message": "source_sha256 must be a lowercase SHA-256"
+      },
+      "ok": true
+    },
+    "R4_past_now_fail_closed": {
+      "observed": {
+        "raised": null,
+        "status": "not_reviewed",
+        "cache_state": "tampered",
+        "reason": "receipt reviewed_at is after now (clock anomaly; now may only tighten freshness)"
+      },
+      "ok": true
+    }
+  },
+  "summary": {
+    "red_gaps_confirmed": [
+      "R1_over_cap_accepted",
+      "R2_disposal_unguarded",
+      "R3_unbound_write_accepted",
+      "R4_past_now_resurrect"
+    ],
+    "red_all_four_confirmed": true,
+    "green_all_four_ok": true,
+    "green_detail": {
+      "R1_over_cap_rejected": true,
+      "R2_disposal_gated": true,
+      "R3_unbound_write_rejected": true,
+      "R4_past_now_fail_closed": true
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "rule": "demand_key = sha256(canonical_json({source_sha256, review_policy, role_set, request_identity})) (OPEN-2 option A / OPEN-5 ruling 4.5.1)",
+  "bindings": [
+    {
+      "label": "c1_first_request",
+      "request_sha256": "c2f596bfee9b68c2125224eebff76480ae4139596a6ade27271c44b711118f3c",
+      "request_identity": {
+        "as_of_date": "2026-09-19",
+        "target": "Zijin Mining",
+        "payload_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "demand_id": "demand-249ac65ee1c4a1aa",
+      "row_request_sha256": "c2f596bfee9b68c2125224eebff76480ae4139596a6ade27271c44b711118f3c",
+      "row_matches_request": true
+    },
+    {
+      "label": "c3_identical_resubmission",
+      "request_sha256": "c2f596bfee9b68c2125224eebff76480ae4139596a6ade27271c44b711118f3c",
+      "request_identity": {
+        "as_of_date": "2026-09-19",
+        "target": "Zijin Mining",
+        "payload_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "demand_id": "demand-249ac65ee1c4a1aa",
+      "row_request_sha256": "c2f596bfee9b68c2125224eebff76480ae4139596a6ade27271c44b711118f3c",
+      "row_matches_request": true
+    },
+    {
+      "label": "c10_asof_only_changed",
+      "request_sha256": "f6093310f8745ff3e85d99cf8ef8d5feab2fa351ebcdc1e5104d3f5e4563b709",
+      "request_identity": {
+        "as_of_date": "2027-03-31",
+        "target": "Zijin Mining",
+        "payload_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "demand_id": "demand-455b69d658890fc1",
+      "row_request_sha256": "f6093310f8745ff3e85d99cf8ef8d5feab2fa351ebcdc1e5104d3f5e4563b709",
+      "row_matches_request": true
+    },
+    {
+      "label": "c8_c9_entity_changed",
+      "request_sha256": "194b86399b645ccce9f775401b784e9c12cd4558138eb26021e5780f25d8f788",
+      "request_identity": {
+        "as_of_date": "2026-09-19",
+        "target": "Zijin Mining H",
+        "payload_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "demand_id": "demand-73307ce501b7a72d",
+      "row_request_sha256": "194b86399b645ccce9f775401b784e9c12cd4558138eb26021e5780f25d8f788",
+      "row_matches_request": true
+    }
+  ],
+  "assertions": {
+    "each_row_binds_its_own_request": true,
+    "no_silent_absorption": true,
+    "c8_c9_c10_counterexample_resolved": true
+  }
+}

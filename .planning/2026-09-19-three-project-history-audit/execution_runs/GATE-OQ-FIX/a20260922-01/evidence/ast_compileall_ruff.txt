@@ -1,0 +1,19 @@
+﻿=== ast parse check (both files) ===
+STDERR:   File "<string>", line 1
+    import
+          ^
+SyntaxError: Expected one or more names after 'import'
+
+=== compileall tools/pre_push_gate.py + tests/test_fc1105_fault_injection.py ===
+stdout: (empty)
+stderr: (empty)
+=== ruff check on the two files ===
+All checks passed!
+
+
+NOTE (disclosure, appended after the fact): the ast_rc=1 in this file is a
+PowerShell Start-Process ArgumentList quoting artifact - the -c program string
+was split at a space ('import' alone), so python never saw valid source. It is
+NOT a defect in either target file. The same ast check re-run via the call
+operator succeeded (rc=0): see evidence/ast_and_help_smoke.txt. compileall rc=0
+and ruff 'All checks passed!' above are valid as-is.

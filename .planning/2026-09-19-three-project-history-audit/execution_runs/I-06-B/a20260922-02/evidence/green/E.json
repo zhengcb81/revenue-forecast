@@ -1,0 +1,72 @@
+{
+  "case": "E",
+  "title": "explicit expire → re-claim, no stranding (P3-A/B)",
+  "iso": "fixed",
+  "ruling_clause": "FIX-W06-GAPS oracle P3-A/P3-B; probe03; OPEN-3 explicit-expire; OPEN-5 C5",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "E0_claimed_then_expired_fixture",
+      "ok": true,
+      "detail": "claimed={'demand_id': 'demand-47ad4d736a044818', 'demand_key': '0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52', 'kind': 'review', 'status': 'running'"
+    },
+    {
+      "name": "E1_explicit_expire_entry_exists",
+      "ok": true,
+      "detail": "hasattr expire=True (probe03: no explicit reclaim entry ⇒ stranded running row)"
+    },
+    {
+      "name": "E2a_post_expiry_refusal_defined",
+      "ok": true,
+      "detail": "type=DemandStateError text='lease expired'"
+    },
+    {
+      "name": "E2b_byid_post_expiry_refusal_defined",
+      "ok": true,
+      "detail": "type=DemandStateError text='lease expired' expect='lease expired'"
+    },
+    {
+      "name": "E3_expire_reclaims_running_expired",
+      "ok": true,
+      "detail": "expire() -> 1 exception=None (must return the reclaimed count, lease cleared)"
+    },
+    {
+      "name": "E4_lease_cleared_after_expire",
+      "ok": true,
+      "detail": "row={\"demand_id\": \"demand-47ad4d736a044818\", \"demand_key\": \"0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52\", \"kind\": \"review\", \"status\": \"pending\", \"source_id\": \"src-1\", \"source_sha256\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\", \"review_policy\": \"p1\", \"role_set\": \"normalized,sections\", \"gaps\": [], \"request_sha256\": \"f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53\", \"attempts\": 0, \"lease_owner\": null, \"lease_until\": null, \"created_at\": 1790115169.1691995, \"updated_at\": 1790115169.2624183, \"candidate_marker\": \"candidate-unratified-I-06-A-a20260919-01\", \"key_version\": \"request-identity-v2\"}"
+    },
+    {
+      "name": "E5_reclaimable_after_explicit_expire",
+      "ok": true,
+      "detail": "reclaim={'demand_id': 'demand-47ad4d736a044818', 'demand_key': '0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52', 'kind': 'review', 'status': 'running', 'source_id': 'src-1', 'source_sha256':"
+    }
+  ],
+  "raw": {
+    "E_generic_exception": "DemandStateError: lease expired",
+    "E_byid_exception": "DemandStateError: lease expired",
+    "E_rows_after_expire": [
+      {
+        "demand_id": "demand-47ad4d736a044818",
+        "demand_key": "0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "src-1",
+        "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps": [],
+        "request_sha256": "f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53",
+        "attempts": 0,
+        "lease_owner": null,
+        "lease_until": null,
+        "created_at": 1790115169.1691995,
+        "updated_at": 1790115169.2624183,
+        "candidate_marker": "candidate-unratified-I-06-A-a20260919-01",
+        "key_version": "request-identity-v2"
+      }
+    ]
+  },
+  "error": null,
+  "seconds": 0.137,
+  "finished_at": "2026-09-22T23:12:49"
+}

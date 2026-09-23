@@ -1,0 +1,33 @@
+{
+  "case": "M1",
+  "title": "OPEN-4 C5① version-only change ⇒ still hit",
+  "iso": "fixed",
+  "ruling_clause": "OPEN-4 condition C5① (two new positives unlocked for I-06-B)",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "M1a_baseline_hit",
+      "ok": true,
+      "detail": "eval=ReviewEvaluation(status='not_detected', cache_state='hit', state_domain='cache', reason='receipt fresh and bound')"
+    },
+    {
+      "name": "M1b_version_only_change_still_hit",
+      "ok": true,
+      "detail": "eval=ReviewEvaluation(status='not_detected', cache_state='hit', state_domain='cache', reason='receipt fresh and bound') (binding axes are source_sha256 × policy_hash CONTENT only; the ruleset version label is not a binding axis — OPEN-4 C5①)"
+    },
+    {
+      "name": "M1c_evaluate_has_no_version_parameter",
+      "ok": true,
+      "detail": "params=['store', 'document_id', 'source_sha256', 'policy_hash', 'now', 'ttl_seconds']"
+    },
+    {
+      "name": "M1d_content_change_invalidates",
+      "ok": true,
+      "detail": "eval=ReviewEvaluation(status='not_reviewed', cache_state='ignored', state_domain='cache', reason='policy ruleset changed since review') (content hash change DOES invalidate — the contrast case, probe06 N2b)"
+    }
+  ],
+  "raw": {},
+  "error": null,
+  "seconds": 0.103,
+  "finished_at": "2026-09-22T23:06:41"
+}

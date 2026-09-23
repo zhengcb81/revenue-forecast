@@ -1,0 +1,28 @@
+{
+  "case": "L2",
+  "title": "demand_store_error=/demand_queued clause pins (P4 M-P2#18)",
+  "iso": "original",
+  "ruling_clause": "P4-SCOPE M-P2#18; OPEN-2b c7 error contract",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "L2a_store_error_clause_verbatim",
+      "ok": true,
+      "detail": "got='prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_store_error=demand_store_unavailable: OSError: [Errno 13] Permission denied; gaps=1 next_action=run the approved review method for this source; worker is not paused'\nexpect='prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_store_error=demand_store_unavailable: OSError: [Errno 13] Permission denied; gaps=1 next_action=run the approved review method for this source; worker is not paused'"
+    },
+    {
+      "name": "L2b_demand_queued_clause_verbatim",
+      "ok": true,
+      "detail": "got='prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-0123456789abcdef source=0123456789abcdef gaps=1 next_action=run the approved review method for this source; worker is not paused'\nexpect='prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-0123456789abcdef source=0123456789abcdef gaps=1 next_action=run the approved review method for this source; worker is not paused'"
+    },
+    {
+      "name": "L2c_paused_worker_clause_verbatim",
+      "ok": true,
+      "detail": "got=\"prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-0123456789abcdef source=0123456789abcdef gaps=1 next_action=run the approved review method for this source; worker desired_state is 'paused' — resume requires an explicit authorised action; this call does not resume it\"\nexpect=\"prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-0123456789abcdef source=0123456789abcdef gaps=1 next_action=run the approved review method for this source; worker desired_state is 'paused' — resume requires an explicit authorised action; this call does not resume it\""
+    }
+  ],
+  "raw": {},
+  "error": null,
+  "seconds": 0.0,
+  "finished_at": "2026-09-22T23:06:29"
+}

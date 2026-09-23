@@ -1,0 +1,52 @@
+{
+  "case": "E",
+  "title": "explicit expire → re-claim, no stranding (P3-A/B)",
+  "iso": "original",
+  "ruling_clause": "FIX-W06-GAPS oracle P3-A/P3-B; probe03; OPEN-3 explicit-expire; OPEN-5 C5",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "name": "E0_claimed_then_expired_fixture",
+      "ok": true,
+      "detail": "claimed={'demand_id': 'demand-04d15970f42b4966', 'demand_key': '07a602c1a8f8b104ca98552ba4a6c4258a8b13f69ed099ae49dcc39a123885a5', 'kind': 'review', 'status': 'running'"
+    },
+    {
+      "name": "E1_explicit_expire_entry_exists",
+      "ok": false,
+      "detail": "hasattr expire=False (probe03: no explicit reclaim entry ⇒ stranded running row)"
+    },
+    {
+      "name": "E2a_post_expiry_refusal_defined",
+      "ok": false,
+      "detail": "claim() on running+expired returned null — stranded row yields a silent None instead of 'lease expired'"
+    },
+    {
+      "name": "E2b_byid_post_expiry_refusal_defined",
+      "ok": false,
+      "detail": "type=TypeError text=\"DurableDemandStore.claim() got an unexpected keyword argument 'demand_id'\" expect='lease expired'"
+    },
+    {
+      "name": "E3_expire_reclaims_running_expired",
+      "ok": false,
+      "detail": "expire() -> None exception=AttributeError (must return the reclaimed count, lease cleared)"
+    },
+    {
+      "name": "E4_lease_cleared_after_expire",
+      "ok": false,
+      "detail": "skipped: expire() raised"
+    },
+    {
+      "name": "E5_reclaimable_after_explicit_expire",
+      "ok": false,
+      "detail": "skipped: expire() raised"
+    }
+  ],
+  "raw": {
+    "E_generic_result": null,
+    "E_byid_exception": "TypeError: DurableDemandStore.claim() got an unexpected keyword argument 'demand_id'",
+    "E_expire_exception": "AttributeError: 'DurableDemandStore' object has no attribute 'expire'"
+  },
+  "error": null,
+  "seconds": 0.109,
+  "finished_at": "2026-09-22T23:06:28"
+}

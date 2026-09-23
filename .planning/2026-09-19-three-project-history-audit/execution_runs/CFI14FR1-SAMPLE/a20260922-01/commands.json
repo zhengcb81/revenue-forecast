@@ -1,0 +1,106 @@
+{
+  "card_id": "CFI14FR1-SAMPLE",
+  "condition_discharged": "CF-I14FR1-3: repo-global hook => broader company-wiki suite sampling before merge/at batch-4",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260922-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\CFI14FR1-SAMPLE\\a20260922-01",
+  "implementer": "delegated sampling session (does NOT self-sign accepted)",
+  "frozen_note": "Written AFTER oracle.md (freeze-first) and BEFORE any pytest execution of this attempt. argv + env + expected-to-record are pre-registered here; OBSERVED outcomes are recorded in evidence/*, decision.md and handoff.json — never by editing this file.",
+  "interpreter": "python -> C:\\Miniconda\\python.exe (Python 3.13.9, pytest 9.1.1), resolved from PATH at freeze; argv uses bare `python` exactly as the card specifies",
+  "network": "disabled for every command (hermetic tests/conftest.py blocks sockets; no command in this file reaches the network)",
+  "git": "NO git command of any kind (read-only included) is run by this card",
+  "cw_write_policy": "CW tree READ-ONLY. Side effects honestly pre-declared: (1) pytest cacheprovider updates .pytest_cache/** (baseline dir mtime 2026-07-18 14:09:05.073; v/cache/nodeids baseline mtime 2026-09-22 22:22:59 from a pre-existing run); (2) PYTHONDONTWRITEBYTECODE=1 + PYTHONPYCACHEPREFIX=%TEMP%\\cf14fr1-pycache on every python invocation so no .pyc lands in CW (root __pycache__ baseline ABSENT, must stay ABSENT); (3) any test-induced write is disclosed by the post-run tree scan, not hidden.",
+  "evidence_capture": "Raw OS byte redirection via `cmd /c '... > file 2>&1'` inside the shell — no PowerShell stream re-encoding. Labels are WRITE-ONCE: a label whose output exists is never overwritten; a re-run needs a new label + disclosure. rc recorded to <label>.rc.txt. evidence/SHA256SUMS.txt pins every byte stream after all runs.",
+  "argv_convention": "<CW> = C:\\Users\\郑曾波\\Projects\\company-wiki (cwd of every pytest); <MY> = this attempt; <TEMP> = C:\\Users\\郑曾波\\AppData\\Local\\Temp (len 31). pytest.ini addopts (-v --tb=short --strict-markers) apply on top of every argv below.",
+  "exit_code_legend": {
+    "0": "all collected nodes passed",
+    "1": "one or more nodes failed, or collection/harness error — per-node outcomes in the raw stdout are authoritative",
+    "aggregation_warning": "one pytest process returns ONE rc; the raw rc alone never decides the business verdict"
+  },
+  "commands": [
+    {
+      "id": "CF-s0-freeze",
+      "purpose": "freeze-first steps: oracle.md written (FIRST artifact of this attempt), then evidence/sample_set_freeze.txt (name/bytes/sha256 of all 268 sample test files + 4 anchors) and baseline captures (00_baseline_lastfailed.json, 00_baseline_nodeids.json, .pytest_cache mtime listing) — all BEFORE any pytest process",
+      "executed": true,
+      "argv_shape": "shell: Get-FileHash / Copy-Item (read-only over CW; writes only under <MY>)",
+      "expected": "oracle sha256 recorded; manifest 268 test entries + 4 anchors; baselines copied",
+      "evidence": ["oracle.md", "evidence/sample_set_freeze.txt", "evidence/00_baseline_lastfailed.json", "evidence/00_baseline_nodeids.json"]
+    },
+    {
+      "id": "CF-c1-run01-with-hook",
+      "label": "01_with_hook",
+      "purpose": "THE SAMPLE: full tests/contract + tests/unit in ONE pytest session with the repo-global 150/60 hook ACTIVE (no disable env)",
+      "cwd": "<CW>",
+      "argv": ["python", "-m", "pytest", "-q", "tests/contract", "tests/unit", "--basetemp", "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\cf14fr1-with-hook"],
+      "env": {
+        "CW_BASETEMP_DECISION_FILE": "<MY>\\evidence\\01_with_hook.decision.jsonl",
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPYCACHEPREFIX": "<TEMP>\\cf14fr1-pycache",
+        "CW_SHORT_BASETEMP_DISABLE": "ABSENT (hook enabled)"
+      },
+      "allowed_write_roots": ["<MY>/**", "<TEMP>/**", "<CW>/.pytest_cache/** (pytest side effect, disclosed)"],
+      "network": "disabled",
+      "timeout_seconds": null,
+      "expected_returncode": "0 or 1 (recorded, not pre-judged)",
+      "expected_to_record_NOT_all_green": [
+        "raw stdout+stderr byte-exact in evidence/01_with_hook.txt (sha256 pinned)",
+        "decision line in evidence/01_with_hook.decision.jsonl — PRE-COMPUTED at freeze: requested len 49 <= 60 => reason=within-budget, relocated=false (hook evaluated, within-budget no-op branch); any deviation recorded as deviation",
+        "per-file pass/fail/skip inventory in evidence/summary.json reconciled with the raw final summary line",
+        "every failing file attributed via CF-c2 (decision.md attribution table)",
+        "rc in evidence/01_with_hook.rc.txt"
+      ],
+      "evidence": ["evidence/01_with_hook.txt", "evidence/01_with_hook.rc.txt", "evidence/01_with_hook.decision.jsonl", "evidence/summary.json", "evidence/01_with_hook.lastfailed.json"]
+    },
+    {
+      "id": "CF-c2-failure-attribution-controls",
+      "label_template": "02_<stem>_rerun",
+      "purpose": "attribute EVERY failing file of CF-c1: same file alone with the hook's redirect DISABLED via the conftest disable env (read live from conftest.py: CW_SHORT_BASETEMP_DISABLE)",
+      "cwd": "<CW>",
+      "argv_template": ["python", "-m", "pytest", "-q", "tests/<root>/<file>", "--basetemp", "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\cf14fr1-with-hook"],
+      "env": {
+        "CW_BASETEMP_DECISION_FILE": "<MY>\\evidence\\02_<stem>_rerun.decision.jsonl",
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPYCACHEPREFIX": "<TEMP>\\cf14fr1-pycache",
+        "CW_SHORT_BASETEMP_DISABLE": "1"
+      },
+      "instantiation_rule": "one instance PER FAILING FILE observed in CF-c1; the frozen rule+template are pre-registered here, the concrete instance list is recorded in decision.md/handoff.json as observed (commands.json is never edited post-run)",
+      "expected_to_record": [
+        "decision line reason=disabled-by-env (proof the control really ran with the redirect off)",
+        "failing node set + failure-message heads WITH hook vs WITHOUT hook, delta quoted, verdict pre-existing|hook-induced|environmental per oracle A4"
+      ],
+      "allowed_write_roots": ["<MY>/**", "<TEMP>/**", "<CW>/.pytest_cache/**"],
+      "network": "disabled"
+    },
+    {
+      "id": "CF-c3-redirect-probe",
+      "label": "03_redirect_probe",
+      "purpose": "direct hook-FIRE evidence: run-01 is a within-budget no-op by arithmetic (49 <= 60), so this probe supplies the relocated=true branch from the SAME live conftest on a real CW test file (the hook's own contract test)",
+      "cwd": "<CW>",
+      "argv": ["python", "-m", "pytest", "-q", "tests/contract/test_short_basetemp_convention.py", "--basetemp", "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\cf14fr1-deep\\over-budget-basetemp-for-redirect-probe"],
+      "env": {
+        "CW_BASETEMP_DECISION_FILE": "<MY>\\evidence\\03_redirect_probe.decision.jsonl",
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPYCACHEPREFIX": "<TEMP>\\cf14fr1-pycache",
+        "CW_SHORT_BASETEMP_DISABLE": "ABSENT (hook enabled)"
+      },
+      "allowed_write_roots": ["<MY>/**", "<TEMP>/**", "<CW>/.pytest_cache/**"],
+      "network": "disabled",
+      "expected_to_record": [
+        "requested basetemp len 84 > 60 => decision reason=resolved-basetemp-exceeds-budget, relocated=true, effective_basetemp under %TEMP%\\cw-pytest-basetemp\\<stamp>-<8hex> with len <= 60",
+        "cleanup event removed=true (fallback self-cleaned)",
+        "the requested over-budget directory is never created",
+        "CW-BASETEMP-DECISION / CW-BASETEMP-CLEANUP stdout lines quoted in decision.md"
+      ],
+      "evidence": ["evidence/03_redirect_probe.txt", "evidence/03_redirect_probe.rc.txt", "evidence/03_redirect_probe.decision.jsonl"]
+    },
+    {
+      "id": "CF-c4-boundary-verification",
+      "purpose": "oracle A5: re-hash the 268 sample files + anchors vs evidence/sample_set_freeze.txt; confirm CW root __pycache__ still absent; tree scan for mtimes inside the run window; pin evidence/SHA256SUMS.txt",
+      "executed_as": "read-only shell hashing/scanning after all runs",
+      "expected": "zero drift on sample files and anchors (esp. dfb7c6cd… contract test, a908c9da… conftest); only .pytest_cache/** (and disclosed test-induced writes, if any) inside the window"
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "card_id": "TTL-30D-POLICY",
+  "attempt_id": "a20260922-01",
+  "revision": "carrier landing (post independent review)",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "ACCEPT — scope-limited (transcribed as accepted_scoped)",
+    "verdict_written_by": "独立复核 (independent reviewer session dispatched by parent session-bfecd191-fbc3-4a66-8ed1-6562479bf102; never the implementer, never the landing executor)",
+    "scope_is_scoped_not_clean": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "scope_statement": {
+    "statement": "Acceptance is SCOPE-LIMITED, not clean (reviewer_report.md line 7 verdict; five binding scope items on lines 9-13). The reviewer independently re-hashed every deliverable against the ledgers, proved frozen-first from CreationTime, regenerated changes.diff byte-identically without git, recomputed all RED/GREEN/mutation counts from raw evidence with one-hunk-minus mutant purity, re-ran the probe and product tests in a fresh %TEMP% mirror, read the implementation line by line, recomputed the zero-test-edit claim, checked the honest-gap citations verbatim, and audited write boundaries. 14 findings are recorded; none is blocking (F8/F12-minor/F14 are record-note nits). The five scope conditions below are binding and must be read together with the verdict.",
+    "why_not_blocking": "F1-F7, F9-F13 are verification results that match the card's claims; F8 (readiness passthrough) is a record-note; F12's missing commands.json BOM step and F14's four nits (frozen-first time anchor, BOM step not in commands.json, :194 same-meaning-not-verbatim citation, no per-line EOL count) are disclosed record-notes that do not contradict any exit claim. The honest gaps U-1..U-4 stay open with the reviewer's own dispositions.",
+    "scope_conditions_verbatim": [
+      "1. 生产提交权归父：CW guard 单文件，after = `142AE84838960D500528F2BD3BEE1742758152E0518E061A67ED3997CA6DD7DD`（勿 `git add -A`）。",
+      "2. U-1（N7 窗口内 past-now 类）维持 **unproven**，本卡未宣称已堵死。",
+      "3. U-2（cap 不在 RULESET_HASH 载荷）= **声明式契约 + 运维纪律**的如实披露，非缺陷。",
+      "4. U-3（CLIP vs REJECT 先例冲突）= 父欠一次归一裁决，须与 I-06-A/a20260922-02 复审协调；本报告只记录分歧、不裁全局选择。",
+      "5. 零产品测试编辑（复算成立，见 F9）。"
+    ],
+    "scope_conditions_source": "reviewer_report.md verdict block lines 9-13, verbatim; dispatch shorthand: parent commits 1 CW file (after 142AE848), U-1 unproven, U-2 contract disclosure, U-3 standardization owed with the I-06-A review, zero test edits",
+    "not_verified_by_review": [
+      "git state / porcelain spot — review boundary forbids git; substitute evidence = commands.json has no git verb and changes.diff is difflib-reproducible without git (F4/F13)",
+      "attribution of the in-window .source_catalog/catalog.sqlite3-shm write (CW) — unattributed; data files untouched (F13/Unverified 2)",
+      "U-1 in-window past-now class — structurally undecidable without a trusted clock; stays unproven",
+      "U-2 automatic cap-in-hash rollover — not implemented, out of authorization; declarative contract disclosure stands",
+      "U-3 CLIP-vs-REJECT global normalization — only both implementations' existence and production having neither is proven; ruling reserved to the parent with the I-06-A review",
+      "U-4 production wiring behavior — shadow-only module, no production entrypoint calls evaluate_review, unverified by design",
+      "per-line EOL count of prod/iso (LF-only claim) — consistent via the hash-chain diff but not separately counted (F14-4, non-gating)",
+      "any external signature — none exists; the implementer never signed (carrier Unverified 7)"
+    ],
+    "carried_residuals": [
+      "F8 (record-note) — readiness_graph.py inherits ttl_seconds by pure passthrough (L82→L102→L115/L132), no local cap; file itself unchanged",
+      "F12 minor gap (record-note) — commands.json lacks the BOM-normalization step; fact lives only in evidence/final_deliverable_hashes.json + scripts/_final_hashes.py",
+      "F14-1 (info) — frozen-first rests on filesystem timestamps + closing hash; external time anchor suggested for future cards",
+      "F14-2 (minor) — BOM step absent from the commands.json step table",
+      "F14-3 (minor) — decision §1 cites OPEN-4 :137,:194 as both verbatim; :194 is same-meaning-not-verbatim (:137 verbatim)",
+      "F14-4 (note) — LF-only claim verified via hash chain, not via per-line EOL counting",
+      "brief's '4 BOM-normalized' = 4 candidates examined; actual normalized writes = 3 per bom_normalized (F12)"
+    ]
+  },
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "verdict_heading_line": 5,
+    "verdict_line": 7,
+    "first_line_of_verdict_text": "**ACCEPT — 证据链齐备、原始件自洽、披露诚实**；接受范围严格限定为父派发所列五项：",
+    "line_range_inclusive_1_based": [1, 101],
+    "verdict_block_line_range_inclusive": [5, 13],
+    "scope_conditions_line_range_inclusive": [9, 13],
+    "signing_nature_disclaimer_line": 3,
+    "findings_section_line_range_inclusive": [15, 82],
+    "unverified_section_line_range_inclusive": [84, 92],
+    "rem79_selfcheck_line_range_inclusive": [94, 96],
+    "reviewer_boundaries_line_range_inclusive": [98, 101],
+    "reviewer_two_files_line": 101,
+    "byte_offsets": {
+      "start": 0,
+      "end_inclusive": 14457,
+      "end_exclusive": 14458
+    },
+    "carrier_file_sha256": "3fda91255762b847b24a5655a7d2099496d2481d98b626e67fdc798615502ff0",
+    "carrier_file_bytes": 14458,
+    "carrier_file_total_lines": 101,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only (0 CRLF); single trailing LF; 9461 characters",
+    "dispatch_byte_figure_note": "the landing dispatch cited 14458 B; measured = 14458 bytes (9461 chars) — exact match; pin and byte figure agree",
+    "verdict_line_byte_region": {"start": 430, "end_inclusive": 546, "length": 117, "sha256": "0ac6cb85fc5cc1f38d959177610c54bb3d09c5598eea3171b220916c116a6e45"},
+    "verdict_heading_line_byte_region": {"start": 418, "end_inclusive": 427, "length": 10, "sha256": "297877e6ba7dd30cc1903ba18db2eba9d95a78231314d74e79e12e0c0619dd13"},
+    "signing_nature_line_byte_region": {"start": 93, "end_inclusive": 415, "length": 323, "sha256": "cd6deec024fce0b606fd645c310d9a9fc8eeb539930ac63506653fa550dc231e"},
+    "scope_condition_1_line_byte_region": {"start": 549, "end_inclusive": 695, "length": 147, "sha256": "6e0c163eea13002417a9d771218d85728cdb0e963875cb4cad5e5cb73c527edc"},
+    "scope_condition_5_line_byte_region": {"start": 1052, "end_inclusive": 1105, "length": 54, "sha256": "cf51f42b1cf78989ffd4e3a4729470bcd6a586f352973eb69c35a04e28936cbd"},
+    "finding_f1_heading_byte_region": {"start": 1163, "end_inclusive": 1209, "length": 47, "sha256": "042e277bed57a788b9d169e15b4e3979643232db8998a80ca1c1900126faa0d7"},
+    "unverified_heading_byte_region": {"start": 12662, "end_inclusive": 12707, "length": 46, "sha256": "5827c555fd14fd8a76384e7842ad36e61c17ddd95fca7dbb780b0d815673791c"},
+    "reviewer_signing_boundary_line_byte_region": {"start": 14311, "end_inclusive": 14456, "length": 146, "sha256": "cf7dc00562f2e31548c517ef0f47af94c88c38e604b28ef89d0fb1ded309b4c6"},
+    "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 14456, "length": 14457, "sha256": "26489ad7f879a8c8eeb5acbf04d9e642a1b7d08bc120d4bd406236bbbf534c20"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the line's terminating LF",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "present": true,
+      "present_before_landing": true,
+      "written_by": "the independent reviewer (declared in its boundaries section: exactly two files written - reviewer_report.md and reviewer_report.sha256)",
+      "bytes": 86,
+      "sha256": "c5bda673f70d9cb52b7eef0d134d1a465f6ea8cd4e969a01724ed38cea9b09fd",
+      "content": "3fda91255762b847b24a5655a7d2099496d2481d98b626e67fdc798615502ff0  reviewer_report.md",
+      "verified": "sidecar content matches an independent re-hash of reviewer_report.md at landing time (= the dispatch's expected pin); the sidecar was NOT created, overwritten or modified by this pass (0 bytes written)"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by the bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核), not by the implementer",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "carrier_bytes_written_by_landing": 0,
+    "plan_file_bytes_written": 0,
+    "git_writes": 0
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "deliverable re-hash: every item matches evidence/final_deliverable_hashes.json / handoff / decision §6; whole-attempt byte scan = 0 BOM files (F1)",
+      "frozen-first proven by CreationTime: oracle.md 22:53:00 earliest -> iso 22:55:47 -> probe script 22:57:01 -> red_before.json 22:57:22 first run; closing hash == freeze hash (F2)",
+      "before/after anchors verified against live production (F900A13D...9C08 / 142AE848...7dd) (F3)",
+      "changes.diff independently regenerated byte-identical: 112 lines / 6 hunks / sha256 8271158b...dbd3, difflib only, no git (F4)",
+      "counts recomputed from raw evidence: RED 7/16 with 9 gating RED == frozen set; GREEN 16/16 + green_confirm 16/16; MUT-1 and MUT-2 gating RED == frozen sets; mutant purity difflib-verified as one-hunk-minus (m1 = iso minus the 5-line cap+isfinite block; m2 = iso minus the past-now branch block) (F5)",
+      "reviewer's own fresh-%TEMP% reruns: probe 16/16; N1 literal 'ttl_seconds exceeds policy cap of 2592000s'; N5 = not_reviewed/tampered with the clock-anomaly reason; G1 same literal string as N1; product suite 26 passed with zero edits (F6/F11)",
+      "implementation trace read line-by-line: constant in __all__ + comments + docstring with policy_hash surface and the OPEN-4 4c note; validation order all before receipt lookup; _freshness clock-anomaly before the age check; readiness pure passthrough (F7/F8)",
+      "zero-test-edit recompute: 12 product-test call sites, max == cap, >cap count = 0, CW tests mtime < attempt window (F9)",
+      "U-1 pre-registration proven by timestamps; U-2 basis quotes verbatim (incl. 「TTL 的数值不由本裁定规范」 at :137 with the :194 same-meaning-not-verbatim nit recorded); RULESET_HASH payload lacks the cap => declarative disclosure correct (F10)",
+      "boundaries: CW zero-write guard re-hash stable at f900a13d; zero git verbs in the ledger; recovery = exact 1-file before/after pair (F13)"
+    ],
+    "not_granted": [
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production write authority — parent holds the commit: exactly 1 CW file, after 142AE84838960D500528F2BD3BEE1742758152E0518E061A67ED3997CA6DD7DD, no git add -A",
+      "closure of U-1 (stays unproven) or U-2 (stays a declared-contract disclosure)",
+      "the U-3 CLIP-vs-REJECT standardization ruling — owed to the parent, to be coordinated with the I-06-A/a20260922-02 review",
+      "verification of U-4 production wiring (shadow-only by design)",
+      "attribution of the .source_catalog/catalog.sqlite3-shm in-window write",
+      "a git porcelain check (review boundary forbids git)",
+      "any acceptance of this landing pass's own - it is bookkeeping transcription only"
+    ]
+  },
+  "findings_mirrored": [
+    {"id": "F1", "severity": "info", "blocking": false, "line": 17, "summary": "All deliverables re-hash match the ledgers item-by-item; whole-attempt byte scan = 0 BOM files.", "disposition": "verified; non-blocking"},
+    {"id": "F2", "severity": "info", "blocking": false, "line": 21, "summary": "Frozen-first proven by CreationTime: oracle.md 22:53:00 earliest -> red_before.json 22:57:22 first run; errata land in the pre-run window; closing hash == freeze hash; embedded guard_sha256 f900a13d == pre-freeze state.", "disposition": "frozen-first holds; non-blocking"},
+    {"id": "F3", "severity": "info", "blocking": false, "line": 24, "summary": "before/after anchors == live production re-hashes (F900A13D...9C08 / 142AE848...7dd).", "disposition": "verified; non-blocking"},
+    {"id": "F4", "severity": "info", "blocking": false, "line": 27, "summary": "changes.diff regenerated byte-identically (112 lines / 6 hunks / sha256 8271158b...dbd3) with difflib, no git.", "disposition": "reproducible; non-blocking"},
+    {"id": "F5", "severity": "info", "blocking": false, "line": 30, "summary": "Counts recomputed: RED 7/16 (9 red = frozen set {C0,G1,N1,N2,N3,N5,N6,N8,N9}), GREEN 16/16 + confirm 16/16, MUT-1 {G1,N1,N2,N3,N8,N9} and MUT-2 {N5,N6} = frozen sets; mutant purity one-hunk-minus verified by the reviewer's own difflib diffs.", "disposition": "verified; non-blocking"},
+    {"id": "F6", "severity": "info", "blocking": false, "line": 36, "summary": "Reviewer's own %TEMP% reruns: 16/16; N1 literal 'ttl_seconds exceeds policy cap of 2592000s'; N5 not_reviewed/tampered with clock-anomaly reason; G1 same literal as N1.", "disposition": "independent rerun agrees; non-blocking"},
+    {"id": "F7", "severity": "info", "blocking": false, "line": 43, "summary": "Implementation trace: constant 86400*30 exported in __all__ with comment/docstring policy_hash + OPEN-4 4c coverage; validation order all before receipt lookup; _freshness clock-anomaly before age check; strict < edge keeps now==reviewed_at fresh.", "disposition": "matches claims; non-blocking"},
+    {"id": "F8", "severity": "record-note", "blocking": false, "line": 49, "summary": "readiness_graph.py inherits ttl_seconds by pure passthrough (L82->L102->L115/L132), no local cap; file unchanged.", "disposition": "record-note: verified, no action"},
+    {"id": "F9", "severity": "info", "blocking": false, "line": 52, "summary": "Zero-test-edit recompute: 12 product-test call sites (10+2), max == 2592000 == cap, >cap = 0; decoy excluded; CW tests mtime 22:22:42 < window start 22:53.", "disposition": "caller_audit conclusion holds; non-blocking (also scope condition 5)"},
+    {"id": "F10", "severity": "honest-gap", "blocking": false, "line": 59, "summary": "U-1 pre-registration proven by timestamps (stays unproven); U-2 quotes verbatim incl. 「TTL 的数值不由本裁定规范」 at :137 with the :194 same-meaning-not-verbatim nit; RULESET_HASH payload lacks the cap => declarative disclosure correct; U-3 both precedents on disk (I-06-A iso cf9174b5... CLIP at L78-82 applied L296-297) and production has NEITHER => parent standardization owed with the I-06-A review.", "disposition": "honest disclosures verified; U-1/U-2/U-3 remain open; non-blocking"},
+    {"id": "F11", "severity": "info", "blocking": false, "line": 64, "summary": "Product baseline 26 passed in all three raw runs + reviewer's own 26 passed re-run under m1 semantics.", "disposition": "probe-is-the-only-detector statement holds; non-blocking"},
+    {"id": "F12", "severity": "verification with minor record-note", "blocking": false, "line": 67, "summary": "Ledger honest: GBK rc=1 disclosed and reproduced; BOM 4 candidates examined / 3 normalized / 0 remaining, byte scan 0 BOM; minor gap = commands.json lacks the BOM step (recorded only in hashes + script).", "disposition": "ledger honest; BOM-step gap recorded as a record-note; non-blocking"},
+    {"id": "F13", "severity": "boundaries", "blocking": false, "line": 72, "summary": "CW zero-write (guard re-hash stable), zero git verbs (no porcelain run), recovery = exact 1-file pair; incidental RF test-file writes attributed to FIX-W06-GAPS (byte-identical to its iso/rf copies).", "disposition": "boundaries hold; RF writes adjudicated authorized at landing (cross_card_adjudication); sqlite-shm stays unattributed; non-blocking"},
+    {"id": "F14", "severity": "record-notes", "blocking": false, "line": 78, "summary": "Four nits: (1) frozen-first rests on timestamps + closing hash, external anchor suggested; (2) BOM step absent from commands.json; (3) decision §1 cites :137,:194 as both verbatim but :194 is same-meaning-not-verbatim; (4) LF-only claim verified via hash chain, not per-line EOL count.", "disposition": "record-notes only; none blocks acceptance"}
+  ],
+  "carried_findings": [
+    {"id": "F1", "mirrored_from": "reviewer_report.md line 17", "blocking": false},
+    {"id": "F2", "mirrored_from": "reviewer_report.md line 21", "blocking": false},
+    {"id": "F3", "mirrored_from": "reviewer_report.md line 24", "blocking": false},
+    {"id": "F4", "mirrored_from": "reviewer_report.md line 27", "blocking": false},
+    {"id": "F5", "mirrored_from": "reviewer_report.md line 30", "blocking": false},
+    {"id": "F6", "mirrored_from": "reviewer_report.md line 36", "blocking": false},
+    {"id": "F7", "mirrored_from": "reviewer_report.md line 43", "blocking": false},
+    {"id": "F8", "mirrored_from": "reviewer_report.md line 49", "blocking": false, "class": "record-note"},
+    {"id": "F9", "mirrored_from": "reviewer_report.md line 52", "blocking": false},
+    {"id": "F10", "mirrored_from": "reviewer_report.md line 59", "blocking": false},
+    {"id": "F11", "mirrored_from": "reviewer_report.md line 64", "blocking": false},
+    {"id": "F12", "mirrored_from": "reviewer_report.md line 67", "blocking": false, "class": "verification + record-note (BOM step gap)"},
+    {"id": "F13", "mirrored_from": "reviewer_report.md line 72", "blocking": false},
+    {"id": "F14", "mirrored_from": "reviewer_report.md lines 78-82", "blocking": false, "class": "record-notes", "nit_count": 4}
+  ],
+  "eligibility_statement": {
+    "formula_classification": "Guard-policy infrastructure only: a 30-day receipt TTL policy cap (REJECT on ttl>cap with an exact message, clock-anomaly fail-closed) in company-wiki's prompt_injection_guard, with caller audit and RED/GREEN/mutation evidence. No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "production_write": "NOT GRANTED. Production read-only throughout; 0 production bytes written by this landing pass. Parent holds the 1-file CW commit.",
+    "tool_class": "shadow-only evaluation module (U-4): no production entrypoint calls evaluate_review yet"
+  },
+  "cross_card_adjudication": {
+    "observation": "carrier F13 recorded RF tests/test_fc905b_trusted_receipt.py + tests/test_message_contract_pins.py writes (byte-identical to FIX-W06-GAPS iso/rf copies) and RF .pytest_cache inside the card window",
+    "adjudication": "authorized - these are FIX-W06-GAPS's product-test face per the parent's P4-SCOPE dispatch 「产物 tests/test_message_contract_pins.py（或等价）、只加测试不动产品源」 and FIX's own report 「产品写入仅 2 文件」 (corroborated by FIX decision.md:105 '2 files, parent-authorized' and commands.json 'parent-authorized test-only'); NOT a boundary violation; .pytest_cache = product-tree run side effect recorded honestly",
+    "recorded_by": "carrier-landing pass on the parent's dispatch; adds no acceptance of its own"
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-22",
+    "what_this_pass_did": "verified the carrier against its pre-existing reviewer-authored sidecar (sha256 + 14458 B + content-match, read-only); created this qualification record for the independent reviewer's byte-pinned ACCEPT scope-limited verdict; landed the carrier fields; created review.md (transcribed verdict block, no acceptance of its own); edited handoff.json (status + status_authority + bookkeeping + 14 appended carried findings + carried_unverified + cross_card_adjudication + *_historical_pre_verdict retention); wrote 0 bytes to reviewer_report.md, its sidecar, any evidence raw file, any plan file, any git state, or production",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "status_transition": "review_pending -> accepted_scoped",
+    "parent_commit_note": "exactly ONE company-wiki file after review: prompt_injection_guard.py with after sha256 142AE84838960D500528F2BD3BEE1742758152E0518E061A67ED3997CA6DD7DD; no git add -A; zero test edits",
+    "files_written": [
+      "review.md (created)",
+      "handoff.json (status + status_authority + bookkeeping + carried_findings F1-F14 + carried_unverified + cross_card_adjudication + *_historical_pre_verdict retention; pre-existing content otherwise untouched)",
+      "evidence/TTL-30D-POLICY/qualification.json (created)"
+    ]
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPE-LIMITED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven. The verdict lives in reviewer_report.md (sha256 3fda91255762b847b24a5655a7d2099496d2481d98b626e67fdc798615502ff0, 14458 B, 101 lines, pinned by the pre-existing reviewer-authored reviewer_report.sha256) at line 7 under the '## Verdict' heading on line 5 and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own."
+}

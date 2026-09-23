@@ -1065,3 +1065,117 @@ P6-A/B 落定验证 → OPEN-6#4 终格「已解除」；P4-SCOPE 落定 → C8 
 - **TTL = A（30 天 policy 上限）**，C6 机制落产品策略待修复卡/实施面并（调用方只可收紧）。
 - **生效链**：转录卡在办（RESPONSES.md 三行 + I-06-A/I-06-B rulings_transcribed，字节保真）→ I-06-A 首条解除 → I-06-A/B 九步 → 19 卡链开闸。FIX-W06-GAPS（13 组修面）继续在飞、复审后并终表。
 - **并行轨**：FIX 落定→复审；batch-4（PWF+载体+修复提交）推送评估；函 A 的真实外部回执若未来到达，仍以其本人卡载体签收为准（本记录不冒名）。
+
+---
+
+## 四十四、【E1E7 四翻转记账：B-6c 落地 ⇒ 前瞻披露 ACTIVE（父侧，四卡字节零动）】2026-09-22 晚
+
+**触发**：owner B 全批 → PROMOTION-EXEC 首试 STOP+REVERT → MODEL-ORACLE-ALIGN 重晋升落地 → **RF `5fd82de7` 含 `scripts/model_registry.py=62f864b9`（I-10-B defect-1 省缺即抛）+ 电池对齐 `89a76809`**（batch-4 已推、门实跑中）。
+
+**翻转记录（时点=5fd82de7 入史）**：
+| M 卡 | oracle.md | E1E7 前瞻披露（原 INACTIVE「修复未晋升」） | 现态 |
+|---|---|---|---|
+| M05/M14/M20/M24（+M14 E-5/E-6/E-7） | **字节零动**（复审 blob==HEAD 4/4 再证） | 「fix NOT promoted」语句=**已过时（被事件超越）** | **ACTIVE**——四卡 oracle 的缺省语义自此按 I-10-B 新义解释；**不回改四卡任何字节**（append-only：语句以本条为 supersession 记录，读者以本条+`5fd82de7` 为准） |
+
+**边界**：本条=父登记册翻转记账，非卡载体写入；E1E7 自身载体（已 accepted 落定）零字节改动；其「非晋升状态」语句作为**历史时点记录**保留（当时为真）。
+
+---
+
+## 四十五、【CW `ac4ebd0` 两处 lint 适配终哈希入册（履行提交信息承诺）】2026-09-22 晚
+
+| 文件 | 晋升源哈希 | lint 适配后终哈希 | 改动 |
+|---|---|---|---|
+| `src/company_wiki/source_catalog/observability.py` | `2f6449949c76b97c…`/43746 B | **`edcbeccb9b13778e…`**/43707 B | 删 1 行死赋值 `quote = text[value_start]`（F841，值从未读；行为中性；**交付字节从未过该仓 ruff**——首提才暴露） |
+| `tests/contract/test_short_basetemp_convention.py` | 晋升 `1fd4e0d8…` → 守卫+计算化 `40babe33…`/11376 B | **`dfb7c6cd149e395c…`**/11366 B | 再删未用 `import os`（F401） |
+
+验证链：ruff 两文件 All checks passed、15/15 测试过、host-guard new=0/rc=0、CW 提交 `ac4ebd0` rc=0（dirty-3 排除）。**B-3/B-5 晋升行的「字节等于源」断言自此带上述已披露偏差**（源哈希仍是 PROMOTION-EXEC 复审的证据锚，适配是入仓门的合规层——两层并记不互覆）。
+
+---
+
+## 四十六、【批次 4 推送绿 + OQ-01/02 正式关闭（负载侧实证补销）】2026-09-22 晚
+
+**推送**：`4b1c690b..865428f8 HEAD -> main`、push_rc=0、门 10/10 绿（含 installed-skill sync 自动把 8 个晋升文件 repo→install 后复检 ok）。ahead=0、gitlinks=0、四锚 disk==HEAD（`9ec65295`/`9939480b`/`45e4e343`/`1821fd2a`）、porcelain CLEAN、gate=`3df161a7`（1800 版）。
+
+**OQ-01 关闭**：real-data 步以 1800 预算在**真实推送负载**下完成（欠账=「负载侧 GREEN 由 batch-4 push 实跑充当」兑现）。**OQ-02 关闭**：f2（内部 timeout=300）在同一次负载 real-data 套件内通过（欠账同上兑现）。GATE-TIMEOUT 卡的三 OQ：OQ-03 维持登记未决（owner 轨道）。
+
+**batch-4 批内容**：终确批（§十九/§四十-四十四）+ 三 T2 裁定文件 + 探针六件 + 转录批（RESPONSES+双卡 139717B）+ RF 三晋升提交（`95df2661`/`ec307d20`/`5fd82de7`——**全部四锚随 ec307d20/5fd82de7 更新后本推送已验证 disk==HEAD**）。CW 侧并行入史 `ac4ebd0`（其门=host-guard new=0）。
+
+---
+
+## 四十七、【TTL 复审 ACCEPT + 父裁：FIX 的 RF 双测试写入=授权面内（非越界）】2026-09-22 晚
+
+- **TTL-30D-POLICY 复审 = ACCEPT（scope-limited）**，报告 `3fda9125…`/14458 B+sidecar、REM-79 自检 0、复审者自带 %TEMP% 重跑（16/16、N1 字面 raise、N5 时钟异常 reason、产品 26 过零编辑）、diff 独立再生成字节同、mutant 纯度 difflib 证。落定在办（CW guard 1 文件 after=`142AE848…` 待父提交）。
+- **跨卡观察父裁（复审如实抓出、我裁定授权面内）**：RF `tests/test_fc905b_trusted_receipt.py`（23:15:07）+ `tests/test_message_contract_pins.py`（23:12:33）写入 = **FIX-W06-GAPS 的授权产品测试面**——我 P4-SCOPE 派单明文「产物 `tests/test_message_contract_pins.py`（或等价）、只加测试不动产品源」+ FIX 终报声明「产品写入仅 2 文件（tests/ 你方授权测试面）」⇒ **非越界**；RF `.pytest_cache`（22:55）= 其产品树实跑副作用，如实记。TTL 复审的观察事实正确、归属正确，裁定=authorized。
+- 记：U-3 clip-vs-REJECT 归一 = 父裁定项（协调 I-06-A 复审回执后择一并全档）。
+
+---
+
+## 四十八、【TTL 落定 + 父裁 U-3：三平行 iso 线合并标准化（GUARD-MERGE 立卡）】2026-09-22 深夜
+
+### TTL-30D-POLICY = accepted_scoped 落定
+三件套：review.md `f268875a…`/21561 B、handoff `8d0461cf…`/36660 B（F1–F14+U1–U4+跨卡父裁入 carried）、qual `c32560be…`/22225 B；carrier+sidecar 零动；父裁（RF 双测试=FIX 授权面）以盘上 FIX 自证（decision.md:105/commands/binding identical_to_iso_copy）佐证入档。
+
+### 父裁 U-3（CLIP-vs-REJECT 及更大一层：三平行 guard 线合并）
+
+**发现**：CW 生产三文件被三卡平行改（同基 guard=`f900a13d`、pi=`7b22f239`、rdg=`3f4c43b0`）：TTL=REJECT+C6+isfinite+clock-anomaly（复审 ACCEPT）｜FIX=P5-abc+C7+P6包（复审在飞）｜I-06-A=CLIP+state_domain（复审 changes_required、NaN 修复轮中）。**单文件提交会丢面**。
+
+**裁定（GUARD-MERGE 卡执行）**：
+1. **TTL/now 机制 = REJECT 形**（fail-closed 露调用方错、零测试编辑证全部真实调用方合规、无需可信时钟源——CLIP 的 `max(now, policy clock)` 要时钟）；CLIP 行整体弃（I-06-A 的 store/processing_demand 面**不受影响**、仍为其卡交付面）。
+2. **record/readiness/pi = FIX 面**（P5-a 载荷+复验、P5-c 必填双绑定、P5-b 处置闸、C7 state_domain fail-closed 四形态）。
+3. **state_domain 重叠取并集从严**（两卡语义并、跑双方负例电池定、差异记 decision）。
+4. **整合验收电池五件**：TTL 探针16/16 · FIX 产品双测试（%TEMP% 镜像跑、不写 RF）· state_domain 四负例 · **I-06-B 十八用例全套（A–M2=整合验收准绳，目标 16G/2R=H2+L3 既知对）** · 变异三点（去帽/去闸/去 isfinite）。
+5. 评审后父提交 CW 3 文件（guard+pi+rdg）。
+
+### 面板
+TTL ✅落定 · I-06-B 增补批（F-01 抢救）执行中 · I-06-A NaN 修复轮执行中 · FIX 复审 `4d710b79` 验中 · CFI 等作业通知 · **GUARD-MERGE 新立**。
+
+---
+
+## 四十九、【四卡全闭环计分 + GUARD-MERGE ACCEPT】2026-09-23 凌晨
+
+### 修复/实施四卡全闭环（复审→落定全链）
+
+| 卡 | 复审 | 落定三件套 |
+|---|---|---|
+| TTL-30D-POLICY | ACCEPT scope-limited（F1–F14、%TEMP% 亲跑 16/16、零编辑复算） | `f268875a…`/`8d0461cf…`/`c32560be…` |
+| FIX-W06-GAPS | ACCEPT scoped（F1–F7、12/12 变异、62 钉） | `ee8fb1b0…`/`096b4940…`/`44af5ed1…`（含 F1 rollup 再生+F2 重跑，前像留痕） |
+| I-06-B 母 | AWIF（F-01 抢救 33 目录、F-02 实化、8 翻转对 FIX 全证） | `6f5dc3ad…`/`3c2c84ec…`/`97eda6de…`（前像补录按实现者回报、UNAVAILABLE 字面留痕） |
+| I-06-B 新面 | ACCEPT（L3 双臂 PASS+复审亲跑） | `8d77e874…`/`4ff2279e…`/`ee70a14c…` |
+| I-06-A | r1 changes_required（NaN）→ **r2 accepted_scoped**（17/17 亲跑、CLIP 有限面未动、9 开口在档） | `5f74436c…`/`e174e9f6…`/`6bb39a1e…`（r1 报告 0 字节保留） |
+
+### GUARD-MERGE 复审 = ACCEPT（4 条件）
+
+合面 `guard d7125478…`/`pi 88154de4…`/`rdg 50c94de2…`；复审亲跑（N1/N5 字面、C7 四负例 rc0、恢复后双绿 spot2）、测试债分解复现分毫不差（Run1 15F/11P → seed tag 后 11F/15P）、DROP grep 全 0、before==live 全审零写。**4 条件**：①提交=3 合面文件+测试债同批（债先独立小修=CW-TEST-DEBT 卡已派）②re-run 条件在档 ③store UNRATIFIED 维持 ④父执行提交。F1–F4 minor 全录（run-order 簿记、raw39 非38、G2 注释性差异、R2/R3 仅 raw 核）。
+
+### 生产提交预备（最后一个面）
+
+CW commit = `prompt_injection_guard.py d7125478…` + `prompt_injection.py 88154de4…` + `readiness_graph.py 50c94de2…` + **2 单元测试债修**（seed tag1 行→4 翻0；payload+state_domain+P5-c 作废测试替换→11 翻0）——CW-TEST-DEBT 卡在办，齐后一次提交（hook 实跑）。
+
+---
+
+## 五十、【债卡两发现与父两裁定（我方算术错第 8 例入档）】2026-09-23 凌晨
+
+- **派单算术错（父）**：我在 CW-TEST-DEBT 派单写 pi 文件「22/22」——实测恰 **17 测**（Run1 11F/6P=17；合 RED 26=17+9），我原算把 readiness 9 测重复计数（9+22=31>26 自相矛盾）。**卡方冻结正确 oracle（0 failed、collected==17、11 红名一一对应）且拒绝凑数加测**（oracle §7.5 禁加测凑数）——执行者胜于派单，与既往「提示当主张须实测」同族，本会话**第 8 例派单-测量类自纠**（前7例见 §40）。
+- **E5a/E5b 两追加适配（字面三修只覆盖 9/11 后）**：E5a=补 valid source_sha256 让 policy_hash 断言可达（P5-c 先抛 source 错遮蔽）；E5b=**父裁定采卡方方案**（SQL 植入 legacy 行+state_domain 标签、name+docstring+双断言逐字不动、披露写入面已产不出此行+真 pre-C7 无标签行现读 absent 归 unproven[2]）——**保名保断言=业务语义连续**（同 guardrails 对齐模式：只改数据生产者）；反方案（断言改 absent）=语义漂移，弃。
+- 实测：RED 15F/11P 与复审 Run1 字节同名集；GREEN 9+17=26；M1 seed→4F/5P、M2 payload→7F/10P、restore→26、三源期末钉在办；oracle 冻结 `9334302a…` @23:59:56.707Z 先于一切。
+
+---
+
+## 五十一、【CW 合面提交 `5d72529`——七卡生产面终入史 + 终局计分】2026-09-23 凌晨
+
+**CW `5d72529` rc=0、5 文件 541+/65−、hook 全 Passed**（ruff/config doctor/host-assumption-guard；dirty-3 排除未动）：guard `d7125478`（TTL REJECT-form 帽+isfinite+clock-anomaly+C7 state_domain fail-closed+P5b 闸）+ pi `88154de4`（P5-a 载荷+复验、P5-c 必填双绑定、P5-b 闸、P6 包装）+ rdg `50c94de2` + 测试两件 `a5db0c9c`/`d3bde1a3`（seed tag+E2..E5b 九 hunk）。**首次产线活树验证 = 本提交后的 CW 套件**（缩窄主张成立）。
+
+### 七卡终局计分（复审→落定全链、零自签、carrier 零动）
+
+| 卡 | 复审 | 落定 |
+|---|---|---|
+| TTL-30D-POLICY | ACCEPT scope-limited | ✅ |
+| FIX-W06-GAPS | ACCEPT scoped F1–F7 | ✅（F1/F2 落定时修复） |
+| I-06-B 母 | ACCEPT WITH FINDINGS | ✅（F-01 抢救 33 目录、F-01/02 前像补录） |
+| I-06-B 新面(a20260923-01) | ACCEPT | ✅ |
+| I-06-A | r1 changes_required→**r2 accepted_scoped** | ✅ |
+| GUARD-MERGE | ACCEPT 4 条件 | ✅ |
+| CW-TEST-DEBT | ACCEPT F1–F5 | ✅（F3 归因=CFI 序列逐秒钉死） |
+| CFI14FR1-SAMPLE | accepted_scoped **CF-I14FR1-3 discharged** | ✅（F1 引文修、A6/A7 父裁入档） |
+
+**结论面**：修复链 14 组+2 测试修全过复审；TTL=REJECT-form 定型（C6 双负例+NaN 闭）；C7=断言字段 fail-closed 四形态；CLIP-vs-REJECT 父裁定=REJECT 胜（§48）；探针六件与八缺陷类全修复+独立验证；14 条 CW 既有失败=独立债务清单（1+5+7+1）随 CFI 转结。**store UNRATIFIED 维持**（D-W06 冻结签名未在——属字母 D 轨道）。

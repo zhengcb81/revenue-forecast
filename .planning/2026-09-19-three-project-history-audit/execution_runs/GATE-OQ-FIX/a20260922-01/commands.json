@@ -1,0 +1,146 @@
+{
+ "card_id": "GATE-OQ-FIX",
+ "attempt_id": "a20260922-01",
+ "schema": "command ledger: every command this attempt executed that had side effects or produced evidence, with expected/raw rc; shell = PowerShell via pwsh tool; python = C:\\Miniconda\\python.exe (3.13.9)",
+ "units": [
+  {
+   "unit_id": "C0-read-given-evidence",
+   "argv_summary": "(read tool) GATE-TIMEOUT-1200 handoff.json (OQ-01/OQ-02 wording), reviewer_report.md (grep OQ lines: L10, L21, L24), after/gate_green_1200.txt (1182.3s/1200 evidence: '1 failed, 63 passed, 1 xfailed ... in 1159.84s'); read OWNER_DECISIONS.md section 17/18 rows",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "OQ-01 wording: 'extreme ambient can still exceed 1200 s, which is an owner call outside section 16-B'; OQ-02 wording: 'f2 helper internal timeout=120 fragility, registered-not-fixed, passes standalone 44 s'; owner row confirmed: 'real-data step 1200->1800 (that step only), f2 internal timeout 120->300'",
+   "side_effects": "none (read-only)"
+  },
+  {
+   "unit_id": "C1-before-state-capture",
+   "argv_summary": "(pwsh) sha256 of both target files; Copy-Item byte copies to before/; git rev-parse HEAD; git status --porcelain (scoped + full); ambient python count",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "gate_before=cf09ade8164e89d79237ff5a8409496ab1ae2a9c5f3ee2c253ccad20ef06df0b (= GATE-TIMEOUT-1200's authorized after hash, i.e. the 1200-default line intact going in); test_before=0bcd7ac81dba2c03362c9d0fa21ef59188f096f872b49e6efffc9cb028a0856e; HEAD=4b1c690b8b798e521cf0c59b538bb1522a5a107c; scoped status EMPTY (both clean); ambient python=2; captured_utc=2026-09-22T18:30:39.1885338Z",
+   "side_effects": "attempt dir creation + before/ copies; NO production write"
+  },
+  {
+   "unit_id": "C2-freeze-oracle-before-any-change",
+   "argv_summary": "(write tool) oracle.md; then (pwsh) sha256 oracle.md -> evidence/oracle_freeze.json with both before-pins re-hashed live",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "oracle_sha256=b08b51df740c2b562c1c83eca6734b6d4459c5114d9282941e6de7393aae5851; both_files_untouched_at_freeze=True (hashes re-verified == C1 values at freeze instant); frozen_utc=2026-09-22T18:33:14.8071481Z; edits_applied_at_freeze=false",
+   "side_effects": "attempt dir only; NO production write"
+  },
+  {
+   "unit_id": "C3-binding-write",
+   "argv_summary": "(write tool) binding.json with before-pins of both files + owner quote + allowed/forbidden roots",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "bound before any edit; after-anchors later filled with measured values",
+   "side_effects": "attempt dir only"
+  },
+  {
+   "unit_id": "C4-fix1-apply",
+   "argv_summary": "(edit tool) tools/pre_push_gate.py: _real_data() _run(...) call grows one explicit line 'timeout=1800,'",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "after sha256=3df161a7ceea17de95b36845bdb3c4cee729dca215c56853868780dce7331484; git diff --numstat for file = '1 0'; _run default 'timeout: int = 1200' untouched (other steps keep 1200)",
+   "side_effects": "THE Fix-1 authorized production change (owner section 18 B / OQ-01)"
+  },
+  {
+   "unit_id": "C5-fix2-apply",
+   "argv_summary": "(edit tool) tests/test_fc1105_fault_injection.py line 60 _t2() helper: timeout=120 -> timeout=300",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "after sha256=98ddcdc70b208a35b87b89d83870fe8985156e94ea6596dd6c2b02e6335f8e62; git diff --numstat for file = '1 1'",
+   "side_effects": "THE Fix-2 authorized production change (owner section 18 B / OQ-02)"
+  },
+  {
+   "unit_id": "C6-after-hashes-numstat-diff",
+   "argv_summary": "(pwsh) sha256 both files; git diff --numstat (scoped); git diff (scoped) -> changes.diff; porcelain filtered for non-.planning modifications",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "numstat = tests/test_fc1105_fault_injection.py '1 1' + tools/pre_push_gate.py '1 0' (total 2 added, 1 deleted = pre-registered 'tiny'); changes.diff sha256=e821500800ee5814fe71bed1c0ec434b14a3f73b2558ee0baf76c3053243951b covers EXACTLY the two authorized files/hunks; only non-.planning M entries at that moment: the two target files",
+   "side_effects": "attempt dir (changes.diff) only"
+  },
+  {
+   "unit_id": "C7-integrity-compileall-ruff-ast-attempt1",
+   "argv_summary": "(pwsh Start-Process) python -m compileall -q tools/pre_push_gate.py tests/test_fc1105_fault_injection.py; ruff check <both>; python -c '<ast one-liner>'",
+   "expected_rc": 0,
+   "raw_rcs": {"compileall": 0, "ruff": 0, "ast_attempt1": 1},
+   "result": "compileall rc=0, empty stdout+stderr (quiet success); ruff rc=0 'All checks passed!'; ast_attempt1 rc=1 was a PowerShell Start-Process ArgumentList QUOTING ARTIFACT (program string split to bare 'import'; python never saw valid source) - disclosed and annotated in evidence/ast_compileall_ruff.txt; NOT a file defect",
+   "evidence": ["evidence/ast_compileall_ruff.txt (with disclosure note)", "evidence/_ca_stdout.txt", "evidence/_ca_stderr.txt", "evidence/_ruff_stdout.txt", "evidence/_ast_stderr.txt"],
+   "side_effects": "__pycache__ from compileall (normal)"
+  },
+  {
+   "unit_id": "C8-ast-retry-and-help-smoke",
+   "argv_summary": "(pwsh call operator) python -c <multi-line ast parse of both files>; python tools/pre_push_gate.py --help",
+   "expected_rc": 0,
+   "raw_rcs": {"ast_retry": 0, "help": 0},
+   "result": "AST OK: both files parse (rc=0); --help printed full usage and exited 0 BEFORE any gate step (argparse answers first) - boundary I-3 held: NO full gate run by this card, no --skip-* flag ever passed",
+   "evidence": "evidence/ast_and_help_smoke.txt"
+  },
+  {
+   "unit_id": "C9-f2-standalone-at-300",
+   "argv_summary": "python -m pytest -q --tb=short tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f2_missing_samples_fails",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "pytest_summary": "1 passed in 59.69s",
+   "wall_s": 79.4,
+   "window_utc": "2026-09-22T18:35:34.9208963Z -> 18:36:54.2853784Z",
+   "load": "ambient python 2 before and after; NO burners started by this card (no load induced)",
+   "test_file_state": "timeout=300 (after-state, sha256 98ddcdc7...f8e62)",
+   "result": "PASS as oracle section 5.4 expected (44-60s band)",
+   "evidence": "evidence/f2_standalone_timeout300.txt (raw stdout+stderr byte-faithful)"
+  },
+  {
+   "unit_id": "C10-mutation-revert-to-120-and-rerun",
+   "argv_summary": "(edit tool) timeout=300 -> 120; (pwsh) sha256 == before-hash cross-check; SAME pytest command re-run",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "mutation_state_sha256": "0bcd7ac81dba2c03362c9d0fa21ef59188f096f872b49e6efffc9cb028a0856e",
+   "mutation_equals_before_hash": true,
+   "mutation_cross_check": "byte-exact reproduction of the before-state proves the timeout literal is the ONLY change in the file",
+   "pytest_summary": "1 passed in 59.45s",
+   "wall_s": 67.6,
+   "window_utc": "2026-09-22T18:37:11.8158024Z -> 18:38:19.4359784Z",
+   "load": "ambient python 2 before and after; NO burners",
+   "result": "PASS at 120 too -> HONEST CONCLUSION (pre-registered oracle 5.5): standalone CANNOT distinguish 120 from 300; the fix is NOT load-proven standalone; load-proof owed to batch-4 push's live gate run under load",
+   "evidence": "evidence/f2_mutation_120_rerun.txt (raw + honest-reading header)"
+  },
+  {
+   "unit_id": "C11-restore-300-and-final-verify",
+   "argv_summary": "(edit tool) timeout=120 -> 300; (pwsh) sha256 both files vs recorded after-hashes; scoped numstat/status; git diff -> evidence/git_diff_final_after_mutation_restore.txt; changes.diff byte-compare vs final diff",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "gate_final=3df161a7...31484 matches=True; test_final=98ddcdc7...f8e62 matches=True (mutation fully undone, final state = timeout=300); final numstat '1 1' + '1 0'; changes.diff_equals_final_diff=True; changes.diff covers exactly the two files",
+   "evidence": ["evidence/final_state_verification.json", "evidence/git_diff_final_after_mutation_restore.txt"]
+  },
+  {
+   "unit_id": "C12-workspace-attribution-check",
+   "argv_summary": "(pwsh) mtimes of scripts/revenue_*.py + company_wiki_source.py + source_preparation.py + progress.md; git rev-parse HEAD; git reflog -5; git diff/--cached --stat on those files",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "result": "HEAD did NOT move during the attempt (4b1c690b at freeze and at close). Additional non-.planning M entries appeared in git status AFTER freeze that this card did NOT write: scripts/revenue_core.py (mtime 2026-09-21T20:29:41Z), scripts/revenue_publication.py (2026-09-21T20:32:17Z), scripts/revenue_report.py (2026-09-21T20:21:07Z), scripts/company_wiki_source.py (2026-09-21T20:14:05Z), scripts/source_preparation.py (2026-09-22T09:36:21Z) - ALL mtimes PREDECE this attempt's window (opened 18:30:39Z), and .planning/.../progress.md (mtime 18:36:25Z, inside window but written by a parallel card - this card never wrote it). Attributed to parallel section-18 cards sharing this workspace (PROMOTION-EXEC attempt dir appeared mid-window) and pre-existing worktree drift surfacing in status; disclosed to the parent for commit scoping",
+   "side_effects": "read-only"
+  },
+  {
+   "unit_id": "C13-close-deliverables",
+   "argv_summary": "(write tool) decision.md, commands.json, handoff.json; (pwsh) final sha256 of deliverables -> evidence/final_deliverable_hashes.json",
+   "expected_rc": 0,
+   "raw_rc": null,
+   "note": "runs as the LAST write of this attempt; its own output file is not self-hashed"
+  }
+ ],
+ "forbidden_operations_check": {
+  "git_add_commit_push_stash_checkout_reset_restore": "none executed by this attempt (only read-only status / diff / numstat / rev-parse / reflog / show)",
+  "full_gate_run": "none - only 'python tools/pre_push_gate.py --help' (argparse exits before any step); GREEN evidence left to the parent's batch-4 push as instructed",
+  "gate_flags_passed": "none (no --skip-*, no -k, no --deselect, no -x, ever)",
+  "pytest_selection": "exact node id tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f2_missing_samples_fails, run twice (after-state 300 + mutation 120); no deselects, no skips introduced",
+  "production_files_changed": "exactly 2: tools/pre_push_gate.py (1 added line, timeout=1800 in _real_data only) + tests/test_fc1105_fault_injection.py (1 line, 120->300, restored after mutation)",
+  "test_behavior_changed_beyond_timeout": "no - no assertion, selection, skip, or xfail touched; the only test-file delta is the subprocess timeout literal",
+  "load_faked_or_induced": "no - 0 burners started; ambient python count 2 at freeze and at both test runs; no load manufactured in any direction",
+  "other_production_writes": "none - other M files in the shared workspace carry pre-window mtimes or belong to parallel cards (see C12)"
+ },
+ "raw_exit_codes_summary": {
+  "compileall": 0, "ruff": 0, "ast_attempt1_quoting_artifact": 1, "ast_retry": 0, "help_smoke": 0,
+  "f2_standalone_300": 0, "f2_mutation_120": 0,
+  "full_gate": "NOT RUN (by design, boundary I-3)"
+ }
+}

@@ -1,0 +1,112 @@
+--- company-wiki/src/company_wiki/source_catalog/prompt_injection_guard.py
++++ execution_runs/TTL-30D-POLICY/a20260922-01/iso/prompt_injection_guard.py
+@@ -20,12 +20,27 @@
+ This module is shadow-only on the evaluation side (reads via the
+ CatalogStore-compatible ``store.fetchone``); receipt generation still goes
+ through the existing write path in ``prompt_injection``.
++
++Policy surface (TTL-30D-POLICY, owner-ratified OWNER_DECISIONS.md §十九
++option A + OPEN-6 ruling C6):
++
++- ``POLICY_RECEIPT_TTL_CAP_SECONDS`` — the policy CAP on the caller's
++  ``ttl_seconds``: callers may only TIGHTEN (``ttl_seconds`` > cap raises
++  ``PromptInjectionGuardError`` instead of being clamped), and a caller
++  ``now`` earlier than the receipt's ``reviewed_at`` is a clock anomaly
++  that fails closed as ``tampered`` — a rewound clock can never resurrect
++  an expired receipt (``now`` may only make freshness stricter).
++- The cap is part of the policy surface covered by ``policy_hash``:
++  changing its value is a POLICY CHANGE, and receipts issued under the
++  old policy must be invalidated on read exactly as when ``policy_hash``
++  moves (OPEN-4 4c: policy content change ⇒ old receipts die).
+ """
+ 
+ from __future__ import annotations
+ 
+ import hashlib
+ import json
++import math
+ import re
+ from dataclasses import dataclass
+ from typing import Any
+@@ -58,6 +73,16 @@
+ ).hexdigest()
+ 
+ CACHE_STATES = frozenset({"hit", "ignored", "expired", "tampered", "absent"})
++
++# Policy CAP on receipt-freshness TTL — owner §十九 option A: 30 days
++# (86400*30 = 2592000s), mechanism per OPEN-6 ruling C6: the TTL ceiling is
++# fixed by the policy surface bound to policy_hash; caller-supplied
++# now/ttl_seconds may only TIGHTEN, never widen.  A wider TTL is REJECTED
++# (fail-closed), not clamped.  This constant is part of the policy_hash-
++# covered contract: changing it is a POLICY CHANGE and invalidates receipts
++# issued under the old policy (OPEN-4 4c — full re-review), exactly as if
++# policy_hash itself had moved.
++POLICY_RECEIPT_TTL_CAP_SECONDS = 86400 * 30
+ 
+ 
+ class PromptInjectionGuardError(ValueError):
+@@ -157,13 +182,31 @@
+ 
+ 
+ def _freshness(receipt: dict[str, Any], now: str, ttl_seconds: float) -> ReviewEvaluation | None:
+-    """expired (older than TTL) or tampered (unparseable timestamps)."""
++    """expired (older than TTL) or tampered (unparseable timestamps, or a
++    ``now`` earlier than ``reviewed_at`` — clock anomaly, never fresh).
++
++    ``ttl_seconds`` reaching this function is already policy-bounded:
++    ``evaluate_review`` rejects anything above
++    ``POLICY_RECEIPT_TTL_CAP_SECONDS`` before the receipt is read, so the
++    only reachable path here is ``ttl_seconds <= cap`` (callers may only
++    tighten further).
++    """
+     reviewed_at = _iso_seconds(str(receipt.get("reviewed_at") or ""))
+     now_seconds = _iso_seconds(now)
+     if reviewed_at is None or now_seconds is None:
+         return ReviewEvaluation(
+             status="not_reviewed", cache_state="tampered",
+             reason="receipt reviewed_at is not ISO-8601 UTC",
++        )
++    if now_seconds < reviewed_at:
++        # OPEN-6 C6: the caller's `now` may only TIGHTEN freshness.  A `now`
++        # before reviewed_at makes the age negative (never > ttl_seconds),
++        # which would let a rewound clock resurrect an expired receipt —
++        # fail closed as a clock anomaly instead of reporting fresh.
++        return ReviewEvaluation(
++            status="not_reviewed", cache_state="tampered",
++            reason="receipt reviewed_at is after now "
++                   "(clock anomaly; now may only tighten freshness)",
+         )
+     if now_seconds - reviewed_at > ttl_seconds:
+         return ReviewEvaluation(
+@@ -187,6 +230,11 @@
+     ``store`` must expose ``fetchone(sql, params)`` (CatalogStore- or
+     reader-compatible).  Every non-hit path returns ``not_reviewed`` with
+     an explicit cache_state — never a faked green.
++
++    ``ttl_seconds`` is bounded by the policy CAP
++    (``POLICY_RECEIPT_TTL_CAP_SECONDS``, 2592000s = 30 days): callers may
++    only tighten; a wider TTL raises ``PromptInjectionGuardError`` (OPEN-6
++    ruling C6 / owner §十九 option A).
+     """
+     if not re.fullmatch(r"[0-9a-f]{64}", source_sha256):
+         raise PromptInjectionGuardError("source_sha256 must be a lowercase SHA-256")
+@@ -194,6 +242,11 @@
+         raise PromptInjectionGuardError("policy_hash must be a lowercase SHA-256")
+     if ttl_seconds < 0:
+         raise PromptInjectionGuardError("ttl_seconds must be >= 0")
++    if ttl_seconds > POLICY_RECEIPT_TTL_CAP_SECONDS:
++        raise PromptInjectionGuardError(
++            "ttl_seconds exceeds policy cap of 2592000s")
++    if not math.isfinite(ttl_seconds):
++        raise PromptInjectionGuardError("ttl_seconds must be a finite number")
+     receipt = _receipt_from_store(store, document_id)
+     if receipt is None:
+         return ReviewEvaluation(status="not_reviewed", cache_state="absent")
+@@ -211,6 +264,7 @@
+ 
+ __all__ = [
+     "CACHE_STATES",
++    "POLICY_RECEIPT_TTL_CAP_SECONDS",
+     "PROMPT_INJECTION_GUARD_SCHEMA",
+     "PROMPT_INJECTION_GUARD_SCHEMA_VERSION",
+     "RULESET_HASH",

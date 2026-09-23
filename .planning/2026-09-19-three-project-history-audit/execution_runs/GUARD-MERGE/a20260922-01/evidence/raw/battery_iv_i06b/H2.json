@@ -1,0 +1,56 @@
+{
+  "case": "H2",
+  "title": "GAP-2 consumer_analysis only missing/blocked (C6)",
+  "iso": "fixed",
+  "ruling_clause": "OPEN-5 C6 (GAP-2 blocked ⇒ missing/blocked only)",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "name": "H2a_gap2_not_applicable_rejected",
+      "ok": false,
+      "detail": "store ACCEPTED a consumer_analysis=not_applicable gap while GAP-2 is blocking (rows=1); no gaps validator exists — OPEN-5 C6 implementation surface (NOT in FIX-W06-GAPS scope)"
+    },
+    {
+      "name": "H2b_gap2_recorded_missing_or_blocked",
+      "ok": false,
+      "detail": "gaps=[{\"gap\": \"review_required\", \"detail\": \"prompt_injection_status is not reviewed\", \"observed\": \"not_reviewed\", \"resolves_by\": \"run the approved review method for this source\"}, {\"gap\": \"artifact_missing\", \"detail\": \"no reusable markdown artifact in the envelope bundle\", \"observed\": \"markdown\", \"resolves_by\": \"produce the markdown artifact, then retry\"}, {\"gap\": \"artifact_missing\", \"detail\": \"no reusable normalized artifact in the envelope bundle\", \"observed\": \"normalized\", \"resolves_by\": \"produce the normalized artifact, then retry\"}, {\"gap\": \"artifact_missing\", \"detail\": \"no reusable sections artifact in the envelope bundle\", \"observed\": \"sections\", \"resolves_by\": \"produce the sections artifact, then retry\"}, {\"gap\": \"artifact_missing\", \"detail\": \"no reusable summary artifact in the envelope bundle\", \"observed\": \"summary\", \"resolves_by\": \"produce the summary artifact, then retry\"}] — a GAP-2 blocked request must carry a consumer_analysis entry in missing/blocked state (never not_applicable, never fake ok); candidate emits no consumer_analysis entry at all"
+    }
+  ],
+  "raw": {
+    "H2_demand_gaps_output": [
+      {
+        "gap": "review_required",
+        "detail": "prompt_injection_status is not reviewed",
+        "observed": "not_reviewed",
+        "resolves_by": "run the approved review method for this source"
+      },
+      {
+        "gap": "artifact_missing",
+        "detail": "no reusable markdown artifact in the envelope bundle",
+        "observed": "markdown",
+        "resolves_by": "produce the markdown artifact, then retry"
+      },
+      {
+        "gap": "artifact_missing",
+        "detail": "no reusable normalized artifact in the envelope bundle",
+        "observed": "normalized",
+        "resolves_by": "produce the normalized artifact, then retry"
+      },
+      {
+        "gap": "artifact_missing",
+        "detail": "no reusable sections artifact in the envelope bundle",
+        "observed": "sections",
+        "resolves_by": "produce the sections artifact, then retry"
+      },
+      {
+        "gap": "artifact_missing",
+        "detail": "no reusable summary artifact in the envelope bundle",
+        "observed": "summary",
+        "resolves_by": "produce the summary artifact, then retry"
+      }
+    ]
+  },
+  "error": null,
+  "seconds": 0.07,
+  "finished_at": "2026-09-23T00:05:05"
+}

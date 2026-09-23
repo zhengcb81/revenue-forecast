@@ -1,0 +1,110 @@
+{
+  "card_id": "MODEL-ORACLE-ALIGN",
+  "attempt_id": "a20260922-01",
+  "parent_agent": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102",
+  "binding_status": "bound (oracle.md frozen FIRST — sha256 146ce313f7158da8ef1093961b1ebd1de5cfef0e4b0ffbe0d733c8fb4c2302da / 12543 B — all before-hashes below measured live before any production write)",
+  "authority_chain": [
+    "OWNER_DECISIONS.md §十八 verbatim 「A-1: 1, A-2: 授权, B: 全批， C:更新函件」(2026-09-22) -> row B = 全批 = 「§十七 B-1..B-7 全部批准」 (B-6c promotion approved)",
+    "PROMOTION-EXEC/a20260922-01/decision.md §B-6c STOP detail + follow-up: 'before B-6c can be re-attempted, tests/test_model_economic_guardrails.py needs an alignment/replacement decision … owner/parent orchestration call' — this card is that delegated execution",
+    "Product-semantics authority: I-10-B defect-1 (T1-22) 省缺即抛 is approved product semantics; NEVER reverted to silent-0.0-fill",
+    "E1E7-ERRATA-LANDING/a20260921-01 DEC-E1E7-4 forward-disclosure precedent language mirrored in oracle.md §0.4 and in decision.md"
+  ],
+  "repos": {
+    "revenue-forecast": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+    "company-wiki": "C:\\Users\\郑曾波\\Projects\\company-wiki (read-only for this card)"
+  },
+  "interpreter": "C:\\Miniconda\\python.exe 3.13.9 / pytest 9.1.1 (measured live pre-freeze; same interpreter as PROMOTION-EXEC and I-10-B)",
+  "write_scope": {
+    "authorized_production_files_exactly_2": [
+      "tests/test_model_economic_guardrails.py (alignment — caller-side explicit defaults)",
+      "scripts/model_registry.py (B-6c re-promotion — byte-exact copy of promoted source)"
+    ],
+    "forbidden": "any other production file, any other test file, any git write, any CW write, B-6b/natural_window, tools/pre_push_gate.py"
+  },
+  "targets": {
+    "tests/test_model_economic_guardrails.py": {
+      "role": "test alignment target",
+      "before_sha256": "665164528d7d37663ff37474ddae20bfcf3c16eceefde3e6f54473324251ab77",
+      "before_bytes": 7988,
+      "before_image_copy": "recovery/before_images/test_alignment/test_model_economic_guardrails.py (verified byte-exact: same sha256/bytes)"
+    },
+    "scripts/model_registry.py": {
+      "role": "B-6c re-promotion target",
+      "before_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "before_bytes": 26446,
+      "before_image_copy": "recovery/before_images/registry_repromotion/model_registry.py (verified byte-exact: same sha256/bytes)",
+      "cross_check": "identical to PROMOTION-EXEC/a20260922-01/recovery/before_images/B-6c/model_registry.py (the image that STOP+REVERT restored)"
+    }
+  },
+  "promoted_source": {
+    "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-10-B/a20260919-01/iso/rf/scripts/model_registry.py",
+    "sha256": "62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081",
+    "bytes": 30116,
+    "measured_live": true,
+    "matches_PROMOTION-EXEC_manifest_pin": true,
+    "companion_unchanged": {
+      "scripts/model_extensions.py": {
+        "production_sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+        "i10b_iso_sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+        "bytes": 14475,
+        "note": "identical both sides — NOT promoted, NOT touched"
+      }
+    }
+  },
+  "neighbor_before_hashes_zero_touch_proof": {
+    "tests/test_model_registry_contract.py": "f3cf1e5c2f4d587f38afd125be17465c886afac95dfd2b7878e8557937dacb65 (1780 B)",
+    "tests/test_model_extensions.py": "460230061afab34926880638d4db863f8e195822471e12dfa54709956f2be541 (15345 B)",
+    "tests/test_model_extensions_anchor.py": "954e08ac4ea19a6953da3c435f9028956d073acad06a5db4f253660c180524f9 (7378 B)",
+    "tests/test_model_integration_bounds.py": "0fab9aeacdac9835c850f61d01eb89b18d6619fe831276cbcc458dee6c71ac7b (1644 B)",
+    "tests/test_models.py": "0ea8c5a351d2c94669862ed8f08de6db76c46e45f333bccd9283dedadb9f0ed2 (8125 B)",
+    "tests/conftest.py": "6da47830e3490fead2787505b2c9d177f75a644cb217ea7b9a859704f1632ee4 (498 B)",
+    "scripts/forecast/segments.py": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd (27697 B) — sole production caller of calculate_registered_model; materializes every optional driver BEFORE calling (segments.py:101-110), so production path is unaffected by defect-1",
+    "rule": "these must be byte-identical after this card (O-6)"
+  },
+  "red_control_reference": {
+    "red_evidence": {
+      "path": "PROMOTION-EXEC/a20260922-01/evidence/B-6c_model_focused_tests.txt",
+      "sha256": "a266a922729b3588d0d41d4b459020d8057e067d015797cdbb899821fd4a0a75",
+      "bytes": 111044,
+      "observed": "31 failed / 53 passed / 177 subtests passed — 6 item FAILED + 25 SUBFAILED, ALL in tests/test_model_economic_guardrails.py, all at scripts/model_registry.py:410"
+    },
+    "control_evidence": {
+      "path": "PROMOTION-EXEC/a20260922-01/evidence/B-6c_PRECHECK_same_battery_before_image.txt",
+      "sha256": "b7fbc74fc1e7c30b9fe908bf1e0684b0eda7710df3628d8544b54756fe0ea304",
+      "bytes": 148,
+      "observed": "59 passed / 202 subtests passed rc 0 (registry at before-image, B-1/B-2 promoted) => regression caused solely by B-6c"
+    },
+    "count_reconciliation": "59 test items total: 6 failed items + 53 passed items = 59; 25 failed subtests + 177 passed subtests = 202; card face '31/84' = 31 failed entries / (31+53) entries"
+  },
+  "battery": {
+    "files": [
+      "tests/test_model_registry_contract.py",
+      "tests/test_model_economic_guardrails.py",
+      "tests/test_model_extensions.py",
+      "tests/test_model_extensions_anchor.py",
+      "tests/test_model_integration_bounds.py"
+    ],
+    "flag_pattern_note": "PROMOTION-EXEC recorded the brace form; this card passes the 5 files explicitly (shell-independent, same file set)",
+    "flags": ["-p no:cacheprovider", "--basetemp=<attempt>/scratch/*", "-q", "-X utf8", "-B"]
+  },
+  "i08c_suite": {
+    "test_file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-08-C/a20260919-01/test_i08c_consumer_rejection.py",
+    "sha256": "3f83fdf2b7d81aba9a0bbafeb08c6c5fdf9344607fce5e5a34bb920da6454fbb",
+    "bytes": 13152,
+    "frozen_r4": true,
+    "expectation": "13 collected / 13 passed / rc 0 with RF_IMPORT_ROOT=production under FULL promotion (post B-6c)"
+  },
+  "git_porcelain_before": [
+    " M .planning/.../{OWNER_DECISIONS,REMEDIATION_REGISTER,execution_v2/START_HERE,findings,progress}.md + outward_requests/* (planning-side, pre-existing)",
+    " M scripts/{company_wiki_source,revenue_core,revenue_publication,revenue_report,source_preparation}.py (PROMOTION-EXEC B-1/B-2, pre-existing)",
+    " M tests/test_fc1105_fault_injection.py (concurrent GATE-OQ-FIX, pre-existing)",
+    " M tools/pre_push_gate.py (concurrent GATE-OQ-FIX, pre-existing)",
+    " ?? execution_runs/{B3-PREREQ iso, GATE-OQ-FIX, M01-M04-PROPAGATE, PROMOTION-EXEC, MODEL-ORACLE-ALIGN}/, ?? .tmp-r41-mutation/, ?? assurance/.../plan_inputs.json.bak (pre-existing / this attempt)",
+    "note: git used READ-ONLY (status); no git write by this card; parent commits after evidence"
+  ],
+  "entry_counts": {
+    "production_targets": 2,
+    "test_alignment_cases_expected": 31,
+    "assertion_rewrites_expected": "0 unless a case genuinely asserts silent-fill itself (rule O-3; enumerated in decision.md)"
+  }
+}

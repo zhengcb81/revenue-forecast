@@ -1,0 +1,442 @@
+target pkg-dir : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\iso\pi_pkg
+    __init__.py sha256=c712addbc3c2592d39cb6fde3a0d40307d2387055adaadece4177b546857f67f
+    prompt_injection.py sha256=88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33
+    prompt_injection_guard.py sha256=17f0dc58f6530f0f0f8dbe5099cd655edfe3b7b4404300e3e594ef38534ed31b
+    readiness_graph.py sha256=50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b
+
+=== Phase A: 8 concurrent single writes, same document_id='doc-race' ===
+    {"owner": "w0", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6", "rc": 0}
+    {"owner": "w1", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec", "rc": 0}
+    {"owner": "w2", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e", "rc": 0}
+    {"owner": "w3", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355", "rc": 0}
+    {"owner": "w4", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e", "rc": 0}
+    {"owner": "w5", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841", "rc": 0}
+    {"owner": "w6", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa", "rc": 0}
+    {"owner": "w7", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5", "rc": 0}
+    final row: {"metadata_json_keys": ["prompt_injection_review", "prompt_injection_review_audit"], "receipt": {"schema_version": "1.0", "status": "not_detected", "reviewer": "w0", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6", "source_sha256": "6b1bf1ed12938116fe681488ad58a9c071871bcdba107c87b8d45b3c767b752b", "policy_hash": "f760fdc04df62115e50b2a7f76669ef663856366dd25ad1847ff108c4d27507b", "state_domain": "review", "writer_pid": "10516", "writer_write_at": "2026-09-22T00:00:00Z", "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"}, "receipt_key_count": 2, "audit_entries": 8, "audit_evidence_sha256s": ["1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5", "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841", "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355", "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec", "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e", "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa", "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e", "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6"]}
+
+=== Phase A2: 8 concurrent writes, connect timeout=0.0 (lock exposed) ===
+    {"owner": "w0", "mode": "tight", "writes": 0, "errors": ["PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"], "error_types": ["PromptInjectionReviewError"], "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6", "rc": 0}
+    {"owner": "w1", "mode": "tight", "writes": 0, "errors": ["PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"], "error_types": ["PromptInjectionReviewError"], "evidence_sha256": "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec", "rc": 0}
+    {"owner": "w2", "mode": "tight", "writes": 0, "errors": ["PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"], "error_types": ["PromptInjectionReviewError"], "evidence_sha256": "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e", "rc": 0}
+    {"owner": "w3", "mode": "tight", "writes": 0, "errors": ["PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"], "error_types": ["PromptInjectionReviewError"], "evidence_sha256": "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355", "rc": 0}
+    {"owner": "w4", "mode": "tight", "writes": 0, "errors": ["PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"], "error_types": ["PromptInjectionReviewError"], "evidence_sha256": "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e", "rc": 0}
+    {"owner": "w5", "mode": "tight", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841", "rc": 0}
+    {"owner": "w6", "mode": "tight", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa", "rc": 0}
+    {"owner": "w7", "mode": "tight", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5", "rc": 0}
+    final row: {"metadata_json_keys": ["prompt_injection_review", "prompt_injection_review_audit"], "receipt": {"schema_version": "1.0", "status": "not_detected", "reviewer": "w7", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5", "source_sha256": "3b9ea4f01c8bcb4be3a1cdd9191111f58895d9fe1374b669f749d67fd91de89d", "policy_hash": "dcc039b371729ad6cc03c00720d9de7d20dff2675d8c06412ea61c03301d5b98", "state_domain": "review", "writer_pid": "43776", "writer_write_at": "2026-09-22T00:00:00Z", "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"}, "receipt_key_count": 2, "audit_entries": 3, "audit_evidence_sha256s": ["07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841", "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa", "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5"]}
+
+=== Phase B: 4 writers + 4 readers interleaved on 'doc-mix' ===
+    {"owner": "m0", "mode": "mix", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "aab0513385bb71654b97546190ea0dd62a09b3ff23a90b75f2e819b7e5bcaebc", "rc": 0}
+    {"owner": "m1", "mode": "mix", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "07a4409ae5453b8b912020bebeb4bc4423ec8e3edf7ef4a56d2a0a7953cd0878", "rc": 0}
+    {"owner": "m2", "mode": "mix", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "4cdeee2b83d9548d68201226c0713418de1d0199df8fa0e959a580892a8f0a8a", "rc": 0}
+    {"owner": "m3", "mode": "mix", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "5163a0ed21dca45368bcdeec035da8e8ec0d352a27238e70b565427c800f2494", "rc": 0}
+    {"owner": "r0", "reads": 122, "none_results": 113, "receipt_results": 9, "errors": [], "rc": 0}
+    {"owner": "r1", "reads": 157, "none_results": 139, "receipt_results": 18, "errors": [], "rc": 0}
+    {"owner": "r2", "reads": 106, "none_results": 53, "receipt_results": 53, "errors": [], "rc": 0}
+    {"owner": "r3", "reads": 95, "none_results": 79, "receipt_results": 16, "errors": [], "rc": 0}
+    final row: {"metadata_json_keys": ["prompt_injection_review", "prompt_injection_review_audit"], "receipt": {"schema_version": "1.0", "status": "not_detected", "reviewer": "m1", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "07a4409ae5453b8b912020bebeb4bc4423ec8e3edf7ef4a56d2a0a7953cd0878", "source_sha256": "98d6fc51d2d4e2bf923963a26fd45694a34ff516b0ff8a9b4e1cf675bcd6b6fb", "policy_hash": "66ebf134c0f5f577d9b72d8916d895875f274c83735ce933dddd868eb174649c", "state_domain": "review", "writer_pid": "24736", "writer_write_at": "2026-09-22T00:00:00Z", "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"}, "receipt_key_count": 2, "audit_entries": 4, "audit_evidence_sha256s": ["5163a0ed21dca45368bcdeec035da8e8ec0d352a27238e70b565427c800f2494", "aab0513385bb71654b97546190ea0dd62a09b3ff23a90b75f2e819b7e5bcaebc", "4cdeee2b83d9548d68201226c0713418de1d0199df8fa0e959a580892a8f0a8a", "07a4409ae5453b8b912020bebeb4bc4423ec8e3edf7ef4a56d2a0a7953cd0878"]}
+
+=== SUMMARY ===
+{
+  "P6A_concurrent_writes": {
+    "maps_06": "Phase A / SUMMARY P6-A lost_write_count=7 (silent last-writer-wins displacement)",
+    "processes": [
+      {
+        "owner": "w0",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6",
+        "rc": 0
+      },
+      {
+        "owner": "w1",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec",
+        "rc": 0
+      },
+      {
+        "owner": "w2",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e",
+        "rc": 0
+      },
+      {
+        "owner": "w3",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355",
+        "rc": 0
+      },
+      {
+        "owner": "w4",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e",
+        "rc": 0
+      },
+      {
+        "owner": "w5",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841",
+        "rc": 0
+      },
+      {
+        "owner": "w6",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa",
+        "rc": 0
+      },
+      {
+        "owner": "w7",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5",
+        "rc": 0
+      }
+    ],
+    "classification": {
+      "acks": 8,
+      "defined_rejections": 0,
+      "undefined_outcomes": 0,
+      "count_conservation": true,
+      "bare_sqlite_errors": [],
+      "all_errors": []
+    },
+    "final_state": {
+      "metadata_json_keys": [
+        "prompt_injection_review",
+        "prompt_injection_review_audit"
+      ],
+      "receipt": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "w0",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6",
+        "source_sha256": "6b1bf1ed12938116fe681488ad58a9c071871bcdba107c87b8d45b3c767b752b",
+        "policy_hash": "f760fdc04df62115e50b2a7f76669ef663856366dd25ad1847ff108c4d27507b",
+        "state_domain": "review",
+        "writer_pid": "10516",
+        "writer_write_at": "2026-09-22T00:00:00Z",
+        "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"
+      },
+      "receipt_key_count": 2,
+      "audit_entries": 8,
+      "audit_evidence_sha256s": [
+        "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5",
+        "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841",
+        "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355",
+        "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec",
+        "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e",
+        "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa",
+        "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e",
+        "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6"
+      ]
+    },
+    "acked_evidence_sha256s": [
+      "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841",
+      "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5",
+      "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e",
+      "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e",
+      "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa",
+      "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6",
+      "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec",
+      "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355"
+    ],
+    "audit_proves_every_acknowledged_write": true,
+    "every_write_traced_or_defined_rejected": true,
+    "expect": "count conservation (acks + defined rejections == attempts), zero silent drops; read-back (audit trail) proves every acknowledged write; under default timeout writes succeed with zero lock exceptions (red line)",
+    "ok": true
+  },
+  "P6B_lock_errors_wrapped": {
+    "maps_06": "Phase A2 / SUMMARY P6-A2: 7/8 bare sqlite3.OperationalError 'database is locked'",
+    "processes": [
+      {
+        "owner": "w0",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        "error_types": [
+          "PromptInjectionReviewError"
+        ],
+        "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6",
+        "rc": 0
+      },
+      {
+        "owner": "w1",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        "error_types": [
+          "PromptInjectionReviewError"
+        ],
+        "evidence_sha256": "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec",
+        "rc": 0
+      },
+      {
+        "owner": "w2",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        "error_types": [
+          "PromptInjectionReviewError"
+        ],
+        "evidence_sha256": "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e",
+        "rc": 0
+      },
+      {
+        "owner": "w3",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        "error_types": [
+          "PromptInjectionReviewError"
+        ],
+        "evidence_sha256": "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355",
+        "rc": 0
+      },
+      {
+        "owner": "w4",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        "error_types": [
+          "PromptInjectionReviewError"
+        ],
+        "evidence_sha256": "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e",
+        "rc": 0
+      },
+      {
+        "owner": "w5",
+        "mode": "tight",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841",
+        "rc": 0
+      },
+      {
+        "owner": "w6",
+        "mode": "tight",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa",
+        "rc": 0
+      },
+      {
+        "owner": "w7",
+        "mode": "tight",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5",
+        "rc": 0
+      }
+    ],
+    "classification": {
+      "acks": 3,
+      "defined_rejections": 5,
+      "undefined_outcomes": 0,
+      "count_conservation": true,
+      "bare_sqlite_errors": [],
+      "all_errors": [
+        [
+          "PromptInjectionReviewError",
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        [
+          "PromptInjectionReviewError",
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        [
+          "PromptInjectionReviewError",
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        [
+          "PromptInjectionReviewError",
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ],
+        [
+          "PromptInjectionReviewError",
+          "PromptInjectionReviewError: store busy/lock timeout: OperationalError: database is locked"
+        ]
+      ]
+    },
+    "final_state": {
+      "metadata_json_keys": [
+        "prompt_injection_review",
+        "prompt_injection_review_audit"
+      ],
+      "receipt": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "w7",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5",
+        "source_sha256": "3b9ea4f01c8bcb4be3a1cdd9191111f58895d9fe1374b669f749d67fd91de89d",
+        "policy_hash": "dcc039b371729ad6cc03c00720d9de7d20dff2675d8c06412ea61c03301d5b98",
+        "state_domain": "review",
+        "writer_pid": "43776",
+        "writer_write_at": "2026-09-22T00:00:00Z",
+        "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"
+      },
+      "receipt_key_count": 2,
+      "audit_entries": 3,
+      "audit_evidence_sha256s": [
+        "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841",
+        "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa",
+        "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5"
+      ]
+    },
+    "expect": "all contention errors surface as PromptInjectionReviewError \"store busy/lock timeout: ...\" (never bare sqlite3.*)",
+    "ok": true
+  },
+  "P6_REDLINE_interleaved_reads": {
+    "maps_06": "Phase B / SUMMARY P6-B: 658 interleaved reads, zero tearing, zero exceptions (MUST stay green)",
+    "writers": [
+      {
+        "owner": "m0",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "aab0513385bb71654b97546190ea0dd62a09b3ff23a90b75f2e819b7e5bcaebc",
+        "rc": 0
+      },
+      {
+        "owner": "m1",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "07a4409ae5453b8b912020bebeb4bc4423ec8e3edf7ef4a56d2a0a7953cd0878",
+        "rc": 0
+      },
+      {
+        "owner": "m2",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "4cdeee2b83d9548d68201226c0713418de1d0199df8fa0e959a580892a8f0a8a",
+        "rc": 0
+      },
+      {
+        "owner": "m3",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "5163a0ed21dca45368bcdeec035da8e8ec0d352a27238e70b565427c800f2494",
+        "rc": 0
+      }
+    ],
+    "readers": [
+      {
+        "owner": "r0",
+        "reads": 122,
+        "none_results": 113,
+        "receipt_results": 9,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r1",
+        "reads": 157,
+        "none_results": 139,
+        "receipt_results": 18,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r2",
+        "reads": 106,
+        "none_results": 53,
+        "receipt_results": 53,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r3",
+        "reads": 95,
+        "none_results": 79,
+        "receipt_results": 16,
+        "errors": [],
+        "rc": 0
+      }
+    ],
+    "writer_classification": {
+      "acks": 4,
+      "defined_rejections": 0,
+      "undefined_outcomes": 0,
+      "count_conservation": true,
+      "bare_sqlite_errors": [],
+      "all_errors": []
+    },
+    "final_state": {
+      "metadata_json_keys": [
+        "prompt_injection_review",
+        "prompt_injection_review_audit"
+      ],
+      "receipt": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "m1",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "07a4409ae5453b8b912020bebeb4bc4423ec8e3edf7ef4a56d2a0a7953cd0878",
+        "source_sha256": "98d6fc51d2d4e2bf923963a26fd45694a34ff516b0ff8a9b4e1cf675bcd6b6fb",
+        "policy_hash": "66ebf134c0f5f577d9b72d8916d895875f274c83735ce933dddd868eb174649c",
+        "state_domain": "review",
+        "writer_pid": "24736",
+        "writer_write_at": "2026-09-22T00:00:00Z",
+        "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"
+      },
+      "receipt_key_count": 2,
+      "audit_entries": 4,
+      "audit_evidence_sha256s": [
+        "5163a0ed21dca45368bcdeec035da8e8ec0d352a27238e70b565427c800f2494",
+        "aab0513385bb71654b97546190ea0dd62a09b3ff23a90b75f2e819b7e5bcaebc",
+        "4cdeee2b83d9548d68201226c0713418de1d0199df8fa0e959a580892a8f0a8a",
+        "07a4409ae5453b8b912020bebeb4bc4423ec8e3edf7ef4a56d2a0a7953cd0878"
+      ]
+    },
+    "torn_or_crashing_reads": [],
+    "ok": true
+  }
+}
+    P6A_concurrent_writes: PASS
+    P6B_lock_errors_wrapped: PASS
+    P6_REDLINE_interleaved_reads: PASS
+P6 SCENARIOS: PASS

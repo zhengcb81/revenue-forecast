@@ -1,0 +1,69 @@
+{
+  "case": "A",
+  "title": "idempotency key includes request identity",
+  "iso": "fixed",
+  "ruling_clause": "OPEN-2 option A (owner 2026-09-20; OPEN-5 C1/§4.5-1; OPEN-4 §4.3 compat red-line)",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "A1_two_rows_distinct_ids",
+      "ok": true,
+      "detail": "rows=2 id1=demand-1ed206c11d1b4fee id2=demand-8992fa7ee428497d (c8/c9/c10 counterexample: a different request must NOT merge into an existing demand)"
+    },
+    {
+      "name": "A2_distinct_demand_keys",
+      "ok": true,
+      "detail": "key1=0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52 key2=415a4750574dda62558327607daa359a830671034ac38eb8077f4664238fef84"
+    },
+    {
+      "name": "A3_row_binds_own_request_sha256",
+      "ok": true,
+      "detail": "row1=f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53 expect=f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53; row2=fecfc740a46421af2b6d9e89ebc8fd5c51598ac9fbfd952fad737265d9d27ea2 expect=fecfc740a46421af2b6d9e89ebc8fd5c51598ac9fbfd952fad737265d9d27ea2"
+    }
+  ],
+  "raw": {
+    "A_rows": [
+      {
+        "demand_id": "demand-1ed206c11d1b4fee",
+        "demand_key": "0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "src-1",
+        "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps": [],
+        "request_sha256": "f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53",
+        "attempts": 0,
+        "lease_owner": null,
+        "lease_until": null,
+        "created_at": 1790118303.8259716,
+        "updated_at": 1790118303.8259716,
+        "candidate_marker": "candidate-unratified-I-06-A-a20260919-01",
+        "key_version": "request-identity-v2"
+      },
+      {
+        "demand_id": "demand-8992fa7ee428497d",
+        "demand_key": "415a4750574dda62558327607daa359a830671034ac38eb8077f4664238fef84",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "src-1",
+        "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps": [],
+        "request_sha256": "fecfc740a46421af2b6d9e89ebc8fd5c51598ac9fbfd952fad737265d9d27ea2",
+        "attempts": 0,
+        "lease_owner": null,
+        "lease_until": null,
+        "created_at": 1790118303.8646948,
+        "updated_at": 1790118303.8646948,
+        "candidate_marker": "candidate-unratified-I-06-A-a20260919-01",
+        "key_version": "request-identity-v2"
+      }
+    ]
+  },
+  "error": null,
+  "seconds": 0.126,
+  "finished_at": "2026-09-23T00:05:03"
+}

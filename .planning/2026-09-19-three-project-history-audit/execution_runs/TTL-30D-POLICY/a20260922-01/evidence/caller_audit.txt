@@ -1,0 +1,72 @@
+# caller_audit.txt — raw evidence: all `evaluate_review` / `ttl_seconds` call sites
+
+Audited 2026-09-22 before any implementation (grep tool, whole company-wiki repo +
+whole revenue-forecast repo, plus plan execution_runs). Source of truth for the
+table frozen in oracle.md §4.
+
+## product (company-wiki)
+
+1. src/company_wiki/source_catalog/prompt_injection_guard.py
+   - L159 `def _freshness(receipt, now, ttl_seconds)` — freshness is pure caller params
+   - L168 `if now_seconds - reviewed_at > ttl_seconds:` (BEFORE: only check; no cap, no now<reviewed_at guard)
+   - L176 `def evaluate_review(...)`; L195-196 `if ttl_seconds < 0: raise ...("ttl_seconds must be >= 0")` — ONLY pre-fix validation
+   - L203 `stale = _freshness(receipt, now, ttl_seconds)`
+2. src/company_wiki/source_catalog/readiness_graph.py
+   - L25 import evaluate_review; L82 `_safety_verdict(..., ttl_seconds)` param
+   - L96-103 `evaluate_review(reader, document_id, ..., ttl_seconds=ttl_seconds)` (passthrough)
+   - L115 `evaluate_readiness(..., ttl_seconds: float, ...)` public param; L130-133 passes through
+3. tests/unit/test_prompt_injection_guard.py — 10 call sites:
+   - L187 ttl_seconds=86400*30   (== cap, legal)
+   - L201 ttl_seconds=86400*30   (== cap, legal)
+   - L214 ttl_seconds=3600       (tighten, legal)
+   - L228 ttl_seconds=86400      (tighten, legal; boundary == age => hit)
+   - L241 ttl_seconds=86400*30   (== cap, legal)
+   - L253 ttl_seconds=3600       (tighten, legal)
+   - L268 ttl_seconds=3600       (tighten, legal)
+   - L286 ttl_seconds=86400*30   (== cap, legal)
+   - L298 ttl_seconds=60         (tighten, legal; invalid-sha256 probe)
+   - L302 ttl_seconds=-1         (invalid, pre-existing reject)
+   => max value == cap; count > cap = 0 => ZERO product-test edits required.
+4. tests/unit/test_readiness_graph.py
+   - L34 `TTL = 86400 * 30`; L181 `_args ttl_seconds: TTL` (== cap, legal)
+   - L223 `**_args(ttl_seconds=1)` (tighten, legal)
+   => count > cap = 0 => ZERO product-test edits required.
+5. scripts/reviewer_gate.py L26 `def evaluate_review(...)` — DIFFERENT function
+   (review gate, positional args, no ttl parameter); tests/unit/test_reviewer_gate.py
+   tests it => NOT a TTL call site (同名异物).
+6. src/company_wiki/source_catalog/llm_summarizer.py L13 — docstring mention only, no call.
+7. coverage.json / docs/** — mentions only, no code call sites.
+
+## revenue-forecast
+
+- grep `evaluate_review(` in *.py: 0 matches.
+- grep `ttl_seconds`: assurance/unified_completion/uc/lock.py (L75/86/116/185/198),
+  casfile.py (L156/168), tests/test_casfile.py L129, tests/worker_ops.py L41,
+  tests/test_lock.py L62 — all FILE-LOCK TTLs, unrelated subsystem => N/A.
+
+## plan execution_runs (historical evidence harnesses, NOT product code)
+
+- execution_runs/I-06-B/a20260919-01/scripts/w06b_review_harness.py:
+  L282/352/372/472/559 ttl_seconds=86400*30 (== cap), L392 ttl_seconds=3600 — all legal post-fix.
+- execution_runs/I-06-A/a20260922-02/scripts/w06a2_cases.py:
+  L586 ttl_seconds=86400; L637 `effective_receipt_ttl(10 ** 30) == 86400 * 30` (CLIP-semantics
+  probe against that attempt's iso; see conflict note); L654 ttl_seconds=10 ** 30
+  (deliberate >cap NEGATIVE probe); L667 ttl_seconds=3600.
+  => the 10**30 usages are probe inputs, not product callers.
+- execution_runs/FIX-W06-GAPS/a20260922-01/scripts/s_c7_state_domain.py: L125/219 ttl_seconds=3600.0.
+
+## prior-art conflict (reported, not resolved here)
+
+- execution_runs/I-06-A/a20260922-02/iso/cw/src/company_wiki/source_catalog/prompt_injection_guard.py
+  L66 comment + L78 `def effective_receipt_ttl(ttl_seconds)` "min(caller TTL, the 30d policy cap)"
+  + L296 `ttl_seconds = effective_receipt_ttl(ttl_seconds)` + L326 __all__ entry = CLIP semantics.
+  Production has NEITHER implementation today (verified: production guard sha256
+  F900A13D7C22FE3BD742485C6B603DE11B92A56D2414A2A046216CCD3B0B9C08 has no effective_receipt_ttl).
+  This card implements REJECT per card text 「pick REJECT (fail-closed)」; C6 permits both
+  (被拒或被策略上限截断). If both attempts are ever promoted, parent must reconcile to ONE.
+
+## production zero-write proof
+
+- prod guard sha256 BEFORE = F900A13D7C22FE3BD742485C6B603DE11B92A56D2414A2A046216CCD3B0B9C08
+- prod guard sha256 AFTER  = F900A13D7C22FE3BD742485C6B603DE11B92A56D2414A2A046216CCD3B0B9C08 (verified)
+- All edits confined to the attempt dir + %TEMP% mirror `ttl30d-a20260922-01`.

@@ -1,0 +1,28 @@
+{
+  "case": "M2",
+  "title": "OPEN-4 C5② role/request change ⇒ receipt hit + role key",
+  "iso": "fixed",
+  "ruling_clause": "OPEN-4 condition C5② + §4.3 domain split",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "M2a_receipt_domain_has_no_role_request_axis",
+      "ok": true,
+      "detail": "params=['store', 'document_id', 'source_sha256', 'policy_hash', 'now', 'ttl_seconds'] (receipt binds source×policy only)"
+    },
+    {
+      "name": "M2b_role_set_change_new_demand_key",
+      "ok": true,
+      "detail": "key1=0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52 key2=7f45fcf4beadf77b4b016686e98b70ae4c5517df47cfefe71d9e24d0f2dfe815"
+    },
+    {
+      "name": "M2c_receipt_still_hit_after_role_and_request_change",
+      "ok": true,
+      "detail": "eval=ReviewEvaluation(status='not_detected', cache_state='hit', state_domain='cache', reason='receipt fresh and bound') — role_set / request identity are NOT receipt binding axes (OPEN-4 C5②); the request-identity → new demand-key half is asserted by case A"
+    }
+  ],
+  "raw": {},
+  "error": null,
+  "seconds": 0.114,
+  "finished_at": "2026-09-22T23:12:50"
+}

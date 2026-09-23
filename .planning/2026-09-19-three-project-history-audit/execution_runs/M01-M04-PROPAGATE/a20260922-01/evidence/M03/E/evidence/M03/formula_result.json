@@ -1,0 +1,72 @@
+{
+ "card_id": "M03",
+ "model_id": "unit_sales",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M03\\a20260919-01\\iso\\checkout_scripts",
+ "code_file_actually_imported": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M03\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "expected_source": "evidence/M03/oracle.json (scripts/oracle_M03.py, stdlib only, no product import)",
+ "expected_was_not_generated_by_product_code": true,
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "positive": {
+  "input": {
+   "model_id": "unit_sales",
+   "base_revenue": 0,
+   "drivers": {
+    "units": [
+     120
+    ],
+    "unit_revenue": [
+     2.5
+    ],
+    "timing_factor": [
+     1
+    ],
+    "other_revenue": [
+     5
+    ]
+   },
+   "years": [
+    2027
+   ]
+  },
+  "raised": null,
+  "actual": [
+   305.0
+  ],
+  "expected": [
+   305.0
+  ],
+  "per_value_checks": [
+   {
+    "index": 0,
+    "year": 2027,
+    "actual": 305.0,
+    "expected": 305.0,
+    "tolerance": 3.05e-07,
+    "abs_diff": 0.0,
+    "ok": true
+   }
+  ],
+  "length_ok": true,
+  "tolerances_ok": true
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   200.0,
+   220.0
+  ],
+  "expected": [
+   200.0,
+   220.0
+  ],
+  "ok": true
+ },
+ "negative_case_count": 13,
+ "negative_case_passed": 13,
+ "negative_case_failed": [],
+ "verdict": "pass",
+ "outcome_sentence": "positive [305.0] equals the independent oracle [305.0] within 1e-9*max(1,abs(e)) for all years; continuity positive passes; all 13 negatives raise ModelRegistryError (re-verified in revision r2)",
+ "not_a_disclosure_fit": true,
+ "not_an_accuracy_result": true
+}

@@ -1,0 +1,72 @@
+{
+  "case": "D",
+  "title": "claim loser defined refusal (P2-B)",
+  "iso": "fixed",
+  "ruling_clause": "FIX-W06-GAPS oracle P2-B; probe02 assert-B; OPEN-6 §7.4 C5-①",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "D0_single_winner_sequential",
+      "ok": true,
+      "detail": "winner={'demand_id': 'demand-7aa5d5717a1842c3', 'demand_key': '0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52', 'kind': 'review', 'status': 'running', 'source_id': 'src-1', 'source_sha256':"
+    },
+    {
+      "name": "D1_loser_defined_refusal_not_none",
+      "ok": true,
+      "detail": "type=DemandStateError text='no ready demand to claim' expect one of ['demand {id!r} is not claimable', 'lease expired', 'no demand {id!r}', 'no ready demand to claim']"
+    },
+    {
+      "name": "D2_byid_refusal_defined",
+      "ok": true,
+      "detail": "type=DemandStateError text=\"demand 'demand-7aa5d5717a1842c3' is not claimable\" expect=\"demand 'demand-7aa5d5717a1842c3' is not claimable\""
+    },
+    {
+      "name": "D3a_exactly_one_winner",
+      "ok": true,
+      "detail": "winners=1 parsed=[{\"owner\": \"wA\", \"result\": {\"demand_id\": \"demand-6d3b7b141e9c4e97\", \"demand_key\": \"0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52\", \"kind\": \"review\", \"status\": \"running\", \"source_id\": \"src-1\", \"source_sha256\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\", \"review_policy\": \"p1\", \"role_set\": \"normalized,sections\", \"gaps\": [], \"request_sha256\": \"f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53\", \"attempts\": 0, \"lease_owner\": \"wA\", \"lease_until\": 1790115469.0672781, \"created_at\": 1790115168.677074, \"updated_at\": 1790115169.0672781, \"candidate_marker\": \"candidate-unratified-I-06-A-a20260919-01\", \"key_version\": \"request-identity-v2\"}}, {\"owner\": \"wB\", \"exception\": {\"type\": \"DemandStateError\", \"text\": \"no ready demand to claim\", \"store_owned"
+    },
+    {
+      "name": "D3b_loser_defined_refusal",
+      "ok": true,
+      "detail": "losers=[{\"has_exception\": true, \"type\": \"DemandStateError\", \"text\": \"no ready demand to claim\", \"store_owned\": true}]"
+    }
+  ],
+  "raw": {
+    "D_winner": {
+      "demand_id": "demand-7aa5d5717a1842c3",
+      "demand_key": "0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52",
+      "kind": "review",
+      "status": "running",
+      "source_id": "src-1",
+      "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+      "review_policy": "p1",
+      "role_set": "normalized,sections",
+      "gaps": [],
+      "request_sha256": "f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53",
+      "attempts": 0,
+      "lease_owner": "wA",
+      "lease_until": 1790115468.6429148,
+      "created_at": 1790115168.6335788,
+      "updated_at": 1790115168.6429148,
+      "candidate_marker": "candidate-unratified-I-06-A-a20260919-01",
+      "key_version": "request-identity-v2"
+    },
+    "D_loser_generic_exception": "DemandStateError: no ready demand to claim",
+    "D_loser_byid_exception": "DemandStateError: demand 'demand-7aa5d5717a1842c3' is not claimable",
+    "D_race_raw": [
+      {
+        "rc": 0,
+        "stdout": "{\"owner\": \"wA\", \"result\": {\"demand_id\": \"demand-6d3b7b141e9c4e97\", \"demand_key\": \"0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52\", \"kind\": \"review\", \"status\": \"running\", \"source_id\": \"src-1\", \"source_sha256\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\", \"review_policy\": \"p1\", \"role_set\": \"normalized,sections\", \"gaps\": [], \"request_sha256\": \"f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53\", \"attempts\": 0, \"lease_owner\": \"wA\", \"lease_until\": 1790115469.0672781, \"created_at\": 1790115168.677074, \"updated_at\": 1790115169.0672781, \"candidate_marker\": \"candidate-unratified-I-06-A-a20260919-01\", \"key_version\": \"request-identity-v2\"}}",
+        "stderr": ""
+      },
+      {
+        "rc": 0,
+        "stdout": "{\"owner\": \"wB\", \"exception\": {\"type\": \"DemandStateError\", \"text\": \"no ready demand to claim\", \"store_owned\": true}}",
+        "stderr": ""
+      }
+    ]
+  },
+  "error": null,
+  "seconds": 0.534,
+  "finished_at": "2026-09-22T23:12:49"
+}

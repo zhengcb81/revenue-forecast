@@ -1,0 +1,106 @@
+{
+ "card_id": "M02",
+ "model_id": "direct_revenue",
+ "attempt_id": "a20260919-01",
+ "produced_by": "implementer (NOT the independent reviewer)",
+ "qualification_scope": "formula-stage evidence only; disclosure_adaptation stays unmapped; accuracy stays unproven",
+ "read_only_sources": true,
+ "network_calls": "none",
+ "read_only_source_documents": [
+  {
+   "doc_id": "cninfo:1225023658",
+   "role": "FY2025 annual report: disclosed FY2025 consolidated revenue used as the direct revenue path value",
+   "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\紫金矿业\\raw\\financial_reports\\annual\\2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf",
+   "pdf_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+   "sidecar_sha256": "7f7570fe6565698f1962a9301b5e47dbe76fb3a5e8dfa5663a48fc3793bf20b5",
+   "bytes": 79925886,
+   "publisher_reported_content_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+   "local_hash_matches_publisher_receipt": true,
+   "provider": "cninfo (sidecar adapter stockinfo-cninfo 1.1.0)",
+   "source_url": "https://www.cninfo.com.cn/new/disclosure/detail?stockCode=601899&announcementId=1225023658&announcementTime=2026-03-20%2016:00",
+   "filing_date": "2026-03-20",
+   "fiscal_year": 2025,
+   "http_status_in_receipt": 200,
+   "retrieved_at": "2026-07-31T21:23:16Z",
+   "pages_used": [15],
+   "how_read": "read-only PyMuPDF text extraction into before/probe01_zj_revenue.json; no download, no network"
+  }
+ ],
+ "per_driver_disclosure_mapping": [
+  {
+   "parameter_id": "direct_revenue.revenue",
+   "role": "required driver array: one already-defined annual recognised revenue amount per forecast year",
+   "driver_or_field": "revenue",
+   "entity_id": "紫金矿业集团股份有限公司",
+   "market": "CN",
+   "segment": "consolidated_group_total_operating_revenue",
+   "source_doc_id": "cninfo:1225023658",
+   "source_doc_version": "2025年年度报告（FY2025）",
+   "source_doc_sha256_pdf": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+   "source_doc_path_readonly": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\紫金矿业\\raw\\financial_reports\\annual\\2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf",
+   "provider": "cninfo",
+   "provider_document_id": "1225023658",
+   "source_url": "https://www.cninfo.com.cn/new/disclosure/detail?stockCode=601899&announcementId=1225023658&announcementTime=2026-03-20%2016:00",
+   "page": 15,
+   "table": "主要会计数据（近三年主要会计数据）",
+   "span": "行「营业收入」，列「2025 年」",
+   "published_at": "2026-03-20T16:00:00+08:00",
+   "available_at": "2026-03-21T00:00:00+08:00",
+   "retrieved_at": "2026-07-31T21:23:16Z",
+   "as_of": "2025-12-31",
+   "fiscal_period_start": "2025-01-01",
+   "fiscal_period_end": "2025-12-31",
+   "currency": "CNY",
+   "scale": "1",
+   "physical_unit": "not_applicable (monetary)",
+   "raw_label": "营业收入",
+   "raw_value": "349,079,082,852",
+   "raw_unit": "元",
+   "normalized_value": 349079082852.0,
+   "conversion_formula": "identity (元 -> 元, scale 1). 349,079,082,852 < 2**53 = 9,007,199,254,740,992, so the IEEE754 double input is exact.",
+   "gross_net": "reported consolidated gross operating revenue; already net of intra-group sales through consolidation",
+   "tax": "presented net of VAT under PRC presentation; the model adds no tax term",
+   "ownership": "100% consolidated group including non-controlling interests",
+   "consolidation_scope": "full consolidation per PRC ASBE",
+   "reported_derived_assumed": "reported",
+   "assumption_reason": "",
+   "restatement_mapping": "identical to the FY2024 report's own FY2024 comparative and to the FY2025 report's comparative; verified at page 15 of both PDFs",
+   "reviewer": "PENDING_INDEPENDENT_REVIEW",
+   "range": "single disclosed value",
+   "unit_dimension_check": "revenue is an amount (dimension 'revenue'); the model copies it without multiplying by any ratio, quantity or per-unit price, so the output keeps CNY and scale 1 exactly"
+  }
+ ],
+ "path_justification_and_non_decomposition": {
+  "why_direct_revenue": "The group has commodity price, equity-production, intercompany-elimination, M&A and FX effects that the audited disclosure does not split into a reproducible driver set; card_M02.md line 7 designates direct_revenue as the evidence-backed fallback when complex accounting revenue cannot yet be safely decomposed.",
+  "not_decomposed_reason": "No reviewed volume/price/FX bridge exists for this segment in this attempt; inventing one would fabricate drivers. The card explicitly says the simple formula must not raise confidence (card_M02.md line 37).",
+  "source_field_is_annual_recognised_amount": true,
+  "is_not_orders_gmv_premium_or_cash": "confirmed: the mapped field is the income-statement revenue line, not order intake, GMV, insurance premium or cash receipts"
+ },
+ "reported_vs_derived_notes": [
+  "The single mapped field is REPORTED. Nothing was derived, assumed or reverse-engineered.",
+  "The model's synthetic positive case (revenue 80/0/120) is NOT a company disclosure and is labelled synthetic in oracle.md."
+ ],
+ "closed_period_reconciliation": {
+  "what_was_done": "the disclosed FY2025 revenue was placed into the revenue driver and the model recopied it",
+  "rebuild_value_cny": "349,079,082,852",
+  "disclosed_value_cny": "349,079,082,852",
+  "residual_cny": "0",
+  "constructive_zero_warning": "The zero residual is an IDENTITY, not a test. It proves only that the copy step is exact. It proves nothing about whether the revenue figure's source, period, gross/net basis or consolidation scope are right, and it is NOT accuracy evidence.",
+  "what_would_be_needed_for_a_real_reconciliation": "an independently built driver decomposition of the same segment whose sum is compared against this disclosed line, with the residual explained by volume/price/FX/scope/timing"
+ },
+ "status": {
+  "disclosure_adaptation": "unmapped",
+  "unmapped_reasons": [
+   "D requires per-driver mapping signed by an industry/accounting reviewer.",
+   "The production forecast entry point (scripts/forecast/segments.py calculate_model_path) was NOT exercised or reviewed in this attempt.",
+   "A closed-period reconciliation against the production forecast entry point is impossible to certify while the zero residual is constructive.",
+   "The reviewer field of every mapping entry is PENDING_INDEPENDENT_REVIEW by construction."
+  ],
+  "accuracy": "unproven",
+  "accuracy_reasons": [
+   "F requires the I-12 frozen design (information-time sample, baseline, uncertainty), which does not exist.",
+   "The model has no growth driver, so it cannot be evaluated for forecast skill from its own output.",
+   "Formula qualification and one company's mapping must never be escalated into industry-wide accuracy."
+  ]
+ }
+}

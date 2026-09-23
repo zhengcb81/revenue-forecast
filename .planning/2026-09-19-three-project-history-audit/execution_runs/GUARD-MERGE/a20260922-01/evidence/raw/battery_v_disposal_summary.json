@@ -1,0 +1,19 @@
+{
+  "mutation": "prompt_injection.py: `if status == \"detected_and_ignored\":` -> `if False and ...` (P5-b disposal gate never runs)",
+  "mutant_pi_sha256": "e16799a6b5abdf789ef54826b494b4268131cd192ded2f43bfad49230c652571",
+  "mutant_verdict": "FAIL",
+  "mutant_failed_checks": [
+    "J1_disposal_gate_rejects",
+    "J2_zero_product_semantic_rows"
+  ],
+  "mutant_sample_detail": [
+    "record(… detected_and_ignored …) was ACCEPTED with no authorization tuple and no trust root (receipt={\"schema_version\": \"1.0\", \"status\": \"detected_and_ignored\", \"reviewer\": \"sec-team\", \"reviewed_at\": \"2026-09-22T00:00:00Z\", \"evidence_sha256\": \"0acd9f4fb2d7edc665d2ffd9d4b5471c928ea4457ee4314b25457234",
+    "product-semantic detected_and_ignored rows after the attempt = 1 (OPEN-6 C3: identity not established ⇒ rows must be 0)"
+  ],
+  "expect_mutant_red": true,
+  "mutant_is_red": true,
+  "restored_pi_sha256": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+  "merged_pi_sha256": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+  "restored_byte_identical": true,
+  "restored_verdict": "PASS"
+}

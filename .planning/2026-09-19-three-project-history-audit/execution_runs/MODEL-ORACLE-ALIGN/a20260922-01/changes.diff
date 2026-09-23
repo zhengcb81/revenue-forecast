@@ -1,0 +1,241 @@
+# ===== SECTION 1 - TEST ALIGNMENT (oracle alignment only: previously-implied defaults made explicit; NO assertion weakened, NO business rule changed) =====
+# tests/test_model_economic_guardrails.py (attempt-local before/after images; both pinned in binding.json)
+--- a/tests/test_model_economic_guardrails.py
++++ b/tests/test_model_economic_guardrails.py
+@@ -22,13 +22,45 @@
+ from test_models import CASES, YEARS  # noqa: E402
+ 
+ 
++# --- MODEL-ORACLE-ALIGN: I-10-B defect-1 (省缺即抛) caller-side alignment -------
++# The promoted registry no longer silently fills an optional driver that has no
++# explicit spec default with 0.0; it raises at scripts/model_registry.py:410.
++# These tests measure guardrail math / business rules, NOT the retired silent
++# fill, so every previously-implied value is now passed EXPLICITLY — identical
++# numbers on the before-image registry and on the promoted registry, therefore
++# zero business-meaning change. Never reintroduce silent-0.0 into the registry.
++# Authority: I-10-B defect-1 (T1-22) approved product semantics; forward-
++# disclosure precedent E1E7-ERRATA-LANDING a20260921-01 DEC-E1E7-4 ("caller-side
++# alignment changes no current expectation, no status, no qualification").
++# ---------------------------------------------------------------------------
++
++
++def _with_explicit_missing_defaults(model: str, drivers, years):
++    """Caller-explicit copy of ``drivers``.
++
++    Materializes every absent optional driver with exactly the value the OLD
++    registry implied: ``spec.defaults.get(driver, 0.0)``. Declared defaults are
++    materialized too (fully explicit caller); the numbers are identical to what
++    both registry versions compute, so what each test measures is unchanged.
++    """
++    spec = MODEL_REGISTRY[model]
++    explicit = dict(drivers)
++    for driver in spec.optional:
++        if driver not in explicit:
++            explicit[driver] = [spec.defaults.get(driver, 0.0)] * len(years)
++    return explicit
++
++
+ class EconomicGuardrailTests(unittest.TestCase):
+     def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+         for model, (drivers, expected) in CASES.items():
+             with self.subTest(model=model):
+-                before = copy.deepcopy(drivers)
+-                actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+-                self.assertEqual(drivers, before)
++                # CASES omit no-default optionals; pass the formerly implied
++                # defaults explicitly (I-10-B defect-1; E1E7 precedent).
++                explicit = _with_explicit_missing_defaults(model, drivers, YEARS)
++                before = copy.deepcopy(explicit)
++                actual = calculate_registered_model(model, 100.0, explicit, YEARS)
++                self.assertEqual(explicit, before)
+                 for observed, target in zip(actual, expected):
+                     self.assertAlmostEqual(observed, target)
+ 
+@@ -61,7 +93,7 @@
+ 
+     def test_overflow_and_negative_net_revenue_fail_closed(self) -> None:
+         for drivers, message in (
+-            ({"units": [1e308], "unit_revenue": [1e308]}, "finite"),
++            ({"units": [1e308], "unit_revenue": [1e308], "other_revenue": [0]}, "finite"),  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
+             ({"units": [1], "unit_revenue": [1], "other_revenue": [-2]}, "negative"),
+         ):
+             with self.subTest(drivers=drivers):
+@@ -78,7 +110,7 @@
+         drivers = {
+             "average_earning_assets": [1000], "asset_yield": [-0.005],
+             "average_interest_bearing_liabilities": [800], "funding_cost": [-0.01],
+-            "fee_revenue": [2],
++            "fee_revenue": [2], "other_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
+         }
+         self.assertEqual(calculate_registered_model("bank_revenue", 0, drivers, [2026]), [5])
+         self.assertEqual(driver_value_bounds("bank_revenue", "funding_cost"), (-math.inf, math.inf))
+@@ -89,6 +121,7 @@
+             "opening_customers": [100], "new_customers": [100], "churned_customers": [0],
+             "ending_customers": [200], "revenue_per_customer": [12],
+             "new_customer_revenue_fraction": [1 / 12],
++            "usage_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
+         }
+         self.assertAlmostEqual(calculate_registered_model("cohort_subscription", 0, drivers, [2026])[0], 1300)
+         drivers["new_customer_revenue_fraction"] = [0]
+@@ -99,6 +132,7 @@
+             "opening_customers": [100], "new_customers": [0], "churned_customers": [20],
+             "ending_customers": [80], "revenue_per_customer": [12],
+             "churned_customer_lost_fraction": [1],
++            "usage_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
+         }
+         self.assertEqual(calculate_registered_model("cohort_subscription", 0, drivers, [2026]), [960])
+         drivers["churned_customer_lost_fraction"] = [0]
+@@ -109,6 +143,7 @@
+             "opening_customers": [0], "new_customers": [10], "churned_customers": [10],
+             "ending_customers": [0], "revenue_per_customer": [1],
+             "new_customer_revenue_fraction": [0], "churned_customer_lost_fraction": [1],
++            "usage_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
+         }
+         with self.assertRaisesRegex(ModelRegistryError, "time exposure"):
+             calculate_registered_model("cohort_subscription", 0, drivers, [2026])
+@@ -124,6 +159,7 @@
+         drivers = {
+             "opening_backlog": [1e16], "bookings": [1], "cancellations": [0],
+             "contract_changes": [0], "closing_backlog": [1e16],
++            "backlog_remeasurements": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
+         }
+         self.assertEqual(calculate_registered_model("project_backlog", 0, drivers, [2026]), [1])
+ 
+@@ -131,6 +167,7 @@
+         drivers = {
+             "opening_reserves": [100], "additions": [0], "reserve_revisions": [-20],
+             "depletion": [10], "closing_reserves": [70], "recovery_rate": [0.8], "realized_price": [5],
++            "other_revenue": [0],  # explicit former 0.0-fill (I-10-B defect-1; E1E7 precedent)
+         }
+         self.assertEqual(calculate_registered_model("reserve_depletion", 0, drivers, [2026]), [40])
+ 
+
+# ===== SECTION 2 - REGISTRY RE-PROMOTION (row B-6c, I-10-B defect-1 省缺即抛 / defect-2 reversal-capable sign; byte-exact copy of I-10-B iso source 62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081) =====
+# scripts/model_registry.py (attempt-local before/after images; both pinned in binding.json)
+--- a/scripts/model_registry.py
++++ b/scripts/model_registry.py
+@@ -262,11 +262,61 @@
+ })
+ 
+ 
+-_SIGNED_DRIVERS = frozenset({
+-    "contract_changes", "other_revenue", "fixed_revenue", "ancillary_revenue",
+-    "milestone_revenue", "royalty_revenue", "service_revenue",
+-    "performance_fee_revenue", "fee_revenue",
++# --- I-10-B defect 2 fix (T1-22) -------------------------------------------
++# Sign is decided by SEMANTIC ROLE derived from declared metadata, never by the
++# driver's NAME.  `_SIGNED_DRIVERS` (a hard-coded name set) is kept ONLY as a
++# deprecated alias for callers that referenced it; it is no longer consulted
++# when computing bounds, so a driver's sign can no longer depend on its spelling.
++#
++# Role precedence in driver_value_bounds(), in order:
++#   1. explicit spec.driver_bounds[driver] metadata      (most specific, wins)
++#   2. growth_rate                                       (fixed semantic role)
++#   3. _REVERSAL_CAPABLE_DIMENSIONS + role table         (semantic, not name)
++#   4. dimension == "ratio"                              (probability-like)
++#   5. default                                           (non-negative)
++_REVERSAL_CAPABLE_DIMENSIONS = frozenset({
++    "backlog", "revenue", "reserve_volume", "aum_fee",
+ })
++
++# Declared role table: a driver listed here is reversal-capable (may be
++# NEGATIVE) because the BUSINESS ROLE says amounts already recognised can be
++# reversed.  Membership is by declared semantic role, not by name pattern.
++# NOTE: this table is reached only via the dimension gate above, so adding a
++# driver here cannot leak signedness into quantities or ratios.
++_REVERSAL_CAPABLE_DRIVERS = frozenset({
++    "contract_changes",
++    "franchise_system_sales",
++    "supply_revenue",
++    "recognized_performance_fees",
++    "usage_revenue",
++    "other_revenue",
++    "fixed_revenue",
++    "ancillary_revenue",
++    "milestone_revenue",
++    "royalty_revenue",
++    "service_revenue",
++    "performance_fee_revenue",
++    "fee_revenue",
++    "backlog_remeasurements",
++    "reserve_revisions",
++})
++
++
++def _is_reversal_capable(driver: str, dimension: str) -> bool:
++    """Semantic-role decision — deliberately NOT a name-only test.
++
++    A driver is treated as reversal-capable only when BOTH hold:
++      * its declared dimension is one where reversal is a meaningful business
++        event (see _REVERSAL_CAPABLE_DIMENSIONS), AND
++      * it carries the declared reversal-capable role bit.
++    A driver that carries neither can never acquire a sign by name guessing.
++    """
++    return dimension in _REVERSAL_CAPABLE_DIMENSIONS and driver in _REVERSAL_CAPABLE_DRIVERS
++
++
++# Deprecated alias kept for back-compatibility of imports only.  It is NOT read
++# by driver_value_bounds(); see the semantic role table above.
++_SIGNED_DRIVERS = _REVERSAL_CAPABLE_DRIVERS
+ 
+ 
+ def driver_value_bounds(model_id: str, driver: str) -> tuple[float, float]:
+@@ -275,6 +325,9 @@
+     A ratio dimension alone does not imply a probability: bank interest rates
+     may be negative and retention/expansion ratios may exceed one. Explicit
+     model metadata takes precedence over conservative default domains.
++
++    I-10-B (T1-22): the sign is decided by SEMANTIC ROLE (declared dimension +
++    declared reversal-capable role bit), never by the driver's name.
+     """
+     try:
+         spec = MODEL_REGISTRY[model_id]
+@@ -286,11 +339,24 @@
+         return (-math.inf if lower is None else float(lower), math.inf if upper is None else float(upper))
+     if driver == "growth_rate":
+         return (-1.0, math.inf)
+-    if driver in _SIGNED_DRIVERS:
++    if _is_reversal_capable(driver, dimension):
+         return (-math.inf, math.inf)
+     if dimension == "ratio":
+         return (0.0, 1.0)
+     return (0.0, math.inf)
++
++
++def _signed_driver_names_for_audit() -> frozenset[str]:
++    """Names that would be reversal-capable under the semantic rule.
++
++    Exposed for the I-10-B compatibility listing; not used for bounds.
++    """
++    names = set()
++    for spec in MODEL_REGISTRY.values():
++        for driver, dimension in spec.dimensions.items():
++            if _is_reversal_capable(driver, dimension):
++                names.add(driver)
++    return frozenset(names)
+ 
+ 
+ def _finite_model_number(value: object, field_name: str) -> float:
+@@ -332,7 +398,21 @@
+         raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+     normalized: dict[str, list[float]] = {}
+     for driver in spec.required + spec.optional:
+-        values = drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
++        # --- I-10-B defect 1 fix (T1-22) ------------------------------------
++        # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
++        # That silently filled any optional driver lacking an explicit default
++        # with 0.0, encoding "absent" and "not found" as the SAME input.
++        # Now: an omitted driver is legal ONLY when spec.defaults carries an
++        # explicit value for it.  Note we deliberately do NOT substitute an
++        # explicit 0.0 — that would still fail to distinguish "not found".
++        if driver not in drivers:
++            if driver not in spec.defaults:
++                raise ModelRegistryError(
++                    f"missing driver for {model_id}: {driver} has no explicit default"
++                )
++            values: object = [spec.defaults[driver]] * len(years)
++        else:
++            values = drivers[driver]
+         if not isinstance(values, (list, tuple)) or len(values) != len(years):
+             raise ModelRegistryError(f"driver {model_id}.{driver} must contain one value per forecast year")
+         lower, upper = driver_value_bounds(model_id, driver)

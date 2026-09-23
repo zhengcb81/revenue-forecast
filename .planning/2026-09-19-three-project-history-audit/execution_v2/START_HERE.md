@@ -221,3 +221,21 @@
 **「裸类型名」schema 约束（重述，含缺失情形）**：`expected` **只能是裸异常类型名**
 （如 `'ModelRegistryError'`）；复合写法（如 `"ModelRegistryError/continuity"`）会**假红**；
 **该键缺失**同样不是合法输入（历史上表现为 harness 崩溃 rc=1，今后应表现为无裁决 rc=2）。
+
+
+---
+
+## rc 码表·勘误 append-3（REM-84；owner 授权 2026-09-22「A-2: 授权」；T1-12 ① 形态）
+
+> 触发：T1-8 P-1 实测与上方正文括注「（现为 `rc=3`，而登记口径写 `rc=2`）」不一致。
+> **本节只登记、不回改上方任何字节**：本追加前全文 = 18452 B，前缀 sha256 `a9cb5a4a34929fb21d43b3f8308c36b03440d73c43325b8952e81fe130f64caf`（追加后复算须一致，已验证）。
+
+**实测事实（域：T1-8 全批实测 + B5-fix 128 次裸 rc 子进程实测，2026-09-21/22）**：
+
+1. **没有任何一批**对「cases.json 缺 `expected`」产出过 `rc=3`——T1-8 P-1：`rc3_classification_observed = []`。括注「现为 `rc=3`」**不成立于任何实测批次**。
+2. 硬下标世代（M01–M04、M05–M08、M09–M12、M21–M24、M29–M31 的未打补丁 runner）= 未捕获 `KeyError` ⇒ **`rc=1`（harness 失败）**，且不产生裁决文件（B5-fix 对 M01–M04 复测同形态：E0/F0/G1 崩溃）。
+3. 打补丁世代（REM-21 六批 + B5-fix 的 G1-a 路由）= **`rc=2` + no_verdict**（B5-fix 实测：23 卡 G 臂全 2、reason `cases_json_declared_expectation_missing:<ids>`；S 结构臂=1；F 不一致=3）。
+4. **术语区分（防止两义混读）**：冻结码表 L100 的「**期望文件缺失**」指 oracle 期望**文件**不存在 ⇒ `rc=1`（harness）；本节与括注所指是 cases.json 的 **`expected` 键缺失/不可用（声明问题）** ⇒ 打补丁后 `rc=2`（无裁决）。两者不同，聚合方须按 `exit_code_legend` 区分。
+5. **方向维持不变**：「须先统一到 `rc=2`，再推广 runner」——B5-fix 已在副本实现并实测（128 裸 rc）；M01–M04 的扩权传播（owner 2026-09-22 选①，另卡 `M01-M04-PROPAGATE`）按同形态执行。
+
+**关联**：REM-84 = 本追加即其交付、待父登记关闭；REM-80 = owner 已选①扩权、另卡执行；本勘误不动 L90–115 冻结正文与既有追加节任何字节。

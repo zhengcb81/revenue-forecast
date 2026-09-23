@@ -1,0 +1,24 @@
+{
+  "card_id": "TTL-30D-POLICY",
+  "attempt_id": "a20260922-01",
+  "freeze_rule": "oracle.md written, THEN errata appended (section 5), THEN hashed — all BEFORE the first any run (probe or pytest). Only read-only inspection (source/ruling reads + caller greps) happened before the freeze; no test/probe/CLI had been executed against the target.",
+  "oracle_path": "oracle.md",
+  "oracle_sha256_at_freeze": "30C4B637DD174F2BCFD3C0A6778519F543C94B70C9A4E93F94EEC8551CA704C2",
+  "oracle_bytes": 13447,
+  "oracle_sha256_at_close": "30C4B637DD174F2BCFD3C0A6778519F543C94B70C9A4E93F94EEC8551CA704C2",
+  "oracle_unchanged_after_freeze": true,
+  "errata_note": "section 5 errata (N5 input correction to now<reviewed_at per the card's own probe formula; P2 input clarification; N7 added as pre-registered NON-gating structural-limitation probe; N8/N9 error-text note) landed inside the same pre-first-run window; the sha above is the post-errata, pre-first-run value and still matches at close.",
+  "target_before_state_at_freeze": {
+    "file": "company-wiki/src/company_wiki/source_catalog/prompt_injection_guard.py",
+    "production_sha256": "F900A13D7C22FE3BD742485C6B603DE11B92A56D2414A2A046216CCD3B0B9C08",
+    "iso_copy_sha256": "F900A13D7C22FE3BD742485C6B603DE11B92A56D2414A2A046216CCD3B0B9C08",
+    "iso_equals_production_at_freeze": true,
+    "iso_edits_at_freeze": false
+  },
+  "first_run_after_freeze": {
+    "artifact": "evidence/red_before.json",
+    "guard_sha256_inside_artifact": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+    "matches_frozen_before_hash": true
+  },
+  "ordering_proof": "the oracle sha256 was computed in the same command that created iso/ (copy + hash), before scripts/ttl30d_probe.py had ever been executed; the first probe run (red_before.json) embeds guard_sha256 == the frozen before-hash, proving expectations were fixed while the target was still untouched."
+}

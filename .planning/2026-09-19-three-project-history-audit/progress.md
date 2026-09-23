@@ -1108,3 +1108,24 @@ REM-80（M01-M04 扩权或豁免）、REM-84（START_HERE append-3 授权）。
 - **22 条存疑收口账**（登记册 §四十二）：19 关闭确认 + 3 随修复自动关 + 零无主。
 - **CW 仓入史 `ac4ebd0`**（5 文件 1347+/107−）：PROMOTION B3/B4/B5 行 + 两处**如实披露的后晋升适配**（conftest 守卫+计算化夹具+删未用 import `40babe33→dfb7c6cd`；observability 死赋值删 `2f644994→edcbeccb`，交付字节从未过该仓 ruff）；host-guard new=0、15/15 过；dirty-3 排除未动。前次被拒=门(new=0)后 **ruff F841/F401**——两修均行为中性。
 - **RF 侧**：GATE-OQ `95df2661`、PROMOTION 五脚本 `ec307d20`、MODEL `5fd82de7` 三提交待 batch-4 推；登记册至 §43、探针 6/6 终报、修复卡 FIX-W06-GAPS（13 组）+ 转录 + I-06-A **在飞排除于本批**。
+
+---
+
+## 2026-09-22 — Round 93：批次 4 绿 + OQ-01/02 关闭
+
+- **batch-4 `4b1c690b..865428f8` 推送绿（10/10）**：ahead=0、gitlinks=0、四锚 disk==HEAD、porcelain CLEAN；installed-skill sync 自动同步 8 晋升文件复检 ok。
+- **OQ-01/02 正式关闭**（负载侧实证：real-data<1800 完成、f2 在负载套件内过）；OQ-03 维持未决（owner）。
+- **CW `ac4ebd0` 并行入史**（lint 适配终哈希入册 §45）。
+- **五卡在飞**：FIX-W06-GAPS（28+文件，P1 迁移修中）、I-06-A（iso 构建）、I-06-B（读卡）、TTL-30D-POLICY、CFI14FR1-SAMPLE；E1E7 四翻转已记账（§44）。
+- 目标余项：19 卡链（I-06-A/B 并行中、其余 18 张按依赖接力）+ owner/外部6项；登记册至 §46。
+
+---
+
+## 2026-09-23 — Round 94：七卡闭环 + CW 合面 `5d72529` + 批 5 收口
+
+- **七卡全链闭环**（TTL/FIX/I-06-B双/I-06-A/GUARD-MERGE/CW-TEST-DEBT/CFI）：每卡 oracle 冻结→红绿变异→独立复审（全 accepted 类）→载体落定（零自签、carrier 零动、F 系 findings 处置+父裁嵌入）。
+- **CW `5d72529`**：5 文件合面+测试修入史（hook 全绿、dirty-3 排除）——生产 REJECT-form TTL+C7 断言字段+P5 全面 fail-closed 定型。
+- **F3 跑者归因闭环**：CFI 自身03/04/05/06 序列逐秒同（探针同秒 basetemp、臂06 同秒 cache）=授权非入侵。
+- **CF-I14FR1-3 discharged**（268 文件/2827 节点、hook-induced=0）；14 既有失败=独立债务清单转结。
+- 批 5 收口（登记册§47–51、progress R94、三函+START_HERE append、全部新 attempt）→提交推送。
+- 下一步：**19 卡链 I-07-B 起**（I-06-A/B 已毕）；store UNRATIFIED=D-W06 轨道；14 债务清单跟踪。

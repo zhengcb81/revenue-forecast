@@ -1,0 +1,95 @@
+{
+  "card": "CW-TEST-DEBT",
+  "attempt": "a20260922-01",
+  "authority": "GUARD-MERGE reviewer_report.md §8.1 condition 1 (ACCEPT 2a26aaae): the single CW commit = 3 merged source files + the two measured unit-test debt fixes, via this separate pass",
+  "binding_rule": "every edit binds to (a) the frozen oracle §4 edit set, (b) reviewer condition-1 wording, (c) the raw RED/GREEN/mutation artifact, (d) a before/after pin. Nothing else changed.",
+  "oracle": {
+    "path": "oracle.md",
+    "sha256": "9334302aa236da374e74f69d9cbfa95e40aaf5ae0d3e76afd0f246079e820a42"
+  },
+  "write_targets_before_after": [
+    {
+      "path": "tests/unit/test_readiness_graph.py",
+      "before_sha256": "71893f5d0db8ca675e05ebcda6d7feebefde7ee9a7a19350461efc0ece4708a7",
+      "before_copy_in_attempt": "before/test_readiness_graph.py",
+      "before_copy_sha256": "71893f5d0db8ca675e05ebcda6d7feebefde7ee9a7a19350461efc0ece4708a7",
+      "after_sha256": "a5db0c9c6959d9c8cbd68d606eec0dc9368ab09f93168a2b892e3fd459f368c2",
+      "before_matches_live_before_pin": true,
+      "after_matches_close_live": true,
+      "only_product_writes_of_this_card": true
+    },
+    {
+      "path": "tests/unit/test_prompt_injection_guard.py",
+      "before_sha256": "c05e25fb4f2e3e1c72143ee3a7c56eccf8a7bddf750efb0394984561484f9bae",
+      "before_copy_in_attempt": "before/test_prompt_injection_guard.py",
+      "before_copy_sha256": "c05e25fb4f2e3e1c72143ee3a7c56eccf8a7bddf750efb0394984561484f9bae",
+      "after_sha256": "d3bde1a3d5ec2495474aae5b91595362b2caad4c8a0178c6927bf2d8023eec3f",
+      "before_matches_live_before_pin": true,
+      "after_matches_close_live": true,
+      "only_product_writes_of_this_card": true
+    }
+  ],
+  "merged_faces_used_for_verification": [
+    {
+      "face": "prompt_injection_guard.py",
+      "path": "execution_runs/GUARD-MERGE/a20260922-01/iso/prompt_injection_guard.py",
+      "sha256": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+      "expected": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+      "matches_reviewer_accept_pin": true
+    },
+    {
+      "face": "prompt_injection.py",
+      "path": "execution_runs/GUARD-MERGE/a20260922-01/iso/prompt_injection.py",
+      "sha256": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+      "expected": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+      "matches_reviewer_accept_pin": true
+    },
+    {
+      "face": "readiness_graph.py",
+      "path": "execution_runs/GUARD-MERGE/a20260922-01/iso/readiness_graph.py",
+      "sha256": "50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b",
+      "expected": "50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b",
+      "matches_reviewer_accept_pin": true
+    }
+  ],
+  "production_sources_read_only": [
+    {
+      "path": "src/company_wiki/source_catalog/prompt_injection_guard.py",
+      "before_pin": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+      "start_live_sha256": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+      "close_live_sha256": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+      "unchanged": true,
+      "start_matches_before_pin": true
+    },
+    {
+      "path": "src/company_wiki/source_catalog/prompt_injection.py",
+      "before_pin": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+      "start_live_sha256": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+      "close_live_sha256": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+      "unchanged": true,
+      "start_matches_before_pin": true
+    },
+    {
+      "path": "src/company_wiki/source_catalog/readiness_graph.py",
+      "before_pin": "3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc",
+      "start_live_sha256": "3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc",
+      "close_live_sha256": "3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc",
+      "unchanged": true,
+      "start_matches_before_pin": true
+    }
+  ],
+  "verification_scope": {
+    "runs_against": "%TEMP%/cwtd-a20260922-01 mirror: production src copy + the 3 merged iso faces overlaid + prod conftest.py/pytest.ini/tests copied",
+    "runs_against_unmerged_production": "NEVER — production lacks evidence_payload binding, state_domain and the C7 read gate, so the edited tests would fail there for the wrong reason (oracle §1, decision.md §4)",
+    "rf_tree_written": false,
+    "cw_tree_written_by_any_run": "only the 2 authorized test edits"
+  },
+  "read_only_assertions": {
+    "production_source_writes": 0,
+    "git_commands": 0,
+    "other_cw_files_written": 0,
+    "sibling_attempts_written": 0,
+    "writes_outside_attempt": "%TEMP%/cwtd-a20260922-01 + pytest's %TEMP% basetemp only"
+  },
+  "generated_utc": "2026-09-23T00:05:18.912529+00:00"
+}

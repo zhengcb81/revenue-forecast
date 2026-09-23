@@ -1,0 +1,50 @@
+{
+  "attempt_id": "a20260923-01",
+  "commands": [
+    {
+      "id": "CMD-I06B3-COPY",
+      "purpose": "Copy mother iso (18 .py) + harness scripts into this attempt (copy-in; mother untouched by this attempt)",
+      "command": "Copy-Item a20260922-02/{iso,scripts/_worker_claim.py,scripts/run_cases.py} -> this attempt",
+      "exit_code": 0
+    },
+    {
+      "id": "CMD-I06B3-HARNESS-AST-L3B",
+      "purpose": "F-03 option ②: replace case_L3's L3b source-text substring with AST/runtime equivalence; add import ast",
+      "command": "edit scripts/run_cases.py: case_L3 -> AST/runtime equivalence, plus 'import ast'; performed AFTER oracle.md was written (freeze-before-run held: oracle.md precedes both this edit and the runs)",
+      "exit_code": 0
+    },
+    {
+      "id": "CMD-I06B3-L3-FIXED",
+      "purpose": "L3 re-run, fixed arm — exact reviewer §5.2 command shape, output to %TEMP%",
+      "command": "python scripts/run_cases.py --iso fixed --case L3 --out %TEMP%\\rev_L3_after_pin",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "L3 PASS (L3a ok sha=41da045c…, L3b AST ok: BLOCK_SENTENCE == MP-1 and referenced in ast.Assert)",
+      "note": "process note: the pwsh wrapper of this two-run command returned EPIPE after both runs and both copies had already completed — all artifacts verified on disk afterwards (evidence/{fixed,original}/{L3.json,summary.json,run_log.txt} + %TEMP% originals present)"
+    },
+    {
+      "id": "CMD-I06B3-L3-ORIGINAL",
+      "purpose": "L3 re-run, original arm — same shape",
+      "command": "python scripts/run_cases.py --iso original --case L3 --out %TEMP%\\rev_L3_after_pin_orig",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "L3 PASS (counts green=1 red=0 total=1)"
+    },
+    {
+      "id": "CMD-I06B3-PRESERVE",
+      "purpose": "Copy %TEMP% run outputs into this attempt's evidence (per oracle §4; %TEMP% originals retained, not deleted)",
+      "command": "Copy-Item %TEMP%\\rev_L3_after_pin{,_orig}\\* -> evidence/{fixed,original}/",
+      "exit_code": 0
+    },
+    {
+      "id": "CMD-I06B3-DIFF",
+      "purpose": "changes.diff = mother harness -> this harness (unified) + new oracle as /dev/null",
+      "command": "python -X utf8 difflib script -> changes.diff (9477 B)",
+      "exit_code": 0
+    }
+  ],
+  "git_commands": [],
+  "network_commands": [],
+  "product_tree_writes": [],
+  "historical_attempt_writes": []
+}

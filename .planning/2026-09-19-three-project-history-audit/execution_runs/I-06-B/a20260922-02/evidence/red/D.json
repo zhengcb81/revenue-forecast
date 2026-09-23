@@ -1,0 +1,71 @@
+{
+  "case": "D",
+  "title": "claim loser defined refusal (P2-B)",
+  "iso": "original",
+  "ruling_clause": "FIX-W06-GAPS oracle P2-B; probe02 assert-B; OPEN-6 §7.4 C5-①",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "name": "D0_single_winner_sequential",
+      "ok": true,
+      "detail": "winner={'demand_id': 'demand-9828c0e2501b4b64', 'demand_key': '07a602c1a8f8b104ca98552ba4a6c4258a8b13f69ed099ae49dcc39a123885a5', 'kind': 'review', 'status': 'running', 'source_id': 'src-1', 'source_sha256':"
+    },
+    {
+      "name": "D1_loser_defined_refusal_not_none",
+      "ok": false,
+      "detail": "claim() returned without raising: result=null (probe02 assert-B shape: bare None, code=null, text=null)"
+    },
+    {
+      "name": "D2_byid_refusal_defined",
+      "ok": false,
+      "detail": "type=TypeError text=\"DurableDemandStore.claim() got an unexpected keyword argument 'demand_id'\" expect=\"demand 'demand-9828c0e2501b4b64' is not claimable\""
+    },
+    {
+      "name": "D3a_exactly_one_winner",
+      "ok": true,
+      "detail": "winners=1 parsed=[{\"owner\": \"wA\", \"result\": null}, {\"owner\": \"wB\", \"result\": {\"demand_id\": \"demand-e49da33f1bc2445b\", \"demand_key\": \"07a602c1a8f8b104ca98552ba4a6c4258a8b13f69ed099ae49dcc39a123885a5\", \"kind\": \"review\", \"status\": \"running\", \"source_id\": \"src-1\", \"source_sha256\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\", \"review_policy\": \"p1\", \"role_set\": \"normalized,sections\", \"gaps\": [], \"request_sha256\": \"f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53\", \"attempts\": 0, \"lease_owner\": \"wB\", \"lease_until\": 1790115088.7839031, \"created_at\": 1790114788.220878, \"updated_at\": 1790114788.7839031, \"candidate_marker\": \"candidate-unratified-I-06-A-a20260919-01\"}}]"
+    },
+    {
+      "name": "D3b_loser_defined_refusal",
+      "ok": false,
+      "detail": "losers=[{\"has_exception\": false, \"type\": null, \"text\": null, \"store_owned\": null}]"
+    }
+  ],
+  "raw": {
+    "D_winner": {
+      "demand_id": "demand-9828c0e2501b4b64",
+      "demand_key": "07a602c1a8f8b104ca98552ba4a6c4258a8b13f69ed099ae49dcc39a123885a5",
+      "kind": "review",
+      "status": "running",
+      "source_id": "src-1",
+      "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+      "review_policy": "p1",
+      "role_set": "normalized,sections",
+      "gaps": [],
+      "request_sha256": "f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53",
+      "attempts": 0,
+      "lease_owner": "wA",
+      "lease_until": 1790115088.1546443,
+      "created_at": 1790114788.1268377,
+      "updated_at": 1790114788.1546443,
+      "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+    },
+    "D_loser_generic_result": null,
+    "D_loser_byid_exception": "TypeError: DurableDemandStore.claim() got an unexpected keyword argument 'demand_id'",
+    "D_race_raw": [
+      {
+        "rc": 0,
+        "stdout": "{\"owner\": \"wA\", \"result\": null}",
+        "stderr": ""
+      },
+      {
+        "rc": 0,
+        "stdout": "{\"owner\": \"wB\", \"result\": {\"demand_id\": \"demand-e49da33f1bc2445b\", \"demand_key\": \"07a602c1a8f8b104ca98552ba4a6c4258a8b13f69ed099ae49dcc39a123885a5\", \"kind\": \"review\", \"status\": \"running\", \"source_id\": \"src-1\", \"source_sha256\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\", \"review_policy\": \"p1\", \"role_set\": \"normalized,sections\", \"gaps\": [], \"request_sha256\": \"f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53\", \"attempts\": 0, \"lease_owner\": \"wB\", \"lease_until\": 1790115088.7839031, \"created_at\": 1790114788.220878, \"updated_at\": 1790114788.7839031, \"candidate_marker\": \"candidate-unratified-I-06-A-a20260919-01\"}}",
+        "stderr": ""
+      }
+    ]
+  },
+  "error": null,
+  "seconds": 0.789,
+  "finished_at": "2026-09-22T23:06:28"
+}

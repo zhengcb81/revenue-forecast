@@ -1,0 +1,12 @@
+{
+  "kind": "identity",
+  "flipped_guard": "_validated_request_identity: covers-three requirement",
+  "file": "cw/src/company_wiki/source_catalog/processing_demand.py",
+  "before": "    covered = (\"as_of_date\", \"target\", \"payload_digest\")\n    missing = sorted(\n        field\n        for field in covered\n        if identity.get(field) is None or identity.get(field) == \"\"\n    )\n    if missing:\n        raise DemandRegistrationError(\n            \"request_identity must cover as_of_date / target / payload digest\"\n            f\" (missing: {missing})\"\n        )",
+  "after": "    if not {\"as_of_date\", \"target\", \"payload_digest\"} & set(identity):\n        raise DemandRegistrationError(\n            \"request_identity must cover as_of_date / target / payload digest\"\n        )",
+  "expected_red": [
+    "W06A2-N11"
+  ],
+  "expected_still_green": "all other cases",
+  "write_mode": "byte-exact (read_bytes/write_bytes; no newline translation)"
+}

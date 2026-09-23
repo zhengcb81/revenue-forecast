@@ -1,0 +1,169 @@
+{
+  "card_id": "CW-TEST-DEBT",
+  "attempt_id": "a20260922-01",
+  "revision": "carrier landing (post independent review)",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "verdict_label_written_by_reviewer": "ACCEPT — scope = these 2 test-file edits plus the card's evidence and boundary claims; findings F1-F5 minor, none blocking (transcribed as accepted_scoped)",
+    "verdict_written_by": "独立复核 (independent reviewer subagent of parent session-bfecd191-fbc3-4a66-8ed1-6562479bf102; never the implementer, never the landing executor)",
+    "scope_is_scoped_not_clean": true
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "scope_statement": {
+    "statement": "Acceptance is SCOPE-LIMITED, not clean (reviewer_report.md verdict L7-L9; closing verdict L328-L338). The reviewer independently re-hashed every deliverable against the ledgers (26/26 manifest entries), proved frozen-first from CreationTime (RED 01:00:14 < first edit 01:01:01), diffed the 2 edited files against before/ with its own difflib (exactly 1 + 8 hunks), re-ran both files in a fresh %TEMP% mirror (26/0) with its own M1 mutation (4F/5P, same 4 names) plus restore-then-green, reproduced the RED name-set bidirectionally against the GUARD-MERGE reference raws, traced the replaced-test design to the merged iso's literal _require_sha256(optional=False) contract (L86/117/121/122) and the E5b SQL plant to the pre-existing L296 technique, audited boundaries (3 source pins == HEAD blobs; C11 raw-never-regenerated mtime proof; 5-file write sweep; zero git verbs; 26 hash entries match), and programmatically matched the 5-file recommended_cw_commit's 3 source pins against the GUARD-MERGE carrier (3/3). Findings F1-F5 are minor, none blocking; F3's runner identification is parent-adjudicated (authorized, evidenced runner = CFI14FR1-SAMPLE's disclosed sequence — NOT an intrusion). The binding acceptance scope below must be read together with the verdict.",
+    "why_not_blocking": "F1 (dispatch count slip family), F2 (repo-wide 5-file + EOL note), F4 (dispatch label slip), F5 (doc-comment wording beyond the frozen set) are disclosed bookkeeping/record-notes with zero assertion effect; F3 (runtime-artifact attribution) was open at review time and is now ADJUDICATED by the parent with second-stage-pinned evidence (CFI14FR1-SAMPLE's own disclosed, review-accepted 02_rerun + 03/04/05/06 sequence, second-by-second mtime correspondence). No finding contradicts any exit claim; all 7 residual items stay carried with their dispositions.",
+    "acceptance_scope": [
+      "1. SINGLE PARENT COMMIT, ALL 5 FILES: the parent performs ONE CW commit bundling all 5 files (merged iso sources prompt_injection_guard.py d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d / prompt_injection.py 88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33 / readiness_graph.py 50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b + tests/unit/test_readiness_graph.py a5db0c9c6959d9c8cbd68d606eec0dc9368ab09f93168a2b892e3fd459f368c2 + tests/unit/test_prompt_injection_guard.py d3bde1a3d5ec2495474aae5b91595362b2caad4c8a0178c6927bf2d8023eec3f), with the hook runs — GUARD-MERGE condition-1 (executed by this card) + condition-4 / register §48 item 5 (parent's action).",
+      "2. UNMERGED-PRODUCTION NON-RUN STANDS, CLAIM NARROWED: the edited tests were never run against unmerged production by design (oracle §1; cross-verified by reviewer §7 against the live bytes). The binding claim is narrowed to 「our EDITED tests' first in-tree live validation = the post-commit CW suite」 — CFI's 02_rerun collected our files at ~00:14 local, before our 01:01:01/01:01:16 edits (it ran pre-edit bytes on unmerged production where they pass), and the post-close 01:08-01:16 live-tree writers are CFI's own control/probe/arm series per the F3 adjudication. NOT a global 「first live validation = post-commit」 claim for all runners.",
+      "3. STORE STAYS UNRATIFIED (GUARD-MERGE condition-3): only the composed faces are ratified; the I-06-A store/processing_demand face + candidate-unratified marker rows remain unratified; GUARD-MERGE handoff unproven[2] (pre-C7 rows read as `absent`, disclosed code-path observation, shadow-only) stands as written.",
+      "4. GUARD-MERGE CONDITION-2 STANDS AS WRITTEN: re-run batteries (i)-(v) if FIX or I-06-A land further changes to the three faces (prompt_injection*/readiness_graph*).",
+      "5. FINDINGS F1-F5 RECORDED, NONE BLOCKING; F3 = PARENT-ADJUDICATED (authorized, evidenced runner; the narrowed claim in item 2 stands). Handoff signature stays signed:false — reviewer_report.md + its sidecar are the review authority; this landing transcribes it and produces no signature."
+    ],
+    "scope_conditions_source": "reviewer_report.md verdict L7-L9 + closing verdict L328-L338, transcribed in substance; F3 adjudication per parent dispatch (session-bfecd191-fbc3-4a66-8ed1-6562479bf102), pointer handoff.json bookkeeping.f3_adjudication / review.md lines 65-79",
+    "not_verified_by_review": [
+      "M2 (evidence_payload mutation) not re-executed by the reviewer — raw-verified alone (7 failed, 10 passed); the reviewer re-ran M1 itself",
+      "GUARD-MERGE reviewer's Run-1 console output is not on disk (only c7_rerun.txt survives) — RED anchor = the two certified reference raws, exactly what oracle §2 pins",
+      "generator runs 1-2 outputs overwritten by run 3 (C11: >=2 writes proven from C!=W; run count disclosure-only)",
+      "WAL / SHM / .pytest_cache writer attribution from file metadata alone — now PARENT-ADJUDICATED (F3 = CFI14FR1-SAMPLE's disclosed sequence), listed for carry-completeness",
+      "edited tests vs unmerged production: never run by this card (by design; stands); rest of the CW suite not run by this card",
+      "single-platform, single-runner evidence only (Windows, CPython 3.13.9, pytest 9.1.1)",
+      "the CW commit itself is not run here (parent's action, condition-4); battery re-run condition (condition-2) and store UNRATIFIED (condition-3) untouched, standing as written",
+      "any external signature — none exists; the implementer never signed and this landing never signs (declarations)"
+    ]
+  },
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "execution_runs/CW-TEST-DEBT/a20260922-01/reviewer_report.md",
+    "verdict_heading_line": null,
+    "verdict_line": 7,
+    "verdict_line_text": "**Verdict: ACCEPT** (scope = these 2 test-file edits plus the card's evidence and",
+    "line_range_inclusive_1_based": [1, 341],
+    "verdict_block_line_range_inclusive": [7, 9],
+    "verdict_repeated_at_closing_line_range_inclusive": [328, 338],
+    "signoff_line_range_inclusive": [340, 341],
+    "findings_section_line_range_inclusive": [270, 305],
+    "finding_F3_line_range_inclusive": [280, 295],
+    "unverified_section_line_range_inclusive": [307, 324],
+    "verify_sections_line_range_inclusive": {
+      "s1_deliverables": [20, 41],
+      "s2_oracle_freeze": [43, 65],
+      "s3_own_difflib": [67, 114],
+      "s4_own_mirror_mutation": [116, 140],
+      "s5_red_nameset": [142, 157],
+      "s6_replaced_test_design": [159, 185],
+      "s7_boundaries": [187, 249],
+      "s8_commit_block": [251, 268]
+    },
+    "byte_offsets": {
+      "verdict_statement_start": 226,
+      "verdict_statement_end_inclusive": 494,
+      "whole_file_minus_trailing_lf_end_inclusive": 22769
+    },
+    "carrier_file_sha256": "6f3febf70c59148d18bfe990d9c3078e67465376a894610acc78dddc2d01103c",
+    "carrier_file_bytes": 22771,
+    "carrier_file_total_lines": 341,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF; 22356 chars",
+    "dispatch_byte_figure_note": "the landing dispatch cited 22771 B; measured = 22771 bytes — exact match; pin and byte figure agree",
+    "verdict_line_byte_region": {"start": 226, "end_inclusive": 494, "length": 269, "sha256": "e490b52466e4e9fc36efe6d3ac0e9ee3bbebdee7cb667ca8b3e6a2adb7096f5b"},
+    "findings_byte_region": {"start": 18077, "end_inclusive": 20657, "length": 2581, "sha256": "f1b4db698e21d079e665a80078f22761fb3a0aff00124fce6c81757d64ce3a49"},
+    "finding_F3_byte_region": {"start": 18702, "end_inclusive": 19941, "length": 1240, "sha256": "bc62cbcebe5b42e277a7e300190a3e506e6e0a4156b37bbf6db1a415acabbcfe"},
+    "unverified_byte_region": {"start": 20660, "end_inclusive": 21772, "length": 1113, "sha256": "366cbe75fd99bbbde0d2785ed4a8a8289d20a0681c4be1159ea07c6c1ee437e0"},
+    "closing_verdict_byte_region": {"start": 21780, "end_inclusive": 22597, "length": 818, "sha256": "8b2a2928a12bb91c2a76b14c8a14f9e4e7d9ac70900731750e87404a254aaaff"},
+    "signoff_byte_region": {"start": 22600, "end_inclusive": 22769, "length": 170, "sha256": "1aa3b0f605c2f3f8393dd8bae027af5feda692ca6749f4897e1b475ebff295d7"},
+    "whole_file_minus_trailing_lf": {"start": 0, "end_inclusive": 22769, "length": 22770, "sha256": "ea9c7c6a25c32a580a0a711243c29c0435406e9b5f84f60f61b2062359bca758"},
+    "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; region lengths exclude the line's terminating LF (multi-line regions include internal LFs)",
+    "pin_sidecar": {
+      "file": "reviewer_report.md.sha256",
+      "present": true,
+      "present_before_landing": true,
+      "written_by": "the independent reviewer (declared in its header: files written in the plan tree = this report + its .sha256 sidecar, 2 files)",
+      "bytes": 84,
+      "sha256": "84865237290050faf87ce525b96ffa101581c01b1ff9fa144cea2154886bc4c9",
+      "content": "6f3febf70c59148d18bfe990d9c3078e67465376a894610acc78dddc2d01103c  reviewer_report.md",
+      "verified": "sidecar content matches an independent re-hash of reviewer_report.md at landing time (= the dispatch's expected pin at 22771 B); the sidecar was NOT created, overwritten or modified by this pass (0 bytes written)"
+    },
+    "landing_file": {
+      "file": "review.md",
+      "path_inside_attempt": "execution_runs/CW-TEST-DEBT/a20260922-01/review.md",
+      "role": "carrier-landing verdict block written by the bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own. The reviewer wrote NO verdict into review.md - the reviewer's words are in reviewer_report.md (which this pass did not modify).",
+      "sha256": "7b3a418bdbbd10fae1c72d1a9bb4db461096771dda23d630784571d5964c5e5c",
+      "bytes": 30347,
+      "lines": 120,
+      "line_ranges_inclusive_1_based": {"verdict_block": [5, 16], "verify_steps_V1_to_V7": [18, 53], "findings_F1_to_F5": [55, 87], "finding_F3_parent_adjudication": [65, 79], "acceptance_scope": [89, 95], "unverified_carried": [97, 105], "not_granted": [107, 109], "bookkeeping": [111, 120]},
+      "pre_image": "none - review.md did not previously exist in this attempt (no implementer stub)"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer (独立复核), not by the implementer",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) - transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "verdict_is_transcribed_not_authored": true,
+    "handoff_signature_signed": false,
+    "carrier_bytes_written_by_landing": 0,
+    "sidecar_bytes_written_by_landing": 0,
+    "plan_file_bytes_written": 0,
+    "git_writes": 0
+  },
+  "scope": {
+    "scoped": true,
+    "granted": [
+      "deliverable re-hash: oracle/changes.diff/before-copies/live tests/live sources/GM iso rows all match; all 26 manifest entries re-hashed 26/26, 0 mismatches (reviewer §1)",
+      "frozen-first by disk times: oracle.md 00:59:32.911 -> oracle_freeze.json 00:59:56.731 -> mirror 00:59:58 -> RED 01:00:14-01:00:21 -> first edit 01:01:01 -> greens 01:01:32+; RED < first edit; closing hash == freeze hash (§2)",
+      "own difflib vs before/: exactly 1 hunk (+1/-0, the seed line, no assert touched) and exactly 8 hunks (+73/-19, all inside E2/E4/E5a/E3/E5b regions); changes.diff ^@@ = 9 = 1+8, keyed to before-pins, no git metadata; 17 def test_ before == after; 5/5 evidence_payload call sites (§3)",
+      "own fresh-%TEMP% mirror: overlay re-hash = merged iso pins; run = 26 passed / 0 failed (9+17) on Python 3.13.9 / pytest 9.1.1; M1 = 4 failed / 5 passed with the same 4 RED names, restore -> a5db0c9c + 26 passed (restore-then-green); card raws re-read row-for-row; M2 raw-verified only (§4)",
+      "RED name-set reproduction: 15 names both sides, RED-GM = empty and GM-RED = empty, sorted-joined byte-identical, tails agree with GM reviewer §6 decomposition (4F/5P + 11F/6P), with the disclosed GM Run-1 console-absent caveat (§5)",
+      "replaced-test design traced to the merged iso literal: _require_sha256(optional=False) L86 with unconditional calls at L117/L121/L122 -> E4's match literals one-for-one; E4 forward contract leaves nothing written; E5a expectation line unchanged; E5b SQL plant byte-same technique as L296 (exactly 2 occurrences); assert-line differing-test set = {test_evaluate_absent} only (E3) (§6)",
+      "boundaries: 3 source pins unchanged at reviewer start AND close, byte-equal to HEAD blobs (no EOL caveat); write sweep = exactly 5 paths (2 authorized tests + wal/shm/pytest_cache -> F3); repo-wide differing tracked set = 5 with the 3 pre-existing dirt rows (F2); zero git verbs by the card (.git state files all <= 2026-09-22 22:23:24); C11 raw-never-regenerated mtime proof (raws created once <= 01:02:58, generator-derived files 01:04:29/01:05:18, >=2 writes provable); handoff honesty lists 5/5 verified; by-design non-run premise cross-checked against live bytes (§7)",
+      "recommended_cw_commit block: 5 entries, count=5, sources_written_by_this_card=0, tests=2; the 3 source pins programmatic field-by-field match the GUARD-MERGE landed handoff 3/3; both test before-pins == before/ copies, after-pins == reviewer close re-hash; GM carrier 2a26aaae re-hashes to its sidecar (§8)",
+      "F3 adjudicated by the parent with second-stage-pinned evidence and carrier spot-check: runner = CFI14FR1-SAMPLE's disclosed+accepted 02_rerun + 03/04/05/06 sequence (second-by-second mtime table); authorized, evidenced runner — NOT an intrusion; narrowed first-validation claim stands"
+    ],
+    "not_granted": [
+      "disclosure_adaptation (stays unmapped) / accuracy (stays unproven)",
+      "any production write authority — parent holds the single 5-file CW commit (5-file bundle with pins in handoff.bookkeeping.parent_commit_plan); no git by this landing",
+      "a GLOBAL 「first live validation = post-commit」 claim — only the narrowed claim (our EDITED tests) is in scope",
+      "closure of any unproven/unmapped item (7 carried unverified + 5 unmapped + 5 unproven stand, with F3/U-4 adjudicated)",
+      "ratification of the I-06-A store/processing_demand face (store stays UNRATIFIED) or closure of GM handoff unproven[2]",
+      "re-run of batteries (i)-(v) — condition-2 stands with its trigger unexercised here",
+      "any acceptance of this landing pass's own - it is bookkeeping transcription only"
+    ]
+  },
+  "findings_mirrored": [
+    {"id": "F1", "severity": "low", "blocking": false, "line": 272, "summary": "handoff unproven holds 5 entries, not the dispatch's 6; unmapped = 5 as dispatched; required content present; the '6' is a dispatch arithmetic slip of the same family as 22/22.", "disposition": "disclosed count slip, zero assertion effect; carried as-recorded"},
+    {"id": "F2", "severity": "low", "blocking": false, "line": 276, "summary": "repo-wide, 5 tracked files differ from CW HEAD (2 tests + 3 pre-existing dirt rows CLAUDE.md/README.md/artifact_dag.py at 22:23:23), not only the 2; card-attributable delta = the 2 tests; 3 sources byte-equal to HEAD; bounded EOL note (LF-normalization-only delta on the before copy of test_prompt_injection_guard.py, CRLF style preserved; readiness before copy byte-exact).", "disposition": "disclosed scoping + EOL note; carried as-recorded"},
+    {"id": "F3", "severity": "medium as filed -> resolved", "blocking": false, "line": 280, "summary": "in/post-window runtime artifacts on the live CW tree (wal 00:59:38; basetemp-dir 01:11:36; .source_catalog-shm 01:12:51; .pytest_cache nodeids+lastfailed 01:15:50) with the runner unidentified from metadata alone; lastfailed 29 keys, 0 of our 26.", "disposition": "ADJUDICATED by the parent: runner = CFI14FR1-SAMPLE's own disclosed, review-accepted (sidecar f958d5466aef18f233ec13123d90e6d4147de3cc5bde7883c68e5dc1fd9063f4) sequence — 02_rerun hook ACTIVE launched 2026-09-22T23:13:41.577Z (00:13:41 local), pytest 3038.18s / wall 3080.8s, finished 00:05:02.531Z (01:05:02 local), outputs in evidence 01:05:00-01:05:02; controls 03_* 01:08:10-01:11:37; probe 04 01:11:36-37 (= basetemp touch same second); arm 05 01:12:48-55 (contains shm 01:12:51); arm 06 01:13:53-01:15:50/51 (= .pytest_cache same second); wal 00:59:38 inside 02_rerun's disclosed window. Authorized, evidenced runner — NOT an intrusion; lastfailed-zero-ours consistent (collected ~00:14 local, pre-01:01 edits); narrowed claim stands. Status: adjudicated.", "status": "adjudicated"},
+    {"id": "F4", "severity": "low", "blocking": false, "line": 296, "summary": "「22→27」 appears nowhere in the oracle (no `27` token); §R arithmetic is 26/17 (22 = 26 − 4; 9 + 22 = 31 > 26); substance matches, label alone off.", "disposition": "disclosed label slip, zero assertion effect; carried as-recorded"},
+    {"id": "F5", "severity": "low", "blocking": false, "line": 299, "summary": "E2's 5-line module comment and E5a's 2-line masking comment exceed the frozen edit set's literal wording (oracle silent on both); rationale documentation only, zero assertion/behavior effect; hunk accounting unaffected (9 hunks, all inside E1-E5 regions).", "disposition": "record-note, not a scope violation; carried as-recorded"}
+  ],
+  "carried_findings": [
+    {"id": "F1", "mirrored_from": "reviewer_report.md L272-L275", "blocking": false, "status": "disclosed"},
+    {"id": "F2", "mirrored_from": "reviewer_report.md L276-L279", "blocking": false, "status": "disclosed"},
+    {"id": "F3", "mirrored_from": "reviewer_report.md L280-L295", "blocking": false, "status": "adjudicated"},
+    {"id": "F4", "mirrored_from": "reviewer_report.md L296-L298", "blocking": false, "status": "disclosed"},
+    {"id": "F5", "mirrored_from": "reviewer_report.md L299-L305", "blocking": false, "status": "disclosed"}
+  ],
+  "carried_unverified_count": 7,
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-23",
+    "what_this_pass_did": "verified the carrier against its pre-existing reviewer-authored sidecar (re-hash 6f3febf7…/22771 B == sidecar content == dispatch pin; sidecar content-match; verdict ACCEPT F1-F5 — read-only); spot-checked the parent's F3 adjudication evidence files read-only (CFI14FR1-SAMPLE started/meta/summary + 03/04/05/06 mtimes + its review sidecar f958d546…); created this qualification record; created review.md (transcribed verdict block + 7 verify steps + findings with dispositions incl. the F3 second-by-second table, no acceptance of its own); edited handoff.json (status + status_authority + bookkeeping + carried F1-F5 + carried U-1..U-7 + implementer_signed + accuracy + disclosure_adaptation; signature.note and unproven[0] superseded byte-exact under *_historical_pre_verdict; pre-image retained); wrote 0 bytes to reviewer_report.md, its sidecar, any evidence raw file, any plan file, any git state, or production",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "status_transition": "review_pending -> accepted_scoped",
+    "parent_commit_note": "exactly ONE company-wiki commit bundling ALL 5 files with hook runs (merged d7125478…/88154de4…/50c94de2… + tests a5db0c9c…/d3bde1a3…); performed ONLY by the parent (GUARD-MERGE condition-4); zero git by this landing",
+    "f3_adjudication_pointer": "handoff.json bookkeeping.f3_adjudication; review.md lines 65-79",
+    "narrowed_claim_pointer": "handoff.json bookkeeping.unmerged_non_run_claim_narrowed",
+    "files_written": [
+      "review.md (created)",
+      "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping + carried_findings F1-F5 + carried_unverified U-1..U-7 + *_historical_pre_verdict supersessions; pre-existing content otherwise untouched; pre-image 8519 B / sha256 9c2a5527da4de9441db118ce0be45584f8122332b56337f29fab149725b2c919)",
+      "evidence/CW-TEST-DEBT/qualification.json (created)"
+    ],
+    "files_written_count": 3,
+    "only_three_files_written": true
+  },
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPE-LIMITED, not clean: disclosure_adaptation stays unmapped and accuracy stays unproven. The verdict lives in reviewer_report.md (sha256 6f3febf70c59148d18bfe990d9c3078e67465376a894610acc78dddc2d01103c, 22771 B, 341 lines, pinned by the pre-existing reviewer-authored reviewer_report.md.sha256) at line 7 (repeated L328-L338) and was written by 独立复核; this file and review.md transcribe it and add no acceptance of their own."
+}

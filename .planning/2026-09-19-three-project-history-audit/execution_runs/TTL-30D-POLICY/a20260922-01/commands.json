@@ -1,0 +1,28 @@
+{
+  "card_id": "TTL-30D-POLICY",
+  "attempt_id": "a20260922-01",
+  "variables": {
+    "attempt": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/TTL-30D-POLICY/a20260922-01",
+    "cw": "C:/Users/郑曾波/Projects/company-wiki",
+    "mirror": "%TEMP%/ttl30d-a20260922-01 (C:/Users/郑曾波/AppData/Local/Temp/ttl30d-a20260922-01)",
+    "prod_guard": "<cw>/src/company_wiki/source_catalog/prompt_injection_guard.py"
+  },
+  "git_writes": "NONE — no git command was executed at all (no add/commit/stash/checkout/reset/restore/status); changes.diff was produced by python difflib (scripts/make_diff.py), per card 「no git」",
+  "production_writes": "NONE — prod_guard sha256 before == after == F900A13D7C22FE3BD742485C6B603DE11B92A56D2414A2A046216CCD3B0B9C08 (re-verified at close)",
+  "steps": [
+    {"id": "C1", "cmd": "New-Item -ItemType Directory -Force <attempt>/iso, <attempt>/evidence, <attempt>/scripts", "rc": 0},
+    {"id": "C2", "cmd": "Copy-Item <prod_guard> <attempt>/iso/prompt_injection_guard.py; Get-FileHash SHA256 (iso, prod, later oracle)", "rc": 0, "result": "iso_before == prod == F900A13D7C22FE3BD742485C6B603DE11B92A56D2414A2A046216CCD3B0B9C08"},
+    {"id": "C3", "cmd": "write oracle.md (contract sources + frozen case table + caller-audit table), then append errata section 5 — BEFORE any run", "rc": 0, "result": "oracle_sha256 = 30C4B637DD174F2BCFD3C0A6778519F543C94B70C9A4E93F94EEC8551CA704C2 (unchanged at close); see oracle_freeze.json"},
+    {"id": "C4", "cmd": "write scripts/ttl30d_probe.py (frozen expectations transcribed from oracle; emits JSON bound to loaded guard sha256)", "rc": 0},
+    {"id": "C5", "cmd": "mirror setup: Remove-Item -Recurse mirror; Copy-Item -Recurse <cw>/src mirror/src; copy conftest.py, tests/conftest.py, tests/unit/test_prompt_injection_guard.py, tests/unit/test_readiness_graph.py; Copy-Item iso guard -> mirror guard; python scripts/ttl30d_probe.py <mirror/src> evidence/red_before.json", "rc": 0, "result": "RED: gating 7/16 passed; gating_failed = [TTL-C0, TTL-G1, TTL-N1, TTL-N2, TTL-N3, TTL-N5, TTL-N6, TTL-N8, TTL-N9] (exactly the pre-registered set); guard_sha256 in artifact == frozen before-hash", "raw": "evidence/red_before.json"},
+    {"id": "C6", "cmd": "cd mirror; python -m pytest tests/unit/test_prompt_injection_guard.py tests/unit/test_readiness_graph.py -q --tb=short (baseline, before-state)", "rc": 0, "result": "26 passed in 9.46s", "raw": "evidence/product_tests_before.txt"},
+    {"id": "C7", "cmd": "5x edit on <attempt>/iso/prompt_injection_guard.py: (1) module docstring Policy-surface block + import math; (2) POLICY_RECEIPT_TTL_CAP_SECONDS constant + comment; (3) _freshness now<reviewed_at clock-anomaly branch + docstring; (4) evaluate_review cap+isfinite validation + docstring; (5) __all__ entry", "rc": 0},
+    {"id": "C8", "cmd": "python scripts/make_mutants.py <attempt>/iso/prompt_injection_guard.py <attempt>/mutants; Copy-Item iso guard -> mirror; python scripts/ttl30d_probe.py <mirror/src> evidence/green_after.json; python -m pytest (same two files)", "rc": 0, "result": "mutants built (m1=61cdab69…, m2=f75eed61…, both compile-checked); GREEN: gating 16/16, failed=[]; product 26 passed in 13.68s", "raw": "evidence/green_after.json, evidence/product_tests_after.txt"},
+    {"id": "C9", "cmd": "loop: Copy-Item mutants/m1|/m2 guard -> mirror; probe -> evidence/mutation_m1_cap_removed.json | mutation_m2_pastnow_removed.json; restore iso guard -> mirror; probe -> evidence/green_confirm.json; write evidence/hashes.json", "rc": 0, "result": "MUT-1 gating_failed = [TTL-G1, TTL-N1, TTL-N2, TTL-N3, TTL-N8, TTL-N9] == frozen set; MUT-2 gating_failed = [TTL-N5, TTL-N6] == frozen set; confirm 16/16", "raw": "evidence/mutation_m1_cap_removed.json, evidence/mutation_m2_pastnow_removed.json, evidence/green_confirm.json"},
+    {"id": "C10", "cmd": "Copy-Item mutants/m1 guard -> mirror; python -m pytest (same two files) -> evidence/product_tests_mutant_m1.txt; restore iso guard; Get-FileHash prod (zero-write check); EOL byte counts of prod vs iso", "rc": 0, "result": "26 PASSED under the cap-removed mutant (product tests cannot detect the mutation — the oracle probe is the detector); prod_unchanged=True (F900A13D…); prod and iso both LF-only (0 CRLF) => diff clean", "raw": "evidence/product_tests_mutant_m1.txt"},
+    {"id": "C11a", "cmd": "python scripts/make_diff.py <prod> <iso> | Set-Content changes.diff (stdout piping)", "rc": 1, "note": "DISCLOSED, not hidden: UnicodeEncodeError 'gbk' on stdout while emitting U+21D2 ⇒ partial 19-line artifact; make_diff.py rewritten to write the file directly as UTF-8; the partial artifact was overwritten by C11b"},
+    {"id": "C11b", "cmd": "python scripts/make_diff.py <prod> <iso> changes.diff (direct UTF-8 write)", "rc": 0, "result": "changes.diff 112 lines, 6 hunks, sha256 8271158BF034E6FEC60B65D48BEC173F5EE1A98AD1538D29A8DAEBCBD29FDBD3"},
+    {"id": "C12", "cmd": "write binding.json, commands.json, decision.md, recovery.md, handoff.json, evidence/caller_audit.txt, evidence/final_deliverable_hashes.json", "rc": 0}
+  ],
+  "environment": {"python": "3.13.9", "pytest": "9.1.1", "platform": "Windows, pwsh file sandbox danger-full-access"}
+}

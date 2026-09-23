@@ -1,0 +1,81 @@
+{
+ "card_id": "GATE-OQ-FIX",
+ "attempt_id": "a20260922-01",
+ "card_title": "owner-authorized robustness fixes for the two registered GATE open questions: real-data step budget 1200->1800 (that step only) + fc1105 f2 helper internal timeout 120->300",
+ "binding_status": "bound",
+ "frozen_utc": "2026-09-22T18:33:14.8071481Z",
+ "written_when": "AFTER oracle.md was frozen and hashed (evidence/oracle_freeze.json), BEFORE any modification to the two target files",
+ "owner_ruling": {
+  "source": "OWNER_DECISIONS.md section 18 (verbatim)",
+  "quote": "「A-1: 1, A-2: 授权, B: 全批， C:更新函件」",
+  "table_row": "| **B = 全批** | §十七 B-1..B-7 **全部批准** | … ②OQ-01/02 修复卡 `GATE-OQ-FIX` 已派（4e29afc4）：real-data 步 1200→1800（仅该步）、f2 内部 timeout 120→300；③**父保留各仓提交权**（卡交付证据后由父分仓提交） |",
+  "item_cleared": "§17 B-7: GATE OQ-01/02（real-data 单独预算复核、f2 timeout=120 脆弱性）— previously 登记未决, now approved in full",
+  "origin_card": "GATE-TIMEOUT-1200 handoff.json open_questions OQ-01 / OQ-02 + reviewer_report.md L10"
+ },
+ "authorized_changes": [
+  {
+   "id": "FIX-1-OQ-01",
+   "file": "tools/pre_push_gate.py",
+   "location": "function _real_data(), the _run(...) call (source lines 196-199 before edit)",
+   "change": "add one explicit keyword argument line: timeout=1800,",
+   "after_call_shape": "return _run([sys.executable, '-m', 'pytest', '-q', '--tb=line', *REAL_DATA_TESTS], 'real-data suite (production catalog; CI needs a self-hosted runner)', timeout=1800,)",
+   "scope": "real-data step ONLY; _run default stays 'timeout: int = 1200' so all other steps keep 1200",
+   "expected_numstat": "1 added 0 deleted"
+  },
+  {
+   "id": "FIX-2-OQ-02",
+   "file": "tests/test_fc1105_fault_injection.py",
+   "location": "_t2() helper, line 60 (the only '120' literal in the file)",
+   "change": "timeout=120 -> timeout=300 inside subprocess.run(...)",
+   "scope": "the single helper that test_f2_missing_samples_fails invokes; nothing else in the file",
+   "expected_numstat": "1 added 1 deleted",
+   "cross_check": "reverting the literal to 120 must reproduce the before-hash byte-exactly (mutation step in oracle section 5.5)"
+  }
+ ],
+ "hash_anchors_before": {
+  "tools/pre_push_gate.py": "cf09ade8164e89d79237ff5a8409496ab1ae2a9c5f3ee2c253ccad20ef06df0b",
+  "tests/test_fc1105_fault_injection.py": "0bcd7ac81dba2c03362c9d0fa21ef59188f096f872b49e6efffc9cb028a0856e",
+  "oracle_md": "b08b51df740c2b562c1c83eca6734b6d4459c5114d9282941e6de7393aae5851",
+  "before_byte_copies": ["before/pre_push_gate.py.orig", "before/test_fc1105_fault_injection.py.orig"],
+  "git_HEAD_at_freeze": "4b1c690b8b798e521cf0c59b538bb1522a5a107c",
+  "git_status_of_both_files_at_freeze": "clean (empty scoped porcelain)",
+  "gate_before_note": "cf09ade8...6df0b is exactly the authorized after-state hash of GATE-TIMEOUT-1200 (committed there as 6f74b056 and later HEAD 4b1c690b), i.e. the 1200-default line is intact going in"
+ },
+ "hash_anchors_after": {
+  "tools/pre_push_gate.py": "3df161a7ceea17de95b36845bdb3c4cee729dca215c56853868780dce7331484",
+  "tests/test_fc1105_fault_injection.py": "98ddcdc70b208a35b87b89d83870fe8985156e94ea6596dd6c2b02e6335f8e62",
+  "numstat_two_files": "tools/pre_push_gate.py 1 0; tests/test_fc1105_fault_injection.py 1 1 (total 2 added, 1 deleted)"
+ },
+ "evidence_basis_no_new_measurement_by_this_card": {
+  "oq_01": "real-data step 1182.3 s wall vs 1200 s cap (~17.7 s margin) at extreme ambient; 691.71 s at RED-comparable ambient (GATE-TIMEOUT-1200 after/gate_green_1200.txt + commands.json)",
+  "oq_02": "f2 helper failed at internal timeout=120 under that load; standalone 1 passed in 44.00 s (GATE-TIMEOUT-1200 evidence/f2_standalone_lightload.txt)"
+ },
+ "environment": {
+  "cpu": "10 cores / 12 logical processors",
+  "ram_gb": 16,
+  "os": "Windows",
+  "interpreter": "C:\\Miniconda\\python.exe (Python 3.13.9)",
+  "ambient_python_procs_at_freeze": 2,
+  "load_policy": "this card starts NO burners and induces NO load; load-proof is owed to the batch-4 push's live gate run"
+ },
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\GATE-OQ-FIX\\a20260922-01",
+  "tools/pre_push_gate.py — ONLY the explicit timeout=1800 argument line in _real_data()",
+  "tests/test_fc1105_fault_injection.py — ONLY the timeout 120->300 literal (plus the temporary mutation revert, which must end restored to 300 with after-hash re-verified)"
+ ],
+ "forbidden": [
+  "git add / commit / push / stash / checkout / reset / restore (the parent commits, section 18 iii)",
+  "running the full pre-push gate (parent's batch-4 push runs it live; only --help smoke allowed)",
+  "passing --skip-*, -k, --deselect, -x or any flag to the gate",
+  "changing any line of either target file other than the two authorized ones",
+  "touching any other production file (nothing else in this workspace may change)",
+  "faking, inflating, or inducing load (no burners this card)",
+  "self-signing acceptance (handoff stays review_pending)"
+ ],
+ "network": "disabled",
+ "qualification_state": {
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "created_during_attempt": true
+}

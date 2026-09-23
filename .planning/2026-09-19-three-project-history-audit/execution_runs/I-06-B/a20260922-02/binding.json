@@ -1,0 +1,88 @@
+{
+  "card_id": "I-06-B",
+  "parent": "I-06",
+  "attempt_id": "a20260922-02",
+  "protocol": "NINE-STEP execution method. HONEST TIMING (reviewer F-02 remediation): this binding.json file was FINALIZED AFTER the three arm runs — CreationTime=LastWriteTime 2026-09-22 23:13:21, i.e. after red 23:06:27 / green-snap1 23:06:39 / green-snap2 23:12:48 — and it anchors evidence_anchors which can only exist post-run. The ONLY on-disk pre-run proof artifact of the freeze discipline is oracle.md (CreationTime 2026-09-22 22:54:32 < first run 23:06:27; APPEND-1 LastWriteTime 23:12:44 < snap2 run 23:12:48). scripts/run_cases.py on-disk mtime 23:06:24 shows the harness was revised after attempt 1 — that revision history is disclosed in commands.json CMD-I06B2-RED-ORIGINAL and decision.md §4 条5/条6.",
+  "__historical": {
+    "protocol_original_claim_before_F02_fix": "NINE-STEP execution method, step 2 (binding) written before any run",
+    "why_replaced": "reviewer F-02: the original claim was not verifiable on disk for THIS file (created 23:13:21, post-run, with embedded evidence_anchors); original wording kept verbatim here per the remediation discipline"
+  },
+  "scope": "Write the FAIL-ABLE test suite for the demand/receipt system per the now-ratified rulings (tests first, no product writes). Independent review follows separately.",
+  "gate": {
+    "prerequisite": "OPEN-4 出裁之前 I-06-B 不可写可失败用例 (letter A)",
+    "satisfied_by": "owner final confirmation 「全部接受」, 2026-09-22, OWNER_DECISIONS §十九",
+    "rulings_source": "execution_runs/I-06-B/a20260919-01/rulings_transcribed_2026-09-22.md",
+    "rulings_sha256": "5ef8d863e3656962836f83eee4ddd87e8712b174491715cbd856b8593fcb8d91",
+    "rulings_bodies": {
+      "T2-1_OPEN-4": "37413f7812bbe4aa21948f0f474a2ceac2ad0f778f1a3c5eb4f6b3af7e1d98bb",
+      "T2-3_OPEN-5": "74f5c83598355bd43627fbf475260babf2da65b869c02196d889d8b11772b234",
+      "T2-2_OPEN-6": "8aabac0908b407b8af5108c00b4a26e11476d889b593ade306d1eee519c368d1"
+    }
+  },
+  "frozen_artifacts": {
+    "oracle.md": "6b55191f2d7c5b1325464e177df8a21754ce08c679a297ec96c3828799c2ef8c (frozen before run; APPEND-1 written before the snap2 run)",
+    "scripts/run_cases.py": "1656124425564bc553cc5c6c9918e3a355157016bc1a4b8f34713967d9115930",
+    "scripts/_worker_claim.py": "8003c96fc1fa06a1301dd41d815ad150df3febf74a856af9eaa3497a93028774"
+  },
+  "interpreter": "Python 3.13.9 | packaged by Anaconda, Inc. | MSC v.1929 64-bit (AMD64)",
+  "dependencies": "stdlib + sqlite3 ONLY (no third-party imports in the suite)",
+  "network": "disabled — no network call is made by the suite or this attempt",
+  "git": "none — no git command executed",
+  "allowed_write_roots": [
+    "execution_runs/I-06-B/a20260922-02/** (this attempt only)",
+    "%TEMP%/i06b_* (sqlite scratch databases, stdlib tempfile)"
+  ],
+  "read_only_roots": [
+    "revenue-forecast/scripts/, tests/ (read product text for pins; zero writes)",
+    "company-wiki/src/ (read; zero writes)",
+    "execution_runs/I-06-A/a20260919-01/** (historical blocked carrier; copy-in only)",
+    "execution_runs/I-06-B/a20260919-01/** (historical attempt; read only)",
+    "execution_runs/OPEN5-DOUBT-PROBE/a20260922-01/** (probe evidence; read only)",
+    "execution_runs/FIX-W06-GAPS/a20260922-01/** (fix card iso; copy-in only, never written)"
+  ],
+  "prod_repos_modified_by_this_attempt": "NONE",
+  "historical_attempts_modified_by_this_attempt": "NONE",
+  "product_anchors": {
+    "RF/scripts/source_preparation.py": "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+    "RF/scripts/processing_demand.py": "fcdfcad8ebd1fc20febf3c157dcd20ad92708fd69d00373ef9a943e5a820afc1",
+    "RF/tests/test_message_contract_pins.py": "ABSENT (P4 Face 2 fix-card deliverable not yet landed — case L3)",
+    "CW/src/company_wiki/source_catalog/prompt_injection.py": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+    "CW/src/company_wiki/source_catalog/prompt_injection_guard.py": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+    "CW/src/company_wiki/source_catalog/processing_demand.py": "90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b"
+  },
+  "input_anchors": {
+    "I-06-A/iso/candidate/processing_demand_store.py (RED baseline)": "7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f",
+    "FIX-W06-GAPS/before/candidate/processing_demand_store.py (identity check with I-06-A candidate)": "7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f",
+    "OPEN5-DOUBT-PROBE/report.md": "feb9f9accd6c733f54d79f21c6e8579ea2dc3a7da902c32db8528d97156ca33b"
+  },
+  "iso_snapshots": {
+    "original": {
+      "cand/processing_demand_store.py": "7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f",
+      "cand/w06a_candidate_patch.py": "113e90b0855400f6563ace77ca2fb16729d1b6b06631deceeeddf1c8991fc87b",
+      "cand/w06a_apply_candidate.py": "4bf02f2694118d97ab2050a408930c0c69bd16fc88e4fd3912682e7799e133b7",
+      "orig_pi/prompt_injection.py": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+      "orig_pi/prompt_injection_guard.py": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+      "rf/source_preparation.py": "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+      "rf/processing_demand.py": "fcdfcad8ebd1fc20febf3c157dcd20ad92708fd69d00373ef9a943e5a820afc1",
+      "cw/processing_demand.py": "90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b"
+    },
+    "fixed_snap1": {
+      "note": "first copy of FIX-W06-GAPS iso (pre-P7); run preserved at evidence/green_snap1_0b6e723e/ (15G/3R)",
+      "cand/processing_demand_store.py": "0b6e723e721c1c61213d33c10693fc785712471bd993d4a673bcfbc58994fafa",
+      "fixed_pi/prompt_injection.py": "5fabc1e7eceb1ba39df106fe4c1edfa67d1a9d5ae47f63c4a0f15c2a04ea08a5",
+      "fixed_pi/prompt_injection_guard.py": "17f0dc58f6530f0f0f8dbe5099cd655edfe3b7b4404300e3e594ef38534ed31b"
+    },
+    "fixed_snap2": {
+      "note": "refreshed copy taken after oracle APPEND-1 and BEFORE the snap2 run; fix card was STILL IN FLIGHT during this attempt (P7 key fix landed mid-attempt)",
+      "cand/processing_demand_store.py": "cd07132212cacb14f9f1dc04bc2155cb5b080b99fc3146119dcf052958d66d40 (source mtime 2026-09-22 23:04:28)",
+      "fixed_pi/prompt_injection.py": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33 (source mtime 2026-09-22 22:53:19)",
+      "fixed_pi/prompt_injection_guard.py": "17f0dc58f6530f0f0f8dbe5099cd655edfe3b7b4404300e3e594ef38534ed31b (source mtime 2026-09-22 22:42:26)",
+      "fixed_pi/__init__.py": "c712addbc3c2592d39cb6fde3a0d40307d2387055adaadece4177b546857f67f"
+    }
+  },
+  "evidence_anchors": {
+    "evidence/red/summary.json": "0193a199355d18d94e0737265923c927ad9367b8848baca03420d3b6e342c27e",
+    "evidence/green/summary.json": "22765e7ac24b6051b861affb0569d89b4e527c57835c883426d542794f0d6d2d",
+    "evidence/green_snap1_0b6e723e/summary.json": "ab62a185f54c86bfaa83a6d001160f595e7e6b71616b46cfc1b5c48dbc3909a6"
+  }
+}

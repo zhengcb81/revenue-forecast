@@ -1,0 +1,8 @@
+﻿Attribution note — RF tests/test_fc1105_fault_injection.py shows ` M` AFTER this run's
+before-snapshot, but PROMOTION-EXEC never wrote any file under revenue-forecast/tests/.
+git diff shows exactly one hunk: `timeout=120` -> `timeout=300` inside _t2(...) subprocess.run.
+That is verbatim the concurrent GATE-OQ-FIX card's OQ-02 mandate ("f2 internal timeout 120->300",
+OWNER_DECISIONS §十八 row B ②). mtime 2026-09-22T19:38:37+01:00 falls inside this card's
+execution window because both cards run concurrently. current sha256
+98ddcdc70b208a35b87b89d83870fe8985156e94ea6596dd6c2b02e6335f8e62, HEAD blob 59d8a3c8..787141fd.
+CONCLUSION: attributed to GATE-OQ-FIX, NOT to PROMOTION-EXEC; this card's write boundary held.

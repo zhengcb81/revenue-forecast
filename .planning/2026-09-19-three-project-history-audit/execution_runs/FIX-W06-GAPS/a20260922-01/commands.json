@@ -1,0 +1,52 @@
+{
+  "attempt": "FIX-W06-GAPS/a20260922-01",
+  "note": "All commands run with python 3.13.9 (C:\\Miniconda\\python.exe), -X utf8 -B, PYTHONDONTWRITEBYTECODE=1. RED runs target before/ copies (byte-identical originals); GREEN runs target iso/ copies. Scenario scripts are identical across RED and GREEN — only --module/--pkg-dir differs.",
+  "python": "3.13.9",
+  "pytest": "9.1.1",
+  "phases": {
+    "red_before_copy": [
+      "python -X utf8 -B scripts/s_p1_migration.py --module before/candidate/processing_demand_store.py --out evidence/RED_P1_migration.txt",
+      "python -X utf8 -B scripts/s_p2_claim_refusal.py --module before/candidate/processing_demand_store.py --out evidence/RED_P2_claim_refusal.txt",
+      "python -X utf8 -B scripts/s_p3_lease_expiry.py --module before/candidate/processing_demand_store.py --out evidence/RED_P3_lease_expiry.txt",
+      "python -X utf8 -B scripts/s_p5_receipt.py --pkg-dir before/cw --out evidence/RED_P5_receipt.txt",
+      "python -X utf8 -B scripts/s_p6_concurrent.py --pkg-dir before/cw --out evidence/RED_P6_concurrent.txt",
+      "python -X utf8 -B scripts/s_c7_state_domain.py --pkg-dir before/cw --out evidence/RED_C7_state_domain.txt",
+      "python -X utf8 -B scripts/s_p7_key.py --module before/candidate/processing_demand_store.py --out evidence/p7_key_c8c9c10_RED.txt"
+    ],
+    "green_iso_copy": [
+      "python -X utf8 -B scripts/s_p1_migration.py --module iso/candidate/processing_demand_store.py --out evidence/GREEN_P1_migration.txt",
+      "python -X utf8 -B scripts/s_p2_claim_refusal.py --module iso/candidate/processing_demand_store.py --out evidence/GREEN_P2_claim_refusal.txt",
+      "python -X utf8 -B scripts/s_p3_lease_expiry.py --module iso/candidate/processing_demand_store.py --out evidence/GREEN_P3_lease_expiry.txt",
+      "python -X utf8 -B scripts/s_p5_receipt.py --pkg-dir iso/pi_pkg --out evidence/GREEN_P5_receipt.txt",
+      "python -X utf8 -B scripts/s_p6_concurrent.py --pkg-dir iso/pi_pkg --out evidence/GREEN_P6_concurrent.txt",
+      "python -X utf8 -B scripts/s_c7_state_domain.py --pkg-dir iso/pi_pkg --out evidence/GREEN_C7_state_domain.txt",
+      "python -X utf8 -B scripts/s_p7_key.py --module iso/candidate/processing_demand_store.py --out evidence/p7_key_c8c9c10_GREEN.txt"
+    ],
+    "pins": [
+      "python -X utf8 -B -m pytest iso/candidate/test_candidate_message_pins.py -q --no-header -p no:cacheprovider  (face 1, 4 tests)",
+      "python -X utf8 -B -m pytest iso/rf/test_message_contract_pins.py -q --no-header -p no:cacheprovider  (face 2, 8 tests)",
+      "python -X utf8 -B -m pytest tests/test_message_contract_pins.py tests/test_fc905b_trusted_receipt.py -q --no-header -p no:cacheprovider  (product tree, 14 tests, workdir=revenue-forecast) -> evidence/PRODUCT_tests_run.txt"
+    ],
+    "mutations": [
+      "python -X utf8 -B scripts/run_mutations.py  (families P1,P2B,P3,P4a,P4b,P5a,P5b,P5c,P6A,P6B,C7,P7; each copies iso sources to %TEMP%, applies ONE recorded textual mutation, re-runs the family checks; expected RED) -> evidence/MUTATION_<family>.txt + evidence/MUTATION_summary.txt"
+    ],
+    "census": [
+      "python -X utf8 -B scripts/call_site_census.py --out evidence/call_site_census.txt"
+    ],
+    "deliverables": [
+      "python -X utf8 -B scripts/gen_changes_diff.py  (changes.diff: repo/attempt-prefixed exact unified hunks)",
+      "python -X utf8 -B scripts/gen_binding.py  (binding.json: before/after pins)"
+    ]
+  },
+  "product_writes": [
+    "Copy-Item iso/rf/test_message_contract_pins.py -> revenue-forecast/tests/test_message_contract_pins.py  (NEW, parent-authorized test-only)",
+    "Copy-Item iso/rf/test_fc905b_trusted_receipt.py -> revenue-forecast/tests/test_fc905b_trusted_receipt.py  (overwrite; before sha256 pinned in before/MANIFEST.json)"
+  ],
+  "mutation_summary_f1_note": "the original MUTATION_summary.txt rollup (12 families) was clobbered — overwritten, NOT deleted — by a later 'scripts/run_mutations.py --only P4a' invocation (48 B, P4a only); regenerated at carrier landing 2026-09-22 by the landing pass from the 12 individual MUTATION_<family>.txt artifacts (all 12 RED, re-read); old value retained at evidence/MUTATION_summary.pre_regen.txt and inside the summary's regeneration_note (MUTATION_summary__stale_48b_value)",
+  "read_only_respected": {
+    "revenue-forecast_scripts": true,
+    "company-wiki_src": true,
+    "I-06-A_original_attempt": true,
+    "git_writes": "none"
+  }
+}

@@ -1,0 +1,35 @@
+=== JSON deliverable validation (GATE-OQ-FIX a20260922-01) ===
+
+ATTEMPT 1 (pwsh) - FLAWED READ, RESULT VOID AS A FILE VERDICT:
+  cmd: Get-Content -Raw <file> | ConvertFrom-Json
+  result: binding.json FAIL / handoff.json FAIL at parse positions 593 / 693;
+          commands.json + oracle_freeze.json + final_state_verification.json OK
+  diagnosis: Get-Content without -Encoding UTF8 decoded the UTF-8 CJK content
+          with the system ANSI codepage (GBK/cp936); multi-byte sequences that
+          sit next to a JSON string-closing quote (e.g. the CJK quotation mark
+          U+300D = E3 80 8D) swallowed the following 0x22 byte as an invalid
+          GBK trail byte, so the QUOTE STRUCTURE was destroyed in the READER,
+          before json parsing ever ran. The three files that "passed" are
+          pure-ASCII, which is exactly why they survived the wrong decoder.
+  status: NOT a defect in the files; a tooling artifact of this validation
+          one-liner. Disclosed here rather than hidden.
+
+ATTEMPT 2 (python, authoritative):
+  cmd: python -c "json.loads(raw.decode('utf-8'))" for all 5 files,
+       plus assert raw does not start with UTF-8 BOM
+  raw_rc=0
+  OK utf-8 no-BOM json: binding.json
+  OK utf-8 no-BOM json: commands.json
+  OK utf-8 no-BOM json: handoff.json
+  OK utf-8 no-BOM json: oracle_freeze.json
+  OK utf-8 no-BOM json: final_state_verification.json
+
+VERDICT: all five JSON deliverables are valid JSON, UTF-8, no BOM.
+
+=== Side check: timeout=60 attribution (pre-existing line, not touched) ===
+  before/test_fc1105_fault_injection.py.orig: L158 timeout=60 (pre-existing)
+  current tests/test_fc1105_fault_injection.py: L158 timeout=60 (identical)
+  L60: before timeout=120 -> current timeout=300 (the ONLY timeout delta;
+       confirmed by the before/ byte copy and by the mutation hash equality)
+  Note: L158 is a different helper/test's pre-existing 60 s budget, outside
+  this card's authorization and byte-identical to the before state.

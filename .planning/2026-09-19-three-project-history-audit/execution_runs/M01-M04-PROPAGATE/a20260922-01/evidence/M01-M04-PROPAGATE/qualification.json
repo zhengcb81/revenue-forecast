@@ -1,0 +1,136 @@
+{
+ "card": "M01-M04-PROPAGATE",
+ "attempt": "execution_runs/M01-M04-PROPAGATE/a20260922-01",
+ "formula": {
+  "state": "accepted_scoped",
+  "state_before_bookkeeping_fix": "review_pending"
+ },
+ "disclosure_adaptation": "unmapped",
+ "accuracy": "unproven",
+ "carrier": {
+  "id": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102",
+  "role": "parent agent carrying the verdict",
+  "verdict_source": {
+   "file": "execution_runs/M01-M04-PROPAGATE/a20260922-01/reviewer_report.md",
+   "sha256": "3217a506e53dfcc876949a34eec71258458021f8e58fa953de63308b6bd703f6",
+   "bytes": 24604,
+   "sidecar": "reviewer_report.sha256 (content matches independent re-hash at landing)",
+   "line_ranges": {
+    "verdict": "L5",
+    "findings": "L216-L224",
+    "conclusion_scope": "L243-L249"
+   },
+   "byte_proof": "size re-measured (24604 B) and sha256 re-computed independently at landing; equal to expected pin and to sidecar content",
+   "verdict_is_transcribed_not_authored": true
+  },
+  "authority": {
+   "file": "OWNER_DECISIONS.md",
+   "line": 424,
+   "register_row": "REMEDIATION_REGISTER.md:869 — M01-M04-PROPAGATE（08e56200） | A-1=①扩权 | 同四前置形态；预期臂 E=0/F=3/G=2/S=1；历史 runner/rc 零回改",
+   "ruling": "A-1 = 1（①扩权）: REM-21/T1-8 同形态门传播扩到 M01–M04 四批（修在副本、before/ 留旧、历史 rc 零回改、证据齐全）; 预期臂 E=0/F=3/G=2/S=1",
+   "verified_at_review": true
+  }
+ },
+ "declarations": {
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "verdict_is_transcribed_not_authored": true,
+  "bookkeeping_transcription_adds_no_acceptance_of_its_own": true,
+  "oracle_md_frozen_byte_untouched": true,
+  "oracle_md_sha256": "9ff1dedec8f2687298f6d083418558e16f85db5c247cb8c2213d2e6327dae0f4",
+  "historical_attempts_read_only": true,
+  "zero_git_commands": true,
+  "zero_product_writes": true,
+  "four_preconditions": {
+   "1_patch_on_copies_only": true,
+   "2_before_keeps_originals": true,
+   "3_zero_historical_rc_rewrite": true,
+   "4_evidence_complete": true
+  }
+ },
+ "arm_table_mirror": {
+  "frozen_expected": {
+   "E": 0,
+   "F": 3,
+   "G": 2,
+   "S": 1,
+   "B": 0
+  },
+  "measured_raw_rc": {
+   "M01": { "E": 0, "F": 3, "G": 2, "S": 1, "B": 0 },
+   "M02": { "E": 0, "F": 3, "G": 2, "S": 1, "B": 0 },
+   "M03": { "E": 0, "F": 3, "G": 2, "S": 1, "B": 0 },
+   "M04": { "E": 0, "F": 3, "G": 2, "S": 1, "B": 0 }
+  },
+  "runs_matching_expectation": "20/20",
+  "deep_checks": "60/60",
+  "all_arms_meet_frozen_expectation": true,
+  "freeze_first": "oracle.md 2026-09-22 19:49:24.524 < evidence/oracle_freeze.json 19:49:50.874 < earliest arm output 19:53:40.619 (+256,095 ms)",
+  "reviewer_two_fresh_spot_runs": {
+   "F": "rc=3, FAIL_declared_expectation_mismatch on NEG-CARD (declared='ValueError' vs raised='ModelRegistryError')",
+   "G": "rc=2, no_verdict, cases_json_declared_expectation_missing:NEG-CARD",
+   "assertions": "10/10",
+   "outputs": "all under %TEMP% only (zero writes to historical attempts)"
+  },
+  "historical_zero_touch": {
+   "files": 7722,
+   "total_bytes": 99931221,
+   "manifest_sha256_before_after_final_recheck": "a03525360a8e8911399114223a28ab4ce9d5464e2d5ecca9cd59adedf9f02751",
+   "verification_sha256": "77a2f6b38caaba368df647abbd167f9a38827fe494f9552365fd3c918f8618a1",
+   "drift": "added=removed=changed=0 (both diff directions empty)",
+   "live_spot_rehash": "3 files across 3 historical batches matched manifest",
+   "rc_carrier": "run_result.json (no rc.txt in the four historical evidence trees)"
+  },
+  "patch_provenance": {
+   "changes_diff": "de038406... (+149/-21); line arithmetic 271-21+149=399 == iso/run_card.py",
+   "mirror": "B5-fix-g1a-g3/a20260922-01/M05-M08/runner.diff 8263fc83... (+111/-12)",
+   "bidirectional_line_set_compare": "only documented b5fcc685 family adaptation + rc-table prose differ; no third semantic class",
+   "gate_shape_lines": "== compare L281; declaration precondition L132-140 -> L361 rc=2; mismatch -> rc=3 L294/L367-369; NOT_JUDGED L269-279; negatives_ok judged-only L357-358; exit_code_semantics L371-391; case.get L243 + hard case[\"kind\"] L244 explains arm S",
+   "source_identity": "8/8 historical runners b5fcc68563f563924529e06e2aeeba06938dcf51bd48b14f553f580191601816 / 12222 B, both difference directions empty; no id gate source-verified"
+  }
+ },
+ "findings_mirror": [
+  {
+   "id": "F-1",
+   "severity": "minor",
+   "status": "corrected-at-landing",
+   "summary": "stale derived manifest_after_sha256 (10d12ef4...) inside evidence/arms_summary.json contradicted the authoritative a0352536...; corrected in place during carrier landing, old value retained as sibling key manifest_after_sha256__stale_derived_value, f1_correction_note added",
+   "sha256_before": "a3af8ebd410d5e194473115228b2bf9f971d49847fad15490052d69e767236bb",
+   "sha256_after": "69743d73916b3e22a01d076e0ea0a8047cd78ab4f1f022c3965a1bac8633f169",
+   "zero_drift_proof_unaffected": true
+  },
+  {
+   "id": "F-2",
+   "severity": "minor",
+   "status": "corrected-at-landing",
+   "summary": "unscoped universal 「全场零 __pycache__」 (decision.md:67) / oracle.md:124 literally false: 292 dirs / 3492 pyc pre-exist in the four historical attempts' venvs, inside the frozen baseline manifest, zero drift; decision.md scoped in place with original retained under 原句留存; oracle.md frozen byte-untouched, its universal scoped via review.md + handoff bookkeeping",
+   "sha256_before": "037b24b61409cb725c9afa08c10e29736add64b9f440c6aa2733f57c8644cd2a",
+   "sha256_after": "18dfc2dacb665650307ea2db75bde57f82d1289e9d50597f7ac81884cea761f2",
+   "scoped_restatement_for_oracle_l124": "zero-new-__pycache__ (domain: 7722-entry manifest, both diff directions empty) + 0 in attempt dir; oracle frozen, universal scoped here"
+  },
+  {
+   "id": "F-3",
+   "severity": "info",
+   "status": "pass",
+   "summary": "no third semantic class in the bidirectional added-line diff-set comparison beyond the documented family adaptation and rc-table prose"
+  }
+ ],
+ "acceptance_scope_mirror": {
+  "rem_80_closure": "parent — REM-80 register-row closure is the parent's, using this arm table as evidence",
+  "formal_31_of_31_recognition": "parent — 31/31 formal 追认 (27/31 -> 31/31 form achieved) stays with the parent after review",
+  "historical_rc_byte_untouched_by_design": true,
+  "arm_s_family_adaptation_pre_registered": "oracle §4 (oracle.md:98-106) and §7.4 (oracle.md:143), before any run; literal extra_unknown_id variant not run and not claimed",
+  "unverified_carried": [
+   "historical G=KeyError not re-run live (read-only discipline)",
+   "literal extra_unknown_id S variant in the b5fcc685 family not run/not claimed",
+   "reviewer independently re-ran only F and G; the other 18 rely on arms_raw.json + static source check",
+   "REM-80 closure and 31/31 formal 追认 belong to the parent",
+   "REM-84 / START_HERE append-3 out of scope",
+   "disclosure_adaptation=unmapped, accuracy=unproven not validated and not extrapolated",
+   "B5-fix round raw measurement records not recomputed",
+   "no full on-site re-hash of all 7722 files (three-timepoint byte-identical manifests + 3-file spot re-hash only)"
+  ],
+  "not_accepted_as_fixed_at_review_time": "F-1 and F-2 were handed to the parent as minor documentation defects not blocking the gate/arm-table/zero-touch conclusions; both have now been corrected during this carrier landing (see findings_mirror)"
+ },
+ "review_md": "execution_runs/M01-M04-PROPAGATE/a20260922-01/review.md"
+}

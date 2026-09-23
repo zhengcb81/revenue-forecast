@@ -1,0 +1,34 @@
+{
+  "card": "CW-TEST-DEBT",
+  "attempt": "a20260922-01",
+  "python": "3.13.9 (Anaconda, on PATH), pytest 9.1.1, Windows/pwsh",
+  "note": "steps in execution order; every write lands in this attempt dir, in the 2 authorized CW unit-test files, or in %TEMP%; -X utf8 + PYTHONIOENCODING=utf-8 everywhere; NO git command of any kind (0).",
+  "variables": {
+    "A": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/CW-TEST-DEBT/a20260922-01",
+    "GM": ".../execution_runs/GUARD-MERGE/a20260922-01",
+    "CW": "C:/Users/郑曾波/Projects/company-wiki",
+    "MIRROR": "%TEMP%/cwtd-a20260922-01"
+  },
+  "steps": [
+    {"id": "C1", "cmd": "scaffold <A>/{before,evidence/raw,scripts,recovery}; Copy-Item the 2 CW unit tests -> <A>/before/; Get-FileHash SHA256 over the 2 test files + 3 CW production sources + 3 GM iso faces -> evidence/raw/live_pins_start.json", "rc": 0, "result": "test files before = 71893f5d…4708a7 / c05e25fb…84f9bae; production == before pins (f900a13d…/7b22f239…/3f4c43b0…); GM iso == reviewer ACCEPT pins (d7125478…/88154de4…/50c94de2…)"},
+    {"id": "C2", "cmd": "write oracle.md (RED definition + GREEN expectations + frozen edit set E1-E5 + §R/§R2 reconciliations + verification-scope rule + boundaries) then sha256 -> oracle_freeze.json", "rc": 0, "result": "FROZEN FIRST: oracle sha256 9334302aa236da374e74f69d9cbfa95e40aaf5ae0d3e76afd0f246079e820a42 at 2026-09-22T23:59:56.707Z, before any edit and before any run"},
+    {"id": "C3", "cmd": "mirror: Remove-Item %TEMP%/cwtd-a20260922-01; robocopy <CW>/src, <CW>/tests, <CW>/config -> mirror (excl. __pycache__); Copy-Item conftest.py + pytest.ini; overlay the 3 merged GM iso faces; hash the overlaid faces -> evidence/raw/mirror_setup.json", "rc": 0, "result": "overlay hashes == d7125478… / 88154de4… / 50c94de2… (merged faces confirmed in mirror)"},
+    {"id": "C4", "cmd": "RED: (cwd=mirror) python -X utf8 -m pytest tests/unit/test_readiness_graph.py tests/unit/test_prompt_injection_guard.py -q --no-header -p no:cacheprovider 2>&1 -> evidence/raw/red_unedited_on_merged.txt", "rc": 1, "result": "15 failed, 11 passed — the 15 names byte-identical to reviewer Run 1 (4 readiness + 11 pi); reproduced BEFORE any edit"},
+    {"id": "C5", "cmd": "EDIT E1 (test_readiness_graph.py::_seed + \"state_domain\": \"review\") and EDIT E2 (import hashlib + _EVIDENCE_PAYLOAD/_evidence_sha256 + evidence_payload on _write_receipt) via the edit tool", "rc": 0, "result": "applied"},
+    {"id": "C6", "cmd": "EDIT E4+E5a (replace test_record_without_binding_keeps_legacy_shape -> test_record_without_binding_rejected, payload pair on both bad-binding calls + valid source_sha256 in the policy_hash case), EDIT E3 (state_domain=\"cache\" in the 2 equality constructions), EDIT E5b (plant the legacy unbound row by SQL) via the edit tool", "rc": 0, "result": "applied; total diff = 1 hunk (readiness) + 8 hunks (pi)"},
+    {"id": "C7", "cmd": "python -X utf8 -c \"ast.parse(...)\" on both edited files; Copy-Item the edited tests -> mirror; GREEN runs: pytest <readiness>, pytest <pi>, pytest both -> green_a_readiness.txt / green_b_prompt_injection_guard.txt / green_combined.txt", "rc": "0 / 0 / 0 / 0 (ast + 3 runs)", "result": "AST OK; 9 passed; 17 passed; 26 passed — oracle (a) and (b') met"},
+    {"id": "C8", "cmd": "after-pins -> evidence/raw/live_pins_after_edits.json; M1: python <A>/scripts/apply_mutation.py <mirror>/tests/unit/test_readiness_graph.py m1; pytest <readiness> -> mut1_seed_tag_removed.txt; Copy-Item the delivered file back; compare sha256", "rc": "pytest=1 / apply=0", "result": "M1: 4 failed, 5 passed = the same 4 RED names; restore matched after-pin a5db0c9c… (RESTORE_rdg_matches_after=True)"},
+    {"id": "C9", "cmd": "M2: python <A>/scripts/apply_mutation.py <mirror>/tests/unit/test_prompt_injection_guard.py m2; pytest <pi> -> mut2_payload_removed.txt; Copy-Item the delivered file back; compare sha256", "rc": "pytest=1 / apply=0", "result": "M2: 7 failed, 10 passed = exactly the 7 payload-dependent names; restore matched after-pin d3bde1a3… (RESTORE_pig_matches_after=True)"},
+    {"id": "C10", "cmd": "restored confirm: pytest both files -> mut_restored_confirm_green.txt", "rc": 0, "result": "26 passed — no mutant left installed"},
+    {"id": "C11", "cmd": "python -X utf8 <A>/scripts/gen_deliverables.py <A>  (difflib changes.diff + binding.json + evidence summaries + close pins)", "rc": 0, "result": "runs 1-2 emitted FALSE name-set checks because the FAILED-line regex/line-ending handling under-collected names (counts were already correct: 15/11, 4/5, 7/10, 26); run 3 after the two-line parser fix -> oracle_checks.json all five checks TRUE. Raw evidence files were never regenerated or edited — only the parser changed. changes.diff = 1 + 8 hunks"},
+    {"id": "C12", "cmd": "write decision.md / handoff.json / recovery.md / commands.json / evidence/SUMMARY.md; re-hash oracle.md (must == freeze), the 3 production sources (must == before pins), the 2 test files (must == after-pins) -> evidence/final_deliverable_hashes.json", "rc": 0, "result": "see evidence/final_deliverable_hashes.json"}
+  ],
+  "read_only_respected": {
+    "company_wiki_production_sources": "READ-ONLY — re-hashed at close, 3/3 == before pins",
+    "company_wiki_other_files": "READ-ONLY — 0 writes; exactly the 2 unit-test files changed",
+    "revenue_forecast_product_tree": "READ-ONLY (only .planning attempt files written)",
+    "guard_merge_attempt": "READ-ONLY (iso faces read + overlaid into %TEMP%, never written)",
+    "git": "ZERO — no add/commit/stash/checkout/reset/restore/status/diff/log of any kind",
+    "runs": "all pytest runs cwd=%TEMP%/cwtd-a20260922-01; mutations were mirror-local only and restored (sha256 == after-pins)"
+  }
+}

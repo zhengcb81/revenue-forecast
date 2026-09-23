@@ -1,0 +1,187 @@
+{
+  "card": "TTL-30D-POLICY",
+  "attempt": "a20260922-01",
+  "run_utc": "2026-09-22T23:06:36.760262+00:00",
+  "guard_module": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\guardmerge-ttl-mirror\\src\\company_wiki\\source_catalog\\prompt_injection_guard.py",
+  "guard_sha256": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+  "cap_frozen": 2592000,
+  "results": {
+    "TTL-C0": {
+      "expect": "POLICY_RECEIPT_TTL_CAP_SECONDS present, == 86400*30 == 2592000, in __all__",
+      "observed": {
+        "has_const": true,
+        "value": 2592000,
+        "in_all": true
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N1": {
+      "expect": "raise PromptInjectionGuardError, message == 'ttl_seconds exceeds policy cap of 2592000s' (ttl=86400*365)",
+      "observed": {
+        "raised": "PromptInjectionGuardError",
+        "message": "ttl_seconds exceeds policy cap of 2592000s"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N2": {
+      "expect": "raise PromptInjectionGuardError, message == 'ttl_seconds exceeds policy cap of 2592000s' (ttl=2592001)",
+      "observed": {
+        "raised": "PromptInjectionGuardError",
+        "message": "ttl_seconds exceeds policy cap of 2592000s"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N3": {
+      "expect": "raise PromptInjectionGuardError, message == 'ttl_seconds exceeds policy cap of 2592000s' (ttl=86400*31)",
+      "observed": {
+        "raised": "PromptInjectionGuardError",
+        "message": "ttl_seconds exceeds policy cap of 2592000s"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N9": {
+      "expect": "raise PromptInjectionGuardError (ttl=inf)",
+      "observed": {
+        "raised": "PromptInjectionGuardError",
+        "message": "ttl_seconds exceeds policy cap of 2592000s"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N8": {
+      "expect": "raise PromptInjectionGuardError (ttl=NaN)",
+      "observed": {
+        "raised": "PromptInjectionGuardError",
+        "message": "ttl_seconds must be a finite number"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-P1": {
+      "expect": "ttl==cap is legal: fresh bound receipt => hit/not_detected, no raise",
+      "observed": {
+        "raised": null,
+        "status": "not_detected",
+        "cache_state": "hit",
+        "reason": "receipt fresh and bound"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-P2": {
+      "expect": "tightening works: age(3d) > ttl(1d) => expired, no raise",
+      "observed": {
+        "raised": null,
+        "status": "not_reviewed",
+        "cache_state": "expired",
+        "reason": "review older than 86400s TTL"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N4": {
+      "expect": "raise PromptInjectionGuardError, message contains 'must be >= 0'",
+      "observed": {
+        "raised": "PromptInjectionGuardError",
+        "message": "ttl_seconds must be >= 0"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N5": {
+      "expect": "now < reviewed_at on an otherwise-expired receipt => not_reviewed/tampered (reason contains reviewed_at); NEVER hit",
+      "observed": {
+        "raised": null,
+        "status": "not_reviewed",
+        "cache_state": "tampered",
+        "reason": "receipt reviewed_at is after now (clock anomaly; now may only tighten freshness)"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N6": {
+      "expect": "now < reviewed_at on a fresh receipt => not_reviewed/tampered, never hit",
+      "observed": {
+        "raised": null,
+        "status": "not_reviewed",
+        "cache_state": "tampered",
+        "reason": "receipt reviewed_at is after now (clock anomaly; now may only tighten freshness)"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-N7": {
+      "expect": "LIMITATION (non-gating): past now >= reviewed_at within ttl window — pure guard has no trusted clock; record observed and report, do not claim pass",
+      "observed": {
+        "raised": null,
+        "status": "not_detected",
+        "cache_state": "hit",
+        "reason": "receipt fresh and bound"
+      },
+      "ok": true,
+      "gating": false
+    },
+    "TTL-P3": {
+      "expect": "now == reviewed_at (age 0) => hit (strict < boundary)",
+      "observed": {
+        "raised": null,
+        "status": "not_detected",
+        "cache_state": "hit",
+        "reason": "receipt fresh and bound"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-P4": {
+      "expect": "normal forward now within ttl => hit (regression)",
+      "observed": {
+        "raised": null,
+        "status": "not_detected",
+        "cache_state": "hit",
+        "reason": "receipt fresh and bound"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-P5": {
+      "expect": "policy_hash change => ignored/not_reviewed (OPEN-4 4c regression)",
+      "observed": {
+        "raised": null,
+        "status": "not_reviewed",
+        "cache_state": "ignored",
+        "reason": "policy ruleset changed since review"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-G1": {
+      "expect": "evaluate_readiness passthrough inherits cap: raise with exact cap message",
+      "observed": {
+        "raised": "PromptInjectionGuardError",
+        "message": "ttl_seconds exceeds policy cap of 2592000s"
+      },
+      "ok": true,
+      "gating": true
+    },
+    "TTL-G2": {
+      "expect": "evaluate_readiness with ttl==cap returns ReadinessDecision, safety_cache_state=hit (regression)",
+      "observed": {
+        "raised": null,
+        "type": "ReadinessDecision",
+        "safety_cache_state": "hit",
+        "ready": true
+      },
+      "ok": true,
+      "gating": true
+    }
+  },
+  "failed": [],
+  "gating_failed": [],
+  "gating_total": 16,
+  "gating_passed": 16
+}

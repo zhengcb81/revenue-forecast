@@ -1,0 +1,52 @@
+{
+  "case": "I",
+  "title": "same-key multi-writer: defined rejection, zero silent loss (P6-A)",
+  "iso": "original",
+  "ruling_clause": "FIX-W06-GAPS oracle P6-A; probe06 lost-writes; OPEN-6 §7.4 F; OPEN-4 §4.1 counterexample (i)",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "name": "I1_hook_interleave_and_outcomes",
+      "ok": true,
+      "detail": "hook_fired=True outcomes=[{\"writer\": \"A\", \"outcome\": \"ack\", \"evidence\": \"6b9062210f4561e5a446cdef3a29719281620a3ff41681717893b0a873a47081\"}, {\"writer\": \"B\", \"outcome\": \"ack\", \"evidence\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\"}] third=[] (every attempt must be an ack or a defined 'concurrent write conflict' rejection — never a bare/other escape)"
+    },
+    {
+      "name": "I2_no_silent_loss_every_ack_provable",
+      "ok": false,
+      "detail": "acks=2 unprovable=['58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994'] primary={\"schema_version\": \"1.0\", \"status\": \"not_detected\", \"reviewer\": \"writer-A\", \"reviewed_at\": \"2026-09-22T00:00:00Z\", \"evidence_sha256\": \"6b9062210f4561e5a446cdef3a29719281620a3ff41681717893b0a873a47081\", \"source_sha256\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\", \"policy_hash\": \"19ace502ee7c13027f43ee82d33944fec84c1296976bc86ce6c8d5869abb962b\"} audit=null — an acked write that neither the primary receipt nor the audit trail can prove was silently displaced (probe06 lost_write_count=7 shape)"
+    },
+    {
+      "name": "I3_count_conservation",
+      "ok": true,
+      "detail": "acks=2 rejections=0 attempts=2 (conservation: acks+rejections == attempts, zero third outcomes)"
+    }
+  ],
+  "raw": {
+    "I_hook_fired": true,
+    "I_writer_B_outcome": {
+      "writer": "B",
+      "outcome": "ack",
+      "evidence": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994"
+    },
+    "I_attempts": [
+      {
+        "writer": "A",
+        "outcome": "ack",
+        "evidence": "6b9062210f4561e5a446cdef3a29719281620a3ff41681717893b0a873a47081"
+      }
+    ],
+    "I_final_primary": {
+      "schema_version": "1.0",
+      "status": "not_detected",
+      "reviewer": "writer-A",
+      "reviewed_at": "2026-09-22T00:00:00Z",
+      "evidence_sha256": "6b9062210f4561e5a446cdef3a29719281620a3ff41681717893b0a873a47081",
+      "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+      "policy_hash": "19ace502ee7c13027f43ee82d33944fec84c1296976bc86ce6c8d5869abb962b"
+    },
+    "I_final_audit": null
+  },
+  "error": null,
+  "seconds": 0.076,
+  "finished_at": "2026-09-22T23:06:29"
+}

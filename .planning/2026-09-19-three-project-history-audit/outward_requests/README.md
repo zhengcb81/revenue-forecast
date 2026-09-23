@@ -44,3 +44,6 @@
 | `execution_runs/I-05-C/a20260919-01/handoff.json` | 7087 | 见该卡 `input_hashes` |
 
 > 本目录文件为**新增**，未修改任何既有载体、未修改任何产品源码。
+> **2026-09-22 更新 pass**：三封函已按 `OWNER_DECISIONS.md` §十八「C:更新函件」各在底部追加一节「更新（2026-09-22，追加式更新段）」（原文字节保留，前缀证明入 `_provenance.json` 的 `updates_2026_09_22`）；本行为本次 pass 对 README 的唯一追加；三函的送达仍归 owner，本目录未产生任何「已发送」状态。
+
+- 2026-09-22：owner 裁定「全部签发」—三函内容定稿并授权发送（发布状态见 `_provenance.json.issuance_2026_09_22`）；实际递送由 owner 使用自身渠道完成。

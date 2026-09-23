@@ -1,0 +1,12 @@
+{
+  "kind": "nan",
+  "flipped_guard": "effective_receipt_ttl: non-finite (isfinite) gate",
+  "file": "cw/src/company_wiki/source_catalog/prompt_injection_guard.py",
+  "before": "    if not math.isfinite(ttl_seconds):\n        raise PromptInjectionGuardError(\"ttl_seconds must be a finite number\")\n",
+  "after": "    # MUTATION: the non-finite gate is removed\n",
+  "expected_red": [
+    "W06A2-N8b"
+  ],
+  "expected_still_green": "all other cases",
+  "write_mode": "byte-exact (read_bytes/write_bytes; no newline translation)"
+}

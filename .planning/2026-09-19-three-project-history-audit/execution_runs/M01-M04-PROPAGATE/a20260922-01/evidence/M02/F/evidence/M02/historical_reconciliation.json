@@ -1,0 +1,47 @@
+{
+ "card_id": "M02",
+ "model_id": "direct_revenue",
+ "attempt_id": "a20260919-01",
+ "scope": "minimum closed-period reconciliation requested by the task brief; NOT the full I-10-A historical reconciliation",
+ "entity": "紫金矿业集团股份有限公司",
+ "segment": "consolidated_group_total_operating_revenue",
+ "currency": "CNY",
+ "scale": "1 (yuan)",
+ "unit_dimension_check": {
+  "input_dimension": "revenue (amount)",
+  "output_dimension": "revenue (amount)",
+  "per_share": "not_applicable - this is a total, never a per-share figure",
+  "gross_net": "consolidated gross operating revenue, already net of intra-group sales by consolidation",
+  "period_alignment": "one driver value per fiscal year, aligned by position with the years array",
+  "conclusion": "the model performs an identity copy, so no dimension can change between input and output"
+ },
+ "reconciliation": {
+  "period": "FY2025",
+  "input_revenue_cny": "349,079,082,852",
+  "rebuild_cny": "349,079,082,852",
+  "disclosed_cny": "349,079,082,852",
+  "residual_cny": "0",
+  "is_constructive_identity": true,
+  "why_it_carries_no_information": "For direct_revenue the driver IS the disclosed output, so the residual is identically zero by construction. It proves only that the copy step is exact. It cannot validate the source, the period, the gross/net basis, the consolidation scope, or the usefulness of the number as a forecast.",
+  "what_an_informative_reconciliation_would_require": [
+   "an independently sourced revenue estimate for the same segment and period, built without using this disclosed figure",
+   "a disclosed driver decomposition (volume, price, FX, scope) whose sum is compared against the disclosed line",
+   "an explicit treatment of the residual, with each component attributed to a disclosed fact rather than an assumption"
+  ],
+  "reviewer": "PENDING_INDEPENDENT_REVIEW"
+ },
+ "cross_checks_performed": {
+  "restatement_check": {
+   "fy2024_per_FY2024_report": "303,639,957,153",
+   "fy2024_per_FY2025_report_comparative": "303,639,957,153",
+   "result": "identical, so the group revenue line is not restatement-contaminated between these two documents"
+  },
+  "float_exactness": {
+   "value": 349079082852,
+   "below_2_pow_53": true,
+   "note": "IEEE754 double represents 349,079,082,852 exactly, so using float inputs introduces no rounding"
+  },
+  "period_continuity": "FY2023 -> FY2024 -> FY2025 are consecutive fiscal years in the same reports; the model does NOT check continuity because it has no bridge"
+ },
+ "not_a_forecast": "every value above is a closed, already-disclosed fact; this is a historical mapping probe and must never be described as a three-scenario forecast or as accuracy evidence"
+}

@@ -1,0 +1,75 @@
+{
+  "v1_cap_check_removed": {
+    "mutant_guard_sha256": "d25d7e91899fc78df3ab0d073d1f598245699a688ca50c2ffe8f0a545392ee0a",
+    "expect_red": [
+      "TTL-G1",
+      "TTL-N1",
+      "TTL-N2",
+      "TTL-N3"
+    ],
+    "observed_red": [
+      "TTL-G1",
+      "TTL-N1",
+      "TTL-N2",
+      "TTL-N3"
+    ],
+    "ok": true,
+    "why": "over-cap REJECT removed alone — N8/N9 stay green because the isfinite gate behind it still rejects NaN/inf (defense in depth)",
+    "evidence": "evidence/raw/battery_v_probe_v1_cap_check_removed.json"
+  },
+  "v1b_cap_and_isfinite_block_removed": {
+    "mutant_guard_sha256": "409d5b8623b8b93f43fca64903af9d790c9c326a749226d098790385d880b06c",
+    "expect_red": [
+      "TTL-G1",
+      "TTL-N1",
+      "TTL-N2",
+      "TTL-N3",
+      "TTL-N8",
+      "TTL-N9"
+    ],
+    "observed_red": [
+      "TTL-G1",
+      "TTL-N1",
+      "TTL-N2",
+      "TTL-N3",
+      "TTL-N8",
+      "TTL-N9"
+    ],
+    "ok": true,
+    "why": "TTL's MUT-1 exact mutant: the whole cap+isfinite validation block removed (frozen set from TTL commands.json C9)",
+    "evidence": "evidence/raw/battery_v_probe_v1b_cap_and_isfinite_block_removed.json"
+  },
+  "v2_pastnow_clock_anomaly_removed": {
+    "mutant_guard_sha256": "13203346800f091c4761b180670126b6227c508ef833e84b8a060fc102dba12e",
+    "expect_red": [
+      "TTL-N5",
+      "TTL-N6"
+    ],
+    "observed_red": [
+      "TTL-N5",
+      "TTL-N6"
+    ],
+    "ok": true,
+    "why": "_freshness clock-anomaly branch removed (TTL MUT-2 frozen set)",
+    "evidence": "evidence/raw/battery_v_probe_v2_pastnow_clock_anomaly_removed.json"
+  },
+  "v3_isfinite_removed": {
+    "mutant_guard_sha256": "bf2ab63259047c9dfcfe2c18fd8608d79839544162397bc0cb202dacc4bdccdf",
+    "expect_red": [
+      "TTL-N8"
+    ],
+    "observed_red": [
+      "TTL-N8"
+    ],
+    "ok": true,
+    "why": "isfinite gate removed — TTL-N8 (NaN) is the explicit NaN case; inf stays caught by the cap check (TTL-N9 green)",
+    "evidence": "evidence/raw/battery_v_probe_v3_isfinite_removed.json"
+  },
+  "_restored": {
+    "mirror_guard_sha256": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+    "merged_guard_sha256": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+    "restored_byte_identical": true,
+    "confirm_green_gating_failed": [],
+    "confirm_green_gating_passed": 16
+  }
+}

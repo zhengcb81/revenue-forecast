@@ -1,0 +1,36 @@
+{
+  "case": "C",
+  "title": "N-1 migration adds columns (P1)",
+  "iso": "original",
+  "ruling_clause": "FIX-W06-GAPS oracle P1-c/P1-d; probe01; OPEN-5 C4",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "name": "C1_migration_adds_6_columns",
+      "ok": false,
+      "detail": "missing=['request_sha256', 'request_json', 'candidate_marker', 'attempts', 'lease_owner', 'lease_until'] columns=['created_at', 'demand_id', 'demand_key', 'gaps_json', 'kind', 'review_policy', 'role_set', 'source_id', 'source_sha256', 'status', 'updated_at'] (probe01 P1-b2: new_columns_added=[] is the RED shape)"
+    },
+    {
+      "name": "C2_old_rows_preserved",
+      "ok": false,
+      "detail": "rows=[{'demand_id': 'demand-n1-1', 'demand_key': 'k1', 'kind': 'review', 'status': 'pending', 'source_id': 's1', 'source_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'review_policy': 'p1', 'role_set': 'normalized,sections', 'gaps_json': '[]', 'created_at': 1.0, 'updated_at': 1.0}, {'demand_id': 'demand-n1-2', 'demand_key': 'k2', 'kind': 'review', 'status': 'pending', 'source_id': 's2', 'source_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'review_policy': 'p1', 'role_set': 'normalized,sections', 'gaps_json': '[]', 'created_at': 2.0, 'updated_at': 2.0}]"
+    },
+    {
+      "name": "C3_second_initialize_idempotent",
+      "ok": true,
+      "detail": "cols_equal=True exception=None"
+    },
+    {
+      "name": "C4_upgraded_db_usable",
+      "ok": false,
+      "detail": "register: DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256; claim: OperationalError: no such column: lease_until"
+    }
+  ],
+  "raw": {
+    "C_register_exception": "DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256",
+    "C_claim_exception": "OperationalError: no such column: lease_until"
+  },
+  "error": null,
+  "seconds": 0.117,
+  "finished_at": "2026-09-22T23:06:28"
+}

@@ -1,0 +1,165 @@
+{
+  "attempt_id": "a20260922-02",
+  "note": "Commands executed in order (pwsh, workdir=C:\\Users\\郑曾波\\Projects\\revenue-forecast). Round-1 = initial delivery (15 cases); round-2 = review remediation (F1/F6 fixes + 2 new gate cases, 17 cases) after reviewer_report.md verdict changes_required. Interim iterations are recorded honestly. FINAL evidence: evidence/{red_before,red_prefix_iso,green_iso,mutation_iso_mutant,mutation_iso_mutant_nan,mutation_iso_mutant_identity}.json; round-1 raw bytes preserved under evidence/round1/.",
+  "commands": [
+    {
+      "id": "CMD-W06A2-01",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\before --out evidence\\red_before.json",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "RED: 0 passed / 15 failed (pristine production copies fail every frozen case)"
+    },
+    {
+      "id": "CMD-W06A2-02",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso --out evidence\\green_iso.json (iteration 1)",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "3/15; exposed a binding-count bug in the candidate INSERT (18 placeholders vs 17 params) - fixed in iso"
+    },
+    {
+      "id": "CMD-W06A2-03",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso --out evidence\\green_iso.json (iteration 2)",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "11/15; exposed two harness defects (child --target propagation; N9 archival FK order) - fixed in scripts/w06a2_cases.py"
+    },
+    {
+      "id": "CMD-W06A2-04",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso --out evidence\\green_iso.json (FINAL)",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "GREEN: 15 passed / 0 failed"
+    },
+    {
+      "id": "CMD-W06A2-05",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_make_mutant.py",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "iso-mutant created; exactly one guard flipped (compute_demand_key request_identity clause)"
+    },
+    {
+      "id": "CMD-W06A2-06",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso-mutant --out evidence\\mutation_iso_mutant.json",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "MUTATION: 12 passed / 3 failed - W06A2-N1 red (predicted), W06A2-P4/N5 red (collateral via the same guard)"
+    },
+    {
+      "id": "CMD-W06A2-07",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\before --out evidence\\red_before.json (FINAL re-run)",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "RED re-confirmed with the final instrument: 0 passed / 15 failed"
+    },
+    {
+      "id": "CMD-W06A2-08",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_evidence.py",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "evidence/{demand.cross-process,request-to-demand-binding,paused-before-after,prod-unchanged}.json collected (all internal assertions green)"
+    },
+    {
+      "id": "CMD-W06A2-09",
+      "round": 1,
+      "cmd": "python scripts\\w06a2_make_diff.py",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "changes.diff written (1056 lines unified; before/cw -> iso/cw)"
+    },
+    {
+      "id": "CMD-W06A2-R2-01",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\before --out evidence\\red_before.json (round-2 instrument, 17 cases)",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "RED: 0 passed / 17 failed (pristine copies; new gate cases fail with the same API-absent errors)"
+    },
+    {
+      "id": "CMD-W06A2-R2-02",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso --out evidence\\red_prefix_iso.json (PRE-FIX iso, before applying the F1/F6 fixes)",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "15 passed / 2 failed - incremental behavioral RED: W06A2-N8b (NaN ttl revived an already-expired receipt, cache_state='hit') + W06A2-N11 (partial identity accepted)"
+    },
+    {
+      "id": "CMD-W06A2-R2-03",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso --out evidence\\green_iso.json (POST-FIX iso, FINAL)",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "GREEN: 17 passed / 0 failed"
+    },
+    {
+      "id": "CMD-W06A2-R2-04",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_make_mutant.py (three arms: key / nan / identity)",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "iso-mutant, iso-mutant-nan, iso-mutant-identity created; one guard flipped each; byte-exact writes (no newline translation)"
+    },
+    {
+      "id": "CMD-W06A2-R2-05",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso-mutant --out evidence\\mutation_iso_mutant.json",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "MUTATION key arm: 14 passed / 3 failed - W06A2-N1 red (target) + W06A2-P4/N5 red (same-guard collateral)"
+    },
+    {
+      "id": "CMD-W06A2-R2-06",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso-mutant-nan --out evidence\\mutation_iso_mutant_nan.json",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "MUTATION nan arm: 16 passed / 1 failed - W06A2-N8b red (target; NaN revival reproduced verbatim)"
+    },
+    {
+      "id": "CMD-W06A2-R2-07",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_cases.py --target <attempt>\\iso-mutant-identity --out evidence\\mutation_iso_mutant_identity.json",
+      "raw_exit_code": 1,
+      "expected_exit_code": 1,
+      "result": "MUTATION identity arm: 16 passed / 1 failed - W06A2-N11 red (target; partial identity accepted again)"
+    },
+    {
+      "id": "CMD-W06A2-R2-08",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_evidence.py",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "collector JSONs refreshed against the delivered iso; demand.cross-process.json now carries per-child pid/argv self-evidence + seven_distinct_child_pids assertion (review finding 3 closed)"
+    },
+    {
+      "id": "CMD-W06A2-R2-09",
+      "round": 2,
+      "cmd": "python scripts\\w06a2_make_diff.py",
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "result": "changes.diff regenerated (1088 lines unified; scope = processing_demand.py + prompt_injection_guard.py + store.py)"
+    }
+  ],
+  "cross_process_invocations": "round 1: 7 real python child processes + 4 in-suite children; round 2: 7 real children each self-reporting pid/argv (demand.cross-process.json children[]) + in-suite children of P1/P2/N1",
+  "raw_exit_codes": {
+    "CMD-W06A2-01": 1, "CMD-W06A2-02": 1, "CMD-W06A2-03": 1, "CMD-W06A2-04": 0,
+    "CMD-W06A2-05": 0, "CMD-W06A2-06": 1, "CMD-W06A2-07": 1, "CMD-W06A2-08": 0,
+    "CMD-W06A2-09": 0, "CMD-W06A2-R2-01": 1, "CMD-W06A2-R2-02": 1, "CMD-W06A2-R2-03": 0,
+    "CMD-W06A2-R2-04": 0, "CMD-W06A2-R2-05": 1, "CMD-W06A2-R2-06": 1, "CMD-W06A2-R2-07": 1,
+    "CMD-W06A2-R2-08": 0, "CMD-W06A2-R2-09": 0
+  },
+  "expected_exit_codes": {
+    "CMD-W06A2-01": 1, "CMD-W06A2-02": 1, "CMD-W06A2-03": 1, "CMD-W06A2-04": 0,
+    "CMD-W06A2-05": 0, "CMD-W06A2-06": 1, "CMD-W06A2-07": 1, "CMD-W06A2-08": 0,
+    "CMD-W06A2-09": 0, "CMD-W06A2-R2-01": 1, "CMD-W06A2-R2-02": 1, "CMD-W06A2-R2-03": 0,
+    "CMD-W06A2-R2-04": 0, "CMD-W06A2-R2-05": 1, "CMD-W06A2-R2-06": 1, "CMD-W06A2-R2-07": 1,
+    "CMD-W06A2-R2-08": 0, "CMD-W06A2-R2-09": 0
+  }
+}

@@ -1,0 +1,1819 @@
+﻿...F.F..FFF.. [ 22%]
+.F............................................                            [100%]
+================================== FAILURES ===================================
+_ EconomicGuardrailTests.test_bank_negative_rates_preserve_sign_without_probability_clamp _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_bank_negative_rates_preserve_sign_without_probability_clamp>
+
+    def test_bank_negative_rates_preserve_sign_without_probability_clamp(self) -> None:
+        drivers = {
+            "average_earning_assets": [1000], "asset_yield": [-0.005],
+            "average_interest_bearing_liabilities": [800], "funding_cost": [-0.01],
+            "fee_revenue": [2],
+        }
+>       self.assertEqual(calculate_registered_model("bank_revenue", 0, drivers, [2026]), [5])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'bank_revenue', base_revenue = 0
+drivers = {'average_earning_assets': [1000], 'asset_yield': [-0.005], 'average_interest_bearing_liabilities': [800], 'funding_cost': [-0.01], ...}
+years = [2026]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for bank_revenue: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_____ EconomicGuardrailTests.test_churn_timing_is_revenue_lost_after_exit _____
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_churn_timing_is_revenue_lost_after_exit>
+
+    def test_churn_timing_is_revenue_lost_after_exit(self) -> None:
+        drivers = {
+            "opening_customers": [100], "new_customers": [0], "churned_customers": [20],
+            "ending_customers": [80], "revenue_per_customer": [12],
+            "churned_customer_lost_fraction": [1],
+        }
+>       self.assertEqual(calculate_registered_model("cohort_subscription", 0, drivers, [2026]), [960])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'cohort_subscription', base_revenue = 0
+drivers = {'opening_customers': [100], 'new_customers': [0], 'churned_customers': [20], 'ending_customers': [80], ...}
+years = [2026]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for cohort_subscription: usage_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_inconsistent_customer_timing_cannot_create_negative_exposure _
+model_registry.ModelRegistryError: missing driver for cohort_subscription: usage_revenue has no explicit default
+
+During handling of the above exception, another exception occurred:
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_inconsistent_customer_timing_cannot_create_negative_exposure>
+
+    def test_inconsistent_customer_timing_cannot_create_negative_exposure(self) -> None:
+        drivers = {
+            "opening_customers": [0], "new_customers": [10], "churned_customers": [10],
+            "ending_customers": [0], "revenue_per_customer": [1],
+            "new_customer_revenue_fraction": [0], "churned_customer_lost_fraction": [1],
+        }
+>       with self.assertRaisesRegex(ModelRegistryError, "time exposure"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: "time exposure" does not match "missing driver for cohort_subscription: usage_revenue has no explicit default"
+
+tests\test_model_economic_guardrails.py:113: AssertionError
+_ EconomicGuardrailTests.test_large_backlog_preserves_small_revenue_increment _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_large_backlog_preserves_small_revenue_increment>
+
+    def test_large_backlog_preserves_small_revenue_increment(self) -> None:
+        drivers = {
+            "opening_backlog": [1e16], "bookings": [1], "cancellations": [0],
+            "contract_changes": [0], "closing_backlog": [1e16],
+        }
+>       self.assertEqual(calculate_registered_model("project_backlog", 0, drivers, [2026]), [1])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'project_backlog', base_revenue = 0
+drivers = {'opening_backlog': [1e+16], 'bookings': [1], 'cancellations': [0], 'contract_changes': [0], ...}
+years = [2026]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for project_backlog: backlog_remeasurements has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_late_customer_additions_do_not_earn_half_year_automatically _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_late_customer_additions_do_not_earn_half_year_automatically>
+
+    def test_late_customer_additions_do_not_earn_half_year_automatically(self) -> None:
+        drivers = {
+            "opening_customers": [100], "new_customers": [100], "churned_customers": [0],
+            "ending_customers": [200], "revenue_per_customer": [12],
+            "new_customer_revenue_fraction": [1 / 12],
+        }
+>       self.assertAlmostEqual(calculate_registered_model("cohort_subscription", 0, drivers, [2026])[0], 1300)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'cohort_subscription', base_revenue = 0
+drivers = {'opening_customers': [100], 'new_customers': [100], 'churned_customers': [0], 'ending_customers': [200], ...}
+years = [2026]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for cohort_subscription: usage_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_overflow_and_negative_net_revenue_fail_closed (drivers={'units': [1e+308], 'unit_revenue': [1e+308]}) _
+model_registry.ModelRegistryError: missing driver for unit_sales: other_revenue has no explicit default
+
+During handling of the above exception, another exception occurred:
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_overflow_and_negative_net_revenue_fail_closed>
+
+    def test_overflow_and_negative_net_revenue_fail_closed(self) -> None:
+        for drivers, message in (
+            ({"units": [1e308], "unit_revenue": [1e308]}, "finite"),
+            ({"units": [1], "unit_revenue": [1], "other_revenue": [-2]}, "negative"),
+        ):
+            with self.subTest(drivers=drivers):
+>               with self.assertRaisesRegex(ModelRegistryError, message):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: "finite" does not match "missing driver for unit_sales: other_revenue has no explicit default"
+
+tests\test_model_economic_guardrails.py:68: AssertionError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='subscription_arr_bridge') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'subscription_arr_bridge', base_revenue = 100.0
+drivers = {'opening_arr': [100, 125], 'gross_retention_rate': [0.9, 0.9], 'expansion_arr': [15, 20], 'new_arr': [20, 30], ...}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for subscription_arr_bridge: usage_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='renewable_generation') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'renewable_generation', base_revenue = 100.0
+drivers = {'average_commissioned_mw': [10, 12], 'period_hours': [8760, 8760], 'pre_curtailment_capacity_factor': [0.25, 0.25], 'curtailment_rate': [0.1, 0.1], ...}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for renewable_generation: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='aum_fee_bridge') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'aum_fee_bridge', base_revenue = 100.0
+drivers = {'opening_aum': [1000, 1050], 'inflows': [100, 120], 'outflows': [50, 70], 'market_change': [0, -100], ...}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for aum_fee_bridge: recognized_performance_fees has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='unit_sales') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'unit_sales', base_revenue = 100.0
+drivers = {'units': [10, 12], 'unit_revenue': [5, 5]}, years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for unit_sales: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='capacity_utilization') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'capacity_utilization', base_revenue = 100.0
+drivers = {'capacity': [100, 120], 'utilization': [0.8, 0.75], 'yield': [0.9, 0.9], 'unit_revenue': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for capacity_utilization: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='subscription') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'subscription', base_revenue = 100.0
+drivers = {'average_customers': [100, 110], 'revenue_per_customer': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for subscription: usage_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='usage_platform') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'usage_platform', base_revenue = 100.0
+drivers = {'eligible_activity': [1000, 1200], 'monetization_rate': [0.02, 0.02]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for usage_platform: fixed_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='services') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'services', base_revenue = 100.0
+drivers = {'billable_capacity': [100, 120], 'utilization': [0.8, 0.75], 'billing_rate': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for services: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='project_backlog') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'project_backlog', base_revenue = 100.0
+drivers = {'opening_backlog': [100, 120], 'bookings': [80, 90], 'cancellations': [5, 5], 'contract_changes': [0, 0], ...}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for project_backlog: backlog_remeasurements has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='resource') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'resource', base_revenue = 100.0
+drivers = {'saleable_volume': [10, 11], 'realized_price': [5, 5]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for resource: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='infrastructure') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'infrastructure', base_revenue = 100.0
+drivers = {'billable_volume': [100, 105], 'tariff': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for infrastructure: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='bank_revenue') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'bank_revenue', base_revenue = 100.0
+drivers = {'average_earning_assets': [1000, 1100], 'asset_yield': [0.05, 0.05], 'average_interest_bearing_liabilities': [800, 850], 'funding_cost': [0.02, 0.02], ...}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for bank_revenue: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='asset_management') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'asset_management', base_revenue = 100.0
+drivers = {'average_aum': [1000, 1100], 'management_fee_rate': [0.01, 0.01]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for asset_management: performance_fee_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='retail_franchise') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'retail_franchise', base_revenue = 100.0
+drivers = {'average_owned_stores': [10, 12], 'revenue_per_owned_store': [5, 5]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for retail_franchise: franchise_system_sales has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='transport') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'transport', base_revenue = 100.0
+drivers = {'capacity': [100, 120], 'utilization': [0.8, 0.75], 'yield': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for transport: ancillary_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='real_estate_rental') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'real_estate_rental', base_revenue = 100.0
+drivers = {'average_occupied_area': [100, 110], 'rent_per_area': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for real_estate_rental: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='licensing_commercial') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'licensing_commercial', base_revenue = 100.0
+drivers = {'treated_units': [10, 12], 'net_revenue_per_unit': [5, 5]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for licensing_commercial: milestone_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='advertising') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'advertising', base_revenue = 100.0
+drivers = {'eligible_impressions': [100000, 120000], 'fill_rate': [0.8, 0.75], 'revenue_per_thousand_impressions': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for advertising: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='gaming') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'gaming', base_revenue = 100.0
+drivers = {'active_users': [1000, 1200], 'payer_conversion': [0.1, 0.1], 'revenue_per_payer': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for gaming: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='cohort_subscription') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'cohort_subscription', base_revenue = 100.0
+drivers = {'opening_customers': [100, 110], 'new_customers': [20, 20], 'churned_customers': [10, 15], 'ending_customers': [110, 115], ...}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for cohort_subscription: usage_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='delivery_pipeline') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'delivery_pipeline', base_revenue = 100.0
+drivers = {'opening_orders': [100, 120], 'new_orders': [50, 60], 'cancellations': [5, 5], 'deliveries': [25, 35], ...}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for delivery_pipeline: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='milestone_royalty') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'milestone_royalty', base_revenue = 100.0
+drivers = {'eligible_sales': [100, 120], 'royalty_rate': [0.1, 0.1]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for milestone_royalty: milestone_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='insurance_service') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'insurance_service', base_revenue = 100.0
+drivers = {'coverage_units': [100, 110], 'revenue_per_coverage_unit': [2, 2]}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for insurance_service: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+_ EconomicGuardrailTests.test_public_calculator_preserves_every_existing_case_without_mutation (model='reserve_depletion') _
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_public_calculator_preserves_every_existing_case_without_mutation>
+
+    def test_public_calculator_preserves_every_existing_case_without_mutation(self) -> None:
+        for model, (drivers, expected) in CASES.items():
+            with self.subTest(model=model):
+                before = copy.deepcopy(drivers)
+>               actual = calculate_registered_model(model, 100.0, drivers, YEARS)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'reserve_depletion', base_revenue = 100.0
+drivers = {'opening_reserves': [1000, 1020], 'additions': [100, 110], 'depletion': [80, 90], 'closing_reserves': [1020, 1040], ...}
+years = [2026, 2027]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for reserve_depletion: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+___ EconomicGuardrailTests.test_reserve_downgrade_is_not_saleable_depletion ___
+
+self = <test_model_economic_guardrails.EconomicGuardrailTests testMethod=test_reserve_downgrade_is_not_saleable_depletion>
+
+    def test_reserve_downgrade_is_not_saleable_depletion(self) -> None:
+        drivers = {
+            "opening_reserves": [100], "additions": [0], "reserve_revisions": [-20],
+            "depletion": [10], "closing_reserves": [70], "recovery_rate": [0.8], "realized_price": [5],
+        }
+>       self.assertEqual(calculate_registered_model("reserve_depletion", 0, drivers, [2026]), [40])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_model_economic_guardrails.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_id = 'reserve_depletion', base_revenue = 0
+drivers = {'opening_reserves': [100], 'additions': [0], 'reserve_revisions': [-20], 'depletion': [10], ...}
+years = [2026]
+
+    def calculate_registered_model(
+        model_id: str,
+        base_revenue: float,
+        drivers: Mapping[str, list[float]],
+        years: Sequence[int],
+    ) -> list[float]:
+        try:
+            spec = MODEL_REGISTRY[model_id]
+        except KeyError as exc:
+            raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
+        base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+        if base < 0:
+            raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
+        if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+            raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
+        if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+            raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+        if not isinstance(drivers, Mapping):
+            raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
+        missing = set(spec.required) - set(drivers)
+        if missing:
+            raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+        extra = set(drivers) - set(spec.required) - set(spec.optional)
+        if extra:
+            raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
+        normalized: dict[str, list[float]] = {}
+        for driver in spec.required + spec.optional:
+            # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+            # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+            # That silently filled any optional driver lacking an explicit default
+            # with 0.0, encoding "absent" and "not found" as the SAME input.
+            # Now: an omitted driver is legal ONLY when spec.defaults carries an
+            # explicit value for it.  Note we deliberately do NOT substitute an
+            # explicit 0.0 — that would still fail to distinguish "not found".
+            if driver not in drivers:
+                if driver not in spec.defaults:
+>                   raise ModelRegistryError(
+                        f"missing driver for {model_id}: {driver} has no explicit default"
+                    )
+E                   model_registry.ModelRegistryError: missing driver for reserve_depletion: other_revenue has no explicit default
+
+scripts\model_registry.py:410: ModelRegistryError
+=========================== short test summary info ===========================
+FAILED tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_bank_negative_rates_preserve_sign_without_probability_clamp
+FAILED tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_churn_timing_is_revenue_lost_after_exit
+FAILED tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_inconsistent_customer_timing_cannot_create_negative_exposure
+FAILED tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_large_backlog_preserves_small_revenue_increment
+FAILED tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_late_customer_additions_do_not_earn_half_year_automatically
+SUBFAILED(drivers={'units': [1e+308], 'unit_revenue': [1e+308]}) tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_overflow_and_negative_net_revenue_fail_closed
+SUBFAILED(model='subscription_arr_bridge') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='renewable_generation') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='aum_fee_bridge') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='unit_sales') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='capacity_utilization') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='subscription') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='usage_platform') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='services') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='project_backlog') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='resource') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='infrastructure') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='bank_revenue') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='asset_management') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='retail_franchise') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='transport') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='real_estate_rental') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='licensing_commercial') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='advertising') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='gaming') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='cohort_subscription') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='delivery_pipeline') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='milestone_royalty') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='insurance_service') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+SUBFAILED(model='reserve_depletion') tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_public_calculator_preserves_every_existing_case_without_mutation
+FAILED tests/test_model_economic_guardrails.py::EconomicGuardrailTests::test_reserve_downgrade_is_not_saleable_depletion
+31 failed, 53 passed, 177 subtests passed in 19.91s

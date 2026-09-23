@@ -1,0 +1,143 @@
+{
+  "card_id": "MODEL-ORACLE-ALIGN",
+  "attempt_id": "a20260922-01",
+  "parent_agent": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "carrier": ".planning/2026-09-19-three-project-history-audit/execution_runs/MODEL-ORACLE-ALIGN/a20260922-01/reviewer_report.md",
+    "carrier_sha256": "399f4e60ff134c2e1cef5b45d665a948f333e27c9dcc8a3e0e512d3ef5f8d01c",
+    "carrier_bytes": 22499,
+    "sidecar": "reviewer_report.sha256 present and content-match (\"399f4e60ff134c2e1cef5b45d665a948f333e27c9dcc8a3e0e512d3ef5f8d01c  reviewer_report.md  bytes=22499\")",
+    "line_ranges": {
+      "total_lines": 124,
+      "verdict": "L10-L12 (L10 verbatim: '## VERDICT: accepted_scoped')",
+      "accept_scope": "L14-L20",
+      "findings_f1_f9": "L24-L97",
+      "observations_o1_o5": "L101-L107",
+      "unverified_list": "L109-L118",
+      "reviewer_boundary_compliance": "L120-L124"
+    },
+    "byte_proof": "reviewer_report.md live-measured 22499 B == expected; recomputed sha256 == 399f4e60ff134c2e1cef5b45d665a948f333e27c9dcc8a3e0e512d3ef5f8d01c == expected == sidecar content; verdict token 'accepted_scoped' read at L10 before any write",
+    "reviewer": "独立复核 (delegated independent reviewer subagent; read/grep/pwsh only, git read-only, one %TEMP% pytest re-run)",
+    "verdict_is_transcribed_not_authored": true,
+    "transcription_note": "bookkeeping transcription adds no acceptance of its own — this handoff re-states the carrier verdict; acceptance authority remains carrier + parent"
+  },
+  "bookkeeping": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "self_sign": false,
+    "signature": null,
+    "pre_image": {
+      "review.md": "ABSENT (created by this bookkeeping pass)",
+      "handoff.json": "5992 B, sha256 1625ad971a181190348d42470fbb173b259094acafa70637d13fc1540a25a671",
+      "evidence/MODEL-ORACLE-ALIGN/qualification.json": "ABSENT (created by this bookkeeping pass)"
+    },
+    "files_written": [
+      "review.md",
+      "handoff.json",
+      "evidence/MODEL-ORACLE-ALIGN/qualification.json"
+    ],
+    "writes_outside_these_three": "none; no git commands run by this landing pass",
+    "o1_resolution_note": "O1 RESOLVED by parent identification: the 20:31:43 byte-identical rewrite of exactly seven paths (both card targets + PROMOTION's 5 scripts company_wiki_source/revenue_core/revenue_publication/revenue_report/source_preparation) = the parent's own GATE-OQ commit 95df2661 (author 20:30:43) pre-commit hook stash->replay cycle; its stderr recorded '[INFO] Restored changes from ...patch1790105464-21160'; the hook stashes only UNSTAGED changes and that unstaged set was exactly those 7 files; replay restored original bytes (parent re-measured all seven 62f864b9 / 89a76809 / 7d1bd8f9 / 8a761498 / bc2bb4a3 / 212f0059 / 91a6dc32 = SEVEN_ALL_OK), bumping only mtimes (20:31:43 = replay completion). Content claims all hold; 08 mtime-ledger non-reproduction explained; actor identified, benign. Parent self-corrected its earlier verbal attribution to ec307d20 (author 20:44:25, inconsistent with 20:31:43)."
+  },
+  "signature": null,
+  "self_sign": false,
+  "attestation": {"da": "unmapped", "acc": "unproven"},
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "authority": "OWNER_DECISIONS.md §十八 verbatim 「B: 全批」(= §十七 B-1..B-7 全部批准, incl. B-6c) + PROMOTION-EXEC/a20260922-01 decision.md §B-6c follow-up (alignment decision delegated to this card) + I-10-B defect-1 (T1-22) 省缺即抛 as approved product semantics + E1E7-ERRATA-LANDING/a20260921-01 DEC-E1E7-4 forward-disclosure precedent",
+  "objective_result": "COMPLETE — test battery aligned caller-side to defect-1 semantics and row B-6c re-attempted GREEN; no STOP triggered",
+  "per_case_alignment_table": {
+    "total_failing_cases": 31,
+    "explicit_default": 31,
+    "assertion_rewrite": 0,
+    "assertion_rewrite_note": "Rule (c) not triggered: none of the 31 asserts the silent-fill itself — all assert guardrail math/business rules whose inputs merely relied on the retired registry-internal fill (before-image model_registry.py:335). Enumerated per-case in decision.md with RED line citations.",
+    "stop_cases": 0
+  },
+  "counts": {
+    "red_promoted_tree": "31 failed / 53 passed / 177 subtests, rc 1 — failure set 31/31 line-identical to PROMOTION-EXEC's recorded RED",
+    "green_promoted_tree": "0 failed / 59 passed / 202 subtests, rc 0",
+    "green_before_image_tree": "0 failed / 59 passed / 202 subtests, rc 0 (dual-tree proof: alignment removes hidden-default reliance only)",
+    "mutation": "omitting ONE aligned field (bank_revenue.other_revenue) => fails AGAIN at scripts/model_registry.py:410 (rc 1, exact defect-1 message) => restored => 59/202 rc 0 (fix is real, not vacuous)",
+    "production_battery": "59 passed / 202 subtests, rc 0 (also -v rerun identical)",
+    "i08c_13node_full_promotion": "13 passed, rc 0 (RF_IMPORT_ROOT=production)",
+    "i10b_own_focused_verify": "phase=after total=7 passed=7 failed=0, rc 0; produced verification_after.json sha256 b7a925f5b5a9e4af4cf77532999521427b79edbc6c51c7bd1aaf2a03c270da86 = byte-identical to I-10-B's own frozen GREEN artifact (their commands.json seq-14 pin)",
+    "py_compile": "both files rc 0 (PYCOMPILE_OK)"
+  },
+  "production_final_state": {
+    "tests/test_model_economic_guardrails.py": {
+      "sha256": "89a76809321e87d852ec8d5863650eed8ac1b47c52c8f1b38db4768f7d5ac82a",
+      "bytes": 10414,
+      "before_sha256": "665164528d7d37663ff37474ddae20bfcf3c16eceefde3e6f54473324251ab77",
+      "change_class": "TEST ALIGNMENT (caller-side explicit defaults; +40/-5 lines; no assertion weakened)"
+    },
+    "scripts/model_registry.py": {
+      "sha256": "62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081",
+      "bytes": 30116,
+      "before_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "change_class": "B-6c RE-PROMOTION (byte-exact copy of I-10-B iso source; not edited by this card)",
+      "mtime_note": "mtime shows 2026-09-20 19:22:26 because Copy-Item preserves source timestamps; content hash-verified"
+    }
+  },
+  "zero_touch_proof": {
+    "recent_production_writes": "exactly the 2 authorized files + one disclosed derived pyc (tests/__pycache__/test_model_economic_guardrails.cpython-313.pyc, git-ignored) — see decision.md boundary incident 1",
+    "protected_neighbors_unchanged": "8 pinned neighbors incl. forecast/segments.py, model_extensions.py, test_models.py, 4 other battery test files, tests/conftest.py, tools/pre_push_gate.py (3df161a7…)",
+    "root_pytest_cache": "mtime 2026-07-12 — untouched (all runs used -p no:cacheprovider)",
+    "git": "READ-ONLY status only; no add/commit/restore/stash",
+    "company_wiki": "not touched",
+    "i10b_attempt": "not written (verify harness mirrored into this attempt)",
+    "m_card_oracles": "M05/M14/M20/M24 oracle.md bytes untouched"
+  },
+  "consequences_recorded_not_acted": [
+    "B-6c now LANDED => E1E7's four defaults-phase forward-disclosures (M05/M14/M20/M24) transition from INACTIVE to ACTIVE — recorded per PROMOTION-EXEC's consequence note; no M-card file edited by this card",
+    "parent retains commit rights (§十八 mapping ③): this card made zero git writes"
+  ],
+  "deliverables": {
+    "oracle.md": "146ce313f7158da8ef1093961b1ebd1de5cfef0e4b0ffbe0d733c8fb4c2302da (12543 B, frozen FIRST)",
+    "binding.json": "30251469f392b19d43ab00393fbf32f64cc2592518b1a4d48033c0b13daa02f5 (7445 B)",
+    "commands.json": "fdb879bb43f1ba891680a1194ca41ac7de035edf5c305918260cea4a974c3af2 (9413 B)",
+    "decision.md": "f8576d5104ef5ee62d5589d834c81e32880f42b64d1e3ce16a8b0084ee8e0881 (16920 B, per-case 31-row table)",
+    "changes.diff": "05180b9d4001f08c24425856c3084342637a5d608f650c43202d33a898c2c7c9 (12519 B, SECTION 1 test-alignment / SECTION 2 registry-re-promotion)",
+    "recovery/README.md": "fadff2ae27f77cea0125a82b3760c8a359575b467d57ea9fdf87a00559eff4b0 (2499 B, exact 2-file revert)",
+    "reviewer_report.md": "399f4e60ff134c2e1cef5b45d665a948f333e27c9dcc8a3e0e512d3ef5f8d01c (22499 B, 独立复核 carrier, verdict accepted_scoped)",
+    "evidence/": "01 RED raw (111045 B), 02 GREEN promoted, 03 GREEN before-image, 04a mutation FAIL at :410, 04b mutation restored GREEN, 05 production battery, 05a py_compile, 05b verbose battery, 06 13-node, 07 I-10-B verify, 08 final integrity (full hash ledger incl. this file's inputs)"
+  },
+  "carried_findings": [
+    {
+      "id": "O1",
+      "title": "20:31:43 byte-identical rewrite of seven production paths",
+      "status": "resolved-by-parent-identification",
+      "carrier_text": "At 20:31:43 (after this card's handoff 20:30:13 and after the parent's GATE-OQ commit 20:30:43) seven production paths were re-written byte-identically: both card targets (62f864b9…, 89a76809… re-hashed OK) plus PROMOTION's 5 scripts (company_wiki_source, revenue_core, revenue_publication, revenue_report, source_preparation). Consequences: (a) zero-touch/final-state claims remain true on content; (b) the 08 ledger's recent-writes list no longer reproduces by mtime; (c) actor is not this card. Non-blocking observation.",
+      "resolution": "Parent identified the writer: the parent's own GATE-OQ commit 95df2661 (author 20:30:43) pre-commit hook stash->replay; stderr '[INFO] Restored changes from ...patch1790105464-21160'; hook stashes only unstaged changes and that set was exactly the 7 paths; byte-identical restore confirmed by parent re-hash of all seven (62f864b9 / 89a76809 / 7d1bd8f9 / 8a761498 / bc2bb4a3 / 212f0059 / 91a6dc32 = SEVEN_ALL_OK); only mtimes bumped (20:31:43 = replay completion). Actor identified, benign; content claims all hold; 08 mtime-ledger non-reproduction explained. Parent self-corrected its earlier ec307d20 attribution (author 20:44:25 ≠ 20:31:43). Closes carrier unverified item 3."
+    },
+    {
+      "id": "O2",
+      "title": "first-build disclosure location",
+      "status": "recorded-as-is (non-blocking placement note)",
+      "carrier_text": "The changes.diff first-build disclosure lives in commands.json + handoff.json, not in decision.md; all three required disclosures exist across the deliverable set, so this is a placement note only."
+    },
+    {
+      "id": "O3",
+      "title": "2/31 frame nuance",
+      "status": "recorded-as-is (non-blocking)",
+      "carrier_text": "2 of 31 RED failures (the two assertRaisesRegex message-mismatch cases) carry no explicit :410 frame line — they quote the :410 message verbatim instead; 'all failure line refs are model_registry.py:410' holds (no other registry line referenced), but '31/31 blocks show a :410 frame' would not — the card did not make that stronger claim."
+    }
+  ],
+  "open_for_reviewer_historical_pre_verdict": [
+    "independent review of the 31-row alignment table (this card does not self-sign)",
+    "parent commits revenue-forecast (2 changed files) after evidence review",
+    "full-suite gate remains at parent's batch-4 push (declared not-run)"
+  ],
+  "review_disposition": {
+    "verdict": "accepted_scoped",
+    "confirmed": "9 items confirmed (F1-F9), 0 blocking findings",
+    "observations_non_blocking": "O1 (now resolved), O2, O3, plus O4/O5 — none changes the verdict",
+    "unverified_carried": 8,
+    "review_md": "see review.md in this attempt (transcription of the carrier)"
+  },
+  "boundary_incidents_disclosed": [
+    "py_compile first attempt rc 1 (CLI misuse: 2nd positional arg read as source); only side effect = one git-ignored derived pyc refreshed from the current aligned source; superseded by explicit-cfile retry rc 0 — see decision.md",
+    "changes.diff first build (13181 B, absolute paths in banner) superseded by ASCII-banner rebuild (12519 B, final)"
+  ]
+}

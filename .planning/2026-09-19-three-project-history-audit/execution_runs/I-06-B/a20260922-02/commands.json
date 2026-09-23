@@ -1,0 +1,61 @@
+{
+  "attempt_id": "a20260922-02",
+  "commands": [
+    {
+      "id": "CMD-I06B2-COPY-ISO",
+      "purpose": "Isolate the surfaces under test into iso/ (copy-in only; sources read-only)",
+      "command": "Copy-Item <I-06-A iso/candidate | CW product | RF product | FIX-W06-GAPS iso> -> <attempt>/iso/{original,fixed}/**",
+      "exit_code": 0,
+      "notes": "w06a_apply_candidate.py initially copied from the wrong source path (iso/candidate); corrected to I-06-A scripts/ and re-copied into both isos — sha256 4bf02f26… recorded in binding.json"
+    },
+    {
+      "id": "CMD-I06B2-RED-ORIGINAL",
+      "purpose": "RED run: full 18-case suite against the ORIGINAL iso (defect baseline)",
+      "command": "python scripts/run_cases.py --iso original --out evidence/red",
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "counts": {"green": 8, "red": 10, "total": 18},
+      "notes": "Two harness self-defects preceded the final run: (1) attempt 1 died with UnicodeEncodeError printing a case title to the GBK console (after writing G.json); (2) attempt 2 completed all 18 cases but its I/J results were contaminated by a record_kwargs reviewer-kwarg TypeError, found by reading evidence/red/{I,J}.json. Both fixed (utf-8 console reconfigure + reviewer kwarg) BEFORE the final run; final evidence/red/** comes from the post-fix run3 only. RETENTION FACT (reviewer F-01): the run1/run2 evidence JSONs and their run_log segments were SAME-NAME OVERWRITTEN by run3 — an overwrite (no deletion command was issued), and the original bytes are NOT preserved in-attempt: unrecoverable, honestly ABSENT. Residual first-run evidence = %TEMP% scratch batches rescued into evidence/red_first_run_recovered/ (13+20 dirs, manifest.json sha256 e5736d7a…) + the labeled executor transcription transcription_first_run_observed.md + this note / decision.md §4 条5 / handoff honesty_notes[2] as the three textual self-descriptions. The overwrite itself is recorded as a process defect in decision.md §4 条5.",
+      "first_run_recovered_index": "evidence/red_first_run_recovered/index.md",
+      "__historical": {
+        "original_notes_sentence_before_F01_fix": "First attempt of this command died with UnicodeEncodeError printing a case title to the GBK console (after writing G.json); stdout/stderr reconfigure(utf-8, errors=replace) added; a reviewer-kwarg harness bug found via evidence/red/{I,J}.json was fixed BEFORE the final run; the final evidence/red/** supersedes both partial attempts (strictly incremental: no evidence deleted, run_log.txt rewritten once before the final run)",
+        "why_replaced": "reviewer F-01: 'no evidence deleted' and 'run_log.txt rewritten' contradicted each other in one sentence and overstated retention (the run1/run2 artifacts were overwritten, not preserved); original wording kept verbatim here per the remediation discipline"
+      }
+    },
+    {
+      "id": "CMD-I06B2-GREEN-SNAP1",
+      "purpose": "GREEN run vs fixed iso snap1 (0b6e723e, pre-P7)",
+      "command": "python scripts/run_cases.py --iso fixed --out evidence/green",
+      "exit_code": 0,
+      "counts": {"green": 15, "red": 3, "total": 18},
+      "notes": "preserved as evidence/green_snap1_0b6e723e/ after the fix card's APPEND-A P7 key revision superseded its scope boundary"
+    },
+    {
+      "id": "CMD-I06B2-REFRESH-SNAP2",
+      "purpose": "Refresh fixed iso from the fix card's current state (post-APPEND-A P7)",
+      "command": "Copy-Item <FIX-W06-GAPS iso> -> <attempt>/iso/fixed/** (then oracle.md APPEND-1 written BEFORE the snap2 run)",
+      "exit_code": 0,
+      "notes": "snap2 store sha cd071322…, pi sha 88154de4… — full list in binding.json iso_snapshots.fixed_snap2"
+    },
+    {
+      "id": "CMD-I06B2-GREEN-SNAP2",
+      "purpose": "GREEN run vs fixed iso snap2 (final green evidence)",
+      "command": "python scripts/run_cases.py --iso fixed --out evidence/green",
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "expected_exit_code": 0,
+      "counts": {"green": 16, "red": 2, "total": 18}
+    },
+    {
+      "id": "CMD-I06B2-DIFF",
+      "purpose": "Generate changes.diff for the harness+cases only (new-file unified diff)",
+      "command": "python -X utf8 -c 'difflib.unified_diff([], text) for scripts/run_cases.py, scripts/_worker_claim.py, oracle.md -> changes.diff'",
+      "exit_code": 0
+    }
+  ],
+  "git_commands": [],
+  "network_commands": [],
+  "product_tree_writes": [],
+  "historical_attempt_writes": []
+}

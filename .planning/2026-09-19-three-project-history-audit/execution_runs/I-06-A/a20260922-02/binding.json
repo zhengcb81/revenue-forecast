@@ -1,0 +1,65 @@
+{
+  "card_id": "I-06-A",
+  "parent": "I-06",
+  "attempt_id": "a20260922-02",
+  "plan_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+  "attempt_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02",
+  "execution_cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "attempt_type": "new attempt (09-19 attempt a20260919-01 = historical blocked carrier, READ-ONLY)",
+  "implementation_surface_frozen_by_parent_step1": [
+    "CW:src/company_wiki/source_catalog/store.py",
+    "CW:src/company_wiki/source_catalog/processing_demand.py",
+    "CW:src/company_wiki/source_catalog/prompt_injection.py (copied as-needed; UNCHANGED)",
+    "CW:src/company_wiki/source_catalog/prompt_injection_guard.py"
+  ],
+  "read_only_sources": {
+    "company_wiki_repo": "C:\\Users\\郑曾波\\Projects\\company-wiki (READ-ONLY, zero writes)",
+    "revenue_forecast_repo": "C:\\Users\\郑曾波\\Projects\\revenue-forecast (product tree READ-ONLY; only this attempt directory written)",
+    "historical_attempt": "execution_runs/I-06-A/a20260919-01 (READ-ONLY)"
+  },
+  "dependency_copies_importable_trees": [
+    "company_wiki/__init__.py",
+    "company_wiki/source_contract/** (stdlib-only)",
+    "company_wiki/source_catalog/admission.py",
+    "company_wiki/source_catalog/lock.py",
+    "company_wiki/source_catalog/llm_failure_policy.py",
+    "company_wiki/source_catalog/models.py",
+    "note: the heavy source_catalog/__init__.py is bypassed by the test loader (registered package stub); the implemented modules never import it"
+  ],
+  "iso_layout": {
+    "before/cw/**": "pristine production copies (RED baseline)",
+    "iso/cw/**": "candidate copies (GREEN; round-2 = F1/F6 fixes on top)",
+    "iso-mutant/**": "key-arm mutant (one guard flipped)",
+    "iso-mutant-nan/**": "nan-arm mutant (isfinite gate removed)",
+    "iso-mutant-identity/**": "identity-arm mutant (covers-three degraded to any-of)",
+    "scripts/**": "harness (case suite, evidence collector, diff, mutant maker)",
+    "evidence/**": "red/green/mutation results + card-required JSONs; round-1 raw bytes under evidence/round1/"
+  },
+  "input_hashes": {
+    "CW store.py (real repo == before copy, unchanged)": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615",
+    "CW processing_demand.py (real repo == before copy, ZR-507 pin 90f232ed…3c8b)": "90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b",
+    "CW prompt_injection.py (real == before == iso; UNCHANGED)": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+    "CW prompt_injection_guard.py (real == before copy)": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08"
+  },
+  "iso_hashes_after_implementation": {
+    "note": "round-2 FINAL (F1 finite gate + F6 covers-three). store.py unchanged vs round 1 (b8e00362…)",
+    "iso/cw/src/company_wiki/source_catalog/store.py": "b8e003620a746dc5e7ae7355697005bc9324c8a047e2e2dc6887e74701b15f81",
+    "iso/cw/src/company_wiki/source_catalog/processing_demand.py": "ca19565536b2592a6faa3c579872c82017c2d307acfb7e748c0fe25070b82c0e",
+    "iso/cw/src/company_wiki/source_catalog/prompt_injection_guard.py": "c2af11b316c923623be9449c94f0cce9be4960bf7a463fccba61d57f5e9bd20c"
+  },
+  "ratified_contract_inputs": {
+    "OWNER_DECISIONS.md §十九 (全部接受 + TTL 30d option A)": "read",
+    "execution_runs/T2-SIM-OPEN5-RF/a20260922-01/ruling.md §4.3/§4.5 + C1-C8 + 边界补充记 5/6/7": "read",
+    "execution_runs/T2-SIM-OPEN6-SEC/a20260922-01/ruling.md (三值语义/无静默态/编码化错误/C6)": "read",
+    "execution_runs/T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md §4.3 (回执失效语义)": "read",
+    "execution_v2/card_I-06-A.md (原卡范围=W06A-P1/P2/N1/N2/N3)": "read",
+    "execution_runs/I-06-A/a20260919-01/decision.md + handoff.json (OPEN-2 A/2b/3 形态)": "read"
+  },
+  "forbidden_and_respected": [
+    "ZERO production writes (both repos untouched)",
+    "ZERO git operations",
+    "a20260919-01 historical attempt untouched",
+    "no new CLI adapter file (file never frozen by any ruling)",
+    "no review rows produced (registration records gaps only; nothing fabricated)"
+  ]
+}

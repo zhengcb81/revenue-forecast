@@ -1,0 +1,172 @@
+{
+  "target": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\iso-mutant-nan",
+  "passed": 16,
+  "failed": 1,
+  "results": [
+    {
+      "case": "W06A2-P1",
+      "result": "PASS",
+      "measurement": {
+        "demand_id": "demand-249ac65ee1c4a1aa",
+        "clause": "demand_queued demand_id=demand-249ac65ee1c4a1aa gaps=3 next_action=review source then re-run source preparation",
+        "cross_process": 1
+      },
+      "seconds": 2.184
+    },
+    {
+      "case": "W06A2-P2",
+      "result": "PASS",
+      "measurement": {
+        "demand_id": "demand-249ac65ee1c4a1aa",
+        "rows": 1
+      },
+      "seconds": 2.236
+    },
+    {
+      "case": "W06A2-P3",
+      "result": "PASS",
+      "measurement": {
+        "variant_a": "table added, old rows preserved, register+claim ok",
+        "variant_b": "columns backfilled ['attempts', 'created_at', 'demand_id', 'demand_key', 'gaps_json', 'kind', 'lease_owner', 'lease_until', 'next_action', 'priority', 'request_identity_json', 'request_json', 'request_sha256', 'retry_at', 'review_policy', 'role_set', 'source_id', 'source_sha256', 'status', 'terminal_reason', 'updated_at'], legacy row kept, register+claim ok"
+      },
+      "seconds": 1.194
+    },
+    {
+      "case": "W06A2-P4",
+      "result": "PASS",
+      "measurement": {
+        "events": [
+          "register",
+          "claim",
+          "complete"
+        ],
+        "terminal": "terminal_failed"
+      },
+      "seconds": 0.629
+    },
+    {
+      "case": "W06A2-N1",
+      "result": "PASS",
+      "measurement": {
+        "rows": 4,
+        "ids": [
+          "demand-249ac65ee1c4a1aa",
+          "demand-455b69d658890fc1",
+          "demand-73307ce501b7a72d",
+          "demand-c3d7e272945a2e4a"
+        ]
+      },
+      "seconds": 1.19
+    },
+    {
+      "case": "W06A2-N2",
+      "result": "PASS",
+      "measurement": {
+        "clause": "demand_store_error=DemandStoreUnavailable: OperationalError: no such table: processing_demands"
+      },
+      "seconds": 0.329
+    },
+    {
+      "case": "W06A2-N3",
+      "result": "PASS",
+      "measurement": {
+        "threads_before": [
+          "MainThread"
+        ],
+        "threads_after": [
+          "MainThread"
+        ]
+      },
+      "seconds": 0.295
+    },
+    {
+      "case": "W06A2-N4",
+      "result": "PASS",
+      "measurement": {
+        "refusals": "all coded"
+      },
+      "seconds": 0.369
+    },
+    {
+      "case": "W06A2-N5",
+      "result": "PASS",
+      "measurement": {
+        "winner": "w2",
+        "loser": "DemandStateError"
+      },
+      "seconds": 0.32
+    },
+    {
+      "case": "W06A2-N6",
+      "result": "PASS",
+      "measurement": {
+        "receipt_cache_state": "ignored",
+        "demand_status_after": "completed"
+      },
+      "seconds": 0.393
+    },
+    {
+      "case": "W06A2-N7",
+      "result": "PASS",
+      "measurement": {
+        "kinds": [
+          "missing",
+          "not_applicable",
+          "unsupported"
+        ]
+      },
+      "seconds": 0.247
+    },
+    {
+      "case": "W06A2-N8",
+      "result": "PASS",
+      "measurement": {
+        "cap": 2592000,
+        "expired": "expired"
+      },
+      "seconds": 0.344
+    },
+    {
+      "case": "W06A2-N9",
+      "result": "PASS",
+      "measurement": {
+        "rows_after_archival": 1
+      },
+      "seconds": 0.362
+    },
+    {
+      "case": "W06A2-C8",
+      "result": "PASS",
+      "measurement": {
+        "queued_clause": "demand_queued demand_id=demand-0123456789abcdef gaps=2 next_action=review source then re-run source preparation",
+        "error_clause": "demand_store_error=DemandStoreUnavailable: sqlite3.OperationalError: database is locked"
+      },
+      "seconds": 0.1
+    },
+    {
+      "case": "W06A2-N10",
+      "result": "PASS",
+      "measurement": {
+        "cache_domain": "cache",
+        "review_domain": "review"
+      },
+      "seconds": 0.145
+    },
+    {
+      "case": "W06A2-N8b",
+      "result": "FAIL",
+      "error": "CaseFailure: NaN ttl revived an already-expired receipt (F1 fail-open, OPEN-6 C6): ReviewEvaluation(status='not_detected', cache_state='hit', reason='receipt fresh and bound', state_domain='cache')",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\scripts\\w06a2_cases.py\", line 970, in main\n    measurement = fn(t) or {}\n                  ~~^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\scripts\\w06a2_cases.py\", line 807, in case_n8b_nonfinite_gate\n    check(\n    ~~~~~^\n        False,\n        ^^^^^^\n        f\"NaN ttl revived an already-expired receipt (F1 fail-open, OPEN-6 C6): {revived!r}\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\scripts\\w06a2_cases.py\", line 73, in check\n    raise CaseFailure(msg)\nCaseFailure: NaN ttl revived an already-expired receipt (F1 fail-open, OPEN-6 C6): ReviewEvaluation(status='not_detected', cache_state='hit', reason='receipt fresh and bound', state_domain='cache')\n",
+      "seconds": 0.267
+    },
+    {
+      "case": "W06A2-N11",
+      "result": "PASS",
+      "measurement": {
+        "partials_refused": 6,
+        "rows": 1
+      },
+      "seconds": 0.295
+    }
+  ]
+}

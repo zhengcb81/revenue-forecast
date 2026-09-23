@@ -1,0 +1,92 @@
+{
+  "card_id": "MODEL-ORACLE-ALIGN",
+  "attempt_id": "a20260922-01",
+  "plan": ".planning/2026-09-19-three-project-history-audit",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "state_authority": "carrier reviewer_report.md sha256 399f4e60ff134c2e1cef5b45d665a948f333e27c9dcc8a3e0e512d3ef5f8d01c (22499 B, sidecar content-match), verdict at L10; state transition is bookkeeping transcription only"
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "carrier": {
+    "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/MODEL-ORACLE-ALIGN/a20260922-01/reviewer_report.md",
+    "sha256": "399f4e60ff134c2e1cef5b45d665a948f333e27c9dcc8a3e0e512d3ef5f8d01c",
+    "bytes": 22499,
+    "sidecar": "reviewer_report.sha256 content-match",
+    "line_ranges": {
+      "total_lines": 124,
+      "verdict": "L10-L12",
+      "accept_scope": "L14-L20",
+      "findings_f1_f9": "L24-L97",
+      "observations_o1_o5": "L101-L107",
+      "unverified_list": "L109-L118",
+      "reviewer_boundary_compliance": "L120-L124"
+    },
+    "reviewer": "独立复核 (delegated independent reviewer subagent of session-bfecd191-fbc3-4a66-8ed1-6562479bf102)",
+    "verdict": "accepted_scoped"
+  },
+  "declarations": {
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_transcription_adds_no_acceptance_of_its_own": true,
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "self_sign": false,
+    "signature": null,
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "git_writes_by_landing_pass": 0,
+    "files_written_by_landing_pass": [
+      "review.md",
+      "handoff.json",
+      "evidence/MODEL-ORACLE-ALIGN/qualification.json"
+    ]
+  },
+  "findings_mirror": [
+    {"id": "F1", "title": "freeze-first", "result": "CONFIRMED", "detail": "oracle 146ce313f7158da8ef1093961b1ebd1de5cfef0e4b0ffbe0d733c8fb4c2302da / 12543 B is first file: oracle 20:09:38 < before-images 20:10:23 < binding 20:10:52 < iso trees 20:11:11-20:11:22 < first evidence 01_red 20:11:34; before-images re-hash to pre-card contents (66516452…/7988, 9ec65295…/26446) => production untouched at capture => freeze precedes every production write by >=45 s; write windows derived: test file (20:16:41, 20:17:01], model_registry.py (20:16:41, 20:19:15]"},
+    {"id": "F2", "title": "two production files live re-hash", "result": "CONFIRMED", "detail": "scripts/model_registry.py 62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081 / 30116 == I-10-B iso source byte-exact (re-hashed); tests/test_model_economic_guardrails.py 89a76809321e87d852ec8d5863650eed8ac1b47c52c8f1b38db4768f7d5ac82a / 10414; before-image 66516452…/7988 byte-identical to PROMOTION-EXEC B-6c image 9ec65295…/26446; companion model_extensions.py 9939480b…/14475 == pin, untouched"},
+    {"id": "F3", "title": "RED/GREEN/mutation chain", "result": "CONFIRMED", "detail": "reviewer's OWN set-diff of 31 FAILED|SUBFAILED lines vs PROMOTION-EXEC's B-6c record = Compare-Object EMPTY, line-identical; all registry refs :410 x29 with 27/29 frames + 2 message-quote blocks; 01 tail 31 failed/53 passed/177 subtests; 02/03/04b each 59/202 rc 0; 04a fails at :410 with defect-1 message; evidence 02-07 re-hash byte-exact to 08 ledger (9/9 OK)"},
+    {"id": "F4", "title": "31-row alignment table + 3 sampled cases", "result": "CONFIRMED", "detail": "decision.md 31 rows with RED line citations; split 31 explicit-default / 0 assertion rewrites / 0 STOP; hidden 0.0 rule at before-image model_registry.py:335; 3 cases live-verified (bank_negative_rates / public_calculator sweep / inconsistent_customer_timing — assertions business-identical); reviewer-derived diff -5/+40 exactly as claimed; 8 neighbor test functions zero diff"},
+    {"id": "F5", "title": "post-promotion verifications", "result": "CONFIRMED", "detail": "05 and 05b each 59/202 rc 0; 06 = 13 passed; 07 = 7/7 (phase after, R-B1/R-B2 PASS) with verification_after.json b7a925f5b5a9e4af4cf77532999521427b79edbc6c51c7bd1aaf2a03c270da86 / 1766 B byte-identical to I-10-B's frozen artifact (both re-hashed); 05a PYCOMPILE_OK; reviewer's own re-run RC 0 (16 passed, 134 subtests, %TEMP%, zero production writes)"},
+    {"id": "F6", "title": "zero-touch", "result": "CONFIRMED", "detail": "9 protected neighbors live == binding pins incl. model_extensions 9939480b… and gate tools/pre_push_gate.py 3df161a7ceea17de95b36845bdb3c4cee729dca215c56853868780dce7331484; M05/M14/M20/M24 oracle.md blob == HEAD 4/4; CW porcelain = pre-existing 6 M + 2 ?? plus PROMOTION's only, no card path; RF reflog newest = 95df2661 (GATE-OQ), no card-authored commit; root .pytest_cache untouched; disclosed 13577 B pyc @ 20:17:01 only; no new pyc in scripts/"},
+    {"id": "F7", "title": "consequence statement", "result": "CONFIRMED PRESENT", "detail": "decision.md 权威链-4 verbatim + handoff consequences_recorded_not_acted[0]: four M05/M14/M20/M24 defaults-phase forward-disclosures flip INACTIVE->ACTIVE, E1E7 carriers untouched; no-edit half blob-proven by F6's 4/4 oracle==HEAD"},
+    {"id": "F8", "title": "three boundary incidents disclosed", "result": "ALL THREE CONFIRMED", "detail": "(1) py_compile CLI misuse rc1 -> git-ignored pyc refresh (13577 B @ 20:17:01, 357 siblings) -> explicit-cfile retry rc0; (2) Copy-Item preserved source mtime on model_registry.py (2026-09-20 19:22:26); (3) changes.diff first build 13181 B superseded by ASCII rebuild 05180b9d…/12519 (live re-hashed)"},
+    {"id": "F9", "title": "handoff + changes.diff + recovery", "result": "CONFIRMED", "detail": "pre-bookkeeping handoff shape: status review_pending, signature null, self_sign false, attestation {da: unmapped, acc: unproven} — unsigned, no self-sign; changes.diff 05180b9d…/12519 repo-prefixed, §1 test alignment / §2 registry re-promotion; recovery/README.md fadff2ae…/2499 exact 2-file revert (66516452… / 9ec65295…) with B-6c cross-note"}
+  ],
+  "observations_mirror": [
+    {"id": "O1", "status": "RESOLVED — resolved-by-parent-identification", "detail": "Carrier: at 20:31:43 seven production paths rewritten byte-identically (both card targets + PROMOTION's 5 scripts) — content claims hold, 08 mtime ledger non-reproducible by mtime, actor not this card. Resolution: parent's own GATE-OQ commit 95df2661 (author 20:30:43) pre-commit hook stash->replay, stderr '[INFO] Restored changes from ...patch1790105464-21160'; hook stashed only unstaged changes and that set was exactly the 7 paths; byte-identical restore verified by parent (62f864b9 / 89a76809 / 7d1bd8f9 / 8a761498 / bc2bb4a3 / 212f0059 / 91a6dc32 = SEVEN_ALL_OK); only mtimes bumped; actor identified, benign; parent self-corrected earlier ec307d20 attribution (author 20:44:25 ≠ 20:31:43)"},
+    {"id": "O2", "status": "recorded as-is (non-blocking)", "detail": "changes.diff first-build disclosure lives in commands.json + handoff.json, not decision.md; all three required disclosures exist across the deliverable set — placement note only"},
+    {"id": "O3", "status": "recorded as-is (non-blocking)", "detail": "2 of 31 RED failures (assertRaisesRegex message-mismatch) carry no explicit :410 frame — they quote the :410 message verbatim; 'all refs are :410' holds; card never claimed 31/31 frames"},
+    {"id": "O4", "status": "recorded as-is (non-blocking)", "detail": "Copy-Item preserved source mtimes for both production targets, so freeze-first/write windows were established via CreationTime + evidence-timestamp reasoning; future cards should stamp write instants"},
+    {"id": "O5", "status": "recorded as-is (non-blocking)", "detail": "evidence/01's own rc is not embedded in the file (rc 1 comes from commands.json); the '31 failed…' line implies it unambiguously"}
+  ],
+  "unverified_mirror": [
+    "1. RF_IMPORT_ROOT for 06 self-declared in commands.json; env not reconstructible from 06's raw output",
+    "2. Exact wall-clock instants of the two production writes — windows inferred (F1), not stamped; mtimes source-preserved and later refreshed by O1",
+    "3. The 20:31:43 writer of the seven production paths — CLOSED by O1 resolution (parent's 95df2661 hook stash->replay, SEVEN_ALL_OK); 5 PROMOTION scripts not independently re-pinnable by reviewer (out of card scope)",
+    "4. Full-repo test suite not run by reviewer; gate owed at parent batch-4",
+    "5. Binding's start-of-card git_porcelain_before snapshot not re-measured after the 20:30:43 GATE-OQ commit removed 2 entries",
+    "6. RED run's exact pytest flags/env identity vs PROMOTION's run — output-level identity only",
+    "7. Whether 01's 29-block vs 31-entry grouping artifact is purely pytest subtest reporting — not root-caused (immaterial)",
+    "8. No separate grep oracle search across all 31 rows — sampling was 3 cases + a complete diff"
+  ],
+  "acceptance_scope_mirror": [
+    "commits = parent's authority: RF commit = exactly 2 files (scripts/model_registry.py + tests/test_model_economic_guardrails.py)",
+    "full-suite gate remains at parent batch-4 push (declared not-run; reviewer did not run it)",
+    "E1E7 carrier flips (M05/M14/M20/M24 INACTIVE->ACTIVE) = parent bookkeeping; no M-card file edited by this card",
+    "B-6b / natural_window remains blocked-by-design, untouched",
+    "CF-I14FR1-3 CW sampling remains owed (parent-side obligation)"
+  ],
+  "counts_mirror": {
+    "findings_confirmed": 9,
+    "findings_blocking": 0,
+    "observations_non_blocking": 5,
+    "observations_resolved": 1,
+    "unverified_items": 8
+  },
+  "boundary_incidents_disclosed": [
+    "py_compile first-use CLI misuse rc1 -> git-ignored pyc refresh -> explicit-cfile retry rc0",
+    "Copy-Item preserved source mtime on model_registry.py (2026-09-20 19:22:26)",
+    "changes.diff first build (13181 B, absolute paths) superseded by ASCII rebuild 05180b9d…/12519"
+  ]
+}

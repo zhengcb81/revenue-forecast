@@ -1,0 +1,89 @@
+{
+ "card_id": "M01",
+ "model_id": "direct_growth",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\iso\\checkout_scripts",
+ "code_file_actually_imported": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "expected_source": "evidence/M01/oracle.json (scripts/oracle_M01.py, stdlib only, no product import)",
+ "expected_was_not_generated_by_product_code": true,
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "positive": {
+  "input": {
+   "model_id": "direct_growth",
+   "base_revenue": 200,
+   "drivers": {
+    "growth_rate": [
+     0.1,
+     -0.5,
+     -1
+    ]
+   },
+   "years": [
+    2027,
+    2028,
+    2029
+   ]
+  },
+  "raised": null,
+  "actual": [
+   220.00000000000003,
+   110.00000000000001,
+   0.0
+  ],
+  "expected": [
+   220.0,
+   110.0,
+   0.0
+  ],
+  "per_value_checks": [
+   {
+    "index": 0,
+    "year": 2027,
+    "actual": 220.00000000000003,
+    "expected": 220.0,
+    "tolerance": 2.2e-07,
+    "abs_diff": 2.842170943040401e-14,
+    "ok": true
+   },
+   {
+    "index": 1,
+    "year": 2028,
+    "actual": 110.00000000000001,
+    "expected": 110.0,
+    "tolerance": 1.1e-07,
+    "abs_diff": 1.4210854715202004e-14,
+    "ok": true
+   },
+   {
+    "index": 2,
+    "year": 2029,
+    "actual": 0.0,
+    "expected": 0.0,
+    "tolerance": 1e-09,
+    "abs_diff": 0.0,
+    "ok": true
+   }
+  ],
+  "length_ok": true,
+  "tolerances_ok": true
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   110.00000000000001,
+   115.50000000000001
+  ],
+  "expected": [
+   110.0,
+   115.5
+  ],
+  "ok": true
+ },
+ "negative_case_count": 11,
+ "negative_case_passed": 11,
+ "negative_case_failed": [],
+ "verdict": "pass",
+ "outcome_sentence": "positive [220.00000000000003, 110.00000000000001, 0.0] equals the independent oracle [220.0, 110.0, 0.0] within 1e-9*max(1,abs(e)) for all years; continuity positive passes; all 11 negatives raise ModelRegistryError (re-verified in revision r2)",
+ "not_a_disclosure_fit": true,
+ "not_an_accuracy_result": true
+}

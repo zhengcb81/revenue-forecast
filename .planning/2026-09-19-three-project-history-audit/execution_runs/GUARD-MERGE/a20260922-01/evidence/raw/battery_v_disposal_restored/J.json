@@ -1,0 +1,26 @@
+{
+  "case": "J",
+  "title": "detected_and_ignored disposal gate fail-closed (OPEN-6 C1/C3, P5-b)",
+  "iso": "fixed",
+  "ruling_clause": "OPEN-6 C1/C2/C3 (§5); FIX-W06-GAPS oracle P5-b",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "J1_disposal_gate_rejects",
+      "ok": true,
+      "detail": "type=PromptInjectionReviewError text='disposal authorization unavailable: ignore_reason' (expect prefix 'disposal authorization unavailable: ', first gap = ignore_reason / trust root not established)"
+    },
+    {
+      "name": "J2_zero_product_semantic_rows",
+      "ok": true,
+      "detail": "product-semantic detected_and_ignored rows after the attempt = 0 (OPEN-6 C3: identity not established ⇒ rows must be 0)"
+    }
+  ],
+  "raw": {
+    "J_exception": "PromptInjectionReviewError: disposal authorization unavailable: ignore_reason",
+    "J_receipt": null
+  },
+  "error": null,
+  "seconds": 0.127,
+  "finished_at": "2026-09-23T00:07:20"
+}

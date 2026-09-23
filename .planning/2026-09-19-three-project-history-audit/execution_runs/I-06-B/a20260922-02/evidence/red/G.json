@@ -1,0 +1,77 @@
+{
+  "case": "G",
+  "title": "receipt ⇄ demand domain independence (C5_C6)",
+  "iso": "original",
+  "ruling_clause": "OPEN-4 §4.3 recovery rule (C5_C6 two-domain independence)",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "G0_receipt_hit_baseline",
+      "ok": true,
+      "detail": "base=ReviewEvaluation(status='not_detected', cache_state='hit', reason='receipt fresh and bound')"
+    },
+    {
+      "name": "G1_invalidation_does_not_close_demands",
+      "ok": true,
+      "detail": "eval=ReviewEvaluation(status='not_reviewed', cache_state='tampered', reason='source bytes changed since review') statuses={'demand-e8d05102bde946c4': 'pending', 'demand-0bc5fbd3aee34275': 'pending'} (C5_C6 shape: source changed ⇒ new demand, old demand stays open)"
+    },
+    {
+      "name": "G2_demand_close_leaves_receipt_bytes",
+      "ok": true,
+      "detail": "before_sha=c4959843f2a3f5740d7e44457903716314fae813713694afa7b963a67bfc247a after_sha=c4959843f2a3f5740d7e44457903716314fae813713694afa7b963a67bfc247a"
+    },
+    {
+      "name": "G3_receipt_readable_after_close",
+      "ok": true,
+      "detail": "receipt={\"schema_version\": \"1.0\", \"status\": \"not_detected\", \"reviewer\": \"suite-reviewer\", \"reviewed_at\": \"2026-09-22T00:00:00Z\", \"evidence_sha256\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\", \"source_sha256\": \"58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994\", \"policy_hash\": \"19ace502ee7c13027f43ee82d33944fec84c1296976bc86ce6c8d5869abb962b\"}"
+    },
+    {
+      "name": "G4_invalidation_left_statuses_unchanged",
+      "ok": true,
+      "detail": "statuses={'demand-e8d05102bde946c4': 'completed', 'demand-0bc5fbd3aee34275': 'pending'}"
+    }
+  ],
+  "raw": {
+    "G_rows_after_invalidation": [
+      {
+        "demand_id": "demand-e8d05102bde946c4",
+        "demand_key": "07a602c1a8f8b104ca98552ba4a6c4258a8b13f69ed099ae49dcc39a123885a5",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "src-1",
+        "source_sha256": "58e517ac742e329af9bd329cf1342d3a055532e29410a0cf27475ebfeb353994",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps": [],
+        "request_sha256": "f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53",
+        "attempts": 0,
+        "lease_owner": null,
+        "lease_until": null,
+        "created_at": 1790114789.3097181,
+        "updated_at": 1790114789.3097181,
+        "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+      },
+      {
+        "demand_id": "demand-0bc5fbd3aee34275",
+        "demand_key": "6c923d37c36f7ab47d5f6f3249c4768836e07cdb2ed58f84f0e63beb919b228f",
+        "kind": "review",
+        "status": "pending",
+        "source_id": "src-1",
+        "source_sha256": "7244daea69fb4373448bf2c36c2eb8d8f46e7ed83f1c9690bb5e314d357f1d88",
+        "review_policy": "p1",
+        "role_set": "normalized,sections",
+        "gaps": [],
+        "request_sha256": "f62a9360c6a05e907e97c9c1929d65b048fec97ba8074f221afa2e95cd5e9e53",
+        "attempts": 0,
+        "lease_owner": null,
+        "lease_until": null,
+        "created_at": 1790114789.3952653,
+        "updated_at": 1790114789.3952653,
+        "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+      }
+    ]
+  },
+  "error": null,
+  "seconds": 0.23,
+  "finished_at": "2026-09-22T23:06:29"
+}

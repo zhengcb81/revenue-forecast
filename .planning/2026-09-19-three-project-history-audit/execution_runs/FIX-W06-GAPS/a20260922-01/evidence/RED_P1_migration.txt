@@ -1,0 +1,275 @@
+target module : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\before\candidate\processing_demand_store.py
+module sha256 : 7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f
+temp copy     : C:\Users\郑曾波\AppData\Local\Temp\fix-w06-gaps\p1\processing_demand_store.py
+
+[S1 first _initialize on fresh DB] rc=0
+--- schema dump [S1 after] (a_fresh.sqlite3) ---
+    index idx_processing_demands_key :: CREATE INDEX idx_processing_demands_key
+    ON processing_demands(demand_key, status)
+    index sqlite_autoindex_processing_demands_1 :: None
+    table processing_demands :: CREATE TABLE processing_demands (
+    demand_id TEXT PRIMARY KEY,
+    demand_key TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    status TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    source_sha256 TEXT NOT NULL,
+    review_policy TEXT NOT NULL,
+    role_set TEXT NOT NULL,
+    gaps_json TEXT NOT NULL,
+    request_sha256 TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    candidate_marker TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    lease_owner TEXT,
+    lease_until REAL,
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+)
+
+[S2 seed one row via register()] rc=0 -> {'demand_id': 'demand-d84c4c1dfbd04c40', 'created': True}
+[S2 re-run _initialize (2nd)] rc=0
+[S2 re-run _initialize (3rd)] rc=0
+--- schema dump [S2 after 3 migrations] (a_fresh.sqlite3) ---
+    index idx_processing_demands_key :: CREATE INDEX idx_processing_demands_key
+    ON processing_demands(demand_key, status)
+    index sqlite_autoindex_processing_demands_1 :: None
+    table processing_demands :: CREATE TABLE processing_demands (
+    demand_id TEXT PRIMARY KEY,
+    demand_key TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    status TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    source_sha256 TEXT NOT NULL,
+    review_policy TEXT NOT NULL,
+    role_set TEXT NOT NULL,
+    gaps_json TEXT NOT NULL,
+    request_sha256 TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    candidate_marker TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    lease_owner TEXT,
+    lease_until REAL,
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+)
+
+[S3 build N-1 DB with 2 existing rows] rc=0
+--- schema dump [S3 N-1 before migrate] (c_nminus1.sqlite3) ---
+    index sqlite_autoindex_processing_demands_1 :: None
+    table processing_demands :: CREATE TABLE processing_demands (demand_id TEXT PRIMARY KEY,demand_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL,source_sha256 TEXT NOT NULL,review_policy TEXT NOT NULL,role_set TEXT NOT NULL,gaps_json TEXT NOT NULL,created_at REAL NOT NULL,updated_at REAL NOT NULL)
+[S3 migrate N-1 (1st _initialize)] rc=0
+[S3 migrate N-1 (2nd _initialize, idempotency)] rc=0
+--- schema dump [S3 N-1 after migrate] (c_nminus1.sqlite3) ---
+    index idx_processing_demands_key :: CREATE INDEX idx_processing_demands_key
+    ON processing_demands(demand_key, status)
+    index sqlite_autoindex_processing_demands_1 :: None
+    table processing_demands :: CREATE TABLE processing_demands (demand_id TEXT PRIMARY KEY,demand_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL,source_sha256 TEXT NOT NULL,review_policy TEXT NOT NULL,role_set TEXT NOT NULL,gaps_json TEXT NOT NULL,created_at REAL NOT NULL,updated_at REAL NOT NULL)
+--- rows after migrate (2) ---
+    {"created_at": 1.0, "demand_id": "demand-n1-1", "demand_key": "k1", "gaps_json": "[]", "kind": "review", "review_policy": "p1", "role_set": "normalized,sections", "source_id": "s1", "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "status": "pending", "updated_at": 1.0}
+    {"created_at": 2.0, "demand_id": "demand-n1-2", "demand_key": "k2", "gaps_json": "[]", "kind": "review", "review_policy": "p1", "role_set": "normalized,sections", "source_id": "s2", "source_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "status": "pending", "updated_at": 2.0}
+
+[S4 register() against migrated N-1 DB] rc=1 EXC=DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256
+Traceback (most recent call last):
+  File "C:\Users\郑曾波\AppData\Local\Temp\fix-w06-gaps\p1\processing_demand_store.py", line 195, in register
+    connection.execute(
+    ~~~~~~~~~~~~~~~~~~^
+        "INSERT INTO processing_demands(demand_id,demand_key,kind,status,"
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<19 lines>...
+        ),
+        ^^
+    )
+    ^
+sqlite3.OperationalError: table processing_demands has no column named request_sha256
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\scripts\s_p1_migration.py", line 44, in step
+    value = fn()
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\scripts\s_p1_migration.py", line 215, in <lambda>
+    lambda: Store(db_n1).register(
+            ~~~~~~~~~~~~~~~~~~~~~^
+        kind="review", source_id="src-n1", source_sha256="d" * 64,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        review_policy="p1", role_set="normalized,sections", gaps=[],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        request={"as_of_date": "2026-09-22"}))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\郑曾波\AppData\Local\Temp\fix-w06-gaps\p1\processing_demand_store.py", line 224, in register
+    raise DemandStoreUnavailable(
+        f"demand store write failed: {type(exc).__name__}: {exc}"
+    ) from exc
+pds_p1.DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256
+
+[S5 claim() against migrated N-1 DB (uses new columns)] rc=1 EXC=OperationalError: no such column: lease_until
+Traceback (most recent call last):
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\scripts\s_p1_migration.py", line 44, in step
+    value = fn()
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\scripts\s_p1_migration.py", line 221, in <lambda>
+    lambda: Store(db_n1).claim(owner="w1", lease_seconds=300.0))
+            ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\郑曾波\AppData\Local\Temp\fix-w06-gaps\p1\processing_demand_store.py", line 257, in claim
+    row = connection.execute(
+          ~~~~~~~~~~~~~~~~~~^
+        "SELECT * FROM processing_demands WHERE status IN ('pending','failed') "
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        (stamp,),
+        ^^^^^^^^^
+    ).fetchone()
+    ^
+sqlite3.OperationalError: no such column: lease_until
+
+--- rows after register+claim (2) ---
+    {"demand_id": "demand-n1-1", "status": "pending"}
+    {"demand_id": "demand-n1-2", "status": "pending"}
+
+[S6 build N-1 DB (no rows) for error-contract] rc=0
+[S6 register() missing-column-class failure (migrator bypassed)] rc=0 -> 'DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256 [store_owned=True]'
+[S6 claim() missing-column-class failure (migrator bypassed)] rc=0 -> 'OperationalError: no such column: lease_until [store_owned=False]'
+[S6 list_active() on degraded store (migrator bypassed)] rc=0 -> 'IndexError: No item with that key [store_owned=False]'
+
+[S7 fresh-DB register/dedupe/list/claim] rc=0 -> {'created': True, 'dedupe_created': False, 'dedupe_same_id': True, 'active_rows': 1, 'claimed_id': 'demand-142081f8da7a4dae', 'claimed_status': 'running'}
+
+=== SUMMARY ===
+{
+  "S1_fresh_migrate": {
+    "maps_01": "[P1-a first _initialize on fresh DB]",
+    "rc": 0,
+    "table_created": true,
+    "index_created": true,
+    "schema_before": [],
+    "schema_after": [
+      [
+        "index",
+        "idx_processing_demands_key",
+        "CREATE INDEX idx_processing_demands_key\n    ON processing_demands(demand_key, status)"
+      ],
+      [
+        "index",
+        "sqlite_autoindex_processing_demands_1",
+        null
+      ],
+      [
+        "table",
+        "processing_demands",
+        "CREATE TABLE processing_demands (\n    demand_id TEXT PRIMARY KEY,\n    demand_key TEXT NOT NULL,\n    kind TEXT NOT NULL,\n    status TEXT NOT NULL,\n    source_id TEXT NOT NULL,\n    source_sha256 TEXT NOT NULL,\n    review_policy TEXT NOT NULL,\n    role_set TEXT NOT NULL,\n    gaps_json TEXT NOT NULL,\n    request_sha256 TEXT NOT NULL,\n    request_json TEXT NOT NULL,\n    candidate_marker TEXT NOT NULL,\n    attempts INTEGER NOT NULL DEFAULT 0,\n    lease_owner TEXT,\n    lease_until REAL,\n    created_at REAL NOT NULL,\n    updated_at REAL NOT NULL\n)"
+      ]
+    ],
+    "ok": true
+  },
+  "S2_idempotent_re_migrate": {
+    "maps_01": "[P1-b seed one row via register()] + re-run _initialize (2nd/3rd)",
+    "register_rc": 0,
+    "register_value": "OK",
+    "rows_before_re_migrate": 1,
+    "second_migrate_rc": 0,
+    "third_migrate_rc": 0,
+    "rows_after_re_migrate": 1,
+    "schema_stable": true,
+    "ok": true
+  },
+  "S3_n1_additive_migrate": {
+    "maps_01": "[P1-b2 build N-1 DB with 2 existing rows] + migrate 1st/2nd + rows after migrate",
+    "migrate_1st_rc": 0,
+    "migrate_2nd_rc": 0,
+    "schema_before": [
+      [
+        "index",
+        "sqlite_autoindex_processing_demands_1",
+        null
+      ],
+      [
+        "table",
+        "processing_demands",
+        "CREATE TABLE processing_demands (demand_id TEXT PRIMARY KEY,demand_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL,source_sha256 TEXT NOT NULL,review_policy TEXT NOT NULL,role_set TEXT NOT NULL,gaps_json TEXT NOT NULL,created_at REAL NOT NULL,updated_at REAL NOT NULL)"
+      ]
+    ],
+    "schema_after": [
+      [
+        "index",
+        "idx_processing_demands_key",
+        "CREATE INDEX idx_processing_demands_key\n    ON processing_demands(demand_key, status)"
+      ],
+      [
+        "index",
+        "sqlite_autoindex_processing_demands_1",
+        null
+      ],
+      [
+        "table",
+        "processing_demands",
+        "CREATE TABLE processing_demands (demand_id TEXT PRIMARY KEY,demand_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL,source_sha256 TEXT NOT NULL,review_policy TEXT NOT NULL,role_set TEXT NOT NULL,gaps_json TEXT NOT NULL,created_at REAL NOT NULL,updated_at REAL NOT NULL)"
+      ]
+    ],
+    "physical_columns_after": [
+      "created_at",
+      "demand_id",
+      "demand_key",
+      "gaps_json",
+      "kind",
+      "review_policy",
+      "role_set",
+      "source_id",
+      "source_sha256",
+      "status",
+      "updated_at"
+    ],
+    "new_columns_added": [],
+    "new_columns_missing": [
+      "attempts",
+      "candidate_marker",
+      "key_version",
+      "lease_owner",
+      "lease_until",
+      "request_json",
+      "request_sha256"
+    ],
+    "old_rows_preserved": true,
+    "old_rows_defaults_ok": true,
+    "ok": false
+  },
+  "S4_register_on_upgraded": {
+    "maps_01": "[P1-c register() against migrated N-1 DB]",
+    "register_rc": 1,
+    "register_result": "DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256",
+    "ok": false
+  },
+  "S5_claim_on_upgraded": {
+    "maps_01": "[P1-c claim() against migrated N-1 DB (uses new columns)]",
+    "claim_rc": 1,
+    "claim_result": "OperationalError: no such column: lease_until",
+    "ok": false
+  },
+  "S6_error_contract_wrap": {
+    "maps_01": "P1-c claim rc=1 EXC=OperationalError: no such column: lease_until (bare throw) + card P1 item 2/3",
+    "register_result": "DemandStoreUnavailable: demand store write failed: OperationalError: table processing_demands has no column named request_sha256 [store_owned=True]",
+    "claim_result": "OperationalError: no such column: lease_until [store_owned=False]",
+    "list_active_result": "IndexError: No item with that key [store_owned=False]",
+    "expected": "all failures surface as store-owned types (DemandStoreUnavailable/DemandStoreError) with the store's own message contract; no bare sqlite3.* escapes",
+    "ok": false
+  },
+  "S7_fresh_db_no_regression": {
+    "maps_01": "P1-a/P1-b PASS kept + P1-c old rows preserved PASS kept (fresh-DB path unchanged-green)",
+    "rc": 0,
+    "value": {
+      "created": true,
+      "dedupe_created": false,
+      "dedupe_same_id": true,
+      "active_rows": 1,
+      "claimed_id": "demand-142081f8da7a4dae",
+      "claimed_status": "running"
+    },
+    "ok": true
+  }
+}
+P1 SCENARIOS (S1..S7): FAIL
+    S1_fresh_migrate: PASS
+    S2_idempotent_re_migrate: PASS
+    S3_n1_additive_migrate: FAIL
+    S4_register_on_upgraded: FAIL
+    S5_claim_on_upgraded: FAIL
+    S6_error_contract_wrap: FAIL
+    S7_fresh_db_no_regression: PASS

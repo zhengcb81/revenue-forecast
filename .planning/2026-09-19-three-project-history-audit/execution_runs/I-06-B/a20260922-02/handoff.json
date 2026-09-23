@@ -1,0 +1,337 @@
+{
+  "card_id": "I-06-B",
+  "parent": "I-06",
+  "attempt_id": "a20260922-02",
+  "card_title": "执行真实审核并从原请求恢复",
+  "scope": "NINE-STEP protocol to review_pending readiness — write the fail-able test suite for the demand/receipt system per the ratified rulings (tests first, no product writes)",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "reviewer_status": "ACCEPT WITH FINDINGS — independent review complete; the verdict was transcribed at carrier landing from reviewer_report.md (26131 B / sha256 855a302d…4f04, pinned by reviewer_report.sha256, verdict line 13); machine status = accepted_scoped (scoped, not clean); verdict_is_transcribed_not_authored=true; this attempt signs nothing (implementer_signed=false)",
+  "reviewer_status_historical_pre_verdict": "PENDING independent review — implementation complete, evidence delivered, no self-acceptance",
+  "implementer_signed": false,
+  "owner": "来源安全 reviewer 冻结方法 / 独立 reviewer 验收（本 attempt 未代签任何方）",
+  "unmapped": [],
+  "unmapped_note": "18/18 cases map to a ratified ruling clause — see decision.md §2 table column 3; zero unmapped",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "gate_evidence": "letter A prerequisite satisfied by owner final confirmation 「全部接受」 2026-09-22, OWNER_DECISIONS §十九; rulings byte-exact source = I-06-B/a20260919-01/rulings_transcribed_2026-09-22.md (sha256 5ef8d863e3656962836f83eee4ddd87e8712b174491715cbd856b8593fcb8d91)",
+  "completed_steps": [
+    "1 领取: card gate + 三裁定转录（byte-exact 全文）+ I-06-B a20260919-01 oracle/decision/handoff（14/14 harness 历史）+ I-06-A handoff L146/147（被探针验证的开放问题）+ 探针 OPEN5-DOUBT-PROBE evidence 01-06（本套件须抓的全部缺陷）已读",
+    "2 绑定: binding.json（产品锚、输入锚、iso 双快照 sha256、interpreter stdlib+sqlite3、allowed_write_roots=本 attempt+%TEMP%、network/git 禁用、零产品写入）",
+    "3 隔离: iso/original（I-06-A 候选 7bc5feb0 + CW/RF 产品字节）+ iso/fixed（FIX-W06-GAPS 快照，双快照 snap1=0b6e723e / snap2=cd071322+88154de4）；只拷被测文件",
+    "4 冻结: oracle.md 用例表 18 例（A–M2）先于任何运行写就；事后事实按 dated APPEND-1 落（additive-only，先于 snap2 运行）",
+    "5 修改前检查: 产品锚 sha256 与 I-06-B handoff input_hashes 逐位相符（pi=7b22f239…、guard=f900a13d…、pd=90f232ed…/fcdfcad8…、source_preparation=91a6dc32…）；RF pin 测试 ABSENT 记录在案",
+    "6 最小修改: 仅新增 scripts/run_cases.py（18 用例）+ scripts/_worker_claim.py（竞态 worker）；零产品改动、零历史 attempt 改动",
+    "7 修改后检查: RED(original)=8G/10R（红=A,C,D,E,F1,F2,H2,I,J,L3，与冻结预期逐项相符）；GREEN(snap1)=15G/3R 保留；GREEN(snap2)=16G/2R（红=H2,L3，与 APPEND-1 预期相符）；逐用例原始输出落 evidence/{red,green,green_snap1_0b6e723e}/<ID>.json",
+    "8 交审: binding/commands/decision（逐例→条款映射 + RED/GREEN/blocked 计数 + 抓到的修复卡缺陷清单）/changes.diff（仅 harness+cases）/recovery/evidence/handoff 全部就位",
+    "9 接续: 独立 reviewer 已验收 —— verdict ACCEPT WITH FINDINGS（reviewer_report.md 26131 B / 855a302d…，sidecar 钉住），findings F-01..F-07；其中 F-01/F-02 复审后在本 attempt 内已修、F-03 由 a20260923-01 解决、F-04..F-07 披露携带",
+    "10 承运落定（bookkeeping 转录，本 pass）: status→accepted_scoped + status_authority + bookkeeping + carried_findings F-01..F-07 + evidence/I-06-B/qualification.json + review.md（均转录复审 verdict，不自签、不新增验收）"
+  ],
+  "next_step_number": 9,
+  "next_action": "Carrier landing DONE: verdict ACCEPT WITH FINDINGS transcribed from the independent reviewer's report (reviewer_report.md, sha256 855a302d4d970e3f2c0460e5ae423184a87c8c1de2521726d3dbd4a051164f04, 26131 B, 190 lines, pinned by reviewer_report.sha256; verdict line 13 / §0 lines 11–19) — see status_authority and review.md; verdict_is_transcribed_not_authored=true. Carried (unchanged truth): H2 = OPEN-5 C6 implementation carrier owed (gaps validator implemented by no party; not this card); GREEN-as-of-snap2 ≠ FIX acceptance — the FIX card was accepted SEPARATELY by its own independent review (FIX-W06-GAPS/a20260922-01/reviewer_report.md sha256 b42d9418dfbb8a0f7c2f024385ab793d897ae1448f98c73cd7520077b7a5b4b1, 26319 B, verdict line 11 'ACCEPT (scoped)'); L3 flip condition SATISFIED by sibling attempt a20260923-01 (path ② harness AST equivalence; its review ACCEPT sha256 0c74f22d…, L3 PASS both arms + reviewer rerun) — mother L3=RED(historical) and sibling L3=PASS coexist as timepoint records; F-01/F-02 fixed in-mother post-review (see bookkeeping). disclosure_adaptation stays unmapped, accuracy stays unproven; implementer_signed stays false. Original pre-verdict text preserved verbatim in next_action_historical_pre_verdict.",
+  "next_action_historical_pre_verdict": "Independent review of this attempt (evidence/red + evidence/green + oracle freeze discipline + zero-write boundaries); L3 flips green only when FIX-W06-GAPS P4 Face 2 lands tests/test_message_contract_pins.py, H2 needs an OPEN-5 C6 gaps validator (implementation surface, no party has built it) — both attributed in decision.md, neither blocks this card's test-suite scope",
+  "frozen_vs_measured": {
+    "counts": {
+      "red_original": {"green": 8, "red": 10, "total": 18},
+      "green_snap1_preserved": {"green": 15, "red": 3, "total": 18},
+      "green_snap2_final": {"green": 16, "red": 2, "total": 18}
+    },
+    "red_to_green_flips_caught_from_fix_card": {
+      "A": "P7-SCOPE key revision (OPEN-2 option A) — snap2",
+      "C": "P1 additive N-1 migrator — snap1+snap2",
+      "D": "P2-B defined loser refusal (DemandStateError + M-D1 verbatim) — snap1+snap2",
+      "E": "P3-A/P3-B explicit expire + 'lease expired', no stranding — snap1+snap2",
+      "F1": "P1-e store-owned error types on degraded schema — snap1+snap2",
+      "F2": "P6-B lock wrap 'store busy/lock timeout:' — snap1+snap2",
+      "I": "P6-A CAS + audit trail, zero silent loss — snap1+snap2",
+      "J": "P5-b disposal gate fail-closed, zero product-semantic rows — snap1+snap2"
+    },
+    "double_red_attributed": {
+      "H2": "OPEN-5 C6 gaps validator (missing/blocked for consumer_analysis in GAP-2 period) — implementation surface; NOT in FIX-W06-GAPS scope; no party has implemented it",
+      "L3": "P4 Face 2 = RF tests/test_message_contract_pins.py — FIX-W06-GAPS named deliverable (its oracle §0 carve-out); product test tree is write-forbidden for this attempt"
+    },
+    "double_green_guards": ["B", "G", "H1", "K", "L1", "L2", "M1", "M2"]
+  },
+  "input_hashes": {
+    "rulings_transcribed_2026-09-22.md": "5ef8d863e3656962836f83eee4ddd87e8712b174491715cbd856b8593fcb8d91",
+    "oracle.md (frozen + APPEND-1)": "6b55191f2d7c5b1325464e177df8a21754ce08c679a297ec96c3828799c2ef8c",
+    "scripts/run_cases.py": "1656124425564bc553cc5c6c9918e3a355157016bc1a4b8f34713967d9115930",
+    "scripts/_worker_claim.py": "8003c96fc1fa06a1301dd41d815ad150df3febf74a856af9eaa3497a93028774",
+    "iso/original/cand/processing_demand_store.py": "7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f",
+    "iso/fixed/cand/processing_demand_store.py (snap2)": "cd07132212cacb14f9f1dc04bc2155cb5b080b99fc3146119dcf052958d66d40",
+    "iso/fixed/fixed_pi/prompt_injection.py (snap2)": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+    "iso/original/orig_pi/prompt_injection.py": "7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618",
+    "iso/original/orig_pi/prompt_injection_guard.py": "f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08",
+    "iso/original/rf/source_preparation.py": "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+    "evidence/red/summary.json": "0193a199355d18d94e0737265923c927ad9367b8848baca03420d3b6e342c27e",
+    "evidence/green/summary.json": "22765e7ac24b6051b861affb0569d89b4e527c57835c883426d542794f0d6d2d"
+  },
+  "full_manifest": "binding.json (all iso snapshots, product anchors, input anchors, evidence anchors)",
+  "changed_paths": [
+    "execution_runs/I-06-B/a20260922-02/scripts/run_cases.py (NEW: 18-case fail-able suite)",
+    "execution_runs/I-06-B/a20260922-02/scripts/_worker_claim.py (NEW: two-process claim race worker)",
+    "execution_runs/I-06-B/a20260922-02/oracle.md (NEW: frozen case table + dated APPEND-1)",
+    "execution_runs/I-06-B/a20260922-02/iso/** (NEW: isolated snapshots, copy-in only)",
+    "execution_runs/I-06-B/a20260922-02/evidence/** (NEW: raw per-case outputs, three arms)",
+    "execution_runs/I-06-B/a20260922-02/{binding.json,commands.json,decision.md,changes.diff,recovery/README.md,handoff.json} (NEW deliverables)",
+    "execution_runs/I-06-B/a20260922-02/evidence/red_first_run_recovered/** (NEW post-review F-01 salvage + manifest + index + labeled transcription)",
+    "execution_runs/I-06-B/a20260922-02/{review.md, evidence/I-06-B/qualification.json} (NEW at carrier landing — verdict transcription only)"
+  ],
+  "prod_repos_modified": "NONE (RF porcelain untouched by this attempt; CW untouched; product files were READ for pin assertions only)",
+  "historical_attempts_modified": "NONE (I-06-A a20260919-01, I-06-B a20260919-01, OPEN5-DOUBT-PROBE, FIX-W06-GAPS: read/copy only)",
+  "commands_executed": "see commands.json (CMD-I06B2-COPY-ISO / RED-ORIGINAL / GREEN-SNAP1 / REFRESH-SNAP2 / GREEN-SNAP2 / DIFF)",
+  "raw_exit_codes": {
+    "CMD-I06B2-RED-ORIGINAL": 0,
+    "CMD-I06B2-GREEN-SNAP1": 0,
+    "CMD-I06B2-GREEN-SNAP2": 0,
+    "CMD-I06B2-DIFF": 0
+  },
+  "expected_exit_codes": {
+    "CMD-I06B2-RED-ORIGINAL": 0,
+    "CMD-I06B2-GREEN-SNAP1": 0,
+    "CMD-I06B2-GREEN-SNAP2": 0,
+    "CMD-I06B2-DIFF": 0
+  },
+  "honesty_notes": [
+    "FIX-W06-GAPS was IN FLIGHT during this attempt (its evidence kept appearing 22:29-23:05; P7 key fix landed mid-attempt) — GREEN halves are as-of recorded snapshots (binding.json), NOT an acceptance of the fix card",
+    "oracle.md main body frozen before any run; the P7 scope supersession is recorded in dated APPEND-1 written before the snap2 run (original column unchanged)",
+    "two harness self-defects were found via evidence and fixed BEFORE the final runs (reviewer kwarg duplication seen in evidence/red/{I,J}.json first attempt; GBK console UnicodeEncodeError) — final evidence comes from post-fix runs only; commands.json records this [F-01 index: evidence/red_first_run_recovered/index.md — the run1/run2 evidence JSONs and run_log segments were same-name OVERWRITTEN by run3 (original bytes unrecoverable, honestly ABSENT); residual first-run proof = the two rescued %TEMP% scratch batches (13+20 dirs, manifest.json sha256 e5736d7a…) + the labeled executor transcription transcription_first_run_observed.md + this note/commands notes/decision.md §4 条5]",
+    "resume/complete absence (case K) is asserted as EXPECTED-ABSENT per handoff L240 「不得假装存在」 — I-06-B keeps this honest until its implementation card",
+    "no numeric specification is asserted anywhere (lease/TTL values are fixtures only; rulings grant no numbers)"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "execution_runs/I-06-B/a20260922-02/binding.json",
+    "execution_runs/I-06-B/a20260922-02/oracle.md",
+    "execution_runs/I-06-B/a20260922-02/commands.json",
+    "execution_runs/I-06-B/a20260922-02/decision.md",
+    "execution_runs/I-06-B/a20260922-02/changes.diff",
+    "execution_runs/I-06-B/a20260922-02/scripts/run_cases.py",
+    "execution_runs/I-06-B/a20260922-02/scripts/_worker_claim.py",
+    "execution_runs/I-06-B/a20260922-02/evidence/red/summary.json",
+    "execution_runs/I-06-B/a20260922-02/evidence/red/<A..M2>.json (18 raw case outputs)",
+    "execution_runs/I-06-B/a20260922-02/evidence/green/summary.json",
+    "execution_runs/I-06-B/a20260922-02/evidence/green/<A..M2>.json (18 raw case outputs)",
+    "execution_runs/I-06-B/a20260922-02/evidence/green_snap1_0b6e723e/ (preserved pre-P7 green run)",
+    "execution_runs/I-06-B/a20260922-02/evidence/red_first_run_recovered/index.md (F-01 rescue index)",
+    "execution_runs/I-06-B/a20260922-02/evidence/red_first_run_recovered/manifest.json (sha256 e5736d7a3d3da9074da4b9911cf2171e83fb1bfbf83cfdc83daffa350e95985b)",
+    "execution_runs/I-06-B/a20260922-02/evidence/red_first_run_recovered/transcription_first_run_observed.md (labeled transcription, NOT original bytes)",
+    "execution_runs/I-06-B/a20260922-02/recovery/README.md",
+    "execution_runs/I-06-B/a20260922-02/review.md (carrier landing; transcribes reviewer_report.md, adds no acceptance)",
+    "execution_runs/I-06-B/a20260922-02/evidence/I-06-B/qualification.json (carrier landing record)"
+  ],
+  "START_HERE_fields": {
+    "recorded_status_transition": "planned → implementing → review_pending → accepted_scoped (verdict transcribed at carrier landing; authority = status_authority)",
+    "cannot_replace": "independent review (DONE — ACCEPT WITH FINDINGS, carrier reviewer_report.md 855a302d…); L3 flip (SATISFIED by sibling a20260923-01, review ACCEPT 0c74f22d…); H2 (OPEN-5 C6 gaps validator — implementation surface still owed); 产品实现本身",
+    "九步执行法位置": "第 1–9 步完成（第 4 步冻结 + dated APPEND-1；第 7 步三臂红绿可复跑；第 9 步独立 reviewer 已出 ACCEPT WITH FINDINGS）；第 10 项 = bookkeeping 承运落定（本 pass，纯转录）"
+  },
+  "carried_findings": [
+    {
+      "id": "F-01",
+      "class": "MEDIUM",
+      "carrier": "reviewer_report.md §3 lines 110–111",
+      "disposition": "fixed_or_resolved",
+      "resolution_kind": "fixed post-review, in-mother (before this landing)",
+      "substance": "commands.json's 'strictly incremental: no evidence deleted, run_log.txt rewritten once' sentence was self-contradictory and overstated retention: run1/run2 evidence/red/*.json + run_log segments were same-name OVERWRITTEN by run3 ⇒ 'raw first-run artifacts present' did not hold; only %TEMP% scratch + three textual self-descriptions remained.",
+      "fix": "salvage of both %TEMP% scratch batches into evidence/red_first_run_recovered/ — 33 payload directories / 30 files (run1 13 dirs/12 files 23:05:37–39; run2 20 dirs/18 files 23:05:54–56) + manifest.json (33-entry listing) + index.md + transcription_first_run_observed.md; the transcription is explicitly labeled NOT original bytes; irrecoverables (run1/run2 original red JSONs and run_log bytes) honestly ABSENT per index.md §不可恢复, never fabricated; commands.json rewritten as honest two-sentence account with the original sentence retained verbatim in __historical.original_notes_sentence_before_F01_fix; %TEMP% originals not deleted (copy, not cut)",
+      "after_sha256": {
+        "commands.json": "560052dc44b5781e90a23af3e19d237b0b459dda7d54f6bd58183ea3e6f4732e",
+        "evidence/red_first_run_recovered/manifest.json": "e5736d7a3d3da9074da4b9911cf2171e83fb1bfbf83cfdc83daffa350e95985b",
+        "evidence/red_first_run_recovered/index.md": "0ca3f6476aea40af406585be12affe69e0568484f6c4a73d478cc0f7077e418f",
+        "evidence/red_first_run_recovered/transcription_first_run_observed.md": "f91abc5ed63797fb6a0ba082d128665cae2d935dc1ce5f11e3c36dc1bc221441",
+        "decision.md": "518af92f688661ecf7d64e1109e48f41f245ec5e14b01ee000da3caeb09c3a6d"
+      },
+      "before_state": {
+        "files": {
+          "commands.json": {"before_sha256": "69a8b0e5b7657f12fc09b8ef60a7d99dbca455211add40c8241ef178e3c8149c", "before_bytes": 3960, "after_sha256": "560052dc44b5781e90a23af3e19d237b0b459dda7d54f6bd58183ea3e6f4732e", "after_bytes": 4506},
+          "decision.md": {"before_sha256": "8d9390b1dc68324d699ae6c4c205963fd50a93242e9fe1a482c49abfd73a25c8", "after_sha256": "518af92f688661ecf7d64e1109e48f41f245ec5e14b01ee000da3caeb09c3a6d"},
+          "handoff.json": {"before_sha256": "78b5b7c56fc8244d4d751b6a72d1416364e6734ed2aa978c484c5098bea0660b", "after_sha256": "9b48d169afbfcc03be29ed0c9e85e72f0b7bc87ebb2b8a91344004ac1bc00cfa", "note": "after = this carrier-landing pass's handoff pre-image"}
+        },
+        "verbatim_before_text_still_retained_at": "commands.json commands[CMD-I06B2-RED-ORIGINAL].__historical.original_notes_sentence_before_F01_fix (content-level before-state)",
+        "source": "实现者整改回报 (implementer remediation report) — 落定时补录 (backfilled post-landing at the parent's dispatch, 2026-09-23); the before-bytes are no longer on disk, so these pairs rest on the implementer's report, not on an on-disk re-hash"
+      },
+      "before_state__superseded": {
+        "superseded_reason": "before-hashes held by the implementer's remediation report were backfilled post-landing (parent dispatch, 2026-09-23)",
+        "superseded_on": "carrier-landing follow-up, 2026-09-23",
+        "original_text_verbatim": "retained VERBATIM as text at commands.json commands[CMD-I06B2-RED-ORIGINAL].__historical.original_notes_sentence_before_F01_fix; before FILE hash was never persisted anywhere on disk — honestly UNAVAILABLE (not guessed); see review.md unverified note"
+      },
+      "source": "implementer's report as carried on disk: decision.md §4 条5 + commands.json notes/__historical + evidence/red_first_run_recovered/index.md"
+    },
+    {
+      "id": "F-02",
+      "class": "MEDIUM",
+      "carrier": "reviewer_report.md §3 lines 113–114",
+      "disposition": "fixed_or_resolved",
+      "resolution_kind": "fixed post-review, in-mother (before this landing)",
+      "substance": "binding.json protocol claimed 'step 2 (binding) written before any run' while the file's CreationTime=LastWriteTime=2026-09-22 23:13:21 (after all three arm runs) and it embeds evidence_anchors ⇒ no pre-run version on disk; the step-2-before-any-run claim was provable on disk only for oracle.md (ct 22:54:32).",
+      "fix": "binding.json.protocol rewritten as an honest two-part statement — (i) this binding was FINALIZED AFTER the three runs (23:13:21, with the exact run timestamps), (ii) the ONLY on-disk pre-run proof artifact is oracle.md (ct 22:54:32 < first run 23:06:27; APPEND-1 LastWrite 23:12:44 < snap2 run 23:12:48); the run_cases.py post-first-run revision (mtime 23:06:24) cross-referenced to its disclosures; original claim retained verbatim in binding.json __historical.protocol_original_claim_before_F02_fix",
+      "after_sha256": {
+        "binding.json": "7b69093dbfb7eb06a346b657de662ae2a39e1126469ac1ca8503c24f6ea9ddf8",
+        "decision.md": "518af92f688661ecf7d64e1109e48f41f245ec5e14b01ee000da3caeb09c3a6d"
+      },
+      "before_state": {
+        "files": {
+          "binding.json": {"before_sha256": "a0fce0d39130bef92e97d0ec44d73a0c2c3eb52a63ddff4325766c53a924fd1f", "after_sha256": "7b69093dbfb7eb06a346b657de662ae2a39e1126469ac1ca8503c24f6ea9ddf8"},
+          "decision.md": {"before_sha256": "8d9390b1dc68324d699ae6c4c205963fd50a93242e9fe1a482c49abfd73a25c8", "after_sha256": "518af92f688661ecf7d64e1109e48f41f245ec5e14b01ee000da3caeb09c3a6d"},
+          "handoff.json": {"before_sha256": "78b5b7c56fc8244d4d751b6a72d1416364e6734ed2aa978c484c5098bea0660b", "after_sha256": "9b48d169afbfcc03be29ed0c9e85e72f0b7bc87ebb2b8a91344004ac1bc00cfa", "note": "after = this carrier-landing pass's handoff pre-image"}
+        },
+        "verbatim_before_text_still_retained_at": "binding.json __historical.protocol_original_claim_before_F02_fix ('NINE-STEP execution method, step 2 (binding) written before any run')",
+        "source": "实现者整改回报 (implementer remediation report) — 落定时补录 (backfilled post-landing at the parent's dispatch, 2026-09-23); the before-bytes are no longer on disk, so these pairs rest on the implementer's report, not on an on-disk re-hash"
+      },
+      "before_state__superseded": {
+        "superseded_reason": "before-hashes held by the implementer's remediation report were backfilled post-landing (parent dispatch, 2026-09-23)",
+        "superseded_on": "carrier-landing follow-up, 2026-09-23",
+        "original_text_verbatim": "retained VERBATIM as text at binding.json __historical.protocol_original_claim_before_F02_fix ('NINE-STEP execution method, step 2 (binding) written before any run'); before FILE hash was never persisted on disk — honestly UNAVAILABLE (not guessed)"
+      },
+      "forward_lesson_applied": "sibling attempt a20260923-01 builds the F-02 lesson into its own binding: binding.protocol HONEST TIMING + binding.pre_run_freeze_proof.oracle.md (hash-matched on disk at its review)"
+    },
+    {
+      "id": "F-03",
+      "class": "LOW",
+      "carrier": "reviewer_report.md §3 lines 116–117 (+ §5.2 lines 148–150)",
+      "disposition": "fixed_or_resolved",
+      "resolution_kind": "resolved by sibling attempt a20260923-01 (dispatched path ②)",
+      "substance": "mother harness judged L3b by source-text contiguous substring 'MP1 in text' while the product pin test's BLOCK_SENTENCE is two adjacent literals (break at '…blocked per ' / 'policy (…)') ⇒ source text lacks the contiguous MP-1 and rerun stays RED(L3b) although the runtime constant == MP-1 (reviewer ast recomputation). Two offered routes: ① product pin single-literal rewrite, ② I-06-B-side L3b AST/runtime equivalence (harness change → new attempt + dated APPEND + freeze-before-run).",
+      "resolution": "path ② executed in a20260923-01: new attempt + new oracle frozen 2026-09-22 23:43:57.525 before both runs + harness delta = import ast + case_L3 only (changes.diff 5a7abba7…, 9477 B) + §5.2 verbatim rerun commands on both arms + L3 PASS both arms + the sibling's own independent reviewer re-ran L3 (-B) PASS",
+      "resolution_carrier_review": {
+        "file": "execution_runs/I-06-B/a20260923-01/reviewer_report.md",
+        "bytes": 21990,
+        "sha256": "0c74f22dc27b8e21d31134319f04851322d126ae4f36ba6b16a6456164f27620",
+        "verdict": "ACCEPT (6 INFO findings), pinned by its reviewer_report.sha256"
+      },
+      "l3_both_arms_anchors": {
+        "evidence/fixed/summary.json": "3cef19204f4efea25487ccc0bc74d99c1e98456fb188408e59e8bc31ce64bac8",
+        "evidence/fixed/L3.json": "9057c2911c2f59cfef3d08c30ef4fd431cba8150c382ce5f84ab789922ec5f24",
+        "evidence/original/summary.json": "5b5b5bfe8c763d236ba24875ac4b1130bb8cb911a54cdc24c80f26c73ccd4120",
+        "evidence/original/L3.json": "915d6933e01c0f5f78ecbb40ac3f7a89a712f484b3cf8a0741c0c3c3397fa598",
+        "plus": "the sibling attempt's independent reviewer rerun (%TEMP%/rev_rev_L3, python -B) = L3 PASS, exit 0"
+      },
+      "coexistence_note": "mother L3=RED(historical, as-of its snapshot) and sibling L3=PASS are different-timepoint records; neither overwrites the other"
+    },
+    {
+      "id": "F-04",
+      "class": "LOW",
+      "carrier": "reviewer_report.md §3 lines 119–120",
+      "disposition": "disclosed",
+      "substance": "as-of labeling stops at directory + document level: binding has both snapshot sha256s but no run timestamps (those live in evidence/*/summary.json started_at/finished_at) and per-case JSONs carry only iso:'fixed' without snapshot sha; attribution currently rests on directory name green_snap1_0b6e723e/ + binding anchors + three textual 'as-of snapshot ≠ fix-card acceptance' declarations, triple-corroborated by timeline + case-A behavior difference",
+      "recommendation_carried": "add snapshot_sha256 into summary and run timestamps into binding (process item; not implemented here — no attempt files were edited beyond the F-01/F-02 fix round)"
+    },
+    {
+      "id": "F-05",
+      "class": "LOW",
+      "carrier": "reviewer_report.md §3 lines 122–123",
+      "disposition": "disclosed",
+      "substance": "snap1 raw bytes (0b6e723e…) left the disk when iso/fixed was refreshed for snap2 ⇒ snap1 sha256 NOT recomputable; its pre-P7 nature supported behaviorally (green_snap1/A.json key1==key2==07a602c1…, same key as original) + binding declaration",
+      "recommendation_carried": "refresh snapshots per iso_fixed_snapN/ instead of overwriting (recovery/README already has the same-direction process)",
+      "note": "sibling attempt a20260923-01 copied iso FROM snap2 and verified 18/18 sha-identical against this attempt ⇒ snap2 bytes independently re-checkable; snap1 bytes remain unrecoverable (carried in the unverified list)"
+    },
+    {
+      "id": "F-06",
+      "class": "INFO",
+      "carrier": "reviewer_report.md §3 lines 125–126",
+      "disposition": "disclosed",
+      "substance": "the reviewer's own R1–R4 re-runs created 4 __pycache__ dirs under iso/ (CreationTime 23:19:30–31; implementer's tree had 0) — disclosed and cleaned immediately by the reviewer (pycache count back to 0; only the 4 directories' LastWriteTime changed to cleanup instant 23:30:49); reviewer deleted its own 3 i06b_* scratch dirs, kept 4 rev_i06b_* outputs as its evidence; outside reviewer_report.md + reviewer_report.sha256 the reviewer wrote nothing into the attempt",
+      "forward_lesson": "re-runs should use -B / PYTHONDONTWRITEBYTECODE=1 — applied by sibling attempt a20260923-01 (reviewer rerun with -B, pycache count 0 after)"
+    },
+    {
+      "id": "F-07",
+      "class": "INFO",
+      "carrier": "reviewer_report.md §3 lines 128–129",
+      "disposition": "disclosed",
+      "substance": "the FIX card kept evolving during this review (iso/candidate/processing_demand_store.py rewritten 23:20:13, cd071322… → 1bbcf9ce…, 21675→22164 B, Oracle APPEND D docstring; FIX evidence and product tests/ landing 23:14–23:2x) ⇒ every GREEN judgment in the mother review is as-of snap2 only (cd071322…/88154de4… + run 23:12:48), and the mother review confers NO acceptance on the FIX card",
+      "fix_separately_accepted": "FIX-W06-GAPS obtained its own independent review: carrier execution_runs/FIX-W06-GAPS/a20260922-01/reviewer_report.md, 26319 B, sha256 b42d9418dfbb8a0f7c2f024385ab793d897ae1448f98c73cd7520077b7a5b4b1, verdict line 11 '## VERDICT — ACCEPT (scoped), with findings F1–F7' (verified read-only at this landing)"
+    }
+  ],
+  "status_authority": {
+    "verdict": "accepted_scoped",
+    "verdict_label_as_written_by_reviewer": "ACCEPT WITH FINDINGS",
+    "verdict_written_by": "独立复核 (the delegated independent review session; never the implementer — the reviewer signed only its own report and self-signed no status field in this file)",
+    "verdict_is_transcribed_not_authored": true,
+    "landing_carrier": {
+      "file": "review.md",
+      "role": "carrier-landing verdict block written by this bookkeeping pass; it transcribes the reviewer's verdict and adds no acceptance of its own; the reviewer wrote NO verdict into review.md — the reviewer's words are in reviewer_report.md (which this pass did not modify)",
+      "pre_image": "none — review.md did not previously exist in this attempt (no implementer stub)"
+    },
+    "authority_carrier": {
+      "file": "reviewer_report.md",
+      "path_inside_attempt": "reviewer_report.md",
+      "line_range_inclusive_1_based": [1, 190],
+      "verdict_line": 13,
+      "verdict_line_range_inclusive": [13, 13],
+      "first_line_of_verdict": "**VERDICT = ACCEPT WITH FINDINGS（通过，带 7 条 findings；本卡 scope = 可失败测试套件，交付面成立）**",
+      "verdict_section_line_range_inclusive": [11, 19],
+      "reviewer_identity_no_self_sign_line_range_inclusive": [3, 6],
+      "reruns_line_range_inclusive": [23, 32],
+      "verifications_line_range_inclusive": [36, 104],
+      "findings_section_line_range_inclusive": [108, 129],
+      "unverified_section_line_range_inclusive": [133, 141],
+      "scope_section_line_range_inclusive": [145, 153],
+      "recompute_list_line_range_inclusive": [157, 182],
+      "selfcheck_signature_line_range_inclusive": [186, 190],
+      "sha256": "855a302d4d970e3f2c0460e5ae423184a87c8c1de2521726d3dbd4a051164f04",
+      "bytes": 26131,
+      "total_lines": 190,
+      "encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+      "byte_proof": {
+        "verdict_line": {"start": 704, "end_inclusive": 827, "length": 124, "sha256": "4eead429957b3d6b45b211edefbbb48b2637faa5f8ddaffb32f5f3e13fad2373"},
+        "verdict_section": {"lines": [11, 19], "start": 690, "end_inclusive": 1415, "length": 726, "sha256": "7c4bebcea63b2c09317679b66111709a15e4c0e6a97d3686299f116f050d395c"},
+        "reviewer_identity_no_self_sign": {"lines": [3, 6], "start": 85, "end_inclusive": 577, "length": 493, "sha256": "45741dabb881dd0301016c9650fd7ebbe57f92408a3bd2e81e2a9ab99fac17dc"},
+        "reruns": {"lines": [23, 32], "start": 1423, "end_inclusive": 2931, "length": 1509, "sha256": "0ebd98dcd326076a356869bd1de9aa5c24d4bc1d09ad23e7ea307397593b4070"},
+        "verifications": {"lines": [36, 104], "start": 2939, "end_inclusive": 14421, "length": 11483, "sha256": "2569ac4017e60912ed7727a31ad3d90c3d05fe521ff074868757df5596892bcc"},
+        "findings_section": {"lines": [108, 129], "start": 14429, "end_inclusive": 19446, "length": 5018, "sha256": "292f3f20cc9a119d3475855a4a505c1859d1ca0ef2e05cd5557a71bc37a4e7c1"},
+        "unverified_section": {"lines": [133, 141], "start": 19454, "end_inclusive": 21253, "length": 1800, "sha256": "1b9c6b91b6a35c42f20feee8af595cded67584881e6c1e5ab13bcd7c7aaed7a2"},
+        "scope_section": {"lines": [145, 153], "start": 21261, "end_inclusive": 22827, "length": 1567, "sha256": "b88b5fd88f46cf26184cdc777b8437c9c6cf87bae0fbfdf97763cb00e9d39af6"},
+        "recompute_list": {"lines": [157, 182], "start": 22835, "end_inclusive": 25524, "length": 2690, "sha256": "911983ecb7839b6ca6b4b6adf037149892304e4573a694d812c95698a9acadb9"},
+        "selfcheck_signature": {"lines": [186, 190], "start": 25532, "end_inclusive": 26129, "length": 598, "sha256": "fcdfd419db218f8fc0a03374fd17950f96e908549e785e43b4382353c35504ec"},
+        "region_definition": "byte offsets are 0-based against the file as it stands at the recorded sha256; multi-line regions include internal LFs and exclude the final LF"
+      },
+      "pin_sidecar": {
+        "file": "reviewer_report.sha256",
+        "present": true,
+        "bytes": 85,
+        "sha256": "a0ccbc5d200d2eb93e3d9a8b9648eb234836c5137ae903c9caa869c95ba511d8",
+        "content": "855a302d4d970e3f2c0460e5ae423184a87c8c1de2521726d3dbd4a051164f04  reviewer_report.md",
+        "verified": "sidecar sha matches an independent read-only re-hash of reviewer_report.md at landing time (26131 B, 190 lines) and the dispatch pin (855a302d…4f04); 0 bytes written by this pass"
+      }
+    },
+    "sibling_flip_carrier": {
+      "attempt": "a20260923-01",
+      "file": "reviewer_report.md",
+      "sha256": "0c74f22dc27b8e21d31134319f04851322d126ae4f36ba6b16a6456164f27620",
+      "bytes": 21990,
+      "verdict": "ACCEPT (6 INFO findings)",
+      "role": "F-03 flip carrier — satisfies the mother review's L3 condition (path ②); also verified read-only at this landing"
+    },
+    "fix_separate_acceptance_reference": {
+      "attempt": "execution_runs/FIX-W06-GAPS/a20260922-01",
+      "file": "reviewer_report.md",
+      "sha256": "b42d9418dfbb8a0f7c2f024385ab793d897ae1448f98c73cd7520077b7a5b4b1",
+      "bytes": 26319,
+      "verdict": "ACCEPT (scoped), findings F1–F7 (line 11)",
+      "role": "GREEN-as-of-snapshot ≠ FIX acceptance: the FIX card is accepted under its OWN review, never by this card"
+    }
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-23",
+    "what_this_pass_did": "verified the mother carrier read-only (reviewer_report.md 26131 B / 190 lines / 855a302d…4f04 == dispatch pin == sidecar content, verdict line 13) and the sibling carrier (a20260923-01 reviewer_report.md 21990 B / 0c74f22d…7620 == its sidecar, verdict ACCEPT) plus the five post-review amendment files (commands 560052dc…, binding 7b69093d…, decision 518af92f…, handoff pre-image 9b48d169…, manifest e5736d7a…); created review.md with a transcribed verdict block (no acceptance of its own); set handoff status accepted_scoped + status_before_bookkeeping_fix review_pending + status_authority (line ranges + sha256 + byte proofs + sidecar + verdict_is_transcribed_not_authored), bookkeeping, and 7 carried findings F-01..F-07; added disclosure_adaptation=unmapped / accuracy=unproven; superseded two stale pre-verdict prose fields byte-exact under *_historical_pre_verdict (reviewer_status, next_action); created evidence/I-06-B/qualification.json; wrote 0 bytes to either reviewer report or either sidecar, 0 bytes to product trees, 0 git writes",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "sibling_attempt_bytes_written": 0,
+    "post_review_amendment_files_bytes_written": 0,
+    "product_files_written": 0,
+    "rf_product_write_attribution": "ZERO product files were written by this attempt — prod_repos_modified stays NONE (RF scripts/tests and CW src were read-only; the two RF tests/ files landed after this attempt's last write and belong to the FIX card, as the mother review attributes). Because this attempt touched no product byte, NO FIX-face attribution applies to it: there is no product write for any authorized face to own.",
+    "git_writes": 0,
+    "status_transition": "review_pending -> accepted_scoped",
+    "files_written": [
+      "review.md (created)",
+      "handoff.json (status + status_before_bookkeeping_fix + status_authority + bookkeeping + 7 carried findings appended + disclosure_adaptation/accuracy + completed_steps step-9/step-10 updates + 2 stale pre-verdict fields superseded under *_historical_pre_verdict; pre-existing content otherwise untouched)",
+      "evidence/I-06-B/qualification.json (created, this landing's record)"
+    ],
+    "handoff_pre_image": "10598 B / sha256 9b48d169afbfcc03be29ed0c9e85e72f0b7bc87ebb2b8a91344004ac1bc00cfa (before this pass's edits)",
+    "F-01_F-02_fix_round": "fixed DURING the review cycle, in-mother, AFTER the verdict (the reviewer did not see the fixes; the fixes do not alter the verdict). Before-state retained verbatim in the __historical blocks of commands.json / binding.json; file-level before-hashes were backfilled post-landing from the implementer's remediation report (parent dispatch, 2026-09-23 — full pairs at carried_findings F-01/F-02 before_state; 原值留痕: \"file-level before-hashes were never persisted on disk and are honestly unavailable\"); file-level after-hashes re-measured read-only at this landing — full detail in carried_findings F-01 / F-02.",
+    "F-03_resolution_pointer": "resolved by sibling attempt a20260923-01; resolution carrier = its reviewer_report.md, 21990 B, sha256 0c74f22dc27b8e21d31134319f04851322d126ae4f36ba6b16a6456164f27620 (verdict ACCEPT, sidecar-pinned); L3 both-arm anchors 3cef1920…/9057c291… + 5b5b5bfe…/915d6933… + sibling reviewer rerun PASS — see carried_findings F-03 and status_authority.sibling_flip_carrier"
+  }
+}

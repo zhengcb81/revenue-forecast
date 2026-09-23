@@ -1,0 +1,1689 @@
+# changes.diff — FIX-W06-GAPS a20260922-01 (exact unified hunks)
+# scope: repair ONLY; originals pinned in before/ (byte-identical) and in
+# before/MANIFEST.json.  Production source (revenue-forecast scripts/,
+# company-wiki src/) untouched — the company-wiki hunks below are the
+# PROPOSED product-side application of the iso fixes (reviewer applies).
+
+## repo:revenue-forecast  [APPLIED (test-only surface, parent-authorized)]
+
+### tests/test_fc905b_trusted_receipt.py
+# after sha256: db8bbb48648adadbbbfdf9dfa5a077c6c10a411a34867f6c5c058e0cf19903e1
+# before sha256: e5c965e5bfea67593772555d12ef68a325206e2559018b3333dbe715478b9684
+
+--- a/tests/test_fc905b_trusted_receipt.py
++++ b/tests/test_fc905b_trusted_receipt.py
+@@ -13,10 +13,17 @@
+   minimal invalidation (the role is never read; DAG-minimal producer events).
+ 
+ RED phase: the envelope fields are ignored / hardcoded values remain.
++
++FIX-W06-GAPS P4-SCOPE (iso after-copy; product edit recorded in
++changes.diff): the loose `match="not reviewed|blocked"` coverage is replaced
++with a VERBATIM pin of the full blocked sentence — a one-byte wording change
++now turns these tests red (see test_message_contract_pins.py for the
++complete pin set incl. the three-copy convergence).
+ """
+ from __future__ import annotations
+ 
+ import json
++import re
+ import subprocess
+ import sys
+ from pathlib import Path
+@@ -27,6 +34,11 @@
+ import pytest  # noqa: E402
+ 
+ from company_wiki_source import CompanyWikiSourceError, select_artifact_roles  # noqa: E402
++
++BLOCK_SENTENCE = (
++    "prompt injection not reviewed — source preparation blocked per "
++    "policy (prompt_injection_status=not_reviewed)"
++)
+ 
+ 
+ def _envelope(**overrides) -> dict:
+@@ -73,7 +85,7 @@
+ 
+ 
+ def test_b1_not_reviewed_blocks(monkeypatch):
+-    with pytest.raises(RuntimeError, match="not reviewed|blocked"):
++    with pytest.raises(RuntimeError, match=re.escape(BLOCK_SENTENCE)):
+         _run(monkeypatch, _envelope(prompt_injection_status="not_reviewed"))
+ 
+ 
+@@ -82,7 +94,7 @@
+     -> blocked (filing-fetch normalizes N-1 upstream; revenue never assumes)."""
+     envelope = _envelope()
+     del envelope["prompt_injection_status"]
+-    with pytest.raises(RuntimeError, match="not reviewed|blocked"):
++    with pytest.raises(RuntimeError, match=re.escape(BLOCK_SENTENCE)):
+         _run(monkeypatch, envelope)
+ 
+ 
+
+### tests/test_message_contract_pins.py
+# after sha256: 41da045cacd4e902fbd0ca5dbc7b21fa134ecb2a1dea1ac023ab419b98b0e2d4
+
+--- /dev/null
++++ b/tests/test_message_contract_pins.py
+@@ -0,0 +1,269 @@
++"""Message-contract pins — verbatim text assertions (FIX-W06-GAPS P4-SCOPE).
++
++SCENARIO: FIX-W06-GAPS (card FIX-W06-GAPS, owner ruling 「fail 的全部要修复」;
++pin face 2 = the RF product test surface).  Replaces the loose
++`match="not reviewed|blocked"` style coverage with VERBATIM, assertable pins
++for the message contracts the OPEN5-DOUBT-PROBE sweep (evidence
++04_blocked_message_sweep.md) found UNPINNED, so a one-byte wording change
++turns these tests red instead of passing silently:
++
++  #2  the full blocked sentence (RF scripts/source_preparation.py) — verbatim;
++  #5  the six demand/claim refusal texts (RF + CW processing_demand.py) —
++      verbatim behavior pins AND cross-repo (RF/CW) equality (逐字同文);
++  #8  the "{field} must be a lowercase SHA-256" family — verbatim behavior pins;
++  #9  the parser/llm counts fail-closed sentence — verbatim.
++  #3  `cases_json_declared_expectation_missing` = RUNNER vocabulary, not
++      product vocabulary (per decision.md clarification): the correct state
++      is ZERO hits in both repos — pinned as a structural zero-hit assertion.
++  #6  resume refusal text: product surface is ABSENT (unbuilt interface,
++      OPEN-5 C4 pending instantiation) — pinned as structural absence so the
++      current state cannot drift unnoticed.
++
++Path overrides for mutation testing (flip one byte in a copy, point the env
++vars at the copy, expect RED):
++  GAPS_PIN_RF_SCRIPTS  default <repo>/scripts
++  GAPS_PIN_CW_DIR      default <repo>/../company-wiki/src/company_wiki/source_catalog
++"""
++from __future__ import annotations
++
++import importlib.util
++import json
++import os
++import shutil
++import sqlite3
++import sys
++from pathlib import Path
++
++import pytest
++
++ROOT = Path(__file__).resolve().parents[1]
++
++# Defaults work both from the product tests/ dir and from the attempt's iso
++# copy; mutation runs override via env (see module docstring).
++_RF_DEFAULT = ROOT / "scripts"
++if not (_RF_DEFAULT / "source_preparation.py").is_file():
++    _RF_DEFAULT = Path(r"C:\Users\郑曾波\Projects\revenue-forecast\scripts")
++_CW_DEFAULT = ROOT.parent / "company-wiki" / "src" / "company_wiki" / "source_catalog"
++if not (_CW_DEFAULT / "processing_demand.py").is_file():
++    _CW_DEFAULT = Path(
++        r"C:\Users\郑曾波\Projects\company-wiki\src\company_wiki\source_catalog")
++
++RF_SCRIPTS = Path(os.environ.get("GAPS_PIN_RF_SCRIPTS", _RF_DEFAULT))
++CW_DIR = Path(os.environ.get("GAPS_PIN_CW_DIR", _CW_DEFAULT))
++
++BLOCK_SENTENCE = (
++    "prompt injection not reviewed — source preparation blocked per "
++    "policy (prompt_injection_status=not_reviewed)"
++)
++COUNTS_SENTENCE = (
++    "parser/llm counts absent from the resolution envelope — fail "
++    "closed instead of fabricating 0"
++)
++
++# (case id, contract form, verbatim rendered text) — oracle M-P2 item 15.
++REFUSAL_CONTRACT = {
++    "missing": ('f"no demand {demand_id!r}"', "no demand 'pd-x'"),
++    "not_claimable": ('f"demand {demand_id!r} is not claimable"',
++                      "demand 'pd-0' is not claimable"),
++    "backoff": ('f"demand {demand_id!r} is in backoff"',
++                "demand 'pd-0' is in backoff"),
++    "no_ready": ('"no ready demand to claim"', "no ready demand to claim"),
++    "wrong_owner": ("f\"lease owned by {demand.lease_owner!r}\"",
++                    "lease owned by 'w1'"),
++    "lease_expired": ('"lease expired"', "lease expired"),
++}
++
++
++def _load_module(name: str, path: Path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    mod = importlib.util.module_from_spec(spec)
++    sys.modules[name] = mod  # dataclasses need module registration
++    spec.loader.exec_module(mod)
++    return mod
++
++
++def _load_rf_demand():
++    return _load_module(f"pin_rf_demand_{id(object())}", RF_SCRIPTS / "processing_demand.py")
++
++
++def _drive_six_refusals(mod) -> dict:
++    texts: dict[str, str] = {}
++    q = mod.DemandQueue(lease_seconds=10.0)
++    try:
++        q.claim(owner="w", now=1.0, demand_id="pd-x")
++    except Exception as exc:  # noqa: BLE001
++        texts["missing"] = str(exc)
++    q = mod.DemandQueue(lease_seconds=10.0)
++    d = q.enqueue(key="k", kind="review", now=0.0)
++    q.claim(owner="tA", now=1.0, demand_id=d.demand_id)
++    try:
++        q.claim(owner="tB", now=2.0, demand_id=d.demand_id)
++    except Exception as exc:  # noqa: BLE001
++        texts["not_claimable"] = str(exc)
++    q = mod.DemandQueue(lease_seconds=10.0)
++    d = q.enqueue(key="k", kind="review", now=0.0)
++    q.claim(owner="tA", now=0.0, demand_id=d.demand_id)
++    q.fail(demand_id=d.demand_id, owner="tA", now=1.0)
++    try:
++        q.claim(owner="tA", now=2.0, demand_id=d.demand_id)
++    except Exception as exc:  # noqa: BLE001
++        texts["backoff"] = str(exc)
++    q = mod.DemandQueue(lease_seconds=10.0)
++    try:
++        q.claim(owner="w", now=1.0)
++    except Exception as exc:  # noqa: BLE001
++        texts["no_ready"] = str(exc)
++    q = mod.DemandQueue(lease_seconds=10.0)
++    d = q.enqueue(key="k", kind="review", now=0.0)
++    q.claim(owner="w1", now=1.0, demand_id=d.demand_id)
++    try:
++        q.complete(demand_id=d.demand_id, owner="w2", now=2.0)
++    except Exception as exc:  # noqa: BLE001
++        texts["wrong_owner"] = str(exc)
++    q = mod.DemandQueue(lease_seconds=10.0)
++    d = q.enqueue(key="k", kind="review", now=0.0)
++    q.claim(owner="w1", now=0.0, demand_id=d.demand_id)
++    try:
++        q.complete(demand_id=d.demand_id, owner="w1", now=20.0)
++    except Exception as exc:  # noqa: BLE001
++        texts["lease_expired"] = str(exc)
++    return texts
++
++
++def _load_cw_pair(tmp_path: Path):
++    """prompt_injection + prompt_injection_guard as a real mini package."""
++    pkg = tmp_path / "pi_pkg"
++    if not pkg.exists():
++        pkg.mkdir()
++        (pkg / "__init__.py").write_text("", encoding="utf-8")
++        for name in ("prompt_injection.py", "prompt_injection_guard.py"):
++            shutil.copy2(CW_DIR / name, pkg / name)
++    sys.path.insert(0, str(tmp_path))
++    try:
++        pi = importlib.import_module("pi_pkg.prompt_injection")
++        guard = importlib.import_module("pi_pkg.prompt_injection_guard")
++    finally:
++        sys.path.remove(str(tmp_path))
++    return pi, guard
++
++
++# --- #2: the full blocked sentence, verbatim --------------------------------
++
++
++def test_block_sentence_pinned_verbatim():
++    import ast
++
++    source = (RF_SCRIPTS / "source_preparation.py").read_text(encoding="utf-8")
++    constants = [
++        node.value for node in ast.walk(ast.parse(source))
++        if isinstance(node, ast.Constant) and isinstance(node.value, str)
++    ]
++    assert BLOCK_SENTENCE in constants, (
++        "the full blocked sentence drifted from its pinned verbatim text")
++    assert constants.count(BLOCK_SENTENCE) == 1
++
++
++# --- #9: parser/llm counts fail-closed sentence, verbatim -------------------
++
++
++def test_counts_sentence_pinned_verbatim():
++    import ast
++
++    source = (RF_SCRIPTS / "source_preparation.py").read_text(encoding="utf-8")
++    constants = [
++        node.value for node in ast.walk(ast.parse(source))
++        if isinstance(node, ast.Constant) and isinstance(node.value, str)
++    ]
++    assert COUNTS_SENTENCE in constants
++
++
++# --- #5: six demand/claim refusal texts, verbatim + cross-repo equality ------
++
++
++def test_six_refusal_texts_pinned_verbatim_rf():
++    texts = _drive_six_refusals(_load_rf_demand())
++    assert texts == {case: verbatim for case, (_, verbatim)
++                     in REFUSAL_CONTRACT.items()}
++
++
++def test_six_refusal_texts_cross_repo_equal_cw():
++    if not (CW_DIR / "processing_demand.py").is_file():
++        pytest.skip(f"company-wiki checkout not found at {CW_DIR}")
++    texts = _drive_six_refusals(
++        _load_module(f"pin_cw_demand_{id(object())}",
++                     CW_DIR / "processing_demand.py"))
++    assert texts == {case: verbatim for case, (_, verbatim)
++                     in REFUSAL_CONTRACT.items()}
++
++
++def test_six_refusal_sources_verbatim_identical():
++    if not (CW_DIR / "processing_demand.py").is_file():
++        pytest.skip(f"company-wiki checkout not found at {CW_DIR}")
++    for _, verbatim in REFUSAL_CONTRACT.values():
++        rendered_literal = verbatim.split(" '")[0] if "'" in verbatim else verbatim
++        # both repos must contain the same source-level message text
++        rf_src = (RF_SCRIPTS / "processing_demand.py").read_text(encoding="utf-8")
++        cw_src = (CW_DIR / "processing_demand.py").read_text(encoding="utf-8")
++        token = {
++            "no demand 'pd-x'": "no demand {demand_id!r}",
++            "demand 'pd-0' is not claimable": "is not claimable",
++            "demand 'pd-0' is in backoff": "is in backoff",
++            "no ready demand to claim": "no ready demand to claim",
++            "lease owned by 'w1'": "lease owned by {demand.lease_owner!r}",
++            "lease expired": '"lease expired"',
++        }[verbatim]
++        assert token in rf_src and token in cw_src, rendered_literal
++
++
++# --- #8: "{field} must be a lowercase SHA-256" family, verbatim -------------
++
++
++def test_lowercase_sha256_family_pinned(tmp_path):
++    pi, guard = _load_cw_pair(tmp_path)
++    con = sqlite3.connect(":memory:")
++    con.execute("CREATE TABLE documents (document_id TEXT PRIMARY KEY, metadata_json TEXT)")
++    con.execute("INSERT INTO documents VALUES('doc-1', '{}')")
++    with pytest.raises(ValueError) as excinfo:
++        pi.record_prompt_injection_review(
++            con, "doc-1", status="not_detected", reviewer="r",
++            evidence_sha256="ABC", now="2026-09-22T00:00:00Z")
++    assert str(excinfo.value) == "evidence_sha256 must be a lowercase SHA-256"
++    with pytest.raises(ValueError) as excinfo:
++        guard.scan_text("x", ruleset_hash="ABC")
++    assert str(excinfo.value) == "ruleset_hash must be a lowercase SHA-256"
++    with pytest.raises(ValueError) as excinfo:
++        guard.evaluate_review(
++            con, "doc-1", source_sha256="ABC", policy_hash="b" * 64,
++            now="2026-09-22T00:00:00Z", ttl_seconds=1.0)
++    assert str(excinfo.value) == "source_sha256 must be a lowercase SHA-256"
++    with pytest.raises(ValueError) as excinfo:
++        guard.evaluate_review(
++            con, "doc-1", source_sha256="b" * 64, policy_hash="ABC",
++            now="2026-09-22T00:00:00Z", ttl_seconds=1.0)
++    assert str(excinfo.value) == "policy_hash must be a lowercase SHA-256"
++
++
++# --- #3: runner vocabulary is NOT product vocabulary (structural zero-hit) ---
++
++
++def test_cases_json_declared_expectation_missing_absent_in_product():
++    needle = "cases_json_declared_expectation_missing"
++    for tree in (RF_SCRIPTS, CW_DIR):
++        if not tree.is_dir():
++            continue
++        for path in tree.rglob("*.py"):
++            assert needle not in path.read_text(encoding="utf-8", errors="replace"), (
++                f"{needle!r} unexpectedly present in {path} — "
++                f"it is RUNNER vocabulary (M01-M04 runner side), not product vocabulary")
++
++
++# --- #6: resume surface is structurally ABSENT (OPEN-5 C4 pending) ----------
++
++
++def test_resume_refusal_surface_structurally_absent():
++    mod = _load_rf_demand()
++    assert not hasattr(mod.DemandQueue, "resume")  # OPEN-5 C4: pending instantiation
++    for path in (RF_SCRIPTS / "processing_demand.py",
++                 CW_DIR / "processing_demand.py"):
++        if path.is_file():
++            assert "def resume" not in path.read_text(encoding="utf-8")
+
+## repo:company-wiki  [PROPOSED ONLY — product source READ-ONLY, not applied]
+
+### src/company_wiki/source_catalog/prompt_injection.py
+# after sha256: 88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33
+# before sha256: 7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618
+
+--- a/src/company_wiki/source_catalog/prompt_injection.py
++++ b/src/company_wiki/source_catalog/prompt_injection.py
+@@ -6,23 +6,77 @@
+ 
+     {"status": "not_detected" | "detected_and_ignored",
+      "reviewer": <non-empty>, "reviewed_at": <UTC>,
+-     "evidence_sha256": <64-hex>, "schema_version": "1.0"}
++     "evidence_sha256": <64-hex>, "schema_version": "1.0",
++     "state_domain": "review"}
+ 
+ Absent receipt == ``not_reviewed`` (the envelope reports that explicitly;
+ consumers block per policy — FC-905-b).  The writer validates fail-closed.
++
++FIX-W06-GAPS repairs (oracle.md; COPIES ONLY — the product module is
++untouched and stays byte-identical in before/):
++
++  * P5-c dual binding MANDATORY for every status: ``source_sha256`` and
++    ``policy_hash`` are required (lowercase SHA-256) — a receipt without
++    source/policy binding is refused, closing the write-side gap the
++    reader already treats as tampered.
++  * P5-a payload binding + scan re-verification: ``evidence_payload`` (the
++    scanned bytes/text) is required, ``sha256(payload) must ==
++    evidence_sha256``, and ``scan_text(payload)`` is re-run internally —
++    a declared status that contradicts the scan verdict is refused (a
++    fabricated "clean" receipt over an actually-injected payload can no
++    longer be written).  Residual forgery face (any hash recomputable from
++    any payload) closes only with the OPEN-6 C1/C2 authorized-tuple +
++    signature identity chain (letter B) — see decision.md.
++  * P5-b disposal gate for ``detected_and_ignored`` (fail-closed): the
++    authorization tuple (ignore_reason non-empty + ignore_authorizer +
++    authorized_at + declared hit snapshot) must be complete, the trust root
++    loaded (>= 1 signer key) and the authorizer signature verified — any
++    gap is a defined ``disposal authorization unavailable: <item>``
++    refusal.  Without an established trust root the status is ALWAYS
++    refused (no identity => zero product-semantic lines).  The
++    ``not_detected`` reviewer stays a free string but every write is
++    audited (writer_pid / writer_write_at / explicit NOT-identity note).
++  * P6-A optimistic concurrency control: the read-modify-write of the
++    shared ``documents.metadata_json`` column is a CAS (bounded retries,
++    then a defined ``concurrent write conflict`` refusal) and every write
++    is read-back-provable via the append-only
++    ``prompt_injection_review_audit`` trail — no silent displacement.
++  * P6-B sqlite contention never escapes bare: writer/reader sqlite
++    failures surface as ``store busy/lock timeout: ...``.
++  * C7 state_domain disambiguation (fallback after the frozen-vocabulary
++    conflict check): every receipt is stamped ``state_domain: "review"``;
++    a record without it (or with an illegal value) is refused/fail-closed
++    — the review conclusion ``detected_and_ignored`` can never be read as
++    the cache state ``ignored`` and vice versa.
+ """
+ 
+ from __future__ import annotations
+ 
++import base64
++import hashlib
+ import json
++import os
+ import re
++import sqlite3
+ from typing import Any
+ 
+ PROMPT_INJECTION_REVIEW_KEY = "prompt_injection_review"
++PROMPT_INJECTION_REVIEW_AUDIT_KEY = "prompt_injection_review_audit"
+ PROMPT_INJECTION_REVIEW_SCHEMA_VERSION = "1.0"
+ PROMPT_INJECTION_REVIEW_STATUSES = frozenset(
+     {"not_detected", "detected_and_ignored"})
+ _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
++
++# C7: explicit domain tags on every state-carrying record (fail-closed:
++# missing or illegal => refuse/strictest, never defaulted into either
++# semantics).
++STATE_DOMAIN_CACHE = "cache"
++STATE_DOMAIN_REVIEW = "review"
++STATE_DOMAINS = frozenset({STATE_DOMAIN_CACHE, STATE_DOMAIN_REVIEW})
++
++WRITER_IDENTITY_NOTE = "writer metadata is an audit trail, NOT verified identity"
++
++_CAS_MAX_ATTEMPTS = 5
+ 
+ 
+ class PromptInjectionReviewError(ValueError):
+@@ -61,8 +115,149 @@
+             f"schema_version must be "
+             f"{PROMPT_INJECTION_REVIEW_SCHEMA_VERSION!r}")
+     _require_sha256(evidence_sha256, "evidence_sha256")
+-    _require_sha256(source_sha256, "source_sha256", optional=True)
+-    _require_sha256(policy_hash, "policy_hash", optional=True)
++    # FIX-W06-GAPS P5-c: dual binding MANDATORY for every status (was
++    # optional=True — an unbound receipt was accepted while the reader
++    # treats missing binding as tampered).
++    _require_sha256(source_sha256, "source_sha256")
++    _require_sha256(policy_hash, "policy_hash")
++
++
++def _canonical_bytes(value: object) -> bytes:
++    return json.dumps(
++        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
++    ).encode("utf-8")
++
++
++def _load_scan_text():
++    from .prompt_injection_guard import scan_text
++    return scan_text
++
++
++def _load_trust_root(path: str | None) -> dict[str, bytes]:
++    """key_id -> raw ed25519 public key bytes; empty when unestablished."""
++    if path is None:
++        path = os.environ.get("PROMPT_INJECTION_TRUST_ROOT")
++    if not path:
++        return {}
++    try:
++        with open(path, "r", encoding="utf-8") as handle:
++            raw = json.load(handle)
++        signers = raw.get("signers") if isinstance(raw, dict) else None
++        if not isinstance(signers, dict):
++            return {}
++        keys: dict[str, bytes] = {}
++        for key_id, entry in signers.items():
++            if isinstance(entry, dict) and entry.get("algorithm") == "ed25519":
++                try:
++                    keys[str(key_id)] = base64.b64decode(
++                        entry.get("public_key_base64", ""), validate=True)
++                except (ValueError, TypeError):
++                    continue
++        return keys
++    except (OSError, json.JSONDecodeError, TypeError, RecursionError):
++        return {}
++
++
++def _ed25519_verify(public_key_raw: bytes, message: bytes,
++                    signature: bytes) -> bool | None:
++    """True/False, or None when no signature backend is available."""
++    try:
++        from cryptography.hazmat.primitives.asymmetric.ed25519 import (
++            Ed25519PublicKey,
++        )
++    except ImportError:
++        return None
++    try:
++        key = Ed25519PublicKey.from_public_bytes(public_key_raw)
++        key.verify(signature, message)
++        return True
++    except Exception:  # noqa: BLE001 — any verification failure == invalid
++        return False
++
++
++def _disposal_gate(
++    *,
++    document_id: str,
++    status: str,
++    source_sha256: str,
++    policy_hash: str,
++    evidence_sha256: str,
++    ignore_reason: str | None,
++    ignore_authorizer: str | None,
++    authorized_at: str | None,
++    declared_matches: Any,
++    signer_key_id: str | None,
++    authorizer_signature: str | None,
++    trust_root_path: str | None,
++) -> dict[str, str]:
++    """P5-b: detected_and_ignored passes ONLY with (tuple) + (trust root)
++    + (verified authorizer signature); every gap is a defined refusal."""
++    if not ignore_reason or not str(ignore_reason).strip():
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: ignore_reason")
++    if not ignore_authorizer or not str(ignore_authorizer).strip():
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: ignore_authorizer")
++    if not authorized_at or not str(authorized_at).strip():
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: authorized_at")
++    if not declared_matches:
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: declared_matches")
++    trust_root = _load_trust_root(trust_root_path)
++    if not trust_root:
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: trust root not established")
++    if not signer_key_id:
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: signer_key_id")
++    if not authorizer_signature:
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: authorizer signature")
++    if signer_key_id not in trust_root:
++        raise PromptInjectionReviewError(
++            f"disposal authorization unavailable: signer key {signer_key_id!r} "
++            f"not in trust root")
++    message = _canonical_bytes({
++        "authorized_at": str(authorized_at),
++        "document_id": document_id,
++        "evidence_sha256": evidence_sha256,
++        "ignore_authorizer": str(ignore_authorizer),
++        "ignore_reason": str(ignore_reason),
++        "matches": list(declared_matches),
++        "policy_hash": policy_hash,
++        "source_sha256": source_sha256,
++        "status": "detected_and_ignored",
++    })
++    signature_bytes = base64.b64decode(str(authorizer_signature), validate=True)
++    verified = _ed25519_verify(trust_root[signer_key_id], message, signature_bytes)
++    if verified is None:
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: signature verification "
++            "backend unavailable")
++    if not verified:
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: authorizer signature invalid")
++    return {
++        "ignore_reason": str(ignore_reason),
++        "ignore_authorizer": str(ignore_authorizer),
++        "authorized_at": str(authorized_at),
++        "matches": json.dumps(list(declared_matches), ensure_ascii=False),
++        "signer_key_id": str(signer_key_id),
++    }
++
++
++def _parse_metadata(raw: Any) -> dict:
++    try:
++        metadata = json.loads(raw or "{}")
++        if not isinstance(metadata, dict):
++            metadata = {}
++    except (json.JSONDecodeError, TypeError, RecursionError):
++        # B-VR05M2-04: the WRITE-side sibling of the reader fixed above; it also caught
++        # only JSONDecodeError, so deep nesting raised RecursionError out of the receipt
++        # writer (tests only today, but the same class of defect).
++        metadata = {}
++    return metadata
+ 
+ 
+ def record_prompt_injection_review(
+@@ -76,18 +271,30 @@
+     schema_version: str = PROMPT_INJECTION_REVIEW_SCHEMA_VERSION,
+     source_sha256: str | None = None,
+     policy_hash: str | None = None,
++    evidence_payload: str | bytes | None = None,
++    ignore_reason: str | None = None,
++    ignore_authorizer: str | None = None,
++    authorized_at: str | None = None,
++    declared_matches: Any = None,
++    signer_key_id: str | None = None,
++    authorizer_signature: str | None = None,
++    trust_root_path: str | None = None,
++    state_domain: str | None = None,
+ ) -> dict[str, str]:
+     """Write (or overwrite) the document's prompt-injection review receipt.
+ 
+-    ``connection`` must be a sqlite3.Connection (caller owns commit).
++    ``connection`` must be a sqlite3.Connection.  FIX-W06-GAPS P6-B contract
++    amendment: the writer owns the transaction end of ITS own write (commit
++    on success, rollback on failure) — the caller-side commit was where a
++    bare ``database is locked`` escaped under contention.  Callers may still
++    commit/rollback afterwards for their own pending work.
+     Validates fail-closed: status enum, non-empty reviewer, sha256 evidence,
+-    non-empty document_id, schema version.
+-
+-    ZR-302 (additive, N-1 compatible): ``source_sha256`` and ``policy_hash``
+-    are optional binding fields — when provided both must be lowercase
+-    SHA-256; they are recorded in the receipt so a later cache evaluation
+-    can distinguish a fresh review (hit) from an ignored/expired/tampered
+-    one.  Callers that do not provide them keep the legacy FC-905 behavior.
++    non-empty document_id, schema version.  FIX-W06-GAPS additionally:
++    mandatory dual binding (P5-c), mandatory evidence payload binding +
++    scan re-verification (P5-a), the detected_and_ignored disposal gate
++    (P5-b), CAS concurrency + audit trail (P6-A) and wrapped sqlite
++    contention (P6-B).  Timeout semantics: the caller's connection/timeout
++    parameters may only be tightened — this writer adds no waits.
+     """
+     _validate_review_inputs(
+         document_id=document_id,
+@@ -98,38 +305,115 @@
+         source_sha256=source_sha256,
+         policy_hash=policy_hash,
+     )
+-    row = connection.execute(
+-        "SELECT metadata_json FROM documents WHERE document_id=?",
+-        (document_id,),
+-    ).fetchone()
+-    if row is None:
+-        raise PromptInjectionReviewError(f"unknown document {document_id}")
+-    try:
+-        metadata = json.loads(row[0] or "{}")
+-        if not isinstance(metadata, dict):
+-            metadata = {}
+-    except (json.JSONDecodeError, TypeError, RecursionError):
+-        # B-VR05M2-04: the WRITE-side sibling of the reader fixed above; it also caught
+-        # only JSONDecodeError, so deep nesting raised RecursionError out of the receipt
+-        # writer (tests only today, but the same class of defect).
+-        metadata = {}
++    # C7: receipts are review-domain records; a conflicting tag is refused.
++    if state_domain is not None and state_domain != STATE_DOMAIN_REVIEW:
++        raise PromptInjectionReviewError(
++            f"state_domain must be 'review' for a review receipt "
++            f"(got {state_domain!r})")
++    # P5-a payload binding.
++    if evidence_payload is None:
++        raise PromptInjectionReviewError(
++            "evidence_payload must be provided "
++            "(evidence_sha256 must bind the evidence bytes)")
++    payload_bytes = (evidence_payload.encode("utf-8")
++                     if isinstance(evidence_payload, str) else bytes(evidence_payload))
++    if hashlib.sha256(payload_bytes).hexdigest() != evidence_sha256:
++        raise PromptInjectionReviewError(
++            "evidence_sha256 does not match sha256(evidence_payload)")
++    # P5-a scan re-verification: the declared status must match scan fact.
++    scan_text = _load_scan_text()
++    scan = scan_text(evidence_payload.decode("utf-8", "replace")
++                     if isinstance(evidence_payload, bytes) else evidence_payload)
++    if scan.status != status:
++        raise PromptInjectionReviewError(
++            f"declared status {status!r} contradicts scan verdict "
++            f"{scan.status!r} (fail closed)")
++    disposal_fields: dict[str, str] = {}
++    if status == "detected_and_ignored":
++        disposal_fields = _disposal_gate(
++            document_id=document_id, status=status,
++            source_sha256=str(source_sha256), policy_hash=str(policy_hash),
++            evidence_sha256=evidence_sha256,
++            ignore_reason=ignore_reason, ignore_authorizer=ignore_authorizer,
++            authorized_at=authorized_at, declared_matches=declared_matches,
++            signer_key_id=signer_key_id,
++            authorizer_signature=authorizer_signature,
++            trust_root_path=trust_root_path,
++        )
+     receipt: dict[str, str] = {
+         "schema_version": schema_version,
+         "status": status,
+         "reviewer": reviewer,
+         "reviewed_at": now,
+         "evidence_sha256": evidence_sha256,
++        "source_sha256": str(source_sha256),
++        "policy_hash": str(policy_hash),
++        # C7: explicit review-domain tag (fail-closed on missing/illegal).
++        "state_domain": STATE_DOMAIN_REVIEW,
++        # P5-b: reviewer is a free string — writer metadata is recorded for
++        # audit only and is explicitly NOT identity.
++        "writer_pid": str(os.getpid()),
++        "writer_write_at": str(now),
++        "writer_identity_note": WRITER_IDENTITY_NOTE,
+     }
+-    if source_sha256 is not None:
+-        receipt["source_sha256"] = source_sha256
+-    if policy_hash is not None:
+-        receipt["policy_hash"] = policy_hash
+-    metadata[PROMPT_INJECTION_REVIEW_KEY] = receipt
+-    connection.execute(
+-        "UPDATE documents SET metadata_json=? WHERE document_id=?",
+-        (json.dumps(metadata, ensure_ascii=False), document_id),
+-    )
+-    return receipt
++    receipt.update(disposal_fields)
++    audit_entry = {
++        "writer_pid": str(os.getpid()),
++        "write_at": str(now),
++        "evidence_sha256": evidence_sha256,
++        "source_sha256": str(source_sha256),
++        "policy_hash": str(policy_hash),
++        "status": status,
++    }
++    try:
++        for _attempt in range(_CAS_MAX_ATTEMPTS):
++            row = connection.execute(
++                "SELECT metadata_json FROM documents WHERE document_id=?",
++                (document_id,),
++            ).fetchone()
++            if row is None:
++                raise PromptInjectionReviewError(f"unknown document {document_id}")
++            old_raw = row[0]
++            metadata = _parse_metadata(old_raw)
++            audit = metadata.get(PROMPT_INJECTION_REVIEW_AUDIT_KEY)
++            if not isinstance(audit, list):
++                audit = []
++            metadata[PROMPT_INJECTION_REVIEW_AUDIT_KEY] = audit + [
++                dict(audit_entry, seq=len(audit) + 1)
++            ]
++            metadata[PROMPT_INJECTION_REVIEW_KEY] = receipt
++            new_raw = json.dumps(metadata, ensure_ascii=False)
++            # P6-A: compare-and-swap on the value this write was computed
++            # from — a concurrent change is never silently overwritten.
++            if old_raw is None:
++                cursor = connection.execute(
++                    "UPDATE documents SET metadata_json=? WHERE document_id=? "
++                    "AND metadata_json IS NULL",
++                    (new_raw, document_id),
++                )
++            else:
++                cursor = connection.execute(
++                    "UPDATE documents SET metadata_json=? WHERE document_id=? "
++                    "AND metadata_json=?",
++                    (new_raw, document_id, old_raw),
++                )
++            if cursor.rowcount == 1:
++                # P6-B: the writer owns the transaction end of ITS write —
++                # the caller-side commit is where a bare "database is locked"
++                # used to escape (06 Phase A2).  Commit here so every lock
++                # failure surfaces as the defined store error instead.
++                connection.commit()
++                return receipt
++        connection.rollback()
++        raise PromptInjectionReviewError(
++            f"concurrent write conflict: document {document_id}")
++    except sqlite3.Error as exc:  # P6-B: never a bare sqlite3.* escape
++        try:
++            connection.rollback()
++        except sqlite3.Error:
++            pass
++        raise PromptInjectionReviewError(
++            f"store busy/lock timeout: {type(exc).__name__}: {exc}") from exc
+ 
+ 
+ def read_prompt_injection_review(
+@@ -138,13 +422,17 @@
+     """Read the document's review receipt, or None when not reviewed.
+ 
+     ``store`` must expose ``fetchone(sql, params)`` (CatalogStore-compatible).
+-    A malformed receipt (bad schema/status) fails closed as ``not_reviewed``
+-    rather than being trusted.
++    A malformed receipt (bad schema/status, missing or illegal state_domain)
++    fails closed as ``not_reviewed`` rather than being trusted.
+     """
+-    row = store.fetchone(
+-        "SELECT metadata_json FROM documents WHERE document_id=?",
+-        (document_id,),
+-    )
++    try:
++        row = store.fetchone(
++            "SELECT metadata_json FROM documents WHERE document_id=?",
++            (document_id,),
++        )
++    except sqlite3.Error as exc:  # P6-B: reader path too
++        raise PromptInjectionReviewError(
++            f"store busy/lock timeout: {type(exc).__name__}: {exc}") from exc
+     if row is None:
+         return None
+     try:
+@@ -158,6 +446,10 @@
+             return None
+         if receipt.get("status") not in PROMPT_INJECTION_REVIEW_STATUSES:
+             return None
++        # C7 fail-closed: a state-carrying record without a valid domain tag
++        # is ambiguous — never defaulted into either semantics.
++        if receipt.get("state_domain") != STATE_DOMAIN_REVIEW:
++            return None
+         return receipt
+     except (json.JSONDecodeError, TypeError, RecursionError, UnicodeDecodeError):
+         # B-VR05M-03 (P1): the shared column is written by several modules and can be
+
+### src/company_wiki/source_catalog/prompt_injection_guard.py
+# after sha256: 17f0dc58f6530f0f0f8dbe5099cd655edfe3b7b4404300e3e594ef38534ed31b
+# before sha256: f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08
+
+--- a/src/company_wiki/source_catalog/prompt_injection_guard.py
++++ b/src/company_wiki/source_catalog/prompt_injection_guard.py
+@@ -20,6 +20,16 @@
+ This module is shadow-only on the evaluation side (reads via the
+ CatalogStore-compatible ``store.fetchone``); receipt generation still goes
+ through the existing write path in ``prompt_injection``.
++
++FIX-W06-GAPS C7 (oracle.md; COPIES ONLY): same-word ambiguity between the
++cache-invalidation state ``cache_state="ignored"`` and the review
++conclusion ``detected_and_ignored`` is disambiguated with an EXPLICIT
++``state_domain`` tag on every state-carrying record (``cache`` | ``review``).
++The rename route (``ignored`` -> ``policy_changed``) is BLOCKED by frozen
++vocabulary (I-06-B oracle.md:87 pins ``cache_state="ignored"`` in frozen
++acceptance expectations) — see decision.md for the conflict list.  The
++domain tag is fail-closed: missing or illegal => refused / strictest,
++never defaulted into either semantics.
+ """
+ 
+ from __future__ import annotations
+@@ -34,6 +44,9 @@
+     PROMPT_INJECTION_REVIEW_KEY,
+     PROMPT_INJECTION_REVIEW_SCHEMA_VERSION,
+     PROMPT_INJECTION_REVIEW_STATUSES,
++    STATE_DOMAIN_CACHE,
++    STATE_DOMAIN_REVIEW,
++    STATE_DOMAINS,
+ )
+ 
+ PROMPT_INJECTION_GUARD_SCHEMA_VERSION = "1.0"
+@@ -64,6 +77,22 @@
+     """Raised when a scan/evaluation input is invalid (fail closed)."""
+ 
+ 
++def require_state_domain(value: Any, expected: str) -> None:
++    """C7 fail-closed domain gate.
++
++    A state token is only interpretable inside its own domain: a missing or
++    illegal tag is refused, and a record of one domain can never be read as
++    the other (``state_domain 'cache' record cannot be read as 'review'``).
++    """
++    if value not in STATE_DOMAINS:
++        raise PromptInjectionGuardError(
++            f"state_domain {value!r} is missing or illegal — fail closed "
++            f"(ambiguity is never defaulted)")
++    if value != expected:
++        raise PromptInjectionGuardError(
++            f"state_domain {value!r} record cannot be read as {expected!r}")
++
++
+ @dataclass(frozen=True)
+ class ScanResult:
+     """Deterministic scanner verdict over one text."""
+@@ -75,11 +104,24 @@
+ 
+ @dataclass(frozen=True)
+ class ReviewEvaluation:
+-    """Cache evaluation of a stored review receipt."""
++    """Cache evaluation of a stored review receipt (state_domain="cache")."""
+ 
+     status: str  # not_detected | detected_and_ignored | not_reviewed
+     cache_state: str  # hit | ignored | expired | tampered | absent
++    state_domain: str  # C7: REQUIRED explicit domain tag (cache)
+     reason: str = ""
++
++    def __post_init__(self) -> None:
++        # C7 fail-closed: missing (TypeError at construction) or illegal or
++        # cross-domain tags are refused — ambiguity must never pass.
++        if self.state_domain not in STATE_DOMAINS:
++            raise PromptInjectionGuardError(
++                f"state_domain {self.state_domain!r} is missing or illegal — "
++                f"fail closed (ambiguity is never defaulted)")
++        if self.state_domain != STATE_DOMAIN_CACHE:
++            raise PromptInjectionGuardError(
++                f"ReviewEvaluation state_domain must be 'cache', "
++                f"got {self.state_domain!r}")
+ 
+ 
+ def scan_text(text: str, ruleset_hash: str = RULESET_HASH) -> ScanResult:
+@@ -125,6 +167,9 @@
+             return None
+         if receipt.get("status") not in PROMPT_INJECTION_REVIEW_STATUSES:
+             return None
++        # C7 fail-closed: no valid domain tag => ambiguous => never trusted.
++        if receipt.get("state_domain") != STATE_DOMAIN_REVIEW:
++            return None
+         return receipt
+     except json.JSONDecodeError:
+         return None
+@@ -146,11 +191,13 @@
+     if receipt.get("source_sha256") != source_sha256:
+         return ReviewEvaluation(
+             status="not_reviewed", cache_state="tampered",
++            state_domain=STATE_DOMAIN_CACHE,
+             reason="source bytes changed since review",
+         )
+     if receipt.get("policy_hash") != policy_hash:
+         return ReviewEvaluation(
+             status="not_reviewed", cache_state="ignored",
++            state_domain=STATE_DOMAIN_CACHE,
+             reason="policy ruleset changed since review",
+         )
+     return None
+@@ -163,11 +210,13 @@
+     if reviewed_at is None or now_seconds is None:
+         return ReviewEvaluation(
+             status="not_reviewed", cache_state="tampered",
++            state_domain=STATE_DOMAIN_CACHE,
+             reason="receipt reviewed_at is not ISO-8601 UTC",
+         )
+     if now_seconds - reviewed_at > ttl_seconds:
+         return ReviewEvaluation(
+             status="not_reviewed", cache_state="expired",
++            state_domain=STATE_DOMAIN_CACHE,
+             reason=f"review older than {ttl_seconds:g}s TTL",
+         )
+     return None
+@@ -196,7 +245,9 @@
+         raise PromptInjectionGuardError("ttl_seconds must be >= 0")
+     receipt = _receipt_from_store(store, document_id)
+     if receipt is None:
+-        return ReviewEvaluation(status="not_reviewed", cache_state="absent")
++        return ReviewEvaluation(
++            status="not_reviewed", cache_state="absent",
++            state_domain=STATE_DOMAIN_CACHE)
+     mismatch = _binding_mismatch(receipt, source_sha256, policy_hash)
+     if mismatch is not None:
+         return mismatch
+@@ -205,6 +256,7 @@
+         return stale
+     return ReviewEvaluation(
+         status=str(receipt["status"]), cache_state="hit",
++        state_domain=STATE_DOMAIN_CACHE,
+         reason="receipt fresh and bound",
+     )
+ 
+@@ -217,6 +269,8 @@
+     "PromptInjectionGuardError",
+     "ReviewEvaluation",
+     "ScanResult",
++    "STATE_DOMAINS",
+     "evaluate_review",
++    "require_state_domain",
+     "scan_text",
+ ]
+
+### src/company_wiki/source_catalog/readiness_graph.py
+# after sha256: 50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b
+# before sha256: 3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc
+
+--- a/src/company_wiki/source_catalog/readiness_graph.py
++++ b/src/company_wiki/source_catalog/readiness_graph.py
+@@ -15,6 +15,11 @@
+ Shadow only: reads exclusively through the zero-write ``CatalogReader``
+ (plus the guard's store-compatible reads); no catalog writes, no
+ production wiring (production entrypoints land in later cards).
++
++FIX-W06-GAPS C7 (oracle.md; COPIES ONLY): an unrecognized safety
++cache_state is now fail-closed to the strictest verdict ("unsatisfied"
++with a frozen next action) instead of a bare KeyError — ambiguity must
++never pass and the decision graph has no crash-only dead end.
+ """
+ 
+ from __future__ import annotations
+@@ -43,6 +48,10 @@
+     "tampered": ("unsatisfied", "verify source bytes and re-run the prompt-injection review"),
+     "absent": ("unknown", "run the prompt-injection scanner and record a review receipt"),
+ }
++
++# FIX-W06-GAPS C7: fail-closed fallback for unknown/illegal cache_state.
++_UNRECOGNIZED_SAFETY_NEXT = (
++    "unrecognized safety cache_state — fail closed (ambiguity is never defaulted)")
+ 
+ # Blocker -> next action for the seven non-safety stages (from ZR-301).
+ _STAGE_NEXT_ACTIONS: dict[str, str] = {
+@@ -101,7 +110,10 @@
+         now=now,
+         ttl_seconds=ttl_seconds,
+     )
+-    verdict, next_action = _SAFETY_MAP[evaluation.cache_state]
++    verdict, next_action = _SAFETY_MAP.get(
++        evaluation.cache_state,
++        ("unsatisfied", _UNRECOGNIZED_SAFETY_NEXT),
++    )
+     return verdict, evaluation.cache_state, next_action
+ 
+ 
+
+## attempt:FIX-W06-GAPS/a20260922-01  [attempt-local copies (fix in COPIES)]
+
+### iso/candidate/processing_demand_store.py
+# after sha256: 1bbcf9ce727a9882cc2ca4aa2f0ab335077debee418b19d80317721cfae6be88
+# before sha256: 7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f
+
+--- a/iso/candidate/processing_demand_store.py
++++ b/iso/candidate/processing_demand_store.py
+@@ -19,6 +19,30 @@
+ 
+ Key derivation, columns, file name and CLI surface are CANDIDATE choices and
+ must be replaced by whatever D-W06 freezes.
++
++FIX-W06-GAPS repairs (card FIX-W06-GAPS, oracle.md) — COPIES ONLY:
++  * P1   `_initialize()` is now a REAL additive migrator (introspect columns,
++         ALTER TABLE ADD COLUMN for each missing column, idempotent, old rows
++         preserved) — CREATE TABLE IF NOT EXISTS alone silently no-ops on an
++         N-1 table and left register()/claim() crashing on missing columns.
++  * P1/P2 sqlite failures in every path surface as the store's own error types
++         (DemandStoreUnavailable / DemandStoreError) with the store's own
++         message contract — never a bare sqlite3.* exception.
++  * P2-B `claim()` never fails silently with a bare None: every refusal is a
++         defined `DemandStateError` with a verbatim, assertable message
++         (see oracle.md M-D1).
++  * P3-A `expire()` is the explicit reclaim entry for expired running leases
++         (memory-queue DemandQueue.expire() shape); reclaiming is always
++         explicit — `claim()` never silently steals a running row.
++  * P3-B post-expiry claim refusals say "lease expired" (defined), never None.
++  * P7  the idempotency key is REVISED to OPEN-2 option A (OPEN-5 ruling
++         §4.5 item 1): sha256(canonical {source_sha256, review_policy,
++         role_set, request_identity}) with request_identity covering
++         as_of_date / target / payload digest; versioned via `key_version`
++         (legacy triple-key rows keep their historical semantics — never
++         recomputed or silently merged).
++  `resume`/`complete` remain deliberately absent (unbuilt interfaces, I-06-B
++  domain; a paused worker is REPORTED, never resumed).
+ """
+ 
+ from __future__ import annotations
+@@ -54,6 +78,7 @@
+     attempts INTEGER NOT NULL DEFAULT 0,
+     lease_owner TEXT,
+     lease_until REAL,
++    key_version TEXT NOT NULL DEFAULT 'triple-v1',
+     created_at REAL NOT NULL,
+     updated_at REAL NOT NULL
+ );
+@@ -61,6 +86,26 @@
+     ON processing_demands(demand_key, status);
+ """
+ 
++# FIX-W06-GAPS P1: the columns the current DEMAND_SCHEMA adds on top of the
++# N-1 shape.  Each entry is (column name, ALTER TABLE ADD COLUMN fragment),
++# nullable/defaulted per DEMAND_SCHEMA (NOT NULL columns need constant
++# defaults so legacy rows survive the upgrade).
++# APPEND A (P7): key_version joins the additive set — legacy rows default to
++# 'triple-v1' (their historical key semantics are preserved, never
++# recomputed); new registrations write 'request-identity-v2'.
++ADDITIVE_COLUMN_SPECS: tuple[tuple[str, str], ...] = (
++    ("request_sha256", "TEXT NOT NULL DEFAULT ''"),
++    ("request_json", "TEXT NOT NULL DEFAULT '{}'"),
++    ("candidate_marker", "TEXT NOT NULL DEFAULT ''"),
++    ("attempts", "INTEGER NOT NULL DEFAULT 0"),
++    ("lease_owner", "TEXT"),
++    ("lease_until", "REAL"),
++    ("key_version", "TEXT NOT NULL DEFAULT 'triple-v1'"),
++)
++
++KEY_VERSION_TRIPLE_V1 = "triple-v1"
++KEY_VERSION_REQUEST_IDENTITY_V2 = "request-identity-v2"
++
+ 
+ class DemandStoreError(RuntimeError):
+     """The durable store could not be used — never fall back to memory."""
+@@ -68,6 +113,10 @@
+ 
+ class DemandStoreUnavailable(DemandStoreError):
+     """Writing/reading the durable store failed (permissions, disk, schema)."""
++
++
++class DemandStateError(DemandStoreError):
++    """A defined claim/lease refusal (coded contract; never a bare None)."""
+ 
+ 
+ class ProcessingDemandRecord:
+@@ -93,6 +142,7 @@
+             "created_at": row["created_at"],
+             "updated_at": row["updated_at"],
+             "candidate_marker": row["candidate_marker"],
++            "key_version": row["key_version"],
+         }
+ 
+ 
+@@ -103,13 +153,45 @@
+     return hashlib.sha256(encoded).hexdigest()
+ 
+ 
+-def demand_key(*, source_sha256: str, review_policy: str, role_set: str) -> str:
+-    """The frozen idempotency triple: bytes identity + policy + roles."""
++def request_identity(request: dict) -> dict:
++    """FIX-W06-GAPS P7 (OPEN-5 ruling §4.5 item 1 = OPEN-2 option A):
++    request identity covering as_of_date / target / payload digest.
++
++    Oracle APPEND D: the three components are disjoint and independently
++    observable — payload_digest covers the request payload EXCLUDING
++    as_of_date/target, so dropping any one identity field is detectable
++    (the frozen mutation criterion), while together they cover the whole
++    request (as_of_date + target + residual payload = full identity).
++    """
++    residual = {
++        key: value for key, value in request.items()
++        if key not in ("as_of_date", "target")
++    }
++    return {
++        "as_of_date": request.get("as_of_date"),
++        "target": request.get("target"),
++        "payload_digest": canonical_sha256(residual),
++    }
++
++
++def demand_key(
++    *, source_sha256: str, review_policy: str, role_set: str, request: dict
++) -> str:
++    """FIX-W06-GAPS P7: OPEN-2 option A key — bytes identity + policy +
++    roles + REQUEST IDENTITY (as_of_date / target / payload digest).
++
++    Historical note: the pre-P7 candidate key was the triple
++    (source_sha256, review_policy, role_set) — known-insufficient because
++    two requests differing only in as_of_date/target/payload silently
++    shared one demand.  Legacy rows keep their triple-derived keys as
++    history (key_version='triple-v1', never recomputed).
++    """
+     return canonical_sha256(
+         {
+             "source_sha256": source_sha256,
+             "review_policy": review_policy,
+             "role_set": role_set,
++            "request_identity": request_identity(request),
+         }
+     )
+ 
+@@ -127,6 +209,14 @@
+         return connection
+ 
+     def _initialize(self) -> None:
++        """Create-or-migrate: fresh schema AND additive N-1 migration.
++
++        FIX-W06-GAPS P1: CREATE TABLE IF NOT EXISTS alone does NOT add the
++        new columns to an existing N-1 table (silent rc=0 no-op, then
++        register()/claim() crashed on `request_sha256`/`lease_until`).
++        Introspect the physical columns and ALTER TABLE ADD COLUMN each
++        missing one — idempotent (2nd run = no-op, no error), old rows kept.
++        """
+         parent = self.database_path.parent
+         try:
+             parent.mkdir(parents=True, exist_ok=True)
+@@ -137,6 +227,17 @@
+             ) from exc
+         try:
+             connection.executescript(DEMAND_SCHEMA)
++            existing = {
++                row[1]
++                for row in connection.execute(
++                    "PRAGMA table_info(processing_demands)"
++                ).fetchall()
++            }
++            for column_name, ddl in ADDITIVE_COLUMN_SPECS:
++                if column_name not in existing:
++                    connection.execute(
++                        f"ALTER TABLE processing_demands ADD COLUMN {column_name} {ddl}"
++                    )
+             connection.commit()
+         except sqlite3.Error as exc:
+             raise DemandStoreUnavailable(
+@@ -164,6 +265,7 @@
+             source_sha256=source_sha256,
+             review_policy=review_policy,
+             role_set=role_set,
++            request=request,
+         )
+         request_sha = canonical_sha256(request)
+         try:
+@@ -174,11 +276,15 @@
+             ) from exc
+         try:
+             connection.execute("BEGIN IMMEDIATE")
++            # P7: dedupe judges WITHIN the key version — legacy triple-key
++            # rows keep their historical semantics and are never silently
++            # merged with request-identity-keyed registrations.
+             existing = connection.execute(
+                 "SELECT * FROM processing_demands WHERE demand_key=? "
++                "AND key_version=? "
+                 "AND status IN ('pending','running','failed') "
+                 "ORDER BY created_at, demand_id LIMIT 1",
+-                (key,),
++                (key, KEY_VERSION_REQUEST_IDENTITY_V2),
+             ).fetchone()
+             if existing is not None:
+                 connection.execute(
+@@ -195,8 +301,8 @@
+             connection.execute(
+                 "INSERT INTO processing_demands(demand_id,demand_key,kind,status,"
+                 "source_id,source_sha256,review_policy,role_set,gaps_json,"
+-                "request_sha256,request_json,candidate_marker,attempts,created_at,"
+-                "updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
++                "request_sha256,request_json,candidate_marker,attempts,key_version,"
++                "created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                 (
+                     demand_id,
+                     key,
+@@ -211,6 +317,7 @@
+                     json.dumps(request, ensure_ascii=False, sort_keys=True),
+                     CANDIDATE_MARKER,
+                     0,
++                    KEY_VERSION_REQUEST_IDENTITY_V2,
+                     stamp,
+                     stamp,
+                 ),
+@@ -220,7 +327,9 @@
+                 "SELECT * FROM processing_demands WHERE demand_id=?", (demand_id,)
+             ).fetchone()
+             return ProcessingDemandRecord(created).to_dict(), True
+-        except sqlite3.Error as exc:
++        except (sqlite3.Error, KeyError, IndexError) as exc:
++            # KeyError/IndexError = missing-column-class row access on a
++            # degraded schema (same defect class as the sqlite failures).
+             raise DemandStoreUnavailable(
+                 f"demand store write failed: {type(exc).__name__}: {exc}"
+             ) from exc
+@@ -239,30 +348,83 @@
+             rows = connection.execute(
+                 "SELECT * FROM processing_demands ORDER BY created_at, demand_id"
+             ).fetchall()
+-        except sqlite3.Error as exc:
++            return [ProcessingDemandRecord(row).to_dict() for row in rows]
++        except (sqlite3.Error, KeyError, IndexError) as exc:
++            # KeyError/IndexError = missing-column-class row access on a
++            # degraded schema (same defect class as the sqlite failures).
+             raise DemandStoreUnavailable(
+                 f"demand store read failed: {type(exc).__name__}: {exc}"
+             ) from exc
+         finally:
+             connection.close()
+-        return [ProcessingDemandRecord(row).to_dict() for row in rows]
+-
+-    def claim(self, *, owner: str, lease_seconds: float = 300.0) -> dict | None:
+-        """Explicit single consumption grant (never automatic)."""
++
++    def claim(
++        self,
++        *,
++        owner: str,
++        lease_seconds: float = 300.0,
++        demand_id: str | None = None,
++        now: float | None = None,
++    ) -> dict:
++        """Explicit single consumption grant (never automatic).
++
++        FIX-W06-GAPS P2-B/P3-B: this never fails silently with a bare None.
++        Every refusal is a defined `DemandStateError` with a verbatim message
++        (oracle.md M-D1):
++          * unknown id          -> f"no demand {demand_id!r}"
++          * running + expired   -> "lease expired"          (P3-B)
++          * not claimable       -> f"demand {demand_id!r} is not claimable"
++          * nothing claimable   -> "lease expired" when an expired-lease
++            running row is the reason (P3-B), else "no ready demand to claim".
++        An expired RUNNING row is reclaimed via `expire()` — always explicit
++        (P3-A); claim() never silently steals a running row.
++        sqlite failures surface as DemandStoreUnavailable (never bare sqlite3).
++        """
+         self._initialize()
+-        stamp = time.time()
+-        connection = self._connect()
++        stamp = time.time() if now is None else now
++        try:
++            connection = self._connect()
++        except (OSError, sqlite3.Error) as exc:
++            raise DemandStoreUnavailable(
++                f"demand store unavailable: {type(exc).__name__}: {exc}"
++            ) from exc
+         try:
+             connection.execute("BEGIN IMMEDIATE")
+-            row = connection.execute(
+-                "SELECT * FROM processing_demands WHERE status IN ('pending','failed') "
+-                "AND (lease_until IS NULL OR lease_until < ?) "
+-                "ORDER BY created_at, demand_id LIMIT 1",
+-                (stamp,),
+-            ).fetchone()
+-            if row is None:
+-                connection.commit()
+-                return None
++            if demand_id is not None:
++                row = connection.execute(
++                    "SELECT * FROM processing_demands WHERE demand_id=?",
++                    (demand_id,),
++                ).fetchone()
++                if row is None:
++                    connection.commit()
++                    raise DemandStateError(f"no demand {demand_id!r}")
++                if (
++                    row["status"] == "running"
++                    and row["lease_until"] is not None
++                    and row["lease_until"] <= stamp
++                ):
++                    connection.commit()
++                    raise DemandStateError("lease expired")
++                if row["status"] not in ("pending", "failed"):
++                    connection.commit()
++                    raise DemandStateError(f"demand {demand_id!r} is not claimable")
++            else:
++                row = connection.execute(
++                    "SELECT * FROM processing_demands WHERE status IN ('pending','failed') "
++                    "AND (lease_until IS NULL OR lease_until < ?) "
++                    "ORDER BY created_at, demand_id LIMIT 1",
++                    (stamp,),
++                ).fetchone()
++                if row is None:
++                    expired_running = connection.execute(
++                        "SELECT 1 FROM processing_demands WHERE status='running' "
++                        "AND lease_until IS NOT NULL AND lease_until <= ? LIMIT 1",
++                        (stamp,),
++                    ).fetchone()
++                    connection.commit()
++                    if expired_running is not None:
++                        raise DemandStateError("lease expired")
++                    raise DemandStateError("no ready demand to claim")
+             connection.execute(
+                 "UPDATE processing_demands SET status='running', lease_owner=?, "
+                 "lease_until=?, updated_at=? WHERE demand_id=?",
+@@ -274,6 +436,43 @@
+                 (row["demand_id"],),
+             ).fetchone()
+             return ProcessingDemandRecord(claimed).to_dict()
++        except (sqlite3.Error, KeyError, IndexError) as exc:
++            raise DemandStoreUnavailable(
++                f"demand store write failed: {type(exc).__name__}: {exc}"
++            ) from exc
++        finally:
++            connection.close()
++
++    def expire(self, *, now: float | None = None) -> int:
++        """FIX-W06-GAPS P3-A: explicit reclaim of expired running leases.
++
++        Memory-queue DemandQueue.expire() shape: running rows whose
++        lease_until <= now go back to `pending` with the lease cleared;
++        returns the number of rows reclaimed.  Reclaiming is ALWAYS explicit —
++        this is the only way an expired running row becomes claimable again.
++        """
++        self._initialize()
++        stamp = time.time() if now is None else now
++        try:
++            connection = self._connect()
++        except (OSError, sqlite3.Error) as exc:
++            raise DemandStoreUnavailable(
++                f"demand store unavailable: {type(exc).__name__}: {exc}"
++            ) from exc
++        try:
++            connection.execute("BEGIN IMMEDIATE")
++            cursor = connection.execute(
++                "UPDATE processing_demands SET status='pending', lease_owner=NULL, "
++                "lease_until=NULL, updated_at=? WHERE status='running' "
++                "AND lease_until IS NOT NULL AND lease_until <= ?",
++                (stamp, stamp),
++            )
++            connection.commit()
++            return int(cursor.rowcount)
++        except sqlite3.Error as exc:
++            raise DemandStoreUnavailable(
++                f"demand store write failed: {type(exc).__name__}: {exc}"
++            ) from exc
+         finally:
+             connection.close()
+ 
+@@ -302,17 +501,29 @@
+     parser = argparse.ArgumentParser(
+         description=f"candidate durable demand store ({CANDIDATE_MARKER})"
+     )
+-    parser.add_argument("command", choices=("list", "claim"))
++    parser.add_argument("command", choices=("list", "claim", "expire"))
+     parser.add_argument("--database", required=True, type=Path)
+     parser.add_argument("--owner", default="cli")
++    parser.add_argument("--demand-id", default=None)
+     args = parser.parse_args(argv)
+     store = DurableDemandStore(args.database)
+     try:
+         if args.command == "list":
+             payload = {"demands": store.list_active(), "store": str(args.database)}
++        elif args.command == "expire":
++            payload = {"expired": store.expire(), "store": str(args.database)}
+         else:
+-            claimed = store.claim(owner=args.owner)
++            claimed = store.claim(owner=args.owner, demand_id=args.demand_id)
+             payload = {"claimed": claimed, "store": str(args.database)}
++    except DemandStateError as exc:
++        sys.stdout.write(
++            json.dumps(
++                {"error": "demand_state", "detail": str(exc)},
++                ensure_ascii=False,
++            )
++        )
++        sys.stdout.write("\n")
++        return 3
+     except DemandStoreUnavailable as exc:
+         sys.stdout.write(
+             json.dumps(
+
+### iso/candidate/w06a_candidate_patch.py
+# after sha256: 24b3529074150528cf833f53d21864a4910ffc3a7e86a6695cc2fa507faa05e2
+# before sha256: 113e90b0855400f6563ace77ca2fb16729d1b6b06631deceeeddf1c8991fc87b
+
+--- a/iso/candidate/w06a_candidate_patch.py
++++ b/iso/candidate/w06a_candidate_patch.py
+@@ -15,6 +15,13 @@
+ Wiring choice (also a CANDIDATE): the store path, worker-control path and role
+ set come from the environment (RF_W06_DEMAND_STORE / RF_W06_WORKER_CONTROL /
+ RF_W06_ROLE_SET).  D-W06 must freeze the real injection point.
++
++FIX-W06-GAPS P4-SCOPE single-source convergence (oracle M-P2 item 18): the
++blocked sentence is defined ONCE here (`block_message_base`) and consumed by
++block_message() and by w06a_apply_candidate's patch anchor — the hand-copied
++duplicates converge on this constant, and the product literal is pinned equal
++to it by assertion (test_candidate_message_pins.py), since a cross-repo
++import of revenue-forecast's inline literal is not possible.
+ """
+ 
+ from __future__ import annotations
+@@ -24,6 +31,20 @@
+ 
+ _CANDIDATE = True
+ _CANDIDATE_MARKER = "candidate-unratified-I-06-A-a20260919-01"
++
++# Single source for the full block sentence (status interpolated at the
++# parenthesized tail, matching the product wording byte for byte).
++BLOCK_MESSAGE_PREFIX = (
++    "prompt injection not reviewed — source preparation blocked per policy "
++)
++
++
++def block_message_base(prompt_injection_status: str) -> str:
++    """The full blocked sentence for one prompt_injection_status value."""
++    return (
++        f"{BLOCK_MESSAGE_PREFIX}"
++        f"(prompt_injection_status={prompt_injection_status})"
++    )
+ 
+ 
+ def _demand_gaps(envelope: dict, handle: dict) -> list[dict]:
+@@ -136,10 +157,7 @@
+     that the source is unreviewed, and separately that the demand was not
+     persisted (`demand_queued` is absent in that case).
+     """
+-    base = (
+-        "prompt injection not reviewed — source preparation blocked per policy "
+-        f"(prompt_injection_status={prompt_injection_status})"
+-    )
++    base = block_message_base(prompt_injection_status)
+     if registration is None:
+         return base
+     worker = registration.get("worker") or {}
+
+### iso/candidate/w06a_apply_candidate.py
+# after sha256: 7b4f8a51b65641a2aecabb1349a3af6839e39355095fdaef2e205093d52f96f4
+# before sha256: 4bf02f2694118d97ab2050a408930c0c69bd16fc88e4fd3912682e7799e133b7
+
+--- a/iso/candidate/w06a_apply_candidate.py
++++ b/iso/candidate/w06a_apply_candidate.py
+@@ -6,6 +6,14 @@
+ Creates iso/rf_fixed from iso/rf (pristine bytes) and applies the candidate
+ change to scripts/source_preparation.py inside the clone.  No product tree is
+ touched.
++
++FIX-W06-GAPS P4-SCOPE single-source convergence (oracle M-P2 item 18): the
++blocked sentence inside the REPLACED anchor is NOT hand-copied here — it is
++built from w06a_candidate_patch.block_message_base (the one candidate-side
++definition).  The anchor's byte-exactness against the product source is
++guarded by the `candidate anchor not found` self-check AND pinned by
++test_candidate_message_pins.py (product literal == candidate constant ==
++this anchor).
+ """
+ 
+ from __future__ import annotations
+@@ -13,6 +21,7 @@
+ import hashlib
+ import json
+ import shutil
++import sys
+ from pathlib import Path
+ 
+ HERE = Path(__file__).resolve().parent
+@@ -21,6 +30,9 @@
+ SRC_TREE = ISO / "rf"
+ DST_TREE = ISO / "rf_fixed"
+ CANDIDATE = ISO / "candidate"
++
++sys.path.insert(0, str(CANDIDATE))
++from w06a_candidate_patch import block_message_base  # noqa: E402
+ 
+ NEW_BLOCK = '''    # ---- I-06-A CANDIDATE (UNRATIFIED) ----------------------------------
+     # Register the durable demand BEFORE the not_reviewed safety verdict is
+@@ -43,14 +55,23 @@
+     # ---- end I-06-A CANDIDATE -------------------------------------------
+ '''
+ 
+-REPLACED = '''    prompt_injection_status = envelope.get("prompt_injection_status")
+-    if prompt_injection_status is None:
+-        prompt_injection_status = "not_reviewed"  # defensive N-1 default
+-    if prompt_injection_status == "not_reviewed":
+-        raise RuntimeError(
+-            "prompt injection not reviewed — source preparation blocked "
+-            "per policy (prompt_injection_status=not_reviewed)")
+-'''
++# The product source splits the block sentence across two adjacent string
++# literals at "blocked " / "per policy"; rebuild that exact source text from
++# the single candidate-side constant (never hand-copy the sentence here).
++_ANCHOR_MESSAGE = block_message_base("not_reviewed")
++_LIT1, _LIT2 = _ANCHOR_MESSAGE.split(" per policy ")
++_SRC_LITERAL_1 = f'"{_LIT1} "'
++_SRC_LITERAL_2 = f'"per policy {_LIT2}")'
++
++REPLACED = (
++    '    prompt_injection_status = envelope.get("prompt_injection_status")\n'
++    '    if prompt_injection_status is None:\n'
++    '        prompt_injection_status = "not_reviewed"  # defensive N-1 default\n'
++    '    if prompt_injection_status == "not_reviewed":\n'
++    '        raise RuntimeError(\n'
++    f'            {_SRC_LITERAL_1}\n'
++    f'            {_SRC_LITERAL_2}\n'
++)
+ 
+ 
+ def sha256_file(path: Path) -> str:
+
+### iso/candidate/test_candidate_message_pins.py
+# after sha256: 4de498b95da73c545daac09dd9e00bae2c35b5d2e2f24e7d320c78ca0176c8aa
+
+--- /dev/null
++++ b/iso/candidate/test_candidate_message_pins.py
+@@ -0,0 +1,165 @@
++"""Candidate-side message pins — face 1 of FIX-W06-GAPS P4-SCOPE.
++
++Pins (verbatim, not just exception types) the messages the C8 ruling names:
++  * M-D1 claim/expiry refusal texts of the repaired candidate store;
++  * the `demand_store_error=` / `demand_queued` clause outputs of
++    w06a_candidate_patch.block_message (oracle M-P2 item 18), with a frozen
++    fixture — the FULL assembled strings are asserted byte for byte;
++  * the single-source convergence of the full blocked sentence: the product
++    literal (revenue-forecast scripts/source_preparation.py) == the candidate
++    constant (w06a_candidate_patch.block_message_base) == the message inside
++    w06a_apply_candidate's REPLACED anchor, and the anchor is a byte-exact
++    substring of the product source (the three hand-copied surfaces cannot
++    drift without this test turning red).
++
++Mutation proof: flip one byte of any pinned copy and these tests go red.
++Path overrides: GAPS_PIN_RF_SCRIPTS, GAPS_PIN_CANDIDATE.
++"""
++from __future__ import annotations
++
++import importlib.util
++import os
++import sqlite3
++import sys
++import uuid
++from pathlib import Path
++
++import pytest
++
++HERE = Path(__file__).resolve().parent
++CANDIDATE = Path(os.environ.get("GAPS_PIN_CANDIDATE", HERE))
++RF_SCRIPTS = Path(os.environ.get("GAPS_PIN_RF_SCRIPTS",
++                                 Path(r"C:\Users\郑曾波\Projects\revenue-forecast\scripts")))
++
++BLOCK_SENTENCE = (
++    "prompt injection not reviewed — source preparation blocked per "
++    "policy (prompt_injection_status=not_reviewed)"
++)
++
++
++def _load(name: str, path: Path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    mod = importlib.util.module_from_spec(spec)
++    sys.modules[name] = mod
++    spec.loader.exec_module(mod)
++    return mod
++
++
++@pytest.fixture(scope="module")
++def store_mod():
++    return _load("pin_store", CANDIDATE / "processing_demand_store.py")
++
++
++@pytest.fixture(scope="module")
++def patch_mod():
++    return _load("pin_patch", CANDIDATE / "w06a_candidate_patch.py")
++
++
++# --- M-D1: claim/expiry refusal texts, verbatim -----------------------------
++
++
++def test_m_d1_refusal_texts_verbatim(store_mod, tmp_path):
++    db = tmp_path / f"{uuid.uuid4().hex}.sqlite3"
++    store = store_mod.DurableDemandStore(db)
++    with pytest.raises(store_mod.DemandStateError) as excinfo:
++        store.claim(owner="w1")
++    assert str(excinfo.value) == "no ready demand to claim"
++
++    demand, _ = store.register(
++        kind="review", source_id="s", source_sha256="a" * 64,
++        review_policy="p", role_set="normalized,sections", gaps=[], request={})
++    with pytest.raises(store_mod.DemandStateError) as excinfo:
++        store.claim(owner="w1", demand_id="demand-nope")
++    assert str(excinfo.value) == "no demand 'demand-nope'"
++
++    store.claim(owner="wA", lease_seconds=60.0)
++    with pytest.raises(store_mod.DemandStateError) as excinfo:
++        store.claim(owner="wB", demand_id=demand["demand_id"])
++    assert str(excinfo.value) == f"demand {demand['demand_id']!r} is not claimable"
++
++    store2 = store_mod.DurableDemandStore(tmp_path / f"{uuid.uuid4().hex}.sqlite3")
++    d2, _ = store2.register(
++        kind="review", source_id="s", source_sha256="a" * 64,
++        review_policy="p", role_set="normalized,sections", gaps=[], request={})
++    store2.claim(owner="w1", demand_id=d2["demand_id"], lease_seconds=1.0,
++                 now=0.0)
++    with pytest.raises(store_mod.DemandStateError) as excinfo:
++        store2.claim(owner="w2", demand_id=d2["demand_id"], now=5.0)
++    assert str(excinfo.value) == "lease expired"
++    with pytest.raises(store_mod.DemandStateError) as excinfo:
++        store2.claim(owner="w2", now=5.0)
++    assert str(excinfo.value) == "lease expired"
++
++
++# --- M-P2 item 18: demand_store_error= / demand_queued clauses, verbatim ----
++
++
++FIXTURE_STORE_ERROR = (
++    "demand_store_unavailable: demand store write failed: "
++    "OperationalError: disk I/O error")
++EXPECTED_STORE_ERROR_CLAUSE = (
++    "prompt injection not reviewed — source preparation blocked per policy "
++    "(prompt_injection_status=not_reviewed); demand_store_error="
++    "demand_store_unavailable: demand store write failed: OperationalError: "
++    "disk I/O error; gaps=1 next_action=run the approved review method for "
++    "this source; worker desired_state is 'paused' — resume requires an "
++    "explicit authorised action; this call does not resume it"
++)
++EXPECTED_DEMAND_QUEUED_CLAUSE = (
++    "prompt injection not reviewed — source preparation blocked per policy "
++    "(prompt_injection_status=not_reviewed); demand_queued "
++    "demand_id=demand-0123456789abcdef source=0123456789abcdef gaps=1 "
++    "next_action=run the approved review method for this source; "
++    "worker is not paused"
++)
++
++
++def test_demand_store_error_clause_verbatim(patch_mod):
++    registration = {
++        "worker": {"desired_state": "paused"},
++        "gaps": [{"gap": "review_required",
++                  "resolves_by": "run the approved review method for this source"}],
++        "store_error": FIXTURE_STORE_ERROR,
++        "demand_id": None,
++        "demand_key": None,
++    }
++    assert patch_mod.block_message(
++        prompt_injection_status="not_reviewed",
++        registration=registration) == EXPECTED_STORE_ERROR_CLAUSE
++
++
++def test_demand_queued_clause_verbatim(patch_mod):
++    registration = {
++        "worker": {"desired_state": None},
++        "gaps": [{"gap": "review_required",
++                  "resolves_by": "run the approved review method for this source"}],
++        "store_error": None,
++        "demand_id": "demand-0123456789abcdef",
++        "demand_key": "0123456789abcdef" + "ff" * 24,
++    }
++    assert patch_mod.block_message(
++        prompt_injection_status="not_reviewed",
++        registration=registration) == EXPECTED_DEMAND_QUEUED_CLAUSE
++
++
++# --- single-source convergence: product == candidate constant == anchor -----
++
++
++def test_block_sentence_single_source_convergence(patch_mod):
++    apply_mod = _load("pin_apply", CANDIDATE / "w06a_apply_candidate.py")
++    product_source = (RF_SCRIPTS / "source_preparation.py").read_text(encoding="utf-8")
++
++    # candidate constant renders the pinned sentence
++    assert patch_mod.block_message_base("not_reviewed") == BLOCK_SENTENCE
++    # the product literal is the same bytes (implicit-concat joined in source)
++    product_literal_1 = '"prompt injection not reviewed — source preparation blocked "'
++    product_literal_2 = '"per policy (prompt_injection_status=not_reviewed)")'
++    assert product_literal_1 in product_source and product_literal_2 in product_source
++    # the apply anchor references (not hand-copies) the constant and matches
++    # the product source byte for byte
++    assert apply_mod._ANCHOR_MESSAGE == BLOCK_SENTENCE
++    assert apply_mod.REPLACED in product_source
++    # no second hand-typed copy of the sentence may exist in the patch module
++    patch_source = (CANDIDATE / "w06a_candidate_patch.py").read_text(encoding="utf-8")
++    assert patch_source.count(
++        "prompt injection not reviewed — source preparation blocked") == 1
+

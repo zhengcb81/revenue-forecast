@@ -1,0 +1,282 @@
+target pkg-dir : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\iso\pi_pkg
+    __init__.py sha256=c712addbc3c2592d39cb6fde3a0d40307d2387055adaadece4177b546857f67f
+    prompt_injection.py sha256=5fabc1e7eceb1ba39df106fe4c1edfa67d1a9d5ae47f63c4a0f15c2a04ea08a5
+    prompt_injection_guard.py sha256=17f0dc58f6530f0f0f8dbe5099cd655edfe3b7b4404300e3e594ef38534ed31b
+    readiness_graph.py sha256=50c94de28f328d125bd4834b2cda8a46794cba5f5f3f01c5415b4060b2d8c97b
+
+[P5-c unbound detected_and_ignored] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: source_sha256 must be a lowercase SHA-256", "error_type": "PromptInjectionReviewError", "text": "source_sha256 must be a lowercase SHA-256"}
+[P5-c unbound not_detected] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: source_sha256 must be a lowercase SHA-256", "error_type": "PromptInjectionReviewError", "text": "source_sha256 must be a lowercase SHA-256"}
+[P5-c bound not_detected (positive control)] -> {"rc": 0, "outcome": "ACCEPTED", "result": {"schema_version": "1.0", "status": "not_detected", "reviewer": "scanner-bot-v1", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2", "source_sha256": "abababababababababababababababababababababababababababababababab", "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", "state_domain": "review", "writer_pid": "29960", "writer_write_at": "2026-09-22T00:00:00Z", "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"}, "dropped_kwargs": [], "accepted_kwargs": ["evidence_payload", "evidence_sha256", "now", "policy_hash", "reviewer", "source_sha256", "status"]}
+
+[P5-a fabricated evidence_sha256, NO payload] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: evidence_payload must be provided (evidence_sha256 must bind the evidence bytes)", "error_type": "PromptInjectionReviewError", "text": "evidence_payload must be provided (evidence_sha256 must bind the evidence bytes)"}
+[P5-a payload binds hash but CONTAINS injection, declared not_detected] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: declared status 'not_detected' contradicts scan verdict 'detected_and_ignored' (fail closed)", "error_type": "PromptInjectionReviewError", "text": "declared status 'not_detected' contradicts scan verdict 'detected_and_ignored' (fail closed)"}
+[P5-a payload hash mismatch] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: evidence_sha256 does not match sha256(evidence_payload)", "error_type": "PromptInjectionReviewError", "text": "evidence_sha256 does not match sha256(evidence_payload)"}
+[P5-a clean payload + matching hash (positive control)] -> {"rc": 0, "outcome": "ACCEPTED", "result": {"schema_version": "1.0", "status": "not_detected", "reviewer": "scanner-bot-v1", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2", "source_sha256": "abababababababababababababababababababababababababababababababab", "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", "state_domain": "review", "writer_pid": "29960", "writer_write_at": "2026-09-22T00:00:00Z", "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"}, "dropped_kwargs": [], "accepted_kwargs": ["evidence_payload", "evidence_sha256", "now", "policy_hash", "reviewer", "source_sha256", "status"]}
+
+[P5-b spoofed detected_and_ignored, no tuple, no trust root] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: disposal authorization unavailable: ignore_reason", "error_type": "PromptInjectionReviewError", "text": "disposal authorization unavailable: ignore_reason"}
+[P5-b tuple with EMPTY ignore_reason] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: disposal authorization unavailable: ignore_reason", "error_type": "PromptInjectionReviewError", "text": "disposal authorization unavailable: ignore_reason"}
+[P5-b full tuple + trust root, NO signature params] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: disposal authorization unavailable: signer_key_id", "error_type": "PromptInjectionReviewError", "text": "disposal authorization unavailable: signer_key_id"}
+[P5-b full tuple + trust root + signer key but NO signature] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: disposal authorization unavailable: authorizer signature", "error_type": "PromptInjectionReviewError", "text": "disposal authorization unavailable: authorizer signature"}
+[P5-b full tuple + trust root + BOGUS signature] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: disposal authorization unavailable: authorizer signature invalid", "error_type": "PromptInjectionReviewError", "text": "disposal authorization unavailable: authorizer signature invalid"}
+[P5-b full tuple + trust root + VALID signature (positive control)] -> {"rc": 0, "outcome": "ACCEPTED", "result": {"schema_version": "1.0", "status": "detected_and_ignored", "reviewer": "security-reviewer-1", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "669993d1b5837d466851f2b2e1ca4cb20f5d0419ce1e9a9d51729355a04b5f98", "source_sha256": "abababababababababababababababababababababababababababababababab", "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", "state_domain": "review", "writer_pid": "29960", "writer_write_at": "2026-09-22T00:00:00Z", "writer_identity_note": "writer metadata is an audit trail, NOT verified identity", "ignore_reason": "confirmed benign sample; injection not actionable in this capture", "ignore_authorizer": "security-reviewer-1", "authorized_at": "2026-09-22T00:00:00Z", "matches": "[\"ignore_previous_instructions\"]", "signer_key_id": "sec-signer-1"}, "dropped_kwargs": [], "accepted_kwargs": ["authorized_at", "authorizer_signature", "declared_matches", "evidence_payload", "evidence_sha256", "ignore_authorizer", "ignore_reason", "now", "policy_hash", "reviewer", "signer_key_id", "source_sha256", "status", "trust_root_path"]}
+
+[P5-d format-illegal evidence_sha256='ABC' (control)] -> {"rc": 1, "outcome": "REJECTED", "error": "PromptInjectionReviewError: evidence_sha256 must be a lowercase SHA-256", "error_type": "PromptInjectionReviewError", "text": "evidence_sha256 must be a lowercase SHA-256"}
+[audit read-back] receipt={"evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2", "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", "reviewed_at": "2026-09-22T00:00:00Z", "reviewer": "scanner-bot-v1", "schema_version": "1.0", "source_sha256": "abababababababababababababababababababababababababababababababab", "state_domain": "review", "status": "not_detected", "writer_identity_note": "writer metadata is an audit trail, NOT verified identity", "writer_pid": "29960", "writer_write_at": "2026-09-22T00:00:00Z"}
+[audit read-back] prompt_injection_review_audit=[{"evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2", "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", "seq": 1, "source_sha256": "abababababababababababababababababababababababababababababababab", "status": "not_detected", "write_at": "2026-09-22T00:00:00Z", "writer_pid": "29960"}]
+
+=== SUMMARY ===
+{
+  "P5C_dual_binding_mandatory": {
+    "maps_05": "[P5-c detected_and_ignored WITHOUT source_sha256/policy_hash] rc=0 (ACCEPTED) = WRITE-SIDE-GAP-CONFIRMED",
+    "unbound_detected_and_ignored": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: source_sha256 must be a lowercase SHA-256",
+      "error_type": "PromptInjectionReviewError",
+      "text": "source_sha256 must be a lowercase SHA-256"
+    },
+    "unbound_not_detected": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: source_sha256 must be a lowercase SHA-256",
+      "error_type": "PromptInjectionReviewError",
+      "text": "source_sha256 must be a lowercase SHA-256"
+    },
+    "bound_positive_control": {
+      "rc": 0,
+      "outcome": "ACCEPTED",
+      "result": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "scanner-bot-v1",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2",
+        "source_sha256": "abababababababababababababababababababababababababababababababab",
+        "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+        "state_domain": "review",
+        "writer_pid": "29960",
+        "writer_write_at": "2026-09-22T00:00:00Z",
+        "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"
+      },
+      "dropped_kwargs": [],
+      "accepted_kwargs": [
+        "evidence_payload",
+        "evidence_sha256",
+        "now",
+        "policy_hash",
+        "reviewer",
+        "source_sha256",
+        "status"
+      ]
+    },
+    "expect_reject_text": "f\"{field} must be a lowercase SHA-256\"",
+    "ok": true
+  },
+  "P5A_payload_binding_and_rescan": {
+    "maps_05": "[P5-a fabricated evidence_sha256 (status=not_detected)] rc=0 (ACCEPTED) = FORGERY-FACE-CONFIRMED",
+    "fabricated_hash_no_payload": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: evidence_payload must be provided (evidence_sha256 must bind the evidence bytes)",
+      "error_type": "PromptInjectionReviewError",
+      "text": "evidence_payload must be provided (evidence_sha256 must bind the evidence bytes)"
+    },
+    "injection_payload_declared_clean": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: declared status 'not_detected' contradicts scan verdict 'detected_and_ignored' (fail closed)",
+      "error_type": "PromptInjectionReviewError",
+      "text": "declared status 'not_detected' contradicts scan verdict 'detected_and_ignored' (fail closed)"
+    },
+    "payload_hash_mismatch": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: evidence_sha256 does not match sha256(evidence_payload)",
+      "error_type": "PromptInjectionReviewError",
+      "text": "evidence_sha256 does not match sha256(evidence_payload)"
+    },
+    "clean_positive_control": {
+      "rc": 0,
+      "outcome": "ACCEPTED",
+      "result": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "scanner-bot-v1",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2",
+        "source_sha256": "abababababababababababababababababababababababababababababababab",
+        "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+        "state_domain": "review",
+        "writer_pid": "29960",
+        "writer_write_at": "2026-09-22T00:00:00Z",
+        "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"
+      },
+      "dropped_kwargs": [],
+      "accepted_kwargs": [
+        "evidence_payload",
+        "evidence_sha256",
+        "now",
+        "policy_hash",
+        "reviewer",
+        "source_sha256",
+        "status"
+      ]
+    },
+    "expect_no_payload": "\"evidence_payload must be provided (evidence_sha256 must bind the evidence bytes)\"",
+    "expect_rescan_mismatch": "f\"declared status {status!r} contradicts scan verdict {scan_status!r} (fail closed)\"",
+    "expect_hash_mismatch": "\"evidence_sha256 does not match sha256(evidence_payload)\"",
+    "ok": true
+  },
+  "P5B_disposal_gate": {
+    "maps_05": "[P5-b reviewer='zr302-test-FAKE' free string] rc=0 (ACCEPTED) = SPOOFABLE -> disposal gate fail-closed",
+    "spoofed_no_tuple": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: disposal authorization unavailable: ignore_reason",
+      "error_type": "PromptInjectionReviewError",
+      "text": "disposal authorization unavailable: ignore_reason"
+    },
+    "empty_ignore_reason": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: disposal authorization unavailable: ignore_reason",
+      "error_type": "PromptInjectionReviewError",
+      "text": "disposal authorization unavailable: ignore_reason"
+    },
+    "trust_root_no_signature": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: disposal authorization unavailable: signer_key_id",
+      "error_type": "PromptInjectionReviewError",
+      "text": "disposal authorization unavailable: signer_key_id"
+    },
+    "trust_root_signer_key_no_signature": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: disposal authorization unavailable: authorizer signature",
+      "error_type": "PromptInjectionReviewError",
+      "text": "disposal authorization unavailable: authorizer signature"
+    },
+    "bogus_signature": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: disposal authorization unavailable: authorizer signature invalid",
+      "error_type": "PromptInjectionReviewError",
+      "text": "disposal authorization unavailable: authorizer signature invalid"
+    },
+    "valid_signature_positive": {
+      "rc": 0,
+      "outcome": "ACCEPTED",
+      "result": {
+        "schema_version": "1.0",
+        "status": "detected_and_ignored",
+        "reviewer": "security-reviewer-1",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "669993d1b5837d466851f2b2e1ca4cb20f5d0419ce1e9a9d51729355a04b5f98",
+        "source_sha256": "abababababababababababababababababababababababababababababababab",
+        "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+        "state_domain": "review",
+        "writer_pid": "29960",
+        "writer_write_at": "2026-09-22T00:00:00Z",
+        "writer_identity_note": "writer metadata is an audit trail, NOT verified identity",
+        "ignore_reason": "confirmed benign sample; injection not actionable in this capture",
+        "ignore_authorizer": "security-reviewer-1",
+        "authorized_at": "2026-09-22T00:00:00Z",
+        "matches": "[\"ignore_previous_instructions\"]",
+        "signer_key_id": "sec-signer-1"
+      },
+      "dropped_kwargs": [],
+      "accepted_kwargs": [
+        "authorized_at",
+        "authorizer_signature",
+        "declared_matches",
+        "evidence_payload",
+        "evidence_sha256",
+        "ignore_authorizer",
+        "ignore_reason",
+        "now",
+        "policy_hash",
+        "reviewer",
+        "signer_key_id",
+        "source_sha256",
+        "status",
+        "trust_root_path"
+      ]
+    },
+    "note": "while the trust root is unestablished the status is ALWAYS rejected; full identity chain = PARTIAL-fix-pending-external (letter B)",
+    "ok": true
+  },
+  "P5D_control_and_writer_audit": {
+    "maps_05": "[P5-d format-illegal evidence_sha256='ABC' (control)] rc=1 EXC=PromptInjectionReviewError: evidence_sha256 must be a lowercase SHA-256 (PASS kept) + P5-b not_detected reviewer audit note",
+    "format_illegal_rejected": {
+      "rc": 1,
+      "outcome": "REJECTED",
+      "error": "PromptInjectionReviewError: evidence_sha256 must be a lowercase SHA-256",
+      "error_type": "PromptInjectionReviewError",
+      "text": "evidence_sha256 must be a lowercase SHA-256"
+    },
+    "accepted_write": {
+      "rc": 0,
+      "outcome": "ACCEPTED",
+      "result": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "scanner-bot-v1",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2",
+        "source_sha256": "abababababababababababababababababababababababababababababababab",
+        "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+        "state_domain": "review",
+        "writer_pid": "29960",
+        "writer_write_at": "2026-09-22T00:00:00Z",
+        "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"
+      },
+      "dropped_kwargs": [],
+      "accepted_kwargs": [
+        "evidence_payload",
+        "evidence_sha256",
+        "now",
+        "policy_hash",
+        "reviewer",
+        "source_sha256",
+        "status"
+      ]
+    },
+    "receipt_read_back": {
+      "schema_version": "1.0",
+      "status": "not_detected",
+      "reviewer": "scanner-bot-v1",
+      "reviewed_at": "2026-09-22T00:00:00Z",
+      "evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2",
+      "source_sha256": "abababababababababababababababababababababababababababababababab",
+      "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+      "state_domain": "review",
+      "writer_pid": "29960",
+      "writer_write_at": "2026-09-22T00:00:00Z",
+      "writer_identity_note": "writer metadata is an audit trail, NOT verified identity"
+    },
+    "audit_trail_read_back": [
+      {
+        "writer_pid": "29960",
+        "write_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "c54e6133edfca6a94e4df9416db7c06b3ecadd650bee0b9b0291f67e8dda0da2",
+        "source_sha256": "abababababababababababababababababababababababababababababababab",
+        "policy_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+        "status": "not_detected",
+        "seq": 1
+      }
+    ],
+    "expect_format_reject": "\"evidence_sha256 must be a lowercase SHA-256\"",
+    "expect_writer_audit_fields": [
+      "writer_pid",
+      "writer_write_at",
+      "writer_identity_note"
+    ],
+    "ok": true
+  }
+}
+    P5C_dual_binding_mandatory: PASS
+    P5A_payload_binding_and_rescan: PASS
+    P5B_disposal_gate: PASS
+    P5D_control_and_writer_audit: PASS
+P5 SCENARIOS: PASS

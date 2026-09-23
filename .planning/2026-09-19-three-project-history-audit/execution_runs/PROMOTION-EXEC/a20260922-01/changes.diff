@@ -1,0 +1,2639 @@
+# PROMOTION-EXEC a20260922-01 — net changes.diff (before-image -> current production)
+# owner ruling: OWNER_DECISIONS.md §十八「B: 全批」; no git commits performed
+
+=== REPO: revenue-forecast ===
+
+--- row B-1 --- a/scripts/revenue_core.py -> b/scripts/revenue_core.py
+# before_sha256: 1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae
+# after_sha256:  8a761498f5eb729e4f4227f2a315d709253f8b96acf7baa7253ab425e73ac883
+--- a/scripts/revenue_core.py
++++ b/scripts/revenue_core.py
+@@ -3,8 +3,13 @@
+ from __future__ import annotations
+ 
+ import copy
++import hashlib
++import json
+ import os
++import re
++import secrets
+ import shutil
++import subprocess
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -111,18 +116,302 @@
+ 
+ 
+ def attestation_capability() -> bool:
+-    """True when an external attestation provider is configured and runnable.
+-
+-    The provider is named by the ``REVENUE_ATTESTATION_PROVIDER`` environment
+-    variable (a command on PATH or an absolute path to an executable).  Without
+-    a runnable provider the runtime can only publish ``"unattested"`` formal
+-    artifacts, which invest-* consumers reject by default (R2.1).
++    """True only when an attestation provider has PROVEN signing capability.
++
++    (B1 / REM-01(b), I-08-A rule R-PROV-1.)  File existence is explicitly **not**
++    capability: a plain ``.txt``, a bare ``.py`` with no protocol response, or
++    ``sys.executable`` all resolve to existing files and all grant nothing.  The
++    provider is named by ``REVENUE_ATTESTATION_PROVIDER`` (a command on PATH or
++    an absolute path) and must complete a bounded one-shot handshake — one JSON
++    request on stdin, exactly one JSON response on stdout — whose ``fingerprint``
++    resolves in the trust domain and whose Ed25519 signature verifies over the
++    echoed request.  Without that, the runtime can only publish ``"unattested"``
++    formal artifacts.
++
++    The provider file is never read, imported or executed as a script by the
++    host; it is only spawned, and only when the path exists.  A module-level
++    diagnostic is exposed by :func:`attestation_last_failure`.
++    """
++    global _ATTESTATION_LAST_FAILURE
++    _ATTESTATION_LAST_FAILURE = None
++    from revenue_publication import (
++        publication_attestation_request,
++    )
++
++    request = publication_attestation_request(
++        request_id=secrets.token_hex(32),
++        payload_sha256=hashlib.sha256(b"capability-probe").hexdigest(),
++    )
++    response = _run_attestation_provider(request)
++    if response is None:
++        return False
++    try:
++        _validate_attestation_response(request, response)
++    except ForecastInputError as exc:
++        _record_attestation_failure(str(exc))
++        return False
++    return True
++
++
++def attestation_last_failure() -> dict[str, str] | None:
++    """Diagnostic for the most recent capability/signing failure, or None.
++
++    Read-only reporting aid: it carries no authority and is never consulted by a
++    validation path.  Its presence never decides a label by itself.
++    """
++    return dict(_ATTESTATION_LAST_FAILURE) if _ATTESTATION_LAST_FAILURE else None
++
++
++# --- Provider handshake (B1 / REM-01) ---------------------------------------
++# `T` (timeout) and `L` (stdout bound) are PARAMETERS, not frozen constants:
++# I-08-A OPEN-D7 owns their values.  These two are this implementation's
++# defaults, recorded in this attempt's binding.json and NOT claimed normative.
++ATTESTATION_PROVIDER_TIMEOUT_SECONDS = 10.0
++ATTESTATION_PROVIDER_MAX_STDOUT_BYTES = 65536
++
++ATTESTATION_RESPONSE_FIELDS = (
++    "attestation_response_schema_version",
++    "request_id",
++    "payload_sha256",
++    "domain_separator",
++    "issuer",
++    "key_id",
++    "fingerprint",
++    "algorithm",
++    "signature",
++    "signed_at",
++)
++
++_ATTESTATION_LAST_FAILURE: dict[str, str] | None = None
++
++
++def _record_attestation_failure(message: str) -> None:
++    """Store ``{"code": <I-08-A code>, "message": <str>}`` for a coded message."""
++    global _ATTESTATION_LAST_FAILURE
++    failure = parse_attestation_failure(message)
++    _ATTESTATION_LAST_FAILURE = failure
++
++
++def parse_attestation_failure(message: str) -> dict[str, str]:
++    """Split a coded rejection message into ``{"code", "message"}``."""
++    match = re.match(r"^([a-z][a-z0-9_]*):\s*(.*)$", message, re.DOTALL)
++    if match is None:
++        return {"code": "provider_protocol_violation", "message": message}
++    return {"code": match.group(1), "message": match.group(2).strip()}
++
++
++def _run_attestation_provider(request: dict[str, Any]) -> dict[str, Any] | None:
++    """One-shot provider handshake.  Returns the response object, or None.
++
++    Every failure path records a coded diagnostic and returns None; nothing here
++    raises, because a publication that cannot be signed must degrade to an honest
++    ``unattested`` publication rather than fail the research result.
+     """
+     provider = os.environ.get("REVENUE_ATTESTATION_PROVIDER")
+     if not provider:
+-        return False
++        _record_attestation_failure(
++            "provider_absent: REVENUE_ATTESTATION_PROVIDER is not set"
++        )
++        return None
+     resolved = shutil.which(provider) or Path(provider).expanduser()
+-    return resolved is not None and os.path.isfile(resolved)
++    if resolved is None or not os.path.isfile(resolved):
++        _record_attestation_failure(
++            f"provider_path_unopenable: {provider!r} does not resolve to a file"
++        )
++        return None
++    try:
++        completed = subprocess.run(
++            [str(resolved)],
++            input=json.dumps(request, sort_keys=True).encode("utf-8"),
++            capture_output=True,
++            timeout=ATTESTATION_PROVIDER_TIMEOUT_SECONDS,
++            check=False,
++        )
++    except subprocess.TimeoutExpired:
++        _record_attestation_failure(
++            "provider_timeout: provider exceeded "
++            f"{ATTESTATION_PROVIDER_TIMEOUT_SECONDS}s and was terminated"
++        )
++        return None
++    except OSError as exc:
++        _record_attestation_failure(f"provider_path_unopenable: {exc}")
++        return None
++    if completed.returncode != 0:
++        detail = completed.stderr.decode("utf-8", "replace").strip()[:200]
++        if "cannot sign" in detail or "no private key" in detail:
++            _record_attestation_failure(
++                f"provider_signing_unavailable: {detail or 'provider refused to sign'}"
++            )
++        else:
++            _record_attestation_failure(
++                f"provider_exit_nonzero: exit code {completed.returncode}; {detail}"
++            )
++        return None
++    raw = completed.stdout
++    if len(raw) > ATTESTATION_PROVIDER_MAX_STDOUT_BYTES:
++        _record_attestation_failure(
++            "provider_output_too_large: provider wrote "
++            f"{len(raw)} bytes, above the {ATTESTATION_PROVIDER_MAX_STDOUT_BYTES} "
++            "byte bound"
++        )
++        return None
++    text = raw.decode("utf-8", "replace").strip()
++    if not text:
++        _record_attestation_failure(
++            "provider_protocol_violation: provider wrote no response"
++        )
++        return None
++    try:
++        response = json.loads(text)
++    except json.JSONDecodeError as exc:
++        _record_attestation_failure(f"provider_invalid_json: {exc}")
++        return None
++    if not isinstance(response, dict):
++        _record_attestation_failure(
++            "provider_schema_mismatch: response must be a single JSON object"
++        )
++        return None
++    _ATTESTATION_LAST_FAILURE = None
++    return response
++
++
++def _validate_attestation_response(
++    request: dict[str, Any], response: dict[str, Any]
++) -> dict[str, str]:
++    """Validate one provider response; raise ``ForecastInputError`` if untrusted.
++
++    Returns the identity fields on success so the caller can assemble the
++    binding record.
++    """
++    from revenue_publication import (
++        PUBLICATION_ATTESTATION_ALGORITHM,
++        PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        verify_ed25519_signature,
++    )
++
++    missing = [field for field in ATTESTATION_RESPONSE_FIELDS if field not in response]
++    extra = sorted(set(response) - set(ATTESTATION_RESPONSE_FIELDS))
++    if missing or extra:
++        raise ForecastInputError(
++            "provider_schema_mismatch: response field set mismatch "
++            f"(missing={missing}, extra={extra})"
++        )
++    if (
++        response["attestation_response_schema_version"]
++        != PUBLICATION_ATTESTATION_SCHEMA_VERSION
++    ):
++        raise ForecastInputError(
++            "provider_schema_mismatch: attestation_response_schema_version mismatch"
++        )
++    for field in ("request_id", "payload_sha256", "domain_separator"):
++        if response[field] != request[field]:
++            raise ForecastInputError(
++                f"provider_binding_mismatch: response.{field} does not echo the request"
++            )
++    if response["algorithm"] != PUBLICATION_ATTESTATION_ALGORITHM:
++        raise ForecastInputError(
++            "provider_schema_mismatch: response.algorithm must be "
++            f"{PUBLICATION_ATTESTATION_ALGORITHM!r}"
++        )
++    for field in ("issuer", "key_id"):
++        if not isinstance(response[field], str) or not response[field].strip():
++            raise ForecastInputError(
++                f"provider_schema_mismatch: response.{field} must be a non-empty string"
++            )
++    if (
++        not isinstance(response["fingerprint"], str)
++        or re.fullmatch(r"[0-9a-f]{32}", response["fingerprint"]) is None
++    ):
++        raise ForecastInputError(
++            "provider_schema_mismatch: response.fingerprint must be 32 lowercase hex"
++        )
++    if not isinstance(response["signature"], str) or not response["signature"]:
++        raise ForecastInputError(
++            "attestation_missing_signature: provider returned no signature (E12)"
++        )
++    if re.fullmatch(r"[0-9a-f]{128}", response["signature"]) is None:
++        raise ForecastInputError(
++            "attestation_malformed_signature: response.signature must be 128 "
++            "lowercase hex (E13)"
++        )
++    if (
++        not isinstance(response["signed_at"], str)
++        or re.fullmatch(
++            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", response["signed_at"]
++        )
++        is None
++    ):
++        raise ForecastInputError(
++            "provider_schema_mismatch: response.signed_at must be RFC3339 UTC 'Z'"
++        )
++    # The signing target is the request object as the provider received it, so a
++    # signature cannot be moved onto a different request.
++    message = canonical_sha256(request).encode("ascii")
++    verify_ed25519_signature(
++        response["fingerprint"], response["signature"], message
++    )
++    return {
++        "issuer": response["issuer"],
++        "key_id": response["key_id"],
++        "fingerprint": response["fingerprint"],
++        "signature": response["signature"],
++        "signed_at": response["signed_at"],
++    }
++
++
++def request_publication_attestation(
++    result: dict[str, Any],
++) -> dict[str, Any] | None:
++    """Run the provider handshake for a concrete publication.
++
++    Returns the binding record to attach to the receipt, or ``None`` when the
++    publication cannot be attested (the caller then publishes ``"unattested"``).
++    The record deliberately omits the result digest and the receipt's own hash:
++    both cover the receipt, which contains the record, so citing them inside the
++    record would be a fixpoint.  The artifact is still bound — see
++    ``revenue_publication.publication_attestation_request``.
++    """
++    from revenue_publication import (
++        PUBLICATION_ATTESTATION_ALGORITHM,
++        PUBLICATION_ATTESTATION_DOMAIN,
++        PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        publication_attestation_request,
++    )
++
++    request = publication_attestation_request(
++        request_id=secrets.token_hex(32),
++        payload_sha256=canonical_sha256(
++            {
++                key: value
++                for key, value in result.items()
++                if key not in ("result_sha256", "publication_receipt")
++            }
++        ),
++    )
++    response = _run_attestation_provider(request)
++    if response is None:
++        return None
++    try:
++        identity = _validate_attestation_response(request, response)
++    except ForecastInputError as exc:
++        # A response that cannot be trusted means "not attested", not "fail the
++        # publication": the research result is still valid, and a bare label is
++        # exactly what this fix removes.
++        _record_attestation_failure(str(exc))
++        return None
++    _ATTESTATION_LAST_FAILURE = None
++    return {
++        "attestation_payload_schema_version": PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        "domain_separator": PUBLICATION_ATTESTATION_DOMAIN,
++        "issuer": identity["issuer"],
++        "key_id": identity["key_id"],
++        "algorithm": PUBLICATION_ATTESTATION_ALGORITHM,
++        "fingerprint": identity["fingerprint"],
++        "request_id": request["request_id"],
++        "payload_sha256": request["payload_sha256"],
++        "signed_at": identity["signed_at"],
++        "signature": identity["signature"],
++    }
+ 
+ 
+ def run_forecast(data: dict[str, Any], *, mode: str = "formal") -> dict[str, Any]:
+@@ -138,8 +427,11 @@
+     invest-* consumers must only accept ``"formal"`` artifacts.
+ 
+     Formal publications carry an ``attestation_status`` (R2.1): ``"host_signed"``
+-    only when an external attestation provider is configured, otherwise
+-    ``"unattested"`` (rejected by invest-* consumers by default).
++    only when a provider completed a verified signing handshake (B1 / REM-01),
++    otherwise ``"unattested"``.  The label is never set from a boolean: it is set
++    only when :func:`request_publication_attestation` returned a record whose
++    signature verifies against the trust domain, and that record is attached to
++    the receipt.
+     """
+     from revenue_publication import (
+         build_publication_receipt,
+@@ -162,11 +454,18 @@
+         )
+         result["publication_receipt"] = build_draft_receipt(result)
+     else:
+-        # R2.1: host_signed requires a configured, runnable attestation
+-        # provider; otherwise the publication is explicitly unattested.
+-        attestation_status = "host_signed" if attestation_capability() else "unattested"
++        # R2.1 + B1/REM-01: host_signed requires a completed, trust-verified
++        # signing handshake.  A configured-but-unproven provider yields an
++        # honest `unattested` publication, never a bare label.
++        attestation_record = request_publication_attestation(result)
++        attestation_status = (
++            "host_signed" if attestation_record is not None else "unattested"
++        )
+         result["publication_receipt"] = build_publication_receipt(
+-            result, context, attestation_status=attestation_status
++            result,
++            context,
++            attestation_status=attestation_status,
++            publication_attestation=attestation_record,
+         )
+     result["result_sha256"] = canonical_sha256(result)
+     if mode == "formal":
+
+--- row B-1 --- a/scripts/revenue_publication.py -> b/scripts/revenue_publication.py
+# before_sha256: 183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba
+# after_sha256:  bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0
+--- a/scripts/revenue_publication.py
++++ b/scripts/revenue_publication.py
+@@ -20,18 +20,46 @@
+   validator recomputes it so a receipt built from a weaker or fabricated
+   context is rejected.
+ * This module never re-runs the revenue model — it only hashes and validates.
++
++SECURITY BOUNDARY (B1 / REM-02): two different things live in this module.
++
++* ``validate_publication_receipt`` is a **hash-consistency check on one artifact**
++  and **NOT a security boundary** (see its docstring and
++  :class:`PublicationReceiptOnlyWarning`).
++* ``validate_forecast_output`` in :mod:`revenue_report` is the consumer entry
++  point: it re-runs the bounded input-gated recomputations and the attestation
++  binding.  **Consumers must call ``validate_forecast_output``**, never
++  ``validate_publication_receipt`` alone.
++
++Attestation (B1 / REM-01): a receipt claiming ``attestation_status ==
++"host_signed"`` must carry a ``publication_attestation`` binding record that
++verifies against the trust domain, per I-08-A E27 (``attestation_missing_record``).
++The label is never accepted on set membership.
+ """
+ 
+ from __future__ import annotations
+ 
++import re
+ from typing import Any
+ 
++from contracts.evidence import ForecastInputError
+ from revenue_core import (
+     ENGINE_VERSION,
+     PUBLICATION_RECEIPT_SCHEMA_VERSION,
+     canonical_sha256,
+     require,
+ )
++
++
++class PublicationReceiptOnlyWarning(UserWarning):
++    """Marker: ``validate_publication_receipt`` is NOT a security boundary.
++
++    Exported so a caller (and a test) can see the limitation without reading the
++    source.  The function checks only that a receipt's self-hashes, gate set and
++    verification context are internally consistent with the artifact they travel
++    with; a fully-recomputed forgery satisfies all of them.  Use
++    ``revenue_report.validate_forecast_output`` for consumer-side validation.
++    """
+ 
+ 
+ # Gates certified by the strong validator (validate_published_forecast) when
+@@ -116,12 +144,231 @@
+ 
+ ATTESTATION_STATUSES = {"host_signed", "unattested"}
+ 
++# --- Publication attestation binding record (B1 / REM-01, I-08-A E27) -------
++# The record is the thing that makes the `host_signed` label evidentiary.  Its
++# field set is CLOSED: an extra or missing key is a rejection, so a record can
++# never be given a meaning by a later reader that this validator did not check.
++PUBLICATION_ATTESTATION_DOMAIN = "revenue-forecast/publication-attestation/v1"
++PUBLICATION_ATTESTATION_SCHEMA_VERSION = "1.0"
++PUBLICATION_ATTESTATION_ALGORITHM = "ed25519"
++PUBLICATION_ATTESTATION_FIELDS = frozenset(
++    {
++        "attestation_payload_schema_version",
++        "domain_separator",
++        "issuer",
++        "key_id",
++        "algorithm",
++        "fingerprint",
++        "request_id",
++        "payload_sha256",
++        "signed_at",
++        "signature",
++    }
++)
++
++_HEX32 = re.compile(r"[0-9a-f]{32}")
++_HEX64 = re.compile(r"[0-9a-f]{64}")
++_HEX128 = re.compile(r"[0-9a-f]{128}")
++_RFC3339_Z = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
++
++# The request's `result_sha256` member exists so the provider sees an
++# unambiguous binding target, but its VALUE cannot be part of the signed record:
++# `result_sha256` covers the receipt, and the receipt contains the record.  The
++# record therefore carries no result digest, and this sentinel is what both the
++# provider request and the reconstruction use, so the signature covers exactly
++# the fields the record can bind.
++SIGNED_RESULT_SHA256_SENTINEL = "0" * 64
++
++
++def verify_ed25519_signature(
++    fingerprint: str, signature: str, message: bytes
++) -> None:
++    """Verify an Ed25519 signature against a fingerprint in the trust domain.
++
++    Fail-closed on every axis: unknown fingerprint, unavailable crypto library,
++    malformed key, malformed signature, or a verification failure all raise.
++    The trust domain is read from :func:`contracts.evidence._trusted_signer_public_keys`
++    so there is exactly one loader (missing file ⇒ zero trusted signers).
++    """
++    from contracts.evidence import _trusted_signer_public_keys
++
++    trusted = _trusted_signer_public_keys()
++    require(
++        fingerprint in trusted,
++        f"provider_key_untrusted: attestation signer {fingerprint[:12]} is not "
++        "trusted (E20)",
++    )
++    try:
++        from cryptography.exceptions import InvalidSignature
++        from cryptography.hazmat.primitives.asymmetric.ed25519 import (
++            Ed25519PublicKey,
++        )
++    except ImportError as exc:  # pragma: no cover - optional dependency
++        raise ForecastInputError(
++            "attestation_signature_invalid: attestation signature verification "
++            "unavailable"
++        ) from exc
++    try:
++        public_key = Ed25519PublicKey.from_public_bytes(trusted[fingerprint])
++        public_key.verify(bytes.fromhex(signature), message)
++    except (InvalidSignature, ValueError) as exc:
++        raise ForecastInputError(
++            "attestation_signature_invalid: attestation signature verification "
++            "failed (E14)"
++        ) from exc
++
++
++def validate_publication_attestation(
++    result: dict[str, Any], receipt: dict[str, Any]
++) -> None:
++    """Validate the ``publication_attestation`` binding record (B1 / REM-01).
++
++    Raises with the I-08-A code spelling in the message so a caller can classify
++    the rejection without parsing prose:
++
++    * ``attestation_missing_record`` (E27) — ``host_signed`` with no record.
++    * ``attestation_missing_signature`` (E12) / ``attestation_malformed_signature``
++      (E13) — absent or malformed signature.
++    * ``attestation_domain_mismatch`` (E17) — wrong domain separator.
++    * ``attestation_payload_hash_mismatch`` (E16) — the record does not bind the
++      live payload / result / receipt.
++    * ``provider_key_untrusted`` (E20) / ``issuer_key_binding_mismatch`` (E21) —
++      trust-domain failures.
++    * ``attestation_signature_invalid`` (E14) — Ed25519 verification failed.
++    """
++    record = receipt.get("publication_attestation")
++    claims_signed = receipt.get("attestation_status") == "host_signed"
++    if record is None:
++        if claims_signed:
++            # I-08-A §6.2 G3b: a package that CLAIMS a signature and cannot
++            # produce the record is rejected.  Never silently downgraded.
++            raise ForecastInputError(
++                "attestation_missing_record: publication_receipt claims "
++                "attestation_status='host_signed' but carries no "
++                "publication_attestation record (E27)"
++            )
++        return
++    require(
++        isinstance(record, dict),
++        "attestation_missing_record: publication_attestation must be an object",
++    )
++    missing = PUBLICATION_ATTESTATION_FIELDS - set(record)
++    extra = set(record) - PUBLICATION_ATTESTATION_FIELDS
++    require(
++        not missing and not extra,
++        "attestation_payload_fields: publication_attestation field set mismatch "
++        f"(missing={sorted(missing)}, extra={sorted(extra)})",
++    )
++    require(
++        record["attestation_payload_schema_version"]
++        == PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        "attestation_payload_fields: publication_attestation schema version mismatch",
++    )
++    require(
++        record["domain_separator"] == PUBLICATION_ATTESTATION_DOMAIN,
++        "attestation_domain_mismatch: publication_attestation domain_separator "
++        f"must be {PUBLICATION_ATTESTATION_DOMAIN!r}",
++    )
++    require(
++        record["algorithm"] == PUBLICATION_ATTESTATION_ALGORITHM,
++        "attestation_payload_fields: publication_attestation algorithm must be "
++        f"{PUBLICATION_ATTESTATION_ALGORITHM!r}",
++    )
++    for field in ("issuer", "key_id"):
++        require(
++            isinstance(record[field], str) and record[field].strip(),
++            f"attestation_payload_fields: publication_attestation.{field} is required",
++        )
++    require(
++        isinstance(record["fingerprint"], str)
++        and _HEX32.fullmatch(record["fingerprint"]) is not None,
++        "attestation_payload_fields: publication_attestation.fingerprint must be "
++        "32 lowercase hex",
++    )
++    require(
++        isinstance(record["request_id"], str)
++        and _HEX64.fullmatch(record["request_id"]) is not None,
++        "attestation_payload_fields: publication_attestation.request_id must be "
++        "64 lowercase hex",
++    )
++    require(
++        isinstance(record["signed_at"], str)
++        and _RFC3339_Z.fullmatch(record["signed_at"]) is not None,
++        "attestation_payload_fields: publication_attestation.signed_at must be "
++        "RFC3339 UTC 'Z'",
++    )
++    require(
++        isinstance(record["signature"], str) and record["signature"],
++        "attestation_missing_signature: publication_attestation.signature is "
++        "required (E12)",
++    )
++    require(
++        _HEX128.fullmatch(record["signature"]) is not None,
++        "attestation_malformed_signature: publication_attestation.signature must "
++        "be 128 lowercase hex (E13)",
++    )
++    # Binding to the live artifact: the record must describe THIS publication.
++    # The record binds the two fields that are knowable BEFORE the receipt
++    # exists: the payload digest (everything except `result_sha256` and
++    # `publication_receipt`) and the one-shot request id.  `result_sha256` and
++    # the receipt's own hash are deliberately NOT record fields — a receipt
++    # cannot contain its own hash (no fixpoint), and `result_sha256` covers the
++    # receipt, which contains this record.  Nothing is left unbound: the
++    # signature is over `request`, and `request` is reconstructed from the
++    # record's bound fields, so any change to a bound value breaks the signature.
++    require(
++        record["payload_sha256"] == receipt.get("validated_payload_sha256"),
++        "attestation_payload_hash_mismatch: publication_attestation.payload_sha256 "
++        "does not match the receipt's validated payload (E16)",
++    )
++    # The signed message is rebuilt from the record's fields and the record's
++    # signature is verified against it, so a record cannot be assembled from a
++    # signature issued for some other request.
++    request = publication_attestation_request(
++        request_id=record["request_id"],
++        payload_sha256=record["payload_sha256"],
++        result_sha256=SIGNED_RESULT_SHA256_SENTINEL,
++    )
++    message = canonical_sha256(request).encode("ascii")
++    verify_ed25519_signature(record["fingerprint"], record["signature"], message)
++
++
++def publication_attestation_request(
++    *,
++    request_id: str,
++    payload_sha256: str,
++    result_sha256: str = SIGNED_RESULT_SHA256_SENTINEL,
++) -> dict[str, Any]:
++    """The exact object a provider signs over (B1 §3.4, oracle revisions r3/r4).
++
++    ``canonical_payload_sha256`` is a redundant, explicitly-named copy of
++    ``payload_sha256`` so the signing target is unambiguous at the provider; the
++    signing target is the whole object including it.
++
++    ``result_sha256`` is present so the request names the artifact it is for, but
++    it is fixed to :data:`SIGNED_RESULT_SHA256_SENTINEL`: a real result digest
++    covers the receipt, and the receipt contains this record, so signing the real
++    value would be a fixpoint.  The artifact is nevertheless bound — the payload
++    digest in this request covers every result field except ``result_sha256`` and
++    ``publication_receipt``, and a change to either of those changes
++    ``validated_payload_sha256``/``receipt_sha256``, which the receipt checks.
++    """
++    return {
++        "attestation_request_schema_version": PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        "domain_separator": PUBLICATION_ATTESTATION_DOMAIN,
++        "request_id": request_id,
++        "payload_sha256": payload_sha256,
++        "result_sha256": result_sha256,
++        "canonical_payload_sha256": payload_sha256,
++    }
++
+ 
+ def build_publication_receipt(
+     result: dict[str, Any],
+     verification_context: VerificationContext | None = None,
+     *,
+     attestation_status: str = "unattested",
++    publication_attestation: dict[str, Any] | None = None,
+ ) -> dict[str, Any]:
+     """Build a publication receipt from a strong-validation verification context.
+ 
+@@ -130,9 +377,11 @@
+     pass receipt before strong validation has run).
+ 
+     *attestation_status* records whether the host attestation was actually
+-    signed (R2.1): ``"host_signed"`` requires an external attestation provider
+-    to be configured; without one the runtime can only produce ``"unattested"``
+-    publications, which invest-* consumers reject by default.
++    signed (R2.1): ``"host_signed"`` requires a **verified**
++    ``publication_attestation`` binding record produced by a completed provider
++    handshake (B1 / REM-01); without one the runtime can only produce
++    ``"unattested"`` publications.  Passing ``"host_signed"`` without a record
++    fails closed here, so a caller cannot mint the label directly.
+     """
+     if not isinstance(verification_context, VerificationContext):
+         raise TypeError(
+@@ -142,6 +391,12 @@
+     if attestation_status not in ATTESTATION_STATUSES:
+         raise ValueError(
+             f"attestation_status must be one of {sorted(ATTESTATION_STATUSES)}"
++        )
++    if attestation_status == "host_signed":
++        require(
++            isinstance(publication_attestation, dict),
++            "attestation_missing_record: attestation_status='host_signed' "
++            "requires a publication_attestation record (E27)",
+         )
+     receipt = {
+         "receipt_schema_version": PUBLICATION_RECEIPT_SCHEMA_VERSION,
+@@ -156,6 +411,15 @@
+         "freeform_override_allowed": False,
+         "attestation_status": attestation_status,
+     }
++    if publication_attestation is not None:
++        publication_attestation = dict(publication_attestation)
++        publication_attestation["payload_sha256"] = receipt[
++            "validated_payload_sha256"
++        ]
++        # The record must name THIS publication; the caller cannot know the
++        # receipt's own hash before it exists, and the receipt cannot contain a
++        # hash of itself, so the binding is re-checked at validation time.
++        receipt["publication_attestation"] = publication_attestation
+     receipt["receipt_sha256"] = _receipt_sha256(receipt)
+     return receipt
+ 
+@@ -183,11 +447,39 @@
+ 
+ 
+ def validate_publication_receipt(result: dict[str, Any]) -> None:
+-    """Validate the publication receipt bound to a published forecast result.
+-
+-    Recomputes the expected verification context from the result content, so a
+-    receipt whose ``gate_ids`` do not match the gates the strong validator would
+-    execute (forged sensitivity without shock recomputation) is rejected.
++    """Hash-consistency check on one publication receipt — **NOT a security boundary**.
++
++    (B1 / REM-02.)  Read this before using the function as a gate.
++
++    What this function DOES check: that the receipt travels with an artifact it
++    is internally consistent with — its schema/engine/input anchors, its
++    ``validated_payload_sha256`` recomputed from the result payload, the gate set
++    the strong validator would execute for this content, the verification-context
++    digest those gates and that input imply, the draft/formal mode consistency,
++    and its own ``receipt_sha256``.
++
++    What this function does **NOT** check, and cannot: whether the artifact is
++    authentic.  Every value it compares is either recomputed from the artifact
++    itself or a public, non-secret hash, so an artifact whose values and hashes
++    were all recomputed together after a mutation satisfies every comparison.
++    That is by construction: it never re-runs an input-gated recomputation and
++    (except for the attestation record below) it never consults an
++    artifact-external authority.
++
++    The one exception is the attestation binding: a receipt claiming
++    ``attestation_status == "host_signed"`` must carry a verifying
++    ``publication_attestation`` record, and a present record is always verified
++    (see :func:`validate_publication_attestation`).  That closes the
++    label-forgery path (I-08-A E27); it does not turn the rest of this function
++    into an authenticity check.
++
++    **Consumers must call** ``revenue_report.validate_forecast_output`` (or, with
++    the original input in hand, ``revenue_report.validate_published_forecast``).
++    Those entry points re-run the bounded input-gated recomputations from the
++    embedded/validated input and are the security boundary.  This function is
++    retained for callers that only need a cheap self-consistency assertion; it
++    emits no runtime warning because the strong validator itself calls it on
++    every validation (see :class:`PublicationReceiptOnlyWarning`).
+     """
+     require(
+         "publication_receipt" in result,
+@@ -259,3 +551,9 @@
+         receipt.get("receipt_sha256") == _receipt_sha256(receipt),
+         "publication_receipt receipt_sha256 mismatch",
+     )
++    # B1 / REM-01: the label is not accepted on set membership.  A `host_signed`
++    # claim without a verifying record is rejected (I-08-A E27 / G3b), and a
++    # record that IS present is verified even when the label is `unattested`,
++    # so a record can never be present-but-ignored.
++    if receipt.get("formal_output_mode") == "formal":
++        validate_publication_attestation(result, receipt)
+
+--- row B-1 --- a/scripts/revenue_report.py -> b/scripts/revenue_report.py
+# before_sha256: a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f
+# after_sha256:  212f00598feca408dc429d4c7a5332131ce25f1165b079347e4b295345df7d3b
+--- a/scripts/revenue_report.py
++++ b/scripts/revenue_report.py
+@@ -25,6 +25,7 @@
+     build_workflow_compliance_receipt,
+     canonical_sha256,
+     parse_iso_date,
++    period_year,
+     referenced_parameter_ids,
+     require,
+     validate_growth_driver_tree,
+@@ -153,6 +154,89 @@
+             ),
+             f"incremental contribution mismatch in {scenario}",
+         )
++
++
++def _validate_segment_opening_bases(
++    result: Any, parameter_index: Any, years: Any  # noqa: ARG001 - years for parity
++) -> None:
++    """Bind ``segments[i].base_revenue`` to its source parameter (B1 / REM-03).
++
++    Two independent gates, both on pre-existing result fields:
++
++    * **per-segment identity** — the segment's ``base_revenue_parameter_id`` must
++      resolve in ``parameter_trace`` (which the strong path already requires to
++      equal the validated input's parameter list) to a revenue-dimension
++      parameter for the base year whose value equals ``base_revenue``.  This is
++      the same lookup the engine itself performs in
++      ``forecast.segments.calculate_segment_forecasts``, so an honest artifact
++      can never fail it.
++    * **opening-base reconciliation** — the segment opening bases must sum to the
++      reported company base within the artifact's declared
++      ``reconciliation_tolerance``, mirroring ``contracts.document``'s
++      ``validate_base_reconciliation`` on the output side.  A segment without a
++      ``base_revenue_parameter_id`` still enters this sum.
++
++    Scope: this binds the per-segment opening base (a presentation field in the
++    分部表).  Company totals were already bound by
++    ``_recompute_consolidated_paths``; this gate adds no claim about them.
++    """
++    segments = result.get("segments")
++    require(isinstance(segments, list) and segments, "segments must be a non-empty list")
++    base_year = result.get("base_year")
++    for position, segment in enumerate(segments):
++        require(
++            isinstance(segment, dict), f"segments[{position}] must be an object"
++        )
++        require(
++            "base_revenue" in segment,
++            f"segments[{position}].base_revenue is required",
++        )
++        observed = float(segment["base_revenue"])
++        parameter_id = segment.get("base_revenue_parameter_id")
++        if parameter_id is None:
++            continue
++        name = segment.get("name")
++        parameter = parameter_index.get(parameter_id)
++        require(
++            isinstance(parameter, dict),
++            "segment base revenue mismatch: "
++            f"{name} references unknown base_revenue_parameter_id {parameter_id!r}",
++        )
++        require(
++            parameter.get("dimension") == "revenue",
++            "segment base revenue mismatch: "
++            f"{parameter_id} must use the revenue dimension",
++        )
++        require(
++            period_year(parameter.get("period"), f"{parameter_id}.period") == base_year,
++            "segment base revenue mismatch: "
++            f"{parameter_id} must be a FY{base_year} parameter",
++        )
++        require(
++            math.isclose(
++                float(parameter["value"]),
++                observed,
++                rel_tol=1e-9,
++                abs_tol=1e-9,
++            ),
++            "segment base revenue mismatch: "
++            f"{name} opening base {observed} does not match {parameter_id} "
++            f"({parameter['value']})",
++        )
++    reported_base = float(result["base_revenue"])
++    opening_total = sum(
++        float(segment["base_revenue"])
++        for segment in segments
++        if isinstance(segment.get("base_revenue"), (int, float))
++        and not isinstance(segment.get("base_revenue"), bool)
++    )
++    tolerance = float(result.get("reconciliation_tolerance", 1e-6))
++    allowed = max(1.0, abs(reported_base)) * tolerance
++    require(
++        abs(opening_total - reported_base) <= allowed,
++        "segment opening base does not reconcile: "
++        f"segments={opening_total}, reported={reported_base}",
++    )
+ 
+ 
+ def _validate_confidence_block(confidence: Any) -> None:
+@@ -476,6 +560,15 @@
+                 <= segment["scenarios"]["high"]["recognized_revenue"][year],
+                 f"segment scenario ordering mismatch: {segment['name']}/{year}",
+             )
++
++    # B1 / REM-03: `segments[i].base_revenue` is the opening base of the
++    # per-segment 分部表 column.  It was bound by NO output gate — the model
++    # recomputation only checks `modeled_activity`, and the company totals only
++    # check `annual_revenue` — so a self-hash-consistent forgery of the
++    # presentation field survived every gate and rendered into the official
++    # report.  Two gates now bind it, using pre-existing fields only so the
++    # signed payload domain of honest artifacts is unchanged.
++    _validate_segment_opening_bases(result, parameter_index, years)
+ 
+     current_constraint_contract = (
+         result["schema_version"],
+
+--- row B-2 --- a/scripts/company_wiki_source.py -> b/scripts/company_wiki_source.py
+# before_sha256: 225fecdd7e48938a97c68724318f0860602a4b86a8d9e834a257243480094294
+# after_sha256:  7d1bd8f9d9122dc4a99465a8f9201e855417a5d0756f5bfdd6d404f7ca9e48ce
+--- a/scripts/company_wiki_source.py
++++ b/scripts/company_wiki_source.py
+@@ -105,25 +105,6 @@
+     return isinstance(artifact, dict) and artifact.get("reusable") is True
+ 
+ 
+-def _dag_closure(role: str) -> list[str]:
+-    """Transitive dependents of ``role`` (including itself) over the frozen
+-    ROLE_DEPENDENCIES, IMPORTED from company-wiki's artifact_dag — the single
+-    source of truth; no second copy can drift."""
+-    from company_wiki.source_catalog.artifact_dag import ROLE_DEPENDENCIES
+-
+-    result: list[str] = []
+-    frontier = [role]
+-    while frontier:
+-        current = frontier.pop()
+-        if current in result:
+-            continue
+-        result.append(current)
+-        for candidate, parents in ROLE_DEPENDENCIES.items():
+-            if current in parents:
+-                frontier.append(candidate)
+-    return result
+-
+-
+ def _dag_ancestors(role: str) -> list[str]:
+     """Transitive inputs of ``role`` (roles it derives from) over the same
+     imported ROLE_DEPENDENCIES: ROLE_DEPENDENCIES[role] IS the direct parent
+@@ -142,6 +123,32 @@
+         result.append(current)
+         frontier.extend(ROLE_DEPENDENCIES.get(current, ()))
+     return result
++
++
++def _production_scope(
++    roles: tuple[str, ...],
++    reusable: set[str],
++    artifact_read: list[str],
++) -> list[str]:
++    """The roles that must be (re)produced for THIS request: every requested
++    role that is not readable, plus every non-reusable ancestor those roles
++    need.  Never the downstream closure of the requested roles — an
++    unrequested dependent is not produced (I-05-C step 2: 不盲补所有下游).
++
++    Shared by BOTH ``select_artifact_roles`` branches: the bundle-present path
++    passes the roles the bundle proved reusable, the ``bundle=None`` path
++    passes an empty set (nothing can be proven reusable without a bundle), so
++    the two branches cannot drift into different "what must be produced"
++    rules again (REM-11)."""
++    needs: set[str] = set()
++    for role in roles:
++        if role in artifact_read:
++            continue
++        needs.add(role)
++        for ancestor in _dag_ancestors(role):
++            if ancestor not in reusable:
++                needs.add(ancestor)
++    return sorted(needs)
+ 
+ 
+ def select_artifact_roles(
+@@ -155,20 +162,35 @@
+ 
+     Returns ``(artifact_read, producer_events)``:
+ 
+-    - ``artifact_read`` — roles whose verified artifact is in the envelope
+-      bundle's ``valid_handles`` (provenance-matched for consumer_analysis);
+-      these are read, their producers do NOT run (parser/LLM=0).
+-    - ``producer_events`` — roles that must be (re)produced = the DAG closure
+-      (role + transitive dependents over ROLE_DEPENDENCIES) of the
+-      non-reusable roles — never a blind full recompute (AR-02/AR-03).
+-
+-    ``bundle=None`` (bundle_status=unavailable) → artifact_read=[], every
+-    role needs production — honest, never faked.  A malformed bundle raises
+-    (fail closed), never silently trusted.
++    - ``artifact_read`` — roles that may be READ: the role has a verified
++      artifact in the envelope bundle's ``valid_handles`` AND every transitive
++      ancestor is also reusable (AR-03: a dependent derived from an invalidated
++      input is not trusted).  ``consumer_analysis`` additionally requires a
++      full provenance match when ``expected_provenance`` is given.  Role
++      reusability is evaluated over the REQUEST closure (the requested roles
++      plus their transitive ancestors), so a valid ancestor is still reported
++      when its dependent is missing from the bundle.  Read roles' producers do
++      NOT run (parser/LLM=0).
++    - ``producer_events`` — roles that must be (re)produced for THIS request:
++      each requested role that is not readable, plus every ancestor of those
++      roles that is not reusable.  It is NOT the downstream closure of the
++      requested roles — an unrequested dependent is never produced
++      (AR-02/AR-03, I-05-C step 2).
++
++    ``bundle=None`` (bundle_status=unavailable) → ``artifact_read=[]`` (nothing
++    can be proven reusable, never faked) and ``producer_events`` follows the
++    SAME request-scoped rule with an empty reusable set: the requested roles
++    plus all their transitive ancestors.  So a ``normalized``-only request
++    produces only ``normalized``, while a request naming all roles still
++    produces all of them.  A malformed bundle raises (fail closed), never
++    silently trusted.
+     """
+     bundle = _bundle_from_handle(handle)
+     if bundle is None:
+-        return [], sorted({r for role in roles for r in _dag_closure(role)})
++        # REM-11: request-scoped, exactly like the bundle-present branch below.
++        # The old downstream closure of `roles` meant a normalized-only request
++        # scheduled every role, contradicting the "ONLY requested" contract.
++        return [], _production_scope(roles, set(), [])
+     if not isinstance(bundle, dict):
+         raise CompanyWikiSourceError("bundle must be an object (fail closed)")
+     reusable: set[str] = set()
+@@ -197,18 +219,12 @@
+         if role in reusable
+         and all(ancestor in reusable for ancestor in _dag_ancestors(role))
+     )
+-    # W05-C fix: producer_events must contain ONLY what's needed to produce
+-    # the requested missing roles — the missing role itself plus any ancestors
+-    # that are not reusable. NOT the full downstream closure of unrequested
+-    # dependents (which was the old bug).
+-    missing_requested = [role for role in roles if role not in artifact_read]
+-    needed_for_production: set[str] = set()
+-    for role in missing_requested:
+-        needed_for_production.add(role)
+-        for ancestor in _dag_ancestors(role):
+-            if ancestor not in reusable:
+-                needed_for_production.add(ancestor)
+-    producer_events = sorted(needed_for_production)
++    # producer_events must contain ONLY what's needed to produce the REQUESTED
++    # missing roles — the missing role itself plus any ancestors that are not
++    # reusable.  NOT the full downstream closure of unrequested dependents
++    # (which was the old bug).  Same helper the bundle=None branch uses, so the
++    # two paths cannot diverge (REM-11).
++    producer_events = _production_scope(roles, reusable, artifact_read)
+     return artifact_read, producer_events
+ 
+ 
+
+--- row B-2 --- a/scripts/source_preparation.py -> b/scripts/source_preparation.py
+# before_sha256: 37a3eeaec73ed0124ac1e549bd4eecb49537676dc3ba9dac6f003496d0e6e2a7
+# after_sha256:  91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d
+--- a/scripts/source_preparation.py
++++ b/scripts/source_preparation.py
+@@ -135,7 +135,7 @@
+     # bundle (FC-902) via the selector — the unsourced
+     # payload.get("selected_artifacts") path is removed.  artifact_read =
+     # roles with a verified artifact (producers do not run); producer_events =
+-    # the DAG closure of the non-reusable roles (never a blind full recompute).
++    # requested missing roles + their non-reusable ancestors (never a blind full recompute).
+     artifact_read, producer_events = (
+         company_wiki_source.select_artifact_roles(handle))
+     # W05-B: verify the ACTUAL artifact reads.  artifact_read is the PLAN;
+
+--- row B-6c(REVERTED) --- a/scripts/model_registry.py -> b/scripts/model_registry.py
+# before_sha256: 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f
+# after_sha256:  9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f
+# NET: NO-OP (reverted to identical before-image; promotion did not land)
+
+=== REPO: company-wiki ===
+
+--- row B-3 --- a/src/company_wiki/source_catalog/observability.py -> b/src/company_wiki/source_catalog/observability.py
+# before_sha256: a73826aa10c9c0bf09bb5dc73cb7466358497f9d9d8c66ba73bfe4b90ffebe5a
+# after_sha256:  2f6449949c76b97c636d5d50e2ca848403116a85a1858bb9ba8f5a2808362464
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -184,6 +184,290 @@
+ _PATH_PATTERN = re.compile(r"[A-Za-z]:[\\/][^;,\s]+|[\\/][^;,\s]*[\\/][^;,\s]+")
+ 
+ REDACT = "<redacted>"
++
++# ---------------------------------------------------------------------------
++# I-14-C: credential-shaped values in free-form text (exception messages).
++#
++# Before this, the only content-aware cleaner was ``_PATH_PATTERN`` and it was
++# applied to ``StageEvent.detail`` only; ``str(exc)`` reached both
++# ``worker_process_events.jsonl`` and the CLI's stderr envelope verbatim.
++#
++# r3 (F-I14C-07): the key is matched by a SINGLE-PASS SCANNER, not by a regex with
++# nested quantifiers.  The r2 expression
++# ``(?:[A-Za-z0-9]+[_-])*<atom>(?:[_-][A-Za-z0-9]+)*`` was quadratic in the number
++# of ``_``/``-`` separated segments (measured: 8000 segments -> 8.9 s, 16000 ->
++# >20 s), and a "linear key candidate" regex turns out to be quadratic too
++# (``[A-Za-z0-9_-]+`` still backtracks once per start position when the value
++# cannot match: measured 8000 -> 2.7 s, 16000 -> >20 s).  The scanner visits every
++# character once, so cost is O(len(text)).
++#
++# A key is credential-shaped when, split on ``_``/``-``, one of its components is a
++# single atom (token, secret, password, passwd, pwd, apikey, credential,
++# passphrase) or two adjacent components form a known pair (api_key, access_key,
++# private_key, secret_key, auth_token, access_token, session_token, bot_token,
++# refresh_token, id_token, api_token, client_secret).  This covers env-var style
++# names such as GITHUB_TOKEN, SLACK_BOT_TOKEN, AWS_SECRET_ACCESS_KEY and
++# AWS_ACCESS_KEY_ID.  A value is redacted only when such a key precedes it; no
++# claim is made about a secret with no credential-like key anywhere near it.
++# ---------------------------------------------------------------------------
++
++_SINGLE_ATOMS = frozenset({
++    "token",
++    "secret",
++    "password",
++    "passwd",
++    "pwd",
++    "apikey",
++    "credential",
++    "passphrase",
++})
++
++_PAIR_ATOMS = frozenset({
++    ("api", "key"),
++    ("api", "token"),
++    ("access", "key"),
++    ("access", "token"),
++    ("secret", "key"),
++    ("private", "key"),
++    ("auth", "token"),
++    ("session", "token"),
++    ("bot", "token"),
++    ("refresh", "token"),
++    ("id", "token"),
++    ("client", "secret"),
++})
++
++_KEY_COMPONENT_SPLIT = re.compile(r"[_-]+")
++_KEY_CHARS = frozenset(
++    "abcdefghijklmnopqrstuvwxyz"
++    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
++    "0123456789_-"
++)
++_ASSIGNMENT_CHARS = frozenset(":=")
++_INLINE_SPACE = frozenset(" \t")
++# same value semantics as the r1/r2 regex: a quoted string (same line), or a run of
++# non-delimiter tokens (delimiters: any whitespace, , ; & " ' |)
++_VALUE_STOP_CHARS = frozenset(",;&\"'|")
++_QUOTES = frozenset("\"'")
++
++
++def key_is_credential(key: str) -> bool:
++    """True when *key* (as written in the text) is a credential-shaped name."""
++    parts = [part for part in _KEY_COMPONENT_SPLIT.split(key.lower()) if part]
++    if not parts:
++        return False
++    if any(part in _SINGLE_ATOMS for part in parts):
++        return True
++    return any(
++        (parts[index], parts[index + 1]) in _PAIR_ATOMS
++        for index in range(len(parts) - 1)
++    )
++
++
++# authorization / bearer: redact everything after the key (scheme included, so a
++# scheme-less "Authorization: <value>" cannot slip through).  These keys are
++# fixed literals, so the pattern has no nested quantifier over the KEY and stays
++# linear; its timing is measured in r3/bench_*.json alongside the scanner.
++_LEFT_ANCHOR = r"(?<![A-Za-z0-9])"
++
++# A value is a quoted string, or - since I-14-D narrowed the r1 greedy rule - a
++# BOUNDED run of non-delimiter tokens (delimiters: any whitespace, , ; & " ' |):
++#   _BARE_VALUE      ONE token: the assignment scanner stops at ANY whitespace,
++#                    including newlines (C13: the r1 rule crossed newlines and
++#                    deleted the whole remaining diagnostic block, 112 in -> 34 out).
++#   _AUTH_BARE_VALUE the authorization/bearer value: tokens joined by INLINE
++#                    whitespace only, so it still carries one scheme word
++#                    ("Bearer <secret>", "token <secret>") but can no longer
++#                    swallow a multi-line diagnostic block either.
++# Declared residual: a bare secret containing whitespace is redacted only up to
++# its first token ("password: iron steel" -> "password: <redacted> steel");
++# quote the value ("password: 'iron steel'") for full coverage.
++_QUOTED_VALUE = r"\"[^\"\r\n]*\"|'[^'\r\n]*'"
++_BARE_VALUE = r"[^\s,;&\"'|]+"
++_VALUE = r"(?P<value>" + _QUOTED_VALUE + r"|" + _BARE_VALUE + r")"
++_AUTH_BARE_VALUE = r"[^\s,;&\"'|]+(?:[ \t]+[^\s,;&\"'|]+)*"
++
++# A value may still cross line breaks, but only behind one PRE-BREAK TOKEN.  That
++# token has been widened four times, each time because a measured family leaked:
++#   r2  a nine-word enumeration of scheme words (F-REV-R2-01: coverage was exactly
++#       as wide as the list);
++#   r3  one RFC 7235 scheme token, `[A-Za-z]...` (F-REV-R3-01: the after-break
++#       quoted alternatives carried an optional-CR form inside a character class,
++#       where `?` is a literal member of the negated set);
++#   r4  the full RFC 7230 tchar class (F-REV-R3-04: a non-letter-initial scheme
++#       leaked where the base tree redacted);
++#   r5  the VALUE-TOKEN class (F-REV-R4-05: a token containing a non-tchar character,
++#       e.g. `Bo?t`, leaked too) -- but that was a SWAP, not a widening: it closed `?`
++#       and re-opened `&`, `'` and `|`, which r4 had redacted (F-REV-R5-01);
++#   r6  ANY NON-WHITESPACE RUN, `[^\s]+`.
++# Every widening before r6 was judged by "does the character that was pointed at now
++# pass", which is only one of the two differences that matter.  The criterion is BOTH:
++# what the new class closes that the old one did not, AND what it re-opens that the old
++# one caught.  Swept over every printable ASCII at this position, `[^\s]+` closes every
++# character r4 or r5 closed and every character either of them leaked, EXCEPT the space --
++# and a space here means the value is a multi-token run, which is the registered OPEN
++# shape below, not a token-class question at all.
++# A wrapped header (`Authorization: Bearer` then the secret on the next line) or an
++# RFC-7230 obs-fold puts the secret on a line that carries no `key=` prefix, so once
++# the pre-break token alone is consumed neither this pattern nor the assignment
++# scanner can see it.  Fail CLOSED: after that token and one or more line breaks (a
++# blank line included), the next token - or a quoted string reached through the same
++# break run - is redacted.  Measured as F-REV-D-01 / F-REV-R2-01 / F-REV-R3-01:
++# without this branch the full credential is persisted in the append-only event log.
++# Deliberate, registered cost (F-REV-R2-02): it cannot tell a wrapped credential from
++# a diagnostic key, so `Authorization: Bearer` + newline DELETES `doc=17`.  The
++# breaks are consumed by the match; the indentation and the keys on the lines AFTER
++# the redacted one are not.
++# One shape stays OPEN and is registered rather than hidden: a TWO-token value that
++# then wraps (`Authorization: Bearer abc` + newline + secret) -- the space is exactly
++# what a non-whitespace run stops at.  Closing it needs the whole first line consumed
++# as a run of tokens (spaces included), which deletes `doc=17` from
++# `Authorization: Bearer <marker>` + newline + `doc=17` + newline + `stage=` -
++# reproduced in `_r3_design_reprobe_20260922/`.  The companion that reproduction
++# names, `r3_fix_record.md`, was never written and is deliberately NOT substituted
++# for; the reproduction is where the substance lives.
++_AUTH_PREBREAK_TOKEN = r"[^\s]+"
++_AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_PREBREAK_TOKEN + r")[ \t]*"
++                      r"(?:(?:\r?\n)[ \t]*)+"
++                      r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r\n]*\"|'[^'\r\n]*')")
++_AUTH_PATTERN = re.compile(
++    r"(?i)(?P<key>" + _LEFT_ANCHOR + r"authorization\s*[:=]\s*|"
++    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_SCHEME_SPLIT + r"|" + _AUTH_BARE_VALUE + r")"
++)
++
++# key=value / key: value forms are handled by `_redact_assignments` (single-pass
++# scanner), NOT by a regex: see the F-I14C-07 note at the top of this block.
++
++MAX_REDACTED_MESSAGE_CHARS = 200
++
++
++def redact_text(text: Any) -> Any:
++    """Replace credential-shaped values in free-form *text* with ``REDACT``.
++
++    Content-aware counterpart of ``_PATH_PATTERN`` for text that is not a path:
++    exception messages, CLI error envelopes and any future free-form field.
++    Never raises; non-strings pass through unchanged.  Redaction happens
++    *before* any truncation, so a length cut can never be the only protection.
++
++    Cost is O(len(text)): one regex pass with fixed literals for
++    ``authorization``/``bearer``, then one scanner pass over the assignment
++    separators.  No nesting-dependent quantifier sees the message.
++    """
++    if not isinstance(text, str) or not text:
++        return text
++    redacted = _AUTH_PATTERN.sub(lambda m: m.group("key") + REDACT, text)
++    return _redact_assignments(redacted)
++
++
++def _redact_assignments(text: str) -> str:
++    """Single pass over ``key = value`` / ``key: value`` forms.
++
++    For every ``:``/``=`` the scanner walks back over whitespace and key characters,
++    validates the key against the atom tables and, on a match, replaces the value.
++    A rejected key does NOT consume the rest of the assignment, so a later genuine
++    credential pair in the same text is still redacted (e.g. a `url=...?token=...`
++    or `cmd: --token=...` shape, which the previous regex skipped).
++    """
++    out: list[str] = []
++    index = 0
++    length = len(text)
++    while index < length:
++        char = text[index]
++        if char not in _ASSIGNMENT_CHARS:
++            out.append(char)
++            index += 1
++            continue
++
++        # walk back over optional whitespace, then over the key characters
++        cursor = index
++        while cursor > 0 and text[cursor - 1] in _INLINE_SPACE:
++            cursor -= 1
++        key_end = cursor
++        while cursor > 0 and text[cursor - 1] in _KEY_CHARS:
++            cursor -= 1
++        key = text[cursor:key_end]
++        boundary_ok = cursor == 0 or text[cursor - 1] not in _KEY_CHARS
++        if not (key and boundary_ok and key_is_credential(key)):
++            out.append(char)
++            index += 1
++            continue
++
++        # the value: a quoted string, or a run of non-delimiter tokens
++        value_start = index + 1
++        while value_start < length and text[value_start] in _INLINE_SPACE:
++            value_start += 1
++        if value_start < length and text[value_start] in _QUOTES:
++            quote = text[value_start]
++            closing = _find_closing_quote(text, value_start)
++            if closing == -1:                      # unterminated quote: redact the tail
++                value_end = length
++            else:
++                value_end = closing + 1
++        else:
++            # I-14-D (C13 narrowing): the value is ONE token.  It stops at any
++            # whitespace INCLUDING newlines, so a diagnostic key after the
++            # credential (`doc=17`, `stage=...` on the next line) survives.
++            # value_end == value_start after the loop means "no value at all";
++            # the `value_end <= value_start` guard below leaves the text alone,
++            # exactly as before.
++            value_end = value_start
++            while (value_end < length
++                   and text[value_end] not in _VALUE_STOP_CHARS
++                   and not text[value_end].isspace()):
++                value_end += 1
++        if value_end <= value_start:
++            out.append(char)
++            index += 1
++            continue
++
++        # Everything before `index` is already in `out`: the loop emitted the key and
++        # any whitespace between the key and the separator one character at a time.
++        # Only the separator, the whitespace after it and the value remain to be written.
++        # (F-I14C-08: re-appending the key here duplicated it, e.g. `tokentoken=<redacted>`.)
++        out.append(char)                           # the separator
++        out.append(text[index + 1:value_start])    # whitespace after the separator
++        out.append(REDACT)
++        index = value_end
++    return "".join(out)
++
++
++def _find_closing_quote(text: str, quote_at: int) -> int:
++    quote = text[quote_at]
++    cursor = quote_at + 1
++    while cursor < len(text) and text[cursor] != quote:
++        if text[cursor] in "\r\n":
++            return -1
++        cursor += 1
++    return cursor if cursor < len(text) else -1
++
++
++def redact_and_truncate(text: Any, limit: int = MAX_REDACTED_MESSAGE_CHARS) -> Any:
++    """``redact_text`` first, then truncate to *limit* characters."""
++    redacted = redact_text(text)
++    if not isinstance(redacted, str):
++        return redacted
++    return redacted[:limit]
++
++
++def exception_cause_types(exc: BaseException) -> list[str]:
++    """Exception class names along the ``__cause__``/``__context__`` chain.
++
++    Only the *type names* are reported as diagnostics; no cause message is
++    returned, so a credential inside a nested cause cannot be persisted by
++    accident (the nested message itself is still redacted by callers that
++    choose to render it).
++    """
++    names: list[str] = []
++    seen: set[int] = set()
++    current = exc
++    while True:
++        nxt = current.__cause__ or current.__context__
++        if nxt is None or id(nxt) in seen:
++            break
++        seen.add(id(nxt))
++        names.append(type(nxt).__name__)
++        current = nxt
++    return names
+ 
+ 
+ def validate_reason(code: str) -> bool:
+
+--- row B-4(NEW) --- --- /dev/null -> b/conftest.py
+# before_sha256: ABSENT
+# after_sha256:  a908c9da7b77ace08a8d60715093a19f28cb9ae67152ccf5627bb4d070084249
+--- /dev/null
++++ b/conftest.py
+@@ -0,0 +1,188 @@
++"""Product-side short-basetemp convention (card I-14-F).
++
++WinError 206 (ERROR_FILENAME_EXCED_RANGE) kills the worker-bootstrap contract nodes when
++the *resolved* ``--basetemp`` sits deep enough that the paths the suite generates under it
++cross the classic Win32 260-character budget consumed by non-``\\\\?\\`` participants
++(``powershell.exe``, ``os.mkdir`` on this platform).  Observed bands (I-14-C r5 §4a, frozen):
++resolved basetemp 173/174 chars → 12/12 failures across two trees; 80/81 chars → 12/12
++passes.  The convention therefore relocates an over-deep basetemp to a fresh short
++directory instead of asking callers to move their cwd.
++
++Criterion (judgable; constants per OWNER_DECISIONS.md §16 E-1 — verbatim ruling
++「E-1: 150/60」, the conservative-reroute option that OVERRIDES the keep-86
++recommendation; see this card's decision.md / oracle.md §0+§2):
++
++    relocate  iff  len(resolved_basetemp) + GENERATION_RESERVE > WIN32_PATH_LIMIT
++    resolved_basetemp = basetemp                (absolute)
++                      = cwd / basetemp          (relative — cwd enters here)
++    WIN32_PATH_LIMIT   = 210  (empirical: generated totals ≤ ~205 are repeatedly clean,
++                               240 degrades (spawn degeneration after 3 attempts), 253/278
++                               hard-fail; 210 sits just above the clean envelope)
++    GENERATION_RESERVE = 150  (the LONGEST suffix either bootstrap node builds under
++                               basetemp: the LOGON node's launcher redirect log, measured
++                               by the I-14-F independent reviewer on two PASSING unrouted
++                               runs (basetemps 74 and 81):
++                                 31   test dir "test_logon_wrapper_detaches_a_0"
++                               + 24   "\\project path with spaces"   (logon-only level)
++                               + 12   "\\fake-project"
++                               + 15   "\\.source_catalog"
++                               + 63   "\\worker_stdout-<32hex>-attempt-0001.log"
++                               +  5   separators                                    = 150
++                               The CHILD node's measured suffix is 125 (basetemps 75/116/174),
++                               NOT the previously documented 124: the old arithmetic
++                               "31 + 13 + 79" was internally wrong (it sums to 123 ≠ 124) and
++                               it described only the child node, omitting the logon node's
++                               deeper project root — the exact omission that made the old
++                               "unrouted max 210" claim false (logon actually reached
++                               86 + 150 = 236 unrouted). 150 ≥ 125 covers BOTH nodes.)
++    ⇒ BASETEMP_MAX_CHARS = 60  (relocate iff len > 60).
++    Calibration history: the first frozen guess (260/100 ⇒ 160) was FALSIFIED by attempt
++    evidence — basetemp 155/156 placements failed with literal WinError 206 / dead launcher
++    spawns; the second guess (240/124 ⇒ 116) failed its boundary probe (basetemp 116
++    unrouted: child spawn degeneration after 3 of 19 attempts, oracle Addendum C); the third
++    (210/124 ⇒ 86) under-reserved the LOGON node (reviewer R-1: real unrouted max 236).
++    FINAL: owner §16 E-1 chose 150/60 — relocate iff len > 60, so every UNRELOCATED placement
++    satisfies len ≤ 60 by construction and every generated total is ≤ 60 + 150 = 210 for the
++    logon node (≤ 60 + 125 = 185 for the child): the margin is STRUCTURAL, not nominal.
++    Boundary pair (pinned by unit tests + integration sweep): 60 ⇒ 210 unrelocated,
++    61 ⇒ 211 relocated; basetemps 61–86 relocate (I-14-F's recorded 69/68, 76/75, 82/81
++    no-reroute controls are superseded — written reason wherever recorded: "owner §16 E-1
++    chose 150/60; this control's unrouted expectation is superseded").
++
++Fallback: a fresh empty ``%TEMP%/cw-pytest-basetemp/<UTCstamp>-<8hex>`` per relocating
++session (never an attempt/evidence root, never reused), removed in ``pytest_unconfigure``.
++No pytest.ini option is loosened; sessions with a within-budget basetemp are untouched
++apart from one decision record.
++
++Machine-readable evidence: each session appends JSON lines (``event=decision`` /
++``event=cleanup``) to ``$CW_BASETEMP_DECISION_FILE`` when that env var is set, and prints
++``CW-BASETEMP-DECISION {...}`` / ``CW-BASETEMP-CLEANUP {...}`` lines to stdout.
++``CW_SHORT_BASETEMP_DISABLE=1`` opts out (A/B testing); ``CW_BASETEMP_FALLBACK_ROOT``
++overrides the fallback parent (tests only).
++"""
++
++from __future__ import annotations
++
++import json
++import os
++import shutil
++import tempfile
++import uuid
++from datetime import datetime, timezone
++from pathlib import Path
++
++WIN32_PATH_LIMIT = 210
++GENERATION_RESERVE = 150  # owner §16 E-1; logon node's measured suffix (child: 125)
++BASETEMP_MAX_CHARS = WIN32_PATH_LIMIT - GENERATION_RESERVE  # 60; relocate iff len > 60
++FALLBACK_ROOT_NAME = "cw-pytest-basetemp"
++DISABLE_ENV = "CW_SHORT_BASETEMP_DISABLE"
++FALLBACK_ROOT_ENV = "CW_BASETEMP_FALLBACK_ROOT"
++DECISION_FILE_ENV = "CW_BASETEMP_DECISION_FILE"
++DECISION_PREFIX = "CW-BASETEMP-DECISION "
++CLEANUP_PREFIX = "CW-BASETEMP-CLEANUP "
++
++
++def resolve_basetemp(cwd, requested) -> Path:
++    """Absolute path the suite will actually use; a relative basetemp resolves vs cwd."""
++    requested_path = Path(requested)
++    if requested_path.is_absolute():
++        return requested_path
++    return Path(cwd) / requested_path
++
++
++def needs_short_path_fallback(
++    cwd,
++    requested,
++    *,
++    win32_path_limit: int = WIN32_PATH_LIMIT,
++    generation_reserve: int = GENERATION_RESERVE,
++) -> bool:
++    return len(str(resolve_basetemp(cwd, requested))) + generation_reserve > win32_path_limit
++
++
++def decide(cwd, requested, *, disabled: bool = False) -> dict:
++    """Frozen judgement for one session; pure apart from reading the filesystem length."""
++    if requested is None:
++        return {
++            "event": "decision",
++            "relocated": False,
++            "reason": "no-explicit-basetemp",
++            "detail": "pytest derives its default basetemp from %TEMP%; short by construction",
++        }
++    effective = resolve_basetemp(cwd, requested)
++    info = {
++        "event": "decision",
++        "requested_basetemp": str(effective),
++        "requested_basetemp_len": len(str(effective)),
++        "cwd_len": len(str(cwd)),
++        "threshold": BASETEMP_MAX_CHARS,
++        "win32_path_limit": WIN32_PATH_LIMIT,
++        "generation_reserve": GENERATION_RESERVE,
++    }
++    if disabled:
++        info.update(relocated=False, reason="disabled-by-env")
++        return info
++    if needs_short_path_fallback(cwd, requested):
++        info.update(relocated=True, reason="resolved-basetemp-exceeds-budget")
++    else:
++        info.update(relocated=False, reason="within-budget")
++    return info
++
++
++def fallback_root() -> Path:
++    override = os.environ.get(FALLBACK_ROOT_ENV)
++    root = Path(override) if override else Path(tempfile.gettempdir()) / FALLBACK_ROOT_NAME
++    root.mkdir(parents=True, exist_ok=True)
++    return root
++
++
++def make_fallback_dir(root=None) -> Path:
++    """Fresh, empty, session-unique directory; caller owns its removal."""
++    base = Path(root) if root is not None else fallback_root()
++    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
++    candidate = base / f"{stamp}-{uuid.uuid4().hex[:8]}"
++    candidate.mkdir()
++    return candidate
++
++
++def _record(decision: dict) -> None:
++    print(DECISION_PREFIX + json.dumps(decision, ensure_ascii=True), flush=True)
++    path = os.environ.get(DECISION_FILE_ENV)
++    if path:
++        with open(path, "a", encoding="utf-8") as handle:
++            handle.write(json.dumps(decision, ensure_ascii=True) + "\n")
++
++
++def pytest_configure(config) -> None:
++    requested = getattr(config.option, "basetemp", None)
++    cwd = os.getcwd()
++    decision = decide(cwd, requested, disabled=bool(os.environ.get(DISABLE_ENV)))
++    if not decision.get("relocated"):
++        _record(decision)
++        return
++    fallback = make_fallback_dir()
++    config.option.basetemp = str(fallback)
++    config._cw_basetemp_requested = decision["requested_basetemp"]
++    config._cw_basetemp_fallback = fallback
++    decision["effective_basetemp"] = str(fallback)
++    decision["effective_basetemp_len"] = len(str(fallback))
++    _record(decision)
++
++
++def pytest_unconfigure(config) -> None:
++    fallback = getattr(config, "_cw_basetemp_fallback", None)
++    if fallback is None:
++        return
++    fallback_path = Path(fallback)
++    record = {
++        "event": "cleanup",
++        "dir": str(fallback_path),
++        "existed": fallback_path.exists(),
++    }
++    shutil.rmtree(fallback_path, ignore_errors=True)
++    record["removed"] = not fallback_path.exists()
++    print(CLEANUP_PREFIX + json.dumps(record, ensure_ascii=True), flush=True)
++    path = os.environ.get(DECISION_FILE_ENV)
++    if path:
++        with open(path, "a", encoding="utf-8") as handle:
++            handle.write(json.dumps(record, ensure_ascii=True) + "\n")
+
+--- row B-4(NEW) --- --- /dev/null -> b/tests/contract/test_short_basetemp_convention.py
+# before_sha256: ABSENT
+# after_sha256:  1fd4e0d81750b7ddeb1826291b675722f7ab3afdd018f0f302021d68f9afa835
+--- /dev/null
++++ b/tests/contract/test_short_basetemp_convention.py
+@@ -0,0 +1,196 @@
++"""Unit tests for the product-side short-basetemp convention (card I-14-F-R1).
++
++These tests pin the FROZEN criterion of OWNER_DECISIONS.md §16 E-1 (verbatim 「E-1: 150/60」:
++``GENERATION_RESERVE = 150`` ⇒ relocate iff ``len(resolved_basetemp) > 60``): pure functions
++of (cwd, requested basetemp) plus filesystem effects, so no subprocess is spawned and the
++suite's real launcher nodes are not exercised here — those are the integration evidence
++(before/ and after/ placement runs of this attempt).
++
++Changes vs I-14-F's frozen file — every one carries a written reason; none is silent:
++- constants 210/124/86 → **210/150/60** (owner §16 E-1).
++- the BOUNDARY pair **60/61** is pinned by two new cases (oracle INV-1; closes I-14-F F-5's
++  "unpinned boundary" for the new threshold).
++- three criterion cases and one ``decide()`` case flip false → true, each with the written
++  reason: **"owner §16 E-1 chose 150/60; this control's unrouted expectation is superseded"**
++  (oracle INV-2 — never a silent flip).
++- all case-table comments now state the REAL constructed length (the reviewer-measured values
++  174/154/119/84/82/360/78 exposed 4 misstated comments in I-14-F — F-5, fixed directly here).
++- a 44-char dir keeps the within-budget branch covered in ``test_decide…`` after the 64-char
++  case flips.
++Lengths below were independently verified by ``harness/check_lengths.py`` before the oracle
++was frozen.
++"""
++
++from __future__ import annotations
++
++import importlib.util
++import json
++import os
++import sys
++import tempfile
++from pathlib import Path
++
++import pytest
++
++_ROOT = Path(__file__).resolve().parents[2]
++_SPEC = importlib.util.spec_from_file_location("cw_short_basetemp_conftest", _ROOT / "conftest.py")
++assert _SPEC is not None and _SPEC.loader is not None
++conftest = importlib.util.module_from_spec(_SPEC)
++sys.modules.setdefault("cw_short_basetemp_conftest", conftest)
++_SPEC.loader.exec_module(conftest)
++
++
++def test_constants_match_the_frozen_budget():
++    # owner §16 E-1: 「E-1: 150/60」 — reserve 150 (logon node's measured suffix; child: 125)
++    # ⇒ threshold 60. Supersedes the frozen I-14-F values 210/124/86.
++    assert conftest.WIN32_PATH_LIMIT == 210
++    assert conftest.GENERATION_RESERVE == 150
++    assert conftest.BASETEMP_MAX_CHARS == conftest.WIN32_PATH_LIMIT - conftest.GENERATION_RESERVE
++    assert conftest.BASETEMP_MAX_CHARS == 60
++
++
++@pytest.mark.parametrize(
++    "cwd, requested, expected",
++    [
++        # deep absolute basetemp: cwd 163, resolved 174 → 174+150=324 > 210 ⇒ relocate
++        ("C:\\" + "d" * 160, "C:\\" + "d" * 160 + "\\run\\pytest", True),
++        # falsified-calibration placement: cwd 143, resolved 154 (basetemp 155/156 failed
++        # unrouted, I-14-F oracle Addendum B) → 154 > 60 ⇒ relocate
++        ("C:\\" + "n" * 140, "C:\\" + "n" * 140 + "\\run\\pytest", True),
++        # recalibration-round edge: cwd 108, resolved 119 (basetemp 116 degraded unrouted,
++        # I-14-F oracle Addendum C) → 119 > 60 ⇒ relocate
++        ("C:\\" + "b" * 105, "C:\\" + "b" * 105 + "\\run\\pytest", True),
++        # BOUNDARY lower half (oracle INV-1): cwd 49, resolved 60 → 60+150 = 210, NOT > 210
++        # ⇒ unrelocated. Pins the new boundary pair (closes I-14-F F-5's unpinned boundary).
++        ("C:\\" + "b" * 46, "C:\\" + "b" * 46 + "\\run\\pytest", False),
++        # BOUNDARY upper half (oracle INV-1): cwd 50, resolved 61 → 61+150 = 211 > 210
++        # ⇒ relocated. Both halves of the 60/61 pair are pinned here.
++        ("C:\\" + "b" * 47, "C:\\" + "b" * 47 + "\\run\\pytest", True),
++        # FLIP false→true (oracle INV-2): cwd 73, resolved 84 — I-14-F pinned this case as
++        # no-relocate under the old threshold 86. Written reason: "owner §16 E-1 chose 150/60;
++        # this control's unrouted expectation is superseded."
++        ("C:\\" + "b" * 70, "C:\\" + "b" * 70 + "\\run\\pytest", True),
++        # FLIP false→true (oracle INV-2): cwd 71, resolved 82 — same written reason: "owner
++        # §16 E-1 chose 150/60; this control's unrouted expectation is superseded."
++        ("C:\\" + "s" * 68, "C:\\" + "s" * 68 + "\\run\\pytest", True),
++        # deliberately over-deep cwd with a relative basetemp: cwd 353, resolved 360
++        # (cwd enters here via resolution) → relocate
++        ("C:\\" + "x" * 350, "pytest", True),
++        # FLIP false→true (oracle INV-2): short cwd, relative basetemp — cwd 71, resolved 78
++        # (was no-relocate under 86). Same written reason: "owner §16 E-1 chose 150/60; this
++        # control's unrouted expectation is superseded."
++        ("C:\\" + "s" * 68, "pytest", True),
++    ],
++)
++def test_criterion_table(cwd, requested, expected):
++    assert conftest.needs_short_path_fallback(cwd, requested) is expected
++
++
++def test_relative_basetemp_resolution_uses_cwd():
++    resolved = conftest.resolve_basetemp("C:\\deep\\cwd", "pytest")
++    assert str(resolved) == str(Path("C:\\deep\\cwd") / "pytest")
++    absolute = conftest.resolve_basetemp("C:\\deep\\cwd", "C:\\elsewhere\\pytest")
++    assert str(absolute) == str(Path("C:\\elsewhere\\pytest"))
++
++
++def test_decide_reports_lengths_and_reasons(tmp_path):
++    # Synthetic paths with placement-independent lengths: tmp_path itself sits under the
++    # session's basetemp, so its depth depends on the invocation — never use it for the
++    # length-sensitive cases.
++    # Construction note (correction after unit-run2): str(Path("C:\\") / name) is
++    # "C:\\" + name WITHOUT an extra separator ⇒ len = 3 + len(name). The frozen oracle §4
++    # pins these dirs at 64 / 44 / 204 chars, so the names are 61 / 41 / 201 chars.
++    mid_dir = Path("C:\\") / ("s" * 61)    # len 64 → 64 > 60 ⇒ relocate
++    small_dir = Path("C:\\") / ("w" * 41)  # len 44 → 44 ≤ 60 ⇒ within budget (branch coverage)
++    deep_dir = Path("C:\\") / ("d" * 201)  # len 204 → relocate
++    # FLIP false→true (oracle INV-2): this 64-char dir asserted relocated=false under the old
++    # threshold 86. Written reason: "owner §16 E-1 chose 150/60; this control's unrouted
++    # expectation is superseded."
++    decision = conftest.decide(str(tmp_path), str(mid_dir))
++    assert decision["relocated"] is True
++    assert decision["reason"] == "resolved-basetemp-exceeds-budget"
++    assert decision["requested_basetemp_len"] == 64
++    # within-budget branch retained with a 44-char dir (44 ≤ 60): no needless reroute still holds
++    within = conftest.decide(str(tmp_path), str(small_dir))
++    assert within["relocated"] is False
++    assert within["reason"] == "within-budget"
++    deep = conftest.decide(str(tmp_path), str(deep_dir))
++    assert deep["relocated"] is True
++    assert deep["reason"] == "resolved-basetemp-exceeds-budget"
++    assert deep["requested_basetemp_len"] == len(str(deep_dir)) == 204
++    disabled = conftest.decide(str(tmp_path), str(deep_dir), disabled=True)
++    assert disabled["relocated"] is False
++    assert disabled["reason"] == "disabled-by-env"
++    default = conftest.decide(str(tmp_path), None)
++    assert default["relocated"] is False
++    assert default["reason"] == "no-explicit-basetemp"
++
++
++def test_fallback_dirs_are_fresh_and_unique(tmp_path):
++    first = conftest.make_fallback_dir(root=tmp_path)
++    second = conftest.make_fallback_dir(root=tmp_path)
++    try:
++        assert first != second
++        assert first.is_dir() and second.is_dir()
++        assert not any(first.iterdir())
++        assert not any(second.iterdir())
++    finally:
++        first.rmdir()
++        second.rmdir()
++
++
++def test_configure_hook_rewrites_option_and_cleans_up(tmp_path, monkeypatch):
++    requested = Path(tempfile.gettempdir()) / ("deep" * 60)  # deep regardless of placement
++    fallback_parent = tmp_path / "fallback-root"
++    decision_file = tmp_path / "decision.jsonl"
++    monkeypatch.setenv(conftest.FALLBACK_ROOT_ENV, str(fallback_parent))
++    monkeypatch.setenv(conftest.DECISION_FILE_ENV, str(decision_file))
++    monkeypatch.delenv(conftest.DISABLE_ENV, raising=False)
++
++    class _Option:
++        basetemp = str(requested)
++
++    class _Config:
++        option = _Option()
++
++    config = _Config()
++    conftest.pytest_configure(config)
++    relocated = Path(config.option.basetemp)
++    try:
++        assert relocated.is_dir()
++        assert not any(relocated.iterdir())
++        assert str(requested) not in config.option.basetemp
++        assert relocated.parent == fallback_parent
++        lines = [json.loads(line) for line in decision_file.read_text("utf-8").splitlines()]
++        assert lines[-1]["event"] == "decision"
++        assert lines[-1]["relocated"] is True
++        conftest.pytest_unconfigure(config)
++        assert not relocated.exists()
++        lines = [json.loads(line) for line in decision_file.read_text("utf-8").splitlines()]
++        assert lines[-1]["event"] == "cleanup"
++        assert lines[-1]["removed"] is True
++    finally:
++        if relocated.exists():
++            conftest.shutil.rmtree(relocated, ignore_errors=True)
++
++
++def test_configure_hook_within_budget_never_reroutes(tmp_path, monkeypatch):
++    # A short absolute basetemp must pass through untouched at ANY placement.
++    # On this box the name resolves to 58 chars (%TEMP% 31 + "\" + 26) ⇒ 58 ≤ 60 (margin 2
++    # under owner §16 E-1's threshold). The assert below states the invariant relative to the
++    # frozen threshold rather than hardcoding this box's %TEMP% depth; the exact 60/61
++    # boundary is pinned in the criterion table above.
++    requested = Path(tempfile.gettempdir()) / "cw-i14f-unit-within-budget"
++    assert len(str(requested)) <= conftest.BASETEMP_MAX_CHARS
++    monkeypatch.delenv(conftest.DISABLE_ENV, raising=False)
++
++    class _Option:
++        basetemp = str(requested)
++
++    class _Config:
++        option = _Option()
++
++    config = _Config()
++    conftest.pytest_configure(config)
++    assert config.option.basetemp == str(requested)
++    assert getattr(config, "_cw_basetemp_fallback", None) is None
+
+--- row B-5 --- a/src/company_wiki/source_catalog/prune_retired_evidence.py -> b/src/company_wiki/source_catalog/prune_retired_evidence.py
+# before_sha256: 2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46
+# after_sha256:  0c99bbe0c5f4ef16e7f84ba8aae0548ef6f59a0080274d5bd1ce83a7d37990b0
+--- a/src/company_wiki/source_catalog/prune_retired_evidence.py
++++ b/src/company_wiki/source_catalog/prune_retired_evidence.py
+@@ -1,21 +1,53 @@
+ """Prune retired documents' evidence spans after the retention window (Phase 2.3).
+ 
+-Evidence for retired documents is archived to ``source_manifests/archive/{date}``
+-(Phase 2.1). Once the oldest archive date is at least ``RETENTION_DAYS`` old,
+-the retired spans may be physically deleted (the archive is the protected copy).
+-Dry-run by default; ``--apply`` is explicit and runs under
+-``CatalogOperationLock``, deleting in batches with a receipt written to
+-``artifacts/gates``.
++Repaired for the five DW15-REPAIR defects (owner ruling A-1, 2026-09-22; the
++proposal this implements is I-15-A decision.md / W15-R1..R5).  Repaired
++behaviour:
++
++* **D1 (空目录也删)** — deletion is authorised *only* by at least one verified
++  archive manifest: manifest exists and declares ``ok``, its declared sha256
++  matches the archive bytes, and the per-row digests match the rows re-read from
++  that archive.  An empty directory, a bare snapshot without a manifest, a
++  manifest whose snapshot is missing/corrupt, and "the directory is old"
++  authorise nothing: dry-run reports ``due=false`` and apply deletes 0 rows.
++  When a verified *due* manifest exists, apply deletes exactly the
++  manifest-authorised, still-retired, digest-matching rows.
++* **D2 (同日覆写)** — receipts are uniquely named
++  (``prune-retired-<token>.json``): two runs in the same second each keep their
++  own receipt; a receipt is only ever replaced by its own run's atomic update.
++* **D3 (时钟取目录名)** — no system clock is read anywhere in this module.  The
++  caller injects ``now`` (required, timezone-aware); the retention window is
++  ``now - manifest.verified_completed_at``, never a directory/file name and
++  never the machine clock.
++* **D4 (TOCTOU)** — apply freezes an exact plan (span ids + row digests +
++  archive sha256s + plan hash).  Inside ``CatalogOperationLock`` it re-verifies
++  every archive byte against its sha256 and every planned row's digest/status
++  *before the first delete*; each batch then re-reads and re-verifies its rows
++  **inside the same transaction** that deletes them.  Any mismatch raises
++  ``PruneRefused`` and the whole apply aborts with 0 rows deleted — silently
++  narrowing the set is forbidden.
++* **D5 (崩溃后不可恢复)** — a *pending* receipt naming the full plan is
++  published atomically **before the first delete**, updated atomically after
++  every committed batch, and finalized to ``complete`` at the end.  A kill at
++  any point leaves the snapshot complete and every deleted id recoverable as a
++  subset of (receipt plan ∩ verified snapshot), so the exact deleted set is a
++  durable fact rather than a directory listing.
++
++Dry-run by default; ``apply=True`` is explicit and runs under
++``CatalogOperationLock``.
+ """
+ from __future__ import annotations
+ 
++import gzip
++import hashlib
+ import json
++import os
+ import sqlite3
+-import time
++import uuid
+ from dataclasses import dataclass
+-from datetime import date, datetime, timezone
++from datetime import datetime, timezone
+ from pathlib import Path
+-from typing import Any
++from typing import Any, Iterable, Mapping, Sequence
+ 
+ from .lock import CatalogOperationLock
+ from .models import CatalogConfig
+@@ -23,11 +55,84 @@
+ 
+ RETENTION_DAYS = 90
+ BATCH_SIZE = 100_000
+-
+-_DELETE_BATCH = """DELETE FROM evidence_spans WHERE span_id IN (
+-    SELECT span_id FROM evidence_spans WHERE document_id IN (
+-        SELECT document_id FROM documents WHERE source_status='retired')
+-    ORDER BY span_id LIMIT ?)"""
++MANIFEST_SCHEMA = "archive-verified-manifest-1.0"
++PLAN_SCHEMA = "exact-prune-plan-dw15.1"
++RECEIPT_SCHEMA = "prune-retired-receipt-1.0"
++
++# every column of evidence_spans plus the document status; ``__source_status``
++# is excluded from digests so live rows hash exactly like archived rows.
++_SPAN_STATE = """SELECT e.span_id, e.document_id, e.source_id, e.locator,
++                        e.page_number, e.paragraph_index, e.table_index,
++                        e.raw_text, e.span_json, e.parser_name,
++                        e.parser_version, e.parse_status,
++                        d.source_status AS __source_status
++                 FROM evidence_spans e
++                 JOIN documents d ON d.document_id = e.document_id
++                 WHERE e.span_id IN ({placeholders})"""
++
++
++class PruneRefused(RuntimeError):
++    """Business refusal: the frozen plan no longer matches the state the delete
++    would act on (or the plan object itself is inconsistent).  The whole apply
++    aborts; nothing is deleted."""
++
++
++@dataclass(frozen=True)
++class VerifiedArchive:
++    manifest_path: str
++    archive_path: str
++    archive_sha256: str
++    verified_completed_at: str
++    row_digests: Mapping[str, str]
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "manifest_path": self.manifest_path,
++            "archive_path": self.archive_path,
++            "archive_sha256": self.archive_sha256,
++            "verified_completed_at": self.verified_completed_at,
++            "row_digests": dict(self.row_digests),
++        }
++
++
++@dataclass(frozen=True)
++class PrunePlan:
++    span_ids: tuple[str, ...]
++    row_digests: Mapping[str, str]
++    archives: tuple[VerifiedArchive, ...]
++    retention_days: int
++    plan_hash: str
++
++    @staticmethod
++    def compute_hash(span_ids: Iterable[str], row_digests: Mapping[str, str],
++                     archives: Sequence[VerifiedArchive],
++                     retention_days: int) -> str:
++        ids = sorted(span_ids)
++        payload = {
++            "schema_version": PLAN_SCHEMA,
++            "retention_days": retention_days,
++            "span_ids": ids,
++            "row_digests": {sid: row_digests[sid] for sid in ids},
++            "archives": sorted(
++                ({"archive_path": va.archive_path,
++                  "archive_sha256": va.archive_sha256,
++                  "verified_completed_at": va.verified_completed_at}
++                 for va in archives),
++                key=lambda item: item["archive_path"]),
++        }
++        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"),
++                             ensure_ascii=False).encode("utf-8")
++        return hashlib.sha256(encoded).hexdigest()
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "schema_version": PLAN_SCHEMA,
++            "span_ids": list(self.span_ids),
++            "row_digests": dict(self.row_digests),
++            "archives": [va.to_dict() for va in self.archives],
++            "retention_days": self.retention_days,
++            "plan_hash": self.plan_hash,
++        }
+ 
+ 
+ @dataclass(frozen=True)
+@@ -40,20 +145,256 @@
+     due: bool
+     deleted_rows: int = 0
+     receipt_path: str | None = None
++    plan_hash: str | None = None
++    plan_span_ids: tuple[str, ...] = ()
++    already_absent: tuple[str, ...] = ()
++    verified_archives: int = 0
++    manifest_problems: tuple[str, ...] = ()
++    plan: PrunePlan | None = None
+ 
+     def to_dict(self) -> dict[str, Any]:
+         d = dict(self.__dict__)
++        d.pop("plan", None)
+         if self.receipt_path is None:
+             d.pop("receipt_path", None)
++        d["plan_span_ids"] = list(self.plan_span_ids)
++        d["already_absent"] = list(self.already_absent)
++        d["manifest_problems"] = list(self.manifest_problems)
+         return d
+ 
+ 
+-def _iso_date(name: str) -> bool:
++# ---------------------------------------------------------------------------
++# D1/D3 helpers: verified manifests, digests, retention clock
++# ---------------------------------------------------------------------------
++
++
++def _row_digest(row: Mapping[str, Any]) -> str:
++    payload = json.dumps(dict(row), sort_keys=True, separators=(",", ":"),
++                         ensure_ascii=False).encode("utf-8")
++    return hashlib.sha256(payload).hexdigest()
++
++
++def _sha256_file(path: Path) -> str:
++    digest = hashlib.sha256()
++    with open(path, "rb") as handle:
++        for chunk in iter(lambda: handle.read(1 << 20), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++def _read_snapshot(path: Path) -> tuple[list[str], dict[str, str]]:
++    ids: list[str] = []
++    digests: dict[str, str] = {}
++    with gzip.open(path, "rt", encoding="utf-8") as handle:
++        for line in handle:
++            line = line.strip()
++            if not line:
++                continue
++            row = json.loads(line)
++            span_id = row["span_id"]
++            if span_id in digests:
++                raise ValueError(f"duplicate span_id {span_id} in {path}")
++            ids.append(span_id)
++            digests[span_id] = _row_digest(row)
++    return ids, digests
++
++
++def _resolve_archive_path(manifest: Mapping[str, Any],
++                          manifest_path: Path) -> Path | None:
++    raw = manifest.get("archive_path")
++    if not isinstance(raw, str) or not raw:
++        return None
++    candidate = Path(raw)
++    if candidate.is_file():
++        return candidate
++    sibling = manifest_path.parent / Path(raw).name
++    if sibling.is_file():
++        return sibling
++    return None
++
++
++def _load_verified_archives(
++        archive_root: Path) -> tuple[list[VerifiedArchive], list[str]]:
++    """Verify every manifest under ``archive_root/archive`` (W15-R1).
++
++    Only manifests that fully verify become ``VerifiedArchive``; anything else
++    is recorded as a problem and authorises nothing (D1).
++    """
++    verified: list[VerifiedArchive] = []
++    problems: list[str] = []
++    base = archive_root / "archive"
++    if not base.exists():
++        return verified, problems
++    for manifest_path in sorted(base.rglob("*.manifest.json")):
++        try:
++            data = json.loads(manifest_path.read_text(encoding="utf-8"))
++        except (OSError, json.JSONDecodeError) as exc:
++            problems.append(f"{manifest_path}: unreadable manifest ({exc})")
++            continue
++        if data.get("schema_version") != MANIFEST_SCHEMA:
++            problems.append(f"{manifest_path}: unsupported schema_version")
++            continue
++        if data.get("ok") is not True:
++            problems.append(f"{manifest_path}: manifest not ok")
++            continue
++        archive_path = _resolve_archive_path(data, manifest_path)
++        if archive_path is None:
++            problems.append(f"{manifest_path}: archive file missing")
++            continue
++        if archive_path.stat().st_size != data.get("archive_bytes"):
++            problems.append(f"{manifest_path}: archive size mismatch")
++            continue
++        try:
++            actual_sha = _sha256_file(archive_path)
++        except OSError as exc:
++            problems.append(f"{manifest_path}: archive unreadable ({exc})")
++            continue
++        if actual_sha != data.get("archive_sha256"):
++            problems.append(f"{manifest_path}: archive sha256 mismatch")
++            continue
++        try:
++            ids, digests = _read_snapshot(archive_path)
++        except (OSError, EOFError, ValueError, json.JSONDecodeError) as exc:
++            problems.append(f"{manifest_path}: archive corrupt ({exc})")
++            continue
++        if len(ids) != data.get("rows_in_archive"):
++            problems.append(f"{manifest_path}: row count mismatch")
++            continue
++        if dict(digests) != dict(data.get("row_digests") or {}):
++            problems.append(f"{manifest_path}: row digest mismatch")
++            continue
++        completed_at = data.get("verified_completed_at")
++        try:
++            _parse_utc(completed_at)
++        except (TypeError, ValueError):
++            problems.append(f"{manifest_path}: bad verified_completed_at")
++            continue
++        verified.append(VerifiedArchive(
++            manifest_path=str(manifest_path),
++            archive_path=str(archive_path),
++            archive_sha256=actual_sha,
++            verified_completed_at=completed_at,
++            row_digests=dict(digests),
++        ))
++    return verified, problems
++
++
++def _parse_utc(value: str) -> datetime:
++    parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
++    if parsed.tzinfo is None:
++        parsed = parsed.replace(tzinfo=timezone.utc)
++    return parsed.astimezone(timezone.utc)
++
++
++def _is_due(archive: VerifiedArchive, now: datetime,
++            retention_days: int) -> bool:
++    """D3: the retention clock is verified_completed_at vs the injected now —
++    never a directory name, never the machine clock (W15-R3)."""
++    age = now.astimezone(timezone.utc) - _parse_utc(archive.verified_completed_at)
++    return age.days >= retention_days
++
++
++def _span_states(database_path: Path,
++                 span_ids: Sequence[str]) -> dict[str, tuple[str, str]]:
++    """{span_id: (row_digest, document status)} for rows that exist now."""
++    states: dict[str, tuple[str, str]] = {}
++    if not span_ids:
++        return states
++    conn = sqlite3.connect(f"file:{database_path}?mode=ro", uri=True)
++    conn.row_factory = sqlite3.Row
+     try:
+-        date.fromisoformat(name)
+-        return True
+-    except ValueError:
+-        return False
++        ids = list(span_ids)
++        for start in range(0, len(ids), 400):
++            chunk = ids[start:start + 400]
++            placeholders = ",".join("?" * len(chunk))
++            for row in conn.execute(_SPAN_STATE.format(placeholders=placeholders),
++                                    chunk):
++                digest_row = {key: row[key] for key in row.keys()
++                              if key != "__source_status"}
++                states[row["span_id"]] = (_row_digest(digest_row),
++                                          row["__source_status"])
++    finally:
++        conn.close()
++    return states
++
++
++def _counts(database_path: Path) -> tuple[int, int]:
++    conn = sqlite3.connect(f"file:{database_path}?mode=ro", uri=True)
++    try:
++        span_rows = int(conn.execute(
++            "SELECT COUNT(*) FROM evidence_spans WHERE document_id IN "
++            "(SELECT document_id FROM documents WHERE source_status='retired')"
++        ).fetchone()[0])
++        retired = int(conn.execute(
++            "SELECT COUNT(*) FROM documents WHERE source_status='retired'"
++        ).fetchone()[0])
++    finally:
++        conn.close()
++    return retired, span_rows
++
++
++def _build_plan(config: CatalogConfig, archive_root: Path, now: datetime,
++                retention_days: int) -> tuple[PrunePlan, list[VerifiedArchive],
++                                              list[str]]:
++    verified, problems = _load_verified_archives(archive_root)
++    due_archives = [va for va in verified if _is_due(va, now, retention_days)]
++    authorised: dict[str, str] = {}
++    for archive in due_archives:
++        for span_id, digest in archive.row_digests.items():
++            if span_id in authorised and authorised[span_id] != digest:
++                # ambiguous authorisation: refuse to guess (W15-R2)
++                authorised.pop(span_id, None)
++                problems.append(
++                    f"conflicting verified digests for {span_id}; excluded")
++                continue
++            authorised.setdefault(span_id, digest)
++    states = _span_states(config.database_path, sorted(authorised))
++    plan_ids: list[str] = []
++    plan_digests: dict[str, str] = {}
++    for span_id in sorted(authorised):
++        state = states.get(span_id)
++        if state is None:
++            continue                      # already absent: nothing to delete
++        live_digest, status = state
++        if status == "retired" and live_digest == authorised[span_id]:
++            plan_ids.append(span_id)
++            plan_digests[span_id] = live_digest
++        # present-but-changed / reactivated rows are simply unauthorised (W15-R2)
++    plan = PrunePlan(
++        span_ids=tuple(plan_ids),
++        row_digests=plan_digests,
++        archives=tuple(due_archives),
++        retention_days=retention_days,
++        plan_hash=PrunePlan.compute_hash(plan_ids, plan_digests,
++                                         due_archives, retention_days),
++    )
++    return plan, verified, problems
++
++
++def _atomic_write_json(path: Path, payload: Mapping[str, Any]) -> None:
++    """D5: temp + fsync + atomic replace (own run's receipt only; names are
++    uuid-unique so no other run's receipt can be targeted — D2)."""
++    tmp = path.with_name(f"{path.name}.partial-{uuid.uuid4().hex[:8]}")
++    with open(tmp, "w", encoding="utf-8", newline="\n") as handle:
++        json.dump(payload, handle, ensure_ascii=False, indent=2)
++        handle.flush()
++        os.fsync(handle.fileno())
++    os.replace(tmp, path)
++
++
++def _chunks(items: Sequence[str], size: int) -> Iterable[list[str]]:
++    for start in range(0, len(items), size):
++        yield list(items[start:start + size])
++
++
++def _verify_archives_on_disk(plan: PrunePlan) -> None:
++    """D4: re-read every archive byte before the first delete."""
++    for archive in plan.archives:
++        path = Path(archive.archive_path)
++        if not path.is_file():
++            raise PruneRefused(f"archive vanished after plan: {path}")
++        if _sha256_file(path) != archive.archive_sha256:
++            raise PruneRefused(f"archive changed after plan: {path}")
+ 
+ 
+ def prune_retired_evidence(
+@@ -62,94 +403,155 @@
+     *,
+     apply: bool = False,
+     retention_days: int = RETENTION_DAYS,
++    now: datetime,
++    plan: PrunePlan | None = None,
+ ) -> PruneReport:
+-    archive_dir = archive_root / "archive"
+-    dates = sorted(
+-        d.name
+-        for d in archive_dir.iterdir()
+-        if d.is_dir() and len(d.name) == 10 and _iso_date(d.name)
+-    ) if archive_dir.exists() else []
+-    oldest = dates[0] if dates else None
+-    today = datetime.now(timezone.utc).date()
+-    due = False
+-    if oldest is not None:
+-        due = (today - date.fromisoformat(oldest)).days >= retention_days
+-
+-    conn = sqlite3.connect(f"file:{config.database_path}?mode=ro", uri=True)
+-    conn.row_factory = sqlite3.Row
+-    try:
+-        span_rows = int(
+-            conn.execute(
+-                "SELECT COUNT(*) FROM evidence_spans WHERE document_id IN "
+-                "(SELECT document_id FROM documents WHERE source_status='retired')"
+-            ).fetchone()[0]
+-        )
+-        retired = int(
+-            conn.execute(
+-                "SELECT COUNT(*) FROM documents WHERE source_status='retired'"
+-            ).fetchone()[0]
+-        )
+-    finally:
+-        conn.close()
+-
+-    if not apply:
+-        return PruneReport(
+-            dry_run=True,
+-            retired_documents=retired,
+-            span_rows=span_rows,
+-            oldest_archive=oldest,
+-            retention_days=retention_days,
+-            due=due,
+-        )
+-    if not due:
+-        return PruneReport(
+-            dry_run=False,
+-            retired_documents=retired,
+-            span_rows=span_rows,
+-            oldest_archive=oldest,
+-            retention_days=retention_days,
+-            due=False,
+-        )
+-
+-    with CatalogOperationLock(config.catalog_dir, operation="prune_retired_evidence"):
+-        store = CatalogStore(config.database_path)
+-        deleted = 0
+-        while True:
+-            with store.transaction() as connection:
+-                cursor = connection.execute(_DELETE_BATCH, (BATCH_SIZE,))
+-                batch = cursor.rowcount
+-            deleted += batch
+-            if batch < BATCH_SIZE:
+-                break
+-
+-    now = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+-    receipt_path = (
+-        config.catalog_dir / "artifacts" / "gates" / f"prune-retired-{now}.json"
+-    )
+-    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+-    receipt_path.write_text(
+-        json.dumps(
+-            {
+-                "oldest_archive": oldest,
+-                "retired_documents": retired,
+-                "span_rows_before": span_rows,
+-                "deleted_rows": deleted,
+-            },
+-            ensure_ascii=False,
+-            indent=2,
+-        ),
+-        encoding="utf-8",
+-    )
+-    return PruneReport(
+-        dry_run=False,
++    """Plan (dry-run by default) or apply a prune of verified retired spans.
++
++    ``now`` (timezone-aware) is REQUIRED — the machine clock is never read (D3).
++    Pass the ``plan`` returned by a previous dry-run to apply *that exact set*;
++    apply re-verifies it under the operation lock and refuses on any drift (D4).
++    """
++    if not isinstance(now, datetime) or now.tzinfo is None:
++        raise TypeError(
++            "now: a timezone-aware datetime is required (no system-clock fallback)")
++    archive_root = Path(archive_root)
++    retired, span_rows = _counts(config.database_path)
++
++    manifest_problems: list[str] = []
++    if plan is None:
++        built_plan, verified, manifest_problems = _build_plan(
++            config, archive_root, now, retention_days)
++        active_plan = built_plan
++    else:
++        if PrunePlan.compute_hash(plan.span_ids, plan.row_digests,
++                                  plan.archives, plan.retention_days
++                                  ) != plan.plan_hash:
++            raise PruneRefused("frozen plan hash does not match its contents")
++        verified, manifest_problems = _load_verified_archives(archive_root)
++        active_plan = plan
++
++    due = bool(active_plan.archives) and any(
++        _is_due(va, now, active_plan.retention_days)
++        for va in active_plan.archives)
++    oldest: str | None = None
++    if verified:
++        oldest = min(verified, key=lambda va: (
++            _parse_utc(va.verified_completed_at), va.archive_path)).archive_path
++
++    base_report = dict(
+         retired_documents=retired,
+         span_rows=span_rows,
+         oldest_archive=oldest,
+-        retention_days=retention_days,
+-        due=True,
++        retention_days=active_plan.retention_days,
++        due=due,
++        plan_hash=active_plan.plan_hash,
++        plan_span_ids=active_plan.span_ids,
++        verified_archives=len(verified),
++        manifest_problems=tuple(manifest_problems),
++        plan=active_plan,
++    )
++
++    if not apply:
++        return PruneReport(dry_run=True, **base_report)
++    if not due:
++        return PruneReport(dry_run=False, deleted_rows=0, **base_report)
++
++    receipt_path: str | None = None
++    deleted = 0
++    already_absent: tuple[str, ...] = ()
++    with CatalogOperationLock(config.catalog_dir,
++                              operation="prune_retired_evidence"):
++        # ---- D4: re-verify plan vs. current state before the first delete ----
++        _verify_archives_on_disk(active_plan)
++        states = _span_states(config.database_path, active_plan.span_ids)
++        todo: list[str] = []
++        absent: list[str] = []
++        for span_id in active_plan.span_ids:
++            state = states.get(span_id)
++            if state is None:
++                absent.append(span_id)          # already deleted: idempotent, not drift
++                continue
++            live_digest, status = state
++            if status != "retired":
++                raise PruneRefused(
++                    f"document of {span_id} is no longer retired; whole apply refused")
++            if live_digest != active_plan.row_digests[span_id]:
++                raise PruneRefused(
++                    f"row {span_id} changed since the plan was frozen; whole apply refused")
++        already_absent = tuple(absent)
++
++        # ---- D5: pending receipt naming the FULL plan, before any delete ----
++        receipt: dict[str, Any] = {
++            "schema_version": RECEIPT_SCHEMA,
++            "status": "pending",
++            "now": now.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
++            "retention_days": active_plan.retention_days,
++            "plan_hash": active_plan.plan_hash,
++            "span_ids": list(active_plan.span_ids),
++            "row_digests": dict(active_plan.row_digests),
++            "archives": [va.to_dict() for va in active_plan.archives],
++            "already_absent": list(already_absent),
++            "committed_ids": [],
++            "deleted_rows": 0,
++        }
++        receipt_file = config.catalog_dir / "artifacts" / "gates" / (
++            f"prune-retired-{uuid.uuid4().hex[:16]}.json")
++        receipt_file.parent.mkdir(parents=True, exist_ok=True)
++        _atomic_write_json(receipt_file, receipt)
++        receipt_path = str(receipt_file.resolve())
++
++        store = CatalogStore(config.database_path)
++        todo = _plan_todo(active_plan, states, absent)
++        for batch in _chunks(todo, BATCH_SIZE):
++            with store.transaction() as connection:
++                # atomic re-verification WITH the delete (D4)
++                placeholders = ",".join("?" * len(batch))
++                rows = {row["span_id"]: row for row in connection.execute(
++                    _SPAN_STATE.format(placeholders=placeholders), batch)}
++                for span_id in batch:
++                    row = rows.get(span_id)
++                    if row is None:
++                        raise PruneRefused(
++                            f"row {span_id} vanished mid-apply; whole apply refused")
++                    digest_row = {key: row[key] for key in row.keys()
++                                  if key != "__source_status"}
++                    if row["__source_status"] != "retired":
++                        raise PruneRefused(
++                            f"document of {span_id} reactivated mid-apply; "
++                            "whole apply refused")
++                    if _row_digest(digest_row) != active_plan.row_digests[span_id]:
++                        raise PruneRefused(
++                            f"row {span_id} changed mid-apply; whole apply refused")
++                cursor = connection.execute(
++                    f"DELETE FROM evidence_spans WHERE span_id IN ({placeholders})",
++                    batch)
++                batch_rows = cursor.rowcount
++            deleted += max(batch_rows, 0)
++            receipt["committed_ids"] = list(
++                dict.fromkeys(receipt["committed_ids"] + batch))
++            receipt["deleted_rows"] = deleted
++            _atomic_write_json(receipt_file, receipt)     # after every commit
++
++        receipt["status"] = "complete"
++        _atomic_write_json(receipt_file, receipt)
++
++    return PruneReport(
++        dry_run=False,
+         deleted_rows=deleted,
+-        receipt_path=str(receipt_path.resolve()),
++        receipt_path=receipt_path,
++        already_absent=already_absent,
++        **{k: v for k, v in base_report.items() if k != "plan"},
++        plan=active_plan,
+     )
+ 
+ 
+-__all__ = ["PruneReport", "RETENTION_DAYS", "prune_retired_evidence"]
++def _plan_todo(plan: PrunePlan, states: Mapping[str, tuple[str, str]],
++               absent: Sequence[str]) -> list[str]:
++    absent_set = set(absent)
++    return [span_id for span_id in plan.span_ids
++            if span_id not in absent_set and span_id in states]
++
++
++__all__ = ["PrunePlan", "PruneRefused", "PruneReport", "RETENTION_DAYS",
++           "VerifiedArchive", "prune_retired_evidence"]
+
+--- row B-5 --- a/src/company_wiki/source_catalog/archive_retired_evidence.py -> b/src/company_wiki/source_catalog/archive_retired_evidence.py
+# before_sha256: 143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0
+# after_sha256:  bbe855e4495e82d2a40b0185c9db8efa2639449fdd5f768120538abb992b28ac
+--- a/src/company_wiki/source_catalog/archive_retired_evidence.py
++++ b/src/company_wiki/source_catalog/archive_retired_evidence.py
+@@ -1,22 +1,48 @@
+ """Archive retired documents' evidence spans to gzip JSONL (Phase 2.1).
+ 
+-Streaming read-only export of ``evidence_spans`` for retired documents into
+-``source_manifests/archive/{yyyy-mm-dd}/retired-evidence.jsonl.gz`` with a row
+-count reconciliation against the live catalog. Runs on a read-only connection,
+-so it does not take the operation lock and may run while the worker is busy
+-(retired documents are never re-normalized, so their spans are stable).
++Streaming read-only export of ``evidence_spans`` for retired documents, repaired
++for the five DW15-REPAIR defects (owner ruling A-1, 2026-09-22; proposal source:
++I-15-A decision.md).  Repaired behaviour:
++
++* **D2 (同日覆写)** — every run writes a *uniquely named* snapshot
++  (``retired-evidence-<token>.jsonl.gz``); no run can truncate, replace or
++  overwrite another run's published snapshot.
++* **D3 (时钟取目录名)** — the function never reads the system clock.  The date
++  directory comes from the explicitly injected ``now`` parameter; the uniqueness
++  token is a non-clock value (uuid4).  ``now`` is required: there is no
++  wall-clock fallback.
++* **D5 (崩溃后不可恢复)** — the snapshot is written to a temporary file,
++  flushed+fsynced, re-read and verified (row count + per-row digests), and only
++  then atomically published with a create-if-absent link/rename.  A kill at any
++  point leaves **no truncated file at a published snapshot path**: either the
++  previous snapshot is still intact, or the new one appears complete, or the
++  evidence simply stays in the catalog.
++
++After a successful publish a per-snapshot manifest
++(``archive-verified-manifest-1.0``) is written atomically next to the snapshot,
++pinning it by sha256/size/exact span ids/row digests/verified completion time
++(I-15-A D-W15-1).  Prune may only authorise deletions from such a manifest (D1).
++
++The export still runs on a read-only connection and does not take the operation
++lock (retired documents are never re-normalized, so their spans are stable).
+ """
+ from __future__ import annotations
+ 
+ import gzip
++import hashlib
+ import json
++import os
+ import sqlite3
++import uuid
+ from dataclasses import dataclass
+ from datetime import datetime, timezone
+ from pathlib import Path
+ from typing import Any, Callable
+ 
++from .models import CATALOG_SCHEMA_VERSION
++
+ BATCH_SIZE = 100_000
++MANIFEST_SCHEMA = "archive-verified-manifest-1.0"
+ 
+ _SELECT = """SELECT e.span_id, e.source_id, e.document_id, e.locator, e.page_number,
+                      e.paragraph_index, e.table_index, e.raw_text, e.span_json,
+@@ -29,29 +55,110 @@
+ @dataclass(frozen=True)
+ class ArchiveReport:
+     archive_path: str
++    manifest_path: str
+     rows_written: int
+     rows_in_catalog: int
+     ok: bool
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return dict(self.__dict__)
++
++
++def _row_digest(row: dict[str, Any]) -> str:
++    """Canonical row digest (I-15-A D-W15-1): sorted-keys compact JSON."""
++    payload = json.dumps(row, sort_keys=True, separators=(",", ":"),
++                         ensure_ascii=False).encode("utf-8")
++    return hashlib.sha256(payload).hexdigest()
++
++
++def _sha256_file(path: Path) -> str:
++    digest = hashlib.sha256()
++    with open(path, "rb") as handle:
++        for chunk in iter(lambda: handle.read(1 << 20), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++def _atomic_write_text(path: Path, text: str) -> None:
++    """Publish ``text`` at ``path`` via temp + fsync + atomic replace."""
++    tmp = path.with_name(f"{path.name}.partial-{uuid.uuid4().hex[:8]}")
++    with open(tmp, "w", encoding="utf-8", newline="\n") as handle:
++        handle.write(text)
++        handle.flush()
++        os.fsync(handle.fileno())
++    os.replace(tmp, path)
++
++
++def _publish(temp_path: Path, final_path: Path) -> None:
++    """Atomically publish ``temp_path`` at ``final_path`` without ever
++    overwriting an existing published file (create-if-absent)."""
++    if final_path.exists():
++        raise FileExistsError(f"snapshot path already published: {final_path}")
++    try:
++        os.link(temp_path, final_path)   # atomic; fails if the target exists
++        temp_path.unlink()
++    except (AttributeError, NotImplementedError, OSError):
++        if final_path.exists():
++            raise FileExistsError(f"snapshot path already published: {final_path}")
++        os.rename(temp_path, final_path)
++
++
++def _fsync_file(path: Path) -> None:
++    with open(path, "r+b") as handle:
++        handle.flush()
++        os.fsync(handle.fileno())
++
++
++def _verify_snapshot(temp_path: Path) -> tuple[int, dict[str, str]]:
++    """Re-read the written bytes and recompute count + digests (fail closed)."""
++    ids: list[str] = []
++    digests: dict[str, str] = {}
++    with gzip.open(temp_path, "rt", encoding="utf-8") as handle:
++        for line in handle:
++            line = line.strip()
++            if not line:
++                continue
++            row = json.loads(line)
++            span_id = row["span_id"]
++            if span_id in digests:
++                raise RuntimeError(f"duplicate span_id in snapshot: {span_id}")
++            ids.append(span_id)
++            digests[span_id] = _row_digest(row)
++    return len(ids), digests
+ 
+ 
+ def archive_retired_evidence(
+     database_path: Path | str,
+     archive_root: Path | str,
+     *,
++    now: datetime,
+     progress: Callable[[int, int], None] | None = None,
+ ) -> ArchiveReport:
++    """Archive retired spans; ``now`` (timezone-aware) is REQUIRED.
++
++    The machine clock is never read: ``now`` decides the date directory and the
++    provenance timestamp, a uuid4 token decides file uniqueness (D2/D3).
++    """
++    if not isinstance(now, datetime) or now.tzinfo is None:
++        raise TypeError(
++            "now: a timezone-aware datetime is required (no system-clock fallback)")
+     database_path = Path(database_path)
+     archive_root = Path(archive_root)
+-    day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
++
++    moment = now.astimezone(timezone.utc)
++    day = moment.date().isoformat()
++    token = uuid.uuid4().hex[:16]                     # non-clock uniqueness (D2/D3)
+     out_dir = archive_root / "archive" / day
+     out_dir.mkdir(parents=True, exist_ok=True)
+-    out_path = out_dir / "retired-evidence.jsonl.gz"
++    out_path = out_dir / f"retired-evidence-{token}.jsonl.gz"
++    if out_path.exists():
++        raise FileExistsError(f"snapshot path already published: {out_path}")
++    tmp_path = out_dir / (
++        f"retired-evidence-{token}.jsonl.gz.partial-{uuid.uuid4().hex[:8]}")
+ 
+     conn = sqlite3.connect(f"file:{database_path}?mode=ro", uri=True)
+     conn.row_factory = sqlite3.Row
++    published = False
+     try:
+         total = int(
+             conn.execute(
+@@ -61,8 +168,11 @@
+         )
+ 
+         rows_written = 0
++        written_digests: dict[str, str] = {}
+         last_id: str | None = None
+-        with gzip.open(out_path, "wt", encoding="utf-8", newline="\n") as fh:
++        # D5: everything below writes the TEMP file only; the published path
++        # is touched once, atomically, after verification.
++        with gzip.open(tmp_path, "wt", encoding="utf-8", newline="\n") as fh:
+             while True:
+                 if last_id is None:
+                     rows = conn.execute(
+@@ -76,19 +186,60 @@
+                 if not rows:
+                     break
+                 for row in rows:
+-                    fh.write(json.dumps(dict(row), ensure_ascii=False) + "\n")
++                    row_dict = dict(row)
++                    fh.write(json.dumps(row_dict, ensure_ascii=False) + "\n")
++                    written_digests[row_dict["span_id"]] = _row_digest(row_dict)
+                     last_id = row["span_id"]
+                 rows_written += len(rows)
+                 if progress is not None:
+                     progress(rows_written, total)
++
++        if rows_written != total:
++            raise RuntimeError(
++                f"archive reconciliation failed: wrote {rows_written}, "
++                f"catalog reports {total}; snapshot not published")
++
++        # verify the bytes we are about to publish (fail closed, D5)
++        _fsync_file(tmp_path)
++        verified_count, verified_digests = _verify_snapshot(tmp_path)
++        if verified_count != rows_written or verified_digests != written_digests:
++            raise RuntimeError(
++                "archive self-verification failed: snapshot not published")
++
++        _publish(tmp_path, out_path)
++        published = True
++
++        archive_sha256 = _sha256_file(out_path)
++        manifest = {
++            "schema_version": MANIFEST_SCHEMA,
++            "catalog_identity": f"{database_path.name}:{CATALOG_SCHEMA_VERSION}",
++            "archive_path": str(out_path.resolve()),
++            "archive_sha256": archive_sha256,
++            "archive_bytes": out_path.stat().st_size,
++            "rows_in_archive": verified_count,
++            "verified_completed_at": moment.strftime("%Y-%m-%dT%H:%M:%SZ"),
++            "span_ids": sorted(verified_digests),
++            "row_digests": {k: verified_digests[k] for k in sorted(verified_digests)},
++            "verifier": ("archive_retired_evidence self-check: re-read snapshot, "
++                         "recomputed per-row digests and count before publish"),
++            "problems": [],
++            "ok": True,
++        }
++        manifest_path = out_dir / f"{out_path.name}.manifest.json"
++        _atomic_write_text(manifest_path,
++                           json.dumps(manifest, ensure_ascii=False, indent=2))
+     finally:
+         conn.close()
++        if not published and tmp_path.exists():
++            # crash/abort residue must never sit at a published path (D5)
++            tmp_path.unlink(missing_ok=True)
+ 
+     return ArchiveReport(
+         archive_path=str(out_path.resolve()),
++        manifest_path=str(manifest_path.resolve()),
+         rows_written=rows_written,
+         rows_in_catalog=total,
+-        ok=rows_written == total,
++        ok=True,
+     )
+ 
+ 

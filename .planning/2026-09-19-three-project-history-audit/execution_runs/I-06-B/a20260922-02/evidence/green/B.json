@@ -1,0 +1,131 @@
+{
+  "case": "B",
+  "title": "register-blocks-until-reviewed (recoverable)",
+  "iso": "fixed",
+  "ruling_clause": "I-06-A C1/C7_r2 + OPEN-2b c7 error contract + OPEN-5 §4.3",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "B1_registered_before_block",
+      "ok": true,
+      "detail": "reg_status=pending rows=1"
+    },
+    {
+      "name": "B2_gaps_carry_next_action",
+      "ok": true,
+      "detail": "gaps=[{\"detail\": \"prompt_injection_status is not reviewed\", \"gap\": \"review_required\", \"observed\": \"not_reviewed\", \"resolves_by\": \"run the approved review method for this source\"}, {\"detail\": \"no reusable markdown artifact in the envelope bundle\", \"gap\": \"artifact_missing\", \"observed\": \"markdown\", \"resolves_by\": \"produce the markdown artifact, then retry\"}, {\"detail\": \"no reusable normalized artifact in the envelope bundle\", \"gap\": \"artifact_missing\", \"observed\": \"normalized\", \"resolves_by\": \"produce the normalized artifact, then retry\"}, {\"detail\": \"no reusable sections artifact in the envelope bun"
+    },
+    {
+      "name": "B3_security_verdict_first",
+      "ok": true,
+      "detail": "msg=prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-a83be942cc7e4d13 source=fead7a6312a2cc4b gaps=5 next_action"
+    },
+    {
+      "name": "B4_demand_queued_recoverable",
+      "ok": true,
+      "detail": "msg=prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-a83be942cc7e4d13 source=fead7a6312a2cc4b gaps=5 next_action=run the approved review method for this source; worker is not paused"
+    },
+    {
+      "name": "B5_store_error_clause_no_fabricated_queue",
+      "ok": true,
+      "detail": "store_error=demand_store_unavailable: demand store unavailable: FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'C:\\\\Users\\\\郑曾波\\\\AppData\\\\Local\\\\Temp\\\\i06b_Bblock_kd9fd_6q\\\\not_a_dir' msg=prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_store_error=demand_store_unavailable: demand store unavailable: FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'C:\\\\Users\\\\郑曾波\\\\AppData\\\\Local\\\\Temp\\\\i06b_Bblock_kd9fd_6q\\\\not_a_dir'; gaps=5 next_action=run the approved review method for this source; worker is not paused rows=1"
+    }
+  ],
+  "raw": {
+    "B_registration": {
+      "demand_id": "demand-a83be942cc7e4d13",
+      "demand_key": "fead7a6312a2cc4b714ea35321b1287b9ce3af8d77b51317389ad4c4592f94ff",
+      "created": true,
+      "status": "pending",
+      "gaps": [
+        {
+          "detail": "prompt_injection_status is not reviewed",
+          "gap": "review_required",
+          "observed": "not_reviewed",
+          "resolves_by": "run the approved review method for this source"
+        },
+        {
+          "detail": "no reusable markdown artifact in the envelope bundle",
+          "gap": "artifact_missing",
+          "observed": "markdown",
+          "resolves_by": "produce the markdown artifact, then retry"
+        },
+        {
+          "detail": "no reusable normalized artifact in the envelope bundle",
+          "gap": "artifact_missing",
+          "observed": "normalized",
+          "resolves_by": "produce the normalized artifact, then retry"
+        },
+        {
+          "detail": "no reusable sections artifact in the envelope bundle",
+          "gap": "artifact_missing",
+          "observed": "sections",
+          "resolves_by": "produce the sections artifact, then retry"
+        },
+        {
+          "detail": "no reusable summary artifact in the envelope bundle",
+          "gap": "artifact_missing",
+          "observed": "summary",
+          "resolves_by": "produce the summary artifact, then retry"
+        }
+      ],
+      "worker": {
+        "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i06b_Bwf_o16kvw7j\\wf.json",
+        "exists": false,
+        "desired_state": null
+      },
+      "store_error": null,
+      "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+    },
+    "B_block_message": "prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-a83be942cc7e4d13 source=fead7a6312a2cc4b gaps=5 next_action=run the approved review method for this source; worker is not paused",
+    "B_registration_store_failure": {
+      "demand_id": null,
+      "demand_key": null,
+      "created": false,
+      "status": "not_registered",
+      "gaps": [
+        {
+          "gap": "review_required",
+          "detail": "prompt_injection_status is not reviewed",
+          "observed": "not_reviewed",
+          "resolves_by": "run the approved review method for this source"
+        },
+        {
+          "gap": "artifact_missing",
+          "detail": "no reusable markdown artifact in the envelope bundle",
+          "observed": "markdown",
+          "resolves_by": "produce the markdown artifact, then retry"
+        },
+        {
+          "gap": "artifact_missing",
+          "detail": "no reusable normalized artifact in the envelope bundle",
+          "observed": "normalized",
+          "resolves_by": "produce the normalized artifact, then retry"
+        },
+        {
+          "gap": "artifact_missing",
+          "detail": "no reusable sections artifact in the envelope bundle",
+          "observed": "sections",
+          "resolves_by": "produce the sections artifact, then retry"
+        },
+        {
+          "gap": "artifact_missing",
+          "detail": "no reusable summary artifact in the envelope bundle",
+          "observed": "summary",
+          "resolves_by": "produce the summary artifact, then retry"
+        }
+      ],
+      "worker": {
+        "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i06b_Bwf_o16kvw7j\\wf.json",
+        "exists": false,
+        "desired_state": null
+      },
+      "store_error": "demand_store_unavailable: demand store unavailable: FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'C:\\\\Users\\\\郑曾波\\\\AppData\\\\Local\\\\Temp\\\\i06b_Bblock_kd9fd_6q\\\\not_a_dir'",
+      "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+    },
+    "B_block_message_store_failure": "prompt injection not reviewed — source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_store_error=demand_store_unavailable: demand store unavailable: FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'C:\\\\Users\\\\郑曾波\\\\AppData\\\\Local\\\\Temp\\\\i06b_Bblock_kd9fd_6q\\\\not_a_dir'; gaps=5 next_action=run the approved review method for this source; worker is not paused"
+  },
+  "error": null,
+  "seconds": 0.075,
+  "finished_at": "2026-09-22T23:12:48"
+}

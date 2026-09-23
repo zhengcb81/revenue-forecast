@@ -1,0 +1,161 @@
+{
+ "card_id": "M04",
+ "first_required_driver": "capacity",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "extra_observations": [
+  {
+   "id": "DEFAULTS-CASE",
+   "input": "defaults_case",
+   "expectation": "output [1440] proving the documented optional defaults"
+  }
+ ],
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver",
+   "driver": "utilization",
+   "value": [
+    1.1
+   ],
+   "expected": "ModelRegistryError",
+   "why": "utilisation is a ratio in [0,1] (card line 44)"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "driver": "capacity",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "bool is not numeric"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "driver": "capacity",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "driver": "capacity",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "driver": "capacity",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "driver": "capacity",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "path length 0 != len(years)=1"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "driver": "capacity",
+   "expected": "ModelRegistryError",
+   "why": "required driver missing"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ],
+   "expected": "ModelRegistryError",
+   "why": "unknown driver"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "empty fiscal-year list"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "value": {
+    "__bool__first__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "True is not a fiscal year"
+  },
+  {
+   "id": "R2-YIELD",
+   "kind": "set_driver",
+   "driver": "yield",
+   "value": [
+    1.2
+   ],
+   "expected": "ModelRegistryError",
+   "why": "yield is a ratio in [0,1]"
+  },
+  {
+   "id": "R3-CAPACITY-NEG",
+   "kind": "set_driver",
+   "driver": "capacity",
+   "value": [
+    -1
+   ],
+   "expected": "ModelRegistryError",
+   "why": "negative capacity"
+  },
+  {
+   "id": "R3-UNIT-REV-NEG",
+   "kind": "set_driver",
+   "driver": "unit_revenue",
+   "value": [
+    -2
+   ],
+   "expected": "ModelRegistryError",
+   "why": "negative revenue per good unit"
+  },
+  {
+   "id": "R8-NET-NEG",
+   "kind": "set_driver",
+   "driver": "other_revenue",
+   "value": [
+    -2000
+   ],
+   "expected": "ModelRegistryError",
+   "why": "signed other_revenue may be negative but the resulting revenue cannot be negative"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "value": [
+    2027,
+    2029
+   ],
+   "base_input": "continuity_positive",
+   "expected": "ModelRegistryError",
+   "why": "fiscal years must be consecutive"
+  }
+ ]
+}

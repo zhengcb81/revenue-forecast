@@ -1,0 +1,141 @@
+{
+  "target": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\iso-mutant",
+  "passed": 12,
+  "failed": 3,
+  "results": [
+    {
+      "case": "W06A2-P1",
+      "result": "PASS",
+      "measurement": {
+        "demand_id": "demand-eb3b921f7687c760",
+        "clause": "demand_queued demand_id=demand-eb3b921f7687c760 gaps=3 next_action=review source then re-run source preparation",
+        "cross_process": 1
+      },
+      "seconds": 5.516
+    },
+    {
+      "case": "W06A2-P2",
+      "result": "PASS",
+      "measurement": {
+        "demand_id": "demand-eb3b921f7687c760",
+        "rows": 1
+      },
+      "seconds": 4.936
+    },
+    {
+      "case": "W06A2-P3",
+      "result": "PASS",
+      "measurement": {
+        "variant_a": "table added, old rows preserved, register+claim ok",
+        "variant_b": "columns backfilled ['attempts', 'created_at', 'demand_id', 'demand_key', 'gaps_json', 'kind', 'lease_owner', 'lease_until', 'next_action', 'priority', 'request_identity_json', 'request_json', 'request_sha256', 'retry_at', 'review_policy', 'role_set', 'source_id', 'source_sha256', 'status', 'terminal_reason', 'updated_at'], legacy row kept, register+claim ok"
+      },
+      "seconds": 2.098
+    },
+    {
+      "case": "W06A2-P4",
+      "result": "FAIL",
+      "error": "DemandIdempotencyViolation: demand 'demand-eb3b921f7687c760' already registered for demand_key eb3b921f7687c760b07f4de05d384478a591f23bab36407832c003e0b0535183 with a DIFFERENT request payload; refusing silent merge (expected request_sha256=c2f596bfee9b68c2125224eebff76480ae4139596a6ade27271c44b711118f3c, got 2471386a8b211318c8ea00f4e9940f2bf4bac34e7c58840d340752d152943dac)",
+      "traceback": "                ~~^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\scripts\\w06a2_cases.py\", line 342, in case_p4_claim_lease_lifecycle\n    d2 = dstore.register(**sample_registration(as_of_date=\"2026-12-31\"))\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\iso-mutant\\cw\\src\\company_wiki\\source_catalog\\processing_demand.py\", line 660, in register\n    return self._resolve_existing(\n           ~~~~~~~~~~~~~~~~~~~~~~^\n        existing,\n        ^^^^^^^^^\n        request_sha256=request_sha256,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        request_text=request_text,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\iso-mutant\\cw\\src\\company_wiki\\source_catalog\\processing_demand.py\", line 735, in _resolve_existing\n    raise DemandIdempotencyViolation(\n    ...<4 lines>...\n    )\ncompany_wiki.source_catalog.processing_demand.DemandIdempotencyViolation: demand 'demand-eb3b921f7687c760' already registered for demand_key eb3b921f7687c760b07f4de05d384478a591f23bab36407832c003e0b0535183 with a DIFFERENT request payload; refusing silent merge (expected request_sha256=c2f596bfee9b68c2125224eebff76480ae4139596a6ade27271c44b711118f3c, got 2471386a8b211318c8ea00f4e9940f2bf4bac34e7c58840d340752d152943dac)\n",
+      "seconds": 0.847
+    },
+    {
+      "case": "W06A2-N1",
+      "result": "FAIL",
+      "error": "DemandIdempotencyViolation: demand 'demand-eb3b921f7687c760' already registered for demand_key eb3b921f7687c760b07f4de05d384478a591f23bab36407832c003e0b0535183 with a DIFFERENT request payload; refusing silent merge (expected request_sha256=c2f596bfee9b68c2125224eebff76480ae4139596a6ade27271c44b711118f3c, got f6093310f8745ff3e85d99cf8ef8d5feab2fa351ebcdc1e5104d3f5e4563b709)",
+      "traceback": "ain\n    measurement = fn(t) or {}\n                  ~~^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\scripts\\w06a2_cases.py\", line 373, in case_n1_request_identity_in_key\n    d_b = dstore.register(**reg_b)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\iso-mutant\\cw\\src\\company_wiki\\source_catalog\\processing_demand.py\", line 660, in register\n    return self._resolve_existing(\n           ~~~~~~~~~~~~~~~~~~~~~~^\n        existing,\n        ^^^^^^^^^\n        request_sha256=request_sha256,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        request_text=request_text,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\iso-mutant\\cw\\src\\company_wiki\\source_catalog\\processing_demand.py\", line 735, in _resolve_existing\n    raise DemandIdempotencyViolation(\n    ...<4 lines>...\n    )\ncompany_wiki.source_catalog.processing_demand.DemandIdempotencyViolation: demand 'demand-eb3b921f7687c760' already registered for demand_key eb3b921f7687c760b07f4de05d384478a591f23bab36407832c003e0b0535183 with a DIFFERENT request payload; refusing silent merge (expected request_sha256=c2f596bfee9b68c2125224eebff76480ae4139596a6ade27271c44b711118f3c, got f6093310f8745ff3e85d99cf8ef8d5feab2fa351ebcdc1e5104d3f5e4563b709)\n",
+      "seconds": 0.541
+    },
+    {
+      "case": "W06A2-N2",
+      "result": "PASS",
+      "measurement": {
+        "clause": "demand_store_error=DemandStoreUnavailable: OperationalError: no such table: processing_demands"
+      },
+      "seconds": 0.551
+    },
+    {
+      "case": "W06A2-N3",
+      "result": "PASS",
+      "measurement": {
+        "threads_before": [
+          "MainThread"
+        ],
+        "threads_after": [
+          "MainThread"
+        ]
+      },
+      "seconds": 0.525
+    },
+    {
+      "case": "W06A2-N4",
+      "result": "PASS",
+      "measurement": {
+        "refusals": "all coded"
+      },
+      "seconds": 0.786
+    },
+    {
+      "case": "W06A2-N5",
+      "result": "FAIL",
+      "error": "DemandIdempotencyViolation: demand 'demand-eb3b921f7687c760' already registered for demand_key eb3b921f7687c760b07f4de05d384478a591f23bab36407832c003e0b0535183 with a DIFFERENT request payload; refusing silent merge (expected request_sha256=07aab5a65dc0d03f701a4945ac68ae8a6c5441a9d5ccf4f73ffa164f95b65432, got f6093310f8745ff3e85d99cf8ef8d5feab2fa351ebcdc1e5104d3f5e4563b709)",
+      "traceback": "      ~~^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\scripts\\w06a2_cases.py\", line 518, in case_n5_concurrent_conflict_defined\n    target = dstore.register(**sample_registration(as_of_date=\"2027-03-31\"))\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\iso-mutant\\cw\\src\\company_wiki\\source_catalog\\processing_demand.py\", line 660, in register\n    return self._resolve_existing(\n           ~~~~~~~~~~~~~~~~~~~~~~^\n        existing,\n        ^^^^^^^^^\n        request_sha256=request_sha256,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        request_text=request_text,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260922-02\\iso-mutant\\cw\\src\\company_wiki\\source_catalog\\processing_demand.py\", line 735, in _resolve_existing\n    raise DemandIdempotencyViolation(\n    ...<4 lines>...\n    )\ncompany_wiki.source_catalog.processing_demand.DemandIdempotencyViolation: demand 'demand-eb3b921f7687c760' already registered for demand_key eb3b921f7687c760b07f4de05d384478a591f23bab36407832c003e0b0535183 with a DIFFERENT request payload; refusing silent merge (expected request_sha256=07aab5a65dc0d03f701a4945ac68ae8a6c5441a9d5ccf4f73ffa164f95b65432, got f6093310f8745ff3e85d99cf8ef8d5feab2fa351ebcdc1e5104d3f5e4563b709)\n",
+      "seconds": 0.438
+    },
+    {
+      "case": "W06A2-N6",
+      "result": "PASS",
+      "measurement": {
+        "receipt_cache_state": "ignored",
+        "demand_status_after": "completed"
+      },
+      "seconds": 0.688
+    },
+    {
+      "case": "W06A2-N7",
+      "result": "PASS",
+      "measurement": {
+        "kinds": [
+          "missing",
+          "not_applicable",
+          "unsupported"
+        ]
+      },
+      "seconds": 0.806
+    },
+    {
+      "case": "W06A2-N8",
+      "result": "PASS",
+      "measurement": {
+        "cap": 2592000,
+        "expired": "expired"
+      },
+      "seconds": 0.798
+    },
+    {
+      "case": "W06A2-N9",
+      "result": "PASS",
+      "measurement": {
+        "rows_after_archival": 1
+      },
+      "seconds": 0.52
+    },
+    {
+      "case": "W06A2-C8",
+      "result": "PASS",
+      "measurement": {
+        "queued_clause": "demand_queued demand_id=demand-0123456789abcdef gaps=2 next_action=review source then re-run source preparation",
+        "error_clause": "demand_store_error=DemandStoreUnavailable: sqlite3.OperationalError: database is locked"
+      },
+      "seconds": 0.441
+    },
+    {
+      "case": "W06A2-N10",
+      "result": "PASS",
+      "measurement": {
+        "cache_domain": "cache",
+        "review_domain": "review"
+      },
+      "seconds": 0.753
+    }
+  ]
+}

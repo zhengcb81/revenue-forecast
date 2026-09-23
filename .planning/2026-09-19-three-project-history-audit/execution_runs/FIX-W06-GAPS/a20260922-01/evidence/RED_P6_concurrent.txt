@@ -1,0 +1,433 @@
+target pkg-dir : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\FIX-W06-GAPS\a20260922-01\before\cw
+    __init__.py sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    processing_demand.py sha256=90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b
+    prompt_injection.py sha256=7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618
+    prompt_injection_guard.py sha256=f900a13d7c22fe3bd742485c6b603de11b92a56d2414a2a046216ccd3b0b9c08
+    readiness_graph.py sha256=3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc
+
+=== Phase A: 8 concurrent single writes, same document_id='doc-race' ===
+    {"owner": "w0", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6", "rc": 0}
+    {"owner": "w1", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec", "rc": 0}
+    {"owner": "w2", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e", "rc": 0}
+    {"owner": "w3", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355", "rc": 0}
+    {"owner": "w4", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e", "rc": 0}
+    {"owner": "w5", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841", "rc": 0}
+    {"owner": "w6", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa", "rc": 0}
+    {"owner": "w7", "mode": "single", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5", "rc": 0}
+    final row: {"metadata_json_keys": ["prompt_injection_review"], "receipt": {"schema_version": "1.0", "status": "not_detected", "reviewer": "w0", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6", "source_sha256": "6b1bf1ed12938116fe681488ad58a9c071871bcdba107c87b8d45b3c767b752b", "policy_hash": "f760fdc04df62115e50b2a7f76669ef663856366dd25ad1847ff108c4d27507b"}, "receipt_key_count": 1, "audit_entries": 0, "audit_evidence_sha256s": []}
+
+=== Phase A2: 8 concurrent writes, connect timeout=0.0 (lock exposed) ===
+    {"owner": "w0", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "error_types": ["OperationalError"], "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6", "rc": 0}
+    {"owner": "w1", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "error_types": ["OperationalError"], "evidence_sha256": "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec", "rc": 0}
+    {"owner": "w2", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "error_types": ["OperationalError"], "evidence_sha256": "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e", "rc": 0}
+    {"owner": "w3", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "error_types": ["OperationalError"], "evidence_sha256": "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355", "rc": 0}
+    {"owner": "w4", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "error_types": ["OperationalError"], "evidence_sha256": "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e", "rc": 0}
+    {"owner": "w5", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "error_types": ["OperationalError"], "evidence_sha256": "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841", "rc": 0}
+    {"owner": "w6", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "error_types": ["OperationalError"], "evidence_sha256": "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa", "rc": 0}
+    {"owner": "w7", "mode": "tight", "writes": 0, "errors": ["OperationalError: database is locked"], "error_types": ["OperationalError"], "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5", "rc": 0}
+    final row: {"metadata_json_keys": [], "receipt": null, "receipt_key_count": 0, "audit_entries": 0, "audit_evidence_sha256s": []}
+
+=== Phase B: 4 writers + 4 readers interleaved on 'doc-mix' ===
+    {"owner": "m0", "mode": "mix", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "aab0513385bb71654b97546190ea0dd62a09b3ff23a90b75f2e819b7e5bcaebc", "rc": 0}
+    {"owner": "m1", "mode": "mix", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "07a4409ae5453b8b912020bebeb4bc4423ec8e3edf7ef4a56d2a0a7953cd0878", "rc": 0}
+    {"owner": "m2", "mode": "mix", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "4cdeee2b83d9548d68201226c0713418de1d0199df8fa0e959a580892a8f0a8a", "rc": 0}
+    {"owner": "m3", "mode": "mix", "writes": 1, "errors": [], "error_types": [], "evidence_sha256": "5163a0ed21dca45368bcdeec035da8e8ec0d352a27238e70b565427c800f2494", "rc": 0}
+    {"owner": "r0", "reads": 141, "none_results": 75, "receipt_results": 66, "errors": [], "rc": 0}
+    {"owner": "r1", "reads": 140, "none_results": 76, "receipt_results": 64, "errors": [], "rc": 0}
+    {"owner": "r2", "reads": 141, "none_results": 77, "receipt_results": 64, "errors": [], "rc": 0}
+    {"owner": "r3", "reads": 154, "none_results": 87, "receipt_results": 67, "errors": [], "rc": 0}
+    final row: {"metadata_json_keys": ["prompt_injection_review"], "receipt": {"schema_version": "1.0", "status": "not_detected", "reviewer": "m3", "reviewed_at": "2026-09-22T00:00:00Z", "evidence_sha256": "5163a0ed21dca45368bcdeec035da8e8ec0d352a27238e70b565427c800f2494", "source_sha256": "8cfb454737d5dfc7b33560cf55921845a1e80280243797c0ad21734f5b7cd857", "policy_hash": "904e183bcf73d2b36f8ea1a5c9cfedfda8243f770f071c41e7baa285f19a7b69"}, "receipt_key_count": 1, "audit_entries": 0, "audit_evidence_sha256s": []}
+
+=== SUMMARY ===
+{
+  "P6A_concurrent_writes": {
+    "maps_06": "Phase A / SUMMARY P6-A lost_write_count=7 (silent last-writer-wins displacement)",
+    "processes": [
+      {
+        "owner": "w0",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6",
+        "rc": 0
+      },
+      {
+        "owner": "w1",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec",
+        "rc": 0
+      },
+      {
+        "owner": "w2",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e",
+        "rc": 0
+      },
+      {
+        "owner": "w3",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355",
+        "rc": 0
+      },
+      {
+        "owner": "w4",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e",
+        "rc": 0
+      },
+      {
+        "owner": "w5",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841",
+        "rc": 0
+      },
+      {
+        "owner": "w6",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa",
+        "rc": 0
+      },
+      {
+        "owner": "w7",
+        "mode": "single",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5",
+        "rc": 0
+      }
+    ],
+    "classification": {
+      "acks": 8,
+      "defined_rejections": 0,
+      "undefined_outcomes": 0,
+      "count_conservation": true,
+      "bare_sqlite_errors": [],
+      "all_errors": []
+    },
+    "final_state": {
+      "metadata_json_keys": [
+        "prompt_injection_review"
+      ],
+      "receipt": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "w0",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6",
+        "source_sha256": "6b1bf1ed12938116fe681488ad58a9c071871bcdba107c87b8d45b3c767b752b",
+        "policy_hash": "f760fdc04df62115e50b2a7f76669ef663856366dd25ad1847ff108c4d27507b"
+      },
+      "receipt_key_count": 1,
+      "audit_entries": 0,
+      "audit_evidence_sha256s": []
+    },
+    "acked_evidence_sha256s": [
+      "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841",
+      "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5",
+      "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e",
+      "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e",
+      "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa",
+      "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6",
+      "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec",
+      "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355"
+    ],
+    "audit_proves_every_acknowledged_write": false,
+    "every_write_traced_or_defined_rejected": false,
+    "expect": "count conservation (acks + defined rejections == attempts), zero silent drops; read-back (audit trail) proves every acknowledged write; under default timeout writes succeed with zero lock exceptions (red line)",
+    "ok": false
+  },
+  "P6B_lock_errors_wrapped": {
+    "maps_06": "Phase A2 / SUMMARY P6-A2: 7/8 bare sqlite3.OperationalError 'database is locked'",
+    "processes": [
+      {
+        "owner": "w0",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "error_types": [
+          "OperationalError"
+        ],
+        "evidence_sha256": "e718507d42acdec7661f8a74ce97158d60cfaf812736caddc88df04da6f815c6",
+        "rc": 0
+      },
+      {
+        "owner": "w1",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "error_types": [
+          "OperationalError"
+        ],
+        "evidence_sha256": "f6a0ef5735e7ba4be492b190ca99eda93b15aa5a13f148afc3f958a3af9c17ec",
+        "rc": 0
+      },
+      {
+        "owner": "w2",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "error_types": [
+          "OperationalError"
+        ],
+        "evidence_sha256": "5286acf975cb3b4168e6bd697996d73054954e4d3cd5b2dc13aef86d23d31f9e",
+        "rc": 0
+      },
+      {
+        "owner": "w3",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "error_types": [
+          "OperationalError"
+        ],
+        "evidence_sha256": "ffbc0a13dd3e32884e8c76afaaf259d29757da433c7f34f413215d9f1f220355",
+        "rc": 0
+      },
+      {
+        "owner": "w4",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "error_types": [
+          "OperationalError"
+        ],
+        "evidence_sha256": "76d762e94e2c91cdaba4080a3cdb85d3942f871ee482e35f770a2637d93c767e",
+        "rc": 0
+      },
+      {
+        "owner": "w5",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "error_types": [
+          "OperationalError"
+        ],
+        "evidence_sha256": "07ccfb55242224c5a199f486039bd291766552420ec7d820160796123fe19841",
+        "rc": 0
+      },
+      {
+        "owner": "w6",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "error_types": [
+          "OperationalError"
+        ],
+        "evidence_sha256": "9b37364899a5b17758e6f81823e0e0cf75d9b942642b751e567a32e1821c5baa",
+        "rc": 0
+      },
+      {
+        "owner": "w7",
+        "mode": "tight",
+        "writes": 0,
+        "errors": [
+          "OperationalError: database is locked"
+        ],
+        "error_types": [
+          "OperationalError"
+        ],
+        "evidence_sha256": "1dfc735485ce14f0af5d9977daec81a3fa7d912556e2d226e3c2ab8d8b679ec5",
+        "rc": 0
+      }
+    ],
+    "classification": {
+      "acks": 0,
+      "defined_rejections": 8,
+      "undefined_outcomes": 0,
+      "count_conservation": true,
+      "bare_sqlite_errors": [
+        "OperationalError: database is locked",
+        "OperationalError: database is locked",
+        "OperationalError: database is locked",
+        "OperationalError: database is locked",
+        "OperationalError: database is locked",
+        "OperationalError: database is locked",
+        "OperationalError: database is locked",
+        "OperationalError: database is locked"
+      ],
+      "all_errors": [
+        [
+          "OperationalError",
+          "OperationalError: database is locked"
+        ],
+        [
+          "OperationalError",
+          "OperationalError: database is locked"
+        ],
+        [
+          "OperationalError",
+          "OperationalError: database is locked"
+        ],
+        [
+          "OperationalError",
+          "OperationalError: database is locked"
+        ],
+        [
+          "OperationalError",
+          "OperationalError: database is locked"
+        ],
+        [
+          "OperationalError",
+          "OperationalError: database is locked"
+        ],
+        [
+          "OperationalError",
+          "OperationalError: database is locked"
+        ],
+        [
+          "OperationalError",
+          "OperationalError: database is locked"
+        ]
+      ]
+    },
+    "final_state": {
+      "metadata_json_keys": [],
+      "receipt": null,
+      "receipt_key_count": 0,
+      "audit_entries": 0,
+      "audit_evidence_sha256s": []
+    },
+    "expect": "all contention errors surface as PromptInjectionReviewError \"store busy/lock timeout: ...\" (never bare sqlite3.*)",
+    "ok": false
+  },
+  "P6_REDLINE_interleaved_reads": {
+    "maps_06": "Phase B / SUMMARY P6-B: 658 interleaved reads, zero tearing, zero exceptions (MUST stay green)",
+    "writers": [
+      {
+        "owner": "m0",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "aab0513385bb71654b97546190ea0dd62a09b3ff23a90b75f2e819b7e5bcaebc",
+        "rc": 0
+      },
+      {
+        "owner": "m1",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "07a4409ae5453b8b912020bebeb4bc4423ec8e3edf7ef4a56d2a0a7953cd0878",
+        "rc": 0
+      },
+      {
+        "owner": "m2",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "4cdeee2b83d9548d68201226c0713418de1d0199df8fa0e959a580892a8f0a8a",
+        "rc": 0
+      },
+      {
+        "owner": "m3",
+        "mode": "mix",
+        "writes": 1,
+        "errors": [],
+        "error_types": [],
+        "evidence_sha256": "5163a0ed21dca45368bcdeec035da8e8ec0d352a27238e70b565427c800f2494",
+        "rc": 0
+      }
+    ],
+    "readers": [
+      {
+        "owner": "r0",
+        "reads": 141,
+        "none_results": 75,
+        "receipt_results": 66,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r1",
+        "reads": 140,
+        "none_results": 76,
+        "receipt_results": 64,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r2",
+        "reads": 141,
+        "none_results": 77,
+        "receipt_results": 64,
+        "errors": [],
+        "rc": 0
+      },
+      {
+        "owner": "r3",
+        "reads": 154,
+        "none_results": 87,
+        "receipt_results": 67,
+        "errors": [],
+        "rc": 0
+      }
+    ],
+    "writer_classification": {
+      "acks": 4,
+      "defined_rejections": 0,
+      "undefined_outcomes": 0,
+      "count_conservation": true,
+      "bare_sqlite_errors": [],
+      "all_errors": []
+    },
+    "final_state": {
+      "metadata_json_keys": [
+        "prompt_injection_review"
+      ],
+      "receipt": {
+        "schema_version": "1.0",
+        "status": "not_detected",
+        "reviewer": "m3",
+        "reviewed_at": "2026-09-22T00:00:00Z",
+        "evidence_sha256": "5163a0ed21dca45368bcdeec035da8e8ec0d352a27238e70b565427c800f2494",
+        "source_sha256": "8cfb454737d5dfc7b33560cf55921845a1e80280243797c0ad21734f5b7cd857",
+        "policy_hash": "904e183bcf73d2b36f8ea1a5c9cfedfda8243f770f071c41e7baa285f19a7b69"
+      },
+      "receipt_key_count": 1,
+      "audit_entries": 0,
+      "audit_evidence_sha256s": []
+    },
+    "torn_or_crashing_reads": [],
+    "ok": true
+  }
+}
+    P6A_concurrent_writes: FAIL
+    P6B_lock_errors_wrapped: FAIL
+    P6_REDLINE_interleaved_reads: PASS
+P6 SCENARIOS: FAIL

@@ -1,0 +1,21 @@
+--- TTL-30D-POLICY/a20260922-01/scripts/ttl30d_probe.py
++++ GUARD-MERGE/a20260922-01/scripts/ttl30d_probe.py (fixture adaptation)
+@@ -59,10 +59,17 @@
+     )
+     con.execute("INSERT INTO documents VALUES (?, '{}')", (doc,))
+     if reviewed_at is not None:
++        # GUARD-MERGE fixture adaptation ONLY (rule 1-3: prompt_injection.py =
++        # FIX face, P5-a payload binding mandatory).  Every frozen expectation
++        # (check(...) calls) is byte-identical to TTL's probe; only this data
++        # producer is brought up to the merged receipt contract.
++        _payload = ""  # clean text => scan_text => not_detected (matches status)
+         record_prompt_injection_review(
+             con, doc, status="not_detected", reviewer="ttl30d-probe",
+-            evidence_sha256="e" * 64, now=reviewed_at,
++            evidence_sha256=hashlib.sha256(_payload.encode("utf-8")).hexdigest(),
++            now=reviewed_at,
+             source_sha256=source, policy_hash=policy,
++            evidence_payload=_payload,
+         )
+         con.commit()
+     return _Store(con)

@@ -1,0 +1,33 @@
+{
+  "case": "C",
+  "title": "N-1 migration adds columns (P1)",
+  "iso": "fixed",
+  "ruling_clause": "FIX-W06-GAPS oracle P1-c/P1-d; probe01; OPEN-5 C4",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "C1_migration_adds_6_columns",
+      "ok": true,
+      "detail": "missing=[] columns=['attempts', 'candidate_marker', 'created_at', 'demand_id', 'demand_key', 'gaps_json', 'kind', 'lease_owner', 'lease_until', 'request_json', 'request_sha256', 'review_policy', 'role_set', 'source_id', 'source_sha256', 'status', 'updated_at'] (probe01 P1-b2: new_columns_added=[] is the RED shape)"
+    },
+    {
+      "name": "C2_old_rows_preserved",
+      "ok": true,
+      "detail": "rows=[{'demand_id': 'demand-n1-1', 'demand_key': 'k1', 'kind': 'review', 'status': 'pending', 'source_id': 's1', 'source_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'review_policy': 'p1', 'role_set': 'normalized,sections', 'gaps_json': '[]', 'created_at': 1.0, 'updated_at': 1.0, 'request_sha256': '', 'request_json': '{}', 'candidate_marker': '', 'attempts': 0, 'lease_owner': None, 'lease_until': None}, {'demand_id': 'demand-n1-2', 'demand_key': 'k2', 'kind': 'review', 'status': 'pending', 'source_id': 's2', 'source_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'review_policy': 'p1', 'role_set': 'normalized,sections', 'gaps_json': '[]', 'created_at': 2.0, 'updated_at': 2.0, 'request_sha256': '', 'request_json': '{}', 'candidate_marker': '', 'attempts': 0, 'lease_owner': None, 'lease_until': None}]"
+    },
+    {
+      "name": "C3_second_initialize_idempotent",
+      "ok": true,
+      "detail": "cols_equal=True exception=None"
+    },
+    {
+      "name": "C4_upgraded_db_usable",
+      "ok": true,
+      "detail": "register: created=True; claim: claimed=True"
+    }
+  ],
+  "raw": {},
+  "error": null,
+  "seconds": 0.099,
+  "finished_at": "2026-09-22T23:06:39"
+}

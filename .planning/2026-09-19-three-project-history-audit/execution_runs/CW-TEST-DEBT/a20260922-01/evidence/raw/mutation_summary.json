@@ -1,0 +1,42 @@
+{
+  "M1": {
+    "what": "mirror-local deletion of the E1 line \"state_domain\": \"review\" from _seed",
+    "expected": "the same 4 readiness failures return (4 failed / 5 passed)",
+    "evidence": "evidence/raw/mut1_seed_tag_removed.txt",
+    "failed": 4,
+    "passed": 5,
+    "failed_tests": [
+      "tests/unit/test_readiness_graph.py::test_ready_source_all_stages",
+      "tests/unit/test_readiness_graph.py::test_safety_guard_drives_graph",
+      "tests/unit/test_readiness_graph.py::test_safety_tampered_blocks_with_action",
+      "tests/unit/test_readiness_graph.py::test_safety_ignored_blocks_with_action"
+    ],
+    "matches_oracle": true
+  },
+  "M2": {
+    "what": "mirror-local deletion of evidence_payload=_EVIDENCE_PAYLOAD from _write_receipt",
+    "expected": "the 7 payload-dependent failures return (7 failed / 10 passed)",
+    "evidence": "evidence/raw/mut2_payload_removed.txt",
+    "failed": 7,
+    "passed": 10,
+    "failed_tests": [
+      "tests/unit/test_prompt_injection_guard.py::test_record_with_binding_fields",
+      "tests/unit/test_prompt_injection_guard.py::test_evaluate_hit",
+      "tests/unit/test_prompt_injection_guard.py::test_evaluate_ignored_when_policy_changed",
+      "tests/unit/test_prompt_injection_guard.py::test_evaluate_expired",
+      "tests/unit/test_prompt_injection_guard.py::test_evaluate_ttl_boundary_equality_is_still_hit",
+      "tests/unit/test_prompt_injection_guard.py::test_evaluate_tampered_when_source_changed",
+      "tests/unit/test_prompt_injection_guard.py::test_evaluate_input_validation"
+    ],
+    "matches_oracle": true
+  },
+  "R": {
+    "what": "restore mirror copies from the delivered CW files (sha256 == after-pins), rerun both files",
+    "expected": "26 passed",
+    "evidence": "evidence/raw/mut_restored_confirm_green.txt",
+    "failed": 0,
+    "passed": 26,
+    "failed_tests": [],
+    "matches_oracle": true
+  }
+}
