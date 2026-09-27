@@ -1,0 +1,82 @@
+{
+  "already_satisfied_evidence": {
+    "artifact": "assurance/unified_completion/legacy/legacy_disposition.json（sha256 22b881238f3916e4fee209647348d84638a2cda0c21530878cbce5c9f27c421e）",
+    "ca_unit": "CA-004",
+    "coverage": "71/71 FC 条目逐条有 class+reason+successors；10 waves；closure_items 完整",
+    "old_plan_immutability": "旧计划目录为冻结 annex；manifest-verify 全量离线重算 OK（含旧计划文件 hash）；本卡未触碰任何旧计划文件",
+    "vocabulary_mapping": {
+      "cancel": "0 项（无静默丢弃）",
+      "contradicted_by_current_behavior(26)": "superseded（successor 指向新单元）",
+      "implemented_not_independently_verified(31)": "reopen（须按 current triplet 重新独立验收）",
+      "pending(5)": "keep（successor 指向 CA-107~109/CA-301~303 新链）",
+      "stale_evidence(9)": "superseded（successor 指向 CA-002/CA-004）"
+    }
+  },
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "7716b876f503e980932d8873cdaec393ced3274b",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "572898907bdbeb0cc004a1df308f10357a3dd2e47970325bad105bf33ea77d24",
+  "commands": [
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli legacy-verify",
+      "exit_code": 0,
+      "result": "OK: legacy disposition matches the frozen tables exactly (71 FC + 10 waves, valid)"
+    },
+    {
+      "command": "Get-FileHash assurance/unified_completion/legacy/legacy_disposition.json -Algorithm SHA256",
+      "exit_code": 0,
+      "result": "22B881238F3916E4FEE209647348D84638A2CDA0C21530878CBCE5C9F27C421E"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli manifest-verify",
+      "exit_code": 0,
+      "result": "OK: all frozen inputs re-verified offline（旧计划文件 hash 未漂移）"
+    },
+    {
+      "command": "per-entry successor completeness check (python over fc_entries)",
+      "exit_code": 0,
+      "result": "71 entries, 0 without successors"
+    }
+  ],
+  "created_at_utc": "2026-08-14T05:00:00+00:00",
+  "findings": [
+    {
+      "detail": "receipt-validate 不适用于 CA-004 历史 receipt（N/N-1 拒绝旧版本属预期）；对 CA-004 的证据引用改用其机器门：legacy-verify OK + disposition hash + manifest-verify，均为本轮新鲜复跑。",
+      "id": "ZR004-LEG-001",
+      "severity": "info",
+      "title": "CA-004 的历史 receipt 为 schema 2.0 旧格式（先于 CA-102 v1 schema）"
+    }
+  ],
+  "implementer": "zr004-implementer",
+  "kind": "implementer",
+  "notes": [
+    "本卡无产品/assurance 代码改动（共享证据关闭）；diff 仅 receipts/ZR-004/** 与 state.json。",
+    "ZR-004 词汇映射诚实为空桶说明：无 cancel 项（71 项全有 successor）；already-satisfied/deprioritize 桶无独立条目。"
+  ],
+  "objective": "只读处置旧全面计划每个未完/完成项（keep/reopen/already-satisfied/deprioritize/cancel/superseded；不修改旧计划）。README §7：历史处置由 CA-004 唯一实现，本卡引用同一实现与 receipt。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "c43586ae0de1762a4067ad77f0b499461d256125",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "old_plan_file_writes": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-004/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-004/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-004"
+}

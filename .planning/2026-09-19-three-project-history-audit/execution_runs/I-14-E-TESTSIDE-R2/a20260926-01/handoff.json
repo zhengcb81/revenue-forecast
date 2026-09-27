@@ -1,0 +1,113 @@
+{
+  "card": "I-14-E-TESTSIDE-R2",
+  "attempt": "a20260926-01",
+  "parent_card": "I-14",
+  "source_card": "I-14-E/a20260919-01 (unchanged: no byte, no status)",
+  "previous_round": {
+    "path": "execution_runs/I-14-E-TESTSIDE/a20260924-01",
+    "status": "blocked",
+    "verdict_carrier": "reviewer_report.md sha256 57e4bff8f1f1f02dcd20570ccea5c771f7a43062a0751c67d9be3ab4909f7918",
+    "blocked_by": "ENV-OPENPROCESS-ALLACCESS-DENIED (source_catalog_worker.ps1:341 Assign throws on null .Handle)"
+  },
+  "authorization": "owner OWNER_DECISIONS.md §二十五 A + parent dispatch 2026-09-26 (rerun R2 after parent escalated probe claimed UNBLOCKED)",
+  "status": "blocked",
+  "status_transition": "none (this attempt started and stopped at gate -1; no review_pending state was ever reached)",
+  "gate_1_unblocked": false,
+  "gate_1": {
+    "ran_utc": "2026-09-26T17:13:09Z",
+    "session_pid": 10628,
+    "probe": "harness/gate1_openprocess_probe.py",
+    "raw_output_file": "evidence/gate-1-openprocess-raw.txt",
+    "raw_output_sha256": "111ea9fb8231b3c508014b85aebfb73cd54b957f466c0f069720ede7db64697e",
+    "raw_output_bytes": 988,
+    "raw_output_verbatim": [
+      "GATE1 session_pid=10628 python=3.13.9 started_utc=2026-09-26T17:13:09Z",
+      "STEP1 spawn child pid=18464",
+      "STEP2-3 {\"pid\": 10628, \"mask\": \"0x1F0FFF\", \"open_ok\": false, \"rc\": 0, \"lasterr\": 5, \"close_ok\": null}",
+      "STEP2-3 {\"pid\": 18464, \"mask\": \"0x1F0FFF\", \"open_ok\": false, \"rc\": 0, \"lasterr\": 5, \"close_ok\": null}",
+      "STEP2-3 {\"pid\": 10628, \"mask\": \"0x1000\", \"open_ok\": true, \"rc\": 436, \"lasterr\": 5, \"close_ok\": true}",
+      "STEP2-3 {\"pid\": 18464, \"mask\": \"0x1000\", \"open_ok\": true, \"rc\": 436, \"lasterr\": 5, \"close_ok\": true}",
+      "STEP4 wait child rc=0",
+      "STEP5 ps rc=0",
+      "STEP5 with_redirect: PSREDIRECT pid=1120 handle_nonnull=False handle= read_error=You cannot call a method on a null-valued expression.",
+      "STEP5 no_redirect_contrast: PNOREDIRECT pid=12264 handle_nonnull=True handle=2800 read_error=",
+      "SELF_ALL_ACCESS_ok=False CHILD_ALL_ACCESS_ok=False PS_REDIRECT_HANDLE_ok=False",
+      "VERDICT: STILL_BLOCKED",
+      "DISPOSITION: stop immediately; report blocked (qualified result); no destructive substitute permitted."
+    ],
+    "four_steps_summary": "spawn ok (child 18464) -> open ALL_ACCESS self+child both rc=0/lasterr=5 -> close n/a (no handle; 0x1000 control rows closed ok) -> wait child rc=0",
+    "verdict": "STILL_BLOCKED"
+  },
+  "blocked_by_env": {
+    "id": "ENV-OPENPROCESS-ALLACCESS-DENIED",
+    "state": "still blocked in THIS session; not lifted by this attempt",
+    "parent_escalated_claim": {
+      "result": "UNBLOCKED (self pid=4028 ok=True lasterr=0; child ok=True lasterr=0; VERDICT=UNBLOCKED, 2026-09-26 17:5x, escalated session)",
+      "disposition": "discipline 19 honored: parent escalated OK != this session OK; this session's own probe is the authoritative gate and it failed on both S8-1 criteria"
+    },
+    "evidence": [
+      "evidence/gate-1-openprocess-raw.txt",
+      "evidence/gate-1-openprocess-result.json",
+      "oracle.md §1 (raw output verbatim) and §2 (trigger list, both fired)",
+      "retry_result.json gate_1"
+    ],
+    "evidence_pointer_note": "unlike the previous round's P2-1, the blocked_by evidence here points at real, persisted raw-output files inside this attempt",
+    "mechanism": "same chain as previous round: no PROCESS_ALL_ACCESS token right -> PS Start-Process redirect branch yields null .Handle -> source_catalog_worker.ps1:340-341 Assign would throw -> launcher_exception before watchdog; independently confirmed here via the PS probe (with-redirect .Handle null; without-redirect handle=2800)"
+  },
+  "implementer_signed": false,
+  "signed_by": null,
+  "signature_note": "ACCEPT may only be signed by an independent reviewer; this implementer does not self-sign, does not promote, and did not produce changes.diff in this attempt.",
+  "releases_nothing": true,
+  "releases_nothing_detail": {
+    "no_accept": true,
+    "no_promotion": "changes.diff was not produced; real company-wiki/tests/** untouched (read-only hash check only)",
+    "no_unrelated_unblocks": "BLOCKED-NEEDS-ORIGIN-BYTES and all other unrelated items untouched",
+    "no_status_change_on_other_cards": true,
+    "no_parameter_release": true,
+    "no_product_repo_writes": 0
+  },
+  "what_this_attempt_did": [
+    "ran gate -1 capability probe (own session, discipline 19)",
+    "verdict STILL_BLOCKED -> stopped immediately per dispatch hard rule",
+    "froze the gate record oracle.md + carried-forward application steps and pre-registered mutation list (M1 + M2-upper) for the next authorized session",
+    "landed retry_result.json and this handoff.json",
+    "read-only anchor checks: company-wiki HEAD bf0c8b27e83c3ee7e533c6031fefad8e27e5e121 (fcap), tests file 32515aa6...005c1 unfixed, launcher 5c12cd74...c311 — all equal to the previous round's pins"
+  ],
+  "what_this_attempt_did_not_do": [
+    "did not copy iso/ or venv/",
+    "did not run any red/green/mutation pytest run (0 runs)",
+    "did not apply or re-derive the test-side fix (no changes.diff, no changes.manifest.json)",
+    "did not write outside .planning (attempt dir + OS temp scratch for two 3 s PS child logs)",
+    "did not run git status; used only read-only git rev-parse / diff --name-only",
+    "did not attempt any destructive substitute for the blocked capability (no Job-handle workaround, no launcher patch, no downgraded-mask substitute application, no retry-on-luck)"
+  ],
+  "written_files": [
+    "oracle.md",
+    "before/freeze_instant.json",
+    "retry_result.json",
+    "handoff.json",
+    "harness/gate1_openprocess_probe.py",
+    "harness/gate1_ps_handle_probe.ps1",
+    "evidence/gate-1-openprocess-raw.txt",
+    "evidence/gate-1-openprocess-result.json"
+  ],
+  "git_diff_non_planning": 0,
+  "git_note": "revenue-forecast @ b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb: diff HEAD --name-only = 3830 lines, all pre-existing .planning paths; this attempt added only .planning files",
+  "unverified": [
+    "red_timing_shape_not_demonstrable_in_this_session (inherited, still true)",
+    "green_6of6_not_demonstrable_in_this_session (inherited, still true)",
+    "mutation_discriminating_power_not_demonstrable_in_this_session (inherited, still true; M1 + new M2-upper both pre-registered but not run)",
+    "node_2_logon_wrapper_budgets_not_applied (inherited per previous oracle §2.5; unchanged)"
+  ],
+  "pre_registered_for_next_authorized_session": {
+    "resume_conditions": "reviewer_report.md §8 S8-1 (session whose token can OpenProcess(PROCESS_ALL_ACCESS) its own child, or PS redirect .Handle non-null) + S8-2 (rerun three arms per frozen oracle §4; oracle need not be re-frozen)",
+    "application_steps": "oracle.md §3 of this attempt (carried verbatim from the previous frozen oracle; no re-derivation needed)",
+    "mutations": "oracle.md §4 of this attempt: M1 (hard-coded 0.5 s, carried) + M2-upper (clamp t0+3.0 -> t0+10.0, new) — both pre-registered expected-red",
+    "expected": "remains the previous round's hand-computed values from the source card's original data; nothing recomputed"
+  },
+  "disclosure": {
+    "prev_round_addendum_b_absent": "a20260924-01 harness/tside_probe.py docstring references oracle-addendum-B.md which does not exist in that attempt (only A and C were landed); pre-existing documentation defect, not corrected here (no byte of the previous attempt was modified)",
+    "probe_root_m700": "probe_root_m700/ remains at the revenue-forecast repo root (reviewer P2-2 item); outside .planning, so not touched by this attempt"
+  },
+  "generated_utc": "2026-09-26T17:18:11Z"
+}

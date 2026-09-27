@@ -1,0 +1,511 @@
+{
+  "card": "OPEN-5",
+  "step": "S3",
+  "attempt": "OPEN5-S3-REACQUISITION/a20260925-01",
+  "role": "implementer_s3",
+  "generated_utc": "2026-09-25T23:16:04Z",
+  "authorized_by": {
+    "dispatch": "编排层派单（ruling.md L164 执行方 = 编排层派单的实现者（新 attempt））",
+    "decision_rule_DEC8": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/decision.md L227-L228",
+      "quote": "**恢复规则**：可读性恢复后（工具或依赖变更），新建 attempt 重新取证；不得把本次的\n`not_readable` 判定改成\"已验证\"。"
+    },
+    "S3_definition_verbatim": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md L164",
+      "quote": "**新建 attempt 重新取证**（卡文 DEC-8 恢复规则）：在**全新 attempt** 中对 HK 原文重新取文；**封盘 attempt `I-11-A/a20260919-01` 与本次 `not_readable` 判定一律不动** | 执行方：编排层派单的实现者（新 attempt） | 失败分支：新 attempt 仍不可读 ⇒ 记 `not_readable`（新记录），**旧判定原样**，回到 S1"
+    },
+    "boundary_verbatim": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md L174-L179",
+      "quote": "ruling.md L174-L179：S3 明文要求\"新建 attempt\"，恢复取证发生在新 attempt，本载体与封盘 attempt 都不产生任何\"已验证\"字样；即使 S2 自检显示\"某路径能读出锚词\"，在 S3/S4/S5 走完之前仍按不可读处置（港股命题零产出、参数维持 `_PLACEHOLDER`）"
+    },
+    "owner_authorization": {
+      "source": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md §二十六 #1/#2",
+      "quote": "#1 PEND-5a owner 原话「授权」；#2 PEND-5b owner 原话「要」→ 澄清答「两项都要（PEND-5b 装 + E1 交会计面）」"
+    },
+    "capability_reused_read_only": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-PEND5B-OCR-CAPABILITY/a20260924-01/capability_report.md",
+      "conclusion": "CAPABLE"
+    },
+    "substitutes_reused_read_only": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/acquisition_report.md",
+      "conclusion": "attempt04 港交所原站 4/5；attempt08 英文年报 5/5"
+    }
+  },
+  "readability_result": "readable",
+  "readability_basis": "path A on the sha-verified origin bytes: 5/5 anchors hit (分部, 小米, 年度報告, 收入, 毛利) on pages [1, 2, 30, 43, 47, 115, 160, 337, 355, 399]; origin text layer on the same pages = 0/5 (contrast). Per oracle §4.3 this is an S3 observation only.",
+  "paths_run": {
+    "A_ocr": {
+      "rc": 0,
+      "engine": "rapidocr 3.9.2 + onnxruntime 1.30.0",
+      "renderer": "pypdfium2 5.13.0",
+      "pages_run": [
+        1,
+        2,
+        30,
+        43,
+        47,
+        115,
+        160,
+        337,
+        355,
+        399
+      ],
+      "anchor_hit_count": 5,
+      "anchors": {
+        "小米": [
+          1,
+          30,
+          160
+        ],
+        "收入": [
+          115,
+          337
+        ],
+        "年度報告": [
+          1,
+          2,
+          43,
+          47,
+          115,
+          337,
+          355,
+          399
+        ],
+        "分部": [
+          337
+        ],
+        "毛利": [
+          337
+        ]
+      },
+      "origin_text_layer_same_pages_anchor_hits": {
+        "小米": [],
+        "收入": [],
+        "年度報告": [],
+        "分部": [],
+        "毛利": []
+      },
+      "ocr_errors": 0,
+      "verdict": "A-pass",
+      "ocr_reconstruction": true
+    },
+    "B1_origin_textlayer": {
+      "rc": 0,
+      "pages_scanned": 415,
+      "chars": 295785,
+      "anchor_hit_count": 0,
+      "anchors": {
+        "小米": 0,
+        "收入": 0,
+        "年度報告": 0,
+        "分部": 0,
+        "毛利": 0
+      },
+      "verdict": "not_readable_alone"
+    },
+    "B2_substitute_attempt04": {
+      "rc": 0,
+      "fitz": {
+        "hit_count": 4,
+        "hit_words": [
+          "小米",
+          "收入",
+          "分部",
+          "毛利"
+        ],
+        "counts": {
+          "小米": 47,
+          "收入": 158,
+          "年度報告": 0,
+          "分部": 77,
+          "毛利": 101
+        }
+      },
+      "pdfminer": {
+        "hit_count": 4,
+        "hit_words": [
+          "小米",
+          "收入",
+          "分部",
+          "毛利"
+        ],
+        "counts": {
+          "小米": 15,
+          "收入": 21,
+          "年度報告": 0,
+          "分部": 18,
+          "毛利": 21
+        }
+      },
+      "both_libs_agree": true,
+      "verdict": "B-pass",
+      "substitute_not_origin": true
+    },
+    "B2prime_substitute_attempt08": {
+      "rc": 0,
+      "cn_hit_count": 0,
+      "en_hit_count": 5,
+      "en_anchor_counts": {
+        "Xiaomi": 920,
+        "Revenue": 33,
+        "Annual Report": 3,
+        "Segment": 9,
+        "Gross profit": 7
+      },
+      "substitute_not_origin": true
+    }
+  },
+  "ocr_reconstruction": true,
+  "ocr_reconstruction_policy": "路径 A 全部文本字段为图像→文本重建，永不冒充 origin 文本",
+  "external_retrieval_not_local": false,
+  "retrieval_method": {
+    "A": "local_bytes_no_external_retrieval_this_attempt (render+OCR)",
+    "B": "local_readonly_reuse_of_prior_attempt_bytes"
+  },
+  "sealed_attempt_untouched": true,
+  "prior_not_readable_preserved": true,
+  "prior_not_readable_verdict_changed": false,
+  "releases_nothing": true,
+  "does_not_claim_I11A_acceptance": true,
+  "open5_released": false,
+  "still_dispositioned_not_readable_until_S4_S5": true,
+  "placeholder_params_released": false,
+  "accept_produced": false,
+  "evidence_grading_done": false,
+  "read_only_manifest_check": [
+    {
+      "dir": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01",
+      "files": 1961,
+      "bytes": 25641319,
+      "aggregate_sha256_before": "76858344183a1ed1f2bf3845ec2e1ea1efb2ad8d27911d68c0ffa74cedecba15",
+      "aggregate_sha256_after": "76858344183a1ed1f2bf3845ec2e1ea1efb2ad8d27911d68c0ffa74cedecba15",
+      "identical": true
+    },
+    {
+      "dir": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01",
+      "files": 44,
+      "bytes": 23741951,
+      "aggregate_sha256_before": "34741d2d6286dbfe388e01c8422f489ffbe90a58fc288b3bf03b6eb5a8189561",
+      "aggregate_sha256_after": "34741d2d6286dbfe388e01c8422f489ffbe90a58fc288b3bf03b6eb5a8189561",
+      "identical": true
+    },
+    {
+      "dir": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-PEND5B-OCR-CAPABILITY/a20260924-01",
+      "files": 3110,
+      "bytes": 410396025,
+      "aggregate_sha256_before": "abeb5b06f6462f3ea40f6e4d799d4f3ed99546c692bfe16c1264d534cc6808e9",
+      "aggregate_sha256_after": "abeb5b06f6462f3ea40f6e4d799d4f3ed99546c692bfe16c1264d534cc6808e9",
+      "identical": true
+    }
+  ],
+  "read_only_manifest_files": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/manifest_before.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/manifest_after.json"
+  ],
+  "s4_staging": {
+    "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/path_compare.json",
+    "sha256": "b503e4a8fcaaac316f45c5bdada52ed7bcec5994463b91b1d711afdcc7962159",
+    "method": {
+      "A_vs_B1": "Same sampled pages: normalise (whitespace-stripped) both the OCR reconstruction and the origin text layer; check (a) whether any full OCR line (>=8 CJK chars) occurs verbatim in the origin layer (expected: no — origin layer is GID-garbled), and (b) whether the readable cover fragment present in the origin layer also appears in the OCR text (expected: yes — readable-in-both cross-check).",
+      "B2_fitz_vs_pdfminer": "Same substitute file: for every anchor, take the first-hit line of library 1 (normalised) and search it in library 2's normalised text; also compare per-page anchor presence sets.",
+      "sha_of_inputs": "every input file's sha256 recorded below"
+    },
+    "summary": {
+      "a_vs_b1_pages": 10,
+      "a_vs_b1_ocr_lines_checked": 92,
+      "a_vs_b1_verbatim_matches_in_origin_layer": 1,
+      "readable_cover_fragment_reproduced_in_ocr": 1,
+      "b2_anchors_with_both_libs_hit": [
+        "分部",
+        "小米",
+        "收入",
+        "毛利"
+      ],
+      "b2_first_line_cross_lib_match_count": 4,
+      "verdict_left_to": "S4 (dual-path review station) — this file only stages inputs"
+    },
+    "verdict_left_to": "S4 (dual-path review station) — this file only stages inputs"
+  },
+  "written_files": {
+    "count": 51,
+    "total_bytes": 7327217,
+    "self_excluded": "handoff.json (self-reference impossible)",
+    "files": [
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_shim/sitecustomize.py",
+        "bytes": 648,
+        "sha256": "6d66310f2cae36f914cc03a8517e8495c177838f83105281e8137d566c02bea3"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/extract/attempt04_fitz.extracted.txt",
+        "bytes": 95648,
+        "sha256": "5d20c2816c0ba2ed6736463d00cc4fc9d73fe55b10d28f9053ef27229ece4c6b"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/extract/attempt04_pdfminer.extracted.txt",
+        "bytes": 111464,
+        "sha256": "d70d4996424776380e5c9eecae7145f0004d4f4aad003f3080d1bf6936bd9cca"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/extract/attempt08_fitz.extracted.txt",
+        "bytes": 956886,
+        "sha256": "990075a686350d49e0ed086be12f59153786df30e1f77d13892ed15c0171bf89"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/extract/origin_fitz_full.txt",
+        "bytes": 709398,
+        "sha256": "d628cf53a8cbb89893602798234af913d51b4247253d1662c0829d1e631b83b1"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/manifest_after.json",
+        "bytes": 1183733,
+        "sha256": "9fde832de1ace101764bc4c5ee028872537093a15d3f1cb59b0938af4a5c199e"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/manifest_before.json",
+        "bytes": 1183734,
+        "sha256": "a55bb34fc1f56f41604b84bfa635f3904745d6511d41115f669e2ebacc04c8b6"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0001.ocr.txt",
+        "bytes": 168,
+        "sha256": "1d46a6406050670ef6eb2d1500831d7d7047631ce0a8e56a25f2e582ba9616c5"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0001.origin_textlayer.txt",
+        "bytes": 72,
+        "sha256": "7f1420f7092e14423b9a9d5f428a559c77464e63afbd7cff4fca92f9949ddd38"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0002.ocr.txt",
+        "bytes": 1064,
+        "sha256": "f45ef7e0f9a3519f18be50717fd048b2a91ce89b9ed648b5bfaa97bb8eee25dd"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0002.origin_textlayer.txt",
+        "bytes": 1114,
+        "sha256": "36ad940bc40fb9d2bab0a38d10094e35be0ea36479fe49547d01d0ce0a901899"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0030.ocr.txt",
+        "bytes": 1913,
+        "sha256": "c0ed505265bd17b928f18126cdd722ab27da5e46ae2e901c20fa182e1fb23b6c"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0030.origin_textlayer.txt",
+        "bytes": 1926,
+        "sha256": "220b0dc6bd54a47de289fe51aeb2f3400b2e32a55725226690dd5f0169a49b6b"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0043.ocr.txt",
+        "bytes": 1461,
+        "sha256": "24961c529243dbff30676bc659c3dff44042a864075c7d3cdc90617c1ea6f9f7"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0043.origin_textlayer.txt",
+        "bytes": 1491,
+        "sha256": "b46effcda311e7818fc23b36aa74987d3bcc83a581340e22fbc335844974f41d"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0047.ocr.txt",
+        "bytes": 1955,
+        "sha256": "678ac54c3ffd265087f92f9faeafaddbce625471b9a567ddc8be0bd061a65c47"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0047.origin_textlayer.txt",
+        "bytes": 2039,
+        "sha256": "035f74d7a53b74023c14afb93049d860e73b2c1f865e8dc53e11228268ac894f"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0115.ocr.txt",
+        "bytes": 1922,
+        "sha256": "372094dd4930315cd00fe8320c34d01ab26eb7d2dd6b7860271078794adce121"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0115.origin_textlayer.txt",
+        "bytes": 2042,
+        "sha256": "370ee9bbe182d0a76e30e494f3fdea64b9a482ecca48712f6415a491ae28b8a3"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0160.ocr.txt",
+        "bytes": 1914,
+        "sha256": "e5c4e1a587bc41548738376cd9ce6372d8449b30aa6a2a18bcb32238b3a6baf8"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0160.origin_textlayer.txt",
+        "bytes": 1922,
+        "sha256": "2278a4eac3f3006092e7938ef5fdc7f6dc554d5c181c8a88a4e0f36c3e18212a"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0337.ocr.txt",
+        "bytes": 1720,
+        "sha256": "29ac862ab29b24c32c3d45c5b03cc44ce63971cb62acad88247c83939383090e"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0337.origin_textlayer.txt",
+        "bytes": 1723,
+        "sha256": "12f451ba737822acab475fd71cb923e1dfaa306e5042b25014999cf316d977fd"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0355.ocr.txt",
+        "bytes": 1516,
+        "sha256": "6acffef2d9dc697a36189d9e72ce3a1d02610bbbc7733ce2a56a00ab8799a4a1"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0355.origin_textlayer.txt",
+        "bytes": 1572,
+        "sha256": "2667b02569545147ab2d6f9400034fa281749bd5f80a475d4befcc7b45c6c4c3"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0399.ocr.txt",
+        "bytes": 1433,
+        "sha256": "a73eaaa8091756e4ac00e7e3f4a916f4d5e34f77d6673f50457541903edcf9f5"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/ocr_text/s3_pathA_p0399.origin_textlayer.txt",
+        "bytes": 1462,
+        "sha256": "32de4a89f86be7f8431d8241369990af17acf73da8a8f6f2455c2e204053f3a5"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/pathA_probe.json",
+        "bytes": 44688,
+        "sha256": "e710bdbeb7cee499aaa4d0420b93e151a9989513058640aa93445feb6560bc18"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/pathB_probe.json",
+        "bytes": 26267,
+        "sha256": "95d69cba164efe74709e2a159b691cd78dd5553f7abc8f7241f9ee75151b6e1b"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/path_compare.json",
+        "bytes": 17357,
+        "sha256": "b503e4a8fcaaac316f45c5bdada52ed7bcec5994463b91b1d711afdcc7962159"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0001.png",
+        "bytes": 92985,
+        "sha256": "a44ca698c12e98e6128500e1e36be1ccdcb44f54b231f20a913127bccbac018f"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0002.png",
+        "bytes": 231140,
+        "sha256": "a5097c4da2471d6b31a29859ae9c4f2103689a7d8180ed92280593b151c38d3f"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0030.png",
+        "bytes": 366649,
+        "sha256": "8f0fc13bd86d338b8484052855e2130641dda3b3deb0c0a2bc948f3279806b51"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0043.png",
+        "bytes": 245707,
+        "sha256": "67df886ef12fe1850cccb58b1f78b528f422235ecedfed369cb5b6e474c62210"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0047.png",
+        "bytes": 248614,
+        "sha256": "fada745354ac25a68d6ac1168bd3f1e2fdd67189b1b4d9e09f161091cebb89cd"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0115.png",
+        "bytes": 434396,
+        "sha256": "29d7c8b7ebaf762cfc3aff1205c47b6a755bbad332fec6ce7aa1b102e38879b9"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0160.png",
+        "bytes": 411015,
+        "sha256": "426da73cc3399240f08bf691fc9fc79aa8377898365fb985adc0bd007f635dcf"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0337.png",
+        "bytes": 282553,
+        "sha256": "6e39713c14a3e96695a6d625898a1635e0f1f9e55c767b66ce75feefd93e439e"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0355.png",
+        "bytes": 238690,
+        "sha256": "3188d0dab77861506093eacb04c1f6ffb00462c1ff0f40692953480b1e5e5fd4"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/renders/s3_pathA_p0399.png",
+        "bytes": 258519,
+        "sha256": "7904a81cd22546919d73612011a63ea1980a753a040d6fcc27a7c3dc0a08ae24"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/s3_assemble.py",
+        "bytes": 20485,
+        "sha256": "158af222d3483fbac230602ecda3b73fd87bac72c12e4c39b917d67231808217"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/s3_make_handoff.py",
+        "bytes": 11062,
+        "sha256": "dbeeb9541963f43ee3c09bc1cf45dffa8222987e94b6555f83f9618cb71eefbe"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/s3_manifest.py",
+        "bytes": 2941,
+        "sha256": "6ffba1ad31159af9b84712d6207a473be9adb1521e5a8afd8ca1c8d370024b68"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/s3_normalise_lf.py",
+        "bytes": 2166,
+        "sha256": "c7d38bdfdfc58bbe485f083cbd379509bc653e29f339de62bbf4482777e812d6"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/s3_pathA_ocr.py",
+        "bytes": 8879,
+        "sha256": "5fa793df766d195a1c21f657b55a416051fa8c315fff8439db4c5aca7386fae4"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/s3_pathB_textlayer.py",
+        "bytes": 11210,
+        "sha256": "b345ab90add288aae190dcd9d1ce2d0333bc7a744582475d39d7c4247be1a58a"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/_work/s3_path_compare.py",
+        "bytes": 7811,
+        "sha256": "631c08898ef1e1fdfddc95db6aa0ac8ed703293542801104b1e33317de1313f8"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/oracle.md",
+        "bytes": 8426,
+        "sha256": "24d4d4e242010a2998a28ecfb0af37b177d14b295533a3eb5555c3aee63e30a9"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/provenance.json",
+        "bytes": 12514,
+        "sha256": "3e44f7e97a74409acc2e1e57f7bc868d85e9e5ba0ef8048cf9212edba70a3d05"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/reacquisition.json",
+        "bytes": 52387,
+        "sha256": "f948276a06d6b967fe574ed8439594338ff731b5ef545c1fa6c6e8b8c746430a"
+      },
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/reacquisition_report.md",
+        "bytes": 18816,
+        "sha256": "a47931e0dabb5714ed354f98ef57dcb4434b5232b9ea34d09c04d6bc38015767"
+      }
+    ]
+  },
+  "git_diff_total": 3826,
+  "git_diff_non_planning": 0,
+  "untracked_non_planning": 48,
+  "git_write_ops": 0,
+  "git_status_used": false,
+  "write_surface": "only .planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/",
+  "not_done": [
+    "未改 I-11-A 封盘任何字节",
+    "未把本次 not_readable 判定改成「已验证」",
+    "未改 S1 两站（PEND-5a/PEND-5b）任何字节",
+    "未解除 OPEN-5（S4/S5 前仍按不可读处置）",
+    "未放行港股参数（维持 _PLACEHOLDER）",
+    "未产生 I-11-B 的 ACCEPT、未代签",
+    "未写五份计划文件",
+    "未判会计证据等级（归 S5）",
+    "未下 S4 双路径一致性结论（只铺路）",
+    "未写 .planning 之外任何路径（含 company-wiki 产品仓）",
+    "零 git 写、未使用 git status"
+  ],
+  "next_station": "S4 双路径复核 + provenance（实现者 + 独立 reviewer）；S5 行业复裁 + 会计定级"
+}

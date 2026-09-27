@@ -1,0 +1,476 @@
+{
+ "card_id": "I-16-A",
+ "attempt_id": "a20260926-01",
+ "role": "implementer_i16a",
+ "generated_at_utc": "2026-09-26T21:36:05.982689+00:00",
+ "exit_code_legend": {
+  "0": "pass（命令正常结束且全部不变量成立）",
+  "1": "harness 失败（脚本/绑定/路径错误）",
+  "2": "无裁决（冻结期望缺失/不可用，判定前发出）",
+  "3": "不变量违例（具名 Jx）＝红臂证明“能发现版本错配”",
+  "note": "本批 legend 为规范值；跨批聚合前必须先读本表"
+ },
+ "red_green_mutations": {
+  "green_arms": [
+   {
+    "arm": "G",
+    "expected_rc": 0,
+    "actual_rc": 0,
+    "rc_match": true,
+    "expected_violations": [],
+    "violations": [],
+    "expected_violation_present": true,
+    "detail": {
+     "probe_rc": 0,
+     "rc": 0,
+     "probe": "_live\\probe_G.json",
+     "result": "_live\\result_G.json",
+     "expected_rc": 0
+    }
+   },
+   {
+    "arm": "G2",
+    "expected_rc": 0,
+    "actual_rc": 0,
+    "rc_match": true,
+    "expected_violations": [],
+    "violations": [],
+    "expected_violation_present": true,
+    "detail": {
+     "probe_rc": 0,
+     "rc": 0,
+     "probe": "_live\\probe_G2.json",
+     "result": "_live\\result_G2.json",
+     "expected_rc": 0
+    }
+   }
+  ],
+  "red_arms": [
+   {
+    "arm": "M1",
+    "expected_rc": 3,
+    "actual_rc": 3,
+    "rc_match": true,
+    "expected_violations": [
+     "J3_new_process_load_path"
+    ],
+    "violations": [
+     "J3_new_process_load_path"
+    ],
+    "expected_violation_present": true,
+    "detail": {
+     "rc": 3,
+     "expected_rc": 3,
+     "old_module_sha256": "a60a9249257a79d7500b2aa7bc7875cd7f77fa9ecea43126eaddbf1f403f1493",
+     "current_module_sha256": "15fd39696398d7cf05ade62868d13eeffd23cf22dfa7827101b491c584cf298d",
+     "mutation_applied": true,
+     "probe": "_mut\\M1\\probe.json",
+     "result": "_mut\\M1\\result.json"
+    }
+   },
+   {
+    "arm": "M2",
+    "expected_rc": 3,
+    "actual_rc": 3,
+    "rc_match": true,
+    "expected_violations": [
+     "J5_config_policy_flags_schema"
+    ],
+    "violations": [
+     "J5_config_policy_flags_schema"
+    ],
+    "expected_violation_present": true,
+    "detail": {
+     "rc": 3,
+     "expected_rc": 3,
+     "artifact_sha_before": "7a65a00ecc526d5503359feed6a80a7578d3dbf4c8ef133ccf899aecf9383fb9",
+     "artifact_sha_after": "c0e01990cfa8068925523e45c85e58c35be227237925ae43932962a87f05d2b7",
+     "mutation_applied": true
+    }
+   },
+   {
+    "arm": "M3",
+    "expected_rc": 3,
+    "actual_rc": 3,
+    "rc_match": true,
+    "expected_violations": [
+     "J5_config_policy_flags_schema"
+    ],
+    "violations": [
+     "J3_new_process_load_path",
+     "J5_config_policy_flags_schema"
+    ],
+    "expected_violation_present": true,
+    "detail": {
+     "rc": 3,
+     "expected_rc": 3,
+     "probe_constants": "3.6",
+     "mutation_applied": true
+    }
+   },
+   {
+    "arm": "M4",
+    "expected_rc": 3,
+    "actual_rc": 3,
+    "rc_match": true,
+    "expected_violations": [
+     "J4_interpreter_deps"
+    ],
+    "violations": [
+     "J3_new_process_load_path",
+     "J4_interpreter_deps",
+     "J5_config_policy_flags_schema"
+    ],
+    "expected_violation_present": true,
+    "detail": {
+     "rc": 3,
+     "expected_rc": 3,
+     "probe_rc": 0,
+     "probe_interpreter": "C:\\Users\\郑曾波\\Projects\\dayu-agent\\dayu-agent\\.venv\\Scripts\\python.exe",
+     "probe_version_info": [
+      3,
+      14,
+      2
+     ]
+    }
+   },
+   {
+    "arm": "M5",
+    "expected_rc": 3,
+    "actual_rc": 3,
+    "rc_match": true,
+    "expected_violations": [
+     "J2_install_copy"
+    ],
+    "violations": [
+     "J2_install_copy"
+    ],
+    "expected_violation_present": true,
+    "detail": {
+     "rc": 3,
+     "expected_rc": 3,
+     "artifact_sha_before": "29cc4b82addb59ab3aa45a35ba9ae402e9328f1c3a5e9ac7b857542150adae0a",
+     "artifact_sha_after": "cbf3461bae496dfff681c0065f2a9c06b03c79febf0c148c5bbf8298efec8352",
+     "mutation_applied": true
+    }
+   }
+  ],
+  "red_arm_count": 5,
+  "meets_at_least_3_red": true,
+  "all_rc_match": true,
+  "all_expected_violations_present": true,
+  "original_artifacts_untouched": true,
+  "summary_path": "_mut/mutation_summary.json"
+ },
+ "three_repo_sha_consistency": {
+  "gate0_observed": {
+   "RF": "b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb",
+   "CW": "bf0c8b27e83c3ee7e533c6031fefad8e27e5e121",
+   "DAYU": "2115c86d5a9027bb51cbbc8a4d0175080732e4e6",
+   "note": "门0 时刻；CW 于 21:08Z 复测时仍为 bf0c8b27（staged=1）"
+  },
+  "bound": {
+   "RF": "b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb",
+   "CW": "dbe474504a6187e22c37918743d17fe59c85a0a8",
+   "DAYU": "2115c86d5a9027bb51cbbc8a4d0175080732e4e6",
+   "bound_at": "2026-09-26T21:30:57.126462+00:00"
+  },
+  "final_recheck": {
+   "RF": {
+    "head": "b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb",
+    "diff_total": 3830,
+    "diff_non_planning": 0,
+    "staged": 0
+   },
+   "CW": {
+    "head": "dbe474504a6187e22c37918743d17fe59c85a0a8",
+    "diff_total": 8,
+    "diff_non_planning": 8,
+    "staged": 0
+   },
+   "DAYU": {
+    "head": "2115c86d5a9027bb51cbbc8a4d0175080732e4e6",
+    "diff_total": 1,
+    "diff_non_planning": 1,
+    "staged": 0
+   }
+  },
+  "dirty_content_digest": {
+   "RF": "f41d1a3f0046dd89246fb16447ab85c8e617825406713b23a23d281608bdda8d",
+   "CW": "3630bfae2a391b95c4d9f03c327ea2775df46dc56e1015378246a57fa1aaceba",
+   "DAYU": "8d2b7c1da188f3b8799d72af1ca05544cd49937d1d94f19376e5b1a498d748e6"
+  },
+  "drift_detected": true,
+  "drift_detail": "CW HEAD bf0c8b27… → dbe47450…（外部会话提交）；CW 两文件内容在两次校验之间变化；CW untracked 50 → 51；CW/DAYU staged 1 → 0。本卡零 git 写，漂移来自外部写入方。",
+  "consistent_at_final_verify": true,
+  "final_verify_path": "_live/result_final.json"
+ },
+ "recovery_drill": {
+  "path": "recovery_drill.json",
+  "all_checks_ok": true,
+  "checks": [
+   {
+    "id": "R1_snapshot_restore_byte_identical",
+    "ok": true,
+    "detail": {
+     "restored": 109,
+     "expected": 109,
+     "mismatch": []
+    }
+   },
+   {
+    "id": "R2_backup_migrate_restore_byte_identical",
+    "ok": true,
+    "detail": {
+     "sha_before": "c563fb439d8bf9a1b31fbec169e7682a464a463f1571c0dbd083151c78bb3d0e",
+     "sha_after_migrate": "5673c251a5e58cae3f27a18ac7151649875f24d92906492d18e36d9ac61bf56c",
+     "sha_after_validate": "5673c251a5e58cae3f27a18ac7151649875f24d92906492d18e36d9ac61bf56c",
+     "sha_after_restore": "c563fb439d8bf9a1b31fbec169e7682a464a463f1571c0dbd083151c78bb3d0e",
+     "backup": {
+      "backup": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-16-A\\a20260926-01\\drill_db\\drift.sqlite3.pre_migrate.bak",
+      "from": 0,
+      "to": 1
+     },
+     "report_from": 0,
+     "report_to": 1,
+     "second_call_is_readonly": true,
+     "byte_identical_restore": true
+    }
+   },
+   {
+    "id": "R3_newer_user_version_fail_closed_unchanged",
+    "ok": true,
+    "detail": {
+     "error": "UnsupportedSchemaVersionError: user_version 99 is newer than supported 1",
+     "sha_before": "9f641d5da1800253e33e0be6c6ade38629b7da7af44e2efcce180278b3ab439e",
+     "sha_after": "9f641d5da1800253e33e0be6c6ade38629b7da7af44e2efcce180278b3ab439e",
+     "unchanged": true
+    }
+   },
+   {
+    "id": "R4_schema_drift_fail_closed_readonly",
+    "ok": true,
+    "detail": {
+     "error": "SchemaDriftError: table set mismatch; missing=[] extra=['extra_drift']",
+     "sha_before": "f3157fff8a1a8fc6b483b9763e8ac4dab4f2c1af88c5f51704e5fc19e567e681",
+     "sha_after": "f3157fff8a1a8fc6b483b9763e8ac4dab4f2c1af88c5f51704e5fc19e567e681",
+     "readonly": true
+    }
+   },
+   {
+    "id": "R5_registry_compat_boundary_observed",
+    "ok": true,
+    "detail": {
+     "r1_bump_from_0": {
+      "user_version_before": 0,
+      "user_version_after": 1,
+      "tables": [
+       "source_aliases",
+       "sources"
+      ]
+     },
+     "r2_silently_accept_9": {
+      "user_version_before": 9,
+      "user_version_after": 9,
+      "tables": []
+     }
+    }
+   }
+  ],
+  "recovery_provable": true,
+  "migration_reversible": true,
+  "compat_boundary": {
+   "catalog_automation": "user_version > SCHEMA_VERSION → UnsupportedSchemaVersionError（fail-closed，文件字节不变）；== → 只读校验；< → 单事务迁移 + backup_hook",
+   "registry_source": "user_version < 1 → CREATE + bump 到 1；> 1 → 旧代码不校验、静默接受（**无 fail-closed 前向守卫**，边界风险登记）",
+   "raw": "raw 层由 acquisition 追加写入；部署不改 raw 字节；本卡零写（见 combo_manifest.raw）"
+  },
+  "production_catalog_anchor": {
+   "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3",
+   "bytes": 3055796224,
+   "sha256_at_bind": "63c359aa4b09545a540a05f8d32d66ac3c9dbd4ccf696470d55cb38a31f6dcfc",
+   "mtime_utc": "2026-09-26T17:48:22.684241+00:00",
+   "user_version": 0,
+   "note": "生产库本卡只读；部署窗口须复核 size/mtime/sha256 与本锚点一致"
+  },
+  "fail_closed_no_strict_gate_disabled": true
+ },
+ "final_live_verification": {
+  "rc": 0,
+  "mode": "live",
+  "checks": [
+   {
+    "id": "J1_repo_source",
+    "ok": true,
+    "status": null
+   },
+   {
+    "id": "J2_install_copy",
+    "ok": true,
+    "status": null
+   },
+   {
+    "id": "J3_new_process_load_path",
+    "ok": true,
+    "status": null
+   },
+   {
+    "id": "J4_interpreter_deps",
+    "ok": true,
+    "status": null
+   },
+   {
+    "id": "J5_config_policy_flags_schema",
+    "ok": true,
+    "status": null
+   },
+   {
+    "id": "J6_recovery",
+    "ok": true,
+    "status": null
+   },
+   {
+    "id": "J7_impact_scope",
+    "ok": true,
+    "status": null
+   },
+   {
+    "id": "J8_boundaries",
+    "ok": true,
+    "status": null
+   }
+  ],
+  "violations": []
+ },
+ "upstream_inputs": {
+  "I-07-D/a20260923-01": {
+   "sha256": "82bb03aca1756d0cec155d039150e930d7b2a885659ad73d5a94e1c032d09e13",
+   "status": "accepted_scoped"
+  },
+  "I-07-E/a20260926-01": {
+   "sha256": "8cfce3671e29d69eac5d49af114d522d5ba4ae3681b3e70c2f688b45786ecc04",
+   "status": "accepted_scoped"
+  },
+  "I-13-A/a20260926-01": {
+   "sha256": "0b466621ff964c8e3347cc96033bf7abd1f800eaf9eda75c3555209ac60a2f97",
+   "status": "accepted_scoped"
+  },
+  "I-13-BC/a20260926-01": {
+   "sha256": "2dfa7a0918a75c862fdf5b378bb50523cf94ff56a48e3b31353d5f0b724f8dfa",
+   "status": "accepted_scoped"
+  }
+ },
+ "input_hashes": {
+  "execution_v2/card_I-16-A.md": "fa2884fa30678085ccb8a4c9f08035817b45a9200de02b6a5ebf3d71852f535c",
+  "execution_v2/common_root_cards.md": "f8127541c763859761eb6affdd9f3c898766e249205436ff164b73c2621cd260",
+  "execution_v2/START_HERE.md": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+  "OWNER_DECISIONS.md": "c905ea515d4b5da1192e411fbb6b5d4fbb720cb5b9b20485b34fc402bd3e11e9"
+ },
+ "gate0": {
+  "passed": true,
+  "raw_output": "=== GATE0 BEGIN (I-16-A/a20260926-01) ===\nutc=2026-09-26T21:06:58.9099667Z\ncwd_attempt=C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-16-A\\a20260926-01\nreadback=gate0 probe I-16-A a20260926-01 write-readback-delete\ndeleted_gone=True\nsha256 .planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-11-A\\a20260919-01\\evidence\\I-11-A\\hypotheses.json = f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28 bytes=51697\nsha256 .planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN2-C2-REGISTRATION\\a20260926-01\\hypotheses_v3.json = b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff bytes=61231\ngit_diff RF total=3830 non_planning=0\ngit_diff CW total=1 non_planning=1\ngit_diff DAYU total=1 non_planning=1\n=== GATE0 END ===\n\n--- GATE0 RECHECK (after transient CW diff=1 observed during gate0; concurrent git activity suspected) ---\nutc=2026-09-26T21:08:07.2794266Z\ngit_diff RF HEAD=b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb exit=0 total=3830 non_planning=0 staged=0\ngit_diff CW HEAD=bf0c8b27e83c3ee7e533c6031fefad8e27e5e121 exit=0 total=9 non_planning=9 staged=1\ngit_diff DAYU HEAD=2115c86d5a9027bb51cbbc8a4d0175080732e4e6 exit=0 total=1 non_planning=1 staged=1\n",
+  "raw_path": "gate0_raw.txt"
+ },
+ "written_files": {
+  "oracle.md": {
+   "bytes": 18833,
+   "sha256": "435406389855ba60f12ad0b5522e92b1a2cd01577198ab6394bfd21ddc249938"
+  },
+  "deployment_proposal.md": {
+   "bytes": 19037,
+   "sha256": "f6427b7173f5e63fa56e48090deb24b34339a91587ea49b5f1ec1f7b2dd3686b"
+  },
+  "impact_scope.json": {
+   "bytes": 6439,
+   "sha256": "e0959fb90afc68b793fa3260bb553a2d1aa029dba0baf4c1b221be05603ac71f"
+  },
+  "combo_manifest.json": {
+   "bytes": 64824,
+   "sha256": "a2b9147ade7e6f35336816512c1bcb7a11fc4288f1f83d922d156143004b5fe6"
+  },
+  "recovery_drill.json": {
+   "bytes": 4606,
+   "sha256": "7130a6e09a246abf7c685373d7401a1a57f4592e079e9c6f9c4eca38b30780fd"
+  },
+  "snapshot_manifest.json": {
+   "bytes": 54024,
+   "sha256": "dadb1db5195d8878db2123fffb902ac3e2806616d9083b91dd9cacb846fc7dfc"
+  },
+  "gate0_raw.txt": {
+   "bytes": 1268,
+   "sha256": "546b00e94ba5408e2ec5009d0d8ce0bea3fa3e072767752136c01fee6da8da8c"
+  },
+  "_probe_newprocess.py": {
+   "bytes": 6966,
+   "sha256": "f55e39b8964ef1edf3723c7c306dd43b7b9e219f2d47b9fbe2891055982e9f2d"
+  },
+  "_bind_combo.py": {
+   "bytes": 19404,
+   "sha256": "2f7df8ee8e0596afa8a881f22df98231712d10dbb09b4fc6bfd7bb12d239189c"
+  },
+  "_recovery_drill.py": {
+   "bytes": 9526,
+   "sha256": "5898d162b053ff63b0e8da656ec42e215d40dbf079011dcefa04e77cd61b1efd"
+  },
+  "_verify_combo.py": {
+   "bytes": 12976,
+   "sha256": "29a2e8ab90c740226a2e7f78f33d282f5d598902abd58e96a531a153d79e9134"
+  },
+  "_run_mutations.py": {
+   "bytes": 11303,
+   "sha256": "4bb36d38100f1db2c85d660501147c1875096d35e20b2af03eeb802e65e01950"
+  },
+  "_mut/mutation_summary.json": {
+   "bytes": 9810,
+   "sha256": "38737b7ef75859cf60f338974d2a03174dfe4c213ec065218b78248927edf704"
+  },
+  "_live/result_final.json": {
+   "bytes": 1790,
+   "sha256": "22c3a5bbd9f1dd62f08ed254a20f095b325e3c12b2a980776d0a57d81bdcc1fb"
+  },
+  "probe_bind.json": {
+   "bytes": 4064,
+   "sha256": "31f049874d144e5f5823fbaf65357c2f86a05143ccf284d9bb892cc26beefd1b"
+  }
+ },
+ "boundaries": {
+  "git_status_run": false,
+  "git_writes": 0,
+  "network_used": false,
+  "params_released": false,
+  "writes_outside_planning": 0,
+  "writes_outside_planning_detail": "项目内写入仅 .planning/**（本 attempt 目录 + 其内隔离副本/快照）；另在会话 %TEMP% 放置若干只读汇总用临时脚本（平台临时区，非产品非项目）；产品三仓 0 写",
+  "product_repos_writes": 0,
+  "production_change_executed": false,
+  "open2_registered_not_consumed": true,
+  "sealed_zero_byte_change": true,
+  "i16b_dispatched": false
+ },
+ "open_findings": [
+  {
+   "id": "u-I16A-0",
+   "severity": "high",
+   "text": "三仓组合在绑定期间被外部写入方改动（HEAD/内容/untracked/staged 四类漂移）；复审者须在安静时刻复跑 J1，仍红则不得开部署窗口"
+  },
+  {
+   "id": "u-I16A-1",
+   "severity": "medium",
+   "text": "2026-08-08 worker 运行组合的 4 个模块字节已不可重建（git 历史+磁盘均未命中）⇒ 禁止用作恢复目标"
+  },
+  {
+   "id": "u-I16A-2",
+   "severity": "low",
+   "text": "一次 drill 重跑对着过期 snapshot 清单出现 R1=False；重绑后三次 drill 全绿"
+  },
+  {
+   "id": "I14-E-unverified",
+   "severity": "medium",
+   "text": "OpenProcess DENIED ⇒ TESTSIDE 三臂不可证、进程命令行不可读；按 §三十八 以 unverified 登记，不作开工阻断"
+  },
+  {
+   "id": "u-I16A-skillcopy",
+   "severity": "low",
+   "text": "skill 安装副本（Junction 目标）本会话不可读 ⇒ 该子项 unverified"
+  }
+ ],
+ "status": "review_pending"
+}

@@ -1,0 +1,123 @@
+{
+  "case": "E0-baseline-F4",
+  "checks": {
+    "expected_raw_returncode": {
+      "ok": true,
+      "detail": {
+        "raw": 2,
+        "expected": 2
+      }
+    },
+    "calls_failed": {
+      "ok": true,
+      "detail": {
+        "raw": 0,
+        "expected": 0
+      }
+    },
+    "peak_rss_gt": {
+      "ok": true,
+      "detail": {
+        "raw": 0.016,
+        "expected_gt": 0.0
+      }
+    },
+    "peak_rss_source": {
+      "ok": true,
+      "detail": {
+        "raw": "live_sample",
+        "expected": "live_sample"
+      }
+    },
+    "rss_sample_count_min_gte": {
+      "ok": true,
+      "detail": {
+        "raw": 1,
+        "expected_gte": 1
+      }
+    },
+    "fixture_pid_is_in_samples": {
+      "ok": false,
+      "detail": {
+        "fixture_reported_pids": [
+          3476,
+          7636,
+          8728,
+          15512,
+          18384,
+          19496
+        ],
+        "sampled": [
+          3476,
+          6916,
+          7636,
+          8728,
+          12520,
+          15316,
+          17268,
+          19496,
+          20392,
+          21644
+        ]
+      }
+    },
+    "window_present:command_total_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.60704
+      }
+    },
+    "window_present:slo_window_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.523087
+      }
+    },
+    "window_present:rss_sample_window_seconds_max": {
+      "ok": true,
+      "detail": {
+        "value": 0.06287
+      }
+    },
+    "window_present:quick_check_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.079907
+      }
+    },
+    "quick_check_outside_slo_window": {
+      "ok": true,
+      "detail": {
+        "value": false
+      }
+    },
+    "rss_window_not_before_slo_window": {
+      "ok": true,
+      "detail": {
+        "rss": 0.06287,
+        "slo": 0.523087
+      }
+    },
+    "frozen_budgets_untouched": {
+      "ok": true,
+      "detail": {
+        "raw": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        },
+        "frozen": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        }
+      }
+    }
+  },
+  "all_ok": false,
+  "failed_checks": [
+    "fixture_pid_is_in_samples"
+  ]
+}

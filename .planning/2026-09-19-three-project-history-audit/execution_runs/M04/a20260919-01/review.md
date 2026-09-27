@@ -215,3 +215,12 @@ reachable in practice") was wrong and is corrected here.
 6. `scripts/model_registry.py` 的 mtime 变更**无法归因**（内容 hash 未变，不影响本卡）。
 7. 本卡的 D/E/F **会计/行业实质**未获审阅（需签署方）；本裁决仅覆盖 A–C（formula）+ 记账。
 8. 并发卡 M05–M31 的任何陈述均为**时点观察**，其后可能已被其他 session 改变。
+
+## 独立验收裁定（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅本 attempt、仅锚 9ec65295…。
+- 未授予：disclosure_adaptation / accuracy / D/E/F / 一切外推。
+- carried：F-MT-01/02/03；revision_history 记账噪声（同 M01 族）。M01-M04-PROPAGATE/a20260922-01 的落定转录形态经抽读采信（非新裁决）。
+- 本次抽验：[730] 三方一致；负例 15/15；九件齐；pin 3/3（CRLF）；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "independent acceptance (M-T-REVIEW N=1) 2026-09-23: accepted_with_conditions (formula only)", carrier: "…/reviews/M04.md + acceptance_rulings.md#M04", implementer_signed: false, supersedes: "point_review_returned" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 5eb13b272bb446a4af00fa92e826d44e5f4088c45f5740c3cc611398b69b2598 over 19264 bytes, verified post-install as sha256 of the first 19264 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = 95ddb8475f4f50989e6e4421741ab97ad911f677134092cb2ec9f80736345992 = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 823 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M04.md (sha256 e4c856e7793808805c9e91fa7b3c9127c6d3f1c3b436f66f947bc580c612fa4a) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

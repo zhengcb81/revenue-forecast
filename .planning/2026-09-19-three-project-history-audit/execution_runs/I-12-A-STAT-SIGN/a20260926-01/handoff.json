@@ -1,0 +1,168 @@
+{
+  "card_id": "I-12-A",
+  "attempt_id": "a20260926-01",
+  "attempt_path": "execution_runs/I-12-A-STAT-SIGN/a20260926-01",
+  "role": "statistics_reviewer_i12a",
+  "role_label": "统计reviewer（统计面签署；非实现者、非行业面）",
+  "parent_agent": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "status": "stat_signatures_delivered_pending_countersign",
+  "status_note": "本件只交付统计面 6 项裁定；不是卡级验收、不是 ACCEPT、不解除 I-12-A 的 BLOCKED_PROFESSIONAL_DECISION。",
+
+  "signed_count": 3,
+  "not_signed_count": 3,
+  "total_items": 6,
+  "signed_items": ["S3", "S4", "S5"],
+  "not_signed_items": ["S1", "S2", "S6"],
+  "signature_summary": [
+    {"item_id": "S1", "field": 5, "item": "时间划分折数/切点/窗口长度", "selection": "NOT_SIGNED", "value_or_missing": "缺 vintage 清单（已登记 origin=1/公司；I-11-C available_at 命中 0；单 origin 可算折数=0）", "decision_sha256": null, "refusal_sha256": "a138debb851a536ea2f564b07cd62734035862c93ecd25b0ace8e12acda59080"},
+    {"item_id": "S2", "field": 10, "item": "最小公司数/每层样本数/统计功效/可接受CI宽度", "selection": "NOT_SIGNED", "value_or_missing": "缺 容差定标（面内 0 处数值）+ 效应量/方差基础（封存面）+ 每层 origin 数", "decision_sha256": null, "refusal_sha256": "ea0e6ac04ab5114246586790301471d71d8ebb3895657939647b0846f85c5120"},
+    {"item_id": "S3", "field": 11, "item": "置信水平(CI level/α)", "selection": "SIGNED", "value_or_missing": "双侧 95%（α=0.05）+ 守卫 cluster>=3 && block>=2 否则只描述", "decision_sha256": "12e0ea07cca59111e5a61c4f4403ecf3efa84f7874adc2b35f3c636ec45fac51"},
+    {"item_id": "S4", "field": 11, "item": "重复抽样次数与随机种子", "selection": "SIGNED", "value_or_missing": "B=10,000；seed=2765402844（=hex(card sha256[0:8])=a4d4b2dc 派生）+ 同守卫", "decision_sha256": "2367b078911467bd75650c152a9caefcab22e22d9980c7c2626aa95f0730b12d"},
+    {"item_id": "S5", "field": 11, "item": "多重比较校正方法", "selection": "SIGNED", "value_or_missing": "Holm、FWER、α=0.05；family 解封前登记；BH-FDR 仅 exploratory", "decision_sha256": "7ab9bfa5f765dae29d54ae503c07fe22fc270231657cf809df0b0b6bac8ede4c"},
+    {"item_id": "S6", "field": 12, "item": "成功/失败阈值（经济显著/偏差/包含率/区间宽度）", "selection": "NOT_SIGNED", "value_or_missing": "缺 经济显著定标（面内 0 处）+ 容差来源（EA-1 明文非精度主张禁挪用）+ 行业 reviewer 共签", "decision_sha256": null, "refusal_sha256": "8b99a7153b23ba41f55fdd16de24018e0ee4c73744ff44f202a944cfb9a698cd"}
+  ],
+
+  "industry_countersign_still_needed": true,
+  "industry_countersign_note": "卡文 Owner 行要求统计与行业 reviewer 共同签字；本件只签统计面。行业面 scope（字段 3 公司池 / 字段 8 baseline / 字段 11 cluster-block 单位 / 字段 12 共同）仍 unsigned —— 另见并行目录 execution_runs/I-12-A-IND-SIGN（本工位未读未改）。字段 12 须共同签署，本工位不单签。",
+  "releases_nothing": true,
+  "params_released": false,
+  "params_released_count": 0,
+  "produces_accept": false,
+  "implements_implementer_signature": false,
+  "stop1_state": "BLOCKED_PROFESSIONAL_DECISION_still_triggered",
+  "stop1_why": "S1/S2/S6 = NOT_SIGNED（统计面亦无据可签）+ S3/S4/S5 仅统计面签署、行业面未签 ⇒ 卡文停止①字面『任何关键统计选项/阈值未签署』仍成立；本件只登记事实，不自裁。",
+  "stop2_triggered": false,
+  "unseal_gate_not_satisfied": true,
+
+  "authorized_by": {
+    "card_owner_line_verbatim": "Parent：I-12；状态：planned；Owner：统计reviewer和行业reviewer共同签字；依赖：I-07-E。",
+    "card_source": "execution_v2/card_I-12-A.md（sha256 a4d4b2dcce2aa1de04ab6aff757de0fb6e75fa21bc5cf0ab0151e5d1e940470f，1,467 B）L5",
+    "i12a_stop_path_verbatim": [
+      "任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。",
+      "已看测试结果后变更设计→新探索版本，旧结果不得追认确认性成功。"
+    ],
+    "i12a_stop_source": "execution_v2/card_I-12-A.md L20-L21（同文见 execution_runs/I-12-A/a20260926-01/oracle.md §1 与 professional_approval.json stop_condition.rule_verbatim）",
+    "i12a_stop_path_registered_verbatim": "execution_runs/I-12-A/a20260926-01/handoff.json card_stop.code = BLOCKED_PROFESSIONAL_DECISION；rule_verbatim = 任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION；disposition = fail-closed 判 blocked（合格形态）；裁定权=独立复审/编排层",
+    "i12a_unblock_conditions_verbatim": [
+      "编排层指派统计 reviewer 与行业 reviewer",
+      "两名 reviewer 在本载体（或其复审载体）对 unsigned_key_statistical_options 逐项签署，签署须早于测试结果解封",
+      "签署后重算 design_manifest SHA256 并冻结（新版本）；结果解封后才补签的阈值一律作废为探索性"
+    ],
+    "unblock_conditions_source": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json L73-L77",
+    "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871）「给你授权所有的沙箱操作，不要再问我了」= 沙箱操作常设授权；边界 L860-L862「纪律 16/17/18/19/20 全部继续有效」「生产零未授权改动」「产品仓提交（git add/commit/push）不在本授权内」。注意：本授权是沙箱操作授权，**不是**统计阈值的专业签署（专业签署来自卡文 Owner 行 + 本派单指派）。",
+    "dispatch": "编排层（owner 指派）：统计 reviewer（非实现者、非行业面）执行 I-12-A 统计阈值签署；回源清单=I-12-A 三件证据 + 卡文 + §三十七 + 上游数据可得性（I-07-E 18 槽位/13 mapped+5 declined、I-11-C parameter_mapping）；硬性纪律=oracle 先冻结+门0 / 不读测试结果 / 不放行参数 / 不代签行业面 / 禁五份计划文件 / 禁 .planning 外 / 禁 git 写+git status / 禁联网 / fail-closed 不为解锁而签 / 红绿变异 ≥3"
+  },
+
+  "gate0_passed": true,
+  "gate0": {
+    "passed": true,
+    "performed": "写+回读+删除三步自探（本 attempt 目录、零提权）+ 封盘/store 只读复哈希",
+    "raw_output": "=== GATE0 BEGIN (I-12-A-STAT-SIGN/a20260926-01) ===\ncwd=C:\\Users\\郑曾波\\Projects\\revenue-forecast\nattempt_dir=.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-A-STAT-SIGN\\a20260926-01\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\ngate0 probe I-12-A-STAT-SIGN a20260926-01 write-readback-delete 2026-09-26T20:42:33.2172152+01:00\n--- step3 delete ---\ndeleted_gone=True\n--- step4 sealed sha (read-only) ---\nsealed_I-11-A_hypotheses_sha256=f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28\nsealed_matches_f2178768=True\nsealed_bytes=51697\n--- step5 store sha (read-only) ---\nstore_hypotheses_v3_sha256=b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff\nstore_matches_b2063ac8=True\n=== GATE0 END ===",
+    "raw_output_file": "gate0_raw_output.txt"
+  },
+
+  "oracle_freeze": {
+    "path": "execution_runs/I-12-A-STAT-SIGN/a20260926-01/oracle.md",
+    "bytes": 17839,
+    "sha256": "1c3ebb51f062dee1af30e2ec33f30b0fee38ed315404d9fe0b265b55f6303f2c",
+    "frozen_before_signing": true,
+    "contents": "6 项判据 C1-C7 + 签署形态（decision_payload_canonical / decision_sha256 写前写后双复算）+ STOP①② 触发规则 + 逐项可签性判定表（§5）+ 红绿变异清单（≥3）+ 门 0 原始输出"
+  },
+
+  "decision_sha256_recheck": {
+    "method": "sha256(UTF-8(decision_payload_canonical))：写入 stat_signatures.json 之前算一次（pre），落盘后从文件回读 canonical 串再算一次（post），并与文件内登记值三方比对",
+    "pre_write_equals_post_write_equals_recorded": true,
+    "all_hash_match": true,
+    "items": [
+      {"item_id": "S1", "field": "NOT_SIGNED", "hash_role": "refusal_sha256", "value": "a138debb851a536ea2f564b07cd62734035862c93ecd25b0ace8e12acda59080", "pre_eq_post": true},
+      {"item_id": "S2", "field": "NOT_SIGNED", "hash_role": "refusal_sha256", "value": "ea0e6ac04ab5114246586790301471d71d8ebb3895657939647b0846f85c5120", "pre_eq_post": true},
+      {"item_id": "S3", "field": "SIGNED", "hash_role": "decision_sha256", "value": "12e0ea07cca59111e5a61c4f4403ecf3efa84f7874adc2b35f3c636ec45fac51", "pre_eq_post": true},
+      {"item_id": "S4", "field": "SIGNED", "hash_role": "decision_sha256", "value": "2367b078911467bd75650c152a9caefcab22e22d9980c7c2626aa95f0730b12d", "pre_eq_post": true},
+      {"item_id": "S5", "field": "SIGNED", "hash_role": "decision_sha256", "value": "7ab9bfa5f765dae29d54ae503c07fe22fc270231657cf809df0b0b6bac8ede4c", "pre_eq_post": true},
+      {"item_id": "S6", "field": "NOT_SIGNED", "hash_role": "refusal_sha256", "value": "8b99a7153b23ba41f55fdd16de24018e0ee4c73744ff44f202a944cfb9a698cd", "pre_eq_post": true}
+    ]
+  },
+
+  "mutations": {
+    "verifier": "_verify_signatures.ps1（只读；exit legend 0=ALL_CRITERIA_OK / 1=harness / 2=无裁决 / 3=判据违例 K1..K8）",
+    "runner": "_run_mutations.ps1（变异只作用于 _mut/Mx 副本）",
+    "raw_outputs": "_mut/GREEN|M1..M8/verifier_output.txt（逐字）",
+    "original_unchanged": true,
+    "original_sha256_after_all_arms": "d4263357db5997353b22297d14b82f535f13c501452cf6281d45903a2a921c38",
+    "arms": [
+      {"id": "GREEN", "kind": "正例", "expect_rc": 0, "actual_rc": 0, "primary": "ALL_CRITERIA_OK (K1-K8)"},
+      {"id": "M1", "kind": "红·签了不该签", "mutation": "S1 NOT_SIGNED→SIGNED 伪造折数", "expect_rc": 3, "actual_rc": 3, "primary": "K2_verdict_lock"},
+      {"id": "M2", "kind": "红·拒签了本可签", "mutation": "S3 SIGNED→NOT_SIGNED", "expect_rc": 3, "actual_rc": 3, "primary": "K2_verdict_lock"},
+      {"id": "M3", "kind": "红·阈值事后篡改", "mutation": "S3.alpha 0.05→0.50（hash 同步重算）", "expect_rc": 3, "actual_rc": 3, "primary": "K3_value_lock（唯一违例）"},
+      {"id": "M4", "kind": "红·越权代签/放行", "mutation": "industry_countersign_still_needed true→false", "expect_rc": 3, "actual_rc": 3, "primary": "K6_boundary_lock"},
+      {"id": "M5", "kind": "红·追加", "mutation": "S2 NOT_SIGNED→SIGNED 编造样本量", "expect_rc": 3, "actual_rc": 3, "primary": "K2_verdict_lock"},
+      {"id": "M6", "kind": "红·追加", "mutation": "S6 NOT_SIGNED→SIGNED 编造阈值", "expect_rc": 3, "actual_rc": 3, "primary": "K2_verdict_lock"},
+      {"id": "M7", "kind": "红·追加", "mutation": "S4.repetitions 10000→100（hash 同步重算）", "expect_rc": 3, "actual_rc": 3, "primary": "K3_value_lock（唯一违例）"},
+      {"id": "M8", "kind": "红·追加", "mutation": "S5.method holm→bh_fdr（hash 同步重算）", "expect_rc": 3, "actual_rc": 3, "primary": "K3_value_lock（唯一违例）"}
+    ],
+    "coverage_note": "M1/M5/M6 = 签了不该签；M2 = 拒签了本可签；M3/M7/M8 = 值/方法篡改（hash 一致仍被值锁击杀）；M4 = 越权代行业签；GREEN = 正例。追加臂方向与 oracle §7 一致且更严（只增不减）。"
+  },
+
+  "final_rehash_source_carrier": {
+    "note": "收尾复哈希：三件证据与上游只读件全部与冻结值逐位一致（零改动）",
+    "execution_runs/I-12-A/a20260926-01/oracle.md": {"bytes": 16649, "sha256": "08723ab0f62c07cbf0f9a7563b8fc6382bff41da8a3f7c72ab14b81cfc7e76ee", "unchanged": true},
+    "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json": {"bytes": 22317, "sha256": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0", "unchanged": true},
+    "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json": {"bytes": 5334, "sha256": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1", "unchanged": true},
+    "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json": {"bytes": 5618, "sha256": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178", "unchanged": true},
+    "execution_runs/I-12-A/a20260926-01/handoff.json": {"bytes": 16285, "sha256": "7bf747b15bf97032f75f9377a9c7bf1c2c023c54c272975cc8b30450ef11c714", "unchanged": true, "note": "本 attempt 全程只读"},
+    "execution_v2/card_I-12-A.md": {"bytes": 1467, "sha256": "a4d4b2dcce2aa1de04ab6aff757de0fb6e75fa21bc5cf0ab0151e5d1e940470f", "unchanged": true},
+    "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json (sealed)": {"bytes": 51697, "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "unchanged": true, "zero_byte_change": true},
+    "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json (store)": {"bytes": 61231, "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "unchanged": true}
+  },
+
+  "written_files": {
+    "note": "全部写入均在 .planning/2026-09-19-three-project-history-audit/execution_runs/I-12-A-STAT-SIGN/a20260926-01/ 内；handoff.json 自身为自指文件不记自身 sha（由父落定/复审复哈希）",
+    "oracle.md": {"bytes": 17839, "sha256": "1c3ebb51f062dee1af30e2ec33f30b0fee38ed315404d9fe0b265b55f6303f2c"},
+    "stat_signatures.json": {"bytes": 35760, "sha256": "d4263357db5997353b22297d14b82f535f13c501452cf6281d45903a2a921c38"},
+    "ruling_stat_sign.md": {"bytes": 20333, "sha256": "c4ec9b16417f82ddd7da505647b62e13c600a8ca70de32577c7ae1cceb11c634"},
+    "gate0_raw_output.txt": {"bytes": 761, "sha256": "af52bbaab04a4819e467bc08fca3c08427dacaa239518023c13341ff63a2b485"},
+    "_verify_signatures.ps1": {"bytes": 12860, "sha256": "0b8eb8aa0861b6b6b15e1c8846f66daee084017d27da0b4573e64d33f58f106f", "note": "只读校验器（UTF-8 BOM，Windows PowerShell 5.1 兼容）"},
+    "_run_mutations.ps1": {"bytes": 5171, "sha256": "16a57840433afe07c11d8b7db89802b731861f9026c264e3f1d704b0fcad2856"},
+    "_mut/GREEN|M1..M8/**": "9 个副本 stat_signatures.json + 各臂 verifier_output.txt（原件字节不动）",
+    "handoff.json": "本文件（自指，不记 sha）"
+  },
+
+  "gate_checks": {
+    "gate0_passed": true,
+    "oracle_frozen_first": true,
+    "criteria_frozen_before_ruling": true,
+    "mutations_all_matched_expected_rc": true,
+    "green_arm_rc": 0,
+    "red_arms_rc": [3, 3, 3, 3, 3, 3, 3, 3]
+  },
+
+  "boundary_declaration": {
+    "test_results_unsealed": false,
+    "test_results_read": false,
+    "accuracy_results_read": false,
+    "sealed_results_not_read": ["I-10-B 结果面", "I-13 买方验收面", "任何 accuracy/backtest 数值"],
+    "open2_ban_observed": true,
+    "open2_values_consumed_as_threshold": false,
+    "industry_signature_performed_by_this_attempt": false,
+    "implementer_signed": false,
+    "self_sign": false,
+    "params_released": false,
+    "five_plan_files_untouched": true,
+    "writes_outside_planning": 0,
+    "git_writes": 0,
+    "git_commands_run": 0,
+    "git_status_run": false,
+    "network_used": false,
+    "external_retrieval_not_local": false,
+    "source_carrier_three_evidence_untouched": true,
+    "sealed_hypotheses_untouched": {"sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "bytes": 51697, "zero_byte_change": true},
+    "store_untouched": {"sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "unchanged": true},
+    "not_dispatched": ["I-12-B"],
+    "not_read": ["execution_runs/I-12-A-IND-SIGN/**（行业面并行工位，未读未改）"]
+  },
+
+  "git_diff_non_planning": 0,
+  "git_diff_derivation": "写入面枚举推导：本 attempt 全部写入均落在 .planning/2026-09-19-three-project-history-audit/execution_runs/I-12-A-STAT-SIGN/a20260926-01/（oracle.md / stat_signatures.json / ruling_stat_sign.md / gate0_raw_output.txt / _verify_signatures.ps1 / _run_mutations.ps1 / _mut/** / handoff.json），.planning 之外写入 = 0；本工位未执行任何 git 命令（含禁用的 git status），git_writes=0",
+
+  "next_action": "①行业 reviewer 在其 scope（字段 3 / 字段 8 / 字段 11 cluster-block 单位 / 字段 12 共同）签署；②S1（vintage 清单）、S2（容差定标+效应量基础+每层 origin 数）、S6（经济显著幅度与容差定标，须行业面先行）补据后由统计面按新版本重签；③双签与 6 项齐备后新开 design 版本重冻 design_manifest SHA256（改写面归 I-12-A 复审/编排层，非本工位）；④编排层明文解封前不解封任何测试实际值、不派 I-12-B；⑤裁定权在独立复审/编排层，本件不自裁、不产生 ACCEPT。"
+}

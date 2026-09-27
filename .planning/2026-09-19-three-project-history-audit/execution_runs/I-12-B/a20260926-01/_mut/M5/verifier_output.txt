@@ -1,0 +1,9 @@
+arm=M5 expected_rc=3 actual_rc=3
+CHECK J1 OK :: 7 unique sample_id, all derived from entity/segment/origin/horizon
+CHECK J2 OK :: conservation 3=2+1 / 9=7+2; Xiaomi exclusion intact
+CHECK J3 OK :: available_at<=origin 7/7 + 2 inputs; Xiaomi quarantined; protocol inputs exempted with reason
+CHECK J4 OK :: 7/7 true_vintage; reconstructed=0 (no merge)
+CHECK J5 OK :: actuals sealed/zero, gate unsatisfied, split PENDING with 0 assignments
+CHECK J7 OK :: upstream 17/17 sha256 recomputed and matched
+FAIL J6: handoff.params_released must be false
+RESULT INVARIANT_VIOLATION count=1

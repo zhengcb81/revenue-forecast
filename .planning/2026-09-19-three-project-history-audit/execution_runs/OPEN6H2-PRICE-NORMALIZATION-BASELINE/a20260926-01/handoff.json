@@ -1,0 +1,212 @@
+{
+  "schema": "handoff/1",
+  "station": "execution_runs/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01",
+  "role": "mining_industry_reviewer_h2",
+  "attempt": "a20260926-01",
+  "generated_utc": "2026-09-26T11:13:08Z",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "task": "MERGE 七条 C5 第四块：H2 阈值的「OPEN-2 口径 + 价格归一化基准」（价格序列/期间/净价口径 + 来源与取回时点）",
+  "authorized_by": [
+    {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-MERGE/a20260924-01/merge_ruling.md",
+      "line": "L234",
+      "file_sha256": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1",
+      "verbatim": "| **H2 ±5%** | OPEN-2 口径裁定 + 价格归一化基准（价格序列/期间/净价口径） | 矿业 reviewer + 会计面（IND L373 BLOCKED-6；ACCT BLOCKED-6a） |"
+    },
+    {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+      "line": "L373",
+      "file_sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b",
+      "verbatim": "| **BLOCKED-6** | OPEN-6：H2 单位收入阈值的**替代数值**（±5% 不采用） | OPEN-2 口径裁定 + 价格归一化基准（价格序列/期间/净价口径） | 矿业 reviewer + 会计面；**保持 `professional_judgement_required` 未审定** |"
+    },
+    {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+      "line": "L296 (BLOCKED-6a) 与 L244-L256 (A-6.3)",
+      "file_sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2",
+      "verbatim": "- **BLOCKED-6a**：3 条 `professional_judgement_required` 阈值的**数值**是否恰当（±5%、[0.9,1.1]、拆分层级判定）—— 需行业/专业 reviewer 按 A-6.3 给出证据与签署；我**不给数**。"
+    }
+  ],
+  "oracle": {
+    "path": "execution_runs/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/oracle.md",
+    "bytes": 15820,
+    "sha256_frozen_utc": "2026-09-26T10:50:54Z",
+    "sha256": "19317143039ce1905cae742e4de321127d309deb73a474845c3e953a75ea7aff",
+    "sha256_recheck_utc": "2026-09-26T11:13:08Z",
+    "sha256_stable": true,
+    "frozen_before_judgement": true,
+    "three_criteria": ["口径锚点", "价格归一化基准四要素", "blocked 触发条件 + 变异清单"]
+  },
+  "h2_status": "still_blocked",
+  "h2_value": null,
+  "h2_value_status": "NOT_ESTABLISHED",
+  "h2_decision_sha256": null,
+  "h2_signed": false,
+  "h2_threshold": {
+    "hypothesis_id": "H-CN-ZIJIN-SEG-02",
+    "threshold_text": "相对偏离 ±5%",
+    "threshold_basis": "professional_judgement_required",
+    "threshold_basis_changed": false,
+    "threshold_review_status": "not_reviewed",
+    "threshold_review_status_changed": false,
+    "professional_judgement_required_review_state": "未审定（维持）",
+    "review_state_changed": false
+  },
+  "caliber_anchor": {
+    "conclusion": "requires_redefinition",
+    "one_liner": "H2 的 observable 必须重定义（口径变 ⇒ 观测量变），重定义后只能锚新 id ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027（+金伴随 id）；旧 id 因跨层相除与未披露系数不得再作锚",
+    "old_id_allowed": false,
+    "new_id_caliber_compliant": true,
+    "observable_already_redefined": false,
+    "key_evidence": [
+      "hypotheses_v4.json L352 observable 仍为「分部报告矿产品对外收入 ÷ 产销量表铜当量销售量…」",
+      "OPEN2-C2-REGISTRATION registration.md L79 falsifier_full_unchanged = true",
+      "HYPOTHESES-V4-MERGE merge_report.md L51 falsifier 逐路径无差异",
+      "IND ruling.md L111 「口径变 ⇒ 观测量变」",
+      "OPEN2-SUBSTITUTE-CALIBER ruling.md L59 「两槽独立、禁止跨层相除」+ substitute_caliber.json L160 「factor_basis 必须为 none」"
+    ]
+  },
+  "price_normalization_baseline": {
+    "verdict": "NOT_ESTABLISHED",
+    "established": ["B4_来源与取回时点"],
+    "not_established": ["B1_价格序列", "B2_期间", "B3_净价口径"],
+    "score": "1/4",
+    "gaps": [
+      "B1：候选 10 条序列（5 金属 × 伦敦/国内现货）× 2 货币 × 2 形态，指派 0 条；年均价构造方法未披露；无汇率规则",
+      "B2：声明基期 FY2023–FY2025（3 期）vs 本地年均价 2 期（FY2024/FY2025）；AR2024 中 `2023 年均价` 命中 0；annual/ 目录仅 2 份 PDF；期间对齐规则 0 处文本；跨期同比重算 4/10 差 >0.5pp（最大 1.3281pp）",
+      "B3：现货序列 ↔ 实现单价 的 VAT/TC-RC/payability/权益金/产品形态桥 0 处；FY2025 铜精矿 63,613 vs 电解铜 71,422 元/吨（−10.93%）实证不同层"
+    ],
+    "established_element": "B4：AR2025 content_sha256=01819e1c… retrieved_at=2026-07-31T21:23:16Z；AR2024 content_sha256=004f733e… retrieved_at=2026-08-01T07:10:51Z；provider=cninfo；含第二条独立复核路径（pdftotext leaf 36 / leaf 35）"
+  },
+  "blocked_triggers_fired": ["T-1", "T-2", "T-3"],
+  "a63_four_conditions": {
+    "observable_recomputable": false,
+    "verifiable_basis": false,
+    "non_implementer_signature": false,
+    "append_only_versioning": false,
+    "satisfied": "0/4"
+  },
+  "mutation_results": {
+    "rc_semantics": "0 = 接受 / 1 = 拒绝",
+    "cases_run": 16,
+    "expectations_met": 16,
+    "failures": 0,
+    "EXPECT_RC": 0,
+    "OVERALL_RC": 1,
+    "python_exit_code": 0,
+    "bidirectional": {
+      "green_when_should_give": "SYNTH-FULL + give + STRICT = 0",
+      "red_when_should_block": "ACTUAL + give + STRICT = 1；SYNTH-FULL + keep_blocked + STRICT = 1",
+      "mutation_survives": [
+        "CF-ANCHOR-FIXED + give: STRICT=1 → MUT-4=0",
+        "SYNTH-MISS-B1: 1 → MUT-1 0",
+        "SYNTH-MISS-B2: 1 → MUT-2 0",
+        "SYNTH-MISS-B3: 1 → MUT-3 0",
+        "SYNTH-OLD-ANCHOR: 1 → MUT-5 0",
+        "SYNTH-NO-SIGN: 1 → MUT-6 0"
+      ],
+      "load_bearing_criteria": ["B-1", "B-2", "B-3", "判据A(口径锚点)", "A-6.3 第3/4件"]
+    },
+    "synthetic_fixture_note": "SYNTH-* 为判据夹具（SYNTHETIC 语义、sha 0…0），不构成现实主张"
+  },
+  "written_files": [
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/oracle.md",
+      "bytes": 15820,
+      "sha256": "19317143039ce1905cae742e4de321127d309deb73a474845c3e953a75ea7aff",
+      "frozen_before_judgement": true
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/h2_baseline.json",
+      "bytes": 32788,
+      "sha256": "0947e009899d7f160a5281aa032680bfb44ac1e23b554571d0d4f76ee05b8175",
+      "json_reparse_ok": true
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/ruling_h2.md",
+      "bytes": 25872,
+      "sha256": "e073b49139ece818f484ba3a3b6740db8c4bdc90df5dacc769f32b0401650a38"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/handoff.json",
+      "bytes": null,
+      "sha256": null,
+      "note": "自指不可自证：本文件 sha256 不写入自身，由外部复算"
+    }
+  ],
+  "written_files_count": 4,
+  "git_diff_observed": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "baseline_before_write_utc": "2026-09-26T10:55:17Z",
+    "baseline_total": 3830,
+    "baseline_non_planning": 0,
+    "final_total": 3830,
+    "git_diff_non_planning": 0,
+    "git_status_used": false,
+    "git_writes": 0,
+    "untracked_own_files": [
+      "…/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/oracle.md",
+      "…/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/h2_baseline.json",
+      "…/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/ruling_h2.md"
+    ],
+    "untracked_note": "本工位 4 个文件均为未跟踪路径，不进入 git diff HEAD；total 由 3830 → 3830（并发写入方波动已回落），非 .planning 计数恒 0"
+  },
+  "read_only_recheck": {
+    "hypotheses_v4.json": "ebf6fa4e2f708c397165127926475d5426afbdef0d93864a795a8640029c4654（同开工前）",
+    "OPEN2-SUBSTITUTE-CALIBER/ruling.md": "f927c44cacacb6d0db8e9d1cc09aa559d74427837fd885c4cd0081dbca899e53（同开工前）",
+    "OPEN2-SUBSTITUTE-CALIBER/substitute_caliber.json": "649a9ff8d1a4490aedbe863ee52a338ba7b30c50408d7ca5f0a9361daa622e72（同开工前）",
+    "I11A-OPEN-IND/ruling.md": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b（同开工前）",
+    "I11A-OPEN-ACCT/ruling.md": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2（同开工前）",
+    "I11A-OPEN-MERGE/merge_ruling.md": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1（同开工前）",
+    "all_unmodified": true
+  },
+  "signoff_requests": {
+    "to_accounting": [
+      "B-3 净价口径认定（VAT/TC-RC/payability/权益金/产品形态桥），或明文改走 A-6.3(ii)",
+      "确认 A-2.2 L90「价格序列/币种/基准日/原文出处」最小集是否适用于 H2",
+      "是否允许把新 id base_period 由 FY2023–FY2025 收窄为 FY2024–FY2025",
+      "A-6.3 ② 数值基础归类（同口径历史离散 vs expert_assumption+敏感性区间）",
+      "BLOCKED-6a 状态：本工位未解除，四要件 0/4"
+    ],
+    "to_mining_industry": [
+      "B-1 序列行业选择（金属 × 市场 × 形态：伦敦现货 vs 国内现货；年均价 vs 年终价）",
+      "重定义后的 observable 文本（同表同注分金属实现单价经归一化，禁跨层相除）",
+      "IND L307 反例（价格中性年份历史波动 ≤5%）尚未满足，±5% 不恢复",
+      "revert_rule 需补「价格归一化口径变化 ⇒ 先查口径不直接改价」分支"
+    ],
+    "signed_by_this_station": false
+  },
+  "releases_nothing": true,
+  "does_not_release_any_parameter": true,
+  "does_not_change_threshold_fields": true,
+  "does_not_unblock_BLOCKED_6a": true,
+  "does_not_unblock_OPEN_6": true,
+  "does_not_unblock_OPEN_2": true,
+  "does_not_claim_I11BAcceptance": true,
+  "does_not_trigger_any_falsifier": true,
+  "implementer_signed": false,
+  "network_requests": 0,
+  "files_outside_planning": 0,
+  "not_granted": [
+    "H2 任何数值（h2_value=null；±5% 未采用，替代数值仍 BLOCKED）",
+    "decision_sha256 签署（h2_decision_sha256=null）",
+    "threshold_basis 变更（仍 professional_judgement_required）",
+    "threshold_review_status 变更（仍 not_reviewed）",
+    "任何参数放行（旧 id 与 4 个新 id low/base/high 全 null、released=false）",
+    "_PLACEHOLDER 解除",
+    "ACCT BLOCKED-6a/6b/6c、IND BLOCKED-1..7、OPEN-6、OPEN-2 的解除（0 条关闭）",
+    "I-11-B 的 ACCEPT / approved_frozen / 任何验收声称",
+    "任何 falsifier 触发、校准边界、情景切换",
+    "代签会计面或其他 reviewer",
+    "对 OPEN2-* / HYPOTHESES-V4 / 两半区 / OPEN6-TOLERANCE-* / BLOCKED6C-* 的任何字节改动"
+  ],
+  "discipline_attestation": {
+    "oracle_frozen_first": true,
+    "network_requests": 0,
+    "git_writes": 0,
+    "git_status_used": false,
+    "files_outside_planning": 0,
+    "company_wiki": "只读（Get-FileHash / JSON 解析 / pdftotext 输出进管道），未落盘未改字节",
+    "json_written_and_reparsed": ["h2_baseline.json", "handoff.json"],
+    "utf8_no_bom_lf": true
+  }
+}

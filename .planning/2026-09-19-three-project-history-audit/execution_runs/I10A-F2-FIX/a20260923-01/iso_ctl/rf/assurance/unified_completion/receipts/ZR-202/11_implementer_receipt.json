@@ -1,0 +1,69 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "236fa24ceb48a23729987904a430d2e3e98db34e",
+    "wiki": "a46db08aac6fcff8e2cda3e89e30894759e9cb03"
+  },
+  "canonical_hash": "6f33abb75b547ffe472b9131858e39070183838045dc6dfb3287cc5d61db0600",
+  "commands": [
+    {
+      "command": "uv run python -m pytest tests/unit/test_catalog_reader_queries.py tests/unit/test_catalog_reader.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "23 passed (13 新增 typed + 10 ZR-201)"
+    },
+    {
+      "command": "uv run python -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "716 passed (baseline 703 → +13)"
+    },
+    {
+      "command": "uv run ruff check + ruff format --check (reader.py + 两个测试文件)",
+      "exit_code": 0,
+      "result": "All checks passed / already formatted"
+    }
+  ],
+  "created_at_utc": "2026-08-14T12:00:00+00:00",
+  "findings": [],
+  "implementation": {
+    "design": "CatalogReader 协议扩展只读类型化方法：query_only 属性（恒 True）、document、source_sha、artifacts_for、location_counts、status（8 计数，与 store.status 同形状）、scan_health（最近 20 scan_runs 摘要）、query（text/kind/source_status/limit 过滤）、entities_like（identify 助手，entities LEFT JOIN document_entities 计数）、resolve_handle（document+source sha，expected_content_sha256 漂移→None fail closed）、bundle（复用 build_source_bundle，纯只读组装，漂移→None）、health（schema+status+scan+query_only）。schema_version 校验：未知版本（非 1.2.0）→ CatalogReaderUnavailable fail closed。协议无 execute/commit/DDL。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/reader.py",
+      "company-wiki/tests/unit/test_catalog_reader_queries.py"
+    ],
+    "wiki_commit": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
+  },
+  "implementer": "zr202-implementer",
+  "kind": "implementer",
+  "notes": [
+    "测试播种经 CatalogStore.transaction()（测试可写；reader 零写）。",
+    "typed 方法 SQL 与 service/resolver 既有读语义同形状（status 8 计数、bundle 组装、resolve 漂移 fail closed），供 ZR-203 重接时逐方法等价替换。",
+    "mypy：wiki CI 固定 11 模块名单不含 reader.py，按前例跳过并注明。"
+  ],
+  "objective": "在 Reader 上实现 typed identify/query/status/resolve/bundle/health queries；schema mismatch fail closed；query-only property/mutation；无任意写 SQL API。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "236fa24ceb48a23729987904a430d2e3e98db34e",
+    "wiki": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki src/company_wiki/source_catalog/reader.py（协议+实现扩展）+ tests/unit/test_catalog_reader_queries.py；revenue 侧 receipts/ZR-202/** 与 state.json。CatalogStore/service/resolver/CLI 零改动（生产接线归 ZR-203）。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes_outside_scope": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/reader.py",
+    "company-wiki/tests/unit/test_catalog_reader_queries.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-202/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-202/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-202"
+}

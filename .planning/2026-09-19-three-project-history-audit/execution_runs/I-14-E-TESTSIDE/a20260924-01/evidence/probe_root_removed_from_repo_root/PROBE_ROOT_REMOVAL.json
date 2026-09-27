@@ -1,0 +1,55 @@
+{
+  "moved": [
+    {
+      "from": "probe_root_m777/f.txt",
+      "to": "evidence/probe_root_removed_from_repo_root/probe_root_m777/f.txt",
+      "bytes": 1,
+      "sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881",
+      "created": 1790369642.0768056
+    },
+    {
+      "from": "probe_root_m777kw/f.txt",
+      "to": "evidence/probe_root_removed_from_repo_root/probe_root_m777kw/f.txt",
+      "bytes": 1,
+      "sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881",
+      "created": 1790369642.0778224
+    }
+  ],
+  "removed": [
+    {
+      "dir": "probe_root_m700",
+      "exists_after": true
+    },
+    {
+      "dir": "probe_root_m777",
+      "exists_after": false
+    },
+    {
+      "dir": "probe_root_m777kw",
+      "exists_after": false
+    }
+  ],
+  "missing": [],
+  "pre_git_non_planning": 0,
+  "finished_utc": "2026-09-25T21:47:13Z",
+  "post_git_non_planning": 0,
+  "dirs_still_at_root": [
+    "probe_root_m700"
+  ],
+  "failed_removal": {
+    "dir": "probe_root_m700",
+    "why": "目录以 mode 0o700 创建，本会话无法访问 —— 与该卡披露的 %TEMP%\\i14ets* 残留同因",
+    "attempts": [
+      "Get-Acl -> 'Attempted to perform an unauthorized operation'",
+      "icacls <dir> /reset /T -> rc=5 (access denied)",
+      "[System.IO.Directory]::Delete(recursive=true) -> 'Access to the path ... is denied.'"
+    ],
+    "state": "REMAINS AT REPO ROOT; empty (no f.txt was ever visible to this session)",
+    "git_impact": "untracked and empty -> git diff HEAD --name-only 非 .planning 仍 = 0（已复测）",
+    "disclosure": "登记于此 + 登记册；不伪造已清除"
+  },
+  "git_invariant": {
+    "pre": 0,
+    "post": 0
+  }
+}

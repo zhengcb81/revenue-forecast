@@ -1,0 +1,595 @@
+{
+ "phase": "mutant-M5",
+ "validator": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/BLOCKED6C-THRESHOLD-REVIEW-STATUS/a20260926-01/mut/M5/validate_hypotheses.py",
+ "attempt": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/BLOCKED6C-THRESHOLD-REVIEW-STATUS/a20260926-01/iso_patched",
+ "positive_case": {
+  "propositions_checked": 8,
+  "errors": [],
+  "verdict": "pass"
+ },
+ "card_counterexamples_ce22_ce25": [
+  {
+   "case_id": "CE-22",
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
+   "note": "threshold_review_status outside the closed set (threshold_basis still present)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_UNKNOWN"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
+     "detail": "B6C-G1: falsifier.threshold_review_status='approved' not in ['not_reviewed', 'reviewed']"
+    }
+   ]
+  },
+  {
+   "case_id": "CE-23",
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_UNSEALED",
+   "note": "threshold_review_status=reviewed without decision.decision_sha256 and without a substantive reviewer seal",
+   "observed_codes": [],
+   "rejected": false,
+   "errors": []
+  },
+  {
+   "case_id": "CE-24",
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+   "note": "threshold_basis present, threshold_review_status MISSING, yet state=approved_frozen (used as reviewed)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+     "detail": "B6C-G3: state=approved_frozen but threshold_review_status is absent and defaults to not_reviewed (effective='not_reviewed', threshold_basis='arithmetic_identity')"
+    }
+   ]
+  },
+  {
+   "case_id": "CE-25",
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+   "note": "threshold_basis present, threshold_review_status explicitly not_reviewed, yet state=approved_frozen (used as reviewed)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+     "detail": "B6C-G3: state=approved_frozen but threshold_review_status is 'not_reviewed' (effective='not_reviewed', threshold_basis='arithmetic_identity')"
+    }
+   ]
+  }
+ ],
+ "ce_summary": {
+  "cases": 4,
+  "rejected": 3,
+  "accepted": 1,
+  "accepted_ids": [
+   "CE-23"
+  ]
+ },
+ "target_suite": {
+  "total": 25,
+  "original_21_total": 21,
+  "original_21_rejected": 21,
+  "original_21_accepted_ids": [],
+  "original_21_notes": [
+   "empty claim",
+   "synthetic source type",
+   "printed page basis instead of pdf leaf",
+   "management target shares the disclosure group",
+   "unregistered model_id",
+   "driver not in the model card",
+   "falsifier threshold removed",
+   "refuted_by removed",
+   "double count rule removed",
+   "wrong document hash",
+   "anchor text absent from the filing",
+   "implementer tries to self-approve",
+   "same parameter_id, different driver",
+   "cited value absent from evidence",
+   "approved_frozen with a short invented reviewer name (was accepted before R2)",
+   "threshold_basis claims arithmetic_identity for a judgement threshold (was accepted before R2)",
+   "refuted_by entries are blank but the list is non-empty (was accepted before R2)",
+   "mechanism chain is placeholder letters (was accepted before R2)",
+   "observation_date is a placeholder (was accepted before R2)",
+   "two propositions share a parameter_id but state different observations (was accepted before R2)",
+   "threshold_basis outside the closed set"
+  ],
+  "new_b6c_total": 4,
+  "new_b6c_rejected": 3,
+  "new_b6c_accepted_ids": [
+   "OWN-23"
+  ],
+  "rejected_as_expected": 24,
+  "accepted_by_mistake": 1,
+  "accepted_by_mistake_notes": [
+   "[B6C] threshold_review_status=reviewed with no A-6.3 seal (was accepted before BLOCKED-6c)"
+  ],
+  "cases": 25
+ },
+ "all_cases": [
+  {
+   "case_id": "OWN-01",
+   "expected_code": "E_EMPTY_FIELD",
+   "note": "empty claim",
+   "observed_codes": [
+    "E_EMPTY_FIELD"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_EMPTY_FIELD",
+     "detail": "empty claim"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-02",
+   "expected_code": "E_SOURCE_TYPE_CLOSED",
+   "note": "synthetic source type",
+   "observed_codes": [
+    "E_SOURCE_TYPE_CLOSED"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_SOURCE_TYPE_CLOSED",
+     "detail": "synthetic is forbidden in hypotheses.json"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-03",
+   "expected_code": "E_BAD_PAGE_BASIS",
+   "note": "printed page basis instead of pdf leaf",
+   "observed_codes": [
+    "E_BAD_PAGE_BASIS"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_BAD_PAGE_BASIS",
+     "detail": "page_index_basis='printed_page_1based' not in ['pdf_leaf_1based', 'table_index_0based']"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-04",
+   "expected_code": "E_MGMT_TARGET_INDEPENDENT",
+   "note": "management target shares the disclosure group",
+   "observed_codes": [
+    "E_MGMT_TARGET_INDEPENDENT"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_MGMT_TARGET_INDEPENDENT",
+     "detail": "management_target must carry a declared management-target independence_group, got 'ZIJIN-AR2025'"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-05",
+   "expected_code": "E_UNKNOWN_MODEL",
+   "note": "unregistered model_id",
+   "observed_codes": [
+    "E_UNKNOWN_MODEL"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_UNKNOWN_MODEL",
+     "detail": "model_id='not_a_model'"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-06",
+   "expected_code": "E_UNKNOWN_DRIVER",
+   "note": "driver not in the model card",
+   "observed_codes": [
+    "E_UNKNOWN_DRIVER"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_UNKNOWN_DRIVER",
+     "detail": "driver 'brand_strength' not in model direct_revenue"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-07",
+   "expected_code": "E_MISSING_FALSIFIER",
+   "note": "falsifier threshold removed",
+   "observed_codes": [
+    "E_MISSING_FALSIFIER",
+    "E_THRESHOLD_BASIS_INCONSISTENT"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_MISSING_FALSIFIER",
+     "detail": "falsifier.threshold empty"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_BASIS_INCONSISTENT",
+     "detail": "threshold_basis=arithmetic_identity but the threshold text is not an equality: 'None'"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-08",
+   "expected_code": "E_MISSING_REFUTED_BY",
+   "note": "refuted_by removed",
+   "observed_codes": [
+    "E_MISSING_REFUTED_BY"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_MISSING_REFUTED_BY",
+     "detail": "refuted_by empty"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-09",
+   "expected_code": "E_NO_DOUBLE_COUNT_RULE",
+   "note": "double count rule removed",
+   "observed_codes": [
+    "E_NO_DOUBLE_COUNT_RULE"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_NO_DOUBLE_COUNT_RULE",
+     "detail": "double_count_exclusion empty"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-10",
+   "expected_code": "E_SOURCE_HASH_MISMATCH",
+   "note": "wrong document hash",
+   "observed_codes": [
+    "E_SOURCE_HASH_MISMATCH"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_SOURCE_HASH_MISMATCH",
+     "detail": "doc_sha256 does not match source_map"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-11",
+   "expected_code": "E_ANCHOR_NOT_FOUND",
+   "note": "anchor text absent from the filing",
+   "observed_codes": [
+    "E_ANCHOR_NOT_FOUND"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_ANCHOR_NOT_FOUND",
+     "detail": "anchor_text not found in extraction output"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-12",
+   "expected_code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+   "note": "implementer tries to self-approve",
+   "observed_codes": [
+    "E_STATE_APPROVED_BY_IMPLEMENTER",
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+     "detail": "B6C-G3: state=approved_frozen but threshold_review_status is absent and defaults to not_reviewed (effective='not_reviewed', threshold_basis='arithmetic_identity')"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+     "detail": "approved_frozen requires a substantive independent reviewer identity, got '本卡实现者'"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+     "detail": "approved_frozen requires decision.decision_sha256 to seal the review record"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-13",
+   "expected_code": "E_DUPLICATE_PARAMETER",
+   "note": "same parameter_id, different driver",
+   "observed_codes": [
+    "E_DUPLICATE_PARAMETER",
+    "E_UNKNOWN_DRIVER"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "CE-DUP",
+     "code": "E_UNKNOWN_DRIVER",
+     "detail": "driver 'other_revenue' not in model direct_revenue"
+    },
+    {
+     "hypothesis_id": "CE-DUP",
+     "code": "E_DUPLICATE_PARAMETER",
+     "detail": "parameter_id ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027 reused: same_driver=False same_proposition=True"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-14",
+   "expected_code": "E_LISTED_VALUE_NOT_IN_EVIDENCE",
+   "note": "cited value absent from evidence",
+   "observed_codes": [
+    "E_ANCHOR_NOT_FOUND",
+    "E_LISTED_VALUE_NOT_IN_EVIDENCE"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "CE-VALUE",
+     "code": "E_ANCHOR_NOT_FOUND",
+     "detail": "anchor_text not found in extraction output"
+    },
+    {
+     "hypothesis_id": "CE-VALUE",
+     "code": "E_LISTED_VALUE_NOT_IN_EVIDENCE",
+     "detail": "cited value 999,999,999 not found in evidence/I-11-A/hypotheses.json"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-15",
+   "expected_code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+   "note": "approved_frozen with a short invented reviewer name (was accepted before R2)",
+   "observed_codes": [
+    "E_STATE_APPROVED_BY_IMPLEMENTER",
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+     "detail": "B6C-G3: state=approved_frozen but threshold_review_status is absent and defaults to not_reviewed (effective='not_reviewed', threshold_basis='arithmetic_identity')"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+     "detail": "approved_frozen requires a substantive independent reviewer identity, got '某审阅人'"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+     "detail": "approved_frozen requires decision.decision_sha256 to seal the review record"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-16",
+   "expected_code": "E_THRESHOLD_BASIS_INCONSISTENT",
+   "note": "threshold_basis claims arithmetic_identity for a judgement threshold (was accepted before R2)",
+   "observed_codes": [
+    "E_THRESHOLD_BASIS_INCONSISTENT"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_BASIS_INCONSISTENT",
+     "detail": "threshold_basis=arithmetic_identity but the threshold text is not an equality: 'relative drift beyond +/-7%'"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-17",
+   "expected_code": "E_EMPTY_FIELD",
+   "note": "refuted_by entries are blank but the list is non-empty (was accepted before R2)",
+   "observed_codes": [
+    "E_EMPTY_FIELD"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_EMPTY_FIELD",
+     "detail": "refuted_by contains a blank entry"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_EMPTY_FIELD",
+     "detail": "refuted_by contains a blank entry"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-18",
+   "expected_code": "E_CHAIN_END_SEMANTICS",
+   "note": "mechanism chain is placeholder letters (was accepted before R2)",
+   "observed_codes": [
+    "E_CHAIN_END_SEMANTICS"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_CHAIN_END_SEMANTICS",
+     "detail": "mechanism_chain must end in revenue-recognition/period semantics, got 'c'"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_CHAIN_END_SEMANTICS",
+     "detail": "mechanism_chain link too short to be a mechanism: 'a'"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_CHAIN_END_SEMANTICS",
+     "detail": "mechanism_chain link too short to be a mechanism: 'b'"
+    },
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_CHAIN_END_SEMANTICS",
+     "detail": "mechanism_chain link too short to be a mechanism: 'c'"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-19",
+   "expected_code": "E_OBSERVATION_DATE_UNRESOLVED",
+   "note": "observation_date is a placeholder (was accepted before R2)",
+   "observed_codes": [
+    "E_OBSERVATION_DATE_UNRESOLVED"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_OBSERVATION_DATE_UNRESOLVED",
+     "detail": "observation_date carries no resolvable date anchor: 'TBD'"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-20",
+   "expected_code": "E_DUPLICATE_PARAMETER",
+   "note": "two propositions share a parameter_id but state different observations (was accepted before R2)",
+   "observed_codes": [
+    "E_DUPLICATE_PARAMETER"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_DUPLICATE_PARAMETER",
+     "detail": "parameter_id ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027 reused: same_driver=True same_proposition=False"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-21",
+   "expected_code": "E_THRESHOLD_BASIS_UNKNOWN",
+   "note": "threshold_basis outside the closed set",
+   "observed_codes": [
+    "E_THRESHOLD_BASIS_UNKNOWN"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_BASIS_UNKNOWN",
+     "detail": "threshold_basis='made_up_basis' not in ['arithmetic_identity', 'disclosure_definition', 'professional_judgement_required']"
+    }
+   ],
+   "is_new_b6c_case": false
+  },
+  {
+   "case_id": "OWN-22",
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
+   "note": "[B6C] threshold_review_status outside the closed set while threshold_basis is present (was accepted before BLOCKED-6c)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_UNKNOWN"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
+     "detail": "B6C-G1: falsifier.threshold_review_status='approved' not in ['not_reviewed', 'reviewed']"
+    }
+   ],
+   "is_new_b6c_case": true
+  },
+  {
+   "case_id": "OWN-23",
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_UNSEALED",
+   "note": "[B6C] threshold_review_status=reviewed with no A-6.3 seal (was accepted before BLOCKED-6c)",
+   "observed_codes": [],
+   "rejected": false,
+   "errors": [],
+   "is_new_b6c_case": true
+  },
+  {
+   "case_id": "OWN-24",
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+   "note": "[B6C] threshold_basis present, threshold_review_status missing, yet state=approved_frozen (was accepted before BLOCKED-6c)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+     "detail": "B6C-G3: state=approved_frozen but threshold_review_status is absent and defaults to not_reviewed (effective='not_reviewed', threshold_basis='arithmetic_identity')"
+    }
+   ],
+   "is_new_b6c_case": true
+  },
+  {
+   "case_id": "OWN-25",
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+   "note": "[B6C] threshold_basis present, threshold_review_status explicitly not_reviewed, yet state=approved_frozen (was accepted before BLOCKED-6c)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true,
+   "errors": [
+    {
+     "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+     "code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+     "detail": "B6C-G3: state=approved_frozen but threshold_review_status is 'not_reviewed' (effective='not_reviewed', threshold_basis='arithmetic_identity')"
+    }
+   ],
+   "is_new_b6c_case": true
+  }
+ ]
+}

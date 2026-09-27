@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "437a98c978f1db4139bb42461cf544ffcd2dcb13",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca302* + three-journey assets review",
+      "exit_code": 0,
+      "result": "G1~G2 缺口确认（无 ca302 套件；三类旅程分项存在无终验组合）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca302_three_journeys.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "8 passed in 1.11s (C1 Zijin canary + fail-closed; C2 second miner chain; C3 non-mining; C4 receipt chain; C5 side-effect 0; C6 no bypass/hardcode)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr709_zijin_journey.py tests/test_zr609_zijin_pilot.py tests/test_ca204_monthly_generalization.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "26 passed in 5.76s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_ca302_three_journeys.py (E741 manual fix)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "bf58841 test(CA-302) — 1 file +238"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "990 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T17:10:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: Zijin canary — draft zero-write (registry absent), formal + bit-identical replay, copper 2026 mine contribution reconciles (reconciled_modeled), honest gap in consolidated; missing Dropbox StarLake doc fails closed MISSING via production resolver. C2: pure gold producer (single 100% level via effective_group_share, single currency) closes operation->terms->ownership->reconcile; engine document path runs draft. C3: trading_and_other non-mining segment has 5-year positive revenue path in production engine; direct_growth model-level hand-check 100->110/121. C4: formal receipt carries formal_output_mode/gate_ids/attestation and validate_publication_receipt passes; draft adds zero registry entries (exactly 1 from the formal). C5: canary+replay+draft -> exactly 2 formal registry entries, zero stray files (side-effect budget 0). C6: git grep 紫金矿业/601899 in scripts/ -> ZERO; all three journeys emit receipts under the SAME schema (no company branch).",
+      "id": "CA302-IMPL-001",
+      "severity": "info",
+      "title": "三类真实用户旅程终验（紫金 canary/第二矿企/非矿企 + receipt 链 + side-effect=0 + 无旁路）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca302_three_journeys.py（8 tests）：C1 紫金 canary 旅程（draft/formal/replay/reconcile/gap/fail-closed）；C2 第二矿企链闭合；C3 非矿引擎路径；C4 receipt 链完整（formal 门 + draft 零注册）；C5 side-effect budget=0；C6 零硬编码 + 同 schema。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_ca302_three_journeys.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-302/**"
+    ]
+  },
+  "implementer": "ca302-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = bf58841（revenue HEAD = CA-302 实现 commit，parent 437a98c）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实下载/worker 旅程为部署动作（需网络/授权），本卡验收引擎旅程语义。"
+  ],
+  "objective": "阶段 J 第二卡：三类真实用户旅程终验（紫金复杂 canary、第二异构矿企、非矿企；所有 roots/状态；receipt 完整；side-effect budget；诚实 gap；无公司特例/无旁路）",
+  "plan_sha256": "18272249e63d02284821d76d8a396c6b6cf576a208b825632a926f1e0a83a87e",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "bf58841b2d6dffc628d44634445b7948ff19ab86",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca302_three_journeys.py (new 8 tests)；assurance/unified_completion/receipts/CA-302/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 2
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca302_three_journeys.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-302/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-302",
+  "canonical_hash": "b421f0a69bff13aa1ece1678dd8ac75c69676c9eb508b20f93df0a7814a7b700"
+}

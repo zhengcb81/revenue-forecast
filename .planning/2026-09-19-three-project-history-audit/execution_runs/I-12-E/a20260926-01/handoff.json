@@ -1,0 +1,154 @@
+{
+ "card_id": "I-12-E",
+ "attempt_id": "a20260926-01",
+ "role": "implementer_i12e",
+ "status": "review_pending",
+ "status_note": "review_pending = 证据齐全的交付进入形态（供独立复审），不是验收、不是签署、不产生 ACCEPT、不改任何卡 status/decision/decision_sha256。",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "releases_nothing": true,
+ "params_released": false,
+ "params_released_count": 0,
+ "open2_ban_observed": true,
+ "gate0_passed": true,
+ "git_diff_non_planning": 0,
+ "git_diff_derivation": "写入面枚举推导：本 attempt 全部写入均在 .planning/2026-09-19-three-project-history-audit/execution_runs/I-12-E/a20260926-01/ 之内（含 _mut/ 变异副本）；.planning 之外写入 = 0。本卡未执行任何 git 命令（含被禁的 git status）⇒ git_writes=0、git_commands_run=0。",
+ "formal_publication_slot": "blocked（无正式签名能力；判定权归统计与行业 reviewer）",
+ "accuracy": "unproven（本卡不评估、不授予准确性；准确性栏=unproven）",
+ "card_stop": {
+  "premise": {
+   "rule_verbatim": "冻结阈值已在结果前批准；全量结果可见。",
+   "met": "0/2",
+   "thresholds_approved_before_results": false,
+   "all_results_visible": false,
+   "disposition": "前提不满足 ⇒ 不作 supported/unsupported 判定；6 个预注册比较全记 inconclusive（fail-closed 默认登记，非专业判定）"
+  },
+  "stop_1": {
+   "code": "STOP_CLAIM",
+   "rule_verbatim": "把31公式通过或少数公司拟合直接称准确率提升→STOP_CLAIM。",
+   "triggered": false,
+   "basis": "accuracy 栏=unproven、accuracy_improvement_claimed=false、supported=0；变异 Q3（人为触发）可被 E1/E3 击杀"
+  },
+  "stop_2": {
+   "code": "STOP_RELEASE_WORDING",
+   "rule_verbatim": "没有达到统计判定条件却宣称普遍有效→STOP_RELEASE_WORDING。",
+   "triggered": false,
+   "basis": "无普遍有效/发布措辞；正式发布格=blocked；scope_limitation.no_generalization 在位"
+  },
+  "card_verdict": "blocked（合格形态）—— 前提 0/2，数据与阈值不足，fail-closed；裁定权=统计与行业 reviewer / 编排层"
+ },
+ "authorized_by": {
+  "owner_decision_s34": "OWNER_DECISIONS.md §三十四（L745-L780）：L762-L766 硬约束逐字「oracle 先冻结」「不放行任何参数」「不触发任何 falsifier/自动动作」「实现者不自签 · 独立复审 · 落定走三件套」；L769-L775 边界逐字「不解除 OPEN-2/3/5/6 任何一条」「不放行参数（两个 _PLACEHOLDER + MSFT 四参数 + 新两分部参数）」「不产生 ACCEPT、不改任何 status/decision/decision_sha256（除非是新卡自己的写入面）」「不代签行业面 / 会计面 / 外部方」。",
+  "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871）：「给你授权所有的沙箱操作，不要再问我了」；边界逐字「纪律 16/17/18/19/20 全部继续有效」「生产零未授权改动」「产品仓提交（git add/commit/push）不在本授权内」。本卡零提权；禁 git（含 git status）、禁联网。",
+  "card_verbatim": "execution_v2/card_I-12-E.md（1,469 B / sha 3c7d6da5…）：L5「Parent：I-12；状态：planned；Owner：统计与行业reviewer；依赖：I-12-D。」；L9-L10 前提「冻结阈值已在结果前批准；全量结果可见。」；L13-L16 动作 1-4 逐字（按冻结阈值判 supported/unsupported/inconclusive 并保留负 skill 与失败层；限定数据集/模型版本/行业/生命周期/披露质量/horizon、未覆盖标 unproven；三栏合并但禁一栏 PASS 覆盖另一栏；误差来源六类 + 后续研究问题、不在本轮评分中修预测）；L19-L21 停止两条逐字；L23 验收「结论与预先规则一致；无覆盖领域、负结果和不确定性显式保留。」；L25 证据四件。",
+  "upstream_verbatim": "I-12-A professional_approval（双签 unsigned、6 项阈值 PENDING）+ design_manifest.unseal_gate（0/4）+ evaluation_design 字段 1/2/3/7/9/10/11/12；I-12-B（scorable=0、limited）；I-12-C（forecast_values_frozen=0、unblind_receipt=not_issued、STOP_MODEL_ADAPTATION 按段登记）；I-12-D（descriptive_only、n_pairs=0、interval_method_not_approved）；disclosure_adaptation_v2（4 signed + 2 STOP + 3 段无 case）。",
+  "dispatch_verbatim": "编排层派单（2026-09-26）：E 卡要点「按冻结阈值判 supported/unsupported/inconclusive（保负 skill 与失败层）· 限定分层（未覆盖标 unproven）· 三栏合并但禁一栏 PASS 盖另一栏」；顺序 B→C→D→E；每卡先冻结 oracle + 门 0；红绿变异 ≥3；fail-closed 数据/历史期不足 ⇒ not_applicable 或 STOP 判 blocked（合格）；不派 I-13/I-16/I-17。"
+ },
+ "gate0": {
+  "passed": true,
+  "performed": "写+回读+删除三步自探 + 封盘/store/B/C/D 证据 + professional_approval 只读复哈希",
+  "raw_output_path": "gate0_raw_output.txt",
+  "raw_output_sha256": "4b8de6250f283fc808183ba56833e3aeb31b4c1cd6cd62910cebf9c19c160ecb",
+  "summary": "write_ok=True / readback_match=True / deleted_gone=True / sealed f2178768… 51,697B / store b2063ac8… 61,231B / B+C+D 证据五件 + professional_approval 0befb154… 复哈希一致 / threshold_signatures=双 unsigned + 6 PENDING"
+ },
+ "completed_steps": [
+  "1 领取：card_I-12-E.md（sha 3c7d6da5…）逐字读 + 研究卡 I-12-E 段（owner_role/preconditions/动作/停止/验收）+ 共用规则 + review_and_handoff + START_HERE + §三十四/§三十七 + OPEN-2 红线",
+  "2 绑定：写入面 = execution_runs/I-12-E/a20260926-01/（新建）；上游 21 件 sha256 冻结进 oracle §2；封盘/store 只读复哈希",
+  "3 读证据：I-12-A 阈值签署状态（0/2 前提第一项）；I-12-B/C/D 本批登记件（0/2 前提第二项）；disclosure_adaptation_v2（披露栏）；I-07-E §A-§G（公式栏/误差来源）；未读任何测试集或准确性结果",
+  "4 冻结预期：oracle.md 先冻结（卡文逐字 + 前提核验表 + 上游 21 件 + 授权 + 红线 + E1-E10 + Q1-Q5 变异 + 门 0 原始输出 + fail-closed 预期 6 条）",
+  "5 修改前检查：门 0 自探通过",
+  "6 最小写入：_build_evidence.py 生成 accuracy_qualification（前提 0/2 + 6 比较 inconclusive + 六键范围 + 7 未覆盖层 + 三栏 + STOP 登记）+ error_taxonomy（六类 13 项 + 6 问 + 不修预测）+ limitations.md + independent_statistical_review.md（未指派/未签署状态登记）",
+  "7 修改后检查：首版绿臂 rc=3（limitations 缺中文『生命周期』标签）⇒ 按事实补标签后 rc=0（判据未放宽）+ 红臂 Q1-Q5 rc=3 具名击杀（原件字节不动）",
+  "8 交审：verification.json（前提核验 + 红绿 5 + 上游 21/21）+ 本 handoff；status=review_pending",
+  "9 接续：见 next_action（统计与行业 reviewer 另派；落定父直写；不派后继卡）"
+ ],
+ "next_step_number": 9,
+ "next_action": "①统计 + 行业 reviewer 对 professional_approval 的 6 项阈值逐项签署（须早于任何结果解封），随后 design_manifest 新版本重冻；②独立复审核验本卡：复算上游 21 件 sha、复跑 _verify.py 绿臂 + 至少一个红臂（建议保留 Q2 一栏盖另一栏击杀）、逐条裁定 6 个 inconclusive 比较的最终档位；③裁定 uncovered 7 层的处置（小米 gap-U1/U2、行业/生命周期赋值、微软 STOP 段、3 个无 case 段、model_version、dataset 外推）；④参数放行 + 目标期 FY2027 结束 + 独立 reviewer 出 unblind_receipt 后，新 attempt 才可把档位改为 supported/unsupported（结果后补阈值一律作废为探索性）；⑤本卡不派 I-13/I-16/I-17。",
+ "input_hashes": {
+  "note": "完整 21 件见 oracle.md §2 与 verification.json.upstream_consistency（现场复算 21/21 一致）",
+  "execution_v2/card_I-12-E.md": "3c7d6da514dc9897bd7575a2e8e883bd9f883be89d1bdda6075d23a7f1ed497b",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metrics_by_stratum.json": "ad14f515bcb4f796bf063957a5a005f26b08babea312b94a6367de98b3392e2e",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/paired_comparison.json": "5709203bac2753c37fe6c56853f4f6d875d5149a1fd56edc993f275ce6e2e0d5",
+  "execution_runs/I10A-DISCLOSURE-ADAPT-SIGN/a20260925-01/disclosure_adaptation_v2.json": "373c162197203da31d68b4273adb27d5c2ba68936bcdf4100e669c23fea9d522",
+  "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json (sealed, read-only)": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+  "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json (store, read-only)": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff"
+ },
+ "current_source_hashes": {
+  "note": "上游只读零改动：21 件 sha 与 oracle §2 逐件一致（E8 全绿）；封盘 f2178768…/51,697B 未动；store b2063ac8…/61,231B 未动；I-12-B/C/D 证据零改动"
+ },
+ "changed_paths": [
+  "execution_runs/I-12-E/a20260926-01/oracle.md",
+  "execution_runs/I-12-E/a20260926-01/gate0_raw_output.txt",
+  "execution_runs/I-12-E/a20260926-01/_build_evidence.py",
+  "execution_runs/I-12-E/a20260926-01/_verify.py",
+  "execution_runs/I-12-E/a20260926-01/_run_mutations.py",
+  "execution_runs/I-12-E/a20260926-01/evidence/I-12-E/accuracy_qualification.json",
+  "execution_runs/I-12-E/a20260926-01/evidence/I-12-E/limitations.md",
+  "execution_runs/I-12-E/a20260926-01/evidence/I-12-E/error_taxonomy.json",
+  "execution_runs/I-12-E/a20260926-01/evidence/I-12-E/independent_statistical_review.md",
+  "execution_runs/I-12-E/a20260926-01/verification.json",
+  "execution_runs/I-12-E/a20260926-01/handoff.json",
+  "execution_runs/I-12-E/a20260926-01/_mut/**（变异副本与红臂输出；原件字节不动）"
+ ],
+ "commands_executed": [
+  "gate0 自探（写/回读/删 + 封盘/store/B/C/D 证据/professional_approval 只读复哈希）——原始输出见 gate0_raw_output.txt",
+  "python _build_evidence.py（确定性生成四件证据；无网络、无 git）",
+  "python _verify.py --root <attempt|_mut/Qx>（只读校验；绿臂 2 次 + 红臂 5 次）",
+  "python _run_mutations.py（_mut/Q1..Q5 各施加一个变异后跑同一只读校验器）"
+ ],
+ "raw_exit_codes": {
+  "note": "本卡自描述 exit_code_legend：0=ALL_INVARIANTS_OK；1=harness 失败（缺件/坏 JSON）；2=无裁决（未使用）；3=具名 E1..E10 违例",
+  "GREEN_FIRST": 3,
+  "GREEN_AFTER_FIX": 0,
+  "Q1_verdict_supported": 3,
+  "Q2_cross_column_pass": 3,
+  "Q3_accuracy_claim": 3,
+  "Q4_open2_consumed": 3,
+  "Q5_taxonomy_gutted": 3,
+  "GREEN_FINAL": 0,
+  "raw_output_location": "_mut/Qx/verifier_output.txt（红臂逐字）；绿臂输出 = CHECK E1-E10 全 OK + RESULT ALL_INVARIANTS_OK；定稿绿臂 = final_green_output.txt"
+ },
+ "expected_exit_codes": {
+  "GREEN_AFTER_FIX": 0, "Q1": 3, "Q2": 3, "Q3": 3, "Q4": 3, "Q5": 3, "GREEN_FINAL": 0, "match": true
+ },
+ "written_files": {
+  "note": "sha256 于定稿时复算；handoff.json 自身为自指文件不记自身 sha（由父落定/复审复哈希）",
+  "oracle.md": {"bytes": 13495, "sha256": "f03e5223613907d5e85e22eb6f11eeb3bb9a9d74dbd06a8d61fe7f84b848a890"},
+  "gate0_raw_output.txt": {"bytes": 1606, "sha256": "4b8de6250f283fc808183ba56833e3aeb31b4c1cd6cd62910cebf9c19c160ecb"},
+  "_build_evidence.py": {"bytes": 23640, "sha256": "5ce62e6c495c4783699035bd1b9a2b15ed94f16c49bbecb44b6fe46501238349"},
+  "_verify.py": {"bytes": 16223, "sha256": "c2fbd1c1bb83613d42aed171528fdaac3f167541cb7f164abf8bb847d113ac75"},
+  "_run_mutations.py": {"bytes": 4386, "sha256": "ceb93d51ddcc01ce4169ba245cd2f7adbd1f8ef69747aebd38eddfba043650c0"},
+  "evidence/I-12-E/accuracy_qualification.json": {"bytes": 14468, "sha256": "52c1d0abd3e13e750d1db96b9f4f0c405da2769e7856435f765ecbfe2fe95b64"},
+  "evidence/I-12-E/limitations.md": {"bytes": 4907, "sha256": "154514b6b4e32e157674fb6d2f8d21d7d41e489b9333e90e0a70e4123ccb0709"},
+  "evidence/I-12-E/error_taxonomy.json": {"bytes": 4776, "sha256": "a1323bcf1592240b2e20f1e32315020610d4db3d3a24d572e441901b92302fef"},
+  "evidence/I-12-E/independent_statistical_review.md": {"bytes": 2489, "sha256": "a290ea6e41cefc04df8cf995af6312bf1ca1bf6f7e3b1937d75ec7ec46f3d272"},
+  "verification.json": {"bytes": 17701, "sha256": "d3377777f2139b1d3e3a9e866057aeab6700dd23f72c9e41b0c3fdaf4d01267c"},
+  "_mut/Q1..Q5/**": "变异副本 + 各臂 verifier_output.txt + mutation_results.json（原件字节不动）"
+ },
+ "open_questions": [
+  "6 项关键统计阈值（字段 10/11×4/12）须统计 + 行业 reviewer 双签并早于解封 ⇒ 本卡档位改判的前置",
+  "7 项未覆盖分层（小米 gap-U1/U2、行业、生命周期、微软 PBP/IC STOP、3 个无 case 段、model_version、dataset 外推）的处置归复审",
+  "secondary baseline 复利读法（I-12-C 遗留）影响 skill 分母口径",
+  "u-N4（MSFT sha 63/64）权威版本由谁裁决",
+  "目标期 FY2027 结束 + unblind 时序与一次性解封规则"
+ ],
+ "blocked_by": [
+  "卡文前提 0/2：冻结阈值未在结果前批准（双签在飞 / 6 项 PENDING）；全量结果不可见（scorable=0、结果封存）",
+  "params_released=false + 目标期 FY2027 未结束 + unseal gate 0/4（继承 I-12-B/C/D）",
+  "OPEN-2/OPEN-3/OPEN-5/OPEN-6 未解（不解除）",
+  "正式发布格 blocked：本工位无正式签名能力、不产生 ACCEPT"
+ ],
+ "evidence_paths": [
+  "execution_runs/I-12-E/a20260926-01/oracle.md（先冻结：卡文逐字 + 前提核验 + 上游 21 件 + 授权 + 红线 + E1-E10 + 变异 + 门0）",
+  "execution_runs/I-12-E/a20260926-01/gate0_raw_output.txt",
+  "execution_runs/I-12-E/a20260926-01/evidence/I-12-E/accuracy_qualification.json（前提 0/2 + 6 比较 inconclusive + 六键范围 + 7 未覆盖层 + 三栏 + STOP 登记）",
+  "execution_runs/I-12-E/a20260926-01/evidence/I-12-E/limitations.md（覆盖缺口/负结果/不确定性/三栏独立/停止条款/解除条件）",
+  "execution_runs/I-12-E/a20260926-01/evidence/I-12-E/error_taxonomy.json（六类 13 项带 source_ref + 6 个后续研究问题 + forecast_fixed=false）",
+  "execution_runs/I-12-E/a20260926-01/evidence/I-12-E/independent_statistical_review.md（未指派/未签署状态登记 + 复审清单；非签署）",
+  "execution_runs/I-12-E/a20260926-01/verification.json（前提核验 + 红绿 5 + 上游 21/21）",
+  "execution_runs/I-12-E/a20260926-01/_verify.py / _run_mutations.py / _mut/**"
+ ],
+ "reviewer_status": "pending — 统计与行业 reviewer 另派；实现者不自签（status=review_pending 是进入形态，不是验收、不是专业签署、不构成 ACCEPT）；落定走父直写"
+}

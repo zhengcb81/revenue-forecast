@@ -1,0 +1,35 @@
+﻿=== RF-STEP9-TRIAGE reproducer (WINDOWS local arm run2, repaired wiki) ===
+date_utc=2026-09-23T21:09:56Z
+file=tests/test_single_owner_guard.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+filing_sha=89c8bdb2cfba4d88720d005d0558f422957e8ade
+sandbox=C:\Users\郑曾波\AppData\Local\Temp\s9win\revenue-forecast (correct dir name)
+PYTHONPATH=C:\Users\郑曾波\AppData\Local\Temp\s9win\company-wiki\src
+cmd=python -m pytest tests/test_single_owner_guard.py -q
+..F                                                                      [100%]
+================================== FAILURES ===================================
+_ SingleOwnerGuardTests.test_only_canonical_client_may_use_subprocess_download_adapters _
+
+self = <test_single_owner_guard.SingleOwnerGuardTests testMethod=test_only_canonical_client_may_use_subprocess_download_adapters>
+
+    def test_only_canonical_client_may_use_subprocess_download_adapters(self) -> None:
+        for path in _python_files():
+            if path.name == CANONICAL_CLIENT or path.name in ORCHESTRATORS:
+                continue
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+>                   self.assertNotIn(
+                        "subprocess",
+                        {alias.name.split(".")[0] for alias in node.names},
+                        f"{path.name} imports subprocess (second download owner)",
+                    )
+E                   AssertionError: 'subprocess' unexpectedly found in {'subprocess'} : revenue_core.py imports subprocess (second download owner)
+
+tests\test_single_owner_guard.py:42: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_single_owner_guard.py::SingleOwnerGuardTests::test_only_canonical_client_may_use_subprocess_download_adapters
+1 failed, 2 passed in 9.14s
+
+PYTEST_RC=1

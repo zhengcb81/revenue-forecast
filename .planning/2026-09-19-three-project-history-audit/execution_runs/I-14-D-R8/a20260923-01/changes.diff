@@ -1,0 +1,152 @@
+# WC-1 / I-14-D-R8 a20260923-01 -- changes.diff
+# ONLY the code fixes the WC-1 work card demanded (REGISTRY-CLOSURE decision.md
+# L84-85), 2 code changes x 2 delivery targets, nothing else:
+#
+# K1 (REM-06 / WC-1 1): key_is_credential strips a trailing digit run from each
+#   split component before the atom-table lookup -- token2/secret2/password2/
+#   api_key2 become credential keys through the SAME split rules as the plain
+#   family; a pure-digit component is left as-is.  Pure ADDITION to the accepted
+#   key set: bidirectional sweep old-minus-new = [] over the frozen 350-key domain
+#   (evidence/key_domain_sweep.json), 4 untouched counter rows (monkey2/oauth2/
+#   secretary2/tokenizer2) stay untouched on every tree (evidence/*_rule*.json
+#   touched_but_should_not_be), MUT-A kills exactly the 5 REM-06 rows
+#   (evidence/mutA_rule_*.json).
+# K2 (F-REV-R3-05 / WC-1 2): the after-break value may start with one of the six
+#   value delimiters (, ; & | " '); quoted alternatives stay FIRST so terminated
+#   quoted values match byte-identically.  Scope frozen in oracle.md 1/4a: after
+#   the break run only, delimiter IMMEDIATELY followed by the token; single-line
+#   `Authorization: Bot,<secret>` unchanged (row N29).  Bidirectional sweep over
+#   the 95 printable ASCII: old-minus-new = [], new-minus-old = exactly those six
+#   (evidence/value_start_sweep.json); MUT-B kills exactly the 6 form rows + the
+#   2 over-redaction pricing rows (evidence/mutB_rule_*.json).
+#
+# Matrix: RED on r8_base = 11 oracle + 13 rule failures, exactly the frozen sets;
+# GREEN on r8_fixed = oracle 61/61 rc 0 (verdict pass) + rule 113 rows
+# fidelity_ok true, registered_open 7/7 (rule rc stays 3 -- negative BY DESIGN
+# since r3; no rc 0 claim for the rule table).
+# Production target apply-check: evidence/production_apply.json (edits land 1:1,
+# py_compile ok, both instruments GREEN on the grafted %TEMP% tree).
+#
+# Application: standard landing only (later promotion/repair batch, owner's
+# decision).  ZERO bytes were written to any production/sealed tree by this card
+# (sources read-only; delivery via this diff only).
+--- a/iso/product_narrow_r6/src/company_wiki/source_catalog/observability.py
++++ b/iso/product_narrow_r6/src/company_wiki/source_catalog/observability.py
+@@ -238,6 +238,8 @@
+ })
+ 
+ _KEY_COMPONENT_SPLIT = re.compile(r"[_-]+")
++# r8 / REM-06: trailing digit run of a key component -- `token2` -> `token`.
++_KEY_TRAILING_DIGITS = re.compile(r"\d+$")
+ _KEY_CHARS = frozenset(
+     "abcdefghijklmnopqrstuvwxyz"
+     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+@@ -252,10 +254,24 @@
+ 
+ 
+ def key_is_credential(key: str) -> bool:
+-    """True when *key* (as written in the text) is a credential-shaped name."""
++    """True when *key* (as written in the text) is a credential-shaped name.
++
++    r8 / REM-06 (WC-1 1): a component may carry a trailing NUMERIC suffix --
++    ``token2``/``secret2``/``password2``/``api_key2`` -- the way env dumps number
++    their slots.  Each split component has its trailing digit run stripped before
++    the atom-table lookup, so the digit family resolves through the SAME split
++    rules as the plain family (single atoms and adjacent pairs alike); a
++    component that is nothing but digits is left as-is.  Every key the pre-r8
++    predicate accepted is still accepted (a pure-letter component is its own
++    normalization), so the predicate only ADDS the digit-suffixed family --
++    bidirectional sweep evidence in execution_runs/I-14-D-R8/a20260923-01/
++    evidence/key_domain_sweep.json (old-minus-new empty, new-minus-old exactly
++    the digit-suffixed credential family within the frozen domain).
++    """
+     parts = [part for part in _KEY_COMPONENT_SPLIT.split(key.lower()) if part]
+     if not parts:
+         return False
++    parts = [_KEY_TRAILING_DIGITS.sub("", part) or part for part in parts]
+     if any(part in _SINGLE_ATOMS for part in parts):
+         return True
+     return any(
+@@ -327,9 +343,21 @@
+ # names, `r3_fix_record.md`, was never written and is deliberately NOT substituted
+ # for; the reproduction is where the substance lives.
+ _AUTH_PREBREAK_TOKEN = r"[^\s]+"
++# r8 / F-REV-R3-05 (WC-1 2): after the break run the VALUE may now START with a
++# value delimiter -- the six forms `,<secret>` `;<secret>` `&<secret>`
++# `|<secret>` `"<secret>` `'<secret>` (reviewer_report_r3.md F-REV-R3-05, all
++# six measured in the clear).  The quoted alternatives are tried FIRST, so a
++# TERMINATED quoted value still matches whole and byte-identically; the optional
++# `[,;&|"' ]*` prefix is consumed as part of the redacted value -- fail-closed
++# direction, priced by the over-auth-break-* rows (`Authorization: Bearer` +
++# newline + `,doc=17` loses doc=17 exactly like the registered F-REV-R2-02 cost).
++# Scope (frozen in oracle.md 1/4a): ONLY after the break run -- single-line
++# `Authorization: Bot,<secret>` keeps its bounded behaviour (oracle N29) -- and
++# only when the delimiter is IMMEDIATELY followed by the token (delimiter+space
++# stays open); value-start `\r \v \f` after the break stays outside this row set.
+ _AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_PREBREAK_TOKEN + r")[ \t]*"
+                       r"(?:(?:\r?\n)[ \t]*)+"
+-                      r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r\n]*\"|'[^'\r\n]*')")
++                      r"(?:\"[^\"\r\n]*\"|'[^'\r\n]*'|[,;&|\"']*" + _AUTH_BARE_VALUE + r"+)")
+ _AUTH_PATTERN = re.compile(
+     r"(?i)(?P<key>" + _LEFT_ANCHOR + r"authorization\s*[:=]\s*|"
+     + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_SCHEME_SPLIT + r"|" + _AUTH_BARE_VALUE + r")"
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -238,6 +238,8 @@
+ })
+ 
+ _KEY_COMPONENT_SPLIT = re.compile(r"[_-]+")
++# r8 / REM-06: trailing digit run of a key component -- `token2` -> `token`.
++_KEY_TRAILING_DIGITS = re.compile(r"\d+$")
+ _KEY_CHARS = frozenset(
+     "abcdefghijklmnopqrstuvwxyz"
+     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+@@ -252,10 +254,24 @@
+ 
+ 
+ def key_is_credential(key: str) -> bool:
+-    """True when *key* (as written in the text) is a credential-shaped name."""
++    """True when *key* (as written in the text) is a credential-shaped name.
++
++    r8 / REM-06 (WC-1 1): a component may carry a trailing NUMERIC suffix --
++    ``token2``/``secret2``/``password2``/``api_key2`` -- the way env dumps number
++    their slots.  Each split component has its trailing digit run stripped before
++    the atom-table lookup, so the digit family resolves through the SAME split
++    rules as the plain family (single atoms and adjacent pairs alike); a
++    component that is nothing but digits is left as-is.  Every key the pre-r8
++    predicate accepted is still accepted (a pure-letter component is its own
++    normalization), so the predicate only ADDS the digit-suffixed family --
++    bidirectional sweep evidence in execution_runs/I-14-D-R8/a20260923-01/
++    evidence/key_domain_sweep.json (old-minus-new empty, new-minus-old exactly
++    the digit-suffixed credential family within the frozen domain).
++    """
+     parts = [part for part in _KEY_COMPONENT_SPLIT.split(key.lower()) if part]
+     if not parts:
+         return False
++    parts = [_KEY_TRAILING_DIGITS.sub("", part) or part for part in parts]
+     if any(part in _SINGLE_ATOMS for part in parts):
+         return True
+     return any(
+@@ -327,9 +343,21 @@
+ # names, `r3_fix_record.md`, was never written and is deliberately NOT substituted
+ # for; the reproduction is where the substance lives.
+ _AUTH_PREBREAK_TOKEN = r"[^\s]+"
++# r8 / F-REV-R3-05 (WC-1 2): after the break run the VALUE may now START with a
++# value delimiter -- the six forms `,<secret>` `;<secret>` `&<secret>`
++# `|<secret>` `"<secret>` `'<secret>` (reviewer_report_r3.md F-REV-R3-05, all
++# six measured in the clear).  The quoted alternatives are tried FIRST, so a
++# TERMINATED quoted value still matches whole and byte-identically; the optional
++# `[,;&|"' ]*` prefix is consumed as part of the redacted value -- fail-closed
++# direction, priced by the over-auth-break-* rows (`Authorization: Bearer` +
++# newline + `,doc=17` loses doc=17 exactly like the registered F-REV-R2-02 cost).
++# Scope (frozen in oracle.md 1/4a): ONLY after the break run -- single-line
++# `Authorization: Bot,<secret>` keeps its bounded behaviour (oracle N29) -- and
++# only when the delimiter is IMMEDIATELY followed by the token (delimiter+space
++# stays open); value-start `\r \v \f` after the break stays outside this row set.
+ _AUTH_SCHEME_SPLIT = (r"(?:" + _AUTH_PREBREAK_TOKEN + r")[ \t]*"
+                       r"(?:(?:\r?\n)[ \t]*)+"
+-                      r"(?:" + _AUTH_BARE_VALUE + r"+|\"[^\"\r\n]*\"|'[^'\r\n]*')")
++                      r"(?:\"[^\"\r\n]*\"|'[^'\r\n]*'|[,;&|\"']*" + _AUTH_BARE_VALUE + r"+)")
+ _AUTH_PATTERN = re.compile(
+     r"(?i)(?P<key>" + _LEFT_ANCHOR + r"authorization\s*[:=]\s*|"
+     + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_SCHEME_SPLIT + r"|" + _AUTH_BARE_VALUE + r")"

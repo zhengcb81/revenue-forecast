@@ -1,0 +1,246 @@
+# I10A-F2-FIX a20260923-01 changes.diff
+#
+# SCOPE: unified diff of iso/rf (the isolation copy) against the production
+# PRE-IMAGE for exactly the files this card changes. RF production is READ-ONLY:
+# `git diff HEAD --name-only` non-.planning paths = 0, and the four oracle
+# anchors still hash to their frozen values (see evidence/anchor_check.json).
+#
+# CLASSIFICATION (register 一一一 / oracle section 5):
+#   [PRODUCT FIX SURFACE]     scripts/forecast/{calc,segments}.py - F-I10A-2
+#   [TEST-PLANE FIXTURE]      tests/* - G1/T1/T2/T3 dispositions (explicit 0.0
+#                             optional drivers + golden hash refresh); disclosed
+#                             per file, no assertion deleted, no skip/xfail added
+#   excluded (NOT deliverable): .mypy_cache/**, __pycache__/**, .pytest_cache/**,
+#                             pytest-cache-files-*/ and pytest-of-*/ (test-runner
+#                             litter), artifacts/** (publication log appended by
+#                             run_forecast) and assurance/runs/** (scheduled daily/
+#                             weekly run manifests - production's copy was rewritten
+#                             mid-attempt by an external scheduler, not by this card).
+#                             Every excluded path that actually differs is listed in
+#                             evidence/diff_manifest.json under
+#                             excluded_cache_or_volatile.
+#
+# generated_at_local: 2026-09-24T22:17:47
+# changed_files: 8  excluded_cache_or_volatile: 400
+
+# [PRODUCT FIX SURFACE] scripts/forecast/calc.py  (14978 -> 15969 bytes, sha256 bc4f33d92738029a -> 9eecf260bfb22f1a)
+--- a/scripts/forecast/calc.py
++++ b/scripts/forecast/calc.py
+@@ -130,10 +130,25 @@
+     years: list[int],
+     scenario: str,
+     model: str,
+-    default: float = 0.0,
++    default: float | None = None,
+ ) -> list[float]:
++    # --- I10A-F2-FIX (F-I10A-2): entry-layer 省缺即抛 ---------------------
++    # ``default`` is a SENTINEL, never a blanket value: ``None`` means the
++    # registry spec (``spec.defaults``) carries NO explicit default for this
++    # optional driver, so an omitted driver must be REFUSED here with the
++    # exact contract of the I-10-B registry layer (model_registry.py:408-413
++    # "missing driver for {model}: {driver} has no explicit default").
++    # Before this fix the entry layer silently filled 0.0, encoding "absent"
++    # and "not found" as the same input and masking the registry guard on
++    # every document-driven path (I-10-A F-I10A-2: mut_omit_optional 3/4
++    # survived).  An explicitly supplied 0.0 remains legal — the fix forbids
++    # IMPLICIT filling, not the value 0 (I-10-B R-B1-N3).
+     if driver not in driver_ids:
+-        return [default] * len(years)
++        if default is None:
++            raise ForecastInputError(
++                f"missing driver for {model}: {driver} has no explicit default"
++            )
++        return [float(default)] * len(years)
+     return resolve_driver_series(
+         parameter_index, driver_ids[driver], years, driver, scenario, model
+     )
+
+# [PRODUCT FIX SURFACE] scripts/forecast/segments.py  (27697 -> 27966 bytes, sha256 95555509bc8a30af -> cd6edee661bf5042)
+--- a/scripts/forecast/segments.py
++++ b/scripts/forecast/segments.py
+@@ -99,6 +99,10 @@
+             parameter_index, driver_ids[driver], years, driver, scenario, model
+         )
+     for driver in spec["optional"]:
++        # --- I10A-F2-FIX (F-I10A-2): pass ONLY the declared spec.defaults
++        # entry (None when the registry carries no explicit default).  The
++        # former ".get(driver, 0.0)" blanket fallback here silently 0-filled
++        # omitted optional drivers at forecast entry.
+         drivers[driver] = _optional_series(
+             driver_ids,
+             driver,
+@@ -106,7 +110,7 @@
+             years,
+             scenario,
+             model,
+-            float(spec.get("defaults", {}).get(driver, 0.0)),
++            spec.get("defaults", {}).get(driver),
+         )
+ 
+     try:
+
+# [TEST-PLANE FIXTURE] tests/golden_behavior_hashes.json  (408 -> 408 bytes, sha256 4e68b98cc16027bc -> 4b0ad037ea5beb6f)
+--- a/tests/golden_behavior_hashes.json
++++ b/tests/golden_behavior_hashes.json
+@@ -1,7 +1,7 @@
+ {
+-  "backlog": "87ae08edb7218117f9984e685d2cd72e88809a3b544fc80ccd985a76d37c82a7",
+-  "bank": "b8c4b4c7a7ddfbed6433b96b215fe89a30d11516399817ff6899eb150ca52ab0",
+-  "capacity": "b664ad2194c7e0da39fc5c6e6d66b6d97be6d9186ba03c48b30ff8c29a938f7a",
+-  "subscriber": "57f7889569545772c327345992a10df173e443fd48225b3264d5ad0247e668ff",
+-  "volume": "2f9337fdf5986ea8b6db98196d660e3d8ece44a6f675869e7959c1042e0abd38"
++  "backlog": "9425368c9f73836495c4bd8554d27a859c9f9c87b16c409da595d8514a6d2369",
++  "bank": "485ee31c779e08c523382491d24533097ab9ef4c3fc6c3dc7753a970acfea639",
++  "capacity": "03775a292a7251c2187eaddfc23f964c1dffe530b27e217eea7ac97ee4347561",
++  "subscriber": "66648837df7d36aaa15b10abb86d26967b295e628bdd00519559998baa54de02",
++  "volume": "1b2eb66c1156f79cecc67593a59985be436d62648c7779128eeaf5785a76c3ed"
+ }
+
+# [TEST-PLANE FIXTURE] tests/test_golden_behavior_lock.py  (7608 -> 8268 bytes, sha256 b127178442ec9625 -> 262a304f11806003)
+--- a/tests/test_golden_behavior_lock.py
++++ b/tests/test_golden_behavior_lock.py
+@@ -35,12 +35,18 @@
+ 
+ MODEL_SPECS = {
+     # (model, {driver: (dimension, base_value)})
+-    "volume": ("resource", {"saleable_volume": ("quantity", 100.0), "realized_price": ("revenue_per_unit", 2.0)}),
+-    "capacity": ("capacity_utilization", {"capacity": ("quantity", 100.0), "utilization": ("ratio", 0.8), "yield": ("ratio", 0.9), "unit_revenue": ("revenue_per_unit", 2.0)}),
+-    "subscriber": ("subscription", {"average_customers": ("quantity", 30.0), "revenue_per_customer": ("revenue_per_unit", 2.0)}),
+-    "backlog": ("project_backlog", {"opening_backlog": ("backlog", 50.0), "bookings": ("backlog", 20.0), "cancellations": ("backlog", 5.0), "contract_changes": ("backlog", 2.0), "closing_backlog": ("backlog", 45.0)}),
++    # I10A-F2-FIX (F-I10A-2): optional drivers without a declared
++    # spec.defaults (e.g. other_revenue, usage_revenue,
++    # backlog_remeasurements, reserve_revisions) are supplied EXPLICITLY at
++    # 0.0 — the entry layer now refuses to 0-fill their omission.  Values are
++    # neutral by formula, so every pinned revenue series stays identical
++    # (only driver_parameter_ids metadata changes => deliberate hash refresh).
++    "volume": ("resource", {"saleable_volume": ("quantity", 100.0), "realized_price": ("revenue_per_unit", 2.0), "other_revenue": ("revenue", 0.0)}),
++    "capacity": ("capacity_utilization", {"capacity": ("quantity", 100.0), "utilization": ("ratio", 0.8), "yield": ("ratio", 0.9), "unit_revenue": ("revenue_per_unit", 2.0), "other_revenue": ("revenue", 0.0)}),
++    "subscriber": ("subscription", {"average_customers": ("quantity", 30.0), "revenue_per_customer": ("revenue_per_unit", 2.0), "usage_revenue": ("revenue", 0.0)}),
++    "backlog": ("project_backlog", {"opening_backlog": ("backlog", 50.0), "bookings": ("backlog", 20.0), "cancellations": ("backlog", 5.0), "contract_changes": ("backlog", 2.0), "closing_backlog": ("backlog", 45.0), "backlog_remeasurements": ("backlog", 0.0)}),
+ 
+-    "bank": ("reserve_depletion", {"opening_reserves": ("reserve_volume", 100.0), "additions": ("reserve_volume", 10.0), "depletion": ("reserve_volume", 20.0), "closing_reserves": ("reserve_volume", 90.0), "recovery_rate": ("ratio", 0.9), "realized_price": ("revenue_per_unit", 2.0)}),
++    "bank": ("reserve_depletion", {"opening_reserves": ("reserve_volume", 100.0), "additions": ("reserve_volume", 10.0), "depletion": ("reserve_volume", 20.0), "closing_reserves": ("reserve_volume", 90.0), "recovery_rate": ("ratio", 0.9), "realized_price": ("revenue_per_unit", 2.0), "other_revenue": ("revenue", 0.0), "reserve_revisions": ("reserve_volume", 0.0)}),
+ }
+ 
+ 
+
+# [TEST-PLANE FIXTURE] tests/test_industry_end_to_end.py  (15216 -> 16117 bytes, sha256 a9363403a60097c0 -> a5c104c6f29115d9)
+--- a/tests/test_industry_end_to_end.py
++++ b/tests/test_industry_end_to_end.py
+@@ -110,6 +110,12 @@
+                     drivers["closing_reserves"][i] = (
+                         drivers["opening_reserves"][i] + drivers["additions"][i] - drivers["depletion"][i]
+                     )
++        # I10A-F2-FIX (F-I10A-2): carry an explicit 0.0 series for optional
++        # drivers with no declared spec.defaults — the entry layer now
++        # refuses their omission instead of silently 0-filling it.
++        for _opt in MODEL_SPECS[model]["optional"]:
++            if _opt not in drivers and _opt not in MODEL_SPECS[model].get("defaults", {}):
++                drivers[_opt] = [0.0] * len(years)
+         driver_ids = {}
+         for driver, values in drivers.items():
+             driver_ids[driver] = []
+@@ -303,6 +309,12 @@
+             data["parameters"].append(parameter)
+             ids.append(parameter["parameter_id"])
+         data["segments"][0]["scenarios"]["low"]["driver_parameter_ids"]["franchise_system_sales"] = ids
++        # I10A-F2-FIX (F-I10A-2): model_document() now supplies every optional
++        # driver explicitly (0.0), so the "one member of the pair without the
++        # other" precondition has to be constructed explicitly — drop the partner
++        # from this scenario — instead of relying on the old implicit omission.
++        # The rule under test and its assertion are unchanged.
++        data["segments"][0]["scenarios"]["low"]["driver_parameter_ids"].pop("recognized_fee_rate", None)
+         finalize_contract(data)
+         with self.assertRaisesRegex(ForecastInputError, "requires franchise_system_sales and recognized_fee_rate together"):
+             run_forecast(data)
+
+# [TEST-PLANE FIXTURE] tests/test_lifecycle_forecasts.py  (10708 -> 11612 bytes, sha256 7492d8c07c5b91be -> 031d70408d697d15)
+--- a/tests/test_lifecycle_forecasts.py
++++ b/tests/test_lifecycle_forecasts.py
+@@ -15,7 +15,7 @@
+ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+ 
+ from model_extensions import EXTENSION_OPENING_BALANCES  # noqa: E402
+-from revenue_core import MODEL_DRIVER_DIMENSIONS, ForecastInputError, run_forecast  # noqa: E402
++from revenue_core import MODEL_DRIVER_DIMENSIONS, MODEL_SPECS, ForecastInputError, run_forecast  # noqa: E402
+ from revenue_report import validate_published_forecast  # noqa: E402
+ from test_data_contract import apply_parameter_contract, finalize_contract, research_coverage  # noqa: E402
+ from test_industry_end_to_end import model_document  # noqa: E402
+@@ -65,6 +65,21 @@
+                     parameter_id = f"{prefix}_{driver}_{year}_{scenario}"
+                     _add_parameter(data, parameter_id, value, MODEL_DRIVER_DIMENSIONS[model][driver], year, scenario)
+                     ids[driver].append(parameter_id)
++            # I10A-F2-FIX (F-I10A-2): this builder rebuilds the segments itself, so
++            # it must carry an explicit 0.0 series for every optional driver that has
++            # no declared spec.defaults — the entry layer now refuses their omission
++            # instead of silently 0-filling it (0.0 is neutral by formula).
++            for _opt in MODEL_SPECS[model]["optional"]:
++                if _opt in ids or _opt in MODEL_SPECS[model].get("defaults", {}):
++                    continue
++                ids[_opt] = []
++                for year in data["forecast_years"]:
++                    parameter_id = f"{prefix}_{_opt}_{year}_{scenario}"
++                    _add_parameter(
++                        data, parameter_id, 0.0,
++                        MODEL_DRIVER_DIMENSIONS[model][_opt], year, scenario,
++                    )
++                    ids[_opt].append(parameter_id)
+             segment["scenarios"][scenario] = {
+                 "model": model, "driver_parameter_ids": ids,
+                 "rationale": f"Synthetic {scenario} economic conditions; no real-world forecast asserted.",
+
+# [TEST-PLANE FIXTURE] tests/test_models.py  (8125 -> 8813 bytes, sha256 0ea8c5a351d2c946 -> 5b02c44ab3d1c110)
+--- a/tests/test_models.py
++++ b/tests/test_models.py
+@@ -15,6 +15,21 @@
+ 
+ 
+ def make_parameters(model: str, driver_values: dict[str, list[float]], scenario: str = "base") -> tuple[dict, dict]:
++    # I10A-F2-FIX (F-I10A-2): the forecast entry layer now refuses omitted
++    # optional drivers that carry no declared spec.defaults (省缺即抛, same
++    # contract as the I-10-B registry layer).  Fixtures therefore supply an
++    # explicit 0.0 series for exactly those drivers — presence is explicit,
++    # the value stays neutral by formula, and nothing is silently 0-filled.
++    _spec = MODEL_SPECS[model]
++    _declared = _spec.get("defaults", {})
++    driver_values = {
++        **driver_values,
++        **{
++            driver: [0.0] * len(YEARS)
++            for driver in _spec["optional"]
++            if driver not in driver_values and driver not in _declared
++        },
++    }
+     parameters = {}
+     ids = {}
+     for driver, values in driver_values.items():
+
+# [TEST-PLANE FIXTURE] tests/test_zr709_zijin_journey.py  (35451 -> 36256 bytes, sha256 2929461b40625dcd -> d59af01aed8aa9be)
+--- a/tests/test_zr709_zijin_journey.py
++++ b/tests/test_zr709_zijin_journey.py
+@@ -324,6 +324,24 @@
+                     )
+                     other_ids.append(other_id)
+                 drivers["other_revenue"] = other_ids
++            else:
++                # I10A-F2-FIX (F-I10A-2): other_revenue has no declared
++                # spec.defaults, so its omission is now refused at the entry
++                # layer — carry an explicit 0.0 series (neutral by formula).
++                other_ids = []
++                for year in YEARS:
++                    other_id = f"{segment}_{scenario}_{year}_other"
++                    _add_driver(
++                        data,
++                        other_id,
++                        0.0,
++                        "revenue",
++                        scenario,
++                        year,
++                        "no other segment revenue (explicit zero, F-I10A-2)",
++                    )
++                    other_ids.append(other_id)
++                drivers["other_revenue"] = other_ids
+             driver_ids[segment][scenario] = drivers
+ 
+     trading_ids: dict[str, list[str]] = {}
+

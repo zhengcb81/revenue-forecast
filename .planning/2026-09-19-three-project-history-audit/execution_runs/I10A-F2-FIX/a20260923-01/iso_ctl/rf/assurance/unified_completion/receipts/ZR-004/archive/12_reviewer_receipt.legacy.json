@@ -1,0 +1,76 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "978fd32b2fdf57da5d7c806bc606ea8b1053f86c",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "393d2752a1dea7e789883a2d3de693eacdebf600d4f47a3e3b29f818eea720dd",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
+      "exit_code": 0,
+      "result": "978fd32b2fdf57da5d7c806bc606ea8b1053f86c (branch fcap)"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast show --stat 978fd32b2fdf57da5d7c806bc606ea8b1053f86c",
+      "exit_code": 0,
+      "result": "3 files changed, 128 insertions(+), 6 deletions(-): assurance/unified_completion/receipts/ZR-004/00_wu_card.md, receipts/ZR-004/11_implementer_receipt.json, assurance/unified_completion/state.json — no code, no legacy artifact changes"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli legacy-verify",
+      "exit_code": 0,
+      "result": "OK: legacy disposition matches the frozen tables exactly (71 FC + 10 waves, valid)"
+    },
+    {
+      "command": "Get-FileHash assurance/unified_completion/legacy/legacy_disposition.json -Algorithm SHA256",
+      "exit_code": 0,
+      "result": "22B881238F3916E4FEE209647348D84638A2CDA0C21530878CBCE5C9F27C421E (matches card/receipt)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli manifest-verify",
+      "exit_code": 0,
+      "result": "OK: all frozen inputs re-verified offline (old-plan file frozen hashes re-verified — old plan not modified)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-004/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: receipt assurance/unified_completion/receipts/ZR-004/11_implementer_receipt.json is canonical and well-formed; canonical_hash present (572898907bdbeb0cc004a1df308f10357a3dd2e47970325bad105bf33ea77d24); result_triplet.revenue == c43586ae0de1762a4067ad77f0b499461d256125"
+    },
+    {
+      "command": "python -B -c fc_entries successor completeness check over legacy_disposition.json",
+      "exit_code": 0,
+      "result": "71 fc_entries; 0 entries missing 'successors' key; 0 entries with empty successors; class counts P=5/I=31/C=26/S=9 (sum 71, matches card pending=5 keep / implemented_not_independently_verified=31 reopen / contradicted_by_current_behavior=26 superseded / stale_evidence=9 superseded / cancel=0); waves=10; closure_items=5"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli state-show",
+      "exit_code": 0,
+      "result": "units.ZR-004.status=independent_review; current_next=ZR-004; ZR-001/ZR-002/ZR-003 all accepted"
+    },
+    {
+      "command": "Get-FileHash assurance/unified_completion/receipts/ZR-004/11_implementer_receipt.json -Algorithm SHA256",
+      "exit_code": 0,
+      "result": "3265A74F14BA2E26D4DA4253642CF6510EA8683A5715B446F9FEC703D516E4A9 (= reviewed_object_sha256)"
+    }
+  ],
+  "created_at_utc": "2026-08-14T04:30:20+00:00",
+  "findings": [
+    {
+      "detail": "11_implementer_receipt.json base_triplet.revenue is 7716b876f503e980932d8873cdaec393ced3274b (product-artifact triplet), while this reviewer anchors base/result_triplet to the git three-repo HEAD binding (revenue 978fd32b...) per task spec; result_triplet.revenue c43586ae0de1762a4067ad77f0b499461d256125 in the implementer receipt is verified present. No impact on verdict.",
+      "id": "ZR004-REV-001",
+      "severity": "info",
+      "title": "Implementer receipt internal base_triplet differs from git-anchored triplet"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-004 shared-evidence review",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "978fd32b2fdf57da5d7c806bc606ea8b1053f86c",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "reviewed_object_sha256": "3265a74f14ba2e26d4da4253642cf6510ea8683a5715b446f9fec703d516e4a9",
+  "reviewer": "reviewer-zr004-independent",
+  "schema_version": 1,
+  "unit": "ZR-004",
+  "verdict": "accepted"
+}

@@ -1,0 +1,272 @@
+{
+  "artifact": "selected_model_manifest",
+  "card": "I-10-A",
+  "attempt_id": "a20260923-01",
+  "frozen_before": "first judged run (see evidence/I-10-A/run_log.jsonl; oracle.md §0 cites this manifest as frozen input)",
+  "frozen_scope_rule": "卡文前提2：先冻结本次实际采用的公司/分部/模型清单；只要求这些模型完成企业披露适配，不要求未使用模型全部适配。未使用模型标 not_selected，不宣称企业适配通过。",
+  "companies_source": "I-07-B a20260923-01 company materials (sample_manifest.json frozen identities, as_of 2026-09-18) + the three readable sources re-hashed at binding (evidence/I-10-A/deps/input_hashes.json)",
+  "carries_inherited_from_I_07_B": {
+    "three_verbatim_declarations": [
+      "三公司仅来源准备通过，仍未授予正式预测资格。",
+      "缺一市场/真实路径不得总体写三市场通过。",
+      "恢复：保留已取得raw，只回退当前隔离变更。"
+    ],
+    "overall_three_market_pass": false,
+    "overall_statement": "NEGATIVE",
+    "zero_RevenueSourceRecord_measured_fact": true,
+    "carried_findings": ["F1", "F2", "F3"],
+    "note": "本清单只冻结披露适配范围；不构成来源链资格（I-07-B 实测 zero-RevenueSourceRecord，来源链资格未获得）"
+  },
+
+  "companies": [
+    {
+      "company_id": "CN-ZIJIN-2025",
+      "company": "紫金矿业集团股份有限公司 (Zijin Mining Group Co., Ltd.)",
+      "market": "CN",
+      "fiscal_period": "FY2025 (calendar 2025, closed)",
+      "information_date_as_of": "2026-09-18",
+      "primary_source": {
+        "doc": "2025年年度报告",
+        "path": "CW/companies/紫金矿业/raw/financial_reports/annual/2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf",
+        "sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+        "published_at": "2026-03-20",
+        "available_at": "2026-03-20",
+        "readable": true
+      },
+      "accounting_framework": "中国企业会计准则 (CAS)，人民币元；收入于客户取得商品控制权时点确认（p.155 收入确认政策；p.254 矿产品单项履约义务时点确认）",
+      "report_segments_per_note": ["矿产品分部", "冶炼产品分部", "贸易分部", "其他分部"],
+      "segments": [
+        {
+          "segment": "矿产品分部",
+          "lifecycle": "成长-扩张期矿业（新并购+技改投产驱动量增；价格随行就市）",
+          "accounting_scope": "矿山产铜/金/锌/银/铁精矿等自产矿产品对外及对内销售（分部收入含内部销售，p.326）",
+          "status": "adopted",
+          "adopted_models": [
+            {
+              "case_id": "ZJ-MIN-M09",
+              "model_id": "resource",
+              "m_card": "M09",
+              "adaptation_scope": "8 条主要矿产品线逐线单实例（金锭/金精矿/铜精矿/电积铜/电解铜/矿山产锌/矿山产银/铁精矿），FY2025；主要产品表外矿产品（锂/钼/铅精矿/钴等）不入本实例范围（E 段范围残差列示）",
+              "reason": "分部收入机制=自产矿产品销售量×实售价（M09 公式 revenue=saleable_volume×realized_price+other_revenue）；p.44 销售详情表逐线披露销售数量与不含税单价，p.45 分产品收入同口径可核",
+              "DE_status": "D/E executed this attempt; reviewer signature PENDING (independent review follows)"
+            }
+          ],
+          "not_adopted_models_note": "M10 reserve_depletion（储量消耗桥）为该分部的备选桥模型，本轮 not_selected：E 段对账不需要储量口径，且储量/回收率披露口径未在本轮冻结（若 I-11-B 后续采用需另行适配）"
+        },
+        {
+          "segment": "冶炼产品分部",
+          "lifecycle": "成熟加工（产能利用率驱动；加工费定价）",
+          "accounting_scope": "冶炼产铜/锌、冶炼加工金银等冶炼产品销售（p.325 产品清单含硫酸、电池级碳酸锂等）",
+          "status": "adopted",
+          "adopted_models": [
+            {
+              "case_id": "ZJ-SMT-M09",
+              "model_id": "resource",
+              "m_card": "M09",
+              "adaptation_scope": "3 条主要冶炼产品线逐线单实例（冶炼加工金/冶炼产铜/冶炼产锌），FY2025；硫酸/电池级碳酸锂等表外产品入 E 段范围残差",
+              "reason": "同为量×实售价机制；p.44 表披露销售数量与不含税单价（冶炼加工金含贸易金口径，见 accounting_decision AD-5）",
+              "DE_status": "D/E executed this attempt; reviewer signature PENDING"
+            }
+          ]
+        },
+        {
+          "segment": "贸易分部",
+          "lifecycle": "成熟商贸",
+          "accounting_scope": "阴极铜等大宗商品贸易（总额法/净额法判定见 p.301 同类政策，本分部为购销）",
+          "status": "not_selected",
+          "not_selected_models": "ALL 31",
+          "reason": "贸易收入为大宗商品购销，独立披露中无量价经营数据分解可完成非循环 E 段复建；M02 direct_revenue 的 revenue[t]=direct_revenue[t] 不构成独立复建。本轮不采用任何模型；如后续采用须补充购销量价披露口径"
+        },
+        {
+          "segment": "其他分部",
+          "lifecycle": "混合（环保工程/铜加工等）",
+          "accounting_scope": "环保收入、铜管铜板带、氰化亚金钾等（p.325）",
+          "status": "not_selected",
+          "not_selected_models": "ALL 31",
+          "reason": "机制混合不可识别（工程业务按时段确认、加工品按销量）；single-model 不可适配，需按收入流拆分后另卡适配；special_review 未决（记 accounting_decision AD-7）"
+        }
+      ]
+    },
+    {
+      "company_id": "HK-XIAOMI-2025",
+      "company": "小米集團－Ｗ (Xiaomi Corporation)",
+      "market": "HK",
+      "fiscal_period": "FY2025 (calendar 2025, closed)",
+      "information_date_as_of": "2026-09-18",
+      "primary_source": {
+        "doc": "2025年度報告",
+        "path": "CW/companies/小米集團－Ｗ/raw/financial_reports/annual/2026-04-28_hkexnews_12127452_2025年度報告.pdf",
+        "sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+        "published_at": "2026-04-28",
+        "available_at": "2026-04-28",
+        "readable": true,
+        "text_layer_note": "内嵌 HYQiHei 子集字体无 ToUnicode；本 attempt 以 PDF 自带 HYQiHei-FES cmap（28,873 字形）反向解码全文（0 unmapped），见 source_extracts/HK-XIAOMI-2025_decoded.txt + manifest"
+      },
+      "accounting_framework": "IFRS（國際財務報告準則），人民币千元；收入於向客戶轉移貨物控制權時（即客戶驗收產品時）確認，大部分收入於某一時間點確認（p.300、p.337 附註5）；總額/淨額按主理人-代理人判定（p.301）",
+      "report_segments_per_note": ["手機×AIoT", "智能電動汽車及AI等創新業務"],
+      "segments": [
+        {
+          "segment": "智能手機（手機×AIoT 分部產品線）",
+          "lifecycle": "成熟硬件（全球前三份额；量稳价稳）",
+          "accounting_scope": "智能手機銷售（p.300 控制权转移=客户验收；附註5 產品線收入 186,439,777 千元）",
+          "status": "adopted",
+          "adopted_models": [
+            {
+              "case_id": "XM-PHONE-M03",
+              "model_id": "unit_sales",
+              "m_card": "M03",
+              "adaptation_scope": "智能手機單產品線 FY2025 出貨量×ASP 實例（units=部, unit_revenue=元/部, timing_factor=1.0, other_revenue=0）",
+              "reason": "收入机制=出貨量×平均售價（p.21 管理層討論與分析逐项披露 165.2 百萬部與每部 1,128.7 元）；附註5 同口径产品线收入可核",
+              "DE_status": "D/E executed this attempt; reviewer signature PENDING"
+            }
+          ]
+        },
+        {
+          "segment": "IoT與生活消費產品（手機×AIoT 分部產品線）",
+          "lifecycle": "成长-成熟混合",
+          "accounting_scope": "平板/可穿戴/智能大家電/生活消費品多品类聚合",
+          "status": "not_selected",
+          "not_selected_models": "ALL 31",
+          "reason": "多品类聚合且独立披露仅分类收入增速（p.21），无单位量价分解；M03 需单量价口径，聚合品类不可识别（需按品类拆分后另行适配）"
+        },
+        {
+          "segment": "互聯網服務（手機×AIoT 分部產品線）",
+          "lifecycle": "成长",
+          "accounting_scope": "廣告/遊戲/金融科技等服務收入",
+          "status": "not_selected",
+          "not_selected_models": "ALL 31",
+          "reason": "机制混合（M18 advertising/M19 gaming/M06 usage 均可能），披露无 activity×rate 或 用戶×付費 分解；本轮不采用，記 special_review AD-7"
+        },
+        {
+          "segment": "其他相關業務（手機×AIoT 分部產品線）",
+          "lifecycle": "配套服务",
+          "accounting_scope": "空調安裝服務等（p.21 (iv)）",
+          "status": "not_selected",
+          "not_selected_models": "ALL 31",
+          "reason": "占收入 0.9%（4,136,860 千元）且无量价分解；本轮不采用（金额已披露，I-11-B 可按 direct 路径处理，另行适配）"
+        },
+        {
+          "segment": "智能電動汽車及AI等創新業務分部",
+          "lifecycle": "商业化爬坡-扩张（有供给约束的放量期）",
+          "accounting_scope": "智能電動汽車銷售 + 其他相關業務（售後服務、配件銷售及汽車金融服務，p.22）",
+          "status": "adopted",
+          "adopted_models": [
+            {
+              "case_id": "XM-EV-M03",
+              "model_id": "unit_sales",
+              "m_card": "M03",
+              "adaptation_scope": "分部整段 FY2025：units=交付量（輛）, unit_revenue=每輛 ASP, timing_factor=1.0, other_revenue=其他相關業務收入（28 億元，MD&A 億元粒度）；AI 等创新业务收入未单独披露（包含于其他相關業務，p.22 归因为售后/配件/汽车金融）",
+              "reason": "收入机制=交付量×每輛售價（p.22 披露 411,082 輛與每輛 251,171 元），分部收入含其他相關業務→M03 optional other_revenue 显式映射",
+              "DE_status": "D/E executed this attempt; reviewer signature PENDING"
+            }
+          ],
+          "lifecycle_note": "M29 commercial_launch / M21 delivery_pipeline 為該分部的备选机制模型，本轮 not_selected：E 段对账不需订单存量桥，交付量×ASP 已可独立复建（如 I-11-B 后续采用 backlog 口径需另行适配并按卡文6版本纪律新建适配版本）"
+        }
+      ]
+    },
+    {
+      "company_id": "US-MSFT-2026",
+      "company": "MICROSOFT CORP",
+      "market": "US",
+      "fiscal_period": "FY2026 (fiscal year ended 2026-06-30, closed)",
+      "information_date_as_of": "2026-09-18",
+      "primary_source": {
+        "doc": "Form 10-K FY2026 (accession 0001193125-26-323660)",
+        "path": "CW/companies/MICROSOFT CORP/raw/financial_reports/annual/2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "sha256": "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecfff",
+        "published_at": "2026-07-29",
+        "available_at": "2026-07-29",
+        "readable": true
+      },
+      "accounting_framework": "US GAAP, USD millions; revenue recognized upon transfer of control (ASC 606; 10-K Revenue Recognition, extract lines 1960-1967); licenses point-in-time, subscriptions/SA ratably over time",
+      "report_segments_per_note": ["Productivity and Business Processes", "Intelligent Cloud", "More Personal Computing"],
+      "segments": [
+        {
+          "segment": "Productivity and Business Processes",
+          "lifecycle": "成熟订阅+云转型",
+          "accounting_scope": "Microsoft 365 Commercial/Consumer subscriptions, LinkedIn, Dynamics, Enterprise and partner services (10-K extract lines 202-254)",
+          "status": "adopted",
+          "adopted_models": [
+            {
+              "case_id": "MS-PBP-M05",
+              "model_id": "subscription",
+              "m_card": "M05",
+              "adaptation_scope": "分部订阅核心（average_customers × revenue_per_customer + usage_revenue）FY2026；D 完成并 missing 标记（席位/客户数与 ARPU 均未按所需粒度披露）",
+              "reason": "收入机制=订阅客户数×每客户收入（M05）；为 I-07-E 正式分部预测所需机制模型，先行适配其披露口径",
+              "DE_status": "D completed missing-marked; E NOT executable (STOP_DISCLOSURE_ADAPTATION); probe NOT run"
+            }
+          ]
+        },
+        {
+          "segment": "Intelligent Cloud",
+          "lifecycle": "高速成长（消费/用量计费）",
+          "accounting_scope": "Server products and cloud services (Azure consumption + on-prem server; 10-K extract line 232)",
+          "status": "adopted",
+          "adopted_models": [
+            {
+              "case_id": "MS-IC-M06",
+              "model_id": "usage_platform",
+              "m_card": "M06",
+              "adaptation_scope": "分部用量核心（eligible_activity × monetization_rate + fixed_revenue）FY2026；D 完成并 missing 标记（用量与费率未披露）",
+              "reason": "收入机制=云消费用量×变现率（M06）；为 I-07-E 正式分部预测所需机制模型",
+              "DE_status": "D completed missing-marked; E NOT executable (STOP_DISCLOSURE_ADAPTATION); probe NOT run"
+            }
+          ]
+        },
+        {
+          "segment": "More Personal Computing",
+          "lifecycle": "成熟混合（许可+内容+广告）",
+          "accounting_scope": "Windows/Devices, XBOX, Search advertising (10-K extract lines 255-260)",
+          "status": "not_selected",
+          "not_selected_models": "ALL 31",
+          "reason": "混合机制不可识别于单模型（M17 licensing / M19 gaming / M18 advertising 三类收入流混合），且 FY2026 10-K 无任何量价分解；须按收入流拆分后另卡适配，special_review 未决（AD-7）"
+        }
+      ]
+    }
+  ],
+
+  "model_registry_coverage": {
+    "registry_source": "iso/rf/scripts/model_registry.py MODEL_REGISTRY (byte-identical to production anchor 62f864b9…30116B; post-I-10-B fix state)",
+    "total_models": 31,
+    "adopted": [
+      {"model_id": "resource", "m_card": "M09", "cases": ["ZJ-MIN-M09", "ZJ-SMT-M09"]},
+      {"model_id": "unit_sales", "m_card": "M03", "cases": ["XM-PHONE-M03", "XM-EV-M03"]},
+      {"model_id": "subscription", "m_card": "M05", "cases": ["MS-PBP-M05"]},
+      {"model_id": "usage_platform", "m_card": "M06", "cases": ["MS-IC-M06"]}
+    ],
+    "not_selected": [
+      {"model_id": "direct_growth", "m_card": "M01", "reason": "本轮无短期兜底/收缩清退分部采用需求；且 M01 明示『不能用恒定CAGR掩盖周期或转型』，三家成长/周期主体不适用", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "direct_revenue", "m_card": "M02", "reason": "直接收入路径不构成非循环 E 段复建；无独立量价时不采用（记 AD-3）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "capacity_utilization", "m_card": "M04", "reason": "本轮未冻结产能/良率披露口径（如后续冶炼/矿山产能适配另卡）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "subscription", "m_card": "M05", "reason_note": "adopted only for MS-PBP-M05; not_selected elsewhere", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025"]},
+      {"model_id": "usage_platform", "m_card": "M06", "reason_note": "adopted only for MS-IC-M06; not_selected elsewhere（互聯網服務机制混合不可识别，见 AD-7）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026:except-IC"]},
+      {"model_id": "services", "m_card": "M07", "reason": "无服务容量×利用率披露（MSFT 空调安装服务等零星项不构成主模型）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "project_backlog", "m_card": "M08", "reason": "MSFT RPO 无 rollforward（bookings/cancellations 未披露），桥不可复建", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "resource", "m_card": "M09", "reason_note": "adopted for ZJ-MIN/ZJ-SMT; not_selected elsewhere", "companies_not_selected_for": ["HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "reserve_depletion", "m_card": "M10", "reason": "储量/回收率口径本轮未冻结；E 段对账不需储量桥", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "infrastructure", "m_card": "M11", "reason": "无计费量×费率披露", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "bank_revenue", "m_card": "M12", "reason": "无银行分部采用需求（紫金非银业务不构成报告分部）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "asset_management", "m_card": "M13", "reason": "无资管规模收费业务采用需求", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "retail_franchise", "m_card": "M14", "reason": "无直营/加盟门店口径披露（小米新零售为自营渠道非加盟费模式）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "transport", "m_card": "M15", "reason": "无运力利用与收益率业务采用需求", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "real_estate_rental", "m_card": "M16", "reason": "无已出租面积租金业务采用需求", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "licensing_commercial", "m_card": "M17", "reason": "MSFT-MPC 许可子流需要但分部机制混合未拆分（AD-7 special_review 未决），本轮不采用", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "advertising", "m_card": "M18", "reason": "广告流（小米互聯網服務/MSFT Search）无曝光×填充×CPM 分解披露", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "gaming", "m_card": "M19", "reason": "XBOX/游戏流无活跃×付费率×ARPPU 分解披露", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "cohort_subscription", "m_card": "M20", "reason": "无客户流量×时间暴露口径披露（MSFT seat 仅披露增长率）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "delivery_pipeline", "m_card": "M21", "reason": "小米汽车订单存量口径未披露（independence: 交付量×ASP 已可复建，订单桥留待 I-11-B 需要时另行适配）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "milestone_royalty", "m_card": "M22", "reason": "无里程碑/分成收入业务采用需求", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "insurance_service", "m_card": "M23", "reason": "无保险分部——精算复核 N/A 如实记（actuarial_reviewer: not_applicable，无保险业务口径）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "subscription_arr_bridge", "m_card": "M24", "reason": "ARR 存量桥需 ARR rollforward（MSFT 仅披露 RPO 存量与时长，无 ARR 口径）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "installed_base_aftermarket", "m_card": "M25", "reason": "无装机存量×售后率披露（汽车售后已并入 XM-EV other_revenue 口径）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "store_cohorts", "m_card": "M26", "reason": "无开闭店/新店成熟度披露", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "renewable_generation", "m_card": "M27", "reason": "无发电量×电价业务采用需求（紫金电力为矿山自用为主，不构成报告分部）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "aum_fee_bridge", "m_card": "M28", "reason": "无 AUM 流量与收费桥业务采用需求", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "commercial_launch", "m_card": "M29", "reason": "小米汽车供给约束商业化机制备选，本轮 not_selected（见 XM-EV lifecycle_note；交付量×ASP 已可复建）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "finite_adoption", "m_card": "M30", "reason": "无有限市场采用口径业务采用需求", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]},
+      {"model_id": "inventory_sellthrough", "m_card": "M31", "reason": "库存销售桥非本轮 E 段对账口径（矿山/汽车销量为即期交付；如后续需要存货桥另行适配）", "companies_not_selected_for": ["CN-ZIJIN-2025", "HK-XIAOMI-2025", "US-MSFT-2026"]}
+    ],
+    "coverage_claim": "31/31 model_ids 登记完毕：4 个 adopted（6 个 case），其余 not_selected 并给出理由；not_selected 不宣称企业适配通过",
+    "special_review_routing": "AD-7（机制混合分部拆分：ZJ-其他/小米互聯網服務/MSFT-MPC）+ 保险口径 actuarial_reviewer N/A 记录 = 交独立行业/会计 reviewer 裁定"
+  }
+}

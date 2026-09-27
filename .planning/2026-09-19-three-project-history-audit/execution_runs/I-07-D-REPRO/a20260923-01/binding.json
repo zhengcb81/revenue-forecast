@@ -1,0 +1,66 @@
+{
+  "card": "I-07-D-REPRO",
+  "attempt": "a20260923-01",
+  "objective": "Substantive fix for AUDIT-DESIGN D3: re-run I-07-D fault cases F02/F03/F04 under the same harness with their documented argv and preserve the judged raw bytes in-attempt, making the three verdicts re-computable and byte-linked to I-07-D's in-attempt transcriptions",
+  "binding_status": "bound (edit-time pins frozen in oracle.md BEFORE any judged run; copy-fidelity rehashes below)",
+  "owner_order": "「审计中出现的问题每一个都要修复」(REMEDIATION_REGISTER §76; D3 row -> this card)",
+  "evidence_retention_policy": "REMEDIATION_REGISTER §72(3) + REM-93: judged-run raw MUST be preserved in attempt/evidence; %TEMP%\\i07d is SCRATCH ONLY; registered hashes carry (sha256, version-domain, preservation-site) triplets",
+  "paths": {
+    "PLAN": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+    "ATT": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-07-D-REPRO\\a20260923-01",
+    "I-07-D_reference_attempt": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-07-D\\a20260923-01 (READ-ONLY reference — zero writes by this card)",
+    "RF": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+    "CW": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+    "FF": "C:\\Users\\郑曾波\\Projects\\filing-fetch",
+    "cell_scratch": "%TEMP%\\i07d\\cases\\{F02,F03,F04} (MAX_PATH isolation root, SCRATCH ONLY — rebuilt fresh by this re-run; its predecessor tree is the D3-lost tree)",
+    "preserved_root": "ATT/evidence/preserved/temp/i07d/cases/<CASE>/cwroot/... (in-attempt %TEMP%-mirroring layout; TEMP=<ATT>/evidence/preserved/temp makes the frozen harness recompute read preserved bytes)"
+  },
+  "interpreter": "ATT/iso/venv/Scripts/python.exe (Python 3.13.9, attempt-scoped copy of I-07-D's venv; Miniconda global NOT used)",
+  "cwd_rule": "driver commands cwd = ATT; entry runs spawned with cwd=ATT; cli scan runs with cwd=<cell>\\cwroot (recorded per run in evidence/cases/<label>/argv.json) — identical to I-07-D commands.json cwd_rule",
+  "network": "disabled for EVERY command (F04 provider = frozen sim metadata fixtures/HK-XIAOMI-2025.provider.json; no live provider call anywhere)",
+  "allowed_write_roots": ["ATT/**", "%TEMP%\\i07d\\**"],
+  "forbidden": ["any production write (RF/CW/FF byte-identical, anchor re-hash asserted)", "any git command", "any real worker / non-manifest PID termination", "any write into the I-07-D reference attempt"],
+  "harness_reuse": {
+    "mode": "verbatim byte-identical COPY of I-07-D's harness+fixtures+iso template+venv into this attempt (common.ATTEMPT resolves to this attempt's parent => all evidence lands here; original attempt untouched)",
+    "copy_fidelity_sha256": {
+      "harness/run_d_matrix.py": "40b9f87a03bd8fd29c8187c2f51c3dfc339ddad7d0a852c2eee36f1c0f08334a",
+      "harness/run_case.py": "aae0f21efb684d071aa704703b81f938d8a7d61c60c3726e2d18ff947269906c",
+      "harness/common.py": "79e36607db2aba407652eca12296f1bfbf609e4162a28a6acdd7cc77726ad7bc",
+      "harness/build_iso.py": "172ca0b3f1a1edc10eb876ce9aedb7cec105c6120b2dd418f7d5a1a222f8daac",
+      "harness/hold_file.py": "4a6cf71fb12b8348df3f78ccd43ebb7ae0335779218c64e0c20573c7fbb57fed",
+      "harness/lock_catalog.py": "af33d1b853e212f09b3079c486be182a6f3bf63687e368cd628b8f2a37aaed50",
+      "harness/spy/sitecustomize.py": "7b3b9cbe8d0e463318f445033a9e907404f78f5a75610ef442b53e96d932508d",
+      "fixtures/HK-XIAOMI-2025.provider.json": "8215b3609b670f175c191910d5cb377a344c8cc483731b0fd2c5cd9c677567f8",
+      "fixtures/fixtures_manifest.json": "cac0af3b3c5996ce73770f73f2e4c63a62220e44834405ef179aeba4ba98a870"
+    }
+  },
+  "input_pins": {
+    "I-07-D/decision.md (comparison oracle)": "ba6e4a1d0d1190f79c0c0519e61d16d6542cfab6e14184879897047c4c01f730 (31292 B)",
+    "I-07-D/oracle.md": "576ddfc57c2c949d6a9e5f875114d8c7e49c833d69b5bd8cd81bcf2417718846 (27211 B)",
+    "I-07-D/commands.json": "458c62c36824014c3f9552e46f4b0851d30242db8508da16e1c4a7e09ccce66e (13107 B)",
+    "I-07-D/binding.json": "30ea8a7be0469c77dff8f084a93c142e9b9a7595454f76e8c410b3f245c4e4e8 (19758 B)",
+    "I-07-D/handoff.json": "82bb03aca1756d0cec155d039150e930d7b2a885659ad73d5a94e1c032d09e13 (45995 B)",
+    "I-07-D/review.md": "b7dba0d4c940072613fcfa794852163aa93afb85ba0c93d4f5d2b3fa988f082b (25542 B)",
+    "I-07-D/reviewer_report.md": "1a1d1c0500e959012888a6c9f2d367d51412d6532a2822c813869eb08ac9a933 (27858 B)",
+    "I-07-D/evidence/cases/F02/verdict.json": "8d6e7a8b6236f87a2cb47996eaa3e4f6abdeca0c718629d5fb7eb6c36f097b94 (2780 B)",
+    "I-07-D/evidence/cases/F03/verdict.json": "6f5b6e6f7a212e1eea364ea81d2de7c8c93ea91fe9bee41828e2a9c94c6b674d (1498 B)",
+    "I-07-D/evidence/cases/F04/verdict.json": "f043c08014c21605a97fe3e6a71a9fb4826099ad300cc0982ecefcd2f8678c5f (3636 B)",
+    "AUDIT-DESIGN/audit_report.md (D3 finding + §5-R2 re-run proof)": "see AUDIT-DESIGN/a20260923-01/audit_report.sha256 sidecar (READ-ONLY)",
+    "REMEDIATION_REGISTER.md §72(3)/§74-D3/§76-D3-row": "plan-root, READ-ONLY citation"
+  },
+  "byte_identity_constants": {
+    "HK-XIAOMI-2025 raw sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+    "HK-XIAOMI-2025 sidecar sha256": "8228741d299164380bde36a83df1267b59e9b46721bea7d8efee857aeeb8da71",
+    "manifest raw name": "2026-04-28_hkexnews_12127452_2025年度報告.pdf (canonical post-import name may differ — I-07-B open item HK-3 carried; content sha asserted)",
+    "kill_exit_code": 4242 (harness TerminateProcess marker; any other non-zero = product's own rc)"
+  },
+  "exit_code_legend": {
+    "driver_rc_0": "all frozen oracle checks for that driver command met",
+    "driver_rc_1": "harness failure (evidence missing / harness exception / build failure)",
+    "driver_rc_2": "no verdict produced — cell recorded BLOCKED",
+    "driver_rc_3": "at least one frozen oracle check NOT met (recorded in that cell's verdict.json)",
+    "product_rc": "recorded RAW per run in evidence; never overwritten (frozen rc table START_HERE L90-115)",
+    "kill_marker": "4242 = harness TerminateProcess"
+  },
+  "state": "bound — oracle.md frozen (sha in commands.json/oracle pin recorded at freeze), commands bound below, judged runs pending"
+}

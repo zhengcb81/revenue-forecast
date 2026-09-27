@@ -1,0 +1,26 @@
+diff --git a/src/company_wiki/source_catalog/observability.py b/src/company_wiki/source_catalog/observability.py
+index 842d0cfbc7e3..ff9c65586cff 100644
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -287,9 +287,20 @@
+ _VALUE = r"(?P<value>" + _QUOTED_VALUE + r"|" + _BARE_VALUE + r")"
+ _AUTH_BARE_VALUE = r"[^\s,;&\"'|]+(?:[ \t]+[^\s,;&\"'|]+)*"
+ 
++# I-14-D-R2 (review F-REV-D-01 / RULING 2): a credential can be wrapped across
++# ONE line break - a folded header, or the scheme word on its own line - and the
++# line carrying the secret has no `key=` prefix, so _AUTH_BARE_VALUE (inline
++# whitespace only) and the assignment scanner both miss it: the r1 narrowing
++# persisted the full credential in the append-only event log.  Fail CLOSED:
++# behind a *known* scheme word, one line break plus the first following token is
++# consumed inside the match and redacted; the break AFTER that token stays
++# outside the match, so the diagnostics on the following lines survive (the C13
++# half of this card).
++_AUTH_SCHEME_SPLIT = (r"(?:bearer|token|basic|digest|oauth|jwt|apikey|api_key|sso)"
++                      r"[ \t]*\r?\n[ \t]*[^\s,;&\"'|]+")
+ _AUTH_PATTERN = re.compile(
+     r"(?i)(?P<key>" + _LEFT_ANCHOR + r"authorization\s*[:=]\s*|"
+-    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_BARE_VALUE + r")"
++    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _AUTH_SCHEME_SPLIT + r"|" + _AUTH_BARE_VALUE + r")"
+ )
+ 
+ # key=value / key: value forms are handled by `_redact_assignments` (single-pass

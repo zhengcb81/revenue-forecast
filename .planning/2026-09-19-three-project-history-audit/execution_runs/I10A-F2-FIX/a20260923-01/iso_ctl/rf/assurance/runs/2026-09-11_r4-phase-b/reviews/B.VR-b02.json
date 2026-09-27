@@ -1,0 +1,193 @@
+{
+  "gate": "B.VR",
+  "scope": "Independent adversarial review of step B02 (commit cab1fd6, parent c986c7a) of the R4 phase-B programme: qualify-then-order candidate locations in the source-catalog read path (src/company_wiki/source_catalog/service.py + resolver.py + new tests/contract/test_r4b02_candidate_selection.py). Verified against the code, against the run-directory evidence (assurance/runs/2026-09-11_r4-phase-b) and against independent re-runs and synthetic temp catalogs.",
+  "reviewed_commit": "cab1fd65f786a025e5d02a808b4096d161ba660e",
+  "reviewer_session_self_report": "06e11171-66c6-4282-b60c-3767bfcafdfc - self-report of the reviewing session, not an operator-held assignment record; no independent attestation of reviewer identity is claimed or available.",
+  "verdict": "rejected",
+  "findings": [
+    {
+      "id": "B-VR02-01",
+      "severity": "P1",
+      "claim": "Claim under test: 'Only an exhausted list yields no handle, so withdrawing the preferred copy falls through to the next EQUIVALENT copy (same document id + content hash, no download)' (B02 step description / b-design B02 segment 3 / L03 acceptance 'all copies unusable -> unavailable, do not take another revision').",
+      "evidence": "Temp harness probe_scenarios.py wrong_bytes, run against BOTH trees (PYTHONPATH=<pre-b02 worktree c986c7a>/src and PYTHONPATH=<company-wiki cab1fd6>/src); fixture: 3 byte-identical copies of one annual report (companies p10 / Dropbox p30 / future_lake p40), then p10 AND p40 deleted and the surviving p30 file rewritten with different bytes (catalog rows/manifest still claim the original hash). document_claimed_sha256=92972bd8...d14dd byte_size=28; served copy actual sha256=1e3e31ffc34ebf7b... size=34. PRE-B02  -> {\"status\": \"missing\", \"download_required\": true, \"match_count\": 0, \"full_trace\": [\"entity_gate_rejected: 0\", \"2025: placeholder_no_handle\"]}. POST-B02 -> {\"status\": \"reused_exact\", \"download_required\": false, \"match_count\": 1, \"canonical_path\": \".../Dropbox/Stock/2025.pdf\", \"content_sha256\": \"92972bd8...d14dd\" (the CLAIMED hash, not the bytes'), \"served_bytes_are_the_requested_version\": false, \"full_trace\": [\"2025: unverified_bytes\", \"2025: candidate <loc1>:not_readable\", \"2025: candidate <loc2>:size_mismatch:34!=28\", \"2025: candidate <loc3>:not_readable\", \"2025: matched\"]}.",
+      "impact": "The read path can now hand out (and report as verified-reusable, download_required=false) a copy whose bytes are provably NOT the requested version - the exact fail-closed case pre-B02 refused (MISSING -> download). This is not merely 'unverified': the size screen AND the full-file digest both failed. It contradicts the run's own L03 acceptance line in test-acceptance-map.md ('all copies unusable -> unavailable, do not take another revision') and the equivalence wording of the claim. The only covering deviation, S-10, is registered as NOT approved (owner-scope-decisions-2026-09-12.md section 9: 'pending owner', 'does not consider itself approved'), and it describes a fallback to 'a locally readable qualified copy', not an override of a pre-existing fail-closed decision with a content hash the bytes do not have.",
+      "required_action": "Before this step can be signed: (a) constrain the fallback to candidates whose own declared/document hash equals the requested one (or gate on byte equality, i.e. the design's segment 3), returning MISSING/unavailable otherwise; or (b) obtain explicit owner approval of S-10 recorded in the run directory, restated to cover this consequence (pre-B02 MISSING becomes REUSED_EXACT of a copy that fails both the size screen and the hash check). Add a regression case for this exact scenario to the F10 test file."
+    },
+    {
+      "id": "B-VR02-02",
+      "severity": "P1",
+      "claim": "Implied claim: B02's qualification change inside service._annotate_locations is safe for existing consumers of is_canonical / duplicate_relation (nothing outside service.py + resolver.py changes behaviour).",
+      "evidence": "Temp harness probe_a2_single_root.py (single 'dayu' root, the documented production rejections layout ACME/filings/.rejections/123/2025.pdf + ACME/filings/.rejections/456/2025.pdf, identical bytes/sidecar). Locations after scan: both original_primary + active, same source_id, same document_id; duplicate_keys CTE returns two groups with n=2. PRE-B02  -> 'list_groups OK, total_groups = 2'. POST-B02 -> 'list_groups RAISED: StopIteration' at duplicate_cleanup.py:228 (`canonical = next(item for item in locations if item[\"is_canonical\"])`, no default). Also reproduced with a two-root variant (companies/.rejections + Dropbox/.rejections). The consumer is user-reachable: cli.py:1151-1157 maps the 'duplicates' command onto DuplicateCleanupService(...).list_groups(...), and cli.py:1551-1559 turns the exception into a structured error + exit code 1.",
+      "impact": "The whole 'duplicates' listing fails (not just the offending group) on catalogs that contain two rejected copies of the same document - a layout the scanner itself produces (scanner.py:619 sets source_status=upstream_rejected but scanner.py:1115-1118 still writes location_status='active' when a source_id exists; adapters/dayu.py:94-97 documents the ticker/filings/.rejections/<id> group key). Operators lose the ability to list/recycle ANY duplicate group. Root cause is B02: pre-B02 every non-empty (document_id, source_id) group always produced an is_canonical=True row; B02 makes canonical status conditional on the new qualification while the unmodified consumer still assumes the old invariant. No test covers this and the evidence documents do not mention it.",
+      "required_action": "Restore an explicit invariant for the (document_id, source_id) group (e.g. always elect a canonical among the group's active original_primary rows, marking excluded ones separately) or make duplicate_cleanup.list_groups tolerant of a fully-excluded group. Because duplicate_cleanup.py is outside the B02 allowed set (F1/F2/F10), the in-scope fix is inside service.py; if a consumer change is judged necessary, stop and register the scope question per task_plan.md section 3. Add a regression case with two rejected copies of one document."
+    },
+    {
+      "id": "B-VR02-03",
+      "severity": "P2",
+      "claim": "Evidence section 6 ('side effects'): the only counting change is that exact_duplicate_location_count / exact_original_copy_count now count qualified copies; 'the write face, outbound face and worker face are untouched apart from _duplicate_summary'.",
+      "evidence": "Temp harness probe_scenarios.py mixed (companies/.../.rejections/2025.pdf with best priority p10 + Dropbox copy p30 + future_lake copy p40, identical bytes), same code both trees: PRE-B02  -> list_groups: total_reclaimable_copies = 3, reclaimable_paths = ['2025.pdf', '2025.pdf', '2025.pdf.source.json']. POST-B02 -> total_reclaimable_copies = 2, reclaimable_paths = ['2025.pdf', '2025.pdf.source.json'] (the .rejections copy is no longer offered for recycling). Cause: excluded rows now get duplicate_relation='' (service.py:691-707), which duplicate_cleanup._public_location/eligibility reads.",
+      "impact": "Provider-rejected copies - precisely the files an operator wants to reclaim - silently disappear from the duplicate-cleanup planner; the same change of is_canonical also alters the exported index rows (service.py:996-1014 exports is_canonical/canonical_location_id/duplicate counts), so the 'outbound face is untouched' statement is imprecise. Neither effect is covered by a test.",
+      "required_action": "Decide and document whether rejected copies stay reclaimable/exported; if they should, do not route eligibility through the new exclusion flag. Update evidence section 6 to state the export/cleanup consequences of the re-based is_canonical/duplicate_relation."
+    },
+    {
+      "id": "B-VR02-04",
+      "severity": "P2",
+      "claim": "Design B02 read-budget rule 3: 'any candidate-count or byte ceiling exceeded -> blocked (reason=budget_exceeded), with the undecided candidates listed in diagnostics'. Resolver comment (resolver.py:144-151): an over-budget/unverifiable candidate 'is simply NOT reusable ... the request keeps its existing MISSING/placeholder semantics - it never silently reuses bytes that were not verified'.",
+      "evidence": "Temp harness probe_scenarios.py budget_reuse, SourceResolver(catalog, read_budget=_ReadBudget(max_candidates=1)). 1st resolve: reused_exact, counters candidates=1 bytes_read=28 (verified, trace ['2025: matched']). 2nd resolve on the SAME resolver: reused_exact, download_required=false, trace ['2025: unverified_bytes', '2025: candidate <loc>:budget_exceeded', '2025: matched'], counters unchanged (candidates=1, bytes_read=28). 3rd resolve with a NEW resolver but the SAME budget object: identical unverified_bytes result. Also: test_r4b02_budget_counters_bound_candidate_reads pins REUSED_EXACT + unverified_bytes when the byte ceiling is exceeded.",
+      "impact": "Two real deviations from the design: (1) budget exhaustion returns a REUSED_EXACT handle instead of the design's blocked/unavailable, and (2) _ReadBudget carries state across requests, so any caller that reuses a budget (or a resolver) silently loses ALL verification for every later request while still receiving reuse handles. No production caller injects read_budget today (grep: only tests), so the exposure is currently limited to the new public parameter, but the failure mode is silent and the module comment quoted above contradicts the code.",
+      "required_action": "Make a reused budget fail loudly (or reset it per resolve()), and either implement blocked-on-exceed or register it as its own named deviation (it is currently only folded into S-10 'by extension' in evidence section 3/4). Correct the resolver.py:144-151 comment so it describes the fallback."
+    },
+    {
+      "id": "B-VR02-05",
+      "severity": "P3",
+      "claim": "Claim: '_handle now returns _Selection (handle + reason + tried) and resolve records the reason in debug_trace whenever the served copy is NOT the preferred one'; comment in _annotate_locations: 'a document carrying two source revisions has one rank-1 row per revision'.",
+      "evidence": "Temp harness probe_scenarios.py twogroups: fabricated second source_id for the same document (sources.content_sha256 is UNIQUE, store.py DDL, so this needed a different hash + SQL surgery), the foreign group's rank-1 tried first (location_id tie-break) and its bytes mutated. Result: served from the document's own group with trace ['entity_gate_rejected: 0', '2025: matched'] only - the failed foreign rank-1 never appears, because the reason string is 'verified_candidate_rank_1' (identical to the ordinary preferred-copy case) and resolve only emits 'tried' when the reason differs. Integrity itself is fine: the served copy's bytes did match document.content_sha256.",
+      "impact": "The diagnostics guarantee is not total (rank-only reasons are ambiguous across groups, 'tried' can be dropped), and the state it protects against is unreachable in a well-formed catalog: source_id and document_id are both derived from the content hash (source_manifest.source_id_for_sha256, scanner._document_id_for_source) and sources.content_sha256 is UNIQUE, so one document cannot hold two source groups. The comment therefore describes an impossible state as if it were supported.",
+      "required_action": "Emit 'tried' whenever it is non-empty regardless of reason, make the reason identify the group (e.g. include the source_id suffix), and correct/qualify the two-revision comment and the matching docstring in the new test file."
+    },
+    {
+      "id": "B-VR02-06",
+      "severity": "P3",
+      "claim": "Evidence claims (b02-implementation.md section 7 / b02-verification.json): '7/7 executed checks pass', coverage gate '2 passed' with resolver.py 87.36% and service.py 95.16%, and the record is re-runnable from the artifact.",
+      "evidence": "Numbers themselves reproduce EXACTLY on my own full re-run: 'python -m pytest tests/ -q --tb=line --cov=src/company_wiki/source_catalog --cov-branch --cov-report=json:<temp>' -> 2684 passed, 7 skipped, 420 warnings in 898.72s; from my coverage.json: resolver.py 87.36% (607/675 lines, 222/274 branches), service.py 95.16% (362/372, 110/124) - identical to the claim; re-evaluating the FC-1204 tables against my measurement: TIER1/TIER2+FROZEN failures = NONE. BUT the recorded artifact is bound to a pre-commit tree: b02-verification.json says \"wiki_head\": \"c986c7a\" (parent, not cab1fd6) and quotes a coverage.json whose meta.timestamp is 2026-09-12T12:27:31 - that file is NOT what the repo tracks. The tracked coverage.json (committed in 90fb08d, meta.timestamp 2026-08-17T20:58:29) yields resolver 85.64 / service 94.42, and the documented command run now gives: 'FC1204_COVERAGE_GATE=1 python -m pytest -q tests/contract/test_fc1204_coverage_ratchet.py' -> 2 failed ('service.py branch coverage 94.4% < 95% (required)', plus evidence_query.py 49.1% < 87%, extraction_quality.py 74.3% < 77%, security_identity.py 73.5% < 77%).",
+      "impact": "A reviewer or CI step that runs the recorded ratchet command against the committed tree sees red for a reason unrelated to B02 (stale tracked coverage.json), and the headline coverage evidence cannot be re-checked from the committed state without a 15-minute suite re-run. The check itself is honest - it just is not self-contained.",
+      "required_action": "Record the post-commit HEAD in b02-verification.json, state explicitly that the coverage gate requires the immediately preceding --cov run (and that the tracked coverage.json is stale), and keep the raw coverage artifact (or its file-level numbers) with the evidence."
+    },
+    {
+      "id": "B-VR02-07",
+      "severity": "P3",
+      "claim": "Segment-2/segment-3 qualification rules: 'a .rejections path is never reusable' and 'a candidate whose bytes are not local (cloud placeholder) is refused without reading it / the query path performs no network I/O'.",
+      "evidence": "Direct calls to service._location_exclusion_reason in a temp probe: healthy -> '', role='original_attachment' -> 'role_not_original_primary', status='retired' -> 'location_status_retired', source_id='' -> 'source_id_missing', r'ACME\\raw\\.rejections\\2025.pdf' -> 'rejections_path' - all four reasons correct. However the same probe returns 'rejections_path' for 'annual/my.rejections_backup/2025.pdf', because the test is a substring match on the normalised relative path (service.py:55-57); pre-B02 that same substring test existed only inside resolver._handle, so its blast radius is now the canonical election, duplicate counts, the exported index and the cleanup planner. Separately, _needs_hydration (resolver.py:157) tests only FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS|OFFLINE (0x400000|0x1000); FILE_ATTRIBUTE_RECALL_ON_OPEN (0x40000) and cloud reparse tags are not covered, and the no-network evidence (test_r4b02_cloud_placeholder_candidate_is_not_read) is a monkeypatched Path.stat - no real placeholder exists in this environment to test against.",
+      "impact": "An unrelated path containing the substring '.rejections' is silently disqualified from canonical election and from duplicate accounting/cleanup; a RECALL_ON_OPEN placeholder would pass the probe and be opened (hydrated) inside resolve, which is what 'qualification must not use the network' forbids.",
+      "required_action": "Match .rejections as a path segment rather than a substring; widen the hydration attribute set (or record the cloud case as not_verified, consistent with the run's D0-only evidence layer)."
+    }
+  ],
+  "claim_checks": [
+    {
+      "claim": "16 new acceptance cases in tests/contract/test_r4b02_candidate_selection.py all pass.",
+      "method": "python -m pytest tests/contract/test_r4b02_candidate_selection.py -q (cwd company-wiki)",
+      "result": "reproduced",
+      "observed": "tests\\contract\\test_r4b02_candidate_selection.py ................ [100%] / 16 passed in 1.86s"
+    },
+    {
+      "claim": "Targeted regression = 23 passed (determinism + sql_pushdown + zr403 + fail_closed).",
+      "method": "python -m pytest <the four files> -q, run per-file from company-wiki",
+      "result": "reproduced",
+      "observed": "determinism+sql_pushdown 8 passed in 22.81s; zr403 7 passed in 3.36s; fail_closed 8 passed in 1.20s (8+7+8 = 23)."
+    },
+    {
+      "claim": "Full suite 2684 passed / 7 skipped / 0 failed.",
+      "method": "python -m pytest tests/ -q --tb=line --cov=src/company_wiki/source_catalog --cov-branch --cov-report=json:<temp>",
+      "result": "reproduced",
+      "observed": "2684 passed, 7 skipped, 420 warnings in 898.72s (0:14:58) - exactly the claimed counts."
+    },
+    {
+      "claim": "Coverage: resolver.py 87.36% (607/675, 222/274); service.py 95.16% (362/372, 110/124).",
+      "method": "own full-suite coverage.json in %TEMP%; plus re-evaluating the FC-1204 TIER1/TIER2/FROZEN tables against it",
+      "result": "reproduced",
+      "observed": "resolver.py 87.36 607/675 222/274; service.py 95.16 362/372 110/124; TIER1/TIER2+FROZEN failures = NONE."
+    },
+    {
+      "claim": "Complexity ratchet green with the table unchanged (service.py 45 / resolver.py 103).",
+      "method": "python -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q; git show --stat cab1fd6; table re-measured with the gate's own _max_complexity",
+      "result": "reproduced",
+      "observed": "2 passed in 0.75s; commit touches only service.py, resolver.py, tests/contract/test_r4b02_candidate_selection.py; measured (top-level functions, as the gate measures) service.py 5 vs 45, resolver.py 32 vs 103."
+    },
+    {
+      "claim": "python -m ruff check src tests/unit tests/contract scripts -> clean.",
+      "method": "python -m ruff check src tests/unit tests/contract scripts",
+      "result": "reproduced",
+      "observed": "All checks passed! (ruff 0.15.18)"
+    },
+    {
+      "claim": "Unit tests 787 passed.",
+      "method": "python -m pytest tests/unit -q",
+      "result": "reproduced",
+      "observed": "787 passed in 59.30s"
+    },
+    {
+      "claim": "FC-1201 root-token gates 10 passed.",
+      "method": "python -m pytest -q tests/contract/test_fc1201_root_hardcode_gate.py tests/contract/test_future_root_config_only.py",
+      "result": "reproduced",
+      "observed": "10 passed in 1.33s"
+    },
+    {
+      "claim": "RED/GREEN probe: pre-B02 returns 'missing' after withdrawing the preferred copy; post-B02 returns reused_exact from the next copy with verified_candidate_rank_2.",
+      "method": "git worktree add --detach %TEMP%\\b02vr-preb02-review c986c7a (my own worktree, author's untouched); byte-identical copy of the author's probe run with PYTHONPATH=<worktree>\\src and PYTHONPATH=<company-wiki>\\src",
+      "result": "reproduced",
+      "observed": "pre: {\"falls_through_to_equivalent_copy\": false} / status after withdrawal: missing; post: {\"falls_through_to_equivalent_copy\": true} / status after withdrawal: reused_exact / canonical after: dropbox. Probe file sha256 identical to the author's copy (5DA5159F...7134); module_file in each JSON points at the tree used."
+    },
+    {
+      "claim": "S-10 causal claim: a byte-equality HARD gate makes exactly the 4 named A-side frozen assertions fail (their fixtures' bytes do not match the claimed content_sha256).",
+      "method": "temp copy of src at HEAD with the fallback removed (return None instead of the unverified fallback) + a pytest plugin that forces the patched tree to win over tests/conftest.py's sys.path.insert; python -m pytest -q -p pathfix_plugin tests/contract/test_source_catalog_determinism.py tests/contract/test_source_catalog_sql_pushdown.py",
+      "result": "reproduced",
+      "observed": "4 failed, 4 passed - exactly test_same_hash_three_roots_picks_priority_primary_preserves_all, test_same_period_different_hash_is_ambiguous, test_resolver_uses_sql_pushdown_not_all_table_query, test_old_period_not_shadowed_by_cap, all with 'content_sha256_mismatch' trace reasons. The causal justification in S-10 is factually correct."
+    },
+    {
+      "claim": "Qualification happens before ordering; each location carries candidate_rank (1..N per group, 0 = excluded) and exclusion_reason; ordering key is (root_priority, root_id, relative_path, location_id) inside the qualified set only; _duplicate_summary counts only qualified copies.",
+      "method": "source read of service.py:35-74 + 666-736 + cab1fd6 diff; direct branch probe of _location_exclusion_reason; query_filing_candidates payload dump",
+      "result": "reproduced",
+      "observed": "All four exclusion reasons returned as documented (role_not_original_primary, location_status_retired, source_id_missing, rejections_path); rank 1..N assigned per source_id group after sorting; excluded rows keep candidate_rank 0; _duplicate_summary filters on candidate_rank. (Ordering key is applied only to the qualified group - confirmed.)"
+    },
+    {
+      "claim": "resolve() creates a per-request _ReadBudget; _select_candidate walks ordered qualified candidates; _local_copy_probe is stat-only; _verify_candidate does size screen then full-file streaming sha256 (256 MiB/candidate, 64 candidates / 2 GiB per request, cancellable).",
+      "method": "source read of resolver.py:152-266, 1300-1364, 946-947; temp probes for constants, cancellation and budget",
+      "result": "reproduced",
+      "observed": "_CANDIDATE_BYTES_CAP = 256 MiB, _REQUEST_MAX_CANDIDATES = 64, _REQUEST_MAX_BYTES = 2 GiB confirmed; budget instantiated inside resolve() (line 947); pre-cancelled and mid-request-cancelled budgets read 0 files and 0 bytes and yield no handle (trace 'candidate_verification_cancelled'). Cancellation is only observed at take_candidate/charge boundaries - a read already in flight is not interrupted (no check inside _sha256_of_file)."
+    },
+    {
+      "claim": "verified_sha256 / candidate_rank / exclusion_reason are read-path annotations that do not leak into persisted state or public payloads.",
+      "method": "temp probe: PRAGMA table_info(locations), SourceHandle.to_dict() keys, json.dumps(ResolutionResult.to_dict()), query_filing_candidates payload keys",
+      "result": "partially_reproduced",
+      "observed": "locations table has no new column (nothing persisted); resolve envelope and SourceHandle.to_dict() contain no verified_sha256/candidate_rank; BUT candidate_rank and exclusion_reason are new keys in the query_filing_candidates location payload (a public SourceCatalog read method - its only production consumer is the resolver). No CLI/export path found that serialises that payload."
+    },
+    {
+      "claim": "Ordinary case (preferred copy verifies): trace unchanged and the returned handle identical to pre-B02.",
+      "method": "temp probe 'envelope' run against both trees, JSON diff after normalising the temp path",
+      "result": "reproduced",
+      "observed": "The full ResolutionResult.to_dict() is identical pre/post except for the random temp directory in canonical_path; trace is ['entity_gate_rejected: 0', '2025: matched'] in both."
+    },
+    {
+      "claim": "Scope: only service.py, resolver.py and the new test file change; no new product module; ratchet table not edited; policy_2x.py export path untouched.",
+      "method": "git show --stat cab1fd6; git show --name-only cab1fd6 | Select-String 'policy_2x|ratchet|.yaml|.json'; git diff --stat c986c7a cab1fd6 -- src",
+      "result": "reproduced",
+      "observed": "3 files changed, 882 insertions(+), 46 deletions(-); src-only diff = 2 files, 315 insertions(+), 46 deletions(-) (matches evidence section 1); no policy_2x/ratchet/yaml/json path in the commit; no new module under source_catalog."
+    },
+    {
+      "claim": "The 16 new cases have teeth (they would fail if the behaviour regressed).",
+      "method": "mutation testing on temp copies of src with the test file copied into each mutant root (so its own sys.path.insert resolves to the mutant): M1 drop the .rejections exclusion, M2 consider only the first qualified candidate, M3 restore pre-B02 duplicate-summary semantics",
+      "result": "reproduced",
+      "observed": "M1 killed by test_r4b02_l04_rejected_copy_with_best_priority_is_not_a_candidate; M2 killed by test_r4b02_l03_withdrawn_preferred_copy_falls_through_to_equivalent + test_r4b02_cloud_placeholder_candidate_is_not_read; M3 killed by test_r4b02_l04 (assert 2 == 1). Baseline (unmutated temp copy) 15 passed / 1 failed, the single failure being my staging omission of test_fc1204_complexity_ratchet.py in the mutant root."
+    }
+  ],
+  "defects_found": [
+    "B-VR02-01: unverified - and provably non-matching - bytes are served as reused_exact with download_required=false where pre-B02 returned missing (fallback path in resolver._select_candidate); the equivalence wording of the claim and the L03 acceptance line ('all copies unusable -> unavailable, do not take another revision') do not hold, and S-10 is explicitly unapproved.",
+    "B-VR02-02: duplicate_cleanup.list_groups raises StopIteration (new regression from B02's is_canonical change) whenever a (document_id, source_id) duplicate group consists only of active .rejections rows - reproduced with the standard ticker/filings/.rejections/<id> layout; the whole 'duplicates' CLI command fails.",
+    "B-VR02-03: rejected copies silently drop out of the duplicate-cleanup reclaimable set (3 -> 2 in the mixed fixture); the exported index's is_canonical/canonical_location_id also change, so 'the outbound face is untouched' is imprecise.",
+    "B-VR02-04: budget exhaustion returns a reuse handle instead of the design's blocked, and a reused _ReadBudget silently degrades every later request to unverified bytes; the resolver.py:144-151 comment contradicts the code.",
+    "B-VR02-05: 'verified_candidate_rank_1' is ambiguous across source groups and suppresses the 'tried' diagnostics; the two-source-group state the code comments describe is forbidden by the schema (sources.content_sha256 UNIQUE + hash-derived ids).",
+    "B-VR02-06: b02-verification.json is bound to the pre-commit HEAD (c986c7a) and to a coverage.json that is not the tracked one; the recorded ratchet command currently fails on the committed tree (2 failed) even though the underlying numbers reproduce exactly.",
+    "B-VR02-07: '.rejections' is matched as a substring (confirmed false positive on 'annual/my.rejections_backup/2025.pdf') with an enlarged blast radius, and the placeholder mask omits FILE_ATTRIBUTE_RECALL_ON_OPEN; the zero-network evidence is a monkeypatched stat."
+  ],
+  "weak_tests": [
+    "test_r4b02_budget_default_ceilings_are_finite - restates the module constants (64 / 2 GiB / 256 MiB); no behaviour is exercised.",
+    "test_r4b02_no_new_source_catalog_module_was_added - only asserts two hard-coded filenames are absent plus os.path.isdir(src); any other new module would pass, so it does not actually pin 'no new product module'.",
+    "test_r4b02_selection_objects_are_frozen_evidence - pytest.raises(Exception) is satisfied by any exception type; it cannot distinguish a FrozenInstanceError from, say, an AttributeError on a renamed attribute.",
+    "test_r4b02_l02_root_config_order_cannot_change_the_winner - 'Path(a).name == Path(b).name' is tautological (both fixtures write 2025.pdf); only the canonical_location_id comparison carries the case.",
+    "test_r4b02_l03_withdrawn_preferred_copy_falls_through_to_equivalent - the trace assertion 'any(\"verified_candidate_rank_2\" in x or \"verified_candidate_rank\" in x)' is vacuous through its second disjunct; it cannot detect a rank-1 selection.",
+    "test_r4b02_l04_rejected_copy_with_best_priority_is_not_a_candidate - 'all(item[\"candidate_rank\"] == 1 for item in healthy)' is trivially true with the single healthy copy used.",
+    "test_r4b02_cancellation_reads_no_byte_and_returns_no_handle - covers only a pre-cancelled budget; no mid-request cancellation (behaviour verified separately by me and it is correct).",
+    "No case covers the fallback-with-non-matching-bytes path, the duplicate-cleanup consumer, or the budget-across-two-requests case - exactly the three areas where I found defects."
+  ],
+  "limitations": [
+    "I could not run evidence/b02_verify.py itself (it rewrites evidence/b02-verification.json, which the review mandate forbids me to touch); instead I re-ran every command it records, individually, and reproduced each result.",
+    "The S-9 'teeth' claim (resolver.py = 61.3% before the new test file landed) was NOT re-measured: that needs a second full 15-minute suite run without the new file.",
+    "The historical claim that the first FC-1201 run had 3 FAILED (docstring root tokens) is not verifiable from any artifact and I did not attempt it.",
+    "No real cloud placeholder, no R2/external root and no production catalog were available (and I was told not to touch them), so the zero-network and hydration guarantees are verified only at the D0 layer with a synthetic stat attribute - the same layer the author claims.",
+    "B-payload-hash remains unverified for the same reason the author states (no frozen baseline in the package), so I can only confirm that SourceHandle fields and the resolve envelope are unchanged for the cases I ran.",
+    "The two-source-group scenario required SQL surgery because sources.content_sha256 is UNIQUE; its behaviour is therefore latent, not production-reachable.",
+    "Mutation testing was performed on temp copies of src plus a copy of the new test file; the ratchet-table test could not run in those trees (file not staged), so the mutant runs show 15/16 cases plus the kills listed.",
+    "All probes used throwaway %TEMP% catalogs; C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog and every production artifact were left untouched, as was the author's own pre-b02 worktree at %TEMP%\\r4b02-preb02. My own RED-half worktree (%TEMP%\\b02vr-preb02-review, created with 'git worktree add --detach ... c986c7a') was removed again after the probe, so the product repository is left clean; it can be recreated with the same command.",
+    "Verified repository state after the review: 'git -C company-wiki status --porcelain' is empty (no product file, test or evidence document touched) and the programme repository shows only the new untracked reviews/B.VR-b02.json."
+  ]
+}

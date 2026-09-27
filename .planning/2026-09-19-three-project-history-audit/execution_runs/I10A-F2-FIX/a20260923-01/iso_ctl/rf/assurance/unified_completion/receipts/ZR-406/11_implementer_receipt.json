@@ -1,0 +1,106 @@
+{
+  "base_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "e8478f90ce0ac34b325012ef56e57c5119d7533c",
+    "wiki": "e56eb5f53cdebb342486be2546a9602037ac68e0"
+  },
+  "canonical_hash": "6685edb2a6697c606bceca5b58fa86f04fca01cb55450459f24b3b06f33748fd",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "39 passed（30 格参数化矩阵：5 local 状态 × 6 provider 状态全组合 + 9 聚焦测试：cells 完备性/hash 确定性+区分度/error 分支 unusable/C2 未知日期+future+mixed/C3 非自然年+修订去重+最新修订 reuse）"
+    },
+    {
+      "command": ".venv\\\\Scripts\\\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py tests/contract/test_source_catalog_gap_plan.py tests/contract/test_fc1204_complexity_ratchet.py tests/contract/test_zr405_policy_export_cli.py tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "839 passed（39 新 + 11 既有 gap_plan + 2 ratchet + 787 unit；无回归）"
+    },
+    {
+      "command": "python -m ruff check src/company_wiki/source_catalog/gap_plan.py src/company_wiki/source_catalog/cli.py tests/contract/test_zr406_gap_plan_orthogonality.py; python -m ruff format --check 同组 (base python)",
+      "exit_code": 0,
+      "result": "All checks passed；3 files already formatted"
+    },
+    {
+      "command": "git diff e56eb5f 45ae721 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "4 文件：gap_plan.py（capture_ready 防御过滤 _usable_handles）、cli.py（ratchet 重构 _run_export_command）、test_zr406_gap_plan_orthogonality.py（30 格矩阵 + 9 聚焦，39 collected）"
+    }
+  ],
+  "created_at_utc": "2026-08-18T22:00:00+00:00",
+  "findings": [
+    {
+      "detail": "正交矩阵全部钉死：local 状态（无/matched-exact/matched-equivalent/多 handle-ambiguous/capture-incomplete-unusable）× provider 状态（current/newer_period/newer_revision/not_published/unknown-error/future）数据驱动断言（reuse/missing/newer_revision/not_published/future 五元组 + gap_hash 确定性/区分度）。",
+      "id": "ZR406-IMPL-001",
+      "severity": "info",
+      "title": "正交矩阵 5×6 全格钉死"
+    },
+    {
+      "detail": "防御性硬化（产品改动，+1 处）：build_gap_plan 入口过滤 capture-incomplete local handle（_usable_handles，含 provider_error 早退分支）——unusable handle 永不进入 reuse、永不翻转 not_published；过滤后 provider 同周期列表为真 missing（诚实）。resolver 上游已 gate capture_ready，本过滤为纯函数防御纵深。",
+      "id": "ZR406-IMPL-002",
+      "severity": "info",
+      "title": "capture_ready 防御过滤（所有结局分支一致）"
+    },
+    {
+      "detail": "测试自 bug 修正记录：ambiguous 矩阵 current 格需 provider accession 匹配最新 local（否则诚实报 newer_revision——该行为本身已钉死）；修订去重 fixture 的 accession 词序需时序化（acc-0001<0002<0003），否则 max 按词典序选错。",
+      "id": "ZR406-IMPL-003",
+      "severity": "info",
+      "title": "矩阵 fixture 修正（accession 词序/current 格语义）"
+    },
+    {
+      "detail": "cli.py 复杂度 ratchet：ZR-405 新增 policy-export elif 使 main 141>140；重构为 _run_export_command helper（export/policy-export 合并进一个 in-tuple 分支），main 分支净零回到 140。gap_plan 21>20 同理用 _usable_handles helper 归还。",
+      "id": "ZR406-IMPL-004",
+      "severity": "info",
+      "title": "复杂度 ratchet 维护（helper 提取，两处）"
+    },
+    {
+      "detail": "REV-001/002 修复：矩阵改为真·数据驱动 30 格参数化（itertools.product 5×6，test_c1_matrix_cell），补上原缺失 5 格（equivalent×not_published/unknown、ambiguous×not_published/unknown、unusable×future）；测试计数诚实为 39 collected（30 矩阵 + 9 聚焦），commit b41bfc2 消息中的 13 计数已由 45ae721 修正。newer_revision 列在无可用 local 时为 missing（语义修正入矩阵）。",
+      "id": "ZR406-IMPL-005",
+      "severity": "info",
+      "title": "REV-001/002 修复：30 格全矩阵 + 诚实计数"
+    }
+  ],
+  "implementation": {
+    "design": "新增 tests/contract/test_zr406_gap_plan_orthogonality.py（39 collected = 30 格参数化矩阵 + 9 聚焦测试）：C1 数据驱动 5×6 全矩阵（itertools.product，_matrix_cell 每格 fixture+期望签名，含 cells-distinct 完备性守卫、全 30 格 gap_hash 确定性+区分度、error 分支 unusable）；C2 as_of 防泄漏（future 排除不否定 not_published、未知 filing_date eligible 保守、混合 eligible+future）；C3 非自然年/修订去重（同 fiscal_year 多 period_end 单桶、amended+original 单 newer_revision、最新修订 reuse）。产品改动：gap_plan.build_gap_plan 入口 _usable_handles 过滤（capture_ready 防御纵深，含 provider_error 分支）；cli.py 复杂度维护（_run_export_command）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/gap_plan.py",
+      "company-wiki/src/company_wiki/source_catalog/cli.py",
+      "company-wiki/tests/contract/test_zr406_gap_plan_orthogonality.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-406/**"
+    ]
+  },
+  "implementer": "zr406-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 e8478f9（ZR-405 closure commit）；result_triplet.wiki 为本卡实现提交 45ae721（含 b41bfc2 初版 + 45ae721 REV-001/002 修正）。",
+    "reviewed_object（新测试文件，45ae721 HEAD）sha256=448b1e8fdb96e68390d1ba08efdcee343d884c713485c4af1b7d801fb929f19f。",
+    "卡片 hash 于最终编辑后冻结：plan_sha256=2a2dd737…。"
+  ],
+  "objective": "正交 local-match 与 provider freshness/coverage planner；exact/equivalent/missing/ambiguous/unusable × current/newer_period/newer_revision/not_published/unknown/future；as_of 防泄漏；非自然年/修订去重。",
+  "plan_sha256": "2a2dd7372d3aad529d5ea44a0486413cfed18e00237378f33b54a60c03198f13",
+  "result_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "e8478f90ce0ac34b325012ef56e57c5119d7533c",
+    "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki gap_plan.py（capture_ready 防御过滤）+ cli.py（ratchet 维护）+ 新测试 tests/contract/test_zr406_gap_plan_orthogonality.py（39 collected）；revenue 侧 receipts/ZR-406/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/gap_plan.py",
+    "company-wiki/src/company_wiki/source_catalog/cli.py",
+    "company-wiki/tests/contract/test_zr406_gap_plan_orthogonality.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-406/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-406"
+}

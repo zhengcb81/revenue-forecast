@@ -1,0 +1,106 @@
+{
+  "case": "E2-F3-sampler-disabled",
+  "checks": {
+    "expected_raw_returncode": {
+      "ok": true,
+      "detail": {
+        "raw": 2,
+        "expected": 2
+      }
+    },
+    "calls_failed": {
+      "ok": false,
+      "detail": {
+        "raw": null,
+        "expected": 0
+      }
+    },
+    "peak_rss_is_null": {
+      "ok": true,
+      "detail": {
+        "raw": null,
+        "must_not_be": 0.0
+      }
+    },
+    "peak_rss_not_zero": {
+      "ok": true,
+      "detail": {
+        "raw": null
+      }
+    },
+    "peak_rss_source": {
+      "ok": false,
+      "detail": {
+        "raw": null,
+        "expected": "sampler_disabled"
+      }
+    },
+    "breach_contains": {
+      "ok": false,
+      "detail": {
+        "breaches": ""
+      }
+    },
+    "window_present:command_total_seconds": {
+      "ok": false,
+      "detail": {
+        "value": null
+      }
+    },
+    "window_present:slo_window_seconds": {
+      "ok": false,
+      "detail": {
+        "value": null
+      }
+    },
+    "window_present:rss_sample_window_seconds_max": {
+      "ok": false,
+      "detail": {
+        "value": null
+      }
+    },
+    "window_present:quick_check_seconds": {
+      "ok": false,
+      "detail": {
+        "value": null
+      }
+    },
+    "quick_check_outside_slo_window": {
+      "ok": false,
+      "detail": {
+        "value": null
+      }
+    },
+    "rss_window_not_before_slo_window": {
+      "ok": true,
+      "detail": {
+        "rss": null,
+        "slo": null
+      }
+    },
+    "frozen_budgets_untouched": {
+      "ok": false,
+      "detail": {
+        "raw": null,
+        "frozen": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        }
+      }
+    }
+  },
+  "all_ok": false,
+  "failed_checks": [
+    "calls_failed",
+    "peak_rss_source",
+    "breach_contains",
+    "window_present:command_total_seconds",
+    "window_present:slo_window_seconds",
+    "window_present:rss_sample_window_seconds_max",
+    "window_present:quick_check_seconds",
+    "quick_check_outside_slo_window",
+    "frozen_budgets_untouched"
+  ]
+}

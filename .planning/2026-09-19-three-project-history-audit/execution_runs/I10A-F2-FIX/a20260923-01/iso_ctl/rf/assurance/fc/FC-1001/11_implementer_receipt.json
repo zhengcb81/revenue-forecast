@@ -1,0 +1,116 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1001",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "Unified isolated-lake fixture (Phase 10 bedrock): one temp dir reproducing the three-root production layout (companies + dayu + Dropbox) with sidecars, identity snapshots, v2 processed artifacts (schema_version COLUMN + metadata, FC-906-d contract), producer_events journal, corruption variants (hash_mismatch/truncated_source/sidecar_missing/location_inactive/column_drop), deterministic manifest hash with NO real paths. Plus a pre-existing date-drift fix in FC-505 tests (as_of pinned 2026-08-11 vs resolver retrieved_at=today). Revenue full suite 411 passed / 0 failed.",
+  "base_triplet": {
+    "revenue": "c79d7cccbbc4f84f2b8c4e9d9ad780e52e0305ff",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "result_triplet": {
+    "revenue": "e54d9e3051e4fce12d12335b7a09b9649cc467f3",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tests/e2e_support/isolated_lake.py",
+    "revenue-forecast/tests/test_fc1001_isolated_lake.py",
+    "revenue-forecast/tests/test_dropbox_full_chain_fc505.py",
+    "revenue-forecast/assurance/fc/FC-1001/00_wu_card.md",
+    "revenue-forecast/assurance/fc/FC-1001/11_implementer_receipt.json",
+    "revenue-forecast/assurance/fc/FC-1001/12_reviewer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/tests/e2e_support/isolated_lake.py",
+    "revenue-forecast/tests/test_fc1001_isolated_lake.py",
+    "revenue-forecast/tests/test_dropbox_full_chain_fc505.py"
+  ],
+  "dependency_receipts": [
+    "company-wiki/assurance/fc/FC-906/ (FC-906-a/b/c/d accepted) — v2 artifact contract + production canary shape",
+    "company-wiki/assurance/fc/FC-604/ (accepted) — three-root consistency fixture pattern"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "AR-01",
+      "status": "passed",
+      "note": "fixture v2 artifacts validate REUSABLE (column + metadata both stamped); bundle path yields valid handles."
+    },
+    {
+      "id": "SAFE-04",
+      "status": "passed",
+      "note": "5 corruption variants each fail closed (validator/bundle/resolver/admission layers); mutations M-loc/M-hash kill their variant tests."
+    },
+    {
+      "id": "EX-07",
+      "status": "passed",
+      "note": "three-root consistent resolve from ONE catalog (companies root resolves 紫金矿业 2025 exact/equiv)."
+    },
+    {
+      "id": "PORT-03",
+      "status": "passed",
+      "note": "manifest has no real paths (C:/, /Users/, 郑曾波, Projects, tmp all absent); pathlib-only construction (Windows/Linux reproducible)."
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=scripts:tests:../company-wiki/src python -B -m pytest tests/test_fc1001_isolated_lake.py -q",
+      "exit_code": 0,
+      "result": "9 passed (determinism, no-real-paths, three-root resolve, v2 bindability, 5 corruption variants)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=scripts:tests:../company-wiki/src python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "411 passed, 106 subtests (was 2 failed: FC-505 date-drift pre-existing, fixed test-only; +9 FC-1001)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check tests/e2e_support/isolated_lake.py tests/test_fc1001_isolated_lake.py tests/test_dropbox_full_chain_fc505.py",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit (auto): full suite + engine E2E + install-sync R4.2",
+      "exit_code": 0,
+      "result": "411 passed; E2E PASS (deterministic double-run identical); MATCH 101 files x2",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "catalog_mutations": 0,
+    "note": "Pure test-infrastructure FC; temp catalogs only. FC-505 fix is test-only date drift."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "No production code changed (test infra + test-only fix)."
+  },
+  "mutation": {
+    "id": "FC-1001-M-loc-M-hash",
+    "killed": true,
+    "details": "M-loc: corrupt('location_inactive') UPDATE set status='active' (no quarantine) -> test FAILS (resolver matches). M-hash: corrupt('hash_mismatch') skips tamper -> test FAILS (artifact still REUSABLE). Both reverted; 9 passed restored. (Naive 'delete assertion' mutations are not valid for single-assertion tests — the corrupt implementation is the mutation target.)"
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert e54d9e3 removes all three files; no data side effects."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1001-independent",
+    "reviewer_receipt_sha256": "bea4e2e5e1b764caae3212b06c5aa1aaedd174b1818620e3721131d81bb4a5f6",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-12T02:25:37Z",
+    "note": "independent reviewer replayed diff + focused + M-loc/M-hash from clean worktree e54d9e3; base failure proof (FC-505 2/4 at base); full suite 411/0; verdict accepted; findings F1(low,sealed now)/F2-F5(info). reviewer_receipt_sha256 recomputed over sealed file (compact sort_keys)"
+  },
+  "provisional_note": "Feat sealed at revenue e54d9e3 (filing/wiki unchanged). 9 fixture contracts + pre-existing date-drift fix; full suite 411 passed / 0 failed. Independent review pending."
+}

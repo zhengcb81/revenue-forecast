@@ -1,0 +1,230 @@
+{
+  "card": "OUTWARD-LETTERS-RECEIPT-AUDIT/a20260926-01",
+  "role": "receipt_auditor",
+  "scope": "函 A 的三份 TIER-2 回执 与 三封函件本体 的一致性与有效性（只出核验结论，不改任何实质内容）",
+  "oracle_frozen": ".planning/2026-09-19-three-project-history-audit/execution_runs/OUTWARD-LETTERS-RECEIPT-AUDIT/a20260926-01/oracle.md",
+  "measured_at": "2026-09-26",
+  "seven_items": {
+
+    "J1_sha_three_way": {
+      "verdict": "满足（3/3，按 RESPONSES.md L15 精确化口径 R==T）",
+      "criteria": "R=RESPONSES.md 登记 sha；L=活文件 sha256；T=转录段 sha256（BEGIN/END 之间逐行 LF 拼接、无尾换行）。R==T 才算一致。",
+      "OPEN-4": {
+        "registered_R": "37413f7812bbe4aa21948f0f474a2ceac2ad0f778f1a3c5eb4f6b3af7e1d98bb",
+        "live_L": "37413f7812bbe4aa21948f0f474a2ceac2ad0f778f1a3c5eb4f6b3af7e1d98bb",
+        "transcript_T": "37413f7812bbe4aa21948f0f474a2ceac2ad0f778f1a3c5eb4f6b3af7e1d98bb",
+        "live_bytes": 42062, "transcript_segment_bytes": 42062,
+        "prefix16": {"R": "37413f7812bbe4aa", "L": "37413f7812bbe4aa", "T": "37413f7812bbe4aa"},
+        "R_eq_T": true, "R_eq_L": true, "note": "三方逐字符合"
+      },
+      "OPEN-5": {
+        "registered_R": "74f5c83598355bd43627fbf475260babf2da65b869c02196d889d8b11772b234",
+        "live_L": "74f5c83598355bd43627fbf475260babf2da65b869c02196d889d8b11772b234",
+        "transcript_T": "74f5c83598355bd43627fbf475260babf2da65b869c02196d889d8b11772b234",
+        "live_bytes": 46901, "transcript_segment_bytes": 46901,
+        "prefix16": {"R": "74f5c83598355bd4", "L": "74f5c83598355bd4", "T": "74f5c83598355bd4"},
+        "R_eq_T": true, "R_eq_L": true, "note": "三方逐字符合"
+      },
+      "OPEN-6": {
+        "registered_R": "8aabac0908b407b8af5108c00b4a26e11476d889b593ade306d1eee519c368d1",
+        "live_L": "5cb476767a934885f48eb40fcccac0515243471a7fc6f0aa0b66680bea99cf15",
+        "transcript_T": "8aabac0908b407b8af5108c00b4a26e11476d889b593ade306d1eee519c368d1",
+        "live_bytes": 52560, "transcript_segment_bytes": 49796,
+        "prefix16": {"R": "8aabac0908b407b8", "L": "5cb476767a934885", "T": "8aabac0908b407b8"},
+        "R_eq_T": true, "R_eq_L": false,
+        "erratum_L15_claim_check": {
+          "claimed_live_sha_prefix": "5cb476767a93", "measured_live_sha_prefix": "5cb476767a93",
+          "claimed_live_bytes": 52560, "measured_live_bytes": 52560,
+          "claimed_fork_char": 22394, "measured_fork_char": 22394,
+          "claim_matches_measurement": true
+        },
+        "live_vs_registered_diff": {
+          "line_diff_total": 12,
+          "insertions": [
+            {"name": "C-续（C7 回报线④…）", "live_lines": "259-264", "chars": 970, "bytes": 1727, "declared_in_L15": true},
+            {"name": "D-续 4（修复卡落地事实知会：P6-B 补面 / P7 键修订）", "live_lines": "308-312", "bytes": 1037, "declared_in_L15": false}
+          ],
+          "sections_1_to_6_byte_identical": true,
+          "conditions_C1_to_C8_byte_identical": true,
+          "note": "§1–§6 与条件表（含 C1–C8）与注册时点逐字节相同；两处插入均落在 §7 解析态区。L15 只记「C-续」一节，未记 D-续 4 ⇒ 记述不完整（见差异明细 D3）"
+        }
+      },
+      "segment_extraction_method": "rulings_transcribed_2026-09-22.md BEGIN/END 标记间行区间 = [6..251] / [258..722] / [729..1035]（0-based），以 \\n 拼接、无尾换行；文件本体 0 处 CRLF、1040 处 LF"
+    },
+
+    "J2_letter_version_timing": {
+      "verdict": "满足（回执确系针对更新后函件；记录 1 处时序异常，已由字节级证据闭合）",
+      "receipt_registration_time": "2026-09-22（RESPONSES.md L5/L6/L7 行内所记）",
+      "mtimes_measured": {
+        "A_DW06_OPEN-4-5-6.md": {"bytes": 11546, "mtime": "2026-09-22 22:24:40", "sha16": "cd88bd4cece0271d"},
+        "B_signature_trust_domain.md": {"bytes": 15946, "mtime": "2026-09-22 22:24:40", "sha16": "f494ac3db7ce2ff2f"},
+        "C_I-05-C_gap2_gap3.md": {"bytes": 11673, "mtime": "2026-09-22 22:24:40", "sha16": "73fb856e0b00d6a4"},
+        "README.md": {"bytes": 3716, "mtime": "2026-09-22 22:24:40", "sha16": "1d4b08c3d3674a11"},
+        "_provenance.json": {"bytes": 9639, "mtime": "2026-09-23 23:02:26", "sha16": "25cd43cc38488e00"},
+        "RESPONSES.md": {"bytes": 2302, "mtime": "2026-09-23 21:36:18", "sha16": "1cfeef0fb438fae8"},
+        "ruling_OPEN4": {"mtime": "2026-09-22 22:02:37"},
+        "ruling_OPEN5": {"mtime": "2026-09-22 22:03:33"},
+        "ruling_OPEN6": {"mtime": "2026-09-22 23:19:28"},
+        "transcript": {"mtime": "2026-09-22 22:21:40", "bytes": 139717}
+      },
+      "byte_level_evidence_receipt_targets_updated_letter": {
+        "OPEN-4": "ruling.md L22 逐字引用「签发哈希 cd88bd4cece0… / 11546 B」= 现行函 A 字节 ⇒ 针对更新后",
+        "OPEN-6": "ruling.md L7 逐字引用「2026-09-22 追加更新后定稿 11546 B，签发 sha256 cd88bd4cece0…」⇒ 针对更新后",
+        "OPEN-5": "ruling.md L23/L27/L51/L63 引用函 A 第 88/90-96/98-108/110-118/147-152 行文本，与现行字节相符；但更新段为底部追加（前缀证明 sha256(after[:9120]) == 87d4431611d2… 已独立复算 OK），原请求项区两版本逐字节相同 ⇒ 引文不构成区分证据，亦不构成过期证据"
+      },
+      "anomaly": {
+        "id": "A1",
+        "text": "三函 + README 实测 mtime 均为 2026-09-22 22:24:40，晚于 OPEN-4(22:02:37)、OPEN-5(22:03:33) 两份回执与转录件(22:21:40)；即函件在两份回执之后被（重）写过一次",
+        "closure": "内容指纹未变：provenance updates.after 三函 sha/bytes 与实测逐项相符；前缀证明三条全部独立复算 OK；OPEN-4/OPEN-6 回执内引用的签发 sha = 现行字节 ⇒ 判「回执未过期」",
+        "residual": "OPEN-5 无回执内 sha 引用，其「针对更新后」仅由同批次 + 请求项字节不变间接支撑"
+      },
+      "letters_post_receipt_edits": "OPEN-6 活文件最后写入 2026-09-22 23:19:28（回执自身被追加，非函件）；三函在 2026-09-22 22:24:40 之后无再写"
+    },
+
+    "J3_request_vs_response": {
+      "verdict": "满足（20 条请求，20 条有回应，0 条缺）",
+      "letter": "outward_requests/A_DW06_OPEN-4-5-6.md（11546 B，sha cd88bd4c…）",
+      "line_number_convention": "ruling.md 行号 = 转录件行号 − 6（OPEN-4）/ − 258（OPEN-5）/ − 729（OPEN-6），已用 OPEN-4 ruling L22 ↔ 转录 L28 交叉核对",
+      "items": [
+        {"id": 1, "request": "4a 审核结论以什么工件承载（DB 行/JSON 收据/两者）", "letter_line": 53, "response": "OPEN-4 ruling §4.1 选择1（L73-74）：唯一权威载体=DB 行内 JSON 收据，导出文件永为非权威", "ruling": "OPEN-4", "has": true},
+        {"id": 2, "request": "4a 判定枚举权威闭集", "letter_line": 54, "response": "OPEN-4 §4.1 选择3-4（L76-81）：三层闭集 {not_reviewed, not_detected, detected_and_ignored}，拒 reviewed_ok", "ruling": "OPEN-4", "has": true},
+        {"id": 3, "request": "4b 身份以何为主体（人ID/角色/进程+凭据）", "letter_line": 59, "response": "OPEN-4 §4.2 选择1（L99）：角色+具名主体+进程凭据三元组", "ruling": "OPEN-4", "has": true},
+        {"id": 4, "request": "4b 是否需不可伪造签名链；与函 B 同一套还是两套（跨函耦合）", "letter_line": 60, "response": "OPEN-4 §4.2 选择2-3（L100-101）同一套不设第二根；OPEN-6 附裁 4b（L83）同表态", "ruling": "OPEN-4+OPEN-6", "has": true},
+        {"id": 5, "request": "4c 何种变更使旧回执失效（source/policy内容/policy版本号/role_set/请求身份）", "letter_line": 64, "response": "OPEN-4 §4.3 选择1（L119-125）：逐项五答", "ruling": "OPEN-4", "has": true},
+        {"id": 6, "request": "4c 失效立即还是下次读取时", "letter_line": 66, "response": "OPEN-4 §4.3 选择2（L126）：读取时 fail-closed，不做立即批量失效", "ruling": "OPEN-4", "has": true},
+        {"id": 7, "request": "4c 作废重审 vs 增量补审 + 已下游消费工件处理", "letter_line": 67, "response": "OPEN-4 §4.3 选择3（L127）：全量重审、拒增量；旧回执留作历史、下游阻断", "ruling": "OPEN-4", "has": true},
+        {"id": 8, "request": "§1.2 复核与 OPEN-2 选项 A 键口径自洽", "letter_line": 74, "response": "OPEN-4 §4.3 兼容影响（L137）：复核结论「自洽」+ 两条实施红线", "ruling": "OPEN-4", "has": true},
+        {"id": 9, "request": "§1.2 OPEN-2b role_set 权威来源（知会项）", "letter_line": 75, "response": "OPEN-6 §7.1(8)（L204）、§7.3(c) 扫描范围定义（L229-236）引用并核 role_set 维度", "ruling": "OPEN-6", "has": true},
+        {"id": 10, "request": "§2.1 确认「接口今天不存在」这一事实", "letter_line": 96, "response": "OPEN-5 §3（L68）：✅ 确认；§4.0（L86-93）给四处实证", "ruling": "OPEN-5", "has": true},
+        {"id": 11, "request": "§2.2-1 消费入口 + 与 I-05-B 已验证字节衔接", "letter_line": 100, "response": "OPEN-5 §4.1（L95-105）：唯一入口 source_preparation.py、经 verify_artifact_reads", "ruling": "OPEN-5", "has": true},
+        {"id": 12, "request": "§2.2-2 恢复接口输入/输出", "letter_line": 102, "response": "OPEN-5 §4.2（L119-133）：输入=demand_id+request 工件并强制绑定；输出=补产指令+record", "ruling": "OPEN-5", "has": true},
+        {"id": 13, "request": "§2.2-3 持久化介质是否同库同迁移", "letter_line": 104, "response": "OPEN-5 §4.3（L146-156）：同一库同一 _apply_additive_migrations，不另立介质", "ruling": "OPEN-5", "has": true},
+        {"id": 14, "request": "§2.2-4 权限（是否与 OPEN-3 claim 共用；禁自动 resume/后台 scheduler）", "letter_line": 107, "response": "OPEN-5 §4.4（L163-174）：共用同一 claim 授权，不多不少", "ruling": "OPEN-5", "has": true},
+        {"id": 15, "request": "§2.3 消费入口是否依赖候选修订；若依赖写明修订后接口契约", "letter_line": 117, "response": "OPEN-5 §4.5（L179-193）：明确「是，依赖修订」+ 六条契约", "ruling": "OPEN-5", "has": true},
+        {"id": 16, "request": "§3.1-1 两状态谁判定/依据什么/落盘在哪；跨域谁最终署名", "letter_line": 126, "response": "OPEN-6 §4.1（L91-105）：检出=安全域事实、忽略=安全域授权、最终署名=ignore_authorizer", "ruling": "OPEN-6", "has": true},
+        {"id": 17, "request": "§3.1-2 是否需要理由字段与「谁授权忽略」记录", "letter_line": 129, "response": "OPEN-6 §4.2（L114-130）：必须，授权元组五件套，缺一 fail-closed", "ruling": "OPEN-6", "has": true},
+        {"id": 18, "request": "§3.1-3 下游可见还是被过滤", "letter_line": 131, "response": "OPEN-6 §4.3（L132-151）：可见且强制标记、禁止过滤", "ruling": "OPEN-6", "has": true},
+        {"id": 19, "request": "§3.2 起草方「零 review 行、未越权」事实知悉", "letter_line": 139, "response": "OPEN-6 §2（L41-45）逐字引用；§4.4 4a（L157）「零 review 行的克制正确」", "ruling": "OPEN-6", "has": true},
+        {"id": 20, "request": "§4 回执要求：落点各卡载体+不在函上签字+六要素+不以最佳实践+RESPONSES 登记", "letter_line": 147, "response": "三份 ruling 落点声明（OPEN-4 L241-245 / OPEN-5 L5-6、L462-464 / OPEN-6 L5、L186）+ OPEN-6 条件 C8（L174）+ RESPONSES.md 三行已登记；两卡载体各一份转录件 rulings_transcribed_2026-09-22.md（139717 B，mtime 2026-09-22 22:21:40）", "ruling": "ALL", "has": true}
+      ],
+      "counts": {"requests_total": 20, "answered": 20, "missing": 0, "out_of_scope_answers": 0},
+      "adjacent_note": "OPEN-6 明示「不关闭 OPEN-4」（§6.4，L185）：4a 闭集最终文本与 4c 键口径自洽须 wiki 来源审核 owner 联署 ⇒ 属联署条件，不计为缺回应"
+    },
+
+    "J4_conditions": {
+      "verdict": "不满足（29 条中 已兑现 13 · 部分兑现 6 · 未兑现 10；兑现率 13/29 = 44.8%，含部分 19/29 = 65.5%）",
+      "OPEN-4_C1_C6": [
+        {"id": "O4-C1", "name": "载体唯一性", "status": "部分兑现", "evidence": "写入唯一入口 record_prompt_injection_review（prompt_injection.py L263）+ audit trail L43；但条件要求的「导出 JSON 带 non-authoritative 副本标注」在产品字节 0 命中", "carrier": "company-wiki/src/company_wiki/source_catalog/prompt_injection.py", "carrier_sha16": "88154de4ab763060", "missing": "导出副本 non-authoritative 标注（实测 0 命中）"},
+        {"id": "O4-C2", "name": "闭集冻结", "status": "已兑现", "evidence": "PROMPT_INJECTION_REVIEW_STATUSES = {not_detected, detected_and_ignored}（L66-67）；闭集外写入拒绝（L107-110）", "carrier": "company-wiki/.../prompt_injection.py", "carrier_sha16": "88154de4ab763060"},
+        {"id": "O4-C3", "name": "双绑定必填", "status": "已兑现", "evidence": "_require_sha256(source_sha256/policy_hash) L121-122；文档 L18-19「P5-c dual binding MANDATORY for every status」；负例测试 test_record_without_binding_rejected（tests/unit/test_prompt_injection_guard.py L158）", "carrier": "company-wiki/tests/unit/test_prompt_injection_guard.py", "carrier_sha16": "d3bde1a3d5ec2495"},
+        {"id": "O4-C4", "name": "身份绑定 + 单一信任根", "status": "未兑现（blocked-on-external）", "evidence": "reviewer 仍仅校验非空（L111-112）；WRITER_IDENTITY_NOTE=L77「audit trail, NOT verified identity」；信任根文件缺席（函 B P1/L28、L240）", "carrier": null, "missing": "函 B T2-9/OPEN-D1 真实回执 + 信任根实测存在；在此之前回执不得标称 signed（OPEN-4 ruling L102）"},
+        {"id": "O4-C5", "name": "失效语义落地 + I-06-B 两新正例", "status": "部分兑现", "evidence": "读取时失效已落地并有测试（test_evaluate_ignored_when_policy_changed L229 / tampered L268 / legacy unbound L309）；但条件原文要求的两条新正例（①policy 仅版本号变⇒仍 hit；②role_set/请求身份变⇒原回执仍 hit+demand 新键）在 CW 测试文件中无对应用例名", "carrier": "company-wiki/tests/unit/test_prompt_injection_guard.py", "carrier_sha16": "d3bde1a3d5ec2495", "missing": "两条新正例测试本体（②的 demand 键面另有 p7_key 证据，但缺「原回执仍 hit」断言）"},
+        {"id": "O4-C6", "name": "覆盖留痕", "status": "部分兑现", "evidence": "审计链存在：metadata[PROMPT_INJECTION_REVIEW_AUDIT_KEY] 逐条追加（L378-383），entry 含本次 evidence_sha256/status（L360-367）", "carrier": "company-wiki/.../prompt_injection.py", "carrier_sha16": "88154de4ab763060", "missing": "被覆盖旧收据 sha 的显式字段（现仅可由历史 entry 间接回溯；非「前后两哈希」并列留档）"}
+      ],
+      "OPEN-5_C1_C8": [
+        {"id": "O5-C1", "name": "键含请求身份", "status": "已兑现", "evidence": "p7_key_c8c9c10_GREEN：仅 as_of_date 不同 ⇒ distinct_ids=true / distinct_keys=true，key_version=request-identity-v2，行内 request_sha256 各自正确", "carrier": "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/p7_key_c8c9c10_GREEN.txt", "carrier_sha16": "4eaae03b5e2fa2a6", "qualifier": "载体位于候选隔离副本（iso/candidate/processing_demand_store.py sha 1bbcf9ce…），卡状态 accepted_scoped"},
+        {"id": "O5-C2", "name": "恢复不绕门", "status": "未兑现", "evidence": "RF scripts/ 全目录 'resume' 0 命中；source_preparation.py（9921 B / sha 91a6dc32…）无 resume 子命令", "carrier": null, "missing": "resume 接口本体（函 A §2.1 事实仍成立：接口不存在）"},
+        {"id": "O5-C3", "name": "输入绑定", "status": "未兑现", "evidence": "同上：无 resume 入口，条件要求的 mutated request 拒绝用例无处落地", "carrier": null, "missing": "resume 接口 + 正反两例"},
+        {"id": "O5-C4", "name": "同库同迁移 + 生命周期", "status": "部分兑现", "evidence": "GREEN_P1_migration.txt（N-1 升级路径）+ MUTATION_P1.txt 证真", "carrier": "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/GREEN_P1_migration.txt", "carrier_sha16": null, "missing": "「prune 后非 terminal demand 行仍在」的测试未见载体"},
+        {"id": "O5-C5", "name": "权限=OPEN-3", "status": "部分兑现", "evidence": "GREEN_P2_claim_refusal.txt + GREEN_P3_lease_expiry.txt + MUTATION_P2B/P3", "carrier": "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/GREEN_P2_claim_refusal.txt", "carrier_sha16": null, "missing": "resume 面三例（因接口不存在无法测）；「无后台 scheduler」为反向事实成立"},
+        {"id": "O5-C6", "name": "缺失语义与函 C 一致", "status": "未兑现（blocked-on-external）", "evidence": "函 C GAP-2 仍阻塞（OWNER_DECISIONS:165 一手出处；函 C 无任何回执）", "carrier": null, "missing": "函 C GAP-2 的 RF consumer_analysis owner 真实回执"},
+        {"id": "O5-C7", "name": "输出不越界", "status": "未兑现", "evidence": "无 resume ⇒ 无「一次端到端 resume 后的产物清单」可验", "carrier": null, "missing": "resume 接口 + 端到端产物清单 + content_sha256_actual==declared 断言"},
+        {"id": "O5-C8", "name": "错误契约钉住", "status": "已兑现", "evidence": "MUTATION_P4a：变异即 RED（钉被打破）；MUTATION_P4b 同；handoff 记 P4-SCOPE 并入本卡", "carrier": "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/MUTATION_P4a.txt", "carrier_sha16": "c93e0599fd5614ee"}
+      ],
+      "OPEN-6_C1_C8": [
+        {"id": "O6-C1", "name": "事实/处置分离落地", "status": "未兑现", "evidence": "scan_text 仍铸造处置态：prompt_injection_guard.py L177-178 `return ScanResult(status=\"detected_and_ignored\", …)`；docstring L161-163 同义", "carrier": "company-wiki/src/company_wiki/source_catalog/prompt_injection_guard.py", "carrier_sha16": "d71254782c10cd6d", "missing": "扫描器只产 matches+ruleset_hash+detected 标志；写入口仍是唯一铸造点但扫描器仍直产该状态串"},
+        {"id": "O6-C2", "name": "授权元组必填", "status": "已兑现", "evidence": "ignore_reason/ignore_authorizer/authorized_at 缺一即 raise（prompt_injection.py L195-203），命中快照与双绑定同批校验（L205-218）；写入侧双绑定强制（L121-122）", "carrier": "company-wiki/.../prompt_injection.py", "carrier_sha16": "88154de4ab763060"},
+        {"id": "O6-C3", "name": "身份落地前零行", "status": "未兑现（不可由本工位判定 → fail-closed 记未兑现）", "evidence": "判据=grep 产品树与卡载体的产品语义 detected_and_ignored 行=0；本工位无产品库行计数读数（catalog.sqlite3 数据面未读）", "carrier": null, "missing": "产品库/数据面行计数读数；且身份链（O4-C4）未落地 ⇒ C3 本身应保持闸门"},
+        {"id": "O6-C4", "name": "下游可见", "status": "未兑现", "evidence": "消费/恢复面负例测试需 resume 接口定形（OPEN-6 §7.2 #7 记「在途」，L220）；本工位未见对应负例载体", "carrier": null, "missing": "I-05-B 消费面与 I-06-B 恢复面的可见+标记负例测试"},
+        {"id": "O6-C5", "name": "无旁路", "status": "部分兑现", "evidence": "guard 产品字节 'getenv|environ|warn-only|bypass' 0 命中（反向事实成立）；state_domain 缺/非法 fail-closed（L104-117）", "carrier": "company-wiki/.../prompt_injection_guard.py", "carrier_sha16": "d71254782c10cd6d", "missing": "C5 要求的「设任意环境开关后行为逐字节不变」负例测试载体"},
+        {"id": "O6-C6", "name": "新鲜度不可由调用方放宽", "status": "已兑现", "evidence": "ttl_seconds > POLICY_RECEIPT_TTL_CAP_SECONDS(2592000) 直接 raise（guard L301-305）；调用方仅可收紧（L92/L241-244）；TTL-30D-POLICY 卡 handoff 内含 exceeds policy cap 负例与 mutation 7 处", "carrier": "execution_runs/TTL-30D-POLICY/a20260922-01/handoff.json", "carrier_sha16": "8d0461cfb5c241fa", "qualifier": "卡状态 accepted_scoped"},
+        {"id": "O6-C7", "name": "术语消歧", "status": "已兑现", "evidence": "require_state_domain fail-closed（guard L104-117）+ 每收据 state_domain:review（prompt_injection.py L352、L451 读侧强校验）+ 四形态检验物 GREEN_C7_state_domain.txt / MUTATION_C7.txt", "carrier": "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/GREEN_C7_state_domain.txt", "carrier_sha16": "3198f7b53cf41e30", "qualifier": "指纹差异：该绿证记录的 iso 守卫 sha=17f0dc58f6530f0f（10963 B），现盘守卫 sha=d71254782c10cd6d（14514 B）⇒ 绿证与现盘不同字节，需落定复核"},
+        {"id": "O6-C8", "name": "登记落地", "status": "已兑现", "evidence": "RESPONSES.md L5/L6/L7 三行存在，登记 sha == 转录段 sha（3/3）", "carrier": "outward_requests/RESPONSES.md", "carrier_sha16": "1cfeef0fb438fae8"}
+      ],
+      "boundary_supplements_1_to_7": [
+        {"id": "B1", "name": "覆盖域两层证明形态", "status": "已兑现（记录性条款）", "carrier": "execution_runs/T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md L215-217 + T2-SIM-OPEN5-RF ruling L398-408", "carrier_sha16": "37413f7812bbe4aa / 74f5c83598355bd4"},
+        {"id": "B2", "name": "派生件识别条款", "status": "已兑现（记录性条款）", "carrier": "T2-SIM-OPEN5-RF ruling L409-412；OPEN-4 ruling L218"},
+        {"id": "B3", "name": "C3 校验对象精确化（哈希域）", "status": "已兑现（记录性条款）", "carrier": "T2-SIM-OPEN5-RF ruling L412-417"},
+        {"id": "B4", "name": "检验物补充：派生件负例探针", "status": "未兑现", "missing": "未见转码/拼接字节流投喂 resume/消费面的负例探针载体（且 resume 不存在）"},
+        {"id": "B5", "name": "detected_and_ignored 流转条款", "status": "已兑现（记录性条款）", "carrier": "T2-SIM-OPEN5-RF ruling L435-438 + OPEN-6 §4.3（L132-151）"},
+        {"id": "B6", "name": "同词异义消歧（改名优先/断言字段退路）", "status": "已兑现", "carrier": "FIX-W06-GAPS/evidence/GREEN_C7_state_domain.txt + MUTATION_C7.txt + OPEN-6 活文件 C-续（L259-264，冲突实存⇒退路已实施）", "carrier_sha16": "3198f7b53cf41e30 / 5f6e7481e4540868"},
+        {"id": "B7", "name": "补产指令携带命中快照", "status": "未兑现", "missing": "补产指令随 resume 接口存在；接口不存在 ⇒ 无法落地"}
+      ],
+      "rate": {"total": 29, "fulfilled": 13, "partial": 6, "unfulfilled": 10, "fulfilled_rate": "13/29 = 44.8%", "fulfilled_plus_partial_rate": "19/29 = 65.5%"}
+    },
+
+    "J5_provenance_fingerprints": {
+      "verdict": "不满足（三函覆盖且指纹相符；RESPONSES.md 未覆盖；README updates.after 指纹与实测不符且无勘误覆盖 ⇒ 触发 blocked #5）",
+      "three_letters": [
+        {"file": "A_DW06_OPEN-4-5-6.md", "recorded_after_bytes": 11546, "measured_bytes": 11546, "recorded_after_sha16": "cd88bd4cece0271d", "measured_sha16": "cd88bd4cece0271d", "prefix_proof_recomputed": "sha256(after[:9120]) = 87d4431611d24f95 == before.sha256", "match": true},
+        {"file": "B_signature_trust_domain.md", "recorded_after_bytes": 15946, "measured_bytes": 15946, "recorded_after_sha16": "f494ac3db7ce2ff2f", "measured_sha16": "f494ac3db7ce2ff2f", "prefix_proof_recomputed": "sha256(after[:12509]) = 84a7988da2a70388 == before.sha256", "match": true},
+        {"file": "C_I-05-C_gap2_gap3.md", "recorded_after_bytes": 11673, "measured_bytes": 11673, "recorded_after_sha16": "73fb856e0b00d6a4", "measured_sha16": "73fb856e0b00d6a4", "prefix_proof_recomputed": "sha256(after[:8724]) = b0ef5fda63ebfdc5 == before.sha256", "match": true}
+      ],
+      "RESPONSES_md": {"covered": false, "detail": "_provenance.json 全文（artifacts / updates_2026_09_22 / issuance_2026_09_22 / errata_2026_09_23）无任何 RESPONSES.md 的 bytes/sha256 条目；实测 2302 B / 1cfeef0fb438fae8…，mtime 2026-09-23 21:36:18"},
+      "README": {"covered_partially": true, "detail": "updates_2026_09_22.readme.after = 3521 B / bfc03849863cae6e…，实测 = 3716 B / 1d4b08c3d3674a11…（+195 B = 第 49 行 issuance 注记）；errata_2026_09_23 只覆盖 I-05-C 的 7087 B 陈旧引用，未覆盖本差异", "delta_bytes": 195},
+      "timestamps_vs_mtime": [
+        {"field": "_provenance.created_at_utc", "value": "2026-09-20T18:1x:00Z", "parseable": false, "note": "分钟位为占位符 x，不可解析；早于三函 mtime 2026-09-22 22:24:40（顺序合理）"},
+        {"field": "updates_2026_09_22.date", "value": "2026-09-22", "letters_mtime": "2026-09-22 22:24:40", "order": "同日，date 粒度不足以定先后"},
+        {"field": "issuance_2026_09_22.date", "value": "2026-09-22", "order": "同日"},
+        {"field": "errata_2026_09_23.by", "value": "BOOKKEEP-REPAIR/a20260923-01", "_provenance_mtime": "2026-09-23 23:02:26", "order": "与 mtime 自洽"},
+        {"field": "letters vs _provenance", "letters_mtime": "2026-09-22 22:24:40", "_provenance_mtime": "2026-09-23 23:02:26", "order": "_provenance 晚于三函（与「事后登记」一致）"}
+      ]
+    },
+
+    "J6_freeze_compliance": {
+      "verdict": "满足",
+      "freeze_source": "outward_requests/RESPONSES.md L17（勘误节，2026-09-23；该文件最后写入 = 冻结生效点）",
+      "freeze_effective_at": "2026-09-23 21:36:18（RESPONSES.md mtime）",
+      "measurements": [
+        {"file": "T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md", "mtime": "2026-09-22 22:02:37", "sha16": "37413f7812bbe4aa", "after_freeze_write": false},
+        {"file": "T2-SIM-OPEN5-RF/a20260922-01/ruling.md", "mtime": "2026-09-22 22:03:33", "sha16": "74f5c83598355bd4", "after_freeze_write": false},
+        {"file": "T2-SIM-OPEN6-SEC/a20260922-01/ruling.md", "mtime": "2026-09-22 23:19:28", "sha16": "5cb476767a934885", "after_freeze_write": false},
+        {"file": "I-06-B/.../rulings_transcribed_2026-09-22.md", "mtime": "2026-09-22 22:21:40", "sha16": "5ef8d863e3656962", "after_freeze_write": false}
+      ],
+      "post_freeze_additions": "无（三份 ruling 的全部追加均在 2026-09-22、早于冻结生效点 2026-09-23 21:36:18）",
+      "separate_file_rule": "冻结令「后续解析态另立文件」——盘上未见三份 ruling 的后续解析态新文件；OPEN-6 的 C-续/D-续 4 写在本体，但发生于冻结前，故不构成违令（记为 L15 记述不完整，见 D3）"
+    },
+
+    "J7_nature_declaration": {
+      "verdict": "部分（要素②「未在任何函上签字」10/10 齐全；要素①「非外部方真实签署」在 5 份产物中无对应声明）",
+      "reference": "RESPONSES.md L3：非外部方真实签署、未在任何函上签字",
+      "per_file": [
+        {"file": "outward_requests/RESPONSES.md", "element_1": true, "element_2": true, "where": "L3 全句"},
+        {"file": "T2-SIM-OPEN4-WIKI/ruling.md", "element_1": true, "element_2": true, "where": "L1 标题 + L3 性质声明；L243 落点声明「未在任何函件上签字…未产生任何 status 变化」"},
+        {"file": "T2-SIM-OPEN5-RF/ruling.md", "element_1": true, "element_2": true, "where": "L1/L4-5（owner-authorized simulated adjudication … NOT a real external signature）；L5「不在任何函件上签字」；L462-464 签署行"},
+        {"file": "T2-SIM-OPEN6-SEC/ruling.md", "element_1": true, "element_2": true, "where": "L1/L3-5（NOT a real external signature、未在任何函件…落一笔）；L186 §6.5「不在任何函件上签字…不代任何方签署」；L305-306 签署行"},
+        {"file": "I-06-A 与 I-06-B rulings_transcribed_2026-09-22.md", "element_1": true, "element_2": true, "where": "三段正文首行即各 ruling 的性质声明与落点声明（转录不改一字）"},
+        {"file": "outward_requests/A_DW06_OPEN-4-5-6.md", "element_1": false, "element_2": true, "where": "② L149「不在本函上签字」、L160/L164「非签署者/不产生任何签名」；① 无对应声明（缺）"},
+        {"file": "outward_requests/B_signature_trust_domain.md", "element_1": false, "element_2": true, "where": "② L197/L211/L215；① 无对应声明（缺）"},
+        {"file": "outward_requests/C_I-05-C_gap2_gap3.md", "element_1": false, "element_2": true, "where": "② L143/L155/L159；① 无对应声明（缺）"},
+        {"file": "outward_requests/README.md", "element_1": false, "element_2": true, "where": "② L6「签字不产生任何效力」、L12「等同伪造签名」；① 无「回执系模拟、非外部方真实签署」声明（缺）"},
+        {"file": "outward_requests/_provenance.json", "element_1": false, "element_2": true, "where": "② L6 nature「Each recipient signs on their own card carrier, never on these letters」+ what_this_action_did_not_do「did not sign anything on behalf of any recipient」；① 无（缺，该文件早于回执产生）"}
+      ],
+      "missing_element_1_in": ["outward_requests/A_DW06_OPEN-4-5-6.md", "outward_requests/B_signature_trust_domain.md", "outward_requests/C_I-05-C_gap2_gap3.md", "outward_requests/README.md", "outward_requests/_provenance.json"],
+      "context_note": "要素①声明的是「三份回执的性质」，三函/README/_provenance 均产生于回执之前（起草期产物），字面上无该声明；但 README 与 _provenance 亦无「TIER-2 回执尚未/仅系模拟」的提示句，故按字面如实记缺"
+    }
+  },
+
+  "consistency_status": "inconsistent",
+  "consistency_differences": [
+    {"id": "D1", "object": "_provenance.json → updates_2026_09_22.readme.after", "registered": "3521 B / bfc03849863cae6e17bdc0e850706ced5c04c3822bd1c6be2dd72b78a3d66f45", "measured": "3716 B / 1d4b08c3d3674a11fc49d16628818d3bcba58da4c1ca47da6de1ada52b6f452e", "delta": "+195 B（README 第 49 行 issuance 注记）", "erratum_covering": false, "triggers": "blocked #5"},
+    {"id": "D2", "object": "_provenance.json → RESPONSES.md", "registered": "无任何 bytes/sha 条目", "measured": "2302 B / 1cfeef0fb438fae8d3d63d89a2626a235e3c7466b8142e8f2d99070c2e538e39", "delta": "整份未覆盖", "triggers": "J5 覆盖缺口"},
+    {"id": "D3", "object": "RESPONSES.md L15 勘误记述 vs OPEN-6 活文件实测", "registered": "活文件 = 注册后补「C-续」一节", "measured": "两处插入：C-续（259-264 行，1727 B）+ D-续 4（308-312 行，1037 B），共 +12 行 / +2764 B", "delta": "L15 未记 D-续 4", "sha_and_bytes_claimed_match": true},
+    {"id": "D4", "object": "函件 mtime vs 回执 mtime", "registered": "回执登记 2026-09-22 针对更新后函件", "measured": "三函+README mtime 2026-09-22 22:24:40 > OPEN-4(22:02:37)/OPEN-5(22:03:33) 与转录件(22:21:40)", "delta": "函件在两份回执之后被写一次；内容指纹由前缀证明 + 回执内 sha 引用闭合 ⇒ 未过期"},
+    {"id": "D5", "object": "_provenance.created_at_utc", "registered": "2026-09-20T18:1x:00Z", "measured": "不可解析（分钟占位 x）", "delta": "时间戳非机器可解析"},
+    {"id": "D6", "object": "RESPONSES.md 覆盖面 vs README L31-33 / task_plan L301", "registered": "三行登记，全部为「函 A / T2-1·T2-3·T2-2」", "measured": "函 B（D1/D2/D3/D5/D6/D7/I09A-1..6）与函 C（GAP-2/GAP-3）零回执；task_plan L301（2026-09-26 复核）仍记「仍等外部：三函回执」", "delta": "仅函 A 有回执（且系模拟）"},
+    {"id": "D7", "object": "OWNER_DECISIONS §十九-4 生效链 vs I-06-A/a20260919-01/handoff.json", "registered": "RESPONSES 三行登记 + 两卡转录 ⇒ I-06-A 的 still_awaiting_other_parties 首条解除", "measured": "handoff.json 仍 status=blocked、still_awaiting_other_parties 含 OPEN-4/5/6、blocked_by[0] 仍为 UNSIGNED；mtime 2026-09-20 17:10:56（转录件 2026-09-22 22:21:40 已在，handoff 未随之更新）", "delta": "登记/转录已完成，但该载体的解除动作未落地", "note": "本工位不授予、不解除，仅记录"}
+  ],
+
+  "blocked_triggers_hit": ["#5（_provenance 记录指纹与实测不符且无勘误覆盖）"],
+
+  "seven_disciplines_from_task_plan_L73": [
+    {"discipline": "不得代签", "OPEN-4": "满足（ruling L241-245）", "OPEN-5": "满足（L6-7、L461-464）", "OPEN-6": "满足（L5、L186、L305-306）"},
+    {"discipline": "不得以「按最佳实践」代替决定", "OPEN-4": "满足（L53 引回执纪律；正文逐子项给确定选择）", "OPEN-5": "满足（L63-64 引回执纪律）", "OPEN-6": "满足（L22 共同约束确认已读并遵守）"},
+    {"discipline": "六要素（选择·理由·反例·兼容影响·恢复规则·被拒绝的替代方案）", "OPEN-4": "满足（§4.1 L73-94、§4.2 L96-114、§4.3 L116-141 六要素齐全）", "OPEN-5": "满足（§4.1-4.4 L95-177 每项六要素齐全；§4.5 L179-193 契约六项）", "OPEN-6": "部分（§4.1-4.3 L91-151 六要素齐全；§4.4 附裁 L155-159 的 4a、4c 未逐字列「恢复规则」，4b 齐全）"},
+    {"discipline": "不得编造证据（缺样本维持 blocked、不造绿色样例）", "OPEN-4": "满足（§7 存疑 8 条逐字保留 L169-178；§7-补 逐条标已解除/仍敞口/前提变化，不改判）", "OPEN-5": "满足（存疑项__initial 6 条 L248-265；C8 明记 REMAINS-OPEN L336）", "OPEN-6": "满足（§7.1 8 条 L193-204；§7.2 三值含「在途/部分解除」，L211-226；多处「不预判验收」）"},
+    {"discipline": "裁决前不得把具体秒数/字节数写成规范值", "OPEN-4": "满足（L137「TTL 的数值不由本裁定规范」；L164「任何数值规范…不授予、全文未写入任何规范数值」）", "OPEN-5": "满足（L238-240「不授予任何数值规范；3600s 系测试夹具值不核准为产品默认」）", "OPEN-6": "满足（C6 引 `86400*30` 为现状引证非规范值，L172；规范值由 TTL-30D-POLICY 卡于裁定后落定）"},
+    {"discipline": "回执一律落各卡自己的载体、不在函上签字", "OPEN-4": "满足（L241-245 落点声明；转录件落 I-06-A 与 I-06-B 两卡各一份 139717 B）", "OPEN-5": "满足（L5-6、L462-464）", "OPEN-6": "满足（L5、L186 条件 C8 由编排层执行）"}
+  ],
+  "discipline_summary": {"total": 7, "satisfied": 6, "partial": 1, "unsatisfied": 0, "partial_detail": "六要素在 OPEN-6 §4.4 附裁 4a/4c 未逐字列「恢复规则」"}
+}

@@ -1,0 +1,101 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "404a2bbbd05cbca6d51851a3b912b069b7c79307",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "ee6dd908d4ac667107a9843f36e4f17bfffb4469dc58c3170b406d057e3c5000",
+  "commands": [
+    {
+      "command": "RED 探针：company-wiki companies/紫金矿业 存在真实年报 PDF（2024/2025）；revenue 侧 F2 契约链已就绪但无真实结构演示——RED = 演示旅程缺失（非产品缺口）",
+      "exit_code": 0,
+      "result": "RED = 紫金主要资产逐矿可回答 + 第二家泛化未串起来"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr609_zijin_pilot.py -q --tb=short",
+      "exit_code": 0,
+      "result": "9 passed（C1 紫金三资产覆盖 4 + C2 第二家泛化 3 + C3 全链手算 2）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "705 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+9 新测试，无回归）"
+    },
+    {
+      "command": "ruff check tests/test_zr609_zijin_pilot.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 137 files"
+    },
+    {
+      "command": "git diff 404a2bb e541d55 --stat",
+      "exit_code": 0,
+      "result": "1 文件 +301：test_zr609_zijin_pilot.py（新 9 tests；生产代码零改动——test-only 演示卡）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T08:00:00+00:00",
+  "findings": [
+    {
+      "detail": "紫金 pilot 演示：卡莫阿-卡库拉（DRC 铜，权益链 0.6×0.66=0.396——真实结构形状）、巨龙铜业（西藏，全资无链）、紫金山金铜矿（金锭+银副产品 credit 350）三资产逐矿贡献可回答；内部流（卡莫阿→冶炼厂）elimination；全链手算（saleable 1045.674/87.78/5559.84）一致。第二家纯金矿商（单矿无链单币种）走同一契约链零代码改动——泛化验证。",
+      "id": "ZR609-IMPL-001",
+      "severity": "info",
+      "title": "紫金三资产逐矿演示 + 第二家泛化（test-only）"
+    },
+    {
+      "detail": "零硬编码验证：生产 5 模块 grep zijin/julong/zhao/bisha/barrick 零命中（kamoa/porgera 仅 docstring 防线语义标签，reviewer 已认可）；公司结构只存在于测试。",
+      "id": "ZR609-IMPL-002",
+      "severity": "info",
+      "title": "零硬编码验证（生产代码）"
+    }
+  ],
+  "implementation": {
+    "design": "test-only 演示卡：合成紫金结构（3 矿 + 权益链 + 内部流）走 F2 全链（MineYearOperation→commercial terms→ownership→elimination→reconciliation）逐矿可回答 + 第二家不同结构矿企泛化；生产代码零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr609_zijin_pilot.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-609/**"
+    ]
+  },
+  "implementer": "zr609-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 e541d55；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=1f6523b0（00_wu_card.md，hashlib 注入）。",
+    "修正记录（reviewer REV-001/REV-002）：ZR-611 closure commit 已独立落地为 404a2bb（e541d55 直接父）——初版 receipt 误记 base_triplet=288ac88 与'流程偏差第三次'，已修正为 base_triplet=404a2bb 并更新 command #7 的 diff 范围。",
+    "独立 reviewer 待派出（reviewer-zr609-independent）。",
+    "注：base_triplet.revenue=404a2bb 为 ZR-611 closure commit。"
+  ],
+  "objective": "F2 合流：紫金 pilot（三主要资产逐矿贡献可回答 + 内部流 elimination + 对账）+ 第二家不同结构矿企泛化——生产代码零公司/矿名硬编码。",
+  "plan_sha256": "1f6523b0701fa048f8434f42a5609340a4d07140a9b547e60c5a7786f1112f97",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e541d556d03605691ab94c81a2dc61cee8c83785",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr609_zijin_pilot.py（新 9 tests，test-only 零产品改动）；revenue 侧 receipts/ZR-609/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr609_zijin_pilot.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-609/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-609"
+}

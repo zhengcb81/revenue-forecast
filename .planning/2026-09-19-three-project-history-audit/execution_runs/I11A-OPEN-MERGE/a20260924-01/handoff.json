@@ -1,0 +1,285 @@
+{
+  "schema": "i11a-open-merge-handoff/1",
+  "card": "I-11-A",
+  "attempt": "execution_runs/I11A-OPEN-MERGE/a20260924-01",
+  "role": "parent_merge_adjudicator",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "authorized_by": "编排层（父代理）依 OWNER_DECISIONS §十 L116/L127 + §十一 L144 已派出两路专家；本工位为两半交付后的合成席位（非第三个专家）",
+  "station_purpose": "合成两半裁定 + 冲突/含糊检测 + 回答 I-11-B 能否开工；不新增专业判断、不解除任何 BLOCKED、不代签、不改 status",
+  "does_not_claim_I11A_acceptance": true,
+  "adds_no_new_domain_judgement": true,
+  "does_not_change_I11A_status": true,
+  "status": "merged_two_halves_rulings_issued_i11b_remains_blocked",
+
+  "source_rulings": [
+    {
+      "station": "I11A-OPEN-ACCT",
+      "role": "accounting_specialist_reviewer",
+      "deliverables": "both halves delivered",
+      "files": [
+        {"path": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md", "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2", "bytes": 37355},
+        {"path": "execution_runs/I11A-OPEN-ACCT/a20260924-01/provenance.json", "sha256": "81b045bc636375738fbad1ae02515ea316cd28fbb6b8b156fbb084b22e9c10f1", "bytes": 18975},
+        {"path": "execution_runs/I11A-OPEN-ACCT/a20260924-01/handoff.json", "sha256": "79f9c878c8ead003226ab1bc5671b2eadb964570fdb55d4a95f4a4c9c1aa8225", "bytes": 11555, "note": "本工位外部复算（该文件自报 sha256=null，自指不可自证）"}
+      ],
+      "provenance_entries": 20
+    },
+    {
+      "station": "I11A-OPEN-IND",
+      "role": "industry_specialist_reviewer (mining + software_and_cloud)",
+      "deliverables": "both halves delivered",
+      "files": [
+        {"path": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md", "sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b", "bytes": 39207},
+        {"path": "execution_runs/I11A-OPEN-IND/a20260924-01/provenance.json", "sha256": "71187a55f4b407c387bb9baa8c6e013864d65b3f9875791c1ccf1e3c44bfa079", "bytes": 25031},
+        {"path": "execution_runs/I11A-OPEN-IND/a20260924-01/handoff.json", "sha256": "0a14f29ce31d371c6ef347123abd56316e40077de14526bc846938f8bc9be17e", "bytes": 22988, "note": "本工位外部复算（该文件自报 sha256=null，自指不可自证）"}
+      ],
+      "provenance_entries": 24
+    }
+  ],
+
+  "open_status": {
+    "OPEN-2": {
+      "status": "RULED_WITH_BLOCKED_VALUE",
+      "conflict_check": "NO_CONFLICT",
+      "ruled_by": "both halves (accounting: source admissibility ladder S0-S4 + disclosure set + fail-closed ladder; industry: A/B/C tiers + local full-text 0-hit + annotation requirements)",
+      "blocked_value": "铜当量系数具体取值与 ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 放行（ACCT BLOCKED-2a/2b；IND BLOCKED-2/3）",
+      "quotes": {
+        "accounting": "ACCT ruling.md L75: 「…本地语料当前无任何 S1/S2，故 ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 必须按 S0 处置 —— 参数保持 _PLACEHOLDER、I-11-B 不得放行幅度校准…」；L103: 「不可得 ⇒ 参数保持 _PLACEHOLDER 且不得放行」",
+        "industry": "IND ruling.md L77: 「⇒ A 类来源在 FY2025 年报中不存在…」；L90: 「维持 pending_professional_decision，low/base/high 保持 null；不得因本裁定获得放行」；L127: 「给…一个可放行的系数取值/单位收入数值 ⇒ BLOCKED」"
+      },
+      "ambiguity_registered": "BLOCKED-UNADJ-1（ACCT L81 允许 S3/行业均值进 low-high 敏感性带 vs IND L67 「不可（跨公司不可比）」；两半未就该子用法同时表态 → 本工位不代裁、授予任何许可）",
+      "unlock_conditions": [
+        "同期原文披露系数+同口径当量销量并本地归档（URL+取回UTC+sha256+逐字引文+独立复核路径）",
+        "非实现者双 reviewer 签署（decision_sha256、日期、作用域），追加 OPEN-2-ACCT-R2 / ruling_r2.md",
+        "hypotheses.json 新增版本（不回改），参数脱离 pending_professional_decision",
+        "走替代口径则新 parameter_id 须在 model_cards.md 注册并通过 REGISTERED 检查",
+        "BLOCKED-2b：补独立紫金 PDF 全文检索记录",
+        "BLOCKED-UNADJ-1：两半（或 owner）对『同行/行业均值可否进 low/high』出具一致明示意见"
+      ]
+    },
+    "OPEN-3": {
+      "status": "RULED_WITH_BLOCKED_VALUE",
+      "conflict_check": "NO_CONFLICT",
+      "ruled_by": "both halves (accounting: E0-E3 证据等级与 fail-closed 处置；industry: FY2027 分部选择与桥接规则) —— 两半显式互相让位，无重叠裁权",
+      "blocked_value": "证据 E1 未满足 ⇒ MSFT_PBP/IC/MPC_REVENUE_FY2027、MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027、I-07-E 微软分部口径全部维持不放行（ACCT BLOCKED-3a/3b；IND BLOCKED-4/5）",
+      "quotes": {
+        "accounting": "ACCT ruling.md L149/L153: 「分部口径变更的『已核』标准 = E1（8-K/10-K 分部附注原文本地归档：URL+取回UTC+sha256+逐字引文+独立复核路径）」；L162: 「MSFT_PBP/IC/MPC… 一律按未放行处理 —— 判定依据是命题 state，不是 _PLACEHOLDER 后缀」",
+        "industry": "IND ruling.md L171: 「FY2027 及以后的建模/预测维度 = 新两分部（待原文进入本地语料后落参数）」；L178: 「新两分部的参数同样不可放行——因为它们的取数目前只存在于外部来源。两条路都不得在当前状态下放行。」"
+      },
+      "ambiguity_registered": "BLOCKED-UNADJ-2（ACCT L168『临时、不可签发的建模假设』未限年度 vs IND L165『旧三分部不可作 FY2027 报告分部口径』；E1 前两半对全部 MSFT 参数的放行判断相同，故当前不产生冲突动作）",
+      "unlock_conditions": [
+        "filing-fetch 授权获取 2026-09-02 8-K 与 Exhibit 99.1 落本地语料，登记 URL+取回UTC+sha256+逐字引文+独立复核路径（=E1）",
+        "会计面新建 OPEN-3-ACCT-R2 认定证据等级（不回改本条与 refuted_by）",
+        "行业面新建 ruling_r2.md 标 supersedes（外部条目永久保留 evidence_class=external）",
+        "命题与 MSFT_* 参数换版；若确认重分类，先重述/重建基期再算增速",
+        "环境/依赖 owner 提供合规取文路径（BLOCKED-3b：SEC 403 + web_search 工具故障）",
+        "BLOCKED-UNADJ-2：两半对『临时建模假设适用年度』出具一致意见"
+      ]
+    },
+    "OPEN-5": {
+      "status": "OWNER_ONLY",
+      "conflict_check": "NO_CONFLICT",
+      "ruled_by": "两半均不裁『归属』；行业面另出的处置规则（保持零产出/不接受二手补位/替代来源分级）不解除任何阻塞",
+      "quotes": {
+        "accounting": "ACCT ruling.md L220: 「NOT_IN_MY_SCOPE：港股（小米）年报原文可读性属环境/依赖 owner + 行业 reviewer 的裁权…本文件不予裁定，仅登记其阻塞关系不变」",
+        "industry": "IND ruling.md L216-L218: 「A. 归属问题——BLOCKED-pending-owner …属环境与依赖 owner（I-00-B 侧）权限…我不代裁，缺的是：owner 对修复路径的指派与授权」；L223: 「I-11-B / I-07-B 的港股分部参数维持 _PLACEHOLDER 且不得放行」"
+      },
+      "ambiguity_registered": null,
+      "unlock_conditions": [
+        "环境/依赖 owner（I-00-B 侧）出具修复路径指派与授权（对象流解析/离线 PDF 库/合规外部工具/依赖升级）",
+        "恢复后新建 attempt 重新取证；不得把 not_readable 就地改成已验证",
+        "取到可读同期间原文后按行业面替代来源 ①/② 级登记，证据等级仍由会计面认定",
+        "在此之前 *_HK_* / 港股分部参数维持 _PLACEHOLDER"
+      ]
+    },
+    "OPEN-6": {
+      "status": "RULED_WITH_BLOCKED_VALUE",
+      "conflict_check": "NO_CONFLICT",
+      "ruled_by": "both halves (accounting: 规则面 —— threshold_basis + threshold_review_status 默认 not_reviewed、给数四要件、三类 basis 可用范围；industry: 分行业给数 —— H4 采用、H8 采用+两修订、H7 维持、H2 拒绝并 BLOCK 替代数、恒等式无异议)",
+      "blocked_value": "H4 四要件 1/4 满足（维持 not_reviewed）；H2 替代数 BLOCKED；H8 两点修订与 A-6.3 签署未落；4 条恒等式容差未审（BLOCKED-6b）；threshold_review_status 未落地（BLOCKED-6c）",
+      "quotes": {
+        "accounting": "ACCT ruling.md L226: 「…threshold_basis=professional_judgement_required 且 threshold_review_status≠reviewed 的阈值不得触发任何自动动作…审定一个阈值必须同时具备可复算观测量 + 可核基础 + 非实现者签署（decision_sha256） + 追加式版本化，否则一律维持 not_reviewed」；L296: 「BLOCKED-6a：3 条 pjr 阈值的数值是否恰当（±5%、[0.9,1.1]、拆分层级判定）…我给不数」",
+        "industry": "IND ruling.md L288: 「H4 | 计划达成率 [0.9, 1.1] | ✅采用（矿业面给数）| 0.90 – 1.10（±10%）」；L291: 「H2 | ±5% | ❌不采用占位值；替代数值 BLOCKED」；L299: 「本条仅为行业面审定…在此之前 I-11-B/I-11-C 不得据此触发」；L330: 「阈值审定不等于参数放行」"
+      },
+      "ambiguity_registered": null,
+      "unlock_conditions": [
+        "H4：补齐给数四要件（可核基础按 A-6.3 第2条落为四类之一并标 expert_assumption+敏感性区间 / 非实现者 decision_sha256 / 命题新版本）后由会计面确认",
+        "H2：先解 OPEN-2 口径 + 价格归一化基准（序列/期间/净价口径）",
+        "H8：两点修订落入命题新版本 + decision_sha256",
+        "4 条恒等式容差对照原文舍入粒度（BLOCKED-6b）",
+        "threshold_review_status 字段与校验器落地（BLOCKED-6c；按 DEC-14 补反例并重跑 21 例）"
+      ]
+    }
+  },
+
+  "i11b_unblocked": false,
+  "i11b_verdict": "BLOCKED",
+  "i11b_reason": "两半合起来产生的 approved_frozen 命题 = 0、可放行参数 = 0、可触发阈值 = 0：两半写入面各仅 3 个载体文件（不含 hypotheses.json/任何 status 字段），两半均自述不解锁（ACCT handoff L176『NOT unlocked by this carrier』；IND handoff L255『do NOT start I-11-B … do not unlock anything by themselves』）；被审 attempt 仍为 6 pending + 2 unquantified / approved_frozen=0（handoff L298、L321；validation_report L13-L18），且 OPEN-2/3/5/6 的取值与证据仍全部 BLOCKED。规则已立 ≠ 参数已批：card_I-11-B.md L9 要求『I-11-A命题已批准』、L23 要求『专业reviewer签署后方可进入forecast』，当前一条都不满足。",
+  "i11b_unlock_conditions": [
+    "≥1 条命题在新版本上由非实现者 reviewer 写入 decision.decision_sha256 并达 approved_frozen（或 owner 明文改判开工门槛）",
+    "OPEN-2：系数取值解 BLOCKED（S1/A 级证据 + 双签）或落实『分部对外收入 + 分金属销量』替代口径并注册新 parameter_id",
+    "OPEN-3：8-K+Exhibit 99.1 本地 E1 归档 → 会计面补裁证据等级 → 行业面复裁分部集合",
+    "OPEN-5：环境/依赖 owner 指派可读性修复路径 → 新 attempt 重新取证",
+    "OPEN-6：threshold_review_status 落地 + H4 四要件补齐 + H2 基准 + 恒等式容差对照表",
+    "OPEN-11（本轮未派）：矿业行业 reviewer 确认上一期期末库存跨期可得性，否则该判定式转 STOP_DISCLOSURE_ADAPTATION",
+    "card_I-11-B.md L9：I-10-A 为实际采用的公司/分部/模型签署披露适配口径（现 review.md 记 disclosure_adaptation = NOT granted）"
+  ],
+
+  "misread_checks": {
+    "H4_value_is_not_approved_frozen": {
+      "question": "行业面给出 H4 = [0.90, 1.10] 是否等于该命题 approved_frozen？",
+      "answer": false,
+      "four_requirements": {
+        "requirement_definition": "ACCT ruling.md L226：可复算观测量 + 可核基础 + 非实现者签署（decision_sha256） + 追加式版本化",
+        "1_observable_recomputable": "满足（hypotheses.json L416-L421：observable/observation_date/source_route 齐备）",
+        "2_verifiable_basis": "不满足（IND ruling.md L296 只给行业判断理由，未按 A-6.3 第2条落为四类之一，未标 expert_assumption、无敏感性区间、无同口径历史离散）",
+        "3_non_implementer_decision_sha256": "不满足（hypotheses.json L443-L447：decision='pending', decision_sha256=null；两半载体均无 H4 决议哈希）",
+        "4_additive_versioning": "不满足（两半写入面均不含 hypotheses.json，无新版本）",
+        "result": "1/4 满足 ⇒ 阈值维持 threshold_review_status=not_reviewed（该字段本身尚未落地 = BLOCKED-6c）⇒ 按 A-6.1 不得触发任何自动动作"
+      },
+      "corroborating_quotes": [
+        "IND ruling.md L299：本条仅为行业面审定…在此之前 I-11-B/I-11-C 不得据此触发",
+        "IND ruling.md L330：注意这两个参数仍是 _PLACEHOLDER，阈值审定不等于参数放行",
+        "IND handoff.json L130：release_condition = industry sign-off only; threshold_basis upgrade still requires the accounting station's basis rule",
+        "ACCT ruling.md L296：BLOCKED-6a 仍含 [0.9,1.1] 数值是否恰当"
+      ]
+    },
+    "external_8k_is_not_E1": {
+      "question": "行业面经 r.jina.ai 外部取得 8-K 原文是否满足会计面 E1（本地归档：URL+取回UTC+sha256+逐字引文+独立复核路径）？",
+      "answer": false,
+      "e1_elements": {
+        "local_archive": "不满足（IND ruling.md L359：未落任何快照文件；IND provenance snapshot_policy snapshots_written=0）",
+        "file_sha256": "不满足（EXT-05 snapshot_sha256=null）",
+        "retrieved_utc": "不满足（仅会话窗口 2026-09-24T20:20:00Z/20:34:43Z，自述不伪造逐请求时间戳）",
+        "verbatim_quote": "满足（Item 7.01/9.01 引文完整）",
+        "independent_review_path": "不满足（原站直取 403，仅第三方文本渲染代理 r.jina.ai 单一路径）",
+        "result": "5 缺 4 ⇒ 至多 E2；ACCT ruling.md L154：E2 只能进入叙述与风险提示，不得支撑参数或『已核』；L190 明示『在线取回即视为 E1』须 owner 裁定才推翻 A-3.1，本工位不代裁"
+      },
+      "corroborating_quotes": [
+        "IND provenance EXT-05 locality_warning：This is EXTERNAL acquisition. It does NOT satisfy the plan's locally verifiable source requirement and must not be used to release I-11-B / I-07-E parameters until ingested locally with a hash",
+        "IND ruling.md L204：被拒替代方案 —— 把外部抓取的 8-K 当作『本地可核来源』",
+        "IND ruling.md L171/L177：待原文进入本地语料后落参数；两条路都不得在当前状态下放行"
+      ]
+    }
+  },
+
+  "count_discrepancy_logged": {
+    "issue": "handoff.json:9 与 mechanism_review.md:211 写『4 条 professional_judgement_required』，机器计数为 3 pjr + 1 disclosure_definition（判断类共 4）",
+    "quotes": {
+      "handoff_l9": "I-11-B: the 4 thresholds marked threshold_basis=professional_judgement_required must be signed off first (OPEN-6)",
+      "handoff_l244": "OPEN-6 (industry reviewers): accept or replace the four professional_judgement_required thresholds (e.g. +/-5% unit revenue drift, 0.9-1.1 plan attainment band)?",
+      "mechanism_review_l211": "8 条命题的 falsifier.threshold 中 4 条标为 professional_judgement_required（±5%、0.9–1.1 计划达成区间等），阈值是否按此采用",
+      "authoritative_machine_count": "validation_report.json L28-L32: {arithmetic_identity: 4, professional_judgement_required: 3, disclosure_definition: 1}"
+    },
+    "authority": "validation_report.counts（4 / 3 / 1；判断类 3+1=4）",
+    "action": "登记不回改（两半已各自登记：ACCT ruling.md L234；IND ruling.md L282）",
+    "already_registered_by_both_halves": true
+  },
+
+  "gaps": {
+    "authorization_gap_count": 3,
+    "items": [
+      {
+        "id": "G1",
+        "open": "OPEN-11",
+        "card_assigns_to": "矿业行业 reviewer（decision.md L405；mechanism_review.md L216）",
+        "dispatch_status": "本轮未派（owner §十 L116/L127 + §十一 L144 只派 OPEN-2/3/5/6）",
+        "confirmed_by_industry_half": "IND ruling.md L51 与 IND handoff.json L191 均明写『NOT dispatched to me』",
+        "impact": "命题 3 库存判定式的跨期可得性未定 ⇒ 若不可得须转 STOP_DISCLOSURE_ADAPTATION，阻塞 I-11-B 对该参数的产能约束使用",
+        "severity": "最直接的授权缺口：卡文指派的角色本轮已在场却未获派"
+      },
+      {
+        "id": "G2",
+        "open": "OPEN-4",
+        "card_assigns_to": "schema owner（decision.md L400）",
+        "dispatch_status": "本轮未派；OWNER_DECISIONS 内未见针对 I-11-A OPEN-4 的裁定行",
+        "confirmed_by_industry_half": "IND ruling.md L51（OPEN-4 归位置枚举/schema owner）",
+        "impact": "跨卡页码复用口径未定（不阻塞 I-11-B 主链，但属未清授权）"
+      },
+      {
+        "id": "G3",
+        "open": "OPEN-12",
+        "card_assigns_to": "PLAN owner / 统计 reviewer（decision.md L408）",
+        "dispatch_status": "本轮未派；OWNER_DECISIONS 内未见针对 I-11-A OPEN-12 的裁定行",
+        "confirmed_by_industry_half": "IND ruling.md L51（OPEN-12 归 owner/统计 reviewer）",
+        "impact": "I-11-C 是否复用同一校验器未定"
+      }
+    ],
+    "not_gaps_owner_already_ruled": [
+      "OPEN-1：owner §十一 L147『允许 pdftotext 降级为交叉核对』",
+      "OPEN-7：owner §十一 L147『分部集合维持』",
+      "OPEN-8：owner §十一 L147『接受择优规则』",
+      "OPEN-9：owner §十一 L147『升级超集』",
+      "OPEN-10：owner §十一 L147『采用最新文件 mtime』"
+    ],
+    "unadjudicated_subitems": [
+      "BLOCKED-UNADJ-1（OPEN-2：同行/行业均值可否进 low/high 敏感性带 —— ACCT L81 vs IND L67 未同时表态）",
+      "BLOCKED-UNADJ-2（OPEN-3：『临时不可签发的建模假设』是否覆盖 FY2027 —— ACCT L168 vs IND L165）"
+    ],
+    "carried_blocked_lists_not_closed": {
+      "ACCT": ["BLOCKED-2a", "BLOCKED-2b", "BLOCKED-3a", "BLOCKED-3b", "BLOCKED-6a", "BLOCKED-6b", "BLOCKED-6c"],
+      "IND": ["BLOCKED-1", "BLOCKED-2", "BLOCKED-3", "BLOCKED-4", "BLOCKED-5", "BLOCKED-6", "BLOCKED-7"],
+      "note": "本工位一条也未关闭；fail-closed 全部原样保留"
+    }
+  },
+
+  "written_files": [
+    {
+      "path": "execution_runs/I11A-OPEN-MERGE/a20260924-01/merge_ruling.md",
+      "sha256": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1",
+      "bytes": 49062
+    },
+    {
+      "path": "execution_runs/I11A-OPEN-MERGE/a20260924-01/provenance.json",
+      "sha256": "3cf0a02feebf5d43c38f61455c0658f8c5afb15278c10d41e537937029a5f70d",
+      "bytes": 23488
+    },
+    {
+      "path": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json",
+      "sha256": null,
+      "bytes": null,
+      "note": "自指不可自证：本文件的 sha256/bytes 不能写进自身；实测值由父代理在外部复算（与两半载体同一处理方式）"
+    }
+  ],
+  "file_format": "UTF-8 without BOM, LF line endings; both JSON files re-parsed after writing",
+
+  "provenance_summary": {
+    "path": "execution_runs/I11A-OPEN-MERGE/a20260924-01/provenance.json",
+    "cited_entries_total": 29,
+    "from_I11A_OPEN_ACCT": 14,
+    "from_I11A_OPEN_IND": 15,
+    "new_external_sources": 0,
+    "new_local_sources": 0,
+    "network_used": false,
+    "policy": "只引两半已有 provenance 条目并标 source=；本工位不取证"
+  },
+
+  "git_diff_non_planning": 0,
+  "git_diff_observed": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "baseline_before_writes": {"total": 3824, "non_planning": 0},
+    "after_writes": {"total": 3824, "non_planning": 0, "measured_at": "merge_ruling.md + provenance.json 写入后"},
+    "final_closeout": {"total": 3824, "non_planning": 0, "measured_at": "三个文件全部写入并校验后"},
+    "untracked_station_files_via_ls_files_others": 3,
+    "note": "本工位 3 个新文件为未跟踪路径，不进入 git diff HEAD；total 的历史波动（3821→3824）来自并发写入方，均在 .planning 内"
+  },
+  "git_writes_performed": false,
+  "git_mutating_commands_run": [],
+  "network_requests_made": 0,
+  "product_files_written": 0,
+  "status_fields_changed": 0,
+  "implementer_signed": false,
+  "i11a_acceptance_claimed": false,
+  "sealed_attempt_modified": false,
+
+  "boundary_attestation": {
+    "zero_product_write": true,
+    "zero_git_write": true,
+    "zero_status_change": true,
+    "zero_proxy_signing": true,
+    "zero_new_domain_judgement": true,
+    "zero_network": true,
+    "fail_closed_applied": "两半未同时表态的子问题一律登记为 BLOCKED-UNADJ-1/2（AMBIGUITY_REGISTERED），本工位不择一、不放行；若父代理判定任一处应升级为 CONFLICT，对应 OPEN 按 fail-closed 铁律降为 BLOCKED（逐字原句已随附）"
+  },
+
+  "next_action": "编排层：①本合并结论可直接用于父级报告（四条 OPEN 状态 + I-11-B 仍 BLOCKED）；②把 G1（OPEN-11 指派给已在场的矿业行业 reviewer）与 G2/G3（OPEN-4 schema owner、OPEN-12 PLAN owner/统计 reviewer）列为待 owner 派单/裁定项；③OPEN-3 的 E1 取文仍需 owner 授权 filing-fetch 路径（SEC 403 + web_search 故障）；④OPEN-5 归属升级给环境/依赖 owner；⑤任何 I-11-B 开工动作在 §i11b_unlock_conditions 全部满足前保持 BLOCKED"
+}

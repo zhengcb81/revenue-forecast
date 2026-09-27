@@ -1,0 +1,114 @@
+{
+  "manifest_id": "r4-readonly-data-manifest-a05-a06",
+  "run_id": "2026-09-11_r4-phase-a",
+  "purpose": "A05 real-corpus selection and A06 read-only baseline trace: the minimum read-only command set needed to complete phase A. Nothing here writes, downloads or changes worker/task state.",
+  "status": "NOT APPROVED - awaiting owner confirmation (gate G4 for behaviour beyond --help; gate G7 for the sample list)",
+  "requested_by": "author session (2026-09-11, under the owner's 'keep going' instruction)",
+  "why_it_currently_differs_from_the_executed_manifest": "The approved manifest of 2026-09-11 covered `--help` only. These commands open the production catalog read-only, so they need their own explicit approval rather than being folded into that one.",
+  "entrypoint": {
+    "python": "C:\\Miniconda\\python.exe",
+    "python_version": "3.13.9",
+    "module": "company_wiki.source_catalog.cli",
+    "flags": ["-B"],
+    "cwd": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+    "env_keys": ["PYTHONPATH", "PYTHONDONTWRITEBYTECODE", "PYTHONIOENCODING"]
+  },
+  "commands": [
+    {
+      "id": "A05-1",
+      "argv": ["status"],
+      "purpose": "catalog counts only (documents/sources/artifacts); no document content",
+      "read_set": ["catalog.sqlite3 (read-only connection)"],
+      "write_set": [],
+      "network": [],
+      "limit": "single invocation",
+      "evidence": "corpus/evidence/a05_status.json"
+    },
+    {
+      "id": "A05-2",
+      "argv": ["query", "--limit", "20"],
+      "purpose": "list a bounded page of indexed documents to pick candidates across roots",
+      "read_set": ["catalog.sqlite3"],
+      "write_set": [],
+      "network": [],
+      "limit": "<=5 invocations, --limit <= 50 each (no full scan)",
+      "evidence": "corpus/evidence/a05_query_*.json"
+    },
+    {
+      "id": "A05-3",
+      "argv": ["duplicates"],
+      "purpose": "find exact-copy groups (same content_sha256) to satisfy the 'two copies of one version' sample requirement",
+      "read_set": ["catalog.sqlite3"],
+      "write_set": [],
+      "network": [],
+      "limit": "single invocation, bounded output",
+      "evidence": "corpus/evidence/a05_duplicates.json"
+    },
+    {
+      "id": "A05-4",
+      "argv": ["evidence-list", "--document-id", "<doc>", "--limit", "20"],
+      "purpose": "per-sample locator/period evidence for the oracle (metadata only, no span bodies)",
+      "read_set": ["catalog.sqlite3"],
+      "write_set": [],
+      "network": [],
+      "limit": "<= 6 invocations, one per sample",
+      "evidence": "corpus/evidence/a05_evidence_<doc>.json"
+    },
+    {
+      "id": "A05-5",
+      "argv": ["sections-list", "--document-id", "<doc>"],
+      "purpose": "confirm which samples have sections vs missing text (L10 sample selection)",
+      "read_set": ["catalog.sqlite3"],
+      "write_set": [],
+      "network": [],
+      "limit": "<= 6 invocations",
+      "evidence": "corpus/evidence/a05_sections_<doc>.json"
+    },
+    {
+      "id": "A06-1",
+      "argv": ["size-report"],
+      "purpose": "record catalog size/disk health as the baseline context for the A06 trace",
+      "read_set": ["catalog.sqlite3"],
+      "write_set": [],
+      "network": [],
+      "limit": "single invocation",
+      "evidence": "baseline/evidence/a06_size_report.json"
+    },
+    {
+      "id": "A06-2",
+      "argv": ["runtime-policy", "show"],
+      "purpose": "record the runtime policy snapshot the reader uses (fails closed when absent)",
+      "read_set": ["runtime policy snapshot file"],
+      "write_set": [],
+      "network": [],
+      "limit": "single invocation",
+      "evidence": "baseline/evidence/a06_runtime_policy.json"
+    }
+  ],
+  "explicitly_excluded": [
+    "ensure / close-gap (network + staging)",
+    "scan / normalize / summarize / run / worker* (writes catalog or starts background work)",
+    "identify --refresh (network + local write)",
+    "derived-audit (touches the catalog through reconcile_artifacts)",
+    "prune-retired-evidence / duplicate-recycle / focus-cleanup (destructive)",
+    "install-startup / uninstall-startup / activation apply|rollback / runtime-policy apply (system state)",
+    "export / policy-export / archive-retired-evidence (writes files)",
+    "any --dry-run of the write commands (belongs to a separate behavioural manifest)"
+  ],
+  "budget": {"bytes_downloaded": 0, "tokens": 0, "cost": 0, "max_wall_seconds": 600, "max_invocations": 25},
+  "side_effect_expectation": "read-only opens of the catalog; catalog.sqlite3 and -wal must stay unchanged; -shm may advance on open (documented in ../2026-09-11_r4-phase-a/boundary-audit.md)",
+  "pre_snapshot": ["catalog.sqlite3 {size, mtime_ns}", "catalog.sqlite3-shm {size, mtime_ns}", "catalog.sqlite3-wal {size, mtime_ns}", "config/source_catalog.yaml {size, mtime_ns}", "git status --porcelain (wiki/revenue/filing)"],
+  "post_snapshot": "same as pre_snapshot, recorded in the same evidence file as the run",
+  "stop_rules": [
+    "any write to the catalog or -wal -> stop immediately and record",
+    "network egress observed -> stop (none of these commands needs network)",
+    "a command returns non-zero -> stop and record; do not retry with different flags",
+    "output larger than the bounded limit -> stop and re-scope rather than scanning the whole catalog"
+  ],
+  "isolation_note": "A05/A06 read the production catalog read-only for metadata only. Behavioural probes (L01-L12 mechanism runs) must NOT use the production catalog: they require the isolated copy in gate G8.",
+  "approval": {
+    "by": null,
+    "at": null,
+    "scope_requested": "read-only metadata commands A05-1..A05-5 and A06-1..A06-2, bounded as above"
+  }
+}

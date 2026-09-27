@@ -1,0 +1,86 @@
+{
+ "card": "BOOKKEEP-REPAIR",
+ "attempt": "execution_runs/BOOKKEEP-REPAIR/a20260923-01",
+ "run_date": "2026-09-23",
+ "exit_code_legend": {"0": "pass", "1": "violations/failure found", "2": "usage/IO error"},
+ "zero_product_code": true,
+ "zero_git_commands": true,
+ "commands": [
+  {
+   "id": "CMD-BKR-01-rem79-before",
+   "purpose": "REM-79 checker baseline on the PWF trio before any repair write (#2/#18)",
+   "cwd": "<PLAN>",
+   "argv": ["python", "-X", "utf8", "-B", "execution_runs/REM79-MECHANIZATION/a20260922-01/tools/check_domain_assertions.py", "task_plan.md", "findings.md", "progress.md"],
+   "returncode": 1,
+   "result": "4 violation(s) across 3 file(s): task_plan.md:1630[全部], findings.md:633[all], findings.md:684[none], progress.md:1060[全部]",
+   "evidence": ["evidence/rem79_before.txt", "evidence/rem79_before.json"]
+  },
+  {
+   "id": "CMD-BKR-02-rem79-before-supplementary",
+   "purpose": "supplementary baseline on register/README/OWNER_DECISIONS (four-files scope discovery)",
+   "argv": ["python", "-X", "utf8", "-B", "…/check_domain_assertions.py", "REMEDIATION_REGISTER.md", "README.md", "OWNER_DECISIONS.md"],
+   "returncode": 1,
+   "result": "7 violation(s) across 3 file(s) — all 7 in REMEDIATION_REGISTER.md (L155/411/1092/1192/1202/1560/1605); README.md and OWNER_DECISIONS.md 0. Exactly four plan files carry REM-79 violations = the 'four files' scope",
+   "evidence": ["evidence/rem79_before_supplementary.txt"]
+  },
+  {
+   "id": "CMD-BKR-03-rem79-after",
+   "purpose": "REM-79 checker after the inline qualifiers (#2/#18/2b)",
+   "argv": ["python", "-X", "utf8", "-B", "…/check_domain_assertions.py", "task_plan.md", "findings.md", "progress.md", "REMEDIATION_REGISTER.md"],
+   "returncode": 0,
+   "result": "0 violation(s) across 4 file(s) — before/after captures both kept (run1 + final)",
+   "evidence": ["evidence/rem79_after_run1.txt", "evidence/rem79_after_run1.json", "evidence/rem79_after_final.txt", "evidence/rem79_after_final.json"]
+  },
+  {
+   "id": "CMD-BKR-04-b1-pin-reconstruction",
+   "purpose": "verify B1-I08C reviewer_report.md self-pin (reconstruction rule) before pinning it in review.md (#4)",
+   "argv": ["pwsh", "[regex]::Replace(ReadAllText(reviewer_report.md), 'REPORT_SHA256: `<pin>`[^\\r\\n]*', 'REPORT_SHA256: `PENDING`') → sha256"],
+   "returncode": 0,
+   "result": "reconstructed form 37086 B sha256 73feb0593b44ffeb448bc5f5b1cea9800f4cc9fb59f40ca19e9aae8038c104fa == reviewer/report_pin.json pin (MATCH); as-stands 6bfd2922…/37224 B. Disclosed: the report's documented PowerShell snippet `$t -replace ('pat','rep')` array-form silently no-ops; corrected invocation used"
+  },
+  {
+   "id": "CMD-BKR-05-sha256-sweep",
+   "purpose": "before/after sha256 + byte counts of every touched file and frozen attestation (#binding)",
+   "argv": ["pwsh", "Get-FileHash -Algorithm SHA256 <each file>"],
+   "returncode": 0,
+   "result": "all values recorded in binding.json; frozen carriers byte-stable; B5 scripts before==after",
+   "evidence": ["evidence/sha_tables_20260923.md"]
+  },
+  {
+   "id": "CMD-BKR-06-d1b-search",
+   "purpose": "independent bounded search proving production_anchors.txt absence (#15)",
+   "argv": ["pwsh", "Get-ChildItem -Recurse -Filter production_anchors.txt <B1-I08C tree> + <plan root> + <outward_requests> + <execution_runs top>"],
+   "returncode": 0,
+   "result": "0 hits; before/production_anchors.json exists (2782 B, 01e7ab52…); before/ dir file count 22; full-tree glob attempt timed out on the iso/venv mega-tree (method boundary disclosed) — AUDIT-DESIGN D1b full-tree check cited as independent prior evidence"
+  },
+  {
+   "id": "CMD-BKR-07-scripts-fixed-construction",
+   "purpose": "build relocatable-output fix copies without touching originals (#19)",
+   "argv": ["pwsh", "ReadAllText(original) → targeted .Replace(output-routing lines) → WriteAllText(scripts_fixed/…)"],
+   "returncode": 0,
+   "result": "fixed copies parse OK (python ast.parse); originals re-hashed after = before (71dbaf29… / e8f89b73…)",
+   "evidence": ["../B5-fix-g1a-g3/a20260922-01/harness_relocatability_erratum.md"]
+  },
+  {
+   "id": "CMD-BKR-08-json-reparse",
+   "purpose": "re-parse every JSON touched by this pass",
+   "argv": ["python", "-c", "json.load(<handoff.json>); json.load(<_provenance.json>); json.load(<i14d_report_pins.json>); json.load(<binding.json>)"],
+   "returncode": 0,
+   "result": "all parse OK"
+  },
+  {
+   "id": "CMD-BKR-09-stub-retention-verify",
+   "purpose": "prove the I-14-F-R1 pre-image retention is byte-exact (#3)",
+   "argv": ["python", "-c", "assert pre_image_text in new_review_text"],
+   "returncode": 0,
+   "result": "inline block byte-equal to sibling: True; sibling sha == review.md before-sha (7f180899…)"
+  },
+  {
+   "id": "CMD-BKR-10-item21-presence",
+   "purpose": "verify _review_i14d_r5_20260922/ existence and census (#21)",
+   "argv": ["pwsh", "Get-ChildItem execution_runs/_review_i14d_r5_20260922 -Recurse -File"],
+   "returncode": 0,
+   "result": "30 files (DISPATCH.md 8473 B + scratch/ 29); no git command run — untracked status taken from the REGISTRY-CLOSURE R5-06 report"
+  }
+ ]
+}

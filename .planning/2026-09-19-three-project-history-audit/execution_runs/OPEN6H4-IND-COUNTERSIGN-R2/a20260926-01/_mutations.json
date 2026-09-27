@@ -1,0 +1,83 @@
+{
+ "schema": "h4_q2_mutations_r2/v1",
+ "role": "mining_industry_reviewer_h4_r2",
+ "carrier": "execution_runs/OPEN6H4-IND-COUNTERSIGN-R2/a20260926-01",
+ "created_utc": "2026-09-26T17:08:14Z",
+ "execution": "python -X utf8 -B -（stdin 内联，本文件为机器中间件随件披露）",
+ "oracle_frozen_sha256": "d9a437e7ebd9ed4ee2c79508cbed77bea760beeb089ba7d72b403f010f6c8ef0",
+ "oracle_frozen_bytes": 18446,
+ "corpus_sha256": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591",
+ "verbatim_line_hits": "47 asserted / 0 failed",
+ "table_self_sums": {
+  "gold_rows_21_to": 89544,
+  "copper_rows_12_to": 1085126
+ },
+ "recomputed": {
+  "residual_gold_kg": 534,
+  "residual_copper_t": 269,
+  "UB_primary_kg": 2039.2148,
+  "direction_consistent": true,
+  "flip_registered": {
+   "gold_main": true,
+   "gold_outer_probe": true,
+   "copper": false
+  }
+ },
+ "cases": {
+  "G1_real_addendum": {
+   "case": "真实案卷（残差534kg/269t、单价810.17元/克可核、方向一致）套追加支 C1-C5",
+   "got": "pass",
+   "expect": "pass",
+   "hit": true,
+   "rc": 0
+  },
+  "R1_residual_over_bound": {
+   "case": "金残差改 2,500kg（>2,039.2148）且方向一致",
+   "got": "blocked",
+   "expect": "blocked",
+   "hit": true,
+   "rc": 0
+  },
+  "R2_direction_contra": {
+   "case": "方向改负（B<A / 实际<桥值）且残差 ≤ 上界",
+   "got": "blocked",
+   "expect": "blocked",
+   "hit": true,
+   "rc": 0
+  },
+  "R3_price_unverifiable": {
+   "case": "单价不可核 ⇒ fail-closed（不造数、不用备用价救）",
+   "got": "blocked",
+   "expect": "blocked",
+   "hit": true,
+   "rc": 0
+  },
+  "R4_original_criterion_regression": {
+   "case": "上轮真实案卷喂原条件5（逐千克闭合 + 三档不翻转，追加支不启用）",
+   "got": "blocked",
+   "expect": "blocked",
+   "hit": true,
+   "rc": 0
+  },
+  "M1_weak_c1_detected": {
+   "case": "弱判据『残差 ≤ 任意自称上界（无单价来源）』× R3 案卷",
+   "weak": "pass",
+   "strong": "blocked",
+   "detected": true,
+   "rc": 0
+  },
+  "M2_weak_c5_detected": {
+   "case": "弱判据『不看方向』× R2 案卷",
+   "weak": "pass",
+   "strong": "blocked",
+   "detected": true,
+   "rc": 0
+  }
+ },
+ "summary": {
+  "cases_total": 7,
+  "all_hit": true,
+  "OVERALL_rc": 0,
+  "red_green_conclusion": "绿：追加支成立⇒pass；红：残差超上界/方向不符/单价不可核/原判据回归 均仍 blocked；弱判据双向检出"
+ }
+}

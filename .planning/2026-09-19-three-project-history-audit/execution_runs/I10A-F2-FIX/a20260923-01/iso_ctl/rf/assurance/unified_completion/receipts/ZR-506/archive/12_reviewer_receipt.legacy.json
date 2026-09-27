@@ -1,0 +1,67 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ab29ce212d1db43b03107d31e84afe7b0798729e",
+    "wiki": "7c4490496e2ead975f39519fcf8a9392cd00511b"
+  },
+  "canonical_hash": "e61e01b469ebc39cf7298923d2d34a944b61f8536abbe6a6e91d53e6f021aafa",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3",
+      "exit_code": 0,
+      "result": "HEAD = cbc6d8c feat(ZR-506): section/chunk/fact assertion ... 14 tests; parent 7c44904 test(ZR-505) ..."
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff 7c44904 cbc6d8c --stat && git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --short",
+      "exit_code": 0,
+      "result": "3 files changed, 375 insertions: normalizer.py (+24), section_chunk_fact.py (+130), tests/contract/test_zr506_section_chunk_fact.py (+221) — exactly the declared 3-file diff. Status: only pre-existing unrelated dirt (D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json)."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr506_section_chunk_fact.py -q --tb=short",
+      "exit_code": 0,
+      "result": "14 passed in 0.43s (Python 3.14.2, pytest 9.1.1)."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
+      "exit_code": 0,
+      "result": "101 passed in 1.85s (101 collected: zr505=11, zr504=10, zr503=13, zr502=11, zr501=10, fc1301=3, evidence_span=41, fc1204=2). Brief stated 115 = 101 + the 14 ZR-506 unit tests; all pass either way."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe %TEMP%\\zr506_adversarial.py (throwaway adversarial spot-checks a-g)",
+      "exit_code": 0,
+      "result": "29 checks, 0 failures. a) body with '## Page 1' + '<!-- locator: ... -->' -> exactly 2 sections '一、经营概况'/'二、成本分析', content-line offsets [0,2], keys {index,title,line_offset}; b) '第一章 总则' and '1.1 背景' both detected; c) '所述一、二点均不构成承诺。' -> [] and plain text -> []; d) chunk_spans(3,[])==[[0,3]], chunk_spans(3,[offset 7])==[[0,3]], chunk_spans(10,[2,5])==[[0,2],[2,5],[5,10]]; e) 营业收入：3036亿元 -> {营业收入,3036,亿元}, 亏损：-2.1亿元 -> value -2.1, 同比增长：12.5% -> unit '%', 数值：42 -> unit None (int), 单位成本下降至每吨2.1万元 -> [] (no colon false positive), 无数字文本 -> [], 指标：10.50 -> 10.5 float; f) _frontmatter payload document_structure.sections non-empty, chunk_count==len(sections)+1, facts present, schema_version '1.0', page_count/homepage_identity/detected_entities keys all coexist; g) zero-hardcode: 紫金矿业/陕西煤业/营业收入/单位成本 absent from section_chunk_fact.py."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/section_chunk_fact.py src/company_wiki/source_catalog/normalizer.py tests/contract/test_zr506_section_chunk_fact.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:18:11+00:00",
+  "findings": [
+    {
+      "detail": "The brief's 'expect 115 passed' does not match actual collection: the 8 listed contract files collect 101 tests (zr505=11, zr504=10, zr503=13, zr502=11, zr501=10, fc1301=3, evidence_span=41, fc1204=2), all passed, exit 0. 101 + the 14 ZR-506 unit tests = 115, indicating the brief's figure included the unit file. Non-blocking: every test in every listed file passed.",
+      "id": "ZR506-REV-001",
+      "severity": "info",
+      "title": "Regression brief expected 115 passed; actual 101 passed (all green)"
+    },
+    {
+      "detail": "detect_sections is regex-only (_CJK_ORDINAL/_CHAPTER/_NUMERIC_HEADING) with no entity/metric literals; _content_lines drops '## ' page headers, '<!--' locator comments, '# ' lines and blanks; _is_heading caps title at 40 chars. chunk_spans clamps via min(offset, line_count) and drops empty trailing chunks. _FACT requires metric (2-12 CJK/alpha chars) immediately followed by ':' or '：' then signed decimal and optional unit, so colon-less '单位成本下降至每吨2.1万元' cannot match. _frontmatter payload contains page_count (ZR-501), homepage_identity (ZR-502), detected_entities (ZR-503) and document_structure (ZR-506, schema_version '1.0', sections/chunk_count/facts) together.",
+      "id": "ZR506-REV-002",
+      "severity": "info",
+      "title": "C1-C5 confirmed by source inspection, not only tests"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-506 independent review",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ab29ce212d1db43b03107d31e84afe7b0798729e",
+    "wiki": "cbc6d8c25b98b005856601620b43eb1877a53a35"
+  },
+  "reviewed_object_sha256": "9a293e960457365794e400aa20fb3312c685d05bed5fe692b800404a557c1134",
+  "reviewer": "reviewer-zr506-independent",
+  "schema_version": 1,
+  "unit": "ZR-506",
+  "verdict": "accepted"
+}

@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN-3-ACCT-R2",
+  "attempt_id": "a20260926-01",
+  "role": "accounting_reviewer",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "status": "RULED",
+  "status_reason": "五问全部裁定完毕（Q1–Q5）；定级 BLOCKED-PARTIAL、S1、语料降 E3、字节维已解。这不是『通过』，是『已裁定』退出——等级本身即 fail-closed 结果。",
+
+  "authorized_by": {
+    "owner_decisions_27_2_verbatim": "允许 origin 字节**经 filing-fetch 既有机制落 `company-wiki/companies/{entity}/raw/…`**，本计划目录**另存镜像与 sha 校验**；仍标 `external_retrieval_not_local` 如实；**等级判定归会计面**；本裁**不解除 `OPEN-3`、不产生 ACCEPT**",
+    "owner_decisions_31_verbatim": "1. **口径**：**8-K 按诚实 kind `current_report` 落 `company-wiki/companies/{entity}/raw/other/`** —— **不改 `canonical_writer` 映射、不谎报 `quarterly_report`**。2. **对 §二十七 #2 落点的澄清注**：该条写的 `company-wiki/companies/{entity}/raw/financial_reports/{kind}/` **按「`raw/…` 下」理解，含 `raw/other/`** —— 本节即该澄清的**唯一授权出处**（**原文不回改，以本节承载**）。3. **仍须满足**：经 **`filing-fetch` 既有机制**取回、**本计划目录另存镜像与 sha 校验**、标 `external_retrieval_not_local` 如实、**等级归会计面**。",
+    "owner_decisions_l543_verbatim": "| **3** | **E1 等级现交会计面裁** | **「要」**（澄清答确认） | 派 `1e143a7e` = `OPEN3-E1-ACCT-RULING`。**只定级、不重取**（禁联网；若必须看原站字节 ⇒ 判 `BLOCKED-NEEDS-ORIGIN-BYTES` 而**不自己去取**）；`fail-closed`——**不得为推进链抬高等级**；`releases_nothing=true` |",
+    "l543_applied_to_this_card": "本卡 = 定级卡（同 L543 受约束对象），按最严读法执行：0 次网络请求；字节已由 OPEN3-E1-ORIGIN-BYTES-R2 取回在盘 ⇒ 无需联网即可定级；副作用已登记（R2 自报响应头无原始头部件落盘，我无法独立复核）",
+    "previous_round_r2_reopening_conditions_verbatim": [
+      "L247(C1)：「**origin 响应字节落进本计划目录**（含 owner 解决落盘点冲突…）| owner 授权 + filing-fetch/受控下载工位 | ① 可升 ✅ ⇒ 本卡新建 `R2` 载体复裁（或由 ACCT 出 `OPEN-3-ACCT-R2`，ACCT **L201**）」",
+      "L251(C5)：「**若 R1 落盘后内容与现有语料不一致** ⇒ 现有 4 文件降 E3、8 条引文作废，重新取证 | 本卡规则 §⑥ | fail-closed 反向也成立」",
+      "L163(④恢复)：「R1 origin 落盘后，**在新载体上重跑同一套字节区校验**（不得复用本卡结论），通过后方可把引文升级为\"已核\"引用。」",
+      "L185(⑤恢复)：「若 R1 落盘 origin 字节，则应把新路径登记为**第三条路径**并与现有两路再做一次全量比对（追加式）。」",
+      "L290(反例1)：「origin 响应字节落盘且 sha256 登记（C1）⇒ ① 升 ✅，②③④⑤ 已成立 ⇒ 可改判 `E1-COMPLETE`；」",
+      "L293(反例4)：「origin 直取内容与现有语料不一致 ⇒ 4 文件降 E3、8 条引文作废（C5）；」",
+      "L190(定义对称)：「E1 定义不得被悄悄改动 … 对**放宽**与**收紧**两个方向对称适用。」"
+    ],
+    "rule_sources_hashes": {
+      "I11A-OPEN-ACCT/a20260924-01/ruling.md": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2",
+      "I11A-OPEN-IND/a20260924-01/ruling.md": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b",
+      "I11A-OPEN-MERGE/a20260924-01/merge_ruling.md": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1",
+      "OPEN3-E1-ACCT-RULING/a20260924-01/ruling.md": "49799cca2e8cc006018dd15803d3dee3f1b4e1e6e17d305f8833c426c6a69972",
+      "OWNER_DECISIONS.md": "9075f9aac00ded42164b4a4a5f8087b99f1312b67163749b6e63fdcf7d6dffb4"
+    }
+  },
+
+  "five_questions": {
+    "Q1": {
+      "question": "E1 五要素在 origin 层是否全部成立？",
+      "judgement": "4/5 —— ①②③⑤ 成立、④ 不成立",
+      "element_1_origin_archive": "PASS",
+      "element_2_sha256": "PASS",
+      "element_3_retrieved_utc": "PASS",
+      "element_4_verbatim_quote_rerun": "FAIL",
+      "element_5_independent_path": "PASS_WITH_LIMIT",
+      "my_own_quote_rerun": {"P_A": "8/8", "P_B_m1": "8/8", "M1_ws_insensitive": "8/8", "M2_ws_collapsed": "7/8", "M3_ws_strict": "3/8", "raw_ascii_anchors": "2/2", "matches_r2_self_report": true}
+    },
+    "Q2": {
+      "question": "origin ↔ 既有语料一致性（C5 裁定）",
+      "judgement": "构成『不一致』 ⇒ C5 触发",
+      "fact_a_q1_space_diff": "不构成（纯空白：origin `(1)&#160;Agents` NBSP×2 vs 语料 0 空白；M1 命中、token 0 差）—— 但须披露为语料空白保真缺陷",
+      "fact_b_edge_script_double_hit": "不构成（传输层注入：as-filed 0 命中、剥注入后与归档逐字节相同、语料为文本渲染天然不含 script）—— 须 raw/stripped 双 sha 登记",
+      "fact_c_new_finding": "构成（本工位全量比对发现）：EX99.1 同句 origin+归档 = `amplifying`，语料 A+B = `amplifies`（1/0 ↔ 0/1 字节级）；且 corpusA 缺 8-K 签名页整段",
+      "corpus_files_downgrade": {"to_level": "E3", "count": 4, "quotes_void": true, "basis": "ACCT 上轮 ruling L251(C5)/L293(反例4) + ACCT L155"},
+      "direction": "错在 origin 侧还是语料侧未定（禁联网，不能自裁）；两方向都指向 E1 不成立"
+    },
+    "Q3": {
+      "question": "由此给 E1 等级",
+      "judgement": "BLOCKED-PARTIAL（4/5；④ 因 C5 引文作废）",
+      "usage_range": "按 E2 执行：仅叙述与风险提示；不得支撑参数、不得出现『已核』『已按新分部建模』"
+    },
+    "Q4": {
+      "question": "S 来源等级",
+      "judgement": "S1（带三项强制登记；S1 ≠ 放行）",
+      "ind_C_table": {"row1_content_type": "company_primary_disclosure (applies)", "row2_regulator": "not applicable", "row3_secondary": "not applicable", "row4_acquisition_method": "external_retrieval_not_local = true (applies, permanent per IND L198/L360)"},
+      "kind_honest_registration": "current_report → company-wiki/companies/MICROSOFT CORP/raw/other/（§三十一 #1；不谎报 quarterly_report、不改 canonical_writer 映射）",
+      "s_is_not_release": "ACCT L226 四要件 0/4 明确满足、MERGE 七条 7/7 未满足、E1 仍 BLOCKED-PARTIAL ⇒ 参数一律不放行"
+    },
+    "Q5": {
+      "question": "解除还是维持 BLOCKED-NEEDS-ORIGIN-BYTES",
+      "judgement": "字节这一维的实质条件已满足（origin_bytes_dimension_resolved = true）；名目的正式解除与 OPEN-3/B1/B2 状态一律不由本卡处理；E1 仍未成立 ⇒ 即便该名目被解除，OPEN-3 仍因 C5 与 B1/B2 维持 BLOCKED"
+    }
+  },
+
+  "e1_level": "BLOCKED-PARTIAL",
+  "s_level": "S1",
+  "corpus_files_level": "E3",
+  "origin_bytes_dimension_resolved": true,
+  "origin_bytes_dimension_scope": "仅指『origin 响应字节在盘且可核』：①字节落盘(62,953 B，拼接属实) ②sha 实测五值一致 ③取回 UTC 与 mtime 互证 ⑤as-filed 独立件剥注入后逐字节相同（两份）—— 四项经本工位独立复算；不含引文层(④)、不含名目解除权、不含产品仓落点",
+
+  "remaining_blockers": [
+    {"id": "C5", "severity": "hard_new", "desc": "origin ↔ 既有语料内容不一致（EX99.1 `amplifying`/`amplifies` 词级差 + corpusA 缺 8-K 签名页段）⇒ 4 语料降 E3、8 条引文作废、须重新取证", "ruled_by_this_card": true, "owner_for_remedy": "取证工位（新卡）"},
+    {"id": "C5-direction", "severity": "hard", "desc": "错在 origin 侧还是语料侧未定；须与 R2 不同会话/不同代码的第三条独立路定向（本卡禁联网不可自裁）", "owner_for_remedy": "取证工位（换会话）"},
+    {"id": "B1", "severity": "hard", "desc": "产品仓落点 0 字节：R2 门 0 P1/P2/P3 全 Access denied；本会话审批禁用、不可提权 ⇒ 需可写 company-wiki 的会话", "owner_for_remedy": "父的第 ① 件"},
+    {"id": "B2", "severity": "hard", "desc": "filing-fetch 分支未跑 ⇒ 无 immutable provenance sidecar、产品仓 git diff 新增路径 = []；§三十二 晋升 blocked（git apply 事故后两文件已 preimage 还原）", "owner_for_remedy": "父 / 另卡（iso→diff→复审→晋升）"},
+    {"id": "ACCT-L226-MERGE-7", "severity": "background", "desc": "参数放行四要件 0/4、MERGE 七条 7/7（与本卡并列的链上阻断，本卡不裁不解除）", "owner_for_remedy": "会计面 / 合并裁"}
+  ],
+
+  "re_verifiable_conditions": [
+    "RC1 定方向：不同会话/不同实现的第三条路复核 `amplifying` 与 8-K 签名页",
+    "RC2 以 origin 为基准重建 8 条引文（Q1 原样保留 `(1)&#160;Agents`），新载体登记 sha + 字节区，不回改旧载体",
+    "RC3 4 份旧语料按 E3 追加式重登记（保留旧件与旧 sha + divergence 登记）",
+    "RC4 B1/B2 落点完成（见 ruling_acct_r2.md §⑥ 落点清单）+ 产品仓新增路径与 sidecar 实测",
+    "RC5 新建 OPEN-3-ACCT-R3 复裁 E1；本卡不得被复用为『已裁通过』依据"
+  ],
+
+  "for_parent_item_1_landing_list": {
+    "target_dir": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\MICROSOFT CORP\\raw\\other\\",
+    "target_dir_readonly_verified": true,
+    "files_to_land": ["d291965d8k.htm (8-K 主文档, 28665 B)", "d291965dex991.htm (EX-99.1, 34288 B)"],
+    "sidecar_schema_reference": "同实体现有件 `raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json`（我只读读取，未改）",
+    "sidecar_required_fields": ["adapter_name", "adapter_version", "amended", "byte_size", "candidate{candidate_id, document_kind, entity, filing_date, fiscal_period, fiscal_year, form_type, language, market, provider, provider_document_id, source_url, title, adapter_payload_json{content_sha256, dayu_document_id, primary_filename}}", "company_name", "content_sha256", "document_kind=current_report", "language", "mime_type", "receipt{http_status:200, retrieved_at, source_url, staged_path, content_sha256, byte_size, candidate_id, schema_version}", "request{allow_download, as_of_date, document_kind}"],
+    "provenance_fields_to_backfill": {
+      "external_retrieval_not_local": true,
+      "kind": "current_report → raw/other/",
+      "raw_sha256_and_stripped_sha256": "8-K a3d0bbf6…/6328d056… (28665/28559); EX99.1 47a0a4a1…/557161af… (34288/34182), inner 4cb79b6e… (34070) —— 双登记缺一不可",
+      "edge_injected_script": "script_html + span_8k [28544,28650] + span_ex991 [34147,34253] + 「as-filed 0 命中、剥注入后与归档逐字节相同」",
+      "independent_path": "url …/0001193125-26-380280.txt, sha256 d82838ac…, 2721504 B, byte_identical=true",
+      "url_retrieved_utc_http_status_bytes_sha256_mechanism_user_agent": "8-K 2026-09-26T13:29:40Z 200/28665/a3d0bbf6…; EX99.1 13:29:41Z 200/34288/47a0a4a1…; python urllib(声明 UA) / revenue-forecast-evidence-audit/1.0 (owner-authorized evidence retrieval; contact: audit-ops@example.com)",
+      "mirror_path_and_sha": ".planning/…/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/origin_bytes/ + origin_bytes.bin (cf84c290…)",
+      "document_identity": "accession 0001193125-26-380280, CIK 789019, MICROSOFT CORP, 8-K, Item 7.01/9.01, period_of_report 2026-09-02, accepted 2026-09-02 16:30:24",
+      "c5_and_levels": "corpus_evidence_class=E3 (4 件) + c5_divergence{amplifying_vs_amplifies, corpusA_missing_signature, q1_nbsp} + e1_level=BLOCKED-PARTIAL + s_level=S1 + releases_nothing=true",
+      "quotes_status": "void_pending_reanchor（RC2 后回填新引文载体 sha；不得直接复用旧引文登记为『已核』）"
+    },
+    "execution_prerequisites": ["门 0 可写探针作为硬前置（写+回读+删除三步全过）——`git apply --check rc=0` 不校验可写（§三十二 事故教训）", "走 iso → changes.diff → 独立复审 → 晋升授权；禁 git add/commit/push", "实测 exhibit 闸门是否已在生产（§三十二 晋升 blocked，不得假定已生效）", "落地后回传：git diff 新增路径 + sidecar sha + raw/other/ 实际路径"]
+  },
+
+  "releases_nothing": true,
+  "not_granted": [
+    "不解除 OPEN-3",
+    "不解除 BLOCKED-NEEDS-ORIGIN-BYTES / B1 / B2 任一状态",
+    "不落产品仓（0 字节）",
+    "不放行任何参数（MSFT_PBP/IC/MPC_REVENUE_FY2027、MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027 与新两分部参数）",
+    "不产生 ACCEPT、不代签矿业面",
+    "不改任何 status/state/decision/decision_sha256",
+    "不改 E1/S 定义（ACCT L190 对称）",
+    "不碰两半区裁定 / 封盘 I-11-A / OPEN6-TOLERANCE-* / BLOCKED6C-* / OPEN6-H2-* 任一字节",
+    "不写五份计划文件、不写 .planning 之外任何路径",
+    "0 次 git 写、未用 git status、0 次联网",
+    "不重取 origin 字节（L543 只定级、不重取）",
+    "不判行业半区分部集合（IND ruling_r2.md 的 supersedes 复裁归行业面）"
+  ],
+
+  "boundary": {
+    "written_files_count": 6,
+    "writes_outside_plan_dir": 0,
+    "product_repo_writes": 0,
+    "network_requests": 0,
+    "git_writes": 0,
+    "git_status_used": false,
+    "git_diff_command": "git -c core.quotepath=false diff HEAD --name-only（只读）",
+    "git_diff_total_lines": 3830,
+    "git_diff_non_planning": 0,
+    "five_plan_files_written": 0,
+    "five_plan_files_mtime_note": "task_plan/findings/progress/OWNER_DECISIONS/REMEDIATION_REGISTER 的 mtime 落在 2026-09-26 13:57–14:22Z（本卡会话期间），但本工位 write/edit 调用仅 6 次、全部指向本卡目录（另 %TEMP% 调试脚本，工作区外）；同期存在多个并行工位（OPEN6B-R2-INVENTORY-BRIDGE / OPEN6B-R2-REVERT-UNQUANTIFIED / OUTWARD-* 等 a20260926-01）⇒ 该 mtime 属并行活动，非本卡写入；OWNER_DECISIONS 在本卡读前读末 sha 均为 9075f9aac00ded42（未变）",
+    "read_only_rehash_verification": "被裁定对象（origin 5 件 + origin_bytes.bin + R2 四载体）、4 份语料、上轮裁定、两半区与合并裁、OWNER_DECISIONS 收尾 sha 与读前登记全部一致 ⇒ 0 字节变更"
+  },
+
+  "mutation_results": {
+    "rc_convention": "0 = 该变异按预期表现",
+    "rows": [
+      {"id": "G1", "expected": "green", "observed": "M2/M3 拒绝 Q1（NBSP 差）", "rc": 1},
+      {"id": "G1b", "expected": "green", "observed": "通过", "rc": 0},
+      {"id": "R1", "expected": "red", "observed": "检出", "rc": 0},
+      {"id": "R2", "expected": "red", "observed": "检出", "rc": 0},
+      {"id": "R3", "expected": "red", "observed": "检出", "rc": 0},
+      {"id": "R4", "expected": "red", "observed": "检出", "rc": 0},
+      {"id": "R5", "expected": "red", "observed": "检出", "rc": 0},
+      {"id": "R6", "expected": "red", "observed": "检出", "rc": 0},
+      {"id": "R7", "expected": "M1绿/M2红", "observed": "M1=True, M2=False", "rc": 0}
+    ],
+    "discrimination_ok": true,
+    "discrimination_ok_literal_G1": false,
+    "G1_literal_reason": "字面 G1 要求『真实 Q1 + 全套 M1∧M2∧M3』，其 rc=1 恰是 Q2(a) 空白差的正确拒绝；不回改 oracle §5.1 判据，绿样改用 G1b（= §一 Q1④ 冻结的验收规则）"
+  },
+
+  "written_files": [
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN-3-ACCT-R2/a20260926-01/oracle.md", "bytes": 25169, "sha256": "a49d3dde1b45de19410909837215584f10baecf7fc82dbdcb44f873d075bfa1d", "note": "先冻结（§一~§四+§5.1+§六），§5.2 为执行后追加实测"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN-3-ACCT-R2/a20260926-01/verify_e1.py", "bytes": 24482, "sha256": "dccdf8256a9e33298c643e20c48992ae0f9323fbd8dd3554abc4b1a88ecda20e"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN-3-ACCT-R2/a20260926-01/_verification_raw.json", "bytes": 17941, "sha256": "2ada52b8941f127063974c178addf441ccdf9e93baf8ade81f1b50c22e27522d"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN-3-ACCT-R2/a20260926-01/e1_regrading.json", "bytes": 17544, "sha256": "9001d43b3f7a384d6b6111c59de50ff5bdc18c3fe5269dc514c029ae12a6e825"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN-3-ACCT-R2/a20260926-01/ruling_acct_r2.md", "bytes": 33747, "sha256": "17fbd752ad1a1d6b3667e908a4da2d845c8455b73416f553ebc5c63e9c3f214b"}
+  ],
+  "written_files_note": "handoff.json 自身不入 written_files（自引用哈希不可稳定计算）；全部 6 个文件均在本 attempt 目录内，.planning 之外 0 写入。",
+
+  "third_party_dependency": {"used": false, "providers": [], "statement": "本工位零联网，全部判定来自盘上字节的本地计算（python 标准库）。"},
+
+  "not_done": [
+    "未判 E1-COMPLETE / 未为推进链抬高等级（fail-closed ⇒ BLOCKED-PARTIAL）",
+    "未解除 OPEN-3 / BLOCKED-NEEDS-ORIGIN-BYTES / B1 / B2 任何一项",
+    "未产生 ACCEPT、未改任何 status/state/decision/decision_sha256",
+    "未放行 MSFT 参数、未冻结 I-07-E 分部口径",
+    "未在 company-wiki / dayu-agent 写入任何字节（只读列目录与只读读取，0 写入）",
+    "未联网（0 次 web_fetch / web_search / HTTP 客户端调用）",
+    "未回改上游任何载体（OPEN3-E1-ORIGIN-BYTES-R2 / OPEN3-E1-ACCT-RULING / OPEN3-E1-ACQUISITION / I11A-* / OWNER_DECISIONS / progress / task_plan / 五份计划文件）",
+    "未执行 git 写、未执行 git status",
+    "未重取 origin 字节（L543 只定级、不重取）",
+    "未判行业半区分部集合（IND ruling_r2.md 归行业面）"
+  ]
+}

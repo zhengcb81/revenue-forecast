@@ -1,0 +1,99 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "529acfc9670d2c3d57a9815e2e12b434c4fc5c9a",
+    "wiki": "354f5566c18f2f6bd87017dc9790866ae628a78e"
+  },
+  "canonical_hash": "1631b0a4eb3a746e97e8d8da64358e359c7aa925bd8a30bdc7e586a21d045f90",
+  "commands": [
+    {
+      "command": "uv run python -m pytest tests/unit/test_error_taxonomy.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "15 passed（raw 形态矩阵/结构化 N-1 分类/非锁不重试负例/发射形态/版本）"
+    },
+    {
+      "command": "uv run python -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "731 passed（716 → +15）"
+    },
+    {
+      "command": "uv run python -m pytest 受影响 contract 批量（paused_guard×2/evidence/extraction/focus/security_identity×3/fc1204 ratchet）",
+      "exit_code": 0,
+      "result": "全部通过（发射形态断言改为 canonical 码；复杂 ratchet 表驱动通过）"
+    },
+    {
+      "command": "uv run ruff check + ruff format --check（全部改动文件）",
+      "exit_code": 0,
+      "result": "All checks passed / already formatted"
+    }
+  ],
+  "created_at_utc": "2026-08-14T23:45:00+00:00",
+  "findings": [
+    {
+      "detail": "error_type 从异常类名改为 canonical 码（fatal 对非锁错误）——evidence_query/extraction_quality/focus_cleanup/security_identity×3/paused_guard×2 断言按新契约更新，断言本体未放宽（均为非锁错误 → fatal）。",
+      "id": "ZR204-IMPL-001",
+      "severity": "info",
+      "title": "错误发射契约变更波及 6 个既有 contract 测试"
+    },
+    {
+      "detail": "filing 侧 ZR-205 将消费该 canonical 码做 deadline-aware retry；本卡不改 filing。",
+      "id": "ZR204-IMPL-002",
+      "severity": "info",
+      "title": "ZR102-F2 的 wiki 侧根因关闭：raw SQLite lock 形态现在发射 catalog_busy(retryable)"
+    }
+  ],
+  "implementation": {
+    "design": "ERROR_TAXONOMY_VERSION=1.0 / ERROR_TAXONOMY_SCHEMA=error-taxonomy-1.0；表驱动分类：CatalogOperationLockedError→catalog_locked(retryable)、raw SQLite OperationalError lock/busy 文本→catalog_busy(retryable)、timeout/deadline→db_timeout(retryable)、paused 文本→worker_paused(retryable)、其余一切→fatal(非 retryable，含未知 error_type 的 N/N-1 fail-closed)；CLI 顶层 + identity_cli 两处发射统一为 {status,error_type,error,retryable}；表驱动保证新增函数复杂度≤10（FC-1204 ratchet）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/error_taxonomy.py",
+      "company-wiki/src/company_wiki/source_catalog/cli.py",
+      "company-wiki/src/company_wiki/source_catalog/identity_cli.py",
+      "company-wiki/tests/unit/test_error_taxonomy.py",
+      "company-wiki/tests/contract/test_source_catalog_ensure_paused_guard.py",
+      "company-wiki/tests/contract/test_source_catalog_security_identity.py",
+      "company-wiki/tests/contract/test_source_catalog_evidence_query.py",
+      "company-wiki/tests/contract/test_source_catalog_extraction_quality.py",
+      "company-wiki/tests/contract/test_source_catalog_focus_cleanup.py"
+    ],
+    "wiki_commits": "65a9e3306afb228b8e9aad9ce56a96acbaacb724 → a4ea60dc8d3fc0b11bcb7e7b29f831aa226e30c9 → ad5402693ca9624c9d20690638df3af8b7db0d5d"
+  },
+  "implementer": "zr204-implementer",
+  "kind": "implementer",
+  "notes": [
+    "本卡实现因用户 2026-08-14 STOP 指令跨会话完成：wiki 实现已提交（65a9e330/a4ea60d/ad54026），revenue 侧 receipt 于恢复时补齐。",
+    "mypy：改动文件不在 wiki CI 固定 11 模块名单，按前例跳过。"
+  ],
+  "objective": "统一 DB busy/locked、operation lock、timeout、paused reason taxonomy；raw SQLite/CLI/JSON 所有形态映射；非锁错误不得误标 retryable。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "529acfc9670d2c3d57a9815e2e12b434c4fc5c9a",
+    "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki error_taxonomy.py（新模块）+ cli.py/identity_cli.py 错误发射接入 + tests/unit/test_error_taxonomy.py + 6 个既有 contract 测试断言改 canonical 码；revenue 侧 receipts/ZR-204/** 与 state.json。filing 侧零改动（ZR-205 消费）。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 3,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/error_taxonomy.py",
+    "company-wiki/src/company_wiki/source_catalog/cli.py",
+    "company-wiki/src/company_wiki/source_catalog/identity_cli.py",
+    "company-wiki/tests/unit/test_error_taxonomy.py",
+    "company-wiki/tests/contract/test_source_catalog_ensure_paused_guard.py",
+    "company-wiki/tests/contract/test_source_catalog_security_identity.py",
+    "company-wiki/tests/contract/test_source_catalog_evidence_query.py",
+    "company-wiki/tests/contract/test_source_catalog_extraction_quality.py",
+    "company-wiki/tests/contract/test_source_catalog_focus_cleanup.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-204/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-204"
+}

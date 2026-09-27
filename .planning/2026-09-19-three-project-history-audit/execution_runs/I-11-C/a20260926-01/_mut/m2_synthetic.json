@@ -1,0 +1,1332 @@
+{
+  "schema": "i11c_parameter_mapping/1",
+  "card": "I-11-C",
+  "attempt": "execution_runs/I-11-C/a20260926-01",
+  "role": "implementer_i11c",
+  "status": "review_pending",
+  "purpose": "动作1 逐槽位核对 I-11-B 幅度/单位/起止年份/转换公式可执行性；动作2 low/base/high+dependency_control 参数映射表；动作3 每行来源+依据（文件+行号，行号由 builder 扫描源文件自动定位）；动作4 见 mapping_verification.json。全部数值登记不放行。",
+  "value_policy": {
+    "params_released": false,
+    "statement": "本表数值为 mapped_not_released（登记，不写进任何 released 字段）；store 侧 low/base/high 仍 null、_PLACEHOLDER 维持、released=false（实测 ST released:false 行=[191, 210, 386, 405]）；放行=独立复审+三件套+有权方（§三十四 L761-L766）。",
+    "management_target_is_not_independent": true,
+    "synthetic_numbers_quarantined": [
+      2,
+      8760,
+      0.5,
+      0.6,
+      0.7,
+      40,
+      20,
+      30,
+      32,
+      34,
+      1200,
+      264000,
+      281520,
+      299040,
+      17520
+    ],
+    "quarantine_rule": "qualitative_synthetic_example 数字不进入任何真实数值字段（CARD_B L16；SMC L36-L42 先例）；1,200,000（铜计划吨数，AR2025:p56）与示例 1200 非复制（collision_scan 先例 SMC L40）",
+    "inputs_read_only": [
+      ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-11-B\\a20260926-01\\calibration_plan.json",
+      ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-11-B\\a20260926-01\\expert_assumptions.json",
+      ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-11-B\\a20260926-01\\synthetic_mechanism_check.json",
+      ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN2-C2-REGISTRATION\\a20260926-01\\hypotheses_v3.json"
+    ]
+  },
+  "source_legend": {
+    "CP": "execution_runs/I-11-B/a20260926-01/calibration_plan.json",
+    "EAF": "execution_runs/I-11-B/a20260926-01/expert_assumptions.json",
+    "ST": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json（只读）",
+    "CARD_B": "execution_v2/card_I-11-B.md",
+    "SMC": "execution_runs/I-11-B/a20260926-01/synthetic_mechanism_check.json",
+    "RECOMP": "execution_runs/I-11-C/a20260926-01/_recompute_action1.py 执行输出（精确有理数）"
+  },
+  "mapping_rows": [
+    {
+      "parameter_id": "ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "unit": "人民币元",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "109,977,556,345",
+      "new_value": {
+        "low": 104478678528,
+        "base": 281520,
+        "high": 115476434162
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "分部对外销售收入直接作为该分部的收入路径输入；合计数由四分部相加得到，不再做第二次抵销。base=最后可得同口径年度值（FY2025）不变（朴素基线，EA-3）；low/high=base×0.95 / base×1.05（EA-1）",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：差额法 349079082852−165858644874−29212610830−44030270803=109977556345（差=0）；low/high 与 base×0.95/1.05 最大偏差 0.25 元（round-to-nearest）",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": "语义张力 unverified-N1（store 原值 349,079,082,852 与分部语义；AR p327/p328 回源归独立复审，EAF EA-5）"
+      },
+      "source": {
+        "primary": [
+          "contract arithmetic"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3",
+          "EA-5"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L38-L48",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L47-L55",
+            "what": "EA-5 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L39",
+            "what": "store H-01 original_value（N1 客体）"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "与 H-02 量×价共享驱动：S-MIN-PRICE/S-VOL-PRICE 联动，不得独立取极值（EA-6）",
+      "blocked_by": [
+        "OPEN-2（矿产品量价口径的系数取值未解）",
+        "OPEN-2（CP L46）",
+        "unverified-N1（交复审）"
+      ]
+    },
+    {
+      "parameter_id": "ZIJIN_SEG_SMELT_EXTERNAL_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "unit": "人民币元",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "165,858,644,874",
+      "new_value": {
+        "low": 157565712630,
+        "base": 165858644874,
+        "high": 174151577118
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "同 H-01；base=FY2025 值不变（EA-3），low/high=±5%（EA-1）",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：±5% 带 max|偏差|=0.3 元",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "contract arithmetic"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L49-L59",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L49",
+            "what": "store 参数在位"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "四分部合计与抵销桥互斥（ST L677-L681），不得与 H-05 双计",
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_SEG_TRADE_EXTERNAL_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "unit": "人民币元",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "29,212,610,830",
+      "new_value": {
+        "low": 27751980289,
+        "base": 29212610830,
+        "high": 30673241372
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "同 H-01；base=FY2025 值不变（EA-3），low/high=±5%（EA-1）",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：±5% 带 max|偏差|=0.5 元（.5 对称进位）",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "contract arithmetic"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L60-L70",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L56",
+            "what": "store 参数在位"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "同上",
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_SEG_OTHER_EXTERNAL_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "unit": "人民币元",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "44,030,270,803",
+      "new_value": {
+        "low": 41828757263,
+        "base": 44030270803,
+        "high": 46231784343
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "同 H-01；base=FY2025 值不变（EA-3），low/high=±5%（EA-1）",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：±5% 带 max|偏差|=0.15 元",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "contract arithmetic"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L71-L81",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L63",
+            "what": "store 参数在位"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "同上",
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-02",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "unit": "人民币元/吨铜当量",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "109977556345/885141（≈124,248.63，精确有理数，推导值非披露原文）",
+      "new_value": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "i11b_proposed_values": {
+        "low": 118036.2,
+        "base": 124248.63,
+        "high": 130461.06
+      },
+      "i11b_proposed_note": "I-11-B proposed 值如实转录存档；本站判 not_executable（unverified-N2）⇒ 传播值置 null，数字不进入下游",
+      "value_state": "not_executable_no_propagation",
+      "conversion_formula": "隐含单位实现收入 = 分部对外收入 ÷ (铜销量 884,943 吨 + 金销量 83,161 千克 × 系数)；系数=24 吨/千克（示意值，EA-2）。low/high=base×0.95/1.05（EA-1）",
+      "executability": {
+        "verdict": "not_executable",
+        "amplitude": "RECOMP（P2 探针）：公式分母合成 884943+83161×24=2880807 ≠ 登记分母 885141；109977556345/885141≈124248.63（登记除法成立），但按公式合成分母商≈38175.95（差 3.26 倍）；敏感性对 885141→968302（Δ=83161）在 c=24 隐含金项仅 198 吨，与 83161×24=1995864 吨矛盾 ⇒ store L170/L175 等式自身不闭合（I-11-B 忠实转录）",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式文本与登记数值不自洽——分母合成见 amplitude 字段",
+        "missing": [
+          "分母 885141 的权威推导或原值算术更正（需 CN-ZIJIN-AR2025 产销量表回源，会计/行业面裁定）",
+          "OPEN-2 裁定（系数来源未裁定 ⇒ 整值可用性=STOP_DISCLOSURE_ADAPTATION，ST L175）"
+        ],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "contract arithmetic",
+          "expert_assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-2"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L82-L92",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L20-L28",
+            "what": "EA-2 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L170",
+            "what": "store 公式原文（分母 885141）"
+          },
+          {
+            "file": "ST",
+            "line": "L175",
+            "what": "store 等式与两点差分表述（不自洽客体）"
+          }
+        ]
+      },
+      "propagation": "blocked_no_propagation（本站槽位级 STOP：公式不可执行 ⇒ 数字不得进入任何下游映射/forecast；与 CP L88『不得进入 forecast』及 OPEN-2 放行=BLOCKED 一致）",
+      "joint_scenario_constraint": "S-MIN-PRICE/S-VOL-PRICE 联动（EA-6）；D4 系数仅量侧一次（CP L244）",
+      "blocked_by": [
+        "OPEN-2（ACCT L75/L103：参数保持 _PLACEHOLDER、不得放行；IND L127：给可放行取值 → BLOCKED）",
+        "OPEN-2",
+        "unverified-N2（本站新登记，交独立复审/会计面）"
+      ]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-02（C2 新注册）",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "unit": "人民币元/吨（不含税）",
+      "period_start": "FY2025（基期，未取得）",
+      "period_end": "FY2027（生效）",
+      "original_value": null,
+      "new_value": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "unmapped_declined_no_number",
+      "conversion_formula": "实现单位收入 = 分产品对外收入 ÷ 分产品销售量（待 OPEN-2 解锁后按 M09 已审定映射回推）；带设计 = ±5%（EA-1，形状已定、数值待基期）",
+      "executability": {
+        "verdict": "not_executable",
+        "amplitude": "无基期：本工位可读面内无铜产品线量价行（CP L97），I-11-B 显式拒绝出数（EA-7）",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [
+          "铜产品线量价行",
+          "OPEN-2 解锁"
+        ],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "contract arithmetic"
+        ],
+        "ea_refs": [
+          "EA-7"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L93-L103",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L65-L73",
+            "what": "EA-7 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L180",
+            "what": "store 新注册参数 low:null"
+          }
+        ]
+      },
+      "propagation": "blocked_no_propagation（槽位级 STOP：数据不足 ⇒ 无数字）",
+      "joint_scenario_constraint": "D1 realized_price 联动（EA-6）",
+      "blocked_by": [
+        "OPEN-2"
+      ]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-02（C2 新注册）",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "unit": "人民币元/克（不含税）",
+      "period_start": "FY2025（基期，未取得）",
+      "period_end": "FY2027（生效）",
+      "original_value": null,
+      "new_value": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "unmapped_declined_no_number",
+      "conversion_formula": "实现单位收入 = 分产品对外收入 ÷ 分产品销售量（待 OPEN-2）；带设计 = ±5%（EA-1）",
+      "executability": {
+        "verdict": "not_executable",
+        "amplitude": "无基期：金锭（冶炼产品，SMC L24 口径注记）≠矿产金，无矿产品口径量价行（CP L108）",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [
+          "矿产金口径产品线量价行",
+          "OPEN-2 解锁"
+        ],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "contract arithmetic"
+        ],
+        "ea_refs": [
+          "EA-7"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L104-L114",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L65-L73",
+            "what": "EA-7 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L199",
+            "what": "store 新注册参数 low:null"
+          }
+        ]
+      },
+      "propagation": "blocked_no_propagation",
+      "joint_scenario_constraint": "D1 联动（EA-6）",
+      "blocked_by": [
+        "OPEN-2"
+      ]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "unit": "吨",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "884,943（FY2025 销售量）",
+      "new_value": {
+        "low": 796448.7,
+        "base": 884943,
+        "high": 973437.3
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "base=FY2025 销售量不变（EA-3，且库存释放效应不外推 ⇒ base 不含 +6,763 的重复释放）；low/high=base×0.9/1.1（EA-1）；约束：销量 ≤ 产量 + 期初库存",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：±10% 带（796448.7/973437.3）逐位相等",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": "量恒等式约束未闭合：BLOCKED-6b/OPEN-11 库存桥 154 千克容差未签（CP L123）——映射算术可执行，传播用途受该未签约束限制（登记交有权方）"
+      },
+      "source": {
+        "primary": [
+          "historical relationship",
+          "expert_assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L115-L125",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L356",
+            "what": "store 参数 low:null"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released（约束未闭合登记在案）",
+      "joint_scenario_constraint": "S-VOL-PRICE 联动：量价同档，不得独立取极值（EA-6）；E1 库存释放仅销量通道（CP L249）",
+      "blocked_by": [
+        "BLOCKED-6b/OPEN-11（库存桥 154 千克容差未签，量恒等式约束未闭合）",
+        "BLOCKED-6b/OPEN-11（CP L123）"
+      ]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "unit": "千克",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "83,161（FY2025 销售量）",
+      "new_value": {
+        "low": 74844.9,
+        "base": 83161,
+        "high": 91477.1
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "同铜；low/high=base×0.9/1.1（EA-1）",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：±10% 带逐位相等",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": "同铜：BLOCKED-6b（CP L134）"
+      },
+      "source": {
+        "primary": [
+          "historical relationship",
+          "expert_assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L126-L136",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L368",
+            "what": "store 参数在位"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "S-VOL-PRICE 联动；D4 系数仅量侧一次",
+      "blocked_by": [
+        "BLOCKED-6b（R2 154 千克 NOT_SIGNED）",
+        "BLOCKED-6b（CP L134）"
+      ]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_ZINC_SALEABLE_VOLUME_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03（C2 新注册）",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "unit": "吨",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "352,470",
+      "new_value": {
+        "low": 317223,
+        "base": 352470,
+        "high": 387717
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "base=FY2025 值不变（EA-3）；low/high=±10%（EA-1）",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：±10% 带逐位相等",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "historical relationship",
+          "expert_assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L137-L147",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L375",
+            "what": "store 新注册参数 low:null"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "S-VOL-PRICE 联动",
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_SILVER_SALEABLE_VOLUME_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03（C2 新注册）",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "unit": "千克",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "430,254",
+      "new_value": {
+        "low": 387228.6,
+        "base": 430254,
+        "high": 473279.4
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "base=FY2025 值不变（EA-3）；low/high=±10%（EA-1）",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：±10% 带逐位相等",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "historical relationship",
+          "expert_assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L148-L158",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L394",
+            "what": "store 新注册参数 low:null"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "S-VOL-PRICE 联动",
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER",
+      "hypothesis_id": "H-CN-ZIJIN-PLAN-04",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "unit": "吨（金）；万吨（铜）→ 统一 克/千克（金 105,000 千克）、吨（铜 1,200,000 吨）",
+      "period_start": "FY2026（计划年度）",
+      "period_end": "FY2026（对照年度）",
+      "original_value": "矿产金 105 吨、矿产铜 120 万吨（FY2026 计划值）",
+      "new_value": {
+        "low": {
+          "gold_kg": 94500,
+          "copper_t": 1080000
+        },
+        "base": {
+          "gold_kg": 105000,
+          "copper_t": 1200000
+        },
+        "high": {
+          "gold_kg": 115500,
+          "copper_t": 1320000
+        }
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "saleable_volume_FY2026 = 计划产量 − 计划年内存货变动；情景带 = 达成率 [0.9, 1.1]（H4 行业面带，EA-1）作用于计划值",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：达成率带 94500/115500（金）、1080000/1320000（铜）逐位相等",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": "§三十四 L772 边界：_PLACEHOLDER 维持不放行；本行仅情景对照与达成率情景用途（CP L165 note；CARD_B L14 管理层目标非独立证据）"
+      },
+      "source": {
+        "primary": [
+          "expert assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-3"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L159-L170",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L29-L37",
+            "what": "EA-3 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L551",
+            "what": "store _PLACEHOLDER 参数"
+          },
+          {
+            "file": "CARD_B",
+            "line": "L14",
+            "what": "管理层目标不得用作独立准确性证据"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released（仅情景对照；_PLACEHOLDER 维持）",
+      "joint_scenario_constraint": "E3：计划值仅对照通道一次，不得同时当产能上限与预测基数（CP L251）；D6 独立性受限",
+      "blocked_by": [
+        "§三十四 边界：两个 _PLACEHOLDER 维持不放行",
+        "§三十四 边界（不放行）"
+      ]
+    },
+    {
+      "parameter_id": "ZIJIN_SEGMENT_RECONCILIATION_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-ELIM-05",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "unit": "人民币元",
+      "period_start": "FY2025（基期）",
+      "period_end": "FY2027（生效）",
+      "original_value": "584,049,229,264 − 234,970,146,412 = 349,079,082,852",
+      "new_value": {
+        "low": 0,
+        "base": 0,
+        "high": 0
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "幅度语义 = 恒等式偏差，理论值 0 元；容差 τ=1 人民币元（ACCT R1/R3 SIGNED）；本参数不设增长幅度，只随 H-01 四分部联动",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：584049229264−234970146412=349079082852（差=0）；四分部对外合计逐位=349079082852；store 毛总计和 138271672956+189683879295+170521025777+85572651236=584049229264 亦逐位复核",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [
+          "contract arithmetic"
+        ],
+        "ea_refs": [],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L171-L181",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "ST",
+            "line": "L658",
+            "what": "raw_value 四分部总计/抵销/对外合计"
+          },
+          {
+            "file": "SMC",
+            "line": "L29-L33",
+            "what": "I-11-B 恒等式复算 3/3"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released（约束性恒等式，非收入路径输入）",
+      "joint_scenario_constraint": "E5：抵销只出现在恒等式桥（CP L253）；禁止 584,049,229,264 与 349,079,082,852 同时作收入基期（ST L677-L681）",
+      "blocked_by": [
+        "store state=unquantified（6b 路径(c) 已退 unquantified，本卡不改 store）",
+        "store state=unquantified（6b 路径(c)，CP L179）——本表不改 store"
+      ]
+    },
+    {
+      "parameter_id": "MSFT_PBP_REVENUE_FY2027",
+      "hypothesis_id": "H-US-MSFT-SEG-01",
+      "model_id": "direct_growth",
+      "driver_name": "growth_rate",
+      "unit": "小数（年度增长率）",
+      "period_start": "FY2026（基线年）",
+      "period_end": "FY2027（生效）",
+      "original_value": "0.16（FY2026 已披露增速，仅作对照）",
+      "new_value": {
+        "low": 0.102,
+        "base": 0.16,
+        "high": 0.218
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "分部收入 = 139,996 × (1+g)（USD mn）；g_low=(1.16×0.95)−1=0.102、g_high=(1.16×1.05)−1=0.218（EA-4 带设计）",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：g_low=51/500、g_high=109/500 逐位相等",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": "增速持续性无 FY2027 证据（EA-4 纯分析师判断）；EA-4 band_rationale 合计区间注记与自身带换算不符=unverified-N3（注记层，不影响本行算术）"
+      },
+      "source": {
+        "primary": [
+          "historical relationship",
+          "expert_assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-4"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L182-L192",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L38-L46",
+            "what": "EA-4 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L766",
+            "what": "store 参数 low:null"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "E7：三分部建模、集团增速不用（CP L255）；S-MSFT-SEG 不得同时独立上调（CP L261）",
+      "blocked_by": [
+        "OPEN-3（MSFT 分部口径参数一律未放行）",
+        "OPEN-3（CP L190）"
+      ]
+    },
+    {
+      "parameter_id": "MSFT_IC_REVENUE_FY2027",
+      "hypothesis_id": "H-US-MSFT-SEG-01",
+      "model_id": "direct_growth",
+      "driver_name": "growth_rate",
+      "unit": "小数",
+      "period_start": "FY2026（基线年）",
+      "period_end": "FY2027（生效）",
+      "original_value": "0.30（FY2026 已披露增速，仅作对照）",
+      "new_value": {
+        "low": 0.235,
+        "base": 0.3,
+        "high": 0.365
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "分部收入 = 137,791 × (1+g)；g_low=(1.30×0.95)−1=0.235、g_high=(1.30×1.05)−1=0.365",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：g_low=47/200、g_high=73/200 逐位相等",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": "同 PBP（EA-4/N3）"
+      },
+      "source": {
+        "primary": [
+          "historical relationship",
+          "expert_assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-4"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L193-L203",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L38-L46",
+            "what": "EA-4 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L778",
+            "what": "store 参数在位"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "同 PBP",
+      "blocked_by": [
+        "OPEN-3"
+      ]
+    },
+    {
+      "parameter_id": "MSFT_MPC_REVENUE_FY2027",
+      "hypothesis_id": "H-US-MSFT-SEG-01",
+      "model_id": "direct_growth",
+      "driver_name": "growth_rate",
+      "unit": "小数",
+      "period_start": "FY2026（基线年）",
+      "period_end": "FY2027（生效）",
+      "original_value": "-0.01（FY2026 已披露增速，仅作对照）",
+      "new_value": {
+        "low": -0.0595,
+        "base": -0.01,
+        "high": 0.0395
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "mapped_not_released",
+      "conversion_formula": "分部收入 = 54,052 × (1+g)；g_low=(0.99×0.95)−1=−0.0595、g_high=(0.99×1.05)−1=0.0395",
+      "executability": {
+        "verdict": "executable",
+        "amplitude": "RECOMP：g_low=−119/2000、g_high=79/2000 逐位相等",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [],
+        "carve_out": "同 PBP；MPC −1% 不得被集团增长掩盖（CP L208）"
+      },
+      "source": {
+        "primary": [
+          "historical relationship",
+          "expert_assumption"
+        ],
+        "ea_refs": [
+          "EA-1",
+          "EA-4"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L204-L214",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L11-L19",
+            "what": "EA-1 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "EAF",
+            "line": "L38-L46",
+            "what": "EA-4 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L785",
+            "what": "store 参数在位"
+          }
+        ]
+      },
+      "propagation": "allowed_not_released",
+      "joint_scenario_constraint": "同 PBP",
+      "blocked_by": [
+        "OPEN-3"
+      ]
+    },
+    {
+      "parameter_id": "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER",
+      "hypothesis_id": "H-US-MSFT-SEG-02",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "unit": "USD million（口径未闭合前不设幅度）",
+      "period_start": "FY2026（基线）",
+      "period_end": "FY2027（口径闭合前 unquantified）",
+      "original_value": "214,400（叙述值）",
+      "new_value": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "unmapped_declined_no_number",
+      "conversion_formula": "无（store：无可用的换算公式）",
+      "executability": {
+        "verdict": "not_executable",
+        "amplitude": "无公式：store 明示无可用的换算公式、缺 Microsoft Cloud→分部/产品行完备映射表（CP L219-L220）",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [
+          "完备映射表",
+          "OPEN-3 解锁"
+        ],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [],
+        "ea_refs": [
+          "EA-7"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L215-L225",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L65-L73",
+            "what": "EA-7 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L890",
+            "what": "store _PLACEHOLDER low:null"
+          }
+        ]
+      },
+      "propagation": "blocked_no_propagation（槽位级 STOP）",
+      "joint_scenario_constraint": "E6：PROHIBITED_CO_USE——不得与 IC 增速并用（CP L254）",
+      "blocked_by": [
+        "OPEN-3（MSFT 口径全维持不放行）",
+        "OPEN-3"
+      ]
+    },
+    {
+      "parameter_id": "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027",
+      "hypothesis_id": "H-US-MSFT-SEG-03",
+      "model_id": "subscription",
+      "driver_name": "composition",
+      "unit": "USD million（单位经济学参数缺披露）",
+      "period_start": "FY2026（基线）",
+      "period_end": "FY2027（拆分可得前 pending）",
+      "original_value": "101,997（FY2026 产品行合计口径）",
+      "new_value": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "i11b_proposed_values": null,
+      "i11b_proposed_note": null,
+      "value_state": "unmapped_declined_no_number",
+      "conversion_formula": "无（store：不写换算公式）",
+      "executability": {
+        "verdict": "not_executable",
+        "amplitude": "无拆分：缺行内拆分（云/许可分项、平均付费席位、净 ARPU）（CP L230-L231）",
+        "unit_check": "与量纲链一致（CP L43/L54/L65/L76/L87/L120/L131/L142/L153/L164/L176/L187/L198/L209/L220/L231 单位字段逐条核对）",
+        "period_check": "period_start/period_end 已定义；FY2027 生效行基期=FY2025（FY2026 无同口径观测，EA-3 朴素基线）",
+        "formula_check": "公式逐项可复算（RECOMP）",
+        "missing": [
+          "行内拆分披露",
+          "OPEN-3 解锁"
+        ],
+        "carve_out": null
+      },
+      "source": {
+        "primary": [],
+        "ea_refs": [
+          "EA-7"
+        ],
+        "basis": [
+          {
+            "file": "CP",
+            "line": "L226-L274",
+            "what": "slot 全字段（逐字转录源）"
+          },
+          {
+            "file": "EAF",
+            "line": "L65-L73",
+            "what": "EA-7 敏感性区间 + equivalent_to_disclosure_basis=false"
+          },
+          {
+            "file": "ST",
+            "line": "L995",
+            "what": "store 参数 low:null"
+          }
+        ]
+      },
+      "propagation": "blocked_no_propagation（槽位级 STOP）",
+      "joint_scenario_constraint": "D7 联动约束（EA-6）",
+      "blocked_by": [
+        "OPEN-3"
+      ]
+    }
+  ],
+  "action_1_summary": {
+    "total_slots": 18,
+    "executable": 13,
+    "not_executable": 5,
+    "not_executable_detail": [
+      {
+        "parameter_id": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027",
+        "why": "RECOMP（P2 探针）：公式分母合成 884943+83161×24=2880807 ≠ 登记分母 885141；109977556345/885141≈124248.63（登记除法成立），但按公式合成分母商≈38175.95（差 3.",
+        "missing": [
+          "分母 885141 的权威推导或原值算术更正（需 CN-ZIJIN-AR2025 产销量表回源，会计/行业面裁定）",
+          "OPEN-2 裁定（系数来源未裁定 ⇒ 整值可用性=STOP_DISCLOSURE_ADAPTATION，ST L175）"
+        ]
+      },
+      {
+        "parameter_id": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+        "why": "无基期：本工位可读面内无铜产品线量价行（CP L97），I-11-B 显式拒绝出数（EA-7）",
+        "missing": [
+          "铜产品线量价行",
+          "OPEN-2 解锁"
+        ]
+      },
+      {
+        "parameter_id": "ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027",
+        "why": "无基期：金锭（冶炼产品，SMC L24 口径注记）≠矿产金，无矿产品口径量价行（CP L108）",
+        "missing": [
+          "矿产金口径产品线量价行",
+          "OPEN-2 解锁"
+        ]
+      },
+      {
+        "parameter_id": "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER",
+        "why": "无公式：store 明示无可用的换算公式、缺 Microsoft Cloud→分部/产品行完备映射表（CP L219-L220）",
+        "missing": [
+          "完备映射表",
+          "OPEN-3 解锁"
+        ]
+      },
+      {
+        "parameter_id": "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027",
+        "why": "无拆分：缺行内拆分（云/许可分项、平均付费席位、净 ARPU）（CP L230-L231）",
+        "missing": [
+          "行内拆分披露",
+          "OPEN-3 解锁"
+        ]
+      }
+    ]
+  },
+  "action_2_dependency_control_transcribed": {
+    "source": "CP L237-L265（本站不重写；映射行逐行携带 joint_scenario_constraint）",
+    "shared_drivers": [
+      "D1 realized_price",
+      "D2 saleable_volume",
+      "D3 other_revenue",
+      "D4 copper_equivalent_coefficient（仅量侧一次）",
+      "D5 elimination_bridge（仅恒等式桥）",
+      "D6 management_plan_FY2026（独立性受限）",
+      "D7 segment_growth_MSFT（与集团增速互斥）"
+    ],
+    "event_reuse_check": "E1-E7 逐条 ALLOWED_ONCE/PROHIBITED_CO_USE（CP L249-L255）",
+    "correlated_scenarios": [
+      "S-MIN-PRICE",
+      "S-VOL-PRICE",
+      "S-MSFT-SEG"
+    ],
+    "scenario_joint_logic": "任一情景 收入增量=Σ(各驱动单通道增量)；同一事件不得贡献两个及以上通道；违反⇒STOP_SCENARIO（CP L263；EA-6 联合带约束）"
+  },
+  "action_3_source_counts": {
+    "rows_total": 18,
+    "rows_mapped_with_values": 13,
+    "rows_unmapped_no_propagation": 5,
+    "from_expert_assumption": 17,
+    "from_expert_assumption_note": "除 ZIJIN_SEGMENT_RECONCILIATION（纯 contract arithmetic，ea_refs=[]，CP L178）外 17 行均经 EA-1…EA-7 承接（带/基线/拒绝处置）；13 行已映射值中 12 行带 EA、4 行显式拒绝（EA-7）、1 行公式不自洽（EA-1/EA-2 承接但判不传播）",
+    "contract_arithmetic_only": 1,
+    "synthetic_numbers_in_real_fields": 0
+  },
+  "unverified_findings": [
+    {
+      "id": "unverified-N1",
+      "registration": "unverified",
+      "desc": "继承 I-11-B：store H-01 original_value=349,079,082,852（四分部合计，ST L39）与 ZIJIN_SEG_MINERAL 分部语义张力（CP L271-L273；EAF EA-5）",
+      "disposition": "登记不回改；AR p327/p328 回源归独立复审"
+    },
+    {
+      "id": "unverified-N2",
+      "registration": "unverified",
+      "desc": "本站新发现：ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 转换公式分母不自洽（store L170/L175 等式 884943+83161×24=885141 不成立，实测合成=2880807；敏感性对在 c=24 隐含金项 198 吨 vs 1995864 吨）——I-11-B 为忠实转录，缺陷源头在 store 口径暴露原文；proposed 值（118036.2/124248.63/130461.06）在更正前不得传播",
+      "disposition": "槽位级 STOP + not_executable_no_propagation；交独立复审/会计面（与 OPEN-2 同源）"
+    },
+    {
+      "id": "unverified-N3",
+      "registration": "unverified",
+      "desc": "本站新发现：EA-4 band_rationale 注记『三分部收入合计区间=[320763,348432] USD mn』与其自身增长率带换算（本站复算 ≈[375283.38, 414786.90]）不符；与基期合计±5%（[315247.05, 348430.95]）亦不吻合（高位差 1.05）——注记层缺陷，不影响任何 new_value 算术",
+      "disposition": "登记交独立复审；MSFT 三行映射可执行性不受影响"
+    },
+    {
+      "id": "unverified-D1",
+      "registration": "erratum_recorded",
+      "desc": "派单标题『校准后参数映射』与 card_I-11-C.md 标题『独立反方审查与触发更新』不同名；判读=编排层拆两站（映射实现者/独立复审），卡文 L13-L16 reviewer 动作不在本站执行",
+      "disposition": "按派单执行并如实登记；拆分确权归编排层"
+    }
+  ],
+  "stop_evaluation": {
+    "slot_level_stop_applied": true,
+    "slot_level_stop_rows": [
+      "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027",
+      "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+      "ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027",
+      "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER",
+      "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027"
+    ],
+    "card_level_stop_calibration_triggered": false,
+    "card_level_operative_reading": "从严触发式（继承 ROS L12）：本站传播的每一个幅度皆可溯源（contract arithmetic/已签容差 τ=1/historical relationship）或由明确 EA+敏感性区间承接；5 个不可执行槽位零传播 ⇒ 无『无来源又未声明』的幅度进入下游",
+    "card_level_strict_reading_registered": "字面从严读法（继承 ROS L13-L17）：存在任一 not_executable 槽位即整卡 blocked——本站 5 个该类槽位存在，若独立复审采严格读法 ⇒ 本卡连同 I-11-B 一并转 blocked；回滚=作废本表 mapped_not_released 行（零封盘改动、store 零改动）",
+    "stop_scenario_triggered": false,
+    "stop_scenario_check": "18 行逐行携带联动约束（EA-6）；未产生量 high×价 high×其他收入 high 独立叠加（≈+21% 不可能联合）；E1-E7 复用检查转录全 PASS/PROHIBITED_CO_USE"
+  },
+  "reviewer_handoff_note": "独立复审接手点：① unverified-N1（p327/p328 回源）② unverified-N2（分母算术更正/权威推导，会计面）③ unverified-N3（EA-4 注记核对）④ 严格读法之争裁定（I-11-B ROS L13-L17）⑤ 本表 13 行 mapped_not_released 的签署与否（三件套落定）；本表不自签、不产生 ACCEPT。"
+}

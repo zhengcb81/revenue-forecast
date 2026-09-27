@@ -1,0 +1,58 @@
+﻿................F..F.........s......F...ssF......                        [100%]
+================================== FAILURES ===================================
+______________________ test_c3_complexity_ratchet_green _______________________
+tests\test_ca303_arch_quality.py:96: in test_c3_complexity_ratchet_green
+    out = proc.stdout + proc.stderr
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: can only concatenate str (not "NoneType") to str
+______________________ test_c5_manifest_verifies_offline ______________________
+tests\test_ca303_arch_quality.py:147: in test_c5_manifest_verifies_offline
+    assert proc.returncode == 0 and "OK" in out, out[-300:]
+E   AssertionError:  16:23:31)
+E     DRIFT: mtime drift: audit_review/2026-08-13_zijin_data_lake_remediation_plan/traceability_matrix.md (2026-08-13 06:51:03 -> 2026-09-20 16:23:31)
+E     DRIFT: mtime drift: audit_review/2026-08-13_zijin_data_lake_remediation_plan/work_unit_registry.md (2026-08-13 06:55:19 -> 2026-09-20 16:23:31)
+E     
+E   assert (1 == 0)
+E    +  where 1 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-m', 'uc.cli', 'manifest-verify'], returncode=1, stdout='DRIFT: m...8-13_zijin_data_lake_remediation_plan/work_unit_registry.md (2026-08-13 06:55:19 -> 2026-09-20 16:23:31)\n', stderr='').returncode
+_ SingleOwnerGuardTests.test_only_canonical_client_may_use_subprocess_download_adapters _
+tests\test_single_owner_guard.py:42: in test_only_canonical_client_may_use_subprocess_download_adapters
+    self.assertNotIn(
+E   AssertionError: 'subprocess' unexpectedly found in {'subprocess'} : revenue_core.py imports subprocess (second download owner)
+_____________________ test_lowercase_sha256_family_pinned _____________________
+tests\test_message_contract_pins.py:219: in test_lowercase_sha256_family_pinned
+    pi, guard = _load_cw_pair(tmp_path)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_message_contract_pins.py:137: in _load_cw_pair
+    shutil.copy2(CW_DIR / name, pkg / name)
+C:\Miniconda\Lib\shutil.py:453: in copy2
+    _winapi.CopyFile2(src_, dst_, flags)
+E   FileNotFoundError: [WinError 3] ϵͳ�Ҳ���ָ����·����
+============================== warnings summary ===============================
+tests/test_ca303_arch_quality.py::test_c3_complexity_ratchet_green
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-6 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+    File "<frozen codecs>", line 325, in decode
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd4 in position 304: invalid continuation byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_ca303_arch_quality.py::test_c3_complexity_ratchet_green - T...
+FAILED tests/test_ca303_arch_quality.py::test_c5_manifest_verifies_offline - ...
+FAILED tests/test_single_owner_guard.py::SingleOwnerGuardTests::test_only_canonical_client_may_use_subprocess_download_adapters
+FAILED tests/test_message_contract_pins.py::test_lowercase_sha256_family_pinned
+4 failed, 42 passed, 3 skipped, 1 warning in 21.31s
+

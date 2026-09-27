@@ -1,0 +1,194 @@
+{
+  "card_id": "RF-E2E-ADAPT",
+  "attempt_id": "a20260923-01",
+  "file_role": "landing mirror created by the carrier-landing bookkeeping pass; this attempt had no evidence/RF-E2E-ADAPT/qualification.json before this pass (pre-image: file did not exist)",
+
+  "formula": {
+    "state": "not_applicable_with_reason",
+    "reason": "本卡是跨仓 E2E 适配/门修复卡（gate root-fix for real-roots E2E RED），不是公式卡：被复审的对象是四个 RF 测试文件的根因修复与门的真实根选择证据链，报告在案的判据是 oracle 冻结时序、根因两端现场核对、RED/GREEN/MUTATION 计数复核、zr803 归属、family 红的先在性与无旁路边界——没有任何公式、情景或数值推导被判据化，因此公式资格 not_applicable_with_reason，本字段不授予任何公式资格、也不提升任何既有卡的 formula 状态。",
+    "reason_verbatim_from_carrier": [
+      {
+        "line": 3,
+        "start": 83,
+        "end_inclusive": 171,
+        "length": 89,
+        "sha256": "c44555a43c9c02bb2ff625fdcc9230a434a63f991b421bf8f3c363168899de01",
+        "text": "- **Card:** `RF-E2E-ADAPT` (gate root-fix for real-roots E2E RED), attempt `a20260923-01`"
+      },
+      {
+        "line": 9,
+        "start": 756,
+        "end_inclusive": 1071,
+        "length": 316,
+        "sha256": "36da8298fc0f8cb2ad9cd8dc2dc493dc778fe58ba4e6df42e442b136b5a755d9",
+        "text": "Scope if accepting (parent): commit the four RF test files (worktree already\ncarries them) → push batch-5c (gate full run incl. real-roots + real-data with\nthese fixes); full-gate / mypy / install-sync / the other 8 real-data files\nremain in the gate's own hands (handoff unproven item 1) — CI re-run after push."
+      }
+    ],
+    "note": "state 值 not_applicable_with_reason = 本卡非公式卡的资格状态；reason 如上，卡片性质与范围逐字引自 carrier（行号 + 字节区 + sha256 全值可复算）。本字段不授予任何公式资格，也不提升任何既有卡的 formula 状态。"
+  },
+
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "disclosure_adaptation_and_accuracy_note": "本卡非披露适配方卡，复审报告没有为本卡授予任何 disclosure_adaptation 或 accuracy；两个值原样登记为 unmapped / unproven，本次落定不授予、不改动、不弱化。",
+
+  "granted_scope": "Scope if accepting (parent): commit the four RF test files (worktree already carries them) → push batch-5c (gate full run incl. real-roots + real-data with these fixes); full-gate / mypy / install-sync / the other 8 real-data files remain in the gate's own hands (handoff unproven item 1) — CI re-run after push.",
+  "granted_scope_source": {
+    "carrier": "reviewer_report.md",
+    "line_range": [9, 12],
+    "byte_region": {"start": 756, "end_inclusive": 1071, "length": 316, "sha256": "36da8298fc0f8cb2ad9cd8dc2dc493dc778fe58ba4e6df42e442b136b5a755d9"},
+    "transcribed_verbatim": true
+  },
+  "granted_scope_note": "该段是**给父的落库范围（parent's commit/push scope）**，逐字转录，仅作登记：提交与推送是父的保留动作，本 pass 未执行任何 git 写操作、未提交、未推送。授予面本身只覆盖『四个 RF 测试文件的根因修复经独立复审 ACCEPT』这一事实。",
+
+  "not_granted": [
+    {
+      "id": "NG-1",
+      "item": "任何 git 提交 / 推送动作 (any commit / push)",
+      "text": "本落定不执行、不授权执行任何提交或推送：granted_scope 明写 commit/push 是 (parent) 的动作；本 pass git 写操作 = 0。"
+    },
+    {
+      "id": "NG-2",
+      "item": "全门 / mypy / install-sync / 另外 8 个 real-data 文件的通过",
+      "text": "复审明写这些 remain in the gate's own hands；本落定不宣称它们通过（unverified #1 原样携带）。"
+    },
+    {
+      "id": "NG-3",
+      "item": "回执时效（TTL/`evaluate_review`）与 CI 侧验证",
+      "text": "TTL 本链未测（unverified #2）；CI 侧待推送后自监（unverified #5）——均不授予。"
+    },
+    {
+      "id": "NG-4",
+      "item": "第五个被改文件 `tests/test_fc905b_trusted_receipt.py` 的提交归属裁定",
+      "text": "F-2 只是给父的 provenance flag；本落定不裁定、不代提交该文件。"
+    },
+    {
+      "id": "NG-5",
+      "item": "任何公式资格 / 披露适配资格 / 准确性",
+      "text": "formula = not_applicable_with_reason（非公式卡）、disclosure_adaptation = unmapped、accuracy = unproven —— 本落定一律不授予。"
+    },
+    {
+      "id": "NG-6",
+      "item": "卡片签名 (card signature)",
+      "text": "carrier L292–L294 逐字：Card signature remains the **parent's** to apply (reviewer does not self-sign the card)。本 pass 未代签、未自签。"
+    }
+  ],
+
+  "verdict": {
+    "word_written_by_reviewer": "ACCEPT",
+    "verdict_heading_line": 7,
+    "verdict_line_text": "- **Verdict: ACCEPT (sign-off as reviewer, 4 findings — none blocking)**（域：4 项 findings 对 verdict 的影响面）",
+    "second_attestation_line": 288,
+    "second_attestation_text": "Independent review verdict: **ACCEPT** —（域：7 项 dispatch 核验）all seven dispatch verify-items pass",
+    "counts": {"findings": 4, "blocking": 0},
+    "counts_verbatim_sidecar": "# verdict: ACCEPT (4 findings, 0 blocking; F-1 freeze/run nuance, F-2 fifth modified RF test file test_fc905b_trusted_receipt.py provenance, F-3 doc phase interleaving with no evidence-dependency violation, F-4 CRLF EOL of changes.diff)",
+    "ledger_status": "accepted_scoped",
+    "status_before": "review_pending",
+    "vocabulary_note": "复审员原词 `ACCEPT` 非本计划四值结论域之一；状态盘字段按先例记 `accepted_scoped`，原词在 status_authority 与 review.md 中逐字保留，本 pass 不改判、不换词、不代签。"
+  },
+
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "path_inside_attempt": "execution_runs/RF-E2E-ADAPT/a20260923-01/reviewer_report.md",
+    "carrier_sha256": "d7e4d7230ac9604590a40cd453a5c1934a5edae2758c98ba22d921da488c6971",
+    "carrier_bytes": 18810,
+    "carrier_total_lines": 294,
+    "carrier_encoding": "UTF-8 without BOM (first bytes 35 32 114 = '# r'); LF-only (CR count 0, LF count 294); single trailing LF (last byte 0a)",
+    "carrier_written_at": "2026-09-23 03:26:34 (local) — 25 minutes after handoff.md (03:01:07)",
+    "verdict_line_byte_region": {"start": 629, "end_inclusive": 753, "length": 125, "sha256": "1764d8c4911bd6651cf1acc9758b889dba6232cae5d7ad58c720691f869b67a7"},
+    "second_attestation_byte_region": {"start": 18293, "end_inclusive": 18403, "length": 111, "sha256": "8cd92a64b89fc8ec48521421ff28e5c84ab649ed257e35b42a4089473df6678b"},
+    "findings_block_byte_region": {"start": 14880, "end_inclusive": 17121, "length": 2242, "sha256": "a87121702f72be24ebe5bf72a05c8d17605193609167b6dc5a2223987dc811ad"},
+    "whole_file_byte_region": {"start": 0, "end_inclusive": 18809, "length": 18810, "sha256": "d7e4d7230ac9604590a40cd453a5c1934a5edae2758c98ba22d921da488c6971"},
+    "region_definition": "0-based byte offsets against the file as it stands at carrier_sha256; multi-line regions include internal LFs and exclude the region's final line terminator",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "bytes": 839,
+      "sha256": "4083813579061475adb0f16d874d48279e70dc942cee61323f31347ce6599fb1",
+      "content_line1": "d7e4d7230ac9604590a40cd453a5c1934a5edae2758c98ba22d921da488c6971  reviewer_report.md",
+      "read_back_equal": "sidecar read-back == independent read-only re-hash of reviewer_report.md at landing time == dispatch pin (18810 B / 294 lines); 0 bytes written to carrier or sidecar by this pass",
+      "rem79_self_check": {"output_verbatim": "0 violation(s) across 1 file(s)", "violations": 0, "SELFCHECK_EXIT": 0, "env": "PYTHONIOENCODING=utf-8"}
+    },
+    "reviewer_writes_confined_to": "# reviewer writes confined to: reviewer_report.md + reviewer_report.sha256",
+    "reviewer_writes_confined_to_byte_region": {"start": 686, "end_inclusive": 759, "length": 74, "sha256": "59bb3b0bf2e1f849ec54a3561e46cf9653a7e3449e0f0c50615d9933cc57e5fe"},
+    "git_usage": "# git usage: read-only (status/diff/log/rev-parse); runs executed into %TEMP%",
+    "git_usage_byte_region": {"start": 761, "end_inclusive": 837, "length": 77, "sha256": "ab147160697cba0d2e0d9d60224e15fcb7fb9ec71c873ada8eb87d0e39bdd080"},
+    "reviewer": "independent delegated reviewer (read/grep/pwsh only; runs into %TEMP%; no product writes; git used read-only; report + sidecar are the reviewer's only writes), 2026-09-23 (local)",
+    "landing_file": "review.md (created by this carrier-landing pass; transcribes the verdict and adds no acceptance of its own)",
+    "nature": "status moved by bookkeeping transcription only — verdict_is_transcribed_not_authored=true; signing face = reviewer_report.md"
+  },
+
+  "carried_findings": [
+    {
+      "id": "F-1",
+      "severity": "info, ordering nuance",
+      "blocking": false,
+      "carrier_line_range": [233, 237],
+      "byte_region": {"start": 14921, "end_inclusive": 15308, "length": 388, "sha256": "7d858fd78f6edc524aeee62103585f578a657aaea7faa2923f3221dcb716018b"},
+      "summary": "freeze/run nuance — RED repro (02:36:49) + receipt probe (02:37:08) ran BEFORE the oracle freeze (02:41:58); disclosed inside the oracle, consistent with reproduce-first protocol; all edits and all other evidence runs are after the freeze; 'frozen-first' = frozen-before-first-edit.",
+      "disposition": "carried verbatim (bookkeeping transcription only); non-blocking; no action by this pass"
+    },
+    {
+      "id": "F-2",
+      "severity": "provenance flag for parent",
+      "blocking": false,
+      "carrier_line_range": [238, 249],
+      "byte_region": {"start": 15310, "end_inclusive": 16108, "length": 799, "sha256": "e2d92811598984b515d33fafae94bb8fdfedbde3d26541e8851093af2abfdc28"},
+      "summary": "fifth modified RF test file outside this card's edit set: tests/test_fc905b_trusted_receipt.py (M, +14/−2, SHA DB8BBB48…F19903E1, LastWriteTime 02:22:04 — before this attempt's first logged command 02:36:49; FIX-W06-GAPS P4-SCOPE content; register :1109 attributes fc905b to FIX-W06-GAPS' authorized test surface). Timestamps place it OUTSIDE this attempt; the card's 'edits = exactly the 4 files' holds for a20260923-01. Parent should confirm that file's commit provenance when committing the four card files.",
+      "disposition": "carried verbatim and routed to the parent; this pass does not commit and does not adjudicate that file's provenance"
+    },
+    {
+      "id": "F-3",
+      "severity": "cosmetic, doc-vs-actual interleaving",
+      "blocking": false,
+      "carrier_line_range": [250, 260],
+      "byte_region": {"start": 16110, "end_inclusive": 16925, "length": 816, "sha256": "b3b489c37ba41760c376e49002b84a53e28d27f5b9da422f4653ed0b6683ee0c"},
+      "summary": "documentation phase interleaving is idealized (diff/decision/commands written while the 187 s green run was in flight) but EVERY doc's cited result existed at that doc's write time — NO evidence-dependency violation; '55 passed' appears only in handoff.md/binding.md, both ≥ 03:01.",
+      "disposition": "carried verbatim; no document rewritten by this pass"
+    },
+    {
+      "id": "F-4",
+      "severity": "info, EOL",
+      "blocking": false,
+      "carrier_line_range": [261, 263],
+      "byte_region": {"start": 16927, "end_inclusive": 17121, "length": 195, "sha256": "2acdd370269c5eec647e9975e7d26d3b9bb77f8e981bae7eae55f970bbc6fa0e"},
+      "summary": "changes.diff on disk is CRLF (Windows text-write default); any future byte-pin of it must normalize EOL first — content identity proven by reconstruction.",
+      "disposition": "carried verbatim; changes.diff left byte-untouched (0 bytes)"
+    }
+  ],
+  "carried_findings_counts": {"findings": 4, "blocking": 0, "verbatim_from_sidecar": "4 findings, 0 blocking"},
+
+  "carried_unverified": [
+    {"n": 1, "origin": "handoff.md L10–L18", "item": "全门 pre_push_gate.py 端到端未跑（含 meta/binding pytest 对、mypy、install-sync、另外 8 个 real-data 文件）", "status": "carried_unproven_unchanged"},
+    {"n": 2, "origin": "handoff.md L19–L23", "item": "回执时效（TTL/evaluate_review）本链未测；固定 reviewed_at 已 >30d，未来链路步骤评估时效将 fail-close", "status": "carried_unproven_unchanged"},
+    {"n": 3, "origin": "handoff.md L24–L28", "item": "prompt_injection_review_audit 字段累积——未来断言 metadata_json 完全相等的测试会看到 audit/writer_* 字段", "status": "carried_unproven_unchanged"},
+    {"n": 4, "origin": "handoff.md L29–L31", "item": "zr803 仅诊断性改动（断言条件逐字节相同；回退该 hunk 仍全绿）", "status": "carried_unproven_unchanged"},
+    {"n": 5, "origin": "handoff.md L32–L35", "item": "CI 侧验证待推送后自监（本卡仅门机器本地验证）", "status": "carried_unproven_unchanged"}
+  ],
+  "carried_unverified_note": "5 条是原卡自己列的，逐字携带于 handoff.json unverified.items[*].lines_verbatim 与 review.md §6；本落定不弱化、不删减、不合并。复审员 §9 的 4 条 unverified（agreed with handoff）并存。",
+
+  "declarations": {
+    "verdict_is_transcribed_not_authored": true,
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "bookkeeping_nature": "bookkeeping transcription adds no acceptance of its own — this file mirrors reviewer_report.md and handoff.json and grants nothing beyond them",
+    "authority": "the verdict word `ACCEPT` was written by the independent reviewer at reviewer_report.md L7 (restated L288), not by the implementer and not by this landing pass",
+    "production_bytes_written": 0,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "handoff_md_bytes_written": 0,
+    "planning_register_bytes_written": 0,
+    "git_writes": 0,
+    "tests_run": 0,
+    "network_calls": 0,
+    "signatures_produced": 0,
+    "git_diff_non_planning": 0,
+    "files_written_by_this_landing": [
+      "handoff.json (created)",
+      "review.md (created)",
+      "evidence/RF-E2E-ADAPT/qualification.json (this file, created)"
+    ],
+    "pre_image": "none for this file — evidence/RF-E2E-ADAPT/qualification.json did not exist in this attempt before this pass",
+    "appends_to_existing_files": 0
+  },
+
+  "mirror_note": "status_authority / carried_findings / carried_unverified mirror handoff.json and reviewer_report.md exactly; this file re-derives nothing, signs nothing, and executes no commit or push"
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1005",
+  "reviewer_identity": "reviewer-fc1005-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "3fbdf9ece4ed510d5b1df9ee7fffefe7587badb2",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "6d104d4b92973a170aa094e3be318918791bd276",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "replayed_command_ids": [
+    "revenue.diff.base_to_result",
+    "revenue.ruff.fc1005",
+    "revenue.focused.fc1005_gate_tests",
+    "revenue.gate.run",
+    "revenue.unit.full",
+    "wiki.mutation.mlatest_live",
+    "wiki.mutation.mlatest_reverted",
+    "revenue.gate.mutation_evidence_deleted",
+    "revenue.gate.attribution_collector",
+    "revenue.manifest_hashes",
+    "codegraph.reachability"
+  ],
+  "scenario_results": [
+    {
+      "id": "mutation-kill-rate",
+      "status": "passed",
+      "note": "gate exit 0; 8/8 classes covered (7/5/13/2/1/7/10/6)"
+    },
+    {
+      "id": "M-latest",
+      "status": "passed",
+      "note": "live replay: re-resolve removed -> cg05+cg07 FAIL; revert -> 7 passed"
+    },
+    {
+      "id": "chaos",
+      "status": "passed",
+      "note": "FC-405/FC-804 receipts killed mutations spot-checked; evidence file consistent"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "gate-evidence-deletion",
+      "passed": true,
+      "note": "latest_reresolve evidence removed -> gate reports gap; test passes"
+    },
+    {
+      "id": "FC-1005-M-latest",
+      "passed": true,
+      "note": "close_gap._finalize re-resolve removed -> cg05+cg07 die; reverted -> 7 passed"
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true,
+    "note": "0 downloads, 0 catalog writes (tmp_path), production untouched; close_gap.py byte-identical to HEAD"
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "note": "gate imported only by its own test; zero production callers"
+  },
+  "rollback": {
+    "required": true,
+    "passed": true,
+    "note": "git revert 6d104d4 available"
+  },
+  "unresolved_findings": [
+    {
+      "severity": "low",
+      "area": "receipt-hash-normalization",
+      "detail": "plan_sha256 CRLF checkout form vs command_registry_sha256 LF git blob — both reproducible at frozen triplet, chain-consistent; closure validator should hash canonical git blobs",
+      "blocking": false
+    }
+  ],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-11T16:00:00Z",
+  "reviewer_receipt_sha256": "7e5686fc633c8af07c0cec7dc2eb55d4a55ed37aed80d5cb7429452d3e1f717d",
+  "hash_note": "recomputed by implementer over sealed file (UTC reviewed_at)"
+}

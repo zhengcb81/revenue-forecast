@@ -1,0 +1,217 @@
+{
+  "purpose": "C-2: independent re-measurement of the two refuted claims plus the error-reading correction",
+  "p1_tools_db_scan": {
+    "files_scanned": [
+      "tools/audit_baseline.py",
+      "tools/audit_dashboard.py",
+      "tools/check_unique_test_symbols.py",
+      "tools/ci_checkout_siblings.py",
+      "tools/daily_t2_runner.py",
+      "tools/daily_t2_schedule.py",
+      "tools/drift_patrol.py",
+      "tools/ex05_chain_replay.py",
+      "tools/final_ratchet.py",
+      "tools/host_assumption_guard.py",
+      "tools/monthly_broker_runner.py",
+      "tools/monthly_broker_schedule.py",
+      "tools/mutation_patrol.py",
+      "tools/pre_push_gate.py",
+      "tools/release_checklist.py",
+      "tools/release_gate.py",
+      "tools/release_readiness.py",
+      "tools/run_coverage_gates.py",
+      "tools/scenario_runner.py",
+      "tools/slo_probe.py",
+      "tools/sync_installations.py",
+      "tools/verify_plan_claims.py",
+      "tools/weekly_t3_runner.py",
+      "tools/weekly_t3_schedule.py"
+    ],
+    "pattern": "\\.db\\b",
+    "hit_count": 0,
+    "hits": []
+  },
+  "p1b_repo_catalog_db_scan": {
+    "pattern": "catalog\\.db",
+    "hit_count": 4,
+    "hits": [
+      {
+        "path": ".review-zr407-20260818\\company-wiki\\task_plan.md",
+        "line": 1985,
+        "text": "- `companies/**`, `sectors/**`, `themes/**`, `.source_catalog/catalog.db`，直到 Phase 8 明确 canary",
+        "in_review_snapshot": true
+      },
+      {
+        "path": ".review-zr407-20260818\\company-wiki\\task_plan_cw_recovery_20260725.md",
+        "line": 383,
+        "text": "- `companies/**`, `sectors/**`, `themes/**`, `.source_catalog/catalog.db`，直到 Phase 8 明确 canary",
+        "in_review_snapshot": true
+      },
+      {
+        "path": "assurance\\runs\\2026-09-11_r4-phase-b\\reviews\\G5-boundary-observation.json",
+        "line": 53,
+        "text": "\"catalog.db | 0 bytes | 2026-08-10 22:18:40 (local)\",",
+        "in_review_snapshot": false
+      },
+      {
+        "path": "audit_review\\2026-08-12_zijin_skill_run_audit\\progress.md",
+        "line": 91,
+        "text": "| 083 | Phase 1/2 | 两次修正 SQLite 查询（错误 DB 名、错误 hash 列） | 首次误查 0-byte catalog.db，第二次误用 content_sha256 列；均只读失败；最终用真实 catalog.sqlite3 + document_id 成功 |",
+        "in_review_snapshot": false
+      }
+    ],
+    "walk_errors": [
+      "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.review-zr407-20260818\\\\tmp-wiki-focused'",
+      "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.tmp-zr408-unit'",
+      "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.tmp-zr408-unit-final'",
+      "[WinError 5] 拒绝访问。: 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.tmp-zr408-unit-retry'"
+    ]
+  },
+  "p2_release_readiness": {
+    "file": "tools/release_readiness.py",
+    "sha256": "0e044ac549313b32896ac7d44eadca425dfee841cc93d431d51242d170e92918",
+    "line_36": "WIKI_ROOT = ROOT.parent / \"company-wiki\"",
+    "line_37": "CATALOG = WIKI_ROOT / \".source_catalog\" / \"catalog.sqlite3\"",
+    "line_38": "RUNS_DIR = ROOT / \"assurance\" / \"runs\"",
+    "expected_line_37": "CATALOG = WIKI_ROOT / \".source_catalog\" / \"catalog.sqlite3\"",
+    "matches_expected": true
+  },
+  "p3_decision_md_claim": {
+    "sealed_decision_path": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\decision.md",
+    "sealed_decision_sha256": "a1a9d37478ffb42f15877ac29b9ecb044b8f402f4d77f532d1a25f1646bfda24",
+    "line_91": "the product itself uses (`catalog.sqlite3`, `catalog.db` — the product's config uses the former and",
+    "line_92": "`RF/tools/release_readiness.py` the latter). Otherwise the probe refuses with exit 3 and",
+    "line_97": "configs — a quoted or bare scalar, `${PROJECT_ROOT}` / `${USER_PROFILE}` expansion, inline `#` comments",
+    "sealed_oracle_path": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\oracle.md",
+    "sealed_oracle_line_219": "`config_catalog_dir()` handles exactly the forms present in the real configs: a top-level scalar,",
+    "sealed_oracle_line_220": "quoted or bare, with `${PROJECT_ROOT}` / `${USER_PROFILE}` expansion and inline `#` comments. It does",
+    "claim": "the product's config uses catalog.sqlite3 and RF/tools/release_readiness.py uses catalog.db",
+    "measured": "tools/*.py contains no `.db` at all; release_readiness.py:37 is catalog.sqlite3",
+    "claim_holds": false,
+    "clause6_implication": "the 'confirm the actual target agrees' branch of card clause 6 is NOT demonstrated for the catalog.db name (measured: --catalog <dir>/catalog.db is accepted as consistent while the resolver opens catalog.sqlite3)"
+  },
+  "p4_p6_probe_runs": {
+    "bare_quoted": {
+      "tag": "bare_quoted",
+      "config": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\evidence\\c2\\cfg_bare_quoted.yaml",
+      "config_bytes": 240,
+      "config_text": "schema_version: \"1.0\"\ncatalog_dir: \"C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I14A-C1C2-ERRATUM/a20260924-01/iso/fixture_root/catalog\"\nreusable_root_kinds: [company_raw]\n",
+      "raw_returncode": 2,
+      "top_level_error": null,
+      "binding_error": null,
+      "binding_detail": null,
+      "configured_catalog_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\iso\\fixture_root\\catalog",
+      "consistent": true,
+      "same_directory": true,
+      "measured": null,
+      "per_call_count": 6,
+      "report_sha256": "66e3a8c91d9cce4b354ca9cc8f231280333a17c1baf46ceef366f1a57a95540b"
+    },
+    "inline_comment": {
+      "tag": "inline_comment",
+      "config": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\evidence\\c2\\cfg_inline_comment.yaml",
+      "config_bytes": 258,
+      "config_text": "schema_version: \"1.0\"\ncatalog_dir: \"C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I14A-C1C2-ERRATUM/a20260924-01/iso/fixture_root/catalog\"  # inline comment\nreusable_root_kinds: [company_raw]\n",
+      "raw_returncode": 3,
+      "top_level_error": "catalog_config_mismatch",
+      "binding_error": null,
+      "binding_detail": null,
+      "configured_catalog_dir": "\"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\iso\\fixture_root\\catalog\"",
+      "consistent": false,
+      "same_directory": false,
+      "measured": false,
+      "per_call_count": 0,
+      "report_sha256": "77f05aa72a75d1b96a5aab49e76e309a1760f2068bbc687594390a5b3de7472a"
+    },
+    "inline_comment_bare": {
+      "tag": "inline_comment_bare",
+      "config": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\evidence\\c2\\cfg_inline_comment_bare.yaml",
+      "config_bytes": 256,
+      "config_text": "schema_version: \"1.0\"\ncatalog_dir: C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I14A-C1C2-ERRATUM/a20260924-01/iso/fixture_root/catalog  # inline comment\nreusable_root_kinds: [company_raw]\n",
+      "raw_returncode": 2,
+      "top_level_error": null,
+      "binding_error": null,
+      "binding_detail": null,
+      "configured_catalog_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\iso\\fixture_root\\catalog",
+      "consistent": true,
+      "same_directory": true,
+      "measured": null,
+      "per_call_count": 6,
+      "report_sha256": "0eacb62a2797c6d55bf214b8dd245c5431d77fdd86be8bc1974f125b24114c33"
+    },
+    "residual_variable": {
+      "tag": "residual_variable",
+      "config": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\evidence\\c2\\cfg_residual_variable.yaml",
+      "config_bytes": 121,
+      "config_text": "schema_version: \"1.0\"\ncatalog_dir: \"${PROJECT_ROOT}/.source_catalog_${UNRESOLVED}\"\nreusable_root_kinds: [company_raw]\n",
+      "raw_returncode": 3,
+      "top_level_error": "catalog_config_mismatch",
+      "binding_error": "config_unreadable_by_probe_parser",
+      "binding_detail": "unresolved variable in catalog_dir: ${PROJECT_ROOT}/.source_catalog_${UNRESOLVED}",
+      "configured_catalog_dir": null,
+      "consistent": false,
+      "same_directory": null,
+      "measured": false,
+      "per_call_count": 0,
+      "report_sha256": "264f17deaf3d154d2fd57808cf5e8fea56f136b8b74d3c5f2dbd0dd3591595e5"
+    },
+    "missing_key": {
+      "tag": "missing_key",
+      "config": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\evidence\\c2\\cfg_missing_key.yaml",
+      "config_bytes": 59,
+      "config_text": "schema_version: \"1.0\"\nreusable_root_kinds: [company_raw]\n",
+      "raw_returncode": 3,
+      "top_level_error": "catalog_config_mismatch",
+      "binding_error": "config_unreadable_by_probe_parser",
+      "binding_detail": "catalog_dir not found in C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\evidence\\c2\\cfg_missing_key.yaml",
+      "configured_catalog_dir": null,
+      "consistent": false,
+      "same_directory": null,
+      "measured": false,
+      "per_call_count": 0,
+      "report_sha256": "bcfcce5dbf0846a0aef299c6373fbfed5fd7fdc41914e726c2349f9a9a8cc497"
+    }
+  },
+  "p5_production_config": {
+    "file": ".review-zr407-20260818\\company-wiki\\config\\source_catalog.yaml",
+    "sha256": "9608be2b53bbfbaed4cab1f739509ee56c7a9379b86df8cf3f9b6834a3fef1cc",
+    "line_1": "schema_version: \"1.0\"",
+    "line_2": "catalog_dir: \"${PROJECT_ROOT}/.source_catalog\"",
+    "line_2_has_inline_comment": false,
+    "configs_found_outside_planning": [
+      ".review-zr407-20260818\\company-wiki\\config\\source_catalog.yaml"
+    ],
+    "conclusion": "the real production config carries no inline comment on catalog_dir, so the parser's inline-comment defect does not affect current production (fail-closed, exit 3, only if someone adds one)"
+  },
+  "p6_reading_correction": {
+    "probe_path": "iso/slo_probe_patched.py (byte-identical copy of the sealed probe)",
+    "probe_sha256": "14932c744839c89f8af126b8d7eba11bafe9192dd73c3b5277a41ef6aaa3540e",
+    "strip_scalar_lines": {
+      "first": "def _strip_scalar(raw: str) -> str:",
+      "second": "    value = raw.strip()",
+      "third": "    if len(value) >= 2 and value[0] == value[-1] and value[0] in \"\\\"'\":",
+      "fourth": "        value = value[1:-1]",
+      "fifth": "    elif \" #\" in value:",
+      "sixth": "        value = value.split(\" #\", 1)[0].strip()",
+      "seventh": "    return value"
+    },
+    "catalog_config_mismatch_literal_lines": [
+      522
+    ],
+    "reading_rule": "the top-level `error` is always catalog_config_mismatch; the parser's own reason is in binding.error / binding.detail (or, when the parser succeeds but the directory differs, in binding.configured_catalog_dir / binding.same_directory)",
+    "claims": {
+      "decision_md_lines_95_99": "**Known limitations the signer must judge (F-I14A-05):** `config_catalog_dir()` is a deliberately small top-level-scalar reader, not a YAML implementation. It handles exactly the forms present in the real configs — a quoted or bare scalar, `${PROJECT_ROOT}` / `${USER_PROFILE}` expansion, inline `#` comments — and **does not** handle YAML block scalars (`|`, `>`), inline mappings, anchors/aliases or escape",
+      "oracle_md_lines_219_224": "`config_catalog_dir()` handles exactly the forms present in the real configs: a top-level scalar, quoted or bare, with `${PROJECT_ROOT}` / `${USER_PROFILE}` expansion and inline `#` comments. It does **not** handle block scalars (`|`, `>`), inline mappings, anchors/aliases or escape sequences; on a residual `${` it raises `ValueError`, which the binding treats as inconsistent and refuses with **exit 3**. The failure mode is deliberately closed (refuse, never guess), and this limitation is now listed as a known limitation for the D2 signature.",
+      "claim_says_inline_comments_handled": true,
+      "measured": "quoted scalar + inline comment is REFUSED (exit 3) and the quotes are retained in configured_catalog_dir"
+    }
+  },
+  "prediction_check": {
+    "P1_zero_db_hits_in_tools": true,
+    "P2_line37_is_catalog_sqlite3": true,
+    "P3_claim_contradicted": true,
+    "P4_inline_comment_refused_rc3": true,
+    "P5_production_config_has_no_inline_comment": true,
+    "P6_top_level_error_always_catalog_config_mismatch": true
+  }
+}

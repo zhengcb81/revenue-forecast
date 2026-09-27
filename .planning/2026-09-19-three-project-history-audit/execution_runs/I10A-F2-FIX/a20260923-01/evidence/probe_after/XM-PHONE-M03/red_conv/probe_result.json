@@ -1,0 +1,142 @@
+{
+ "artifact": "historical_mapping_probe_result",
+ "historical_mapping_probe": true,
+ "label": "historical_mapping_probe",
+ "NOT_a_three_scenario_forecast": true,
+ "accuracy_evidence": false,
+ "case_id": "XM-PHONE-M03",
+ "variant": "red_conv",
+ "started_at_local": "2026-09-24T06:29:19",
+ "finished_at_local": "2026-09-24T06:29:19",
+ "product_entry": "iso/rf/scripts/forecast/segments.py calculate_model_path",
+ "model_id": "unit_sales",
+ "period": "FY2025",
+ "scenarios_run": [
+  "low",
+  "base",
+  "high"
+ ],
+ "scenario_values_identical_by_design": "historical_mapping_probe: disclosed historical parameters at identical values on low/base/high (card action 4); mapping verification ONLY",
+ "counts_measured": {
+  "calculate_registered_model_calls": 3,
+  "calculate_model_path_calls": 3
+ },
+ "counts_expected": {
+  "calculate_registered_model_calls": 3,
+  "instances": 1,
+  "scenarios_per_instance": 3
+ },
+ "counts_ok": true,
+ "call_log": [
+  {
+   "fn": "calculate_registered_model",
+   "seq": 1
+  },
+  {
+   "fn": "calculate_registered_model",
+   "seq": 2
+  },
+  {
+   "fn": "calculate_registered_model",
+   "seq": 3
+  }
+ ],
+ "instances": [
+  {
+   "instance": "smartphones",
+   "cn": "智能手機",
+   "parameter_index": {
+    "P-HK-SMARTPHONES-QTY": {
+     "value": 1652000000.0,
+     "unit": "部",
+     "dimension": "quantity",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMARTPHONES-PRICE": {
+     "value": 1128.7,
+     "unit": "元/部",
+     "dimension": "revenue_per_unit",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMARTPHONES-T": {
+     "value": 1.0,
+     "unit": "ratio",
+     "dimension": "ratio",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMARTPHONES-OTHER": {
+     "value": 0.0,
+     "unit": "元",
+     "dimension": "revenue",
+     "period": "FY2025",
+     "scenario": "all"
+    }
+   },
+   "driver_parameter_ids": {
+    "units": [
+     "P-HK-SMARTPHONES-QTY"
+    ],
+    "unit_revenue": [
+     "P-HK-SMARTPHONES-PRICE"
+    ],
+    "timing_factor": [
+     "P-HK-SMARTPHONES-T"
+    ],
+    "other_revenue": [
+     "P-HK-SMARTPHONES-OTHER"
+    ]
+   },
+   "per_scenario": {
+    "low": {
+     "ok": true,
+     "annual_revenue": 1864612400000.0
+    },
+    "base": {
+     "ok": true,
+     "annual_revenue": 1864612400000.0
+    },
+    "high": {
+     "ok": true,
+     "annual_revenue": 1864612400000.0
+    }
+   },
+   "driver_values_sample": {
+    "units": {
+     "2025": 1652000000.0
+    },
+    "unit_revenue": {
+     "2025": 1128.7
+    },
+    "timing_factor": {
+     "2025": 1.0
+    },
+    "other_revenue": {
+     "2025": 0.0
+    }
+   },
+   "low_base_high_identical": true,
+   "frozen_expected_revenue": 186461240000.0,
+   "matches_frozen_expected": false
+  }
+ ],
+ "product_errors": [],
+ "refusals": [],
+ "mismatches": [
+  {
+   "instance": "smartphones",
+   "expected": 186461240000.0,
+   "measured": [
+    1864612400000.0,
+    1864612400000.0,
+    1864612400000.0
+   ],
+   "variant": "red_conv"
+  }
+ ],
+ "business_verdict": "correctly_rejected",
+ "expected_business_result": "runner MUST refuse (output != frozen expected) — rc 2",
+ "raw_rc": 2
+}

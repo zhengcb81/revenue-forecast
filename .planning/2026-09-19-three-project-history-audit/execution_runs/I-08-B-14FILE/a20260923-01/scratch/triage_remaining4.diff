@@ -1,0 +1,67 @@
+diff --git a/tests/test_zr601_asset_facts.py b/tests/test_zr601_asset_facts.py
+index be609bdb..a8fac670 100644
+--- a/tests/test_zr601_asset_facts.py
++++ b/tests/test_zr601_asset_facts.py
+@@ -88,14 +88,14 @@ def test_c1_negative_asset_drivers_rejected():
+         drivers = _reserve_drivers()
+         drivers[field] = list(drivers[field])
+         drivers[field][1] = -1.0
+-        with pytest.raises(ForecastInputError, match="cannot be negative"):
++        with pytest.raises(ForecastInputError, match="cannot be negative|outside permitted bounds"):
+             _run("reserve_depletion", drivers)
+ 
+ 
+ def test_c1_recovery_rate_out_of_range_rejected():
+     drivers = _reserve_drivers()
+     drivers["recovery_rate"] = [0.9, 1.5]  # ratio driver must be in [0, 1]
+-    with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
++    with pytest.raises(ForecastInputError, match="must be between 0 and 1|outside permitted bounds"):
+         _run("reserve_depletion", drivers)
+ 
+ 
+diff --git a/tests/test_zr708_backtest_reverify.py b/tests/test_zr708_backtest_reverify.py
+index 20636d85..eacac2d8 100644
+--- a/tests/test_zr708_backtest_reverify.py
++++ b/tests/test_zr708_backtest_reverify.py
+@@ -74,6 +74,7 @@ def test_c2_accuracy_record_consumed_by_confidence():
+     assert record["backtest_id"] == evaluation["backtest_id"]
+     assert "record_sha256" in record
+     data = forecast_document()
++    data["as_of_date"] = "2028-03-01"  # Only usable after these actuals are known.
+     data["historical_accuracy_records"] = [record]
+     result = run_forecast(data)
+     assert result["confidence"]["historical_accuracy"]["wape"] == pytest.approx(
+diff --git a/tools/daily_t2_runner.py b/tools/daily_t2_runner.py
+index fed9389f..6d9577c5 100644
+--- a/tools/daily_t2_runner.py
++++ b/tools/daily_t2_runner.py
+@@ -76,10 +76,11 @@ def run_checks(
+     m_triplet = manifest.get("current_triplet", {})
+     missing = [r for r in ("revenue", "filing", "wiki")
+                if not subprocess.run(
+-                   ["git", "-c", "safe.directory=*", "-C", str(PROJECT_ROOT.parent /
+-                                     {"revenue": "revenue-forecast",
+-                                      "filing": "filing-fetch",
+-                                      "wiki": "company-wiki"}[r]),
++                   ["git", "-c", "safe.directory=*", "-C", str(
++                        PROJECT_ROOT if r == "revenue"
++                        else PROJECT_ROOT.parent /
++                        {"filing": "filing-fetch",
++                         "wiki": "company-wiki"}[r]),
+                     "cat-file", "-e", m_triplet.get(r, "0" * 40)],
+                    capture_output=True).returncode == 0]
+     checks["triplet"] = {"heads": triplet, "manifest_missing": missing}
+diff --git a/tools/mutation_patrol.py b/tools/mutation_patrol.py
+index 49ca2bda..5a510981 100644
+--- a/tools/mutation_patrol.py
++++ b/tools/mutation_patrol.py
+@@ -52,7 +52,7 @@ def _resign(result: dict) -> dict:
+             expected_publication_gates(result),
+             result["engine_version"],
+         ),
+-        attestation_status="host_signed",
++        attestation_status="unattested",
+     )
+     result["result_sha256"] = canonical_sha256(
+         {key: value for key, value in result.items() if key != "result_sha256"}
+

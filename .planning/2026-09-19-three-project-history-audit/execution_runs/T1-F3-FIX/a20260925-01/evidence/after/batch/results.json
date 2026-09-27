@@ -1,0 +1,307 @@
+{
+  "phase": "after",
+  "sut_sha256": "d1ced6ac566d41cb6b9c829074c7422393ee8aa9f2e74b191d2de6face97b7f0",
+  "mixed": {
+    "raw_returncode": 0,
+    "stdout": "{\r\n  \"ok\": true,\r\n  \"report\": \"C:\\\\Users\\\\\\u90d1\\u66fe\\u6ce2\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\T1-F3-FIX\\\\a20260925-01\\\\evidence\\\\after\\\\batch\\\\mixed.report.json\",\r\n  \"case_count\": 4,\r\n  \"accepted_claim_count\": 2,\r\n  \"sut_version\": \"i14b-after-2\"\r\n}\r\n",
+    "stderr": "",
+    "report_written": true,
+    "report_sha256": "0a25212c85e9d9f56f33a627eb21da710394fedba3a49a9a603a5aadf9ff1e51"
+  },
+  "mixed_verdicts": [
+    {
+      "case_id": "F3-TS2",
+      "class": "window_accounting",
+      "requirement_id": "W-1",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-TIMESTAMP-MALFORMED"
+      ],
+      "computed": {
+        "scheduled_at": null,
+        "started_at": "2026-09-20T00:00:00Z",
+        "first_sampled_at": "2026-09-20T00:00:00Z",
+        "last_sampled_at": "2026-09-20T00:28:00Z",
+        "observation_finished_at": "2026-09-20T00:29:00Z",
+        "observation_span_seconds": 1680.0,
+        "sample_count": 14,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": null,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-20T00:00:00Z",
+            "2026-09-20T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "union_of_windows",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "basis": "union_of_windows",
+        "natural_observation_seconds": 1740
+      },
+      "note": null
+    },
+    {
+      "case_id": "W1",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "sample_span",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "sample_span"
+      },
+      "note": "card oracle: observation 00:00-00:29 then quick_check 8 min -> observation is 29 min, NOT 37"
+    },
+    {
+      "case_id": "X5",
+      "class": "window_accounting",
+      "requirement_id": "P2-QC-NOT-IN-UNION(review finding)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "union_of_windows",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "union_of_windows"
+      },
+      "note": "P2 fixed direction: the honest 1740 s claim under union_of_windows is now supported"
+    },
+    {
+      "case_id": "C1",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-EMPTY-EVIDENCE",
+        "R-FUTURE-CLOCK",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "daily_same_day_runs_dropped": 0,
+        "weekly_count": 0,
+        "monthly_count": 0,
+        "alert_count": 1,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "historical attack reproduced from reviews/revenue/review.md:13: 7 distinct ids, one future instant, empty evidence hashes"
+    }
+  ],
+  "good_only": {
+    "raw_returncode": 0,
+    "stdout": "{\r\n  \"ok\": true,\r\n  \"report\": \"C:\\\\Users\\\\\\u90d1\\u66fe\\u6ce2\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\T1-F3-FIX\\\\a20260925-01\\\\evidence\\\\after\\\\batch\\\\good_only.report.json\",\r\n  \"case_count\": 3,\r\n  \"accepted_claim_count\": 2,\r\n  \"sut_version\": \"i14b-after-2\"\r\n}\r\n",
+    "stderr": "",
+    "report_written": true,
+    "report_sha256": "41bf0a402ee3cc23b9be49920f1546f04852604ce048c6ca617f6406d6a99648"
+  },
+  "good_only_verdicts": [
+    {
+      "case_id": "W1",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "sample_span",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "sample_span"
+      },
+      "note": "card oracle: observation 00:00-00:29 then quick_check 8 min -> observation is 29 min, NOT 37"
+    },
+    {
+      "case_id": "X5",
+      "class": "window_accounting",
+      "requirement_id": "P2-QC-NOT-IN-UNION(review finding)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "union_of_windows",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "union_of_windows"
+      },
+      "note": "P2 fixed direction: the honest 1740 s claim under union_of_windows is now supported"
+    },
+    {
+      "case_id": "C1",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-EMPTY-EVIDENCE",
+        "R-FUTURE-CLOCK",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "daily_same_day_runs_dropped": 0,
+        "weekly_count": 0,
+        "monthly_count": 0,
+        "alert_count": 1,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "historical attack reproduced from reviews/revenue/review.md:13: 7 distinct ids, one future instant, empty evidence hashes"
+    }
+  ],
+  "good_only_report_sha256": "41bf0a402ee3cc23b9be49920f1546f04852604ce048c6ca617f6406d6a99648",
+  "checks": [
+    {
+      "name": "B-POS: mixed batch rc=0 / report written / 4 verdicts",
+      "ok": true,
+      "detail": "rc=0 written=True n=4"
+    },
+    {
+      "name": "bad case alone refused with the new code",
+      "ok": true,
+      "detail": "[\"R-TIMESTAMP-MALFORMED\"]"
+    },
+    {
+      "name": "B-BYTE-1: good verdicts byte-identical with and without the bad case",
+      "ok": true,
+      "detail": "verdicts[1:] vs good_only.verdicts"
+    },
+    {
+      "name": "B-BYTE-2: good-only report byte-identical before vs after (cross-phase, checked in invariants)",
+      "ok": true,
+      "detail": "sha recorded for cross-phase compare"
+    }
+  ],
+  "checks_pass": true,
+  "failed": []
+}

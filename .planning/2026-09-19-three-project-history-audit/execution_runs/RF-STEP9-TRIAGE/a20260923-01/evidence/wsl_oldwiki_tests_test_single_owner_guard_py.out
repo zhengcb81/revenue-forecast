@@ -1,0 +1,32 @@
+=== RF-STEP9-TRIAGE sibling-control (OLD wiki pin, pre-pin-fix) ===
+date_utc=2026-09-23T19:52:27Z
+file=tests/test_single_owner_guard.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=31c0afcb963ae7539173454022af6c34521bc363
+PYTHONPATH=/home/zhengcb/company-wiki/src
+cmd=python3 -m pytest tests/test_single_owner_guard.py -q
+..F                                                                      [100%]
+=================================== FAILURES ===================================
+_ SingleOwnerGuardTests.test_only_canonical_client_may_use_subprocess_download_adapters _
+
+self = <test_single_owner_guard.SingleOwnerGuardTests testMethod=test_only_canonical_client_may_use_subprocess_download_adapters>
+
+    def test_only_canonical_client_may_use_subprocess_download_adapters(self) -> None:
+        for path in _python_files():
+            if path.name == CANONICAL_CLIENT or path.name in ORCHESTRATORS:
+                continue
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+>                   self.assertNotIn(
+                        "subprocess",
+                        {alias.name.split(".")[0] for alias in node.names},
+                        f"{path.name} imports subprocess (second download owner)",
+                    )
+E                   AssertionError: 'subprocess' unexpectedly found in {'subprocess'} : revenue_core.py imports subprocess (second download owner)
+
+tests/test_single_owner_guard.py:42: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_single_owner_guard.py::SingleOwnerGuardTests::test_only_canonical_client_may_use_subprocess_download_adapters
+1 failed, 2 passed in 0.60s
+PYTEST_RC=1

@@ -1,0 +1,99 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "328f807961ac25cd782d1e82d59b512d4a520531",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "fafc80c680c5878892407550c7abdc3bd3fd40520859d0376058d949d1a6f303",
+  "commands": [
+    {
+      "command": "RED 探针：互换攻击（draft→formal 已拒；formal→draft 降级 + 重算 receipt_sha256 被接受 = 真实缺口）+ draft render_markdown 失败（validate_published_forecast 要求 formal）= 真实缺口",
+      "exit_code": 0,
+      "result": "G1（降级攻击缺口）/G2（重 hash 已拒但降级绕过）/G3（draft 不可 render）坐实"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr705_draft_formal_swap.py -q --tb=short",
+      "exit_code": 0,
+      "result": "8 passed（C1 draft render 不发布 2 + C2 formal 强门 2 + C3 互换攻击 2 + C4 重 hash 攻击 2）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=300",
+      "exit_code": 0,
+      "result": "502 passed + 106 subtests（exit 0 无回归）"
+    },
+    {
+      "command": "ruff check scripts/revenue_publication.py scripts/revenue_report.py tests/test_zr705_draft_formal_swap.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "git diff 328f807 bbee038 --stat",
+      "exit_code": 0,
+      "result": "3 文件 +179/-1：revenue_publication.py（draft 模式空 gate_ids 一致性门）、revenue_report.py（draft 跳过 formal-only 强验证）、test_zr705（新 8 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-20T20:23:20+00:00",
+  "findings": [
+    {
+      "detail": "两个真实产品缺口探针发现并修复：① render_markdown 对 draft 结果抛 gate_ids mismatch（validate_published_forecast 要求 formal 形态）→ REV-06 'draft 可 render 不发布' 不满足；修复：draft receipt 跳过 formal-only 强验证直接渲染。② formal receipt 改 formal_output_mode='draft' + 重算 receipt_sha256 被 validate_publication_receipt 接受（draft 模式跳过 verification_context 校验且无 gate_ids 一致性检查）→ REV-08a '互换攻击失败' 不满足；修复：draft 模式要求 gate_ids 为空。",
+      "id": "ZR705-IMPL-001",
+      "severity": "info",
+      "title": "REV-06/REV-08a 两个真实缺口修复"
+    },
+    {
+      "detail": "重 hash 攻击（REV-08b）验证：篡改 result 数值（terminal_revenue+1）→ validated_payload_sha256 失配拒绝；重算 receipt_sha256 不修复（payload 失配独立校验）。draft→formal 互换拒绝（gate_ids mismatch）。formal 强门（gate_ids 非空 + attestation_status）与无 VerificationContext 自签 TypeError 钉死。",
+      "id": "ZR705-IMPL-002",
+      "severity": "info",
+      "title": "REV-07/REV-08b 攻击矩阵钉死"
+    }
+  ],
+  "implementation": {
+    "design": "revenue_publication.py validate_publication_receipt 加 draft 模式一致性门（formal_output_mode=draft 时必须空 gate_ids——拒绝降级攻击）；revenue_report.py render_markdown 对 draft receipt 跳过 formal-only 强验证（draft 已在 run_forecast 内强验证过，直接渲染）。测试 8 个：C1 draft render 不发布（render 可用 + registry 不创建 + receipt 标记 draft）、C2 formal 强门（gate_ids 非空 + attestation + 不能自签 TypeError）、C3 互换攻击（draft→formal 拒 + formal→draft 降级拒）、C4 重 hash 攻击（payload 变异拒 + 重算 receipt 不修复）。",
+    "files": [
+      "revenue-forecast/scripts/revenue_publication.py",
+      "revenue-forecast/scripts/revenue_report.py",
+      "revenue-forecast/tests/test_zr705_draft_formal_swap.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-705/**"
+    ]
+  },
+  "implementer": "zr705-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 bbee038；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=48788004（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr705-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "注：base_triplet.revenue=328f807 为 ZR-704 closure commit（git rev-parse 注入）。"
+  ],
+  "objective": "F1 REV-06~08 draft/formal 分离与互换/重 hash 攻击门：draft 可 render 不发布 + formal 强门签名 + 互换（升/降级）与重 hash 攻击全部失败。",
+  "plan_sha256": "487880046797725d6ae988528bdf9246f1ad56915250be0f5bd3ba3c6804383d",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "bbee038e7e7c643f99d8de13f1d6333724d60739",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast（revenue_publication.py 一致性门 + revenue_report.py draft render）+ 新测试 test_zr705_draft_formal_swap.py（8 tests）；revenue 侧 receipts/ZR-705/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/revenue_publication.py",
+    "revenue-forecast/scripts/revenue_report.py",
+    "revenue-forecast/tests/test_zr705_draft_formal_swap.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-705/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-705"
+}

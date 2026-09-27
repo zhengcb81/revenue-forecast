@@ -1,0 +1,120 @@
+{
+  "artifact": "barfix-scripts-readers",
+  "purpose": "prove the scripts/ hard-zero gate bites (A) and that the convergence closes a real escape (B)",
+  "gate_test": "tests/contract/test_b10_read_chain.py::test_b10_scripts_have_no_direct_reader",
+  "baseline": {
+    "gate": {
+      "exit_code": 0,
+      "tail": [
+        "tests\\contract\\test_b10_read_chain.py .                                  [100%]",
+        "",
+        "============================== 1 passed in 0.98s =============================="
+      ],
+      "passed": true
+    }
+  },
+  "mutations": [
+    {
+      "mutation": "direct reader in legacy_observer.py",
+      "injected_into": [
+        "legacy_observer.py"
+      ],
+      "gate": {
+        "exit_code": 1,
+        "tail": [
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_b10_read_chain.py::test_b10_scripts_have_no_direct_reader",
+          "============================== 1 failed in 0.96s =============================="
+        ],
+        "passed": false
+      },
+      "killed": true,
+      "expectation": "the gate must FAIL (killed)"
+    },
+    {
+      "mutation": "direct reader in wu904_remediation_restore.py",
+      "injected_into": [
+        "wu904_remediation_restore.py"
+      ],
+      "gate": {
+        "exit_code": 1,
+        "tail": [
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_b10_read_chain.py::test_b10_scripts_have_no_direct_reader",
+          "============================== 1 failed in 0.98s =============================="
+        ],
+        "passed": false
+      },
+      "killed": true,
+      "expectation": "the gate must FAIL (killed)"
+    },
+    {
+      "mutation": "control: loads() on a DIFFERENT column",
+      "injected_into": [
+        "legacy_observer.py"
+      ],
+      "gate": {
+        "exit_code": 0,
+        "tail": [
+          "tests\\contract\\test_b10_read_chain.py .                                  [100%]",
+          "",
+          "============================== 1 passed in 0.99s =============================="
+        ],
+        "passed": true
+      },
+      "killed": true,
+      "expectation": "the gate must PASS (the scan keys on the shared column)"
+    }
+  ],
+  "escape_probe": [
+    {
+      "input": "not json",
+      "old_expression": "caught (JSONDecodeError)",
+      "new_single_chain": "(dict, state='unreadable')",
+      "new_never_escapes": true,
+      "metadata_object_is_same_parse": true
+    },
+    {
+      "input": "empty string",
+      "old_expression": "returned dict",
+      "new_single_chain": "(dict, state=None)",
+      "new_never_escapes": true,
+      "metadata_object_is_same_parse": true
+    },
+    {
+      "input": "deeply nested (RecursionError)",
+      "old_expression": "ESCAPED: RecursionError",
+      "new_single_chain": "(dict, state='unreadable')",
+      "new_never_escapes": true,
+      "metadata_object_is_same_parse": true
+    },
+    {
+      "input": "not a string (TypeError)",
+      "old_expression": "ESCAPED: TypeError",
+      "new_single_chain": "(dict, state='unreadable')",
+      "new_never_escapes": true,
+      "metadata_object_is_same_parse": true
+    },
+    {
+      "input": "undecodable bytes (UnicodeDecodeError)",
+      "old_expression": "caught (JSONDecodeError)",
+      "new_single_chain": "(dict, state='unreadable')",
+      "new_never_escapes": true,
+      "metadata_object_is_same_parse": true
+    }
+  ],
+  "restored": {
+    "fingerprints_identical": true,
+    "before": {
+      "legacy_observer.py": "73dd6e5cd8c1a4c55c59be5910f6e02f4f98d2f20fc39e6fcf99cd5791144b4a",
+      "wu904_remediation_restore.py": "5af10632e3710dd67ce88c5be512ddb13519b6df9320adc337f5ea235ad20366"
+    },
+    "after": {
+      "legacy_observer.py": "73dd6e5cd8c1a4c55c59be5910f6e02f4f98d2f20fc39e6fcf99cd5791144b4a",
+      "wu904_remediation_restore.py": "5af10632e3710dd67ce88c5be512ddb13519b6df9320adc337f5ea235ad20366"
+    },
+    "git_status_unchanged_outside_the_fix": true,
+    "note": "`git status --porcelain` still lists the CONVERGED files, because this probe runs before that change is committed; the comparison is pre/post the injections, which is what proves the restoration"
+  },
+  "ran_at_utc": "2026-09-18T20:16:42.557457+00:00"
+}

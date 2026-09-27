@@ -1,0 +1,62 @@
+{
+ "unit": "ZR-1104",
+ "reviewer": "reviewer-zr1104-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "69b071218ffb1cf88a0f50e2a96cec23da52df15caaf315bcb416200237195b4",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr1104_observation_drill.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "9 passed in 0.59s (C1 observation; C2 legacy gate; C3 rollback drill; C4 no waiver; C5 drill journal)"
+  },
+  {
+   "command": "python -m pytest tests/test_ca206_soak_window.py tests/test_ca304_r9_removal.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "24 passed in 16.57s (相邻契约回归 OK)"
+  },
+  {
+   "command": "independent probes: legacy_close_gate semantics, activation round trip, soak window purity",
+   "exit_code": 0,
+   "result": "hits!=0 blocks with legacy_bridge_hits reason; two consecutive zero-hit windows allow; open window never counts; activation round trip preserves epoch/cohort with flag-only flip and distinct receipts; dup run_id skipped, stale weekly counts 0, only acked drills count"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD~1..HEAD + receipt/triplet/lock/card checks",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=1a8de5b parent=ca252e1 matches; canonical 69b07121 == computed; plan_sha256 == wu_card sha256; triplet delta only revenue; lock nonce and README current_next consistent"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "ca252e1e9e646e4e86ff3e251c8babd4886f4367",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "1a8de5baad1b6903484cedcd1bd22114cb98a61f",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR1104-REV-001",
+   "severity": "minor",
+   "title": "closure commit 必须包含 receipts/state/locks",
+   "detail": "实现 commit 仅含测试文件；state.json（M）、receipts/ZR-1104/**、locks 均未提交——ZR-1103 惯例为 closure 时统一提交，判定为流程中间态；closure commit 必须包含这些文件。"
+  },
+  {
+   "id": "ZR1104-REV-002",
+   "severity": "info",
+   "title": "C3 未直接断言 policy_hash 保留列",
+   "detail": "该行为由 activation.py 既有实现保证（rollback journal 保留 policy_hash、re-activate 复用同一 policy），FC-203 系列已覆盖。"
+  },
+  {
+   "id": "ZR1104-REV-003",
+   "severity": "info",
+   "title": "复放耗时与声明一致",
+   "detail": "9 passed in 0.59s vs 声明 0.71s。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T20:24:26+00:00",
+ "canonical_hash": "6cffa81097bea971912a871e8738795b71f9b7fee89844d6954914d38f665ba9"
+}

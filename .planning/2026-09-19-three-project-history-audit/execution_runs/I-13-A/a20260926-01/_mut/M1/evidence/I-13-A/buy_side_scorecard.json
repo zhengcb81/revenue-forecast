@@ -1,0 +1,169 @@
+{
+  "schema": "i13a_buy_side_scorecard/1",
+  "card": "I-13-A",
+  "attempt": "execution_runs/I-13-A/a20260926-01",
+  "role": "implementer_i13a",
+  "status": "review_pending",
+  "frozen_before_scoring": {
+    "oracle": "execution_runs/I-13-A/a20260926-01/oracle.md",
+    "oracle_note": "卡文判据(B01-B08/7 hard_blocks/classification) + 上游 13 件 sha + OPEN-2 红线 + EA 模板 + 变异清单 M1-M5 已先冻结；本文件为动作1产物，逐条复现 oracle §6 P1-P11。"
+  },
+  "scored_object": {
+    "what": "买方交付面 = 预测包及其证据链（研究草稿，未放行）",
+    "primary_artifact": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md (sha a2304fdd…, 26132 B)",
+    "supporting_artifacts": [
+      "execution_runs/I-07-E/a20260926-01/handoff.json (sha 8cfce367…, status=accepted_scoped)",
+      "execution_runs/I-07-E/a20260926-01/verification.json (sha 237bc2d3…)",
+      "execution_runs/I-11-C/a20260926-01/parameter_mapping.json (sha d542b34d…, 18 映射行)",
+      "execution_runs/I-11-C/a20260926-01/mapping_verification.json (sha cecdcb33…)",
+      "execution_runs/I-11-C/a20260926-01/handoff.json (sha da25f736…, status=accepted_scoped)"
+    ],
+    "prerequisite_met": "预测包及证据可读（summary 26KB 全文 + 两份 accepted_scoped handoff + verification + 18 行映射表逐行读到）；accuracy=unproven 已由上游诚实标注 ⇒ 卡文 L9 前提成立",
+    "not_scored_here": "投资建议正确率 / 回报预期（卡文 L22 明禁）"
+  },
+  "rubric_source": {
+    "buy_side_dimensions": "execution_v2/research_cards.json L192-L249（卡文 L13 点名，定域取尺，逐字冻结于 oracle §2.1）",
+    "hard_blocks": "execution_v2/research_cards.json L250-L258（卡文 L14 点名，oracle §2.2）",
+    "buy_side_classification": "execution_v2/research_cards.json L259（oracle §2.3）",
+    "read_scope": "V2-4 只读清单 + 上述定域取尺；清单外零读（见 oracle §2 声明）"
+  },
+  "hard_blocks_checked_first": {
+    "note": "卡文 L14『先核hard_blocks，再看评分』——逐条判定与三件套见 blocking_issues.json；此处仅结果摘要",
+    "HB1_substance_units_currency_scale_period_consolidation": "not_established",
+    "HB2_source_unverifiable_hash_wrong_reading_unproven_leak": "not_established",
+    "HB3_stock_bridge_reconciliation供需_fail_without_applicability_ruling": "established（fail-closed 从严读法；反证同登记；裁定权=独立买方 reviewer）",
+    "HB4_param_as_disclosure_mgmt_target_as_independent_double_count": "not_established",
+    "HB5_fabricated_runs_wiring_receipts_filename_as_action": "not_established",
+    "HB6_formal_delivery_without_formula_disclosure_qualification": "not_established",
+    "HB7_unverified_probability_backtest_accuracy_as_concluded": "not_established",
+    "established_count": 1
+  },
+  "dimensions": [
+    {
+      "id": "B01",
+      "title": "证据与信息日",
+      "score": 1,
+      "why_not_0": "来源可定位：紫金 CN-ZIJIN-AR2025 sha + p327/p328/p44/p56 + published_at=available_at=2026-03-20；微软 US-MSFT-10K-FY2026 + table 74/76 + 2026-07-29；小米 HK-XIAOMI-AR2025 sha + p.21。无未来信息泄漏；不可读源显式 blocked-缺位不造数。",
+      "why_not_2": "至少一处重大结论未完成版本对齐/原文核查：u-N4 store 内 MSFT doc_sha256 63 位 vs I-07-B 实测 64 位；gap-U2 小米披露日未在回源面内登记；gap-U3/gap-U4（H1锁定、微软重述）已审载体未检出。",
+      "evidence": [
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L15（紫金行：doc_id/sha/页码/信息日/缺口）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L16（小米行：sha/p.21 + I-11-A not_readable_in_this_attempt ⇒ 明确 blocked-缺位）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L17（微软行：sha 63位见 u-N4 vs 实测 64位 + 2026-07-29）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L19-L24（gap-U1/U2/U3/U4 缺口登记）",
+        "execution_runs/I-07-E/a20260926-01/verification.json L51-L55（u-N4/u-N5/u-N6 登记，只登记不更正）"
+      ]
+    },
+    {
+      "id": "B02",
+      "title": "收入定义与历史桥",
+      "score": 1,
+      "why_not_0": "定义无错：币种（人民币元 / USD mn）、尺度、总净额与并表范围（四分部对外销售收入、抵销只进恒等式桥、Microsoft Cloud 不与 IC 并列）明确；收入对账恒等式 584,049,229,264−234,970,146,412=349,079,082,852 差=0、四分部合计逐位；无实质性未解释差额进入交付面。",
+      "why_not_2": "重述/分部历史对账仍待 review：u-N5/unverified-N1（store H-01 349,079,082,852 与矿产品分部语义张力，AR p327/p328 回源未做）；6b 库存桥 154 千克容差未签；store state=unquantified；范围/差额尚未获买方审定。",
+      "evidence": [
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L111（分部加总恒等式差=0 + 毛总计和逐位）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L93（合并/内部抵销口径：234,970,146,412 只进抵销桥）",
+        "execution_runs/I-11-C/a20260926-01/parameter_mapping.json L47-L71（ZIJIN_SEG_MINERAL 行 + carve_out unverified-N1）",
+        "execution_runs/I-11-C/a20260926-01/parameter_mapping.json L530 / L596（铜/金 saleable_volume carve_out：BLOCKED-6b 库存桥 154 千克容差未签）",
+        "execution_runs/I-11-C/a20260926-01/handoff.json L230-L235（blocked_by：BLOCKED-6b/OPEN-11）"
+      ]
+    },
+    {
+      "id": "B03",
+      "title": "因果驱动与参数",
+      "score": 1,
+      "why_not_0": "不是只给目标增速：D1-D7 驱动逐条映射 + 18 行逐行 source.basis（文件+行号）+ EA-1…EA-7 承接；E1-E7 同一事件复用/双计审查全过（ALLOWED_ONCE / PROHIBITED_CO_USE）。",
+      "why_not_2": "校准与反方审查未完成：OPEN-2（REALIZED_UNIT 量价系数来源未裁）+ unverified-N2（转换公式分母 884,943+83,161×24=2,880,807 ≠ 885,141，商差 3.26 倍）⇒ 该参数校准未验证；5 槽位 not_executable；管理层目标独立性受限（D6 仅对照）；反方/可证伪面（I-11-C 卡文 L13-L16 falsifier 动作）在实现站未执行（unverified-D1 登记）。",
+      "evidence": [
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L83-L88（D1-D7 + E1-E7 复用检查 + STOP_SCENARIO=false）",
+        "execution_runs/I-11-C/a20260926-01/parameter_mapping.json L305-L336（REALIZED_UNIT 行：not_executable_no_propagation + i11b_proposed_values 仅存档 L318）",
+        "execution_runs/I-11-C/a20260926-01/mapping_verification.json L34（P2 分母不自洽探针实测）",
+        "execution_runs/I-11-C/a20260926-01/parameter_mapping.json L1215（action_1_summary：18 槽位 13 可执行 / 5 不可执行）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L81（management_target_is_not_independent=true）"
+      ]
+    },
+    {
+      "id": "B04",
+      "title": "模型经济约束",
+      "score": 1,
+      "why_not_0": "无单位/存量桥/产销/供需/收入确认矛盾进入交付面：公式资格 M01-M31 accepted_scoped；单位逐条核对（unit_check 与量纲链一致）；产销主恒等式闭合（Cu 878,180+6,763=884,943；Au 82,743+418=83,161）；收入确认口径（抵销仅恒等式桥）明确。",
+      "why_not_2": "至少一项专业适配待签：MSFT MS-PBP-M05 / MS-IC-M06 = STOP_DISCLOSURE_ADAPTATION（不授予）；H4 口径桥 269t/534kg 会签未成（§三十六 追加支已授权但 Q2 重跑未做）；BLOCKED-6b 154 千克容差未签；小米适配面因源不可读不适用（blocked-缺位）。",
+      "evidence": [
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L130（I-10-A MS-PBP-M05/MS-IC-M06 = STOP_DISCLOSURE_ADAPTATION 不授予）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L134（formula = M01-M31 accepted_scoped 不外推；disclosure_adaptation 4 case 已签 + 2 不授予）",
+        "execution_runs/I-11-C/a20260926-01/handoff.json L156-L159（C5-② H4 口径桥残差 269t/534kg；§三十六 修订授权≠会签完成）",
+        "execution_runs/I-11-C/a20260926-01/parameter_mapping.json L530（量恒等式约束未闭合、容差未签）"
+      ]
+    },
+    {
+      "id": "B05",
+      "title": "情景和敏感性",
+      "score": 1,
+      "why_not_0": "低高次序与依赖合理：low<base<high 全 13 行成立；情景不冒充概率（无置信覆盖主张）；EA-6 联合约束逐行携带，未出现量 high×价 high×其他收入 high 独立叠加（≈+21% 不可能联合已被 STOP_SCENARIO 拦截）。",
+      "why_not_2": "关键约束未走查完：OPEN-6（H4 四要件未齐、口径桥未闭合）为 EA-1 的 blocked_by；BLOCKED-6b 容差未签；小米 0 槽位 ⇒ 该公司无任何情景（fail-closed，非 3/3）；非线性交互仅以两点差分（EA-2，明标非偏导）登记，未做联合非线性走查。",
+      "evidence": [
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L66（EA-1 敏感性带 + blocked_by OPEN-6）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L67（EA-2 系数两点差分，非偏导，红线禁消费）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L71（EA-6 联合情景约束 + ≈+21% 拦截）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L88 / L114（STOP_SCENARIO=false；18 行逐行 joint_scenario_constraint）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L16 / L131（小米无情景，明确 blocked-缺位）"
+      ]
+    },
+    {
+      "id": "B06",
+      "title": "投资者决策信息",
+      "score": 1,
+      "why_not_0": "能回答主体问题：增长来源（D1-D7 分驱动）、时点（FY2025 基期 → FY2027 生效，微软 FY2026→FY2027）、主要风险（blocked_by 逐行登记 OPEN-2/3/5/6、BLOCKED-6b、小米缺位）与可证伪条件的骨架（STOP 判据 + E1-E7 复用禁令）均可读。",
+      "why_not_2": "贡献分解/预期差口径未完整说明：无催化/反证/更新触发器载体（可证伪与触发更新属 I-11-C 卡文 L13-L16 reviewer 面，实现站未执行 = unverified-D1）；I-12 未做 ⇒ 预期差/准确性口径只能 unproven，覆盖缺口见 gap-U1..U4。",
+      "evidence": [
+        "execution_runs/I-07-E/a20260926-01/handoff.json L14（accuracy=unproven，准确性 F 归后继 I-12）",
+        "execution_runs/I-07-E/a20260926-01/handoff.json L104-L113（open_questions 8 项：gap-U1..U4、u-N4..N6、严格读法之争）",
+        "execution_runs/I-11-C/a20260926-01/handoff.json L110-L114（unverified-D1：falsifier 面不在实现站执行）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L133（3/3 声明=否；不授予样本外准确性）"
+      ]
+    },
+    {
+      "id": "B07",
+      "title": "资格与准确性诚实",
+      "score": 0,
+      "why": "三栏独立且准确转述形态正确：formula（M01-M31 accepted_scoped 不外推）、disclosure_adaptation（I-10-A 4 case 已签 + 2 case 不授予）、accuracy（I-12 未完成 ⇒ 清楚写 unproven）分列于不同字段/段落，互不混写；覆盖缺口显式（gap-U1..U4、unverified-N1..N3）；无把合成测试/拟合/情景范围当准确性证明（synthetic_quarantine_enforced=true，管理层目标标非独立，红线值只登记不消费）。",
+      "evidence": [
+        "execution_runs/I-07-E/a20260926-01/handoff.json L13-L15（formal_publication_slot=blocked / accuracy=unproven / disclosure_adaptation 三字段独立）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L133-L134（3/3=否；签名资格与准确性分列）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L115（合成示例数隔离清单 + 真实数值字段出现次数=0）",
+        "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md L139-L147（红线登记区 registered_not_consumed）"
+      ]
+    },
+    {
+      "id": "B08",
+      "title": "复现与交付完整",
+      "score": 1,
+      "why_not_0": "无伪造：门 0/校验器原始输出与 rc 全留档；24 件上游 sha 可复算；发布回执未伪造（正式发布格=blocked）；命令与期望码表齐全。",
+      "why_not_2": "证据链/独立签署/接续项未齐：小米源 not_readable_in_this_attempt ⇒ 该公司证据链缺口；gap-U3/U4 已审载体缺位；u-N4 63 位 hash 转录缺陷；I-07-E 自身 8 项 open_questions 待独立复审裁定；正式发布资格明确未验证（formal_publication_slot=blocked）。",
+      "evidence": [
+        "execution_runs/I-07-E/a20260926-01/verification.json L14-L23（J1-J5 校验器不变量）",
+        "execution_runs/I-07-E/a20260926-01/verification.json L25-L50（24 件上游 sha 清单，可复算）",
+        "execution_runs/I-07-E/a20260926-01/verification.json L56-L74（绿臂 rc=0 + 5 红臂 rc=3 具名，原件字节不动）",
+        "execution_runs/I-07-E/a20260926-01/handoff.json L61-L83（commands_executed + raw/expected exit codes）",
+        "execution_runs/I-07-E/a20260926-01/handoff.json L104-L113（接续项 open_questions 8 项）"
+      ]
+    }
+  ],
+  "total": 9,
+  "total_max": 16,
+  "total_is_display_only": true,
+  "total_note": "总分仅展示，不作自动放行阈值；缺失不靠总分补偿（卡文 L11/L15）。分值与 ready 标签均不解释为投资建议正确率（卡文 L22）。",
+  "zeros_present": 0,
+  "classification": "blocked",
+  "classification_derivation": {
+    "rule": "任一硬阻断或任一维度0→blocked；没有0但存在1→research_draft_needs_review；全部八维2且独立签署→buy_side_review_ready（oracle §2.3 逐字）",
+    "step1_hard_blocks": "established_count=1（HB3 established）⇒ 直接 blocked，禁止以总分或文字解释豁免（卡文 L19）",
+    "step2_scores": "zeros_present=0；存在 1 的维度 7 个 ⇒ 若无硬阻断则本应为 research_draft_needs_review",
+    "result": "blocked",
+    "overturn_condition": "若独立买方 reviewer 裁定 HB3 为 not_established（例如：裁定 6b 的 154 千克容差已由有权方明文裁决、或认定 §三十六 追加支覆盖该残差并完成 Q2 重跑），则分类按同一规则机械降为 research_draft_needs_review（仍非 buy_side_review_ready：7 维为 1、B08/B02/B03/B04/B05/B06/B01 均未达 2）"
+  },
+  "stop_conditions": {
+    "hard_block_stop": "触发（HB3）⇒ 卡文停止条件成立 ⇒ 本卡 STOP、不派 I-13-B",
+    "accuracy_unproven_stop": "未触发且明确不得触发：未证明准确性只写 unproven，不因该事实自动否定可审阅的研究草案（卡文 L20）——本卡 blocked 的唯一依据是 HB3，不是 accuracy=unproven"
+  },
+  "disclaimer": "本标签=买方可审阅性判据的机械应用结果，不是投资回报保证、不是准确性认证、不构成投资建议。"
+}

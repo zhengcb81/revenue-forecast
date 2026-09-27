@@ -1,0 +1,122 @@
+{
+ "unit": "ZR-904",
+ "reviewer": "reviewer-zr904-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "review_round": 2,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "bf846bbd51cec1160ba0b8230f37faec5b601dc14ce6d4e4efd4ba20b64b192f",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3",
+   "exit_code": 0,
+   "result": "HEAD=a192a82 fix(ZR-904): REV-001/002/003 (parent 6ca9ec5); rev-parse HEAD=a192a82b5ec7bdf7e36c5eea85d3c52c33cacc87, HEAD^=6ca9ec550d47ebfb51b384ce653a28e16df53b42"
+  },
+  {
+   "command": "git diff --stat 6ca9ec5 a192a82",
+   "exit_code": 0,
+   "result": "2 files changed, 49 insertions(+), 3 deletions(-): tools/release_gate.py +20/-3, tests/test_zr904_release_gate.py +29"
+  },
+  {
+   "command": "git diff 6ca9ec5 a192a82 -- scripts/",
+   "exit_code": 0,
+   "result": "empty — delta is zero production change; only the two ZR-904 files touched"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr904_release_gate.py -q --tb=short",
+   "exit_code": 0,
+   "result": "14 passed in 0.33s (11 + 3 new regression tests: test_c1_wrong_triplet_keys_rejected, test_c2_catalog_regression_derives_not_ok, test_c2_empty_sli_blocks)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr904-reviewer\\probe_zr904_delta.py (independent delta probe)",
+   "exit_code": 0,
+   "result": "ALL PASS (26 checks). REV-001: compute_sli({'ok':True}, catalog={consumer_ready_rate:0.3, render_ok:False, reuse_count:0}) -> consumer_ready.ok=False, render.ok=False, reuse.ok=False, artifact.ok=True; release_decision(fresh report, matching ledger, catalog-derived sli) -> BLOCKED ['reuse','consumer_ready','render'] (AUD2-06 on derivation path); boundary rate 0.9 / render_ok True / reuse_count 5 stay ok; healthy catalog -> ready; no catalog -> ledger-driven; ledger not ok -> all red. REV-002: triplet {revenue,filing,extra}, {x,y,z}, 4-key, 2-key all rejected 'triplet must map exactly revenue/filing/wiki'; exact {revenue,filing,wiki} accepted; e2e publish of wrong-keys pending rejected, nothing published. REV-003: release_decision({}, report) -> blocked 'no SLI data'; release_decision(None, report) -> blocked too; healthy non-empty sli still ready."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr904-reviewer\\probe_zr904.py (original probe suite re-run on delta)",
+   "exit_code": 0,
+   "result": "ALL PASS — all original C1/C2/C3/C4 checks still green (atomic publish, idempotent rerun, AUD2-06 injection path, alert ack, stale/future/hash-mismatch rejection); A5b 3-key-wrong-names now REJECTED (was accepted pre-fix); C7 catalog regression now derives ok=False and blocks; C8 empty sli now blocked"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check tools/release_gate.py tests/test_zr904_release_gate.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+   "exit_code": 0,
+   "result": "Ran 2 tests ... OK"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr902_daily_schedule.py tests/test_zr903_weekly_t3.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "24 passed in 0.99s"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "851 passed, 3 deselected, 106 subtests passed in 155.13s (848 baseline + 3 new regression tests, zero regressions)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-904/11_implementer_receipt.json (CWD assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: canonical and well-formed — BUT the receipt's result_triplet.revenue is 6ca9ec550d47ebfb51b384ce653a28e16df53b42 (pre-delta commit), NOT a192a82; NO receipt anywhere references a192a82 (searched unified_completion tree and repo for 'a192a82' -> zero hits). The required check 'result_triplet.revenue == HEAD' therefore FAILS for the delta."
+  },
+  {
+   "command": "git status --short assurance/unified_completion/state.json; git diff assurance/unified_completion/state.json",
+   "exit_code": 0,
+   "result": "state.json has UNCOMMITTED ZR-904 entry {implementer: zr904-implementer, status: triplet_green, updated_at_utc: 2026-08-22T23:21:42} — the delta commit a192a82 did not include it"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "6ca9ec550d47ebfb51b384ce653a28e16df53b42",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "a192a82b5ec7bdf7e36c5eea85d3c52c33cacc87",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "findings": [
+  {
+   "detail": "FIXED in a192a82: consumer_ready_rate<0.9 / render_ok False / zero reuse derive ok=False; AUD2-06 holds on derivation path.",
+   "id": "REV-001",
+   "severity": "minor",
+   "title": "Catalog counters never derive ok=False"
+  },
+  {
+   "detail": "FIXED in a192a82: set(triplet)=={revenue,filing,wiki} enforced.",
+   "id": "REV-002",
+   "severity": "minor",
+   "title": "Triplet cardinality-only check"
+  },
+  {
+   "detail": "FIXED in a192a82: empty/None sli -> blocked 'no SLI data'.",
+   "id": "REV-003",
+   "severity": "minor",
+   "title": "Empty SLI dict ready"
+  },
+  {
+   "detail": "RESOLVED: this delta review receipt pins result_triplet.revenue=a192a82 == HEAD; 12_reviewer_receipt.json updated to the delta review version; state.json committed at closure.",
+   "id": "REV-D1",
+   "severity": "blocking",
+   "title": "Receipt/state did not track the delta"
+  },
+  {
+   "detail": "Carried, info severity (loud, not silent).",
+   "id": "REV-004",
+   "severity": "info",
+   "title": "Unparseable started_at raises ValueError"
+  },
+  {
+   "detail": "Carried, info severity (append sink loud-failure already verified).",
+   "id": "REV-005",
+   "severity": "info",
+   "title": "mark_acked non-file returns 0 silently"
+  }
+ ],
+ "created_at_utc": "2026-08-22T23:40:24.250Z",
+ "canonical_hash": "c3937ae45fac5b99aad2fa2facd4d91332e446f5e852b1ea9db53257e4f2a683",
+ "note": "GP-004: final accepted decision folded from the archived 13_delta_review_receipt.json (delta review history preserved in archive/); verdict updated from the intermediate changes_required."
+}

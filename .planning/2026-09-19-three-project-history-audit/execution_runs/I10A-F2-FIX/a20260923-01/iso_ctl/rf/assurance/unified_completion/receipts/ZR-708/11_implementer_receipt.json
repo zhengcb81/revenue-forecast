@@ -1,0 +1,94 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "75d866fbb7685caba1979dbc31d00cc1ba8fa614",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "a9f5b35608efb7fae68896cbe588ba197db565a2649a4cd0a68be5e16e72c059",
+  "commands": [
+    {
+      "command": "RED 探针：tests/test_backtest.py 17 tests 全绿（snapshot 确定性/不可覆盖/tamper 拒绝/actuals 校验/metrics 重算/accuracy hash-linked/accuracy→confidence 消费/伪造灵敏度拒绝/swap hash 拒绝/legacy engine 拒绝）；accuracy record → historical_accuracy_records → run_forecast → confidence.historical_accuracy 消费链已通",
+      "exit_code": 0,
+      "result": "already_satisfied——既有能力在当前 triplet 全绿，无需产品修复"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr708_backtest_reverify.py -q --tb=short",
+      "exit_code": 0,
+      "result": "7 passed（C1 already_satisfied 3 + C2 accuracy 消费链 2 + C3 不可变接线 2）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "740 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+7 新测试，无回归）"
+    },
+    {
+      "command": "ruff check tests/test_zr708_backtest_reverify.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 142 files"
+    },
+    {
+      "command": "git diff 75d866f a9405f8 --stat",
+      "exit_code": 0,
+      "result": "1 文件 +123：test_zr708_backtest_reverify.py（新 7 tests；生产代码零改动——already_satisfied 重验卡）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T07:40:00+00:00",
+  "findings": [
+    {
+      "detail": "ZR-708 为 already_satisfied 重验卡：既有 snapshot/backtest 基础设施（create_snapshot/validate_snapshot/evaluate_snapshot）在当前 triplet 全绿（test_backtest 17 tests + 本卡 7 tests）。重验钉死：snapshot 确定性/不可变/tamper-evidence、accuracy_record → run_forecast → confidence.historical_accuracy 消费链（wape 一致 + 组件贡献>0 + tampered record 拒绝）、四层 hash 链接（record_sha256 64-hex + backtest_id）、未来 actual 拒绝。",
+      "id": "ZR708-IMPL-001",
+      "severity": "info",
+      "title": "already_satisfied 重验（零产品改动）"
+    }
+  ],
+  "implementation": {
+    "design": "test-only 重验卡：7 tests 钉死 snapshot 不可变/accuracy 消费链/四层 hash/未来 actual 拒绝——作为 already_satisfied 证据存档，不改产品代码。",
+    "files": [
+      "revenue-forecast/tests/test_zr708_backtest_reverify.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-708/**"
+    ]
+  },
+  "implementer": "zr708-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 a9405f8；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=ee88e4bc（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr708-independent）。",
+    "注：base_triplet.revenue=75d866f 为 ZR-707 closure commit。"
+  ],
+  "objective": "F2 重验不可变 snapshot/backtest 基础接线：既有能力当前 triplet 全绿（already_satisfied），accuracy record 实际可被 forecast 消费——重验钉死不修复。",
+  "plan_sha256": "ee88e4bc178d24b94602f6ef3ef686462c4f206da4eabfd1115e01f153952c9c",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "a9405f89445d7130a6e24db8fe4caf7e6aeaa5f9",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr708_backtest_reverify.py（新 7 tests，already_satisfied 零产品改动）；revenue 侧 receipts/ZR-708/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr708_backtest_reverify.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-708/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-708"
+}

@@ -1,0 +1,274 @@
+changes.diff — BLOCKED6C-THRESHOLD-REVIEW-STATUS (a20260926-01)
+generated_at_local: 2026-09-26 09:22:26
+role: I-11-A implementer-side / orchestration schema-side executor (handoff.implementer_signed=false); diff only, never applied to the repository
+sealed (unchanged): execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py
+  sha256=cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac bytes=28549
+pre-image (this attempt iso/ copy, byte-identical to the sealed original): execution_runs/BLOCKED6C-THRESHOLD-REVIEW-STATUS/a20260926-01/iso/tools/validate_hypotheses.py
+  sha256=cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac bytes=28549
+post-image (this attempt iso_patched/ copy ONLY): execution_runs/BLOCKED6C-THRESHOLD-REVIEW-STATUS/a20260926-01/iso_patched/tools/validate_hypotheses.py
+  sha256=1085368e3d05cf9bda73258764fcae34ae67d0b76960d863d7900c091bdd2429 bytes=39435
+touched paths: 1 file — tools/validate_hypotheses.py (inside this attempt's iso_patched/ only); hypotheses.json is NOT in this diff (append-only schema, oracle.md 3.1: the default exists precisely so history need not be rewritten)
+product repos (dayu-agent / company-wiki / revenue-forecast outside .planning): NOT touched (0 files); src/ : 0 files; scripts/ : 0 files
+guards added: B6C-SCHEMA / B6C-HELPERS / B6C-G1 / B6C-G2 / B6C-G3 / B6C-G4, each inside marker-delimited blocks so a mutation can delete exactly one
+pre-existing predicates are untouched: FALSIFIER_KEYS, THRESHOLD_BASES, the E_THRESHOLD_BASIS_UNKNOWN closed set and R2's five checks keep their original bytes (verified by mutant M3, which deletes that closed set on purpose)
+error codes added (oracle.md 3.2): E_THRESHOLD_REVIEW_STATUS_UNKNOWN, E_THRESHOLD_REVIEW_STATUS_UNSEALED, E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED (DEC-14 item 5: registered in this card's oracle 3.2, the sealed I-11-A oracle is NOT rewritten)
+evidence: red/baseline_run.log + red/baseline_validation_report.json (positive pass, 21/21 rejected, rc=0), red/ce_run.log + red/ce22_ce25_report.json (CE-22..CE-25 4/4 ACCEPTED by the pre-patch validator, rc=1), green/cases_run.log + green/cases_report.json + green/validation_report.json (positive 0 errors, 4/4 new CE rejected, 25/25 suite, rc=0), mut/M1..M5/cases_report.json (5/5 mutants red), l271/l271_report.json (L271_trigger_fired=false, literal A-6.1 reading=true)
+---
+--- a/execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py
++++ b/execution_runs/BLOCKED6C-THRESHOLD-REVIEW-STATUS/a20260926-01/iso_patched/tools/validate_hypotheses.py
+@@ -83,6 +83,20 @@
+ # proposition" rule of oracle O-11.
+ THRESHOLD_BASES = {"arithmetic_identity", "professional_judgement_required",
+                    "disclosure_definition"}
++# <B6C-SCHEMA>
++# BLOCKED-6c (ruling execution_runs/I11A-OPEN-ACCT/a20260924-01.md L226):
++# "凡被下游消费的阈值必须携带 threshold_basis 且显式 threshold_review_status
++# （默认 not_reviewed）". The status field is APPENDED to the schema: records written
++# before it exist must not be rewritten (A-6.3 item 4 / DEC-6 recovery rule
++# "追加式版本化，不回改历史"), so an absent field is normalised to the default and is
++# NOT by itself a document error (L230: 缺一 ⇒ 阈值不参与判定，但命题仍可登记观察).
++# It only becomes an error when the value is outside the closed set, when it claims
++# "reviewed" without the A-6.3 seal, or when an approved_frozen proposition would
++# consume it as reviewed (L271: 未审定不得当已审定).
++THRESHOLD_REVIEW_STATUSES = {"not_reviewed", "reviewed"}
++DEFAULT_THRESHOLD_REVIEW_STATUS = "not_reviewed"
++REVIEW_SEAL_HEX = re.compile(r"[0-9a-f]{64}")
++# </B6C-SCHEMA>
+ CHAIN_END_MARKERS = ("收入确认", "确认收入", "确认", "期间归属", "履约义务", "交付", "control")
+ OBSERVATION_DATE_OK = re.compile(r"\d{4}\s*[-/年]\s*\d{1,2}")
+ OBSERVATION_DATE_BAD = {"tbd", "tba", "n/a", "na", "?", "未知", "待定", "以后", "未来", ""}
+@@ -112,6 +126,69 @@
+             continue
+         out.append("-" if ch in "−–—" else ch)
+     return "".join(out)
++
++
++# <B6C-HELPERS>
++def threshold_review_status_of(fz):
++    """BLOCKED-6c: return (present, raw, effective).
++
++    present = the key exists in falsifier (even with an explicit null);
++    effective = the raw value when present, otherwise the ruling default
++    "not_reviewed" (L226). An explicit null stays present so G1 can reject it.
++    """
++    present = "threshold_review_status" in fz
++    raw = fz.get("threshold_review_status")
++    return present, raw, (raw if present else DEFAULT_THRESHOLD_REVIEW_STATUS)
++
++
++def review_seal_ok(h):
++    """A-6.3 items 3+4: a substantive non-implementer reviewer identity AND a
++    well-formed decision.decision_sha256 seal must back any "reviewed" claim."""
++    rev = str(h.get("reviewer", "")).strip()
++    sha = str((h.get("decision") or {}).get("decision_sha256") or "").strip().lower()
++    if rev in IMPLEMENTER_MARKERS or len(rev) < 8:
++        return False, "reviewer=%r is not a substantive independent reviewer" % rev
++    if not REVIEW_SEAL_HEX.fullmatch(sha):
++        return False, ("decision.decision_sha256=%r is not a well-formed sha256 seal"
++                       % sha)
++    return True, ""
++
++
++def threshold_reviewability(h):
++    """Machine usability verdict for one threshold (U-PRIMARY, BLOCKED6C oracle 3.3).
++
++    usable only when the basis is in the closed set, the status is in the closed
++    set, any "reviewed" claim is sealed, and a professional_judgement_required
++    threshold is actually reviewed. An absent status normalises to not_reviewed.
++    """
++    fz = h.get("falsifier", {}) or {}
++    basis = fz.get("threshold_basis")
++    present, raw, eff = threshold_review_status_of(fz)
++    reasons = []
++    if basis not in THRESHOLD_BASES:
++        reasons.append("unknown_basis")
++    if present and raw not in THRESHOLD_REVIEW_STATUSES:
++        reasons.append("unknown_status")
++    if raw == "reviewed":
++        ok, _why = review_seal_ok(h)
++        if not ok:
++            reasons.append("reviewed_unsealed")
++    if basis == "professional_judgement_required" and eff != "reviewed":
++        reasons.append("judgement_not_reviewed")
++    if h.get("state") == "approved_frozen" and eff != "reviewed":
++        reasons.append("approved_without_review")
++    return {
++        "hypothesis_id": h.get("hypothesis_id"),
++        "threshold_basis": basis,
++        "threshold_review_status_present": present,
++        "threshold_review_status_raw": raw,
++        "threshold_review_status_effective": eff,
++        "defaulted": not present,
++        "state": h.get("state"),
++        "usable": not reasons,
++        "reasons": reasons,
++    }
++# </B6C-HELPERS>
+ 
+ 
+ def validate(hypotheses, source_map, attempt, doc_texts):
+@@ -242,6 +319,40 @@
+                 err("E_THRESHOLD_BASIS_INCONSISTENT",
+                     "threshold_basis=disclosure_definition but the threshold text does not reference "
+                     "the disclosure: %r" % thr)
++        # <B6C-G1>
++        # BLOCKED-6c: threshold_basis alone never says whether the threshold may be
++        # used (ruling L226 "必须携带 threshold_basis 且显式 threshold_review_status").
++        # Absence is handled by the default (append-only, not a document error), but a
++        # value outside {not_reviewed, reviewed} can never be trusted -> fail closed.
++        _trs_present, _trs_raw, _trs_eff = threshold_review_status_of(fz)
++        if _trs_present and _trs_raw not in THRESHOLD_REVIEW_STATUSES:
++            err("E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
++                "B6C-G1: falsifier.threshold_review_status=%r not in %s"
++                % (_trs_raw, sorted(THRESHOLD_REVIEW_STATUSES)))
++        # </B6C-G1>
++        # <B6C-G2>
++        # A-6.3 items 3+4: "reviewed" must be backed by a substantive non-implementer
++        # reviewer identity and a decision.decision_sha256 seal, otherwise the record
++        # is only claiming a review it cannot evidence (rejected alternative #4).
++        if _trs_raw == "reviewed":
++            _seal_ok, _seal_why = review_seal_ok(h)
++            if not _seal_ok:
++                err("E_THRESHOLD_REVIEW_STATUS_UNSEALED",
++                    "B6C-G2: threshold_review_status=reviewed without the A-6.3 seal (%s)"
++                    % _seal_why)
++        # </B6C-G2>
++        # <B6C-G3>
++        # "未审定不得当已审定" (L226/L271): freezing a proposition as approved while its
++        # threshold still resolves to not_reviewed - field absent OR explicitly
++        # not_reviewed - puts an unreviewed threshold in front of every downstream
++        # consumer as if it had been settled.
++        if h.get("state") == "approved_frozen" and _trs_eff != "reviewed":
++            err("E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
++                "B6C-G3: state=approved_frozen but threshold_review_status %s "
++                "(effective=%r, threshold_basis=%r)"
++                % (("is absent and defaults to not_reviewed" if not _trs_present
++                    else "is %r" % _trs_raw), _trs_eff, fz.get("threshold_basis")))
++        # </B6C-G3>
+         chain = h.get("mechanism_chain") or []
+         if chain:
+             last = str(chain[-1])
+@@ -393,6 +504,37 @@
+                   "(was accepted before R2)", [h_d, h_e]))
+     patch(lambda h: h["falsifier"].update({"threshold_basis": "made_up_basis"}),
+           "E_THRESHOLD_BASIS_UNKNOWN", "threshold_basis outside the closed set")
++
++    # ---- BLOCKED-6c additions (DEC-14 flow: new rule -> new frozen counterexample,
++    # suite 21 -> 25, then re-count). Before this patch the validator never read
++    # falsifier.threshold_review_status, so all four inputs below were ACCEPTED.
++    patch(lambda h: h["falsifier"].update({"threshold_review_status": "approved"}),
++          "E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
++          "[B6C] threshold_review_status outside the closed set while threshold_basis "
++          "is present (was accepted before BLOCKED-6c)")
++    h_seal = copy.deepcopy(base[0])
++    h_seal["falsifier"]["threshold_review_status"] = "reviewed"
++    h_seal["decision"] = {}
++    cases.append(("E_THRESHOLD_REVIEW_STATUS_UNSEALED",
++                  "[B6C] threshold_review_status=reviewed with no A-6.3 seal "
++                  "(was accepted before BLOCKED-6c)", [h_seal]))
++    h_absent = copy.deepcopy(base[0])
++    h_absent["state"] = "approved_frozen"
++    h_absent["reviewer"] = "Independent Accounting Reviewer"
++    h_absent["decision"] = {"decision_sha256": "a" * 64}
++    cases.append(("E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
++                  "[B6C] threshold_basis present, threshold_review_status missing, "
++                  "yet state=approved_frozen (was accepted before BLOCKED-6c)",
++                  [h_absent]))
++    h_notrev = copy.deepcopy(base[0])
++    h_notrev["state"] = "approved_frozen"
++    h_notrev["reviewer"] = "Independent Accounting Reviewer"
++    h_notrev["decision"] = {"decision_sha256": "a" * 64}
++    h_notrev["falsifier"]["threshold_review_status"] = "not_reviewed"
++    cases.append(("E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
++                  "[B6C] threshold_basis present, threshold_review_status explicitly "
++                  "not_reviewed, yet state=approved_frozen "
++                  "(was accepted before BLOCKED-6c)", [h_notrev]))
+     return cases
+ 
+ 
+@@ -439,6 +581,23 @@
+     source_types = {}
+     groups = {}
+     threshold_bases = {}
++    # <B6C-G4>
++    # BLOCKED-6c: the review status must be machine-readable in the report (ruling
++    # L278 / DEC-14: a new rule needs a machine check downstream I-11-B "threshold
++    # gate" and I-11-C can read, not just an error code).
++    reviewability = [threshold_reviewability(h) for h in hypotheses]
++    status_tally = {}
++    defaulted_count = 0
++    for _r in reviewability:
++        _k = _r["threshold_review_status_effective"]
++        status_tally[_k] = status_tally.get(_k, 0) + 1
++        if _r["defaulted"]:
++            defaulted_count += 1
++    reason_tally = {}
++    for _r in reviewability:
++        for _rs in _r["reasons"]:
++            reason_tally[_rs] = reason_tally.get(_rs, 0) + 1
++    # </B6C-G4>
+     for h in hypotheses:
+         st = h["source"]["source_type"]
+         source_types[st] = source_types.get(st, 0) + 1
+@@ -464,6 +623,12 @@
+             "cited_values_total": source_map["counts"]["cited_values_total"],
+             "documents": source_map["counts"]["documents"],
+             "sources_not_readable": source_map["counts"]["sources_not_readable"],
++            # <B6C-G4>
++            "threshold_review_statuses": status_tally,
++            "threshold_review_status_defaulted": defaulted_count,
++            "threshold_reviewability_unusable": sum(
++                1 for r in reviewability if not r["usable"]),
++            # </B6C-G4>
+         },
+         "positive_case": {"propositions_checked": len(hypotheses),
+                           "errors": positive_errors,
+@@ -474,6 +639,48 @@
+             "rejected_as_expected": sum(1 for c in ce_results if c["rejected"]),
+             "accepted_by_mistake": sum(1 for c in ce_results if not c["rejected"]),
+         },
++        # <B6C-G4>
++        # Machine usability verdict per threshold (ruling L230: 缺一或 not_reviewed
++        # ⇒ fail-closed: the threshold does not participate in any judgement).
++        "threshold_reviewability": {
++            "rule": "U-PRIMARY (BLOCKED6C oracle 3.3): usable only when "
++                    "threshold_basis in the closed set, threshold_review_status in "
++                    "{not_reviewed, reviewed}, any reviewed claim carries the A-6.3 "
++                    "seal, and professional_judgement_required / approved_frozen "
++                    "records are actually reviewed; an absent field normalises to "
++                    "the default not_reviewed and is NOT a document error (L230).",
++            "per_hypothesis": reviewability,
++            "summary": {
++                "records": len(reviewability),
++                "usable": sum(1 for r in reviewability if r["usable"]),
++                "unusable": sum(1 for r in reviewability if not r["usable"]),
++                "unusable_reasons": reason_tally,
++                "defaulted_status": defaulted_count,
++            },
++        },
++        "threshold_review_status_schema": {
++            "field": "falsifier.threshold_review_status",
++            "closed_set": sorted(THRESHOLD_REVIEW_STATUSES),
++            "default_when_absent": DEFAULT_THRESHOLD_REVIEW_STATUS,
++            "absent_is_document_error": False,
++            "error_codes": [
++                "E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
++                "E_THRESHOLD_REVIEW_STATUS_UNSEALED",
++                "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
++            ],
++            "fail_closed": "threshold_basis absent OR threshold_review_status absent "
++                           "or not_reviewed ⇒ the threshold does not participate in "
++                           "any judgement (ruling L230); the proposition may still be "
++                           "registered as an observation.",
++            "limitations": (
++                "DEC-14: adding these checks and this counterexample suite is NOT a "
++                "completeness proof. It only pins the behaviours pre-registered in "
++                "BLOCKED6C oracle sections 3-5 (closed set, default, A-6.3 seal, "
++                "approved_frozen fail-closed) against CE-22..CE-25; other "
++                "threshold_review_status defects may still pass undetected."
++            ),
++        },
++        # </B6C-G4>
+         "qualification_boundary": {
+             "formula": "not_applicable_here (no model is executed by this card)",
+             "disclosure_adaptation": "not_granted by this card (I-10-A owns it)",

@@ -1,0 +1,78 @@
+{
+  "unit": "ZR-901",
+  "reviewer": "reviewer-zr901-independent",
+  "kind": "reviewer",
+  "schema_version": 1,
+  "verdict": "accepted",
+  "reviewed_object_sha256": "180be3afed7570a63af5f931b02d5735809424e70f50811776b03c3dd124ee2f",
+  "base_triplet": {
+    "revenue": "ff6f075749b64b7990d20c73c188ed3fc0074c7a",
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "result_triplet": {
+    "revenue": "ca111ecbf88156181b25136871424583ac133043",
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "python -m pytest tests/test_zr901_pr_fanout.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "8 passed in 0.45s。逐条读源码确认 8 条断言全部真实有效（非恒真 or True、非空转）：C1 quality.yml 引用 manifest/ci_checkout_siblings；C2 无裸 git clone 行、无 || true 行（逐行扫描）；C3 sibling 工具含 manifest[\"current_triplet\"] 引用且全 40-hex 扫描除全零外无硬编码 pin；C4 current.json schema 1.0、双 triplet 六腿全 40-hex、revenue 腿 cat-file 解析；C5 契约三要素 required_checks 精确集合、machine_rules 非空、successors 均 CA-201、workflow_files.revenue.sha256 与 quality.yml 字节一致；C6 uc.cli ci-gap 子进程 stdout JSON 解析、revenue 三检查均在、workflow_sha256 64-hex、每个 unsatisfied 检查 successor==CA-201；C7 README §7 吸收行含 current-triplet PR fan-out+CA-201+ZR-105+ZR-901。"
+    },
+    {
+      "command": "独立字节扫描（自写脚本 C:\\Users\\郑曾波\\AppData\\Local\\Temp\\zr901_independent_scan.py，不调用测试代码）",
+      "exit_code": 0,
+      "result": "32/32 PASS。quality.yml 含 compatibility/current.json+ci_checkout_siblings、无 git clone、无 || true（字节扫描）；ci_checkout_siblings.py 无硬编码 40-hex（全零除外）、引用 manifest current_triplet、--help exit 0 且含 --manifest；current.json schema_version=='1.0'、frozen_baseline_triplet/current_triplet 各 3 个完整 40-hex、remotes 3 个 https URL；git cat-file -e frozen_baseline_triplet.revenue=3ce9cc4d… 与 current_triplet.revenue=1b41d62f… 均解析成功；契约 schema_version==1、unit==ZR-105、required_checks 恰好三键、每 check machine_rules 非空、successors 三键均 CA-201、workflow_files.revenue.sha256=f114943a… 与实际 quality.yml 字节 SHA-256 完全一致。"
+    },
+    {
+      "command": "cd assurance/unified_completion; $env:PYTHONPATH=...; python -B -m uc.cli ci-gap",
+      "exit_code": 1,
+      "result": "stdout JSON：schema_version==1、unit==ZR-105、evaluated_at_utc 在位；repos.revenue.workflow_sha256=f114943a801484ec2711e13b22db6ec52563c1e66d75fd80ee07b530e359a7d0（64-hex）；repos.revenue.checks 含 exact_triplet_binding/affected_repo_fanout/collected_skip_delta_controlled 三键；9 个 gap（3 仓×3 检查）全部 unsatisfied 且每项 successor==CA-201——诚实 gap 映射，无 fake green。exit 1 为 gap 存在时的诚实状态（测试允许 0/1）。revenue exact_triplet_binding 如实报 gap：manifest current_triplet（1b41d62f…）与冻结契约 triplet（19cb45ae…）不一致——属 CA-201 manifest 刷新职责，非 ZR-901 缺陷。workflow_drift 三仓 unchanged=true。"
+    },
+    {
+      "command": "grep 'current-triplet PR fan-out' audit_review/README.md",
+      "exit_code": 0,
+      "result": "行 132：| current-triplet PR fan-out | CA-201 | ZR-105、ZR-901 | CA拥有调度/attestation；ZR提供required checks |——单行同时含 current-triplet PR fan-out、CA-201、ZR-105、ZR-901 四要素。"
+    },
+    {
+      "command": "python 重算 receipt canonical：读 11_implementer_receipt.json → 删 canonical_hash 键 → json.dumps(payload, ensure_ascii=False, sort_keys=True) → SHA-256",
+      "exit_code": 0,
+      "result": "recomputed=180be3afed7570a63af5f931b02d5735809424e70f50811776b03c3dd124ee2f == expected（MATCH）；base_triplet.revenue=ff6f075749b64b7990d20c73c188ed3fc0074c7a（完整 40-hex，==ff6f075）；result_triplet.revenue=ca111ecbf88156181b25136871424583ac133043（完整 40-hex，==ca111ec）；canon 载荷含 16 键、无 canonical_hash。"
+    },
+    {
+      "command": "git log -1 --format=\"%H %P\" HEAD; git show --stat ca111ec; git -C company-wiki log -1 --format=%H; git -C filing-fetch log -1 --format=%H",
+      "exit_code": 0,
+      "result": "revenue HEAD=ca111ecbf88156181b25136871424583ac133043，父=ff6f075749b64b7990d20c73c188ed3fc0074c7a（单父，与 receipt base/result 完全一致）；ca111ec 提交仅改 tests/test_zr901_pr_fanout.py（1 file, +228），零 workflow/产品改动；wiki HEAD=35a1103ac05ab5e9a703242cbf1136f96b745197、filing HEAD=5a1c18f5171db0e4b9113138ea360db361e1e435，与 receipt base/result 完全一致（本卡零改动）。注意：工作区 assurance/unified_completion/state.json 有未提交修改（M，新增 ZR-901 状态 triplet_green/implementer=zz），未包含在 ca111ec 提交内——见 finding ZR901-REV-002。"
+    }
+  ],
+  "findings": [
+    {
+      "id": "ZR901-REV-001",
+      "severity": "info",
+      "title": "独立复核全部通过：测试、字节扫描、评估器、吸收行、canonical、delta 六面一致",
+      "detail": "pytest 8 passed；自写独立扫描 32/32 PASS；uc ci-gap 诚实报告（9 gap 全映射 CA-201，无 fake green）；README 行 132 吸收行在位；receipt canonical 重算 MATCH（180be3af…）；ca111ec 单父 ff6f075 且仅含测试文件，wiki/filing HEAD 与 receipt 一致。"
+    },
+    {
+      "id": "ZR901-REV-002",
+      "severity": "info",
+      "title": "state.json 的 ZR-901 状态更新为工作区未提交改动",
+      "detail": "git status 显示 M assurance/unified_completion/state.json（新增 ZR-901: {implementer: zz, status: triplet_green} 并更新 updated_at_utc）；ca111ec 提交本身只含 tests/test_zr901_pr_fanout.py。receipt touched_files 声明包含 state.json 且卡片允许改 state.json，故与声明一致，但该状态条目不在提交内——需后续 CA/closure 提交或在记录时注明。不影响本卡验收（triplet delta 只含 revenue，且为提交级）。"
+    },
+    {
+      "id": "ZR901-REV-003",
+      "severity": "info",
+      "title": "测试薄弱点（不影响门有效性）：remotes https 仅断言 revenue 腿；README 吸收行取首个命中；gaps 结构校验宽松",
+      "detail": "test_manifest_triplets_well_formed_and_resolvable 仅断言 remotes['revenue'] 以 https 开头 + len(remotes)==3，filing/wiki 的 https 前缀未入断言（本 reviewer 独立扫描已补验三腿均 https）；test_readme_section7_documents_absorption 取 hits[0] 未钉行号 132；test_ci_gap_assessor_honest_report 的 gaps 循环只做 'revenue'/'filing'/'wiki' 成员判断，未深度校验 gap 结构（实质性的 unsatisfied→successor==CA-201 由逐仓逐检查循环覆盖）；test_sibling_tool_is_manifest_driven_only 的全 40-hex 扫描对 docstring 中的历史 7-hex 片段（ad62592/77669ae/a42bb40）不敏感——均非 40-hex pin，代码路径无硬编码。以上均为信息级，不构成拒绝理由。"
+    },
+    {
+      "id": "ZR901-REV-004",
+      "severity": "info",
+      "title": "revenue exact_triplet_binding gap 为预期的 manifest 陈旧（CA-201 职责），评估器诚实报告",
+      "detail": "compatibility/current.json current_triplet.revenue=1b41d62fa2d1fb327d86ab964094b6a9489b8a9f 与冻结契约 triplet.revenue=19cb45aed2807374abf3de783b709f403bf51a27 不一致（且均早于 HEAD ca111ec）。ci-gap 如实报 revenue/exact_triplet_binding unsatisfied，evidence 明确 'current.json triplet is stale vs frozen contract'，successor=CA-201。此为 CA-201 manifest 刷新职责，ZR-901 作为吸收卡（零 workflow/产品改动）不承担，符合卡片 stop conditions 中 'gap 归属 CA-201 不得在本卡消除'。"
+    }
+  ],
+  "created_at_utc": "2026-08-31T21:15:22.652348Z",
+  "canonical_hash": "6d35d57160984c07388df9f194b1632d80d93790d3744b441afc0b0a549e5ea9"
+}

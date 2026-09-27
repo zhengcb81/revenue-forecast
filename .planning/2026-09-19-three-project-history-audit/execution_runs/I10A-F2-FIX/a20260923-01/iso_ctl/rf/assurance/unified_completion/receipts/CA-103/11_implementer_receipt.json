@@ -1,0 +1,94 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "a745e06001f29653f424fd58643e24ca58af683b",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "75d613113bcb1f6769a4aa8cdf1a3b705e37c63d1d8b2a5d40fd654a3d086f27",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "116 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 14 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/CA-103/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed"
+    }
+  ],
+  "created_at_utc": "2026-08-14T02:40:00Z",
+  "implementer": "ca103-implementer",
+  "kind": "implementer",
+  "mutation": {
+    "details": "stale reviewer reference, self-review, stale accepted override, unknown supersedes, forks, duplicate revisions, P1-without-successor all rejected; P1-with-successor and clean chains accepted.",
+    "id": "CA-103-M-revision",
+    "killed": true
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "red_evidence": [
+    {
+      "description": "receipts lack revision metadata; 'first receipt' selection is arbitrary (FC-504 r1/r2 history). See receipts/CA-103/red/RED.md.",
+      "id": "RED-A",
+      "status": "red_proved"
+    },
+    {
+      "description": "no reviewer-pairing validation existed (referenced object unverified, self-review allowed). See receipts/CA-103/red/RED.md.",
+      "id": "RED-B",
+      "status": "red_proved"
+    },
+    {
+      "description": "stale accepted could override a newer changes_required. See receipts/CA-103/red/RED.md.",
+      "id": "RED-C",
+      "status": "red_proved"
+    },
+    {
+      "description": "P1/P2 findings had no enforced successors. See receipts/CA-103/red/RED.md.",
+      "id": "RED-D",
+      "status": "red_proved"
+    }
+  ],
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "a745e06001f29653f424fd58643e24ca58af683b",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "review": {
+    "status": "pending"
+  },
+  "revision": "r1",
+  "rollback": {
+    "note": "Additive assurance code; rollback = revert commit.",
+    "proved": true,
+    "required": false
+  },
+  "scenario_note": "Governance tooling card; no 197-scenario mapping. T0 contract/mutation tests only.",
+  "scenario_results": [],
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "summary": "CA-103 (revision selector + independent reviewer pairing): implemented uc/revision.py + CLI revision-select. Receipt sets form a revision chain (revision/supersedes fields); the selector validates the chain (no unknown supersedes, no forks, no duplicates), selects the unique latest valid revision, requires exactly one reviewer receipt referencing that revision's canonical hash with reviewer != implementer, never lets an older accepted decision override a newer changes_required/rejected, and enforces finding closure (P1/P2 findings and promised P3 findings need successors or closed status). 12 new tests cover chain selection, stale-reviewer reference, self-review, stale-accepted, unknown supersedes, forks, duplicates, finding closure, duplicate reviewers, missing implementer. Full suite: 116 passed. Product code/config/CI/catalog/roots: zero writes.",
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/uc/revision.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_revision.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-103/*"
+  ],
+  "unit": "CA-103"
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "unit": "CA-201",
+  "kind": "implementer",
+  "implementer": "ca201-implementer",
+  "objective": "吸收卡终局验收（DAG 第 117 单元/最后一个）：current-triplet PR fan-out 由 CA-201 拥有调度/attestation，ZR-105（契约+诚实评估器）与 ZR-901（PR 面落实证据）提供 required checks；本卡验证吸收关系成立 + 机器 DAG 全依赖闭环 + 零重复实现；零 workflow/产品改动",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "base_triplet": {
+    "revenue": "0c53238a93c389329ee5ecd197dd718db24355bd",
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "result_triplet": {
+    "revenue": "e67d1fea4c3dd157cdb628d2dbcd7f407d8ea08f",
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca201* + fanout tools + contract successor probe",
+      "exit_code": 0,
+      "result": "RED 确认：tests 无 ca201 套件；tools/ 无 fanout/fan* 工具（零重复实现）；ci_contract.py 全部 successor=CA-201；README §7 吸收行在位；DAG deps [CA-107,ZR-105,ZR-901] 全 accepted"
+    },
+    {
+      "command": "python -m pytest tests/test_ca201_pr_fanout_ownership.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "7 passed (C1 DAG 依赖全 accepted；C2 README §7 吸收行；C3 契约三要素 successor=CA-201；C4 ci-gap 诚实映射 CA-201；C5 revenue PR 面落实证据；C6 零重复实现；C7 state 条目+依赖闭环)"
+    },
+    {
+      "command": "ruff check tests/test_ca201_pr_fanout_ownership.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "e67d1fe test(CA-201)"
+    },
+    {
+      "command": "revenue full suite (-k not fc1103)",
+      "exit_code": 0,
+      "result": "1085 passed + 106 subtests (零回归；1078+7 新；-k not fc1103)"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca201_pr_fanout_ownership.py（7 tests）：C1 state.json 依赖三单元 accepted；C2 README §7 吸收行（CA-201 | ZR-105、ZR-901 | CA拥有调度/attestation；ZR提供required checks）；C3 ZR-105 契约三要素 successors 均=CA-201；C4 uc.cli ci-gap 确定性 JSON、unsatisfied 项 successor=CA-201（诚实）；C5 revenue quality.yml 吸收面存在（manifest 驱动 sibling checkout、无浮动 clone、无 || true）；C6 tools/uc/ci 无 fanout 工具/模块/第二契约文件；C7 state CA-201 条目存在且 current_next/phase 正确。产品/workflow/契约/评估器/清单零改动——吸收卡不重复实现。",
+    "files": [
+      "revenue-forecast/tests/test_ca201_pr_fanout_ownership.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-201/**"
+    ]
+  },
+  "findings": [
+    {
+      "id": "CA201-IMPL-001",
+      "severity": "info",
+      "title": "吸收卡终局验收：PR fan-out 所有权与 required-checks 吸收关系成立，DAG 依赖全闭环",
+      "detail": "C1: CA-107/ZR-105/ZR-901 在 state.json 全 accepted；C2: README §7 行 132 吸收行（CA-201 唯一 owner；ZR-105、ZR-901 提供 required checks）在位；C3: 契约三要素 successors 均=CA-201；C4: ci-gap 9 项 gap 全部映射 successor=CA-201（诚实，无 fake green）；C5: revenue quality.yml 已含 manifest 驱动 sibling checkout（ci_checkout_siblings + current.json）、无裸 clone、无 || true；C6: tools/ 无 fanout 工具、uc/ 无第二 fanout 模块、ci/ 无第二契约文件；C7: state 已建 CA-201 条目，current_next=CA-201、phase=J_final_verification。产品/workflow/契约/评估器/清单零改动。"
+    }
+  ],
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca201_pr_fanout_ownership.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-201/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "scope": "revenue-forecast: tests/test_ca201_pr_fanout_ownership.py（新 7 tests）；assurance/unified_completion/receipts/CA-201/** 与 state.json。产品代码与 .github/workflows 零改动。",
+  "notes": [
+    "result_triplet.revenue = e67d1fea4c3dd157cdb628d2dbcd7f407d8ea08f（revenue HEAD = CA-201 实现 commit，parent 0c53238a93c389329ee5ecd197dd718db24355bd）；wiki 35a1103ac05ab5e9a703242cbf1136f96b745197（本卡零改动）；filing 5a1c18f5171db0e4b9113138ea360db361e1e435（未动）。",
+    "卡片 hash: plan_sha256 指向 completion_assurance_registry.md（861e28f9…）。",
+    "本卡为 DAG 第 117 单元/最后一个——closure 后 117/117 全部闭环。"
+  ],
+  "created_at_utc": "2026-08-31T21:33:17.334727+00:00",
+  "canonical_hash": "747228fb11851bb69a94fb18fa7dc290749570b0f69a987c25d6e23f9afe2402"
+}

@@ -271,3 +271,24 @@ L126–127 的 `proposed = 5 (implementer proposal, NOT frozen)` 两行是**冻�
 ### 11.7 仍未完成 / 仍 blocked
 
 真实 30/60/120 秒观察：**仍 blocked**（reviewer 已冻结容差，但缺预布置记录器、缺 owner 授权启动 worker/UI，且真实窗口须另开 attempt + 另开 binding）。17 行日历**全部 pending**；`evidence/calendar_mapping.json` 的 CAL-13 增设 `blocked_reason` 字段（reviewer 建议）以免把 pending 与 blocked 混读。本卡仍**不授予**真实自然观察资格与 UI 即时性资格。
+### 11.8 rc 归属裁定：schema 级 vs per-case（reviewer-owned，追加式；触发 = T1-10-FIX F-3 + review.md:353 提请）
+
+- **rc=2 = 仅「文档/调用域」的输入畸形**：`--cases` 不可解析、顶层缺 `cases`/`frozen_now_utc`、
+  或 `frozen_now_utc` 本身不可解析 —— 即 `main()` 在**进入任何 case 判定之前**失败的那批形状
+  （既有实现 L461–466）。判定对象是本次调用；fail-closed 在此不剥夺任何裁决（此时本无裁决）。
+- **rc=4 = 仅真正的内部错误**（实现自身缺陷）。**用户提供的单 case 字段**类型/格式错误不属于 rc=4：
+  把它记成 rc=4 既属误分类，又复现缺陷①的「剥夺裁决」形态（报告不写出、整批 0 裁决）。
+- **单 case 字段的类型/格式错误 = per-case 拒绝**：该 case 记 `reject_claim`、整批照常裁决、
+  报告照常写出、SUT rc=0；与 §11.3 标量校验同语义：
+  - `basis` 容器 / `claim` 载体非对象 / `clock_source` 容器 / `windows`、`sampled_at`、`ledger.daily` 为容器
+    → 按既有码拒绝（basis/载体族 = `R-BASIS-UNKNOWN`；时钟 = `R-SIMULATED-CLOCK`；载体不可读 ≡ 缺键）；
+  - 时间戳畸形（`_parse` 抛 `ValueError`，如 `started_at="not-a-timestamp"`）→ `reject_claim` +
+    **新码 `R-TIMESTAMP-MALFORMED`**（本节为该码的唯一授权来源；词表自 16 码增至 17 码），
+    无法解析的时间字段在 `computed` 中置 `null`，其余派生量按可得事实计算。
+- **变异/回归要求（承接修卡）**：任一畸形单 case 字段不得使任何其他 case 的裁决丢失 —— 回归面同缺陷①：
+  批次臂 rc=0、坏 case 单独被拒、良构 case 输出逐字节不变；且须带「单畸形 case 不可炸批」的批次负控。
+- 触发与授权链：I-14-B `review.md:353`（P4 提请 §11 明确归属）→ T1-10-FIX `oracle.md §7 E-adj-4 / I-5`
+  （实现卡拒绝自填、显式留待 reviewer）→ 本裁定（T1-10-FIX 独立 reviewer，2026-09-24，N=1）。
+- 落点分工：**F-3（时间戳 `_parse` 非全函数）→ 独立修轨 T1-F3-FIX**（机制=解析全函数化，与 F-1/F-2 的
+  成员/载体守卫不同，且 T1-F2-FIX 已派未含此项）；**F-1/F-2 与 P4 容器族 → T1-F2-FIX**；
+  两卡共用本节文本，先落者写入、后落者只引用。

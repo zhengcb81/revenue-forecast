@@ -1,0 +1,240 @@
+{
+  "card": "OPEN-5",
+  "step": "S5（会计半区）",
+  "attempt": "OPEN5-S5-ACCT-GRADING/a20260926-01",
+  "role": "accounting_reviewer_s5",
+  "generated_utc": "2026-09-26T08:58:02Z",
+  "authorized_by": {
+    "S5_definition_verbatim": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md L166",
+      "quote": "| **S5** | **行业复裁 + 会计定级**：按 IND 已裁的 C 表①/②登记来源等级，**证据等级由会计面认定**（§二十四 执行纪律第 3 条）；通过后才谈港股命题与参数 | 行业 reviewer + 会计 reviewer | 各自专业裁定权（**本载体不代行**） | 任一面未过 ⇒ 港股参数继续 `_PLACEHOLDER` |"
+    },
+    "dispatch": "编排层派单（续跑 OPEN-5 S5 会计定级；前工位系统事件中断，从已有进度续跑）",
+    "owner_rule_verbatim": {
+      "source": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md L504",
+      "quote": "- **取证（选项 3）的证据等级由会计面定，不由取证方自定**；取不到就维持 BLOCKED，**不造绿色样例**。"
+    },
+    "boundary_verbatim": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md L179",
+      "quote": "即使 S2 自检显示\"某路径能读出锚词\"，在 S3/S4/S5 走完之前**仍按不可读处置**（IND 处置规则 B 部分继续有效：港股命题零产出、参数维持 `_PLACEHOLDER`）。"
+    },
+    "C_table_1_verbatim": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md L231",
+      "quote": "| ① | **同一发行人、同一报告期**的其他**可读原文**官方文件（HKEX 披露易 PDF 文本层正常者、全年业绩公告、中期报告、公司 IR 的年报 HTML/可读 PDF） | `company_primary_disclosure`（与年报同级，但必须标注**文件类型与期间**） | 必须：原文可定位（页码/锚文本或章节）+ 原始 sha256 + 期间与年报一致；跨期文件必须标 `period_mismatch_risk` |"
+    },
+    "C_table_4_verbatim": {
+      "source": "同文件 L234",
+      "quote": "| ④ | 外部抓取的港股年报 PDF（若本地原件不可读） | `external_retrieval_not_local` | 必须登记 URL + 取回时间 + sha256，**永不冒充本地可核**；且仍需可复核的取文路径 |"
+    },
+    "dispatch_paraphrase_delta": "派单把出处写作「OWNER_DECISIONS §二十四 执行纪律第 3 条」、分隔符用全角 ｜；文件原文为「§二十四 执行纪律第 3 条」、半角 |。以文件原文为准（oracle §1.1 登记）。"
+  },
+  "g2_g3_resolved": true,
+  "g2_resolution": {
+    "resolved": true,
+    "attempt04": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032400609_c.pdf",
+      "retrieved_utc": "2026-09-24T22:09:26Z",
+      "sha256": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+      "three_way_equal": true,
+      "recorded_here_only": true
+    },
+    "attempt08": {
+      "url": "https://ir.mi.com/system/files-encrypted/nasdaq_kms/assets/2026/04/28/5-29-08/Xiaomi%202025%20AR_EN.pdf",
+      "retrieved_utc": "2026-09-25T20:37:56Z",
+      "sha256": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+      "three_way_equal": true,
+      "recorded_here_only": true
+    }
+  },
+  "g3_resolution": {
+    "resolved": true,
+    "external_retrieval_not_local": true,
+    "semantics_adopted": "IND C 表 ④",
+    "divergence_registered": "口径 A(false, S3/PEND-5a) vs 口径 B(true, ④/OPEN-11/S4)；两边均不回改，只在本工位记录登记",
+    "back_written_to_prior_stations": false
+  },
+  "levels_graded": [
+    {
+      "source": "attempt04",
+      "c_table": "① + ④",
+      "evidence_class": "company_primary_disclosure",
+      "e_level": "E1",
+      "s_tier": "S1",
+      "usable_faces": [
+        "zh-Hant"
+      ],
+      "admissible": true,
+      "document_type": "全年业绩公告（results announcement，非年度报告）",
+      "period": "FY2025"
+    },
+    {
+      "source": "attempt08",
+      "c_table": "① + ④",
+      "evidence_class": "company_primary_disclosure",
+      "e_level": "E1",
+      "s_tier": "S1",
+      "usable_faces": [
+        "en"
+      ],
+      "admissible": true,
+      "document_type": "年度报告英文版（annual report, EN）",
+      "period": "FY2025"
+    },
+    {
+      "source": "attempt07 (r.jina.ai 代理)",
+      "c_table": "③",
+      "evidence_class": "secondary_lead_only",
+      "e_level": "E3",
+      "s_tier": "S0",
+      "usable_faces": [],
+      "admissible": false,
+      "document_type": "third_party_proxy_render",
+      "period": "FY2025"
+    },
+    {
+      "source": "HK-XIAOMI-AR2025 (origin)",
+      "c_table": null,
+      "evidence_class": null,
+      "e_level": null,
+      "s_tier": null,
+      "usable_faces": [],
+      "admissible": false,
+      "graded": false,
+      "disposition": "S4 NOT_USABLE + L165 不可引用、维持不可读处置；不进入定级"
+    }
+  ],
+  "hk_parameters_released": false,
+  "placeholder_maintained": true,
+  "releases_nothing": true,
+  "accept_produced": false,
+  "open5_released": false,
+  "industry_face_countersigned": false,
+  "industry_face_note": "行业复裁由父另派；本工位不代签、不裁 C 表启用与否、不解除 IND B 部分",
+  "mutations": {
+    "baseline_rc": 0,
+    "m1_weak_rc": 0,
+    "m2_origin_rc": 0,
+    "m3_nourl_rc": 2,
+    "m4_quote_rc": 2,
+    "all_expectations_met": true
+  },
+  "own_extraction_stability_note": "attempt04 pdfminer 自抽工件 8 次抽取字节稳定；attempt08 pdfminer 自抽工件跨进程出现 2 个 sha（f5d1077a… / f24c26b5…），但两种变体下全部引文 raw+归一化命中。不影响任何等级（E1d 针对 PDF 本体；E1e/E1f 锚定引文命中）",
+  "oracle": {
+    "file": "oracle.md",
+    "sha256": "32c28419ef12bf614ea4cb4a5944e3214857dc628a4e3888ec96328992ef93ea",
+    "frozen_before_any_measurement": true,
+    "modified_by_this_round": false
+  },
+  "written_files": {
+    "count": 17,
+    "total_bytes": 2451026,
+    "self_excluded": "handoff.json (self-reference impossible)",
+    "files": [
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/extract/s5_attempt04_fitz.txt",
+        "bytes": 95648,
+        "sha256": "5d20c2816c0ba2ed6736463d00cc4fc9d73fe55b10d28f9053ef27229ece4c6b"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/extract/s5_attempt04_pdfminer.txt",
+        "bytes": 111987,
+        "sha256": "21ba5eadedc28849d50ecae4416e1e7cc777b8d560b3e0a60e15089dfe880992"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/extract/s5_attempt08_fitz.txt",
+        "bytes": 956886,
+        "sha256": "990075a686350d49e0ed086be12f59153786df30e1f77d13892ed15c0171bf89"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/extract/s5_attempt08_pdfminer.txt",
+        "bytes": 1029246,
+        "sha256": "f5d1077a737aa39a4ffc092ff28a546c4532b1e4649640886679bedf0cbb22e9"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_build.py",
+        "bytes": 38051,
+        "sha256": "146cf5ff511413f299569d2e2aa3f8a849836aad89fb9b2e6b7cb69c437a5b5b"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_determinism.py",
+        "bytes": 4820,
+        "sha256": "f6ca91121379a865436552c7dea5d9e1a279a87e46c436825844876c9211c813"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_extract_determinism_attempt04.json",
+        "bytes": 2376,
+        "sha256": "5dec8e4ea2071b001d5113ef8fe25f28f250da2c85b768878d5c3f78930ceb54"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_extract_determinism_attempt08.json",
+        "bytes": 3084,
+        "sha256": "3d845beaaa093100ff5d741d5a8a27824194e060292312b051b4d5ac09229f9b"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_grade.py",
+        "bytes": 18950,
+        "sha256": "8204145e3e5e2ad6f27f07e2c22602c0c6a8ecb54b9964352c10397a7eb4a520"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_measure_baseline.json",
+        "bytes": 20405,
+        "sha256": "03787237532aa01c87d1124b3ce5e36408e2e7f8d29d5b2695fb10d065729c1b"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_measure_m1_weak.json",
+        "bytes": 20453,
+        "sha256": "d8e649b73c642a4f67a3d4baa1b494d34448e57cee035d5244cad52cea8b29b2"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_measure_m2_origin.json",
+        "bytes": 20467,
+        "sha256": "c2a2c13737abb59e8e163c931d338f42770361912fd422f19c9c5020bea2cd09"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_measure_m3_nourl.json",
+        "bytes": 20277,
+        "sha256": "dac2bdbe917e18d5a0e89a6b1cdfd38bf88413a2e2e915efdb37603a035a1891"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/_work/s5_measure_m4_quote.json",
+        "bytes": 20465,
+        "sha256": "f0547a7ca175f2e57a1a7219b9919b7844976daf39d0ead5a8579219d338b8ac"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/acct_grading.json",
+        "bytes": 42499,
+        "sha256": "3a5623afb19a19bdf9b83520595980810e41d14072131769639c00c5a69b0eda"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/oracle.md",
+        "bytes": 21551,
+        "sha256": "32c28419ef12bf614ea4cb4a5944e3214857dc628a4e3888ec96328992ef93ea"
+      },
+      {
+        "path": "execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/s5_acct_report.md",
+        "bytes": 23861,
+        "sha256": "0bfbedaead34929cdd994e5e1a3660d642d6720a50a9f95c8041ff8f3cb9fd5c"
+      }
+    ]
+  },
+  "git_diff_total": 3830,
+  "git_diff_non_planning": 0,
+  "git_diff_non_planning_paths": [],
+  "untracked_non_planning": 48,
+  "untracked_non_planning_note": "全部为既有 .tmp-r41-mutation/* 等历史路径，非本工位创建",
+  "git_write_ops": 0,
+  "git_status_used": false,
+  "network_used": false,
+  "write_surface": "only .planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S5-ACCT-GRADING/a20260926-01/",
+  "not_done": [
+    "未改 S4 / S3 / S1 两站 / 封盘 I-11-A 任何字节（G2/G3 只在本工位记录里补）",
+    "未下 S4 结论、未改 consistency_result / numeric_conflict",
+    "未代签行业面（C 表启用与否、IND B 部分、行业处置规则均未裁）",
+    "未解除 OPEN-5、未放行港股参数（hk_parameters_released=false）",
+    "未产生 I-11-B 的 ACCEPT、未把任何 not_readable 改成「已验证」",
+    "未写五份计划文件、未写 .planning 之外任何路径（含 company-wiki）",
+    "零 git 写、未用 git status、未联网",
+    "未给 origin 本体赋任何等级（排除在定级外）"
+  ],
+  "next_station": "S5 行业复裁（父另派）→ 两面齐备后才由有权方谈港股命题与参数"
+}

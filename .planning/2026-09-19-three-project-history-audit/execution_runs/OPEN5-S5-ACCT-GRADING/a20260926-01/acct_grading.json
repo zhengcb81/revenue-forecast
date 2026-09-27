@@ -1,0 +1,845 @@
+{
+  "card": "OPEN-5",
+  "step": "S5 · 会计半区（会计定级）",
+  "attempt": "OPEN5-S5-ACCT-GRADING/a20260926-01",
+  "role": "accounting_reviewer_s5",
+  "generated_utc": "2026-09-26T08:50:31Z",
+  "oracle": {
+    "file": "oracle.md",
+    "sha256": "32c28419ef12bf614ea4cb4a5944e3214857dc628a4e3888ec96328992ef93ea",
+    "bytes": 21551,
+    "frozen_before_any_measurement": true,
+    "addendum": null,
+    "note": "续跑工位：oracle 已在前一轮冻结，本轮未改其任何字节（先冻结后判）"
+  },
+  "authorization": {
+    "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md L166",
+    "quote_verbatim": "| **S5** | **行业复裁 + 会计定级**：按 IND 已裁的 C 表①/②登记来源等级，**证据等级由会计面认定**（§二十四 执行纪律第 3 条）；通过后才谈港股命题与参数 | 行业 reviewer + 会计 reviewer | 各自专业裁定权（**本载体不代行**） | 任一面未过 ⇒ 港股参数继续 `_PLACEHOLDER` |",
+    "owner_rule": {
+      "file": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+      "locator": "L504",
+      "verbatim": "- **取证（选项 3）的证据等级由会计面定，不由取证方自定**；取不到就维持 BLOCKED，**不造绿色样例**。",
+      "check": "证据等级由会计面定"
+    },
+    "authorization_is_permission_not_action": {
+      "file": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+      "locator": "L502",
+      "verbatim": "- **「授权」是许可不是动作**：四项均**不产生任何 ACCEPT、不解除任何 BLOCKED、不改任何 status**；`I-11-B` 仍 BLOCKED（解锁 7 条条件未满足）。",
+      "check": "本工位不产生 ACCEPT / 不解除 BLOCKED"
+    }
+  },
+  "step1_g2_g3": {
+    "g2_resolution": {
+      "rule": "oracle.md §4.1（冻结）",
+      "resolved": true,
+      "back_written_to_prior_stations": false,
+      "gap_before_this_station": "S4 G2: in-02 / in-03 无 url 字段（S3 provenance L77–L97 无 `url` 键）；URL 只存在于 PEND-5a provenance ext-04 / ext-08",
+      "resolution": "本工位回源读取 PEND-5a provenance.json 的 ext-04 / ext-08，取 URL + 取回 UTC + sha256，对 IN-07 字节全量重算 sha256，并与 S3 in-02/in-03、S4 own_provenance 三方比对全等；三件套只写入本目录 acct_grading.json → g2_resolution",
+      "by_source": {
+        "attempt04": {
+          "source": "attempt04",
+          "rule": "oracle.md §4.1 (G2a URL / G2b 取回 UTC / G2c sha256 / G2d 记录落位)",
+          "G2a_url": {
+            "result": true,
+            "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032400609_c.pdf",
+            "evidence": {
+              "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+              "locator": "L99–L119 (ext-04)",
+              "verbatim": "\"url\": \"https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032400609_c.pdf\"",
+              "check": "回源核实：与派单所列 URL 全等（S4 PEND-5a 记录 → 本工位回读）"
+            }
+          },
+          "G2b_retrieved_utc": {
+            "result": true,
+            "retrieved_utc": "2026-09-24T22:09:26Z",
+            "file_mtime_utc_corroboration": "2026-09-24T22:09:26Z",
+            "evidence": {
+              "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+              "locator": "L99–L119 (ext-04) (retrieved_utc 行)",
+              "verbatim": "\"retrieved_utc\": \"2026-09-24T22:09:26Z\"",
+              "check": "形态 YYYY-MM-DDTHH:MM:SSZ；盘上 corpus 文件 LastWriteTimeUtc 与之逐字相等"
+            }
+          },
+          "G2c_sha256": {
+            "result": true,
+            "sha256_registered_pend5a": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "sha256_recomputed_by_this_station": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "sha256_s3_in": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "sha256_s4_own": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "three_way_equal": true,
+            "evidence": [
+              {
+                "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+                "locator": "L99–L119 (ext-04) (sha256 行)",
+                "verbatim": "\"sha256\": \"d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b\"",
+                "check": "PEND-5a 登记值"
+              },
+              {
+                "file": "execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/provenance.json",
+                "locator": "L81",
+                "verbatim": "\"sha256\": \"d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b\"",
+                "check": "S3 in-0x 登记值（G2 缺 URL，sha 不缺）"
+              },
+              {
+                "file": "execution_runs/OPEN5-S4-DUAL-PATH-VERIFY/a20260926-01/dual_path_verify.json",
+                "locator": "L5597",
+                "verbatim": "\"sha256\": \"d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b\"",
+                "check": "S4 own_provenance 登记值"
+              },
+              {
+                "file": "本工位 IN-07 字节",
+                "locator": "sha256 全量复算",
+                "verbatim": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+                "check": "python hashlib.sha256 over the corpus bytes（s5_grade.py → sha256_file）"
+              }
+            ]
+          },
+          "G2d_recorded_here": {
+            "result": true,
+            "note": "三件套由本工位写入 acct_grading.json；不回改 S3/S4/PEND-5a"
+          },
+          "resolved": true
+        },
+        "attempt08": {
+          "source": "attempt08",
+          "rule": "oracle.md §4.1 (G2a URL / G2b 取回 UTC / G2c sha256 / G2d 记录落位)",
+          "G2a_url": {
+            "result": true,
+            "url": "https://ir.mi.com/system/files-encrypted/nasdaq_kms/assets/2026/04/28/5-29-08/Xiaomi%202025%20AR_EN.pdf",
+            "evidence": {
+              "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+              "locator": "L185–L205 (ext-08)",
+              "verbatim": "\"url\": \"https://ir.mi.com/system/files-encrypted/nasdaq_kms/assets/2026/04/28/5-29-08/Xiaomi%202025%20AR_EN.pdf\"",
+              "check": "回源核实：与派单所列 URL 全等（S4 PEND-5a 记录 → 本工位回读）"
+            }
+          },
+          "G2b_retrieved_utc": {
+            "result": true,
+            "retrieved_utc": "2026-09-25T20:37:56Z",
+            "file_mtime_utc_corroboration": "2026-09-25T20:37:56Z",
+            "evidence": {
+              "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+              "locator": "L185–L205 (ext-08) (retrieved_utc 行)",
+              "verbatim": "\"retrieved_utc\": \"2026-09-25T20:37:56Z\"",
+              "check": "形态 YYYY-MM-DDTHH:MM:SSZ；盘上 corpus 文件 LastWriteTimeUtc 与之逐字相等"
+            }
+          },
+          "G2c_sha256": {
+            "result": true,
+            "sha256_registered_pend5a": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "sha256_recomputed_by_this_station": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "sha256_s3_in": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "sha256_s4_own": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "three_way_equal": true,
+            "evidence": [
+              {
+                "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+                "locator": "L185–L205 (ext-08) (sha256 行)",
+                "verbatim": "\"sha256\": \"b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2\"",
+                "check": "PEND-5a 登记值"
+              },
+              {
+                "file": "execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/provenance.json",
+                "locator": "L92",
+                "verbatim": "\"sha256\": \"b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2\"",
+                "check": "S3 in-0x 登记值（G2 缺 URL，sha 不缺）"
+              },
+              {
+                "file": "execution_runs/OPEN5-S4-DUAL-PATH-VERIFY/a20260926-01/dual_path_verify.json",
+                "locator": "L5614",
+                "verbatim": "\"sha256\": \"b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2\"",
+                "check": "S4 own_provenance 登记值"
+              },
+              {
+                "file": "本工位 IN-07 字节",
+                "locator": "sha256 全量复算",
+                "verbatim": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+                "check": "python hashlib.sha256 over the corpus bytes（s5_grade.py → sha256_file）"
+              }
+            ]
+          },
+          "G2d_recorded_here": {
+            "result": true,
+            "note": "三件套由本工位写入 acct_grading.json；不回改 S3/S4/PEND-5a"
+          },
+          "resolved": true
+        }
+      },
+      "not_resolved_for": []
+    },
+    "g3_resolution": {
+      "rule": "oracle.md §4.2（按 IND C 表 ④ 语义裁）",
+      "resolved": true,
+      "adopted_semantics": "④ 语义：外部取回件一律标 external_retrieval_not_local = true，永不冒充本地可核",
+      "station_records": {
+        "attempt04": {
+          "external_retrieval_not_local": true,
+          "substitute_not_origin": true
+        },
+        "attempt08": {
+          "external_retrieval_not_local": true,
+          "substitute_not_origin": true
+        }
+      },
+      "authority": [
+        {
+          "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+          "locator": "L234",
+          "verbatim": "| ④ | 外部抓取的港股年报 PDF（若本地原件不可读） | `external_retrieval_not_local` | 必须登记 URL + 取回时间 + sha256，**永不冒充本地可核**；且仍需可复核的取文路径 |",
+          "check": "④ 的证据等级列本身就是 external_retrieval_not_local"
+        },
+        {
+          "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+          "locator": "L360",
+          "verbatim": "**外部 ≠ 本地**：所有 `EXT-*` 一律标 `evidence_class=external_retrieval_not_local`；`2026-09-02 8-K` 条目显式写明\"**本地不可核，外部获取，不得作为本地可核证据放行**\"。",
+          "check": "OPEN-11 语义"
+        },
+        {
+          "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+          "locator": "L261",
+          "verbatim": "- 用外部抓取件静默顶替本地原件（必须按④登记为外部）；",
+          "check": "被拒方案原文"
+        }
+      ],
+      "divergence": {
+        "side_A_false": {
+          "meaning": "非第三方代理（仅 r.jina.ai 代理件标 true）",
+          "where": [
+            "PEND-5a provenance ext-04/ext-08.external_retrieval_not_local=false",
+            "S3 provenance in-02/in-03.external_retrieval_not_local=false"
+          ],
+          "observed_values": [
+            false,
+            false
+          ],
+          "evidence": [
+            {
+              "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+              "locator": "L109 / L195",
+              "verbatim": "\"external_retrieval_not_local\": false",
+              "check": "ext-04 / ext-08 口径 A"
+            },
+            {
+              "file": "execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/provenance.json",
+              "locator": "L83 / L94",
+              "verbatim": "\"external_retrieval_not_local\": false",
+              "check": "in-02 / in-03 口径 A"
+            }
+          ],
+          "back_written": false
+        },
+        "side_B_true": {
+          "meaning": "外部取回件一律标外部、永不冒充本地可核",
+          "where": [
+            "IND C 表 ④ L234",
+            "OPEN-11 L360",
+            "S4 own_provenance.external_retrieval_not_local=true"
+          ],
+          "observed_values": [
+            true
+          ],
+          "evidence": [
+            {
+              "file": "execution_runs/OPEN5-S4-DUAL-PATH-VERIFY/a20260926-01/dual_path_verify.json",
+              "locator": "L5605 / L5622",
+              "verbatim": "\"external_retrieval_not_local\": true",
+              "check": "S4 own_provenance 口径 B"
+            }
+          ],
+          "back_written": false
+        },
+        "resolution": "本工位按 ④ 语义裁为 true；两边均不回改，仅登记分歧（oracle §4.2）",
+        "both_sides_back_written": false
+      },
+      "constraint_on_grading": "任何标 true 的件，其等级结论必须显式声明「外部取回件，永不冒充本地原件 / 不冒充 origin」——见各 source 的 external_never_impersonates_local"
+    },
+    "g2_g3_resolved": true
+  },
+  "step2_c_table_registration": {
+    "rule": "oracle.md §4.3（L166「按 C 表①/②登记来源等级」）",
+    "origin_excluded_from_tiering": true,
+    "by_source": {
+      "attempt04": {
+        "tier": "①",
+        "evidence_class": "company_primary_disclosure",
+        "stacked_4": {
+          "flag": true,
+          "meaning": "① 是来源级别，④ 是取回路径的外部身份；二者叠加登记，不矛盾"
+        },
+        "must_label": {
+          "document_type": "全年业绩公告（results announcement，非年度报告）",
+          "period": "FY2025（与 origin 年报同期间）"
+        },
+        "usage_conditions_from_C1": {
+          "原文可定位": true,
+          "原始sha256": true,
+          "期间与年报一致": true,
+          "period_mismatch_risk": false
+        },
+        "authority": [
+          {
+            "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+            "locator": "L227",
+            "verbatim": "**C. 可接受的替代来源及其证据等级（我裁，供 owner 解锁后使用）**",
+            "check": "C 表标题"
+          },
+          {
+            "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+            "locator": "L231",
+            "verbatim": "| ① | **同一发行人、同一报告期**的其他**可读原文**官方文件（HKEX 披露易 PDF 文本层正常者、全年业绩公告、中期报告、公司 IR 的年报 HTML/可读 PDF） | `company_primary_disclosure`（与年报同级，但必须标注**文件类型与期间**） | 必须：原文可定位（页码/锚文本或章节）+ 原始 sha256 + 期间与年报一致；跨期文件必须标 `period_mismatch_risk` |",
+            "check": "① 行"
+          },
+          {
+            "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+            "locator": "L234",
+            "verbatim": "| ④ | 外部抓取的港股年报 PDF（若本地原件不可读） | `external_retrieval_not_local` | 必须登记 URL + 取回时间 + sha256，**永不冒充本地可核**；且仍需可复核的取文路径 |",
+            "check": "④ 行"
+          },
+          {
+            "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+            "locator": "L111–L113",
+            "verbatim": "\"document\": \"截至2025年12月31日止年度之全年業績公告（小米集团，港交所披露易原站）\"",
+            "check": "文件类型与期间标注（① 的 must_label）"
+          }
+        ]
+      },
+      "attempt08": {
+        "tier": "①",
+        "evidence_class": "company_primary_disclosure",
+        "stacked_4": {
+          "flag": true,
+          "meaning": "① 是来源级别，④ 是取回路径的外部身份；二者叠加登记，不矛盾"
+        },
+        "must_label": {
+          "document_type": "年度报告英文版（annual report, EN）",
+          "period": "FY2025（与 origin 年报同期间）"
+        },
+        "usage_conditions_from_C1": {
+          "原文可定位": true,
+          "原始sha256": true,
+          "期间与年报一致": true,
+          "period_mismatch_risk": false
+        },
+        "authority": [
+          {
+            "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+            "locator": "L227",
+            "verbatim": "**C. 可接受的替代来源及其证据等级（我裁，供 owner 解锁后使用）**",
+            "check": "C 表标题"
+          },
+          {
+            "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+            "locator": "L231",
+            "verbatim": "| ① | **同一发行人、同一报告期**的其他**可读原文**官方文件（HKEX 披露易 PDF 文本层正常者、全年业绩公告、中期报告、公司 IR 的年报 HTML/可读 PDF） | `company_primary_disclosure`（与年报同级，但必须标注**文件类型与期间**） | 必须：原文可定位（页码/锚文本或章节）+ 原始 sha256 + 期间与年报一致；跨期文件必须标 `period_mismatch_risk` |",
+            "check": "① 行"
+          },
+          {
+            "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+            "locator": "L234",
+            "verbatim": "| ④ | 外部抓取的港股年报 PDF（若本地原件不可读） | `external_retrieval_not_local` | 必须登记 URL + 取回时间 + sha256，**永不冒充本地可核**；且仍需可复核的取文路径 |",
+            "check": "④ 行"
+          },
+          {
+            "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+            "locator": "L197–L199",
+            "verbatim": "\"document\": \"Xiaomi 2025 AR_EN（2025 年度报告英文版，发行人官网）\"",
+            "check": "文件类型与期间标注（① 的 must_label）"
+          }
+        ]
+      },
+      "attempt07_proxy": {
+        "tier": "③",
+        "evidence_class": "secondary_lead_only",
+        "must_label": {
+          "document_type": "third_party_proxy_render (r.jina.ai 代理渲染)"
+        },
+        "usage": "仅可作线索；不得进参数、不得进命题 cited_values",
+        "authority": [
+          {
+            "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+            "locator": "L233",
+            "verbatim": "| ③ | 券商研报 / 新闻 / 数据商 / wiki | `secondary_lead_only` | **仅可作线索**，**不得**进参数、**不得**进命题的 `cited_values` |",
+            "check": "③ 行"
+          }
+        ],
+        "pass": false
+      },
+      "origin_HK-XIAOMI-AR2025": {
+        "tier": null,
+        "registered": false,
+        "reason": "origin 本体不进入定级（S4 NOT_USABLE + ENVOWNER L165；oracle §4.5）"
+      }
+    }
+  },
+  "step3_accounting_grading": {
+    "rule": "oracle.md §4.4（E1 六要素 + S 系列，缺一即降级）",
+    "by_source": {
+      "attempt04": {
+        "source_id": "attempt04",
+        "c_table_tier": "①",
+        "e_level": "E1",
+        "e_level_note": "六要素齐（ACCT L66/L153）",
+        "s_tier": "S1",
+        "s_tier_note": "同期间公司原文披露 + 可定位 + sha 绑定 + ≥1 独立路径复核（ACCT L56）",
+        "e_elements": {
+          "E1a_local_archive": true,
+          "E1b_url": true,
+          "E1c_retrieved_utc": true,
+          "E1d_sha256": true,
+          "E1e_verbatim_quote": true,
+          "E1f_independent_path": true
+        },
+        "usable_faces": [
+          "zh-Hant"
+        ],
+        "s4_face_result": "CONSISTENT",
+        "external_never_impersonates_local": true,
+        "reason": "六要素齐（ACCT L66/L153）；同期间公司原文披露 + 可定位 + sha 绑定 + ≥1 独立路径复核（ACCT L56）",
+        "admissible": true,
+        "evidence": [
+          {
+            "file": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+            "locator": "L66",
+            "verbatim": "| **E1 已核** | 申报原文**本地归档**：URL + 取回 UTC + 文件 sha256 + 逐字引文 + 至少一条独立复核路径（同本卡 P1/P2 双路径精神） | 参数、口径声明、\"已核\" 字样 |",
+            "check": "E1 定义（六要素来源）"
+          },
+          {
+            "file": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+            "locator": "L56",
+            "verbatim": "| **S1** | 公司/发行人**同一期间原文披露**：可定位到页/表/锚文本，doc sha256 已绑定，至少一条独立路径复核 | 可 |",
+            "check": "S1 定义"
+          },
+          {
+            "element": "E1e 逐字引文 q-01",
+            "file": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN5-PEND5A-HK-ACQUISITION\\a20260924-01\\probe\\attempt04_fitz.extracted.txt",
+            "locator": "bytes[499:560]",
+            "verbatim": "截至2 0 2 5 年1 2 月3 1 日止年度之全年業績公告",
+            "check": {
+              "artifact_sha256_registered": "7d01ca6ef52a20ed3678e20bc4ef82214bc1bec5da8a83a911f59365376350d1",
+              "artifact_sha256_recomputed": "7d01ca6ef52a20ed3678e20bc4ef82214bc1bec5da8a83a911f59365376350d1",
+              "artifact_sha_match": true,
+              "byte_exact": true,
+              "found_in_own_extraction": true,
+              "e1e": true
+            }
+          },
+          {
+            "element": "E1e 逐字引文 q-02",
+            "file": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN5-PEND5A-HK-ACQUISITION\\a20260924-01\\probe\\attempt04_fitz.extracted.txt",
+            "locator": "bytes[346:358]",
+            "verbatim": "小米集团",
+            "check": {
+              "artifact_sha256_registered": "7d01ca6ef52a20ed3678e20bc4ef82214bc1bec5da8a83a911f59365376350d1",
+              "artifact_sha256_recomputed": "7d01ca6ef52a20ed3678e20bc4ef82214bc1bec5da8a83a911f59365376350d1",
+              "artifact_sha_match": true,
+              "byte_exact": true,
+              "found_in_own_extraction": true,
+              "e1e": true
+            }
+          },
+          {
+            "element": "E1e 逐字引文 q-03",
+            "file": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN5-PEND5A-HK-ACQUISITION\\a20260924-01\\probe\\attempt04_fitz.extracted.txt",
+            "locator": "bytes[2306:2410]",
+            "verbatim": "比增長25.0%。業務分部來看，2025年，我們的「手機×AIoT」分部收入為人民幣3,512",
+            "check": {
+              "artifact_sha256_registered": "7d01ca6ef52a20ed3678e20bc4ef82214bc1bec5da8a83a911f59365376350d1",
+              "artifact_sha256_recomputed": "7d01ca6ef52a20ed3678e20bc4ef82214bc1bec5da8a83a911f59365376350d1",
+              "artifact_sha_match": true,
+              "byte_exact": true,
+              "found_in_own_extraction": true,
+              "e1e": true
+            }
+          },
+          {
+            "element": "E1e 逐字引文 q-04",
+            "file": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN5-PEND5A-HK-ACQUISITION\\a20260924-01\\probe\\attempt04_pdfminer.extracted.txt",
+            "locator": "bytes[11799:11905]",
+            "verbatim": "5.4% 。「手機×AIoT」分部毛利率達到歷史新高的21.7% ，同比增長0.5個百分點 。2025",
+            "check": {
+              "artifact_sha256_registered": "21ba5eadedc28849d50ecae4416e1e7cc777b8d560b3e0a60e15089dfe880992",
+              "artifact_sha256_recomputed": "21ba5eadedc28849d50ecae4416e1e7cc777b8d560b3e0a60e15089dfe880992",
+              "artifact_sha_match": true,
+              "byte_exact": true,
+              "found_in_own_extraction": true,
+              "e1e": true
+            }
+          },
+          {
+            "element": "E1f 独立复核路径 ①",
+            "file": "execution_runs/OPEN5-S4-DUAL-PATH-VERIFY/a20260926-01/dual_path_verify.json",
+            "locator": "faces.U2_substitute_attempt04 / U3_substitute_attempt08",
+            "verbatim": "CONSISTENT",
+            "check": "S4 双库互证（只读接受，不下 S4 结论）"
+          },
+          {
+            "element": "E1f 独立复核路径 ②（本工位自己重抽）",
+            "file": "_work/extract/s5_attempt04_fitz.txt / s5_attempt04_pdfminer.txt / s5_attempt08_fitz.txt / s5_attempt08_pdfminer.txt",
+            "locator": "sha256 见 own_extraction；四件均由本工位用 PyMuPDF + pdfminer.six 重新全局抽取",
+            "verbatim": "found_in_own_extraction = true（见每条 E1e 的 check）",
+            "check": "本工位独立路径，非复用 S4/S3 抽取"
+          },
+          {
+            "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+            "locator": "L115–L117",
+            "verbatim": "P3 PyMuPDF 1.26.7 rc=0 total_chars=45593 cjk=23481 命中 4/5",
+            "check": "取文路径可复核（④ 的使用条件）"
+          }
+        ],
+        "limits": [
+          "E1 只对本文件所载内容成立，**永不等于本地原件（origin）已核**（④ 约束）",
+          "本等级只裁来源可采性与证据等级，不裁港股命题是否成立（行业面 + L179 另行约束）",
+          "document_type = 全年业绩公告（非年度报告）⇒ 已按 ① must_label 标注文件类型与期间"
+        ]
+      },
+      "attempt08": {
+        "source_id": "attempt08",
+        "c_table_tier": "①",
+        "e_level": "E1",
+        "e_level_note": "六要素齐（ACCT L66/L153）",
+        "s_tier": "S1",
+        "s_tier_note": "同期间公司原文披露 + 可定位 + sha 绑定 + ≥1 独立路径复核（ACCT L56）",
+        "e_elements": {
+          "E1a_local_archive": true,
+          "E1b_url": true,
+          "E1c_retrieved_utc": true,
+          "E1d_sha256": true,
+          "E1e_verbatim_quote": true,
+          "E1f_independent_path": true
+        },
+        "usable_faces": [
+          "en"
+        ],
+        "s4_face_result": "CONSISTENT",
+        "external_never_impersonates_local": true,
+        "reason": "六要素齐（ACCT L66/L153）；同期间公司原文披露 + 可定位 + sha 绑定 + ≥1 独立路径复核（ACCT L56）",
+        "admissible": true,
+        "evidence": [
+          {
+            "file": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+            "locator": "L66",
+            "verbatim": "| **E1 已核** | 申报原文**本地归档**：URL + 取回 UTC + 文件 sha256 + 逐字引文 + 至少一条独立复核路径（同本卡 P1/P2 双路径精神） | 参数、口径声明、\"已核\" 字样 |",
+            "check": "E1 定义（六要素来源）"
+          },
+          {
+            "file": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+            "locator": "L56",
+            "verbatim": "| **S1** | 公司/发行人**同一期间原文披露**：可定位到页/表/锚文本，doc sha256 已绑定，至少一条独立路径复核 | 可 |",
+            "check": "S1 定义"
+          },
+          {
+            "element": "E1e 逐字引文 q-08",
+            "file": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN5-PEND5A-HK-ACQUISITION\\a20260924-01\\probe\\attempt08_en_probe.extracted.txt",
+            "locator": "bytes[7517:7633]",
+            "verbatim": "RMB457.3 billion, representing a year-over-year increase of 25.0%. Segment-wise, in 2025, revenue of our smartphone ",
+            "check": {
+              "artifact_sha256_registered": "a6a918d1c4c6ea64ad1a58f9c04cbb412a91c6bc42c23ffb37bcb944f12b24d4",
+              "artifact_sha256_recomputed": "a6a918d1c4c6ea64ad1a58f9c04cbb412a91c6bc42c23ffb37bcb944f12b24d4",
+              "artifact_sha_match": true,
+              "byte_exact": true,
+              "found_in_own_extraction": true,
+              "e1e": true
+            }
+          },
+          {
+            "element": "E1e 逐字引文 q-09",
+            "file": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN5-PEND5A-HK-ACQUISITION\\a20260924-01\\probe\\attempt08_en_probe.extracted.txt",
+            "locator": "bytes[4641:4653]",
+            "verbatim": "Gross profit",
+            "check": {
+              "artifact_sha256_registered": "a6a918d1c4c6ea64ad1a58f9c04cbb412a91c6bc42c23ffb37bcb944f12b24d4",
+              "artifact_sha256_recomputed": "a6a918d1c4c6ea64ad1a58f9c04cbb412a91c6bc42c23ffb37bcb944f12b24d4",
+              "artifact_sha_match": true,
+              "byte_exact": true,
+              "found_in_own_extraction": true,
+              "e1e": true
+            }
+          },
+          {
+            "element": "E1f 独立复核路径 ①",
+            "file": "execution_runs/OPEN5-S4-DUAL-PATH-VERIFY/a20260926-01/dual_path_verify.json",
+            "locator": "faces.U2_substitute_attempt04 / U3_substitute_attempt08",
+            "verbatim": "CONSISTENT",
+            "check": "S4 双库互证（只读接受，不下 S4 结论）"
+          },
+          {
+            "element": "E1f 独立复核路径 ②（本工位自己重抽）",
+            "file": "_work/extract/s5_attempt04_fitz.txt / s5_attempt04_pdfminer.txt / s5_attempt08_fitz.txt / s5_attempt08_pdfminer.txt",
+            "locator": "sha256 见 own_extraction；四件均由本工位用 PyMuPDF + pdfminer.six 重新全局抽取",
+            "verbatim": "found_in_own_extraction = true（见每条 E1e 的 check）",
+            "check": "本工位独立路径，非复用 S4/S3 抽取"
+          },
+          {
+            "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+            "locator": "L201–L203",
+            "verbatim": "P3 PyMuPDF total_chars=951018 英文锚词 5/5；P4 pdfminer.six total_chars=1022506 英文锚词 5/5（独立路径互证）；中文锚词 0/5（正文为英文，语言不同）",
+            "check": "取文路径可复核（④ 的使用条件）"
+          }
+        ],
+        "limits": [
+          "E1 只对本文件所载内容成立，**永不等于本地原件（origin）已核**（④ 约束）",
+          "本等级只裁来源可采性与证据等级，不裁港股命题是否成立（行业面 + L179 另行约束）",
+          "中文锚词 0/5 ⇒ usable_faces=[\"en\"]，不可作中文原文来源（承 S4 U3）"
+        ]
+      },
+      "attempt07_proxy": {
+        "source_id": "attempt07",
+        "c_table_tier": "③",
+        "e_level": "E3",
+        "e_level_note": "第三方代理渲染件 = 二手（ACCT L68 / ③ 仅可提问题）",
+        "s_tier": "S0",
+        "s_tier_note": "非公司原文披露，不得支撑参数",
+        "e_elements": {
+          "E1a_local_archive": true,
+          "E1b_url": true,
+          "E1c_retrieved_utc": true,
+          "E1d_sha256": true,
+          "E1e_verbatim_quote": true,
+          "E1f_independent_path": false
+        },
+        "usable_faces": [],
+        "s4_face_result": "not_subject_to_S4",
+        "external_never_impersonates_local": true,
+        "reason": "第三方代理渲染件 = 二手（ACCT L68 / ③ 仅可提问题）；非公司原文披露，不得支撑参数",
+        "admissible": false,
+        "evidence": [
+          {
+            "file": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+            "locator": "L66",
+            "verbatim": "| **E1 已核** | 申报原文**本地归档**：URL + 取回 UTC + 文件 sha256 + 逐字引文 + 至少一条独立复核路径（同本卡 P1/P2 双路径精神） | 参数、口径声明、\"已核\" 字样 |",
+            "check": "E1 定义（六要素来源）"
+          },
+          {
+            "file": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+            "locator": "L56",
+            "verbatim": "| **S1** | 公司/发行人**同一期间原文披露**：可定位到页/表/锚文本，doc sha256 已绑定，至少一条独立路径复核 | 可 |",
+            "check": "S1 定义"
+          },
+          {
+            "element": "E1e 逐字引文 q-07",
+            "file": ".planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN5-PEND5A-HK-ACQUISITION\\a20260924-01\\corpus\\attempt07_rjina_xiaomi_ar2025_zh_proxy.txt",
+            "locator": "bytes[194:214]",
+            "verbatim": "Number of Pages: 415",
+            "check": {
+              "artifact_sha256_registered": "a44064f13f6ee8a09093ff945ccfa3842d13339764f63f825583105e534684de",
+              "artifact_sha256_recomputed": "a44064f13f6ee8a09093ff945ccfa3842d13339764f63f825583105e534684de",
+              "artifact_sha_match": true,
+              "byte_exact": true,
+              "found_in_own_extraction": true,
+              "e1e": true
+            }
+          },
+          {
+            "element": "E1f 独立复核路径 ①",
+            "file": "execution_runs/OPEN5-S4-DUAL-PATH-VERIFY/a20260926-01/dual_path_verify.json",
+            "locator": "faces.U2_substitute_attempt04 / U3_substitute_attempt08",
+            "verbatim": "CONSISTENT",
+            "check": "S4 双库互证（只读接受，不下 S4 结论）"
+          },
+          {
+            "element": "E1f 独立复核路径 ②（本工位自己重抽）",
+            "file": "_work/extract/s5_attempt04_fitz.txt / s5_attempt04_pdfminer.txt / s5_attempt08_fitz.txt / s5_attempt08_pdfminer.txt",
+            "locator": "sha256 见 own_extraction；四件均由本工位用 PyMuPDF + pdfminer.six 重新全局抽取",
+            "verbatim": "found_in_own_extraction = true（见每条 E1e 的 check）",
+            "check": "本工位独立路径，非复用 S4/S3 抽取"
+          },
+          {
+            "file": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+            "locator": "L201–L203",
+            "verbatim": "P3 PyMuPDF total_chars=951018 英文锚词 5/5；P4 pdfminer.six total_chars=1022506 英文锚词 5/5（独立路径互证）；中文锚词 0/5（正文为英文，语言不同）",
+            "check": "取文路径可复核（④ 的使用条件）"
+          }
+        ],
+        "limits": [
+          "第三方代理渲染件 = 二手；③/E3/S0，仅可提问题，不得进参数与 cited_values"
+        ]
+      }
+    }
+  },
+  "origin_excluded": {
+    "source_id": "HK-XIAOMI-AR2025 (origin)",
+    "excluded_from_grading": true,
+    "graded": false,
+    "level": null,
+    "admissible": false,
+    "disposition": "S4 NOT_USABLE + L165 该来源不可引用、维持不可读处置；STOP_EVIDENCE/not_readable 不变",
+    "rule": "oracle.md §4.5 / ENVOWNER L165 / S4 consistency_result=NOT_USABLE",
+    "authority": [
+      {
+        "file": "execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md",
+        "locator": "L165",
+        "verbatim": "复核不一致 ⇒ 该来源不可引用，维持不可读处置",
+        "check": "S4 失败分支（只读接受）"
+      },
+      {
+        "file": "execution_runs/OPEN5-S4-DUAL-PATH-VERIFY/a20260926-01/s4_report.md",
+        "locator": "L197",
+        "verbatim": "**S4 结论 = `NOT_USABLE`（触发面 = origin 本体）** ⇒ 按 `ruling.md` L165 失败分支，**`HK-XIAOMI-AR2025` origin 本体不可引用、维持不可读处置**，**不进入定级**。",
+        "check": "S4 提请（只读接受，本工位不下 S4 结论）"
+      }
+    ]
+  },
+  "step4_hk_parameters": {
+    "hk_parameters_released": false,
+    "placeholder_maintained": true,
+    "low_base_high": [
+      null,
+      null,
+      null
+    ],
+    "conditions_all_required": [
+      {
+        "#": 1,
+        "condition": "L179 的 S3/S4/S5 三个站都走完（S5 = 行业 + 会计两个受理人）",
+        "met_in_this_station_view": false,
+        "note": "行业那一半由父另派，本工位视角内条件 2 永不满足（oracle §4.6）"
+      },
+      {
+        "#": 2,
+        "condition": "行业面已复裁通过（非本工位裁）",
+        "met_in_this_station_view": false,
+        "note": "本工位不代签行业面"
+      },
+      {
+        "#": 3,
+        "condition": "会计面（本工位）定级完成",
+        "met_in_this_station_view": true,
+        "note": "四步完成；attempt04/attempt08 = ①+④ / E1 / S1"
+      },
+      {
+        "#": 4,
+        "condition": "ENVOWNER §⑦ 解锁前置全部满足",
+        "met_in_this_station_view": false,
+        "note": "本工位一条也不能代解"
+      }
+    ],
+    "authority": [
+      {
+        "file": "execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md",
+        "locator": "L166",
+        "verbatim": "| **S5** | **行业复裁 + 会计定级**：按 IND 已裁的 C 表①/②登记来源等级，**证据等级由会计面认定**（§二十四 执行纪律第 3 条）；通过后才谈港股命题与参数 | 行业 reviewer + 会计 reviewer | 各自专业裁定权（**本载体不代行**） | 任一面未过 ⇒ 港股参数继续 `_PLACEHOLDER` |",
+        "check": "失败分支 = 任一面未过 ⇒ 港股参数继续 _PLACEHOLDER"
+      },
+      {
+        "file": "execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md",
+        "locator": "L179",
+        "verbatim": "即使 S2 自检显示\"某路径能读出锚词\"，在 S3/S4/S5 走完之前**仍按不可读处置**（IND 处置规则 B 部分继续有效：港股命题零产出、参数维持 `_PLACEHOLDER`）。",
+        "check": "L179 压顶：本工位即使判过也不解除"
+      }
+    ],
+    "conclusion": "hk_parameters_released = false 恒成立；港股命题零产出、参数维持 _PLACEHOLDER"
+  },
+  "mutations": {
+    "m1_weak": {
+      "rc": 0,
+      "expectation": "rc=0 且 should_pass_flip=true（判据改弱后 attempt07 由不通过翻为通过 ⇒ 红）",
+      "expectation_met": true,
+      "verdict": "GRADED",
+      "should_pass_flip": true,
+      "origin_grade_flip": null,
+      "blocked_reasons": [],
+      "red": true
+    },
+    "m2_origin": {
+      "rc": 0,
+      "expectation": "rc=0 且 origin_grade_flip=true（origin 被赋等级 ⇒ 红）",
+      "expectation_met": true,
+      "verdict": "GRADED",
+      "should_pass_flip": null,
+      "origin_grade_flip": true,
+      "blocked_reasons": [],
+      "red": true
+    },
+    "m3_nourl": {
+      "rc": 2,
+      "expectation": "rc=2 且 verdict=blocked（§4.7-1）",
+      "expectation_met": true,
+      "verdict": "blocked",
+      "should_pass_flip": null,
+      "origin_grade_flip": null,
+      "blocked_reasons": [
+        "G2 unresolved for attempt04"
+      ],
+      "red": true
+    },
+    "m4_quote": {
+      "rc": 2,
+      "expectation": "rc=2 且 verdict=blocked（E1e 失败 ⇒ 降级 + 阻塞）",
+      "expectation_met": true,
+      "verdict": "blocked",
+      "should_pass_flip": null,
+      "origin_grade_flip": null,
+      "blocked_reasons": [
+        "E1e verbatim quote check failed for attempt04"
+      ],
+      "red": true
+    }
+  },
+  "verdict": {
+    "g2_g3_resolved": true,
+    "baseline_verdict": "GRADED",
+    "accounting_face": "GRADED（会计面四步完成；只裁本半区，不构成任何放行）",
+    "blocked_triggered": false,
+    "sources_graded": 2,
+    "sources_rejected": 1,
+    "origin_excluded": true,
+    "hk_parameters_released": false,
+    "sufficiency_for_hk_thesis": "如实判：本工位只给出来源等级与证据等级；港股命题能否成立还取决于 (a) 行业面复裁与 C 表启用裁定（IND L240/L241）、(b) L179 未解除、(c) 需要的分部数据是否齐备。本工位**不**声称定级已足以支撑港股命题。"
+  },
+  "inputs_read_only": {
+    "IN-01": "execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md",
+    "IN-02": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+    "IN-03": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+    "IN-04": "execution_runs/OPEN5-S4-DUAL-PATH-VERIFY/a20260926-01/",
+    "IN-05": "execution_runs/OPEN5-S3-REACQUISITION/a20260925-01/provenance.json",
+    "IN-06": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json",
+    "IN-07": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/corpus/",
+    "IN-08": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/probe/",
+    "IN-10": "OWNER_DECISIONS.md L490–L504"
+  },
+  "own_extraction_sha256": {
+    "fitz_attempt04": {
+      "sha256": "5d20c2816c0ba2ed6736463d00cc4fc9d73fe55b10d28f9053ef27229ece4c6b"
+    },
+    "pdfminer_attempt04": {
+      "sha256": "21ba5eadedc28849d50ecae4416e1e7cc777b8d560b3e0a60e15089dfe880992"
+    },
+    "fitz_attempt08": {
+      "sha256": "990075a686350d49e0ed086be12f59153786df30e1f77d13892ed15c0171bf89"
+    },
+    "pdfminer_attempt08": {
+      "sha256": "f5d1077a737aa39a4ffc092ff28a546c4532b1e4649640886679bedf0cbb22e9"
+    }
+  },
+  "own_extraction_stability": {
+    "probe": "_work/s5_determinism.py → _work/s5_extract_determinism_{attempt04,attempt08}.json",
+    "attempt04": {
+      "available": true,
+      "distinct_shas": 1,
+      "byte_stable": true,
+      "all_quotes_found_all_runs_raw": false,
+      "all_quotes_found_all_runs_whitespace_normalized": true,
+      "observed_shas": [
+        "21ba5eadedc28849d50ecae4416e1e7cc777b8d560b3e0a60e15089dfe880992"
+      ],
+      "independent_processes": 3
+    },
+    "attempt08": {
+      "available": true,
+      "distinct_shas": 2,
+      "byte_stable": false,
+      "all_quotes_found_all_runs_raw": true,
+      "all_quotes_found_all_runs_whitespace_normalized": true,
+      "observed_shas": [
+        "f24c26b54308dd0b4a417ae40093c6499186c2131bc0e4447c952352803241e5",
+        "f5d1077a737aa39a4ffc092ff28a546c4532b1e4649640886679bedf0cbb22e9"
+      ],
+      "independent_processes": 6
+    },
+    "impact_on_levels": "无降级：E1d 的 sha256 针对 PDF 本体（三方全等，恒定）；E1e 锚定登记引文载体的 byte_range 全等；E1f 锚定「同一引文在本工位自抽文本中命中」，全部命中。attempt08 的 pdfminer 自抽工件跨进程出现 2 个 sha（布局依赖 hash 随机化），已如实登记为限制，不以自抽工件字节全等作为放行条件"
+  },
+  "releases_nothing": true,
+  "open5_released": false,
+  "accept_produced": false,
+  "network_used": false
+}

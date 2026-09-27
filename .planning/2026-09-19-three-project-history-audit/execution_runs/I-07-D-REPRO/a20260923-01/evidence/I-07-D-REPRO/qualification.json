@@ -1,0 +1,55 @@
+{
+  "kind": "qualification (landing mirror of the accepted verdict)",
+  "card_id": "I-07-D-REPRO",
+  "attempt_id": "a20260923-01",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before": "review_pending",
+    "state_before_full": "review_pending (implementer never signs acceptance)",
+    "authority": "reviewer_report.md VERDICT=accepted_scoped, independent reviewer, N=1, 28058 B, sha256 db051f23305deb8e18c65bb69b42195869cac7f23549d217f946bbdde5a84cfb, sidecar reviewer_report.sha256 verified equal",
+    "transcription_only": true,
+    "self_signing": false,
+    "scope": "D3 objective + the card's own frozen oracle §7 attack list; findings F-01 MEDIUM, F-02 LOW, F-03 LOW; rulings R-1..R-3; observations O-1..O-4; boundary PASS with census exception F-01"
+  },
+  "mirrors": {
+    "reviewer_report": {"path": "reviewer_report.md", "bytes": 28058, "sha256": "db051f23305deb8e18c65bb69b42195869cac7f23549d217f946bbdde5a84cfb", "sidecar": "reviewer_report.sha256 (86 B, sha256 7c40cbe95aab02d729c4d0a0dcf9ab149a6cb2df31ea843dd9250e7eecd32d3e), content match: true", "rem79_self_check": "exit 0, 0 violations", "untouched_at_landing": true},
+    "section_byte_ranges": {"verdict_line": [450, 531], "sec9_findings_header": [20769, 20813], "F-01": [20857, 22021], "F-02": [22022, 22383], "F-03": [22384, 22936], "observations_header": [22937, 22967], "rulings_header": [23658, 23690], "R-1": [23693, 24278], "R-2": [24279, 24419], "R-3": [24420, 24565], "limits_header": [24566, 24599], "sec10_scope": [25502, 25551], "d3_fixed_marker": [25580, 25593]},
+    "handoff": {"status_before": "review_pending (implementer never signs acceptance)", "status_after": "accepted_scoped", "pre_image_sha256": "cefe4567e4bcb3f4bfe32b6b33e9fd976a5629314bfe6f4d5a1ff128872592bd", "pre_image_bytes": 7025},
+    "review_md": {"pre_image": "stub, status review_pending/unsigned, 1155 B", "pre_image_sha256": "45719fcc567f792b679e41b2021e6826c8098037ecae0c7ebe553e66f949d510", "post_image": "accepted_scoped verdict transcription (carrier)"},
+    "decision_md": {"pre_image_sha256": "e60e231239fa0830b3ca5b5f985fd2637f8eba0166cd91869d3729f6cb8b81b4", "edit": "append-only `## F erratum (landing)` (items F-01/F-02/F-03/R-1); original text untouched"},
+    "originals_untouched": ["reviewer_report.md", "reviewer_report.sha256", "oracle.md", "binding.json", "commands.json", "changes.diff", "recovery/README.md", "evidence/** originals", "I-07-D original attempt"],
+    "no_git": true,
+    "no_network": true
+  },
+  "d3_fixed_mirror": {
+    "d3": "FIXED",
+    "verdicts_recomputable_from_preserved_raws": {"F02": "YES", "F03": "YES", "F04": "YES", "count": "YES x3"},
+    "dual_proof": ["TEMP-redirected recompute (TEMP=\\\\?\\<ATT>\\evidence\\preserved\\temp) independently reproduced by reviewer", "scratch-absent recompute (%TEMP\\i07d renamed away) independently reproduced by reviewer"],
+    "reviewer_own_recomputes": {"f02v": "rc0 all_ok true, structurally identical to recorded", "f03v": "rc3 same single red lock_held_across_scan (10/11), checks/raw_rcs/model_prediction_checks equal", "f04v": "rc0 all_ok true killed 1, identical (committed_raw_path = preserved path)"},
+    "raw_rehash": "10/10 preserved files re-hashed == raws_manifest triplets; byte-links ffd73376…2da7c / 8228741d…8da71 / e26fb2ef…25b22 == I-07-D's recorded shas",
+    "byte_level_checks_true_on_preserved": ["raw_preserved", "raw_intact_after_recovery", "provenance_committed"],
+    "changes_diff": "empty product diff (0 hunks; 20 hashed anchors changed:[] + 6 plan pins re-verified = 26/26 unchanged) => nothing rides the merge batch",
+    "declarations_carried_unchanged": ["I-07-B F1", "I-07-B F2", "I-07-B F3", "HK-3/D-3 (canonical filename != manifest name)", "F-F06-audit NOT absorbed", "F-F05-cause NOT absorbed", "F04 attempt-1 unrecoverable = decision §7.1 sole account", "I-09-C F12/F5", "I-07-B J6 anchor drift", "disclosure_adaptation=unmapped", "accuracy=unproven"]
+  },
+  "f_r_rulings_mirror": {
+    "F-01": {"severity": "MEDIUM", "title": "census leg gap — frozen oracle §6 R6 census ground rule never executed/recorded", "ruling": "recorded, never absorbed; not retro-repairable; disclosed in decision.md ## F erratum (landing) item 1", "disposition": "census-policy REM row — PARENT register (REM-98, register §99)", "substitute_evidence": "reviewer kill-record verification: exactly 1 kill pid 19452, gate 5/5, manifest paths inside scratch F04, harness kills manifest-registered PIDs exclusively", "touches_d3": false},
+    "F-02": {"severity": "LOW", "title": "recovery/README.md incident line '(none yet)' stale vs decision §6's 3 incidents", "ruling": "recorded, never absorbed", "disposition": "pointer note in decision erratum item 2; README left as-is (note-here-only)"},
+    "F-03": {"severity": "LOW", "title": "commands.json binding_status 'bound before judged runs' not timestamp-verifiable", "ruling": "recorded, never absorbed; no expectation-value exposure found", "disposition": "wording note in decision erratum item 3; pre-run freeze carried by oracle.md 22:45:47 + binding.json 22:48:00 < first judged run 22:49:27; commands.json untouched"},
+    "R-1": {"ruling": "ACCEPTED as timing-family, non-gating per FROZEN comparison rule oracle §4.3(i)", "parent_confirmed": "REMEDIATION_REGISTER §89", "root_cause": "f03_runs time.sleep(2.0) at run_d_matrix.py L1153-1154 vs 3.064 s lock-helper spawn→BEGIN EXCLUSIVE; mark→locked 1.064027 s; single recorded red never re-run to green", "fix_track": "REM-97 already registered (f03_runs derive t_scan_start from lock-helper handshake instead of sleep(2.0))"},
+    "R-2": {"ruling": "ACCEPTED disclosure", "live_recheck": "LongPathsEnabled=0", "detail": "\\\\?\\ convention validated by reviewer's own recomputes; FileNotFoundError / manifest undercount / rename-back incidents recorded, no evidence loss"},
+    "R-3": {"ruling": "ACCEPTED disclosure", "detail": "retention-tool expectation correction accurate against I-07-D's existence-only provenance pin; frozen comparison values unchanged"}
+  },
+  "census_policy_mirror": {
+    "policy": "future kill-bearing cards MUST run+record census before/after and keep it in-attempt",
+    "register_row": "REM-98 (REMEDIATION_REGISTER §99) — parent-registered",
+    "reason": "frozen oracle §6 R6 kill-bearing census ground rule never executed/recorded by I-07-D-REPRO (no census artifact, no census command, omission undisclosed); a 'before' census cannot be taken after the fact",
+    "current_state": "'no real worker touched' rests on the reviewer's kill-record verification alone (exactly 1 kill pid 19452, gate 5/5, scratch manifest paths, harness kills manifest PIDs exclusively); full-tree census-diff = unverifiable limit",
+    "landing_disclosure": "decision.md ## F erratum (landing) item 1"
+  },
+  "sha256_before": {
+    "decision.md": "e60e231239fa0830b3ca5b5f985fd2637f8eba0166cd91869d3729f6cb8b81b4",
+    "review.md": "45719fcc567f792b679e41b2021e6826c8098037ecae0c7ebe553e66f949d510",
+    "handoff.json": "cefe4567e4bcb3f4bfe32b6b33e9fd976a5629314bfe6f4d5a1ff128872592bd",
+    "evidence/I-07-D-REPRO/qualification.json": "(not present — created at landing)"
+  }
+}

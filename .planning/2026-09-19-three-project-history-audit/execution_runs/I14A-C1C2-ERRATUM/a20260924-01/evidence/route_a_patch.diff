@@ -1,0 +1,118 @@
+diff --git "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\harness\\fixture_spec.py" "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\harness\\fixture_spec.py"
+index 00f42a41..5cabcc21 100644
+--- "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\harness\\fixture_spec.py"
++++ "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\harness\\fixture_spec.py"
+@@ -150,6 +150,33 @@ PERCENTILE_CASES = [
+ 
+ PROBE_CASES_TIMEOUT_SECONDS = 300
+ 
++# --------------------------------------------------------------------------- #
++# I14A-C1C2-ERRATUM, route A (append-only correction of the F4/E0 identity
++# expectation; see this attempt's oracle.md §4-§5 and the sealed
++# I-14-A/a20260919-01/oracle.md §10, written append-only).
++#
++# `fixture_pid_is_in_samples` is now SCOPED: it is required only for calls whose
++# measured lifetime reaches 2x the *effective* sampling cadence.  Derivation
++# (oracle.md §4, evidence/threshold_derivation.json):
++#   nominal interval      RSS_SAMPLE_INTERVAL_SECONDS = 0.05 s (probe :76)
++#   effective cadence     measured 64.0-75.2 ms/sample (D1 reviewer evidence
++#                         e1c_samples_inside_life.json, 6 E1c calls) and
++#                         re-measured per E1c call by this attempt as
++#                         window / (count - 1); the larger of the two maxima wins
++#   threshold             2 * 0.0752 s = 0.1504 s (150.4 ms)
++# Why 2x: the first periodic sample lands at ~1 cadence after spawn, so a child
++# alive >= 2 cadences is guaranteed at least one periodic sample while alive; a
++# shorter child is covered only by the spawn-time race sample, where identity is
++# NOT guaranteed on this platform (D1 ruling 4.3 / 5.1(a)2).
++# The lifetime used is the probe's per-call elapsed_seconds (child wall time),
++# which is >= the fixture pid's true lifetime, so the scope can only over-include
++# (stricter) and can never weaken the assertion into a free pass.
++IDENTITY_SCOPE_MIN_SECONDS = 0.1504
++IDENTITY_SCOPE_RULE = ("fixture_pid_is_in_samples required iff the call's "
++                       "elapsed_seconds >= 2x effective sampling cadence "
++                       "(0.1504 s = 2 * 75.2 ms); shorter calls are recorded as "
++                       "identity-not-claimed with their measured lifetimes")
++
+ 
+ def fixture_template(key: str) -> list[str]:
+     return [PYTHON, "-X", "utf8", "-B", str(FIXTURE_SCRIPTS[key])]
+diff --git "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\harness\\run_probe_cases.py" "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\harness\\run_probe_cases.py"
+index 6696f88c..729b5c11 100644
+--- "a/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\harness\\run_probe_cases.py"
++++ "b/C:\\Users\\\351\203\221\346\233\276\346\263\242\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I14A-C1C2-ERRATUM\\a20260924-01\\harness\\run_probe_cases.py"
+@@ -119,17 +119,70 @@ def verify_case(case_id: str, report: dict, rc: int) -> dict:
+         # The sampler walks the process tree, so the fixture's own os.getpid() must
+         # appear among the sampled pids — that is the identity proof that the
+         # measured process is the script and not the launcher shim.
++        #
++        # I14A-C1C2-ERRATUM route A (append-only correction; the original,
++        # unqualified form of this assertion is preserved verbatim in the sealed
++        # attempt's oracle.md §6 R1-erratum lines 117-122 and superseded by the
++        # sealed oracle.md §10 appended section): identity is now asserted for
++        # calls whose measured lifetime reaches 2x the effective sampling cadence.
++        # A sub-cadence call is recorded as identity-NOT-claimed together with its
++        # measured lifetime, and every other check of the case stays binding
++        # (this attempt's oracle.md §5).
++        threshold = getattr(SPEC, "IDENTITY_SCOPE_MIN_SECONDS", 0.1504)
++        scope_rule = getattr(SPEC, "IDENTITY_SCOPE_RULE", "")
++        per_call_scope: list[dict] = []
+         reported: set[int] = set()
+         for c in report.get("per_call", []):
+             try:
+                 envelope = json.loads((c["stdout_head"] or "").splitlines()[0])
+             except (ValueError, IndexError):
+-                continue
+-            if isinstance(envelope, dict) and isinstance(envelope.get("pid"), int):
+-                reported.add(envelope["pid"])
++                envelope = None
++            pid = envelope.get("pid") if isinstance(envelope, dict) else None
++            elapsed = c.get("elapsed_seconds")
++            elapsed = float(elapsed) if isinstance(elapsed, (int, float)) else 0.0
++            in_scope = elapsed >= threshold
++            per_call_scope.append({"child_pid": c.get("child_pid"),
++                                   "fixture_pid": pid,
++                                   "elapsed_seconds": elapsed,
++                                   "in_scope": in_scope})
++            if in_scope and isinstance(pid, int):
++                reported.add(pid)
+         sampled = set(got.get("rss_sampled_pids") or [])
+-        check("fixture_pid_is_in_samples", bool(reported) and reported <= sampled,
+-              {"fixture_reported_pids": sorted(reported), "sampled": sorted(sampled)})
++        if any(r["in_scope"] for r in per_call_scope):
++            check("fixture_pid_is_in_samples", bool(reported) and reported <= sampled,
++                  {"identity_scope": "alive_ge_2x_effective_cadence",
++                   "threshold_seconds": threshold,
++                   "fixture_reported_pids": sorted(reported),
++                   "sampled": sorted(sampled),
++                   "per_call": per_call_scope})
++        else:
++            # No call reached the threshold: identity is NOT claimed for them, but
++            # the exclusion itself must stay auditable — every call must carry a
++            # self-reported fixture pid (otherwise identity could never be evaluated
++            # for this case at all) and must be measured below the threshold.
++            check("fixture_pid_identity_scope",
++                  bool(per_call_scope)
++                  and all(r["fixture_pid"] is not None for r in per_call_scope)
++                  and all(not r["in_scope"] for r in per_call_scope),
++                  {"status": "not_claimed_sub_cadence",
++                   "rule": scope_rule,
++                   "threshold_seconds": threshold,
++                   "fixture_reported_pids": sorted(
++                       r["fixture_pid"] for r in per_call_scope
++                       if isinstance(r["fixture_pid"], int)),
++                   "sampled": sorted(sampled),
++                   "per_call": per_call_scope})
++    if exp.get("rss_pids_include_child_pids"):
++        # I14A-C1C2-ERRATUM: fixture_spec DECLARES this expectation for E0 and E1c,
++        # but the sealed runner never evaluated it (it read
++        # `rss_pids_match_child_pids`, a key no case declares). Wiring it here makes
++        # the frozen expectation real; strengthening only, never a relaxation.
++        child_pids = {c.get("child_pid") for c in report.get("per_call", [])
++                      if isinstance(c.get("child_pid"), int)}
++        sampled_pids = set(got.get("rss_sampled_pids") or [])
++        check("rss_pids_include_child_pids",
++              bool(child_pids) and child_pids <= sampled_pids,
++              {"sampled": sorted(sampled_pids), "child_pids": sorted(child_pids)})
+     if "bundle_measured" in exp:
+         check("bundle_measured",
+               got.get("bundle", {}).get("measured") is exp["bundle_measured"],

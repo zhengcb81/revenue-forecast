@@ -1,0 +1,21 @@
+﻿{
+ "target": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\scripts\\contracts\\evidence.py",
+ "_trusted_signer_public_keys": {
+  "source": "def _trusted_signer_public_keys() -> dict[str, bytes]:\n    \"\"\"Load the trusted Ed25519 signer key set (fail closed on absence/corruption).\n\n    Source: ``REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS`` env (JSON file path) or the\n    repo default ``config/trusted_signer_public_keys.json``.  A missing file\n    means *no* trusted signer \u2014 any signature is rejected.\n    \"\"\"\n    env = os.environ.get(\"REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS\")\n    path = (\n        Path(env).expanduser()\n        if env\n        else Path(__file__).resolve().parents[2] / \"config\" / \"trusted_signer_public_keys.json\"\n    )\n    try:\n        if not path.exists():\n            return {}\n        data = json.loads(path.read_text(encoding=\"utf-8\"))\n        keys: dict[str, bytes] = {}\n        for item in data.get(\"public_keys\", []):\n            public_bytes = base64.b64decode(item[\"public_key\"])\n            keys[item.get(\"fingerprint\", hashlib.sha256(public_bytes).hexdigest()[:32])] = (\n                public_bytes\n            )\n        return keys\n    except (OSError, ValueError, KeyError, TypeError):\n        return {}",
+  "parses_issuer": false,
+  "parses_key_id": false,
+  "mentions_fingerprint": true,
+  "mentions_public_key": true
+ },
+ "_validate_host_signature": {
+  "source": "def _validate_host_signature(receipt: dict[str, Any]) -> None:\n    \"\"\"Verify an Ed25519 signature over the unsigned host receipt payload.\"\"\"\n    try:\n        from cryptography.exceptions import InvalidSignature\n        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey\n    except ImportError as exc:  # pragma: no cover - optional dependency\n        raise ForecastInputError(\n            \"capture host_receipt signature verification unavailable\"\n        ) from exc\n    signature = receipt.get(\"signature\")\n    fingerprint = receipt.get(\"public_key_fingerprint\")\n    require(\n        isinstance(signature, str) and re.fullmatch(r\"[0-9a-f]{128}\", signature),\n        \"invalid capture host_receipt signature\",\n    )\n    require(\n        isinstance(fingerprint, str) and re.fullmatch(r\"[0-9a-f]{32}\", fingerprint),\n        \"invalid capture host_receipt public_key_fingerprint\",\n    )\n    assert isinstance(signature, str)  # narrow; require() above enforced\n    assert isinstance(fingerprint, str)  # narrow; require() above enforced\n    trusted = _trusted_signer_public_keys()\n    require(\n        fingerprint in trusted,\n        f\"capture host_receipt signer {fingerprint[:12]} is not trusted\",\n    )\n    payload = {\n        key: value\n        for key, value in receipt.items()\n        if key not in (\"signature\", \"public_key_fingerprint\")\n    }\n    message = canonical_sha256(payload).encode(\"ascii\")\n    try:\n        public_key = Ed25519PublicKey.from_public_bytes(trusted[fingerprint])\n        public_key.verify(bytes.fromhex(signature), message)\n    except (InvalidSignature, ValueError) as exc:\n        raise ForecastInputError(\n            \"capture host_receipt signature verification failed\"\n        ) from exc",
+  "parses_issuer": false,
+  "parses_key_id": false,
+  "mentions_fingerprint": true,
+  "mentions_public_key": true
+ },
+ "loader_found": true,
+ "interpretation": "the trust domain resolves fingerprint -> public key with NO issuer/key_id fields; E21 as specified ('issuer != the trust-domain entry's issuer, or key_id mismatch') therefore needs the 12-field trust-entry schema (I-08-A E25, recorded NOT implemented) = a trust-schema cap change (oracle 7: stopped at its honest label)",
+ "all_ok": true
+}
+L3_E-L3.2_ALL_OK: True

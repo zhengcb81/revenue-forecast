@@ -1,0 +1,100 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "48fa6412ea828bb60a3948cd1127d9eb4590c457",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "685474d4b7c780ed0d4d788fa2c0d4e34ca1f48c11a4698ddd980f868222cbe0",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "130 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 16 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli scenario-build",
+      "exit_code": 0,
+      "result": "registry at scenarios/scenario_registry.json, sha256 a350a3c979a090f14174759fdfca976e75fc648594cb0a22e5fa0621ac3cc9fe"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli scenario-verify",
+      "exit_code": 0,
+      "result": "no drift; closure report: 197 total, 197 unsatisfied (honest phase-B state)"
+    }
+  ],
+  "created_at_utc": "2026-08-14T03:30:00Z",
+  "implementer": "ca105-implementer",
+  "kind": "implementer",
+  "mutation": {
+    "details": "source hash drift and scenario-set drift both detected; overlap between matrices rejected; closure math flips red/green correctly.",
+    "id": "CA-105-M-scenarios",
+    "killed": true
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "red_evidence": [
+    {
+      "description": "scenario coverage relied on ID text in receipts without evidence paths. See receipts/CA-105/red/RED.md.",
+      "id": "RED-A",
+      "status": "red_proved"
+    },
+    {
+      "description": "no machine-computable required total existed (first machine total: 197). See receipts/CA-105/red/RED.md.",
+      "id": "RED-B",
+      "status": "red_proved"
+    },
+    {
+      "description": "placeholder statuses could fake green. See receipts/CA-105/red/RED.md.",
+      "id": "RED-C",
+      "status": "red_proved"
+    },
+    {
+      "description": "no per-scenario tier record existed. See receipts/CA-105/red/RED.md.",
+      "id": "RED-D",
+      "status": "red_proved"
+    }
+  ],
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "48fa6412ea828bb60a3948cd1127d9eb4590c457",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "review": {
+    "status": "pending"
+  },
+  "revision": "r1",
+  "rollback": {
+    "note": "Additive assurance code; rollback = revert commit.",
+    "proved": true,
+    "required": false
+  },
+  "scenario_note": "This card CREATES the scenario registry; the 197 cells themselves are filled by phases C-G and this card correctly leaves them unsatisfied.",
+  "scenario_results": [],
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "summary": "CA-105 (197-scenario per-tier machine result registry): implemented uc/scenarios.py + CLI scenario-build/verify. Parses both frozen matrices (old 95 + new 102, disjoint — including the new matrix's AUD2-01..08 series: extraction yields exactly 102, matching the frozen self-audit) into a machine registry: per-scenario source/tier (machine-extracted from matrix table rows; 'matrix_defined' when not machine-extractable)/status/evidence_path/fixture_hash/oracle. Registry build/verify detects source hash drift and scenario-set drift; closure_report makes the required-result total machine-computable (197) and red while any required cell is unsatisfied (currently 197/197 — the honest phase-B state; cells fill during phases C-G). RED evidence: scenario coverage previously relied on ID text in receipts with no evidence paths; no machine total existed. 7 new tests. Full suite: 130 passed. Product code/config/CI/catalog/roots: zero writes.",
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/uc/scenarios.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_scenarios.py",
+    "revenue-forecast/assurance/unified_completion/scenarios/scenario_registry.json",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-105/*"
+  ],
+  "unit": "CA-105"
+}

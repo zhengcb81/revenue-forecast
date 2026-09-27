@@ -1,0 +1,18 @@
+--- a/scripts/revenue_publication.py
++++ b/scripts/revenue_publication.py
+@@ -232,8 +232,12 @@
+     * ``attestation_domain_mismatch`` (E17) — wrong domain separator.
+     * ``attestation_payload_hash_mismatch`` (E16) — the record does not bind the
+       live payload / result / receipt.
+-    * ``provider_key_untrusted`` (E20) / ``issuer_key_binding_mismatch`` (E21) —
+-      trust-domain failures.
++    * ``provider_key_untrusted`` (E20) — trust-domain failure.
++      (``issuer_key_binding_mismatch`` (E21) is documented but **not implemented
++      and never raised**: ``contracts.evidence._trusted_signer_public_keys()``
++      resolves fingerprint -> public key with no ``issuer``/``key_id`` fields, so
++      E21 as specified requires the 12-field trust-entry schema (I-08-A E25, not
++      implemented). Recorded as NOT CLOSED — I-08-C-RESIDUAL a20260923-01
++      evidence/L3_E21_not_closed_record_20260923.md.)
+     * ``attestation_signature_invalid`` (E14) — Ed25519 verification failed.
+     """
+     record = receipt.get("publication_attestation")

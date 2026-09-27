@@ -1,0 +1,45 @@
+{
+  "schema_version": "2.0",
+  "company_wiki_root": "${USER_PROFILE}/Projects/company-wiki",
+  "security_master_root": "${COMPANY_WIKI_ROOT}/.source_catalog/security_master",
+  "staging_root": "${COMPANY_WIKI_ROOT}/.source_catalog/revenue-forecast-staging",
+  "timeout_seconds": 1800,
+  "adapters": {
+    "cn": {
+      "name": "stockinfo-cninfo",
+      "version": "1.1.0",
+      "interface": "json_command_v1",
+      "project_root": "${COMPANY_WIKI_ROOT}/../StockInfoDLSimple/v2-clean-rewrite",
+      "config_root": null,
+      "command": [
+        "${PYTHON_EXECUTABLE}",
+        "-m",
+        "src.company_wiki_adapter_cli"
+      ]
+    },
+    "hk": {
+      "name": "dayu-hkex-cli",
+      "version": "1.0.0",
+      "interface": "dayu_cli_v1",
+      "project_root": "${COMPANY_WIKI_ROOT}/../dayu-agent/dayu-agent",
+      "config_root": "${COMPANY_WIKI_ROOT}/../dayu-agent/workspace/config",
+      "command": [
+        "${COMPANY_WIKI_ROOT}/../dayu-agent/dayu-agent/.venv/Scripts/python.exe",
+        "-m",
+        "dayu.cli"
+      ]
+    },
+    "us": {
+      "name": "dayu-sec-cli",
+      "version": "1.0.0",
+      "interface": "dayu_cli_v1",
+      "project_root": "${COMPANY_WIKI_ROOT}/../dayu-agent/dayu-agent",
+      "config_root": "${COMPANY_WIKI_ROOT}/../dayu-agent/workspace/config",
+      "command": [
+        "${COMPANY_WIKI_ROOT}/../dayu-agent/dayu-agent/.venv/Scripts/python.exe",
+        "-m",
+        "dayu.cli"
+      ]
+    }
+  }
+}

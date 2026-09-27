@@ -1,0 +1,169 @@
+# 多根 Filing Data Lake 改进计划 — 规划进度
+
+> **2026-08-09 状态：`superseded_by_FCAP-r2`。** 本日志停止接受新的旧 WU 进度；已有记录/receipt 保留为历史证据。所有仍需实施的条目见 [legacy_plan_disposition.md](../2026-08-09_full_completion_assurance_plan/legacy_plan_disposition.md) 和 FCAP r2 registry。
+
+## 2026-08-09
+
+- 已完整读取 `planning-with-files/SKILL.md`。
+- 已建立独立三文件工作区，避免把新架构计划混入已发生实施漂移的旧审查计划。
+- 当前仅开展计划编制；未修改产品代码、配置、测试、生产 catalog 或真实资产。
+- 当前阶段：Phase 0，细化目标、工作包、测试矩阵、弱模型执行闸门和审计回执。
+- 已对照旧计划的执行协议、目标契约、37 个场景和最终验收门；决定继承证据状态机/latest/artifact 合同，废止已被证伪的 Dropbox config-only/runtime-diff=0 前提。
+- 用 CodeGraph 与现存 SKILL.md 复核 revenue 侧生产调用链：resolve_filing 只有 CLI/测试调用者，build_revenue_source_record 与 select_reusable_artifacts 只有测试调用者；已记为 D-009。
+- 明确真实 Dropbox canary 的证据边界：fixture 只能证明实现行为，不能替代真实根目录中合格样本的生产验收。
+- 记录工具错误：不存在的 README.md 路径，以及两次未应用的计划补丁；没有产品文件受到修改。
+- 已盘点三仓现有实现与测试落点；计划将以演进 source_catalog、filing-fetch 主脚本、revenue source client 为主，禁止另起不接生产调用链的平行 helper。
+- 已完成计划主体初稿：64 个工作单标题、72 个表格化对抗场景、跨进程 E2E/真实 canary 分层、20 步弱模型协议。
+- 第一次计划自审发现若干 Phase 放行门标题格式不统一；将在最终冻结前统一并加机器检查。
+- 已复核三仓状态：本轮未改 filing-fetch 产品文件；company-wiki 仅显示既有用户文件状态；revenue 仅 planning/audit 文档有改动。
+- 开始收敛 WU-400 的 schema owner 决策：CodeGraph 已确认 CatalogStore/EvidenceSpan 基础，但 assertion service 符号解析不足，需对指定源码做一次目标只读检查后冻结选择。
+- 已读取现有 assertion 表和 service：其字段、candidate/verified/rejected 与 supersession 语义足以演进；计划冻结为扩展现表而非新建第二真相源。
+- 第二次计划自审当时发现 Phase 15 标题格式不统一；现已修正为 15/15，WU ID 无重复，未发现遗留开放选择。
+- 已重读旧审查 F-034~F-060，确认新计划覆盖 semantic ingest、adapter、resolver、retire、URL binding、entity、artifact 主链和测试真实性。
+- 已补齐 F-034~F-060 共 27 条逐项实施映射。
+- 最终结构自审得到：Phase 1~15 各有一个显式放行门，64 个 WU，Phase 12 有 72 个表格化场景，WU ID 无重复。
+- 自审命令有一次参数错误：把三个路径以逗号拼成 rg 的单一路径；不影响此前成功的计数，已记录并改用逐路径参数重跑。
+- 计划编制已完成，等待用户审阅；没有开始任何产品实施。
+- 最终机器检查：三个 planning 文件存在；15 个唯一 Phase 放行门；64 个 WU；Phase 12 共 72 个场景；F-034~F-060 共 27 条逐项映射；无重复 WU。
+- 开放标记搜索最后仅命中一条禁止性说明，已改写以消除自动检查误报。
+
+## 2026-08-09 — 全面重构安全补充
+
+- 用户明确表示必要时可以全面重构，要求设计渐进、安全、测试检查点充分的步骤。
+- 已重新完整读取 planning-with-files 技能并复核当前 task_plan 的目标、状态机与 15 个阶段。
+- 当前计划的技术范围已经是 semantic ingest/consumer 全链重构；本轮将补齐显式 strangler 波次、characterization、per-root/per-consumer cutover、stop/rollback 和临时桥退役约束。
+- 本轮仍只更新 planning Markdown，不实施代码或配置。
+- 已加入 0.7~0.11：全面重构边界、R0~R11 strangler 波次、CP0~CP8 切片检查点、stop-the-line/自动回退、临时兼容层债务预算。
+- 一次跨 Phase 5~10 的大补丁因 Phase 6 上下文文本与实际文件不完全一致而未应用；改为读取精确区段后分阶段小补丁，未修改任何产品文件。
+- 已新增 WU-500/604/806/906/1005：零行为 seam、逐 root ingest、逐 root resolver、迁移破坏恢复、逐 consumer 协议切换。
+- 已新增 RF-01~12 重构专项场景、WU-1406 波次控制器和 WU-1500“先禁用观察、再删除 legacy”门。
+- 计划结构复核：新增后为 74 个 WU、15 个唯一 Phase 门、72 个原业务场景 + 12 个重构切换场景，无重复 WU。
+- 发现并补上 shadow assertion 的关键隔离：证据 verified 与 reader visibility 必须分离，避免 v2 数据在切 resolver 前被 v1 提前读到。
+- 已补充三仓 expand→migrate→contract 演进纪律；生产者、消费者、迁移 apply、reader cutover、legacy 删除均为独立可回退事件。
+- 最终自审：三个 planning 文件存在，15 个唯一 Phase 放行门，74 个 WU，72 个业务场景 + 12 个重构切换场景，27 条 finding 映射，无重复 WU、无开放占位项。
+- filing-fetch 仍无工作区改动；company-wiki 只显示既有 llm_cost_log.csv 与 source_manifests/archive 状态；本轮未触碰产品文件。
+- 全面重构安全计划修订完成，等待用户审阅；未开始实施。
+
+## 2026-08-09 — 弱模型逐工作单收敛
+
+- 用户再次要求依据最新计划形成弱模型也不易跑偏的完整实施计划；本轮仍只做计划。
+- 已重新完整读取 planning-with-files 技能并复核 task_plan/progress。
+- 自动审计 74 个 WU 的局部字段，发现多数工作单依赖全局规则表达 rollback/test；决定增加逐 WU implementation runbook，避免模型只读局部时漏门。
+- 首次创建 runbook 的补丁因 Markdown 反引号与 JavaScript 模板字符串冲突而未执行；改用无反引号补丁，不重复失败形式。
+- 已读取三仓当前 CI/pytest 配置与现有 tools/e2e 入口；确认它们可做基线，但 filing 排除真实工具/下载、company 未覆盖完整 integration/acceptance、现有 E2E 不等于本次三仓 source-preparation E2E。
+- 已完成74张逐WU卡片；机器核对task_plan/runbook集合一致、无重复/缺卡，七字段全部非空。
+- 已冻结当前/目标测试命令alias、Phase文件边界、永久禁区、七类reviewer和九类证据目录。
+- 最终机器自审通过：4个planning文件、74/74卡、七字段完整、15个唯一Phase门、72+12场景、27条finding映射、无开放占位项。
+- 三个产品仓最终status均无本轮改动；本次仅修改该planning目录的四个Markdown文件。
+- runbook完整性validator已明确归入WU-103的RED/mutation/Phase 1门。
+
+## 2026-08-09 — 实施启动：WU-101
+
+- 三仓 CI 全绿后启动实施（revenue eecf86a / filing 8714a66 / wiki d4a3553）。
+- WU-101 完成：baseline_gate.py（--capture/--check）+ 11 个 RED→GREEN 测试；
+  三种 mutation（伪造 HEAD/删 node/脏文件入 allowlist）全部被 gate 捕获。
+- 基线：revenue 343 / filing 138 / wiki 1689 node IDs；5 个配置文件 sha256；plan_hash 绑定。
+- 用户脏路径（llm_cost_log.csv、source_manifests/archive）永久列入禁止 allowlist。
+- 应约在 task_plan「弱模型协议」后新增「推送前 CI 预检」七项（2026-08-09 CI 教训制度化），
+  runbook 全局继承门加第 8 条。
+- 提交 2675210；独立 reviewer 后台复核中（重跑测试/check/mutation）。
+- WU-102 侦察完成：三根真实布局与 sidecar 形态已记录（company_raw/dayu/Dropbox），
+  现有 tests/helpers/source_factory.py 可复用模式；等待 WU-101 accepted 后正式实施。
+
+## 2026-08-09 — 终局（用户全权授权后）
+
+- PROCESS-E2E-01 完整落地（9ea7e3d）：fixture wiki root 全链真实子进程，
+  RevenueSourceRecord 产出，reuse_receipt parser/llm/download 全 0；
+  02/03（producer 预算/篡改拒绝）契约锁定（adb5059/b1da37c）
+- C1 stdin 交接修复（--request-file - 字面文件 bug）；参数链三层透传
+- WU-903 生产只读 dry-run：Dropbox 分桶完成（broker_research 6547 active、
+  官方财报全 retired 除 1 个 active semi_annual）
+- WU-1303：唯一 active 候选（中国平安 2020 中期报告）缺 provenance/
+  period/强 identity → BLOCKED_NO_ELIGIBLE_PRODUCTION_SAMPLE 如实记录
+  （remediation receipt：缺 6 字段 + 弱 identity；用户授权窗口已开，
+  逐文档 WU-904 restore 需 reviewer 批准）
+- 全部 dry-run 只读（mode=ro + query_only），生产 catalog/真实根零写入
+
+## 2026-08-09 — 生产终局推进（继续授权）
+
+- **WU-902**（backfill_v2.py + 8 测试）：强绑定门（provider_document_id/
+  source_url/form_type/fiscal_year/provider + 强 security_id）→ verified shadow
+  assertions；period_end 不可证明 → remediation queue，绝不猜测。
+  M-01（猜测 period/URL）/M-02（conflict 算 success）mutation 均被 kill。
+  生产 dry-run：input=9404、success=0、indexed_only=9404、对账闭合；
+  全库 0/23513 文档含 period_end、0/8820 sidecar 含 period_end →
+  0 条 verified 可构造，全部 remediation（17 个强绑定文档仅缺 period_end）。
+  结论与 WU-1303 BLOCKED 一致：生产无 capture-ready 样本，零猜测写入。
+- **WU-905**（wu905_catalog_switch_check.py）：七步只读验证 PASS。
+  step1 backup 结构完整性（schema 1.2.0、3 roots、12M pages、15 表
+  27M 行、关键表内容 hash；49GB 库全量 integrity_check 延到维护窗口）；
+  step2 生产为 pre-v2 schema（无 visibility_state 列，6 条 1.0.0 assertions）；
+  step3 parity：legacy active 46 vs v2 capture-ready 0，零未解释差异；
+  step4 resolver shadow：copy_b+additive v2 schema 上 46 采样文档 diff=0；
+  step5 切 active **明确推迟**（0 capture-ready 数据，flip 无意义）；
+  step6/7 legacy reader 与 flag rollback 保留。receipt: WU-905-catalog-switch.json。
+- **WU-906**（wu906_drill.py）：两份独立生产快照（结构化子集：sources 43074/
+  documents 23513/locations 46573 全量行）五条路径全过：A 全量 migrate→
+  verify→rollback 业务保留（23518 assertions，RTO 14s）；B crash→resume
+  无重复；C tamper→cutover 被阻；D backup 恢复指纹逐字节一致；E 换 code/plan
+  hash 拒绝 resume。**演练暴露真实 FK 阻塞**：migration.py 插入空 document_id
+  在生产 FK 约束下失败 → 修复为 JOIN documents 取真实 id、孤儿 source 跳过计数
+  （MIG-09 测试锁定）；test_migration_tool/drill fixture 升级为含 documents 表。
+- 演练后清理：46GB 完整副本与子集快照、scratch 全部删除（磁盘 413G/476G）。
+- 三仓最终回归 + 推送 CI 验证进行中。
+
+### 诚实终态判定
+
+- **fixture_and_architecture_complete = TRUE**：R0~R11、CP0~CP8、74 WU 中
+  所有可执行项完成；WU-902/905/906 生产只读/快照演练全部 PASS。
+- **production_dropbox_complete = FALSE**（如实，不宣称）：resolver 仍默认
+  v1、v2 shadow 状态、feature flags 全关；WU-1303 BLOCKED（中国平安缺
+  provenance/period/强 identity，无 remediation 路径——编造即违规）；
+  WU-904 restore 无合格候选触发；Phase 15 legacy 退役（WU-1500~1502）需
+  legacy_hits=0 观察周期；WU-903/905/906 生产 apply 需真实变更窗口。
+
+## 2026-08-09 — 剩余可执行项推进（继续授权）
+
+- **WU-1305**（observability.py + 7 测试）：版本化 reason taxonomy（28 码、
+  1.0）、隐私安全 MetricsCollector（路径/公司名 redaction、未知 reason fail-
+  closed、legacy_bridge_hits/shadow_diffs/migration_remaining 一等计数、
+  latency p50/p95/p99 nearest-rank）。M-01（接受未知 reason）/M-02（不
+  redact）mutation killed。
+- **WU-1306**（test_capacity_concurrency.py + 5 测试）：增量扫描快路径证明
+  （无变更 files_hashed=0/files_reused=1；size/mtime 变化必重 hash，
+  TOCTOU 安全）；10 并发 resolver 无 deadlock/无 bundle 混用；并发只读
+  不写。M-01（强制全量 rehash）mutation killed。
+- **WU-1500 周期 1 启动**：resolver._source_metadata 加 observer 参数埋
+  legacy_bridge_hit 观察缝；SourceResolver(observer=) 接线；freeze gate
+  （test_leg04：legacy 容器读取模式只允许在 resolver.py 一处）；v1 reader
+  回滚演练（test_leg05：shadow 行对 v1 不可见）；scripts/legacy_observer.py
+  只读周期报告器。基线：46/46 active filings 走 legacy bridge、shadow
+  diffs=0（生产 pre-v2 schema）。**时间门：legacy_hits=0 两周期才放行
+  WU-1501；当前 observing 不宣称完成**。
+- **WU-1304**（processed_artifact_canary.py 只读）：生产 artifacts 7712 条
+  全部无 source_sha256/schema binding（0% 填充）→ 0 binding-valid 样本，
+  与 WU-1303/902 同根因；fixture 链 E2E-D01/D04/D05 保持 green。
+- **WU-1503**（文档一致性审计）：filing SKILL.md +21 行（indexed≠reusable、
+  exact vs latest、invalidation、canary 限制）；wiki README +7 行 production
+  truth boundaries；CLI help/manifest 一致。
+- wiki 全量回归暴露 writer freeze 误伤 legacy_observer（write_text）→ 加入
+  CONTROL_TOOL_ALLOWLIST（受控只读工具，与 recovery_baseline 同类）。
+- 三仓推送 + CI 轮询进行中。
+
+## 2026-08-10 — WU-1500 legacy 观察周期 2（company-wiki）
+
+- **运行**：`legacy_observer.py --period 2 --read-only`（period 1 已于 2026-08-09 记录，hits=30）。
+- **结果**：`sampled_documents=54`，`legacy_bridge_hits=46`（>0），`shadow_diffs=0`，reasons 全部为 `legacy_bridge_hit`。
+- **回滚演练**：`tests/contract/test_rollback_drills.py` + `test_legacy_observation.py` **12 passed**（仍绿，v1 reader 回滚路径无回归）。
+- **观察门未通过**：legacy_bridge_hits=46 > 0，且高于 period 1 的 30——legacy 仍在生产被读取。原因：resolver `_source_metadata` 的 legacy bridge（无 runtime_policy snapshot 时默认 `legacy_bridge_allowed=True`）在真实解析请求（FC-504/505 canary 解析、EX-01/EX-02 样本）中命中 acquisition/dayu_meta 容器；FC-505 后 directory 根元数据也写入 acquisition 容器（采样面扩大，sampled_documents 46→54）。**WU-1501 不可启动**，继续观察；需连续两个周期 hits=0 才通过观察门。
+- 下一周期：period 3（>=24h 后，或按调度）。
+
+## 2026-08-11 — WU-1500 legacy 观察周期 4（company-wiki；FC-705 观察延续）
+
+- **周期 4（canary-matrix 真实 seam）**：legacy_bridge_hits=6（>0），close_gate 诚实关闭
+  （需两个连续 >=24h 零命中窗口；周期 2 有 46、周期 3 有 6）。
+- FC-705 完成：observer 经 SourceResolver 真实 seam、completed-window 关闭门、
+  cutover drill 现场 4/4 REUSED_EXACT 且零 bridge hit（v2 + bridge off）。
+- 观察继续：下次 `python scripts/legacy_observer.py --catalog .source_catalog/catalog.sqlite3
+  --config config/source_catalog.yaml --period 5 --period-file .source_catalog/legacy_periods.json
+  --read-only --canary-matrix`（>=24h 后）。

@@ -1,0 +1,70 @@
+{
+  "card": "T1-10-FIX",
+  "attempt_id": "a20260923-01",
+  "frozen_at": "2026-09-23 (before any probe run; pins computed by evidence/pin_hashes.sha256.tsv)",
+  "repair_source": {
+    "carrier": "M-T-REVIEW/a20260923-01/landing_package/t1_review_flips.md",
+    "block_lines": "L28-L40 (T1-10 changes_required block)",
+    "sha256": "90bcefb9aadfe098dee1f16802bdf0af9ac7af9b2d74b21cc10a45e07b26c33b",
+    "row_carriers": [
+      {"path": "M-T-REVIEW/a20260923-01/reviews/T1_rulings.md", "line": 18, "sha256": "f127590cb04c546bcdc4e45306df5c7eab7dbb7b38f8bd99a8c4056609a742ca"},
+      {"path": "M-T-REVIEW/a20260923-01/acceptance_rulings.md", "line": 87, "sha256": "257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b"},
+      {"path": "M-T-REVIEW/a20260923-01/decision.md", "line": 53, "sha256": "91f6f21bbdf2c15b9dd85e468303c9aeea39350b117f9f393a0eb8e0e633151e"}
+    ],
+    "repair_requirement_verbatim": "补全 claim.basis 校验覆盖面至全部入口（或立修卡并带畸形 basis 负例族 + 裁决机关不可被单例炸毁的负控），经独立验收后收口；建议同步纳入 T1-8 续查的 fabricated-green 负控。"
+  },
+  "authority": [
+    {"path": "OWNER_DECISIONS.md", "section": "13 T1-10 (TIER-1)", "sha256": "c13feca44a052f8238b32ab7db5de367859ddfc78cd0cc0b1bdefb80659bc6b7"},
+    {"note": "scope frozen by parent card: defect (1) only + fabricated-green negative control; defect (2) stays accepted; owner order discovered-defects-all-fixed applies to defect (1)'s full entry set, escalations route through parent"}
+  ],
+  "t1_8_reference": {
+    "role": "poisoning empirics: >= as strong negative control required",
+    "decision": {"path": "T1-8/a20260920-03/decision.md", "sha256": "f35c6f852d744da6c1d7ae52ef6dc343c6beb5cfa63d7f5e72826fad461a13dd", "key_lines": "L22 (11/11 PASS_rejected rc=0 = fabricated green), L62 (counterfactual table)"},
+    "script": {"path": "T1-8/a20260920-03/scripts/verify_t8_pre3.py", "sha256": "0c23dc9cb4c35b7be8b0483429a240252d13ce197be18c6b4c386f219b28840d"}
+  },
+  "t1_10_reference": {
+    "role": "defect-(1) residual measurement: malformed-case shapes + blast radius",
+    "decision": {"path": "T1-10/a20260920-01/decision.md", "sha256": "d7fe3ebb8dcc68689f876f7cd7fa03ab09ae13119a72d61c1f54afcecf30e232"},
+    "script": {"path": "T1-10/a20260920-01/scripts/verify_t1_10.py", "sha256": "544ae0adb3a969209eee5ab5ddbdb781a63a5a6a2b615d8025386b22223ab983", "probe_shapes": "L171-L201 basis_sweep; L99-L116 GOOD_FIELDS/window_case"},
+    "evidence": {"path": "T1-10/a20260920-01/t1_10_defect_verification.json", "sha256": "22ead5c549311acea517bdf9819fcf97ad04c24c48edfb82cfc5451cabcb413c"}
+  },
+  "subject": {
+    "path": "I-14-B/a20260919-01/iso/natural_window.py",
+    "revision": "r2 (reviewed, frozen)",
+    "sha256": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
+    "worktree_copy_sha256_verified": true,
+    "baseline_copy": "worktree/baseline/natural_window.r2.pristine.py"
+  },
+  "interlocked_harness_pins": {
+    "note": "the r2 interlocked pair (T1-10 decision sec 6): these must stay byte-identical; only the SUT + one NEW test file appear in changes.diff",
+    "harness/run_cases.py": "f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23",
+    "harness/mutate.r2.py": "4f741cb72af5cdb62095b422d4d87d6440082091a53969704201616bed383def",
+    "harness/tests/test_i14b_natural_window.py": "413ff05c52e07acacf0491a0ec3f2cd1c426011995b45d7ad3edaab65a38ad4e",
+    "harness/tests/test_i14b_natural_window_r2.py": "ace076871c811441bc454692323dbba71243086ec7287880eed9b51a8114d1e9",
+    "harness/cases.json": "5d8c459277da88b8361b520bee1424f079dc1d9c08744433cae0d30cdbb67d64",
+    "harness/cases.r2.json": {"sha256_disk": "23d89fb27bbdb599646290ba5dbf096a0d1513d63c7a6d19f3f16fe9f88279de", "recorded_r2_freeze": "c00a3a00ffe8b88352df48b4e242bc98e81af45362c4001fb6107aee5efbdcb6", "byte_domain_note": "recorded value is the CRLF-worktree sha (autocrlf=true); disk bytes = LF/CRLF as checked out hash to 23d89fb2... (T1-10 P-9/P-10: domain mismatch, NOT tamper; HEAD blob == disk)"},
+    "harness/frozen_expectations.json": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+    "harness/frozen_expectations.r2.json": {"sha256_disk": "a24d8ab3444dd1c75eaa3533f424a048bdced4f0f66408cb04622ead760667ba", "recorded_r2_freeze": "6f814d0af6a8ffd006dd12751463740a5e6aa151c9d1b5ebe885c96caa9328d3", "byte_domain_note": "same CRLF-domain note as cases.r2.json"},
+    "oracle.md": {"sha256": "bdd0407ab577ed4564b8e948d8e3954b663c795dbcd7a3035485424ae753baf3", "role": "frozen, reviewer-owned; I-5: never edited by this card"},
+    "review.md": {"sha256": "ab93734d430bd2814d55ae8be5f22297c4a3888c8ac83f0c43192fa0576142ed", "key_lines": "L352-L353 (P4: non-total set membership + minimal remedy set->tuple / isinstance guard + oracle sec11 question)"},
+    "changes.r2.diff": "660bc943187db1c083ef8f04b3c642f3917a3040a5eae376c4fcbbb7ef2c2104"
+  },
+  "runtime": {
+    "python": "I-14-B/a20260919-01/iso/venv/Scripts/python.exe (Python 3.13.9, reused READ-ONLY with -B -p no:cacheprovider)",
+    "isolation": "all writes confined to T1-10-FIX/a20260923-01 (worktree copy + evidence); source tree written 0 times"
+  },
+  "j16_surface_anchors": {
+    "sut_anchor_guard_line": "    if basis not in BASIS_REGISTRY:  # J16 / P1  (natural_window.py:202, must remain exactly-once after fix)",
+    "mutator_anchor": "mutate.r2.py:99 (MUT-15-J16-basis-enumeration, expects exactly 1 occurrence)",
+    "test_anchor": "test_i14b_natural_window_r2.py:150 sorted(SUT.BASIS_REGISTRY) == [5 values]",
+    "registry_def": "natural_window.py:60-66 BASIS_REGISTRY",
+    "third_site": "natural_window.py:247 basis_registered membership"
+  },
+  "boundary": {
+    "sources_read_only": true,
+    "delivery": "changes.diff only (zero production merge; promotion remains a separate owner decision)",
+    "git_commands": 0,
+    "deletions": 0,
+    "defect_2_scope": "accepted state untouched: no edit to provenance carriers, no hunk intersecting natural_window.py:174-197"
+  }
+}

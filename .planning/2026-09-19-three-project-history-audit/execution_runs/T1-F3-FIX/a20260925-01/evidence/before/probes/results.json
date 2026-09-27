@@ -1,0 +1,147 @@
+{
+  "phase": "before",
+  "sut": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py",
+  "sut_sha256": "9b1ebda2b75c4d1124d0d20a95d7a16cb31b8d9564c1c90da9b4d2d77eaa3ba2",
+  "results": {
+    "TS1": {
+      "raw_returncode": 4,
+      "report_written": false,
+      "stdout_tail": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: 'not-a-timestamp'\"}",
+      "stderr_tail": "",
+      "verdicts": null
+    },
+    "TS2": {
+      "raw_returncode": 4,
+      "report_written": false,
+      "stdout_tail": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: 'not-a-timestamp'\"}",
+      "stderr_tail": "",
+      "verdicts": null
+    },
+    "TS3": {
+      "raw_returncode": 4,
+      "report_written": false,
+      "stdout_tail": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: 'not-a-timestamp'\"}",
+      "stderr_tail": "",
+      "verdicts": null
+    },
+    "TS4": {
+      "raw_returncode": 4,
+      "report_written": false,
+      "stdout_tail": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: 'not-a-timestamp'\"}",
+      "stderr_tail": "",
+      "verdicts": null
+    },
+    "TS5": {
+      "raw_returncode": 4,
+      "report_written": false,
+      "stdout_tail": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"'list' object has no attribute 'endswith'\"}",
+      "stderr_tail": "",
+      "verdicts": null
+    },
+    "DOC2": {
+      "raw_returncode": 2,
+      "report_written": false,
+      "stdout_tail": "{\"ok\": false, \"error\": \"malformed_input\", \"detail\": \"Invalid isoformat string: 'not-a-timestamp'\"}",
+      "stderr_tail": "",
+      "verdicts": null
+    },
+    "CTRL4": {
+      "raw_returncode": 4,
+      "report_written": false,
+      "stdout_tail": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"'str' object has no attribute 'get'\"}",
+      "stderr_tail": "",
+      "verdicts": null
+    }
+  },
+  "direct": {
+    "TS1": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open(sys.argv[2],encoding='utf-8'))['cases'][0];f=datetime(2026,9,20,2,56,38,tzinfo=timezone.utc);r=m.classify(case,f,5.0,5.0);print(json.dumps(r,ensure_ascii=False))\r\n                                                                                                                                                                                                                                                                                                                                ~~~~~~~~~~^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 482, in classify\r\n    computed, refusals = derive_window(fields, frozen_now)\r\n                         ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 145, in derive_window\r\n    started = _parse(fields[\"started_at\"])\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 92, in _parse\r\n    dt = datetime.fromisoformat(ts)\r\nValueError: Invalid isoformat string: 'not-a-timestamp'\r\n"
+    },
+    "TS2": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open(sys.argv[2],encoding='utf-8'))['cases'][0];f=datetime(2026,9,20,2,56,38,tzinfo=timezone.utc);r=m.classify(case,f,5.0,5.0);print(json.dumps(r,ensure_ascii=False))\r\n                                                                                                                                                                                                                                                                                                                                ~~~~~~~~~~^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 482, in classify\r\n    computed, refusals = derive_window(fields, frozen_now)\r\n                         ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 152, in derive_window\r\n    sample_stamps = [_parse(x) for x in (fields.get(\"sampled_at\") or [])]\r\n                     ~~~~~~^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 92, in _parse\r\n    dt = datetime.fromisoformat(ts)\r\nValueError: Invalid isoformat string: 'not-a-timestamp'\r\n"
+    },
+    "TS3": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open(sys.argv[2],encoding='utf-8'))['cases'][0];f=datetime(2026,9,20,2,56,38,tzinfo=timezone.utc);r=m.classify(case,f,5.0,5.0);print(json.dumps(r,ensure_ascii=False))\r\n                                                                                                                                                                                                                                                                                                                                ~~~~~~~~~~^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 484, in classify\r\n    computed, refusals = derive_calendar(fields, frozen_now)\r\n                         ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 322, in derive_calendar\r\n    daily, daily_ref = _eligible(ledger.get(\"daily\") or [], frozen_now)\r\n                       ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 288, in _eligible\r\n    ordered = sorted(entries, key=lambda e: _parse(e[\"started_at\"]))\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 288, in <lambda>\r\n    ordered = sorted(entries, key=lambda e: _parse(e[\"starte"
+    },
+    "TS4": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open(sys.argv[2],encoding='utf-8'))['cases'][0];f=datetime(2026,9,20,2,56,38,tzinfo=timezone.utc);r=m.classify(case,f,5.0,5.0);print(json.dumps(r,ensure_ascii=False))\r\n                                                                                                                                                                                                                                                                                                                                ~~~~~~~~~~^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 486, in classify\r\n    computed, refusals = derive_login(fields, tol, cap_tol, frozen_now)\r\n                         ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 415, in derive_login\r\n    sampled = _parse(label[\"sampled_at\"])\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 92, in _parse\r\n    dt = datetime.fromisoformat(ts)\r\nValueError: Invalid isoformat string: 'not-a-timestamp'\r\n"
+    },
+    "TS5": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open(sys.argv[2],encoding='utf-8'))['cases'][0];f=datetime(2026,9,20,2,56,38,tzinfo=timezone.utc);r=m.classify(case,f,5.0,5.0);print(json.dumps(r,ensure_ascii=False))\r\n                                                                                                                                                                                                                                                                                                                                ~~~~~~~~~~^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 482, in classify\r\n    computed, refusals = derive_window(fields, frozen_now)\r\n                         ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 145, in derive_window\r\n    started = _parse(fields[\"started_at\"])\r\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\T1-F3-FIX\\a20260925-01\\worktree\\i14b\\iso\\natural_window.py\", line 90, in _parse\r\n    if ts.endswith(\"Z\"):\r\n       ^^^^^^^^^^^\r\nAttributeError: 'list' object has no attribute 'endswith'\r\n"
+    }
+  },
+  "checks": [
+    {
+      "name": "TS1 RED: rc=4 / report_written=False / detail~Invalid isoformat string: 'not-a-timestamp'",
+      "ok": true,
+      "detail": "observed rc=4 written=False stdout='{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: \\'not-a-timestamp\\'\"}'"
+    },
+    {
+      "name": "TS2 RED: rc=4 / report_written=False / detail~Invalid isoformat string: 'not-a-timestamp'",
+      "ok": true,
+      "detail": "observed rc=4 written=False stdout='{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: \\'not-a-timestamp\\'\"}'"
+    },
+    {
+      "name": "TS3 RED: rc=4 / report_written=False / detail~Invalid isoformat string: 'not-a-timestamp'",
+      "ok": true,
+      "detail": "observed rc=4 written=False stdout='{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: \\'not-a-timestamp\\'\"}'"
+    },
+    {
+      "name": "TS4 RED: rc=4 / report_written=False / detail~Invalid isoformat string: 'not-a-timestamp'",
+      "ok": true,
+      "detail": "observed rc=4 written=False stdout='{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: \\'not-a-timestamp\\'\"}'"
+    },
+    {
+      "name": "TS5 RED: rc=4 / report_written=False / detail~'list' object has no attribute 'endswith'",
+      "ok": true,
+      "detail": "observed rc=4 written=False stdout='{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"\\'list\\' object has no attribute \\'endswith\\'\"}'"
+    },
+    {
+      "name": "DOC2 RED: rc=2 / report_written=False / detail~Invalid isoformat string: 'not-a-timestamp'",
+      "ok": true,
+      "detail": "observed rc=2 written=False stdout='{\"ok\": false, \"error\": \"malformed_input\", \"detail\": \"Invalid isoformat string: \\'not-a-timestamp\\'\"}'"
+    },
+    {
+      "name": "CTRL4 RED: rc=4 / report_written=False / detail~has no attribute 'get'",
+      "ok": true,
+      "detail": "observed rc=4 written=False stdout='{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"\\'str\\' object has no attribute \\'get\\'\"}'"
+    },
+    {
+      "name": "TS1 RED direct classify() raises",
+      "ok": true,
+      "detail": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open"
+    },
+    {
+      "name": "TS2 RED direct classify() raises",
+      "ok": true,
+      "detail": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open"
+    },
+    {
+      "name": "TS3 RED direct classify() raises",
+      "ok": true,
+      "detail": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open"
+    },
+    {
+      "name": "TS4 RED direct classify() raises",
+      "ok": true,
+      "detail": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open"
+    },
+    {
+      "name": "TS5 RED direct classify() raises",
+      "ok": true,
+      "detail": "Traceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import importlib.util,sys,json;spec=importlib.util.spec_from_file_location('sut', sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);from datetime import datetime,timezone;case=json.load(open"
+    }
+  ],
+  "checks_pass": true,
+  "checks_failed": []
+}

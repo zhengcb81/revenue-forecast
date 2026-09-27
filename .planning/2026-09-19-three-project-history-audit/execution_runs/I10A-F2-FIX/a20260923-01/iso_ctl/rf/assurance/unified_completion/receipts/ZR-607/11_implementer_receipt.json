@@ -1,0 +1,102 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e8700d5b31e9221ad3d52937c543999d77609ab0",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "05c102fbe6a8dfacdd0f4fdb52a4f59affed4c24b9d4c4a0e0bb4c7caa0b3e79",
+  "commands": [
+    {
+      "command": "RED 探针：grep elimination|intersegment|internal sale|gross|net|smelt scripts → revenue_constraints 的 elimination 是通用参数化调整、constants.intersegment_elimination 是调整类别、segments.py:465 处理调整类别——均非矿业内部流程桥；零实现",
+      "exit_code": 0,
+      "result": "G1 真实产品缺口：矿业内部流程桥（内部转冶炼/贸易可追踪 elimination）零实现"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr607_internal_flow.py -q --tb=short",
+      "exit_code": 0,
+      "result": "29 passed（C1 可追踪 10 + C2 elimination 4 + C3 组合 2 + 冻结 dataclass）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "674 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+29 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/internal_flow.py tests/test_zr607_internal_flow.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件各函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 133 files"
+    },
+    {
+      "command": "git diff e8700d5 073fd4d --stat",
+      "exit_code": 0,
+      "result": "2 文件 +318：internal_flow.py（新 ~140 行）、test_zr607_internal_flow.py（新 29 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T06:00:00+00:00",
+  "findings": [
+    {
+      "detail": "InternalFlow 全字段可追踪（flow_id/source/destination/product/volume/transfer_price/period/scenario）——文本非空、数值 finite_number >0、任一缺失 gap-on-missing。eliminate_internal_revenue 的 gross/net 桥：gross=external+Σ内部转移值（as sold）、net=external（内部销售从集团收入消除——不重复计），period/scenario 过滤。与 ZR-606 commercial terms 组合：内部流量价按商业条款折算后 elimination 仍精确。",
+      "id": "ZR607-IMPL-001",
+      "severity": "info",
+      "title": "可追踪 InternalFlow + gross/net elimination 桥"
+    },
+    {
+      "detail": "探针词汇陷阱：revenue_constraints 的 elimination/constants.intersegment_elimination 是通用参数化调整机制（segment_adjustment_parameter_ids 指向参数），与矿业内部流程（内部转冶炼/贸易）语义不同——grep 命中≠机制存在（ZR-603 发现的教训再次验证）。",
+      "id": "ZR607-IMPL-002",
+      "severity": "info",
+      "title": "elimination 同名不同义探针"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/internal_flow.py：InternalFlow frozen dataclass（八字段）+ validate_internal_flow（gap-on-missing + finite_number + 文本非空 + scenario 枚举）+ internal_revenue（volume×transfer_price）+ eliminate_internal_revenue（gross/net 桥：net=external 内部消除不重复计，period/scenario 过滤）。零产品硬编码。",
+    "files": [
+      "revenue-forecast/scripts/internal_flow.py",
+      "revenue-forecast/tests/test_zr607_internal_flow.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-607/**"
+    ]
+  },
+  "implementer": "zr607-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 073fd4d；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=757241b0（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr607-independent）。",
+    "注：base_triplet.revenue=e8700d5 为 ZR-606 closure commit。"
+  ],
+  "objective": "F2 ownership/consolidation/internal flow 会计桥：可追踪 InternalFlow（内部转冶炼/贸易），eliminate_internal_revenue 消除内部销售（不重复计），gross/net 口径桥，与 ZR-606 商业量价、ZR-603 权益语义组合。",
+  "plan_sha256": "757241b0bbc25c42e27e4d0adb61a1d5e394f4dccc723ac722c775cdd2ef440c",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "073fd4d20eac6d66369fe5728e2d36087b4636f5",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/internal_flow.py（新）、tests/test_zr607_internal_flow.py（新 29 tests）；revenue 侧 receipts/ZR-607/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/internal_flow.py",
+    "revenue-forecast/tests/test_zr607_internal_flow.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-607/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-607"
+}

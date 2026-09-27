@@ -1,0 +1,213 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN-3-ACCT-R2",
+  "attempt_id": "a20260926-01",
+  "role": "accounting_reviewer",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "oracle_frozen_before_actions": true,
+  "oracle_path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN-3-ACCT-R2/a20260926-01/oracle.md",
+  "method": {
+    "network_requests": 0,
+    "network_rule": "OWNER_DECISIONS L543『只定级、不重取（禁联网）』按卡适用于定级工位（本卡）；字节已由 OPEN3-E1-ORIGIN-BYTES-R2 取回在盘 ⇒ 本工位零联网",
+    "harness": "verify_e1.py (python 3.13.9, local bytes only)",
+    "raw_output": "_verification_raw.json",
+    "quote_methods": {
+      "M1_ws_insensitive": "去全部空白(含 \\xa0/全角)后子串比对",
+      "M2_ws_collapsed": "空白连续段折叠为单空格、不增删空格（本卡的『空白敏感』主报数）",
+      "M3_ws_strict": "strip(HTML) 后原样子串（参考，不单独否决）",
+      "P_A": "引文 byte_span 落在 corpus path A 上逐字节相同",
+      "P_B": "corpus path B 上 M1 命中"
+    }
+  },
+
+  "Q1_e1_five_elements_on_origin": {
+    "question": "E1 五要素在 origin 层是否全部成立？",
+    "verdict": "4/5 —— ①②③⑤ 成立、④ 不成立",
+    "elements": {
+      "1_local_archive_origin": {
+        "judgement": "PASS",
+        "evidence": [
+          "两份 sec.gov 目标响应体在盘：28,665 B / 34,288 B；origin_bytes.bin = 两文件首尾相接（bin_is_concat=True，[0,28665)/[28665,62953)），总 62,953 B",
+          "剥离边缘注入后与 EDGAR as-filed 完整申报 inner 副本逐字节相同：8-K 28,559 B sha 6328d05612511965…（归档内偏移 1178）；EX-99.1 34,070 B sha 4cb79b6e33fbb687…（归档内偏移 29857）",
+          "mtimes = 2026-09-26T13:29:40~13:30:36Z，与登记取回窗口一致"
+        ],
+        "limitation": "R2 未落原始响应头部件 ⇒ 其自报的 Content-Length/Akamai/Set-Cookie 头我无法独立复核（本卡禁联网）；只能核盘上字节、字节数与内容"
+      },
+      "2_sha256": {
+        "judgement": "PASS",
+        "evidence": "5 个 origin 件 + origin_bytes.bin 实测 sha256 与 R2 handoff.origin_sha256 五值逐一相同（a3d0bbf6…/47a0a4a1…/cf84c290…/618f010b…/d82838ac…）；block page 2922be22… 亦一致"
+      },
+      "3_retrieved_utc": {
+        "judgement": "PASS",
+        "evidence": "provenance 四窗口（13:29:40Z–13:30:36Z、复测 13:38:59Z）+ 文件 mtime 实测落在同一窗口；窗口式为上轮 3.3 已确认的诚实形式"
+      },
+      "4_verbatim_quote_rerun_on_origin": {
+        "judgement": "FAIL",
+        "my_rerun": {
+          "P_A_corpus_pathA_exact": "8/8",
+          "P_B_corpus_pathB_m1": "8/8",
+          "M1_ws_insensitive": "8/8",
+          "M2_ws_collapsed": "7/8 (Q1 miss)",
+          "M3_ws_strict": "3/8 (参考)",
+          "raw_ascii_anchor_spans": "2/2 (8-K [21796,21866], EX99.1 [3079,3139])"
+        },
+        "reason_fail": "R2 自报(8/8、7/8)我已独立复现，但依 oracle §一 Q2 触发的 C5：既有语料与 origin 存在已证内容不一致 ⇒ ACCT ruling L251 C5『8 条引文作废、重新取证』⇒ 以语料为基的引文集在本卡被判作废；origin 载体上的复跑属 L163 的升级校验，但 C5 是对『origin ≠ 语料』这一具体情形的专门规则，优先于通用升级路径（fail-closed，不取对等级更有利的读法）",
+        "note": "引文本身在 origin 上逐字可定位（M1 8/8）；作废的是其『以既有 4 份语料为据』的引文基础"
+      },
+      "5_independent_path": {
+        "judgement": "PASS_WITH_LIMIT",
+        "evidence": "as-filed 完整申报 .txt（2,721,504 B，d82838ac…）与 origin 剥注入内容逐字节相同（两份）",
+        "limitation": "该独立件与 origin 同为 R2 同一 Python urllib 会话取回（同代码、同采集方）；与之相对的两条第三方渲染路（r.jina.ai / W3C html2txt）在 1 个叙事词 + 1 段签名页上与 origin 不一致 ⇒ 该不一致计入 ④/C5，不在 ⑤ 重复计罚（同上轮 §3.5 的克制）",
+        "numeric_contradiction": "0（四对全量 token 比对，数值差全部归因完毕）"
+      }
+    },
+    "count": "4/5"
+  },
+
+  "Q2_origin_vs_existing_corpus_consistency": {
+    "question": "origin ↔ 既有语料一致性（C5 裁定）",
+    "verdict": "构成『不一致』 ⇒ C5 触发",
+    "fact_a_q1_space_diff": {
+      "observed": "origin 原始 HTML = `(1)&#160;Agents … (2)&#160;Devices`（U+00A0 NBSP ×2）；corpus = `(1)Agents … (2)Devices`（0 个空白字符）",
+      "my_rerun": "M1 命中、M2 未命中（Q1 是唯一 M2 miss）",
+      "ruling": "不构成 C5『不一致』——纯空白类差异，去空白后完全相同、token 0 差；登记为语料空白保真缺陷（语料把 NBSP 整个丢了），必须披露，但不单独触发降级"
+    },
+    "fact_b_edge_injected_script_double_hit": {
+      "observed": "<script src=\"/QQpw/SBxk/…\"></script> 在 8-K [28544,28650] 与 EX99.1 [34147,34253] 双命中，两处字节逐字节相同；EDGAR index 与 as-filed 完整申报 0 命中",
+      "my_rerun": "剥注入后 8-K 28,559 B/6328d056…、EX99.1 raw 34,182 B/557161af…、EX99.1 inner 34,070 B/4cb79b6e… 全部与自报一致；as-filed 比对 byte_identical=True（两份）",
+      "ruling": "不构成 C5『不一致』——传输层注入、非申报正文：(i) as-filed 归档 0 命中、(ii) 剥离后正文与归档逐字节相同、(iii) 既有语料是文本渲染，构造上不含 script 标签。必须登记 raw+stripped 双 sha 与字节跨度；后续任何产品仓落点必须双 sha 同登"
+    },
+    "fact_c_new_finding_by_this_station": {
+      "how_found": "ACCT L185 要求的『与现有两路再做一次全量比对』——四对文件的数值/单词 token 双向差集，逐条归因（R2 自报与派单均未提及此项）",
+      "finding_1": {
+        "what": "EX99.1 同一句 `…to ensure AI empowers every person, ▯ their agency and ambition…`：origin 与 as-filed 归档 = `amplifying`（各 1 次）；corpusA 与 corpusB = `amplifies`（各 1 次），任一侧对另一词均 0 次",
+        "byte_level_proof": "origin_ex: amplifying=1/amplifies=0；archive: 1/0；corpusA_ex: 0/1；corpusB_ex: 0/1",
+        "attributed_to_layout": false
+      },
+      "finding_2": {
+        "what": "corpusA 8-K 缺签名页整段（`Date: September 2, 2026 / /s/ Alice L. Jolla / Corporate Vice President and Chief Accounting Officer`）；origin 与 corpusB 均有；corpusA 正文止于 `104 Cover Page Interactive Data File`",
+        "attributed_to_layout": false
+      },
+      "attributions_checked": [
+        "origin 独有 {0000789019,09} = iXBRL header 事实（corpusA 未含，corpusB 含）",
+        "corpusA 独有 {06,20,31} = r.jina.ai 渲染头 Published Time 20:31:06 GMT",
+        "corpusB 独有 {21,5,8} = html2txt 输出的 alt=\"Slide N\" 图注",
+        "路径B 独有单词碎片 = 硬换行把 notesthreepoint…member 等长词截断"
+      ],
+      "numeric_contradictions_unattributed": 0
+    },
+    "ruling": "C5 判据 3 命中（词形差异 + 整段缺漏，均不在允许的排版归因清单内）⇒ origin ↔ 既有语料『不一致』成立 ⇒ 依 ACCT ruling L251/L293：既有 4 份语料文件降 E3、8 条引文作废、需重新取证",
+    "consequence_for_corpus_files": {
+      "files": [
+        "corpus/MSFT_8K_2026-09-02_Item7.01.md",
+        "corpus/MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt",
+        "corpus/MSFT_8K_2026-09-02_Exhibit99-1.md",
+        "corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt"
+      ],
+      "new_level": "E3（二手/web 工具转录，仅可用于提出问题）",
+      "quotes_void": true,
+      "direction_unknown": "错在 origin 侧还是语料侧，本卡无法定（禁联网；origin 与 as-filed 同为 R2 一会话取回，语料 A/B 同为工位转写）⇒ 无论哪侧错，E1 均不成立（见 Q3 的双向论证）"
+    }
+  },
+
+  "Q3_e1_level": {
+    "question": "由此给 E1 等级",
+    "level": "BLOCKED-PARTIAL",
+    "not_E1_COMPLETE_reason": "五要素 4/5，④ 因 C5 引文作废而不成立",
+    "not_E2_reason": "ACCT L154 定义 E2 =『在线取回但只留 URL/时间/引文，未落本地归档』——与 origin 字节已落盘、sha 可复算的事实冲突；标 E2 会错报证据状态（同上轮 4.2）",
+    "not_E3_reason": "origin 层①②③⑤经我实测成立，整体不属『研究稿/转录/新闻』；E3 只适用于上表被判降级的 4 份语料",
+    "usage_range": "按 E2 执行：仅叙述与风险提示；不得支撑任何参数、不得出现『已核』『已按新分部建模』字样（ACCT L154/L163）",
+    "direction_argued_both_ways": [
+      "若错在语料侧 ⇒ C5 触发 ⇒ 4 文件 E3 + 8 引文作废 ⇒ ④ ❌ ⇒ E1 不成立",
+      "若错在 origin 侧 ⇒ ①『申报原文』的原文性不成立、且 ⑤ 的独立件与 origin 同源不能自证 ⇒ ①/⑤ ❌ ⇒ E1 更不成立",
+      "⇒ 两个方向都指向 fail-closed，故无需联网即可定级"
+    ],
+    "additional_requirement_checked": "ACCT L153『分部重分类还须附重述后的基期分部数据』——origin EX99.1 含重述表（Q6 `$61,672 $64,441 $67,438 $74,576 $268,127` M1/M2 命中）与 FY27Q1 outlook（Q7 `$75.15 to $75.75 billion / $14.7 to $15.2 billion` 命中）⇒ 该附加要件在 origin 载体上成立（记录事实，不构成解锁）"
+  },
+
+  "Q4_source_tier": {
+    "question": "S 来源等级",
+    "ind_C_table_itemisation": [
+      {"row": "① 同一发行人同一期间可读原文官方文件", "applies": true, "evidence_class": "company_primary_disclosure", "note": "8-K + EX-99.1 = MICROSOFT CORP 同期原文；accession 0001193125-26-380280、period_of_report 2026-09-02、accepted 2026-09-02 16:30:24；锚文本可定位、doc sha256 已绑定"},
+      {"row": "② 交易所/监管公告", "applies": false, "evidence_class": "regulator_primary_disclosure", "note": "存管处为 SEC EDGAR，但被引对象是公司自身披露 ⇒ 归 ①"},
+      {"row": "③ 券商研报/新闻/数据商/wiki", "applies": false, "evidence_class": "secondary_lead_only", "note": "不适用"},
+      {"row": "④ 外部抓取（本地原件不可读）", "applies": "取得方式层", "evidence_class": "external_retrieval_not_local", "note": "本件系联网取回 ⇒ 该 flag 必须 = true 且按 IND L198/L360 永久保留，只可新增 local_ingested_at，不得改写为 local_verifiable"}
+    ],
+    "s_level": "S1",
+    "s1_conditions": {
+      "同一发行人同一期间原文披露": true,
+      "可定位到页/表/锚文本": true,
+      "doc_sha256 已绑定": true,
+      "至少一条独立路径复核": "true（as-filed 归档逐字节；限定：与 origin 同采集代码；第三方渲染路有 1 词 + 1 段不一致，已计入 Q2/C5）"
+    },
+    "mandatory_registrations": [
+      "external_retrieval_not_local = true（永久）",
+      "kind = current_report → 落 company-wiki/companies/{entity}/raw/other/（§三十一 #1；不谎报 quarterly_report、不改 canonical_writer 映射）",
+      "raw_sha256 与 stripped_sha256 双登记 + edge_injected_script 字节跨度",
+      "若用于非本文件所报期间的数据须标 period_mismatch_risk（IND C 表 ① 条件）"
+    ],
+    "s_is_not_release": "S1 是参数放行的必要条件之一、不是充分条件：E1 仍 BLOCKED-PARTIAL、ACCT L226 四要件（可复算观测量/可核基础/非实现者 decision_sha256/追加式版本化）当前 0/4 明确满足、MERGE 七条 7/7 未满足 ⇒ 任何 MSFT 参数一律维持未放行",
+    "rejected_alternative": "记 S0 —— 拒：S0 原义为『不可得/不可核』，而本件字节已在盘且经我复算（可用性与可核性成立）；用 S0 会错报可用性。fail-closed 的落点改由『E1 未成立 + 四要件 0/4 + 七条 7/7』承担，而非错报来源类型"
+  },
+
+  "Q5_blocked_origin_bytes": {
+    "question": "解除还是维持 BLOCKED-NEEDS-ORIGIN-BYTES",
+    "origin_bytes_dimension_resolved": true,
+    "dimension_definition": "仅指『origin 响应字节在盘且可核』这一维：①字节落盘+②sha 复算+③取回 UTC+⑤ as-filed 独立件逐字节复核 —— 四项经本工位独立实测成立；R2 自报 origin_bytes_retrieved=62953 属实",
+    "formal_release": "不在本卡（releases_nothing=true）：本卡不解 BLOCKED-NEEDS-ORIGIN-BYTES、不解 OPEN-3、不解 B1/B2，不改任何 status/state/decision",
+    "e1_still_blocked": "字节维已解 ≠ E1 成立：④ 因 C5 作废 ⇒ e1_level = BLOCKED-PARTIAL ⇒ 即便该名目被有权方解除，OPEN-3 仍因 C5（新阻断）与 B1/B2 维持 BLOCKED",
+    "remaining_blockers": [
+      {"id": "C5", "severity": "hard_new", "desc": "origin ↔ 既有语料内容不一致（EX99.1 `amplifying`/`amplifies` 词级差 + corpusA 缺 8-K 签名页段）⇒ 4 语料降 E3、8 引文作废、须重新取证", "owner": "会计面已裁（本卡）；补救=取证工位"},
+      {"id": "C5-direction", "severity": "hard", "desc": "错在 origin 侧还是语料侧未定；需第三条独立路（不同会话/不同代码的独立取回或独立渲染）定方向", "owner": "取证工位（须换会话）；本卡禁联网不可自裁"},
+      {"id": "B1", "severity": "hard", "desc": "产品仓落点 0 字节：R2 门 0 P1/P2/P3 全 Access denied；本会话审批禁用、不可提权 ⇒ 需可写 company-wiki 的会话（父的第 ① 件）", "owner": "父"},
+      {"id": "B2", "severity": "hard", "desc": "filing-fetch 分支未跑 ⇒ 无 immutable provenance sidecar、产品仓 git diff 新增路径 = []；且 §三十二 晋升 blocked（git apply 事故后两文件已 preimage 还原）", "owner": "父/另卡（iso→diff→复审→晋升）"},
+      {"id": "ACCT-L226-MERGE7", "severity": "background", "desc": "参数放行的四要件与 MERGE 七条（与本卡并列的链上阻断，本卡不裁不解除）", "owner": "会计面/合并裁"}
+    ],
+    "re_verifiable_condition_list": [
+      "RC1 方向裁定：用与 R2 不同会话/不同实现的第三条路取回同两 URL（或独立渲染 as-filed 归档副本），复核 `amplifying` 与签名页 ⇒ 定出错在哪一侧",
+      "RC2 以 origin 为基准重建 8 条引文（Q1 须原样保留 `(1)&#160;Agents` 形态），新建载体登记 sha256 与字节区，不回改旧载体",
+      "RC3 4 份旧语料按 E3 追加式重登记（保留旧件与旧 sha，新增 E3 标注与 divergence 登记），不就地改写",
+      "RC4 B1/B2 落点（父的第 ① 件）：product repo 落地 + sidecar + 计划目录镜像 + git diff 新增路径实测",
+      "RC5 全部满足后新建 OPEN-3-ACCT-R3 复裁 E1；本卡不得被复用为已裁依据"
+    ]
+  },
+
+  "quote_rerun_results": {
+    "note": "8 条引文由本工位自己重跑；不采信 R2 自报",
+    "rows": [
+      {"id": "Q1", "carrier": "8-K", "P_A_exact": true, "M1": true, "M2": false, "M3": false, "miss_reason": "origin `(1)&#160;Agents` vs corpus `(1)Agents`（NBSP ×2 被语料丢弃）"},
+      {"id": "Q2", "carrier": "8-K", "P_A_exact": true, "M1": true, "M2": true, "M3": true},
+      {"id": "Q3", "carrier": "8-K", "P_A_exact": true, "M1": true, "M2": true, "M3": false},
+      {"id": "Q4", "carrier": "EX99.1", "P_A_exact": true, "M1": true, "M2": true, "M3": true},
+      {"id": "Q5", "carrier": "EX99.1", "P_A_exact": true, "M1": true, "M2": true, "M3": false},
+      {"id": "Q6", "carrier": "EX99.1", "P_A_exact": true, "M1": true, "M2": true, "M3": true},
+      {"id": "Q7", "carrier": "EX99.1", "P_A_exact": true, "M1": true, "M2": true, "M3": false},
+      {"id": "Q8", "carrier": "EX99.1", "P_A_exact": true, "M1": true, "M2": true, "M3": false}
+    ],
+    "summary": {"P_A": "8/8", "P_B_m1": "8/8", "M1_去空白": "8/8", "M2_空白敏感": "7/8", "M3_严格": "3/8", "raw_ascii_anchors": "2/2"},
+    "matches_r2_self_report": "是（R2 报 8/8 去空白、7/8 空白敏感、Q1 差 2 空格）"
+  },
+
+  "mutations": {
+    "rc_convention": "0 = 该变异按预期表现",
+    "rows": [
+      {"id": "G1", "expected": "green", "observed": "M2/M3 拒绝 Q1（NBSP 差）", "rc": 1, "note": "字面 G1 未通过；如实登记，不回改判据"},
+      {"id": "G1b", "expected": "green", "observed": "通过（登记 sha + 8/8 M1 + P-A 8/8）", "rc": 0},
+      {"id": "R1", "expected": "red", "observed": "检出（sha 不在登记表 + 引文不命中）", "rc": 0},
+      {"id": "R2", "expected": "red", "observed": "检出", "rc": 0},
+      {"id": "R3", "expected": "red", "observed": "检出", "rc": 0},
+      {"id": "R4", "expected": "red", "observed": "检出（sha 复算不符）", "rc": 0},
+      {"id": "R5", "expected": "red", "observed": "M1/M2/M3 全拒", "rc": 0},
+      {"id": "R6", "expected": "red", "observed": "M1/M2/M3 全拒", "rc": 0},
+      {"id": "R7", "expected": "M1绿/M2红", "observed": "M1=True, M2=False", "rc": 0}
+    ],
+    "discrimination_ok": true,
+    "discrimination_ok_literal_G1": false
+  },
+
+  "levels": {"e1_level": "BLOCKED-PARTIAL", "s_level": "S1", "corpus_files_level": "E3", "level_claimed_by_station": "BLOCKED-PARTIAL"},
+  "releases_nothing": true,
+  "network_requests": 0,
+  "git_writes": 0,
+  "git_status_used": false
+}

@@ -1,0 +1,198 @@
+# RF-STEP9-TRIAGE / a20260923-01 — changes.diff (8 files, 9 hunks; base=b0d016a6; iso red/green proven; RF production untouched)
+# Per-file justification (owner rule: every change justified here; '#' preamble lines, git-apply find_header tolerant):
+# 1. tests/adversarial/test_receipt_attacks.py   [H1/#1 ] small-safe test-expectation update: build label host_signed->unattested (owner-authorized B1/REM-01 E27 fail-closed; test intent = forged-gate rejection, label incidental; red wsl_head_* -> green iso_ok_receipt_attacks).
+# 2. tools/mutation_patrol.py                    [H2/#9 ] small-safe product-tool fix: _resign must not mint host_signed w/o record (E27; golden receipt is unattested); green iso_ok_zr1102 + PATROL_RC=0 (accepted==0 still real gate/hash rejections).
+# 3. tests/test_zr601_asset_facts.py             [H3/#10-11] revert-tolerant message match (old|new) for 70dd9f6e bounds wording; rejection semantics unchanged; green iso_ok_zr601 (all 10).
+# 4. tests/test_zr708_backtest_reverify.py       [H4/#12] fixture as_of=2028-03-01 mirroring same-commit test_backtest.py:245 precedent (70dd9f6e leak check); green iso_ok_zr708 (all 7).
+# 5. tests/test_fc1102_t2_runner.py              [H5a/#3-5] revenue repo resolve = PROJECT_ROOT (self), dir-name independent; byte-equivalent under canonical layout (CI/prod unchanged); green iso_misfix_* + iso_ok_fc*.
+# 6. tests/test_fc1302_scan_health.py            [H5b/#6-7] same as H5a.
+# 7. tools/daily_t2_runner.py                    [H5c/#3-7] missing-check revenue = PROJECT_ROOT (aligns with heads resolution; fixes two-branch inconsistency); byte-equivalent under canonical layout.
+# 8. tests/test_single_owner_guard.py            [H6a+H6b/#8] OWNER RULING (2) guard narrowing — OWNER_DECISIONS section 22 / register section 84 (file count 7->8):
+#      justification FIRST LINE: (2) case = NO new allowlist entries; only narrow the reach back to declared semantics (download adapters only).
+#      Exemptions stay exactly {CANONICAL_CLIENT=filing_fetch_client.py, ORCHESTRATORS={source_preparation.py}}; no file added to any list; judgment criterion NOT deleted.
+#      Narrowed rule = subprocess import AND file text in DOWNLOAD_DOMAIN tokens (census: revenue_core 12/12 tokens hits=0 -> green).
+#      Evidence: guard_readproof.txt (G1-G6) · R1=wsl_head/win2_head baseline red · G1=g_g1_narrow_green RC=0 ·
+#      bypass counters g_b1 (filing-CLI downloader) RC=1 NEW_MSG + g_b2 (curl/xlsx pull) RC=1 NEW_MSG ·
+#      mutations g_m1 (un-narrow -> revenue_core red again: narrowing load-bearing) RC=1 + g_m2 (scope-zero -> bypass opens: counterexample load-bearing) RC=0 ·
+#      promotion surface zero-byte: PROMOTION_SURFACE_DIFF_EMPTY=YES (revenue_core/revenue_publication/revenue_report/company_wiki_source/source_preparation untouched).
+# RF production: READ-ONLY; apply only via the authorized merge batch (git apply --check re-verified AFTER header prepend; see decision.md section 6).
+diff --git a/tests/adversarial/test_receipt_attacks.py b/tests/adversarial/test_receipt_attacks.py
+index 944ab3a8..3e5f99fb 100644
+--- a/tests/adversarial/test_receipt_attacks.py
++++ b/tests/adversarial/test_receipt_attacks.py
+@@ -45,7 +45,7 @@ class ReceiptAttackTests(unittest.TestCase):
+         forged_context = copy.copy(legit_context)
+         forged_context.executed_gate_ids = ["output_recomputation", "input_contract"]
+         receipt = build_publication_receipt(
+-            result, forged_context, attestation_status="host_signed"
++            result, forged_context, attestation_status="unattested"
+         )
+         result["publication_receipt"] = receipt
+         result["result_sha256"] = canonical_sha256(
+diff --git a/tests/test_fc1102_t2_runner.py b/tests/test_fc1102_t2_runner.py
+index ebf74b77..3045746a 100644
+--- a/tests/test_fc1102_t2_runner.py
++++ b/tests/test_fc1102_t2_runner.py
+@@ -116,7 +116,9 @@ class TestT2Runner(unittest.TestCase):
+ def _manifest(td: Path) -> Path:
+     def head(repo: str) -> str:
+         return subprocess.run(
+-            ["git", "-C", str(PROJECT_ROOT.parent / repo), "rev-parse", "HEAD"],
++            ["git", "-C", str(PROJECT_ROOT if repo == "revenue-forecast"
++                                else PROJECT_ROOT.parent / repo),
++             "rev-parse", "HEAD"],
+             capture_output=True, text=True).stdout.strip()
+     manifest = {
+         "schema_version": "1.0",
+diff --git a/tests/test_fc1302_scan_health.py b/tests/test_fc1302_scan_health.py
+index dc52bd8c..70dd5738 100644
+--- a/tests/test_fc1302_scan_health.py
++++ b/tests/test_fc1302_scan_health.py
+@@ -24,7 +24,7 @@ def _manifest(tmp: Path) -> Path:
+     # minimal manifest: triplet commits must exist
+     heads = {}
+     for name in ("revenue-forecast", "filing-fetch", "company-wiki"):
+-        repo = PROJECT_ROOT.parent / name
++        repo = PROJECT_ROOT if name == "revenue-forecast" else PROJECT_ROOT.parent / name
+         heads[name] = subprocess.run(
+             ["git", "-C", str(repo), "rev-parse", "HEAD"],
+             capture_output=True, text=True).stdout.strip()
+diff --git a/tests/test_single_owner_guard.py b/tests/test_single_owner_guard.py
+index 1385cc61..b6fa78c7 100644
+--- a/tests/test_single_owner_guard.py
++++ b/tests/test_single_owner_guard.py
+@@ -26,6 +26,31 @@ DOC_SOURCES = (
+     + sorted((SKILL_ROOT / "references").glob("*.md"))
+ )
+ 
++# Owner ruling (2) 2026-09-23 — OWNER_DECISIONS §22 / register §84: 守卫收窄。
++# justification 首行: (2) 案 = 不加白名单条目，只把射程修回声明语义
++# (download adapters only)；豁免仍精确等于 {CANONICAL_CLIENT, ORCHESTRATORS}，
++# 域内（filing/download 词面）subprocess 强制与原先同样全覆盖、不删判据。
++DOWNLOAD_DOMAIN = (
++    "filing",
++    "download",
++    "fetch",
++    "resolve_filing",
++    "acquisitionmanager",
++    "adapterregistry",
++    "dayu",
++    "stock",
++    "dropbox",
++    "curl",
++    "wget",
++    "xlsx",
++)
++
++
++def _in_download_domain(text: str) -> bool:
++    low = text.lower()
++    return any(token in low for token in DOWNLOAD_DOMAIN)
++
++
+ 
+ def _python_files() -> list[Path]:
+     return sorted(path for path in SCRIPTS.glob("*.py") if path.name != "__init__.py")
+@@ -37,19 +62,23 @@ class SingleOwnerGuardTests(unittest.TestCase):
+             if path.name == CANONICAL_CLIENT or path.name in ORCHESTRATORS:
+                 continue
+             tree = ast.parse(path.read_text(encoding="utf-8"))
+-            for node in ast.walk(tree):
+-                if isinstance(node, ast.Import):
+-                    self.assertNotIn(
+-                        "subprocess",
+-                        {alias.name.split(".")[0] for alias in node.names},
+-                        f"{path.name} imports subprocess (second download owner)",
+-                    )
+-                if isinstance(node, ast.ImportFrom):
+-                    self.assertNotEqual(
+-                        node.module,
+-                        "subprocess",
+-                        f"{path.name} imports subprocess (second download owner)",
+-                    )
++            imports_subprocess = any(
++                isinstance(node, ast.Import)
++                and any(
++                    alias.name.split(".")[0] == "subprocess"
++                    for alias in node.names
++                )
++                or isinstance(node, ast.ImportFrom)
++                and node.module == "subprocess"
++                for node in ast.walk(tree)
++            )
++            if not imports_subprocess:
++                continue
++            self.assertFalse(
++                _in_download_domain(path.read_text(encoding="utf-8")),
++                f"{path.name} uses subprocess inside the filing/download domain "
++                "(second download owner)",
++            )
+ 
+     def test_no_second_resolve_filing_symbol(self) -> None:
+         for path in _python_files():
+diff --git a/tests/test_zr601_asset_facts.py b/tests/test_zr601_asset_facts.py
+index be609bdb..a8fac670 100644
+--- a/tests/test_zr601_asset_facts.py
++++ b/tests/test_zr601_asset_facts.py
+@@ -88,14 +88,14 @@ def test_c1_negative_asset_drivers_rejected():
+         drivers = _reserve_drivers()
+         drivers[field] = list(drivers[field])
+         drivers[field][1] = -1.0
+-        with pytest.raises(ForecastInputError, match="cannot be negative"):
++        with pytest.raises(ForecastInputError, match="cannot be negative|outside permitted bounds"):
+             _run("reserve_depletion", drivers)
+ 
+ 
+ def test_c1_recovery_rate_out_of_range_rejected():
+     drivers = _reserve_drivers()
+     drivers["recovery_rate"] = [0.9, 1.5]  # ratio driver must be in [0, 1]
+-    with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
++    with pytest.raises(ForecastInputError, match="must be between 0 and 1|outside permitted bounds"):
+         _run("reserve_depletion", drivers)
+ 
+ 
+diff --git a/tests/test_zr708_backtest_reverify.py b/tests/test_zr708_backtest_reverify.py
+index 20636d85..eacac2d8 100644
+--- a/tests/test_zr708_backtest_reverify.py
++++ b/tests/test_zr708_backtest_reverify.py
+@@ -74,6 +74,7 @@ def test_c2_accuracy_record_consumed_by_confidence():
+     assert record["backtest_id"] == evaluation["backtest_id"]
+     assert "record_sha256" in record
+     data = forecast_document()
++    data["as_of_date"] = "2028-03-01"  # Only usable after these actuals are known.
+     data["historical_accuracy_records"] = [record]
+     result = run_forecast(data)
+     assert result["confidence"]["historical_accuracy"]["wape"] == pytest.approx(
+diff --git a/tools/daily_t2_runner.py b/tools/daily_t2_runner.py
+index fed9389f..6d9577c5 100644
+--- a/tools/daily_t2_runner.py
++++ b/tools/daily_t2_runner.py
+@@ -76,10 +76,11 @@ def run_checks(
+     m_triplet = manifest.get("current_triplet", {})
+     missing = [r for r in ("revenue", "filing", "wiki")
+                if not subprocess.run(
+-                   ["git", "-c", "safe.directory=*", "-C", str(PROJECT_ROOT.parent /
+-                                     {"revenue": "revenue-forecast",
+-                                      "filing": "filing-fetch",
+-                                      "wiki": "company-wiki"}[r]),
++                   ["git", "-c", "safe.directory=*", "-C", str(
++                        PROJECT_ROOT if r == "revenue"
++                        else PROJECT_ROOT.parent /
++                        {"filing": "filing-fetch",
++                         "wiki": "company-wiki"}[r]),
+                     "cat-file", "-e", m_triplet.get(r, "0" * 40)],
+                    capture_output=True).returncode == 0]
+     checks["triplet"] = {"heads": triplet, "manifest_missing": missing}
+diff --git a/tools/mutation_patrol.py b/tools/mutation_patrol.py
+index 49ca2bda..5a510981 100644
+--- a/tools/mutation_patrol.py
++++ b/tools/mutation_patrol.py
+@@ -52,7 +52,7 @@ def _resign(result: dict) -> dict:
+             expected_publication_gates(result),
+             result["engine_version"],
+         ),
+-        attestation_status="host_signed",
++        attestation_status="unattested",
+     )
+     result["result_sha256"] = canonical_sha256(
+         {key: value for key, value in result.items() if key != "result_sha256"}

@@ -1,0 +1,17 @@
+=== G1: grep for exit-code literal 120 in RF scripts/ (product source) ===
+filing_fetch_client.py:57: # explicit config file (FC-1202: no implicit sibling-directory lookup).
+filing_fetch_client.py:107: "filing_fetch_root (FC-1202: no independent allowlist, no "
+revenue_report.py:70: """Recompute consolidated annual/CAGR/bridge paths per scenario (FC-1204-b)."""
+revenue_report.py:243: """Recompute confidence score/rating/gates (FC-1204-b)."""
+revenue_report.py:271: """Recompute theme terminal/counterfactual/increment/elasticity (FC-1204-b)."""
+revenue_report.py:328: """Recompute workflow/publication receipt + result hash (FC-1204-b)."""
+source_preparation.py:90: # FC-1202: explicit root override for E2E fixtures — no implicit
+total_hits=7
+=== G2: exit-code-shaped 120 patterns ===
+exit_shaped_hits=0  (FC-120x identifiers above are requirement IDs, not exit codes)
+
+=== G3: who emits the string "Exception ignored on flushing sys.stdout" ? ===
+HIT in python313.dll at byte offset 5921656
+dll_sha256=d97a98104f8bba00acc6d91c9b1db9ce0e917257da80ec923000f7e9be9d77f4
+python=3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]
+=> the message is emitted by the CPython interpreter itself (inside python313.dll), not by any revenue-forecast source file.

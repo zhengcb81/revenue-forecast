@@ -71,3 +71,8 @@ owner-ruling). Attribution completeness > fixing speed.
 oracle.md (this) · binding.md · commands.md · decision.md (12-row attribution table) · changes.diff
 (may be empty — honest) · handoff.md · evidence/ · recovery.md · final report to parent incl. the
 unresolved oracle-confirmation question.
+
+## 追认（关闭 — 收到父方回执即录, 2026-09-23）
+- **父方追认本 oracle 冻结口径有效**：creation 先于首个判据运行、执行全程依此；`ask_user_question`
+  不可用判为**基建限制非流程缺口**，父方追认 = 人类确认替代，入登记册 **§81**。无需修正。
+  → `handoff.md` unsigned 段的 unresolved oracle question **关闭**。

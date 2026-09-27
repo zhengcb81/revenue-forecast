@@ -1,0 +1,239 @@
+{
+  "probe": "b03_review_paths",
+  "wiki_head": "f0aacbfd258b85b2eb76d41365786abf58179067",
+  "realpath_semantics": {
+    "C:\\": "C:\\",
+    "C:\\Users": "C:\\Users",
+    "C:\\Users\\": "C:\\Users",
+    "trailing_sep_root": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies",
+    "nonexistent_under_existing": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\nope\\2025.pdf",
+    "normcase_drive": "c:\\users\\x"
+  },
+  "capabilities": {
+    "symlink_dir": {
+      "ok": false,
+      "msg": "OSError: [WinError 1314] 客户端没有所需的特权。: 'C:\\\\Users\\\\郑曾波\\\\AppData\\\\Local\\\\Temp\\\\b03path-igos8si6\\\\companies' -> 'C:\\\\Users\\\\郑曾波\\\\AppData\\\\Local\\\\Temp\\\\b03path-igos8si6\\\\link_to_companies'"
+    },
+    "junction_dir": {
+      "ok": true,
+      "msg": "Junction created for C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\junc_to_companies <<===>> C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies"
+    },
+    "junction_inside_root": {
+      "ok": true,
+      "msg": "Junction created for C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\escape <<===>> C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\outside"
+    }
+  },
+  "results": [
+    {
+      "test": "containment::plain_inside",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\2025.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies_extra"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::other_root_inside",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies_extra\\2025.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies_extra"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::textual_prefix_sibling",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies_x\\2025.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies_extra"
+      ],
+      "inside": false,
+      "expected": false,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::case_variant_of_target",
+      "path": "C:\\USERS\\郑曾波\\APPDATA\\LOCAL\\TEMP\\B03PATH-IGOS8SI6\\COMPANIES\\2025.PDF",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies_extra"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::case_variant_of_root",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\2025.pdf",
+      "roots": [
+        "C:\\USERS\\郑曾波\\APPDATA\\LOCAL\\TEMP\\B03PATH-IGOS8SI6\\COMPANIES"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::dotdot_escape",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\..\\outside\\2025.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies_extra"
+      ],
+      "inside": false,
+      "expected": false,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::file_path_equals_root",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::root_with_trailing_sep",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\2025.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::nonexistent_under_root",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\nope\\deep\\2025.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::drive_root_root",
+      "path": "C:\\Users",
+      "roots": [
+        "C:\\"
+      ],
+      "inside": false,
+      "expected": null,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::drive_root_file",
+      "path": "C:\\Windows\\win.ini",
+      "roots": [
+        "C:\\"
+      ],
+      "inside": false,
+      "expected": null,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::hardlink_to_outside",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\hardlink.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::unc_style_root",
+      "path": "\\\\localhost\\C$\\Windows",
+      "roots": [
+        "\\\\localhost\\C$\\"
+      ],
+      "inside": true,
+      "expected": null,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::junction_root_config",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\junc_to_companies\\2025.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\junc_to_companies"
+      ],
+      "inside": true,
+      "expected": true,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::junction_escape_inside_root",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\escape\\2025.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies"
+      ],
+      "inside": false,
+      "expected": false,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "containment::nonexistent_under_junction_escape",
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies\\escape\\nothere.pdf",
+      "roots": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b03path-igos8si6\\companies"
+      ],
+      "inside": false,
+      "expected": false,
+      "matches_expectation": true,
+      "note": "expected=None -> report only (host/policy dependent)"
+    },
+    {
+      "test": "entrypoint::junction_escape",
+      "status": "not_found",
+      "reason": "artifact_path_outside_allowed_root",
+      "data_is_none": true,
+      "bytes_leaked": false
+    },
+    {
+      "test": "entrypoint::plain_outside",
+      "status": "not_found",
+      "reason": "artifact_path_outside_allowed_root",
+      "data_is_none": true,
+      "bytes_leaked": false
+    },
+    {
+      "test": "entrypoint::hardlink_to_outside_bytes",
+      "status": "verified",
+      "reason": "",
+      "bytes_served": true,
+      "same_bytes_as_outside": true,
+      "note": "hardlink inside the root; realpath does not resolve hardlinks"
+    },
+    {
+      "test": "entrypoint::drive_root_root",
+      "status": "not_found",
+      "reason": "artifact_path_outside_allowed_root",
+      "detail": "loc-1",
+      "refused_before_reading": true,
+      "note": "root configured as a drive root"
+    }
+  ]
+}

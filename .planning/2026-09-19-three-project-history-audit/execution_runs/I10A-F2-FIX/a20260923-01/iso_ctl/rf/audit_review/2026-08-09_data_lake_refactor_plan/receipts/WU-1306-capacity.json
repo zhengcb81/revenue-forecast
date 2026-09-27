@@ -1,0 +1,19 @@
+{
+  "wu_id": "WU-1306",
+  "date": "2026-08-09",
+  "title": "容量、性能与稳定性（并发 prepare + 增量扫描不重 hash）",
+  "status": "accepted",
+  "implementation": {
+    "tests": "company-wiki tests/contract/test_capacity_concurrency.py (5 tests)",
+    "incremental_scan": "mtime+size 快路径已接线：无变更扫描 files_hashed=0 / files_reused=1（test_cap01）",
+    "rehash_triggers": "size 或 mtime 变化必重 hash（test_cap02/03，TOCTOU 安全）",
+    "concurrency": "10 线程并发 resolver 无 deadlock、无异常、无跨请求 bundle 混用（test_cap04）",
+    "read_only": "并发只读 mode=ro + query_only，写操作被 SQLite 拒绝（test_cap05）"
+  },
+  "mutation_proof": {
+    "M-01_force_full_rehash": "KILLED — 忽略 mtime/size 快路径后 test_cap01 red",
+    "restore": "字节级还原，5/5 green"
+  },
+  "baseline": "exact resolve warm p95 SLO 测试已有（test_resolver_perf_slo.py）；本 WU 锁定增量与并发属性",
+  "next": "WU-1500 legacy 观察周期启动"
+}

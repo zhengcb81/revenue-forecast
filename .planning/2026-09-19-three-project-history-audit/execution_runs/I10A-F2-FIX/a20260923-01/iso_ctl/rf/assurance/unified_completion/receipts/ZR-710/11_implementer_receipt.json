@@ -1,0 +1,97 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "33cd6d692f55783bac7a7e71ae8d8df138d0d29b",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "d4fd4220f0d89ed60192fc082c7583796526abae1e397020d3098bafdc45fb22",
+  "commands": [
+    {
+      "command": "RED 探针：revenue_forecast.py --output/--markdown 直接 write_text（非原子）；registry append 与写入无事务钉死；故障注入/幂等无测试",
+      "exit_code": 0,
+      "result": "G1（非原子写）/G2（故障注入无测试）/G3（幂等无测试）坐实"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr710_publication_txn.py -q --tb=short",
+      "exit_code": 0,
+      "result": "6 passed（C1 原子写 2 + C2 故障注入 3 + C3 幂等 1）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "515 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；无回归）"
+    },
+    {
+      "command": "ruff check scripts/revenue_forecast.py tests/test_zr710_publication_txn.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "git diff 33cd6d6 3f81318 --stat",
+      "exit_code": 0,
+      "result": "2 文件 +175/-2：revenue_forecast.py（_atomic_write_text + os import）、test_zr710（新 6 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-20T21:37:27+00:00",
+  "findings": [
+    {
+      "detail": "REV-09 原子写修复：_atomic_write_text（同目录 tmp + write + flush + os.fsync + os.replace + finally tmp unlink）应用于 --output/--markdown——进程中断任何点要么旧文件要么无文件，绝无半文件；故障注入（write 失败 / os.replace 失败）无目标文件 + tmp 清理；registry append 失败（进程内注入）→ main 返回 2 且 output 未写（registry 在 output 前失败）；恢复幂等（同输入两次发布 output 字节一致 + registry 恰 2 条同 anchor）。",
+      "id": "ZR710-IMPL-001",
+      "severity": "info",
+      "title": "REV-09 原子写 + 事务故障注入 + 幂等（修复+钉死）"
+    },
+    {
+      "detail": "测试经验：registry 故障注入不能通过子进程（monkeypatch 不跨进程）——改进程内调用 main() + sys.argv 注入；_read_entries 读取需父进程 setenv REVENUE_PUBLICATION_REGISTRY 与子进程一致。",
+      "id": "ZR710-IMPL-002",
+      "severity": "info",
+      "title": "故障注入测试架构（进程内 main + env 同步）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue_forecast.py 新增 _atomic_write_text(path, text)（tmp+fsync+os.replace 原子替换）替换 --output/--markdown 的直接 write_text；测试 6 个：C1 原子写完整/替换既有；C2 故障注入（os.replace 失败无目标+tmp 清理；write 失败无目标；registry append 失败 exit 2 + output 未写）；C3 幂等（同输入两次发布 output 字节一致 + registry 每跑恰 1 条）。",
+    "files": [
+      "revenue-forecast/scripts/revenue_forecast.py",
+      "revenue-forecast/tests/test_zr710_publication_txn.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-710/**"
+    ]
+  },
+  "implementer": "zr710-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 3f81318；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=8aae939b（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr710-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "注：base_triplet.revenue=33cd6d6 为 ZR-706 closure commit。"
+  ],
+  "objective": "F1 REV-09 publication 事务：原子写入（tmp+fsync+os.replace，中断无孤儿/半文件）+ 故障注入无残留 + 恢复幂等（同输入同 output + registry 每跑恰 1 条）。",
+  "plan_sha256": "8aae939be3bd6881c1ffd61561408cd0bd49a442b3a2287c7242883a646ad72a",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "3f8131847513563730148f2ae53ab61bafdf1d88",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast（revenue_forecast.py 原子写 + 测试 test_zr710_publication_txn.py 6 tests）；revenue 侧 receipts/ZR-710/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 1,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/revenue_forecast.py",
+    "revenue-forecast/tests/test_zr710_publication_txn.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-710/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-710"
+}

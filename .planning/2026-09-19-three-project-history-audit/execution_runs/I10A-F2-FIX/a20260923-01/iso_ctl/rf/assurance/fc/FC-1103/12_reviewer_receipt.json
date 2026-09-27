@@ -1,0 +1,28 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1103",
+  "reviewer_identity": "reviewer-fc1103-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "a9ffc07ccbb86e54f7c7c30b45d8229050f07f89",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "f6c500c96ed1ed55a08c5b8eb32adb8088c4a812",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "commands_replayed": [
+    "ruff check the 2 files -> 0",
+    "pytest tests/test_fc1103_t3_runner.py -q -> 3 passed in 207.71s (force test ran real FC-805 suite)",
+    "weekly_t3_runner.py --force -> exit 0, T3 passed; FC-805 3 passed in 214.56s (real CN/HK/US, isolated temp wiki)",
+    "guard-bypass mutation -> test_without_force_is_blocked FAILED (silent green caught); reverted",
+    "weekly_t3_runner.py (no --force) -> exit 2 BLOCKED; report status=blocked",
+    "pytest tests/ -q -> 446 passed, 106 subtests, 0 failed"
+  ],
+  "findings": [],
+  "decision": "accepted",
+  "reviewed_at": "2026-08-12T07:48:19Z",
+  "reviewer_receipt_sha256": "521c2e54a9a4f480e0d3a2e6dee3f7f7cc0f0697f691a7fdc6611e18f79bb9b7"
+}

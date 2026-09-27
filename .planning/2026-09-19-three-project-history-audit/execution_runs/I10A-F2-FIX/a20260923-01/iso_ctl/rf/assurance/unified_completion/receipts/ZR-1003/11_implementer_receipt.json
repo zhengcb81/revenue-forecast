@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "623020147032cfc58e731409330e87c29e4b4fdd",
+    "wiki": "6af6cc5b430733fde403e16be432930f1770e662"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep zr1003 → 零命中；既有测试未覆盖 lifecycle/safety/policy/两周期/flag-only 语义",
+      "exit_code": 0,
+      "result": "G1 真实缺口"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr1003_shadow_assertions.py -q --tb=short（company-wiki CWD）",
+      "exit_code": 0,
+      "result": "7 passed（C1 lifecycle / C2 safety / C3 policy / C4 两周期 / C5 active 不变 / C6 flag-only）"
+    },
+    {
+      "command": "company-wiki 回归：ZR-1002 5 + activation 15",
+      "exit_code": 0,
+      "result": "20 passed（零回归）"
+    },
+    {
+      "command": "ruff check tests/contract/test_zr1003_shadow_assertions.py（company-wiki CWD）",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit（company-wiki）",
+      "exit_code": 0,
+      "result": "9a00df6 test(ZR-1003) — 1 file +241"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'（revenue CWD）",
+      "exit_code": 0,
+      "result": "889 passed + 106 subtests（零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T04:20:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 lifecycle：断言 shadow→apply→active→rollback→shadow 每阶段可见性正确。C2 safety：未评审文档无 review receipt（fail-closed 前提）+ record_prompt_injection_review（sqlite3.Connection 语义）后 receipt 完整（not_detected/reviewer）。C3 RootPolicy：错误 policy_hash（current_policy_hash 解耦）→ ActivationError 拒绝 + active 空；正确 policy 激活成功。C4 两动态周期：两次 apply→读→rollback 输出 canonical hash 一致（确定性 diff 全解释）。C5 active 响应：rollback+re-apply（新 epoch——同 epoch receipt_id 唯一约束）前后 active 行全等。C6 flag-only：回滚后 visibility_state=shadow + activation_epoch 保留 + entity 数据完整 + journal rollback 记录。",
+      "id": "ZR1003-IMPL-001",
+      "severity": "info",
+      "title": "shadow assertions 生命周期/safety/RootPolicy/两周期/flag-only 综合验收"
+    }
+  ],
+  "implementation": {
+    "design": "company-wiki 新 tests/contract/test_zr1003_shadow_assertions.py（7 tests）：_seed（ZR-1002 模式）+ _apply（epoch/policy 参数化，current_policy_hash 固定 POLICY_A 以验证错误 policy 拒绝）+ _active_rows（ReadOnlyCatalogReader active 可见性）；prompt_injection review 用 store.transaction() conn（函数要求 sqlite3.Connection）。产品零改动。",
+    "files": [
+      "company-wiki/tests/contract/test_zr1003_shadow_assertions.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1003/**"
+    ]
+  },
+  "implementer": "zr1003-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.wiki 为本卡实现提交 9a00df6（company-wiki，parent 6af6cc5 = ZR-1002）；revenue 6230201（ZR-1002 closure）、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=29b6a14d（00_wu_card.md，hashlib 注入）。",
+    "真实生产 shadow 周期观察由 CA-206 soak 收集。",
+    "独立 reviewer 待派出（reviewer-zr1003-independent）。"
+  ],
+  "objective": "阶段 I 第三卡：lifecycle/safety/RootPolicy shadow assertions——两动态周期 diff 全解释；active response 不变；rollback 仅关 flag。",
+  "plan_sha256": "29b6a14df653a5faf5dbb3d1dc3769aece93fa4dd7e9334a20d0e9de6e97a04a",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "623020147032cfc58e731409330e87c29e4b4fdd",
+    "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki：tests/contract/test_zr1003_shadow_assertions.py（新 7 tests）；revenue：receipts/ZR-1003/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr1003_shadow_assertions.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1003/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1003",
+  "canonical_hash": "6a119154249f5777e93e462dd1231afc4c510b241b7d75124b53e98bcc96e2b9"
+}

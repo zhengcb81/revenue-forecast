@@ -1,0 +1,12 @@
+probe_utc=2026-09-25T23:03:45Z
+session_file_policy=workspace-write (session workspace = C:\Users\郑曾波\Projects\revenue-forecast)
+method=System.IO.File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None)  [no bytes written on success; probe is non-mutating]
+results:
+  RW_DENY : C:\Users\郑曾波\Projects\company-wiki\.source_catalog\catalog.db :: Access to the path ... is denied.
+  RW_DENY : C:\Users\郑曾波\Projects\company-wiki\.state\state.db :: Access to the path ... is denied.
+  RW_DENY : C:\Users\郑曾波\Projects\company-wiki\.state\job_queue.db (same family, probed via state.db) 
+  RW_DENY : C:\Users\郑曾波\Projects\company-wiki\companies\MICROSOFT CORP\raw\financial_reports\annual (directory handle) :: Access to the path ... is denied.
+  RW_DENY : C:\Users\郑曾波\.agents\skills\filing-fetch\config\company_wiki.json (non-workspace, non-product control) :: Access denied.
+  RW_OK   : C:\Users\郑曾波\Projects\revenue-forecast\SKILL.md (inside session workspace control)
+conclusion: 本会话对 session workspace 之外的一切路径（含 company-wiki 产品仓）拒绝写打开；filing-fetch 的下载落盘路径必然不可写。
+residue_check: 对 company-wiki\.source_catalog 与 company-wiki\companies 做「LastWriteTime >= 2026-09-25T00:00:00」枚举 -> 命中 2 个早于本工位会话（21:00:46Z）的既有文件，本工位两次 filing-fetch 运行（22:52Z / 23:01Z）在 company-wiki 内新增/修改文件 = 0。

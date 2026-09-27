@@ -1,0 +1,75 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e8700d5b31e9221ad3d52937c543999d77609ab0",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "146f26fec138b8b05769468740ee8e505ee2dc750ee3733a2fffcd5682c0415a",
+  "commands": [
+    {
+      "command": "git -C <repo> log --oneline -2",
+      "exit_code": 0,
+      "result": "HEAD=073fd4d feat(ZR-607)...; parent e8700d5 close ZR-606 (confirmed via rev-parse HEAD^)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr607_internal_flow.py -q --tb=short",
+      "exit_code": 0,
+      "result": "29 passed in 0.15s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr606_commercial_terms.py tests/test_zr605_mine_year_operation.py tests/test_zr603_ownership_timeline.py tests/test_golden_behavior_lock.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "90 passed in 0.48s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/internal_flow.py tests/test_zr607_internal_flow.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "Ran 2 tests OK (new file per-function complexity <= 10)"
+    },
+    {
+      "command": "adversarial probe %TEMP%\\zr607-reviewer\\probe_zr607.py (items a-i)",
+      "exit_code": 0,
+      "result": "9/9 passed: 8 missing fields gap-fail 'required (gap, not default 0)'; empty/whitespace text 'non-empty string'; inf/-inf/NaN/'abc'/True/None 'finite|numeric'; 0/negative 'positive'; bad scenario 'scenario'; internal_revenue 100x50=5000; 2-flow elimination gross 23000 / internal 13000 / net 10000 (net never includes internal); period FY2026->6500, scenario base->7500, combined->1500; empty flows gross==net==10000 internal_total==0; commercial-terms composition gross 5000 / net 4997, elimination net=external no double count; frozen dataclass AttributeError; zero company/mine hardcoding in internal_flow.py"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+      "exit_code": 0,
+      "result": "674 passed, 3 deselected, 2 warnings, 106 subtests passed in 124.49s; matches implementer claim exactly"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-607/11_implementer_receipt.json (cwd assurance\\unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed; base_triplet.revenue=e8700d5 is a real git commit object; result_triplet.revenue=073fd4d == HEAD; filing/wiki triplets unchanged"
+    },
+    {
+      "command": "git cat-file -t e8700d5b31e9221ad3d52937c543999d77609ab0 / 073fd4d20eac6d66369fe5728e2d36087b4636f5",
+      "exit_code": 0,
+      "result": "commit / commit (both real git objects)"
+    }
+  ],
+  "created_at_utc": "2026-08-21T21:36:18Z",
+  "findings": [
+    {
+      "detail": "The full-suite run printed a PytestUnhandledThreadExceptionWarning (UnicodeDecodeError for byte 0xd4 in a subprocess stdout reader thread) but completed with 674 passed / 3 deselected / 106 subtests and exit code 0. Not attributable to ZR-607: its 29 tests spawn no subprocesses. Reported for transparency only; not a gate failure.",
+      "id": "REV-001",
+      "severity": "info",
+      "title": "Full suite emits a non-fatal pytest warning"
+    }
+  ],
+  "kind": "reviewer",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "073fd4d20eac6d66369fe5728e2d36087b4636f5",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_object_sha256": "02f93cd534a4bd5498c4e2b092182e8e45507cd916d26ecba9561b2c68699e50",
+  "reviewer": "reviewer-zr607-independent",
+  "schema_version": 1,
+  "unit": "ZR-607",
+  "verdict": "accepted"
+}

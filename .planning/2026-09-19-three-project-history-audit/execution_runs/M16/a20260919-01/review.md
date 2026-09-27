@@ -309,3 +309,11 @@ The exit-code matrix observed by the mutation self-check is in
 > affects any other card's verdict (each has its own frozen isolate, which this reviewer did not
 > re-examine); the exact number and ordering of writes to the production file inside the review
 > window; and a full replay of the other three cards' observations to "bit-identical to r2" strength.
+
+## 独立验收裁定（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅本 attempt、仅锚 9ec65295…。r3 点复审裁定采信。
+- carried：F-MT-02/03；mtime 腿记录态为凭。
+- 本次抽验：[32] 三方一致；负例 11/11；九件齐；pin 3/3（LF）；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "independent acceptance (M-T-REVIEW N=1) 2026-09-23: accepted_with_conditions (formula only)", carrier: "…/reviews/M16.md + acceptance_rulings.md#M16", implementer_signed: false, supersedes: "r3 point review transcribed" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 70196fa4ff847971a24b20b767506bf27639ee1d14667ab1077b44c6030850d0 over 24106 bytes, verified post-install as sha256 of the first 24106 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = 7310d474c31d07b12fc995526ef5970b34e4ee68029ad7c384d8626b6de8be2a = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 667 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M16.md (sha256 b5d5c66fef7af0cc3cd0ba6db2c80f4d2a80074b78def9d4e423127b67b98c04) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

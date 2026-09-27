@@ -1,0 +1,206 @@
+{
+  "_registry": "I-10-A a20260923-01 command registry (START_HERE 命令不能猜 two-stage binding). Entries carry binding_status: bound = argv verified against real code/tools and runnable; planned = contract frozen, argv will be confirmed after the referenced harness script exists and then flipped to bound BEFORE it runs. No entry runs from a production repo cwd; no git; no network.",
+  "exit_code_legend": {
+    "0": "pass — command ended normally AND the business judgement passed (outer runner 0 never overrides a child failure)",
+    "1": "harness failure — the runner/script itself broke (import error, fixture error, missing expected file, unbound path)",
+    "2": "no verdict / expected rejection — a negative case correctly refused on business grounds, or the command produces no verdict (read-only query)",
+    "3": "not as expected — a positive case failed, a negative case was NOT refused, or a declared expectation did not hold (应红未红 / 应绿未绿)"
+  },
+  "batch_rc_semantics": "this batch uses ONLY the frozen legend above; per-run raw rc is recorded verbatim and classified separately from the business verdict (commands.json expected_* vs run_log raw_rc)",
+
+  "commands": [
+    {
+      "id": "CMD-I10A-ISO-SETUP",
+      "class": "attempt_support",
+      "purpose": "build the isolated execution surface: copy the I-00-A venv template into <attempt>/iso/venv and the read-only product modules into <attempt>/iso/rf/scripts; record per-file hashes proving iso == production anchors",
+      "cwd": "<attempt_root>",
+      "argv": ["pwsh", "-NoProfile", "-Command", "Copy-Item -Recurse <I-00-A>/iso/venv <attempt>/iso/venv; New-Item -ItemType Directory <attempt>/iso/rf/scripts; Copy-Item -Recurse <RF>/scripts/*.py <attempt>/iso/rf/scripts/ ; Copy-Item -Recurse <RF>/scripts/contracts <attempt>/iso/rf/scripts/contracts; Copy-Item -Recurse <RF>/scripts/forecast <attempt>/iso/rf/scripts/forecast"],
+      "network": "disabled",
+      "allowed_write_roots": ["<attempt>/iso/**"],
+      "expected_returncode": 0,
+      "expected_business_result": "iso/venv/Scripts/python.exe exists and runs; iso/rf/scripts holds byte-identical copies of model_registry.py, model_extensions.py, forecast/segments.py, forecast/calc.py, contracts/, revenue_constraints.py (hash-equal to binding.product_anchors_current)",
+      "before_after_evidence": ["evidence/I-10-A/deps/iso_hash_proof.json"],
+      "binding_status": "bound"
+    },
+    {
+      "id": "CMD-I10A-DEP-SWEEP",
+      "class": "attempt_support",
+      "purpose": "read-only dependency evidence sweep: hash + status-extract I-00-B contract files, I-07-B handoff/decision/review/reviewer_report, all 31 M-card qualification.json + handoff.json, the 3 source raws + sidecars; writes evidence/I-10-A/deps/*.json (measurement, not derivation)",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/dep_sweep.py", "--out", "<attempt>/evidence/I-10-A/deps"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "m31_qualification_sweep.json shows 31/31 cards with formula status extracted verbatim from each qualification.json; input_hashes.json matches binding pins; zero writes outside <attempt>",
+      "before_after_evidence": ["evidence/I-10-A/deps/m31_qualification_sweep.json", "evidence/I-10-A/deps/input_hashes.json"],
+      "binding_status": "bound (harness/dep_sweep.py implemented this attempt; argv confirmed against the real script; reads only the pinned paths, writes only --out)"
+    },
+    {
+      "id": "CMD-I10A-EXTRACT-CN",
+      "class": "attempt_support",
+      "purpose": "extract the Zijin 2025 annual report PDF text (with per-page form-feeds) for verbatim source quoting; raw bytes untouched",
+      "cwd": "<attempt_root>",
+      "argv": ["C:\\Program Files\\Git\\mingw64\\bin\\pdftotext.exe", "-layout", "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\紫金矿业\\raw\\financial_reports\\annual\\2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf", "<attempt>/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "UTF-8 text extract with form-feed page separators; extract hash recorded; raw re-hash unchanged (evidence/I-10-A/source_extracts/extract_manifest.json)",
+      "before_after_evidence": ["evidence/I-10-A/source_extracts/extract_manifest.json"],
+      "binding_status": "bound"
+    },
+    {
+      "id": "CMD-I10A-EXTRACT-HK",
+      "class": "attempt_support",
+      "purpose": "extract the Xiaomi 2025 annual report PDF text for verbatim source quoting; raw bytes untouched",
+      "cwd": "<attempt_root>",
+      "argv": ["C:\\Program Files\\Git\\mingw64\\bin\\pdftotext.exe", "-layout", "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\小米集團－Ｗ\\raw\\financial_reports\\annual\\2026-04-28_hkexnews_12127452_2025年度報告.pdf", "<attempt>/evidence/I-10-A/source_extracts/HK-XIAOMI-2025.txt"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "UTF-8 text extract with form-feed page separators; extract hash recorded; raw re-hash unchanged",
+      "before_after_evidence": ["evidence/I-10-A/source_extracts/extract_manifest.json"],
+      "binding_status": "bound"
+    },
+    {
+      "id": "CMD-I10A-EXTRACT-US",
+      "class": "attempt_support",
+      "purpose": "extract the Microsoft FY2026 10-K HTM to text (stdlib html parser harness; entity-decoded; block structure preserved) for verbatim source quoting; raw bytes untouched",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/htm_to_text.py", "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm", "<attempt>/evidence/I-10-A/source_extracts/US-MSFT-2026.txt"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "text extract whose quotes are byte-verifiable against the raw HTM after the same normalization; extract hash recorded; raw re-hash unchanged",
+      "before_after_evidence": ["evidence/I-10-A/source_extracts/extract_manifest.json"],
+      "binding_status": "bound (harness/htm_to_text.py implemented this attempt; stdlib only; reads argv[1], writes argv[2] only)"
+    },
+    {
+      "id": "CMD-I10A-PDFTEXT-CN",
+      "class": "attempt_support",
+      "purpose": "CJK-capable PDF text extraction (page-marked) of the Zijin 2025 annual report — REPLACES CMD-I10A-EXTRACT-CN whose poppler build silently produced 0 CJK characters (its output is kept, marked superseded)",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/pdf_to_text.py", "<CN raw pdf>", "<attempt>/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "page-marked text with CJK present (>=1 CJK chars per content page class), input raw hash unchanged before/after (sidecar manifest), pdftotext output preserved at source_extracts/superseded_pdftotext/",
+      "before_after_evidence": ["evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt.manifest.json"],
+      "binding_status": "bound (harness/pdf_to_text.py implemented this attempt; vendored pymupdf at iso/vendor — global Miniconda interpreter NOT used, only a read-only library copy)"
+    },
+    {
+      "id": "CMD-I10A-PDFTEXT-HK",
+      "class": "attempt_support",
+      "purpose": "CJK-capable PDF text extraction (page-marked) of the Xiaomi 2025 annual report — REPLACES CMD-I10A-EXTRACT-HK (Adobe-CNS1 failures, 0 CJK characters)",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/pdf_to_text.py", "<HK raw pdf>", "<attempt>/evidence/I-10-A/source_extracts/HK-XIAOMI-2025.txt"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "page-marked text with CJK present; input raw hash unchanged; superseded pdftotext output preserved",
+      "before_after_evidence": ["evidence/I-10-A/source_extracts/HK-XIAOMI-2025.txt.manifest.json"],
+      "binding_status": "bound (same tool/provenance as CMD-I10A-PDFTEXT-CN)"
+    },
+    {
+      "id": "CMD-I10A-RENDER-HK",
+      "class": "attempt_support",
+      "purpose": "deterministic page->PNG rendering of the six Xiaomi pages cited by the D-mapping (text layer unusable: embedded subset fonts without ToUnicode — pdfminer emits raw (cid:NNNN)); verbatim quotes are transcribed visually from these renders and cross-checked against the text layer's digit stream",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/render_pages.py", "--pdf", "<HK raw pdf>", "--pages", "11,20,21,22,300,337", "--out-dir", "<attempt>/evidence/I-10-A/source_extracts/page_renders", "--tag", "HK"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "6 PNGs with recorded hashes; raw re-hashed unchanged before/after rendering (render manifest)",
+      "before_after_evidence": ["evidence/I-10-A/source_extracts/page_renders/HK_render_manifest.json"],
+      "binding_status": "bound (harness/render_pages.py implemented this attempt; pure rendering, writes only --out-dir)"
+    },
+    {
+      "id": "CMD-I10A-SNAP-BEFORE",
+      "class": "attempt_support",
+      "purpose": "freeze before-state: product anchor hashes, source raw+sidecar hashes, plan input hashes, iso hash proof (this is the before/ half of the before/after hash table)",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/snapshot.py", "--out", "<attempt>/before/snapshot_before.json"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "before/snapshot_before.json with every anchor + raw + plan input hash measured (no derived values)",
+      "before_after_evidence": ["before/snapshot_before.json"],
+      "binding_status": "bound (harness/snapshot.py implemented this attempt; argv confirmed; reads only pinned paths, writes only --out)"
+    },
+    {
+      "id": "CMD-I10A-VALIDATE-RED",
+      "class": "judged",
+      "purpose": "RED arm per judged case: the frozen oracle rules must FAIL against the deliberately incomplete/erroneous evidence fixtures (one fixture defect per rule family) — proves each rule is non-vacuous BEFORE the real artifacts are credited",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/validate_adaptation.py", "--evidence-root", "<scratch-red-case-dir>", "--expect", "fail", "--rule-family", "<family>", "--out", "<command-run-dir>"],
+      "network": "disabled",
+      "expected_returncode": 2,
+      "expected_business_result": "validator refuses with the exact frozen error semantics for that rule family (negative case correctly rejected => rc=2 per this batch legend); a RED arm that passes is rc=3 (应红未红)",
+      "before_after_evidence": ["command_runs/<run-id>/validate_result.json"],
+      "binding_status": "planned"
+    },
+    {
+      "id": "CMD-I10A-VALIDATE-GREEN",
+      "class": "judged",
+      "purpose": "GREEN arm: the same frozen rules must PASS against the real evidence artifacts (positive case => rc=0)",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/validate_adaptation.py", "--evidence-root", "<attempt>/evidence/I-10-A", "--expect", "pass", "--out", "<command-run-dir>"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "all rule families pass against the delivered artifacts (business pass, not just exit 0)",
+      "before_after_evidence": ["command_runs/<run-id>/validate_result.json"],
+      "binding_status": "planned"
+    },
+    {
+      "id": "CMD-I10A-VALIDATE-MUT",
+      "class": "judged",
+      "purpose": "MUTATION arm: one mutated copy of the real artifacts per rule family (wrong sha, unlabelled probe, over-claim wording, zero-filled missing field, post-hoc tolerance, revenue-back-solved parameter); each mutant must be KILLED by the validator (rc=2); any SURVIVOR is recorded honestly",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/validate_adaptation.py", "--evidence-root", "<scratch-mutant-dir>", "--expect", "fail", "--rule-family", "<family>", "--out", "<command-run-dir>"],
+      "network": "disabled",
+      "expected_returncode": 2,
+      "expected_business_result": "each mutant is detected (killed); survivors are logged as mutation_gaps",
+      "before_after_evidence": ["command_runs/mutation/mutation_proof.json"],
+      "binding_status": "planned"
+    },
+    {
+      "id": "CMD-I10A-PROBE-<MODEL_CASE>",
+      "class": "judged",
+      "purpose": "historical_mapping_probe per adopted model/segment: run the production calculate_model_path in the isolated copy with the disclosed historical parameters at identical values on low/base/high; count real registry invocations via call-spy; assert field->parameter->model->output wiring and cross-check output against the independent hand computation frozen in oracle.md; labelled historical_mapping_probe ONLY",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/run_mapping_probe.py", "--case", "<model_case_id>", "--out", "<attempt>/evidence/I-10-A/probe_runs/<model_case_id>"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "three scenario runs (low/base/high) return identical annual_revenue equal to the frozen hand-computed value within 1e-9*max(1,|e|); spy counts show calculate_registered_model actually invoked once per scenario; output labelled historical_mapping_probe",
+      "before_after_evidence": ["evidence/I-10-A/historical_mapping_probe.json", "evidence/I-10-A/probe_runs/<model_case_id>/probe_result.json"],
+      "binding_status": "planned"
+    },
+    {
+      "id": "CMD-I10A-PROBE-RUNS",
+      "class": "judged",
+      "purpose": "the concrete 16 probe invocations: 4 probed cases {ZJ-MIN-M09, ZJ-SMT-M09, XM-PHONE-M03, XM-EV-M03} x 4 variants {normal, red_conv, mut_swap, mut_omit_optional}. MS-PBP-M05 / MS-IC-M06 are deliberately NOT run (parameters missing; oracle §3). Each invocation: argv = [iso python, -X utf8, -B, harness/run_mapping_probe.py, --case <id>, --variant <v>, --out evidence/I-10-A/probe_runs/<id>/<v>, --expect-file evidence/I-10-A/oracle_expected.json]; expected rc: normal=0 (or 3 if mismatch), negative variants=2 (or 3 = survived mutant).",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/run_mapping_probe.py", "--case", "<id>", "--variant", "<normal|red_conv|mut_swap|mut_omit_optional>", "--out", "<attempt>/evidence/I-10-A/probe_runs/<id>/<variant>", "--expect-file", "<attempt>/evidence/I-10-A/oracle_expected.json"],
+      "network": "disabled",
+      "expected_returncode": "0 for normal; 2 for correctly-rejected negative variants; 3 = 应红未红/应绿未绿 (recorded as gap)",
+      "expected_business_result": "normal variants: outputs == frozen hand values, low/base/high identical, spy counts == frozen counts (24/9/3/3); negative variants detected (mismatch or product refusal)",
+      "before_after_evidence": ["evidence/I-10-A/probe_runs/<id>/<variant>/probe_result.json", "evidence/I-10-A/run_log.jsonl"],
+      "binding_status": "bound (run_mapping_probe.py + cases_data.py implemented this attempt before the runs; product entry exercised is the iso byte-copy of production segments.py/model_registry.py)"
+    },
+    {
+      "id": "CMD-I10A-DECODE-HK",
+      "class": "attempt_support",
+      "purpose": "decode the Xiaomi report's Identity-H glyph stream via the PDF's own embedded HYQiHei-FES sfnt cmap (28,873 glyphs, subset fonts stripped their cmap; master glyph space shared across the family — verified 股=20579/份=7871/幣=11813/年=11830). REPLACES the unusable pdftotext/PyMuPDF-plain outputs. NOTE (disclosed in decision.md J-2): this command was first run during tooling iteration before its registration here; argv identical to the recorded runs; evidence kept in command_runs/CMD-I10A-DECODE-HK + run_log.jsonl.",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/decode_hk_text.py", "--pdf", "<HK raw pdf>", "--out", "<attempt>/evidence/I-10-A/source_extracts/HK-XIAOMI-2025_decoded.txt", "--pages", "all"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "page-marked decoded text; 0 unmapped glyphs; raw re-hashed unchanged; manifest records method + hashes",
+      "before_after_evidence": ["evidence/I-10-A/source_extracts/HK-XIAOMI-2025_decoded.txt.manifest.json"],
+      "binding_status": "bound (registered post-run as disclosed; harness/decode_hk_text.py)"
+    },
+    {
+      "id": "CMD-I10A-SNAP-AFTER",
+      "class": "attempt_support",
+      "purpose": "after-state snapshot: identical hash table to CMD-I10A-SNAP-BEFORE for the product anchors + source raws + plan inputs; product zero-change asserted by anchors_identical",
+      "cwd": "<attempt_root>",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/harness/snapshot.py", "--out", "<attempt>/after/snapshot_after.json"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "after/snapshot_after.json identical anchors to before (product zero-change; raw bytes unchanged; plan inputs unchanged)",
+      "before_after_evidence": ["after/snapshot_after.json", "after/hash_table_before_after.json"],
+      "binding_status": "planned"
+    }
+  ]
+}

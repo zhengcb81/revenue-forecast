@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ORIGIN-BYTES",
+  "attempt_id": "a20260925-01",
+  "role": "controlled_forensics",
+  "status": "BLOCKED",
+  "status_reason": "origin 响应字节取回 0 个：B1 落点（company-wiki 在 workspace-write 会话策略下不可写，filing-fetch ensure fatal / downloads=0）+ B2 机制（filing-fetch/dayu 不下载 8-K exhibit ⇒ Exhibit 99.1 origin 字节机制不可达）。fail-closed，不造绿样。",
+  "authorized_by": "OWNER_DECISIONS.md §二十七 第 2 行（2026-09-25，owner 原话「落产品仓（与 filing-fetch 同流）（建议）」）；执行映射逐字见 provenance.json authorization.verbatim；执行纪律 §二十七 L563（三票 = 三个许可，不是三个结论）",
+  "milestone": "MERGE 解锁条件 C3 第一步（merge_ruling.md L162 / L328）的取证层；C3 的会计定级与行业复裁不在本工位",
+  "level_claimed": null,
+  "releases_nothing": true,
+  "does_not_claim_I11A_acceptance": true,
+  "adds_no_new_domain_judgement": true,
+  "origin_bytes_retrieved": 0,
+  "origin_bytes_true_entries": 0,
+  "evidence_elements": {
+    "element_1_local_archive_origin": false,
+    "element_1_flipped_this_attempt": false,
+    "element_5_independent_path": true,
+    "element_5_flipped_this_attempt": false,
+    "element_5_note": "上一轮已判 ✅（带 origin 层限定）；本工位新增第 3 条尝试路径但 0 字节产出，限定未解除",
+    "count_met_origin_side": "0/5 可对 origin 评估；① 仍 ❌、⑤ 维持 ✅ 带限定，②③④ 对 origin 侧无对象"
+  },
+  "target_documents": [
+    {"document": "MSFT 8-K 2026-09-02 Item 7.01", "accession": "0001193125-26-380280", "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm", "origin_bytes": false, "sha256": null, "bytes": null, "http_status": null},
+    {"document": "MSFT 8-K Exhibit 99.1 (FY27 Segments and Investor Metrics)", "accession": "0001193125-26-380280", "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm", "origin_bytes": false, "sha256": null, "bytes": null, "http_status": null}
+  ],
+  "landing_target_decision": {
+    "rule_applied": "OWNER_DECISIONS §二十七 #2（取代 §二十四 L498 在本场景的适用）+ 派单纪律 #1 落点二分",
+    "origin_bytes_primary_landing": {
+      "authorized_path": "C:/Users/郑曾波/Projects/company-wiki/companies/MICROSOFT CORP/raw/…",
+      "required_mechanism": "filing-fetch 既有机制（scripts/fetch_filing.py --allow-download -> company_wiki.source_catalog ensure -> dayu-sec-cli），带其 immutable provenance sidecar",
+      "decision": "BLOCKED —— 按授权原样发起该机制（A2），落点在 ensure 建库/写入阶段被会话文件策略拒绝；未改落点、未改机制、未降级为 web_fetch",
+      "evidence": ["attempt_A2_download.txt（status=fatal / error=attempt to write a readonly database / downloads=0 / exit=2）", "attempt_A3_write_scope_probe.txt（company-wiki 三处 RW_DENY + workspace 内 RW_OK）", "company-wiki reader.py L3-L7 根因说明"],
+      "bytes_landed": 0,
+      "alternate_landing_used": false,
+      "alternate_landing_rejected_reason": "派单纪律 #3：会写出 filing-fetch 允许之外路径的方法不执行；自造影子 wiki 根既非授权落点也会造成『看似已入产品仓』的误导样本（纪律 #4 不造绿样）"
+    },
+    "plan_dir_landing": {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/",
+      "contents": ["attempt_A1_resolve_probe.txt", "attempt_A2_download.txt", "attempt_A3_write_scope_probe.txt", "mechanism_scan.json", "mirror/manifest.json（0 条目，如实空置）", "provenance.json", "acquisition_report.md", "handoff.json"],
+      "decision": "全部取证产物（含镜像位与 sha 校验位）只落本计划目录 —— 与 §二十七 #2 的『本计划目录另存镜像与 sha 校验』一致；镜像位为空是因为无 origin 字节可镜像"
+    },
+    "product_repo_exclusions": "除 origin 字节本体外任何产物均未落产品仓；本工位实际落产品仓字节 = 0",
+    "landing_shape_warning_for_unblock": "即便解封，filing-fetch 的 kind→子目录映射（canonical_writer.py L90-L101）对 8-K 的诚实 kind（current_report / regulatory_filing）会落 raw/other/ 而非 raw/financial_reports/{kind}/；谎报为 quarterly_report 才会落 financial_reports/quarterly/，本工位拒绝。解封前需 owner/父确认可接受形态（仍属 §二十七 #2 的 raw/…）。"
+  },
+  "blockers": [
+    {"id": "B1", "type": "landing_conflict", "summary": "会话文件策略 workspace-write 拒绝 company-wiki 全部写入，filing-fetch 下载无法落盘", "escalation": "未申请且不可申请（审批提示禁用、子代理权限固定）", "remediation": "在允许写 company-wiki 的会话/进程中原样重跑 A2 的 command+request"},
+    {"id": "B2", "type": "mechanism_gap", "summary": "dayu SEC 下载器仅 form_type==6-K 时纳入 exhibit，且适配器只复制 primary_document ⇒ Exhibit 99.1 origin 字节机制不可达", "escalation": "属 filing-fetch/dayu 产品仓改动，需另行授权", "remediation": "owner 决定：扩展 exhibit 闸门到 8-K / 新增 exhibit 级通道 / 另裁取证方式"},
+    {"id": "B3", "type": "landing_shape_note", "summary": "8-K 诚实 kind 落 raw/other/，与『raw/financial_reports/{kind}/』字面不符（仍属 raw/…）", "escalation": "解封前确认落点形态"}
+  ],
+  "attempt_counts": {"total": 4, "network_requests": 0, "origin_bytes_retrieved": 0, "structured_miss": 1, "failed_fatal": 1, "local_probes": 2},
+  "third_party_dependency": {"used": false, "providers": [], "statement": "本工位 0 次网络请求；未使用 harness web_fetch、未使用任何第三方代理取 origin；上一轮的 r.jina.ai / W3C html2txt 转写语料不在本工位登记为 evidence。"},
+  "git_boundary": {
+    "command_used": "git -c core.quotepath=false diff HEAD --name-only（只读；未执行 git status —— 派单纪律 #6 禁用）",
+    "diff_total_lines": 3826,
+    "diff_non_planning_count": 0,
+    "class_a_authorized_origin_bytes_in_product_repo": {
+      "definition": "§二十七 #2 授权落 company-wiki 的 origin 响应字节（失败时允许在产品仓出现的未跟踪新文件）",
+      "count": 0,
+      "paths": [],
+      "note": "company-wiki 是独立 git 仓库；本工位在 company-wiki 内新增/修改 = 0（含 A2 失败尝试的残留检查）。revenue-forecast 侧不存在任何被授权的非 .planning 新文件，因为 origin 字节 0 个。"
+    },
+    "class_b_other_non_planning_writes": {
+      "definition": "除授权 origin 字节外的任何非 .planning 写入（含改动已跟踪产品文件）",
+      "count": 0,
+      "paths": [],
+      "note": "本工位写入面 = 恰 8 个文件，全部在本 attempt 目录内；diff 非 .planning = 0 佐证已跟踪产品文件 0 改动。"
+    },
+    "untracked_detection_limit": "git status 被禁止，未跟踪新文件无法用 git 枚举；改用写入面枚举 + company-wiki 残留时间戳枚举交叉验证，两类均为 0。",
+    "git_writes": 0,
+    "git_status_used": false
+  },
+  "written_files": [
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/attempt_A1_resolve_probe.txt", "bytes": 953, "sha256": "42ed7da91da407942f2d5ad720e3f1984f2e2b1893d5fc4eeccd7a6e511da8e6"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/attempt_A2_download.txt", "bytes": 412, "sha256": "58e4bd534349803593b243f33df791314d16697c767c438b8c274c43ad50122c"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/attempt_A3_write_scope_probe.txt", "bytes": 1483, "sha256": "8a43e0b113613e22d3328066c8d515804e7acb988f600121f560b427a3ef1ebb"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/mechanism_scan.json", "bytes": 5183, "sha256": "a409f26f1feea2b44e7e271a48222789836a37b44b2a16e53462e5f45df245c0"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/mirror/manifest.json", "bytes": 1684, "sha256": "19ce580065d2296667a105fb3659d8901cebdae0fce425f744f7d165953e95c2"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/provenance.json", "bytes": 15149, "sha256": "4835b61eb51cb0937b72bc96411d64abe7d5b9ac62b037a5db092ef488321324"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/acquisition_report.md", "bytes": 16403, "sha256": "43e04dd5f04aa86b4f06c116faec3288ec6c7b296d87cfcb0114d94915698d08"}
+  ],
+  "written_files_note": "handoff.json 自身不入 written_files（自引用哈希不可稳定计算）；上一轮 4 个语料与三份 ruling 全部只读、0 字节变更（sha 复测见 provenance.previous_corpus_verification）。",
+  "not_done": [
+    "未判定任何证据等级（E1 / E2 / BLOCKED-PARTIAL 均未判；level_claimed=null）",
+    "未解除 OPEN-3、未关闭 BLOCKED-3a/3b、BLOCKED-4/5、BLOCKED-UNADJ-2 任何一项",
+    "未产生 ACCEPT、未改任何 status/state/decision/decision_sha256、未授权晋升",
+    "未放行任何 MSFT 参数、未冻结 I-07-E 分部口径",
+    "未在 company-wiki / dayu-agent / filing-fetch / revenue-forecast 写入任何字节（含 origin 字节：0 个）",
+    "未用 harness web_fetch 或第三方代理冒充 origin 字节（纪律 #2）",
+    "未越出 §二十七 #2 的落点范围（未自造影子 wiki 根、未把产物落产品仓）",
+    "未执行 git 写操作、未执行 git status",
+    "未回改上游任何载体（OPEN3-E1-ACQUISITION / OPEN3-E1-ACCT-RULING / I11A-* / OWNER_DECISIONS）"
+  ],
+  "next_owner_action": "1) 解 B1：在可写 company-wiki 的会话/进程中原样重跑 A2（command+request 见 provenance.attempts[A2]），落点形态按 landing_shape_warning_for_unblock 先确认；2) 解 B2：owner 裁定是否授权 filing-fetch/dayu 扩展 8-K exhibit 下载（否则 Exhibit 99.1 origin 字节永远取不到，C3 第一步只能部分完成）；3) origin 落盘后再由会计面按 ACCT R1/C1 出 OPEN-3-ACCT-R2 定级、行业面 ruling_r2.md 复裁（本工位不代行）。"
+}

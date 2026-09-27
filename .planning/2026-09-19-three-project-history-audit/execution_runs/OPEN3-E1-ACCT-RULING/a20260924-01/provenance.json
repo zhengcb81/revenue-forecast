@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ACCT-RULING",
+  "attempt_id": "a20260924-01",
+  "role": "accounting_disclosure_reviewer",
+  "workspace_root": "C:/Users/郑曾波/Projects/revenue-forecast",
+  "write_surface": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACCT-RULING/a20260924-01/"
+  ],
+  "network_activity": {
+    "requests_made": 0,
+    "retrieval_attempts_made": 0,
+    "statement": "本工位是定级工位，不是取证工位：全程零联网、零重取；只用盘上已落的 4 个语料文件 + 21 次尝试记录 + 上游裁定文本裁定等级。"
+  },
+  "external_sources_added": 0,
+  "external_sources_added_note": "provenance 证据条目只引用 OPEN3-E1-ACQUISITION/a20260924-01/provenance.json 的既有条目并标 source=；本地只读文件单列于 local_read_only_inputs（不联网、非外部来源）。",
+
+  "authorization": {
+    "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#authorization",
+    "section": "二十四、【已裁定·第五批】Owner 四答（2026-09-24 深夜，选项式问答原话）",
+    "line": 498,
+    "row": 3,
+    "owner_choice_verbatim": "授权 filing-fetch 路径",
+    "execution_discipline_line_504_verbatim": "取证（选项 3）的证据等级由会计面定，不由取证方自定；取不到就维持 BLOCKED，不造绿色样例。",
+    "dispatch_for_this_card": {
+      "source": "local_file: OWNER_DECISIONS.md#§二十六 (L532-L548)",
+      "owner_verbatim_first_answer": "1，授权，2，要",
+      "owner_verbatim_clarified": "两项都要（PEND-5b 装 + E1 交会计面）",
+      "row3_owner_word_verbatim": "要",
+      "row3_mapping_verbatim": "派 1e143a7e = OPEN3-E1-ACCT-RULING。只定级、不重取（禁联网；若必须看原站字节 ⇒ 判 BLOCKED-NEEDS-ORIGIN-BYTES 而不自己去取）；fail-closed——不得为推进链抬高等级；releases_nothing=true"
+    }
+  },
+
+  "e1_definition_source": {
+    "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#e1_definition_verbatim",
+    "line_66": "| **E1 已核** | 申报原文**本地归档**：URL + 取回 UTC + 文件 sha256 + 逐字引文 + 至少一条独立复核路径（同本卡 P1/P2 双路径精神） | 参数、口径声明、已核字样 |",
+    "line_153": "- **E1 = 已核**（唯一可支撑分部口径已确定的等级）：申报原文本地归档 + sha256 + 逐字引文 + 独立路径复核（与本卡 P1/P2 双路径、arithmetic_oracle 同精神）；分部重分类还须附重述后的基期分部数据（否则不可比）。"
+  },
+
+  "cited_provenance_entries": [
+    {"id": "C-01", "kind": "attempt", "attempt_id": "A1", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts/A1", "summary": "直连 sec.gov 8-K，HTTP 403，窗口 2026-09-24T21:18:59Z-21:19:06Z", "used_for": "① origin 直取成功次数=0"},
+    {"id": "C-02", "kind": "attempt", "attempt_id": "A3", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts/A3", "summary": "直连 sec.gov Exhibit 99.1，HTTP 403，窗口 21:20:24Z-21:20:32Z", "used_for": "① origin 直取成功次数=0"},
+    {"id": "C-03", "kind": "attempt", "attempt_id": "A4", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts/A4", "summary": "r.jina.ai 渲染代理取 8-K，HTTP 200，窗口 21:20:45Z-21:20:56Z，saved_to corpus/MSFT_8K_2026-09-02_Item7.01.md", "used_for": "③④⑤ 语料 1 来源"},
+    {"id": "C-04", "kind": "attempt", "attempt_id": "A5", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts/A5", "summary": "r.jina.ai 渲染代理取 Exhibit 99.1，HTTP 200，窗口 21:21:03Z-21:21:11Z，saved_to corpus/MSFT_8K_2026-09-02_Exhibit99-1.md", "used_for": "③④⑤ 语料 3 来源"},
+    {"id": "C-05", "kind": "attempt", "attempt_id": "A19", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts/A19", "summary": "W3C www.w3.org/services/html2txt 取 8-K，HTTP 200，窗口 21:26:35Z-21:26:42Z，与 r.jina.ai 不同运营方/引擎，saved_to 语料 2", "used_for": "⑤ 独立复核路径 path B"},
+    {"id": "C-06", "kind": "attempt", "attempt_id": "A20", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts/A20", "summary": "W3C html2txt 取 Exhibit 99.1，HTTP 200，窗口 21:26:49Z-21:26:54Z，saved_to 语料 4", "used_for": "⑤ 独立复核路径 path B"},
+    {"id": "C-07", "kind": "attempt", "attempt_id": "A21", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts/A21", "summary": "r.jina.ai 再取 8-K（核对用），窗口 21:32:41Z-21:32:46Z；发现并修正 A4 转写封面页 2 处段落", "used_for": "① 保真层可错的实证；同时证明 Exhibit 主文件未做同等再核"},
+    {"id": "C-08", "kind": "attempt", "attempt_id": "A2", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts/A2", "summary": "filing-fetch 只读 reuse 探针，exit 2，status=not_found，downloads=0", "used_for": "① 未使用下载路径的原因链"},
+    {"id": "C-09", "kind": "attempt_set", "attempt_ids": "A6-A18 (A8/A9/A10/A11/A12/A13/A14/A15/A16/A17/A18 等)", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempts", "summary": "镜像/代理/搜索/摘要站尝试：失败 9、部分不可用 3、搜索 3、结构化 miss 1；均未取得 origin 字节", "used_for": "① 备选取文路径全部未产出 origin 锚点"},
+    {"id": "C-10", "kind": "attempt_summary", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#attempt_summary", "summary": "total 21 / document_text_retrieved 5 / search_results 3 / partial_unusable 3 / failed 9 / structured_miss 1 / saved_to_corpus 4（来源 A4,A5,A19,A20）", "used_for": "§② 对象清单与 21 次尝试核对"},
+    {"id": "C-11", "kind": "saved_artifact", "path": "corpus/MSFT_8K_2026-09-02_Item7.01.md", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#saved_artifacts[0]", "summary": "sha256 096c7d9df55ab46a0ccef21b3ac528b7e59483a91e1b6b32277808bcae801ad1 / 3789 B / 77 行 / UTF-8 无 BOM LF；byte_composition 声明为转写、非 origin 字节", "used_for": "①②③④"},
+    {"id": "C-12", "kind": "saved_artifact", "path": "corpus/MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#saved_artifacts[1]", "summary": "sha256 5927de0367d1097a6bbb1f59c669a3461eacce43c8115874c5e0a497f7689f1c / 5183 B / 182 行", "used_for": "⑤ path B"},
+    {"id": "C-13", "kind": "saved_artifact", "path": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.md", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#saved_artifacts[2]", "summary": "sha256 20392f0e110568fa4338a1167da3756627b77e606eec85ae113aeebf40373f58 / 27586 B / 129 行", "used_for": "①②③④"},
+    {"id": "C-14", "kind": "saved_artifact", "path": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#saved_artifacts[3]", "summary": "sha256 56b0460b4e635b590c1870153a65adc996d134fd12e2cd6c2670c51ab170956d / 28536 B / 510 行", "used_for": "⑤ path B"},
+    {"id": "C-15", "kind": "verbatim_quotes", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#verbatim_quotes", "summary": "Q1-Q8 共 8 条，各带 path A byte_span 与 independent_path_b_confirmed（path B 文件 + 字节区 + 去空白匹配方法）", "used_for": "④ 逐字引文 + ⑤ 双路径命中"},
+    {"id": "C-16", "kind": "acquisition_boundary", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#acquisition_boundary", "summary": "third_party_proxy_used=true；origin_direct_sec_success=false；statement 声明 4 语料全部来自两条第三方文本服务、为转写、非 origin 响应字节，且 dayu-agent/filing-fetch 下载路径因落盘点属禁写产品仓而未执行", "used_for": "① 判定的核心事实 + 恢复规则 R1 的落盘点冲突"},
+    {"id": "C-17", "kind": "method_notes", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json#method_notes", "summary": "timestamps（读秒窗口、不伪造单点）/ transcription_disclosure（逐字转写，A21 修正 A4 封面页 2 处）/ no_origin_bytes（本地文件不含 origin HTML 字节）/ level_not_claimed（等级归会计面）", "used_for": "①③④"},
+    {"id": "C-18", "kind": "handoff_fields", "source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/handoff.json", "summary": "evidence_elements_met 自报 5/5 但 element_1/element_5 带路径限定；level_claimed 明示不判等级；third_party_dependency.sec_origin_direct_successes=0；written_files 4 语料 + 2 载体的 sha256/字节；git_diff_non_planning=0", "used_for": "§② 自报比对 + ⑤ 限定 + §⑦ git 基线"}
+  ],
+
+  "local_read_only_inputs": [
+    {"id": "L-01", "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md", "bytes": 37355, "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2", "lines_cited": "L66, L153-L155, L160-L164, L168-L173, L190, L201, L213-L214, L226, L248-L256", "network": false},
+    {"id": "L-02", "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-MERGE/a20260924-01/merge_ruling.md", "bytes": 49062, "sha256": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1", "lines_cited": "L19, L162-L167, L279-L288, L303-L322, L326-L332", "network": false},
+    {"id": "L-03", "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md", "bytes": 39207, "sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b", "lines_cited": "L133, L147-L153, L171, L175-L178, L197-L198, L208, L359-L360, L371-L372", "network": false},
+    {"id": "L-04", "path": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md", "bytes": 73108, "sha256": "068f39e1d2325f0c5abeb3fa683ab80f6da26cb672bb6c1c283d8dcb0b28a4c7", "lines_cited": "L490-L504 (§二十四), L532-L548 (§二十六)", "network": false, "note": "MERGE L19 记该文件为 c13feca4…/64386 B；本工位实测 068f39e1…/73108 B，差额来自 MERGE 之后的追加式新增节，登记不回改"},
+    {"id": "L-05", "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/decision.md", "lines_cited": "L19, L27, L30 (P1/P2 双路径与失效条件)", "network": false},
+    {"id": "L-06", "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/oracle.md", "lines_cited": "L56, L62, L76 (P1 自制取文器 / P2 Xpdf pdftotext 无共享代码 / 数值逐个出现判据)", "network": false},
+    {"id": "L-07", "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "lines_cited": "L636, L647-L652, L665, L755-L760, L860-L865", "network": false},
+    {"id": "L-08", "path": ".planning/2026-09-19-three-project-history-audit/execution_v2/START_HERE.md", "lines_cited": "L26, L36, L47 (不代签 / 专业决策未定先 blocked / 评审意见六要素)", "network": false}
+  ],
+
+  "reviewer_local_verifications": [
+    {"id": "V-01", "method": "Get-FileHash -Algorithm SHA256 + 文件字节数（对 4 个语料文件）", "network": false, "result": "4/4 与取证方自报完全一致：096c7d9df55ab46a0ccef21b3ac528b7e59483a91e1b6b32277808bcae801ad1(3789) / 5927de0367d1097a6bbb1f59c669a3461eacce43c8115874c5e0a497f7689f1c(5183) / 20392f0e110568fa4338a1167da3756627b77e606eec85ae113aeebf40373f58(27586) / 56b0460b4e635b590c1870153a65adc996d134fd12e2cd6c2670c51ab170956d(28536)", "supports": "② = ✅"},
+    {"id": "V-02", "method": "按 verbatim_quotes[*].byte_slice 读取 path A 原始字节、UTF-8 解码、与 text 逐字节比较；并按偏移回算 1-based 行号", "network": false, "result": "8/8 逐字节相同；8/8 行号与申报一致（Q1 L65 / Q2 L67 / Q3 L69 / Q4 L23 / Q5 L41 / Q6 L89 / Q7 L119 / Q8 L5）", "supports": "④ = ✅"},
+    {"id": "V-03", "method": "对 path B 文件去全部空白后子串匹配 8 条引文；并对 declared 独立字节区做两种解释的切片比对", "network": false, "result": "引文命中 8/8；declared 区间在去空白流中 0/8 符合（Q3/Q7 甚至越界），但在 path B 原始（含空白）字节流上 8/8 精确——去空白归一化后与引文逐字相同 ⇒ 字段名 whitespace_insensitive_byte_span 与实义不符，值可用、标签不准（登记不回改）", "supports": "④⑤ = ✅ + 一处元数据命名缺陷登记"},
+    {"id": "V-04", "method": "全量 token 双向比对（离线）：正则抽取两路文件的数字 token 集合与英文单词集合求差集", "network": false, "result": "Exhibit 对：唯一数字 463 vs 460，onlyInA={000119312526380280,789019,99}（图片 URL/编号片段）、onlyInB=∅；A 侧单词未见于 B 者 8 个，全为图片 URL 词（archives,data,edgar,gov,https,image,jpg,www）。8-K 对：onlyInA={000119312526380280,06,20,31,789019}（r.jina.ai 头部 Published Time 与 URL）、onlyInB={0000789019,09}（iXBRL 事实头）；A 侧未见于 B 的 10 词全为渲染器头部词。⇒ 实质内容 0 矛盾，P1/P2 失效条件未触发", "supports": "⑤ = ✅（不矛盾判据实测通过）"},
+    {"id": "V-05", "method": "UTF-8 严格解码 + BOM 检查 + CR 检查（4 个语料文件）", "network": false, "result": "4/4 严格解码通过、BOM=False、hasCR=False（纯 LF）", "supports": "载体格式自检"},
+    {"id": "V-06", "method": "取证工位 7 个文件的 sha256/字节/mtime 读取前后对照", "network": false, "result": "全部与自报一致；mtime 停留在 22:33:00/22:33:52/22:35:10/22:36:35/22:40:39/22:41:48/22:43:22 ⇒ 待裁对象 0 字节变更", "supports": "§② 只读自证"},
+    {"id": "V-07", "method": "git -c core.quotepath=false diff HEAD --name-only 与 git status --porcelain（只读）", "network": false, "result": "diff HEAD 总 3826 条、非 .planning = 0；porcelain 非 .planning = 2（.tmp-r41-mutation/、assurance/unified_completion/manifests/plan_inputs.json.bak，均为本会话开始前既有 untracked，取证工位 handoff L62-L66 同判）", "supports": "§⑦ 零 git 写"},
+    {"id": "V-08", "method": "读取 hypotheses.json 与三份上游 ruling 的相关行，逐条核 MSFT 参数放行前置", "network": false, "result": "给数四要件对 MSFT 阈值 = 1/4 明确满足（观测量✅，可核基础部分，非实现者签署❌，追加版本化❌）；MERGE §3.4 七条 = 7/7 未满足", "supports": "§5.4 条件式清单（未触发）"}
+  ],
+
+  "method_notes": {
+    "no_retrieval": "本工位未发起任何网络请求；一切验证均为本地文件读取与哈希/字节/集合运算。",
+    "no_origin_bytes_needed_to_rule": "owner §二十六 #3 的 BLOCKED-NEEDS-ORIGIN-BYTES 是为『必须看原站字节才能定级』准备的退出状态；本工位不需要看 origin 字节即可按 fail-closed 给出结论，故照常定级，并把 origin 字节登记为要素①的补齐条件（不是本裁定的退出状态）。",
+    "transcription_vs_origin": "本裁定区分两层：路径层（两条不同第三方代理，实测不矛盾）与 origin 字节层（盘上无锚点）。路径层问题由要素⑤处理，origin 字节层问题由要素①处理，同一缺口不重复计罚。",
+    "level_authority": "等级判定权归会计面（§二十四 L504）；取证方自评的 5/5 与 E1-PARTIAL 只作形态输入，不作等级。",
+    "additive_only": "本文件为追加式载体；任何更正须新建 R2 并在 handoff.json 登记链条，不回改本文件。"
+  },
+
+  "boundary_compliance": {
+    "files_written": ["ruling.md", "provenance.json", "handoff.json"],
+    "files_written_count": 3,
+    "writes_outside_plan_dir": 0,
+    "object_files_modified": 0,
+    "i11a_modified": false,
+    "upstream_carriers_modified": false,
+    "git_write_operations": 0,
+    "network_requests": 0,
+    "status_changes": 0,
+    "blocked_released": 0
+  }
+}

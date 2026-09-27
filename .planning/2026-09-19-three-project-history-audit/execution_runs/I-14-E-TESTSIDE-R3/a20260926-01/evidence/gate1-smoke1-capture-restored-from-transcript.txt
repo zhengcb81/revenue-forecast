@@ -1,0 +1,64 @@
+> RESTORED FROM SESSION TRANSCRIPT - NOT ORIGINAL BYTES.
+>
+> Defect: smoke #1's pytest capture (evidence/gate1-smoke/captures/red-p1-r1.txt)
+> and band json (evidence/gate1-smoke-band.json) were OVERWRITTEN IN PLACE by
+> smoke #2, which used the same arm/pass/run-derived filenames (--arm red
+> --runs 1 => red-p1-r1.txt both times). My invocation error. The content below
+> is the exact capture text as displayed verbatim in the session transcript
+> (read of the original file before it was overwritten); smoke #1's surviving
+> ORIGINAL bytes are evidence/gate1-pytest-smoke-raw.txt (driver console:
+> "red p1 r1 rc=3 unknown wall=1.27s ... tally ... ambient"). Smoke #2's
+> capture remains at evidence/gate1-smoke/captures/red-p1-r1.txt (original).
+>
+> ===== capture content (transcript-restored) =====
+CW-BASETEMP-DECISION {"event": "decision", "requested_basetemp": "C:\\Users\\\u90d1\u66fe\u6ce2\\AppData\\Local\\Temp\\dsh-yl8Qld\\i14ets-r3\\s11", "requested_basetemp_len": 56, "cwd_len": 52, "threshold": 60, "win32_path_limit": 210, "generation_reserve": 150, "relocated": false, "reason": "within-budget"}
+
+INTERNALERROR> Traceback (most recent call last):
+
+INTERNALERROR>   File "C:\Users\閮戞浘娉Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-TESTSIDE-R3\a20260926-01\venv\Lib\site-packages\_pytest\main.py", line 326, in wrap_session
+
+INTERNALERROR>     config._do_configure()
+
+INTERNALERROR>     ~~~~~~~~~~~~~~~~~~~~^^
+
+INTERNALERROR>   File "C:\Users\閮戞浘娉Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-TESTSIDE-R3\a20260926-01\venv\Lib\site-packages\_pytest\config\__init__.py", line 1205, in _do_configure
+
+INTERNALERROR>     self.hook.pytest_configure.call_historic(kwargs=dict(config=self))
+
+INTERNALERROR>     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+
+INTERNALERROR>   File "C:\Users\閮戞浘娉Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-TESTSIDE-R3\a20260926-01\venv\Lib\site-packages\pluggy\_hooks.py", line 534, in call_historic
+
+INTERNALERROR>     res = self._hookexec(self.name, self._hookimpls.copy(), kwargs, False)
+
+INTERNALERROR>     ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+
+INTERNALERROR>   File "C:\Users\閮戞浘娉Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-TESTSIDE-R3\a20260926-01\venv\Lib\site-packages\pluggy\_manager.py", line 120, in _hookexec
+
+INTERNALERROR>     return self._inner_hookexec(hook_name, kwargs, firstresult)
+
+INTERNALERROR>            ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+
+INTERNALERROR>   File "C:\Users\閮戞浘娉Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-TESTSIDE-R3\a20260926-01\venv\Lib\site-packages\pluggy\_callers.py", line 167, in _multicall
+
+INTERNALERROR>     raise exception
+
+INTERNALERROR>   File "C:\Users\閮戞浘娉Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-TESTSIDE-R3\a20260926-01\venv\Lib\site-packages\pluggy\_callers.py", line 121, in _multicall
+
+INTERNALERROR>     res = hook_impl.function(*args)
+
+INTERNALERROR>   File "C:\Users\閮戞浘娉Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-TESTSIDE-R3\a20260926-01\iso\conftest.py", line 161, in pytest_configure
+
+INTERNALERROR>     _record(decision)
+
+INTERNALERROR>     ~~~~~~~^^^^^^^^^^
+
+INTERNALERROR>   File "C:\Users\閮戞浘娉Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-E-TESTSIDE-R3\a20260926-01\iso\conftest.py", line 152, in _record
+
+INTERNALERROR>     with open(path, "a", encoding="utf-8") as handle:
+
+INTERNALERROR>          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+INTERNALERROR> FileNotFoundError: [Errno 2] No such file or directory: '.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-E-TESTSIDE-R3\\a20260926-01\\evidence\\gate1-smoke\\basetemp-decisions.jsonl'
+
+> ===== end restored content =====

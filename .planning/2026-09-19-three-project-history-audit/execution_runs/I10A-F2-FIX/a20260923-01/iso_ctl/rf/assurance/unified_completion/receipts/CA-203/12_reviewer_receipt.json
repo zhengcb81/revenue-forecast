@@ -1,0 +1,73 @@
+{
+ "unit": "CA-203",
+ "reviewer": "reviewer-ca203-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "b3add2c86b854b27dfb0dfde7082fa6325ff6b7bcd99ab174d890f1bfcb8ad9c",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca203_weekly_t3.py -q --timeout=600",
+   "exit_code": 0,
+   "result": "8 passed in 50.66s (C1 gate/blocked; C2 single-flight; C3 amendment; C4 provider drift; C5 reconciliation)"
+  },
+  {
+   "command": "independent marker/structure verification (opt-in env, skipUnless, three markets, corruption rejection, second-run-zero-download in filing-fetch T3 suite; _suite_outcome three-branch pure function; spy adapter local-only no network)",
+   "exit_code": 0,
+   "result": "ALL markers confirmed; spy_adapter imports only hashlib/json/os/sys/pathlib, writes local fake PDF, fake domain https://spy.example/; FILING_FETCH_E2E_DOWNLOAD never set by the test"
+  },
+  {
+   "command": "pytest adjacent spot check (test_zr903 x2 + test_zr805 x1)",
+   "exit_code": 0,
+   "result": "3 passed in 0.18s"
+  },
+  {
+   "command": "git status revenue (scripts/tools) + filing-fetch + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "revenue scripts/tools clean; filing-fetch clean (HEAD 5a1c18f5); HEAD=b05b1947 parent=e331289 matches; commit only tests/test_ca203_weekly_t3.py +325"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical b3add2c8 matches; base_triplet (filing 5a1c18f/revenue e3312898/wiki 35a1103) and result_triplet (revenue b05b1947) all real commits; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "e3312898eda7d985add4129c39e4ac5df46f562e",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "b05b1947606e729f02e5006009615535cb02dec2",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA203-REV-001",
+   "severity": "info",
+   "title": "_suite_outcome 对含 passed 的部分跳过判 ok",
+   "detail": "如 '2 passed, 3 skipped' exit 0 会判 ok——与 ZR-903 既有语义一致的设计取舍（全跳过才 blocked），非缺陷。"
+  },
+  {
+   "id": "CA203-REV-002",
+   "severity": "info",
+   "title": "registry 卡片文件未提交为预期中状态",
+   "detail": "state.json 修改 + receipts/CA-203/、locks 未跟踪——与 implementer receipt touched_files 声明一致，closure 流程将提交归档。"
+  },
+  {
+   "id": "CA203-REV-003",
+   "severity": "info",
+   "title": "company-wiki 工作区既有脏文件",
+   "detail": "llm_cost_log.csv/coverage.json 等历史遗留，非本卡产物（touched_files 仅 revenue tests+registry）。"
+  },
+  {
+   "id": "CA203-REV-004",
+   "severity": "info",
+   "title": "C2 bytes>0 断言含 seed 种子文档字节",
+   "detail": "关键断言（二次请求字节不变、fetch 计数不变）不受影响，字节记账语义不变。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T15:10:24+00:00",
+ "canonical_hash": "e49639e7fd5239da236cb25e0031a86cdcf170949378a36e6af021f0ed8d4251"
+}

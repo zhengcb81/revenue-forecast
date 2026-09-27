@@ -1,0 +1,18 @@
+﻿=== 51-CI-equiv-dual-run-completeness.log ===
+task 3 check: BOTH CI-equivalent full runs complete on disk? (the run killed at ~45-47% must NOT count)
+VOID (kept, NOT used): 33-cov-BEFORE-B-CI-equiv-full.log bytes=27418 mtime=2026-09-24 00:44:23 collected=2894 footer='' -> truncated, NO pass/fail footer => NOT an artifact.
+BEFORE-B : 33b-cov-BEFORE-B-CI-equiv-full.log
+   bytes=631418  mtime=2026-09-24 06:21:51  sha256=DA87EA835AE0F17D80AD6D15E87B954CFAB2909D7F6A8F6257E594A23C959CE0
+   collected=2894 items
+   footer: === 62 failed, 2822 passed, 10 skipped, 487 warnings in 1117.38s (0:18:37) ====
+   FAILED breakdown: total=62  tests/unit=1  tests/contract=39  other(acceptance+tests root)=22
+AFTER-B  : 34-cov-AFTER-B-CI-equiv-full.log
+   bytes=624448  mtime=2026-09-24 06:26:01  sha256=379B7491DBCDD79286EC023FA7B25B6F63A4F14782C0DCB5A0835970A1676018
+   collected=2906 items
+   footer: === 63 failed, 2833 passed, 10 skipped, 485 warnings in 1110.03s (0:18:30) ====
+   FAILED breakdown: total=63  tests/unit=1  tests/contract=40  other=22
+delta AFTER-B vs BEFORE-B: +12 items (the 12 new fail-closed archive tests), +11 passed, +1 failed.
+the single extra failure = tests/contract/test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample
+(portfolio fingerprint race; isolated re-run PASSES twice -> 46-zr409-extra-failure-isolated-rerun.log).
+Both runs share the identical failure set otherwise => decision.md §7.4 claim re-verified at raw level.
+Both COMPLETE => no re-run required (and a re-run is NOT executable in this session — see 49).

@@ -1,0 +1,124 @@
+{
+  "schema": "i11b_expert_assumptions/1",
+  "card": "I-11-B",
+  "attempt": "execution_runs/I-11-B/a20260926-01",
+  "role": "implementer_i11b",
+  "template_rule": "§三十四 L766：每一条以 expert_assumption 承接的判断，必须给敏感性区间 + equivalent_to_disclosure_basis=false（同 H4 的 (iv) 形态）。缺任一字段 ⇒ 该条不成立 ⇒ 对应参数触发 STOP_CALIBRATION。",
+  "carrier_form": "A-6.3 (iv) expert_assumption + 敏感性区间",
+  "release_state_all": "not_released",
+  "assumptions": [
+    {
+      "id": "EA-1",
+      "assumption": "幅度敏感性带的形状借用行业面已审定阈值带：销量类参数 [0.9, 1.1]（±10%，H4 计划达成率带）、单位收入/复合收入类参数 ±5%（H2 单位收入漂移带）、增长率参数按产出收入 ±5% 换算。带形状是敏感性设计，不是预测精度主张。",
+      "basis": "本地语料中唯一经专业面审定的带宽约定（IND ruling L288 H4=0.90-1.10；OPEN-6 H2=±5%）；无同口径多期历史样本可估分布，故带形状只能由分析师锚定既有审定约定。缺口：无任何已审定的'幅度分布'证据。",
+      "equivalent_to_disclosure_basis": false,
+      "release_state": "not_released",
+      "blocked_by_residuals": [
+        "OPEN-6（H4 四要件未齐/口径桥未闭合）"
+      ]
+    },
+    {
+      "id": "EA-2",
+      "assumption": "金→铜当量换算系数 = 24 吨/千克（示意值）用于 ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 的分母折算。",
+      "basis": "公司未披露铜当量换算系数（store 转换公式原文：'本式假定 1 千克金 = 24 吨铜当量（示意值，不是披露值）'）。缺口：系数来源需会计/行业 reviewer 裁定（OPEN-2）。",
+      "sensitivity_interval": {
+        "low": "系数 23 吨/千克 ⇒ 单位收入 124,248.63+10,670.89/1≈134,919.5（两点差分方向）",
+        "base": "系数 24 ⇒ 124,248.63 元/吨铜当量",
+        "high": "系数 25 ⇒ 113,577.74 元/吨铜当量",
+        "unit": "人民币元/吨铜当量",
+        "band_rationale": "store 已载明两点差分：系数每 +1 吨/千克 ⇒ 当量分母 885,141→968,302 ⇒ 单位收入 −10,670.89 元/吨（不是偏导数；分母单独 +1 吨的效应仅约 0.14 元/吨，两者不可混用）"
+      },
+      "equivalent_to_disclosure_basis": false,
+      "release_state": "not_released",
+      "blocked_by_residuals": [
+        "OPEN-2（ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 放行=BLOCKED；参数保持 _PLACEHOLDER）"
+      ]
+    },
+    {
+      "id": "EA-3",
+      "assumption": "基期取'最后可得同口径年度值不变'（FY2025 实际 → FY2027 base 的朴素基线）；FY2025 库存释放效应（铜 +6,763 吨、金 +418 千克）不外推为常态。",
+      "basis": "evaluation_design_fields 朴素 baseline 规则（'最后可得同口径年度收入不变'）+ store conversion_formula 原文'均由库存下降/在途释放实现，不得外推为常态'。缺口：无 FY2026/FY2027 可核同口径观测。",
+      "sensitivity_interval": {
+        "low": "base×0.9（量）/ base×0.95（价、收入）",
+        "base": "FY2025 同口径值",
+        "high": "base×1.1（量）/ base×1.05（价、收入）",
+        "unit": "随参数",
+        "band_rationale": "若 FY2026 中报出现同口径观测，应以观测替换基线；基线选择对 2 年期 CAGR 的敏感性=±0%（持平假设）vs 趋势外推的差异可达 ±10% 以上"
+      },
+      "equivalent_to_disclosure_basis": false,
+      "release_state": "not_released",
+      "blocked_by_residuals": []
+    },
+    {
+      "id": "EA-4",
+      "assumption": "MSFT 三分部 FY2027 增长率的 base 取 FY2026 已披露增速持续（PBP +16%、IC +30%、MPC −1%）；low/high 由产出收入 ±5% 换算（g_low=(1+g)×0.95−1、g_high=(1+g)×1.05−1）。",
+      "basis": "FY2027 无任何已披露或可核增速来源；store 仅登记 FY2026 增速'仅作对照'。缺口：增速持续性无证据，纯分析师判断。",
+      "sensitivity_interval": {
+        "low": "PBP 0.102 / IC 0.235 / MPC −0.0595",
+        "base": "0.16 / 0.30 / −0.01",
+        "high": "PBP 0.218 / IC 0.365 / MPC 0.0395",
+        "unit": "小数（年度增长率）",
+        "band_rationale": "带宽=收入 ±5%（EA-1 形状）；若改用 ±10% 收入带则增长率带同比例扩张（PBP [0.044, 0.278]）；三情景下三分部收入合计区间 = [320,763, 348,432] USD mn 量级，须与集团口径一致性复核"
+      },
+      "equivalent_to_disclosure_basis": false,
+      "release_state": "not_released",
+      "blocked_by_residuals": [
+        "OPEN-3（MSFT 分部口径全部维持不放行）"
+      ]
+    },
+    {
+      "id": "EA-5",
+      "assumption": "ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027 的基期值取 109,977,556,345 元（= store 四分部合计 349,079,082,852 − 165,858,644,874 − 29,212,610,830 − 44,030,270,803；亦即 H-CN-ZIJIN-SEG-02 转换公式所引'分部对外收入'）。",
+      "basis": "store H-01 parameter_mapping.original_value 记 '349,079,082,852'（= 合并口径合计）与 parameter_id 的矿产品分部语义存在张力（unverified-N1）；差额法与 H-02 引数法两路同值。缺口：store 原文未给矿产品分部单值的直接引文行（p327/p328 待独立复审回源核对）。",
+      "sensitivity_interval": {
+        "low": "104,478,678,528 元（−5%）",
+        "base": "109,977,556,345 元",
+        "high": "115,476,434,162 元（+5%）",
+        "unit": "人民币元",
+        "band_rationale": "若独立复审认定 store 原值 349,079,082,852 才是该参数语义，则 base 幅度差异约 3.17 倍——该张力本身即最大敏感性来源，须优先裁并"
+      },
+      "equivalent_to_disclosure_basis": false,
+      "release_state": "not_released",
+      "blocked_by_residuals": [
+        "unverified-N1"
+      ]
+    },
+    {
+      "id": "EA-6",
+      "assumption": "联合情景相关性：同一事件驱动的销量、价格、额外收入三通道必须沿同一情景档联动；low/high 是成对联动档位，不是各驱动独立极值的组合。",
+      "basis": "卡文 L15/L21（dependency_control + STOP_SCENARIO）+ 各命题 double_count_check 逐字约束。缺口：相关系数无历史样本可估，只作结构约束（不作统计相关性主张）。",
+      "sensitivity_interval": {
+        "low": "联合低档：量与价同向下沿（收入下沿≈量×价复合 −14.5% 量级）",
+        "base": "各 base",
+        "high": "联合高档：量与价同向上沿（≈+15.5% 量级）",
+        "unit": "复合（收入）",
+        "band_rationale": "独立极值组合（量 high × 价 high × 其他收入 high）会产生 +21% 量级的不可能联合情景——这就是 STOP_SCENARIO 要拦的形态；联动档把联合带控制在单驱动带宽的复合内"
+      },
+      "equivalent_to_disclosure_basis": false,
+      "release_state": "not_released",
+      "blocked_by_residuals": []
+    },
+    {
+      "id": "EA-7",
+      "assumption": "analyst_assumption_declined（显式拒绝出数）：ZIJIN_MINERAL_COPPER/GOLD_REALIZED_UNIT_REVENUE_FY2027（基期值本工位不可复算）、MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER（口径未闭合、无换算公式）、MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027（拆分数据缺失）四个槽位，本卡明确不作任何幅度假设，维持 null/unquantified/_PLACEHOLDER。",
+      "basis": "出数只能靠捏造基期或口径 ⇒ 违反'不复制示例数字'与'残余不隐藏'红线。缺口本身即 C3/C5 残余（OPEN-2/OPEN-3）的直接后果。",
+      "sensitivity_interval": {
+        "low": "n/a（无数值）",
+        "base": "n/a（无数值）",
+        "high": "n/a（无数值）",
+        "unit": "n/a",
+        "band_rationale": "带设计已预登记（±5% 形状，EA-1）；一旦 OPEN-2/OPEN-3 解锁并取得基期，按同一形状出数即可，无需新方法"
+      },
+      "equivalent_to_disclosure_basis": false,
+      "release_state": "not_released（无值可放）",
+      "declined": true,
+      "blocked_by_residuals": [
+        "OPEN-2",
+        "OPEN-3"
+      ]
+    }
+  ],
+  "count": 7,
+  "all_have_sensitivity_interval": true,
+  "all_equivalent_to_disclosure_basis_false": true
+}

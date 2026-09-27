@@ -1,0 +1,67 @@
+{
+ "unit": "ZR-1007",
+ "reviewer": "reviewer-zr1007-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "ccbde9d8d1685f504fdae7900f22c7277c29aba992bdcd90fc59e7c582e2bba1",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr1007_mine_shadow.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "12 passed in 0.31s (C1 shadow computable + legacy coexists; C2 attribution; C3 reconcile/honest gap; C4 mine-volume backtest + as-of; C5 zero registry writes + run_forecast not called)"
+  },
+  {
+   "command": "python -m pytest tests/test_zr609_zijin_pilot.py tests/test_zr713_rolling_backtest.py tests/test_zr605_mine_year_operation.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "54 passed in 1.40s (相邻契约回归 OK)"
+  },
+  {
+   "command": "independent hand-checks: saleable 427.5 x 5.0 = 2137.5; volume delta 200x0.5x0.9x0.95x5.0=427.5; price 5->6 delta 427.5; recovery 0.9->0.8 formula 1000x0.5x(-0.1)x0.95x5.0=-237.5 (test asserts this formula and passes); reconcile gap 50.0; mine-volume 427.5+855.0=1282.5",
+   "exit_code": 0,
+   "result": "ALL PROBES MATCH test assertions (C1/C2/C3/C4)"
+  },
+  {
+   "command": "git status --porcelain -- scripts tests + log -1",
+   "exit_code": 0,
+   "result": "HEAD=887fd12 parent=4091fa15 matches declaration; scripts/ tests/ zero product changes"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check + --collect-only",
+   "exit_code": 0,
+   "result": "canonical ccbde9d8 matches; base_triplet (filing 5a1c18f/revenue 4091fa15/wiki 35a1103) and result_triplet (revenue 887fd12) all real commits; delta only revenue; 911 collected = 908 passed + 3 deselected (self-consistent)"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "4091fa15a69fde7f38e4b443e75917d88a4541e7",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "887fd12cd8ab09a790f8d80a3c6e67d8ebdd73bc",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR1007-REV-001",
+   "severity": "minor",
+   "title": "implementer receipt 中 recovery delta 数值 -213.75 应为 -237.5",
+   "detail": "receipt finding ZR1007-IMPL-001 叙述写 'recovery 0.9->0.8 -> delta -213.75'，手算 1000x0.5x(-0.1)x0.95x5.0=-237.5；测试断言公式本身正确（-237.5）且复放通过，仅 receipt 叙述数值瑕疵，不影响断言真实性。"
+  },
+  {
+   "id": "ZR1007-REV-002",
+   "severity": "minor",
+   "title": "implementer receipt 中全量计数 896 应为 908",
+   "detail": "receipt commands 记 '896 passed'，实测 911 collected = 908 passed + 3 deselected（-k not fc1103），896 差 12 恰为本卡新增测试数（commit 前旧口径）；零回归结论不受影响，本卡 12 passed + 相邻 54 passed 均独立复放。"
+  },
+  {
+   "id": "ZR1007-REV-003",
+   "severity": "info",
+   "title": "复放耗时优于声称值",
+   "detail": "本卡 12 passed in 0.31s（声称 0.42s）、相邻 54 passed in 1.40s（声称 1.26s），无 flaky。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T13:13:59+00:00",
+ "canonical_hash": "3775053f481d3c8e0215b6195839d1e3545fa435326aa369ea7c8cac66f53f10"
+}

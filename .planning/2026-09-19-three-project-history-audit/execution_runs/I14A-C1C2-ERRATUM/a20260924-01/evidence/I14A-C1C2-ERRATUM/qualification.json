@@ -1,0 +1,209 @@
+{
+  "card_id": "I14A-C1C2-ERRATUM",
+  "card": "I-14-A",
+  "attempt_id": "a20260924-01",
+  "attempt": "execution_runs/I14A-C1C2-ERRATUM/a20260924-01",
+  "record": "qualification",
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+
+  "formula": "not_applicable_with_reason",
+  "formula_reason": "本卡是追加式勘误载体轮（C-1 冻结期望失败的阈值更正 + C-2 两处被推翻表述的读法更正），不含任何收入预测公式工作：无代码改动、无测试执行、无期望值/资格变化、无产品写入。此处不产生、不修正、也不验收任何 revenue-forecast 公式结果，故 formula 判为 not_applicable_with_reason（不适用并附理由），而非通过或不通过。",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+
+  "status": "accepted_scoped",
+  "status_before": "review_pending",
+  "scope_is_scoped_not_clean": true,
+
+  "granted_scope": {
+    "statement": "授予范围 = C-1 阈值更正与 C-2 读法更正的**证据与判据**被独立复审判为成立（ACCEPT，P1=0 / P2=2 / P3=3 + 6 项未证实），且仅限于此；不外溢到晋升、复签或产品收紧。",
+    "items": [
+      "C-1 阈值导出性判据：三源在盘且复审独立复算（名义 50ms = iso/slo_probe_patched.py:76；reviewer 节拍 64.0-75.2ms = e1c_samples_inside_life.json；本会话节拍 63.67-66.92ms 由 evidence/green/sweep/E1c-F3-alive-allocate/report.json 按 window/(count-1) 重算），0.1504 = 2 x max(75.2, 66.92) 复算一致 ⇒ 判「导出成立」",
+      "C-1 阈值系数外生性判据：2x 与约 150ms 逐字来自 D1 已签署 ruling.md:174 与 :185(i)，D1 载体 mtime 2026-09-24T20:55:57Z 早于本 attempt 首写 21:15:46Z",
+      "C-1 先冻后跑判据：oracle.md 21:15:46Z < 最早 evidence 21:17:30Z < 首份运行证据 21:17:44Z",
+      "C-1 阈值不在刀口上判据：max→min 得 0.1338s，对 10 次 E0 + --all + M1-M4 逐调用重判结论全不变；唯一 >=0.1338 的调用 0.135917s 属修后 run2，其 fixture pid 全集 ⊆ 采样集（missing=[]），即使入域仍绿",
+      "C-1 反例与判据计数判据：git diff --no-index 独立比对 ⇒ fixture_spec.py +27/-0（期望字典零改动）、run_probe_cases.py +58/-5（5 行删除全在原身份块内）；E0 判据 13→14，逐键对照新增 rss_pids_include_child_pids",
+      "C-1 三臂与四变异判据（复审在 %TEMP% 全部自跑）：修前 E0×5 = R,G,G,R,G ⇒ 3红/2绿、红时恒 fixture_pid_is_in_samples、pytest rc=1 1f/11p/1s；修后 E0×3 全绿 14 键 rc=0、--all rc=0 7/7、pytest rc=0 12p/1s；M1 红（4 项）· M2 红且唯一 fixture_pid_is_in_samples（入域 1.794-2.061s）· M3 红且唯一（入域 0.461-0.484s）· M4 绿（0.468-0.541s）⇒ E0 非空断言成立",
+      "C-1 两处封盘前缀复算判据（含 git blob 交叉验证）：oracle.md 前 20457B = 87775f2f4ff025e4d104fd1dfe23d7f7bfc75a20520f8859732133e96ec84bb7、前缀 git hash-object = 2cd1926dd496862ee1a53317f7ed1700d0597d5d = HEAD blob；decision.md 前 8467B = a1a9d37478ffb42f15877ac29b9ecb044b8f402f4d77f532d1a25f1646bfda24、前缀 blob = 89f5d936744ed8a039d01efcbf9abb7411c3782a = HEAD blob ⇒ 前像即提交原像；追加段与登记追加源逐字节相等；git status --porcelain -- execution_runs/I-14-A 恰好 2 行 M；封盘 85 个被跟踪文件逐 git hash-object 比对仅这 2 个不等；封盘全树 mtime≥2026-09-21 只有这两个、其余 1578 件仍为封盘当时 ⇒ 追加未越界、P1=0",
+      "C-2 读法更正判据：tools/*.py 24 文件、\\.db\\b 0 命中；release_readiness.py:37 = CATALOG = WIKI_ROOT / \".source_catalog\" / \"catalog.sqlite3\"；全树 catalog.db 4 命中且与自述逐一相同、全非产品代码；隔离副本实跑引号+注释 ⇒ rc=3、引号残留、same_directory=false；裸标量+注释 ⇒ 绑定接受；--catalog <dir>/catalog.db ⇒ consistent/allowed=true ⇒ clause 6 对 catalog.db 确未达成；生产 source_catalog.yaml:2 不含行内注释 ⇒ 当前生产不受影响（不夸大）"
+    ],
+    "not_included_in_granted_scope": ["晋升", "D2 复签", "产品收紧"]
+  },
+
+  "not_granted": [
+    "晋升（探针/产品任何路径的 promotion；本卡 promotion_copy_count = 0）",
+    "I-14-A 通过声明（does_not_claim_I14A_acceptance = true；复审明示「本人不宣布 I-14-A 通过」）",
+    "D2 复签（D2_resign_pending = true；复审与本落定均不处置，应另开受控卡）",
+    "产品收紧（产品侧 consistent 收紧属代码改动，需另开受控卡；本轮不做）",
+    "干净环境绿（复审仅在 %TEMP% 隔离副本复跑，未在干净环境取证；不作此声明）",
+    "disclosure_adaptation 与 accuracy 的任何推进（分别保持 unmapped / unproven）",
+    "6 项未证实事项的补证或消解（随行登记，本落定不补证、不改判）",
+    "P2-1 / P2-2 / P3-1 / P3-2 / P3-3 五处文字数值的修复（按 T1-21 另起纯追加更正登记，本轮不改既有 carrier 字节）"
+  ],
+
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "verdict_author": "独立复审工位（与实现者非同一人）— written in reviewer_report.md line 13, never by the implementer and never by this file's author",
+    "landing_agent": "carrier-landing bookkeeping executor (delegated subagent) — transcribed the reviewer's existing verdict; wrote no verdict of its own",
+    "bookkeeping_transcription_adds_no_acceptance": true,
+    "no_new_adjudication": true,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "existing_carrier_bytes_written": 0,
+    "sealed_files_bytes_written": 0,
+    "plan_files_written": 0,
+    "git_write_operations": 0,
+    "network_access": 0,
+    "tests_run": 0
+  },
+
+  "status_authority": {
+    "status": "accepted_scoped",
+    "status_before": "review_pending",
+    "verdict": "ACCEPT",
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "verdict_written_by": "独立复审工位（independent reviewer session, 与实现者非同一人）— written in reviewer_report.md, never by the implementer",
+    "verdict_is_transcribed_not_authored": true,
+    "implementer_signed": false,
+    "authority_statement": "status accepted_scoped 只是对 reviewer_report.md 既有裁决的簿记转录；本 pass 不产生新裁决、不自签、不宣布 I-14-A 通过、不处置 D2 复签与产品收紧。",
+    "carrier": {
+      "file": "reviewer_report.md",
+      "path_inside_attempt": "reviewer_report.md",
+      "bytes": 23627,
+      "sha256": "b088ed676644e46d8dbb2f1b37034266a257d9564d976d5472e3164524bda246",
+      "total_lines": 138,
+      "encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+      "line_range_inclusive_1_based": [1, 138],
+      "verdict_line": 13,
+      "verdict_line_range_inclusive": [13, 13],
+      "verdict_line_text": "VERDICT: ACCEPT",
+      "conclusion_line": 15,
+      "conclusion_line_range_inclusive": [15, 15],
+      "sections": {
+        "per_item_table_1_to_8": {"lines": [19, 34], "byte_region": {"start": 1146, "end_inclusive": 8074, "length": 6929, "sha256": "1fe1488f8451e50cee24ead264cc5590c522cf59b97123e519d8e4159e5b8af1"}},
+        "threshold_export_verdict": {"lines": [38, 47], "byte_region": {"start": 8082, "end_inclusive": 10433, "length": 2352, "sha256": "5088bdf8688eb80ff3df7da8b18736a309aac1b43bd1b6fa904df69334240503"}},
+        "three_arms_four_mutations": {"lines": [51, 68], "byte_region": {"start": 10441, "end_inclusive": 12926, "length": 2486, "sha256": "2992c4c6edc30b7900f80acb476ffec4928394bcbfb7893040fd6622eceabe4a"}},
+        "rc_and_hashes": {"lines": [72, 88], "byte_region": {"start": 12934, "end_inclusive": 17235, "length": 4302, "sha256": "066209dbb06fc7459441d60f0fa9b976459b23a51fb274d42bb6358c13937690"}},
+        "findings_grading": {"lines": [92, 115], "byte_region": {"start": 17243, "end_inclusive": 21473, "length": 4231, "sha256": "ed908859328819a4891ca5c023ff13c87d262424bc02c43c2bfe0146e00c6325"}},
+        "P1_section": {"lines": [94, 95], "byte_region": {"start": 17266, "end_inclusive": 17360, "length": 95, "sha256": "20f133cb32a4765d96565bca511294b836c87b918795f4bb3379a9c415d05624"}},
+        "P2_section": {"lines": [97, 100], "byte_region": {"start": 17363, "end_inclusive": 18638, "length": 1276, "sha256": "8a4f2c2920d35402b9731bfae692c8c78b9bfbb0dd919b7747f6bac267c16172"}},
+        "P3_section": {"lines": [102, 106], "byte_region": {"start": 18641, "end_inclusive": 19854, "length": 1214, "sha256": "d06f355ebd9d3c45e87e90d7775221dd3d9c9ddf2855784819931721cf2aff6b"}},
+        "unverified_section": {"lines": [108, 115], "byte_region": {"start": 19857, "end_inclusive": 21473, "length": 1617, "sha256": "eb69eccd1a8b847afa01f13d804be42c6f48add32df4b791af9e09f85c85f746"}},
+        "boundary_declaration": {"lines": [119, 132], "byte_region": {"start": 21481, "end_inclusive": 23331, "length": 1851, "sha256": "66bdc27bcf1db190daa430ecaac8b8974e3e50be8fcd6694877e7f4d27651bd6"}},
+        "one_liner_to_orchestrator": {"lines": [136, 138], "byte_region": {"start": 23339, "end_inclusive": 23625, "length": 287, "sha256": "9666135563ca0386d268ed72d40f7ccd8e3e8b886c3ed79875fefc481a15a8fe"}}
+      },
+      "byte_proof": {
+        "verdict_line": {"start": 702, "end_inclusive": 716, "end_exclusive": 717, "length": 15, "sha256": "f422a3f09f3f34867781b3d435ff517074b87f9ef6852bd7732ef50f8b95d1e7"},
+        "conclusion_line": {"start": 719, "end_inclusive": 1138, "end_exclusive": 1139, "length": 420, "sha256": "1b0a352706e5f3557b5bb228cd46712ff72c536fbdc08e524087ade4012e57c3"},
+        "region_definition": "0-based byte offsets against the file as it stands at the recorded sha256; region lengths exclude the line's terminating LF"
+      },
+      "pin_sidecar": {
+        "file": "reviewer_report.sha256",
+        "present": true,
+        "bytes": 85,
+        "sha256": "6dc03f05aeaa44df8dba1775c0ea956f740b31fd279aca10650b5bd8cb6bb750",
+        "content": "b088ed676644e46d8dbb2f1b37034266a257d9564d976d5472e3164524bda246  reviewer_report.md\n",
+        "verified_at_landing": "落定时只读复算：独立重哈希 = b088ed676644e46d8dbb2f1b37034266a257d9564d976d5472e3164524bda246，与钉边内容及派单给的值一致；文件长度 23627 B；钉边文件 85 B"
+      },
+      "landing_file": {
+        "file": "review.md",
+        "role": "carrier-landing 簿记 pass 创建的裁决转录件；只转录、不追加任何自有验收",
+        "pre_image": "none — 创建前本 attempt 无 review.md（无实现者占位件）"
+      }
+    },
+    "counts": {"P1": 0, "P2": 2, "P3": 3, "unverified": 6},
+    "scope_note": "ACCEPT 为 scoped 而非 clean：复审登记 2 项 P2 + 3 项 P3 与 6 项明示未证实；不授予晋升、不授予 I-14-A 通过声明、不授予 D2 复签、不授予产品收紧、不授予干净环境绿。"
+  },
+
+  "carried_findings": [
+    {
+      "id": "P2-1",
+      "severity": "P2 (需按 T1-21 追加式更正，不阻断本卡)",
+      "origin": "reviewer_report.md line 99 (§五 P2)",
+      "finding_verbatim": "P2-1 阈值「更大 ⇒ 更严」方向说反：`oracle.md:65`（已冻结正文）与封盘追加节 `oracle.md` §10.1 表述「取两者较大值……阈值只会更大（更严）」不成立——在 `elapsed >= threshold` 才入域的规则下阈值越大域门越宽松。正确论据是「取最坏节拍上界才兑现『≥2 节拍必有一次周期采样』的保证」。该句论据不成立，但结论（导出而非调到刚好通过）不依赖它。",
+      "must_not_be_weakened": "结论（导出）不依赖此句；该句会被误读为安全裕度。",
+      "status": "carried_not_resolved"
+    },
+    {
+      "id": "P2-2",
+      "severity": "P2 (需按 T1-21 追加式更正，不阻断本卡)",
+      "origin": "reviewer_report.md line 100 (§五 P2)",
+      "finding_verbatim": "P2-2 「首跑 4 臂全假绿」与盘上 raw 不符：`report.md:41` 与 `handoff.json.C1_execution.mutation_first_run_disclosed.issue` 称首跑「4 臂全假绿」；实际 `evidence/mutations/*/run1_driver_bug/arm.stdout.json` 为 `m1: all_ok=true`（假绿）、`m2: all_ok=false, failed=[fixture_pid_is_in_samples]`（**红**，其变异打在探针文件上、不受该驱动 bug 影响）、`m3: all_ok=true`（假绿）、`m4: all_ok=true`（对照臂**本就应绿**）。准确表述应为「2 臂（m1/m3）假绿、m4 应绿、m2 本就红」。影响：披露文字失真，**不影响**绿的准入（准入依据是修正后 m1/m2/m3 均打红，我已独立复现）。",
+      "must_not_be_weakened": "准确说法是「2 臂假绿」；不影响绿准入（准入依据 = 修正后 m1/m2/m3 均红，复审已复现）。",
+      "status": "carried_not_resolved"
+    },
+    {
+      "id": "P3-1",
+      "severity": "P3 (记录在案，供后续追加更正)",
+      "origin": "reviewer_report.md line 104 (§五 P3)",
+      "finding_verbatim": "P3-1 M3 寿命上限自述 0.497 s，raw 为 0.473486 s（`evidence/mutations/m3/E0-baseline-F4/verdict.json` 与 `arm.stdout.json` 两处一致：0.473486/0.471959/0.466426/0.471499/0.464713/0.458451）；`0.497` 实为 M4 的上限（0.496813）。出现在 `report.md:36`、`handoff.json`、封盘追加节 §10.1 三处。**不影响**「6 调用全部入域（>0.1504）」的结论。",
+      "must_not_be_weakened": "0.497 实为 M4 上限 0.496813；出现在 report/handoff/封盘追加节三处；不影响入域结论。",
+      "status": "carried_not_resolved"
+    },
+    {
+      "id": "P3-2",
+      "severity": "P3 (记录在案，供后续追加更正)",
+      "origin": "reviewer_report.md line 105 (§五 P3)",
+      "finding_verbatim": "P3-2 `handoff.json` 的 `e0_identity_branch` 写「per-call lifetimes recorded (0.055-0.099 s)」，盘上 5 次绿 run 的实测区间为 `0.0515–0.1359 s`（单次最大 0.135917 s，见 run2）。**不影响**判定（全部 < 0.1504，走 `not_claimed_sub_cadence` 分支，我已复算）。",
+      "must_not_be_weakened": "盘上 5 次绿实测 0.0515–0.1359s，handoff 写 0.055-0.099s；不影响判定。",
+      "status": "carried_not_resolved"
+    },
+    {
+      "id": "P3-3",
+      "severity": "P3 (记录在案，供后续追加更正)",
+      "origin": "reviewer_report.md line 106 (§五 P3)",
+      "finding_verbatim": "P3-3 `_strip_scalar` 机理表述不准：`report.md:50`、`decision.md` 追加节 §3 写「引号分支先返回 ⇒ `#` 注释不再剥除」；我直接调用实测为——引号+注释输入因首尾字符不同**不进**引号分支，而是走 `elif \" #\"` 分支**剥掉注释、保留引号** ⇒ 引号残留（结论与 rc=3 观测正确，机理描述错误；同节对裸标量例又写「`elif \" #\"` 分支生效」，前后自相矛盾）。",
+      "must_not_be_weakened": "结论 rc=3/引号残留正确，机理错；同节对裸标量又写「elif 分支生效」自相矛盾。",
+      "status": "carried_not_resolved"
+    }
+  ],
+
+  "unverified": {
+    "source": "reviewer_report.md §五「未证实 / 未逐件复算（如实登记）」 lines 108-115 (byte region 19857..21473, 1617 B, sha256 eb69eccd1a8b847afa01f13d804be42c6f48add32df4b791af9e09f85c85f746)",
+    "count": 6,
+    "items": [
+      "1. 「`.planning` 之外全树仅此一份 `source_catalog.yaml`」：我在可读范围内仅找到 `.review-zr407-20260818/company-wiki/config/source_catalog.yaml` 这一份；但枚举过程对若干目录被沙箱拒绝（多个 `.pytest_cache/`、`scratch/`、`.tmp-*`、`probe_root_m700/` 等 `Access denied`）⇒ **部分未证实**。同法下 `catalog.db` 全树扫描我得到与自述**完全相同的 4 处**命中。",
+      "2. `evidence/copied_inputs_sha256.json` 的「1053/1053 逐件一致 + manifest 同哈希」为实现者自算；我做的是**现存**逐件哈希对照（排除 `__pycache__`）：`harness` 11 件中 2 件不同（= 被补丁的两文件）、`iso` 559 件中 3 件不同（**全部**在 `iso/fixture_root/config/*.yaml`，由 `ensure_fixture_root()` 复跑重建，属预期）、`company-wiki` 2 件全同；`*.pyc` 未逐件比对。",
+      "3. `--catalog <dir>/catalog.db` 的「6 次 resolve 调用 succeeded」：我复测 `calls.total=6`、`consistent=true`，但因我的默认 resolver 不可运行而 `succeeded=0`；「6 次成功」未由我复现（绑定层结论已证实）。",
+      "4. C-2 两处接受类 rc（自述 2）：见四.6，我得到绑定接受但 rc=4（resolver 差异），非 rc=2。",
+      "5. Gen-2「6 红 1 绿」：为文件级核验（`ruling.md:131` + reviewer raw 在盘），**未**由我重跑 reviewer 会话。",
+      "6. 修前红的复现是概率性的：我的 5 次为 `R,G,G,R,G`，实现者为 `绿,红,绿,红,红`——比例同为 3红2绿，排列不同属竞态随机，非矛盾。"
+    ],
+    "disposition": "复审已明示边界与原因，不以推断充作结论；本落定不补证、不改判、随行登记。"
+  },
+
+  "eligibility_statement": {
+    "formula_classification": "No revenue-forecast formula work: append-only erratum carrier round for C-1 (threshold correction) and C-2 (reading correction); no code, no tests, no expectation/status/qualification change. No revenue-forecast formula result is qualified here.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped.",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven.",
+    "production_write": "NOT GRANTED. Production read-only throughout; 0 production bytes written by this landing pass.",
+    "promotion": "NOT GRANTED. Probe/product promotion stays prohibited (does_not_promote_probe = true).",
+    "D2_re_sign": "NOT GRANTED. D2_resign_pending = true; belongs to a separate controlled card.",
+    "product_tightening": "NOT GRANTED. The tightened `consistent` rule is a code change requiring a separate controlled card."
+  },
+
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent)",
+    "what_this_pass_did": "created this qualification record for the independent reviewer's byte-pinned verdict; created review.md (transcribed verdict block, no acceptance of its own); transcribed handoff.json status review_pending -> accepted_scoped and appended status_before/status_authority/status_history/reviewer_status/carried_findings/unverified/verdict_is_transcribed_not_authored; wrote 0 bytes to reviewer_report.md and its sidecar",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "existing_carrier_bytes_written": 0,
+    "sealed_files_bytes_written": 0,
+    "production_bytes_written": 0,
+    "status_transition": "review_pending -> accepted_scoped",
+    "handoff_pre_image": {"bytes": 18849, "sha256": "7e9fc25d0ff68e16cabce2e38791159be2abbab3f92a545cedbf465b7a5f8e56"},
+    "files_written": [
+      "review.md (created — 本 attempt 此前无此文件)",
+      "handoff.json (status 转录 + status_before/status_authority/status_history/reviewer_status/carried_findings/unverified/verdict_is_transcribed_not_authored 追加；其余既有键逐字保留)",
+      "evidence/I14A-C1C2-ERRATUM/qualification.json (created, this file)"
+    ]
+  },
+
+  "note": "created by the carrier-landing pass. formula.state = not_applicable_with_reason (no formula work in this card), disclosure_adaptation stays unmapped and accuracy stays unproven. The verdict lives in reviewer_report.md (sha256 b088ed676644e46d8dbb2f1b37034266a257d9564d976d5472e3164524bda246, 23627 B, pinned by reviewer_report.sha256, verdict at line 13: VERDICT: ACCEPT) and was written by the independent reviewer; this file and review.md transcribe it and add no acceptance of their own."
+}

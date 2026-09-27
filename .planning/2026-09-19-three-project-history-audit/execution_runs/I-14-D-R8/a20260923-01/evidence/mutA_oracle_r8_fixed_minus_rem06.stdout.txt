@@ -1,0 +1,36 @@
+﻿{
+  "label": "mutA_oracle",
+  "cases": 61,
+  "narrow_must_failed": [
+    "N14-digit-token2-pair",
+    "N15-digit-secret2",
+    "N16-digit-password2",
+    "N17-digit-api-key2",
+    "N18-digit-env-secret2"
+  ],
+  "keep_must_failed": [],
+  "registered_open": [
+    "R3a-two-token-then-wrap",
+    "R3b-quoted-two-token",
+    "R7a-line3-bare-credential",
+    "R7b-prebreak-cr",
+    "R7c-prebreak-vtab",
+    "R7d-prebreak-ff",
+    "R3c-two-token-then-wrap-marker"
+  ],
+  "registered_open_confirmed": [
+    "R3a-two-token-then-wrap",
+    "R3b-quoted-two-token",
+    "R7a-line3-bare-credential",
+    "R7b-prebreak-cr",
+    "R7c-prebreak-vtab",
+    "R7d-prebreak-ff",
+    "R3c-two-token-then-wrap-marker"
+  ],
+  "verdict": "RED-as-expected-pre-fix"
+}
+ORACLE-FAIL N14-digit-token2-pair expected 'token=<redacted> token2=<redacted> b=2' got 'token=<redacted> token2=ghp_ZQ7ReviewerFakeCredential0123456789 b=2'
+ORACLE-FAIL N15-digit-secret2 expected 'secret2=<redacted>' got 'secret2=ghp_ZQ7ReviewerFakeCredential0123456789'
+ORACLE-FAIL N16-digit-password2 expected 'password2=<redacted>' got 'password2=SYNTHETIC_AUDIT_TOKEN'
+ORACLE-FAIL N17-digit-api-key2 expected 'api_key2=<redacted>' got 'api_key2=SYNTHETIC_AUDIT_TOKEN'
+ORACLE-FAIL N18-digit-env-secret2 expected 'export SECRET2=<redacted>' got 'export SECRET2=ghp_ZQ7ReviewerFakeCredential0123456789'

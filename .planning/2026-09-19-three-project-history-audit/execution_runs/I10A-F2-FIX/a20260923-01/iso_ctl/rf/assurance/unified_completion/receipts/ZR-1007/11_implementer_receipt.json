@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "4091fa15a69fde7f38e4b443e75917d88a4541e7",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1007* + grep shadow/mine_facts/差异归因",
+      "exit_code": 0,
+      "result": "G1~G2 缺口确认（无 zr1007 套件；无 shadow vs legacy 并存对比测试）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1007_mine_shadow.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "12 passed in 0.42s (C1 shadow computable + legacy coexists; C2 attribution; C3 reconcile/honest gap; C4 mine-volume backtest + as-of; C5 zero registry writes + run_forecast not called)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr609_zijin_pilot.py tests/test_zr713_rolling_backtest.py tests/test_zr605_mine_year_operation.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "54 passed in 1.26s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_zr1007_mine_shadow.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (2 auto-fixed, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "887fd12 test(ZR-1007) — 1 file +269"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "896 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T13:00:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: MineYearOperation(1000x0.5x0.9x0.95=427.5 saleable) x price 5.0 = 2137.5 shadow revenue per year; legacy direct_growth 100->110/121 coexists. C2: volume +200 -> delta 427.5 (=200x0.5x0.9x0.95x5.0); price 5->6 -> delta 427.5; recovery 0.9->0.8 -> delta -213.75; legacy responds only to own drivers. C3: two-mine shadow total reconciles to legacy total (reconciled_modeled); +50.0 unexplained -> honest gap (difference 50.0 reported, never fabricated). C4: rolling backtest mine-volume decomposes 427.5+855.0=1282.5; future actual leak -> ForecastInputError. C5: publication_registry._append stubbed to raise -> no write during shadow/legacy computation; run_forecast spy -> 0 calls (production untouched).",
+      "id": "ZR1007-IMPL-001",
+      "severity": "info",
+      "title": "mine facts/model shadow vs legacy 分部模型验收（归因/reconcile/backtest/零替换）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr1007_mine_shadow.py（12 tests）：C1 shadow 路径（MineYearOperation->to_resource_model_drivers->resource model）手算等价 + legacy 并存；C2 逐 driver 差异归因；C3 reconcile_layer/gap_report 闭合或诚实 gap；C4 rolling backtest mine-volume + as-of fail-closed；C5 零 registry 写 + run_forecast 零调用。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr1007_mine_shadow.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1007/**"
+    ]
+  },
+  "implementer": "zr1007-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 887fd12（revenue HEAD = ZR-1007 实现 commit，parent 4091fa1）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实生产预测切换（shadow 替换 production）为部署动作，不在本卡（C5 证明零替换）。"
+  ],
+  "objective": "阶段 I 第七卡：mine facts/model shadow 与旧分部模型对比（差异归因、reconciliation、backtest；不自动替换生产预测）",
+  "plan_sha256": "aee934afa723058e4384174f65606897b8822cb0d771aff66b521b0885591966",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "887fd12cd8ab09a790f8d80a3c6e67d8ebdd73bc",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr1007_mine_shadow.py (new 12 tests)；assurance/unified_completion/receipts/ZR-1007/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1007_mine_shadow.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1007/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1007",
+  "canonical_hash": "ccbde9d8d1685f504fdae7900f22c7277c29aba992bdcd90fc59e7c582e2bba1"
+}

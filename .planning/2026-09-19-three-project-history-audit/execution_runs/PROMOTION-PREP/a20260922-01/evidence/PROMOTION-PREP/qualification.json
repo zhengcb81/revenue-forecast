@@ -1,0 +1,251 @@
+{
+  "card_id": "PROMOTION-PREP",
+  "attempt_id": "a20260922-01",
+  "revision": "r1",
+  "formula": {
+    "state": "not_applicable_with_reason",
+    "reason": "本卡是晋升清单（prep）/簿记卡，不是公式卡：被复审的对象是六行晋升清单及其冻结载体，报告在案的判据是 executability / verifiability / unambiguity 与哈希、时序、目标存在性的独立复算——没有任何公式、情景或数值推导被判据化，因此公式资格 not_applicable。",
+    "reason_verbatim_from_carrier": [
+      {
+        "line": 14,
+        "start": 986,
+        "end_inclusive": 1572,
+        "length": 587,
+        "sha256": "01a779bb5b6f620598e825fbcb78cf493abd1f2d13fb1658369b0d7871029745",
+        "text": "In scope: (1) line-by-line read of the six-row manifest and judgement of executability / verifiability / unambiguity; (2) independent re-measurement of at least three recorded sha256/path claims (I performed ~40, see §4); (3) freeze order of `oracle.md` vs any execution write (mtime/ctime + embedded-hash evidence); (4) zero production writes by this card; (5) line-by-line consistency with the downstream `PROMOTION-EXEC/a20260922-01` record; (6) adjudication of the two historically recorded parent-agent errors; (7) existence of every manifest-listed target in the production tree."
+      },
+      {
+        "line": 8,
+        "start": 660,
+        "end_inclusive": 950,
+        "length": 291,
+        "sha256": "02213c2aea333ce48bc040b512225690ab4a1e60814d0d4e5802466d449e0965",
+        "text": "Scope of this verdict: the manifest card's own deliverables (`promotion_batch_manifest.md` + `oracle.md` + `binding.json` + `commands.json` + `decision.md` + `handoff.json` + `recovery/README.md`). No P1 found ⇒ ACCEPT (per rule 6). Findings: 0×P1, 1×P2, 6×P3, plus 7 unverified items."
+      }
+    ],
+    "note": "state 值 not_applicable_with_reason = 本卡非公式卡的资格状态；reason 如上，逐字引自 carrier（行号 + 字节区 + sha256 全值可复算）。本字段不授予任何公式资格，也不提升任何既有卡的 formula 状态。"
+  },
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "disclosure_adaptation_and_accuracy_note": "两个值是本 attempt 既有 handoff.json 前像中原样存在的键值（前像 407 B 内即为 \"unmapped\" / \"unproven\"），本次落定原样保留、未改动、未授予；复审报告没有为本卡授予任何 disclosure_adaptation 或 accuracy。",
+  "granted_scope": "promotion batch manifest (prep) as a frozen, executable, verifiable checklist",
+  "granted_scope_note": "仅此一项；授予面 = 清单作为冻结、可执行、可核验的检查表。裁决范围逐字见 carrier L8（manifest 卡自身的交付物），逐条判据见 carrier L14。",
+  "not_granted": [
+    {
+      "id": "NG-1",
+      "item": "晋升执行本身 (the promotion execution itself)",
+      "text": "本裁决不授予、也不评价任何晋升执行动作：它只覆盖 PROMOTION-PREP 这张清单卡自身的交付物；与下游 PROMOTION-EXEC 的关系仅是 carrier L14 in-scope (5) 的一致性核对。",
+      "report_anchor_verbatim": [
+        "L8 (bytes 660..950): Scope of this verdict: the manifest card's own deliverables (`promotion_batch_manifest.md` + `oracle.md` + `binding.json` + `commands.json` + `decision.md` + `handoff.json` + `recovery/README.md`).",
+        "L16 (bytes 1574..1897): Out of scope / explicitly not done: no status transition (the card stays `review_pending` until the plan owner acts), no edit to `oracle.md`/`binding.json`/`commands.json`/`decision.md`/`promotion_batch_manifest.md`/`handoff.json`, no network, no test run, no `git status`, no `git add/commit/checkout/stash/restore/reset`.",
+        "L133: | B-5 | `2358c73b/143fef01` → `0c99bbe0/bbe855e4`; **E-4: promotion ≠ execution authorization** | 2 sections; commit message `ac4ebd0` keeps \"code-only, execution still E-4 owner-unsigned\" | CW live = `0c99bbe0…`/23115 + `bbe855e4…`/9894 = sources | **YES** |"
+      ]
+    },
+    {
+      "id": "NG-2",
+      "item": "产品质量判断 (any product-quality judgment)",
+      "text": "本裁决不授予任何产品质量判断：被判定的“可执行/可核验/无歧义”是清单单元格的属性，不是被晋升代码的质量；报告对唯一 P2 的行为中性结论也明确写着只是审读而非运行时测试。",
+      "report_anchor_verbatim": [
+        "L14 (bytes 986..1572): In scope: (1) line-by-line read of the six-row manifest and judgement of executability / verifiability / unambiguity; …",
+        "L175 (bytes 20813..21947): … so the removal is behaviour-neutral by inspection, **not** runtime-tested here) …"
+      ]
+    },
+    {
+      "id": "NG-3",
+      "item": "B-7 / B-8 (owner §十七 中超出本清单六行的两项)",
+      "text": "本裁决不覆盖 B-7 与 B-8：本清单只到 B-1..B-6，B-7 被 §十八 路由到 GATE-OQ-FIX、B-8 被路由到外部方；报告只确认“没有晋升项被遗漏”，并把清单未自述此事记为 P3-4。",
+      "report_anchor_verbatim": [
+        "L121 (bytes 14187..14403): Coverage vs owner §十七: manifest covers B-1..B-6; §十七 has B-1..B-8 and §十八 maps B-7 to `GATE-OQ-FIX` and B-8 to an external party, so no promotion item is lost — but the manifest never says so (P3-4).",
+        "L179 (bytes 22798..23145): **Scope note missing**: title = \"B-1..B-6\", L7 says the source table was read as \"rows B-1..B-7\", while §十七 actually lists B-1..B-8; the manifest nowhere states why B-7 (GATE OQ-01/02) and B-8 (external) are excluded. §十八 routes them elsewhere, so there is no functional gap — a reader must leave the card to learn this."
+      ]
+    }
+  ],
+  "verdict": {
+    "word_written_by_reviewer": "ACCEPT",
+    "verdict_line": 6,
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "counts": {"P1": 0, "P2": 1, "P3": 6, "unverified": 7},
+    "restated_at_line": 183,
+    "restated_text": "**0×P1 ⇒ `VERDICT: ACCEPT`** (restated: no blocking defect in the reviewed card)."
+  },
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "carrier_path_inside_attempt": "execution_runs/PROMOTION-PREP/a20260922-01/reviewer_report.md",
+    "carrier_sha256": "db76c3666d946d0392cf663fe8aefd0fc2819874441fb737680e760ea2e8e74a",
+    "carrier_bytes": 27105,
+    "carrier_total_lines": 203,
+    "carrier_encoding": "UTF-8 without BOM (first bytes 23 20 49 = '# I'); LF-only (CR count 0, LF count 203); single trailing LF (last byte 0a)",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "bytes": 84,
+      "sha256": "d41ead46c5c58ca1b8443ade792fab8c6e512824b0bb2cf9ae6597f86821f4f9",
+      "content": "db76c3666d946d0392cf663fe8aefd0fc2819874441fb737680e760ea2e8e74a  reviewer_report.md",
+      "trailing_newline": false
+    },
+    "verdict_line": 6,
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "verdict_line_byte_region": {"start": 643, "end_inclusive": 658, "length": 16, "sha256": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4"},
+    "verdict_scope_and_counts_line": 8,
+    "verdict_scope_and_counts_byte_region": {"start": 660, "end_inclusive": 950, "length": 291, "sha256": "02213c2aea333ce48bc040b512225690ab4a1e60814d0d4e5802466d449e0965"},
+    "line_ranges_inclusive_1_based": {
+      "verdict_line": [6, 6],
+      "verdict_scope_and_counts": [8, 8],
+      "scope_and_non_actions_s1": [12, 16],
+      "method_s2": [18, 24],
+      "freeze_order_and_zero_write_s3": [26, 49],
+      "spot_checks_s4": [51, 121],
+      "downstream_consistency_s5": [123, 138],
+      "two_parent_errors_s6": [140, 148],
+      "target_completeness_s7": [150, 169],
+      "findings_s8": [171, 183],
+      "findings_table_rows_F1_to_F7": [175, 181],
+      "unverified_s9": [185, 195],
+      "unverified_table_rows_U1_to_U7": [189, 195],
+      "boundary_s10": [197, 203],
+      "whole_file": [1, 203]
+    },
+    "byte_proof": {
+      "verdict_line_L6": {"start": 643, "end_inclusive": 658, "length": 16, "sha256": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4"},
+      "verdict_scope_L8": {"start": 660, "end_inclusive": 950, "length": 291, "sha256": "02213c2aea333ce48bc040b512225690ab4a1e60814d0d4e5802466d449e0965"},
+      "in_scope_L14": {"start": 986, "end_inclusive": 1572, "length": 587, "sha256": "01a779bb5b6f620598e825fbcb78cf493abd1f2d13fb1658369b0d7871029745"},
+      "out_of_scope_L16": {"start": 1574, "end_inclusive": 1897, "length": 324, "sha256": "4ff8d2844f5df9be49c95cad7852b763e858431d8827787d2ee46c16168e18c4"},
+      "freeze_section_L26_L49": {"start": 3044, "end_inclusive": 5721, "length": 2678, "sha256": "162c8dc1664991f275668c4b83c781a0730fcbfa3ce4f84a62e26c4c10a0dcc1"},
+      "freeze_conclusion_L38": {"start": 3681, "end_inclusive": 4054, "length": 374, "sha256": "d87377d4b880a4c4137c0a5efecd18f45234358a65d6ec12b180d7ef45da0ebd"},
+      "two_parent_errors_L140_L148": {"start": 17543, "end_inclusive": 19182, "length": 1640, "sha256": "70aa35ffd6ce6a354ec034a45329ffa5409bc78fdb27b1649d7320148fa315ec"},
+      "error_A_ruling_L143": {"start": 17668, "end_inclusive": 17775, "length": 108, "sha256": "d22f215c6362db676ddac9c31a44387e0d73ceec722af5257b7ca385c697ee72"},
+      "error_B_ruling_L147": {"start": 18363, "end_inclusive": 18484, "length": 122, "sha256": "b3e50e0857567e02ad7f30a6f74cc1efa9695c987f84a63383d6856d7984fe87"},
+      "findings_section_L171_L183": {"start": 20745, "end_inclusive": 24004, "length": 3260, "sha256": "085eda93636dd77f47eaadec26a914f084079e77a52448b5365c84d0c1fface2"},
+      "findings_rows_F1_to_F7_L175_L181": {"start": 20813, "end_inclusive": 23918, "length": 3106, "sha256": "4270c01fe34dd5a5dd6150ff697a3d576d3ebffb60df5a626f7af6377a4793ba"},
+      "unverified_section_L185_L195": {"start": 24006, "end_inclusive": 25837, "length": 1832, "sha256": "58d4168ee0093d48ff06d12db963bd80866e9a78b1d7c9a33494b34f88ba42b7"},
+      "unverified_rows_U1_to_U7_L189_L195": {"start": 24084, "end_inclusive": 25837, "length": 1754, "sha256": "a00575c6249f25619a519ba438cc0e4715d9b75ba3ae35fe4047fbf6f1d3c4ea"},
+      "boundary_section_L197_L203": {"start": 25839, "end_inclusive": 27104, "length": 1266, "sha256": "fae5cf6a0af596599e2b8a6fe0ebe830e0f05bc7b668b611edbd6eebaab84c4f"},
+      "whole_file_L1_L203": {"start": 0, "end_inclusive": 27104, "length": 27105, "sha256": "db76c3666d946d0392cf663fe8aefd0fc2819874441fb737680e760ea2e8e74a"},
+      "region_definition": "0-based byte offsets against the file as it stands at carrier_sha256; multi-line regions include internal LFs and exclude the region's final line terminator"
+    },
+    "reviewer": "independent re-review station of plan 三项目历史承诺逐项独立复审 (N=1, parent-dispatched, 2026-09-24); explicitly NOT the card implementer and NOT the parent agent that dispatched the original work (carrier L4)",
+    "reviewer_write_scope": "exactly two new files in this attempt — reviewer_report.md + reviewer_report.sha256 (carrier L201)",
+    "landing_file": "review.md (created by this carrier-landing pass; transcribes the verdict and adds no acceptance of its own)",
+    "nature": "status moved by bookkeeping transcription only — verdict_is_transcribed_not_authored=true; signing face = reviewer_report.md"
+  },
+  "carried_findings": [
+    {
+      "id": "P2-1",
+      "carrier_id": "F-1",
+      "severity": "P2",
+      "blocking": false,
+      "origin": "reviewer_report.md §8 L175",
+      "finding": "Manifest's post-promotion verification expectations for **B-3** and **B-4** no longer hold on today's tree: CW `observability.py` = `edcbeccb…`/43707 (source `2f644994…`/43746; −1 dead assignment `quote = text[value_start]` at r6 L400 — I read L392–446 and confirmed that local is never read inside `_redact_assignments`, so the removal is behaviour-neutral by inspection, **not** runtime-tested here) and `tests/contract/test_short_basetemp_convention.py` = `dfb7c6cd…`/11366 (source `1fd4e0d8…`/9899; +1467 B Windows-only `pytestmark` guard + computed fixtures, `- import os`). Drift happened **after** PROMOTION-EXEC's byte-exact delivery (its reviewer measured `2f644994…`/43746) and **at** the parent's commit `ac4ebd0` (2026-09-22 22:23, message: \"gate-compliance + lint adaptations\"); register §四十五 L1085–1092 already discloses both final hashes, and `git log -- <file>` shows only `ac4ebd0` ever touched them. Consequence: a literal re-run of the manifest's Verification column yields 2 FAILs. Not blocking this card (freeze-time values were correct and the execution matched them).",
+      "disposition": "carried verbatim (bookkeeping transcription only); non-blocking, disclosed by register §四十五; this landing corrects nothing and re-measures nothing",
+      "status": "carried_non_blocking"
+    },
+    {
+      "id": "P3-1",
+      "carrier_id": "F-2",
+      "severity": "P3",
+      "blocking": false,
+      "origin": "reviewer_report.md §8 L176",
+      "finding": "**B-5 source path written as an ellipsis** (`iso/fixed/…/source_catalog/`, L102/L105) instead of the literal `iso/fixed/company_wiki/source_catalog/…` found in the card's `changes.diff`; uniquely resolvable (I proved one match) but not copy-paste executable — the exact looseness that produced the parent's flat-path false MISSING.",
+      "disposition": "carried verbatim; frozen manifest not rewritten by this landing",
+      "status": "carried_non_blocking"
+    },
+    {
+      "id": "P3-2",
+      "carrier_id": "F-3",
+      "severity": "P3",
+      "blocking": false,
+      "origin": "reviewer_report.md §8 L177",
+      "finding": "**No embedded hash evidence for the oracle freeze**: attempt has no `oracle.sha256`, and no carrier contains any 64-hex digest (unlike sibling cards `B3-PREREQ`, `I-14-F-R1`); freeze order is provable only from ctime/wtime.",
+      "disposition": "carried verbatim; no oracle.sha256 created by this landing",
+      "status": "carried_non_blocking"
+    },
+    {
+      "id": "P3-3",
+      "carrier_id": "F-4",
+      "severity": "P3",
+      "blocking": false,
+      "origin": "reviewer_report.md §8 L178",
+      "finding": "**No self-pin of the deliverable**: `6759d1eb…`/19190 appears in no file of this attempt (I grepped all seven carriers); it survives only in the register. I re-computed it: `6759d1eb7044a3a4e5af75ffecd35fb612a2d9b26f0f361b15d5dcdee2073aac`.",
+      "disposition": "carried verbatim as the reviewer's measurement; promotion_batch_manifest.md keeps 0 changed bytes",
+      "status": "carried_non_blocking"
+    },
+    {
+      "id": "P3-4",
+      "carrier_id": "F-5",
+      "severity": "P3",
+      "blocking": false,
+      "origin": "reviewer_report.md §8 L179",
+      "finding": "**Scope note missing**: title = \"B-1..B-6\", L7 says the source table was read as \"rows B-1..B-7\", while §十七 actually lists B-1..B-8; the manifest nowhere states why B-7 (GATE OQ-01/02) and B-8 (external) are excluded. §十八 routes them elsewhere, so there is no functional gap — a reader must leave the card to learn this.",
+      "disposition": "carried verbatim; the B-7/B-8 exclusion is restated only in this transcription (see not_granted NG-3), the manifest text is not edited",
+      "status": "carried_non_blocking"
+    },
+    {
+      "id": "P3-5",
+      "carrier_id": "F-6",
+      "severity": "P3",
+      "blocking": false,
+      "origin": "reviewer_report.md §8 L180",
+      "finding": "**B-6b cell vs register resolution not reconciled in the artifact**: manifest cell = `UNRESOLVED-path`; register §三十 L813 resolves it as `new-file, inherits-from I-14-B promotion` (wave order I-14-B first). By design the frozen manifest was not rewritten, and PROMOTION-EXEC skipped correctly — but two authoritative carriers now describe the same cell differently.",
+      "disposition": "carried verbatim; neither carrier edited by this landing",
+      "status": "carried_non_blocking"
+    },
+    {
+      "id": "P3-6",
+      "carrier_id": "F-7",
+      "severity": "P3",
+      "blocking": false,
+      "origin": "reviewer_report.md §8 L181",
+      "finding": "**Register-side label typo (outside my write scope)**: register §四十五 L1092 says the disclosed byte deviation attaches to \"B-3/B-5 晋升行\", yet the two adapted files belong to **B-3 and B-4**; B-5's `prune/archive` are byte-identical to their sources (I measured `0c99bbe0…`/`bbe855e4…` live). I may not edit the register — reported for the parent/owner.",
+      "disposition": "carried verbatim and routed to the parent/owner; REMEDIATION_REGISTER.md NOT edited by this landing (0 bytes)",
+      "status": "carried_for_parent_owner"
+    }
+  ],
+  "carried_unverified": [
+    {"id": "U-1", "item": "B-6a sealed source unit test `b0402b56…`/6182 (`I-14-F/a20260919-01/iso/tree/tests/contract/test_short_basetemp_convention.py`)", "why": "**ACL denied**: `Test-Path`/`ReadAllBytes` → \"Access to the path … is denied\"; path is not in HEAD either (`git cat-file -e` rc 128). Unverified.", "origin": "reviewer_report.md §9 L189"},
+    {"id": "U-2", "item": "B-6b pre-fix image `7fff6f0c…`/20293", "why": "exists only as text inside `changes.diff` header; the pre-fix file is not on disk, so no independent re-hash.", "origin": "reviewer_report.md §9 L190"},
+    {"id": "U-3", "item": "all six `git apply --check` cells", "why": "declared `UNRESOLVED-verification` by the card per `oracle.md` step 5; I did not substitute a run (my card authorises read-only verification only, and apply-checks on copies were not part of this review's mandate).", "origin": "reviewer_report.md §9 L191"},
+    {"id": "U-4", "item": "cited card test outcomes (13-node suite, FC-904 11 passed, rem49 5 passed, I-14-D 44/95 harness, DW15 guard)", "why": "no test runs permitted in this review; I only confirmed the corresponding `evidence/*.txt` files exist with plausible sizes.", "origin": "reviewer_report.md §9 L192"},
+    {"id": "U-5", "item": "absolute absence of transient production writes inside 2026-09-22 13:15–13:45 (write-then-revert)", "why": "`git diff` cannot see them; indirect evidence only (diff=0, 0/46 untracked paths in window, attempt-confined mtimes).", "origin": "reviewer_report.md §9 L193"},
+    {"id": "U-6", "item": "whether the E1E7 forward-disclosures (M05/M14/M20/M24 defaults-phase flips) are now ACTIVE after `MODEL-ORACLE-ALIGN` re-promoted `model_registry.py`", "why": "beyond this card's scope; PROMOTION-EXEC recorded them INACTIVE at its freeze, and no re-audit was performed here.", "origin": "reviewer_report.md §9 L194"},
+    {"id": "U-7", "item": "the card's declaration \"zero tests run / no git writes during this attempt\"", "why": "no independent artifact can prove a negative; accepted as declared, corroborated by `commands.json`'s `explicitly_not_run` and by the attempt's confined timestamps.", "origin": "reviewer_report.md §9 L195"}
+  ],
+  "declarations": {
+    "verdict_is_transcribed_not_authored": true,
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "bookkeeping_nature": "bookkeeping transcription adds no acceptance of its own — this file mirrors reviewer_report.md and handoff.json and grants nothing beyond them",
+    "authority": "the verdict word `ACCEPT` was written by the independent reviewer at reviewer_report.md L6, not by the implementer and not by this landing pass",
+    "production_bytes_written": 0,
+    "reviewer_report_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "git_writes": 0,
+    "tests_run": 0,
+    "network_calls": 0,
+    "signatures_produced": 0,
+    "files_written_by_this_landing": [
+      "review.md (created)",
+      "handoff.json (status transcription; pre-image 407 B / sha256 4cc8840779a154213977189f6684dbde15315b4a19e509327f455867b7e98757 preserved verbatim in pre_image_handoff_json)",
+      "evidence/PROMOTION-PREP/qualification.json (this file, created)"
+    ],
+    "pre_image": "none for this file — evidence/PROMOTION-PREP/qualification.json did not exist in this attempt before this pass"
+  },
+  "freeze_order_transcribed": {
+    "source": "reviewer_report.md §3 (L26–L49) / conclusion L38 (bytes 3681..4054, sha256 d87377d4b880a4c4137c0a5efecd18f45234358a65d6ec12b180d7ef45da0ebd)",
+    "conclusion_verbatim": "Conclusion: `oracle.md` (ctime == wtime == 13:22:57) precedes the **first content write of every other artifact** by ≥2 min 6 s (manifest first created 13:25:03). The only earlier timestamp is the empty `evidence\\` directory scaffold (13:22:41, zero file content). `oracle.md` was never modified after creation (ctime==wtime), which is stronger evidence than mtime alone.",
+    "carried": "oracle ctime=wtime 2026-09-22 13:22:57 < manifest 首建 13:25:03 < 末写 13:32:16；唯一更早者是空 `evidence\\` 目录 13:22:41"
+  },
+  "two_parent_errors_transcribed": {
+    "error_A": {
+      "cells": "hint `7D1BD8F9` vs live `225fecdd`",
+      "ruling_verbatim": "Ruling: **parent dispatch-hint error, corrected by the card's live measurement — NOT a manifest defect.**",
+      "line": 143,
+      "byte_region": {"start": 17668, "end_inclusive": 17775, "length": 108, "sha256": "d22f215c6362db676ddac9c31a44387e0d73ceec722af5257b7ca385c697ee72"}
+    },
+    "error_B": {
+      "cells": "parent's flat path vs actual nested path (B-5)",
+      "ruling_verbatim": "Ruling: **parent's path-guess error, not a manifest path defect — but the manifest does carry an abbreviation (P3-1).**",
+      "line": 147,
+      "byte_region": {"start": 18363, "end_inclusive": 18484, "length": 122, "sha256": "b3e50e0857567e02ad7f30a6f74cc1efa9695c987f84a63383d6856d7984fe87"}
+    }
+  },
+  "mirror_note": "status_authority / carried_findings / carried_unverified mirror handoff.json and reviewer_report.md exactly; this file re-derives nothing and signs nothing"
+}

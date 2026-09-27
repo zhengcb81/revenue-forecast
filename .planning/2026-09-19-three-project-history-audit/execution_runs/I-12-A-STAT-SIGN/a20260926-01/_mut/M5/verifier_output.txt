@@ -1,0 +1,14 @@
+﻿=== MUTATION M5 ===
+rc=3
+first_fail=FAIL K2_verdict_lock : S2.selection=SIGNED != frozen NOT_SIGNED
+CHECK K1_items_set OK
+CHECK K3_value_lock OK
+CHECK K5_result_seal OK
+CHECK K6_boundary_lock OK
+CHECK K8_open2_redline OK
+FAIL K2_verdict_lock : S2.selection=SIGNED != frozen NOT_SIGNED
+FAIL K4_signature_form : S2 SIGNED but decision_sha256 null
+FAIL K4_signature_form : S2 SIGNED but signature.signed!=true
+FAIL K4_signature_form : S2 SIGNED must not carry refusal_sha256
+FAIL K7_hash_integrity : S2 decision_sha256 mismatch (recorded= recomputed=ea0e6ac04ab5114246586790301471d71d8ebb3895657939647b0846f85c5120)
+RESULT CRITERIA_VIOLATION primary=K2_verdict_lock count=5

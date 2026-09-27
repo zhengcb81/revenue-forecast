@@ -1,0 +1,56 @@
+{
+  "schema": "i11b_synthetic_mechanism_check/1",
+  "card": "I-11-B",
+  "attempt": "execution_runs/I-11-B/a20260926-01",
+  "purpose": "按 qualitative_synthetic_example 手算复核实施机制，再执行真实已审定映射；不复制示例数字到真实公司（卡文 L16）",
+  "part_1_synthetic_hand_check": {
+    "source": "execution_v2/research_cards.json qualitative_synthetic_example（H-SYNTH-RENEWABLE-01）；research_cards.md L81-L114 同文",
+    "synthetic": true,
+    "not_real_disclosure": true,
+    "hand_work_recheck": {
+      "step_1_volume": {"formula": "电量 = average_commissioned_mw × period_hours × pre_curtailment_capacity_factor", "hand": "2 × 8760 × 0.5 = 8,760 MWh", "example_stated": "8760MWh", "match": true},
+      "step_2_price_mix": {"formula": "blend = contracted_share × contract_price + (1 − contracted_share) × merchant_price", "hand": {"low_s_0.5": "0.5×40 + 0.5×20 = 30 元/MWh", "base_s_0.6": "0.6×40 + 0.4×20 = 32 元/MWh", "high_s_0.7": "0.7×40 + 0.3×20 = 34 元/MWh"}, "example_stated": "low电价30、base32、high34", "match": true},
+      "step_3_revenue": {"formula": "收入 = 电量 × blend + other_revenue", "hand": {"low": "8,760×30 + 1,200 = 262,800 + 1,200 = 264,000", "base": "8,760×32 + 1,200 = 280,320 + 1,200 = 281,520", "high": "8,760×34 + 1,200 = 297,840 + 1,200 = 299,040"}, "example_stated": {"low": 264000, "base": 281520, "high": 299040}, "match": true},
+      "step_4_delta": {"hand": "base 相对原值（s=0.5 → 264,000）增加 281,520 − 264,000 = 17,520", "example_stated": "base相对原值增17520", "match": true},
+      "step_5_single_driver_rule": {"check": "只变 contracted_share；电量固定；不得再加'定性溢价收入'一项", "observed": "复算链条中仅 s 变动；收入=量×混合价+其他收入，无第四通道", "match": true},
+      "unit_check": "MW×h=MWh；MWh×元/MWh=元；元+元=元 —— 量纲一致"
+    },
+    "mechanism_abstracted": "收入 = 可计量量 ×（价格组合）+ 额外收入；量由产能×时间×利用率决定；情景只动单驱动；其他收入显式单列、只进一次",
+    "verdict_synthetic": "手算复核 5/5 步逐项与示例一致（独立重算，非抄写）"
+  },
+  "part_2_real_mapping_execution": {
+    "definition": "真实已审定映射 = I10A-DISCLOSURE-ADAPT-SIGN/a20260925-01/disclosure_adaptation_v2.json 中 4 个 signed mapped case（C7 口径）；本步只复算机制、不新增判定、不放行任何参数",
+    "cases": [
+      {"case_id": "ZJ-MIN-M09", "model_id": "resource", "mechanism": "收入 = Σ(披露销售数量 × 披露不含税单价)", "signed_values": {"sum_rebuilt": 131491532271, "sum_disclosed": 131489500000, "residual": -2032271, "residual_pct": 0.0015456, "tolerance": "±0.05%"}, "my_recheck": {"residual_abs_over_disclosed_pct": "2,032,271 ÷ 131,489,500,000 = 0.0015456%", "line_spot_check": "金锭：49,074 千克 × 810.17 元/克 = 39,757,982,580 元 ≈ 原文 3,975,798 万元", "match": true}, "verdict": "机制复算一致"},
+      {"case_id": "ZJ-SMT-M09", "model_id": "resource", "mechanism": "收入 = Σ(披露销售数量 × 披露不含税单价)", "signed_values": {"sum_rebuilt": 183988605486, "sum_disclosed": 183988510000, "residual": -95486, "residual_pct": 0.0000519, "tolerance": "±0.05%"}, "my_recheck": {"residual_abs_over_disclosed_pct": "95,486 ÷ 183,988,510,000 = 0.0000519%", "line_spot_check": "冶炼产锌：403,324 吨 × 20,327 元/吨 = 8,198,366,948 元 vs 披露 8,198,230,000 元（−136,948，线级 ±0.10% 内）", "match": true}, "verdict": "机制复算一致"},
+      {"case_id": "XM-PHONE-M03", "model_id": "unit_sales", "mechanism": "收入 = 销量 × 单机收入 + timing_factor（+0）", "signed_values": {"units": 165200000, "unit_revenue": 1128.7, "rebuilt": 186461240000, "disclosed": 186439777000, "residual": -21463000, "residual_pct": 0.011512, "tolerance": "±0.05%"}, "my_recheck": {"product_recomputed": "165,200,000 × 1,128.7 = 186,461,240,000（逐位相等）", "residual_abs_over_disclosed_pct": "21,463,000 ÷ 186,439,777,000 = 0.011512%", "match": true}, "verdict": "机制复算一致"},
+      {"case_id": "XM-EV-M03", "model_id": "unit_sales", "mechanism": "收入 = 销量 × 单车收入 + other_revenue（显式单列，只进一次）", "signed_values": {"units": 411082, "unit_revenue": 251171, "other_revenue": 2800000000, "rebuilt": 106051877022, "disclosed": 106069513000, "residual": 17635978, "residual_pct": 0.0166268, "tolerance": "±0.10%"}, "my_recheck": {"product_recomputed": "411,082 × 251,171 = 103,251,877,022；+ 2,800,000,000 = 106,051,877,022（逐位相等）", "residual_abs_over_disclosed_pct": "17,635,978 ÷ 106,069,513,000 = 0.0166268%", "double_count_check": "other_revenue 仅出现一次（映射显式字段），未经单位价格二次进入", "match": true}, "verdict": "机制复算一致"}
+    ],
+    "identity_checks_on_real_data": [
+      {"check": "H-05 恒等式：584,049,229,264 − 234,970,146,412 = 349,079,082,852", "hand": "584,049,229,264 − 234,970,146,412 = 349,079,082,852", "match": true},
+      {"check": "H-01 四分部对外合计：109,977,556,345 + 165,858,644,874 + 29,212,610,830 + 44,030,270,803", "hand": "= 349,079,082,852（=合并营业收入）", "match": true},
+      {"check": "MSFT 三分部合计：139,996 + 137,791 + 54,052 = 331,839 USD mn", "hand": "= 331,839", "match": true}
+    ],
+    "verdict_real": "4/4 已审定映射机制复算逐位一致 + 3/3 恒等式复算成立；未新增判定、未放行参数"
+  },
+  "part_3_quarantine": {
+    "rule": "示例数字不得复制到真实公司",
+    "synthetic_numbers_quarantined": [2, 8760, 0.5, 0.6, 0.7, 40, 20, 30, 32, 34, 1200, 264000, 281520, 299040, 17520],
+    "check_method": "人工比对 calibration_plan.json 全部真实参数字段：无任何字段取值来自上述集合（真实值全部为 349,079,082,852 / 165,858,644,874 / 29,212,610,830 / 44,030,270,803 / 884,943 / 83,161 / 352,470 / 430,254 / 139,996 / 137,791 / 54,052 / 124,248.63 等真实来源数及其 ±5%/±10% 派生）",
+    "collision_scan": "巧合重合登记：30/32/34 等小整数不出现在任何真实字段；1,200,000（铜计划吨数）与示例 1200 量级不同且来源不同（CN-ZIJIN-AR2025:p56），非复制",
+    "result": "PASS（零复制）"
+  },
+  "mutation_results": {
+    "note": "红绿变异在副本上执行，原件字节不动；校验器 = verify_plan.py（本目录）",
+    "runs": [
+      {"id": "M1", "mutation": "删除 EA-1 的 sensitivity_interval", "red_rc": 1, "green_rc": 0, "expected_red_rc_nonzero": true, "red_violation": "I1 violated: EA-1 missing sensitivity_interval"},
+      {"id": "M2", "mutation": "EA-2 equivalent_to_disclosure_basis 翻 true", "red_rc": 1, "green_rc": 0, "expected_red_rc_nonzero": true, "red_violation": "I1 violated: EA-2 equivalent_to_disclosure_basis != false"},
+      {"id": "M3", "mutation": "handoff.params_released 翻 true", "red_rc": 1, "green_rc": 0, "expected_red_rc_nonzero": true, "red_violation": "I5 violated: handoff.params_released != false"},
+      {"id": "M4", "mutation": "store 副本 low:null → 0（模拟放行）", "red_rc": 1, "green_rc": 0, "expected_red_rc_nonzero": true, "red_violation": "I4 violated: store low != null (got 0) — release detected"},
+      {"id": "M5", "mutation": "C3/C5 残余 registration → resolved", "red_rc": 1, "green_rc": 0, "expected_red_rc_nonzero": true, "red_violation": "I5 violated: residual … registration='resolved' (must stay open-form)"}
+    ],
+    "mutants_dir": "execution_runs/I-11-B/a20260926-01/_mut/（副本；原件字节未动）",
+    "verdict": "红绿双向成立：green rc=0（ALL_INVARIANTS_OK），5 红全 rc=1 且违例具名",
+    "note_first_round": "首轮 M3-M5 的 rc=1 系变异副本带 UTF-8 BOM 导致解析崩溃（非干净违例）；校验器改为 utf-8-sig 后重跑，违例均具名——两轮 rc 均为 1，取第二轮为有效证据"
+  }
+}

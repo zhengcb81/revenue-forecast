@@ -1,0 +1,79 @@
+{
+  "card": "I-14-E-TESTSIDE-R2",
+  "attempt": "a20260926-01",
+  "generated_utc": "2026-09-26T17:18:11Z",
+  "outcome": "blocked_at_gate_1",
+  "dispatch_rule_applied": "discipline 19 (parent escalated OK != this session OK): run own probe first; if STILL DENIED -> stop immediately, report blocked; destructive substitutes forbidden. Rule followed.",
+  "gate_1": {
+    "probe_script": "harness/gate1_openprocess_probe.py",
+    "raw_output_file": "evidence/gate-1-openprocess-raw.txt",
+    "structured_result_file": "evidence/gate-1-openprocess-result.json",
+    "ran_utc": "2026-09-26T17:13:09Z",
+    "session_pid": 10628,
+    "four_steps": {
+      "spawn": { "step": "spawn", "child_pid": 18464, "ok": true },
+      "open": [
+        { "step": "open", "target": "self", "pid": 10628, "mask": "0x1F0FFF", "rc": 0, "lasterr": 5, "open_ok": false },
+        { "step": "open", "target": "child", "pid": 18464, "mask": "0x1F0FFF", "rc": 0, "lasterr": 5, "open_ok": false }
+      ],
+      "close": {
+        "step": "close",
+        "all_access": "no handle to close on either target (open returned 0)",
+        "control_0x1000": "both targets: handle rc=436 opened and CloseHandle ok=true"
+      },
+      "wait": { "step": "wait", "child_exit_code": 0 }
+    },
+    "controls": [
+      { "target": "self", "pid": 10628, "mask": "0x1000", "rc": 436, "open_ok": true },
+      { "target": "child", "pid": 18464, "mask": "0x1000", "rc": 436, "open_ok": true }
+    ],
+    "ps_start_process_handle_reviewer_s8_1_criterion_2": {
+      "with_redirect": { "handle_nonnull": false, "read_error": "You cannot call a method on a null-valued expression.", "meaning": "exactly the shape source_catalog_worker.ps1:340-341 receives; Assign would throw" },
+      "no_redirect_contrast": { "handle_nonnull": true, "handle": "2800" }
+    },
+    "verdict": "STILL_BLOCKED",
+    "criteria_failed": ["S8-1-1 ctypes OpenProcess(ALL_ACCESS) on own child", "S8-1-2 PS Start-Process redirect .Handle non-null"]
+  },
+  "application": {
+    "executed": false,
+    "rc": null,
+    "reason": "gate_1_verdict=STILL_BLOCKED; dispatch: stop immediately; no iso copy, no arm run, no test-side change applied, no changes.diff produced",
+    "changes_diff_produced": false,
+    "iso_copied": false,
+    "real_repo_unchanged_read_only_check": {
+      "repo": "C:/Users/郑曾波/Projects/company-wiki",
+      "head": "bf0c8b27e83c3ee7e533c6031fefad8e27e5e121",
+      "branch": "fcap",
+      "tests_file": "tests/contract/test_source_catalog_worker_bootstrap.py",
+      "tests_file_sha256": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+      "tests_file_bytes": 40868,
+      "launcher_sha256": "5c12cd740cc36abf95f3b9559485472d9d9a760143d27de46e3aaa7b4bbc311",
+      "logon_wrapper_sha256": "70b4d7d7128567c0a753e684c3d4e8359c6a93bdc3dbefc7c5f93feaadbe5a1c",
+      "matches_previous_round_anchors": true
+    }
+  },
+  "arms_and_mutations": {
+    "red_pre_fix": { "executed": false, "frozen_criteria": "previous oracle §3.C: >=1 red of N=6 under C1 (expected shape assert N==2 / TimeoutExpired, NOT launcher_exception)" },
+    "green_applied": { "executed": false, "frozen_criteria": "previous oracle §3.D: 6/6 green with the four sub-criteria, H = min(max(2.0, 4*t0), t0+3)" },
+    "mutation_m1": {
+      "executed": false,
+      "definition": "exported formula reverted to hard-coded 0.5 s (t0 probe and recording kept); sole mutated element",
+      "pre_registered_expected": "red: cpu8 child-2 lifetime 0.642-2.486 s > 0.5 -> killed -> child_started >= 3 -> assert == 2 fails",
+      "carried_from": "previous oracle §3.E (unchanged)"
+    },
+    "mutation_m2_upper": {
+      "executed": false,
+      "definition": "semantic upper clamp t0 + 3.0 -> t0 + 10.0; sole mutated element",
+      "pre_registered_expected": "red: H >= t0+10 > t0+5, so child-1 (sleeps 5 s after writing count) self-exits before the watchdog fires; events lack child_unresponsive; next() raises StopIteration; wall ~t0+5+eps < 15 s driver timeout",
+      "introduced_by": "this attempt (oracle.md §4) to satisfy dispatch 'mutations >= 2' with deterministic discriminating power"
+    }
+  },
+  "boundary": {
+    "product_repo_writes": 0,
+    "git_diff_non_planning": 0,
+    "git_diff_total_lines": 3830,
+    "git_diff_note": "read-only `git -c core.quotepath=false diff HEAD --name-only` in revenue-forecast @ b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb; all 3830 lines are pre-existing .planning paths; `git status` NOT run (dispatch forbids); no git write of any kind",
+    "unrelated_blocked_items_touched": 0,
+    "disclosure_repo_root": "probe_root_m700/ exists at the revenue-forecast repo root (reviewer P2-2 item); outside .planning so this attempt neither deleted nor modified it"
+  }
+}

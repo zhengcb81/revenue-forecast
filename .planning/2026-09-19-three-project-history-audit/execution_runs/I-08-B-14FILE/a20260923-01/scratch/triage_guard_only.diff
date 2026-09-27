@@ -1,0 +1,70 @@
+diff --git a/tests/test_single_owner_guard.py b/tests/test_single_owner_guard.py
+index 1385cc61..b6fa78c7 100644
+--- a/tests/test_single_owner_guard.py
++++ b/tests/test_single_owner_guard.py
+@@ -26,6 +26,31 @@ DOC_SOURCES = (
+     + sorted((SKILL_ROOT / "references").glob("*.md"))
+ )
+ 
++# Owner ruling (2) 2026-09-23 鈥?OWNER_DECISIONS 搂22 / register 搂84: 瀹堝崼鏀剁獎銆?+# justification 棣栬: (2) 妗?= 涓嶅姞鐧藉悕鍗曟潯鐩紝鍙妸灏勭▼淇洖澹版槑璇箟
++# (download adapters only)锛涜眮鍏嶄粛绮剧‘绛変簬 {CANONICAL_CLIENT, ORCHESTRATORS}锛?+# 鍩熷唴锛坒iling/download 璇嶉潰锛塻ubprocess 寮哄埗涓庡師鍏堝悓鏍峰叏瑕嗙洊銆佷笉鍒犲垽鎹€?+DOWNLOAD_DOMAIN = (
++    "filing",
++    "download",
++    "fetch",
++    "resolve_filing",
++    "acquisitionmanager",
++    "adapterregistry",
++    "dayu",
++    "stock",
++    "dropbox",
++    "curl",
++    "wget",
++    "xlsx",
++)
++
++
++def _in_download_domain(text: str) -> bool:
++    low = text.lower()
++    return any(token in low for token in DOWNLOAD_DOMAIN)
++
++
+ 
+ def _python_files() -> list[Path]:
+     return sorted(path for path in SCRIPTS.glob("*.py") if path.name != "__init__.py")
+@@ -37,19 +62,23 @@ class SingleOwnerGuardTests(unittest.TestCase):
+             if path.name == CANONICAL_CLIENT or path.name in ORCHESTRATORS:
+                 continue
+             tree = ast.parse(path.read_text(encoding="utf-8"))
+-            for node in ast.walk(tree):
+-                if isinstance(node, ast.Import):
+-                    self.assertNotIn(
+-                        "subprocess",
+-                        {alias.name.split(".")[0] for alias in node.names},
+-                        f"{path.name} imports subprocess (second download owner)",
+-                    )
+-                if isinstance(node, ast.ImportFrom):
+-                    self.assertNotEqual(
+-                        node.module,
+-                        "subprocess",
+-                        f"{path.name} imports subprocess (second download owner)",
+-                    )
++            imports_subprocess = any(
++                isinstance(node, ast.Import)
++                and any(
++                    alias.name.split(".")[0] == "subprocess"
++                    for alias in node.names
++                )
++                or isinstance(node, ast.ImportFrom)
++                and node.module == "subprocess"
++                for node in ast.walk(tree)
++            )
++            if not imports_subprocess:
++                continue
++            self.assertFalse(
++                _in_download_domain(path.read_text(encoding="utf-8")),
++                f"{path.name} uses subprocess inside the filing/download domain "
++                "(second download owner)",
++            )
+ 
+     def test_no_second_resolve_filing_symbol(self) -> None:
+         for path in _python_files():

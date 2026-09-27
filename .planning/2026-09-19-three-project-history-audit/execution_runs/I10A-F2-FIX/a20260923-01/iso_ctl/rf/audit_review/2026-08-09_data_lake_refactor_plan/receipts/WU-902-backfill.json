@@ -1,0 +1,50 @@
+{
+  "wu_id": "WU-902",
+  "date": "2026-08-09",
+  "title": "company_raw/dayu 历史 backfill（强绑定字段→v2 assertions）",
+  "status": "accepted",
+  "implementation": {
+    "tool": "company-wiki src/company_wiki/source_catalog/backfill_v2.py",
+    "tests": "company-wiki tests/contract/test_backfill_v2.py (8 tests)",
+    "modes": "dry-run (default, zero writes) | apply (verified shadow assertions only)",
+    "strong_binding_gate": [
+      "provider_document_id", "source_url", "form_type", "fiscal_year",
+      "provider", "security_id 强标识（ticker/股票代码，非显示名）"
+    ],
+    "period_rule": "period_end 必须可证明（legacy 元数据或 sidecar）；不可证明 → remediation queue，绝不从标题/文件名猜测",
+    "reconciliation": "input = success + indexed_only + conflict + skipped + error（按 root/status/kind/year 对账）"
+  },
+  "mutation_proof": {
+    "M-01_guess_period_or_url": "KILLED — 猜测 period_end 后 test_bf02/bf03 red",
+    "M-02_conflict_as_success": "KILLED — conflict 归 success 后 test_bf06 red",
+    "restore": "字节级还原，8/8 green"
+  },
+  "production_dry_run": {
+    "catalog": ".source_catalog/catalog.sqlite3 (schema 1.2.0)",
+    "roots": ["company_raw", "dayu_portfolio"],
+    "input": 9404,
+    "success": 0,
+    "indexed_only": 9404,
+    "conflict": 0,
+    "skipped": 0,
+    "errors": 0,
+    "reconciliation_closed": true,
+    "remediation_buckets": {
+      "缺全部强字段（含 display-name security_id）": 9204,
+      "缺 fiscal_year/form_type/provider/provider_document_id/source_url": 103,
+      "缺 fiscal_year/form_type/provider/provider_document_id/security_id": 70,
+      "仅缺 period_end（强绑定文档，均有 sidecar）": 17,
+      "其他小桶": 10
+    },
+    "period_end_availability": {
+      "legacy acquisition 元数据": "0/23513 文档含 period_end",
+      "sidecar .source.json": "0/8820 文件含 period_end",
+      "结论": "period_end 在任何证据源中均不可证明"
+    }
+  },
+  "verdict": "0 verified assertions 可构造；全部 9404 候选进入 remediation queue，原因精确到缺失字段。与 WU-1303 BLOCKED_NO_ELIGIBLE_PRODUCTION_SAMPLE 判定一致：生产 legacy 数据无 capture-ready 样本，不做任何猜测性写入。apply 模式保持可用但生产未触发（无合格样本）。",
+  "parity": "legacy active 可复用集（9404）vs v2 active 可复用集（0）：逐项差异均附 document_id + 精确缺失字段 reason，零未解释差异。",
+  "catalog_untouched": true,
+  "real_roots_untouched": true,
+  "next": "WU-903 已有 remediation receipt（中国平安候选 BLOCKED）；WU-904 restore 无合格候选可触发；WU-905 切换验证在 0 v2 assertions 基数上执行 parity/shadow 检查，不切 active。"
+}

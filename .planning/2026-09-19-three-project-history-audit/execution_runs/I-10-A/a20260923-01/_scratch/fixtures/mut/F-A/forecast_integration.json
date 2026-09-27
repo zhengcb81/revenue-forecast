@@ -1,0 +1,264 @@
+{
+ "artifact": "forecast_integration",
+ "card": "M卡D/E 交接产物 (forecast integration mapping)",
+ "attempt_id": "a20260923-01",
+ "production_entry": {
+  "path": "RF/scripts/forecast/segments.py",
+  "function": "calculate_model_path(model, base_revenue, driver_ids, parameter_index, years, scenario)",
+  "sha256": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd",
+  "registry": "RF/scripts/model_registry.py calculate_registered_model (sha256 62f864b9…, post-I-10-B state)",
+  "iso_copy": "iso/rf/scripts/** (byte-identical; proven by before/after snapshots)"
+ },
+ "parameter_contract": {
+  "parameter_index[pid]": {
+   "value": "float",
+   "unit": "str",
+   "dimension": "str",
+   "period": "FYyyyy (strict)",
+   "scenario": "all|low|base|high"
+  },
+  "driver_parameter_ids": "driver -> [pid, ...] one per forecast year",
+  "dimension_check": "resolve_driver_series asserts parameter.dimension == MODEL_DRIVER_DIMENSIONS[model][driver]",
+  "bounds_check": "driver_value_bounds (post-I-10-B semantic-role rule)"
+ },
+ "cases": {
+  "ZJ-MIN-M09": {
+   "case_id": "ZJ-MIN-M09",
+   "model_id": "resource",
+   "driver_parameter_ids_sample": {
+    "saleable_volume": [
+     "P-CN-GOLD_INGOT-QTY"
+    ],
+    "realized_price": [
+     "P-CN-GOLD_INGOT-PRICE"
+    ],
+    "other_revenue": [
+     "P-CN-GOLD_INGOT-OTHER"
+    ]
+   },
+   "parameter_index_sample": {
+    "P-CN-GOLD_INGOT-QTY": {
+     "value": 49074000.0,
+     "unit": "克",
+     "dimension": "quantity",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-CN-GOLD_INGOT-PRICE": {
+     "value": 810.17,
+     "unit": "元/克",
+     "dimension": "revenue_per_unit",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-CN-GOLD_INGOT-OTHER": {
+     "value": 0.0,
+     "unit": "元",
+     "dimension": "revenue",
+     "period": "FY2025",
+     "scenario": "all"
+    }
+   },
+   "years": [
+    2025
+   ],
+   "base_revenue_argument": {
+    "value": 0.0,
+    "basis": "rowwise 模型（M09/M03）公式不消费 base_revenue；期初锚点对本模型族 not_applicable（AD-4）"
+   },
+   "scenario_keys_probed": [
+    "low",
+    "base",
+    "high"
+   ],
+   "wiring_verified": true
+  },
+  "ZJ-SMT-M09": {
+   "case_id": "ZJ-SMT-M09",
+   "model_id": "resource",
+   "driver_parameter_ids_sample": {
+    "saleable_volume": [
+     "P-CN-SMELTED_GOLD-QTY"
+    ],
+    "realized_price": [
+     "P-CN-SMELTED_GOLD-PRICE"
+    ],
+    "other_revenue": [
+     "P-CN-SMELTED_GOLD-OTHER"
+    ]
+   },
+   "parameter_index_sample": {
+    "P-CN-SMELTED_GOLD-QTY": {
+     "value": 162950000.0,
+     "unit": "克",
+     "dimension": "quantity",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-CN-SMELTED_GOLD-PRICE": {
+     "value": 772.15,
+     "unit": "元/克",
+     "dimension": "revenue_per_unit",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-CN-SMELTED_GOLD-OTHER": {
+     "value": 0.0,
+     "unit": "元",
+     "dimension": "revenue",
+     "period": "FY2025",
+     "scenario": "all"
+    }
+   },
+   "years": [
+    2025
+   ],
+   "base_revenue_argument": {
+    "value": 0.0,
+    "basis": "rowwise 模型（M09/M03）公式不消费 base_revenue；期初锚点对本模型族 not_applicable（AD-4）"
+   },
+   "scenario_keys_probed": [
+    "low",
+    "base",
+    "high"
+   ],
+   "wiring_verified": true
+  },
+  "XM-PHONE-M03": {
+   "case_id": "XM-PHONE-M03",
+   "model_id": "unit_sales",
+   "driver_parameter_ids_sample": {
+    "units": [
+     "P-HK-SMARTPHONES-QTY"
+    ],
+    "unit_revenue": [
+     "P-HK-SMARTPHONES-PRICE"
+    ],
+    "timing_factor": [
+     "P-HK-SMARTPHONES-T"
+    ],
+    "other_revenue": [
+     "P-HK-SMARTPHONES-OTHER"
+    ]
+   },
+   "parameter_index_sample": {
+    "P-HK-SMARTPHONES-QTY": {
+     "value": 165200000.0,
+     "unit": "部",
+     "dimension": "quantity",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMARTPHONES-PRICE": {
+     "value": 1128.7,
+     "unit": "元/部",
+     "dimension": "revenue_per_unit",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMARTPHONES-T": {
+     "value": 1.0,
+     "unit": "ratio",
+     "dimension": "ratio",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMARTPHONES-OTHER": {
+     "value": 0.0,
+     "unit": "元",
+     "dimension": "revenue",
+     "period": "FY2025",
+     "scenario": "all"
+    }
+   },
+   "years": [
+    2025
+   ],
+   "base_revenue_argument": {
+    "value": 0.0,
+    "basis": "rowwise 模型（M09/M03）公式不消费 base_revenue；期初锚点对本模型族 not_applicable（AD-4）"
+   },
+   "scenario_keys_probed": [
+    "low",
+    "base",
+    "high"
+   ],
+   "wiring_verified": true
+  },
+  "XM-EV-M03": {
+   "case_id": "XM-EV-M03",
+   "model_id": "unit_sales",
+   "driver_parameter_ids_sample": {
+    "units": [
+     "P-HK-SMART_EV_SEGMENT-QTY"
+    ],
+    "unit_revenue": [
+     "P-HK-SMART_EV_SEGMENT-PRICE"
+    ],
+    "timing_factor": [
+     "P-HK-SMART_EV_SEGMENT-T"
+    ],
+    "other_revenue": [
+     "P-HK-SMART_EV_SEGMENT-OTHER"
+    ]
+   },
+   "parameter_index_sample": {
+    "P-HK-SMART_EV_SEGMENT-QTY": {
+     "value": 411082.0,
+     "unit": "輛",
+     "dimension": "quantity",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMART_EV_SEGMENT-PRICE": {
+     "value": 251171.0,
+     "unit": "元/輛",
+     "dimension": "revenue_per_unit",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMART_EV_SEGMENT-T": {
+     "value": 1.0,
+     "unit": "ratio",
+     "dimension": "ratio",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMART_EV_SEGMENT-OTHER": {
+     "value": 2800000000.0,
+     "unit": "元",
+     "dimension": "revenue",
+     "period": "FY2025",
+     "scenario": "all"
+    }
+   },
+   "years": [
+    2025
+   ],
+   "base_revenue_argument": {
+    "value": 0.0,
+    "basis": "rowwise 模型（M09/M03）公式不消费 base_revenue；期初锚点对本模型族 not_applicable（AD-4）"
+   },
+   "scenario_keys_probed": [
+    "low",
+    "base",
+    "high"
+   ],
+   "wiring_verified": true
+  },
+  "MS-PBP-M05": {
+   "case_id": "MS-PBP-M05",
+   "model_id": "subscription",
+   "driver_parameter_ids_sample": null,
+   "wiring_verified": false,
+   "wiring_status": "not_probed_parameters_missing"
+  },
+  "MS-IC-M06": {
+   "case_id": "MS-IC-M06",
+   "model_id": "usage_platform",
+   "driver_parameter_ids_sample": null,
+   "wiring_verified": false,
+   "wiring_status": "not_probed_parameters_missing"
+  }
+ }
+}

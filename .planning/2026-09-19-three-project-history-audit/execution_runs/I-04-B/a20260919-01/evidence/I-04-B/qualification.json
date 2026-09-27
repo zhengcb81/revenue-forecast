@@ -1,0 +1,43 @@
+{
+  "card": "I-04-B",
+  "attempt": "a20260919-01",
+  "generated_by": "carrier-landing bookkeeping pass (2026-09-24)",
+  "verdict_is_transcribed_not_authored": true,
+  "status": "accepted_scoped",
+  "status_authority": {
+    "source_file": "review.md",
+    "line_refs": [4, 5, 6],
+    "quote": "- **第 1 轮 `changes_required`（1×P1 / 4×P2 / 5×low）→ 作者修订 → 第 2 轮 `accepted_scoped`**（附 2 项非阻断条件 C1/C2 + 3 项 carry）。",
+    "quote_scope_declared_line_5": "授予范围：隔离副本内的预算规则修复（退避返回后重算、请求预算无下限、清理 `C=max(30,2r+g)`、探测 `min(20,相位预算)` 且现测、`pause_action`/`cleanup_*` 分账字段、相位墙只报告、`ε=0.57`）。",
+    "corroboration": "handoff.json status = accepted_scoped; handoff.json reviewer_status = 'round1 changes_required (1xP1/4xP2/5xlow) -> revised -> round2 accepted_scoped with 2 non-blocking conditions (C1/C2, both now disposed) and 3 carries'; handoff.json scope = 'isolated copy only: iso/filing-fetch/scripts/fetch_filing.py + tests/test_fetch_filing.py; production filing-fetch untouched (sha256 046cc7dc...088)'"
+  },
+  "formula": {
+    "state": "not_applicable_with_reason",
+    "scope": "隔离副本内的预算规则修复（退避返回后重算、请求预算无下限、清理 C=max(30,2r+g)、探测 min(20,相位预算) 且现测、pause_action/cleanup_* 分账字段、相位墙只报告、ε=0.57）（review.md:5 逐字）",
+    "reason": "本卡为实施卡，授予面是隔离副本（iso/filing-fetch/scripts/fetch_filing.py + tests/test_fetch_filing.py）内的预算规则修复；review.md:5-6 明确划出授予与不授予，裁决全文未授予任何预测公式资格，故 formula 对本卡不适用。判定依据为本卡自己的裁决文本。"
+  },
+  "disclosure_adaptation": {
+    "state": "unmapped",
+    "reason": "本卡 review.md 与 handoff.json 原文均未提及 disclosure_adaptation（全文检索 0 命中）；按登记册 REMEDIATION_REGISTER.md:708 通则回填 canonical 值 unmapped。"
+  },
+  "accuracy": {
+    "state": "unproven",
+    "reason": "本卡 review.md 与 handoff.json 原文均未提及 accuracy（全文检索 0 命中）；review.md:44 的复审 not_verified 逐字列出「未在真实多参与者 refcount/慢 tasklist 下验证封顶与相位墙」「未运行真实 provider/wiki/worker」「R2-01 竞态用注入时钟复现、**真实概率未量化**」，与 unproven 一致；按 REMEDIATION_REGISTER.md:708 回填 canonical 值 unproven。"
+  },
+  "not_granted": [
+    "真实 provider/worker 资格——归 I-07/I-16（review.md:6）",
+    "跨进程 lease 并发资格——归 I-04-C/D；本卡只证单进程路径（review.md:6、review.md:39 carry 2）",
+    "产品信封的探测耗时/相位墙字段——归 I-04-E；本卡只报子调用耗时与探头次数（review.md:6、review.md:38 carry 1）",
+    "任何超出隔离副本的落地——handoff.json scope 逐字：isolated copy only；production filing-fetch untouched (sha256 046cc7dc...088)"
+  ],
+  "sources_read": ["review.md", "handoff.json"],
+  "pre_image_notes": "本次写入前实测：本 attempt 下不存在任何 qualification*.json，且 evidence/ 目录不存在（本 pass 新建目录与本文件）；三资格字段在前像中整体缺失，按 REMEDIATION_REGISTER.md:708 补 canonical 记录。",
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "裁决由独立 reviewer 写入 review.md（两轮：第 1 轮 changes_required → 第 2 轮 accepted_scoped，附条件 C1/C2 与 3 项 carry）；本文件仅转录，不代签、不改任何 status",
+    "this_file_grants_nothing_new": true,
+    "existing_bytes_written": 0
+  },
+  "carrier_completeness_note": "本文件为第三件载体补齐（原缺失）；不新增任何资格、不改任何既有字节、不转移 status"
+}

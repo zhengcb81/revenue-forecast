@@ -1,0 +1,543 @@
+{
+  "ok": true,
+  "sut_version": "i14b-after-1",
+  "case_count": 20,
+  "tolerance_seconds_input": 5.0,
+  "capture_tolerance_seconds_input": 5.0,
+  "frozen_now_utc": "2026-09-20T02:56:38Z",
+  "trusted_clock_sources": [
+    "scheduler_trusted",
+    "system_utc"
+  ],
+  "verdicts": [
+    {
+      "case_id": "W1",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "union_seconds": 2220.0,
+        "sum_seconds": 2220.0,
+        "overlap_seconds": 0.0,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "sample_span"
+      },
+      "note": "card oracle: observation 00:00-00:29 then quick_check 8 min -> observation is 29 min, NOT 37"
+    },
+    {
+      "case_id": "W2",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-TOTAL-AS-OBS"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "union_seconds": 2220.0,
+        "sum_seconds": 2220.0,
+        "overlap_seconds": 0.0,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": "command_total"
+      },
+      "note": "same raw record, but the claim calls the 37 min command total the observation"
+    },
+    {
+      "case_id": "W3",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "union_seconds": 2220.0,
+        "sum_seconds": 2220.0,
+        "overlap_seconds": 0.0,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2220,
+        "basis": "observation_plus_quick_check"
+      },
+      "note": "same raw record, claim adds quick_check to the observation (29+8=37)"
+    },
+    {
+      "case_id": "W4",
+      "class": "window_accounting",
+      "requirement_id": "OVERLAP-NOT-SUMMED(I-14-B#1)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SUM-OVERLAP"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": null,
+        "last_sampled_at": null,
+        "observation_finished_at": "2026-09-19T00:40:00Z",
+        "observation_span_seconds": null,
+        "sample_count": 0,
+        "samples_outside_window": 0,
+        "quick_check_seconds": null,
+        "command_total_seconds": 2400.0,
+        "schedule_lag_seconds": 0.0,
+        "union_seconds": 2400.0,
+        "sum_seconds": 2940.0,
+        "overlap_seconds": 540.0,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2940,
+        "basis": "sum_of_windows"
+      },
+      "note": "two overlapping observation windows; the claim sums them (2940) instead of the union (2400)"
+    },
+    {
+      "case_id": "W5",
+      "class": "window_accounting",
+      "requirement_id": "OVERLAP-NOT-SUMMED(I-14-B#1)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": null,
+        "last_sampled_at": null,
+        "observation_finished_at": "2026-09-19T00:40:00Z",
+        "observation_span_seconds": null,
+        "sample_count": 0,
+        "samples_outside_window": 0,
+        "quick_check_seconds": null,
+        "command_total_seconds": 2400.0,
+        "schedule_lag_seconds": 0.0,
+        "union_seconds": 2400.0,
+        "sum_seconds": 2940.0,
+        "overlap_seconds": 540.0,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 2400,
+        "basis": "union_of_windows"
+      },
+      "note": "same two windows; the claim uses the union (2400)"
+    },
+    {
+      "case_id": "W6",
+      "class": "window_accounting",
+      "requirement_id": "UNMEASURED-IS-NOT-ZERO(I-14-A M6)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-NO-SAMPLES"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:05:00Z",
+        "last_sampled_at": "2026-09-19T00:05:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": null,
+        "sample_count": 1,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "union_seconds": 2220.0,
+        "sum_seconds": 2220.0,
+        "overlap_seconds": 0.0,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 0,
+        "basis": "sample_span"
+      },
+      "note": "one sample only; a 0-second observation claim is unsupportable (unmeasured != 0)"
+    },
+    {
+      "case_id": "W7",
+      "class": "window_accounting",
+      "requirement_id": "SAMPLES-INSIDE-WINDOW(I-14-B#1)",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SAMPLE-OUTSIDE"
+      ],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 5,
+        "samples_outside_window": 1,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "union_seconds": 2220.0,
+        "sum_seconds": 2220.0,
+        "overlap_seconds": 0.0,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "sample_span"
+      },
+      "note": "one sample sits after observation_finished_at; it must not extend the span"
+    },
+    {
+      "case_id": "C1",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-EMPTY-EVIDENCE",
+        "R-FUTURE-CLOCK",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "weekly_count": 0,
+        "monthly_count": 0,
+        "alert_count": 1,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "historical attack reproduced from reviews/revenue/review.md:13: 7 distinct ids, one future instant, empty evidence hashes"
+    },
+    {
+      "case_id": "C2",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 5,
+        "weekly_count": 1,
+        "monthly_count": 0,
+        "alert_count": 0,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "pending",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "honest but incomplete: 5 of 7 daily, claim stays pending"
+    },
+    {
+      "case_id": "C3",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 7,
+        "weekly_count": 2,
+        "monthly_count": 1,
+        "alert_count": 1,
+        "window_status": "complete",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "SYNTHETIC hand-written ledger that satisfies every rule; proves the algorithm can reach complete ONLY from rule-satisfying records. NOT a real observation."
+    },
+    {
+      "case_id": "C4",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 6,
+        "weekly_count": 2,
+        "monthly_count": 1,
+        "alert_count": 1,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "claim says complete but only 6 consecutive daily runs exist"
+    },
+    {
+      "case_id": "C5",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SIMULATED-CLOCK"
+      ],
+      "computed": {
+        "daily_count": 7,
+        "weekly_count": 2,
+        "monthly_count": 1,
+        "alert_count": 1,
+        "window_status": "complete",
+        "clock_source": "simulated_clock_advanced_by_7_days"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "records as C3 but reached with a simulated clock -> must not be eligible even so"
+    },
+    {
+      "case_id": "C6",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-DUP-RUN-ID"
+      ],
+      "computed": {
+        "daily_count": 6,
+        "weekly_count": 2,
+        "monthly_count": 1,
+        "alert_count": 1,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "7 distinct dates but the last two share a run_id (copied report)"
+    },
+    {
+      "case_id": "C7",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-EMPTY-EVIDENCE"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "weekly_count": 2,
+        "monthly_count": 1,
+        "alert_count": 1,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "records as C3 but every daily entry has an empty evidence hash"
+    },
+    {
+      "case_id": "L1",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "anchor_event_id": "login-0001",
+        "shared_anchor_event_id": "login-0001",
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0.0,
+        "capture_latency_max_seconds": 1.0,
+        "label_count": 3
+      },
+      "claim": {
+        "all_labels_anchor_correct": true
+      },
+      "note": "honest pre-placed-recorder anchors, exact offsets, live capture"
+    },
+    {
+      "case_id": "L2",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR"
+      ],
+      "computed": {
+        "anchor_event_id": "login-0001",
+        "shared_anchor_event_id": "login-0001",
+        "label_offsets_seconds": [
+          29,
+          88,
+          207
+        ],
+        "label_offset_max_error_seconds": 87.0,
+        "capture_latency_max_seconds": 0.0,
+        "label_count": 3
+      },
+      "claim": {
+        "all_labels_anchor_correct": true
+      },
+      "note": "historical WR defect: the 30/60/120 labels were cumulative waits 29/88/207 s, not anchor instants"
+    },
+    {
+      "case_id": "L2b",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR",
+        "R-POSTHOC-CAPTURE"
+      ],
+      "computed": {
+        "anchor_event_id": "login-0001",
+        "shared_anchor_event_id": "login-0001",
+        "label_offsets_seconds": [
+          29,
+          88,
+          207
+        ],
+        "label_offset_max_error_seconds": 87.0,
+        "capture_latency_max_seconds": 0.0,
+        "label_count": 3
+      },
+      "claim": {
+        "all_labels_anchor_correct": true
+      },
+      "note": "same cumulative waits, but presented as a post-hoc log"
+    },
+    {
+      "case_id": "L3",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-POSTHOC-CAPTURE"
+      ],
+      "computed": {
+        "anchor_event_id": "login-0001",
+        "shared_anchor_event_id": "login-0001",
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0.0,
+        "capture_latency_max_seconds": 3600.0,
+        "label_count": 3
+      },
+      "claim": {
+        "all_labels_anchor_correct": true
+      },
+      "note": "offsets exact but the snapshot was captured one hour later from a log"
+    },
+    {
+      "case_id": "L4",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "anchor_event_id": "login-0001",
+        "shared_anchor_event_id": "login-0001",
+        "label_offsets_seconds": [
+          30,
+          30,
+          30
+        ],
+        "label_offset_max_error_seconds": 90.0,
+        "capture_latency_max_seconds": 1.0,
+        "label_count": 3
+      },
+      "claim": {
+        "all_labels_anchor_correct": true
+      },
+      "note": "a single snapshot at +30 s relabelled as three separate labels"
+    },
+    {
+      "case_id": "L5",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-ANCHOR-NOT-SHARED"
+      ],
+      "computed": {
+        "anchor_event_id": "login-0001",
+        "shared_anchor_event_id": null,
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0.0,
+        "capture_latency_max_seconds": 1.0,
+        "label_count": 3
+      },
+      "claim": {
+        "all_labels_anchor_correct": true
+      },
+      "note": "three labels measured against three DIFFERENT anchor events, not one shared anchor"
+    }
+  ],
+  "accepted_claim_count": 6,
+  "refusal_code_count": 18
+}

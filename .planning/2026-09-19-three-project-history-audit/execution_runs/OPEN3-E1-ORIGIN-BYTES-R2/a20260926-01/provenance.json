@@ -1,0 +1,465 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ORIGIN-BYTES-R2",
+  "attempt_id": "a20260926-01",
+  "role": "evidence_acquirer",
+  "generated_utc": "2026-09-26T13:46:44Z",
+  "oracle_frozen_before_actions": true,
+  "external_retrieval_not_local": true,
+  "network": {
+    "session_network_allowed": true,
+    "project_default_rule": "progress.md L1244（允许 web_search/web_fetch 取证；每条外部证据必须落 provenance.json；外部来源不得冒充本地可核事实）",
+    "probe": {
+      "url": "https://example.com",
+      "http_status": 200,
+      "when_utc": "2026-09-26T13:03Z",
+      "bytes": 559,
+      "sha256": "ff67a9d764d6a2367a187734e697f6a53217db9a21c101d410a113ca871a299d"
+    },
+    "not_applicable_rule": "OWNER_DECISIONS L543 的『禁联网』只约束 OPEN3-E1-ACCT-RULING 定级工位，不约束本取证工位（见 oracle §0.2）"
+  },
+  "user_agent": "revenue-forecast-evidence-audit/1.0 (owner-authorized evidence retrieval; contact: audit-ops@example.com)",
+  "gate0": {
+    "criteria": "oracle.md §一",
+    "gate0_writability_passed": false,
+    "probes": [
+      {
+        "id": "P0",
+        "dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN3-E1-ORIGIN-BYTES-R2\\a20260926-01",
+        "write_rc": 0,
+        "readback_rc": 0,
+        "payload_match": true,
+        "payload_len": 24,
+        "delete_rc": 0,
+        "residual_exists": false,
+        "result": "PASS"
+      },
+      {
+        "id": "P1",
+        "dir": "C:\\Users\\ZhengZengbo\\Projects\\company-wiki\\companies",
+        "write_rc": "ERR",
+        "readback_rc": "NA",
+        "delete_rc": "NA",
+        "raw_error": "Access to the path 'C:\\...\\company-wiki\\companies\\_gate0_probe_16680_2.tmp' is denied.",
+        "result": "DENIED"
+      },
+      {
+        "id": "P2",
+        "dir": "C:\\...\\company-wiki\\src\\company_wiki\\source_catalog",
+        "write_rc": "ERR",
+        "readback_rc": "NA",
+        "delete_rc": "NA",
+        "raw_error": "Access to the path 'C:\\...\\source_catalog\\_gate0_probe_16680_3.tmp' is denied.",
+        "result": "DENIED"
+      },
+      {
+        "id": "P3",
+        "dir": "C:\\...\\dayu-agent\\dayu-agent\\dayu\\fins\\downloaders",
+        "write_rc": "ERR",
+        "readback_rc": "NA",
+        "delete_rc": "NA",
+        "raw_error": "Access to the path 'C:\\...\\downloaders\\_gate0_probe_16680_4.tmp' is denied.",
+        "result": "DENIED"
+      }
+    ],
+    "payload": "GATE0-PROBE-a20260926-01",
+    "probe_pid": 16680,
+    "consequence": "产品仓落点分支停手：不运行 filing-fetch --allow-download，不尝试任何替代写法（git apply / 重定向 / 删除-重写 全禁）"
+  },
+  "attempts": [
+    {
+      "seq": "A1",
+      "mechanism": "PowerShell 5.1 Invoke-WebRequest / .NET Framework HttpClient",
+      "outcome": "FAIL",
+      "error": "基础连接已经关闭: 接收时发生错误（TLS 握手失败）",
+      "utc": "2026-09-26T13:0xZ",
+      "http_status": null
+    },
+    {
+      "seq": "A2",
+      "mechanism": "curl.exe (Windows, schannel)",
+      "outcome": "FAIL",
+      "error": "curl (35) schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS",
+      "rc": 35,
+      "http_status": null
+    },
+    {
+      "seq": "A3",
+      "mechanism": "harness web_fetch（仅文本、非下载型）",
+      "outcome": "HTTP 403",
+      "detail": "SEC.gov | Your Request Originates from an Undeclared Automated Tool（UA 未声明）",
+      "counted_as_origin_bytes": false
+    },
+    {
+      "seq": "A4",
+      "mechanism": "Python urllib（声明 UA，下载型 M2）→ EDGAR index",
+      "outcome": "OK",
+      "http_status": 200,
+      "bytes": 17557,
+      "sha256": "618f010b6e56597ce881da5ada82b6946615caf2d1062a68942d34a9e24753cf",
+      "utc": "2026-09-26T13:29:40Z",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/0001193125-26-380280-index.htm",
+      "role": "文档身份确认（不计入 origin_bytes_retrieved）"
+    },
+    {
+      "seq": "A5",
+      "mechanism": "Python urllib（同上）→ 8-K 主文档",
+      "outcome": "OK",
+      "http_status": 200,
+      "bytes": 28665,
+      "sha256": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878",
+      "utc": "2026-09-26T13:29:40Z",
+      "counted_as_origin_bytes": true
+    },
+    {
+      "seq": "A6",
+      "mechanism": "Python urllib（同上）→ Exhibit 99.1",
+      "outcome": "OK",
+      "http_status": 200,
+      "bytes": 34288,
+      "sha256": "47a0a4a1d6a335fffab571789aba597eca0637d2650f0f62371afa10e205b987",
+      "utc": "2026-09-26T13:29:41Z",
+      "counted_as_origin_bytes": true
+    },
+    {
+      "seq": "A7",
+      "mechanism": "Python urllib → EDGAR 完整申报 .txt（独立复核路径）",
+      "outcome": "OK",
+      "http_status": 200,
+      "bytes": 2721504,
+      "sha256": "d82838ac92ed3e8b8e2d6f2ee21b51997309c53d38bcc637ba1041392d1b118f",
+      "utc": "2026-09-26T13:30:33Z",
+      "counted_as_origin_bytes": false
+    },
+    {
+      "seq": "A8",
+      "mechanism": "Python http.client 原始头复取（8-K，第 3 次）",
+      "outcome": "OK",
+      "http_status": 200,
+      "bytes": 28665,
+      "sha256": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878",
+      "utc": "2026-09-26T13:38:59Z",
+      "note": "三次取回 sha 完全一致；Content-Length=28665 与实收一致"
+    }
+  ],
+  "documents": [
+    {
+      "document": "MSFT 8-K 2026-09-02 Item 7.01（含 Item 9.01）",
+      "accession": "0001193125-26-380280",
+      "cik": "0000789019",
+      "filer": "MICROSOFT CORP",
+      "form": "8-K",
+      "period_of_report": "2026-09-02",
+      "accepted": "2026-09-02 16:30:24",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm",
+      "retrieved_utc": "2026-09-26T13:29:40Z",
+      "retrieved_utc_end": "2026-09-26T13:29:41Z",
+      "http_status": 200,
+      "bytes": 28665,
+      "sha256": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878",
+      "file_sha256_reread": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878",
+      "reread_matches": true,
+      "content_type": "text/html",
+      "date_header": "Sat, 26 Sep 2026 13:29:41 GMT",
+      "last_modified": "Wed, 02 Sep 2026 20:31:06 GMT",
+      "landed_path": "origin_bytes/MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+      "verbatim_quote": {
+        "text": "On September 2, 2026, Microsoft Corporation (the “Company”) posted presentation materials to its Investor Relations website titled “FY27 Segments and Investor Metrics” announcing a change in reportable segments and investor metrics. Beginning in fiscal year 2027, the Company will manage its operations under this updated reporting structure and report its financial performance based on two reportable segments: (1)Agents and Infra and (2)Devices and Consumer. A copy of the presentation materials is furnished as Exhibit 99.1 to this report.",
+        "raw_ascii_anchor": "posted presentation materials to its Investor Relations website titled",
+        "raw_anchor_span": [
+          21796,
+          21866
+        ],
+        "quote_located_on_origin": true
+      }
+    },
+    {
+      "document": "MSFT 8-K Exhibit 99.1 — FY27 Segments and Investor Metrics（2026-09）",
+      "accession": "0001193125-26-380280",
+      "cik": "0000789019",
+      "filer": "MICROSOFT CORP",
+      "form": "8-K",
+      "exhibit": "EX-99.1",
+      "sequence": 2,
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm",
+      "retrieved_utc": "2026-09-26T13:29:41Z",
+      "retrieved_utc_end": "2026-09-26T13:29:42Z",
+      "http_status": 200,
+      "bytes": 34288,
+      "sha256": "47a0a4a1d6a335fffab571789aba597eca0637d2650f0f62371afa10e205b987",
+      "file_sha256_reread": "47a0a4a1d6a335fffab571789aba597eca0637d2650f0f62371afa10e205b987",
+      "reread_matches": true,
+      "content_type": "text/html",
+      "date_header": "Sat, 26 Sep 2026 13:29:42 GMT",
+      "last_modified": "Wed, 02 Sep 2026 20:31:06 GMT",
+      "landed_path": "origin_bytes/MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+      "served_with_sgml_document_wrapper": true,
+      "wrapper_head": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>d291965dex991.htm\n<DESCRIPTION>EX-99.1\n<TEXT>\n<HTML><HEAD>\n<TITLE>EX-99.1",
+      "verbatim_quote": {
+        "text": "Beginning with FY27, we will transition from our current three reporting segments, Productivity and Business Processes, Intelligent Cloud, and More Personal Computing, to two segments: Agents and Infra and Devices and Consumer.",
+        "raw_ascii_anchor": "we will transition from our current three reporting segments",
+        "raw_anchor_span": [
+          3079,
+          3139
+        ],
+        "quote_located_on_origin": true
+      }
+    }
+  ],
+  "origin_bytes_retrieved_total": 62953,
+  "origin_bytes_pack": {
+    "path": "origin_bytes.bin",
+    "layout": [
+      {
+        "file": "MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+        "offset": [
+          0,
+          28665
+        ],
+        "bytes": 28665,
+        "sha256": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878"
+      },
+      {
+        "file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+        "offset": [
+          28665,
+          62953
+        ],
+        "bytes": 34288,
+        "sha256": "47a0a4a1d6a335fffab571789aba597eca0637d2650f0f62371afa10e205b987"
+      }
+    ],
+    "total_bytes": 62953,
+    "sha256": "cf84c29048ab314e329758975e101804ba3032f28e2b22d0373f46e3d3c9db1e"
+  },
+  "identity_confirmation": {
+    "index_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/0001193125-26-380280-index.htm",
+    "http_status": 200,
+    "bytes": 17557,
+    "sha256": "618f010b6e56597ce881da5ada82b6946615caf2d1062a68942d34a9e24753cf",
+    "retrieved_utc": "2026-09-26T13:29:40Z",
+    "period_of_report": "2026-09-02",
+    "accepted": "2026-09-02 16:30:24",
+    "items": [
+      "Item 7.01: Regulation FD Disclosure",
+      "Item 9.01: Financial Statements and Exhibits"
+    ],
+    "files_in_filing": [
+      "d291965d8k.htm",
+      "d291965dex991.htm"
+    ],
+    "filer": "MICROSOFT CORP (Filer)"
+  },
+  "independent_path": {
+    "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/0001193125-26-380280.txt",
+    "http_status": 200,
+    "bytes": 2721504,
+    "sha256": "d82838ac92ed3e8b8e2d6f2ee21b51997309c53d38bcc637ba1041392d1b118f",
+    "retrieved_utc": "2026-09-26T13:30:33Z/2026-09-26T13:30:36Z",
+    "landed_path": "origin_bytes/_independent_0001193125-26-380280_complete_submission.txt",
+    "verdict": {
+      "8K": {
+        "origin_minus_edge_script_bytes": 28559,
+        "archive_inner_bytes": 28559,
+        "byte_identical": true,
+        "sha_origin_minus_script": "6328d05612511965c29ff3d6a6919137eab86080fc2952d141c126cfe091d600",
+        "sha_archive_inner": "6328d05612511965c29ff3d6a6919137eab86080fc2952d141c126cfe091d600",
+        "note": "origin 响应体去掉边缘注入脚本后与 EDGAR 完整申报副本逐字节相同（差异仅为 archive 侧 <XBRL> 包裹与尾部换行）"
+      },
+      "EX991": {
+        "origin_sgml_inner_bytes": 34176,
+        "origin_inner_minus_edge_script_bytes": 34070,
+        "archive_inner_bytes": 34070,
+        "byte_identical_after_removing_edge_script": true,
+        "sha_origin_inner_minus_script": "4cb79b6e33fbb687f2fd6dbd2b59a4b53b41fa87b009d0a0c859d28e0c3987fd",
+        "sha_archive_inner": "4cb79b6e33fbb687f2fd6dbd2b59a4b53b41fa87b009d0a0c859d28e0c3987fd",
+        "note": "origin 响应体（剥去 EDGAR <DOCUMENT>/<TEXT> 包装、去掉边缘注入脚本后）与 2026-09-02 归档的 as-filed 副本逐字节相同",
+        "byte_identical": true
+      }
+    }
+  },
+  "edge_injected_script": {
+    "detected_in": [
+      "8-K",
+      "EX99.1"
+    ],
+    "absent_in": [
+      "_identity_0001193125-26-380280-index.htm",
+      "_independent_0001193125-26-380280_complete_submission.txt"
+    ],
+    "script_html": "<script type=\"text/javascript\"  src=\"/QQpw/SBxk/Vaws3/_e/ukQ/ahaE2chLLGzQfS/Ji1MAQ/Zg9QCV/p9Knc\"></script>",
+    "span_8k": [
+      28544,
+      28650
+    ],
+    "span_ex991": [
+      34147,
+      34253
+    ],
+    "response_content_length_matched_actual": true,
+    "evidence_headers": {
+      "Content-Length": "28665",
+      "X-Akamai-Transformed": "0 - 0 -",
+      "Set-Cookie": "bm_sz=... (Akamai Bot Manager)",
+      "x-amz-request-id": "36ASJ5HHEVXTBHZH"
+    },
+    "interpretation": "注入发生在 sec.gov/Edge 侧（响应头为 SEC 的 S3+Akamai 头，Content-Length 与实际收字节数一致）；因此该脚本**属于本客户端收到的 HTTP 响应体**，是 origin 响应字节的一部分；它**不在 2026-09-02 归档的 as-filed 副本中**。",
+    "raw_sha_8k": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878",
+    "stripped_sha_8k": "6328d05612511965c29ff3d6a6919137eab86080fc2952d141c126cfe091d600",
+    "raw_bytes_8k": 28665,
+    "stripped_bytes_8k": 28559,
+    "raw_sha_ex991": "47a0a4a1d6a335fffab571789aba597eca0637d2650f0f62371afa10e205b987",
+    "stripped_sha_ex991": "557161af7ac2f2eed02c2ad77b8d5e1e21acd35173e46519981ad85d28a15be5",
+    "raw_bytes_ex991": 34288,
+    "stripped_bytes_ex991": 34182
+  },
+  "quote_reverification_on_origin_carrier": {
+    "method": "ACCT ruling L163『在新载体上重跑同一套字节区校验』；HTML→文本、实体解码、空白归一化后逐字比对（等同 path B『去空白归一化』），另登记原始 ASCII 锚点字节区",
+    "ws_insensitive_hits": "8/8",
+    "ws_sensitive_hits": "7/8",
+    "ws_sensitive_miss": [
+      "Q1（origin 为 '(1) Agents'，语料为 '(1)Agents' —— 仅 2 处空格差，属转写排版差，非内容矛盾；是否构成 ACCT C5『不一致』归会计面裁定，本工位不裁）"
+    ],
+    "rows": [
+      {
+        "id": "Q1",
+        "corpus_file": "MSFT_8K_2026-09-02_Item7.01.md",
+        "ws_insensitive_match_on_origin": true,
+        "ws_sensitive_match_on_origin": false,
+        "matched_origin_file": "MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+        "raw_ascii_anchor": "posted presentation materials to its Investor Relations website titled",
+        "raw_anchor_span": {
+          "file": "MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+          "span": [
+            21796,
+            21866
+          ]
+        }
+      },
+      {
+        "id": "Q2",
+        "corpus_file": "MSFT_8K_2026-09-02_Item7.01.md",
+        "ws_insensitive_match_on_origin": true,
+        "ws_sensitive_match_on_origin": true,
+        "matched_origin_file": "MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+        "raw_ascii_anchor": "provides a description of our updated reporting structure and presents summary financial information",
+        "raw_anchor_span": {
+          "file": "MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+          "span": [
+            22457,
+            22557
+          ]
+        }
+      },
+      {
+        "id": "Q3",
+        "corpus_file": "MSFT_8K_2026-09-02_Item7.01.md",
+        "ws_insensitive_match_on_origin": true,
+        "ws_sensitive_match_on_origin": true,
+        "matched_origin_file": "MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+        "raw_ascii_anchor": "shall not be deemed to be",
+        "raw_anchor_span": {
+          "file": "MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+          "span": [
+            22946,
+            22971
+          ]
+        }
+      },
+      {
+        "id": "Q4",
+        "corpus_file": "MSFT_8K_2026-09-02_Exhibit99-1.md",
+        "ws_insensitive_match_on_origin": true,
+        "ws_sensitive_match_on_origin": true,
+        "matched_origin_file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+        "raw_ascii_anchor": "we will transition from our current three reporting segments",
+        "raw_anchor_span": {
+          "file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+          "span": [
+            3079,
+            3139
+          ]
+        }
+      },
+      {
+        "id": "Q5",
+        "corpus_file": "MSFT_8K_2026-09-02_Exhibit99-1.md",
+        "ws_insensitive_match_on_origin": true,
+        "ws_sensitive_match_on_origin": true,
+        "matched_origin_file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+        "raw_ascii_anchor": "two reporting segments for FY27",
+        "raw_anchor_span": null
+      },
+      {
+        "id": "Q6",
+        "corpus_file": "MSFT_8K_2026-09-02_Exhibit99-1.md",
+        "ws_insensitive_match_on_origin": true,
+        "ws_sensitive_match_on_origin": true,
+        "matched_origin_file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+        "raw_ascii_anchor": "$268,127",
+        "raw_anchor_span": {
+          "file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+          "span": [
+            20323,
+            20331
+          ]
+        }
+      },
+      {
+        "id": "Q7",
+        "corpus_file": "MSFT_8K_2026-09-02_Exhibit99-1.md",
+        "ws_insensitive_match_on_origin": true,
+        "ws_sensitive_match_on_origin": true,
+        "matched_origin_file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+        "raw_ascii_anchor": "$75.15 to $75.75 billion",
+        "raw_anchor_span": {
+          "file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+          "span": [
+            30770,
+            30794
+          ]
+        }
+      },
+      {
+        "id": "Q8",
+        "corpus_file": "MSFT_8K_2026-09-02_Exhibit99-1.md",
+        "ws_insensitive_match_on_origin": true,
+        "ws_sensitive_match_on_origin": true,
+        "matched_origin_file": "MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+        "raw_ascii_anchor": "FY27 Segments and Investor Metrics September 2026",
+        "raw_anchor_span": null
+      }
+    ]
+  },
+  "previous_corpus_reverification": {
+    "MSFT_8K_2026-09-02_Exhibit99-1.md": {
+      "bytes": 27586,
+      "sha256": "20392f0e110568fa4338a1167da3756627b77e606eec85ae113aeebf40373f58"
+    },
+    "MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt": {
+      "bytes": 28536,
+      "sha256": "56b0460b4e635b590c1870153a65adc996d134fd12e2cd6c2670c51ab170956d"
+    },
+    "MSFT_8K_2026-09-02_Item7.01.md": {
+      "bytes": 3789,
+      "sha256": "096c7d9df55ab46a0ccef21b3ac528b7e59483a91e1b6b32277808bcae801ad1"
+    },
+    "MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt": {
+      "bytes": 5183,
+      "sha256": "5927de0367d1097a6bbb1f59c669a3461eacce43c8115874c5e0a497f7689f1c"
+    }
+  },
+  "product_repo": {
+    "filing_fetch_invoked": false,
+    "files_written": 0,
+    "reason": "门 0 P1/P2/P3 均 Access denied（本工位会话无产品仓写权限）；纪律 16/17 禁止替代写法",
+    "git_diff_new_paths": [],
+    "sha": null
+  },
+  "not_done": [
+    "未判 E1/E2/BLOCKED-PARTIAL 等级（level_claimed=null）",
+    "未解除 OPEN-3 / BLOCKED-NEEDS-ORIGIN-BYTES / B1",
+    "未产生 ACCEPT、未放行参数、未代签",
+    "未写产品仓任何字节、0 次 git 写、未用 git status"
+  ]
+}

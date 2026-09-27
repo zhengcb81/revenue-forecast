@@ -1,0 +1,104 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d86afa5d321ccf2dd3d8c10efb9b81424875abe2",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "581596995555cc257bbc0e7231899d31525314e88a8ecb2199fb469d0a6eb915",
+  "commands": [
+    {
+      "command": "RED 探针：document.py:471-479 semantic_groups 硬失败无双 assertion/resolution status 机制；grep assertion_status|resolution_status|conflict scripts → 零命中",
+      "exit_code": 0,
+      "result": "G1 真实产品缺口：冲突参数硬失败，无法表达双 assertion+resolution status"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr604_conflict_resolution.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed（C1 冲突解决 6 + C2 词汇 5）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "585 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+11 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/contracts/constants.py scripts/contracts/document.py tests/test_zr604_conflict_resolution.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（document.py max 32——helper 提取模式复用 ZR-602/603；新 helpers ≤4）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 127 files"
+    },
+    {
+      "command": "git diff d86afa5 2636e55 --stat",
+      "exit_code": 0,
+      "result": "3 文件 +238/-4：constants.py（+20 行 ASSERTION_STATUSES/RESOLUTION_STATUSES）、document.py（+38 行 helpers + 集成）、test_zr604_conflict_resolution.py（新 11 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T03:00:00+00:00",
+  "findings": [
+    {
+      "detail": "冲突参数语义扩展：同 definition/period/unit/scenario 不同值的参数，若均携带 resolution_status 且至多一个 accepted → 允许共存（冲突已解决）；否则保持原行为硬失败（backward compatible）。assertion_status 标识 primary/secondary 角色；resolution_status 跟踪 accepted/rejected/pending_review/under_review。双 assertion 机制：同一事实的两个来源均被保留，不静默覆盖。",
+      "id": "ZR604-IMPL-001",
+      "severity": "info",
+      "title": "双 assertion + resolution status 冲突解决（加性，backward compatible）"
+    },
+    {
+      "detail": "document.py 集成复用 ZR-602/603 零 McCabe 增量模式：_validate_conflict_resolution（冲突解决逻辑）和 _validate_parameter_status_fields（词汇校验）均提取为 module-level helpers——validate_parameters 主函数 max 保持 32。semantic_groups 循环改造为调用 helper，零新增分支。",
+      "id": "ZR604-IMPL-002",
+      "severity": "info",
+      "title": "零 McCabe 增量模式第三次复用"
+    }
+  ],
+  "implementation": {
+    "design": "constants.py 加 ASSERTION_STATUSES（primary/secondary）+ RESOLUTION_STATUSES（accepted/rejected/pending_review/under_review）；document.py 两个 helper（_validate_parameter_status_fields 校验 assertion_status/resolution_status 枚举值——additive None 早退 + _validate_conflict_resolution 冲突解决逻辑——all resolution_status 且 ≤1 accepted → 通过，否则原行为硬失败）；semantic_groups 循环改造为调用 helper（validate_parameters max 保持 32）。11 tests + 全量 585+106 绿。",
+    "files": [
+      "revenue-forecast/scripts/contracts/constants.py",
+      "revenue-forecast/scripts/contracts/document.py",
+      "revenue-forecast/tests/test_zr604_conflict_resolution.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-604/**"
+    ]
+  },
+  "implementer": "zr604-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 2636e55；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=d9e3650b（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr604-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "注：base_triplet.revenue=d86afa5 为 ZR-603 closure commit。"
+  ],
+  "objective": "F2 第四卡冲突保存与人工 review：同语义键不同值的参数可携带 resolution_status 共存（至多一个 accepted），assertion_status 标识 primary/secondary 角色——不静默覆盖、保留双 assertion、人工 review 决定取舍。",
+  "plan_sha256": "d9e3650bd3bce1c10ed256c65eb18d0d8e6ff5c7ebbd2334096a8f71428d8ac8",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "2636e55f45f33000dda11224143f96d8830a31d6",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/contracts/constants.py（+20 行词汇）、scripts/contracts/document.py（+38 行 helpers + 集成）、tests/test_zr604_conflict_resolution.py（新 11 tests）；revenue 侧 receipts/ZR-604/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 3,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/contracts/constants.py",
+    "revenue-forecast/scripts/contracts/document.py",
+    "revenue-forecast/tests/test_zr604_conflict_resolution.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-604/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-604"
+}

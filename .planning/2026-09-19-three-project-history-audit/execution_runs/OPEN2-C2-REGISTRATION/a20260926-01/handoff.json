@@ -1,0 +1,267 @@
+{
+  "schema": "open2-c2-registration-handoff/1",
+  "card_context": "I-11-B unlock condition C2 (branch 2): 落实『分部对外收入 + 分金属销量』替代口径并注册新 parameter_id —— 本工位执行最后一步『注册』",
+  "attempt": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01",
+  "role": "implementer_registration",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "implementer_signed": false,
+  "station_purpose": "只做注册：model_cards.md 追加 4 个 parameter_id + hypotheses 新版本 + decision_sha256；不裁专业问题、不放行参数、不代签、不解除任何 BLOCKED",
+
+  "authorized_by": {
+    "c2_verbatim": "OPEN-2：系数取值解 BLOCKED（S1/A 级证据 + 双签）或落实『分部对外收入 + 分金属销量』替代口径并注册新 parameter_id",
+    "c2_source": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json L119（file_sha256 b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878，本工位独立复算）",
+    "c2_registration_requirement_verbatim": "走替代口径则新 parameter_id 须在 model_cards.md 注册并通过 REGISTERED 检查",
+    "c2_registration_requirement_source": "同文件 L54",
+    "open2_substitute_caliber_discharged_false_verbatim": {
+      "field": "c2_branch2_fully_discharged",
+      "value": false,
+      "quote_handoff_l20": "\"c2_branch2_fully_discharged\": false,",
+      "quote_handoff_l21": "model_cards.md 新增 parameter_id 注册 + hypotheses.json 新版本 + decision.decision_sha256（均属实现者/编排层写入面，本工位无该权限）⇒ OPEN-2 与 I-11-B 维持 BLOCKED",
+      "quote_ruling_s5_1": "不解除 OPEN-2：本裁定只回答 C2 第二分支『口径是否成立』，不宣布该分支已满足——『注册』（model_cards.md 新增 + hypotheses.json 新版本 + decision.decision_sha256）属实现者/编排层，本工位无该写入面 ⇒ c2_branch2_fully_discharged = false",
+      "source_files": [
+        {"path": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01/handoff.json", "sha256": "22ca566501afa4dbc663caf24986c708466a8024b1a13f1626f75a3edd9a0b12", "bytes": 11563, "note": "自报 sha256=null，本工位外部复算"},
+        {"path": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01/ruling.md", "sha256": "f927c44cacacb6d0db8e9d1cc09aa559d74427837fd885c4cd0081dbca899e53", "bytes": 35872}
+      ]
+    },
+    "dispatch": "编排层（父代理 session-19074bf0-0205-4315-af73-9db57597275a）派单；写入面 = 本 attempt 5 件 + execution_v2/model_cards.md 追加"
+  },
+
+  "c2_branch2_discharged": true,
+  "c2_branch2_discharged_meaning": "仅指 C2 第二分支所要求的『注册』动作已完成、且其成立条件 C-1…C-5 经本工位逐条回源复核全部成立（fail-closed 未触发）",
+  "c2_branch2_discharged_reason": "① model_cards.md 已在文件末尾追加 4 个新 parameter_id（前像 855b5e2d…/165,695 B → 后像 cc24be67…/171,460 B，前缀字节不变已复算两次）；② hypotheses_v3.json 已落盘（b2063ac8…/61,231 B，同形 8 元素数组，provenance.supersedes_sha256 = f2178768… 指封盘原件，未改的下标 0 与 3-7 逐字节相同）；③ decision.decision_sha256 已写入并在写入前后各复算一次、两值相同；④ validate() 对 hypotheses_v3.json errors=0/rc=0（封盘原文件基线同为 errors=0）；⑤ 4 个新 id 的 low/base/high 全为 null、released=false、state=pending_professional_decision，未放行任何参数",
+  "c2_branch2_not_claimed": [
+    "不解除 OPEN-2：OPEN-2 的其余 unlock_conditions（同期原文披露系数、非实现者双签署、参数脱离 pending_professional_decision、BLOCKED-2b 全文检索、BLOCKED-UNADJ-1 同行均值意见）一条未满足，本工位也不评估其是否属于本分支",
+    "不产生 I-11-B 的 ACCEPT、不声称 I-11-A/I-11-B 验收；OPEN-2 与 I-11-B 是否解 BLOCKED 仍须独立 reviewer 裁定与编排层判定",
+    "不放行任何参数、不给任何幅度/单价/阈值数值作为放行值"
+  ],
+
+  "conditions_verified": {
+    "C-1": {"verdict": "成立", "evidence": "收入槽 ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027(direct_revenue/revenue, 封盘 L37) 与量槽 ZIJIN_MINERAL_COPPER/GOLD_SALEABLE_VOLUME_FY2027(resource/saleable_volume, L275/L287) 分别落参数；新写入 4 条字段机器检查不含任何跨层相除合成式(no_cross_layer_division_in_new_entries=true)；追加块 4 条 factor_basis=none；跨层相除比值由本工位独立复算=124,276.43，仅登记为被拒构造，不进入任何注册字段"},
+    "C-2": {"verdict": "成立", "evidence": "两个 realized_price 新条目 unit_basis=disclosed_same_table_pairing(same_table_pairing_on_price_slots=true)；同表同注实证：P2_zijin_44_48.txt L15 表名、L53-L57/L101-L107 三列、L97 表注『本表不含非控股企业的相关数据。』、L267/L327 量侧表与其表注；算术复算 63,613×666,158=42,376,308,854 vs 披露 42,376,570,000 ⇒ 0.000616% ≤ 0.1%；八项销量同比闭环最大 0.00498pp < 0.005pp"},
+    "C-3": {"verdict": "成立", "evidence": "追加块 A.2-3 逐字写入 direct_revenue 与 resource 二选一 + 对账式；新 id 只落既有模型槽(resource 实际 31 个 model 不变、命题仍 8 条)；封盘 double_count_exclusion 与 dependency_control 逐字节未改(double_count_and_dependency_unchanged=true)"},
+    "C-4": {"verdict": "成立", "evidence": "model_id/driver 在 validate_hypotheses.py REGISTERED 内(L31 resource=[saleable_volume,realized_price,other_revenue])；18 个 parameter_id 零重复；4 个新 id 全库检索仅命中规格来源载体；validate() 对 hypotheses_v3.json errors=0 rc=0(基线原文件同 errors=0)；DEC-5 L125-L135 通过"},
+    "C-5": {"verdict": "成立", "evidence": "4 条新 id low/base/high=null、released=false、state=pending_professional_decision；既有 14 个 id 全在位未变；8 条 falsifier 整块(含 threshold_basis)逐字节相同；2 个 _PLACEHOLDER id 原样；被封 ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 落点未动；封盘与裁定载体收尾 sha 全部未变"}
+  },
+
+  "naming_rule": {
+    "explicit_naming_rule_document": "NOT_FOUND",
+    "independently_verified_by_this_station": true,
+    "searched": [
+      "execution_v2/*.md（含 model_cards.md / START_HERE.md / card_I-11-A.md / common_*_cards.md / card_M01-M31.md / research_cards.md / filing_cards.md / wiki_cards.md）",
+      "execution_v2/*.json（dispatch.json / model_cards.json / research_cards.json）与 validate_execution_pack.py",
+      "execution_runs/I-11-A/a20260919-01/{decision.md,oracle.md,review.md,binding.json,commands.json,handoff.json} 与 evidence/I-11-A/mechanism_review.md",
+      "execution_runs/I-11-A/a20260919-01/tools/{validate_hypotheses.py,build_hypotheses.py}",
+      "计划根 {OWNER_DECISIONS.md,REMEDIATION_REGISTER.md,task_plan.md,findings.md,progress.md,implementation_plan.md,README.md}"
+    ],
+    "patterns": ["命名", "构词", "命名法", "词法", "命名规则", "naming", "naming_rule", "全大写下划线", "ISSUER", "id 构成", "parameter_id"],
+    "rule_used": "{发行人}_{范围或分部}_{指标}_{期间 FY20xx}[_PLACEHOLDER]，全大写下划线分隔（归纳，非自创；新 id 与既有 ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027 同构）",
+    "rule_sources": [
+      "decision.md DEC-5 L125-L135（只落到 model_cards.md 已注册 model_id/driver_name）",
+      "validate_hypotheses.py L21-L75(REGISTERED) / L187-L190(E_UNKNOWN_MODEL/E_UNKNOWN_DRIVER) / L197-L213(E_DUPLICATE_PARAMETER)",
+      "I-11-A oracle.md L132-L134（一命题一 id，多个须显式列出）",
+      "model_cards.md L644-L650（M09：必填 saleable_volume/realized_price；不得混矿石吨、精矿吨、金属吨）"
+    ],
+    "only_hit_for_not_found_statement": "REMEDIATION_REGISTER.md L3393（登记行，非规则文档）"
+  },
+
+  "registered_ids": [
+    {
+      "parameter_id": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+      "role": "primary",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "unit": "人民币元/吨（不含税）",
+      "unit_basis": "disclosed_same_table_pairing",
+      "factor_basis": "none",
+      "base_period": "FY2023-FY2025",
+      "effective_period": "FY2027",
+      "low": null, "base": null, "high": null,
+      "released": false,
+      "state": "pending_professional_decision",
+      "hypotheses_entry_sha256": "f1064371f8824e296dcfde676a97d1851c9c938f8267ba2e8c102abbdb2f29f2",
+      "model_cards_row_sha256": "ab7e6c401b9504fad820bbe88b7b9b8c992e939bfa97701095f3b8b9d5762fda",
+      "landed_in": ["hypotheses_v3.json[1].additional_parameters[0]", "model_cards.md 附录 A.1 第 1 行"]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027",
+      "role": "companion",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "unit": "人民币元/克（不含税）",
+      "unit_basis": "disclosed_same_table_pairing",
+      "factor_basis": "none",
+      "base_period": "FY2023-FY2025",
+      "effective_period": "FY2027",
+      "low": null, "base": null, "high": null,
+      "released": false,
+      "state": "pending_professional_decision",
+      "unit_scale_note": "与千克销量相乘须显式登记 ×1000 比例因子（unit_scale_only=true，尺度换算非金属换算）",
+      "hypotheses_entry_sha256": "eb1c04a4f947c2cf24727de8d3c99335f110961b13c8863cfe3f4fb738257037",
+      "model_cards_row_sha256": "830e3841853367b33851e45ff19a6c06ea67427cc81cdfcf0c6022a86b758944",
+      "landed_in": ["hypotheses_v3.json[1].additional_parameters[1]", "model_cards.md 附录 A.1 第 2 行"]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_ZINC_SALEABLE_VOLUME_FY2027",
+      "role": "companion",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "unit": "吨",
+      "unit_basis": "disclosed_production_sales_table",
+      "factor_basis": "none",
+      "base_period": "FY2023-FY2025",
+      "effective_period": "FY2027",
+      "low": null, "base": null, "high": null,
+      "released": false,
+      "state": "pending_professional_decision",
+      "original_value": "352,470（FY2025 销售量，披露原值，仅作基期观察非放行值）",
+      "hypotheses_entry_sha256": "e4dcc9a6f5458b73cc138804f4c107b691265afba58e2b0d978ed5ff22d2bc2e",
+      "model_cards_row_sha256": "1759872cdf8054c76098c73c9faf05ceef6febdbf8a892d92c420a5fb5eab983",
+      "landed_in": ["hypotheses_v3.json[2].additional_parameters[1]", "model_cards.md 附录 A.1 第 3 行"]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_SILVER_SALEABLE_VOLUME_FY2027",
+      "role": "companion",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "unit": "千克",
+      "unit_basis": "disclosed_production_sales_table",
+      "factor_basis": "none",
+      "base_period": "FY2023-FY2025",
+      "effective_period": "FY2027",
+      "low": null, "base": null, "high": null,
+      "released": false,
+      "state": "pending_professional_decision",
+      "original_value": "430,254（FY2025 销售量，披露原值，仅作基期观察非放行值）",
+      "hypotheses_entry_sha256": "63c91fc80b8a62f013166cf428d785f93da8a6e54f358fc7c762c6281ab3333f",
+      "model_cards_row_sha256": "e3313224fd7151c22cea3613e53261a921a11d621e1fb9f2cf6e2335d8dd418f",
+      "landed_in": ["hypotheses_v3.json[2].additional_parameters[2]", "model_cards.md 附录 A.1 第 4 行"]
+    }
+  ],
+
+  "decision_sha256": "1a7838a1c48ffbdd176e8f7cf445e64f80d99efa269e69a312c20ab332addb55",
+  "decision_sha256_verification": {
+    "preimage": "UTF8-free 原始字节 ruling.md(35,872 B, sha f927c44c…) + 0x0A + UTF8(manifest 16 行 / 1,113 B / 无尾随换行) ⇒ 36,986 B；manifest 逐行冻结于本 attempt oracle.md §5",
+    "preimage_bytes": 36986,
+    "runs": [
+      {"when": "写 hypotheses_v3.json 之前", "result": "1a7838a1c48ffbdd176e8f7cf445e64f80d99efa269e69a312c20ab332addb55"},
+      {"when": "全部写入之后，从盘上重读 ruling.md 与 model_cards.md 重算", "result": "1a7838a1c48ffbdd176e8f7cf445e64f80d99efa269e69a312c20ab332addb55", "matches_run1": true}
+    ],
+    "embedded_in": ["hypotheses_v3.json[1].decision.decision_sha256", "hypotheses_v3.json[2].decision.decision_sha256", "hypotheses_v3.json[1|2].provenance.decision_sha256", "registration.md §4.3", "handoff.json.decision_sha256"],
+    "scope": "封存『前一专业 reviewer 的裁定记录 + 本次注册动作』的绑定关系；不是任何命题的批准签署、不是阈值审定、不是参数放行；decision.decision 仍为 pending，reviewer / professional_reviewer 字段未改"
+  },
+
+  "validator": {
+    "tool": "execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py",
+    "tool_sha256": "cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac",
+    "called": "validate(hypotheses, source_map, attempt, doc_texts) only",
+    "main_called": false,
+    "baseline_sealed_hypotheses": {"hypotheses": 8, "errors": 0, "rc": 0},
+    "hypotheses_v3": {"hypotheses": 8, "errors": 0, "rc": 0},
+    "pycache_written": false,
+    "pycache_evidence": "封盘 tools/__pycache__ 三个 .pyc mtime 仍为 2026-09-20 03:36/03:45/04:16；命令带 -B 与 PYTHONDONTWRITEBYTECODE=1",
+    "report_written": false
+  },
+
+  "releases_nothing": true,
+  "does_not_claim_I11BAcceptance": true,
+  "does_not_claim_I11AAcceptance": true,
+  "does_not_unblock_open2": true,
+  "no_threshold_basis_changed": true,
+  "no_placeholder_removed": true,
+  "blocked_items_closed": [],
+  "approved_frozen_written": false,
+  "status_fields_changed": 0,
+  "sealed_attempt_modified": false,
+  "open2_station_modified": false,
+  "dispatch_or_card_files_modified": false,
+
+  "written_files": [
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/oracle.md", "sha256": "a87d491fb562a246be6a04ab5e112f5ab196e45d9478dc601f967447a8115dd9", "bytes": 15831, "role": "判据冻结件（先冻结后执行）"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/model_cards_append.md", "sha256": "135020c8ca2f2fa9c933af684c9b6295acc8c6f74501b7aeca99b2af333f9bfc", "bytes": 10859, "role": "追加内容 + 前像/后像 sha + 前缀不变证明 + 段绑定副作用登记"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json", "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "bytes": 61231, "role": "hypotheses 新版本（同形 8 元素数组，supersedes f2178768…）"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/registration.md", "sha256": "84b709abf2bed14d07b3593c842f0e9a7d544309bdcb98ba5329f46b764a89b8", "bytes": 20715, "role": "四步逐条执行报告 + 校验器 rc"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/handoff.json", "sha256": null, "bytes": null, "note": "自指不可自证：本文件 sha256/bytes 不能写进自身；实测值由父代理在外部复算"},
+    {"path": "execution_v2/model_cards.md", "sha256": "cc24be67c06d250342d7624ad7d0190a21f67505317dc4e749d3e809deb0748d", "bytes": 171460, "note": "既有计划文件，末尾追加 5,765 B；前像 855b5e2d06cc02a1c103316224a428fcfc7a1cc8fb3cfbf07f1f066a552855ab/165,695 B，前缀字节不变已复算两次"}
+  ],
+
+  "model_cards_append_proof": {
+    "preimage_sha256": "855b5e2d06cc02a1c103316224a428fcfc7a1cc8fb3cfbf07f1f066a552855ab",
+    "preimage_bytes": 165695,
+    "postimage_sha256": "cc24be67c06d250342d7624ad7d0190a21f67505317dc4e749d3e809deb0748d",
+    "postimage_bytes": 171460,
+    "appended_bytes": 5765,
+    "prefix_sha256_recomputed": "855b5e2d06cc02a1c103316224a428fcfc7a1cc8fb3cfbf07f1f066a552855ab",
+    "prefix_bytes_unchanged": true,
+    "recomputed_times": 2,
+    "existing_lines_modified": 0
+  },
+
+  "hypotheses_v3_proof": {
+    "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+    "bytes": 61231,
+    "file_shape": "与封盘同形的 8 元素 JSON 数组；provenance 附在被改动的下标 1/2 条目内（数组无顶层伴随键）",
+    "supersedes_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+    "supersedes_bytes": 51697,
+    "modified_indices": [1, 2],
+    "unchanged_indices": [0, 3, 4, 5, 6, 7],
+    "byte_identity_proof": {
+      "index_0_prefix_sha256_original": "685c962d809c124aa0b5e7fde8b9479aed4d08ef20a999ba1c700a20f82d404b",
+      "index_0_prefix_sha256_new": "685c962d809c124aa0b5e7fde8b9479aed4d08ef20a999ba1c700a20f82d404b",
+      "indices_3_7_suffix_sha256_original": "a6749b15dc864dd41dfb7b5c2a884d13a17bf72dfab88dbef4f5ab7fb4e46185",
+      "indices_3_7_suffix_sha256_new": "a6749b15dc864dd41dfb7b5c2a884d13a17bf72dfab88dbef4f5ab7fb4e46185",
+      "identical": true
+    },
+    "encoding": "UTF-8 无 BOM（首三字节 91,10,32）、全文 CR=0、写后 json.load 重解析通过（8 元素）",
+    "parameter_id_count": "18（既有 14 + 新 4，零重复）"
+  },
+
+  "registered_findings_not_amending_any_file": [
+    "EV-16-SHA-MISMATCH：substitute_caliber.json 把 model_cards.md 的 sha256 记为 38ff2907…，实测该值属 execution_v2/card_I-11-B.md；model_cards.md 前像实为 855b5e2d…（引文与行号无误）。登记不回改，OPEN2 目录一字未改。",
+    "PLACEHOLDER-ID-NOT-ON-DISK：OPEN2 ruling §⑤-3 列的 ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER 不在封盘 hypotheses.json 的 14 个 id 内（仅见于 build_hypotheses.py PARAM_IDS L128）。本轮未触碰该脚本。",
+    "V2-V3-DIVERGENCE：既有 hypotheses_v2.json（I11A-HYP-APPROVE）已把下标 0 改为 approved_frozen(decision_sha256=4d4ee106…)；本工位按派单以封盘原件为 supersedes 基线、未合并 v2 改动 ⇒ 两者在下标 0 分歧，属编排层裁并范围。",
+    "I10B-SECTION-BINDING：model_cards.md 末尾追加使 validate_execution_pack.py 的最后卡片段(I-10-B)出现 stale+clone 两条错误（基线 32 段 0 错 → 追加后 32 段 2 错，逐条同名于 oracle §6 的冻结预测）；dispatch.json / card_I-10-B.md 不在写入面故未改，移交编排层按 T1-12 ① 同步。该验证器本轮之前已因 32 条产品源漂移而不通过，红/绿结论未变。",
+    "ARITH-INCONSISTENCY-1 / IDX-DRIFT-1 / AMBIG-ORACLE-MUT：沿用前一工位登记，不重开不回改。"
+  ],
+
+  "readonly_shas_reverified_at_closeout": {
+    "I-11-A hypotheses.json": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+    "I-11-A decision.md": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951",
+    "I-11-A tools/validate_hypotheses.py": "cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac",
+    "OPEN2 ruling.md": "f927c44cacacb6d0db8e9d1cc09aa559d74427837fd885c4cd0081dbca899e53",
+    "OPEN2 substitute_caliber.json": "649a9ff8d1a4490aedbe863ee52a338ba7b30c50408d7ca5f0a9361daa622e72",
+    "OPEN2 oracle.md": "f5c4529095534013e4dee39b40d42d24ab435030ef81290dfa5ab0e97419f945",
+    "I11A-OPEN-MERGE handoff.json": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878"
+  },
+
+  "git_diff_non_planning": 0,
+  "git_diff_observed": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "baseline_before_writes": {"total": 3826, "non_planning": 0},
+    "after_append_and_v3": {"total": 3827, "non_planning": 0},
+    "final_closeout": {"total": 3827, "non_planning": 0, "measured_at": "5 件交付全部写入并复算后"},
+    "untracked_station_files": 5,
+    "note": "本工位 5 个新文件为未跟踪路径、不进 git diff HEAD；唯一进 diff 的是已跟踪计划内文件 execution_v2/model_cards.md 的末尾追加（非 .planning 计数不变）"
+  },
+  "git_status_command_run": false,
+  "git_writes_performed": false,
+  "git_mutating_commands_run": [],
+  "network_requests_made": 0,
+  "product_files_written": 0,
+  "planning_files_written": 0,
+
+  "boundary_attestation": {
+    "write_surface": "本 attempt 5 件 + execution_v2/model_cards.md 末尾追加（仅此 6 个文件）",
+    "zero_write_outside_planning": true,
+    "zero_write_to_company_wiki": true,
+    "zero_git_write": true,
+    "zero_git_status": true,
+    "zero_network": true,
+    "zero_status_change": true,
+    "zero_proxy_signing": true,
+    "zero_threshold_change": true,
+    "zero_release": true,
+    "fail_closed_applied": "C-1…C-5 任一不成立即不注册判 blocked；实测全部成立故执行注册；缺证据处写 NOT_ESTABLISHED/登记项而不猜；未改任何被封/既有字段"
+  },
+
+  "next_action": "编排层/owner：①本工位已完成 C2 第二分支的注册动作（c2_branch2_discharged=true，仅限注册语义），但 OPEN-2 与 I-11-B 的解 BLOCKED 仍须独立 reviewer 裁定 + 其余 unlock_conditions，本工位不宣布；②把 I10B-SECTION-BINDING 移交项派给有 dispatch.json/card_I-10-B.md 写入面的工位按 T1-12 ① 同步；③V2-V3-DIVERGENCE（下标 0 的两个并存版本）需编排层裁并；④EV-16-SHA-MISMATCH 与 PLACEHOLDER-ID-NOT-ON-DISK 交 owner 决定是否要求 OPEN2 侧出 r2 登记；⑤任何 I-11-B 开工动作在 MERGE 七条全部满足前保持 BLOCKED"
+}

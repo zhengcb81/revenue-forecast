@@ -1,0 +1,132 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "465033c4404f9129f74f5b83951b7baa23ce1c5b",
+    "wiki": "8c5f24fde877c3f5f425280d8c83c66eb6b551dc"
+  },
+  "canonical_hash": "74b0027a2ab101aa84aaec3a9d2ff22890e5109fc166f0386c98be16dcd74705",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr502_homepage_identity.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "11 passed（C1 角色分离闭环 2 + C2 纯函数 5 + C3 normalize wiring 4）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_cw_228_backfill.py tests/contract/test_fc1301_reason_taxonomy.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "38 passed（ZR-501 10 + backfill 14 + reason taxonomy 3 全绿，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --timeout=300 (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（质量门 unit 787）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests -q --timeout=600 (company-wiki, full suite)",
+      "exit_code": 1,
+      "result": "2486 passed, 18 skipped；10 failed + 3 errors 全部既有基线（见 ZR502-IMPL-005；stash 基线对照证 2 项非回归，其余与改动面无交集）"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/homepage_identity.py src/company_wiki/source_catalog/normalizer.py src/company_wiki/source_catalog/adapters/sidecar.py src/company_wiki/source_catalog/observability.py src/company_wiki/source_contract/evidence_span.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git diff 8c5f24f 19c3b73 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "8 文件 +488/-2：homepage_identity.py（新，纯函数）、normalizer.py（first_page_text 提取 + _frontmatter 接线 + Row/dict 兼容）、sidecar.py（published_at->filing_date）、observability.py（3 reason 码）、evidence_span.py（QualityFlag 新成员）、docs/contracts/evidence-span-v1.md、test_zr502（新 11 tests）、test_zr501（stub 同步）"
+    }
+  ],
+  "created_at_utc": "2026-08-19T19:35:17+00:00",
+  "findings": [
+    {
+      "detail": "首页判定最终采用归一化子串包含（declared 值整体 in page_norm），否决 token 交集与 4-gram 滑窗：CJK 封面无空格，token 交集零命中误判 contradiction；4-gram 滑窗在 foreign cover（陕西煤业 vs 紫金矿业）因通用片段（股份有限公司/2025年/年度报告）假阳性判 consistent。子串包含对 10+ 字名称精确、对 publisher/security_id 短值同样适用（无 CJK 分词依赖）。",
+      "id": "ZR502-IMPL-001",
+      "severity": "info",
+      "title": "判定信号：归一化子串包含（非 token 交集/滑窗）"
+    },
+    {
+      "detail": "C1 端到端测试暴露：sidecar 无 published_date 时 resolver 报 published_date_unknown → AMBIGUOUS（无法 REUSED_EXACT）。company_raw 侧 sidecar 契约键为 filing_date（dayu acquisition 契约），scanner 只认 filing_date；sidecar_filing_v1 adapter 补显式 published_at->filing_date 映射（非文件名猜测，符合 F-043）。测试 sidecar 用 filing_date 键。",
+      "id": "ZR502-IMPL-002",
+      "severity": "info",
+      "title": "published_date 链路：sidecar published_at->filing_date 映射"
+    },
+    {
+      "detail": "quality_flag 与 evidence reason 需注册进封闭词汇：QualityFlag 枚举加 HOMEPAGE_IDENTITY_CONTRADICTION（extraction-only，无研究语义）；observability.REASONS + STAGES_BY_REASON 注册 no_first_page_text / no_declared_identity_on_cover / no_strong_cover_framing（semantic 类）——fc1301 taxonomy gate 失败闭环自动捕获未注册码。",
+      "id": "ZR502-IMPL-003",
+      "severity": "info",
+      "title": "词汇注册：QualityFlag + reason taxonomy 闭环"
+    },
+    {
+      "detail": "_frontmatter 的 document 双形态：normalize_catalog 传 sqlite3.Row（metadata_json 为 JSON 字符串列，需 json.loads + 下标访问），测试 fixture 传 dict（.get 安全）。首次实现用 .get 直接访问 Row 报 AttributeError，改为 isinstance 分支双通道。",
+      "id": "ZR502-IMPL-004",
+      "severity": "info",
+      "title": "frontmatter 兼容 sqlite3.Row 与 dict 双形态"
+    },
+    {
+      "detail": "既有基线失败登记（非本卡回归）：corrupt pdf/xls（fitz 版本分类差异，stash 基线对照证非回归）、dropbox_config_invariants×2（ZR-409 future_lake 第四根使 directory-kind 集合含 future_lake，测试期望 {dropbox_stock} 漂移）、security_identity×2（stale_cache vs refreshed，身份刷新环境态）、worker_bootstrap×1（heartbeat 时序）、integration×3（synthetic pdf fitz）、pipeline/extraction_quality（meeting.html 子进程 parser 失败走 _failed → 'parser_failed' 未注册 QualityFlag——既有缺陷，stash 基线对照证非本卡引入）。",
+      "id": "ZR502-IMPL-005",
+      "severity": "info",
+      "title": "既有基线失败登记（stash 对照 + 影响面判定）"
+    },
+    {
+      "detail": "homepage_identity_contradiction 仅进 normalized.md frontmatter（review 信号），artifact metadata quality_flags 保持 parser 原始集（normalizer.py:1721 list(normalized.quality_flags)）——两通道不混淆，extraction_quality 校验与 frontmatter 语义各归其位。",
+      "id": "ZR502-IMPL-006",
+      "severity": "info",
+      "title": "identity flag 仅进 frontmatter，artifact metadata 不混入"
+    }
+  ],
+  "implementation": {
+    "design": "新 src/company_wiki/source_catalog/homepage_identity.py：assess_homepage_identity(first_page_text, title, publisher, security_id, entity) 纯函数（hermetic 无 LLM）——归一化子串包含判定 → consistent；无命中 + 页面含强报告 framing（_STRONG_CONFLICT_TOKENS）→ contradiction；无文本/无 framing → unverifiable 不伪造。normalizer.py：_Normalized 加 first_page_text、_pdf_markdown 经 _first_page_text 提取 coordinates.page_number==1 的 raw_text、_frontmatter 调 assess（publisher 取 metadata_json.acquisition/dayu_meta）加 homepage_identity 键 + 矛盾 quality_flag。sidecar.py：published_at->filing_date 映射。observability.py/evidence_span.py：reason/flag 词汇注册。测试 11 个：C1 角色分离闭环（orphan sidecar 不产候选 + filing 请求 REUSED_EXACT 匹配 primary 而非 .source.json）、C2 纯函数矩阵（title/publisher consistent、foreign cover contradiction、无文本/无 framing unverifiable）、C3 wiring（contradiction→frontmatter+flag、consistent 无 flag、unverifiable 无伪造、page_count 共存）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/homepage_identity.py",
+      "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+      "company-wiki/src/company_wiki/source_catalog/adapters/sidecar.py",
+      "company-wiki/src/company_wiki/source_catalog/observability.py",
+      "company-wiki/src/company_wiki/source_contract/evidence_span.py",
+      "company-wiki/docs/contracts/evidence-span-v1.md",
+      "company-wiki/tests/contract/test_zr502_homepage_identity.py",
+      "company-wiki/tests/contract/test_zr501_broker_metadata_contract.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-502/**"
+    ]
+  },
+  "implementer": "zr502-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 465033c（ZR-501 closure commit，本次未动 revenue）；result_triplet.wiki 为本卡实现提交 19c3b73。",
+    "卡片 hash 冻结：plan_sha256=baac61b5（00_wu_card.md）。",
+    "独立 reviewer 待派出（reviewer-zr502-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "sidecar 与原文角色分离闭环 + 首页身份验证：.source.json 永不成为文档/请求匹配；assess_homepage_identity 纯函数 consistent/contradiction/unverifiable；normalizer 接线（frontmatter homepage_identity 键 + homepage_identity_contradiction quality_flag）。",
+  "plan_sha256": "baac61b5793738cfa7aa5cfc5a46664e4d63ab5ada6b778c8b8b949f36fe1554",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "465033c4404f9129f74f5b83951b7baa23ce1c5b",
+    "wiki": "19c3b73174170c3e7a3d9724b85599cce8237f42"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki homepage_identity.py（新纯函数）+ normalizer.py（first_page_text 提取与 frontmatter 接线）+ sidecar.py（filing_date 映射）+ 词汇注册（observability/evidence_span）+ 新测试 test_zr502_homepage_identity.py（11 tests）；revenue 侧 receipts/ZR-502/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 5,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/homepage_identity.py",
+    "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+    "company-wiki/src/company_wiki/source_catalog/adapters/sidecar.py",
+    "company-wiki/src/company_wiki/source_catalog/observability.py",
+    "company-wiki/src/company_wiki/source_contract/evidence_span.py",
+    "company-wiki/docs/contracts/evidence-span-v1.md",
+    "company-wiki/tests/contract/test_zr502_homepage_identity.py",
+    "company-wiki/tests/contract/test_zr501_broker_metadata_contract.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-502/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-502"
+}

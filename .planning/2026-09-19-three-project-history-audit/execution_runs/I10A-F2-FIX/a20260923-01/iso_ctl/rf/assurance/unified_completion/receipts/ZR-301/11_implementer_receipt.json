@@ -1,0 +1,80 @@
+{
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "3d0d0971a2b7f207bdfac37dc34f7f92ea2d7b8d",
+    "wiki": "3ea00396e8aa75b32859e87021204e2824bf4455"
+  },
+  "canonical_hash": "767d5f3c84e3f5a13200c10ac52ae3c1110a533170bf981d9b1cee31e3b3b214",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_source_lifecycle.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "9 passed（八阶段矩阵、requirements 校验、empty 平凡 ready、unknown 不伪绿、not_reviewed 声明 fail-closed、malformed receipt fail-closed、blocked consumer、shadow 只读断言）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "740 passed（731 → +9，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py tests/contract/test_source_catalog_ensure_paused_guard.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "5 passed（ratchet 新文件≤10：source_lifecycle.py max 8；paused_guard 无回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-17T19:45:00+00:00",
+  "findings": [
+    {
+      "detail": "prompt_injection 模块只存 not_detected/detected_and_ignored 两种 receipt status；'not_reviewed' 是信封对缺失 receipt 的呈报，不是可存储状态。因此 safety 阶段：无 receipt → unknown（绝不伪绿）；status 不在枚举 → malformed → unknown（fail closed）；有效 receipt → satisfied。",
+      "id": "ZR301-IMPL-001",
+      "severity": "info",
+      "title": "safety 阶段语义：not_reviewed 是缺席呈报，缺失/malformed 均 unknown 不伪绿"
+    },
+    {
+      "detail": "求值器只通过 reader 的 fetchone/fetchall 读取；单元测试断言 CREATE/DELETE 在只读连接上 fail closed（shadow 零写）。未接任何生产入口——统一 machine decision graph 由 ZR-303 接线。",
+      "id": "ZR301-IMPL-002",
+      "severity": "info",
+      "title": "shadow-only：零写 + 未接线生产（ZR-303 接线）"
+    }
+  ],
+  "implementation": {
+    "design": "新增 source_lifecycle.py：LIFECYCLE_SCHEMA 1.0 / source-lifecycle-1.0；ConsumerRequirements（required_stages 未知即拒，空=平凡 ready）；evaluate_source_readiness 按 ZR-101 八阶段顺序求值（identity=verified assertion、resolution=document 绑定、freshness=published_date、acquisition=active location、safety=prompt-injection receipt（缺失/malformed→unknown，绝不伪绿）、artifact=completed artifact、semantic=parse_ok span、consumer=source_status 非 blocked），每阶段返回 verdict+blocker+next_action+evidence；ready=全部 required 阶段 satisfied；unknown 一律不算 satisfied（fail closed）。表驱动 _STAGE_EVALUATORS 保证复杂度≤10（实测 max 8）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/source_lifecycle.py",
+      "company-wiki/tests/unit/test_source_lifecycle.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-301/**"
+    ]
+  },
+  "implementer": "zr301-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 3d0d097（ZR-206 closure commit）；result_triplet.wiki 为本卡实现提交 09deecb。",
+    "本卡是阶段 D 首卡（source-lifecycle 状态机）：ZR-301 shadow 求值器 → ZR-302 safety receipt 生成/缓存 → ZR-303 统一决策图接线。"
+  ],
+  "objective": "additive source-lifecycle assertion schema + readiness evaluator：shadow only；八阶段可组合；不覆盖历史；consumer requirements 决定 ready。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "3d0d0971a2b7f207bdfac37dc34f7f92ea2d7b8d",
+    "wiki": "09deecb598773b8d1fea89d5b7049e42c3e514f5"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 source_lifecycle.py（shadow 只读求值器）+ tests/unit/test_source_lifecycle.py（9 测试）；revenue 侧 receipts/ZR-301/** 与 state.json。产品其他零改动（reader/锁/schema/source_status 语义均未动）；无真实 catalog 访问、无下载。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 1,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/source_lifecycle.py",
+    "company-wiki/tests/unit/test_source_lifecycle.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-301/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-301"
+}

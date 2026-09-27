@@ -1,0 +1,128 @@
+{
+ "artifact": "historical_mapping_probe_result",
+ "historical_mapping_probe": true,
+ "label": "historical_mapping_probe",
+ "NOT_a_three_scenario_forecast": true,
+ "accuracy_evidence": false,
+ "case_id": "XM-PHONE-M03",
+ "variant": "mut_omit_optional",
+ "started_at_local": "2026-09-24T21:11:33",
+ "finished_at_local": "2026-09-24T21:11:33",
+ "product_entry": "iso/rf/scripts/forecast/segments.py calculate_model_path",
+ "model_id": "unit_sales",
+ "period": "FY2025",
+ "scenarios_run": [
+  "low",
+  "base",
+  "high"
+ ],
+ "scenario_values_identical_by_design": "historical_mapping_probe: disclosed historical parameters at identical values on low/base/high (card action 4); mapping verification ONLY",
+ "counts_measured": {
+  "calculate_registered_model_calls": 0,
+  "calculate_model_path_calls": 0
+ },
+ "counts_expected": {
+  "calculate_registered_model_calls": 3,
+  "instances": 1,
+  "scenarios_per_instance": 3
+ },
+ "counts_ok": false,
+ "call_log": [],
+ "instances": [
+  {
+   "instance": "smartphones",
+   "cn": "智能手機",
+   "parameter_index": {
+    "P-HK-SMARTPHONES-QTY": {
+     "value": 165200000.0,
+     "unit": "部",
+     "dimension": "quantity",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMARTPHONES-PRICE": {
+     "value": 1128.7,
+     "unit": "元/部",
+     "dimension": "revenue_per_unit",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMARTPHONES-T": {
+     "value": 1.0,
+     "unit": "ratio",
+     "dimension": "ratio",
+     "period": "FY2025",
+     "scenario": "all"
+    }
+   },
+   "driver_parameter_ids": {
+    "units": [
+     "P-HK-SMARTPHONES-QTY"
+    ],
+    "unit_revenue": [
+     "P-HK-SMARTPHONES-PRICE"
+    ],
+    "timing_factor": [
+     "P-HK-SMARTPHONES-T"
+    ]
+   },
+   "per_scenario": {
+    "low": {
+     "ok": false,
+     "error_type": "ForecastInputError",
+     "error": "missing driver for unit_sales: other_revenue has no explicit default"
+    },
+    "base": {
+     "ok": false,
+     "error_type": "ForecastInputError",
+     "error": "missing driver for unit_sales: other_revenue has no explicit default"
+    },
+    "high": {
+     "ok": false,
+     "error_type": "ForecastInputError",
+     "error": "missing driver for unit_sales: other_revenue has no explicit default"
+    }
+   },
+   "driver_values_sample": null,
+   "low_base_high_identical": false,
+   "frozen_expected_revenue": 186461240000.0,
+   "matches_frozen_expected": false
+  }
+ ],
+ "product_errors": [
+  {
+   "instance": "smartphones",
+   "scenario": "low",
+   "error_type": "ForecastInputError",
+   "error": "missing driver for unit_sales: other_revenue has no explicit default"
+  },
+  {
+   "instance": "smartphones",
+   "scenario": "base",
+   "error_type": "ForecastInputError",
+   "error": "missing driver for unit_sales: other_revenue has no explicit default"
+  },
+  {
+   "instance": "smartphones",
+   "scenario": "high",
+   "error_type": "ForecastInputError",
+   "error": "missing driver for unit_sales: other_revenue has no explicit default"
+  }
+ ],
+ "refusals": [
+  "smartphones/low:ForecastInputError",
+  "smartphones/base:ForecastInputError",
+  "smartphones/high:ForecastInputError"
+ ],
+ "mismatches": [
+  {
+   "instance": "smartphones",
+   "expected": 186461240000.0,
+   "measured": [],
+   "variant": "mut_omit_optional"
+  }
+ ],
+ "business_verdict": "correctly_rejected",
+ "expected_business_result": "runner MUST record product refusal (post-I-10-B registry raises on omitted optional without explicit default) — rc 2",
+ "raw_rc": 2
+}

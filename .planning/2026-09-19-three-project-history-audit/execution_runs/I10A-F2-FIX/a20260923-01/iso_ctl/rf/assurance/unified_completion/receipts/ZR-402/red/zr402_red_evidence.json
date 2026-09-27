@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-402",
+  "kind": "red_evidence",
+  "note": "survivor mutants / verification gaps over the CURRENT suite at wiki 251615e: S2/S3/S4 are real gaps (killers missing); S1 disproven (facade fail-closed already pinned by seam02 + ex08 tests — honest negative)",
+  "checks": {
+    "S1_facade_fail_closed_already_pinned": {
+      "survivor": false,
+      "covered": true,
+      "evidence": "facade fail-closed is already fully pinned (missing/bogus/runtime-no-fallback = True); NOT a red gap — recorded as honest negative",
+      "pins": {
+        "missing_adapter_id": true,
+        "bogus_adapter_id": true,
+        "runtime_failure_no_fallback": true
+      }
+    },
+    "S2_kind_routing_mutant_survives": {
+      "baseline_ok": true,
+      "survivor": true,
+      "evidence": "with adapter_for replaced by a kind-routing mutant, the exact assertions of test_adapter_production_dispatch.py still pass (canonical pairing only) => M8 survives; 2 mismatched kind<->adapter cases would silently reroute with no killer",
+      "mutant_passes_existing_assertions": true,
+      "mismatched_cases_unpinned": 2
+    },
+    "S3_determinism_negative_missing": {
+      "survivor": true,
+      "evidence": "test_adapter_conformance.py has no non-deterministic adapter mutant and never asserts determinism FAILED => M1 (non-deterministic enumerate) survives untested",
+      "has_nondeterministic_class": false,
+      "has_determinism_failed_assert": false
+    },
+    "S4_route_kind_gate_missing": {
+      "survivor": true,
+      "evidence": "no test pins zero kind/ID branches in the adapter-route core; FC-1201 is a token-mention ratchet and adapter_dispatch.py/admission.py sit INSIDE its allowlist, so a new root-kind branch there trips nothing => S4 gate gap (modules clean today, unpinned)",
+      "pin_exists_in_any_test": false,
+      "current_kind_branch_counts": {
+        "adapter_dispatch.py": 0,
+        "admission.py": 0,
+        "adapters/registry.py": 0,
+        "adapters/interface.py": 0,
+        "adapters/conformance.py": 0
+      },
+      "fc1201_allowlists_route_files": {
+        "adapter_dispatch.py": true,
+        "admission.py": true
+      }
+    }
+  },
+  "red_confirmed": true,
+  "files_read_only": true
+}

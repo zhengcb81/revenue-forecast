@@ -1,0 +1,162 @@
+{
+ "card_id": "I-16-B",
+ "attempt_id": "a20260926-01",
+ "parent": "I-16",
+ "role": "implementer_i16b",
+ "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+ "objective": "生产部署 + 部署后同入口复验（卡文 L8-L10）；先做卡文 L7 前置 fail-closed 自评，前置不成立即 STOP 报 blocked 并逐条列具体请求。",
+ "status": "blocked",
+ "implementer_signed": false,
+ "releases_nothing": true,
+ "releases_nothing_detail": "不产生 ACCEPT · 不放行任何参数（low/base/high 全 null、_PLACEHOLDER 维持）· 不触发自动动作 · 不代 I-14-E 出结论 · 不解 TESTSIDE 阻断 · 不派 I-17-A · 不写五份计划文件 · 不写 .planning 外 · 零 git 写 · 禁 git status 未跑 · 零网络 · 封盘 f2178768… 与 store b2063ac8… 零字节 · 未执行任何生产变更",
+ "params_released": false,
+ "authorized_by": {
+  "card_precondition_L6": "card_I-16-B.md L6 逐字：「前置：具体部署范围已获授权、组合冻结、恢复可用。运行生产步骤时另建新的attempt，不能把隔离绿灯当生产已完成。」（卡 sha256 9af3f671e26f3c132cb765e28ad5c044676cdbc7fb710f4b0e35d302ae3f315e）",
+  "i16a_review_carrier": {
+   "file": "I-16-A/a20260926-01/reviewer_report.md",
+   "sha256": "b0bc2ec547a3e7ab0c838d256d400b672f9eba4b5ad0dfa712d1574e57e6fe33",
+   "bytes": 19885,
+   "verdict_line_verbatim": "## VERDICT：`ACCEPT`（附 `P2×2` + `P3×5`；无 P1）",
+   "scope_verbatim": "**资格口径（卡文 L13）**：仅「可进入具体部署窗口」，**尚非已部署**；本卡未执行任何生产变更 —— 不因未部署判 P1。",
+   "handoff_status": "accepted_scoped"
+  },
+  "owner_decision_s38_verbatim": "OWNER_DECISIONS.md §三十八 裁定一（L879-L886，逐字）：「裁定一：`I-16-A` 开工门槛 —— 「授权开工（建议）」。依据卡文：`card_I-16-A.md` L5 `依赖：I-07-E、I-07-D、I-08、I-09、I-13、I-14、I-15`。开工判据（owner 明文改判，`§三十四` 同款）：1. 已 `accepted`：`I-07-D` · `I-07-E` · `I-09` · `I-13-A` · `I-13-BC` · `I-15-A` ✓ 2. `I-08-A`：按 `task_plan` 清单 `[x]` 视为满足（其 `review_pending` 是复审明令「`not-granted` 项 3 禁写 `accepted`」的刻意状态，非未完成）3. `I-14` 家族：`A/B/C/D` 已落（`D` 的 `R2` 凭证修复 2026-09-26 `accepted_scoped`）；`E` 被 `OpenProcess` 环境阻断 ⇒ 以 `unverified` 登记，不作开工阻断 4. 红线（不因开工而放宽）：`I-16-A` 自身动作 3「不能证明恢复则 `blocked`，不以关闭严格门回滚」维持 fail-closed；动作 4「真正未授权影响再向用户说明具体请求」维持 5. 不授予：不代 `I-14-E` 出结论 · 不解 `TESTSIDE` 环境阻断 · 不放行参数 · 产出仍须独立复审」；其执行映射 3 仅记「`I-16-A` 的下一卡 `I-16-B` 依赖 `I-16-A`」（依赖顺序，非部署范围授权）",
+  "owner_decision_s37_verbatim": "OWNER_DECISIONS.md §三十七（L852-L863，逐字节选）：「全沙箱操作常设授权：『给你授权所有的沙箱操作，不要再问我了』…覆盖：`dayu-agent` / `company-wiki` / `revenue-forecast` 三仓全部读写 · `OpenProcess` 等系统调用 · 任意目录的文件创建/修改（含 `raw/`、`tools/` 落点）· 网络取证。边界（授权 ≠ 免除纪律）1. 纪律 16/17/18/19/20 全部继续有效…2. 生产零未授权改动的纪律不变 —— 本授权就是『已授权』的记账…commit/push 仍须 owner 另批（§三十二 先例）。3. 产品仓提交（git add/commit/push）不在本授权内 —— 仍归 owner 逐次决定。」（判定：属沙箱能力授权，边界明写生产纪律不变 ⇒ 不构成具体部署范围批准）",
+  "conclusion": "以上授权覆盖『I-16-A 开工』与『沙箱能力』，**均不覆盖 I-16-B 具体部署范围**；故前置 C1 自评不成立（详见 precondition_verdict）"
+ },
+ "precondition_verdict": {
+  "rule": "fail-closed（卡文 L6 + 调度逐字：不造授权）：证据缺失/模糊/仅间接 ⇒ 不成立 ⇒ 立即 STOP",
+  "C1_specific_deployment_scope_authorized": false,
+  "C2_combo_frozen": true,
+  "C3_recovery_available": true,
+  "overall": "NOT_ESTABLISHED",
+  "decisive_evidence": [
+   "OWNER_DECISIONS.md（114027 B，sha c905ea51…）全文「部署」出现 0 次；含「部署+授权词」的行 0（UTF-8 显式解码复算）",
+   "§三十八 裁定一授权对象=I-16-A 开工（附『不授予』清单）；§三十七=沙箱能力授权（边界：生产零未授权改动纪律不变）",
+   "I-16-A deployment_proposal.md §4.4：窗口内需『改 raw/ 或 registry 生产数据』等即停下向用户报具体请求；绑定组合部署必然含 registry/catalog 生产数据写入（recovery_drill R5 实测 0→1 bump）⇒ 升级条款已触发",
+   "I-16-A 资格口径=『可进入具体部署窗口，尚非已部署』；复审 P2-1 逐字『本次复跑即为红 ⇒ 当前不得开窗』（须安静时刻复跑 J1 至绿）"
+  ],
+  "evaluated_by": "_inputs/G/result.json（verdict=NOT_ESTABLISHED, failed=[C1]，rc=0）"
+ },
+ "gate0_passed": true,
+ "gate0_raw_output": "=== GATE0 BEGIN (I-16-B/a20260926-01) ===\nutc=2026-09-26T22:01:49.442Z\nreadback=gate0 probe I-16-B a20260926-01 write-readback-delete\n（Remove-Item 后 Test-Path=False ⇒ 探针已删）\nsha256 …I-11-A\\hypotheses.json = f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28 bytes=51697\nsha256 …OPEN2-C2-REGISTRATION\\a20260926-01\\hypotheses_v3.json = b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff bytes=61231\ngit_diff RF HEAD=b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb total=3830 non_planning=0 staged_total=0 untracked_non_planning=48\ngit_diff CW HEAD=dbe474504a6187e22c37918743d17fe59c85a0a8 total=8 non_planning=8 staged_total=0 untracked_non_planning=62\ngit_diff DAYU HEAD=2115c86d5a9027bb51cbbc8a4d0175080732e4e6 total=1 non_planning=1 staged_total=0 untracked_non_planning=1\ngit_status_run=false · git_writes=0\n=== GATE0 END ===",
+ "completed_steps": [
+  "1 领取/回源：card_I-16-B.md（sha 9af3f671…）+ common_root_cards + START_HERE + review_and_handoff + OWNER_DECISIONS §三十七/§三十八 逐字回源 + I-16-A 全套 16 件产物（proposal/combo_manifest/recovery_drill/impact_scope/handoff accepted_scoped/reviewer_report P2×2+P3×5）只读",
+  "2 新 attempt：execution_runs/I-16-B/a20260926-01/ 新建（卡文明令另建）",
+  "3 门 0 自探留档：写/回读/删 + 封盘 f2178768…（51697 B）+ store b2063ac8…（61231 B）零字节复算 + 三仓 git 只读计数（gate0_raw.txt；禁 git status 未跑）",
+  "4 oracle 先冻结（先于判定运行）：§1 授权逐字（卡文 L6 + §三十八 + §三十七 + 复审 carrier sha/裁决/资格口径/P2-1）+ §2 前置判据 C1/C2/C3 fail-closed 可判定化 + §3 卡文 L8-L11/L13 动作逐字 + §4 变异≥3 冻结期望 + §5 rc 码表 + §6 红线 + §7 环境限制 + §8 门0 + §9 输入 sha",
+  "5 前置自评（判定器 _precondition_check.py）：G 臂 rc=0 → NOT_ESTABLISHED(failed=[C1])；M1 伪造授权注入 → ESTABLISHED(rc=0，非恒红)；M2 冻结失效 → C2=false；M3 恢复失效 → C3=false；M4 授权+恢复失效 → 授权单独不放行（AND 组合）",
+  "6 变异 rc 记录：attempt1 G=0/M1=0/M2=1/M3=1/M4=1（M2-M4 夹具 PowerShell 编码往返损坏= harness rc1，留痕 result_attempt1.json）；attempt2（UTF-8 字节忠实重建夹具，冻结件未改）G=0/M1=0/M2=3/M3=3/M4=0；条件位 15/15 与冻结期望一致，M2/M3 rc=3 归因实现者期望 failed[] 漏计基线恒假 C1（登记不回改）",
+  "7 卡文 L8 动作1 只读部分：worker_state_observed.txt（原 worker 状态记录；未启动/停止/暂停任何进程）",
+  "8 STOP：前置不成立 ⇒ 未执行 L9 安装/配置同入口复验、L10 I-14 测量、L11 恢复演练；写 blocked_request.md（R1-R8 具体请求）+ verification.json + 本 handoff，status=blocked（不自签）"
+ ],
+ "next_step_number": 1,
+ "next_action": "由父将 blocked_request.md 的 R1-R8 逐条报 owner 裁定（R1 部署范围逐项授权、R2 明确窗口、R3 原 worker 目标状态意图、R4 安静时刻复跑 J1 至绿、R5 R1 演练目的地碰撞处置、R6 registry 先备份裁定、R7 具备写入面/进程能力的执行主体、R8 I-14 测量器命令绑定）；全部落实后另开新 attempt 复派 I-16-B，不复用本 attempt",
+ "blocked_by": [
+  "C1 具体部署范围未获授权（owner 决策载体 0 处提及「部署」；提案 §4.4 升级条款已触发）—— 卡文 L6 前置 fail-closed",
+  "R2 无明确部署窗口（卡文 L8「只在明确窗口启动已绑定版本」）",
+  "R3 原 worker 意图无记录（worker_control.json 不存在；不无条件 resume）",
+  "复审 P2-1 未关闭：J1 现红 ⇒「当前不得开窗」（CW untracked 62→63 仍在漂移）",
+  "复审 P2-2 未关闭：R1 演练目的地 basename 碰撞",
+  "本会话能力面：workspace-write 沙箱 + 审批禁用 ⇒ 安装层/两产品仓/生产 catalog+registry 写入被策略拒绝且无法会话内提权；OpenProcess 对他人进程拒绝（I-14-E 同源）"
+ ],
+ "next_request": [
+  "R1【必需】在 OWNER_DECISIONS 新增裁定，逐项授权 I-16-B 部署范围：①安装层（C:\\Miniconda\\Lib\\site-packages 的 pth/finder/dist-info + Scripts\\dayu-{cli,render,web,wechat}.exe）②config/policy 四件（RF/config/company_wiki.json、RF/config/filing_fetch.json、CW/config/source_catalog.yaml、CW/config/source_catalog_worker.yaml）③数据层生产写入（catalog.sqlite3 3,055,796,224 B 迁移/备份 + registry 三库先备份后写）④worker 状态文件与进程启停 ⑤实际用户入口复验与 I-14 测量",
+  "R2【必需】给出明确部署窗口（起止时间或触发条件）及窗口内允许动作清单",
+  "R3【必需】明确部署后 worker 目标状态与原 paused/等待任务处置意图（现 worker_control.json 不存在、worker 自 2026-08-08 未运行、status=waiting、pid=15596 已消亡）",
+  "R4【开窗前置】外部并发工位静默后复跑 I-16-A _verify_combo.py live（J1）至绿（复审 P2-1 逐字：仍红则不得开窗）",
+  "R5【开窗前置】R1 恢复演练按相对路径补跑，或将声明收窄（复审 P2-2）",
+  "R6【裁定】registry 前向无 fail-closed 守卫（R5 实测）⇒ 是否强制部署窗口先备份 registry",
+  "R7【能力】指定具备工作区外写入面与进程能力的执行主体（本会话 workspace-write+审批禁用、OpenProcess DENIED），或将对应动作改派该主体",
+  "R8【绑定】给出 I-14 已验证测量器的 command-id/argv/nodeid/sample 预算（命令不能猜，须 I-00-B 绑定）"
+ ],
+ "input_hashes": {
+  "card_I-16-B.md": "9af3f671e26f3c132cb765e28ad5c044676cdbc7fb710f4b0e35d302ae3f315e",
+  "common_root_cards.md": "f8127541c763859761eb6affdd9f3c898766e249205436ff164b73c2621cd260",
+  "START_HERE.md": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+  "review_and_handoff.md": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9",
+  "OWNER_DECISIONS.md": "c905ea515d4b5da1192e411fbb6b5d4fbb720cb5b9b20485b34fc402bd3e11e9",
+  "I-16-A/handoff.json": "8b6849109db11f962d5b3bb5fb0dd863ba200ad8bbfea1a2202f035835dca29f",
+  "I-16-A/reviewer_report.md": "b0bc2ec547a3e7ab0c838d256d400b672f9eba4b5ad0dfa712d1574e57e6fe33",
+  "I-16-A/impact_scope.json": "e0959fb90afc68b793fa3260bb553a2d1aa029dba0baf4c1b221be05603ac71f",
+  "I-16-A/recovery_drill.json": "7130a6e09a246abf7c685373d7401a1a57f4592e079e9c6f9c4eca38b30780fd",
+  "I-16-A/deployment_proposal.md": "f6427b7173f5e63fa56e48090deb24b34339a91587ea49b5f1ec1f7b2dd3686b",
+  "I-16-A/combo_manifest.json": "a2b9147ade7e6f35336816512c1bcb7a11fc4288f1f83d922d156143004b5fe6"
+ },
+ "current_source_hashes": {
+  "RF_head": "b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb（与 I-16-A 绑定一致）",
+  "CW_head": "dbe474504a6187e22c37918743d17fe59c85a0a8（= 父授权提交 u-I16A-0，非漂移；与 I-16-A 最终绑定一致）",
+  "DAYU_head": "2115c86d5a9027bb51cbbc8a4d0175080732e4e6（与 I-16-A 绑定一致）",
+  "gate0_and_final_recount": "RF 3830/np0、CW 8/np8、DAYU 1/np1（两轮一致）；CW untracked(np) 62(gate0)→63(final) 为外部并发写入"
+ },
+ "changed_paths": [
+  ".planning/2026-09-19-three-project-history-audit/execution_runs/I-16-B/a20260926-01/**（本 attempt 全部产物）"
+ ],
+ "changed_paths_outside_planning": [],
+ "commands_executed": [
+  "gate0 只读块（写/回读/删 + Get-FileHash + git rev-parse/diff/diff --cached/ls-files）rc=0",
+  "C:\\Miniconda\\python.exe -X utf8 -B _build_arm_inputs.py rc=0",
+  "C:\\Miniconda\\python.exe -X utf8 -B _precondition_check.py --arm <G|M1|M2|M3|M4> …（attempt1 rc: 0/0/1/1/1；attempt2 rc: 0/0/3/3/0）",
+  "worker 只读观测块（Test-Path/Get-Item/ConvertFrom-Json/Get-Process）rc=0",
+  "final git 只读 recount rc=0"
+ ],
+ "raw_exit_codes": {"attempt1": {"G": 0, "M1": 0, "M2": 1, "M3": 1, "M4": 1}, "attempt2": {"G": 0, "M1": 0, "M2": 3, "M3": 3, "M4": 0}},
+ "expected_exit_codes": {"legend": {"0": "与冻结期望逐字段一致", "1": "harness 失败", "2": "无裁决", "3": "与冻结期望不一致"}, "attempt2_frozen_expectation": {"G": 0, "M1": 0, "M2": 0, "M3": 0, "M4": 0}},
+ "exit_code_legend": {"0": "pass/与冻结期望一致", "1": "harness 失败", "2": "no_verdict", "3": "与冻结期望不一致"},
+ "open_questions": [
+  "R1-R8 待 owner 裁定（blocked_request.md）",
+  "M2/M3 冻结期望 failed[] 规格缺陷（漏计基线恒假 C1）已登记：条件位 15/15 一致、不回改冻结件；如需重冻 oracle 另开 attempt",
+  "I-14-E（OpenProcess 阻断）与 u-I16A-skillcopy 两项 unverified 维持未解除",
+  "u-I16A-1（2026-08-08 运行态不可重建）禁作恢复目标；是否另立补救卡仍待 owner/编排层"
+ ],
+ "evidence_paths": [
+  "oracle.md（先冻结 + 门0 + 前置自评判据与结论逐字）",
+  "gate0_raw.txt",
+  "expectations.json / _precondition_check.py / _build_arm_inputs.py",
+  "_inputs/G|M1|M2|M3|M4/result.json（attempt2）与 result_attempt1.json（首轮 harness 留痕）",
+  "blocked_request.md（具体请求 R1-R8）",
+  "worker_state_observed.txt（原 worker 状态只读记录）",
+  "verification.json",
+  "handoff.json（本文件）"
+ ],
+ "written_files": {
+  "oracle.md": { "bytes": 15350, "sha256": "04c2bac4c34f1f72616952d2f2266a8011dfe08bd390aa9f19479515e3d5c76d" },
+  "gate0_raw.txt": { "bytes": 1251, "sha256": "bb949f50a051034400cd96392d33550c90a80adb03e93090e8aae5dac7bc196c" },
+  "expectations.json": { "bytes": 839, "sha256": "01332aee46727ca96275bf7a3bb61df17e65b2cb966b2ea5512b6d3d9d60a0b7" },
+  "_precondition_check.py": { "bytes": 6180, "sha256": "1e713a4e0a6617d32d703236b299c448b13d17d75bf415aeffc130f43a6c9edd" },
+  "_build_arm_inputs.py": { "bytes": 2649, "sha256": "8ed01290535b6c76320ff6d3f85d11abf6cd2b6afcd0722a4fd4754589decaef" },
+  "blocked_request.md": { "bytes": 5960, "sha256": "3f75405d2871477a7e276fb4da56a1645a35f0bda36d03e5109790e58bdefbcb" },
+  "verification.json": { "bytes": 12578, "sha256": "4fe717194c9cc4ef42e3dfea4044cf2105d93051d721cd427aa1c4ad23f00990" },
+  "worker_state_observed.txt": { "bytes": 671, "sha256": "9b4b0760a47b925c6ae94c736a9f426018ee2dc92ee407e0eaa0a92914fbf8b6" },
+  "_inputs/G/result.json": { "bytes": 1245, "sha256": "e5bc6bb7ea513a7f2ac4f3534e74ea62e5dbccb9de75ec50c56368791d8e7a7d" },
+  "_inputs/G/result_attempt1.json": { "bytes": 1245, "sha256": "e5bc6bb7ea513a7f2ac4f3534e74ea62e5dbccb9de75ec50c56368791d8e7a7d" },
+  "_inputs/M1/result_attempt1.json": { "bytes": 1465, "sha256": "1a5435bd2c9b76101fd8e924c9b95aaa7928f8cdddce41e8b220a28eb30eff92" },
+  "_inputs/M1/result.json": { "bytes": 1465, "sha256": "bda72b734005b375820b5d0151bc057609bb093c40fdf5be3c208ddcd55066ea" },
+  "_inputs/M2/result.json": { "bytes": 1293, "sha256": "6e3093395b2756bfc6d66098326b14672be55cd6d82b23637499700d2bb760a5" },
+  "_inputs/M3/result.json": { "bytes": 1295, "sha256": "35041e8a4045188c9b7bbcd9127fb691cfa2b756e7fc2a50d4b43dc6dec123f3" },
+  "_inputs/M4/result.json": { "bytes": 1500, "sha256": "15433c277529df227a86ca5799b0170ed17db317023eb681b3defe49cca55b71" },
+  "_inputs/M2/result_attempt1.json": { "bytes": 188, "sha256": "9b347af5a5ebb968d3d11c98c60f1173806897a6b2d069a6825a665df7363a02" },
+  "_inputs/M3/result_attempt1.json": { "bytes": 176, "sha256": "87ba624b1cfa01525e02844225db71491fe306956f3172027b6746ffee5ff624" },
+  "_inputs/M4/result_attempt1.json": { "bytes": 176, "sha256": "996c81fd7384000cf3ff7300b614aed98e3a1a3b52055f8eb7aa10dcb8951a9e" },
+  "handoff.json": "（本文件自身，不入台账）"
+ },
+ "reviewer_status": "pending",
+ "status_authority_note": "blocked 由实现者按卡文 L13/START_HERE 记录表进入（缺授权/窗口/能力 ⇒ 列出具体原因）；不自签 accepted，落定走父直写",
+ "git_diff_non_planning": 0,
+ "git_diff_non_planning_measured": "git -c core.quotepath=false diff HEAD --name-only（只读，门0+收尾两轮）→ RF total=3830/non_planning=0；CW total=8/non_planning=8、DAYU total=1/non_planning=1 均为既存产品改动/外部会话所为（与 I-16-A 绑定一致）；本卡写入面 = execution_runs/I-16-B/a20260926-01/**（.planning 内）⇒ 归因本卡 non_planning 改动 = 0；禁 git status 未跑；零 git 写",
+ "boundary_self_declaration": {
+  "production_change_executed": false,
+  "processes_started_stopped_paused": 0,
+  "writes_outside_planning": 0,
+  "product_repos_writes": 0,
+  "git_writes": 0,
+  "git_status_run": false,
+  "network_used": false,
+  "params_released": false,
+  "five_plan_files_untouched": true,
+  "sealed_hypotheses_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28（51697 B 零字节变化）",
+  "store_sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff（61231 B 零字节变化，low/base/high 全 null）",
+  "open2_ban_observed": true,
+  "i17a_dispatched": false
+ }
+}

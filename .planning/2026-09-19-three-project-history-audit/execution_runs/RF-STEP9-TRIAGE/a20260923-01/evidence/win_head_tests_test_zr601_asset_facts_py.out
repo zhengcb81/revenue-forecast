@@ -1,0 +1,44 @@
+﻿=== RF-STEP9-TRIAGE reproducer (WINDOWS local arm, CORRECT dir name) ===
+date_utc=2026-09-23T20:35:31Z
+file=tests/test_zr601_asset_facts.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=HEAD
+filing_sha=89c8bdb2cfba4d88720d005d0558f422957e8ade
+sandbox=C:\Users\郑曾波\AppData\Local\Temp\s9win\revenue-forecast
+PYTHONPATH=C:\Users\郑曾波\AppData\Local\Temp\s9win\company-wiki\src
+cmd=python -m pytest tests/test_zr601_asset_facts.py -q
+...FF.....                                                               [100%]
+================================== FAILURES ===================================
+___________________ test_c1_negative_asset_drivers_rejected ___________________
+
+    def test_c1_negative_asset_drivers_rejected():
+        for field in ("opening_reserves", "additions", "depletion", "closing_reserves",
+                      "realized_price"):
+            drivers = _reserve_drivers()
+            drivers[field] = list(drivers[field])
+            drivers[field][1] = -1.0
+>           with pytest.raises(ForecastInputError, match="cannot be negative"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: 'cannot be negative'
+E             Actual message: 'driver opening_reserves outside permitted bounds [0.0, inf]: opening_reserves_2027_base'
+
+tests\test_zr601_asset_facts.py:91: AssertionError
+_________________ test_c1_recovery_rate_out_of_range_rejected _________________
+
+    def test_c1_recovery_rate_out_of_range_rejected():
+        drivers = _reserve_drivers()
+        drivers["recovery_rate"] = [0.9, 1.5]  # ratio driver must be in [0, 1]
+>       with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'must be between 0 and 1'
+E         Actual message: 'driver recovery_rate outside permitted bounds [0.0, 1.0]: recovery_rate_2027_base'
+
+tests\test_zr601_asset_facts.py:98: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_zr601_asset_facts.py::test_c1_negative_asset_drivers_rejected
+FAILED tests/test_zr601_asset_facts.py::test_c1_recovery_rate_out_of_range_rejected
+2 failed, 8 passed in 3.48s
+
+PYTEST_RC=1

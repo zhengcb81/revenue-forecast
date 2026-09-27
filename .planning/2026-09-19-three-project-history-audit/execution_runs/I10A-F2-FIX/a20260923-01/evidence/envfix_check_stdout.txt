@@ -1,0 +1,274 @@
+﻿......x.......F.....F........................FF                          [100%]
+================================== FAILURES ===================================
+____________________ test_install_sync_gate_detects_drift _____________________
+
+tmp_path = WindowsPath('C:/Users/֣����/AppData/Local/Temp/dsh-5SPejJ/p/pytest-of-֣����/pytest-1/test_install_sync_gate_detects0')
+
+    def test_install_sync_gate_detects_drift(tmp_path: Path):
+        """R4.2 install-sync consistency (self-contained): syncing the canonical
+        skill to a throwaway destination must yield an identical manifest
+        (repo == installed copy), proving the sync mechanism detects and closes
+        drift without depending on the real installed-copy state."""
+        dest = tmp_path / "installed"
+        proc = subprocess.run(
+            [sys.executable, "-B", str(PROJECT_ROOT / "tools" / "sync_installations.py"),
+             "--apply", "--destination", str(dest)],
+            capture_output=True, text=True, encoding="utf-8", timeout=120,
+            cwd=str(PROJECT_ROOT),
+        )
+>       assert proc.returncode == 0, f"sync failed: {proc.stdout[-400:]}"
+E       AssertionError: sync failed: 
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\֣����\\Projects\\revenue-forecast\\.planning\\2026...l\\Temp\\dsh-5SPejJ\\p\\pytest-of-֣����\\pytest-1\\test_install_sync_gate_detects0\\installed'], returncode=1, stdout='').returncode
+
+tests\test_fc1004_platform.py:94: AssertionError
+__________ TestFaultInjection.test_runner_robustness_utf8_and_atomic __________
+
+self = <test_fc1105_fault_injection.TestFaultInjection testMethod=test_runner_robustness_utf8_and_atomic>
+
+    def test_runner_robustness_utf8_and_atomic(self):
+        """Runner robustness: UTF-8 reports + atomic dashboard ledger (no
+        leftover .tmp) + concurrent dashboard runs do not corrupt the
+        ledger."""
+        import concurrent.futures
+    
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            m = IsolatedLake(td, seed="fc1105").build()
+            runs = td / "runs"
+>           self.assertEqual(_t2(m.catalog_path, runs, _manifest(td)), 0)
+E           AssertionError: 1 != 0
+
+tests\test_fc1105_fault_injection.py:151: AssertionError
+_______________________ test_c3_patrol_core_gates_green _______________________
+
+    def test_c3_patrol_core_gates_green():
+        """schema/manifest/installation (skill hash) must be green.  config was
+        a KNOWN red (ZR-907 finding: future_lake vs CONFIG-DBX-02), fixed in
+        GP-001 by syncing the allowlist to {dropbox_stock, future_lake}."""
+        results = {entry["check"]: entry for entry in dp.patrol()}
+        for check in ("schema", "manifest", "installation"):
+>           assert results[check]["ok"], f"{check} must be green: {results[check]}"
+E           AssertionError: installation must be green: {'check': 'installation', 'problems': ['installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.py\n  scripts/forecast/segments.py\n  scripts/generate_input_template.py\n  scripts/internal_flow.py\n  scripts/lint_input.py\n  scripts/mine_year_operation.py\n  scripts/mixed_recognition.py\n  scripts/model_extensions.py\n  scripts/model_registry.py\n  scripts/processed_artifact_canary.py\n  scripts/processing_demand.py\n  scripts/publication_registry.py\n'], 'ok': False}
+E           assert False
+
+tests\test_zr907_drift_patrol.py:102: AssertionError
+_______________________ test_c3_cli_reports_all_checks ________________________
+
+    def test_c3_cli_reports_all_checks():
+        proc = subprocess.run(
+            [sys.executable, "-B", str(ROOT / "tools" / "drift_patrol.py")],
+            capture_output=True, text=True, encoding="utf-8", timeout=300,
+        )
+        out = proc.stdout + proc.stderr
+        for check in ("version", "installation", "config", "docs",
+                      "dependencies", "schema", "manifest"):
+            assert check in out, f"check {check} missing from CLI output"
+        # schema/manifest/installation lines must be OK; config is known-red
+        assert re.search(r"OK\s+schema", out)
+        assert re.search(r"OK\s+manifest", out)
+>       assert re.search(r"OK\s+installation", out)
+E       AssertionError: assert None
+E        +  where None = <function search at 0x00000124A9BA0D60>('OK\\s+installation', 'OK   version\nFAIL installation\n     installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.p...emand.py\n  scripts/publication_registry.py\n\nOK   config\nOK   docs\nOK   dependencies\nOK   schema\nOK   manifest\n')
+E        +    where <function search at 0x00000124A9BA0D60> = re.search
+
+tests\test_zr907_drift_patrol.py:119: AssertionError
+============================== warnings summary ===============================
+tests/test_fc1004_platform.py::test_install_sync_gate_detects_drift
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-8 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+    File "<frozen codecs>", line 325, in decode
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd4 in position 55: invalid continuation byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f2_missing_samples_fails
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-22 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f2_missing_samples_fails
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-20 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f2_missing_samples_fails
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-18 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f4_policy_drift_fails
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-30 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f4_policy_drift_fails
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-28 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_f4_policy_drift_fails
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-26 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_runner_robustness_utf8_and_atomic
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-38 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_runner_robustness_utf8_and_atomic
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-36 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_fc1105_fault_injection.py::TestFaultInjection::test_runner_robustness_utf8_and_atomic
+  C:\Miniconda\Lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-34 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Miniconda\Lib\threading.py", line 1043, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "C:\Miniconda\Lib\threading.py", line 994, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Miniconda\Lib\subprocess.py", line 1615, in _readerthread
+      buffer.append(fh.read())
+                    ~~~~~~~^^
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa2 in position 42: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_fc1004_platform.py::test_install_sync_gate_detects_drift - ...
+FAILED tests/test_fc1105_fault_injection.py::TestFaultInjection::test_runner_robustness_utf8_and_atomic
+FAILED tests/test_zr907_drift_patrol.py::test_c3_patrol_core_gates_green - As...
+FAILED tests/test_zr907_drift_patrol.py::test_c3_cli_reports_all_checks - Ass...
+4 failed, 42 passed, 1 xfailed, 10 warnings in 304.64s (0:05:04)

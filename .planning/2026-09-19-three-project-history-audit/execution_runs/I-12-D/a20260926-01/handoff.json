@@ -1,0 +1,168 @@
+{
+ "card_id": "I-12-D",
+ "attempt_id": "a20260926-01",
+ "role": "implementer_i12d",
+ "status": "review_pending",
+ "status_note": "review_pending = 证据齐全的交付进入形态（供独立复审），不是验收、不是签署、不产生 ACCEPT、不改任何卡 status/decision/decision_sha256。",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "releases_nothing": true,
+ "params_released": false,
+ "params_released_count": 0,
+ "open2_ban_observed": true,
+ "gate0_passed": true,
+ "git_diff_non_planning": 0,
+ "git_diff_derivation": "写入面枚举推导：本 attempt 全部写入均在 .planning/2026-09-19-three-project-history-audit/execution_runs/I-12-D/a20260926-01/ 之内（含 _mut/ 变异副本）；.planning 之外写入 = 0。本卡未执行任何 git 命令（含被禁的 git status）⇒ git_writes=0、git_commands_run=0。",
+ "formal_publication_slot": "blocked（无正式签名能力；统计复算归独立统计 reviewer）",
+ "accuracy": "unproven（本卡只验证指标程序与登记分层计数，不评估、不授予准确性）",
+ "card_stop": {
+  "stop_1": {
+   "code": "STOP_METRICS",
+   "rule_verbatim": "发现零分母被任意epsilon替代、样本不对齐或结果挑选→STOP_METRICS。",
+   "triggered": false,
+   "basis": "零分母 ⇒ undefined+reason（N1 实测，代码无 epsilon 分支）；sample_id 错位 ⇒ 拒绝评分（N2）；oracle 与冻结期望 14/14 一致（P1 篡改可被击杀）⇒ 三项均未发生"
+  },
+  "stop_2": {
+   "code": "descriptive_only",
+   "rule_verbatim": "样本未达设计要求→descriptive_only，不宣称显著更准确。",
+   "triggered": true,
+   "triggered_by": "可评分样本 = 0（I-12-B scorable_samples=0；I-12-C forecast_values_frozen=0）⇒ 分层 n_scorable=0、成对 n_pairs=0",
+   "disposition": "state=descriptive_only、significance_claimed=false；fail-closed 登记，裁定权=独立复审/编排层"
+  },
+  "acceptance_state": {
+    "hand_check_of_oracle_and_weights": "达成（oracle 面：14 指标与冻结期望逐项一致 + 独立有理数复算；权重结构 macro/micro 冻结并登记）",
+    "formula_exclusion_counts_consistent": "达成（样本侧：registered 7 = scorable 0 + missing 7；排除 entity 1 / 行 2 与 I-12-B 守恒一致）",
+    "no_metric_swapped_without_approval": "达成（指标集 = 冻结 metric_definitions；可选项未启用）",
+    "real_sample_scoring": "不可达成（0 可评分观测）⇒ 整卡判定 blocked（合格形态）"
+  }
+ },
+ "authorized_by": {
+  "owner_decision_s34": "OWNER_DECISIONS.md §三十四（L745-L780）：L762-L766 硬约束逐字「oracle 先冻结」「不放行任何参数」「不触发任何 falsifier/自动动作」「实现者不自签 · 独立复审 · 落定走三件套」；L769-L775 边界逐字「不解除 OPEN-2/3/5/6 任何一条」「不放行参数」「不产生 ACCEPT、不改任何 status/decision/decision_sha256（除非是新卡自己的写入面）」「不代签行业面 / 会计面 / 外部方」。",
+  "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871）：「给你授权所有的沙箱操作，不要再问我了」；边界逐字「纪律 16/17/18/19/20 全部继续有效」「生产零未授权改动」「产品仓提交（git add/commit/push）不在本授权内」。本卡零提权；禁 git（含 git status）、禁联网。",
+  "card_verbatim": "execution_v2/card_I-12-D.md（1,776 B / sha c6595cef…）：L5「Parent：I-12；状态：planned；Owner：执行者；统计reviewer独立复算；依赖：I-12-C。」；L9-L10 前提「设计规定的指标、权重、cluster/block、种子、阈值已知。」；L13-L17 动作 0-4 逐字（先跑 metric_numeric_oracle 及负例存两件、合格才碰真实样本；逐样本 signed/abs error 按 metric_definitions 处理零分母/缺失/异常/边界并存明细；成对同样本评 model 与 baseline、分行业/阶段/市场/horizon 报 n_companies 与 n_origins；按已批准方法给不确定性区间、用冻结 cluster/block；同时报误差/偏差/情景包含率与宽度、无概率声明禁用统计区间得分）；L19-L22 停止两条逐字；L24 验收「独立抽核手算样本和聚合权重；公式/排除计数一致；未经批准不得换指标。」；L26 证据七件。",
+  "upstream_verbatim": "research_cards.json metric_numeric_oracle（L836-L951，含 expected/负例 3 条/comparison/limitation 逐字）+ metric_definitions（L130-L191）；I-12-A 设计字段 9/10/11/12（权重与 cluster/block 已冻结、CI/种子/重抽样/多重比较/样本量/成功失败阈值 unsigned 或 PENDING）；I-12-B scorable_samples=0；I-12-C forecast_values_frozen=0。",
+  "dispatch_verbatim": "编排层派单（2026-09-26）：D 卡要点「先跑 metric oracle + 负例（evidence/I-12-D/metric_oracle_result.json）→ 合格才碰真实样本 · 逐样本 signed/abs error 明细 · 成对比较 + 分层报告」；顺序 B→C→D→E；每卡先冻结 oracle + 门 0；红绿变异 ≥3；fail-closed 数据/历史期不足 ⇒ not_applicable 或 STOP 判 blocked（合格）；不派 I-13/I-16/I-17。"
+ },
+ "gate0": {
+  "passed": true,
+  "performed": "写+回读+删除三步自探 + 封盘/store/B-C 证据/research_cards 只读复哈希",
+  "raw_output_path": "gate0_raw_output.txt",
+  "raw_output_sha256": "fab9b49f100a8b6be75025e794a72b8033aac71abeafcee76131f0f937f2af4d",
+  "summary": "write_ok=True / readback_match=True / deleted_gone=True / sealed f2178768… 51,697B / store b2063ac8… 61,231B / B+C 证据三件 + research_cards 4a22e266… 复哈希一致"
+ },
+ "completed_steps": [
+  "1 领取：card_I-12-D.md（sha c6595cef…）逐字读 + 研究卡 I-12-D 段 + metric_definitions/metric_numeric_oracle 逐字 + 共用规则 + review_and_handoff + START_HERE + §三十四/§三十七 + OPEN-2 红线",
+  "2 绑定：写入面 = execution_runs/I-12-D/a20260926-01/（新建）；上游 18 件 sha256 冻结进 oracle §2；封盘/store 只读复哈希",
+  "3 读证据：I-12-A 字段 9/10/11/12 与 unsigned 阈值清单；I-12-B 样本/实际值政策；I-12-C 预测/基线/manifest/回执；未读任何测试集或准确性结果",
+  "4 冻结预期：oracle.md 先冻结（卡文逐字 + 上游 18 件 + 授权 + 红线 + D1-D10 + P1-P5 变异 + 门 0 原始输出 + fail-closed 预期 6 条）",
+  "5 修改前检查：门 0 自探通过",
+  "6 动作 0（前置门）：_metric_oracle.py 独立实现 6 项指标（精确有理数）+ 3 冻结负例 + 2 扩展控制 ⇒ oracle 14/14 与冻结期望一致、负例 5/5、STOP_METRICS 未触发；首次运行 rc=3（整数观测被误判 undefined）→ 修正比较器后 rc=0（判据/期望未改）",
+  "7 最小写入（oracle 合格后才执行）：_build_sample_evidence.py 生成 sample_errors.csv（仅表头）+ metrics_by_stratum（7 层 n 计数）+ paired_comparison（n_pairs=0、区间 null）+ interval_diagnostics（禁用项）+ metric_reproduction.md",
+  "8 修改后检查：绿臂 rc=0 + 红臂 P1-P5 rc=3 具名击杀（原件字节不动）",
+  "9 交审：verification.json（action0 门 + 红绿 5 + 上游 18/18）+ 本 handoff；status=review_pending"
+ ],
+ "next_step_number": 9,
+ "next_action": "①独立统计 reviewer 复算：复跑 _metric_oracle.py 与 _verify.py 绿臂、抽核 1 条 secondary baseline 之外的手算（建议 N1 零分母与 oracle skill=1−40/50）、复算 7 层 n 计数与 I-12-B 守恒；②裁定动作 3 的区间方法（CI 水平/重抽样次数/种子/多重比较/样本量 5 项）——签署须早于任何结果解封；③解封 + 参数放行 + 目标期 FY2027 结束后，由新 attempt 补 sample_errors 明细行并重算（本卡 D1-D10 判据可直接复用）；④本卡不派后继卡（依赖顺序另派）。",
+ "input_hashes": {
+  "note": "完整 18 件见 oracle.md §2 与 verification.json.upstream_consistency（现场复算 18/18 一致）",
+  "execution_v2/card_I-12-D.md": "c6595cef4b3523c4fd4a879cd8f4106675130463f5573d09efb812fc6dbd4f69",
+  "execution_v2/research_cards.json": "4a22e26608d421799e2b8adde0d0424fa48a634509a0559c51d279e06d918263",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/sample_manifest.jsonl": "679a7a496e87ed953311d8d8139b47576ab84ddf7f0f0a4238991695d4ef0702",
+  "execution_runs/I-12-C/a20260926-01/evidence/I-12-C/forecast_vintages.jsonl": "42daea726d9d1d0c5e538881d5f31c663b3a5619a3f2d6dd7350e48a5965cf1f",
+  "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json (sealed, read-only)": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+  "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json (store, read-only)": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff"
+ },
+ "current_source_hashes": {
+  "note": "上游只读零改动：18 件 sha 与 oracle §2 逐件一致（D9 全绿）；封盘 f2178768…/51,697B 未动；store b2063ac8…/61,231B 未动；I-12-B/C 证据零改动"
+ },
+ "changed_paths": [
+  "execution_runs/I-12-D/a20260926-01/oracle.md",
+  "execution_runs/I-12-D/a20260926-01/gate0_raw_output.txt",
+  "execution_runs/I-12-D/a20260926-01/_metric_oracle.py",
+  "execution_runs/I-12-D/a20260926-01/_build_sample_evidence.py",
+  "execution_runs/I-12-D/a20260926-01/_verify.py",
+  "execution_runs/I-12-D/a20260926-01/_run_mutations.py",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metric_oracle_result.json",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metric_negative_results.json",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/sample_errors.csv",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metrics_by_stratum.json",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/paired_comparison.json",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/interval_diagnostics.json",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metric_reproduction.md",
+  "execution_runs/I-12-D/a20260926-01/verification.json",
+  "execution_runs/I-12-D/a20260926-01/handoff.json",
+  "execution_runs/I-12-D/a20260926-01/_mut/**（变异副本与红臂输出；原件字节不动）"
+ ],
+ "commands_executed": [
+  "gate0 自探（写/回读/删 + 封盘/store/B-C 证据/research_cards 只读复哈希）——原始输出见 gate0_raw_output.txt",
+  "python _metric_oracle.py（动作 0 前置门；rc=0，oracle 14/14、负例 5/5）",
+  "python _build_sample_evidence.py（oracle 合格后才写样本侧；rc=0）",
+  "python _verify.py --root <attempt|_mut/Px>（只读校验；绿臂 + 红臂 5 次）",
+  "python _run_mutations.py（_mut/P1..P5 各施加一个变异后跑同一只读校验器）"
+ ],
+ "raw_exit_codes": {
+  "note": "本卡自描述 exit_code_legend：0=ALL_INVARIANTS_OK；1=harness 失败（缺件/坏 JSON）；2=无裁决（未使用）；3=具名 D1..D10 违例",
+  "METRIC_ORACLE_first_attempt": 3,
+  "METRIC_ORACLE_after_comparator_fix": 0,
+  "BUILD_SAMPLE_EVIDENCE": 0,
+  "GREEN_PREHANDOFF": 0,
+  "P1_tampered_oracle": 3,
+  "P2_epsilon_zero_denominator": 3,
+  "P3_fabricated_row": 3,
+  "P4_unsigned_ci_claim": 3,
+  "P5_significance_claim": 3,
+  "GREEN_FINAL": 0,
+  "raw_output_location": "_mut/Px/verifier_output.txt（红臂逐字）；绿臂输出 = CHECK D1-D10 全 OK + RESULT ALL_INVARIANTS_OK；定稿绿臂 = final_green_output.txt"
+ },
+ "expected_exit_codes": {
+  "GREEN_PREHANDOFF": 0, "P1": 3, "P2": 3, "P3": 3, "P4": 3, "P5": 3, "GREEN_FINAL": 0, "match": true
+ },
+ "written_files": {
+  "note": "sha256 于定稿时复算；handoff.json 自身为自指文件不记自身 sha（由父落定/复审复哈希）",
+  "oracle.md": {"bytes": 14057, "sha256": "c631c201571218cc688a969c22412aeac5e35802903c86396bdf1ec4e4eb0daa"},
+  "gate0_raw_output.txt": {"bytes": 1275, "sha256": "fab9b49f100a8b6be75025e794a72b8033aac71abeafcee76131f0f937f2af4d"},
+  "_metric_oracle.py": {"bytes": 16983, "sha256": "f9b32c8d9f885403dd1db1cbee3d633a6b2625a5142e492f9618586d192f208c"},
+  "_build_sample_evidence.py": {"bytes": 14823, "sha256": "ab0715cfbaef7896d46171bfa6a8214d60584133af42827d4de11779835eca70"},
+  "_verify.py": {"bytes": 19319, "sha256": "c7fa3477ec25ccf890b07a763cfdef78ba9f4b41954eee74d1266154282076c8"},
+  "_run_mutations.py": {"bytes": 4690, "sha256": "612f99dc45a4d22c24c908445959df26518244b45682abbeed6ec4fa9c22b761"},
+  "evidence/I-12-D/metric_oracle_result.json": {"bytes": 8415, "sha256": "0d64d62e0f60df0a253bea58b9cb0841b0377198631cccdc7a0109e7366e83ca"},
+  "evidence/I-12-D/metric_negative_results.json": {"bytes": 5988, "sha256": "22b88eb3497a1aceceaed69df5a0969d9afee2656b64649a9fc9b3abdd662429"},
+  "evidence/I-12-D/sample_errors.csv": {"bytes": 169, "sha256": "b36045e8438fa54a6bb0232265a4b315c36f323c4b59850bf8eb28f88a920320"},
+  "evidence/I-12-D/metrics_by_stratum.json": {"bytes": 12085, "sha256": "ad14f515bcb4f796bf063957a5a005f26b08babea312b94a6367de98b3392e2e"},
+  "evidence/I-12-D/paired_comparison.json": {"bytes": 1961, "sha256": "5709203bac2753c37fe6c56853f4f6d875d5149a1fd56edc993f275ce6e2e0d5"},
+  "evidence/I-12-D/interval_diagnostics.json": {"bytes": 1802, "sha256": "555dbf864d294b74993746656048f49ccf48e273fa2340c8b86a5199ea976531"},
+  "evidence/I-12-D/metric_reproduction.md": {"bytes": 3388, "sha256": "2431a520ae836aa9da12d49be1733f6fc7b7c9bf3dc8f3ae38de9d7a9082f4dd"},
+  "verification.json": {"bytes": 16634, "sha256": "b31fb2510bce5afeabd0e0a8e5dca2835b0917f0cbcd76e2e91dade839156de3"},
+  "_mut/P1..P5/**": "变异副本 + 各臂 verifier_output.txt + mutation_results.json（原件字节不动）"
+ },
+ "open_questions": [
+  "区间方法 5 项（CI 水平/重抽样次数/种子/多重比较校正/样本量与功效）全部未签 ⇒ 动作 3 不可执行，须统计 reviewer + 行业 reviewer 签署",
+  "secondary baseline 的同比延续复利读法（I-12-C 遗留）影响后续 skill 分母口径，归复审",
+  "industry/lifecycle 分层键在设计字段 3 未赋值 ⇒ 分层报告只能标 unproven，需设计补全",
+  "0 可评分样本的根因（目标期未结束 + 解封门未满足 + params 未放行）在本卡不可解，按依赖顺序另派",
+  "可选指标（sMAPE/MASE）在本设计下仍未事前声明 ⇒ 不启用，如需启用须新探索版本"
+ ],
+ "blocked_by": [
+  "样本未达设计要求（卡文停止②）：可评分样本 0 ⇒ descriptive_only，不宣称显著更准确",
+  "不确定性区间方法未获批（设计字段 10/11/12 PENDING/unsigned）⇒ 动作 3 fail-closed 不执行",
+  "params_released=false 与目标期 FY2027 未结束 + unseal gate 未满足（继承 I-12-B/C）",
+  "OPEN-2/OPEN-3/OPEN-5/OPEN-6 未解（不解除）",
+  "正式发布格 blocked：本工位无正式签名能力"
+ ],
+ "evidence_paths": [
+  "execution_runs/I-12-D/a20260926-01/oracle.md（先冻结：卡文逐字/上游 18 件/授权/红线/D1-D10/变异/门0/fail-closed 预期）",
+  "execution_runs/I-12-D/a20260926-01/gate0_raw_output.txt",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metric_oracle_result.json（动作 0：14 指标与冻结期望逐项一致 + 独立复算）",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metric_negative_results.json（3 冻结负例 + 2 扩展控制，5/5 pass）",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/sample_errors.csv（仅表头、逐样本明细列）",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metrics_by_stratum.json（7 层 n_companies/n_origins、n_scorable=0、descriptive_only）",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/paired_comparison.json（n_pairs=0、区间 null、≥5 项 pending）",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/interval_diagnostics.json（无概率声明、interval_score/pinball 禁用、CI 未签不算）",
+  "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metric_reproduction.md（手算 + 复跑命令 + limitation 逐字）",
+  "execution_runs/I-12-D/a20260926-01/verification.json（action0 门 + 红绿 5 + 上游 18/18）",
+  "execution_runs/I-12-D/a20260926-01/_verify.py / _run_mutations.py / _mut/**"
+ ],
+ "reviewer_status": "pending — 独立统计 reviewer 另派复算；实现者不自签（status=review_pending 是进入形态，不是验收、不是专业签署）；落定走父直写，本卡不产生 ACCEPT"
+}

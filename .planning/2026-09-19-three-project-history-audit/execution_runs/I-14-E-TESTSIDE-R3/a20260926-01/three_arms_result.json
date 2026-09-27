@@ -1,0 +1,117 @@
+{
+  "card": "I-14-E-TESTSIDE-R3",
+  "attempt": "a20260926-01",
+  "generated_utc": "2026-09-26T19:10:00Z",
+  "protocol": {
+    "carried_verbatim_from": "I-14-E-TESTSIDE-R2/a20260926-01/oracle.md section 3 (steps) + section 4 (pre-registered mutations); expected not recomputed (authority: I-14-E-TESTSIDE/a20260924-01/oracle.md)",
+    "node": "tests/contract/test_source_catalog_worker_bootstrap.py::test_child_without_runtime_session_is_terminated_and_restarted",
+    "condition": "C1=cpu (8 busy-loop burners) + ambient machine load",
+    "runs_per_arm": 6,
+    "driver_timeout_seconds": 90.0,
+    "basetemp": "%TEMP%\\i14ets-r3\\<tag><pass><run> (56 chars, within-budget per oracle-addendum-A)",
+    "pytest_form": "python -X utf8 -B -m pytest -p no:cacheprovider -p tside_probe --basetemp <fresh> -q <suite>::<node>",
+    "shim": "-p tside_probe (dir-mode shim + out-of-band report sink) applied identically to all arms",
+    "env": "stripped: PYTHONDONTWRITEBYTECODE=1, PYTHONUTF8=1, PATH, SYSTEMROOT, TEMP, TMP, PYTHONPATH=iso/src+harness, CW_BASETEMP_DECISION_FILE, CW_TSIDE_TRACE_FILE, CW_REPORT_FILE"
+  },
+  "sut": {
+    "tests_file_pristine_sha256": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+    "tests_file_pristine_bytes": 40868,
+    "tests_file_green_sha256": "a1cfeb13f3ee4e1c155546daaf59e0b50c08836da62ef6c55e8f6be7baa67fb0",
+    "tests_file_m1_sha256": "7896ef852dc2d35d128bb9c19fd0273a686d264a17c5ecd21789bdacf1197211",
+    "tests_file_m2upper_sha256": "517562203cf76aa075568a8b148e43ba6b66e4db8cb2014e5e9fa345df796c3c",
+    "green_bytes": 46437,
+    "green_reproduces_r1_applied_bytes": true,
+    "launcher_sha256": "5c12cd740cc36abf95f3b9559485472d9d9a760143d27de46e3aaa7b4bbbc311",
+    "launcher_note": "equal to R1 hashed_before.json full value and to current real repo; the R2 oracle/handoff/retry_result pin string (5c12cd74...4bbc311) is 63 hex chars = one 'b' dropped in transcription (see handoff.disclosure)",
+    "logon_wrapper_sha256": "70b4d7d7128567c0a753e684c3d4e8359c6a93bdc3dbefc7c5f93feaadbe5a1c",
+    "real_repo_tests_file_sha256_read_only_check": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+    "real_repo_launcher_sha256_read_only_check": "5c12cd740cc36abf95f3b9559485472d9d9a760143d27de46e3aaa7b4bbbc311"
+  },
+  "arms": {
+    "red_pre_fix": {
+      "band": "red/band-red.json",
+      "capture_dir": "red/captures",
+      "raw_driver_output": "red/red-run-raw.txt",
+      "pytest_rc_per_run": [1, 1, 1, 1, 1, 1],
+      "tally": {"runs": 6, "passed": 0, "failed": 6, "timeout": 0, "unknown": 0},
+      "wall_seconds_per_run": [2.210, 1.797, 1.938, 1.878, 1.861, 1.755],
+      "hang_timeout_seconds_seen": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+      "child_started_count_per_run": [0, 0, 0, 0, 0, 0],
+      "failure_shape_every_run": "rc-gate: assert 1 == 0 at assert completed.returncode == 0; launcher events {starting, launcher_exception}; the launcher never reached its watchdog",
+      "frozen_criterion": "R1 oracle 3.C: >=1 red of N=6 under C1 with timing shape assert N==2 / TimeoutExpired (NOT launcher_exception)",
+      "criterion_met_in_this_session": false,
+      "criterion_note": "red count 6/6 is observed, but the SHAPE is launcher_exception (R1 addendum-C C3 degradation), so the timing red form is NOT demonstrated here"
+    },
+    "green_post_fix": {
+      "band": "green/band-green.json",
+      "capture_dir": "green/captures",
+      "raw_driver_output": "green/green-run-raw.txt",
+      "pytest_rc_per_run": [1, 1, 1, 1, 1, 1],
+      "tally": {"runs": 6, "passed": 0, "failed": 6, "timeout": 0, "unknown": 0},
+      "wall_seconds_per_run": [2.800, 2.615, 2.713, 2.656, 2.778, 4.636],
+      "exported_H_per_run": [2.0, 2.0, 2.0, 2.0, 2.0, 2.1059148],
+      "measured_t0_per_run_seconds": [0.1915, 0.1590, 0.1822, 0.1919, 0.1794, 0.5265],
+      "t0_H_trace_file": "green/tside-trace.jsonl",
+      "formula_mechanically_verified": "H = min(max(2.0, 4*t0), t0+3.0) computed and handed to the launcher every run (floor bound 2.0 bound in 5/6 runs; 4*t0=2.1059 bound in run 6)",
+      "failure_shape_every_run": "rc-gate: assert 1 == 0 at assert completed.returncode == 0; launcher events {starting, launcher_exception}; child_started=0",
+      "frozen_criterion": "R1 oracle 3.D: 6/6 green with four sub-criteria (rc==0; child_started==2 + reasons; lower bound H>child-2 lifetime; upper bound H<child-1 exit)",
+      "criterion_met_in_this_session": false,
+      "criterion_note": "0/6 green; every run dies at the launcher_exception rc gate BEFORE the timing mechanism can be exercised, identically in red and green arms"
+    }
+  },
+  "mutations": {
+    "m1": {
+      "definition_verbatim_R2_section_4": "导出公式退回写死 0.5（t0 探针与记录保留）",
+      "sole_mutated_element": "exported formula -> hard-coded 0.5 s",
+      "applied_file_sha256": "7896ef852dc2d35d128bb9c19fd0273a686d264a17c5ecd21789bdacf1197211",
+      "band": "mut1/band-mut-m1.json",
+      "raw_driver_output": "mut1/mut1-run-raw.txt",
+      "pytest_rc_per_run": [1, 1, 1, 1, 1, 1],
+      "tally": {"runs": 6, "passed": 0, "failed": 6, "timeout": 0, "unknown": 0},
+      "wall_seconds_per_run": [6.656, 5.948, 6.452, 6.364, 7.341, 4.068],
+      "hang_timeout_seconds_seen": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+      "measured_t0_per_run_seconds": [0.5269, 0.3332, 0.4537, 0.3960, 1.1652, 0.4643],
+      "pre_registered_expected_red_verbatim": "cpu8 下子进程②寿命 0.642–2.486 s > 0.5 ⇒ 被杀 ⇒ child_started ≥ 3 ⇒ assert … == 2 红",
+      "observed_red": "6/6 red, but same rc-gate/launcher_exception shape as green",
+      "discriminating_power_in_this_session": false,
+      "note": "red count >=1 satisfied; discriminating power NOT demonstrable here because green fails for the identical environmental reason (R1 handoff step 4 disposition carried)"
+    },
+    "m2_upper": {
+      "definition_verbatim_R2_section_4": "语义上界钳制 t0 + 3.0 → t0 + 10.0（其余一字不改）",
+      "sole_mutated_element": "upper clamp t0+3.0 -> t0+10.0 (floor 2.0 and coefficient 4 untouched)",
+      "applied_file_sha256": "517562203cf76aa075568a8b148e43ba6b66e4db8cb2014e5e9fa345df796c3c",
+      "band": "mut2/band-mut-m2upper.json",
+      "raw_driver_output": "mut2/mut2-run-raw.txt",
+      "pytest_rc_per_run": [1, 1, 1, 1, 1, 1],
+      "tally": {"runs": 6, "passed": 0, "failed": 6, "timeout": 0, "unknown": 0},
+      "wall_seconds_per_run": [4.130, 6.763, 7.525, 5.357, 3.912, 4.377],
+      "exported_H_per_run": [2.0, 2.7832552, 2.2423428, 2.158566, 2.0, 2.0],
+      "measured_t0_per_run_seconds": [0.2950, 0.6958, 0.5606, 0.5396, 0.3422, 0.3479],
+      "pre_registered_expected_red_verbatim": "H ≥ t0+10 > t0+5 ⇒ 子进程①（count 落盘后睡 5 s 自净退）先于看门狗退出 ⇒ 事件缺 child_unresponsive ⇒ next() 抛 StopIteration ⇒ 红（墙钟 ≈ t0+5+ε < 15 s）",
+      "observed_red": "6/6 red, but same rc-gate/launcher_exception shape as green",
+      "discriminating_power_in_this_session": false,
+      "note": "H handed to the launcher every run confirms the mutated clamp is in effect (4*t0 bound all six runs below t0+10); the pre-registered StopIteration form cannot be reached because the launcher dies before the watchdog"
+    }
+  },
+  "mutation_registry_satisfaction": {
+    "dispatch_requirement": "预注册变异 M1/M2-upper（R2 oracle §4）照跑（各 1 条）",
+    "pre_registered_entries_run": 2,
+    "entries": ["M1", "M2-upper"],
+    "runs_per_entry": 6,
+    "note": "each pre-registered entry run as its own band at the frozen N=6; optional M2 (H=2.0 floor-only) remains excluded per R2 section 4 (probabilistic, no discriminating power)"
+  },
+  "session_environment": {
+    "s8_1_1_ctypes_openprocess_all_access_on_own_child": "FAIL (handle=0, lasterr=5 for self and own child; 0x1000 control opens fine)",
+    "s8_1_2_ps_start_process_redirect_handle_nonnull": "FAIL (with-redirect .Handle null; no-redirect control handle non-null)",
+    "record_probe": "evidence/gate1-record-probe-raw.txt",
+    "consequence": "product launcher source_catalog_worker.ps1:341 [KillOnCloseJob]::Assign throws 'Cannot convert null to type System.IntPtr' -> launcher_exception exit 1 before the watchdog; identical chain to R1/R2 (ENV-OPENPROCESS-ALLACCESS-DENIED)",
+    "gate_effect_under_narrowed_criteria": "none on pytest itself: pytest starts, runs to completion and emits rc in this session (gate -1 (a) PASS), so all six carried steps were executed"
+  },
+  "honest_unverified": [
+    "red timing shape (assert N==2 / TimeoutExpired) NOT demonstrable in this session (inherited env blocker)",
+    "green 6/6 NOT demonstrable in this session (0/6; same env blocker at the rc gate)",
+    "mutation discriminating power NOT demonstrable in this session (green fails for the identical environmental reason)",
+    "node 2 (15/15/20 s budgets) still not applied (carried: source card measured 16/16 passing; no red reproducible)",
+    "no green sample was manufactured; every raw capture is preserved"
+  ]
+}

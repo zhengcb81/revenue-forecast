@@ -1,0 +1,124 @@
+{
+  "purpose": "C-1 route A: derivation of the identity-scope threshold (2x effective sampling cadence); frozen in this attempt's oracle.md section 4",
+  "nominal_interval_seconds": 0.05,
+  "nominal_interval_source": "sealed iso/slo_probe_patched.py:76 RSS_SAMPLE_INTERVAL_SECONDS = 0.05",
+  "reviewer_cadence_ms": {
+    "min": 64.0,
+    "max": 75.2,
+    "calls": 6,
+    "source": "execution_runs/I14A-D1-OPS-REVIEW/a20260924-01/evidence/e1c_samples_inside_life.json",
+    "sha256": "7d7455ebd564932b4ee7edbd1a39965fc1da791604066b97f1647718784c4375",
+    "rows": [
+      {
+        "call": 0,
+        "elapsed": 1.811359,
+        "window": 1.768885,
+        "count": 28,
+        "spacing_ms": 65.5
+      },
+      {
+        "call": 1,
+        "elapsed": 2.146402,
+        "window": 2.060031,
+        "count": 29,
+        "spacing_ms": 73.6
+      },
+      {
+        "call": 2,
+        "elapsed": 1.78028,
+        "window": 1.735139,
+        "count": 28,
+        "spacing_ms": 64.3
+      },
+      {
+        "call": 3,
+        "elapsed": 1.956322,
+        "window": 1.879446,
+        "count": 26,
+        "spacing_ms": 75.2
+      },
+      {
+        "call": 4,
+        "elapsed": 1.778622,
+        "window": 1.727317,
+        "count": 28,
+        "spacing_ms": 64.0
+      },
+      {
+        "call": 5,
+        "elapsed": 1.7568,
+        "window": 1.69994,
+        "count": 26,
+        "spacing_ms": 68.0
+      }
+    ]
+  },
+  "own_cadence_ms": {
+    "min": 63.67,
+    "max": 66.92,
+    "calls": 6,
+    "method": "spacing = rss_sample_window_seconds / (rss_sample_count - 1) per E1c call",
+    "source": "evidence/green/sweep/E1c-F3-alive-allocate/report.json",
+    "sha256": "da224f3c372999a83e9178e77222b493bda494693a73743b59edac86c9f3c834",
+    "rows": [
+      {
+        "child_pid": 2624,
+        "fixture_pid_from_stdout": 15920,
+        "elapsed_seconds": 1.803172,
+        "rss_sample_count": 28,
+        "rss_sample_window_seconds": 1.718988,
+        "spacing_ms": 63.67
+      },
+      {
+        "child_pid": 4664,
+        "fixture_pid_from_stdout": 18868,
+        "elapsed_seconds": 1.819882,
+        "rss_sample_count": 28,
+        "rss_sample_window_seconds": 1.753219,
+        "spacing_ms": 64.93
+      },
+      {
+        "child_pid": 16780,
+        "fixture_pid_from_stdout": 16960,
+        "elapsed_seconds": 1.767093,
+        "rss_sample_count": 27,
+        "rss_sample_window_seconds": 1.728068,
+        "spacing_ms": 66.46
+      },
+      {
+        "child_pid": 7624,
+        "fixture_pid_from_stdout": 1480,
+        "elapsed_seconds": 1.79453,
+        "rss_sample_count": 28,
+        "rss_sample_window_seconds": 1.731417,
+        "spacing_ms": 64.13
+      },
+      {
+        "child_pid": 8960,
+        "fixture_pid_from_stdout": 7720,
+        "elapsed_seconds": 1.774672,
+        "rss_sample_count": 27,
+        "rss_sample_window_seconds": 1.74003,
+        "spacing_ms": 66.92
+      },
+      {
+        "child_pid": 10280,
+        "fixture_pid_from_stdout": 11092,
+        "elapsed_seconds": 1.796963,
+        "rss_sample_count": 27,
+        "rss_sample_window_seconds": 1.703565,
+        "spacing_ms": 65.52
+      }
+    ]
+  },
+  "cadence_max_ms": 75.2,
+  "cadence_max_source": "D1 reviewer measurement",
+  "threshold_2x_ms": 150.4,
+  "threshold_seconds": 0.1504,
+  "threshold_seconds_from_reviewer": 0.1504,
+  "threshold_seconds_from_own": 0.1338,
+  "hardcoded_in_harness": 0.1504,
+  "hardcoded_consistent": true,
+  "rationale": "a child alive >= 2x the effective cadence is guaranteed >=1 periodic sample while alive; a shorter child is covered only by the spawn-time race sample, where fixture identity is not guaranteed on this platform (D1 ruling 4.3 / 5.1(a)2)",
+  "lifetime_proxy": "per-call elapsed_seconds (child wall time) >= fixture pid true lifetime, so the scope can only over-include (stricter) and can never weaken the assertion"
+}

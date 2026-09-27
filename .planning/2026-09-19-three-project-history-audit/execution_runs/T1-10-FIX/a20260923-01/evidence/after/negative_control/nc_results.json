@@ -1,0 +1,124 @@
+{
+  "attempt_id": "a20260923-01",
+  "card": "T1-10-FIX",
+  "checks": [
+    {
+      "detail": "count=18",
+      "holds": true,
+      "name": "fixture: 18 window cases on this surface"
+    },
+    {
+      "detail": "window claims=18, accepted-declarations=3",
+      "holds": true,
+      "name": "poison budget >= T1-8's 11 declarations"
+    },
+    {
+      "detail": "rc=0 ok=True mismatch=0",
+      "holds": true,
+      "name": "PC: unpoisoned gate green (rc=0 ok=true mismatch=0)"
+    },
+    {
+      "detail": "rc=0 decided=34",
+      "holds": true,
+      "name": "NC-1 SUT: machinery survives mass poisoning (rc=0, 34/34 decided)"
+    },
+    {
+      "detail": "rc=1 ok=False",
+      "holds": true,
+      "name": "NC-1: gate does NOT go green on poisoned claims (rc=1 ok=false)"
+    },
+    {
+      "detail": "accepted=['W1', 'W5', 'X5'] mismatched=['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'X1', 'X10', 'X11', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9']",
+      "holds": true,
+      "name": "NC-1: every declared-accept window claim flips to mismatch"
+    },
+    {
+      "detail": "rc=1 ok=False",
+      "holds": true,
+      "name": "NC-2: gate does NOT go green on poisoned declarations (rc=1 ok=false)"
+    },
+    {
+      "detail": "mismatched=['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'X1', 'X10', 'X11', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9']",
+      "holds": true,
+      "name": "NC-2: all 18 window declarations flagged as mismatch"
+    },
+    {
+      "detail": "rc=1",
+      "holds": true,
+      "name": "NC-2: not a T1-8-style fabricated green (never rc=0 with poison)"
+    }
+  ],
+  "failed_checks": [],
+  "nc1": {
+    "accepted_ineligible_count": 0,
+    "case_count": 34,
+    "gate_ok": false,
+    "mismatch_case_ids": [
+      "W1",
+      "W2",
+      "W3",
+      "W4",
+      "W5",
+      "W6",
+      "W7",
+      "X1",
+      "X10",
+      "X11",
+      "X2",
+      "X3",
+      "X4",
+      "X5",
+      "X6",
+      "X7",
+      "X8",
+      "X9"
+    ],
+    "mismatch_count": 21,
+    "runner_rc": 1,
+    "runner_stdout": "{\n  \"ok\": false,\n  \"label\": \"NC-1-claim-poison\",\n  \"case_count\": 34,\n  \"mismatch_count\": 21,\n  \"accepted_ineligible_count\": 0,\n  \"sut_raw_returncode\": 0,\n  \"sut_sha256\": \"064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d\"\n}\n"
+  },
+  "nc1_sut_decided": 34,
+  "nc1_sut_rc": 0,
+  "nc2": {
+    "accepted_ineligible_count": 3,
+    "case_count": 34,
+    "gate_ok": false,
+    "mismatch_case_ids": [
+      "W1",
+      "W2",
+      "W3",
+      "W4",
+      "W5",
+      "W6",
+      "W7",
+      "X1",
+      "X10",
+      "X11",
+      "X2",
+      "X3",
+      "X4",
+      "X5",
+      "X6",
+      "X7",
+      "X8",
+      "X9"
+    ],
+    "mismatch_count": 36,
+    "runner_rc": 1,
+    "runner_stdout": "{\n  \"ok\": false,\n  \"label\": \"NC-2-declaration-poison\",\n  \"case_count\": 34,\n  \"mismatch_count\": 36,\n  \"accepted_ineligible_count\": 3,\n  \"sut_raw_returncode\": 0,\n  \"sut_sha256\": \"064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d\"\n}\n"
+  },
+  "overall": "PASS",
+  "pc": {
+    "accepted_ineligible_count": 0,
+    "case_count": 34,
+    "gate_ok": true,
+    "mismatch_case_ids": [],
+    "mismatch_count": 0,
+    "runner_rc": 0,
+    "runner_stdout": "{\n  \"ok\": true,\n  \"label\": \"PC-unpoisoned\",\n  \"case_count\": 34,\n  \"mismatch_count\": 0,\n  \"accepted_ineligible_count\": 0,\n  \"sut_raw_returncode\": 0,\n  \"sut_sha256\": \"064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d\"\n}\n"
+  },
+  "poisoned_assertion_declarations": 18,
+  "poisoned_claim_declarations": 18,
+  "sut_sha256": "064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d",
+  "t1_8_reference": "T1-8/a20260920-03 poisoned 11 declarations -> rc=0 / 11-11 PASS_rejected = fabricated green; this surface must behave oppositely"
+}

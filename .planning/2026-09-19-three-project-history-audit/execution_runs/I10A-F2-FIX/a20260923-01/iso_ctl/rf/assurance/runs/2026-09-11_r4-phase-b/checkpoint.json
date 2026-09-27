@@ -1,0 +1,1614 @@
+{
+  "run_id": "2026-09-11_r4-phase-b",
+  "phase": "B (position-transparent index and read-only access) - B01-B10 IMPLEMENTED, PUSHED, REVIEWED AND DISPOSED OF, plus all four registered residuals R3 (fifth root inside an isolated catalog), R4 (cross-repo reuse through the filing-fetch entry point, read-only), R5 (the three dropbox_stock bytes) and R6 (the residual-risk register entry). B05, B08 (G8 level 2), B09/B.AR, B10, R3, R4, R5 and R6 are all closed; the only open items need the owner's go-ahead (see failed_or_unknown)",
+  "step": "R4 (cross-repo end-to-end reuse, read-only) and R5 (dropbox_stock byte verification) closed on 2026-09-18, after R3 (fifth root by CONFIG ONLY inside an isolated catalog) earlier the same day, and after the owner-instructed product-fix batch of that day; a follow-up increment on 2026-09-19 then closed the last two sites the owner's ruling (4) named - the SECOND of the two fetchall calls and the record-transaction guard, the latter now DRIVEN by fault injection rather than inferred from its siblings. The preceding step B10 (single read chain) closed on 2026-09-17 after four review rounds: increment 1 (registry + v1 adapters + gate) = accepted_with_findings; batches 1-2 (seven readers converged, metadata_state added) = REJECT then disposed; the r2 dispositions = REJECT then disposed; and the final verification = APPROVE_WITH_FINDINGS, whose one live P2 (the MAIN-path manifest parse) and four evidence problems are disposed of in company-wiki c4f5b8a / revenue-forecast 65cc18d. The chain now has ONE parse implementation (store.metadata_state / metadata_object), one declared non-chain reader (section_query, whose contract is a named error), two count-based ratchets (CONFIRMED_DIRECT_READERS = 1 entry; COLUMN_VALUE_HANDOFFS = 12 scopes / 15 sites) plus a hard zero for the rest of the product package, and measured gate boundaries written into the product",
+  "last_completed_step": "The 2026-09-19 follow-up increment (company-wiki f39bd5a, remote CI run 35430114632) closed the LAST TWO sites the owner's ruling (4) named, and corrected two of the author's own record defects. (a) The SECOND of the two fetchall calls (backfill_text_fingerprints' locations read) was still unguarded after the 2026-09-18 batch, so one failing statement escaped the whole backfill batch and starved every document behind it; it now records a named per-document outcome - a READ failure says nothing about the document, so it is retryable with backoff and becomes terminal only once retry_limit is spent. (b) The record-transaction guard was the one member of the family justified only by 'the same shape as its siblings', which is a reading rather than a proof; it now has an unambiguous fault injection (the switch is armed after seeding, and normalize_catalog opens exactly one store.transaction() per document) and its own mutant. Registered limits: the recording call itself is not guarded (a database that cannot accept the outcome row is a hard stop), and the two BATCH-level reads outside the loop stay fatal because they cannot be attributed to one document. Measured: mutant matrix 17/17 KILLED with the repository untouched, every mutant red-before-green inside its temporary copy; contract 1939 passed + 8 skipped, unit 799 passed, coverage AND complexity ratchets 2 passed. Two record defects were corrected rather than carried: the 2026-09-18 coverage anchor was the raw sha256 of a working-tree file that was NOT retained (and coverage.json embeds a timestamp, so a raw hash is not reproducible), and the mutation matrix had declared one mutant id TWICE while an ambiguous anchor would have mutated whichever copy came first - the harness now refuses both plus a no-op replacement, and the one-off audit scripts were deleted so the record does not carry two drifting copies of the same check. The full suite was 1 failed / 2870 passed / 8 skipped: the single failure is an EXISTING real-root journey case whose write oracle digests the st_size of a live root's top-level children, and a 240 s read-only watch caught five of those directories flipping 4096 -> 0 on their own with mtime_ns unchanged (the cloud-placeholder signature of the same family as R5's F-BAR-13); the case passes when re-run alone on the identical tree, and it is one of the files CI's contract step excludes while the coverage step tolerates failures. Fixing that pre-existing oracle is outside this step's authorization. Earlier in the same owner batch, the 2026-09-18 product fixes (company-wiki 24e1c2f) - F-BAR-10 (an adapter-declared root is scanned through its adapter regardless of the activation snapshot, with ScanReport.strategy making the dispatch observable), F-BAR-11 (the byte entry point honours the same reusable-root policy the decision path uses, keyed on the SAME value - the location's root_id - after the review showed the two keys could disagree under nested roots), F-BAR-12 (additive bundle_usable / bundle_valid_handle_count / bundle_invalid_roles, envelope schema still 1.0), F-BAR-14 (the sidecar adapter no longer narrows the declared metadata: form_type, company_name, source_title, both date spellings and an INT fiscal_year pass through, while the legacy acquisition/dayu_meta containers stay unborrowed per FC-502) and the whole F-B10R2 family on BOTH sides - the four in-package column parses (activation / assertion_service / remediation / scanner) now refuse BY NAME, and normalize_catalog's handler ingests, per-document read, artifact write and record transaction are per-document failures, proven behaviourally (pre-fix copy escapes at normalizer.py:1859 and starves the healthy row; post-fix it does not), plus the two scripts/ readers converged with the ratchet upgraded to a hard zero. Measured: mutation matrix 15/15 KILLED at that point (17/17 after the 2026-09-19 increment) with the repository untouched, full suite 2868 passed / 8 skipped / 0 failed at that point, coverage AND complexity ratchets 4 passed (then anchored to the raw sha256 8cf4a793... of a coverage.json that was NOT retained - corrected on 2026-09-19, see the failed_or_unknown entry F-COV-01), local CI unit 799 / contract 1936 passed + 8 skipped, remote CI green on company-wiki 24e1c2f (run 35408350167) and revenue-forecast eab6328 (run 35408584197). The batch's independent review B.VR-ba1 = approve_with_findings (1xP1/5xP2/2xP3) is disposed of in full, including the P1 that was the author's own bookkeeping (a stale mutation anchor made '8/8' irreproducible) and two gate failures the author introduced while disposing of it (the frozen complexity table, and a handoff 'moved' instead of converged). Earlier: R4/R5/R3, and the B10 dispositions (c4f5b8a / 65cc18d) that routed the main-path manifest parse through a never-raising helper - pinned by tests/unit/test_b10_manifest_abort_paths.py and mutants M11/M12. B05 closed with two review rounds (a live P0 in the author's own fix), B08 level 2 closed with a byte-identical probe re-run plus an audit-hook tripwire, and B09/B.AR closed with the read-only manifest run plus an independently reproduced identity/hash re-derivation - carrying an adjudicated OVERREACH on the manifest's own bounds",
+  "current_gate": "No author-owned gate remains open: B01-B10 plus R3, R4, R5 and R6 are all delivered, independently reviewed and disposed of, and the owner's four rulings of 2026-09-18 are executed (the product fixes and the whole F-B10R2 family on both sides, including the second fetchall and a record-transaction guard that is now driven rather than inferred). What remains needs the OWNER and is listed in failed_or_unknown / authorization_needed: the five sibling atomic-write loops that are not per-document sites, untracking the coverage build outputs, F-BAR-12's other half (a normalize/summarize re-run, i.e. a production write), and whether the gate's syntactic ratchets should become a dataflow check. Two items were closed by owner DECISION rather than by work: the four-production-roots-plus-fifth-root coexistence in the production catalog (not verified, on purpose) and the R6 hardening of the zero-write claim (not done, on purpose)",
+  "pending_review": [
+    {
+      "gate": "B.VR-ba2 (the 2026-09-19 BAR increment)",
+      "scope": "company-wiki f39bd5a (the SECOND fetchall guarded in backfill_text_fingerprints + the record-transaction guard driven by fault injection + 3 new tests + barfix_mutations.py _self_check with 2 new mutants) and revenue-forecast 2c5384b (the record and the barfix6-* evidence)",
+      "status": "closed",
+      "verdict": "approve_with_findings",
+      "findings": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 0,
+        "P3": 3
+      },
+      "note": "the sixth independent session re-ran EVERY substantive claim in its own %TEMP% copies rather than reading the author's JSON: reverting only the second guard reddens exactly the two new backfill cases, reverting the record-transaction guard escapes at normalizer.py:1933, a retry_limit=2 ladder shows the row is not re-selected at t0+899 and is at t0+900, the in-tree harness reproduces 17/17 KILLED with a field-by-field diff of [] against the committed JSON, all three _self_check refusals fire, the new coverage anchor recomputes, and the old 8cf4a793 anchor is absent from all 7,225 + 4,045 blobs of both repositories. Its three P3s were the author's bookkeeping: a stale mutation count in barfix-product-fixes.md section 7, a checkpoint.json that was still the pre-increment snapshot and still cited the RETRACTED coverage anchor, and two registration numbers for one flake case with no cross-reference. All three disposed of in evidence/b-vr-ba2-disposition.md, which also answers each not_verified item and registers F-CHK-01 (nothing checks that a shipped checkpoint.json is not stale)",
+      "record": "reviews/B.VR-ba2.json",
+      "reviewer_self_reported_id": "df04021d-b515-4526-a3b5-13dd772b27c9"
+    },
+    {
+      "gate": "B.VR-r5 (R5)",
+      "scope": "revenue-forecast: the three dropbox_stock documents B.AR skipped, verified with the owner's accepted hydration",
+      "status": "closed",
+      "verdict": "approve_with_findings",
+      "findings": {
+        "P0": 0,
+        "P1": 1,
+        "P2": 1,
+        "P3": 3
+      },
+      "note": "the fifth independent session confirmed the target set (ids, paths and digests against the ratified A05 evidence), walked 5,000 files of the Dropbox tree to show the author's Python blindness is CONDITIONAL (both instruments agree outside it), and refuted one claim of the author's own: 'data locality is undeterminable' was an UNDER-claim - it read AllocationSize via a zero-access handle and measured that the bytes were already locally resident, so the accepted hydration never happened. It also caught a missing NTFS ChangeTime in the state fingerprint, a stale git head in three documents, and two stale wording/field references. All five disposed of in evidence/b-vr-r5-disposition.md, with the harness re-run afterwards (8/8 invariants, --verify 3/3)",
+      "record": "reviews/B.VR-r5.json",
+      "reviewer_self_reported_id": "independent read-only subagent (no id self-reported)"
+    },
+    {
+      "gate": "B.VR-r4 (R4)",
+      "scope": "revenue-forecast: the cross-repo reuse call through the REAL consumer entry point (filing-fetch), read-only",
+      "status": "closed",
+      "verdict": "approve_with_findings",
+      "findings": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 4,
+        "P3": 4
+      },
+      "note": "the fourth independent session re-ran all four legs with BYTE-IDENTICAL stdout, re-hashed the canonical PDF itself (4,172,424 B / e39fbf9c...), and found that three supporting legs were defective: the write-surface table's only 'REACHED' row was false (the resolve path uses the READ-ONLY reader, mode=ro + PRAGMA query_only=ON, so no writable store is ever constructed - the A05/A06 analogy was wrong), no_download_requested was VACUOUS (it read a key summarise() never emits), the pause-file row's reason was wrong (--no-pause-worker is inert because the scope is only built under allow_download), plus a stale ran_at/-shm pair, a stale head, and three over-wide 'unchanged' claims. All eight disposed of in evidence/b-vr-r4-disposition.md; the harness now carries 11/11 invariants including pyc-cache and per-leg download checks",
+      "record": "reviews/B.VR-r4.json",
+      "reviewer_self_reported_id": "independent read-only subagent (no id self-reported)"
+    },
+    {
+      "gate": "B.VR-r3 (R3)",
+      "scope": "revenue-forecast 3825db2: the fifth root registered by CONFIG ONLY inside an isolated catalog + the query -> open -> consumer minimal read",
+      "status": "closed",
+      "verdict": "approve_with_findings",
+      "findings": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 3,
+        "P3": 3
+      },
+      "note": "the fourth independent session re-ran all three harness modes (main / --mutations / --verify), reproduced every recorded number, re-hashed the fixture files on disk to confirm the open leg really returned the bytes on disk, and re-confirmed the production triple and all three HEADs. C1-C4 and C6 confirmed, C5 partly. Its three P2s were all the author's: the deny claim was written wider than the evidence (the deny binds the resolver decision, while the byte primitive still serves that root's bytes - now MEASURED in deny.byte_entry_point and narrowed in the L04 table, plus registered as F-BAR-11); the authorisation basis existed only inside the artefact it authorised (now owner-scope-decisions-2026-09-18.md, and the author's own one-day date error 09-17 -> 09-18 is corrected); and the new evidence file announced two ledger edits in the completed voice before making them (all three ledgers are now actually edited). All six disposed of in evidence/b-vr-r3-disposition.md",
+      "record": "reviews/B.VR-r3.json",
+      "reviewer_self_reported_id": "independent read-only subagent (no id self-reported)"
+    },
+    {
+      "gate": "B.DR rev6",
+      "scope": "B design v0.1.5",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 3,
+        "P2": 6,
+        "P3": 4
+      },
+      "note": "also falsified the first two-sided claim audit: it asserted verification without patterns/commands/output; replaced by evidence/claim_fact_audit.py, which is re-runnable and searches the whole run directory",
+      "record": "reviews/B.DR-rev6.json",
+      "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d"
+    },
+    {
+      "gate": "B.VR (B01)",
+      "scope": "company-wiki 0e28d99 (resolver reuse alignment + 6 cases) and the FC-1001 strict xfail in revenue-forecast b6d1fdc",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P1": 1,
+        "P2": 3,
+        "P3": 2
+      },
+      "note": "reproduced every measured number and the FC-1001 justification with a real pre-change tree, and found one P1 in the AUTHOR'S OWN acceptance: the frozen 'cross-repo' hash was the resolver-side export, not the policy_2x payload filing-fetch consumes, and a kind-only revert of that copy left all six cases green while turning the consumer fail-open. Two P2s were real defects as well (a case-variant declared kind was downgraded to derived, and config admission accepted quoted booleans so a declared false read as reusable). All six are disposed of in be2e4ed, each with a mutation that now fails; the dispositions are tabulated in evidence/b01-review-disposition.md",
+      "record": "reviews/B.VR-b01.json"
+    },
+    {
+      "gate": "B.VR (B03, to be run)",
+      "scope": "company-wiki 5ab0779: resolver.read_verified_bytes + ByteReadResult, 13 acceptance cases",
+      "status": "pending",
+      "reviewer": "independent subagent (non-author), one round per step: does the entry point really return only bytes that were digested as returned (TOCTOU), are all refusals inside the contract's five values, can the mid-read check be defeated, and is the unimplemented snapshot tier honestly registered rather than implied",
+      "note": "same round samples the B01 dispositions (be2e4ed); evidence: evidence/b03-implementation.md, evidence/b03-plan.md, findings F-B01-8"
+    },
+    {
+      "gate": "B.VR (B05)",
+      "scope": "company-wiki 6909e78 + bdd99dc + 9db3394: merge extraction, reserved r4_provenance with read-modify-write, per-column rules, read-side blocked; 6 F10 cases",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 2,
+        "P2": 5,
+        "P3": 3
+      },
+      "note": "reproduced the author's numbers and the whole column-rule matrix, and confirmed the core fix (pre-B05 dropped other modules' keys; post-B05 only adds the reserved one). It falsified two things: conflict preservation depended on scan order (and a later agreeing capture erased the candidates), and a declared value could be overwritten silently because declaration was recomputed from the stored container instead of being bound to the value. Both P1s are fixed in b6a8442 with regression cases; the remaining P2/P3 items are tracked in evidence/b05-review-disposition.md, and the response-level blocked question became scope item S-13 for the owner",
+      "rework": "completed rather than re-reviewed (section 11): the P2s are fixed in 9826b3c (declaration must match the value the scanner actually consumed; agreeing captures accumulate as sources and keep their attribution), B-VR05-03 was resolved by the owner (S-13 -> B06/B07), and B-VR05-09/-10 are registered follow-ups; the next step's review samples these fixes instead of opening a second full round",
+      "record": "reviews/B.VR-b05.json"
+    },
+    {
+      "gate": "B.VR (B04, focused)",
+      "scope": "company-wiki bc3590f: tests/contract/test_r4b04_reference_stability.py (4 cases) + findings",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 2,
+        "P3": 4
+      },
+      "note": "reproduced every number (4/69/ruff, hashes, anchors, one new test file) and ran its own mutation matrix (M3/M4/M5/M6/M7 killed); it corrected two of the author's statements - F-B04-1 overstated the loss (a metadata-level handle lookup still answers; with a second copy the old reference still resolves) and L03's protection comes from the pre-B02 provider_document_id gate, not from B02's source-group restriction - and it found F-B04-2 (moving the PDF without its sidecar drops the document out of the candidate slice, answering MISSING with an empty trace). All six findings are addressed in the run directory, including a new author-side mutation harness and a capture bound to the reviewed commit.",
+      "record": "reviews/B.VR-b04.json"
+    },
+    {
+      "gate": "B02 closure decision (author, 2026-09-12)",
+      "scope": "wiki 1d8b1f7 (rev5, text-only) on top of the four reviewed revisions",
+      "status": "closed",
+      "verdict": "no further review round requested",
+      "note": "The behavioural surface converged under four independent rounds (all four historical counter-examples fixed, mutants M5/M6/M7 killed, mutation harness restores the file byte-identically, CI green on every step commit). rev5 changes words only: the difference list moved to one authoritative place and the two-sided audit - now also searching the three product files - enforces it (32/32). A fifth prose-only round would add no behavioural evidence, so B02 is closed here; the next independent review (B04) is asked to re-check the single-source rule as part of its own scope, and the owner still rules on S-10/S-11 using the authoritative list."
+    },
+    {
+      "gate": "B.VR rev3 (B02 rev3)",
+      "scope": "company-wiki 182846b",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 1,
+        "P3": 6
+      },
+      "note": "confirmed all four earlier counter-examples fixed and reproduced every measured number; rev3 falsified the (now-retired) claim that the trust level was equivalent to pre-B02 and found three surviving mutants; all seven findings addressed in rev4",
+      "record": "reviews/B.VR-b02-rev3.json"
+    },
+    {
+      "gate": "B.VR rev4 (B02 rev4, focused)",
+      "scope": "company-wiki da5e0f5",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 1,
+        "P3": 3
+      },
+      "note": "the corrected wording had reached only four of the nine places that restated it, and two further differences (c: the local probe; d: verified-copy preference) were missing from the list; all four findings addressed in rev5, which moved the list to one authoritative place and taught the audit to search the product files",
+      "record": "reviews/B.VR-b02-rev4.json"
+    },
+    {
+      "gate": "B.VR rev2 (B02 rev2)",
+      "scope": "company-wiki 350b67a",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 2,
+        "P3": 3
+      },
+      "note": "rev2 confirmed both rev1 P1s genuinely fixed; it found that the claim-trusted fallback short-circuited the walk and that the then-current justification for the S-10 deviation was false; all five addressed in rev3",
+      "record": "reviews/B.VR-b02-rev2.json"
+    },
+    {
+      "gate": "B.VR rev1 (B02)",
+      "scope": "company-wiki cab1fd6",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 2,
+        "P2": 2,
+        "P3": 3
+      },
+      "note": "reproduced the author's numbers digit-for-digit AND found two real defects the author had missed; both fixed in 350b67a, each with a regression case",
+      "record": "reviews/B.VR-b02.json"
+    },
+    {
+      "gate": "B.DR rev5",
+      "scope": "B design v0.1.4",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 2,
+        "P2": 4,
+        "P3": 5
+      },
+      "note": "corrected as v0.1.6 (see findings F-B01-5); rev6 then rejected v0.1.5's successor as well",
+      "record": "reviews/B.DR-rev5.json"
+    },
+    {
+      "gate": "B.DR rev4",
+      "scope": "B design v0.1.4",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 2,
+        "P2": 6,
+        "P3": 3
+      },
+      "note": "reviewer stated the defects are text/landing level and one editing pass converges them; no architectural rework required",
+      "record": "reviews/B.DR-rev4.json",
+      "reviewer_self_reported_id": "1f962189-34f4-45aa-bd5c-2418ffa048bc"
+    },
+    {
+      "gate": "B.DR rev3",
+      "scope": "B design v0.1.2",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 3,
+        "P2": 7,
+        "P3": 1
+      },
+      "round1_closure": "14 of 20 closed",
+      "round2_closure": "6 of 15 closed",
+      "record": "reviews/B.DR-rev3.json",
+      "reviewer_self_reported_id": "ba59c7cd-f239-4b80-954f-b42a0002198d"
+    },
+    {
+      "gate": "B.DR rev2",
+      "scope": "B design v0.1.1",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 3,
+        "P2": 9,
+        "P3": 3
+      },
+      "round1_closure": "7 of 20 closed",
+      "record": "reviews/B.DR-rev2.json",
+      "reviewer_self_reported_id": "92aeb4c7-6cb2-4410-bbc0-849c1ce641b6"
+    },
+    {
+      "gate": "B.DR rev1",
+      "scope": "B design v0.1",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P0": 1,
+        "P1": 7,
+        "P2": 9,
+        "P3": 3
+      },
+      "record": "reviews/B.DR.json",
+      "reviewer_self_reported_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe"
+    },
+    {
+      "gate": "B.VR (B05 malformed shared column)",
+      "scope": "company-wiki 74ffeeb..41fdfe1 (read side of documents.metadata_json)",
+      "status": "closed",
+      "verdict": "rejected_then_verified",
+      "findings": {
+        "P0": 1,
+        "P1": 3,
+        "P2": 2
+      },
+      "note": "round 1 found a LIVE P0 in the author's own fix: the SQL json_extract ran before the Python guard, so a malformed row raised OperationalError; round 1's P1s (RecursionError escaping both guards, the driver-level decode failure) were real too. All disposed of; the verification round confirmed 15/15 mutants and the shadowing bug the author had introduced and reverted",
+      "records": [
+        "reviews/B.VR-b05malformed.json",
+        "reviews/B.VR-b05malformed-verify.json"
+      ],
+      "disposition": "evidence/b-vr-b05malformed-disposition.md"
+    },
+    {
+      "gate": "B.VR (B08, G8 level 2)",
+      "scope": "isolated root referencing a REAL filing directory read-only",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 2,
+        "P3": 5
+      },
+      "note": "its strongest result is a byte-identical re-run of the probe plus an add-audit-hook tripwire around a full build and probe (production catalog open count 0). It caught two P2s in the author's work: the tamper case is not a content test (the wrong digest is refused at the handle version-pin gate before any file is opened) and _real_root_state only covered direct files. Both fixed",
+      "record": "reviews/B.VR-b08l2.json",
+      "disposition": "evidence/b-vr-b08l2-disposition.md"
+    },
+    {
+      "gate": "B.AR / B09",
+      "scope": "approved READ-ONLY manifest commands + identity/hash re-derivation from the originals",
+      "status": "closed_with_overreach",
+      "verdict": "approve_with_findings_plus_authorization_overreach",
+      "findings": {
+        "P1": 1,
+        "P2": 4,
+        "P3": 3
+      },
+      "note": "it confirmed the evidence was not tampered with (8/8 side-file hashes, its own read-only re-run reproducing 9/10 commands byte-for-byte) and that the executed set was NOT the manifest as written: an extra command, --limit 100 against the manifest's own <= 50, 102 invocations against budget 25, 85 non-zero retries against the stop rule, and approval.by = null (never approved in writing). The owner delegated the adjudication to the authoring session, which RATIFIED the read-only reading, kept the overreach on the record, and turned the bounds into mechanical refusals with a 5/5 selftest plus a machine-checkable compliance read",
+      "record": "reviews/B.VR-bar.json",
+      "disposition": "evidence/b-vr-bar-disposition.md",
+      "adjudication": "owner-authorisation-and-my-adjudication-2026-09-16.md"
+    },
+    {
+      "gate": "B.VR (B10 increment 1)",
+      "scope": "company-wiki b829b03/c4a69e0/d92bb33 (read-chain registry + v1 adapter + gate)",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P1": 1,
+        "P2": 2,
+        "P3": 4
+      },
+      "note": "the P1 was a false declaration in the author's own registry: reader.bundle was registered as claim-level/'never opens a file' while it hashes artifact files through artifact_handle.validate_artifact. It also measured eight gate-bypass shapes, which drove the second ratchet and the count-based ratchets",
+      "record": "reviews/B.VR-b10.json",
+      "disposition": "evidence/b-vr-b10-disposition.md"
+    },
+    {
+      "gate": "B.VR (B10 batches 1-2)",
+      "scope": "company-wiki 326383d/5ec18a5 (seven readers converged + metadata_state)",
+      "status": "closed",
+      "verdict": "rejected_then_disposed",
+      "findings": {
+        "P0": 1,
+        "P1": 2,
+        "P2": 2,
+        "P3": 2
+      },
+      "note": "the P0 was real and was the author's own misfiling: the metadata parse in normalize_catalog is NOT inside the per-document try (AST: the only Try covers 1665-1679), so one malformed column aborted the whole run - and the author had registered that unguarded crash path as a deliberate non-chain reader, WITH a test pinning the false declaration. A P1 followed (degrading silently recorded an identity verdict with no evidence). All disposed of",
+      "record": "reviews/B.VR-b10-r2.json",
+      "note_2": "its partial work also exposed two holes the author then fixed: count-less ratchets let a second reader inside a baselined scope pass, and the harness recorded a mutant-induced SyntaxError as an assertion kill"
+    },
+    {
+      "gate": "B.VR (B10 r2 dispositions)",
+      "scope": "company-wiki f92fc71 (P0 fix + true declaration + visible degradation)",
+      "status": "closed",
+      "verdict": "rejected_then_disposed",
+      "findings": {
+        "P2": 1,
+        "P3": 5
+      },
+      "note": "it verified all three core fixes as FIXED with its own AST map, its own before/after driver and a re-applied mutant, then rejected on one live P2 (the SAME defect shape on the sibling normalization_metadata_json column) plus stale counts/reasons in the record. Both were disposed of; the P2 fix carries a pre-fix reading taken against a mutated temp copy via the probe's B10_WIKI_SRC override",
+      "record": "reviews/B.VR-b10-r3.json"
+    },
+    {
+      "gate": "B.VR (B10 r3 dispositions, final verification)",
+      "scope": "company-wiki 396c5d6 (sibling-column abort fix + evidence corrections)",
+      "status": "closed",
+      "verdict": "approve_with_findings",
+      "findings": {
+        "P2": 1,
+        "P3": 5
+      },
+      "note": "it independently verified the sibling-column fix as FIXED (its own real-.docx parse failure plus a reverted copy: escaped=true at 1727 with zero normalized.md, and the healthy document behind it starved), re-confirmed the three core fixes and the baseline counts key for key, and reproduced the recorded regression numbers exactly. It then found a live P2 of the same family that needed no parser failure to fire (the MAIN-path manifest parse) and four evidence problems (a probe verdict reading that isolates nothing, stale/unanchored citations, an over-claimed 'all fixed', and a mislabelled phase-3 failure). All disposed of in c4f5b8a/65cc18d",
+      "record": "reviews/B.VR-b10-r4.json"
+    }
+  ],
+  "reviewer_assignments": {
+    "note": "recorded by the authoring session from outside the reviewer session; still only process evidence - an operator-held assignment record is required (gate G6)",
+    "B.DR_rev1": {
+      "reviewer_session_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe",
+      "record": "reviews/B.DR.json"
+    }
+  },
+  "authorization_needed": [
+    "OWNER (P0, production behaviour): F-PROD-01 - the production scan has done no work since 2026-08-20 because the 2026-09-02 activation snapshot sets v2_scan_shadow: true while only future_lake declares an adapter_id, so company_raw fail-closes every run (files_seen 0). Choose the repair: declare an adapter for company_raw, turn the shadow flag off, or let adapter-less roots fall back to v1 (today FC-303 forbids that)",
+    "OWNER: whether the five remaining sibling _atomic_write loops should get the same per-document guard treatment, although they are NOT per-document sites (summarizer.py:225, section_extractor.py:374/397, llm_summarizer.py:496, focus_cleanup.py:467/519/588/646, service.py:1367)",
+    "OWNER: whether to untrack the build outputs coverage.json / .coverage - they are tracked today, so every coverage measurement leaves the tree dirty (measured cause of one false 'git_status_identical' alert in this run's own harness)",
+    "OWNER: F-BAR-12's other half - repairing the derived artifacts of an already-reused document needs an approved normalize/summarize RE-RUN, i.e. a WRITE to the production catalog; the share of documents in that state is still NOT quantified",
+    "OWNER: whether the gate's syntactic ratchets should become a dataflow check, given the four measured bypass shapes recorded in GATE_BOUNDARIES",
+    "OPERATOR: reviewer assignment records remain process evidence only (gate G6); the operator-held record is still outstanding",
+    "CLOSED BY OWNER DECISION on 2026-09-18 and therefore NOT outstanding: fixing F-BAR-10/F-BAR-11/F-BAR-12 and the F-B10R2 family with the two scripts/ readers (done), verifying the four-production-roots-plus-fifth-root coexistence inside the PRODUCTION catalog (declined), and hardening the R6 zero-write claim beyond metadata observation (declined)",
+    "NO OWNER RULING IS OUTSTANDING for phase B's code: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12, the G8 two-level decision and the read-only manifest were approved on 2026-09-13, the adjudication of the A05 overreach was delegated to the authoring session on 2026-09-16, the residual work packages R3/R4/R5 were chosen by the owner on 2026-09-18, and the four product/runtime rulings of 2026-09-18 are executed"
+  ],
+  "gate_status": {
+    "B.DR": "rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 implementation record (no design change); the ratchet table stays frozen (S-7)",
+    "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round falsified one of the author's justification sentences, now single-sourced; B02 closed by the author's documented decision (no fifth prose-only round); B04 = accepted_with_findings (all six findings addressed); B05 = rejected (2xP1/5xP2/3xP3) with the P1s and P2s fixed and the residuals registered, then a verification round = rejected with a LIVE P0 in the author's own fix (the SQL filter ran before the Python guard), disposed of; B01/B03/B06/B07 = accepted_with_findings, all disposed of; B08 = accepted_with_findings (7 findings, disposed of) after a byte-identical probe re-run and an audit-hook tripwire; B10 = four rounds: accepted_with_findings (increment 1), REJECT (batches 1-2: a P0 that was the author's own misfiled crash path plus a false declaration the author's test had PINNED), REJECT (r2 dispositions: one live P2 of the same family), and finally APPROVE_WITH_FINDINGS (r3 dispositions) - all findings disposed of",
+    "R4": "DELIVERED 2026-09-18 and independently reviewed (B.VR-r4 = approve_with_findings 0xP0/0xP1/4xP2/4xP3, all eight disposed of). The REAL consumer entry point was run read-only: filing-fetch/scripts/fetch_filing.py --no-pause-worker without --allow-download, so the wiki action is `resolve`. L1/L2 exit 0 capture_ready with the canonical path of the Alibaba annual, content_sha256 e39fbf9c... (the digest B08 level 2 derived from the real bytes) and 4,172,424 bytes; the wiki side said outcome reused_existing, qualification.label verified_input and policy_hash c773099b... (same as runtime-policy show in A06-2). Controls: FY2019 -> not_found, unknown company -> identity_error. 11/11 invariants; out of 12,476 catalog-dir entries exactly one changed (catalog.sqlite3-shm mtime at the same 32,768 bytes, recorded and NOT attributed). The write surface was read out of the code first and then CORRECTED by the review: the resolve path passes the READ-ONLY reader (cli.py:1193; reader.py:165/188), so no mkdir/WAL/migration/commit occurs, and the worker-pause scope is never built on the reuse branch (--no-pause-worker is inert). Product boundary registered: F-BAR-12 (a reused document's derived artifacts are not reusable)",
+    "R5": "DELIVERED 2026-09-18 and independently reviewed (B.VR-r5 = approve_with_findings 0xP0/1xP1/1xP2/3xP3, all five disposed of). The three dropbox_stock documents B.AR skipped were located through the ratified A05 output (no new production read) and their bytes verify 3/3 (543/567/567) - all three are *.source.json SIDECARS indexed as annual_report documents, i.e. the F-BAR-1 family. The owner accepted hydration; measurement then showed NONE took place (AllocationSize 4096 before the read while EndOfFile is 543/567), so the authorisation was not used. Two instrument defects were found and corrected inside the step: Python's st_file_attributes cannot see the cloud state inside the Dropbox tree (0x20 vs PowerShell 0x420 and fsutil's reparse tag 0x9000601a), and the author's 'locality is undeterminable' was an UNDER-claim that GetFileInformationByHandleEx answers",
+    "R6": "REGISTERED 2026-09-18 in risk-and-stop-rules.md section 7: every zero-write claim in this run is bounded to METADATA observation (size, mtime_ns, -wal/-shm, repo worktree, src tree fingerprint) - a write that preserves size and mtime is invisible to it, and this host offers no OS-level write observer. The two candidate strengthenings (a full-file sha256 of the 46.3 GiB production DB; USN/ETW write auditing) are registered with their costs and limits and were NOT performed",
+    "R3": "DELIVERED 2026-09-18 (revenue-forecast 3825db2) and independently reviewed: the fifth root joins by CONFIG ONLY inside an isolated catalog (r4_fifth_root, kind directory + the registered sidecar_filing_v1 adapter + read_only + reusable_for_filing, priority 50; the scanner's own INSERT wrote the roots row with no product-code change). Measured: query 2 documents, resolve(mode=exact) reused_exact twice with capture_ready [true], read_verified_bytes verified twice (59 B, sha256 = the file on disk), query_filing_candidates 2 rows; unregistered adapter CFG-01 fail-closed, unknown root id refused on both branches, deny -> missing. Invariants 7/7, --verify 4/4, mutation 5/5 KILLED, local CI unit 799 / contract 1905 passed + 8 skipped. Review B.VR-r3 = approve_with_findings (0xP0/0xP1/3xP2/3xP3), all six disposed of. It is NOT a production registration: the production catalog was never written (49,677,344,768 B and its mtime_ns unchanged), so the four-real-roots-plus-fifth coexistence remains unverified. The two boundaries it measured are registered, not fixed: F-BAR-10 and F-BAR-11",
+    "B.AR": "EXECUTED and reviewed: the read-only manifest run (10 commands / 102 invocations) plus an independent identity/hash re-derivation from the originals (6/6 digests, 18/18 derived artifacts, 8/12 documents confirmed against the exchange registry snapshots). Its review returned APPROVE_WITH_FINDINGS with authorization OVERREACH: the executed set was not the manifest as written (an extra command, --limit 100 against <=50, 102 invocations against budget 25, 85 retries against the stop rule, and approval.by = null). The owner delegated the adjudication to the authoring session, which ratified the read-only reading, kept the overreach on the record, and turned the bounds into mechanical refusals (5/5 selftest) plus a machine-checkable compliance read. Unfinished by AUTHORIZATION, not by choice: the fifth-root half was later DELIVERED inside an isolated catalog (see R3 below, owner's choice of 2026-09-18); a cross-repo end-to-end call still needs an approved command; the cloud-synced sample was deliberately not hashed (reading a placeholder hydrates it)",
+    "G7": "read-only manifest commands: APPROVED by the owner's in-session instruction, executed, and the over-budget/extra-command part ADJUDICATED (ratified with the violation on the record) after the independent review refused to treat it as compliant",
+    "G8": "two levels, both EXERCISED: level 1 = a temp isolated catalog; level 2 = an isolated root referencing a REAL filing directory read-only, with 4,172,424 verified bytes, a tamper probe returning zero bytes, and before/after evidence that the real files and the production catalog metadata did not move. Residual risk stated by the review: a size- and mtime-preserving write to the production catalog would be invisible to a metadata-only rule",
+    "B01": "implemented as 0e28d99 and REVIEWED (accepted_with_findings); dispositions in be2e4ed. The resolver calls policy._effective_reusable instead of keeping a kind-only copy, candidate selection requires membership (no empty-set escape), config admission refuses quoted booleans (CFG-08) and the declaration test normalises document_kind the way the classifier does. Production blast radius is none (every shipped root was already effectively reusable). Residual: the policy_2x copy of the rule cannot be removed (S-3 freezes the export path), so agreement is asserted by a case instead of guaranteed by one implementation - and the consumer-side hash that filing-fetch pins is now frozen in addition to the resolver-side one",
+    "B03": "implemented as 5ab0779: read_verified_bytes reads a version ONCE, digests exactly the buffer it returns and refuses everything else inside the contract's five error values, closing the byte-level hard gate S-10 deferred to the read path. Registered limits: the design's middle tier (read an EXISTING controlled snapshot) has no object to read in this repository, so it is unimplemented and bytes_source='snapshot' stays unreachable; ACL denial was not synthesised separately; the cloud-placeholder case uses synthetic stat attributes; the symlink case skips on this host; consumers that still open canonical_path themselves are B07's to wire",
+    "B04": "implemented as acceptance + findings with NO product change and reviewed (B.VR b04 = accepted_with_findings, 2xP2 + 4xP3 addressed). Design goal 1-2 verified; goal 3 is CONDITIONAL: a same-path overwrite destroys the old bytes, and with a second copy the old reference still resolves. The owner chose option (iii), the contract-level known limitation (S-12), recorded in the run directory only; F-B04-2 registers the silent MISSING when only the PDF is moved without its sidecar",
+    "B05": "implemented and then rejected by its own review; the P1s and P2s are fixed with regression cases and the read side exposes provenance/conflicts/metadata_status. The response-level blocked verdict is NOT in B05 (owner S-13 assigns it to B06/B07). Residuals: B-VR05-09 (wording) and B-VR05-10 (field names appear in provenance; a low-entropy value's 12-hex hash can be brute-forced) - registered, not silently dropped",
+    "S-1_test_files": "APPROVED (F10/F11); F10 landing used by the four new contract files (6+30+4+9 cases)",
+    "S-2_R1_R4_out_of_B": "DECIDED - R-1/R-4 stay outside B as separate work packages",
+    "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen (B-payload-hash still NOT executed)",
+    "S-4_consumer_side": "DECIDED - belongs to phase C, B does not sign it",
+    "S-5_isolated_copy": "DECIDED - two levels; L1 can start now",
+    "S-6_fourth_round": "done - five review rounds were run in total (rev4 then rev5/rev6)",
+    "S-7_ratchet_edit": "DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited",
+    "S-8_N1": "DECIDED - N-1 stays outside B, registered as a cross-repo protocol item",
+    "S-10_byte_hard_gate": "APPROVED as recommended (owner 2026-09-12): B02 implements the segment-3 hash equality as a preference with per-candidate diagnostics; the byte-level hard gate ('serve verified bytes or fail explicitly') belongs to B03's read path. The authoritative a-d difference list lives in evidence/b02-implementation.md section 3 and nowhere else",
+    "S-11_budget_status": "APPROVED as recommended: budget exhaustion maps onto the pre-B02 row plus a trace entry, no sixth status value; the counters reset per request and cancellation stays sticky",
+    "S-12_same_path_overwrite": "APPROVED as recommended: option (iii), a contract-level known limitation (the old bytes are physically destroyed by an in-place overwrite); a byte-snapshot remedy would be a separate work package. Recorded in the run directory only, per the owner's instruction not to touch the frozen phase-A artifacts",
+    "S-13_response_blocked": "APPROVED as recommended: the response-level blocked verdict moves into B06/B07; B05's scope was NOT widened, it delivers the field-level facts and the read-side metadata_status",
+    "BAR_increment_2026-09-19": "DELIVERED as company-wiki f39bd5a under the owner's ruling (4) and verified the same way as its predecessors: the second fetchall gets a named retryable per-document outcome, the record-transaction guard is driven by an unambiguous fault injection instead of being inferred from its siblings, every mutant is red-before-green in a temporary copy, the matrix is 17/17 KILLED with the repository untouched, contract 1939 passed + 8 skipped, unit 799 passed, and the FC-1204 coverage + complexity ratchets pass on a fresh measurement whose module numbers are recorded (normalizer.py 60.5 against a frozen 53). Two of the author's own record defects were corrected here rather than carried forward (F-COV-01, and a duplicated mutant id with an ambiguous-anchor class behind it), and one pre-existing live-data flake was measured and registered without being fixed (F-ZR409-01). Independent review B.VR-ba2 = approve_with_findings (0xP0/0xP1/0xP2/3xP3, all three disposed of): it re-ran every claim in its own temporary copies and reproduced all of them, and its P3s were the author's bookkeeping (a stale mutation count, a checkpoint.json still carrying the retracted coverage anchor, and a duplicated registration number for the flake)",
+    "implementation_go_ahead": "GRANTED (owner 2026-09-12, second batch); B02, B04, B05 and B01 have landed and B01 is the next review round"
+  },
+  "actual_side_effects": "Unlike the design-only rounds, this run has MODIFIED PRODUCT FILES in company-wiki: src/company_wiki/source_catalog/service.py, src/company_wiki/source_catalog/scanner.py (the B05 merge path), src/company_wiki/source_catalog/resolver.py, plus four new files under tests/contract/ (test_r4b02_candidate_selection.py, test_r4b04_reference_stability.py, test_r4b05_metadata_provenance.py, test_r4b01_field_owner_alignment.py) - all inside the authorized file scope (F1/F2/F3/F10) and pushed (cab1fd6 ... 9826b3c, then 0e28d99 for B01). Executed locally: pytest (including the full suite with coverage), ruff, git worktree, read-only probes over synthetic tmp fixtures (including evidence/b01_fc1001_probe.py, which builds the FC-1001 lake in a temp directory to explain the F-B01-7 gate failure), and mutation harnesses that restore the product files to the same digest. DECLARED, not evidenced (G5 closed 2026-09-15 by an independent read-only observation, reviews/G5-boundary-observation.json): no CLI of the product was executed by the authoring session, and no network/download/LLM egress, task registration, worker action or deletion was performed. This host keeps no launch log, so that half is UNFALSIFIABLE - no read-only instrument can confirm or refute it - and it is recorded as a declaration rather than a result. EVIDENCED: no persisted write to the production catalog BY THIS RUN - catalog.sqlite3 (49,677,344,768 B) carried its 2026-09-08 22:23:21 mtime through every window measured here and -wal was 0 bytes (main DB independently re-confirmed 2026-09-15). CORRECTED 2026-09-19: that mtime has since ADVANCED to 2026-09-19T06:31:35Z (size unchanged) because the PRODUCT's own scan runs wrote scan_runs rows that day - see F-PROD-01 - so the 2026-09-08 baseline must not be quoted as the current state. NOT evidenced either way: whether a session opened the catalog read-only, because -shm moves on this host with no session acting (the observer measured >=4 advances in 2.5 minutes while running only Get-Item, and the OS refused to hash -wal/-shm because another process held the catalog open), so -shm movement reproduces mechanically but cannot attribute. Known opens inside the window: the mandatory pre-push gate of every push (its real-data suite opens the production catalog READ-ONLY), the 22:00 daily task, and several pre-existing wiki tests. At the time of writing that gate was RED for the F-B01-7 reason, so the B01 run-directory commits were local; the owner later resolved that blocker (decision A) and every commit of this run is pushed - never with --no-verify. Several pre-existing wiki tests also open the production catalog read-only when the suite runs (known limitation, attributed in phase A).",
+  "failed_or_unknown": [
+    "BLOCKER (F-B01-7): after B01 landed, revenue-forecast's pre-push gate (real-data suite) is RED on tests/test_fc1001_isolated_lake.py::test_corruption_variants_fail_closed[sidecar_missing]. Root cause located with a six-way probe (evidence/b01_fc1001_probe.py): that case NEVER passed for the reason it names - the rejection came from the resolver's old kind-only reuse gate under the case's inline synthetic config (default reusable_root_kinds=['company_raw'] against a 'directory' root), and under the production-shaped config the same document resolves BOTH before and after B01 (matches=1), including after a re-scan and with sidecar_suffixes declared. So B01 removed an incidental cover, not an identity check (the entity gate still rejects as before), and the case's fail-closed expectation has never held in production - the real gap it exposes (a document whose sidecar is missing must not default to a trusted filing) belongs to B06 by the design text. The fix is a one-case correction in revenue-forecast, which is OUTSIDE phase B's file scope, so it is with the owner (options A-D in findings F-B01-7). Until then the revenue-side commits stay local; the gate was NOT bypassed",
+    "B03/B06/B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so a preferred copy whose bytes drifted is served on the catalog's claim (S-10's other half, assigned to B03), and no response-level blocked verdict exists yet (S-13, assigned to B06/B07)",
+    "B-payload-hash is now EXECUTABLE and PASSES (findings F-B07-1): the gate's stated blocker ('reading the value needs an unapproved CLI') is false - cli._policy_export_payload is a pure function - so evidence/b07_payload_baseline.py compares the payload byte for byte between a read-only worktree of the phase-A frozen revision 7d4852f and the current tree with a FIXED project_root, and the two are identical (canonical_sha256 bd1a359f... on both sides, 1216 bytes). The absolute hash remains machine-scoped (it embeds each root's absolute path_ref - F-B01-9), so what is portable is the comparison, not the value; B07 re-runs the script to confirm",
+    "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases cover L01-L04 plus budget/cancel/no-network, the review regressions and the B01 alignment property, not the whole matrix",
+    "B01's residual: the resolver imports the private policy function _effective_reusable - recorded in F-B01-6; promoting it to a public API would touch the export payload, and B-payload-hash is not executable",
+    "B05's residuals: B-VR05-09 (flat-shape wording, 35 vs 30 complexity) and B-VR05-10 ('no raw text' holds for values only - injected canary key NAMES appear as fields - and a low-entropy value's 12-hex hash is brute-forceable)",
+    "N-1 support is undefined on both sides and is therefore registered as a cross-repo protocol item, no longer part of B07's completion",
+    "handbook section 3 run structure is still partial: card.json, baseline.json, data-manifest.json, requirements.csv and oracle/ are absent",
+    "G5/G6/G7/G8 remain owner/operator items",
+    "revenue-forecast dirty=0 is incomplete: three .tmp-zr408-unit* directories are unreadable (permission denied), so git cannot enumerate them",
+    "test_dbx05_symlink_escape_rejected skips on this host (symlinks not supported), so the symlink-escape control did not run here",
+    "the current acceptance cases run on tmp fixtures; the real four-root and cloud-placeholder behaviour still needs the isolated copy (G8)",
+    "R3's two product boundaries were FIXED on 2026-09-18 under the owner's ruling (F-BAR-10: an adapter-declared root is scanned through its adapter regardless of the activation snapshot, with ScanReport.strategy making the dispatch observable, so .source.json sidecars are no longer indexed as documents on such a root; F-BAR-11: the byte entry point now honours the same reusable-root policy as the decision path, keyed on the SAME value - the location's root_id). The original measurements stay in this record as the pre-fix state: with no runtime_policy.json a declared root was walked by the v1 path (mutant M5), and read_verified_bytes served a reusable_for_filing: false root's bytes because it gated on containment only",
+    "the F-B10R2 family's own remaining limits, registered rather than silently closed (2026-09-19): in backfill_text_fingerprints the recording call (record_fingerprint_outcome) is NOT guarded, because a database that cannot accept the outcome row is a hard stop and swallowing it would drop the record silently; and the two BATCH-level reads that sit outside the loop (select_fingerprint_batch, fingerprint_status) stay fatal by design, since they cannot be attributed to one document",
+    "the mutation matrix itself carried two author bookkeeping defects found and fixed on 2026-09-19: one mutant id was declared TWICE (a duplicated dict key silently drops the earlier definition, so the count still looked right) and an anchor appearing more than once would have mutated whichever copy came first. barfix_mutations.py now refuses both, plus a replacement text that is already present (a no-op mutant); the one-off audit scripts written for this were deleted so the record does not carry two drifting copies of the same check",
+    "F-CHK-01 (a PROCESS defect of this run's own tooling, found by review B.VR-ba2, registered and NOT fixed): checkpoint.json is excluded from its own manifest (excluded_by_design) and nothing verifies that its recorded reviewed_commit is still the newest commit, so a STALE checkpoint silently keeps asserting superseded statements - measured here: commit 2c5384b shipped a checkpoint generated at 2026-09-19T00:21Z against reviewed_commit 9e0271f that still presented the RETRACTED 8cf4a793 coverage anchor as valid. The repair belongs to the generator (refuse to write unless reviewed_commit is HEAD or HEAD~1 by construction) and is a separate work package",
+    "R3 does NOT cover the coexistence of the four production roots with a fifth root in the production catalog: the isolated catalog is empty by construction, so the four-root legs still rest on the earlier B.AR evidence, not on this run",
+    "F-PROD-01 (a PRODUCTION finding, measured 2026-09-19 while monitoring CI, registered and NOT fixed - the repair is a production decision and outside this run's authorization): the production catalog's own scan_runs table shows the two most recent scans (2026-09-19T04:52:11Z and 04:52:59Z) completing_with_errors with files_seen 0 and 'scan_root_strategy: v2 scanner unavailable (fail closed): root company_raw has no adapter_id (2.x policy required)', while the last scan that actually did work was 2026-08-20 (files_seen 46,600). The chain is recorded artefact by artefact in evidence/prod_scan_failclosed_probe.py + prod-scan-failclosed.json: the production snapshot .source_catalog/runtime_policy.json has said v2_scan_shadow: true since 2026-09-02T18:34:03Z, so scanner.py:855 use_adapter is true for EVERY root, while config/source_catalog.yaml declares an adapter_id only for future_lake, so adapter_dispatch.py:41 refuses and FC-303 forbids a v1 fallback. NOT caused by this run's product changes: the refusal string entered on 2026-08-10 (7cf5957, before every change here), v2_scan_shadow was already true, F-BAR-10 leaves company_raw's behaviour identical, and F-BA1-04 only turned a whole-run abort into a per-root recorded error. Measured impact, no more: no new scan since 2026-08-20, locations_active 25,046 / locations_missing 6 unrefreshed. Candidate repairs (declare an adapter for company_raw, turn the shadow flag off, or fall back to v1 for adapter-less roots) each change production behaviour and need the owner",
+    "CORRECTION to actual_side_effects (2026-09-19): its 'the production catalog ... still carries its 2026-09-08 22:23:21 mtime' was true for every window this run measured, but it is no longer true as a statement about the file TODAY - the main DB's size is unchanged (49,677,344,768 B) while its mtime advanced to 2026-09-19T06:31:35Z, written by the PRODUCT's own scan runs (F-PROD-01), not by this run. Every zero-write claim in this record is about THIS RUN's operations and stays as measured; readers must not carry the 2026-09-08 baseline forward as a current fact",
+    "R6 (registered 2026-09-18, risk-and-stop-rules.md section 7): every zero-write claim in this run is bounded to METADATA observation (size, mtime_ns, -wal/-shm, repo worktree, src tree fingerprint) - a write that preserves size and mtime is invisible to it, and this host offers no OS-level write observer. The owner declined to harden it on 2026-09-18, so it stands as registered, not as an outstanding action",
+    "F-COV-01 (the author's own record defect, corrected TWICE on 2026-09-19): the 2026-09-18 coverage evidence anchored the RAW sha256 (8cf4a793..., 1,138,137 B) of a working-tree coverage.json that was not retained anywhere - the repository's tracked copy is the 1,014,394 B file from 2026-08-17 - and coverage.py embeds meta.timestamp and meta.version, so a raw file hash is not reproducible even when the measurement is identical. Replaced by two anchors plus the retained file: raw sha256 ae00af2e... (1,138,400 B, 95 files) and measurement_sha256 e223dab3... over the canonical JSON of files + totals only, with the measured report itself stored as evidence/barfix6-coverage.json. The SECOND correction came from acting on review B.VR-ba2's not_verified item: a fresh measurement on the identical tree produced measurement_sha256 63fadcf7... with percent_covered 83.083 vs 83.111, because the second run had a different FAILURE SET (F-LOAD-01), so the content anchor is the content identity of a RETAINED measurement - recomputable against that file by evidence/coverage_anchor.py - and NOT a cross-run guarantee; the earlier 'recomputable across runs' wording is retracted. The coverage + complexity ratchet still passed (4 passed) on the fresh measurement",
+    "F-LOAD-01 (this host's load sensitivity, measured 2026-09-19, registered): the second full-suite coverage run, executed while OTHER agent workloads were using the machine, was 9 failed / 2,862 passed / 8 skipped in 27m38s - versus 1 failed / 2,870 passed in 17m12s for the first. All 8 additional failures are TIMING/PROCESS cases (six in test_source_catalog_parser_liveness.py, one worker-bootstrap supervisor test, one Windows-CIM process-creation-time test). Judged load sensitivity rather than a regression because they are timing-based and the same revision's REMOTE CI contract step (which includes them, on a quiet runner) was green; individual reruns were not done, so green-on-a-quiet-local-machine is NOT claimed either. Consequence: full-suite evidence produced on this host is usable only with its concurrency conditions stated. Distinct from F-ZR409-01 (the live-root oracle),",
+    "F-ZR409-01 (an EXISTING case's host sensitivity, measured, registered and NOT fixed - fixing it is outside the step's authorization): tests/contract/test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample compares two (name, size, mtime_ns) fingerprints of the LIVE dayu_portfolio root taken milliseconds apart, and st_size of a top-level child on this host is not stable: a 240 s read-only watch (49 samples, evidence/zr409-live-root-watch.json) caught five child directories flipping 4096 -> 0 with mtime_ns unchanged, the cloud-placeholder signature of the same family as R5's F-BAR-13. It failed once inside the full-suite coverage run on 2026-09-19 and passed when re-run alone on the identical tree; the production DB's size and mtime_ns were unchanged throughout. CI's contract step excludes this file and the coverage step tolerates failures, so the gate is unaffected - but the case is a real flake against live data, and it must NOT be read as evidence about the 2026-09-19 code change, which touches only the backfill path that this case never enters",
+    "R4/R5's own narrower claims, now scoped in the prose rather than left to read wider: the `companies` digest is relative path + size for files only (a same-size overwrite or a new empty directory would not appear); `repos_unchanged_during_run` compares `git status --porcelain` (the harness's own five evidence files are untracked, so a content rewrite of one would not appear - the pyc caches are digested separately and the wiki children now run with PYTHONDONTWRITEBYTECODE=1); the catalog-dir -shm movement is recorded and NOT attributed",
+    "two instrument defects were found inside R5 and corrected there (Python's st_file_attributes is blind to the cloud state inside the Dropbox tree; the author's 'locality is undeterminable' was an under-claim). Both are now measured facts in the record, but a reviewer should treat any EARLIER statement of those two as withdrawn",
+    "F-BAR-12 (registered, not fixed): a document reused through the cross-repo path reports bundle_status available while valid_handles is empty, because its derived artifacts are unusable (normalized: artifact_status_not_completed; summary: artifact_source_sha_missing). The share of the production catalog in that state is NOT quantified"
+  ],
+  "next_step": "The owner's four rulings of 2026-09-18 are EXECUTED, which is what shrank this list: (1) 'fix' = the three measured product boundaries F-BAR-10 / F-BAR-11 / F-BAR-12 plus the newly found F-BAR-14 - delivered; (2) 'do not verify' = the coexistence of the four production roots WITH a fifth root in the PRODUCTION catalog - closed by owner decision, deliberately NOT verified (no 46.3 GiB copy, no production write); (3) 'do not harden' = R6, the zero-write claim beyond metadata observation - closed by owner decision, the registered bound stands; (4) 'fix' = the F-B10R2-MISSINGFILE family plus the two scripts/ readers - delivered, and completed on 2026-09-19 with the SECOND of the two fetchall calls and with the record-transaction guard now DRIVEN by fault injection instead of justified by its siblings' shape (the earlier 'the probe covers it' statement was corrected: the probe drives the generic handler's ingest, a different site). What still needs the OWNER before anything moves: (A) whether the same per-document guard shape should be given to the five remaining sibling _atomic_write loops, which are NOT per-document sites (summarizer.py, section_extractor.py, llm_summarizer.py, focus_cleanup.py, service.py); (B) whether to UNTRACK the build outputs coverage.json / .coverage, which every coverage measurement rewrites - they are tracked today, so every run leaves the tree dirty; (C) F-BAR-12's other half: a reused document's derived artifacts are still unusable, and repairing them needs an approved normalize/summarize RE-RUN, i.e. a production write; (D) whether the gate's syntactic ratchets should become a dataflow check, given the four measured bypass shapes recorded in GATE_BOUNDARIES. OPERATOR: the G5/G6 records remain operator items. A further B10 increment requires no owner input but also no further value: the chain is single, declared and gated",
+  "inputs": {
+    "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
+    "company-wiki": {
+      "head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+      "dirty": 2
+    },
+    "revenue-forecast": {
+      "head": "ec50ed25d2f67d7363463da8d0b94ae0bacb9136",
+      "dirty": 45
+    },
+    "filing-fetch": {
+      "head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+      "dirty": 1
+    }
+  },
+  "reviewed_commit": "ec50ed25d2f67d7363463da8d0b94ae0bacb9136",
+  "commit_anchor": {
+    "head": "ec50ed25d2f67d7363463da8d0b94ae0bacb9136",
+    "index_tree": "3ed37e102d425b7eb221842fdb47aec08ac231d7",
+    "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
+  },
+  "produced_files": {
+    ".gitattributes": {
+      "sha256": "2380dc1cb5c4831e386ce5df2b0ab9bb333dddaee7b615e42b20d94b617de879",
+      "size": 907
+    },
+    "b-ar-record.md": {
+      "sha256": "b29b7f33fc82ab9af620c67dc0fba57d25faa299ee62cf49c615b4b406e9cca1",
+      "size": 24940
+    },
+    "b-design.md": {
+      "sha256": "c871ab0687d354771a9668cf0955569d0cf219b48925f64d30c0ddbe7dc92f41",
+      "size": 36406
+    },
+    "b-vr-protocol.md": {
+      "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
+      "size": 7366
+    },
+    "b08-level2-report.md": {
+      "sha256": "ca1297bb62e379d1b9ddbe37de56e5189b880eecb56722d6a83f6ef7e9e6a74d",
+      "size": 18149
+    },
+    "b08-mechanism-plan.md": {
+      "sha256": "ad75079175fe9c8e2a888850f3c0cc1a37d827c8e988029182950951519536b0",
+      "size": 3896
+    },
+    "b08-mechanism-report.md": {
+      "sha256": "2a48950d67ee0745cc51302aeca7cc7b0cb267805b60c7e441c2cfb820b9f4ef",
+      "size": 6990
+    },
+    "evidence/a05-readonly-manifest-run-A05-1-stdout.txt": {
+      "sha256": "c74996c6a18968193492c54db4be71fc1c6881f6c9b91d52c517eacdc62bbcfa",
+      "size": 206
+    },
+    "evidence/a05-readonly-manifest-run-A05-2-stdout.txt": {
+      "sha256": "edb92c010925ac413278e4ce064294ce5bedaefa5a29ac7cae01e28ad6714f74",
+      "size": 114913
+    },
+    "evidence/a05-readonly-manifest-run-A05-2b-stdout.txt": {
+      "sha256": "539d78dd7123c1e072c418191177a67fd0762af675fbaaed24d93141416eb240",
+      "size": 504834
+    },
+    "evidence/a05-readonly-manifest-run-A05-3-stdout.txt": {
+      "sha256": "bd77a701ae03b58783b41bc24df013f1ff89700d34075cf903ad32ae2da91342",
+      "size": 107132
+    },
+    "evidence/a05-readonly-manifest-run-A05-4-stdout.txt": {
+      "sha256": "a321586981ae3a066b5dfee670363f6d653bd53f476b00a1f610125ecd80dcb0",
+      "size": 42446
+    },
+    "evidence/a05-readonly-manifest-run-A05-4b-stdout.txt": {
+      "sha256": "a725350862da3730926731f0e9404c30e4aa548f1df70c87267b4f5a669e60e1",
+      "size": 43585
+    },
+    "evidence/a05-readonly-manifest-run-A06-1-stdout.txt": {
+      "sha256": "7f1a322e47cd4e4accfd1c8da7ca4c07aaefcaad40662d514f469b539c2c8602",
+      "size": 212
+    },
+    "evidence/a05-readonly-manifest-run-A06-2-stdout.txt": {
+      "sha256": "a0ce50c99bee075d3f0a873dc92288b623dc4aa44d8d0180092d3b5feebb01e1",
+      "size": 510
+    },
+    "evidence/a05-readonly-manifest-run.json": {
+      "sha256": "57345772a46243982e6fe3a83f109964ea9cb27f5d3b260a6da3387ecced7afb",
+      "size": 64529
+    },
+    "evidence/audit_manifest_compliance.py": {
+      "sha256": "75b028c851e73b3f6af497665b824a815ccc925185f6796cd7ca77757bc46953",
+      "size": 8112
+    },
+    "evidence/b-ar-cross-repo-reuse-L1-reuse-any-year-stdout.txt": {
+      "sha256": "d8aa34311d6ac8cfe39b4f2497667a8d3cecbe5774c34e4dc5daae98e2bced7c",
+      "size": 6207
+    },
+    "evidence/b-ar-cross-repo-reuse-L2-reuse-exact-FY2026-stdout.txt": {
+      "sha256": "b64f11b6df89745b8d59e2a6017f6793fa6fb9da180c398b491919e40a54b983",
+      "size": 6207
+    },
+    "evidence/b-ar-cross-repo-reuse-L3-control-missing-FY2019-stdout.txt": {
+      "sha256": "8433b7efdc5db1fc3338a5dbdab95763b5c94ab1df21786ef51543692881cea6",
+      "size": 455
+    },
+    "evidence/b-ar-cross-repo-reuse-L4-control-unknown-company-stdout.txt": {
+      "sha256": "5c6492b7c12b0a70704ea22e20338ad1d6c4d96df4fc395d63411bb94ec90e31",
+      "size": 246
+    },
+    "evidence/b-ar-cross-repo-reuse.json": {
+      "sha256": "9b3105401a31ef8fb7d5150e976d3e627aa97d473023b76cbfbc00353ae2bdc8",
+      "size": 47705
+    },
+    "evidence/b-ar-cross-repo-reuse.md": {
+      "sha256": "c8f1fad38d0e8c1bd2cd5fd923b74da4483c6963244e9bc885fdd6ac1cd08b39",
+      "size": 11331
+    },
+    "evidence/b-ar-dropbox-bytes.json": {
+      "sha256": "1c7df6f66382c482bcae4f571a387f9f8fa018ceecb11601c69bbb07c395dedc",
+      "size": 33852
+    },
+    "evidence/b-ar-dropbox-bytes.md": {
+      "sha256": "531b612e5c307c8f3e14c7c67b4fbfbc7fbea39b92a6420984f0f8c3d9694070",
+      "size": 6822
+    },
+    "evidence/b-ar-fifth-root-isolated.json": {
+      "sha256": "8b35a30ae7b9c18c9fa15f8557e3c052af7dd55f44310a7c4bbfcb9fe81cba38",
+      "size": 76531
+    },
+    "evidence/b-ar-fifth-root-isolated.md": {
+      "sha256": "298ba4735e97e989dc4972d63e9f9aa7b2bdd7848ebbec4b822ef137b5af88b2",
+      "size": 14639
+    },
+    "evidence/b-ar-fifth-root-mutations.json": {
+      "sha256": "5e2d7b7987541c978aa192e7cd7d6227ad6c6631ae62d96d88367a03cda87578",
+      "size": 6634
+    },
+    "evidence/b-ar-identity-crosscheck.json": {
+      "sha256": "23ffab67a1c0b1bcb757d1e480df7ef692842f1c07faeb272c7ec9a8b89360c6",
+      "size": 12391
+    },
+    "evidence/b-ar-identity-hash.json": {
+      "sha256": "a38e600fd5cce2c208cd8fddc9768bf16669645f1c74a652b00e76d3dd694c1b",
+      "size": 20082
+    },
+    "evidence/b-ar-manifest-compliance.json": {
+      "sha256": "9cb143c720c4a866bf0976d7d5493142a3eb147035de9510dd324143d283b6d7",
+      "size": 3946
+    },
+    "evidence/b-vr-b05malformed-disposition.md": {
+      "sha256": "48847945d0922e78e9aed28d7d8ce16978175558e2cd2fe38a84bb27015307fe",
+      "size": 10899
+    },
+    "evidence/b-vr-b08l2-disposition.md": {
+      "sha256": "2370d106c539b382d0564876966a149097029219133869f25aff1e3e1bd75038",
+      "size": 6774
+    },
+    "evidence/b-vr-ba1-disposition.md": {
+      "sha256": "cb3f9b70d68d72c4755ccc0925344c471a02f1aec2fd9f5a8dc63564ec77f5c9",
+      "size": 6074
+    },
+    "evidence/b-vr-ba2-disposition.md": {
+      "sha256": "0f56dfd2e515284891202c5ce4d1017f353c0bb1d4d4c0a3b6d91ec7f42719c1",
+      "size": 6444
+    },
+    "evidence/b-vr-bar-disposition.md": {
+      "sha256": "4786426c795a6f09a9a69827f909c479ab5d1064eb15be339314e3c5a2e416ae",
+      "size": 8240
+    },
+    "evidence/b-vr-fc1301-disposition.md": {
+      "sha256": "9a81c26a49d3fbafc345ebda610716ecec9d2c62288ae9092f793311b492410a",
+      "size": 6176
+    },
+    "evidence/b-vr-r3-disposition.md": {
+      "sha256": "b2999cc7ffec77b5a8a668baab41abbcfa45ef08e3ed62ad18169f814cfe30f8",
+      "size": 5954
+    },
+    "evidence/b-vr-r4-disposition.md": {
+      "sha256": "fd492c82b113cb5bf6db44d08be9e7c3c3ad7df321b8bd1dc5917034e2214a6a",
+      "size": 5322
+    },
+    "evidence/b-vr-r5-disposition.md": {
+      "sha256": "77b6428cbcda817aba668d17dc57296817be01d041ac8cd38a552e3cd2a84042",
+      "size": 4442
+    },
+    "evidence/b01-fc1001-probe.json": {
+      "sha256": "9deeb5256f8e7448676efa25435fef283795c39c48f166f361b9386874c4dd3e",
+      "size": 17145
+    },
+    "evidence/b01-implementation.md": {
+      "sha256": "0f98797dccb532f8c55527eab2c04a8c0dfaf0a82653aaa781a806f20db43b43",
+      "size": 12745
+    },
+    "evidence/b01-review-disposition.md": {
+      "sha256": "790f2b1bd5e9ff14fc176cfeb912c90667dbf5acad42e8b72ee8702b38922fb0",
+      "size": 6575
+    },
+    "evidence/b01-review-verify.json": {
+      "sha256": "8560817ca3b9aecf80724722f39a46fc731cedc77b373327bc5ba2ef05521119",
+      "size": 2379
+    },
+    "evidence/b01_fc1001_probe.py": {
+      "sha256": "be742268e14bd1ce3d31ccc0ccd2b65833c2192a34452dc8dc61b24786813512",
+      "size": 10979
+    },
+    "evidence/b01_mutations.py": {
+      "sha256": "90049dbb508356e86f93ab41c38e2ee7d95045b6db5bd8f16413f46ee9e4f1ed",
+      "size": 2840
+    },
+    "evidence/b01_review_verify.py": {
+      "sha256": "b3f2f48477e5e9161eaa9e26d8fcf2a4f5047adb565982da8713278b8fc1a0a3",
+      "size": 6140
+    },
+    "evidence/b01_x2_agreement_probe.py": {
+      "sha256": "4b79f6ee95d5e717ab450b6d146daf74a9a086ee6a447453fb968b971e4bc009",
+      "size": 2905
+    },
+    "evidence/b02-ci-runs.md": {
+      "sha256": "3b2932a89af74c7e9980e30d109b63d849789fd15b998c53f25bac137c52da74",
+      "size": 15630
+    },
+    "evidence/b02-implementation.md": {
+      "sha256": "cccbda6085f3254a5d13d7337887016b4a76ad3344aaf4b672ce257cac847dcc",
+      "size": 21973
+    },
+    "evidence/b02-red-green-post-b02.json": {
+      "sha256": "cdb7cee25037e74d682e0b86a8fe1cbb3ba0c1c3e3640e826447a4f967d8cab0",
+      "size": 1562
+    },
+    "evidence/b02-red-green-pre-b02.json": {
+      "sha256": "ceb0159a736c91b910fe53e8f8b395eaa4985f0c16b42366181c6e0a58b6cfeb",
+      "size": 1213
+    },
+    "evidence/b02-verification.json": {
+      "sha256": "27ec103b95a2e5ab327c92090978bccd092e37389618874a82e3933186d93a08",
+      "size": 4641
+    },
+    "evidence/b02_anchors.py": {
+      "sha256": "fce781bec5d72237fa379de35dcf1f7c2cb01eeff3671c46af0a3bcf076fb243",
+      "size": 2788
+    },
+    "evidence/b02_mutation_check.py": {
+      "sha256": "6a5a7267ed42e19997b6b42b697a4d55ba47a908967cd72c5bff16787df4af82",
+      "size": 4520
+    },
+    "evidence/b02_red_green_probe.py": {
+      "sha256": "5da5159fffa1a504228e130388ac730c76bf1dac765648d7eea9f969a6197134",
+      "size": 7595
+    },
+    "evidence/b02_verify.py": {
+      "sha256": "e21ba0377d26ed9d7b6f6e2b71b2233c1334f9c406e19c111dbb59b211e3bb1e",
+      "size": 8559
+    },
+    "evidence/b03-implementation.md": {
+      "sha256": "c1cd9d480f831d2abda2d7faf1557df3dc03e9740714a6f5ff1fff6b8f1a821c",
+      "size": 11013
+    },
+    "evidence/b03-plan.md": {
+      "sha256": "a708b31df635daf810865af0c678bd6c65f632a4e6cb61fe8773ed211cfbd396",
+      "size": 9233
+    },
+    "evidence/b03-review-disposition.md": {
+      "sha256": "14b88495fda7a1d3868fbc2f496aa317212f69bd5c772efd0f302e1340c82351",
+      "size": 7492
+    },
+    "evidence/b03_disposition_mutations.py": {
+      "sha256": "7a6a32dc37c1a0064bfd9091ffcce32012a883aa49c5ca1f82c6ed6f16d4f7fa",
+      "size": 3032
+    },
+    "evidence/b03_review_bytes.json": {
+      "sha256": "0d609463ac396f648f8f5d04e92e7db297830b63c93515da6d3b91e51fa80db5",
+      "size": 12559
+    },
+    "evidence/b03_review_bytes.py": {
+      "sha256": "5cd7d78c2bd8cb5991e2fe8151a6473c6a56663116fe6d6f9fdb3230c15f361b",
+      "size": 20650
+    },
+    "evidence/b03_review_cfg08.json": {
+      "sha256": "8b59430cc6c98074c8e093587b8cfaef5158120383b87dd866193ebbab294004",
+      "size": 5763
+    },
+    "evidence/b03_review_cfg08.py": {
+      "sha256": "d1f37e309cc31cb7bfd5920091c6928dbfbbec2d770687371aa95426643ba6e5",
+      "size": 4539
+    },
+    "evidence/b03_review_cfg08_null.py": {
+      "sha256": "9d2553a96c5acf369b9a8a560429e598578ffb23a47f6ee6768b145aad661aeb",
+      "size": 866
+    },
+    "evidence/b03_review_junction.json": {
+      "sha256": "4b1d2b8930e07a61a3e0f9beb942a7bba9c1be7614de684f1a5d606b07a01329",
+      "size": 469
+    },
+    "evidence/b03_review_junction.py": {
+      "sha256": "db485cd161f4b81538a84309494d3f6e4522266a1b0be8ce772954a145505c08",
+      "size": 4448
+    },
+    "evidence/b03_review_mutations.json": {
+      "sha256": "91eb4308ba3ea5f9564442f66ec1a9abd78dba9dacfa266c51e1284cfed996c7",
+      "size": 3227
+    },
+    "evidence/b03_review_mutations.py": {
+      "sha256": "0e0dfb96a079a804855c1b8f353497b13bc70d8a23fa41b47e607691c8e7c172",
+      "size": 5086
+    },
+    "evidence/b03_review_mutations_baseline.txt": {
+      "sha256": "b5096b55b87060bce384bb3d50a3328b4d58d2bff2e4088ebf68e0d56e5d1507",
+      "size": 614
+    },
+    "evidence/b03_review_paths.json": {
+      "sha256": "2c3fc78f1ee695fac3846d4f99e25e75149c781154eb88e97d351def44271dc6",
+      "size": 9087
+    },
+    "evidence/b03_review_paths.py": {
+      "sha256": "4d62e05e199b6b2ed1763b7fa2ca8b8d5be14d9825c37020c78aa8c081fb4619",
+      "size": 9777
+    },
+    "evidence/b04-implementation.md": {
+      "sha256": "be2a8be365a934ef0440bd978ad0ac7d78bfc6201e7fcc56818b4bf687e1e38c",
+      "size": 7544
+    },
+    "evidence/b04-plan.md": {
+      "sha256": "ae0342550d6e5c5185de63bf27a8e47460444ff2bb1d0c967b657a7e4223d207",
+      "size": 3755
+    },
+    "evidence/b04-test-run.txt": {
+      "sha256": "8edbc8547bbd4735dc31892a78397c57337ab964c9041490115f6c13953bbe68",
+      "size": 2377
+    },
+    "evidence/b04_mutation_check.py": {
+      "sha256": "a75b38195a8d481e48291cc410ff9b99f29e062c33ce875ef1bb365e3ffd0f52",
+      "size": 4800
+    },
+    "evidence/b05-ci-step1-unit.txt": {
+      "sha256": "38bc7591c37d37587470119d1af2337ba576dc1fd5a600fc17bd6cc8d5b61436",
+      "size": 5674
+    },
+    "evidence/b05-ci-step2-contract.txt": {
+      "sha256": "1fc3f0c41857c1fe94188c7ae12991ea804880595a535e7d640434dc811ca31e",
+      "size": 18230
+    },
+    "evidence/b05-implementation.md": {
+      "sha256": "bfa1901bac303115391e590f2f51d68044c90d877c397700b21ec99c10e65862",
+      "size": 13488
+    },
+    "evidence/b05-malformed-column-pre-fix.txt": {
+      "sha256": "d085c496175c3efc402fe24895983946308091a25ae351d546a8e143ff91bb8c",
+      "size": 2155
+    },
+    "evidence/b05-plan.md": {
+      "sha256": "b088cedff3db3cf8c419a86a4faf6465f315099bdc31e04ca37374279cf8f416",
+      "size": 7960
+    },
+    "evidence/b05-review-disposition.md": {
+      "sha256": "6358c41b7938d3680a5a689488faeb6ab0681ee8155eed497bf69a0fd748123a",
+      "size": 6624
+    },
+    "evidence/b05_mutations.py": {
+      "sha256": "a0fb8699d9069a8f968dfec9e99bd725b6bd10aab3713a3bbd697e4f54ccde3b",
+      "size": 10339
+    },
+    "evidence/b05b-ci-step1-unit.txt": {
+      "sha256": "773959fd5e9059707ca334224f9cc26192fb3c3fd6e6af1ae3f15575b335c2ef",
+      "size": 5674
+    },
+    "evidence/b05b-ci-step2-contract.txt": {
+      "sha256": "50e453cf17459c5a43fa9306324d7fd44e54647c6a504377158b5fa48742a3a9",
+      "size": 18311
+    },
+    "evidence/b06-implementation.md": {
+      "sha256": "a34da8b1bae548d3e57afec88d39c0faf74d09136d8150bd0b545e79f5d9cfab",
+      "size": 6951
+    },
+    "evidence/b06-plan.md": {
+      "sha256": "0e1f1c1669fcbbde848b034fdff0da7663fce284d7f36c7ccc3a99dca7b4e2c0",
+      "size": 8957
+    },
+    "evidence/b0607-review-disposition.md": {
+      "sha256": "02957b1e050968bb9ebc6ec887dd295d144f4fe91a045ea5c4d9c1965c0a3521",
+      "size": 8628
+    },
+    "evidence/b06_period_probe.py": {
+      "sha256": "8bd94f9a3e24c81d159954420020e33673edfe44e8202f3e1a5f18b1e606adda",
+      "size": 4617
+    },
+    "evidence/b06_review_b03_head.json": {
+      "sha256": "a1b42ebc6fac01e1ee1b346fbf5ddd4349a504fc4f5da24867077f89b895074a",
+      "size": 2257
+    },
+    "evidence/b06_review_b03_pre.json": {
+      "sha256": "59980d61989c8fe44041b6e3a874ca7abccd8451e2f00ca525b07db7a949f578",
+      "size": 2284
+    },
+    "evidence/b06_review_b03probe.py": {
+      "sha256": "1699ea687726c0b6247891228b374b09c732c515c4462b4c985168f3b8ff4f05",
+      "size": 9118
+    },
+    "evidence/b06_review_cfg08_head.json": {
+      "sha256": "2791093c16e23f175e44faaac2e5d5e8d2c3859af3342aedff2b8769b83671f9",
+      "size": 821
+    },
+    "evidence/b06_review_cfg08_pre.json": {
+      "sha256": "d117718f5338121116963b07f004ef3bd44ea98ca517d28bd5232d3e2b6daf60",
+      "size": 785
+    },
+    "evidence/b06_review_cfg08probe.py": {
+      "sha256": "4ac5172c7c43262ac99f75d2557ec3492352b426450e66ca241830ad6b320d5f",
+      "size": 2347
+    },
+    "evidence/b06_review_envdump.py": {
+      "sha256": "1e33bd0dfc35f4203ce26d15f0e162f1cc470c3b9b631b1bc15fb106df927cd0",
+      "size": 4162
+    },
+    "evidence/b06_review_m6.json": {
+      "sha256": "fc143c99555cd07dbcab06060d8eef3874262e468ec206cbb459081fafcaa17b",
+      "size": 430
+    },
+    "evidence/b06_review_m6_check.py": {
+      "sha256": "ddbcf3c2a6854808653302e46f4c6dff5276220f2ddbd3d50a08b0ca83523e6e",
+      "size": 2943
+    },
+    "evidence/b06_review_mutations.json": {
+      "sha256": "bdffde302c8569ad0e0b929947cd2b1931a577a4cf32f82499c8ac8fe4413ec5",
+      "size": 8353
+    },
+    "evidence/b06_review_mutations.py": {
+      "sha256": "8a18e20f4ade8ce5a49301f71fd982c4c4793b1d87d58cf5327d4223799e9bcb",
+      "size": 7003
+    },
+    "evidence/b06_review_patch.py": {
+      "sha256": "810a1c4b2de20b9fdc5a7a956c453e914747181de212fc41e48cfd328d4462d2",
+      "size": 825
+    },
+    "evidence/b06_review_post.json": {
+      "sha256": "1e0aa63eea107d2627cf4021c853ffe025679e618f4c782bf86b2164ab933691",
+      "size": 7065
+    },
+    "evidence/b06_review_post2.json": {
+      "sha256": "394aec30fbca41ec177a6d64c43d516e41113e0c9d3b49736a59edaa804cdac7",
+      "size": 7065
+    },
+    "evidence/b06_review_pre.json": {
+      "sha256": "a3f4c38ed2f4463fc266f337bc68207c3de6ac9a09f8f5df356f4613ca224a16",
+      "size": 6808
+    },
+    "evidence/b06_review_prepost.json": {
+      "sha256": "6ab68ecd0b4ca4d973d62a0595e82024b9f95ba977f8cd9aa5cc1aee12705bdb",
+      "size": 17034
+    },
+    "evidence/b06_review_prepost.py": {
+      "sha256": "dc1ffe2305889931d50766ea8a72afd8f7c4592d62523d5ad768618327851b4a",
+      "size": 1914
+    },
+    "evidence/b06_review_probe.json": {
+      "sha256": "1297cb313987b9ae041e27d79c39638b4bf430c042e6a4a6c47174fa18a77ddd",
+      "size": 10643
+    },
+    "evidence/b06_review_probe.py": {
+      "sha256": "7cbbf0268c695922d426cd0c896c4c15bc666325fe02cfba9de912844f3b675f",
+      "size": 22550
+    },
+    "evidence/b06_review_tests.txt": {
+      "sha256": "281fb7b65e49fa606a5f3c830e5109a8c6a2a7ba61a011beff2b69de0ca1de0a",
+      "size": 2616
+    },
+    "evidence/b07-payload-baseline.json": {
+      "sha256": "53b6f4e0d8b0294910842d1037041eed1012f6974eb6f73ca5363fadc840a76d",
+      "size": 1578
+    },
+    "evidence/b07-plan.md": {
+      "sha256": "317908a599ce9ad4bde7eb75028e4adc0096b4dba6e5c172c0e1a9708b956003",
+      "size": 6811
+    },
+    "evidence/b07_payload_baseline.py": {
+      "sha256": "9cd1dcd49f2f9e2f0e22ff9dfc2103d77d599a8ad740bab69408672586f96bb8",
+      "size": 4644
+    },
+    "evidence/b07_review_mutations.json": {
+      "sha256": "a212a9b69c66922506f38c05e5c385bdce3f3031aa0433491b6edd27940e8290",
+      "size": 3118
+    },
+    "evidence/b07_review_mutations.py": {
+      "sha256": "04ca5adba54040b186cc542d4c2b37bc6c919cf3da17e19a4e671f06ba23a409",
+      "size": 6386
+    },
+    "evidence/b07_review_payload-baseline.author-original.json": {
+      "sha256": "53b6f4e0d8b0294910842d1037041eed1012f6974eb6f73ca5363fadc840a76d",
+      "size": 1578
+    },
+    "evidence/b07_review_probe.json": {
+      "sha256": "1defff8d344de01250076255c7058ead53be8c84e671ceb855c999375586083c",
+      "size": 3039
+    },
+    "evidence/b07_review_probe.py": {
+      "sha256": "0d91f13765c84dc45865b3e3f11443235fd46cb13c880d9b31d82d2770e3eb66",
+      "size": 13534
+    },
+    "evidence/b07_review_probe2.json": {
+      "sha256": "0aad2241d8eedb16086f6a17591bbb8a7e88b85779022b14ac7509f6fa79b353",
+      "size": 1974
+    },
+    "evidence/b07_review_probe2.py": {
+      "sha256": "0daa24687020c2c7b2da3c47a261b5ae4b41500b2d8f5f3a7c91fec8a32c1cc4",
+      "size": 8525
+    },
+    "evidence/b07_review_probe3.json": {
+      "sha256": "50d552325ac32c7b5b96dd049d45c465e04bc6ad19710070c3969ab6eed64259",
+      "size": 778
+    },
+    "evidence/b07_review_probe3.py": {
+      "sha256": "930208147bdaae9766b67bacad0be72d602ffb0ac7124e2d6e842250267cef0a",
+      "size": 4543
+    },
+    "evidence/b07_review_report.py": {
+      "sha256": "1940d5e2e3d90095478c6ee5db9a3760a025065b21d1a7a0619570f0bc98b35d",
+      "size": 50887
+    },
+    "evidence/b08-level2-evidence.json": {
+      "sha256": "a105ee397a10575d215701ba004e1504c72bd312e6522f7d837d82c5d9b9cd33",
+      "size": 4020
+    },
+    "evidence/b08-level2-probe.json": {
+      "sha256": "736d9adb254c82562eaae7f16807e68e1547a517e5097fb553ff71e75054356f",
+      "size": 5299
+    },
+    "evidence/b08-real-root-choice.json": {
+      "sha256": "3c5a55d3eb5a3f35041565ad91067a44eed5cd0283a779e3eda98db28e263ad4",
+      "size": 1863
+    },
+    "evidence/b08-side-effects-after.json": {
+      "sha256": "fdc948f0d75e93f7a6c58d1feacb934025a54e1bbda9479adbd328b32aa3b76e",
+      "size": 585
+    },
+    "evidence/b08-side-effects-before.json": {
+      "sha256": "3c1226165ac0b3555d0c97b46c2d901d7fd993918cdfe1be98baf4be60704a55",
+      "size": 733
+    },
+    "evidence/b08_isolated_env.py": {
+      "sha256": "57074424e931d9b7ea7729ec814062a4dd3b99df97448164da4d2fc88255e941",
+      "size": 19184
+    },
+    "evidence/b08_level2_probe.py": {
+      "sha256": "960e93ca74a9ab9eb542acb5f8c11ce478d3277f1d49e06773991ec3398548a6",
+      "size": 12705
+    },
+    "evidence/b08_level2_run.py": {
+      "sha256": "2e7adaba2128d02d84227ae4720dcee3919a05090c0076d599385ce563c7bc19",
+      "size": 3069
+    },
+    "evidence/b09-bar-inputs.txt": {
+      "sha256": "a0447cda9eb1c79c6f95bf44f7979a56b7a79d5d98a7db16456be85f957044df",
+      "size": 4375
+    },
+    "evidence/b10-ci-step1-unit.txt": {
+      "sha256": "0566684241b7f071c488934cb15b7ee7022a9c19ed657fe97e701ac840c6e588",
+      "size": 5669
+    },
+    "evidence/b10-ci-step2-contract.txt": {
+      "sha256": "fc02db1100f920f990fed18291c00ab368c0e5782e1cef7c48bc2d74cf26f807",
+      "size": 17739
+    },
+    "evidence/b10-implementation.md": {
+      "sha256": "b437c591fe4694af3b44e4ad7d5647b74c0570cb91fcc34dc779ea0af3947907",
+      "size": 43646
+    },
+    "evidence/b10-mutations.json": {
+      "sha256": "1a6621d0913c38cd660833be8c9a0b63e0c9bc61f9066ee2e54dc72f7be9f39e",
+      "size": 8274
+    },
+    "evidence/b10-p0-probe.txt": {
+      "sha256": "ec8255b96ff22076f6b45b88a7e04beb1a3a1e8ada684a1dbaecd6c007b7c85d",
+      "size": 1628
+    },
+    "evidence/b10-read-chain-inventory.json": {
+      "sha256": "b4fc354957be6746b16a7f695c618b5bccb380048d9fbd59cc4c99f4ccb9ceae",
+      "size": 16903
+    },
+    "evidence/b10_mutations.py": {
+      "sha256": "4d2f8cbb01464f124974481a4f69d63a6a1ee22c85caa688fe540a2a8fe85713",
+      "size": 18811
+    },
+    "evidence/b10_p0_probe.py": {
+      "sha256": "fd3b5d7795e9b33c6d6d997f6efc6cf9ddd26f486e16a2dff9b49a127d3b6aee",
+      "size": 12806
+    },
+    "evidence/b10_read_chain_inventory.py": {
+      "sha256": "c86e2f922d0493f260b6f80f52e56f463e5522dab97d5aba61259cf1cfad28fa",
+      "size": 6754
+    },
+    "evidence/b10r2-ci-step1-unit.txt": {
+      "sha256": "6d0de21b2009a2056acd1ab173b425c3535919b1019e799e6e99a766c586af05",
+      "size": 5669
+    },
+    "evidence/b10r2-ci-step2-contract.txt": {
+      "sha256": "e51104c565bf895d9b03bbac482207a1aa6278e6a6f9ebbf30c0e4591f8a9a66",
+      "size": 17739
+    },
+    "evidence/b10r3-ci-step1-unit.txt": {
+      "sha256": "83737220dd01830a0e4d594a5810a421ca06d68d4a40d98ab4edb33db8d8ab14",
+      "size": 5750
+    },
+    "evidence/b10r3-ci-step2-contract.txt": {
+      "sha256": "24cf71266acc65f38926ac6f5443949363955393025b8a4737d76fda964b798a",
+      "size": 17739
+    },
+    "evidence/b10r4-ci-step1-unit.txt": {
+      "sha256": "6b79dd26105e3b577a00427132c63e6e29010df98b46fb1accfc4edd850c47ba",
+      "size": 5831
+    },
+    "evidence/b10r4-ci-step2-contract.txt": {
+      "sha256": "65785bd4a906672930723a594b2b82cb9350d4ff441527574d3867d7cefad056",
+      "size": 17739
+    },
+    "evidence/b10r5-ci-step1-unit.txt": {
+      "sha256": "479d59a33725eb8f21aebac0311661c8262b91b18d78234b9eb569b0d76345dc",
+      "size": 5831
+    },
+    "evidence/b10r5-ci-step2-contract.txt": {
+      "sha256": "436a403656500c2517f3e20a0c44cf492dd0086a64bee8f901a114dbea80152e",
+      "size": 17739
+    },
+    "evidence/b10r6-ci-step1-unit.txt": {
+      "sha256": "6b8a337a145c212fc81ea291eb2f1025542fe9fc9532f83559ed9a852a042fee",
+      "size": 5831
+    },
+    "evidence/b10r6-ci-step2-contract.txt": {
+      "sha256": "3f57c4dbd87bbe4ece34a07846836dc02d71987ab17f183353170d09bc7e6ed1",
+      "size": 17739
+    },
+    "evidence/b10r7-ci-step1-unit.txt": {
+      "sha256": "271603347ef4ab828d67e1972d37a154e61282f9ffcaa787ef600b79484fae3a",
+      "size": 5912
+    },
+    "evidence/b10r7-ci-step2-contract.txt": {
+      "sha256": "bc76e72136d3966ef446d914f4e71b65604f1ebf09ac7caf9751b238e4a1eaf4",
+      "size": 17739
+    },
+    "evidence/b_ar_identity_crosscheck.py": {
+      "sha256": "c57aca9278bb50cb0e0ce1b73b757dbfdfe63f8e40f2383461bee855d8740d61",
+      "size": 18153
+    },
+    "evidence/b_ar_verify_identity_hash.py": {
+      "sha256": "83d0d5024fe2ca2a36dd907126c738095cbec4a1ae15f02c8970d1b40449325e",
+      "size": 14273
+    },
+    "evidence/barfix-ci-step1-unit.txt": {
+      "sha256": "3cd50d0fc916bd10581803fc12039f6622eede666648841119f9616f7ac94a90",
+      "size": 5988
+    },
+    "evidence/barfix-ci-step2-contract.txt": {
+      "sha256": "4f3eeebd0caf89f0e7ec4f20c773a4187be0a99329bfee2dd794547fb80ad766",
+      "size": 18210
+    },
+    "evidence/barfix-coverage-measurement.txt": {
+      "sha256": "5f304e28d0b0f657830e809a100f3c9bf8445f2e9646a7d852c4cd4e4296320a",
+      "size": 230
+    },
+    "evidence/barfix-coverage-ratchet.txt": {
+      "sha256": "f88e8f7ed7d934564f563d403e7cce11471b3063c8a8380a9cbd8c96f416a4b2",
+      "size": 3112
+    },
+    "evidence/barfix-mutations.json": {
+      "sha256": "b4f15731ae0c32635693086c75392148667097dded0c2167342d0d38caf0842a",
+      "size": 23951
+    },
+    "evidence/barfix-normalize-probe.json": {
+      "sha256": "004ae3d4bad086e332c67243751df96a11ff24dfc0f1ea823dbc8f633fad1655",
+      "size": 1984
+    },
+    "evidence/barfix-product-fixes.md": {
+      "sha256": "a43d92d05e2815f3cf382efd0c70b7dab6e6bc39f56bed2f8a986b1160922c72",
+      "size": 12693
+    },
+    "evidence/barfix-scripts-readers.json": {
+      "sha256": "ea0d04f8fc93baad215123f5a1513b6fe40488547d1872d4a22a6eceb6709d33",
+      "size": 4325
+    },
+    "evidence/barfix2-ci-step1-unit.txt": {
+      "sha256": "dc3f6227aa09081b2eea252afd4f57242728afa295c82d665d8bacc664dec190",
+      "size": 5991
+    },
+    "evidence/barfix2-ci-step2-contract.txt": {
+      "sha256": "806f35015654c71a610d499d73204fd2211ed90fe030867f648d37c2d43c4f8a",
+      "size": 18220
+    },
+    "evidence/barfix3-ci-step1-unit.txt": {
+      "sha256": "7ff1155ff186d6ae6e078839752c1a489546fe825fd0df22a4308cc0a5ef0422",
+      "size": 5995
+    },
+    "evidence/barfix3-ci-step2-contract.txt": {
+      "sha256": "fcce7dbe7360a0e671e376a34a0a143edf482030ca80b533469135d385b3eb86",
+      "size": 18383
+    },
+    "evidence/barfix3-coverage-measurement.txt": {
+      "sha256": "4e524ecc9422b99a5df551df65086cec38da3105edcc14097876bbe59c04e882",
+      "size": 402
+    },
+    "evidence/barfix3-coverage-ratchet.txt": {
+      "sha256": "f7100d9ec05a9ca6f8c0a33365f2dcf42d793fec4b59a20ee5919ce4b2d072cb",
+      "size": 1606
+    },
+    "evidence/barfix4-coverage-measurement.txt": {
+      "sha256": "cadb22a9f8d4df70725e3a5e517d7add4a0d54204645f72c53bdb6782d6299a1",
+      "size": 512
+    },
+    "evidence/barfix4-coverage-ratchet.txt": {
+      "sha256": "53d6a521a9ca37bcca5ba6fa5b22ed7d8b5beac9b01e513911dd740aea6f00f1",
+      "size": 904
+    },
+    "evidence/barfix5-coverage-measurement.txt": {
+      "sha256": "dc7ee6547a443364347d8d10315c872abb74dbea609dd8dba312e2345f13fd87",
+      "size": 596
+    },
+    "evidence/barfix5-coverage-ratchet.txt": {
+      "sha256": "84d77722b643325d70e1f874c29c460b9e258de66dfb4870ea981fe3317427e8",
+      "size": 1967
+    },
+    "evidence/barfix6-ci-step1-unit.txt": {
+      "sha256": "1388b182b433059e6fe144739b7bfd370a7110bfe10c516bc4e712c6d146e20e",
+      "size": 5917
+    },
+    "evidence/barfix6-ci-step2-contract.txt": {
+      "sha256": "3b9b1a7829d770ff919833c134853942fc35631bdeda9b5fc897445b6d3b1dbc",
+      "size": 18311
+    },
+    "evidence/barfix6-coverage-anchor.txt": {
+      "sha256": "eabf3981e4601871ccd6c4bf76d40791a2cf707504e9d929ec7590b7b0e6dc37",
+      "size": 392
+    },
+    "evidence/barfix6-coverage-numbers.txt": {
+      "sha256": "4239a7da057139a28b2a251f19e59100ad8409e9d2d01bee076e7ca7adc0e774",
+      "size": 412
+    },
+    "evidence/barfix6-coverage-ratchet.txt": {
+      "sha256": "a33df31f4c964abac9adf6aeac1df212f1968080b46f86b9dcb9bf1e5c871ea2",
+      "size": 893
+    },
+    "evidence/barfix6-coverage-repro-anchor.txt": {
+      "sha256": "31b21c5e6707eb462f6aeb22dda505197619d2831611fdd86511874565862430",
+      "size": 507
+    },
+    "evidence/barfix6-coverage-repro-numbers.txt": {
+      "sha256": "f30c210432e3fcd109922d662ea2001433852e91aa8ee029240b1d230d1b04a1",
+      "size": 208
+    },
+    "evidence/barfix6-coverage-repro-ratchet.txt": {
+      "sha256": "2c81b29c3c8f734f78a20b1f4a2034abfecf29304f5eac4a4d89873d49dfaf12",
+      "size": 974
+    },
+    "evidence/barfix6-coverage-repro-run.txt": {
+      "sha256": "ad0186202fc16a1b2f23553fe6fe5860cc871895716db925187abb1685941c06",
+      "size": 266332
+    },
+    "evidence/barfix6-coverage-repro.json": {
+      "sha256": "47341b6c5d3f9e03df59ca8cb511db16338f0638a4aa8d7d9d6ed9cfef752547",
+      "size": 1138399
+    },
+    "evidence/barfix6-coverage-run.txt": {
+      "sha256": "2d573f5707737fd9f881aff99c1b0b44d7529b512af33c58c55692d6efaa75e3",
+      "size": 264850
+    },
+    "evidence/barfix6-coverage.json": {
+      "sha256": "ae00af2e40ffdf09c5189fb49f0d76c60adaeba306850e2a4b2b054d562eee3e",
+      "size": 1138400
+    },
+    "evidence/barfix6-plan-claims.txt": {
+      "sha256": "9848c3c79e1c4095869714686a4bc9438802719a5a1b4f8016e426d1bd7006db",
+      "size": 62
+    },
+    "evidence/barfix6-unique-symbols.txt": {
+      "sha256": "0771692ffa8be6e1d5e5660716917287d4aa80ca5900ec9cd84fdbedbb77dfa6",
+      "size": 58
+    },
+    "evidence/barfix_mutations.py": {
+      "sha256": "c5df23a528dbadd960da415d6e49d7400da49d6431176f39359c56ed466f53d6",
+      "size": 20710
+    },
+    "evidence/barfix_normalize_probe.py": {
+      "sha256": "bdfa77925649444103eb71a5c82652dfb3ba7da9c85c1cd4d4b0f420d3256fb6",
+      "size": 14636
+    },
+    "evidence/barfix_scripts_readers_probe.py": {
+      "sha256": "e42899ceb6333efffa386e743d574a64ef86d3d9b6a0d706aa228d40cd910350",
+      "size": 9147
+    },
+    "evidence/build_checkpoint.py": {
+      "sha256": "ed1e7b4d6c80e5a589d3fb5363f3e8134105b212a6e629087d6b6cb423b49775",
+      "size": 82698
+    },
+    "evidence/choose_resolved_real_root.py": {
+      "sha256": "3e27d6ebfda82e1594f872c602de854cd2ff4f5d5d6439b680a641a927ebc38b",
+      "size": 2993
+    },
+    "evidence/ci_audit.py": {
+      "sha256": "6013ac03d0468aa80fe1256d6ff2d3bde854f58a7270106d5c77be5986116b94",
+      "size": 2695
+    },
+    "evidence/ci_failures.py": {
+      "sha256": "2e629d73e45205a02907f82866b431efcd7cc323442eeac4263b169d6602696a",
+      "size": 2780
+    },
+    "evidence/ci_logs.py": {
+      "sha256": "76f1e3a5384115f485bfd27348c3f237bdd342c6d2e44d498ab45dd8b5de7e4e",
+      "size": 3904
+    },
+    "evidence/ci_progress.py": {
+      "sha256": "5ef52cc0fe55562a0733122302e9237c7fd5da8c825a76d5fcd045544f0ead37",
+      "size": 3060
+    },
+    "evidence/ci_query.py": {
+      "sha256": "742e2af08750ae4edbbd143162d126a21867e1e66a17f03e5ed2b62e0dc085d8",
+      "size": 2304
+    },
+    "evidence/claim-fact-audit.json": {
+      "sha256": "507b2eda3e7e946aa44d9c03f355c62f8d2c19676a83afeaa68dcd7e4c42f165",
+      "size": 110669
+    },
+    "evidence/claim_fact_audit.py": {
+      "sha256": "38dc00a5fe8e22b4b848363c116b4121f17b4d0a8659680a4e5853c21f9efca4",
+      "size": 20511
+    },
+    "evidence/coverage_anchor.py": {
+      "sha256": "c4fa109036be0da9e56c609726c4e83d8925b35466a586ec44bd82db62ef3a79",
+      "size": 2940
+    },
+    "evidence/coverage_ratchet_numbers.py": {
+      "sha256": "68026fa479c6d656c49edb485b72b426734ca410c6ab329c3ad8ca2f70473bef",
+      "size": 2131
+    },
+    "evidence/fc1301-reason-inventory.json": {
+      "sha256": "6d3ad774ab4d70eb68c9caea057c449a34714074f717d163d74e72c4441db2e4",
+      "size": 40683
+    },
+    "evidence/fc1301-unregistered.txt": {
+      "sha256": "c7050788f62e757695bd2b4beb1aa0a0b8aa03a8c7f2da1f976140278c359492",
+      "size": 412
+    },
+    "evidence/fc1301_reason_inventory.py": {
+      "sha256": "70992bfe4dfd4ae7af3d8b70b029e1b78feccab43d1410025c7149b49f1c3829",
+      "size": 11660
+    },
+    "evidence/fc1307a_mutations.py": {
+      "sha256": "4189a6a3a08041d4bb78e3908e99a00db00e86af5283f7b1bcbb2faed5e7edef",
+      "size": 7513
+    },
+    "evidence/field-owner-map.json": {
+      "sha256": "d8b76aa21010b9f2895935f4d7de767b266dfaf5590d49d8f16d704fea3fe08e",
+      "size": 10582
+    },
+    "evidence/inspect_isolated_identity.py": {
+      "sha256": "76f3db5c69d40a8999e964b9bfdcfb25b3f462d5bd3c457fbfeb309c1361139d",
+      "size": 975
+    },
+    "evidence/inspect_isolated_metadata.py": {
+      "sha256": "02c118d765557f8cdd65a99e9e6dd40248de6085c0e4a6e341c461942b285231",
+      "size": 1177
+    },
+    "evidence/l-item-coverage.json": {
+      "sha256": "058e8a5bbb6af1309fece7cb23fb31552eb49f5e0cab327d193f6c56f658d381",
+      "size": 1529
+    },
+    "evidence/l_coverage_check.py": {
+      "sha256": "55b3e956a07fb22c745cbc78853ab7cfb197625002de3b77113eadb654af13b5",
+      "size": 4025
+    },
+    "evidence/list_filing_dirs.py": {
+      "sha256": "8a9addf6e0ae21cf62f81a2b4bc7af78fba2a30b1c7abca8dce4091cb5292fc7",
+      "size": 1366
+    },
+    "evidence/manifest-bounds-selftest.json": {
+      "sha256": "0c9de697a8a4033b593152b9ca6bf6aa84907f1bc9ae33055fa3497c013b6468",
+      "size": 1325
+    },
+    "evidence/measure_guard_exposure.py": {
+      "sha256": "ccfe3dfa065da66d2bf489928c15fe67b85440b66cd49d9508e838cca69459bd",
+      "size": 2612
+    },
+    "evidence/name_matrix_items.py": {
+      "sha256": "e0ff7ecef7b57ecc966bf13cb797c38deb85ba68c0afbb6d26d52d0c3120bda2",
+      "size": 3044
+    },
+    "evidence/prod-scan-failclosed.json": {
+      "sha256": "0a0b35b22fb5ed2fbf50a02a8938c039dc8445ee96ebccbcf9cb2aafb2eaa5a4",
+      "size": 7683
+    },
+    "evidence/prod_scan_failclosed_probe.py": {
+      "sha256": "47904817372b92420d0efd0c667707c19feb0455b874fc3ed9db7a3a20fbb7a4",
+      "size": 7720
+    },
+    "evidence/r2-ci-step1-unit.txt": {
+      "sha256": "d4204f6f414eb93d27e9042a3da8acd2899469d25af0e348a6b7afe990c2a27f",
+      "size": 5912
+    },
+    "evidence/r2-ci-step2-contract.txt": {
+      "sha256": "b72c083592eb36da56219828af6cfa7a397e71ce5fcaf8f9dd1b54ccb0fa7eb0",
+      "size": 17739
+    },
+    "evidence/r3-ci-step1-unit.txt": {
+      "sha256": "888ba257c715d3959242320e1c8a96b600385c90b99d5d8d8a9a6f3cb115cf2f",
+      "size": 6136
+    },
+    "evidence/r3-ci-step2-contract.txt": {
+      "sha256": "d1ac3c19636ed140775d10a8c9c3c23b04dd22338a53e62ff674a07006568613",
+      "size": 17936
+    },
+    "evidence/r45-ci-step1-unit.txt": {
+      "sha256": "32bd3a7a68e35c7b7e42f7757adb2037f855d28e5e2283c319036b73e2d95114",
+      "size": 6070
+    },
+    "evidence/r45-ci-step2-contract.txt": {
+      "sha256": "f1dd792581d65ce4f05665de2a8cfa36db782fd8a3e6dcefbf7774ae1c3951db",
+      "size": 17828
+    },
+    "evidence/run_a05_readonly_manifest.py": {
+      "sha256": "77c0d67a95c7fff76e340be96ba7a53427bb0333ed39557661a1d1c8b111ac40",
+      "size": 18949
+    },
+    "evidence/run_bar_fifth_root_isolated.py": {
+      "sha256": "ff7ed294bc96c9300d387d28f17520ee815401e402963c2a2429cd56d2361b6a",
+      "size": 54074
+    },
+    "evidence/run_r4_cross_repo_reuse.py": {
+      "sha256": "0073dbc48c95225178de00169b0069daac898eaae5ced2b1c37f9f38cf9f1698",
+      "size": 29624
+    },
+    "evidence/run_r5_dropbox_bytes.py": {
+      "sha256": "338651f4705688a12b66375fadd26bc0b3a4ec7512e77e7b1b9359a063b24ea5",
+      "size": 28157
+    },
+    "evidence/show_fc1301_unregistered.py": {
+      "sha256": "b1bf0768be8eb63e2e04a9ccb2c8ba1ea41fc61f0f567600609e175e5fbf36e7",
+      "size": 1183
+    },
+    "evidence/summarise_a05_run.py": {
+      "sha256": "1f1a44c68536d3997c2d02f3327960c3f25a031beadb9290326734bf36231b82",
+      "size": 1742
+    },
+    "evidence/transplant-manifest.json": {
+      "sha256": "f8c24660218f1efb9f7f03af5fbe85eb90e09bdfec6a5945d41b2474df045b68",
+      "size": 2784
+    },
+    "evidence/transplant_split.py": {
+      "sha256": "f30b001e078ed52d6728bed151b58c615986b20d8713cd8655c9f8468a5a70b9",
+      "size": 8089
+    },
+    "evidence/zr409-live-root-watch.json": {
+      "sha256": "63f9be9bb43d98eddcdd6d4f405c4c4ec34c0e4086f5aa7ce982adc711d62843",
+      "size": 2407
+    },
+    "evidence/zr409_live_root_watch.py": {
+      "sha256": "dba14e06485eb4655cec1d0279991eeeeb439d3b7b50ed35072fac918133d1b5",
+      "size": 5537
+    },
+    "evidence/zr902_mutations.py": {
+      "sha256": "88a1a0245a155376b9c928ecbfad9163d453b3e45b98ed9eb6a2193fdb9a422c",
+      "size": 4704
+    },
+    "evidence/zr903_mutations.py": {
+      "sha256": "fc1148167ae11216851df4001c165758d66fd5189dad688df3f69b8f34cdc907",
+      "size": 6493
+    },
+    "file-scope.md": {
+      "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
+      "size": 12565
+    },
+    "findings.md": {
+      "sha256": "1119368a566f891bcc8ef81cf28d20eeceb50acedea63a2ca96727a431fb6035",
+      "size": 155976
+    },
+    "operator-reviewer-assignment.md": {
+      "sha256": "a9ce18a780bbafc7f0c897ea2abf1207176847bf2be6f2bc3bac51b4c3d86513",
+      "size": 3500
+    },
+    "owner-authorisation-and-my-adjudication-2026-09-16.md": {
+      "sha256": "2f761789525da9e71c4b35c95f3fd9a303eb8513b8bd1701b7a54dfb35fc91d3",
+      "size": 6484
+    },
+    "owner-directive-2026-09-16.md": {
+      "sha256": "d8ab3823d6e5a3799042f6514d58d64927276620f6443e8ac4b3e9ee65951680",
+      "size": 4022
+    },
+    "owner-scope-decisions-2026-09-12.md": {
+      "sha256": "cb6ac486f03de140a4dfdd308b7dd484809ded199c69122d8e180bc5c3483d24",
+      "size": 10926
+    },
+    "owner-scope-decisions-2026-09-13.md": {
+      "sha256": "4d1b06e3deb26695cf4b85fb0b7aac4a5be0589c221ecdeb7a75269d2b9f0362",
+      "size": 3558
+    },
+    "owner-scope-decisions-2026-09-18.md": {
+      "sha256": "5d48ac1ccb1713b77fa921c95a59e832e16fe9ce9b48901b7ae13e062b4cd1de",
+      "size": 5310
+    },
+    "packages/b05-read-side-malformed-columns.md": {
+      "sha256": "53ae92dd7f166bd92262128a8e0bcf44fdae4e55cccd8fe5d27023f8847546c4",
+      "size": 8468
+    },
+    "packages/b10-plan.md": {
+      "sha256": "0842358e6837f184f517298c82f9d2b428a76f86a489e56462cab4a47ef2640e",
+      "size": 8288
+    },
+    "packages/b10-recon.md": {
+      "sha256": "1d717145589e29f645e2043f08daede467e793030d23d645c8df5ce50f3c6e82",
+      "size": 4086
+    },
+    "packages/fc1301-taxonomy-coverage.md": {
+      "sha256": "bad1b86e630e56433525112092fb8c12d342310e9b6968c390ea0e409ba571b2",
+      "size": 4819
+    },
+    "progress.md": {
+      "sha256": "a0f73b5c844bcba06fde88f49fe82e38aaf9349f555e7ab2be3966dc28ad4f35",
+      "size": 76452
+    },
+    "r4-final-status.md": {
+      "sha256": "114a8867f954f943ca7a328331dc7ccdd3074577364ac3fca57b7b6f14cfd19c",
+      "size": 8237
+    },
+    "reviews/B.DR-rev2.json": {
+      "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
+      "size": 86930
+    },
+    "reviews/B.DR-rev3.json": {
+      "sha256": "4e49ee381f51679f94ca8c6273d2dfa8f3c12d01b5133eabe4a82dd349ed4fa3",
+      "size": 99809
+    },
+    "reviews/B.DR-rev4.json": {
+      "sha256": "07f246997dd33d547ac102b8c01a72218e2c43f9335e760a3b17066e9f99f6bf",
+      "size": 86124
+    },
+    "reviews/B.DR-rev5.json": {
+      "sha256": "e3dfca7eb0885d07dfd78ce2e1dc418f427e08f0158e7485dceb5bbfd382cbfc",
+      "size": 73005
+    },
+    "reviews/B.DR-rev6.json": {
+      "sha256": "0cb4a4c3b27bb73d39d4342b3f4fbe9481f3c6b8a6ee330ec771cb6829611cca",
+      "size": 78074
+    },
+    "reviews/B.DR.json": {
+      "sha256": "bbe383f34872b44cfed1894d5c7c7c62d894d4bf424ac911a242dc89cd081af4",
+      "size": 66878
+    },
+    "reviews/B.VR-b01.json": {
+      "sha256": "db8ec1fa9582a315ebd34553c5962e46501c39524e06d5cc882fd959bc76a394",
+      "size": 48938
+    },
+    "reviews/B.VR-b02-rev2.json": {
+      "sha256": "c055c0ea2cdb803698bdc76bb32d94d36bff5578fc236cdb2e3f37fab87f0ce9",
+      "size": 32941
+    },
+    "reviews/B.VR-b02-rev3.json": {
+      "sha256": "c65499e6d6fd305f3f20d0db5d3f2af1371f78d53b2e7d61c9e83d48266db467",
+      "size": 38074
+    },
+    "reviews/B.VR-b02-rev4.json": {
+      "sha256": "31707359c4537d9a646596f8576fe293d84969545dde2f2e34bf0916e5cf8706",
+      "size": 31771
+    },
+    "reviews/B.VR-b02.json": {
+      "sha256": "cea22427b73237fb27da26f416018f528799f73004193574d72575e400717ad5",
+      "size": 30525
+    },
+    "reviews/B.VR-b03.json": {
+      "sha256": "44dbe92636e6a74a0a6686a9be91472295ba0573c30837bd79d1071b92ca580d",
+      "size": 58607
+    },
+    "reviews/B.VR-b04.json": {
+      "sha256": "1b7c07a371524598d5df5283c43708c20ce8f1732a23456b54e92f53845c2831",
+      "size": 31720
+    },
+    "reviews/B.VR-b05.json": {
+      "sha256": "c502639ce1009c7c8a353cf3f0e3f1e4bd868f720a99c971381bc3bbcbad543c",
+      "size": 47251
+    },
+    "reviews/B.VR-b05malformed-verify.json": {
+      "sha256": "a60ddd026a6e7ac1414298010c0105ca862a110c8cffa4475c778ce688cbee5d",
+      "size": 34561
+    },
+    "reviews/B.VR-b05malformed.json": {
+      "sha256": "25de70f8e6ef70a6b1c2c2fd42ce9763067befb48bf8c3f2c35ef03f6910c67f",
+      "size": 42774
+    },
+    "reviews/B.VR-b06.json": {
+      "sha256": "0b217e2b8cedee3e56729d2308df029f2a451d4248077b3fe649be3bdca040b5",
+      "size": 40638
+    },
+    "reviews/B.VR-b07.json": {
+      "sha256": "de4c03b95b96e5b4ccb0e54bf8407609c23b8e5e0afd3bcc0f97e188e85b1ac0",
+      "size": 41259
+    },
+    "reviews/B.VR-b08l2.json": {
+      "sha256": "ffda2abc67668b190ac3d180c6e49de8386e11ceea9051a90d765ad87af27bfe",
+      "size": 68230
+    },
+    "reviews/B.VR-b10-r2.json": {
+      "sha256": "a5bf6856f05e03918a16d03cab8abd349bb725c46255443a12f30e6815c79c59",
+      "size": 42046
+    },
+    "reviews/B.VR-b10-r3.json": {
+      "sha256": "513cbcd35494c78eaf7487ef24f585a69ac55f30195731d949063c663d3ccb49",
+      "size": 48572
+    },
+    "reviews/B.VR-b10-r4.json": {
+      "sha256": "684d7314c57ab8098a8e31711625f75508ebb1f9584f132576a028f82a7531ac",
+      "size": 55199
+    },
+    "reviews/B.VR-b10.json": {
+      "sha256": "c1baf704ade23a5459fb3b9fcb56bd95e93ff20fdde600eca7ed7e1b63672072",
+      "size": 60301
+    },
+    "reviews/B.VR-ba1.json": {
+      "sha256": "e3b892d93b087b7e3251d84c4f156ab32c90089716b536edce691913770e5401",
+      "size": 34782
+    },
+    "reviews/B.VR-ba2.json": {
+      "sha256": "4460c25012943b02cd4898f458bbfd90c4adbf2838aab8d2afd91f8aca456045",
+      "size": 11760
+    },
+    "reviews/B.VR-bar.json": {
+      "sha256": "5015096abd7cd32cd498f0e27d2c7c3a2af4af7c5946f74a2530e3a9358953d0",
+      "size": 52716
+    },
+    "reviews/B.VR-fc1301.json": {
+      "sha256": "99fb067ee04a6d977976c1a467f7547673fae0a900f67b55d6a4117a005b039b",
+      "size": 45384
+    },
+    "reviews/B.VR-fc1307a.json": {
+      "sha256": "e2914b6b07ed90cf158745e9623a8f39197807f59ef975c51de36fd1b835e5b3",
+      "size": 36256
+    },
+    "reviews/B.VR-r3.json": {
+      "sha256": "96966b3cc45853f319dedecdea36fc5bc8a42b7ef7f020810cc56d8748a5806e",
+      "size": 27447
+    },
+    "reviews/B.VR-r4.json": {
+      "sha256": "10fe769b8925700b139059b50f3b463c1225add669e7e336bd1f01b1d04f3493",
+      "size": 27858
+    },
+    "reviews/B.VR-r5.json": {
+      "sha256": "556138ab668276690c974dc65cb8d3c9656d74e9237f6d87564a371777b34aac",
+      "size": 22000
+    },
+    "reviews/B.VR-zr903.json": {
+      "sha256": "8d0b5c66f98f0db3f262bc814687f8fde6b4008df45b370a0ed9801f915bb809",
+      "size": 47057
+    },
+    "reviews/G5-boundary-observation.json": {
+      "sha256": "3526df73a8245c25c71da998b1c4718c3deb2c1a680ced213677f09031f04595",
+      "size": 46832
+    },
+    "risk-and-stop-rules.md": {
+      "sha256": "4b1bea86eabb8eca8177f146662abf76d673a08fc4fb7ececd3942179c3d51c5",
+      "size": 9349
+    },
+    "task_plan.md": {
+      "sha256": "e95978748b88ac16766df411c3d499f2c4907d4f9fc978900258d3ac4137cfa9",
+      "size": 20604
+    },
+    "test-acceptance-map.md": {
+      "sha256": "9ea61182305242ccdace02637fb8917accc69b19cf6258f1bce5d2c243132d98",
+      "size": 12258
+    }
+  },
+  "produced_files_verification": {
+    "checked": 284,
+    "source": "index",
+    "compared_revision": "3ed37e102d425b7eb221842fdb47aec08ac231d7",
+    "head_revision": "ec50ed25d2f67d7363463da8d0b94ae0bacb9136",
+    "index_tree": "3ed37e102d425b7eb221842fdb47aec08ac231d7",
+    "blob_mismatches": [],
+    "all_match": true,
+    "proves": "recorded digest == stored blob at the reported revision",
+    "does_not_prove": [
+      "manifest completeness (see the completeness block)",
+      "that the working tree equals the compared revision"
+    ]
+  },
+  "produced_files_completeness": {
+    "files_on_disk": 284,
+    "files_listed": 284,
+    "unlisted": [],
+    "phantom": [],
+    "excluded_by_design": [
+      "checkpoint.json"
+    ],
+    "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
+    "complete": true
+  },
+  "generated_at_utc": "2026-09-19T22:09:25.600841+00:00"
+}

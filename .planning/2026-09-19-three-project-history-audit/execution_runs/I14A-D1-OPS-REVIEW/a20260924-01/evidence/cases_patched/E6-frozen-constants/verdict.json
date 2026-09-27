@@ -1,0 +1,84 @@
+{
+  "case": "E6-frozen-constants",
+  "checks": {
+    "budgets_frozen": {
+      "ok": true,
+      "detail": {
+        "exact_p95": 5.0,
+        "latest_p95": 5.0,
+        "bundle_p95": 5.0,
+        "peak_rss_gb": 2.0
+      }
+    },
+    "percentiles_[0.1, 0.2, 0.3]": {
+      "ok": true,
+      "detail": {
+        "got": {
+          "p50": 0.3,
+          "p95": 0.5,
+          "p99": 0.5
+        },
+        "expected": {
+          "p50": 0.3,
+          "p95": 0.5,
+          "p99": 0.5
+        }
+      }
+    },
+    "percentiles_[1.0, 2.0, 3.0]": {
+      "ok": true,
+      "detail": {
+        "got": {
+          "p50": 5.5,
+          "p95": 10.0,
+          "p99": 10.0
+        },
+        "expected": {
+          "p50": 5.5,
+          "p95": 10.0,
+          "p99": 10.0
+        }
+      }
+    },
+    "percentiles_[1.0]": {
+      "ok": true,
+      "detail": {
+        "got": {
+          "p50": 1.0,
+          "p95": 1.0,
+          "p99": 1.0
+        },
+        "expected": {
+          "p50": 1.0,
+          "p95": 1.0,
+          "p99": 1.0
+        }
+      }
+    },
+    "percentiles_[0.4, 0.1, 0.9]": {
+      "ok": true,
+      "detail": {
+        "got": {
+          "p50": 0.30000000000000004,
+          "p95": 0.9,
+          "p99": 0.9
+        },
+        "expected": {
+          "p50": 0.30000000000000004,
+          "p95": 0.9,
+          "p99": 0.9
+        }
+      }
+    },
+    "independent_recompute": {
+      "ok": true,
+      "detail": {
+        "p50": 0.30000000000000004,
+        "p95": 0.9,
+        "p99": 0.9
+      }
+    }
+  },
+  "all_ok": true,
+  "failed_checks": []
+}

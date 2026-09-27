@@ -1,0 +1,188 @@
+{
+  "schema": "provenance/v1",
+  "station": "evidence_acquirer_r2",
+  "carrier": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01",
+  "created_utc": "2026-09-26T14:17:57Z",
+  "network_policy": {
+    "source": "progress.md L1244",
+    "verbatim": "**网络口径（本轮明确，需入册）**：允许 `web_search`/`web_fetch` 取证（专家 reviewer 职权），但**每条外部证据必须落 `provenance.json`**（URL + 取回 UTC + 原文引文 + 快照 sha）；**外部来源不得冒充本地可核事实**——I-11-A 已登记「2026-09-02 8-K 原文不在本地可核来源」，联网取到须显式标注为**外部获取**。",
+    "source_sha256": "0f7b5808f71679512a19ec16a60b7b316e0eb837093d70f3f3a75acf700b98ee",
+    "source_bytes": 303777
+  },
+  "snapshot_sha256_scope": "外部条目的 `snapshot_sha256` = 对本文件 `verbatim_quote` 字段（UTF-8 字节）求 sha256。原因（如实声明）：本环境 harness `web_fetch` 只回解码后文本、不产响应字节；pwsh 直连 HTTPS 被拒（见 tool_environment_facts）⇒ origin 字节在本会话不可复现。评审者可用本文件内引文复算校验；该 sha **不冒充 origin 文件 sha**，外部条目一律 evidence_class = external_retrieval_not_local。",
+  "external_retrievals": [
+    {
+      "id": "EXT-01",
+      "kind": "search_result_page",
+      "url": "https://html.duckduckgo.com/html/?q=%E7%B4%AB%E9%87%91%E7%9F%BF%E4%B8%9A+2025+%E5%B9%B4%E6%8A%A5+%E4%BA%A7%E9%94%80%E9%87%8F+%E5%BA%93%E5%AD%98%E9%87%8F+%E5%8D%83%E5%85%8B",
+      "http_status": 200,
+      "retrieved_utc": "2026-09-26T13:31Z (窗口值：门0 13:24:43Z 之后、14:10:21Z 之前；本条为首次检索，未单独计时 —— 如实标注 retrieved_utc_instrumented=false)",
+      "retrieved_utc_instrumented": false,
+      "verbatim_quote": "紫金矿业 2025 年报 产销量 库存量 千克 at DuckDuckGo",
+      "snapshot_sha256": "b6789007c13cef023ec9659f7412748d6b414fad2c0f7f3f462e70057f2d5e6c",
+      "evidence_class": "external_retrieval_not_local",
+      "used_for": "线索检索：确认外部公开检索只指向年报原文/研报页，未出现任何以千克计量的存货明细",
+      "result": "negative_for_quantity —— 返回结果均为年报/摘要/研报/新闻页，无一给出黄金存货数量（千克）"
+    },
+    {
+      "id": "EXT-02",
+      "kind": "search_result_page",
+      "url": "https://lite.duckduckgo.com/lite/?q=%E7%B4%AB%E9%87%91%E7%9F%BF%E4%B8%9A%20%E6%94%B6%E8%B4%AD%20%E9%87%91%E7%9F%BF%20%E5%AD%98%E8%B4%A7%20%E5%85%AC%E5%85%81%E4%BB%B7%E5%80%BC%20%E5%8D%83%E5%85%8B%20%E4%BA%A7%E9%94%80%E9%87%8F%20%E5%BA%93%E5%AD%98%E9%87%8F",
+      "http_status": 200,
+      "retrieved_utc_start": "2026-09-26T14:16:07Z",
+      "retrieved_utc_end": "2026-09-26T14:17:57Z",
+      "retrieved_utc_instrumented": true,
+      "verbatim_quote": "黄金储备扩张：加纳阿基姆金矿、新疆萨瓦亚尔顿金矿已完成交割并贡献产量，哈萨克斯坦Raygorodok金矿加速整合。",
+      "snapshot_sha256": "2f91790d3a373fae66622b26177dd2ac5d2535aa115e3a60e08e3d708369f1dc",
+      "evidence_class": "external_retrieval_not_local",
+      "used_for": "L4 并购范围线的外部佐证（FY2025 确为多笔黄金并购交割年；并出现本地年报未点名的新疆萨瓦亚尔顿金矿交割线索）",
+      "result": "方向性佐证；**无数量** —— 未出现任何黄金存货千克数"
+    },
+    {
+      "id": "EXT-02b",
+      "kind": "search_result_page (same response as EXT-02)",
+      "url": "https://lite.duckduckgo.com/lite/?q=%E7%B4%AB%E9%87%91%E7%9F%BF%E4%B8%9A%20%E6%94%B6%E8%B4%AD%20%E9%87%91%E7%9F%BF%20%E5%AD%98%E8%B4%A7%20%E5%85%AC%E5%85%81%E4%BB%B7%E5%80%BC%20%E5%8D%83%E5%85%8B%20%E4%BA%A7%E9%94%80%E9%87%8F%20%E5%BA%93%E5%AD%98%E9%87%8F",
+      "http_status": 200,
+      "retrieved_utc_start": "2026-09-26T14:16:07Z",
+      "retrieved_utc_end": "2026-09-26T14:17:57Z",
+      "retrieved_utc_instrumented": true,
+      "verbatim_quote": "此次收购以紫金黄金国际为实施主体，交易完成后，其资产布局将拓展至12个国家的12座大型金矿，紫金黄金国际的资产规模、盈利水平及全球行业地位将得到显著提升，有助于进一步巩固其在全球黄金行业的地位与影响力。",
+      "snapshot_sha256": "83d4f3992faafaa6deb3321aecda513173a7c1c6de1f6acf6ffd9d53ee5433dc",
+      "evidence_class": "external_retrieval_not_local",
+      "used_for": "并购线实施主体（紫金黄金国际）确认；仍无存货数量"
+    },
+    {
+      "id": "EXT-03",
+      "kind": "origin_document_fetch",
+      "url": "https://www.zjky.cn/upload/file/2024/10/09/0afa107989364b25bcc546186fa550fd.pdf",
+      "description": "紫金矿业集团股份有限公司 关于收购加纳Akyem金矿项目的公告（官方 IR 站 PDF）",
+      "retrieved_utc": "2026-09-26 (会话窗口，未单独计时)",
+      "retrieved_utc_instrumented": false,
+      "outcome": "FAILED",
+      "error_text": "unsupported content type \"application/pdf\"",
+      "http_status": null,
+      "verbatim_quote": null,
+      "snapshot_sha256": null,
+      "snapshot_sha256_reason": "取回失败 ⇒ 无响应字节、无快照，按 E2-EXT 处理，不入承重证据",
+      "evidence_class": "external_fetch_failed"
+    },
+    {
+      "id": "EXT-04",
+      "kind": "search_tool_failure",
+      "tool": "web_search",
+      "retrieved_utc": "2026-09-26 (会话窗口)",
+      "outcome": "FAILED",
+      "error_text": "DeepSeek returned an unprocessable response body: SyntaxError: Unexpected token 'e' … is not valid JSON (search endpoint configuration is separate from chat)",
+      "verbatim_quote": null,
+      "snapshot_sha256": null,
+      "evidence_class": "tool_failure",
+      "note": "两次尝试（4 查询 / 1 查询）均同一错误 ⇒ 本卡外部检索改用 web_fetch 直取；**未据检索工具失败推断任何事实**"
+    },
+    {
+      "id": "EXT-05",
+      "kind": "environment_capability_probe",
+      "target": "https://example.com 及 DDG（pwsh Invoke-WebRequest 直连）",
+      "retrieved_utc": "2026-09-26 (会话窗口)",
+      "outcome": "FAILED",
+      "error_text": "基础连接已经关闭: 接收时发生错误。(两条 URL 同错)",
+      "snapshot_sha256": null,
+      "evidence_class": "environment_fact",
+      "note": "⇒ 本会话外部字节只能经 harness web_fetch 取得（回文本），这也是 snapshot_sha256_scope 声明的由来"
+    }
+  ],
+  "local_read_only_sources": [
+    {
+      "id": "LOC-01",
+      "path": "execution_runs/I-10-A/a20260923-01/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt",
+      "bytes": 763644,
+      "sha256": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591",
+      "what": "FY2025 年报全文文本（本地可核，跨卡复用）",
+      "evidence_class": "local_verifiable",
+      "lines_used": ["L11652", "L14789-L14851", "L15031", "L22066-L22144", "L26340", "L2644-L2701", "L2707", "L2758/L2761", "L3958-L3982", "L4106/L4110", "L4262-L4344", "L28784-L29024"]
+    },
+    {
+      "id": "LOC-02",
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\紫金矿业\\raw\\financial_reports\\annual\\2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf",
+      "bytes": 79925886,
+      "sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+      "what": "FY2025 年报原件（产品仓，只读；与 hypotheses.json doc_sha256 一致）",
+      "evidence_class": "local_verifiable",
+      "access": "只读；未写产品仓任何字节"
+    },
+    {
+      "id": "LOC-03",
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\紫金矿业\\raw\\financial_reports\\annual\\2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf",
+      "bytes": 32100114,
+      "sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89",
+      "what": "FY2024 年报原件（产品仓，只读）",
+      "evidence_class": "local_verifiable",
+      "extraction_command": "pdftotext -enc UTF-8 <pdf> <本工位目录 evidence/CN-ZIJIN-2024.full.txt>（输出只落本工位目录，产品仓零写入）"
+    },
+    {
+      "id": "LOC-04",
+      "path": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/evidence/CN-ZIJIN-2024.full.txt",
+      "bytes": 821643,
+      "sha256": "ad6d9e50f05003e90d14aa685cf48c226bae35647a1fc72e2f98baa213443e46",
+      "what": "本工位从 LOC-03 自取的 FY2024 全文（派生产物，登记入 handoff.written_files）",
+      "evidence_class": "local_derived_by_this_station",
+      "lines_used": ["L11657", "L13027-L13063", "L13180", "L22517", "L3183-L3241"]
+    },
+    {
+      "id": "LOC-05",
+      "path": "execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01/ruling_6b.md",
+      "bytes": 28628,
+      "sha256": "e5d1efce3821c252d0da18b7cd5734192993328f03da6c918eaa42db417ee3df",
+      "what": "本卡直接授权与恢复路径 (a) 原文（L66/L90/L94-L97/L104/L110）",
+      "evidence_class": "local_verifiable",
+      "access": "只读，交付前后 sha 须一致（不改一个字节）"
+    },
+    {
+      "id": "LOC-06",
+      "path": "execution_runs/I11A-OPEN11-IND/a20260924-01/ruling.md",
+      "bytes": 38930,
+      "sha256": "c02e255f67f76be9c0a38569454b64cd93f8469d9fc5244e6da2ce7cfc3bb95d",
+      "what": "OPEN-11 R6 条件2 原文（L187-L194）、R3 实测（L153-L166）",
+      "evidence_class": "local_verifiable"
+    },
+    {
+      "id": "LOC-07",
+      "path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+      "bytes": 51697,
+      "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+      "what": "H-CN-ZIJIN-VOL-03 的 observation/scope/falsifier_candidates/alternative_explanations/revert_rule(L315)",
+      "evidence_class": "local_verifiable",
+      "access": "只读；本工位不修改任何 hypotheses*.json"
+    },
+    {
+      "id": "LOC-08",
+      "path": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+      "bytes": 93834,
+      "sha256": "917d30efafe22065c875f8c62e2ee4a06eb60bdf6737f1b2dd1cd14405c4fdab",
+      "what": "§二十四（L490-L505：取证授权与 fail-closed 纪律）、§二十七（L552-L586：origin 字节落点、网络/能力边界）",
+      "evidence_class": "local_verifiable"
+    },
+    {
+      "id": "LOC-09",
+      "path": "execution_runs/OPEN6H4-IND-COUNTERSIGN/a20260926-01/ruling_h4_ind.md",
+      "bytes": 26878,
+      "sha256": "0aef8925dac9cf2004f46af398494c40c291bb38dfa7e7e4af897010a3d7de6b",
+      "what": "Q1/Q4 依据：FY2025 为真实并购并表年（L177、L196、L197）",
+      "evidence_class": "local_verifiable"
+    },
+    {
+      "id": "LOC-10",
+      "path": ".planning/2026-09-19-three-project-history-audit/progress.md",
+      "bytes": 303777,
+      "sha256": "0f7b5808f71679512a19ec16a60b7b316e0eb837093d70f3f3a75acf700b98ee",
+      "what": "L1244 网络口径原文",
+      "evidence_class": "local_verifiable"
+    }
+  ],
+  "negative_findings_recorded": [
+    "FY2025/FY2024 全文『寄售』0 命中；『在途物资/发出商品』0 命中",
+    "存货附注四年两期均只有人民币金额、四类别，无任何数量列",
+    "外部公开检索（EXT-01/02）未返回任何以千克计量的紫金黄金存货明细",
+    "EXT-03 官方 Akyem 收购公告 PDF 因 content-type 被 web_fetch 拒绝，未取得字节"
+  ],
+  "external_never_masquerades_as_local": true
+}

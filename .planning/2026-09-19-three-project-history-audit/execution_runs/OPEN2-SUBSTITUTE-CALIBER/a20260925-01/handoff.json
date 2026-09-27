@@ -1,0 +1,196 @@
+{
+  "schema": "open2-substitute-caliber-handoff/1",
+  "attempt": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01",
+  "card_context": "I-11-B unlock condition C2 (evaluated against I-11-A artifacts and the two half-rulings)",
+  "role": "industry_or_accounting_reviewer",
+  "implementer_signed": false,
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+
+  "authorized_by": "OPEN-2：系数取值解 BLOCKED（S1/A 级证据 + 双签）或落实『分部对外收入 + 分金属销量』替代口径并注册新 parameter_id",
+  "authorized_by_source": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json L119（sha256 b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878，本工位独立复算）",
+  "c2_branch_ruled": "第 2 分支（替代口径 + 新 parameter_id）",
+  "c2_branch_ruled_explicit": {
+    "branch_1_S1_or_A_tier_evidence_plus_dual_signoff": "NOT_RULED_BY_THIS_STATION（两半区已判死：ACCT L75 本地无任何 S1/S2；IND L77 A 类来源不存在；本工位不重裁）",
+    "branch_2_substitute_caliber_plus_new_parameter_id": "RULED_BY_THIS_STATION"
+  },
+
+  "substitute_established": true,
+  "substitute_established_scope": "『分部对外收入 + 分金属销量』口径定义 + FY2023/FY2024/FY2025 三年数据 + 新 parameter_id 规格 成立；仅在 oracle P1–P6 与 substitute_caliber.json.verdict.conditions C-1…C-5 全部成立时成立",
+  "substitute_reading_that_is_rejected": "分部对外收入 ÷ 分金属销量 的跨层相除读法（三重口径错配；RED_B 实测 STRICT rc=1）",
+  "c2_branch2_fully_discharged": false,
+  "c2_branch2_remaining_work": "model_cards.md 新增 parameter_id 注册 + hypotheses.json 新版本 + decision.decision_sha256（均属实现者/编排层写入面，本工位无该权限）⇒ OPEN-2 与 I-11-B 维持 BLOCKED",
+
+  "new_parameter_id": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+  "new_parameter_id_detail": {
+    "primary": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+    "companions": [
+      "ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027",
+      "ZIJIN_MINERAL_ZINC_SALEABLE_VOLUME_FY2027",
+      "ZIJIN_MINERAL_SILVER_SALEABLE_VOLUME_FY2027"
+    ],
+    "model_id": "resource",
+    "driver_name": "realized_price",
+    "unit": "人民币元/吨（不含税）",
+    "unit_basis": "disclosed_same_table_pairing",
+    "factor_basis": "none",
+    "low": null,
+    "base": null,
+    "high": null,
+    "base_period_start": "FY2023",
+    "base_period_end": "FY2025",
+    "effective_period": "FY2027",
+    "released": false,
+    "registration_performed_by_this_station": false,
+    "naming_rule_source": "hypotheses.json 既有 14 个 id 构词 + validate_hypotheses.py REGISTERED/E_DUPLICATE_PARAMETER + decision.md DEC-5 + model_cards.md M09；explicit_naming_rule_document = NOT_FOUND"
+  },
+
+  "data_status": {
+    "segment_external_revenue_mineral_segment": {
+      "FY2023": 59766798161,
+      "FY2024": 74089365354,
+      "FY2025": 109977556345,
+      "status": "ESTABLISHED",
+      "locations": [
+        "P1_zijin_pages.json L161/L163 (pdf_page=327) — FY2025，原件 pdftotext -f 326，页脚 -219 -",
+        "P1_zijin_pages.json L166/L168 (pdf_page=328) — FY2024，原件 pdftotext -f 327，页脚 -220 -",
+        "AR2024 pdftotext -f 352（页脚 238）— FY2024 跨报告同值（A9）",
+        "AR2024 pdftotext -f 354（页脚 240）— FY2023 分部表原文"
+      ]
+    },
+    "metal_sales_volume": {
+      "copper_t": {"FY2023": 810737, "FY2024": 824317, "FY2025": 884943},
+      "gold_kg": {"FY2023": 66707, "FY2024": 67786, "FY2025": 83161},
+      "zinc_t": {"FY2023": 414879, "FY2024": 386444, "FY2025": 352470},
+      "silver_kg": {"FY2023": 411403, "FY2024": 424145, "FY2025": 430254},
+      "status": "ESTABLISHED",
+      "locations": [
+        "P2_zijin_44_48.txt L312（FY2025 销售量列：83,161 / 884,943 / 352,470 / 430,254）",
+        "P2_zijin_44_48.txt L112（FY2024 销售详情 销售数量）",
+        "AR2024 pdftotext -f 42（页脚 42，②产销量情况分析表 FY2024 绝对值）",
+        "AR2024 pdftotext -f 41（页脚 41，2023 年 销售数量列）",
+        "八项同比闭环 A1–A8 最大偏差 0.00498pp（容差 0.005pp）"
+      ]
+    }
+  },
+  "not_established": [
+    "NE-1 命题 id H-CN-ZIJIN-MIN-02：工作区 0 命中（最近真实命题 H-CN-ZIJIN-SEG-02）",
+    "NE-2 矿产品分部内 锂/钨/钼/铅精矿 的分金属销量：产销量表无该等行 ⇒ 分部收入无法对四金属完全分解",
+    "NE-3 FY2023 年报原件不在本地语料（数据取自 FY2024 年报比较期同表）",
+    "NE-4 铜当量换算系数取值：不在本轮范围（两半区已判死，不重裁）"
+  ],
+
+  "red_green_mutation_rcs": {
+    "convention": "0 = ACCEPT / 1 = REJECT（判据级）；程序整体退出码 = 各用例 rc 按位或",
+    "oracle_frozen_sha256_before_runs": "f5c4529095534013e4dee39b40d42d24ab435030ef81290dfa5ab0e97419f945",
+    "oracle_frozen_bytes": 11035,
+    "A_group_arithmetic": {
+      "A_RC": 0,
+      "checks": "A1..A12 全 PASS（8 项同比闭环 / 跨报告同值 / 分部对外=合并 / 分产品−抵销=合并 / 单价×数量≈金额 0.000616%）"
+    },
+    "B_group": {
+      "STRICT(GREEN_A)": 0,
+      "MUTATED(GREEN_A)": 0,
+      "STRICT(RED_B)": 1,
+      "MUTATED(RED_B)": 0,
+      "STRICT(RED_C)": 1,
+      "MUTATED(RED_C)": 1
+    },
+    "EXPECT_RC": 0,
+    "OVERALL_RC": 1,
+    "python_exit_code": 1,
+    "mutation_proof": "MUTATED(RED_B)=0 而 STRICT(RED_B)=1 ⇒ P3（禁止跨层相除）/P4（同表同注）为承重判据：判据改弱后，把锂/银/锌/铁收入装进『元/吨铜』标签的口径即被放行；MUTATED(RED_C)=1 ⇒ 变异是定向的，不是什么都放行",
+    "green_samples_fabricated": false,
+    "green_evidence_traceable_to": "substitute_caliber.json.evidence[]（每条含 file + line/leaf + verbatim_quote + sha256）"
+  },
+
+  "registered_observations_not_amending_any_file": [
+    "ARITH-INCONSISTENCY-1：封盘件 original_value 自述分母 885,141 与其自述公式 884,943+83,161×24=2,880,807 算术不一致（num/2,880,807=38,175.95；num/885,141=124,248.63；隐含 k=0.002381）；IND L86 三点敏感性 k=20/k=28 吻合、k=24 换基准；只登记不回改，不改变 fail-closed 结论",
+    "IDX-DRIFT-1：同一物理页在封盘 P1 索引与 pdftotext 索引下编号不同，且 MD&A 段（P1=leaf−1）与附注段（P1=leaf+1）方向相反 ⇒ 跨源引用必须用 anchor_text",
+    "AMBIG-ORACLE-MUT：oracle §3 公式行与括注对 P5 是否入 MUTATED 表述二义；以公式行为准并把 RED_B 构造成 single_revenue_path=True，rc 不受影响"
+  ],
+
+  "independent_reverification": {
+    "method": "本工位自行 Get-FileHash / pdftotext 取文 / python 复算；不引用实现者自述",
+    "files_rehashed": {
+      "I11A-OPEN-ACCT ruling.md": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2 (37355)",
+      "I11A-OPEN-IND ruling.md": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b (39207)",
+      "I11A-OPEN11-IND ruling.md": "c02e255f67f76be9c0a38569454b64cd93f8469d9fc5244e6da2ce7cfc3bb95d (38930)",
+      "I11A-OPEN-MERGE handoff.json": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878 (21808)",
+      "I-11-A hypotheses.json": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28 (51697)",
+      "I-11-A decision.md": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951 (29756)",
+      "extract/P1_zijin_pages.json": "f1909d136d05bde0230e7fd2761c079026f9a132dd7123109bd7ca7bab85e2cf (89754)",
+      "extract/P2_zijin_44_48.txt": "073276d2dc73bddef40ec7d415e9f5e7e942769c645f673f422b507a72cbf159 (17810)",
+      "execution_v2/card_I-11-B.md": "38ff2907acb627f3d5f6a97ca386a17551329ad3909720e84463a185154ae87c (1672)",
+      "company-wiki AR2025 pdf": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d (79925886)",
+      "company-wiki AR2024 pdf": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89 (32100114)"
+    },
+    "cross_checks_against_external_registrations": "ACCT/IND ruling 与 hypotheses/decision 的 sha256 与两半区及 OPEN-11 载体登记值逐一相同（4/4）；两份年报 sha 与 hypotheses doc_sha256、OPEN-11 登记值相同（2/2）"
+  },
+
+  "releases_nothing": true,
+  "does_not_claim_I11BAcceptance": true,
+  "does_not_unblock_open2": true,
+  "no_threshold_basis_changed": true,
+  "no_placeholder_removed": true,
+  "blocked_items_closed": [],
+  "approved_frozen_written": false,
+  "hypotheses_json_written": false,
+  "model_cards_md_written": false,
+  "planning_files_written": 0,
+
+  "written_files": [
+    {
+      "path": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01/oracle.md",
+      "sha256": "f5c4529095534013e4dee39b40d42d24ab435030ef81290dfa5ab0e97419f945",
+      "bytes": 11035
+    },
+    {
+      "path": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01/substitute_caliber.json",
+      "sha256": "649a9ff8d1a4490aedbe863ee52a338ba7b30c50408d7ca5f0a9361daa622e72",
+      "bytes": 30612
+    },
+    {
+      "path": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01/ruling.md",
+      "sha256": "f927c44cacacb6d0db8e9d1cc09aa559d74427837fd885c4cd0081dbca899e53",
+      "bytes": 35872
+    },
+    {
+      "path": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01/handoff.json",
+      "sha256": null,
+      "bytes": null,
+      "note": "自指不可自证：本文件 sha256/bytes 不能写进自身；实测值由父代理在外部复算（与两半区及合并载体同一处理方式）"
+    }
+  ],
+  "file_format": "UTF-8 without BOM, LF line endings; both JSON files re-parsed with json.load after writing",
+
+  "git_diff_non_planning": 0,
+  "git_diff_observed": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "total": 3826,
+    "non_planning": 0,
+    "measured_at": "ruling.md 写入后（handoff.json 写入前）",
+    "untracked_station_files": 4,
+    "untracked_note": "本工位 4 个文件为未跟踪路径，不进入 git diff HEAD；total 历史波动（3821→3826）来自并发写入方，全部落在 .planning/** 内"
+  },
+  "git_status_command_run": false,
+  "git_writes_performed": false,
+  "git_mutating_commands_run": [],
+  "network_requests_made": 0,
+  "product_files_written": 0,
+  "status_fields_changed": 0,
+  "sealed_attempt_modified": false,
+  "two_half_rulings_modified": false,
+
+  "boundary_attestation": {
+    "zero_write_outside_this_station": true,
+    "zero_write_to_company_wiki": true,
+    "zero_git_write": true,
+    "zero_git_status": true,
+    "zero_network": true,
+    "zero_status_change": true,
+    "zero_proxy_signing": true,
+    "fail_closed_applied": "任一判据不成立即判不成立；数据缺一项写 NOT_ESTABLISHED 而不猜；注册未落 ⇒ c2_branch2_fully_discharged=false，OPEN-2/I-11-B 维持 BLOCKED"
+  },
+
+  "next_action": "编排层/owner：①把 C2 第二分支的『注册』动作派给有写入面的实现者（model_cards.md 新增 ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027 等 4 个 id + hypotheses.json 新版本 + decision_sha256）；②注册完成前，C2 第二分支仍不满足，I-11-B 维持 BLOCKED（7 条解锁条件还有 6 条未动）；③ARITH-INCONSISTENCY-1 建议由 owner 决定是否要求封盘侧出 R2 更正（本工位只登记不回改）；④H-CN-ZIJIN-MIN-02 若确为 owner 记忆中的 id，请 owner 明确其对应的真实命题，否则一律以 H-CN-ZIJIN-SEG-02 为准"
+}

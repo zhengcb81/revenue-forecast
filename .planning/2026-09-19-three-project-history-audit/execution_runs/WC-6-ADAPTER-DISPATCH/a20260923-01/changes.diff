@@ -1,0 +1,44 @@
+--- a/src/company_wiki/source_catalog/adapter_dispatch.py  (live pre-image, sha256 6a72e7c552d791f23cec595fe885dd79cfbb1cc4efc082d1acebb04cd4ffbdbe)
++++ b/src/company_wiki/source_catalog/adapter_dispatch.py  (iso fixed, sha256 0c5ac1a2c2a4bd53dc10f954bd4d429b2d5511dcc8610b3b901ea11c10754769)
+@@ -73,6 +73,12 @@
+         entity_name=_infer_company(item.relative_path, company_names),
+         group_metadata=dict(item.normalized or {}),
+         source_status="active",
++        # REM-95 (WC-6): carry the adapter's remediation reason (the exact
++        # string computed in adapters/sidecar.py) onto the scanner candidate so
++        # the scanner can persist it in locations.error.  Diagnostic payload
++        # only: role/admission/status and every accept-reject decision are
++        # computed elsewhere and stay untouched.
++        error=item.evidence.get("remediation"),
+     )
+ 
+ 
+--- a/src/company_wiki/source_catalog/scanner.py  (live pre-image, sha256 f039d5f8d1360bd0e87898c059b7cce68d7ec5d0fad31c9a0196a57a6425e45e)
++++ b/src/company_wiki/source_catalog/scanner.py  (iso fixed, sha256 85d96757b627a45e3487197d164eb611a19aa54bcfbfc4eb62ad223bd02a47a9)
+@@ -52,6 +52,13 @@
+     group_metadata: dict[str, Any]
+     source_status: str
+     admission: AdmissionDecision | None = None
++    # REM-95 (WC-6): the adapter's own remediation reason (computed in
++    # adapters/sidecar.py:60/74 and carried through adapter_dispatch), stored on
++    # the candidate so the locations INSERT can persist it for catalog readers.
++    # DIAGNOSTIC PAYLOAD ONLY: it never participates in accept/reject, role,
++    # status, or the scan report's error accounting (which stays on
++    # _ObservedFile.error, set exclusively by the observe-time exception path).
++    error: str | None = None
+ 
+ 
+ @dataclass(frozen=True)
+@@ -1111,7 +1118,11 @@
+                             run_id,
+                             item.manifest_json,
+                             canonical_json({"group_key": group_key, "source_status": source_status}),
+-                            item.error,
++                            # REM-95: an observation error (quarantine cause)
++                            # keeps precedence byte-for-byte so the known_error
++                            # equality gate above still matches; otherwise persist
++                            # the adapter's remediation reason (else NULL).
++                            item.error if item.error is not None else candidate.error,
+                         ),
+                     )
+                 for obsolete_document_id in sorted(obsolete_document_ids):

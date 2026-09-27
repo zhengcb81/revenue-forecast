@@ -1,0 +1,103 @@
+{
+  "card_id": "I-07-D-REPRO",
+  "attempt_id": "a20260923-01",
+  "status": "accepted_scoped",
+  "status_before": "review_pending (implementer never signs acceptance)",
+  "status_historical_pre_verdict": "review_pending (implementer never signs acceptance)",
+  "status_authority": "VERDICT=accepted_scoped authored by the INDEPENDENT reviewer in reviewer_report.md (Face = reviewer, separate from implementer; implementer never signs acceptance; no self-signing): 28058 B, sha256 db051f23305deb8e18c65bb69b42195869cac7f23549d217f946bbdde5a84cfb, sidecar reviewer_report.sha256 verified equal at landing; N=1 reviewer; scope = D3 objective + the card's own frozen oracle §7 attack list, findings F-01 MEDIUM / F-02+F-03 LOW, rulings R-1..R-3; this handoff/review.md are CARRIER TRANSCRIPTIONS only (stub→flip recorded in bookkeeping)",
+  "verdict_scope": "accepted_scoped — D3 objective + frozen oracle §7 attack list; 3 findings (1 MEDIUM, 2 LOW) + observations O-1..O-4; boundary PASS with census exception F-01; attack results 8/8 transcribed in review.md",
+  "reviewer_status": "accepted_scoped / verdict transcribed-not-authored by carrier at landing (reviewer write boundary was report + sidecar only)",
+  "reviewer_status_historical_pre_verdict": "review_pending / unsigned / verdict_is_transcribed_not_authored",
+  "completed_steps": [
+    "1 领取: card I-07-D-REPRO = substantive fix for AUDIT-DESIGN D3 (owner order 「审计中出现的问题每一个都要修复」); observable result = F02/F03/F04 verdicts re-computable from raws preserved in this attempt",
+    "2 绑定: binding.json (paths/interpreter/cwd/write-roots/network-disabled + I-07-D pins + copy-fidelity hashes)",
+    "3 读证据: I-07-D a20260923-01 harness + commands.json argv + decision §2/§4/§6/§7.1 transcriptions + verdict.json values + frozen oracle §2; AUDIT-DESIGN D3 + §5-R2; REMEDIATION_REGISTER §72(3)/§74/§76",
+    "4 冻结预期: oracle.md frozen BEFORE any judged run (sha256 b320ebddf6c9041061d830ce142e0f98c19f1f31ea1b39403a59131e74cde267, 20989 B) — per-case expectations + comparison rule (invariants vs timings) + preservation plan",
+    "5 运行修改前检查: CMD-REPRO-SNAP-BEFORE (26 anchors, raw/sidecar all_match) + CMD-REPRO-BUILD (5 cells product-isomorphic, scaffold 5/5) + CMD-REPRO-WPROBE (zero_insert true)",
+    "6 无产品修改 (this card's scope = re-run + preservation): F02 re-run (4 product runs) + preserve + recompute; F03 re-run (2 product runs) + preserve + recompute; F04 re-run (3 product runs, 1 manifest-gated kill) + preserve + recompute",
+    "7 修改后检查: verdicts run-time + recomputed-from-preserved check-identical per case; scratch-gone proof (all three f0Xv reproduce with %TEMP%\\i07d absent); CMD-REPRO-SNAP-AFTER (production untouched)",
+    "8 交审: decision.md (MATCH/DIVERGE table + D3 closure), changes.diff (EMPTY asserted), evidence preserved raws + manifests, this handoff",
+    "9 落定 (carrier landing, verdict transcription): verify reviewer_report.md 28058 B + sha db051f23… == sidecar + section byte ranges + handoff pre-image; decision.md append-only `## F erratum (landing)` (F-01 census policy / F-02 README note / F-03 wording note / R-1→REM-97 + R-2 R-3 accepted); review.md stub→accepted_scoped transcription (8 attack results + dispositions + limits + scope-if-accepting); this handoff status flip; evidence/I-07-D-REPRO/qualification.json written; originals untouched; no git; no network"
+  ],
+  "next_step_number": 10,
+  "next_action": "Landing complete (accepted_scoped). Parent tracks only: keep REM-98 census policy row (REMEDIATION_REGISTER §99 — future kill-bearing cards MUST run+record census before/after, in-attempt) and REM-97 harness fix track (f03_runs derive t_scan_start from lock-helper handshake instead of sleep(2.0)); F-01/F-02/F-03 recorded, never absorbed; no further action on this attempt",
+  "next_action_historical_pre_verdict": "Independent reviewer: run oracle.md §7 attack list (re-hash preserved raws vs ffd73376…/8228741d… + raws_manifest.json triplets; re-run f02v/f03v/f04v with TEMP=\\\\?\\<ATT>\\evidence\\preserved\\temp; attack F02 hold∩scan / F03 lock containment (events.jsonl) / F04 kill-gate+census; verify §3 table both ways vs I-07-D pins; verify changes.diff empty assert), then rule on F03 lock_held_across_scan timing-formula divergence (R-1) and R-2/R-3 disclosures — do NOT re-run any product case to change a verdict",
+  "rulings_closed": {
+    "R-1": "RULED: lock_held_across_scan:false accepted as timing-family, non-gating per FROZEN comparison rule oracle §4.3(i) (parent-confirmed register §89); mechanism = fixed sleep(2.0) vs 3.06 s lock-helper startup, divergence never re-run to green; fix track = REM-97 (already registered: f03_runs derive t_scan_start from lock-helper handshake instead of sleep(2.0))",
+    "R-2": "ACCEPTED disclosure: host LongPathsEnabled=0 re-verified live; \\\\?\\ convention validated by reviewer's own recomputes; incidents recorded with no evidence loss",
+    "R-3": "ACCEPTED disclosure: retention-tool expectation correction accurate against I-07-D's existence-only provenance pin; frozen comparison values unchanged"
+  },
+  "open_questions": [],
+  "open_questions_historical_pre_verdict": [
+    "R-1 ruling: accept F03 lock_held_across_scan:false as timing-family non-gating (frozen rule §4.3(i) classification already applied) or route f03_runs' 2.0 s sleep assumption to the harness track for future cards",
+    "R-2: host LongPathsEnabled=0 — future in-attempt retention of deep cell paths must keep using the \\\\?\\ convention (or a shorter ATT-relative mirror) until the host enables long paths"
+  ],
+  "bookkeeping": {
+    "F-01_census_policy_row": "MEDIUM finding, landed: frozen oracle §6 R6 kill-bearing census ground rule never executed/recorded by this card (no census artifact in attempt excluding iso/; no census command in commands.json; omission undisclosed) ⇒ oracle §7-3 kill-gate+census leg unsatisfiable after the fact; NOT retro-repairable; recorded in decision.md ## F erratum (landing) item 1 + register policy row for PARENT (REM-98, register §99): future kill-bearing cards MUST run+record census before/after; substitute = reviewer kill-record verification (exactly 1 kill pid 19452, gate 5/5, manifest paths inside scratch F04, harness kills manifest-registered PIDs exclusively); does not touch D3",
+    "F-02_note": "LOW finding, landed: recovery/README.md incident line '(none yet)' stale vs decision §6's 3 incidents; pointer note in decision erratum item 2 — README left as-is (note-here-only preferred, no edit)",
+    "F-03_note": "LOW finding, landed: commands.json binding_status 'bound before judged runs' not timestamp-verifiable (mtime 23:16:45 post-dates every judged run, carries post-run notes); actual pre-run freeze carried by oracle.md 22:45:47 + binding.json 22:48:00 < first judged run 22:49:27; wording note in decision erratum item 3; no expectation-value exposure found (reviewer); commands.json untouched",
+    "R-1_to_REM-97_citation": "decision erratum item 4 cites REM-97 as the R-1 fix track (already registered, register §89); R-2/R-3 = accepted disclosures",
+    "files_written": [
+      "decision.md (append-only section `## F erratum (landing)` — original text untouched)",
+      "review.md (pre-image stub 1155 B → accepted_scoped transcription)",
+      "handoff.json (this status flip + bookkeeping)",
+      "evidence/I-07-D-REPRO/qualification.json (new; directory created)"
+    ],
+    "never_touched": [
+      "reviewer_report.md (28058 B, sha256 db051f23305deb8e18c65bb69b42195869cac7f23549d217f946bbdde5a84cfb)",
+      "reviewer_report.sha256 (sidecar)",
+      "oracle.md", "binding.json", "commands.json", "changes.diff", "recovery/README.md",
+      "evidence/** originals (raws_manifest.json, snapshot_before/after.json, anchor_compare.txt, repro_verdicts.json, scratch_gone_recompute_proof.txt, wprobe.json, build.json, adapter_scaffolding.json, cases/**, preserved/**, wprobe_tmp)",
+      "I-07-D original attempt (execution_runs/I-07-D/a20260923-01)"
+    ],
+    "no_git": true,
+    "no_network": true,
+    "review_md_stub_to_flip": "pre-image: status = review_pending / unsigned stub, 1155 B, sha256 45719fcc567f792b679e41b2021e6826c8098037ecae0c7ebe553e66f949d510 → post-image: accepted_scoped verdict transcription (carrier; reviewer report remains the authored verdict file)",
+    "self_signing": "none — verdict authored by independent reviewer (N=1); carrier transcribes only; implementer never signs acceptance"
+  },
+  "input_hashes": "see binding.json input_pins (I-07-D decision ba6e4a1d…f730, oracle 576ddfc5…8846, commands 458c62c3…66e, verdicts 8d6e7a8b…/6f5b6e6f…/f043c080…) + byte_identity_constants",
+  "current_source_hashes": "product trees untouched (changes.diff empty assert; snapshot before/after 20 hashed anchors identical + 6 plan pins re-verified at corrected paths); harness copies byte-identical per binding.json copy_fidelity_sha256; this attempt's only new file = harness/preserve_manifest.py; at landing only decision.md (erratum append), review.md (flip), handoff.json (flip) changed — all other originals re-hashed unchanged",
+  "changed_paths": ["(product trees: NONE)", "ATT/evidence/** (runs + preserved raws + manifests)", "ATT/harness/preserve_manifest.py (new, this attempt only)", "ATT deliverables: oracle.md binding.json commands.json decision.md changes.diff handoff.json review.md recovery/README.md", "ATT/iso/** (attempt-scoped venv copy + rebuilt iso/rf read-only copy of RF)", "ATT landing writes: decision.md (append-only F erratum), review.md (stub→flip), handoff.json (flip), evidence/I-07-D-REPRO/qualification.json (new)"],
+  "commands_executed": ["CMD-REPRO-SNAP-BEFORE rc0", "CMD-REPRO-BUILD rc0", "CMD-REPRO-WPROBE rc0", "CMD-REPRO-F02 driver rc0", "CMD-REPRO-F02-PRESERVE rc0 (manifest byte_link true)", "CMD-REPRO-F02-RECOMPUTE rc0 (\\?\\ TEMP)", "CMD-REPRO-F03 driver rc3 (one failed check, see decision F03/R-1)", "CMD-REPRO-F03-PRESERVE rc0 (byte_link true)", "CMD-REPRO-F03-RECOMPUTE rc3 (identical red — re-computable)", "CMD-REPRO-F04 driver rc0", "CMD-REPRO-F04-PRESERVE rc0 (byte_link true)", "CMD-REPRO-F04-RECOMPUTE rc0", "SCRATCH-GONE-PROOF f02v rc0 / f03v rc3 / f04v rc0 with %TEMP%\\i07d absent", "CMD-REPRO-SNAP-AFTER rc0", "CMD-REPRO-CHANGES (anchor compare -> changes.diff empty assert)"],
+  "raw_exit_codes": {
+    "product (raw, never overwritten)": {"F02": {"scan1_fault": 0, "entry_nohandle": 3, "scan2_recovery": 0, "entry_after_recovery": 3}, "F03": {"scan1_fault": 1, "scan2_recovery": 0}, "F04": {"run1_entry_fault": 3, "scan2_recovery": 0, "entry_after_recovery": 3}},
+    "kill_marker": "4242 seen in F04 product error chain (pid 19452, manifest-gated)",
+    "driver": "see commands_executed list (exit_code_legend in commands.json)"
+  },
+  "expected_exit_codes": "commands.json expected_raw_product_rc per case — F02/F04 matched exactly; F03 product rcs matched exactly (driver rc3 derives solely from the frozen lock_held_across_scan formula, R-1)",
+  "blocked_by": [],
+  "evidence_paths": [
+    "evidence/cases/F02/** (argv/stdout/stderr/evidence.json per run, scan_runs.json, hold_record_f02.json, counters, verdict_run_time.json, verdict_recomputed_from_preserved.json)",
+    "evidence/cases/F03/** (incl. lock/hold.json, events.jsonl containment proof)",
+    "evidence/cases/F04/** (incl. state/pid_19452.json + barrier_*.json + kill_record in run1 evidence.json)",
+    "evidence/preserved/temp/i07d/cases/{F02,F03,F04}/** (F02/F03 = 12 files each: raw + sidecar + catalog + configs; F04 = 13 incl. staged fetch raw 12127452.pdf + product-generated provenance — the judged bytes)",
+    "evidence/raws_manifest.json ((sha256, version-domain, preservation-site) triplets + byte-link asserts)",
+    "evidence/scratch_gone_recompute_proof.txt (D3 proof: recomputes succeed with %TEMP% scratch absent)",
+    "evidence/repro_verdicts.json, evidence/anchor_compare.txt, evidence/snapshot_before.json, evidence/snapshot_after.json",
+    "evidence/I-07-D-REPRO/qualification.json (landing qualification mirror: accepted_scoped + D3-FIXED + F/R rulings + census policy)"
+  ],
+  "carries": {
+    "inherited_declarations_count": 7,
+    "inherited_declarations": [
+      "status review_pending (implementer never signs)",
+      "disclosure_adaptation=unmapped",
+      "accuracy=unproven",
+      "carried open items: I-07-B F1 (entry never scans; registration is cli scan only), F2 (refusals lack structured actionable-recovery), F3 (no review CLI => refusals land at not_reviewed / prompt injection not reviewed), I-07-B HK-3/D-3 canonical filename != manifest name (content sha asserted; reproduced in this re-run), I-09-C F12/F5, I-07-B J6 anchor drift",
+      "product findings NOT absorbed here: F-F06-audit, F-F05-cause (REMEDIATION ledger owners)",
+      "F04 attempt-1 bytes remain unrecoverable (I-07-D decision §7.1/FR-1 transcription is the only surviving account of attempt-1; untouched by this card)",
+      "F02 D-1 model-prediction divergence reproduced and kept visible (oracle literal zero-registration prediction misses; row satisfied via non-reusable refusal)"
+    ],
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "note": "all 7 I-07-D inherited declarations carry unchanged through acceptance (declaration 1's review_pending status component is superseded by this flip via status_historical_pre_verdict; the never-signs/no-self-signing discipline itself carries); findings F-01/F-02/F-03 are REPRO-landing findings recorded, never absorbed"
+  },
+  "carried_declarations_from_I-07-D": [
+    "status review_pending (implementer never signs)",
+    "disclosure_adaptation=unmapped",
+    "accuracy=unproven",
+    "carried open items: I-07-B F1 (entry never scans; registration is cli scan only), F2 (refusals lack structured actionable-recovery), F3 (no review CLI => refusals land at not_reviewed / prompt injection not reviewed), I-07-B HK-3/D-3 canonical filename != manifest name (content sha asserted; reproduced in this re-run), I-09-C F12/F5, I-07-B J6 anchor drift",
+    "product findings NOT absorbed here: F-F06-audit, F-F05-cause (REMEDIATION ledger owners)",
+    "F04 attempt-1 bytes remain unrecoverable (I-07-D decision §7.1/FR-1 transcription is the only surviving account of attempt-1; untouched by this card)",
+    "F02 D-1 model-prediction divergence reproduced and kept visible (oracle literal zero-registration prediction misses; row satisfied via non-reusable refusal)"
+  ]
+}

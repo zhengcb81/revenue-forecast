@@ -1,0 +1,39 @@
+{
+  "card": "I-14-B",
+  "authored": "BEFORE any run; hand-derived from oracle.md sections 3-4 (no SUT call used to produce these values)",
+  "frozen_now_utc": "2026-09-20T02:56:38Z",
+  "default_inputs": {
+    "label_offset_tolerance_seconds": 5,
+    "capture_latency_tolerance_seconds": 5,
+    "note": "input parameters only; oracle.md section 6 pre-registers them as a PROPOSAL awaiting reviewer freeze"
+  },
+  "expected": {
+    "W1": {"verdict": "accept_claim", "refusals": [], "computed": {"observation_span_seconds": 1740, "sample_count": 30, "quick_check_seconds": 480, "command_total_seconds": 2220, "overlap_seconds": 0, "union_seconds": 2220}},
+    "W2": {"verdict": "reject_claim", "refusals": ["R-TOTAL-AS-OBS"], "computed": {"observation_span_seconds": 1740, "command_total_seconds": 2220}},
+    "W3": {"verdict": "reject_claim", "refusals": ["R-QC-IN-OBS"], "computed": {"observation_span_seconds": 1740, "quick_check_seconds": 480}},
+    "W4": {"verdict": "reject_claim", "refusals": ["R-SUM-OVERLAP"], "computed": {"union_seconds": 2400, "sum_seconds": 2940, "overlap_seconds": 540}},
+    "W5": {"verdict": "accept_claim", "refusals": [], "computed": {"union_seconds": 2400, "sum_seconds": 2940, "overlap_seconds": 540}},
+    "W6": {"verdict": "reject_claim", "refusals": ["R-NO-SAMPLES"], "computed": {"observation_span_seconds": null, "sample_count": 1}},
+    "W7": {"verdict": "reject_claim", "refusals": ["R-SAMPLE-OUTSIDE"], "computed": {"observation_span_seconds": 1740, "samples_outside_window": 1}},
+    "C1": {"verdict": "reject_claim", "refusals": ["R-CLAIM-EXCEEDS", "R-EMPTY-EVIDENCE", "R-FUTURE-CLOCK", "R-SAME-INSTANT"], "computed": {"daily_count": 0, "window_status": "pending"}},
+    "C2": {"verdict": "accept_claim", "refusals": [], "computed": {"daily_count": 5, "window_status": "pending"}},
+    "C3": {"verdict": "accept_claim", "refusals": [], "computed": {"daily_count": 7, "window_status": "complete"}},
+    "C4": {"verdict": "reject_claim", "refusals": ["R-CLAIM-EXCEEDS"], "computed": {"daily_count": 6, "window_status": "pending"}},
+    "C5": {"verdict": "reject_claim", "refusals": ["R-SIMULATED-CLOCK"], "computed": {"daily_count": 7, "window_status": "complete"}},
+    "C6": {"verdict": "reject_claim", "refusals": ["R-CLAIM-EXCEEDS", "R-DUP-RUN-ID"], "computed": {"daily_count": 6, "window_status": "pending"}},
+    "C7": {"verdict": "reject_claim", "refusals": ["R-CLAIM-EXCEEDS", "R-EMPTY-EVIDENCE"], "computed": {"daily_count": 0, "window_status": "pending"}},
+    "L1": {"verdict": "accept_claim", "refusals": [], "computed": {"label_offsets_seconds": [30, 60, 120], "label_offset_max_error_seconds": 0}},
+    "L2": {"verdict": "reject_claim", "refusals": ["R-LABEL-ANCHOR"], "computed": {"label_offsets_seconds": [29, 88, 207], "label_offset_max_error_seconds": 87}},
+    "L2b": {"verdict": "reject_claim", "refusals": ["R-LABEL-ANCHOR", "R-POSTHOC-CAPTURE"], "computed": {"label_offsets_seconds": [29, 88, 207], "label_offset_max_error_seconds": 87}},
+    "L3": {"verdict": "reject_claim", "refusals": ["R-POSTHOC-CAPTURE"], "computed": {"label_offsets_seconds": [30, 60, 120], "label_offset_max_error_seconds": 0}},
+    "L4": {"verdict": "reject_claim", "refusals": ["R-LABEL-ANCHOR", "R-SAME-INSTANT"], "computed": {"label_offsets_seconds": [30, 30, 30], "label_offset_max_error_seconds": 90}},
+    "L5": {"verdict": "reject_claim", "refusals": ["R-ANCHOR-NOT-SHARED"], "computed": {"label_offsets_seconds": [30, 60, 120], "label_offset_max_error_seconds": 0}}
+  },
+  "tolerance_sweep_expectation": {
+    "L1": "accept_claim for every tolerance in 0..90",
+    "L2": "reject_claim for tolerance <= 86; accept_claim for tolerance >= 87 (max error at label 120 is 87 s)",
+    "L2b": "reject_claim for every tolerance in the sweep (R-POSTHOC-CAPTURE is tolerance-independent)",
+    "L3": "reject_claim for every tolerance in the sweep",
+    "L4": "reject_claim for tolerance <= 89; accept_claim at tolerance >= 90 is NOT expected because R-SAME-INSTANT also fires, so reject_claim for every tolerance in the sweep"
+  }
+}

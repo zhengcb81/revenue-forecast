@@ -1,0 +1,125 @@
+{
+  "review_id": "B.VR-r5",
+  "reviewer": "independent read-only subagent",
+  "reviewed_at_utc": "2026-09-18T19:18:30Z",
+  "scope": "R5 dropbox_stock three-file byte verification (+ the harness instrument defect)",
+  "verdict": "approve_with_findings",
+  "claims": [
+    {
+      "id": "C1",
+      "verdict": "confirmed",
+      "evidence": "1) b-ar-identity-hash.json contains exactly 3 entries with status=='skipped_cloud_sync', root_id=='dropbox_stock', and their document_id set == the R5 TARGETS set (identical id sets: True). 2) In evidence/a05-readonly-manifest-run-A05-2b-stdout.txt each of the three ids returns exactly 1 row and 1 location, absolute_path string-equal to the record's absolute_path (path_exact=True x3); row byte_size 543/567/567 == record catalog_byte_size; row content_sha256 == the record's catalog_content_sha256 == the sha tail embedded in each document_id (row_sha_eq_id=True x3); each location's manifest_json carries byte_size + content_sha256 = the same values; location_status 'active'; observed_size 543/567/567; observed_mtime_ns 1786394574483694400 / 1786394574480864500 / 1786394574482329200. 3) Live disk re-hash of the three paths returns 19892d82.../386c153e.../98f6ac2b... = record read_sha256.",
+      "note": "I re-derived the paths and digests from the ratified evidence file itself rather than trusting the harness; no substituted target and no path/digest drift. The harness hard-codes only the three ids and takes paths+digests from the evidence JSON. Note the digests are self-consistent by construction (document_id = 'urn:company-wiki:document:sha256:'+content_sha256), which the author correctly concedes in md:46-48; the identification leg is consistency, not independent re-hashing of an original. The harness also never opens the production catalog: no sqlite/CLI invocation is present in run_r5_dropbox_bytes.py (only git/powershell/fsutil subprocesses), and the record's pre/post production_db stat equals the live stat."
+    },
+    {
+      "id": "C2",
+      "verdict": "confirmed",
+      "evidence": "record summary: files=3, digest_matches=3, size_matches=3, size matches 543/567/567 == catalog byte_size == live st_size. Independently: sha256 of each live path == record read_sha256 == catalog content_sha256 == document_id tail (verified in my own python: live_eq_read=True x3; row_sha_eq_id=True x3). all_are_sidecar_documents is computed from the evidence paths (all end '.source.json'), not hard-coded. document_kind=='annual_report' for all three in the evidence rows (46/46 rows in that file are annual_report).",
+      "note": "'3/3 sha256 equal the catalog's declared content_sha256' and '3/3 sizes match' are both literally true and re-checkable; the sidecar/annual_report characterisation is also true. Caveat (in the record's favour): the sha256 covers the ~0.5 KB .source.json sidecar, NOT the 32 MB / 79 MB annual-report PDF of the same basename - md sect.5.2 declares that, so it is not an over-claim."
+    },
+    {
+      "id": "C3",
+      "verdict": "confirmed",
+      "evidence": "Python blindness is real and reproduced by me on the same files: for all 17 files in the two target folders, os.stat().st_file_attributes == 0x20 (python_0x400=0, python_0x20=17) while PowerShell (Get-Item -Force).Attributes.value__ == 0x420 (ps_0x400=17) and fsutil reparsepoint query returns 'Reparse Tag Value : 0x9000601a' (tag_ok=17). I extended the check to a 5,000-file walk of C:\\Users\\郑曾波\\Dropbox\\Stock: python_0x400_found=0, while every ~500th file sampled with PowerShell reported 0x420 (e.g. '视觉中国：2020年第一季度报告全文.PDF' py=0x20 ps=0x420). GetFileInformationByHandleEx(FileBasicInfo) also reports 0x20 for the targets, so the blindness covers the raw Win32 basic-info path too. The tag is decisive: 0x9000601a with reparse data magic 'FeRp' (Dropbox), and fsutil's own 'Tag value: Microsoft' names a vendor owner while 'Tag value: Directory' is the name-surrogate flag, not a claim that the target is a directory. The fix is sound: the PowerShell discriminator (value & 0x400) selects Dropbox's cloud-file shape on this host. The control was re-run by me and printed files=17 reparse=17 plain=0.",
+      "note": "Blindness is general within the Dropbox tree but CONDITIONAL overall, which the record should say explicitly: off the Dropbox tree python and PowerShell agree - on the junction C:\\Users\\郑曾波\\AppData\\Local\\History python's st_file_attributes = 0x2416 (bit 0x400 True, os.path.isjunction True) while powershell also says 0x2416, and on a normal local file (revenue-forecast\\SKILL.md) both say 0x20. That strengthens the finding (it is a Dropbox/cloud-shape blindness, not a broken Python) and also means the invariant name 'python_instrument_disagrees_with_fsutil' is exactly right. I could NOT independently confirm the FIRST version's literal output ('placeholders_before: 0' / 'hydration_observed: 0'): that artifact is not in the run directory - only the references to it (json summary.withdrawn_claim, md:10-11, findings.md:32 F-BAR-13, progress.md:8). But the withdrawal is correct on its merits: any hydration verdict derived from the 0x400 bit of st_file_attributes is necessarily vacuous here."
+    },
+    {
+      "id": "C4",
+      "verdict": "partly",
+      "evidence": "True part: every entry carries data_locality_determinable=false (3/3), and neither the prose nor the JSON asserts that hydration happened or did not happen (the withdrawn numbers survive only inside summary.withdrawn_claim / the harness docstring, explicitly marked WITHDRAWN). False part: data locality IS determinable with standard, read-only, non-hydrating Win32 calls on this host. GetFileInformationByHandleEx(FileStandardInfo) via a handle opened with ZERO desired access returns AllocationSize adjacent to EndOfFile. For the three targets: alloc=4096 vs eof=567, alloc=4096 vs eof=567, alloc=4096 vs eof=543 - the data is present locally in full (a not-locally-present file reports alloc==0 for its data); and for the sample I scanned, alloc is 0 files out of 17 in those two folders, i.e. no dry file exists there at all.",
+      "note": "So the record under-claims rather than over-claims: 'this run cannot say whether the read hydrated the file' is too strong, because the locality question is answerable with metadata only (prose sect.3 itself names 'GetFileInformationByHandleEx 的 FileStandardInfo' as the tool it would need - and that call is available here without opening the data). The correction direction is safe (no unproven hydration assertion survives), but the justification for the disclaimer is inaccurate and the harness could have carried a real pre/post locality reading instead of a blanket false."
+    },
+    {
+      "id": "C5",
+      "verdict": "confirmed",
+      "evidence": "production DB: record pre == post == literal {'exists': true, 'size': 49677344768, 'mtime_ns': 1788902601072747300}, and the live stat of C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3 read at 19:18Z is byte-identical (same size, same mtime_ns). Repos: live git HEADs company-wiki 8665c8c4..., revenue-forecast 51f1e056..., filing-fetch d35b6f5b... all equal the heads the record captured, before and after my own re-run; company-wiki and filing-fetch porcelain both empty. Sizes: 543/567/567 before == after == bytes_read in all 20 reads I performed (repo record 3, my re-run 3, my probe 17 with re-reads, plus --verify). Cloud files: fsutil still returns tag 9000601a after the read on all three; mtime unchanged (1786394574483694400 / ...864500 / ...329200 == the evidence rows' observed_mtime_ns). invariants.no_size_change_observed == true and cloud_files_still_cloud_files == true in both the record and my re-run.",
+      "note": "The claim survives, but the evidential leg is thinner than the wording suggests: the harness's equality test covers only st_file_attributes, PowerShell's attribute value, the tag string, size and mtime - none of which can register hydration, so no outcome could ever have made that invariant false. See F-R5-02 for the metadata-only channel (NTFS ChangeTime) that was available and not recorded."
+    },
+    {
+      "id": "C6",
+      "verdict": "confirmed",
+      "evidence": "placeholder_control.totals = {files: 17, reparse_point_files: 17, plain_local_files: 0} in the record and again in my re-run (printed 'files=17 reparse=17 plain=0'). Denominator checked independently: the two folders contain exactly 17 items total (紫金矿业 11 items / 0 dirs, 星环科技 6 items / 0 dirs) and every one carries Attributes.value__ == 1056 (0x420). The control cannot count directories or follow reparse points: Get-ChildItem without -Recurse enumerates only that directory and -File excludes the 0 directories present; I confirmed 0 subdirectories and 0 misclassified entries.",
+      "note": "17 is the right denominator for the two folders. The discriminator string is slightly loose - 0x400 marks 'reparse point', and it is the cloud tag 0x9000601a (not 0x400 by itself) that makes it a cloud file - but on this host it selects exactly the 17 cloud files and nothing else, and the earlier Python-based control's 'plain=17' was indeed blind."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-R5-01",
+      "severity": "P1",
+      "statement": "The record declares data locality undeterminable ('data_locality_determinable: false' x3, md sect.3 'existing three instruments cannot answer whether the data was local before the read'), but locality is determinable on this host with a metadata-only call the harness never made: GetFileInformationByHandleEx(FileStandardInfo).AllocationSize. Measured: the three targets report AllocationSize 4096/4096/4096 against EndOfFile 567/567/543, i.e. the bytes were already fully resident locally; across all 17 files of the two folders alloc==0 occurs 0 times. The system under review therefore under-claims, and the artifact's central open question was answerable.",
+      "evidence": "run_r5_dropbox_bytes.py:351-357 sets data_locality_determinable=false with the note 'NOT determinable with these instruments'; b-ar-dropbox-bytes.md:57-58 names the right tool ('GetFileInformationByHandleEx 的 FileStandardInfo') as the thing it lacks. My measurement (ctypes CreateFileW with dwDesiredAccess=0, FILE_FLAG_BACKUP_SEMANTICS, then GetFileInformationByHandleEx(FileStandardInfo)): '紫金矿业...2024年年报报告.pdf.source.json alloc=4096 eof=567', '...2025年年度报告.pdf.source.json alloc=4096 eof=567', '星环科技：2024年年度报告.pdf.source.json alloc=4096 eof=543'; whole-folder scan: TOTALS {\"n\": 17, \"alloc_zero\": 0, \"alloc_gt0\": 17}. Control that the call itself reads nothing: the handle is opened with zero desired access, so it cannot trigger a recall.",
+      "why_it_matters": "The step's headline honesty claim is 'we cannot tell whether the read hydrated the files'. A buyer of this record would conclude the dropbox_stock side-effect question is permanently unanswerable, when in fact (a) the data was already local, and (b) a pre/post AllocationSize reading would have given the harness the hydration signal it says it lacks. This is the difference between 'hydration is unmeasurable' and 'hydration did not need to happen'."
+    },
+    {
+      "id": "F-R5-02",
+      "severity": "P2",
+      "statement": "The before/after state fingerprint omits the one cheap metadata channel that catches metadata-only mutation - NTFS ChangeTime (GetFileInformationByHandleEx(FileBasicInfo)) - so 'state_changes_observed: 0' and 'no_size_change_observed: true' are vacuously strong: they cannot register a change that leaves size, mtime, attribute value and reparse tag intact. On these very files that channel is non-trivial: ChangeTime is recent (2026-09-18T19:11:22Z for both 紫金矿业 sidecars, 2026-09-18T18:49:47Z for the 星环 sidecar) while LastWriteTime is still 2026-08-10T20:42:54Z and never moved.",
+      "evidence": "run_r5_dropbox_bytes.py:341-350 compares python_attributes, powershell value, fsutil tag, size, mtime - nothing else; the invariant at :405-407 is literally a size comparison. Measured live: 星环科技：2024年年度报告.pdf.source.json {created 2026-08-10T20:11:49Z, last_write 2026-08-10T20:42:54Z, change 2026-09-18T18:49:47Z}; 紫金矿业 2024 sidecar {last_write 2026-08-10T20:42:54Z, change 2026-09-18T19:11:22Z}; 紫金矿业 2025 sidecar {change 2026-09-18T19:11:22Z}; R5 ran_at_utc = 2026-09-18T19:14:08Z.",
+      "why_it_matters": "The run window was demonstrably not quiet (something re-stamped these files' change times minutes before the run, and my own read moved LastAccessTime to 19:16:24-25Z), yet the harness's fingerprint would have printed 'no state change observed' either way. A record whose no-write leg rests on a fingerprint with a known blind spot should say so - the more so because the omitted reading is one API call away and costs nothing."
+    },
+    {
+      "id": "F-R5-03",
+      "severity": "P3",
+      "statement": "The prose's invariant table reports the wrong revenue-forecast head for the very run it documents: md:66 says 'revenue 801d5de', but the run recorded 51f1e0563305dc8d0705e73406916d855bd7d07d and the repo's live HEAD is still 51f1e05; 801d5de9df375eed257e1993203bdb686f8c05b1 is an earlier commit (reachable via git rev-parse) used by the earlier B.AR artifacts.",
+      "evidence": "b-ar-dropbox-bytes.md:66 '| heads_unchanged | true（wiki 8665c8c、revenue 801d5de、filing d35b6f5） |' vs b-ar-dropbox-bytes.json pre.repos['revenue-forecast'].head == post.repos[...].head == '51f1e0563305dc8d0705e73406916d855bd7d07d'; live `git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD` = 51f1e056... (equal=True); identical stale string also appears in b-ar-cross-repo-reuse.md:73 and b-ar-fifth-root-isolated.md:97.",
+      "why_it_matters": "The JSON invariant is true (pre==post), but the human-readable record contradicts its own machine record, so a reader auditing 'the repos did not move during R5' cannot use the prose to identify which revision was pinned. Copy-paste drift across three run documents suggests the head summary line is boilerplate rather than generated."
+    },
+    {
+      "id": "F-R5-04",
+      "severity": "P3",
+      "statement": "Residual stale text from the withdrawn version: the JSON still declares side_effect = {'declared': 'reading a cloud placeholder hydrates it (owner accepted)', 'measured_per_file': true} - the declarative 'hydrates it' is exactly the proposition the step withdrew (unmeasured here), and 'measured_per_file: true' now points at nothing, because the per-file fields placeholders_before/hydration_observed no longer exist. The harness docstring keeps the same stale reference at line 32 ('The verdict fields are ... and `hydration_observed` (attributes or stat changed)').",
+      "evidence": "b-ar-dropbox-bytes.json lines 10-13 (side_effect block) and the absence of any 'hydration_observed' key in the 3 file entries; run_r5_dropbox_bytes.py:31-33 docstring; the field is only mentioned as withdrawn at :87 and :387-391. The underlying source b_ar_verify_identity_hash.py:24-26 is an author's stated rationale ('reading a placeholder hydrates it ... would be a real local side effect'), not a measurement on these files.",
+      "why_it_matters": "A reader skimming the record's header can still take away 'measured: reading hydrates', which is the one hydration assertion the step exists to retract; and the docstring advertises a verdict field that no longer exists."
+    },
+    {
+      "id": "F-R5-05",
+      "severity": "P3",
+      "statement": "The harness's summary of why B.AR skipped these files is broader than the evidence: run_r5_dropbox_bytes.py:28-30 states a placeholder 'carries FILE_ATTRIBUTE_OFFLINE 0x1000 / RECALL_ON_DATA_ACCESS 0x400000 / RECALL_ON_OPEN 0x40000', but the measured attribute value on all three files is 0x420 and on all 17 files of both folders is 0x420 (Archive|ReparsePoint) - none of those three flags is set anywhere I looked. The gating fact is the reparse point plus tag 0x9000601a.",
+      "evidence": "run_r5_dropbox_bytes.py:70-74 PLACEHOLDER_FLAGS is defined but never evaluated against any measurement (grep: the dict is only declared; is_cloud_file is computed from fsutil at :331); record state_before/state_after powershell.value == 1056 (0x420) for all three entries; my folder scan shows item_attrs 1056 for all 17 items; 0x1000/0x40000/0x400000 appear in none of the readings.",
+      "why_it_matters": "A dead heuristic documented as the discriminator invites the next reader (or the next tool) to key the hydration guard on flags that are never present in this tree, which is the failure mode B.AR's own path-substring guard already exhibited (b-ar-record.md:87, B-VR-BAR-05)."
+    }
+  ],
+  "reproduction": [
+    {
+      "command": "C:\\Miniconda\\python.exe \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\runs\\2026-09-11_r4-phase-b\\evidence\\run_r5_dropbox_bytes.py\" --out \"%TEMP%\\reviewer-r5.json\"",
+      "observed": "exit 0, 'all invariants hold'. Printed per file: read=543 digest_ok=True cloud_file=True tag=9000601a python_blind=True (x3, same for 567/567); control 'files=17 reparse=17 plain=0'. Field-level diff of the fresh record against the repo record: only 3 differences - pre/post repos['revenue-forecast'].porcelain (expected: untracked assurance artifacts added since the run) and ran_at_utc (19:16:28Z vs 19:14:08Z). summary and all 8 invariants byte-identical. Production DB unchanged around my run: 49677344768 bytes, mtime_ns 1788902601072747300 before and after."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe \"...\\evidence\\run_r5_dropbox_bytes.py\" --verify",
+      "observed": "exit 0; {'production_db_still_matches': true, 'heads_still_match': true, 'files_still_carry_the_recorded_digest': true}; live production_db {'exists': true, 'size': 49677344768, 'mtime_ns': 1788902601072747300}."
+    },
+    {
+      "command": "python (stdin) cross-check: json.load(a05-readonly-manifest-run-A05-2b-stdout.txt) vs b-ar-dropbox-bytes.json; hashlib.sha256 of the three recorded absolute_paths",
+      "observed": "3/3 rows found with row_sha_eq_id=True, path_exact=True, kind='annual_report', row/manifest byte_size 543/567/567; live sha256 == record read_sha256 == content_sha256 == document_id tail for all three."
+    },
+    {
+      "command": "python (stdin) + Get-Item + fsutil across both folders: st_file_attributes vs (Get-Item -Force).Attributes.value__ vs fsutil reparsepoint query vs GetFileInformationByHandleEx(FileStandardInfo)",
+      "observed": "TOTALS {\"n\": 17, \"py_0x400\": 0, \"py_0x20\": 17, \"ps_0x400\": 17, \"tag_ok\": 17, \"alloc_zero\": 0, \"alloc_gt0\": 17}; e.g. '星环科技：2024年年度报告.pdf.source.json py=0x20 ps=0x420 tag=9000601a alloc=4096 eof=543'."
+    },
+    {
+      "command": "os.walk('C:\\\\Users\\\\郑曾波\\\\Dropbox\\\\Stock') stat-only over 5000 files, with a PowerShell attribute sample every 500 files",
+      "observed": "{'files_stat_ed': 5000, 'python_0x400_found': 0}; sampled counterparts all 0x420 with python 0x20 (e.g. '视觉中国：2020年第一季度报告全文.PDF', 'company_financial_data.json.source.json')."
+    },
+    {
+      "command": "python -c \"...os.stat(p, follow_symlinks=False)...\" on C:\\Users\\郑曾波\\AppData\\Local\\History vs on C:\\Users\\郑曾波\\Dropbox\\Stock\\03111110.xlsx",
+      "observed": "junction: python 0x2416 (bit 0x400 True, os.path.isjunction True) == PowerShell 0x2416 -> instruments AGREE off the Dropbox tree; Dropbox file: python 0x20 (bit 0x400 False) while PowerShell says 0x420 -> conditional blindness."
+    },
+    {
+      "command": "python (stdin) json walk of b-ar-identity-hash.json for status=='skipped_cloud_sync'",
+      "observed": "exactly 3 entries, all root_id=='dropbox_stock', document_id set identical to the R5 TARGETS set (identical id sets: True)."
+    },
+    {
+      "command": "python (stdin) GetFileInformationByHandleEx(FileBasicInfo) on the three targets + git rev-parse HEAD in all three repos + os.stat of the production DB",
+      "observed": "targets last_write 2026-08-10T20:42:54Z, change 2026-09-18T18:49:47Z / 19:11:22Z / 19:11:22Z, attrs 0x20; heads 8665c8c4.../51f1e056.../d35b6f5b... all equal the record; DB live stat == record post stat ('db mtime equal to repo post: True')."
+    }
+  ],
+  "not_covered": [
+    "Whether the FIRST harness version literally emitted 'placeholders_before: 0' / 'hydration_observed: 0' - that artifact is not present in the run directory; I confirmed only that the withdrawal is correct on its merits (Python's 0x400 bit is blind to this tree).",
+    "The real annual-report PDFs behind the three sidecars (32 MB / 79 MB / ...) - not read; their relation to the catalogued 543/567-byte sidecars is out of scope for the byte leg.",
+    "F-BAR-1 / F-B08-L2-2 themselves (sidecars indexed as annual_report documents): I did not audit whether the catalog's document_kind assignment is correct, only that the evidence rows say 'annual_report'.",
+    "Whether Dropbox's own client state (apex.sqlite3, instance_db) exposes a per-file locality field - only its existence was checked, not its schema; the locality evidence I used is the kernel-level AllocationSize, not the Dropbox client.",
+    "Whether the sandbox's or any other process's activity - rather than Dropbox or the harness - wrote the 2026-09-18T18:49:47Z / 19:11:22Z change times; I can anchor the timestamps but not their author.",
+    "The remaining ~46 candidate documents in the other three roots and the rest of the dropbox_stock sample (12 of 66 candidates, 0.28%) - the sampling width was not re-audited.",
+    "Any claim about FILE_ATTRIBUTE_OFFLINE / RECALL_ON_* flags elsewhere in the tree - I only established that they are absent on all 17 files of the two target folders and are never evaluated by the harness."
+  ]
+}

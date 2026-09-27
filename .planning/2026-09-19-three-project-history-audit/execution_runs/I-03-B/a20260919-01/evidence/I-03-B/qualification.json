@@ -1,0 +1,44 @@
+{
+  "card": "I-03-B",
+  "attempt": "a20260919-01",
+  "generated_by": "carrier-landing bookkeeping pass (2026-09-24)",
+  "verdict_is_transcribed_not_authored": true,
+  "status": "accepted_scoped",
+  "status_authority": {
+    "source_file": "review.md",
+    "line_refs": [5, 24, 26, 27, 28, 29],
+    "quote": "- **结论：accepted_scoped**。",
+    "quote_scope_declared_line_26": "**本验收仅授予隔离副本（iso/override）的纯选择面实现资格**：不授予生产部署；gap_plan.py 合入生产须走 I-03-C/D 的 schema 落地、哈希/授权重建与消费端验收。",
+    "corroboration": "handoff.json status = accepted_scoped; handoff.json reviewer_status 记录该词转录自 review.md:5"
+  },
+  "formula": {
+    "state": "not_applicable_with_reason",
+    "scope": "隔离副本（iso/override）的纯选择面实现资格（review.md:26 逐字）",
+    "reason": "本卡授予面是 gap_plan 纯选择面在隔离副本内的实现资格；review.md:26-29 逐字写明不授予生产部署、T-GAP 绑定归 I-00-B、C15 执行面归 I-03-C、三市场样本不外推为真实 provider 验收，全文未授予任何预测公式资格，故 formula 对本卡不适用。判定依据为本卡自己的裁决文本。"
+  },
+  "disclosure_adaptation": {
+    "state": "unmapped",
+    "reason": "本卡 review.md 与 handoff.json 原文均未提及 disclosure_adaptation（全文检索 0 命中）；按登记册 REMEDIATION_REGISTER.md:708 通则回填 canonical 值 unmapped。"
+  },
+  "accuracy": {
+    "state": "unproven",
+    "reason": "本卡 review.md 与 handoff.json 原文均未提及 accuracy（全文检索 0 命中）；review.md:29 逐字「三市场样本为手工 metadata 模拟，不外推为真实 provider（CN 交易所/HKEX/SEC）验收」与 unproven 一致；按 REMEDIATION_REGISTER.md:708 回填 canonical 值 unproven。"
+  },
+  "not_granted": [
+    "生产部署资格；gap_plan.py 合入生产——须走 I-03-C/D 的 schema 落地、哈希/授权重建与消费端验收（review.md:26）",
+    "T-GAP（生产 checkout pytest）绑定——归 I-00-B；本 attempt 未运行生产 pytest（review.md:27）",
+    "C15 批次截断/completed_partial/remaining 与全部执行面（close_gap/authorization）——归 I-03-C，本卡验收不含（review.md:28）",
+    "把三市场手工 metadata 模拟样本外推为真实 provider（CN 交易所/HKEX/SEC）验收（review.md:29）",
+    "把 override `_candidate_dates` 含 published_date 回退当作生产 catalog 字段真实性——生产落地时须经 I-03-C/D 确认（review.md:30）"
+  ],
+  "sources_read": ["review.md", "handoff.json"],
+  "pre_image_notes": "本次写入前实测：本 attempt 下不存在任何 qualification*.json，且 evidence/ 目录不存在（本 pass 新建目录与本文件）；三资格字段在前像中整体缺失，按 REMEDIATION_REGISTER.md:708 补 canonical 记录。",
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "裁决由独立 reviewer 写入 review.md；本文件仅转录，不代签、不改任何 status",
+    "this_file_grants_nothing_new": true,
+    "existing_bytes_written": 0
+  },
+  "carrier_completeness_note": "本文件为第三件载体补齐（原缺失）；不新增任何资格、不改任何既有字节、不转移 status"
+}

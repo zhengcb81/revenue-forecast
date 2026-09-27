@@ -1,0 +1,285 @@
+{
+ "schema": "i14d_r2_handoff/1",
+ "card_id": "I-14-D",
+ "attempt_id": "a20260926-01",
+ "round": "I-14-D-R2",
+ "attempt_path": "execution_runs/I-14-D-R2/a20260926-01",
+ "role": "implementer_i14d_r2",
+ "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+ "objective": "Fix the credential-persistence regression on the authorization path that the independent review of I-14-D/a20260919-01 raised as F-REV-D-01 (reviewer_report.md L18 CHANGES_REQUIRED, L25-L30): redaction of the authorization value must complete BEFORE persistence, so that `Authorization: Bearer\\n<SECRET>\\ndoc=17` is persisted as `Authorization: <redacted>\\ndoc=17` (secret gone, diagnostics kept), without changing any frozen criterion of the inherited oracle.",
+ "authorized_by": {
+  "review_verdict_L18_verbatim": "**CHANGES_REQUIRED — the attempt is NOT accepted.**",
+  "review_defect_L25_L30_verbatim": "However the review found a **credential-persistence regression on the authorization path that the frozen oracle, the rule table and all three mutations fail to exercise**:\n\n> `\"Authorization: Bearer\\n<SECRET>\\ndoc=17\"` — on the pre-fix tree the persisted event is\n> `\"Authorization: <redacted>\"` (secret gone); on `iso/product_narrow` the persisted event is\n> `\"Authorization: <redacted>\\n<SECRET>\\ndoc=17\"` — **the full credential is written to the\n> append-only event log in plaintext.**",
+  "review_source": "execution_runs/I-14-D/a20260919-01/reviewer_report.md",
+  "review_source_sha256": "499d91acf06a67e2f7dd06d4a5af6569b5b92a6e4b3b77adda57b739eaa03d2b",
+  "review_source_bytes": 37659,
+  "review_source_lines": 583,
+  "review_required_remediation_L283_L286_verbatim": "Required remediation. Either the scheme-aware fail-closed value (Ruling 2 / §5), or an equivalent that cannot leave a token after a scheme word unredacted, **plus** rule-table and `FIDELITY_CASES` rows for `Authorization: Bearer\\n<marker>` (LF, CRLF, obs-fold, and `authorization: token\\n`). Re-run the oracle, rule table, both suites and the mutation plan afterwards.",
+  "review_ruling2_target_L479_verbatim": "end-to-end: `Authorization: Bearer\\n<SECRET>\\ndoc=17` persists as **`\"Authorization: <redacted>\\ndoc=17\"`** — **secret gone AND diagnostics kept**, i.e. both halves of the card's exit clause satisfied;",
+  "card_face_verbatim": "execution_v2/card_I-14-D.md (sha256 5e5cdaaac186a4a7b6595e8ed33302b5c63ce4472256c2cbc8e5eaef64760114, 2369 B): L22「负例：多行诊断（`doc=17`/`stage=`/`code=`/`request_id=`）在收窄后**必须存活**；纯合成 marker 必须仍被脱敏；既有 rule table `cred-multiline-swallow` 系列需按新语义更新（更新的是**语义期望**，不是把失败改绿）。」；L24「不得以『冻结测试失败』为据回退；该冻结测试的**唯一正当结局**是本卡写完新 oracle 后由 reviewer 改写它。」；L26「退出：裸值不再跨行吞掉后续诊断键，且 E4b 新基线经独立 reviewer 复算。」；L27「恢复：回退 redactor 与 rule table 到本卡前像；保留合成日志。」",
+  "owner_decision_s37_verbatim": "OWNER_DECISIONS.md §三十七（L852-L871，sha256 17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d）：「## 三十七、【已授权·第二十一批】**全沙箱操作常设授权：「给你授权所有的沙箱操作，不要再问我了」**（2026-09-26 17:5x，原话）」；授权内容「本会话内编排层（父）的一切沙箱提权操作，owner 一次性常设授权，**无需逐次审批**」；边界「**纪律 16/17/18/19/20 全部继续有效** …… **破坏性操作仍须前像留痕+写后验证+fail-closed 回滚**」「**生产零未授权改动** 的纪律不变 …… **产品仓提交（`git add/commit/push`）不在本授权内** —— 仍归 owner 逐次决定」。",
+  "dispatch_verbatim": "编排层派单（2026-09-26）`I-14-D-R2`（修复轮）：『oracle 先冻结（复审缺陷逐字 + 修复判据 + 新增覆盖授权路径的变异 ≥3 + 门 0）』；『修缺陷：授权路径的 redaction 必须在**持久化前**完成（不改冻结 oracle 的既有判据，**新增**）』；『红绿：绿（含授权路径新用例 = `Bearer\\n<SECRET>\\ndoc=17` 落盘为 `<redacted>` 无 SECRET）+ 红（原缺陷复现）+ 变异 ≥3（含「只修 `iso/narrow` 不修授权路径」必须红）』；『改动只落你的 `iso/` 或 `changes.diff`（封盘与旧 attempt 只读）；须写产品仓 ⇒ 停报 `blocked`』；『不放行参数 · 不自签（复审另派）· 不派 `I-14-E`/`I-16-A` · 不解任何无关项』"
+ },
+ "gate0_passed": true,
+ "gate0_raw_output": "=== GATE0 BEGIN (I-14-D-R2/a20260926-01) ===\ncwd=C:\\Users\\郑曾波\\Projects\\revenue-forecast\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\ngate0 probe I-14-D-R2 a20260926-01 write-readback-delete\n--- step3 delete ---\ndeleted_gone=True\n=== GATE0 END ===",
+ "gate0_note": "门0 三步（写→回读→删）本会话自探、零提权，探针已删；原始输出另存 evidence/gate0_raw.txt。门0 同时包含『缺陷自探』：只读对 pre-image 跑 reviewer 的 D1-D9 表，DEFECT_PRESENT（D1-D7+核心 9 行泄漏），见 evidence/dfamily_product_pre.json。全部期望值为手算（oracle §3.1/§4），并在冻结前与复审 L233-L243 base 列、L479 prototype 实测交叉核对。",
+ "defect_status": {
+  "review_finding": "F-REV-D-01 (BLOCKER, high)",
+  "before_fix": {
+   "tree": "iso/product_pre (sha256 e8abd522b2072add062be225d7ec1ca10621ffa5be7841f99ef9fb339015cbd0, 40476 B)",
+   "tree_identity": "byte-identical to the iso/product_narrow the review measured at reviewer_report.md L56",
+   "persisted_event": "Authorization: <redacted>\nghp_ZQ7ReviewerFakeCredential0123456789\ndoc=17",
+   "secret_persistence_fixed": false,
+   "oracle_rc": 3,
+   "persistence_probe_rc": 3
+  },
+  "after_fix": {
+   "tree": "iso/product_post (sha256 8dab63d9c21a7f32679b11c6ef5d4337bdac33b4ff4f4b6a937a17ced87107ca, 41304 B, +828 B, CRLF preserved)",
+   "persisted_event": "Authorization: <redacted>\ndoc=17",
+   "secret_persistence_fixed": true,
+   "oracle_rc": 0,
+   "persistence_probe_rc": 0
+  },
+  "fix_site": "company_wiki/source_catalog/observability.py only: `_AUTH_SCHEME_SPLIT` added after `_AUTH_BARE_VALUE` and inserted into `_AUTH_PATTERN`'s value group between `_QUOTED_VALUE` and `_AUTH_BARE_VALUE` (review RULING 2 scheme-aware fail-closed value)"
+ },
+ "secret_persistence_fixed": true,
+ "red_green_mutations": {
+  "red_original_defect_rc": 3,
+  "green_rc": 0,
+  "mutation_rc": {
+   "M1_auth_path_unfixed": 3,
+   "M2_scheme_list_no_bearer_token": 3,
+   "M3_scheme_split_multi_line_run": 3,
+   "M4_split_no_crlf": 3
+  },
+  "mutations_run": 4,
+  "mutations_required": 3,
+  "dispatch_required_mutation_M1_only_narrow_not_auth_red": true,
+  "all_predictions_matched": true,
+  "new_auth_cases": [
+   "P1-bearer-lf-secret-doc17",
+   "P2-s39-lf-secret-doc17",
+   "P3-bearer-space-lf",
+   "P4-nospace-colon",
+   "P5-lowercase-token-key",
+   "P6-crlf",
+   "P7-obsfold",
+   "P8-midline",
+   "P9-tab-sep(keep)",
+   "P10-sameline(keep)",
+   "P11-persisted-event"
+  ],
+  "inherited_criteria_untouched": "oracle.md §4 A0-A17 (the r1-frozen 17 cases + E4b 314/200) transcribed unchanged and green on both red and green arms"
+ },
+ "oracle": {
+  "file": "oracle.md",
+  "frozen_before_fix": true,
+  "frozen_prefix_bytes": 18054,
+  "frozen_prefix_sha256": "71cbff493122d1f0905fd0eb5b6bfed0b0d7d0128bcdf475748bf32750ab1383",
+  "post_appendix_sha256": "a3a0a5df41695ae5ac62239db716ae126d50823ef3b364dc6187f8b508f3fcf6",
+  "post_appendix_bytes": 22936,
+  "append_only_verified": "sha256 of oracle.md bytes 1-18054 == the frozen prefix hash after the post-run APPENDIX",
+  "sidecar": "oracle.sha256"
+ },
+ "pre_image": {
+  "sha256": "090dfc450db05697295007708e8070d4a355ff3717ce9df149a11c3379f1ed09",
+  "bytes": 19651,
+  "status": "review_pending"
+ },
+ "post_image": {
+  "sha256": "8dab63d9c21a7f32679b11c6ef5d4337bdac33b4ff4f4b6a937a17ced87107ca",
+  "bytes": 41304,
+  "delta_bytes": 828,
+  "only_file_changed_in_tree": true
+ },
+ "changes_diff": {
+  "file": "changes.diff",
+  "bytes": 1636,
+  "sha256": "a4d6fad2da012125e1272d6aaa1021213e83cd8d0462d86fd2766978b3a7d733",
+  "hunks": 1,
+  "files_touched": [
+   "src/company_wiki/source_catalog/observability.py"
+  ],
+  "posix_paths_only": true,
+  "round_trip_own_applier": "forward == product_post, reverse == product_pre (rc 0)",
+  "round_trip_git_apply": "git apply --check/-p1/-R -p1 with --directory=<attempt scratch copy> all rc 0; applied sha == product_post; reverse sha == product_pre; `git diff --cached` still 0 entries (no index write)",
+  "evidence": "evidence/diff_roundtrip.txt"
+ },
+ "input_hashes": {
+  "note": "upstream, read-only",
+  "execution_runs/I-14-D/a20260919-01/reviewer_report.md": "499d91acf06a67e2f7dd06d4a5af6569b5b92a6e4b3b77adda57b739eaa03d2b",
+  "execution_runs/I-14-D/a20260919-01/oracle.md": "cfc09f99de99f1c5675340faf7a8f56752806cf56f1efd9a669dbd5e3432fbef",
+  "execution_runs/I-14-D/a20260919-01/handoff.json": "c1facfb1f136b5d6eb3d5784be634cec442f3cb5c4b8dba69e40b4c3a6b7113e",
+  "execution_runs/I-14-D/a20260919-01/changes.diff": "4c0160b888127ccbed99bce25a13bb645edd9a4c7df79541190e5cf1afdb750a",
+  "execution_v2/card_I-14-D.md": "5e5cdaaac186a4a7b6595e8ed33302b5c63ce4472256c2cbc8e5eaef64760114",
+  "OWNER_DECISIONS.md": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d",
+  "pre-image source tree": "execution_runs/I-14-D/a20260919-01/iso/product_mut_authsplit/src (== the review's iso/product_narrow, e8abd522…/40476)"
+ },
+ "completed_steps": [
+  "1 回源: reviewer_report.md L18 + L25-L30 + D1-D9 表 + 根因 + RULING 1/2 逐字读完; 旧 attempt oracle/handoff(review_pending)/changes.diff 只读; card_I-14-D + OWNER_DECISIONS §三十七 读完",
+  "2 门0: 写→回读→删三步自探 + 只读缺陷自探（D1-D9 在 pre-image 上 DEFECT_PRESENT 9 行）留档",
+  "3 冻结: oracle.md 先冻结（sha 71cbff49…，18054 B）—— 复审缺陷逐字 + 手算修复判据 P1-P11 + 继承判据 A0-A17 原样转录 + 变异清单 M1-M4",
+  "4 前像留痕: pre-image 复制到 iso/product_pre（sha/字节核对一致）+ before/observability.py.preimage 副本 + before/pre_image.json",
+  "5 红: iso/product_pre → oracle rc 3（继承全绿、授权 8 行泄漏）、落盘探针 rc 3 SECRET_PERSISTED",
+  "6 修: harness/apply_fix_r2.py fail-closed 写入 _AUTH_SCHEME_SPLIT（sha 断言+锚点唯一，rc 4 中止），product_post 8dab63d9…/41304，CRLF 保留，仅此一文件变更",
+  "7 绿: iso/product_post → oracle rc 0（28/28）、落盘探针 rc 0 PERSISTED_CLEAN（写盘+回读均无 SECRET、doc=17 存活）、D 族 0 泄漏",
+  "8 变异: M1-M4 各 rc 3 且与预测逐条吻合（含派单要求的「只修 iso/narrow 不修授权路径」必红）；product_post sha 前后未动",
+  "9 diff: changes.diff 生成 + 自写 applier 双向字节一致 + 真实 git apply --check/apply/-R 三步 rc 0（不碰 index）",
+  "10 收尾: 交叉核对旧 attempt 规则表（只读）、git diff 计数、产物 sha、handoff status=review_pending"
+ ],
+ "written_files": {
+  "note": "sha256 复算于定稿时；handoff.json 为自指文件不记自身 sha（由父落定复算）",
+  "oracle.md": {
+   "bytes": 22936,
+   "sha256": "a3a0a5df41695ae5ac62239db716ae126d50823ef3b364dc6187f8b508f3fcf6",
+   "role": "四件之一：先冻结（前 18054 B）+ 门0 + 缺陷逐字 + 新增授权判据 + 变异清单 + 跑后 APPENDIX"
+  },
+  "changes.diff": {
+   "bytes": 1636,
+   "sha256": "a4d6fad2da012125e1272d6aaa1021213e83cd8d0462d86fd2766978b3a7d733",
+   "role": "四件之一：仅 observability.py 的授权路径 redaction 修复"
+  },
+  "red_green_mutations.json": {
+   "bytes": 9417,
+   "sha256": "b0ec2738b4c48d8cd34421ff3cf3855a9b6e36cadf7d8808dfd8124a73ed77fa",
+   "role": "四件之一：红/绿/4 变异 + 新用例"
+  },
+  "oracle.sha256": {
+   "role": "冻结前缀 + 定稿两行 sidecar"
+  },
+  "before/pre_image.json": {
+   "bytes": 2218,
+   "sha256": "69f334bbb64a91f4306abc429f36dead115d3854f67559ee82bc19a7c1f993ae"
+  },
+  "before/observability.py.preimage": {
+   "bytes": 40476,
+   "sha256": "e8abd522b2072add062be225d7ec1ca10621ffa5be7841f99ef9fb339015cbd0"
+  },
+  "harness/run_oracle_r2.py": {
+   "bytes": 11069,
+   "sha256": "9543a8d1887695b5ac77b418dd72fdc060d21ace1b862fc84802fa614f8f710e"
+  },
+  "harness/persist_probe.py": {
+   "bytes": 4129,
+   "sha256": "84b831e1342521c3474297368ec695590b9c9dab12b1f66aa8adced7d5516189"
+  },
+  "harness/probe_dfamily.py": {
+   "bytes": 3868,
+   "sha256": "8c4ae60edd2373b0f2163bcf7df8a3a3eb5acaa0440e70a09480f65f433c42f5"
+  },
+  "harness/apply_fix_r2.py": {
+   "bytes": 3789,
+   "sha256": "c76d9b3bff203b1ff68c5443ae2188b3aa0164aa233b96f0402fc4dd3f41a7c3"
+  },
+  "harness/build_mutations_r2.py": {
+   "bytes": 3542,
+   "sha256": "1d2548b0b7a7c91e12fbf60fe4ec119fc538eb9c137d79b95c12009bf5371c33"
+  },
+  "harness/make_diff_r2.py": {
+   "bytes": 2601,
+   "sha256": "be073c8e44710d2c0d6079020ea3b42a63f811c734da16be2f848db91e7fe193"
+  },
+  "harness/verify_diff_r2.py": {
+   "bytes": 4444,
+   "sha256": "3456d1fa92de844c50bbea4d6e2363cd11b8b33697788533817d3f29f3d65fd7"
+  },
+  "iso/product_pre/**": "pre-image 树副本（152 文件，来源见 pre_image.json）",
+  "iso/product_post/**": "修复后树（仅 observability.py 与 pre 不同）",
+  "_mut/M1..M4/**": "4 个单点变异树副本",
+  "evidence/**": "gate0_raw.txt、red/green/mut 的 oracle 与落盘 JSON、D 族 JSON、规则表 JSON、pytest 原始输出、diff_roundtrip.txt",
+  "before/**": "前像字节副本 + pre_image.json"
+ },
+ "evidence_paths": [
+  "oracle.md（门0 原始输出 + 冻结判据 + 跑后 APPENDIX）",
+  "red_green_mutations.json（红绿变异总表）",
+  "evidence/gate0_raw.txt",
+  "evidence/red_oracle_product_pre.json / evidence/red_persist_product_pre.json / evidence/red_worker_process_events.jsonl",
+  "evidence/green_oracle_product_post.json / evidence/green_persist_product_post.json / evidence/green_worker_process_events.jsonl",
+  "evidence/dfamily_product_pre.json / evidence/dfamily_product_post.json",
+  "evidence/mut_oracle_M*.json / evidence/mut_persist_M*.json",
+  "evidence/ruletable_product_pre.json / evidence/ruletable_product_post.json",
+  "evidence/diff_roundtrip.txt",
+  "before/pre_image.json + before/observability.py.preimage"
+ ],
+ "boundary_self_declaration": {
+  "write_surface": "execution_runs/I-14-D-R2/a20260926-01/** only (inside .planning)",
+  "product_repo_writes": 0,
+  "old_attempt_writes": 0,
+  "old_attempt_mtime_check": "0 files under execution_runs/I-14-D/a20260919-01 with LastWriteTime inside this session's window (verified twice)",
+  "concurrent_product_repo_activity_observed": "company-wiki/src shows 9 files with mtime inside the window (error_taxonomy.py, evidence_query.py, narrative_evidence.py, __init__.py at 17:50-20:54 plus __pycache__ entries) — written by concurrent actors, NOT by this round: this session never executed anything against C:\\Users\\郑曾波\\Projects\\company-wiki (every run imported only this attempt's iso/** trees, with -B / PYTHONDONTWRITEBYTECODE=1). Registered as an observation, not as this round's write.",
+  "five_plan_files_untouched": true,
+  "writes_outside_planning": 0,
+  "git_writes_performed": false,
+  "git_index_entries_after_all_checks": 0,
+  "git_status_run": false,
+  "network_used": false,
+  "params_released": false,
+  "no_falsifier_triggered": true,
+  "auto_actions_triggered": 0,
+  "not_dispatched": [
+   "I-14-E",
+   "I-16-A"
+  ],
+  "unrelated_items_resolved": 0,
+  "synthetic_only": "every credential/marker used is synthetic (ghp_ZQ7ReviewerFakeCredential0123456789, SYNTHETIC_AUDIT_TOKEN, ZQ7_REVIEWER_MARKER_9f3c)"
+ },
+ "git_diff_non_planning": 0,
+ "git_diff_measurement": "git -c core.quotepath=false diff HEAD --name-only → 3830 entries (历史+并发写入方均在 .planning 内), non_planning=0; git diff --cached → 0; 未跑 git status、无 git 写",
+ "status": "accepted_scoped",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "releases_nothing": true,
+ "releases_nothing_detail": "不产生 ACCEPT · 不放行任何参数（params_released=false）· 不触发任何 falsifier/自动动作 · 不解 OPEN-2/3/5/6 与任何 BLOCKED-* · 不代签（复审另派）· 不改封盘与旧 attempt 任一字节 · 不写产品仓 · 不派 I-14-E / I-16-A · 不写五份计划文件 · 不跑 git status、不 git 写 · 不联网",
+ "open_questions": [
+  "declared cost (oracle.md A.3): a bare scheme word followed by a credential-free line over-redacts that line's first token — `Authorization: Bearer\\ndoc=17` → `Authorization: <redacted>`; the review names this cost at L485-L488 and the read-only attempt later registered it as `over-auth-*` rows; this round discloses it and does not claim it fixed",
+  "out-of-scope residual (oracle.md A.4): scheme words outside the review's nine-word enumeration (Negotiate / AWS4-HMAC-SHA256 / SCRAM-SHA-256 / Hawk / Bot / Zzz …) still leave the next token in the clear — 2 credential leaks + 12 fidelity rows remain on product_post against the read-only attempt's *evolved* table; that is the old attempt's later finding F-REV-R2-01, not the dispatched F-REV-D-01 family",
+  "carried from the review, not addressed here: F-REV-D-03 (digit-suffixed credential names), F-REV-D-04 (`Authorization:\\ndoc=17` key-side newline), F-REV-D-02 (dead `_VALUE` constant) — all pre-existing / later-round items, out of this dispatch's scope"
+ ],
+ "unverified": [
+  "the read-only attempt's copied pytest suite (test_i14c_real_exit_redaction.py) was run against iso/product_post but 18/86 cases error at tmp_path setup with WinError 5 (pytest cannot create its numbered temp dir in this sandbox) → 68 passed / 18 errors is NOT used as evidence; raw output in evidence/pytest_copied_suite_post.txt",
+  "the read-only attempt's rule table was re-run as a cross-check only (79-row evolved table); it is not a criterion of this round",
+  "crash-restart / non-pure-function behaviour: NA by construction (redact_text is a pure function; no state is written by the fix)"
+ ],
+ "next_action": "编排层另派独立复审（非本工位）：核 oracle 冻结前缀 sha 与 handoff 复算、红/绿/4 变异 rc、changes.diff 双向 round-trip（含真实 git apply）、前像 sha、以及 A.3/A.4 两条登记残留的定级；落定走父直写（复审裁定词由 reviewer 自写，本工位不自签、不产生 ACCEPT）。",
+ "next_step_number": 2,
+ "status_before": "review_pending",
+ "status_history": [
+  {
+   "seq": 1,
+   "status": "review_pending",
+   "recorded_by": "implementer_i14d_r2（本 attempt 实现者工位）",
+   "basis": "四件齐 + 红绿变异 rc 齐 + 前像/round-trip 齐；实现者不自签（dispatch：不自签、复审另派）",
+   "carrier_then": "reviewer_report.md 尚不存在于本 attempt（复审于其后另派）"
+  },
+  {
+   "at_utc": "",
+   "status": "accepted_scoped",
+   "by": "landing_parent_v3",
+   "note": "父直写轻格式落定（V3）；前像 sha 见 pre_image"
+  }
+ ],
+ "file_format": "UTF-8 (写后重解析校验)",
+ "status_transition": "review_pending -> accepted_scoped",
+ "status_authority": {
+  "carrier": "reviewer_report.md",
+  "carrier_sha256": "a7aecf6f058c2081b4fd85fb58d481eec1a428a5c6909aa329faab746bfe85ea",
+  "carrier_bytes": 18115,
+  "carrier_encoding": "UTF-8 no BOM",
+  "verdict_line": "**ACCEPT — `I-14-D-R2/a20260926-01` 通过独立复审。**",
+  "verdict_byte_region": {
+   "content": [
+    808,
+    887
+   ],
+   "incl_lf": [
+    808,
+    887
+   ]
+  },
+  "verdict_word_written_by_reviewer": "ACCEPT",
+  "pin_sidecar": "a7aecf6f058c2081b4fd85fb58d481eec1a428a5c6909aa329faab746bfe85ea  reviewer_report.md  (independent reviewer report, I-14-D-R2/a20260926-01, ACCEPT)",
+  "three_way_match": true
+ },
+ "carried_findings": [],
+ "verdict_is_transcribed_not_authored": true
+}

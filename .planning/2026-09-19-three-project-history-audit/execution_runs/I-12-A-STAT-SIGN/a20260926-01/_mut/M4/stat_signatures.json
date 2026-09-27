@@ -1,0 +1,384 @@
+{
+  "schema": "i12a_stat_signatures/1",
+  "card": "I-12-A",
+  "attempt": "execution_runs/I-12-A-STAT-SIGN/a20260926-01",
+  "source_attempt": "execution_runs/I-12-A/a20260926-01",
+  "role": "statistics_reviewer_i12a",
+  "role_label": "统计reviewer（统计面签署；非实现者、非行业面）",
+  "design_version": "v1",
+  "signed_at": "2026-09-26T20:45:23+01:00",
+  "authorized_by": {
+    "card_owner_clause_verbatim": "Parent：I-12；状态：planned；Owner：统计reviewer和行业reviewer共同签字；依赖：I-07-E。",
+    "card_stop_verbatim": "任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。",
+    "note": "本件是统计面半边签署；行业面签署不在本件、也不由本件代签。"
+  },
+  "oracle": {
+    "path": "execution_runs/I-12-A-STAT-SIGN/a20260926-01/oracle.md",
+    "bytes": 17839,
+    "sha256": "1c3ebb51f062dee1af30e2ec33f30b0fee38ed315404d9fe0b265b55f6303f2c",
+    "frozen_before_signing": true
+  },
+  "source_carrier_read_only": {
+    "path": "execution_runs/I-12-A/a20260926-01",
+    "modified_by_this_attempt": false,
+    "evidence_sha256": {
+      "evidence/I-12-A/evaluation_design.json": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+      "evidence/I-12-A/professional_approval.json": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+      "evidence/I-12-A/design_manifest.json": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178"
+    }
+  },
+  "source_seal": {
+    "test_results_sealed": true,
+    "accuracy_results_read": false,
+    "results_read_before_signing": false,
+    "test_results_read": false,
+    "sealed_results_not_consulted": ["I-10-B 结果面", "I-13 买方验收面", "任何 accuracy/backtest 数值"]
+  },
+  "criteria_applied": [
+    "C1_traceable",
+    "C2_result_independent",
+    "C3_counterexample_tested",
+    "C4_role_scope",
+    "C5_fail_closed_direction",
+    "C6_value_plus_guard",
+    "C7_carrier_form"
+  ],
+  "summary": {
+    "total_items": 6,
+    "signed_count": 3,
+    "not_signed_count": 3,
+    "signed_items": ["S3", "S4", "S5"],
+    "not_signed_items": ["S1", "S2", "S6"],
+    "stop1_state": "BLOCKED_PROFESSIONAL_DECISION_still_triggered",
+    "stop1_why": "S1/S2/S6 = NOT_SIGNED；S3/S4/S5 仅统计面签署、行业面未签 ⇒ 卡文停止① 未解除",
+    "stop2_triggered": false,
+    "industry_countersign_still_needed": false,
+    "releases_nothing": true,
+    "produces_accept": false
+  },
+
+  "items": [
+    {
+      "item_id": "S1",
+      "field_index": 5,
+      "item_label": "时间划分折数/切点/窗口长度",
+      "selection": "NOT_SIGNED",
+      "refusal_reason_code": "insufficient_evidence",
+      "value": {},
+      "rationale": "回源面内根本没有可核算折数的输入：已登记 origin 截点每公司只有 1 个（紫金 2026-03-20、微软 2026-07-29、小米 null），滚动 origin 至少需要同公司多个可得 vintage 才能形成 ≥2 折 train/test；I-11-C 18 映射行只带 period_start/period_end（FY2025/FY2026→FY2027），无任何 available_at/vintage 字段。折数/切点/窗口长度在此属『无据可定』，按 C1/C2 fail-closed 拒签，不挑一个方便的折数。",
+      "counterexample": {
+        "arm": "M1",
+        "mutation": "把本项 selection 由 NOT_SIGNED 改为 SIGNED 并附伪造 value（编造 3 折滚动切点）",
+        "expected": "rc=3，具名 K2_verdict_lock（oracle §5 冻结判定 S1 = NOT_SIGNED）",
+        "observed": "rc=3，K2_verdict_lock 命中（见证据 ruling_stat_sign.md §变异）"
+      },
+      "compatibility_impact": "字段 5 维持 PENDING ⇒ evaluation_design 验收『全部完成或有获批 not_applicable』仍不达成；与字段 4 vintage_class 硬分规则（evaluation_design L130-L134）不冲突——缺清单时按 unavailable 处理、不入池。不影响已签的 S3/S4/S5（其守卫已按 cluster/block 不足降级）。",
+      "recovery_rule": "面内登记每公司 ≥3 个历史 origin（published_at/available_at + 原文 sha256 + vintage_class=true_vintage），且 available_at<=origin 可核 ⇒ 重算折数/切点/滚动窗口长度 ⇒ 新开 design 版本、重冻 SHA256 后由统计面重签；解封后才补的切点一律作废为探索性（停止②）。",
+      "rejected_alternatives": [
+        {"option": "按『当前只有 1 个 origin』直接定为 1 折（留出全部作测试）", "why_rejected": "无训练段即无模型可评，且等价于把全部观测当测试，属方便通过型阈值（卡文动作 1 明禁）。"},
+        {"option": "凭惯例填 5 折或 70/30 切分", "why_rejected": "面内零锚点（D3/D4 实测），违反 C1；切点日期一旦与真实 available_at 不符即产生泄漏观测。"},
+        {"option": "等待解封后按结果表现回调切点", "why_rejected": "直接触发停止②，旧结果不得追认确认性成功。"}
+      ],
+      "evidence": [
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L141", "what": "pending_reason：可得 vintage 清单（历史 origin 逐个 available_at）未在本卡回源面内 ⇒ 切点/折数无法核算"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L152", "what": "PENDING_parts：可得 vintage 清单 / 折数与切点日期 / 滚动扩展窗口长度 / 调参预算"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L124-L127", "what": "registered_cutoffs 仅 3 行、每公司 1 个 origin（小米 available_at=null）"},
+        {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "lines": "L15-L17", "what": "上游同源截点：紫金 2026-03-20、微软 2026-07-29、小米披露日未登记"},
+        {"path": "execution_runs/I-11-C/a20260926-01/parameter_mapping.json", "lines": "L1-L1340", "what": "18 映射行只有 period_start/period_end；全目录 available_at|vintage_class|published_at 命中 = 0（实测）"}
+      ],
+      "missing_evidence_measured": [
+        {"fact": "回源面内可得 vintage origin 数 = 每公司 1 个（3 行截点，其中小米 null）", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L124-L127"},
+        {"fact": "I-11-C 全目录 available_at/vintage_class/published_at 命中数 = 0", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_runs/I-11-C/a20260926-01/** (grep 计数 0)"},
+        {"fact": "单 origin ⇒ 滚动 origin 可算折数 = 0（需 ≥2 个 origin/公司才成 1 折）", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L152 + L124-L127"}
+      ],
+      "decision_payload_canonical": "S1|i12a-statsign|field=5|selection=NOT_SIGNED|reason=insufficient_evidence|missing=vintage_origin_list_available_at_per_origin|design_version=v1|reviewer=statistics_reviewer_i12a",
+      "decision_sha256": null,
+      "refusal_sha256": "a138debb851a536ea2f564b07cd62734035862c93ecd25b0ace8e12acda59080",
+      "signature": {
+        "role": "statistics_reviewer_i12a",
+        "signed": false,
+        "signed_at": null,
+        "scope": "统计面半边（字段 5 时间切分与折数）",
+        "industry_countersign": "required_separately",
+        "does_not_imply": ["不放行参数", "不代签行业面", "不解除 STOP①", "不产生 ACCEPT"]
+      }
+    },
+
+    {
+      "item_id": "S2",
+      "field_index": 10,
+      "item_label": "最小公司数/每层样本数/统计功效/可接受 CI 宽度",
+      "selection": "NOT_SIGNED",
+      "refusal_reason_code": "insufficient_evidence",
+      "value": {},
+      "rationale": "精度型反推（oracle §5 方法）需要一个『每层可接受 CI 半宽』定标，而面内实测 0 处数值定标（D6：execution_v2 + OWNER_DECISIONS 内 经济显著|可接受偏差|统计功效|可接受CI 共 6 命中，全为字段定义原文）；功效型反推需要效应量与方差，而误差面属封存结果（C2 禁读）。第三件输入『每层 origin 数』随 S1 同缺。任一缺失即 fail-closed ⇒ 拒签，且明确不许以『当前只有 2 家』为由反推一个宽松阈值（C5）。",
+      "counterexample": {
+        "arm": "M5",
+        "mutation": "把本项 selection 由 NOT_SIGNED 改为 SIGNED 并附伪造 value（编造 最小公司数=2 / 可接受 CI 半宽=±0.50 之类宽松值）",
+        "expected": "rc=3，具名 K2_verdict_lock（oracle §5 冻结判定 S2 = NOT_SIGNED）",
+        "observed": "rc=3，K2_verdict_lock 命中（见证据 ruling_stat_sign.md §变异）"
+      },
+      "compatibility_impact": "字段 10 维持 PENDING，但其不变量『样本不足 ⇒ 只描述、不宣称准确性优势』（evaluation_design L230）已冻结、与本拒签无关地继续成立；S3/S4 的适用性守卫与该不变量同向（当前 cluster=2/block=1 必然降级），因此不产生任何放宽。",
+      "recovery_rule": "三件齐备后一次性定数并新开版本重签：① 统计+行业共同给定每层可接受 CI 半宽 w 与置信水平（须先解 S6 的容差定标）；② 效应量定义所需方差基础只能来自解封后由编排层明文授权的训练段/历史面（非测试集），或改走纯精度型以回避方差；③ 每层 origin 数随 S1 的 vintage 清单到位。定数公式预登记（如 proportion 精度型 n >= z^2*p*(1-p)/w^2，p 取 0.5 最保守），解封后不得改。",
+      "rejected_alternatives": [
+        {"option": "以可评 entity=2 直接定『最小公司数=2』", "why_rejected": "把实测池大小当阈值 = 反向适配数据，典型方便通过型阈值（卡文动作 1 明禁），且使『只描述』不变量形同虚设。"},
+        {"option": "沿用 EA-1 行业带（量±10% / 价±5%）当可接受误差阈值", "why_rejected": "EA-1 明文『带形状=敏感性设计非精度主张』（I-07-E L66），挪用即把敏感性设计误当精度主张。"},
+        {"option": "先给一个宽松半宽（如 ±50%）让样本量看起来够用", "why_rejected": "违反 C5 fail-closed 方向：阈值比『只描述、不宣称』更松。"},
+        {"option": "从封存的测试/准确性结果估方差再定功效", "why_rejected": "违反 C2 与封存令（停止②物种），本工位未读也不得读。"}
+      ],
+      "evidence": [
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L224", "what": "pending_reason：样本量/功效阈值属关键统计阈值，且可评 entity 当前 = 2、vintage 清单未核算"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L228-L231", "what": "method_frozen=精度型；PENDING_parts 5 项；current_pool_note：以公司为单位的功效几乎必然不足"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L111", "what": "pool_size_current = 可评 entity 数 2"},
+        {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "lines": "L66", "what": "EA-1『带形状=敏感性设计非精度主张』⇒ 禁挪用为精度/容差阈值"},
+        {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "lines": "L60", "what": "18 槽位 = 13 mapped + 5 declined；小米 0 槽位（每层样本数的上游分母事实）"},
+        {"path": "execution_v2/research_cards.json", "lines": "L125", "what": "字段 10 原文：不足只描述，不宣称准确性优势"}
+      ],
+      "missing_evidence_measured": [
+        {"fact": "面内数值定标命中 = 0（经济显著|可接受偏差|统计功效|可接受CI 共 6 命中，全为字段定义原文）", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_v2/** + OWNER_DECISIONS.md (grep 计数)"},
+        {"fact": "效应量/方差基础 = 封存结果面，本 attempt 未读（test_results_sealed=true, accuracy_results_read=false）", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L8-L9"},
+        {"fact": "可评 entity = 2、cluster=entity ⇒ cluster n = 2；每公司 origin 数 = 1 ⇒ block n = 1", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L111 + L79 + L243 + L124-L127"}
+      ],
+      "decision_payload_canonical": "S2|i12a-statsign|field=10|selection=NOT_SIGNED|reason=insufficient_evidence|missing=precision_ci_halfwidth_anchor,effect_size_variance_basis,per_stratum_origin_count|design_version=v1|reviewer=statistics_reviewer_i12a",
+      "decision_sha256": null,
+      "refusal_sha256": "ea0e6ac04ab5114246586790301471d71d8ebb3895657939647b0846f85c5120",
+      "signature": {
+        "role": "statistics_reviewer_i12a",
+        "signed": false,
+        "signed_at": null,
+        "scope": "统计面半边（字段 10 样本量/功效/可接受 CI 宽度）",
+        "industry_countersign": "required_separately",
+        "does_not_imply": ["不放行参数", "不代签行业面", "不解除 STOP①", "不产生 ACCEPT"]
+      }
+    },
+
+    {
+      "item_id": "S3",
+      "field_index": 11,
+      "item_label": "置信水平(CI level/α)",
+      "selection": "SIGNED",
+      "value": {
+        "confidence_level": 0.95,
+        "alpha": 0.05,
+        "ci_form": "two_sided",
+        "applicability_guard": "cluster_count >= 3 AND block_count >= 2 否则该层记 insufficient_for_ci、只描述",
+        "decision_rule": "model vs baseline 成对差异的双侧 95% CI 不含 0（方向事前登记）且通过 S5 的 Holm 校正，方可宣称确认性优势",
+        "current_pool_state": "当前 cluster=2、block=1 ⇒ 守卫必然触发 ⇒ 本层只描述（不解锁任何宣称）"
+      },
+      "rationale": "该值属面内显式委托给统计 reviewer 的选择（professional_approval 统计面 scope L24；research_cards L159『CI或显著性方法按冻结设计』），且数值本身不依赖任何未封存结果（C2）：α=0.05 双侧是与 S5 Holm FWER 同一 α 的确认性常规、事前固定、与数据无关（C1 锚在 field 11 structure_frozen 的 cluster/block 结构上）。同时把『当前算不出』写成守卫而不是放宽（C6），与字段 10『只描述』不变量同向（C5）。",
+      "counterexample": {
+        "arm": "M2+M3",
+        "mutation": "M2：把本项退回 NOT_SIGNED（拒签本可签项）；M3：把 value.alpha 由 0.05 改为 0.50 并同步重算 hash（模拟事后放宽）",
+        "expected": "rc=3，具名 K2_verdict_lock（M2）/ K3_value_lock（M3）",
+        "observed": "rc=3，K2_verdict_lock 与 K3_value_lock 分别命中（见证据 ruling_stat_sign.md §变异）"
+      },
+      "compatibility_impact": "不改变 evaluation_design 任何字段状态（字段 11 仍为 filled_threshold_unsigned 直到新版本重冻）；不解封、不放行、不产生 ACCEPT；守卫与 field 7 thin_stratum_rule（L184）、field 10 invariant（L230）一致 ⇒ 对 I-12-A 是纯增量约束，无放宽。STOP① 因行业面未签与 S1/S2/S6 未签仍成立。",
+      "recovery_rule": "解封前若要改 α/CI 形式 ⇒ 新开 design 版本 + 重冻 design_manifest SHA256 后重签；解封后才改 ⇒ 触发停止②，该次评估作废为探索性。守卫解除仅当面内登记 cluster>=3 且 block>=2 的 vintage 清单（依赖 S1 恢复规则）。",
+      "rejected_alternatives": [
+        {"option": "90% CI（α=0.10）", "why_rejected": "确认性语境过宽，等于给『显著』放水（C5 方向不符）。"},
+        {"option": "99% CI（α=0.01）", "why_rejected": "更严格但无面内依据选择该水平，且与 S5 的 FWER α 需另行配套；非本面确认性常规，收益不抵引入的不一致。"},
+        {"option": "单侧检验（不预先登记方向）", "why_rejected": "方向可在结果后挑，等价于放宽一倍，停止②物种。"},
+        {"option": "不给 CI、只报点估计", "why_rejected": "违反卡文动作 2『CI 和多重比较校正』与 research_cards L159。"},
+        {"option": "按当前 cluster=2 直接给『小样本可用』的区间", "why_rejected": "n=2 不可估区间方差；声称可算即伪造精度（C5/C6）。"}
+      ],
+      "evidence": [
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L241-L245", "what": "field 11 structure_frozen：成对同样本 / cluster=entity / block=origin / 时间相关按 origin 分块"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L247", "what": "confidence_level = PENDING（待签位置，统计面 scope L24 覆盖）"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L79 + L243 + L124-L127 + L111", "what": "守卫输入：cluster=entity、block=origin、每公司 origin=1、可评 entity=2"},
+        {"path": "execution_v2/research_cards.json", "lines": "L159", "what": "skill_vs_baseline boundary『CI或显著性方法按冻结设计』⇒ 由本冻结定值"},
+        {"path": "execution_v2/research_cards.json", "lines": "L126", "what": "字段 11 原文：置信水平、重复抽样次数与随机种子、多模型检验校正方法"}
+      ],
+      "missing_evidence_measured": [],
+      "decision_payload_canonical": "S3|i12a-statsign|field=11|selection=SIGNED|ci=two_sided|confidence_level=0.95|alpha=0.05|guard=clusters_gte_3_and_blocks_gte_2_else_descriptive_only|design_version=v1|reviewer=statistics_reviewer_i12a",
+      "decision_sha256": "12e0ea07cca59111e5a61c4f4403ecf3efa84f7874adc2b35f3c636ec45fac51",
+      "refusal_sha256": null,
+      "signature": {
+        "role": "statistics_reviewer_i12a",
+        "signed": true,
+        "signed_at": "2026-09-26T20:45:23+01:00",
+        "scope": "统计面半边（字段 11 置信水平/α）",
+        "industry_countersign": "required_separately（字段 12 与 cluster/block 单位归行业面）",
+        "results_independent": true,
+        "does_not_imply": ["不放行参数", "不代签行业面", "不解除 STOP①", "不产生 ACCEPT", "不代表当前样本可算出 CI"]
+      }
+    },
+
+    {
+      "item_id": "S4",
+      "field_index": 11,
+      "item_label": "重复抽样次数与随机种子",
+      "selection": "SIGNED",
+      "value": {
+        "repetitions": 10000,
+        "seed": 2765402844,
+        "seed_derivation": "hex(SHA256(execution_v2/card_I-12-A.md)[0:8]) = a4d4b2dc -> 2765402844（事前由卡文指纹派生，与任何结果无关、不可事后择优）",
+        "resampling_scheme": "cluster=entity、block=origin 的成对重抽样（与 field 11 structure_frozen 一致，不假设观测独立）",
+        "applicability_guard": "cluster_count >= 3 AND block_count >= 2 否则不执行重抽样、记 insufficient_for_resampling、只描述",
+        "reproducibility": "同 design + 同已签参数 + 同 seed ⇒ 复算逐位一致（evaluation_design L286）；PRNG 实现与版本随 manifest 一并登记，否则该次运行判不可复现"
+      },
+      "rationale": "面内显式留给统计 reviewer（evaluation_design L249『实现者不擅自固定一个“刚好好看”的种子』= 事后择优种子被明文禁止，故须事前由本面固定）。B=10,000 覆盖 95% 双侧分位的 Monte-Carlo 误差（分位索引标准差约 sqrt(B*0.025*0.975)≈15.6，相对 10,000 次 ≈0.16%），并相对常规确认性下限 B>=2,000 留 5 倍余量；seed 由卡文 sha256 前 8 位十六进制派生，事前可核、结果无关（C2）。守卫同 S3，不因签署放宽（C5/C6）。",
+      "counterexample": {
+        "arm": "M7",
+        "mutation": "把 value.repetitions 由 10000 改为 100 并把 seed 改为结果相关值（同步重算 hash）",
+        "expected": "rc=3，具名 K3_value_lock（oracle §5 冻结数值表）",
+        "observed": "rc=3，K3_value_lock 命中（见证据 ruling_stat_sign.md §变异）"
+      },
+      "compatibility_impact": "只增加可复现性与守卫，不改变字段状态、不解封、不放行；当前 cluster/block 不足 ⇒ 重抽样根本不执行，与『只描述』不变量同向；不解除 STOP①。",
+      "recovery_rule": "解封前改 B 或 seed ⇒ 新开 design 版本 + 重冻 SHA256 后重签；解封后改 seed ⇒ 触发停止②，作废为探索性（择优种子即证据污染）。若重抽样实现不可复现（PRNG 未登记/逐位不一致）⇒ 该次运行判不可复现、结果作废为探索性。",
+      "rejected_alternatives": [
+        {"option": "B=1,000", "why_rejected": "95% 双侧分位的 MC 索引标准差升至约 0.5%，确认性报告的区间端点抖动可见；成本差可忽略，无理由取下限。"},
+        {"option": "B=100", "why_rejected": "分位索引标准差约 1.6%，区间端点不可信，等同不可复现。"},
+        {"option": "以当前时间/系统随机源定 seed", "why_rejected": "不可复现，违反 evaluation_design L286 同种子逐位一致规则。"},
+        {"option": "解封后择一个『好看』的 seed", "why_rejected": "面内明文禁止（L249）且直接触发停止②。"},
+        {"option": "cluster/block 不足时仍强行重抽样（n=2）", "why_rejected": "对 2 个 cluster 的重抽样退化为少数几个取值，方差估计无意义，属伪造精度（C5/C6）。"}
+      ],
+      "evidence": [
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L248-L249", "what": "bootstrap_or_resample_repetitions 与 random_seed = PENDING；L249 明禁实现者自定『刚好好看』的种子"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L286", "what": "rerun_rules：同 design + 同已签参数 + 同种子 ⇒ 复算逐位一致"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L243-L244", "what": "block=origin、时间相关按 origin 分块重抽样 ⇒ 重抽样单位与守卫输入"},
+        {"path": "execution_v2/card_I-12-A.md", "lines": "L14 + sha a4d4b2dcce2aa1de04ab6aff757de0fb6e75fa21bc5cf0ab0151e5d1e940470f", "what": "动作 2 要求选定 CI 与校正；seed 派生指纹来源（§1#1）"},
+        {"path": "execution_v2/research_cards.json", "lines": "L126", "what": "字段 11 原文含『重复抽样次数与随机种子』"}
+      ],
+      "missing_evidence_measured": [],
+      "decision_payload_canonical": "S4|i12a-statsign|field=11|selection=SIGNED|repetitions=10000|seed=2765402844|seed_derivation=hex(card_I-12-A.md_sha256[0:8])=a4d4b2dc|guard=clusters_gte_3_and_blocks_gte_2_else_descriptive_only|design_version=v1|reviewer=statistics_reviewer_i12a",
+      "decision_sha256": "2367b078911467bd75650c152a9caefcab22e22d9980c7c2626aa95f0730b12d",
+      "refusal_sha256": null,
+      "signature": {
+        "role": "statistics_reviewer_i12a",
+        "signed": true,
+        "signed_at": "2026-09-26T20:45:23+01:00",
+        "scope": "统计面半边（字段 11 重复抽样次数与随机种子）",
+        "industry_countersign": "required_separately（本项按 professional_approval L24 归统计面；行业面共签仍为卡级必需）",
+        "results_independent": true,
+        "does_not_imply": ["不放行参数", "不代签行业面", "不解除 STOP①", "不产生 ACCEPT", "不代表当前样本可执行重抽样"]
+      }
+    },
+
+    {
+      "item_id": "S5",
+      "field_index": 11,
+      "item_label": "多重比较校正方法",
+      "selection": "SIGNED",
+      "value": {
+        "method": "holm",
+        "error_control": "FWER",
+        "alpha": 0.05,
+        "family_definition": "解封前在 design_manifest 登记的全部确认性成对检验（model vs baseline × entity 层 × 指标 × horizon 层）；family 大小 m 事前固定",
+        "bh_fdr_rule": "BH-FDR 仅允许用于显式标注 exploratory 的附录分析，且不得用于任何确认性成功主张",
+        "family_change": "family 增删或事后换方法 ⇒ 新 design 版本 + 重冻 SHA256；解封后变更 ⇒ 停止②"
+      },
+      "rationale": "面内逐字委托本面（evaluation_design L250『候选：Holm FWER / BH FDR，二选一由统计 reviewer 定』）⇒ C4 完全成立。选 Holm 而非 BH：本评估要出的是『确认性成功』主张，须控 FWER；Holm 在任意依赖结构下有效且严格优于 Bonferroni，m 很小时与 Bonferroni 接近但不更差。α=0.05 与 S3 同源，避免两套 α。数值不依赖任何结果（C2），family 在解封前登记防事后挑族（C3 反例已测）。",
+      "counterexample": {
+        "arm": "M8",
+        "mutation": "把 value.method 由 holm 改为 bh_fdr（用于确认性主张）并同步重算 hash",
+        "expected": "rc=3，具名 K3_value_lock（oracle §5 冻结数值表）",
+        "observed": "rc=3，K3_value_lock 命中（见证据 ruling_stat_sign.md §变异）"
+      },
+      "compatibility_impact": "与 S3 共用 α=0.05，两签互洽；不改变字段状态、不解封、不放行；family 事前登记与 I-12-A design_manifest 冻结流程兼容（签署齐备后须新开版本重冻）；不解除 STOP①。",
+      "recovery_rule": "解封前换方法/改 α/改 family ⇒ 新开 design 版本 + 重冻 SHA256 后重签；解封后变更 ⇒ 触发停止②，该次评估作废为探索性。若 family 内某检验缺登记 ⇒ 该检验不得作确认性宣称（fail-closed）。",
+      "rejected_alternatives": [
+        {"option": "BH-FDR（q=0.05）", "why_rejected": "控制的是错误发现比例，确认性语境允许 FDR 逃逸；面内虽列为候选，但按卡文要产出『确认性成功』判定 ⇒ 取 FWER。"},
+        {"option": "Bonferroni", "why_rejected": "被 Holm 严格支配（同 FWER 下功效不高于 Holm），无额外收益。"},
+        {"option": "不校正", "why_rejected": "多模型/多指标下第一类错误膨胀，违反卡文动作 2 与字段 11 原文。"},
+        {"option": "解封后再定 family 或换校正方法", "why_rejected": "停止②物种（面内 L252 明禁『结果后补阈值』）。"},
+        {"option": "对所有 secondary 指标也一律做确认性检验", "why_rejected": "family 须事前界定为确认性成对检验；secondary 未登记即只描述，避免以指标数量刷显著。"}
+      ],
+      "evidence": [
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L250", "what": "multiplicity_correction = PENDING；逐字『候选：Holm FWER / BH FDR，二选一由统计 reviewer 定』"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L246 + L252", "what": "threshold_items_unsigned 位置；prohibition：阈值须在看结果前签署，结果后补 = 停止②"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json", "lines": "L24", "what": "统计 reviewer scope 含『多重比较校正方法』"},
+        {"path": "execution_v2/card_I-12-A.md", "lines": "L14", "what": "动作 2 逐字要求选择『CI和多重比较校正』"},
+        {"path": "execution_v2/research_cards.json", "lines": "L126", "what": "字段 11 原文『多模型检验校正方法』"}
+      ],
+      "missing_evidence_measured": [],
+      "decision_payload_canonical": "S5|i12a-statsign|field=11|selection=SIGNED|method=holm|error_control=FWER|alpha=0.05|family=pre_unseal_registered_confirmatory_pairwise_tests|bh_fdr=exploratory_only|design_version=v1|reviewer=statistics_reviewer_i12a",
+      "decision_sha256": "7ab9bfa5f765dae29d54ae503c07fe22fc270231657cf809df0b0b6bac8ede4c",
+      "refusal_sha256": null,
+      "signature": {
+        "role": "statistics_reviewer_i12a",
+        "signed": true,
+        "signed_at": "2026-09-26T20:45:23+01:00",
+        "scope": "统计面半边（字段 11 多重比较校正方法）",
+        "industry_countersign": "required_separately（行业面 scope 为 cluster/block 单位，不重叠本项）",
+        "results_independent": true,
+        "does_not_imply": ["不放行参数", "不代签行业面", "不解除 STOP①", "不产生 ACCEPT"]
+      }
+    },
+
+    {
+      "item_id": "S6",
+      "field_index": 12,
+      "item_label": "成功/失败阈值：经济显著改善幅度、可接受偏差、情景包含率、区间宽度",
+      "selection": "NOT_SIGNED",
+      "refusal_reason_code": "insufficient_evidence",
+      "value": {},
+      "rationale": "三重缺据：①『经济显著改善幅度』在面内 0 处数值定标（D6 实测），且其判断主体是行业面，统计面单独定即越权（C4）；②『可接受偏差/情景包含率/区间宽度』唯一可用的行业带 EA-1 明文『带形状=敏感性设计非精度主张』，挪用即把敏感性设计当精度主张；情景带又无名义概率（field 9 L215-L216），只能谈情景包含率、不能谈覆盖率，但『可接受包含率』数值仍无来源；③ 卡文明文要求统计与行业 reviewer 共同签字，行业面当前 unsigned（professional_approval L38-L43）⇒ 单签不成立。fail-closed 拒签，不为解锁而签。",
+      "counterexample": {
+        "arm": "M6+M4",
+        "mutation": "M6：把本项 selection 由 NOT_SIGNED 改为 SIGNED 并编造阈值（如 Skill>+5%、bias<=10%、containment>=0.8）；M4：把 industry_countersign_still_needed 由 true 改为 false（模拟代行业签、解除 STOP①）",
+        "expected": "rc=3，具名 K2_verdict_lock（M6）/ K6_boundary_lock（M4）",
+        "observed": "rc=3，K2_verdict_lock 与 K6_boundary_lock 分别命中（见证据 ruling_stat_sign.md §变异）"
+      },
+      "compatibility_impact": "字段 12 维持 PENDING ⇒ 验收不达成、停止① 成立；与 field 9『无名义概率只评情景包含率』不冲突（本拒签不写任何覆盖率阈值）；S3/S4/S5 已签项不因此失效，但整体不解封。不放行、不产生 ACCEPT。",
+      "recovery_rule": "① 行业 reviewer 先在面内给定经济显著改善幅度与可接受偏差/包含率/区间宽度的容差定标（若拟升格 EA-1 带为容差，须由 owner/行业面明文废止『非精度主张』限定，本面不得代为升格）；② 统计面复核其统计形态（是否事前可定、是否与 S3/S5 的 α 族相容）后共签；③ 双签齐后新开 design 版本重冻 SHA256。解封后才补签的任何阈值一律作废为探索性（面内 L270 anti_cherry_pick）。",
+      "rejected_alternatives": [
+        {"option": "以 EA-1 的 ±5%/±10% 直接充当『可接受偏差/区间宽度』", "why_rejected": "EA-1 明文『带形状=敏感性设计非精度主张』（I-07-E L66），挪用即误用。"},
+        {"option": "统计面先签一个占位阈值（如 Skill>0 即成功）以便解锁", "why_rejected": "『Skill>0』是方向不是经济显著幅度；占位阈值 = 方便通过型（卡文动作 1 明禁），且缺行业共签（C4）。"},
+        {"option": "以低/高情景包含率写成 80%/90% 覆盖率阈值", "why_rejected": "面内明禁：无名义概率的情景带只能叫情景包含率（research_cards L164、evaluation_design L215-L216）。"},
+        {"option": "等看到测试结果后再定阈值", "why_rejected": "停止②逐字禁止，旧结果不得追认确认性成功。"},
+        {"option": "由本统计面代行业 reviewer 签字", "why_rejected": "Owner 行要求共同签字；派单明令不代签，C4 越权即拒。"}
+      ],
+      "evidence": [
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L259 + L264-L271", "what": "pending_reason 与 threshold_set 四项全 PENDING；who_signs=[统计reviewer, 行业reviewer]；anti_cherry_pick"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json", "lines": "L38-L43", "what": "行业 reviewer scope 含『字段 12 成功/失败阈值（与统计 reviewer 共同）』且当前 unsigned"},
+        {"path": "execution_v2/research_cards.json", "lines": "L127 + L164", "what": "字段 12 原文（由统计与行业reviewer签字；禁止看到结果后补阈值）；情景包含率边界"},
+        {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "lines": "L66", "what": "EA-1『带形状=敏感性设计非精度主张』⇒ 不得升格为成功/失败阈值"},
+        {"path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json", "lines": "L215-L216", "what": "low/high = 情景非统计区间 ⇒ 覆盖率阈值不可写"}
+      ],
+      "missing_evidence_measured": [
+        {"fact": "经济显著改善幅度/可接受偏差的面内数值定标 = 0 处（6 命中全为字段定义原文）", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_v2/** + OWNER_DECISIONS.md (grep 计数)"},
+        {"fact": "唯一候选行业带 EA-1 的性质 = 敏感性设计、非精度主张（不可挪用）", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md:L66"},
+        {"fact": "行业 reviewer signed=false、signature_status=unsigned", "measured_at": "2026-09-26T20:4x+01:00", "source": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json:L33-L43"}
+      ],
+      "decision_payload_canonical": "S6|i12a-statsign|field=12|selection=NOT_SIGNED|reason=insufficient_evidence|missing=economic_materiality_anchor,tolerance_calibration_source,industry_countersign|design_version=v1|reviewer=statistics_reviewer_i12a",
+      "decision_sha256": null,
+      "refusal_sha256": "8b99a7153b23ba41f55fdd16de24018e0ee4c73744ff44f202a944cfb9a698cd",
+      "signature": {
+        "role": "statistics_reviewer_i12a",
+        "signed": false,
+        "signed_at": null,
+        "scope": "统计面半边（字段 12 成功/失败阈值 —— 须共同签署，本面不单签）",
+        "industry_countersign": "required_separately",
+        "does_not_imply": ["不放行参数", "不代签行业面", "不解除 STOP①", "不产生 ACCEPT"]
+      }
+    }
+  ],
+
+  "boundary_declaration": {
+    "role": "statistics_reviewer_i12a",
+    "signed_by_statistics_only": true,
+    "industry_countersign_still_needed": false,
+    "industry_signature_performed_by_this_attempt": false,
+    "implementer_signed": false,
+    "self_sign_by_implementer": false,
+    "params_released": false,
+    "releases_nothing": true,
+    "produces_ACCEPT": false,
+    "stop1_still_triggered": true,
+    "test_results_unsealed": false,
+    "test_results_read": false,
+    "accuracy_results_read": false,
+    "open2_ban_observed": true,
+    "open2_values_consumed_as_threshold": false,
+    "writes_outside_planning": 0,
+    "git_writes": 0,
+    "git_commands_run": 0,
+    "git_status_run": false,
+    "network_used": false,
+    "five_plan_files_untouched": true,
+    "sealed_hypotheses_untouched": {"sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "bytes": 51697, "zero_byte_change": true},
+    "store_untouched": {"sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "unchanged": true},
+    "source_carrier_three_evidence_untouched": true,
+    "not_dispatched": ["I-12-B"]
+  }
+}

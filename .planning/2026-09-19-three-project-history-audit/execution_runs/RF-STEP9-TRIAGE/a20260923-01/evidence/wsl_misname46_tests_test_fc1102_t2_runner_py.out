@@ -1,0 +1,66 @@
+=== RF-STEP9-TRIAGE control: misname46 ===
+date_utc=2026-09-23T23:00:40Z
+file=tests/test_fc1102_t2_runner.py
+rf_sha=46bd8b16f295e41d3e6228fd0f38b8f175656e8a
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+layout=/tmp/s9mis/rfclone
+cmd=python3 -m pytest tests/test_fc1102_t2_runner.py -q
+.FFF                                                                     [100%]
+=================================== FAILURES ===================================
+____________________ TestT2Runner.test_healthy_lake_passes _____________________
+
+self = <test_fc1102_t2_runner.TestT2Runner testMethod=test_healthy_lake_passes>
+
+    def test_healthy_lake_passes(self):
+        import tempfile
+    
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            m = IsolatedLake(td, seed="fc1102").build()
+            proc = _run(m.catalog_path, td / "runs", _manifest(td))
+>           self.assertEqual(proc.returncode, 0, proc.stderr[-400:])
+E           AssertionError: 1 != 0 : PROBLEMS: manifest triplet commits missing: ['revenue']
+
+tests/test_fc1102_t2_runner.py:45: AssertionError
+__________________ TestT2Runner.test_report_isolated_and_json __________________
+
+self = <test_fc1102_t2_runner.TestT2Runner testMethod=test_report_isolated_and_json>
+
+    def test_report_isolated_and_json(self):
+        import tempfile
+    
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            m = IsolatedLake(td, seed="fc1102").build()
+            runs = td / "runs"
+            proc = _run(m.catalog_path, runs, _manifest(td))
+>           self.assertEqual(proc.returncode, 0)
+E           AssertionError: 1 != 0
+
+tests/test_fc1102_t2_runner.py:68: AssertionError
+_______________ TestT2Runner.test_trend_delta_detects_regression _______________
+
+self = <test_fc1102_t2_runner.TestT2Runner testMethod=test_trend_delta_detects_regression>
+
+    def test_trend_delta_detects_regression(self):
+        """A second run with scan errors grown beyond budget must fail —
+        trends are compared against the previous report, not absolute green."""
+        import tempfile
+    
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            m = IsolatedLake(td, seed="fc1102").build()
+            runs = td / "runs"
+            manifest = _manifest(td)
+            # first run green
+            p1 = _run(m.catalog_path, runs, manifest)
+>           self.assertEqual(p1.returncode, 0)
+E           AssertionError: 1 != 0
+
+tests/test_fc1102_t2_runner.py:87: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_fc1102_t2_runner.py::TestT2Runner::test_healthy_lake_passes
+FAILED tests/test_fc1102_t2_runner.py::TestT2Runner::test_report_isolated_and_json
+FAILED tests/test_fc1102_t2_runner.py::TestT2Runner::test_trend_delta_detects_regression
+3 failed, 1 passed in 3.79s
+PYTEST_RC=1

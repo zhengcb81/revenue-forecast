@@ -1,0 +1,274 @@
+{
+  "schema": "i11b_calibration_plan/1",
+  "card": "I-11-B",
+  "attempt": "execution_runs/I-11-B/a20260926-01",
+  "role": "implementer_i11b",
+  "status": "review_pending",
+  "value_policy": {
+    "params_released": false,
+    "store_untouched": true,
+    "statement": "本文件是卡内载体（写入面 = 本 attempt 目录）。hypotheses*.json / model_cards* 全程只读；store 侧 low/base/high 仍 null、_PLACEHOLDER 维持、released=false。本文件中的数值一律为 proposed_not_released 的校准拟定值（专家假设承接），不是放行。放行 = 把数值写入登记/封盘载体并解除 pending/_PLACEHOLDER 态——本卡不做、无权做（§三十四 边界）。",
+    "management_target_is_not_independent": true,
+    "management_target_rule": "管理层目标（FY2026 计划 金 105 吨/铜 120 万吨）只作 base 情景对照上界与达成率情景；禁止用作独立准确性证据（卡文 L14 + hypotheses H-CN-ZIJIN-PLAN-04）。",
+    "synthetic_numbers_quarantined": "qualitative_synthetic_example 的一切数字（2/8760/0.5/0.6/0.7/40/20/30/32/34/1200/264000/281520/299040/17520）不进入本文件任何真实参数字段"
+  },
+  "band_conventions": {
+    "volume_band": {"shape": "[0.9, 1.1]（±10%）", "anchor": "行业面已审定 H4 计划达成率带（IND ruling L288：0.90-1.10）", "use": "销量类参数敏感性带形状", "ea_ref": "EA-1"},
+    "price_band": {"shape": "±5%", "anchor": "行业面已审定 H2 单位收入漂移带（±5%）", "use": "单位实现收入/复合收入类参数敏感性带形状", "ea_ref": "EA-1"},
+    "growth_band": {"shape": "对产出收入 ±5% 换算：g_low=(1+g_base)×0.95−1，g_high=(1+g_base)×1.05−1", "anchor": "同 H2 形状", "use": "增长率参数", "ea_ref": "EA-4"},
+    "warning": "带形状是分析师对敏感性区间的设计（expert_assumption），不是披露依据；equivalent_to_disclosure_basis=false"
+  },
+  "action_1_method_selection": {
+    "allowed_methods": ["contract arithmetic", "historical relationship", "external comparable", "expert assumption"],
+    "rule": "优先 contract arithmetic（同披露内量×价/恒等式可复算）；无同口径多期历史可核样本 ⇒ 不引外部可比（不需要网络，且外部可比需另行 provenance 四件）⇒ 落 expert_assumption 并给敏感性区间",
+    "samples_available_locally": [
+      "CN-ZIJIN-AR2025:p327-p328 分部报告对外销售收入行（H-01 已登记 sample）",
+      "CN-ZIJIN-AR2025 产销量情况分析表（铜 884,943 吨/金 83,161 千克销售量、878,180 吨/82,743 千克产量）",
+      "CN-ZIJIN-AR2025:p56 经营计划（FY2026 计划值，管理层目标类）",
+      "CN-ZIJIN-AR2025 产品线量价行（金锭 810.17 元/克×49,074 千克；冶炼产锌 20,327 元/吨×403,324 吨）",
+      "US-MSFT-2026 分部收入 FY2026（PBP 139,996 / IC 137,791 / MPC 54,052 USD mn；增速 +16%/+30%/−1%）",
+      "I10A-DISCLOSURE-ADAPT-SIGN disclosure_adaptation_v2.json 四个 signed mapped case 的已审定映射与残差"
+    ],
+    "historical_experience_limit": "本地同口径多期样本不足（H-01/H-05 恒等式核对覆盖 FY2025/FY2024 两期；量价分解仅 FY2025 一期在本工位可读面内）⇒ 幅度类判断全部经 expert_assumption 承接（见 expert_assumptions.json）",
+    "external_comparable_used": false,
+    "network_used": false
+  },
+  "parameters": [
+    {
+      "parameter_id": "ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "action1_calibration": {"method": "contract arithmetic", "sample_ids": ["CN-ZIJIN-AR2025:p327", "CN-ZIJIN-AR2025:p328", "H-CN-ZIJIN-SEG-02 conversion_formula 引数 109,977,556,345"], "selection_rule": "分部报告附注'对外销售收入'行；矿产品分部单值 = 四分部合计 − 冶炼 − 贸易 − 其他 = 349,079,082,852 − 165,858,644,874 − 29,212,610,830 − 44,030,270,803 = 109,977,556,345 元（= H-02 公式所引数）", "data_gap": "store L39 original_value 记的是四分部合计 349,079,082,852，与 parameter_id 的分部语义存在张力（unverified-N1，登记不回改）"},
+      "action2_parameter_mapping": {"unit": "人民币元", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "effective_period": "FY2025（基期）→ FY2027", "original_value": "109,977,556,345", "original_value_transcribed_from_store": "349,079,082,852", "new_value": {"low": 104478678528, "base": 109977556345, "high": 115476434162}, "value_state": "proposed_not_released", "conversion_formula": "分部对外销售收入直接作为该分部的收入路径输入；合计数由四分部相加得到，不再做第二次抵销。base=最后可得同口径年度值（FY2025）不变（朴素基线，EA-3）；low/high=base×0.95 / base×1.05（EA-1）", "independence": "derived：矿产品分部收入与 H-02 量×价共享驱动，联合情景中不得与量、价同时独立取极值"},
+      "stop_evaluation": {"amplitude_source": "contract arithmetic（基期）+ expert_assumption（带设计）", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-3", "EA-5"],
+      "blocked_by": ["OPEN-2（矿产品量价口径的系数取值未解）"]
+    },
+    {
+      "parameter_id": "ZIJIN_SEG_SMELT_EXTERNAL_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "action1_calibration": {"method": "contract arithmetic", "sample_ids": ["CN-ZIJIN-AR2025:p327", "CN-ZIJIN-AR2025:p328"], "selection_rule": "分部报告附注'对外销售收入'行", "data_gap": "无同口径多期量价分解 ⇒ 幅度带走 EA-1"},
+      "action2_parameter_mapping": {"unit": "人民币元", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "165,858,644,874", "new_value": {"low": 157565712630, "base": 165858644874, "high": 174151577118}, "value_state": "proposed_not_released", "conversion_formula": "同 H-01；base=FY2025 值不变（EA-3），low/high=±5%（EA-1）"},
+      "stop_evaluation": {"amplitude_source": "contract arithmetic + expert_assumption", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-3"],
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_SEG_TRADE_EXTERNAL_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "action1_calibration": {"method": "contract arithmetic", "sample_ids": ["CN-ZIJIN-AR2025:p327", "CN-ZIJIN-AR2025:p328"], "selection_rule": "分部报告附注'对外销售收入'行", "data_gap": "同上"},
+      "action2_parameter_mapping": {"unit": "人民币元", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "29,212,610,830", "new_value": {"low": 27751980289, "base": 29212610830, "high": 30673241372}, "value_state": "proposed_not_released", "conversion_formula": "同 H-01；base=FY2025 值不变（EA-3），low/high=±5%（EA-1）"},
+      "stop_evaluation": {"amplitude_source": "contract arithmetic + expert_assumption", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-3"],
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_SEG_OTHER_EXTERNAL_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "action1_calibration": {"method": "contract arithmetic", "sample_ids": ["CN-ZIJIN-AR2025:p327", "CN-ZIJIN-AR2025:p328"], "selection_rule": "分部报告附注'对外销售收入'行", "data_gap": "同上"},
+      "action2_parameter_mapping": {"unit": "人民币元", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "44,030,270,803", "new_value": {"low": 41828757263, "base": 44030270803, "high": 46231784343}, "value_state": "proposed_not_released", "conversion_formula": "同 H-01；base=FY2025 值不变（EA-3），low/high=±5%（EA-1）"},
+      "stop_evaluation": {"amplitude_source": "contract arithmetic + expert_assumption", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-3"],
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-02",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "action1_calibration": {"method": "contract arithmetic（基期推导）+ expert_assumption（幅度）", "sample_ids": ["CN-ZIJIN-AR2025 产销量表 + 分部对外收入行（同披露内量÷价互约束）"], "selection_rule": "隐含单位实现收入 = 分部对外收入 ÷ 铜当量销售量（store 转换公式逐字沿用）", "data_gap": "铜当量换算系数 24 吨/千克为示意值、无披露依据（store 原文明示）；结论对该假设高度敏感（每 +1 吨/千克 ⇒ 单位收入 −10,670.89 元/吨铜当量，两点差分）"},
+      "action2_parameter_mapping": {"unit": "人民币元/吨铜当量", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "109977556345/885141（≈124,248.63，精确有理数，推导值非披露原文）", "new_value": {"low": 118036.2, "base": 124248.63, "high": 130461.06}, "value_state": "proposed_not_released", "conversion_formula": "隐含单位实现收入 = 分部对外收入 ÷ (铜销量 884,943 吨 + 金销量 83,161 千克 × 系数)；系数=24 吨/千克（示意值，EA-2）。low/high=base×0.95/1.05（EA-1）", "sensitivity_note": "系数 +1 吨/千克 ⇒ 分母 885,141→968,302 ⇒ 单位收入 124,248.63→113,577.74（−10,670.89）"},
+      "stop_evaluation": {"amplitude_source": "基期=contract arithmetic 推导；幅度=expert_assumption（EA-1/EA-2）", "explicit_assumption": true, "stop_calibration_triggered": false, "note": "整值可用性在 store 中为 STOP_DISCLOSURE_ADAPTATION（系数来源未裁定）；OPEN-2 明令该值放行=BLOCKED ⇒ proposed_not_released 且不得进入 forecast"},
+      "ea_refs": ["EA-1", "EA-2"],
+      "blocked_by": ["OPEN-2（ACCT L75/L103：参数保持 _PLACEHOLDER、不得放行；IND L127：给可放行取值 → BLOCKED）"]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-02（C2 新注册）",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "action1_calibration": {"method": "待定（contract arithmetic 可经已审定 M09 量价映射回推）", "sample_ids": ["disclosure_adaptation_v2.json ZJ-MIN-M09 signed 映射（Σ量×价）"], "selection_rule": "分金属实现价应由'分产品量×价'行回推（金锭 810.17 元/克×49,074 千克属该类行）", "data_gap": "本工位可读面内无铜产品线量价行 ⇒ FY2025 基期值不可复算；store original_value=null"},
+      "action2_parameter_mapping": {"unit": "人民币元/吨（不含税）", "period_start": "FY2025（基期，未取得）", "period_end": "FY2027（生效）", "original_value": null, "new_value": {"low": null, "base": null, "high": null}, "value_state": "declined_to_calibrate（显式拒绝出数，非静默缺失）", "conversion_formula": "实现单位收入 = 分产品对外收入 ÷ 分产品销售量（待 OPEN-2 解锁后按 M09 已审定映射回推）；带设计 = ±5%（EA-1，形状已定、数值待基期）", "why_no_number": "幅度无基期来源；本卡显式声明不作幅度假设（EA-7），维持 null —— 不是'无来源又未明确假设'的静默状态"},
+      "stop_evaluation": {"amplitude_source": "无", "explicit_assumption": "explicitly_declined（EA-7）", "stop_calibration_triggered": false, "disposition": "该槽位不校准、不出数；若独立复审采严格读法（幅度问题仅在出数时才发生）结论相同：无数字产生即无未经声明的幅度"},
+      "ea_refs": ["EA-7"],
+      "blocked_by": ["OPEN-2"]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-SEG-02（C2 新注册）",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "action1_calibration": {"method": "待定（contract arithmetic 可经 M09 映射回推）", "sample_ids": ["CN-ZIJIN-AR2025 金锭行 810.17 元/克×49,074 千克（产品线行，非矿产金口径）"], "selection_rule": "同铜分金属实现价", "data_gap": "金锭（冶炼产品）与矿产金口径不同，不可直接充当矿产品实现价；store original_value=null"},
+      "action2_parameter_mapping": {"unit": "人民币元/克（不含税）", "period_start": "FY2025（基期，未取得）", "period_end": "FY2027（生效）", "original_value": null, "new_value": {"low": null, "base": null, "high": null}, "value_state": "declined_to_calibrate（显式拒绝出数）", "conversion_formula": "实现单位收入 = 分产品对外收入 ÷ 分产品销售量（待 OPEN-2）；带设计 = ±5%（EA-1）", "why_no_number": "同铜分金属实现价：显式不作假设（EA-7）"},
+      "stop_evaluation": {"amplitude_source": "无", "explicit_assumption": "explicitly_declined（EA-7）", "stop_calibration_triggered": false, "disposition": "不校准、不出数"},
+      "ea_refs": ["EA-7"],
+      "blocked_by": ["OPEN-2"]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "action1_calibration": {"method": "historical relationship（基期）+ expert_assumption（幅度）", "sample_ids": ["CN-ZIJIN-AR2025 产销量表（铜销售量 884,943 吨、生产量 878,180 吨）"], "selection_rule": "可售量参数取产销量表销售量；产量作上限约束 saleable_volume ≤ production + inventory_change", "data_gap": "FY2025 销量−产量=+6,763 吨由库存下降/在途释放实现，store 明示'不得外推为常态'"},
+      "action2_parameter_mapping": {"unit": "吨", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "884,943（FY2025 销售量）", "new_value": {"low": 796448.7, "base": 884943, "high": 973437.3}, "value_state": "proposed_not_released", "conversion_formula": "base=FY2025 销售量不变（EA-3，且库存释放效应不外推 ⇒ base 不含 +6,763 的重复释放）；low/high=base×0.9/1.1（EA-1）；约束：销量 ≤ 产量 + 期初库存"},
+      "stop_evaluation": {"amplitude_source": "historical relationship + expert_assumption", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-3"],
+      "blocked_by": ["BLOCKED-6b/OPEN-11（库存桥 154 千克容差未签，量恒等式约束未闭合）"]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "action1_calibration": {"method": "historical relationship + expert_assumption", "sample_ids": ["CN-ZIJIN-AR2025 产销量表（金销售量 83,161 千克、生产量 82,743 千克）"], "selection_rule": "同铜可售量", "data_gap": "FY2025 销量−产量=+418 千克（库存释放），不外推"},
+      "action2_parameter_mapping": {"unit": "千克", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "83,161（FY2025 销售量）", "new_value": {"low": 74844.9, "base": 83161, "high": 91477.1}, "value_state": "proposed_not_released", "conversion_formula": "同铜；low/high=base×0.9/1.1（EA-1）"},
+      "stop_evaluation": {"amplitude_source": "historical relationship + expert_assumption", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-3"],
+      "blocked_by": ["BLOCKED-6b（R2 154 千克 NOT_SIGNED）"]
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_ZINC_SALEABLE_VOLUME_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03（C2 新注册）",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "action1_calibration": {"method": "historical relationship + expert_assumption", "sample_ids": ["CN-ZIJIN-AR2025 产销量表（锌销售量 352,470 吨）"], "selection_rule": "取产销量表销售量", "data_gap": "无多期可核序列"},
+      "action2_parameter_mapping": {"unit": "吨", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "352,470", "new_value": {"low": 317223, "base": 352470, "high": 387717}, "value_state": "proposed_not_released", "conversion_formula": "base=FY2025 值不变（EA-3）；low/high=±10%（EA-1）"},
+      "stop_evaluation": {"amplitude_source": "historical relationship + expert_assumption", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-3"],
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_MINERAL_SILVER_SALEABLE_VOLUME_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03（C2 新注册）",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "action1_calibration": {"method": "historical relationship + expert_assumption", "sample_ids": ["CN-ZIJIN-AR2025 产销量表（银销售量 430,254 千克）"], "selection_rule": "取产销量表销售量", "data_gap": "无多期可核序列"},
+      "action2_parameter_mapping": {"unit": "千克", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "430,254", "new_value": {"low": 387228.6, "base": 430254, "high": 473279.4}, "value_state": "proposed_not_released", "conversion_formula": "base=FY2025 值不变（EA-3）；low/high=±10%（EA-1）"},
+      "stop_evaluation": {"amplitude_source": "historical relationship + expert_assumption", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-3"],
+      "blocked_by": []
+    },
+    {
+      "parameter_id": "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER",
+      "hypothesis_id": "H-CN-ZIJIN-PLAN-04",
+      "model_id": "resource",
+      "driver_name": "saleable_volume",
+      "action1_calibration": {"method": "expert assumption（管理层目标类，独立性受限）", "sample_ids": ["CN-ZIJIN-AR2025:p56 经营计划"], "selection_rule": "只登记原文计划值与原文风险声明；不把计划值与独立预测混合", "data_gap": "计划值是管理层目标，原文声明为指导性指标、不构成承诺"},
+      "action2_parameter_mapping": {"unit": "吨（金）；万吨（铜）→ 统一 克/千克（金 105,000 千克）、吨（铜 1,200,000 吨）", "period_start": "FY2026（计划年度）", "period_end": "FY2026（对照年度）", "original_value": "矿产金 105 吨、矿产铜 120 万吨（FY2026 计划值）", "new_value": {"low": {"gold_kg": 94500, "copper_t": 1080000}, "base": {"gold_kg": 105000, "copper_t": 1200000}, "high": {"gold_kg": 115500, "copper_t": 1320000}}, "value_state": "proposed_not_released（_PLACEHOLDER 维持）", "conversion_formula": "saleable_volume_FY2026 = 计划产量 − 计划年内存货变动；情景带 = 达成率 [0.9, 1.1]（H4 行业面带，EA-1）作用于计划值", "management_target_is_not_independent": true},
+      "stop_evaluation": {"amplitude_source": "expert assumption（EA-1）+ 管理层目标原值", "explicit_assumption": true, "stop_calibration_triggered": false, "note": "管理层目标不得用作独立准确性证据；仅 base 情景对照上界 + 达成率情景"},
+      "ea_refs": ["EA-1", "EA-3"],
+      "blocked_by": ["§三十四 边界：两个 _PLACEHOLDER 维持不放行"],
+      "reserved_id_note": "ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER 在 I-11-A carries 中列为保留 id，hypotheses_v3 无独立条目（铜计划值并入本条 original_value 文本）；登记不回改"
+    },
+    {
+      "parameter_id": "ZIJIN_SEGMENT_RECONCILIATION_FY2027",
+      "hypothesis_id": "H-CN-ZIJIN-ELIM-05",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "action1_calibration": {"method": "contract arithmetic（恒等式）", "sample_ids": ["CN-ZIJIN-AR2025 分部报告（四分部总计 584,049,229,264、抵销 234,970,146,412、合并 349,079,082,852）"], "selection_rule": "合并收入 = Σ(分部总计) − 抵销 = Σ(分部对外收入)（A2 已精确复算差=0）", "data_gap": "无（恒等式两期可核：FY2025/FY2024）"},
+      "action2_parameter_mapping": {"unit": "人民币元", "period_start": "FY2025（基期）", "period_end": "FY2027（生效）", "original_value": "584,049,229,264 − 234,970,146,412 = 349,079,082,852", "new_value": {"low": 0, "base": 0, "high": 0}, "value_state": "proposed_not_released", "conversion_formula": "幅度语义 = 恒等式偏差，理论值 0 元；容差 τ=1 人民币元（ACCT R1/R3 SIGNED）；本参数不设增长幅度，只随 H-01 四分部联动"},
+      "stop_evaluation": {"amplitude_source": "contract arithmetic", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": [],
+      "blocked_by": ["store state=unquantified（6b 路径(c) 已退 unquantified，本卡不改 store）"]
+    },
+    {
+      "parameter_id": "MSFT_PBP_REVENUE_FY2027",
+      "hypothesis_id": "H-US-MSFT-SEG-01",
+      "model_id": "direct_growth",
+      "driver_name": "growth_rate",
+      "action1_calibration": {"method": "historical relationship（已披露增速持续）+ expert_assumption（幅度）", "sample_ids": ["US-MSFT-2026 分部收入 FY2026（PBP 139,996 USD mn，+16%）"], "selection_rule": "分部收入 = 基期分部收入 × (1 + growth_rate)；三分部增长差异分别建模", "data_gap": "FY2027 无任何已披露/可核增速来源 ⇒ 基期增速持续为分析师假设（EA-4）"},
+      "action2_parameter_mapping": {"unit": "小数（年度增长率）", "period_start": "FY2026（基线年）", "period_end": "FY2027（生效）", "original_value": "0.16（FY2026 已披露增速，仅作对照）", "new_value": {"low": 0.102, "base": 0.16, "high": 0.218}, "value_state": "proposed_not_released", "conversion_formula": "分部收入 = 139,996 × (1+g)（USD mn）；g_low=(1.16×0.95)−1=0.102、g_high=(1.16×1.05)−1=0.218（EA-4 带设计）"},
+      "stop_evaluation": {"amplitude_source": "expert assumption（EA-4）", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-4"],
+      "blocked_by": ["OPEN-3（MSFT 分部口径参数一律未放行）"]
+    },
+    {
+      "parameter_id": "MSFT_IC_REVENUE_FY2027",
+      "hypothesis_id": "H-US-MSFT-SEG-01",
+      "model_id": "direct_growth",
+      "driver_name": "growth_rate",
+      "action1_calibration": {"method": "historical relationship + expert_assumption", "sample_ids": ["US-MSFT-2026 IC 137,791 USD mn，+30%"], "selection_rule": "同 PBP", "data_gap": "同 PBP"},
+      "action2_parameter_mapping": {"unit": "小数", "period_start": "FY2026（基线年）", "period_end": "FY2027（生效）", "original_value": "0.30（FY2026 已披露增速，仅作对照）", "new_value": {"low": 0.235, "base": 0.3, "high": 0.365}, "value_state": "proposed_not_released", "conversion_formula": "分部收入 = 137,791 × (1+g)；g_low=(1.30×0.95)−1=0.235、g_high=(1.30×1.05)−1=0.365"},
+      "stop_evaluation": {"amplitude_source": "expert assumption（EA-4）", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-4"],
+      "blocked_by": ["OPEN-3"]
+    },
+    {
+      "parameter_id": "MSFT_MPC_REVENUE_FY2027",
+      "hypothesis_id": "H-US-MSFT-SEG-01",
+      "model_id": "direct_growth",
+      "driver_name": "growth_rate",
+      "action1_calibration": {"method": "historical relationship + expert_assumption", "sample_ids": ["US-MSFT-2026 MPC 54,052 USD mn，−1%"], "selection_rule": "同 PBP；MPC 的 −1% 不得被集团增长掩盖", "data_gap": "同 PBP"},
+      "action2_parameter_mapping": {"unit": "小数", "period_start": "FY2026（基线年）", "period_end": "FY2027（生效）", "original_value": "-0.01（FY2026 已披露增速，仅作对照）", "new_value": {"low": -0.0595, "base": -0.01, "high": 0.0395}, "value_state": "proposed_not_released", "conversion_formula": "分部收入 = 54,052 × (1+g)；g_low=(0.99×0.95)−1=−0.0595、g_high=(0.99×1.05)−1=0.0395"},
+      "stop_evaluation": {"amplitude_source": "expert assumption（EA-4）", "explicit_assumption": true, "stop_calibration_triggered": false},
+      "ea_refs": ["EA-1", "EA-4"],
+      "blocked_by": ["OPEN-3"]
+    },
+    {
+      "parameter_id": "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER",
+      "hypothesis_id": "H-US-MSFT-SEG-02",
+      "model_id": "direct_revenue",
+      "driver_name": "revenue",
+      "action1_calibration": {"method": "无可用方法（口径未闭合）", "sample_ids": ["US-MSFT-2026 叙述值 $214.4 billion（非表格精确值）"], "selection_rule": "store 明示：无可用换算公式，缺 Microsoft Cloud→分部/产品行完备映射表", "data_gap": "映射表缺失（store conversion_formula 逐字）"},
+      "action2_parameter_mapping": {"unit": "USD million（口径未闭合前不设幅度）", "period_start": "FY2026（基线）", "period_end": "FY2027（口径闭合前 unquantified）", "original_value": "214,400（叙述值）", "new_value": {"low": null, "base": null, "high": null}, "value_state": "declined_to_calibrate（显式拒绝出数）", "conversion_formula": "无（store：无可用的换算公式）", "why_no_number": "口径未闭合即无幅度可言；显式不作假设（EA-7），维持 unquantified/_PLACEHOLDER"},
+      "stop_evaluation": {"amplitude_source": "无", "explicit_assumption": "explicitly_declined（EA-7）", "stop_calibration_triggered": false, "disposition": "不校准、不出数、不把叙述值当精确值"},
+      "ea_refs": ["EA-7"],
+      "blocked_by": ["OPEN-3（MSFT 口径全维持不放行）"]
+    },
+    {
+      "parameter_id": "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027",
+      "hypothesis_id": "H-US-MSFT-SEG-03",
+      "model_id": "subscription",
+      "driver_name": "composition",
+      "action1_calibration": {"method": "无可用方法（拆分数据缺失）", "sample_ids": ["US-MSFT-2026 M365 Commercial 行 101,997 USD million（FY2026 产品行合计口径）"], "selection_rule": "store 明示：缺行内拆分（云/许可分项、平均付费席位、净 ARPU）", "data_gap": "拆分表未披露"},
+      "action2_parameter_mapping": {"unit": "USD million（单位经济学参数缺披露）", "period_start": "FY2026（基线）", "period_end": "FY2027（拆分可得前 pending）", "original_value": "101,997（FY2026 产品行合计口径）", "new_value": {"low": null, "base": null, "high": null}, "value_state": "declined_to_calibrate（显式拒绝出数）", "conversion_formula": "无（store：不写换算公式）", "why_no_number": "显式不作假设（EA-7）"},
+      "stop_evaluation": {"amplitude_source": "无", "explicit_assumption": "explicitly_declined（EA-7）", "stop_calibration_triggered": false, "disposition": "不校准、不出数"},
+      "ea_refs": ["EA-7"],
+      "blocked_by": ["OPEN-3"]
+    }
+  ],
+  "action_3_dependency_control": {
+    "purpose": "列共享驱动及约束，并检查同一事件是否同时在销量、价格、额外收入重复出现（卡文 L15）",
+    "shared_driver_ids": [
+      "D1 realized_price（矿产品实现价；影响 H-02 全部量价参数与 H-01 矿产品分部收入）",
+      "D2 saleable_volume（可售量；H-03 四参数 + H-02 分母）",
+      "D3 other_revenue（额外收入；XM-EV 映射 2,800,000,000 元；不得经价格二次进入）",
+      "D4 copper_equivalent_coefficient（金→铜当量系数 24 吨/千克；只允许在量的口径转换出现一次）",
+      "D5 elimination_bridge（内部抵销 234,970,146,412 元；只出现在恒等式桥）",
+      "D6 management_plan_FY2026（计划产量；独立性受限）",
+      "D7 segment_growth_MSFT（三分部增速；与集团增速互斥）"
+    ],
+    "event_reuse_check": [
+      {"event": "E1 FY2025 库存释放（铜 +6,763 吨 / 金 +418 千克：销量−产量）", "appears_in": ["销量（saleable_volume−production）"], "risk": "若价格侧用'收入÷销量'的实现价同时吸收该释放 ⇒ 同一事件在销量与价格双重出现", "verdict": "ALLOWED_ONCE：只在销量通道；base 已剔除常态外推，价格侧不得再解释同一增量", "result": "PASS"},
+      {"event": "E2 金→铜当量折算（24 吨/千克）", "appears_in": ["量的口径转换（分母 83,161×24）"], "risk": "若价格里再折算一次 ⇒ 双计（H-02 double_count_check 逐字禁止）", "verdict": "ALLOWED_ONCE：仅量侧；分金属价格用 元/克、不得再用 元/吨铜当量 二次折算", "result": "PASS"},
+      {"event": "E3 管理层 FY2026 计划（金 105 吨 / 铜 120 万吨）", "appears_in": ["销量情景（对照上界/达成率带）"], "risk": "同时当产能上限与收入预测基数 ⇒ 双计；且管理层目标被误作独立准确性证据", "verdict": "ALLOWED_ONCE：仅情景对照；management_target_is_not_independent=true", "result": "PASS"},
+      {"event": "E4 XM-EV 其他收入 2,800,000,000 元", "appears_in": ["额外收入（unit_sales 映射 other_revenue 字段，M09/M03 已审定映射）"], "risk": "经单位价格再进一次 ⇒ 双计", "verdict": "ALLOWED_ONCE：已审定映射显式加总一次（mut_omit_optional 变异曾击杀）", "result": "PASS"},
+      {"event": "E5 内部交易抵销 234,970,146,412 元", "appears_in": ["恒等式桥（H-05）"], "risk": "被当作任何参数收入基期 ⇒ 双计/高估约 67%", "verdict": "ALLOWED_ONCE：只在抵销桥", "result": "PASS"},
+      {"event": "E6 Microsoft Cloud 聚合（FY2026 214.4 billion，+27%）", "appears_in": ["（不进入任何收入路径）"], "risk": "与 IC 分部收入并列作两条路径 ⇒ 双计", "verdict": "PROHIBITED_CO_USE：H-07 维持 unquantified，不与 IC 增速并用", "result": "PASS"},
+      {"event": "E7 FY2026 分部增速（16%/30%/−1%）", "appears_in": ["MSFT 三参数的 base（持续性假设）"], "risk": "与集团 18% 增速同时进入同一路径 ⇒ 双计", "verdict": "ALLOWED_ONCE：三分部建模，集团增速不用", "result": "PASS"}
+    ],
+    "double_count_check_summary": "7 事件逐条过检：无同一事件同时出现在销量、价格、额外收入两个及以上通道；全部为 ALLOWED_ONCE 或 PROHIBITED_CO_USE 显式约束",
+    "correlated_scenarios": [
+      "S-MIN-PRICE：矿产品实现价（H-02）与矿产品分部收入（H-01-MINERAL）完全共享驱动 ⇒ 联动",
+      "S-VOL-PRICE：可售量与实现价受同一商品周期驱动 ⇒ low/high 成对联动，不得独立取极值",
+      "S-MSFT-SEG：三分部增速之和决定集团收入 ⇒ 三者不得同时独立上调至高情景而集团仍按旧口径（STOP_SCENARIO 触发条件）"
+    ],
+    "scenario_joint_logic": "联合情景规则：low/base/high 三情景中，同一事件的驱动（量、价、额外收入）必须沿同一情景档联动；禁止'独立调高多个有关联 driver'（卡文 L21）。实施检查：任一情景下 收入增量 = Σ(各驱动单通道增量) 且同一事件不得贡献两个及以上通道；违反 ⇒ STOP_SCENARIO。",
+    "stop_scenario_evaluation": {"independent_uplift_of_correlated_drivers": false, "joint_scenarios_consistent": true, "stop_scenario_triggered": false}
+  },
+  "action_4_reference": {
+    "hand_check": "synthetic_mechanism_check.json（合成示例手算复核 + 真实已审定映射执行）",
+    "rule": "示例数字不得复制到真实公司（已隔离登记）",
+    "real_mapping_executed": ["ZJ-MIN-M09", "ZJ-SMT-M09", "XM-PHONE-M03", "XM-EV-M03"]
+  },
+  "unverified_notes": [
+    {"id": "unverified-N1", "desc": "hypotheses_v3 H-01 parameter_mapping.original_value='349,079,082,852'（=四分部对外合计/合并营业收入）与 parameter_id=ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027 的分部语义存在张力；矿产品分部单值 109,977,556,345 由差额与 H-02 引数双重推出", "disposition": "登记不回改；本卡 proposed 值以 109,977,556,345 为 base 并公开该张力，交独立复审/编排层裁并"}
+  ]
+}

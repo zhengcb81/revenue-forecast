@@ -1,0 +1,44 @@
+{
+  "schema": "i12c_unblind_receipt/1",
+  "card": "I-12-C",
+  "attempt": "execution_runs/I-12-C/a20260926-01",
+  "role": "implementer_i12c",
+  "issued": true,
+  "issued_by": "implementer_i12c",
+  "issued_by_role": "独立reviewer（保管实际值者；卡文 Owner 栏 + 研究卡 step5）",
+  "this_station_cannot_issue": true,
+  "why": "实现者不自签（§三十四 L765）；解封回执属独立 reviewer 职权，本工位只登记其前置条件状态",
+  "preconditions_unmet": [
+    "统计 reviewer 与行业 reviewer 双签未落地（professional_approval 双双 unsigned；派单记「双签在飞」）",
+    "evaluation_design 13 字段未全完成（3 PENDING + 1 含未签阈值 ⇒ 验收未达成）",
+    "design_manifest 需签署后新版本重冻并经独立复审核验（当前 unseal_gate.currently_satisfied=false）",
+    "编排层/父层明文解封指令未下达",
+    "目标期 FY2027 未结束（紫金 2027-12-31 / 微软 2027-06-30）⇒ 实际值尚不存在",
+    "forecast_vintages 零数值（params 未放行）⇒ 无可评分的冻结预测"
+  ],
+  "preconditions_met": [
+    "forecast_manifest 已冻结（version=v1、input_hashes 已记、freeze_before_unblind=true）",
+    "本卡零实际值暴露（target_period_actuals_read=false）"
+  ],
+  "forecast_manifest": {
+    "path": "evidence/I-12-C/forecast_manifest.json",
+    "sha256": "03cdb01c71b232b8797e2eedf1503d3d8b0b5407a6c93cf7cb9e0384da26922a",
+    "version": "v1"
+  },
+  "sample_scope": {
+    "samples": 7,
+    "scorable_samples": 0
+  },
+  "exposure": {
+    "target_period_actuals_seen": false,
+    "exploratory_downgrade_required": false,
+    "basis": "未见实际值 ⇒ 不触发「已见实际值降 exploratory」；但可评分样本=0"
+  },
+  "state": "issued",
+  "next_owner": "独立 reviewer（另派）+ 编排层（解封指令）",
+  "declarations": {
+    "implementer_signed": false,
+    "params_released": false,
+    "releases_nothing": true
+  }
+}

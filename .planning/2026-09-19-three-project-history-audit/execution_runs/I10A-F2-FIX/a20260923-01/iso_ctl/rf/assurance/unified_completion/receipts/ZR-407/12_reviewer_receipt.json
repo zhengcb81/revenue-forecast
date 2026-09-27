@@ -1,0 +1,102 @@
+{
+  "base_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "5e5902d762a0b2e6b89453465f9e26b9981d5361",
+    "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+  },
+  "canonical_hash": "faa3e142232bd19ac1b60721ff778ffe6029a1acd738d8303be608c3fac7759d",
+  "commands": [
+    {
+      "command": "clean checkout: git -c safe.directory=<source> -c core.autocrlf=false clone --no-hardlinks <source> <revenue>/.review-zr407-20260818/{filing-fetch,company-wiki}; then copy only the six reviewed candidate files",
+      "exit_code": 0,
+      "result": "Both clean HEAD clones created at filing=3087f289 and wiki=45ae721. Their candidate diffs contain only filing-fetch scripts/fetch_filing.py and tests/test_fc802_gap_orchestration.py; company-wiki cli.py, close_gap.py, test_close_gap_fc801.py, and new test_zr407_ensure_readonly.py. git diff --check returned 0 for both. The first plain clone attempt was rejected by Git dubious-ownership; process-only safe.directory was the successful alternative and did not modify global config."
+    },
+    {
+      "command": "PYTHONUTF8=1 python -m pytest tests/test_complexity_ratchet.py tests/test_fc802_gap_orchestration.py tests/test_real_tool_conformance.py -q --tb=short --basetemp <clean>/tmp-filing-focused",
+      "exit_code": 0,
+      "result": "131 passed, 2 skipped, 39 subtests passed in 23.39s. Includes FC-802 revision-only orchestration, complexity ratchet, and real-tool no-download conformance."
+    },
+    {
+      "command": "PYTHONUTF8=1 PYTHONPATH=src python -m pytest tests/contract/test_close_gap_fc801.py tests/contract/test_zr407_ensure_readonly.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short --basetemp <clean>/tmp-wiki-focused",
+      "exit_code": 0,
+      "result": "11 passed in 5.70s. Covers newer_revision exact authorization, OS-read-only exact/no-download ensure with attempt=null and no acquisition journal, and the CLI complexity ratchet."
+    },
+    {
+      "command": "PYTHONUTF8=1 TEMP=<clean>/tmp-filing-e2e TMP=<clean>/tmp-filing-e2e python -m pytest tests/test_e2e_isolated_wiki.py -q --tb=short --basetemp <clean>/tmp-filing-e2e",
+      "exit_code": 0,
+      "result": "15 passed in 47.65s using isolated temporary roots/catalog and clean sibling clones; no production catalog, provider, or external root was used."
+    },
+    {
+      "command": "python -m ruff check --no-cache <all six reviewed source/test paths> (each clean clone)",
+      "exit_code": 0,
+      "result": "All checks passed in filing-fetch and company-wiki."
+    },
+    {
+      "command": "PYTHONUTF8=1 PYTHONPATH=assurance/unified_completion GIT_CONFIG_COUNT=3 with process-only safe.directory entries, python -X utf8 -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-407/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: implementer receipt is canonical and well-formed. UTF-8 and safe.directory settings were process-scoped only."
+    }
+  ],
+  "created_at_utc": "2026-08-18T22:10:29Z",
+  "findings": [
+    {
+      "detail": "The clean checkout verifies the filing GAP guard considers missing or newer_revision, while CloseGapTransaction uses one ordered actionable set before and inside the single-flight lock. The focused public-entrypoint tests confirm revision-only binds and passes the exact amended accession; no parallel authorization model was introduced.",
+      "id": "ZR407-REV-001",
+      "severity": "resolved",
+      "title": "newer_revision is now an actionable exact authorized candidate"
+    },
+    {
+      "detail": "The user-authorized repair dispatches exact no-download ensure through SourceResolver and renders the existing structured missing/reused style envelope with attempt=null. The isolated contract forbids SourceCatalog.store and confirms no journal append; download-capable and latest_as_of requests remain on the previous write-capable path.",
+      "id": "ZR407-REV-002",
+      "severity": "resolved",
+      "title": "no-download exact ensure no longer requires a writable catalog"
+    },
+    {
+      "detail": "Git initially rejected local clones because the sandbox account differs from repository ownership. Re-running with one-process safe.directory configuration created independent clean clones; no global Git configuration or source worktree content was changed.",
+      "id": "ZR407-REV-003",
+      "severity": "info",
+      "title": "clean review environment created despite ownership guard"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "Independent clean-checkout review of ZR-407 candidate; reviewer did not modify product sources, state.json, or lifecycle progression.",
+  "result_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "5e5902d762a0b2e6b89453465f9e26b9981d5361",
+    "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+  },
+  "reviewed_files": [
+    {
+      "path": "filing-fetch/scripts/fetch_filing.py",
+      "sha256": "743238E6D0E4EB77D58C89049CA113E862F16E9C692840D50FFD512829243B05"
+    },
+    {
+      "path": "filing-fetch/tests/test_fc802_gap_orchestration.py",
+      "sha256": "DB4AF157FA54FB152D19BABAA6C8AD788A802D0CB5F9CE63913C34F938ADD773"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/close_gap.py",
+      "sha256": "117C8166A6C26F3462574B787E0DB79C419E00C8B18287F25738948032F475C3"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/cli.py",
+      "sha256": "2F5C5740343697078D1E69B3A6A9EF9B0809277799C2D9C28A2D3E4048C4D512"
+    },
+    {
+      "path": "company-wiki/tests/contract/test_close_gap_fc801.py",
+      "sha256": "5BF49A5F9895D72A0D94BE557B099DB226A515E97E6289D9BBB19C0E63DD3E24"
+    },
+    {
+      "path": "company-wiki/tests/contract/test_zr407_ensure_readonly.py",
+      "sha256": "44C7407C793904AECDC23418F0DAB7D7D84336B9C54DF9D3B8019CD5350311C3"
+    }
+  ],
+  "reviewed_object_sha256": "dabc67e899d9e4d416c541e43e65cdf727268058f12b0a24cdb32f01bf5146cb",
+  "reviewed_plan_sha256": "72EAD6167BE728A0EEB20872CBEB97F1BD42AB5FC5DE3024689709E6D75A9744",
+  "reviewer": "reviewer-zr407-independent",
+  "schema_version": 1,
+  "scope_verdict": "within user-authorized ZR-407 extension; no production-root, provider, authorization-schema, canonical-writer, CI, or frozen-input modification found.",
+  "side_effect_verdict": "review tests used only clean clones and explicit isolated temporary roots; observed production catalog mutations=0, downloads=0, external-root writes=0.",
+  "unit": "ZR-407",
+  "verdict": "accepted"
+}

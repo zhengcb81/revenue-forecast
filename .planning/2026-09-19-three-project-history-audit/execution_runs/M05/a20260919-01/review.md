@@ -136,4 +136,12 @@ re-hashed; see `evidence/M05/evidence_hashes.json` and `after/rerun_sha256.json`
 
 Status after r2: `formula` = review_pending (point review of r2), `disclosure_adaptation` = unmapped, `accuracy` = unproven.
 
----
+---
+## 独立验收裁定 · r2 态（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅本 attempt 盘上 r2 态、仅锚 9ec65295…。本块即 r1 九项发现修复后缺失的点复审确认轮。
+- 未授予：disclosure_adaptation / accuracy / D/E/F / 一切外推。
+- carried：F-MT-01/02/03；原「formula = review_pending (point review of r2)」与 handoff.status 的矛盾由本块闭合（F-MT-04/05）。
+- 本次抽验（r2 态）：[620] 三方一致；负例 11/11；九件齐；pin 3/3（CRLF，路径式键）；无产品重写；OQ-02 枚举裁定采信。
+- status_authority: { status: "accepted_scoped", reviewer_status: "r2 point review returned by M-T-REVIEW (N=1) 2026-09-23: accepted_scoped (formula only), nine r1 findings confirmed addressed", carrier: "…/reviews/M05.md + acceptance_rulings.md#M05", implementer_signed: false, supersedes: "review_pending (point review of r2)" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 d4f29fa1dcb03028571da36bf1743681cb9d545761b80e50f907605c522bb5b3 over 9440 bytes, verified post-install as sha256 of the first 9440 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = b62f3c85339e436b0c5e84cb8001b2e57ead942c55d6a28541ee5f2087388e3d = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 992 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M05.md (sha256 091f96865e6fb08f285d4f96c327d377b90f31faab89c48a84f6b170d3da9ac2) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

@@ -429,3 +429,11 @@ r3 遗留项 P3-A…P3-D 的处置都发生在该世代**之后**，故本卡目
 标记）；P3-C/P3-D 以**文档**形式落在 `rc_namespace.json` 与批次交接（**不改 `run_card.py` 一个字节**，
 以保持 reviewer 已验证的 runner sha `94619a98…` 不变）；P3-E 的世代覆盖事实登记在批次交接与
 `generation_manifest.json`。`disclosure_adaptation` 与 `accuracy` **未动**。
+
+## 独立验收裁定 · r2 态（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅 r2 态、仅锚 9ec65295…。本块为缺失的 r2 确认轮。
+- carried：F-MT-01/02/03；F-MT-04/05 由本块闭合。
+- 本次抽验：[8100] 三方一致；负例 11/11；九件齐；pin 3/3（CRLF）；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "r2 fixes confirmed by M-T-REVIEW (N=1) 2026-09-23: accepted_scoped (formula only)", carrier: "…/reviews/M18.md + acceptance_rulings.md#M18", implementer_signed: false, supersedes: "review_pending (r2 fixes awaiting reviewer)" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 fe99f902246b8dbad93a471a0935ad9826188a32626be53802fdf6c249482db3 over 37031 bytes, verified post-install as sha256 of the first 37031 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = 970ea0de8f752acdf0b10a6150239fcfb5bdddc72f548c820aa8517136fc1f7a = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 695 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M18.md (sha256 3ebcdec940c25d8d96afbb09fdae6e1c5faa7b522b26c568904969bc7b599a78) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

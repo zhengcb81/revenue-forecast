@@ -1,0 +1,233 @@
+{
+  "review": "B.VR-fc1301",
+  "reviewed_at_utc": "2026-09-16T17:56:35Z",
+  "reviewer_agent_id": "c5e14f1a-4cd1-44da-9645-cc2dd0b332dc (copied from $env:DSH_SESSION_ID; this is a PROCESS-LEVEL SELF-REPORT, not an independently attestable identity)",
+  "independence_statement": "I did not author and did not fix any code under review. I wrote no file in either repository except this record. Commands I ran: read-only git (`git log`, `git show`, `git status`, `git rev-parse` in company-wiki), file reads, text search, SHA-256 hashing, `python -m pytest tests/contract/test_fc1301_reason_taxonomy.py -q` in company-wiki (6 passed in 1.57s), repo B's inventory tool re-run read-only through my own driver, `python -m ruff check` on the two changed files, and Python `ast` probes written to %TEMP%\\vr1301. All mutations were applied to a COPY of company-wiki's src tree under %TEMP%\\vr1301\\mut; company-wiki `git status --porcelain` was empty before and after (HEAD 76cc1bcd936ad3cd48e4f150f3683fd1bd346a4f unchanged). I did NOT run: the full contract suite or any pytest other than the FC-1301 gate file, the ZR-409 journey file, any network command, any wiki CLI, and I did not open/query/hash company-wiki\\.source_catalog\\catalog.sqlite3. I did not touch .tmp-zr408-*, .review-zr407-* or .review-* directories.",
+  "artifacts": {
+    "company-wiki:src/company_wiki/source_catalog/observability.py": "REVIEWED REVISION 76cc1bc: sha256:531bd15f964ee3d1 lines=580 | CURRENT HEAD 719f05b: sha256:5609d929573f42c8 lines=580 (working-tree hash; only the version comment/constant changed)",
+    "company-wiki:src/company_wiki/source_catalog/admission.py": "sha256:d177821c1216d92d lines=276",
+    "company-wiki:src/company_wiki/source_catalog/close_gap.py": "sha256:117c8166a6c26f34 lines=503",
+    "company-wiki:src/company_wiki/source_catalog/resolver.py": "sha256:83d6eabcd1e3b422 lines=2128",
+    "company-wiki:src/company_wiki/source_catalog/security_identity.py": "sha256:656cb235ceebbc67 lines=1108",
+    "company-wiki:src/company_wiki/source_catalog/artifact_handle.py": "sha256:3cc8fbf4f65380d1 lines=145",
+    "company-wiki:src/company_wiki/source_catalog/evidence_query.py": "sha256:a60a9249257a79d7 lines=426",
+    "company-wiki:tests/contract/test_fc1301_reason_taxonomy.py": "REVIEWED REVISION 76cc1bc: sha256:268c6f7dae6c1871 lines=224 | CURRENT HEAD 719f05b: sha256:e42b092bb9d0902c lines=224 (the scanner functions are byte-identical; only the version test was rewritten and test_the_newly_registered_codes_are_present was added)",
+    "company-wiki:tests/contract/test_zr409_fourth_root_real_journeys.py": "sha256:59ed97c0c49c5b26 lines=362",
+    "company-wiki:tests/unit/test_stage_taxonomy.py": "sha256:073195190bbf322a lines=361",
+    "company-wiki:tests/contract/test_close_gap_fc801.py": "sha256:5bf49a5f9895d72a lines=428",
+    "company-wiki:.github/workflows/ci.yml": "sha256:036ae658c539e07a lines=127",
+    "revenue-forecast:assurance/runs/2026-09-11_r4-phase-b/evidence/fc1301_reason_inventory.py": "sha256:6fec0a893a4ba685 lines=258",
+    "revenue-forecast:assurance/runs/2026-09-11_r4-phase-b/evidence/fc1301-reason-inventory.json": "sha256:0a99df530e1863aa lines=1204",
+    "revenue-forecast:assurance/runs/2026-09-11_r4-phase-b/evidence/fc1301-unregistered.txt": "sha256:af4a51900e1c0c39 lines=40",
+    "revenue-forecast:assurance/runs/2026-09-11_r4-phase-b/findings.md": "sha256:ecfb599fbb27c074 lines=527",
+    "revenue-forecast:assurance/runs/2026-09-11_r4-phase-b/packages/fc1301-taxonomy-coverage.md": "sha256:bad1b86e630e5643 lines=58"
+  },
+  "verdict": "rejected",
+  "counts": {
+    "P0": 1,
+    "P1": 2,
+    "P2": 2,
+    "P3": 4
+  },
+  "claims_verified": [
+    {
+      "claim": "1a. The AST inventory (evidence/fc1301_reason_inventory.py) found 33 positional reason sites, 32 code-like, 15 distinct never-registered codes (13 focus_policy_* + stale_gap_hash + v2_profile_admitted), and the keyword style had 34 code-like values with 0 unregistered.",
+      "verdict": "sound",
+      "evidence": "Recorded evidence/fc1301-reason-inventory.json summary.resolved_positional = {sites:33, code_like_sites:32, free_text_sites:1, unregistered_code_like_sites:17, unregistered_code_like_values:[15 names]}; summary.keyword_style = {code_like_sites:34, unregistered_code_like_sites:0}. My own read-only re-run of the same tool (python probe_inventory.py, temp scratch) reproduces 33/32 and 34/0 exactly and shows registry_codes=98, taxonomy_version='1.2'. Reproduced, but see 1b: the numbers are the tool's output, not a complete census."
+    },
+    {
+      "claim": "1b. (implied by 'the 15 codes that were invisible' + the work package acceptance criterion 'every existing reason is registered or rewritten, with a per-item disposition') The positional blind spot is now closed: after this commit no unregistered reason code is emitted in production source.",
+      "verdict": "false",
+      "evidence": "The gate resolves callees by BARE NAME with FIRST-DEFINITION-WINS (test_fc1301_reason_taxonomy.py:68 `out.setdefault(node.name, ...)`), and it scans files in sorted-path order. `gate._signatures(SRC)['_reject'] == ['artifact','reason']` (from artifact_handle.py:62, which wins over close_gap.py:206 `_reject(reason)`); `gate._signatures(SRC)['_result'] == ['cls','connection','row']` (from evidence_query.py:289, which wins over resolver.py:1907 `_result(request,status,reason,matches,debug_trace)` and security_identity.py:576 `_result(query,normalized_query,market,exchange,status,reason,candidates)`). A per-file (locally correct) AST scan of the same tree finds 49 code-like reason-position sites, of which 17 are invisible to the gate: 16 carry NEVER-REGISTERED codes (close_gap.py:224 no_runtime_policy, close_gap.py:226 stale_policy_hash, resolver.py:1501/1512/1519/1527/1538/1545/1553/1563, security_identity.py:622/632/642/667/679/688) plus stale_gap_hash at close_gap.py:256. Mutation on a TEMP COPY: renaming close_gap.py:256 to `_reject(\"brand_new_positional_code\")` leaves the gate GREEN, while the same rename at close_gap.py:380 makes it RED."
+    },
+    {
+      "claim": "2. The 15 codes are registered in observability.py with descriptions matching their call sites, each added to STAGES_BY_REASON, and REASON_TAXONOMY_VERSION went 1.1 -> 1.2.",
+      "verdict": "sound",
+      "evidence": "Read of src/company_wiki/source_catalog/observability.py lines 31 and 48-66, 266-282: REASON_TAXONOMY_VERSION == '1.2'; all 98 codes have non-empty descriptions; len(REASONS) == len(STAGES_BY_REASON) == 98 with set equality (reasons_minus_stages == stages_minus_reasons == []); all 15 new codes are present in both maps. Descriptions were checked against every call site (S1): 13 of 15 are exact; focus_policy_quarterly_keyword's description omits the '10-q' form code that admission.py:208 matches, and v2_profile_admitted duplicates the pre-existing `admitted` description (see B-VR1301-05). The STAGE BUCKETS chosen are a separate matter (B-VR1301-03). POST-REVIEW UPDATE: the version-bump element of this claim was itself the defect - at the reviewed revision REASON_TAXONOMY_VERSION was '1.2' while tests/unit/test_stage_taxonomy.py:107 (unchanged by the commit, present since cf765a3) asserts `REASON_TAXONOMY_VERSION == '1.1'` under the comment 'N-1 compat: the v1.1 flat taxonomy constant is untouched'; CI run 35130154115 went red on the unit step for all three Pythons and commit 719f05b reverted the constant to '1.1'. See B-VR1301-09."
+    },
+    {
+      "claim": "3. The gate is AST-based: positional and keyword arguments are mapped onto the callee's parameter names (dataclass fields included), and values are classified by shape so free text is not required to be registered.",
+      "verdict": "false",
+      "evidence": "The mechanism exists (fixture j_dataclass: `@dataclass class Decision: kind; reason` + Decision('x','planted_never_registered') IS detected; fixture g_kwonly: keyword `reason=` IS detected), and the shape test works (fixture free-text with spaces is not reported). But the mapping is unsound for same-named callees: 12 fixtures run through the gate's own emitted_codes() give a_vararg MISSED, b_kwargs_dict MISSED, c_module_const MISSED, d_self_method MISSED, e_name_collision MISSED, f_plain_class MISSED, h_lambda MISSED, k_deep_alias MISSED, l_attribute_unknownobj MISSED, i_outside_root MISSED, g_kwonly DETECTED, j_dataclass DETECTED. Two of those miss classes have LIVE instances in the tree today (e_name_collision: 17 sites; see claim 1b)."
+    },
+    {
+      "claim": "4. No other repository consumes the taxonomy version (filing-fetch 0 hits, revenue-forecast 0 hits), which is why the version bump is safe.",
+      "verdict": "false",
+      "evidence": "The cross-repo half is right, the SAFETY CONCLUSION is wrong. Cross-repo: 0 code matches for REASON_TAXONOMY_VERSION|reason-taxonomy-|STAGES_BY_REASON in revenue-forecast *.py and in the whole filing-fetch tree (its 14 'taxonomy' hits are its own unrelated ZR-204 error taxonomy). But the version is PINNED INSIDE this repo: `git show 76cc1bc:tests/unit/test_stage_taxonomy.py` line 107 = `assert REASON_TAXONOMY_VERSION == \"1.1\"` (same line exists at cf765a3, i.e. before the change), and `git show 76cc1bc:src/company_wiki/source_catalog/observability.py` = `REASON_TAXONOMY_VERSION = \"1.2\"`, so tests/unit/test_stage_taxonomy.py must fail at the reviewed revision (two cases: the constant pin at :107 and test_n1_consumer_rejects_20_event_without_crash at :318, whose n1_validate compares against the live constant). Commit 719f05b (landed while this review was running) confirms CI run 35130154115 was red on the unit step and reverts the constant to '1.1'. Verdict false for the bump-safety claim; the 'no cross-repo consumer' fact remains verified."
+    },
+    {
+      "claim": "5. The gate is load-bearing: deleting one of the new registrations makes it red naming the code AND its call site (close_gap.py:380); three new cases pin the widening.",
+      "verdict": "sound",
+      "evidence": "All 15 new codes appear in the gate's own emitted_codes(SRC) map, so dropping any one of them must fail test_every_emitted_reason_is_registered. Mutation on a TEMP COPY (isolated process, copy's registry proven loaded: registry_is_the_copy=true) deleting the `stale_gap_hash` REASONS line gives: RED, message \"unregistered reason codes in production source: ['stale_gap_hash'] - locations: {'stale_gap_hash': ['close_gap.py:380']}\"; restoring gives GREEN again; the unmutated copy is GREEN (len(REASONS)=98). The file has 6 test functions (3 new): test_the_scan_reaches_positional_reason_arguments, test_free_text_reasons_are_not_treated_as_codes, test_every_registered_code_has_a_stage; the third duplicates tests/unit/test_stage_taxonomy.py:126 and does not pin the widening (B-VR1301-06)."
+    },
+    {
+      "claim": "6a. A full contract-suite run gave 1934 passed / 8 skipped / 1 failed.",
+      "verdict": "unproven",
+      "evidence": "NOT VERIFIED BY ME by design: my review protocol allows only the FC-1301 gate file, and forbids any other pytest run (never the full suite). I have no independent observation of these counts and no CI log (no network). Recorded as unverified, not as false. POST-REVIEW UPDATE: the same suite question is answered by evidence I can verify - the reviewed revision made the UNIT step red (see claim 4), so the author's local 'contract suite' run cannot have covered tests/unit; the follow-up commit 719f05b says exactly that ('the previous round ran only the contract step, which is why CI found it instead of me'). The '1934 passed / 8 skipped / 1 failed' contract-only numbers remain unverified by me."
+    },
+    {
+      "claim": "6b. The single failure (test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample) is NOT caused by this change: the file is CI-ignored, passes in isolation, and its helper appends b'inaccessible' when child.stat() raises OSError, so a transient stat failure reads as a write.",
+      "verdict": "sound",
+      "evidence": "CI-ignore VERIFIED: .github/workflows/ci.yml:55 `--ignore=tests/contract/test_zr409_fourth_root_real_journeys.py`. Code fact VERIFIED: _shallow_fingerprint at tests/contract/test_zr409_fourth_root_real_journeys.py:79-93 digests (name, st_size, st_mtime_ns) of the root's top-level children and does `except OSError: digest.update(b'inaccessible')`; the failing assertion is line 221-223 (`portfolio_before == _shallow_fingerprint(dayu_portfolio)`). 'Not caused by this change' is well supported: the commit touches exactly two files (git show --stat 76cc1bc), the only behavioural value it alters is ObservabilityReport.schema_version ('reason-taxonomy-1.1' -> '1.2', observability.py:462), ObservabilityReport is constructed only inside observability.py (in-memory) and is never written to disk, and the fingerprint is over C:\\Users\\...\\dayu-agent\\workspace\\portfolio whose 28 top-level children are all dated 2026-05-31..2026-08-18 (verified by Get-ChildItem). 'Passes in isolation in 0.84 s' NOT verified (that pytest run is outside my allowed command set). The transient-stat-failure attribution is a plausible mechanism, not a proven cause -> B-VR1301-08."
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR1301-01",
+      "severity": "P0",
+      "area": "gate correctness (tests/contract/test_fc1301_reason_taxonomy.py:58-124)",
+      "claim": "The AST widening closes the 'positional reason is invisible' blind spot, so an unregistered positional reason code fails the gate.",
+      "counter_evidence": "`_signatures` keys callees by BARE NAME and keeps the FIRST definition in sorted-path order (`out.setdefault(node.name, _param_names(node))`, line 68), and `_callee_name` throws away the receiver (line 84-89). Measured with the gate's own helper: gate._signatures(SRC)['_reject'] == ['artifact','reason'] (artifact_handle.py:62 wins over close_gap.py:206 ['reason']); gate._signatures(SRC)['_result'] == ['cls','connection','row'] (evidence_query.py:289 wins over resolver.py:1907 and security_identity.py:576). Consequence, measured: a locally-correct scan of source_catalog finds 49 code-like reason-position sites; 17 are invisible to the gate, and 16 of them carry NEVER-REGISTERED codes - close_gap.py:224 no_runtime_policy, close_gap.py:226 stale_policy_hash (the latter is asserted by an existing contract test, tests/contract/test_close_gap_fc801.py:205 `assert result.reason == 'stale_policy_hash'`), resolver.py:1501/1512/1519/1527/1538/1545/1553/1563 and security_identity.py:622/632/642/667/679/688 - plus stale_gap_hash at close_gap.py:256. End-to-end mutation on a TEMP COPY: `python mut_step.py repl .../close_gap.py stale_gap_hash brand_new_positional_code 1` (i.e. the :256 site) then the gate's own test_every_emitted_reason_is_registered() -> GREEN; the identical rename at the :380 site -> RED \"... ['brand_new_positional_code'] - locations: {'brand_new_positional_code': ['close_gap.py:380']}\". So a positional drift in close_gap.py / resolver.py / security_identity.py passes CI unnoticed today, and the in-tree evidence already contains 16 such codes.",
+      "required_fix": "Resolve callees per file/class scope (module-local symbols first, `self`/`cls` stripped for methods), union the candidate signatures of same-named definitions instead of taking the first, and fail closed when two candidates disagree about which index is the reason parameter; then re-run the widened gate and register or rewrite the 16 codes it now reports (and re-check the inventory tool with the same fix).",
+      "residual": "Even after that fix the literal-only AST scan cannot see runtime-computed reasons (36 non-literal reason positions, e.g. admission.py:271 `_rejected('|'.join(reasons), *reasons)` emits a pipe-joined multi-code string) - that is inherent to the design and should be stated as a limit."
+    },
+    {
+      "id": "B-VR1301-02",
+      "severity": "P1",
+      "area": "evidence / acceptance criteria (repo B evidence + findings.md)",
+      "claim": "The positional inventory is the actionable, complete list of unregistered codes: '33 positional sites, 32 code-like => 15 codes were never registered' (findings.md:7-8, fc1301-unregistered.txt, fc1301-reason-inventory.json), and acceptance criterion 2 ('every existing reason registered or rewritten, with a per-item disposition') is therefore met.",
+      "counter_evidence": "The inventory tool has the SAME first-definition-wins resolver as the gate (fc1301_reason_inventory.py:69 `signatures.setdefault(node.name, ...)`), so it reports 0 unregistered code-like positional values while a locally-correct resolution of the same tree finds 16 unregistered code-like SITES (=16 distinct codes) at _reject/_result call sites the tool mis-mapped. fc1301-unregistered.txt lists exactly 40 lines and ends at 'stale_gap_hash @ close_gap.py:380'; the 'unregistered sites' list omits close_gap.py:224, close_gap.py:226 and all 14 resolver/security_identity _result sites. findings.md:7-8 states the 15-code conclusion with a '=>' inference from a scan that cannot see them.",
+      "required_fix": "Fix the tool's resolution as in B-VR1301-01, regenerate the inventory and the unregistered list, and either register the 16 codes (with per-item semantics and stage) or rewrite the call sites - then restate the acceptance criterion with the new counts.",
+      "residual": "Whether these 16 codes are IN SCOPE is a scope judgement the owner should make; the registry itself claims to be 'kept in sync with admission/reuse/resolver/artifact codes' (observability.py:33-34), resolver-family codes such as exact_hit/latest_selected/reused_after_discovery/existing_catalog_source_reused_before_adapter ARE registered, and stale_policy_hash sits in the same nested helper as the stale_gap_hash the commit did register - so the case for in-scope is strong but not owner-decided."
+    },
+    {
+      "id": "B-VR1301-03",
+      "severity": "P2",
+      "area": "taxonomy staging (observability.py:195-282)",
+      "claim": "The 15 new codes are placed in the right STAGES_BY_REASON buckets ('same stage as the sibling focus_policy_* codes: the decision is made while admitting an artifact').",
+      "counter_evidence": "The map documents its own attribution rules (observability.py:195-204): identity = 'entity/security identity + admission profile gates', artifact = 'artifact schema/hash/binding/status + path-policy checks', semantic = 'content/meaning-level decisions', freshness = 'as-of date, period, gap analysis, timeliness'. Against those rules: (a) the 13 focus_policy_* codes are title/metadata keyword classification decisions and are staged ('artifact',) while their direct sibling from the same function, focus_policy_no_allowed_category_evidence (admission.py:226, the fall-through of that same keyword ladder), is ('semantic',) - so the comment's premise 'same stage as the sibling focus_policy_* codes' is false; (b) v2_profile_admitted is an admission-profile gate (evaluate_candidate, admission.py:244-276) and is staged ('artifact',), while its sibling `admitted` - whose registry description is nearly identical, 'candidate facts pass the profile gate' - is ('identity',); (c) stale_gap_hash is a gap-plan revalidation (close_gap.py:247-256 / 372-380, 'gap revalidation (DL-03) - metadata only, nothing fetched') and is staged ('acquisition',), while the codes in the same if-block, gap_already_closed and gap_closed_by_concurrent, are both ('freshness',). Consequence: _reason_stage_problems (observability.py:404-409) fails closed, so an event emitted under the natural stage is dropped by MetricsCollector.record_stage_event, and the map is documented as consumed cross-repo ('revenue-forecast and filing-fetch consume this map in later cards').",
+      "required_fix": "Re-derive the stage for each of the 15 codes from the documented attribution rules (most plausibly semantic/identity for the focus_policy_* batch, identity for v2_profile_admitted, freshness for stale_gap_hash), and correct the in-code justification comment.",
+      "residual": "No production emitter of StageEvent exists in src yet (callers are tests and scripts), so the impact is latent - but it lands on the cross-repo consumers the map is written for."
+    },
+    {
+      "id": "B-VR1301-04",
+      "severity": "P2",
+      "area": "gate robustness (test_fc1301_reason_taxonomy.py:35-41)",
+      "claim": "The gate validates the registry of the tree it scans.",
+      "counter_evidence": "The gate computes SRC = <test>/../../src/company_wiki/source_catalog and then does `sys.path.insert(0, str(SRC.parent))`, i.e. it inserts ...\\src\\company_wiki - a directory that provably contains no `company_wiki` package (verified: (SRC.parent/'company_wiki').is_dir() is False; the directory holds __init__.py, automation/, canonical_ingest.py, ...). The import therefore resolves through whatever `company_wiki` is installed: with company-wiki paths removed from sys.path, `import company_wiki` raises ImportError; in this environment a .pth/editable entry supplies repo A. Demonstrated impact: running the gate against a COPY of the tree with a dropped registration printed registry_file = repo A's observability.py and GREEN (registry_is_the_copy=false); only after I forced the copy's src onto sys.path did the same mutation produce the claimed RED. Repo B's inventory tool guards against exactly this (fc1301_reason_inventory.py:228-231 'imported a DIFFERENT copy of the registry'); the CI gate does not.",
+      "required_fix": "Insert the correct path (SRC.parents[1]) and add the inventory tool's registry-identity assertion (imported observability.__file__ must equal the scanned tree's observability.py), so a mismatch is red instead of silently green.",
+      "residual": "In CI (checkout + editable install of the same tree) both paths coincide, so today's CI result is probably unaffected; the risk is to copy-based verification and to any installed-package environment."
+    },
+    {
+      "id": "B-VR1301-05",
+      "severity": "P3",
+      "area": "registry descriptions (observability.py:52-66)",
+      "claim": "Each new code is registered 'with the meaning the call sites give them'.",
+      "counter_evidence": "Two are imprecise: (a) focus_policy_quarterly_keyword = 'quarterly keyword or Q1-Q4 form code' while admission.py:208 also matches folded_form == '10-q'; (b) v2_profile_admitted = 'candidate facts pass the v2 profile gate' duplicates the pre-existing `admitted` = 'candidate facts pass the profile gate' (observability.py:37), and `admitted` is never emitted anywhere in src (grep: only observability.py:37/207 and a boolean dict key in focus_cleanup.py:164/182) - so the batch added a second code for one meaning instead of reusing/renaming, and the work package's requirement of a per-item register-or-rewrite rationale is not recorded anywhere I could find.",
+      "required_fix": "Amend the quarterly description to include the 10-Q form code, and either emit the existing `admitted` at admission.py:272 or record why a near-duplicate code is preferable.",
+      "residual": "Cosmetic for the gate (both descriptions are non-empty and plausible), but they are the human-readable half of the registry."
+    },
+    {
+      "id": "B-VR1301-06",
+      "severity": "P3",
+      "area": "docstrings / commit-message numbers",
+      "claim": "The gate docstring and commit message describe the inventory accurately and the three new cases pin the change.",
+      "counter_evidence": "(a) test docstring line 11 says 'an inventory found 17 code-like positional sites in production source and 15 codes that were never registered'; the inventory's own JSON key for 17 is `unregistered_code_like_sites` and the code-like positional total is 32 - as written it reads as the total count. (b) The commit message says 'the keyword style had 34 code-like values'; the recorded JSON has 34 code-like SITES and 29 distinct code-like values (computed from keyword_style). (c) test docstring line 21-22 says a callee 'not defined inside the scanned package cannot be mapped' - the resolution scope is only the scanned ROOT (source_catalog), and the inventory tool scans src/company_wiki, a strictly wider tree (e.g. routing.py:76/102 values appear in the tool's JSON and are never seen by the gate). (d) The third 'new case', test_every_registered_code_has_a_stage, duplicates tests/unit/test_stage_taxonomy.py:126 `assert set(STAGES_BY_REASON) == set(REASONS)` and has nothing to do with the widening.",
+      "required_fix": "Correct the three numbers/wording and either drop the duplicate case or state that it is a cheap local re-assertion.",
+      "residual": "No effect on gate behaviour."
+    },
+    {
+      "id": "B-VR1301-07",
+      "severity": "P3",
+      "area": "cross-repo claim (commit message; findings.md:9; packages/fc1301-taxonomy-coverage.md:54)",
+      "claim": "'no other repository references the taxonomy version (filing-fetch 0 hits, revenue-forecast 0 hits)' / '跨仓消费者: revenue-forecast 0 处'.",
+      "counter_evidence": "As a literal search the revenue-forecast half is false: grep for REASON_TAXONOMY_VERSION in revenue-forecast matches 8 files, e.g. assurance/fc/FC-1301/12_reviewer_receipt.json:20 ('REASON_TAXONOMY_VERSION 1.0->1.1'), assurance/unified_completion/receipts/ZR-101/12_reviewer_receipt.json:42 ('REASON_TAXONOMY_VERSION=1.1 ... -> PASS'), plus *.md run notes (assurance/runs/2026-09-02_remaining-gap-closure/progress.md:75 'taxonomy 1.1 additive'). filing-fetch's half is accurate (0 hits for the reason taxonomy; its 14 'taxonomy' hits are its own ZR-204 error taxonomy). No code consumer exists in either repo, so the bump is safe - the wording is what is wrong, not the conclusion.",
+      "required_fix": "Reword to 'no code in filing-fetch or revenue-forecast imports or asserts the reason taxonomy (only archived assurance records mention the version)'.",
+      "residual": "None material."
+    },
+    {
+      "id": "B-VR1301-08",
+      "severity": "P3",
+      "area": "ZR-409 attribution (commit message; findings.md:13-19)",
+      "claim": "'Its helper appends b\"inaccessible\" to the digest when child.stat() raises OSError, so a transient stat failure under full-suite load reads as \"a write happened\"' - i.e. that mechanism explains the observed red.",
+      "counter_evidence": "The code fact is verified (test_zr409_fourth_root_real_journeys.py:87-92), and the 'no write happened' half is supported (all 28 top-level children of C:\\Users\\...\\dayu-agent\\workspace\\portfolio have mtimes 2026-05-31..2026-08-18, verified with Get-ChildItem). But the causal claim is an inference, not an observation: the test captured no diagnostic (it does not record which child or which digest differed), and an equally evidence-consistent mechanism - another process creating and removing a top-level entry inside the before/after window (the fingerprint includes child NAME and size, not just mtime) - would also produce portfolio_before != after and would leave exactly the same absence of trace. The commit message's 'so ...' presents one of the two as the cause; findings.md:17 is more careful but still calls it the mechanism the file 'exposes'.",
+      "required_fix": "Mark the cause as unproven (as findings.md does for other cases) or have the test log the differing child/digest so a recurrence is diagnosable.",
+      "residual": "The 'unrelated to this change' conclusion is separately sound (see claim 6b) and does not depend on this mechanism."
+    },
+    {
+      "id": "B-VR1301-09",
+      "severity": "P1",
+      "area": "version bump / recon axis (observability.py:31 at 76cc1bc; commit message)",
+      "claim": "'The recon first established that no other repository references the taxonomy version (filing-fetch 0 hits, revenue-forecast 0 hits), so the bump does not cross a repo boundary' - i.e. bumping REASON_TAXONOMY_VERSION 1.1 -> 1.2 is safe.",
+      "counter_evidence": "The recon checked who IMPORTS the constant but not what PINS it. tests/unit/test_stage_taxonomy.py:103-107 (byte-identical at cf765a3 and 76cc1bc) pins it deliberately: '# N-1 compat: the v1.1 flat taxonomy constant is untouched.' followed by `assert REASON_TAXONOMY_VERSION == \"1.1\"`; test_n1_consumer_rejects_20_event_without_crash (:299-318) additionally requires the live constant to validate a 'reason-taxonomy-1.1' payload. At the reviewed revision the constant was '1.2', so both cases fail - the repository was CI-red on the unit step. Commit 719f05b (2026-09-16T18:54:36+01:00, landed DURING this review) reverts the constant to '1.1', documents the freeze, and records CI run 35130154115 as red in the 'Unit tests' step for all three Pythons. Independently re-verified after the fix at HEAD 719f05b: gate file 7 passed in 1.90s, taxonomy_version '1.1', and the mutation results are unchanged (drop stale_gap_hash -> RED naming close_gap.py:380; new code at close_gap.py:256 -> GREEN; same code at :380 -> RED).",
+      "required_fix": "Nothing further for this element - it is disposed by 719f05b, which is the correct resolution (registering codes really is additive and needs no version bump). The residual action is procedural: a claim of the form 'no other repository consumes X' must be accompanied by a PIN search in this repository too (grep for the constant name and its literal value across tests/ and docs/), and the pre-push verification must run the same steps CI runs - a contract-only run hid this.",
+      "residual": "Fixed before I finished, so the reviewed revision 76cc1bc is red while HEAD 719f05b is green on this element. It is recorded because it falsifies a stated justification in the reviewed commit and because it shows the 'VERIFIED' section of that message was produced by a partial run."
+    }
+  ],
+  "suspicions": [
+    {
+      "id": "S1",
+      "status": "refuted",
+      "evidence": "Read every call site: admission.py:142-226 (evaluate_admission) and admission.py:244-276 (evaluate_candidate); close_gap.py:247-256 and 372-380. 13/15 descriptions are exact - e.g. focus_policy_strict_broker_evidence = 'broker institution AND research-report semantics both present' matches admission.py:181 `_BROKER_INSTITUTION_RE.search(text) and _BROKER_REPORT_RE.search(text)`; focus_policy_financial_report_keyword = 'financial-report keyword, kind left as regulatory_filing' matches admission.py:214-219 `_decision('regulatory_filing', ...)`; stale_gap_hash = 'gap plan hash moved on since the binding was written' matches `current_plan.gap_hash != binding.gap_plan_hash` (close_gap.py:255, 379). No description is WRONG; two are imprecise (B-VR1301-05).",
+      "why": "The suspicion that a description misdescribes its call site is refuted; only two precision defects remain (quarterly keyword misses the 10-q form code; v2_profile_admitted duplicates `admitted`)."
+    },
+    {
+      "id": "S2",
+      "status": "confirmed",
+      "evidence": "observability.py:195-204 documents the attribution rules; focus_policy_no_allowed_category_evidence = ('semantic',) while the 13 new focus_policy_* are ('artifact',); `admitted` = ('identity',) while v2_profile_admitted = ('artifact',); gap_already_closed / gap_closed_by_concurrent = ('freshness',) while stale_gap_hash = ('acquisition',). _reason_stage_problems drops events whose stage is not in the code's bucket. See B-VR1301-03.",
+      "why": "14 of the 15 codes sit in a bucket the map's own rules do not support, and the in-code justification ('same stage as the sibling focus_policy_* codes') is false because one sibling is staged semantic."
+    },
+    {
+      "id": "S3",
+      "status": "confirmed",
+      "evidence": "Fixtures run through the gate's own emitted_codes(): a_vararg (*args forwarding) MISSED; b_kwargs_dict (f(**{'reason':...})) MISSED; c_module_const (code in a module constant) MISSED; d_self_method (self._reject('code') with `def _reject(self, reason)`) MISSED - the gate keeps `self` at index 0, shifting every method index; e_name_collision (same-named callee defined first in another file) MISSED - LIVE, 17 sites; f_plain_class (class with __init__, not a dataclass) MISSED; h_lambda MISSED; k_deep_alias (`from helpers import _decision as emit`) MISSED; l_attribute_unknownobj and i_outside_root MISSED; g_kwonly (keyword-only `reason`) DETECTED; j_dataclass DETECTED. Live-instance check for the other classes: the only reason-carrying methods in the package live OUTSIDE the scanned root (deployment.py:135/149, proposal.py:275/302/405, run_store.py:265, source_registry.py:197) and are never called from source_catalog with a literal (only sqlite `connection.rollback()`); the only unpacking site is admission.py:271 `*reasons` into `*evidence`, not a reason position; no aliased imports of reason carriers exist.",
+      "why": "Real, undocumented false-negative class with 17 live sites (the name collision), plus several latent ones (self-method offset, non-dataclass class, lambda, aliased import, *args/**kwargs, non-literal values). Only the 'callee defined outside the scanned root' limit is documented - and it is documented as 'outside the scanned package', which is narrower than the actual scanned root."
+    },
+    {
+      "id": "S4",
+      "status": "refuted",
+      "evidence": "Registered codes failing ^[a-z][a-z0-9_]*$: 0 (computed over all 98 REASONS keys). Mirror risk: of the 74 distinct values at reason positions, 58 are code-like and all 58 are registered; the 16 non-code-like values are prose, and the only single-token ones are CJK ('主实体', '内容明确提及', from src/company_wiki/routing.py) which the ASCII shape test correctly rejects. No live false positive exists.",
+      "why": "Both directions of the shape-classification risk are currently benign: no registered code is skipped, and no ASCII single-word prose is coerced into a code. The residual risk is future-only (an English single-word prose reason would be treated as a code) and is inherent to shape classification."
+    },
+    {
+      "id": "S5",
+      "status": "confirmed",
+      "evidence": "The gate IS load-bearing, and the mechanism is exactly as claimed: on a TEMP COPY (company-wiki itself untouched) with the copy's registry proven loaded, deleting the `stale_gap_hash` REASONS line makes test_every_emitted_reason_is_registered fail with \"unregistered reason codes in production source: ['stale_gap_hash'] - locations: {'stale_gap_hash': ['close_gap.py:380']}\"; restoring makes it green; all 15 new codes appear in emitted_codes(SRC). The commit's stated call-site close_gap.py:380 is the ONLY site it can see - the second stale_gap_hash site (close_gap.py:256) is invisible (B-VR1301-01). I ran the assertion directly rather than pytest on the copy: same test function, fresh interpreter per step; my first two attempts were invalid (sys.modules caching, then the editable install supplying repo A's registry) and were corrected - that second failure is itself finding B-VR1301-04.",
+      "why": "Yes, load-bearing for the 15 registered codes; but its demonstrated power is narrower than the invariant it advertises, because the neighbouring positional sites in the same file are not reachable."
+    },
+    {
+      "id": "S6",
+      "status": "confirmed",
+      "evidence": "No CODE consumer in either repo: revenue-forecast *.py -> 0 matches for REASON_TAXONOMY_VERSION|reason-taxonomy-|STAGES_BY_REASON (and no zr101_map.py survives in the tree); filing-fetch -> 0 matches for REASONS/REASON_TAXONOMY_VERSION/STAGES_BY_REASON (its 'taxonomy' hits are the unrelated ZR-204 error taxonomy). BUT documentation references DO exist in revenue-forecast: 8 files, e.g. assurance/fc/FC-1301/12_reviewer_receipt.json:20, assurance/unified_completion/receipts/ZR-101/12_reviewer_receipt.json:42, assurance/runs/2026-09-02_remaining-gap-closure/progress.md:75. So '0 hits' is false as a text search while 'no consumer' is true. POST-REVIEW UPDATE: the same recon axis missed an IN-REPO pin - tests/unit/test_stage_taxonomy.py:107 pins REASON_TAXONOMY_VERSION == '1.1' (present since cf765a3), so the bump in 76cc1bc made CI red; reverted by 719f05b (B-VR1301-09). The cross-repo answer above is unchanged.",
+      "why": "The claim's substance (the bump cannot break another repo) is verified; its evidence wording overstates the search result (B-VR1301-07)."
+    },
+    {
+      "id": "S7",
+      "status": "confirmed",
+      "evidence": "_shallow_fingerprint is at :79-93 and does append b'inaccessible' on OSError; the failing assertion is the dayu_portfolio fingerprint at :221-223; the file is CI-ignored (ci.yml:55); the portfolio's 28 top-level children are all dated 2026-05-31..2026-08-18, so no persistent write is visible. Nothing in the change can reach that path: git show --stat 76cc1bc lists exactly two files, the only output value it alters is the in-memory ObservabilityReport.schema_version, and no ObservabilityReport is ever written to disk. The transient-stat mechanism is plausible but unproven as the cause (the equally consistent 'transient extra child' mechanism is not excluded, and no diagnostic was captured). 'Passes in isolation in 0.84 s' could not be verified (outside my allowed pytest set).",
+      "why": "The unrelatedness conclusion is sound; the registered cause is a hypothesis presented with causal wording in the commit message (B-VR1301-08). The findings.md entry is honest about registering a defect rather than dismissing the red, which is the right disposition."
+    },
+    {
+      "id": "S8",
+      "status": "confirmed",
+      "evidence": "Overstatements/understatements found: (a) test docstring:11 and the observability registration comment ('17 code-like sites, 15 distinct codes') drop the word 'unregistered', turning 17 unregistered-of-32 into 17 total; (b) commit message '34 code-like values' where the JSON has 34 sites / 29 distinct values; (c) findings.md:7-8 '=> 15 个码从未注册' asserts completeness that the tool cannot support (16 more exist); (d) commit message 'revenue-forecast 0 hits' (8 files match); (e) commit message's ZR-409 'so a transient stat failure ... reads as a write' presents an unproven cause; (f) observability.py:266-267 comment 'same stage as the sibling focus_policy_* codes' is contradicted by focus_policy_no_allowed_category_evidence being staged semantic. Counterweight: the same texts are explicit that free text is excluded on purpose (17 sites), that one resolution limit exists ('this gate does not pretend to be exhaustive'), and findings.md:11 records the author's own third root-path/miscounted-inventory error - the honesty is real, the coverage numbers are what overreach. (g) the commit message's 'no other repository references the taxonomy version ... so the bump does not cross a repo boundary' is true across repos but false for this repo's own frozen pin (B-VR1301-09), and the message's 'VERIFIED' paragraph lists a contract-only run while the unit step was red.",
+      "why": "Several sentences claim more than the measurements support; the most consequential is (c), because it is the sentence the acceptance decision rests on."
+    }
+  ],
+  "not_checked": [
+    "The full contract suite result (1934 passed / 8 skipped / 1 failed) - my protocol forbids any pytest run other than tests/contract/test_fc1301_reason_taxonomy.py, so this number is unverified, not disputed.",
+    "That test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample passes in isolation in 0.84 s (same restriction).",
+    "CI status/logs for 76cc1bc on any Python version (no network, no CI log access); I verified only the --ignore list in .github/workflows/ci.yml.",
+    "ruff on the whole repository (I ran it only on the two changed files: 'All checks passed!', exit 0) and mypy/coverage/complexity ratchets.",
+    "Whether the 16 unregistered codes found by my scan are in scope for FC-1301 - that is an owner scope decision; I verified they are genuine reason positions and that same-family codes are registered.",
+    "Repos other than filing-fetch and revenue-forecast were not searched for taxonomy consumers (claim 4 names only those two).",
+    "The behaviour of the gate under Linux/macOS path ordering (my resolution findings are platform-independent AST facts, but file order was only observed on Windows).",
+    "catalog.sqlite3 was never opened, queried or hashed, per protocol; no wiki CLI was run.",
+    "I did not re-run the ZR-409 journey or inspect the production catalog data that journey reads."
+  ],
+  "notes": "Method: read-only git + file reads + text search + SHA-256 + Python ast; three independent scanners written in %TEMP%\\vr1301 (union-resolution, per-file local-resolution, and a fixture harness that calls the gate's own emitted_codes()), plus an isolated-process mutation harness on a COPY of src/company_wiki. Repo A was never written: `git status --porcelain` in company-wiki is empty and HEAD is still 76cc1bcd936ad3cd48e4f150f3683fd1bd346a4f. Errors I made and corrected: (1) my first mutation harness ran all mutations in one interpreter, so the cached company_wiki.source_catalog.observability module made the dropped-registration mutation report GREEN - corrected by one process per step; (2) my second attempt still imported repo A's registry because an editable install (.pth / _EditableFinder) put it on sys.path ahead of the copy, while the gate's own `sys.path.insert(0, str(SRC.parent))` points at a directory that cannot contain the package - I detected this with an explicit registry-identity printout and fixed it by stripping the editable finder and the installed path, which is how B-VR1301-04 was found; (3) a PowerShell argument-quoting problem mangled a mutation anchor ('anchor not found'), so the anchors were moved inside the script; (4) my first fixture script crashed on a missing parent directory (FileNotFoundError) - fixed with mkdir; (5) my first independent scanner used a union-of-all-same-named-definitions model, which over-approximated reason indices (36 'non-literal' hits, some belonging to a different same-named definition), so I added the per-file local-resolution model and report the 49-sites / 17-invisible / 16-unregistered numbers from that stricter model. What is genuinely good in the change and should survive the required fixes: the shape classification is a real methodological correction (the first inventory's '17 unregistered' conflated code and prose), the 13 focus_policy_* codes were genuinely unregistered and are now described accurately, the version bump was checked cross-repo, the gate documents one resolution limit instead of pretending to be exhaustive, and the load-bearing mutation claim is true as stated. POST-REVIEW EVENT: repo A's HEAD moved from 76cc1bc to 719f05b while I was writing this record (another session committed a fix for the version bump). I did not write that commit and did not touch either repository: company-wiki `git status --porcelain` was empty at every check and the only untracked file in the run directory is this record. I re-ran the gate file at the new HEAD (7 passed), rebuilt my mutation copy from HEAD and re-ran all three mutations, and diffed the gate's scanner: the P0 blind spot is still live at HEAD, while the version-bump defect is fixed. Because the review request named 76cc1bc, both revisions are recorded in artifacts and in head_moved_during_review.",
+  "head_moved_during_review": {
+    "reviewed_revision": "76cc1bc (the commit named in the review request)",
+    "head_at_review_start": "76cc1bcd936ad3cd48e4f150f3683fd1bd346a4f",
+    "head_at_review_end": "719f05b1d7f7448384f0c799b60d409615bbf32f",
+    "new_commit": "719f05b fix(fc1301): the flat taxonomy version is a FROZEN N-1 contract - do not bump it (2026-09-16T18:54:36+01:00; files: src/company_wiki/source_catalog/observability.py, tests/contract/test_fc1301_reason_taxonomy.py)",
+    "what_it_changes": "REASON_TAXONOMY_VERSION 1.2 -> 1.1 (with a freeze comment), rewrites the gate's version test as test_taxonomy_version_is_the_frozen_n1_contract, adds test_the_newly_registered_codes_are_present pinning the 15 codes. The 15 registrations and their STAGES_BY_REASON entries are unchanged.",
+    "re_verified_at_head": [
+      "python -m pytest tests/contract/test_fc1301_reason_taxonomy.py -q in company-wiki -> 7 passed in 1.90s",
+      "git diff 76cc1bc..HEAD -- tests/contract/test_fc1301_reason_taxonomy.py -> the only hunks are the two test functions; _signatures/_callee_name/emitted_codes/CODE_LIKE/the SRC+sys.path lines are byte-identical, so B-VR1301-01/-03/-04 apply unchanged",
+      "mutation harness rebuilt from HEAD on the TEMP COPY: baseline GREEN (98 codes, version 1.1); drop stale_gap_hash -> RED \"... ['stale_gap_hash'] - locations: {'stale_gap_hash': ['close_gap.py:380']}\"; new code at close_gap.py:256 -> GREEN (blind spot still live); same new code at close_gap.py:380 -> RED",
+      "close_gap.py / resolver.py / security_identity.py / admission.py / artifact_handle.py / evidence_query.py are unchanged between the two revisions (hashes identical)."
+    ],
+    "effect_on_this_review": "Claim 4's safety conclusion is recorded as false (B-VR1301-09, severity P1, already disposed by 719f05b). All other findings were re-checked at HEAD and still hold; the P0 is unaffected."
+  }
+}

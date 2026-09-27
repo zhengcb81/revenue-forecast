@@ -1,0 +1,95 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "739d5aa4c05fd4cd58b6115e9726f5395542e36b",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "b52f37235db5ed9b84fc906ca417f578fdfe5277fa203301bf7c89dba41c6b0c",
+  "commands": [
+    {
+      "command": "uv run python -m pytest tests/unit/test_stage_taxonomy.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "20 passed in 0.30s"
+    },
+    {
+      "command": "uv run python -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "693 passed in 36.57s (baseline 673 → +20)"
+    },
+    {
+      "command": "uv run python -m pytest tests/contract -q --tb=no (company-wiki)",
+      "exit_code": 1,
+      "result": "1478 passed, 18 skipped, 8 failed：7 个冻结 HEAD 已知既有失败（worker_bootstrap heartbeat/session_start、security_identity×2、pipeline export、pdf_page_aware、parser_liveness、extraction_quality）+ 1 个负载 flake（test_terminating_supervisor_does_not_leave_an_orphan_worker，隔离重跑 1 passed in 5.05s；与 observability 无关）"
+    },
+    {
+      "command": "uv run ruff check src/company_wiki/source_catalog/observability.py tests/unit/test_stage_taxonomy.py && uv run ruff format --check <同两个文件>",
+      "exit_code": 0,
+      "result": "All checks passed! / already formatted"
+    },
+    {
+      "command": "tools/check_unique_test_symbols.py (company-wiki)",
+      "exit_code": 0,
+      "result": "OK"
+    }
+  ],
+  "created_at_utc": "2026-08-14T06:00:00+00:00",
+  "findings": [
+    {
+      "detail": "测试断言 >=78 并在测试内注明；未虚构 code。frozen annex 只要求八阶段 schema + unknown fail + N/N-1，不要求 code 数量。",
+      "id": "ZR101-IMPL-001",
+      "severity": "info",
+      "title": "spec 偏差（已按诚实处理）：REASONS 实为 78 个 code 而非简报假设的 ≥90"
+    },
+    {
+      "detail": "test_terminating_supervisor_does_not_leave_an_orphan_worker 在并行负载下超时失败，隔离重跑绿；7 项为冻结 HEAD 既有失败（ZR001-ENV-001 记录集）。",
+      "id": "ZR101-IMPL-002",
+      "severity": "info",
+      "title": "wiki contract 8 failed 中 1 项为负载 flake（非本卡回归）"
+    }
+  ],
+  "implementation": {
+    "api": [
+      "STAGE_TAXONOMY_VERSION=2.0 / STAGE_TAXONOMY_SCHEMA=stage-taxonomy-2.0（REASON_TAXONOMY_VERSION=1.1 原样保留）",
+      "CrossRepoStage(str,Enum)：identity,resolution,freshness,acquisition,safety,artifact,semantic,consumer（annex 顺序）",
+      "STAGES_BY_REASON：78 个 v1.1 code 全部归属（≥1 阶段；safety 按 spec 保留空集）",
+      "stage_sequence()/stages_for_reason()（unknown→ValueError fail closed）/is_registered_stage()",
+      "StageEvent dataclass + to_dict()；validate_stage_event() 返回 problems（永不 raise；path-like detail 就地 redact 为 <redacted>；schema/stage/reason/mismatch/emitted_at 全校验）",
+      "MetricsCollector.record_stage_event() 无效事件返回 False；record_reason 行为不变"
+    ],
+    "wiki_commit": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "implementer": "zr101-implementer",
+  "kind": "implementer",
+  "notes": [
+    "本卡为 wiki 产品 additive 改动；revenue/filing 零改动（triplet 侧只冻结）。",
+    "mypy 无门（wiki CI mypy 仅覆盖 11 个指定 contract 模块，observability.py 不在其中）。",
+    "observability.py 全量套件 branch coverage 94.9% ≥ 冻结下限 91%。"
+  ],
+  "objective": "版本化跨仓阶段/原因/事件 taxonomy：identity→consumer 八阶段 schema；unknown reason fail；N/N-1 contract tests。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "739d5aa4c05fd4cd58b6115e9726f5395542e36b",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki src/company_wiki/source_catalog/observability.py（additive 2.0）+ tests/unit/test_stage_taxonomy.py；revenue 侧 receipts/ZR-101/** 与 state.json。禁止改动其它产品模块与 1.1 契约。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes_outside_scope": 0,
+    "wiki_user_dirty_files_touched": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/observability.py",
+    "company-wiki/tests/unit/test_stage_taxonomy.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-101/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-101/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-101"
+}

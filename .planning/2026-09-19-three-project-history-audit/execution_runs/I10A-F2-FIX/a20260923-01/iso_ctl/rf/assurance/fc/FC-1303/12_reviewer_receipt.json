@@ -1,0 +1,98 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1303",
+  "review_round": "r1",
+  "reviewer": "reviewer-fc1303-independent",
+  "implementer": "honest-implementer",
+  "decision": "accepted",
+  "status": "accepted",
+  "base_triplet": {
+    "revenue": "4a4c1089b00716696b8c382b9265ba9478b9ec05",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "result_triplet": {
+    "revenue": "a9f1ff1821c64dde55601d7fd4606a4e91d0c0df",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "reviewed_at": "2026-08-13T03:15:36Z",
+  "replay_note": "Full from-scratch replay in clean worktrees under .fcap-review/fc-130x/ (same layout as the FC-1302 replay). F-6 rule honored throughout. Diff audit: tools/slo_probe.py (new, 130 lines: frozen BUDGETS exact/latest/bundle p95=5.0s + peak_rss_gb=2.0, nearest-rank _percentiles, psutil peak_wset with honest None fallback when psutil is absent, exit 2 on breach, isolated --report write) + tools/tests/test_slo_probe.py (new, 3 tests: frozen budgets / percentile order statistics / read-only source scan). Production run executed from the clean worktree with the production config and catalog: exit 0, all p95 ~0.45s against the 5s budgets, peak RSS 21MB against 2GB, breaches=[]. The resolve subprocess is the frozen resolver CLI (read-only resolve semantics); the probe itself contains zero write statements (grep + contract test).",
+  "commands": [
+    {
+      "command": "Diff audit: full read of tools/slo_probe.py + test file at result",
+      "exit_code": 0,
+      "result": "Matches spec: frozen budgets table, percentile order statistics, psutil with honest None fallback, exit 2 on breach, report isolated. No extra production files.",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "RED at base: copy tools/tests/test_slo_probe.py onto revenue-base, run it",
+      "exit_code": 0,
+      "result": "RED reproduced: ModuleNotFoundError: No module named 'slo_probe' (tool missing at base) — collection error. Copy removed; revenue-base clean.",
+      "cwd": "fc-130x/revenue-base worktree"
+    },
+    {
+      "command": "GREEN at result: python -B -m pytest tools/tests/test_slo_probe.py -q",
+      "exit_code": 0,
+      "result": "3 passed in 0.07s.",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "M3 mutation: weaken BUDGETS['exact_p95'] 5.0 -> 50.0 (reverse edit), run test_slo_probe.py",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — test_budgets_are_frozen_at_measured_levels FAILS (AssertionError: 50.0 != 5.0; 1 failed, 2 passed). Reverted via reverse edit -> 3 passed, git status clean.",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "Production verification: python tools/slo_probe.py --samples 3 --catalog <production catalog.sqlite3> --config <production config/source_catalog.yaml> --report <temp>",
+      "exit_code": 0,
+      "result": "EXIT=0: exact p95 0.453s, latest p95 0.438s, bundle p95 0.453s (budget 5s each), peak_rss_gb=0.021 (21MB, budget 2GB), breaches=[]. Resolve subprocess runs production code (editable install at result tip 304966d) with the production config against the production catalog — read-only resolve semantics.",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "No-write source scan: grep INSERT/UPDATE/DELETE/CREATE TABLE in tools/slo_probe.py",
+      "exit_code": 0,
+      "result": "Zero write statements (also asserted by test_probe_cli_is_read_only_by_contract).",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "python tools/receipt_validator.py --receipt assurance/fc/FC-1303/11_implementer_receipt.json (after result_triplet fix)",
+      "exit_code": 0,
+      "result": "OK: 1 receipt(s) valid. result_triplet corrected by reviewer to revenue a9f1ff1 (finding F1).",
+      "cwd": "revenue-forecast (main checkout)"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "M3",
+      "file": "revenue-forecast/tools/slo_probe.py",
+      "mutation": "Weakened the frozen budget exact_p95 from 5.0 to 50.0 (reverse edit)",
+      "killed": true,
+      "result": "tools/tests/test_slo_probe.py -> test_budgets_are_frozen_at_measured_levels FAILS (50.0 != 5.0). Reverted via reverse edit -> 3 passed, worktree clean."
+    }
+  ],
+  "unresolved_findings": [
+    {
+      "id": "FC-1303-F1",
+      "severity": "info",
+      "file": "revenue-forecast/assurance/fc/FC-1303/11_implementer_receipt.json",
+      "issue": "result_triplet was generated pre-commit and equaled the base triplet; corrected by reviewer to a9f1ff1.",
+      "disposition": "Fixed by reviewer in this round."
+    },
+    {
+      "id": "FC-1303-F2",
+      "severity": "warn",
+      "file": "revenue-forecast/tools/slo_probe.py",
+      "issue": "_resolve() ignores its `request` parameter — EXACT_PROBE/LATEST_PROBE are decorative and every sample runs the identical exact-mode CLI call (no --mode latest_as_of, which the wiki resolve CLI supports at cli.py:415). The report's `latest` row therefore measures the exact path a second time and is mislabeled: the latest-as-of SLO is not actually measured. No measurement is fabricated and the bundle row is the documented honest proxy, so the frozen budgets still guard real resolve latency.",
+      "disposition": "Non-blocking but should be fixed: wire --mode latest_as_of for the latest samples (or relabel the row) in a follow-up before the SLO baseline is treated as covering latest-as-of."
+    },
+    {
+      "id": "FC-1303-F3",
+      "severity": "info",
+      "file": "revenue-forecast/tools/slo_probe.py",
+      "issue": "peak RSS measures the probe process's own peak working set (~21MB), not the resolver subprocess that actually opens the 47G catalog — the 2GB RSS budget is nearly vacuous. Honest (None fallback, never faked) but the RSS SLO is effectively unmonitored.",
+      "disposition": "Non-blocking; measure the spawned resolve subprocess's peak memory (psutil on the Popen handle) in a follow-up."
+    }
+  ],
+  "summary": "r1 ACCEPTED. New read-only SLO probe verified end to end: RED at base (tool missing -> collection error), GREEN at result (3 passed), M3 frozen-budget mutation killed and reverted, production run exit 0 with exact/latest/bundle p95 ~0.45s (budget 5s) and peak RSS 21MB (budget 2GB), zero write statements in the tool. Three findings, none blocking: stale result_triplet (fixed), F2 warn that the `latest` row is actually a second exact-path measurement because _resolve ignores its request parameter (the latest-as-of SLO is not genuinely measured — follow-up recommended), and F3 info that the RSS budget measures the probe shell, not the resolver subprocess. Result triplet (rev-parsed fcap tips): revenue a9f1ff1, filing 83c638e, wiki b93994a over base 4a4c108/83c638e/b93994a."
+}

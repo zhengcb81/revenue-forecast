@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ACQUISITION",
+  "attempt_id": "a20260924-01",
+  "role": "controlled_acquisition",
+  "workspace_root": "C:/Users/郑曾波/Projects/revenue-forecast",
+  "write_surface": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/"
+  ],
+  "authorization": {
+    "source_file": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+    "section": "二十四、【已裁定·第五批】Owner 四答（2026-09-24 深夜，选项式问答原话）",
+    "line": 498,
+    "row": 3,
+    "verbatim": {
+      "question": "`OPEN-3` 的 E1 取文（SEC 直连 403、`web_search` 端点故障，行业 reviewer 仅经 `r.jina.ai` 取到文本且 **快照 sha=null** ⇒ 会计面判「至多 E2、不得支撑参数」）",
+      "owner_choice": "**授权 filing-fetch 路径**",
+      "execution_mapping": "授权用 **filing-fetch / 受控抓取**把 **2026-09-02 8-K Item 7.01（含 Exhibit 99.1 若可得）**落成**本地语料文件**，记 **URL + 取回 UTC + sha256 + 逐字引文**（E1 五要素），满足后**交会计面定等级**。**取证产物只落本计划目录内**，不写 company-wiki 或其他产品仓",
+      "execution_discipline_line_504": "**取证（选项 3）的证据等级由会计面定，不由取证方自定**；取不到就维持 BLOCKED，**不造绿色样例**。"
+    }
+  },
+  "e1_definition_verbatim": {
+    "source_file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+    "line_66": "| **E1 已核** | 申报原文**本地归档**：URL + 取回 UTC + 文件 sha256 + 逐字引文 + 至少一条独立复核路径（同本卡 P1/P2 双路径精神） | 参数、口径声明、\"已核\"字样 |",
+    "line_153": "- **E1 = 已核**（唯一可支撑\"分部口径已确定\"的等级）：申报原文本地归档 + sha256 + 逐字引文 + 独立路径复核（与本卡 P1/P2 双路径、`arithmetic_oracle` 同精神）；分部重分类还须附**重述后的基期分部数据**（否则不可比）。"
+  },
+  "acquisition_boundary": {
+    "third_party_proxy_used": true,
+    "origin_direct_sec_success": false,
+    "statement": "SEC 原站直取全部 HTTP 403；本目录内 4 个语料文件全部来自两条不同的第三方文本处理服务（r.jina.ai 渲染代理 / W3C html2txt 服务），且为工位对 harness web_fetch 返回文本的转写（harness 不暴露 HTTP 响应体字节），不是 origin HTML 响应字节。此两点必须随本产物一起上交，由会计面裁定是否满足 E1。",
+    "dayu_agent_market_tool": {
+      "status": "not_executed",
+      "reason": "dayu-agent（US 市场下载工具）不在 PATH；其 download 的唯一落盘目标是 dayu-agent workspace/product 仓与 filing-fetch 的 company-wiki companies/{entity}/raw/ —— 两者均为 owner 明文禁止写入的产品仓，且本会话文件沙箱只允许写 revenue-forecast 工作区。因此只执行了 filing-fetch 只读 reuse 探针（attempt A2，downloads=0），未执行任何下载写入。"
+    }
+  },
+  "attempts": [
+    {"id": "A1", "retrieval_method": "直连（harness web_fetch → sec.gov）", "target": "8-K", "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm", "retrieved_utc_window": {"start": "2026-09-24T21:18:59Z", "end": "2026-09-24T21:19:06Z"}, "http_status": 403, "outcome": "failed", "note": "SEC 拒止页 Your Request Originates from an Undeclared Automated Tool；Reference ID 0.1ac2645f.1790284746.136c8537"},
+    {"id": "A2", "retrieval_method": "filing-fetch skill（只读 reuse 探针，python scripts/fetch_filing.py）", "target": "8-K", "url": "local://filing-fetch/company-wiki-catalog", "retrieved_utc_window": {"start": "2026-09-24T21:20:21Z", "end": "2026-09-24T21:20:23Z"}, "http_status": null, "exit_code": 2, "outcome": "structured_miss", "response": "{\"schema_version\":\"1.1\",\"status\":\"not_found\",\"error\":\"source is not reusable: missing / no_existing_source_satisfies_request\",\"error_code\":\"not_found\",\"retryable\":false,\"calls\":2,\"downloads\":0}", "note": "catalog 内无可复用 8-K（与 IND ruling L142 枚举一致：company-wiki 内 8-K 文件数=0）；--allow-download 下载路径按 owner 边界未执行"},
+    {"id": "A3", "retrieval_method": "直连（harness web_fetch → sec.gov）", "target": "Exhibit 99.1", "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm", "retrieved_utc_window": {"start": "2026-09-24T21:20:24Z", "end": "2026-09-24T21:20:32Z"}, "http_status": 403, "outcome": "failed", "note": "SEC 拒止页；Reference ID 0.1ac2645f.1790284832.136cdda0"},
+    {"id": "A4", "retrieval_method": "第三方渲染代理 r.jina.ai（harness web_fetch）", "target": "8-K", "url": "https://r.jina.ai/https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm", "upstream_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm", "retrieved_utc_window": {"start": "2026-09-24T21:20:45Z", "end": "2026-09-24T21:20:56Z"}, "http_status": 200, "outcome": "document_text_retrieved", "saved_to": "corpus/MSFT_8K_2026-09-02_Item7.01.md"},
+    {"id": "A5", "retrieval_method": "第三方渲染代理 r.jina.ai（harness web_fetch）", "target": "Exhibit 99.1", "url": "https://r.jina.ai/https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm", "upstream_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm", "retrieved_utc_window": {"start": "2026-09-24T21:21:03Z", "end": "2026-09-24T21:21:11Z"}, "http_status": 200, "outcome": "document_text_retrieved", "saved_to": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.md"},
+    {"id": "A6", "retrieval_method": "第三方镜像直取（harness web_fetch → sec.report）", "target": "8-K", "url": "https://sec.report/Document/0001193125-26-380280/d291965d8k.htm", "retrieved_utc_window": {"start": "2026-09-24T21:21:28Z", "end": "2026-09-24T21:21:33Z"}, "http_status": null, "outcome": "failed", "note": "TypeError: fetch failed（连接层失败）"},
+    {"id": "A7", "retrieval_method": "web_search 工具", "target": "搜索", "url": "tool://web_search", "retrieved_utc_window": {"start": "2026-09-24T21:21:44Z", "end": "2026-09-24T21:21:56Z"}, "http_status": null, "outcome": "failed", "note": "DeepSeek 返回不可解析响应体（SyntaxError: Unexpected token 'e'… is not valid JSON），endpoint=api.deepseek.com/anthropic/v1/messages —— 与 owner 记载的『web_search 端点故障』一致，本次仍未恢复"},
+    {"id": "A8", "retrieval_method": "第三方 raw 代理 allorigins（harness web_fetch）", "target": "8-K", "url": "https://api.allorigins.win/raw?url=https%3A%2F%2Fwww.sec.gov%2FArchives%2Fedgar%2Fdata%2F789019%2F000119312526380280%2Fd291965d8k.htm", "retrieved_utc_window": {"start": "2026-09-24T21:22:27Z", "end": "2026-09-24T21:22:52Z"}, "http_status": 522, "outcome": "failed", "note": "Cloudflare 522 origin connection timed out"},
+    {"id": "A9", "retrieval_method": "第三方 raw 代理 codetabs（harness web_fetch）", "target": "8-K", "url": "https://api.codetabs.com/v1/proxy?quest=https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm", "retrieved_utc_window": {"start": "2026-09-24T21:22:58Z", "end": "2026-09-24T21:23:03Z"}, "http_status": 503, "outcome": "failed", "note": "Cloudflare Error 1200 rate limited"},
+    {"id": "A10", "retrieval_method": "第三方镜像直取（harness web_fetch → sec.report 重试）", "target": "8-K", "url": "https://sec.report/Document/0001193125-26-380280/", "retrieved_utc_window": {"start": "2026-09-24T21:23:17Z", "end": "2026-09-24T21:23:23Z"}, "http_status": null, "outcome": "failed", "note": "TypeError: fetch failed（再次失败）"},
+    {"id": "A11", "retrieval_method": "搜索引擎结果页直取（harness web_fetch → html.duckduckgo.com）", "target": "搜索", "url": "https://html.duckduckgo.com/html/?q=%22FY27+Segments+and+Investor+Metrics%22", "retrieved_utc_window": {"start": "2026-09-24T21:23:33Z", "end": "2026-09-24T21:23:38Z"}, "http_status": 200, "outcome": "search_results_retrieved", "note": "E3 级：命中 sec.gov 原文链接、webull/itiger/cbonds/stocktitan/雪球/新浪 条目；snippet 含 Item 7.01 首句"},
+    {"id": "A12", "retrieval_method": "第三方摘要站直取（harness web_fetch → stocktitan.net）", "target": "8-K", "url": "https://www.stocktitan.net/sec-filings/MSFT/8-k-microsoft-corp-reports-material-event-f8a7cf7d3af8.html", "retrieved_utc_window": {"start": "2026-09-24T21:23:46Z", "end": "2026-09-24T21:23:53Z"}, "http_status": 200, "outcome": "partial_unusable", "note": "Rhea-AI 摘要 + 内容截断提示，未取得 8-K 逐字全文"},
+    {"id": "A13", "retrieval_method": "第三方新闻站直取（harness web_fetch → cbonds.com）", "target": "8-K", "url": "https://cbonds.com/news/4076487/", "retrieved_utc_window": {"start": "2026-09-24T21:24:00Z", "end": "2026-09-24T21:24:04Z"}, "http_status": 403, "outcome": "failed", "note": "Cloudflare Just a moment… challenge"},
+    {"id": "A14", "retrieval_method": "第三方新闻站直取（harness web_fetch → webull.com）", "target": "8-K", "url": "https://www.webull.com/news/15510679132840960", "retrieved_utc_window": {"start": "2026-09-24T21:24:09Z", "end": "2026-09-24T21:24:20Z"}, "http_status": 200, "outcome": "partial_unusable", "note": "仅返回标题行，正文截断"},
+    {"id": "A15", "retrieval_method": "搜索引擎结果页直取（harness web_fetch → html.duckduckgo.com, site:microsoft.com）", "target": "搜索", "url": "https://html.duckduckgo.com/html/?q=%22FY27+Segments+and+Investor+Metrics%22+site%3Amicrosoft.com", "retrieved_utc_window": {"start": "2026-09-24T21:24:51Z", "end": "2026-09-24T21:24:55Z"}, "http_status": 200, "outcome": "search_results_retrieved", "note": "0 results —— 未找到 microsoft.com 第一方副本"},
+    {"id": "A16", "retrieval_method": "第三方提取 API microlink（harness web_fetch）", "target": "8-K", "url": "https://api.microlink.io/?url=https%3A%2F%2Fwww.sec.gov%2FArchives%2Fedgar%2Fdata%2F789019%2F000119312526380280%2Fd291965d8k.htm&meta=false&pdf=false&screenshot=false", "retrieved_utc_window": {"start": "2026-09-24T21:25:14Z", "end": "2026-09-24T21:25:21Z"}, "http_status": 200, "outcome": "partial_unusable", "note": "status=success 但无正文载荷"},
+    {"id": "A17", "retrieval_method": "第三方 raw 代理 allorigins 重试（harness web_fetch）", "target": "8-K", "url": "https://api.allorigins.win/raw?url=https%3A%2F%2Fwww.sec.gov%2FArchives%2Fedgar%2Fdata%2F789019%2F000119312526380280%2Fd291965d8k.htm", "retrieved_utc_window": {"start": "2026-09-24T21:25:36Z", "end": "2026-09-24T21:26:04Z"}, "http_status": 522, "outcome": "failed", "note": "Cloudflare 522（重试仍失败）"},
+    {"id": "A18", "retrieval_method": "搜索引擎结果页直取（harness web_fetch → html.duckduckgo.com, 整句短语检索）", "target": "搜索", "url": "https://html.duckduckgo.com/html/?q=%22the+Company+will+manage+its+operations+under+this+updated+reporting+structure%22", "retrieved_utc_window": {"start": "2026-09-24T21:26:18Z", "end": "2026-09-24T21:26:23Z"}, "http_status": 200, "outcome": "search_results_retrieved", "note": "0 results"},
+    {"id": "A19", "retrieval_method": "第三方文本转换服务 W3C html2txt（harness web_fetch → www.w3.org，与 r.jina.ai 不同运营方/不同引擎）", "target": "8-K", "url": "https://www.w3.org/services/html2txt?url=https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm", "upstream_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm", "retrieved_utc_window": {"start": "2026-09-24T21:26:35Z", "end": "2026-09-24T21:26:42Z"}, "http_status": 200, "outcome": "document_text_retrieved", "saved_to": "corpus/MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt"},
+    {"id": "A20", "retrieval_method": "第三方文本转换服务 W3C html2txt（harness web_fetch → www.w3.org）", "target": "Exhibit 99.1", "url": "https://www.w3.org/services/html2txt?url=https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm", "upstream_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm", "retrieved_utc_window": {"start": "2026-09-24T21:26:49Z", "end": "2026-09-24T21:26:54Z"}, "http_status": 200, "outcome": "document_text_retrieved", "saved_to": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt"},
+    {"id": "A21", "retrieval_method": "第三方渲染代理 r.jina.ai 再取（harness web_fetch，用于逐段核对已存文件）", "target": "8-K", "url": "https://r.jina.ai/https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm", "retrieved_utc_window": {"start": "2026-09-24T21:32:41Z", "end": "2026-09-24T21:32:46Z"}, "http_status": 200, "outcome": "document_text_retrieved", "note": "核对用途：发现并修正了 A4 转写中封面页两处段落（Rule 12b-2 段与 extended transition period 段）"}
+  ],
+  "attempt_summary": {
+    "total": 21,
+    "document_text_retrieved": 5,
+    "search_results_retrieved": 3,
+    "partial_unusable": 3,
+    "failed": 9,
+    "structured_miss": 1,
+    "saved_to_corpus": 4,
+    "corpus_source_attempts": ["A4", "A5", "A19", "A20"]
+  },
+  "saved_artifacts": [
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/corpus/MSFT_8K_2026-09-02_Item7.01.md",
+      "document": "Microsoft Corporation Form 8-K (2026-09-02), Item 7.01 + Item 9.01(d)",
+      "source_attempt": "A4",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm",
+      "retrieved_utc_window": {"start": "2026-09-24T21:20:45Z", "end": "2026-09-24T21:20:56Z"},
+      "http_status": 200,
+      "retrieval_method": "第三方渲染代理 r.jina.ai（非直连；SEC 直连 403）",
+      "sha256": "096c7d9df55ab46a0ccef21b3ac528b7e59483a91e1b6b32277808bcae801ad1",
+      "bytes": 3789,
+      "lines": 77,
+      "encoding": "UTF-8 no BOM, LF",
+      "byte_composition": "harness web_fetch 返回文本（r.jina.ai 响应体，已剔除 harness 前言 'Fetched …' 与 'External web content follows.'）由工位逐字转写后编码为 UTF-8；非 origin HTTP 响应字节"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/corpus/MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt",
+      "document": "同一 8-K 的独立复核抓取（path B）",
+      "source_attempt": "A19",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm",
+      "retrieved_utc_window": {"start": "2026-09-24T21:26:35Z", "end": "2026-09-24T21:26:42Z"},
+      "http_status": 200,
+      "retrieval_method": "W3C html2txt（www.w3.org 服务，与 r.jina.ai 不同运营方/引擎；非直连）",
+      "sha256": "5927de0367d1097a6bbb1f59c669a3461eacce43c8115874c5e0a497f7689f1c",
+      "bytes": 5183,
+      "lines": 182,
+      "encoding": "UTF-8 no BOM, LF",
+      "byte_composition": "工位对 harness web_fetch 返回文本的逐字转写（响应体原文缩进保留）"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/corpus/MSFT_8K_2026-09-02_Exhibit99-1.md",
+      "document": "Exhibit 99.1『FY27 Segments and Investor Metrics』(2026-09) 全 22 页文本",
+      "source_attempt": "A5",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm",
+      "retrieved_utc_window": {"start": "2026-09-24T21:21:03Z", "end": "2026-09-24T21:21:11Z"},
+      "http_status": 200,
+      "retrieval_method": "第三方渲染代理 r.jina.ai（非直连；SEC 直连 403）",
+      "sha256": "20392f0e110568fa4338a1167da3756627b77e606eec85ae113aeebf40373f58",
+      "bytes": 27586,
+      "lines": 129,
+      "encoding": "UTF-8 no BOM, LF",
+      "byte_composition": "harness web_fetch 返回文本（已剔除 harness 前言）由工位逐字转写；非 origin HTTP 响应字节"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt",
+      "document": "同一 Exhibit 99.1 的独立复核抓取（path B，全 22 页）",
+      "source_attempt": "A20",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm",
+      "retrieved_utc_window": {"start": "2026-09-24T21:26:49Z", "end": "2026-09-24T21:26:54Z"},
+      "http_status": 200,
+      "retrieval_method": "W3C html2txt（www.w3.org 服务；非直连）",
+      "sha256": "56b0460b4e635b590c1870153a65adc996d134fd12e2cd6c2670c51ab170956d",
+      "bytes": 28536,
+      "lines": 510,
+      "encoding": "UTF-8 no BOM, LF",
+      "byte_composition": "工位对 harness web_fetch 返回文本的逐字转写（响应体原文缩进保留）"
+    }
+  ],
+  "verbatim_quotes": [
+    {
+      "id": "Q1",
+      "document": "8-K Item 7.01",
+      "file": "corpus/MSFT_8K_2026-09-02_Item7.01.md",
+      "line": 65,
+      "byte_span": [2098, 2649],
+      "text": "On September 2, 2026, Microsoft Corporation (the “Company”) posted presentation materials to its Investor Relations website titled “FY27 Segments and Investor Metrics” announcing a change in reportable segments and investor metrics. Beginning in fiscal year 2027, the Company will manage its operations under this updated reporting structure and report its financial performance based on two reportable segments: (1)Agents and Infra and (2)Devices and Consumer. A copy of the presentation materials is furnished as Exhibit 99.1 to this report.",
+      "independent_path_b_confirmed": {"file": "corpus/MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt", "whitespace_insensitive_byte_span": [2806, 3383], "method": "去全部空白后子串匹配（path B 为硬换行重排版）"}
+    },
+    {
+      "id": "Q2",
+      "document": "8-K Item 7.01",
+      "file": "corpus/MSFT_8K_2026-09-02_Item7.01.md",
+      "line": 67,
+      "byte_span": [2651, 2888],
+      "text": "The exhibit furnished on this report under Regulation FD provides a description of our updated reporting structure and presents summary financial information and historical data on a basis consistent with the updated reporting structure.",
+      "independent_path_b_confirmed": {"file": "corpus/MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt", "whitespace_insensitive_byte_span": [3388, 3634]}
+    },
+    {
+      "id": "Q3",
+      "document": "8-K Item 7.01（furnished 而非 filed）",
+      "file": "corpus/MSFT_8K_2026-09-02_Item7.01.md",
+      "line": 69,
+      "byte_span": [3022, 3125],
+      "text": "shall not be deemed to be “filed” for purposes of Section 18 of the Securities Exchange Act of 1934",
+      "independent_path_b_confirmed": {"file": "corpus/MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt", "whitespace_insensitive_byte_span": [3777, 3883]}
+    },
+    {
+      "id": "Q4",
+      "document": "Exhibit 99.1 slide 4",
+      "file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.md",
+      "line": 23,
+      "byte_span": [1917, 2144],
+      "text": "Beginning with FY27, we will transition from our current three reporting segments, Productivity and Business Processes, Intelligent Cloud, and More Personal Computing, to two segments: Agents and Infra and Devices and Consumer.",
+      "independent_path_b_confirmed": {"file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt", "whitespace_insensitive_byte_span": [1884, 2123]}
+    },
+    {
+      "id": "Q5",
+      "document": "Exhibit 99.1 slide 7",
+      "file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.md",
+      "line": 41,
+      "byte_span": [5467, 5521],
+      "text": "We will transition to two reporting segments for FY27.",
+      "independent_path_b_confirmed": {"file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt", "whitespace_insensitive_byte_span": [5572, 5626]}
+    },
+    {
+      "id": "Q6",
+      "document": "Exhibit 99.1 slide 15（重述后分部历史，Agents and Infra FY2026 收入）",
+      "file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.md",
+      "line": 89,
+      "byte_span": [15807, 15855],
+      "text": "Revenue $61,672 $64,441 $67,438 $74,576 $268,127",
+      "independent_path_b_confirmed": {"file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt", "whitespace_insensitive_byte_span": [16299, 16350]}
+    },
+    {
+      "id": "Q7",
+      "document": "Exhibit 99.1 slide 20（FY27 Q1 新分部 outlook）",
+      "file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.md",
+      "line": 119,
+      "byte_span": [24785, 24892],
+      "text": "Agents and Infra Revenue of $75.15 to $75.75 billion Devices and Consumer Revenue of $14.7 to $15.2 billion",
+      "independent_path_b_confirmed": {"file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt", "whitespace_insensitive_byte_span": [25635, 25745]}
+    },
+    {
+      "id": "Q8",
+      "document": "Exhibit 99.1 slide 1（题名/日期）",
+      "file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.md",
+      "line": 5,
+      "byte_span": [155, 217],
+      "text": "FY27 Segments and Investor Metrics September 2026 Exhibit 99.1",
+      "independent_path_b_confirmed": {"file": "corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt", "whitespace_insensitive_byte_span": [83, 145]}
+    }
+  ],
+  "method_notes": {
+    "timestamps": "每次尝试的 retrieved_utc 为真实读秒：发起前与返回后各读一次 UTC 系统时钟（yyyy-MM-ddTHH:mm:ssZ），记为窗口 [start,end]；harness web_fetch 不提供服务端时间戳，工位不伪造单点时刻。",
+    "transcription_disclosure": "harness web_fetch 只把响应文本放进上下文、不落盘；4 个语料文件 = 工位对该返回文本的逐字转写（UTF-8/LF/无 BOM）。sha256 对已写入字节计算。A4 的首次转写经 A21 独立再取逐段核对，修正了封面页 2 处段落；8 条引文全部在 path A / path B 两份文件中各自定位到字节区间。",
+    "no_origin_bytes": "SEC 原站直取 4 次全部 403（A1/A3；另 A8/A9/A17 raw 代理亦未成功），因此本地文件不含 origin HTML 字节；是否可称『申报原文本地归档』由会计面裁定。",
+    "level_not_claimed": "本工位只交证据与形态，不作 E1/E2 等级判定（OWNER_DECISIONS §二十四 执行纪律：证据等级由会计面定，不由取证方自定）。"
+  },
+  "boundary_compliance": {
+    "writes_outside_plan_dir": 0,
+    "product_repos_written": [],
+    "git_write_operations": 0,
+    "company_wiki_written": false,
+    "i11a_modified": false,
+    "open3_status_modified": false
+  }
+}

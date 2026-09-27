@@ -1,0 +1,257 @@
+{
+  "schema": "inventory_bridge_not_closed/v1",
+  "station": "evidence_acquirer_r2",
+  "role": "evidence_acquirer_r2",
+  "carrier": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01",
+  "created_utc": "2026-09-26T14:10:21Z",
+  "authorized_by": {
+    "source_file": "execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01/ruling_6b.md",
+    "line": "L95 (within L94-L97 recovery-path block)",
+    "verbatim": "(a) 取得**存货桥闭合证据**（在产品 / 在途 / 寄售 / 并购范围明细，OPEN-11 R6 条件2）解释 154 千克，恒等式按新口径重述后，在 `0 < τ ≤ 1 单位` 内按 A-6.3(2) 选基础签署",
+    "also_ruling_lines": ["L66", "L90", "L104", "L110"]
+  },
+  "target": {
+    "hypothesis_id": "H-CN-ZIJIN-VOL-03",
+    "threshold_row": "R2",
+    "product": "矿山产金",
+    "unit": "千克",
+    "granularity_g": "1 千克",
+    "opening_inventory_kg": 1734,
+    "production_kg": 82743,
+    "sales_kg": 83161,
+    "bridge_value_kg": 1316,
+    "ending_inventory_kg": 1470,
+    "residual_kg": 154,
+    "residual_sign": "positive (actual ending inventory above bridge)",
+    "admissible_band": "0 < τ ≤ 1 单位 (A-6.2)",
+    "band_needed_to_cover_measurement": "τ ≥ 154 千克",
+    "band_intersection": "empty (ruling_6b.md L79-L81)"
+  },
+  "verdict": {
+    "bridge_closed": false,
+    "residual_explained_kg": null,
+    "suggested_tau_basis": null,
+    "trigger": ["B1", "B2"],
+    "oracle_applied": "oracle.md §3.2 (C1..C5) and §5 (blocked triggers)",
+    "failed_criteria": [
+      "C1 (可量化): 所有四条线找到的证据均无千克(或可换算为千克)数量 —— 财务附注与并购附注只披露人民币金额",
+      "C2 (来源可核) 不足以补 C1: 本地来源全部可核、外部来源无一给出数量"
+    ],
+    "closure_computation": {
+      "formula": "residual_new = 期末 − (期初 + 产量 − 销量 + Σ Aᵢ)",
+      "sum_A_kg": null,
+      "residual_new_kg": "undefined (no admissible Aᵢ)",
+      "required": "|residual_new| ≤ 1 千克",
+      "actual": "无法计算 —— 没有任何一条满足 C1 的调整项",
+      "gap_kg": 154
+    },
+    "statement": "四条线各查到方向一致但零数量的证据；净可量化解释量 = 0 千克；与 154 千克的差 = 154 千克（> A-6.2 上限 1 千克的 154 倍）"
+  },
+  "four_lines": [
+    {
+      "line": "L1 在产品 (work-in-process)",
+      "searched": [
+        "company-wiki FY2025 年报全文文本 (CN-ZIJIN-2025.txt, 763,644 B, sha256 196f2c54…)",
+        "company-wiki FY2024 年报全文文本 (本工位 pdftotext 自取 evidence/CN-ZIJIN-2024.full.txt, 821,643 B, sha256 ad6d9e50…)"
+      ],
+      "found": [
+        {
+          "what": "存货按类别附注（唯一一处存货分类披露）",
+          "quote": "存货分类 … 原材料 / 在产品 / 产成品 / 周转材料 … 在产品 18,597,301,620 (77,167,413) 18,520,134,207 … 14,916,924,011 (128,887,032) 14,788,036,979 … 合计 40,085,197,455 (472,675,245) 39,612,522,210",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L14789-L14851 (PDF leaf 页 -75-)",
+          "note": "人民币金额；全集团所有产品（金/铜/锌/铁/冶炼）合并，无金属拆分、无数量"
+        },
+        {
+          "what": "存货会计政策的类别口径",
+          "quote": "存货包括原材料、在产品、产成品和周转材料等。",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L11652"
+        },
+        {
+          "what": "FY2024 同一附注（比较期同样只有金额）",
+          "quote": "（1） 存货分类 … 原材料 在产品 产成品 周转材料 … 12,537,153,758 14,916,924,011 6,346,423,770 15,767,404",
+          "file": "evidence/CN-ZIJIN-2024.full.txt",
+          "line": "L13027-L13063"
+        }
+      ],
+      "quantified_kg": null,
+      "gap_kg": 154,
+      "why_not_usable": "只有人民币金额，既无黄金在产品的量，也无任何把 ¥ 换算成千克的披露依据（黄金/铜/锌/铁混合）⇒ 不满足 C1；按 oracle §4.3-3 属排除项"
+    },
+    {
+      "line": "L2 在途 (in-transit)",
+      "searched": [
+        "FY2025 全文正则 寄售|在途物资|发出商品 → 0 命中",
+        "FY2025 全文正则 在途 → 仅 L13158「在途资金」(货币资金)、L27860/L27863「资金在途」",
+        "FY2024 全文正则 寄售|在途|发出商品 → 仅「在途资金/在途资金准备」，无存货类在途"
+      ],
+      "found": [
+        {
+          "what": "存货分类中不存在『发出商品/在途物资』科目",
+          "quote": "存货分类：原材料、在产品、产成品、周转材料（四类，无在途/寄售类）",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L14791-L14846"
+        },
+        {
+          "what": "期末无所有权受限存货（排除质押/托管）",
+          "quote": "于2025年12月31日和2024年12月31日，本集团无存货所有权受到限制的情况。",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L15031"
+        },
+        {
+          "what": "FY2024 同句",
+          "quote": "于 2024 年 12 月 31 日和 2023 年 12 月 31 日，本集团无存货所有权受到限制的情况。",
+          "file": "evidence/CN-ZIJIN-2024.full.txt",
+          "line": "L13180"
+        }
+      ],
+      "quantified_kg": null,
+      "gap_kg": 154,
+      "why_not_usable": "披露中根本不存在『在途存货』这一项（不是查到但无量，而是查无此项）⇒ 满足 blocked 触发 B2/B4；不得据检索失败反推『不存在在途』，只能登记『本语料未披露』"
+    },
+    {
+      "line": "L3 寄售 (consignment)",
+      "searched": [
+        "FY2025 全文正则 寄售 → 0 命中",
+        "FY2024 全文正则 寄售 → 0 命中",
+        "FY2025 黄金租赁/托管/交易所库存 专项检索"
+      ],
+      "found": [
+        {
+          "what": "黄金租赁（最接近『寄售/托管』的业务，实为融资）",
+          "quote": "黄金租赁(注1) 8,240,133,800 … 6,935,043,150 … 注1： 本集团从银行租入黄金，通过上海黄金交易所卖出所租赁黄金融得资金，到期日通过上海黄金交易所买入相同数量和规格的黄金偿还银行并支付约定租金，租赁期为 1 年以内(包括1 年)。",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L22066-L22074、L22140-L22144；衍生负债口径 L22121-L22123 (762,887,364 / 156,777,250)"
+        },
+        {
+          "what": "外购精矿只进入冶炼行，不进入矿山产金行",
+          "quote": "将本集团生产的及外购的精矿加工而成冶炼金，铜，锌及其他金属的冶炼产品后向外销",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L26340"
+        }
+      ],
+      "quantified_kg": null,
+      "gap_kg": 154,
+      "why_not_usable": "①『寄售』0 命中；②黄金租赁是租入→当即卖出→到期买回的融资安排，注文明示其不形成本集团自有黄金存货，且只披露人民币金额、无千克；③若强行按金额估算（如 8,240,133,800 元 ÷ 810.17 元/克）会把融资负债当存货量 —— 方向与口径均错 ⇒ C1/C5 同时失败"
+    },
+    {
+      "line": "L4 并购范围 (M&A consolidation scope)",
+      "searched": [
+        "FY2025『七、合并范围的变动』全节（L28784-L29380）",
+        "FY2024 La Arena 收购会计处理（L11657、L22517）",
+        "FY2025 产量归属与并购表注（L2644、L2692、L2758、L2761、L2885）"
+      ],
+      "found": [
+        {
+          "what": "FY2025 三宗非同一控制下企业合并的购买日",
+          "quote": "紫金金岭公司(注1) 2025 年4 月16 日 … 购买日 2025 年4 月16 日 … 藏格矿业公司(注2) 2025 年4 月30 日 … 购买日 2025 年4 月30 日 … RG 金矿(注3) 2025 年10 月10 日 … 购买日 2025 年10 月10 日",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L28816-L28845（注1 L28847-L28849、注2 L28869-L28873、注3 L28875-L28876）"
+        },
+        {
+          "what": "购买日可辨认资产中的『存货』—— 只有人民币金额，无千克",
+          "quote": "存货 271,074,320 271,074,320 502,160,256 410,756,786 1,381,036,350 925,694,512",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L29018-L29024（列头 L28959-L28968：紫金金岭公司 / 藏格矿业公司 / RG 金矿；购买日公允价值 / 购买日账面价值）"
+        },
+        {
+          "what": "两宗黄金并购在报告期贡献的产量（说明并购当年表内产量已含并表后产出，但并表前已存在的存货不是『生产量』）",
+          "quote": "加纳阿基姆（2025 年4 月16 日交割） 85% 5,088 4,325 … 哈萨克斯坦瑞果多（2025年10月10日交割） 85% 1,236 1,050 … 总计 89,544 75,144",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L2644-L2647、L2692-L2695、L2699-L2701"
+        },
+        {
+          "what": "管理层对增产增销来源的定性说明（点名并购）",
+          "quote": "产销量情况说明：本表不含非控股企业相关数据。矿产铜、矿产金的产销量同比有不同程度的上升，主要得益于报告期公司新并购项目和现有项目技改投产等带来的增产增销。",
+          "file": "CN-ZIJIN-2025.txt",
+          "line": "L4272"
+        },
+        {
+          "what": "FY2024 唯一的黄金并购（La Arena）不构成业务合并 ⇒ 连购买日可辨认资产负债表都没有",
+          "quote": "本次收购于北京时间 2024 年 12 月 3 日完成交割，购买日确定为 2024 年 12 月 3 日。… 判断为不构成业务，本次收购并未按照《企业会计准则第 20 号——企业合并》以非同一控制下的企业合并进行处理。",
+          "file": "evidence/CN-ZIJIN-2024.full.txt",
+          "line": "L22517（另见 L11657）"
+        }
+      ],
+      "quantified_kg": null,
+      "gap_kg": 154,
+      "direction_consistent": true,
+      "reviewer_derived_bound_not_evidence": {
+        "note": "本工位自算的量级上界，仅用于判断『154 千克是否在合理区间』，按 oracle §4.3-4 不得作为 C1 证据",
+        "upper_bound_kg": 2039,
+        "how": "两宗黄金并购购买日存货公允价值合计 271,074,320 + 1,381,036,350 = 1,652,110,670 元 ÷ 810.17 元/克（FY2025 金锭不含税单价，CN-ZIJIN-2025.txt L3960-L3961）≈ 2,039,190 克 ≈ 2,039 千克",
+        "caveat": "该上界假设并购存货 100% 为黄金，实际必然更低（含矿石、试剂、燃料等）；同时 154 千克落在 [0, 2039] 区间内 ⇒ 机制上可能、数量上未知"
+      },
+      "why_not_usable": "方向对（并表取得的存货进入期末库存而不进入本期生产量），但披露只有人民币金额、没有任何千克/吨数量，也没有可核的 ¥→kg 换算依据 ⇒ 不满足 C1"
+    }
+  ],
+  "cross_year_structural_test": {
+    "purpose": "判断 154 千克是否是 FY2025 并购年独有，还是同一行的持续性口径差",
+    "method": "两个年度年报的同一张『②产销量情况分析表』全部 8 行逐年复算；FY2025 期初直接取 FY2024 披露期末（OPEN-11 R4 第 2 步口径），FY2024 期初由该表『库存量比上年增减(%)』反推（reviewer 自算，标 derived）",
+    "fy2025": [
+      {"row": "矿山产金(千克)", "open": 1734, "prod": 82743, "sales": 83161, "bridge": 1316, "end": 1470, "residual": 154},
+      {"row": "矿山产铜(吨)", "open": 18105, "prod": 878180, "sales": 884943, "bridge": 11342, "end": 11343, "residual": 1},
+      {"row": "矿山产锌(吨)", "open": 11398, "prod": 348556, "sales": 352470, "bridge": 7484, "end": 7484, "residual": 0},
+      {"row": "矿山产银(千克)", "open": 7482, "prod": 429382, "sales": 430254, "bridge": 6610, "end": 6609, "residual": -1},
+      {"row": "铁精矿(万吨)", "open": 21, "prod": 94.34, "sales": 111.35, "bridge": 3.99, "end": 3.99, "residual": 0},
+      {"row": "冶炼加工贸易金(千克)", "open": 671, "prod": 162922, "sales": 162950, "bridge": 643, "end": 644, "residual": 1},
+      {"row": "冶炼产铜(吨)", "open": 2249, "prod": 697588, "sales": 697678, "bridge": 2159, "end": 2160, "residual": 1},
+      {"row": "冶炼产锌(吨)", "open": 8184, "prod": 397679, "sales": 403324, "bridge": 2539, "end": 2539, "residual": 0}
+    ],
+    "fy2024": [
+      {"row": "矿山产金(千克)", "open": 1152, "open_derived_from_yoy_pct": 50.52, "prod": 68275, "sales": 67786, "bridge": 1641, "end": 1734, "residual": 93},
+      {"row": "矿山产铜(吨)", "open": 4851, "open_derived_from_yoy_pct": 273.20, "prod": 837570, "sales": 824317, "bridge": 18104, "end": 18105, "residual": 1},
+      {"row": "矿山产锌(吨)", "open": 2278, "open_derived_from_yoy_pct": 400.35, "prod": 395564, "sales": 386444, "bridge": 11398, "end": 11398, "residual": 0},
+      {"row": "矿山产银(千克)", "open": 2943, "open_derived_from_yoy_pct": 154.23, "prod": 428684, "sales": 424145, "bridge": 7482, "end": 7482, "residual": 0},
+      {"row": "铁精矿(万吨)", "open": 18.54, "open_derived_from_yoy_pct": 13.29, "prod": 65.85, "sales": 63.40, "bridge": 20.99, "end": 21, "residual": 0, "note": "万吨两位小数，属披露粒度内"},
+      {"row": "冶炼加工贸易金(千克)", "open": 731, "open_derived_from_yoy_pct": -8.20, "prod": 228152, "sales": 228212, "bridge": 671, "end": 671, "residual": 0},
+      {"row": "冶炼产铜(吨)", "open": 6, "open_derived_from_yoy_pct": 37400.00, "prod": 747570, "sales": 745326, "bridge": 2250, "end": 2249, "residual": -1},
+      {"row": "冶炼产锌(吨)", "open": 419, "open_derived_from_yoy_pct": 1853.22, "prod": 371057, "sales": 363292, "bridge": 8184, "end": 8184, "residual": 0}
+    ],
+    "result": "16 个『行×年』检验中 14 个落在 ±1 单位（A-6.2 帽内）；只有『矿山产金』连续两年超帽：FY2024 +93 千克、FY2025 +154 千克（两年合计 +247 千克）",
+    "interpretation": "① 差额是金行专属、跨年持续的**结构性口径差**，不是舍入；② 两年恰好都是黄金并购交割年（FY2024 La Arena 2024-12-03；FY2025 阿基姆 2025-04-16、藏格 2025-04-30、瑞果多 2025-10-10）⇒ 『并购并表取得的黄金存货不计入本期生产量』这一机制与观测方向一致；③ 但披露从未给出任何一年的黄金存货数量 ⇒ 机制可解释、数量不可闭合",
+    "reproduced_by": "本工位 python 自算（输入全部取自两份年报原文行号，未引用对照表结论）"
+  },
+  "evidence_sufficiency_vs_oracle": {
+    "C1_quantified": "FAIL（四条线 0 千克）",
+    "C2_source_verifiable": "PASS for what exists (all local anchors sha256 + line + quote), but cannot rescue C1",
+    "C3_direction": "PASS (M&A mechanism is directionally positive)",
+    "C4_residual_in_cap": "NOT EVALUABLE (ΣAᵢ = null)",
+    "C5_same_scope": "PASS for the located anchors (all from the 控股并表 caliber table / consolidated notes)"
+  },
+  "blocked_triggers_fired": [
+    "B1: ΣAᵢ = 0 千克（无可计入项），|154 − 0| = 154 > 1 千克",
+    "B2: 找到的证据全部为定性/金额级（QUAL 或非数量级），无一条满足 C1"
+  ],
+  "next_step": {
+    "recommend": "(c)",
+    "recommend_reason": [
+      "残差是结构性、跨年、金行专属（+93/+154 千克），与 1 千克粒度差 93–154 倍 ⇒ 不是 A-6.2 的『披露舍入粒度』问题，A-6.3(2)(i) 无法承重",
+      "四条线给不出任何数量 ⇒ 即使走 (b) 也无法为 τ 选值：A-6.3 四要件中的『可核基础』缺失，任何 τ ≥ 154 都是无基础放大（ruling_6b §6.1-3 已拒）",
+      "因此 (a) 已实证不可达、(b) 目前同样无法完成，(c)『结构差无法解释』与实测最吻合"
+    ],
+    "caveat_that_must_be_resolved_by_owner": "hypotheses.json L315 revert_rule 的两个字面触发条件实测均不成立 —— ①『销售量 > 生产量 + 期初库存』：83,161 ≤ 84,477（未超）；②『与库存量同比变动方向相反』：方向一致（库存下降）。故执行 (c) 需要 owner/编排层先确认『无法凑平 ⇒ 口径不一致』这一支是否适用于本情形，或先修订 revert_rule；**本工位不执行该写入**",
+    "when_b_would_become_viable": "仅当同时满足：① owner 按 DEC-14 修订 A-6.2（含 I-11-A/I-11-C 校验器同步）；② 另行取得可核的黄金存货数量（公司披露、申报文件或可核第三方），使 τ 有 A-6.3 基础。两者缺一，(b) 都会退化为『为解锁而签』",
+    "what_would_close_it_later": "任一年出现下列之一即可按 oracle §3.2 重评：公司披露按金属拆分的期末存货数量（千克）、并购标的购买日存货的重量明细、产销量表新增『在产品/在途/寄售』数量列"
+  },
+  "releases_nothing": true,
+  "signed_by_this_station": false,
+  "does_not_sign_tau": true,
+  "does_not_modify": [
+    "ruling_6b.md",
+    "OPEN6-TOLERANCE-TABLE/*",
+    "tolerance_signed.json (未创建、不属本工位)",
+    "hypotheses*.json",
+    "threshold_basis / threshold_review_status",
+    "任何 status / decision 字段"
+  ],
+  "blocked_status_unchanged": {
+    "BLOCKED-6b": "仍 blocked（由 owner/编排层在 R2 解决后重判，ruling_6b.md L110）",
+    "BLOCKED-6a": "不动",
+    "BLOCKED-6c": "不动",
+    "OPEN-6": "不动",
+    "OPEN-2": "不动",
+    "OPEN-11": "不动（R6 条件2 仍未满足）"
+  }
+}

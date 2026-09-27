@@ -1,0 +1,49 @@
+{
+  "card_id": "M-T-REVIEW",
+  "attempt_id": "a20260923-01",
+  "implementer_is_not_the_reviewer": true,
+  "formula": {
+    "state": "accepted_with_conditions",
+    "state_before": "review_pending",
+    "state_historical_pre_verdict": "review_pending",
+    "equivalence": "accepted_with_conditions ≡ accepted_scoped + carried",
+    "basis": "own review by the parent-dispatched independent reviewer agent (N=1); deliverables-level / bookkeeping-level carried only; the 53-row matrix conclusions are unchanged",
+    "history_97_tests_216_subtests_do_not_substitute": true,
+    "not_yet_independently_reviewed": false,
+    "independent_review": {
+      "reviewer": "independent reviewer agent dispatched by parent session session-bfecd191-fbc3-4a66-8ed1-6562479bf102",
+      "reviewed_at": "2026-09-23",
+      "scope": "own review of execution_runs/M-T-REVIEW/a20260923-01 (D9 repair review agency: 53 rulings + 6 registration rows, M01-M31 + T1-*)",
+      "verdict": "accepted_with_conditions",
+      "verdict_is_transcribed_not_authored": true,
+      "N": 1,
+      "carrier": "reviewer_report.md (27477 B, sha256 6aedddcc029922f348fdf36a0c67eeb11872fe9a687fe97940094e4fd7e10467; sidecar reviewer_report.sha256 match)",
+      "basis_summary": "45/45 self_manifest re-hash; 53+6 recount across decision.md and acceptance_rulings.md; 5/5 spot-check rulings earned (M01 CRLF 3/3, M09 LF 3/3 direct, M17 CRLF 3/3 + block-range e383f5e8…, T1-10 changes_required non-fabricated, T1-13 earned); 7/7 M05-M07/M17-M20 contradictions confirmed and flip-block closure mechanism sound; 11/11 M21-M31 finals + 10 name-check shas; 6/6 T1 shas + T1-10 fix-card citation (90bcefb9…); F-MT-01/02/03 VERIFIED; boundary clean (zero writes to reviewed attempts, zero state-changing git, zero network, zero harness)"
+    }
+  },
+  "mirrors": {
+    "handoff_status": "accepted_with_conditions (status_before=review_pending; status_authority + bookkeeping blocks in handoff.json)",
+    "decision_md": "appended section '## F-RV erratum (landing)' (F-RV-01..F-RV-05 dispositions)",
+    "review_md": "review.md verdict block + key verifications + F-RV dispositions + unverified 6 + scope-after-accept",
+    "qualification_scope": "formula only, anchor 9ec65295…; disclosure_adaptation=unmapped, accuracy=unproven are inherited as carried (never upgraded by this acceptance)"
+  },
+  "d9": {
+    "state_before": "closed-via-this-agency-pending-install",
+    "state": "install-done",
+    "state_target": "install-done",
+    "mirror_pending_install": "D9 = CLOSED-via-this-agency pending install: both landing slots produced (review_flips_M01-M20.md 20 blocks + sampled_and_namecheck_M21-M31.md), to be installed by the parent landing batch per landing_package/README.md (append-only + prefix proof + only handoff.json.reviewer_status key) after this ACCEPT",
+    "mirror_install_done": "install-done mirror (verified 2026-09-24): install_log.jsonl (this attempt) records all 20 M01-M20 flip-block appends with pre/post sha256 + prefix-proof PASS (independently re-verified: sha256 of the first pre_bytes of each installed file == logged pre_sha256, 20/20) + F-RV-02 inline block sha (20/20 present and matching the logged value) + F-RV-03 verdict_is_transcribed_not_authored:true (20/20 present); 20 handoff.json reviewer_status-only touches each json-reparsed OK with exactly one reviewer_status key and status unchanged; slot-2 archive copied byte-identically to landed_package/sampled_and_namecheck_M21-M31.md (sha 88dfd369… identical, M21-M31 attempts untouched — boundary check PASS); slot-3 landed 21 new T1 review.md files (F-RV-02 sha matches + F-RV-03 key present, 21/21) with T1-10 explicitly NOT flipped (fix card T1-10-FIX/a20260923-01 runs separately) and the 6 registration rows recorded as not-installed (no attempt dirs). D9 closure criterion met: both slots installed per README + prefix proofs all PASS + F-RV-02/03 present in every installed block.",
+    "d9_closure_criterion": "two slots installed per README + prefix proof all PASS + F-RV-02/03 present in every installed block",
+    "d9_closure_criterion_met": true,
+    "install_log": "install_log.jsonl (this attempt)"
+  },
+  "f_mt_mirror": {
+    "F-MT-01": "VERIFIED — CRLF-form pins vs LF disk: M01 3/3 + M17 3/3 reproduce only after LF→CRLF re-serialization (6 pins ≥ 2 required), M09 3/3 raw-LF direct (crlf_only_count=0), iso/script pins raw; pin_resolution.json all_pins_reproduced:false exactly M08 + M13 (count re-checked = 2), both documented annotation repacks (M08 docfix_r3 e6c36cf4…→57459a8f… with recovery/docfix-r3/ on disk; M13 cases_annotation_repack 0353e544…→54399cd2… with pre-image recovery/before_fixes/cases.json on disk — all four values read live)",
+    "F-MT-02": "VERIFIED — recorded-state M01 review.md mtime 01:18:24 and forensics/revision_r2 sequence 01:15:15/01:18:22/01:18:24 read live; on-disk mtimes mass-rewritten 2026-09-20 ~14:52-14:54 UTC batch (M01 14:52:13Z / M09 14:53:22Z / M17 14:54:46Z) so the original freeze order is unreproducible on disk; T1-24 third leg rests on recorded manifests only. Policy ruling registered by parent: content-based freeze attestations (byte-regenerable oracle + generator pre-run hash on disk + recorded mtime order) + permanent gap note (on-disk mtime order must never stand in as pre-hoc freeze evidence)",
+    "F-MT-03": "VERIFIED with read-only git evidence — production scripts/model_registry.py now 62f864b9ab3f144e…; commit 5db4734a (2026-09-20, owner-authorized) holds 9ec65295… = the anchor of every reviewed card; commit 5fd82de7 (2026-09-22 promote B-6c) holds 62f864b9… = current; drift happened after all reviewed attempts (09-19/09-20), so re-runs must explicitly re-anchor"
+  },
+  "raw_exit_codes": "own review ran no harness (read/grep/pwsh only); n/a",
+  "evidence_paths_extra": [
+    "review.md", "reviewer_report.md", "reviewer_report.sha256", "install_log.jsonl", "evidence/M-T-REVIEW/qualification.json"
+  ]
+}

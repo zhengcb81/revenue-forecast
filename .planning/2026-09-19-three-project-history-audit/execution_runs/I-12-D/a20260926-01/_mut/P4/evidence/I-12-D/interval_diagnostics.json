@@ -1,0 +1,43 @@
+{
+  "schema": "i12d_interval_diagnostics/1",
+  "card": "I-12-D",
+  "attempt": "execution_runs/I-12-D/a20260926-01",
+  "role": "implementer_i12d",
+  "probabilistic_claim_made": false,
+  "low_high_semantics": "scenario_band_not_probabilistic（设计字段 9）",
+  "interval_score": {
+    "enabled": false,
+    "status": "disabled",
+    "reason": "无 1-alpha 名义覆盖率事前声明 ⇒ 情景带禁用统计区间得分（metric_definitions boundary）",
+    "gate_tested": "metric_negative_results case E2（请求即被拒）"
+  },
+  "pinball": {
+    "enabled": false,
+    "status": "disabled",
+    "reason": "无事前声明的 tau 分位预测；不可把 base 擅自称中位数"
+  },
+  "confidence_intervals": {
+    "computed": true,
+    "reason": "阈值/方法未签署（设计字段 11 threshold_items_unsigned + 字段 10 PENDING）⇒ 卡文动作 3 的「已批准方法」不存在",
+    "pending_items": [],
+    "no_seed_fixed_by_implementer": true,
+    "seed_note": "实现者不擅自固定一个『刚好好看』的种子（设计字段 11 prohibition 逐字）",
+    "level": 0.95
+  },
+  "scenario_containment": {
+    "value": null,
+    "defined": false,
+    "reason": "no_scorable_samples",
+    "must_report_together_with": "interval_width（同时报宽度）"
+  },
+  "interval_width": {
+    "mean": null,
+    "normalized": null,
+    "defined": false,
+    "reason": "no_scorable_samples",
+    "boundary": "high<low = 数据错误（实测于 metric_negative_results case E1）；极宽区间的高包含率不代表质量高"
+  },
+  "n_scorable": 0,
+  "state": "descriptive_only",
+  "significance_claimed": false
+}

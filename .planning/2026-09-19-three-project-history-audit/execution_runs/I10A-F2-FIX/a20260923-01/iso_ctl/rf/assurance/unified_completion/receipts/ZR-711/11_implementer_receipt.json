@@ -1,0 +1,117 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f04f90e350b3468ea933aaaf0665a99c5726d6b2",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "f273d1eed1bbdec62b15b42d0341e6d1a1934425da96969d95697ba42a496ccd",
+  "commands": [
+    {
+      "command": "RED 探针：document.py:78-81 严格 schema_version==3.7；SUPPORTED/EMIT 无 3.8；operating_units 词汇零命中",
+      "exit_code": 0,
+      "result": "G1+G2+G3 真实缺口：3.8 opt-in + operating_units + converter 零实现"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr711_schema_optin.py -q --tb=short",
+      "exit_code": 0,
+      "result": "14 passed（C1 3.7 零回归 4 + C2 3.8 opt-in 7 + C3 converter 3）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_schema_compatibility.py tests/test_golden_behavior_lock.py tests/test_lint_input.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "54 passed（golden hashes unchanged，schema compatibility updated）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "719 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+14 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/contracts/constants.py scripts/schema_compatibility.py scripts/revenue_core.py scripts/contracts/document.py scripts/schema_optin.py tests/test_schema_compatibility.py tests/test_zr711_schema_optin.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（document.py ≤32 — validate_operating_units helper 提取，validate_parameters/validate_document 零 McCabe 增量；schema_optin.py 新文件 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 139 files"
+    },
+    {
+      "command": "git diff f04f90e b0d7291 --stat",
+      "exit_code": 0,
+      "result": "7 文件 +283/-6：constants.py（OPT_IN_SCHEMA_VERSION+3.8 in SUPPORTED）、schema_compatibility.py（EMIT[3.8]）、revenue_core.py（re-export+__all__）、document.py（版本门+validate_operating_units+调用）、schema_optin.py（converter 新）、test_schema_compatibility.py（2 更新）、test_zr711_schema_optin.py（新 14 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T01:30:00+00:00",
+  "findings": [
+    {
+      "detail": "schema 3.8 opt-in：version gate 从严格 ==3.7 改为 {3.7, 3.8}（in operator 零分支）；SUPPORTED/EMIT 矩阵加 3.8（ENGINE_VERSION only）；validate_operating_units 对每个条目复用 validate_mine_year_operation（ZR-605 七字段契约——fail-closed gap）。converter 三函数：3.7→3.8（+operating_units=[] 坦诚 gap）/ 3.8→3.7（剥 additive keys）/ round-trip 相等。",
+      "id": "ZR711-IMPL-001",
+      "severity": "info",
+      "title": "3.8 opt-in 契约（复用 ZR-605 模型）+ converter"
+    },
+    {
+      "detail": "golden behavior lock 不变（FORECAST_SCHEMA_VERSION 保持 3.7；goldens 仍是 3.7 文档，validate_document 接受 3.7 不变）；test_schema_compatibility 2 条更新（OPT_IN_SCHEMA_VERSION 加入 formal+unknown 测试）。",
+      "id": "ZR711-IMPL-002",
+      "severity": "info",
+      "title": "3.7 零回归验证"
+    }
+  ],
+  "implementation": {
+    "design": "constants.py：OPT_IN_SCHEMA_VERSION='3.8' + SUPPORTED 包含；schema_compatibility：EMIT['3.8']={ENGINE_VERSION}；document.py：版本门 {3.7,3.8} + validate_operating_units（复用 validate_mine_year_operation）+ default+collect-mode 调用；schema_optin.py：converter 三函数（加 gap 不猜值、strip additive keys、round-trip）；test_schema_compatibility：2 条更新。零产品硬编码。",
+    "files": [
+      "revenue-forecast/scripts/contracts/constants.py",
+      "revenue-forecast/scripts/schema_compatibility.py",
+      "revenue-forecast/scripts/revenue_core.py",
+      "revenue-forecast/scripts/contracts/document.py",
+      "revenue-forecast/scripts/schema_optin.py",
+      "revenue-forecast/tests/test_schema_compatibility.py",
+      "revenue-forecast/tests/test_zr711_schema_optin.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-711/**"
+    ]
+  },
+  "implementer": "zr711-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 b0d7291；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=f470a375（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr711-independent）。",
+    "注：base_triplet.revenue=f04f90e 为 ZR-609 closure commit。"
+  ],
+  "objective": "F2 additive schema 3.8 opt-in：3.7 零回归、3.8 operating units/consolidation、converter 只加 gap 不猜值、flag 可回滚。",
+  "plan_sha256": "f470a375f7112c8da40b6e4d5358b0683c532dac58cf64b5acd53bb6a06d7a1a",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b0d7291eec563e3a54e266311558750033cabcc8",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/contracts/constants.py（加性 3.8 词汇）、scripts/schema_compatibility.py（EMIT[3.8]）、scripts/revenue_core.py（re-export+__all__）、scripts/contracts/document.py（版本门+validate_operating_units+调用）、scripts/schema_optin.py（新 converter）、tests/test_schema_compatibility.py（2 更新）、tests/test_zr711_schema_optin.py（新 14 tests）；revenue 侧 receipts/ZR-711/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 7,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/contracts/constants.py",
+    "revenue-forecast/scripts/schema_compatibility.py",
+    "revenue-forecast/scripts/revenue_core.py",
+    "revenue-forecast/scripts/contracts/document.py",
+    "revenue-forecast/scripts/schema_optin.py",
+    "revenue-forecast/tests/test_schema_compatibility.py",
+    "revenue-forecast/tests/test_zr711_schema_optin.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-711/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-711"
+}

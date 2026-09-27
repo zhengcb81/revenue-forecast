@@ -1,0 +1,112 @@
+{
+ "schema_version": "1.0",
+ "card": "I-12-BE",
+ "attempt": "a20260926-01",
+ "role": "merged_unit_carrier",
+ "status": "accepted_scoped",
+ "phases": [
+  {
+   "phase": "I-12-B",
+   "card_stop": {
+    "traceable_to_info_time": true,
+    "traceable_to_actual_value": false,
+    "counts_conserved": true,
+    "verdict": "blocked（数据/历史期不足；合格形态，非绕过）"
+   },
+   "open2": true,
+   "sha": "a11c16010c795bc6"
+  },
+  {
+   "phase": "I-12-C",
+   "card_stop": {
+    "scorable_samples_with_frozen_forecast": 0,
+    "samples_with_fair_baseline": 7,
+    "no_true_vintage_forecast_group": "7/7 样本清晰分组（forecast_value_state=not_produced_params_not_released + vintage_class=true_vintage_information_set）",
+    "verdict": "blocked（可评分样本 0：params 未放行 + 目标期 FY2027 未结束 + 解封门 0/4 满足；合格形态）"
+   },
+   "open2": true,
+   "sha": "90f915c09935504c"
+  },
+  {
+   "phase": "I-12-D",
+   "card_stop": {
+    "hand_check_of_oracle_and_weights": "达成（oracle 面：14 指标与冻结期望逐项一致 + 独立有理数复算；权重结构 macro/micro 冻结并登记）",
+    "formula_exclusion_counts_consistent": "达成（样本侧：registered 7 = scorable 0 + missing 7；排除 entity 1 / 行 2 与 I-12-B 守恒一致）",
+    "no_metric_swapped_without_approval": "达成（指标集 = 冻结 metric_definitions；可选项未启用）",
+    "real_sample_scoring": "不可达成（0 可评分观测）⇒ 整卡判定 blocked（合格形态）"
+   },
+   "open2": true,
+   "sha": "105d883374b6f013"
+  },
+  {
+   "phase": "I-12-E",
+   "card_stop": {
+    "premise": {
+     "rule_verbatim": "冻结阈值已在结果前批准；全量结果可见。",
+     "met": "0/2",
+     "thresholds_approved_before_results": false,
+     "all_results_visible": false,
+     "disposition": "前提不满足 ⇒ 不作 supported/unsupported 判定；6 个预注册比较全记 inconclusive（fail-closed 默认登记，非专业判定）"
+    },
+    "stop_1": {
+     "code": "STOP_CLAIM",
+     "rule_verbatim": "把31公式通过或少数公司拟合直接称准确率提升→STOP_CLAIM。",
+     "triggered": false,
+     "basis": "accuracy 栏=unproven、accuracy_improvement_claimed=false、supported=0；变异 Q3（人为触发）可被 E1/E3 击杀"
+    },
+    "stop_2": {
+     "code": "STOP_RELEASE_WORDING",
+     "rule_verbatim": "没有达到统计判定条件却宣称普遍有效→STOP_RELEASE_WORDING。",
+     "triggered": false,
+     "basis": "无普遍有效/发布措辞；正式发布格=blocked；scope_limitation.no_generalization 在位"
+    },
+    "card_verdict": "blocked（合格形态）—— 前提 0/2，数据与阈值不足，fail-closed；裁定权=统计与行业 reviewer / 编排层"
+   },
+   "open2": true,
+   "sha": "2e9feff3697eec94"
+  }
+ ],
+ "reviewer_report_sha256": "945c473dbbd9fb3a6492b4bdc83c5d147bad2cfc520810ae3485ce04e885d839",
+ "implementer_signed": false,
+ "params_released": false,
+ "open2_ban_observed": true,
+ "releases_nothing": true,
+ "note": "merged unit carrier (owner 乙); per-phase handoffs are phase evidence; review is unit-level",
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> accepted_scoped",
+ "status_history": [
+  {
+   "at_utc": "",
+   "status": "accepted_scoped",
+   "by": "landing_parent_v3",
+   "note": "父直写轻格式落定（V3）；前像 sha 见 pre_image"
+  }
+ ],
+ "status_authority": {
+  "carrier": "reviewer_report.md",
+  "carrier_sha256": "945c473dbbd9fb3a6492b4bdc83c5d147bad2cfc520810ae3485ce04e885d839",
+  "carrier_bytes": 28592,
+  "carrier_encoding": "UTF-8 no BOM",
+  "verdict_line": "**VERDICT: ACCEPT —— P1 = 0**（无数值错 / OPEN-2 红线未破 / 封盘未动 / 段 D `metric_numeric_oracle`+负例先于真实样本）；附 **P3 × 9、P2 = 0**",
+  "verdict_byte_region": {
+   "content": [
+    68,
+    240
+   ],
+   "incl_lf": [
+    68,
+    241
+   ]
+  },
+  "verdict_word_written_by_reviewer": "ACCEPT",
+  "pin_sidecar": "945c473dbbd9fb3a6492b4bdc83c5d147bad2cfc520810ae3485ce04e885d839  reviewer_report.md",
+  "three_way_match": true
+ },
+ "carried_findings": [],
+ "pre_image": {
+  "sha256": "51b1b141aa885794abeba25916c462d7aa3a88162b8e39c743c4770e8a5b0c81",
+  "bytes": 3151,
+  "status": "review_pending"
+ },
+ "verdict_is_transcribed_not_authored": true
+}

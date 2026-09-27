@@ -1,0 +1,453 @@
+{
+  "schema_version": "open5-s5-ind-handoff-1.0",
+  "card": "OPEN-5",
+  "step": "S5（行业半区 · 行业复裁）",
+  "attempt": "OPEN5-S5-IND-RULING/a20260926-01",
+  "role": "industry_reviewer_s5",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "generated_utc": "2026-09-26T10:43:23Z",
+  "authorized_by": {
+    "S5_definition_verbatim": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md L166",
+      "quote": "| **S5** | **行业复裁 + 会计定级**：按 IND 已裁的 C 表①/②登记来源等级，**证据等级由会计面认定**（§二十四 执行纪律第 3 条）；通过后才谈港股命题与参数 | 行业 reviewer + 会计 reviewer | 各自专业裁定权（**本载体不代行**） | 任一面未过 ⇒ 港股参数继续 `_PLACEHOLDER` |"
+    },
+    "dispatch": "父 agent 派单：OPEN-5 恢复路径 S5 的行业面那一半（会计半区已由 OPEN5-S5-ACCT-GRADING/a20260926-01 交付，本工位不代签、不推翻）",
+    "c_table_authority_verbatim": "- 若出现①类可读原文且含分部收入 ⇒ B 的\"零产出\"解除，港股命题可重新走正常取证（仍需会计面定证据等级）；",
+    "c_table_no_enable_verbatim": "- 环境 owner 解决可读性后，若新 attempt 实测仍读不出原文 ⇒ B 部分（保持不可用）继续有效，C 表不启用；",
+    "boundary_verbatim": {
+      "source": "同文件 L179",
+      "quote": "- 即使 S2 自检显示\"某路径能读出锚词\"，在 S3/S4/S5 走完之前**仍按不可读处置**（IND 处置规则 B 部分继续有效：港股命题零产出、参数维持 `_PLACEHOLDER`）。"
+    },
+    "owner_rule_verbatim": {
+      "source": "OWNER_DECISIONS.md L504",
+      "quote": "- **取证（选项 3）的证据等级由会计面定，不由取证方自定**；取不到就维持 BLOCKED，**不造绿色样例**。"
+    },
+    "authorization_is_permission_not_action": {
+      "source": "OWNER_DECISIONS.md L504",
+      "quote": "- **取证（选项 3）的证据等级由会计面定，不由取证方自定**；取不到就维持 BLOCKED，**不造绿色样例**。"
+    }
+  },
+  "c_table_adopted": true,
+  "c_table_registration": {
+    "rule": "IND C 表（I11A-OPEN-IND L227–L234）+ oracle §4.5",
+    "attempt04": "① + ④",
+    "attempt08": "① + ④",
+    "attempt07": "③（仅线索，不可采）",
+    "attempt02_or_regulator_rows": "② 本轮零登记",
+    "origin": "不登记（排除在定级外）"
+  },
+  "attempt_levels_confirmed": {
+    "source_of_levels": "会计面 OPEN5-S5-ACCT-GRADING/a20260926-01（证据等级由会计面认定，本工位只读引用、不改）",
+    "accounting_levels": {
+      "attempt04": {
+        "c_table": "① + ④",
+        "e_level": "E1",
+        "s_tier": "S1",
+        "usable_faces": [
+          "zh-Hant"
+        ],
+        "admissible": true,
+        "document_type": "全年业绩公告（results announcement，非年度报告）",
+        "period": "FY2025"
+      },
+      "attempt08": {
+        "c_table": "① + ④",
+        "e_level": "E1",
+        "s_tier": "S1",
+        "usable_faces": [
+          "en"
+        ],
+        "admissible": true,
+        "document_type": "年度报告英文版（annual report, EN）",
+        "period": "FY2025"
+      },
+      "attempt07": {
+        "c_table": "③",
+        "e_level": "E3",
+        "s_tier": "S0",
+        "usable_faces": [],
+        "admissible": false,
+        "document_type": "third_party_proxy_render",
+        "period": "FY2025"
+      }
+    },
+    "industry_confirmation": {
+      "attempt04": {
+        "confirmed": true,
+        "c_table_adopted": "① + ④",
+        "evidence_class": "company_primary_disclosure",
+        "industry_scope_note": "同期间发行人原文披露；①④叠加（①=来源级别，④=取回路径外部身份）",
+        "must_label": [
+          "document_type=全年业绩公告（非年度报告）",
+          "period=FY2025",
+          "period_mismatch_risk=false",
+          "external_retrieval_not_local=true",
+          "language_face=zh-Hant"
+        ]
+      },
+      "attempt08": {
+        "confirmed": true,
+        "c_table_adopted": "① + ④",
+        "evidence_class": "company_primary_disclosure",
+        "industry_scope_note": "年报本体英文版；①④叠加；语言面仅 en（中文锚词0/5）",
+        "must_label": [
+          "document_type=年度报告英文版",
+          "period=FY2025",
+          "period_mismatch_risk=false",
+          "external_retrieval_not_local=true",
+          "language_face=en"
+        ]
+      },
+      "attempt07": {
+        "confirmed": true,
+        "c_table_adopted": "③",
+        "evidence_class": "secondary_lead_only",
+        "industry_scope_note": "第三方代理渲染件，且正文中文锚词 0/5（不可读）⇒ 双重不可采",
+        "must_label": [
+          "document_type=third_party_proxy_render",
+          "external_retrieval_not_local=true",
+          "lead_only=true"
+        ]
+      },
+      "HK-XIAOMI-AR2025 (origin)": {
+        "confirmed": null,
+        "c_table_adopted": null,
+        "evidence_class": null,
+        "industry_scope_note": "排除在定级外（S4 NOT_USABLE + L165），不赋级",
+        "must_label": [
+          "graded=false",
+          "level=null",
+          "admissible=false"
+        ]
+      }
+    },
+    "all_three_confirmed": true
+  },
+  "points_summary": [
+    {
+      "id": "P1",
+      "topic": "C 表是否启用（IND L240/L241 裁定权在行业面）+ attempt04/08/07 定级会签",
+      "verdict": "启用（限定效力范围）；三件来源定级逐条会签：attempt04 承认 ①+④、attempt08 承认 ①+④、attempt07 承认 ③（= 不可采）"
+    },
+    {
+      "id": "P2",
+      "topic": "attempt04 文件类型用途（全年业绩公告 FY2025，非年报）",
+      "verdict": "承认其为同期间公司原文披露，但用途按内容清单裁：可用 A1/A2/A3/A4a/A5a/A6b；不可用 A4b/A5b/A6a/A7"
+    },
+    {
+      "id": "P3",
+      "topic": "attempt08 英文面在港股命题中的可用范围（中文锚词 0/5）",
+      "verdict": "承认会计面 usable=[\"en\"]；英文面可用于数值型/年报本体命题，禁止用于中文原文逐字与中文锚词类命题"
+    },
+    {
+      "id": "P4",
+      "topic": "G3 口径会签（会计 true vs PEND-5a/S3 false）",
+      "verdict": "按 IND L234/L360 裁口径 B（external_retrieval_not_local=true）为准；两边都不回改，只登记分歧"
+    }
+  ],
+  "industry_face_status": "PASS（四点全部裁定成立）",
+  "accounting_face_status": "GRADED（只读引用 OPEN5-S5-ACCT-GRADING/a20260926-01；本工位不代签、不改其任何字节）",
+  "s4_status_read_only": {
+    "consistency_result": "NOT_USABLE",
+    "changed_by_this_station": false,
+    "numeric_conflict_changed": false,
+    "used_as": "U2/U3 = CONSISTENT 作 E1f 路径①引用；U1 = NOT_USABLE 只读接受"
+  },
+  "origin_excluded": {
+    "source": "HK-XIAOMI-AR2025",
+    "excluded": true,
+    "graded": false,
+    "level": null,
+    "admissible": false,
+    "s4_consistency_result": "NOT_USABLE",
+    "rule": "ENVOWNER L165 + S4 NOT_USABLE + oracle §4.5/§4.6"
+  },
+  "hk_parameters_released": false,
+  "placeholder_maintained": true,
+  "low_base_high": [
+    null,
+    null,
+    null
+  ],
+  "releases_nothing": true,
+  "accept_produced": false,
+  "open5_released": false,
+  "does_not_claim_I11A_acceptance": true,
+  "back_written_to_prior_stations": false,
+  "mutations": {
+    "script": "_work/s5_ind_grade.py",
+    "expected_rc_sequence": [
+      0,
+      0,
+      0,
+      2,
+      2,
+      2
+    ],
+    "observed": {
+      "baseline": {
+        "rc": 0,
+        "expectation_met": true
+      },
+      "m1_weak": {
+        "rc": 0,
+        "expectation_met": true
+      },
+      "m2_origin": {
+        "rc": 0,
+        "expectation_met": true
+      },
+      "m3_nourl": {
+        "rc": 2,
+        "expectation_met": true
+      },
+      "m4_noseg": {
+        "rc": 2,
+        "expectation_met": true
+      },
+      "m5_langconflict": {
+        "rc": 2,
+        "expectation_met": true
+      }
+    },
+    "all_expectations_met": true
+  },
+  "verbatim_check": {
+    "checks_total": 55,
+    "fails": []
+  },
+  "oracle": {
+    "file": "oracle.md",
+    "sha256": "549cadfe0c66614b2687da12e094317db9601633718f204ce35ca17de71b07ee",
+    "bytes": 25531,
+    "frozen_before_any_judgement": true,
+    "modified_by_this_round": false,
+    "addendum": null
+  },
+  "written_files": {
+    "deliverables": [
+      {
+        "path": "oracle.md",
+        "bytes": 25531,
+        "sha256": "549cadfe0c66614b2687da12e094317db9601633718f204ce35ca17de71b07ee"
+      },
+      {
+        "path": "ind_ruling.json",
+        "bytes": 25375,
+        "sha256": "396f4bbe3ae1ced55f570e7a8efe25f71291384de0358faea8a142cf0ac7b796"
+      },
+      {
+        "path": "s5_ind_report.md",
+        "bytes": 23748,
+        "sha256": "168916435967edea32a53f8dfbacb1cccfa68c6727c3850c6e783ac5b72153e5"
+      }
+    ],
+    "work_files_count": 34,
+    "work_files_total_bytes": 2431137,
+    "work_files": [
+      {
+        "path": "_work/build_handoff.py",
+        "bytes": 7758,
+        "sha256": "ae0a5565c7bb8c522442447226e3024b745b5820f8feaf15674421272f20f468"
+      },
+      {
+        "path": "_work/dbg_m5.py",
+        "bytes": 730,
+        "sha256": "4c15b89d2c0d28cbbc3f443723acad5999557406eafc036c20d67dff3b0d8e66"
+      },
+      {
+        "path": "_work/expect_baseline.json",
+        "bytes": 315,
+        "sha256": "81c706142e5649a3dfe1f1430c6a8fa8edde40c1c65ff0f5e3d0ae8fa61500b3"
+      },
+      {
+        "path": "_work/expect_m1_weak.json",
+        "bytes": 133,
+        "sha256": "7136cd30fc77846bdebade05fe2806d7e2e6565a3ce89d7dbe6e2dc1ce921416"
+      },
+      {
+        "path": "_work/expect_m2_origin.json",
+        "bytes": 173,
+        "sha256": "9bc9cf09790bec53c469e38649aab5cd954976c76c21a245951f5adc01b1643e"
+      },
+      {
+        "path": "_work/expect_m3_nourl.json",
+        "bytes": 259,
+        "sha256": "c93967f221c0fc894a7bfe11afbbe5fe97b9a0a502a1e9bfaa2beb678244eec7"
+      },
+      {
+        "path": "_work/expect_m4_noseg.json",
+        "bytes": 137,
+        "sha256": "cd4f281f1f51669b3c7a58d3245802da64f6a86dd0f45a804bf5b7900d473cba"
+      },
+      {
+        "path": "_work/expect_m5_langconflict.json",
+        "bytes": 953,
+        "sha256": "bb506adaa1fdd1c73fd42a96ef26665836559a2b37ea82ca2f2618c4e50b22e5"
+      },
+      {
+        "path": "_work/extract/s5_ind_attempt04_fitz.txt",
+        "bytes": 95825,
+        "sha256": "c810db0d9dfe10047979a3163f9ffe973050bf36e9381209993ec58c8264775f"
+      },
+      {
+        "path": "_work/extract/s5_ind_attempt04_pdfminer.txt",
+        "bytes": 111987,
+        "sha256": "21ba5eadedc28849d50ecae4416e1e7cc777b8d560b3e0a60e15089dfe880992"
+      },
+      {
+        "path": "_work/extract/s5_ind_attempt08_fitz.txt",
+        "bytes": 958131,
+        "sha256": "fe8a3b53507f5c225aeb87d592320442d9f1241869363e1155de75e29e65a858"
+      },
+      {
+        "path": "_work/extract/s5_ind_attempt08_pdfminer.txt",
+        "bytes": 1029246,
+        "sha256": "f5d1077a737aa39a4ffc092ff28a546c4532b1e4649640886679bedf0cbb22e9"
+      },
+      {
+        "path": "_work/final_check.py",
+        "bytes": 3586,
+        "sha256": "96579a0b455f1b82ccda7247439dcb6733c1ea6c428523c822142b4650d7589d"
+      },
+      {
+        "path": "_work/measure_baseline.json",
+        "bytes": 16849,
+        "sha256": "0309b9a8db296cd6753c4ad23db1d54ebdba77816dfce8299fb9d69ac3ff0d8f"
+      },
+      {
+        "path": "_work/measure_m1_weak.json",
+        "bytes": 16813,
+        "sha256": "8e0c7ed7212514ba4dd1d56ec36049a5db25922da07533640b0b95fe857171ac"
+      },
+      {
+        "path": "_work/measure_m2_origin.json",
+        "bytes": 16891,
+        "sha256": "60c36e3dd83728e469022fb7257759bac74bd8432a5fcff67d611f191d7db34e"
+      },
+      {
+        "path": "_work/measure_m3_nourl.json",
+        "bytes": 16951,
+        "sha256": "dcc86328ae97ad7a59de08e8af137324b8cece4b52639b16b718030aff78470e"
+      },
+      {
+        "path": "_work/measure_m4_noseg.json",
+        "bytes": 17067,
+        "sha256": "29045b70b9a3f68ec5c558b896e9a67700b10526d10ef87150ea203d581538c0"
+      },
+      {
+        "path": "_work/measure_m5_langconflict.json",
+        "bytes": 16998,
+        "sha256": "624f56fada411f39be21622559ac57e79f66a64ce2c88a1230b1eb8087abac23"
+      },
+      {
+        "path": "_work/probe_en_audit.out.json",
+        "bytes": 5057,
+        "sha256": "e017b6b61cd3896fd06e73f5c60a8900e63010af15c73309db5cf66dd575e085"
+      },
+      {
+        "path": "_work/probe_en_audit.py",
+        "bytes": 2311,
+        "sha256": "b3017fa2fdbbff0af75210a1f45eaf07075caa7f4ff4d3577cc67c3b0767743b"
+      },
+      {
+        "path": "_work/probe_inventory.out.json",
+        "bytes": 7669,
+        "sha256": "ee729c16b9250b8755425021b47328d9433f06065c7b15e5c60666c843aff0b2"
+      },
+      {
+        "path": "_work/probe_inventory.py",
+        "bytes": 2127,
+        "sha256": "055528e82db8b733bd6fa087c6bbddad60b1a7a6356622c98b6ec61acf7845d3"
+      },
+      {
+        "path": "_work/probe_json.out.txt",
+        "bytes": 2362,
+        "sha256": "48da25b6f5d6865fb8bc1d6c725e91c9cfd609e4e7129562cca41728fda73464"
+      },
+      {
+        "path": "_work/probe_json.py",
+        "bytes": 1774,
+        "sha256": "fb7b3bd018798ada7379c0b889a15acb856b276ded662f844da2893007517184"
+      },
+      {
+        "path": "_work/probe_shared.out.json",
+        "bytes": 11107,
+        "sha256": "53909ac13a333ab8ee063baed8cacb0f988995a44230b3a6e6648d116e39c457"
+      },
+      {
+        "path": "_work/probe_shared.py",
+        "bytes": 1114,
+        "sha256": "8808557641fd1154991b0f6c217358e7983cc4861af5dcfa3ad7e3020a8b1990"
+      },
+      {
+        "path": "_work/s5_ind_extract.json",
+        "bytes": 25446,
+        "sha256": "58771dada815ddf526093700ad7667ad576be8e78a2e24a529ec2bb1e43328cd"
+      },
+      {
+        "path": "_work/s5_ind_extract.py",
+        "bytes": 10329,
+        "sha256": "e4e0d1dadd3811ffcacf31c91d98cae838b57d86791e73e5e73045d111dbb4d1"
+      },
+      {
+        "path": "_work/s5_ind_grade.py",
+        "bytes": 40105,
+        "sha256": "f2cb40f4d9c9ce615776005475703fa97aba8e95a22ef67b4202d253cc797336"
+      },
+      {
+        "path": "_work/verify_frag_src.json",
+        "bytes": 1873,
+        "sha256": "ef47da1f7c1548236b305018f2c25e7c1b5d63b4045202cf11645f8cd1f305cc"
+      },
+      {
+        "path": "_work/verify_frags.py",
+        "bytes": 1209,
+        "sha256": "5adac124e387302a2ba0ab5a16f3cd946d7f05991349816df85ac211a098eba0"
+      },
+      {
+        "path": "_work/verify_quotes.json",
+        "bytes": 40,
+        "sha256": "d3317da0c723065895c421a33fa15f74edac36ce24185ccea6397af1e149568b"
+      },
+      {
+        "path": "_work/verify_quotes.py",
+        "bytes": 7812,
+        "sha256": "8e34ff892e7ba0fe81405b2f553fd8c01d2cab1ef13ffdf882bd02f8e5ef3893"
+      }
+    ],
+    "self_excluded": "handoff.json（自引用不计哈希）"
+  },
+  "git_diff_total": 3830,
+  "git_diff_non_planning": 0,
+  "git_diff_non_planning_paths": [],
+  "git_write_ops": 0,
+  "git_status_used": false,
+  "network_used": false,
+  "writes_outside_planning": 0,
+  "company_wiki_opened": false,
+  "five_plan_files_written": false,
+  "write_surface": "only .planning/2026-09-19-three-project-history-audit/execution_runs/OPEN5-S5-IND-RULING/a20260926-01/",
+  "not_done": [
+    "未代签会计面：不动 E1/E3/S1/S0、不动 usable_faces、不动 admissible、不重做会计四步、不改会计半区任一字节",
+    "未放行港股参数：hk_parameters_released=false、_PLACEHOLDER 维持、low/base/high=[null,null,null]",
+    "未解除 OPEN-5、未产生 I-11-B 的 ACCEPT、未新增 approved_frozen",
+    "未改 NOT_USABLE、未下 S4 结论、未动 numeric_conflict、未把任何 not_readable 改成「已验证」",
+    "未给 origin 赋级（M2 变异体中的 MUTANT 字样仅在 _work 测试产物内）",
+    "未回改 S4 / S3 / S1 两站 / 封盘 I-11-A / 会计半区 / I11A-OPEN-IND / I11A-OPEN11-IND 任一字节",
+    "未写五份计划文件、未写 .planning 之外任何路径（含 company-wiki，且未打开）",
+    "零 git 写、未用 git status、未联网"
+  ],
+  "registered_for_owner": [
+    "L240/L241 读法分歧：行业面采 α（新 attempt 产不出任何可读原文文本才叫『读不出原文』），β（仅指 origin 本体）已登记不采用；两者都不放行参数",
+    "派单把 IND C 表出处写成 I11A-OPEN11-IND（实为 I11A-OPEN-IND L227–L234/L240-241/L261/L360），不回改、只登记",
+    "attempt08 pdfminer 自抽工件跨进程 2 个 sha：登记为限制，非阻塞；行业面只要求引用绑定登记载体 sha256 + byte_range"
+  ],
+  "next_station": "两面（会计=完成、行业=PASS）均已出 ⇒ 仍只到 L166『通过后才谈港股命题与参数』；参数放行、OPEN-5 解除、I-11-B ACCEPT 一概归有权方按 ENVOWNER §⑦ 另行处理",
+  "file_format": {
+    "encoding": "UTF-8",
+    "bom": false,
+    "line_ending": "LF",
+    "json_reparsed_after_write": true
+  }
+}

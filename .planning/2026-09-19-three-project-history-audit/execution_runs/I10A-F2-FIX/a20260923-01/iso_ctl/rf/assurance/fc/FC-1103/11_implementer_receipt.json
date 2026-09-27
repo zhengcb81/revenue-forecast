@@ -1,0 +1,97 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1103",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "Weekly T3 isolated runner (tools/weekly_t3_runner.py): runs the FC-805 real-provider suite (CN/HK/US on a temp wiki, never production) with explicit semantics — no --force => BLOCKED exit 2 (an alert, never a silent green); --force => real downloads, skipped = blocked, all-green = 0, failures = 1. Isolated report under assurance/runs/{run_id}/t3_report.json. 3 contracts; the --force test really ran the FC-805 suite (3:31, classified correctly). Revenue full suite 446 passed / 0 failed.",
+  "base_triplet": {
+    "revenue": "a9ffc07ccbb86e54f7c7c30b45d8229050f07f89",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "f6c500c96ed1ed55a08c5b8eb32adb8088c4a812",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tools/weekly_t3_runner.py",
+    "revenue-forecast/tests/test_fc1103_t3_runner.py",
+    "revenue-forecast/assurance/fc/FC-1103/11_implementer_receipt.json",
+    "revenue-forecast/assurance/fc/FC-1103/12_reviewer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/tools/weekly_t3_runner.py",
+    "revenue-forecast/tests/test_fc1103_t3_runner.py"
+  ],
+  "dependency_receipts": [
+    "company-wiki/assurance/fc/FC-805/ (accepted) — real CN/HK/US T3 suite",
+    "revenue-forecast/assurance/fc/FC-1102/ (accepted) — runner pattern + report isolation"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "AUD-06",
+      "status": "passed",
+      "note": "weekly T3: no --force => BLOCKED exit 2 (alert, never silent green); --force runs the real suite with correct classification. (no --force => exit 2 BLOCKED, verified; expected-nonzero semantics in result text per FC-703 r2 precedent)"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python -B tools/weekly_t3_runner.py --report-root /tmp/t3runs --force",
+      "exit_code": 0,
+      "result": "FC-805 real suite ran; classified per outcome",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_fc1103_t3_runner.py -q",
+      "exit_code": 0,
+      "result": "3 passed (blocked / force-invokes / report isolated)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "446 passed, 106 subtests, 0 failed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit (auto): suite + E2E + R4.2",
+      "exit_code": 0,
+      "result": "446 passed; E2E PASS; MATCH 109 files",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "catalog_mutations": 0,
+    "note": "Runner never touches production; real downloads only under --force on a temp wiki (FC-805 semantics)."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "New tool; scheduled deployment is a release-owner action."
+  },
+  "mutation": {
+    "id": "FC-1103-M1",
+    "killed": true,
+    "details": "M1: without-force blocked branch removed (runner would exit 0) -> test_without_force_is_blocked FAILS. Reverted; 3 passed."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert f6c500c; standalone tool."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1103-independent",
+    "reviewer_receipt_sha256": "521c2e54a9a4f480e0d3a2e6dee3f7f7cc0f0697f691a7fdc6611e18f79bb9b7",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-12T07:48:19Z",
+    "note": "reviewer replayed runner + tests + guard-bypass mutation + REAL CN/HK/US downloads (214s all green) from clean worktree f6c500c; full suite 446/0; verdict accepted; unresolved_findings=[]"
+  },
+  "provisional_note": "Feat sealed at revenue f6c500c (filing/wiki unchanged). 3 runner contracts; full suite 446/0. Independent review pending."
+}

@@ -1,0 +1,302 @@
+{
+  "review_id": "A.DR-rev2",
+  "reviewed_scope": "R4 阶段 A 的第二轮设计审查（gate A.DR rev2）。审查对象为 revenue-forecast 运行目录 assurance/runs/2026-09-11_r4-phase-a/ 的冻结包：A01 baseline-map.md、A02 root-contract.md、A03 operation-contract.md、A04 identity-contract.md，台账 findings.md / progress.md / task_plan.md / checkpoint.json / inputs.json / boundary-audit.md / command-manifest.json / .gitattributes，证据目录 evidence/（执行器 run_cli_help_matrix.py、observe_catalog_companions.ps1、build_checkpoint.py；产物 cli-help-matrix.json、catalog-companion-observation.json/.csv），以及首轮复审记录 reviews/A.DR.json。验收依据为 company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/{simplified-execution-plan.md, execution-handbook.md, simplified-test-matrix.md}。被测包声称的冻结修订为 revenue-forecast commit 0408abb（实际 tip 为 3e0c8f3，见 A-DR2-01 与 A-DR2-08）。本轮未执行任何 wiki CLI（含 --help），未打开/查询/复制/哈希生产库 company-wiki/.source_catalog/catalog.sqlite3（仅 Get-Item 元数据），未修改任何产品文件、配置、DB、任务、worker 状态、计划文档或运行目录内既有文件；唯一写入为本记录 reviews/A.DR-rev2.json。",
+  "reviewer_agent_id": "b31cbc67-7142-495a-a9db-8886c700ed8f",
+  "reviewer_identity_note": "该 ID 读自运行时管理的环境变量 DSH_SESSION_ID。自报 ID 不构成独立证明：它既不能证明我未参与编写，也不能证明编排方确实把该 ID 指派给了本审查。按 execution-handbook 第 3 节（review 字段要求实际 agent/task ID、非实现者声明）与首轮 A-DR-16 的要求，独立性的可审计性仍取决于会话外部（编排方/operator）持有的指派记录；checkpoint.json 的 pending_review[0].assignment_stamp 亦自述 \"NOT YET STAMPED EXTERNALLY (A-DR-16)\"（gate G6），本记录同样无法自证该点，故与首轮一样仅登记、不自签。",
+  "independence_statement": "我未编写、编辑或参与本运行目录任何被审文档、证据或台账，也不持有该 run 的任何作者角色；我是与首轮 reviewer（7cd316cc-…）不同的会话。本轮所有判断均从一手制品重新推导：git 对象（git ls-tree/git cat-file/git show 逐 blob 取字节并自行计算 sha256）、文件系统元数据、源码逐行读取、re.finditer/Select-String 文本检索、Python ast 解析（cli.py 解析器面）。我未采信任何被审文档的结论：10 项被声明为\"事实\"的断言我逐条重算（结果见 verifications_passed 与 findings）。方法学限制（如实披露）：(1) 生产库禁止打开，因此\"只读打开 WAL 库会前移 -shm\"这一机制我未（也不得）在本机复现，只能静态核验 gate 代码指向生产 catalog 并用仓库外的 CI 时间戳交叉验证；(2) 我无法证明作者会话未做过某事，凡涉及\"谁打开了库\"的判断我均给出证据与归因限制；(3) 本审查期间工作区非静止（见 A-DR2-05），故任何边界结论都只对观测时刻成立。",
+  "inputs_read": [
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/baseline-map.md", "sha256": "394077da1007013e547e03d924ddf3760b41e12793f471d316ca07313d2b32f1"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/root-contract.md", "sha256": "955b012ffe8b3102aef2fa04256f08bca130084bf5ca94c9d7224cd97445c886"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/operation-contract.md", "sha256": "99a307169ed932dff3619bec7289e8a921f317d92a34adef03791c1dedf5b22b"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/identity-contract.md", "sha256": "028e44bc87db0d0b93094d081534c9509c9a9809995ad0d628e703de3d241be6"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/findings.md", "sha256": "bac153110071889247497e386d5a0714eb6565afec692759fb7fd9ffef0f0b45"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/progress.md", "sha256": "6c1769c0f48a2f2c0319b53a5354e85b7269d390e1d08249a5eeda4d56ba7c9a"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/task_plan.md", "sha256": "76dc9f1e5faa2a79da6fa6a2a84a32cbae241c270866ea8b3e1681ad73a2ee25"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/checkpoint.json", "sha256": "e8a11ca38dfb215e775eea6ab445d8d80bd38b9932059f5c34716288a9b7b0b1"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/inputs.json", "sha256": "64b6592a7b3f6ea89bf03fa68f7e685efa92a9fb89598013f51a9ea00e116ff3"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md", "sha256": "6bce5289b326bceb9a20af67460fcc274486e297313f2abbe6df7119986f5550"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/command-manifest.json", "sha256": "cce1b173640a4372844e0706e94d9958e845a82cdf35c0faaba019775bd72a0f"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/.gitattributes", "sha256": "8d10b3ccbbcb5902f06f726e757fa33fbc418ae0167007c36587dfd6ed3823f5"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/evidence/run_cli_help_matrix.py", "sha256": "a402ef1ce2f514a9c741203f32b4a308c04961371714d6c43f2e1ca9684fc0df"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/evidence/observe_catalog_companions.ps1", "sha256": "4ee5b3eff1db267ed6590ec2263e5e575b56cff73c4e868d7bf3e807a1e4e2bb"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/evidence/build_checkpoint.py", "sha256": "12197d231971e0559ce854155f9ff1e73fc25ab5fdf655cb5d166a4d1c5e3146"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/evidence/cli-help-matrix.json", "sha256": "4a95ded2b310f3f8b0e28f2ac61ee14f1246b77bfbbd8138a8cd63aa5cb0d9ca"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/evidence/catalog-companion-observation.json", "sha256": "f8a0f14fdb782517c4b2841a31cad88380051625e2c479be3b7e02ca6334604c"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/evidence/catalog-companion-observation.csv", "sha256": "18da3da04d1a89e0d29faa8a3e5a7811e34ac2b0680bccc049ac43372bd49f8b"},
+    {"path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/reviews/A.DR.json", "sha256": "93900926df672d7d214763196771e99c780ce9237fe19565e0768dff9ee2c67d"},
+    {"path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md", "sha256": "e0dccd11ef9191c97c1a9688a319ba253aed7c936836b8b01a476cdcf2896467"},
+    {"path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/execution-handbook.md", "sha256": "b20ace43143727376e83801771d08ba550d2ba3429d8f3f902db6847c2b113af"},
+    {"path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-test-matrix.md", "sha256": "b90ef4d0b1c3e9446210953f1fa9696575e5c14292a914a8f8469679a1380f49"},
+    {"path": "company-wiki/config/source_catalog.yaml", "sha256": "f9eb72a6c37c2dfe…(16) / 1712 B（整文件重算，下同）"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/{cli,config,models,resolver,service,policy,policy_2x,policy_3x,scanner,store,security_identity,llm_summarizer,startup,adapter_process,control,dayu_cli_adapter,lock,normalizer,worker,reader,duplicate_cleanup}.py", "sha256": "逐行读取与检索；其中 cli.py 2f5c574034369707、config.py e96cea75cb27bcf6、models.py fc6cc009fb22f6d6、resolver.py 6962b258ce198f19、service.py 6412b19e8e9a3073 已整文件重算并与 A01 冻结值一致"},
+    {"path": "filing-fetch/scripts/{fetch_filing.py,filing_contracts.py}", "sha256": "046cc7dc4e3ff2f4… / 2d1b2e3374f1d0c2…"},
+    {"path": "revenue-forecast/scripts/{company_wiki_source.py,source_preparation.py}", "sha256": "aeeb7b2a63047c73… / 5ec16eaf0fe48012…"},
+    {"path": "revenue-forecast/tools/pre_push_gate.py", "sha256": "逐行读取 141-215 与 gate 列表（未执行该脚本：执行它会打开生产 catalog，违反本审查的硬约束）"}
+  ],
+  "commands_run": [
+    "git -C revenue-forecast log --oneline -8 ; git -C revenue-forecast rev-parse HEAD ; git -C revenue-forecast status --porcelain -uall",
+    "git -C revenue-forecast show --stat --format='%H %ad %s' d152833 3e0c8f3 0408abb ; git -C revenue-forecast show 3e0c8f3 （完整 diff）",
+    "git -C revenue-forecast ls-tree -r b644e16|cd0c0ca|0408abb|3e0c8f3 -- assurance/runs/2026-09-11_r4-phase-a/",
+    "git -C revenue-forecast cat-file -s <rev>:<path> （18 个 produced_files 的 blob 字节数）; git -C revenue-forecast hash-object --path=<path> <worktree file>（属性感知的 blob sha1）",
+    "git -C revenue-forecast cat-file blob 3e0c8f3:<path> > <临时文件>，对 4 个 CRLF 文件做 LF→CRLF 逐字节变换后重算 SHA-256（复现出记录值）",
+    "git -C revenue-forecast cat-file blob 0408abb:…/evidence/build_checkpoint.py（重算 sha256 = 92c13fb15654c6e7… / 10225 B）",
+    "Get-FileHash -Algorithm SHA256 对 checkpoint.json 的 18 个 produced_files 逐条与工作树比对；对 baseline-map §0 的 12 个输入文件逐条比对（12/12 HASH_OK）",
+    "公司三仓 HEAD/dirty：git -C company-wiki|filing-fetch|revenue-forecast rev-parse HEAD + status --porcelain -uall；git -C company-wiki log -8 --date=iso；git -C company-wiki show 478bb92 （完整 diff）",
+    "文件系统元数据（只读、不开句柄）：Get-Item company-wiki/.source_catalog/catalog.sqlite3{,-shm,-wal}（Name/Length/LastWriteTime/CreationTime）；Get-ChildItem .source_catalog -Force 按 mtime 排序",
+    "GBK/UTF-8 字节级行尾分析：对运行目录 20 个文件用 [System.IO.File]::ReadAllBytes 统计 LF/CRLF/BOM",
+    "Select-String 逐行检索（含行号）：symlink_policy / is_symlink|reparse|symlink / reusable_root_kinds|reusable_for_filing / priority / is_canonical / ORDER BY / legacy_bridge_allowed / canonical_write_target / load_root_policy_2x / load_root_policy_3x / load_catalog_config / subprocess\\.|Popen|os\\.system|CREATE_NO_WINDOW（覆盖 company-wiki/src 全树）",
+    "python -B 自写只读脚本 1：ast.parse(cli.py) 枚举 add_parser 调用点、接收者、help 文本、add_subparsers、helper 定义与调用点、args.command 分派链",
+    "python -B 自写只读脚本 2：把 operation-contract.md §2 的 47 叶子枚举与 AST 叶子集合做集合差（missing/extra）",
+    "python -B 自写只读脚本 3：解析 checkpoint.json / inputs.json / evidence/*.json / *.csv，统计探针数、rc 直方图、side_effect_scope、观测样本与 transitions",
+    "逐行读取（read 工具）全部 22 个在审文档 + 评审依据 3 份计划文档",
+    "Get-Process python,pythonw,pwsh（进程快照）; schtasks /query /tn company-wiki-source-catalog-worker（任务不存在）",
+    "GitHub REST 只读查询（任务显式许可，本机无 token，公开仓库匿名访问）：GET api.github.com/repos/zhengcb81/revenue-forecast/actions/runs?per_page=8 与 api.github.com/repos/zhengcb81/company-wiki/actions/runs?per_page=4",
+    "（明确未执行）任何 wiki CLI 子命令（含 --help）、任何 python -m company_wiki…、revenue-forecast/tools/pre_push_gate.py（会打开生产 catalog）、git push/commit、任何下载命令",
+    "（写出）reviews/A.DR-rev2.json（本记录，唯一写入）"
+  ],
+  "verifications_passed": [
+    "【复现】A01 输入冻结 12/12 逐字节成立：source_catalog.yaml f9eb72a6c37c2dfe/1712、resolver.py 6962b258ce198f19/56769、service.py 6412b19e8e9a3073/55519、policy.py 78320c429e4b7bc9/3384、scanner.py c2ada3e26a53b535/62894、cli.py 2f5c574034369707/65553、config.py e96cea75cb27bcf6/9744、models.py fc6cc009fb22f6d6/10292、filing fetch_filing.py 046cc7dc4e3ff2f4/48392、filing filing_contracts.py 2d1b2e3374f1d0c2/22631、revenue company_wiki_source.py aeeb7b2a63047c73/14377、revenue source_preparation.py 5ec16eaf0fe48012/9605；wiki src/company_wiki/source_catalog 下确有 86 个 .py 且 reader.py 存在。",
+    "【复现】checkpoint.json 的 18 个 produced_files 哈希与工作树字节逐条一致（18/18），其中 14 个同时与 3e0c8f3 的 committed blob 一致（见 A-DR2-01：另 4 个不一致）。",
+    "【复现·声明 1】symlink_policy 确为\"解析但从不读取\"：config.py:79（允许字段）、config.py:140（默认 \"reject\"）、models.py:101（dataclass 默认）、policy_2x.py:39/164；resolver.py、service.py、scanner.py、store.py、reader.py、全 src 树内均无任何读取点（symlink_policy 的检索命中仅上述 5 行 + policy_3x.py:43 注释）。",
+    "【复现·声明 2】复用判定只看 kind：resolver.py:782-786 以 root.kind in set(config.reusable_root_kinds) 构造 reusable_root_ids，:933-940 仅测试 item['root_id'] in reusable_root_ids；resolver.py 内 reusable_for_filing 零命中；resolver.py 内 priority 仅 1 处命中且在字符串字面量 :531 'lowest_priority_active_original_primary_then_tiebreak'；真实排序在 SQL：service.py:329 与 :527 的 ORDER BY l.document_id, r.priority, l.root_id, l.relative_path。显式 reusable_for_filing: false 无法关闭复用（fail-open）成立。",
+    "【复现·声明 3】canonical_write_target 的两套分叉准入成立：policy_2x.py:49 _WRITABLE_KINDS=frozenset({'company_raw'})、:121-131 对写目标做 kind/read_only 校验；而现行 loader config.py:75-84 的 allowed_root_fields 不含 canonical_write_target（也不含 cohort），因此该字段在活路径上被当未知字段拒绝。调用者核查：load_root_policy_2x 仅出现于 policy_2x.py:58/319（自身）、policy_3x.py:37/95，以及 3 个测试文件（test_dropbox_root_policy_fc501.py:182/212、test_future_root_config_only.py:43/73/85/114/159/184、test_root_policy_2x.py:54/57）；其唯一上游 load_root_policy_3x 也只在 tests/unit/test_policy_3x.py:67 被调用 → 两套 2x/3x loader 均无生产调用者。",
+    "【复现·声明 4】identify --refresh = 网络 + 本地写：cli.py:1080-1087 在 args.refresh 为真时构造 OfficialSecurityMasterRefresher(store).refresh(markets=…)；security_identity.py:20 import requests、:26-45 https 端点、:1007 requests.get、:348 temporary.write_text、:1047 def refresh。",
+    "【复现·声明 5】CLI 面 41 顶层 + 10 嵌套 = 51 解析器节点、4 个纯分组 → 47 叶子：ast 解析 cli.py 得 47 个 add_parser 调用点；顶层 36 个命名 + add_worker_control_parser（定义 :578、subparsers.add_parser :579、调用 :587/:592/:598/:604-608 的 2 元组循环）产生的 5 个 = 41；嵌套 10 个（documents:259/265、identity-enrichment:277/291/297、activation:639/645/656、runtime-policy:671/674）；分组解析器在 :255/:272/:634/:664。集合比对：operation-contract §2 的 47 条枚举与 AST 叶子集合完全一致（无遗漏、无多余；\"identify --refresh\" 为同一叶子的 flag 形式，§2.1 注已声明只计一次），§2.1 的 15 条 + §2.2 的 14+2+3+2+11=32 条 = 47 ✓。",
+    "【复现·声明 6（部分）】wiki 侧子进程面确为 7 个模块：全 src 树 grep subprocess\\.|Popen|os\\.system|CREATE_NO_WINDOW 命中 adapter_process.py、control.py、dayu_cli_adapter.py、lock.py、normalizer.py、startup.py、worker.py 共 7 个模块 39 行；跨仓 spawn 引用准确：fetch_filing.py:199 def _run_company_wiki_json / :209 creationflags=subprocess.CREATE_NO_WINDOW / :213 subprocess.run；source_preparation.py:3-5 docstring 自述跨仓子进程链 / :18 import subprocess / :99 subprocess.run。（\"12 个 spawn 调用点\"不成立，见 A-DR2-04。）",
+    "【复现·声明 6（docstring 更正）】revenue scripts/company_wiki_source.py 内 subprocess 零命中，filing_fetch_client 命中仅在 :3、:12、:261 三处 docstring 文本内；该文件无相关 import、无调用 → 首轮 F-A01-2 的两处 docstring 伪引用确已删除。",
+    "【复现·声明 7】A04 规则 R4 确为目标而非现状：service.py:643-653 以 (int(item['root_priority']), item['root_id'], item['relative_path'], item['location_id']) 排序取 ordered[0] 标 is_canonical=True，:634-641 以 source_id 分组，:659-662 标 duplicate_relation='exact_copy'；resolver.py:912-921 按路径内容排除含 .rejections 的 original_primary；:528-533 rationale 为字符串（:531）。（补充：service.py:772 还有第三处 ORDER BY r.priority,l.root_id,l.relative_path,l.location_id，文档未列，见 A-DR2-10。）",
+    "【复现·声明 8（时间戳部分）】GitHub REST 只读查询独立复现了包内引用的全部 5 个 CI 时间戳（UTC，本地=UTC+1）：#136 2596c396 20:09:02Z、#137 b0ba1e91 20:12:29Z、#138 d1bb4f5d 20:16:28Z、#139 b644e167 20:19:16Z、#140 cd0c0ca4 20:27:44Z，全部 success。归因机制静态核实：revenue-forecast/tools/pre_push_gate.py:184-199 的 _real_data() 把 catalog 指向 PROJECT_ROOT.parent/company-wiki/.source_catalog/catalog.sqlite3 并对其跑 pytest（REAL_DATA_TESTS 定义在 :150-154）。（归因完整性见 A-DR2-05/A-DR2-06。）",
+    "【复现·声明 9（部分）】checkpoint.json 确由 evidence/build_checkpoint.py 生成：该脚本（202 行）以 RUN.rglob('*') 计算 produced_files（排除 checkpoint.json/.git/__pycache__/.pytest_cache）、把 LEDGER 块与三仓 head/dirty 合并后写 RUN/checkpoint.json；pending_review 已填充 2 条（A.DR rev2 pending + A.DR rev1 closed/rejected 8-5-3）。",
+    "【复现】inputs.json 的 6 个依赖/lockfile 哈希逐条整文件重算一致：wiki pyproject.toml e8f77c42fa5773f7f9e018b006fedf01/2447、requirements.txt 05dbf2204c21ddbad51380a6b76bc2a0/604、requirements-test.txt b19ea72472c5405ec9f7835a1e919adc/181、pytest.ini 013980c5b2d94d7aacc078c198e810e6/360、uv.lock cb48a8a5ec9ea0e119236b0d848ccfbb/472229、filing pyproject.toml c0e6144b2076eeefa7025b4c4a3cb612/330；schema 常量复核：models.py:11 CATALOG_SCHEMA_VERSION='1.2.0'、models.py:13 NORMALIZER_VERSION='1.0.0'、store.py:25 _UPGRADEABLE_SCHEMA_VERSIONS={'1.0.0','1.1.0'}、store.py:995 PRAGMA journal_mode=WAL、models.py:39 ROOT_KINDS；revenue-forecast 根目录确无 pyproject.toml/requirements.txt/uv.lock，filing pyproject.toml 确只含 ruff/pytest/coverage 工具配置（无依赖、无 lock）。",
+    "【复现】A02 §2 的 root 表逐字段成立：source_catalog.yaml:13 reusable_root_kinds: [company_raw, dayu_portfolio, directory]；company_raw kind=company_raw priority=10 privacy_class=public；dayu_portfolio kind=dayu_portfolio priority=20 public；dropbox_stock kind=directory priority=30 public 且无其他声明；future_lake kind=directory priority=40 public + adapter_id: sidecar_filing_v1 + read_only: true + reusable_for_filing: true。",
+    "【复现】A02 §3 的准入引用成立：config.py:86-88 重复 root_id 报错；config.py 完全无 kind 校验，kind 准入在 models.py:141-142 对 ROOT_KINDS（models.py:39）；config.py:82-84 未知字段拒绝、:90-95 未解析变量拒绝、:106 read_only 默认 True、:108-111 CFG-05、:112-118 CFG-07；C3 出口门在 llm_summarizer.py:333-338（:45 _PRIVATE_PRIVACY_CLASS='private_user'）。",
+    "【复现】A03 的 flag 条件与 help 文本：ensure 裸调用（无 --allow-download 且 mode≠latest_as_of）在 cli.py:752-758 为纯读返回；:760-762 写流程先取 get_catalog().store；:764-771 paused 且未加 --allow-acquisition-while-paused 时 RuntimeError；:772-778 仅在 --allow-download 且 paused 时写 paused_acquisition.log（_append_paused_acquisition_log 定义处 :102-117，日志路径 :109）→ 首轮 A-DR-15 指出的\"审计方向写反\"确已改正；close-gap 在 :1217-1218 于 paused 且无 override 时拒绝。AST/探针 help 文本：size-report :361 \"read-only catalog size / disk-health report\"（自述只读 ✓）、identity-enrichment preview :277 \"preview a candidate assertion without writing\"（自述不写 ✓）、activation preview :639 \"read-only: which assertions would flip\"（自述只读）、extraction-quality :366 \"assess deterministic source/extraction quality without span bodies\"（无只读自述 ✓）。A-DR-12 的出口修正成立：cli.py:970-971 → _run_export_command 写 CatalogConfig.export_dir，models.py:206-208 export_dir = catalog_dir/'index'（本地）。derived-audit cli.py:972 + :976-980 调 reconcile_artifacts(config.database_path,…)；import-portfolio cli.py:1336 分派。",
+    "【复现】边界快照的覆盖盲区确已修复：evidence/cli-help-matrix.json 的 side_effects.catalog_files_per_file 覆盖 catalog.sqlite3 / -shm / -wal 三件套（before/after 的 size+mtime_ns 相等、unchanged=true），run_cli_help_matrix.py 的 CATALOG_FILES 含三件套、TIMEOUT=60；探针 52 次全部 rc=0（results 长度 52、rc 直方图 {0:52}、52 个互不相同的 argv_tail），top_level_commands 长度 41、nested 为 4 个分组。",
+    "【复现】被动观测数据支持其\"窗内零前移\"的表述：observation.json 的 samples=99、interval_seconds=15、distinct_mtime_sets=1、transitions=[]，csv 99 行样本的 -shm mtime_ns 恒为 639247552076590712；探针非空转：csv 第 10/11 样本记录到 10344:python.exe 与 19888:python.exe。（其推论不成立，见 A-DR2-06。）",
+    "【复现】生产库主文件与 -wal 全程未变的表述与元数据一致：catalog.sqlite3 49677344768 B、mtime 2026-09-08 22:23:21（未变）；catalog.sqlite3-wal 0 B、mtime 2026-09-08 22:23:21；catalog.sqlite3-shm 32768 B（mtime 见 A-DR2-05）。登录任务 company-wiki-source-catalog-worker 确实不存在（schtasks 报\"系统找不到指定的文件\"）。",
+    "【复现】台账字段已满足 handbook §3 的 checkpoint 清单：三仓输入 hash（inputs）、last_completed_step、current_gate、pending_review（已填充）、produced_files+sha256、actual_side_effects、failed_or_unknown、next_step、authorization_needed、worker_desired_state_note 均在；task_plan 另设 G1–G8 门禁表，把\"command-manifest 缺失\"从散文升为门禁条目（G4），符合首轮 A-DR-11 的要求。"
+  ],
+  "round1_finding_closure": [
+    {
+      "id": "A-DR-01",
+      "closed": false,
+      "evidence": "结论面已改对：root-contract.md C1 行明确写 \"`symlink_policy` 不在此列（见更正 1）\"，§5 表写 \"默认值存在但从未被读取（更正 1）→ 不构成任何保护\"，并新增规则 R7。代码复核支持该结论：symlink_policy 仅在 config.py:79/140、models.py:101、policy_2x.py:39/164 被解析/默认化，resolver/service/scanner/store/reader 与全 src 树无任何读取点。但同一处更正的事实句是假的：root-contract.md 第 4 行写 \"wiki `src` 内 **`is_symlink|reparse` 命中 0 次**\"。实测全 src 树命中 7 行：source_catalog/duplicate_cleanup.py:46 `if not path.is_file() or path.is_symlink()`、:534 `if indexed_path.is_symlink()`、:545 `if not resolved_path.is_file() or resolved_path.is_symlink()`，source_contract/announcement_collector.py:301 `if company.is_symlink():`、:302 `raise AnnouncementCollectionError(\"company directory must not be a symlink\")`、:323 `if cursor.exists() and cursor.is_symlink():`、:325 `f\"collector target traverses a symlink: {cursor}\"`。",
+      "residual": "必须删改该\"命中 0 次\"句（或改为\"symlink_policy 无任何读取点；仓库内只有 duplicate_cleanup.py 与 source_contract/announcement_collector.py 各自独立的 is_symlink 检查，二者都不读该字段\"）。该假句是本轮新引入的事实错误，另记为 A-DR2-03。"
+    },
+    {
+      "id": "A-DR-02",
+      "closed": true,
+      "evidence": "三条更正全部复现：resolver.py:782-786 以 kind 构造 reusable_root_ids、:933-940 只测 root_id ∈ 该集合、resolver.py 内 reusable_for_filing 零命中（fail-open 成立）；resolver.py 内 priority 仅 1 处命中且位于字符串字面量 :531；真实排序在 service.py:329 与 :527。baseline-map §1②/§2 与 root-contract 更正 2 的表述与代码一致，且不再宣称不存在的复用链。",
+      "residual": "owner 裁定仍未取得（显式 false 是否必须生效、是否删字段），已正确登记为 task_plan G2 第 2 项与 checkpoint.failed_or_unknown 第 3 项；A02 明文未冻结。"
+    },
+    {
+      "id": "A-DR-03",
+      "closed": true,
+      "evidence": "更正与代码一致：policy_2x.py:49 _WRITABLE_KINDS、:121-131 对 kind/read_only 的强制；config.py:75-84 的 allowed_root_fields 不含 canonical_write_target，故活 loader 报未知字段；调用者核查证实 policy_2x/policy_3x 两条 loader 均无生产调用者（policy_3x.py:95 是唯一非测试调用点，而 load_root_policy_3x 自身只被 tests/unit/test_policy_3x.py:67 调用）。R8（同一 YAML 不得有两套分叉准入）已登记。",
+      "residual": "R8 的收敛方向仍未裁定（G2 第 3 项）；另 \"调用者只有 policy_3x.py:95 与 5 个测试\" 的计数不精确（直接引用 load_root_policy_2x 的测试文件为 3 个），见 A-DR2-10。"
+    },
+    {
+      "id": "A-DR-04",
+      "closed": true,
+      "evidence": "identify 已从纯 R 面移出为\"flag 条件\"类：operation-contract §2.1 行内标注\"默认只读；--refresh = 网络 + 本地写\"，§2.3 第 1 条把该 flag 归 N+W 并要求走 request_work 或更高授权、不得被 query_local/open_version 间接触达；baseline-map §1① 同步更正。代码复核：cli.py:1083-1087 + security_identity.py:20/1007/348 成立。",
+      "residual": "§4 问题 5（identify 默认形式是否写 identity cache，--identity-cache-dir 的存在提示缓存可能落盘）仍为 VR 项，属正确保留。"
+    },
+    {
+      "id": "A-DR-05",
+      "closed": true,
+      "evidence": "7 个漏列叶子已全部落位：worker-status/start/resume/pause/stop（§2.2 S 类，含注册点 cli.py:579 与分派 :1405/:1479/:1484/:1489/:1494）、derived-audit（W 类，:972 与 :976-980）、import-portfolio（W 类\"规范写入\"，:1336）。集合比对显示 operation-contract §2 的枚举与 ast 得出的 47 叶子集合完全一致，无遗漏无重复，15+32=47 的算术闭合。",
+      "residual": "无（分类的正确性仍属 VR 行为层的对象，文档已如此声明）。"
+    },
+    {
+      "id": "A-DR-06",
+      "closed": false,
+      "evidence": "两项要求已做到：wiki 侧由单句改为逐模块表（baseline-map §1.1），含行号与外部 boundary 标注（adapter_process.py:137、dayu_cli_adapter.py:192）；F-A01-2 的两处 docstring 伪引用已删并改为 fetch_filing.py:199/209/213 与 source_preparation.py:18/99（我逐行复核均属实，company_wiki_source.py 内 subprocess 零命中、filing_fetch_client 只在 :3/:12/:261 的 docstring 内出现）。但新表的可核数字不成立：\"7 个模块、12 个真实 spawn 调用点\"中，7 模块成立（全 src 树命中恰为这 7 个模块），而 12 个被引行里有 4 行不是调用点——startup.py:107/:124/:176/:212 全是 `runner: Callable[..., Any] = subprocess.run,` 默认参数绑定，startup.py 里唯一真实 spawn 调用点是 :109 `completed = runner(args, capture_output=True, …)`，而该行未被引用。真实 spawn 调用点为 9 个（adapter_process.py:137、dayu_cli_adapter.py:192、control.py:91、control.py:1127、lock.py:85、normalizer.py:286、normalizer.py:1261、startup.py:109、worker.py:110）。",
+      "residual": "把\"12 个 spawn 调用点\"改为\"9 个调用点 + startup.py 4 处 runner 默认绑定\"，并把 startup.py 的引用行由 :107/:124/:176/:212 改为 :109（另可注明 :104-115 的 _run 是所有 schtasks/reg 调用的唯一出口）。另记为 A-DR2-04。"
+    },
+    {
+      "id": "A-DR-07",
+      "closed": true,
+      "evidence": "R4 已重述为目标并点名残留；identity-contract §3 与 §4 V3 的静态答案与代码一致：选择键 = (root_priority, root_id, relative_path, location_id)（service.py:643-653），取值 SQL service.py:329/:527，canonical 候选按路径内容过滤（resolver.py:912-921），rationale 为字符串字面量（resolver.py:528-533）。§5 问题 1 把\"位置代表权是否算违例\"交回 A.DR/owner，处理得当。",
+      "residual": "严格读法仍待 owner 裁定（G2 第 6 项）；service.py:772 的第三处同类 ORDER BY 未被列入，见 A-DR2-10。"
+    },
+    {
+      "id": "A-DR-08",
+      "closed": false,
+      "evidence": "方向正确且机制成立：pre_push_gate.py:184-199 的 real-data 套件确实指向生产 catalog；包内引用的 5 个 CI 时间戳（#136 20:09:02Z … #140 20:27:44Z）被我独立复现，与 21:18:15/21:26:47 的\"推前 gate ≈1 分钟前完成\"模型吻合；主库与 -wal 全程未变的表述与元数据一致；G5（操作员级独立观测）如实登记为未完成，作者未自签。但本轮不能判 closed，四处硬伤：(1) 撤回未传播——evidence/cli-help-matrix.json 的 side_effect_scope.interpretation_limit 仍写 \"catalog.sqlite3-shm is touched by an ambient process on this machine on its own schedule\"，其生成器 run_cli_help_matrix.py 内同样文字，inputs.json 的 data_read_boundary.not_claimed 仍写 \"unknown attribution\"，progress.md 的 v0.2 更正表 A-DR-08 行仍写\"被**环境未知进程**触碰\"，而同一次 wiki 提交 478bb92 的 docs/plans/painpoint-outcome-audit-2026-09-05/progress.md 写 -shm\"**归属未知**\"、同提交的 PLANNING_STATUS.md 却写\"**已归因**\"（同一提交自相矛盾）；(2) 归因规则在本审查期间即被新观测打破——我测得 catalog.sqlite3-shm 的 mtime 已是 2026-09-11 22:10:11（包内最后记录值是 22:05:03），而 22:14 前后 GitHub REST 显示 revenue-forecast 最新 run 仍为 #140（created_at 20:27:44Z，即本地 21:27:44），不存在与之配对的推送，故\"已知开库者 = 22:00 每日任务 + push 前 gate\"这条判定规则无法解释该次前移（见 A-DR2-05）；(3) \"环境周期性触碰者假设被证伪\"是逻辑越权（见 A-DR2-06）；(4) checkpoint 的 actual_side_effects 说\"pushed to GitHub five times tonight\"，与实际至少 6 次（含 wiki 仓库 478bb92 于 22:08:58 触发 CI run #101）不符，且两个 stamp 提交 d152833/3e0c8f3 在本审查时刻尚未推送。",
+      "residual": "必须做四件事：把 ambient/unknown 表述从 cli-help-matrix.json、run_cli_help_matrix.py、inputs.json、progress.md 与 wiki 侧 progress.md 中清除；把 -shm 记录更新到审查时刻并说明 22:10:11 的去向（或明确标为未归因）；把\"证伪\"降级为\"窗口内零前移，方向性证据\"；把 push 次数与\"stamp 提交未推送\"事实写实。G5 仍须 operator 完成，作者不得自签。"
+    },
+    {
+      "id": "A-DR-09",
+      "closed": true,
+      "evidence": "三份台账已一致指向 A.DR rev2（task_plan 状态行、A01–A04 行、progress §6/§7、checkpoint.step/current_gate 同一口径）；pending_review 已填充（含 rev1 的 closed/rejected 记录与 rev2 的 pending 条目及 assignment_stamp 未戳记声明），checkpoint.json 改由 evidence/build_checkpoint.py 生成（脚本存在、生成物一致、18 个 produced_files 与工作树吻合）；G1/next_step 已从 A01 移到 A.DR rev2 节点。",
+      "residual": "记录的三仓输入对仍不描述被审修订：revenue 记 head=d152833/dirty=1，而审查对象是 0408abb（tip 3e0c8f3、工作树干净），company-wiki 记 head=7d4852f/dirty=3 而实测为 478bb92/干净（见 A-DR2-08）。另 checkpoint 记录的 evidence/build_checkpoint.py 哈希 12197d23…(10791 B) 属 3e0c8f3 版本，0408abb 处该文件为 92c13fb1…(10225 B)——即\"reviewed_commit=0408abb\"这一口径下有一项产物哈希对不上。"
+    },
+    {
+      "id": "A-DR-10",
+      "closed": false,
+      "evidence": "两处 help 文本错配已换回：§2.1 的 identity-enrichment preview 现在引 cli.py:277 \"preview a candidate assertion without writing\"（help 自述不写 ✓），extraction-quality 现在引 cli.py:366 并明确\"无 span 正文≠只读，不标只读\"（✓），size-report 的\"help 自述只读\"与 :361 相符（✓）。但同一张表里 activation preview 行仍错：operation-contract §2.1 该行写 \"preview/apply/rollback cohort-epoch activation（`cli.py:639`）\" 与 \"**只读性未自述**，待 VR\"——引文其实是分组 `activation` 的 help（cli.py:634），而 :639 这个叶子的 help 是 \"read-only: which assertions would flip\"，即**确实自述只读**。这与同文件 §2.3 第 4 条（\"help 文本（cli.py:639）为 \\\"read-only: which assertions would flip\\\"——**自述只读**\"）和 §4 问题 2（\"help 自述 \\\"read-only: which assertions would flip\\\"\"）直接矛盾，也与 AST/探针证据矛盾。",
+      "residual": "把 §2.1 的 activation preview 行改成叶子 help 原文 + \"自述只读，但未自述具体读写集合，待 VR 行为证明\"，消除 §2.1 与 §2.3/§4 的自相矛盾。另记为 A-DR2-07。"
+    },
+    {
+      "id": "A-DR-11",
+      "closed": true,
+      "evidence": "inputs.json 已补（三仓 HEAD/dirty + 12 输入哈希 + 6 个依赖/lockfile 哈希 + schema 常量 + 解释器 + 数据读取边界声明），其中 6 个依赖哈希我逐条整文件重算一致；command-manifest.json 已存在且字段齐备（entrypoint/module/flags/cwd/env_keys/read_set/stat_set/write_set/network_destinations/budget/timeout_seconds/subprocesses/exit_expectation/approval/evidence_path/revision），并把\"行为探针 manifest 未提交\"登记为门禁 G4 而非散文。",
+      "residual": "handbook §3 结构里的 card.json / baseline.json / data-manifest.json 仍缺，且 checkpoint.failed_or_unknown 的缺件条目只列了执行计划 §50 的 results/oracle/tests/rollback-contract.json/outcomes.json，未列这三项；行为探针 manifest 仍 pending（已正确 gated）。"
+    },
+    {
+      "id": "A-DR-12",
+      "closed": true,
+      "evidence": "轴已拆为 X-local 与 X-egress：§2.2 把 export/policy-export/archive-retired-evidence 归 X-local，X-egress 只留 LLM 摘要路径（入口命令待 VR）。代码复核支持该归类：cli.py:970-971 → CatalogConfig.export_dir（models.py:206-208 = catalog_dir/index，本地），export/policy-export 不对外发送。",
+      "residual": "X-egress 目前无具体命令入口（依赖 llm_summarizer 门控，§2.3 第 3 条留 VR）——属如实保留，不构成夸大。"
+    },
+    {
+      "id": "A-DR-13",
+      "closed": false,
+      "evidence": "R6 已补出可检测要素表（owner/机制/存储位置/负例/验证方式），V5 命令已收紧为\"必须不带 --refresh\"的 identify（identity-contract §2 R6 表与 §4 V5，均与 cli.py:1083-1087 事实一致），这两点是首轮要求的内容。但 R6 表的 owner 字段写的是\"**本阶段无 owner 指派**，需 owner 裁定（§5 问题 2）\"——首轮要求\"Give R6 an owner\"，即仍未交付，只登记为 G2 第 5 项；存储位置仍是 TO-VERIFY（数据侧，本轮未开库，属合理保留）。",
+      "residual": "owner 指派仍待裁定（G2 第 5 项）；在 owner 未指派前 R6 仍不可作为\"可检测的契约条款\"冻结。"
+    },
+    {
+      "id": "A-DR-14",
+      "closed": true,
+      "evidence": "引用已按实测拆开并复现：root-contract 更正 4 与 §1 写 root_id 唯一性在 config.py:86-88、kind 准入在 models.py:141-142（对 models.py:39 的 ROOT_KINDS），且明确 config.py 完全不做 kind 校验。我逐行核对属实。",
+      "residual": "同段落仍把 reusable_for_filing 的默认位置写成 \"`models.py:105` 附近\"，实际在 models.py:97（:105 是 privacy_class），见 A-DR2-10。"
+    },
+    {
+      "id": "A-DR-15",
+      "closed": true,
+      "evidence": "方向性错误已改正：baseline-map §1③ 现按 cli.py:742-824 重述三道闸，并明确\"worker `desired_state==\\\"paused\\\"` 时拒绝下载，除非显式 --allow-acquisition-while-paused；**被该 flag 放行时才**记暂停期审计\"——与 :764-778 及 :102-117（paused_acquisition.log 路径 :109）逐行一致；F-A01-3 同步更正为\"闸门不止两道\"。",
+      "residual": "新表述少了 :764-767 的 `args.allow_download and` 这一连接条件，因此\"paused 就拒绝\"对 latest_as_of 且无 --allow-download 的路径并不成立（该路径进入写流程但既不触发 :764-771 的 RuntimeError，也不触发 :772-778 的审计）。见 A-DR2-10。"
+    },
+    {
+      "id": "A-DR-16",
+      "closed": false,
+      "evidence": "已登记但未解决：task_plan G6 与 checkpoint.pending_review[0].assignment_stamp 均写明 reviewer 身份须由编排方/操作员从 reviewer 会话外部写入，\"a reviewer self-reported id does not make independence auditable\"，作者未代签——处理方式正确。但该动作本身仍 pending，本记录同样只能读 DSH_SESSION_ID 自报，无法自证。",
+      "residual": "需编排方/operator 在 checkpoint 中从会话外部写入 reviewer 指派记录（含本轮 A.DR-rev2 的 ID b31cbc67-7142-495a-a9db-8886c700ed8f 与首轮 7cd316cc-50bc-44d5-9574-180030d9ee09）；在此之前，任何\"独立\"结论都只有流程性证据、无制度性证据。"
+    }
+  ],
+  "findings": [
+    {
+      "id": "A-DR2-01",
+      "severity": "P1",
+      "area": "证据完整性：checkpoint.produced_files 的哈希无法从已提交 blob 复现（.gitattributes 的字节稳定承诺不成立）",
+      "claim": "被审包（checkpoint.json 的 produced_files_note 与其 .gitattributes 注释）声称：produced_files 记录的是工作树字节，且 .gitattributes 的 `* -text -eol -filter -working-tree-encoding`（.gitattributes:11）使 \"blob bytes == working-tree bytes for every file below\"，因此审查者用 `git show HEAD:<path>` 也能得到同一摘要。",
+      "counter_evidence": "18 个 produced_files 中 14 个的 3e0c8f3 blob 与记录一致，另 4 个不一致，且落差恰等于 CRLF 数：command-manifest.json（blob 5bdb8c71e2…/1922 B，记录 cce1b173…/1971 B，工作树 49 个 CRLF）、evidence/catalog-companion-observation.csv（blob 5815f3f92c…/13006 B，记录 18da3da0…/13106 B，100 个 CRLF）、evidence/catalog-companion-observation.json（blob 234064fc47…/716 B，记录 f8a0f14f…/740 B，24 个 CRLF）、evidence/cli-help-matrix.json（blob cd6042ef0b…/46062 B，记录 4a95ded2…/46812 B，750 个 CRLF）。对每个 blob 做 LF→CRLF 变换后重算 SHA-256，恰好复现记录值（cce1b173640a4372…、18da3da04d1a89e0…、f8a0f14fdb782517…、4a95ded2b310f3f8…），即 blob 是 LF 化后的字节，记录值取自 CRLF 工作树。原因是时序而非工具：这四个文件的工作树 mtime 为 21:37:10、21:37:43、21:59:53、22:00:08，全部早于 .gitattributes 的 22:03:18，而 core.autocrlf=true 下它们在被 .gitattributes 覆盖之前就已按 LF 入库（`git ls-tree` 显示这四个路径的 blob 在 0408abb 与 3e0c8f3 完全相同，未因属性生效而重新归一）。后果：a) 用文档指定的校验方法（git show / 从 clone 取字节）会在这四个文件上失败，其中包括全部两份边界证据（cli-help-matrix.json 与 observation 对）；b) 在新机器上 checkout 会得到 LF 字节，其摘要不等于记录值，故\"byte stability\"未达成；c) claim 10\"记录的 sha256 可从已提交 blob 复现\"为假。另附：被审包声称冻结修订为 0408abb，但 checkpoint 记录的 evidence/build_checkpoint.py 摘要 12197d23…/10791 B 对应 3e0c8f3 版本，0408abb 处该文件是 92c13fb1…/10225 B。",
+      "required_fix": "在运行目录内重新以 -text 属性入库这四个文件（先 `git add --renormalize` 该目录或用 `git hash-object -w` 直写原始字节），使 blob 字节等于工作树字节；随后由 build_checkpoint.py 重算并重写 produced_files；同时把 .gitattributes 的注释从\"承诺\"改成\"自 0408abb 起生效，0408abb 之前入库的四个文件需 renormalize\"，并在 checkpoint 中写明校验方法（工作树 sha256 或 `git cat-file blob` 二选一，且两者必须相等）。"
+    },
+    {
+      "id": "A-DR2-02",
+      "severity": "P2",
+      "area": "v0.2 更正的传播完整性：被撤回的\"环境未知进程\"归因仍留在被引证据与台账中",
+      "claim": "boundary-audit.md §2 与 F-A01-8 宣布两点：-shm 前移\"已归因\"为本会话自己的强制 pre-push gate；\"环境周期性触碰者\"假设\"**已证伪**，v0.1 的猜测已撤回\"，且\"正确表述是——本会话的 push 协议会以只读方式打开生产 catalog\"。",
+      "counter_evidence": "至少五处仍持被撤回的旧表述，且其中一处是被 contracts 当作权威引用的证据文件：(1) evidence/cli-help-matrix.json 的 side_effect_scope.interpretation_limit：\"catalog.sqlite3-shm is touched by an ambient process on this machine on its own schedule (see finding F-A01-8 and boundary-audit.md)\"；(2) evidence/run_cli_help_matrix.py 内同一句（生成器注释/字段源）；(3) inputs.json 的 data_read_boundary.not_claimed：\"catalog.sqlite3-shm was observed to change at 21:18:15 and 21:26:47 local with unknown attribution (finding F-A01-8, boundary-audit.md)\"；(4) 运行目录 progress.md §3 更正表的 A-DR-08 行：\"`-shm` 被**环境未知进程**触碰\"；(5) wiki 侧同一次提交 478bb92 的 docs/plans/painpoint-outcome-audit-2026-09-05/progress.md 第 8 条：\"生产库 `catalog.sqlite3-shm` 在 run 窗口内被写入（21:18:15），**归属未知**\"——而同一提交的 PLANNING_STATUS.md 写\"三处前移**已归因**\"。baseline-map §4 与 operation-contract §2 都把 cli-help-matrix.json 列为表面积与零副作用的权威证据，因此\"证据文件说 ambient、合同说 own push gate\"是同一包内的直接冲突；VR 若按合同指向的证据文件复核，会得到相反结论。",
+      "required_fix": "四处文本统一为归因后的表述（或明确标注\"该字段生成于 20:37:43Z，早于归因结论，保留原文以存史\"并加 superseded 指针）；wiki 侧 478bb92 的 progress.md 条目把\"归属未知\"改为\"已归因（见 revenue 侧 boundary-audit.md §2/§3.4）\"，与同提交 PLANNING_STATUS.md 一致。"
+    },
+    {
+      "id": "A-DR2-03",
+      "severity": "P2",
+      "area": "A02 root-contract 更正 1：作为\"假保证字段\"论据的否定性检索结论是假的",
+      "claim": "root-contract.md 第 4 行（v0.2 更正 1）：\"该字段只被解析与默认化（`config.py:79/140`、`models.py:101`、`policy_2x.py:39/164`），wiki `src` 内 **`is_symlink|reparse` 命中 0 次**——**存储但从未被读取**。\"",
+      "counter_evidence": "\"命中 0 次\"为假。对 company-wiki/src 全树检索 is_symlink|reparse|symlink 命中至少 7 行实现代码：source_catalog/duplicate_cleanup.py:46 `if not path.is_file() or path.is_symlink():`、:534 `if indexed_path.is_symlink():`、:545 `if not resolved_path.is_file() or resolved_path.is_symlink():`；source_contract/announcement_collector.py:301 `if company.is_symlink():`、:302 `raise AnnouncementCollectionError(\"company directory must not be a symlink\")`、:323 `if cursor.exists() and cursor.is_symlink():`、:325 `f\"collector target traverses a symlink: {cursor}\"`。真正成立的是\"symlink_policy 无任何读取点\"（该字段的命中只有 config.py:79/140、models.py:101、policy_2x.py:39/164 与 policy_3x.py:43 的注释），这与\"仓库内不存在 symlink 检查\"是两回事。",
+      "required_fix": "删除\"命中 0 次\"，改写为\"`symlink_policy` 在解析/默认化之外无任何读取点；仓库内另有 duplicate_cleanup.py 与 source_contract/announcement_collector.py 各自独立的 is_symlink 检查，但都不读 root 的 symlink_policy，故该字段对扫描/准入仍然无效\"。"
+    },
+    {
+      "id": "A-DR2-04",
+      "severity": "P2",
+      "area": "A01 §1.1 子进程清单：spawn 调用点数被默认参数绑定虚增",
+      "claim": "baseline-map §1.1 前言与 findings F-A01-2 的范围更正、task_plan/progress 均写\"实测 `company-wiki/src` 全树 grep `subprocess\\.|Popen|os\\.system|CREATE_NO_WINDOW` 命中 **7 个模块、12 个真实 spawn 调用点**\"；表中 startup.py 一行以 \":107/:124/:176/:212\" 作为 4 个 spawn 点。",
+      "counter_evidence": "7 个模块成立（命中确在 adapter_process/control/dayu_cli_adapter/lock/normalizer/startup/worker 七个模块，共 39 行）。但被引的 12 行里 4 行不是调用点：startup.py:107 `runner: Callable[..., Any] = subprocess.run,`、:124 同、:176 同、:212 同，均为四个函数的默认参数绑定；startup.py 内唯一真实 spawn 调用点是 :109 `completed = runner(args, capture_output=True, text=True, encoding=\"utf-8\", errors=\"replace\")`（:104-115 的 _run），而它未被引用。真实 spawn 调用点合计 9 个：adapter_process.py:137、dayu_cli_adapter.py:192、control.py:91、control.py:1127（经 :651 默认 popen=subprocess.Popen）、lock.py:85、normalizer.py:286、normalizer.py:1261、startup.py:109、worker.py:110。",
+      "required_fix": "把\"12 个 spawn 调用点\"改为\"9 个调用点（逐行列号）+ startup.py 4 处 runner 默认绑定\"，startup 行改引 :109；findings F-A01-2、task_plan A01 行、progress §3 的 A-DR-06 行与 wiki 侧同一表述同步更正。"
+    },
+    {
+      "id": "A-DR2-05",
+      "severity": "P2",
+      "area": "边界证据：-shm 记录在审查时刻已过期，且存在无法用包内规则解释的新前移",
+      "claim": "boundary-audit §3.4 判定规则 2 与 checkpoint.actual_side_effects 断言：已知会打开该库的本机动作\"只有两个\"——22:00 每日任务与\"本仓任意一次 git push 前的强制 gate\"；并称本会话\"pushed to GitHub five times tonight\"，最后一次前移记录是 22:05:03。",
+      "counter_evidence": "我在 2026-09-11 22:14（本地）测得 catalog.sqlite3-shm 的 LastWriteTime = **2026-09-11 22:10:11**（32768 B），比包内最后记录值 22:05:03 晚 5 分 08 秒；同时主库 mtime 仍为 2026-09-08 22:23:21、-wal 仍为 0 B/mtime 2026-09-08 22:23:21。该次前移无法按包内规则配对：GitHub REST（公开仓库，只读）显示 revenue-forecast 的最新 workflow run 仍是 **#140（created_at 2026-09-11T20:27:44Z = 本地 21:27:44）**，即 22:10:11 之前约 43 分钟起就没有 revenue 推送；company-wiki 侧的最新 run 是 **#101（head 478bb92，created_at 21:08:58Z = 本地 22:08:58）**，其推送发生在 22:10:11 之前。该前移也不是我造成的（我能执行的只有 git 查询、文件哈希/元数据、文本与 AST 解析、只读 HTTP），且我按硬约束未执行任何会打开该库的命令。此外\"five times tonight\"少算：wiki 仓库 478bb92（22:08:29 提交、22:08:58 触发 CI run #101）是第 6 次推送，而本次审查对象的两个 stamp 提交（d152833 22:08:11、3e0c8f3 22:08:20）在我查询时刻尚无对应 run（#141 不存在），即\"把设计推上远端\"这件事在被审修订上尚未发生、或发生后被撤回——包内 next_step 却已写\"Commit the v0.2 corrections and boundary evidence\"。",
+      "required_fix": "把 -shm 记录更新到审查时刻并逐条说明每一处 mtime（含 22:10:11 的去向：是又一次未配对的 gate 运行、还是别的开库动作），或明确登记为\"未归因\"；把\"已知开库者只有两个\"扩为实际清单（含\"跑了 gate 但未推送\"这一类别，22:03 的手动 gate 本身就是该类）；把 push 次数写实为\"revenue 5 次 + wiki 1 次\"，并声明 stamp 提交的推送状态。"
+    },
+    {
+      "id": "A-DR2-06",
+      "severity": "P2",
+      "area": "边界证据的推理效力：以被动观测窗的零结果宣称\"证伪\"",
+      "claim": "boundary-audit §2 表格最后一行：\"**\\\"环境周期性触碰者\\\"** | 被动观测窗（99 样本 / 25 min）**零前移**；窗口内没有 push，也就没有 gate | ❌ **该假设被证伪**，v0.1 的猜测已撤回\"；§3.2 亦以\"窗内零前移\"作为观测结论。",
+      "counter_evidence": "该推理方向不成立：一个 25 分钟、且**刻意不含 push 与 22:00 定时任务**的观测窗出现零前移，与\"存在按自己节奏触碰该库的环境进程\"完全相容（它只是没在该窗口触碰），因此零结果不能证伪该假设的存在性；能证伪的只是\"21:18:15/21:26:47 两次观测值由环境进程造成\"这一具体推断——而这依赖的是 CI 时间戳与 gate 代码，不是观测窗。观测窗的真正价值（探针有效性、该窗口内无前移）已在 §3.2 正确表述，§2 表格的\"❌ 被证伪\"属越权结论。更关键的是，A-DR2-05 记录的 22:10:11 前移是一个**与任何 push 都不配对**的开库事件，它恰好说明\"环境/其他开库者\"这一类并没有被排除。",
+      "required_fix": "把\"该假设被证伪\"改为\"窗口内未观察到前移（阴性观测，不能排除按其他节奏发生的开库）；两次已观测前移由 CI 时间戳 + gate 代码解释为本会话推送前的 gate\"，并把 22:10:11 作为\"尚不能归因的开库事件\"写入 §1 待解释事实表。"
+    },
+    {
+      "id": "A-DR2-07",
+      "severity": "P2",
+      "area": "A03 §2.1 与 §2.3/§4 自相矛盾：activation preview 的 help 归属与只读自述",
+      "claim": "operation-contract §2.1 表：\"| `activation preview` | preview/apply/rollback cohort-epoch activation（`cli.py:639`） | **只读性未自述**，待 VR |\"。",
+      "counter_evidence": "cli.py:634 是分组 `activation` 的 add_parser（help='preview/apply/rollback cohort-epoch activation (FC-203)'），:639 才是叶子 `activation preview`（help='read-only: which assertions would flip'）。该叶子**自述只读**，同文件 §2.3 第 4 条与 §4 问题 2 也正是这样写的（\"help 文本（`cli.py:639`）为 \\\"read-only: which assertions would flip\\\"——**自述只读**\"），因此 §2.1 一格与 §2.3/§4 直接冲突，且把分组 help 当成叶子 help——恰是首轮 A-DR-10 指出的错配类型，本轮只修好了 identity-enrichment preview 与 extraction-quality 两行。",
+      "required_fix": "§2.1 的 activation preview 行改为引叶子 help 原文并写\"自述只读；未自述具体读写集合，待 VR 行为证明\"，与 §2.3 第 4 条、§4 问题 2 统一口径。"
+    },
+    {
+      "id": "A-DR2-08",
+      "severity": "P2",
+      "area": "输入冻结漂移与\"不写回审计证据目录\"边界：同一次会话在生成 checkpoint 后 9 秒写入了审计目录",
+      "claim": "baseline-map 头部（\"运行目录：…（**不写回审计证据目录**，符合 handbook §2.5 / §3）\"）、task_plan 头部、progress §1 与 identity-contract §6 均把\"不写回审计证据目录\"作为本次 run 的边界性质；checkpoint.inputs 记 company-wiki head=7d4852fa…/dirty=3，checkpoint.inputs_note 称\"company-wiki carries two doc-only edits **outside this run directory**\"。",
+      "counter_evidence": "(1) 漂移：我测得 company-wiki HEAD=478bb92ab8928059bed575bf98eb734aca969d33、工作树干净（0 条），与记录的 7d4852fa35023aaf467ba7a7277c0ff4d77c2eb9/dirty=3 不同；478bb92 的提交时间是 2026-09-11 22:08:29，即 checkpoint.json 生成（generated_at_utc 21:08:20.776Z = 本地 22:08:20）之后 9 秒。按 handbook §2.3\"并发漂移则重审受影响部分\"，该漂移必须登记。(2) 边界：478bb92 恰好修改了审计证据目录内的两份台账——docs/plans/painpoint-outcome-audit-2026-09-05/progress.md（+18 行）与 task_plan.md（+7 行），加上 PLANNING_STATUS.md（+6 行）共 3 个条目，正是 checkpoint 的 dirty=3。也就是说，同一次会话一边在文档里声明\"不写回审计证据目录\"，一边把本轮 A.DR 的状态写进了该目录；checkpoint 的 inputs_note 虽如实记了这三处编辑，却只用\"outside this run directory\"描述，未说明它们位于审计证据目录之内，读者无法据此判断该边界是否仍成立（首轮 A-DR rev1 的复核结论\"nothing was written back into the audit-evidence directory\"仅对当时成立）。(3) 同提交自相矛盾：478bb92 的 progress.md 条目写 -shm\"归属未知\"，而同提交 PLANNING_STATUS.md 写\"已归因\"。",
+      "required_fix": "在 baseline-map/task_plan/checkpoint 中把边界表述收窄为\"本轮 run 的证据产物只落在 revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/；会话另于 22:08:29 在 company-wiki 提交 478bb92，仅改动 PLANNING_STATUS.md 与该审计目录的 progress.md/task_plan.md 台账（+31 行，无产品代码/配置）\"；同时把 company-wiki 的 head/dirty 重冻结到 478bb92/0（并说明该提交晚于 checkpoint 生成），或明确声明\"本包对 company-wiki 的冻结时点为 7d4852f，其后发生的 478bb92 属文档台账更新，不影响 12 个产品输入哈希（12/12 复算一致）\"。"
+    },
+    {
+      "id": "A-DR2-09",
+      "severity": "P3",
+      "area": "边界证据的次级数字与结构（观测窗数字、编号、重复小节）",
+      "claim": "boundary-audit §3.2/§3.4 写\"21:35:01 → 22:00:08（99 样本 / 1500 s）…末样本 21:59:31\"与\"即最后一次采样（21:59:31）之后 31 s\"；§3 的小节编号为 3.1、3.2、3.4；findings F-A01-8 连续出现两个\"处置：\"块（第 60、61 行）；task_plan 头部\"最后更新：2026-09-11 21:4x 本地\"。",
+      "counter_evidence": "evidence/catalog-companion-observation.csv 的最后一行（sample 99）本地时间是 **21:59:53.255**（UTC 20:59:53.255Z），比文档写的 21:59:31 晚 22 秒，因此 22:00:02 与该末样本的间隔是 **9 秒**而不是 31 秒（31 秒对应的是文档假设的 21:59:31）；JSON 的 finished_utc 是 21:00:08Z（=本地 22:00:08），是脚本退出时刻而非末样本时刻，文档把两者混为一句。§3 缺 3.3 编号；F-A01-8 的两个\"处置\"块中第一个（含\"该事实已写入 A02/A03 的 VR 约束\"）与第二个（1/2/3 条）内容重叠且互不一致（前者称已写入 A02/A03，后者称仅扩展了快照字段并重跑）；task_plan 的\"最后更新 21:4x\"与同文件包含 22:0x 事实（G5 归因、FC-705 窗口）不符。",
+      "required_fix": "把末样本时间改为 21:59:53、间隔改为 9 秒并区分\"脚本存活 1500 s\"与\"采样跨度 1492 s\"；补齐/合并 §3 的小节编号；删去 F-A01-8 重复的\"处置\"块；更新 task_plan 的\"最后更新\"时间。"
+    },
+    {
+      "id": "A-DR2-10",
+      "severity": "P3",
+      "area": "更正后仍存的引用精度与机制表述缺口（A02/A03/A04 与 A03 §2.2 N 行）",
+      "claim": "root-contract §1 称默认值位置为\"`reusable_for_filing=None` 在 `:105` 附近\"、§3 C3 以\"`llm_summarizer.py:327/336`\"为门控位置；root-contract 更正 3 称调用者\"只有 `policy_3x.py:95` 与 5 个测试\"；A03 §2.2 N 行称 ensure 的第③道闸为\"worker `desired_state == \\\"paused\\\"` 时 :764-771 `RuntimeError` 拒绝下载，除非显式加 `--allow-acquisition-while-paused`\"；identity-contract §1 残留项只列了 service.py:329/:527、:643-653 与 resolver.py:912-921/:528-533 三处。",
+      "counter_evidence": "(a) models.py 的 reusable_for_filing 默认在 :97（`reusable_for_filing: bool | None = None  # None = follow kind policy`），:105 是 privacy_class——\"附近\"偏差 8 行；(b) llm_summarizer.py:327 是 docstring 内的一句解释，真正的门控比较在 :336-337（A.DR rev1 已正确引为 336-337）；(c) 直接出现 load_root_policy_2x 的测试文件是 3 个（test_dropbox_root_policy_fc501.py、test_future_root_config_only.py、test_root_policy_2x.py，共 10 行），\"5 个测试\"只有在把 policy_3x 的使用者（tests/unit/test_policy_3x.py、tests/contract/test_fc1201_root_hardcode_gate.py:39 的文件名字符串）也算进来时才成立；(d) cli.py:764-767 的条件是 `if (args.allow_download and desired_state == \"paused\" and not args.allow_acquisition_while_paused)`，因此 latest_as_of 且无 --allow-download 的写流程路径不会触发该拒绝（:772 的审计同样要求 args.allow_download），文档的\"三道闸\"读起来像对整条写流程生效；(e) service.py:772 还有一处 `ORDER BY r.priority,l.root_id,l.relative_path,l.location_id`（:769-813 的 locations 查询），与 R4 残留同类，未被列入。",
+      "required_fix": "逐条改为 :97、:336-337、\"3 个测试文件（另 2 个文件只涉及 policy_3x）\"、\"第③道闸仅在前两道条件的 --allow-download 分支内生效，latest_as_of 无 flag 路径不触发拒绝与审计\"，并把 service.py:772 补入 R4 残留清单。"
+    },
+    {
+      "id": "A-DR2-11",
+      "severity": "P3",
+      "area": "台账制度证据：授权与身份缺可核原件，handbook §3 的 card/baseline/data-manifest 未列入缺件",
+      "claim": "task_plan §授权边界写\"owner 2026-09-11 批准（原文三项）：① A 阶段精确 DEV/数据读取许可；② `--help`-only command manifest；③ VR reviewer 指派\"，progress §1 与 checkpoint.authorization_needed 同口径；checkpoint.failed_or_unknown 的缺件条目称\"the execution-plan section 50 minimum-artifact list is still partial: results/, oracle/, tests/, rollback-contract.json and outcomes.json belong to later phases and are not created; reviews/ now exists\"。",
+      "counter_evidence": "包内没有任何授权原件：没有 owner 消息的引用/时间戳/哈希或工单号，command-manifest.json 的 approval 块（\"by\": \"repo owner\", \"at\": \"2026-09-11\", \"scope\": \"--help only\"）是作者自填字段，不能作为\"用户授权证据\"（handbook §2 第 01 项要求\"用户授权证据、有效期、WP及当前G节点\"，§3 要求 card 的 authorization_refs）。同样缺失的是身份证据：整个运行目录记不到作者/实施者会话 ID（只有首轮 reviewer 的自报 ID），而 handbook §3 要求 card 字段 owner/implementer/independent_reviewers 不得为空、review 记录须有\"非实现者声明\"。此外缺件条目只覆盖执行计划 §50 的清单，未列 handbook §3 明确列举的 card.json、baseline.json、data-manifest.json 与 oracle/、tests/。",
+      "required_fix": "补一份授权记录（owner 批准原文引用 + 时间 + 覆盖范围 + 有效期）与作者/实施者会话 ID；在 checkpoint.failed_or_unknown 的缺件条目中同时列出 handbook §3 的 card.json/baseline.json/data-manifest.json/oracle/tests 与执行计划 §50 的 results，并说明各自归属阶段。"
+    }
+  ],
+  "to_verify_assessment": {
+    "items_that_should_have_been_resolved_statically_now": [
+      "A03 §2.1 activation preview 的 help 与只读自述：纯解析器读取即可判定（cli.py:634 是分组、:639 是叶子且自述 read-only），本轮已做错一处，应就地改对（A-DR2-07）。",
+      "A01 §1.1 的 spawn 调用点计数：纯 grep + AST 即可区分调用点与默认参数绑定（startup.py:109 vs :107/:124/:176/:212），不应留待 VR（A-DR2-04）。",
+      "symlink 面的否定性结论：一次全树检索即可得到 7 行命中，\"0 次\"是可立即推翻的错误（A-DR2-03）。",
+      "R4 残留的完整清单：service.py:772 的第三处 priority/root_id/relative_path 排序同样是静态可读的（A-DR2-10(e)）。",
+      "inputs.json 的依赖哈希与 12 输入哈希：已在本轮完成且我逐条复现一致，属正确收口。",
+      "checkpoint 的三件套快照与 52 次 rc=0：已由证据文件自证（results 长度 52、rc 直方图 {0:52}、per-file unchanged=true），属正确收口。"
+    ],
+    "items_correctly_deferred_to_vr_or_data_access": [
+      "A04 V1/V2/V4（documents/sources/artifacts 的 schema、主键、多版本并存、跨 root exact-copy 实际分布）需要数据库读取，在\"本次不开生产库\"的边界下正确保留；建议按 A04 §5 问题 7 在 A06 的隔离副本上执行。",
+      "A02 §4 的①②（不在四个 root 内的 locator/path 行为、privacy_class 显式 deny 在全部出口的一致性）需要真实命令与隔离副本，正确保留。",
+      "A03 §2.3 第 3-5 条（summarize/run/worker 中哪条到达 LLM、activation preview 的行为只读性、duplicate-preview 的 confirmation token 是否落盘）属行为层，正确保留为 VR。",
+      "G5（句柄级/对象访问审计）与 G8（隔离副本）需要 operator 权限与约 49.7 GB 的空间预算，作者无法自证，保留正确；注意这也是本审查无法复现 -shm 机制实验的原因（执行 pre_push_gate.py 会打开生产 catalog，被硬约束禁止）。",
+      "A05/A06（真实语料样本清单、L01-L12 基线与只读 trace、错误状态码全集）需要精确数据读取许可，正确保留为 blocked（G7）。"
+    ],
+    "asserted_as_verified_but_actually_requiring_execution_or_observation": [
+      "checkpoint.actual_side_effects 中\"none of which opens the catalog（catalog.sqlite3, -shm and -wal all unchanged across the run）\"的括号部分只有 52 次 --help 探针前后快照支持，不能覆盖整个 run（-shm 在 21:18:15、21:26:47、22:00:02/18、22:05:03、22:10:11 均有前移）；该句应由\"探针前后快照未变\"替代\"全程未变\"（A-DR2-05）。",
+      "boundary-audit §2 表格把\"环境周期性触碰者\"标为\"已证伪\"：这是由阴性观测推出的全称否定，须降级（A-DR2-06）。",
+      "baseline-map §4 表格\"零副作用（前后快照比对）… 全部 true\"在\"-shm 已多次前移\"的事实下读起来像对整轮 run 的结论，应限定为\"该 52 次探针执行前后的三件套快照未变\"。",
+      "root-contract/task_plan/progress 关于\"不写回审计证据目录\"的表述：同一会话 22:08:29 的提交 478bb92 修改了该目录的 progress.md/task_plan.md，须收窄或更正（A-DR2-08）。"
+    ]
+  },
+  "gate_items_absent_from_the_package": [
+    "owner 授权原件（批准原文/时间/范围/有效期）与 authorization_refs：handbook §2 第 01 项与 §3 的 card 字段要求，包内仅有作者复述与 command-manifest 的自填 approval 块（A-DR2-11）。",
+    "作者/实施者与其他 review 参与者的实际 task/agent ID：handbook §3 要求 review 记录含实际 ID 与\"非实现者/非 oracle 作者\"声明；包内只有首轮 reviewer 的自报 ID，作者侧 ID 完全缺失（A-DR2-11）。",
+    "handbook §3 run 结构中的 card.json、baseline.json、data-manifest.json（以及 oracle/、tests/）：既未提供，也未出现在 checkpoint.failed_or_unknown 的缺件清单中（该清单只列了执行计划 §50 的 results/oracle/tests/rollback-contract.json/outcomes.json）（A-DR2-11）。",
+    "执行计划 §50 要求的 results（每例基线结果）：如实登记为后续阶段产物，但 A06 的\"每例基线结果\"与 L01-L12 冻结结果在 A 阶段结束前仍属缺件——当前以 G7/G8 blocked 形式记录，可接受但应在 A08 前给出归属。",
+    "行为探针（--dry-run / 只读数据命令）的 command-manifest：已作为门禁 G4 登记为 missing（这是 A-DR-11 要求的\"门禁条目而非散文\"，处理正确），但作为门禁项仍是缺件。",
+    "reviewer 独立性戳记（G6）：checkpoint 已声明须由会话外部写入，仍未发生；本轮 A.DR-rev2 的 ID 同样只能自报。"
+  ],
+  "verdict": "rejected",
+  "verdict_reason": "v0.2 的实质更正大部分成立并且我逐条复现：A-DR-02/03/04/05/07/12/14 七项的事实更正是准确的（resolver.py:782-786/:933-940 只看 kind、resolver.py:531 是字符串字面量、真实排序在 service.py:329/:527/:643-653；policy_2x.py:49/:121-131 有强制但两条 2x/3x loader 均无生产调用者而 config.py:75-84 拒绝该字段；identify --refresh 确为网络+写；CLI 41 顶层+10 嵌套=51 节点/4 分组/47 叶子且 operation-contract 的 47 条枚举与 AST 集合完全一致、15+32 算术闭合；R4 确为目标且残留三处已点名；X 轴拆分与引文拆分正确），12/12 A01 输入哈希、18/18 produced_files 工作树哈希、6/6 依赖哈希、5/5 CI 时间戳、三条台账一致化与 G1-G8 门禁表、三件套快照修复与被动观测探针有效性均复现通过——这些都是真实且可核的进步。但仍不能接受为冻结的设计基线：其一，出现一处 P1 级证据完整性缺陷（A-DR2-01：四个已在库文件——含两份边界证据——的 committed blob 与其记录 sha256 不符，.gitattributes 的字节稳定承诺不成立，用文档指定的 `git show` 方法复核会失败，且 claim 10 为假）；其二，16 项首轮发现中 6 项未真正闭环：A-DR-01 的更正带着\"is_symlink|reparse 命中 0 次\"这一被推翻的事实句，A-DR-06 的更正在同一张表里把 4 处默认参数绑定当成 spawn 调用点（真实 9 处），A-DR-10 的同一张表又把 activation preview 的只读自述写反并与 §2.3/§4 自相矛盾，A-DR-08 的归因结论未传播到被合同引为权威的证据文件（cli-help-matrix.json 仍写 ambient process、inputs.json 仍写 unknown attribution）、其\"证伪\"属逻辑越权、且在我审查期间出现无法用包内规则解释的新 -shm 前移（22:10:11，无配对 CI run），A-DR-13 的 R6 owner 仍未指派，A-DR-16 的外部戳记仍缺；其三，本轮新增 7 项 P2 与 3 项 P3，其中 A-DR2-08 触及本次 run 自身的边界声明（\"不写回审计证据目录\"与同会话 22:08:29 提交 478bb92 写入该目录的 progress.md/task_plan.md 相矛盾），A-DR2-05/A-DR2-06 使\"生产库未被触碰\"这一门禁结论在审查时刻仍然不成立。加之 A01-A04 未冻结（6 项 owner 裁定 pending）、G5/G6/G7/G8 全为 pending，按 execution-handbook 第 5 节与首轮 A.DR 的口径，本包应退回更正而非接受。",
+  "resubmission_path": "第三轮（A.DR rev3）通过所需的最小更正集：(1) 把运行目录内四个 LF-化的文件重新按原始字节入库（git add --renormalize 或 hash-object -w），由 build_checkpoint.py 重算 produced_files，并在 .gitattributes/checkpoint 中把\"字节稳定\"改为\"自本次 renormalize 起成立\"，同时给出两种校验方法必须一致的判据——关闭 A-DR2-01；(2) 清除 cli-help-matrix.json、run_cli_help_matrix.py、inputs.json、progress.md 与 wiki 侧 progress.md 中已撤回的 ambient/unknown 归因，统一为\"本会话 push 前 gate 只读打开\"并把 22:10:11 前移登记为待归因或给出解释，push 次数改为 6 次并写明 stamp 提交的推送状态——关闭 A-DR2-02/A-DR2-05；(3) 删除\"is_symlink|reparse 命中 0 次\"并改写为\"symlink_policy 无读取点\"——关闭 A-DR2-03 与 A-DR-01；(4) 把\"12 个 spawn 调用点\"改为\"9 个调用点 + startup.py 4 处 runner 默认绑定\"并改引 startup.py:109——关闭 A-DR2-04 与 A-DR-06；(5) 修正 §2.1 的 activation preview 行使之与 §2.3/§4 及 cli.py:639 一致——关闭 A-DR2-07 与 A-DR-10；(6) 把\"证伪\"降级为阴性观测，并把边界观测窗数字改为末样本 21:59:53/间隔 9 s、补齐 §3 编号、删去 F-A01-8 重复的\"处置\"块——关闭 A-DR2-06/A-DR2-09；(7) 更正边界表述（本轮证据只在 run 目录；会话另在 478bb92 改写了审计目录台账）+ 把 company-wiki 输入对重冻结到 478bb92/0 或明确冻结时点，或至少按 handbook §2.3 记录漂移——关闭 A-DR2-08；(8) 逐条修正 models.py:97、llm_summarizer:336-337、\"3 个测试文件\"、ensure 第③闸的 --allow_download 连接条件，并补入 service.py:772——关闭 A-DR2-10；(9) 补 owner 授权原件引用与作者/实施者 ID，并把 handbook §3 的 card.json/baseline.json/data-manifest.json 列入缺件清单——关闭 A-DR2-11。另需 owner 就 A02 §6 的 6 项开放问题作出裁定（或明确延期并说明 A02 冻结条件），并由 operator 完成 G5/G6 戳记；A-DR-13 的 R6 owner 指派与 A-DR-16 的外部戳记在 owner/operator 动作前无法由实施者关闭，本轮不因此额外扣分，但仍须保留为门禁项。上述 (1)–(8) 均不需要新的数据读取许可或 CLI 执行。",
+  "closed_at_utc": "2026-09-11T21:16:20Z"
+}

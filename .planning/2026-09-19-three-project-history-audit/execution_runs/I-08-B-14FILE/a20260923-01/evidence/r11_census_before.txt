@@ -1,0 +1,244 @@
+﻿F........F.F............................................................ [ 55%]
+.................................F...F......FF........F...               [100%]
+================================== FAILURES ===================================
+___ AttestationTests.test_configured_provider_means_host_signed_publication ___
+
+self = <test_attestation.AttestationTests testMethod=test_configured_provider_means_host_signed_publication>
+
+    def test_configured_provider_means_host_signed_publication(self) -> None:
+        os.environ["REVENUE_ATTESTATION_PROVIDER"] = sys.executable
+>       self.assertTrue(attestation_capability())
+E       AssertionError: False is not true
+
+tests\test_attestation.py:72: AssertionError
+_ SingleOwnerGuardTests.test_only_canonical_client_may_use_subprocess_download_adapters _
+
+self = <test_single_owner_guard.SingleOwnerGuardTests testMethod=test_only_canonical_client_may_use_subprocess_download_adapters>
+
+    def test_only_canonical_client_may_use_subprocess_download_adapters(self) -> None:
+        for path in _python_files():
+            if path.name == CANONICAL_CLIENT or path.name in ORCHESTRATORS:
+                continue
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+>                   self.assertNotIn(
+                        "subprocess",
+                        {alias.name.split(".")[0] for alias in node.names},
+                        f"{path.name} imports subprocess (second download owner)",
+                    )
+E                   AssertionError: 'subprocess' unexpectedly found in {'subprocess'} : revenue_core.py imports subprocess (second download owner)
+
+tests\test_single_owner_guard.py:42: AssertionError
+_ ReceiptAttackTests.test_context_fabrication_is_rejected_by_final_validation _
+
+self = <adversarial.test_receipt_attacks.ReceiptAttackTests testMethod=test_context_fabrication_is_rejected_by_final_validation>
+
+    def test_context_fabrication_is_rejected_by_final_validation(self) -> None:
+        # A VerificationContext copied from a legit run with fabricated
+        # gate_ids can produce a receipt — but the final validator recomputes
+        # the gates from the result and must reject the mismatch.
+        from revenue_report import validate_published_forecast
+    
+        result = run_forecast(forecast_document())
+        legit_context = validate_published_forecast(
+            result, result["input_document"]
+        )
+        forged_context = copy.copy(legit_context)
+        forged_context.executed_gate_ids = ["output_recomputation", "input_contract"]
+>       receipt = build_publication_receipt(
+            result, forged_context, attestation_status="host_signed"
+        )
+
+tests\adversarial\test_receipt_attacks.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_publication.py:396: in build_publication_receipt
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = "attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)"
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)
+
+scripts\contracts\evidence.py:93: ForecastInputError
+___________________ test_c1_no_orphaned_script_without_main ___________________
+
+    def test_c1_no_orphaned_script_without_main():
+        """Every scripts/*.py is either a CLI (has main) or a library module
+        imported by at least one other module (reachable production surface)."""
+        sys.path.insert(0, str(SCRIPTS))
+        import importlib
+    
+        for path in sorted(SCRIPTS.glob("*.py")):
+            if path.name == "__init__.py":
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if "def main(" in text or "def run(" in text or "def run_" in text:
+                continue  # CLI surface
+            # library module: must be importable and referenced elsewhere
+            module = importlib.import_module(path.stem)
+            assert module is not None, f"{path.name} not importable"
+            referenced = subprocess.run(
+                ["git", "-C", str(ROOT), "grep", "-l", path.stem, "--",
+                 "scripts/", "tests/"],
+                capture_output=True, text=True, encoding="utf-8", timeout=60)
+            files = [line for line in referenced.stdout.splitlines()
+                     if line.strip() and Path(line) != path]
+>           assert len(files) >= 1, f"{path.name} orphaned (no importer)"
+E           AssertionError: asset_ownership.py orphaned (no importer)
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests\test_zr1102_adversarial_audit.py:83: AssertionError
+____________________ test_c4_mutation_patrol_capabilities _____________________
+
+    def test_c4_mutation_patrol_capabilities():
+        import mutation_patrol as mp
+    
+        # patrol runs and yields mutation results on the forecast receipt
+>       results = mp.patrol(seed=42, samples=3)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_zr1102_adversarial_audit.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tools\mutation_patrol.py:153: in patrol
+    mutant = mutate(golden, rng)
+             ^^^^^^^^^^^^^^^^^^^
+tools\mutation_patrol.py:79: in field_delete
+    return _resign(mutant)
+           ^^^^^^^^^^^^^^^
+tools\mutation_patrol.py:48: in _resign
+    result["publication_receipt"] = build_publication_receipt(
+scripts\revenue_publication.py:396: in build_publication_receipt
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = "attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)"
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)
+
+scripts\contracts\evidence.py:93: ForecastInputError
+___________________ test_c1_negative_asset_drivers_rejected ___________________
+
+    def test_c1_negative_asset_drivers_rejected():
+        for field in ("opening_reserves", "additions", "depletion", "closing_reserves",
+                      "realized_price"):
+            drivers = _reserve_drivers()
+            drivers[field] = list(drivers[field])
+            drivers[field][1] = -1.0
+>           with pytest.raises(ForecastInputError, match="cannot be negative"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: 'cannot be negative'
+E             Actual message: 'driver opening_reserves outside permitted bounds [0.0, inf]: opening_reserves_2027_base'
+
+tests\test_zr601_asset_facts.py:91: AssertionError
+_________________ test_c1_recovery_rate_out_of_range_rejected _________________
+
+    def test_c1_recovery_rate_out_of_range_rejected():
+        drivers = _reserve_drivers()
+        drivers["recovery_rate"] = [0.9, 1.5]  # ratio driver must be in [0, 1]
+>       with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'must be between 0 and 1'
+E         Actual message: 'driver recovery_rate outside permitted bounds [0.0, 1.0]: recovery_rate_2027_base'
+
+tests\test_zr601_asset_facts.py:98: AssertionError
+_______________ test_c2_accuracy_record_consumed_by_confidence ________________
+
+    def test_c2_accuracy_record_consumed_by_confidence():
+        evaluation = evaluate_snapshot(
+            create_snapshot(forecast_document(), "v1"), actuals_document()
+        )
+        record = evaluation["accuracy_record"]
+        assert record["backtest_id"] == evaluation["backtest_id"]
+        assert "record_sha256" in record
+        data = forecast_document()
+        data["historical_accuracy_records"] = [record]
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_zr708_backtest_reverify.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:445: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:81: in _build_forecast_draft
+    result["confidence"] = calculate_confidence(data, validated, result, sensitivities)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\analysis\confidence.py:151: in calculate_confidence
+    historical_wape, historical_observations = validate_historical_accuracy_records(
+scripts\contracts\document.py:796: in validate_historical_accuracy_records
+    require(origin < available <= cutoff,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'historical accuracy future information leak: 451a070b299e074256f0c3c9983dbe8faf92248f2d4b8f23e1c8b25cbf479cf5'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: historical accuracy future information leak: 451a070b299e074256f0c3c9983dbe8faf92248f2d4b8f23e1c8b25cbf479cf5
+
+scripts\contracts\evidence.py:93: ForecastInputError
+=========================== short test summary info ===========================
+FAILED tests/test_attestation.py::AttestationTests::test_configured_provider_means_host_signed_publication
+FAILED tests/test_single_owner_guard.py::SingleOwnerGuardTests::test_only_canonical_client_may_use_subprocess_download_adapters
+FAILED tests/adversarial/test_receipt_attacks.py::ReceiptAttackTests::test_context_fabrication_is_rejected_by_final_validation
+FAILED tests/test_zr1102_adversarial_audit.py::test_c1_no_orphaned_script_without_main
+FAILED tests/test_zr1102_adversarial_audit.py::test_c4_mutation_patrol_capabilities
+FAILED tests/test_zr601_asset_facts.py::test_c1_negative_asset_drivers_rejected
+FAILED tests/test_zr601_asset_facts.py::test_c1_recovery_rate_out_of_range_rejected
+FAILED tests/test_zr708_backtest_reverify.py::test_c2_accuracy_record_consumed_by_confidence
+8 failed, 122 passed in 51.34s

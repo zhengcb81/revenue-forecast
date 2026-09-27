@@ -1,0 +1,27 @@
+﻿F                                                                        [100%]
+================================== FAILURES ===================================
+______________________ test_c3_complexity_ratchet_green _______________________
+
+    def test_c3_complexity_ratchet_green():
+        proc = subprocess.run(
+            [sys.executable, "-B", str(ROOT / "tools" / "tests" / "test_complexity_ratchet.py"), "-q"],
+            capture_output=True, text=True, encoding="utf-8", timeout=180)
+        out = proc.stdout + proc.stderr
+>       assert proc.returncode == 0, f"complexity ratchet red: {out[-500:]}"
+E       AssertionError: complexity ratchet red: a\Local\Temp\i08b14file\a20260923-01\before_tree\tools\tests\test_complexity_ratchet.py", line 90, in test_new_files_stay_simple
+E             self.assertLessEqual(actual, NEW_FILE_MAX, f"{rel} max {actual} > {NEW_FILE_MAX}")
+E             ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         AssertionError: 27 not less than or equal to 10 : model_extensions.py max 27 > 10
+E         
+E         ----------------------------------------------------------------------
+E         Ran 2 tests in 0.226s
+E         
+E         FAILED (failures=2)
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i08b14file\\a20260923...---------------------------------------------------------------------\nRan 2 tests in 0.226s\n\nFAILED (failures=2)\n').returncode
+
+tests\test_ca303_arch_quality.py:97: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_ca303_arch_quality.py::test_c3_complexity_ratchet_green - A...
+1 failed in 3.60s

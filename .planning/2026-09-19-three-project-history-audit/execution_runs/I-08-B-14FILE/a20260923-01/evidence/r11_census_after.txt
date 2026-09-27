@@ -1,0 +1,116 @@
+﻿........................................................................ [ 50%]
+..............................................F..........FF........F...  [100%]
+================================== FAILURES ===================================
+___________________ test_c1_no_orphaned_script_without_main ___________________
+
+    def test_c1_no_orphaned_script_without_main():
+        """Every scripts/*.py is either a CLI (has main) or a library module
+        imported by at least one other module (reachable production surface)."""
+        sys.path.insert(0, str(SCRIPTS))
+        import importlib
+    
+        for path in sorted(SCRIPTS.glob("*.py")):
+            if path.name == "__init__.py":
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if "def main(" in text or "def run(" in text or "def run_" in text:
+                continue  # CLI surface
+            # library module: must be importable and referenced elsewhere
+            module = importlib.import_module(path.stem)
+            assert module is not None, f"{path.name} not importable"
+            referenced = subprocess.run(
+                ["git", "-C", str(ROOT), "grep", "-l", path.stem, "--",
+                 "scripts/", "tests/"],
+                capture_output=True, text=True, encoding="utf-8", timeout=60)
+            files = [line for line in referenced.stdout.splitlines()
+                     if line.strip() and Path(line) != path]
+>           assert len(files) >= 1, f"{path.name} orphaned (no importer)"
+E           AssertionError: asset_ownership.py orphaned (no importer)
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests\test_zr1102_adversarial_audit.py:83: AssertionError
+___________________ test_c1_negative_asset_drivers_rejected ___________________
+
+    def test_c1_negative_asset_drivers_rejected():
+        for field in ("opening_reserves", "additions", "depletion", "closing_reserves",
+                      "realized_price"):
+            drivers = _reserve_drivers()
+            drivers[field] = list(drivers[field])
+            drivers[field][1] = -1.0
+>           with pytest.raises(ForecastInputError, match="cannot be negative"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: 'cannot be negative'
+E             Actual message: 'driver opening_reserves outside permitted bounds [0.0, inf]: opening_reserves_2027_base'
+
+tests\test_zr601_asset_facts.py:91: AssertionError
+_________________ test_c1_recovery_rate_out_of_range_rejected _________________
+
+    def test_c1_recovery_rate_out_of_range_rejected():
+        drivers = _reserve_drivers()
+        drivers["recovery_rate"] = [0.9, 1.5]  # ratio driver must be in [0, 1]
+>       with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'must be between 0 and 1'
+E         Actual message: 'driver recovery_rate outside permitted bounds [0.0, 1.0]: recovery_rate_2027_base'
+
+tests\test_zr601_asset_facts.py:98: AssertionError
+_______________ test_c2_accuracy_record_consumed_by_confidence ________________
+
+    def test_c2_accuracy_record_consumed_by_confidence():
+        evaluation = evaluate_snapshot(
+            create_snapshot(forecast_document(), "v1"), actuals_document()
+        )
+        record = evaluation["accuracy_record"]
+        assert record["backtest_id"] == evaluation["backtest_id"]
+        assert "record_sha256" in record
+        data = forecast_document()
+        data["historical_accuracy_records"] = [record]
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_zr708_backtest_reverify.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:164: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:76: in _build_forecast_draft
+    result["confidence"] = calculate_confidence(data, validated, result, sensitivities)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\analysis\confidence.py:151: in calculate_confidence
+    historical_wape, historical_observations = validate_historical_accuracy_records(
+scripts\contracts\document.py:796: in validate_historical_accuracy_records
+    require(origin < available <= cutoff,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'historical accuracy future information leak: 9bb1663b53fb978c3744d7fa0ef637a298f7e4eaafc105c011410689ba2d339b'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: historical accuracy future information leak: 9bb1663b53fb978c3744d7fa0ef637a298f7e4eaafc105c011410689ba2d339b
+
+scripts\contracts\evidence.py:93: ForecastInputError
+=========================== short test summary info ===========================
+FAILED tests/test_zr1102_adversarial_audit.py::test_c1_no_orphaned_script_without_main
+FAILED tests/test_zr601_asset_facts.py::test_c1_negative_asset_drivers_rejected
+FAILED tests/test_zr601_asset_facts.py::test_c1_recovery_rate_out_of_range_rejected
+FAILED tests/test_zr708_backtest_reverify.py::test_c2_accuracy_record_consumed_by_confidence
+4 failed, 139 passed in 70.18s (0:01:10)

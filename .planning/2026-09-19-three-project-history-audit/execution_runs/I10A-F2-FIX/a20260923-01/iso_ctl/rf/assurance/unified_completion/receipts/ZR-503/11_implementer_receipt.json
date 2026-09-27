@@ -1,0 +1,122 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "508627ea1d0e9e2a5b0d7bd48fcad2c18f8d369e",
+    "wiki": "19c3b73174170c3e7a3d9724b85599cce8237f42"
+  },
+  "canonical_hash": "c39c67e5fb02d319e86b2f51b434affa2cc305c08dc0376b323ef42a6d87ffc3",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr503_multi_entity_attribution.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "13 passed（C1 纯函数 7 + C2 wiring 4 + C3 零硬编码/golden 锚定 2）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_cw_228_backfill.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "81 passed（ZR-502 11 + ZR-501 10 + taxonomy 3 + backfill 14 + evidence span + complexity ratchet 全绿，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --timeout=300 (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（质量门 unit 787）"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/entity_detection.py src/company_wiki/source_catalog/normalizer.py src/company_wiki/source_catalog/observability.py src/company_wiki/source_contract/evidence_span.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_zr502_homepage_identity.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "RED/GREEN 探针（构造长江式双实体比较报告走 _frontmatter）",
+      "exit_code": 0,
+      "result": "RED（wiki 19c3b73）：frontmatter 无 detected_entities、无多实体 flag（G1 零检测坐实）；GREEN（wiki e8e2926）：detected_entities.verdict=multi_entity + phrases=[紫金全称, 陕西全称] + quality_flags 含 multi_entity_attribution_needed"
+    },
+    {
+      "command": "git diff 19c3b73 e8e2926 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "6 文件 +406：entity_detection.py（新纯函数）、normalizer.py（_frontmatter 全文接线）、observability.py（no_company_name_phrases）、evidence_span.py（MULTI_ENTITY_ATTRIBUTION_NEEDED）、test_zr503（新 13 tests）、test_zr501（stub body 同步）"
+    }
+  ],
+  "created_at_utc": "2026-08-19T19:52:20+00:00",
+  "findings": [
+    {
+      "detail": "公司名短语提取正则：非贪婪主体 + 短后缀优先会把完整名拆成两个短语（'…集团公司' + '股份有限公司'）；改贪婪主体（回溯到后缀前最长主体）+ 长后缀优先 alternation 后完整名保持一个短语。无字典提取的固有近似（前导噪声词可能被吸收）在文档中注明，供 attribution fail-closed 使用，不承诺精确切分。",
+      "id": "ZR503-IMPL-001",
+      "severity": "info",
+      "title": "正则贪婪主体 + 长后缀优先防止完整名拆分"
+    },
+    {
+      "detail": "零硬编码测试（C1）当场抓出注释中的实体名——零硬编码原则覆盖产品代码含注释；注释改为描述性文字。",
+      "id": "ZR503-IMPL-002",
+      "severity": "info",
+      "title": "零硬编码含注释（测试抓出注释实体名）"
+    },
+    {
+      "detail": "复杂度 ratchet（新文件 max≤10）：detect_entities 初版 18 超限；拆分 _classify（判定）→ 12 仍超；再拆 _split_related（related/others 推导）后 max=9（_split_related）达标——两次迭代教训：推导式内的 and/or 也计入 McCabe。",
+      "id": "ZR503-IMPL-003",
+      "severity": "info",
+      "title": "复杂度 ratchet 两轮拆分（helper 提取）"
+    },
+    {
+      "detail": "ZR-501 测试 _Norm stub 需同步加 body（_frontmatter 现读 normalized.body 做全文检测）——stub 与 _Normalized 契约的同步成本随 frontmatter 输入面扩大而增加（first_page_text 后 body 第二次）。",
+      "id": "ZR503-IMPL-004",
+      "severity": "info",
+      "title": "frontmatter 输入面扩大：ZR-501 stub 同步 body"
+    },
+    {
+      "detail": "判定语义：有声明时全部短语 related（简称+全称同实体）→ single；无声明且 ≥2 短语 → 保守 multi_entity；1 短语非声明实体 → single（身份矛盾归 ZR-502 首页验证管，本卡只管多实体）；unverifiable 不伪造。golden corpus 长江条目（sha256 273d4508…）只读引用锚定测试。",
+      "id": "ZR503-IMPL-005",
+      "severity": "info",
+      "title": "判定矩阵实现与 golden 锚定"
+    }
+  ],
+  "implementation": {
+    "design": "新 src/company_wiki/source_catalog/entity_detection.py：detect_entities(text, declared_entity, declared_security_ids) 纯函数（hermetic 无 LLM、零实体名硬编码）——贪婪主体 + 长后缀优先正则提取公司名短语（`X{2,12}(?:股份有限公司|有限责任公司|有限公司|集团公司|集团)`）→ _split_related/_classify → verdict single/multi_entity/unverifiable + evidence（company_phrases/others_unrelated_to_declared/reason）。normalizer._frontmatter：normalized.body 全文 + metadata acquisition/dayu_meta 的 canonical_entity_id/display_name/security_ids → payload['detected_entities'] + multi_entity_attribution_needed quality_flag（multi_entity 时）。词汇注册：QualityFlag.MULTI_ENTITY_ATTRIBUTION_NEEDED + observability no_company_name_phrases（REASONS + STAGES_BY_REASON semantic）。测试 13 个：C1 纯函数矩阵（双实体比较报告 multi/单实体 single/无短语 unverifiable/无声明多短语 multi/简称+全称 single/flag 映射/零硬编码含注释）；C2 wiring（multi→frontmatter+flag、single 无 flag、unverifiable 无伪造、ZR-501/502 字段共存）；C3 golden corpus 长江条目 hash 锚定 + 形状文本检测。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/entity_detection.py",
+      "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+      "company-wiki/src/company_wiki/source_catalog/observability.py",
+      "company-wiki/src/company_wiki/source_contract/evidence_span.py",
+      "company-wiki/tests/contract/test_zr503_multi_entity_attribution.py",
+      "company-wiki/tests/contract/test_zr501_broker_metadata_contract.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-503/**"
+    ]
+  },
+  "implementer": "zr503-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 508627e（ZR-502 closure commit，本次未动 revenue）；result_triplet.wiki 为本卡实现提交 e8e2926。",
+    "卡片 hash 冻结：plan_sha256=00_wu_card.md sha256。",
+    "独立 reviewer 待派出（reviewer-zr503-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "多实体 attribution 不串实体：detect_entities 纯函数（single/multi_entity/unverifiable，零实体名硬编码）+ normalizer 全文接线（frontmatter detected_entities 键 + multi_entity_attribution_needed quality_flag fail-closed）+ golden corpus 长江双实体负例 hash 锚定；BR-06/07 错归=0 的第一步（检测 + 拒绝静默单实体污染）。",
+  "plan_sha256": "636b27f9038ed94769b2cbc0deb501e6d82bb90569634d4ecd0a1289c1c91aba",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "508627ea1d0e9e2a5b0d7bd48fcad2c18f8d369e",
+    "wiki": "e8e2926a47d4c310ec66533249794e4b2baacb76"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki entity_detection.py（新纯函数）+ normalizer.py（全文检测接线）+ 词汇注册（observability/evidence_span）+ 新测试 test_zr503_multi_entity_attribution.py（13 tests）；revenue 侧 receipts/ZR-503/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 4,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/entity_detection.py",
+    "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+    "company-wiki/src/company_wiki/source_catalog/observability.py",
+    "company-wiki/src/company_wiki/source_contract/evidence_span.py",
+    "company-wiki/tests/contract/test_zr503_multi_entity_attribution.py",
+    "company-wiki/tests/contract/test_zr501_broker_metadata_contract.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-503/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-503"
+}

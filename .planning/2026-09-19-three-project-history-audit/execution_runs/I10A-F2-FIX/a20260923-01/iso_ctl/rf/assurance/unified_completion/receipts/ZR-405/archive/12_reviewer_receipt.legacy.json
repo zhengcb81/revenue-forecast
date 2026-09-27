@@ -1,0 +1,119 @@
+{
+  "base_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "63fb5a43e81b8e40f91824a19c6c2b23a68f32a3",
+    "wiki": "f45f7edb76e42a3f54489f7999182ce59e4cb678"
+  },
+  "commands": [
+    {
+      "command": "git -C wiki rev-parse HEAD; git -C filing rev-parse HEAD; git -C revenue rev-parse HEAD",
+      "exit_code": 0,
+      "result": "wiki e56eb5f53cdebb342486be2546a9602037ac68e0, filing 3087f28926fc36fd0cdad19a0fa0495de42f35ec, revenue 63fb5a43e81b8e40f91824a19c6c2b23a68f32a3 — all three match the claimed result triplet (revenue == receipt base, i.e. 'at or after' holds as equal)"
+    },
+    {
+      "command": "git -C wiki diff f45f7ed e56eb5f --stat; git -C filing diff df66796 3087f28 --stat; git status --short (both repos)",
+      "exit_code": 0,
+      "result": "wiki: exactly 4 files (cli.py +46, policy.py, policy_2x.py, test_zr405_policy_export_cli.py +150; +284/-37). filing: exactly 3 files (fetch_filing.py, filing_contracts.py, test_zr405_policy_roots.py +497; +694/-119). Both base commits verified as ancestors of result HEADs. Working tree: wiki carries only pre-existing dirt (D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json — unrelated coverage artifacts); filing tree clean. No other tracked modifications."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr405_policy_export_cli.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "5 passed in 0.80s — incl. test_zr405_policy_export_hash_matches_export_policy_2x which recomputes sha256 over the payload minus the policy_hash key (sort_keys, ensure_ascii=False) and asserts equality with payload['policy_hash'] and export_policy_2x's canonical hash; plus roots contract fields, absolute path_refs, determinism, read-only (no .source_catalog created)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed in 59.65s (exact count match)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_root_policy_2x.py tests/contract/test_activation_transaction.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "26 passed in 2.45s — export_2x hash determinism and activation transaction suites green under the effective-reusable normalization"
+    },
+    {
+      "command": "python -m pytest tests/test_zr405_policy_roots.py -q --tb=short (filing-fetch)",
+      "exit_code": 0,
+      "result": "13 passed, 1 skipped in 0.32s — dropbox-only/dayu-only/future_lake accepted; companies rejected under dropbox-only policy (no legacy default when policy present); allowed_roots cannot widen (policy wins); dotdot escape rejected; symlink escape rejected (1 skipped: symlink creation lacks Windows privileges); policy hash mismatch -> 'policy snapshot hash mismatch'; envelope policy_hash mismatch -> 'does not match the exported root policy'; envelope match forwards; envelope without policy_hash forwards (N-1); response without policy_export keeps legacy companies bridge; resolve_filing e2e wiring asserts calls == ['identify','resolve'] (no extra subprocess) and rejects non-policy handles"
+    },
+    {
+      "command": "python -m pytest tests/test_policy_containment_fc501.py tests/test_fc903_bundle_contract.py tests/test_fc905b_envelope_fields.py tests/test_fc1204_coverage_gap.py tests/test_fc802_gap_orchestration.py tests/test_complexity_ratchet.py -q --tb=short (filing-fetch)",
+      "exit_code": 0,
+      "result": "167 passed, 1 skipped, 39 subtests passed in 17.99s — complexity ratchet green (filing_contracts.py <= frozen 39, fetch_filing.py <= 34)"
+    },
+    {
+      "command": "python -m pytest tests/ -q --tb=line (filing-fetch, full suite)",
+      "exit_code": 0,
+      "result": "357 passed, 12 skipped, 78 subtests passed in 146.86s — zero failures; the single flaky live test (test_ensure_entity_without_download_reports_missing) PASSED this run because the real catalog was free; only warning is a pre-existing subprocess reader-thread UnicodeDecodeError (encoding quirk, both affected tests pass)"
+    },
+    {
+      "command": "python -m pytest tests/test_e2e_isolated_wiki.py -q --tb=line (filing-fetch, real company-wiki CLI)",
+      "exit_code": 0,
+      "result": "15 passed in 66.48s — real company-wiki code (editable install at ~/Projects/company-wiki) with temporary scanned instances; proves the response-embedded policy_export works end-to-end and the effective-reusable normalization makes company_raw reusable under a minimal 1.x config (single company_raw root, no reusable_for_filing flag, default reusable_root_kinds=('company_raw',))"
+    },
+    {
+      "command": "zr405_norm_check.py (temp script, wiki venv): export_policy_2x / export_policy / cli policy-export on a minimal 1.x config",
+      "exit_code": 0,
+      "result": "10/10 checks passed — 2x and 1x exports normalize unset per-root reusable_for_filing by kind (company_raw -> True via default reusable_root_kinds; directory -> False); both exporters' hashes recompute over the document; CLI policy-export payload minus policy_hash key re-hashes to payload['policy_hash'] == export_policy_2x hash; payload keys == {schema_version, reusable_root_kinds, roots} (verbatim document + hash); path_refs absolute"
+    },
+    {
+      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-405/11_implementer_receipt.json (revenue/assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed; plan_sha256 d9fce0d6feff86cfd895e3a2fef9f614d2ca5b414c64543e4f8f8d87fc7f2a6d == my sha256 of the current 00_wu_card.md; triplets in receipt match the verified repo HEADs"
+    },
+    {
+      "command": "python -m uc.cli state-show (revenue/assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "units.ZR-405.status=independent_review, current_next=ZR-405, current_phase=D_lifecycle_roots_freshness — matches the claimed state exactly"
+    },
+    {
+      "command": "sha256 of tests/test_zr405_policy_roots.py and tests/contract/test_zr405_policy_export_cli.py (my own computation)",
+      "exit_code": 0,
+      "result": "filing test = 59615a4b44b956ba60da7a7cf16bad1ba845cceac881b3d1c49bfea4d7caf549; wiki test = f7065a458944733193aa843c384ecc84254ebc65f6127f1e623723c859c9a7b4 — both match the hashes claimed in the implementer receipt notes"
+    },
+    {
+      "command": "python -m pytest tests/test_real_tool_conformance.py::LiveConformanceTests::test_ensure_entity_without_download_reports_missing -q --tb=short (filing-fetch)",
+      "exit_code": 0,
+      "result": "1 passed — the flake did not reproduce (real catalog free at review time). Claim verified by construction: the test file is byte-identical at base df66796 (not in the ZR-405 diff), and the ensure/missing + catalog_busy machinery (filing_contracts _CATALOG_RETRY_CODES, ZR-205-era) and the ensure path in fetch_filing.py changed only cosmetically (format reflows) — so the environment-determined catalog_busy failure exists identically at base and is NOT a ZR-405 regression"
+    }
+  ],
+  "created_at_utc": "2026-08-18T20:10:35Z",
+  "findings": [
+    {
+      "detail": "cli.py policy-export branch comment says paths are \"${PROJECT_ROOT}-tokenized so the artifact never leaks absolute user paths (same discipline as policy_3x export)\", but export_policy_2x emits str(spec.path) after load_catalog_config expands the token (config.py _expand_path), so path_ref values are ABSOLUTE — as the card C1, the tests, and my direct run all confirm. The comment is stale/misleading documentation only; behavior is correct and matches the card.",
+      "id": "ZR405-REV-001",
+      "severity": "info",
+      "title": "cli.py policy-export comment contradicts actual absolute path_refs"
+    },
+    {
+      "detail": "The close-gap (download) path's response is CloseGapResult.to_dict() whose 'resolution' is the raw SourceResolver to_dict() (close_gap.py:481) and never carries policy_export — only the resolve/ensure CLI branches embed it. So _handle_from_resolution on the close-gap resolution falls back to the legacy <wiki_root>/companies containment and skips the envelope policy_hash cross-check there (expected_policy_hash is None). The N-1 bridge comment's claim 'the CURRENT triplet always sends it' is therefore inaccurate for the close-gap response. Impact for the current triplet is benign: the canonical write root is the company_raw root (companies/...), so the legacy containment passes real downloads, and the wiki-side DL-03 runtime-policy binding (close_gap.py:207-215, pre-existing ZR-404 design) still gates the download against the binding's policy_hash — the failure direction is over-restrictive (deny), never under-restrictive (allow). For future multi-canonical-root configs (e.g. ZR-409 future_lake) this would reject legitimate downloads into policy-allowed non-companies roots. Recommendation: embed policy_export in the close-gap response (or pass the known export hash into the close-gap call) as a follow-up, and cover it with a test.",
+      "id": "ZR405-REV-002",
+      "severity": "minor",
+      "title": "close-gap (download) response lacks policy_export — legacy companies containment still applies on that path"
+    },
+    {
+      "detail": "The implementer receipt's created_at_utc (2026-08-18T21:40:00Z) postdates the state.json transition of ZR-405 to independent_review (2026-08-18T20:01:58Z) and this review's start (~20:06Z). Most likely tooling clock skew in the implementer environment (state and receipt were written within minutes of each other in real time); the receipt content is self-consistent and receipt-validate passes. No impact.",
+      "id": "ZR405-REV-003",
+      "severity": "info",
+      "title": "implementer receipt timestamp ordering vs state.json (clock skew)"
+    },
+    {
+      "detail": "The pre-existing wiki working-tree dirt appears in git status as '?? .coverage' (a directory containing the .coverage data file) plus '?? coverage.json' at the repo root — the card's phrasing '.coverage/coverage.json' as a single nested path is slightly imprecise, but the substance (untracked coverage artifacts, unrelated to ZR-405) is correct. Filing tree is clean.",
+      "id": "ZR405-REV-004",
+      "severity": "info",
+      "title": "wiki untracked coverage items differ slightly in phrasing from the card"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-405 independent review",
+  "result_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "63fb5a43e81b8e40f91824a19c6c2b23a68f32a3",
+    "wiki": "e56eb5f53cdebb342486be2546a9602037ac68e0"
+  },
+  "reviewed_object_sha256": "59615a4b44b956ba60da7a7cf16bad1ba845cceac881b3d1c49bfea4d7caf549",
+  "reviewer": "reviewer-zr405-independent",
+  "schema_version": 1,
+  "unit": "ZR-405",
+  "verdict": "accepted",
+  "canonical_hash": "d5736a0b675306fd57430422d6daeeeea62f42865a066f3df6bd6968177eb235"
+}

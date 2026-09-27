@@ -1,0 +1,86 @@
+{
+ "schema_version": "1.0",
+ "card": "I-11-C",
+ "attempt": "a20260926-01",
+ "formula": "not_applicable_with_reason",
+ "formula_reason": "裁定/映射类卡，非产出公式的消费卡",
+ "disclosure_adaptation": "unmapped",
+ "accuracy": "unproven",
+ "granted_scope": "本卡 18 条参数映射的证据与判据（proposed_not_released 形态，同 H4 (iv)）",
+ "not_granted": [
+  "不解除任何 OPEN/BLOCKED（含 OPEN-2）",
+  "不放行任何参数（low/base/high 仍 null、_PLACEHOLDER 维持、proposed 不当已发布）",
+  "不升 threshold_review_status（仍 not_reviewed）",
+  "不派 I-07-E（依赖顺序另派）",
+  "不代签不晋升不写产品仓"
+ ],
+ "not_granted_note": "OPEN-2 前禁消费 ZIJIN_MINERAL_REALIZED_UNIT_REVENUE 的 base(124,248.63 及 ±5% 带)——承继 I-11-B P2-1",
+ "status": "accepted_scoped",
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> accepted_scoped",
+ "status_authority": {
+  "carrier": "reviewer_report.md",
+  "carrier_sha256": "0664b8cf9e215155633afab5a16718f28a1e4c97e7f119c5b387928e8df82922",
+  "carrier_bytes": 38829,
+  "carrier_encoding": "UTF-8 no BOM, LF-only",
+  "verdict_line": 21,
+  "verdict_byte_region": {
+   "start": 2328,
+   "content_end_inclusive": 2445,
+   "content_end_exclusive": 2446,
+   "content_length": 118,
+   "with_lf_end_exclusive": 2447,
+   "with_lf_length": 119,
+   "note": "内容区 [2328,2445] 118B（不含行尾 LF）；含行尾 LF 口径 [2328,2447) 119B"
+  },
+  "verdict_word_written_by_reviewer": "ACCEPT",
+  "pin_sidecar": "0664b8cf9e215155633afab5a16718f28a1e4c97e7f119c5b387928e8df82922  reviewer_report.md",
+  "three_way_match": true
+ },
+ "carried_findings": [
+  {
+   "id": "P2-1",
+   "severity": "P2",
+   "summary": "四查记录样板化且自相矛盾（period_check 18 行同句 vs 6 行自身 period；formula_check 17 行 vs 4 行 not_executable；unit_check 行号 16/18）——值/单位/年份/verdict 均正确，仅叙述层需逐行重写",
+   "report_ref": "报告 §5 L214（佐证 §2.1⑤ L63-L67）"
+  },
+  {
+   "id": "P2-2",
+   "severity": "P2",
+   "summary": "verify_mapping.py 三盲区：T2（verdict 与 value_state 解耦）· R2b（字典型 new_value 不扫合成数）· T4c（EA 模板 8 字段只测 2）",
+   "report_ref": "报告 §5 L215（佐证 §2.4 L130-L133）"
+  },
+  {
+   "id": "P2-3",
+   "severity": "P2",
+   "summary": "EA 模板 carrier_form 7/7 缺（仅顶层）、与 oracle §3 自设失败条款冲突（继承 I-11-B P2-2）；因区间+eqt=false 齐备 ⇒ 非 P1",
+   "report_ref": "报告 §5 L216（佐证 §2.2 L90）"
+  },
+  {
+   "id": "P3-4",
+   "severity": "P3",
+   "summary": "C3-④ 事实过时（卡内写 IND-r2 目录空，实测 9 件已 RULED）——形态 unverified 正确",
+   "report_ref": "报告 §5 L220"
+  },
+  {
+   "id": "P3-5",
+   "severity": "P3",
+   "summary": "m3/m5 变异副本基于旧 handoff 快照（deep-diff 15 叶非纯单字段）",
+   "report_ref": "报告 §5 L221"
+  },
+  {
+   "id": "P3-6",
+   "severity": "P3",
+   "summary": "小注三条：3.26→3.25 精度 · unit_check 漏 CP L98/L109 · CRLF/LF 混用（14 件均无 BOM）",
+   "report_ref": "报告 §5 L222"
+  }
+ ],
+ "pre_image": {
+  "file": "handoff.json",
+  "sha256": "77f3bbab3f66deda9926a12a70479aee5efa649cb7f4c7815a62245e306ae75c",
+  "bytes": 16815,
+  "status": "review_pending"
+ },
+ "implementer_signed": false,
+ "verdict_is_transcribed_not_authored": true
+}

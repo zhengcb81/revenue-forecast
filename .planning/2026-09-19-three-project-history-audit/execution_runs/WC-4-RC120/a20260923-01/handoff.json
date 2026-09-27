@@ -1,0 +1,303 @@
+{
+  "card": "WC-4 = F12-RC120",
+  "attempt": "a20260923-01",
+  "round": "r2",
+  "status": "accepted_scoped",
+  "status_before": "review_pending",
+  "status_transition": "review_pending -> accepted_scoped",
+  "status_rounds": 2,
+  "status_note": "TRANSCRIBED at carrier landing from the round-2 independent review. The round-1 verdict changes_required (reviewer_report.md, 26073 B / 9941660588641a31a22449365982392a28f4fc5b2451a69ca8587f38ad3074e8, verdict line 161) is HISTORY and is preserved read-only in status_history; the round-2 verdict ACCEPT (reviewer_report_r2.md, 28878 B / ddbd536c47b54822e1ff2af79f02d48632907b54cc057dcda1f43f6cf80ca001, verdict line 232, P1=0/P2=1/P3=1) is the CURRENT authority. This landing adds no acceptance of its own.",
+  "status_history": [
+    {
+      "round": 1,
+      "verdict": "changes_required",
+      "carrier": "reviewer_report.md",
+      "bytes": 26073,
+      "sha256": "9941660588641a31a22449365982392a28f4fc5b2451a69ca8587f38ad3074e8",
+      "total_lines": 161,
+      "verdict_line": 161,
+      "verdict_line_byte_region_inclusive": [26047, 26072],
+      "verdict_line_length": 26,
+      "verdict_line_sha256": "501cc91c3dc9566eeb7032d7c8aa2faccb5b68a41bf1582d848c4193f32d9488",
+      "verdict_line_text": "VERDICT: changes_required",
+      "pinned_by": "reviewer_report.sha256 (85 B, content-match; sidecar self-sha 381efe271046e67f75a7cac31b0b019a99b8117f2d27ff75ddc57351e2efc490)",
+      "counts": "P1=1 (F-01) / P2=0 / P3=7 (F-02..F-08)",
+      "sole_blocker": "F-01 — --help/-h with a broken stdout pipe returned raw rc=120 outside the frozen domain {0,2} in the r1 delivery state 4e6b64a7..., i.e. oracle O-1 falsified on a reachable F12 path; closed in round 2 (see p1_fix and review.md section 2)",
+      "preservation": "round-1 report UNTOUCHED at carrier landing: re-hashed read-only == its pinned sha before and after this pass; the changes_required history is retained here and in review.md, never overwritten"
+    },
+    {
+      "round": 2,
+      "verdict": "ACCEPT",
+      "carrier": "reviewer_report_r2.md",
+      "bytes": 28878,
+      "sha256": "ddbd536c47b54822e1ff2af79f02d48632907b54cc057dcda1f43f6cf80ca001",
+      "total_lines": 232,
+      "verdict_line": 232,
+      "verdict_line_byte_region_inclusive": [28862, 28877],
+      "verdict_line_length": 16,
+      "verdict_line_sha256": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4",
+      "verdict_line_text": "VERDICT: ACCEPT",
+      "pinned_by": "reviewer_report_r2.sha256 (88 B, content-match; sidecar self-sha cfed6122474bba684638a4f8e26f70052c589f6a791dbe55bda9069f59fb959c)",
+      "counts": "P1=0 / P2=1 (N-01) / P3=1 (N-02)",
+      "blocker_F01": "closed — the reviewer personally re-ran both states in a %TEMP% isolated copy: pre-fix 4e6b64a7... --help=120 / -h=120 with only the two CPython lines and NO product text; post-fix 405fec6d... --help=2 / -h=2 with stderr 'error: stdout flush failed: [Errno 22] Invalid argument' and 'Exception ignored' 0 hits; reader-end matrix 0/0/0/0/0/2 shape 5/5; reader --help stdout 1612 B byte-identical to pristine; product tests 1 failed 8 passed -> 9 passed rc=0; all three mutation arms red",
+      "findings": "N-01 (P2, changes.diff is 0-context: plain git apply --check rc=1, needs --unidiff-zero) + N-02 (P3, F-06 disposition location mis-recorded) + informational pin-timepoint note",
+      "reviewer": "独立复审工位 (round-2 independent review session; the verdict was written in the carrier by the reviewer, never by the implementer and never by this landing pass)"
+    }
+  ],
+  "status_authority": {
+    "status": "accepted_scoped",
+    "status_before": "review_pending",
+    "status_transition": "review_pending -> accepted_scoped",
+    "status_rounds": 2,
+    "verdict": "ACCEPT",
+    "verdict_round": 2,
+    "carrier": "reviewer_report_r2.md",
+    "carrier_bytes": 28878,
+    "carrier_sha256": "ddbd536c47b54822e1ff2af79f02d48632907b54cc057dcda1f43f6cf80ca001",
+    "carrier_total_lines": 232,
+    "carrier_encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+    "verdict_line": 232,
+    "verdict_line_byte_region_inclusive": [28862, 28877],
+    "verdict_line_length": 16,
+    "verdict_line_sha256": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4",
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "region_definition": "0-based byte offsets against reviewer_report_r2.md at the recorded sha256; single-line region includes its trailing LF; multi-line regions include internal LFs and exclude the final LF",
+    "carrier_pin_sidecar": {
+      "file": "reviewer_report_r2.sha256",
+      "bytes": 88,
+      "self_sha256": "cfed6122474bba684638a4f8e26f70052c589f6a791dbe55bda9069f59fb959c",
+      "content": "ddbd536c47b54822e1ff2af79f02d48632907b54cc057dcda1f43f6cf80ca001  reviewer_report_r2.md",
+      "verified": "sidecar content matches an independent read-only re-hash of reviewer_report_r2.md at landing (28878 B, 232 lines); 0 bytes written by this pass"
+    },
+    "sections_byte_regions": {
+      "s2_F01_closure_lines_19_57": {"start": 2324, "end_inclusive": 5633, "length": 3310, "sha256": "78a89734b470ba3b146ad9c1201ff172689675a5ade7503461803a160ead2c24"},
+      "s4_three_mutation_arms_lines_71_82": {"start": 6331, "end_inclusive": 7969, "length": 1639, "sha256": "276b6728aa46994d47746e3d7b5a8ebcc713e72821500774f27ecae18a8627ad"},
+      "s5_product_tests_lines_84_97": {"start": 7973, "end_inclusive": 9775, "length": 1803, "sha256": "e1d4342e904be2d84ea2933f997af34dfd47c24c09e63ec444fe926d25010bd6"},
+      "s6_ratchet_lint_lines_99_112": {"start": 9779, "end_inclusive": 10699, "length": 921, "sha256": "8b0baaf6beaa28555c4342b9ddb513cf5fb043fe8e14b2c7076b963b0bc9679d"},
+      "s7_changes_diff_lines_114_129": {"start": 10703, "end_inclusive": 12615, "length": 1913, "sha256": "d8d73c980b8246e4a41c1cd97026c373c3651aa1f21f740062d7bb73959fdb53"},
+      "s8_F02_F08_lines_131_143": {"start": 12619, "end_inclusive": 17632, "length": 5014, "sha256": "0ec482ae98d8978ce85fb79b3ad32ead007412bc62ca16ec0698c6797a0bbc62"},
+      "s9_bookkeeping_incidents_lines_145_167": {"start": 17636, "end_inclusive": 19761, "length": 2126, "sha256": "45d04a961a61a4cbc20e85d147a33ba3cd26519f2426410bd3df04b6ce74ad39"},
+      "s10_prefix_ledgers_lines_169_181": {"start": 19765, "end_inclusive": 21242, "length": 1478, "sha256": "b3c7a0926950c54ae3b03004e5bc8f15d8a5c5096d18e76de9a003f12f057878"},
+      "s11_boundary_lines_183_189": {"start": 21246, "end_inclusive": 21932, "length": 687, "sha256": "a233a6bc956f14577fedd0e06248c74a97ac56f64a11430a93e942be5dd54711"},
+      "s12_findings_lines_191_199": {"start": 21936, "end_inclusive": 24496, "length": 2561, "sha256": "70fb50f35587e4f97e37012517b281b2e2c343c3b77241f91ae15f0e998d652e"},
+      "s12_N01_row_line_195": {"start": 22050, "end_inclusive": 22996, "length": 947, "sha256": "046e8eb9d3874d2d9e4421046b2c94f8b217d39057cecc111220dfd1c561296c"},
+      "s12_N02_row_line_196": {"start": 22998, "end_inclusive": 23872, "length": 875, "sha256": "d967832dcc5e2d76ae5f20c6a0fe393ac7a373e26af5c34b7f9e993d8bd698d9"},
+      "s13_unverified_lines_201_211": {"start": 24500, "end_inclusive": 26589, "length": 2090, "sha256": "783962e29b81e8d1d66981a98ebac49bd8a0d323d9f39afd3919cc387bc8e815"},
+      "s14_not_done_lines_213_222": {"start": 26593, "end_inclusive": 27716, "length": 1124, "sha256": "1fa5e886d80879f7d28dcf78ca93acea473f709af05aea709ed4e3efb6aa8de1"},
+      "s15_conclusion_lines_224_232": {"start": 27720, "end_inclusive": 28875, "length": 1156, "sha256": "1118b4a9253efbb23a53dc8b65791a003bda07cf20d7f74ce8b555dd27e4ac8c"}
+    },
+    "round1_carrier_preserved_as_history": {
+      "file": "reviewer_report.md",
+      "verdict": "changes_required",
+      "verdict_line": 161,
+      "verdict_line_byte_region_inclusive": [26047, 26072],
+      "verdict_line_length": 26,
+      "verdict_line_sha256": "501cc91c3dc9566eeb7032d7c8aa2faccb5b68a41bf1582d848c4193f32d9488",
+      "verdict_line_text": "VERDICT: changes_required",
+      "bytes": 26073,
+      "sha256": "9941660588641a31a22449365982392a28f4fc5b2451a69ca8587f38ad3074e8",
+      "total_lines": 161,
+      "sections_byte_regions": {
+        "s3_findings_lines_123_136": {"start": 16518, "end_inclusive": 21713, "length": 5196, "sha256": "abf2dea26c5e8fe70dfc192f9405b7ac36e1451ce0ad8419f347832c222e9157"},
+        "s4_unverified_lines_138_146": {"start": 21717, "end_inclusive": 24046, "length": 2330, "sha256": "147a86a1e331d91d0d7de5e65f0f11fd9adc05750f3a85595ccaab1acb8aa570"},
+        "s5_boundary_lines_148_155": {"start": 24050, "end_inclusive": 25578, "length": 1529, "sha256": "ae6341ba7a9f0ab8119c348a98938552e47eb959d016ab6b80fa8ad1e8ccc71a"},
+        "s6_conclusion_lines_157_161": {"start": 25582, "end_inclusive": 26070, "length": 489, "sha256": "5afd4f5c56361481be032b20dd5eb58342615bc9808e650ae398ea0ff76cef81"}
+      },
+      "pin_sidecar": {"file": "reviewer_report.sha256", "bytes": 85, "self_sha256": "381efe271046e67f75a7cac31b0b019a99b8117f2d27ff75ddc57351e2efc490", "content": "9941660588641a31a22449365982392a28f4fc5b2451a69ca8587f38ad3074e8  reviewer_report.md"},
+      "status_at_landing": "untouched — 0 bytes written; kept as history per the dispatch (both review reports are read-only and both are preserved)"
+    },
+    "landing_carrier": {
+      "file": "review.md",
+      "role": "verdict block written by this bookkeeping pass; it transcribes the two-round verdict chain and adds no acceptance of its own. The reviewer wrote NO verdict into review.md — the reviewer's words are in reviewer_report_r2.md, which this pass did not modify.",
+      "pre_image": "none — review.md did not previously exist in this attempt (created by this carrier-landing bookkeeping pass)"
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "the ACCEPT verdict was written by the independent reviewer (独立复审工位) in reviewer_report_r2.md line 232 (conclusion lines 224-232), not by the implementer and not by this landing pass; handoff.json only transcribes it",
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_transcription_adds_no_acceptance_of_its_own": true
+  },
+  "reviewer_status": "REVIEW COMPLETE round 2 — verdict ACCEPT (P1=0 / P2=1 N-01 / P3=1 N-02), transcribed by the carrier-landing pass from reviewer_report_r2.md line 232 (authored by the 独立复审工位); round-1 changes_required (reviewer_report.md line 161, sole blocker F-01) preserved read-only as history in status_history; implementer 未自签 (implementer_signed=false); this landing adds no acceptance of its own and does not downgrade N-01",
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+  "signed_by": null,
+  "review_source": {
+    "file": "reviewer_report.md",
+    "bytes": 26073,
+    "sha256": "9941660588641a31a22449365982392a28f4fc5b2451a69ca8587f38ad3074e8",
+    "verdict": "changes_required",
+    "read_only_in_r2": true,
+    "note": "round-1 carrier, retained read-only as HISTORY; superseded as the current verdict by review_source_current (round 2)"
+  },
+  "review_source_current": {
+    "file": "reviewer_report_r2.md",
+    "bytes": 28878,
+    "sha256": "ddbd536c47b54822e1ff2af79f02d48632907b54cc057dcda1f43f6cf80ca001",
+    "verdict": "ACCEPT",
+    "verdict_line": 232,
+    "verdict_line_byte_region_inclusive": [28862, 28877],
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "counts": "P1=0 / P2=1 / P3=1",
+    "pin_sidecar": "reviewer_report_r2.sha256 (88 B)",
+    "read_only_in_landing": true,
+    "bytes_written_by_landing": 0
+  },
+  "oracle": {
+    "file": "oracle.md",
+    "sha256": "7fecfaea02f62b3740122a2c79ff5f7194bdd29505696cb0e8c38cdce1cb8be8",
+    "changed_in_r2": false,
+    "note": "frozen invariant O-1 kept verbatim; the fix was changed to satisfy it, the oracle was not; r2 re-verified four independent same-value records (oracle.md re-hash / oracle.sha256 content / binding.json.oracle_sha256 / r1 report section 2.6) and no owner exemption was walked"
+  },
+  "p1_fix": {
+    "finding": "F-01",
+    "closed_by_round": 2,
+    "route_taken": "extend the entry wrapper so a SystemExit raised INSIDE main() (argparse --help/-h) also passes through _finalize_exit_status",
+    "route_not_taken": "owner oracle scope exemption (requires an owner ruling; not requested, not self-issued)",
+    "iso_cli_sha256_before": "4e6b64a789b97f30daf5def474bcd5a1d19cbc45b555e554b23fb8ecafe9e977",
+    "iso_cli_sha256_after": "405fec6d7ea23324bd671e144caa994889e076104d67560bc3b1d0f830599bda",
+    "raw_rc_before": {"help": 120, "h": 120, "validate": 2, "version": 2, "usage": 2, "reader_normal_5_arms": "0/0/0/0/2"},
+    "stderr_before": "Exception ignored on flushing sys.stdout:\nOSError: [Errno 22] Invalid argument",
+    "product_error_text_before": false,
+    "raw_rc_after": {"help": 2, "h": 2, "validate": 2, "version": 2, "usage": 2, "reader_normal_5_arms": "0/0/0/0/2"},
+    "stderr_after": "error: stdout flush failed: [Errno 22] Invalid argument",
+    "cpython_exception_ignored_after": "0 hits",
+    "reader_stdout_shape": "5/5 correct (--help and -h start with 'usage:', --validate-only is literally 'valid', --version starts with 'revenue-forecast ', usage has 'usage:' on stderr)",
+    "reader_help_stdout_bytes": "1612 B, byte-identical to production pristine",
+    "production_pristine_reference": {"sha256": "2a2dfede7941b0fac972d802d25eb71f798c1ebdb83226bbf8528481b9669e36", "bytes": 5333, "help": 120, "h": 120, "validate": 120, "version": 120, "usage": 2, "note": "non-regression of this card (fixed only after changes.diff merges)"},
+    "closure_evidence": "reviewer personally re-ran both states in %TEMP%\\wc4r2rev\\rf (isolated copy of iso\\rf, 1976 files / 28 MB) with a self-built probe; r2 section 2 (lines 19-57)",
+    "evidence": [
+      "evidence/rgm2/red/probe.json",
+      "evidence/rgm2/green/probe.json",
+      "evidence/rgm2/pytest_r2/red_newtest_r1_state.txt",
+      "evidence/rgm2/pytest_r2/green_r2_state.txt",
+      "evidence/rgm2/pytest_r2/green_final_r2_state.txt"
+    ]
+  },
+  "product_tests": {
+    "r1_suite": {"count": 8, "green": "8 passed / 0 failed"},
+    "r2_suite": {"count": 9, "pre_fix": "1 failed, 8 passed (pytest rc=1)", "post_fix": "9 passed (pytest rc=0)"},
+    "pre_fix_failure_verbatim": "AssertionError: --help with a broken stdout pipe must land in the frozen domain {0,2} as rc=2, got 120; stderr='Exception ignored on flushing sys.stdout:\r\nOSError: [Errno 22] Invalid argument\r\n'",
+    "new_test": "test_help_with_broken_stdout_exits_2_with_preserved_error_text",
+    "test_file": {"bytes": 7270, "lines": 195, "test_defs": 9, "sha256": "083b92a535bf43f0ea0863a979579c2e6f55c4eb1e63abbefa7a7b35e1d533aa"},
+    "runner": "harness/run_pytest_r2.py (pytest --noconftest + explicit REVENUE_PUBLICATION_REGISTRY; pytest tmp basetemp is denied by this sandbox)",
+    "workaround_changes_runtime_not_criteria": "--noconftest only bypasses the session fixture _isolate_publication_registry (tmp_path_factory.mktemp); the reviewer independently reproduced that tempfile.mkdtemp() SUCCEEDS but open(...,'w') inside it raises PermissionError: [Errno 13] (also in a pure python process); that fixture's only job is setting REVENUE_PUBLICATION_REGISTRY, replaced explicitly by %TEMP%. The criteria assertions themselves (rc, 'stdout flush failed' text, 'Errno', absence of 'Exception ignored', sys.stdout is not broken, _NullStream fallback, normal arms 0/2) were NOT changed — reviewer read the test source and re-ran each one."
+  },
+  "mutation_arms": [
+    {"id": "MUT-A", "name": "revert wrapper (wrap main() return value only)", "iso_sha256": "4e6b64a789b97f30daf5def474bcd5a1d19cbc45b555e554b23fb8ecafe9e977", "help_raw_rc": 120, "h_raw_rc": 120, "validate_raw_rc": 2, "version_raw_rc": 2, "usage_raw_rc": 2, "stderr": "only the two CPython lines, no product text", "pytest": "1 failed, 8 passed", "detected": true},
+    {"id": "MUT-B", "name": "keep catch, drop stream neutralization (= frozen M-2)", "iso_sha256": "99fc716ad9ef6ce80f5e2e50062027f2e2e0354a432774034ad8c8a6d6891153", "help_raw_rc": 120, "h_raw_rc": 120, "validate_raw_rc": 120, "version_raw_rc": 120, "usage_raw_rc": 2, "product_text_present": true, "cpython_exception_ignored_present": true, "stderr": "product text and 'Exception ignored' COEXIST (both verbatim present)", "pytest": "3 failed, 6 passed", "detected": true},
+    {"id": "MUT-C", "name": "neutralize without catch (F-08 supplementary arm)", "iso_sha256": "4f9d78034b46e8054ef9807dafc38f9728737269f2be5c6eeca505012ddbd95b", "help_raw_rc": 0, "h_raw_rc": 0, "validate_raw_rc": 0, "version_raw_rc": 0, "usage_raw_rc": 2, "product_text_present": false, "cpython_exception_ignored_present": false, "stderr": "empty — no product text, no 'Exception ignored'", "pytest": "4 failed, 5 passed", "detected": true, "breaches": "G-2 fail-closed/informative (rc stays in {0,2})"}
+  ],
+  "checks": {
+    "ruff_0_15_18": {"raw_rc": 0, "result": "All checks passed!", "files": "two delivery files (iso CLI + iso new test)"},
+    "ratchet": {"raw_rc": 0, "iso_fixed": 18, "iso_pristine": 18, "production": 18, "r1_state": 18, "worst": "main:18", "frozen_max": 18, "result": "OWN_FILE_RATCHET_OK", "note": "four targets (iso r2 / iso pristine / production / r1) all 18 == frozen 18; reviewer re-computed independently with a self-written _mccabe/_max_complexity aligned to tools/tests/test_complexity_ratchet.py and then cross-checked the card's own check_ratchet_own_file.py"},
+    "changes_diff": {"bytes": 10114, "sha256": "d1a79376c518eab300400c54badf91e141ed4b50ae0623a6fefe52900ad2856d", "verify": "VERIFY_DIFF_OK", "files": 2, "cli_hunks": ["@@ -125,0 +126,44 @@", "@@ -127 +171,15 @@"], "new_test_hunk": "@@ -0,0 +1,195 @@", "hunks_exact": "three hunks exactly; r1/r2 increments distinguishable", "independent_rebuild": "reviewer rebuilt with difflib.unified_diff(..., n=0) -> byte_identical to the on-disk file (both sha d1a79376...)", "plain_git_apply_check": "raw rc=1 (FAILED) — see finding N-01", "unidiff_zero_check": "raw rc=0; real apply in an isolated copy yields exactly 405fec6d... / 083b92a5... after LF normalization", "note": "U0 (0-context) diff so the r1 fix and the r2 fix stay in separate hunks"},
+    "git_diff_non_planning": 0,
+    "production_cli_sha256": "2a2dfede7941b0fac972d802d25eb71f798c1ebdb83226bbf8528481b9669e36"
+  },
+  "findings": [
+    {"id": "F-01", "level": "P1", "disposition": "FIXED (route 1) + 1 new product test + red/green/3-mutation proof; independently re-executed by the round-2 reviewer in %TEMP%", "closed": true, "closed_in_round": 2},
+    {"id": "F-02", "level": "P3", "disposition": "erratum: rc=0 belongs to coverage run; coverage report measured rc=2 under global fail_under=84; per-module >=60% gate is a different scope; evidence bytes untouched", "closed": true, "r2_verification": "coverage 7.12.0 independently reproduced the 0/2/0 triple in %TEMP%; new evidence evidence/rgm2/coverage_rc_probe_r2.txt (848 B) in MANIFEST_r2; commands.md first 13251 B still bde20daa... (Q3 row untouched)"},
+    {"id": "F-03", "level": "P3", "disposition": "pin_drift recorded (10 MATCH / 9 DRIFT, same partition as review; register non-blank pinned lines now +3 but verbatim preserved, closure decision delta 0, iso_cli_before drift expected); pin table NOT rewritten", "closed": true, "r2_verification": "pins_r2.json archive re-computed = 10/9 with drift_ids identical to r1; reviewer's own 22:38 reading = 8 MATCH / 11 DRIFT (see unverified/timepoint note); all 50 pinned lines still verbatim on disk; binding.json caca43e8... unchanged"},
+    {"id": "F-04", "level": "P3", "disposition": "timing correction appended: C1b artifact mtime 00:04:17 is post-freeze (oracle.sha256 23:50:41); pre-freeze execution is unprovable and not asserted", "closed": true, "r2_verification": "mtimes re-measured and match (oracle.md 2026-09-23 23:50:38, oracle.sha256 23:50:41, mech_cases.json 23:40:19 pre-freeze, grep_120_and_emitter.txt 2026-09-24 00:04:17 post-freeze); commands.md R2-步骤6 F-04 row present on disk"},
+    {"id": "F-05", "level": "P3", "disposition": "wording corrected: report_SA-DEFECT.md bytes untouched (sha 374a5770... == pin, L165 unchanged); correction is carried by this card's oracle sec5 / decision sec1", "closed": true, "r2_verification": "AUDIT-GOAL\\a20260923-01\\evidence\\report_SA-DEFECT.md = 26047 B / 374a57700884a6ee427286a2e27c544746dfe004dd260739dcabdceba74d37df == pin; L165 still reads '| F12（断管归一化） | 断言在返回后开火 | REG:592 | …'; handoff.md review_round_2 F-05 row carries the corrected wording"},
+    {"id": "F-06", "level": "P3", "disposition": "decision sec5 family grep list now also lists tests/test_publication_pipeline.py:315; file set still exactly 8", "closed": true, "closed_as_recorded": false, "r2_verification": "entity facts re-tested TRUE (production tests\\ same regex = exactly 8 files / 15 lines; test_publication_pipeline.py hits 87, 315, 332, 360) BUT the recorded LOCATION is wrong: decision.md sec5 (L71) still lists only 87,332,360 and the only '315' in the file is L124 (sec7.5 summary); sec5 sits inside the append-only r1 prefix (first 11542 B = fad182c0..., re-computed) so it structurally cannot be amended => finding N-02 (P3)"},
+    {"id": "F-07", "level": "P3", "disposition": "disclosed: r1 first-round RED probe bytes were overwritten by the final round's same-name file; from r2 on, same-name overwrites are renamed-archived first", "closed": true, "r2_verification": "mtime re-measured: evidence/rgm/green/probe_run1_after_fix.json 00:14:27 < evidence/rgm/red/probe.json 00:32:41 (overwrite fact holds); archived renamed artifacts evidence/rgm2/failed_try1_expect_table/probe.json (5453 B) and evidence/rgm2/prefix_selfcheck_r2_failed1.json (7787 B) on disk, commands.md explicitly marks them NOT as evidence"},
+    {"id": "F-08", "level": "P3", "disposition": "supplementary mutation arm 'neutralize without catch' run this round (rc=0, no product text, 4F/5P); frozen M-1/M-2 and oracle sec4 untouched", "closed": true, "r2_verification": "arm re-run by the reviewer (see mutation_arms MUT-C); oracle.md sha still 7fecfaea... => sec4 byte-identical; decision.md sec4 inside r1 prefix (fad182c0... re-computed); sec7.3 closure sentence present on disk"}
+  ],
+  "carried_findings": [
+    {
+      "id": "N-01",
+      "level": "P2",
+      "source": "reviewer_report_r2.md line 195 (byte region [22050,22996] / 947 B / 046e8eb9d3874d2d9e4421046b2c94f8b217d39057cecc111220dfd1c561296c) + section 7 (lines 114-129)",
+      "title": "changes.diff was regenerated as difflib n=0 (0-context); plain `git apply --check` now fails and `--unidiff-zero` is required",
+      "verbatim_must_carry": "r2 把 `changes.diff` 改成 `difflib n=0`（0-context）后，**plain `git apply --check` = rc=1**（`error: patch failed: scripts/revenue_forecast.py:127` / `patch does not apply`；隔离副本与本仓各跑一次相同；`core.autocrlf=false/true` 结果相同）；须 **`git apply --check --unidiff-zero`** 才 rc=0（实打后 LF 归一产物恰为 `405fec6d…`/`083b92a5…`）。**对照：r1 旧 diff `f0a01489…`（n=3）plain check rc=0。** 卡面 R2-C10b 只披露了 n=0 的「hunk 分离」动机，**未披露对 plain git apply 的影响**；卡面自身的 `verify_diff` 是字节重建、**从未用 git**。⇒ **若合并批本就用 `--unidiff-zero` 或非 git 工具，可降 P3** —— 此处置权归父/合并批，**你不裁**。",
+      "disposition": "CARRIED to the parent / merge batch verbatim; this pass does NOT adjudicate any downgrade to P3 (that authority belongs to the parent/merge batch); card faces commands.md R2-C10b, handoff.json checks.changes_diff and changes.diff itself are read-only here",
+      "blocking": false
+    },
+    {
+      "id": "N-02",
+      "level": "P3",
+      "source": "reviewer_report_r2.md line 196 (byte region [22998,23872] / 875 B / d967832dcc5e2d76ae5f20c6a0fe393ac7a373e26af5c34b7f9e993d8bd698d9) + section 8 row F-06",
+      "title": "F-06 disposition is recorded at a location that does not exist as described",
+      "verbatim_must_carry": "F-06 处置**位置记录不实** —— `handoff.md:85`、`handoff.json` findings[F-06]、`commands.md` R2-步骤6 三处都写「`decision.md` **§5** 补列 `test_publication_pipeline.py:315`」，但 §5（L71）逐字仍只列 `87,332,360`，全文唯一 `315` 在 **L124（§7.5 摘要）**；§5 在 append-only r1 前缀内（前 11542 B = `fad182c0…` 已复算）**结构上不可能改**。**实体事实复测为真**：生产 `tests/` 同正则**恰 8 文件 / 15 行**，`test_publication_pipeline.py` = 87,315,332,360。",
+      "disposition": "CARRIED to the parent; recommended wording fix ('in sec7.5/this table' or 'sec5 is inside the r1 frozen prefix and cannot be amended, so it was added in sec7.5') belongs to the parent — handoff.md / commands.md / decision.md are read-only existing carriers for this pass",
+      "blocking": false
+    },
+    {"id": "F-02", "level": "P3", "round": 1, "source": "reviewer_report.md finding F-02 (r1 report section 3) + reviewer_report_r2.md section 8 row F-02", "title": "commands.md P1 table Q3 row records raw rc=0 while the evidence's last line is 'Coverage failure: total of 73 is less than fail-under=84' (report step rc=2)", "disposition": "CLOSED in r2: erratum recorded (coverage run=0 / coverage report --fail-under=84=2 / --fail-under=0=0), evidence bytes untouched; reviewer independently reproduced the 0/2/0 triple with coverage 7.12.0 in %TEMP%", "blocking": false},
+    {"id": "F-03", "level": "P3", "round": 1, "source": "reviewer_report.md finding F-03 + reviewer_report_r2.md section 8 row F-03", "title": "binding.json 19 pins: 9 DRIFT / 10 MATCH with line-level drift in REMEDIATION_REGISTER.md", "disposition": "CLOSED in r2: pin_drift recorded as erratum, pin table NOT rewritten; drift_ids identical to r1 (register x5 + closure decision x3 + iso_cli_before x1); ALL 50 pinned lines still verbatim on disk. READING MUST BE TIMESTAMPED — see the timepoint note below.", "blocking": false},
+    {"id": "F-04", "level": "P3", "round": 1, "source": "reviewer_report.md finding F-04 + reviewer_report_r2.md section 8 row F-04", "title": "C1b artifact (mtime 00:04:17, post-freeze) listed in the 'before oracle freeze' table", "disposition": "CLOSED in r2: timing correction appended, registered as a post-freeze artifact, 'ran before freeze' not asserted; mtimes re-measured by the reviewer", "blocking": false},
+    {"id": "F-05", "level": "P3", "round": 1, "source": "reviewer_report.md finding F-05 + reviewer_report_r2.md section 8 row F-05", "title": "handoff table claimed report_SA-DEFECT.md:165 was corrected although the pin MATCHes and the bytes never changed", "disposition": "CLOSED in r2: wording corrected to 'correction carried by this card's oracle sec5 / decision sec1; sealed bytes untouched'; pin re-computed 26047 B / 374a5770... == pin, L165 verbatim unchanged", "blocking": false},
+    {"id": "F-06", "level": "P3", "round": 1, "source": "reviewer_report.md finding F-06 + reviewer_report_r2.md section 8 row F-06", "title": "decision.md sec5 family grep line list omits tests/test_publication_pipeline.py:315 (comment line)", "disposition": "DISPOSITION RECORDED AT THE WRONG LOCATION -> escalated as N-02 (P3). Entity facts are true (8 files / 15 lines; 87,315,332,360); sec5 itself still lists only 87,332,360 and cannot be amended (inside the append-only r1 prefix). r1's original ask was 'list 315 OR note that comment lines were excluded'; the actual landing is in sec7.5/commands/handoff only.", "blocking": false},
+    {"id": "F-07", "level": "P3", "round": 1, "source": "reviewer_report.md finding F-07 + reviewer_report_r2.md section 8 row F-07", "title": "r1 first-round GREEN probe bytes were overwritten by the final round's same-name file", "disposition": "CLOSED in r2: disclosure appended + new rule 'rename-archive before any same-name overwrite'; mtime re-measured (00:14:27 < 00:32:41); archived artifacts on disk and marked NOT as evidence", "blocking": false},
+    {"id": "F-08", "level": "P3", "round": 1, "source": "reviewer_report.md finding F-08 + reviewer_report_r2.md section 8 row F-08 and section 4 MUT-C", "title": "frozen mutation matrix had M-1/M-2 but no 'neutralize without catch' arm (would be rc=0 with no product text, in {0,2} yet breaching G-2)", "disposition": "CLOSED in r2: supplementary arm run (4f9d7803... -> help/h/validate/version all 0, no product text, no 'Exception ignored', 4 failed / 5 passed); frozen M-1/M-2 and oracle sec4 byte-identical", "blocking": false}
+  ],
+  "carried_findings_counts": "P1=0 (F-01 closed in round 2); carried open: P2=1 (N-01), P3=1 (N-02); r1 P3 dispositions carried: F-02..F-08 (7/7, F-06 -> N-02)",
+  "pin_reading_timepoint_note": {
+    "must_be_timestamped": true,
+    "text": "r2's 10 MATCH / 9 DRIFT are readings from around 22:03 (archived in evidence/rgm2/pins_r2.json; drift_ids identical to r1's partition). The reviewer's 22:38 on-disk reading = 8 MATCH / 11 DRIFT; the 2 extra are OWNER_DECISIONS.md (externally appended at 22:15:34) and REMEDIATION_REGISTER.md (re-appended at 22:13:25), both AFTER the r2 recomputation. All 50 pinned lines are still verbatim on disk (register delta=+3, closure delta=0, OWNER_DECISIONS delta=0).",
+    "source": "reviewer_report_r2.md line 197 (informational, explicitly NOT a defect of this card)",
+    "disposition": "carried for the parent: any later review quoting pin numbers MUST state the timepoint; no action required from this card"
+  },
+  "blocked_by": [],
+  "unverified": [
+    "1. family 8-file regression 64 passed / 48 subtests was re-run by NEITHER r2 NOR this round-2 review (tempfile/tmp_path denied by the sandbox): the reviewer independently reproduced the root cause — tempfile.mkdtemp() creates the directory, but writing a file into it raises PermissionError: [Errno 13] (also in a pure python process); tests/conftest.py _isolate_publication_registry is tmp_path_factory.mktemp. What can be carried is only byte-level verification of r1's 5 family_* artifacts (before/after/final_raw.txt, compare.txt, compare_v1testfile.txt — all hit in r1's MANIFEST 57/57) plus static disjointness (grep of the 8 family files shows 0 hits for --help/-h). NOT proven: 're-running in this session yields 64/48'.",
+    "2. per-module coverage gate revenue_forecast.py >= 60% NOT re-measured (r1's 73% depends on in-process main() coverage, unrunnable here): only the rc semantics of F-02 (0/2/0) were independently verified; r1's 73% subset was NOT re-run and r2's 38% subset was NOT adopted as a gate result (the card states it is incomparable and makes no gate claim; its `coverage combine` rc=1 failure is honestly archived).",
+    "3. Linux/macOS broken-pipe exit codes NOT tested (disclosed by the card; copied verbatim by the review).",
+    "4. SystemExit-in-main combinations other than --help/-h NOT enumerated (e.g. parser.exit(status) with a non-0/2 code); the mapping int->original / None->0 / otherwise->2 was read in source but only argparse's actual 0/2 were exercised.",
+    "5. broken pipe on the stderr sink itself NOT constructed (oracle sec6 explicitly lists it as a non-goal).",
+    "6. `git apply` for real inside the repository was NOT executed (only --check; the actual --unidiff-zero apply ran in an isolated copy).",
+    "7. r2's archived reading (pins_r2.json 10/9) cannot be reproduced verbatim at the reviewer's timepoint — only the archive plus mtimes establish it as the truth at that time.",
+    "8. The review did NOT replicate the tree-sha algorithm of production_zero_write_*.txt (the card does not give the manifest): substituted by `git diff HEAD --name-only` non-.planning = 0 + production CLI sha == pin + the new test absent from the production tree.",
+    "9. The review did NOT use `git status` (forbidden by the card's discipline), therefore it did not re-check the card's mention of '2 pre-existing untracked items'."
+  ],
+  "unverified_pre_landing_implementation_side": [
+    "family 8-file regression not re-run in r2 (tempfile/tmp_path denied by this sandbox); r1's byte-level 64/48 evidence carried forward plus the static argument that the family never invokes --help/-h",
+    "per-module coverage gate >=60% not re-measured in r2 (tests calling main() in-process cannot run here); r1's 73% neither overturned nor re-confirmed",
+    "Linux/macOS broken-pipe codes untested",
+    "SystemExit-in-main combinations other than --help/-h not enumerated",
+    "stderr sink broken-pipe not constructed (oracle sec6 non-goal)"
+  ],
+  "unverified_note": "the 9-item list above is the verbatim item-by-item transcription of reviewer_report_r2.md section 13 (lines 201-211); the implementer's own 5-item list is preserved untouched in unverified_pre_landing_implementation_side",
+  "not_done": [
+    "did not modify oracle.md / oracle.sha256",
+    "did not modify the r1 reviewer report or its sha sidecar",
+    "did not rewrite binding.json, evidence/pins_freeze.txt or any evidence/rgm/** r1 byte",
+    "did not write to REMEDIATION_REGISTER.md / progress.md / findings.md / task_plan.md",
+    "did not set status to accepted, did not sign on behalf of a reviewer, did not promote anything",
+    "performed no git write commands (add/commit/checkout/stash/restore/reset)",
+    "no network access"
+  ],
+  "not_done_at_carrier_landing": [
+    "did not modify reviewer_report.md / reviewer_report.sha256 (round-1 carrier, 0 bytes written)",
+    "did not modify reviewer_report_r2.md / reviewer_report_r2.sha256 (round-2 carrier, 0 bytes written)",
+    "did not modify oracle.md / oracle.sha256 / binding.json / changes.diff / decision.md / handoff.md / commands.md / DELIVERABLES.sha256 / evidence/MANIFEST.sha256 / evidence/** / evidence/rgm/** / evidence/rgm2/** / harness/** / iso/** / recovery.md",
+    "did not write the five plan files (progress.md / findings.md / task_plan.md and siblings) — those fold into the parent",
+    "did not touch any other card",
+    "did not adjudicate any downgrade of N-01 to P3 (authority: parent / merge batch)",
+    "did not promote anything (no production closure)",
+    "did not run `git status` (forbidden in this repo); only `git -c core.quotepath=false diff HEAD --name-only` (read-only)",
+    "performed no git write command; no network access; ran no tests"
+  ],
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent)",
+    "write_surface": "exactly 3 files, all inside this attempt: review.md (new), handoff.json (status face only), evidence/WC-4-RC120/qualification.json (new; directory created)",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "verdict_author": "独立复审工位 (round-2 independent reviewer) — in reviewer_report_r2.md line 232, not in any file this pass wrote",
+    "bookkeeping_transcription_adds_no_acceptance_of_its_own": true,
+    "handoff_pre_image": {"bytes": 6575, "sha256": "19a2969e237c8b5abd18518653c97744d6d4f60be4c04746dac974f4e3c75e9d", "status_at_pre_image": "review_pending"},
+    "git": "no git write operation; only `git -c core.quotepath=false diff HEAD --name-only` (read-only) — non-.planning count checked at the end of this pass",
+    "network": "none",
+    "tests": "none run",
+    "git_status": "not used (forbidden by this repo's discipline)",
+    "review_reports_bytes_written": 0,
+    "existing_carrier_bytes_written": 0
+  },
+  "files_and_hashes": {
+    "review.md": {"state": "created (did not exist before this pass)", "note": "its own sha256/bytes are reported in the pass result (self-hash cannot be embedded)"},
+    "handoff.json": {"state": "status face transcribed", "sha256_before": "19a2969e237c8b5abd18518653c97744d6d4f60be4c04746dac974f4e3c75e9d", "bytes_before": 6575, "note": "post-write sha256/bytes and json re-parse reported in the pass result"},
+    "qualification.json": {"state": "created", "path": "evidence/WC-4-RC120/qualification.json", "note": "its own sha256/bytes are reported in the pass result"},
+    "read_only_untouched": ["reviewer_report.md", "reviewer_report.sha256", "reviewer_report_r2.md", "reviewer_report_r2.sha256", "oracle.md", "oracle.sha256", "binding.json", "changes.diff", "decision.md", "handoff.md", "commands.md", "DELIVERABLES.sha256", "recovery.md", "evidence/MANIFEST.sha256", "evidence/pins_freeze.txt", "evidence/** (all pre-existing)", "harness/**", "iso/**"]
+  }
+}

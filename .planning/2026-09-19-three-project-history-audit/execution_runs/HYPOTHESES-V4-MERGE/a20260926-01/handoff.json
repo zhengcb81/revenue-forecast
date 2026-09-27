@@ -1,0 +1,202 @@
+{
+  "station": "execution_runs/HYPOTHESES-V4-MERGE/a20260926-01",
+  "role": "implementer_version_merge",
+  "attempt_id": "a20260926-01",
+  "generated_by": "implementer (编排层派单 · 版本裁并)",
+  "is_a_decision": false,
+  "is_an_approval": false,
+  "statement": "hypotheses_v4.json 是版本合并件（v2 ⊕ v3 ⊕ 封盘），不是裁决件：不产生 I-11-B 的 ACCEPT、不解除 OPEN-2、不放行任何参数、不代签。",
+
+  "authorized_by": "既有 `hypotheses_v2.json` 与本 v3 在下标 0 分歧待裁并",
+  "authorized_by_source": {
+    "dispatch": "编排层派单 · 会话 session-19074bf0-0205-4315-af73-9db57597275a",
+    "registration_item_on_disk": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/registration.md L177 登记项 #3 `V2-V3-DIVERGENCE`",
+    "registration_item_verbatim": "3. **`V2-V3-DIVERGENCE`**：既存 `execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json` 已把下标 `0`（`H-CN-ZIJIN-SEG-01`）改为 `approved_frozen` 并写入 `decision_sha256 = 4d4ee106…`。本工位按派单以**封盘原件**为 `supersedes` 基线，**未合并 v2 的改动**，故下标 `0` 在 v3 中 = 封盘原字节 ⇒ **v2 与 v3 在下标 0 上分歧**。这属编排层裁并范围，**本工位不合并不回改**。",
+    "json_side_of_same_item": "OPEN2-C2-REGISTRATION/a20260926-01/handoff.json L221（registered_findings_not_amending_any_file 第 3 条）+ L266 next_action ③「V2-V3-DIVERGENCE（下标 0 的两个并存版本）需编排层裁并」",
+    "authorized_by_verbatim_on_disk": false,
+    "authorized_by_note": "派单给出的逐字串「既有 `hypotheses_v2.json` 与本 v3 在下标 0 分歧待裁并」在盘上检索不到（检索面：计划根 *.md/*.json、OPEN2-C2-REGISTRATION/*、仓库根 *.md）；语义唯一对应物 = 上列 registration.md L177 登记项 #3。此处两个表述都登记，不把派单转述冒充盘上逐字（见 merge_report.md §⑥ 登记 1）。"
+  },
+
+  "divergence_resolved": true,
+  "divergence": {
+    "what": "v2 与 v3 各自独立 supersede 同一封盘原件，导致下标 [0] 分歧；按「最高修订件生效」读 v3 会让 C1（approved_frozen=1）静默消失",
+    "orthogonal": true,
+    "same_field_conflicts": [],
+    "fail_closed_triggered": false,
+    "fail_closed_rule": "oracle.md §5：v2/v3 在同一 index × 同一字段路径取值不同 ⇒ 判 blocked 并输出逐字段冲突表；实测冲突表为空，故未触发",
+    "resolution": "[0]←v2、[1]/[2]←v3、[3..7]←封盘（逐字节）"
+  },
+
+  "source_versions": {
+    "sealed_original": {
+      "file": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+      "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+      "bytes": 51697,
+      "modified_indices": []
+    },
+    "hypotheses_v2": {
+      "file": "execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json",
+      "sha256": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859",
+      "bytes": 55213,
+      "modified_indices": [0],
+      "supersedes_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28"
+    },
+    "hypotheses_v3": {
+      "file": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json",
+      "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+      "bytes": 61231,
+      "modified_indices": [1, 2],
+      "supersedes_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28"
+    },
+    "validator": {
+      "file": "execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py",
+      "sha256": "cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac",
+      "bytes": 28549,
+      "usage": "只调 validate()；PYTHONDONTWRITEBYTECODE=1 + python -X utf8 -B；未执行 main()；未写 validation_report.json / ascii log"
+    },
+    "all_unchanged_at_closeout": true
+  },
+
+  "index_sources": {
+    "0": "hypotheses_v2.json (state / state_reason / decision.decision / decision.reason / decision.decision_sha256；唯一差异 = provenance 块)",
+    "1": "hypotheses_v3.json (整条逐字节)",
+    "2": "hypotheses_v3.json (整条逐字节)",
+    "3": "sealed_original (逐字节)",
+    "4": "sealed_original (逐字节)",
+    "5": "sealed_original (逐字节)",
+    "6": "sealed_original (逐字节)",
+    "7": "sealed_original (逐字节)"
+  },
+
+  "hypotheses_v4": {
+    "file": "execution_runs/HYPOTHESES-V4-MERGE/a20260926-01/hypotheses_v4.json",
+    "sha256": "ebf6fa4e2f708c397165127926475d5426afbdef0d93864a795a8640029c4654",
+    "bytes": 68565,
+    "file_shape": "与三份源同形的 8 元素 JSON 数组；provenance 附在下标 0 条目内（数组无顶层伴随键，沿用 I11A-HYP-APPROVE / OPEN2-C2-REGISTRATION 先例）",
+    "encoding": "UTF-8 无 BOM（首三字节 91,10,32）、全文 CR=0、尾随 \\n、写后 json.load 重解析通过（8 元素）且再序列化逐字节相同",
+    "new_file_sha256_in_file": null,
+    "new_file_sha256_note": "自指不可自证；实测值 = 本字段 hypotheses_v4.sha256（本工位写后外部复算）",
+    "modified_indices": [0, 1, 2],
+    "unchanged_indices": [3, 4, 5, 6, 7],
+    "element_sha256": {
+      "v4": [
+        "aaffb000cebe8e7253c43046430bc5214e564708910511d96acae777a530ad43",
+        "3bacd67710a3d652e95cd2447e40f8081fe818c9352e3ab0af6b6020ce95d1a0",
+        "31976c09946c12d00042c2b6fad42d52196e7340b16f237f007be0f911252474",
+        "21a04c35f082d367b8bf8863ab29eba3f798ef2984cf066318d1dde37020c7f5",
+        "850bac6249e328233fbc63bebc82850a67e4ceba25c2811d9bd4e90a2f2612f0",
+        "81d8486573d11f257daebeb646cfcf720d7b3b7e45c78a8ed13420bbc4529e13",
+        "b70d11245125141ab1e3c7b9e26e305b95eea90783f89832c3ce5ff76a0d6d89",
+        "b29e46e7e60cbf1740fa775ab9f7d2f8700c13df9f8696fc3c8367b9e635ee20"
+      ],
+      "byte_identity_1_2_vs_v3": true,
+      "byte_identity_3_7_vs_base": true,
+      "index0_equals_v2_outside_provenance": true
+    }
+  },
+
+  "c1_preserved": true,
+  "c1_detail": "v4 中 state=approved_frozen 恰好 1 条 = 下标 0 H-CN-ZIJIN-SEG-01，同条 decision.decision=approved_frozen、decision.decision_sha256=4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f；下标 1/2 的 state 仍为 pending_professional_decision、decision.decision 仍为 pending（未升级）",
+
+  "c2_registration_preserved": true,
+  "c2_detail": "下标 1 additional_parameters=2、下标 2 additional_parameters=3（既有 1 + 新 2）；四个新 parameter_id 各出现一次：ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027、ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027、ZIJIN_MINERAL_ZINC_SALEABLE_VOLUME_FY2027、ZIJIN_MINERAL_SILVER_SALEABLE_VOLUME_FY2027；全文件 parameter_id = 18 个、零重复；low/base/high 全 null、released 全 false（违规数 0）；两个 _PLACEHOLDER parameter_id 原样",
+
+  "decision_sha256s_retained": {
+    "index_0": "4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f",
+    "index_1": "1a7838a1c48ffbdd176e8f7cf445e64f80d99efa269e69a312c20ab332addb55",
+    "index_2": "1a7838a1c48ffbdd176e8f7cf445e64f80d99efa269e69a312c20ab332addb55",
+    "distinct_values_in_file": [
+      "4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f",
+      "1a7838a1c48ffbdd176e8f7cf445e64f80d99efa269e69a312c20ab332addb55"
+    ],
+    "both_retained": true
+  },
+
+  "oracle": {
+    "file": "execution_runs/HYPOTHESES-V4-MERGE/a20260926-01/oracle.md",
+    "sha256_frozen": "0549211ae5ae02c83a4aeb494ae9148b2b2f3fb9fbefaeaf82e2f3d60d7cf7b5",
+    "bytes": 14815,
+    "frozen_before_any_output_write": true,
+    "edited_after_freeze": false
+  },
+
+  "validator_results": {
+    "invocation": "PYTHONDONTWRITEBYTECODE=1 python -X utf8 -B -（脚本经 stdin；只调 validate()；未跑 main()）",
+    "baseline_sealed": {"hypotheses": 8, "errors": 0, "rc": 0},
+    "hypotheses_v4": {"hypotheses": 8, "errors": 0, "rc": 0},
+    "report_files_written": false,
+    "sealed_pycache_mtime_unchanged": ["2026-09-20 04:16:53", "2026-09-20 03:45:14", "2026-09-20 03:36:31"]
+  },
+
+  "red_green_mutations": {
+    "rc_convention": "rc=0 = 绿（检查全过）；rc!=0 = 红（变异被抓）；变异在内存施加、不落盘、无第 5 个文件",
+    "green_baseline": {"id": "NONE", "checks": "CHK-C1/CHK-C2/CHK-BYTE/CHK-DSHA/CHK-ID/CHK-PROV/CHK-RELEASE 全过", "raw_rc": 0, "validate_errors": 0},
+    "mutations": [
+      {"id": "M1", "mutation": "把 v4[0] 整条换回封盘原条目（state 退回 pending_professional_decision、decision_sha256=null）", "designated": "CHK-C1", "result": "red", "raw_rc": 1, "validate_errors": 0, "also_failed": ["CHK-DSHA", "CHK-PROV"]},
+      {"id": "M2", "mutation": "删掉 v4[1] 的 2 条 additional_parameters", "designated": "CHK-C2", "result": "red", "raw_rc": 1, "validate_errors": 0},
+      {"id": "M3", "mutation": "v4[5].state_reason 末尾加 1 字节", "designated": "CHK-BYTE", "result": "red", "raw_rc": 1, "validate_errors": 0},
+      {"id": "M4", "mutation": "v4[0].decision.decision_sha256 = null（state 仍 approved_frozen）", "designated": "validate()", "result": "red", "raw_rc": 1, "validate_errors": 1, "validate_rc": 1, "code": "E_STATE_APPROVED_BY_IMPLEMENTER"},
+      {"id": "M5", "mutation": "v4[2].decision.decision_sha256 换成 4d4ee106…", "designated": "CHK-DSHA", "result": "red", "raw_rc": 1, "validate_errors": 0}
+    ],
+    "required_three_raw_rc": [1, 1, 1],
+    "missed_mutations": 0,
+    "predeclared_note": "M1/M2/M3/M5 的红由本 oracle 判据给出（validate() 不校验来源下标与 provenance，实测仍 errors=0，与 oracle §6 预先声明一致）；M4 必须由 validate() 自己判红，实测判红"
+  },
+
+  "fail_closed": {
+    "triggered": false,
+    "conflict_table": [],
+    "rule": "oracle.md §5 —— v2/v3 同一 index × 同一字段路径冲突 ⇒ blocked + 逐字段冲突表；实测改动集合 {0} ∩ {1,2} = ∅"
+  },
+
+  "releases_nothing": true,
+  "release_state": {"low_base_high_all_null": true, "released_all_false": true, "placeholder_ids_intact": true, "release_violations": []},
+  "blocked_items_closed": [],
+  "open2_lifted": false,
+  "i11b_accept_produced": false,
+  "threshold_basis_changed": false,
+  "model_cards_changed": false,
+  "signatures_made": [],
+
+  "written_files": [
+    "execution_runs/HYPOTHESES-V4-MERGE/a20260926-01/oracle.md",
+    "execution_runs/HYPOTHESES-V4-MERGE/a20260926-01/hypotheses_v4.json",
+    "execution_runs/HYPOTHESES-V4-MERGE/a20260926-01/merge_report.md",
+    "execution_runs/HYPOTHESES-V4-MERGE/a20260926-01/handoff.json"
+  ],
+  "written_files_count": 4,
+  "write_surface": "仅上述 4 件（全在 .planning 内）；变异与校验脚本均经 stdin 执行，未产生第 5 个文件、未落任何临时副本",
+
+  "git_diff_non_planning": 0,
+  "git_diff_observed": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "total": 3829,
+    "non_planning": 0,
+    "git_status_command_run": false,
+    "git_writes_performed": false,
+    "git_mutating_commands_run": [],
+    "note": "本工位 4 件为未跟踪新路径，不进 git diff HEAD（git ls-files --others --exclude-standard 已核）"
+  },
+  "network_requests_made": 0,
+  "planning_five_files_written": 0,
+  "product_files_written": 0,
+
+  "boundary_attestation": {
+    "sealed_v2_v3_bytes_changed": false,
+    "sealed_closeout_sha": {
+      "sealed_original": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+      "hypotheses_v2": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859",
+      "hypotheses_v3": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+      "validate_hypotheses_py": "cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac"
+    },
+    "all_match_pre_work_values": true
+  },
+
+  "registered_findings_not_amending_any_file": [
+    "AUTHORIZED-BY-VERBATIM-MISMATCH：派单给的 authorized_by 逐字串盘上检索不到；盘上唯一对应物是 OPEN2-C2-REGISTRATION registration.md L177 登记项 #3。两者都登记，不冒充。",
+    "V2-INLINE-ARRAY-LAYOUT：hypotheses_v2.json 只在自己的 provenance 块内用行内短数组；v4 用规范序列化，仅排版差异、零值差异（index0 剥 provenance 后字节相同）。",
+    "沿用 OPEN2-C2-REGISTRATION 的 EV-16-SHA-MISMATCH / PLACEHOLDER-ID-NOT-ON-DISK / I10B-SECTION-BINDING / ARITH-INCONSISTENCY-1 等登记：本工位不重开、不回改、不关闭。"
+  ],
+
+  "next_action": "编排层/owner：① 用 hypotheses_v4.json（sha ebf6fa4e…）作为后续读取基线，替代 v2/v3 的二选一读法；② v4 不是批准件 —— I-11-B 的 ACCEPT、OPEN-2 解除、任何 BLOCKED-* 关闭仍须独立 reviewer 裁定；③ 四个新参数仍不可用（low/base/high=null、released=false），放行须另行授权；④ 登记项 AUTHORIZED-BY-VERBATIM-MISMATCH 请 owner 决定是否要求补一份逐字登记。"
+}

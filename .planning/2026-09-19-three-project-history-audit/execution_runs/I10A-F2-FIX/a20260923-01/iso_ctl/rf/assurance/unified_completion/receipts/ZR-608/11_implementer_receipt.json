@@ -1,0 +1,97 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "073fd4d20eac6d66369fe5728e2d36087b4636f5",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "d549709616d8852cb55803403e7df12c5359a48ff43e3255bd9f0c36934fb965",
+  "commands": [
+    {
+      "command": "RED 探针：grep reconcil|fallback|modeled|gap scripts → gap 仅模板/文档词汇（generate_input_template status=data_gap）、无层级对账机制——真实产品缺口",
+      "exit_code": 0,
+      "result": "G1 真实产品缺口：asset→segment→group 对账零实现"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr608_reconciliation.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed（C1 容差门 4 + C2 诚实 fallback 3 + C3 防伪收入 4）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "685 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+11 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/reconciliation.py tests/test_zr608_reconciliation.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件各函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 135 files"
+    },
+    {
+      "command": "git diff 073fd4d 3081967 --stat",
+      "exit_code": 0,
+      "result": "16 文件 +497：reconciliation.py（新 107 行）+ test_zr608_reconciliation.py（新 116 行）+ ZR-607 closure 文件（流程偏差：ZR-607 closure commit 未独立落地，closure 文件被合入本 commit——详见 notes）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T06:40:00+00:00",
+  "findings": [
+    {
+      "detail": "reconcile_layer 容差门：|diff| ≤ max(1.0,|ref|)×tol → reconciled_modeled，否则 gap（诚实 fallback 不伪造差值）。fallback_segment_listing：分部并列 + 未闭合差值显式 gap（绝不进 segment_total）。gap_report：资产贡献 NaN/inf 拒绝（finite_number——防伪收入），缺资产=gap 非 0 收入。",
+      "id": "ZR608-IMPL-001",
+      "severity": "info",
+      "title": "容差门 + 诚实 fallback + 防伪收入"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/reconciliation.py：reconcile_layer（容差门：reconciled_modeled vs gap）+ fallback_segment_listing（分部并列 + 显式 gap + closed 标记）+ gap_report（资产贡献有限性 + 缺资产=gap）。零产品硬编码。",
+    "files": [
+      "revenue-forecast/scripts/reconciliation.py",
+      "revenue-forecast/tests/test_zr608_reconciliation.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-608/**"
+    ]
+  },
+  "implementer": "zr608-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 3081967；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=d53deb10（00_wu_card.md，hashlib 注入）。",
+    "流程偏差记录：ZR-607 closure commit 未独立落地（pwsh-39 后台提交被后续 ZR-608 提交合并）——ZR-607 closure 文件（receipts/ZR-607/**、state.json、README）随本 commit 3081967 一并入库；机器状态与 receipt 链条正确（ZR-607 accepted + closure→ZR-608 已在 state.json），仅 git 历史粒度不干净。后续 closure 提交需确认前一 closure commit 落地后再 stage 新卡文件。",
+    "独立 reviewer 待派出（reviewer-zr608-independent）。",
+    "注：base_triplet.revenue=073fd4d 为 ZR-607 实现 commit（ZR-607 closure 无独立 commit）。"
+  ],
+  "objective": "F2 asset→segment→group reconciliation：容差内才标 modeled、不闭合回退分部并列 gap、禁止产量×价格伪收入。",
+  "plan_sha256": "d53deb108901f13ecd227a4acacfd9b5cac117539e14746aca0f06de642e7f41",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "30819677646e4d6cc3620a4b46d2bd017b81eb60",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/reconciliation.py（新）、tests/test_zr608_reconciliation.py（新 11 tests）；revenue 侧 receipts/ZR-608/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/reconciliation.py",
+    "revenue-forecast/tests/test_zr608_reconciliation.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-608/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-608"
+}

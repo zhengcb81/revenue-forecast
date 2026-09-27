@@ -1,0 +1,138 @@
+{
+ "artifact": "historical_mapping_probe_result",
+ "historical_mapping_probe": true,
+ "label": "historical_mapping_probe",
+ "NOT_a_three_scenario_forecast": true,
+ "accuracy_evidence": false,
+ "case_id": "XM-EV-M03",
+ "variant": "mut_swap_ids",
+ "started_at_local": "2026-09-24T06:09:08",
+ "finished_at_local": "2026-09-24T06:09:08",
+ "product_entry": "iso/rf/scripts/forecast/segments.py calculate_model_path",
+ "model_id": "unit_sales",
+ "period": "FY2025",
+ "scenarios_run": [
+  "low",
+  "base",
+  "high"
+ ],
+ "scenario_values_identical_by_design": "historical_mapping_probe: disclosed historical parameters at identical values on low/base/high (card action 4); mapping verification ONLY",
+ "counts_measured": {
+  "calculate_registered_model_calls": 0,
+  "calculate_model_path_calls": 0
+ },
+ "counts_expected": {
+  "calculate_registered_model_calls": 3,
+  "instances": 1,
+  "scenarios_per_instance": 3
+ },
+ "counts_ok": false,
+ "call_log": [],
+ "instances": [
+  {
+   "instance": "smart_ev_segment",
+   "cn": "智能電動汽車及AI等創新業務",
+   "parameter_index": {
+    "P-HK-SMART_EV_SEGMENT-QTY": {
+     "value": 411082.0,
+     "unit": "輛",
+     "dimension": "quantity",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMART_EV_SEGMENT-PRICE": {
+     "value": 251171.0,
+     "unit": "元/輛",
+     "dimension": "revenue_per_unit",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMART_EV_SEGMENT-T": {
+     "value": 1.0,
+     "unit": "ratio",
+     "dimension": "ratio",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMART_EV_SEGMENT-OTHER": {
+     "value": 2800000000.0,
+     "unit": "元",
+     "dimension": "revenue",
+     "period": "FY2025",
+     "scenario": "all"
+    }
+   },
+   "driver_parameter_ids": {
+    "units": [
+     "P-HK-SMART_EV_SEGMENT-PRICE"
+    ],
+    "unit_revenue": [
+     "P-HK-SMART_EV_SEGMENT-QTY"
+    ],
+    "timing_factor": [
+     "P-HK-SMART_EV_SEGMENT-T"
+    ],
+    "other_revenue": [
+     "P-HK-SMART_EV_SEGMENT-OTHER"
+    ]
+   },
+   "per_scenario": {
+    "low": {
+     "ok": false,
+     "error_type": "ForecastInputError",
+     "error": "dimension mismatch: P-HK-SMART_EV_SEGMENT-PRICE must be quantity for unit_sales.units"
+    },
+    "base": {
+     "ok": false,
+     "error_type": "ForecastInputError",
+     "error": "dimension mismatch: P-HK-SMART_EV_SEGMENT-PRICE must be quantity for unit_sales.units"
+    },
+    "high": {
+     "ok": false,
+     "error_type": "ForecastInputError",
+     "error": "dimension mismatch: P-HK-SMART_EV_SEGMENT-PRICE must be quantity for unit_sales.units"
+    }
+   },
+   "driver_values_sample": null,
+   "low_base_high_identical": false,
+   "frozen_expected_revenue": 106051877022.0,
+   "matches_frozen_expected": false
+  }
+ ],
+ "product_errors": [
+  {
+   "instance": "smart_ev_segment",
+   "scenario": "low",
+   "error_type": "ForecastInputError",
+   "error": "dimension mismatch: P-HK-SMART_EV_SEGMENT-PRICE must be quantity for unit_sales.units"
+  },
+  {
+   "instance": "smart_ev_segment",
+   "scenario": "base",
+   "error_type": "ForecastInputError",
+   "error": "dimension mismatch: P-HK-SMART_EV_SEGMENT-PRICE must be quantity for unit_sales.units"
+  },
+  {
+   "instance": "smart_ev_segment",
+   "scenario": "high",
+   "error_type": "ForecastInputError",
+   "error": "dimension mismatch: P-HK-SMART_EV_SEGMENT-PRICE must be quantity for unit_sales.units"
+  }
+ ],
+ "refusals": [
+  "smart_ev_segment/low:ForecastInputError",
+  "smart_ev_segment/base:ForecastInputError",
+  "smart_ev_segment/high:ForecastInputError"
+ ],
+ "mismatches": [
+  {
+   "instance": "smart_ev_segment",
+   "expected": 106051877022.0,
+   "measured": [],
+   "variant": "mut_swap_ids"
+  }
+ ],
+ "business_verdict": "correctly_rejected",
+ "expected_business_result": "positive: outputs equal frozen hand values and low/base/high identical",
+ "raw_rc": 2
+}

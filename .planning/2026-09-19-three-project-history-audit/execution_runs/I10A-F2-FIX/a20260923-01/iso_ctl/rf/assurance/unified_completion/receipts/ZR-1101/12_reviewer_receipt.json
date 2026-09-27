@@ -1,0 +1,86 @@
+{
+ "unit": "ZR-1101",
+ "reviewer": "reviewer-zr1101-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "59994dc0164aa78e9adf208551ad61ae2e00b7e98b0a33f4233d93b8fdc38280",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr1101_closure_gate.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "6 passed in 13.95s (C1 full chain + no wrong closure; C2 canonical + 40-hex; C3 coverage + tool surface; C4 timestamps; C5 triplet objects)"
+  },
+  {
+   "command": "independent probes: state counts, receipt naming tolerance, canonical spot check, git objects, HEAD chain",
+   "exit_code": 0,
+   "result": "accepted=109 (ZR-1101 triplet_green under review); 0 known_gap/blocked misclosures; 0 missing reviewer/closure.by/next; 0 future-dated; ZR-805 14_closure naming + ZR-601 early no-base_triplet tolerated; 16/16 sampled receipts canonical; revenue bba1fe09/filing 5a1c18f5/wiki 35a1103a all valid objects; base=8dd4582b parent"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=bba1fe09328455fd2e707ce9b63822cec8ac6fdd; chain bba1fe0->cdda9ef->8dd4582 consistent"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "canonical 59994dc0 matches; result_triplet.revenue=bba1fe09328455fd2e707ce9b63822cec8ac6fdd char-exact"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "8dd4582bc143079d9a6ef6c2a25f87b2c2195f36",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "bba1fe09328455fd2e707ce9b63822cec8ac6fdd",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR1101-REV-001",
+   "severity": "info",
+   "title": "复放 6 passed 13.95s",
+   "detail": "无 skipped/deselected，与声明一致。"
+  },
+  {
+   "id": "ZR1101-REV-002",
+   "severity": "info",
+   "title": "state 109 accepted 无误关",
+   "detail": "known_gap/blocked_reason=0，缺 reviewer/closure.by/next=0，future-dated=0。"
+  },
+  {
+   "id": "ZR1101-REV-003",
+   "severity": "info",
+   "title": "receipts 命名/早期容忍/canonical 抽查",
+   "detail": "ZR-805 14_closure；ZR-601 无 base_triplet；16/16 canonical 一致。"
+  },
+  {
+   "id": "ZR1101-REV-004",
+   "severity": "info",
+   "title": "三仓 git 对象有效",
+   "detail": "revenue/filing/wiki 均 cat-file -e 通过。"
+  },
+  {
+   "id": "ZR1101-REV-005",
+   "severity": "info",
+   "title": "产品零改动 + HEAD 正确",
+   "detail": "scripts/ 空；HEAD=bba1fe09 与声明一致。"
+  },
+  {
+   "id": "ZR1101-REV-006",
+   "severity": "info",
+   "title": "receipt canonical 自洽",
+   "detail": "59994dc0 重算一致。"
+  },
+  {
+   "id": "ZR1101-REV-007",
+   "severity": "info",
+   "title": "工具面完整",
+   "detail": "verify_closure_ledger 可导入；wu_card 存在。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T19:35:26+00:00",
+ "canonical_hash": "154d06b93e0e30980fba2ae81e9e4d3317dfc9634bd49a8780db1263c93d9c0e"
+}

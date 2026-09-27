@@ -1,0 +1,38 @@
+﻿{
+  "label": "mutB_oracle",
+  "cases": 61,
+  "narrow_must_failed": [
+    "N23-auth-break-comma",
+    "N24-auth-break-semicolon",
+    "N25-auth-break-ampersand",
+    "N26-auth-break-pipe",
+    "N27-auth-break-dquote",
+    "N28-auth-break-squote"
+  ],
+  "keep_must_failed": [],
+  "registered_open": [
+    "R3a-two-token-then-wrap",
+    "R3b-quoted-two-token",
+    "R7a-line3-bare-credential",
+    "R7b-prebreak-cr",
+    "R7c-prebreak-vtab",
+    "R7d-prebreak-ff",
+    "R3c-two-token-then-wrap-marker"
+  ],
+  "registered_open_confirmed": [
+    "R3a-two-token-then-wrap",
+    "R3b-quoted-two-token",
+    "R7a-line3-bare-credential",
+    "R7b-prebreak-cr",
+    "R7c-prebreak-vtab",
+    "R7d-prebreak-ff",
+    "R3c-two-token-then-wrap-marker"
+  ],
+  "verdict": "RED-as-expected-pre-fix"
+}
+ORACLE-FAIL N23-auth-break-comma expected 'Authorization: <redacted>' got 'Authorization: <redacted>\n,ghp_ZQ7ReviewerFakeCredential0123456789'
+ORACLE-FAIL N24-auth-break-semicolon expected 'Authorization: <redacted>' got 'Authorization: <redacted>\n;ghp_ZQ7ReviewerFakeCredential0123456789'
+ORACLE-FAIL N25-auth-break-ampersand expected 'Authorization: <redacted>' got 'Authorization: <redacted>\n&ghp_ZQ7ReviewerFakeCredential0123456789'
+ORACLE-FAIL N26-auth-break-pipe expected 'Authorization: <redacted>' got 'Authorization: <redacted>\n|ghp_ZQ7ReviewerFakeCredential0123456789'
+ORACLE-FAIL N27-auth-break-dquote expected 'Authorization: <redacted>' got 'Authorization: <redacted>\n"ghp_ZQ7ReviewerFakeCredential0123456789'
+ORACLE-FAIL N28-auth-break-squote expected 'Authorization: <redacted>' got "Authorization: <redacted>\n'ghp_ZQ7ReviewerFakeCredential0123456789"

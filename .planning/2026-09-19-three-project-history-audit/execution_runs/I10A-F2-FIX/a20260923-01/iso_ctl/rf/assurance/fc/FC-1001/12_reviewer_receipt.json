@@ -1,0 +1,106 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1001",
+  "implementer_receipt_sha256": "7acb14864b5095f1b564f4129f054b51847c8b273c1e1c3b27f135a27894ede9",
+  "reviewer_identity": "reviewer-fc1001-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "c79d7cccbbc4f84f2b8c4e9d9ad780e52e0305ff",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "result_triplet": {
+    "revenue": "e54d9e3051e4fce12d12335b7a09b9649cc467f3",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "replayed_command_ids": [
+    "fc1001.diff_scope",
+    "fc1001.ruff_changed_files",
+    "fc1001.focused_fixture_tests",
+    "fc505.focused_chain_tests",
+    "fc1001.mutation_m_loc",
+    "fc1001.mutation_m_hash",
+    "fc1001.full_regression",
+    "fc1001.sanity_no_real_paths",
+    "fc1001.sanity_production_isolation",
+    "fc1001.base_failure_proof"
+  ],
+  "scenario_results": [
+    {
+      "id": "AR-01",
+      "status": "passed",
+      "note": "v2 preset artifacts bind (reusable=True, schema_version column+metadata stamped)"
+    },
+    {
+      "id": "SAFE-04",
+      "status": "passed",
+      "note": "5 corruption variants fail closed; M-loc/M-hash killed"
+    },
+    {
+      "id": "EX-07",
+      "status": "passed",
+      "note": "three-root resolve from one tmp catalog; full suite 411/0"
+    },
+    {
+      "id": "PORT-03",
+      "status": "passed",
+      "note": "manifest deterministic, no real paths"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "M-loc",
+      "killed": true,
+      "note": "location_status 'quarantined'->'active' FAILS [location_inactive] (assert 0>=1)"
+    },
+    {
+      "id": "M-hash",
+      "killed": true,
+      "note": "tamper->pass FAILS [hash_mismatch] (reusable=True) — both reverted, 9 passed, clean"
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true,
+    "note": "all changed files construct tmp-only catalogs; caveat F3 background writer"
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "note": "zero production files changed; diff = allowlist exactly"
+  },
+  "rollback": {
+    "required": false,
+    "passed": true
+  },
+  "unresolved_findings": [
+    {
+      "id": "F1",
+      "severity": "low",
+      "finding": "11_implementer_receipt.json not in result commit (untracked); plan_sha256 not reproducible — seal via docs commit (FC-505 pattern)"
+    },
+    {
+      "id": "F2",
+      "severity": "info",
+      "finding": ".fcap-review/filing-fetch junction broken (dangling fc-905b-fil) — environmental, 4 passed in sibling-correct worktree"
+    },
+    {
+      "id": "F3",
+      "severity": "info",
+      "finding": "background process writes production company-wiki catalog during review (verified 90s idle mtime change); not FC-1001"
+    },
+    {
+      "id": "F4",
+      "severity": "info",
+      "finding": "hardcoded as_of_date=2026-08-12 in new tests — verified date-stable (one-directional published>as_of check)"
+    },
+    {
+      "id": "F5",
+      "severity": "info",
+      "finding": "FC-505 file lost trailing newline (cosmetic); removed imports genuinely unused"
+    }
+  ],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-12T02:25:37Z",
+  "reviewer_receipt_sha256": "bea4e2e5e1b764caae3212b06c5aa1aaedd174b1818620e3721131d81bb4a5f6",
+  "hash_note": "recomputed by implementer over sealed file (reviewer-claimed 157896d1 did not match its own JSON under any canonical form)"
+}

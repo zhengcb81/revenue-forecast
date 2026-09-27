@@ -1,0 +1,79 @@
+{
+  "card_id": "M-T-REVIEW",
+  "attempt_id": "a20260923-01",
+  "note": "All commands are READ-ONLY over reviewed attempts and production; writes land only under this attempt. No card harness was executed (formula cards need no new run per the dispatch; behavior spot = internal consistency of recorded evidence).",
+  "units": [
+    {
+      "id": "C1-list-attempts",
+      "argv": ["pwsh", "-Command", "Get-ChildItem -Directory execution_runs | filter M*/T1*; list per-attempt top files"],
+      "cwd": "<PLAN>",
+      "raw_exit_code": 0,
+      "expected_exit_codes": {"ok": 0},
+      "result": "31 M card dirs (each 1 attempt a20260919-01; M01-M04-PROPAGATE a20260922-01), 3 AUX batch dirs, 20 T1 dirs / 22 attempts"
+    },
+    {
+      "id": "C2-build-inventory",
+      "argv": ["pwsh", "-File", "scripts/build_inventory.ps1"],
+      "cwd": "<ATTEMPT>",
+      "raw_exit_code": 0,
+      "expected_exit_codes": {"ok": 0},
+      "result": "evidence/inventory.json + evidence/per_card_checks.json (56 check rows)"
+    },
+    {
+      "id": "C3-analyze-checks",
+      "argv": ["pwsh", "-File", "scripts/analyze_checks.ps1"],
+      "cwd": "<ATTEMPT>",
+      "raw_exit_code": 0,
+      "result": "evidence/digests.txt + evidence/clause_compare.json + ASCII summary table"
+    },
+    {
+      "id": "C4-hash-reattribution",
+      "argv": ["pwsh", "-File", "scripts/hash_reattribution.ps1"],
+      "cwd": "<ATTEMPT>",
+      "raw_exit_code": 0,
+      "result": "evidence/hash_reattribution.json; expected-output clause PASS M01-M28 (M29-M31 spec==oracle, handoff.positive_expected absent); CRLF hypothesis formed"
+    },
+    {
+      "id": "C5-crlf-hypothesis-test",
+      "argv": ["pwsh", "-Command", "re-hash M01 input/oracle/cases under CRLF re-serialization vs handoff pins"],
+      "cwd": "<PLAN>",
+      "raw_exit_code": 0,
+      "result": "EXACT match for all three pins (22910b38…/cb60e60d…/0e1f55af…) => fleet pins are CRLF-form; disk LF-normalized"
+    },
+    {
+      "id": "C6-pin-resolution",
+      "argv": ["pwsh", "-File", "scripts/pin_resolution.ps1"],
+      "cwd": "<ATTEMPT>",
+      "raw_exit_code": 0,
+      "result": "evidence/pin_resolution.json; pins resolved+reproduced for all 31 M attempts except M08 cases.json and M13 cases.json (both reconciled against documented annotation-repack ledgers); changes.diff touches no product paths anywhere; negatives 11/11 (M03 13/13, M04 15/15); mass 09-20 mtime rewrite confirmed"
+    },
+    {
+      "id": "C7-m21-m31-finals-grep",
+      "argv": ["pwsh", "-Command", "per M21..M31: grep review.md verdict text, hash verdict_transcription*/verdict_confirmation* proofs, read handoff.status"],
+      "cwd": "<PLAN>",
+      "raw_exit_code": 0,
+      "result": "all 11 finals present (verdict text + transcription proof shas + status=accepted_scoped)"
+    },
+    {
+      "id": "C8-m08-m13-cases-provenance",
+      "argv": ["pwsh", "-Command", "locate raw vs pinned hash strings inside M08/M13 attempts; read docfix_r3.json / cases_annotation_repack.json"],
+      "cwd": "<PLAN>",
+      "raw_exit_code": 0,
+      "result": "M08 cases.json = documented r3 annotation repack (117/117 leaf values unchanged; current CRLF-form hash recorded in docfix_r3 ledger); M13 cases.json = documented annotation repack (current hash recorded in source_manifest/run_result/oracle.md; pre-image preserved in recovery/before_fixes)"
+    },
+    {
+      "id": "C9-m05m07-r2-state-check",
+      "argv": ["pwsh", "-Command", "grep M05/M06/M07 review.md for r2 point-review verdict"],
+      "cwd": "<PLAN>",
+      "raw_exit_code": 0,
+      "result": "no r2 point review landed; last recorded state 'formula = review_pending (point review of r2)' while handoff.status=accepted_scoped => finding F-MT-04/05; this review supplies the missing r2-state acceptance at sampled depth"
+    },
+    {
+      "id": "C10-t1-5-product-spot",
+      "argv": ["pwsh", "-Command", "Select-String tests/*.py for model_extensions regression references"],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+      "raw_exit_code": 0,
+      "result": "product tests referencing model_extensions exist (tests/test_industry_end_to_end.py:19 imports test_model_extensions); commit-green claim itself not re-run (carried)"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "d7e10f265cb5f984f430008f6399ff12abf0b300",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "9a1dfeffdd15ab1f31987169751a48217c0bd62367244ded1107dda3bec82543",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "150 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 20 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli legacy-gate",
+      "exit_code": 1,
+      "result": "verdict=callers_found; LEGACY-CALLER-001 registered (quality.yml, successor CA-201)"
+    }
+  ],
+  "created_at_utc": "2026-08-14T06:05:00Z",
+  "implementer": "ca109-implementer",
+  "kind": "implementer",
+  "mutation": {
+    "details": "unguarded reference flagged; migration-reader references become findings (never silent pass); real workflow caller registered; findings carry CA-201 successors.",
+    "id": "CA-109-M-legacy-gate",
+    "killed": true
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "red_evidence": [
+    {
+      "description": "quality.yml:46-47 calls verify_closure_ledger.py in CI (legacy gate semantics). See receipts/CA-109/red/RED.md.",
+      "id": "RED-A",
+      "status": "red_proved"
+    },
+    {
+      "description": "old gate accepted_fcs=66 vs Closure 2.0 'incomplete' divergence. See receipts/CA-109/red/RED.md.",
+      "id": "RED-B",
+      "status": "red_proved"
+    }
+  ],
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "d7e10f265cb5f984f430008f6399ff12abf0b300",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "review": {
+    "status": "pending"
+  },
+  "revision": "r1",
+  "rollback": {
+    "note": "Additive assurance code; rollback = revert commit. No CI modified.",
+    "proved": true,
+    "required": false
+  },
+  "scenario_note": "Governance tooling card; no 197-scenario mapping.",
+  "scenario_results": [],
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "summary": "CA-109 (legacy gate isolation + compatible output): implemented uc/legacy_gate.py + CLI legacy-gate. Scans the three repos' gate surface (.github/.githooks/tools/scripts/e2e) for legacy closure-tool references, excluding the legacy tools' own files and their tests; every remaining reference becomes a registered P2 finding with successor CA-201 (CI rewiring is CA-201 scope per the frozen plan — nothing silently passes). Real scan registers LEGACY-CALLER-001: revenue .github/workflows/quality.yml:46-47 runs verify_closure_ledger.py against the old plan ledger in CI — a production gate caller of legacy semantics; verdict=callers_found (honest). RED evidence: the old gate reports accepted_fcs=66 while Closure 2.0 declares the old plan incomplete with a complete reason set (26 contradicted / 5 pending / 197 unsatisfied / R9 frozen). Historical ledgers remain read-only display. 5 new tests. Full suite: 150 passed. Product code/config/CI/catalog/roots: zero writes (CI rewiring deferred to CA-201 by design).",
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/uc/legacy_gate.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_legacy_gate.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-109/*"
+  ],
+  "unit": "CA-109"
+}

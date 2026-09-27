@@ -176,3 +176,11 @@ Status after r2: `formula` = blocked, `disclosure_adaptation` = unmapped, `accur
 - **F-M08-R3（P3）**：四份 `oracle.md` 已被 r3 re-render（hash 已变），请以新 hash 作为当前值。
 
 **未验证：** r3 re-render 脚本本身；`OWNER_DECISIONS.md §十` 其它裁定项的落地；`validation.json` 重跑后是否新增其它 errors；73/73、61/61 计数；`M05-M08` 批目录与 HEAD 逐文件比对。
+
+## 独立验收裁定（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅 r3 态、仅锚 9ec65295…。T1-15 三步（owner 裁读法 C → 索引四处更正留原文+前像 hash → 同 code_root 复跑 [50.0]/11/11）核验闭环，采信。
+- carried：F-MT-02/03；handoff.reviewer_status 的「transcription pending」与 T1-15 的「已转录」口径不一致 —— 以本块 + T1-15 P-6 复跑件为准对齐（字段陈旧，非内容缺陷）；cases.json r3 注释性 repack（117/117 前存叶子零改动，docfix_r3 账本在案）；披露影响区间（2.36–12.64 亿元）属 D 域，本次不裁定。
+- 本次抽验：[50] 三方一致；负例 11/11；九件齐；pin 复现（含 repack 账本对账）；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "step-3 re-review confirmed by M-T-REVIEW (N=1) 2026-09-23: accepted_scoped (formula only); verdict transcription complete (T1-15 P-6 carrier)", carrier: "…/reviews/M08.md + acceptance_rulings.md#M08", implementer_signed: false, supersedes: "step-3 re-review … transcription pending" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 d370a6ad3354060e9de60a66ca34d71360f75f7dcad7e344ec84187db0ea855a over 16570 bytes, verified post-install as sha256 of the first 16570 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = 9422277cc06bc3f5cca381c9312ab2ff2ed5e531ed0827dde5e62a8be97a6cc0 = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 1192 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M08.md (sha256 fafd821b33d02f10d915a08c8120932979b173146e417e85098a33811227c20f) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

@@ -1,0 +1,88 @@
+===== oracle_wc4 :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\WC-4-RC120\a20260923-01\oracle.md :: full file pin :: sha256=7fecfaea02f62b3740122a2c79ff5f7194bdd29505696cb0e8c38cdce1cb8be8 :: bytes=5166 =====
+
+===== frozen_domain_i09a_f12_row :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-A\a20260919-01\decision.md :: lines 410-425 :: sha256=94a27b8ae31cb7467bf9910714e90777a1cec7790e3d6bca364c9e4062db8a57 =====
+  410: `rc` 一栏 = **producer 进程退出码**；「可见版本」= 读者进程判定。**A** = 本卡冻结预期（提案）；**E** = 本次实测（`probe_commit`/`probe_registry_fault`）。`n/a` = 本卡未实测（I-09-C 范围），**不得**当作通过。
+  411: 
+  412: | # | 故障点 | 冻结预期（A） | rc（A） | 恢复动作（A） | 本卡实测（E） |
+  413: |---|---|---|---|---|---|
+  414: | F1 | prepare 前（输入强验证失败） | provider 调用 0、registry 新增 0、无成员 | 2 | 无（fail closed） | 未构造（I-08-A A-D4 已覆盖同类） |
+  415: | F2 | prepare 中（载荷/身份计算失败） | 同上 | 2 | 无 | n/a |
+  416: | F3 | JSON 落盘失败（P5-a） | 无成员可见、无 committed 行 | 2 | 重试写成员 | ✅ c02（rc=2；但**现状**仍留 1 行 → 见 F9） |
+  417: | F4 | Markdown 落盘失败（P5-b） | 同上（成员不齐 ⇒ 不可提交） | 2 | 重试写 Markdown | ✅ c03（rc=2；**现状**读者仍见 commit_qualified=1） |
+  418: | F5 | registry 锁获取失败 | 无 committed 行 | 2 | 超时后重试 | n/a（锁未实现） |
+  419: | F6 | registry append 前崩溃 | 无 committed 行；成员成为**孤儿**（不可消费） | — (kill) | 孤儿清理或重写 | n/a（I-09-C） |
+  420: | F7 | append 写了一半（torn line） | 链校验失败 ⇒ 整个 registry 不可读（fail closed） | 2 | 人工介入/从备份修复 | n/a（现状 `_read_entries` 会报错） |
+  421: | F8 | append + fsync 完成、回报前崩溃 | **已 committed**；重试必须得到**同一**逻辑 commit | — (kill) | 幂等重试 | 部分：N-8 显示现状无身份 ⇒ 重试不可判定 |
+  422: | F9 | 成员已落盘、registry append 失败 | 无 committed 行（成员不可见） | 2 | 重试 append | ✅ c04b（rc=2、无输出、0 行） |
+  423: | F10 | commit 可见后、返回前崩溃 | 已 committed；读者可见；调用者未知 | n/a | 幂等重试（同 `publication_id`） | n/a（I-09-C） |
+  424: | F11 | 恢复过程再崩溃 | 补偿行半写 ⇒ 链断 ⇒ registry 不可读 | — | 重入恢复（先查是否已补偿） | n/a（I-09-C） |
+  425: | F12 | stdout 输送失败（管道关闭/终端退出） | **无保证**（不可达保证，D-3 C-12 明列） | 0 或 2 | 无 | 未构造（不可承诺） |
+
+===== owner_decisions_sec22 :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\OWNER_DECISIONS.md :: lines 473-477 :: sha256=c13feca44a052f8238b32ab7db5de367859ddfc78cd0cc0b1bdefb80659bc6b7 =====
+  473: ## 二十二、【#8 single_owner 守卫 owner 裁定：「守卫收窄」】2026-09-23 深夜
+  474: 
+  475: **owner 原话**（对 RF-STEP9-TRIAGE #8 三选一的答复）：「**守卫收窄**」。
+  476: 
+  477: **效力**：single_owner 守卫（only_canonical_client_may_use_subprocess_download_adapters）按**其自身声明语义收窄射程**（download adapters only，非全局 subprocess）——(2) 案；**不加白名单条目**（(1) 案否）、**不动 revenue_core/晋升面字节**（(3) 案否）。前置纪律=先核判据实现证过宽+**防旁路反例必证**（规范客户端×下载适配器强制仍全覆盖：非规范客户端/非适配器路径的 subprocess 下载反例必须仍红）。TRIAGE 卡 STOP 解除、按此执行、并批入合并落地批。
+
+===== owner_decisions_sec23 :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\OWNER_DECISIONS.md :: lines 481-486 :: sha256=c13feca44a052f8238b32ab7db5de367859ddfc78cd0cc0b1bdefb80659bc6b7 =====
+  481: ## 二十三、【Owner 双票：REM-24「1，追认」+ F12「2，记为待修」】2026-09-23 深夜
+  482: 
+  483: 1. **REM-24 = 追认**（owner 原话「1，追认」）：M14 OQ-03 的 **D/E 层按现状签收**——内部冲减**不需要**单独 signed 约定，以 owner 本次追认收口、进 signed 记录；REGISTRY-CLOSURE 的 OWNER-BLOCKED 改判解除、REM-24=CLOSED（owner-ratified）。
+  484: 2. **F12 = 记为待修**（owner 原话「2，记为待修」）：冻结 rc 数值域**维持 {0,2} 不改**（第一选项口径）；实测 **rc=120（finalization flush 失败自报）= 记为待修产品缺陷** → WC-4 卡激活派出（修产品使 flush 失败路径落域内=rc=2+错误文本保留；SA-DEFECT 的机制错述「断言在返回后开火」随其更正为「finalization flush 失败」）。
+  485: 
+  486: **owner 票面再次清零**（D2/#8/REM-24/F12 四票全落）——owner 队列余=既册老项（OQ-03 本体其余面/31/31 追认/countersign）+外部3，均不阻流水线。
+
+===== register_sec84_header :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\REMEDIATION_REGISTER.md :: lines 1655-1658 :: sha256=2e9f3a4041b91cbdc7176891d70ff0113fa197c85dcce67c96cd4701b7756699 =====
+ 1655: ## 八十四、【REGISTRY-CLOSURE 处置汇总（AUDIT-GOAL ③ 残留排干：10 零处置行 + 10 隐式行 + 16 登记未修 + REM-78/79 编号注记 + REM-95/96）】2026-09-23 深夜
+ 1656: 
+ 1657: > 卡指定代号「七十六」；因父侧 §76 起各节已占号，本节取下一空号——沿 §35 纪律「引用带节标题消歧」，不重蹈 §11–§20 重复编号缺陷。载体=`execution_runs\REGISTRY-CLOSURE\a20260923-01`（oracle 冻结 `16e4f2a0…` / decision / changes.diff / evidence）；本节=**全部 42 条处置的唯一行级回填**（历史行一字未改，append-only）。
+ 1658: > **计数**：CLOSED-NOW 16｜SUPERSEDED 13｜WORK-CARD 11（WC-1..6）｜OWNER-BLOCKED 2｜EXTERNAL-BLOCKED 1。class 细目与逐字行文见 decision.md。
+
+===== register_sec84_f12_row :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\REMEDIATION_REGISTER.md :: lines 1701-1701 :: sha256=2e9f3a4041b91cbdc7176891d70ff0113fa197c85dcce67c96cd4701b7756699 =====
+ 1701: | **F12** | **WORK-CARD WC-4 + OWNER-BLOCKED（数值域半）**：产品半（断管退出归一化至 {0,2}，随修 probe_f12.py:65）立 WC-4；冻结数值域 {0,2} vs 实测 120 的勘误=owner/I-09-A 权。机制勘误：「断言在返回后开火」措辞不准——实为 CLI finalization flush 失败（Errno 22）自报 rc=120。 |
+
+===== register_sec84_wc4_spec :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\REMEDIATION_REGISTER.md :: lines 1716-1716 :: sha256=2e9f3a4041b91cbdc7176891d70ff0113fa197c85dcce67c96cd4701b7756699 =====
+ 1716: - **WC-4｜F12 产品修**：断管退出归一化至 {0,2} + probe_f12.py:65（前置=owner 数值域裁）。
+
+===== register_owner_vote_pending :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\REMEDIATION_REGISTER.md :: lines 1741-1741 :: sha256=2e9f3a4041b91cbdc7176891d70ff0113fa197c85dcce67c96cd4701b7756699 =====
+ 1741: - **§八十四撞号更正**：REGISTRY 汇总=八十四、守卫收窄=八十五（本系更正注记入各节头）；**owner 待票新增 2**：①REM-24（M14 OQ-03 D/E 追认与否——E1E7 载体明文「由 owner 决定/只登记不代裁」）②F12 数值域勘误（终态 rc 冻结集 {0,2} vs 实测 finalization flush rc=120——按哪口径裁）。
+
+===== register_sec87_owner_vote_landed :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\REMEDIATION_REGISTER.md :: lines 1745-1749 :: sha256=2e9f3a4041b91cbdc7176891d70ff0113fa197c85dcce67c96cd4701b7756699 =====
+ 1745: ## 八十七、【双票落地：REM-24 追认闭 + F12 记为待修（WC-4 激活）】2026-09-23 深夜
+ 1746: 
+ 1747: - REM-24 = **CLOSED(owner-ratified 追认)**——D/E 层现状签收、免单独 signed 约定（§23 原话入档）；REGISTRY 的 OWNER-BLOCKED 计数-1。
+ 1748: - F12 数值域半 = **已裁**：{0,2} 维持、rc=120 待修 → **WC-4-RC120 卡已派**（flush 失败路径落域 rc=2+文本保留、SA-DEFECT 机制措辞随修更正、正常路径行为不变证明+红绿变异）。
+ 1749: - REGISTRY-CLOSURE 的两张 owner 票全部落笔 ⇒ 其42 行处置中 OWNER-BLOCKED 仅剩1（若 REM-24 算闭）——owner 票面=0 待决（既册老项除外）。
+
+===== registry_closure_c16_row :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\REGISTRY-CLOSURE\a20260923-01\decision.md :: lines 64-64 :: sha256=a68ed77fe922f768a845a6497000de93baab922f1d2128ffe9bbc5727fe79353 =====
+   64: | C16 | **F12**（断管归一化；frozen rc∈{0,2} vs 实测 **120**）双轨 | **WORK-CARD**（WC-4）+ **OWNER-BLOCKED**（数值域半） | 实测双半皆未执行：I-09-B 无产品修（其 attempt 无 changes.diff、零断管内容）；I-09-A/owner 数值域勘误未记（errata.md E-1…E-13 不涉 F12；OWNER_DECISIONS 0 命中）。路由：**WC-4**（产品半：断管退出归一化 + 随修 `probe_f12.py:65` C.stderr 误标）+ **owner**（半：冻结数值域 {0,2} vs 120 的勘误/判据决定——I-09-A oracle 权）。机制勘误：SA-DEFECT「断言在返回后开火」措辞不准——实为产品 CLI 解释器 finalization 段 stdio flush 失败（Errno 22）自报 rc=120（I-09-C handoff:54 原文）。 | ✅（双路由） |
+
+===== registry_closure_wc4_spec :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\REGISTRY-CLOSURE\a20260923-01\decision.md :: lines 93-94 :: sha256=a68ed77fe922f768a845a6497000de93baab922f1d2128ffe9bbc5727fe79353 =====
+   93: **WC-4｜F12 断管归一化产品修（+probe_f12.py:65）**
+   94: 产品 CLI broken-pipe 退出归一化至冻结域 {0,2}（Errno 22 finalization flush 路径）；随修 probe_f12.py:65 C.stderr 误标；**前置**=owner 对数值域勘误的裁决（见路由）。
+
+===== registry_closure_owner_route :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\REGISTRY-CLOSURE\a20260923-01\decision.md :: lines 104-104 :: sha256=a68ed77fe922f768a845a6497000de93baab922f1d2128ffe9bbc5727fe79353 =====
+  104: **owner 路由（2）**：①REM-24——M14 OQ-03 D/E 层追认（内部冲减是否需 signed 约定）；②F12——冻结数值域 {0,2} vs 实测 120 的 oracle 勘误/判据决定。
+
+===== sa_defect_wrong_mechanism :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\AUDIT-GOAL\a20260923-01\evidence\report_SA-DEFECT.md :: lines 165-165 :: sha256=374a57700884a6ee427286a2e27c544746dfe004dd260739dcabdceba74d37df =====
+  165: | F12（断管归一化） | 断言在返回后开火 | REG:592 | OPEN-ROUTED（OPEN_IN_ACCEPTED_SCOPE；双轨归属 I-09-A 勘误 + I-09-B 产品修） | progress:1006 | n/a |
+
+===== i09c_handoff_f12_attribution :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-C\a20260922-01\handoff.json :: lines 54-54 :: sha256=fa5c456b6a817ef7ba6a520bdc2e500d48488efc5214fb9e3d64591e80d17d83 =====
+   54:     "F-1 (RETAINED FAILURE, status @ accepted_scoped landing = OPEN_IN_ACCEPTED_SCOPE): F12_stdout_pipe — frozen I-09-A F12 row records rc {0 or 2}; measured raw=120. Attribution chain: probe_f12.py A(pipe with reader)=0, B(pipe with no reader)=120, C(stdout to file)=0 under identical harness; harness reserves only 4242 and never rewrites child rc => rc=120 is the PRODUCT CLI's own exit code (CPython stdio flush failure at finalization on a broken stdout pipe; stderr shows 'Exception ignored on flushing sys.stdout: OSError [Errno 22]'). Frozen expectation NOT amended, case NOT rerun to green (verdict all_ok=false). Substance of F12 ('无保证 / unreachable guarantee') is confirmed by exactly this unpredictability; no cross-terminal rollback is claimed. Disposition: if the frozen numeric range must hold, normalizing broken-pipe handling is a PRODUCT fix for I-09-B; amending the frozen numeric range is an owner / I-09-A oracle-erratum decision. Neither was done here. [status @ accepted_scoped landing: OPEN_IN_ACCEPTED_SCOPE — stays OPEN inside the accepted scope, per carrier scope item 2 (reviewer_report.md line 14); see accepted_scope_carry / SC-2].",
+
+===== i09c_pipe_controls_mechanism :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-C\a20260922-01\evidence\cases\F12_stdout_pipe\pipe_controls.json :: lines 22-22 :: sha256=8e5dd6bc50818c40af6cb07bfbc56329f7b19b6fdf51841f189b1dc45060f246 =====
+   22:     "mechanism": "rc=120 is CPython's standard-stream flush failure exit status, raised in the CHILD (product CLI) at interpreter finalization when sys.stdout has no reader; the harness only records Popen.returncode (GetExitCodeProcess) and never rewrites it.",
+
+===== i09c_reviewer_f12 :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-C\a20260922-01\reviewer_report.md :: lines 46-46 :: sha256=673c10bc24a2f093e152f464a6fe6ce9c6b0c07a8d1bc1a087b41362f1929b94 =====
+   46: - **裁定 (i) 归属是否可靠？—— 是。** A/B/C 单变量对照 + harness 不改写子进程 rc + B 的 stderr 机制证据（CPython finalization stdio flush），足以把 rc=120 归到产品 CLI 自身的退出码。**一处小瑕疵（不改裁定）**：`probe_f12.py` 第 65 行把 B 阶段的 `err` 变量误记为 C 的 stderr 字段（C 分支未单独取 stderr），故 `pipe_controls.json` 里 C 的 stderr 文案实为 B 的陈旧值；**A/B/C 三个 returncode 均各自分支正确采集，归属结论不受影响**。
+
+===== i09c_probe_f12_line65 :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-C\a20260922-01\harness\probe_f12.py :: lines 64-66 :: sha256=0f6e7aa4b6be03ab1f98b61a82c572158210a927cafa1ba71bcc6f36fe9d12a6 =====
+   64:         "stdout_file": str(out_file),
+   65:         "stderr": (err or b"").decode("utf-8", "replace")[:200],
+   66:     }
+
+===== prod_cli_before :: C:\Users\郑曾波\Projects\revenue-forecast\scripts\revenue_forecast.py :: full file pin :: sha256=2a2dfede7941b0fac972d802d25eb71f798c1ebdb83226bbf8528481b9669e36 :: bytes=5333 =====
+
+===== iso_cli_before :: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\WC-4-RC120\a20260923-01\iso\rf\scripts\revenue_forecast.py :: full file pin :: sha256=2a2dfede7941b0fac972d802d25eb71f798c1ebdb83226bbf8528481b9669e36 :: bytes=5333 =====
+

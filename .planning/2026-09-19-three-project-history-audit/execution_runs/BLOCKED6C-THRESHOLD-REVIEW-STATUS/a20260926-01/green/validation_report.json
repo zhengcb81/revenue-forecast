@@ -1,0 +1,391 @@
+{
+ "attempt_id": "a20260919-01",
+ "generated_by": "tools/validate_hypotheses.py",
+ "oracle_sections": [
+  "3.1 O-8",
+  "3.2 O-9",
+  "3.3 O-10/O-11",
+  "3.4 O-12/O-13",
+  "3.5 O-14",
+  "4 O-15/O-16",
+  "7 counterexamples"
+ ],
+ "counts": {
+  "hypotheses": 8,
+  "states": {
+   "pending_professional_decision": 6,
+   "unquantified": 2
+  },
+  "source_types": {
+   "company_disclosure": 7,
+   "management_target": 1
+  },
+  "independence_groups": {
+   "ZIJIN-AR2025": 4,
+   "ZIJIN-MGMT-PLAN-2026": 1,
+   "MSFT-10K-FY2026": 3
+  },
+  "threshold_bases": {
+   "arithmetic_identity": 4,
+   "professional_judgement_required": 3,
+   "disclosure_definition": 1
+  },
+  "refuted_by_total": 24,
+  "falsifier_candidates_total": 16,
+  "parameters": 14,
+  "cited_values_total": 46,
+  "documents": 3,
+  "sources_not_readable": 1,
+  "threshold_review_statuses": {
+   "not_reviewed": 8
+  },
+  "threshold_review_status_defaulted": 8,
+  "threshold_reviewability_unusable": 3
+ },
+ "positive_case": {
+  "propositions_checked": 8,
+  "errors": [],
+  "verdict": "pass"
+ },
+ "counterexamples": [
+  {
+   "expected_code": "E_EMPTY_FIELD",
+   "note": "empty claim",
+   "observed_codes": [
+    "E_EMPTY_FIELD"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_SOURCE_TYPE_CLOSED",
+   "note": "synthetic source type",
+   "observed_codes": [
+    "E_SOURCE_TYPE_CLOSED"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_BAD_PAGE_BASIS",
+   "note": "printed page basis instead of pdf leaf",
+   "observed_codes": [
+    "E_BAD_PAGE_BASIS"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_MGMT_TARGET_INDEPENDENT",
+   "note": "management target shares the disclosure group",
+   "observed_codes": [
+    "E_MGMT_TARGET_INDEPENDENT"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_UNKNOWN_MODEL",
+   "note": "unregistered model_id",
+   "observed_codes": [
+    "E_UNKNOWN_MODEL"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_UNKNOWN_DRIVER",
+   "note": "driver not in the model card",
+   "observed_codes": [
+    "E_UNKNOWN_DRIVER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_MISSING_FALSIFIER",
+   "note": "falsifier threshold removed",
+   "observed_codes": [
+    "E_MISSING_FALSIFIER",
+    "E_THRESHOLD_BASIS_INCONSISTENT"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_MISSING_REFUTED_BY",
+   "note": "refuted_by removed",
+   "observed_codes": [
+    "E_MISSING_REFUTED_BY"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_NO_DOUBLE_COUNT_RULE",
+   "note": "double count rule removed",
+   "observed_codes": [
+    "E_NO_DOUBLE_COUNT_RULE"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_SOURCE_HASH_MISMATCH",
+   "note": "wrong document hash",
+   "observed_codes": [
+    "E_SOURCE_HASH_MISMATCH"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_ANCHOR_NOT_FOUND",
+   "note": "anchor text absent from the filing",
+   "observed_codes": [
+    "E_ANCHOR_NOT_FOUND"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+   "note": "implementer tries to self-approve",
+   "observed_codes": [
+    "E_STATE_APPROVED_BY_IMPLEMENTER",
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_DUPLICATE_PARAMETER",
+   "note": "same parameter_id, different driver",
+   "observed_codes": [
+    "E_DUPLICATE_PARAMETER",
+    "E_UNKNOWN_DRIVER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_LISTED_VALUE_NOT_IN_EVIDENCE",
+   "note": "cited value absent from evidence",
+   "observed_codes": [
+    "E_ANCHOR_NOT_FOUND",
+    "E_LISTED_VALUE_NOT_IN_EVIDENCE"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+   "note": "approved_frozen with a short invented reviewer name (was accepted before R2)",
+   "observed_codes": [
+    "E_STATE_APPROVED_BY_IMPLEMENTER",
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_THRESHOLD_BASIS_INCONSISTENT",
+   "note": "threshold_basis claims arithmetic_identity for a judgement threshold (was accepted before R2)",
+   "observed_codes": [
+    "E_THRESHOLD_BASIS_INCONSISTENT"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_EMPTY_FIELD",
+   "note": "refuted_by entries are blank but the list is non-empty (was accepted before R2)",
+   "observed_codes": [
+    "E_EMPTY_FIELD"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_CHAIN_END_SEMANTICS",
+   "note": "mechanism chain is placeholder letters (was accepted before R2)",
+   "observed_codes": [
+    "E_CHAIN_END_SEMANTICS"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_OBSERVATION_DATE_UNRESOLVED",
+   "note": "observation_date is a placeholder (was accepted before R2)",
+   "observed_codes": [
+    "E_OBSERVATION_DATE_UNRESOLVED"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_DUPLICATE_PARAMETER",
+   "note": "two propositions share a parameter_id but state different observations (was accepted before R2)",
+   "observed_codes": [
+    "E_DUPLICATE_PARAMETER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_THRESHOLD_BASIS_UNKNOWN",
+   "note": "threshold_basis outside the closed set",
+   "observed_codes": [
+    "E_THRESHOLD_BASIS_UNKNOWN"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
+   "note": "[B6C] threshold_review_status outside the closed set while threshold_basis is present (was accepted before BLOCKED-6c)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_UNKNOWN"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_UNSEALED",
+   "note": "[B6C] threshold_review_status=reviewed with no A-6.3 seal (was accepted before BLOCKED-6c)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_UNSEALED"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+   "note": "[B6C] threshold_basis present, threshold_review_status missing, yet state=approved_frozen (was accepted before BLOCKED-6c)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED",
+   "note": "[B6C] threshold_basis present, threshold_review_status explicitly not_reviewed, yet state=approved_frozen (was accepted before BLOCKED-6c)",
+   "observed_codes": [
+    "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+   ],
+   "rejected": true
+  }
+ ],
+ "counterexample_summary": {
+  "cases": 25,
+  "rejected_as_expected": 25,
+  "accepted_by_mistake": 0
+ },
+ "threshold_reviewability": {
+  "rule": "U-PRIMARY (BLOCKED6C oracle 3.3): usable only when threshold_basis in the closed set, threshold_review_status in {not_reviewed, reviewed}, any reviewed claim carries the A-6.3 seal, and professional_judgement_required / approved_frozen records are actually reviewed; an absent field normalises to the default not_reviewed and is NOT a document error (L230).",
+  "per_hypothesis": [
+   {
+    "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+    "threshold_basis": "arithmetic_identity",
+    "threshold_review_status_present": false,
+    "threshold_review_status_raw": null,
+    "threshold_review_status_effective": "not_reviewed",
+    "defaulted": true,
+    "state": "pending_professional_decision",
+    "usable": true,
+    "reasons": []
+   },
+   {
+    "hypothesis_id": "H-CN-ZIJIN-SEG-02",
+    "threshold_basis": "professional_judgement_required",
+    "threshold_review_status_present": false,
+    "threshold_review_status_raw": null,
+    "threshold_review_status_effective": "not_reviewed",
+    "defaulted": true,
+    "state": "pending_professional_decision",
+    "usable": false,
+    "reasons": [
+     "judgement_not_reviewed"
+    ]
+   },
+   {
+    "hypothesis_id": "H-CN-ZIJIN-VOL-03",
+    "threshold_basis": "arithmetic_identity",
+    "threshold_review_status_present": false,
+    "threshold_review_status_raw": null,
+    "threshold_review_status_effective": "not_reviewed",
+    "defaulted": true,
+    "state": "pending_professional_decision",
+    "usable": true,
+    "reasons": []
+   },
+   {
+    "hypothesis_id": "H-CN-ZIJIN-PLAN-04",
+    "threshold_basis": "professional_judgement_required",
+    "threshold_review_status_present": false,
+    "threshold_review_status_raw": null,
+    "threshold_review_status_effective": "not_reviewed",
+    "defaulted": true,
+    "state": "pending_professional_decision",
+    "usable": false,
+    "reasons": [
+     "judgement_not_reviewed"
+    ]
+   },
+   {
+    "hypothesis_id": "H-CN-ZIJIN-ELIM-05",
+    "threshold_basis": "arithmetic_identity",
+    "threshold_review_status_present": false,
+    "threshold_review_status_raw": null,
+    "threshold_review_status_effective": "not_reviewed",
+    "defaulted": true,
+    "state": "unquantified",
+    "usable": true,
+    "reasons": []
+   },
+   {
+    "hypothesis_id": "H-US-MSFT-SEG-01",
+    "threshold_basis": "arithmetic_identity",
+    "threshold_review_status_present": false,
+    "threshold_review_status_raw": null,
+    "threshold_review_status_effective": "not_reviewed",
+    "defaulted": true,
+    "state": "pending_professional_decision",
+    "usable": true,
+    "reasons": []
+   },
+   {
+    "hypothesis_id": "H-US-MSFT-SEG-02",
+    "threshold_basis": "disclosure_definition",
+    "threshold_review_status_present": false,
+    "threshold_review_status_raw": null,
+    "threshold_review_status_effective": "not_reviewed",
+    "defaulted": true,
+    "state": "unquantified",
+    "usable": true,
+    "reasons": []
+   },
+   {
+    "hypothesis_id": "H-US-MSFT-SEG-03",
+    "threshold_basis": "professional_judgement_required",
+    "threshold_review_status_present": false,
+    "threshold_review_status_raw": null,
+    "threshold_review_status_effective": "not_reviewed",
+    "defaulted": true,
+    "state": "pending_professional_decision",
+    "usable": false,
+    "reasons": [
+     "judgement_not_reviewed"
+    ]
+   }
+  ],
+  "summary": {
+   "records": 8,
+   "usable": 5,
+   "unusable": 3,
+   "unusable_reasons": {
+    "judgement_not_reviewed": 3
+   },
+   "defaulted_status": 8
+  }
+ },
+ "threshold_review_status_schema": {
+  "field": "falsifier.threshold_review_status",
+  "closed_set": [
+   "not_reviewed",
+   "reviewed"
+  ],
+  "default_when_absent": "not_reviewed",
+  "absent_is_document_error": false,
+  "error_codes": [
+   "E_THRESHOLD_REVIEW_STATUS_UNKNOWN",
+   "E_THRESHOLD_REVIEW_STATUS_UNSEALED",
+   "E_THRESHOLD_REVIEW_STATUS_NOT_REVIEWED"
+  ],
+  "fail_closed": "threshold_basis absent OR threshold_review_status absent or not_reviewed ⇒ the threshold does not participate in any judgement (ruling L230); the proposition may still be registered as an observation.",
+  "limitations": "DEC-14: adding these checks and this counterexample suite is NOT a completeness proof. It only pins the behaviours pre-registered in BLOCKED6C oracle sections 3-5 (closed set, default, A-6.3 seal, approved_frozen fail-closed) against CE-22..CE-25; other threshold_review_status defects may still pass undetected."
+ },
+ "qualification_boundary": {
+  "formula": "not_applicable_here (no model is executed by this card)",
+  "disclosure_adaptation": "not_granted by this card (I-10-A owns it)",
+  "accuracy": "not_granted by this card (I-12 owns it)"
+ }
+}

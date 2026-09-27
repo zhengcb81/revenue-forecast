@@ -1,0 +1,168 @@
+{
+  "tool": "audit_manifest_compliance.py",
+  "note": "Retrospective read of the SAME evidence file (nothing is rewritten): the manifest's declared bounds vs what was executed.",
+  "manifest": {
+    "id": "r4-readonly-data-manifest-a05-a06",
+    "status": "NOT APPROVED - awaiting owner confirmation (gate G4 for behaviour beyond --help; gate G7 for the sample list)",
+    "approval": {
+      "by": null,
+      "at": null,
+      "scope_requested": "read-only metadata commands A05-1..A05-5 and A06-1..A06-2, bounded as above"
+    },
+    "declared_commands": [
+      "A05-1",
+      "A05-2",
+      "A05-3",
+      "A05-4",
+      "A05-5",
+      "A06-1",
+      "A06-2"
+    ],
+    "budget_max_invocations": 25,
+    "limit_flag_cap": 50,
+    "stop_rule": "a command returns non-zero -> stop and record; do not retry with different flags"
+  },
+  "run": {
+    "ran_at_utc": "2026-09-16T20:48:14.305241+00:00",
+    "approval_basis": "owner in-session instruction 2026-09-16: \"继续做，直到全部完成\" answering the request to approve the read-only manifest; the writing/network commands in explicitly_excluded stay unapproved and were not run",
+    "executed_results": 10
+  },
+  "per_command": [
+    {
+      "id": "A05-1",
+      "declared_limit": "single invocation",
+      "declared_cap": 1,
+      "invocations": 1,
+      "exit_codes": [
+        0
+      ],
+      "nonzero_invocations": 0
+    },
+    {
+      "id": "A05-2",
+      "declared_limit": "<=5 invocations, --limit <= 50 each (no full scan)",
+      "declared_cap": 5,
+      "invocations": 1,
+      "exit_codes": [
+        0
+      ],
+      "nonzero_invocations": 0
+    },
+    {
+      "id": "A05-3",
+      "declared_limit": "single invocation, bounded output",
+      "declared_cap": 1,
+      "invocations": 1,
+      "exit_codes": [
+        0
+      ],
+      "nonzero_invocations": 0
+    },
+    {
+      "id": "A05-4",
+      "declared_limit": "<= 6 invocations, one per sample",
+      "declared_cap": 6,
+      "invocations": 11,
+      "exit_codes": [
+        0,
+        0
+      ],
+      "nonzero_invocations": 0
+    },
+    {
+      "id": "A05-5",
+      "declared_limit": "<= 6 invocations",
+      "declared_cap": 6,
+      "invocations": 85,
+      "exit_codes": [
+        1,
+        1
+      ],
+      "nonzero_invocations": 85
+    },
+    {
+      "id": "A06-1",
+      "declared_limit": "single invocation",
+      "declared_cap": 1,
+      "invocations": 1,
+      "exit_codes": [
+        0
+      ],
+      "nonzero_invocations": 0
+    },
+    {
+      "id": "A06-2",
+      "declared_limit": "single invocation",
+      "declared_cap": 1,
+      "invocations": 1,
+      "exit_codes": [
+        0
+      ],
+      "nonzero_invocations": 0
+    }
+  ],
+  "extra_commands_not_in_manifest": [
+    {
+      "id": "A05-2b",
+      "argv": [
+        "query",
+        "--document-kind",
+        "annual_report",
+        "--limit",
+        "100"
+      ],
+      "invocations": 1
+    }
+  ],
+  "total_invocations": 102,
+  "violations": [
+    {
+      "kind": "per_command_invocations",
+      "id": "A05-4",
+      "declared": 6,
+      "actual": 11
+    },
+    {
+      "kind": "per_command_invocations",
+      "id": "A05-5",
+      "declared": 6,
+      "actual": 85
+    },
+    {
+      "kind": "stop_rule_retries_after_nonzero",
+      "id": "A05-5",
+      "extra_nonzero_invocations": 84
+    },
+    {
+      "kind": "limit_flag_above_cap",
+      "id": "A05-2b",
+      "declared": 50,
+      "actual": 100
+    },
+    {
+      "kind": "command_not_in_manifest",
+      "id": "A05-2b",
+      "argv": [
+        "query",
+        "--document-kind",
+        "annual_report",
+        "--limit",
+        "100"
+      ],
+      "invocations": 1
+    },
+    {
+      "kind": "total_budget",
+      "declared": 25,
+      "actual": 102
+    }
+  ],
+  "compliant": false,
+  "counts": {
+    "command_not_in_manifest": 1,
+    "limit_flag_above_cap": 1,
+    "per_command_invocations": 2,
+    "stop_rule_retries_after_nonzero": 1,
+    "total_budget": 1
+  }
+}

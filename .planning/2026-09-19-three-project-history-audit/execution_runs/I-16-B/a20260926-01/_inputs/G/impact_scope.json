@@ -1,0 +1,108 @@
+{
+  "card_id": "I-16-A",
+  "attempt_id": "a20260926-01",
+  "purpose": "动作4：部署影响范围清单（具体写入 / 停止重启进程 / 恢复步骤）——本卡只列清单并执行可逆准备，生产变更不执行",
+  "production_change_executed": false,
+  "unauthorized_impact": false,
+  "writes": {
+    "already_written_by_this_card": [
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-16-A/a20260926-01/**",
+        "kind": "本 attempt 目录（oracle/清单/校验/演练/变异/交接）",
+        "product_impact": "无"
+      },
+      {
+        "path": ".planning/…/execution_runs/I-16-A/a20260926-01/snapshot/**",
+        "kind": "可逆准备：三仓 dirty/untracked 层字节快照（读产品 → 写本目录）",
+        "product_impact": "无（产品零写）",
+        "reversal": "删除 snapshot/ 即回到未准备状态"
+      },
+      {
+        "path": ".planning/…/execution_runs/I-16-A/a20260926-01/{_iso_baseline,_mut,drill_db,drill_restore}/**",
+        "kind": "隔离安装副本与隔离恢复演练",
+        "product_impact": "无"
+      }
+    ],
+    "planned_in_deployment_window_NOT_executed_here": [
+      {
+        "target": "C:\\Miniconda\\Lib\\site-packages\\__editable__.company_wiki-0.1.0.pth / company_wiki-0.1.0.dist-info/{direct_url.json,METADATA,RECORD} / __editable__.dayu_agent-0.1.4.pth / __editable___dayu_agent_0_1_4_finder.py / dayu_agent-0.1.4.dist-info/*",
+        "kind": "安装层（editable）写入或重装",
+        "reversible_by": "按 combo_manifest.install 逐文件哈希复原，或 pip install -e 重装后复核哈希"
+      },
+      {
+        "target": "C:\\Miniconda\\Scripts\\dayu-cli.exe / dayu-render.exe / dayu-web.exe / dayu-wechat.exe",
+        "kind": "entry-point shim（RECORD 内含 sha256，可复核）",
+        "reversible_by": "pip 重装生成同名 shim；按 RECORD 校验"
+      },
+      {
+        "target": "revenue-forecast/config/company_wiki.json、revenue-forecast/config/filing_fetch.json、company-wiki/config/source_catalog.yaml、company-wiki/config/source_catalog_worker.yaml",
+        "kind": "config/policy/flags/schema 文件写入",
+        "reversible_by": "本卡 manifest 已记录逐文件 sha256，按记录回写"
+      },
+      {
+        "target": "company-wiki/.source_catalog/catalog.sqlite3（3,055,796,224 B）及 -wal/-shm",
+        "kind": "数据层（如发生迁移/索引重建）",
+        "reversible_by": "迁移前 backup_hook 备份 → restore（演练 R2 已证字节相等）；更高 user_version fail-closed（R3）"
+      },
+      {
+        "target": "company-wiki registry DB（source_registry / question_registry / run_store）",
+        "kind": "registry 自动 bump user_version",
+        "reversible_by": "见 recovery_drill.json R5：registry 无 fail-closed 前向守卫 ⇒ 部署窗口须先备份再开库"
+      },
+      {
+        "target": "company-wiki/config/.source_catalog/worker_state.json、worker_runtime.json、worker_runs.jsonl、worker_control.json",
+        "kind": "worker 状态文件写入（启动/暂停控制）",
+        "reversible_by": "记录部署前 desired_state 原文，恢复时按原文回写；不无条件 resume"
+      },
+      {
+        "target": "raw 层（company-wiki/companies/**/raw、dayu-agent/workspace/portfolio）",
+        "kind": "部署步骤不写；仅 acquisition 追加写",
+        "reversible_by": "本卡零写（J1 证明三仓 dirty 集合与绑定一致）"
+      }
+    ]
+  },
+  "stop_restart": {
+    "current_observed_state": {
+      "source_catalog_worker": "未运行：worker_runtime.json pid=15596 已不存在；worker_status=waiting；heartbeat=2026-08-08T09:41:10Z；worker_control.json 不存在（desired_state 未被本卡改动）",
+      "running_python_processes_observed": "Get-Process 只读可见 10 个 python.exe（多数与本 GUI/工具链同批启动）",
+      "command_line_readable": false,
+      "command_line_block_reason": "Get-CimInstance/Win32_Process 拒绝访问（OpenProcess DENIED）→ 与 I-14-E 同一环境阻断，登记 unverified，不作开工阻断"
+    },
+    "deployment_window_plan": [
+      "1) 记录原 worker 状态与 desired_state 原文（只读）",
+      "2) 若 worker 正在运行：按 card_I-16-B L8 只在明确窗口内 pause（记录意图），不因工具退出无条件 resume",
+      "3) 部署写入（安装层/配置/数据层）",
+      "4) 从实际用户入口复验（属 I-16-B，本卡不执行）",
+      "5) 按记录的 desired_state 恢复 worker；任何 resume 都必须与部署前意图一致",
+      "6) dayu-cli 等 4 个 entry point 为短命令、无常驻，部署后只需 --version 类复验（本卡未执行）"
+    ]
+  },
+  "recovery_steps": [
+    "代码层：git 恢复到 combo_manifest.repos.<RF/CW/DAYU>.head（需要 git 写 ⇒ owner 另批；本卡未执行任何 git 写）",
+    "dirty/untracked 层：用本卡 snapshot/ 逐文件还原（演练 R1：逐文件 sha256 相等）",
+    "安装层：按 combo_manifest.install 的 pth/finder/direct_url/RECORD 哈希复原",
+    "数据层：迁移前备份 → 恢复（演练 R2 字节相等）；更高 user_version → fail-closed 且文件不变（R3）",
+    "registry：部署前先备份（R5 显示 registry 对更高 user_version 无守卫）",
+    "进程层：按部署前记录的 desired_state 恢复；原 paused 任务不因工具退出无条件 resume",
+    "恢复不可证时：STOP 判 blocked（不以关闭严格门回滚）"
+  ],
+  "reversible_preparation_executed": [
+    "三仓 dirty/untracked 层字节快照（snapshot/ + snapshot_manifest.json）",
+    "隔离安装副本（_iso_baseline/artifacts/**）与隔离恢复演练（drill_db/、drill_restore/）",
+    "生产 catalog 只读锚点（size/mtime/sha256/user_version，见 combo_manifest.data_layer）"
+  ],
+  "escalation_to_user": {
+    "triggered": false,
+    "reason": "本卡未遭遇真正未授权影响；若部署窗口需 (a) git 写/提交、(b) 停止他人进程、(c) 改 raw/registry 生产数据、(d) 联网，则停下来向用户报具体请求",
+    "specific_request_if_needed": null
+  },
+  "self_declarations": {
+    "git_status_run": false,
+    "git_writes": 0,
+    "network_used": false,
+    "params_released": false,
+    "writes_outside_planning": 0,
+    "product_repos_writes": 0,
+    "i16b_dispatched": false
+  }
+}

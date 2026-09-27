@@ -1,0 +1,49 @@
+{
+ "artifact": "family_diff_control",
+ "generated_at_local": "2026-09-24T22:12:32",
+ "control_tree": "iso_ctl/rf (pristine product + pristine fixtures)",
+ "control_conditions": "same session, same dir-mode shim, same short temp root",
+ "pytest_raw_rc": 1,
+ "flipped_in_after": [
+  "tests.test_fc1004_platform::test_install_sync_gate_detects_drift",
+  "tests.test_zr804_platform_shape::test_installed_copy_executes_with_canonical_identity[install_root0]",
+  "tests.test_zr804_platform_shape::test_installed_copy_executes_with_canonical_identity[install_root1]",
+  "tests.test_zr907_drift_patrol::test_c3_cli_reports_all_checks",
+  "tests.test_zr907_drift_patrol::test_c3_patrol_core_gates_green"
+ ],
+ "regressed_in_control": [
+  {
+   "id": "tests.test_fc1004_platform::test_install_sync_gate_detects_drift",
+   "before": "passed",
+   "control": "failed",
+   "control_message": "AssertionError: sync failed: \nassert 1 == 0\n +  where 1 = CompletedProcess(args=['C:\\\\Miniconda\\\\python.exe', '-B', 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026...l\\\\Temp\\\\dsh-5SPejJ\\\\p\\\\pytest-of-郑曾波\\\\pytest-3\\\\test_install_sync_gate_detects0\\\\installed'], returncode=1, stdout='').r"
+  },
+  {
+   "id": "tests.test_zr804_platform_shape::test_installed_copy_executes_with_canonical_identity[install_root0]",
+   "before": "passed",
+   "control": "failed",
+   "control_message": "subprocess.TimeoutExpired: Command '['C:\\\\Miniconda\\\\python.exe', 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\I10A-F2-FIX\\\\a20260923-01\\\\iso_ctl\\\\rf\\\\tools\\\\sync_installations.py', '--apply']' timed out after 300 seconds"
+  },
+  {
+   "id": "tests.test_zr804_platform_shape::test_installed_copy_executes_with_canonical_identity[install_root1]",
+   "before": "passed",
+   "control": "failed",
+   "control_message": "subprocess.TimeoutExpired: Command '['C:\\\\Miniconda\\\\python.exe', 'C:\\\\Users\\\\郑曾波\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\I10A-F2-FIX\\\\a20260923-01\\\\iso_ctl\\\\rf\\\\tools\\\\sync_installations.py', '--apply']' timed out after 300 seconds"
+  },
+  {
+   "id": "tests.test_zr907_drift_patrol::test_c3_cli_reports_all_checks",
+   "before": "passed",
+   "control": "failed",
+   "control_message": "AssertionError: assert None\n +  where None = <function search at 0x000002086C9B0D60>('OK\\\\s+installation', 'OK   version\\nFAIL installation\\n     installation sync drift:.py\\n  scripts/fix_hashes.py\\n  scripts/forecast/calc.p...emand.py\\n  scripts/publication_registry.py\\n\\nOK   config\\nOK   docs\\nO"
+  },
+  {
+   "id": "tests.test_zr907_drift_patrol::test_c3_patrol_core_gates_green",
+   "before": "passed",
+   "control": "failed",
+   "control_message": "AssertionError: installation must be green: {'check': 'installation', 'problems': ['installation sync drift:.py\\n  scripts/fix_hashes.py\\n  scripts/forecast/calc.py\\n  scripts/forecast/segments.py\\n  scripts/generate_input_template.py\\n  scripts/internal_flow.py\\n  scripts/lint_input.py\\n  scripts/m"
+  }
+ ],
+ "passed_in_control": [],
+ "ids_not_run_in_control": [],
+ "identical": false
+}

@@ -1,0 +1,166 @@
+== live production hashes ==
+  scripts/model_registry.py           62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081  30116 B
+  scripts/revenue_core.py             8a761498f5eb729e4f4227f2a315d709253f8b96acf7baa7253ab425e73ac883  25842 B
+  scripts/revenue_publication.py      bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0  24917 B
+
+== 1. sha literals of these files anywhere in tests/ + tools/ ==
+  total sha-literal hits = 0
+
+== 2. reads/references of the three file NAMES in tests/ + tools/ ==
+  tests\test_input_construction_consistency.py:3: ``scripts/revenue_core.py`` (findings G8).
+  tests\test_model_economic_guardrails.py:27: # explicit spec default with 0.0; it raises at scripts/model_registry.py:410.
+  tests\test_model_extensions_anchor.py:137: registry_src = (ROOT / "scripts" / "model_registry.py").read_text(encoding="utf-8")
+  tests\test_model_extensions_anchor.py:139: "model_registry.py no longer references the extension mount point")
+  tests\test_skill_documentation.py:116: core = (SKILL_ROOT / "scripts" / "revenue_core.py").read_text(encoding="utf-8")
+  tests\test_structure_targets.py:3: N-02: revenue_core.py reached 3922 lines with no one intercepting, and the
+  tests\test_structure_targets.py:23: # R9 target: revenue_core.py must be an orchestration layer, not a
+  tests\test_structure_targets.py:25: lines = (SCRIPTS / "revenue_core.py").read_text(encoding="utf-8").splitlines()
+  tests\test_structure_targets.py:29: "revenue_core.py exceeds the 2500-line target; R9 module split "
+  tools\run_coverage_gates.py:28: "scripts/revenue_core.py": 70,
+  tools\run_coverage_gates.py:30: "scripts/revenue_publication.py": 70,
+  tools\run_coverage_gates.py:34: "scripts/model_registry.py": 80,
+  tools\tests\test_complexity_ratchet.py:28: "model_registry.py": 9,
+  tools\tests\test_complexity_ratchet.py:36: "revenue_core.py": 6,
+  tools\tests\test_complexity_ratchet.py:38: "revenue_publication.py": 10,
+  total name references = 15
+
+== 3. sha256-of-file calls in tests/ + tools/ (context lines) ==
+  tests\adversarial\test_anchor_attacks.py:49: forged["workflow_compliance_receipt"]["receipt_sha256"] = canonical_sha256(
+  tests\adversarial\test_anchor_attacks.py:64: forged["result_sha256"] = canonical_sha256(
+  tests\adversarial\test_anchor_attacks.py:102: forged["forecast_result_sha256"] = canonical_sha256(forged_result)
+  tests\adversarial\test_anchor_attacks.py:116: forged["snapshot_id"] = canonical_sha256(identity)
+  tests\adversarial\test_receipt_attacks.py:51: result["result_sha256"] = canonical_sha256(
+  tests\adversarial\test_receipt_attacks.py:64: forged["receipt_sha256"] = canonical_sha256(
+  tests\adversarial\test_receipt_attacks.py:68: result["result_sha256"] = canonical_sha256(
+  tests\e2e_support\isolated_lake.py:80: return hashlib.sha256(payload.encode()).hexdigest()
+  tests\e2e_support\isolated_lake.py:117: kind="annual_report", body_sha=hashlib.sha256(body).hexdigest(),
+  tests\e2e_support\isolated_lake.py:122: body_sha=hashlib.sha256(body).hexdigest(),
+  tests\e2e_support\isolated_lake.py:149: body_sha=hashlib.sha256(body).hexdigest(),
+  tests\e2e_support\isolated_lake.py:164: kind="semi_annual_report", body_sha=hashlib.sha256(body).hexdigest(),
+  tests\e2e_support\isolated_lake.py:169: body_sha=hashlib.sha256(body).hexdigest(),
+  tests\e2e_support\isolated_lake.py:271: policy["snapshot_sha256"] = _h.sha256(canon.encode()).hexdigest()
+  tests\e2e_support\isolated_lake.py:303: digest = hashlib.sha256(
+  tests\e2e_support\isolated_lake.py:311: content_sha = hashlib.sha256(body).hexdigest()
+  tests\fixtures\legacy_filing_data.py:60: return hashlib.sha256(_canonical_json(value).encode("utf-8")).hexdigest()
+  tests\fixtures\legacy_filing_data.py:64: digest = hashlib.sha256()
+  tests\test_attestation.py:39: fingerprint = hashlib.sha256(public_key_bytes).hexdigest()[:32]
+  tests\test_attestation.py:40: message = canonical_sha256(receipt).encode("ascii")
+  tests\test_attestation.py:87: "fingerprint": hashlib.sha256(public_key_bytes).hexdigest()[:32],
+  tests\test_attestation.py:150: receipt["receipt_sha256"] = canonical_sha256(
+  tests\test_backtest.py:92: event_sha256=text_sha256(f"fixture-open-{source['source_id']}"),
+  tests\test_backtest.py:95: capture["receipt_sha256"] = canonical_sha256(capture)
+  tests\test_backtest.py:114: "excerpt_sha256": text_sha256(excerpt),
+  tests\test_backtest.py:144: "excerpt_sha256": text_sha256(excerpt),
+  tests\test_backtest.py:173: canonical_sha256(snapshot["forecast_result"]),
+  tests\test_backtest.py:320: result["result_sha256"] = canonical_sha256(
+  tests\test_backtest.py:323: forged["forecast_result_sha256"] = canonical_sha256(result)
+  tests\test_backtest.py:337: forged["snapshot_id"] = canonical_sha256(identity)
+  tests\test_backtest.py:372: canonical_sha256(
+  tests\test_backtest.py:390: forged_result["result_sha256"] = canonical_sha256(
+  tests\test_backtest.py:396: forged["forecast_result_sha256"] = canonical_sha256(forged_result)
+  tests\test_backtest.py:410: forged["snapshot_id"] = canonical_sha256(identity)
+  tests\test_bundle_artifact_selection.py:200: "snapshot_sha256": hashlib.sha256(body).hexdigest(),
+  tests\test_bundle_e2e_d01.py:44: sha = hashlib.sha256(body).hexdigest()
+  tests\test_bundle_e2e_d01.py:76: "content_sha256": hashlib.sha256(normalized_body).hexdigest(),
+  tests\test_bundle_e2e_d01.py:91: assert hashlib.sha256(Path(used["path"]).read_bytes()).hexdigest() == (
+  tests\test_bundle_e2e_d01.py:132: "snapshot_sha256": hashlib.sha256(body).hexdigest(),
+  tests\test_bundle_e2e_d01.py:155: "content_sha256": hashlib.sha256(summary_body).hexdigest(),
+  tests\test_bundle_e2e_d01.py:192: "snapshot_sha256": hashlib.sha256(body).hexdigest(),
+  tests\test_bundle_e2e_d01.py:215: "content_sha256": hashlib.sha256(b"# summary").hexdigest(),
+  tests\test_bundle_e2e_d01.py:221: "content_sha256": hashlib.sha256(b"stale").hexdigest(),
+  tests\test_bundle_e2e_d01.py:265: "snapshot_sha256": hashlib.sha256(body).hexdigest(),
+  tests\test_bundle_e2e_d01.py:288: "content_sha256": hashlib.sha256(b"# normalized ok").hexdigest(),
+  tests\test_bundle_e2e_d01.py:342: "snapshot_sha256": hashlib.sha256(body).hexdigest(),
+  tests\test_bundle_e2e_d01.py:365: "content_sha256": hashlib.sha256(sections_body).hexdigest(),
+  tests\test_bundle_e2e_d01.py:378: assert hashlib.sha256(Path(used["path"]).read_bytes()).hexdigest() == (
+  tests\test_bundle_e2e_d01.py:394: sha = hashlib.sha256(body).hexdigest()
+  tests\test_bundle_e2e_d01.py:428: "content_sha256": hashlib.sha256(
+  tests\test_buy_side_accuracy.py:20: record["record_sha256"] = canonical_sha256({k: v for k, v in record.items() if k != "record_sha256"})
+  tests\test_buy_side_accuracy.py:26: "record_schema_version": "1.1", "backtest_id": canonical_sha256({"backtest": origin, "available": available}),
+  tests\test_buy_side_accuracy.py:27: "snapshot_id": canonical_sha256({"snapshot": origin}), "evaluation_sha256": canonical_sha256({"evaluation": origin}),
+  tests\test_buy_side_accuracy.py:78: two["backtest_id"] = canonical_sha256({"backtest": "different-version"})
+  tests\test_buy_side_accuracy.py:79: two["snapshot_id"] = canonical_sha256({"snapshot": "different-version"})
+  tests\test_ca206_soak_window.py:59: return hashlib.sha256(f"{run_id}:{day}".encode()).hexdigest()
+  tests\test_ca301_clean_checkout.py:172: recomputed = hashlib.sha256(
+  tests\test_ca301_clean_checkout.py:186: h1 = hashlib.sha256(raw).hexdigest()
+  tests\test_ca301_clean_checkout.py:187: h2 = hashlib.sha256(state_path.read_bytes()).hexdigest()
+  tests\test_ca303_arch_quality.py:155: assert hashlib.sha256(raw).hexdigest() == hashlib.sha256(
+  tests\test_ca305_six_problems.py:163: assert len(hashlib.sha256(raw).hexdigest()) == 64
+  tests\test_ca306_terminal_closure.py:60: snapshot[str(path.relative_to(directory))] = hashlib.sha256(
+  tests\test_company_wiki_source.py:28: digest = hashlib.sha256(source.read_bytes()).hexdigest()
+  tests\test_compatibility_manifest.py:48: actual = hashlib.sha256((COMPAT_DIR / name).read_bytes()).hexdigest()
+  tests\test_data_contract.py:81: "excerpt_sha256": text_sha256(excerpt),
+  tests\test_data_contract.py:109: event_sha256=text_sha256(f"fixture-open-{source['source_id']}"),
+  tests\test_data_contract.py:112: capture["receipt_sha256"] = canonical_sha256(capture)
+  tests\test_data_contract.py:569: capture["receipt_sha256"] = canonical_sha256(
+  tests\test_data_contract.py:818: capture["receipt_sha256"] = canonical_sha256(
+  tests\test_dropbox_full_chain_fc505.py:59: "content_sha256": hashlib.sha256(body).hexdigest(),
+  tests\test_dropbox_full_chain_fc505.py:120: return hashlib.sha256(
+  tests\test_dropbox_full_chain_fc505.py:164: assert record["capture"]["snapshot_sha256"] == hashlib.sha256(body).hexdigest()
+  tests\test_dropbox_full_chain_fc505.py:199: digest = hashlib.sha256(body).hexdigest()
+  tests\test_fc1307a_host_assumption_gate.py:79: digests = {name: hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+  tests\test_fc1307a_host_assumption_gate.py:81: mine_digest = hashlib.sha256(mine).hexdigest()[:16]
+  tests\test_golden_behavior_lock.py:155: actual = canonical_sha256(result)
+  tests\test_golden_behavior_lock.py:166: hashes = {family: canonical_sha256(run_family(family)) for family in MODEL_SPECS}
+  tests\test_growth_driver_tree.py:151: event_sha256=text_sha256("fixture-open-industry-source"),
+  tests\test_growth_driver_tree.py:154: capture["receipt_sha256"] = canonical_sha256(capture)
+  tests\test_growth_driver_tree.py:265: legacy["publication_receipt"]["receipt_sha256"] = canonical_sha256(
+  tests\test_growth_driver_tree.py:272: legacy["result_sha256"] = canonical_sha256(
+  tests\test_lint_input.py:132: claim["excerpt_sha256"] = hashlib.sha256(claim["excerpt"].encode("utf-8")).hexdigest()
+  tests\test_management_targets.py:48: "excerpt_sha256": text_sha256(excerpt),
+  tests\test_management_targets.py:228: legacy["result_sha256"] = canonical_sha256(
+  tests\test_management_targets.py:237: legacy["result_sha256"] = canonical_sha256(
+  tests\test_management_targets.py:246: legacy["result_sha256"] = canonical_sha256(
+  tests\test_management_targets.py:262: legacy["result_sha256"] = canonical_sha256(
+  tests\test_management_targets.py:292: tampered["result_sha256"] = canonical_sha256(
+  tests\test_management_targets.py:307: legacy["result_sha256"] = canonical_sha256(
+  tests\test_management_targets.py:318: legacy["result_sha256"] = canonical_sha256(
+  tests\test_model_extensions_anchor.py:134: digest = hashlib.sha256(raw).hexdigest()
+  tests\test_output_report.py:47: result["result_sha256"] = canonical_sha256(
+  tests\test_output_report.py:136: result["result_sha256"] = canonical_sha256(
+  tests\test_output_report.py:145: result["result_sha256"] = canonical_sha256(
+  tests\test_output_report.py:156: result["result_sha256"] = canonical_sha256(
+  tests\test_output_report.py:167: result["result_sha256"] = canonical_sha256(
+  tests\test_output_report.py:176: result["workflow_compliance_receipt"]["receipt_sha256"] = canonical_sha256(
+  tests\test_output_report.py:183: result["result_sha256"] = canonical_sha256(
+  tests\test_output_report.py:418: forged["workflow_compliance_receipt"]["receipt_sha256"] = canonical_sha256(
+  tests\test_preparation_e2e_success.py:36: PDF_SHA = hashlib.sha256(pdf_body).hexdigest()
+  tests\test_publication_pipeline.py:107: result["result_sha256"] = canonical_sha256(
+  tests\test_publication_pipeline.py:139: receipt["receipt_sha256"] = canonical_sha256(
+  tests\test_publication_pipeline.py:142: result["result_sha256"] = canonical_sha256(
+  tests\test_publication_registry.py:55: register_publication({**base, "result_sha256": canonical_sha256({"x": 1})})
+  tests\test_publication_registry.py:59: self.assertNotEqual(first, canonical_sha256({"x": 1}))
+  tests\test_publication_registry.py:95: forged["input_sha256"] = canonical_sha256({"never": "published"})
+  tests\test_zr701_f1_draft_formal.py:118: "input_summary_sha256": publication_registry.input_summary_sha256(result),
+  tests\test_zr701_f1_draft_formal.py:213: assert entry["receipt_sha256"] == canonical_sha256(result["publication_receipt"])
+  tests\test_zr704_validate_only_gate.py:49: return hashlib.sha256(reg_path.read_bytes()).hexdigest()
+  tests\test_zr705_draft_formal_swap.py:113: receipt["receipt_sha256"] = canonical_sha256(
+  tests\test_zr705_draft_formal_swap.py:154: receipt["receipt_sha256"] = canonical_sha256(
+  tests\test_zr709_zijin_journey.py:501: bodies[str(path)] = (hashlib.sha256(body).hexdigest(), len(body))
+  tests\test_zr709_zijin_journey.py:890: assert canonical_sha256(stripped) == canonical_sha256(document)
+  tests\test_zr802_combined_journeys.py:184: body_sha=hashlib.sha256(body).hexdigest(),
+  tests\test_zr803_chaos_recovery.py:314: return canonical_sha256(document)
+  tests\test_zr806_real_t2_samples.py:79: digest = hashlib.sha256()
+  tests\test_zr806_real_t2_samples.py:87: digest = hashlib.sha256()
+  tests\test_zr901_pr_fanout.py:57: return hashlib.sha256(data).hexdigest()
+  tools\audit_baseline.py:32: def _sha256(path: Path) -> str:
+  tools\audit_baseline.py:33: digest = hashlib.sha256()
+  tools\audit_baseline.py:97: out[str(path)] = _sha256(path)
+  tools\daily_t2_runner.py:102: actual = hashlib.sha256(canon.encode()).hexdigest()
+  tools\ex05_chain_replay.py:55: return hashlib.sha256(
+  tools\ex05_chain_replay.py:94: policy_hash = hashlib.sha256(
+  tools\host_assumption_guard.py:29: ``hashlib.sha256(...).hexdigest()`` compared against a constant) is invisible
+  tools\host_signer\keygen.py:43: fingerprint = hashlib.sha256(public_bytes).hexdigest()[:32]
+  tools\host_signer\sign_events.py:30: def canonical_sha256(value: Any) -> str:
+  tools\host_signer\sign_events.py:34: return hashlib.sha256(encoded).hexdigest()
+  tools\host_signer\sign_events.py:49: receipt["receipt_sha256"] = canonical_sha256(receipt)
+  tools\host_signer\sign_events.py:50: message = canonical_sha256(receipt).encode("ascii")
+  tools\host_signer\sign_events.py:56: fingerprint = hashlib.sha256(public_bytes).hexdigest()[:32]
+  tools\mutation_patrol.py:57: result["result_sha256"] = canonical_sha256(
+  tools\release_gate.py:41: return hashlib.sha256(
+  tools\sync_installations.py:50: path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+  tools\sync_installations.py:57: path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+  tools\tests\test_audit_baseline.py:45: digest = hashlib.sha256()
+  tools\tests\test_sync_installations.py:56: expected_hash = hashlib.sha256(artifact.read_bytes()).hexdigest()
+  tools\tests\test_sync_installations.py:61: hashlib.sha256(artifact.read_bytes()).hexdigest(), expected_hash
+  total hashing-call lines = 138

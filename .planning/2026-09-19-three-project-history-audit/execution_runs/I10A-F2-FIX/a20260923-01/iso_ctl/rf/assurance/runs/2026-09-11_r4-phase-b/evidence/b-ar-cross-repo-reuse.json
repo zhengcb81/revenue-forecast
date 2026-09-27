@@ -1,0 +1,935 @@
+{
+  "artifact": "r4-cross-repo-reuse",
+  "run_id": "2026-09-11_r4-phase-b",
+  "purpose": "R4: the B.AR cross-repo half - the REAL consumer entry point (filing-fetch) resolves an already-indexed filing from the production catalog read-only, with no download and no worker control",
+  "authorisation_basis": "owner choice 2026-09-18 (option A): run fetch_filing.py --no-pause-worker after the write surface has been read out of the code and reported; production catalog writes remain forbidden",
+  "entry_point": {
+    "path": "C:\\Users\\郑曾波\\Projects\\filing-fetch\\scripts\\fetch_filing.py",
+    "config": "C:\\Users\\郑曾波\\Projects\\filing-fetch\\config\\company_wiki.json",
+    "python": "C:\\Miniconda\\python.exe",
+    "cwd": "C:\\Users\\郑曾波\\Projects\\filing-fetch",
+    "worker_pause": false,
+    "allow_download": false
+  },
+  "write_surface": {
+    "worker_pause_files": "NOT REACHED: the scope is only built inside `if allow_download:` / `_close_gap`, so the reuse branch never constructs it and `--no-pause-worker` is inert here (fetch_filing.py:736-750, 988-999, 758-765)",
+    "binding_temp_file": "NOT REACHED (close-gap/download path only; :961-1008)",
+    "download_or_network": "NOT REACHED (--allow-download absent => action=resolve; :704-716)",
+    "identity_cache_write": "NOT REACHED (no --refresh; security_identity.py:319-356)",
+    "acquisition_journal_append": "NOT REACHED (resolve reads it; cli.py:1183-1195)",
+    "catalog_write_through_product_store": "NOT REACHED: the resolve path passes the READ-ONLY reader (cli.py:1193) which opens mode=ro with PRAGMA query_only=ON (reader.py:165/188); no writable store is constructed, so there is no mkdir, WAL switch, additive migration or commit on this path (corrected per B.VR-r4 F-R4-02)",
+    "shm_note": "may advance; a read-only WAL reader is a sufficient cause, so it is recorded and not attributed"
+  },
+  "legs": [
+    {
+      "mode": "cli",
+      "argv": [
+        "python",
+        "scripts/fetch_filing.py",
+        "--no-pause-worker",
+        "--request-file",
+        "request-dd160e8c.json"
+      ],
+      "request": {
+        "schema_version": "1.1",
+        "company_query": "09988",
+        "market": "HK",
+        "document_kind": "annual_report",
+        "as_of_date": "2026-09-18"
+      },
+      "exit_code": 0,
+      "stdout_bytes": 6207,
+      "stdout_sha256": "d8aa34311d6ac8cfe39b4f2497667a8d3cecbe5774c34e4dc5daae98e2bced7c",
+      "stdout": "{\n  \"schema_version\": \"1.1\",\n  \"status\": \"capture_ready\",\n  \"handle\": {\n    \"byte_size\": 4172424,\n    \"canonical_location_id\": \"urn:company-wiki:location:sha256:22bea91cfe8a6bd716ba12a1681f021b61b2e61e9a8b126ec6045bf72a3df4d7\",\n    \"canonical_path\": \"C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\companies\\\\阿里巴巴－Ｗ\\\\raw\\\\financial_reports\\\\annual\\\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf\",\n    \"capture_ready\": true,\n    \"collector_name\": \"dayu-hkex-cli\",\n    \"collector_version\": \"1.0.0\",\n    \"content_sha256\": \"e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\",\n    \"document_id\": \"urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\",\n    \"document_kind\": \"annual_report\",\n    \"duplicate_group_id\": \"\",\n    \"entity_ids\": [\n      \"company-name:阿里巴巴－Ｗ\"\n    ],\n    \"exact_duplicate_location_count\": 0,\n    \"fiscal_period\": null,\n    \"fiscal_year\": 2026,\n    \"form_type\": null,\n    \"https_url\": \"https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0618/2026061800845_c.pdf\",\n    \"language\": null,\n    \"mime_type\": \"application/pdf\",\n    \"missing_capture_fields\": [],\n    \"provider\": \"hkexnews\",\n    \"provider_document_id\": \"12207997\",\n    \"published_date\": \"2026-06-18\",\n    \"retrieved_at\": \"2026-08-01T16:36:15Z\",\n    \"schema_version\": \"1.0\",\n    \"snapshot_sha256\": \"e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\",\n    \"source_id\": \"urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\",\n    \"source_status\": \"active\",\n    \"source_type\": \"regulatory_filing\",\n    \"title\": \"2026財務年度報告\",\n    \"request_id\": \"urn:company-wiki:source-request:sha256:1bd1baba5112c907bad2131f38078efcae344c527807047658e017d9d27343c2\",\n    \"resolution_envelope\": {\n      \"activation_epoch\": \"epoch-canary-2026-08-10\",\n      \"bundle\": {\n        \"bundle_hash\": \"f21c88e1bf826044b3c7aeeb4d77a76083967defcc98466b3652b9914f07d255\",\n        \"invalid\": {\n          \"normalized\": {\n            \"artifact_id\":",
+      "stderr_tail": "",
+      "payload": {
+        "schema_version": "1.1",
+        "status": "capture_ready",
+        "handle": {
+          "byte_size": 4172424,
+          "canonical_location_id": "urn:company-wiki:location:sha256:22bea91cfe8a6bd716ba12a1681f021b61b2e61e9a8b126ec6045bf72a3df4d7",
+          "canonical_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf",
+          "capture_ready": true,
+          "collector_name": "dayu-hkex-cli",
+          "collector_version": "1.0.0",
+          "content_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+          "document_id": "urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+          "document_kind": "annual_report",
+          "duplicate_group_id": "",
+          "entity_ids": [
+            "company-name:阿里巴巴－Ｗ"
+          ],
+          "exact_duplicate_location_count": 0,
+          "fiscal_period": null,
+          "fiscal_year": 2026,
+          "form_type": null,
+          "https_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0618/2026061800845_c.pdf",
+          "language": null,
+          "mime_type": "application/pdf",
+          "missing_capture_fields": [],
+          "provider": "hkexnews",
+          "provider_document_id": "12207997",
+          "published_date": "2026-06-18",
+          "retrieved_at": "2026-08-01T16:36:15Z",
+          "schema_version": "1.0",
+          "snapshot_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+          "source_id": "urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+          "source_status": "active",
+          "source_type": "regulatory_filing",
+          "title": "2026財務年度報告",
+          "request_id": "urn:company-wiki:source-request:sha256:1bd1baba5112c907bad2131f38078efcae344c527807047658e017d9d27343c2",
+          "resolution_envelope": {
+            "activation_epoch": "epoch-canary-2026-08-10",
+            "bundle": {
+              "bundle_hash": "f21c88e1bf826044b3c7aeeb4d77a76083967defcc98466b3652b9914f07d255",
+              "invalid": {
+                "normalized": {
+                  "artifact_id": "urn:company-wiki:artifact:sha256:fdd33e38e9457d768a0b7f4b94f7014b4ff4547fdd35bfc4382d0691f81d147b",
+                  "artifact_role": "normalized",
+                  "as_of_date": null,
+                  "content_sha256": "cce8677c0af30d93890aab4d877f3089ad8765a969e59f8132aa34511d9f40c3",
+                  "document_id": "",
+                  "generator_name": "source_catalog_normalizer",
+                  "generator_version": "1.0.0",
+                  "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\derived\\e3\\e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\\normalized.md",
+                  "reason": "artifact_status_not_completed",
+                  "reusable": false,
+                  "schema_version": "1.0",
+                  "source_id": "urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+                },
+                "summary": {
+                  "artifact_id": "urn:company-wiki:artifact:sha256:219e6fb7830cf5d0a22bcc15e259049151b6bfce19e6f1187dadffd536d8ca91",
+                  "artifact_role": "summary",
+                  "as_of_date": null,
+                  "content_sha256": "4484824ffd6ea70ed37dfdcde1a349edeb9bd6bf6efe326e0df5b68902efec8e",
+                  "document_id": "",
+                  "generator_name": "source_catalog_llm_summary",
+                  "generator_version": "1.0.0",
+                  "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\derived\\e3\\e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\\summary.md",
+                  "reason": "artifact_source_sha_missing",
+                  "reusable": false,
+                  "schema_version": "1.0",
+                  "source_id": "urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+                }
+              },
+              "schema_version": "1.0",
+              "source": {
+                "as_of_date": "2026-06-18",
+                "document_id": "urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+                "primary_source_id": "urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+                "source_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+              },
+              "valid_handles": {}
+            },
+            "bundle_hash": "f21c88e1bf826044b3c7aeeb4d77a76083967defcc98466b3652b9914f07d255",
+            "bundle_status": "available",
+            "candidate_exclusion_trace": [
+              "entity_gate_rejected: 45",
+              "2026財務年度報告: matched"
+            ],
+            "canonical_location_rationale": {
+              "canonical_location_id": "urn:company-wiki:location:sha256:22bea91cfe8a6bd716ba12a1681f021b61b2e61e9a8b126ec6045bf72a3df4d7",
+              "canonical_path": "${PROJECT_ROOT}\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf",
+              "selection": "lowest_priority_active_original_primary_then_tiebreak",
+              "source_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+            },
+            "cohorts": [
+              "canary-2026-08-10"
+            ],
+            "download_events": 0,
+            "envelope_schema_version": "1.0",
+            "llm_calls": 1,
+            "outcome": "reused_existing",
+            "parser_calls": 1,
+            "policy_hash": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+            "prompt_injection_status": "not_reviewed",
+            "qualification": {
+              "conflict_check": "store",
+              "gaps": [],
+              "label": "verified_input",
+              "reason": ""
+            },
+            "source_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+          },
+          "company_identity": {
+            "active": true,
+            "canonical_name": "阿里巴巴－Ｗ",
+            "exchange": "HKEX",
+            "identifiers": {
+              "hkex_stock_id": "7353"
+            },
+            "market": "HK",
+            "match_basis": "ticker_exact",
+            "matched_value": "09988",
+            "score": 1.0,
+            "security_id": "09988",
+            "source_name": "hkex",
+            "source_record_id": "7353",
+            "source_url": "https://www1.hkexnews.hk/ncms/script/eds/activestock_sehk_c.json",
+            "ticker": "09988",
+            "verified": true
+          }
+        },
+        "calls": 2,
+        "downloads": 0
+      },
+      "id": "L1-reuse-any-year",
+      "purpose": "the cross-repo reuse call for an already-indexed filing",
+      "summary": {
+        "parsed": true,
+        "status": "capture_ready",
+        "error_type": null,
+        "error": null,
+        "calls": 2,
+        "downloads": 0,
+        "request_id": "urn:company-wiki:source-request:sha256:1bd1baba5112c907bad2131f38078efcae344c527807047658e017d9d27343c2",
+        "identity": "阿里巴巴－Ｗ",
+        "identity_security_id": "09988",
+        "identity_match_basis": "ticker_exact",
+        "identity_verified": true,
+        "identity_active": true,
+        "identity_source_name": "hkex",
+        "document_id": "urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+        "canonical_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf",
+        "content_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+        "byte_size": 4172424,
+        "fiscal_year": 2026,
+        "capture_ready": true,
+        "missing_capture_fields": [],
+        "source_status": "active",
+        "https_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0618/2026061800845_c.pdf",
+        "outcome": "reused_existing",
+        "bundle_status": "available",
+        "bundle_hash": "f21c88e1bf826044b3c7aeeb4d77a76083967defcc98466b3652b9914f07d255",
+        "valid_handles": [],
+        "policy_hash": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+        "activation_epoch": "epoch-canary-2026-08-10",
+        "cohorts": [
+          "canary-2026-08-10"
+        ],
+        "qualification_label": "verified_input",
+        "download_events": 0,
+        "journal_llm_calls": 1,
+        "journal_parser_calls": 1,
+        "candidate_exclusion_trace": [
+          "entity_gate_rejected: 45",
+          "2026財務年度報告: matched"
+        ],
+        "invalid_artifacts": {
+          "normalized": "artifact_status_not_completed",
+          "summary": "artifact_source_sha_missing"
+        },
+        "top_level_keys": [
+          "calls",
+          "downloads",
+          "handle",
+          "schema_version",
+          "status"
+        ],
+        "handle_keys": [
+          "byte_size",
+          "canonical_location_id",
+          "canonical_path",
+          "capture_ready",
+          "collector_name",
+          "collector_version",
+          "company_identity",
+          "content_sha256",
+          "document_id",
+          "document_kind",
+          "duplicate_group_id",
+          "entity_ids",
+          "exact_duplicate_location_count",
+          "fiscal_period",
+          "fiscal_year",
+          "form_type",
+          "https_url",
+          "language",
+          "mime_type",
+          "missing_capture_fields",
+          "provider",
+          "provider_document_id",
+          "published_date",
+          "request_id",
+          "resolution_envelope",
+          "retrieved_at",
+          "schema_version",
+          "snapshot_sha256",
+          "source_id",
+          "source_status",
+          "source_type",
+          "title"
+        ]
+      },
+      "stdout_file": "b-ar-cross-repo-reuse-L1-reuse-any-year-stdout.txt"
+    },
+    {
+      "mode": "cli",
+      "argv": [
+        "python",
+        "scripts/fetch_filing.py",
+        "--no-pause-worker",
+        "--request-file",
+        "request-4e97d779.json"
+      ],
+      "request": {
+        "schema_version": "1.1",
+        "company_query": "09988",
+        "market": "HK",
+        "document_kind": "annual_report",
+        "fiscal_year": 2026,
+        "as_of_date": "2026-09-18"
+      },
+      "exit_code": 0,
+      "stdout_bytes": 6207,
+      "stdout_sha256": "b64f11b6df89745b8d59e2a6017f6793fa6fb9da180c398b491919e40a54b983",
+      "stdout": "{\n  \"schema_version\": \"1.1\",\n  \"status\": \"capture_ready\",\n  \"handle\": {\n    \"byte_size\": 4172424,\n    \"canonical_location_id\": \"urn:company-wiki:location:sha256:22bea91cfe8a6bd716ba12a1681f021b61b2e61e9a8b126ec6045bf72a3df4d7\",\n    \"canonical_path\": \"C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki\\\\companies\\\\阿里巴巴－Ｗ\\\\raw\\\\financial_reports\\\\annual\\\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf\",\n    \"capture_ready\": true,\n    \"collector_name\": \"dayu-hkex-cli\",\n    \"collector_version\": \"1.0.0\",\n    \"content_sha256\": \"e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\",\n    \"document_id\": \"urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\",\n    \"document_kind\": \"annual_report\",\n    \"duplicate_group_id\": \"\",\n    \"entity_ids\": [\n      \"company-name:阿里巴巴－Ｗ\"\n    ],\n    \"exact_duplicate_location_count\": 0,\n    \"fiscal_period\": null,\n    \"fiscal_year\": 2026,\n    \"form_type\": null,\n    \"https_url\": \"https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0618/2026061800845_c.pdf\",\n    \"language\": null,\n    \"mime_type\": \"application/pdf\",\n    \"missing_capture_fields\": [],\n    \"provider\": \"hkexnews\",\n    \"provider_document_id\": \"12207997\",\n    \"published_date\": \"2026-06-18\",\n    \"retrieved_at\": \"2026-08-01T16:36:15Z\",\n    \"schema_version\": \"1.0\",\n    \"snapshot_sha256\": \"e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\",\n    \"source_id\": \"urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\",\n    \"source_status\": \"active\",\n    \"source_type\": \"regulatory_filing\",\n    \"title\": \"2026財務年度報告\",\n    \"request_id\": \"urn:company-wiki:source-request:sha256:9932e5f28054df4d3a21c170e14fe55db90de038c4ed09d8e3adacb20cf9c3c8\",\n    \"resolution_envelope\": {\n      \"activation_epoch\": \"epoch-canary-2026-08-10\",\n      \"bundle\": {\n        \"bundle_hash\": \"f21c88e1bf826044b3c7aeeb4d77a76083967defcc98466b3652b9914f07d255\",\n        \"invalid\": {\n          \"normalized\": {\n            \"artifact_id\":",
+      "stderr_tail": "",
+      "payload": {
+        "schema_version": "1.1",
+        "status": "capture_ready",
+        "handle": {
+          "byte_size": 4172424,
+          "canonical_location_id": "urn:company-wiki:location:sha256:22bea91cfe8a6bd716ba12a1681f021b61b2e61e9a8b126ec6045bf72a3df4d7",
+          "canonical_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf",
+          "capture_ready": true,
+          "collector_name": "dayu-hkex-cli",
+          "collector_version": "1.0.0",
+          "content_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+          "document_id": "urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+          "document_kind": "annual_report",
+          "duplicate_group_id": "",
+          "entity_ids": [
+            "company-name:阿里巴巴－Ｗ"
+          ],
+          "exact_duplicate_location_count": 0,
+          "fiscal_period": null,
+          "fiscal_year": 2026,
+          "form_type": null,
+          "https_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0618/2026061800845_c.pdf",
+          "language": null,
+          "mime_type": "application/pdf",
+          "missing_capture_fields": [],
+          "provider": "hkexnews",
+          "provider_document_id": "12207997",
+          "published_date": "2026-06-18",
+          "retrieved_at": "2026-08-01T16:36:15Z",
+          "schema_version": "1.0",
+          "snapshot_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+          "source_id": "urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+          "source_status": "active",
+          "source_type": "regulatory_filing",
+          "title": "2026財務年度報告",
+          "request_id": "urn:company-wiki:source-request:sha256:9932e5f28054df4d3a21c170e14fe55db90de038c4ed09d8e3adacb20cf9c3c8",
+          "resolution_envelope": {
+            "activation_epoch": "epoch-canary-2026-08-10",
+            "bundle": {
+              "bundle_hash": "f21c88e1bf826044b3c7aeeb4d77a76083967defcc98466b3652b9914f07d255",
+              "invalid": {
+                "normalized": {
+                  "artifact_id": "urn:company-wiki:artifact:sha256:fdd33e38e9457d768a0b7f4b94f7014b4ff4547fdd35bfc4382d0691f81d147b",
+                  "artifact_role": "normalized",
+                  "as_of_date": null,
+                  "content_sha256": "cce8677c0af30d93890aab4d877f3089ad8765a969e59f8132aa34511d9f40c3",
+                  "document_id": "",
+                  "generator_name": "source_catalog_normalizer",
+                  "generator_version": "1.0.0",
+                  "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\derived\\e3\\e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\\normalized.md",
+                  "reason": "artifact_status_not_completed",
+                  "reusable": false,
+                  "schema_version": "1.0",
+                  "source_id": "urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+                },
+                "summary": {
+                  "artifact_id": "urn:company-wiki:artifact:sha256:219e6fb7830cf5d0a22bcc15e259049151b6bfce19e6f1187dadffd536d8ca91",
+                  "artifact_role": "summary",
+                  "as_of_date": null,
+                  "content_sha256": "4484824ffd6ea70ed37dfdcde1a349edeb9bd6bf6efe326e0df5b68902efec8e",
+                  "document_id": "",
+                  "generator_name": "source_catalog_llm_summary",
+                  "generator_version": "1.0.0",
+                  "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\derived\\e3\\e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350\\summary.md",
+                  "reason": "artifact_source_sha_missing",
+                  "reusable": false,
+                  "schema_version": "1.0",
+                  "source_id": "urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+                }
+              },
+              "schema_version": "1.0",
+              "source": {
+                "as_of_date": "2026-06-18",
+                "document_id": "urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+                "primary_source_id": "urn:company-wiki:source:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+                "source_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+              },
+              "valid_handles": {}
+            },
+            "bundle_hash": "f21c88e1bf826044b3c7aeeb4d77a76083967defcc98466b3652b9914f07d255",
+            "bundle_status": "available",
+            "candidate_exclusion_trace": [
+              "entity_gate_rejected: 45",
+              "2026財務年度報告: matched"
+            ],
+            "canonical_location_rationale": {
+              "canonical_location_id": "urn:company-wiki:location:sha256:22bea91cfe8a6bd716ba12a1681f021b61b2e61e9a8b126ec6045bf72a3df4d7",
+              "canonical_path": "${PROJECT_ROOT}\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf",
+              "selection": "lowest_priority_active_original_primary_then_tiebreak",
+              "source_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+            },
+            "cohorts": [
+              "canary-2026-08-10"
+            ],
+            "download_events": 0,
+            "envelope_schema_version": "1.0",
+            "llm_calls": 1,
+            "outcome": "reused_existing",
+            "parser_calls": 1,
+            "policy_hash": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+            "prompt_injection_status": "not_reviewed",
+            "qualification": {
+              "conflict_check": "store",
+              "gaps": [],
+              "label": "verified_input",
+              "reason": ""
+            },
+            "source_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"
+          },
+          "company_identity": {
+            "active": true,
+            "canonical_name": "阿里巴巴－Ｗ",
+            "exchange": "HKEX",
+            "identifiers": {
+              "hkex_stock_id": "7353"
+            },
+            "market": "HK",
+            "match_basis": "ticker_exact",
+            "matched_value": "09988",
+            "score": 1.0,
+            "security_id": "09988",
+            "source_name": "hkex",
+            "source_record_id": "7353",
+            "source_url": "https://www1.hkexnews.hk/ncms/script/eds/activestock_sehk_c.json",
+            "ticker": "09988",
+            "verified": true
+          }
+        },
+        "calls": 2,
+        "downloads": 0
+      },
+      "id": "L2-reuse-exact-FY2026",
+      "purpose": "the same call pinned to the fiscal year the first response reported (a reproducible request)",
+      "summary": {
+        "parsed": true,
+        "status": "capture_ready",
+        "error_type": null,
+        "error": null,
+        "calls": 2,
+        "downloads": 0,
+        "request_id": "urn:company-wiki:source-request:sha256:9932e5f28054df4d3a21c170e14fe55db90de038c4ed09d8e3adacb20cf9c3c8",
+        "identity": "阿里巴巴－Ｗ",
+        "identity_security_id": "09988",
+        "identity_match_basis": "ticker_exact",
+        "identity_verified": true,
+        "identity_active": true,
+        "identity_source_name": "hkex",
+        "document_id": "urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+        "canonical_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf",
+        "content_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+        "byte_size": 4172424,
+        "fiscal_year": 2026,
+        "capture_ready": true,
+        "missing_capture_fields": [],
+        "source_status": "active",
+        "https_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0618/2026061800845_c.pdf",
+        "outcome": "reused_existing",
+        "bundle_status": "available",
+        "bundle_hash": "f21c88e1bf826044b3c7aeeb4d77a76083967defcc98466b3652b9914f07d255",
+        "valid_handles": [],
+        "policy_hash": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+        "activation_epoch": "epoch-canary-2026-08-10",
+        "cohorts": [
+          "canary-2026-08-10"
+        ],
+        "qualification_label": "verified_input",
+        "download_events": 0,
+        "journal_llm_calls": 1,
+        "journal_parser_calls": 1,
+        "candidate_exclusion_trace": [
+          "entity_gate_rejected: 45",
+          "2026財務年度報告: matched"
+        ],
+        "invalid_artifacts": {
+          "normalized": "artifact_status_not_completed",
+          "summary": "artifact_source_sha_missing"
+        },
+        "top_level_keys": [
+          "calls",
+          "downloads",
+          "handle",
+          "schema_version",
+          "status"
+        ],
+        "handle_keys": [
+          "byte_size",
+          "canonical_location_id",
+          "canonical_path",
+          "capture_ready",
+          "collector_name",
+          "collector_version",
+          "company_identity",
+          "content_sha256",
+          "document_id",
+          "document_kind",
+          "duplicate_group_id",
+          "entity_ids",
+          "exact_duplicate_location_count",
+          "fiscal_period",
+          "fiscal_year",
+          "form_type",
+          "https_url",
+          "language",
+          "mime_type",
+          "missing_capture_fields",
+          "provider",
+          "provider_document_id",
+          "published_date",
+          "request_id",
+          "resolution_envelope",
+          "retrieved_at",
+          "schema_version",
+          "snapshot_sha256",
+          "source_id",
+          "source_status",
+          "source_type",
+          "title"
+        ]
+      },
+      "stdout_file": "b-ar-cross-repo-reuse-L2-reuse-exact-FY2026-stdout.txt"
+    },
+    {
+      "mode": "cli",
+      "argv": [
+        "python",
+        "scripts/fetch_filing.py",
+        "--no-pause-worker",
+        "--request-file",
+        "request-08afc287.json"
+      ],
+      "request": {
+        "schema_version": "1.1",
+        "company_query": "09988",
+        "market": "HK",
+        "document_kind": "annual_report",
+        "fiscal_year": 2019,
+        "as_of_date": "2026-09-18"
+      },
+      "exit_code": 2,
+      "stdout_bytes": 455,
+      "stdout_sha256": "8433b7efdc5db1fc3338a5dbdab95763b5c94ab1df21786ef51543692881cea6",
+      "stdout": "{\n  \"schema_version\": \"1.1\",\n  \"status\": \"not_found\",\n  \"error\": \"source is not reusable: missing / no_existing_source_satisfies_request\",\n  \"error_code\": \"not_found\",\n  \"retryable\": false,\n  \"resolution_trace\": {\n    \"request_id\": \"urn:company-wiki:source-request:sha256:5367918de41d07285cdc54cb5e4bb73fdd2be34406e0f4f4f527bf571c95bf10\",\n    \"status\": \"missing\",\n    \"reason\": \"no_existing_source_satisfies_request\"\n  },\n  \"calls\": 2,\n  \"downloads\": 0\n}\n",
+      "stderr_tail": "",
+      "payload": {
+        "schema_version": "1.1",
+        "status": "not_found",
+        "error": "source is not reusable: missing / no_existing_source_satisfies_request",
+        "error_code": "not_found",
+        "retryable": false,
+        "resolution_trace": {
+          "request_id": "urn:company-wiki:source-request:sha256:5367918de41d07285cdc54cb5e4bb73fdd2be34406e0f4f4f527bf571c95bf10",
+          "status": "missing",
+          "reason": "no_existing_source_satisfies_request"
+        },
+        "calls": 2,
+        "downloads": 0
+      },
+      "id": "L3-control-missing-FY2019",
+      "purpose": "a filing that is NOT indexed: reuse-only must refuse, not fetch",
+      "summary": {
+        "parsed": true,
+        "status": "not_found",
+        "error_type": null,
+        "error": "source is not reusable: missing / no_existing_source_satisfies_request",
+        "calls": 2,
+        "downloads": 0,
+        "request_id": null,
+        "identity": null,
+        "identity_security_id": null,
+        "identity_match_basis": null,
+        "identity_verified": null,
+        "identity_active": null,
+        "identity_source_name": null,
+        "document_id": null,
+        "canonical_path": null,
+        "content_sha256": null,
+        "byte_size": null,
+        "fiscal_year": null,
+        "capture_ready": null,
+        "missing_capture_fields": null,
+        "source_status": null,
+        "https_url": null,
+        "outcome": null,
+        "bundle_status": null,
+        "bundle_hash": null,
+        "valid_handles": [],
+        "policy_hash": null,
+        "activation_epoch": null,
+        "cohorts": null,
+        "qualification_label": null,
+        "download_events": null,
+        "journal_llm_calls": null,
+        "journal_parser_calls": null,
+        "candidate_exclusion_trace": null,
+        "invalid_artifacts": {},
+        "top_level_keys": [
+          "calls",
+          "downloads",
+          "error",
+          "error_code",
+          "resolution_trace",
+          "retryable",
+          "schema_version",
+          "status"
+        ],
+        "handle_keys": []
+      },
+      "stdout_file": "b-ar-cross-repo-reuse-L3-control-missing-FY2019-stdout.txt"
+    },
+    {
+      "mode": "cli",
+      "argv": [
+        "python",
+        "scripts/fetch_filing.py",
+        "--no-pause-worker",
+        "--request-file",
+        "request-14acf9be.json"
+      ],
+      "request": {
+        "schema_version": "1.1",
+        "company_query": "zzz-no-such-issuer-zzz",
+        "market": "HK",
+        "document_kind": "annual_report",
+        "as_of_date": "2026-09-18"
+      },
+      "exit_code": 2,
+      "stdout_bytes": 246,
+      "stdout_sha256": "5c6492b7c12b0a70704ea22e20338ad1d6c4d96df4fc395d63411bb94ec90e31",
+      "stdout": "{\n  \"schema_version\": \"1.1\",\n  \"status\": \"identity_error\",\n  \"error\": \"company identity is not uniquely resolved: missing / no_verified_identity_candidate\",\n  \"error_code\": \"identity_error\",\n  \"retryable\": false,\n  \"calls\": 1,\n  \"downloads\": 0\n}\n",
+      "stderr_tail": "",
+      "payload": {
+        "schema_version": "1.1",
+        "status": "identity_error",
+        "error": "company identity is not uniquely resolved: missing / no_verified_identity_candidate",
+        "error_code": "identity_error",
+        "retryable": false,
+        "calls": 1,
+        "downloads": 0
+      },
+      "id": "L4-control-unknown-company",
+      "purpose": "identity must fail closed before any resolution",
+      "summary": {
+        "parsed": true,
+        "status": "identity_error",
+        "error_type": null,
+        "error": "company identity is not uniquely resolved: missing / no_verified_identity_candidate",
+        "calls": 1,
+        "downloads": 0,
+        "request_id": null,
+        "identity": null,
+        "identity_security_id": null,
+        "identity_match_basis": null,
+        "identity_verified": null,
+        "identity_active": null,
+        "identity_source_name": null,
+        "document_id": null,
+        "canonical_path": null,
+        "content_sha256": null,
+        "byte_size": null,
+        "fiscal_year": null,
+        "capture_ready": null,
+        "missing_capture_fields": null,
+        "source_status": null,
+        "https_url": null,
+        "outcome": null,
+        "bundle_status": null,
+        "bundle_hash": null,
+        "valid_handles": [],
+        "policy_hash": null,
+        "activation_epoch": null,
+        "cohorts": null,
+        "qualification_label": null,
+        "download_events": null,
+        "journal_llm_calls": null,
+        "journal_parser_calls": null,
+        "candidate_exclusion_trace": null,
+        "invalid_artifacts": {},
+        "top_level_keys": [
+          "calls",
+          "downloads",
+          "error",
+          "error_code",
+          "retryable",
+          "schema_version",
+          "status"
+        ],
+        "handle_keys": []
+      },
+      "stdout_file": "b-ar-cross-repo-reuse-L4-control-unknown-company-stdout.txt"
+    }
+  ],
+  "workdir": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\r4-cross-repo",
+  "pre": {
+    "production_catalog": {
+      "catalog.sqlite3": {
+        "exists": true,
+        "kind": "file",
+        "size": 49677344768,
+        "mtime_ns": 1788902601072747300
+      },
+      "catalog.sqlite3-wal": {
+        "exists": true,
+        "kind": "file",
+        "size": 0,
+        "mtime_ns": 1789682726592111000
+      },
+      "catalog.sqlite3-shm": {
+        "exists": true,
+        "kind": "file",
+        "size": 32768,
+        "mtime_ns": 1789759163372751100
+      },
+      "operation.lock": {
+        "exists": false,
+        "error": "FileNotFoundError"
+      },
+      "runtime_policy.json": {
+        "exists": true,
+        "kind": "file",
+        "size": 510,
+        "mtime_ns": 1788374043610572500
+      },
+      "acquisition_attempts.jsonl": {
+        "exists": true,
+        "kind": "file",
+        "size": 44922,
+        "mtime_ns": 1786422412750249500
+      },
+      "filing_fetch_pause.refcount": {
+        "exists": false,
+        "error": "FileNotFoundError"
+      },
+      "filing_fetch_pause.owner": {
+        "exists": false,
+        "error": "FileNotFoundError"
+      },
+      "worker_control.json": {
+        "exists": true,
+        "kind": "file",
+        "size": 178,
+        "mtime_ns": 1787262212371386700
+      }
+    },
+    "catalog_dir": {
+      "exists": true,
+      "entry_count": 12476,
+      "digest": "9d9b35e0627608421dbae7d5fcdb638249ea1d84b5bcab307e71f109936dfdc5"
+    },
+    "companies_root": {
+      "exists": true,
+      "file_count": 33122,
+      "digest": "de2b51a3bec5436765febaa96700a1f324b100e4cbd2e704e9c961077f8f0e77"
+    },
+    "pyc_caches": {
+      "company-wiki": {
+        "file_count": 3087,
+        "digest": "f6e1d1034e9ece4b4dfc4750d8d98e7708afe192af6b4b5efe77b21285eef05a"
+      },
+      "revenue-forecast": {
+        "file_count": 611,
+        "digest": "bf393830aea4dee45f3991b18cb299d58b2e646ae7400cb7544d2eb06ccf9841"
+      },
+      "filing-fetch": {
+        "file_count": 82,
+        "digest": "efc728d66ae5cb5d253e8b20569b1e6503e75b2894ac1fd94bc892804b1cca4d"
+      }
+    },
+    "repos": {
+      "company-wiki": {
+        "head": "8665c8c47c020cde7dcf683ee8e6389ead77f282",
+        "porcelain": ""
+      },
+      "revenue-forecast": {
+        "head": "51f1e0563305dc8d0705e73406916d855bd7d07d",
+        "porcelain": " M CHANGELOG.md\n M SKILL.md\n M assurance/runs/2026-09-11_r4-phase-b/b-ar-record.md\n M assurance/runs/2026-09-11_r4-phase-b/findings.md\n M assurance/runs/2026-09-11_r4-phase-b/owner-scope-decisions-2026-09-18.md\n M assurance/runs/2026-09-11_r4-phase-b/progress.md\n M assurance/runs/2026-09-11_r4-phase-b/r4-final-status.md\n M e2e/expected/expected-0e1cc8d4c73d.json\n M references/backtesting.md\n M references/growth-driver-tree.md\n M references/input-schema.md\n M references/management-targets.md\n M references/model-library.md\n M references/research-coverage.md\n M references/resource-business-guidance.md\n M scripts/analysis/confidence.py\n M scripts/analysis/sensitivity.py\n M scripts/contracts/constants.py\n M scripts/contracts/document.py\n M scripts/forecast/calc.py\n M scripts/forecast/segments.py\n M scripts/generate_input_template.py\n M scripts/model_registry.py\n M scripts/research/targets.py\n M scripts/revenue_backtest.py\n M scripts/revenue_core.py\n M scripts/revenue_report.py\n M scripts/schema_compatibility.py\n M tests/golden_behavior_hashes.json\n M tests/test_backtest.py\n M tests/test_data_contract.py\n M tests/test_generate_input_template.py\n M tests/test_golden_behavior_lock.py\n M tests/test_industry_end_to_end.py\n M tests/test_models.py\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse-L1-reuse-any-year-stdout.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse-L2-reuse-exact-FY2026-stdout.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse-L3-control-missing-FY2019-stdout.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse-L4-control-unknown-company-stdout.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse.json\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse.md\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-dropbox-bytes.json\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-dropbox-bytes.md\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/r45-ci-step1-unit.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/r45-ci-step2-contract.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/run_r4_cross_repo_reuse.py\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/run_r5_dropbox_bytes.py\n?? assurance/runs/2026-09-11_r4-phase-b/reviews/B.VR-r4.json\n?? assurance/runs/2026-09-11_r4-phase-b/reviews/B.VR-r5.json\n?? audit_review/2026-09-18_real_company_skill_audit/\n?? docs/buy_side_model_audit_2026-09-18.md\n?? docs/buy_side_review_2026-09-18.md\n?? docs/buy_side_validation_2026-09-18.json\n?? references/buy-side-methodology.md\n?? references/extended-models.md\n?? references/industry-lifecycle-routing.md\n?? scripts/model_extensions.py\n?? tests/test_buy_side_accuracy.py\n?? tests/test_independent_targets.py\n?? tests/test_lifecycle_forecasts.py\n?? tests/test_model_economic_guardrails.py\n?? tests/test_model_extensions.py\n?? tests/test_model_integration_bounds.py\n"
+      },
+      "filing-fetch": {
+        "head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+        "porcelain": ""
+      }
+    },
+    "wiki_src": {
+      "file_count": 143,
+      "tree_sha256": "d201140eabd226e44fb5895aceed10c9ace1088eda12754b2d8082db81c8b716"
+    }
+  },
+  "post": {
+    "production_catalog": {
+      "catalog.sqlite3": {
+        "exists": true,
+        "kind": "file",
+        "size": 49677344768,
+        "mtime_ns": 1788902601072747300
+      },
+      "catalog.sqlite3-wal": {
+        "exists": true,
+        "kind": "file",
+        "size": 0,
+        "mtime_ns": 1789682726592111000
+      },
+      "catalog.sqlite3-shm": {
+        "exists": true,
+        "kind": "file",
+        "size": 32768,
+        "mtime_ns": 1789759671162009900
+      },
+      "operation.lock": {
+        "exists": false,
+        "error": "FileNotFoundError"
+      },
+      "runtime_policy.json": {
+        "exists": true,
+        "kind": "file",
+        "size": 510,
+        "mtime_ns": 1788374043610572500
+      },
+      "acquisition_attempts.jsonl": {
+        "exists": true,
+        "kind": "file",
+        "size": 44922,
+        "mtime_ns": 1786422412750249500
+      },
+      "filing_fetch_pause.refcount": {
+        "exists": false,
+        "error": "FileNotFoundError"
+      },
+      "filing_fetch_pause.owner": {
+        "exists": false,
+        "error": "FileNotFoundError"
+      },
+      "worker_control.json": {
+        "exists": true,
+        "kind": "file",
+        "size": 178,
+        "mtime_ns": 1787262212371386700
+      }
+    },
+    "catalog_dir": {
+      "exists": true,
+      "entry_count": 12476,
+      "digest": "876975e72de6a421c8cbe1f29bb6ac4b282d39eeb2a302e1be1c14e8b89a27aa"
+    },
+    "companies_root": {
+      "exists": true,
+      "file_count": 33122,
+      "digest": "de2b51a3bec5436765febaa96700a1f324b100e4cbd2e704e9c961077f8f0e77"
+    },
+    "pyc_caches": {
+      "company-wiki": {
+        "file_count": 3087,
+        "digest": "f6e1d1034e9ece4b4dfc4750d8d98e7708afe192af6b4b5efe77b21285eef05a"
+      },
+      "revenue-forecast": {
+        "file_count": 611,
+        "digest": "bf393830aea4dee45f3991b18cb299d58b2e646ae7400cb7544d2eb06ccf9841"
+      },
+      "filing-fetch": {
+        "file_count": 82,
+        "digest": "efc728d66ae5cb5d253e8b20569b1e6503e75b2894ac1fd94bc892804b1cca4d"
+      }
+    },
+    "repos": {
+      "company-wiki": {
+        "head": "8665c8c47c020cde7dcf683ee8e6389ead77f282",
+        "porcelain": ""
+      },
+      "revenue-forecast": {
+        "head": "51f1e0563305dc8d0705e73406916d855bd7d07d",
+        "porcelain": " M CHANGELOG.md\n M SKILL.md\n M assurance/runs/2026-09-11_r4-phase-b/b-ar-record.md\n M assurance/runs/2026-09-11_r4-phase-b/findings.md\n M assurance/runs/2026-09-11_r4-phase-b/owner-scope-decisions-2026-09-18.md\n M assurance/runs/2026-09-11_r4-phase-b/progress.md\n M assurance/runs/2026-09-11_r4-phase-b/r4-final-status.md\n M e2e/expected/expected-0e1cc8d4c73d.json\n M references/backtesting.md\n M references/growth-driver-tree.md\n M references/input-schema.md\n M references/management-targets.md\n M references/model-library.md\n M references/research-coverage.md\n M references/resource-business-guidance.md\n M scripts/analysis/confidence.py\n M scripts/analysis/sensitivity.py\n M scripts/contracts/constants.py\n M scripts/contracts/document.py\n M scripts/forecast/calc.py\n M scripts/forecast/segments.py\n M scripts/generate_input_template.py\n M scripts/model_registry.py\n M scripts/research/targets.py\n M scripts/revenue_backtest.py\n M scripts/revenue_core.py\n M scripts/revenue_report.py\n M scripts/schema_compatibility.py\n M tests/golden_behavior_hashes.json\n M tests/test_backtest.py\n M tests/test_data_contract.py\n M tests/test_generate_input_template.py\n M tests/test_golden_behavior_lock.py\n M tests/test_industry_end_to_end.py\n M tests/test_models.py\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse-L1-reuse-any-year-stdout.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse-L2-reuse-exact-FY2026-stdout.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse-L3-control-missing-FY2019-stdout.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse-L4-control-unknown-company-stdout.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse.json\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-cross-repo-reuse.md\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-dropbox-bytes.json\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-dropbox-bytes.md\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/r45-ci-step1-unit.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/r45-ci-step2-contract.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/run_r4_cross_repo_reuse.py\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/run_r5_dropbox_bytes.py\n?? assurance/runs/2026-09-11_r4-phase-b/reviews/B.VR-r4.json\n?? assurance/runs/2026-09-11_r4-phase-b/reviews/B.VR-r5.json\n?? audit_review/2026-09-18_real_company_skill_audit/\n?? docs/buy_side_model_audit_2026-09-18.md\n?? docs/buy_side_review_2026-09-18.md\n?? docs/buy_side_validation_2026-09-18.json\n?? references/buy-side-methodology.md\n?? references/extended-models.md\n?? references/industry-lifecycle-routing.md\n?? scripts/model_extensions.py\n?? tests/test_buy_side_accuracy.py\n?? tests/test_independent_targets.py\n?? tests/test_lifecycle_forecasts.py\n?? tests/test_model_economic_guardrails.py\n?? tests/test_model_extensions.py\n?? tests/test_model_integration_bounds.py\n"
+      },
+      "filing-fetch": {
+        "head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+        "porcelain": ""
+      }
+    },
+    "wiki_src": {
+      "file_count": 143,
+      "tree_sha256": "d201140eabd226e44fb5895aceed10c9ace1088eda12754b2d8082db81c8b716"
+    }
+  },
+  "summary": {
+    "L1_status": "capture_ready",
+    "L1_canonical_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf",
+    "L1_content_sha256": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+    "L1_digest_is_the_verified_one": true,
+    "L1_byte_size": 4172424,
+    "L1_bytes_match_b08_level2": true,
+    "L1_wiki_side_outcome": "reused_existing",
+    "L1_wiki_side_qualification": "verified_input",
+    "L1_wiki_calls": 2,
+    "L1_downloads": 0,
+    "L1_invalid_artifacts": {
+      "normalized": "artifact_status_not_completed",
+      "summary": "artifact_source_sha_missing"
+    },
+    "reuse_legs": 2,
+    "per_leg_downloads": {
+      "L1-reuse-any-year": 0,
+      "L2-reuse-exact-FY2026": 0,
+      "L3-control-missing-FY2019": 0,
+      "L4-control-unknown-company": 0
+    },
+    "allow_download_flag_passed": false,
+    "control_statuses": {
+      "L3-control-missing-FY2019": "not_found",
+      "L4-control-unknown-company": "identity_error"
+    },
+    "unknown_company_error_type": [
+      null
+    ]
+  },
+  "invariants": {
+    "production_db_unchanged": true,
+    "production_wal_unchanged": true,
+    "no_pause_files": true,
+    "no_new_file_under_companies": true,
+    "companies_digest_scope": "relative path + size for every file (not content)",
+    "repos_unchanged_during_run": true,
+    "heads_unchanged": true,
+    "product_source_unchanged": true,
+    "pyc_caches_unchanged": true,
+    "every_leg_reports_zero_downloads": true,
+    "allow_download_never_passed": true
+  },
+  "catalog_dir_diff": {
+    "changed": [
+      {
+        "path": "catalog.sqlite3-shm",
+        "before": [
+          32768,
+          1789759163372751100
+        ],
+        "after": [
+          32768,
+          1789759671162009900
+        ]
+      }
+    ],
+    "changed_total": 1,
+    "added": [],
+    "added_total": 0,
+    "removed": [],
+    "removed_total": 0,
+    "capped_at": 50,
+    "catalog_dir_changed": true
+  },
+  "ran_at_utc": "2026-09-18T19:28:50.122092+00:00"
+}

@@ -1,0 +1,270 @@
+{
+  "ok": true,
+  "sut_version": "i14b-before-1",
+  "case_count": 20,
+  "tolerance_seconds_input": 5.0,
+  "capture_tolerance_seconds_input": 5.0,
+  "frozen_now_utc": "2026-09-20T02:56:38Z",
+  "verdicts": [
+    {
+      "case_id": "W1",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "reject_claim",
+      "refusals": [],
+      "computed": {
+        "elapsed_seconds": 2220.0,
+        "sample_count": 30
+      },
+      "note": "card oracle: observation 00:00-00:29 then quick_check 8 min -> observation is 29 min, NOT 37"
+    },
+    {
+      "case_id": "W2",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "elapsed_seconds": 2220.0,
+        "sample_count": 30
+      },
+      "note": "same raw record, but the claim calls the 37 min command total the observation"
+    },
+    {
+      "case_id": "W3",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "elapsed_seconds": 2220.0,
+        "sample_count": 30
+      },
+      "note": "same raw record, claim adds quick_check to the observation (29+8=37)"
+    },
+    {
+      "case_id": "W4",
+      "class": "window_accounting",
+      "requirement_id": "OVERLAP-NOT-SUMMED(I-14-B#1)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "elapsed_seconds": 2940.0,
+        "sample_count": 0
+      },
+      "note": "two overlapping observation windows; the claim sums them (2940) instead of the union (2400)"
+    },
+    {
+      "case_id": "W5",
+      "class": "window_accounting",
+      "requirement_id": "OVERLAP-NOT-SUMMED(I-14-B#1)",
+      "verdict": "reject_claim",
+      "refusals": [],
+      "computed": {
+        "elapsed_seconds": 2940.0,
+        "sample_count": 0
+      },
+      "note": "same two windows; the claim uses the union (2400)"
+    },
+    {
+      "case_id": "W6",
+      "class": "window_accounting",
+      "requirement_id": "UNMEASURED-IS-NOT-ZERO(I-14-A M6)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "elapsed_seconds": 0.0,
+        "sample_count": 1
+      },
+      "note": "one sample only; a 0-second observation claim is unsupportable (unmeasured != 0)"
+    },
+    {
+      "case_id": "W7",
+      "class": "window_accounting",
+      "requirement_id": "SAMPLES-INSIDE-WINDOW(I-14-B#1)",
+      "verdict": "reject_claim",
+      "refusals": [],
+      "computed": {
+        "elapsed_seconds": 2220.0,
+        "sample_count": 5
+      },
+      "note": "one sample sits after observation_finished_at; it must not extend the span"
+    },
+    {
+      "case_id": "C1",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 7,
+        "window_status": "complete"
+      },
+      "note": "historical attack reproduced from reviews/revenue/review.md:13: 7 distinct ids, one future instant, empty evidence hashes"
+    },
+    {
+      "case_id": "C2",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 5,
+        "window_status": "pending"
+      },
+      "note": "honest but incomplete: 5 of 7 daily, claim stays pending"
+    },
+    {
+      "case_id": "C3",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 7,
+        "window_status": "complete"
+      },
+      "note": "SYNTHETIC hand-written ledger that satisfies every rule; proves the algorithm can reach complete ONLY from rule-satisfying records. NOT a real observation."
+    },
+    {
+      "case_id": "C4",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 6,
+        "window_status": "pending"
+      },
+      "note": "claim says complete but only 6 consecutive daily runs exist"
+    },
+    {
+      "case_id": "C5",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 7,
+        "window_status": "complete"
+      },
+      "note": "records as C3 but reached with a simulated clock -> must not be eligible even so"
+    },
+    {
+      "case_id": "C6",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 6,
+        "window_status": "pending"
+      },
+      "note": "7 distinct dates but the last two share a run_id (copied report)"
+    },
+    {
+      "case_id": "C7",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 7,
+        "window_status": "complete"
+      },
+      "note": "records as C3 but every daily entry has an empty evidence hash"
+    },
+    {
+      "case_id": "L1",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ]
+      },
+      "note": "honest pre-placed-recorder anchors, exact offsets, live capture"
+    },
+    {
+      "case_id": "L2",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "label_offsets_seconds": [
+          29,
+          88,
+          207
+        ]
+      },
+      "note": "historical WR defect: the 30/60/120 labels were cumulative waits 29/88/207 s, not anchor instants"
+    },
+    {
+      "case_id": "L2b",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "label_offsets_seconds": [
+          29,
+          88,
+          207
+        ]
+      },
+      "note": "same cumulative waits, but presented as a post-hoc log"
+    },
+    {
+      "case_id": "L3",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ]
+      },
+      "note": "offsets exact but the snapshot was captured one hour later from a log"
+    },
+    {
+      "case_id": "L4",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          30,
+          30
+        ]
+      },
+      "note": "a single snapshot at +30 s relabelled as three separate labels"
+    },
+    {
+      "case_id": "L5",
+      "class": "login_anchor",
+      "requirement_id": "WR-LOGIN-30-60-120",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ]
+      },
+      "note": "three labels measured against three DIFFERENT anchor events, not one shared anchor"
+    }
+  ],
+  "accepted_claim_count": 15,
+  "refusal_code_count": 0
+}

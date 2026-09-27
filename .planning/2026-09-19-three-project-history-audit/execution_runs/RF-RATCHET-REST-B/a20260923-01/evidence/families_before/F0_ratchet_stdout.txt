@@ -1,0 +1,33 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+___________ ComplexityRatchetTests.test_frozen_files_do_not_worsen ____________
+
+self = <test_complexity_ratchet.ComplexityRatchetTests testMethod=test_frozen_files_do_not_worsen>
+
+    def test_frozen_files_do_not_worsen(self):
+        for rel, frozen in sorted(FROZEN_MAX.items()):
+            path = SRC / rel
+            self.assertTrue(path.is_file(), f"ratchet file missing: {rel}")
+            actual = _max_complexity(path.read_text(encoding="utf-8"))
+>           self.assertLessEqual(actual, frozen, f"{rel} max {actual} > {frozen}")
+E           AssertionError: 32 not less than or equal to 23 : analysis/confidence.py max 32 > 23
+
+tools\tests\test_complexity_ratchet.py:82: AssertionError
+______________ ComplexityRatchetTests.test_new_files_stay_simple ______________
+
+self = <test_complexity_ratchet.ComplexityRatchetTests testMethod=test_new_files_stay_simple>
+
+    def test_new_files_stay_simple(self):
+        for path in sorted(SRC.rglob("*.py")):
+            rel = str(path.relative_to(SRC)).replace("\\", "/")
+            if rel in FROZEN_MAX:
+                continue
+            actual = _max_complexity(path.read_text(encoding="utf-8"))
+>           self.assertLessEqual(actual, NEW_FILE_MAX, f"{rel} max {actual} > {NEW_FILE_MAX}")
+E           AssertionError: 27 not less than or equal to 10 : model_extensions.py max 27 > 10
+
+tools\tests\test_complexity_ratchet.py:90: AssertionError
+=========================== short test summary info ===========================
+FAILED tools/tests/test_complexity_ratchet.py::ComplexityRatchetTests::test_frozen_files_do_not_worsen
+FAILED tools/tests/test_complexity_ratchet.py::ComplexityRatchetTests::test_new_files_stay_simple
+2 failed in 4.84s

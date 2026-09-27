@@ -1,0 +1,88 @@
+{
+  "arms": [
+    {
+      "arm": "MUT-G1",
+      "crash_returned": true,
+      "mutant_sha256": "d93e7361bafdac6cc65d407ef994b995a57a618906a4e34451e31209ccd57a0c",
+      "probes": [
+        {
+          "rc": 4,
+          "report_written": false,
+          "shape": "B1",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"unhashable type: 'list'\"}\n"
+        },
+        {
+          "rc": 4,
+          "report_written": false,
+          "shape": "B2",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"unhashable type: 'dict'\"}\n"
+        },
+        {
+          "rc": 4,
+          "report_written": false,
+          "shape": "B11",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"unhashable type: 'list'\"}\n"
+        }
+      ],
+      "reverts": "BASIS_REGISTRY tuple -> set"
+    },
+    {
+      "arm": "MUT-G2",
+      "crash_returned": true,
+      "mutant_sha256": "3efc888f8245754a0d65284e5652df44d83e1f90aa7694b3ae1e35b783fa4bca",
+      "probes": [
+        {
+          "rc": 4,
+          "report_written": false,
+          "shape": "B3",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"'list' object has no attribute 'get'\"}\n"
+        },
+        {
+          "rc": 4,
+          "report_written": false,
+          "shape": "B12a",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"'str' object has no attribute 'get'\"}\n"
+        }
+      ],
+      "reverts": "claim carrier guard -> original line"
+    }
+  ],
+  "attempt_id": "a20260923-01",
+  "baseline_sut_sha256": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
+  "card": "T1-10-FIX",
+  "checks": [
+    {
+      "detail": "count=1",
+      "holds": true,
+      "name": "MUT-G3: mutate.r2.py J16 anchor exactly-once in fixed SUT"
+    },
+    {
+      "detail": "count=1",
+      "holds": true,
+      "name": "MUT-G3: anchor also exactly-once in baseline (comparison)"
+    },
+    {
+      "detail": "",
+      "holds": true,
+      "name": "fixed registry block present exactly once"
+    },
+    {
+      "detail": "",
+      "holds": true,
+      "name": "fixed carrier guard present exactly once"
+    },
+    {
+      "detail": "[{\"shape\": \"B1\", \"rc\": 4, \"report_written\": false, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"unhashable type: 'list'\\\"}\\n\"}, {\"shape\": \"B2\", \"rc\": 4, \"report_written\": false, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"unhashable type: 'dict'\\\"}\\n\"}, {\"shape\": \"B11\", \"rc\": 4, \"report_written\": false, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"unhashable type: 'list'\\\"}\\n\"}]",
+      "holds": true,
+      "name": "MUT-G1: guard reverted -> crash RETURNS (non-vacuous)"
+    },
+    {
+      "detail": "[{\"shape\": \"B3\", \"rc\": 4, \"report_written\": false, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"'list' object has no attribute 'get'\\\"}\\n\"}, {\"shape\": \"B12a\", \"rc\": 4, \"report_written\": false, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"'str' object has no attribute 'get'\\\"}\\n\"}]",
+      "holds": true,
+      "name": "MUT-G2: carrier guard removed -> crash RETURNS (non-vacuous)"
+    }
+  ],
+  "failed_checks": [],
+  "fixed_sut_sha256": "064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d",
+  "overall": "PASS"
+}

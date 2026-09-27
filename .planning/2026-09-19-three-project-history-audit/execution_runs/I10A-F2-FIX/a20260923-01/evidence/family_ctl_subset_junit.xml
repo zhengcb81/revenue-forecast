@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="5" time="602.180" timestamp="2026-09-24T22:02:11.830578+01:00" hostname="DESKTOP-156V213"><testcase classname="tests.test_fc1004_platform" name="test_install_sync_gate_detects_drift" time="0.284"><failure message="AssertionError: sync failed: &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026...l\\Temp\\dsh-5SPejJ\\p\\pytest-of-郑曾波\\pytest-3\\test_install_sync_gate_detects0\\installed'], returncode=1, stdout='').returncode">tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/dsh-5SPejJ/p/pytest-of-郑曾波/pytest-3/test_install_sync_gate_detects0')
+
+    def test_install_sync_gate_detects_drift(tmp_path: Path):
+        """R4.2 install-sync consistency (self-contained): syncing the canonical
+        skill to a throwaway destination must yield an identical manifest
+        (repo == installed copy), proving the sync mechanism detects and closes
+        drift without depending on the real installed-copy state."""
+        dest = tmp_path / "installed"
+        proc = subprocess.run(
+            [sys.executable, "-B", str(PROJECT_ROOT / "tools" / "sync_installations.py"),
+             "--apply", "--destination", str(dest)],
+            capture_output=True, text=True, encoding="utf-8", timeout=120,
+            cwd=str(PROJECT_ROOT),
+        )
+&gt;       assert proc.returncode == 0, f"sync failed: {proc.stdout[-400:]}"
+E       AssertionError: sync failed: 
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026...l\\Temp\\dsh-5SPejJ\\p\\pytest-of-郑曾波\\pytest-3\\test_install_sync_gate_detects0\\installed'], returncode=1, stdout='').returncode
+
+..\..\iso\rf\tests\test_fc1004_platform.py:94: AssertionError</failure></testcase><testcase classname="tests.test_zr804_platform_shape" name="test_installed_copy_executes_with_canonical_identity[install_root0]" time="300.023"><failure message="subprocess.TimeoutExpired: Command '['C:\\Miniconda\\python.exe', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I10A-F2-FIX\\a20260923-01\\iso_ctl\\rf\\tools\\sync_installations.py', '--apply']' timed out after 300 seconds">install_root = WindowsPath('C:/Users/郑曾波/.agents/skills/revenue-forecast')
+
+    @pytest.mark.parametrize("install_root", INSTALL_ROOTS)
+    def test_installed_copy_executes_with_canonical_identity(install_root):
+&gt;       _sync_installations()
+
+..\..\iso\rf\tests\test_zr804_platform_shape.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\iso\rf\tests\test_zr804_platform_shape.py:161: in _sync_installations
+    subprocess.run(
+C:\Miniconda\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\subprocess.py:1222: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Popen: returncode: 1 args: ['C:\\Miniconda\\python.exe', 'C:\\Users\\郑曾波\\P...&gt;
+input = None, endtime = 5540.5662605, orig_timeout = 300
+
+    def _communicate(self, input, endtime, orig_timeout):
+        # Start reader threads feeding into a list hanging off of this
+        # object, unless they've already been started.
+        if self.stdout and not hasattr(self, "_stdout_buff"):
+            self._stdout_buff = []
+            self.stdout_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stdout, self._stdout_buff))
+            self.stdout_thread.daemon = True
+            self.stdout_thread.start()
+        if self.stderr and not hasattr(self, "_stderr_buff"):
+            self._stderr_buff = []
+            self.stderr_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stderr, self._stderr_buff))
+            self.stderr_thread.daemon = True
+            self.stderr_thread.start()
+    
+        if self.stdin:
+            self._stdin_write(input)
+    
+        # Wait for the reader threads, or time out.  If we time out, the
+        # threads remain reading and the fds left open in case the user
+        # calls communicate again.
+        if self.stdout is not None:
+            self.stdout_thread.join(self._remaining_time(endtime))
+            if self.stdout_thread.is_alive():
+&gt;               raise TimeoutExpired(self.args, orig_timeout)
+E               subprocess.TimeoutExpired: Command '['C:\\Miniconda\\python.exe', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I10A-F2-FIX\\a20260923-01\\iso_ctl\\rf\\tools\\sync_installations.py', '--apply']' timed out after 300 seconds
+
+C:\Miniconda\Lib\subprocess.py:1646: TimeoutExpired</failure></testcase><testcase classname="tests.test_zr804_platform_shape" name="test_installed_copy_executes_with_canonical_identity[install_root1]" time="300.024"><failure message="subprocess.TimeoutExpired: Command '['C:\\Miniconda\\python.exe', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I10A-F2-FIX\\a20260923-01\\iso_ctl\\rf\\tools\\sync_installations.py', '--apply']' timed out after 300 seconds">install_root = WindowsPath('C:/Users/郑曾波/.codex/skills/revenue-forecast')
+
+    @pytest.mark.parametrize("install_root", INSTALL_ROOTS)
+    def test_installed_copy_executes_with_canonical_identity(install_root):
+&gt;       _sync_installations()
+
+..\..\iso\rf\tests\test_zr804_platform_shape.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\iso\rf\tests\test_zr804_platform_shape.py:161: in _sync_installations
+    subprocess.run(
+C:\Miniconda\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\subprocess.py:1222: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Popen: returncode: 1 args: ['C:\\Miniconda\\python.exe', 'C:\\Users\\郑曾波\\P...&gt;
+input = None, endtime = 5840.6851892, orig_timeout = 300
+
+    def _communicate(self, input, endtime, orig_timeout):
+        # Start reader threads feeding into a list hanging off of this
+        # object, unless they've already been started.
+        if self.stdout and not hasattr(self, "_stdout_buff"):
+            self._stdout_buff = []
+            self.stdout_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stdout, self._stdout_buff))
+            self.stdout_thread.daemon = True
+            self.stdout_thread.start()
+        if self.stderr and not hasattr(self, "_stderr_buff"):
+            self._stderr_buff = []
+            self.stderr_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stderr, self._stderr_buff))
+            self.stderr_thread.daemon = True
+            self.stderr_thread.start()
+    
+        if self.stdin:
+            self._stdin_write(input)
+    
+        # Wait for the reader threads, or time out.  If we time out, the
+        # threads remain reading and the fds left open in case the user
+        # calls communicate again.
+        if self.stdout is not None:
+            self.stdout_thread.join(self._remaining_time(endtime))
+            if self.stdout_thread.is_alive():
+&gt;               raise TimeoutExpired(self.args, orig_timeout)
+E               subprocess.TimeoutExpired: Command '['C:\\Miniconda\\python.exe', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I10A-F2-FIX\\a20260923-01\\iso_ctl\\rf\\tools\\sync_installations.py', '--apply']' timed out after 300 seconds
+
+C:\Miniconda\Lib\subprocess.py:1646: TimeoutExpired</failure></testcase><testcase classname="tests.test_zr907_drift_patrol" name="test_c3_cli_reports_all_checks" time="0.757"><failure message="AssertionError: assert None&#10; +  where None = &lt;function search at 0x000002086C9B0D60&gt;('OK\\s+installation', 'OK   version\nFAIL installation\n     installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.p...emand.py\n  scripts/publication_registry.py\n\nOK   config\nOK   docs\nOK   dependencies\nOK   schema\nOK   manifest\n')&#10; +    where &lt;function search at 0x000002086C9B0D60&gt; = re.search">def test_c3_cli_reports_all_checks():
+        proc = subprocess.run(
+            [sys.executable, "-B", str(ROOT / "tools" / "drift_patrol.py")],
+            capture_output=True, text=True, encoding="utf-8", timeout=300,
+        )
+        out = proc.stdout + proc.stderr
+        for check in ("version", "installation", "config", "docs",
+                      "dependencies", "schema", "manifest"):
+            assert check in out, f"check {check} missing from CLI output"
+        # schema/manifest/installation lines must be OK; config is known-red
+        assert re.search(r"OK\s+schema", out)
+        assert re.search(r"OK\s+manifest", out)
+&gt;       assert re.search(r"OK\s+installation", out)
+E       AssertionError: assert None
+E        +  where None = &lt;function search at 0x000002086C9B0D60&gt;('OK\\s+installation', 'OK   version\nFAIL installation\n     installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.p...emand.py\n  scripts/publication_registry.py\n\nOK   config\nOK   docs\nOK   dependencies\nOK   schema\nOK   manifest\n')
+E        +    where &lt;function search at 0x000002086C9B0D60&gt; = re.search
+
+..\..\iso\rf\tests\test_zr907_drift_patrol.py:119: AssertionError</failure></testcase><testcase classname="tests.test_zr907_drift_patrol" name="test_c3_patrol_core_gates_green" time="0.631"><failure message="AssertionError: installation must be green: {'check': 'installation', 'problems': ['installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.py\n  scripts/forecast/segments.py\n  scripts/generate_input_template.py\n  scripts/internal_flow.py\n  scripts/lint_input.py\n  scripts/mine_year_operation.py\n  scripts/mixed_recognition.py\n  scripts/model_extensions.py\n  scripts/model_registry.py\n  scripts/processed_artifact_canary.py\n  scripts/processing_demand.py\n  scripts/publication_registry.py\n'], 'ok': False}&#10;assert False">def test_c3_patrol_core_gates_green():
+        """schema/manifest/installation (skill hash) must be green.  config was
+        a KNOWN red (ZR-907 finding: future_lake vs CONFIG-DBX-02), fixed in
+        GP-001 by syncing the allowlist to {dropbox_stock, future_lake}."""
+        results = {entry["check"]: entry for entry in dp.patrol()}
+        for check in ("schema", "manifest", "installation"):
+&gt;           assert results[check]["ok"], f"{check} must be green: {results[check]}"
+E           AssertionError: installation must be green: {'check': 'installation', 'problems': ['installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.py\n  scripts/forecast/segments.py\n  scripts/generate_input_template.py\n  scripts/internal_flow.py\n  scripts/lint_input.py\n  scripts/mine_year_operation.py\n  scripts/mixed_recognition.py\n  scripts/model_extensions.py\n  scripts/model_registry.py\n  scripts/processed_artifact_canary.py\n  scripts/processing_demand.py\n  scripts/publication_registry.py\n'], 'ok': False}
+E           assert False
+
+..\..\iso\rf\tests\test_zr907_drift_patrol.py:102: AssertionError</failure></testcase></testsuite></testsuites>

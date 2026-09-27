@@ -1,0 +1,86 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1104",
+  "reviewer": "reviewer-fc1104-independent-r2",
+  "reviewer_identity": "reviewer-fc1104-independent-r2",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "fed22700d65754fbdb4a61968eff323b533fe3f5",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "154a454c597a3ae16526ef5f6328230fd11d5797",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "commands_replayed": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_fc1104_dashboard.py -q",
+      "exit_code": 0,
+      "result": "5 passed in 0.31s",
+      "cwd": "fc-1104 worktree @154a454"
+    },
+    {
+      "command": "negative smoke: T2-only fresh run -> audit_dashboard release gate",
+      "exit_code": 1,
+      "result": "gate FAIL 'no T3 report' (expected-nonzero per FC-703 r2)",
+      "cwd": "scratch report-root"
+    },
+    {
+      "command": "positive smoke: fresh T2 ok + fresh T3 passed -> audit_dashboard release gate",
+      "exit_code": 0,
+      "result": "gate PASS; ledger.json written atomically",
+      "cwd": "scratch report-root"
+    },
+    {
+      "command": "git diff --stat fed2270..154a454",
+      "exit_code": 0,
+      "result": "exactly 2 files: tests/test_fc1104_dashboard.py (+98), tools/audit_dashboard.py (+137); both in allowed_files; no production code modified"
+    },
+    {
+      "command": "python -B tools/receipt_validator.py --receipt assurance/fc/FC-1104/11_implementer_receipt.json --accept --implementer honest-implementer --reviewer reviewer-fc1104-independent-r2 --json",
+      "exit_code": 0,
+      "result": "ok: true (post-stamp)"
+    }
+  ],
+  "scenario_results": [
+    {
+      "id": "AUD-07",
+      "status": "passed",
+      "note": "receipt gate PASS on fresh T2+T3; negative smoke (T2-only -> FAIL 'no T3 report' exit 1) recorded in scenario note with expected-nonzero semantics; not in commands"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "FC-1104-M1",
+      "killed": true,
+      "detail": "r1 verified: freshness check removed -> stale-T2 test fails; receipt mutation.killed=true. Not re-mutated in r2 (code unchanged from r1; r2 scope = receipt governance)"
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "note": "codegraph_callers audit_dashboard: no production callers; standalone new tool"
+  },
+  "rollback": {
+    "required": true,
+    "passed": true,
+    "note": "single revert-able commit 154a454; standalone tool"
+  },
+  "findings": [
+    {
+      "id": "F2",
+      "severity": "low",
+      "evidence": "pre-existing command_registry argv drift (sync_installations.py --check does not exist); informational, predates FC-1104, non-blocking",
+      "recovery": "recorded in implementer receipt review.note; optional registry cleanup WU"
+    }
+  ],
+  "unresolved_findings": [],
+  "decision": "accepted",
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-12T08:31:00Z",
+  "reviewer_receipt_sha256": "d315e544071fe7a3b61a6e921fb7e938ad43f63c8898871c34702e2501f03bee"
+}

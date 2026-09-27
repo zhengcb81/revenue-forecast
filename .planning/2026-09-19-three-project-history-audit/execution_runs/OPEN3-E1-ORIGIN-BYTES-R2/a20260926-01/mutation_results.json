@@ -1,0 +1,93 @@
+{
+  "validator_rules": "oracle.md §四 fail-closed 触发条件 V1–V10",
+  "cases": [
+    {
+      "case": "G",
+      "desc": "正常：目标 URL + 200 + 真实 8-K 体",
+      "expected": "GREEN",
+      "result": {
+        "accepted": true,
+        "failures": []
+      }
+    },
+    {
+      "case": "R1",
+      "desc": "传入 SEC 拦截页当 origin 字节",
+      "expected": "RED",
+      "result": {
+        "accepted": false,
+        "failures": [
+          "V1 http_status!=200 (403)",
+          "V7 SEC block/interstitial page detected",
+          "V4 verbatim_quote not located in body"
+        ]
+      }
+    },
+    {
+      "case": "R2",
+      "desc": "传入同一申报的 index 页（相似文档、非目标文档）",
+      "expected": "RED",
+      "result": {
+        "accepted": false,
+        "failures": [
+          "V4 verbatim_quote not located in body",
+          "V6 url != frozen target url (S1 fail-closed)"
+        ]
+      }
+    },
+    {
+      "case": "R3",
+      "desc": "传入 web_fetch 文本转写（非响应字节）",
+      "expected": "RED",
+      "result": {
+        "accepted": false,
+        "failures": [
+          "V2b bytes mismatch",
+          "V4 verbatim_quote not located in body",
+          "V8 mechanism is text transcription, not download-type (ACCT L126)"
+        ]
+      }
+    },
+    {
+      "case": "R4",
+      "desc": "sha256 与文件复算不符",
+      "expected": "RED",
+      "result": {
+        "accepted": false,
+        "failures": [
+          "V2 sha256 mismatch"
+        ]
+      }
+    },
+    {
+      "case": "R5",
+      "desc": "门 0 拒写却仍尝试落产品仓",
+      "expected": "RED",
+      "result": {
+        "accepted": false,
+        "failures": [
+          "V10 product-repo landing attempted while gate0 denied (discipline 16)"
+        ]
+      }
+    },
+    {
+      "case": "R6",
+      "desc": "缺 verbatim_quote 与 retrieved_utc",
+      "expected": "RED",
+      "result": {
+        "accepted": false,
+        "failures": [
+          "V4 verbatim_quote not located in body",
+          "V3 missing retrieved_utc"
+        ]
+      }
+    }
+  ],
+  "discrimination_ok": true,
+  "quote_used_for_validation": "Q1 (verbatim_quotes[0] from OPEN3-E1-ACQUISITION provenance)",
+  "R1_block_page": {
+    "status": 403,
+    "bytes": 4819,
+    "sha256": "2922be224c135e1d4189e37f70e25af3d9e17ce40650c25a1611cb99a4e040a0"
+  }
+}

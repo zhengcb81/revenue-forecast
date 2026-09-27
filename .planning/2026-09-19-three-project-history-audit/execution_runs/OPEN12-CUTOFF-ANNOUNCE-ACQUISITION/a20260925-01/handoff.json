@@ -1,0 +1,139 @@
+{
+  "station": "OPEN12-CUTOFF-ANNOUNCE-ACQUISITION",
+  "attempt": "a20260925-01",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "generated_utc": "2026-09-25T22:14:00Z",
+  "authorized_by": "OWNER_DECISIONS §二十七 #1",
+  "authorized_by_owner_words_verbatim": "两条都授权（建议）",
+  "authorized_by_row_verbatim": "派 `OPEN-4`（wiki 来源审核）与 `OPEN-12`（cutoff 后交易所公告取得方式）**受控取证**；**产物只落本计划目录**（同 §二十四 #3 形态）；**不解除任何 BLOCKED、不产生 ACCEPT**；两站交付后**仍须过 MERGE 七条**",
+  "station_layer": "acquisition_layer_only",
+  "three_layers": {
+    "acquisition_layer": "本工位：来源是否存在 / 可得 / 字节可核 —— 已交付",
+    "rule_review_layer": "交易所公告来源审核（可否采信、来源分级）—— 本工位不裁",
+    "grading_release_layer": "会计面（证据等级 E1/E2、命题与参数放行）—— 本工位不裁、不评级"
+  },
+  "releases_nothing": true,
+  "does_not_claim_I11A_acceptance": true,
+  "adds_no_new_domain_judgement": true,
+  "level_claimed": null,
+  "status_fields_changed": 0,
+  "implementer_signed": false,
+  "accept_produced": false,
+  "blocked_released": 0,
+  "rationale": "落点判定理由（本工位不属于「origin 字节经 filing-fetch」场景）：①本工位授权行 §二十七 #1 的执行映射逐字已写「产物只落本计划目录（同 §二十四 #3 形态）」；②§二十七 #2 的适用范围逐字为「仅限 origin 响应字节经 filing-fetch 取回」，而本工位 18 次尝试全程只用 web_fetch 只读 GET，filing_fetch_used=false；③本工位客观上未取得任何 origin 响应字节（harness web_fetch 只回解码/渲染文本），#2 所指对象在本工位不存在；④故 §二十四 L498 对本工位完整适用，corpus/ 与三份载体全部落本计划目录，产品仓写入=0；⑤前瞻留给父/owner：若后续确需 origin 字节（E1 形态），须另行授权 filing-fetch，届时才进入 #2 场景（产品仓落 + 本计划目录镜像与 sha 校验 + 仍标 external_retrieval_not_local）；本工位未申请、未执行该路径。",
+  "landing_target_decision": {
+    "decision": "plan_directory_only",
+    "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN12-CUTOFF-ANNOUNCE-ACQUISITION/a20260925-01/",
+    "is_section27_item2_scenario": false,
+    "section24_L498_applies_fully": true,
+    "filing_fetch_used": false,
+    "product_repo_writes": 0,
+    "reasons": [
+      "§二十七 #1 执行映射逐字：产物只落本计划目录（同 §二十四 #3 形态）",
+      "§二十七 #2 适用范围逐字：仅限 origin 响应字节经 filing-fetch 取回；本工位未用 filing-fetch",
+      "本工位未取得 origin 响应字节，#2 的前提对象不存在",
+      "web_fetch 是允许的只读方法，其落点即本计划目录"
+    ]
+  },
+  "evidence_elements_met": {
+    "url": {"met": true, "count": 18},
+    "retrieved_utc": {"met": "partial", "exact_for_saved_files": 3, "session_window_only": 15, "note": "harness web_fetch 不提供逐请求时间戳；不伪造精确到秒的单条时间（与 IND provenance 同口径）"},
+    "http_status": {"met": "13/18", "null_reason": "5 次为工具级失败（content-type 不支持 / 超时 / fetch failed / web_search 端点故障），不冒充 HTTP"},
+    "sha256_of_saved_bytes": {"met": true, "files": 3, "note": "sha256 覆盖实际保存字节；byte_fidelity = harness_spill_of_formatted_result"},
+    "verbatim_quotes": {"met": true, "min_per_entry": 3, "locators": "corpus 行号 + 字节偏移（已存条目）/ inline locator（未存条目）"},
+    "retrieval_method": {"met": true, "count": 18},
+    "third_party_marked": {"met": true, "entries": ["att-04", "att-09", "att-10", "att-11", "att-12", "att-13"], "label": "external_retrieval_not_local"},
+    "origin_response_bytes": {"met": false, "note": "0 件 —— web_fetch 只回文本不产响应字节；文档级正文亦未落盘 ⇒ origin 字节级核验 BLOCKED"},
+    "independent_review_path": {"met": "partial", "note": "HKEX 为交易所一级直取（非代理）1 条路径；SEC 仅第三方代理 1 条路径、origin 403，无独立复核路径"}
+  },
+  "cutoff_window": {
+    "as_of": "2026-09-18",
+    "window": "(2026-09-18 00:00, 2026-09-25T22:11Z]",
+    "definition_sources": ["card_I-11-A.md L21 「来源晚于as_of或原文无法核查→STOP_EVIDENCE。」", "AUDIT_REPORT.md L76 「capture验证要求published<=captured<=as_of。」", "requests/*.json L4 as_of_date=2026-09-18"],
+    "coverage_relation": {
+      "hkex_first_party": "窗口有覆盖：全类别 4,920 条（09-18→09-25）、cutoff 当日起 922 条（09-18→09-20）、财务类 748 条；每查询仅载入 100 条 ⇒ 全窗口未枚举",
+      "audited_entity_hit": "紫金矿业 H 股 02899 「2026 Interim Report」25/09/2026 12:01 ⇒ 被审计主体 cutoff 后公告实证存在（corpus/ext-01 L5 偏移 39,526）",
+      "sse_cninfo_first_party": "不可得（SSE 业务层拒绝 / 巨潮 POST-only 500 / 巨潮全文本 SPA 外壳）",
+      "sec_first_party": "不可得（403 × 2）；第三方 r.jina.ai 显示 MSFT 最新 8-K = 2026-09-02（cutoff 前），窗口内 0 条（仅 type=8-K&count=10 可见面）",
+      "third_party_eastmoney_601899": "最新 notice_date = 2026-09-17（cutoff 前），窗口内 0 条 —— 覆盖未证，不作无公告结论",
+      "xiaomi_01810": "未证：定向查询两次因 content-type 失败、第三方两次空列表、300 条已载入记录 0 命中（抽样≠不存在）"
+    }
+  },
+  "acquisition_findings": {
+    "source_exists": "PROVEN (HKEX 一级, 4,920 条窗口内公告, 含被审计主体紫金 H 股 cutoff 后件)",
+    "source_obtainable": "PARTIAL (HKEX 一级 GET 成功; 上交所/巨潮/SEC 一级均不可得; 小米定向未闭合)",
+    "bytes_verifiable": "NOT_PROVEN at origin level (origin 响应字节 0 件; 3 件已存为 harness 渲染文本并各自 sha256)",
+    "enumeration_complete": "NOT_PROVEN (每查询 100/4,920; 三腿覆盖未闭合)"
+  },
+  "c1_c8_status": {
+    "source": "execution_runs/T2-SIM-OPEN6-SEC/a20260922-01/ruling.md §5 (L163-L176)；owner §十九 已终确",
+    "precondition_note": "C1–C8 字面对象是 detected_and_ignored 落盘条件，不是交易所公告；本表只给「在取证层能证/不能证」，不代裁、不改判",
+    "C1": {"status": "NOT_EVIDENCED", "layer": "rule/implementation", "blocker": "需产品代码审查 + 负例红绿；本工位无写入面、未读产品源"},
+    "C2": {"status": "NOT_EVIDENCED", "layer": "rule/implementation", "blocker": "需 schema/变异臂；取证层反向硬事实：C2 要求的 source_sha256（对 origin 字节）当前不可算，origin 字节 0 件 ⇒ 该绑定先卡在取证层", "acquisition_contribution": "source_sha256 前置不可满足（origin bytes unavailable）"},
+    "C3": {"status": "NOT_EVIDENCED", "layer": "rule/implementation", "blocker": "需 grep 产品树与卡载体；本工位未做"},
+    "C4": {"status": "NOT_EVIDENCED", "layer": "rule/implementation", "blocker": "需 I-05-B/I-06-B 接口成形 + 消费端负例；本工位未做"},
+    "C5": {"status": "NOT_EVIDENCED", "layer": "rule/implementation", "blocker": "需代码审查 + 开关后字节不变负例；本工位未做"},
+    "C6": {"status": "NOT_EVIDENCED", "layer": "rule/implementation", "blocker": "需策略上限与 TTL 负例；取证层注记：本工位 15/18 条仅有 session-window 时间戳，自身即弱时间面"},
+    "C7": {"status": "NOT_EVIDENCED", "layer": "rule/contract", "blocker": "需契约文本与两种语义各一负例；本工位未做"},
+    "C8": {"status": "NOT_EVIDENCED", "layer": "orchestration/registration", "blocker": "登记归编排层，须 owner 终确后转录；本工位不代登记，卡载体与 RESPONSES.md 一字未动"},
+    "summary": {"proven": 0, "not_evidenced": 8, "note": "8/8 均不属本工位裁权；唯一实质交集为 C2 的 source_sha256 前置（取证层实测：不可算）"}
+  },
+  "open_12_state": {
+    "before": "RULED_WITH_BLOCKED_VALUE（规则已裁、取值仍 BLOCKED）",
+    "after_this_attempt": "UNCHANGED —— 仍为 RULED_WITH_BLOCKED_VALUE；本工位只补取证层事实，不解锁、不改 status",
+    "what_was_acquired": "来源存在性（HKEX 一级、含紫金 H 股 cutoff 后公告）+ 部分可得性（HKEX GET 200 ×4）+ 3 件可重算 sha256 的响应呈现字节",
+    "still_missing": [
+      "origin 响应字节与公告原文档字节（含紫金 02899 23MB PDF 未下载）⇒ 字节级核验 BLOCKED",
+      "A 股（上交所/巨潮）一级列表在只读 GET 下不可得 ⇒ 601899 窗口覆盖未证",
+      "SEC origin 403 ⇒ MSFT 窗口覆盖只有第三方可见面，未证",
+      "小米 01810 定向查询未闭合（stockId 映射 JSONP，工具不支持）⇒ 窗口覆盖未证",
+      "全窗口枚举未完成（每查询 100/4,920）",
+      "OPEN-12 所指不一致（卡文 L408「校验器完备性另立专业卡」 vs owner L558「cutoff 后交易所公告取得方式」）未裁"
+    ]
+  },
+  "registered_conflicts": [
+    {
+      "type": "OPEN-12 所指不一致",
+      "card": "I-11-A/decision.md L408「是否需要为“校验器完备性”另立一张专业卡（统计/工程 reviewer）」",
+      "merge": "I11A-OPEN-MERGE/merge_ruling.md L362（G3 行，同卡文）",
+      "owner": "OWNER_DECISIONS.md L558「`OPEN-12`（cutoff 后交易所公告取得方式）」",
+      "handling": "登记不裁；本工位按 owner 行所指执行取证；不得据本交付读成卡文 L408 问题已处理"
+    }
+  ],
+  "attempts": {"total": 18, "web_fetch": 17, "web_search": 1, "http_200": 10, "http_403": 2, "http_500": 1, "tool_failures": 5, "usable_data": 6, "saved": 3, "third_party": 6},
+  "written_files": [
+    {"path": "corpus/ext-01_hkexnews_titleSearch_financial_20260918-20260925.txt", "bytes": 55471, "sha256": "ede179a0bce20b673bb0d879530871e0dbc86023de2511f122027d41737f917f"},
+    {"path": "corpus/ext-02_hkexnews_titleSearch_all_20260918-20260920.txt", "bytes": 60665, "sha256": "9a101bf92ab4d7909057088c9d9a3711f379401210fb968fc0c1cbc84fcd9c95"},
+    {"path": "corpus/ext-03_hkexnews_titleSearch_all_20260918-20260925.txt", "bytes": 57308, "sha256": "70eec1a6109661c436c78ea2209cf65c2348eeb6e00ab3c14fd475522025eb94"},
+    {"path": "provenance.json", "bytes": 29631, "sha256": "f2b1dc60d8f01db04632be65fcceb16177fb29fd348bf2054d62eb325fd60be1"},
+    {"path": "acquisition_report.md", "bytes": 19902, "sha256": "8ac1b14610df48d5fdfb77d8e8d83431739d60ae0893fd0f33795b090a15782a"},
+    {"path": "handoff.json", "bytes": null, "sha256": null, "note": "自指不可自证"}
+  ],
+  "file_format": {"utf8_no_bom": true, "line_endings": "LF", "json_reparsed_after_write": true, "bom_check": "provenance.json/acquisition_report.md 实测 bom=False, CR=0；handoff.json 写后重解析"},
+  "git_diff_observed": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "git_status_used": false,
+    "total_entries": 3826,
+    "git_diff_non_planning": 0,
+    "required": 0,
+    "note": "本工位 6 个产物均为未跟踪路径，不进入 git diff HEAD；非 .planning 写入 = 0"
+  },
+  "discipline_attestation": {
+    "git_write_ops": 0,
+    "git_status_calls": 0,
+    "product_repo_writes": 0,
+    "network_methods_used": ["web_fetch", "web_search"],
+    "filing_fetch_calls": 0,
+    "status_fields_changed": 0,
+    "green_samples_fabricated": false,
+    "fail_closed_applied": true
+  },
+  "not_done": [
+    "未声称 OPEN-12 已解锁 / 未解除任何 BLOCKED / 未产生 ACCEPT / 未代签",
+    "未改任何 status、命题 state、参数取值、卡载体、RESPONSES.md",
+    "未做证据等级判定（归会计面）、未做来源可用性裁定（归交易所公告来源审核）",
+    "未使用 filing-fetch、未写产品仓、未执行 git 写操作、未执行 git status",
+    "未下载窗口内紫金 02899 23MB PDF（未尝试，字节未证）",
+    "未枚举全窗口（100/4,920）、未闭合小米/A股/SEC 三腿覆盖"
+  ]
+}

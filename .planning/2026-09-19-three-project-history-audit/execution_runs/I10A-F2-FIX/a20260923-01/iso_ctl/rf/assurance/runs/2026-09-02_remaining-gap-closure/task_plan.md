@@ -1,0 +1,184 @@
+# 剩余缺口关闭实施计划（2026-09-02）
+
+> **2026-09-07优先状态**：本组下方9/6覆盖后又有其他任务推进。revenue HEAD=6682ecf，latest daily=20260906T210001Z/ok=false/空triplet；DEFAULT_PERIODS改为wiki账本，旧revenue green不代表当前资格。Git确认R9 revenue批1+2工具/测试及CI step已删，wiki批3日志记录延后；不重复执行、不在此追认其全量验收。当前差异见[状态覆盖](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/current-delta-2026-09-07.md)，整改以同目录执行手册为编排依据。CI协议是现有WP11输入，旧命令/批准不是本轮push、真实测试、网络、任务或删除授权。保留下方原日志及批准字节。
+
+> [当前状态总入口](../../../PLANNING_STATUS.md)
+
+> **2026-09-09 状态修正**：GP-006（real-roots 阻断且绿）、GP-008（自然触发闭环）、GP-010（sections 7/7）、N-1/FC-150x、CI 协议两项已关闭；GP-009 monthly 1/1、drill 1/1、daily 3/7、weekly 0/2 自然累积中；FC-705 仍关（P7 窗口差 19 秒）。当前逐项结案与证据见 [gp_tail_closure_2026-09-08.md](gp_tail_closure_2026-09-08.md)。
+
+> **2026-09-09 深夜更新（22:00 运行后）**：daily `20260909T210001Z` ok=true，权威账本开 **period 9**（hits=0）；FC-705 last-two = P7（23:59:41 ✗）+ P8（24:00:11 ✓）→ 仍 false，**预计 2026-09-10 22:00 运行后转 true**。GP-009 累积更新为 daily **4/7**、weekly 0/2。**R9 批 3 范围已按实测修正**（仅 `artifact_backfill.py` 零生产读者；其余候选均有活跃调用者），执行清单见 [r9_batch3_checklist.md](r9_batch3_checklist.md)，需技术门 + owner 政策门双重满足。Worker v5 独立轨道全部完成（冻结 51 项 + 三轴审查 accepted），仍不授权实施。
+
+## 2026-09-06 最新状态与领取规则（优先于下方全部旧覆盖/命令/批准摘要）
+
+2026-09-08规划覆盖：用户只批准planning调整，不授权实施、重新注册、删除或运行。原痛点审计继续保留，活动整改使用[R4虚拟数据湖计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md)及其测试矩阵/旧WP迁移表。A/B本地读取、C生产、D运维、M收入按实际依赖推进，不再叠加旧15包95门。本组只作历史执行/批准来源，不并行领取第二套队列，不把旧批准扩大为新动作许可。
+
+- GP-008参数错误已在revenue HEAD `2ff20d9`修复，注册器现为`run-daily`。旧“代码仍阻塞/必须先改拼写”失效；部署Action及自然触发仍未独立闭环，不自动重注册。
+- latest观测daily manifest=`20260905T194055Z`、period=2、ok=true，绑定旧`2cbd585`而非当前HEAD；legacy一个ended_at完成窗口、第二个未完成，close_allowed=false。旧9/3唯一run/零completed不再是最新状态，仍不可按预计日期放行。
+- GP-010观测为normalized7/7、review7/7、summary6/7、sections5/7，安全拒绝保留，列表式缺口未闭。kind宽范围历史产物214份与精确7份cohort不是同一范围；按owner已有处置保留，不执行旧“DELETE+重扫即无外部副作用”的回滚说法。
+- 117 accepted/197 passed不是原目标完成证明：9/6审计找到required tier、真实消费、业务计算、失败账本和发布等实质反例。历史receipt/批准原字节不改，禁止批量重签来制造当前资格。
+- 新H01自动prune归档覆盖风险是worker恢复前置。当前整改全部NOT_IMPLEMENTATION_AUTHORIZED；旧授权不自动包含新scope/新版本。GP/R9历史批准保留，但继续执行需WP01/12/13/14相应门、真实数据E2E和当前精确授权。
+
+以下9/2–9/5内容均为有日期的历史快照，不是新的可执行指令；若与本节冲突按本节及新计划处理。真实报告、完整观察、受控删除未完成，不以文档同步勾成完成。
+
+## 2026-09-05 当前状态覆盖（以下历史基线与旧停止点不再代表当前状态）
+
+本次为只读证据核对后的文档纠偏，不重开或改写原 CA/ZR DAG、receipt、scenario registry、冻结旧计划。原 DAG 的 completed / CA-201 是终局记录；不得据此推断 GP 与生产余项全部完成。
+
+| 工作单元 | 当前状态 | 证据与剩余项 |
+|---|---|---|
+| GP-001～004、007 | 历史实施已记录 | 保留原提交/验证记录，本次未重跑三仓全量 |
+| GP-005 | registry 登记 197/197 passed；生产语义不等同完成 | 9/4新增broker分节能力并真实执行；七份目标研报当前5/7有sections，仍非7/7 |
+| GP-006 | partial | Windows sibling 临时数据 job 已接入；continue-on-error=true，真实 catalog 套件仍未进入阻断式 CI |
+| GP-008 | blocked_code + deployment_action_unverified | 9/5已修电源条件、StartWhenAvailable并改22:00，owner记录重注册；但注册器仍生成 --run-daily，而 parser 只接受 run-daily，安全解析探针仍拒绝 |
+| GP-009 | 注册声明已记录；自然时间验收未完成 | owner记录daily/weekly已重注册；当前Action与实际自然触发未闭环，7 Daily/2 Weekly/1 Monthly/1 drill也未满足 |
+| GP-010 | 已批准、部分执行 | normalized 7/7、review receipt 7/7、summary 6/7；1份安全门正确拒绝；9/4规则提取后sections为5/7，仍有2份列表式研报缺口 |
+
+运行证据快照：daily_manifest=20260903T211059Z、observation_period=1；legacy_periods 仅一个 observing 窗口，completed=0、close_allowed=false。旧“最早9/6 03:30”预测已失去前提；只以两个实际 completed、各≥24h且hits=0窗口判门，不按日历自动放行。
+
+R9：9/3 owner 已批准 A+B，但本次不执行删除。GP-008修复/实际部署核验和窗口证据未满足；批1+2为revenue单commit，随后wiki批3独立commit。GP-010授权已获得，不再等待KD-08重新批准。详见本组两份授权记录与后续纠偏。
+
+> 目标：把 2026-09-02 全面审查发现的未完成目标全部实现。每个工作单元必须有机器证据（测试 + 独立复核 + receipt），每一步完成后必须核实并更新本页进度。
+
+## 1. 审查发现总表（全部 12 项缺口）
+
+### A 类：代码缺陷（本轮已修复）
+
+| ID | 缺口 | 证据 | 修复状态 |
+|---|---|---|---|
+| **A-1** | llm_summarizer.py:433 硬编码空 source_sha256 | SELECT 已 join `s.content_sha256 AS source_sha256` 但 INSERT 传 `""`；真实库 49 个产物被判 reusable | ✅ 已修复（afe5eb1）：`row["source_sha256"] if "source_sha256" in row.keys() else ""` |
+| **A-2** | artifact_handle.py:98-100 validator 对空 source_sha 放行 | `if artifact_source_sha and ...` 条件短路空值 | ✅ 已修复（afe5eb1）：`if not artifact_source_sha: reject(artifact_source_sha_missing)` |
+| **A-3** | runtime_policy.json policy_hash 漂移（77c1bdb7 ≠ c773099b） | ZR-409 第 4 root 配置后未重发快照 | ✅ 已修复（生产 CAS 重发，envelope=export 匹配） |
+
+### B 类：部署动作（设计上明确延后，需自然时间/授权）
+
+| ID | 缺口 | 性质 | 前置条件 |
+|---|---|---|---|
+| **B-1** | legacy 真实删除（R9 四 RED、quality.yml 行 133 真实调用、5 个 FC-150x N-1 待批） | 部署动作 | 两个 ≥24h 零 legacy_bridge_hits 自然观测窗口 + N-1 批准 |
+| **B-2** | 自然时间动态审核（7 Daily + 2 Weekly + 1 Monthly + 1 alert drill） | 部署动作 | Windows 任务注册 + 真实运行累积（当前 ledger 为零） |
+| **B-3** | 七份紫金研报真实语义处理（BR-01~26 scenario pending、0 artifacts/0 spans） | 部署动作 | KD-08 明示"不得批量处理真实研报"；需 cohort cutover 授权 |
+| **B-4** | privacy_class 3.0 config 升级（生产 config 仍 schema 1.0） | 配置升级 | config_doctor 兼容 + 全量测试 |
+
+### C 类：契约回溯工程（历史遗留）
+
+| ID | 缺口 | 规模 | 修复方式 |
+|---|---|---|---|
+| **C-1** | 87/117 单元 12 receipt 不满足 CA-103 契约（reviewed_object_sha256 ≠ 11 canonical_hash；12 结构无效） | 87 个单元 | 重签发 12 receipt（按当前 CA-103 契约）或显式豁免早期 git-blob 语义 |
+| **C-2** | scenario registry 197/197 全 pending、0 evidence_path、receipts 内 scenario_results 全空 | 197 个场景 | 回填真实执行证据（evidence_path + status=passed）或明确废弃并更新 closure-report |
+
+### D 类：生产接线（代码层完备，物理入口未接）
+
+| ID | 缺口 | 影响 | 修复方式 |
+|---|---|---|---|
+| **D-1** | v2 scanner 生产周期扫描物理入口仍走 v1 分支（cutover_decision 无 src 生产调用者） | 生产扫描仍是 v1 | scanner 主路径传 v2 flag 或接入 v2 adapter |
+| **D-2** | worker LLM 出口无 privacy/receipt 过滤（llm_summarizer.summarize_catalog_with_llm SQL 无过滤；readiness_graph/source_lifecycle 无生产调用者） | 986 条 dropbox summary 无 receipt 仍可被 LLM 汇总 | worker 选数 SQL 接 privacy/receipt 过滤门 |
+| **D-3** | 真实 roots E2E 套件被 CI --ignore（test_zr806 等仅在本地验收跑） | CI 不覆盖真实数据路径 | CI 加 windows-latest 单 job 或 self-hosted runner，把真实套件移回 |
+
+## 2. 实施阶段（Phase 1→4）
+
+### Phase 1：缺陷修复闭环（A 类 + D 类 1-2 项）
+
+目标：已修复的 3 个缺陷闭环验证 + 剩余 2 个代码缺陷修复。
+
+**工作单元**：
+
+1. **GP-001**（A-1/A-2 回归验证）：空 source_sha 修复的三仓回归
+   - 验证：wiki 全套测试 + revenue 全量回归 + filing 全套测试
+   - 核实：CI 三仓全绿（push 后）
+   - 检查点：真实库 49 个空 sha 产物被 validator 拒绝（assert）
+
+2. **GP-002**（D-1 v2 scanner 生产切入）：scanner 主路径传 v2 flag
+   - 修改：`scanner.py:833` `_scan_catalog_impl → scan_root_strategy(...)` 传 v2_scan_shadow 标志
+   - 测试：wiki scanner_cutover 5 + scanner_facade 4 全绿 + 新增真实扫描测试（v2 分支执行）
+   - 复核：独立 reviewer
+   - 检查点：生产扫描日志显示 v2 adapter 路径被调用
+
+3. **GP-003**（D-2 worker privacy 过滤）：worker LLM 出口加 privacy/receipt 门
+   - 修改：llm_summarizer.py 的选数 SQL 增加 receipt/privacy 过滤条件（接 readiness_graph 或 source_lifecycle）
+   - 测试：新增测试（无 receipt 的 private_user 文档不进选数）、wiki 全套回归
+   - 复核：独立 reviewer
+   - 检查点：986 条 dropbox summary 无 receipt 的文档不进 worker 选数
+
+### Phase 2：契约回溯（C 类）
+
+**工作单元**：
+
+4. **GP-004**（C-1 receipt 重签发）：87 个单元 12 receipt 重签
+   - 脚本：批量重生成 12_reviewer_receipt.json（reviewed_object_sha256=对应 11 canonical_hash，符合 CA-103 契约）
+   - 保留原 receipt 为 `.legacy.json` 备份；新 receipt 用当前格式
+   - 测试：批量 receipt-validate 112/117 通过（5 个 CA-001..004/101 旧格式 grandfathered）
+   - 复核：独立 reviewer
+   - 检查点：closure-report 87 incomplete → 0 incomplete
+
+5. **GP-005**（C-2 scenario 证据回填）：197 场景真实执行证据
+   - 写 scenario execution runner（逐场景真实执行 + evidence_path 记录）
+   - 回填：197 个 scenario 的 status=passed + evidence_path（receipt/日志路径）
+   - 测试：scenario-verify 从 197 unsatisfied → 0 unsatisfied
+   - 复核：独立 reviewer
+   - 检查点：scenario-verify 绿 + closure-report 完整
+
+### Phase 3：生产接线（D-3 + B-4）
+
+6. **GP-006**（D-3 真实 roots E2E 进 CI）：CI 加 windows-latest 单 job 或 self-hosted runner
+   - 修改：.github/workflows/quality.yml 加 job `real-roots`（windows-latest，需 git clone sibling repos）
+   - 测试：真实 roots 套件（test_zr806/test_zr1004 等）在 windows-latest 通过
+   - 检查点：CI 三 job 全绿（ubuntu quality + ubuntu contract + windows real-roots）
+
+7. **GP-007**（B-4 privacy_class 3.0 config 升级）：生产 config schema 1.0 → 3.0
+   - 修改：config/source_catalog.yaml schema 升级 + privacy_class 字段
+   - 测试：config_doctor 兼容 + wiki 全套回归
+   - 检查点：config_doctor 绿 + config schema=3.0
+
+### Phase 4：部署动作监督（B-1/B-2/B-3——这些需要自然时间/授权，不主动实施，但建立监督机制）
+
+8. **GP-008**（B-1 legacy 删除准备）：注册 Windows 任务开始生产观测
+   - 动作：注册 revenue_daily_t2 任务（schtasks /create）→ 每日跑 daily_t2_runner → 开始累积 legacy_bridge_hits 观测
+   - 监督：连续 2 个 ≥24h 窗口零 hit 后 CA-304 可执行删除
+   - 本计划只建立观测起点，不执行删除
+
+9. **GP-009**（B-2 自然时间审核准备）：注册 Daily/Weekly/Monthly 调度任务
+   - 动作：注册 schtasks（daily T2、weekly T3、monthly broker）→ 开始累积自然时间证据
+   - 监督：7 Daily/2 Weekly/1 Monthly/1 alert drill 完成后回填 closure ledger
+   - 本计划只注册调度起点，不等自然时间
+
+10. **GP-010**（B-3 研报语义处理准备）：向 KD-08 提交 cohort cutover 授权请求
+    - 动作：写授权申请文档（七份研报语义处理的范围/方法/风险）→ 等待批准
+    - 本计划只提交申请，不执行处理
+
+## 3. 每个工作单元的验收标准（统一）
+
+每个 GP 必须满足：
+- **RED→实施→GREEN**：先有失败测试，再修复，再绿
+- **独立复核**：reviewer 独立重跑/重扫，写 12_reviewer_receipt.json
+- **机器证据**：11 receipt canonical hash 可重算；12 指向 11 hash
+- **状态机**：lock-acquire → preflight_locked → red_proved → implemented → focused_green → owner_repo_green → triplet_green → independent_review → accepted（在 state.json 中记录）
+- **质量门**：ruff 0、mypy 0、coverage 不降、mutation patrol 全杀
+- **文档更新**：完成后更新本页 progress.md（追加该 GP 的证据摘要）
+
+## 4. 依赖顺序
+
+```
+GP-001（回归）→ GP-002（scanner）→ GP-003（worker）→ GP-004（receipt 重签）→ GP-005（scenario 回填）→ GP-006（CI 接线）→ GP-007（config 升级）
+→ GP-008（legacy 观测起点）→ GP-009（调度注册）→ GP-010（cutover 申请）
+```
+
+## 5. 当前状态
+
+- 已修复：A-1、A-2、A-3（2026-09-02 本轮审查发现，已 push 验证）
+- ✅ **GP-001 完成**（2026-09-02）：三仓回归全绿
+- ✅ **GP-002 完成**（wiki 9809127）：v2 scanner 生产切入（D-1 closed）
+- ✅ **GP-003 完成**（wiki c3a99c8）：LLM exit receipt+privacy gate（D-2 closed）
+- ✅ **GP-004 完成**（revenue 04556d5）：receipt 重签发 87→0 incomplete（C-1 closed）
+- ✅ **GP-005 完成**（revenue 48b185c）：scenario runner + 141/197 passed（71.6%），56 blocked（11 T3/T4 + 45 BR/MINE 专用基础设施）
+- ✅ **GP-006 完成**（revenue 43fab74）：real-roots CI job + 9 sibling tests（D-3 closed）
+- ✅ **GP-007 完成**（wiki c636516）：privacy_class 配置升级（B-4 closed）
+- 📋 **GP-008/009 部署指南就绪**：schtasks register 命令文档化，需管理员权限执行
+- ✅ **GP-010 申请文档完成**：cohort cutover 授权申请，待 KD-08 批准
+- 进行中：~~GP-005（scenario 证据回填，197 scenarios）~~ → **全部完成**：197/197 passed + 真实数据 E2E（wiki 50b44ba）
+- 机器状态：accepted 117/117，current_next=CA-201（终局游标），plan_status=completed
+- 三仓 CI：wiki a0c7629 / revenue f579c76 / filing 89c8bdb 全绿
+- **2026-09-03 晚间更新**：余下缺口全为部署/自然时间层——① daily 调度 argparse 缺陷已修（revenue 3552795）；② N-1（FC-150x）+ R9 分批删除授权已获 owner 批准（n1_r9_removal_request.md）；③ 删除执行前置 = 两个 ≥24h 零 hit 观测窗口（最早 2026-09-06 03:30 后），批 1~3 待窗口满足；④ weekly T3/7 Daily/1 Monthly/1 drill 自然累积中（GP-009）。详见 progress.md 2026-09-03 晚间条目。
+- **2026-09-04 上午更新**：09-04 03:30 调度实测**未触发**（daily_manifest 停留在 09-03 21:11 手动 run1；无 alert）→ owner 提权**重新注册** revenue_daily_t2/revenue_weekly_t3 完成。时间线修正：09-05 03:30 run2（P1 短窗出局）→ 09-06 run3（关 P2 ✓）→ 09-07 run4（关 P3 ✓）→ **gate 最早 ~09-07 03:30 后**。同日完成：wiki 全量回归 1 处过时断言修复（zr1006 C1 → GP-010 后状态，wiki a0c7629，全量 2656 passed / 0 failed）。
+- **交接状态（2026-09-04 08:35，自然时间等待中）**：
+  - 已完成：观测接线 revenue 630b554 + observer 快照门控 wiki 25a8eea（hits=0 实证）+ 首次真实 run-daily（period 1 open）+ zr1006 断言修复（a0c7629）+ R9 批 1+2 精确执行套件（n1_r9_removal_request.md §3.2）+ 任务重注册（owner，09-04）。
+  - **恢复检查点（下次会话）**：① **09-05 早上**检查 `assurance/runs/daily_manifest.json`——started_at ≈09-05 03:30 且 observation_period=2 → 调度真实触发，继续等 run3/run4；若仍为 20260903T211059Z/period=1 → 重注册后仍未触发，需 owner 提权查任务 Last Run Result（`schtasks /query /tn revenue_daily_t2 /fo LIST /v`）排查；② **09-07 03:30 后**：核验 `legacy_periods.json` close_gate.close_allowed=True → 按 n1_r9_removal_request.md §3.2 执行批 1+2 单 commit（工具 4 文件 + 测试 5 文件 + quality.yml 重接线 + zr1102 节点替换），legacy-gate 复扫 + 三仓 CI 全绿后执行批 3（wiki）；③ weekly T3 周日 04:30（**2026-09-06 首跑**，真实下载）与 monthly/drill 自然累积（GP-009）。
+  - 期间**不手动 run-daily**（避免窗口起点再次偏移）。后台监视任务在会话存活期间轮询 run2。

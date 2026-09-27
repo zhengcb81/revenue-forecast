@@ -1,0 +1,97 @@
+{
+ "schema_version": "1.0",
+ "card": "I-17-B",
+ "attempt": "a20260926-01",
+ "generated_at_utc": "2026-09-27T08:46:11Z",
+ "six_negatives": {
+  "combination": {
+   "uc_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion",
+   "scenarios_py_sha256": "524fc1e6d6ba6a841e36f339c1aaf4e14bd7f26ec3ed6f04c83669d082544f29",
+   "closure_py_sha256": "952abfe0ea39ced076e3b83090de79e90ee95e5a39d94d8711377f65a446300e",
+   "registry_sha256": "d25e6f0600bab482a8ebd780ed307e4e58ddd5cc68ea4b2a5da19f832f377427",
+   "patch_gate_present": false,
+   "python": "3.13.9"
+  },
+  "negative_count": 9,
+  "negatives_rejected": 3,
+  "all_six_rejected": false,
+  "results": [
+   {
+    "case": "N1_all_passed_but_no_evidence",
+    "rejected": false,
+    "detail": "closure_ready=True unsatisfied=0"
+   },
+   {
+    "case": "N2_read10_wrong_capability_evidence",
+    "rejected": false,
+    "detail": "closure_ready=True unsatisfied_ids=[]"
+   },
+   {
+    "case": "CTRL_read10_covering_capability_accepted",
+    "rejected": true,
+    "detail": "closure_ready=True (control, must be True)"
+   },
+   {
+    "case": "N3_stale_accepted_after_newer_fail",
+    "rejected": true,
+    "detail": "verdict=changes_required problems=['1 older accepted review(s) exist but latest verdict is changes_required — stale accepted must not win']"
+   },
+   {
+    "case": "N4_empty_commands",
+    "rejected": false,
+    "detail": "closure_ready=True unsatisfied_ids=[]"
+   },
+   {
+    "case": "N5_empty_invariants",
+    "rejected": false,
+    "detail": "closure_ready=True unsatisfied_ids=[]"
+   },
+   {
+    "case": "N45_both_empty",
+    "rejected": false,
+    "detail": "closure_ready=True unsatisfied_ids=[]"
+   },
+   {
+    "case": "N4b_receipt_layer_requires_commands",
+    "rejected": true,
+    "detail": "required=('base_triplet', 'result_triplet', 'plan_sha256', 'commands', 'touched_files', 'side_effect_counts', 'implementer')"
+   },
+   {
+    "case": "N6_original_obligations_still_pending",
+    "rejected": true,
+    "detail": "pending=3 reasons=['0 legacy FCs contradicted by current behavior', \"3 legacy closure items pending (['CA-206', 'CA-301', 'CA-302'])\", '0 of 197 mandatory scenarios unsatisfied', 'R9 legacy removal frozen (4/4 RED at audit; deletion belongs to CA-304)', 'legacy receipt sets remain outside the machine schema (grandfathered history; migration is CA-107+CA-304 scope)']"
+   },
+   {
+    "case": "N6b_narrowed_successor_flagged",
+    "rejected": false,
+    "detail": "narrowed_flagged=False reasons=['0 legacy FCs contradicted by current behavior', \"3 legacy closure items pending (['CA-206', 'CA-301', 'CA-302'])\", '0 of 197 mandatory scenarios unsatisfied', 'R9 legacy removal frozen (4/4 RED at audit; deletion belongs to CA-304)', 'legacy receipt sets remain outside the machine schema (grandfathered history; migration is CA-107+CA-304 scope)']"
+   }
+  ]
+ },
+ "six_negatives_encoding_note": "original file UTF-16 (implementer PS encoding defect); parent decoded and transcribed, original bytes untouched",
+ "mutations": {
+  "M1_remove_a_blocked_card_from_upstream_list": {
+   "expectation": "final_report missing that card = detectable",
+   "result": "final_report enumerates 15/15 chain cards",
+   "rc": 0
+  },
+  "M2_claim_ready_despite_unproven": {
+   "expectation": "buy_side/accuracy must stay non-ready (card L10)",
+   "result": "六资格表 accuracy=blocked unproven、非 ready",
+   "rc": 3
+  },
+  "M3_mask_blocked_with_all_pass_except": {
+   "expectation": "card L13 forbids『全部通过，除…』; final_report has explicit blocked section",
+   "result": "五分类含 blocked 独立段落",
+   "rc": 3
+  }
+ },
+ "upstream_sha_count": 15,
+ "sealed_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+ "params_released": false,
+ "red_green": {
+  "green_rc": 0,
+  "red_arms": 2,
+  "harness_arms": 3
+ }
+}

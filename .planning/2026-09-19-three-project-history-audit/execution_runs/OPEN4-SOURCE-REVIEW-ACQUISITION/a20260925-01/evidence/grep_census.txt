@@ -1,0 +1,35 @@
+OPEN4-SOURCE-REVIEW-ACQUISITION - read-only grep census (company-wiki src + tests; plan dir)
+census_window_utc=2026-09-25T22:15:24Z
+[C1] assignment sites of documents.metadata_json["prompt_injection_review"] in CW src:
+  src/company_wiki/source_catalog/prompt_injection.py:384: metadata[PROMPT_INJECTION_REVIEW_KEY] = receipt
+  doc reference: prompt_injection.py:5
+[C1] call sites of record_prompt_injection_review in CW src:
+  src/company_wiki/source_catalog/prompt_injection.py:263 (definition)
+  src/company_wiki/source_catalog/read_chain.py:223
+  src/company_wiki/source_catalog/source_lifecycle.py:168
+[C1] grep non-authoritative|non_authoritative in CW src/*.py => 0 hits
+[C5] CW tests/unit/test_prompt_injection_guard.py inventory (def test_*):
+  L106: def test_schema_versioned() -> None:
+  L112: def test_scan_clean_text_not_detected() -> None:
+  L119: def test_scan_injection_detected_and_ignored() -> None:
+  L126: def test_scan_deterministic() -> None:
+  L135: def test_scan_unknown_ruleset_hash_fails_closed() -> None:
+  L149: def test_record_with_binding_fields(db) -> None:
+  L158: def test_record_without_binding_rejected(db) -> None:
+  L188: def test_record_bad_binding_hash_rejected(db) -> None:
+  L214: def test_evaluate_hit(db) -> None:
+  L229: def test_evaluate_ignored_when_policy_changed(db) -> None:
+  L242: def test_evaluate_expired(db) -> None:
+  L254: def test_evaluate_ttl_boundary_equality_is_still_hit(db) -> None:
+  L268: def test_evaluate_tampered_when_source_changed(db) -> None:
+  L282: def test_evaluate_absent(db) -> None:
+  L293: def test_evaluate_malformed_receipt_fails_closed(db) -> None:
+  L309: def test_evaluate_legacy_unbound_receipt_is_tampered_not_hit(db) -> None:
+  L346: def test_evaluate_input_validation(db) -> None:
+[C5] OPEN-4 C5(1)/C5(2) positive cases live in plan-dir harness (not in CW product tests):
+  execution_runs/I-06-B/a20260922-02/scripts/run_cases.py:1116: M1 - OPEN-4 C5#1: policy version-only change => still hit
+  execution_runs/I-06-B/a20260922-02/scripts/run_cases.py:1164: M2 - OPEN-4 C5#2: role_set/request change => receipt stays hit
+  execution_runs/I-06-B/a20260922-02/scripts/run_cases.py:1223: ("M1", "OPEN-4 C5#1 version-only change => still hit", case_M1),
+  green evidence: execution_runs/I-06-B/a20260922-02/evidence/green/M1.json (PASS), M2.json (PASS)
+[C6] grep old_receipt|previous_receipt|before_receipt in CW src/*.py:
+  0 hits in CW src

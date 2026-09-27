@@ -1,0 +1,859 @@
+{
+  "card": "OPEN5-PEND5B-OCR-CAPABILITY",
+  "attempt": "a20260924-01",
+  "role": "capability_landing",
+  "authorized_by": "OWNER_DECISIONS §二十六 #2",
+  "generated_utc": "2026-09-25T21:38:39Z",
+  "network_used": true,
+  "downloads_summary": {
+    "count": 24,
+    "total_bytes_chosen": 112399186,
+    "largest_single_bytes": 44000345,
+    "any_over_200mb": false,
+    "all_sha256_verified": true,
+    "orphan_extra_bytes": 144462,
+    "note": "plus transient index/metadata page fetches (not retained) and one pip diagnostic fetch of six-1.17.0 wheel (11,050 B, into pip temp, deleted with temp)"
+  },
+  "ocr_reconstruction_disclaimer": true,
+  "entries": [
+    {
+      "id": "auth-01",
+      "kind": "authorization",
+      "source": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+      "section": "§二十六（2026-09-24 深夜，原话逐字）第 2 行",
+      "quote": "| **2** | **`PEND-5b`** 装 OCR 引擎（`OPEN-5` 恢复路径 S1 的另一半） | **「要」**（澄清答确认） | 派 `fc80192e` = `OPEN5-PEND5B-OCR-CAPABILITY`。硬边界：**安装只许落在本卡隔离 venv**、**默认禁止系统级安装**；若必须系统二进制（tesseract 类）⇒ **不装、报 `BLOCKED-NEEDS-SYSTEM-BINARY`** 交 owner 再裁；**单件下载 > 200 MB 须先报体积**；**OCR 产物必标 `ocr_reconstruction`、永不冒充 origin 文本**；**先在 CN-ZIJIN 可读样本自检通过才许打 HK 探针**（依 `OPEN5-ENVOWNER` 的 S2 次序） |",
+      "chain": "owner 首答「1，授权，2，要」→ 父一次澄清提问 → owner 答「两项都要（PEND-5b 装 + E1 交会计面）」⇒ 本项 = PEND-5b 装 OCR 引擎授权"
+    },
+    {
+      "id": "auth-02",
+      "kind": "authorization_context",
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md",
+      "quotes": [
+        "RC-1（文件层，决定性）：正文中文以 Type0 / Identity-H 的子集 CJK 字体排版…字体字典无 `/ToUnicode`，且内嵌子集 TrueType 无 `cmap` 表（探针 D/F）⇒ 文档内部根本不存在码→Unicode 映射。",
+        "「换工具 / 装个 PDF 库」不是恢复路径（探针 C/E 已证 5 个库同结果）",
+        "S2：先在已知可读样本（CN-ZIJIN-AR2025）上验证该路径能读出锚词，再对 HK 样本跑同一探针"
+      ]
+    },
+    {
+      "id": "input-01",
+      "kind": "local_file_read_only",
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\小米集團－Ｗ\\raw\\financial_reports\\annual\\2026-04-28_hkexnews_12127452_2025年度報告.pdf",
+      "role": "HK-XIAOMI-AR2025 target (read-only)",
+      "bytes": 4405561,
+      "sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+      "page_count": 415,
+      "writes_to_this_file": 0
+    },
+    {
+      "id": "input-02",
+      "kind": "local_file_read_only",
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\紫金矿业\\raw\\financial_reports\\annual\\2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf",
+      "role": "CN-ZIJIN-AR2025 readable sample for S2 gate (read-only)",
+      "bytes": 79925886,
+      "sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+      "writes_to_this_file": 0
+    },
+    {
+      "id": "env-01",
+      "kind": "environment_probe",
+      "command": "python -c: tempfile.mkdtemp()/os.mkdir(mode) write test in plan dir AND platform TEMP",
+      "observation": "mkdtemp: PermissionError [Errno 13]; mkdir 0o700: [Errno 13]; mkdir 0o777: OK",
+      "note": "sandbox hazard reproduced (matches card discipline #6); drove shim + workaround choices"
+    },
+    {
+      "id": "env-02",
+      "kind": "environment_probe",
+      "command": "urllib GET https://pypi.org/simple/six/ , /simple/rapidocr/ , /simple/onnxruntime/",
+      "observation": "HTTP 200 in 0.00-0.36s",
+      "note": "network egress to PyPI healthy via urllib"
+    },
+    {
+      "id": "env-03",
+      "kind": "environment_probe",
+      "command": "Invoke-WebRequest HEAD pypi.org / files.pythonhosted.org / google.com",
+      "observation": "ERR: 基础连接已经关闭: 接收时发生错误 (PS 5.1 TLS)",
+      "note": "PowerShell stack unusable for downloads; python urllib works"
+    },
+    {
+      "id": "env-04",
+      "kind": "environment_probe",
+      "command": "python -m pip --isolated download --no-deps six (no shim)",
+      "observation": "rc=2,11.7s: Error [Errno 13] Permission denied ... pip-unpack-*\\six-1.17.0-py2.py3-none-any.whl.metadata",
+      "note": "pip network OK but dies on sandbox-broken mkdtemp dir"
+    },
+    {
+      "id": "env-05",
+      "kind": "environment_probe",
+      "command": "python -m pip --isolated download --no-deps rapidocr (+PYTHONPATH shim, TMP=attempt/_tmp)",
+      "observation": "150s harness timeout; _dl/pip_dl2.log last line 'Getting page https://pypi.org/simple/rapidocr/'",
+      "note": "pip index fetch hung"
+    },
+    {
+      "id": "env-06",
+      "kind": "environment_probe",
+      "command": "python -m pip (non-isolated) download rapidocr onnxruntime pypdfium2 (+shim, TMP)",
+      "observation": "killed after ~10min; _dl/pip_download.log last line 'Getting page https://pypi.org/simple/rapidocr/'",
+      "note": "same hang without --isolated"
+    },
+    {
+      "id": "env-07",
+      "kind": "environment_probe",
+      "command": "python -m pip --isolated download rapidocr (shim, TEMP removed = confounded control)",
+      "observation": "130s harness timeout",
+      "note": "third bounded pip attempt; pip route abandoned after this"
+    },
+    {
+      "id": "env-08",
+      "kind": "environment_probe",
+      "command": "python -m venv venv (shim active) then -m ensurepip",
+      "observation": "venv created (py3.13.9); first ensurepip failed without inherited PYTHONPATH; re-run with shim: pip-25.2 installed",
+      "note": "card venv has pip available but pip network path unusable"
+    },
+    {
+      "id": "install-01",
+      "kind": "install_scope",
+      "venv": "venv/ (this card's isolated venv, Python 3.13.9 base)",
+      "site_packages": "venv/Lib/site-packages",
+      "system_level_changes": {
+        "PATH": 0,
+        "windows_packages": 0,
+        "global_site_packages_writes": 0,
+        "system_python_packages_installed": 0
+      },
+      "pip_used_for_install": false,
+      "install_mechanism": "urllib download of PEP427 wheels + direct extraction into venv site-packages (build_env.py)",
+      "shim": {
+        "path": "_shim/sitecustomize.py",
+        "activation": "PYTHONPATH=<shim dir> for specific process invocations only",
+        "effect": "forces os.mkdir mode 0o777 so sandbox-created temp dirs stay writable",
+        "system_level": false
+      }
+    },
+    {
+      "id": "install-02",
+      "kind": "build_run",
+      "script": {
+        "path": "_work/build_env.py",
+        "bytes": 28307,
+        "sha256": "45a4b73ef7446564d906996b2763150d2aa1e5678d11900f1f7310f8b523221b"
+      },
+      "final_rc": 0,
+      "verify_all_ok": true,
+      "imports": {
+        "antlr4-python3-runtime": true,
+        "certifi": true,
+        "charset-normalizer": true,
+        "colorama": true,
+        "colorlog": true,
+        "flatbuffers": true,
+        "idna": true,
+        "numpy": true,
+        "omegaconf": true,
+        "onnxruntime": true,
+        "opencv-python": true,
+        "packaging": true,
+        "pillow": true,
+        "protobuf": true,
+        "pyclipper": true,
+        "pypdfium2": true,
+        "pyyaml": true,
+        "rapidocr": true,
+        "requests": true,
+        "shapely": true,
+        "six": true,
+        "tqdm": true,
+        "urllib3": true
+      },
+      "bundled_models": [
+        {
+          "path": "rapidocr\\models\\PP-OCRv6_rec_small.onnx",
+          "bytes": 21234383
+        },
+        {
+          "path": "rapidocr\\models\\PP-OCRv6_det_small.onnx",
+          "bytes": 9929594
+        },
+        {
+          "path": "rapidocr\\models\\ch_ppocr_mobile_v2.0_cls_mobile.onnx",
+          "bytes": 585532
+        }
+      ],
+      "bundled_model_total_bytes": 31749509,
+      "install_report": {
+        "path": "_dl/install_report.json",
+        "bytes": 14466,
+        "sha256": "0c0e6a41a5dd8ce7f264b28e46344ca510e7d0928bff0adb0ffe9949105330d4",
+        "extract_failure_count": 0,
+        "collision_note": "collisions are re-extraction overwrites from earlier build rounds in this same attempt"
+      },
+      "receipts_file": {
+        "path": "_dl/build_receipts.json",
+        "bytes": 33477,
+        "sha256": "e73be0e23f36b04cc0e4157fbffc0c9b9e864c9ad58b51d6ff162d14c44a1849"
+      },
+      "pip_download_logs": [
+        {
+          "path": "_dl/pip_download.log",
+          "bytes": 1540,
+          "sha256": "192a6f29e3cc454ab477fde5dd8dab755943011c991ccc000b9d73e95e4ba532"
+        },
+        {
+          "path": "_dl/pip_dl2.log",
+          "bytes": 1540,
+          "sha256": "5609384b3fa7cbab8d217f2ce7e0087b4ebd5d58e05429ac7ca2fdfecdc8287b"
+        },
+        {
+          "path": "_dl/pip_dl3.log",
+          "bytes": 990,
+          "sha256": "f77de105c95a2eb5c497e1eeceb46faf6ac12cc25990dc3180770e4f915e03f0"
+        }
+      ],
+      "logs": [
+        {
+          "path": "_dl/build_env.log",
+          "bytes": 21924,
+          "sha256": "1166b1d957e467b86ddfd4b2d59a528cd4f1c00cc487b676a8eb069204c94e30"
+        }
+      ]
+    },
+    {
+      "id": "dl-01",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/3e/38/7859ff46355f76f8d19459005ca000b6e7012f2f1ca597746cbcd1fbfe5e/antlr4-python3-runtime-4.9.3.tar.gz",
+      "retrieved_utc": "2026-09-25T21:16:17Z",
+      "bytes": 117034,
+      "sha256": "f224469b4168294902bb1efa80a8bf7855f24c99aef99cbefc1bcd3cce77881b",
+      "sha256_match_upstream": true,
+      "purpose": "parser runtime (omegaconf dep)",
+      "project": "antlr4-python3-runtime",
+      "version": "4.9.3",
+      "kind_of_artifact": "sdist",
+      "index_url": "https://pypi.org/simple/antlr4-python3-runtime/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-02",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:34Z",
+      "bytes": 136983,
+      "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+      "sha256_match_upstream": true,
+      "purpose": "CA bundle (requests dep)",
+      "project": "certifi",
+      "version": "2026.7.22",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/certifi/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-03",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/cc/61/d01fc49b8dea277640b55a9e15960dbca9fdc8c9fde18e572d39c59f4019/charset_normalizer-3.5.1-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:33Z",
+      "bytes": 68658,
+      "sha256": "6df0ec430f9a831772c23ca5a224cba36517a58a84bb32c32bb59a9fa67c47f6",
+      "sha256_match_upstream": true,
+      "purpose": "charset detection (requests dep)",
+      "project": "charset-normalizer",
+      "version": "3.5.1",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/charset-normalizer/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-04",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:33Z",
+      "bytes": 25335,
+      "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+      "sha256_match_upstream": true,
+      "purpose": "transitive dependency",
+      "project": "colorama",
+      "version": "0.4.6",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/colorama/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-05",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/d4/19/0b6647bf5e331521e55d2b63bfbdc210bd9cd605189273f03614a05f702d/colorlog-6.12.0-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:12Z",
+      "bytes": 12239,
+      "sha256": "30d392604e9110045a2c2aeefc27d7a017abbab63f3a8aee594eac0801df784e",
+      "sha256_match_upstream": true,
+      "purpose": "colored logging (onnxruntime dep)",
+      "project": "colorlog",
+      "version": "6.12.0",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/colorlog/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-06",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:12Z",
+      "bytes": 26661,
+      "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+      "sha256_match_upstream": true,
+      "purpose": "serialization (onnxruntime dep)",
+      "project": "flatbuffers",
+      "version": "25.12.19",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/flatbuffers/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-07",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:34Z",
+      "bytes": 69583,
+      "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+      "sha256_match_upstream": true,
+      "purpose": "IDNA codec (requests dep)",
+      "project": "idna",
+      "version": "3.20",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/idna/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-08",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/f3/ec/100f2b1794ede74a9b3d7ec6b9736927f56713414c1dfe19ab6c383494bf/numpy-2.5.3-cp313-cp313-win_amd64.whl",
+      "retrieved_utc": "2026-09-25T21:06:21Z",
+      "bytes": 12560965,
+      "sha256": "71cad2b2a7451ab79d8f5e71b453485b6775963d5cf794179144a7463fe6e8ec",
+      "sha256_match_upstream": true,
+      "purpose": "numeric arrays (rapidocr/onnxruntime dep)",
+      "project": "numpy",
+      "version": "2.5.3",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/numpy/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-09",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/a4/0e/152509871bf30df6fc38569f52a2db9b55dd41aae957adae50a053ac7778/omegaconf-2.3.1-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:11Z",
+      "bytes": 79502,
+      "sha256": "3d701d14e9a8828f1edd28bb70b725908b34277cdd72cf7d6a83f94dadc6b6a0",
+      "sha256_match_upstream": true,
+      "purpose": "config framework (rapidocr dep)",
+      "project": "omegaconf",
+      "version": "2.3.1",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/omegaconf/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-10",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/3c/dd/c57c529dbc6dd55eca24b12cfbeab1b6a690de72083824eca689085f55b0/onnxruntime-1.30.0-cp313-cp313-win_amd64.whl",
+      "retrieved_utc": "2026-09-25T21:05:40Z",
+      "bytes": 14311378,
+      "sha256": "4b63041bd623a9a9ac5e353948436c6fa7f43edd12d6b4a4ebc340bca959ba93",
+      "sha256_match_upstream": true,
+      "purpose": "ROOT: OCR inference runtime (CPU execution provider)",
+      "project": "onnxruntime",
+      "version": "1.30.0",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/onnxruntime/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-11",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/21/f0/9fa6e85cb10c8eb36a0222d27e50fe381b86ce49a55446bf39f491727564/opencv_python-5.0.0.93-cp37-abi3-win_amd64.whl",
+      "retrieved_utc": "2026-09-25T21:06:32Z",
+      "bytes": 44000345,
+      "sha256": "f90ba04b8f73bc5c3814037699739f0156f597338a98f05956c684e7c3ca10d2",
+      "sha256_match_upstream": true,
+      "purpose": "image processing required by rapidocr (declared dep)",
+      "project": "opencv-python",
+      "version": "5.0.0.93",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/opencv-python/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-12",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:12Z",
+      "bytes": 129956,
+      "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+      "sha256_match_upstream": true,
+      "purpose": "version parsing (onnxruntime dep)",
+      "project": "packaging",
+      "version": "26.3",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/packaging/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-13",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/a6/9b/7a58e61d62be561da3a356fe2384d4059a6345fc130e23ef1c36a5b81d24/pillow-12.3.0-cp313-cp313-win_amd64.whl",
+      "retrieved_utc": "2026-09-25T21:06:12Z",
+      "bytes": 7239691,
+      "sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+      "sha256_match_upstream": true,
+      "purpose": "image I/O, PNG save/load (rapidocr dep)",
+      "project": "pillow",
+      "version": "12.3.0",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/pillow/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-14",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/e4/04/d52c7016b04b6c5108f26691f9d33ec82a9b65d041f1a9c771137693d618/protobuf-7.36.2-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:13Z",
+      "bytes": 179806,
+      "sha256": "bdb3a345d48db958e6ce1f18e508beb0cc981d64f24088427549c866cd039f1e",
+      "sha256_match_upstream": true,
+      "purpose": "model/IR serialization (onnxruntime dep)",
+      "project": "protobuf",
+      "version": "7.36.2",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/protobuf/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-15",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/ba/42/0a1920d276a0e1ca21dc0d13ee9e3ba10a9a8aa3abac76cd5e5a9f503306/pyclipper-1.4.0-cp313-cp313-win_amd64.whl",
+      "retrieved_utc": "2026-09-25T21:06:08Z",
+      "bytes": 104007,
+      "sha256": "d4b2d7c41086f1927d14947c563dfc7beed2f6c0d9af13c42fe3dcdc20d35832",
+      "sha256_match_upstream": true,
+      "purpose": "polygon offsetting in text detection (rapidocr dep)",
+      "project": "pyclipper",
+      "version": "1.4.0",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/pyclipper/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-16",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/5d/99/a37b6b902457569468ed5908c94e56cb6c4032541f02cf89f723d42a9148/pypdfium2-5.13.0-py3-none-win_amd64.whl",
+      "retrieved_utc": "2026-09-25T21:05:28Z",
+      "bytes": 3885553,
+      "sha256": "47dcca2a8d507b5fd24f94c3c9d48fb379430f097bc20f01beff6c963ffbcedb",
+      "sha256_match_upstream": true,
+      "purpose": "ROOT: PDF page renderer feeding the OCR image pipeline",
+      "project": "pypdfium2",
+      "version": "5.13.0",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/pypdfium2/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-17",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/97/c9/39d5b874e8b28845e4ec2202b5da735d0199dbe5b8fb85f91398814a9a46/pyyaml-6.0.3-cp313-cp313-win_amd64.whl",
+      "retrieved_utc": "2026-09-25T21:06:08Z",
+      "bytes": 154090,
+      "sha256": "79005a0d97d5ddabfeeea4cf676af11e647e41d81c9a7722a193022accdb6b7c",
+      "sha256_match_upstream": true,
+      "purpose": "config loading (rapidocr/omegaconf dep)",
+      "project": "pyyaml",
+      "version": "6.0.3",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/pyyaml/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-18",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/55/ed/0ee9b9281986974be9d2406ae0134c8d7c91d2fc613f16ffda9701eeda6f/rapidocr-3.9.2-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:05:43Z",
+      "bytes": 27275208,
+      "sha256": "04d6b8d151f823d930bd91910555f57bea897c0c44fa6794267b94cf9c1ef9a0",
+      "sha256_match_upstream": true,
+      "purpose": "ROOT: OCR engine (pure-python wheel, models expected bundled)",
+      "project": "rapidocr",
+      "version": "3.9.2",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/rapidocr/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-19",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:12Z",
+      "bytes": 73075,
+      "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+      "sha256_match_upstream": true,
+      "purpose": "HTTP helper (rapidocr dep)",
+      "project": "requests",
+      "version": "2.34.2",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/requests/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-20",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/41/47/3647fe7ad990af60ad98b889657a976042c9988c2807cf322a9d6685f462/shapely-2.1.2-cp313-cp313-win_amd64.whl",
+      "retrieved_utc": "2026-09-25T21:06:09Z",
+      "bytes": 1722151,
+      "sha256": "ca2591bff6645c216695bdf1614fca9c82ea1144d4a7591a466fef64f28f0715",
+      "sha256_match_upstream": true,
+      "purpose": "polygon cleanup in text detection (rapidocr dep)",
+      "project": "shapely",
+      "version": "2.1.2",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/shapely/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-21",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:08Z",
+      "bytes": 11050,
+      "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+      "sha256_match_upstream": true,
+      "purpose": "compat shim (rapidocr dep)",
+      "project": "six",
+      "version": "1.17.0",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/six/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-22",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:10Z",
+      "bytes": 80199,
+      "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73",
+      "sha256_match_upstream": true,
+      "purpose": "progress display (rapidocr dep)",
+      "project": "tqdm",
+      "version": "4.70.1",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/tqdm/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-23",
+      "kind": "external_download",
+      "url": "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:34Z",
+      "bytes": 135717,
+      "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+      "sha256_match_upstream": true,
+      "purpose": "HTTP client (requests dep)",
+      "project": "urllib3",
+      "version": "2.8.0",
+      "kind_of_artifact": "wheel",
+      "index_url": "https://pypi.org/simple/urllib3/",
+      "over_200mb": false
+    },
+    {
+      "id": "dl-orphan-01",
+      "kind": "external_download_unused",
+      "url": "https://pypi.org/simple/antlr4-python3-runtime/ (exact href recorded there; file served from files.pythonhosted.org)",
+      "file": "antlr4_python3_runtime-4.13.2-py3-none-any.whl",
+      "retrieved_utc": "2026-09-25T21:06:34Z",
+      "bytes": 144462,
+      "sha256": "fe3835eb8d33daece0e799090eda89719dbccee7aa39ef94eed3818cafa5a7e8",
+      "purpose": "superseded pick during resolver development; omegaconf pins antlr4==4.9.* so 4.13.2 was replaced by the 4.9.3 sdist; kept for audit, NOT installed (install_sdist wipes and installs 4.9.3)",
+      "installed": false
+    },
+    {
+      "id": "dl-index-01",
+      "kind": "external_metadata_fetch",
+      "urls": [
+        "https://pypi.org/simple/antlr4-python3-runtime/",
+        "https://pypi.org/simple/certifi/",
+        "https://pypi.org/simple/charset-normalizer/",
+        "https://pypi.org/simple/colorama/",
+        "https://pypi.org/simple/colorlog/",
+        "https://pypi.org/simple/flatbuffers/",
+        "https://pypi.org/simple/idna/",
+        "https://pypi.org/simple/numpy/",
+        "https://pypi.org/simple/omegaconf/",
+        "https://pypi.org/simple/onnxruntime/",
+        "https://pypi.org/simple/opencv-python/",
+        "https://pypi.org/simple/packaging/",
+        "https://pypi.org/simple/pillow/",
+        "https://pypi.org/simple/protobuf/",
+        "https://pypi.org/simple/pyclipper/",
+        "https://pypi.org/simple/pypdfium2/",
+        "https://pypi.org/simple/pyyaml/",
+        "https://pypi.org/simple/rapidocr/",
+        "https://pypi.org/simple/requests/",
+        "https://pypi.org/simple/shapely/",
+        "https://pypi.org/simple/six/",
+        "https://pypi.org/simple/tqdm/",
+        "https://pypi.org/simple/urllib3/"
+      ],
+      "purpose": "PEP 503 simple index pages (candidate listing, requires-python, yanked flags, sha256 fragments)",
+      "transient": true,
+      "retained_bytes": 0,
+      "sha256": null,
+      "note": "fetched in-memory by build_env.py; not retained on disk; wheel digests verified against #sha256 fragments"
+    },
+    {
+      "id": "dl-index-02",
+      "kind": "external_metadata_fetch",
+      "urls": [
+        "https://pypi.org/pypi/rapidocr-onnxruntime/json",
+        "https://pypi.org/pypi/rapidocr/json"
+      ],
+      "purpose": "backend selection research (requires_python / deps / wheel sizes)",
+      "transient": true,
+      "retained_bytes": 0
+    },
+    {
+      "id": "ocr-01",
+      "kind": "self_check_render_ocr",
+      "order": "ran BEFORE any HK probe (S2 sequence)",
+      "gate_passed": true,
+      "file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\紫金矿业\\raw\\financial_reports\\annual\\2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf",
+      "page": 1,
+      "dpi": 200,
+      "anchors": [
+        "紫金",
+        "收入",
+        "年度报告"
+      ],
+      "anchor_hit_pages": {
+        "紫金": [
+          1
+        ],
+        "收入": [],
+        "年度报告": [
+          1
+        ]
+      },
+      "text_layer_anchor_hit_pages": {
+        "紫金": [
+          1
+        ],
+        "收入": [],
+        "年度报告": [
+          1
+        ]
+      },
+      "ocr_ms": 7169,
+      "ocr_chars": 230,
+      "score_mean": 0.9964,
+      "artifact": {
+        "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN5-PEND5B-OCR-CAPABILITY\\a20260924-01\\_work\\cn_selfcheck.json",
+        "sha256": "99b10741ef9d61f2ecbe3f8a0a0e4cf487c626af40546dc6229c2964238afc70"
+      },
+      "png": "rendered at _work/cn/cn_p0001.png (path+bytes+sha256 inside artifact)"
+    },
+    {
+      "id": "ocr-hk-hk_probe.json",
+      "kind": "hk_probe_render_ocr",
+      "artifact": {
+        "path": "_work/hk_probe.json",
+        "sha256": "e6b7433415eda0cd9208b2722ceacdeb56620990ce4b24451eb7aa510ba1dc89"
+      },
+      "pages": [
+        1,
+        2,
+        30,
+        40,
+        44,
+        53,
+        65,
+        90,
+        115,
+        135,
+        160,
+        200
+      ],
+      "wall_ms": 164733,
+      "ocr_reconstruction": true
+    },
+    {
+      "id": "ocr-hk-hk_probe2.json",
+      "kind": "hk_probe_render_ocr",
+      "artifact": {
+        "path": "_work/hk_probe2.json",
+        "sha256": "42222a88c21c390177baea5f368a1d7d45ca8d72ec4236b2c6c0ae782e4a01b7"
+      },
+      "pages": [
+        46,
+        50,
+        56,
+        60,
+        112,
+        118,
+        124,
+        140
+      ],
+      "wall_ms": 126417,
+      "ocr_reconstruction": true
+    },
+    {
+      "id": "ocr-hk-hk_probe3.json",
+      "kind": "hk_probe_render_ocr",
+      "artifact": {
+        "path": "_work/hk_probe3.json",
+        "sha256": "a36caa58448749e3b6b19e668c3a0a2ac144003be9384ca996617b2ef7db3360"
+      },
+      "pages": [
+        43,
+        47,
+        48,
+        49,
+        55,
+        57,
+        59,
+        67,
+        68,
+        71,
+        72,
+        88
+      ],
+      "wall_ms": 158059,
+      "ocr_reconstruction": true
+    },
+    {
+      "id": "ocr-hk-hk_probe4.json",
+      "kind": "hk_probe_render_ocr",
+      "artifact": {
+        "path": "_work/hk_probe4.json",
+        "sha256": "353f8a66533756226157bc4348b6e66701dce48f3c61a980c0dcab67896e0640"
+      },
+      "pages": [
+        242,
+        243,
+        272,
+        275,
+        277,
+        325,
+        337,
+        355,
+        356,
+        395,
+        399
+      ],
+      "wall_ms": 86719,
+      "ocr_reconstruction": true
+    },
+    {
+      "id": "ocr-agg-01",
+      "kind": "aggregated_result",
+      "artifact": {
+        "path": "_work/hk_probe_aggregate.json",
+        "bytes": 10355,
+        "sha256": "e5adfc58c0c3547597f6e28733bfd5b77f02fff4c8c2d1c8db19358275d13f26"
+      },
+      "pages_probed": 43,
+      "anchors_hit": [
+        "分部",
+        "小米",
+        "年度報告",
+        "收入",
+        "毛利"
+      ],
+      "anchors_missed": [],
+      "ocr_anchor_page_hits": 53,
+      "text_layer_anchor_page_hits": 0,
+      "ocr_errors": 0,
+      "total_ocr_chars": 38227,
+      "total_wall_ms": 535928
+    },
+    {
+      "id": "git-01",
+      "kind": "git_audit",
+      "measured_utc": "2026-09-25T21:38:39Z",
+      "workspace": "C:/Users/郑曾波/Projects/revenue-forecast",
+      "git_diff_HEAD_total": 3826,
+      "git_diff_non_planning": 0,
+      "git_diff_non_planning_paths": [],
+      "git_untracked_non_planning": 50,
+      "git_untracked_non_planning_prefixes": [
+        ".tmp-r41-mutation",
+        "assurance",
+        "h2.log",
+        "h2.log.err",
+        "probe_root_m777",
+        "probe_root_m777kw"
+      ],
+      "git_untracked_non_planning_by_this_card": 0,
+      "git_writes_performed_by_this_card": 0,
+      "note": "read-only git commands only (diff HEAD / ls-files --others); no add/commit/checkout/stash/reset"
+    },
+    {
+      "id": "git-02",
+      "kind": "git_audit_other_repo",
+      "repo": "C:/Users/郑曾波/Projects/company-wiki",
+      "diff_HEAD_total": 3,
+      "files": [
+        "CLAUDE.md",
+        "README.md",
+        "src/company_wiki/source_catalog/artifact_dag.py"
+      ],
+      "mtime": "2026-09-23 13:08:38 (before this card's session start 2026-09-25)",
+      "by_this_card": false,
+      "note": "read-only inspection via git diff; this card performed zero writes there (only read the two source PDFs)"
+    },
+    {
+      "id": "writeface-01",
+      "kind": "write_face",
+      "root": "execution_runs/OPEN5-PEND5B-OCR-CAPABILITY/a20260924-01/",
+      "files_total": 3105,
+      "bytes_total": 410358996,
+      "by_top_segment": {
+        "_dl": {
+          "files": 31,
+          "bytes": 112619652
+        },
+        "_nettest": {
+          "files": 1,
+          "bytes": 0
+        },
+        "_shim": {
+          "files": 2,
+          "bytes": 2252
+        },
+        "_tmp": {
+          "files": 1,
+          "bytes": 2
+        },
+        "_tmpprobe": {
+          "files": 1,
+          "bytes": 2
+        },
+        "_work": {
+          "files": 56,
+          "bytes": 19797405
+        },
+        "provenance.json": {
+          "files": 1,
+          "bytes": 32859
+        },
+        "venv": {
+          "files": 3012,
+          "bytes": 277906824
+        }
+      },
+      "rendered_pngs": {
+        "count": 44,
+        "bytes": 19572165,
+        "hashes": "per-page png sha256 recorded inside _work/*.json probe artifacts"
+      },
+      "outside_attempt_dir": 0,
+      "outside_planning_dir": 0,
+      "git_writes": 0
+    }
+  ]
+}

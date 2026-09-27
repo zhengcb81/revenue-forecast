@@ -1,0 +1,183 @@
+{
+  "case": "E0-baseline-F4",
+  "checks": {
+    "expected_raw_returncode": {
+      "ok": true,
+      "detail": {
+        "raw": 2,
+        "expected": 2
+      }
+    },
+    "calls_failed": {
+      "ok": true,
+      "detail": {
+        "raw": 0,
+        "expected": 0
+      }
+    },
+    "peak_rss_gt": {
+      "ok": true,
+      "detail": {
+        "raw": 0.016,
+        "expected_gt": 0.0
+      }
+    },
+    "peak_rss_source": {
+      "ok": true,
+      "detail": {
+        "raw": "live_sample",
+        "expected": "live_sample"
+      }
+    },
+    "rss_sample_count_min_gte": {
+      "ok": true,
+      "detail": {
+        "raw": 1,
+        "expected_gte": 1
+      }
+    },
+    "fixture_pid_identity_scope": {
+      "ok": true,
+      "detail": {
+        "status": "not_claimed_sub_cadence",
+        "rule": "fixture_pid_is_in_samples required iff the call's elapsed_seconds >= 2x effective sampling cadence (0.1504 s = 2 * 75.2 ms); shorter calls are recorded as identity-not-claimed with their measured lifetimes",
+        "threshold_seconds": 0.1504,
+        "fixture_reported_pids": [
+          5832,
+          6284,
+          7380,
+          9288,
+          9676,
+          17272
+        ],
+        "sampled": [
+          1860,
+          2928,
+          3124,
+          5196,
+          7380,
+          9676,
+          18328,
+          21104
+        ],
+        "per_call": [
+          {
+            "child_pid": 2928,
+            "fixture_pid": 5832,
+            "elapsed_seconds": 0.083144,
+            "in_scope": false
+          },
+          {
+            "child_pid": 1860,
+            "fixture_pid": 17272,
+            "elapsed_seconds": 0.062407,
+            "in_scope": false
+          },
+          {
+            "child_pid": 3124,
+            "fixture_pid": 9676,
+            "elapsed_seconds": 0.063089,
+            "in_scope": false
+          },
+          {
+            "child_pid": 21104,
+            "fixture_pid": 9288,
+            "elapsed_seconds": 0.083199,
+            "in_scope": false
+          },
+          {
+            "child_pid": 18328,
+            "fixture_pid": 7380,
+            "elapsed_seconds": 0.068165,
+            "in_scope": false
+          },
+          {
+            "child_pid": 5196,
+            "fixture_pid": 6284,
+            "elapsed_seconds": 0.060643,
+            "in_scope": false
+          }
+        ]
+      }
+    },
+    "rss_pids_include_child_pids": {
+      "ok": true,
+      "detail": {
+        "sampled": [
+          1860,
+          2928,
+          3124,
+          5196,
+          7380,
+          9676,
+          18328,
+          21104
+        ],
+        "child_pids": [
+          1860,
+          2928,
+          3124,
+          5196,
+          18328,
+          21104
+        ]
+      }
+    },
+    "window_present:command_total_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.500266
+      }
+    },
+    "window_present:slo_window_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.44147
+      }
+    },
+    "window_present:rss_sample_window_seconds_max": {
+      "ok": true,
+      "detail": {
+        "value": 0.053752
+      }
+    },
+    "window_present:quick_check_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.056993
+      }
+    },
+    "quick_check_outside_slo_window": {
+      "ok": true,
+      "detail": {
+        "value": false
+      }
+    },
+    "rss_window_not_before_slo_window": {
+      "ok": true,
+      "detail": {
+        "rss": 0.053752,
+        "slo": 0.44147
+      }
+    },
+    "frozen_budgets_untouched": {
+      "ok": true,
+      "detail": {
+        "raw": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        },
+        "frozen": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        }
+      }
+    }
+  },
+  "all_ok": true,
+  "failed_checks": []
+}

@@ -1,0 +1,74 @@
+{
+ "schema_version": 1,
+ "unit": "ZR-1001",
+ "kind": "reviewer",
+ "reviewer": "reviewer-zr1001-independent",
+ "verdict": "accepted",
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "c473e972d02eac5d9c33bcad1ae845c75dc5c6da",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "3ed266149364d4abf73275962f153dc7e3d2f752",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "commands": [
+  {
+   "command": "git rev-parse HEAD; git diff c473e97 3ed2661 --stat",
+   "exit_code": 0,
+   "result": "HEAD=3ed2661, delta only tools/release_readiness.py (+7/-3), scripts/ diff 0"
+  },
+  {
+   "command": "python -m pytest tests/test_zr1001_release_readiness.py -q --tb=short",
+   "exit_code": 0,
+   "result": "8 passed"
+  },
+  {
+   "command": "grep docstring 'key-table probes' + BUDGET_SUITE_SECONDS absence",
+   "exit_code": 0,
+   "result": "REV-001/002 FIXED in code: docstring corrected, dead constant removed"
+  },
+  {
+   "command": "adversarial probes (fingerprints/integrity/capacity/backup/rollback/auth)",
+   "exit_code": 0,
+   "result": "all pass on 3ed2661"
+  },
+  {
+   "command": "ruff + ratchet",
+   "exit_code": 0,
+   "result": "ruff clean; ratchet 2 OK rc=0"
+  }
+ ],
+ "created_at_utc": "2026-08-23T03:20:00+00:00",
+ "findings": [
+  {
+   "id": "REV-001",
+   "severity": "minor",
+   "title": "Module docstring claims PRAGMA integrity_check",
+   "detail": "FIXED in 3ed2661 (module docstring aligned to key-table fast gate); test docstring cosmetic alignment noted (DELTA-MIN-001)."
+  },
+  {
+   "id": "REV-002",
+   "severity": "minor",
+   "title": "Dead BUDGET_SUITE_SECONDS constant",
+   "detail": "FIXED in 3ed2661 (removed; suite time bounded by CI timeouts)."
+  },
+  {
+   "id": "DELTA-BLOCK-001",
+   "severity": "blocking",
+   "title": "11 implementer receipt not updated for delta",
+   "detail": "RESOLVED at closure: 11 result_triplet.revenue updated to 3ed2661 == reviewed HEAD and resealed; 12 updated to delta review version."
+  },
+  {
+   "id": "DELTA-MIN-001",
+   "severity": "minor",
+   "title": "Test docstring stale wording",
+   "detail": "Cosmetic; test docstring says 'integrity_check == ok (read-only)' — aligned with the code behavior (key-table probes); carried as cosmetic note."
+  }
+ ],
+ "objective": "Delta re-review of ZR-1001 (prior accepted at c473e97): verify REV-001/002 fixes in 3ed2661 and remediate receipt tracking (DELTA-BLOCK-001).",
+ "reviewed_object_sha256": "0bcc4911f957cf91b9bdd2ed7e84e046a0e5773a681c48933a67f95349a3d5f6",
+ "canonical_hash": "59856762b7d57b90fa0d8839e6ef43c822391bc010f7d4a2e9a4c86736de070c"
+}

@@ -1,0 +1,124 @@
+{
+ "schema": "i11a-open5-envowner-handoff/1",
+ "card": "I-11-A",
+ "open_id": "OPEN-5",
+ "attempt": "execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01",
+ "role": "environment_dependency_owner",
+ "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+ "generated_utc": "2026-09-24T21:30:00Z",
+ "authorized_by": {
+  "primary": "OWNER_DECISIONS.md §二十四 (2026-09-24 深夜) 第 4 行 (L499)",
+  "primary_verbatim": "| **4** | **`OPEN-5` 归属**（港股（小米）年报原文可读性由谁解决；两半 reviewer 均判 `BLOCKED-pending-owner`、未代裁） | **指定环境/依赖 owner 处理** | 授权**派环境/依赖 owner 角色**裁定该归属问题；恢复后按卡文「**新建 attempt 重新取证、不得把 `not_readable` 改成已验证**」 |",
+  "discipline_verbatim": "§二十四 执行纪律 L502-L504: 「授权」是许可不是动作…不产生任何 ACCEPT、不解除任何 BLOCKED、不改任何 status；选项 2/3/4 只授权派工与取证，裁定仍归各自 reviewer/owner 角色；取不到就维持 BLOCKED，不造绿色样例。",
+  "upstream_chain": [
+   "OWNER_DECISIONS.md §十 L116/L127 (I-11-A OPEN-2/3/5/6 指派会计+行业 reviewer)",
+   "OWNER_DECISIONS.md §十一 L144 (派新 subagent 当行业 reviewer)",
+   "OWNER_DECISIONS.md §十一 L147 (I-11-A OPEN-1 允许 pdftotext 降级为交叉核对)"
+  ],
+  "card_lines": [
+   "execution_v2/card_I-11-A.md L9 (只用可核验来源)",
+   "execution_v2/card_I-11-A.md L21 (原文无法核查→STOP_EVIDENCE)",
+   "execution_runs/I-11-A/a20260919-01/decision.md L401 (OPEN-5 行: 裁定人=环境/依赖 owner + 行业 reviewer)",
+   "execution_runs/I-11-A/a20260919-01/decision.md L227-L228 (DEC-8 恢复规则)",
+   "execution_runs/I-11-A/a20260919-01/oracle.md L84-L86 (O-7 HK 可读性判据)",
+   "execution_v2/card_I-07-B.md L1/L14; execution_v2/card_I-11-B.md L9/L20/L23"
+  ]
+ },
+ "ruling_open5_ownership": {
+  "value": "environment_dependency_owner_self_held (环境/依赖 owner / I-00-B 侧 本角色主责)",
+  "statement_verbatim": "RULING —— OPEN-5 的归属 = 环境/依赖 owner（I-00-B 侧）本角色自持主责：由环境/依赖 owner 负责「可读性修复路径的选型、向上申请执行授权、能力落地与取证环境编排」。工具维护者不承担该归属；filing-fetch / HK 市场工具是候选「手段」而非归属方（且重下同一 URL 不产生可读性）；I-07-B 卡侧只是需求提出方/消费方，不拥有环境能力。归属本身不判 BLOCKED；两条真正动网/动依赖的执行子步判 PENDING_HIGHER_AUTHORIZATION（fail-closed，不执行、不预授权）。",
+  "rejected_assignments": [
+   "tools/pdf_text.py 工具维护者：不承担（工具声明范围本就排除 CID-without-ToUnicode，且 6 条本地取文路径同结果 ⇒ 改工具非根因修复；不硬指派）",
+   "filing-fetch / dayu-hkex-cli：非归属方，只是候选手段 A（reuse-first 会复用同一份不可读字节）",
+   "I-07-B 卡侧：只是需求提出方/消费方，不拥有环境能力"
+  ],
+  "pending_higher_authorization": [
+   {"id": "PEND-5a", "content": "路径 A 联网取可读替代件", "missing": "owner 对网络取文的明文授权（形态参照 §二十四 #3；产物只落本计划目录）", "to": "PLAN owner", "fail_closed": true},
+   {"id": "PEND-5b", "content": "路径 B 本地 OCR 依赖安装", "missing": "owner 对依赖安装（离线包/安装源/安装位置）的明文授权", "to": "PLAN owner + 环境/依赖 owner 执行", "fail_closed": true},
+   {"id": "PEND-5c", "content": "恢复后证据等级认定", "missing": "会计面定级（行业面 C 表分级已裁，等级归会计）", "to": "会计 reviewer", "fail_closed": true}
+  ],
+  "no_blocked_pending_higher_owner": "归属本身不需要更高层级决定（owner 已于 §二十四 #4 指定给本角色），故本裁定不判 BLOCKED-pending-higher-owner；仅执行子步判 PENDING_HIGHER_AUTHORIZATION。"
+ },
+ "root_cause": {
+  "sample_tested": true,
+  "sample_note": "盘上有 HK-XIAOMI-AR2025 本尊样本（非『无样本可测』）",
+  "sample_path": "C:/Users/郑曾波/Projects/company-wiki/companies/小米集團－Ｗ/raw/financial_reports/annual/2026-04-28_hkexnews_12127452_2025年度報告.pdf",
+  "sample_sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+  "sample_bytes": 4405561,
+  "rc_file_layer": "RC-1 文档层（决定性）：正文中文用 Type0/Identity-H 子集 CJK 字体（basefont 含 GBK-EUC-H），字体字典无 /ToUnicode，内嵌子集 TrueType 无 cmap 表（表仅 OS/2, glyf, head, hhea, hmtx, loca, maxp, name, prep）⇒ 文档内部不存在码→Unicode 映射；只有封面单个带 /ToUnicode 的字体可读（全文件 /ToUnicode 出现 1 次）。",
+  "rc_env_layer": "RC-2 环境/准入层（决定归属）：卡内唯一准许的取文器是 attempt 自带纯标准库 tools/pdf_text.py（隔离 venv 零 PDF 库、禁网、全局解释器被卡规则禁止 —— pdf_text.py L5-L9）；能绕过映射缺失的两条真路径（OCR / 重新取可读件）分别需要依赖安装与联网授权，均在环境/依赖 owner 管辖之上、须 owner 授权。",
+  "measured_summary": "tools/pdf_text.py rc=0 却 0 chars（页 1/2/3/10/20/44 全 0，classic_pages=415，无错误串）；pdftotext 4.00 rc=0 但乱码（1-3 页 1,586 B、40-46 页 13,557 B，锚词 0 命中）；PyMuPDF 1.26.7 全篇 415 页 total_chars=289,668 / cjk_chars=55,698 但 小米/收入/年度報告/分部/物聯網/智能手機 各 0 页命中；pypdf 6.16.2 / pdfminer.six 20260107 / pypdfium2 4.30.0 同族乱码；渲染通道完好（pixmap 1241x1684）。",
+  "conclusion": "『换工具/装个 PDF 库』不是恢复路径（5 个库实测同结果）；恢复只能走 ①重新取得可读同期间原文（需联网授权）或 ②本地 OCR（需 OCR 引擎安装授权，tesseract/gs/mutool/pdftoppm 均 absent）。",
+  "env_inventory": {
+   "attempt_venv_pdf_libs": "absent (fitz/pypdf/pdfminer/pdfplumber/pdftext/pypdfium2 全缺)",
+   "global_interpreter_pdf_libs": ["PyMuPDF 1.26.7", "pypdf 6.16.2", "pdfminer.six 20260107", "pdfplumber 0.11.8", "pypdfium2 4.30.0", "pdftext 0.6.3"],
+   "external_tools": {"present": ["pdftotext.exe (Xpdf 4.00, Git for Windows)"], "absent": ["tesseract", "mutool", "pdftoppm", "gs", "magick", "qpdf", "pdftk", "pdftohtml", "ocrmypdf", "fontTools"]}
+  }
+ },
+ "recovery_path_steps": [
+  {"step": "S0", "action": "归属裁定落地（ruling.md / handoff.json）", "executor": "环境/依赖 owner（本角色）", "authorization": "OWNER_DECISIONS.md §二十四 #4（已给：派工+取证准备）", "on_failure": "—", "status": "done"},
+  {"step": "S1", "action": "提交授权申请：路径 A（联网取可读替代件，走 filing-fetch/受控抓取，产物只落本计划目录，登记 URL+取回 UTC+sha256+逐字引文）与/或 路径 B（安装 OCR 依赖），并把 I-07-B 侧港股可读原文需求并入同一申请", "executor": "环境/依赖 owner 编排，PLAN owner 决断", "authorization": "PEND-5a / PEND-5b（owner 明文授权）", "on_failure": "fail-closed：维持 STOP_EVIDENCE / not_readable、港股命题零产出，不造绿色样例", "status": "pending_higher_authorization"},
+  {"step": "S2", "action": "落地取文能力并自检：先在已知可读样本 CN-ZIJIN-AR2025 上验证路径能读出锚词，再对 HK 样本跑同一探针；登记 argv/rc/输出 hash", "executor": "环境/依赖 owner 指派的工具工位", "authorization": "S1 的授权", "on_failure": "自检不过（HK 仍 0 锚词）⇒ 回 S1 换路径；不得把 CN 样本结论外推为 HK 结论", "status": "pending"},
+  {"step": "S3", "action": "新建 attempt 重新取证（DEC-8 恢复规则）：在全新 attempt 中对 HK 原文重新取文；封盘 attempt 与本次 not_readable 判定一律不动", "executor": "编排层派单的实现者（新 attempt）", "authorization": "编排层派单 + 独立 reviewer 复核", "on_failure": "新 attempt 仍不可读 ⇒ 新记录 not_readable，旧判定原样，回到 S1", "status": "pending"},
+  {"step": "S4", "action": "双路径复核 + provenance：两条独立取文路径互证（承 P1/P2 精神），登记 sha256、页码/锚文本、取回 UTC；外部件按行业面 C 表④标 external_retrieval_not_local、永不冒充本地", "executor": "实现者 + 独立 reviewer", "authorization": "S1/S3 授权", "on_failure": "复核不一致 ⇒ 该来源不可引用，维持不可读处置", "status": "pending"},
+  {"step": "S5", "action": "行业复裁 + 会计定级：按 IND 已裁 C 表①/②登记来源等级，证据等级由会计面认定（§二十四 执行纪律第 3 条）；通过后才谈港股命题与参数", "executor": "行业 reviewer + 会计 reviewer", "authorization": "各自专业裁定权（本载体不代行）", "on_failure": "任一面未过 ⇒ 港股参数继续 _PLACEHOLDER", "status": "pending"}
+ ],
+ "recovery_path_step_count": 6,
+ "recovery_path_steps_needing_owner_authorization": ["S1 (PEND-5a, PEND-5b)"],
+ "recovery_path_steps_needing_specialist_reviewer": ["S5"],
+ "rejected_paths": [
+  {"path": "C 换/升级 PDF 解析库或改 tools/pdf_text.py", "reason": "实测证否：5 个本地库对 body 文本同结果；文档内无映射可恢复", "evidence": "PRB-A/B/C/E/F/H"},
+  {"path": "D 字形轮廓反查 Unicode（glyph matching）", "reason": "fontTools 缺失、需参考字体、误判率高，非受控手段（fail-closed 不采纳）", "evidence": "PRB-F (fontTools absent)"}
+ ],
+ "consistency_with_card_discipline": {
+  "card_rule_verbatim": "decision.md L227-L228: 可读性恢复后（工具或依赖变更），新建 attempt 重新取证；不得把本次的 not_readable 判定改成\"已验证\"。",
+  "compliance": [
+   "S3 明文要求新建 attempt，恢复取证只发生在新 attempt",
+   "本载体未写 I-11-A 的 hypotheses.json / source_map.json / mechanism_review.md / handoff.json，未改任何 state/status/not_readable 字段",
+   "即使 S2 自检显示某路径能读出锚词，在 S3/S4/S5 走完之前仍按不可读处置（行业处置规则 B 继续有效）"
+  ],
+  "violates_card_rule": false
+ },
+ "unlocks_nothing": true,
+ "unlocks_nothing_detail": [
+  "不解除 OPEN-5 对 I-11-B 港股参数的阻塞（decision.md L401/L410-L411）；I-11-B 开工仍需合并席位列的 7 条条件",
+  "不解除对 I-07-B 港股 case 的阻塞（decision.md L225: 必须先解决 OPEN-5 —— 本载体只裁了『谁解决』，没有『已解决』）",
+  "不改 IND 已裁处置规则：港股命题零产出、HK-XIAOMI-AR2025 维持 STOP_EVIDENCE/not_readable、拒二手稿与常识补位、替代来源分级与外部件永不冒充本地继续有效",
+  "不解除两半任何 BLOCKED（ACCT BLOCKED-2a/2b/3a/3b/6a/6b/6c；IND BLOCKED-1..7；MERGE BLOCKED-UNADJ-1/2）",
+  "不新增 approved_frozen、不放行任何 _PLACEHOLDER、不认定任何证据等级"
+ ],
+ "does_not_claim_I11A_acceptance": true,
+ "adds_no_new_domain_judgement": true,
+ "adds_no_new_domain_judgement_scope": "本载体只裁『谁负责解决可读性 + 技术根因 + 恢复路径』；不重裁行业处置规则、不给任何港股数值、不做会计/行业/估值判断、不定证据等级。",
+ "not_done": [
+  "未修改 I-11-A 封盘 attempt 任何文件（含 tools/pdf_text.py 仅被只读执行）",
+  "未代签任何内容、未改任何 status/state/字段",
+  "未解除 OPEN-5 或任何 BLOCKED",
+  "未联网取港股原文（网络请求数 = 0）",
+  "未重裁行业半区已裁的处置规则（仅引用）",
+  "未执行 git 写操作（add/commit/checkout/stash/restore/reset 全未用）"
+ ],
+ "git_diff_observed": {
+  "command": "git -c core.quotepath=false diff HEAD --name-only（只读）",
+  "diff_total": 3826,
+  "git_diff_non_planning": 0,
+  "required_non_planning": 0,
+  "status_modified_non_planning": 0,
+  "untracked_non_planning_preexisting": [".tmp-r41-mutation/", "assurance/unified_completion/manifests/plan_inputs.json.bak"],
+  "note": "上述 untracked 非 .planning 路径为既有文件，非本载体创建；本载体新建文件全部位于 .planning 内"
+ },
+ "written_files": [
+  {"path": "execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md", "sha256": "2636d463ed58ad0a4ee8a9488feffb14b033bfb4a7c4630c4dcc6d08cf19d5e1", "bytes": 26429},
+  {"path": "execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/provenance.json", "sha256": "25a8cb593e33b0eec24df85b1fa23571b5f3faf4ceddfac33fe961305f154c78", "bytes": 25882},
+  {"path": "execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/handoff.json", "sha256": null, "bytes": null, "note": "自指不可自证：本字段由外部复算填写（同 ACCT/MERGE 先例）"}
+ ],
+ "written_files_count": 3,
+ "git_diff_non_planning": 0,
+ "file_format": {
+  "encoding": "UTF-8",
+  "bom": false,
+  "line_endings": "LF only (CRLF count = 0)",
+  "json_reparse": "provenance.json reparse OK after write (local_file=30, local_probe=13, ephemeral=4, total=47); handoff.json reparse OK after write"
+ },
+ "next_action": "把本裁定（归属=环境/依赖 owner；路径 A/B 的授权申请 PEND-5a/PEND-5b）提交 PLAN owner 决断；未获授权前一切港股取证保持停止。恢复获准后按 S2→S3（新 attempt）→S4→S5 推进；解锁仍须会计面定级 + 行业面复裁，不由本载体。"
+}

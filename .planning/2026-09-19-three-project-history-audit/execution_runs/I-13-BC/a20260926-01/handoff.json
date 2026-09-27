@@ -1,0 +1,243 @@
+{
+ "card_id": "I-13-BC",
+ "attempt_id": "a20260926-01",
+ "role": "implementer_i13bc",
+ "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+ "status": "accepted_scoped",
+ "objective": "合并卡两段连续判断：阶段 B reviewer 只用最终报告回答 5 问 + 复核路径/增量/CAGR/贡献/敏感性 + 独立预期对照；阶段 C 按评分规则定级 + 逐模型公式/披露/准确性三栏 + 保留 source 与模型 hash/as_of/限制/更新条件/接续卡。",
+ "authorized_by": {
+  "dispatch_verbatim": "编排层派单（2026-09-26）：「你是编排层派单的实现者，开 I-13-BC（合并卡：原 I-13-B 独答 + I-13-C 评分，owner 批「乙」合并后的执行单元）。依赖 I-13-A 已落定 accepted_scoped（2026-09-26 21:0x）。」+ 硬性纪律：「每段独立 oracle 冻结点（oracle_B.md + oracle_C.md 或单 oracle 内两节）+ 门 0 自探留档 + 变异 ≥3（含「一栏 PASS 盖另一栏」必须红）。不放行参数 · 不自签（复审另派）· 落定父直写 · 封盘 f2178768… 零字节。禁五份计划文件 · 禁 .planning 外 · 禁 git 写 · 禁 git status · 禁联网。fail-closed：最终报告不可得 ⇒ STOP 判 blocked；任一评分维度证据不足 ⇒ 落 blocked/research_draft_needs_review（非 ready）。不派 I-16-A（依赖顺序另派）。」+ 红线「124,248.63（真值 38,175.95）OPEN-2 前只登记不消费」+ 父 21:1x 补充「两段各一 oracle 冻结点，任一段 STOP ⇒ 整卡 STOP（fail-closed）」。",
+  "merge_authorization_verbatim": "card_I-13-BC.md L3：「性质：owner 授权的执行单元合并（2026-09-26 「先做甲，然后做乙」）—— 不改原两卡判据一字，作为两段连续判断装进一个执行单元（一次复审 + 一次落定）。」L5「原卡文（判据权威）：card_I-13-B.md · card_I-13-C.md —— 只读、零字节改动。」L12「实现者不自签」L36「两段结论同 handoff，status_authority 引同一复审报告」。",
+  "owner_decision_s34": "OWNER_DECISIONS.md §三十四（L745-L780，2026-09-26 15:4x）：L754 owner 选择「A」；L757「改判 I-11-B 的开工门槛 —— 以 MERGE 七条当前 5✅ + 2❌ 现状开工；i11b_unblocked 的语义从『7/7 才开』改为『owner 明文许可开工』」；L758「C3/C5 的残余不丢、不隐藏」；L761-L766 硬约束「oracle 先冻结」「不放行任何参数」「不触发任何 falsifier/自动动作」「实现者不自签 · 独立复审 · 落定走三件套」「expert_assumption 必须给敏感性区间 + equivalent_to_disclosure_basis=false」；L769-L775 边界：不解除 OPEN-2/3/5/6 与任何 BLOCKED-*、不放行参数、不产生 ACCEPT、不代签；L779「后继卡按卡文依赖顺序另派」（本轮 I-13-BC 合并派单即该『另派』机制的行使）。",
+  "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871，2026-09-26 17:5x）：授权原话「给你授权所有的沙箱操作，不要再问我了」；覆盖三仓读写/系统调用/文件落点/网络取证；边界：纪律 16/17/18/19/20 继续有效、生产零未授权改动、git add/commit/push 不在授权内。本卡使用面 = 零提权（全部写入在本 attempt 目录普通文件）；网络 = 0（provenance 四件未触发）。",
+  "card_face_verbatim": {
+   "card_I-13-B": "L13「让reviewer只用最终报告回答：增长从何而来、何时确认、最大三项驱动贡献、哪些约束会使高情景失败、哪条证据推翻基情景。」L14「复核收入年路径、增量、CAGR边界、驱动贡献和敏感性；非线性分解方法若未冻结，禁止把交互项随意分配。」L15「对照独立预期来源；若无可靠consensus/market-implied数据明确写不可得，不编数字。」L16「将答案逐条链到source→parameter→calculation→output；点开至少一个重要原文来源确认真实内容，摘要或manifest名不代替实际读取。」L20-L21 停止（STOP_INVESTOR_USE / STOP_ACCOUNTING）；L23 验收「具体问题可用最终交付独立回答；缺失需回到对应卡，不能在总结里虚报补齐。」",
+   "card_I-13-C": "L13「按评分规则确定blocked/research_draft_needs_review/buy_side_review_ready。」L14「逐模型列公式、披露、准确性三栏；准确性未证实也必须明写，禁止改成已验证预测。」L15「保留source及模型hash、as_of、当前限制、触发更新条件、下次需执行卡和owner。」L16「本卡只审阅资格，不自行补写host_receipt或改索引。」L20-L21 停止（ready 禁令 / STOP_PROVENANCE）；L23 验收「明确区分研究可审阅、部署可用、预测准确性；保留所有未证实事项。」"
+  },
+  "prerequisites_verified": {
+   "I-13-A": "execution_runs/I-13-A/a20260926-01/handoff.json（sha 0b466621…）→ status=accepted_scoped（status_transition: review_pending -> accepted_scoped；status_authority.carrier=reviewer_report.md sha 7f0c379c…，three_way_match=true）；分类结论 research_draft_needs_review、HB3=not_established（复审推翻实现者原判 established）",
+   "I-07-E": "calibration_validation_summary.md（sha a2304fdd…/26,132 B）153 行全读 = 阶段 B 作答报告面",
+   "I-11-C": "parameter_mapping.json（sha d542b34d…/54,875 B）18 映射行结构机读 + 逐行溯源链"
+  }
+ },
+ "gate0_passed": true,
+ "gate0_raw_output": "=== GATE0 BEGIN (I-13-BC/a20260926-01) ===\ncwd=C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-13-BC\\a20260926-01\n--- step0 mkdir ---\ndir_exists=True\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\nreadback=gate0 probe I-13-BC a20260926-01 write-readback-delete 2026-09-26T21:18:22.0755186+01:00\n--- step3 delete ---\ndeleted_gone=True\n--- step4 sealed sha (read-only) ---\nsealed_I-11-A_hypotheses_sha256=f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28\nsealed_matches_f2178768=True\nsealed_bytes=51697\n--- step5 store sha (read-only) ---\nstore_hypotheses_v3_sha256=b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff\nstore_matches_b2063ac8=True\nstore_bytes=61231\n--- step6 git diff name-only count (read-only) ---\n[stderr] git warning CRLF/LF（pwsh 升级为终止错误中断；同命令只读重跑如下）\ngit_diff_total=3830\ngit_diff_non_planning=0\ngit_diff_exit_ok=True\n=== GATE0 END ===",
+ "gate0_note": "写+回读+删三步本会话自探（21:18:22+01:00）；零提权、探针已删无残件；封盘/store 只读复哈希（oracle §0 冻结，定稿复验见 boundary_self_declaration）。",
+ "two_stage_summary": {
+  "stage_B": {
+   "product": "reviewer_answers.json",
+   "five_questions_tally": {
+    "Q1_growth_source": "partial",
+    "Q2_when_confirmed": "partial",
+    "Q3_top3_driver_contributions": "not_answerable（无贡献分解；交互项分配=none，不编数字）",
+    "Q4_high_scenario_failure_constraints": "answerable（7 条）",
+    "Q5_evidence_overturning_base": "answerable（3 条候选反证）"
+   },
+   "stop_evaluation": "STOP_INVESTOR_USE 未触发（报告面可答驱动/时点/约束骨架）；STOP_ACCOUNTING 未触发（情景≠概率、产量≠销量、总≠净额显式）；最终报告可得性：采用读法=最终交付报告面可得（研究草稿）⇒ 段不 STOP；严格读法（须独立成篇正式最终报告）⇒ 不可得 ⇒ STOP 判 blocked ⇒ 整卡 STOP——两读法均登记，裁定权=独立买方 reviewer+行业 reviewer",
+   "expectation_comparison": "consensus/market-implied 明写不可得、数字 0（不编数字）；可预期差异均登记为口径不同（u-N5 语义张力、红线两值分母口径、产量/销量、总/净额、Cloud 聚合口径）",
+   "gaps_routed": "G1 贡献分解缺、G2 确认时点缺、G3 逐年路径缺、G4 预期差不可得、G5 小米缺位、G6 u-N5、G7 红线族、G8 gap-U3/U4——逐条回对应卡，无虚报补齐"
+  },
+  "stage_C": {
+   "product": "final_scorecard.json",
+   "classification": "research_draft_needs_review",
+   "classification_derivation": "established_hard_blocks=[]（HB3=not_established 复审裁定）∧ zeros_present=0 ∧ 有 1 的维度=7 ⇒ 机械推导 research_draft_needs_review（非 ready：缺独立全维签署 + 未解 blocking issue）",
+   "qualification_statuses": {
+    "research_reviewable": "research_draft_needs_review",
+    "deployment_usable": false,
+    "forecast_accuracy": "unproven"
+   },
+   "per_model_columns": "14 行 × 公式/披露/准确性三栏；accuracy 全部=unproven 明写；不授予行（MS-PBP-M05/MS-IC-M06）row_status 非 pass；缺位行（XM-PHONE-M03/XM-EV-M03）blocked_gap；禁止一栏 PASS 盖另一栏",
+   "retained": "source 三源 doc sha + 载体/模型 hash（M01-M31 逐模型 hash 显式登记不可得）+ as_of=2026-09-18 + 当前限制 + 触发更新条件 + 下次卡与 owner 全保留"
+  },
+  "two_stage_conclusion_single_handoff": "两段结论同 handoff；status_authority 引同一复审报告（复审另派后由父直写落定补记）"
+ },
+ "completed_steps": [
+  "1 领取：合并卡文 + 原卡 I-13-B/I-13-C（只读）+ 上游 I-13-A/I-07-E/I-11-C + §三十四/§三十七 + 红线回源完成",
+  "2 门 0 自探留档：写/回读/删 + 封盘 f2178768… 与 store b2063ac8… 只读复哈希 + git diff 只读计数（oracle §0）",
+  "3 oracle 先冻结：两段独立冻结点（§2.A oracle_B / §2.B oracle_C）+ 上游 14 件 sha + 红线 + 事前预期 P1-P12 + 变异 M1-M6 + exit code legend（先于任何产物写入）",
+  "4 阶段 B：最终报告识别（两读法登记）+ 五问答（2 answerable / 2 partial / 1 not_answerable）+ 复核五项（路径/增量/CAGR/贡献/敏感性，复算值全标 review_recompute_not_released）+ 预期对照（不可得、不编数字）+ 7 条 source→parameter→calculation→output 链 + 3 条原文实读回执（store claim 逐字）→ reviewer_answers.json",
+  "5 阶段 C：评分规则逐字（common_research_cards L293）机械推导分类 + 14 模型三栏表 + 三资格状态分列 + 保留五项（hash/as_of/限制/触发/接续卡）+ STOP 判据评估 → final_scorecard.json",
+  "6 红绿变异：_verify_i13bc.py（J1-J6）绿臂 + 6 红臂（_mut/ 副本，原件字节不动）→ verification.json",
+  "7 交审：本 handoff，status=review_pending（证据齐全的进入形态，非验收）；落定走父直写（V3 轻格式），本 unit 不产生 ACCEPT"
+ ],
+ "next_step_number": 8,
+ "next_action": "一次复审（合并卡 L35：review_pending →（一次复审）→（一次落定）accepted_scoped）：①独立买方 reviewer + 行业 reviewer 裁定『最终报告』两读法（严格读法 ⇒ 阶段 B STOP 判 blocked ⇒ 整卡 STOP；采用读法 ⇒ 维持走查）②复核 Q1-Q5 五问答案与缺口路由、复算值（review_recompute_not_released）③主审 + 独立买方 reviewer 复核分类推导、14 模型三栏、保留清单 ④重跑 _verify_i13bc.py 绿臂 + 抽验红臂 M1/M3。复审后由父直写落定（两段结论同 handoff，status_authority 引同一复审报告）。本 unit 不派 I-16-A（派单明令）、不派 I-12/I-16/I-17（依赖顺序另派）。",
+ "input_hashes": {
+  "algorithm": "sha256",
+  "note": "完整 14 件见 verification.upstream_inputs（J6 逐件复算）；封盘与 store 零字节/零改动",
+  "execution_v2/card_I-13-BC.md": "56d1dad542ca17d13cc820272f3d1717423cde5ef0e5759bf5761fe9b8d96a39",
+  "execution_runs/I-13-A/a20260926-01/handoff.json": "0b466621ff964c8e3347cc96033bf7abd1f800eaf9eda75c3555209ac60a2f97",
+  "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb",
+  "execution_runs/I-11-C/a20260926-01/parameter_mapping.json": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c",
+  "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json (sealed)": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+  "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json (store)": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff"
+ },
+ "changed_paths": [
+  "execution_runs/I-13-BC/a20260926-01/oracle.md",
+  "execution_runs/I-13-BC/a20260926-01/reviewer_answers.json",
+  "execution_runs/I-13-BC/a20260926-01/final_scorecard.json",
+  "execution_runs/I-13-BC/a20260926-01/_verify_i13bc.py",
+  "execution_runs/I-13-BC/a20260926-01/_run_mutations.py",
+  "execution_runs/I-13-BC/a20260926-01/verification.json",
+  "execution_runs/I-13-BC/a20260926-01/handoff.json",
+  "execution_runs/I-13-BC/a20260926-01/_mut/**（M1-M6 变异副本与各臂 verifier_output.txt；原件不动）"
+ ],
+ "commands_executed": [
+  "pwsh: 门 0 六步（New-Item/WriteAllText/ReadAllText/Remove-Item + Get-FileHash 封盘/store 只读复哈希 + git diff HEAD --name-only 只读计数）—— 原始输出见 gate0_raw_output",
+  "pwsh: Get-FileHash SHA256 × 14 上游件（只读）",
+  "python -B _verify_i13bc.py --root <attempt|_mut/Mx> --plan <plan-root>（绿臂 + 6 红臂 + 定稿绿臂，只读校验）",
+  "python _run_mutations.py（副本变异执行 + 原件 before/after sha 比对）"
+ ],
+ "raw_exit_codes": {
+  "note": "exit_code_legend（冻结于 oracle §6）：0=ALL_INVARIANTS_OK；1=harness 失败；2=不产生；3=不变量违例（具名 J1..J6）",
+  "GREEN": 0,
+  "M1_one_column_masking": 3,
+  "M2_accuracy_overclaim": 3,
+  "M3_ready_escalation": 3,
+  "M4_redline_consumption": 3,
+  "M5_fabricated_numbers": 3,
+  "M6_scenario_as_probability": 3,
+  "GREEN_AFTER_MUTATIONS": 0,
+  "GREEN_FINAL_post_finalization": 0
+ },
+ "expected_exit_codes": {
+  "GREEN": 0,
+  "M1": 3,
+  "M2": 3,
+  "M3": 3,
+  "M4": 3,
+  "M5": 3,
+  "M6": 3,
+  "GREEN_AFTER_MUTATIONS": 0,
+  "GREEN_FINAL": 0
+ },
+ "mutation_summary": "红绿双向：绿臂 rc=0 ×3（首跑 / 红臂后 / 定稿后 GREEN_FINAL）；6 红 rc=3 全数与 oracle §6 冻结期望一致（match=true），J1-J6 全覆盖（J1←M3+M4、J2←M1〔一栏 PASS 盖另一栏，派单点名，必须红——命中〕+M2、J3←M4、J4←M5+M6、J5←M3、J6 由绿臂复算）；原件与上游字节零改动（_run_mutations.py before/after 比对 untouched=True）",
+ "written_files": {
+  "note": "sha256 于定稿时复算（bytes|sha256）；handoff.json 自身为自指文件不记自身 sha（由父落定/复审复哈希）",
+  "oracle.md": {
+   "bytes": 27249,
+   "sha256": "f1f9240a9ade28ecf1e951cac83f4f4b2de68c93368cfc0a67eef0d3baf2ff00"
+  },
+  "reviewer_answers.json": {
+   "bytes": 27844,
+   "sha256": "df599de9214384e8f54f4f28483d41ea4e3328164efb35893c8f2498b4653656"
+  },
+  "final_scorecard.json": {
+   "bytes": 27097,
+   "sha256": "06976e807fd5077a493151e7f4391dd238004abeb8ca9bbe3f50a48f21850263"
+  },
+  "_verify_i13bc.py": {
+   "bytes": 11535,
+   "sha256": "6d35df404ddf88a00aed369b57178d53d56e589da0b641100dc6b90bc0d2d5be"
+  },
+  "_run_mutations.py": {
+   "bytes": 5112,
+   "sha256": "1551057181dadf6671d4f0eee3a4fb33311313afb534b62b5f706d7bcb2b1b8f"
+  },
+  "verification.json": {
+   "bytes": 8638,
+   "sha256": "ed069b7c659e334365714a24e76fe6b56104ab932600665832e4aa41e8be7aca"
+  },
+  "_mut/**": "M1-M6 变异副本 + 各臂 verifier_output.txt + mutation_summary.json（原件字节不动）",
+  "handoff.json": "自指文件，不记自身 sha"
+ },
+ "open_questions": [
+  "『最终报告』两读法裁定（严格读法 ⇒ 阶段 B STOP 判 blocked ⇒ 整卡 STOP）——裁定权=独立买方 reviewer + 行业 reviewer",
+  "Q3 驱动贡献分解缺失的补齐路径：非线性分解方法未冻结（I-11-B）+ 分解产物不存在（I-07-E/I-11-C）——回对应卡，本站不虚报",
+  "BLOCKED-6b 整条是否转 accepted（ruling_6b L110）由 owner/编排层另判（F-2 继承）",
+  "u-N5 AR p327/p328 回源裁定、u-N4 store 63 位勘误、gap-U3/U4 载体定位——继承上游，未在本站解决",
+  "严格读法之争（not_executable 槽位 ⇒ 整卡 blocked）：上游复审按不触发接受；本站不重开、不自裁"
+ ],
+ "blocked_by": [
+  "OPEN-2（红线值禁消费；只登记不消费）",
+  "OPEN-3 / OPEN-5 / OPEN-6 未解（不解除）",
+  "BLOCKED-6b（154 千克 NOT_SIGNED，signed 3/4）still_blocked；BLOCKED-6a/6c、BLOCKED-NEEDS-ORIGIN-BYTES 未解",
+  "正式发布格 blocked：本 unit 无正式签名能力、不走发布卡（card_I-13-C L16）",
+  "独立签名缺：independent_buy_side_signoff 归独立买方 reviewer 另派（本站不自签）"
+ ],
+ "evidence_paths": [
+  "execution_runs/I-13-BC/a20260926-01/oracle.md（门 0 原始输出 + 两段冻结点 + 上游 sha + 红线 + P1-P12 + 变异 M1-M6 + 边界）",
+  "execution_runs/I-13-BC/a20260926-01/reviewer_answers.json（阶段 B：五问 + 复核五项 + 预期对照 + 7 条溯源链 + 3 条实读回执 + STOP 评估 + 缺口路由）",
+  "execution_runs/I-13-BC/a20260926-01/final_scorecard.json（阶段 C：分类机械推导 + 14 模型三栏 + 三资格状态 + 保留清单 + STOP 评估）",
+  "execution_runs/I-13-BC/a20260926-01/verification.json（红绿变异 + 上游一致性核）",
+  "execution_runs/I-13-BC/a20260926-01/_verify_i13bc.py + _run_mutations.py（只读校验器 + 变异执行器）",
+  "execution_runs/I-13-BC/a20260926-01/_mut/（M1-M6 副本 + 各臂 verifier_output.txt + mutation_summary.json）"
+ ],
+ "reviewer_status": "pending —— 一次复审另派（阶段 B 面：独立买方 reviewer + 行业 reviewer；阶段 C 面：主审 + 独立买方 reviewer）；实现者不自签（status=review_pending 是证据齐全的进入形态，不是验收）；落定走父直写（V3 轻格式），本 unit 不产生 ACCEPT",
+ "boundary_self_declaration": {
+  "no_auto_actions": true,
+  "no_falsifier_triggered": true,
+  "no_status_decision_changed": true,
+  "params_released": false,
+  "sealed_hypotheses_untouched": {
+   "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "bytes": 51697,
+   "zero_byte_change": true
+  },
+  "store_untouched": {
+   "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+   "bytes": 61231,
+   "low_base_high_all_null": true,
+   "placeholders_in_place": true
+  },
+  "five_plan_files_untouched": true,
+  "writes_outside_planning": 0,
+  "git_writes": 0,
+  "git_status_run": false,
+  "network_used": false,
+  "independent_signoff_not_produced": true,
+  "host_receipt_not_written": true,
+  "index_not_modified": true,
+  "read_scope_V2_4": "只读清单（合并卡文 + 原卡 I-13-B/C + I-13-A 三件 + I-07-E summary + I-11-C parameter_mapping + §三十四/§三十七 + 红线）+ 定域取尺（common_research_cards.md L291-L312/L11/L156-L163）+ 定域消歧（research_cards.md L1-L60/L521-600）+ 原文实读（store hypotheses_v3.json claim 逐字）——见 oracle §2 回源面声明；其余零读",
+  "not_dispatched": [
+   "I-16-A",
+   "I-12",
+   "I-16",
+   "I-17"
+  ]
+ },
+ "git_diff_non_planning": 0,
+ "git_diff_non_planning_measured": "git -c core.quotepath=false diff HEAD --name-only（只读，两轮：开工 gate0 + 定稿）→ total=3830（历史/并发写入方均在 .planning 内），non_planning=0；禁 git status 未跑；无 git 写",
+ "open2_ban_observed": true,
+ "params_released": false,
+ "implementer_signed": false,
+ "releases_nothing": true,
+ "releases_nothing_detail": "不产生 ACCEPT · 不放行任何参数（store low/base/high 全 null、两个 _PLACEHOLDER 维持、18 行 mapped_not_released 零传播）· 不触发任何 falsifier/自动动作 · 不解 OPEN-2/3/5/6、不解任何 BLOCKED-* · 不代签行业/会计/外部/买方面 · 不产 independent_buy_side_signoff（归独立买方 reviewer）· 封盘与 store 零字节/零改动 · 不写五份计划文件 · 不写 .planning 之外 · 不走发布卡、不补 host_receipt、不改索引 · 不派 I-16-A/I-12/I-16/I-17",
+ "status_authority": {
+  "carrier": "reviewer_report.md",
+  "carrier_sha256": "b4c4ae2127b266602bea68330d2d43adb2c023da26edb9f0efe4ec78c67e5248",
+  "carrier_bytes": 26404,
+  "carrier_encoding": "UTF-8 no BOM",
+  "verdict_line": "**VERDICT: ACCEPT —— P1×0（数值/推导、`124,248.63` 红线、封盘 `f2178768…`、`M1` 必红四项全过）；P2×1、P3×4 随附。⭐ 首要裁定：「最终报告」两读法 → 本人采**采用读法**（最终交付报告面 = `I-07-E calibration_validation_summary.md` 可得）⇒ **阶段 B 不 `STOP`、整卡不 `STOP`**；严格读法登记在案不采纳（若采 ⇒ 本卡交付物落 `blocked`，仍是 ACCEPT 合格交付，`P1` 不因它触发）。Q3 `not_answerable` 判定正确、consensus 明写不可得合规、分类机械推导自算一致、14 模型三栏 accuracy 14/14 = `unproven`、变异绿臂 `rc=0` / `M1 rc=3(J2)` / `M3 rc=3(J1,J5)` 全部本人复跑复现。**",
+  "verdict_byte_region": {
+   "content": [
+    599,
+    1314
+   ],
+   "incl_lf": [
+    599,
+    1315
+   ]
+  },
+  "verdict_word_written_by_reviewer": "ACCEPT",
+  "pin_sidecar": "b4c4ae2127b266602bea68330d2d43adb2c023da26edb9f0efe4ec78c67e5248  reviewer_report.md",
+  "three_way_match": true
+ },
+ "pre_image": {
+  "sha256": "795e95c1738b6fa575e825855fb0654844d129108689885ddab782a92aede522",
+  "bytes": 20486,
+  "status": "review_pending"
+ },
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> accepted_scoped",
+ "status_history": [
+  {
+   "at_utc": "",
+   "status": "accepted_scoped",
+   "by": "landing_parent_v3",
+   "note": "父直写轻格式落定（V3）；前像 sha 见 pre_image"
+  }
+ ],
+ "carried_findings": [],
+ "verdict_is_transcribed_not_authored": true
+}

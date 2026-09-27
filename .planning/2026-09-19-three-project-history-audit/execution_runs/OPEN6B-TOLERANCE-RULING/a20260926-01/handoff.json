@@ -1,0 +1,213 @@
+{
+  "schema": "execution-run-handoff/1",
+  "role": "accounting_reviewer",
+  "carrier": "OPEN6B-TOLERANCE-RULING",
+  "attempt": "execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01",
+  "plan_root": ".planning/2026-09-19-three-project-history-audit",
+  "task": "按 OPEN6-TOLERANCE-TABLE/a20260925-01 的 §⑥ 提请，按 BLOCKED-6b 补裁三点（模型 A/B、L_A>U 冲突、R2 是否补登），并对 4 条 arithmetic_identity 阈值逐条签署容差或判 NOT_SIGNED",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "generated_utc": "2026-09-26T00:00:00Z",
+
+  "authorized_by": {
+    "blocked_6b_verbatim": "BLOCKED-6b：4 条 arithmetic_identity 的容差是否与其来源舍入粒度一致（含 ±1 USD million）—— 需逐条对照原文舍入粒度复核后签署（规则已给，值未审）",
+    "blocked_6b_source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L297, bytes [32795,33005), sha256 f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2 (37355 B)",
+    "blocked_6b_dispatch_verbatim": "BLOCKED-6b | 4 条恒等式阈值的容差是否匹配披露舍入粒度 | 逐条对照原文舍入粒度 | 会计 reviewer（我）在拿到对照表后补裁 / 行业 reviewer 会签",
+    "blocked_6b_dispatch_source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L323, bytes [35734,35923)",
+    "c5_verbatim": "OPEN-6：threshold_review_status 落地 + H4 四要件补齐 + H2 基准 + 恒等式容差对照表",
+    "c5_source": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json L122, bytes [11330,11437), sha256 b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878 (21808 B)",
+    "c5_breakdown_verbatim": "4 条恒等式容差对照原文舍入粒度（BLOCKED-6b）",
+    "c5_breakdown_source": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json L108, bytes [9785,9857)",
+    "rule_a62_verbatim": "arithmetic_identity | 4（hypotheses.json L88 / L311 / L524 / L649） | 可用（等式判定） | 舍入容差必须显式且不超过来源披露的舍入粒度（如\"允许 |差| ≤ 1 元\"对应元位披露），容差依据须写明；不得自由放大",
+    "rule_a62_source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L240, bytes [26593,27309)（本工位逐字切片复核）",
+    "criteria_frozen_in": "oracle.md §②（先冻结，后裁定）"
+  },
+
+  "three_questions": [
+    {
+      "id": "Q1",
+      "question": "模型 A（round-half-to-nearest，L_A = n·g/2）还是模型 B（账簿精确值，L_B = 0）适用于这些披露（NE-2）",
+      "conclusion": "insufficient_evidence",
+      "ne2_upheld": true,
+      "basis": "本工位自跑检索：CN-ZIJIN-2025.txt 四舍五入|舍入|取整|rounding|四捨五入 = 0 命中；US-MSFT-2026.txt [Rr]ound|ROUND|rounded|nearest = 7 命中全为词内子串；两份原文只有单位声明（人民币元 / 单位：元 / In millions），无舍入模式声明",
+      "consequence": "两个模型都不采用；任何由模型推导的下限不得作为签/不签的承重理由；签署值须在模型 A 与模型 B 下就 A-6.2 上限都可容；注册文本中\"允许披露四舍五入引入的\"因果归属登记为待更正措辞（追加式，不回改），签署依据改写为原文粒度 g",
+      "material_to_signing": false
+    },
+    {
+      "id": "Q2",
+      "question": "L_A > U 时以哪条判据为准（RULE_CONFLICT，R1/R3/R4）",
+      "conclusion": "以 A-6.2 上限 U = g 为准；模型 A 下限 L_A 不具约束力",
+      "basis": "①书面规则（A-6.2 L240，无条件、自带\"允许 |差| ≤ 1 元\"范例）层级高于条件式推导量；②L_A > U 仅在模型 A 成立时出现，而模型 A 按 Q1 未证；③把 τ 放大到 > g = 修改 A-6.2，属 owner/DEC-14（A-6.3 第5条、ACCT ruling L278），本工位无权；④按 L_A 会放松判定并否掉规则自带范例",
+      "residual_risk_registered": "若模型 A 日后被证实，纯舍入可产生 R1 2 元 / R3 3 元 / R4 2 USD mn 量级残差被判超限（假阳性）—— 登记而不预防：判超限属 fail-closed 方向，且该观测本身是新证据，触发恢复规则重裁",
+      "third_criterion_rejected": "「冲突需要第三判据」= 新增规则，须 owner/DEC-14 + 校验器同步，不属本次补裁"
+    },
+    {
+      "id": "Q3",
+      "question": "R2（H-CN-ZIJIN-VOL-03）是否补登数值容差",
+      "conclusion": "不补登（本轮不能补登）",
+      "r2_status": "NOT_SIGNED",
+      "reason_code": "insufficient_evidence",
+      "prerequisite_now_satisfied": "OPEN-11 已裁「跨期可得性成立」（I11A-OPEN11-IND/a20260924-01/ruling.md L95 裁定文本，sha256 c02e255f67f76be9c0a38569454b64cd93f8469d9fc5244e6da2ce7cfc3bb95d）",
+      "blocking_measurement": "可容带 0 < τ ≤ 1 单位（A-6.2 上限 = g = 1 吨/1 千克）与覆盖实测所需带 τ ≥ 154 千克交集为空；本工位自算实测残差 铜 +1 吨 / 锌 0 吨 / 银 −1 千克 / 金 +154 千克",
+      "rejected_values": ["τ = 0（NE-3 明令不以 0 代填）", "τ = 1 单位（合规但已知覆盖不了金 154）", "τ = 2 单位（超帽且仍覆盖不了 154）", "τ ≥ 154 千克（超帽 154 倍 = 自由放大；无 A-6.3 基础；对 ≤154 千克并购范围/在途寄售变化失明）"],
+      "consequence": "NE-3 保持（比较 NOT_ESTABLISHED，不以 0 或 1 代填）；R2 凑平支按 OPEN-11 R4 第5步在容差签署前不执行；四产品上限判据与方向判据实测通过仅为测量事实，不构成放行",
+      "recovery_rule": "(a) 取得存货桥闭合证据（OPEN-11 R6 条件2）后在新版本内按 A-6.3(2) 选基础并在 0<τ≤1 单位签署；(b) 若须 τ>1 单位，先由 owner 修订 A-6.2（DEC-14 + 校验器同步）；(c) 若结构差无法解释，按 hypotheses.json L315 revert_rule 处理（写入属实现者/编排层，本工位不执行）"
+    }
+  ],
+
+  "blocked_6b_status": "still_blocked",
+  "blocked_6b_status_reason": "BLOCKED-6b 的完成条件是 4 条逐条对照原文舍入粒度复核后签署；R1/R3/R4 已签、R2 判 NOT_SIGNED(insufficient_evidence) ⇒ 少签 1 条 ⇒ 未达成",
+  "signed_count": 3,
+  "not_signed_count": 1,
+  "thresholds_count": 4,
+
+  "signed_thresholds": [
+    {"row": "R1", "threshold_id": "H-CN-ZIJIN-SEG-01", "tau": "1", "unit": "CNY_yuan", "granularity": "1 人民币元", "observed_max_abs_residual": "0（FY2025/FY2024，自算）"},
+    {"row": "R3", "threshold_id": "H-CN-ZIJIN-ELIM-05", "tau": "1", "unit": "CNY_yuan", "granularity": "1 人民币元", "observed_max_abs_residual": "0（FY2025/FY2024，自算）"},
+    {"row": "R4", "threshold_id": "H-US-MSFT-SEG-01", "tau": "1", "unit": "USD_million", "granularity": "1 USD million", "observed_max_abs_residual": "0（FY2026/FY2025，自算）"}
+  ],
+  "not_signed_thresholds": [
+    {"row": "R2", "threshold_id": "H-CN-ZIJIN-VOL-03", "tau": null, "status": "NOT_SIGNED", "reason": "insufficient_evidence：可容带 (0,1 单位] 与覆盖实测所需带 [154,∞) 交集为空"}
+  ],
+
+  "decision_sha256": "b9c6bab547cb97184ad9c058ca10490ea84e5b4b538f85356525b100377989da",
+  "decision_sha256_preimage_schema": "decision-sha256/v1",
+  "decision_sha256_preimage_composition": "sha256( utf8( json.dumps(pre, sort_keys=True, ensure_ascii=False, separators=(',',':')) ) )；pre = {schema, role, carrier, scope, authorized_by, authorized_by_sha256, q1_model, q2_rule_conflict, q3_r2, signed[3], not_signed[1], blocked_6b_status, signed_count, releases_nothing, does_not_claim_I11BAcceptance}；preimage 全文 1979 字节，逐字存于 tolerance_signed.json → decision_preimage_canonical",
+  "decision_sha256_before_write": "b9c6bab547cb97184ad9c058ca10490ea84e5b4b538f85356525b100377989da",
+  "decision_sha256_after_write": "b9c6bab547cb97184ad9c058ca10490ea84e5b4b538f85356525b100377989da",
+  "decision_sha256_two_pass_match": true,
+  "decision_sha256_scope": "BLOCKED-6b；hypothesis_id ∈ {H-CN-ZIJIN-SEG-01, H-CN-ZIJIN-VOL-03, H-CN-ZIJIN-ELIM-05, H-US-MSFT-SEG-01}；parameter_id = 无；签署人 = 会计 reviewer（非实现者）",
+
+  "independent_recompute": {
+    "requirement": "至少 2 条残差自算，不引用对照表结论",
+    "performed": "4 条恒等式 × 2 期 = 8 处 + R2 四产品 = 12 处，全部由本工位代入原文操作数精确求和",
+    "results": [
+      "R1 FY2025: 109,977,556,345+165,858,644,874+29,212,610,830+44,030,270,803 = 349,079,082,852 ⇒ Δ=0",
+      "R1 FY2024: 74,089,365,354+181,141,823,725+29,386,475,085+19,022,292,989 = 303,639,957,153 ⇒ Δ=0",
+      "R3 FY2025: 138,271,672,956+189,683,879,295+170,521,025,777+85,572,651,236 = 584,049,229,264; −234,970,146,412 = 349,079,082,852 ⇒ Δ=0",
+      "R3 FY2024: 95,360,053,889+201,367,589,325+134,062,842,189+46,012,598,723 = 476,803,084,126; −173,163,126,973 = 303,639,957,153 ⇒ Δ=0",
+      "R4 FY2026: 139,996+137,791+54,052 = 331,839 = Total revenue ⇒ Δ=0",
+      "R4 FY2025: 120,810+106,265+54,649 = 281,724 = Total revenue ⇒ Δ=0",
+      "R2 铜: 18,105+878,180−884,943 = 11,342 vs 11,343 ⇒ +1 吨",
+      "R2 金: 1,734+82,743−83,161 = 1,316 vs 1,470 ⇒ +154 千克",
+      "R2 锌: 11,398+348,556−352,470 = 7,484 vs 7,484 ⇒ 0",
+      "R2 银: 7,482+429,382−430,254 = 6,610 vs 6,609 ⇒ −1 千克"
+    ],
+    "granularity_checks": [
+      "CN 检索 四舍五入|舍入|取整|rounding|四捨五入 = 0 命中（本工位现跑）",
+      "MSFT 检索 [Rr]ound|ROUND|rounded|nearest = 7 命中全为词内子串",
+      "MSFT 检索 In millions = 63 处（L821/L769/L1360 为 R4 所在表头）",
+      "CN 单位：元 = 12 处（L1107/L1108 与 L992 同处 <<<PAGE 15>>>；L3839 与 L3769 同处 <<<PAGE 43>>>）；会计政策 L10842-L10843；页眉 L34952",
+      "2024 年报 PDF（只读，PyMuPDF 1.26.7，379 页）leaf 42 锚文本「②产销量情况分析表」在字符位 1267"
+    ]
+  },
+
+  "discrimination_tests": {
+    "criterion": "sign(row) = C1 粒度可核 ∧ C2 0<τ≤g ∧ C3 基础不依赖未证前提 ∧ C4 盘上实测 |Δ|≤τ ∧ C5 非实现者签署",
+    "rc_convention": "rc = 0 ⇒ 变异被检出（判别力成立）；rc ≠ 0 ⇒ 未被检出（不合格）",
+    "green": {"id": "green_as_is", "rc": 0, "detail": "R1/R3/R4 = SIGNED；R2_registered/tau1/tau2/tau154/SYN_img_page = NOT_SIGNED —— 与期望完全一致"},
+    "mutants": [
+      {"id": "m1_drop_A62_cap", "rc": 0, "weakened": "去掉 τ ≤ g", "detected": "R2 τ=154 千克 由 NOT_SIGNED 翻成 SIGNED（不该被接受的容差通过）"},
+      {"id": "m2_drop_obs_coverage", "rc": 0, "weakened": "去掉 C4 实测覆盖", "detected": "R2 τ=1 单位（已知覆盖不了金 154）翻成 SIGNED"},
+      {"id": "m3_floor_governs_over_cap", "rc": 0, "weakened": "问题二换侧（以 L_A 为准）", "detected": "R1/R3/R4 被拒 且 R2 τ=154 被签（双向发散）"},
+      {"id": "m4_unlock_no_checks", "rc": 0, "weakened": "C1+C2+C4 全去（为解锁而签）", "detected": "R2 三档候选 + 合成行全部 SIGNED"},
+      {"id": "m5_drop_granularity_req", "rc": 0, "weakened": "去掉 C1", "detected": "合成行（粒度未证、τ=1）翻成 SIGNED"}
+    ],
+    "all_mutants_detected": true,
+    "execution": "python -c 内联执行，未落盘；协议见 oracle.md §⑤"
+  },
+
+  "read_only_sources": [
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-10-A/a20260923-01/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt", "sha256": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591", "bytes": 763644},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-10-A/a20260923-01/evidence/I-10-A/source_extracts/US-MSFT-2026.txt", "sha256": "8da453c191394c1530a7d036018b0a8ede34fa43a8c78c36bd12293f6d64fabe", "bytes": 356348},
+    {"path": "C:/Users/郑曾波/Projects/company-wiki/companies/紫金矿业/raw/financial_reports/annual/2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf", "sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89", "bytes": 32100114, "how": "只读（PyMuPDF 1.26.7 打开取文本，未写任何字节）"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "bytes": 51697},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json", "sha256": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859", "bytes": 55213},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/validation_report.json", "sha256": "dc014e7e7a5699f5692d60d3e7cf76b782d1c64ef7668d5104e077290cb7c9b8", "bytes": 5341},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md", "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2", "bytes": 37355},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json", "sha256": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878", "bytes": 21808},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN11-IND/a20260924-01/ruling.md", "sha256": "c02e255f67f76be9c0a38569454b64cd93f8469d9fc5244e6da2ce7cfc3bb95d", "bytes": 38930},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-TOLERANCE-TABLE/a20260925-01/tolerance_table.md", "sha256": "ca77c57ecea3df5059b86b1e740389e90ddf3c31dcac8535e3b23dc4fe8d7e40", "bytes": 14630, "how": "只用作提请（§⑥ 三点），不作证据"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-TOLERANCE-TABLE/a20260925-01/tolerance_table.json", "sha256": "1da977bfe05e23545363f123bb1f00e1b21e153849173e5ec9ed9bd8ec315573", "bytes": 37631, "how": "只读"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-TOLERANCE-TABLE/a20260925-01/oracle.md", "sha256": "0a50a637b12410679b19e6d1a0cecfc9058e3355628b8bb81a4f9632818160d9", "bytes": 13402, "how": "只读"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-TOLERANCE-TABLE/a20260925-01/handoff.json", "sha256": "81e0f9eb9bcd728dcc2ca8b05bb3520cafe3b05a5e1d64d01a542c828a1f310b", "bytes": 13238, "how": "只读；见 findings 第 1 条"}
+  ],
+
+  "findings_for_owner": [
+    {
+      "id": "F-1",
+      "severity": "登记（不影响本裁）",
+      "finding": "对照表 OPEN6-TOLERANCE-TABLE/a20260925-01/handoff.json 自行记录的 sha256 有 4 项不是合法 SHA-256 十六进制串（长度 63/65 ≠ 64 且与现算不符）",
+      "detail": [
+        "read_only_sources · I11A-OPEN-ACCT/ruling.md：记录 f3040df0081f6653c0d18ac334890bf0aff12175aeacbd8e31485972bb329c2（63 位）≠ 现算 …75aeacbdc8e31485972bb329c2",
+        "read_only_sources · I11A-OPEN-MERGE/handoff.json：记录 b7314a22ebea453d4df6e6a93df62b993e0b179140feb67dfa0ec52b18b5878（63 位）≠ 现算 …140feb67dafa0ec52b18b5878",
+        "written_files · 自身 oracle.md：记录 0a50a637b12410679b19e6d1a0cecffc9058e3355628b8bb81a4f9632818160d9（65 位）≠ 现算 …1a0cecfc9058e335…",
+        "written_files · 自身 tolerance_table.md：记录 ca77c57ece3df5059b86b1e740389e90ddf3c31dcac8535e3b23dc4fe8d7e40（63 位）≠ 现算 …57ecea3df5059b86…"
+      ],
+      "evidence_of_no_content_change": "同表记录的字节数全部正确（37355/21808/13402/14630/37631），且我切出的 L297/L323/L122/L108/L240 字节区与表内引文逐字一致 ⇒ 文件未变，是记录值自身损坏",
+      "action": "登记不回改；下游不得用该 handoff 的 sha 作标识符，应以本 handoff read_only_sources 的现算值为准",
+      "impact_on_this_ruling": "无（本裁未引用对照表任何 sha 或数值作证据）"
+    },
+    {
+      "id": "F-2",
+      "severity": "措辞待更正（追加式，不回改）",
+      "finding": "R1/R3 注册阈值文本 \"允许披露四舍五入引入的 |差| ≤ 1 元\" 把容差归因于四舍五入，而原文无舍入政策句（Q1 = insufficient_evidence）",
+      "action": "本裁把签署依据改写为原文粒度 g；文本本身留待 hypotheses.json 新版本由有写入面者更正，本工位不回改"
+    },
+    {
+      "id": "F-3",
+      "severity": "登记（不属本裁）",
+      "finding": "hypotheses.json / hypotheses_v2.json 均不含 threshold_review_status 字段 ⇒ BLOCKED-6c 仍开；A-6.3 第4条（追加式版本化）须写入 hypotheses.json 新版本，本工位写入面不含该文件",
+      "action": "归实现者 / 编排层 / schema owner"
+    }
+  ],
+
+  "written_files": [
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01/oracle.md", "sha256": "1efb584f4a4c746979787a331e90ddb6174ffa3e79b4c1d31798361c65167660", "bytes": 15055, "note": "先冻结：三点判据 + insufficient_evidence 定义 + 变异协议 + 边界"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01/ruling_6b.md", "sha256": "e5d1efce3821c252d0da18b7cd5734192993328f03da6c918eaa42db417ee3df", "bytes": 28628, "note": "§①-§⑦ 裁定书"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01/tolerance_signed.json", "sha256": "3ad403ba75cf545721b0ba4fa32345d5ecae00c1802e4ca39feb5f19d5f747e8", "bytes": 18082, "note": "json.load 复解析通过；UTF-8 无 BOM；LF（crlf=0）；decision_sha256 写入前后复算一致"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01/handoff.json", "sha256": null, "bytes": null, "note": "本文件（自引用不可哈希）"}
+  ],
+
+  "git_diff_non_planning": 0,
+  "git_diff_detail": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "total_entries": 3826,
+    "non_planning_entries": 0,
+    "measured_at": "2026-09-26T00:00Z（写入本文件前复测）",
+    "git_status_used": false,
+    "git_writes_used": false,
+    "note": "本工位四件均为 .planning 内新建文件（未 add），不进入 diff 列表；写入面全在 .planning 内，非 .planning 条目 = 0"
+  },
+
+  "discipline": {
+    "writes_only_inside_planning": true,
+    "write_surface_is_new_dir_only": true,
+    "writes_to_company_wiki": false,
+    "network_used": false,
+    "git_status_used": false,
+    "git_writes_used": false,
+    "read_only_on_tolerance_table": true,
+    "read_only_on_i11a_open_acct": true,
+    "read_only_sources_unchanged_recheck": true,
+    "modified_threshold_basis": false,
+    "modified_threshold_review_status": false,
+    "modified_any_hypotheses_or_ruling_or_handoff": false,
+    "wrote_five_planning_files": false,
+    "json_reparsed_after_write": true,
+    "utf8_no_bom_lf": true
+  },
+
+  "releases_nothing": true,
+  "does_not_claim_I11BAcceptance": true,
+  "does_not_unblock_open6": true,
+  "does_not_unblock_blocked_6b_except_this_carrier_scope": true,
+  "does_not_unblock_any_other_blocked": true,
+  "does_not_release_any_parameter_or_threshold": true,
+  "does_not_change_threshold_basis": true,
+  "does_not_change_threshold_review_status": true,
+  "produces_no_accept": true,
+  "produces_accept": false,
+  "does_not_countersign_industry_reviewer": true,
+  "low_base_high_still_null": true,
+  "statement": "本工位只裁 BLOCKED-6b：三点逐条裁出（Q1 insufficient_evidence、Q2 以 A-6.2 上限为准、Q3 R2 不补登），4 条阈值 3 签 1 不签，BLOCKED-6b 维持 still_blocked；未解除 OPEN-6 或任何其他 BLOCKED、未放行任何参数/阈值、未改 threshold_basis / threshold_review_status、未产生 I-11-B 的 ACCEPT、未代签行业 reviewer 会签、未改对照表任何字节。"
+}

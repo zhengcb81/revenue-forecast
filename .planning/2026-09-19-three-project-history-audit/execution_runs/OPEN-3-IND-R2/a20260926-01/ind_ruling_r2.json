@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN-3-IND-R2",
+  "attempt_id": "a20260926-01",
+  "role": "industry_reviewer_ind_r2",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "status": "RULED",
+  "status_reason": "五问逐条裁定完毕；Q1 分部集合=齐（内容层）、Q2 词形方向=不确定+签名页方向=语料A侧、Q3 S=S1 会签、Q4 IND C 表 ①②③④ 同意、Q5 RC1-RC5 同意+IND 侧 5 补充步。这是『已裁定』退出，不是通过；releases_nothing=true。",
+  "supersedes": {
+    "target": "I11A-OPEN-IND/a20260924-01/ruling.md#OPEN-3 (segment-set portion)",
+    "effect": "证据基础升级为 origin 字节；实质结论（FY2027 起新两分部、旧分部只作基期/桥接）确认不变；旧载体不回改（追加式）",
+    "basis": "I11A-OPEN-IND ruling.md L197 + OPEN3-E1-ACCT-RULING C4(L169)"
+  },
+
+  "authorized_by": {
+    "ind_l197_verbatim": "8-K/Exhibit 99.1 进入本地语料后：**新建 attempt** 重新取证并更新本裁定（追加 `ruling_r2.md` + 新 provenance 条目，标 `supersedes`）；**不回改** I-11-A、**不回改**本文件",
+    "ind_l198_verbatim": "本裁定中\"外部获取\"的条目永久保留 `evidence_class=external`，即使日后本地化也不改写历史条目，只新增 `local_ingested_at` 条目。",
+    "ind_l227_verbatim": "**C. 可接受的替代来源及其证据等级（我裁，供 owner 解锁后使用）**",
+    "ind_l231_verbatim": "① **同一发行人、同一报告期**的其他**可读原文**官方文件（HKEX 披露易 PDF 文本层正常者、全年业绩公告、中期报告、公司 IR 的年报 HTML/可读 PDF） | `company_primary_disclosure`（与年报同级，但必须标注**文件类型与期间**） | 必须：原文可定位（页码/锚文本或章节）+ 原始 sha256 + 期间与年报一致；跨期文件必须标 `period_mismatch_risk`",
+    "ind_l232_verbatim": "② 交易所/监管公告（HKEX） | `regulator_primary_disclosure` | 同上",
+    "ind_l233_verbatim": "③ 券商研报 / 新闻 / 数据商 / wiki | `secondary_lead_only` | **仅可作线索**，**不得**进参数、**不得**进命题的 `cited_values`",
+    "ind_l234_verbatim": "④ 外部抓取的港股年报 PDF（若本地原件不可读） | `external_retrieval_not_local` | 必须登记 URL + 取回时间 + sha256，**永不冒充本地可核**；且仍需可复核的取文路径",
+    "ind_l240_241_verbatim": "- 环境 owner 解决可读性后，若新 attempt 实测仍读不出原文 ⇒ B 部分（保持不可用）继续有效，C 表不启用；- 若出现①类可读原文且含分部收入 ⇒ B 的\"零产出\"解除，港股命题可重新走正常取证（仍需会计面定证据等级）；",
+    "ind_l261_verbatim": "- 用外部抓取件静默顶替本地原件（必须按④登记为外部）；",
+    "ind_l360_verbatim": "**外部 ≠ 本地**：所有 `EXT-*` 一律标 `evidence_class=external_retrieval_not_local`；`2026-09-02 8-K` 条目显式写明\"**本地不可核，外部获取，不得作为本地可核证据放行**\"。",
+    "owner_decisions_31_verbatim": "**口径**：**8-K 按诚实 kind `current_report` 落 `company-wiki/companies/{entity}/raw/other/`** —— **不改 `canonical_writer` 映射、不谎报 `quarterly_report`**。（#2）该条写的 `…/raw/financial_reports/{kind}/` **按「`raw/…` 下」理解，含 `raw/other/`** —— 本节即该澄清的**唯一授权出处**",
+    "owner_decisions_30_verbatim": "**owner 选择（B2）**：**「授权扩闸到 8-K（建议）」**；「**先解 B2 ≠ B3 已定、更 ≠ B1 已解** —— 三者独立，**全部满足前 `C3` 第一步仍 `BLOCKED`**」",
+    "acct_r2_conclusion_verbatim": "**RULING —— `E1 = BLOCKED-PARTIAL`（五要素 4/5：①②③⑤ 经我独立实测成立、④ 因 C5 不成立）· `S = S1`（IND C 表 ①类 + `external_retrieval_not_local=true` + kind `current_report`→`raw/other/`，但不等于放行）· 既有 4 份语料降 `E3` · `origin_bytes_dimension_resolved = true`（字节这一维已解除实质条件）· 但 `BLOCKED-NEEDS-ORIGIN-BYTES` / `OPEN-3` / `B1` / `B2` 一律不由本卡解除 · `releases_nothing = true`**",
+    "acct_r2_direction_verbatim": "**方向未定（如实）**：我**无法**断定错在 origin 侧还是语料侧 —— origin 与 as-filed 同为 R2 一会话取回，语料 A/B 同为工位转写；本卡禁联网，不能用第三条路定向。",
+    "acct_r2_five_elements": "①申报原文本地归档 ✅ ②文件 sha256 ✅ ③取回 UTC ✅ ④逐字引文在 origin 载体上重跑 ❌（C5 引文作废）⑤至少一条独立复核路径 ✅（带限定）⇒ 4/5 = BLOCKED-PARTIAL",
+    "acct_r2_three_registrations_verbatim": "1. `external_retrieval_not_local = true`（**永久**，不得改写）；2. **`kind = current_report` → 落 `company-wiki/companies/{entity}/raw/other/`**；3. **`raw_sha256` + `stripped_sha256` 双登记** + `edge_injected_script` 字节跨度"
+  },
+
+  "five_questions": {
+    "Q1": {
+      "question": "8-K + Exhibit 99.1 的分部集合（含 FY27Q1 outlook 与重述基期分部数据）是否齐？",
+      "judgement": "齐（内容层）",
+      "basis_byte_regions_origin_carrier": {
+        "coord_note": "文件内偏移；EX99.1 在 origin_bytes.bin 内 = +28665",
+        "i_segment_names_and_effective_fy": {"anchors": {"Beginning in fiscal year 2027": 21981, "two reportable segments: (1)...": 22136}, "region_8k": [21796, 22350]},
+        "ii_restated_statement": {"anchor": "presents summary financial information and historical data on a basis consistent with the updated reporting structure", "offset": 22519},
+        "iii_restated_base_segment_data": {"aif_row_span": [20291, 20331], "aif_row": "Revenue $61,672 $64,441 $67,438 $74,576 $268,127 (FY26) / $50,476 $52,766 $54,763 $60,778 $218,783 (FY25)", "dc_row_offset": 20777, "dc_row": "Revenue $16,001 $16,832 $15,448 $15,431 $63,712 (FY26) / $15,109 $16,866 $15,303 $15,663 $62,941 (FY25)", "total_row_offset": 21187, "total_row": "$77,673 $81,273 $82,886 $90,007 $331,839 / $65,585 $69,632 $70,066 $76,441 $281,724", "label_offset": 21531, "label": "Segment History as Restated"},
+        "iii_b_legacy_three_segment_history": {"pbp_row_offset": 22095, "ic_row_offset": 22527, "mpc_row_offset": 22971},
+        "iv_fy27q1_outlook_new_basis": {"aif_span": [30770, 30794], "aif": "Agents and Infra Revenue of $75.15 to $75.75 billion", "dc_span": [30827, 30849], "dc": "Devices and Consumer Revenue of $14.7 to $15.2 billion"},
+        "iv_b_fy27q1_outlook_legacy_basis": {"offset": 29837, "text": "Total Company Revenue of $89.85 to $90.95 billion; PBP $36.7 to $37.0 billion (offset 29909); IC $40.95 to $41.25 billion; MPC $12.2 to $12.7 billion", "cross_check": "75.15+14.7=89.85; 75.75+15.2=90.95; 36.7+40.95+12.2=89.85 ✓"},
+        "v_bridge_info": {"transition_stmt_offset": 3058, "definitions_offsets": [7516, 7580], "previously_reported_hits": 12, "previously_reported_offsets_head": [8586, 9146, 9226, 9532, 9605, 10802, 13968, 14280], "note": "公司披露的业务线迁移映射 + 新旧两套历史 + 新旧两套 outlook；无独立数值桥接表（形态限定如实登记）"}
+      },
+      "caveats": ["无单张旧三段→新两段数值桥接表；IND L165 旧/新历史仍不得混算增速", "I-07-E 是否冻结口径不归本卡（不授予）"],
+      "counterexample": "任一锚点在 origin 上不存在（未发生）；或 FY2027 首份 10-K 回到 PBP/IC/MPC（IND L183）⇒ 本判定与 IND L133 裁定一并撤销",
+      "compat_impact": "内容层齐 ≠ 可引：8 条引文仍 void_pending_reanchor；不构成解锁（E1 仍 BLOCKED-PARTIAL）",
+      "recovery_rule": "本表字节区即 RC2 重建引文锚点集（RC-IND-1）"
+    },
+    "Q2": {
+      "question": "C5-direction（错在 origin 侧还是语料侧）能否定？",
+      "judgement": "分两处：词形 amplifying/amplifies = 不确定（fail-closed）；corpusA 缺签名页 = 可定为语料 A 侧",
+      "word_divergence": {
+        "ruling": "undetermined",
+        "measurement": {"origin_ex991": "amplifying=1@3681, amplifies=0", "asfiled_submission": "amplifying=1@33446, amplifies=0", "corpusA_ex": "amplifying=0, amplifies=1@2540", "corpusB_ex": "amplifying=0, amplifies=1@2540"},
+        "why_undetermined": "两族 2:2、断口与族界重合（R2 取回族 vs 工位转写族），无跨族旁证；IND 侧独立条目（I11A-OPEN-IND / I11A-OPEN11-IND provenance 全文检索 amplif|agency|ambition|Jolla = 0 命中）不覆盖争议句；行业面抽取件只是重读盘上 origin 字节，不能定向",
+        "auxiliary_observation_not_directional": "origin 形态 'AI empowers every person, amplifying their agency and ambition' 为分词短语（语法成立）；语料 '…every person, amplifies their agency…' 为逗号粘连（语法不成立）⇒ 倾向语料转写步改词形，但语法推断非第三条路，fail-closed 不定向",
+        "needed_for_direction": "与 R2 不同会话/不同实现、覆盖该句的原始字节或独立渲染件（如另一会话直取 d291965dex991.htm 响应体并保存原始字节；或对 as-filed 归档副本用不同代码独立渲染）",
+        "counterexample": "任一覆盖该句的第三条路与某边一致 ⇒ 立即定向并按方向重判 C5 归属"
+      },
+      "signature_page_divergence": {
+        "ruling": "directed_to_corpusA_side_omission",
+        "measurement": {"origin_8k": "Date: September@26875, Jolla@27777, /s/, CAO 全有", "asfiled_submission": "全有（Jolla@28955）", "corpusB_8k": "全有（W3C 链，与 R2 不同渲染实现）", "corpusA_8k": "全缺（正文止于 '104 Cover Page Interactive Data File'@~24700）"},
+        "why_directed": "三条独立链（R2 直取 / EDGAR 归档 / W3C 渲染）均有签名页、唯 corpusA 缺 ⇒ 缺段方向 = 语料 A 链条（r.jina.ai 渲染或其转写），与 origin 无关；corpusB 构成与 R2 不同实现的旁证，满足定向门槛",
+        "counterexample": "若签名页只存在于 origin 族、W3C 链也无 ⇒ 方向退回不确定（未发生）"
+      },
+      "effect_on_acct_c5": "不一致成立与 4 语料降 E3 维持不变；若 RC1 证明词形错在 origin 侧 ⇒ 按 ACCT 反例改判（降的改为 origin、语料不降 E3），本卡不预设"
+    },
+    "Q3": {
+      "question": "S = S1 是否可会签？",
+      "judgement": "会签（同意 S1 + 三项强制登记；另补第 4 项登记义务 period_mismatch_risk）",
+      "four_elements_reverified": {"same_period_primary_disclosure": "PASS（accession 0001193125-26-380280, period 2026-09-02, accepted 2026-09-02 16:30:24, Item 7.01/9.01）", "locatable_anchors": "PASS（8 条引文 origin 载体重跑 M1=8/8, M2=7/8, M3=3/8，与 ACCT 自报逐数一致）", "doc_sha256_bound": "PASS（9 件实测 sha 全部与登记一致）", "independent_path": "PASS_WITH_LIMIT（as-filed 逐字节相同；限定：与 origin 同采集会话/实现，artifact 级独立、非实现级独立，限定随判定传播）"},
+      "three_registrations_confirmed": ["external_retrieval_not_local=true（永久，IND L198/L360）", "kind=current_report → raw/other/（§三十一 #1/#2；不谎报 quarterly_report、不改 canonical_writer）", "raw_sha256+stripped_sha256 双登记 + edge_injected_script 跨度（8-K [28544,28650]，EX99.1 [34147,34253]，inner 4cb79b6e…）"],
+      "added_registration_number_4": "period_mismatch_risk 标注（IND L231 自带：跨期文件必须标）：8-K/EX99.1 文档日期 2026-09-02 与 FY2026 年报期间（截至 2026-06-30）不同期；FY27Q1 outlook 属前瞻期间 ⇒ 引用须标注期间关系。登记义务补充，非 S 定义修改（L190 对称不触发）",
+      "s_is_not_release": "维持：ACCT L226 四要件（1/4 明确满足、②部分）与 MERGE 七条 7/7 未满足 ⇒ 任何 MSFT 参数一律维持未放行",
+      "counterexample": "RC1 证明词形错在 origin 侧 ⇒ S 降 S0、① 重判；owner 明文改 S 定义 ⇒ 追加登记",
+      "recovery_rule": "RC1–RC5 完成并 OPEN-3-ACCT-R3 复裁 E1 后，S1 才升为可进入 L226 四要件评估"
+    },
+    "Q4": {
+      "question": "IND C 表逐项是否同意（含 kind=current_report → raw/other/ 诚实登记）？",
+      "judgement": "①②③④ 全部同意（附 2 处细化）",
+      "row1_content_type": "同意 company_primary_disclosure（同一发行人、覆盖被引报告期的公司自身正式披露；Reg FD furnished 非 filed；原文可定位 + 原始 sha256 + 期间标注齐）。细化：必须标注文件类型（current_report / Exhibit 99.1 furnished）；跨期引用标 period_mismatch_risk",
+      "row2_regulator": "同意不适用——SEC EDGAR 是申报存管处，被引对象是公司自身披露，归①；C 表②语义是交易所/监管方自身公告",
+      "row3_secondary": "同意不适用——本件非研报/新闻/数据商/wiki；注：4 份语料降 E3 后恰落③的处境（仅可作线索、不得进参数、不得进 cited_values）",
+      "row4_external_retrieval_not_local": "同意 = true 且永久——IND L198（只可新增 local_ingested_at）、L360（不得冒充本地可核、不得据此放行）、L261（被拒替代）",
+      "kind_honest_registration": "同意（§三十一 #1/#2 逐字；与 service_helpers.py L117 '8-K': current_report 同源一致；禁止谎报 quarterly_report、禁止改 canonical_writer 映射）",
+      "counterexample": "若证明 8-K 实为 filed ⇒ ①文件类型标注需改；产品落点谎报 kind ⇒ ①诚实登记作废、S1 回退",
+      "compat_impact": "IND BLOCKED-4 实质条件大部分满足（origin 字节在计划目录、sha 可复算），名目关闭与产品仓落点归 RC4/父；BLOCKED-5 不动"
+    },
+    "Q5": {
+      "question": "恢复链 RC1–RC5 是否同意、是否还缺 IND 侧的步？",
+      "judgement": "同意 RC1–RC5；另补 5 条 IND 侧步（RC-IND-1…5）",
+      "RC1": "同意，且收窄：签名页一处本卡已定向（语料 A 侧）⇒ RC1 只剩词形一处（归取证工位换会话；本卡零联网不自取）",
+      "RC2": "同意 + RC-IND-1：重建引文锚点集以本卡 Q1 字节区表为准（新增旧三段历史行、双口径 outlook、previously reported 映射段），Q1 原样保留 (1)&#160;Agents NBSP 形态，并登记三方空白形态（origin=NBSP×2 / corpusA=无空白 / corpusB=半角空格+硬换行）",
+      "RC3": "同意 + RC-IND-2/3：divergence 三件逐件登记方向（词形=未定向、缺段=corpusA 侧、空白=保真缺陷）；corpusB 的 Q1 空白形态细化入册；EXT-* 旧条目永不改写（L198/L360），只新增 local_ingested_at",
+      "RC4": "同意（不归本卡执行）。现状更新：OWNER_DECISIONS §三十四 已记「② B2 晋升 ✅」（§三十二 晋升 blocked 已被后续授权取代）；B1 仍缺可写 company-wiki 会话（§三十四 边界不解除 B1）",
+      "RC5": "同意 + RC-IND-5：ACCT-R3 须同时核本卡 Q1 字节区表与 Q3 第 4 项登记（period_mismatch_risk）是否落地",
+      "ind_side_extra_steps": ["RC-IND-1 引文锚点集（取证工位）", "RC-IND-2 divergence 三件定向登记（取证/记账工位）", "RC-IND-3 corpusB 空白形态细化（取证/记账工位）", "RC-IND-4 第三条路须保存原始返回字节/渲染输出、不经转写步（本次 C5 教训：共享转写步使 A/B 互证失效）（取证工位）", "RC-IND-5 ACCT-R3 核 Q1 表 + period_mismatch_risk 落地（会计面）"],
+      "carrier_note": "本卡（ruling_ind_r2.md + ind_ruling_r2.json）即 IND L197/C4 要求的『追加 ruling_r2 + 标 supersedes』载体；但 L197 同句的『重新取证』不由本卡完成（定级/复裁卡不重取），仍留 RC1/RC2"
+    }
+  },
+
+  "segment_set_ok": "yes_content_layer_with_bridge_caveat",
+  "c5_direction_ruling": {
+    "word_amplifying_vs_amplifies": "undetermined",
+    "signature_page_missing_in_corpusA": "directed_to_corpusA_side",
+    "overall": "undetermined_overall_for_word; RC1 required (narrowed to the word only)"
+  },
+  "s_level_signed": "S1",
+  "e1_level_not_changed_by_this_card": "BLOCKED-PARTIAL (per ACCT-R2; this card neither raises nor lowers)",
+  "corpus_e3_not_changed_by_this_card": "4 files remain E3 (per ACCT-R2 C5); direction of word divergence pending RC1",
+
+  "mutation_results": {
+    "rc_convention": "0 = 按预期表现",
+    "rows": [
+      {"id": "G1", "expected": "origin/归档 amplifying=1,amplifies=0；语料 0/1", "observed": "逐数复现", "rc": 0},
+      {"id": "G2", "expected": "origin 1、corpusB 1、corpusA 0", "observed": "Jolla//s//CAO/Date 四探针：origin/asfiled/corpusB 全 1、corpusA 全 0", "rc": 0},
+      {"id": "G3", "expected": "origin NBSP×2；语料非 NBSP", "observed": "origin=实体 &#160;×2；corpusA=0 空白；corpusB=半角空格+硬换行（预期『语料无空白』仅对 corpusA 成立，按细化登记）", "rc": 0},
+      {"id": "G4", "expected": "origin 各 1、归档 0、跨度一致", "observed": "8-K@28544(→28650)、EX99.1@34147(→34253)、asfiled/index 0；剥后 sha 复算一致", "rc": 0},
+      {"id": "G5", "expected": "分部集合锚点全命中给字节区", "observed": "Q6 [20291,20331]、Q7 [30770,30794]/[30827,30849]、名称/生效期/重述声明/旧三段/双口径 outlook 全命中", "rc": 0},
+      {"id": "R1", "expected": "红", "observed": "语料 sha 不在 origin 登记表 ⇒ 拒", "rc": 0},
+      {"id": "R2", "expected": "红", "observed": "$268,126 在 origin 0 命中 ⇒ 拒", "rc": 0},
+      {"id": "R3", "expected": "M1 绿/M2 红", "observed": "解码载体 Q1: M1=True, M2=False 差异化成立", "rc": 0},
+      {"id": "R4", "expected": "红", "observed": "翻转 1 字节 sha 复算不符", "rc": 0}
+    ],
+    "discrimination_ok": true,
+    "quote_rerun_independent": {"M1": "8/8", "M2": "7/8", "M3": "3/8", "exact_decoded": "3/8", "matches_acct_self_report": true, "corpusA_exact": "8/8 (引文系语料基，佐证须 RC2 换 origin 基)"}
+  },
+
+  "differences_vs_acct_r2": [
+    "C5-direction 细分：签名页缺段可定（corpusA 侧），词形维持不确定 —— 对 ACCT『整体未定』的收窄，非推翻",
+    "Q1 空白形态细化：corpusA=无空白、corpusB=半角空格+硬换行（ACCT『语料 0 空白』实为 corpusA 专属）",
+    "补第 4 项登记义务 period_mismatch_risk（IND L231 自带，ACCT 三项未列；不改 S 定义）"
+  ],
+
+  "releases_nothing": true,
+  "not_granted": [
+    "不解除 OPEN-3",
+    "不解除 BLOCKED-NEEDS-ORIGIN-BYTES / B1 / B2 / IND BLOCKED-4 / BLOCKED-5",
+    "不放行任何参数（MSFT_PBP/IC/MPC_REVENUE_FY2027、MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027、新两分部参数、*_PLACEHOLDER）",
+    "不产生 ACCEPT、不代签会计面、不改任何 status/state/decision/decision_sha256",
+    "不改 E1/S 定义、不回改任何上游载体（追加式，supersedes 仅为标注）",
+    "不冻结 I-07-E 分部口径、不触发任何 falsifier/自动动作、不动 H-US-MSFT-SEG-01 state",
+    "不落产品仓（0 字节）、不写五份计划文件、不写 .planning 之外、0 次 git 写、禁 git status、0 次联网、不重取 origin",
+    "不判词形方向（不确定即如实结论）"
+  ]
+}

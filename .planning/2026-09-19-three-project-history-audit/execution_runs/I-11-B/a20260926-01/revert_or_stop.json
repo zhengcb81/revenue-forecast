@@ -1,0 +1,41 @@
+{
+  "schema": "i11b_revert_or_stop/1",
+  "card": "I-11-B",
+  "attempt": "execution_runs/I-11-B/a20260926-01",
+  "role": "implementer_i11b",
+  "stop_conditions_frozen": {
+    "STOP_CALIBRATION": "幅度无来源又未明确分析师假设 → STOP_CALIBRATION（card_I-11-B.md L20）",
+    "STOP_SCENARIO": "独立调高多个有关联 driver 导致不可能的联合情景 → STOP_SCENARIO（card_I-11-B.md L21）"
+  },
+  "stop_calibration_evaluation": {
+    "triggered": false,
+    "operative_reading": "触发式判据（fail-closed 从严）：凡本卡产出的每一个幅度，必须(i)有可核来源（contract arithmetic / 历史经验）或(ii)被明确标注为分析师假设（expert_assumption + 敏感性区间 + equivalent_to_disclosure_basis=false）；两者皆无的幅度不得产出。本卡 14 个出数槽位全部满足 (i) 基期 + (ii) 幅度带假设（EA-1/3/4/5）；4 个无法出数的槽位以 EA-7 显式拒绝出数（explicitly_declined），维持 null/unquantified/_PLACEHOLDER —— 不产生任何'无来源且未声明'的幅度。",
+    "strict_alternative_reading_registered": {
+      "reading": "字面从严读法：只要存在'幅度无来源'的槽位（如 ZIJIN_MINERAL_COPPER/GOLD_REALIZED_UNIT_REVENUE_FY2027、MSFT_MICROSOFT_CLOUD、MSFT_LICENSING_VS_CLOUD），即便显式拒绝出数也构成 STOP_CALIBRATION ⇒ 整卡判 blocked。",
+      "why_not_adopted_without_review": "该读法将使 §三十四 owner 明文许可开工（选项 A）立即落空（C3/C5 残余必然导致至少 4 个槽位无基期）；而卡文 L20 的语义是'不得用无来源的幅度推进校准'，本卡对该 4 槽位的 fail-closed 处置（不出数、不放行、维持原状）与 STOP 的实质后果一致。",
+      "escalation": "本读法之争交独立复审裁定；若复审采严格读法 ⇒ 本卡 status 由 review_pending 转 blocked，回滚按下述 revert_rule 执行（本卡产物仅登记、零放行，回滚=宣告其 proposed 值作废，无需动任何封盘字节）"
+    },
+    "per_slot_summary": {"total_parameter_slots": 18, "sourced_or_explicitly_assumed": 14, "explicitly_declined_no_number": 4, "silent_unsourced_amplitudes": 0}
+  },
+  "stop_scenario_evaluation": {
+    "triggered": false,
+    "check": "dependency_control.event_reuse_check 7 事件逐条：无同一事件同时进入销量/价格/额外收入双通道；联合情景三档按共享驱动联动（EA-6），未对有关联 driver 独立调高",
+    "would_trigger_if": "任一情景把量 high × 价 high × 其他收入 high 独立叠加（≈+21% 不可能联合）或同一事件贡献两条通道"
+  },
+  "revert_rules": {
+    "global": "本卡全部数值为 proposed_not_released；任何复审否决 ⇒ 直接作废对应 proposed 值并维持 store 原状（low/base/high 仍 null、_PLACEHOLDER 维持）；不改历史快照、不回改封盘、不写 hypotheses 新版本（本卡未产生新版本需求）。",
+    "per_falsifier_revert_rule_transcribed": [
+      "H-CN-ZIJIN-SEG-01：恒等式不成立 ⇒ 停止四分部对外收入直接相加；回到上一已证实口径并把差异登记为口径桥缺口，不改历史快照",
+      "H-CN-ZIJIN-SEG-02：（口径未闭合前不引用）单位收入偏离 ±5% ⇒ 见 OPEN-6 H2 规则，阈值待签",
+      "H-CN-ZIJIN-VOL-03：销量超『产量+期初库存』或与库存同比变动方向相反且无法凑平 ⇒ 参数退回 unquantified 并保留旧快照，不得用差额继续外推（store L315 revert_rule 逐字）",
+      "H-CN-ZIJIN-PLAN-04：计划显著偏离（达成率出 [0.9,1.1]）⇒ 不回改本期命题：新版本中下调计划权重并保留旧快照；计划值移出 base 情景，直到出现第二个可观测年度",
+      "H-CN-ZIJIN-ELIM-05 / H-US-MSFT-SEG-01：恒等式偏差超容差 ⇒ 停止该加总路径，回上一已证实口径"
+    ],
+    "falsifiers_not_triggered_by_this_card": true,
+    "auto_actions_triggered": 0,
+    "note": "ACCT ruling L230 + IND ruling L299：threshold_review_status≠reviewed 的阈值不得触发任何自动动作；I-11-B/I-11-C 不得据此触发"
+  },
+  "stop_calibration_triggered": false,
+  "stop_scenario_triggered": false,
+  "card_status": "review_pending（若独立复审采严格读法则转 blocked，见 strict_alternative_reading_registered）"
+}

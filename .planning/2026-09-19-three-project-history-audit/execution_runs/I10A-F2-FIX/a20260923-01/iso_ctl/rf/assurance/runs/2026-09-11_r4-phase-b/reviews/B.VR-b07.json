@@ -1,0 +1,236 @@
+{
+  "gate": "B.VR (B07)",
+  "scope": "company-wiki 5b7ef10 (B07, wiki-side versioned read contract): the policy text next to SOURCE_RESOLVER_SCHEMA_VERSION, the unknown-version refusal in build_resolution_envelope, tests/contract/test_r4b07_version_contract.py (4 cases), and the B-payload-hash comparison (evidence/b07_payload_baseline.py + evidence/b07-payload-baseline.json). Consumer-side adapter/fallback work and N-1 stay out of scope by design (S-4 / B-DR4-03) and were not reviewed for correctness; the version-refusal completeness question was reviewed for the WIKI side only, as gate question (a) requires.",
+  "reviewed_commits": [
+    {
+      "repo": "company-wiki",
+      "branch": "fcap",
+      "commit": "5b7ef10",
+      "subject": "feat(r4b07): version policy, unknown-version refusal, no directory-level fallback",
+      "diff_scope": "src/company_wiki/source_catalog/resolver.py (+26) ; tests/contract/test_r4b07_version_contract.py (+229, new)",
+      "tree_identity": "git rev-parse 5b7ef10:resolver.py = efa7d4b2... ; git hash-object of the working tree file = efa7d4b2... (identical); test file blob bfa5138a... on both sides; git diff 5b7ef10 HEAD -- <those two paths> is empty, so the reviewed artifacts are exactly what the tree contains."
+    },
+    {
+      "repo": "company-wiki",
+      "commit": "52d394d",
+      "role": "HEAD at review time (B06 5138546 + the Linux-CI fix are on top of B07)"
+    },
+    {
+      "repo": "company-wiki",
+      "commit": "7d4852f",
+      "role": "phase-A frozen baseline, read via the existing read-only worktree Temp/cw-preb (git worktree list)"
+    }
+  ],
+  "reviewer_session_self_report": "Independent reviewer session, not the author; no author transcript or reasoning was used. I reproduced the author's numbers with my own probes (evidence/b07_review_probe.py, b07_review_probe2.py, b07_review_probe3.py, b07_review_mutations.py) rather than re-running only the author's script, then attacked the claims. The author's own script was also re-run once and produced a byte-identical artifact (sha256 53B6F4E0... before and after). The product repo was not modified: mutations were applied to temp copies of src/ + config/ under %TEMP%; no coverage run (the tracked .coverage/coverage.json were never touched); git status --short in company-wiki is empty at the end of the review. Only the permitted targeted test set was executed. The known leaked worker PID 17684 was alive for the whole review (started 2026-09-12 21:18:04) and is attributed, never killed; a concurrent B06 review was running.",
+  "verdict": "accepted_with_findings",
+  "claims_rechecked": [
+    {
+      "claim": "1. The version policy is stated where the contract lives (next to SOURCE_RESOLVER_SCHEMA_VERSION): accept exactly the current version, refuse unknown versions explicitly, express failures with the operation contract's five error values, and no directory-level fallback (never another revision, never a copy outside the configured roots).",
+      "status": "VERIFIED AS TEXT (one clause overstated; one clause not implemented that way)",
+      "evidence": "resolver.py:85-100 is a comment block immediately above SOURCE_RESOLVER_SCHEMA_VERSION (resolver.py:102) and carries all four statements; the guard case test_r4b07_the_contract_declares_the_version_policy_and_no_fallback asserts the four phrases (test file lines 179-187). The substantive part of the claim was checked in CODE, not only in the text: the resolve path restricts candidates to the document's own source group (resolver.py:1685-1703), the document gate refuses a fiscal-year mismatch (resolver.py:1368-1371), the legacy bridge reads the already-indexed metadata containers only (resolver.py:1052-1097, no filesystem read), and read_verified_bytes refuses a locator outside the configured roots before any byte is read (resolver.py:1971-1990). I found no directory-level fallback or cross-root/cross-revision substitution. Two clauses are weaker than the text: the five-value error model is not what the new refusal produces (B-VR07-03) and the neighbouring sentence 'when no qualified copy of the REQUESTED version exists, the answer is an explicit failure (missing / not_found)' is not what the code does when a qualified candidate fails byte verification (B-VR07-01)."
+    },
+    {
+      "claim": "2. build_resolution_envelope now REFUSES a ResolutionResult whose schema_version is not the current one (fail closed, ValueError) - before this it did not check at all.",
+      "status": "VERIFIED",
+      "evidence": "resolver.py:923-931 adds the check after the isinstance guard. Independent before/after reproduction (evidence/b07_review_probe2.json -> baseline_vs_current_envelope_on_foreign_version): the same probe invoked with sys.path pointing at the 7d4852f worktree returns foreign_version_result='ACCEPTED' with envelope_schema_version='1.0', and against the current tree returns 'refused:ValueError'. The delivered case pair (2.0 refused with 'schema_version' in the message, 1.0 accepted) passes."
+    },
+    {
+      "claim": "3. tests/contract/test_r4b07_version_contract.py has 4 cases: artifacts carry the current version; an unknown version is refused while the current one passes; the contract text still declares the policy and the absence of fallback; a request whose version does not exist answers MISSING instead of substituting another revision.",
+      "status": "VERIFIED (4 cases, names and assertions exactly as enumerated; one assertion inside case 4 is vacuous - B-VR07-05)",
+      "evidence": "Targeted run: 4 passed (test_r4b07_version_contract.py ....), together with the other three permitted files: 25 passed in 8.84s. Case 4's decisive assertions are resolution.matches == () and status is ResolutionStatus.MISSING with a 2024-vs-2023 revision fixture; those genuinely test the no-substitution property. Its extra assertion 'not any(\"served\" in item for item in resolution.debug_trace)' cannot fail: 'served' occurs in resolver.py only inside comments/strings that never reach the trace."
+    },
+    {
+      "claim": "4. B-payload-hash is now executable and PASSES: cli._policy_export_payload(config) is a pure function, so evidence/b07_payload_baseline.py compares the policy-export payload byte for byte between a read-only worktree of 7d4852f and the current tree with an explicit fixed project_root, and reports identical: true (both sides canonical_sha256 bd1a359f..., 1216 bytes); only the comparison is portable.",
+      "status": "VERIFIED, and I extended the window to HEAD 52d394d",
+      "evidence": "Re-ran the author's script: identical=true, canonical_sha256 bd1a359f... on both sides, 1216 bytes, policy_hash 5659a22f... on both sides; the artifact it rewrote is byte-identical to the author's pinned copy (sha256 53B6F4E0... both). My own probe re-measured the same numbers and additionally: (i) with each side's REAL project_root the two sides are NOT identical (00d8b49d vs 942c9d1f) purely because the worktree location changes 3 of 4 path_refs, including dayu_portfolio whose '../dayu-agent/...' escape resolves under %TEMP% for the baseline - so the fixed project_root is not a convenience, it is the only way to compare bytes at all, and it is disclosed in the artifact; (ii) the current side with the real project_root gives policy_hash c773099b... which equals the shipped .source_catalog/runtime_policy.json; (iii) the compared object IS the consumer's artifact: filing-fetch/scripts/fetch_filing.py:889 reads resolution.get('policy_export') and filing_contracts._policy_document_hash(payload) (filing_contracts.py:395-403) recomputes exactly c773099b... - the same function the CLI uses at cli.py:811/1182; (iv) the fixed project_root does not exist and that changes nothing: config._expand_path uses resolve(strict=False) and RootSpec.__post_init__ (models.py:134-152) touches no filesystem. Sensitivity was tested by mutation: 4 of 6 payload-affecting mutants were killed (config priority, root path, an exported document field, the payload's own key set); the 2 survivors are explained in mutations M5/M6."
+    },
+    {
+      "claim": "5. Nothing consumer-side is claimed: no adapter change, no fallback removal, no wiring of consumers to read_verified_bytes.",
+      "status": "VERIFIED",
+      "evidence": "The commit touches only resolver.py and the new test file. B07's plan (evidence/b07-plan.md section 3), the design scope table (b-design.md section B07) and the acceptance-map B07 row all assign the consumer adapter/companies fallback to phase C, and b03-implementation.md section 4 explicitly corrects the earlier 'B07 wires the consumer' sentence. Nothing in the B07 record asserts N-1 support; the design removed it from B's completion definition (B-DR4-03). The one coverage overstatement I found is on the L12 side, not the consumer side: B-VR07-06."
+    }
+  ],
+  "questions": [
+    {
+      "id": "a",
+      "question": "Is the unknown-version refusal COMPLETE for the wiki side? Enumerate the entry points that accept or produce a versioned artifact and say which ones can still silently accept a foreign version.",
+      "answer": "NO - the refusal is enforced at exactly ONE entry point. Enumeration (all verified by executing them, evidence/b07_review_probe.json -> version_entry_points): (1) SourceRequest(schema_version='2.0') -> REFUSED (SourceResolutionError, resolver.py:499-503); (2) build_resolution_envelope(result with 2.0) -> REFUSED (ValueError, the new check); (3) SourceHandle(schema_version='2.0', ...) -> ACCEPTED - the frozen dataclass has no __post_init__ (resolver.py:581-618) and to_dict() re-emits '2.0'; (4) ResolutionResult(schema_version='2.0', ...) -> ACCEPTED at construction and to_dict() emits '2.0' (resolver.py:636-661); (5) build_resolution_envelope with the CURRENT version but a FOREIGN-version handle in matches -> ACCEPTED (no per-handle version check) while the sibling resolution dict the CLI ships alongside the envelope carries '2.0' to the consumer; (6) SourceResolver.read_verified_bytes(foreign handle) -> ACCEPTED and returns status='verified' with the file's 19 bytes for a handle stamped '2.0' (resolver.py:1949-1993 never inspects handle.schema_version) - this is the byte entry point B03's own record designates as the wiki-side read contract; (7) the CLI read-only ensure path cli._read_only_ensure_result (cli.py:698-739, reached at cli.py:753) renders resolution.to_dict() and never calls build_resolution_envelope, so it hands a foreign version through verbatim; (8) reader.resolve_handle / reader.bundle (reader.py:326-382) are NOT on this axis at all - they take a document_id and speak the CATALOG schema version, which fails closed separately via CatalogReaderUnavailable (reader.py:193-205). Severity: no in-repo producer can stamp a foreign version (resolve() always passes the constant at resolver.py:1829/1895), so the fail-open is latent, not reachable from the shipped paths - hence P2, not P0. But the contract text says 'This interface accepts EXACTLY this version', and for entry points 3/5/6/7 that sentence is not true.",
+      "evidence": "evidence/b07_review_probe.json (version_entry_points); probes executed against the installed checkout (import company_wiki -> company-wiki/src/company_wiki/__init__.py); read_verified_bytes returned {'status': 'verified', 'bytes_returned': 19} for a handle with schema_version '2.0'."
+    },
+    {
+      "id": "b",
+      "question": "Does the new refusal BREAK a legitimate caller? Look for existing tests or code that construct a ResolutionResult/envelope with another version, and for any documented additive-compatibility promise. Report any breakage, and whether the refusal should instead be a normalized pass-through.",
+      "answer": "NO BREAKAGE FOUND. tests/contract/test_resolution_envelope_fc704.py:108-112 and tests/contract/test_zr404_envelope_trace_rationale.py:351-361 - the only other places that construct a ResolutionResult - both pass SOURCE_RESOLVER_SCHEMA_VERSION, so the check is a no-op for them (fc704 ran green inside the permitted set; zr404 was inspected, not run - see limitations). In src/, ResolutionResult is constructed in exactly one place (resolver.py:1894, the constant) and SourceHandle in one place (resolver.py:1828). The documented additive promise is a FIELD-level promise to consumers ('all new fields are optional with honest defaults so pre-ZR-404 consumers keep working; envelope_schema_version stays 1.0', resolver.py:827-832) and is untouched: the envelope's own version constant is unchanged and the new refusal is producer-side. A normalized pass-through would be the wrong fix: silently converting an unknown version into the current one is precisely the 'unknown version silently accepted' failure the gate rates P0, and it would make the refusal untestable. The right direction is the opposite of pass-through: name where the refusal is enforced and what the caller gets (B-VR07-02/-03).",
+      "evidence": "Read of both envelope test files; 25 targeted tests passed (the 4 permitted files incl. test_r4b01_field_owner_alignment.py); grep for ResolutionResult(/SourceHandle( across the repo shows resolver.py:1828/1894 plus the tests only."
+    },
+    {
+      "id": "c",
+      "question": "Is claim 1 true IN CODE, not just in a comment? Search the wiki src/ for any directory-level fallback or cross-root substitution (including the legacy bridge and _source_metadata/v2 assertion paths). Say whether the 'no fallback' sentence describes reality.",
+      "answer": "THE 'NO DIRECTORY-LEVEL FALLBACK' SENTENCE DESCRIBES REALITY; the neighbouring sentence in the same comment does not. Reality checks: (i) candidates are restricted to the document's own source entry and to reusable roots (resolver.py:1685-1703); (ii) a different revision is a different document and the document gate refuses it on fiscal_year/form_type/provider identity (resolver.py:1368-1395); (iii) _source_metadata reads the v2 assertion row first and otherwise the already-indexed acquisition/dayu_meta containers, never the filesystem (resolver.py:1052-1097); (iv) the legacy bridge is gated by the runtime-policy flag and only supplies metadata, it does not open another location (resolver.py:667-674, 1086-1096); (v) read_verified_bytes refuses any locator outside the configured roots before reading (resolver.py:1971-1990); (vi) no code path contains a 'companies' fallback (grep: the only occurrences in the resolver are the new comment itself). But the sentence 'when no qualified copy of the REQUESTED version exists, the answer is an explicit failure (missing / not_found)' is not what happens when a qualified candidate's bytes fail verification: owner decision S-10 rule 2 serves the legacy canonical row on the catalog's claim. I reproduced it: replace the indexed file's bytes with a different version and resolve again -> status reused_exact, matches=1, trace 'unverified_content_sha256_mismatch_on_pre_b02_canonical', handle content_sha256 442ae3b7... while the bytes on disk hash to 82b1519d.... See B-VR07-01. (Not a directory-level fallback; a claim-trust fallback inside the same document/version group, owner-approved - but the contract text must not read as an explicit failure there.) Two smaller value-level fallbacks exist and are pre-existing, not introduced by B07: _fiscal_year derives a year from the document title when metadata lacks one (resolver.py:1100-1105), and the drift path just described.",
+      "evidence": "evidence/b07_review_probe2.json (rule2_drift_after_scan), evidence/b07_review_probe3.json (consumer view of the same case); code anchors above."
+    },
+    {
+      "id": "d",
+      "question": "Audit the payload comparison: does it compare the artifact filing-fetch actually consumes? Is the fixed project_root choice sound? Can the comparison pass while the payload changed? Try to defeat it.",
+      "answer": "(1) YES - it compares the right object. cli._policy_export_payload (cli.py:835-857) is a pure function of CatalogConfig that returns the export_policy_2x document plus its hash; the CLI puts that same dict into the response at cli.py:811 (ensure) and cli.py:1182 (resolve), and the consumer reads resolution['policy_export'] at filing-fetch/scripts/fetch_filing.py:889 and re-hashes it with filing_contracts._policy_document_hash (filing_contracts.py:395-403); I ran the consumer's own hash rule over the wiki payload -> c773099b..., equal to the payload's policy_hash and to the shipped .source_catalog/runtime_policy.json. (2) The fixed project_root is SOUND and NECESSARY: with each side's real project_root the comparison is impossible (00d8b49d vs 942c9d1f) because the worktree location changes 3 of 4 path_refs - including '../dayu-agent/...' which escapes the checkout and resolves under %TEMP% for the baseline; the fixed path is deliberately nonexistent and that is harmless (_expand_path resolves strict=False; RootSpec has no I/O). It cannot hide a real difference in code, config or semantics: mutants M1 (config priority), M2 (root path), M3 (exported document field) and M4 (the payload's own keys) were all KILLED. (3) The one way it CAN pass while something changed is scope, not method: M5 (policy_2x._effective_reusable_2x reduced to the kind-only rule) SURVIVES on the shipped config, because all four roots are reusable under either rule - the gate is byte equality for ONE config, not an export-semantics gate; that limitation is already registered as F-B01-8 and the acceptance-map row's own wording says 'same config'. M6 (bumping SOURCE_RESOLVER_SCHEMA_VERSION in resolver.py) also survives, which is the positive evidence that the payload does not depend on resolver.py - i.e. B07 cannot move it.",
+      "evidence": "evidence/b07_review_probe.json (payload), evidence/b07_review_mutations.json (M1-M6), evidence/b07_review_probe2.json (consumer identity), plus the byte-identical re-run of the author's script."
+    },
+    {
+      "id": "e",
+      "question": "Does the B07 change touch anything the payload depends on (F8 export_policy semantics)? Re-run the comparison yourself if cheap, or state precisely which numbers you reproduced.",
+      "answer": "NO. The payload path is cli._policy_export_payload -> policy_2x.export_policy_2x -> CatalogConfig/RootSpec (config.py) and does not import resolver.py; the commit changes resolver.py only (plus a new test), and `git diff 7d4852f HEAD -- config/` is empty, so even the shipped config is unchanged across the window. Empirically: the comparison re-run at HEAD 52d394d (which includes B06+B07) still reports identical=true with canonical_sha256 bd1a359f.../1216 B and policy_hash 5659a22f... on BOTH sides, and mutant M6 (SOURCE_RESOLVER_SCHEMA_VERSION 1.0 -> 1.1 in a temp copy) leaves the payload hash unchanged - direct proof of independence. Numbers I reproduced myself: identical=true; bd1a359f...; 1216 B; policy_hash 5659a22f... (fixed root) and c773099b... (real root = production runtime_policy.json); the consumer's document hash c773099b...; 4 killed / 2 survived mutants. The author's artifact is byte-stable across my re-run (53B6F4E0...).",
+      "evidence": "evidence/b07-payload-baseline.json (rewritten, byte-identical), evidence/b07_review_mutations.json, evidence/b07_review_probe.json."
+    },
+    {
+      "id": "f",
+      "question": "Is the L11/L12 honesty acceptable: the record claims only the wiki side, states that the consumer side is unverified, and does not claim N-1 support? Point out any sentence that overstates what was verified.",
+      "answer": "MOSTLY ACCEPTABLE. Accurate: the design scope table, b07-plan section 3 and the acceptance-map B07 row all put the consumer adapter/companies fallback in phase C and say 'consumer side unverified'; N-1 is explicitly removed from B's completion definition (B-DR4-03) and nothing in the B07 record claims it; the checkpoint's B07 sentence (version policy next to the constant, envelope refuses unknown schema_version, B-payload-hash executable and passing on 7d4852f vs the current tree with a fixed project_root) matches what I measured. Three sentences overstate or mis-count: (i) the new contract comment / test docstring claim an explicit failure when no qualified copy of the requested version exists (B-VR07-01); (ii) 'failures are expressed with the operation contract's five error values' is not what the new refusal does, and its two-value vocabulary is borrowed from the read path (B-VR07-03); (iii) L12 coverage: b07-plan section 4 lists an L12 zero-write/no-network/no-worker-control case and the acceptance map (line 51) credits 'query zero-write' to 'B06/B07 acceptance', while the delivered B07 file contains no such case (B-VR07-06). Case counts in progress.md are also unreconciled ('existing envelope cases 18' vs 20 collected for fc704+zr404, whose only skipif is inactive on this host; 'B06(11)' vs 12 collected) - B-VR07-04.",
+      "evidence": "b-design.md section B07, evidence/b07-plan.md sections 3-4, test-acceptance-map.md lines 16 and 51, checkpoint.json B07 text, progress.md lines 11-12/22/28; `pytest --collect-only -q` counts (20 and 12)."
+    }
+  ],
+  "mutations": [
+    {
+      "id": "M1-config-priority (config/source_catalog.yaml priority: 10 -> 11, applied to a temp copy)",
+      "status": "killed",
+      "killed_by": "b07_review_mutations.py canonical_sha256 comparison: 2bd9a0fc... != bd1a359f...",
+      "note": "proves the comparison reads the shipped config of the checkout under test"
+    },
+    {
+      "id": "M2-config-root-path (${PROJECT_ROOT}/future_lake -> .../future_lake_renamed)",
+      "status": "killed",
+      "killed_by": "canonical_sha256 3ffaa90e... != bd1a359f...",
+      "note": "the fixed project_root does not mask a root-path change"
+    },
+    {
+      "id": "M3-export-document-field (policy_2x.export_policy_2x 'priority' -> 'priority + 1000')",
+      "status": "killed",
+      "killed_by": "canonical_sha256 c5d63d2c... != bd1a359f...",
+      "note": "a change inside the exported document is detected"
+    },
+    {
+      "id": "M4-consumer-payload-key (cli._policy_export_payload 'roots' -> 'roots_v2')",
+      "status": "killed",
+      "killed_by": "canonical_sha256 c101db67... != bd1a359f... (policy_hash unchanged)",
+      "note": "the comparison covers the payload envelope, not only export_policy_2x's hash"
+    },
+    {
+      "id": "M5-reusable-kind-only (policy_2x._effective_reusable_2x -> kind-only rule)",
+      "status": "survived",
+      "killed_by": null,
+      "note": "EXPECTED SURVIVOR and a real scope limit: all four shipped roots are reusable under either rule, so the bytes are identical. The gate is byte equality on ONE config, not an F8 export-semantics gate; the conflicting-flag class is covered by the B01 acceptance case (test_r4b01_field_owner_alignment.py, green here) rather than by this comparison. I did not re-run the x2 mutant itself because this review was forbidden to modify product files."
+    },
+    {
+      "id": "M6-resolver-version-bump (resolver.py SOURCE_RESOLVER_SCHEMA_VERSION 1.0 -> 1.1)",
+      "status": "survived",
+      "killed_by": null,
+      "note": "EXPECTED SURVIVOR and the positive answer to (e): the compared artifact does not depend on resolver.py, which is why the B07 commit cannot move the payload."
+    },
+    {
+      "id": "M7-refusal-removed (pre-change behaviour: the 7d4852f worktree, which accepts a '2.0' result)",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b07_version_contract.py::test_r4b07_an_unknown_version_is_refused_explicitly",
+      "note": "The pre-change tree IS the mutant (probe2: baseline ACCEPTED, current ValueError), so the delivered case is load-bearing for claim 2."
+    },
+    {
+      "id": "P-drift (replace the indexed file's bytes after the scan, then resolve again)",
+      "status": "survived",
+      "killed_by": null,
+      "note": "No case or code path answers an explicit failure: the resolution is reused_exact with one handle whose content_sha256 is the indexed (requested) digest while the bytes on disk are a different version; the trace marks it unverified_content_sha256_mismatch_on_pre_b02_canonical. This is what falsifies the contract sentence in B-VR07-01 (the behaviour itself is owner-approved S-10 rule 2)."
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR07-01",
+      "severity": "P1",
+      "claim": "The version policy text added by this commit (resolver.py:85-100) and the new test file's docstring (tests/contract/test_r4b07_version_contract.py:11-14) state: 'when no qualified copy of the REQUESTED version exists, the answer is an explicit failure (missing / not_found)'. In the design's own vocabulary a qualified copy is one whose bytes hash to the requested version (b-design section B02 segment 3 'readable AND same hash'; section B04 'no qualified copy -> unavailable'). That is not what the wiki side does.",
+      "evidence": "Reproduced: build a verified catalog, overwrite the indexed file with different bytes, resolve again -> status reused_exact, matches=1, reason one_existing_source_matches_provider_identity, trace ['entity_gate_rejected: 0', 'Acme 2025 Annual Report: unverified_content_sha256_mismatch_on_pre_b02_canonical', '<location>:content_sha256_mismatch:82b1519db82f', 'matched']; the served handle's content_sha256 is 442ae3b7... (the indexed original) while the bytes on disk hash to 82b1519d...; capture_ready=True, missing_capture_fields=[]; the envelope carries source_sha256 442ae3b7... and qualification label 'verified_input' with no gaps. Code anchors: resolver.py:1665-1669 (rule 2 stated in the docstring), resolver.py:1752-1770 (claimed_fallback served when no candidate verifies), resolver.py:85-100 (the contract sentence). Owner decision S-10 approves the BEHAVIOUR; what is wrong is the contract text (and the test docstring) reading as an explicit failure. Under the code's own narrower sense of 'qualified' (membership in the ordered candidate list, resolver.py:1704-1707) the sentence is literally true - the defect is that the contract does not distinguish the two senses, and its declared audience is the phase-C consumer implementer.",
+      "impact": "A consumer implementer writing the phase-C adapter from this contract can conclude that a returned handle implies the requested version's bytes exist. In the drift case the response still says capture_ready=True, content_sha256=<requested digest> and qualification=verified_input while the file behind canonical_path holds different bytes; only callers wired to read_verified_bytes are protected (unavailable / content_sha256_mismatch) and nothing is wired yet. False-guarantee class, cross-repo impact, but it does NOT falsify the gate's claim 1 (no directory-level fallback: never another revision, never outside the configured roots - both verified true).",
+      "required_action": "Text-only fix in B07's contract block (and the test docstring): name the exception explicitly - e.g. 'when no candidate's bytes verify, a single claim-trusted row of the requested version may still be served and is marked unverified_<status>_on_pre_b02_canonical in the trace (S-10)' - or replace 'qualified copy' with 'verified copy' and say what happens when none verifies. No product behaviour change is required or requested."
+    },
+    {
+      "id": "B-VR07-02",
+      "severity": "P2",
+      "claim": "The refusal added by B07 is complete for the wiki side ('This interface accepts EXACTLY this version'): only build_resolution_envelope checks the version.",
+      "evidence": "Executed enumeration (evidence/b07_review_probe.json -> version_entry_points): SourceRequest -> refused; build_resolution_envelope(2.0) -> ValueError; SourceHandle(schema_version='2.0') -> constructed, to_dict emits '2.0' (no __post_init__ at resolver.py:581-618); ResolutionResult(schema_version='2.0') -> constructed, to_dict emits '2.0' (resolver.py:636-661); build_resolution_envelope(current version + 2.0 handle in matches) -> ACCEPTED and the sibling resolution dict ships '2.0' to the consumer; SourceResolver.read_verified_bytes(2.0 handle) -> status 'verified', 19 bytes returned (resolver.py:1949-1993 checks only isinstance and the content pin); cli._read_only_ensure_result (cli.py:698-739, used at cli.py:753) renders resolution.to_dict() with no envelope and no version check; reader.resolve_handle/bundle are on the catalog schema-version axis, which fails closed separately (reader.py:193-205).",
+      "impact": "The interface's own byte entry point - the one B03's record points consumers at - accepts a foreign-version handle and hands out bytes labelled verified, and the envelope builder can emit an envelope whose sibling resolution carries a foreign version. Latent today: resolve() stamps the constant at resolver.py:1829/1895, so no in-repo producer can create a foreign-version artifact (hence P2, not the P0 the wording 'unknown version silently accepted' would otherwise suggest); the cost of the gap is that the contract's universal sentence cannot be relied on by a future caller or by the phase-C adapter.",
+      "required_action": "Either check handle.schema_version where handles are consumed (read_verified_bytes, and the matches of a result entering build_resolution_envelope) plus give SourceHandle/ResolutionResult a __post_init__ version guard, or narrow the contract sentence to name the single enforced entry point. Only the second option is inside B07's current file scope; the first is a small follow-up work package."
+    },
+    {
+      "id": "B-VR07-03",
+      "severity": "P2",
+      "claim": "'Failures are expressed with the operation contract's five error values (not_found / not_indexed / unavailable / blocked / ambiguous) plus a reason' - written next to the version policy as the error model of an unknown version's refusal.",
+      "evidence": "The new refusal raises a bare ValueError (resolver.py:923-931) and the delivered case asserts pytest.raises(ValueError), not one of the five values. The two constants that actually exist are B03_ERROR_NOT_FOUND / B03_ERROR_UNAVAILABLE (resolver.py:304-305) and they are returned only by read_verified_bytes; no wiki-side path maps an unknown version to not_found/blocked, and ResolutionStatus itself is a different five (reused_exact/reused_equivalent/missing/ambiguous/identity_conflict, resolver.py:300-306 comment vs the enum). The design expected otherwise: b-design section B07 'unknown -> not_found/blocked' and evidence/b07-plan.md section 2 item 1 lists the five values as the vocabulary 'used on refusal'.",
+      "impact": "The phase-C adapter implementer cannot map this refusal onto the interface's error model from the contract alone (it is a Python exception from a producer-side builder, not a response value); the contract's error-model statement reads as describing behaviour that no path implements for versions. Two-value borrowing from the read path is already a registered gap (F-B01-9 / B-VR03-05) - this finding is that B07's new text does not acknowledge it.",
+      "required_action": "Say precisely what an unknown version yields on the wiki side (a caller/programming error: ValueError from build_resolution_envelope, which the wiki's own producers can never trigger), or state the mapping the consumer should apply. Text-only."
+    },
+    {
+      "id": "B-VR07-04",
+      "severity": "P3",
+      "claim": "The B-payload-hash evidence records the window and the scope precisely enough to be re-derived later.",
+      "evidence": "(i) evidence/b07-payload-baseline.json pins only checkout PATHS ('C:\\Users\\...\\Temp\\cw-preb', 'C:\\Users\\...\\Projects\\company-wiki'); neither side's git revision is in the artifact, so after the temp worktree moves the pinned comparison cannot be re-derived from the artifact alone - I had to resolve 7d4852f via `git worktree list` and F-B07-1's prose. (ii) Mutant M5 survives: a change to the export's reusability semantics that the shipped config does not exercise leaves the bytes identical, so the gate does not verify F8 'export_policy semantics unchanged' - only byte equality for one config (the acceptance-map row's own wording 'recompute for the same config' is accurate; the file-scope B07 row's 'F8 semantics unchanged' is not what is tested). (iii) Case counts in progress.md are unreconciled: 'existing envelope cases 18' vs 20 collected for test_resolution_envelope_fc704.py + test_zr404_envelope_trace_rationale.py (the single skipif there is inactive on this host because the filing-fetch checkout exists), and 'B06(11)' vs 12 collected in test_r4b06_qualification.py. B07's own count (4) is exact.",
+      "impact": "A later reader cannot tell which revisions were compared from the machine-readable artifact, may over-read the gate as an export-semantics check, and cannot reconcile the recorded case counts.",
+      "required_action": "Write both revisions (git rev-parse of each side) into the report, add one line stating the gate is byte equality for the shipped config, and correct the case counts (or state what they count)."
+    },
+    {
+      "id": "B-VR07-05",
+      "severity": "P3",
+      "claim": "The delivered cases protect what their docstrings say they protect.",
+      "evidence": "tests/contract/test_r4b07_version_contract.py:227-229 asserts `not any('served' in item for item in resolution.debug_trace)`. The string 'served' occurs in resolver.py only in comments and in no trace literal (grep: lines 168-169, 763, 856, 1007-1008, 1664-1673, 1917), so that assertion can never fail; the case's real protection is matches == () plus status MISSING (lines 223-225), which does hold. The contract-guard case (lines 179-187) is a substring search over the source file, so it detects deletion but not rewording or relocation.",
+      "impact": "A reader of the case believes the trace is checked for leaked served copies; it is not. No false green for the gate's claims - the substantive assertions carry the case.",
+      "required_action": "Drop the vacuous assertion or replace it with a real one (e.g. assert that no trace entry matches the candidate-served vocabulary 'verified_candidate_rank_'), and optionally pin the guard to a normalised text window around the constant."
+    },
+    {
+      "id": "B-VR07-06",
+      "severity": "P3",
+      "claim": "B07 covers the L12 side of its acceptance row ('query zero write / no network / no worker control').",
+      "evidence": "evidence/b07-plan.md section 4 lists a 'resolve zero-write' case (read-only connection + no-network probe) as part of the F10 case list, and test-acceptance-map.md line 51 credits 'query zero-write' to 'B06/B07 acceptance'; the delivered tests/contract/test_r4b07_version_contract.py contains exactly 4 cases, none of which touches writes, sockets or worker control (its own docstring says the payload comparison is the fourth item). I found no zero-write assertion in tests/contract/test_r4b06_qualification.py either (its docstring says 'no network is touched', but that is prose, and B06 is the other reviewer's gate - not judged here). The design defers L12's independent observation to B08, so the map's B07 row note is honest; line 51 and the plan's case list are not.",
+      "impact": "The step is credited with a matrix item (L12) that has no executable case on the wiki side, which is the kind of unbacked coverage claim this audit treats as a record defect.",
+      "required_action": "Correct the plan/map to say B07 delivers no L12 case (L12's zero-write observation stays with B08), or add the case to the F10 file."
+    }
+  ],
+  "limitations": [
+    "Only the permitted targeted tests were run: tests/contract/test_r4b07_version_contract.py, test_resolution_envelope_fc704.py, test_r4b01_field_owner_alignment.py, test_fc1204_complexity_ratchet.py (25 passed in 8.84s) plus `ruff check src tests/contract` (All checks passed). No full-suite run, no coverage run (the tracked .coverage/coverage.json were not touched), and FC1204_COVERAGE_GATE was not exercised.",
+    "tests/contract/test_zr404_envelope_trace_rationale.py was NOT executed (outside the permitted set), so the author's 'existing envelope cases 18' figure is neither confirmed nor refuted; `--collect-only` shows 20 tests across fc704+zr404 and the one skipif in zr404 is inactive on this host, which points at 20 passing rather than 18. I read the only ResolutionResult construction there (line 351-361, current version) - it cannot be broken by the new refusal.",
+    "The CI/Linux side of F-B01-9 (policy_hash ca3b7f5d... on Linux) cannot be verified offline; what I did verify is the machine-scope claim on this host (real root c773099b... = production .source_catalog/runtime_policy.json) and its consequence that only the comparison is portable.",
+    "The mutants M5/M6 were applied to temp copies of src+config only; I did not re-run the author's B01 mutation harness (x2_kind_only) because this review was forbidden to modify tracked product files, so the conflicting-flag coverage of that class rests on reading the B01 acceptance file and on the B.VR-b03 record rather than on my own execution.",
+    "The 'verified_input' label and capture_ready=True in the drift case belong to B06's artifact; I report them as the impact of B-VR07-01 but did not audit B06 (a separate reviewer holds that gate).",
+    "The leaked worker PID 17684 (python, started 2026-09-12 21:18:04) was alive throughout and is attributed, never killed; a concurrent B06 review was running on the same machine, so timing numbers are load-affected (the only timing I quote is 25 passed in 8.84s).",
+    "Non-ASCII paths were kept out of console output (probes write JSON files with ensure_ascii=False); the author's own probe decodes the child's stdout through subprocess(text=True), i.e. the locale codec (GBK here) - a path with characters outside that codec would break the script even though the JSON artifact itself is UTF-8. Not triggered on this host."
+  ],
+  "extra_evidence": {
+    "environment": {
+      "host": "Windows, PowerShell; console code page GBK",
+      "python": "3.13.9 (Anaconda, MSC v.1929 64-bit)",
+      "pytest": "9.1.1",
+      "installed_package": "company_wiki resolves to C:\\Users\\...\\Projects\\company-wiki\\src\\company_wiki\\__init__.py (this checkout)",
+      "company_wiki": "branch fcap, HEAD 52d394d74d3ab8b05145c7d9dbe8111ab7d97198, git status --short empty before and after",
+      "baseline_worktree": "C:\\Users\\...\\AppData\\Local\\Temp\\cw-preb (detached at 7d4852fa35023aaf467ba7a7277c0ff4d77c2eb9)",
+      "consumer_checkout": "C:\\Users\\...\\Projects\\filing-fetch\\scripts (filing_contracts.py, fetch_filing.py)",
+      "leaked_worker": "PID 17684 python, started 2026-09-12 21:18:04 - alive, attributed, not killed",
+      "review_artifacts": [
+        "evidence/b07_review_probe.py + b07_review_probe.json",
+        "evidence/b07_review_probe2.py + b07_review_probe2.json",
+        "evidence/b07_review_probe3.py + b07_review_probe3.json",
+        "evidence/b07_review_mutations.py + b07_review_mutations.json",
+        "evidence/b07_review_payload-baseline.author-original.json (backup of the author's pinned artifact)"
+      ]
+    },
+    "commands_run": [
+      "git -C company-wiki rev-parse HEAD ; git status --short ; git worktree list",
+      "git -C company-wiki show 5b7ef10 --stat ; git show 5b7ef10 -- src/company_wiki/source_catalog/resolver.py",
+      "git -C company-wiki rev-parse 5b7ef10:tests/contract/test_r4b07_version_contract.py ; git hash-object <same path> (blob identity bfa5138a...)",
+      "git -C company-wiki diff --stat 5b7ef10 HEAD -- src/company_wiki/source_catalog/resolver.py tests/contract/test_r4b07_version_contract.py (empty)",
+      "git -C company-wiki diff --stat 7d4852f..HEAD -- config/ (empty)",
+      "python -m pytest tests/contract/test_r4b07_version_contract.py tests/contract/test_resolution_envelope_fc704.py tests/contract/test_r4b01_field_owner_alignment.py tests/contract/test_fc1204_complexity_ratchet.py -q  -> 25 passed in 8.84s",
+      "ruff check src tests/contract -> All checks passed",
+      "python -m pytest <fc704 + zr404> --collect-only -q -> 20 tests collected",
+      "python -m pytest tests/contract/test_r4b06_qualification.py --collect-only -q -> 12 tests collected",
+      "python evidence/b07_payload_baseline.py C:\\Users\\...\\AppData\\Local\\Temp\\cw-preb  -> identical true, bd1a359f..., 1216 B (artifact byte-identical to the author's: sha256 53B6F4E0...)",
+      "python evidence/b07_review_probe.py  -> payload (fixed vs real root) + version-entry-point enumeration",
+      "python evidence/b07_review_probe2.py -> rule-2 drift case, baseline-vs-current envelope on a 2.0 result, consumer hash identity",
+      "python evidence/b07_review_probe3.py -> consumer-facing view of the drift case (capture_ready, qualification label)",
+      "python evidence/b07_review_mutations.py -> 4 killed / 2 survived payload mutants",
+      "git -C company-wiki status --short (empty at the end of the review)"
+    ]
+  }
+}

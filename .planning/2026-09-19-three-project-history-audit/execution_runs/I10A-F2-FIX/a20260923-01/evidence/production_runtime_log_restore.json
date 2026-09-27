@@ -1,0 +1,58 @@
+{
+ "artifact": "production_runtime_log_restore",
+ "target": "artifacts/registry/publications.jsonl",
+ "target_is_gitignored": true,
+ "gitignore_evidence": ".gitignore:16 artifacts/",
+ "action": "attempted_blocked_readonly",
+ "at": "2026-09-24T21:55:33",
+ "lines_before": 65,
+ "lines_removed": 5,
+ "bytes_before": 50229,
+ "bytes_after": 46369,
+ "sha256_before": "18310faea83bad23e68f6713b2c5cce2ad6a3d89f6d8a6b8a02419659335ad55",
+ "sha256_after": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+ "sha256_after_is_prefix_of_before": true,
+ "removed_records": [
+  {
+   "line": 61,
+   "registered_at": "2026-09-24T20:02:50.848835+00:00",
+   "note": "run_forecast formal",
+   "in_incident_window": true
+  },
+  {
+   "line": 62,
+   "registered_at": "2026-09-24T20:02:50.888548+00:00",
+   "note": "run_forecast formal",
+   "in_incident_window": true
+  },
+  {
+   "line": 63,
+   "registered_at": "2026-09-24T20:02:50.935065+00:00",
+   "note": "run_forecast formal",
+   "in_incident_window": true
+  },
+  {
+   "line": 64,
+   "registered_at": "2026-09-24T20:02:50.982019+00:00",
+   "note": "run_forecast formal",
+   "in_incident_window": true
+  },
+  {
+   "line": 65,
+   "registered_at": "2026-09-24T20:02:51.036956+00:00",
+   "note": "run_forecast formal",
+   "in_incident_window": true
+  }
+ ],
+ "all_removed_inside_incident_window": true,
+ "iso_prefix_60_identical": true,
+ "hash_chain_valid_over_kept": true,
+ "hash_chain_break_line": null,
+ "cause": "scripts/golden_value_identity.py run against the read-only production tree (I-6 baseline capture); run_forecast appends one publication record per call.",
+ "tracked_file_written": false,
+ "remediation": {
+  "attempted": true,
+  "succeeded": false,
+  "detail": "BLOCKED: PermissionError(13, 'Permission denied'). The file carries the ReadOnly attribute; this implementer will not clear a protection flag on a production file. Disclosed in handoff instead."
+ }
+}

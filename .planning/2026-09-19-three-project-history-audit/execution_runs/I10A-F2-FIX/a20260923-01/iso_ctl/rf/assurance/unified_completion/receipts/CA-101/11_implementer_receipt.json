@@ -1,0 +1,122 @@
+﻿{
+  "schema_version": "2.0",
+  "unit": "CA-101",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "schema_note": "CA-102 will version the canonical receipt schema; this mirrors the historical 2.0 shape.",
+  "summary": "CA-101 (strict work-unit state machine + DAG): implemented uc/strict_state.py and upgraded uc.cli state-update/state-render. Closed state enum (CA registry 12 states ∪ runbook lifecycle = 15), one-directional LEGAL_TRANSITIONS with only documented rework loops (blocked<->preflight_locked, blocked<->implemented, independent_review->implemented), dependency gate (leaving pending to any non-blocked/non-superseded state requires all deps accepted/already_satisfied), reviewer gate (accepted requires a reviewer distinct from the implementer), per-unit single-writer locks (uc.lock resource unit-<id>, TTL 600s), and DAG cycle detection (dag.cycle_check). CLI refusals demonstrated on the real machine: pending->accepted jump rc=2, accepted without reviewer rc=2, free-text status 'accepted on 2026-08-14' rc=3 — with zero state writes. state-render emits a read-only Markdown view (never a source of truth). 11 new tests including property tests over all 15x15 state pairs (illegal pairs rejected, legal pairs pass) and cycle detection. Full suite: 93 passed. Existing accepted units CA-001~004 are grandfathered (history preserved, no re-validation). Product code/config/CI/catalog/roots: zero writes.",
+  "base_triplet": {
+    "revenue": "ce3d6be957afc15bde477fcc71918ab1fee53394",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_triplet": {
+    "revenue": "ce3d6be957afc15bde477fcc71918ab1fee53394",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_note": "claim-time triplet; code/receipt commits land after this receipt.",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "allowed_files": [
+    "revenue-forecast/assurance/unified_completion/**"
+  ],
+  "changed_files": [
+    "revenue-forecast/assurance/unified_completion/uc/strict_state.py",
+    "revenue-forecast/assurance/unified_completion/uc/dag.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_strict_state.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-101/*"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/unified_completion/receipts/CA-004/ (accepted, closure receipt present)"
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "93 passed (11 strict-state tests incl. 15x15 property tests)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 12 source files",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli state-update --unit CA-999 --status accepted --reviewer rev-test",
+      "exit_code": 2,
+      "result": "STATE-GATE: illegal transition: pending -> accepted (zero writes)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli state-update --unit CA-998 --status accepted",
+      "exit_code": 2,
+      "result": "STATE-GATE: illegal transition + accepted requires a reviewer identity (zero writes)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli state-update --unit CA-997 --status 'accepted on 2026-08-14'",
+      "exit_code": 3,
+      "result": "invalid status (free-text state rejected)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli state-render",
+      "exit_code": 0,
+      "result": "read-only Markdown view of 4 accepted units",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "red_evidence": [
+    {
+      "id": "RED-A",
+      "description": "pending->accepted direct jump was legal in the previous state-update (no transition table). See receipts/CA-101/red/RED.md.",
+      "status": "red_proved"
+    },
+    {
+      "id": "RED-B",
+      "description": "any caller could write accepted (no reviewer identity/role gate). See receipts/CA-101/red/RED.md.",
+      "status": "red_proved"
+    },
+    {
+      "id": "RED-C",
+      "description": "dag module had no cycle detection. See receipts/CA-101/red/RED.md.",
+      "status": "red_proved"
+    },
+    {
+      "id": "RED-D",
+      "description": "no per-unit single-writer lock existed. See receipts/CA-101/red/RED.md.",
+      "status": "red_proved"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "catalog_mutations": 0,
+    "product_code_changes": 0,
+    "note": "state-update refusal demonstrations performed zero writes (validation precedes transform); locks acquired and released cleanly."
+  },
+  "mutation": {
+    "id": "CA-101-M-states",
+    "killed": true,
+    "details": "property tests over all 15x15 state pairs; illegal jumps rejected even with satisfied deps and reviewer present; dependency gate tested for blocked/superseded exemption; reviewer==implementer rejected; cycle detection covers self-loop and two-node cycles; rework-loop pairs whitelisted."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Additive assurance code; rollback = revert commit. Existing state history untouched."
+  },
+  "review": {
+    "status": "pending",
+    "note": "independent reviewer must verify: strict_state table vs CA registry enum + runbook lifecycle, property tests, CLI refusals, state-render view, and give accepted/changes_required/blocked/rejected."
+  }
+}

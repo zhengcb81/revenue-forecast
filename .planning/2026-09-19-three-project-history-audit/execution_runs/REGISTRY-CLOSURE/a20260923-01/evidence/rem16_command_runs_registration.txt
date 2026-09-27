@@ -1,0 +1,35 @@
+REM-16 / I-10-B F-R1 — evidence_paths 补登记（closure evidence, REGISTRY-CLOSURE a20260923-01）
+=========================================================================================
+Defect (register:32): "`command_runs/` 有 7 个子目录而 `evidence_paths` 只列 6（`r2-verify-before/` 未列）"
+Fix demanded: "补登记（结论未缺）" — this file IS the supplementary registration.
+
+Disk state verified 2026-09-23 (read-only, PLAN\execution_runs\I-10-B\a20260919-01):
+
+  command_runs\ subdirectories on disk (7):
+    r2-char_beforeexp_before_reg
+    r2-mutation
+    r2-red_afterexp_before_reg
+    r2-repro-compat
+    r2-verify-after
+    r2-verify-before          <-- the unlisted one
+    r2-xcheck_beforeexp_after_reg
+
+  handoff.json `evidence_paths` array lists 6 of the 7:
+    command_runs/r2-mutation/mutation_proof.json
+    command_runs/r2-red_afterexp_before_reg/
+    command_runs/r2-char_beforeexp_before_reg/
+    command_runs/r2-xcheck_beforeexp_after_reg/
+    command_runs/r2-verify-after/
+    command_runs/r2-repro-compat/
+  (full array also lists binding.json / commands.json / oracle.md / decision.md / changes.diff /
+   compatibility_impact.md / compatibility_cells.json / frozen_impact_scan.json /
+   frozen_regression_rerun.json / verification_before.json / verification_after.json /
+   t16_reachability_probe.json)
+
+Registration supplement (the demanded fix): `command_runs/r2-verify-before/` IS part of the
+I-10-B evidence set (7th directory). Conclusion unaffected — the register row itself says
+"结论未缺" and the verification_before/after JSONs cited in evidence_paths carry the results.
+
+Sealed-carrier note: I-10-B handoff.json is sealed (accepted attempt); per project convention
+it is NOT edited. This supplement is the register-side disposition record (REMEDIATION_REGISTER
+consolidated disposition section, 2026-09-23).

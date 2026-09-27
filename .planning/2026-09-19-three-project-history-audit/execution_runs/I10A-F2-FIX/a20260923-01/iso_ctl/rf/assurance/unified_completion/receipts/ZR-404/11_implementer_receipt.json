@@ -1,0 +1,113 @@
+{
+  "base_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "ce8152a1e93381060b63f8eea77ebfbbd79276a3",
+    "wiki": "87ee0ac2c64b2c48ac6c5ff58829650a275cdf9d"
+  },
+  "canonical_hash": "fe23197e72202b4a89578f1e54e77a17b44556e5fae9857997593427ee7b3233",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr404_envelope_trace_rationale.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "11 passed（四键一致性/无 snapshot 诚实缺省、冲突 fail closed 4 形态、排除 trace 携带+空匹配、canonical rationale+脱敏、无匹配无 rationale、加性旧键+schema 稳定、filing 跨仓 N/N-1 透传、policy_hash 形状与 filing 逐字同规则）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_resolution_envelope_fc704.py test_fc902_bundle_in_resolver.py test_fc905_receipt_envelope.py test_runtime_policy.py test_activation_transaction.py test_close_gap_fc801.py test_close_gap_concurrency_fc804.py test_resolver_activation_snapshot.py test_fc1201_root_hardcode_gate.py test_fc1204_tier1_gaps.py test_fc1204_complexity_ratchet.py test_zr404_envelope_trace_rationale.py -q --tb=short (company-wiki, tests/contract)",
+      "exit_code": 0,
+      "result": "114 passed（11 新 + 103 既有 envelope/policy/activation/close-gap/ratchet/FC-1201 无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（无回归）"
+    },
+    {
+      "command": "python -m ruff check src/company_wiki/source_catalog/resolver.py cli.py close_gap.py tests/contract/test_zr404_envelope_trace_rationale.py; python -m ruff format --check 同组 (base python)",
+      "exit_code": 0,
+      "result": "All checks passed（1 次 unused-import fix + 2 文件 format 后干净）"
+    },
+    {
+      "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/resolver.py cli.py close_gap.py (base python)",
+      "exit_code": 1,
+      "result": "2 errors 均基线既有（git stash 对照：base 57cd72e 同样 2 errors，行 308/762→309/845 仅行号位移；本卡零新增 mypy 错误）——详见 ZR404-IMPL-003"
+    },
+    {
+      "command": "git diff 87ee0ac f45f7ed --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "4 文件：resolver.py +86（ResolutionEnvelope 4 新字段+to_dict、build_resolution_envelope 严格形状+派生字段、_redact_path）、cli.py +2、close_gap.py +1（两调用点传 project_root）、新测试 +378"
+    }
+  ],
+  "created_at_utc": "2026-08-18T21:05:00+00:00",
+  "findings": [
+    {
+      "detail": "ZR-404 为产品代码卡（非纯验收）：envelope 加性扩展。ResolutionEnvelope 新增 candidate_exclusion_trace/canonical_location_rationale/cohorts/source_sha256 四字段（默认 ()/None，to_dict 加键）；build_resolution_envelope 新增 project_root 参数 + policy_snapshot 严格形状校验（非 dict→ValueError；policy_hash 非 0-9a-f{64}→ValueError；current_epoch 非文本→ValueError；active_cohorts 非 str 列表→ValueError）+ 派生字段（trace=resolution.debug_trace、rationale=matches[0] handle 脱敏、cohorts=snapshot.active_cohorts、source_sha256=handle.content_sha256）；_redact_path 将 project_root/USERPROFILE token 化。schema_version 保持 '1.0'（加性契约，filing 侧零改动）。",
+      "id": "ZR404-IMPL-001",
+      "severity": "info",
+      "title": "envelope 加性扩展：四新字段 + 严格形状 fail closed + 路径脱敏"
+    },
+    {
+      "detail": "跨仓 N/N-1 验证：filing validate_resolution_envelope（filing_contracts.py:237）对未知键宽容；新测试 test_zr404_filing_validator_accepts_enriched_envelope 直接加载 filing_contracts.py 校验 enriched envelope → 透传通过（schema '1.0'、新字段保留、无绝对路径泄漏）。policy_hash 形状规则与 filing 校验器逐字一致（lowercase 64-hex or null）。",
+      "id": "ZR404-IMPL-002",
+      "severity": "info",
+      "title": "加性 N/N-1 与 filing 校验器跨仓透传通过"
+    },
+    {
+      "detail": "mypy 基线 2 条既有错误（非本卡引入，git stash 对照 base 57cd72e 同 2 条）：resolver.py 'list(...)' 期望 Iterable[dict] 收到 tuple[str,...]（envelope matches 构造处）；'_verified_assertion_identity' 参数 3 类型 Any|None vs str（resolve() 内 document.get('content_sha256') or None）。本卡零新增。建议在后续质量卡/CA-201 清理（不越权本卡修复）。",
+      "id": "ZR404-IMPL-003",
+      "severity": "info",
+      "title": "mypy 基线既有 2 错误继承（非本卡引入），移交后续质量卡"
+    },
+    {
+      "detail": "RED 证据（red/zr404_red_evidence.json，sha256 b1f91561…）：对 base wiki 57cd72e resolver.py 静态验证——envelope 类体无 candidate_exclusion_trace/canonical_location_rationale/cohorts/source_sha256 字段、policy_snapshot 分支无形状校验、模块无 _redact_path，red_confirmed=true。",
+      "id": "ZR404-IMPL-004",
+      "severity": "info",
+      "title": "RED 四缺口静态确认（G1~G4）"
+    }
+  ],
+  "implementation": {
+    "design": "resolver.py：ResolutionEnvelope +4 字段（candidate_exclusion_trace=()、canonical_location_rationale=None、cohorts=None、source_sha256=None）与 to_dict 加键；build_resolution_envelope +project_root 参数、policy_snapshot 严格形状（dict-or-None + policy_hash 64-hex-or-None + current_epoch text-or-None + active_cohorts str-list-or-None，违者 ValueError）、派生四字段（debug_trace→trace；matches[0]→rationale{canonical_location_id, canonical_path 脱敏, selection, source_sha256}+source_sha256；snapshot.active_cohorts→cohorts）；新增 _redact_path（${PROJECT_ROOT}/${USER_PROFILE} token 化）。cli.py resolve/ensure 与 close_gap._finalize 三个调用点传 project_root。新测试 tests/contract/test_zr404_envelope_trace_rationale.py（11 tests）：四键一致性、无 snapshot 诚实缺省、fail closed 4 形态、trace 携带/干净匹配、rationale+脱敏、MISSING 无 rationale、加性+schema 稳定、filing 跨仓透传、policy_hash 形状与 filing 同规则。schema_version 保持 '1.0'（加性，filing 零改动）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/resolver.py",
+      "company-wiki/src/company_wiki/source_catalog/cli.py",
+      "company-wiki/src/company_wiki/source_catalog/close_gap.py",
+      "company-wiki/tests/contract/test_zr404_envelope_trace_rationale.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-404/**"
+    ]
+  },
+  "implementer": "zr404-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 ce8152a（ZR-403 closure commit）；result_triplet.wiki 为本卡实现提交 f45f7ed。",
+    "red_evidence sha256=b1f915610c8d564f60b12505d51fa0cee6ca8f1892fe772ddf6137d5fcb60f59；reviewed_object（新测试文件）sha256=2e51f686ccee233d8245839ec5f69be9441ef527d453b1a86ac2badc3e0c7e69。",
+    "卡片 hash 于最终编辑后计算并冻结（吸取 ZR401-REV-005 教训）：plan_sha256=f1876885…，此后不再改动 00_wu_card.md。",
+    "envelope_schema_version 保持 '1.0'：加性契约，filing validate_resolution_envelope 无需改动（零 diff 验证由跨仓透传测试承担）。"
+  ],
+  "objective": "envelope 带 policy snapshot、候选排除 trace、canonical location rationale；policy/epoch/cohort/source hash 一致；路径脱敏；冲突 fail closed。",
+  "plan_sha256": "f1876885415cc21d57da7a4d1d8041609d4f38da429e1e4f424e7d18114c0d95",
+  "result_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "ce8152a1e93381060b63f8eea77ebfbbd79276a3",
+    "wiki": "f45f7edb76e42a3f54489f7999182ce59e4cb678"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki resolver.py + cli.py + close_gap.py（envelope 加性扩展）+ 新测试 tests/contract/test_zr404_envelope_trace_rationale.py（11 tests）；revenue 侧 receipts/ZR-404/** 与 state.json。filing 零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 3,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/resolver.py",
+    "company-wiki/src/company_wiki/source_catalog/cli.py",
+    "company-wiki/src/company_wiki/source_catalog/close_gap.py",
+    "company-wiki/tests/contract/test_zr404_envelope_trace_rationale.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-404/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-404"
+}

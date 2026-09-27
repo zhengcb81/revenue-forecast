@@ -1,0 +1,61 @@
+{
+ "unit": "ZR-1009",
+ "reviewer": "reviewer-zr1009-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "12ebc05c1c20c43a266b2c3f99a4a766c7d3068abb051886836375b6a930fb6c",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr1009_legacy_removal.py -q --timeout=600",
+   "exit_code": 0,
+   "result": "9 passed in 102.01s (C1 caller gate; C2 two cycles zero-hit; C3 N-1 disposition; C4 removal drift + new freeze green; real codegraph CLI, no skip)"
+  },
+  {
+   "command": "python -m pytest tests/test_legacy_gate.py tests/test_legacy_disposition.py -q (assurance/unified_completion cwd)",
+   "exit_code": 0,
+   "result": "13 passed in 0.79s (工具自身回归 OK)"
+  },
+  {
+   "command": "independent uc.legacy_gate.report three-repo scan",
+   "exit_code": 0,
+   "result": "verdict=callers_found, exactly 2 findings (revenue .github/workflows/quality.yml line 47 -> verify_closure_ledger + closure_ledger, P2, successor CA-201) — verbatim match; quality.yml:47 is a real CI call"
+  },
+  {
+   "command": "git status --porcelain -- scripts tools assurance/unified_completion/uc + show --stat",
+   "exit_code": 0,
+   "result": "HEAD=7eb8392 parent=4b17486 matches; product dirs clean; commit only tests/test_zr1009_legacy_removal.py +238"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical 12ebc05c matches; base_triplet (filing 5a1c18f/revenue 4b174864/wiki 35a1103) and result_triplet (revenue 7eb8392) all real commits; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "4b1748649da296252896ac9823f4f798ba656bcd",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "7eb8392579752e9b501f03f75990eef1097ad588",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR1009-RVW-001",
+   "severity": "info",
+   "title": "company-wiki 工作区有与本卡无关的未跟踪/修改噪音",
+   "detail": "llm_cost_log.csv 等非产品文件；HEAD 与 triplet 一致，非本卡引入。"
+  },
+  {
+   "id": "ZR1009-RVW-002",
+   "severity": "info",
+   "title": "探针相对路径书写问题",
+   "detail": "任务给出的 assurance 探针相对路径从指定 workdir 解析指向不存在路径，修正后复放 13 passed；属探针书写问题，非实施缺陷。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T14:07:42+00:00",
+ "canonical_hash": "48a0a6893311e965728c03225d127724b54ef6e0e8b7506e11ec4231db586bc9"
+}

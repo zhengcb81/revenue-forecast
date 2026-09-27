@@ -1,0 +1,141 @@
+{
+  "card_id": "WC-6-ADAPTER-DISPATCH",
+  "remediation_id": "REM-95",
+  "attempt_id": "a20260923-01",
+  "binding_status": "bound",
+  "nine_step_step": 2,
+  "parent_agent_id": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102",
+  "owner_order": "「发现的缺陷都要全部修复」(§76 owner 原话) + 「审计中出现的问题每一个都要修复」",
+
+  "paths": {
+    "plan": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit",
+    "attempt": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/WC-6-ADAPTER-DISPATCH/a20260923-01",
+    "product_read_only_root": "C:/Users/郑曾波/Projects/company-wiki",
+    "code_under_test": "<attempt>/iso/cw/src (byte-identical to live CW before step 6; only this copy is edited)",
+    "test_tree_under_test": "<attempt>/iso/cw/tests (byte-identical copy; family runs happen here)",
+    "iso_cell": "%TEMP%/wc6/cells/probes/cwroot",
+    "rf": "C:/Users/郑曾波/Projects/revenue-forecast",
+    "ff": "C:/Users/郑曾波/Projects/filing-fetch"
+  },
+
+  "allowed_write_roots": [
+    "<attempt>/** (this attempt directory)",
+    "%TEMP%/wc6/cells/** (isolated probe cell)",
+    "<attempt>/iso/cw/src/company_wiki/source_catalog/adapter_dispatch.py (step 6 fix)",
+    "<attempt>/iso/cw/src/company_wiki/source_catalog/scanner.py (step 6 fix)"
+  ],
+  "forbidden_writes": [
+    "live company-wiki tree: src/, tests/, config/, .source_catalog/ (production 49.7GB catalog)",
+    "any frozen/reviewed evidence of other cards (I-07-C/**)",
+    "REMEDIATION_REGISTER.md / OWNER_DECISIONS.md / task_plan.md / findings.md / progress.md",
+    "revenue-forecast product tree (scripts/, tools/)"
+  ],
+  "network": "disabled by construction for every bound command (product hermetic env + no downloads)",
+  "git": "NOT USED — this card runs no git command (delivery is changes.diff, difflib-based)",
+
+  "interpreter": {
+    "path": "<attempt>/iso/venv/Scripts/python.exe",
+    "sha256": "0e818a1f9a0b8fbd4e7cc458a07cb7de2ea02ea326e387699a33b92f151242cd",
+    "pyvenv_cfg_sha256": "6ca0d93deaed0477182646c207397a77961e531b837fc96f58bbe3b767d4561c",
+    "version": "3.13.9 (packaged by Anaconda, Inc.)",
+    "pytest": "9.1.1 (bundled in this venv)",
+    "cloned_from": "execution_runs/I-07-C/a20260923-01/iso/venv (lineage I-06-A -> I-00-A template)",
+    "company_wiki_import": "via PYTHONPATH=<attempt>/iso/cw/src (no install, no write to CW; global Miniconda python is NOT on this venv's sys.path)",
+    "global_miniconda_python_forbidden": true
+  },
+
+  "product_sources_before": {
+    "src/company_wiki/source_catalog/adapter_dispatch.py": {
+      "sha256": "6a72e7c552d791f23cec595fe885dd79cfbb1cc4efc082d1acebb04cd4ffbdbe",
+      "bytes": 3799
+    },
+    "src/company_wiki/source_catalog/scanner.py": {
+      "sha256": "f039d5f8d1360bd0e87898c059b7cce68d7ec5d0fad31c9a0196a57a6425e45e",
+      "bytes": 88112
+    },
+    "src/company_wiki/source_catalog/adapters/sidecar.py": {
+      "sha256": "101878793ca71e2842575502d36712dc8b29379544d3607d10e5fd0ea9f1e002",
+      "bytes": 10238
+    },
+    "src/company_wiki/source_catalog/adapters/interface.py": {
+      "sha256": "14bb129f956f95053a889d21e3b30db0fd43b035e92e617fe08f480f09c83140",
+      "bytes": 2592
+    },
+    "src/company_wiki/source_catalog/config.py": {
+      "sha256": "beb07a6d0e97942c81c0ab7a1f82904d0fdcb3ef5447f01659773431b2839064",
+      "bytes": 11841
+    },
+    "src/company_wiki/source_catalog/store.py": {
+      "sha256": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615",
+      "bytes": 63563
+    },
+    "src/company_wiki/source_catalog/service.py": {
+      "sha256": "32b76e6d7f9879a2c7280f20180a8584c61ec11d706dbd70e3d019fd8cb48fa5",
+      "bytes": 64320
+    },
+    "full_manifest": "evidence/source_pins_before.json (503 files under src/+tests/+config, manifest_sha256 41c2271dbaf26bcf2f564d48eb0705e467bbf7b2dc05f85f914fdcced047d739; iso_equals_live=true before any edit)"
+  },
+
+  "live_line_citations_reverified": {
+    "sidecar_promise": "adapters/sidecar.py:4-9 (reason promise at :5-7)",
+    "reason_computed": ["adapters/sidecar.py:60 (missing_sidecar literal)", "adapters/sidecar.py:74 (semicolon-joined problems, else empty dict)"],
+    "reason_vocabulary": "adapters/sidecar.py:90-119 (_validate_sidecar)",
+    "evidence_field": "adapters/interface.py:26 NormalizedCandidate.evidence",
+    "drop_seam": "adapter_dispatch.py:57-76 (_to_scanner_candidate never reads item.evidence; only :74 group_metadata=dict(item.normalized or {}))",
+    "carrier_field_actual": "scanner.py:44-54 _Candidate has NO error field; scanner.py:57-68 _ObservedFile.error (the :67 cited line) ; scanner.py:1089-1116 locations INSERT writes item.error (:1114) with error=excluded.error (:1099)",
+    "known_error_gate": "scanner.py:733-739 existing['error'] == error",
+    "consumers": ["service.py:653-660 query() selects l.error into document.locations[]", "store.py:584-605 legacy status error_details", "scanner.py:738 read-back gate"],
+    "cfg01_refusal_quote": "config.py:127-131 -> \"roots[{index}] adapter_id {adapter_id!r} not registered (CFG-01)\""
+  },
+
+  "carriers": {
+    "i07c_decision_C1": "execution_runs/I-07-C/a20260923-01/decision.md sha256 0fc21ff056267bb4b39213ff30840f9bde7b20eaf4416a600d0ea9aa09ba7340 (20277 B) — C1 wording at :23, probe outcomes at :122-131",
+    "i07c_review": "execution_runs/I-07-C/a20260923-01/review.md sha256 c5021799827f16f3c4ff707aa80f55ffae3f9871717bfdf7e3a26c6af0cf4d14 (27319 B) — F-REV-1 row at :229",
+    "i07c_reviewer_report": "execution_runs/I-07-C/a20260923-01/reviewer_report.md sha256 d5e3e661f9638048e1fc38308f6bb00a7b0b71389d9623bc42b8b54e8e58ecd6 (40851 B) — C1 substance at :79-83, F-REV-1 at :177",
+    "i07c_oracle": "execution_runs/I-07-C/a20260923-01/oracle.md sha256 b051135a17c6f1f94913da445857c5db827ec167ed2abed6c9a6214c84e9d253 (17659 B)",
+    "i07c_handoff": "execution_runs/I-07-C/a20260923-01/handoff.json sha256 550b489da48c5366069cef5248735d4804837469c67ae467348185c7388491f7 (46545 B)",
+    "remediation_register": "REMEDIATION_REGISTER.md sha256 f8cd3ac492c179c7284c891a3c705aca468c563cbcdaebcb2fd53908310aed8f (223551 B) — REM-95 rows at :1502 (§75), :1709 (§84 E 组), :1718 (WC-6 spec 「补救原因持久化至 locations.error」), :1739 (§86 派发 9d8cb419)"
+  },
+
+  "card_inputs": {
+    "task": "WC-6 dispatch text (parent message, 2026-09-23)",
+    "oracle": {"file": "oracle.md", "sha256": "f59aa27dc880cbb7b4adce62ca50f85421fbc38d367c60495997118e0cdfccc4", "bytes": 13183, "frozen_before_first_judged_run": true},
+    "probe_fixture": {"file": "inputs/probe_fixture.json", "sha256": "1836b8b7ef26e1cb82caf5977d0b9b7a55a80d086412658a7017e0e9f206ec9c"},
+    "nine_step": "execution_v2/START_HERE.md:31-41 (固定九步执行法)",
+    "acceptance_contract": "execution_v2/review_and_handoff.md (交付最小目录 + handoff 字段 + reviewer 固定操作)"
+  },
+
+  "harness": {
+    "compare_family.py": "de8c6179db7c4fc43deb45c3135dfb70fc159327f3990a92b9e0af1e47e80385",
+    "compare_runs.py": "6109783738acb4a47b346f991c1046002e042794eadd2b9cc45ca43e5a18e159",
+    "make_changes_diff.py": "89141e5dca17b066c51ed32fc0fca3cc43dd4e6f6cb9c3b45462b2d0f4250c32",
+    "pin_sources.py": "00b4cd3cb20b079f9f91e17d00aa767eb73db2f9b72b920d96eda04d2e04df02",
+    "prepare.py": "6496abd479bc6121c18b26dbba5b74a0efba71a68666daebe4acca1bb9484085",
+    "reason_chain.py": "ab95253c131c34c6bf1a696fb5b3476250e2ee2889a26a39c97642e832a46ea7",
+    "run_family.py": "ba44edbc30c1825850c7fe69dcda7dfce36886bf068bf10c4a6d000414b99443",
+    "run_stage.py": "69b81b3161fa429c172844efe58145dbf1354f905c398bd4286e961dca11df90",
+    "select_family.py": "5a8c821d4242ebcd48f89238080b00778e788e10cbfc77ae1c1c9d2884691e07",
+    "wc6_common.py": "2ddabd45ad9259af535463dd2409a8028db71ac8a781315d66d6a65e110c9a7e",
+    "note": "FINAL values, re-hashed after the harness edits listed in decision.md 'harness corrections'. The values written when binding.json was first frozen were: wc6_common 2513fda2…, prepare a6da5275…, run_stage 7bf5fdc7…, compare_runs f1d362b0… — every later change is disclosed in decision.md and touched ONLY harness/ files (no product file, no oracle, no carrier)."
+  },
+  "fixed_iso_files": {
+    "src/company_wiki/source_catalog/adapter_dispatch.py": "0c5ac1a2c2a4bd53dc10f954bd4d429b2d5511dcc8610b3b901ea11c10754769",
+    "src/company_wiki/source_catalog/scanner.py": "85d96757b627a45e3487197d164eb611a19aa54bcfbfc4eb62ad223bd02a47a9",
+    "byte_snapshot": "<attempt>/iso/fixed/ (used for exact restore after the RED-arm revert and after the mutation arm; both restores verified byte-identical)"
+  },
+  "changes_diff": {
+    "file": "changes.diff",
+    "bytes": 2604,
+    "sha256": "ad88feed773a312ecfa3229144fbdad397e5055d490956fdff16c18e277eb44f",
+    "files": [
+      "src/company_wiki/source_catalog/adapter_dispatch.py",
+      "src/company_wiki/source_catalog/scanner.py"
+    ],
+    "added_lines": 18,
+    "removed_lines": 1
+  },
+
+  "iso_cell_initialization": "schema created by the product's own CatalogStore._initialize (18 tables); all rows created later by the product's own `cli scan` — the harness never writes a catalog row",
+
+  "drift_rule": "if any live CW pin differs from product_sources_before at re-check (pin_sources.py after), STOP: isolation is broken and this attempt reports blocked instead of a fix"
+}

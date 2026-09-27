@@ -1,0 +1,48 @@
+﻿{
+  "cases": [
+    {
+      "case": "argv absent from the manifest",
+      "refused": true,
+      "message_matches": true,
+      "message": "refusing argv not in the manifest command list: ['query', '--document-kind', 'x', '--limit"
+    },
+    {
+      "case": "--limit above the manifest cap",
+      "refused": true,
+      "message_matches": true,
+      "message": "refusing --limit 100: the manifest allows <= 50"
+    },
+    {
+      "case": "per-command invocation cap",
+      "refused": true,
+      "message_matches": true,
+      "message": "refusing invocation 2 of A05-1: the manifest allows 1"
+    },
+    {
+      "case": "total budget (synthetic manifest)",
+      "refused": true,
+      "message": "refusing invocation 3: budget.max_invocations is 2"
+    },
+    {
+      "case": "stop rule on non-zero",
+      "refused": true,
+      "message": "stopping: A05-5 returned non-zero (1); the manifest's stop rule forbids retrying with diff"
+    }
+  ],
+  "ok": true,
+  "parsed": {
+    "per_command_cap": {
+      "A05-1": 1,
+      "A05-2": 5,
+      "A05-3": 1,
+      "A05-4": 6,
+      "A05-5": 6,
+      "A06-1": 1,
+      "A06-2": 1
+    },
+    "per_command_caps_total": 21,
+    "max_limit_flag": 50,
+    "max_invocations": 25,
+    "binding_constraint": "per-command caps"
+  }
+}

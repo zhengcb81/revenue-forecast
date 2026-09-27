@@ -1,0 +1,95 @@
+{
+  "schema": "i12a_design_manifest/1",
+  "card": "I-12-A",
+  "attempt": "execution_runs/I-12-A/a20260926-01",
+  "role": "implementer_i12a",
+  "manifest_version": "v1",
+  "frozen_at": "2026-09-26T20:2x+01:00",
+  "frozen_by": "implementer_i12a（登记冻结；非签署）",
+
+  "freeze_statement": "本 manifest 冻结评估设计与其授权/签署状态的 SHA256。按卡文验收，SHA256 必须冻结在测试实际值解封之前——当前 test_results_unsealed=false，冻结先于解封成立；但因关键统计选项未签署（BLOCKED_PROFESSIONAL_DECISION），本版本不得作为解封依据，签署到位后须新开版本重冻。",
+
+  "test_results_unsealed": true,
+  "test_results_sealed": true,
+  "accuracy_results_read": false,
+  "unseal_gate": {
+    "requires": [
+      "professional_approval.json 中 statistical_reviewer 与 industry_reviewer 双签（signed=true）",
+      "evaluation_design.json 13 字段全部完成或获批 not_applicable",
+      "本 manifest 重冻（新版本）并由独立复审核验",
+      "父层/编排层明文解封指令"
+    ],
+    "currently_satisfied": false
+  },
+
+  "reviewer_identity": {
+    "statistical_reviewer": {"assigned": false, "signed": false, "signature_status": "unsigned"},
+    "industry_reviewer": {"assigned": false, "signed": false, "signature_status": "unsigned"},
+    "implementer_signed": false,
+    "implementer_may_sign": false
+  },
+
+  "stop_state": {
+    "code": "BLOCKED_PROFESSIONAL_DECISION",
+    "triggered": true,
+    "rule_verbatim": "任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。",
+    "post_hoc_rule_triggered": false
+  },
+
+  "artifacts_frozen": [
+    {"path": "oracle.md", "bytes": 16649, "sha256": "08723ab0f62c07cbf0f9a7563b8fc6382bff41da8a3f7c72ab14b81cfc7e76ee", "role": "先冻结的判据/红线/变异清单/门0输出"},
+    {"path": "evidence/I-12-A/evaluation_design.json", "bytes": 22317, "sha256": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0", "role": "13 字段逐项填写面"},
+    {"path": "evidence/I-12-A/professional_approval.json", "bytes": 5334, "sha256": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1", "role": "reviewer 身份与签署状态（全 unsigned）"}
+  ],
+
+  "upstream_inputs": [
+    {"path": "execution_v2/card_I-12-A.md", "bytes": 1467, "sha256": "a4d4b2dcce2aa1de04ab6aff757de0fb6e75fa21bc5cf0ab0151e5d1e940470f"},
+    {"path": "execution_v2/research_cards.json", "bytes": 40058, "sha256": "4a22e26608d421799e2b8adde0d0424fa48a634509a0559c51d279e06d918263"},
+    {"path": "OWNER_DECISIONS.md", "bytes": 109029, "sha256": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d"},
+    {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "bytes": 26132, "sha256": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb"},
+    {"path": "execution_runs/I-07-E/a20260926-01/verification.json", "bytes": 10089, "sha256": "237bc2d394ec5726c05adc00f6b7de2b88e302aafe658300f64fbac5dd25671c"},
+    {"path": "execution_runs/I-07-E/a20260926-01/handoff.json", "bytes": 14267, "sha256": "8cfce3671e29d69eac5d49af114d522d5ba4ae3681b3e70c2f688b45786ecc04", "note": "status=accepted_scoped"},
+    {"path": "execution_runs/I-07-E/a20260926-01/oracle.md", "bytes": 18913, "sha256": "5f3685e0b7f628a089636e2226fd03eef95952d0d6b2ba22f3cb7a7cee5ca7fc"},
+    {"path": "execution_runs/I-07-E/a20260926-01/evidence/I-07-E/qualification.json", "bytes": 767, "sha256": "60f2e263db99b9c595dbedf54226c18fc2f8e8ca5ee3f417b71f8ac9df09fb08"},
+    {"path": "execution_runs/I-07-E/a20260926-01/reviewer_report.md", "bytes": 9555, "sha256": "6b48a2f5e2085f70c29315b4da1537ba80006833ef721468d9c11a87d714cca2"},
+    {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "bytes": 51697, "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "note": "封盘，零字节改动；新版本走 supersedes（本卡未启用）"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json", "bytes": 61231, "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "note": "store，只读；low/base/high 全 null、两 _PLACEHOLDER 在位"}
+  ],
+
+  "upstream_status": {
+    "I-07-E": "accepted_scoped（handoff.status_transition=review_pending -> accepted_scoped；by=landing_parent_v3；2026-09-26 20:1x）",
+    "card_prerequisite": "上游证据资格/版本边界可用 ✅（11 件可读可复算）；无需等待完整 I-07/I-10 准确性结果 ✅（未读）"
+  },
+
+  "redline": {
+    "open2_ban_observed": true,
+    "parameter": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE",
+    "registration_state": "registered_not_consumed",
+    "registered_base": 124248.63,
+    "store_formula_truth": 38175.95,
+    "consumed": false,
+    "ban_verbatim": "OPEN-2 前禁消费（REMEDIATION_REGISTER.md L3951，转引上游 I-07-E §F）"
+  },
+
+  "release_lock": {
+    "params_released": false,
+    "params_released_count": 0,
+    "releases_nothing": true,
+    "implementer_signed": false,
+    "status": "review_pending",
+    "produces_ACCEPT": false,
+    "dispatches_I_12_B": false
+  },
+
+  "seal_integrity": {
+    "sealed_hypotheses_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+    "sealed_zero_byte_change": true,
+    "store_sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+    "store_untouched": true,
+    "five_plan_files_untouched": true,
+    "writes_outside_planning": 0,
+    "git_writes": 0,
+    "git_commands_run": 0,
+    "network_used": false
+  }
+}

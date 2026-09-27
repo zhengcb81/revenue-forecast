@@ -1,0 +1,144 @@
+{
+  "card": "I-11-A",
+  "attempt": "a20260919-01",
+  "attempt_sealed": true,
+  "carrier": "execution_runs/I11A-OPEN11-IND/a20260924-01",
+  "role": "mining_industry_reviewer",
+  "open_item_ruled": "OPEN-11",
+  "authorized_by": {
+    "primary": "OWNER_DECISIONS.md §二十四 第 2 行 (L497), 2026-09-24 深夜, owner 选择「补派」, 执行映射=「授权把 OPEN-11 追加派给已在场的矿业行业 reviewer（同一角色、同一批裁定的延续，出一张新裁定载体）」",
+    "prior_dispatch_context": [
+      "OWNER_DECISIONS.md §十 L116（OPEN-2/3/5/6 指派会计+行业 reviewer）",
+      "OWNER_DECISIONS.md §十 L127（执行行只含 2/3/5/6）",
+      "OWNER_DECISIONS.md §十一 L144（第二批只派 2/3/5/6）"
+    ],
+    "card_assignment": "execution_runs/I-11-A/a20260919-01/decision.md L405 裁定人栏 = 矿业行业 reviewer",
+    "discipline": [
+      "OWNER_DECISIONS.md L502：授权是许可不是动作，不产生 ACCEPT、不解除任何 BLOCKED、不改任何 status",
+      "OWNER_DECISIONS.md L503：选项 2 只授权派工与取证，裁定仍归 reviewer 角色"
+    ]
+  },
+  "ruling_open11": {
+    "result": "RULING",
+    "one_line": "跨期可得性按三段式确认链裁定（取证=owner/filing-fetch、证据=会计 reviewer、口径=矿业行业 reviewer、实现者不得自证）；实质上跨期可得性成立且已在本地连续两期年报实证（FY2024 产销量表：铜 18,105 吨 / 金 1,734 千克；FY2025：铜 11,343 吨 / 金 1,470 千克，六项同比%复算闭环），故不转 STOP_DISCLOSURE_ADAPTATION；但容差与存货桥未解，参数产能约束用法维持 BLOCKED。",
+    "cross_period_availability": "available_verified_locally_two_consecutive_periods",
+    "stop_disclosure_adaptation_triggered": false,
+    "confirmation_chain": {
+      "retrieval_layer": "environment/dependency owner + filing-fetch controlled retrieval (owner authorization required)",
+      "evidence_layer": "accounting/disclosure reviewer (E1/E2 grading + rounding tolerance)",
+      "scope_layer": "mining industry reviewer (this carrier)",
+      "implementer_may_self_attest": false
+    },
+    "reads_of_observation_date": {
+      "A_primary": "本期=FY2026 (2027-03 披露), 上一期=FY2025 → 期末库存 铜 11,343 吨 / 金 1,470 千克，本地已核",
+      "B_literal": "本期=FY2027 (2028-03 披露), 上一期=FY2026 → 尚未披露，届时按取证层归档",
+      "ambiguity_registered_not_modified": true
+    },
+    "does_not_reopen_open": ["OPEN-2", "OPEN-3", "OPEN-5", "OPEN-6"],
+    "touchpoint_with_open6": "H-CN-ZIJIN-VOL-03 threshold_basis=arithmetic_identity 维持不变；零容差假阳性（金差 154 千克）作为 OPEN-11 范围内执行前提移交会计面 BLOCKED-6b；本工位不给容差数、不改 threshold_basis、不动 threshold_review_status"
+  },
+  "produces_approved_frozen": false,
+  "approved_frozen_check_four_requirements": {
+    "source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L226",
+    "1_recomputable_observable": "not_met（本期列未披露 + 容差未定）",
+    "2_verifiable_basis": "not_met（只给口径确认与核对，未给任何阈值/参数数值）",
+    "3_non_implementer_decision_sha256": "not_met（本载体非 hypotheses.json 内的 decision_sha256 记录）",
+    "4_additive_versioning": "not_met（无 hypotheses.json 写入面，封盘 attempt 只读）",
+    "satisfied": "0/4",
+    "additional_reasons": [
+      "存货桥未闭合（state_reason L244；实测金差 154 千克）",
+      "§二十四 L502：本授权不产生任何 ACCEPT、不解除任何 BLOCKED"
+    ]
+  },
+  "blocked": {
+    "any_status_or_state_changed": false,
+    "any_blocked_released": false,
+    "items": [
+      {
+        "id": "B-11-1",
+        "content": "ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027 / ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027 的产能约束用法放行",
+        "missing": "会计面容差裁定（ACCT BLOCKED-6b）+ 存货桥闭合证据（在产品/在途/寄售、并购范围）+ 命题 approved_frozen（decision.decision_sha256 落新版本）+ 若读法 B 则需上一期 FY2026 年报归档",
+        "owner_of_block": "accounting reviewer + writer with hypotheses.json write surface",
+        "released_by_this_carrier": false
+      },
+      {
+        "id": "B-11-2",
+        "content": "判定式「无法凑平」支的可执行性",
+        "missing": "容差值（属会计面 BLOCKED-6b；本工位只交出实证：舍入级 0.3088 千克/0.02pp 与存货桥 154 千克）",
+        "owner_of_block": "accounting reviewer",
+        "released_by_this_carrier": false
+      },
+      {
+        "id": "B-11-3",
+        "content": "observation_date 读法二义性（2027年年度报告 vs 2027-03 前后）",
+        "missing": "实现者/owner 在新版本中澄清；本工位不回改 hypotheses.json",
+        "owner_of_block": "implementer / PLAN owner",
+        "released_by_this_carrier": false
+      }
+    ],
+    "statement": "fail-closed：以上任一项在补齐前，不得被下游当作「已裁定/已放行」。"
+  },
+  "open11_dispatches_gap": {
+    "MERGE_G1_filled": true,
+    "MERGE_G2_OPEN4_still_unassigned": true,
+    "MERGE_G3_OPEN12_still_unassigned": true,
+    "note": "本载体只补 G1（OPEN-11）的派单；G2/G3 归 schema owner 与 PLAN owner/统计 reviewer，本工位不裁。"
+  },
+  "external_sources_used": 8,
+  "external_sources_cited_in_ruling": ["EXT-02", "EXT-03", "EXT-07"],
+  "external_retrieval_window_utc": "2026-09-24T21:22:04Z/2026-09-24T21:27:43Z",
+  "external_snapshot_files_written": 0,
+  "external_evidence_class": "external_retrieval_not_local",
+  "written_files": [
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN11-IND/a20260924-01/ruling.md",
+      "sha256": "c02e255f67f76be9c0a38569454b64cd93f8469d9fc5244e6da2ce7cfc3bb95d",
+      "byte_size": 38930
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN11-IND/a20260924-01/provenance.json",
+      "sha256": "cc448ee763c12ba3c8aacb0d6c4e8c1e8b2b3cc1a756d7d6dd9a86d64024461b",
+      "byte_size": 38204
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN11-IND/a20260924-01/handoff.json",
+      "sha256": null,
+      "byte_size": null,
+      "sha256_note": "self-reference: this file cannot hash itself. Verifier should hash the file on disk after writing."
+    }
+  ],
+  "written_file_count": 3,
+  "git_diff_non_planning": 0,
+  "git_diff": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "baseline_before_write": {"total": 3824, "non_planning": 0},
+    "final_after_write": {"total": 3826, "non_planning": 0},
+    "note": "non-.planning count = 0 both before and after (requirement = 0). total moved 3824 → 3826, both deltas inside .planning/** from concurrent writers; this carrier's 3 files are untracked and therefore do not appear in `git diff HEAD`."
+  },
+  "read_only_verification": {
+    "sealed_attempt_path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01",
+    "key_file_sha256_unchanged": [
+      {"file": "decision.md", "sha256": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951", "unchanged": true},
+      {"file": "review.md", "sha256": "4938e745adc3f32582cc6fd70e3e69197385035d0270807d955d2a7c7776daed", "unchanged": true},
+      {"file": "handoff.json", "sha256": "e4dafd16952b31317aa47f43e14fd73b078497d488be06a594a9de6b73c903c4", "unchanged": true},
+      {"file": "evidence/I-11-A/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "unchanged": true},
+      {"file": "evidence/I-11-A/mechanism_review.md", "sha256": "70c3ca91c16bacedb719fbe8033ee169a490017e9da3099906879e222f8c6d26", "unchanged": true}
+    ],
+    "bytes_written_to_sealed_attempt": 0
+  },
+  "company_wiki_access": {
+    "mode": "read_only",
+    "operations": ["Get-FileHash", "pdftotext -enc UTF-8 (stdout only)"],
+    "bytes_written": 0
+  },
+  "does_not_claim_I11A_acceptance": true,
+  "adds_no_new_domain_judgement": true,
+  "does_not_sign_any_status": true,
+  "does_not_release_any_blocked": true,
+  "re_ruled_open_2_3_5_6": false,
+  "implemented_or_modified_frozen_attempt": false,
+  "git_writes_performed": false,
+  "network_tools_used": ["web_search (failed, TOOL-01)", "web_fetch"],
+  "role_scope_statement": "本载体只出 OPEN-11 一项的行业面裁定；I-11-A 的 status/state/accepted_scoped 以既有独立 reviewer 记录为准，本载体不新增、不修改、不代签。",
+  "generated_utc": "2026-09-24T21:39:06Z"
+}

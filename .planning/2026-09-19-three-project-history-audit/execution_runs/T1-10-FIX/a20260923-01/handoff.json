@@ -1,0 +1,283 @@
+{
+  "card": "T1-10-FIX",
+  "attempt_id": "a20260923-01",
+  "status": "accepted_scoped",
+  "reviewer_status": "accepted_scoped - transcribed from the independent reviewer (N=1) ACCEPT verdict at reviewer_report.md section 1 (lines 14-29; sha256 96847e0a9e2d01db44b882ae38b43541131865c55a95e4171e8bbb7ef4272a69, 30247 B / 318 lines; sidecar reviewer_report.sha256 read-back equal). The reviewer's own filing sentence says its ACCEPT is a review-side ruling that rewrites no status field of this card (carrier lines 43-44), so this status move is bookkeeping transcription by the landing pass, not a reviewer status write: implementer_signed stays false, implementer never signs acceptance, verdict_is_transcribed_not_authored=true. PRE-VERDICT TEXT retained verbatim: unsigned - no acceptance granted by this card; independent acceptance per the repair block's own condition (经独立验收后收口) has not yet occurred",
+  "implementer_signed": false,
+  "status_authority": {
+    "repair_source": "M-T-REVIEW/a20260923-01/landing_package/t1_review_flips.md L28-40 (T1-10 changes_required block), sha256 90bcefb9aadfe098dee1f16802bdf0af9ac7af9b2d74b21cc10a45e07b26c33b",
+    "row_carriers": [
+      "M-T-REVIEW/a20260923-01/reviews/T1_rulings.md:18",
+      "M-T-REVIEW/a20260923-01/acceptance_rulings.md:87",
+      "M-T-REVIEW/a20260923-01/decision.md:53"
+    ],
+    "verbatim_requirement": "补全 claim.basis 校验覆盖面至全部入口（或立修卡并带畸形 basis 负例族 + 裁决机关不可被单例炸毁的负控），经独立验收后收口；建议同步纳入 T1-8 续查的 fabricated-green 负控。",
+    "authority_note": "this card is the 立修卡 the block allows; it does NOT self-close T1-10 - closure requires the independent acceptance the block names"
+  },
+  "mapping": {
+    "production_tree": "unmapped - zero production writes (22/22 input pins re-hashed unchanged after the run, evidence/boundary_check.txt); no natural_window.py exists outside .planning and D-6 promotion remains unauthorized",
+    "delivery": "changes.diff only (zero production merge); landing/apply decision belongs to the parent orchestrator",
+    "defect_2_state": "accepted (M-T-REVIEW) and untouched - provenance carriers byte-identical (expected_superseded.W1 old=2220 still present), changed baseline lines [60,66,199,200] do not intersect the defect-2 zone :174-197"
+  },
+  "deliverables": {
+    "oracle.md": "afe8b61a3274e2473fe08db116e362bacf30e7c99facc90ec13d9453c929e4fb (frozen before any run)",
+    "binding.json": "d43fe18320d0dd0c58db11211da9e21c991a9a7b5a192e1bd055b12ee1d8e3af",
+    "commands.json": "(this file; see steps array; git commands = 0)",
+    "changes.diff": "625ecfe45f3d713a08b5873c6cb3df258c25279d4c5bf3f4e25295cd441199ac (11534 B, +229 -4, two files)",
+    "fixed_sut": "worktree/i14b/iso/natural_window.py sha256 064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d (baseline 7fff6f0c... r2)",
+    "new_negative_family_test": "harness/tests/test_i14b_natural_window_basis_total.py sha256 316e369c9afc9d8df04a425945b97e41378e87f3ac17c721d0ab9ddf90904bfd (23 tests)",
+    "decision.md": "line-cited validation trace (E1/E2/E3) + case table + rgm + negative-control + adjacent findings",
+    "scripts": "verify_t1_10_fix.py (probe/mutation/nc/invariants), make_diff.py (difflib, no git)",
+    "evidence_index": [
+      "evidence/before/probes/family_results.json - RED 32/32 checks (7 crash shapes rc=4, arms A/C batch destroyed, direct TypeErrors)",
+      "evidence/before/suite_basis_total.txt - RED tracebacks, FAILED [B1][B2][B3][B11][B12a/b/c], 16 failed / 7 passed",
+      "evidence/before/{suite_r1,suite_r2}.json - 32/0 and 18/0 green on baseline",
+      "evidence/before/mutations.json - 20/20 mutation arms all-red on baseline (J16 surface)",
+      "evidence/after/probes/family_results.json - GREEN 39/39 checks + adjacent_discovery rows",
+      "evidence/after/suite_basis_total.json - 23 passed / 0 failed (was 7/16)",
+      "evidence/after/cmd-CASES-r2/sut_report.json - byte-identical to before (sha beb06495...)",
+      "evidence/after/mutation/mutation_results.json - MUT-G1/G2 crash returned, MUT-G3 anchors exactly-once",
+      "evidence/after/mutation/scratch/MUT-G4_reviewer_isinstance_alt_alone.json - reviewer alternative alone still crashes (E3/E1)",
+      "evidence/after/negative_control/nc_results.json - PC green; NC-1 18 claims poisoned -> rc=1; NC-2 18 assertions poisoned -> rc=1; SUT survives mass poison rc=0 34/34",
+      "evidence/after/invariants.json - 33/33 PASS",
+      "evidence/boundary_check.txt - 22 pins unchanged, git 0, deletions 0"
+    ]
+  },
+  "proven": [
+    "defect (1) closed at ALL THREE claim.basis entry points (E1 carrier read, E2 J16 guard, E3 basis_registered): total over every JSON value; malformed basis = clean per-case rejection with the neighbouring scalar semantics (reject_claim + R-BASIS-UNKNOWN + basis_registered=false, rc=0, report written, batch fully decided)",
+    "RED: 6 crashing shapes (B1/B2/B3/B11/B12a/b/c) reproduced on baseline (rc=4/internal_error/no report + raw TypeErrors/AttributeErrors); blast arms A and C destroyed 13/13 and 8/8 verdicts",
+    "GREEN: same inputs now clean-rejected; valid-input behaviour byte-identical (r1+r2 SUT reports byte-equal before==after; stable family rows byte-equal); r1/r2 suites 32/18 unchanged; r2 gate 34/34",
+    "MUTATION non-vacuous: reverting either guard brings the crash back (MUT-G1: B1/B2/B11 rc=4; MUT-G2: B3/B12a rc=4); reviewer's isinstance-alone alternative proven insufficient (MUT-G4: crash moves to E3/E1)",
+    "J16 surface intact: mutate.r2.py MUT-15 anchor exactly-once; 20-arm proof all-red before==after with identical per-arm red case sets",
+    "fabricated-green negative control: 18 claim declarations poisoned -> runner rc=1/ok=false (21 mismatches, all 18 window ids) while SUT stays rc=0/34-decided (machinery not blown up); 18 assertion declarations poisoned -> runner rc=1/ok=false (36 mismatches, all 18 ids); positive control green (rc=0) - opposite of T1-8's 11-poison rc=0/11-11 green",
+    "defect (2) untouched: no hunk in :174-197, provenance old=2220/new=1740 intact, all frozen carriers at pinned shas",
+    "sources read-only: 22/22 pins unchanged after the full run"
+  ],
+  "unproven": [
+    "independent acceptance of this repair has NOT happened (the block requires 经独立验收后收口) - this card's status stays review_pending and unsigned",
+    "oracle.md section 11 field-type rc-ownership ruling (schema-level rc=2 vs per-case refusal, reviewer P4 L353) is reviewer-owned and was deliberately NOT self-filled (oracle I-5); the GREEN semantics executed here follow the block's own wording (same refusal semantics as neighbouring scalar validation), which does not substitute for that oracle ruling",
+    "adjacent same-family defects are DISCOVERED but NOT fixed in this card (frozen scope = defect (1) only): F-1 J7 clock_source set-membership non-total (rc=4 on container, NEW - not named by P4), F-2 calendar claim.status carrier crash at :343, F-3 malformed timestamp rc=4 (schema-level, reviewer-owned), plus P4-registered windows/sampled_at/ledger.daily containers - per owner order 「发现的缺陷都要全部修复」 these need follow-up cards routed by the parent",
+    "the r1 frozen gate stays rc=1 on r2-family SUTs (pre-existing expected_superseded delta W1 union 2220->1740, equal before==after) - registered, not a regression, but its greenness is not claimed",
+    "real 30/60/120 observation windows and promotion remain blocked/unauthorized (unchanged from I-14-B D-6 and oracle 11.7)"
+  ],
+  "next_action": "parent: route this attempt to an independent reviewer for the acceptance the M-T-REVIEW block requires; register F-1/F-2 (fixable same-pattern) and F-3 (needs oracle ruling first) as follow-up cards per owner order; decide landing of changes.diff (SUT fix + new negative-family test) as the r3-level revision record",
+  "boundary": {
+    "source_tree_writes": 0,
+    "git_commands": 0,
+    "deletions": 0,
+    "status_transfers": 0,
+    "signatures": "none (implementer_signed=false)",
+    "promotions": 0,
+    "oracle_edits": 0,
+    "defect_2_carrier_edits": 0
+  },
+  "sha256_note": "handoff.json does not register its own hash (self-reference); its sha256 is reported to the parent in the delivery message",
+  "status_before": "review_pending",
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "path_inside_attempt": "execution_runs/T1-10-FIX/a20260923-01/reviewer_report.md",
+    "carrier_sha256": "96847e0a9e2d01db44b882ae38b43541131865c55a95e4171e8bbb7ef4272a69",
+    "carrier_bytes": 30247,
+    "carrier_total_lines": 318,
+    "carrier_encoding": "UTF-8 without BOM (first bytes 35 32 49 = '# T'); LF-only (CR=0); single trailing LF",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "bytes": 85,
+      "content": "96847e0a9e2d01db44b882ae38b43541131865c55a95e4171e8bbb7ef4272a69  reviewer_report.md",
+      "verified": "sidecar read-back == independent read-only re-hash of reviewer_report.md at landing time == dispatch pin; 0 bytes written by this pass"
+    },
+    "verdict_word_written_by_reviewer": "ACCEPT",
+    "verdict_heading_line": 14,
+    "verdict_line": 16,
+    "verdict_line_text": "**ACCEPT —— 缺陷①（claim.basis 枚举校验非全函数）已在其**全部 3 个入口**（E1 载体读取 / E2 J16 守卫 / E3 `basis_registered`）",
+    "verdict_block_byte_region": {
+      "lines": [
+        14,
+        29
+      ],
+      "start": 923,
+      "end_inclusive": 2429,
+      "length": 1507,
+      "sha256": "152c17e202b4fe6fbb090a3207dff53c16d555f0fa8d8730420e0ef34cc819ab"
+    },
+    "f3_ruling_section_byte_region": {
+      "lines": [
+        159,
+        216
+      ],
+      "start": 13980,
+      "end_inclusive": 20135,
+      "length": 6156,
+      "sha256": "9c9b4e0375ef56adea3779573bd11119f7f6594db784723ef2ca7a51f6ef0466"
+    },
+    "f3_amendment_source_byte_region": {
+      "lines": [
+        190,
+        210
+      ],
+      "start": 17226,
+      "end_inclusive": 19600,
+      "length": 2375,
+      "sha256": "a94ba5c24ba7903e9873b5e2d3f59b78bf41643c5dc70ac79822740f99ea853a"
+    },
+    "accept_scope_section_byte_region": {
+      "lines": [
+        275,
+        289
+      ],
+      "start": 26358,
+      "end_inclusive": 28116,
+      "length": 1759,
+      "sha256": "52f58a40094eca417ac05929ecf5cc1b8abb59cd3fa1ddafe5f86b1c511715b6"
+    },
+    "region_definition": "0-based byte offsets against the file as it stands at carrier_sha256; multi-line regions include internal LFs and exclude the region's final line terminator",
+    "status_label_transcribed": "accepted_scoped",
+    "status_label_mapping_note": "the reviewer writes the word ACCEPT (not a status enum); accepted_scoped is the plan's canonical status for an ACCEPT carrying the scoping conditions the reviewer lists in section 11 - REMEDIATION_REGISTER section 114 heading reads 'T1-10-FIX 复审 ACCEPT + F-3 显式裁权（新码+§11.8）+ 三轨并行'",
+    "reviewer": "independent reviewer, N=1 (dispatched by parent session-bfecd191-fbc3-4a66-8ed1-6562479bf102); did not participate in this card's implementation",
+    "reviewer_method_boundary": "read / grep / pwsh read-only + %TEMP% self-runs; zero writes to product and card trees; no network; no state-changing git (carrier lines 6-8); REM-79 self-check rc=0 / 0 violations (carrier lines 315-316)",
+    "authority_chain_for_f3": "I-14-B review.md:353 (P4 asks section 11 to pin the ownership) -> T1-10-FIX oracle.md section 7 E-adj-4 / I-5 (implementation card refuses to self-fill) -> this ruling (independent reviewer of T1-10-FIX, 2026-09-24, N=1) - carrier lines 206-207",
+    "nature": "this status move is a bookkeeping transcription of the carrier verdict - verdict_is_transcribed_not_authored=true; signing face = reviewer_report.md; landing transcription is bookkeeping, not implementer self-sign"
+  },
+  "status_history": [
+    {
+      "round": 1,
+      "status": "review_pending",
+      "set_by": "implementer, before any independent review",
+      "pre_image": "handoff.json pre-image of this pass: 7708 B, sha256 f3f4dd2bc5c08f09f69261a1069a5ec3eedab1206d02951ea6b84195c661a445, file mtime 2026-09-24T00:23",
+      "implementer_signed": false,
+      "reviewer_status_at_that_time": "unsigned - no acceptance granted by this card; independent acceptance per the repair block's own condition (经独立验收后收口) has not yet occurred",
+      "preservation": "the pre-review state is retained verbatim here; the pre-image hash is the value the independent reviewer re-computed and reported at carrier line 42"
+    },
+    {
+      "round": 2,
+      "status": "accepted_scoped",
+      "verdict_word_written_by_reviewer": "ACCEPT",
+      "carrier": "reviewer_report.md",
+      "bytes": 30247,
+      "sha256": "96847e0a9e2d01db44b882ae38b43541131865c55a95e4171e8bbb7ef4272a69",
+      "pinned_by": "reviewer_report.sha256",
+      "granted": "defect (1) CLOSED at all three entries (E1/E2/E3), G4-proven structural closure; non-fabricated-green negative control (PC green + NC-1/NC-2 bidirectional red, 18>=11, opposite direction to T1-8); well-formed behaviour byte-identical; defect (2) zone disjoint; the repair block's four deliverables all met and reproduced by the reviewer's own runs - T1-10 may be closed per the block's own wording (carrier sections 1 and 11)",
+      "rulings": [
+        "F-3 (reviewer-owned, takes (b)+(c), rejects (a)): rc=2 is document/call-domain only (the main() L461-466 shapes, failing before any case is decided); rc=4 is real internal errors only; a malformed single-case field = per-case refusal (rc=0, report written, whole batch decided); new refusal code R-TIMESTAMP-MALFORMED (vocabulary 16 -> 17); oracle section 11.8 amendment required; authorization chain review.md:353 -> I-05 oracle -> this ruling (N=1)",
+        "F-1 (new finding, J7 clock_source) / F-2 (calendar claim.status carrier) / P4 container family (windows, sampled_at, ledger.daily - all rc=4 in the reviewer's own runs) -> T1-F2-FIX (already dispatched by the parent)",
+        "F-3 -> independent repair track T1-F3-FIX; both cards share the section 11.8 text (first lander writes, the other only cites)",
+        "merge order: T1-10 (625ecfe4...) -> T1-F2-FIX -> T1-F3-FIX, no-line-overlap declaration carried in each oracle"
+      ],
+      "not_granted": "no production write, no promotion, no apply/merge of changes.diff, real 30/60/120 observation windows stay blocked, defect (2) scope unchanged, no company forecast released",
+      "reviewer": "independent reviewer N=1, 2026-09-24 (continued-order round); wrote only reviewer_report.md + its sidecar inside this attempt and explicitly rewrote no status field of this card"
+    },
+    {
+      "round": "bookkeeping carrier landing (this pass)",
+      "status": "accepted_scoped",
+      "verdict": null,
+      "note": "pure transcription of the round-2 carrier verdict into review.md / this file / evidence/T1-10-FIX/qualification.json; adds no acceptance of its own; verdict_is_transcribed_not_authored=true; implementer_signed remains false"
+    }
+  ],
+  "verdict_is_transcribed_not_authored": true,
+  "notes": {
+    "pin_drift_1_of_2_M_T_decision": {
+      "pin": "#4 of this card's 22 input pins = M-T-REVIEW/a20260923-01/decision.md",
+      "drift": "91f6f21b... (8473 B) -> 43936ff6... (11672 B), mtime 2026-09-24T05:07:05Z",
+      "cause_register_section_114_line_2099": "我方落定批追加 F-RV 节、:53 载体行与修复源 90bcefb9 未变 = 注记不改判",
+      "cause_register_section_114_line_2103": "并行漂移注记（M-T decision 91f6f21b→43936ff6）=我方 D9 落定批、已由本卡边界两时点0 失配取证覆盖。",
+      "carrier_row_unchanged": "decision.md:53 carrier-line text byte-identical (reviewer re-read it, carrier lines 236-238); repair source t1_review_flips.md pin #1 90bcefb9... still equal",
+      "effect": "annotation only - does NOT re-adjudicate this card's boundary claim (the reviewer's two 0/22-mismatch checkpoints stand)",
+      "attributed_to": "parallel carrier-landing batch by another party during the review window (2026-09-24T05:05-05:13Z); outside this card's run window (ends 2026-09-23T23:24Z); not this card, not the reviewer, not this landing pass"
+    },
+    "pin_drift_2_of_2_I14B_oracle_pin19": {
+      "pin": "#19 of this card's 22 input pins = I-14-B/a20260919-01/oracle.md",
+      "drift": "bdd0407ab577ed4564b8e948d8e3954b663c795dbcd7a3035485424ae753baf3 (26554 B) -> b1eb5d0cf83dd8f059d7f011427447a4b79b211c19167f0190b2c140cb34ade6 (28930 B), delta +2376 B",
+      "cause": "the PARENT landed the reviewer's oracle section 11.8 amendment text as a pure suffix (the amendment block of reviewer_report.md section 7.3, starting '### 11.8 rc 归属裁定：schema 级 vs per-case...') - ordered by REMEDIATION_REGISTER section 114 ('oracle §11.8 追加文原文=其报告 §7.3（父落笔、§1-§10 与 §6.1 冻结四行不动）') and by the reviewer's own hand-off sentence at carrier lines 183-185 ('追加文交父/owner 落到 I-14-B oracle.md 末尾 …… 我不落笔')",
+      "written_by_this_attempt": false,
+      "written_by": "parent session (script .planning/_pwf_tmp/append_i14b_118.py); 6/6 post-conditions OK: prefix_bytes_preserved, section 6.1 frozen four lines (L128-131) sha 06f399e3fa082d9c82377d84a1a0912988c54e42e9ec339c33cb247f20f69f26 unchanged before/after, section 1-10 (L23-L210) sha 9c153b2689593d596ebee5bab2e2b16e6fa97d8d5ef47a3908a5de9b1f710870 unchanged, '## N.' heading count unchanged, exactly one '### 11.8 ', append_is_pure_suffix",
+      "effect": "annotation only - pin #19 mismatch is attributed to the parent's post-review amendment, NOT to this card's run window and NOT to this landing pass",
+      "recorded_separately_from_pin_4": "different pin, different cause - the two drifts must not be merged"
+    },
+    "diff_route": {
+      "changes_diff_path_base": "I-14-B attempt root execution_runs/I-14-B/a20260919-01/ (its layout is exactly iso/ + harness/, so a/iso/natural_window.py and b/harness/tests/test_i14b_natural_window_basis_total.py resolve there)",
+      "left_side_sha": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796 = canonical pin10 I-14-B/iso/natural_window.py, byte-identical (same body) with I-14-H/iso/natural_window.py",
+      "I_14_H": "applicable as-is because of the same body; whether to propagate to I-14-H is the parent's propagation ruling - NOT done here",
+      "I_14_I": "carries a different revision 9edb9515... so the patch cannot be applied directly there; a separate rebase would be needed - parent propagation ruling, NOT done here",
+      "non_production_source": "true - across the whole project natural_window.py exists ONLY inside .planning/ (I-14-B / I-14-H / I-14-I / this card's two worktree copies); this diff is NOT a modification of any production source",
+      "merge_order": "T1-10 (changes.diff sha 625ecfe45f3d713a08b5873c6cb3df258c25279d4c5bf3f4e25295cd441199ac) -> T1-F2-FIX -> T1-F3-FIX",
+      "no_line_overlap_declaration": "the three cards' changed-line sets are declared disjoint and each card carries that declaration in its own oracle; this landing does NOT apply, merge or rebase anything",
+      "application_status": "changes.diff has NOT been applied by anyone here - the reviewer only ran git apply --check (rc=0) in %TEMP% (carrier section 10 item 6); the landing/apply decision belongs to the parent"
+    },
+    "oracle_section_11_8": {
+      "landed": true,
+      "written_by_this_attempt": false,
+      "target": "execution_runs/I-14-B/a20260919-01/oracle.md (canonical)",
+      "payload": "reviewer_report.md section 7.3 amendment block, verbatim",
+      "landed_by": "parent session; this landing pass writes NO oracle file at all",
+      "this_attempt_oracle_untouched": "this card's oracle.md stays byte-identical at afe8b61a3274e2473fe08db116e362bacf30e7c99facc90ec13d9453c929e4fb (10758 B)",
+      "reason": "dispatch rule 2 limits this pass's writes to this attempt directory; the reviewer explicitly assigned the amendment to the parent/owner (carrier lines 183-185); conflict reported to the parent, who ruled C and executed it"
+    },
+    "stale_pre_verdict_text_retained": [
+      "unproven[0] 'independent acceptance of this repair has NOT happened ... this card's status stays review_pending and unsigned' - true at pre-image time, superseded by status_history round 2; retained byte-identical",
+      "unproven[1] 'oracle.md section 11 field-type rc-ownership ruling ... is reviewer-owned and was deliberately NOT self-filled' - now ruled by the reviewer and landed by the parent; retained byte-identical",
+      "next_action 'parent: route this attempt to an independent reviewer ...' - completed by the review; retained byte-identical"
+    ],
+    "json_reparse_verified": true,
+    "git_boundary": "git diff HEAD --name-only non-.planning count = 0 before this landing (measured: 3820 .planning entries, 0 non-.planning); re-measured after the landing and reported in the delivery message; no state-changing git command executed by this pass"
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent of session-19074bf0-0205-4315-af73-9db57597275a), 2026-09-24 (local)",
+    "what_this_pass_did": "verified the carrier read-only (96847e0a... / 30247 B / 318 lines == sidecar read-back == dispatch pin); created review.md with the verdict block, byte-range proofs, verbatim transcription of carrier sections 1 / 7 (findings and dispositions including the F-3 ruling) / 10 / 11 and a bookkeeping section; set handoff status to accepted_scoped with status_before, status_authority, status_history, notes (two separate pin-drift annotations, diff-route annotation, oracle section 11.8 landing record) and verdict_is_transcribed_not_authored; created evidence/T1-10-FIX/qualification.json mirroring the same ruling; wrote 0 bytes to reviewer_report.md and its sidecar, 0 bytes to any oracle, 0 bytes to any other card's files, 0 bytes to any production tree file, 0 git writes",
+    "status_transition": "review_pending -> accepted_scoped",
+    "pre_image_handoff": {
+      "file": "handoff.json",
+      "bytes": 7708,
+      "sha256": "f3f4dd2bc5c08f09f69261a1069a5ec3eedab1206d02951ea6b84195c661a445",
+      "status_at_pre_image": "review_pending",
+      "implementer_signed_at_pre_image": false
+    },
+    "prefix_proof": "the pre-image was recovered and re-hashed byte-exactly after an aborted first write: stripping the appended block and reverting the two authorized value substitutions reproduces sha f3f4dd2bc5c08f09f69261a1069a5ec3eedab1206d02951ea6b84195c661a445 / 7708 B; the bytes before the status line (line 4) are unchanged",
+    "files_written": [
+      "review.md (created; 24335 B; sha256 1ab78c3d712ecef415a297ae768c23a950338a1d7b3ec16d1a062bedf0fd84cc)",
+      "handoff.json (status / status_before / status_authority / status_history / verdict_is_transcribed_not_authored / notes / bookkeeping; pre-image 7708 B / f3f4dd2bc5c08f09f69261a1069a5ec3eedab1206d02951ea6b84195c661a445)",
+      "evidence/T1-10-FIX/qualification.json (created; 8042 B; sha256 f34175b6c97dfcd5d40f31a0a1c4faa2cfd3060c073b3d201f41ec2eba179189)"
+    ],
+    "no_self_sign": true,
+    "verdict_is_transcribed_not_authored": true,
+    "implementer_signed": false
+  },
+  "oracle_pin19_drift": {
+    "pin_index": 19,
+    "pin_name": "I-14-B canonical oracle.md (execution_runs/I-14-B/a20260919-01/oracle.md)",
+    "pin_role": "one of this card's 22 input pins (binding.json pin19); the reviewer re-computed 22/22 equal at both checkpoints",
+    "pre": {
+      "sha256": "bdd0407ab577ed4564b8e948d8e3954b663c795dbcd7a3035485424ae753baf3",
+      "bytes": 26554
+    },
+    "post": {
+      "sha256": "b1eb5d0cf83dd8f059d7f011427447a4b79b211c19167f0190b2c140cb34ade6",
+      "bytes": 28930
+    },
+    "delta_bytes": 2376,
+    "cause": "the parent/owner landed the reviewer's oracle section 11.8 amendment text (verbatim amendment block of reviewer_report.md section 7.3, starting '### 11.8 rc 归属裁定：schema 级 vs per-case...') as a pure suffix append - ordered by REMEDIATION_REGISTER section 114 (oracle §11.8 追加文原文=其报告 §7.3（父落笔、§1-§10 与 §6.1 冻结四行不动）) and by the reviewer's own sentence at carrier lines 183-185 (追加文交父/owner 落到 I-14-B oracle.md 末尾 …… 我不落笔). NOT a change by this card.",
+    "written_by_this_attempt": false,
+    "written_by": "parent session, script .planning/_pwf_tmp/append_i14b_118.py",
+    "six_checks": {
+      "prefix_bytes_preserved": true,
+      "frozen_four_lines_unchanged": true,
+      "section_1_to_10_unchanged": true,
+      "heading_count_unchanged": true,
+      "h118_exactly_once": true,
+      "append_is_pure_suffix": true
+    },
+    "six_checks_detail": {
+      "frozen_four_lines": "I-14-B oracle.md section 6.1 lines 128-131 sha 06f399e3fa082d9c82377d84a1a0912988c54e42e9ec339c33cb247f20f69f26, identical before and after",
+      "section_1_to_10": "I-14-B oracle.md lines 23-210 sha 9c153b2689593d596ebee5bab2e2b16e6fa97d8d5ef47a3908a5de9b1f710870, identical before and after",
+      "heading_count": "the number of '## N.' headings is unchanged",
+      "h118": "exactly one '### 11.8 ' occurrence after the append",
+      "append_is_pure_suffix": "the pre-image file is a strict byte prefix of the post-image file"
+    },
+    "window": "post-review, outside this card's run window (ends 2026-09-23T23:24Z) and outside this landing pass's write scope (this pass writes only inside this attempt directory)",
+    "effect": "annotation only - pin #19's mismatch is attributed to the parent's amendment and does NOT re-adjudicate T1-10-FIX's boundary claim (register section 114 wording: 注记不改判)",
+    "parallel_with_pin4": {
+      "other_pin": "#4 of 22 = M-T-REVIEW/a20260923-01/decision.md",
+      "other_drift": "91f6f21b... (8473 B) -> 43936ff6... (11672 B), mtime 2026-09-24T05:07:05Z; cause = a parallel carrier-landing batch appended an F-RV section (the pinned decision.md:53 carrier line and the repair source 90bcefb9... are unchanged)",
+      "relationship": "same nature (a post-hoc append by another party), different cause - registered separately as notes.pin_drift_1_of_2_M_T_decision and notes.pin_drift_2_of_2_I14B_oracle_pin19; MUST NOT be merged into a single entry"
+    }
+  }
+}

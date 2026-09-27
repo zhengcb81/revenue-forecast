@@ -1,0 +1,84 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "730d399b1a27df73ceea84d5004c24b2b4d34d25",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1102* + reachability/mutation/island probes",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 zr1102 套件；三门扫描零命中；mutation_patrol 可运行）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1102_adversarial_audit.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "9 passed in 3.10s (C1 reachability no orphans; C2 hardcode re-audit zero; C3 no test islands + spot collection; C4 mutation patrol + fake-counter guard; C5 no silent-pass/bypass)"
+    },
+    {
+      "command": "ruff check tests/test_zr1102_adversarial_audit.py (E741 x2 manual)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "2914c54 test(ZR-1102) — 1 file +178"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1042 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T19:50:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: every scripts/*.py is either a CLI (main/run entrypoint) or a library module importable and referenced from scripts/ or tests/ — zero orphans (schema_optin referenced from tests, mixed_recognition from test_zr707, asset_ownership from scripts). C2: final_ratchet hardcode/legacy/encoding all zero on current tree. C3: every tests/test_*.py defines real tests (def test_ or pytest.fixture); spot collect-only on CA-306 + ZR-1101 files no errors. C4: mutation_patrol.patrol(seed=42, samples=3) returns mutation results; docstring company labels never count as code (scanner treats docstring lines as non-code). C5: no '|| true' in any workflow; no module-level skip without an opt-in marker (FILING_FETCH_E2E_DOWNLOAD/CODEGRAPH_CLI).",
+      "id": "ZR1102-IMPL-001",
+      "severity": "info",
+      "title": "对抗式三仓审查验收（reachability/硬编码复扫/测试孤岛/伪计数/旁路）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr1102_adversarial_audit.py（9 tests）：C1 生产 reachability（CLI + 库模块无孤儿）；C2 独立复扫；C3 孤岛检测 + 抽查收集；C4 mutation patrol + docstring 标签不计；C5 无 silent-pass/无 skip 缺 opt-in。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr1102_adversarial_audit.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1102/**"
+    ]
+  },
+  "implementer": "zr1102-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 2914c54（revenue HEAD = ZR-1102 实现 commit，parent 730d399）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实用户旅程复验为 ZR-1103 卡（部署/reviewer 动作），本卡验收审查机制。"
+  ],
+  "objective": "Phase 11 第二卡：独立 reviewer 对抗式三仓代码/架构/旁路审查（不复用实施者结论；生产 reachability、硬编码、测试孤岛、伪计数全部复核）",
+  "plan_sha256": "cfab543d3a6f89441b89ef6facfa31a4aa46e7860043aa63d16ea1433ca074d3",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "2914c5465429621a68002d26f0f687391eb4ca74",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr1102_adversarial_audit.py (new 9 tests)；assurance/unified_completion/receipts/ZR-1102/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1102_adversarial_audit.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1102/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1102",
+  "canonical_hash": "89bfc07b98b5258f39ba6eaa5f33b129a065122b252623ed5fbd6efcdc3ecefe"
+}

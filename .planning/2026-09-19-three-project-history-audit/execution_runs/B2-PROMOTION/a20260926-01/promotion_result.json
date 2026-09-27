@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "card": "B2-PROMOTION",
+  "attempt_id": "a20260926-01",
+  "role": "promotion_executor",
+  "result": "blocked",
+  "result_reason": "git apply 在本会话不可写产品仓：--check rc=0 通过，但 git apply rc=128 且把两个目标文件删掉后写回失败；随后 5 种回滚手段全部被沙箱拒绝（Access denied），无法自行还原。晋升未完成，需在可写产品仓的会话用 preimage/ 还原后再重跑本卡。",
+  "promoted": false,
+  "committed": false,
+
+  "authorization": {
+    "change": {
+      "source": "OWNER_DECISIONS.md §三十 (L648)",
+      "owner_quote_verbatim": "授权扩闸到 8-K（建议）"
+    },
+    "promotion": {
+      "source_card_face": "OWNER_DECISIONS.md 最新一问（2026-09-26 12:07）",
+      "source_actually_found": "REMEDIATION_REGISTER.md §一五二.C L3695",
+      "owner_quote_verbatim": "授权晋升（建议）",
+      "provenance_line_verbatim": "### C. ⭐ owner 授权 `B2` 晋升（2026-09-26 12:07 原话「授权晋升（建议）」）"
+    }
+  },
+
+  "review_artifacts_verified": {
+    "reviewer_report.md": {"bytes": 20209, "sha256": "74590637384fafc81f1baf4dcedb85dfd99d15e37137ce183f71f4fe857014b1", "verdict_line": "VERDICT: ACCEPT", "findings": "P1=0, 2xP2, 3xP3", "match_card": true},
+    "handoff.json": {"bytes": 43773, "sha256": "0e48d0aef9a4fbb8b3b39851a4ff621a9fd1f24927d526866dbd7a4d96069dc3", "status": "accepted_scoped", "status_authority_present": true, "match_card": true},
+    "changes.diff": {"bytes": 11379, "sha256": "731bbeeb77d31eec8c2b57ef8eb65418f403480273b25d4638029ca5da8e803e", "file_count": 2, "diff_added_removed": ["+6/-3", "+121/-7"], "match_card": true},
+    "regression/6k_regression.md": {"bytes": 3626, "sha256": "03953176f615da3378d324f50636c334fbbdca24152d7b1e60c43d1d727fc99b"},
+    "mutations/mutations.json": {"bytes": 4722, "sha256": "c6888258bfca2d6ebff83c1fc0b2a0efb0b2c723fd82f3ade72e6820250b8893", "mutations": 6, "mismatch": 0},
+    "self_attest.md": {"bytes": 5130, "sha256": "a1fb6b37a93fcf10cb72bac6737b28cd7840bb8c22d0076d0f859216c4e797a7"}
+  },
+
+  "apply": {
+    "diff": "execution_runs/B2-EXHIBIT-GATE-8K/a20260926-01/changes.diff",
+    "command": "git apply --check -p1 <diff>  ;  git apply -p1 <diff>",
+    "cwd": "C:\\Users\\郑曾波\\Projects",
+    "check_rc": 0,
+    "apply_rc": 128,
+    "apply_stderr": "error: unable to write file 'dayu-agent/dayu-agent/dayu/fins/downloaders/sec_downloader.py' mode 100644: No such file or directory",
+    "applied": false,
+    "no_3way_used": true
+  },
+
+  "files": [
+    {
+      "path": "dayu-agent/dayu-agent/dayu/fins/downloaders/sec_downloader.py",
+      "repo_root": "C:\\Users\\郑曾波\\Projects\\dayu-agent\\dayu-agent",
+      "preimage_sha256": "543d005c25fabea3431704293e05e79ebfa76de71f031bf6dc6106113e7a5da0",
+      "preimage_bytes": 74235,
+      "preimage_copy_path": "preimage/dayu-agent/dayu-agent/dayu/fins/downloaders/sec_downloader.py",
+      "preimage_copy_verified": true,
+      "expected_postimage_sha256": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b",
+      "expected_postimage_bytes": 74543,
+      "actual_postimage_sha256": null,
+      "actual_postimage_bytes": null,
+      "post_apply_state": "MISSING (deleted by git apply, write-back denied)"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/dayu_cli_adapter.py",
+      "repo_root": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+      "preimage_sha256": "bcbbbfd955306c3ed7ca4febff03813ea7dfafeb068c114873bfbfd3456eab5a",
+      "preimage_bytes": 19775,
+      "preimage_copy_path": "preimage/company-wiki/src/company_wiki/source_catalog/dayu_cli_adapter.py",
+      "preimage_copy_verified": true,
+      "expected_postimage_sha256": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+      "expected_postimage_bytes": 25328,
+      "actual_postimage_sha256": null,
+      "actual_postimage_bytes": null,
+      "post_apply_state": "MISSING (deleted by git apply, write-back denied)"
+    }
+  ],
+  "postimage_matches_registered": false,
+
+  "sixk_regression": {
+    "executed": false,
+    "ok": false,
+    "reason": "无后像状态可测：两文件在盘上缺失，产品代码不可导入（dayu/cw 测试均 ModuleNotFoundError）。",
+    "expected": {
+      "dayu_6k_payload_sha256_before_and_after": "649d906c3bc03bccd19c51849e78363646f36c7636ce8753173a884086def2bd",
+      "dayu_6k_payload_bytes": 3318,
+      "adapter_6k_result_sha256_before_and_after": "0c9000a11443dba1a505534d80dfb3f2d8717bcef705734a494d02e89ef41b7c",
+      "adapter_10k_result_sha256": "7507acadb06e691ba923ce1d9acb689d9df122ebff491af5fa009696ca9f3109"
+    },
+    "frozen_before_files": ["results/6k_frozen_before.json (3415 B)", "results/adapter_frozen_before.json (2220 B)"]
+  },
+
+  "tests": {
+    "in_product_repo": true,
+    "expected": {"dayu_test_sec_downloader": "41 passed", "company_wiki_dayu_adapter_3files": "14 passed"},
+    "dayu_test_sec_downloader": {"rc": 2, "ok": false, "detail": "collection error: ModuleNotFoundError: No module named 'dayu.fins.downloaders.sec_downloader'（目标文件已缺失）"},
+    "company_wiki_dayu_adapter_3files": {"rc": 2, "ok": false, "detail": "collection error: ModuleNotFoundError: No module named 'company_wiki.source_catalog.dayu_cli_adapter'（目标文件已缺失）"},
+    "preapply_baseline_note": "应用前 company-wiki 三文件 --collect-only = 14 collected rc=0（环境可跑）；dayu 应用前未跑（应用后即失败）。"
+  },
+
+  "git_diff": {
+    "dayu_agent": ["dayu/fins/downloaders/sec_downloader.py  (D)"],
+    "company_wiki": [
+      "CLAUDE.md  (M, 既有基线 2026-09-23, 非本卡)",
+      "README.md  (M, 既有基线 2026-09-23, 非本卡)",
+      "src/company_wiki/source_catalog/artifact_dag.py  (M, 既有基线 2026-09-23, 非本卡)",
+      "src/company_wiki/source_catalog/dayu_cli_adapter.py  (D, 本卡 git apply 误删)"
+    ],
+    "revenue_forecast_non_planning": 0,
+    "note": "本卡净意图改动 = 恰 2 文件；实际状态为两文件被删（非晋升后像）。"
+  },
+
+  "preexisting_dirty_baseline_company_wiki": [
+    {"path": "CLAUDE.md", "bytes": 7907, "sha256": "963869fa08c042306b3baf12b56f3ecfdb592cd88b4e619565e97dccb64c23be", "mtime": "2026-09-23 13:08:38"},
+    {"path": "README.md", "bytes": 13877, "sha256": "fdc75e0a72da96d5c7cad07c702b9c6249a0cdfbd4638a4f7050dcedde2f4dd2", "mtime": "2026-09-23 13:08:38"},
+    {"path": "src/company_wiki/source_catalog/artifact_dag.py", "bytes": 2814, "sha256": "0c8b1d6d1a28c94f27ea8ffe52a98d67b84f0a49653931b9c9317e27da6c20d1", "mtime": "2026-09-23 13:08:38"}
+  ],
+
+  "rollback_attempts_by_executor": [
+    {"method": "Copy-Item (preimage -> product)", "rc": "denied", "error": "Access to the path ... is denied."},
+    {"method": "[System.IO.File]::WriteAllBytes", "rc": "denied", "error": "Access to the path ... is denied."},
+    {"method": "python shutil.copyfile", "rc": "denied", "error": "PermissionError [Errno 13]"},
+    {"method": "git restore --worktree -- <path>", "rc": 128, "error": "Unable to create '.git/index.lock': Permission denied"},
+    {"method": "git checkout-index -f -- <path>", "rc": 1, "error": "unable to create file ...: Permission denied"}
+  ],
+  "restore_required_by": "可写产品仓的会话/进程（本会话 workspace-write + 审批禁用，子代理权限固定不可扩）",
+
+  "fail_closed": {
+    "1_check_failed": false,
+    "2_postimage_mismatch": true,
+    "3_sixk_changed": null,
+    "4_test_failed": true,
+    "verdict": "blocked（回滚未能在本会话完成，已移交可写会话执行 rollback_procedure.md）"
+  },
+
+  "written_files": [
+    "execution_runs/B2-PROMOTION/a20260926-01/oracle.md",
+    "execution_runs/B2-PROMOTION/a20260926-01/preimage/dayu-agent/dayu-agent/dayu/fins/downloaders/sec_downloader.py",
+    "execution_runs/B2-PROMOTION/a20260926-01/preimage/company-wiki/src/company_wiki/source_catalog/dayu_cli_adapter.py",
+    "execution_runs/B2-PROMOTION/a20260926-01/verification/b2_promo_shim.py",
+    "execution_runs/B2-PROMOTION/a20260926-01/promotion_result.json",
+    "execution_runs/B2-PROMOTION/a20260926-01/rollback_procedure.md",
+    "execution_runs/B2-PROMOTION/a20260926-01/incident_git_apply_deletion.md",
+    "execution_runs/B2-PROMOTION/a20260926-01/handoff.json"
+  ],
+  "scratch_dir": {
+    "path": "_tmp/",
+    "note": "本卡 scratch（同在产出目录内）：TEMP/TMP 重定向目标、python mkdir mode 探针、两次还原尝试的中间副本；其中 5 个由 python mkdtemp 创建的空目录因沙箱 mode-0o700 问题本会话不可读也不可删，已无法清理，均为无内容空壳。"
+  },
+  "no_third_file_written": false,
+  "no_third_file_written_note": "唯一越出写入面的操作 = git apply 删除了两个授权文件本身（写回被拒）；未创建/修改任何其他产品文件；revenue-forecast 非 .planning diff = 0。"
+}

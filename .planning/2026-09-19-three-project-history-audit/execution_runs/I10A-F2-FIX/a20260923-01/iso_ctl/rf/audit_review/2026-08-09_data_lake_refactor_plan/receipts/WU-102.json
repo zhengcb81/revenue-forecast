@@ -1,0 +1,67 @@
+{
+  "wu_id": "WU-102",
+  "plan_version": "2.1-full-refactor-execution-cards",
+  "plan_hash": "见 baselines/WU-101-baseline.json plan_hash",
+  "owner": "company-wiki tests/fixtures/helpers（source_lake_v2）",
+  "reviewer": "agent-skills:code-reviewer ab2a6c3fbd5ccf5d7",
+  "status": "accepted（一审 9/9：diff 3 文件、4 tests、hash 5/5、确定性、FIX-01/03/04、真实根探针、类型边界）",
+  "baseline_commit": {
+    "revenue": "183b1cf",
+    "filing": "8714a66",
+    "wiki": "d4a3553"
+  },
+  "current_commit": {
+    "revenue": "2ed37b6",
+    "filing": "8714a66",
+    "wiki": "111f214"
+  },
+  "allowed_files": [
+    "company-wiki tests/fixtures/source_lake_v2/**",
+    "company-wiki tests/contract/test_source_lake_v2_fixture.py"
+  ],
+  "actual_changed_files": [
+    "wiki: tests/fixtures/source_lake_v2/{__init__,factory}.py",
+    "wiki: tests/contract/test_source_lake_v2_fixture.py"
+  ],
+  "red_test_ids": [
+    "test_fix01_no_real_absolute_paths",
+    "test_fix02_tamper_byte_breaks_manifest",
+    "test_fix03_future_root_no_special_case",
+    "test_fix04_no_external_side_effects"
+  ],
+  "red_exit_code": 1,
+  "focused_commands": [
+    "cd company-wiki && python -m pytest tests/contract/test_source_lake_v2_fixture.py -q（4 passed）"
+  ],
+  "mutation_proof": [
+    {
+      "mutation_id": "M-FIX-02",
+      "description": "篡改文件字节不更新 manifest",
+      "expected_failure_test": "manifest sha256 与实际不符",
+      "observed_failure": "test_fix02 断言 actual != entry[sha256]（GREEN 态下篡改后必然失败）",
+      "revert_proof": "重建 fixture 即恢复"
+    },
+    {
+      "mutation_id": "M-FIX-01",
+      "description": "把真实 Dropbox 路径写入 fixture",
+      "expected_failure_test": "FIX-01 泄漏检测",
+      "observed_failure": "REAL_PATH_FRAGMENTS 断言（reviewer 复验 47 文件 + sidecar JSON 零泄漏）",
+      "revert_proof": "合成路径恒无泄漏"
+    }
+  ],
+  "network_calls": 0,
+  "download_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "external_write_calls": 0,
+  "canonical_write_calls": 0,
+  "real_root_probe": "companies 33122 / dayu 3673 / dropbox 10334 前后一致（reviewer 重跑确认）",
+  "reviewer_findings": [
+    {
+      "severity": "P3",
+      "desc": "PDF 常量字节共享致 sha256 相同",
+      "resolution": "accepted（fixture 自洽；已记录 runbook 知悉）"
+    }
+  ],
+  "admission_decision": "accepted"
+}

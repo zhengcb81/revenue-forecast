@@ -1,0 +1,177 @@
+{
+  "card_id": "WC-4-RC120",
+  "card": "WC-4 = F12-RC120",
+  "attempt_id": "a20260923-01",
+  "plan": "2026-09-19-three-project-history-audit",
+  "date": "2026-09-24",
+  "created_by": "carrier-landing bookkeeping pass (transcription only)",
+  "creation_note": "created by the carrier-landing 簿记 pass. Before this pass the attempt had NO review.md and NO evidence/WC-4-RC120/ directory (attempt root held binding.json / changes.diff / commands.md / decision.md / DELIVERABLES.sha256 / handoff.json / handoff.md / oracle.md / oracle.sha256 / recovery.md / reviewer_report.md / reviewer_report.sha256 / reviewer_report_r2.md / reviewer_report_r2.sha256 + evidence/ harness/ iso/). This file adds no acceptance of its own.",
+
+  "formula": "not_applicable_with_reason",
+  "formula_reason": "本卡不是公式卡：被判据化的是产品 CLI 在 stdout 断管（F12）故障下的**退出码终态处理域**（`_finalize_exit_status` + `_neutralize_broken_stream` + `__main__` 包装）之**证据与判据**——红绿链 rc、三条变异臂 rc、产品测试 9 条判据断言、复杂度棘轮 18==18、ruff、changes.diff 字节、前缀/台账/清单复算；没有任何公式、情景或数值推导被判据化。本 pass 更只做簿记转录。故 formula 记 not_applicable_with_reason，理由如本字段——不授予任何公式资格，也不提升任何既有卡的 formula 状态。",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+
+  "verdict": "ACCEPT",
+  "verdict_line_text": "VERDICT: ACCEPT",
+  "verdict_counts": "P1=0 / P2=1 (N-01) / P3=1 (N-02) + a set of 9 unverified items (report section 13); P1=0 => verdict is ACCEPT, not changes_required",
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+
+  "granted_scope": [
+    "rc 终态处理域（iso CLI `405fec6d7ea23324bd671e144caa994889e076104d67560bc3b1d0f830599bda`）的**证据与判据**：断读端 5 臂（`--help` / `-h` / `--validate-only` / `--version` / 无参数 usage）raw rc 全 **2**、stderr 逐字 `error: stdout flush failed: [Errno 22] Invalid argument`、`Exception ignored` **0 命中**、读端正常 5 臂 **0/0/0/0/2**、读端 stdout 形状 **5/5 全对**、读端 `--help` stdout **1612 B 与生产 pristine 逐字节同**",
+    "F-01 关闭证据：修前态 `4e6b64a7…` 在 %TEMP% 隔离副本被复审亲测复现（`--help`=**120**、`-h`=**120**、stderr 只有 `Exception ignored on flushing sys.stdout:` + `OSError: [Errno 22] Invalid argument` 两行、**无产品文本**）；修后态为 **2**；生产 pristine `2a2dfede…` 对照 help/h/validate/version 全 **120**、usage=**2**（非本卡回归）",
+    "三变异臂全打红的**证据与判据**：变异①回退包装 `4e6b64a7…` ⇒ `--help`=**120**、产品测试 **1F/8P**；变异②只 catch 不换流 `99fc716a…` ⇒ help/h/validate/version 全 **120**、stderr 产品文本与 `Exception ignored` **并存**、**3F/6P**；变异③只中和不 catch（F-08 补臂）`4f9d7803…` ⇒ help/h/validate/version 全 **0**、无产品文本、无 `Exception ignored`（∈{0,2} 但违反 G-2）、**4F/5P**",
+    "产品测试 9 条的**判据与结果**：修前 **1F/8P** → 修后 **9 passed rc=0**；测试文件 7270 B / 195 行 / 9 个 `def test_` / `083b92a535bf43f0ea0863a979579c2e6f55c4eb1e63abbefa7a7b35e1d533aa`；绕行（`--noconftest` + 显式 `REVENUE_PUBLICATION_REGISTRY`）**只改运行方式不改判据**（复审独立复现 `tempfile.mkdtemp()` 建得进、写入即 `PermissionError: [Errno 13]`）",
+    "棘轮 / lint 的**证据与判据**：iso r2 / iso pristine / 生产 / r1 **四者均 18（`main:18`）== frozen 18**、`OWN_FILE_RATCHET_OK rc=0`；ruff **0.15.18** 对两个交付文件 `All checks passed!`",
+    "`changes.diff` 的**字节判据**：10114 B / `d1a79376c518eab300400c54badf91e141ed4b50ae0623a6fefe52900ad2856d` / 恰 2 文件 / hunks 恰为 `@@ -125,0 +126,44 @@` + `@@ -127 +171,15 @@` + `@@ -0,0 +1,195 @@`（r1/r2 增量可辨）；复审用 `difflib n=0` 独立重建 → **与盘上逐字节相同**",
+    "两起簿记事故还原的**证据**：`commands.md` 前 13251 B = `bde20daace862f4f080793cb44697a23ce230086cce5464ed65d6b5de4aa7eae` == r1 钉值、`byte[13250]=0x0a` 尾换行确已还原；`DELIVERABLES.sha256` 前 725 B = `c7d8c583eeea3a754ae8272d54e36757896a93c71a977447370c53c5b4cb5ce8` == r1 钉值、**9 CRLF / 9 LF** 逐字节复原；两次失败产物已改名归档且 `commands` 明写不作证据",
+    "裁决的**转录面**：`review.md`（新建）、`handoff.json` 的 status 面（`review_pending → accepted_scoped` + `status_before` / `status_authority` / `status_history` 两条 / `reviewer_status` / `carried_findings` / `unverified` 9 条）、本 `qualification.json`"
+  ],
+  "not_granted": [
+    "**生产闭环** —— 生产 `scripts/revenue_forecast.py` 仍为 pre-image `2a2dfede7941b0fac972d802d25eb71f798c1ebdb83226bbf8528481b9669e36`（5333 B，== pin `prod_cli_before`），实测 help/h/validate/version 全 120；修复只在 iso 隔离副本；**不可记生产 CLOSED**",
+    "**晋升** —— 把 `changes.diff` 合并进生产是 **owner / 合并批的独立决定**，本卡与本 pass 均不授予、不执行",
+    "**家族 64 passed / 48 subtests** —— r2 与本轮复审**均未重跑**（沙箱 `tempfile`/`tmp_path` 被拒，写入即 `PermissionError 13`）；只做了字节级核验与静态不相交，**不授予「本会话重跑得 64/48」这一事实**",
+    "**单模块覆盖门 `revenue_forecast.py ≥60%`** —— 未复测（依赖直调 `main()` 的进程内覆盖，本会话不可运行）；r1 的 73% 既未推翻也未再确认，r2 的 38% 子集不作门结论；**不授予该门的任何通过判定**",
+    "**Linux/macOS 断管码值** —— 未测；卡面已披露、复审照录，**不授予任何跨平台码值结论**",
+    "**disclosure accuracy** —— `disclosure_adaptation` 保持 `unmapped`、`accuracy` 保持 `unproven`，本 pass 不做任何 accuracy 判定",
+    "**公式资格** —— `formula = not_applicable_with_reason`（见上）",
+    "**N-01 的降级** —— `changes.diff` 0-context 导致 plain `git apply --check` rc=1 是否降为 P3，处置权归**父 / 合并批**，本 pass **不裁**",
+    "**N-02 的措辞修正** —— `handoff.md` L85 / `commands.md` R2-步骤6 / `decision.md` L124 三处措辞属既有 carrier，本 pass 只读不改，修正归父",
+    "**登记册 / 五份计划文件的任何写入** —— 归父（父统一折入）；本 pass 零写入",
+    "**任何 status 之外既有裁决字节的改动** —— `oracle.md`/`oracle.sha256`/`binding.json`/`changes.diff`/`commands.md`/`decision.md`/`handoff.md`/`DELIVERABLES.sha256`/`evidence/**`/`harness/**`/`iso/**`/两份复审报告及其 sha 侧车 一律只读"
+  ],
+
+  "status_authority": {
+    "status": "accepted_scoped",
+    "status_before": "review_pending",
+    "status_transition": "review_pending -> accepted_scoped",
+    "status_rounds": 2,
+    "carrier": "reviewer_report_r2.md",
+    "carrier_bytes": 28878,
+    "carrier_sha256": "ddbd536c47b54822e1ff2af79f02d48632907b54cc057dcda1f43f6cf80ca001",
+    "carrier_pin_sidecar": "reviewer_report_r2.sha256 (88 B; sha256 of the sidecar itself = cfed6122474bba684638a4f8e26f70052c589f6a791dbe55bda9069f59fb959c; content 'ddbd536c…ca001  reviewer_report_r2.md' MATCHES an independent re-hash at landing)",
+    "carrier_total_lines": 232,
+    "verdict_line": 232,
+    "verdict_line_byte_region_inclusive": [28862, 28877],
+    "verdict_line_length": 16,
+    "verdict_line_sha256": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4",
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "region_definition": "0-based byte offsets against reviewer_report_r2.md at the recorded sha256; single-line region includes its trailing LF; multi-line regions include internal LFs and exclude the final LF",
+    "sections": {
+      "s2_F01_closure_lines_19_57": {"start": 2324, "end_inclusive": 5633, "length": 3310, "sha256": "78a89734b470ba3b146ad9c1201ff172689675a5ade7503461803a160ead2c24"},
+      "s4_three_mutation_arms_lines_71_82": {"start": 6331, "end_inclusive": 7969, "length": 1639, "sha256": "276b6728aa46994d47746e3d7b5a8ebcc713e72821500774f27ecae18a8627ad"},
+      "s5_product_tests_lines_84_97": {"start": 7973, "end_inclusive": 9775, "length": 1803, "sha256": "e1d4342e904be2d84ea2933f997af34dfd47c24c09e63ec444fe926d25010bd6"},
+      "s6_ratchet_lint_lines_99_112": {"start": 9779, "end_inclusive": 10699, "length": 921, "sha256": "8b0baaf6beaa28555c4342b9ddb513cf5fb043fe8e14b2c7076b963b0bc9679d"},
+      "s7_changes_diff_lines_114_129": {"start": 10703, "end_inclusive": 12615, "length": 1913, "sha256": "d8d73c980b8246e4a41c1cd97026c373c3651aa1f21f740062d7bb73959fdb53"},
+      "s8_F02_F08_lines_131_143": {"start": 12619, "end_inclusive": 17632, "length": 5014, "sha256": "0ec482ae98d8978ce85fb79b3ad32ead007412bc62ca16ec0698c6797a0bbc62"},
+      "s9_bookkeeping_incidents_lines_145_167": {"start": 17636, "end_inclusive": 19761, "length": 2126, "sha256": "45d04a961a61a4cbc20e85d147a33ba3cd26519f2426410bd3df04b6ce74ad39"},
+      "s12_findings_lines_191_199": {"start": 21936, "end_inclusive": 24496, "length": 2561, "sha256": "70fb50f35587e4f97e37012517b281b2e2c343c3b77241f91ae15f0e998d652e"},
+      "s12_N01_row_line_195": {"start": 22050, "end_inclusive": 22996, "length": 947, "sha256": "046e8eb9d3874d2d9e4421046b2c94f8b217d39057cecc111220dfd1c561296c"},
+      "s12_N02_row_line_196": {"start": 22998, "end_inclusive": 23872, "length": 875, "sha256": "d967832dcc5e2d76ae5f20c6a0fe393ac7a373e26af5c34b7f9e993d8bd698d9"},
+      "s13_unverified_lines_201_211": {"start": 24500, "end_inclusive": 26589, "length": 2090, "sha256": "783962e29b81e8d1d66981a98ebac49bd8a0d323d9f39afd3919cc387bc8e815"},
+      "s15_conclusion_lines_224_232": {"start": 27720, "end_inclusive": 28875, "length": 1156, "sha256": "1118b4a9253efbb23a53dc8b65791a003bda07cf20d7f74ce8b555dd27e4ac8c"}
+    },
+    "round1_history": {
+      "carrier": "reviewer_report.md",
+      "carrier_bytes": 26073,
+      "carrier_sha256": "9941660588641a31a22449365982392a28f4fc5b2451a69ca8587f38ad3074e8",
+      "carrier_total_lines": 161,
+      "verdict_line": 161,
+      "verdict_line_byte_region_inclusive": [26047, 26072],
+      "verdict_line_length": 26,
+      "verdict_line_sha256": "501cc91c3dc9566eeb7032d7c8aa2faccb5b68a41bf1582d848c4193f32d9488",
+      "verdict_line_text": "VERDICT: changes_required",
+      "counts": "P1=1 (F-01) / P2=0 / P3=7 (F-02..F-08)",
+      "pin_sidecar": "reviewer_report.sha256 (85 B)",
+      "status_at_landing": "untouched — 0 bytes written; retained read-only as history"
+    },
+    "mirror": "handoff.json: status=accepted_scoped, status_before=review_pending, status_transition=review_pending -> accepted_scoped, status_rounds=2, status_history=[round 1 changes_required, round 2 ACCEPT], implementer_signed=false, verdict_is_transcribed_not_authored=true; full mirror in handoff.json > status_authority",
+    "transcription_only": "this file, review.md and handoff.json transcribe the carrier verdict and add no acceptance of their own"
+  },
+
+  "carried_findings": [
+    {
+      "id": "N-01",
+      "level": "P2",
+      "title": "changes.diff 是 0-context（difflib n=0），plain `git apply --check` = rc=1，须 `--unidiff-zero`",
+      "verbatim_must_carry": "r2 把 `changes.diff` 改成 `difflib n=0`（0-context）后，**plain `git apply --check` = rc=1**（`error: patch failed: scripts/revenue_forecast.py:127` / `patch does not apply`；隔离副本与本仓各跑一次相同；`core.autocrlf=false/true` 结果相同）；须 **`git apply --check --unidiff-zero`** 才 rc=0（实打后 LF 归一产物恰为 `405fec6d…`/`083b92a5…`）。**对照：r1 旧 diff `f0a01489…`（n=3）plain check rc=0。** 卡面 R2-C10b 只披露了 n=0 的「hunk 分离」动机，**未披露对 plain git apply 的影响**；卡面自身的 `verify_diff` 是字节重建、**从未用 git**。⇒ **若合并批本就用 `--unidiff-zero` 或非 git 工具，可降 P3** —— 此处置权归父/合并批，**你不裁**。",
+      "disposition": "carried to parent / merge batch verbatim; NO downgrade adjudicated here",
+      "blocking": false,
+      "source": "reviewer_report_r2.md line 195 + section 7 (lines 114-129)"
+    },
+    {
+      "id": "N-02",
+      "level": "P3",
+      "title": "F-06 处置位置记录不实（三处写「decision.md §5 补列 315」，但 §5/L71 仍只列 87,332,360）",
+      "verbatim_must_carry": "F-06 处置**位置记录不实** —— `handoff.md:85`、`handoff.json` findings[F-06]、`commands.md` R2-步骤6 三处都写「`decision.md` **§5** 补列 `test_publication_pipeline.py:315`」，但 §5（L71）逐字仍只列 `87,332,360`，全文唯一 `315` 在 **L124（§7.5 摘要）**；§5 在 append-only r1 前缀内（前 11542 B = `fad182c0…` 已复算）**结构上不可能改**。**实体事实复测为真**：生产 `tests/` 同正则**恰 8 文件 / 15 行**，`test_publication_pipeline.py` = 87,315,332,360。",
+      "disposition": "carried to parent; wording fix belongs to the parent (handoff.md / commands.md / decision.md are read-only existing carriers here)",
+      "blocking": false,
+      "source": "reviewer_report_r2.md line 196 + section 8 row F-06"
+    },
+    {"id": "F-02", "level": "P3", "round": 1, "title": "commands.md Q3 行 rc 记 0 与 evidence 末行 fail-under=84 不符", "disposition": "CLOSED in r2 (erratum 0/2/0; evidence bytes untouched; reviewer reproduced the rc triple with coverage 7.12.0)", "blocking": false, "source": "reviewer_report.md section 3 + reviewer_report_r2.md section 8"},
+    {"id": "F-03", "level": "P3", "round": 1, "title": "binding.json 19 pins 9 DRIFT / 10 MATCH，行级漂移", "disposition": "CLOSED in r2 (pin_drift erratum, pin table not rewritten, drift_ids identical to r1, all 50 pinned lines still verbatim); readings MUST be timestamped", "blocking": false, "source": "reviewer_report.md section 3 + reviewer_report_r2.md section 8"},
+    {"id": "F-04", "level": "P3", "round": 1, "title": "C1b 产物 mtime 晚于 oracle 冻结却列在「冻结之前」", "disposition": "CLOSED in r2 (timing correction appended; post-freeze artifact; 'ran before freeze' not asserted)", "blocking": false, "source": "reviewer_report.md section 3 + reviewer_report_r2.md section 8"},
+    {"id": "F-05", "level": "P3", "round": 1, "title": "handoff 称 report_SA-DEFECT.md:165 被更正，但封存件字节未动", "disposition": "CLOSED in r2 (wording corrected to 'carried by oracle sec5 / decision sec1; sealed bytes untouched'; pin 26047 B / 374a5770… re-verified)", "blocking": false, "source": "reviewer_report.md section 3 + reviewer_report_r2.md section 8"},
+    {"id": "F-06", "level": "P3", "round": 1, "title": "decision.md §5 家族 grep 行号清单漏 test_publication_pipeline.py:315", "disposition": "entity facts TRUE but disposition recorded at the wrong location => escalated to N-02 (P3); §5 is inside the append-only r1 prefix and structurally cannot be amended", "blocking": false, "source": "reviewer_report.md section 3 + reviewer_report_r2.md section 8"},
+    {"id": "F-07", "level": "P3", "round": 1, "title": "r1 首轮 probe 字节被末轮同名覆盖未留存", "disposition": "CLOSED in r2 (disclosure appended + rename-archive-before-overwrite rule; mtime 00:14:27 < 00:32:41 re-measured; archived artifacts marked NOT as evidence)", "blocking": false, "source": "reviewer_report.md section 3 + reviewer_report_r2.md section 8"},
+    {"id": "F-08", "level": "P3", "round": 1, "title": "冻结变异矩阵缺「只中和不 catch」臂", "disposition": "CLOSED in r2 (supplementary arm 4f9d7803… run: all 0, no product text, 4F/5P; frozen M-1/M-2 and oracle sec4 byte-identical)", "blocking": false, "source": "reviewer_report.md section 3 + reviewer_report_r2.md section 4 MUT-C / section 8"}
+  ],
+  "carried_findings_counts": "carried: P2=1 (N-01), P3=1 (N-02) + r1 dispositions F-02..F-08 (7, all closed, F-06 -> N-02); r1's only P1 F-01 closed in round 2; report counts at verdict: P1=0 / P2=1 / P3=1",
+
+  "unverified": [
+    "1. family 8-file 64 passed / 48 subtests NOT re-run in r2 nor in this review (sandbox denies tempfile/tmp_path; write raises PermissionError 13); byte-level verification of r1's 5 family_* artifacts + static disjointness only — NOT proven: a same-session rerun yielding 64/48",
+    "2. per-module coverage gate revenue_forecast.py >= 60% NOT re-measured (in-process main() coverage unrunnable here); r1's 73% neither overturned nor re-confirmed; r2's 38% subset not adopted as a gate result",
+    "3. Linux/macOS broken-pipe exit codes NOT tested",
+    "4. SystemExit-in-main combinations other than --help/-h NOT enumerated (mapping int->original / None->0 / otherwise->2 read in source, only argparse's 0/2 exercised)",
+    "5. broken pipe on the stderr sink itself NOT constructed (oracle sec6 non-goal)",
+    "6. real in-repo `git apply` NOT executed (only --check; the actual --unidiff-zero apply ran in an isolated copy)",
+    "7. r2's archived pin reading (pins_r2.json 10/9) cannot be reproduced verbatim at the reviewer's timepoint — only the archive + mtimes establish it as the truth then",
+    "8. the tree-sha algorithm of production_zero_write_*.txt NOT replicated (card gives no manifest); substituted by git diff HEAD --name-only non-.planning=0 + production CLI sha==pin + new test absent from production",
+    "9. `git status` NOT used (forbidden here), so the card's '2 pre-existing untracked items' were not re-checked"
+  ],
+  "unverified_source": "reviewer_report_r2.md section 13 (lines 201-211), item-by-item transcription",
+
+  "pin_reading_timepoint_note": "r2's 10 MATCH / 9 DRIFT = readings around 22:03 (pins_r2.json archived; drift_ids identical to r1's partition); the reviewer's 22:38 on-disk reading = 8 MATCH / 11 DRIFT, the 2 extra being OWNER_DECISIONS.md (appended 22:15:34) and REMEDIATION_REGISTER.md (re-appended 22:13:25), both after the r2 recomputation. All 50 pinned lines are still verbatim on disk (register delta=+3, closure delta=0, OWNER_DECISIONS delta=0). Any later quoting of pin numbers MUST state the timepoint; informational, not a defect of this card.",
+
+  "reviewer_rc_inventory": [
+    "pre-fix state 4e6b64a7… (broken stdout pipe): --help=120, -h=120, validate=2, version=2, usage=2, reader 5 arms 0/0/0/0/2",
+    "post-fix state 405fec6d… (broken stdout pipe): --help=2, -h=2, validate=2, version=2, usage=2, reader 5 arms 0/0/0/0/2; 'Exception ignored' 0 hits; reader stdout shape 5/5; reader --help stdout 1612 B == pristine",
+    "production pristine 2a2dfede…: --help=120, -h=120, validate=120, version=120, usage=2",
+    "MUT-A 4e6b64a7… : --help=120; pytest 1 failed, 8 passed",
+    "MUT-B 99fc716a… : help/h/validate/version=120, usage=2; pytest 3 failed, 6 passed",
+    "MUT-C 4f9d7803… : help/h/validate/version=0, usage=2; pytest 4 failed, 5 passed",
+    "product tests: pre-fix 1 failed 8 passed (pytest rc=1); post-fix 9 passed (pytest rc=0); production pristine 7 failed 2 passed (rc=1)",
+    "ratchet: iso_fixed=18 / iso_pristine=18 / production=18 / r1_state=18 / frozen_max=18, OWN_FILE_RATCHET_OK, raw rc=0",
+    "ruff 0.15.18 on two delivery files -> All checks passed!, raw rc=0",
+    "git apply --check <changes.diff> -> raw rc=1 (both isolated copy and this repo; autocrlf false/true identical)",
+    "git apply --check --unidiff-zero -> raw rc=0; real apply (isolated) -> exactly 405fec6d… / 083b92a5… after LF normalization",
+    "r1 old diff f0a01489… (n=3) plain git apply --check -> rc=0",
+    "coverage (7.12.0, independently re-run): coverage run=0 / coverage report --fail-under=84=2 / --fail-under=0=0",
+    "git -c core.quotepath=false diff HEAD --name-only -> TOTAL=3826, non-.planning = 0"
+  ],
+  "reviewer_rc_inventory_note": "transcribed from reviewer_report_r2.md sections 2/4/5/6/7/11 without altering any number; this pass re-ran nothing",
+
+  "files_and_hashes": {
+    "review.md": {"state": "created (did not exist before this pass)", "note": "its own sha256/bytes are reported in the pass result (self-hash cannot be embedded)"},
+    "handoff.json": {"state": "status face transcribed", "sha256_before": "19a2969e237c8b5abd18518653c97744d6d4f60be4c04746dac974f4e3c75e9d", "bytes_before": 6575, "status_before": "review_pending", "note": "post-write sha256/bytes and json re-parse reported in the pass result"},
+    "qualification.json": {"state": "created", "note": "this file; its own sha256/bytes are reported in the pass result (self-hash cannot be embedded)"},
+    "carrier_r2": {"file": "reviewer_report_r2.md", "bytes": 28878, "sha256": "ddbd536c47b54822e1ff2af79f02d48632907b54cc057dcda1f43f6cf80ca001", "bytes_written_by_this_pass": 0},
+    "carrier_r1": {"file": "reviewer_report.md", "bytes": 26073, "sha256": "9941660588641a31a22449365982392a28f4fc5b2451a69ca8587f38ad3074e8", "bytes_written_by_this_pass": 0},
+    "untouched_originals": ["reviewer_report.md", "reviewer_report.sha256", "reviewer_report_r2.md", "reviewer_report_r2.sha256", "oracle.md", "oracle.sha256", "binding.json", "changes.diff", "commands.md", "decision.md", "handoff.md", "DELIVERABLES.sha256", "recovery.md", "evidence/MANIFEST.sha256", "evidence/pins_freeze.txt", "evidence/* (all pre-existing)", "harness/*", "iso/*"]
+  },
+
+  "bookkeeping": {
+    "write_surface": "exactly 3 files, all inside this attempt: review.md (new), handoff.json (status face), evidence/WC-4-RC120/qualification.json (new; directory created)",
+    "never_written": ["REMEDIATION_REGISTER.md", "progress.md", "findings.md", "task_plan.md", "OWNER_DECISIONS.md", "任何 .planning 之外的文件", "reviewer_report.md + reviewer_report.sha256", "reviewer_report_r2.md + reviewer_report_r2.sha256", "本 attempt 的既有 carrier（oracle/binding/changes.diff/commands/decision/handoff.md/DELIVERABLES/evidence 既有字节）", "其他卡的任何文件"],
+    "git": "no git write operation; only `git -c core.quotepath=false diff HEAD --name-only` (read-only) — non-.planning count = 0 at end of pass; `git status` NOT used (forbidden in this repo)",
+    "network": "none",
+    "tests": "none run",
+    "json_reparse": "handoff.json and this file re-parsed with python json.load after writing (OK)",
+    "implementer_signed": false,
+    "verdict_is_transcribed_not_authored": true
+  },
+
+  "note": "Created by the carrier-landing bookkeeping pass. verdict = ACCEPT (reviewer_report_r2.md:232, sha256 ddbd536c47b54822e1ff2af79f02d48632907b54cc057dcda1f43f6cf80ca001, 28878 B, pinned by reviewer_report_r2.sha256), counts P1=0 / P2=1 (N-01) / P3=1 (N-02) + 9 unverified items; round-1 changes_required (reviewer_report.md:161, 26073 B / 99416605…4e8, P1=F-01) preserved read-only as history in status_history. formula = not_applicable_with_reason (this card's adjudicated object is the evidence and criteria of the CLI exit-status terminal handling domain, not a formula), disclosure_adaptation stays unmapped, accuracy stays unproven. granted_scope = the evidence and criteria of the rc terminal domain (fix before/after, three mutation arms, 9 product tests, ratchet, ruff, changes.diff bytes, prefix/ledger restoration) and the transcription of the verdict; not_granted = production closure, promotion, family 64/48, the per-module coverage gate >=60%, Linux/macOS broken-pipe codes, disclosure accuracy, formula qualification, the N-01 downgrade, the N-02 wording fix, and any register/plan-file write. P2 N-01 and P3 N-02 are carried verbatim and must not be weakened. This file adds no acceptance of its own."
+}

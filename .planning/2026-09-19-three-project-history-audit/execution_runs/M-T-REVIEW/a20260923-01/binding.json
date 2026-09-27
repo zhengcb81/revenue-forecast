@@ -1,0 +1,55 @@
+{
+  "card_id": "M-T-REVIEW",
+  "attempt_id": "a20260923-01",
+  "role": "INDEPENDENT REVIEWER (sampled-verification review agency) — never the implementer",
+  "binding_status": "bound",
+  "scope": {
+    "full_per_card_rulings": "M01-M20",
+    "sampled_finals": "M21-M31 (deep sample M21/M25/M31; name-check M22/M23/M24/M26/M27/M28/M29/M30)",
+    "t1_surface": "every T1 number with an attempt (T1-1/2, T1-5..T1-8, T1-10, T1-13..T1-27); owner-decision-only numbers (T1-3/4/9/11/12/28) registered not_applicable_with_reason rows",
+    "scope_revision_note": "parent scope correction 2026-09-23: missing independent acceptance is M01-M20 (not M01-M28); M21-M31 already hold valid finals — re-verified by this reviewer's own grep before sampling"
+  },
+  "frozen_review_oracle": {
+    "path": "oracle.md",
+    "sha256": "ef68aaaf3e161dc0a88e35ef0503fc54336cd0bf1b4de650f090c3d16c851da9",
+    "frozen_before_first_check": true
+  },
+  "verdict_vocabulary": {
+    "accepted_scoped": "accepted within an explicit scope",
+    "accepted_with_conditions": "equivalent to accepted_scoped + carried findings (BOOKKEEP-REPAIR mapping note, D4)",
+    "changes_required": "substantive or bookkeeping defect requiring repair before acceptance",
+    "insufficient_evidence": "evidence insufficient to accept (house: blocked in its evidence-shortage form; missing samples are never NA)"
+  },
+  "read_only_roots": [
+    "execution_runs/<every reviewed card attempt> (RF/plan READ-ONLY; this attempt writes only under execution_runs/M-T-REVIEW/a20260923-01)",
+    "execution_v2 (spec sources)",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast (production repo, read-only hashing only)"
+  ],
+  "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M-T-REVIEW\\a20260923-01"
+  ],
+  "forbidden": [
+    "writing into any old attempt, the plan root docs, or any of the three production repos",
+    "implementing fixes (this session only rules and produces a landing_package for the parent landing pass)",
+    "signing as anything other than the independent reviewer"
+  ],
+  "frozen_sample_rule": {
+    "m_cards": ["evidence/<card>/input.json", "evidence/<card>/oracle.json", "evidence/<card>/cases.json"],
+    "t1_cards": ["primary verification JSON", "handoff.json", "decision.md"],
+    "iso_spot": "iso/checkout_scripts/model_registry.py + model_extensions.py vs binding pins and current production",
+    "pin_sources_tried_in_order": ["handoff.input_hashes (both key styles)", "evidence_hashes.json.files", "artifact_sha256.txt"],
+    "crlf_note": "pins found to be CRLF-form; a pin is credited as reproduced when it matches raw or CRLF re-serialization, with the form recorded per file"
+  },
+  "production_anchor_observed": {
+    "scripts/model_registry.py": {
+      "card_anchor": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "production_now": "62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081",
+      "note": "anchor drift post-dates all reviewed attempts; qualifications remain scoped to the anchor (finding F-MT-03)"
+    },
+    "scripts/model_extensions.py": {
+      "card_anchor": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+      "production_now": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+      "note": "unchanged"
+    }
+  }
+}

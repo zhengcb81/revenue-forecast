@@ -1,0 +1,25 @@
+# F-02 coverage rc probe (WC-4 r2)
+
+## coverage run -m mod.py (fail_under=84 in .coveragerc)
+raw_rc=0
+1
+
+
+## coverage report (same .coveragerc, fail_under=84)
+raw_rc=2
+Name     Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------
+mod.py      15     10      8      1    26%   4, 8-16
+----------------------------------------------------
+TOTAL       15     10      8      1    26%
+Coverage failure: total of 26 is less than fail-under=84
+
+
+## coverage report --fail-under=0 (control: same data, no gate)
+raw_rc=0
+Name     Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------
+mod.py      15     10      8      1    26%   4, 8-16
+----------------------------------------------------
+TOTAL       15     10      8      1    26%
+

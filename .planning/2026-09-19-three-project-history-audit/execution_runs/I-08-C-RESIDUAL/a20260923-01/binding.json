@@ -1,0 +1,60 @@
+{
+  "card_id": "I-08-C-RESIDUAL",
+  "attempt_id": "a20260923-01",
+  "plan": "2026-09-19-three-project-history-audit",
+  "bound_at": "2026-09-23 (pre-run; step 2 of the nine-step protocol, recorded after the stricter oracle-first freeze disclosed in oracle.md)",
+  "role": "closure/bookkeeping agent; implementer does NOT self-sign accepted",
+
+  "paths": {
+    "plan_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+    "attempt_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-C-RESIDUAL\\a20260923-01",
+    "rf_production_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+    "read_only_referenced_attempts": [
+      "execution_runs/I-08-C/a20260919-01/**",
+      "execution_runs/B1-I08C-product-fixes/a20260921-01/**",
+      "execution_runs/B1-PREREQ/a20260922-01/**",
+      "execution_runs/I-14-D/**, execution_runs/PROMOTION-PREP/**, execution_runs/PROMOTION-EXEC/**",
+      "execution_runs/AUDIT-DESIGN/**, execution_runs/AUDIT-GOAL/**, execution_runs/AUDIT-INTEGRITY/**"
+    ],
+    "allowed_write_roots": [
+      "<attempt_root>/** (all deliverables and evidence)",
+      "%TEMP%\\I08C-RESIDUAL-a20260923-01\\** (scratch copies and pytest basetemps only)"
+    ],
+    "forbidden_writes": "every execution_runs/** tree other than this attempt; the three production repos (goal discipline 05 生产零合并); git index/object writes anywhere"
+  },
+
+  "isolation": {
+    "method": "no file of any referenced attempt is executed in place and no file of any referenced attempt is written. All re-executions run against %TEMP% copies (iso/fixed/rf -> fixed copy; reviewer/scratch/mutations/M6/rf -> M6 copy). Test modules imported read-only with PYTHONDONTWRITEBYTECODE=1 and python -B; pytest run with -p no:cacheprovider --noconftest --basetemp under %TEMP%.",
+    "registry_redirect": "REVENUE_PUBLICATION_REGISTRY -> %TEMP%\\I08C-RESIDUAL-a20260923-01\\run\\runner\\registry\\publications.jsonl for every pytest invocation (plus the test modules' own autouse isolated_env redirect)",
+    "network": "disabled for every bound command (no command reaches the network)"
+  },
+
+  "interpreter": {
+    "path": "C:\\Miniconda\\python.exe",
+    "expected": "3.13.9 (the interpreter B1/I-08-C bound); pytest 9.1.1; cryptography 50.0.1 (only needed by the re-run arms)"
+  },
+
+  "input_hashes": {
+    "note": "full per-file manifests of the referenced attempts are captured by command I08CR-c0 into evidence/manifests_before.json; the pins below are the inputs this card's oracle cites",
+    "B1_reviewer_report.md (accepted_with_conditions carrier)": "REPORT_SHA256 73feb0593b44ffeb448bc5f5b1cea9800f4cc9fb59f40ca19e9aae8038c104fa (self-pinning rule per reviewer/REPORT_PIN_VALUE.txt)",
+    "I-08-C review.md (round-1 changes_required)": "c1a8fd11b20f911c7407943dabe70bc493a9cb2959719c13beef21f8e7f1f2a3 (13700-byte prefix after the round-2 append)",
+    "I-08-C reviewer_report_r2.md (round-2 accepted_scoped carrier)": "ee5046a5bafb8b75c3550d0abdb0520b337af894acb191302dd7c09a1179dc9a (13285 B, sidecar-matching)",
+    "I-08-C handoff.json (before-hash, must remain unchanged)": "captured at I08CR-c0 and asserted at I08CR-c12 (value lands in evidence/manifests_before.json and verdict_supersession_20260923.md)",
+    "B1 oracle.md prefixes r1-r4": "81af124047eef968d6db84b8f4c1c1b22e77a5f4781b2664d2ca6e8555f74281 (27697) / 60ecbca7a008d60b8634bfed1cec56b801a86e6486f639c54e19cd257867f1d4 (31081) / 231e79768bd71ce95730ed10539d1e5865caa659c0dccf942bf7f2b99d8e3523 (35840) / fadf8a5ebfdb7ca771031790e0fa1701a31fedf15becbf6da8c9cbaf5460fbae (39287)",
+    "OWNER_DECISIONS.md (authority texts, at freeze)": "4bed42c685579fb114ade92c4a63192af4c84db9933b8b24329e2f1e88f7c083",
+    "REMEDIATION_REGISTER.md (at freeze)": "535152f0fd7bd44b5fe830d416bf8e6ee8ecd744d99c464f94d2f7849c17a088",
+    "execution_v2/card_I-08-C.md (design line)": "3c14d03de76d97b681e4fbbd84e9a67c7f2796292df46224ca15738843538e52 (per AUDIT-DESIGN baseline A)"
+  },
+
+  "current_source_hashes": {
+    "PRODUCTION_scripts/revenue_publication.py": "bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0 (post-promotion fixed bytes — measured 2026-09-23 pre-run)",
+    "PRODUCTION_scripts/revenue_core.py": "8a761498f5eb729e4f4227f2a315d709253f8b96acf7baa7253ab425e73ac883 (post-promotion)",
+    "PRODUCTION_scripts/revenue_report.py": "212f00598feca408dc429d4c7a5332131ce25f1165b079347e4b295345df7d3b (post-promotion)",
+    "PRODUCTION_scripts/publication_registry.py": "29aaae4f9864d9c4dbb92720744daa49315a2980dfa158b0e3666cb86d886344",
+    "PRODUCTION_scripts/contracts/evidence.py": "054e364a7a5c428f43c6378f795429751b26f24af8de07e22da4b3d0ac8a4561",
+    "note": "the three promoted hashes equal B1's fixed_tree_hashes exactly (REM-01/02/03 promoted under owner B: 全批); this card writes none of them"
+  },
+
+  "frozen_expectations_reference": "oracle.md (frozen before any judged run), sections 3 and 5",
+  "binding_status": "bound"
+}

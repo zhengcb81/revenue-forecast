@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ORIGIN-BYTES",
+  "attempt_id": "a20260925-01",
+  "purpose": "判定 filing-fetch 既有机制能否覆盖 Exhibit 99.1（form 8-K 附件）的 origin 字节取回；本文件为只读代码与盘上语料扫描，不含任何联网",
+  "scan_utc_window": {"start": "2026-09-25T22:55:00Z", "end": "2026-09-25T23:02:00Z", "note": "本地只读扫描（代码阅读 + 盘上 meta.json 解析），无联网；窗口为工位读秒的粗粒度上下界"},
+  "conclusion": "BLOCKED_MECHANISM_GAP：form 8-K 的 exhibit 文件不在 filing-fetch（dayu US 适配器）的下载与落盘覆盖面内",
+  "code_evidence": [
+    {
+      "file": "C:/Users/郑曾波/Projects/dayu-agent/dayu-agent/dayu/fins/downloaders/sec_downloader.py",
+      "line_1094": "include_exhibits: 是否包含 exhibit 文件（6-K）。",
+      "line_1105": "filenames: list[str] = [primary_document]",
+      "line_1112": "if include_exhibits and form_type == \"6-K\":",
+      "line_1124": "if include_exhibits and form_type == \"6-K\":",
+      "lines_1125_1128": "filenames.extend(pick_form_document_files(index_items, form_type)) / pick_form_document_files(index_header_documents, form_type) / pick_exhibit_files(index_items) / pick_exhibit_files(index_header_documents)",
+      "meaning": "远端文件清单 = 主文档 + XBRL；exhibit 只在 form_type == \"6-K\" 时加入 —— 8-K 永远不含 exhibit"
+    },
+    {
+      "file": "C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/dayu_cli_adapter.py",
+      "line_366_368": "allowed_forms = _forms_for_request(request); if form_type not in allowed_forms: return None",
+      "line_389": "file_entry = self._us_primary_entry(value)",
+      "lines_474_490": "_us_primary_entry 只按 meta.primary_document 在 files[] 中取唯一一个条目",
+      "lines_245_298": "fetch() 只把该唯一 primary 资产 sha256 校验后 copyfile 到 staging",
+      "meaning": "每个 filing 只产出 1 个 candidate = primary document；即便 files[] 里有 exhibit 也不会被复制"
+    },
+    {
+      "file": "C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/canonical_writer.py",
+      "lines_90_101": "_destination_subdirectory: annual_report/semi_annual_report/quarterly_report -> financial_reports/*; prospectus/broker_research/research/investor_relations/news -> 各自子目录; 其余 -> Path(\"other\")",
+      "meaning": "8-K（current_report / regulatory_filing 等非三种财报 kind）即便下载成功也会落 companies/{entity}/raw/other/，不会落 raw/financial_reports/{kind}/；除非把它谎报为 quarterly_report（本工位拒绝）"
+    },
+    {
+      "file": "C:/Users/郑曾波/.agents/skills/filing-fetch/SKILL.md",
+      "quote": "New bytes are written into companies/{entity}/raw/financial_reports/{annual|semi_annual|quarterly}/ (kind-to-subdirectory mapping; other kinds use their own subdirectory) with a <file>.source.json provenance sidecar.",
+      "meaning": "filing-fetch 自述：非三种财报 kind 走『各自子目录』；落点仍在 companies/{entity}/raw/ 之内（符合 OWNER_DECISIONS §二十七 #2 的 raw/… 表述）"
+    }
+  ],
+  "empirical_scan": {
+    "method": "枚举 C:/Users/郑曾波/Projects/dayu-agent/workspace/portfolio/*/filings/*/meta.json，解析 files[].name，匹配 /ex99|ex-99|dex991|exhibit/",
+    "total_meta_scanned": 449,
+    "metas_with_exhibit_like_file": 23,
+    "forms_with_exhibits": {"6-K": 23},
+    "forms_without_exhibits_incl_8K": "8-K（含 MSFT 全部 8-K：fil_0000950170-25-061032 / -25-100226 / 0001193125-25-154103 / -25-225125 / -25-256310 / -25-311196 / -26-027198 / -26-191457 / -26-224155 / -26-258667 等）files[] 仅含 primary + XBRL，0 例 exhibit",
+    "interpretation": "与代码闸门完全一致：exhibit 下载只对 6-K 生效",
+    "target_accession_absent": {
+      "accession": "0001193125-26-380280",
+      "present_in_dayu_portfolio": false,
+      "note": "目标 8-K（2026-09-02）尚未被 dayu 下载过；dayu MSFT filings 目录最新 2026 accession 为 0001193125-26-258667（2026-06-05）"
+    }
+  },
+  "route_matrix": [
+    {"route": "filing-fetch resolve（只读 reuse，company_raw / dayu_portfolio / directory 三根）", "reachable": true, "result": "not_found（A1，downloads=0）—— catalog 与 dayu portfolio 内均无目标 filing"},
+    {"route": "filing-fetch ensure --allow-download（US -> dayu 适配器）-> 8-K primary d291965d8k.htm", "reachable_in_principle": true, "reachable_in_this_session": false, "result": "BLOCKED_B1：company-wiki 落盘点在本会话 workspace-write 策略下不可写（A2 fatal / A3 探针）"},
+    {"route": "filing-fetch ensure --allow-download -> Exhibit 99.1 d291965dex991.htm", "reachable_in_principle": false, "result": "BLOCKED_B2：机制不覆盖（8-K 无 exhibit 下载闸门 + 仅复制 primary）"},
+    {"route": "harness web_fetch / 任何第三方代理", "usable": false, "reason": "派单纪律 #2：web_fetch 返回不是 origin 字节，不得混用"}
+  ],
+  "boundary": {
+    "network_calls_made": 0,
+    "writes_outside_plan_dir": 0,
+    "git_writes": 0
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ORIGIN-BYTES",
+  "attempt_id": "a20260925-01",
+  "role": "controlled_forensics",
+  "workspace_root": "C:/Users/郑曾波/Projects/revenue-forecast",
+  "session_file_policy": "workspace-write (DSH; approval prompts disabled — escalation not requested and not available to this subagent)",
+  "write_surface": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES/a20260925-01/"
+  ],
+  "authorization": {
+    "source_file": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+    "section": "二十七、【已裁定·第十一批】Owner 三票：G2/G3 取证授权 · origin 字节落点 · 环境能力（2026-09-25，选项式问答原话）",
+    "line": 559,
+    "row": 2,
+    "verbatim": {
+      "question": "origin 响应字节落点冲突：`E1` 只差 origin 字节，但 `filing-fetch` 下载落盘点 = company-wiki 产品仓，而 §二十四 L498 写「取证产物只落本计划目录」；且 harness web_fetch 只回文本、不产响应字节",
+      "owner_choice": "落产品仓（与 filing-fetch 同流）（建议）",
+      "execution_mapping": "⇒ 本条以 owner 本裁为准，取代 §二十四 L498 在该场景的适用：允许 origin 字节经 filing-fetch 既有机制落 company-wiki/companies/{entity}/raw/…，本计划目录另存镜像与 sha 校验；仍标 external_retrieval_not_local 如实；等级判定归会计面；本裁不解除 OPEN-3、不产生 ACCEPT",
+      "execution_discipline_line_563": "三票 = 三个许可，不是三个结论：不解除 OPEN-4/OPEN-12/OPEN-3/OPEN-5 任何 BLOCKED、不产生 ACCEPT、不改任何 status、不授权晋升。"
+    }
+  },
+  "e1_definition_verbatim": {
+    "source_file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+    "line_66": "| **E1 已核** | 申报原文**本地归档**：URL + 取回 UTC + 文件 sha256 + 逐字引文 + 至少一条独立复核路径（同本卡 P1/P2 双路径精神） | 参数、口径声明、\"已核\"字样 |",
+    "line_153": "- **E1 = 已核**（唯一可支撑\"分部口径已确定\"的等级）：申报原文本地归档 + sha256 + 逐字引文 + 独立路径复核（与本卡 P1/P2 双路径、arithmetic_oracle 同精神）；分部重分类还须附重述后的基期分部数据（否则不可比）。"
+  },
+  "c3_condition_verbatim": {
+    "source_file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-MERGE/a20260924-01/merge_ruling.md",
+    "line_162": "1. **E1 归档（核心缺口）**：由 filing-fetch 授权获取（需 owner 授权，因 SEC 端点 403）把 2026-09-02 8-K（d291965d8k.htm）与 Exhibit 99.1（d291965dex991.htm）落本地语料，登记 URL + 取回 UTC + 文件 sha256 + 逐字引文 + 至少一条独立复核路径（ACCT ruling.md L66/L153；IND ruling.md L371 BLOCKED-4）。",
+    "line_328": "3. **OPEN-3**：8-K + Exhibit 99.1 **本地归档 E1**（filing-fetch 授权 + hash）→ 会计面 `OPEN-3-ACCT-R2` 补裁证据等级 → 行业面 `ruling_r2.md` 复裁分部集合。"
+  },
+  "target_documents": [
+    {
+      "id": "T1",
+      "document": "Microsoft Corporation Form 8-K (2026-09-02), Item 7.01 Regulation FD Disclosure + Item 9.01(d)",
+      "issuer": "Microsoft Corporation (MSFT, CIK 0000789019)",
+      "accession": "0001193125-26-380280",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm",
+      "retrieved_utc": null,
+      "http_status": null,
+      "sha256": null,
+      "bytes": null,
+      "retrieval_method": "filing-fetch ensure --allow-download (US -> dayu-sec-cli adapter) — 未发出 HTTP 即在 company-wiki 落点写入阶段失败",
+      "origin_bytes": false,
+      "status": "not_retrieved",
+      "blocked_by": ["B1 landing_denied_workspace_write"]
+    },
+    {
+      "id": "T2",
+      "document": "Exhibit 99.1 'FY27 Segments and Investor Metrics' (September 2026), furnished with the 2026-09-02 8-K",
+      "issuer": "Microsoft Corporation (MSFT, CIK 0000789019)",
+      "accession": "0001193125-26-380280",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm",
+      "retrieved_utc": null,
+      "http_status": null,
+      "sha256": null,
+      "bytes": null,
+      "retrieval_method": "filing-fetch ensure --allow-download — 机制不覆盖：dayu SEC 下载器仅在 form_type == \"6-K\" 时纳入 exhibit 文件，8-K 只取 primary_document",
+      "origin_bytes": false,
+      "status": "not_retrieved",
+      "blocked_by": ["B2 mechanism_gap_exhibit_not_in_scope", "B1 landing_denied_workspace_write"]
+    }
+  ],
+  "external_evidence": [],
+  "external_evidence_note": "本工位 0 次网络请求（http_status 全为 null，非 0/200/403 的编造值）；因此不存在任何 origin_bytes=true 的条目。harness web_fetch 与第三方代理返回按派单纪律 #2 不得充作 origin 字节，本文件不予登记为 evidence。",
+  "attempts": [
+    {
+      "id": "A1",
+      "kind": "filing_fetch_readonly_resolve_probe",
+      "command": "python C:/Users/郑曾波/.agents/skills/filing-fetch/scripts/fetch_filing.py --timeout-seconds 300 --debug",
+      "request": {"schema_version": "1.1", "company_query": "Microsoft", "market": "US", "document_kind": "current_report", "form_type": "8-K", "fiscal_year": 2026, "as_of_date": "2026-09-25"},
+      "retrieved_utc_window": {"start": "2026-09-25T22:52:29Z", "end": "2026-09-25T22:52:32Z"},
+      "rerun_capture_window": {"start": "2026-09-25T23:01:26Z", "end": "2026-09-25T23:01:29Z", "note": "两次输出逐字节相同，第二次用于落盘取证"},
+      "http_status": null,
+      "network_reached": false,
+      "exit_code": 2,
+      "outcome": "structured_miss",
+      "response": {"status": "not_found", "error": "source is not reusable: missing / no_existing_source_satisfies_request", "error_code": "not_found", "retryable": false, "calls": 2, "downloads": 0},
+      "evidence_file": "attempt_A1_resolve_probe.txt",
+      "origin_bytes": false
+    },
+    {
+      "id": "A2",
+      "kind": "filing_fetch_authorized_download",
+      "command": "python C:/Users/郑曾波/.agents/skills/filing-fetch/scripts/fetch_filing.py --allow-download --timeout-seconds 600",
+      "request": {"schema_version": "1.1", "company_query": "Microsoft", "market": "US", "document_kind": "current_report", "form_type": "8-K", "fiscal_year": 2026, "as_of_date": "2026-09-25"},
+      "intended_landing": "C:/Users/郑曾波/Projects/company-wiki/companies/MICROSOFT CORP/raw/…（filing-fetch kind→子目录映射，见 mechanism_scan.json B3）",
+      "retrieved_utc_window": {"start": "2026-09-25T22:52:45Z", "end": "2026-09-25T22:53:02Z"},
+      "http_status": null,
+      "network_reached": false,
+      "exit_code": 2,
+      "outcome": "failed_fatal",
+      "response": {"status": "fatal", "error": "company-wiki ensure exited 1: {\"error\": \"attempt to write a readonly database\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"}", "error_code": "fatal", "stage": "ensure", "attempts": 1, "calls": 3, "downloads": 0},
+      "evidence_file": "attempt_A2_download.txt",
+      "origin_bytes": false,
+      "note": "失败发生在 dayu 下载器启动之前的 company-wiki 目录/建库写入阶段；company-wiki 内新增或修改文件 = 0（残留检查见 A3 记录）"
+    },
+    {
+      "id": "A3",
+      "kind": "write_scope_probe_non_mutating",
+      "method": "System.IO.File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None) —— 成功则不写任何字节",
+      "retrieved_utc_window": {"start": "2026-09-25T22:55:00Z", "end": "2026-09-25T22:58:00Z"},
+      "http_status": null,
+      "network_reached": false,
+      "results": [
+        {"path": "C:/Users/郑曾波/Projects/company-wiki/.source_catalog/catalog.db", "verdict": "RW_DENY", "message": "Access to the path ... is denied."},
+        {"path": "C:/Users/郑曾波/Projects/company-wiki/.state/state.db", "verdict": "RW_DENY", "message": "Access to the path ... is denied."},
+        {"path": "C:/Users/郑曾波/Projects/company-wiki/companies/MICROSOFT CORP/raw/financial_reports/annual", "verdict": "RW_DENY", "message": "Access to the path ... is denied."},
+        {"path": "C:/Users/郑曾波/.agents/skills/filing-fetch/config/company_wiki.json", "verdict": "RW_DENY", "note": "非 workspace 对照（非产品仓）"},
+        {"path": "C:/Users/郑曾波/Projects/revenue-forecast/SKILL.md", "verdict": "RW_OK", "note": "session workspace 内对照"}
+      ],
+      "evidence_file": "attempt_A3_write_scope_probe.txt",
+      "origin_bytes": false
+    },
+    {
+      "id": "A4",
+      "kind": "mechanism_coverage_scan_local_only",
+      "window": {"start": "2026-09-25T22:55:00Z", "end": "2026-09-25T23:02:00Z"},
+      "http_status": null,
+      "network_reached": false,
+      "outcome": "exhibit_out_of_scope_confirmed",
+      "evidence_file": "mechanism_scan.json",
+      "origin_bytes": false,
+      "note": "读代码 + 解析盘上 449 个 dayu meta.json；含 exhibit 文件名者 23 个且全部 form_type=6-K，8-K 0 例"
+    }
+  ],
+  "attempt_summary": {
+    "total": 4,
+    "network_requests": 0,
+    "origin_bytes_retrieved": 0,
+    "origin_bytes_landed_company_wiki": 0,
+    "origin_bytes_mirrored_plan_dir": 0,
+    "structured_miss": 1,
+    "failed_fatal": 1,
+    "local_probes": 2
+  },
+  "blockers": [
+    {
+      "id": "B1",
+      "type": "landing_conflict",
+      "summary": "会话文件策略 workspace-write 拒绝 company-wiki 一切写入 ⇒ filing-fetch 下载无法落盘（fail-closed BLOCKED）",
+      "primary_evidence": "A2 filing-fetch 输出 status=fatal / error=attempt to write a readonly database / downloads=0；A3 三处 RW_DENY + workspace 内 RW_OK",
+      "root_cause_doc": "company-wiki src/company_wiki/source_catalog/reader.py L3-L7：CatalogStore.__init__ 在 OS-只读文件上崩溃于 attempt to write a readonly database",
+      "escalation": "未申请、也不可申请（本会话审批提示禁用；子代理权限固定）",
+      "remediation": "在允许写 C:/Users/郑曾波/Projects/company-wiki 的会话/进程中重跑同一条 filing-fetch 命令（A2 的 command+request 原样），或由 owner/host 放开该路径写权限"
+    },
+    {
+      "id": "B2",
+      "type": "mechanism_gap",
+      "summary": "filing-fetch（dayu SEC 下载器）对 form 8-K 不下载 exhibit，且适配器只复制 primary_document ⇒ Exhibit 99.1 origin 字节机制上不可达",
+      "primary_evidence": "dayu/fins/downloaders/sec_downloader.py L1105/L1112/L1124（include_exhibits 闸门 form_type==\"6-K\"）；company-wiki dayu_cli_adapter.py L389/L474-L490/L245-L298（仅 primary）；449 个 meta.json 实测 8-K 0 例 exhibit",
+      "escalation": "产品侧改动需另行授权（属 filing-fetch/dayu 产品仓变更，本工位不做）",
+      "remediation": "由 owner 决定：扩展 dayu exhibit 闸门到 8-K / 新增 exhibit 级取证通道 / 或另行裁定其他取证方式"
+    },
+    {
+      "id": "B3",
+      "type": "landing_shape_note",
+      "summary": "8-K 的诚实 document_kind 会落 companies/MICROSOFT CORP/raw/other/（canonical_writer.py L90-L101 仅三种财报 kind 映射到 financial_reports/*），不落 raw/financial_reports/{kind}/；谎报为 quarterly_report 可达成该路径但属元数据造假，本工位拒绝",
+      "escalation": "解封前需 owner/父确认可接受的落点形态"
+    }
+  ],
+  "five_element_status": {
+    "element_1_local_archive_origin": {"before": "false", "after": "false", "flipped": false, "reason": "origin 字节 0 个"},
+    "element_2_sha256_over_origin": {"before": "n/a_for_origin", "after": "n/a_for_origin", "flipped": false, "note": "上一轮 sha256 只覆盖转写字节；本工位无 origin 对象可算 sha"},
+    "element_3_retrieved_utc": {"before": "true_for_transcriptions", "after": "true_for_transcriptions", "flipped": false, "note": "本工位无 origin 取回窗口（未发出 HTTP）"},
+    "element_4_verbatim_quotes": {"before": "true", "after": "true", "flipped": false, "note": "8 条引文未被本工位改动；在 origin 到位前不得升级为『已核』"},
+    "element_5_independent_path": {"before": "true_with_origin_layer_limit", "after": "true_with_origin_layer_limit", "flipped": false, "note": "新增第 3 条尝试路径（filing-fetch→dayu→SEC，代码不共享）但未产出字节，origin 层样本仍为 0"}
+  },
+  "previous_corpus_verification": {
+    "source": "OPEN3-E1-ACQUISITION/a20260924-01/corpus (只读复测)",
+    "recomputed_utc": "2026-09-25T22:56:00Z",
+    "files": [
+      {"name": "MSFT_8K_2026-09-02_Item7.01.md", "bytes": 3789, "sha256": "096c7d9df55ab46a0ccef21b3ac528b7e59483a91e1b6b32277808bcae801ad1", "matches_previous": true, "origin_bytes": false},
+      {"name": "MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt", "bytes": 5183, "sha256": "5927de0367d1097a6bbb1f59c669a3461eacce43c8115874c5e0a497f7689f1c", "matches_previous": true, "origin_bytes": false},
+      {"name": "MSFT_8K_2026-09-02_Exhibit99-1.md", "bytes": 27586, "sha256": "20392f0e110568fa4338a1167da3756627b77e606eec85ae113aeebf40373f58", "matches_previous": true, "origin_bytes": false},
+      {"name": "MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt", "bytes": 28536, "sha256": "56b0460b4e635b590c1870153a65adc996d134fd12e2cd6c2670c51ab170956d", "matches_previous": true, "origin_bytes": false}
+    ],
+    "byte_relation_to_origin": "不可比 —— 本轮 origin 字节为 0，无法建立同/不同关系（若日后 origin 落盘，须按会计面 C5 做内容级比对：不一致则 4 文件降 E3、8 条引文作废）"
+  },
+  "method_notes": {
+    "no_web_fetch_as_origin": "派单纪律 #2：harness web_fetch 返回不是 origin 字节，本工位全程未用其取 origin，也未把任何代理渲染文本登记为 evidence。",
+    "sha256_scope": "sha256 字段只对 origin 响应字节本体计算；本轮无此类字节，故全部为 null（无对象可算），不写占位哈希。",
+    "timestamps": "所有 retrieved_utc_window 为真实读秒（发起前/返回后各读一次 UTC 系统时钟），未伪造单点时刻；本地探针同理。",
+    "fail_closed": "取不到即 BLOCKED 并给原始工具输出；不造绿样、不以转写冒充 origin、不为推进链抬高等级。",
+    "level_not_claimed": "等级判定（E1/E2/BLOCKED）归会计面（OWNER_DECISIONS §二十四 L504 / §二十七 执行映射『等级判定归会计面』）；本工位只交取证形态与阻断证据。"
+  },
+  "boundary_compliance": {
+    "write_surface_respected": true,
+    "writes_outside_plan_dir": 0,
+    "product_repos_written": [],
+    "company_wiki_written": false,
+    "company_wiki_residue_from_this_card": 0,
+    "revenue_forecast_non_planning_writes": 0,
+    "git_write_operations": 0,
+    "git_status_used": false,
+    "network_requests": 0,
+    "i11a_modified": false,
+    "open3_status_modified": false
+  }
+}

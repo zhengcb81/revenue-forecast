@@ -1,0 +1,194 @@
+{
+  "probe": "b03_review_cfg08",
+  "wiki_head": "f0aacbfd258b85b2eb76d41365786abf58179067",
+  "boolean_fields": {
+    "RootSpec": [
+      {
+        "field": "read_only",
+        "annotation": "bool"
+      },
+      {
+        "field": "reusable_for_filing",
+        "annotation": "bool | None"
+      }
+    ],
+    "CatalogConfig": []
+  },
+  "rows": [
+    {
+      "case": "reusable_for_filing quoted false",
+      "yaml": "reusable_for_filing: \"false\"",
+      "admitted": false,
+      "error": "CatalogConfigError",
+      "text": "roots[0] reusable_for_filing must be a boolean or null, got str 'false' (CFG-08)"
+    },
+    {
+      "case": "reusable_for_filing quoted true",
+      "yaml": "reusable_for_filing: \"true\"",
+      "admitted": false,
+      "error": "CatalogConfigError",
+      "text": "roots[0] reusable_for_filing must be a boolean or null, got str 'true' (CFG-08)"
+    },
+    {
+      "case": "reusable_for_filing int 1",
+      "yaml": "reusable_for_filing: 1",
+      "admitted": false,
+      "error": "CatalogConfigError",
+      "text": "roots[0] reusable_for_filing must be a boolean or null, got int 1 (CFG-08)"
+    },
+    {
+      "case": "reusable_for_filing int 0",
+      "yaml": "reusable_for_filing: 0",
+      "admitted": false,
+      "error": "CatalogConfigError",
+      "text": "roots[0] reusable_for_filing must be a boolean or null, got int 0 (CFG-08)"
+    },
+    {
+      "case": "reusable_for_filing empty (null)",
+      "yaml": "reusable_for_filing:",
+      "admitted": true,
+      "read_only": "True",
+      "read_only_type": "bool",
+      "reusable_for_filing": "None",
+      "reusable_for_filing_type": "NoneType",
+      "effective_reusable": true,
+      "priority": 100,
+      "priority_type": "int",
+      "max_file_size": null,
+      "max_file_size_type": "NoneType"
+    },
+    {
+      "case": "read_only quoted true",
+      "yaml": "read_only: \"true\"",
+      "admitted": false,
+      "error": "CatalogConfigError",
+      "text": "roots[0] read_only must be a boolean or null, got str 'true' (CFG-08)"
+    },
+    {
+      "case": "read_only quoted false",
+      "yaml": "read_only: \"false\"",
+      "admitted": false,
+      "error": "CatalogConfigError",
+      "text": "roots[0] read_only must be a boolean or null, got str 'false' (CFG-08)"
+    },
+    {
+      "case": "read_only int 1",
+      "yaml": "read_only: 1",
+      "admitted": false,
+      "error": "CatalogConfigError",
+      "text": "roots[0] read_only must be a boolean or null, got int 1 (CFG-08)"
+    },
+    {
+      "case": "read_only int 0",
+      "yaml": "read_only: 0",
+      "admitted": false,
+      "error": "CatalogConfigError",
+      "text": "roots[0] read_only must be a boolean or null, got int 0 (CFG-08)"
+    },
+    {
+      "case": "read_only empty (null)",
+      "yaml": "read_only:",
+      "admitted": false,
+      "error": "TypeError",
+      "text": "read_only must be a boolean"
+    },
+    {
+      "case": "read_only yaml yes (1.1 bool)",
+      "yaml": "read_only: yes",
+      "admitted": true,
+      "read_only": "True",
+      "read_only_type": "bool",
+      "reusable_for_filing": "None",
+      "reusable_for_filing_type": "NoneType",
+      "effective_reusable": true,
+      "priority": 100,
+      "priority_type": "int",
+      "max_file_size": null,
+      "max_file_size_type": "NoneType"
+    },
+    {
+      "case": "reusable_for_filing yaml no (1.1 bool)",
+      "yaml": "reusable_for_filing: no",
+      "admitted": true,
+      "read_only": "True",
+      "read_only_type": "bool",
+      "reusable_for_filing": "False",
+      "reusable_for_filing_type": "bool",
+      "effective_reusable": false,
+      "priority": 100,
+      "priority_type": "int",
+      "max_file_size": null,
+      "max_file_size_type": "NoneType"
+    },
+    {
+      "case": "priority quoted int",
+      "yaml": "priority: \"10\"",
+      "admitted": true,
+      "read_only": "True",
+      "read_only_type": "bool",
+      "reusable_for_filing": "None",
+      "reusable_for_filing_type": "NoneType",
+      "effective_reusable": true,
+      "priority": 10,
+      "priority_type": "int",
+      "max_file_size": null,
+      "max_file_size_type": "NoneType"
+    },
+    {
+      "case": "priority yaml true",
+      "yaml": "priority: true",
+      "admitted": true,
+      "read_only": "True",
+      "read_only_type": "bool",
+      "reusable_for_filing": "None",
+      "reusable_for_filing_type": "NoneType",
+      "effective_reusable": true,
+      "priority": 1,
+      "priority_type": "int",
+      "max_file_size": null,
+      "max_file_size_type": "NoneType"
+    },
+    {
+      "case": "priority yaml yes",
+      "yaml": "priority: yes",
+      "admitted": true,
+      "read_only": "True",
+      "read_only_type": "bool",
+      "reusable_for_filing": "None",
+      "reusable_for_filing_type": "NoneType",
+      "effective_reusable": true,
+      "priority": 1,
+      "priority_type": "int",
+      "max_file_size": null,
+      "max_file_size_type": "NoneType"
+    },
+    {
+      "case": "max_file_size quoted int",
+      "yaml": "max_file_size: \"1000\"",
+      "admitted": true,
+      "read_only": "True",
+      "read_only_type": "bool",
+      "reusable_for_filing": "None",
+      "reusable_for_filing_type": "NoneType",
+      "effective_reusable": true,
+      "priority": 100,
+      "priority_type": "int",
+      "max_file_size": "1000",
+      "max_file_size_type": "str"
+    },
+    {
+      "case": "max_file_size bool",
+      "yaml": "max_file_size: true",
+      "admitted": true,
+      "read_only": "True",
+      "read_only_type": "bool",
+      "reusable_for_filing": "None",
+      "reusable_for_filing_type": "NoneType",
+      "effective_reusable": true,
+      "priority": 100,
+      "priority_type": "int",
+      "max_file_size": true,
+      "max_file_size_type": "bool"
+    }
+  ]
+}

@@ -1,0 +1,330 @@
+{
+  "tool": "b_ar_identity_crosscheck.py",
+  "note": "Cross-source identity check: the exchange registry snapshots (independent provenance) vs the names the catalog/sidecar assert. Read-only; the production catalog database was never opened.",
+  "normalizer": {
+    "module_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\src\\company_wiki\\source_catalog\\security_identity.py",
+    "module_sha256_16": "656cb235ceebbc67",
+    "in_repository": true
+  },
+  "registry_snapshots": {
+    "hk": {
+      "file": "hk.json",
+      "record_count": 2746,
+      "retrieved_at": "2026-07-19T08:12:43Z",
+      "sources_len": 4,
+      "sha256_16": "8b15eec8a2047b41"
+    },
+    "cn": {
+      "file": "cn.json",
+      "record_count": 6137,
+      "retrieved_at": "2026-07-19T07:53:37Z",
+      "sources_len": 1,
+      "sha256_16": "d9a4860f3b6eb407"
+    },
+    "us": {
+      "file": "us.json",
+      "record_count": 6959,
+      "retrieved_at": "2026-07-19T08:04:38Z",
+      "sources_len": 3,
+      "sha256_16": "8f946cab293f66f0"
+    }
+  },
+  "source_run": {
+    "manifest_id": "r4-readonly-data-manifest-a05-a06",
+    "ran_at_utc": "2026-09-16T20:48:14.305241+00:00"
+  },
+  "sample": {
+    "per_root": 3,
+    "max_docs": 20,
+    "documents_checked": 12,
+    "sample_matches_identity_hash_evidence": true
+  },
+  "totals": {
+    "ambiguous_name": 3,
+    "identifier_agree": 5,
+    "name_agree": 3,
+    "name_not_asserted": 3,
+    "no_comparable_identifier": 3
+  },
+  "checks": [
+    {
+      "root_id": "<no location>",
+      "document_id": "urn:company-wiki:document:sha256:36118a6201d8e5b0d8e9e7f1f2ea911bbc81c161804c56d05ad68fedee3221fa",
+      "catalog_market": null,
+      "catalog_security_id": null,
+      "catalog_security_id_len": 0,
+      "catalog_asserted_names": [],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": false,
+      "status": "no_comparable_identifier",
+      "reason": "the row asserts no identity at all (no identifier, no name, no resolved entity) - nothing to look up"
+    },
+    {
+      "root_id": "<no location>",
+      "document_id": "urn:company-wiki:document:sha256:b46e8a947b505174f259c958275a7b455c327dd4c931fd898a6c337a077b7bd4",
+      "catalog_market": null,
+      "catalog_security_id": null,
+      "catalog_security_id_len": 0,
+      "catalog_asserted_names": [
+        {
+          "source": "entity_name",
+          "sha16": "8c19d90993d8c545"
+        }
+      ],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": true,
+      "status": "ambiguous_name",
+      "ambiguous_name_source": "entity_name",
+      "name_lookup_hits": [
+        {
+          "market": "HK",
+          "security_id": "02899"
+        },
+        {
+          "market": "CN",
+          "security_id": "601899"
+        }
+      ],
+      "reason": "the asserted company name resolves to several distinct registry securities"
+    },
+    {
+      "root_id": "<no location>",
+      "document_id": "urn:company-wiki:document:sha256:c5c74c9a8f26f45d453f90ef57796c54ea0a88f17e473256e3e7d50590132e36",
+      "catalog_market": null,
+      "catalog_security_id": null,
+      "catalog_security_id_len": 0,
+      "catalog_asserted_names": [],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": false,
+      "status": "no_comparable_identifier",
+      "reason": "the row asserts no identity at all (no identifier, no name, no resolved entity) - nothing to look up"
+    },
+    {
+      "root_id": "company_raw",
+      "document_id": "urn:company-wiki:document:sha256:004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89",
+      "catalog_market": "cn",
+      "catalog_security_id": "601899",
+      "catalog_security_id_len": 6,
+      "catalog_asserted_names": [
+        {
+          "source": "metadata.company_name",
+          "sha16": "8c19d90993d8c545"
+        }
+      ],
+      "catalog_company_name_sha16": "8c19d90993d8c545",
+      "catalog_asserts_a_company_name": true,
+      "status": "in_registry",
+      "matched_via": "cn_security_id",
+      "registry_market": "CN",
+      "registry_security_id": "601899",
+      "registry_canonical_sha16": "8c19d90993d8c545",
+      "registry_alias_count": 1,
+      "registry_active": true,
+      "identifier_agree": true,
+      "matched_registry_names": [
+        "8c19d90993d8c545"
+      ],
+      "name_agree": true,
+      "index_rule": "leading zeros stripped, casefolded; market taken from the catalog when it declares one, otherwise the key must be unambiguous across hk/cn/us"
+    },
+    {
+      "root_id": "company_raw",
+      "document_id": "urn:company-wiki:document:sha256:01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+      "catalog_market": "cn",
+      "catalog_security_id": "601899",
+      "catalog_security_id_len": 6,
+      "catalog_asserted_names": [
+        {
+          "source": "metadata.company_name",
+          "sha16": "8c19d90993d8c545"
+        }
+      ],
+      "catalog_company_name_sha16": "8c19d90993d8c545",
+      "catalog_asserts_a_company_name": true,
+      "status": "in_registry",
+      "matched_via": "cn_security_id",
+      "registry_market": "CN",
+      "registry_security_id": "601899",
+      "registry_canonical_sha16": "8c19d90993d8c545",
+      "registry_alias_count": 1,
+      "registry_active": true,
+      "identifier_agree": true,
+      "matched_registry_names": [
+        "8c19d90993d8c545"
+      ],
+      "name_agree": true,
+      "index_rule": "leading zeros stripped, casefolded; market taken from the catalog when it declares one, otherwise the key must be unambiguous across hk/cn/us"
+    },
+    {
+      "root_id": "company_raw",
+      "document_id": "urn:company-wiki:document:sha256:048bf062eaffc9b34fc0e4ca9345a511cf2f5338ec417a159d88bf1fa4d24d2c",
+      "catalog_market": "cn",
+      "catalog_security_id": "周大生",
+      "catalog_security_id_len": 3,
+      "security_id_kind": "non_numeric (the catalog stores a NAME here)",
+      "catalog_asserted_names": [
+        {
+          "source": "security_id_holds_a_name",
+          "sha16": "858512d639e77d9e"
+        }
+      ],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": true,
+      "name_lookup_source": "security_id_holds_a_name",
+      "name_lookup_hits": [
+        {
+          "market": "CN",
+          "security_id": "002867"
+        }
+      ],
+      "status": "in_registry",
+      "matched_via": "cn_name",
+      "registry_market": "CN",
+      "registry_security_id": "002867",
+      "registry_canonical_sha16": "858512d639e77d9e",
+      "registry_alias_count": 1,
+      "registry_active": true,
+      "identifier_agree": null,
+      "identifier_note": "no numeric identifier on the row; matched by name",
+      "matched_registry_names": [
+        "858512d639e77d9e"
+      ],
+      "name_agree": true,
+      "index_rule": "leading zeros stripped, casefolded; market taken from the catalog when it declares one, otherwise the key must be unambiguous across hk/cn/us"
+    },
+    {
+      "root_id": "dayu_portfolio",
+      "document_id": "urn:company-wiki:document:sha256:0d40d94aef8d2fa08c4c75760198be426a0b579be3d7200ec9450a7e04522b4f",
+      "catalog_market": null,
+      "catalog_security_id": "688031",
+      "catalog_security_id_len": 6,
+      "entity_name_is_an_identifier": "3399d14a6a768082",
+      "catalog_asserted_names": [],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": false,
+      "status": "in_registry",
+      "matched_via": "cn_security_id",
+      "registry_market": "CN",
+      "registry_security_id": "688031",
+      "registry_canonical_sha16": "4d5304b044f4411f",
+      "registry_alias_count": 1,
+      "registry_active": true,
+      "identifier_agree": true,
+      "name_agree": null,
+      "name_comparison": "not comparable: the row asserts no company name and no resolved entity name",
+      "index_rule": "leading zeros stripped, casefolded; market taken from the catalog when it declares one, otherwise the key must be unambiguous across hk/cn/us"
+    },
+    {
+      "root_id": "dayu_portfolio",
+      "document_id": "urn:company-wiki:document:sha256:236efadda82625eed8c29dcb35c9cca5c015aba153d828f193ed488130d17864",
+      "catalog_market": null,
+      "catalog_security_id": "688031",
+      "catalog_security_id_len": 6,
+      "entity_name_is_an_identifier": "3399d14a6a768082",
+      "catalog_asserted_names": [],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": false,
+      "status": "in_registry",
+      "matched_via": "cn_security_id",
+      "registry_market": "CN",
+      "registry_security_id": "688031",
+      "registry_canonical_sha16": "4d5304b044f4411f",
+      "registry_alias_count": 1,
+      "registry_active": true,
+      "identifier_agree": true,
+      "name_agree": null,
+      "name_comparison": "not comparable: the row asserts no company name and no resolved entity name",
+      "index_rule": "leading zeros stripped, casefolded; market taken from the catalog when it declares one, otherwise the key must be unambiguous across hk/cn/us"
+    },
+    {
+      "root_id": "dayu_portfolio",
+      "document_id": "urn:company-wiki:document:sha256:3384b52c31e87bc7081941a9d3ca776aaa6579ff33e7528c3c5326172952ac6d",
+      "catalog_market": null,
+      "catalog_security_id": "603993",
+      "catalog_security_id_len": 6,
+      "entity_name_is_an_identifier": "0cc3b9db76eca9c3",
+      "catalog_asserted_names": [],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": false,
+      "status": "in_registry",
+      "matched_via": "cn_security_id",
+      "registry_market": "CN",
+      "registry_security_id": "603993",
+      "registry_canonical_sha16": "7fd3b745b668f282",
+      "registry_alias_count": 1,
+      "registry_active": true,
+      "identifier_agree": true,
+      "name_agree": null,
+      "name_comparison": "not comparable: the row asserts no company name and no resolved entity name",
+      "index_rule": "leading zeros stripped, casefolded; market taken from the catalog when it declares one, otherwise the key must be unambiguous across hk/cn/us"
+    },
+    {
+      "root_id": "dropbox_stock",
+      "document_id": "urn:company-wiki:document:sha256:19892d8211843ba0409cf34788f881f76feeb15070aee268e5ef6828a891edc6",
+      "catalog_market": null,
+      "catalog_security_id": null,
+      "catalog_security_id_len": 0,
+      "catalog_asserted_names": [],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": false,
+      "status": "no_comparable_identifier",
+      "reason": "the row asserts no identity at all (no identifier, no name, no resolved entity) - nothing to look up"
+    },
+    {
+      "root_id": "dropbox_stock",
+      "document_id": "urn:company-wiki:document:sha256:386c153e28b3a66d472f485bb367e3e327d8c0490b1b8d280f0d25855b43d1ea",
+      "catalog_market": null,
+      "catalog_security_id": null,
+      "catalog_security_id_len": 0,
+      "catalog_asserted_names": [
+        {
+          "source": "entity_name",
+          "sha16": "8c19d90993d8c545"
+        }
+      ],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": true,
+      "status": "ambiguous_name",
+      "ambiguous_name_source": "entity_name",
+      "name_lookup_hits": [
+        {
+          "market": "HK",
+          "security_id": "02899"
+        },
+        {
+          "market": "CN",
+          "security_id": "601899"
+        }
+      ],
+      "reason": "the asserted company name resolves to several distinct registry securities"
+    },
+    {
+      "root_id": "dropbox_stock",
+      "document_id": "urn:company-wiki:document:sha256:98f6ac2bead3f16897f241e8d62b07ea7352d64df644b2a1e4c6c1d3b536bac2",
+      "catalog_market": null,
+      "catalog_security_id": null,
+      "catalog_security_id_len": 0,
+      "catalog_asserted_names": [
+        {
+          "source": "entity_name",
+          "sha16": "8c19d90993d8c545"
+        }
+      ],
+      "catalog_company_name_sha16": null,
+      "catalog_asserts_a_company_name": true,
+      "status": "ambiguous_name",
+      "ambiguous_name_source": "entity_name",
+      "name_lookup_hits": [
+        {
+          "market": "HK",
+          "security_id": "02899"
+        },
+        {
+          "market": "CN",
+          "security_id": "601899"
+        }
+      ],
+      "reason": "the asserted company name resolves to several distinct registry securities"
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+ "schema": "handoff/1",
+ "role": "mining_industry_reviewer_h4",
+ "card": "I-11-A",
+ "attempt_under_review": "execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01（全程只读）+ 两半区裁定（只读）",
+ "carrier": "execution_runs/OPEN6H4-IND-COUNTERSIGN/a20260926-01",
+ "generated_at_utc": "2026-09-26T11:45:59Z",
+ "implementer_signed": false,
+ "is_implementer": false,
+ "authorized_by": {
+  "ind_l299_verbatim": "放行条件：本条仅为行业面审定；是否可标 threshold_basis 升级、以什么基础允许给数，由 I11A-OPEN-ACCT 依其基础规则确认，在此之前 I-11-B/I-11-C 不得据此触发。",
+  "ind_l299_source": {
+   "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+   "line": 299,
+   "sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b"
+  },
+  "ruling_h4_section_8_verbatim": "⑧ 给行业面的会签提请（I11A-OPEN-IND，本工位不代签）｜会计面已按 IND L299 完成「以什么基础允许给数」的确认：A-6.3 (iv) expert_assumption + 敏感性区间，四要件 4/4，非实现者 decision_sha256 已出具。以下事项请行业面复核并会签（未会签前状态维持 not_reviewed，不得据此触发）：1. 口径必须先统一（最高优先）：observable 指定的「②产销量情况分析表」口径（FY2025 矿山产铜 878,180 吨）与 MD&A 口径（1,085,126 吨 / 109 万吨）对同一年算出的达成率一个带外（0.763635）、一个带内（0.943588）。请明确 H4 用哪一张表、并在 source_route 中锁定；差异成因（口径桥）本工位未取证。 2. 敏感性档位确认 3. revert_rule 的豁免分支（IND L298 行业面自己提的反例）：新项目爬坡年、重大并购并表年、不可抗力/长周期检修年的豁免分支尚未写入 falsifier.revert_rule（封盘原文无此分支）。本工位不回改封盘字段；请在新版本中补。 4. 计划值本身的口径 5. 会签落点：会签记录请以新 attempt + 新版本 + decision_sha256 追加，不得就地改本文件或封盘。",
+  "ruling_h4_section_8_source": {
+   "file": "execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01/ruling_h4.md",
+   "lines": "222-230",
+   "sha256": "acce9a38be1a98a2b394e44eb14770348bce03fb654476b676245ca1b78cbaef"
+  },
+  "acct_l226_verbatim": "审定一个阈值必须同时具备可复算观测量 + 可核基础 + 非实现者签署（decision_sha256） + 追加式版本化，否则一律维持 not_reviewed",
+  "acct_l226_source": {
+   "file": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+   "line": 226,
+   "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2"
+  },
+  "c5_verbatim": "OPEN-6：threshold_review_status 落地 + H4 四要件补齐 + H2 基准 + 恒等式容差对照表",
+  "c5_source": {
+   "file": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json",
+   "line": 122,
+   "sha256": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878"
+  }
+ },
+ "oracle": {
+  "path": "oracle.md",
+  "frozen_before_outputs": true,
+  "sha256_at_freeze": "9af07a8f2ab657d6d27b6cb9fecac6aa3af5df82a39e4b8d98e7f46c302c06db",
+  "bytes": 20701,
+  "sha256_at_delivery": "9af07a8f2ab657d6d27b6cb9fecac6aa3af5df82a39e4b8d98e7f46c302c06db",
+  "unchanged_since_freeze": true
+ },
+ "four_questions": {
+  "1_caliber_anchor": "pass —— 锚口径 B（MD&A 分矿山表 / 报告摘要『产量及…年产量计划』配对表）；口径 A 不可锚；observable/source_route 已换锁并写入新版本（FY2025/FY2024 两年年报 leaf 10 计划与实际同表同行 + MD&A 交叉）",
+  "2_caliber_bridge": "blocked —— 规则层已取证（A 表注 L4272『本表不含非控股企业相关数据』；B 分矿山表持有权益列；同基对照行 冶炼产铜 697,588=697,588），逐行复算差额 206,946 吨/6,801 千克，可识别非控股项覆盖 99.8700%/92.1482%，残差 269 吨/534 千克落在未明细的『其他矿山合计』（12,015 吨/3,909 千克）内；但按冻结判据 Q2 条件5『三档下带内/带外不翻转』，金在内档翻转（重建 89,010/85,000=1.047176 带内 vs 锚 89,544/85,000=1.053459 带外，边界 1.05），第二探针外档亦翻转 ⇒ fail-closed",
+  "3_accounting_choice": "pass —— (i)/(iii) 关键词 0 命中、(ii) 期数 1<2 均本工位独立复测；(iv) 标注齐、三档齐、equivalent_to_disclosure_basis=false；三档后果在锚口径基准样本上自测（内档铜金双双带外=假阳性、外档对口径 A 仍带外）；无默认触发档；未改 threshold_basis、未放行参数、未升 status",
+  "4_revert_exemption": "pass —— IND L298 确有要求、封盘/v1 revert_rule（L421）确无该分支；FY2025 为真实并购并表年（藏格 2025-04-30、阿基姆 2025-04-16、瑞果多 2025-10-10）；已在 hypotheses_h4_ind_v2.json 追加式补入，条件有界可核（逐次引用原文、不得 reviewer 自张、exemption_log、豁免年不计入可观测年度、最多连续豁免 1 年、缺证据即不豁免）"
+ },
+ "countersigned": false,
+ "decision": "blocked",
+ "blocked_by": [
+  "2_caliber_bridge"
+ ],
+ "blocked_summary": "口径桥残差 269 吨（铜）/ 534 千克（金）未逐行闭合，且在金上翻转至少一档带内/带外判定 ⇒ 按冻结 oracle Q2 fail-closed；Q1/Q3/Q4 通过",
+ "decision_sha256": null,
+ "decision_sha256_withheld_reason": "oracle §2：四问任一 blocked ⇒ 该 sha 不写入（本例 q2 blocked）；会计面 decision_sha256=9d2d3845… 不被本工位代签、复签或修改",
+ "unblock_path": "『其他矿山合计』逐行明细或发行人非控股企业产量清单 ⇒ 残差闭合 ⇒ 新 attempt 复跑 Q2（变异 G1b 显示残差闭合后四问全 pass）；或有权方追加式修订 oracle Q2 条件5 适用范围（本工位不改冻结判据）",
+ "caliber_bridge_ruling": {
+  "anchored_caliber": "B",
+  "anchored_caliber_definition": "MD&A 分矿山表『总计』行 + 报告摘要『产量及…年产量计划』配对表（矿山产量，含权益法参股矿山权益产量，未剔除非控股企业）",
+  "rejected_caliber": "A（②产销量情况分析表；表注 L4272『产销量情况说明：本表不含非控股企业相关数据。』）",
+  "cause": "A 剔除非控股（权益法）企业产量、B 保留：铜 = 卡莫阿 172,583 吨（44.20%，L2806-L2809）+ 玉龙 34,094 吨（22%，L2830-L2833）+ 残差 269 吨；金 = 招金 3,513 千克（18.20%，L2656-L2659）+ 波格拉 2,754 千克（20.83%，L2672-L2675）+ 残差 534 千克",
+  "bridge_status": "partially_evidenced（规则层已取证；铜 99.8700%、金 92.1482% 闭合；残差未闭合）",
+  "why_b_is_anchored": "分母（计划）口径由报告摘要 leaf 10 同表配对锁定：FY2025 报告 2024/2025 实际 107→109 万吨、73→90 吨 与 2026E 计划 120 万吨/105 吨 同表；FY2024 报告第 10 页 101/107/115 与 68/73/85 交叉一致；MD&A L2880 上年同期 1,068,455 吨 ≈ 107 万吨",
+  "why_a_is_rejected": "无计划侧对应口径、序列不衔接（A 基线隐含 +36.65% vs 自报 +10.59%）、三档下矿产铜 0.763635 全部带外（无判别力）",
+  "ratios": {
+   "caliber_a_copper": 0.763635,
+   "caliber_b_copper": 0.943588,
+   "caliber_a_gold": 0.973447,
+   "caliber_b_gold_exact": 1.053459,
+   "caliber_b_gold_rounded": 1.058824
+  },
+  "countersign_consequence": "不通过（fail-closed）"
+ },
+ "threshold_review_status": "not_reviewed",
+ "threshold_review_status_still_not_reviewed": true,
+ "threshold_review_status_upgraded": false,
+ "threshold_basis_changed": false,
+ "threshold_basis": "professional_judgement_required（原样）",
+ "fail_closed_triggered": true,
+ "releases_nothing": true,
+ "releases": {
+  "parameters_released": [],
+  "parameters_still_placeholder": [
+   "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER",
+   "ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER"
+  ],
+  "low_base_high_still_null": true,
+  "threshold_review_status_changed_to_reviewed": false,
+  "blocked_items_released": [],
+  "actions_triggered": [],
+  "falsifier_triggered": false,
+  "scenario_switch_triggered": false,
+  "calibration_boundary_triggered": false,
+  "i11c_countertest_triggered": false,
+  "i11b_acceptance": false,
+  "accounting_decision_sha256_modified": false,
+  "statement": "会签未通过；即使通过也不放行任何参数（IND L330 逐字）；本工位放行的东西 = 无。"
+ },
+ "blocked_status": {
+  "BLOCKED-6a": "still_blocked（H2/H8 仍未按 A-6.3 签署；H4 会计面四要件虽齐，但行业面会签 blocked）",
+  "BLOCKED-6b": "untouched",
+  "BLOCKED-6c": "untouched（不改校验器、不代落地 schema）",
+  "OPEN-6": "untouched",
+  "OPEN-2/3/5/11": "untouched"
+ },
+ "red_green_mutations": {
+  "execution": "python -X utf8 -B -（stdin 内联，不落盘）",
+  "discrimination_rc_excluding_G1": 0,
+  "g1_rc": 1,
+  "g1_disclosure": "oracle §5 G1 预设『真实案卷 ⇒ countersigned=true』被实测推翻（本案卷 Q2 条件5 金/内档翻转 ⇒ blocked）；与 oracle §1『任一问 blocked ⇒ countersigned=false（此为合格交付）』冲突，按 §1 判据执行并如实登记 rc=1；未回改 oracle、未放宽判据。G1b（残差闭合）rc=0 证明判据可通（非 stuck-at-blocked）。",
+  "cases_total": 9,
+  "cases_rc0": 8,
+  "red_cases": [
+   "B0",
+   "B1",
+   "B2",
+   "B3",
+   "B4"
+  ],
+  "weakened_criteria_detected": [
+   "M1",
+   "M2"
+  ]
+ },
+ "written_files": [
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H4-IND-COUNTERSIGN/a20260926-01/oracle.md",
+   "sha256": "9af07a8f2ab657d6d27b6cb9fecac6aa3af5df82a39e4b8d98e7f46c302c06db",
+   "bytes": 20701,
+   "note": "判据冻结件；冻结后未回改"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H4-IND-COUNTERSIGN/a20260926-01/ind_countersign.json",
+   "sha256": "812797102c6533824adda12e88bf735d490465ead9be9746d42a93a9c9ad95e2",
+   "bytes": 23935,
+   "note": "四问逐条结论 + 证据 + 口径桥实测 + countersigned=false"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H4-IND-COUNTERSIGN/a20260926-01/ruling_h4_ind.md",
+   "sha256": "0aef8925dac9cf2004f46af398494c40c291bb38dfa7e7e4af897010a3d7de6b",
+   "bytes": 26878,
+   "note": "四问正文 + 与会计面 §⑧ 衔接 + 红绿变异 rc + 不授予"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H4-IND-COUNTERSIGN/a20260926-01/hypotheses_h4_ind_v2.json",
+   "sha256": "1902e5694dcd72709c5233014ee023ec3bd965b6fbbee5af62667b017172ca78",
+   "bytes": 62513,
+   "note": "追加式新版本（Q1 口径锁定 + Q4 豁免分支 + 会签记录 countersigned=false；未签 sha）；8 元素数组、仅下标 3 改、supersedes → v1"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H4-IND-COUNTERSIGN/a20260926-01/_mutations.json",
+   "sha256": "9ce7ec8105b49fec201e3d9eee8eb6345abf6d84094f2e946fe037f852b28a97",
+   "bytes": 2534,
+   "note": "变异结果原始 JSON（机器中间件，随本件披露）"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H4-IND-COUNTERSIGN/a20260926-01/handoff.json",
+   "sha256": null,
+   "bytes": null,
+   "note": "本文件自身（自指不可自证）"
+  }
+ ],
+ "written_files_count": 5,
+ "sealed_inputs_integrity": {
+  "sealed_hypotheses": {
+   "path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+   "sha256_before": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "sha256_after": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "unchanged": true
+  },
+  "accounting_v1": {
+   "path": "execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01/hypotheses_h4_v1.json",
+   "sha256_before": "329a719beb9e6ce2bdecdfdde7c6bc6db9e3e1c7e4f36f7fb982cdf81e109717",
+   "sha256_after": "329a719beb9e6ce2bdecdfdde7c6bc6db9e3e1c7e4f36f7fb982cdf81e109717",
+   "unchanged": true
+  },
+  "accounting_ruling_sha256": "acce9a38be1a98a2b394e44eb14770348bce03fb654476b676245ca1b78cbaef",
+  "accounting_four_req_sha256": "b11b905d28c389996d15903ee7f7ec1d8654a8c5b82bd19d37d34d4abd64a1ca",
+  "accounting_handoff_sha256": "baa41aa85aa1a6c33516275419ccc839573f3c9eb08b655b1833d49f69f180f6",
+  "ind_ruling_sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b",
+  "acct_ruling_sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2",
+  "merge_ruling_sha256": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1",
+  "open6_h4_four_req_bytes_changed": 0
+ },
+ "version_chain": "封盘 hypotheses.json (f2178768…) → hypotheses_h4_v1 (329a719b…) → hypotheses_h4_ind_v2 (Q1+Q4；会签 countersigned=false)；裁并归编排层",
+ "next_action": "① 回给会计面/编排层：口径裁定 = 锚 B（证据已交）、口径桥残差未闭合 ⇒ H4 会签 blocked；② 残差闭合需『其他矿山合计』明细或发行人非控股产量清单（行业面/披露侧）；③ 会签成立前不得把 threshold_review_status 升 reviewed、不得触发任何动作；④ C5 另两子项（H2 基准、恒等式容差对照表）分别归行业面与 OPEN6B，本工位未触碰",
+ "does_not_claim_I11A_acceptance": true,
+ "does_not_claim_industry_countersign": true,
+ "git_diff_total": 3830,
+ "git_diff_non_planning": 0,
+ "git_status_used": false,
+ "git_writes": 0,
+ "network_requests": 0,
+ "writes_outside_planning": 0,
+ "five_plan_files_written": false
+}

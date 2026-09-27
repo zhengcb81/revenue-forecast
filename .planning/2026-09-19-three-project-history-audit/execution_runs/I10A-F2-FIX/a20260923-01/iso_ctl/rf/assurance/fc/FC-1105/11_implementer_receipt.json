@@ -1,0 +1,98 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1105",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "Audit fault-injection self-tests (AUD-01..08): stale manifest triplet (fabricated commits fail the FC-1101 gate), missing samples (column_drop fails T2), policy drift (tampered runtime_policy hash fails T2 — closes FC-1102 F1 P3), Dropbox sidecar missing (fresh-scan admission fails closed), runner robustness (UTF-8 reports, atomic dashboard ledger, 4-way concurrent runs consistent). IsolatedLake now ships a self-consistent runtime_policy.json (production shape). 5 fault tests; revenue full suite 456 passed / 0 failed.",
+  "base_triplet": {
+    "revenue": "4a89ec3e43299bf55c03ab04ca1e2745f85b39ac",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "a04e4136014a03ec821826daca0f01c8c58de6ad",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tests/test_fc1105_fault_injection.py",
+    "revenue-forecast/tests/e2e_support/isolated_lake.py",
+    "revenue-forecast/tools/daily_t2_runner.py",
+    "revenue-forecast/assurance/fc/FC-1105/11_implementer_receipt.json",
+    "revenue-forecast/assurance/fc/FC-1105/12_reviewer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/tests/test_fc1105_fault_injection.py",
+    "revenue-forecast/tests/e2e_support/isolated_lake.py",
+    "revenue-forecast/tools/daily_t2_runner.py"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/fc/FC-1101..1104 (accepted) — the audited mechanisms"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "AUD-01..08",
+      "status": "passed",
+      "note": "fault-injection matrix: stale manifest / missing samples / policy drift / Dropbox sidecar missing all make their mechanism fail; robustness (UTF-8, atomic, concurrent) verified."
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_fc1105_fault_injection.py -q",
+      "exit_code": 0,
+      "result": "5 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "456 passed, 106 subtests, 0 failed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check tests/test_fc1105_fault_injection.py tests/e2e_support/isolated_lake.py tools/daily_t2_runner.py",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit (auto): suite + E2E + R4.2",
+      "exit_code": 0,
+      "result": "456 passed; E2E PASS; MATCH 111 files",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "catalog_mutations": 0,
+    "note": "Temp lakes + fault injections on temp catalogs only."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "T2 runner gained policy-freshness check (production code, additive)."
+  },
+  "mutation": {
+    "id": "FC-1105-M1",
+    "killed": true,
+    "details": "M1 (FC-1102 baseline): samples check removed -> degraded test FAILS. FC-1105 adds 5 fault-injection contracts (each injected fault makes its mechanism exit non-zero)."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert a04e413; policy check in T2 runner is additive (revert restores prior behavior)."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1105-independent",
+    "reviewer_receipt_sha256": "a2a0d771a18e2701242ccb71f2234d9dab06c6303016171ac70f4f09fe0fe84f",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-12T00:00:00Z",
+    "note": "reviewer replayed diff + 5 fault tests + 2 mutations (policy/samples checks killed) + full suite 456/0 from clean worktree a04e413; verdict accepted; unresolved_findings=[]"
+  },
+  "provisional_note": "Feat sealed at revenue a04e413 (filing/wiki unchanged). 5 fault tests; full suite 456/0. Independent review pending."
+}

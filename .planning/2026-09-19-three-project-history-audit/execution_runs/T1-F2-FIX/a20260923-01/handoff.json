@@ -1,0 +1,413 @@
+{
+  "card": "T1-F2-FIX",
+  "attempt_id": "a20260923-01",
+  "status": "accepted_scoped",
+  "status_before": "review_pending",
+  "status_transition": "review_pending -> accepted_scoped",
+  "status_history": [
+    {
+      "round": 1,
+      "status": "review_pending",
+      "set_by": "implementer, before any independent review",
+      "pre_image": "handoff.json pre-image of this landing pass: 23422 B, sha256 2d7cf62d36332cab5c3672c25455b8105d14007e6802077299b6ea69a2a40304, file mtime 2026-09-24 21:31:15 (local)",
+      "implementer_signed": false,
+      "reviewer_status_at_that_time": "独立复审尚未发生 —— 本卡不自签 ACCEPT（原 signature_note 逐字保留：「本卡不自签 ACCEPT；F-1/F-2/P4 处置 = FIXED-pending-review，独立复审属 reviewer 裁权」）",
+      "preservation": "pre-review state retained here verbatim; the pre-image hash is the value recorded before any byte of this pass was written"
+    },
+    {
+      "round": 2,
+      "status": "accepted_scoped",
+      "verdict_word_written_by_reviewer": "ACCEPT",
+      "carrier": "reviewer_report.md",
+      "bytes": 30308,
+      "sha256": "baa60fc402988a5f6d02f13e29343a21fc6849faba11c06a6c8096ba10cdcce9",
+      "verdict_line": 304,
+      "verdict_line_text": "**VERDICT: ACCEPT**",
+      "pinned_by": "reviewer_report.sha256 (85 B)",
+      "counts": "P1=0 / P2=0 / P3=4（report §13）",
+      "granted": "三处修复（F-1 / F-2 / P4）正确、判据承重、边界干净 —— 14 崩溃形态 rc4→rc0 且拒码逐条命中、13 稳定行 before==after 全等、PT-1/PT-2 维持 rc4 未自填、66/66 → 73/73、invariants 37/37、mutation 12 + semantic 21 + nc 6、20 臂两树全红、四套件 32/18/23/13→29、39 探针 adjacent rc4/rc4/rc4→rc0/rc0/rc4、r2 门 34/34 同 sha、词表 16==16；冻结先于运行、oracle 一字未改、changes.diff 可逆重建且行不交、pin 表未回写、勘误对准冻结文本（carrier §15）",
+      "rulings_carried": "4 条发现全部 P3（P3-1 引用指针失效 / P3-2 首跑观测未证实 / P3-3 窗口外第三次外部漂移 / P3-4 范围外遗留未裁），均不改变结论",
+      "not_granted": "不重裁 F-3、不自填、不 apply/merge changes.diff、零生产写、不晋升、不改修法、不改五份计划文件、不碰其他卡",
+      "reviewer": "independent reviewer, N=1（carrier L3-L5：独立复审工位，与实现者非同一人）；写入面 = 本 attempt 内 reviewer_report.md + reviewer_report.sha256 两个新建文件，改前改后均 0 字节"
+    },
+    {
+      "round": "bookkeeping carrier landing (this pass)",
+      "status": "accepted_scoped",
+      "verdict": null,
+      "note": "pure transcription of the round-2 carrier verdict into review.md / this file / evidence/T1-F2-FIX/qualification.json; adds no acceptance of its own; verdict_is_transcribed_not_authored=true; implementer_signed remains false"
+    }
+  ],
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "path_inside_attempt": "execution_runs/T1-F2-FIX/a20260923-01/reviewer_report.md",
+    "carrier_sha256": "baa60fc402988a5f6d02f13e29343a21fc6849faba11c06a6c8096ba10cdcce9",
+    "carrier_bytes": 30308,
+    "carrier_total_lines": 312,
+    "carrier_encoding": "UTF-8 without BOM (first bytes 35 32 84 = '# T'), LF-only (CR count = 0), single trailing LF",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "bytes": 85,
+      "sidecar_sha256": "aae00884ec35b0d5a3664e5cec0001c1694021687e4007dad1085f2008d615fa",
+      "content": "baa60fc402988a5f6d02f13e29343a21fc6849faba11c06a6c8096ba10cdcce9  reviewer_report.md",
+      "verified": "sidecar read-back == independent read-only re-hash of reviewer_report.md at landing time == dispatch pin; 0 bytes written by this pass"
+    },
+    "verdict_word_written_by_reviewer": "ACCEPT",
+    "verdict_line": 304,
+    "verdict_line_text": "**VERDICT: ACCEPT**",
+    "verdict_line_byte_region_inclusive": [29175, 29194],
+    "verdict_line_length": 20,
+    "verdict_line_sha256": "f378376c192f6d3c42293c19d1591d6c647057e540667a9ae417294e65b36eeb",
+    "verdict_line_text_only": {"start": 29175, "end_inclusive": 29193, "length": 19, "sha256": "5bfe2716576b1c3e7fba4d04058bd2ac1a7a0e2378340a526ce7ad7562df721a"},
+    "region_definition": "0-based byte offsets against reviewer_report.md as it stands at carrier_sha256; each region includes its final line's trailing LF",
+    "sections": {
+      "s13_findings_lines_260_280": {"start": 23998, "end_inclusive": 26722, "length": 2725, "sha256": "47c3ac2d81e2471c519b5f0972f30b439cb6c27234cef12b36ab69f2df39e07d"},
+      "s14_unverified_lines_284_294": {"start": 26729, "end_inclusive": 28347, "length": 1619, "sha256": "b1d96eff2c06b9b306ad0801be0992d76f5c3c096c3ca641fedf23f65dff7fe0"},
+      "s15_conclusion_and_verdict_lines_298_304": {"start": 28354, "end_inclusive": 29194, "length": 841, "sha256": "0f35db315893c521e487c3229dbc1451319b05a3d430ecb24523d5c28923cec8"},
+      "s4_must_flip_and_not_change_lines_97_128": {"start": 8002, "end_inclusive": 10918, "length": 2917, "sha256": "ed4d9699faef029b2de73fee44af19b2faa5a324d3b04a486368bb09bc91177f"},
+      "s5_missing_key_lines_132_152": {"start": 10925, "end_inclusive": 12838, "length": 1914, "sha256": "d4dde8d71699fa84ea5528bf472b9f17c6506e9c36202e365fd2fc4cf8e30986"},
+      "s7_family_ratchet_lines_176_200": {"start": 14692, "end_inclusive": 17257, "length": 2566, "sha256": "b416a3ec620663908a9065f499ffddce93b74c4c89669f0911a1f85e934ef767"},
+      "s3_diff_minimality_lines_53_93": {"start": 4080, "end_inclusive": 7995, "length": 3916, "sha256": "70ae361a1955f10efb466058aa34b5f362be81787a53492fefdd8f782cc15c1a"},
+      "s2_freeze_order_lines_32_51": {"start": 2565, "end_inclusive": 4078, "length": 1514, "sha256": "a352e31f89342916f49cb82e19877742b710883b25b5b1618e841db4821a64e3"},
+      "s10_external_pin_lines_226_237": {"start": 20151, "end_inclusive": 21765, "length": 1615, "sha256": "8473b346a04f96d1c6fcebbf3410694b5b7fa1bc2f5e93f2588389abef852ab4"},
+      "s12_boundary_lines_247_258": {"start": 22611, "end_inclusive": 23996, "length": 1386, "sha256": "204fd6d6daa937f50707459ab697ce5d76e52730028d3708f51ef492a1e4e579"}
+    },
+    "verdict_counts": "P1=0 / P2=0 / P3=4 (report §13)",
+    "status_label_transcribed": "accepted_scoped",
+    "status_label_mapping_note": "the reviewer writes the word ACCEPT (not a status enum); accepted_scoped is the plan's canonical status for an ACCEPT carrying the four P3 findings listed in report §13 — none of them changes the verdict (report §15)",
+    "reviewer": "independent reviewer, N=1 (carrier L3-L5); did not participate in this card's implementation; wrote only reviewer_report.md + reviewer_report.sha256 inside this attempt and explicitly rewrote no status field of this card",
+    "nature": "this status move is a bookkeeping transcription of the carrier verdict - verdict_is_transcribed_not_authored=true; signing face = reviewer_report.md; landing transcription is bookkeeping, not implementer self-sign"
+  },
+  "reviewer_status": "SIGNED BY CARRIER — the independent reviewer (N=1) wrote `**VERDICT: ACCEPT**` at reviewer_report.md:304 (line 304, byte region [29175, 29194], sha256 f378376c192f6d3c42293c19d1591d6c647057e540667a9ae417294e65b36eeb; carrier = baa60fc402988a5f6d02f13e29343a21fc6849faba11c06a6c8096ba10cdcce9 / 30308 B / 312 lines, pinned by reviewer_report.sha256 85 B) with counts P1=0 / P2=0 / P3=4 and the closing sentence that all four findings are P3 and none changes the conclusion. This handoff's transition review_pending -> accepted_scoped is a bookkeeping transcription ONLY: implementer_signed=false, verdict_is_transcribed_not_authored=true. Carried findings are in carried_findings (P3-1..P3-4 verbatim), the report's §14 list is in unverified, f3_state stays pending_routed_not_refilled (F-3 belongs to the T1-10-FIX reviewer; PT-1/PT-2 stay rc4 and were NOT self-filled here).",
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+  "signature_note": "本卡不自签 ACCEPT；F-1/F-2/P4 处置 = FIXED-pending-review，独立复审属 reviewer 裁权",
+  "role": "implementer (continuation of the started attempt a20260923-01; no restart, no rollback)",
+
+  "one_observable_result": "同一对隔离副本上，14 个畸形载体探针从 before「rc=4 / 无报告 / 全批 0 裁决 + raw TypeError|AttributeError」整体翻为 after「rc=0 / 报告写出 / 全批裁决 / 拒码 ∈ oracle 既有词表」（K1-K3→R-SIMULATED-CLOCK，S1-S5→R-CLAIM-EXCEEDS，S6→accept，P4-W1/L2→accept，P4-W2/L1→R-CLAIM-EXCEEDS，P4-S1→R-NO-SAMPLES），而 13 行缺键/正常载体稳定行（K4-K8, S7a/b/c, S8, S9, S10, P4-STAB-W/S）before==after 行字节全等；evidence/after/invariants.json = 37 checks / 0 failed / PASS。",
+
+  "completed_steps": [
+    {"step": 1, "name": "盘点缺哪几步", "status": "done",
+     "detail": "开工时盘上已有 oracle.md/binding.json/pin_hashes/before 相位 probes 与两脚本、两 worktree；缺 = before 相位的 suites/inherit/reports/mut20、after 相位全部、mutation、nc、invariants、changes.diff、decision.md、handoff.json。另发现首跑 before probes 判 FAIL（3 条仪器构造偏差，见 instrument_corrections）。"},
+    {"step": 2, "name": "worktree 内完成 F-1 + F-2 + P4 三处修复", "status": "done",
+     "detail": "仅改 worktree/i14b/iso/natural_window.py 三个冻结点（定义行 56 set→tuple；derive_calendar 载体读行 360 → isinstance 守卫 + fail-closed 读替身，J11 行一字未动；classify() 入口 441-442 → 单点容器归一）；T1-10-FIX 已合入面（60-74 / 207-217 / 182-205）与 _parse 82-88 零触碰。"},
+    {"step": 3, "name": "after 逐探针重跑 + before/after 差分", "status": "done",
+     "detail": "before probes 66/66 PASS（重跑，见 instrument_corrections I1-I3）、after probes 73/73 PASS；14 翻转 + 13 不变 + PT-1/PT-2 pending-routed 全部按 oracle 分列，raw rc 落盘于 evidence/{before,after}/probes/raw/。"},
+    {"step": 4, "name": "变异证明（含缺键字节不变负控）", "status": "done",
+     "detail": "MUT-F1/F2/P4 回退臂全部崩溃回归（PASS 12 checks）；追加 MUT-SEM-1（fail-closed→静默 ⇒ 3 条 GREEN 判据红）、MUT-SEM-2（缺键也当畸形 ⇒ 3 条 STABLE 判据红、S10 不动 ⇒ 无过度拒绝）、NC-MISSING（7 行 before==after 全等）共 21 checks PASS；再加 20 臂 mutate.r2 两树全红 + PC/NC-1/NC-2 双向负控。"},
+    {"step": 5, "name": "verify 全绿 + 家族/棘轮不变量", "status": "done",
+     "detail": "invariants 37/37 PASS；r1 32/32、r2 18/18、23 测试 23/23 before==after；新 29 测试 before 13/16 → after 29/0；39 探针两树 PASS（adjacent rc4/rc4/rc4 → rc0/rc0/rc4）；r2 门 34/34 且 sut_report sha 前后同为 beb06495…；r1 门字段前後全等（既有 W1 superseded 差）；词表 before==after；锚点各恰一次且文本相同。"},
+    {"step": 6, "name": "生成 changes.diff", "status": "done",
+     "detail": "scripts/make_diff.py（difflib、无 git）→ changes.diff 20153 B / sha bc87bf81bc53aad17f5c2f1047db467c64a92ec0b431499d94a438e8cbd3f3ca / +415 −2 / 两文件；旧侧行区间 53-59、357-363、439-444（+ 新文件 0-0），与 T1-10-FIX {60-74,207-217}、defect-2 {182-205}、_parse {82-88} 全不交。"},
+    {"step": 7, "name": "写 handoff.json", "status": "done",
+     "detail": "本文件；status=review_pending、implementer_signed=false、零生产写自证 + 全部 sha256。"},
+    {"step": 8, "name": "无法做的步骤如实进 blocked_by / unverified", "status": "done",
+     "detail": "见 blocked_by 与 unverified 两节数组。"},
+    {"step": 9, "name": "oracle 需要补充则只做追加", "status": "not_needed",
+     "detail": "F-3 边界继承（§4）与三层合并序（§1 + APPENDIX 取代注记）均已在 09-24 06:30 冻结文本内，故不追加 erratum；oracle.md 全程一字未改（sha 前后 ea63701c288fdc890cd985b077dce37c4a53aebd438e1548add9d047714f30ce）。外部 F-3 裁定落册事实只登记于 decision.md §4，不据此自填。"}
+  ],
+
+  "scope_executed": "F-1 (J7 clock_source set-membership non-total) + F-2 (calendar claim.status carrier non-total, 父方 pre-freeze 裁定 = present-but-malformed 结构化拒绝 / 真正缺键行为字节不变) + P4 容器族 (windows / sampled_at / ledger.{daily,weekly,monthly,alerts}, evidence-degraded 单点归一) + 双向负控 + 锚核；F-3 只作 pending-routed 声明，不自填。",
+
+  "f2_refusal_code_selection": {
+    "code": "R-CLAIM-EXCEEDS",
+    "authority": "oracle.md sec 3.1 (frozen pre-run) + 登记册「一一一」节父方 pre-freeze 裁定",
+    "reason": "词表中唯一日历 claim 类拒绝；不可读载体 = 主张不可核验 = 按最强主张(status=complete)读入，随后一字未动的 J11 行在事实不足 complete 时拒此码；R-SIMULATED-CLOCK 属 J7 另一入口、R-UNKNOWN_CLASS 属类别、R-BASIS-UNKNOWN 属窗口 basis 封闭枚举（日历 claim 无 basis 语义）均不描述「主张不可核验」；零新增 R-* 码（词表 before==after 已验）。",
+    "missing_key_rule": "claim 缺失已被 classify() 归一为 {}、dict 载体无 status 键 ⇒ claim_status=None ⇒ J11 不触发 ⇒ 与 before 行字节相同（S7a/S7b/S7c/S8/S9/S10 实测 equal=True）"
+  },
+
+  "before_after_key_rc": {
+    "probes_before": "66 checks PASS (phase=before)",
+    "probes_after": "73 checks PASS (phase=after)",
+    "must_flip": [
+      "K1/K2/K3: rc4+0裁决+raw unhashable  ->  rc0 reject [R-SIMULATED-CLOCK]",
+      "S1: rc4 raw \"'list' object has no attribute 'get'\"  ->  rc0 reject [R-CLAIM-EXCEEDS]",
+      "S2: rc4 同上  ->  rc0 reject [R-CLAIM-EXCEEDS, R-EMPTY-EVIDENCE, R-FUTURE-CLOCK, R-SAME-INSTANT]",
+      "S3/S4/S5: rc4 raw 'str'/'int'/'bool' has no attribute 'get'  ->  rc0 reject [R-CLAIM-EXCEEDS]",
+      "S6 (complete 事实+畸形载体): rc4  ->  rc0 accept []  (oracle sec3.3 冻结边界)",
+      "P4-W1: rc4 raw string indices  ->  rc0 accept []",
+      "P4-W2*: rc4  ->  rc0 reject [R-CLAIM-EXCEEDS]",
+      "P4-S1*: rc4 raw \"Invalid isoformat string: 'a'\"  ->  rc0 reject [R-NO-SAMPLES]",
+      "P4-L1*: rc4 raw string indices  ->  rc0 reject [R-CLAIM-EXCEEDS]",
+      "P4-L2: rc4  ->  rc0 accept []",
+      "J1: rc4 0/5 -> rc0 5/5 rej={BAD-F1,BAD-F2}",
+      "J1b: rc4 0/5 -> rc0 5/5 rej={BAD-F1,BAD-F2}",
+      "J2: rc4 0/5 -> rc0 5/5 rej={P4-W2,P4-S1,P4-L1}",
+      "J3: rc4 0/8 -> rc0 8/8 rej={BAD-F1,BAD-F2,P4-W2,P4-S1,P4-L1}",
+      "ArmA: rc4 0/7 -> rc0 7/7 rej={BAD-F1}",
+      "ArmC: rc4 0/7 -> rc0 7/7 rej={BAD-F1,BAD-F2}",
+      "ArmD: rc4 0/7 -> rc0 7/7 rej={P4-S1}"
+    ],
+    "must_not_change": [
+      "K4 accept[] / K5,K6,K7,K8 reject[R-SIMULATED-CLOCK] — before==after 行字节相同",
+      "S7a accept[] / S7b accept[] / S7c accept[] (缺键/claim 缺失) — before==after 行字节相同",
+      "S8 reject[R-EMPTY-EVIDENCE,R-FUTURE-CLOCK,R-SAME-INSTANT] 且不含 R-CLAIM-EXCEEDS — before==after 行字节相同 (= 缺键≠畸形的可判定对照)",
+      "S9 reject[四码] / S10 accept[] — before==after 行字节相同",
+      "P4-STAB-W accept[] / P4-STAB-S accept[] — before==after 行字节相同",
+      "ArmB rc0 7/7 仅 BAD-STR-CONTRAST 被拒 — before==after 行字节相同"
+    ],
+    "pending_routed_not_adjudicated": [
+      "PT-1: before rc4 -> after rc4 (时间戳串内容畸形 → T1-F3-FIX)",
+      "PT-2: before rc4 -> after rc4 (列表载体+坏时间戳串 → T1-F3-FIX；分界=载体形态 vs 串内容)"
+    ]
+  },
+
+  "mutation_arms": {
+    "oracle_sec6": {
+      "MUT-F1 (tuple->set)": "K1/K2/K3 崩溃回归 rc=4 无报告 0 裁决",
+      "MUT-F2 (守卫块->原单行)": "S1/S3 崩溃回归 rc=4 raw AttributeError",
+      "MUT-P4 (入口归一移除)": "P4-W2 string indices / P4-S1 Invalid isoformat 'a' / P4-L1 string indices, 全 rc=4",
+      "MUT-A1/A2": "三锚 + sorted(TRUSTED_CLOCKS) + BASIS_REGISTRY = ( 各恰 1 次、文本 byte-identical、before==after",
+      "overall": "PASS, 12 checks"
+    },
+    "added_semantic_arms": {
+      "MUT-SEM-1 fail-closed->静默": "mutant sha 59763c0a27b6203c…；S1 变 accept[]、S2 丢 R-CLAIM-EXCEEDS、S3 变 accept[] ⇒ 3 条冻结 GREEN 判据全红",
+      "MUT-SEM-2 缺键也当畸形(过度拒绝)": "mutant sha 10879b2c82c9124c…；S7a/S7c 由 accept 翻 reject[R-CLAIM-EXCEEDS]、S8 多出 R-CLAIM-EXCEEDS ⇒ 3 条 STABLE 判据全红，同臂 S10(真有 status)保持 accept ⇒ 无过度拒绝",
+      "NC-MISSING 缺键行为字节不变": "K7,S7a,S7b,S7c,S8,S9,S10 共 7 行 before==after 全等",
+      "overall": "PASS, 21 checks"
+    },
+    "twenty_arm_machinery": "mutate.r2.py 两树各 20 臂：mutation_count=20、all_mutants_red_again=true、all_expected_cases_red=true，逐臂 cases_red 列表 before==after（MUT-7→C5、MUT-15→X1..X4）",
+    "negative_controls": "PC rc=0/ok/mismatch=0；NC-1 输入侧毒化 ⇒ SUT rc=0 34/34 而 runner rc=1/ok=false/{C3,C2} 且 cases_sha ≠ 冻结 pin；NC-2 声明侧毒化 ⇒ runner rc=1/ok=false/mismatch=4 含 {C5,C4}（与 T1-8 毒化仍绿方向相反）"
+  },
+
+  "instrument_corrections": {
+    "policy": "oracle 冻结期望一字未改；以下全部是把测量仪器对准已冻结的 oracle，而非把期望改成观测值。首跑 before 相位(06:44)即因 I1-I3 判 FAIL，修正后重跑同一 before 相位 = 66/66 PASS。",
+    "items": [
+      "_batch(n=6,replace) 只造 6 例 vs oracle「6× GOOD + 1× BAD = 7」→ 三处调用 6→7（armA/armB/armD）",
+      "GOOD_FIELDS.sampled_at = range(0,30,2) 只有 15 串(span 1680) vs oracle A.2「正常 30 串」→ range(0,30)（= W1 形，span 1740）",
+      "P4-STAB-W 手搓 _good(windows=…) 让 quick_check 落进窗口 b ⇒ 合法触发既有 J15 R-QC-IN-OBS，与 oracle「W5 形 union 2400 → accept」不符 → 改用 cases.r2 的 W5 夹具逐字",
+      "新增 29 测试的 test_stable_container_neighbours_unchanged 用同一手搓形状 ⇒ before 12/17、after 28/1，与冻结预测 13/16→29/0 不符 → 同法改用 BY_ID[W5]/BY_ID[W1] 夹具（两树同步）；修正后 before=13/16、after=29/0 与冻结预测逐值相同（互证）",
+      "环境：本机沙箱把 os.mkdir(path,0o700) 映射为创建者自己都无法列举/删除的 ACL，pytest basetemp.mkdir(0o700) 后 sessionfinish 抛 PermissionError、汇总行不打印 ⇒ 新增 scripts/pytest_tmp_acl_plugin.py（仅放宽 0o700→0o777）由 cmd_suites 以 -p 加载；basetemp 根 _pytest_tmp → _pytest_tmp2（旧根内 3 个不可删空目录留作环境证据）。不改任何断言/夹具/测试/SUT 字节。",
+      "pin 门拆分 attempt_internal(必须 0 失配) / external(只披露、绝不回写 pin 表)"
+    ],
+    "verify_script_sha": {
+      "binding_recorded": "b903a9f677d537ca2d1fee4bac22723317ede80449e4cfcb1f8126981d47b7f1",
+      "delivered": "a464f67df8f078273bb5d3f0204520f573bf22b7b46bc649df011a976d5acfae",
+      "note": "binding.json 原文明记 will be re-hashed at delivery；oracle 侧冻结值未动"
+    }
+  },
+
+  "boundary": {
+    "git_diff_HEAD_name_only_total": 3821,
+    "git_diff_HEAD_name_only_non_planning": 0,
+    "git_status_non_planning_entries": 2,
+    "git_status_non_planning_provenance": "均为本卡运行前既存的未跟踪遗留物（.tmp-r41-mutation/ mtime 2026-09-20T18:31、assurance/unified_completion/manifests/plan_inputs.json.bak mtime 2026-09-21T07:09），非本卡产生",
+    "production_writes": 0,
+    "source_tree_read_only": true,
+    "git_state_changing_commands": 0,
+    "git_read_only_commands": "git diff / git status 各 1-2 次，仅用于纪律要求的边界取证",
+    "deletions": 0,
+    "deletion_note": "一次只读探针对 attempt 根逐项 os.rmdir 误删了空的 recovery/ 目录，同一轮即以 New-Item 原样重建；此外零删除",
+    "status_transfers": 0,
+    "signatures": "none (implementer_signed=false)",
+    "promotions": 0,
+    "network": 0,
+    "oracle_writes": 0,
+    "delivery": "changes.diff only（零生产合并；落库/合并决定属父方）"
+  },
+
+  "external_pin_drift": {
+    "pin_table_unchanged": "evidence/pin_hashes.sha256.tsv sha 135d71dc3dbdb673f79cb82e745100a956427190a54645c4222050b3d780945b (36 行，未回写)",
+    "pins_check": "ok=true, attempt_internal_mismatches=[], external_carrier_drift=[] (收尾读数；本卡全部自身冻结输入 byte-unchanged)",
+    "observed_oscillation": [
+      {
+        "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-10-FIX/a20260923-01/handoff.json",
+        "at_pin_time_local_2026_09_24_06_43": "7708 B sha f3f4dd2bc5c08f09f69261a1069a5ec3eedab1206d02951ea6b84195c661a445 (= 我方 pin 值)",
+        "drift_local_2026_09_24_21_15_08_utc_20_15_08Z": "22194 B sha bffebc011a395e9aca58aa9925119a040908ce2efcf56b752311417c4eaef82f —— 外部并行载体落册批次把 T1-10-FIX 复审 ACCEPT 状态转录与 F-3 裁定写入该文件（新文 bookkeeping.recorded_by 自述为父代理 session-19074bf0-0205-4315-af73-9db57597275a 的 delegated subagent）",
+        "reset_local_2026_09_24_21_26_25_utc_20_26_25Z": "7708 B sha f3f4dd2bc5c08f09f69261a1069a5ec3eedab1206d02951ea6b84195c661a445 —— 同一外部批次复位回 pin 值",
+        "written_by_this_card": false,
+        "this_card_write_set": "T1-F2-FIX/a20260923-01/** 单一目录；本卡对 T1-10-FIX 只有只读 sha256",
+        "handling": "全程披露、绝不回写 evidence/pin_hashes.sha256.tsv（回写会毁掉该表本要提供的证据）；漂移窗口观测保留在 decision.md §9 与 evidence/after/invariants.json.external_pin_drift",
+        "effect_on_this_card": "无：裁决面/探针期望/changes.diff 均不受影响；F-3 rc 归属仍 pending-routed、不自填"
+      }
+    ],
+    "f3_ruling_durable_carrier_read_only": {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-10-FIX/a20260923-01/reviewer_report.md",
+      "sha256": "96847e0a9e2d01db44b882ae38b43541131865c55a95e4171e8bbb7ef4272a69",
+      "bytes": 30247,
+      "sidecar": "reviewer_report.sha256 读回相等",
+      "content": "T1-10-FIX 独立复审 ACCEPT + F-3 裁定（per-case 拒绝 rc=0、新码 R-TIMESTAMP-MALFORMED、词表 16→17、oracle §11.8 追加文交父方落笔）+ F-1/F-2/P4 归本卡",
+      "this_card_writes": 0
+    }
+  },
+
+  "merge_order_declaration": "T1-10-FIX changes.diff 625ecfe45f3d713a08b5873c6cb3df258c25279d4c5bf3f4e25295cd441199ac FIRST -> 本卡 changes.diff bc87bf81bc53aad17f5c2f1047db467c64a92ec0b431499d94a438e8cbd3f3ca SECOND (左基 = 其 fixed iso 064e5381…) -> T1-F3-FIX THIRD (scope = _parse 82-88)；本卡 hunk 旧侧行区间 {53-59, 357-363, 439-444} 与 T1-10 {60-74, 207-217}、defect-2 {182-205}、_parse {82-88} 全不交（生成后实测，见 decision.md §2 与 diff_stats.json）。",
+
+  "changed_paths": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/changes.diff (新增，交付物)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/diff_stats.json (新增)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/decision.md (新增)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/handoff.json (本文件，新增)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/worktree/i14b/iso/natural_window.py (F-1+F-2+P4 三处修复)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/worktree/i14b/harness/tests/test_i14b_natural_window_container_total.py (稳定性夹具勘误)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/worktree_before/i14b/harness/tests/test_i14b_natural_window_container_total.py (与 worktree 同步，字节相同)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/scripts/verify_t1_f2_fix.py (仪器勘误 I1/I2/I3/I5/I6)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/scripts/mutation_semantic_arms.py (新增)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/scripts/pytest_tmp_acl_plugin.py (新增)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/evidence/** (before+after 全相位证据)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/_pytest_tmp2/** (pytest basetemp v2)",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/recovery/ (空目录，误删后同轮原样重建)"
+  ],
+  "changed_paths_outside_attempt": [],
+  "changed_paths_outside_planning": [],
+
+  "evidence_paths": {
+    "probes_before": "evidence/before/probes/family_results.json (66 checks PASS) + evidence/before/probes/raw/*",
+    "probes_after": "evidence/after/probes/family_results.json (73 checks PASS) + evidence/after/probes/raw/*",
+    "suites_before": "evidence/before/suites/suites_summary.json (r1 32/0, r2 18/0, basis23 23/0, container29 13/16)",
+    "suites_after": "evidence/after/suites/suites_summary.json (32/0, 18/0, 23/0, 29/0)",
+    "inherit_before": "evidence/before/inherit/inherit_result.json (39/39 PASS, adjacent rc4/rc4/rc4)",
+    "inherit_after": "evidence/after/inherit/inherit_result.json (39/39 PASS, adjacent rc0/rc0/rc4)",
+    "gates_before": "evidence/before/reports_summary.json + evidence/before/cmd-CASES-{r2,r1}/ (r2 34/34, sut_report sha beb06495…)",
+    "gates_after": "evidence/after/reports_summary.json + evidence/after/cmd-CASES-{r2,r1}/ (sut_report sha 与 before 同)",
+    "mut20_before": "evidence/before/mut20/mutations.r2.json",
+    "mut20_after": "evidence/after/mut20/mutations.r2.json",
+    "mutation": "evidence/after/mutation/mutation_results.json (PASS 12 checks) + scratch/",
+    "semantic_arms": "evidence/after/mutation_semantic/results.json (PASS 21 checks) + raw/ + scratch/",
+    "negative_control": "evidence/after/nc/nc_results.json (PASS) + raw/",
+    "invariants": "evidence/after/invariants.json (PASS 37/37)",
+    "pins": "evidence/pin_hashes.sha256.tsv (36 行未改) + evidence/boundary_check.json",
+    "diff": "changes.diff + diff_stats.json"
+  },
+
+  "sha256": {
+    "oracle.md": "ea63701c288fdc890cd985b077dce37c4a53aebd438e1548add9d047714f30ce (31224 B, 冻结前后相同)",
+    "binding.json": "836fbd099b6bc5c917ab420bba19e0681c48d465c8a237ac8b74985673a2bddf (11178 B)",
+    "decision.md": "a3adcf9cde18d007f8b5ecfdd334d882d70efe67a447edf304ecc6cf0cf90e98 (20426 B)",
+    "changes.diff": "bc87bf81bc53aad17f5c2f1047db467c64a92ec0b431499d94a438e8cbd3f3ca (20153 B, +415 -2)",
+    "diff_stats.json": "8287cba28bec8b46859210110f34e5ab36ab172ac91373eef3749edcf8e2b019 (1554 B)",
+    "fixed_sut": "9b1ebda2b75c4d1124d0d20a95d7a16cb31b8d9564c1c90da9b4d2d77eaa3ba2 (23534 B)",
+    "baseline_sut_and_diff_left": "064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d (21416 B)",
+    "new_test_file": "f39f1b912cfb664d207a95d8e7853c79dfc76cda6bdebd94afc9ea87e064387c (16333 B, 两树相同)",
+    "scripts/verify_t1_f2_fix.py": "a464f67df8f078273bb5d3f0204520f573bf22b7b46bc649df011a976d5acfae (66790 B)",
+    "scripts/make_diff.py": "12b30d4aa2e2c272390ac4ef8e8cdd334c161bd912753bae939861452cb2f56b (3883 B, 未改)",
+    "scripts/mutation_semantic_arms.py": "893cf88e5238c196d075c8de58cf4efb14db62a2c75fa995b404774423556677 (8296 B)",
+    "scripts/pytest_tmp_acl_plugin.py": "e96890fe3275a6ef72063b0c112afdd6607a2b4ae50c08cdd8664594f0002aa3 (1725 B)",
+    "scripts/inherit_probe_t1_10_fix.py": "88f15ee66c6df28ffb528b1366f25d11d65b44e80a758256f52dbadcbb4515bf (39297 B, 未改)",
+    "evidence/pin_hashes.sha256.tsv": "135d71dc3dbdb673f79cb82e745100a956427190a54645c4222050b3d780945b (4791 B, 未改)",
+    "evidence/before/probes/family_results.json": "01a2a54b1527df96a12b751f754e0ff0a33116cc37977b163bd0cd6545ab0bc5 (73697 B)",
+    "evidence/after/probes/family_results.json": "c5afb4161f649ea1d10094a3fb02d4b86b451a8990a80d9751ede829fbe5171e (126821 B)",
+    "evidence/before/suites/suites_summary.json": "916105a1bfe606c3afc84cd04f86661c51c051a2d8d6e48b468801b53d762483 (1461 B)",
+    "evidence/after/suites/suites_summary.json": "c1bfee9e6a41e7c456fc4e725c289749d2a4944d954c7d81e3794d63020f65ac (1432 B)",
+    "evidence/before/inherit/inherit_result.json": "c20d6582ae07ee42a09dbf2c9d4563700d467b3d8ba619627a5da4a4af1561a5 (924 B)",
+    "evidence/after/inherit/inherit_result.json": "ebee0c171442b40b54ddfe4848b1cf3d417ca2f2b30b7cc9e2a73c4740cb2c1b (1426 B)",
+    "evidence/before/reports_summary.json": "178fee2ac669a7881c44ce64d0b3fdb651412cac1dac016da722c8e788349a54 (1107 B)",
+    "evidence/after/reports_summary.json": "6e8e3de7ace490371180cf334a9062f910d8a1ff063d12da09ab531ff9e9e8b6 (1106 B)",
+    "evidence/before/mut20/mutations.r2.json": "23cf9799b3ba73359656df5c027a794154f52b207409e0846299372e176a8558 (18942 B)",
+    "evidence/after/mut20/mutations.r2.json": "b1e388b3668ad24e075a278d26b5d430d5450f830c39b3586872333c0324dcc0 (18802 B)",
+    "evidence/after/mutation/mutation_results.json": "cb6ed2a213f528bb6ff8657740b86f77e161103d5def85dd0bd4eea496a9d9e1 (6861 B)",
+    "evidence/after/mutation_semantic/results.json": "6dd122885a6bae7e36f5e030f9cd13098be397a4b14265a52e9f86b831b98089 (12819 B)",
+    "evidence/after/nc/nc_results.json": "13e5edde8928b95f3d3c853b2fb9747aa13cb7774fac55e98db2e06ee49c9a84 (2872 B)",
+    "evidence/after/invariants.json": "e0903d172a91c5a0af207566fd3592e6c7565567f13958489e0e9ae6a59a0050 (15089 B, PASS 37/37)",
+    "evidence/boundary_check.json": "73dcbf19892cfe3ff7bc5724cc35e6b2f5dceb4a22edabedd9d40ad455d371d1 (452 B, 收尾读数 0 失配)"
+  },
+  "sha256_note": "handoff.json 不登记自身 hash（自引用）；其 sha256 在交付消息中报告",
+
+  "carried_findings": [
+    {
+      "id": "P3-1",
+      "carrier_row": "F-1",
+      "level": "P3",
+      "title": "I5 环境事故的引用指针失效（实质仍成立，指针需更正）",
+      "verbatim_must_carry": "I5 环境事故的**引用指针失效**：插件 docstring 与 `decision.md §8 I5` 把首跑证据指向 `evidence/before/suites/*.stderr.txt`，但该目录 4 个 `*.stderr.txt` **全部 0 字节**，且 `evidence/**` 全树 **grep 不到 `PermissionError` / `WinError 5` / `cleanup_dead_symlinks`** 任何一处。**实质仍成立**（我在 %TEMP% 独立复现 WinError 5；`_pytest_tmp` 三个不可枚举目录是盘面佐证），只是**被引证据件不存在** → 指针需更正",
+      "dispatch_addendum": "父派单同条的补充细节（一并携带、不弱化）：复审者已独立复现成功（%TEMP% 内 `os.mkdir(p, 0o700)` → listdir/rmdir 均 WinError 5、chmod 0o777 后仍 WinError 5）⇒ **需更正指针，不否定披露**。",
+      "disposition": "carried verbatim; pointer needs correcting while the disclosure is NOT overturned (reviewer independently reproduced WinError 5; three non-enumerable _pytest_tmp directories corroborate on disk); this pass changes no existing evidence file",
+      "blocking": false,
+      "source": "reviewer_report.md §13 F-1 (line 266) + §9"
+    },
+    {
+      "id": "P3-2",
+      "carrier_row": "F-2",
+      "level": "P3",
+      "title": "首跑 before 判 FAIL 无留存件（披露文本在、观测未证实）",
+      "verbatim_must_carry": "「首跑 09-24 06:44 before 相位判 FAIL（I1–I3）」**无任何留存件**：923 个 evidence 文件中 **922 个 mtime 落在 21:03–21:2x**（唯一早者是 06:43:09 的 pin 表），首跑观测与首跑仪器源文件均被覆盖（pyc 头显示首跑版源 size 62921 B，交付版 66790 B，源已不存）。**披露文本在、观测不可复核** → 记「未证实」，非造假证据",
+      "dispatch_addendum": "父派单同条的补充口径（一并携带、不弱化）：披露文本在、观测未证实；只转录为「未证实」，非造假证据，不作任何处置。",
+      "disposition": "carried verbatim as 未证实 (not as an allegation); feeds report §14 items 1 and 2; this pass re-runs nothing and rewrites no evidence",
+      "blocking": false,
+      "source": "reviewer_report.md §13 F-2 (line 267) + §2 + §8"
+    },
+    {
+      "id": "P3-3",
+      "carrier_row": "F-3",
+      "level": "P3",
+      "title": "外部载体第三次漂移（本卡窗口外）；以「0 失配」复核必须注明读数时刻",
+      "verbatim_must_carry": "外部载体**第三次漂移发生在本卡窗口之外**：`T1-10-FIX/.../handoff.json` 现为 `e6b9a94a…` / 26509 B / mtime 21:37:01，**不在**本卡 §9 的三时点表内（其时点表到 21:26:25 为止）。本卡当窗披露准确、pin 表未回写；但**今天再跑 `pins --check` 会得 external_drift=1**，父方若以「0 失配」复核需注明读数时刻",
+      "dispatch_addendum": "父派单同条的补充口径（一并携带、不弱化）：attempt_internal 仍 0；**本卡当窗三时点披露准确、pin 表未回写 = 好实践**；以「0 失配」复核时**必须注明读数时刻**。",
+      "disposition": "carried verbatim; this pass re-read the drifted file read-only at landing and confirms 26509 B / e6b9a94a40313b9ad600ba09011b64dfebb7d683b0b590fc4e2f78c10269433e / mtime 2026-09-24 21:37:01; the pin table is NOT rewritten (evidence/pin_hashes.sha256.tsv stays sha 135d71dc3dbdb673f79cb82e745100a956427190a54645c4222050b3d780945b, 36 lines)",
+      "blocking": false,
+      "source": "reviewer_report.md §13 F-3 (line 268) + §2 + §10"
+    },
+    {
+      "id": "P3-4",
+      "carrier_row": "F-4",
+      "level": "P3",
+      "title": "范围外遗留（不构成本卡违约），复审者未裁、交父决定是否登记跟进",
+      "verbatim_must_carry": "**范围外遗留（不构成本卡违约，交父方决定是否跟进）**：dict claim 内 `status` 为**非字符串**（如 `{\"status\": [\"complete\"]}`）时按「非 complete」读入 —— 我实测 C2(pending 事实) → `accept []`（无 `R-CLAIM-EXCEEDS`），C1 → `reject [R-EMPTY-EVIDENCE,R-FUTURE-CLOCK,R-SAME-INSTANT]`（时钟类检查**未被绕过**、**不崩溃**）。该形态**不在本卡 oracle §3 冻结面内**（§3/§3.2 冻结的是「载体真值非字典」），J11 行又受「一字未动」约束 → 属**既有未变行为**，本卡既未承诺也未触及",
+      "dispatch_addendum": "父派单同条的处置口径（一并携带）：**复审者未裁、交父决定是否登记跟进** ⇒ 只原样转录，不做处置。",
+      "verbatim_probe_output": "C2+claim{status:[complete]}  -> accept_claim []\nC2+claim{status:{x:1}}       -> accept_claim []\nC2+claim{status:True}        -> accept_claim []\nC2+claim{}                   -> accept_claim []\nC1+claim{status:[complete]}  -> reject_claim ['R-EMPTY-EVIDENCE','R-FUTURE-CLOCK','R-SAME-INSTANT']",
+      "disposition": "TRANSCRIBED ONLY - no disposition issued here; whether to register a follow-up card is the parent's decision (the reviewer explicitly did not rule on it)",
+      "blocking": false,
+      "source": "reviewer_report.md §13 F-4 (line 269) + verbatim probe block (lines 271-278)"
+    }
+  ],
+  "carried_findings_counts": "P1=0, P2=0, P3=4 (verbatim from reviewer_report.md §13); all four are P3 and none changes the verdict (§15)",
+  "f3_state": "pending_routed_not_refilled",
+  "f3_state_note": "F-3（畸形时间戳 rc 归属）归 T1-10-FIX reviewer 裁权，本卡只保持 pending-routed：PT-1 / PT-2 维持 rc4 → rc4（verdict/refusals 均空、report 未写出），继承 adjacent 三行末位仍 rc4；本卡与本次落定**均未自填**，本 pass 不重裁、不复述其裁决内容。",
+  "merge_order": "T1-10 625ecfe4 → T1-F2-FIX bc87bf81 → T1-F3-FIX (尚无 changes.diff)",
+
+  "blocked_by": [],
+
+  "unverified": [
+    "1. **首跑 06:44 FAIL 观测**（无留存件，见 F-2）；同理 I4 修正前的 `before 12/17 / after 28/1` 也无留存件。",
+    "2. **binding 记录的 pre-run verify 脚本 sha `b903a9f6…`**：源文件已不存在，无法直接验 sha；仅 pyc 头 `size=62921 / mtime 06:41:34` 佐证「首跑时确为另一版本」。",
+    "3. **外部 pin 两个中间态**（`bffebc01…` @21:15:08 与 21:26:25 的复位值）—— 历史瞬态，我只能核 pin 时点值（`f3f4dd2b…`）与**当前值**（`e6b9a94a…`）。",
+    "4. **合并序第三腿 T1-F3-FIX**：该卡 `changes.diff` 尚不存在，第三腿仅为声明；`_parse 82-88` 的「不交」我按**本卡改动集**核过为 ∅，但无法与其实际 diff 对撞。",
+    "5. **「除 recovery/ 外零删除」**：只能证伪不能证真（本 attempt 无 `commands.json`、无独立删除日志）；我核到的是「handoff 所列 13 路径全在、顶层 7 目录齐全」。",
+    "6. **登记册盘上回执**：handoff 已自列为移交项，运行期间未见落册 —— 与我观察一致（未见新回执件）。",
+    "7. **r1 门 rc=1 / W1 mismatch**：我复跑 before/after **字段全等**，但按 oracle 口径它是既有 superseded 态，**其绿度我不判**。",
+    "8. **`defect-2 {182-205}` 的上游出处**：我核了它的**内容语义**（quick_check/J15/J6 拒绝块）与**行号自洽**（= r2 基线 174–197 + 8），但未找到产生该区间的原始缺陷卡文件。",
+    "9. **F-3 裁决内容**：按裁权边界**我不读判、不复述**，只核本卡保持 pending-routed（已核）。"
+  ],
+  "unverified_source": "reviewer_report.md §14 (lines 284-294, byte region 26729..28347, sha256 b1d96eff2c06b9b306ad0801be0992d76f5c3c096c3ca641fedf23f65dff7fe0), transcribed item by item without altering any number",
+  "unverified_pre_verdict_retained": [
+    "独立复审未发生：本卡不自签 ACCEPT，status=review_pending、implementer_signed=false",
+    "F-3（畸形时间戳 rc 归属）= pending-routed，本卡不跑 F-3 探针、不判合规性、不自填；PT-1/PT-2 仅记录 rc=4 → rc=4",
+    "changes.diff 未被任何人 apply/merge（零生产合并）；落库与合并序执行属父方决定",
+    "登记册对本裁定的盘上回执（oracle §3 注记的 pending receipt）运行期间未见落册，仍为移交项",
+    "环境遗留：_pytest_tmp/{before_suite_basis23,before_suite_container29,mode_test_700} 三个空目录因沙箱 ACL 不可列举/不可删除，留存未清",
+    "r1 冻结门在 r2 系 SUT 上维持 rc=1（既有 expected_superseded W1 差，before==after 字段全等）—— 既有态，非本卡回归，其绿度不声称"
+  ],
+  "unverified_pre_verdict_note": "原（pre-verdict）unverified 六条逐字保留于此，未删一字；其第 1 条「独立复审未发生」已由 status_history round 2 取代，其余五条仍然有效（第 2 条现对应 report §14.9 之外的 F-3 pending-routed，第 5 条 = 本卡零生产合并、第 6 条 = report §14.6、第 7 条 = report §14.7、第 4 条 = 环境遗留仍在盘）。权威未证实清单 = 上方 unverified（report §14）。",
+
+  "next_action": "父方：1) 指派独立 reviewer 复审本 attempt（不自签）；2) 裁定 changes.diff 落库，严格按合并序 T1-10-FIX(625ecfe4) → 本卡(bc87bf81) → T1-F3-FIX；3) 复核 decision.md §8 仪器勘误与 §9 外部 pin 漂移披露；4) T1-F3-FIX 修轨按其已裁 R-TIMESTAMP-MALFORMED/rc 归属推进（与本卡 hunk 行不交已实测）。",
+
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent of session-19074bf0-0205-4315-af73-9db57597275a), 2026-09-24 (local)",
+    "status_transition": "review_pending -> accepted_scoped",
+    "what_this_pass_did": "verified the carrier read-only (baa60fc402988a5f6d02f13e29343a21fc6849faba11c06a6c8096ba10cdcce9 / 30308 B / 312 lines == sidecar read-back == dispatch pin); created review.md (it did NOT exist in this attempt before this pass) carrying the ACCEPT transcription, the four P3 findings verbatim, the reviewer's measured rc inventory verbatim, the two independent evidences, the diff recompute, the vocabulary, report §14 and the boundary statement, plus a parent-dispatch transcription erratum section; transcribed handoff.json's status face (status / status_before / status_transition / status_authority / status_history / reviewer_status / carried_findings / unverified(=report §14) / f3_state / merge_order / verdict_is_transcribed_not_authored / bookkeeping); created evidence/T1-F2-FIX/qualification.json mirroring the same ruling. Zero bytes written to reviewer_report.md and its sidecar, to any oracle, to any other card, to any production file, to the five plan files; 0 git writes; no tests; no network.",
+    "pre_image_handoff": {
+      "file": "handoff.json",
+      "bytes": 23422,
+      "sha256": "2d7cf62d36332cab5c3672c25455b8105d14007e6802077299b6ea69a2a40304",
+      "mtime": "2026-09-24 21:31:15 (local)",
+      "status_at_pre_image": "review_pending",
+      "implementer_signed_at_pre_image": false
+    },
+    "files_written": [
+      "review.md (created; did not exist before this pass; sha256 + bytes reported in the delivery message)",
+      "handoff.json (status face transcription only; pre-image 23422 B / 2d7cf62d36332cab5c3672c25455b8105d14007e6802077299b6ea69a2a40304; post-image sha256 + bytes reported in the delivery message; re-parsed after write)",
+      "evidence/T1-F2-FIX/qualification.json (created; directory evidence/T1-F2-FIX/ newly created; sha256 + bytes reported in the delivery message)"
+    ],
+    "json_reparse_verified": true,
+    "evidence_file_count_note": "the reviewer's reading of 923 evidence files is the pre-landing figure; this pass adds exactly one new file under evidence/ (evidence/T1-F2-FIX/qualification.json), so the count is 924 at landing time. No pre-existing evidence file was touched.",
+    "parent_dispatch_erratum": "父派单转录层把 F-1 写成「BASIS_REGISTRY 定义行 56 set→tuple」，实际 changes.diff 行 56 改的是 TRUSTED_CLOCKS（set→tuple）；BASIS_REGISTRY 属 T1-10 前置层（baseline 行 68、落在 T1-10 新增块 60-74 内），本卡未碰。实现者自己的 decision.md §3.1（L45）与 handoff.json 写的是 TRUSTED_CLOCKS，是对的；错在父的转录层。详见 review.md §7。本 pass 不改任何既有文件的既有字节。",
+    "stale_pre_verdict_text_retained": [
+      "signature_note（原值逐字保留）",
+      "completed_steps / one_observable_result / before_after_key_rc / mutation_arms / instrument_corrections / boundary / external_pin_drift / evidence_paths / sha256 / changed_paths 等实现期字节 —— 一律未改",
+      "next_action 仍写「指派独立 reviewer 复审本 attempt」—— 该步已由本轮独立复审完成；按「既有 carrier 只读」纪律原样保留，未改一字"
+    ],
+    "no_self_sign": true,
+    "verdict_is_transcribed_not_authored": true,
+    "implementer_signed": false,
+    "git_boundary": "git -c core.quotepath=false diff HEAD --name-only: total 3824 / non-.planning 0 measured before this pass; re-measured after this pass and reported in the delivery message; no state-changing git command executed"
+  }
+}

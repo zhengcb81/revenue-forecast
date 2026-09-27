@@ -1,0 +1,1762 @@
+"""Selective, source-only narrative evidence parsing and selection.
+
+This module is deliberately separate from ``normalize_catalog`` and from the
+catalog writer. It parses document structure in memory, keeps only selected
+business evidence as canonical EvidenceSpan values, and never writes a DB or
+starts a model request.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field, replace
+import hashlib
+import json
+from pathlib import Path
+import re
+from types import MappingProxyType
+from typing import Any, Literal
+import unicodedata
+
+from company_wiki.source_contract import EvidenceCoordinates, EvidenceSpan, ParseStatus
+
+
+NARRATIVE_PARSER_NAME = "selective_narrative_parser"
+NARRATIVE_PARSER_VERSION = "0.1.0"
+_FINANCIAL_TERMS = re.compile(
+    r"资产负债表|利润表|现金流量表|每股收益|归母净利润|营业收入|营业成本|"
+    r"货币资金|应收账款|存货|固定资产|加权平均|基本每股|稀释每股|"
+    r"balance sheet|income statement|cash flow statement|earnings per share",
+    re.IGNORECASE,
+)
+_FINANCIAL_HEADERS = re.compile(
+    r"报告期|期末余额|期初余额|本期发生额|上期发生额|金额\s*\(?元\)?|"
+    r"项目\s*金额|会计科目|financial statement|period ended",
+    re.IGNORECASE,
+)
+_SIGNALS: dict[str, tuple[str, ...]] = {
+    "industry_dynamics": (
+        "行业趋势", "行业动态", "行业格局", "供需格局", "竞争格局", "市场需求变化",
+        "行业政策变化", "产业趋势", "industry trend", "market trend", "competitive landscape",
+        "泛半导体产业", "市场发展", "半导体产业",
+        "market expansion", "prescription trends", "supply constraints", "capacity constraints",
+        "available supply", "demand exceeds", "demand continues", "supply-demand imbalance",
+    ),
+    "core_business": (
+        "主营业务", "核心业务", "业务进展", "业务布局", "生产经营", "主业发展",
+        "关键设备领域", "设备市场", "设备产品", "core business", "business development",
+    ),
+    "new_business": (
+        "新业务", "第二曲线", "新产品", "新市场", "业务开拓", "新兴业务",
+        "投资和并购", "投资并购", "产业链上下游", "新兴领域", "市场布局", "自主研发",
+        "new business", "new product", "new market", "pipeline", "model choice",
+        "open and custom models", "frontier models", "multiple models", "commercial approach",
+    ),
+    "overseas": (
+        "出海", "海外市场", "境外市场", "国际化", "海外客户", "出口业务",
+        "overseas", "international", "global expansion", "export market",
+    ),
+    "orders_customers": (
+        "订单", "客户验证", "客户导入", "重复订单", "新增客户", "客户需求",
+        "客户端验证", "批量订货", "批量订单", "付运量显著提升",
+        "order", "customer", "backlog", "qualification", "starter doses", "patient uptake",
+        "customer uptake", "prescription growth",
+    ),
+    "capacity_projects": (
+        "产能", "产线", "中试线", "扩产", "投产", "募投项目", "项目建设", "基地建设",
+        "项目以", "精密加工业务", "产业链延伸", "向下游延伸", "零件交付",
+        "capacity", "production line", "pilot line", "facility", "capital project",
+    ),
+    "products_rd": (
+        "研发项目", "研发进展", "技术突破", "核心技术", "量产", "试产", "中试", "产品验证", "产品迭代", "临床",
+        "产品开发", "产品销售", "实现销售", "clinical trial", "trial", "trial results",
+        "phase 1", "phase 2", "phase 3", "clinical data", "too early to speculate",
+        "non-inferiority", "superiority",
+        "research and development", "technology breakthrough", "commercialization", "launched", "pilot line",
+    ),
+}
+_PROGRESS = re.compile(
+    r"已经|已完成|完成|进入|通过|取得|推出|签订|新增|获批|验证|量产|试产|投产|"
+    r"建设|扩建|开拓|拓展|交付|落地|预计|计划|推进|持续|达到|同比增长|增长|"
+    r"实现销售|开始销售|正式发布|正式投产|开工|建成|上线|获客户|客户导入|"
+    r"achieved|completed|entered|launched|signed|added|approved|validated|scaled|expanded|"
+    r"delivered|planned|expected|progressed|increased|grew|commercialized",
+    re.IGNORECASE,
+)
+_RECENCY = re.compile(
+    r"(?:20\d{2}\s*年|本期|报告期|当年|本年度|近期|目前|截至|当前|最新|"
+    r"year|quarter|recent|currently|as of|latest|during the period)",
+    re.IGNORECASE,
+)
+_PROJECT_PLAN = re.compile(
+    r"募投项目.{0,30}(?:建设|实施|达产|投产|产能|计划|预计|进度|风险)|"
+    r"募集资金.*(?:建设|用于)|项目建设|项目建成后|预计达产|建设期|"
+    r"本项目以.{0,60}(?:拓展|延伸|建设|发展)|"
+    r"拟建|拟投产|规划建设|will build|planned capacity|project completion|"
+    r"commissioning|expected to reach capacity",
+    re.IGNORECASE,
+)
+_PROJECT_SECTION_HEADING = re.compile(
+    r"项目建设的必要性|项目建设必要性|募投项目.{0,24}(?:必要性|风险|可行性)|"
+    r"募集资金投资项目.{0,24}(?:必要性|风险|可行性)|"
+    r"(?:本次)?募投项目.{0,20}(?:供应商认证|产品认证).{0,8}风险",
+    re.IGNORECASE,
+)
+_BUSINESS_SECTION_HEADING = re.compile(
+    r"(?:第[一二三四五六七八九十\d]+节\s*)?业务与技术|主要产品与服务|主营业务情况",
+    re.IGNORECASE,
+)
+_STRATEGIC_PLAN = re.compile(
+    r"未来.{0,30}(?:将|预计|有望|计划|拟).{0,40}(?:覆盖|建设|扩展|形成|达到|拓展|开发|进入|投资|并购|市场)|"
+    r"积极考虑.{0,16}(?:投资|并购)|将通过.{0,28}(?:自主研发|行业合作|产业链|并购)",
+    re.IGNORECASE,
+)
+_STATIC_DEFINITION = re.compile(
+    r"是指|指的是|定义为|主要是指|生产方式是指|订单式生产是指|production\s+is\s+defined\s+as",
+    re.IGNORECASE,
+)
+_TABLE_OF_CONTENTS = re.compile(r"(?:\.{3,}|…{2,})\s*\d+\s*$")
+_ACCOUNTING_CONTEXT = re.compile(
+    r"合同现金流|公允价值|资本化时点|资本化项目|开发支出|应收账款|收款政策|营运资金|未实现销售收入",
+    re.IGNORECASE,
+)
+_HEADING_ONLY = re.compile(
+    r"^[（(]?[一二三四五六七八九十\d]+[）).、]\s*[^。！？!?；;]{1,24}(?:风险|项目|方案|安排)$"
+)
+_HIGH_VALUE_EVENT = re.compile(
+    r"(?:新产品|新业务|第二曲线|新市场).{0,24}(?:推出|发布|验证|认证|量产|试产|投产|销售|订单|客户|开拓|拓展|落地)|"
+    r"(?:推出|发布|取得|通过|完成|实现|进入|开拓|拓展|新增|签订).{0,24}"
+    r"(?:新产品|新业务|第二曲线|新市场|海外市场|境外市场|国际市场|客户|订单|采购合同|销售合同|供货合同|合作协议|验证|认证|量产|投产|交付)|"
+    r"(?:海外|出海|境外|国际化).{0,24}(?:拓展|进入|新增|签订|营收|销售|开拓|落地)|"
+    r"(?:海外客户|境外客户|国际客户).{0,16}(?:新增|签订|导入|验证|重复订单)|"
+    r"(?:客户|订单|合同|产线|产能|基地|募投项目).{0,18}"
+    r"(?:新增|获得|签订|中标|通过|完成|实现|进入|量产|试产|投产|建成|开工|扩建|交付|验证|认证)|"
+    r"(?:签署|签订|建立).{0,48}(?:合作意向书|合作协议|战略合作|合资公司|项目合作)|"
+    r"(?:中试线|试生产线|pilot line).{0,24}(?:建设|推进|完成|投产|中试|建成|运行)|"
+    r"(?:开发|推出|发布|实现|开始).{0,40}(?:新产品|新业务|产品销售|商业化|意向书)|"
+    r"客户端.{0,18}(?:验证|订单)|批量订货|批量订单|付运量.{0,14}(?:提升|增长)|"
+    r"实现销售|"
+    r"customer qualification|customer validation|repeat order|new product.{0,24}(?:launched|validated|commercialized|sales|order)|"
+    r"(?:launched|validated|commercialized|expanded|entered|signed|won).{0,24}"
+    r"(?:new product|new business|overseas|international|customer|order|capacity|facility)|"
+    r"model choice|models are an input|model is swappable|multiple models|open and custom models|"
+    r"demand.{0,40}(?:exceeds|outstrips).{0,40}(?:available\s+)?(?:supply|capacity)|"
+    r"efficiency gains?.{0,60}monetiz|supply-demand imbalance|"
+    r"market expansion|starter doses|prescription trends.{0,60}"
+    r"(?:increased|declined|grew|slowed|currently|reached|prescriptions)|"
+    r"too early to speculate|non-inferiority|superiority|"
+    r"(?:phase|trial).{0,35}(?:clinical|superiority|results)",
+    re.IGNORECASE,
+)
+_QA_QUESTION = re.compile(r"(?m)(?:^|\n|\s)(?P<number>\d{1,3}\s*[、.．]\s*)?(?:问|问题)\s*[:：]")
+_QA_ANSWER = re.compile(r"(?:答复|回答|答|回复)\s*[:：]")
+_QA_TRANSITION = re.compile(
+    r"(?:move\s+over\s+to|move\s+to)\s+Q\s*&\s*A|questions\s*(?:&|and)\s*answers",
+    re.IGNORECASE,
+)
+_QA_FIRST_REFERENCE = re.compile(r"\b(?:first|firstly)\s+(?:one|question)\b|\bon\s+the\s+first\b", re.I)
+_QA_SECOND_REFERENCE = re.compile(
+    r"\b(?:second|secondly)\s+(?:one|question)\b|\bon\s+the\s+second\b", re.I
+)
+_ANALYST_SUBQUESTION = re.compile(
+    r"\b(?:and\s+)?(?:secondly|second\s+question)\b", re.IGNORECASE
+)
+_TRANSCRIPT_START = re.compile(
+    r"^(?:full conference call transcript|prepared remarks|conference call transcript)\s*:?[ \t]*$",
+    re.IGNORECASE,
+)
+_QA_HEADING = re.compile(r"^questions\s*(?:&|and)\s*answers\s*:?[ \t]*$", re.IGNORECASE)
+_TRANSCRIPT_END = re.compile(
+    r"^(?:forward-looking statements|disclaimer|copyright(?:\s|$)|about the motley fool)",
+    re.IGNORECASE,
+)
+_SPEAKER_LINE = re.compile(
+    r"^(?P<name>[A-Z][A-Za-z0-9.'’ -]{1,78}?)(?:\s*--\s*(?P<title>[^:]{1,80}))?:\s*(?P<body>.*)$"
+)
+_SPEAKER_LABEL = re.compile(
+    r"^(?P<name>[A-Z][A-Za-z0-9.'’ -]{1,78})\s*--\s*(?P<title>[^:]{1,80})\s*$"
+)
+_EDITORIAL = re.compile(
+    r"full conference call transcript|call participants|glossary|editorial|"
+    r"forward-looking statements|copyright|motley fool",
+    re.IGNORECASE,
+)
+
+
+@dataclass(frozen=True)
+class NarrativeUnit:
+    """One transient text block or table row with a replayable source locator."""
+
+    unit_id: str
+    source_id: str
+    parser_name: str
+    parser_version: str
+    coordinates: EvidenceCoordinates
+    raw_text: str
+    unit_kind: str
+    source_role: str
+    language: str
+    quality_flags: tuple[str, ...] = ()
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if not self.raw_text or self.raw_text != self.raw_text.strip():
+            raise ValueError("narrative unit text must be non-empty and trimmed")
+        if unicodedata.normalize("NFC", self.raw_text) != self.raw_text:
+            raise ValueError("narrative unit text must use NFC")
+        if not self.unit_id.startswith("urn:company-wiki:narrative-unit:sha256:"):
+            raise ValueError("unit_id must be a canonical narrative-unit SHA-256")
+        if not isinstance(self.coordinates, EvidenceCoordinates):
+            raise TypeError("coordinates must be EvidenceCoordinates")
+        # Copy so callers cannot mutate source context after a unit is hashed.
+        object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+
+    @property
+    def text_sha256(self) -> str:
+        return hashlib.sha256(self.raw_text.encode("utf-8")).hexdigest()
+
+    def to_evidence_span(
+        self,
+        *,
+        topics: Sequence[str],
+        selection_reasons: Sequence[str],
+        selection_group_id: str | None = None,
+    ) -> EvidenceSpan:
+        structured = dict(self.metadata)
+        structured.update(
+            {
+                "language": self.language,
+                "selection_reasons": list(selection_reasons),
+                "source_role": self.source_role,
+                "text_sha256": self.text_sha256,
+                "topics": list(topics),
+                "unit_kind": self.unit_kind,
+            }
+        )
+        if selection_group_id is not None:
+            structured["selection_group_id"] = selection_group_id
+        return EvidenceSpan.create(
+            source_id=self.source_id,
+            coordinates=self.coordinates,
+            raw_text=self.raw_text,
+            structured_value=structured,
+            parser_name=self.parser_name,
+            parser_version=self.parser_version,
+            parse_status=ParseStatus.PARSED,
+            quality_flags=self.quality_flags,
+        )
+
+
+@dataclass(frozen=True)
+class NarrativeParseResult:
+    source_id: str
+    source_sha256: str
+    language: str
+    units: tuple[NarrativeUnit, ...]
+    page_count: int = 0
+    pages_read: int = 0
+    opaque_pages: tuple[int, ...] = ()
+    table_scan_pages: tuple[int, ...] = ()
+    deferred_table_pages: tuple[int, ...] = ()
+    line_count: int = 0
+    errors: tuple[str, ...] = ()
+
+    @property
+    def coverage_complete(self) -> bool:
+        if self.errors or self.opaque_pages or self.deferred_table_pages:
+            return False
+        if self.page_count:
+            return self.pages_read == self.page_count
+        return self.line_count > 0
+
+
+@dataclass(frozen=True)
+class NarrativeEvidencePackage:
+    source_id: str
+    source_sha256: str
+    document_kind: str
+    status: Literal["selected", "partial", "skipped_no_narrative", "needs_review", "blocked"]
+    evidence_spans: tuple[EvidenceSpan, ...]
+    candidate_count: int
+    dropped_financial_count: int
+    source_units: int
+    omitted_candidate_count: int
+    coverage_complete: bool
+
+    @property
+    def selected_text_bytes(self) -> int:
+        return sum(len((span.raw_text or "").encode("utf-8")) for span in self.evidence_spans)
+
+    def summary_input(self) -> dict[str, Any]:
+        """Return selected evidence only; the full document is never included."""
+        grouped: dict[str, list[EvidenceSpan]] = {}
+        for span in self.evidence_spans:
+            group_id = span.structured_value.get("selection_group_id")
+            key = str(group_id) if group_id is not None else span.span_id
+            grouped.setdefault(key, []).append(span)
+
+        evidence: list[dict[str, Any]] = []
+        for group_id, members in grouped.items():
+            members.sort(
+                key=lambda span: (
+                    span.coordinates.page_number or 0,
+                    span.coordinates.paragraph_index or 0,
+                    span.coordinates.table_index or 0,
+                    span.coordinates.row_index or 0,
+                    span.coordinates.column_index or 0,
+                )
+            )
+            member_ids = [span.span_id for span in members]
+            member_texts = [span.raw_text or "" for span in members]
+            language = str(members[0].structured_value.get("language", "zh"))
+            separator = " " if language.startswith("en") else ""
+            raw_text = separator.join(member_texts)
+            topics = sorted(
+                {
+                    str(topic)
+                    for span in members
+                    for topic in span.structured_value.get("topics", ())
+                }
+            )
+            reasons = sorted(
+                {
+                    str(reason)
+                    for span in members
+                    for reason in span.structured_value.get("selection_reasons", ())
+                }
+            )
+            quality_flags = sorted(
+                {flag for span in members for flag in span.quality_flags}
+            )
+            row: dict[str, Any] = {
+                "evidence_ids": member_ids,
+                "locators": [span.locator for span in members],
+                "source_role": members[0].structured_value.get("source_role", "unknown"),
+                "topics": topics,
+                "selection_reasons": reasons,
+                "raw_text_sha256": hashlib.sha256(raw_text.encode("utf-8")).hexdigest(),
+                "raw_text": raw_text,
+                "quality_flags": quality_flags,
+                "parser_name": members[0].parser_name,
+                "parser_version": members[0].parser_version,
+            }
+            if len(members) == 1:
+                row["evidence_id"] = members[0].span_id
+                row["locator"] = members[0].locator
+            else:
+                row["context_group_id"] = group_id
+                row["context_member_count"] = len(members)
+            evidence.append(row)
+
+        return {
+            "schema_version": "narrative-summary-input/0.2.0",
+            "source_id": self.source_id,
+            "source_sha256": self.source_sha256,
+            "document_kind": self.document_kind,
+            "summary_scope": "selected_evidence_only",
+            "evidence": evidence,
+        }
+
+
+@dataclass(frozen=True)
+class SummaryClaim:
+    claim_id: str
+    text: str
+    evidence_ids: tuple[str, ...]
+    claim_type: Literal["company_statement", "analyst_question", "editorial", "uncertain"]
+    modality: Literal["actual", "planned", "forecast", "question", "negation", "uncertain"]
+    needs_review: bool = False
+
+
+@dataclass(frozen=True)
+class SourceSummaryDraft:
+    source_id: str
+    source_sha256: str
+    language: str
+    claims: tuple[SummaryClaim, ...]
+    status: Literal["draft", "needs_review"] = "draft"
+
+
+class SummaryValidationError(ValueError):
+    """Raised when a summary draft violates source, role, or citation rules."""
+
+
+def _make_unit(
+    *,
+    source_id: str,
+    parser_version: str,
+    coordinates: EvidenceCoordinates,
+    raw_text: str,
+    unit_kind: str,
+    source_role: str,
+    language: str,
+    metadata: Mapping[str, Any],
+    quality_flags: Sequence[str] = (),
+) -> NarrativeUnit:
+    canonical_text = unicodedata.normalize("NFC", raw_text.replace("\r\n", "\n")).strip()
+    if not canonical_text:
+        raise ValueError("cannot create a narrative unit from blank text")
+    identity = json.dumps(
+        {
+            "coordinates": coordinates.locator(),
+            "parser_name": NARRATIVE_PARSER_NAME,
+            "parser_version": parser_version,
+            "source_id": source_id,
+            "text_sha256": hashlib.sha256(canonical_text.encode("utf-8")).hexdigest(),
+            "unit_kind": unit_kind,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    unit_id = "urn:company-wiki:narrative-unit:sha256:" + hashlib.sha256(
+        identity.encode("utf-8")
+    ).hexdigest()
+    return NarrativeUnit(
+        unit_id=unit_id,
+        source_id=source_id,
+        parser_name=NARRATIVE_PARSER_NAME,
+        parser_version=parser_version,
+        coordinates=coordinates,
+        raw_text=canonical_text,
+        unit_kind=unit_kind,
+        source_role=source_role,
+        language=language,
+        quality_flags=tuple(quality_flags),
+        metadata=metadata,
+    )
+
+
+def _sentence_fragments(text: str) -> list[tuple[int, int, str]]:
+    """Split a PDF text block into sentence-sized units with block offsets."""
+    fragments: list[tuple[int, int, str]] = []
+    start = 0
+    for match in re.finditer(r"[。！？!?；;]+[”’\"'）】》」』]*", text):
+        end = match.end()
+        left = start
+        right = end
+        while left < right and text[left].isspace():
+            left += 1
+        while right > left and text[right - 1].isspace():
+            right -= 1
+        value = text[left:right]
+        if value:
+            fragments.append((left, right, value))
+        start = end
+    left = start
+    right = len(text)
+    while left < right and text[left].isspace():
+        left += 1
+    while right > left and text[right - 1].isspace():
+        right -= 1
+    if left < right:
+        fragments.append((left, right, text[left:right]))
+    return fragments or [(0, len(text), text)]
+
+
+def _pdf_qa_parts(text: str, *, group_prefix: str) -> list[dict[str, Any]]:
+    """Split repeated investor Q&A markers inside one extracted table cell."""
+    questions = list(_QA_QUESTION.finditer(text))
+    fragments: list[dict[str, Any]] = []
+    if not questions:
+        answer = _QA_ANSWER.search(text)
+        if answer is None:
+            return fragments
+        prefix = text[: answer.start()].strip()
+        if prefix:
+            fragments.append(
+                {
+                    "text": prefix,
+                    "start": 0,
+                    "end": answer.start(),
+                    "role": "investor_question",
+                    "state": "question_continuation",
+                    "qa_group_id": None,
+                    "question_number": None,
+                }
+            )
+        fragments.append(
+            {
+                "text": text[answer.start() :].strip(),
+                "start": answer.start(),
+                "end": len(text),
+                "role": "management",
+                "state": "answer_continuation",
+                "qa_group_id": None,
+                "question_number": None,
+            }
+        )
+        return fragments
+
+    first_question_start = questions[0].start()
+    prefix = text[:first_question_start]
+    if prefix.strip():
+        answer = _QA_ANSWER.search(prefix)
+        if answer is not None:
+            question_tail = prefix[: answer.start()].strip()
+            if question_tail:
+                fragments.append(
+                    {
+                        "text": question_tail,
+                        "start": 0,
+                        "end": answer.start(),
+                        "role": "investor_question",
+                        "state": "question_continuation",
+                        "qa_group_id": None,
+                        "question_number": None,
+                    }
+                )
+            fragments.append(
+                {
+                    "text": prefix[answer.start() :].strip(),
+                    "start": answer.start(),
+                    "end": first_question_start,
+                    "role": "management",
+                    "state": "answer_continuation",
+                    "qa_group_id": None,
+                    "question_number": None,
+                }
+            )
+        else:
+            fragments.append(
+                {
+                    "text": prefix.strip(),
+                    "start": 0,
+                    "end": first_question_start,
+                    "role": "unknown",
+                    "state": "before_first_question",
+                    "qa_group_id": None,
+                    "question_number": None,
+                }
+            )
+
+    for index, question in enumerate(questions):
+        end = questions[index + 1].start() if index + 1 < len(questions) else len(text)
+        answer = _QA_ANSWER.search(text, question.end(), end)
+        group_id = f"{group_prefix}:q{index + 1}"
+        question_end = answer.start() if answer else end
+        question_text = text[question.start() : question_end].strip()
+        if question_text:
+            fragments.append(
+                {
+                    "text": question_text,
+                    "start": question.start(),
+                    "end": question_end,
+                    "role": "investor_question",
+                    "state": "question_paired" if answer else "question_unanswered",
+                    "qa_group_id": group_id,
+                    "question_number": (question.group("number") or "").strip(" 、.．") or None,
+                }
+            )
+        if answer:
+            answer_text = text[answer.start() : end].strip()
+            if answer_text:
+                fragments.append(
+                    {
+                        "text": answer_text,
+                        "start": answer.start(),
+                        "end": end,
+                        "role": "management",
+                        "state": "answer_paired",
+                        "qa_group_id": group_id,
+                        "question_number": (question.group("number") or "").strip(" 、.．") or None,
+                    }
+                )
+    return fragments
+
+
+def _link_cross_page_qa(units: Sequence[NarrativeUnit]) -> tuple[NarrativeUnit, ...]:
+    """Pair a trailing question with its answer continuation on the next page."""
+    output = list(units)
+    pending_index: int | None = None
+    continuation_indices: list[int] = []
+
+    def mark_orphan(index: int) -> None:
+        item = output[index]
+        metadata = dict(item.metadata)
+        metadata["qa_state"] = "question_orphan_needs_review"
+        output[index] = replace(item, metadata=metadata)
+
+    for index, unit in enumerate(output):
+        state = unit.metadata.get("qa_state")
+        if state == "question_unanswered":
+            if pending_index is not None:
+                mark_orphan(pending_index)
+                for continuation_index in continuation_indices:
+                    mark_orphan(continuation_index)
+            pending_index = index
+            continuation_indices = []
+        elif state == "question_continuation" and pending_index is not None:
+            continuation_indices.append(index)
+        elif state == "answer_continuation":
+            if pending_index is None:
+                metadata = dict(unit.metadata)
+                metadata["qa_state"] = "orphan_answer_needs_review"
+                output[index] = replace(unit, metadata=metadata)
+                continue
+            question = output[pending_index]
+            group_id = question.metadata.get("qa_group_id")
+            question_meta = dict(question.metadata)
+            question_meta["qa_state"] = "question_paired_cross_page"
+            output[pending_index] = replace(question, metadata=question_meta)
+            for continuation_index in continuation_indices:
+                continuation = output[continuation_index]
+                continuation_meta = dict(continuation.metadata)
+                continuation_meta["qa_group_id"] = group_id
+                continuation_meta["qa_state"] = "question_paired_cross_page"
+                output[continuation_index] = replace(continuation, metadata=continuation_meta)
+            answer_meta = dict(unit.metadata)
+            answer_meta["qa_group_id"] = group_id
+            answer_meta["qa_state"] = "answer_paired_cross_page"
+            output[index] = replace(unit, metadata=answer_meta)
+            pending_index = None
+            continuation_indices = []
+        elif state in {"question_paired", "answer_paired"} and pending_index is not None:
+            mark_orphan(pending_index)
+            for continuation_index in continuation_indices:
+                mark_orphan(continuation_index)
+            pending_index = None
+            continuation_indices = []
+    if pending_index is not None:
+        mark_orphan(pending_index)
+        for continuation_index in continuation_indices:
+            mark_orphan(continuation_index)
+    return tuple(output)
+
+
+def parse_pdf(
+    path: Path,
+    *,
+    source_id: str,
+    source_sha256: str,
+    parser_version: str = NARRATIVE_PARSER_VERSION,
+    language: str = "zh",
+    full_table_scan: bool = False,
+    table_pages: Sequence[int] | None = None,
+) -> NarrativeParseResult:
+    """Scan every page cheaply, then detect tables only on candidate pages.
+
+    Set ``full_table_scan`` only for bounded negative-control documents or a
+    review run that needs complete table coverage. Unscanned table pages are
+    reported as deferred, so the selector cannot auto-skip that document.
+    """
+    try:
+        import fitz
+    except ImportError as exc:  # pragma: no cover - environment-specific
+        raise RuntimeError("PDF parsing requires the optional PyMuPDF dependency") from exc
+
+    units: list[NarrativeUnit] = []
+    opaque_pages: list[int] = []
+    errors: list[str] = []
+    pages_read = 0
+    with fitz.open(path) as document:
+        page_count = len(document)
+        page_blocks: list[tuple[int, list[tuple[int, tuple[float, ...], str]]]] = []
+        signal_pages: set[int] = set()
+        empty_pages: set[int] = set()
+        for page_number, page in enumerate(document, start=1):
+            try:
+                snapshot = page.get_text("dict", sort=False)
+                blocks: list[tuple[int, tuple[float, ...], str]] = []
+                for raw_block_no, block in enumerate(snapshot.get("blocks", ())):
+                    if block.get("type") != 0:
+                        continue
+                    lines = [
+                        "".join(span.get("text", "") for span in line.get("spans", ()))
+                        for line in block.get("lines", ())
+                    ]
+                    text = "\n".join(lines).strip()
+                    if not text:
+                        continue
+                    bbox = tuple(float(value) for value in block.get("bbox", ()))
+                    blocks.append((raw_block_no, bbox, text))
+                page_blocks.append((page_number, blocks))
+                if _topics("\n".join(item[2] for item in blocks)):
+                    signal_pages.add(page_number)
+                if not blocks:
+                    empty_pages.add(page_number)
+                pages_read += 1
+            except Exception as exc:
+                errors.append(f"page_text:{page_number}:{type(exc).__name__}")
+                page_blocks.append((page_number, []))
+                empty_pages.add(page_number)
+
+        if full_table_scan:
+            table_scan_pages = set(range(1, page_count + 1))
+        elif table_pages is not None:
+            table_scan_pages = {int(value) for value in table_pages}
+            invalid = sorted(value for value in table_scan_pages if not 1 <= value <= page_count)
+            if invalid:
+                raise ValueError(f"table_pages outside document bounds: {invalid}")
+        else:
+            # Routine mode uses event-bearing pages rather than every page that
+            # merely mentions products, markets, or R&D. Blank pages are checked
+            # because they may contain image-only business evidence.
+            table_scan_pages = {
+                number
+                for number, blocks in page_blocks
+                if _table_scan_signal("\n".join(item[2] for item in blocks))
+            }
+            for page_number in tuple(table_scan_pages):
+                table_scan_pages.update(
+                    candidate
+                    for candidate in (page_number - 1, page_number + 1)
+                    if 1 <= candidate <= page_count
+                )
+            table_scan_pages.update(empty_pages)
+
+        for page_number, blocks in page_blocks:
+            page_unit_count = len(units)
+            qa_page = any(
+                _QA_QUESTION.search(text) or _QA_ANSWER.search(text)
+                for _block_no, _bbox, text in blocks
+            )
+            paragraph_no = 0
+            for raw_block_no, bbox, text in blocks:
+                block_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
+                for char_start, char_end, fragment_text in _sentence_fragments(text):
+                    units.append(
+                        _make_unit(
+                            source_id=source_id,
+                            parser_version=parser_version,
+                            coordinates=EvidenceCoordinates(
+                                page_number=page_number,
+                                paragraph_index=paragraph_no,
+                            ),
+                            raw_text=fragment_text,
+                            unit_kind="pdf_text_block",
+                            source_role="qa_text_shadow" if qa_page else "company_filing",
+                            language=language,
+                            metadata={
+                                "bbox": bbox,
+                                "block_char_end": char_end,
+                                "block_char_start": char_start,
+                                "block_sha256": block_sha256,
+                                "pdf_block": raw_block_no,
+                            },
+                        )
+                    )
+                    paragraph_no += 1
+
+            if page_number in table_scan_pages:
+                qa_unit_start = len(units)
+                try:
+                    page = document.load_page(page_number - 1)
+                    finder = page.find_tables()
+                    for table_index, table in enumerate(finder.tables):
+                        rows = table.extract() or []
+                        normalized_rows = [
+                            ["" if cell is None else str(cell).strip() for cell in row]
+                            for row in rows
+                        ]
+                        headers = next(
+                            (row for row in normalized_rows if any(cell for cell in row)), []
+                        )
+                        bbox = tuple(float(value) for value in table.bbox)
+                        for row_index, row in enumerate(normalized_rows):
+                            text = " | ".join(cell for cell in row if cell)
+                            if not text:
+                                continue
+                            qa_created = False
+                            for column_index, cell in enumerate(row):
+                                if not cell:
+                                    continue
+                                group_prefix = f"p{page_number}:t{table_index}:r{row_index}:c{column_index}"
+                                fragments = _pdf_qa_parts(cell, group_prefix=group_prefix)
+                                if not fragments:
+                                    continue
+                                qa_created = True
+                                cell_sha = hashlib.sha256(cell.encode("utf-8")).hexdigest()
+                                for fragment in fragments:
+                                    fragment_text = str(fragment["text"]).strip()
+                                    if not fragment_text:
+                                        continue
+                                    units.append(
+                                        _make_unit(
+                                            source_id=source_id,
+                                            parser_version=parser_version,
+                                            coordinates=EvidenceCoordinates(
+                                                page_number=page_number,
+                                                table_index=table_index,
+                                                row_index=row_index,
+                                                column_index=column_index,
+                                            ),
+                                            raw_text=fragment_text,
+                                            unit_kind="pdf_table_qa_fragment",
+                                            source_role=str(fragment["role"]),
+                                            language=language,
+                                            quality_flags=("locator_unstable",),
+                                            metadata={
+                                                "bbox": bbox,
+                                                "cell_fragment_end": int(fragment["end"]),
+                                                "cell_fragment_sha256": hashlib.sha256(
+                                                    fragment_text.encode("utf-8")
+                                                ).hexdigest(),
+                                                "cell_fragment_start": int(fragment["start"]),
+                                                "cell_sha256": cell_sha,
+                                                "column_index": column_index,
+                                                "qa_group_id": fragment["qa_group_id"],
+                                                "qa_question_number": fragment["question_number"],
+                                                "qa_state": fragment["state"],
+                                                "row_cells": tuple(row),
+                                                "table_headers": tuple(headers),
+                                            },
+                                        )
+                                    )
+                            if qa_created:
+                                continue
+                            units.append(
+                                _make_unit(
+                                    source_id=source_id,
+                                    parser_version=parser_version,
+                                    coordinates=EvidenceCoordinates(
+                                        page_number=page_number,
+                                        table_index=table_index,
+                                        row_index=row_index,
+                                    ),
+                                    raw_text=text,
+                                    unit_kind="pdf_table_row",
+                                    source_role="company_filing",
+                                    language=language,
+                                    metadata={
+                                        "bbox": bbox,
+                                        "row_cells": tuple(row),
+                                        "table_headers": tuple(headers),
+                                    },
+                                )
+                            )
+                except Exception as exc:
+                    errors.append(f"page_table:{page_number}:{type(exc).__name__}")
+
+                if qa_page and not any(
+                    unit.unit_kind == "pdf_table_qa_fragment" for unit in units[qa_unit_start:]
+                ):
+                    opaque_pages.append(page_number)
+
+            if len(units) == page_unit_count and page_number not in opaque_pages:
+                opaque_pages.append(page_number)
+
+    return NarrativeParseResult(
+        source_id=source_id,
+        source_sha256=source_sha256,
+        language=language,
+        units=_link_cross_page_qa(units),
+        page_count=page_count,
+        pages_read=pages_read,
+        opaque_pages=tuple(opaque_pages),
+        table_scan_pages=tuple(sorted(table_scan_pages)),
+        deferred_table_pages=tuple(sorted(set(range(1, page_count + 1)) - table_scan_pages)),
+        errors=tuple(errors),
+    )
+
+
+def _speaker_role(name: str, title: str, *, qa_mode: bool, management_speakers: set[str]) -> str:
+    lowered = f"{name} {title}".casefold()
+    if "operator" in lowered or "conference operator" in lowered:
+        return "operator"
+    if re.search(r"analyst|j\.p\. morgan|ubs|goldman|morgan stanley|barclays", lowered):
+        return "analyst"
+    if name in management_speakers or re.search(
+        r"ceo|cfo|chief|president|executive|officer|investor relations|management", lowered
+    ):
+        return "management"
+    return "analyst" if qa_mode else "management"
+
+
+def _trimmed_range(text: str, start: int, end: int) -> tuple[int, int, str]:
+    while start < end and text[start].isspace():
+        start += 1
+    while end > start and text[end - 1].isspace():
+        end -= 1
+    return start, end, text[start:end]
+
+
+def _transcript_sentence_fragments(text: str) -> list[tuple[int, int, str]]:
+    """Split a speaker turn into replayable sentence fragments."""
+    fragments: list[tuple[int, int, str]] = []
+    abbreviations = {"mr", "mrs", "ms", "dr", "prof", "inc", "ltd", "e.g", "i.e"}
+    start = 0
+    for match in re.finditer(r"[.!?][\"')\]]*\s+(?=[A-Z0-9])", text):
+        punctuation = text[match.start()]
+        if punctuation == ".":
+            prior_token = re.search(r"([A-Za-z](?:[A-Za-z.]*)?)$", text[: match.start()])
+            if prior_token and prior_token.group(1).casefold().strip(".") in abbreviations:
+                continue
+            if prior_token and len(prior_token.group(1).replace(".", "")) == 1:
+                continue
+        boundary_end = match.start() + 1
+        while boundary_end < match.end() and text[boundary_end] in "\"')]”’":
+            boundary_end += 1
+        left, right, value = _trimmed_range(text, start, boundary_end)
+        if value:
+            fragments.append((left, right, value))
+        start = match.end()
+    left, right, value = _trimmed_range(text, start, len(text))
+    if value:
+        fragments.append((left, right, value))
+    return fragments or [(0, len(text), text)]
+
+
+def parse_transcript_text(
+    text: str,
+    *,
+    source_id: str,
+    source_sha256: str,
+    parser_version: str = NARRATIVE_PARSER_VERSION,
+    language: str = "en",
+) -> NarrativeParseResult:
+    """Split known transcript layouts by speaker while preserving source lines."""
+    if not isinstance(text, str):
+        raise TypeError("transcript text must be a string")
+    raw_lines = text.splitlines()
+    start_index = next(
+        (index for index, line in enumerate(raw_lines) if _TRANSCRIPT_START.match(line.strip())),
+        None,
+    )
+    if start_index is None:
+        return NarrativeParseResult(
+            source_id=source_id,
+            source_sha256=source_sha256,
+            language=language,
+            units=(),
+            line_count=len(raw_lines),
+            errors=("transcript_start_missing",),
+        )
+
+    qa_mode = False
+    management_speakers: set[str] = set()
+    blocks: list[dict[str, Any]] = []
+    active: dict[str, Any] | None = None
+    active_qa: int | str | None = None
+    current_qa_parent: int | None = None
+    qa_counter = 0
+    for line_number, line in enumerate(raw_lines[start_index + 1 :], start=start_index + 2):
+        stripped = line.strip()
+        if _TRANSCRIPT_END.match(stripped):
+            break
+        if not stripped:
+            if active is not None:
+                active["lines"].append("")
+            continue
+        if _QA_HEADING.match(stripped):
+            qa_mode = True
+            active = None
+            continue
+        transition_after_line = bool(_QA_TRANSITION.search(stripped))
+        label = _SPEAKER_LABEL.match(stripped)
+        inline = _SPEAKER_LINE.match(stripped)
+        name = title = body = None
+        if label:
+            name, title = label.group("name").strip(), label.group("title").strip()
+            body = ""
+        elif inline:
+            name, title, body = (
+                inline.group("name").strip(),
+                (inline.group("title") or "").strip(),
+                inline.group("body").strip(),
+            )
+        if name and name.casefold() not in {"prepared remarks", "questions & answers"}:
+            role = _speaker_role(
+                name, title or "", qa_mode=qa_mode, management_speakers=management_speakers
+            )
+            if not qa_mode and role == "management":
+                management_speakers.add(name)
+            if qa_mode and role == "analyst":
+                qa_counter += 1
+                current_qa_parent = qa_counter
+                active_qa = current_qa_parent
+            if qa_mode and role == "management" and current_qa_parent is not None:
+                cue_text = f"{name} {title or ''} {body or ''}"
+                if _QA_FIRST_REFERENCE.search(cue_text):
+                    active_qa = f"{current_qa_parent}:q1"
+                elif _QA_SECOND_REFERENCE.search(cue_text):
+                    active_qa = f"{current_qa_parent}:q2"
+                elif active_qa is None:
+                    active_qa = current_qa_parent
+            active = {
+                "line_start": line_number,
+                "line_end": line_number,
+                "name": name,
+                "title": title or "",
+                "role": role,
+                "qa_group_id": active_qa if qa_mode else None,
+                "section": "qa" if qa_mode else "prepared_remarks",
+                "lines": [body] if body else [],
+            }
+            blocks.append(active)
+            if transition_after_line:
+                qa_mode = True
+            continue
+        if active is None:
+            if _EDITORIAL.search(stripped):
+                continue
+            # Keep unattributed text visible for review, but do not treat it as
+            # management evidence automatically.
+            active = {
+                "line_start": line_number,
+                "line_end": line_number,
+                "name": "",
+                "title": "",
+                "role": "unknown",
+                "qa_group_id": active_qa if qa_mode else None,
+                "section": "qa" if qa_mode else "prepared_remarks",
+                "lines": [],
+            }
+            blocks.append(active)
+        active["lines"].append(line)
+        active["line_end"] = line_number
+        if transition_after_line:
+            qa_mode = True
+
+    units: list[NarrativeUnit] = []
+    for block in blocks:
+        body = "\n".join(block["lines"]).strip()
+        if not body:
+            continue
+        start_line = int(block["line_start"])
+        end_line = int(block["line_end"])
+        question_pieces = [(0, len(body), body)]
+        if block["role"] == "analyst":
+            split_points = list(_ANALYST_SUBQUESTION.finditer(body))
+            if split_points:
+                question_pieces = []
+                piece_start = 0
+                for match in split_points:
+                    if match.start() > piece_start:
+                        question_pieces.append(
+                            _trimmed_range(body, piece_start, match.start())
+                        )
+                        piece_start = match.start()
+                if piece_start < len(body):
+                    question_pieces.append(_trimmed_range(body, piece_start, len(body)))
+                question_pieces = [piece for piece in question_pieces if piece[2]]
+        parent_group = block["qa_group_id"]
+        for question_index, (question_start, _question_end, question_text) in enumerate(
+            question_pieces, start=1
+        ):
+            group_id = parent_group
+            if (
+                block["role"] == "analyst"
+                and len(question_pieces) > 1
+                and parent_group is not None
+            ):
+                group_id = f"{parent_group}:q{question_index}"
+            for local_start, local_end, piece_text in _transcript_sentence_fragments(question_text):
+                char_start = question_start + local_start
+                char_end = question_start + local_end
+                coords = EvidenceCoordinates(
+                    paragraph_index=start_line - 1,
+                    char_start=char_start,
+                    char_end=char_end,
+                )
+                units.append(
+                    _make_unit(
+                        source_id=source_id,
+                        parser_version=parser_version,
+                        coordinates=coords,
+                        raw_text=piece_text,
+                        unit_kind="transcript_speaker_block",
+                        source_role=block["role"],
+                        language=language,
+                        metadata={
+                            "line_end": end_line,
+                            "line_start": start_line,
+                            "text_char_end": char_end,
+                            "text_char_start": char_start,
+                            "qa_group_id": group_id,
+                            "qa_parent_id": parent_group,
+                            "section": block["section"],
+                            "speaker": block["name"] or None,
+                            "speaker_title": block["title"] or None,
+                        },
+                    )
+                )
+
+    return NarrativeParseResult(
+        source_id=source_id,
+        source_sha256=source_sha256,
+        language=language,
+        units=tuple(units),
+        line_count=len(raw_lines),
+    )
+
+
+def _roundtrip_key(
+    *, locator: str, raw_text: str, role: str, unit_kind: str
+) -> tuple[str, str, str, str]:
+    return (
+        locator,
+        hashlib.sha256(raw_text.encode("utf-8")).hexdigest(),
+        role,
+        unit_kind,
+    )
+
+
+def _unit_roundtrip_key(unit: NarrativeUnit) -> tuple[str, str, str, str]:
+    return _roundtrip_key(
+        locator=unit.coordinates.locator(),
+        raw_text=unit.raw_text,
+        role=unit.source_role,
+        unit_kind=unit.unit_kind,
+    )
+
+
+def _span_roundtrip_key(span: EvidenceSpan) -> tuple[str, str, str, str]:
+    return _roundtrip_key(
+        locator=span.coordinates.locator(),
+        raw_text=span.raw_text or "",
+        role=str(span.structured_value.get("source_role", "unknown")),
+        unit_kind=str(span.structured_value.get("unit_kind", "")),
+    )
+
+
+def verify_pdf_evidence_spans(
+    path: Path,
+    *,
+    source_id: str,
+    source_sha256: str,
+    evidence_spans: Sequence[EvidenceSpan],
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Re-read the hashed PDF and verify selected page/table snippets exactly."""
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    if digest.hexdigest() != source_sha256:
+        raise ValueError("PDF changed before evidence locator round-trip")
+    if any(span.source_id != source_id for span in evidence_spans):
+        raise ValueError("evidence source_id does not match the requested PDF")
+    versions = {span.parser_version for span in evidence_spans}
+    if len(versions) > 1:
+        raise ValueError("round-trip verification requires one parser version")
+    parser_version = next(iter(versions), NARRATIVE_PARSER_VERSION)
+    table_pages = sorted(
+        {
+            span.coordinates.page_number
+            for span in evidence_spans
+            if span.coordinates.table_index is not None
+            and span.coordinates.page_number is not None
+        }
+    )
+    replay = parse_pdf(
+        path,
+        source_id=source_id,
+        source_sha256=source_sha256,
+        parser_version=parser_version,
+        table_pages=table_pages,
+    )
+    available: dict[tuple[str, str, str, str], list[NarrativeUnit]] = {}
+    for unit in replay.units:
+        available.setdefault(_unit_roundtrip_key(unit), []).append(unit)
+
+    verified: list[str] = []
+    failed: list[str] = []
+    for span in evidence_spans:
+        matches = available.get(_span_roundtrip_key(span), [])
+        if not matches:
+            failed.append(span.span_id)
+            continue
+        if span.structured_value.get("unit_kind") == "pdf_table_qa_fragment":
+            expected = span.structured_value
+            if not any(
+                unit.metadata.get("cell_sha256") == expected.get("cell_sha256")
+                and unit.metadata.get("cell_fragment_start")
+                == expected.get("cell_fragment_start")
+                and unit.metadata.get("cell_fragment_end") == expected.get("cell_fragment_end")
+                for unit in matches
+            ):
+                failed.append(span.span_id)
+                continue
+        verified.append(span.span_id)
+    return tuple(verified), tuple(failed)
+
+
+def verify_transcript_evidence_spans(
+    text: str,
+    *,
+    source_id: str,
+    source_sha256: str,
+    evidence_spans: Sequence[EvidenceSpan],
+    language: str = "en",
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Replay TXT line parsing and verify selected speaker blocks exactly."""
+    if any(span.source_id != source_id for span in evidence_spans):
+        raise ValueError("evidence source_id does not match the requested transcript")
+    versions = {span.parser_version for span in evidence_spans}
+    if len(versions) > 1:
+        raise ValueError("round-trip verification requires one parser version")
+    parser_version = next(iter(versions), NARRATIVE_PARSER_VERSION)
+    replay = parse_transcript_text(
+        text,
+        source_id=source_id,
+        source_sha256=source_sha256,
+        parser_version=parser_version,
+        language=language,
+    )
+    available = {_unit_roundtrip_key(unit) for unit in replay.units}
+    verified = tuple(
+        span.span_id for span in evidence_spans if _span_roundtrip_key(span) in available
+    )
+    failed = tuple(
+        span.span_id for span in evidence_spans if _span_roundtrip_key(span) not in available
+    )
+    return verified, failed
+
+
+def classify_document_kind(title: str, existing_kind: str = "unknown") -> str:
+    value = title.casefold()
+    if re.search(r"可转换公司债券|可转债", title):
+        return "convertible_bond_prospectus"
+    if re.search(r"向特定对象发行股票|定向增发|增发新股|非公开发行股票", title):
+        return "equity_offering_prospectus"
+    if re.search(r"投资者关系管理办法|投资者关系管理制度", title):
+        return "ir_policy"
+    if re.search(r"关于召开.*(?:业绩说明会|投资者说明会)|会议通知", title):
+        return "meeting_notice"
+    if "招股说明书" in title:
+        return "prospectus"
+    if re.search(r"半年度报告|半年报", title):
+        return "semi_annual_report"
+    if re.search(r"年度报告|年报", title):
+        return "annual_report"
+    if re.search(r"季度报告|季报", title):
+        return "quarterly_report"
+    if re.search(r"投资者关系|活动记录", title):
+        return "investor_relations"
+    if re.search(r"earnings_call|transcript", value):
+        return "investor_call_transcript"
+    return existing_kind
+
+
+def _topics(text: str) -> tuple[str, ...]:
+    return tuple(
+        topic
+        for topic, phrases in _SIGNALS.items()
+        if any(phrase.casefold() in text.casefold() for phrase in phrases)
+    )
+
+
+def _table_scan_signal(text: str) -> bool:
+    """Limit expensive table discovery to pages with specific business events."""
+    if _QA_QUESTION.search(text) or _QA_ANSWER.search(text):
+        return True
+    topics = _topics(text)
+    if not topics:
+        return False
+    if _HIGH_VALUE_EVENT.search(text) or _PROJECT_PLAN.search(text) or _STRATEGIC_PLAN.search(text):
+        return True
+    return "industry_dynamics" in topics and bool(_RECENCY.search(text))
+
+
+def _financial_table(unit: NarrativeUnit, topics: Sequence[str]) -> bool:
+    if unit.unit_kind != "pdf_table_row":
+        return False
+    headers = " ".join(str(value) for value in unit.metadata.get("table_headers", ()))
+    cells = unit.metadata.get("row_cells", ())
+    numeric_cells = sum(
+        1 for cell in cells if re.fullmatch(r"[\d,.%()\-+年月日亿元万股\s]+", str(cell))
+    )
+    financial_label = bool(_FINANCIAL_TERMS.search(unit.raw_text))
+    financial_header = bool(_FINANCIAL_HEADERS.search(headers))
+    event_signal = bool(_HIGH_VALUE_EVENT.search(unit.raw_text) or _PROJECT_PLAN.search(unit.raw_text))
+    if numeric_cells >= 2 and not event_signal:
+        return True
+    if not topics and (financial_label or financial_header):
+        return True
+    return financial_label and not any(topic in topics for topic in ("products_rd", "capacity_projects")) and numeric_cells >= 1
+
+
+def _pdf_context_groups(
+    units: Sequence[NarrativeUnit],
+) -> tuple[tuple[str, tuple[NarrativeUnit, ...], str], ...]:
+    """Reassemble visually continuous PDF line fragments for selection only.
+
+    Evidence remains stored as independently replayable source spans. These
+    transient groups let the selector recognize a sentence split across PDF
+    text blocks without inventing a cross-block locator.
+    """
+    by_page: dict[int, list[NarrativeUnit]] = {}
+    for unit in units:
+        if unit.unit_kind != "pdf_text_block" or unit.source_role == "qa_text_shadow":
+            continue
+        page = unit.coordinates.page_number
+        if page is not None:
+            by_page.setdefault(page, []).append(unit)
+
+    result: list[tuple[str, tuple[NarrativeUnit, ...], str]] = []
+    for page, page_units in sorted(by_page.items()):
+        ordered = sorted(
+            page_units,
+            key=lambda unit: (
+                unit.coordinates.paragraph_index or 0,
+                unit.coordinates.char_start or 0,
+            ),
+        )
+        clusters: list[list[NarrativeUnit]] = []
+
+        def visual_continuation(previous: NarrativeUnit, current: NarrativeUnit) -> bool:
+            if previous.source_role != current.source_role:
+                return False
+            if (
+                _PROJECT_SECTION_HEADING.search(previous.raw_text)
+                or _BUSINESS_SECTION_HEADING.search(previous.raw_text)
+                or _HEADING_ONLY.search(previous.raw_text)
+            ):
+                return False
+            if (
+                _PROJECT_SECTION_HEADING.search(current.raw_text)
+                or _BUSINESS_SECTION_HEADING.search(current.raw_text)
+                or _HEADING_ONLY.search(current.raw_text)
+            ):
+                return False
+            previous_block = previous.metadata.get("pdf_block")
+            current_block = current.metadata.get("pdf_block")
+            if previous_block is not None and previous_block == current_block:
+                return True
+            previous_bbox = previous.metadata.get("bbox")
+            current_bbox = current.metadata.get("bbox")
+            if not (
+                isinstance(previous_bbox, Sequence)
+                and isinstance(current_bbox, Sequence)
+                and len(previous_bbox) == 4
+                and len(current_bbox) == 4
+            ):
+                return False
+            vertical_gap = float(current_bbox[1]) - float(previous_bbox[3])
+            if vertical_gap < -1.0 or vertical_gap > 16.0:
+                return False
+            horizontal_overlap = max(
+                0.0,
+                min(float(previous_bbox[2]), float(current_bbox[2]))
+                - max(float(previous_bbox[0]), float(current_bbox[0])),
+            )
+            narrower_width = min(
+                float(previous_bbox[2]) - float(previous_bbox[0]),
+                float(current_bbox[2]) - float(current_bbox[0]),
+            )
+            return narrower_width > 0 and horizontal_overlap / narrower_width >= 0.60
+
+        for unit in ordered:
+            if clusters and visual_continuation(clusters[-1][-1], unit):
+                clusters[-1].append(unit)
+            else:
+                clusters.append([unit])
+
+        for cluster in clusters:
+            members = tuple(cluster)
+            pieces: list[str] = []
+            previous: NarrativeUnit | None = None
+            for unit in members:
+                if previous is None:
+                    pieces.append(unit.raw_text)
+                else:
+                    same_block = previous.metadata.get("pdf_block") == unit.metadata.get("pdf_block")
+                    contiguous = (
+                        same_block
+                        and previous.metadata.get("block_char_end")
+                        == unit.metadata.get("block_char_start")
+                    )
+                    separator = "" if contiguous or unit.language.startswith("zh") else " "
+                    pieces.append(separator + unit.raw_text)
+                previous = unit
+            text = "".join(pieces)
+            member_key = "|".join(unit.unit_id for unit in members)
+            identity = hashlib.sha256(
+                f"{members[0].source_id}:{page}:{member_key}".encode("utf-8")
+            ).hexdigest()
+            result.append((f"urn:company-wiki:context-group:sha256:{identity}", members, text))
+    return tuple(result)
+
+
+def select_narrative_evidence(
+    parsed: NarrativeParseResult,
+    *,
+    title: str,
+    existing_kind: str = "unknown",
+    max_selected: int = 160,
+) -> NarrativeEvidencePackage:
+    """Select compact narrative spans; incomplete scans can never auto-skip."""
+    if max_selected < 1:
+        raise ValueError("max_selected must be positive")
+    document_kind = classify_document_kind(title, existing_kind)
+    candidates: list[tuple[NarrativeUnit, tuple[str, ...], tuple[str, ...], int]] = []
+    selection_group_ids: dict[str, str] = {}
+    dropped_financial = 0
+    for unit in parsed.units:
+        if unit.source_role in {
+            "analyst", "investor_question", "operator", "editorial", "qa_text_shadow"
+        }:
+            continue
+        topics = _topics(unit.raw_text)
+        if _financial_table(unit, topics):
+            dropped_financial += 1
+            continue
+        unit_event_signal = bool(_HIGH_VALUE_EVENT.search(unit.raw_text))
+        unit_project_signal = bool(
+            _PROJECT_PLAN.search(unit.raw_text) or _STRATEGIC_PLAN.search(unit.raw_text)
+        )
+        if not topics and not unit_event_signal and not unit_project_signal:
+            continue
+        if not topics:
+            topics = ("new_business",) if unit_event_signal else ("capacity_projects",)
+        if len(unit.raw_text) < 12 or _TABLE_OF_CONTENTS.search(unit.raw_text):
+            continue
+        if _ACCOUNTING_CONTEXT.search(unit.raw_text) or _HEADING_ONLY.search(unit.raw_text):
+            continue
+        has_progress = bool(_PROGRESS.search(unit.raw_text))
+        has_event = bool(_HIGH_VALUE_EVENT.search(unit.raw_text))
+        has_current_industry_signal = (
+            "industry_dynamics" in topics and bool(_RECENCY.search(unit.raw_text))
+        )
+        has_project_signal = bool(
+            _PROJECT_PLAN.search(unit.raw_text) or _STRATEGIC_PLAN.search(unit.raw_text)
+        )
+        # Topic words alone are too broad (for example, a static list of
+        # products or generic R&D language). Require evidence of a change,
+        # project, or current industry development before selecting a unit.
+        if not (has_event or has_project_signal or (has_progress and has_current_industry_signal)):
+            continue
+        if _STATIC_DEFINITION.search(unit.raw_text):
+            continue
+        reasons = ["business_narrative_signal"]
+        if has_progress:
+            reasons.append("progress_or_change_language")
+        if has_event:
+            reasons.append("specific_business_event")
+        if has_project_signal:
+            reasons.append("project_plan_or_status")
+        if has_current_industry_signal:
+            reasons.append("current_industry_context")
+        if unit.source_role == "management":
+            reasons.append("management_statement")
+        score = len(topics) + (2 if has_progress else 0) + (3 if has_event else 0)
+        if unit.unit_kind == "pdf_table_row":
+            score += 1
+        candidates.append((unit, topics, tuple(reasons), score))
+
+    # PDF layout extraction often separates one logical sentence into several
+    # adjacent text blocks. Evaluate those fragments together, then retain the
+    # original locators as a grouped set of evidence spans. Prospectus project
+    # sections also supply local context for their following body paragraphs.
+    pdf_groups = _pdf_context_groups(parsed.units)
+    project_context_group_ids: set[str] = set()
+    project_context_scores: dict[str, int] = {}
+    business_context_group_ids: set[str] = set()
+    business_context_scores: dict[str, int] = {}
+    if document_kind in {
+        "convertible_bond_prospectus",
+        "equity_offering_prospectus",
+    }:
+        groups_by_page: dict[int, list[tuple[str, tuple[NarrativeUnit, ...], str]]] = {}
+        for group in pdf_groups:
+            page = group[1][0].coordinates.page_number
+            if page is not None:
+                groups_by_page.setdefault(page, []).append(group)
+        for page_groups in groups_by_page.values():
+            active_project_context = False
+            remaining_context_chars = 0
+            active_context_score = 0
+            for group_id, _members, group_text in page_groups:
+                if _PROJECT_SECTION_HEADING.search(group_text):
+                    active_project_context = True
+                    remaining_context_chars = 1_600
+                    active_context_score = 120 if re.search(
+                        r"项目建设.{0,8}必要性|项目建设必要性", group_text
+                    ) else 80
+                    continue
+                if active_project_context and _HEADING_ONLY.search(group_text):
+                    active_project_context = False
+                    remaining_context_chars = 0
+                    active_context_score = 0
+                    continue
+                if active_project_context:
+                    if remaining_context_chars <= 0:
+                        active_project_context = False
+                        continue
+                    project_context_group_ids.add(group_id)
+                    project_context_scores[group_id] = active_context_score
+                    remaining_context_chars -= len(group_text)
+
+    if document_kind == "prospectus":
+        groups_by_page = {}
+        for group in pdf_groups:
+            page = group[1][0].coordinates.page_number
+            if page is not None:
+                groups_by_page.setdefault(page, []).append(group)
+        for page_groups in groups_by_page.values():
+            active_business_context = False
+            remaining_context_chars = 0
+            for group_id, _members, group_text in page_groups:
+                if _BUSINESS_SECTION_HEADING.search(group_text):
+                    active_business_context = True
+                    remaining_context_chars = 1_200
+                    continue
+                if active_business_context and _HEADING_ONLY.search(group_text):
+                    active_business_context = False
+                    remaining_context_chars = 0
+                    continue
+                if active_business_context:
+                    if remaining_context_chars <= 0:
+                        active_business_context = False
+                        continue
+                    business_context_group_ids.add(group_id)
+                    business_context_scores[group_id] = 140
+                    remaining_context_chars -= len(group_text)
+
+    candidate_unit_ids_before_context = {item[0].unit_id for item in candidates}
+    for group_id, members, group_text in pdf_groups:
+        topics = _topics(group_text)
+        if _PROJECT_SECTION_HEADING.search(group_text) or _BUSINESS_SECTION_HEADING.search(group_text):
+            continue
+        in_project_context = group_id in project_context_group_ids
+        in_business_context = group_id in business_context_group_ids
+        in_context = in_project_context or in_business_context
+        has_event = bool(_HIGH_VALUE_EVENT.search(group_text))
+        has_project_signal = bool(
+            _PROJECT_PLAN.search(group_text) or _STRATEGIC_PLAN.search(group_text)
+        )
+        if not topics and not in_context and not has_event and not has_project_signal:
+            continue
+        if len(group_text) < 12 or _TABLE_OF_CONTENTS.search(group_text):
+            continue
+        if _ACCOUNTING_CONTEXT.search(group_text) or _STATIC_DEFINITION.search(group_text):
+            continue
+        has_progress = bool(_PROGRESS.search(group_text))
+        has_current_industry_signal = (
+            "industry_dynamics" in topics and bool(_RECENCY.search(group_text))
+        )
+        if not (
+            has_event
+            or has_project_signal
+            or (has_progress and has_current_industry_signal)
+            or in_context
+        ):
+            continue
+        if not topics:
+            if in_project_context or has_project_signal:
+                topics = ("capacity_projects",)
+            elif in_business_context:
+                topics = ("core_business",)
+            else:
+                topics = ("new_business",)
+        reasons = ["business_narrative_signal", "pdf_visual_context_group"]
+        if has_progress:
+            reasons.append("progress_or_change_language")
+        if has_event:
+            reasons.append("specific_business_event")
+        if has_project_signal or in_project_context:
+            reasons.append("project_plan_or_status")
+        if in_project_context:
+            reasons.append("project_section_context")
+        if in_business_context:
+            reasons.append("business_section_context")
+        if has_current_industry_signal:
+            reasons.append("current_industry_context")
+        score = 8 + len(topics) + (2 if has_progress else 0) + (3 if has_event else 0)
+        if in_project_context:
+            score += project_context_scores.get(group_id, 40)
+        if in_business_context:
+            score += business_context_scores.get(group_id, 80)
+        if not in_context and any(
+            unit.unit_id in candidate_unit_ids_before_context for unit in members
+        ):
+            # Existing sentence-level candidates already carry the signal. Do
+            # not expand every such group into all of its line fragments; the
+            # context group is expanded only when selection depends on joined
+            # text that no individual member exposes.
+            continue
+        for unit in members:
+            if unit.source_role in {
+                "analyst", "investor_question", "operator", "editorial", "qa_text_shadow"
+            }:
+                continue
+            if _TABLE_OF_CONTENTS.search(unit.raw_text):
+                continue
+            page_y = unit.metadata.get("bbox")
+            if (
+                isinstance(page_y, Sequence)
+                and len(page_y) == 4
+                and (float(page_y[1]) < 60.0 or float(page_y[1]) > 750.0)
+            ):
+                continue
+            selection_group_ids[unit.unit_id] = group_id
+            member_topics = _topics(unit.raw_text) or topics
+            member_reasons = list(reasons)
+            if unit.source_role == "management":
+                member_reasons.append("management_statement")
+            candidates.append((unit, member_topics, tuple(member_reasons), score))
+
+    # Keep an immediately preceding product/new-business phrase when an event
+    # sentence starts with a connector such as “and these four products...”.
+    unit_by_location = {
+        (unit.coordinates.page_number, unit.coordinates.paragraph_index): unit
+        for unit in parsed.units
+        if unit.unit_kind == "pdf_text_block"
+    }
+    candidate_unit_ids = {item[0].unit_id for item in candidates}
+    for unit, _topics_for_event, _reasons, _score in tuple(candidates):
+        if unit.unit_kind != "pdf_text_block" or not _HIGH_VALUE_EVENT.search(unit.raw_text):
+            continue
+        page = unit.coordinates.page_number
+        paragraph = unit.coordinates.paragraph_index
+        previous = unit_by_location.get((page, paragraph - 1))
+        if (
+            previous is None
+            or previous.unit_id in candidate_unit_ids
+            or previous.source_role != unit.source_role
+            or not (set(_topics(previous.raw_text)) & {"new_business", "products_rd", "core_business"})
+            or len(previous.raw_text) < 12
+            or _ACCOUNTING_CONTEXT.search(previous.raw_text)
+        ):
+            continue
+        candidates.append(
+            (previous, _topics(previous.raw_text), ("adjacent_subject_context",), 0)
+        )
+        candidate_unit_ids.add(previous.unit_id)
+
+    # A selected management answer can carry its linked analyst/investor
+    # question as
+    # context. Questions remain separately role-tagged and never support facts.
+    selected_ids = {item[0].unit_id for item in candidates}
+    qa_groups = {
+        item[0].metadata.get("qa_group_id")
+        for item in candidates
+        if item[0].metadata.get("qa_group_id") is not None
+    }
+    for unit in parsed.units:
+        question_group = unit.metadata.get("qa_group_id")
+        linked = any(
+            question_group == answer_group
+            or (
+                question_group is not None
+                and answer_group is not None
+                and str(question_group).startswith(f"{answer_group}:q")
+            )
+            for answer_group in qa_groups
+        )
+        if (
+            unit.source_role in {"analyst", "investor_question"}
+            and linked
+            and unit.unit_id not in selected_ids
+        ):
+            if not (
+                _topics(unit.raw_text)
+                or _HIGH_VALUE_EVENT.search(unit.raw_text)
+                or "?" in unit.raw_text
+                or "？" in unit.raw_text
+            ):
+                continue
+            candidates.append((unit, (), ("linked_question_context",), 0))
+            selected_ids.add(unit.unit_id)
+
+    # Keep the best locator when the PDF exposes identical text in both views.
+    by_text: dict[tuple[str, int | None, str], tuple[NarrativeUnit, tuple[str, ...], tuple[str, ...], int]] = {}
+    for item in candidates:
+        unit = item[0]
+        text_key = hashlib.sha256(" ".join(unit.raw_text.split()).encode("utf-8")).hexdigest()
+        # Suppress duplicate text/table views on the same page while retaining
+        # repeated statements on different pages or by different speakers.
+        key = (text_key, unit.coordinates.page_number, unit.source_role)
+        previous = by_text.get(key)
+        if previous is None or (unit.unit_kind == "pdf_table_row" and previous[0].unit_kind != "pdf_table_row"):
+            by_text[key] = item
+    candidates = sorted(
+        by_text.values(),
+        key=lambda item: (-item[3], item[0].coordinates.locator(), item[0].unit_id),
+    )
+    kept = candidates[:max_selected]
+    # Keep a visual context group intact if its first fragment made the budget;
+    # a partial sentence group would create a compact but misleading summary.
+    selected_group_ids = {
+        selection_group_ids[unit.unit_id]
+        for unit, _topics_for_span, _reasons, _score in kept
+        if unit.unit_id in selection_group_ids
+    }
+    kept_ids = {item[0].unit_id for item in kept}
+    for item in candidates[max_selected:]:
+        unit = item[0]
+        group_id = selection_group_ids.get(unit.unit_id)
+        if group_id is not None and group_id in selected_group_ids and unit.unit_id not in kept_ids:
+            kept.append(item)
+            kept_ids.add(unit.unit_id)
+    omitted = max(0, len(candidates) - len(kept))
+    kept.sort(key=lambda item: (item[0].coordinates.locator(), item[0].unit_id))
+    spans = tuple(
+        unit.to_evidence_span(
+            topics=topics,
+            selection_reasons=reasons,
+            selection_group_id=selection_group_ids.get(unit.unit_id),
+        )
+        for unit, topics, reasons, _score in kept
+    )
+
+    if spans:
+        if any("locator_unstable" in span.quality_flags for span in spans):
+            status: Literal["selected", "partial", "skipped_no_narrative", "needs_review", "blocked"] = "needs_review"
+        else:
+            status = "selected" if parsed.coverage_complete and omitted == 0 else "partial"
+    elif parsed.errors:
+        status = "blocked"
+    elif not parsed.coverage_complete:
+        status = "needs_review"
+    elif document_kind in {"ir_policy", "meeting_notice"}:
+        status = "skipped_no_narrative"
+    else:
+        status = "needs_review"
+
+    return NarrativeEvidencePackage(
+        source_id=parsed.source_id,
+        source_sha256=parsed.source_sha256,
+        document_kind=document_kind,
+        status=status,
+        evidence_spans=spans,
+        candidate_count=len(candidates),
+        dropped_financial_count=dropped_financial,
+        source_units=len(parsed.units),
+        omitted_candidate_count=omitted,
+        coverage_complete=parsed.coverage_complete,
+    )
+
+
+def validate_summary_draft(
+    draft: SourceSummaryDraft,
+    *,
+    source_id: str,
+    source_sha256: str,
+    language: str,
+    evidence_spans: Sequence[EvidenceSpan],
+) -> None:
+    """Validate citations and roles; this is not a semantic truth review."""
+    if draft.source_id != source_id or draft.source_sha256 != source_sha256:
+        raise SummaryValidationError("summary source identity/hash does not match")
+    if draft.language != language:
+        raise SummaryValidationError("summary language must match the source language")
+    known = {span.span_id: span for span in evidence_spans}
+    if not draft.claims:
+        raise SummaryValidationError("summary draft must contain at least one claim")
+    for claim in draft.claims:
+        if not claim.text.strip():
+            raise SummaryValidationError("summary claim text must not be blank")
+        if not claim.evidence_ids:
+            raise SummaryValidationError("every summary claim requires evidence IDs")
+        missing = set(claim.evidence_ids) - set(known)
+        if missing:
+            raise SummaryValidationError("summary claim refers to unknown evidence IDs")
+        roles = {
+            known[evidence_id].structured_value.get("source_role", "unknown")
+            for evidence_id in claim.evidence_ids
+        }
+        if claim.claim_type == "company_statement" and not roles <= {"company_filing", "management"}:
+            raise SummaryValidationError("non-company evidence cannot support a company statement")
+        if claim.claim_type == "analyst_question" and (
+            not roles or not roles <= {"analyst", "investor_question"}
+        ):
+            raise SummaryValidationError("analyst-question claims must cite question evidence only")
+        cited_spans = [known[evidence_id] for evidence_id in claim.evidence_ids]
+        if any("locator_unstable" in span.quality_flags for span in cited_spans):
+            if not claim.needs_review or draft.status != "needs_review":
+                raise SummaryValidationError("unstable evidence locators require needs_review status")
+        if claim.needs_review and draft.status != "needs_review":
+            raise SummaryValidationError("review-required claims require a needs_review draft")
+    # A citation-valid draft remains a draft. Semantic entailment, contradictory
+    # evidence, modality, negation, and speaker accuracy require G1 review.

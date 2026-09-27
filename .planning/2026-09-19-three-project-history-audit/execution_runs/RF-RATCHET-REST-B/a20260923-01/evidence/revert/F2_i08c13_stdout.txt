@@ -1,0 +1,28 @@
+...........F.                                                            [100%]
+================================== FAILURES ===================================
+_________ test_e11_host_signed_label_flip_is_rejected_at_consumption __________
+
+U = {'company_name': 'Test Co', 'as_of_date': '2026-07-12', 'currency': 'USD', 'unit': 'million', ...}
+
+    def test_e11_host_signed_label_flip_is_rejected_at_consumption(U):
+        """E11 (r4 re-freeze, owner A-2): a self-hash-consistent package that
+        CLAIMS `attestation_status='host_signed'` while carrying no
+        `publication_attestation` binding record MUST be rejected by BOTH consumer
+        entry points. B1 REM-01(a) implements the gate; frozen rejection reason:
+        `attestation_missing_record` (E27). Node id renamed from
+        `..._is_not_bound_at_consumption`, whose name asserted the retired gap
+        (oracle R4-3).
+        """
+        assert attestation_capability() is False  # issuance gate present
+        flipped = copy.deepcopy(U)
+        assert flipped["publication_receipt"]["attestation_status"] == "unattested"
+        flipped["publication_receipt"]["attestation_status"] = "host_signed"
+        _rehash(flipped)
+>       with pytest.raises(ForecastInputError, match="attestation_missing_record"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ForecastInputError
+
+C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-08-C\a20260919-01\test_i08c_consumer_rejection.py:271: Failed
+=========================== short test summary info ===========================
+FAILED ..\..\..\..\..\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-08-C\a20260919-01\test_i08c_consumer_rejection.py::test_e11_host_signed_label_flip_is_rejected_at_consumption
+1 failed, 12 passed in 17.37s

@@ -1,0 +1,38 @@
+REM-79 self-check record — AUDIT-GOAL a20260923-01
+checker = REM79-MECHANIZATION\a20260922-01\tools\check_domain_assertions.py (v1.2.0-correction2)
+env    = PYTHONIOENCODING=utf-8 (set), python = C:\Miniconda\python.exe, -B
+date   = 2026-09-23
+
+RUN 1 — frozen corpus self-test (4 files: 2 positive samples + 2 negative samples)
+command: python -B tools/check_domain_assertions.py <corpus>/pos_i14d_review_L349.md pos_round76_original.md neg_domain_lines.md neg_no_marker_lines.md
+output:
+  ...corpus/pos_i14d_review_L349.md:4:[every] | `F-REV-R5-01` (MEDIUM) | **fixed**: ...
+  ...corpus/pos_round76_original.md:4:[每一个] `[^\s]+` 关闭了 **r4 与 r5 关闭过的每一个字符、以及两者泄漏过的每一个字符**，**只剩空格**...
+  2 violation(s) across 4 file(s)
+rc=1
+assessment: matches the REM79 card's frozen expectation table (the two pos samples each
+carry exactly one no-domain universal; the two neg samples are clean; exit 1 on findings).
+
+RUN 2 — self-check of audit_report.md (first draft)
+command: python -B tools/check_domain_assertions.py <attempt>/audit_report.md
+output:
+  audit_report.md:69:[全部] 拦门根因修复（抽 3+1，全部"修码/测不修门/基线"）：
+  1 violation(s) across 1 file(s)
+rc=1
+assessment: 1 true finding of the REM-79 species (universal marker without a same-line
+domain). Remediated by the auditor by re-wording the line with its domain
+("抽 4 例：3 主线 + 1 前置；4 例的修复面均为码/测，门与基线零改动") — no metric changed.
+
+RUN 3 — self-check of audit_report.md (final wording)
+command: python -B tools/check_domain_assertions.py <attempt>/audit_report.md
+output:
+  0 violation(s) across 1 file(s)
+rc=0
+assessment: CLEAN. The report's own universal statements all carry same-line domains.
+
+RUN 4 — self-check of audit_report.md (after inserting this self-check record block)
+output: (see RUN 4 result line below, appended after the block was inserted)
+
+RUN 4 result: 
+0 violation(s) across 1 file(s)
+rc=0

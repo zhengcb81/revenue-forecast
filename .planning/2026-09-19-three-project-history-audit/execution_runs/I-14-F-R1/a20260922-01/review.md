@@ -1,3 +1,51 @@
+# I-14-F-R1 review.md — CARRIER LANDING / STATUS FLIP（簿记转录；实现者从不自签）
+
+Status: **`accepted_scoped`**（attempt `a20260922-01`）。独立复核（独立 reviewer）把裁决写在
+`reviewer_report.md`（字节钉载体）——**不是**本文件。本文件是该裁决的**落定簿记转录**：
+它翻转此前 implementer stub 的 `review_pending` 状态口径，使本 attempt 的状态口径与
+reviewer_report 一致（消除 AUDIT-DESIGN D4 所记「同一 attempt 两个状态口径」双口径）。
+**这是纯簿记转录：不新增任何接受。** 裁决原话请读 `reviewer_report.md` 本身。
+`verdict_is_transcribed_not_authored: true`；`implementer_signed: false`；`implementer_never_signs_acceptance: true`。
+
+## Verdict block（转录，不改判）
+
+- Card / attempt：**I-14-F-R1 / `execution_runs\I-14-F-R1\a20260922-01`**。
+- verdict：**`accepted_scoped`** —— reviewer 原词在载体 **L16**：`## VERDICT: **accepted_scoped**`。
+- 裁决作者：**独立复核（独立 reviewer）**，N=1；本文件作者=BOOKKEEP-REPAIR 簿记执行者（父派单），**从不自签**。
+- 接受域（转录）：按 owner `OWNER_DECISIONS.md` §16 E-1「E-1: 150/60」（`GENERATION_RESERVE=150`
+  ⇒ relocate iff `len + 150 > 210 ⇔ len > 60`）落 product-side 短 basetemp 约定；边界 60/61 钉住
+  （60 → unrelocated，61 → relocated）；尺寸扫描 61/69/76/82/86 relocate+pass、40/60 unrelocated（7/7 guard ok）；
+  12 控制翻转各带逐字 superseded 理由「owner §16 E-1 chose 150/60; this control's unrouted expectation is superseded」；
+  RED/GREEN/MUT 由 reviewer 亲自深登录复跑复现（RED rc1 含 `WinError 206`、GREEN rc0 `relocated=true`、
+  MUTATION rc1 `relocated=false`）；unit suite 15 passed rc0（reviewer 自跑）；封存的 I-14-F attempt 与生产零触碰。
+- 随行限定（转录）：CF-I14FR1-3 / Gap-5 裁**不阻断** ⇒ 晋升期采样义务（另卡、未授予）；R-2 立（I-14-E 域）；
+  N-1（low）/N-2（info）/N-3（info）；`disclosure_adaptation = unmapped`、`accuracy = unproven`；
+  `iso/` 晋升=独立 owner 决定，**未授予**。
+
+## Carrier（byte-pinned；本转录所依据的裁决载体）
+
+| field | value |
+|---|---|
+| carrier file | `reviewer_report.md`（单轮；verdict `accepted_scoped`） |
+| path | `execution_runs/I-14-F-R1/a20260922-01/reviewer_report.md` |
+| sha256 | `8ce87ef6d31087da65e556be4736a8c8f7734594575cf868149df383e5f62a1c` |
+| bytes | 15841（2026-09-23 复算 = 侧车值 ✓） |
+| sidecar | `reviewer_report.sha256`（321 B，sha256 `dbbe3e2935804c89f09f2e4fddcb678da1ed46ff69dc47a0926d1b4f4c557d604`；内容=`sha256:` + `bytes: 15841` + `verdict: accepted_scoped`、`pinned_at_local: 2026-09-22T09:29:07+01:00`）——内容相符，0 字节写入 |
+| verdict line | 16（`## VERDICT: **accepted_scoped**`） |
+| scope limits | L35–48；Gap-5 ruling §6 L143–163；findings §7 L165–174；signature §9 L202–211 |
+| producer | 独立复核 only —— 从不是 implementer、从不是本文件作者 |
+
+Verification at flip（read-only，2026-09-23）：15841 B ✓；复算 `8ce87ef6…2a1c` ✓ == 侧车值；
+L16 `accepted_scoped` ✓。**`reviewer_report.md` 与 `reviewer_report.sha256` 0 字节改动。**
+
+## review_stanb_stub_historical（原值留痕：翻转前 review.md 全文，一字不删）
+
+- **字节权威留存件**：`review_stanb_stub_historical_20260923.md`（6029 B，sha256
+  `7f1808993e4e30884aeca26ad14d5ce2ac149e77e452646ed5a64a53e48a8a83`）= 翻转前 `review.md` 的
+  **逐字节副本**（含 implementer stub 全文 L1–41 + 2026-09-22 CARRIER LANDING 块 L43–93）。**从不删除。**
+- 下框 = 该留存件**全文逐字注入**（与兄弟件字节等同；如有毫厘差以兄弟件+其 sha 为准）：
+
+```text
 # I-14-F-R1 review.md — STUB (no verdict; the implementer does NOT self-sign)
 
 Status: **`review_pending`**. No review of this attempt has been performed yet. Acceptance is
@@ -91,3 +139,21 @@ asymmetry, immaterial); reviewer-disclosed unit-run1/run2 failures retained (har
 invocation + pathlib 63-vs-64 construction bugs; test fixed, not the oracle — mtime ordering
 08:34 < 08:35 < 08:42); `disclosure_adaptation = unmapped`, `accuracy = unproven`;
 promotion of `iso/` = separate owner decision, **ungranted**.
+```
+
+原状态口径（留痕摘要）：stub 首行 `# I-14-F-R1 review.md — STUB (no verdict; the implementer does NOT self-sign)`、
+`Status: **`review_pending`**`；2026-09-22 CARRIER LANDING 块已转录 verdict `accepted_scoped` 并声明
+「supersedes the `review_pending` status declared by the implementer stub above」——但文件**头行状态**仍为
+`review_pending`（=D4 双口径本体）。本次翻转把**头行状态**落为 `accepted_scoped`，stub 与旧块全文保留在上方字段。
+
+## Bookkeeping
+
+- 翻转者：BOOKKEEP-REPAIR / a20260923-01 簿记执行者（delegated subagent），2026-09-23，父派单
+  （parent session `session-bfecd191-fbc3-4a66-8ed1-6562479bf102`；AUDIT-DESIGN D4 修复项 #3）。
+- before/after：`review.md` before = `7f180899…48a8a83` / 6029 B → after（见本卡 `binding.json`）；
+  before 全文字节 = 兄弟件 `review_stanb_stub_historical_20260923.md`（同 sha）。
+- `handoff.json` 已于 2026-09-22 落定翻转（`status: accepted_scoped`、`status_before_bookkeeping_fix: review_pending`、
+  `status_authority` 在）——本次**不动** handoff.json。
+- 0 字节写入 `reviewer_report.md` / `reviewer_report.sha256` / 任何冻结件 / 任何产品树 / 任何 git 状态。
+  **无自签**：裁决由独立复核写就，本文件只是转录，不授予任何新资格
+  （`disclosure_adaptation = unmapped`、`accuracy = unproven`、晋升未授予）。

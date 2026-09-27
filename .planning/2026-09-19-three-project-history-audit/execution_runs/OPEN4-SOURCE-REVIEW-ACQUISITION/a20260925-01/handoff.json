@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN4-SOURCE-REVIEW-ACQUISITION",
+  "attempt_id": "a20260925-01",
+  "role": "controlled_acquisition",
+  "gap": "G2 = OPEN-4",
+  "authorized_by": "OWNER_DECISIONS §二十七 #1",
+  "authorization_verbatim": "派 `OPEN-4`（wiki 来源审核）与 `OPEN-12`（cutoff 后交易所公告取得方式）**受控取证**；**产物只落本计划目录**（同 §二十四 #3 形态）；**不解除任何 BLOCKED、不产生 ACCEPT**；两站交付后**仍须过 MERGE 七条**",
+  "authorization_discipline_applied": [
+    "§二十四 L498 未被取代（§二十七 #2 只定向取代「origin 响应字节经 filing-fetch」场景，本工位不属该场景）⇒ 产物只落本计划目录",
+    "§二十七 L563：三票 = 许可不是结论"
+  ],
+  "scope": {
+    "station_reaches": "取证层（来源是否存在、可得、字节可核、引文可验）",
+    "rule_review_layer_owner": "wiki 来源审核 owner（+ 安全 reviewer 联席面）",
+    "grading_release_layer_owner": "会计面 / owner"
+  },
+  "target": {
+    "open_id": "OPEN-4 (D-W06 函 A / T2-1, wiki 来源审核)",
+    "source_carrier": ".planning/2026-09-19-three-project-history-audit/execution_runs/T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md",
+    "source_sha256": "37413f7812bbe4aa21948f0f474a2ceac2ad0f778f1a3c5eb4f6b3af7e1d98bb",
+    "source_bytes": 42062,
+    "source_registration_match": "outward_requests/RESPONSES.md L5 登记同 sha256，逐字符合",
+    "ruled_form": "CONDITIONAL：4a/4c APPROVE、4b 挂函 B 信任根、C1–C6（OWNER_DECISIONS L437 转述）",
+    "blocked_value_under_test": "「来源审核回执能否被视为已签名/身份可核」（= 4b / 条件 C4 所依赖的取值）"
+  },
+  "evidence_elements_met": {
+    "element_1_local_archive": true,
+    "element_2_sha256_on_saved_bytes": true,
+    "element_3_retrieved_utc_real_window": true,
+    "element_4_verbatim_quotes": true,
+    "element_5_independent_verification_path": true,
+    "count_met": 5,
+    "count_total": 5,
+    "caveats": {
+      "element_1": "本地归档 = 本机只读文件系统的字节复制到本 attempt（corpus 3 件 + evidence 2 件）；无任何网络响应字节（0 联网）。",
+      "element_3": "全部为真实读秒的窗口（发起前/返回后各读一次 UTC 系统时钟），非服务端时间戳，未伪造单点秒级时刻。",
+      "element_5": "「独立复核路径」在本地语境下 = ①三轮独立 sha256 复算（22:01:45Z / 22:13:11–12Z / 22:16:20Z）②corpus 副本与产品源字节逐位相等（复算 match=True）③关键 sha256 与既有登记值（RESPONSES L5、裁定 L83/L175 记录）交叉比对；不存在、也不需要网络独立取回路径。"
+    },
+    "external_url_elements": "n/a —— 0 条外部证据（external_evidence=[]，理由见 provenance.external_evidence_note）"
+  },
+  "verbatim_quote_count": 56,
+  "verbatim_quote_note": "17 个证据条目共 56 条带行号（corpus 条目另带实测字节区）的逐字引文；单行表单引文条目（L06/L07）各 1 条，其余条目均 ≥2 条。跨行引文以 \" / \" 表示原文件换行（provenance.quote_transcription_convention）。",
+  "c1_c8_status": {
+    "C1": {
+      "status": "acquired_subitem_gap",
+      "evidence_layer": "已证（主体）：载体常量字节 L5 [199,254)、唯一赋值点 pi:384、record 调用点 2 处；子项「导出 JSON non-authoritative 标注」在 CW src 0 命中 ⇒ 无对象可取",
+      "blocked_at": "子项②缺对象 ⇒ 是否构成缺口归审核层",
+      "judged_by": "wiki 来源审核 owner"
+    },
+    "C2": {
+      "status": "acquired",
+      "evidence_layer": "已证：frozenset 闭集字节 L66–L67、闭集外值拒绝 L107–L110、schema 门 L113–L116、17 个产品测试清单；行号较裁定漂移（:23–24→:66–67、:53–56→:107–110）已登记",
+      "blocked_at": null,
+      "judged_by": "wiki 来源审核 owner"
+    },
+    "C3": {
+      "status": "acquired",
+      "evidence_layer": "已证：写入侧双绑定已强制 L118–L122（强于裁定时的「调用非 None」检验）、读取侧 _binding_mismatch L220–L230、INV-6 既有测试 L309、matrix INV-6 VERIFIED",
+      "blocked_at": null,
+      "judged_by": "wiki 来源审核 owner"
+    },
+    "C4": {
+      "status": "blocked_no_trust_root",
+      "evidence_layer": "未证：函 B L28「不存在可用于生产验证的信任根」、L240「信任根文件仍实测缺席」；本工位探针 env 未设 + 19 个 JSON 无 signers/trust_root；产品现 fail-closed（无信任根 ⇒ detected_and_ignored 一律拒，pi L207–L210）",
+      "blocked_at": "①函 B T2-9/OPEN-D1 未出裁（跨仓双方提选项 + owner 择定）②信任根未建立（环境/运维 owner）③探针不含 OS keystore/机器级只读路径（本工位无该层权限）",
+      "judged_by": "wiki 来源审核 owner + 安全 reviewer + 环境/依赖 owner"
+    },
+    "C5": {
+      "status": "acquired_secondhand",
+      "evidence_layer": "已证（带限定）：INV-1…7 matrix 7/7 VERIFIED、events 14/14 PASS、新正例①M1 PASS（run_cases.py:1116 + green/M1.json L5–L6）、②M2 PASS（green/M2.json L5–L6）",
+      "blocked_at": "限定：M1/M2 为 iso=fixed 隔离副本运行、非产品仓实跑；harness 工件系 I-06-B 卡产出的二手工件，本工位只读转录、未复跑",
+      "judged_by": "wiki 来源审核 owner"
+    },
+    "C6": {
+      "status": "not_acquired_object_absent",
+      "evidence_layer": "未证：样例 review-execution-events.json 14 条事件无「覆盖前后两收据哈希」；现产品以 append-only prompt_injection_review_audit（seq 递增）留痕，无「旧收据整体 sha256」字段；grep old_receipt|previous_receipt|before_receipt in CW src = 0 命中",
+      "blocked_at": "C6 字面对象（前后两收据哈希）在样例与产品两侧均不存在 ⇒ 需产品补字段（实现面）或审核层认定现有审计链等价",
+      "judged_by": "wiki 来源审核 owner（等价性认定）+ 编排层/实现者（补字段）"
+    },
+    "C7": {
+      "status": "not_in_open4_source",
+      "evidence_layer": "源文件 OPEN-4 无 C7：ruling §5 只到 C6（L147–L152）、RESPONSES.md L5「CONDITIONAL（C1–C6）」、OWNER_DECISIONS L437 转述同；仓内「C7」字样属 T2-SIM-OPEN5-RF 与 FIX-W06-GAPS 的引用",
+      "blocked_at": "题面与源不符，需父/owner 澄清",
+      "judged_by": "父代理 / owner（题面澄清）"
+    },
+    "C8": {
+      "status": "not_in_open4_source",
+      "evidence_layer": "同上：C1–C8 属 RESPONSES.md L6/L7 的 OPEN-5 与 OPEN-6 两行；OPEN-4 不含",
+      "blocked_at": "题面与源不符，需父/owner 澄清",
+      "judged_by": "父代理 / owner（题面澄清）"
+    }
+  },
+  "c1_c8_summary": {
+    "acquired": ["C1(主体)", "C2", "C3", "C5(带二手限定)"],
+    "not_acquired": ["C4", "C6"],
+    "not_in_source": ["C7", "C8"],
+    "note": "「acquired」只表示取证层检验物齐备，不表示条件已满足。"
+  },
+  "discrepancies_registered": [
+    {
+      "id": "D1",
+      "type": "open_id_conflict",
+      "statement": "§二十七 L558 称 G2=「OPEN-4（wiki 来源审核）」，而合并裁 G2 行（merge_ruling.md L361）与 I-11-A decision.md L400、IND ruling L51 的 OPEN-4 是「pdf_leaf_1based/table_index_0based 位置枚举（schema owner）」——两套同号异物。本工位按授权原文执行 wiki 来源审核取证，未择一、未改任何载体。"
+    },
+    {
+      "id": "D2",
+      "type": "spec_vs_source_mismatch",
+      "statement": "父题面称 T2-SIM-OPEN4-WIKI 列 C1–C8；源文件逐字只到 C1–C6（ruling §5、RESPONSES L5、OWNER_DECISIONS L437 三处一致）。C7/C8 记 NOT_IN_OPEN-4_SOURCE，不代裁。"
+    },
+    {
+      "id": "D3",
+      "type": "premise_drift",
+      "statement": "裁定所引产品字节已漂移：prompt_injection.py 7b22f239…/6,619B → 88154de4…/20,100B；prompt_injection_guard.py f900a13d…/8,382B → d7125478…/14,514B（FIX-W06-GAPS 修复面入产品）。检验锚点行号随之漂移，已逐条登记。"
+    }
+  ],
+  "third_party": {
+    "used": false,
+    "statement": "0 次网络取回，0 次第三方代理；全部字节来自本机只读文件系统。web_fetch=0、web_search=0、filing-fetch=0。"
+  },
+  "attempt_counts": {
+    "network_attempts": 0,
+    "local_pwsh_commands": 37,
+    "local_file_reads": 12,
+    "local_grep_calls": 3,
+    "hash_passes": 3,
+    "failed_or_aborted_local_commands": 4,
+    "files_written": 7
+  },
+  "level_claimed": null,
+  "written_files": [
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/corpus/CW_prompt_injection.py", "bytes": 20100, "sha256": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33", "sha16": "88154de4ab763060"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/corpus/CW_prompt_injection_guard.py", "bytes": 14514, "sha256": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d", "sha16": "d71254782c10cd6d"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/corpus/CW_test_prompt_injection_guard.py", "bytes": 13143, "sha256": "d3bde1a3d5ec2495474aae5b91595362b2caad4c8a0178c6927bf2d8023eec3f", "sha16": "d3bde1a3d5ec2495"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/evidence/trust_root_probe.txt", "bytes": 969, "sha256": "a09686ca75954631f877df173ebd3f0b28cc604f4a26f642f51228b4d24a3ba5", "sha16": "a09686ca75954631"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/evidence/grep_census.txt", "bytes": 2424, "sha256": "b89a7ad890d43898a3cd559d9fb68cd467b81db8c5df1bcc1fa88cb8e1dfebbd", "sha16": "b89a7ad890d43898"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/provenance.json", "bytes": 34459, "sha256": "8562de795a5f30a9aa74726f89d68dd9e87b57334eb3f56b8ab88ec88127650f", "sha16": "8562de795a5f30a9"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/acquisition_report.md", "bytes": 20188, "sha256": "50e521e24a2f5e138080c04514c3b9dd954be8b0ac7697f715833f79adf0ea40", "sha16": "50e521e24a2f5e13"}
+  ],
+  "written_files_note": "handoff.json 自身不入 written_files（自引用哈希不可稳定计算）。",
+  "git_diff_non_planning": 0,
+  "git_diff_observed": {
+    "command": "git diff HEAD --name-only（只读；未用 git status；无任何 git 写操作）",
+    "total_lines": 3826,
+    "non_planning": 0,
+    "requirement": 0,
+    "observed": 0,
+    "untracked_in_this_attempt": 7,
+    "note": "本 attempt 7 个文件均为未跟踪路径，不进入 git diff HEAD；total 行数含并发写入方的 .planning 内改动，与本工位无关。"
+  },
+  "json_and_format_selfcheck": {
+    "provenance_json_reparsed": true,
+    "handoff_json_reparsed": true,
+    "utf8_no_bom": true,
+    "lf_only": true,
+    "verified_by": "读取全部字节后按 UTF-8 解码再 ConvertFrom-Json；字节级 BOM/CRLF 探测",
+    "corpus_byte_identical_note": "corpus/CW_test_prompt_injection_guard.py 含 CRLF = 产品源文件原样字节（sha256 与源相等，改换行即破等）；本工位自撰的 provenance.json / handoff.json / acquisition_report.md / evidence/*.txt 均 UTF-8 无 BOM + 纯 LF。"
+  },
+  "releases_nothing": true,
+  "does_not_claim_I11A_acceptance": true,
+  "adds_no_new_domain_judgement": true,
+  "not_done": [
+    "未写 company-wiki / filing-fetch / revenue-forecast（仓根）或任何 .planning 之外路径",
+    "未执行任何 git 写操作；未使用 git status",
+    "未判定任何证据等级（level_claimed=null，归会计面）",
+    "未解除 OPEN-4 的任何 BLOCKED、未产生 ACCEPT、未代签、未改任何 status/decision/state",
+    "未跑 pytest/产品测试（避免向产品仓写缓存）；C5 的 PASS 为只读转录的二手工件",
+    "未把 C7/C8 安到 OPEN-4 头上、未替父澄清两处登记不一致"
+  ],
+  "next_owner_action": "① 父/owner 核对 G2 的 OPEN-4 身份（wiki 来源审核 vs schema 位置枚举）；② 父澄清题面 C1–C8 所指（源为 C1–C6）；③ C4 待函 B T2-9/OPEN-D1 出裁并建立信任根后，新开 attempt 重测；④ C6 需产品补「覆盖前后收据哈希」字段或审核层认定现有审计链等价；⑤ 以上任一判定均由 wiki 来源审核 owner 执行，等级与放行仍归会计面。"
+}

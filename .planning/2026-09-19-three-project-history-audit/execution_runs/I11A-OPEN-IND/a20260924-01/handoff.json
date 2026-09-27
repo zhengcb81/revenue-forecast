@@ -1,0 +1,256 @@
+{
+  "schema_version": "1.0",
+  "card": "I-11-A",
+  "attempt": "execution_runs/I11A-OPEN-IND/a20260924-01",
+  "role": "industry_specialist_reviewer",
+  "industries": ["mining", "software_and_cloud"],
+  "authorized_by": "OWNER_DECISIONS §十 L116/L127 + §十一 L144",
+  "authorization_quotes": {
+    "L116": "I-11-A OPEN-2/3/5/6 指派会计+行业 reviewer",
+    "L127": "I-11-A OPEN-2/3/5/6 | 指派：会计 + 行业（矿业/软件）reviewer | 编排层按此派单；OPEN-2/3/5/6 阻塞 I-11-B / I-07-E",
+    "L144": "2 | I-11-A OPEN-2/3/5/6 | 派新 subagent 当行业 reviewer | 编排层创建独立行业 reviewer subagent"
+  },
+  "status": "rulings_issued_industry_dimension_only",
+  "created_at_utc": "2026-09-24T20:34:43Z",
+  "does_not_claim_I11A_acceptance": true,
+  "does_not_change_I11A_status": true,
+  "counterpart_station": {
+    "id": "I11A-OPEN-ACCT",
+    "role": "accounting/disclosure reviewer",
+    "owns": [
+      "OPEN-2: whether the copper-equivalent factor may enter the statements, evidence grade, release of STOP_DISCLOSURE_ADAPTATION",
+      "OPEN-3: evidence grade of the 2026-09-02 8-K and whether external retrieval may be admitted at all",
+      "OPEN-6: the rule on WHAT BASIS is required before any threshold may be given a number"
+    ],
+    "note": "this station deliberately did not rule on any of the above"
+  },
+  "one_line_summaries": {
+    "OPEN-2_mining": "RULING: 只有“公司在同一份定期报告中同时披露换算系数（含价格/回收率/其他换算因子）与同口径当量销量”才可作 base（A级），本地全文扫描证明紫金 FY2025 年报 0 命中『铜当量/换算系数』⇒ 24 吨/千克示意值不可放行、跨公司『元/吨铜当量』不可比、ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 必须标 unit_basis=derived_not_disclosed + cross_company_comparable=false 并优先改用『分部收入 + 分金属销量』口径；系数取值本身 BLOCKED。",
+    "OPEN-3_software_cloud": "RULING: FY2027 建模分部应改为新两分部 Agents and Infra / Devices and Consumer（外部取得 8-K 原文，非本地可核），『沿用 PBP/IC/MPC + 标注』只可作 FY2025/FY2026 基期与桥接层、不可作 FY2027 报告口径；在 8-K 进入本地可核来源且会计面定证据等级前，MSFT_PBP/IC/MPC_REVENUE_FY2027 与新两分部参数一律不得放行。",
+    "OPEN-5_industry": "BLOCKED: 「可读性由谁解决」= BLOCKED-pending-owner（环境/依赖 owner，不代裁）；行业面同时裁定：原文不可读期间港股分部命题保持零产出、I-07-B/I-11-B 港股参数维持 _PLACEHOLDER 不得放行、不接受二手/常识补位，替代来源仅限①同发行人同期间可读原文②交易所公告（company/regulator primary），研究稿/新闻只可作线索。",
+    "OPEN-6_thresholds": "RULING: 只有 H4 计划达成率给出数值 0.90–1.10（basis=professional_judgement，矿业面，需补爬坡/并表/不可抗力豁免分支）、H8 拆分层级判定采用（来源集合放宽到发行人原始披露全集）、H7 维持 disclosure_definition 不给数；H2 的 ±5% 不予采用且替代数值 BLOCKED（口径未定 + 缺价格归一化基准），4 条算术恒等式行业面无异议、其审定基础规则归会计面。"
+  },
+  "rulings": [
+    {
+      "id": "OPEN-2",
+      "industry": "mining",
+      "verdict": "RULING",
+      "one_liner": "A/B/C/D 四级来源分级 + 跨公司不可比 + 参数标注要求已裁定；系数取值 BLOCKED。",
+      "gives_a_number": false,
+      "accepted_source_tiers": {
+        "A_base_only": "issuer discloses, in the same periodic report, both the conversion factor basis (prices, recoveries, other conversion factors) and the equivalent-volume figure on that same basis",
+        "B_scenario_only": "analyst-computed factor from public price series + disclosed recoveries; scenario low/high only, flagged factor_basis=analyst_assumption, never base",
+        "C_rejected": "peer/industry-average factor, or resource/reserve equivalent-grade basis applied to sales volume, or the 24 t/kg placeholder treated as approved"
+      },
+      "local_verification": "pdftotext full-text scan of CN-ZIJIN-AR2025 (26,118 lines): 铜当量=0, 吨铜当量=0, 铜金属当量=0, 换算系数=0, 折算系数=0, 换算=0; 当量=26 (all lithium-carbonate/carbon contexts + 1 cut-off grade line)",
+      "parameter_annotation_required": {
+        "parameter_id": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027",
+        "unit_basis": "derived_not_disclosed",
+        "conversion_factor_value": null,
+        "conversion_factor_basis": "analyst_placeholder_rejected",
+        "factor_source_in_filing": "none",
+        "cross_company_comparable": false,
+        "state": "pending_professional_decision (low/base/high stay null)",
+        "preferred_alternative": "model 矿产品分部对外收入 (元) and per-metal sales volumes (铜 884,943 t / 金 83,161 kg / 锌 / 银) separately; no equivalent aggregation"
+      },
+      "counterexample": "issuer discloses the factor and equivalent sales volume in one periodic report, and the accounting reviewer accepts the basis -> tier A becomes available and the numeric block lifts",
+      "compat_impact": ["ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027", "ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027", "ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027", "OPEN-6 H2 observable definition", "I-07-E disclosure adaptation (accounting side)"],
+      "restore_rule": "append-only: new evidence -> new attempt -> new ruling_rN.md + new provenance entry with supersedes; never edit this file or any I-11-A byte",
+      "rejected_alternatives": ["approve 24 t/kg placeholder", "borrow a peer factor", "apply resource/reserve equivalent-grade basis to sales volume", "back out equivalent volumes from broker research", "keep unit 元/吨铜当量 without the not-disclosed flag"]
+    },
+    {
+      "id": "OPEN-3",
+      "industry": "software_and_cloud",
+      "verdict": "RULING",
+      "one_liner": "FY2027 modelling segments = Agents and Infra + Devices and Consumer; old three segments acceptable only as base-period/bridge with segment_basis=pre_reclassification_legacy; parameter release stays BLOCKED.",
+      "gives_a_number": false,
+      "substantive_impact": "structural: segments change from FY2027, history restated on the new basis, 8-K furnished (not filed) under Reg FD; old-basis segment growth cannot be reconciled to what will be reported",
+      "which_segments": {
+        "FY2027_and_beyond": ["Agents and Infra", "Devices and Consumer"],
+        "FY2025_FY2026_base": "old three segments from the local 10-K (primary) OR the 8-K restated history once ingested; the two must never be mixed in one growth rate",
+        "transition": "old three segments retained only as legacy scenario + bridge table + invalidation condition"
+      },
+      "legacy_plus_label_acceptable": "PARTIALLY: acceptable only as base-period/bridge with segment_basis=pre_reclassification_legacy, a bridge table and an explicit rebuild trigger; NOT acceptable as the FY2027 reporting basis and NOT acceptable without a bridge",
+      "external_primary_quote": "Beginning in fiscal year 2027, the Company will manage its operations under this updated reporting structure and report its financial performance based on two reportable segments: (1) Agents and Infra and (2) Devices and Consumer.",
+      "external_evidence_warning": "2026-09-02 8-K text was retrieved EXTERNALLY (sec.gov direct 403, retrieved through r.jina.ai); local corpus enumeration shows 0 8-K files (33,126 files under company-wiki/companies/**). External retrieval must never be presented as a locally verifiable source.",
+      "counterexample": "Exhibit 99.1 does not restate history, or the FY2027 10-K still reports PBP/IC/MPC, or the change turns out to be investor-metrics only -> the new-two-segment ruling must be withdrawn",
+      "compat_impact": ["MSFT_PBP_REVENUE_FY2027", "MSFT_IC_REVENUE_FY2027", "MSFT_MPC_REVENUE_FY2027", "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER (KPI may be redefined)", "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027", "H-US-MSFT-SEG-01 falsifier revert_rule (rebuild required)", "I-07-E segment basis freeze", "I-12 accuracy sample"],
+      "restore_rule": "after the 8-K and Exhibit 99.1 are ingested locally with hashes: new attempt re-collects evidence and appends ruling_r2.md marked supersedes; external entries keep evidence_class=external forever",
+      "rejected_alternatives": ["silently keep three segments and release", "promote secondary aggregators to primary", "treat external retrieval as locally verifiable", "infer that no reclassification happened because it is absent locally", "mix three- and two-segment series without a bridge"]
+    },
+    {
+      "id": "OPEN-5",
+      "industry": "cross_market_hk",
+      "verdict": "RULING (industry handling) + BLOCKED-pending-owner (attribution)",
+      "one_liner": "Attribution (who fixes readability) = BLOCKED-pending-owner; industry handling = keep HK propositions at zero output, HK parameters at _PLACEHOLDER, no secondary backfill; substitute sources graded ①② primary / ③ lead-only / ④ external-with-hash.",
+      "gives_a_number": false,
+      "attribution": {
+        "status": "BLOCKED-pending-owner",
+        "question": "who resolves HK annual-report text readability (object-stream parsing / offline PDF library / approved external tool / dependency upgrade)",
+        "owner": "environment/dependency owner (I-00-B side)",
+        "missing": "owner's path designation and authorization"
+      },
+      "industry_handling": [
+        "HK source stays STOP_EVIDENCE / not_readable; the verdict must never be rewritten as verified",
+        "I-07-B / I-11-B HK segment parameters stay _PLACEHOLDER and must not be released",
+        "no secondary research drafts, news, data vendors or common knowledge may supply segment values",
+        "after readability is restored: NEW attempt re-collects evidence (card wording, decision.md L227-228)"
+      ],
+      "substitute_source_grades": {
+        "1": "same issuer + same period other readable original official document -> company_primary_disclosure (must carry file type, period, sha256, locator)",
+        "2": "exchange/regulator announcement -> regulator_primary_disclosure",
+        "3": "broker research / news / vendor / wiki -> secondary_lead_only, never enters cited_values or parameters",
+        "4": "externally fetched HK PDF -> external_retrieval_not_local, URL + time + sha256 mandatory, never presented as local"
+      },
+      "counterexample": "owner resolves readability but the new attempt still cannot read the source -> the no-output handling stands; conversely a readable same-period original with segment revenue unlocks HK proposition collection (evidence grade still accounting side)",
+      "compat_impact": ["I-07-B HK case", "I-11-B HK segment parameters (stay _PLACEHOLDER)", "I-07-E three-company basis freeze", "I-12 sample eligibility for HK-XIAOMI-2025"],
+      "restore_rule": "append-only new attempt after the tool/dependency changes; never flip not_readable in place",
+      "rejected_alternatives": ["use the Xiaomi research draft in the audit directory", "fill segment structure from industry common knowledge", "change not_readable to verified", "silently substitute an externally fetched PDF", "let I-11-B run on placeholder values"]
+    },
+    {
+      "id": "OPEN-6",
+      "industry": "mining_and_software_thresholds",
+      "verdict": "RULING",
+      "one_liner": "Give a number only for H4 plan attainment 0.90-1.10 (professional_judgement, mining); adopt H8's disclosure-level gate with two revisions; keep H7 as disclosure_definition with no number; reject H2's +/-5% and BLOCK its replacement; arithmetic-identity thresholds are outside my remit for basis rules.",
+      "gives_a_number": true,
+      "counts_verified_locally": {
+        "threshold_bases": {"arithmetic_identity": 4, "professional_judgement_required": 3, "disclosure_definition": 1},
+        "judgement_class_total": 4,
+        "discrepancy_logged_not_fixed": "handoff.json:9 and mechanism_review.md:211 say 4 professional_judgement_required; script count is 3 (+1 disclosure_definition). Cite validation_report.counts."
+      },
+      "thresholds": [
+        {
+          "hypothesis": "H-CN-ZIJIN-PLAN-04",
+          "threshold": "actual production / plan production within [0.90, 1.10]",
+          "ruling": "ADOPT",
+          "value": [0.90, 1.10],
+          "basis": "professional_judgement (mining reviewer)",
+          "scope": "judges management plan attainment only; never model accuracy (plan values are not independent evidence)",
+          "counterexample": "ramp-up year, major acquisition consolidation year, force-majeure/long overhaul year -> >10% deviation does not imply the plan was meaningless; revert_rule must gain an exemption branch",
+          "release_condition": "industry sign-off only; threshold_basis upgrade still requires the accounting station's basis rule"
+        },
+        {
+          "hypothesis": "H-CN-ZIJIN-SEG-02",
+          "threshold": "relative deviation +/-5%",
+          "ruling": "REJECT_PLACEHOLDER_NUMBER_BLOCKED",
+          "value": null,
+          "basis": "BLOCKED",
+          "reason": "the observable's denominator depends on the undecided OPEN-2 factor, and a flat +/-5% band on a blended multi-metal implied unit revenue is triggered by ordinary metal-price moves alone, so it cannot separate mechanism failure from price movement; a price-normalisation basis (series, period, net-price convention) is missing",
+          "counterexample": "a locally verifiable history showing the observable moves <=5% in price-neutral years would let +/-5% return for approval"
+        },
+        {
+          "hypothesis": "H-US-MSFT-SEG-03",
+          "threshold": "disclosure-level gate for cloud/licensing split + seats + revenue per unit",
+          "ruling": "ADOPT_WITH_TWO_REVISIONS",
+          "value": null,
+          "basis": "professional_judgement (software reviewer)",
+          "revisions": [
+            "source set widened from 10-K(+8-K exhibit) to the issuer's primary disclosure set (10-K / 8-K exhibit / earnings release and supplemental), each with its own source_type and independence_group",
+            "when only one of the two items is disclosed the state stays pending_professional_decision, but an alternative driver (direct_growth/growth_rate) may be registered as a candidate without calibrating any magnitude"
+          ],
+          "counterexample": "issuer declares seats/ARPU permanently non-disclosed -> the proposition should move pending -> unquantified instead of waiting"
+        },
+        {
+          "hypothesis": "H-US-MSFT-SEG-02",
+          "threshold": "disclosure_definition: issuer must give a recomposable, non-overlapping component mapping of Microsoft Cloud",
+          "ruling": "KEEP",
+          "value": null,
+          "basis": "disclosure_definition (not a magnitude threshold; no number is due)",
+          "industry_note": "under the new segment structure (OPEN-3) the Microsoft Cloud KPI may be redefined; re-verify the definition at the first FY2027 disclosure or the gate will produce false negatives",
+          "counterexample": "the FY2026/FY2027 filing publishes a recomposable component list -> the gate is satisfied immediately"
+        },
+        {
+          "hypothesis": "H-CN-ZIJIN-SEG-01 / VOL-03 / ELIM-05, H-US-MSFT-SEG-01",
+          "threshold": "0 (with +/-1 CNY or +/-1 USD million rounding)",
+          "ruling": "NO_INDUSTRY_OBJECTION",
+          "value": 0,
+          "basis": "arithmetic_identity",
+          "note": "the rule on what basis is required to approve a threshold belongs to the accounting station and is intentionally not restated here"
+        }
+      ],
+      "counterexample": "see per-threshold counterexamples above",
+      "compat_impact": ["ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER / ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER (attainment test only; both remain PLACEHOLDER)", "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 falsifier executability", "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027 release condition", "I-11-C falsifier reuse (H4 exemption branch, H8 source set)", "validator threshold_basis closed set (no new enum value introduced by this station)"],
+      "restore_rule": "threshold changes go through a new attempt and a new ruling file marked supersedes; the old threshold version is retained for I-12 scoring",
+      "rejected_alternatives": ["treat +/-5% as approved", "adopt 0.9-1.1 without stating a basis", "invent a replacement number for H2 to fill the list", "convert H7's definition gate into a magnitude threshold"]
+    }
+  ],
+  "blocked": [
+    {"id": "BLOCKED-1", "item": "OPEN-5 attribution: who fixes HK annual-report readability", "missing": "environment/dependency owner's path designation and authorization", "owner": "environment/dependency owner (I-00-B side)", "status": "BLOCKED-pending-owner"},
+    {"id": "BLOCKED-2", "item": "OPEN-2: a releasable copper-equivalent factor value / unit-revenue value", "missing": "issuer-disclosed factor plus equivalent sales volume on the same basis (0 hits in local full text)", "owner": "mining reviewer + accounting station", "status": "blocked"},
+    {"id": "BLOCKED-3", "item": "OPEN-2: ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 entering I-11-B calibration", "missing": "BLOCKED-2 plus accounting evidence grade", "owner": "I-11-B gate", "status": "blocked"},
+    {"id": "BLOCKED-4", "item": "OPEN-3: 2026-09-02 8-K and Exhibit 99.1 entering the locally verifiable corpus", "missing": "filing-fetch authorised ingestion with hashes (0 local 8-K files enumerated)", "owner": "filing-fetch / owner + accounting station", "status": "blocked"},
+    {"id": "BLOCKED-5", "item": "OPEN-3: release of MSFT_PBP/IC/MPC_REVENUE_FY2027 and I-07-E Microsoft segment freeze", "missing": "BLOCKED-4 plus accounting evidence grade; the new two-segment parameters are equally unreleasable because they exist only externally today", "owner": "I-11-B / I-07-E gate", "status": "blocked"},
+    {"id": "BLOCKED-6", "item": "OPEN-6: replacement number for H2's +/-5%", "missing": "OPEN-2口径 decision plus a price-normalisation basis (series, period, net-price convention)", "owner": "mining reviewer + accounting station", "status": "professional_judgement_required remains unresolved"},
+    {"id": "BLOCKED-7", "item": "OPEN-5: HK segment propositions and I-11-B HK parameters", "missing": "not an evidence gap to be filled: deliberately held unusable until BLOCKED-1 and the substitute-source table conditions are met", "owner": "I-07-B / I-11-B", "status": "kept unusable, _PLACEHOLDER not releasable"}
+  ],
+  "not_in_scope": [
+    "accounting/disclosure dimension of OPEN-2, OPEN-3, OPEN-6 (evidence grade, statement admissibility, STOP_DISCLOSURE_ADAPTATION release) -> I11A-OPEN-ACCT",
+    "OPEN-6 rule on what basis is required before a number may be given -> I11A-OPEN-ACCT",
+    "OPEN-5 attribution (who fixes readability) -> environment/dependency owner",
+    "OPEN-1 (owner already ruled at §十一 L147), OPEN-4 (schema owner), OPEN-7 (owner ruled to maintain), OPEN-8 (independent reviewer), OPEN-9 (owner ruled superset), OPEN-10 (owner ruled newest-file mtime)",
+    "OPEN-11 (assigned in the card to the mining industry reviewer, but the owner's dispatch at §十/§十一 sent only OPEN-2/3/5/6 to this station; NOT dispatched to me)",
+    "OPEN-12 (PLAN owner / statistics reviewer)",
+    "any change to I-11-A status, handoff, review verdict or evidence bytes",
+    "any parameter magnitude (low/base/high), any model run, any prediction"
+  ],
+  "written_files": [
+    {
+      "path": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+      "sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b",
+      "byte_size": 39207
+    },
+    {
+      "path": "execution_runs/I11A-OPEN-IND/a20260924-01/provenance.json",
+      "sha256": "71187a55f4b407c387bb9baa8c6e013864d65b3f9875791c1ccf1e3c44bfa079",
+      "byte_size": 25031
+    },
+    {
+      "path": "execution_runs/I11A-OPEN-IND/a20260924-01/handoff.json",
+      "sha256": null,
+      "byte_size": null,
+      "note": "self-reference is not provable from inside the file; compute externally after writing (reported to the parent agent). ruling.md and provenance.json were hashed BEFORE this file was written and are not modified afterwards."
+    }
+  ],
+  "provenance_summary": {
+    "path": "execution_runs/I11A-OPEN-IND/a20260924-01/provenance.json",
+    "total_entries": 24,
+    "local": 11,
+    "external": 12,
+    "tool": 1,
+    "external_fetch_attempts": 12,
+    "external_fetch_ok": 9,
+    "external_fetch_failed": 3,
+    "external_entries_cited_in_ruling": 5,
+    "snapshots_written": 0,
+    "retrieval_window_utc": "2026-09-24T20:20:00Z/2026-09-24T20:34:43Z"
+  },
+  "evidence_discipline": {
+    "external_must_not_pose_as_local": true,
+    "msft_8k_local_verifiability": "confirmed absent locally (0 8-K files among 33,126 enumerated files); the retrieved 8-K text is marked external_retrieval_not_local in provenance EXT-05",
+    "zijin_factor_local_verifiability": "confirmed absent locally by full-text scan (pdftotext, 26,118 lines, 0 hits for 铜当量/换算系数)",
+    "placeholder_values_must_not_pass": "no placeholder was promoted: no factor value, no H2 number, no HK proposition, no MSFT parameter release"
+  },
+  "git_diff_non_planning": 0,
+  "git_diff_baseline_before_writes": {"total": 3821, "non_planning": 0},
+  "git_diff_after_writes": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "total": 3822,
+    "non_planning": 0,
+    "paths_in_diff_mentioning_this_station": 0,
+    "untracked_station_files_via_ls_files_others": 3,
+    "note": "the +1 between baseline and close-out is a .planning path written by a concurrent actor; this station created only the three untracked files above, which never enter git diff HEAD"
+  },
+  "sealed_attempt_unchanged_after_station": {
+    "files_rehashed": 5,
+    "all_unchanged": true,
+    "sha256": {
+      "decision.md": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951",
+      "review.md": "4938e745adc3f32582cc6fd70e3e69197385035d0270807d955d2a7c7776daed",
+      "handoff.json": "e4dafd16952b31317aa47f43e14fd73b078497d488be06a594a9de6b73c903c4",
+      "binding.json": "9d9c89a7fb83e4ef99bbfe94a492ad96d21705ba62a3e499b829e669447f9e24",
+      "evidence/I-11-A/hypotheses.json": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28"
+    }
+  },
+  "git_mutation_commands_run": [],
+  "next_action": "orchestrator: (1) route the accounting halves of OPEN-2/3/6 to I11A-OPEN-ACCT; (2) escalate BLOCKED-1 to the environment/dependency owner; (3) do NOT start I-11-B until BLOCKED-2..BLOCKED-6 clear; this station's rulings are additive carriers and do not unlock anything by themselves."
+}

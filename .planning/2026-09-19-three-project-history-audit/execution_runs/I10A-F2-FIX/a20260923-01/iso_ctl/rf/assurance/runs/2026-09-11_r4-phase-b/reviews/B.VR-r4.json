@@ -1,0 +1,155 @@
+{
+  "review_id": "B.VR-r4",
+  "reviewer": "independent read-only subagent",
+  "reviewed_at_utc": "2026-09-18T19:18:02.935666Z",
+  "scope": "R4 cross-repo end-to-end reuse call (filing-fetch real entry, read-only)",
+  "verdict": "approve_with_findings",
+  "claims": [
+    {
+      "id": "C1",
+      "verdict": "confirmed",
+      "evidence": "harness run_r4_cross_repo_reuse.py:214-219 spawns [sys.executable, '-B', filing-fetch/scripts/fetch_filing.py, '--no-pause-worker', '--request-file', <temp>] with cwd=filing-fetch; record legs[*].argv identical; no '--allow-download' and no 'mode' key in any of the four requests, so fetch_filing.py:718-720 yields action='resolve' (is_latest only when mode=='latest_as_of'); the resolve branch then runs cli.py:1165-1200 (load_runtime_policy -> SourceResolver(get_catalog()).resolve -> _policy_export_payload -> build_resolution_envelope) with no acquisition adapter and no refresh. 'wiki action = resolve' also requires identify first: fetch_filing.py:694-704 always calls identify (L1/L2/L3 show calls=2, L4 calls=1).",
+      "note": "Read the whole fetch_filing.py chain around the anchors (:455-457/:572/:584-585/:704-716/:736-757/:961-1008/:988-995/:1037-1041/:1106-1116) and the wiki resolve branch. action=resolve holds for L1-L3; L4 dies in identify. No download/network path is constructed on this branch (no AcquisitionCoordinator/adapters, no OfficialSecurityMasterRefresher because --refresh is absent at cli.py:1083-1087). CAVEAT carried into F-R4-03: the '--no-pause-worker' half of the claim is inert on this path (the PausedWorkerScope is only constructed inside `if allow_download:` at :736-750 and in _close_gap_and_return_handle at :990-999), so the flag did not cause anything - which is why the run is NOT weaker than the skill default (SKILL.md:20-29, 63-65 scope the pause to downloads) but also why the harness's stated reason for that row is wrong."
+    },
+    {
+      "id": "C2",
+      "verdict": "confirmed",
+      "evidence": "L1 stdout (b-ar-cross-repo-reuse-L1-reuse-any-year-stdout.txt, 6,207 B, sha256 d8aa3431...) handle: content_sha256=e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350, byte_size=4172424, fiscal_year=2026, canonical_path=...\\company-wiki\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf. Independent checks: (a) I hashed that file myself - Length 4,172,424, sha256 e39fbf9c... (identical); (b) B08 level 2 recorded the SAME digest from the real bytes (evidence/b08-level2-evidence.json real_root_before.files[<same name>].sha256 = e39fbf9c..., bytes 4172424) and its probe read the real bytes twice with digest_ok=true and digest_in_real_root_snapshot=true (evidence/b08-level2-probe.json probe.verified_reads); (c) the consumer itself re-hashed the file in this run: filing_contracts.py:513-517 reads canonical.read_bytes(), hashes it and fails closed unless it equals snapshot_sha256 - L1 returned capture_ready, so the bytes matched inside the run.",
+      "note": "Containment is also closed: config/source_catalog.yaml:14-19 root company_raw = ${PROJECT_ROOT}/companies (project_root = company-wiki per cli.py:866-867), and filing_contracts.py:480-497 fails closed with 'handle canonical_path is outside the policy snapshot's reusable roots'; the policy hash itself is re-derived at filing_contracts.py:461-467. L2 (fiscal_year=2026 pinned) returned the same document_id/digest."
+    },
+    {
+      "id": "C3",
+      "verdict": "confirmed",
+      "evidence": "L3 stdout: exit 2, status/error_code 'not_found', error 'source is not reusable: missing / no_existing_source_satisfies_request', resolution_trace {status:'missing', reason:'no_existing_source_satisfies_request', request_id urn:...5367918d...}, calls=2. L4 stdout: exit 2, status/error_code 'identity_error', error 'company identity is not uniquely resolved: missing / no_verified_identity_candidate', calls=1. Both raw files re-hashed by me: 8433b7ef... / 5c6492b7... = the record's stdout_sha256.",
+      "note": "L3 is a genuine reuse refusal, not a mislabelled config/identity problem: calls=2 proves identify succeeded (fetch_filing.py:210-211 increments per wiki subprocess) and the failure is the consumer's own 'source is not reusable' raise at fetch_filing.py:821-827 driven by the wiki resolution status; exit 2 is shared with config/identity errors (fetch_filing.py:1028-1029) so the status/error text, not the exit code, is the discriminator - the prose quotes the text. L4 fails before resolution (1 call). 'Neither downloads' is true via action=resolve + the artifact invariants, but NOT via the reported field: see F-R4-01."
+    },
+    {
+      "id": "C4",
+      "verdict": "confirmed",
+      "evidence": "Live stat (mine): catalog.sqlite3 = 49,677,344,768 B, mtime_ns 1788902601072747300 (= record pre and post, -wal 0 B, both mtime 1789682726592111000); no filing_fetch_pause.* and no operation.lock in .source_catalog (Get-ChildItem); record companies_root {file_count: 33122, digest de2b51a3...} identical pre/post (my re-run: 33122 and the same digest); catalog_dir {entry_count 12476, digest 0fb5ed46... -> c46ae12d...} with catalog_dir_diff changed_total=1, added_total=0, removed_total=0, the single change catalog.sqlite3-shm size 32768 (1789758508591531000 -> 1789758587695508100); repos: company-wiki and filing-fetch clean, revenue-forecast porcelain identical pre/post (50 lines, sha cafd8c17...), heads 8665c8c/51f1e05/d35b6f5 identical pre/post; wiki_src {143 files, d201140e...} identical. `--verify` = 5/5 true, exit 0.",
+      "note": "The catalog-dir diff is NOT hidden by the cap: only the printed lists are capped at 50 (harness:141-149), while changed_total/added_total/removed_total are exact counts over the complete rglob('*') map (harness:101-113); an added+deleted pair inside .source_catalog would still move the directory entry's own mtime, and the directory entry is in the digest - it did not move. My re-run reproduced every one of these numbers (only ran_at_utc, the -shm pair and the repo porcelain differ, the last because 3 unrelated R5 files appeared later). I did NOT attribute the shm movement in either direction (see F-R4-02 for the code-anchored candidate)."
+    },
+    {
+      "id": "C5",
+      "verdict": "partly",
+      "evidence": "Substantively the 'NOT REACHED' conclusions hold and I re-derived them: worker pause writers fetch_filing.py:453-458/:565-590 are never called (no scope constructed on the reuse branch, :758-765); binding temp file only in _close_gap_and_return_handle (:961-1008), reachable only from :778-800; download/network gated by :720; identity cache write only under `if args.refresh` (cli.py:1083-1087, writer security_identity.py:319-356, reader :358-415); journal append only inside AcquisitionJournal.record() (acquisition_journal.py:77-133, called solely from acquisition_service/close_gap/duplicate_cleanup - resolve only calls read_all at resolver.py:971). But two rows do not survive: (1) the pause-file row's cited reason is wrong (F-R4-03) and (2) the only 'REACHED' row is false (F-R4-02).",
+      "note": "Effectively: 5/5 NOT REACHED conclusions are right, 1/5 of their citations is unsupported, and the single REACHED row describes a surface that is not reached at all. The residual question 'does anything else on the reachable path write?' is answered no: the DB is opened only by ReadOnlyCatalogReader (file:...?mode=ro + PRAGMA query_only=ON, reader.py:165/:188), bundle/prompt-injection/producer-event reads are SELECTs plus local artifact hashing (source_bundle.py has no INSERT/UPDATE/write_text), load_runtime_policy is a read (write path save_runtime_policy_cas is policy-apply only)."
+    },
+    {
+      "id": "C6",
+      "verdict": "confirmed",
+      "evidence": "L1 envelope (raw stdout lines 37-108): outcome 'reused_existing', qualification {label 'verified_input', conflict_check 'store', gaps []}, policy_hash c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd, activation_epoch epoch-canary-2026-08-10, cohorts [canary-2026-08-10], download_events 0, llm_calls 1, parser_calls 1; top level downloads 0, calls 2. The policy hash equals .source_catalog/runtime_policy.json's policy_hash and equals a05-readonly-manifest-run-A06-2-stdout.txt's policy_hash c773099b... (A06-2 = `runtime-policy show`). llm_calls/parser_calls are journal history: producer_events.py:1-36 counts rows in the producer_events table (written by trg_artifact_producer_event on artifact INSERT) and resolver.py:937-941 says the counts come from that journal; the resolve path inserts no artifact.",
+      "note": "Levels are right: outcome/qualification/policy_hash/download_events are read from handle.resolution_envelope (harness summarise :273-285), while the payload itself only carries calls/downloads/handle/status. bundle_status='available' with valid_handles={} and invalid normalized/summary are quoted correctly by the prose §3bis. One caveat on the 'downloads=0' half for the two CONTROL legs - see F-R4-01; for L1/L2 it is genuinely the mirrored envelope download_events (fetch_filing.py:622-629 called at :833)."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-R4-01",
+      "severity": "P2",
+      "statement": "The only machine-checked 'no download' invariant is vacuous: run_r4_cross_repo_reuse.py:431 evaluates `leg['summary'].get('download_required')`, but summarise() (:249-290) never emits a `download_required` key (verified: the string appears in the record only inside the derived key `any_download_required`), so `any_download_required` is always False and `invariants['no_download_requested']` (:461) is True no matter what the legs reported. In addition, the `downloads: 0` that the prose §3 reads as 'zero downloads' for L3/L4 is the initialized counter (`fetch_filing.py:1106` stats={'calls':0,'downloads':0}); it is only overwritten from the envelope by _record_download_events (:622-629), which is called on the success paths :833/:1021 - both controls raise before that (:821-827 and _resolved_company_identity).",
+      "evidence": "evidence/run_r4_cross_repo_reuse.py:431 and :461; evidence/b-ar-cross-repo-reuse.json summary.any_download_required=false with no `download_required` key anywhere in legs[*].summary; evidence/b-ar-cross-repo-reuse.md:75 and :44-45; scripts/fetch_filing.py:1106, :622-629, :821-827",
+      "why_it_matters": "One of the eight invariants that the prose presents as 8/8 is computed from a field that never exists, and the failure-path `downloads` field is a default rather than an observation. The zero-download conclusion still stands on action=resolve (:720) plus the artifact invariants, but the record contains no invariant that would have caught a leg self-reporting a download."
+    },
+    {
+      "id": "F-R4-02",
+      "severity": "P2",
+      "statement": "The write-surface table's only 'REACHED' row is false: the writable CatalogStore is never opened on the resolve path - the run opens the catalog only through the read-only reader. The row claims 'REACHED by construction (mkdir/connect/WAL/additive migrations/commit; store.py:983,990,1054,1056,1067)'.",
+      "evidence": "harness run_r4_cross_repo_reuse.py:334-336 and evidence/b-ar-cross-repo-reuse.json write_surface.product_store_open; the claim has since propagated into the run's master records, findings.md:29 ('只有产品 store 打开时的进程级副作用（store.py:983/990/1054/1056/1067）按构造会触及，与已批的只读 manifest 同类', written 2026-09-18T19:14:47Z) and progress.md:6. Code: the resolve branch (cli.py:1165-1200) contains no `get_catalog().store` - contrast the two places that DO initialize it explicitly, cli.py:762 ('writer initializer may create the catalog', ensure) and cli.py:1216 (close-gap); it passes `store=get_catalog().reader` (:1193) and SourceResolver reads via `self.catalog.reader` (resolver.py:1280, :1353, :1371) and service.query_filing_candidates / query_source_bundle use `self.reader` (service.py:365, :396, :407, :549, :562, :575). The reader opens `file:...?mode=ro` and `PRAGMA query_only=ON` (reader.py:165, :188); CatalogStore.__init__ (store.py:979-987 -> _initialize :1051-1067: PRAGMA journal_mode=WAL, DDL, additive migrations, commit) is not constructed.",
+      "why_it_matters": "This is the row that the owner's authorization condition ('after the write surface has been read out of the code') rests on; asserting that a write-capable store open (mkdir/WAL/migrations/commit) happened inflates the claimed reached surface and mis-locates the cause of the only observed change. A read-only WAL reader alone is sufficient to move `-shm`, and phase A already established the `-shm` is not attributable."
+    },
+    {
+      "id": "F-R4-03",
+      "severity": "P2",
+      "statement": "The pause-file row's cited justification is wrong: '--no-pause-worker 使整个 PausedWorkerScope 不启用' is not what keeps the pause files from being written. PausedWorkerScope is constructed only (a) inside `if allow_download:` (fetch_filing.py:736-750) and (b) in _close_gap_and_return_handle (:990-999, reachable only from :778-800, i.e. ensure + allow_download + authorization). The reuse branch (:758-765) constructs no scope at all, so the flag is inert for this run.",
+      "evidence": "harness run_r4_cross_repo_reuse.py:329 ('NOT REACHED (--no-pause-worker; fetch_filing.py:988-995)') and evidence/b-ar-cross-repo-reuse.md:23, which cite the writer functions fetch_filing.py:455-457/:572/:584-585 and the close-gap-path anchor :988-995, but never the decisive `if allow_download:` gate at :736 and the else branch at :758-765. SKILL.md:20-29 and :63-65 also scope the pause to downloads ('Only with --no-pause-worker are downloads blocked while the worker is paused').",
+      "why_it_matters": "The row's conclusion is correct but its anchor does not support it, so C5's 'every NOT REACHED line is backed by the cited anchor' fails for 1 of 5 rows. The mitigating fact - that the flag changes nothing here and the run is therefore not a weaker path than the skill documents - is itself absent from the record, so a reader cannot tell whether the authorization decision (owner option A) rested on a real causal reading."
+    },
+    {
+      "id": "F-R4-04",
+      "severity": "P3",
+      "statement": "The prose §3/§5 report a different execution than the record they accompany: §3 states ran_at_utc 2026-09-18T19:08:52Z and §5 tables the `-shm` pair 1789758353733320600 -> 1789758508591531000, while the record says ran_at_utc 2026-09-18T19:10:16.467230+00:00 and diffs 1789758508591531000 -> 1789758587695508100. The prose's 'after' is the record's 'before', i.e. two separate author runs.",
+      "evidence": "evidence/b-ar-cross-repo-reuse.md:35 and :85 vs evidence/b-ar-cross-repo-reuse.json ran_at_utc and catalog_dir_diff; converted: 1789758353733320600=19:05:53.733321Z, 1789758508591531000=19:08:28.591531Z, 1789758587695508100=19:09:47.695508Z. My own sanctioned re-run's `-shm` pre (=1789758587695508100) equals the record's post and moved it again to 1789758806714482400=19:13:26.714482Z, so three consecutive runs each moved exactly that one entry with 0 added / 0 removed.",
+      "why_it_matters": "§5 is the increment's required 'name the changed entry instead of only saying changed/unchanged' evidence; as written it cannot be reproduced from the record. The four legs' stdout hashes are identical across runs, so no substantive number changes - only the timestamps and the ran_at_utc of the record are inconsistent with the prose."
+    },
+    {
+      "id": "F-R4-05",
+      "severity": "P3",
+      "statement": "The prose §4 heads row is wrong for revenue-forecast: it claims revenue-forecast head 801d5de while the record's pre and post snapshots both carry 51f1e0563305dc8d0705e73406916d855bd7d07d.",
+      "evidence": "evidence/b-ar-cross-repo-reuse.md:73 ('company-wiki 8665c8c、revenue-forecast 801d5de、filing-fetch d35b6f5') vs evidence/b-ar-cross-repo-reuse.json pre.repos['revenue-forecast'].head / post.repos[...].head = 51f1e05...; `git -C revenue-forecast rev-parse HEAD` = 51f1e0563305dc8d0705e73406916d855bd7d07d (branch fcap) and `git cat-file -t 801d5de` = commit (an older ancestor: 'fix(r1+r2): missing primary file is now a per-document failure'). company-wiki 8665c8c and filing-fetch d35b6f5 match live.",
+      "why_it_matters": "A reader cross-checking the heads table against the record sees a contradiction; the invariant itself (pre = post within the run) is unaffected, and my re-run reproduced 51f1e05."
+    },
+    {
+      "id": "F-R4-06",
+      "severity": "P3",
+      "statement": "The harness's own write surface is missing from the write-surface table, and the repo invariant cannot see it by construction: the run writes the record JSON, four `<out>-<leg>-stdout.txt` side files (into the repo's evidence dir when the default --out is used) and a temp workdir. `repos_unchanged_during_run` compares git porcelain snapshots, and all of these are untracked, so a same-path content rewrite shows as an identical `??` line.",
+      "evidence": "harness run_r4_cross_repo_reuse.py:466-471 (side files + record) and :310-313 (workdir), none listed in the table at :328-338 / write_surface in the JSON; :455-457 compares porcelain captured at :344 and :409. Confirmed empirically: my re-run's porcelain delta against the record for revenue-forecast is exactly three later, unrelated files (?? b-ar-cross-repo-reuse.md, ?? b-ar-dropbox-bytes.json, ?? run_r5_dropbox_bytes.py) - the record JSON and the four stdout files produce no delta because they were already untracked when the recorded run snapshotted.",
+      "why_it_matters": "C4's 'three repos unchanged' is true only in the porcelain sense; the increment itself writes five files into revenue-forecast, and the only reason the invariant never had to account for them is that they are untracked. Scope this explicitly rather than letting the table read as a complete enumeration."
+    },
+    {
+      "id": "F-R4-07",
+      "severity": "P2",
+      "statement": "Bytecode writes are invisible to the 'wiki src unchanged' leg: _tree_fingerprint hashes only `*.py` and skips `__pycache__`, company-wiki/.gitignore ignores `__pycache__/` so git porcelain cannot see it either, and the wiki child process is spawned with `env = dict(os.environ)` + PYTHONUTF8 only - the harness's `-B` does not propagate as PYTHONDONTWRITEBYTECODE.",
+      "evidence": "harness run_r4_cross_repo_reuse.py:170-180 (rglob('*.py'), `if '__pycache__' in path.parts: continue`), :215 (`-B` on the parent), scripts/fetch_filing.py:207-216 (`environment = dict(os.environ)`, `environment['PYTHONUTF8'] = '1'`, subprocess.run(..., env=environment)), company-wiki/.gitignore:16 (`__pycache__/`), $env:PYTHONDONTWRITEBYTECODE empty. Empirical closure for the recorded window: newest *.pyc in company-wiki = 2026-09-18T08:40:58Z (tests/), newest under src/ = 2026-09-18T08:11:16Z - unchanged after the 19:05-19:13 runs.",
+      "why_it_matters": "A .pyc write inside company-wiki during the run would leave both 'three repos unchanged' and 'wiki src unchanged' true, so the zero-write claim's coverage is narrower than the prose implies. I closed the gap empirically for this window, but the record itself does not establish it (and the same blind spot applies to any future run of this harness)."
+    },
+    {
+      "id": "F-R4-08",
+      "severity": "P3",
+      "statement": "`no_new_file_under_companies` is a path+size digest over regular files only: it hashes `relative_path\\0size` for entries where `entry.is_file()`, with no content hash, no mtime and no directory entries.",
+      "evidence": "harness run_r4_cross_repo_reuse.py:152-167 (_tree_paths_digest, `if not entry.is_file(): continue`) and the record's companies_root = {file_count: 33122, digest: de2b51a3...}. Whole-tree coverage is genuine (rglob('**/*') over the whole companies root; a new file at a new path changes the digest - my re-run reproduced the identical digest and count).",
+      "why_it_matters": "A same-size in-place overwrite of an existing path (e.g. a re-download of an identically sized revision onto the same canonical filename) or a newly created empty directory would leave the digest unchanged. The prose discloses '路径+大小' (b-ar-cross-repo-reuse.md:71), so this is an undisclosed-coverage gap rather than a false statement - but the check is weaker than 'no download landed'."
+    }
+  ],
+  "reproduction": [
+    {
+      "command": "C:\\Miniconda\\python.exe \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\runs\\2026-09-11_r4-phase-b\\evidence\\run_r4_cross_repo_reuse.py\" --out \"$env:TEMP\\reviewer-r4.json\"",
+      "observed": "exit 0. All four legs byte-identical to the record: exit 0/0/2/2 with stdout_sha256 d8aa34311d6ac8cf... / b64f11b6df89745b... / 8433b7efdc5db1fc... / 5c6492b7c12b0a70... (identical full hashes), summary blocks equal (L1 status capture_ready, digest e39fbf9c..., bytes 4172424, outcome reused_existing, qualification verified_input, calls 2, downloads 0, invalid artifacts normalized=artifact_status_not_completed / summary=artifact_source_sha_missing; L3 not_found; L4 identity_error). 8/8 invariants true; catalog_dir changed=True with changed=1 added=0 removed=0, the single change catalog.sqlite3-shm (32768, 1789758587695508100 -> 1789758806714482400); companies 33122 files, same digest; wiki_src 143 files, same tree hash."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe \"...\\evidence\\run_r4_cross_repo_reuse.py\" --verify",
+      "observed": "exit 0, 5/5 true (production_db_still_matches, production_wal_still_matches, companies_root_still_matches, heads_still_match, wiki_src_still_matches); live production catalog 49,677,344,768 B / mtime_ns 1788902601072747300, catalog_dir entry_count 12476. This is read-only: the record file's mtime stayed 2026-09-18T19:10:16Z and sha256 f0ce90d228216016... ."
+    },
+    {
+      "command": "Get-FileHash -LiteralPath 'C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\阿里巴巴－Ｗ\\raw\\financial_reports\\annual\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf' -Algorithm SHA256 ; (Get-Item -LiteralPath <same>).Length",
+      "observed": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350 / 4172424 - identical to L1's content_sha256/byte_size, to B08 level 2's real-byte digest (b08-level2-evidence.json real_root_before) and to the handle's snapshot_sha256."
+    },
+    {
+      "command": "python -c \"hash each of the four b-ar-cross-repo-reuse-L*-stdout.txt and compare to the record's stdout_sha256\"",
+      "observed": "All four match exactly (6207/d8aa3431..., 6207/b64f11b6..., 455/8433b7ef..., 246/5c6492b7...); the record stores honest 2000-char prefixes for L1/L2 and the full text for L3/L4."
+    },
+    {
+      "command": "python -c \"json walk of the record: legs[*].summary keys, invariants, pre/post snapshots, repos\"",
+      "observed": "No `download_required` key in any leg summary; `any_download_required` = false; `no_download_requested` = true (vacuous, see F-R4-01). repos: company-wiki 8665c8c (clean), revenue-forecast 51f1e05 (50 porcelain lines), filing-fetch d35b6f5 (clean); pre == post for all three."
+    },
+    {
+      "command": "git -C revenue-forecast rev-parse HEAD ; git cat-file -t 801d5de ; git -C company-wiki rev-parse HEAD ; git -C filing-fetch rev-parse HEAD",
+      "observed": "51f1e0563305dc8d0705e73406916d855bd7d07d (branch fcap); 801d5de exists as an older commit (ancestor); 8665c8c...; d35b6f5... . So the prose's 'revenue-forecast 801d5de' contradicts the record (F-R4-05)."
+    },
+    {
+      "command": "Get-ChildItem 'company-wiki\\.source_catalog' -Force | Where-Object { filing_fetch_pause* / operation.lock / catalog.sqlite3* }",
+      "observed": "No filing_fetch_pause.refcount/.owner and no operation.lock; catalog.sqlite3 49,677,344,768 B mtime 2026-09-08T21:23:21Z; -wal 0 B mtime 2026-09-17T22:05:26Z; -shm 32,768 B mtime 2026-09-18T19:13:26Z (moved by my re-run, matching its post snapshot 1789758806714482400)."
+    },
+    {
+      "command": "Get-Content a05-readonly-manifest-run-A06-2-stdout.txt ; Get-Content company-wiki\\.source_catalog\\runtime_policy.json",
+      "observed": "Both carry policy_hash c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd, equal to L1's envelope policy_hash (same activation_epoch/cohorts), confirming C6's cross-reference to A06-2."
+    },
+    {
+      "command": "Get-ChildItem company-wiki -Recurse -File -Include *.pyc | Sort LastWriteTimeUtc -Descending | Select -First 3",
+      "observed": "Newest 2026-09-18T08:40:58Z (tests/contract, tests/unit) and 08:11:16Z under src/ - nothing written during the 19:05-19:13 run windows (closes F-R4-07 empirically for this window)."
+    },
+    {
+      "command": "Select-String -Path findings.md,progress.md -Pattern 'valid_handles|artifact_status_not_completed|b-ar-cross-repo-reuse' -Encoding UTF8 ; Get-Item findings.md,progress.md",
+      "observed": "Grep at ~19:13Z found no registration for prose §6's observation, and the review first recorded a dangling-pointer finding. Re-checked at 19:16Z after the parent wrote the run records (findings.md mtime 2026-09-18T19:14:47Z, progress.md 19:14:53Z): the observation IS minted as F-BAR-12 (findings.md:30, progress.md:9: bundle_status=available with empty valid_handles, normalized=artifact_status_not_completed, summary=artifact_source_sha_missing, blast radius unquantified) and §6's pointer resolves - that finding was withdrawn rather than left standing. The same re-read shows the F-R4-02 store-open claim has propagated into findings.md:29 and progress.md:6, and that the four R4 evidence files themselves are unchanged (prose mtime 2026-09-18T19:10:30Z)."
+    }
+  ],
+  "not_covered": [
+    "I did not hash the production catalog contents (49.7 GB) and did not query it: a write that preserves file size and restores mtime remains invisible to me and to the harness (already registered as the R6 residual risk in progress.md:14).",
+    "I did not instrument the wiki subprocess at runtime; the conclusion that the writable CatalogStore is never opened on the resolve path (F-R4-02) is a source trace (cli.py:1165-1200, resolver.py:1280/1353/1371, service.py:365/396/407/549/562/575, reader.py:165/188), not an observed connection count.",
+    "I did not audit the first author run (the 19:05:53-19:08:52 one the prose describes): only the recorded run and my own re-run were executed; the prose's numbers are inferred to belong to that earlier run from the matching `-shm` pair.",
+    "I did not verify whether any concurrent process (background worker, task scheduler, another session) opened or touched the catalog during the windows, so the `-shm` movement is left unattributed in both directions, as the increment does.",
+    "I did not exercise the download/acquire/close-gap paths, so the 'NOT REACHED' rows for the binding temp file and the pause files remain code-reading conclusions (also declared as uncovered in prose §7.3).",
+    "I did not test the wiki's own test suite, CI gates, the revenue-forecast consumer entry (filing_fetch_client), the R5 dropbox-bytes increment (its files appeared in the workspace at 19:14 during this review), or the other configured roots (dayu_portfolio, dropbox_stock, future_lake).",
+    "I did not verify the catalog-internal provenance of the L1 document (sources/documents/locations rows) beyond what the consumer response and the on-disk byte hash prove.",
+    "I did not delete or modify anything in the three repos; the only repo file I wrote is this review. The sanctioned re-run wrote only under $env:TEMP (record JSON + four side files) and those temp artifacts are left in place untouched."
+  ]
+}

@@ -1,0 +1,341 @@
+=== RF-STEP9-TRIAGE sibling-control (OLD wiki pin, pre-pin-fix) ===
+date_utc=2026-09-23T19:52:24Z
+file=tests/test_fc1302_scan_health.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=31c0afcb963ae7539173454022af6c34521bc363
+PYTHONPATH=/home/zhengcb/company-wiki/src
+cmd=python3 -m pytest tests/test_fc1302_scan_health.py -q
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_recurring_unchanged_errors_do_not_fail __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-zhengcb/pytest-3/test_recurring_unchanged_error0')
+
+    def test_recurring_unchanged_errors_do_not_fail(tmp_path: Path):
+        """The production case (findings 62): an empty user file re-reported
+        unchanged every scan must NOT fail the health check."""
+>       m = IsolatedLake(tmp_path, seed="fc1302").build()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_fc1302_scan_health.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e_support/isolated_lake.py:202: in build
+    self._preset_v2_artifacts(catalog)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <e2e_support.isolated_lake.IsolatedLake object at 0x7600bb1cdc70>
+catalog = <company_wiki.source_catalog.service.SourceCatalog object at 0x7600ba8f1dc0>
+
+    def _preset_v2_artifacts(self, catalog: "object") -> None:
+        """INSERT v2 artifact rows (schema_version column + metadata) +
+        derived files + producer_events — isomorphic to the production canary."""
+        # RF-E2E-ADAPT: the receipt is written through CW's fail-closed writer
+        # (state_domain stamping + payload/dual binding are validated AT WRITE
+        # time) — same call shape as CW tests/unit/test_prompt_injection_guard.
+        from company_wiki.source_catalog.prompt_injection import (
+            record_prompt_injection_review,
+        )
+        from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
+    
+        con = sqlite3.connect(catalog.config.database_path)
+        con.row_factory = sqlite3.Row
+        derived = catalog.config.derived_dir
+        # map root_id -> entry list
+        by_root: dict[str, list[LakeEntry]] = {}
+        for e in self.entries:
+            by_root.setdefault(e.root_id, []).append(e)
+        for root_id, entries in by_root.items():
+            for e in entries:
+                doc = con.execute(
+                    "SELECT document_id, primary_source_id FROM documents "
+                    "WHERE title LIKE ? OR document_id IN "
+                    "(SELECT document_id FROM locations WHERE root_id=? AND relative_path=?)",
+                    (f"%{e.security}%", root_id, e.rel_path),
+                ).fetchone()
+                if doc is None:
+                    continue
+                digest = hashlib.sha256(
+                    (doc["document_id"] + "\0normalized\0source_catalog_normalizer\0"
+                     "1.0.0").encode()).hexdigest()
+                art_id = "urn:company-wiki:artifact:sha256:" + digest
+                sub = derived / digest[:2] / digest
+                sub.mkdir(parents=True)
+                body = f"normalized markdown for {e.rel_path} (v2)\n".encode()
+                (sub / "normalized.md").write_bytes(body)
+                content_sha = hashlib.sha256(body).hexdigest()
+                con.execute(
+                    """INSERT OR REPLACE INTO artifacts
+                    (artifact_id,document_id,source_id,artifact_role,path,content_sha256,
+                     byte_size,mime_type,generator_name,generator_version,status,error,
+                     schema_version,source_sha256,metadata_json,created_at)
+                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%SZ','now'))""",
+                    (art_id, doc["document_id"], doc["primary_source_id"], "normalized",
+                     str(sub / "normalized.md"), content_sha, len(body), "text/markdown",
+                     "source_catalog_normalizer", "1.0.0", "completed", None,
+                     ARTIFACT_SCHEMA_VERSION,
+                     con.execute("SELECT content_sha256 FROM sources WHERE source_id=?",
+                                 (doc["primary_source_id"],)).fetchone()[0],
+                     json.dumps({"schema_version": ARTIFACT_SCHEMA_VERSION,
+                                 "parser_name": "plain_text",
+                                 "parser_version": "1.0.0",
+                                 "quality_flags": [], "span_count": 0},
+                                ensure_ascii=False)),
+                )
+                con.execute(
+                    """INSERT OR IGNORE INTO producer_events
+                    (event_id,document_id,artifact_role,producer_name,producer_version,
+                     event_type,created_at)
+                    VALUES(?,?,?,?,?,?,datetime('now'))""",
+                    (f"pe-{art_id}-fc1001", doc["document_id"], "normalized",
+                     "source_catalog_normalizer", "1.0.0", "parser"),
+                )
+                # FC-905-b policy gate: consumption blocks on not_reviewed —
+                # the lake's documents carry a deterministic-policy review
+                # receipt (same contract as the FC-906-c production canary).
+                # RF-E2E-ADAPT: written through the CW receipt WRITER (the
+                # promoted GUARD-MERGE/OPEN-6 contract: state_domain + payload
+                # binding + source/policy dual binding, mirrored from CW's
+                # tests/unit/test_prompt_injection_guard.py).  A hand-shaped
+                # pre-5d72529 dict fails the reader's C7 state_domain
+                # fail-closed as not_reviewed and the chain blocks upstream.
+                source_sha = con.execute(
+                    "SELECT content_sha256 FROM sources WHERE source_id=?",
+                    (doc["primary_source_id"],),
+                ).fetchone()[0]
+>               record_prompt_injection_review(
+                    con,
+                    doc["document_id"],
+                    status="not_detected",
+                    reviewer="policy-reviewer-fc1001",
+                    evidence_sha256=content_sha,
+                    now="2026-08-12T00:00:00Z",
+                    source_sha256=source_sha,
+                    policy_hash=RULESET_HASH,
+                    evidence_payload=body,
+                )
+E               TypeError: record_prompt_injection_review() got an unexpected keyword argument 'evidence_payload'
+
+tests/e2e_support/isolated_lake.py:351: TypeError
+_________________________ test_new_errors_in_24h_fail __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-zhengcb/pytest-3/test_new_errors_in_24h_fail0')
+
+    def test_new_errors_in_24h_fail(tmp_path: Path):
+        """A NEW scan error must fail the check (increment semantics)."""
+>       m = IsolatedLake(tmp_path, seed="fc1302").build()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_fc1302_scan_health.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e_support/isolated_lake.py:202: in build
+    self._preset_v2_artifacts(catalog)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <e2e_support.isolated_lake.IsolatedLake object at 0x7600ba79f6b0>
+catalog = <company_wiki.source_catalog.service.SourceCatalog object at 0x7600ba79fb60>
+
+    def _preset_v2_artifacts(self, catalog: "object") -> None:
+        """INSERT v2 artifact rows (schema_version column + metadata) +
+        derived files + producer_events — isomorphic to the production canary."""
+        # RF-E2E-ADAPT: the receipt is written through CW's fail-closed writer
+        # (state_domain stamping + payload/dual binding are validated AT WRITE
+        # time) — same call shape as CW tests/unit/test_prompt_injection_guard.
+        from company_wiki.source_catalog.prompt_injection import (
+            record_prompt_injection_review,
+        )
+        from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
+    
+        con = sqlite3.connect(catalog.config.database_path)
+        con.row_factory = sqlite3.Row
+        derived = catalog.config.derived_dir
+        # map root_id -> entry list
+        by_root: dict[str, list[LakeEntry]] = {}
+        for e in self.entries:
+            by_root.setdefault(e.root_id, []).append(e)
+        for root_id, entries in by_root.items():
+            for e in entries:
+                doc = con.execute(
+                    "SELECT document_id, primary_source_id FROM documents "
+                    "WHERE title LIKE ? OR document_id IN "
+                    "(SELECT document_id FROM locations WHERE root_id=? AND relative_path=?)",
+                    (f"%{e.security}%", root_id, e.rel_path),
+                ).fetchone()
+                if doc is None:
+                    continue
+                digest = hashlib.sha256(
+                    (doc["document_id"] + "\0normalized\0source_catalog_normalizer\0"
+                     "1.0.0").encode()).hexdigest()
+                art_id = "urn:company-wiki:artifact:sha256:" + digest
+                sub = derived / digest[:2] / digest
+                sub.mkdir(parents=True)
+                body = f"normalized markdown for {e.rel_path} (v2)\n".encode()
+                (sub / "normalized.md").write_bytes(body)
+                content_sha = hashlib.sha256(body).hexdigest()
+                con.execute(
+                    """INSERT OR REPLACE INTO artifacts
+                    (artifact_id,document_id,source_id,artifact_role,path,content_sha256,
+                     byte_size,mime_type,generator_name,generator_version,status,error,
+                     schema_version,source_sha256,metadata_json,created_at)
+                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%SZ','now'))""",
+                    (art_id, doc["document_id"], doc["primary_source_id"], "normalized",
+                     str(sub / "normalized.md"), content_sha, len(body), "text/markdown",
+                     "source_catalog_normalizer", "1.0.0", "completed", None,
+                     ARTIFACT_SCHEMA_VERSION,
+                     con.execute("SELECT content_sha256 FROM sources WHERE source_id=?",
+                                 (doc["primary_source_id"],)).fetchone()[0],
+                     json.dumps({"schema_version": ARTIFACT_SCHEMA_VERSION,
+                                 "parser_name": "plain_text",
+                                 "parser_version": "1.0.0",
+                                 "quality_flags": [], "span_count": 0},
+                                ensure_ascii=False)),
+                )
+                con.execute(
+                    """INSERT OR IGNORE INTO producer_events
+                    (event_id,document_id,artifact_role,producer_name,producer_version,
+                     event_type,created_at)
+                    VALUES(?,?,?,?,?,?,datetime('now'))""",
+                    (f"pe-{art_id}-fc1001", doc["document_id"], "normalized",
+                     "source_catalog_normalizer", "1.0.0", "parser"),
+                )
+                # FC-905-b policy gate: consumption blocks on not_reviewed —
+                # the lake's documents carry a deterministic-policy review
+                # receipt (same contract as the FC-906-c production canary).
+                # RF-E2E-ADAPT: written through the CW receipt WRITER (the
+                # promoted GUARD-MERGE/OPEN-6 contract: state_domain + payload
+                # binding + source/policy dual binding, mirrored from CW's
+                # tests/unit/test_prompt_injection_guard.py).  A hand-shaped
+                # pre-5d72529 dict fails the reader's C7 state_domain
+                # fail-closed as not_reviewed and the chain blocks upstream.
+                source_sha = con.execute(
+                    "SELECT content_sha256 FROM sources WHERE source_id=?",
+                    (doc["primary_source_id"],),
+                ).fetchone()[0]
+>               record_prompt_injection_review(
+                    con,
+                    doc["document_id"],
+                    status="not_detected",
+                    reviewer="policy-reviewer-fc1001",
+                    evidence_sha256=content_sha,
+                    now="2026-08-12T00:00:00Z",
+                    source_sha256=source_sha,
+                    policy_hash=RULESET_HASH,
+                    evidence_payload=body,
+                )
+E               TypeError: record_prompt_injection_review() got an unexpected keyword argument 'evidence_payload'
+
+tests/e2e_support/isolated_lake.py:351: TypeError
+__________________ test_interrupted_delta_beyond_budget_fails __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-zhengcb/pytest-3/test_interrupted_delta_beyond_0')
+
+    def test_interrupted_delta_beyond_budget_fails(tmp_path: Path):
+        """Interrupted growth beyond the frozen budget fails via the previous
+        report comparison."""
+>       m = IsolatedLake(tmp_path, seed="fc1302").build()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_fc1302_scan_health.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e_support/isolated_lake.py:202: in build
+    self._preset_v2_artifacts(catalog)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <e2e_support.isolated_lake.IsolatedLake object at 0x7600ba7cfb90>
+catalog = <company_wiki.source_catalog.service.SourceCatalog object at 0x7600ba7cf920>
+
+    def _preset_v2_artifacts(self, catalog: "object") -> None:
+        """INSERT v2 artifact rows (schema_version column + metadata) +
+        derived files + producer_events — isomorphic to the production canary."""
+        # RF-E2E-ADAPT: the receipt is written through CW's fail-closed writer
+        # (state_domain stamping + payload/dual binding are validated AT WRITE
+        # time) — same call shape as CW tests/unit/test_prompt_injection_guard.
+        from company_wiki.source_catalog.prompt_injection import (
+            record_prompt_injection_review,
+        )
+        from company_wiki.source_catalog.prompt_injection_guard import RULESET_HASH
+    
+        con = sqlite3.connect(catalog.config.database_path)
+        con.row_factory = sqlite3.Row
+        derived = catalog.config.derived_dir
+        # map root_id -> entry list
+        by_root: dict[str, list[LakeEntry]] = {}
+        for e in self.entries:
+            by_root.setdefault(e.root_id, []).append(e)
+        for root_id, entries in by_root.items():
+            for e in entries:
+                doc = con.execute(
+                    "SELECT document_id, primary_source_id FROM documents "
+                    "WHERE title LIKE ? OR document_id IN "
+                    "(SELECT document_id FROM locations WHERE root_id=? AND relative_path=?)",
+                    (f"%{e.security}%", root_id, e.rel_path),
+                ).fetchone()
+                if doc is None:
+                    continue
+                digest = hashlib.sha256(
+                    (doc["document_id"] + "\0normalized\0source_catalog_normalizer\0"
+                     "1.0.0").encode()).hexdigest()
+                art_id = "urn:company-wiki:artifact:sha256:" + digest
+                sub = derived / digest[:2] / digest
+                sub.mkdir(parents=True)
+                body = f"normalized markdown for {e.rel_path} (v2)\n".encode()
+                (sub / "normalized.md").write_bytes(body)
+                content_sha = hashlib.sha256(body).hexdigest()
+                con.execute(
+                    """INSERT OR REPLACE INTO artifacts
+                    (artifact_id,document_id,source_id,artifact_role,path,content_sha256,
+                     byte_size,mime_type,generator_name,generator_version,status,error,
+                     schema_version,source_sha256,metadata_json,created_at)
+                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%SZ','now'))""",
+                    (art_id, doc["document_id"], doc["primary_source_id"], "normalized",
+                     str(sub / "normalized.md"), content_sha, len(body), "text/markdown",
+                     "source_catalog_normalizer", "1.0.0", "completed", None,
+                     ARTIFACT_SCHEMA_VERSION,
+                     con.execute("SELECT content_sha256 FROM sources WHERE source_id=?",
+                                 (doc["primary_source_id"],)).fetchone()[0],
+                     json.dumps({"schema_version": ARTIFACT_SCHEMA_VERSION,
+                                 "parser_name": "plain_text",
+                                 "parser_version": "1.0.0",
+                                 "quality_flags": [], "span_count": 0},
+                                ensure_ascii=False)),
+                )
+                con.execute(
+                    """INSERT OR IGNORE INTO producer_events
+                    (event_id,document_id,artifact_role,producer_name,producer_version,
+                     event_type,created_at)
+                    VALUES(?,?,?,?,?,?,datetime('now'))""",
+                    (f"pe-{art_id}-fc1001", doc["document_id"], "normalized",
+                     "source_catalog_normalizer", "1.0.0", "parser"),
+                )
+                # FC-905-b policy gate: consumption blocks on not_reviewed —
+                # the lake's documents carry a deterministic-policy review
+                # receipt (same contract as the FC-906-c production canary).
+                # RF-E2E-ADAPT: written through the CW receipt WRITER (the
+                # promoted GUARD-MERGE/OPEN-6 contract: state_domain + payload
+                # binding + source/policy dual binding, mirrored from CW's
+                # tests/unit/test_prompt_injection_guard.py).  A hand-shaped
+                # pre-5d72529 dict fails the reader's C7 state_domain
+                # fail-closed as not_reviewed and the chain blocks upstream.
+                source_sha = con.execute(
+                    "SELECT content_sha256 FROM sources WHERE source_id=?",
+                    (doc["primary_source_id"],),
+                ).fetchone()[0]
+>               record_prompt_injection_review(
+                    con,
+                    doc["document_id"],
+                    status="not_detected",
+                    reviewer="policy-reviewer-fc1001",
+                    evidence_sha256=content_sha,
+                    now="2026-08-12T00:00:00Z",
+                    source_sha256=source_sha,
+                    policy_hash=RULESET_HASH,
+                    evidence_payload=body,
+                )
+E               TypeError: record_prompt_injection_review() got an unexpected keyword argument 'evidence_payload'
+
+tests/e2e_support/isolated_lake.py:351: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_fc1302_scan_health.py::test_recurring_unchanged_errors_do_not_fail
+FAILED tests/test_fc1302_scan_health.py::test_new_errors_in_24h_fail - TypeEr...
+FAILED tests/test_fc1302_scan_health.py::test_interrupted_delta_beyond_budget_fails
+3 failed in 1.57s
+PYTEST_RC=1

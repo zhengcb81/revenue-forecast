@@ -1,0 +1,34 @@
+﻿=== 49-BLOCKED-pytest-tmp-sandbox.log ===
+Finding: in THIS session (DSH workspace-write sandbox), pytest's tmp_path machinery cannot be used,
+because directories created with mode 0o700 (tempfile.mkdtemp / pytest tmp_path_factory) are not
+writable by python here — every tmp_path-using test ERRORS at setup. Location-independent
+(%TEMP%, session temp, workspace temp all fail the same way).
+Probe 1 (tempfile.mkdtemp vs os.makedirs, same python, same dir level):
+python 3.13.9
+mkdtemp inner write: FAILED PermissionError [Errno 13] Permission denied: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-nedzqX\\tmpoiuvhzxp\\x.txt'
+makedirs inner write: OK
+
+Probe 2 (explicit --basetemp, ASCII dir):
+rc = 4
+
+
+Probe 3 (%TEMP% redirected into the attempt's scratch dir):
+=================================== ERRORS ====================================
+_ ERROR at setup of test_ctrl03_unknown_assertion_rolls_back_whole_transaction _
+E   PermissionError: [WinError 5] �ܾ����ʡ�: 'C:\\Users\\֣����\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\CW-GATE-UNBLOCK-2\\a20260923-01\\scratch\\pytmp\\pytest-of-֣����'
+_ ERROR at setup of test_ctrl03_apply_requires_catalog_transaction_visibility _
+Consequences recorded for the card:
+ - the two coverage-ratchet gate judgments (39a/39b) are UNAFFECTED (those 2 tests use no tmp_path;
+   both reproduced 36's result exactly),
+ - a CI-equivalent full-suite run CANNOT be executed in this session (2906 items, most of them
+   tmp_path-based) -> the pristine-module attribution diagnostic (37, whose original run died with
+   a coverage sqldata INTERNALERROR in the previous session) is NOT completable here -> logged as
+   UNVERIFIED, with the dual-judgment (39a/39b) + static upper bound (40) as the measured basis,
+ - no test additions were attempted or possible from this session (see decision.md §8).
+raw errors quoted above are unedited pytest/python output.
+
+Probe 2 rerun (cwd=iso copy, explicit ASCII --basetemp):
+CW-BASETEMP-DECISION {"event": "decision", "requested_basetemp": "C:\\Users\\\u90d1\u66fe\u6ce2\\AppData\\Local\\Temp\\dsh-nedzqX\\bt3", "requested_basetemp_len": 46, "cwd_len": 54, "threshold": 60, "win32_path_limit": 210, "generation_reserve": 150, "relocated": false, "reason": "within-budget"}
+    + FullyQualifiedErrorId : NativeCommandError
+    cleanup_dead_symlinks(basetemp)
+PermissionError: [WinError 5] �ܾ����ʡ�: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-nedzqX\\bt3'

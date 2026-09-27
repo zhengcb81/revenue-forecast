@@ -1,0 +1,24 @@
+{
+  "wu_id": "WU-1304",
+  "date": "2026-08-09",
+  "title": "真实 processed-artifact canary（只读）",
+  "status": "accepted_with_production_limitation",
+  "implementation": {
+    "canary": "revenue scripts/processed_artifact_canary.py — mode=ro+query_only 强制，只读生产 catalog 的 artifacts 表",
+    "reuse_precondition": "binding 有效（content_sha256+source_sha256+status=completed+schema 1.0/2.0）→ parser/LLM=0 由 E2E-D01 spy 证明",
+    "minimal_recompute": "document_hash/producer 变化 → 仅失效依赖链（E2E-D04/D05 证明）"
+  },
+  "production_finding": {
+    "artifacts_total": 7712,
+    "sampled_summary": 20,
+    "binding_valid": 0,
+    "source_sha256_filled": "0/7712 (0%)",
+    "schema_version_filled": "0/7712 (0%)",
+    "root_cause": "legacy artifacts 写入从未填充 binding 列（列存在但全 NULL）",
+    "conclusion": "生产 processed-artifact 复用链无 binding-valid 样本；与 WU-1303/902 同根因（legacy 数据缺强绑定），不能宣称生产复用已证明"
+  },
+  "fixture_chain": "E2E-D01（valid→parser=0）、D04（stale→仅重算该 role）、D05（misbound→仅重算 summary）全部 green",
+  "catalog_untouched": true,
+  "real_roots_untouched": true,
+  "next": "artifacts 需在 v2 迁移窗口重写 binding 后重跑；当前保持 fixture_and_architecture_complete 而非 production 完成"
+}

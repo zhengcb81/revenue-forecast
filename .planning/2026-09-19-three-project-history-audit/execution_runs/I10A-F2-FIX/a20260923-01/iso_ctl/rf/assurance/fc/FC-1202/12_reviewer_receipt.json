@@ -1,0 +1,225 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1202",
+  "reviewer": "reviewer-fc1202-independent",
+  "implementer": "honest-implementer",
+  "decision": "accepted",
+  "status": "accepted",
+  "base_triplet": {
+    "revenue": "84d4967d31ef92ec45a570aafeed94d4a9897e87",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "b3b45aa57a88dd890f19b7930e8ae8f377156dd9"
+  },
+  "result_triplet": {
+    "revenue": "b34097dd0b86fb25aacb70bd320715cf25189d02",
+    "filing": "b7ef9cca0747b108184f00e3e519aeb046be9d2b",
+    "wiki": "a6937f34081cdc928704d511e0b011f71b061a90"
+  },
+  "reviewed_at": "2026-08-12T21:19:04Z",
+  "replay_note": "All replay performed in clean git worktrees under C:/Users/郑曾波/Projects/.fcap-review/fc-1202 (result-* at result_triplet, base-* at base_triplet; F-6 rule: base reproduction in separate worktrees, no git checkout of paths in main checkouts). revenue fcap HEAD 20180f94967bbbd0805a8fa217b9cacb1cb29741 = b34097d + receipt/docs-only commit (verified: 2 docs files, no code change). Chain test (FC-1002, sibling-layout fixture) run in the main revenue checkout since tests only read; pre/post git-status snapshots + llm_cost_log.csv md5 identical. Main checkouts' working files untouched by this review.",
+  "commands": [
+    {
+      "command": "git worktree add .fcap-review/fc-1202/result-revenue 20180f9 (+ base-revenue 84d4967, result/base filing, result/base wiki)",
+      "exit_code": 0,
+      "result": "Six clean review worktrees created; rev-parsed full hashes verified for all three repos.",
+      "cwd": "revenue-forecast / filing-fetch / company-wiki"
+    },
+    {
+      "command": "git show b34097d (revenue feat) --stat + full diff",
+      "exit_code": 0,
+      "result": "8 files (+371/-9): config/filing_fetch.json, filing_fetch_client.py (strict load_filing_fetch_root + sibling default deleted), source_preparation.py passthrough, 3 test files, 00_wu_card.md, findings.md. EXACT match to description, no extra change.",
+      "cwd": "fc-1202 worktree"
+    },
+    {
+      "command": "git show 20180f9 (revenue receipt commit)",
+      "exit_code": 0,
+      "result": "2 files, docs-only: 11_implementer_receipt.json + work_unit_registry.md status line. No code change.",
+      "cwd": "fc-1202 worktree"
+    },
+    {
+      "command": "git show b7ef9cc (filing feat) --stat + full diff",
+      "exit_code": 0,
+      "result": "6 files (+486/-24): fetch_filing.py fail-closed relative root, tools/config_doctor.py new (262 lines, zero hardcoded root paths), quality.yml stale block replaced, SKILL.md Notes rewritten, test_config_doctor.py new (10 tests), test_fetch_filing.py absolute roots + 1 negative test. EXACT match.",
+      "cwd": "fc-1202 worktree"
+    },
+    {
+      "command": "git show a6937f3 (wiki feat) --stat + full diff",
+      "exit_code": 0,
+      "result": "2 files (+108/-30): config_doctor.py explicit filing_fetch_config param, sibling lookup removed, --filing-fetch-config CLI arg, latent order bug fixed (missing dropbox_stock no longer skips filing check); tests 1 updated + 2 new. EXACT match (description said 2 updated — actual 1 updated, info-level count note).",
+      "cwd": "fc-1202 worktree"
+    },
+    {
+      "command": "revenue focused: PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_filing_fetch_client.py tests/test_source_preparation.py -q (result worktree)",
+      "exit_code": 0,
+      "result": "28 passed in 1.98s.",
+      "cwd": "result-revenue worktree"
+    },
+    {
+      "command": "revenue trio incl chain: PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_filing_fetch_client.py tests/test_source_preparation.py tests/test_fc1002_three_process_e2e.py -q (main checkout, sibling layout required by chain fixture)",
+      "exit_code": 0,
+      "result": "31 passed in 8.05s (implementer receipt said 30 — actual 31: 17+11+3; count discrepancy, non-blocking). Pre/post git-status snapshots identical.",
+      "cwd": "revenue-forecast (main checkout)"
+    },
+    {
+      "command": "filing focused: python -B -m pytest tests/test_config_doctor.py -q; python -B -m pytest tests/test_fetch_filing.py -q -k 'relative_company_wiki_root or editing_config_moves_root'",
+      "exit_code": 0,
+      "result": "10 passed; 2 passed.",
+      "cwd": "result-filing worktree"
+    },
+    {
+      "command": "wiki focused: PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_config_doctor.py tests/contract/test_dropbox_config_invariants.py -q",
+      "exit_code": 0,
+      "result": "13 passed in 0.73s.",
+      "cwd": "result-wiki worktree"
+    },
+    {
+      "command": "RED-at-base revenue: copy new test files into base worktree, run",
+      "exit_code": 1,
+      "result": "KILL CONFIRMED: client module collection ERROR (ImportError: cannot import name 'load_filing_fetch_root'); test_prepare_source_forwards_filing_fetch_root TypeError (unexpected kwarg); test_cli_forwards_filing_fetch_root SystemExit 2 (unrecognized --filing-fetch-root).",
+      "cwd": "base-revenue worktree"
+    },
+    {
+      "command": "RED-at-base filing: copy new test files into base worktree, run",
+      "exit_code": 1,
+      "result": "KILL CONFIRMED: test_config_doctor.py ModuleNotFoundError config_doctor; test_relative_company_wiki_root_is_rejected AssertionError FilingFetchError not raised (base resolves relative silently).",
+      "cwd": "base-filing worktree"
+    },
+    {
+      "command": "RED-at-base wiki: copy new test file into base worktree, run",
+      "exit_code": 1,
+      "result": "KILL CONFIRMED for explicit-missing + updated smuggling test: TypeError diagnose() got unexpected keyword argument 'filing_fetch_config'. test_no_implicit_sibling_lookup_without_arg passes at base AS WRITTEN (base latent order bug: missing dropbox_stock early-returns before sibling lookup). With dropbox_stock added to the fixture, base FAILS (sibling lookup detects smuggled config) while result PASSES — differentiator proven.",
+      "cwd": "base-wiki worktree"
+    },
+    {
+      "command": "Mutation M1: rename load_filing_fetch_root in revenue filing_fetch_client.py",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — collection ERROR ImportError (Did you mean: load_filing_fetch_root_MUTATED?). Reverted via reverse edit; focused suite green.",
+      "cwd": "result-revenue worktree"
+    },
+    {
+      "command": "Mutation M2b: remove filing_fetch_root kwarg forwarding in source_preparation.main",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — test_cli_forwards_filing_fetch_root FAILS (captured kwargs lack filing_fetch_root). Reverted; green.",
+      "cwd": "result-revenue worktree"
+    },
+    {
+      "command": "Mutation M3: restore root = selected.parent / root fallback in filing fetch_filing.py",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — test_relative_company_wiki_root_is_rejected FAILS (no raise). Reverted; green.",
+      "cwd": "result-filing worktree"
+    },
+    {
+      "command": "Mutation M4: remove reusable_root_kinds check block in filing tools/config_doctor.py",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — test_wiki_yaml_missing_reusable_kinds_fails FAILS. Reverted; green.",
+      "cwd": "result-filing worktree"
+    },
+    {
+      "command": "Mutation M5: restore sibling lookup as default in wiki config_doctor.py",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — test_no_implicit_sibling_lookup_without_arg FAILS (smuggled sibling config detected without explicit arg). Reverted; green.",
+      "cwd": "result-wiki worktree"
+    },
+    {
+      "command": "revenue full: python -B -m pytest tests/ tools/tests/ -q",
+      "exit_code": 0,
+      "result": "513 passed / 1 failed / 106 subtests (287.21s). 1 failed = pre-existing PORT-01 tools/tests/test_audit_baseline.py::test_collects_baseline_facts (GBK UnicodeDecodeError 0xd4; finding 31, FC-1205 scope). Reproduced identically at base worktree. Zero new failures.",
+      "cwd": "revenue-forecast (main checkout, sibling layout)"
+    },
+    {
+      "command": "filing hermetic: python -B -m pytest tests -q --tb=short --ignore=tests/test_real_tool_conformance.py --ignore=tests/test_e2e_download.py",
+      "exit_code": 0,
+      "result": "289 passed / 6 skipped / 54 subtests (74.92s). Zero failures.",
+      "cwd": "result-filing worktree"
+    },
+    {
+      "command": "wiki full: PYTHONPATH=<worktree>/src python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "2241 passed / 2 failed / 1 skipped (468.03s). 2 failed = pre-existing PORT-01 pair test_check_unique_test_symbols.py (GBK subprocess decode). Reproduced identically at base worktree. Zero new failures. PYTHONPATH pinned to worktree src so subprocesses never imported the .pth-linked main checkout.",
+      "cwd": "result-wiki worktree"
+    },
+    {
+      "command": "Config doctor live smoke: python tools/config_doctor.py --revenue-root C:/Users/郑曾波/Projects/revenue-forecast",
+      "exit_code": 0,
+      "result": "OK: three-repo configs healthy, exit 0.",
+      "cwd": "result-filing worktree"
+    },
+    {
+      "command": "Config doctor negative smoke: temp config with allowed_handle_roots via --filing-config",
+      "exit_code": 1,
+      "result": "CONFIG-PROBLEM: filing-fetch config must NOT carry allowed_handle_roots, exit 1. Fail-closed confirmed.",
+      "cwd": "result-filing worktree"
+    },
+    {
+      "command": "Wiki doctor live smoke (main checkout, read-only): no-arg; --filing-fetch-config real config; --filing-fetch-config missing path",
+      "exit_code": 0,
+      "result": "exit 0 OK (cross-repo skipped); exit 0 OK (cross-repo runs clean); exit 1 CONFIG-PROBLEM does-not-exist (fail-closed, no silent skip).",
+      "cwd": "company-wiki (main checkout)"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "FC-1202-M1",
+      "killed": true,
+      "detail": "Loader removal -> config tests collection ERROR. Prevents dropping the explicit config loader."
+    },
+    {
+      "id": "FC-1202-M2b",
+      "killed": true,
+      "detail": "CLI kwarg forwarding removal -> CLI-forwarding test FAILS. Prevents silent drop of explicit roots."
+    },
+    {
+      "id": "FC-1202-M3",
+      "killed": true,
+      "detail": "Relative-root fallback restore -> rejection test FAILS. Prevents implicit location in filing config."
+    },
+    {
+      "id": "FC-1202-M4",
+      "killed": true,
+      "detail": "reusable_root_kinds structural check removal -> yaml test FAILS. Prevents weakening the wiki policy check."
+    },
+    {
+      "id": "FC-1202-M5",
+      "killed": true,
+      "detail": "Sibling lookup restore -> no-implicit-lookup guard FAILS. Prevents implicit sibling location in wiki doctor."
+    }
+  ],
+  "unresolved_findings": [
+    {
+      "id": "FC-1202-F1",
+      "severity": "info",
+      "file": "revenue-forecast/tests/test_filing_fetch_client.py",
+      "issue": "Description says 8 new config tests; actual count is 9 (test_explicit_param_bypasses_config included). Implementer receipt says focused trio 30 passed; actual 31 (17 client + 11 source_prep + 3 chain).",
+      "disposition": "Non-blocking. Counts err on the conservative side (more coverage)."
+    },
+    {
+      "id": "FC-1202-F2",
+      "severity": "info",
+      "file": "company-wiki/tests/test_config_doctor.py",
+      "issue": "Description says 2 updated + 2 new tests; actual is 1 updated (test_e2e_f03_filing_allowance_smuggled_fails modified in place) + 2 new.",
+      "disposition": "Non-blocking. Verified by diffing test-function names base vs result (8 -> 10)."
+    },
+    {
+      "id": "FC-1202-F3",
+      "severity": "info",
+      "file": "company-wiki/tests/test_config_doctor.py",
+      "issue": "test_no_implicit_sibling_lookup_without_arg is GREEN at base as written — the base latent order bug (missing dropbox_stock root -> early return in _cross_repo_checks) skips the sibling lookup before it runs. The test only differentiates base-vs-result when a dropbox_stock root exists (proven: with dropbox in the fixture, base FAILS / result PASSES).",
+      "disposition": "Non-blocking. The guard has real teeth (M5 kills any sibling-lookup restore in result code). RED-at-base for the no-lookup property relies on the dropbox-variant experiment, recorded in the replay."
+    },
+    {
+      "id": "FC-1202-F4",
+      "severity": "info",
+      "file": "company-wiki/scripts/config_doctor.py",
+      "issue": "In a fresh worktree the wiki doctor reports catalog_dir is not a directory because .source_catalog is an untracked runtime directory absent from the worktree.",
+      "disposition": "Non-blocking. Environment artifact; the doctor honestly reports rather than fabricating green. Main checkout run is clean."
+    },
+    {
+      "id": "FC-1202-F5",
+      "severity": "info",
+      "file": "filing-fetch/tools/config_doctor.py",
+      "issue": "USERPROFILE -> Path.home() fallback relies on ci_checkout_siblings laying out repos under $HOME/Projects (CI Ubuntu has no USERPROFILE). Same convention as fetch_filing.py and findings 58.",
+      "disposition": "Non-blocking. Documented in findings 58; no new risk introduced."
+    }
+  ],
+  "summary": "ACCEPTED. Diff reviewed per-commit across all three repos and matches the FC-1202 description exactly (revenue 8 feat + 2 docs files, filing 6, wiki 2 — all within allowed_files, zero extra changes). Focused suites green: revenue 28 (worktree) + 31 with the sibling-layout chain trio, filing 10+2, wiki 13. RED-at-base proven in separate base worktrees for 7 of 8 new/updated tests with correct causes (ImportError load_filing_fetch_root, missing --filing-fetch-root, ModuleNotFoundError config_doctor, relative root silently resolving, missing filing_fetch_config kwarg); the no-implicit-lookup guard is base-green only because the base latent order bug masks it — dropbox-present variant proves base-vs-result differentiation. All 5 mutations (M1/M2b/M3/M4/M5) killed and cleanly reverted with worktrees re-green. Full suites reproduce exactly: revenue 513/1 (PORT-01 audit_baseline GBK, identical at base), filing 289/6/0, wiki 2241/2/1 (PORT-01 pair, identical at base). Config doctor live smoke: filing positive exit 0, negative exit 1 CONFIG-PROBLEM; wiki no-arg OK, explicit OK, missing path exit 1 fail-closed. Main checkouts' working files untouched throughout (status snapshots + llm_cost_log.csv md5 verified). Zero blocking findings; F1-F5 info-level."
+}

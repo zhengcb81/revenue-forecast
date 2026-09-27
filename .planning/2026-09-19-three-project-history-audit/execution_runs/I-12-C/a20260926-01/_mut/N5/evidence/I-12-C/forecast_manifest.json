@@ -1,0 +1,125 @@
+{
+  "schema": "i12c_forecast_manifest/1",
+  "card": "I-12-C",
+  "attempt": "execution_runs/I-12-C/a20260926-01",
+  "role": "implementer_i12c",
+  "version": "v1",
+  "frozen_at": "2026-09-26T21:0x+01:00",
+  "freeze_before_unblind": true,
+  "actuals_read_by_this_station": false,
+  "target_period_actuals_read": false,
+  "target_period_actuals_note": "目标期 FY2027 未结束且 unseal gate 未满足 ⇒ 无实际值可读（本卡零暴露）",
+  "low_high_semantics": "scenario_band_not_probabilistic",
+  "low_high_semantics_ref": "设计字段 9：low/high = 情景（scenario bands），非统计区间；禁称 80%/90% 置信覆盖；interval_score 与 pinball 禁用",
+  "forecast_time": null,
+  "forecast_time_note": "无预测值产出 ⇒ 预测时间不存在；冻结的是语义/版本/hash 与零值集",
+  "input_hashes": {
+    "evidence/I-12-C/forecast_vintages.jsonl": "42daea726d9d1d0c5e538881d5f31c663b3a5619a3f2d6dd7350e48a5965cf1f",
+    "evidence/I-12-C/baseline_vintages.jsonl": "043f31c9441030a003b5d2cba3286676d35fff30a801909e08b255c3f17a2cbc"
+  },
+  "upstream_sample_table": {
+    "path": "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/sample_manifest.jsonl",
+    "sha256": "679a7a496e87ed953311d8d8139b47576ab84ddf7f0f0a4238991695d4ef0702",
+    "rows": 7,
+    "carrier_status": "review_pending（本批产物，未验收；引用须标此状态）"
+  },
+  "model_run": {
+    "executed": false,
+    "reason": "binding_status=unbound（无 I-00-B 绑定的 argv/cwd/allowlist）+ params_released=false ⇒ 不运行任何模型命令（START_HERE「命令不能猜」/「不能要求新功能存在才允许实施它」）",
+    "model_ids_formula_qualified": "M01-M31 = accepted_scoped（仅公式面）"
+  },
+  "baselines": {
+    "primary": {
+      "rule": "最后可得同口径年度收入不变",
+      "rows": 7,
+      "state": "produced_frozen"
+    },
+    "secondary": {
+      "rule": "上一可得同比延续（按 h 复利，精确有理数）",
+      "rows": 7,
+      "state": "produced_frozen_secondary_only"
+    },
+    "seasonal_same_quarter": {
+      "state": "not_applicable",
+      "reason": "本审计可得序列为年度分部收入，无同季可比序列（设计字段 8）",
+      "approval": "pending_reviewer（not_applicable 须获批；本卡不自批）"
+    },
+    "missing_history_rule": "baseline 缺必需历史期 ⇒ 标 not_applicable，不用未来资料补齐（卡文动作 2）；本批 7 样本历史期齐备（紫金 FY2024-FY2025、微软 FY2025-FY2026 均在 origin 前披露）⇒ 0 例 not_applicable"
+  },
+  "disclosure_qualification_counts": {
+    "signed": 2,
+    "stop": 2,
+    "uncovered": 3
+  },
+  "disclosure_qualification_detail": {
+    "signed": [
+      "CN-ZIJIN/MINERAL (ZJ-MIN-M09)",
+      "CN-ZIJIN/SMELT (ZJ-SMT-M09)"
+    ],
+    "stop": [
+      "US-MSFT/PBP (MS-PBP-M05 partial_STOP_DISCLOSURE_ADAPTATION)",
+      "US-MSFT/IC (MS-IC-M06 partial_STOP_DISCLOSURE_ADAPTATION)"
+    ],
+    "uncovered": [
+      "CN-ZIJIN/TRADE（无 case）",
+      "CN-ZIJIN/OTHER（无 case）",
+      "US-MSFT/MPC（无 case）"
+    ],
+    "source_sha256": "373c162197203da31d68b4273adb27d5c2ba68936bcdf4100e669c23fea9d522"
+  },
+  "rerun_policy": {
+    "rule": "重跑必须有原因且保留旧版本（卡文动作 3）；同 design + 同已签参数 + 同种子 ⇒ 允许复算重跑；任何 design 字段变更 ⇒ 版本 +1（设计字段 13）",
+    "reruns_performed": 0,
+    "old_versions_retained": []
+  },
+  "seal_state": {
+    "test_results_sealed": true,
+    "test_results_unsealed": false,
+    "accuracy_results_read": false,
+    "unseal_gate_currently_satisfied": false
+  },
+  "redline": {
+    "parameter": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE",
+    "registration_state": "registered_not_consumed",
+    "consumed": false,
+    "ban_verbatim": "OPEN-2 前禁消费（REMEDIATION_REGISTER.md L3951，转引上游 I-07-E §F）"
+  },
+  "declarations": {
+    "params_released": false,
+    "implementer_signed": false,
+    "releases_nothing": true,
+    "open2_ban_observed": true,
+    "network_used": false,
+    "git_used": false
+  },
+  "counts": {
+    "samples": 7,
+    "forecast_values_frozen": 0,
+    "baselines_frozen": 14,
+    "scorable_samples": 0,
+    "samples_without_true_vintage_forecast": 7
+  },
+  "stop_registration": {
+    "stop_1_ordering": {
+      "rule_verbatim": "预测冻结晚于读取实际值→该样本只能exploratory。",
+      "triggered": false,
+      "basis": "本卡未读取任何目标期实际值（zero exposure）；冻结写入时序先于任何解封动作 ⇒ 无样本需降级 exploratory"
+    },
+    "stop_2_model_adaptation": {
+      "rule_verbatim": "模型披露映射未通过→STOP_MODEL_ADAPTATION；不阻止其他已合格模型继续。",
+      "triggered": true,
+      "affected_samples": [
+        "SMP-US-MSFT_PBP_20260729_FY2027",
+        "SMP-US-MSFT_IC_20260729_FY2027"
+      ],
+      "trigger_basis": "MS-PBP-M05 / MS-IC-M06 = partial_STOP_DISCLOSURE_ADAPTATION（signed=false）",
+      "non_blocking_clause": "紫金矿产品/冶炼 2 段 disclosure_adaptation signed=true ⇒ 保留局部资格，不受本 STOP 阻断",
+      "uncovered_samples": [
+        "SMP-CN-ZIJIN_TRADE_20260320_FY2027",
+        "SMP-CN-ZIJIN_OTHER_20260320_FY2027",
+        "SMP-US-MSFT_MPC_20260729_FY2027"
+      ],
+      "uncovered_note": "无 case（未覆盖），按 fail-closed 不得记为通过；另码登记不与 stop 混同"
+    }
+  }
+}

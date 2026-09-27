@@ -1,0 +1,346 @@
+{
+  "probe": "evidence/b01_fc1001_probe.py",
+  "question": "does B01's alignment change FC-1001's sidecar_missing verdict, and what did that verdict actually depend on?",
+  "fixture": "tests/e2e_support/isolated_lake.py, seed=fc1001, corruption=sidecar_missing",
+  "request": "SourceRequest(document_kind=semi_annual_report, as_of_date=2026-08-12, market=CN, fiscal_year=2020)",
+  "scenarios": [
+    {
+      "scenario": "effective (shipped after B01) | config as_test (CatalogConfig default)",
+      "reuse_rule": "effective (shipped after B01)",
+      "rescanned_after_corruption": false,
+      "reusable_root_kinds": [
+        "company_raw"
+      ],
+      "declared_reusable_for_filing": true,
+      "matches": 1,
+      "first_handle": {
+        "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "content_sha256": "fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "canonical_location_id": "urn:company-wiki:location:sha256:17263adde85ec2e6f338d68742755463a9277afa40d19d98afca55b10da732c0",
+        "capture_ready": true,
+        "provider_document_id": "1223023656"
+      },
+      "trace_len": 2,
+      "trace_has_no_reusable_root_location": false,
+      "trace_has_entity_gate_rejected": true,
+      "trace": [
+        "entity_gate_rejected: 1",
+        "中国平安2020年中期报告: matched"
+      ],
+      "catalog_facts": {
+        "dropbox_locations": [
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF",
+            "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "rank_like_keys": {}
+          },
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json",
+            "source_id": "urn:company-wiki:source:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "document_id": "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "rank_like_keys": {}
+          }
+        ],
+        "dropbox_documents": 2,
+        "document_entities_rows": {
+          "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95": 1,
+          "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f": 2
+        },
+        "dropbox_sidecar_files_left_on_disk": [],
+        "expected_sidecars_for_dropbox": [
+          "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json"
+        ]
+      }
+    },
+    {
+      "scenario": "effective (shipped after B01) | config as_prod (shipped kind list)",
+      "reuse_rule": "effective (shipped after B01)",
+      "rescanned_after_corruption": false,
+      "reusable_root_kinds": [
+        "company_raw",
+        "dayu_portfolio",
+        "directory"
+      ],
+      "declared_reusable_for_filing": true,
+      "matches": 1,
+      "first_handle": {
+        "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "content_sha256": "fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "canonical_location_id": "urn:company-wiki:location:sha256:17263adde85ec2e6f338d68742755463a9277afa40d19d98afca55b10da732c0",
+        "capture_ready": true,
+        "provider_document_id": "1223023656"
+      },
+      "trace_len": 2,
+      "trace_has_no_reusable_root_location": false,
+      "trace_has_entity_gate_rejected": true,
+      "trace": [
+        "entity_gate_rejected: 1",
+        "中国平安2020年中期报告: matched"
+      ],
+      "catalog_facts": {
+        "dropbox_locations": [
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF",
+            "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "rank_like_keys": {}
+          },
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json",
+            "source_id": "urn:company-wiki:source:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "document_id": "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "rank_like_keys": {}
+          }
+        ],
+        "dropbox_documents": 2,
+        "document_entities_rows": {
+          "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95": 1,
+          "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f": 2
+        },
+        "dropbox_sidecar_files_left_on_disk": [],
+        "expected_sidecars_for_dropbox": [
+          "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json"
+        ]
+      }
+    },
+    {
+      "scenario": "kind_only (shipped before B01) | config as_test (CatalogConfig default)",
+      "reuse_rule": "kind_only (shipped before B01)",
+      "rescanned_after_corruption": false,
+      "reusable_root_kinds": [
+        "company_raw"
+      ],
+      "declared_reusable_for_filing": true,
+      "matches": 0,
+      "first_handle": null,
+      "trace_len": 2,
+      "trace_has_no_reusable_root_location": true,
+      "trace_has_entity_gate_rejected": true,
+      "trace": [
+        "entity_gate_rejected: 1",
+        "中国平安2020年中期报告: no_reusable_root_location"
+      ],
+      "catalog_facts": {
+        "dropbox_locations": [
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF",
+            "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "rank_like_keys": {}
+          },
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json",
+            "source_id": "urn:company-wiki:source:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "document_id": "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "rank_like_keys": {}
+          }
+        ],
+        "dropbox_documents": 2,
+        "document_entities_rows": {
+          "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95": 1,
+          "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f": 2
+        },
+        "dropbox_sidecar_files_left_on_disk": [],
+        "expected_sidecars_for_dropbox": [
+          "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json"
+        ]
+      }
+    },
+    {
+      "scenario": "kind_only (shipped before B01) | config as_prod (shipped kind list)",
+      "reuse_rule": "kind_only (shipped before B01)",
+      "rescanned_after_corruption": false,
+      "reusable_root_kinds": [
+        "company_raw",
+        "dayu_portfolio",
+        "directory"
+      ],
+      "declared_reusable_for_filing": true,
+      "matches": 1,
+      "first_handle": {
+        "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "content_sha256": "fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "canonical_location_id": "urn:company-wiki:location:sha256:17263adde85ec2e6f338d68742755463a9277afa40d19d98afca55b10da732c0",
+        "capture_ready": true,
+        "provider_document_id": "1223023656"
+      },
+      "trace_len": 2,
+      "trace_has_no_reusable_root_location": false,
+      "trace_has_entity_gate_rejected": true,
+      "trace": [
+        "entity_gate_rejected: 1",
+        "中国平安2020年中期报告: matched"
+      ],
+      "catalog_facts": {
+        "dropbox_locations": [
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF",
+            "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "rank_like_keys": {}
+          },
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json",
+            "source_id": "urn:company-wiki:source:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "document_id": "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "rank_like_keys": {}
+          }
+        ],
+        "dropbox_documents": 2,
+        "document_entities_rows": {
+          "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95": 1,
+          "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f": 2
+        },
+        "dropbox_sidecar_files_left_on_disk": [],
+        "expected_sidecars_for_dropbox": [
+          "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json"
+        ]
+      }
+    },
+    {
+      "scenario": "effective (shipped after B01) | config as_prod | re-scan after corruption",
+      "reuse_rule": "effective (shipped after B01)",
+      "rescanned_after_corruption": true,
+      "reusable_root_kinds": [
+        "company_raw",
+        "dayu_portfolio",
+        "directory"
+      ],
+      "declared_reusable_for_filing": true,
+      "matches": 1,
+      "first_handle": {
+        "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "content_sha256": "fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "canonical_location_id": "urn:company-wiki:location:sha256:17263adde85ec2e6f338d68742755463a9277afa40d19d98afca55b10da732c0",
+        "capture_ready": true,
+        "provider_document_id": "1223023656"
+      },
+      "trace_len": 2,
+      "trace_has_no_reusable_root_location": false,
+      "trace_has_entity_gate_rejected": true,
+      "trace": [
+        "entity_gate_rejected: 1",
+        "中国平安2020年中期报告: matched"
+      ],
+      "catalog_facts": {
+        "dropbox_locations": [
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF",
+            "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "rank_like_keys": {}
+          },
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "missing",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json",
+            "source_id": "urn:company-wiki:source:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "document_id": "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "rank_like_keys": {}
+          }
+        ],
+        "dropbox_documents": 2,
+        "document_entities_rows": {
+          "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95": 1,
+          "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f": 2
+        },
+        "dropbox_sidecar_files_left_on_disk": [],
+        "expected_sidecars_for_dropbox": [
+          "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json"
+        ]
+      }
+    },
+    {
+      "scenario": "effective | config as_prod + sidecar_suffixes declared | re-scan after corruption",
+      "reuse_rule": "effective (shipped after B01)",
+      "rescanned_after_corruption": true,
+      "reusable_root_kinds": [
+        "company_raw",
+        "dayu_portfolio",
+        "directory"
+      ],
+      "declared_reusable_for_filing": true,
+      "matches": 1,
+      "first_handle": {
+        "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "content_sha256": "fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+        "canonical_location_id": "urn:company-wiki:location:sha256:17263adde85ec2e6f338d68742755463a9277afa40d19d98afca55b10da732c0",
+        "capture_ready": true,
+        "provider_document_id": "1223023656"
+      },
+      "trace_len": 2,
+      "trace_has_no_reusable_root_location": false,
+      "trace_has_entity_gate_rejected": true,
+      "trace": [
+        "entity_gate_rejected: 1",
+        "中国平安2020年中期报告: matched"
+      ],
+      "catalog_facts": {
+        "dropbox_locations": [
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "active",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF",
+            "source_id": "urn:company-wiki:source:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "document_id": "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f",
+            "rank_like_keys": {}
+          },
+          {
+            "root_id": "dropbox_stock",
+            "location_status": "missing",
+            "role": "original_primary",
+            "relative_path": "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json",
+            "source_id": "urn:company-wiki:source:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "document_id": "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95",
+            "rank_like_keys": {}
+          }
+        ],
+        "dropbox_documents": 2,
+        "document_entities_rows": {
+          "urn:company-wiki:document:sha256:10219cf0d1bbb0c3813272a8de15d3e269c92a2b8a76a8f17fac8af2fb0e0f95": 1,
+          "urn:company-wiki:document:sha256:fea784ea02a1a2a4186db0dc964fb8b7e2f6a0f4903f27699ab6b9083e40d56f": 2
+        },
+        "dropbox_sidecar_files_left_on_disk": [],
+        "expected_sidecars_for_dropbox": [
+          "金融/保险/中国平安/中国平安2020年中期报告.PDF.source.json"
+        ]
+      }
+    }
+  ],
+  "conclusion": "see the README-style summary in evidence/b01-implementation.md section 6"
+}

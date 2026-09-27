@@ -1,0 +1,10 @@
+arm=N3 expected_rc=3 actual_rc=3
+CHECK K1 OK :: 7/7 null forecasts with params_released=false reason; no model_version; not scorable
+CHECK K2 OK :: 14 baselines (7 primary exact + 7 secondary rational); seasonal not_applicable; no released parameter
+CHECK K3 OK :: manifest frozen v1 before unblind; input hashes match; qual 2/2/3; STOP registrations correct
+CHECK K6 OK :: upstream 21/21 sha256 recomputed and matched
+CHECK K8 SKIP :: run_logs.json not yet written (pre-finalization run)
+CHECK K9 SKIP :: handoff.json not yet written (pre-finalization run)
+FAIL K4: receipt must be unissued and issued_by null (implementer must not issue)
+FAIL K4: state must be not_issued
+RESULT INVARIANT_VIOLATION count=2

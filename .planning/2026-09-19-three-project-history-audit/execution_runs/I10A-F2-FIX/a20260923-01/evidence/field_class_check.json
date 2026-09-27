@@ -1,0 +1,55 @@
+{
+ "artifact": "field_class_check",
+ "cases": [
+  {
+   "id": "FC1",
+   "model": "unit_sales",
+   "note": "RAISE class omitted",
+   "outcome": "raised",
+   "error_type": "ForecastInputError",
+   "error": "missing driver for unit_sales: other_revenue has no explicit default",
+   "pass": true
+  },
+  {
+   "id": "FC2",
+   "model": "resource",
+   "note": "RAISE class omitted (I-10-A GREEN requirement)",
+   "outcome": "raised",
+   "error_type": "ForecastInputError",
+   "error": "missing driver for resource: other_revenue has no explicit default",
+   "pass": true
+  },
+  {
+   "id": "FC3",
+   "model": "unit_sales",
+   "note": "tolerant class: timing_factor omitted -> declared 1.0 (but FC1 shows other_revenue still raises; FC3 uses explicit other_revenue below)",
+   "outcome": "ok",
+   "annual_revenue": [
+    50.0,
+    55.0
+   ],
+   "pass": true
+  },
+  {
+   "id": "FC4",
+   "model": "unit_sales",
+   "note": "explicit 0.0 accepted (I-10-B R-B1-N3); values must equal 10*5, 11*5 with other 0",
+   "outcome": "ok",
+   "annual_revenue": [
+    50.0,
+    55.0
+   ],
+   "pass": true
+  },
+  {
+   "id": "FC5",
+   "model": "unit_sales",
+   "note": "present-but-None is malformed, never silent",
+   "outcome": "raised",
+   "error_type": "ForecastInputError",
+   "error": "driver other_revenue must be a list of parameter_ids",
+   "pass": true
+  }
+ ],
+ "all_pass": true
+}

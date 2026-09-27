@@ -159,3 +159,12 @@ driver as `missing` with the fields that would have to be filled, and no value w
   `_FAILED_first_attempt` suffix under `after/`.
 - `decision.md` section "Owner hand-off" points at `handoff.json` (`open_questions`, `next_action`,
   `blocked_by`) as the authoritative continuation record.
+
+## 独立验收裁定（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅本 attempt、仅锚 9ec65295…。
+- 既有终裁载体（采信）：reviewer 报告 5a44fd4e… M12 行（bank_revenue | accepted_scoped | 仅 formula）+ 卡内副本。
+- 本块补录卡内裁决区（清 in_card_transcription_owed）。carried：F-MT-02/03/04（本块闭合）。
+- 本次抽验：[34] 三方一致；负例 11/11；九件齐；pin 3/3（LF）；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "independent verdict transcribed in-card by M-T-REVIEW append (N=1) 2026-09-23: accepted_scoped (formula only); original carrier report 5a44fd4e…", carrier: "…/reviews/M12.md + acceptance_rulings.md#M12", implementer_signed: false, supersedes: "RESOLVED … in-card verdict region owed" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 4d9e4cd82af2810b8dcca53d4686876ae3fd83e51ae3c9b1eb03f0843703b5a8 over 11833 bytes, verified post-install as sha256 of the first 11833 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = 502758ebac73c60af3e5e967f2758a38fcd7c6efeaf3d780d54ea42b165a22f0 = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 906 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M12.md (sha256 334a7b5b6171aa24d795acf182214cfa5f88b79c97862a11eb5658ae41bb0fa6) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

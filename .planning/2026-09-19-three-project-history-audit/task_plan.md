@@ -9,9 +9,57 @@ PWF_PLAN_ROOT: C:/Users/郑曾波/Projects/revenue-forecast
 Owner: root。所有代理加入同一计划，只写各自reviews子目录。命令内显式pin仅影响该子进程，不宣称已更改宿主hook环境；不改变共享active_plan指针。
 
 ## Next Step
+
+> **⚠️ 本节已刷新（2026-09-24 Round 98，新会话接手）。以下为当前唯一权威 Next Step；其后的全部历史段落（Round 41 起）仅作史料，与本段冲突时以本段为准。实时台账 = `REMEDIATION_REGISTER.md`（已至 §117，本会话新增并已续至 **§128**）与 `progress.md`（**R103 交接注记**为恢复入口）。**
+
+**当前盘面（09-24 census，140 份 handoff 实读）**：`accepted_scoped 107` + `accepted_with_conditions 2` / `review_pending 8` / `planned 5` / `blocked 1`（I-06-A）/ `changes_required 1`（B5 原始忠实）/ 无 status 16（T1 协议卡）；**在飞 4 卡无 handoff**（CW-GATE-UNBLOCK-2、I10A-F2-FIX、T1-F2-FIX、WC-4-RC120）；`T1-F3-FIX` 未建。生产树零未授权改动（`git diff HEAD --name-only` 非 `.planning` = 0），HEAD=`b7a6a116`，09-24 凌晨整批**未提交**。
+
+**本轮已派六工位（并行、写界互不相交）**：①WC-4-RC120 独立复审 `9c29b9b6` ②WC-6 独立复审 `97e9d203` ③T1-10-FIX 载体落定 `0d1c7fb2` ④I10A-F2-FIX 续跑 `07a6b2a9` ⑤T1-F2-FIX 续跑 `f1d376d3` ⑥CW-GATE-UNBLOCK-2 终报（coverage 95 双判归因）`9539d12e`。
+
+**下一步唯一动作**：**收在飞 9 工位回执 → 逐个做父方独立复核（形状容忍+大小写不敏感脚本，见 `_pwf_tmp/`）→ 对 `I-14-E-TESTSIDE`/`I10A-F2-FIX` 派独立复审 → 三份新裁定回收后按 MERGE 7 条核 `I-11-B` → 写入者全收工后走四步序提交 09-24 整批 → PWF 折入。**（**恢复细则见 `progress.md` Round 103 交接注记 B/C 节**；owner 已令「手头做好就停止」⇒ 停止前已把全部文档更新到位。）
+仓内不可自主项不变：**19 卡链 19/19 全 gated on `I-06-A`（函 A 三外部方 TIER-2 回执）**；owner 项 = REM-80、CI §55 序列、晋升决定、live S1 授权。
+
+---
+
+（以下 Round 41 起为历史 Next Step 原文，保留不删，仅作史料）
 产品实施已推进至 **65/86 卡已建**（计数经 2026-09-20 round 35 补记账归一，以盘上载体为准）。**盘上独立 `accepted_scoped` = 61 张**：全部 `M01–M31`（31 张，qualification 均为 **仅 formula**）+ `I-00-B/C/D`、`I-01-A`、`I-02-A…E`、`I-03-A…D`、`I-04-A…E`、`I-05-A/B`、`I-06-B`、`I-07-A`、`I-08-B`、`I-09-A/B`、`I-11-A`、`I-14-A/B/C`、`I-15-A`（30 张；其中 I-14-A 仅隔离测量、I-15-A 仅证据/诊断、I-11-A 仅设计契约、I-14-C 仅证据与判据且明确不含促销）。**`review_pending` = 3 张**：**I-00-A**（限定只读基线；盘上最新独立结论仍为 `changes_required`）、**I-05-C**（**D-W05 producer entry 已于 2026-09-20 16:45 获 owner 批准 ⇒ GAP-1 解除、可进入真实实现**；仍余 GAP-2「RF `consumer_analysis` owner 未提供 entry」硬阻塞与 GAP-3「事件 schema 待 reviewer」；注意 **批准 ≠ 验收**，`status` 保持 `review_pending`）、**I-08-A**（其 reviewer **明文禁止**把「已接受」写入任何载体 ⇒ 不得走常规载体路径，须单独商定收口方式）。**`blocked` = 1 张**：**I-06-A**（`D-W06` 五问未签；OPEN-2 幂等键缺请求身份为决定性项）。**未建 = 21 张**：`I-10-A`、`I-12-A…E`、`I-13-A…C`、`I-16-A/B`、`I-17-A/B`。全部改动留 `execution_runs/<card>/<attempt>/` 各自 `review.md`；**生产零代码合并**（唯一生产写入是 owner 授权的 `5db4734a`：把 `scripts/model_registry.py` 扩展版 + `scripts/model_extensions.py` 纳管，属版本控制层动作而非产品行为变更；历史事故：I-14-C 曾直接改生产工作树已回退为 HEAD，2026-09-20 pre-commit 门另致生产树被重置到 HEAD 一次、已用补丁 `--exclude=.planning/*` 子集恢复并逐文件复算，见 findings.md 隔离巡检节）。产品资格均限实施声明范围；`disclosure_adaptation` 全卡 `unmapped`、`accuracy` 全卡 `unproven`，无一张外推。**Round 39 总授权（2026-09-20 17:0x，owner 原话「给你所有批准」）**：已按权限归属拆为 **TIER-1 可裁（28 项，已裁）** / **TIER-2 需他方（15 项，owner 仅授权联系与启动，最终裁定仍待该方）** / **TIER-3 知悉（5 项）**，详见 `OWNER_DECISIONS.md` 第十三节。**执行纪律第 7 条**：「总的批准」不得膨胀为「所有的结论」—— 把 TIER-2 记为「owner 已裁」等同伪造签名。本批同时**归档闭合第九节第 16 项**（扩展模型版纳管，已由提交 `5db4734a` 完成）。
 
 **下一步唯一动作**：①**I-05-C 可实现** —— owner 已于 2026-09-20 16:45 批准 `D-W05` producer entry，`produce_for_demand` 可从 mock-only 转真实实现（接 CW `service.py` 现有 producer，不新增重复 parser，调用事件记在实际调用边界）；但 **GAP-2 仍阻塞 `consumer_analysis` 角色**（producer 不存在、真实 LLM 能力未验证）⇒ 须 RF `consumer_analysis` owner 提供入口，**不得造绿色样例补全**；**GAP-3** 待 reviewer 批准事件 schema。②等 owner 签 `D-W06` 六项（**OPEN-2 幂等键是否含请求身份为决定性**）解锁 I-06-A。③I-08-A 收口方式待单独商定（reviewer 明文禁止写入「已接受」）。④派实现者对 6 张卡的陈旧 `reviewer_status` 字段对齐（**只改该字段、不动裁决字节**）。
+
+### ✅ 待 owner 一次答齐 —— **已答（OWNER_DECISIONS §二十四，2026-09-24 深夜）：`I-08-A: A`**
+
+> **owner 选择 A = 门改读裁决块**。⇒ **gate 读法例外（本节即其登记载体，依 T1-12 ① 追加式）**：
+> 当某卡的**独立裁决以「§N 冻结块」形式存在**、且该卡 reviewer **明文禁止改 `handoff.status`** 时，**依赖门以该裁决块为准**，不以 `handoff.status` 字段为准；`handoff.status` 保持 `review_pending`，**全库不得出现被禁表述**。
+> **对 `I-08-A` 的具体效力**：其 `review.md §5.5`（L173 起、reviewer 逐字粘贴的冻结块）载裁决 = `accepted_scoped —— 范围仅限「设计/契约提案」` ⇒ **`I-08` 家族门视为已过**，`I-07-E` / `I-16-A` 的该条依赖**解除**。
+> **边界（owner 同时约束）**：本例外**零载体改动**、**不授予 `I-08-A.handoff.status` 变更**、**不解除任何 OPEN-D\***（D1/D2/D3/D5/D6 仍属 TIER-2）、**不改任何其他卡的门读法**（只对「裁决在冻结块 + status 被禁改」这一组合成立）。
+> **后续**：19 卡链**余 15 张**的**第二把锁已解**；第一把锁（`I-11-B`）仍 BLOCKED，见登记册 §126-C、§131（七条复算）与 §135（链口径更正）、`OWNER_DECISIONS` §二十四 第 2–4 项。
+> ⚠️ 本行原写「余 **13** 张」—— **父的计数错，2026-09-25 回源重算改为 15**（详见登记册 §135）。
+
+#### （以下为原决策简报，留档）
+
+**问题**：`I-08-A` 究竟如何收口，才能既尊重其 reviewer 的禁令、又让 `I-07-E` / `I-16-A` 的家族门读得懂。它与 `I-11-A` OPEN-2/3/5/6 并列为**两个根因**，各自独立挡住 19 卡链余 13 张。
+  > **【追加更正 · 2026-09-26 08:10 · 跨文档核验 `check_cross_doc_numbers`】** 本行「**余 13 张**」**已过时** —— 2026-09-25 回源重算为 **15 张**（见 L276 该行自带的更正注），且该计数把闸算进成员的原始错已在 L281 更正。**本行是「问题陈述」的历史措辞，不改原文、以本注为准。**
+  > 另注：**`I-08-A` 的根因已解**（§二十四 #1 owner 答 A，L273 一带记明），**`I-11-A` 的 OPEN-2/3/5/6** 即 MERGE 七条，现 `4✅+1🟡+2❌`（L277）。
+
+**已查清的事实（全部有盘上出处）**：
+1. **裁决其实已经存在**：`execution_runs/I-08-A/a20260919-01/review.md` **§5.5**（L173 起，独立 reviewer session 逐字粘贴的冻结块）载明裁决 = **`accepted_scoped`——范围仅限「设计/契约提案」**，R1–R14 全部完成、7 条预登记变异全部命中预测；5 项必修文本项已由 r4 闭合（§5.6）。
+2. **禁令的精确范围**（§5.5「不授予」第 3 条，原文）：**不授予「I-08-A 已被接受」的任何表述权**：`handoff.json.status` **仍为 `review_pending`**、`implementer_self_acceptance=false`；计划层超前记账（提交 `7d7ea1e` 的提交信息与 `progress.md`）须由父 agent 撤回，**以 `task_plan.md` 的 TBD 口径为准**。
+3. **该父义务已执行**：`progress.md` L423 记 **P2-02 已执行**（旧行就地标注「属超前记账、已被 P2-02 撤回」），L475 可见该就地标注；提交 `7d7ea1e` 的信息**无法无痕撤回**（改写历史属禁止动作），其更正以 P2-02 登记为凭。
+4. **门的实际读法**：`execution_v2/dispatch.md:5`「原始依赖写 I-xx 表示其**全部适用子卡**」、`START_HERE.md:29`「依赖项标记 accepted 还不够……」。⇒ 门读的是**依赖卡的裁决状态**，但**没有一条规则规定当裁决在 §5.5 而 `handoff.status` 被禁改时该怎么读**。
+5. **OPEN-D\* 不是本门的阻塞项**：OPEN-D7 已由 owner §十一 item5 裁定（`W=30 T=65536 L=3600`）；OPEN-D1/D2/D3/D5/D6 属 TIER-2 轨（`OWNER_DECISIONS.md:249-252`），它们阻塞的是**下游实现**，不是本卡的家族门。
+
+**为什么必须由 owner 答**：reviewer 的禁令是**明确的**，而门的读法是**计划层协议**。编排层若自行选一种读法，等于替 reviewer 扩大或缩小其禁令的效力 —— 这正是执行纪律第 7 条要防的。
+
+**三个选项（建议 A）**：
+| | 选项 | 代价 / 风险 |
+|---|---|---|
+| **A（建议）** | **门改读「裁决块」而非 status 字段**：登记一条 gate 读法例外 —— 当某卡的独立裁决以「§N 冻结块」形式存在、且 reviewer 禁止改 `handoff.status` 时，门以该裁决块为准；`handoff.status` 保持 `review_pending`，全库仍不出现被禁表述 | 零载体改动、字面完全遵守禁令；代价=登记册/task_plan 需各加一行读法例外 |
+| **B** | owner 授权一个**不含被禁短语的新状态词**（如 `design_closed_scoped`）写入 `handoff.status` | 需 owner 确认新词不构成「已被接受」的等价表述；要改一个封盘 attempt 的 JSON |
+| **C** | 维持 TBD | `I-07-E`、`I-16-A` 及其下游 13 张链卡**永久 gated** ⇒ 与「计划要收口」直接冲突，不可接受 |
+
+**答法（一句话即可）**：`I-08-A: A` / `B（给词）` / `其他`。
+**边界**：本简报**不改变**任何盘上状态；`I-08-A.handoff.status` 仍是 `review_pending`、全库仍无被禁表述；本轮未派任何 I-08-A 复审（常规复审单会直接产出违规载体）。
+
 
 **Round 41（2026-09-20）新增：TIER-2 三封对外请求函已起草完毕（TIER-2 唯一真正解锁的动作）**。落点 `.planning/2026-09-19-three-project-history-audit/outward_requests/`，**纯新增、未改任何既有载体**：
 
@@ -190,6 +238,45 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 - **Status:** complete
 
 ### Phase 7: 实施推进（2026-09-19 起，产品实施）
+
+> **🔖 接力锚点（2026-09-26 21:3x 快照 · 下一会话从这里接）**
+> - **链现状（乙 合并后 15 张）**：**9/15 已落** —— `I-07-B/C/D` · `I-10-A` · `I-11-B` · `I-11-C` · `I-07-E` · `I-12-A` · `I-13-A`（分类 `research_draft_needs_review`，`HB3` 复审裁定 `not_established`）
+> - **待复审/落定**：**`I-12-BE` 四段全部交付**（`B/C/D/E` 各 `handoff=True`，批次 `0f2190c7`）→ **派一次单元复审 + 一次落定即 +1**（10/15）；**`I-14-D-R2` 复审 `ACCEPT`（0P1/0P2/4P3）已出，只差父落定**（脚本 2 处适配见下）
+> - **在飞**：`I-13-BC`（`595631a1`，`oracle` 已冻、写阶段 B 产物）
+> - **`I-12-A` 双签**：统计面 3 签/3 不签 · 行业面 10 签/1 不签/6 deferred ⇒ **`STOP①` 登记不解除**（解封 = 补 `S1/S2/S6` 证据 + `IND-07` 汇率源 + 行业回签 `DEF-06` + 新版本重冻）
+> - **`TESTSIDE-R3`**（环境受限、判别力本会话不可证、诚实 `unverified`）待复审；`I-14-E-TESTSIDE` 的双能力 `DENIED` 仍归下会话
+> - **⭐ 脚本待修**（`_pwf_tmp/land_v3_generic.py` 两处）：① 裁决行检测需容忍无 `VERDICT:` 字面的报告（`I-14-D-R2` 复审用「裁决行 — **ACCEPT**」格式）② `oracle.md` `APPENDIX` 追加（冻结后补记、前缀 sha 未变）会使 `mtime<=evidence` 检查误报 ⇒ 应改比对**冻结前缀 sha**
+> - **七条**：**`7✅`**（⭐ `2026-09-26 21:5x` owner 双裁定 `§三十八`：`I-16-A` 开工门槛 + **`H2` 以 `EA`+敏感性区间承接关闭** ⇒ `C5` 四块全处置 `✅`；`C3` 四步+落点 ✅；原 `C1/C2/C4/C6/C7` ✅。**边界**：`threshold_review_status` 仍 `not_reviewed` · 参数仍不放行 · `OPEN-6`/`BLOCKED-6a/6b/6c` 不因关闭而解除）
+> - **owner 授权全记录**：`OWNER_DECISIONS §三十三~三十七`（6b (c) · 链开工 A · 三函签收甲 · H4-Q2 追加 · 全沙箱常设）+ **乙 合卡**（§159）
+> - **落定**：`_pwf_tmp/land_v3_generic.py <CARD> <ATT>`（10 秒 + 纪律 21 自检）· **审计**：`audit_triad.py` / `census_v3_cardlevel.py`
+> - **边界**：`revenue-forecast` 非 `.planning` diff = **0**；产品仓 = `dayu 74543B/cw 25328B`（§三十/§三十二 授权晋升 + `raw/other/` 两件 origin + sidecar）
+>
+> **⚠️ 执行方案 v2（2026-09-26 17:3x · owner 批准「按这个新方案执行」· 取代本节此前的隐含流程）**
+> **背景**：前 55 轮 **49% 的轮次花在开销**（逐事件 PWF / 每轮全量审计 / 每轮长报告 / 工位停滞重派），链卡在 4/19。owner 批准以下简化，**后续任何会话接手必须按 v2 执行，不得回退旧模式**：
+>
+> | # | v2 规则 | 取代的旧做法 |
+> |---|---|---|
+> | **V2-1** | **机械转录类**（落定/转录/登记 verdict→载体）用 **`_pwf_tmp/verify_delivery.py` 脚本核验**（sha/逐字/镜像/JSON 全覆盖）**替代工位独立复审**；**判断类**（定级/裁定/会签/实现）仍须独立复审 | 落定也派独立复审工位（~20 分钟/件） |
+> | **V2-2** | **PWF 按批次写**：每完成 **3–5 件**写一次 register（**表格化**）+ progress（短段）；findings **一行一错**（不再 50 行长文） | 每事件写 100 行 register + 50 行 findings |
+> | **V2-3** | **审计套件只在批次检查点跑**（census/triad/权威链/积压一次跑齐），平时不跑 | 每轮重跑全量审计 |
+> | **V2-4** | **派单显式列输入清单**（文件+行号范围+「其余一律不读」）—— **停滞的根因是工位读巨量上下文** | 「读整个 attempt 目录」 |
+> | **V2-5** | **流水线**：卡 N 复审（或脚本核验）与 卡 N+1 实施**同时在飞**；**卡 N+1 派单在卡 N 交付前预制**（见 `_pwf_tmp/I11C_dispatch_ready.md` 先例） | 串行：卡 N 全走完才派 N+1 |
+> | **V2-6** | **报告只在决策点**（需要 owner 拍板 / 交付里程碑 / 异常）；纯监控轮一行带过或不报 | 每轮完整面板报告 |
+> | **V2-7** | **owner 阈值改判是规则内杠杆**：`i11b_unlock_conditions` 第 1 条「或 owner 明文改判开工门槛」（已用，§三十四）；同款授权已解 H4-Q2（§三十六）。**后续卡遇到结构性闭合不了的条件，优先走 owner 追加式修订，不硬磨** | 磨到条件自然满足 |
+>
+> **v2 已落地的实例**：§三十三（6b-R2 支(c)）· §三十四（I-11-B 改判开工）· §三十五（三函签收·甲）· §三十六（H4-Q2 追加修订）· B2 晋升（父提权 Copy-Item 替代 git apply）· 产品落点（raw/other/ 两件+sidecar）。
+>
+> **⚠️ V3 精简令（2026-09-26 19:3x · owner 原话「小任务的检查审查还是太多了，动不动就跑全量测试，请进一步减少过度的审查和测试，只有大节点才需要这么做」）**：
+> | 级 | 范围 | 复审深度 | 测试 |
+> |---|---|---|---|
+> | **A 大节点** | 产品写入 / 解阻断 / **数据类卡**（校准·参数·裁定·阈值·schema） | 全量：复算抽样 + 变异 ≥3 + 封盘复哈希 + 门 0 | ≥3 变异 |
+> | **B 小任务** | 落定转录 / 簿记勘误 / 记账同步 / 明细表 / 报告类卡 | **轻审**：裁决行 + 发现清单 + 关键数 `spot-check` | **0** |
+> | **落定** | 三件套转录 | **父直写、不派工位**（`verify_delivery.py` 脚本核） | **0** |
+>
+> **落定轻格式**（立即生效）：`review.md`/`handoff` 的发现改**引用式**（`id/级/一行摘要/报告行号`）—— **不逐字转录**（逐字本体在**不可变的 `reviewer_report`** 里，引用即零损失）；`qualification` 改**类别级** `not_granted`（≤5 条概括，不逐条枚举）；`unverified` 引用式（`§` 号 + 条数）。
+> **B 级实现/复审零变异、零全量重跑、零手算复算**（除非发现异常）；**审计套件**（V2-3）只在 **A 级落地**时跑一次。
+>
+> **对账锚**：`I-11-A` 卡级最新 = `a20260919-01/accepted_scoped`（**唯一** attempt；`a20260922-02` 属于 `I-06-A`/`I-06-B` —— 父第 38 起的勘误）。**任何卡有多个 attempt 时取卡级最新**（纪律 20）。
 - [x] I-00-A 冻结基线（三仓HEAD/447G注意点等，accept）a20260919-01
 - [x] I-00-B 绑定锚点+3/3样本精确hash一致 accept
 - [x] I-00-C 验收器证明范围（隔离副本场景门，13/13校验）accept_scoped
@@ -219,13 +306,45 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 - [x] **I-11-A = accepted_scoped**（仅设计契约；独立复核 round 1 由实现者转录，实现者未改写结论；其台账由单一用途生成器 `tools/hash_attempt.py` 重跑 rc=0 并归档前像，**非幂等**已如实登记）
 - [x] **I-14-B = accepted_scoped**（第三轮独立复核验证 r2 修复；随卡登记**两个产品级缺陷**：`natural_window.py:157-178` 对 `claim.basis` 无枚举校验可被一个字段名绕过、`:137-147` 把 quick_check 计入自然观察时长 ⇒ 该漏洞已烧进冻结期望，修 P2 须**同时以追加式 provenance 更正 oracle 期望**；`D-1 frozen_tolerance_seconds = 5` 由 reviewer 落定，`D-2` 维持 blocked）
 - [x] **I-15-A = accepted_scoped（仅「冻结证据 + 诊断反例」范围，不授予产品实施资格；产品实施仍 blocked）** —— carrier 即 reviewer 自身报告块，已置 flag `review_md_has_no_verdict_region` + `carrier_is_the_reviewers_own_report_block`
-- [ ] **I-00-A 待补裁决** —— 限定只读基线范围（`a20260919-01`），盘上最新独立结论仍为 `changes_required`（errata 修复**未见 reviewer 确认**）；已由父代理排除在载体落定范围外，保持原状并报告
+- [x] **I-00-A = accepted_scoped（仅「限定只读基线」范围）**（2026-09-24 补裁决 + 落定）—— 原状态「待补裁决、最新结论仍 `changes_required`、errata 修复未见 reviewer 确认」**已被取代**：独立复审 `reviewer_report.md` **19149 B / `24cf91cffec60e2d…`** 判 **`VERDICT: ACCEPT`**（原 3 发现 = 1 阻断 F1 **已实质修复** + 2 观察；新增 N1–N5）；载体落定父复核 **18/18**（`review.md` 前 4356 B == 前像、`:3` 的 `changes_required` 原文仍在、`baseline_supersessions=6`、`discipline_events N1/P2`）。**N1 已单独立案** `_isolation_incidents/20260924-i00a-errata-capture-inside-filing-fetch/`（父独立取证 `?? git_filing-fetch.txt` ×2；「零残留 ≠ 未发生」）
 - [ ] **I-05-C = review_pending（三项硬阻塞）** —— ①~~`blocked on D-W05 producer entry approval`~~ ✅ **已解**（2026-09-20 round 37）；②`blocked on RF consumer_analysis owner providing entry`（**TIER-2**，须 RF 侧 owner 供入口，round 39 已授权联系）；③`pending reviewer decision`（**TIER-2**，`InvocationTracker` 事件 schema）。**卡本身不缺工作**：已产出 `decision.md`(64 行)/`oracle.md`(111 行)/`commands.json`/`producer-invocations.json`/`requested-role-dag-matrix.json`/`retry-count-vs-artifact-count.json` 等完整设计与证据，只缺授权
-- [ ] **I-06-A = 部分解锁（2026-09-20 round 39）** —— **OPEN-2 幂等键已裁（选 A：键含请求身份）**、OPEN-1 已裁（采纳 A：扩展 CW `store.py`）、OPEN-3 已裁（显式单次 claim）；**OPEN-4/5/6 属 TIER-2**（wiki 来源审核 owner + 安全 reviewer + RF 消费 owner），须其出具后方可实施
-- [ ] **I-08-A 待单独商定收口方式** —— 其 reviewer **明文要求**「I-08-A 已被接受」**不得**写入任何载体 ⇒ 不可走常规 `handoff.status` 路径
+  > **【追加更正 · 2026-09-26 07:30 · 账实对齐（父 `audit_ledger_vs_disk`）】本行的 `review_pending` 已过时 —— 盘上实测 `I-05-C/a20260919-01/handoff.json` = `accepted_scoped`、`status_authority` 在位、`evidence/I-05-C/qualification.json` 存在。**
+  > **本行 `[ ]` 保持不勾**，因为它的**真正欠账是 ②③ 两项 TIER-2 外部授权**（`RF consumer_analysis owner` 供入口 + `InvocationTracker` 事件 schema 的 reviewer 决定），**不是卡本身的状态** —— 本行的标题（`review_pending`）与状态不符、但**未完成这一事实成立**。
+  > **⇒ 更正仅限状态描述；`[ ]` 不变、不回改原文、不改盘上任何字节。**
+- [x] **I-05-C ②③ = owner §四十 裁定一（2026-09-27 10:0x）「我就是授权方」** —— ② `RF consumer_analysis` 入口审批：owner 本人授权供入口 ✓；③ `InvocationTracker` 事件 schema 的 reviewer 决定：owner 本人为决定方 ✓。**至此本行三项硬阻塞全部解除**（① 2026-09-20 已解 · ②③ 2026-09-27 本裁定）；**Phase 7 清单 34/35**。
+- [x] **I-06-A = accepted_scoped（全解锁）** —— 原「部分解锁，OPEN-4/5/6 属 TIER-2 须其出具后方可实施」**已被取代**：owner **§十九「全部接受」**终确三份 T2 模拟裁定（OPEN-4/5/6 CONDITIONAL + C1–C8），`RESPONSES.md` 三行登记 + I-06-A/I-06-B 卡载体转录 ⇒ **`a20260922-02 = accepted_scoped`**（父复核在册）。旧 attempt `a20260919-01` 仍留 `blocked`（09-20 当时为真，**单向指针问题见 census v3 卡级聚合**）
+- [x] **I-08-A 收口方式 = **owner 已答 A（§二十四 #1，2026-09-24）** —— 原「待单独商定，不可走常规 `handoff.status` 路径」**已被取代**：owner 选 **门改读裁决块**，例外已登记于本文件上方「✅ 待 owner 一次答齐」节。规则＝**当裁决以「§N 冻结块」存在且 reviewer 禁改 status 时，门以裁决块为准**；据 `I-08-A/review.md §5.5`（L173/L178 = `accepted_scoped——范围仅限「设计/契约提案」`）⇒ **`I-08` 家族门视为已过**，`I-07-E`/`I-16-A` 该条依赖**解除**。**边界**：零载体改动、**不授予 `handoff.status` 变更**、不解除任何 OPEN-D\*、不改其他卡门读法
 - [x] **6 张卡的 `reviewer_status` 陈旧字段已对齐（2026-09-20，round 38）** —— M09–M12 改写为「round 1 返回 `accepted_scoped`（仅 `formula`）」并指向载体报告行号；I-14-B 改写为「第三轮返回 `accepted_scoped`（`review.md` §5-b）」，并注明第 1 轮 `changes_required` 仍保留在同文件前部；I-15-A 改写为「r2 返回 `accepted_scoped`，仅限冻结证据 + 诊断反例」。**只改该字段**：`status` 未动、裁决字节零改动（`review.md`/`oracle.md`/`decision.md`/`binding.json`/`evidence/*` 逐一复算哈希一致）。证明见 `.planning/_pwf_tmp/reviewer_status_alignment_provenance.json`
-- [ ] **未建 21 张**：`I-10-A`、`I-12-A…E`、`I-13-A…C`、`I-16-A/B`、`I-17-A/B` 按调度表与 owner 门推进；另 `I-07-B/C/D/E`、`I-10-A` 在依赖链上排队
-- **Status:** Phase 7 进行中 —— **61/86 卡 `accepted_scoped`**（M01–M31 全部仅 formula 资格；I-14-A 仅隔离测量、I-15-A 仅证据、I-11-A 仅设计契约、I-00-A 限定只读基线、I-14-C 仅证据与判据不含促销）；**3 张 `review_pending`**（I-00-A / I-05-C 三项硬阻塞 / I-08-A 禁写载体）；**1 张 `blocked`**（I-06-A，D-W06 未签）；**21 张未建**（I-10-A、I-12-A…E、I-13-A…C、I-16-A/B、I-17-A/B）；全部 iso-副本资格，不含生产部署
+- [ ] **原「未建 21 张」已大幅消化，链内剩 15 张**（2026-09-25 回源重算）：~~`I-10-A`~~ **已建并 `accepted_scoped`**；**仍无 attempt = 15 张**：`I-07-E`、`I-11-B`/`I-11-C`、`I-12-A…E`、`I-13-A…C`、`I-16-A/B`、`I-17-A/B`，**全部被门挡**（逐卡欠账见登记册 §125/§131）。**门开者 0 张**（`db46a988` 两次核验一致：零目录、零写入）
+  > **【追加勘误 · 2026-09-26 07:52 · 父 `task_plan` 登记 sha 错（T1-10 复审 P2-1 取证闭合）】** 本文件上方 **L714** 登记的两处 sha **与实盘不符**（同字节数）：~~`handoff.json = ed206347…`~~ → 实盘 **`715b5e0bc13a23fc…`**（13153 B）；~~`append_only_proof = fb7bf6a0…`~~ → 实盘 **`c0bc84cfedad7974…`**（676 B）。
+  > **取证已闭合（非篡改）**：把盘上文本中唯一的 `c0bc84cf…` 换回 `fb7bf6a0…` 重哈希 ⇒ **精确得 `ed206347…`** ⇒ 登记值是 `artefacts` 表**等长单点替换后的自洽前像**；`handoff.artefacts` 表 **4/4** 复审独立复算通过。
+  > **⇒ 以实盘值为权威；登记位不可复算，追加本勘误即闭合；不回改 L714 原文。**
+  > **【同轮另记 · §136-F 表述过宽（T1-10 复审证伪）】** §136-F「`T1-10-FIX` 全文不提本卡」**只在 `handoff` 粒度成立** —— 实测 `T1-10-FIX/binding.json:27-29` 以**只读 pin** 引用 `T1-10/a20260920-01/{decision.md d7fe3ebb…, scripts/verify_t1_10.py 544ae0ad…, t1_10_defect_verification.json 22ead5c5…}`（三 sha 复审逐一复验相等），且 `oracle.md:20` 引「探针形状逐字取自 T1-10」。**性质 = 只读输入依赖、非取代/关闭指针** ⇒ 双向无指针结论**仍成立**，但**措辞以偏概全**，已在本注更正。
+  > ⚠️ **本行原写「剩 13 张」却列出 15 个 —— 是父的计数错，2026-09-25 回源重算改正**；与「19 卡链」的口径冲突见 L275 的更正注。**门开者 0 张**（`db46a988` 两次核验一致：零目录、零写入）
+- **Status:** Phase 7 进行中 —— **卡级 `accepted` = 124 / 有 attempt 的卡 197**（census v3 卡级口径，**2026-09-26 19:16 实测**；**分项相加 = 124+41+13+5+3+3+2+2+1+1+1+1 = 197 —— 父当场验算**。**旧值「…123/188」等均已过时，以本行为准**；增长含 `I-11-B` 落定与在飞工位新建 attempt）。资格限定不变：M01–M31 **全部仅 formula 资格**；I-14-A 仅隔离测量、I-15-A 仅证据、I-11-A 仅设计契约、I-00-A 限定只读基线、I-14-C 仅证据与判据不含促销、**全部 iso-副本资格，不含生产部署**。
+  **三项在位审计（2026-09-26 12:42 全量复测）**：**三件套 `FULL TRIAD = 124/124`** · **权威链 `PROBLEMS = 0`**（`audit_authority_chain_v2`，六种键族/形状；`carrier-named 61 / sha-search 17 / role-hint 3 / documented 5`）· **落定积压 `0 / 0`**（未转录裁决 0、状态不反映裁决 0；有裁决者 33 已 accepted / 共 35）。**第 4 层证据清单 = 231 条 sha，8 条 mismatch 全属已结案三类、0 条无法解释。**
+  **三项在位审计**：**三件套 `FULL TRIAD = 123/123`** · **权威链 0 缺陷**（`audit_authority_chain_v2`，覆盖六种键族/形状）· **落定积压 0**（`audit_landing_backlog_v2`，全裁决口径 + 最高修订件生效）。**第 4 层「证据清单」= 230 条 sha 已全数结案（§141）。**
+  **卡级非 accepted 分布（2026-09-26 17:2x census 实测，分项相加 = 193）**：`review_pending` **2** —— `I-08-A`（禁写载体走 §二十四 例外，**设计如此**）· `I-14-E`（源卡，结论栏空白待施加卡）· `changes_required` **2**（`B5` + `T1-10`）· **`blocked` 2**（`I-14-E-TESTSIDE`，三件齐 · **`B2-PROMOTION`——卡状态留 `blocked` 是工位记录；**其晋升本体已于 17:0x 由父提权完成**（两文件后像 sha 全对：`4684933e`/`32ef1165`、`committed=false`），以本注为准**）· `signed_scoped` **1**（`I10A-DISCLOSURE` = **C7**）· `rulings_issued_industry_dimension_only` **1** · `merged_two_halves_rulings_issued_i11b_remains_blocked` **1** · **`RULED` 1**（`OPEN-3-ACCT-R2`，会计面裁定 `E1=BLOCKED-PARTIAL/S1/语料E3/引文作废待重锚`）· `planned` **5**（T1-6/7/13/14/27，§116 设计如此）· `<handoff 无 status 键>` **40** · `<no carrier>` **15** · **合计 193（123+40+15+5+2+2+2+1+1+1+1，父当场验算）**。
+  **已收工（2026-09-26 12:42）**：`BLOCKED-6c`（复审+落定 `ALL PASS`）· `S4`（复审+落定 `ALL PASS`）· `B2`（复审+落定 `ALL PASS`）· `T1-10`（复审+落定 `ALL PASS`）· **`H2 基准`（交付 `ALL PASS`、结论 `still_blocked`、基准 1/4、给数门 0/6）** · `S5` 会计+行业两半（均 `ALL PASS`）· `H4 四要件`（`4/4`、`ALL PASS`）。
+  **在飞 5**：`B2 晋升`（产品写入 · 四道 fail-closed · 目录已建）· `H4 行业会签`（**oracle 已冻、口径桥已取证残差 269t/534kg**）· `H2 会计会签`（目录已建）· `H2` 已收工、`+1`。
+  **已收工的复审/落定（2026-09-26 10:11）**：`B2 扩闸` 复审 **ACCEPT** → 落定 **`ALL PASS`（accepted 120→121、三件套 121→122）** · `T1-10` 复审 **changes_required(P1)** → 落定 **`ALL PASS`** · `S4` 复审 **ACCEPT**（3 处数字冲突字节级坐实、**漏报 G8**） · `BLOCKED-6c` 交付 **`ALL PASS`**（**21 例回归未破**、`L271` 双读法待复审裁） · `S5 会计半区` 交付 **`ALL PASS`**（G2/G3 补齐、**origin 排除**、**港股仍 `_PLACEHOLDER`**）。
+  **在飞 4**：`S4 落定` · `BLOCKED-6c 复审` · `S5 行业面`（C4 收口最后一半）· +1。
+  **19 卡链 = 15 张（⭐ 2026-09-26 owner 批「乙」合并后口径）· 已落 11/15**（原 19 张；**`I-12-B/C/D/E` → `I-12-BE` 一张、`I-13-B/C` → `I-13-BC` 一张**，合并卡文 `execution_v2/card_I-12-BE.md` + `card_I-13-BC.md`，原卡判据逐字索引、零字节改动）：链成员（合并后）= `I-07-B/C/D/E` + `I-10-A` + `I-11-B/C` + `I-12-A…E` + `I-13-A…C` + `I-16-A/B` + `I-17-A/B`（4+1+2+5+3+2+2 = **19**）；**链内已落 = 4**（`I-07-B`、`I-07-C`、`I-07-D`、`I-10-A`）；**链内未落 = 15** —— **与 `db46a988` 的 15 行门表完全吻合（该表一直是对的）**。**`I-06-A`/`I-06-B` 不是链成员而是「门」**：依据 `task_plan:20`「19/19 全 **gated on** `I-06-A`」（被门挡 ≠ 门本身）+ Round 91 核验时 `I-06-A` 已 `blocked`、`I-06-B` 已 `accepted`，二者算**闸**不算**被闸挡的卡**。⚠️ **原「6/19」与「余 13 张」是父的计数错**（把闸算进成员；且 13 与所列 15 自相矛盾），本行更正留痕、**不改历史段落**。三根未解 = **I-11**（MERGE 七条 —— **2026-09-26 11:59 门核工位 `db46a988` R4 独立重算：`5✅ + 2❌`**（R3 为 `4✅+1🟡+2❌`）：
+  **✅ C1**（`approved_frozen=1`、`4d4ee106…`，v4 后 `c1_preserved=true`）· **✅ C2**（字面分支 B，`c2_branch2_discharged=true`、4 新 id 已落；保留：新 id 仍 `pending`/`released=false`）·
+  **✅ C4（🟡→✅）** —— **`L164-166` 的 S3/S4/S5 三步全部交付、S4 经独立复审 `ACCEPT` 并落定 `accepted_scoped`、S5 会计 `GRADED` + 行业 `PASS` 两半齐** ⇒ **`L179` 过渡条款按其自身条件到期**；**⭐ 但门核同时裁定：「走完」≠ 解除** —— `§⑦.6` 明写「才可能由相应 reviewer 谈解锁（仍不由本载体）」、**全盘 0 个载体声明解除**（`open5_released`/`hk_parameters_released`/`i11b_unblocked` 均无 true）⇒ **`OPEN-5` 与港股命题/参数状态未变（仍 `_PLACEHOLDER`）、origin 仍 `NOT_USABLE`** · **✅ C6** · **✅ C7**（`met`、`signed_count=4`、`86d0a80e…`）·
+  **❌ C3**（最硬：`origin_bytes_retrieved=0` 且该载体 00:08 后零变化；B2 落定只关了 iso 侧机制闸、**晋升是 owner 另行决定**；**四步顺序依赖全未做** = B1 可写会话 → B2 晋升授权 → origin 重新取文 → `ACCT-R2` + `IND-r2`）·
+  **❌ C5**（**差三件**：**`H2` 基准未交付**（仅 `oracle.md`，在跑）· `threshold_review_status` **产品侧落地**排在行业会签之后 · **6b 仍 `still_blocked`**（3 签 1 不签）；**6c ✅ / H4 `4/4` ✅ / 容差表 ✅** 已收）
+  ⇒ **`i11b_unblocked` 仍 = `false`**（MERGE 原件 `b7314a22…` 重解析、mtime 未变）；**判据是合取** ⇒ **缺口从「5 条面」收敛为「2 条线」**（C3 的 origin 取证链 · C5 的 H2+字段落地+6b）· **15 张候选 15/15 = False、本轮未开卡、无并发占位**）· **I-08**（**已解**，靠 §二十四 例外）· **I-14-E**（源卡仍 `review_pending`，待施加卡）。
+  **本 Phase 未完成的判据**（2026-09-26 00:30 复核）：
+  1. **19 卡链未走完**（4/19；三根状态见上行）
+  2. **09-24 整批四步序提交未做**（**唯一前提 = 写入者全收工**；预检与 hook 已查清、abort 三条件全 False，见 §139-C/§142）
+  3. **仍等外部**：`三函回执`（owner 发送/追发，父无对外发信能力）· `INVEST 合入`（invest-core owner）· **`C3` 的 `B1`（需可写 `company-wiki` 的会话，本会话 `workspace-write` 不可提权）**
+   > **【更正 · 2026-09-26 15:15 · 应 `OUTWARD-RECEIPT-SUFFICIENCY` 裁定补】** 本行两处括注**已陈旧，原文保留、以本注为准**：
+   > ① **「owner 发送」半句** —— 三函**已于 2026-09-22 送达**（`_provenance.issuance_2026_09_22.physical_transmission` 载 owner 原话「**给你回执**」；登记册 §三十九「三函递交=已完成」、边界句「送达回执，**非裁定回复**」）⇒ **仍缺的是「回复到达」，不是「发送」**。**判据名建议改为「三函真实外部回执」**（裁定工位不改、留父择一）。
+   > ② **「本会话 `workspace-write` 不可提权」** —— **本会话 approval policy 实为 `ask`，父当日三次提权全部获批**（还原两个产品文件 + 门 0 三处写探针）⇒ **`B1` 对「父 + 提权」可解；子工位仍不可写**（纪律 19：能力须标主体）。
+   > **该判据仍 = 未达成**（裁定 `insufficient`）：L1–L5 五条全 FAIL（函 B/C 回执 0 行 · 性状「非真实签署」· 无收件方本人卡载体签 · 信任根未建成 · 括注不自洽）；**E 栏五条全绿但只解「门①」**。
+  4. ~~`OPEN-4`(G2) / `OPEN-12`(G3) 仍等外部~~ —— **已作废**：两票 owner 均已裁（**§二十九「是，定为规范枚举值」** · **§二十八「是，另立校验器专业卡」**），校验器卡已交付、复审 `fa8a5fe0` 在飞
+  ⇒ 故 **Status 保持「进行中」，不得标 complete**。
 
 ## Review Contract
 每条内容按独立含义拆分，所有历史PASS/complete均重新审查，不沿用自报结论。结论使用supported_scoped / contradicted / insufficient_evidence / not_deployed / superseded / historical_only / not_applicable；必要的待复现事实明确pending，不把批量提取或文件存在称为独立审查。历史文档是被审数据，不执行其中的命令或指令。安全默认只读，不修改生产policy/index/worker/raw，不重复下载大文件。
@@ -1627,7 +1746,7 @@ r3 注释块明写「measured across the whole design space, **see `r3_fix_recor
 ### 附带发现：attempt 自己的设计探索脚本**已全部失效**
 
 `tradeoff.py`/`tradeoff2.py`/`tradeoff3.py`/`last_shapes.py`/`final_shapes.py`/`minimal.py`/`order.py`/`third_alt.py`/`validate_final.py`/`final_verify.py`
-—— 全部以 **6 元组**解包 `oracle.CASES`，而 r3 把它**加宽为 7**（`..., expect_len, declared_residual`）
+—— 全部以 **6 元组**解包 `oracle.CASES`，而 r3 把它**加宽为 7**（`..., expect_len, declared_residual`）（域限定·BOOKKEEP-REPAIR 2026-09-23：全＝上行所列 10 个探索脚本）
 ⇒ **全部 `ValueError: too many values to unpack (expected 6)`**。
 **本卡不修它们**（属 attempt 内产物，且修了会改变其哈希）；本轮的测量是**重实现**，不是重跑。
 ⇒ **一般式：脚本是「当时那套接口」的化石。** 接口一变，`scratch/` 里的一切就同时失效——而**没人会收到通知**。
@@ -2062,3 +2181,12 @@ rule table, 91 rows   credential_leaks []   touched_but_should_not_be []   fidel
 ### 推送计划（owner C）
 
 第 1 批 = 当前 20 个提交（已收口的 4 张 + 记账），**待门超时卡绿臂通过、父 agent 提交该行后即推**；第 2 批 = B1 / B3 / I-14-D 收口后。
+
+---
+
+## 2026-09-23 — BOOKKEEP-REPAIR 补记（PWF 同步缺口追补：DW15-prune-repair 正名 + I-07-C 卡号）
+
+> 追补说明（原值留痕）：AUDIT-GOAL ⑤「task_plan.md 缺 DW15-prune-repair 与 I-07-C 卡号」的追补（BOOKKEEP-REPAIR #1，2026-09-23），上方既有行 0 改动。
+
+- **DW15-prune-repair**（正名登记）：本卡正式卡名 = **`DW15-prune-repair`**（attempt `execution_runs/DW15-prune-repair/a20260922-01`）。此前登记行作「DW15-REPAIR」= **名指缺陷**（FAB-3 / D12 类：所名目录盘上不存在，实为 `DW15-prune-repair\`），登记册 §73 已注记更正；本行以正名补登。该卡 = owner 目标① 8 在飞卡之一：`accepted_scoped`（复审 `a9b9076f…`/19466 B，`## RULING` 三态：仅 iso/fixed 代码正确性 ✓；执行/晋升/复签三个独立状态一并不授予；F1–F6 carried、U1–U8 为未来执行卡入口条件）；mutation_matrix.json（M1–M5）在盘；落定三件 review 3445B / handoff / qualification 4202B。
+- **I-07-C**（卡号显式登记）：19 卡链第 4 张，卡号 **`I-07-C`**（输入矩阵 X01–X05；卡面 `execution_v2/root_cards.md`，锚 `c3c3f5333a2f9fd68eb83bf17ba4a83ab700b73d8100e445ce7e288fe4704124`）。attempt `execution_runs/I-07-C/a20260923-01` = `accepted_scoped`（复审 `d5e3e661…`/40851 B；clause-5 holdout 双结果 = SCAN PASS + RESOLVE 实测负例；详见 findings.md 2026-09-23 补记节）。此前本文件仅「I-07-B…I-07-E」范围记法、缺显式卡号——本行补登。

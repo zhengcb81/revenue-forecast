@@ -1,0 +1,149 @@
+{
+  "artifact": "r3-fifth-root-mutations",
+  "purpose": "prove the R3 legs discriminate: each mutation must change an observation (R3 changes no product code, so the harness is the unit under test)",
+  "ran_at_utc": "2026-09-18T18:37:13.940267+00:00",
+  "python": "C:\\Miniconda\\python.exe",
+  "work_root": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\r4-bar-fifth-root-mutations",
+  "cases": [
+    {
+      "id": "M1",
+      "mutation": "fifth-root path moved outside the workdir",
+      "expectation": "the isolation guard refuses (SystemExit)",
+      "observed": {
+        "killed": true,
+        "detail": "refusing to run: root paths outside the isolated workdir: [{'root_id': 'r4_fifth_root', 'path': 'C:\\\\Users\\\\郑曾波\\\\AppData\\\\Local\\\\Temp\\\\roots\\\\fifth_root'}]"
+      },
+      "killed": true
+    },
+    {
+      "id": "M2",
+      "mutation": "the denied root flipped to reusable_for_filing: true",
+      "expectation": "the consumer serves it (reused_exact), so the real deny leg's `missing` is discriminating",
+      "observed": {
+        "statuses": [
+          "reused_exact",
+          "reused_exact"
+        ]
+      },
+      "killed": true,
+      "detail": "statuses=['reused_exact', 'reused_exact']"
+    },
+    {
+      "id": "M3",
+      "mutation": "sidecar without published_at",
+      "expectation": "the consumer no longer answers reused_exact",
+      "observed": {
+        "statuses": [
+          "ambiguous",
+          "ambiguous"
+        ],
+        "reasons": [
+          "matching_sources_have_unknown_published_date",
+          "matching_sources_have_unknown_published_date"
+        ]
+      },
+      "killed": true,
+      "detail": "statuses=['ambiguous', 'ambiguous']"
+    },
+    {
+      "id": "M4",
+      "mutation": "sidecar content_sha256 does not match the file",
+      "expectation": "the consumer no longer answers reused_exact (or the scan refuses the candidate)",
+      "observed": {
+        "statuses": [
+          "missing",
+          "missing"
+        ],
+        "location_roles": [
+          {
+            "relative_path": "acme/2024-annual.pdf",
+            "role": "indexed_only",
+            "location_status": "active"
+          },
+          {
+            "relative_path": "acme/2025-annual.pdf",
+            "role": "indexed_only",
+            "location_status": "active"
+          }
+        ]
+      },
+      "killed": true,
+      "detail": "statuses=['missing', 'missing'] documents=2"
+    },
+    {
+      "id": "M5",
+      "mutation": "no runtime_policy.json (v1 legacy walk)",
+      "expectation": "the adapter path is gone: the sidecars are indexed as documents, so the run's document set differs",
+      "observed": {
+        "documents": [
+          {
+            "title": "2024-annual",
+            "document_kind": "annual_report",
+            "source_status": "active"
+          },
+          {
+            "title": "2024-annual.pdf.source",
+            "document_kind": "broker_research",
+            "source_status": "active"
+          },
+          {
+            "title": "2025-annual",
+            "document_kind": "annual_report",
+            "source_status": "active"
+          },
+          {
+            "title": "2025-annual.pdf.source",
+            "document_kind": "broker_research",
+            "source_status": "active"
+          }
+        ],
+        "counts": {
+          "roots": 1,
+          "documents": 4,
+          "sources": 4,
+          "locations": 4,
+          "scan_runs": 1
+        }
+      },
+      "killed": true,
+      "detail": "titles=['2024-annual', '2024-annual.pdf.source', '2025-annual', '2025-annual.pdf.source']"
+    }
+  ],
+  "all_killed": true,
+  "prod_guard": {
+    "production_catalog": {
+      "catalog.sqlite3": {
+        "exists": true,
+        "size": 49677344768,
+        "mtime_ns": 1788902601072747300
+      },
+      "catalog.sqlite3-wal": {
+        "exists": true,
+        "size": 0,
+        "mtime_ns": 1789682726592111000
+      },
+      "catalog.sqlite3-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1789756570048719900
+      }
+    },
+    "repos": {
+      "company-wiki": {
+        "head": "8665c8c47c020cde7dcf683ee8e6389ead77f282",
+        "porcelain": "",
+        "clean": true
+      },
+      "revenue-forecast": {
+        "head": "801d5de9df375eed257e1993203bdb686f8c05b1",
+        "porcelain": " M CHANGELOG.md\n M SKILL.md\n M e2e/expected/expected-0e1cc8d4c73d.json\n M references/backtesting.md\n M references/growth-driver-tree.md\n M references/input-schema.md\n M references/management-targets.md\n M references/model-library.md\n M references/research-coverage.md\n M references/resource-business-guidance.md\n M scripts/analysis/confidence.py\n M scripts/analysis/sensitivity.py\n M scripts/contracts/constants.py\n M scripts/contracts/document.py\n M scripts/forecast/calc.py\n M scripts/forecast/segments.py\n M scripts/generate_input_template.py\n M scripts/model_registry.py\n M scripts/research/targets.py\n M scripts/revenue_backtest.py\n M scripts/revenue_core.py\n M scripts/revenue_report.py\n M scripts/schema_compatibility.py\n M tests/golden_behavior_hashes.json\n M tests/test_backtest.py\n M tests/test_data_contract.py\n M tests/test_generate_input_template.py\n M tests/test_golden_behavior_lock.py\n M tests/test_industry_end_to_end.py\n M tests/test_models.py\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-fifth-root-isolated.json\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-fifth-root-isolated.md\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/b-ar-fifth-root-mutations.json\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/r3-ci-step1-unit.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/r3-ci-step2-contract.txt\n?? assurance/runs/2026-09-11_r4-phase-b/evidence/run_bar_fifth_root_isolated.py\n?? assurance/runs/2026-09-11_r4-phase-b/owner-scope-decisions-2026-09-18.md\n?? assurance/runs/2026-09-11_r4-phase-b/reviews/B.VR-r3.json\n?? docs/buy_side_model_audit_2026-09-18.md\n?? docs/buy_side_review_2026-09-18.md\n?? docs/buy_side_validation_2026-09-18.json\n?? references/buy-side-methodology.md\n?? references/extended-models.md\n?? references/industry-lifecycle-routing.md\n?? scripts/model_extensions.py\n?? tests/test_buy_side_accuracy.py\n?? tests/test_independent_targets.py\n?? tests/test_lifecycle_forecasts.py\n?? tests/test_model_economic_guardrails.py\n?? tests/test_model_extensions.py\n?? tests/test_model_integration_bounds.py\n",
+        "clean": false
+      },
+      "filing-fetch": {
+        "head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+        "porcelain": "",
+        "clean": true
+      }
+    }
+  }
+}

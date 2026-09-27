@@ -1,0 +1,81 @@
+{
+  "schema": "i13a_verification/1",
+  "card": "I-13-A",
+  "attempt": "execution_runs/I-13-A/a20260926-01",
+  "role": "implementer_i13a",
+  "purpose": "红绿双向变异（≥3，实做 6）+ 上游一致性核（13 件 sha 全量复算）。变异在 _mut/ 副本上执行，原件字节不动（sha 前后比对）。校验器=_verify_i13a.py（只读）。",
+  "exit_code_legend": {
+    "0": "ALL_INVARIANTS_OK（命令正常结束且业务判定通过）",
+    "1": "harness 失败（文件缺失/JSON 不可解析等运行器自身错误）",
+    "2": "无裁决（本校验器不产生 2）",
+    "3": "不变量违例（具名 J1..J5；红臂期望值）",
+    "note": "跨批聚合先读本 legend，不假定各卡码表同名同义（I-07-E 红=3、I-11-C 红=1）。"
+  },
+  "verifier": {
+    "script": "execution_runs/I-13-A/a20260926-01/_verify_i13a.py",
+    "invocations": "python _verify_i13a.py --root <attempt|_mut/Mx> --plan <plan-root>",
+    "invariants": {
+      "J1_release_authority_lock": "handoff: params_released=false ∧ implementer_signed=false ∧ releases_nothing=true ∧ status=review_pending ∧ gate0_passed=true ∧ git_diff_non_planning=0 ∧ open2_ban_observed=true ∧ role=implementer_i13a ∧ authorized_by/gate0_raw_output/written_files 齐 ∧ boundary（no_auto_actions/no_falsifier_triggered/five_plan_files_untouched=true；writes_outside_planning=0；git_writes=0；git_status_run=false；network_used=false）",
+      "J2_scorecard_rule": "8 维齐、分值∈{0,1,2}、每维有 path:line 引用；total=sum(scores) 且 total_is_display_only=true；7 条 hard_blocks disposition 合法，established 必有 reproducible_sample+impact+required_fix，not_established 必有 basis+counter_evidence；classification 必须等于由（established→blocked；else 有0→blocked；else 有1→research_draft_needs_review；else buy_side_review_ready）机械推出；established_hard_blocks 清单与实际一致；ready 标签不得带阻断或 0 分",
+      "J3_open2_ban": "全部产物无 consumed_for_forecast；124,248.63/124248.63 只以登记语境出现（registered_not_consumed|只登记|禁消费|登记|存档），且不得以 JSON 数值形态出现；open2_ban_observed=true",
+      "J4_upstream_sha": "verification.upstream_inputs 13 件逐件按 sha256+bytes 复算比对（含封盘 f2178768… 与 store b2063ac8…）",
+      "J5_evidence_completeness": "artifact_references 三公司字段表+refs 齐、read-scope 声明在位；scorecard stop_conditions 两支齐且明确写明『blocked 不以 accuracy=unproven 为由』；rubric_source 在位"
+    }
+  },
+  "upstream_inputs": [
+    {"path": "execution_v2/card_I-13-A.md", "bytes": 1383, "sha256": "daaf300ebd3762e875e3c8b413de9e88d08110fe23709d5362030b544b14599b"},
+    {"path": "OWNER_DECISIONS.md", "bytes": 109029, "sha256": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d"},
+    {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "bytes": 26132, "sha256": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb"},
+    {"path": "execution_runs/I-07-E/a20260926-01/handoff.json", "bytes": 14267, "sha256": "8cfce3671e29d69eac5d49af114d522d5ba4ae3681b3e70c2f688b45786ecc04"},
+    {"path": "execution_runs/I-07-E/a20260926-01/verification.json", "bytes": 10089, "sha256": "237bc2d394ec5726c05adc00f6b7de2b88e302aafe658300f64fbac5dd25671c"},
+    {"path": "execution_runs/I-07-E/a20260926-01/reviewer_report.md", "bytes": 9555, "sha256": "6b48a2f5e2085f70c29315b4da1537ba80006833ef721468d9c11a87d714cca2"},
+    {"path": "execution_runs/I-11-C/a20260926-01/parameter_mapping.json", "bytes": 54875, "sha256": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c"},
+    {"path": "execution_runs/I-11-C/a20260926-01/mapping_verification.json", "bytes": 9193, "sha256": "cecdcb33281727f7c450d7c121d420dd743edbe53c88dbff25491cf8e4cb633f"},
+    {"path": "execution_runs/I-11-C/a20260926-01/handoff.json", "bytes": 20258, "sha256": "da25f736cfde6f97047a691ddff28f1b079c6c29d1cfeac03729ce4c32b9c453"},
+    {"path": "execution_runs/I-11-C/a20260926-01/oracle.md", "bytes": 16336, "sha256": "437a7758da4c038762ff72ca95b9cca7492e41fd87b8cd6eca70b397680a01ec"},
+    {"path": "execution_runs/I-11-B/a20260926-01/expert_assumptions.json", "bytes": 8580, "sha256": "9f8b844e342ec17e731cbe4554388005f5070e0c586de329782df86ee3abd79f"},
+    {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "bytes": 51697, "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "note": "封盘，只读零字节"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json", "bytes": 61231, "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "note": "store，只读零改动"}
+  ],
+  "upstream_consistency": {
+    "recomputed": "13/13（本站 Get-FileHash SHA256 逐件复算 == 上表记录）",
+    "cross_card_agreement": [
+      "I-07-E verification.upstream_inputs 所记 summary/verification/reviewer_report/PM/MV/H11C/oracle/EAF/sha256 与本站复算逐件一致 ✅",
+      "I-11-C handoff.written_files_hashes 与 input_hashes 所记 PM/MV/oracle/OWNER_DECISIONS sha 与本站复算逐件一致 ✅",
+      "两份上游 handoff status=accepted_scoped（I-07-E status_authority.three_way_match=true；I-11-C three_way_match=true）✅"
+    ],
+    "structure_probe": "PM: mapping_rows=18；value_states=mapped_not_released:13 | not_executable_no_propagation:1 | unmapped_declined_no_number:4；params_released=false；rows_claiming_released=0；new_value 全表不含 124,248.63",
+    "registered_differences": [
+      {"id": "u-N4", "registration": "unverified", "desc": "store 内 US-MSFT-10K-FY2026.doc_sha256 = 63 位 vs I-07-B 实测 64 位（转录层缺陷）", "disposition": "只登记不更正（store 只读）；计入 B01 未达 2 的依据之一"},
+      {"id": "u-N5", "registration": "unverified", "desc": "unverified-N1 继承：store H-01 original_value=349,079,082,852 与矿产品分部语义张力", "disposition": "登记交独立复审（AR p327/p328 回源）"},
+      {"id": "u-N6", "registration": "unverified", "desc": "unverified-N3 继承：EA-4 注记区间 [320,763, 348,432] 与自身带换算不符", "disposition": "登记交独立复审"}
+    ]
+  },
+  "mutation_results": {
+    "status": "executed",
+    "note": "变异在 _mut/ 副本上执行，原件字节不动（sha_before_mutations == sha_after_mutations，见 originals_untouched）；校验器=_verify_i13a.py；原始输出逐字存 _mut/Mx/verifier_output.txt。定稿时本文件仅补记 observed/rc（记账性编辑，非变异）。",
+    "runs": [
+      {"id": "GREEN", "target": "原件五件（oracle/evidence×3/verification/handoff）+ 上游 13 件", "rc": "PENDING", "expected": "rc=0 ALL_INVARIANTS_OK", "observed": "PENDING", "pass": "PENDING"},
+      {"id": "M1", "mutation": "buy_side_scorecard.classification → \"buy_side_review_ready\"（模拟绕过硬阻断给 ready 标签）", "copy": "_mut/M1", "rc": "PENDING", "expected": "rc=3 违例含 J2", "observed": "PENDING", "pass": "PENDING"},
+      {"id": "M2", "mutation": "blocking_issues.HB3.disposition established→not_established（模拟以文字解释豁免硬阻断），classification 保持 blocked", "copy": "_mut/M2", "rc": "PENDING", "expected": "rc=3 违例含 J2", "observed": "PENDING", "pass": "PENDING"},
+      {"id": "M3", "mutation": "handoff.params_released false→true（模拟放行参数）", "copy": "_mut/M3", "rc": "PENDING", "expected": "rc=3 违例含 J1", "observed": "PENDING", "pass": "PENDING"},
+      {"id": "M4", "mutation": "verification.upstream_inputs[card_I-13-A.md].sha256 改 1 个 hex 位（模拟上游指纹不符）", "copy": "_mut/M4", "rc": "PENDING", "expected": "rc=3 违例含 J4", "observed": "PENDING", "pass": "PENDING"},
+      {"id": "M5", "mutation": "handoff 内塞 consumed_for_forecast（模拟消费 OPEN-2 禁消费值）", "copy": "_mut/M5", "rc": "PENDING", "expected": "rc=3 违例含 J3", "observed": "PENDING", "pass": "PENDING"},
+      {"id": "M6", "mutation": "artifact_references.companies[小米].refs 清空（模拟证据引用缺失）", "copy": "_mut/M6", "rc": "PENDING", "expected": "rc=3 违例含 J5", "observed": "PENDING", "pass": "PENDING"},
+      {"id": "GREEN_FINAL", "target": "定稿后原件再跑一次", "rc": "PENDING", "expected": "rc=0", "observed": "PENDING", "pass": "PENDING"}
+    ],
+    "originals_untouched": {
+      "sha_before_mutations": "PENDING",
+      "sha_after_mutations": "PENDING",
+      "unchanged_by_mutations": "PENDING",
+      "proof": "各臂只读取原件后在 _mut/ 副本上改写；原件 sha 在全部红臂前后比对"
+    },
+    "verdict": "PENDING"
+  },
+  "reviewer_hooks": [
+    "重跑：python _verify_i13a.py --root <attempt> --plan <plan-root> → 期望 rc=0",
+    "保留红臂案例：_mut/M2（文字豁免硬阻断）与 _mut/M5（OPEN-2 消费）必须仍 rc=3",
+    "复算至少一件上游 sha 与本文件 upstream_inputs 比对；再复核 HB3 的 154 千克/269t 证据行",
+    "分值与标签不解释为投资建议正确率（卡文 L22）"
+  ]
+}

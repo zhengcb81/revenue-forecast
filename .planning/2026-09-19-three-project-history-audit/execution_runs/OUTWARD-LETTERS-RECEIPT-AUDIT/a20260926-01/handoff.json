@@ -1,0 +1,111 @@
+{
+  "card": "OUTWARD-LETTERS-RECEIPT-AUDIT/a20260926-01",
+  "role": "receipt_auditor",
+  "status": "completed",
+  "measured_at": "2026-09-26",
+
+  "authorized_by": {
+    "RESPONSES_md_L3_verbatim": "本登记为 owner 终确（原话「全部接受」）下的 role-play 模拟裁定转录——**非外部方真实签署、未在任何函上签字**；收函方若出正式回执，以其本人卡载体签收为准，本登记仅系本计划内部归档",
+    "RESPONSES_md_L5_to_L7_verbatim": "函 A / T2-1(OPEN-4) / wiki 来源审核 owner（模拟·owner 终确）/ 落点 execution_runs/T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md / sha256 37413f7812bbe4aa21948f0f474a2ceac2ad0f778f1a3c5eb4f6b3af7e1d98bb / 2026-09-22 / 结论 CONDITIONAL（C1–C6） || 函 A / T2-3(OPEN-5) / RF 消费 owner（模拟·owner 终确）/ 落点 execution_runs/T2-SIM-OPEN5-RF/a20260922-01/ruling.md / sha256 74f5c83598355bd43627fbf475260babf2da65b869c02196d889d8b11772b234 / 2026-09-22 / 结论 CONDITIONAL（C1–C8+边界补充记 7 条） || 函 A / T2-2(OPEN-6) / 安全 reviewer（模拟·owner 终确）/ 落点 execution_runs/T2-SIM-OPEN6-SEC/a20260922-01/ruling.md / sha256 8aabac0908b407b8af5108c00b4a26e11476d889b593ade306d1eee519c368d1 / 2026-09-22 / 结论 CONDITIONAL（C1–C8）",
+    "RESPONSES_md_L17_freeze_verbatim": "冻结令（自本行生效）：三份 T2-SIM ruling.md 自即日起冻结（`T2-SIM-OPEN4-WIKI/T2-SIM-OPEN5-RF/T2-SIM-OPEN6-SEC` 各 a20260922-01/ruling.md），不再接受任何追加/改写；后续解析态另立文件。",
+    "task_plan_L73_verbatim": "四封函的共同纪律（已逐条写入正文）：不得代签；不得以「按最佳实践」代替决定；每项须给选择·理由·反例·兼容影响·恢复规则·被拒绝的替代方案；不得编造证据（缺样本则维持 `blocked`、不造绿色样例）；裁决前不得把具体秒数/字节数写成规范值（函 B 对 `W`/`T`/`L` 刻意留空）；回执一律落各卡自己的载体，不在函上签字。自证：西里尔/异体字符扫描 0 命中；四文件 UTF-8 全部可解析；`_provenance.json`（3775 B）JSON 合法。本动作不产生任何裁定、签名或 `status` 变化。",
+    "task_plan_L301_verbatim": "仍等外部：`三函回执`（owner 发送/追发，父无对外发信能力）· `INVEST 合入`（invest-core owner）· **`C3` 的 `B1`（需可写 `company-wiki` 的会话，本会话 `workspace-write` 不可提权）**",
+    "secondary": [
+      "REMEDIATION_REGISTER.md §三十五（L889-911，2026-09-22）：三函更新落定 + 父复算 ALL_PREFIX_PROOFS_OK + 三函新哈希已报 owner",
+      "OWNER_DECISIONS.md §十八 行「C = 更新函件」（L427）与 §十九「全部接受」（L433-440，记录性质=非外部方真实签署、未在任何函上签字）"
+    ]
+  },
+
+  "consistency_status": "inconsistent",
+  "consistency_differences": [
+    {"id": "D1", "object": "_provenance.json → updates_2026_09_22.readme.after", "registered": "3521 B / bfc03849863cae6e17bdc0e850706ced5c04c3822bd1c6be2dd72b78a3d66f45", "measured": "3716 B / 1d4b08c3d3674a11fc49d16628818d3bcba58da4c1ca47da6de1ada52b6f452e", "delta_bytes": 195, "erratum_covering": false, "severity": "blocked-trigger-#5"},
+    {"id": "D2", "object": "_provenance.json → RESPONSES.md", "registered": "无任何 bytes/sha256 条目", "measured": "2302 B / 1cfeef0fb438fae8d3d63d89a2626a235e3c7466b8142e8f2d99070c2e538e39 (mtime 2026-09-23 21:36:18)", "delta": "整份未覆盖", "severity": "coverage-gap"},
+    {"id": "D3", "object": "RESPONSES.md L15 勘误记述 vs OPEN-6 活文件", "registered": "活文件 = 注册后补「C-续」一节", "measured": "两处插入：C-续 L259-264（1727 B）+ D-续 4 L308-312（1037 B），共 +12 行 / +2764 B", "sha_and_bytes_claim_match": true, "severity": "记述不完整"},
+    {"id": "D4", "object": "函件 mtime vs 回执 mtime", "measured": "三函+README mtime 2026-09-22 22:24:40 晚于 OPEN-4(22:02:37)、OPEN-5(22:03:33) 与转录件(22:21:40)", "closure": "前缀证明三条复算 OK + OPEN-4/OPEN-6 回执内引用签发 sha cd88bd4c…/11546 B = 现行字节 ⇒ 判回执未过期", "severity": "时序异常（已闭合）"},
+    {"id": "D5", "object": "_provenance.created_at_utc = '2026-09-20T18:1x:00Z'", "measured": "分钟位占位 x，不可解析", "severity": "时间戳质量"},
+    {"id": "D6", "object": "RESPONSES.md 覆盖面 vs README L31-33 / task_plan L301", "measured": "三行登记全部属函 A；函 B（D1/D2/D3/D5/D6/D7/I09A-1..6）与函 C（GAP-2/GAP-3）零回执；task_plan L301 仍记「仍等外部：三函回执」", "severity": "回执缺口（外部）"},
+    {"id": "D7", "object": "OWNER_DECISIONS §十九-4 生效链 vs I-06-A/a20260919-01/handoff.json", "measured": "仍 status=blocked、still_awaiting_other_parties 含 OPEN-4/5/6、blocked_by[0] 仍为 UNSIGNED；mtime 2026-09-20 17:10:56（转录件 2026-09-22 22:21:40 已在，handoff 未随之更新）", "severity": "登记已做但解除动作未落地（本工位不解除）"}
+  ],
+  "blocked_triggers_hit": ["#5（_provenance 记录指纹与实测不符且无勘误覆盖）"],
+
+  "gates_passed": 4,
+  "gates_total": 7,
+  "gates_detail": [
+    {"gate": "J1 sha 三方一致", "passed": true},
+    {"gate": "J2 函件版本时序", "passed": true},
+    {"gate": "J3 请求项↔回应", "passed": true},
+    {"gate": "J4 条件兑现", "passed": false, "detail": "13/29 已兑现（部分 6、未兑现 10）"},
+    {"gate": "J5 _provenance 指纹", "passed": false, "detail": "RESPONSES.md 未覆盖；README updates.after 指纹不符无勘误"},
+    {"gate": "J6 冻结令遵守", "passed": true},
+    {"gate": "J7 登记性质声明完整性", "passed": false, "detail": "要素①缺 5 文件；要素② 10/10"}
+  ],
+
+  "conditions_unfulfilled": [
+    {"id": "O4-C1", "condition": "载体唯一性（OPEN-4）", "state": "partial", "missing": "导出 JSON non-authoritative 副本标注（产品字节 0 命中）"},
+    {"id": "O4-C4", "condition": "身份绑定 + 单一信任根（OPEN-4）", "state": "unfulfilled", "missing": "函 B T2-9/OPEN-D1 真实回执 + 信任根文件实测存在；在此之前回执不得标称 signed（ruling L102）"},
+    {"id": "O4-C5", "condition": "失效语义落地 + 两条新正例（OPEN-4）", "state": "partial", "missing": "①policy 仅版本号变⇒仍 hit；②role_set/请求身份变⇒原回执仍 hit 的两条正例测试"},
+    {"id": "O4-C6", "condition": "覆盖留痕（OPEN-4）", "state": "partial", "missing": "被覆盖旧收据 sha 的显式并列留档字段"},
+    {"id": "O5-C2", "condition": "恢复不绕门（OPEN-5）", "state": "unfulfilled", "missing": "resume 接口本体（RF scripts 'resume' 0 命中）"},
+    {"id": "O5-C3", "condition": "输入绑定（OPEN-5）", "state": "unfulfilled", "missing": "resume 接口 + 正反两例"},
+    {"id": "O5-C4", "condition": "同库同迁移 + 生命周期（OPEN-5）", "state": "partial", "missing": "「prune 后非 terminal demand 行仍在」的测试载体"},
+    {"id": "O5-C5", "condition": "权限=OPEN-3（OPEN-5）", "state": "partial", "missing": "resume 面三例（无接口）"},
+    {"id": "O5-C6", "condition": "缺失语义与函 C 一致（OPEN-5）", "state": "unfulfilled", "missing": "函 C GAP-2 的 RF consumer_analysis owner 真实回执"},
+    {"id": "O5-C7", "condition": "输出不越界（OPEN-5）", "state": "unfulfilled", "missing": "resume 接口 + 端到端产物清单 + content_sha256_actual==declared 断言"},
+    {"id": "O6-C1", "condition": "事实/处置分离（OPEN-6）", "state": "unfulfilled", "missing": "scan_text 仍返回 status=detected_and_ignored（prompt_injection_guard.py L177-178）"},
+    {"id": "O6-C3", "condition": "身份落地前零行（OPEN-6）", "state": "unfulfilled", "missing": "产品库/数据面行计数读数（本工位不可得 → fail-closed）"},
+    {"id": "O6-C4", "condition": "下游可见（OPEN-6）", "state": "unfulfilled", "missing": "I-05-B 消费面与 I-06-B 恢复面负例测试（接口未定形）"},
+    {"id": "O6-C5", "condition": "无旁路（OPEN-6）", "state": "partial", "missing": "「设任意环境开关后行为逐字节不变」负例测试载体"},
+    {"id": "B4", "condition": "边界补充记 4：派生件负例探针", "state": "unfulfilled", "missing": "转码/拼接字节流投喂 resume/消费面的负例探针"},
+    {"id": "B7", "condition": "边界补充记 7：补产指令携带命中快照", "state": "unfulfilled", "missing": "resume 接口本体"}
+  ],
+  "conditions_summary": {"total": 29, "fulfilled": 13, "partial": 6, "unfulfilled": 10, "fulfilled_rate": "13/29 = 44.8%", "fulfilled_plus_partial_rate": "19/29 = 65.5%"},
+
+  "requests_summary": {"letter_A_requests": 20, "answered": 20, "missing": 0},
+  "seven_disciplines": {"total": 7, "satisfied": 6, "partial": 1, "unsatisfied": 0, "partial_detail": "六要素在 OPEN-6 §4.4 附裁 4a、4c 未逐字列「恢复规则」"},
+  "nature_declaration": {"element_1_non_external_signature": "5/10 文件缺（函 A/B/C、README.md、_provenance.json）", "element_2_no_signing_on_letters": "10/10"},
+
+  "signed_by_this_station": false,
+  "releases_nothing": true,
+  "releases_nothing_detail": "不产生 ACCEPT；不解除 I-06-A（其 handoff.json 仍 status=blocked 且未改）；不改任何函件/回执/ruling/转录件；不代任何外部方签收；不改计划文件；无 git 写；无网络",
+
+  "written_files": [
+    "execution_runs/OUTWARD-LETTERS-RECEIPT-AUDIT/a20260926-01/oracle.md",
+    "execution_runs/OUTWARD-LETTERS-RECEIPT-AUDIT/a20260926-01/receipt_consistency.json",
+    "execution_runs/OUTWARD-LETTERS-RECEIPT-AUDIT/a20260926-01/audit_report.md",
+    "execution_runs/OUTWARD-LETTERS-RECEIPT-AUDIT/a20260926-01/handoff.json"
+  ],
+  "written_files_all_under": ".planning/2026-09-19-three-project-history-audit/execution_runs/OUTWARD-LETTERS-RECEIPT-AUDIT/a20260926-01/",
+  "git_diff_non_planning": 0,
+  "git_diff_total_entries": 60,
+  "git_status_used": false,
+  "network_used": false,
+
+  "read_only_targets_confirmed_untouched": [
+    {"path": "outward_requests/A_DW06_OPEN-4-5-6.md", "bytes": 11546, "sha16": "cd88bd4cece0271d", "mtime": "2026-09-22 22:24:40"},
+    {"path": "outward_requests/B_signature_trust_domain.md", "bytes": 15946, "sha16": "f494ac3db7ce2ff2f", "mtime": "2026-09-22 22:24:40"},
+    {"path": "outward_requests/C_I-05-C_gap2_gap3.md", "bytes": 11673, "sha16": "73fb856e0b00d6a4", "mtime": "2026-09-22 22:24:40"},
+    {"path": "outward_requests/RESPONSES.md", "bytes": 2302, "sha16": "1cfeef0fb438fae8", "mtime": "2026-09-23 21:36:18"},
+    {"path": "outward_requests/README.md", "bytes": 3716, "sha16": "1d4b08c3d3674a11", "mtime": "2026-09-22 22:24:40"},
+    {"path": "outward_requests/_provenance.json", "bytes": 9639, "sha16": "25cd43cc38488e00", "mtime": "2026-09-23 23:02:26"},
+    {"path": "execution_runs/T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md", "bytes": 42062, "sha16": "37413f7812bbe4aa", "mtime": "2026-09-22 22:02:37"},
+    {"path": "execution_runs/T2-SIM-OPEN5-RF/a20260922-01/ruling.md", "bytes": 46901, "sha16": "74f5c83598355bd4", "mtime": "2026-09-22 22:03:33"},
+    {"path": "execution_runs/T2-SIM-OPEN6-SEC/a20260922-01/ruling.md", "bytes": 52560, "sha16": "5cb476767a934885", "mtime": "2026-09-22 23:19:28"},
+    {"path": "execution_runs/I-06-B/a20260919-01/rulings_transcribed_2026-09-22.md", "bytes": 139717, "sha16": "5ef8d863e3656962", "mtime": "2026-09-22 22:21:40"}
+  ],
+
+  "key_measured_shas": {
+    "letters_issued": {"A": "cd88bd4cece0271d", "B": "f494ac3db7ce2ff2f", "C": "73fb856e0b00d6a4"},
+    "transcript_segments": {"OPEN4": "37413f7812bbe4aa", "OPEN5": "74f5c83598355bd4", "OPEN6": "8aabac0908b407b8"},
+    "carriers": {
+      "company-wiki/src/company_wiki/source_catalog/prompt_injection.py": "88154de4ab763060",
+      "company-wiki/src/company_wiki/source_catalog/prompt_injection_guard.py": "d71254782c10cd6d",
+      "company-wiki/tests/unit/test_prompt_injection_guard.py": "d3bde1a3d5ec2495",
+      "execution_runs/TTL-30D-POLICY/a20260922-01/handoff.json": "8d0461cfb5c241fa",
+      "execution_runs/FIX-W06-GAPS/a20260922-01/handoff.json": "096b4940aae4042d",
+      "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/p7_key_c8c9c10_GREEN.txt": "4eaae03b5e2fa2a6",
+      "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/GREEN_C7_state_domain.txt": "3198f7b53cf41e30",
+      "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/MUTATION_C7.txt": "5f6e7481e4540868",
+      "execution_runs/FIX-W06-GAPS/a20260922-01/evidence/MUTATION_P4a.txt": "c93e0599fd5614ee"
+    }
+  }
+}

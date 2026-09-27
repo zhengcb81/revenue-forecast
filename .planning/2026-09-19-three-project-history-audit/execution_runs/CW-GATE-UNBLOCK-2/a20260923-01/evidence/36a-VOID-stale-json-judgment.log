@@ -1,0 +1,79 @@
+﻿CW-BASETEMP-DECISION {"event": "decision", "relocated": false, "reason": "no-explicit-basetemp", "detail": "pytest derives its default basetemp from %TEMP%; short by construction"}
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.5.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: C:\Users\֣����\AppData\Local\Temp\cwgu2\repo
+configfile: pytest.ini
+plugins: anyio-4.13.0, Faker-40.19.1, asyncio-1.3.0, base-url-2.1.0, benchmark-5.2.3, cov-7.0.0, html-4.1.1, metadata-3.1.1, mock-3.15.1, playwright-0.7.2, timeout-2.4.0, xdist-3.8.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests\contract\test_fc1204_coverage_ratchet.py FF                        [100%]
+
+================================== FAILURES ===================================
+_______________________ test_tier1_critical_chain_at_95 _______________________
+
+    def test_tier1_critical_chain_at_95() -> None:
+>       _check(TIER1, _load(), required=True)
+
+tests\contract\test_fc1204_coverage_ratchet.py:167: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+table = {'policy.py': 95, 'url_binding.py': 95, 'admission.py': 95, 'scheduler_policy.py': 95, ...}
+measured = {'__init__.py': 100.0, 'acquisition.py': 24.3, 'acquisition_config.py': 27.6, 'acquisition_journal.py': 38.5, ...}
+required = True
+
+    def _check(table: dict[str, float], measured: dict[str, float], required: bool) -> None:
+        problems: list[str] = []
+        for rel, floor in sorted(table.items()):
+            actual = measured.get(rel)
+            if actual is None:
+                problems.append(f"module not measured: {rel}")
+                continue
+            # 0.5pt tolerance: the term report rounds to integers while
+            # coverage.json carries decimals (run-to-run variance ~0.3pt).
+            if actual < floor - 0.5:
+                problems.append(
+                    f"{rel} branch coverage {actual}% < {floor}% "
+                    f"({'required' if required else 'frozen'})"
+                )
+>       assert not problems, "; ".join(problems)
+E       AssertionError: module not measured: adapters/sidecar.py; admission.py branch coverage 25.1% < 95% (required); artifact_handle.py branch coverage 27.2% < 95% (required); canary_registry.py branch coverage 0.0% < 95% (required); dropbox_governance.py branch coverage 0.0% < 95% (required); flags.py branch coverage 15.2% < 95% (required); gap_plan.py branch coverage 26.6% < 95% (required); migration.py branch coverage 0.0% < 95% (required); policy.py branch coverage 28.6% < 95% (required); producer_events.py branch coverage 0.0% < 95% (required); restore.py branch coverage 0.0% < 95% (required); scheduler_policy.py branch coverage 53.6% < 95% (required); service.py branch coverage 14.8% < 95% (required); source_bundle.py branch coverage 0.0% < 95% (required); url_binding.py branch coverage 0.0% < 95% (required); visibility_bridge.py branch coverage 0.0% < 95% (required)
+E       assert not ['module not measured: adapters/sidecar.py', 'admission.py branch coverage 25.1% < 95% (required)', 'artifact_handle.p... 'dropbox_governance.py branch coverage 0.0% < 95% (required)', 'flags.py branch coverage 15.2% < 95% (required)', ...]
+
+tests\contract\test_fc1204_coverage_ratchet.py:163: AssertionError
+____________________ test_tier2_and_frozen_do_not_regress _____________________
+
+    def test_tier2_and_frozen_do_not_regress() -> None:
+>       _check({**TIER2, **FROZEN}, _load(), required=False)
+
+tests\contract\test_fc1204_coverage_ratchet.py:171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+table = {'acquisition_journal.py': 85, 'close_gap.py': 85, 'runtime_policy.py': 84, 'resolver.py': 86, ...}
+measured = {'__init__.py': 100.0, 'acquisition.py': 24.3, 'acquisition_config.py': 27.6, 'acquisition_journal.py': 38.5, ...}
+required = False
+
+    def _check(table: dict[str, float], measured: dict[str, float], required: bool) -> None:
+        problems: list[str] = []
+        for rel, floor in sorted(table.items()):
+            actual = measured.get(rel)
+            if actual is None:
+                problems.append(f"module not measured: {rel}")
+                continue
+            # 0.5pt tolerance: the term report rounds to integers while
+            # coverage.json carries decimals (run-to-run variance ~0.3pt).
+            if actual < floor - 0.5:
+                problems.append(
+                    f"{rel} branch coverage {actual}% < {floor}% "
+                    f"({'required' if required else 'frozen'})"
+                )
+>       assert not problems, "; ".join(problems)
+E       AssertionError: acquisition.py branch coverage 24.3% < 78% (frozen); acquisition_config.py branch coverage 27.6% < 73% (frozen); acquisition_journal.py branch coverage 38.5% < 85% (frozen); acquisition_service.py branch coverage 30.2% < 82% (frozen); activation.py branch coverage 0.0% < 82% (frozen); adapter_dispatch.py branch coverage 0.0% < 89% (frozen); adapter_process.py branch coverage 14.5% < 70% (frozen); adapters/common.py branch coverage 37.1% < 86% (frozen); module not measured: adapters/company_raw.py; module not measured: adapters/conformance.py; adapters/dayu.py branch coverage 7.2% < 83% (frozen); adapters/interface.py branch coverage 37.0% < 100% (frozen); module not measured: adapters/parity.py; adapters/registry.py branch coverage 71.4% < 100% (frozen); architecture_gate.py branch coverage 0.0% < 75% (frozen); archive_retired_evidence.py branch coverage 85.4% < 95% (frozen); artifact_backfill.py branch coverage 0.0% < 79% (frozen); artifact_dag.py branch coverage 0.0% < 44% (frozen); assertion_service.py branch coverage 0.0% < 86% (frozen); authorization.py branch coverage 24.1% < 89% (frozen); backfill_v2.py branch coverage 0.0% < 85% (frozen); canonical_writer.py branch coverage 21.7% < 72% (frozen); catalog_size_report.py branch coverage 0.0% < 92% (frozen); cli.py branch coverage 0.0% < 70% (frozen); close_gap.py branch coverage 0.0% < 85% (frozen); code_identity.py branch coverage 0.0% < 100% (frozen); config.py branch coverage 11.4% < 81% (frozen); control.py branch coverage 0.0% < 73% (frozen); dayu_cli_adapter.py branch coverage 11.0% < 71% (frozen); duplicate_cleanup.py branch coverage 11.6% < 74% (frozen); evidence_query.py branch coverage 32.0% < 87% (frozen); extraction_quality.py branch coverage 21.3% < 77% (frozen); focus_cleanup.py branch coverage 8.0% < 86% (frozen); identity_cli.py branch coverage 0.0% < 82% (frozen); legacy_close_gate.py branch coverage 0.0% < 85% (frozen); llm_failure_policy.py branch coverage 41.7% < 100% (frozen); llm_summarizer.py branch coverage 15.8% < 82% (frozen); lock.py branch coverage 43.7% < 61% (frozen); migration_ledger.py branch coverage 0.0% < 86% (frozen); models.py branch coverage 65.9% < 85% (frozen); normalized_meta.py branch coverage 0.0% < 65% (frozen); normalizer.py branch coverage 30.4% < 53% (frozen); observability.py branch coverage 0.0% < 91% (frozen); policy_2x.py branch coverage 0.0% < 80% (frozen); portfolio_promoter.py branch coverage 0.0% < 87% (frozen); prompt_injection.py branch coverage 11.5% < 73% (frozen); prune_retired_evidence.py branch coverage 0.0% < 87% (frozen); reconcile_retire_state.py branch coverage 0.0% < 92% (frozen); reconciliation.py branch coverage 0.0% < 91% (frozen); remediation.py branch coverage 0.0% < 79% (frozen); resolver.py branch coverage 16.9% < 86% (frozen); runtime_policy.py branch coverage 14.0% < 84% (frozen); scanner.py branch coverage 38.0% < 91% (frozen); section_extractor.py branch coverage 20.1% < 87% (frozen); section_query.py branch coverage 0.0% < 87% (frozen); security_identity.py branch coverage 19.0% < 77% (frozen); shadow_parity.py branch coverage 0.0% < 87% (frozen); startup.py branch coverage 0.0% < 35% (frozen); store.py branch coverage 42.0% < 83% (frozen); summarizer.py branch coverage 12.3% < 87% (frozen); trace_parity.py branch coverage 0.0% < 82% (frozen); worker.py branch coverage 0.0% < 78% (frozen)
+E       assert not ['acquisition.py branch coverage 24.3% < 78% (frozen)', 'acquisition_config.py branch coverage 27.6% < 73% (frozen)', ...', 'activation.py branch coverage 0.0% < 82% (frozen)', 'adapter_dispatch.py branch coverage 0.0% < 89% (frozen)', ...]
+
+tests\contract\test_fc1204_coverage_ratchet.py:163: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/contract/test_fc1204_coverage_ratchet.py::test_tier1_critical_chain_at_95
+FAILED tests/contract/test_fc1204_coverage_ratchet.py::test_tier2_and_frozen_do_not_regress
+============================== 2 failed in 2.70s ==============================

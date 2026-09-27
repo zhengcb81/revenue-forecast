@@ -1,0 +1,570 @@
+{
+  "schema": "open6-tolerance-table/1",
+  "title": "4 条 arithmetic_identity 阈值：当前容差 与 原文披露舍入粒度 对照表",
+  "role": "evidence_compiler",
+  "attempt": "execution_runs/OPEN6-TOLERANCE-TABLE/a20260925-01",
+  "compiled_for": "BLOCKED-6b（会计 reviewer 补裁 / 行业 reviewer 会签）",
+  "authorized_by": {
+    "c5_verbatim": "OPEN-6：threshold_review_status 落地 + H4 四要件补齐 + H2 基准 + 恒等式容差对照表",
+    "c5_source": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json L122, bytes [11330,11437), sha256 b7314a22ebea453d4df6e6a93df62b993e0b179140feb67dfa0ec52b18b5878",
+    "c5_breakdown_verbatim": "4 条恒等式容差对照原文舍入粒度（BLOCKED-6b）",
+    "c5_breakdown_source": "同 handoff.json L108, bytes [9785,9857)",
+    "blocked_6b_verbatim": "BLOCKED-6b：4 条 arithmetic_identity 的容差是否与其来源舍入粒度一致（含 ±1 USD million）—— 需逐条对照原文舍入粒度复核后签署（规则已给，值未审）",
+    "blocked_6b_source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L297, bytes [32795,33005), sha256 f3040df0081f6653c0d18ac334890bf0aff12175aeacbd8e31485972bb329c2",
+    "blocked_6b_dispatch_verbatim": "BLOCKED-6b ｜ 4 条恒等式阈值的容差是否匹配披露舍入粒度 ｜ 逐条对照原文舍入粒度 ｜ 会计 reviewer（我）在拿到对照表后补裁 / 行业 reviewer 会签",
+    "blocked_6b_dispatch_source": "同 ruling.md L323, bytes [35734,35923)",
+    "rule_a62_verbatim": "arithmetic_identity | 4（hypotheses.json L88 / L311 / L524 / L649） | 可用（等式判定） | 舍入容差必须显式且不超过来源披露的舍入粒度（如\"允许 |差| <= 1 元\"对应元位披露），容差依据须写明；不得自由放大",
+    "rule_a62_source": "同 ruling.md L240-L242, bytes [26593,27309)"
+  },
+  "rules": {
+    "symbols": {
+      "g": "该恒等式所用每个披露数在原文中的舍入粒度（实测）",
+      "epsilon": "g / 2 = 单项在 round-half-to-nearest 假设下的最大舍入误差",
+      "n": "恒等式中独立被舍入的披露项个数（含等号另一侧的合计项）",
+      "L_A": "n * g / 2 = 模型A（原文为四舍五入值）下的舍入误差上界，即不假阳性所需最小容差",
+      "L_int": "floor(L_A / g) * g = 因披露值为粒度整数倍，|Delta| 实际可达的最大整数倍",
+      "L_B": "0 = 模型B（原文为账簿精确值，无再舍入）下的最小容差",
+      "U": "g = A-6.2 上限（容差不得超过来源披露的舍入粒度）",
+      "tau": "当前登记容差（逐字抄录，不改写）"
+    },
+    "labels": {
+      "过严": "tau < L_A（当前容差小于纯舍入可产生的差异，存在假阳性风险）",
+      "够": "L_A <= tau <= U（既覆盖舍入、又不超出披露粒度）",
+      "过宽": "tau > U，或 tau 明显大于 L_A（超出披露粒度/超出舍入可解释范围，等式判定失去区分力）",
+      "不可比": "未登记数值容差，无 tau 可比",
+      "RULE_CONFLICT": "L_A > U：A-6.2 上限与舍入下限互相矛盾（n >= 3 时必然出现）；本表只登记该事实，不裁哪边为准"
+    },
+    "rounding_models": {
+      "model_A": "原文各数为 g 的四舍五入结果 => 每项误差 <= g/2，n 项代数和误差 <= n*g/2",
+      "model_B": "原文各数为账簿精确值（无再舍入）=> 恒等式应精确为 0，L_B = 0",
+      "which_model_applies": "NOT_ESTABLISHED：盘上语料未见任何舍入政策声明（检索见 not_established_items NE-2），不猜、不代填"
+    },
+    "fail_closed": "某行/子项找不到原文舍入粒度、或缺比较对象、或原页无可提取文本 => 标 NOT_ESTABLISHED 并列出检索位置；禁止用默认值或现有容差反填结论。"
+  },
+  "counts": {
+    "thresholds_count": 4,
+    "granularity_established": 4,
+    "granularity_not_established": 0,
+    "comparison_established": 3,
+    "comparison_not_established": 1,
+    "rows_with_rule_conflict": 3,
+    "rows_over_tight": 3,
+    "rows_over_loose": 0,
+    "not_established_items": 5
+  },
+  "rows": [
+    {
+      "row_id": "R1",
+      "threshold_id": "H-CN-ZIJIN-SEG-01",
+      "alias": "H1",
+      "hypothesis_state": "pending_professional_decision",
+      "threshold_basis": "arithmetic_identity",
+      "threshold_text_verbatim": "0（算术恒等式，允许披露四舍五入引入的 |差| <= 1 元）",
+      "current_tolerance": {
+        "tau": 1,
+        "unit": "人民币元",
+        "kind": "绝对值容差",
+        "verbatim": "允许披露四舍五入引入的 |差| <= 1 元"
+      },
+      "expression": {
+        "formula": "SUM(分部对外销售收入: 矿产品 + 冶炼产品 + 贸易 + 其他) - 合并营业收入 = 0",
+        "operands": [
+          {"label": "矿产品 对外销售收入", "raw": "109,977,556,345", "unit": "CNY yuan"},
+          {"label": "冶炼产品 对外销售收入", "raw": "165,858,644,874", "unit": "CNY yuan"},
+          {"label": "贸易 对外销售收入", "raw": "29,212,610,830", "unit": "CNY yuan"},
+          {"label": "其他 对外销售收入", "raw": "44,030,270,803", "unit": "CNY yuan"},
+          {"label": "合并营业收入", "raw": "349,079,082,852", "unit": "CNY yuan", "sign": -1}
+        ],
+        "n_operands": 5,
+        "fy2025_computed": "109977556345 + 165858644874 + 29212610830 + 44030270803 = 349079082852",
+        "fy2025_difference": "0",
+        "fy2024_difference": "0"
+      },
+      "registration_evidence": [
+        {"file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "bytes_total": 51697, "lines": "85-88", "byte_range": "[3806,4096)"},
+        {"file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json", "sha256": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859", "bytes_total": 55213, "lines": "85-88", "byte_range": "[4170,4460)", "note": "当前登记版本，阈值文本逐字相同"}
+      ],
+      "source_evidence": [
+        {
+          "role": "分部附注 2025 年表（四个分部对外销售收入 + 合计）",
+          "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-10-A/a20260923-01/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt",
+          "sha256": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591",
+          "bytes_total": 763644,
+          "lines": "34990-34996",
+          "byte_range": "[723989,724095)",
+          "page_markers": {"extract_page_marker": "<<<PAGE 326>>> at L34946", "printed_page": "- 219 - (L34955)", "pymupdf_leaf_verified": 326, "p1_zijin_pages_json_pdf_page": 327},
+          "verbatim_quote": "对外销售收入 \n109,977,556,345 \n165,858,644,874 \n29,212,610,830 \n44,030,270,803 \n- \n349,079,082,852"
+        },
+        {
+          "role": "同页页眉的单位声明",
+          "file": "同上（CN-ZIJIN-2025.txt）",
+          "lines": "34950-34952",
+          "byte_range": "[723374,723427)",
+          "verbatim_quote": "财务报表附注 - 续 \n2025 年度 \n人民币元"
+        },
+        {
+          "role": "合并营业收入（主要会计数据）",
+          "file": "同上（CN-ZIJIN-2025.txt）",
+          "lines": "991-992",
+          "byte_range": "[27561,27590)",
+          "page_markers": {"extract_page_marker": "<<<PAGE 15>>> at L975", "printed_page": "15", "pymupdf_leaf_verified": 15},
+          "verbatim_quote": "营业收入\n349,079,082,852"
+        },
+        {
+          "role": "合并营业收入（管理层讨论与分析·科目分析）",
+          "file": "同上（CN-ZIJIN-2025.txt）",
+          "lines": "3768-3769",
+          "byte_range": "[103882,103911)",
+          "page_markers": {"extract_page_marker": "<<<PAGE 43>>>", "unit_line": "单位：元 at L3839"},
+          "verbatim_quote": "营业收入\n349,079,082,852"
+        },
+        {
+          "role": "记账本位币与列报单位（会计政策）",
+          "file": "同上（CN-ZIJIN-2025.txt）",
+          "lines": "10842-10843",
+          "byte_range": "[303626,303773)",
+          "page_markers": {"pymupdf_leaf_verified": 131},
+          "verbatim_quote": "本公司记账本位币和编制本财务报表所采用的货币均为人民币。除有特别说明外，均以人民币元为单位表示。"
+        }
+      ],
+      "measured_granularity": {
+        "g": 1,
+        "unit": "人民币元",
+        "status": "ESTABLISHED",
+        "statement": "所有操作数均以人民币元列报，且无小数位：值形如 109,977,556,345 / 349,079,082,852，页眉单位为「人民币元」，会计政策「均以人民币元为单位表示」。",
+        "evidence": ["S1 L34950-L34952 [723374,723427)", "S1 L34990-L34996 [723989,724095)", "S1 L991-L992 [27561,27590)", "S1 L10842-L10843 [303626,303773)"]
+      },
+      "derivation": {
+        "model_A": {
+          "steps": [
+            "披露粒度 g = 1 元 => 单项最大舍入误差 epsilon = g/2 = 0.5 元",
+            "恒等式独立舍入项 n = 5（4 个分部对外收入 + 合并营业收入）",
+            "纯舍入模型下 |Delta| <= L_A = n * g / 2 = 5 * 0.5 = 2.5 元",
+            "披露值是 1 元的整数倍 => |Delta| 是整数 => 实际可达上界 L_int = floor(2.5/1)*1 = 2 元",
+            "故不产生假阳性的最小容差 tau_min(A) = 2.5 元（整数口径 2 元）",
+            "A-6.2 上限 U = g = 1 元",
+            "当前 tau = 1 元 => tau < tau_min(A) 且 tau <= U"
+          ],
+          "L_A": 2.5,
+          "L_int": 2,
+          "U": 1
+        },
+        "model_B": {"L_B": 0, "note": "若原文为账簿精确值则恒等式应精确为 0，tau = 1 元 >= 0 即覆盖"},
+        "conflict": "L_A(2.5 元) > U(1 元)：A-6.2 的上限与舍入下限不可同时满足（n=5 >= 3）"
+      },
+      "comparison": {
+        "tau": 1,
+        "unit": "人民币元",
+        "vs_rounding_floor_model_A": "过严（1 元 < L_A 2.5 元；且 < L_int 2 元 ⇒ 纯舍入即可产生 |Delta| = 2 元而被判超限）",
+        "vs_A62_cap": "够（tau = U = g = 1 元，恰好等于披露粒度，未超上限）",
+        "vs_model_B": "够（tau = 1 元 >= 0）",
+        "rule_conflict": true,
+        "rule_conflict_note": "RULE_CONFLICT：按 A-6.2 只能取 tau <= 1 元，按模型 A 不假阳性需 tau >= 2.5 元；两判据在 n=5 时无交集。由会计 reviewer 补裁采用哪一判据/哪一模型。",
+        "over_tight": true,
+        "over_loose": false
+      },
+      "observed_residuals": [
+        {"period": "FY2025", "difference": "0", "source": "arithmetic_oracle.json A1 (difference='0', verdict='pass')"},
+        {"period": "FY2024", "difference": "0", "source": "arithmetic_oracle.json A3 (difference='0', verdict='pass')"}
+      ],
+      "not_established": ["NE-1 合并利润表原页无可提取文本（见 not_established_items）", "NE-2 原文舍入政策声明未找到（见 not_established_items）"],
+      "notes": ["本行只给对照，不断言该容差是否应被批准。"]
+    },
+    {
+      "row_id": "R2",
+      "threshold_id": "H-CN-ZIJIN-VOL-03",
+      "alias": "H3",
+      "hypothesis_state": "pending_professional_decision",
+      "threshold_basis": "arithmetic_identity",
+      "threshold_text_verbatim": "披露可判定式：销售量不得大于『本期生产量 + 本期期初库存』，而期初库存须由『上一期披露的期末库存量』取得。用现有披露可核对『销售量−生产量 = 期末库存较期初的减少额』是否与库存量同比变动方向一致；方向相反或无法凑平 ⇒ 判口径不一致。上一期数据缺失则本式不可判定（转 STOP_DISCLOSURE_ADAPTATION）",
+      "current_tolerance": {
+        "tau": null,
+        "unit": null,
+        "kind": "无数值容差（阈值为可判定式/方向判定）",
+        "verbatim": "阈值文本中没有任何数值容差（无 ±X、无 |差| <= X）"
+      },
+      "expression": {
+        "formula": "销售量 - 生产量 - (期初库存 - 期末库存) = 0；及 销售量 <= 生产量 + 期初库存（判定式）",
+        "operands": [
+          {"label": "销售量", "fy2025_copper": "884,943 吨", "fy2025_gold": "83,161 千克"},
+          {"label": "生产量", "fy2025_copper": "878,180 吨", "fy2025_gold": "82,743 千克"},
+          {"label": "期末库存（FY2025）", "copper": "11,343 吨", "gold": "1,470 千克"},
+          {"label": "期初库存（= FY2024 期末）", "copper": "18,105 吨", "gold": "1,734 千克"}
+        ],
+        "n_operands": 4,
+        "note": "阈值原文为方向/可判定式，未登记任何数值容差；此处 n 仅供推导最小合理误差之用。"
+      },
+      "registration_evidence": [
+        {"file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "lines": "308-311", "byte_range": "[17700,18424)"},
+        {"file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json", "sha256": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859", "lines": "332-335", "byte_range": "[21216,21940)", "note": "当前登记版本，阈值文本逐字相同"}
+      ],
+      "source_evidence": [
+        {
+          "role": "本期产销量情况分析表（生产量/销售量/库存量 + 三项同比变动）",
+          "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-10-A/a20260923-01/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt",
+          "sha256": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591",
+          "lines": "4262-4296",
+          "byte_range": "[112078,113867)",
+          "page_markers": {"extract_page_marker": "<<<PAGE 45>>>", "pymupdf_leaf_verified": 45, "p1_zijin_pages_json_pdf_page": 44},
+          "verbatim_quote": "②产销量情况分析表 … 主要产品 / 单位 / 生产量 / 销售量 / 库存量 / 生产量比上年增减（%） / 销售量比上年增减（%）库存量比上年增减（%） / 矿山产金 / 千克 / 82,743 / 83,161 / 1,470 / 21.19 / 22.68 / -15.24 / 矿山产铜 / 吨 / 878,180 / 884,943 / 11,343 / 4.85 / 7.35 / -37.35"
+        },
+        {
+          "role": "上一期（FY2024）产销量情况分析表 —— 提供『期初库存』绝对值",
+          "file": "C:/Users/郑曾波/Projects/company-wiki/companies/紫金矿业/raw/financial_reports/annual/2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf",
+          "sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89",
+          "bytes_total": 32100114,
+          "access": "只读（PyMuPDF 1.26.7 只读打开，未写入任何字节；本轮不涉 §二十七 #2）",
+          "page": "leaf 42（印刷页 42）",
+          "verbatim_quote": "②产销量情况分析表 … 主要产品 / 单位 / 生产量 / 销售量 / 库存量 / … / 矿山产金 / 千克 / 68,275 / 67,786 / 1,734 / 5.30 / 1.62 / 50.52 / 矿山产铜 / 吨 / 837,570 / 824,317 / 18,105 / 4.25 / 1.68 / 273.20 / 矿山产锌 / 吨 / 395,564 / 386,444 / 11,398 / 矿山产银 / 千克 / 428,684 / 424,145 / 7,482"
+        },
+        {
+          "role": "披露缺口自证：本表不披露期初库存",
+          "file": ".planning/.../I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+          "lines": "312",
+          "verbatim_quote": "review 发现 P2-8：初稿阈值写成『生产量+期初库存』，而年报产销量表只有期末库存量与同比变动，期初库存需跨期取上一年报的期末库存；该跨期可得性是专业判断项，已在 OPEN-11 登记（不阻塞本卡）"
+        }
+      ],
+      "measured_granularity": {
+        "g": 1,
+        "unit": "吨（铜、锌）/ 千克（金、银）",
+        "status": "ESTABLISHED",
+        "statement": "铜/锌行单位为『吨』、金/银行单位为『千克』，两期披露值均为整数无小数（878,180、884,943、11,343、837,570、824,317、18,105、82,743、83,161、1,470、68,275、67,786、1,734）。注意：同表『铁精矿』行单位为万吨且保留两位小数（94.34 / 111.35），粒度为 0.01 万吨 = 100 吨 —— 不同行粒度不同，本行恒等式仅涉铜/金/锌/银。",
+        "evidence": ["S1 L4262-L4296 [112078,113867)", "S3 leaf 42（FY2024 同表）"],
+        "percentage_columns": "三项同比变动为百分比、两位小数（如 -37.35、-15.24），若用其反推期初库存则误差被放大（铜：dV0/dp = 11,343/(1-0.3735)^2 = 28,899 吨/单位 p，p 每含 ±0.00005（0.01% 的一半）即引入约 ±1.44 吨）—— 故阈值原文要求取上一期绝对值而非百分比反推。"
+      },
+      "derivation": {
+        "model_A": {
+          "steps": [
+            "披露粒度 g = 1 单位（吨/千克）=> epsilon = 0.5 单位",
+            "恒等式独立舍入项 n = 4（销售量、生产量、期初库存、期末库存）",
+            "|Delta| <= L_A = 4 * 0.5 = 2 单位；因整数披露，L_int = 2 单位",
+            "A-6.2 上限 U = g = 1 单位",
+            "当前 tau = 无（阈值未登记数值容差）=> 无比较对象"
+          ],
+          "L_A": 2,
+          "L_int": 2,
+          "U": 1
+        },
+        "model_B": {"L_B": 0},
+        "conflict": "即使补登 tau，L_A(2 单位) > U(1 单位)，n=4 >= 3 同样出现 RULE_CONFLICT"
+      },
+      "comparison": {
+        "tau": null,
+        "vs_rounding_floor_model_A": "不可比 => NOT_ESTABLISHED（阈值未登记数值容差）",
+        "vs_A62_cap": "不可比 => NOT_ESTABLISHED",
+        "vs_model_B": "不可比 => NOT_ESTABLISHED",
+        "rule_conflict": "N/A（无 tau 可比）；若日后补登，将出现 L_A(2) > U(1) 的同一冲突",
+        "over_tight": null,
+        "over_loose": null
+      },
+      "observed_residuals": {
+        "basis": "FY2024 年报披露的期末库存作为 FY2025 期初库存，代入 销售量 - 生产量 - (期初 - 期末) = 0",
+        "definition": "residual = 期末库存 - (期初库存 + 生产量 - 销售量)",
+        "items": [
+          {"product": "矿山产铜", "unit": "吨", "begin": 18105, "production": 878180, "sales": 884943, "end": 11343, "residual": 1},
+          {"product": "矿山产锌", "unit": "吨", "begin": 11398, "production": 348556, "sales": 352470, "end": 7484, "residual": 0},
+          {"product": "矿山产银", "unit": "千克", "begin": 7482, "production": 429382, "sales": 430254, "end": 6609, "residual": -1},
+          {"product": "矿山产金", "unit": "千克", "begin": 1734, "production": 82743, "sales": 83161, "end": 1470, "residual": 154}
+        ],
+        "rounding_bound_reference": "L_int = 2 单位（模型 A）",
+        "disclaimer": "以上为实测残差数据，供会计/行业 reviewer 参考；本表不判定其是否可接受、不据此裁 BLOCKED-6b。"
+      },
+      "not_established": ["NE-3 当前阈值无登记数值容差，比较对象缺失", "NE-4 期初库存跨期可得性的裁定属 OPEN-11（本表不代裁）", "NE-2 原文舍入政策声明未找到"],
+      "notes": ["本行的『原文舍入粒度』本身已实测（1 吨/1 千克，两期一致）；不可成立的是『当前容差 vs 最小合理误差』的比较。"]
+    },
+    {
+      "row_id": "R3",
+      "threshold_id": "H-CN-ZIJIN-ELIM-05",
+      "alias": "H5",
+      "hypothesis_state": "unquantified",
+      "threshold_basis": "arithmetic_identity",
+      "threshold_text_verbatim": "0（算术恒等式，允许 |差| <= 1 元）",
+      "current_tolerance": {
+        "tau": 1,
+        "unit": "人民币元",
+        "kind": "绝对值容差",
+        "verbatim": "允许 |差| <= 1 元"
+      },
+      "expression": {
+        "formula": "SUM(分部总计: 矿产品 + 冶炼产品 + 贸易 + 其他) - 抵销 - 对外销售收入合计 = 0",
+        "operands": [
+          {"label": "矿产品 总计", "raw": "138,271,672,956"},
+          {"label": "冶炼产品 总计", "raw": "189,683,879,295"},
+          {"label": "贸易 总计", "raw": "170,521,025,777"},
+          {"label": "其他 总计", "raw": "85,572,651,236"},
+          {"label": "抵销", "raw": "(234,970,146,412)", "sign": -1},
+          {"label": "对外销售收入合计", "raw": "349,079,082,852", "sign": -1}
+        ],
+        "n_operands": 6,
+        "fy2025_computed": "584,049,229,264 - 234,970,146,412 = 349,079,082,852",
+        "fy2025_difference": "0",
+        "fy2024_difference": "0（95,360,053,889 + 201,367,589,325 + 134,062,842,189 + 46,012,598,723 = 476,803,084,126；476,803,084,126 - 173,163,126,973 = 303,639,957,153）"
+      },
+      "registration_evidence": [
+        {"file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "lines": "521-524", "byte_range": "[30621,30870)"},
+        {"file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json", "sha256": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859", "lines": "545-548", "byte_range": "[34137,34386)", "note": "当前登记版本，阈值文本逐字相同"}
+      ],
+      "source_evidence": [
+        {
+          "role": "分部附注 2025 年『总计』行（四分部 + 抵销 + 合计）",
+          "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-10-A/a20260923-01/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt",
+          "sha256": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591",
+          "lines": "35011-35017",
+          "byte_range": "[724216,724327)",
+          "page_markers": {"extract_page_marker": "<<<PAGE 326>>> at L34946", "printed_page": "- 219 - (L34955)", "pymupdf_leaf_verified": 326},
+          "verbatim_quote": "总计 \n138,271,672,956 \n189,683,879,295 \n170,521,025,777 \n85,572,651,236 \n(234,970,146,412) \n349,079,082,852"
+        },
+        {
+          "role": "同表『内部销售收入』行的抵销数",
+          "file": "同上（CN-ZIJIN-2025.txt）",
+          "lines": "34997-35003",
+          "byte_range": "[724095,724202)",
+          "verbatim_quote": "内部销售收入 \n28,294,116,611 \n23,825,234,421 \n141,308,414,947 \n41,542,380,433 \n(234,970,146,412) \n-"
+        },
+        {
+          "role": "同页页眉单位",
+          "file": "同上（CN-ZIJIN-2025.txt）",
+          "lines": "34950-34952",
+          "byte_range": "[723374,723427)",
+          "verbatim_quote": "财务报表附注 - 续 \n2025 年度 \n人民币元"
+        },
+        {
+          "role": "FY2024 对照（同页 2024 年表）",
+          "file": ".planning/.../I-11-A/a20260919-01/evidence/I-11-A/extract/P1_zijin_pages.json",
+          "lines": "168",
+          "verbatim_quote": "2024年 … 总计 95,360,053,889 201,367,589,325 134,062,842,189 46,012,598,723 (173,163,126,973) 303,639,957,153"
+        }
+      ],
+      "measured_granularity": {
+        "g": 1,
+        "unit": "人民币元",
+        "status": "ESTABLISHED",
+        "statement": "全部 6 个操作数位于同一张分部附注表、同一页眉『人民币元』下，全部为整数无小数。",
+        "evidence": ["S1 L34950-L34952 [723374,723427)", "S1 L35011-L35017 [724216,724327)", "S1 L34997-L35003 [724095,724202)"]
+      },
+      "derivation": {
+        "model_A": {
+          "steps": [
+            "披露粒度 g = 1 元 => epsilon = 0.5 元",
+            "恒等式独立舍入项 n = 6（4 个分部总计 + 抵销 + 对外销售收入合计）",
+            "|Delta| <= L_A = 6 * 0.5 = 3 元",
+            "整数披露 => L_int = 3 元",
+            "A-6.2 上限 U = g = 1 元",
+            "当前 tau = 1 元 => tau < L_A(3 元) 且 tau <= U"
+          ],
+          "L_A": 3,
+          "L_int": 3,
+          "U": 1
+        },
+        "model_B": {"L_B": 0, "note": "若为精确账簿值则应精确为 0，tau = 1 元覆盖"},
+        "conflict": "L_A(3 元) > U(1 元)：n=6，A-6.2 上限与舍入下限无交集"
+      },
+      "comparison": {
+        "tau": 1,
+        "unit": "人民币元",
+        "vs_rounding_floor_model_A": "过严（1 元 < L_A 3 元；纯舍入下 |Delta| 可达 3 元而被判超限）",
+        "vs_A62_cap": "够（tau = U = g = 1 元，等于披露粒度，未超上限）",
+        "vs_model_B": "够（tau = 1 元 >= 0）",
+        "rule_conflict": true,
+        "rule_conflict_note": "RULE_CONFLICT：模型 A 需 tau >= 3 元，A-6.2 要求 tau <= 1 元；n=6 时矛盾更大。由会计 reviewer 补裁。",
+        "over_tight": true,
+        "over_loose": false
+      },
+      "observed_residuals": [
+        {"period": "FY2025", "difference": "0", "source": "arithmetic_oracle.json A2 (difference='0', verdict='pass')"},
+        {"period": "FY2024", "difference": "0", "source": "本表按 P1_zijin_pages.json L168 逐字值复算"}
+      ],
+      "not_established": ["NE-2 原文舍入政策声明未找到（见 not_established_items）"],
+      "notes": ["6 个操作数全部同页、同单位、同粒度，是 4 行中证据最完整的一行。"]
+    },
+    {
+      "row_id": "R4",
+      "threshold_id": "H-US-MSFT-SEG-01",
+      "alias": "H6",
+      "hypothesis_state": "pending_professional_decision",
+      "threshold_basis": "arithmetic_identity",
+      "threshold_text_verbatim": "0（分部加总恒等式，允许 ±1 USD million 舍入）；对 FY2027 分部增速本卡不设幅度阈值",
+      "current_tolerance": {
+        "tau": 1,
+        "unit": "USD million",
+        "kind": "绝对值容差",
+        "verbatim": "允许 ±1 USD million 舍入"
+      },
+      "expression": {
+        "formula": "PBP + Intelligent Cloud + More Personal Computing - Total revenue = 0",
+        "operands": [
+          {"label": "Productivity and Business Processes Revenue", "raw": "139,996"},
+          {"label": "Intelligent Cloud Revenue", "raw": "137,791"},
+          {"label": "More Personal Computing Revenue", "raw": "54,052"},
+          {"label": "Total revenue", "raw": "331,839", "sign": -1}
+        ],
+        "n_operands": 4,
+        "fy2026_computed": "139,996 + 137,791 + 54,052 = 331,839",
+        "fy2026_difference": "0",
+        "fy2025_difference": "0（120,810 + 106,265 + 54,649 = 281,724）"
+      },
+      "registration_evidence": [
+        {"file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "lines": "646-649", "byte_range": "[36843,37142)"},
+        {"file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json", "sha256": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859", "lines": "670-673", "byte_range": "[40359,40658)", "note": "当前登记版本，阈值文本逐字相同"}
+      ],
+      "source_evidence": [
+        {
+          "role": "MD&A 分部结果表（三个分部收入）+ 表头单位",
+          "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-10-A/a20260923-01/evidence/I-10-A/source_extracts/US-MSFT-2026.txt",
+          "sha256": "8da453c191394c1530a7d036018b0a8ede34fa43a8c78c36bd12293f6d64fabe",
+          "bytes_total": 356348,
+          "lines": "820-871",
+          "byte_range": "[188965,189434)",
+          "verbatim_quote": "SEGMENT RESULTS OF OPERATIONS\n(In millions, except percentages)\n2026\n2025\nPercentage\nChange\nProductivity and Business Processes\nRevenue\n$\n139,996\n…\nIntelligent Cloud\nRevenue\n$\n137,791\n…\nMore Personal Computing\nRevenue\n$\n54,052"
+        },
+        {
+          "role": "经审计合并利润表（Total revenue）+ 表头单位",
+          "file": "同上（US-MSFT-2026.txt）",
+          "lines": "1359-1378",
+          "byte_range": "[227784,227985)",
+          "verbatim_quote": "INCOME STATEMENTS\n(In millions, except per share amounts)\nYear Ended June 30,\n2026\n2025\n2024\nRevenue:\nProduct\n$\n64,696\n…\nService and other\n267,143\n…\nTotal revenue\n331,839\n281,724\n245,122"
+        },
+        {
+          "role": "MD&A 汇总结果表（同一合计数的第二处披露）",
+          "file": "同上（US-MSFT-2026.txt）",
+          "lines": "768-776",
+          "byte_range": "[186227,186359)",
+          "verbatim_quote": "SUMMARY RESULTS OF OPERATIONS\n(In millions, except percentages and per share amounts)\n2026\n2025\nPercentage\nChange\nRevenue\n$\n331,839"
+        }
+      ],
+      "measured_granularity": {
+        "g": 1,
+        "unit": "USD million",
+        "status": "ESTABLISHED",
+        "statement": "分部表与合并利润表表头均明写「In millions」，数值为整数百万美元（139,996 / 137,791 / 54,052 / 331,839），即披露粒度 = 1 USD million。",
+        "evidence": ["S2 L820-L821 [188965,189029)", "S2 L1359-L1360 [227784,227842)", "S2 L768-L769 [186227,186313)", "S2 L826-L871 [189057,189434)"]
+      },
+      "derivation": {
+        "model_A": {
+          "steps": [
+            "披露粒度 g = 1 USD million => epsilon = 0.5 USD million",
+            "恒等式独立舍入项 n = 4（3 个分部收入 + 合并 Total revenue）",
+            "|Delta| <= L_A = 4 * 0.5 = 2 USD million",
+            "数值为百万的整数倍 => L_int = 2 USD million（可能取值 -2/-1/0/1/2）",
+            "A-6.2 上限 U = g = 1 USD million",
+            "当前 tau = 1 USD million => tau < L_A(2) 且 tau = U"
+          ],
+          "L_A": 2,
+          "L_int": 2,
+          "U": 1
+        },
+        "model_B": {"L_B": 0, "note": "若美元原值在百万位精确（不可能）则恒等式精确为 0；实务上 10-K 收入必然由元级金额舍入而来，故本行模型 A 更贴近现实——但原文未写舍入政策，仍按 NE-2 登记为未确立。"},
+        "conflict": "L_A(2 USD mn) > U(1 USD mn)：n=4，A-6.2 上限与舍入下限无交集"
+      },
+      "comparison": {
+        "tau": 1,
+        "unit": "USD million",
+        "vs_rounding_floor_model_A": "过严（1 USD mn < L_A 2 USD mn；纯舍入下 |Delta| 可达 2 USD mn 而被判超限——这正是 BLOCKED-6b 括注『含 ±1 USD million』所指）",
+        "vs_A62_cap": "够（tau = U = g = 1 USD million，等于披露粒度，未超上限）",
+        "vs_model_B": "够（tau = 1 >= 0）",
+        "rule_conflict": true,
+        "rule_conflict_note": "RULE_CONFLICT：模型 A 需 tau >= 2 USD mn，A-6.2 要求 tau <= 1 USD mn；由会计 reviewer 补裁。",
+        "over_tight": true,
+        "over_loose": false
+      },
+      "observed_residuals": [
+        {"period": "FY2026", "difference": "0", "source": "arithmetic_oracle.json A5 (difference='0', verdict='pass')"},
+        {"period": "FY2025", "difference": "0", "source": "arithmetic_oracle.json A7 分部部分 (difference='0', verdict='pass')"}
+      ],
+      "not_established": ["NE-2 原文舍入政策声明未找到（见 not_established_items）"],
+      "notes": ["本行是 BLOCKED-6b 括注点名的 ±1 USD million 行。"]
+    }
+  ],
+  "not_established_items": [
+    {
+      "id": "NE-1",
+      "applies_to": ["R1"],
+      "item": "合并利润表原页本身无法实测列报粒度",
+      "reason": "紫金 2025 年报 PDF leaf 116-117（印刷页 9-10，TOC『合并利润表 9 - 10』）在盘上抽取件中为纯空页标记；PyMuPDF 1.26.7 只读复核 textlen=0、images=1（图像页）。",
+      "searched": [
+        ".planning/…/source_extracts/CN-ZIJIN-2025.txt L10666-L10698（<<<PAGE 113>>>..<<<PAGE 128>>> 之间无文本）",
+        "同文件全文检索 349,079,082,852 -> 7 处（L992 / L3769 / L25950 / L26015 / L26049 / L34996 / L35017），均不在 leaf 116-117",
+        "同文件全文检索 营业总收入 -> 0 命中",
+        "PyMuPDF 只读：leaf 113..117 textlen=0, images=1"
+      ],
+      "mitigation": "同一数值 349,079,082,852 在主要会计数据（leaf 15，L991-992）、MD&A 科目分析（leaf 43，L3768-3769，表下『单位：元』L3839）与分部附注同页合计（L34996）三处以人民币元列报，且会计政策声明『均以人民币元为单位表示』（leaf 131）；据此本行粒度仍判 ESTABLISHED，但『合并利润表原页的直接实测』如实记为 NOT_ESTABLISHED。"
+    },
+    {
+      "id": "NE-2",
+      "applies_to": ["R1", "R2", "R3", "R4"],
+      "item": "原文是否声明了舍入（rounding）政策 —— 模型 A / 模型 B 哪个适用未确立",
+      "reason": "两份年报均未见舍入政策句；没有该声明就无法判定披露值是四舍五入结果还是账簿精确值。",
+      "searched": [
+        "CN-ZIJIN-2025.txt 检索 四舍五入|舍入|取整 -> 0 命中",
+        "CN-ZIJIN-2025.txt 检索 记账本位币/单位：元 -> L10840-L10843、L1107-L1108、L1216-L1218、L3839 等（仅单位，无舍入声明）",
+        "US-MSFT-2026.txt 检索 round|Round|ROUND -> 7 命中全为 ground/surround/around 等词内子串，无政策句",
+        "US-MSFT-2026.txt 检索 in millions -> L769 / L821 / L968 / L987 / L1006 / L1083 / L1360 / L1840 / L2059 / L3192 / L3211 / L3734 / L4127（仅单位声明）"
+      ],
+      "consequence": "本表并列给出 L_A = n*g/2 与 L_B = 0 两套下限；选用哪一套由会计 reviewer 补裁。"
+    },
+    {
+      "id": "NE-3",
+      "applies_to": ["R2"],
+      "item": "『当前容差 vs 最小合理误差』的比较不可成立",
+      "reason": "H-CN-ZIJIN-VOL-03 的阈值文本是披露可判定式/方向判定，未登记任何数值容差 => 无 tau 可比。",
+      "searched": [
+        "hypotheses.json L310（threshold 全文，无数值容差）",
+        "hypotheses_v2.json L334（当前版本 threshold 全文，同上）",
+        "validation_report.json L29（threshold_bases 计数 4/3/1，不含容差数值）"
+      ],
+      "consequence": "该行比较结论 = NOT_ESTABLISHED；不得以 0 或 1 代填。"
+    },
+    {
+      "id": "NE-4",
+      "applies_to": ["R2"],
+      "item": "『上一期期末库存』的跨期可得性裁定不在本表范围",
+      "reason": "阈值原文把期初库存指向『上一期披露的期末库存量』，而跨期可得性在 hypotheses.json L312 已登记为 OPEN-11（矿业行业 reviewer 裁定项）。",
+      "searched": [
+        "hypotheses.json L312 observability_note（逐字见 R2 source_evidence 第 3 条）",
+        "I11A-OPEN11-IND/a20260924-01/provenance.json L182 / L206（同一事项的两次逐字转录）",
+        "本轮只读实测：2024 年报 PDF leaf 42 存在该表且给出绝对值 18,105 吨 / 1,734 千克（见 R2 source_evidence 第 2 条）"
+      ],
+      "consequence": "本表只交付『披露粒度』事实，不代裁 OPEN-11，也不据此宣布该判定式可判定。"
+    },
+    {
+      "id": "NE-5",
+      "applies_to": ["R1", "R2", "R3"],
+      "item": "页码坐标口径未统一（P1 的 pdf_page 与 PyMuPDF leaf 差 ±1）",
+      "reason": "I-11-A 的 P1_zijin_pages.json 记 pdf_page=44（产销量表）/ 327（分部 2025 表），而 PyMuPDF 只读实测为 leaf 45 / leaf 326；两者的印刷页码（45 / - 219 -）一致。",
+      "searched": [
+        "P1_zijin_pages.json（pdf_page / page_object / classic_pages=352）",
+        "CN-ZIJIN-2025.txt 的 <<<PAGE n>>> 标记（45 / 326）",
+        "PyMuPDF 只读：leaf 45 命中『产销量情况分析表』、leaf 326/327 命中『对外销售收入』"
+      ],
+      "consequence": "本表以 CN-ZIJIN-2025.txt 的行号 + 字节区为主坐标，三方坐标并列登记；不判定谁对谁错。"
+    }
+  ],
+  "cross_row_findings": [
+    {
+      "id": "F1",
+      "finding": "在模型 A（标准四舍五入）下，3 条带数值容差的行全部满足 L_A > U，即 ACCT ruling A-6.2 的『容差不得超过披露粒度』与『不假阳性所需最小容差 n*g/2』在 n >= 3 时无交集。",
+      "numbers": {"R1": "L_A=2.5 元 vs U=1 元", "R3": "L_A=3 元 vs U=1 元", "R4": "L_A=2 USD mn vs U=1 USD mn"},
+      "status": "事实登记，非裁定；由会计 reviewer 决定采用哪一判据"
+    },
+    {
+      "id": "F2",
+      "finding": "按 A-6.2 上限口径，3 条数值容差均 tau = U = g，无一行『过宽』；按模型 A 下限口径，3 行均『过严』。",
+      "status": "两口径并列，本表不下结论"
+    },
+    {
+      "id": "F3",
+      "finding": "已披露期的实测残差：R1 FY2025/FY2024 = 0/0；R3 FY2025/FY2024 = 0/0；R4 FY2026/FY2025 = 0/0；R2 四产品 = +1 吨 / 0 吨 / -1 千克 / +154 千克（金）。",
+      "status": "实测数据，供参考；不构成对 BLOCKED-6b 的裁定，不构成 ACCEPT"
+    }
+  ],
+  "disclaimers": {
+    "releases_nothing": true,
+    "does_not_sign_tolerance": true,
+    "does_not_rule_blocked_6b": true,
+    "does_not_change_threshold_basis": true,
+    "does_not_change_threshold_review_status": true,
+    "does_not_unblock_any_blocked": true,
+    "produces_no_accept": true,
+    "statement": "本表不含任何容差结论：所有『过严/够/过宽』均为按 §rules 的机械比较结果，签署权归会计 reviewer，会签归行业 reviewer。"
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "base_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "e8478f90ce0ac34b325012ef56e57c5119d7533c",
+    "wiki": "e56eb5f53cdebb342486be2546a9602037ac68e0"
+  },
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff b41bfc280fe90762a4bc3a6689e5c1e698425bec 45ae72124cf6b26dec90b20d89f9bbbde2030074 --stat",
+      "exit_code": 0,
+      "result": "1 file changed, 139 insertions(+), 144 deletions(-) — exactly one file: tests/contract/test_zr406_gap_plan_orthogonality.py"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py --collect-only -q (company-wiki)",
+      "exit_code": 0,
+      "result": "39 collected: 30 matrix cells (test_c1_matrix_cell, 5 local x 6 provider parametrize) + 9 focused tests"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "39 passed in 0.34s"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py tests/contract/test_source_catalog_gap_plan.py tests/contract/test_fc1204_complexity_ratchet.py tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "839 passed in 45.30s (39 + 11 gap_plan + 2 ratchet + 787 unit)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_source_catalog_gap_plan.py tests/contract/test_fc1204_complexity_ratchet.py tests/unit --collect-only -q (company-wiki)",
+      "exit_code": 0,
+      "result": "11 / 2 / 787 collected — receipt breakdown '39+11+2+787=839' fully confirmed component-wise"
+    },
+    {
+      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-406/11_implementer_receipt.json (unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt receipts/ZR-406/11_implementer_receipt.json is canonical and well-formed"
+    },
+    {
+      "command": "python canonical-hash recompute (receipt minus canonical_hash; json.dumps sort_keys, default separators, ensure_ascii=False)",
+      "exit_code": 0,
+      "result": "dcf55bcc0b72d31b7be305dfd8963879db8791e4e275442b380118c3f7e68d44 — matches receipt canonical_hash"
+    },
+    {
+      "command": "sha256 of tests/contract/test_zr406_gap_plan_orthogonality.py at 45ae721 HEAD",
+      "exit_code": 0,
+      "result": "448b1e8fdb96e68390d1ba08efdcee343d884c713485c4af1b7d801fb929f19f — matches receipt notes[1] reviewed_object sha256; company-wiki HEAD = 45ae721, file unmodified in working tree"
+    },
+    {
+      "command": "state check (revenue-forecast/assurance/unified_completion/state.json)",
+      "exit_code": 0,
+      "result": "units.ZR-406.status = independent_review; current_next = ZR-406"
+    },
+    {
+      "command": "reproduce implementer receipt commands[1] as written (bare filenames, company-wiki root)",
+      "exit_code": 1,
+      "result": "ERROR: file or directory not found: test_source_catalog_gap_plan.py — command string not reproducible as written; the 839 claim itself verified true via the full-path command above"
+    },
+    {
+      "command": "reproduce implementer receipt commands[2] as written (ruff check src/company_wiki/source_catalog/gap_plan.py cli.py tests/contract/test_zr406_gap_plan_orthogonality.py)",
+      "exit_code": 1,
+      "result": "ruff E902: cli.py not found (os error 2) — bare path fails; rerun with full path src/company_wiki/source_catalog/cli.py: exit 0 'All checks passed!'; format --check '3 files already formatted' — result claim honest"
+    }
+  ],
+  "created_at_utc": "2026-08-18T20:39:40Z",
+  "findings": [
+    {
+      "detail": "独立复跑：模块 39 collected / 39 passed；回归批 839 passed（39+11+2+787，各分量 11/2/787 收集数逐一核对）；receipt commands[0] 声称 '39 passed（30 格参数化矩阵：5 local 状态 × 6 provider 状态全组合 + 9 聚焦测试）' 与实测一致。REV-001 计数虚报已修复，计数诚实。",
+      "id": "ZR406-REV-001",
+      "severity": "resolved",
+      "title": "REV-001 修复验证：计数诚实（39/39 模块；839 回归）"
+    },
+    {
+      "detail": "test_c1_matrix_cell 经 @pytest.mark.parametrize(local_key, _LOCAL_KEYS(5)) × (provider_key, _PROVIDER_KEYS(6)) 生成全部 30 格，每格经 _matrix_cell 构建 fixture 与期望签名并断言；cell 完备性守卫（cells_are_distinct，product 长度=30 且无重复）在位。原缺失 5 格全部在列：not_published-equivalent、unknown-equivalent、not_published-ambiguous、unknown-ambiguous、future-unusable。语义逐格对照 gap_plan.build_gap_plan 源码核验：current×no_local/unusable→missing（无可用 local）；current×ambiguous→provider accession acc-2025-b 匹配可用 local→reuse+not_published；newer_revision×no_local/unusable→missing（非 newer_revision，语义修正成立）；not_published 无可用 local→True；unknown(error)→provider_unavailable=True 且 reuse 仅含可用 local；future→future 元组+not_published=True。REV-002 矩阵不完整已修复。",
+      "id": "ZR406-REV-002",
+      "severity": "resolved",
+      "title": "REV-002 修复验证：30 格全矩阵数据驱动且语义正确"
+    },
+    {
+      "detail": "非阻断（minor）：re-sealed receipt commands[1]（裸文件名 test_source_catalog_gap_plan.py 等）与 commands[2]（裸 cli.py）按字面无法复现（pytest 'file or directory not found'；ruff E902 os error 2，exit 1）。但其结果声称（839 passed；ruff clean + 3 formatted）均已用正确全路径独立复跑验证为真——属命令串书写瑕疵，非计数虚报。另 commands[1] 命令串列入了 test_zr405_policy_export_cli.py（5 tests），与计数分解 39+11+2+787（不含该文件）不一致。",
+      "id": "ZR406-REV-003",
+      "severity": "minor",
+      "title": "receipt commands[1]/[2] 命令串不可复现（结果声称本身真实）"
+    },
+    {
+      "detail": "非阻断（minor）：re-seal 部分更新残留修复前文本——implementation.design 与 scope 仍写 '（13 tests）'（实测 39）；notes[0] 声称 'result_triplet.wiki 为本卡实现提交 b41bfc2'，与 result_triplet.wiki=45ae721 自相矛盾；commands[3] 记录的是修复前 diff 范围 e56eb5f→b41bfc2（3 文件）而非修复提交 45ae721（1 文件）。不影响两个阻断项与计数真实性，建议后续整理。",
+      "id": "ZR406-REV-004",
+      "severity": "minor",
+      "title": "re-sealed receipt 残留修复前文本（13 tests / b41bfc2 note / 旧 diff 范围）"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-406 delta review",
+  "result_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "e8478f90ce0ac34b325012ef56e57c5119d7533c",
+    "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+  },
+  "reviewed_object_sha256": "448b1e8fdb96e68390d1ba08efdcee343d884c713485c4af1b7d801fb929f19f",
+  "reviewer": "reviewer-zr406-independent",
+  "schema_version": 1,
+  "unit": "ZR-406",
+  "verdict": "accepted",
+  "canonical_hash": "72a323d72fddb7a1240c3f6944dcec8566fcc2e27e50bb5f9923fbdda06450f8"
+}

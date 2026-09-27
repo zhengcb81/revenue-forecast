@@ -1,0 +1,175 @@
+{
+  "card": "T1-F3-FIX",
+  "attempt_id": "a20260925-01",
+  "note": "Every product command below was bound by reading the real entry points first (harness/run_cases.py argparse, harness/mutate.r2.py argparse, the four test files' I14B_SUT contract, iso/natural_window.py CLI). No command was guessed. All argv arrays; network disabled; every write root is inside this attempt directory.",
+  "runtime": {
+    "python": "execution_runs/I-14-B/a20260919-01/iso/venv/Scripts/python.exe",
+    "version": "3.13.9",
+    "pytest": "9.1.1",
+    "flags": ["-X", "utf8", "-B"],
+    "pytest_extra": ["-p", "no:cacheprovider"]
+  },
+  "ids": [
+    {
+      "id": "C-FREEZE",
+      "purpose": "write evidence/freeze.json (oracle sha + 11 harness pins + external authority shas + git boundary) BEFORE any SUT run",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "freeze"],
+      "binding_status": "bound",
+      "expected_returncode": 0
+    },
+    {
+      "id": "C-PROBE-BEFORE",
+      "purpose": "RED: probe family TS1..TS5 + DOC-2 + CTRL-4 against the PRE-fix SUT (9b1ebda2...), raw rc + stdout + stderr + report-presence per probe",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "probes", "--phase", "before", "--sut", "<attempt>/worktree/i14b/iso/natural_window.py"],
+      "binding_status": "bound",
+      "expected_returncode": 0,
+      "expected_business_result": "all RED expectations hold (TS1..TS5 rc=4 / no report / internal_error detail contains Invalid isoformat string; DOC-2 rc=2 malformed_input; CTRL-4 rc=4 internal_error)"
+    },
+    {
+      "id": "C-GATE-BEFORE",
+      "purpose": "frozen case gates on cases.r2.json (34) and cases.json (20) against the PRE-fix SUT",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "gates", "--phase", "before", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_business_result": "r2 gate green (rc=0, ok=true, 34/34, mismatch=0); r1 gate keeps its pre-existing superseded-W1 state; both recorded for byte-identity comparison"
+    },
+    {
+      "id": "C-SUITE-BEFORE",
+      "purpose": "the four inherited suites + this card's new suite against the PRE-fix SUT",
+      "cwd": "<attempt>/worktree/i14b",
+      "argv": ["<python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider", "--basetemp", "<attempt>/_pytest_tmp/<phase>_<suite>", "-q", "<attempt>/worktree/i14b/harness/tests/<suite>"],
+      "env": {"I14B_SUT": "<SUT>"},
+      "binding_status": "bound",
+      "expected_business_result": "before: 4 inherited suites 0 failed (32/18/23/29), new suite RED (>0 failures); after: all five green"
+    },
+    {
+      "id": "C-NCMISSING-BEFORE",
+      "purpose": "T1-F2-FIX's 7 missing-key rows (K7, S7a, S7b, S7c, S8, S9, S10) against the PRE-fix SUT",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "ncmissing", "--phase", "before", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_business_result": "7/7 rows green with the frozen values (S7a/S7b/S7c accept [], S8 reject without R-CLAIM-EXCEEDS)"
+    },
+    {
+      "id": "C-VOCAB-BEFORE",
+      "purpose": "refusal-code vocabulary regex count on the PRE-fix SUT source",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "vocab", "--phase", "before", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_returncode": 0,
+      "expected_business_result": "exactly 16 codes, identical to VOCAB_16"
+    },
+    {
+      "id": "C-BATCH-BEFORE",
+      "purpose": "batch negative control B-NEG (1 malformed + 3 well-formed) against the PRE-fix SUT",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "batch", "--phase", "before", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_business_result": "rc=4 / no report = the batch IS blown up before the fix (discriminating power); good-only control still adjudicates"
+    },
+    {
+      "id": "C-MUT20-BEFORE",
+      "purpose": "20-arm J1..J16 mutation ratchet on the PRE-fix worktree SUT (mutate.r2.py hardcodes ATTEMPT/iso/natural_window.py, so this MUST run before the edit)",
+      "cwd": "<attempt>/worktree/i14b",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/worktree/i14b/harness/mutate.r2.py", "--out", "<attempt>/evidence/before/mut20/mutations.r2.json"],
+      "binding_status": "bound",
+      "expected_business_result": "mutation_count=20, all_mutants_red_again=true, all_expected_cases_red=true"
+    },
+    {
+      "id": "C-PROBE-AFTER",
+      "purpose": "GREEN: the same probe family against the FIXED SUT",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "probes", "--phase", "after", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_business_result": "TS1..TS5 rc=0 / report written / reject_claim / R-TIMESTAMP-MALFORMED / computed == the hand-computed oracle table; DOC-2 and CTRL-4 byte-identical to RED"
+    },
+    {
+      "id": "C-GATE-AFTER",
+      "purpose": "same gates against the FIXED SUT (byte-identity proof)",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "gates", "--phase", "after", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_business_result": "every gate field equal to the before phase, including sut_report sha256"
+    },
+    {
+      "id": "C-SUITE-AFTER",
+      "purpose": "five suites against the FIXED SUT",
+      "cwd": "<attempt>/worktree/i14b",
+      "argv": ["<python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider", "--basetemp", "<attempt>/_pytest_tmp/<phase>_<suite>", "-q", "<attempt>/worktree/i14b/harness/tests/<suite>"],
+      "env": {"I14B_SUT": "<SUT>"},
+      "binding_status": "bound",
+      "expected_business_result": "all five suites 0 failed"
+    },
+    {
+      "id": "C-NCMISSING-AFTER",
+      "purpose": "the same 7 missing-key rows against the FIXED SUT",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "ncmissing", "--phase", "after", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_business_result": "7/7 rows byte-identical to the before phase"
+    },
+    {
+      "id": "C-VOCAB-AFTER",
+      "purpose": "vocabulary count on the FIXED SUT source",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "vocab", "--phase", "after", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_returncode": 0,
+      "expected_business_result": "exactly 17 codes = the frozen 16 + R-TIMESTAMP-MALFORMED"
+    },
+    {
+      "id": "C-BATCH-AFTER",
+      "purpose": "B-POS / B-BYTE-1 against the FIXED SUT",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "batch", "--phase", "after", "--sut", "<SUT>"],
+      "binding_status": "bound",
+      "expected_business_result": "rc=0, 4 verdicts, bad case alone refused, good verdicts byte-identical to the good-only run"
+    },
+    {
+      "id": "C-MUT20-AFTER",
+      "purpose": "the same 20-arm ratchet on the FIXED worktree SUT",
+      "cwd": "<attempt>/worktree/i14b",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/worktree/i14b/harness/mutate.r2.py", "--out", "<attempt>/evidence/after/mut20/mutations.r2.json"],
+      "binding_status": "bound",
+      "expected_business_result": "mutation_count=20 / all red / all expected cases red (the fix did not weaken any judgement anchor)"
+    },
+    {
+      "id": "C-ARMS",
+      "purpose": "the four T1-F3-FIX mutation arms (scratch mutants, never the SUT)",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "mutations"],
+      "binding_status": "bound",
+      "expected_business_result": "all four arms RED exactly as frozen in oracle.md section 6"
+    },
+    {
+      "id": "C-DIFF",
+      "purpose": "build changes.diff with difflib (no git) + diff_stats.json",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "diff"],
+      "binding_status": "bound",
+      "expected_returncode": 0
+    },
+    {
+      "id": "C-INVARIANTS",
+      "purpose": "aggregate every frozen invariant (I-1..I-9) + line disjointness + diff reversibility + git boundary",
+      "cwd": "<attempt>",
+      "argv": ["<python>", "-X", "utf8", "-B", "<attempt>/scripts/verify_t1_f3_fix.py", "invariants"],
+      "binding_status": "bound",
+      "expected_business_result": "PASS with 0 failed checks"
+    },
+    {
+      "id": "C-GIT-BOUNDARY",
+      "purpose": "read-only boundary probe (the ONLY git command this card runs)",
+      "cwd": "<repo root>",
+      "argv": ["git", "-c", "core.quotepath=false", "diff", "HEAD", "--name-only"],
+      "binding_status": "bound",
+      "expected_business_result": "non-.planning path count == 0",
+      "state_changing": false
+    }
+  ],
+  "network": "disabled",
+  "state_changing_git_commands": 0,
+  "allowed_write_roots": ["<attempt>/**"]
+}

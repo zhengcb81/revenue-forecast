@@ -1,0 +1,490 @@
+diff --git a/tests/contract/test_source_catalog_evidence_query.py b/tests/contract/test_source_catalog_evidence_query.py
+--- a/tests/contract/test_source_catalog_evidence_query.py
++++ b/tests/contract/test_source_catalog_evidence_query.py
+@@ -231,49 +231,6 @@ def test_invalid_unknown_and_source_locator_mismatch_fail_closed(evidence_catalo
+         service.list_spans(source_id=evidence_catalog["source_id"], limit=0)
+ 
+ 
+-def test_active_only_catalog_identifies_archived_legacy_evidence(
+-    evidence_catalog, capsys
+-):
+-    from company_wiki.source_catalog.cli import main
+-
+-    query = _query_module()
+-    catalog = evidence_catalog["catalog"]
+-    target = _span_by_kind(evidence_catalog, "table")
+-    with catalog.store.transaction() as connection:
+-        connection.execute(
+-            "UPDATE documents SET source_status='retired' WHERE document_id=?",
+-            (evidence_catalog["document_id"],),
+-        )
+-        connection.execute(
+-            "DELETE FROM evidence_spans WHERE document_id=?",
+-            (evidence_catalog["document_id"],),
+-        )
+-        connection.execute(
+-            "INSERT INTO catalog_meta(key,value) VALUES(?,?)",
+-            ("legacy_evidence_retention", "active_only"),
+-        )
+-    service = query.EvidenceQueryService(catalog.config.database_path)
+-    with pytest.raises(query.EvidenceQueryArchivedError, match="archived"):
+-        service.lookup(
+-            source_id=evidence_catalog["source_id"], locator=target["locator"]
+-        )
+-    with pytest.raises(query.EvidenceQueryArchivedError, match="archived"):
+-        service.list_spans(document_id=evidence_catalog["document_id"])
+-    with pytest.raises(query.EvidenceQueryArchivedError, match="archived"):
+-        service.list_spans(source_id=evidence_catalog["source_id"])
+-    with pytest.raises(query.EvidenceQueryNotFoundError):
+-        service.list_spans(source_id="urn:company-wiki:source:sha256:" + "0" * 64)
+-
+-    assert main([
+-        "--config", str(evidence_catalog["config_path"]),
+-        "evidence", "--source-id", evidence_catalog["source_id"],
+-        "--locator", target["locator"],
+-    ]) == 1
+-    error = json.loads(capsys.readouterr().err)
+-    assert error["error_type"] == "legacy_evidence_archived"
+-    assert error["retryable"] is False
+-
+-
+ def test_missing_database_is_unavailable_without_creating_parent(tmp_path):
+     query = _query_module()
+     database = tmp_path / "missing" / "catalog.sqlite3"
+diff --git a/tests/contract/test_source_catalog_worker_bootstrap.py b/tests/contract/test_source_catalog_worker_bootstrap.py
+--- a/tests/contract/test_source_catalog_worker_bootstrap.py
++++ b/tests/contract/test_source_catalog_worker_bootstrap.py
+@@ -758,6 +758,131 @@ def _launcher_events(project: Path) -> list[dict[str, object]]:
+     return [json.loads(line) for line in text.splitlines() if line.strip()]
+ 
+ 
++# ---------------------------------------------------------------------------
++# I-14-E-TESTSIDE — test-side timing fix (frozen in oracle.md §2, owner §二十五 A)
++# ---------------------------------------------------------------------------
++
++_WARMUP_PROBE_PS1 = r"""
++param(
++    [Parameter(Mandatory = $true)][string]$PythonExe,
++    [Parameter(Mandatory = $true)][string]$ProjectRoot,
++    [Parameter(Mandatory = $true)][string]$LogDir,
++    [double]$DeadlineSeconds = 60
++)
++$ErrorActionPreference = 'Stop'
++Set-Location -LiteralPath $ProjectRoot
++$env:PYTHONUTF8 = '1'
++$env:PYTHONIOENCODING = 'utf-8'
++$ConfigPath = Join-Path $ProjectRoot 'config/source_catalog.yaml'
++$WorkerConfigPath = Join-Path $ProjectRoot 'config/source_catalog_worker.yaml'
++$CatalogDir = Join-Path $ProjectRoot '.source_catalog'
++$Marker = Join-Path $CatalogDir 'fake_worker_count.txt'
++if (Test-Path -LiteralPath $Marker) { Remove-Item -LiteralPath $Marker -Force }
++New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
++$Arguments = @(
++    '-m', 'company_wiki.source_catalog.cli',
++    '--config', $ConfigPath,
++    'worker',
++    '--worker-config', $WorkerConfigPath
++)
++# Exactly the supervisor's own clock: $StartedAt immediately before Start-Process
++# (source_catalog_worker.ps1:327-333), same argv/cwd/redirects.
++$StartedAt = Get-Date
++$Child = Start-Process `
++    -FilePath $PythonExe `
++    -ArgumentList $Arguments `
++    -WorkingDirectory $ProjectRoot `
++    -WindowStyle Hidden `
++    -RedirectStandardOutput (Join-Path $LogDir 'warmup_stdout.log') `
++    -RedirectStandardError (Join-Path $LogDir 'warmup_stderr.log') `
++    -PassThru
++$ChildPid = $Child.Id
++$found = $false
++while (((Get-Date) - $StartedAt).TotalSeconds -lt $DeadlineSeconds) {
++    if (Test-Path -LiteralPath $Marker) { $found = $true; break }
++    Start-Sleep -Milliseconds 5
++}
++$t0 = ((Get-Date) - $StartedAt).TotalSeconds
++try {
++    if (-not $Child.HasExited) { $Child.Kill(); $null = $Child.WaitForExit(10000) }
++} catch { }
++if (-not $found) {
++    Write-Output ('ERR ' + $t0.ToString([cultureinfo]::InvariantCulture))
++    exit 2
++}
++Write-Output ('OK ' + $t0.ToString([cultureinfo]::InvariantCulture))
++exit 0
++"""
++
++
++def _measure_startup_bandwidth(tmp_path: Path, project: Path) -> float:
++    """t0 = launch -> first side effect, measured with the watchdog's own clock.
++
++    The warm-up child is started exactly the way the supervisor starts a child
++    (same PowerShell clock, same argv, same working directory, same redirects),
++    probed every 5 ms for ``.source_catalog/fake_worker_count.txt``, then killed.
++    The marker is deleted afterwards so the asserted run starts from the same
++    clean state as before the change.
++    """
++    script = tmp_path / "tside_warmup_probe.ps1"
++    script.write_text(_WARMUP_PROBE_PS1, encoding="utf-8")
++    completed = subprocess.run(
++        [
++            "powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy",
++            "Bypass", "-File", str(script),
++            "-PythonExe", sys.executable,
++            "-ProjectRoot", str(project),
++            "-LogDir", str(tmp_path / "tside_warmup_logs"),
++        ],
++        cwd=str(project),
++        capture_output=True,
++        text=True,
++        encoding="utf-8",
++        errors="replace",
++        timeout=120,
++        check=False,
++    )
++    lines = [line.strip() for line in (completed.stdout or "").splitlines() if line.strip()]
++    line = lines[-1] if lines else ""
++    if completed.returncode != 0 or not line.startswith("OK "):
++        raise AssertionError(
++            "startup-bandwidth warm-up failed: rc=%r stdout=%r stderr=%r"
++            % (completed.returncode, (completed.stdout or "")[-400:],
++               (completed.stderr or "")[-400:])
++        )
++    marker = project / ".source_catalog" / "fake_worker_count.txt"
++    if marker.exists():
++        marker.unlink()
++    return float(line[3:].split()[0])
++
++
++def _exported_hang_timeout(t0_seconds: float) -> float:
++    """建议1 + semantic upper bound, both derived in oracle.md §2.1.
++
++    lower: max(2.0, 4*t0) covers the worst tail the source card measured
++           (2.486 s) as long as t0 >= 0.6215 s; every cpu8 sample was >= 0.642 s.
++    upper: t0 + 3.0 keeps >= 2 s of margin before behaviour #1's 5 s sleep ends,
++           because the watchdog MUST still fire (otherwise the node loses its
++           ``child_unresponsive`` event and fails with StopIteration instead).
++    """
++    return min(max(2.0, 4.0 * t0_seconds), t0_seconds + 3.0)
++
++
++def _record_timing_trace(node: str, t0_seconds: float, hang_timeout_seconds: float) -> None:
++    """Optional evidence sink; the fix does not depend on it being set."""
++    path = os.environ.get("CW_TSIDE_TRACE_FILE")
++    if not path:
++        return
++    payload = {
++        "node": node,
++        "t0_seconds": round(t0_seconds, 4),
++        "hang_timeout_seconds": round(hang_timeout_seconds, 4),
++        "wall_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
++    }
++    with open(path, "a", encoding="utf-8") as handle:
++        handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
++
++
+ @pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell launcher integration")
+ def test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8(tmp_path):
+     project = _prepare_fake_launcher_project(
+@@ -899,10 +1024,16 @@ def test_child_without_runtime_session_is_terminated_and_restarted(tmp_path):
+         ],
+     )
+ 
++    # I-14-E-TESTSIDE (oracle.md §2.1): derive -WorkerHangTimeoutSeconds from
++    # this run's own measured startup bandwidth instead of a hard-coded 0.5 s.
++    t0_seconds = _measure_startup_bandwidth(tmp_path, project)
++    hang_timeout_seconds = _exported_hang_timeout(t0_seconds)
++    _record_timing_trace("child_without_runtime", t0_seconds, hang_timeout_seconds)
++
+     completed = _run_real_worker_launcher(
+         project,
+         timeout=15,
+-        worker_hang_timeout_seconds=0.5,
++        worker_hang_timeout_seconds=hang_timeout_seconds,
+         child_poll_milliseconds=100,
+     )
+ 
+diff --git a/tests/unit/test_error_taxonomy.py b/tests/unit/test_error_taxonomy.py
+--- a/tests/unit/test_error_taxonomy.py
++++ b/tests/unit/test_error_taxonomy.py
+@@ -14,7 +14,6 @@ from company_wiki.source_catalog.error_taxonomy import (
+     ERROR_TAXONOMY_SCHEMA,
+     ERROR_TAXONOMY_VERSION,
+     FATAL,
+-    LEGACY_EVIDENCE_ARCHIVED,
+     WORKER_PAUSED,
+     classify_error_type,
+     classify_exception,
+@@ -92,18 +91,6 @@ def test_unknown_error_type_fails_closed() -> None:
+     assert code == FATAL and retryable is False
+ 
+ 
+-def test_archived_legacy_evidence_is_explicit_and_non_retryable() -> None:
+-    from company_wiki.source_catalog.evidence_query import EvidenceQueryArchivedError
+-
+-    exc = EvidenceQueryArchivedError("legacy_evidence_archived")
+-    assert classify_exception(exc) == (LEGACY_EVIDENCE_ARCHIVED, False)
+-    assert classify_error_type("EvidenceQueryArchivedError") == (
+-        LEGACY_EVIDENCE_ARCHIVED,
+-        False,
+-    )
+-    assert structured_error(exc)["error_type"] == LEGACY_EVIDENCE_ARCHIVED
+-
+-
+ def test_operational_error_without_lock_text_fatal() -> None:
+     assert classify_error_type("OperationalError", "no such table: x") == (FATAL, False)
+ 
+@@ -124,8 +111,8 @@ def test_structured_error_emission_shape() -> None:
+ 
+ 
+ def test_taxonomy_versioned_and_retryable_set() -> None:
+-    assert ERROR_TAXONOMY_VERSION == "1.1"
+-    assert ERROR_TAXONOMY_SCHEMA == "error-taxonomy-1.1"
++    assert ERROR_TAXONOMY_VERSION == "1.0"
++    assert ERROR_TAXONOMY_SCHEMA == "error-taxonomy-1.0"
+     assert is_retryable(CATALOG_BUSY)
+     assert is_retryable(CATALOG_LOCKED)
+     assert is_retryable(DB_TIMEOUT)
+diff --git a/tests/unit/test_retire_source_catalog_db.py b/tests/unit/test_retire_source_catalog_db.py
+--- a/tests/unit/test_retire_source_catalog_db.py
++++ /dev/null
+@@ -1,239 +0,0 @@
+-"""Isolated rehearsal for the active-only, stream-verified retirement tool."""
+-
+-from __future__ import annotations
+-
+-import hashlib
+-import json
+-from pathlib import Path
+-import sqlite3
+-from contextlib import closing
+-from types import SimpleNamespace
+-
+-import pytest
+-
+-from scripts.retire_source_catalog_db import RetirementRefused, prepare
+-from scripts.cutover_source_catalog_db import CONTRACT_FILES, CutoverRefused, cutover, rollback, smoke, retire
+-import scripts.cutover_source_catalog_db as cutover_module
+-
+-
+-def _fixture_project(root: Path) -> tuple[Path, Path]:
+-    project = root / "project"
+-    catalog = project / ".source_catalog"
+-    catalog.mkdir(parents=True)
+-    (catalog / "worker_control.json").write_text(
+-        json.dumps({"desired_state": "paused"}), encoding="utf-8"
+-    )
+-    database = catalog / "catalog.sqlite3"
+-    with closing(sqlite3.connect(database)) as connection:
+-        connection.executescript(
+-            """
+-            CREATE TABLE catalog_meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+-            CREATE TABLE sources(source_id TEXT PRIMARY KEY,content_sha256 TEXT);
+-            CREATE TABLE documents(document_id TEXT PRIMARY KEY,
+-                primary_source_id TEXT REFERENCES sources(source_id),
+-                source_status TEXT NOT NULL);
+-            CREATE TABLE evidence_spans(span_id TEXT PRIMARY KEY,
+-                document_id TEXT REFERENCES documents(document_id),
+-                source_id TEXT REFERENCES sources(source_id),
+-                locator TEXT NOT NULL,raw_text TEXT NOT NULL);
+-            CREATE TABLE artifacts(artifact_id TEXT PRIMARY KEY,document_id TEXT);
+-            CREATE TABLE producer_events(event_id TEXT PRIMARY KEY,artifact_id TEXT);
+-            CREATE TRIGGER trg_artifact_event AFTER INSERT ON artifacts BEGIN
+-              INSERT INTO producer_events VALUES('event-' || NEW.artifact_id,NEW.artifact_id);
+-            END;
+-            CREATE INDEX idx_spans_document ON evidence_spans(document_id);
+-            INSERT INTO catalog_meta VALUES('schema_version','1.2.0');
+-            INSERT INTO sources VALUES('active-source','a');
+-            INSERT INTO sources VALUES('retired-source','b');
+-            INSERT INTO documents VALUES('active-doc','active-source','active');
+-            INSERT INTO documents VALUES('retired-doc','retired-source','retired');
+-            INSERT INTO evidence_spans VALUES('active-span','active-doc',
+-                'active-source','loc:v1/page:1','selected business text');
+-            INSERT INTO evidence_spans VALUES('retired-span','retired-doc',
+-                'retired-source','loc:v1/page:2','old text');
+-            INSERT INTO artifacts VALUES('artifact-a','active-doc');
+-            """
+-        )
+-    return project, database
+-
+-
+-def test_prepare_preserves_source_and_stream_verifies_without_full_restore(tmp_path):
+-    project, database = _fixture_project(tmp_path)
+-    Path(str(database) + "-wal").touch()
+-    Path(str(database) + "-shm").write_bytes(bytes(32768))
+-    before = hashlib.sha256(database.read_bytes()).hexdigest()
+-    result = prepare(
+-        project,
+-        "20260926T170000Z-a1b2c3d4",
+-        Path(r"C:\Miniconda\Library\bin\zstd.exe"),
+-    )
+-    assert result["source_sha256"] == before
+-    assert hashlib.sha256(database.read_bytes()).hexdigest() == before
+-    assert result["decompressed_sha256"] == before
+-    assert result["decompressed_bytes"] == database.stat().st_size
+-    assert result["full_disk_restore_performed"] is False
+-    assert result["tables"]["evidence_spans"]["rows"] == 1
+-    assert result["trigger_names"] == ["trg_artifact_event"]
+-    assert Path(result["backup_path"]).is_file()
+-    assert not list(Path(result["backup_path"]).parent.glob("*restored*"))
+-    with closing(sqlite3.connect(result["shadow_path"])) as shadow:
+-        assert shadow.execute("SELECT span_id FROM evidence_spans").fetchall() == [
+-            ("active-span",)
+-        ]
+-        assert shadow.execute(
+-            "SELECT value FROM catalog_meta WHERE key='legacy_evidence_retention'"
+-        ).fetchone() == ("active_only",)
+-        assert shadow.execute("PRAGMA quick_check").fetchone() == ("ok",)
+-        assert shadow.execute("SELECT COUNT(*) FROM producer_events").fetchone() == (1,)
+-    assert json.loads(
+-        (Path(result["backup_path"]).parent / "prepared.json").read_text(
+-            encoding="utf-8"
+-        )
+-    )["cutover_performed"] is False
+-
+-
+-def test_prepare_refuses_unpaused_worker(tmp_path):
+-    project, database = _fixture_project(tmp_path)
+-    (project / ".source_catalog" / "worker_control.json").write_text(
+-        json.dumps({"desired_state": "running"}), encoding="utf-8"
+-    )
+-    with pytest.raises(RetirementRefused, match="paused"):
+-        prepare(
+-            project,
+-            "20260926T170000Z-a1b2c3d4",
+-            Path(r"C:\Miniconda\Library\bin\zstd.exe"),
+-        )
+-    assert database.is_file()
+-    assert not (project / ".source_catalog" / "retirement").exists()
+-
+-
+-def test_prepare_refuses_nonempty_wal(tmp_path):
+-    project, database = _fixture_project(tmp_path)
+-    Path(str(database) + "-wal").write_bytes(b"uncheckpointed")
+-    with pytest.raises(RetirementRefused, match="WAL"):
+-        prepare(
+-            project,
+-            "20260926T170000Z-a1b2c3d4",
+-            Path(r"C:\Miniconda\Library\bin\zstd.exe"),
+-        )
+-
+-
+-def test_cutover_requires_audits_and_can_rollback_exact_files(tmp_path):
+-    project, database = _fixture_project(tmp_path)
+-    Path(str(database) + "-wal").touch()
+-    Path(str(database) + "-shm").write_bytes(bytes(32768))
+-    result = prepare(
+-        project,
+-        "20260926T170000Z-a1b2c3d4",
+-        Path(r"C:\Miniconda\Library\bin\zstd.exe"),
+-    )
+-    receipt = Path(result["backup_path"]).parent / "prepared.json"
+-    with pytest.raises(FileNotFoundError):
+-        cutover(receipt)
+-    assert database.is_file()
+-    assert Path(result["shadow_path"]).is_file()
+-    _write_audits(receipt, result)
+-    cut = cutover(receipt)
+-    assert cut["production_sha256"] == result["shadow_sha256"]
+-    assert hashlib.sha256(database.read_bytes()).hexdigest() == result["shadow_sha256"]
+-    assert Path(str(database) + "-wal").exists() is False
+-    assert Path(str(database) + "-shm").exists() is False
+-    old = Path(cut["old_database"])
+-    assert hashlib.sha256(old.read_bytes()).hexdigest() == result["source_sha256"]
+-    rolled = rollback(receipt)
+-    assert rolled["source_sha256"] == result["source_sha256"]
+-    assert hashlib.sha256(database.read_bytes()).hexdigest() == result["source_sha256"]
+-    assert Path(str(database) + "-wal").exists()
+-    assert Path(str(database) + "-shm").exists()
+-    assert not old.exists()
+-
+-
+-def _write_audits(receipt: Path, result: dict):
+-    project = Path(result["project_root"])
+-    contract_hashes = {}
+-    for relative in CONTRACT_FILES:
+-        path = project / relative
+-        path.parent.mkdir(parents=True, exist_ok=True)
+-        path.write_text("fixture contract", encoding="utf-8")
+-        contract_hashes[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+-    sibling_root = Path(result["project_root"]).parent
+-    dependency_files = {
+-        "stockwiki_config_sha256": sibling_root / "StockWiki" / "config" / "source_provider.yaml",
+-        "forecast_client_sha256": sibling_root / "revenue-forecast" / "scripts" / "filing_fetch_client.py",
+-        "filing_fetch_sha256": sibling_root / "filing-fetch" / "scripts" / "fetch_filing.py",
+-    }
+-    for path in dependency_files.values():
+-        path.parent.mkdir(parents=True, exist_ok=True)
+-        path.write_text("fixture consumer", encoding="utf-8")
+-    (receipt.parent / "evidence_audit.json").write_text(json.dumps({
+-        "schema": "catalog-retirement-evidence-audit-v1",
+-        "status": "passed",
+-        "old_source_sha256": result["source_sha256"],
+-        "shadow_sha256": result["shadow_sha256"],
+-    }), encoding="utf-8")
+-    (receipt.parent / "consumer_audit.json").write_text(json.dumps({
+-        "schema": "catalog-retirement-consumer-audit-v1",
+-        "status": "passed",
+-        "source_sha256": result["source_sha256"],
+-        "shadow_sha256": result["shadow_sha256"],
+-        "contracts_checked": ["fixture-consumer"],
+-        **{key: hashlib.sha256(path.read_bytes()).hexdigest()
+-           for key, path in dependency_files.items()},
+-        "company_wiki_contract_sha256": contract_hashes,
+-    }), encoding="utf-8")
+-
+-
+-def test_retire_requires_separated_smokes_and_deletes_only_exact_old_files(tmp_path, monkeypatch):
+-    project, database = _fixture_project(tmp_path)
+-    Path(str(database) + "-wal").touch()
+-    Path(str(database) + "-shm").write_bytes(bytes(32768))
+-    result = prepare(project, "20260926T170000Z-a1b2c3d4",
+-                     Path(r"C:\Miniconda\Library\bin\zstd.exe"))
+-    receipt = Path(result["backup_path"]).parent / "prepared.json"
+-    _write_audits(receipt, result)
+-    old = Path(cutover(receipt)["old_database"])
+-
+-    class _Evidence:
+-        def lookup(self, **kwargs):
+-            return SimpleNamespace(document_id="active-doc")
+-
+-    monkeypatch.setattr("scripts.cutover_source_catalog_db.EvidenceQueryService",
+-                        lambda path: _Evidence())
+-    assert smoke(receipt, 1)["status"] == "passed"
+-    assert smoke(receipt, 2)["status"] == "passed"
+-    with pytest.raises(CutoverRefused, match="too close"):
+-        retire(receipt)
+-    deleted = retire(receipt, minimum_interval_seconds=0)
+-    assert deleted["deleted_database"] == str(old)
+-    assert not old.exists()
+-    assert not Path(str(old) + "-wal").exists()
+-    assert not Path(str(old) + "-shm").exists()
+-    assert hashlib.sha256(database.read_bytes()).hexdigest() == result["shadow_sha256"]
+-    assert Path(result["backup_path"]).is_file()
+-    with pytest.raises(CutoverRefused, match="deletion has already begun"):
+-        rollback(receipt)
+-
+-
+-def test_cutover_interrupted_after_old_rename_restores_old_and_sidecars(tmp_path, monkeypatch):
+-    project, database = _fixture_project(tmp_path)
+-    Path(str(database) + "-wal").touch()
+-    Path(str(database) + "-shm").write_bytes(bytes(32768))
+-    result = prepare(project, "20260926T170000Z-a1b2c3d4",
+-                     Path(r"C:\Miniconda\Library\bin\zstd.exe"))
+-    receipt = Path(result["backup_path"]).parent / "prepared.json"
+-    _write_audits(receipt, result)
+-    real_rename = cutover_module._rename
+-
+-    def fail_shadow(source, target):
+-        if source.name == "catalog.active.sqlite3":
+-            raise PermissionError("injected failure after old rename")
+-        real_rename(source, target)
+-
+-    monkeypatch.setattr(cutover_module, "_rename", fail_shadow)
+-    with pytest.raises(PermissionError, match="injected failure"):
+-        cutover(receipt)
+-    assert hashlib.sha256(database.read_bytes()).hexdigest() == result["source_sha256"]
+-    assert Path(str(database) + "-wal").exists()
+-    assert Path(str(database) + "-shm").exists()
+-    assert Path(result["shadow_path"]).exists()
+-    assert not Path(str(database) + ".retiring." + result["run_id"]).exists()

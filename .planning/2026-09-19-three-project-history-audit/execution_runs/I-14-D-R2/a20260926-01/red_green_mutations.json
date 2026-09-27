@@ -1,0 +1,152 @@
+{
+  "schema": "i14d_r2_red_green_mutations/1",
+  "round": "I-14-D-R2",
+  "attempt": "execution_runs/I-14-D-R2/a20260926-01",
+  "oracle": {
+    "file": "oracle.md",
+    "frozen_before_fix": true,
+    "frozen_prefix_bytes": 18054,
+    "frozen_prefix_sha256": "71cbff493122d1f0905fd0eb5b6bfed0b0d7d0128bcdf475748bf32750ab1383",
+    "append_only_after_runs": true,
+    "appendix_only_after_freeze": true,
+    "criteria_changed_by_appendix": false
+  },
+  "instruments": {
+    "oracle_runner": "harness/run_oracle_r2.py (A0-A17 inherited + P1-P10 new auth + P11 persisted via _check)",
+    "persistence_probe": "harness/persist_probe.py (mirrors worker.py:1060/1066/1072-1079, appends JSONL inside this attempt, reads it back)",
+    "d_family_probe": "harness/probe_dfamily.py (reviewer's D1-D9 table + the dispatched core case)",
+    "rule_table_cross_check": "read-only I-14-D/a20260919-01/harness/run_rule_table_i14d.py (79-row evolved table, NOT a criterion of this round)",
+    "diff": "harness/make_diff_r2.py + harness/verify_diff_r2.py",
+    "exit_code_legend": "0 = all criteria pass, 2 = cannot adjudicate, 3 = at least one criterion failed, 4 = fail-closed abort"
+  },
+  "new_auth_cases": [
+    {"id": "P1-bearer-lf-secret-doc17", "in": "Authorization: Bearer\\nSYNTHETIC_AUDIT_TOKEN\\ndoc=17", "expected": "Authorization: <redacted>\\ndoc=17", "len": 32},
+    {"id": "P2-s39-lf-secret-doc17", "in": "Authorization: Bearer\\nghp_ZQ7ReviewerFakeCredential0123456789\\ndoc=17", "expected": "Authorization: <redacted>\\ndoc=17", "len": 32},
+    {"id": "P3-bearer-space-lf", "in": "Authorization: Bearer \\n<SECRET>", "expected": "Authorization: <redacted>", "len": 25},
+    {"id": "P4-nospace-colon", "in": "Authorization:Bearer\\n<SECRET>", "expected": "Authorization:<redacted>", "len": 24},
+    {"id": "P5-lowercase-token-key", "in": "authorization: token\\n<SECRET>", "expected": "authorization: <redacted>", "len": 25},
+    {"id": "P6-crlf", "in": "Authorization: Bearer\\r\\n<SECRET>", "expected": "Authorization: <redacted>", "len": 25},
+    {"id": "P7-obsfold", "in": "Authorization: Bearer\\n  <SECRET>", "expected": "Authorization: <redacted>", "len": 25},
+    {"id": "P8-midline", "in": "stage=summarize Authorization: Bearer\\n<SECRET>\\nrequest_id=req-1", "expected": "stage=summarize Authorization: <redacted>\\nrequest_id=req-1", "len": 58},
+    {"id": "P9-tab-sep", "in": "Authorization: Bearer\\t<SECRET>", "expected": "Authorization: <redacted>", "len": 25, "kind": "auth_keep"},
+    {"id": "P10-sameline", "in": "Authorization: Bearer <SECRET>", "expected": "Authorization: <redacted>", "len": 25, "kind": "auth_keep"},
+    {"id": "P11-persisted-event", "rule": "for P1 and P2 the value written to the append-only log (message_redacted = redact_and_truncate(message)) must contain <redacted> and doc=17, must not contain SYNTHETIC_AUDIT_TOKEN or ghp_ZQ7...789, and must be <= 200 chars, also after a JSONL write/read round trip"}
+  ],
+  "arms": {
+    "red_original_defect": {
+      "tree": "iso/product_pre",
+      "tree_sha256": "e8abd522b2072add062be225d7ec1ca10621ffa5be7841f99ef9fb339015cbd0",
+      "tree_bytes": 40476,
+      "tree_identity": "byte-identical to the iso/product_narrow tree reviewer_report.md L56 measured (the delivered r1 narrowing)",
+      "oracle_rc": 3,
+      "inherited_A0_A17_failed": [],
+      "auth_new_failed": ["P1-bearer-lf-secret-doc17", "P2-s39-lf-secret-doc17", "P3-bearer-space-lf", "P4-nospace-colon", "P5-lowercase-token-key", "P6-crlf", "P7-obsfold", "P8-midline"],
+      "auth_leak_rows": ["P1-bearer-lf-secret-doc17", "P2-s39-lf-secret-doc17", "P3-bearer-space-lf", "P4-nospace-colon", "P5-lowercase-token-key", "P6-crlf", "P7-obsfold", "P8-midline"],
+      "persistence_probe_rc": 3,
+      "persistence_verdict": "SECRET_PERSISTED",
+      "persisted_value": "Authorization: <redacted>\\nghp_ZQ7ReviewerFakeCredential0123456789\\ndoc=17",
+      "d_family_probe_rc": 3,
+      "d_family_leak_rows": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "R2-core", "R2-core-marker"],
+      "evidence": ["evidence/red_oracle_product_pre.json", "evidence/red_persist_product_pre.json", "evidence/red_worker_process_events.jsonl", "evidence/dfamily_product_pre.json"],
+      "note": "the inherited section stays GREEN on the red arm: the defect is isolated to the authorization path, exactly as the review states"
+    },
+    "green_fix": {
+      "tree": "iso/product_post",
+      "tree_sha256": "8dab63d9c21a7f32679b11c6ef5d4337bdac33b4ff4f4b6a937a17ced87107ca",
+      "tree_bytes": 41304,
+      "delta_bytes": 828,
+      "only_file_changed_vs_pre": "company_wiki/source_catalog/observability.py",
+      "oracle_rc": 0,
+      "inherited_A0_A17_failed": [],
+      "auth_new_failed": [],
+      "auth_leak_rows": [],
+      "persistence_probe_rc": 0,
+      "persistence_verdict": "PERSISTED_CLEAN",
+      "persisted_value": "Authorization: <redacted>\\ndoc=17",
+      "d_family_probe_rc": 0,
+      "d_family_leak_rows": [],
+      "evidence": ["evidence/green_oracle_product_post.json", "evidence/green_persist_product_post.json", "evidence/green_worker_process_events.jsonl", "evidence/dfamily_product_post.json"]
+    }
+  },
+  "mutations": [
+    {
+      "id": "M1_auth_path_unfixed",
+      "tree": "_mut/M1_auth_path_unfixed",
+      "tree_sha256": "a724850c893ac85d4f96c25985b6c0fd85d3ff7630bbebb839b2ab6d01b00026",
+      "single_site_edit": "remove `+ r\"|\" + _AUTH_SCHEME_SPLIT` from _AUTH_PATTERN's value group (the C13/narrow half stays fixed, the authorization path is not)",
+      "required_by_dispatch": "变异「只修 iso/narrow 不修授权路径」必须红",
+      "predicted_failure": "P1-P8 leak the credential; P11 persists it; section 4 stays green",
+      "oracle_rc": 3,
+      "inherited_failed": [],
+      "auth_new_failed": ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"],
+      "leak_rows": ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"],
+      "persistence_rc": 3,
+      "prediction_matched": true
+    },
+    {
+      "id": "M2_scheme_list_no_bearer_token",
+      "tree": "_mut/M2_scheme_list_no_bearer_token",
+      "tree_sha256": "29f6f8606b71d3b12698856ddbcb3b284cda1ad8f1e449c14993c430ba20c2a3",
+      "single_site_edit": "scheme-word alternation loses `bearer|token` -> `(?:basic|digest|oauth|jwt|apikey|api_key|sso)`",
+      "predicted_failure": "P1-P8 leak; P11 persists it",
+      "oracle_rc": 3,
+      "inherited_failed": [],
+      "auth_new_failed": ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"],
+      "leak_rows": ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"],
+      "persistence_rc": 3,
+      "prediction_matched": true
+    },
+    {
+      "id": "M3_scheme_split_multi_line_run",
+      "tree": "_mut/M3_scheme_split_multi_line_run",
+      "tree_sha256": "a9470c445ebee7668fe8860282fe0f622a86b94a41a9a2e2f016e07a5e16843f",
+      "single_site_edit": "the post-break token becomes a MULTI-LINE run `(?:[ \\t]*\\r?\\n[ \\t]*[^\\s,;&\"'|]+)+`",
+      "predicted_failure": "no leak, but doc=17 / request_id=req-1 are swallowed -> P1, P2, P8 fail on exact/contains; P11 fails the doc17 check",
+      "oracle_rc": 3,
+      "inherited_failed": [],
+      "auth_new_failed": ["P1", "P2", "P8"],
+      "leak_rows": [],
+      "persistence_rc": 3,
+      "prediction_matched": true
+    },
+    {
+      "id": "M4_split_no_crlf",
+      "tree": "_mut/M4_split_no_crlf",
+      "tree_sha256": "d9281d1d0255acc626c9b0c0fcdd7d43bdf5f8186f1b8929869ff0fe93d9c3b5",
+      "single_site_edit": "`\\r?\\n` -> `\\n` inside _AUTH_SCHEME_SPLIT (LF-only recognition)",
+      "predicted_failure": "P6 (CRLF header) leaks; all other rows green",
+      "oracle_rc": 3,
+      "inherited_failed": [],
+      "auth_new_failed": ["P6-crlf"],
+      "leak_rows": ["P6-crlf"],
+      "persistence_rc": 0,
+      "prediction_matched": true,
+      "note": "the persistence probe's input is LF, so it stays green for M4; the leak is caught by the P6 criterion"
+    }
+  ],
+  "post_tree_untouched_by_mutation_build": {
+    "sha_before": "8dab63d9c21a7f32679b11c6ef5d4337bdac33b4ff4f4b6a937a17ced87107ca",
+    "sha_after": "8dab63d9c21a7f32679b11c6ef5d4337bdac33b4ff4f4b6a937a17ced87107ca",
+    "unchanged": true,
+    "builder": "harness/build_mutations_r2.py (fail-closed on any anchor count != 1, rc 4)"
+  },
+  "supplementary_rule_table": {
+    "instrument": "read-only I-14-D/a20260919-01/harness/run_rule_table_i14d.py",
+    "rows": 79,
+    "product_pre": {"rc": 3, "credential_leaks": 8, "fidelity_failures": 29},
+    "product_post": {"rc": 3, "credential_leaks": 2, "fidelity_failures": 14,
+      "remaining_leaks": ["cred-auth-generic-negotiate-marker", "cred-auth-generic-scram-marker"]},
+    "dispatched_family_rows_all_green_on_post": ["cred-auth-split-bearer-lf", "cred-auth-split-bearer-crlf", "cred-auth-split-bearer-obsfold", "cred-auth-split-bearer-nospace", "cred-auth-split-token-scheme", "cred-auth-split-bearer-real-secret", "cred-auth-split-keeps-diagnostics"],
+    "status": "cross-check only, not a criterion of this round; the 2 remaining leaks are the out-of-scope generic-scheme family registered in oracle.md A.4",
+    "evidence": ["evidence/ruletable_product_pre.json", "evidence/ruletable_product_post.json"]
+  },
+  "summary": {
+    "red_rc": 3,
+    "green_rc": 0,
+    "mutation_rc": {"M1": 3, "M2": 3, "M3": 3, "M4": 3},
+    "mutations_run": 4,
+    "mutations_required": 3,
+    "all_predictions_matched": true,
+    "secret_persistence_fixed": true
+  }
+}

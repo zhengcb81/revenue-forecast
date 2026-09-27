@@ -1,0 +1,317 @@
+﻿.FF..F.F.FF..F.F.F                                                       [100%]
+================================== FAILURES ===================================
+_________ AttestationTests.test_bare_py_source_is_capability_unproven _________
+
+self = <test_attestation.AttestationTests testMethod=test_bare_py_source_is_capability_unproven>
+
+    def test_bare_py_source_is_capability_unproven(self) -> None:
+        bare = Path(self._temporary.name) / "provider.py"
+        bare.write_text("print('{}')\n", encoding="utf-8")
+>       self._reverse_case(code="provider_capability_unproven", provider=str(bare))  # E32
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_attestation.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_attestation.AttestationTests testMethod=test_bare_py_source_is_capability_unproven>
+code = 'provider_capability_unproven'
+provider = 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\tmppfzsad16\\provider.py'
+allow_protocol_faults = False
+
+    def _reverse_case(
+        self,
+        *,
+        code: str,
+        provider: str | None,
+        allow_protocol_faults: bool = False,
+    ) -> None:
+        if provider is None:
+            os.environ.pop("REVENUE_ATTESTATION_PROVIDER", None)
+        else:
+            os.environ["REVENUE_ATTESTATION_PROVIDER"] = provider
+        self.assertFalse(attestation_capability())
+        result = run_forecast(forecast_document())
+        receipt = result["publication_receipt"]
+>       outcome = result["publication_attestation_outcome"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'publication_attestation_outcome'
+
+tests\test_attestation.py:265: KeyError
+_______ AttestationTests.test_directory_as_provider_reports_unopenable ________
+
+self = <test_attestation.AttestationTests testMethod=test_directory_as_provider_reports_unopenable>
+
+    def test_directory_as_provider_reports_unopenable(self) -> None:
+>       self._reverse_case(
+            code="provider_path_unopenable", provider=self._temporary.name  # E02
+        )
+
+tests\test_attestation.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_attestation.AttestationTests testMethod=test_directory_as_provider_reports_unopenable>
+code = 'provider_path_unopenable'
+provider = 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\tmpepsg9we8'
+allow_protocol_faults = False
+
+    def _reverse_case(
+        self,
+        *,
+        code: str,
+        provider: str | None,
+        allow_protocol_faults: bool = False,
+    ) -> None:
+        if provider is None:
+            os.environ.pop("REVENUE_ATTESTATION_PROVIDER", None)
+        else:
+            os.environ["REVENUE_ATTESTATION_PROVIDER"] = provider
+        self.assertFalse(attestation_capability())
+        result = run_forecast(forecast_document())
+        receipt = result["publication_receipt"]
+>       outcome = result["publication_attestation_outcome"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'publication_attestation_outcome'
+
+tests\test_attestation.py:265: KeyError
+_______ AttestationTests.test_missing_provider_path_reports_unopenable ________
+
+self = <test_attestation.AttestationTests testMethod=test_missing_provider_path_reports_unopenable>
+
+    def test_missing_provider_path_reports_unopenable(self) -> None:
+>       self._reverse_case(
+            code="provider_path_unopenable",
+            provider=str(Path(self._temporary.name) / "not_here.exe"),  # E02
+        )
+
+tests\test_attestation.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_attestation.AttestationTests testMethod=test_missing_provider_path_reports_unopenable>
+code = 'provider_path_unopenable'
+provider = 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\tmpp12c_b9l\\not_here.exe'
+allow_protocol_faults = False
+
+    def _reverse_case(
+        self,
+        *,
+        code: str,
+        provider: str | None,
+        allow_protocol_faults: bool = False,
+    ) -> None:
+        if provider is None:
+            os.environ.pop("REVENUE_ATTESTATION_PROVIDER", None)
+        else:
+            os.environ["REVENUE_ATTESTATION_PROVIDER"] = provider
+        self.assertFalse(attestation_capability())
+        result = run_forecast(forecast_document())
+        receipt = result["publication_receipt"]
+>       outcome = result["publication_attestation_outcome"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'publication_attestation_outcome'
+
+tests\test_attestation.py:265: KeyError
+_______ AttestationTests.test_no_provider_means_unattested_publication ________
+
+self = <test_attestation.AttestationTests testMethod=test_no_provider_means_unattested_publication>
+
+    def test_no_provider_means_unattested_publication(self) -> None:
+        result = run_forecast(forecast_document())
+        self.assertEqual(
+            result["publication_receipt"]["attestation_status"], "unattested"
+        )
+        self.assertFalse(attestation_capability())
+        self.assertNotIn("publication_attestation", result)
+>       outcome = result["publication_attestation_outcome"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'publication_attestation_outcome'
+
+tests\test_attestation.py:141: KeyError
+___________ AttestationTests.test_plain_txt_is_capability_unproven ____________
+
+self = <test_attestation.AttestationTests testMethod=test_plain_txt_is_capability_unproven>
+
+    def test_plain_txt_is_capability_unproven(self) -> None:
+        text = Path(self._temporary.name) / "notes.txt"
+        text.write_text("definitely not a provider\n", encoding="utf-8")
+>       self._reverse_case(code="provider_capability_unproven", provider=str(text))  # E32
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_attestation.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_attestation.AttestationTests testMethod=test_plain_txt_is_capability_unproven>
+code = 'provider_capability_unproven'
+provider = 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\tmpuyfoyho4\\notes.txt'
+allow_protocol_faults = False
+
+    def _reverse_case(
+        self,
+        *,
+        code: str,
+        provider: str | None,
+        allow_protocol_faults: bool = False,
+    ) -> None:
+        if provider is None:
+            os.environ.pop("REVENUE_ATTESTATION_PROVIDER", None)
+        else:
+            os.environ["REVENUE_ATTESTATION_PROVIDER"] = provider
+        self.assertFalse(attestation_capability())
+        result = run_forecast(forecast_document())
+        receipt = result["publication_receipt"]
+>       outcome = result["publication_attestation_outcome"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'publication_attestation_outcome'
+
+tests\test_attestation.py:265: KeyError
+___ AttestationTests.test_provider_handshake_means_host_signed_publication ____
+
+self = <test_attestation.AttestationTests testMethod=test_provider_handshake_means_host_signed_publication>
+
+    def test_provider_handshake_means_host_signed_publication(self) -> None:
+        """host_signed now requires one successful handshake + a trusted signature."""
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    
+        private_key = Ed25519PrivateKey.generate()
+        public_bytes = private_key.public_key().public_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PublicFormat.Raw,
+        )
+        fingerprint = hashlib.sha256(public_bytes).hexdigest()[:32]
+        self._write_domain(public_bytes, fingerprint)
+    
+        # the provider is "executable + script", never a bare interpreter waiting
+        # on stdin; its stamp is an offset from the request's own issued_at
+        os.environ["REVENUE_ATTESTATION_PROVIDER"] = sys.executable
+        os.environ["I08B_FAKE_KEY_HEX"] = private_key.private_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PrivateFormat.Raw,
+            encryption_algorithm=serialization.NoEncryption(),
+        ).hex()
+        os.environ["I08B_FAKE_ISSUER"] = ISSUER
+        os.environ["I08B_FAKE_MODE"] = "ok"
+        os.environ["I08B_FAKE_SIGNED_AT"] = "+1"
+    
+>       self.assertTrue(attestation_capability())
+E       AssertionError: False is not true
+
+tests\test_attestation.py:172: AssertionError
+_________ AttestationTests.test_sys_executable_is_capability_unproven _________
+
+self = <test_attestation.AttestationTests testMethod=test_sys_executable_is_capability_unproven>
+
+    def test_sys_executable_is_capability_unproven(self) -> None:
+        """A real executable that speaks no protocol must never be capability."""
+>       self._reverse_case(
+            code="provider_capability_unproven",  # E32
+            provider=sys.executable,
+            allow_protocol_faults=True,
+        )
+
+tests\test_attestation.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_attestation.AttestationTests testMethod=test_sys_executable_is_capability_unproven>
+code = 'provider_capability_unproven', provider = 'C:\\Miniconda\\python.exe'
+allow_protocol_faults = True
+
+    def _reverse_case(
+        self,
+        *,
+        code: str,
+        provider: str | None,
+        allow_protocol_faults: bool = False,
+    ) -> None:
+        if provider is None:
+            os.environ.pop("REVENUE_ATTESTATION_PROVIDER", None)
+        else:
+            os.environ["REVENUE_ATTESTATION_PROVIDER"] = provider
+        self.assertFalse(attestation_capability())
+        result = run_forecast(forecast_document())
+        receipt = result["publication_receipt"]
+>       outcome = result["publication_attestation_outcome"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'publication_attestation_outcome'
+
+tests\test_attestation.py:265: KeyError
+________ AttestationTests.test_unset_provider_reports_provider_absent _________
+
+self = <test_attestation.AttestationTests testMethod=test_unset_provider_reports_provider_absent>
+
+    def test_unset_provider_reports_provider_absent(self) -> None:
+>       self._reverse_case(code="provider_absent", provider=None)  # E01
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_attestation.py:215: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_attestation.AttestationTests testMethod=test_unset_provider_reports_provider_absent>
+code = 'provider_absent', provider = None, allow_protocol_faults = False
+
+    def _reverse_case(
+        self,
+        *,
+        code: str,
+        provider: str | None,
+        allow_protocol_faults: bool = False,
+    ) -> None:
+        if provider is None:
+            os.environ.pop("REVENUE_ATTESTATION_PROVIDER", None)
+        else:
+            os.environ["REVENUE_ATTESTATION_PROVIDER"] = provider
+        self.assertFalse(attestation_capability())
+        result = run_forecast(forecast_document())
+        receipt = result["publication_receipt"]
+>       outcome = result["publication_attestation_outcome"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'publication_attestation_outcome'
+
+tests\test_attestation.py:265: KeyError
+_____ AttestationTests.test_unstartable_executable_is_capability_unproven _____
+
+self = <test_attestation.AttestationTests testMethod=test_unstartable_executable_is_capability_unproven>
+
+    def test_unstartable_executable_is_capability_unproven(self) -> None:
+        stub = Path(self._temporary.name) / "provider.exe"
+        stub.write_bytes(b"")
+>       self._reverse_case(code="provider_capability_unproven", provider=str(stub))  # E32
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_attestation.py:249: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_attestation.AttestationTests testMethod=test_unstartable_executable_is_capability_unproven>
+code = 'provider_capability_unproven'
+provider = 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\tmpwokt7n3a\\provider.exe'
+allow_protocol_faults = False
+
+    def _reverse_case(
+        self,
+        *,
+        code: str,
+        provider: str | None,
+        allow_protocol_faults: bool = False,
+    ) -> None:
+        if provider is None:
+            os.environ.pop("REVENUE_ATTESTATION_PROVIDER", None)
+        else:
+            os.environ["REVENUE_ATTESTATION_PROVIDER"] = provider
+        self.assertFalse(attestation_capability())
+        result = run_forecast(forecast_document())
+        receipt = result["publication_receipt"]
+>       outcome = result["publication_attestation_outcome"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'publication_attestation_outcome'
+
+tests\test_attestation.py:265: KeyError
+=========================== short test summary info ===========================
+FAILED tests/test_attestation.py::AttestationTests::test_bare_py_source_is_capability_unproven
+FAILED tests/test_attestation.py::AttestationTests::test_directory_as_provider_reports_unopenable
+FAILED tests/test_attestation.py::AttestationTests::test_missing_provider_path_reports_unopenable
+FAILED tests/test_attestation.py::AttestationTests::test_no_provider_means_unattested_publication
+FAILED tests/test_attestation.py::AttestationTests::test_plain_txt_is_capability_unproven
+FAILED tests/test_attestation.py::AttestationTests::test_provider_handshake_means_host_signed_publication
+FAILED tests/test_attestation.py::AttestationTests::test_sys_executable_is_capability_unproven
+FAILED tests/test_attestation.py::AttestationTests::test_unset_provider_reports_provider_absent
+FAILED tests/test_attestation.py::AttestationTests::test_unstartable_executable_is_capability_unproven
+9 failed, 9 passed in 16.46s

@@ -1,0 +1,95 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "4b1748649da296252896ac9823f4f798ba656bcd",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1009* + real legacy-gate scan + disposition verify",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 zr1009 套件；真实扫描 callers_found 2 findings quality.yml->closure_ledger successor CA-201；disposition counts I31/C26/S9/P5）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1009_legacy_removal.py -q --timeout=600",
+      "exit_code": 0,
+      "result": "9 passed in 80.15s (C1 caller gate honest + scratch isolation; C2 two dynamic cycles zero-hit + reappearance fail-closed; C3 disposition validates + N-1 targets; C4 removal drift detection + new freeze green + gate isolated)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1001_release_readiness.py tests/test_zr1004_small_cohort.py tests/test_zr1007_mine_shadow.py tests/test_zr1008_new_chain_cutover.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "37 passed in 3.61s (相邻契约回归 OK)"
+    },
+    {
+      "command": "python -m pytest tests/test_legacy_gate.py tests/test_legacy_disposition.py -q (assurance/unified_completion cwd)",
+      "exit_code": 0,
+      "result": "13 passed in 0.66s (工具自身回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_zr1009_legacy_removal.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "7eb8392 test(ZR-1009) — 1 file +238"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "927 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T14:00:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: real three-repo scan verdict=callers_found (2 findings: revenue .github/workflows/quality.yml -> verify_closure_ledger/closure_ledger, severity P2, successor CA-201) — honest NOT-approved state for CA-304 removal gate; scratch clean repo isolated=True. C2: two freeze->verify cycles on scratch trio both [] (absent sentinels zero-hit, no drift); deleted-symbol reappearance -> verify fail-closed. C3: frozen legacy_disposition re-validates (71 FC rows, counts I31/C26/S9/P5, every successor defined, graph acyclic); 5 pending closure items (FC-150x, class P) are N-1 approval targets; CA-304 reachable in known_units. C4: after deleting legacy tool, old freeze verify != [] (index statistic drift detected — removal provably alters index); new freeze verify == [] (matrix replayable); absent sentinel zero-hit; legacy-gate isolated.",
+      "id": "ZR1009-IMPL-001",
+      "severity": "info",
+      "title": "legacy 路由/代码删除门验收（caller 诚实报告/≥2 周期 zero-hit/N-1 批准/删除后全绿）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr1009_legacy_removal.py（9 tests）：C1 真实三仓 caller 扫描诚实报告 + scratch 隔离；C2 scratch 三仓两轮 freeze→verify zero-hit + 重现 fail-closed（真实 codegraph CLI）；C3 legacy_disposition 验证 + 5 个 N-1 批准目标；C4 删除后旧 freeze 漂移检测 + 新 freeze 全绿 + 门 isolated。产品零改动、零真实删除（CA-304 唯一拥有）。",
+    "files": [
+      "revenue-forecast/tests/test_zr1009_legacy_removal.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1009/**"
+    ]
+  },
+  "implementer": "zr1009-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 7eb8392（revenue HEAD = ZR-1009 实现 commit，parent 4b17486）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 legacy 代码删除为 CA-304 唯一拥有的部署动作，不在本卡（C1 诚实 callers_found 证明未批准）。"
+  ],
+  "objective": "阶段 I 收官卡：legacy 路由/代码删除门（≥2 动态周期 zero-hit、CodeGraph caller=0、N-1 结束批准；删除后全矩阵/回滚绿）",
+  "plan_sha256": "30d58b2ab55554e46b0d90c89dcf57934b57e970ed01318a7aa4f7754b49544f",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "7eb8392579752e9b501f03f75990eef1097ad588",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr1009_legacy_removal.py (new 9 tests)；assurance/unified_completion/receipts/ZR-1009/** 与 state.json。产品代码零改动、零真实删除。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_code_removals": 0,
+    "registry_writes": 0,
+    "scratch_index_cycles": 6
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1009_legacy_removal.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1009/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1009",
+  "canonical_hash": "12ebc05c1c20c43a266b2c3f99a4a766c7d3068abb051886836375b6a930fb6c"
+}

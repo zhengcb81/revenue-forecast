@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="1" tests="47" time="304.616" timestamp="2026-09-24T21:39:08.249296+01:00" hostname="DESKTOP-156V213"><testcase classname="tests.test_fc1001_isolated_lake" name="test_manifest_is_deterministic" time="0.716" /><testcase classname="tests.test_fc1001_isolated_lake" name="test_manifest_has_no_real_paths" time="0.099" /><testcase classname="tests.test_fc1001_isolated_lake" name="test_three_roots_resolve_consistently" time="0.113" /><testcase classname="tests.test_fc1001_isolated_lake" name="test_v2_artifacts_are_bindable" time="0.132" /><testcase classname="tests.test_fc1001_isolated_lake" name="test_corruption_variants_fail_closed[hash_mismatch]" time="0.216" /><testcase classname="tests.test_fc1001_isolated_lake" name="test_corruption_variants_fail_closed[truncated_source]" time="0.246" /><testcase classname="tests.test_fc1001_isolated_lake" name="test_corruption_variants_fail_closed[sidecar_missing]" time="0.275"><skipped type="pytest.xfail" message="F-B01-7: sidecar-missing fail-closed is unimplemented (carrier: B06)" /></testcase><testcase classname="tests.test_fc1001_isolated_lake" name="test_corruption_variants_fail_closed[location_inactive]" time="0.311" /><testcase classname="tests.test_fc1001_isolated_lake" name="test_corruption_variants_fail_closed[column_drop]" time="0.258" /><testcase classname="tests.test_fc1003_uj" name="test_uj01_companies_only_journey_zero_side_effects" time="2.389" /><testcase classname="tests.test_fc1003_uj" name="test_uj02_dayu_only_raw_no_download" time="0.247" /><testcase classname="tests.test_fc1003_uj" name="test_uj04_all_missing_structured_gap" time="1.635" /><testcase classname="tests.test_fc1003_uj" name="test_uj07_identity_conflict_fails_closed" time="1.635" /><testcase classname="tests.test_fc1004_platform" name="test_port02_spaces_in_lake_path_consistent" time="0.474" /><testcase classname="tests.test_fc1004_platform" name="test_install_sync_gate_detects_drift" time="0.222"><failure message="AssertionError: sync failed: &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026...l\\Temp\\dsh-5SPejJ\\p\\pytest-of-郑曾波\\pytest-1\\test_install_sync_gate_detects0\\installed'], returncode=1, stdout='').returncode">tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/dsh-5SPejJ/p/pytest-of-郑曾波/pytest-1/test_install_sync_gate_detects0')
+
+    def test_install_sync_gate_detects_drift(tmp_path: Path):
+        """R4.2 install-sync consistency (self-contained): syncing the canonical
+        skill to a throwaway destination must yield an identical manifest
+        (repo == installed copy), proving the sync mechanism detects and closes
+        drift without depending on the real installed-copy state."""
+        dest = tmp_path / "installed"
+        proc = subprocess.run(
+            [sys.executable, "-B", str(PROJECT_ROOT / "tools" / "sync_installations.py"),
+             "--apply", "--destination", str(dest)],
+            capture_output=True, text=True, encoding="utf-8", timeout=120,
+            cwd=str(PROJECT_ROOT),
+        )
+&gt;       assert proc.returncode == 0, f"sync failed: {proc.stdout[-400:]}"
+E       AssertionError: sync failed: 
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026...l\\Temp\\dsh-5SPejJ\\p\\pytest-of-郑曾波\\pytest-1\\test_install_sync_gate_detects0\\installed'], returncode=1, stdout='').returncode
+
+tests\test_fc1004_platform.py:94: AssertionError</failure></testcase><testcase classname="tests.test_fc1004_platform" name="test_utf8_stdin_stdout_chain" time="2.387" /><testcase classname="tests.test_fc1105_fault_injection.TestFaultInjection" name="test_f1_stale_manifest_triplet_fails" time="0.129" /><testcase classname="tests.test_fc1105_fault_injection.TestFaultInjection" name="test_f2_missing_samples_fails" time="0.721" /><testcase classname="tests.test_fc1105_fault_injection.TestFaultInjection" name="test_f4_policy_drift_fails" time="0.675" /><testcase classname="tests.test_fc1105_fault_injection.TestFaultInjection" name="test_f6_dropbox_missing_fails_closed" time="0.318" /><testcase classname="tests.test_fc1105_fault_injection.TestFaultInjection" name="test_runner_robustness_utf8_and_atomic" time="0.685"><failure message="AssertionError: 1 != 0">self = &lt;test_fc1105_fault_injection.TestFaultInjection testMethod=test_runner_robustness_utf8_and_atomic&gt;
+
+    def test_runner_robustness_utf8_and_atomic(self):
+        """Runner robustness: UTF-8 reports + atomic dashboard ledger (no
+        leftover .tmp) + concurrent dashboard runs do not corrupt the
+        ledger."""
+        import concurrent.futures
+    
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            m = IsolatedLake(td, seed="fc1105").build()
+            runs = td / "runs"
+&gt;           self.assertEqual(_t2(m.catalog_path, runs, _manifest(td)), 0)
+E           AssertionError: 1 != 0
+
+tests\test_fc1105_fault_injection.py:151: AssertionError</failure></testcase><testcase classname="tests.test_zr1009_legacy_removal" name="test_c1_legacy_gate_report_shape" time="0.080" /><testcase classname="tests.test_zr1009_legacy_removal" name="test_c1_removal_not_approved_while_callers_exist" time="0.069" /><testcase classname="tests.test_zr1009_legacy_removal" name="test_c1_scratch_repo_isolation_holds_when_clean" time="0.011" /><testcase classname="tests.test_zr1009_legacy_removal" name="test_c2_two_dynamic_cycles_zero_hit" time="103.761" /><testcase classname="tests.test_zr1009_legacy_removal" name="test_c2_deleted_symbol_reappearance_fails_closed" time="51.472" /><testcase classname="tests.test_zr1009_legacy_removal" name="test_c3_disposition_validates_on_frozen_sources" time="0.010" /><testcase classname="tests.test_zr1009_legacy_removal" name="test_c3_disposition_artifact_is_fresh" time="0.027" /><testcase classname="tests.test_zr1009_legacy_removal" name="test_c3_pending_closure_items_have_successors" time="0.002" /><testcase classname="tests.test_zr1009_legacy_removal" name="test_c4_after_removal_gate_isolated_and_verify_green" time="122.151" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j1_reuses_filing_and_research_with_explainable_receipt" time="4.468" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j1_missing_document_fails_closed_into_tracked_demand" time="1.452" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j2_five_year_mine_contributions_reconcile_to_segments" time="0.113" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j2_kamoa_equity_chain_and_internal_flow_never_double_count" time="0.104" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j2_uncovered_business_is_honest_gap_not_fabricated_revenue" time="0.111" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j2_schema_38_operating_units_embedded_zero_numeric_drift" time="0.230" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j3_draft_is_renderable_and_registers_nothing" time="0.066" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j3_formal_results_replay_bit_identically" time="0.237" /><testcase classname="tests.test_zr709_zijin_journey" name="test_j3_snapshot_round_trip_replays" time="0.329" /><testcase classname="tests.test_preparation_e2e_success" name="test_full_chain_hits_fixture_record" time="3.028" /><testcase classname="tests.test_zr907_drift_patrol" name="test_c1_stale_schema_literal_detected" time="0.021" /><testcase classname="tests.test_zr907_drift_patrol" name="test_c1_real_tree_clean" time="0.042" /><testcase classname="tests.test_zr907_drift_patrol" name="test_c2_real_manifest_verify_clean" time="0.269" /><testcase classname="tests.test_zr907_drift_patrol" name="test_c2_injected_manifest_drift_detected" time="0.106" /><testcase classname="tests.test_zr907_drift_patrol" name="test_c3_patrol_reports_all_seven_checks" time="0.492" /><testcase classname="tests.test_zr907_drift_patrol" name="test_c3_patrol_core_gates_green" time="0.461"><failure message="AssertionError: installation must be green: {'check': 'installation', 'problems': ['installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.py\n  scripts/forecast/segments.py\n  scripts/generate_input_template.py\n  scripts/internal_flow.py\n  scripts/lint_input.py\n  scripts/mine_year_operation.py\n  scripts/mixed_recognition.py\n  scripts/model_extensions.py\n  scripts/model_registry.py\n  scripts/processed_artifact_canary.py\n  scripts/processing_demand.py\n  scripts/publication_registry.py\n'], 'ok': False}&#10;assert False">def test_c3_patrol_core_gates_green():
+        """schema/manifest/installation (skill hash) must be green.  config was
+        a KNOWN red (ZR-907 finding: future_lake vs CONFIG-DBX-02), fixed in
+        GP-001 by syncing the allowlist to {dropbox_stock, future_lake}."""
+        results = {entry["check"]: entry for entry in dp.patrol()}
+        for check in ("schema", "manifest", "installation"):
+&gt;           assert results[check]["ok"], f"{check} must be green: {results[check]}"
+E           AssertionError: installation must be green: {'check': 'installation', 'problems': ['installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.py\n  scripts/forecast/segments.py\n  scripts/generate_input_template.py\n  scripts/internal_flow.py\n  scripts/lint_input.py\n  scripts/mine_year_operation.py\n  scripts/mixed_recognition.py\n  scripts/model_extensions.py\n  scripts/model_registry.py\n  scripts/processed_artifact_canary.py\n  scripts/processing_demand.py\n  scripts/publication_registry.py\n'], 'ok': False}
+E           assert False
+
+tests\test_zr907_drift_patrol.py:102: AssertionError</failure></testcase><testcase classname="tests.test_zr907_drift_patrol" name="test_c3_cli_reports_all_checks" time="0.523"><failure message="AssertionError: assert None&#10; +  where None = &lt;function search at 0x00000124A9BA0D60&gt;('OK\\s+installation', 'OK   version\nFAIL installation\n     installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.p...emand.py\n  scripts/publication_registry.py\n\nOK   config\nOK   docs\nOK   dependencies\nOK   schema\nOK   manifest\n')&#10; +    where &lt;function search at 0x00000124A9BA0D60&gt; = re.search">def test_c3_cli_reports_all_checks():
+        proc = subprocess.run(
+            [sys.executable, "-B", str(ROOT / "tools" / "drift_patrol.py")],
+            capture_output=True, text=True, encoding="utf-8", timeout=300,
+        )
+        out = proc.stdout + proc.stderr
+        for check in ("version", "installation", "config", "docs",
+                      "dependencies", "schema", "manifest"):
+            assert check in out, f"check {check} missing from CLI output"
+        # schema/manifest/installation lines must be OK; config is known-red
+        assert re.search(r"OK\s+schema", out)
+        assert re.search(r"OK\s+manifest", out)
+&gt;       assert re.search(r"OK\s+installation", out)
+E       AssertionError: assert None
+E        +  where None = &lt;function search at 0x00000124A9BA0D60&gt;('OK\\s+installation', 'OK   version\nFAIL installation\n     installation sync drift:.py\n  scripts/fix_hashes.py\n  scripts/forecast/calc.p...emand.py\n  scripts/publication_registry.py\n\nOK   config\nOK   docs\nOK   dependencies\nOK   schema\nOK   manifest\n')
+E        +    where &lt;function search at 0x00000124A9BA0D60&gt; = re.search
+
+tests\test_zr907_drift_patrol.py:119: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,86 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1105",
+  "reviewer_identity": "reviewer-fc1105-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "4a89ec3e43299bf55c03ab04ca1e2745f85b39ac",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "a04e4136014a03ec821826daca0f01c8c58de6ad",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "commands_replayed": [
+    {
+      "command": "git diff 4a89ec3..a04e413 --stat",
+      "exit_code": 0,
+      "result": "exactly 3 files, 207 insertions, all in allowed_files"
+    },
+    {
+      "command": "ruff check the 3 files",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "pytest tests/test_fc1105_fault_injection.py -q",
+      "exit_code": 0,
+      "result": "5 passed"
+    },
+    {
+      "command": "pytest tests/test_fc1102_t2_runner.py tests/test_fc1104_dashboard.py -q",
+      "exit_code": 0,
+      "result": "9 passed (regression)"
+    },
+    {
+      "command": "pytest tests/ -q",
+      "exit_code": 0,
+      "result": "456 passed, 106 subtests, 0 failed, 0 skipped"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "M-A",
+      "killed": true,
+      "mutation": "policy-freshness block removed",
+      "result": "test_f4_policy_drift_fails FAILS; reverted"
+    },
+    {
+      "id": "M-B",
+      "killed": true,
+      "mutation": "samples check removed",
+      "result": "test_f2_missing_samples_fails FAILS; reverted"
+    }
+  ],
+  "scenario_results": [
+    {
+      "id": "AUD-01..08",
+      "status": "passed",
+      "note": "fault-injection matrix replayed GREEN (stale manifest / missing samples / policy drift / dropbox sidecar / robustness)"
+    },
+    {
+      "id": "negative-missing-policy",
+      "status": "passed",
+      "note": "deleted runtime_policy.json -> T2 exit 1 fail closed"
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true,
+    "note": "temp lakes only; 0 downloads/writes/mutations"
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "note": "runner change purely additive; only caller is main()"
+  },
+  "rollback": {
+    "passed": true,
+    "required": true,
+    "note": "git revert a04e413 -> tree byte-identical to base"
+  },
+  "unresolved_findings": [],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-12T00:00:00Z",
+  "reviewer_receipt_sha256": "a2a0d771a18e2701242ccb71f2234d9dab06c6303016171ac70f4f09fe0fe84f"
+}

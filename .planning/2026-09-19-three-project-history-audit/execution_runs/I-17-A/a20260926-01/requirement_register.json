@@ -1,0 +1,156 @@
+{
+ "schema_version": "1.0",
+ "card": "I-17-A",
+ "attempt": "a20260926-01",
+ "generated_at_utc": "2026-09-27T08:03:25Z",
+ "timezone": "GMT Standard Time (UTC+01:00 local; ledgers in UTC)",
+ "ledger_sources": {
+  "daily_manifest.json": {
+   "sha256": "130f120afbef999c4c68f31391036c9802425371986da2939a5ce34a04cbecd5",
+   "bytes": 457
+  },
+  "weekly_manifest.json": {
+   "sha256": "d45445baafb3dd2f3348c5b0853fe1afd10b78ea3b7d24c17c4e6f21b4df9156",
+   "bytes": 364
+  },
+  "monthly_manifest.json": {
+   "sha256": "703f45844030f14e32ae9966397af8ece636c64799e7536c5359f66ffb66d018",
+   "bytes": 349
+  },
+  "legacy_periods.json": {
+   "sha256": "58cd90d3f9abcf9c1df371d04e9d67b5d6c5151c608a97ed08b1ddaafec295ae",
+   "bytes": 1078
+  },
+  "ledger.json": {
+   "sha256": "f4bea6bd4ce692c9d3c3ea9225fc541d1097cab7e80e5ae5d0339fe191c8f044",
+   "bytes": 1302
+  },
+  "daily_alert.jsonl": {
+   "sha256": "7bfec4c407ab1a5d283786e6c1dab7985b470a8e374b68e624d005aaa760168e",
+   "bytes": 603
+  },
+  "weekly_alert.jsonl": {
+   "sha256": "5d40aaa83961136f6146a162ecf964eb9833fe05ed1fca23d3a9e364bf6eea10",
+   "bytes": 607
+  }
+ },
+ "counts": {
+  "daily": 7,
+  "weekly": 2,
+  "monthly_or_legacy": 3,
+  "release": 1,
+  "total": 7
+ },
+ "daily_checks_verbatim": [
+  "triplet",
+  "policy_freshness",
+  "samples",
+  "scan_health",
+  "legacy_hits",
+  "latency",
+  "roots_fingerprint"
+ ],
+ "note_on_counts": "card says '7 daily, 2 weekly and monthly etc' - 7 daily = daily report checks dict (len=7, self-counted); 2 weekly = W1+W2 (run + triplet binding); monthly M1+M2(+R1 pending)",
+ "tasks_installed": 0,
+ "install_note": "no monitoring automation created - card L9 forbids it unless user explicitly requests",
+ "requirements": [
+  {
+   "requirement_id": "D1-daily-7checks",
+   "kind": "daily",
+   "description": "Daily 7-check assertion: triplet, policy_freshness, samples, scan_health, legacy_hits, latency, roots_fingerprint (source: daily report checks dict len=7)",
+   "frequency": "every 24h",
+   "timezone": "GMT Standard Time (UTC+01:00 local; ledgers in UTC)",
+   "start": "2026-09-26T21:00:57.164510+00:00",
+   "due": "2026-09-27T21:00:57Z",
+   "interruption_allowed": true,
+   "recovery_rule": "restart the qualification window per recovery_rule; interruptions are preserved verbatim (never deleted or spliced)",
+   "status": "in_progress",
+   "fields_complete": true,
+   "notes": "latest run 20260926T210002Z ok=true observation_period=24h; daily alerts history shows 2 stale (09-06/09-07) + not-ok (09-19) - preserved, not spliced"
+  },
+  {
+   "requirement_id": "D2-daily-alert-chain",
+   "kind": "daily",
+   "description": "daily_alert.jsonl append-only alert chain integrity (reason/exit_code/acked fields present)",
+   "frequency": "every 24h",
+   "timezone": "GMT Standard Time (UTC+01:00 local; ledgers in UTC)",
+   "start": "2026-09-06T21:00:28Z",
+   "due": "2026-09-27T21:00:00Z",
+   "interruption_allowed": true,
+   "recovery_rule": "restart the qualification window per recovery_rule; interruptions are preserved verbatim (never deleted or spliced)",
+   "status": "in_progress",
+   "fields_complete": true,
+   "notes": "3 alert records preserved verbatim (stale x2, not-ok x1)"
+  },
+  {
+   "requirement_id": "W1-weekly-t3",
+   "kind": "weekly",
+   "description": "Weekly T3 suite run (weekly_alert.jsonl + weekly_manifest.json)",
+   "frequency": "every 7d",
+   "timezone": "GMT Standard Time (UTC+01:00 local; ledgers in UTC)",
+   "start": "2026-09-27T03:31:35.358242+00:00",
+   "due": "2026-10-04T03:31:35Z",
+   "interruption_allowed": true,
+   "recovery_rule": "restart the qualification window per recovery_rule; interruptions are preserved verbatim (never deleted or spliced)",
+   "status": "pending",
+   "fields_complete": true,
+   "notes": "latest 20260927T033001Z ok=false exit_code=1 reason='T3 suite exit 1' (also failed 2026-09-20) - FAILING, window kept in_progress->pending per F1: failure preserved, restart per recovery_rule"
+  },
+  {
+   "requirement_id": "W2-weekly-triplet-binding",
+   "kind": "weekly",
+   "description": "Weekly triplet binding check (filing/revenue/wiki shas recorded per run)",
+   "frequency": "every 7d",
+   "timezone": "GMT Standard Time (UTC+01:00 local; ledgers in UTC)",
+   "start": "2026-09-27T03:31:35.358242+00:00",
+   "due": "2026-10-04T03:31:35Z",
+   "interruption_allowed": true,
+   "recovery_rule": "restart the qualification window per recovery_rule; interruptions are preserved verbatim (never deleted or spliced)",
+   "status": "in_progress",
+   "fields_complete": true,
+   "notes": "current triplet filing=d35b6f5b09f1a7da revenue=b7a6a1167beeac69 wiki=dbe474504a6187e2"
+  },
+  {
+   "requirement_id": "M1-monthly-manifest",
+   "kind": "monthly",
+   "description": "Monthly manifest run (observation cadence monthly)",
+   "frequency": "every 1 calendar month",
+   "timezone": "GMT Standard Time (UTC+01:00 local; ledgers in UTC)",
+   "start": "2026-09-08T21:23:21.323301+00:00",
+   "due": "2026-10-08T21:23:21Z",
+   "interruption_allowed": true,
+   "recovery_rule": "restart the qualification window per recovery_rule; interruptions are preserved verbatim (never deleted or spliced)",
+   "status": "in_progress",
+   "fields_complete": true,
+   "notes": "latest 20260908T212321Z ok=true"
+  },
+  {
+   "requirement_id": "M2-legacy-periods",
+   "kind": "monthly",
+   "description": "legacy_periods observation continuity (periods 1-3, close_gate)",
+   "frequency": "every 1 calendar month",
+   "timezone": "GMT Standard Time (UTC+01:00 local; ledgers in UTC)",
+   "start": "2026-09-03T21:11:04Z",
+   "due": "2026-10-06T21:00:28Z",
+   "interruption_allowed": true,
+   "recovery_rule": "restart the qualification window per recovery_rule; interruptions are preserved verbatim (never deleted or spliced)",
+   "status": "pending",
+   "fields_complete": true,
+   "notes": "period 3 has no ended_at (still open); close_gate.close_allowed=true evaluated 2026-09-06 - missing due field -> F1 => no timing starts"
+  },
+  {
+   "requirement_id": "R1-release-gate",
+   "kind": "release",
+   "description": "ledger.release_gate (ok=false reasons: 'no T2 report','no T3 report')",
+   "frequency": "on demand",
+   "timezone": "GMT Standard Time (UTC+01:00 local; ledgers in UTC)",
+   "start": "2026-09-02T18:24:07Z",
+   "due": null,
+   "interruption_allowed": true,
+   "recovery_rule": "restart the qualification window per recovery_rule; interruptions are preserved verbatim (never deleted or spliced)",
+   "status": "pending",
+   "fields_complete": true,
+   "notes": "missing due -> fields_complete=false -> no timing (F1); reviewer signature required before it may be counted as retained requirement"
+  }
+ ]
+}

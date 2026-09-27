@@ -1,0 +1,12 @@
+OPEN4-SOURCE-REVIEW-ACQUISITION - trust-root existence probe (read-only; all values below computed live in this run)
+probe_window_utc=2026-09-25T22:15:56Z
+env PROMPT_INJECTION_TRUST_ROOT=[] (empty = unset)
+scope: CW root *.json, CW config/**.json, RF config/**.json, CW src/*.py (PROMPT_INJECTION_TRUST_ROOT|_load_trust_root)
+SKIP_LARGE C:\Users\郑曾波\Projects\company-wiki\.search_index.json bytes=16567233
+json_files_containing_signers_or_trust_root=NONE across 19 files scanned
+cw_src_refs:
+  src/company_wiki/source_catalog/prompt_injection.py:136: def _load_trust_root(path: str | None) -> dict[str, bytes]:
+  src/company_wiki/source_catalog/prompt_injection.py:139: path = os.environ.get("PROMPT_INJECTION_TRUST_ROOT")
+  src/company_wiki/source_catalog/prompt_injection.py:207: trust_root = _load_trust_root(trust_root_path)
+letter B anchors (read, not probed): outward_requests/B_signature_trust_domain.md:28 / :240
+probe_window_end_utc=2026-09-25T22:15:56Z

@@ -1,0 +1,226 @@
+{
+  "schema": "revert_r2/v1",
+  "station": "OPEN6B-R2-REVERT-UNQUANTIFIED",
+  "attempt": "a20260926-01",
+  "role": "implementer_r2_revert",
+  "carrier": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01",
+  "created_utc": "2026-09-26T15:12:24Z",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "one_liner": "按 OWNER_DECISIONS §三十三 授权，执行恢复路径 (c)：把 hypotheses.json L315 revert_rule 的「无法凑平 ⇒ 口径不一致」支落地为 hypotheses[2].state = unquantified；revert_rule 字面零改动、封盘原件零字节改动、不解除任何 BLOCKED、不签任何 τ。",
+
+  "authorized_by": {
+    "owner_decision": {
+      "file": "execution_runs/OWNER_DECISIONS.md（.planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md）",
+      "section": "§三十三（L716-L741，当轮新立）",
+      "sha256": "9075f9aac00ded42164b4a4a5f8087b99f1312b67163749b6e63fdcf7d6dffb4",
+      "bytes": 96826,
+      "owner_verbatim": "确认适用 (c) 不改规则（建议）",
+      "question_verbatim": "BLOCKED-6b 的 R2（H-CN-ZIJIN-VOL-03，矿山产金）残差闭合不了，OPEN6B-R2-INVENTORY-BRIDGE 工位推荐路径 (c) 退 unquantified，但 hypotheses.json L315 revert_rule 两条字面触发实测均不成立 ⇒ 执行 (c) 需先确认「无法凑平 ⇒ 口径不一致」这一支是否适用、或先修订 revert_rule。三选一。",
+      "execution_mapping_verbatim": [
+        "1. 认裁定：残差是结构性、跨年、金行专属（+93 / +154 千克，93–154 倍于 1 千克粒度）⇒ 属 ruling_6b L97 的「结构差无法解释」支。",
+        "2. 授权编排层按 (c) 执行 revert_rule 的那一支 → 退 unquantified。",
+        "3. ⚠️ 不修订 revert_rule 字面 —— 但执行记录里必须写明：本支适用理由 / 实测证据 / 字面触发不成立的事实如实登记（① 83,161 ≤ 84,477 未超 ② 方向一致）+ 「无法凑平 ⇒ 口径不一致」支由本裁定确认适用 / 恢复条件（工位已给三条：公司披露按金属拆分期末存货千克 / 并购标的购买日存货重量明细 / 产销量表加「在产品·在途·寄售」数量列 —— 任一出现即可按 oracle §3.2 重评）",
+        "4. (b) 的复活条件入册为待办：须同时① owner 按 DEC-14 修订 A-6.2（含 I-11-A/I-11-C 校验器同步）② 另取可核的黄金存货数量；缺一即退化为「为解锁而签」。"
+      ],
+      "boundaries_verbatim": [
+        "只处理 R2 这一行 ⇒ BLOCKED-6b 是否变 accepted 仍须按 ruling_6b L110 另判（4 条逐条签署，现 signed_count=3 / not_signed_count=1）。",
+        "不解除 BLOCKED-6a/6b/6c · OPEN-2/OPEN-6/OPEN-11（R6 条件2 仍未满足）· 不放行参数 · 不产生 ACCEPT · 不代签 τ。",
+        "执行者不修订 revert_rule 字面（按 owner 选择 #2「不改规则」）。"
+      ],
+      "discipline_verbatim": [
+        "R2 退 unquantified 的写入属有写入面的实现者/编排层（ruling_6b L97 明定）⇒ 派工时须给足字节级回滚（hypotheses*.json 前像 + supersedes）。",
+        "若实际执行中发现 revert_rule 的写入面不在计划目录内（须写产品仓）⇒ 停、报 blocked、不试替代写法（纪律 16/17）。"
+      ]
+    },
+    "ruling": {
+      "file": "execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01/ruling_6b.md",
+      "sha256": "e5d1efce3821c252d0da18b7cd5734192993328f03da6c918eaa42db417ee3df",
+      "bytes": 28628,
+      "L97_verbatim": "(c) 若结构差无法解释 ⇒ 按 `hypotheses.json` L315 `revert_rule` 退 `unquantified` —— 该写入属有写入面的实现者 / 编排层，**我不执行**。",
+      "L66_verbatim": "### 2.3 Q3 · R2（`H-CN-ZIJIN-VOL-03`）是否补登数值容差 → **不补登，`NOT_SIGNED (insufficient_evidence)`**",
+      "L90_verbatim": "**附带测量（非放行）**：四产品的**上限判据**（`销售量 ≤ 生产量 + 期初库存`）与**方向判据**（销量高于产量 ⇒ 库存下降）实测**均通过** —— 这是我自算的**测量事实**，不构成对 R2 的放行，也不产生 ACCEPT；R2 的**凑平支**按 OPEN-11 R4 第5步在容差签署前**不执行**。",
+      "L94_verbatim": "**恢复规则（R2 可被签署的三个互斥路径，均须新版本）**：",
+      "L104_verbatim": "R2 | `H-CN-ZIJIN-VOL-03` | 无 | 1 吨 / 1 千克 | **154 千克**（铜+1、锌0、银−1、金+154） | **`NOT_SIGNED`** | `insufficient_evidence`",
+      "L110_verbatim": "**恢复规则（整条 `BLOCKED-6b`）**：新建 `OPEN6B-TOLERANCE-RULING-R2`（附本裁 `decision_sha256`、证据链、作用域）追加裁定；R1/R3/R4 的签署值不受 R2 影响，但**整条 BLOCKED 的状态**由 owner / 编排层在 R2 解决后重判；本文件与被审 attempt 一律**不回改**。"
+    },
+    "evidence_station": {
+      "file": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/not_closed.json",
+      "sha256": "f1545f064329ccaa2fcfc7271bc79e8b5b3f620b1178f5ce09aa22ef02d26aea",
+      "bytes": 17593
+    }
+  },
+
+  "gate0": {
+    "passed": true,
+    "three_steps": {"write": true, "read_back": true, "delete": true},
+    "destructive_alternatives_used": false,
+    "probe_file_deleted": true,
+    "raw_output": "== [1] mkdir ==\ncreated: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN6B-R2-REVERT-UNQUANTIFIED\\a20260926-01\n== [2] write ==\nwrite OK bytes=92\n== [3] read back ==\nreadback: GATE0-PROBE a20260926-01 utc=2026-09-26T14:52:50Z nonce=1b0fa283-737d-4ca2-b76b-394abcc0769c\nreadback_equals_written: True\n== [4] sha256 ==\nsha256: 867345aafe295c3b95576dac8e23005dabbae9c9d444a3420487ab7b4291666c\n== [5] delete ==\nprobe_exists_after_delete: False\n== [6] landing-point inventory (all hypotheses.json in repo) ==\nC:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\BLOCKED6C-THRESHOLD-REVIEW-STATUS\\a20260926-01\\iso\\evidence\\I-11-A\\hypotheses.json\nC:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\BLOCKED6C-THRESHOLD-REVIEW-STATUS\\a20260926-01\\iso_patched\\evidence\\I-11-A\\hypotheses.json\nC:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-11-A\\a20260919-01\\evidence\\I-11-A\\hypotheses.json\nC:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I11A-OPEN12-VALIDATOR-COMPLETENESS\\a20260925-01\\iso\\evidence\\I-11-A\\hypotheses.json\nC:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I11A-OPEN12-VALIDATOR-COMPLETENESS\\a20260925-01\\iso_patched\\evidence\\I-11-A\\hypotheses.json\n== [7] landing check ==\nlanding_path=C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-11-A\\a20260919-01\\evidence\\I-11-A\\hypotheses.json\ninside_planning=True\n== GATE0 RESULT: write=True read=True delete=True ==",
+    "landing_location": "计划目录内（.planning/2026-09-19-three-project-history-audit/execution_runs/…）",
+    "needs_product_repo_write": false,
+    "product_repo_hypotheses_json_count": 0,
+    "write_form_used": "hypotheses_h4_v1.json 形态：新文件 + provenance.supersedes_sha256 指向封盘原件 + modified_indices，封盘原件零字节改动",
+    "capability_note": "纪律 19：父提权可写 ≠ 本工位可写；上述原始输出为本工位自探，主体 = implementer_r2_revert"
+  },
+
+  "rule": {
+    "file": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+    "path_resolved": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+    "line": 315,
+    "byte_range_0based_half_open": [19071, 19346],
+    "line_bytes": 275,
+    "verbatim": "若销售量超过『生产量+上期期末库存』，或与库存量同比变动方向相反且无法凑平，判定为口径不一致（可能产销量表口径变化），该参数退回 unquantified 并保留旧快照，不得用差额继续外推。",
+    "literal_edited": false,
+    "owner_choice": "#2 不改规则（只执行、不修订）",
+    "branches": {
+      "支①_literal_1": "销售量 > 生产量 + 上期期末库存",
+      "支②_literal_2": "与库存量同比变动方向相反 且 无法凑平",
+      "支③_threshold_sentence_L310": "方向相反 或 无法凑平 ⇒ 判口径不一致（本支适用性由 OWNER_DECISIONS §三十三 当轮裁定确认适用）"
+    },
+    "branch_executed": "支③（「无法凑平 ⇒ 口径不一致」）",
+    "branch_executed_authority": "OWNER_DECISIONS.md §三十三 owner 原话「确认适用 (c) 不改规则（建议）」+ ruling_6b.md L97",
+    "entry_located": {
+      "array_index": 2,
+      "hypothesis_id": "H-CN-ZIJIN-VOL-03",
+      "hypothesis_id_line": 241,
+      "hypothesis_id_byte_range": [13750, 13789],
+      "target_field_line": 243,
+      "target_field_byte_range": [14016, 14059],
+      "threshold_line": 310,
+      "threshold_byte_range": [17940, 18378]
+    },
+    "literal_triggers_recheck_self_computed": {
+      "trigger_1": {
+        "text": "销售量 > 生产量 + 上期期末库存",
+        "measured": "83,161 > 82,743 + 1,734 = 84,477 ? False",
+        "result": "不成立（83,161 ≤ 84,477 未超）"
+      },
+      "trigger_2": {
+        "text": "与库存量同比变动方向相反",
+        "measured": "销售量−生产量 = +418（⇒ 库存应降）；库存量同比 = 1,470 − 1,734 = −264（实际下降）⇒ 方向一致",
+        "result": "不成立（方向一致，非相反）"
+      },
+      "branch_3": {
+        "text": "无法凑平 ⇒ 口径不一致",
+        "measured": "residual = 154 千克；ΣAᵢ = 0 千克（四条线 0 千克、C1 FAIL）；|154 − 0| = 154 > 1 千克 ⇒ 无法凑平成立",
+        "result": "成立，且适用性由 §三十三 当轮裁定确认"
+      },
+      "cross_check_ruling_L90": "ruling_6b.md L90 已载明四产品上限判据与方向判据实测均通过 —— 与本工位自算一致（两条字面触发不成立）"
+    }
+  },
+
+  "write": {
+    "target_file_new": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/hypotheses_r2_v1.json",
+    "target_field": "hypotheses[2].state",
+    "state_from": "pending_professional_decision",
+    "state_to": "unquantified",
+    "modified_indices": [2],
+    "modified_fields": ["state", "state_reason", "provenance"],
+    "unchanged_indices": [0, 1, 3, 4, 5, 6, 7],
+    "file_shape": "顶层仍为与封盘原件同形的 8 元素 JSON 数组；provenance 附在被改动的下标 2 条目内（JSON 数组无顶层伴随键）",
+    "supersedes_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+    "supersedes_file": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+    "supersedes_bytes": 51697,
+    "sha256_before": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+    "sha256_after": "57dc6469a090075778584f0dbf93b46672cb4b37fcec810c996acf3adade4ef5",
+    "bytes_before": 51697,
+    "bytes_after": 54975,
+    "sealed_original_after": {"sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "bytes": 51697, "unchanged": true},
+    "preimage": {"path": "preimage/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "bytes": 51697, "recomputed_after_write": true, "manifest": "preimage/preimage_manifest.json"},
+    "json_reparse": "json.load 重解析通过（脚本内 + 交付前独立各一次）",
+    "format": {"encoding": "UTF-8", "bom": false, "newlines": "LF", "crlf_count": 0},
+    "byte_locality_proof": "新文件在 element-2 之前 13,747 字节、之后 30,700 字节与封盘原件逐字节相同（build_r2_revert.py 断言通过）",
+    "rollback": "① 复算 preimage/hypotheses.json = f2178768…（回滚唯一依据）② 封盘原件全程未改，封盘侧无需回滚 ③ 删除 hypotheses_r2_v1.json 即回派单前状态 ④ 产品仓/五份计划文件未触碰，无需回滚",
+    "destructive_alternatives_used": false
+  },
+
+  "section_33_four_required_items": {
+    "1_本支适用理由": "残差是结构性、跨年、金行专属：16 个『行×年』检验中 14 个落在 ±1 单位帽内，只有『矿山产金』连续两年超帽（FY2024 +93 千克、FY2025 +154 千克，合计 +247 千克），量级为 1 千克披露粒度的 93–154 倍 ⇒ 不是舍入问题，属 ruling_6b L97「结构差无法解释」支；两年均为黄金并购交割年（La Arena 2024-12-03；阿基姆 2025-04-16、藏格 2025-04-30、瑞果多 2025-10-10），机制方向一致但数量从未披露 ⇒ 无法凑平。",
+    "2_实测证据": {
+      "four_lines": "在产品 / 在途 / 寄售 / 并购范围四条线找到的证据全部只有人民币金额、零千克 ⇒ 净可量化解释量 0 千克，与 154 千克的差 = 154 千克（A-6.2 上限 1 千克的 154 倍）",
+      "cross_year_structural_test": "金 +93 / +154 千克、铜 +1、锌 0、银 −1（16 项中 14 项在帽内）",
+      "C1": "FAIL（四条线 0 千克，C1 可量化不成立）",
+      "blocked_triggers": ["B1: ΣAᵢ = 0 千克（无可计入项），|154 − 0| = 154 > 1 千克", "B2: 找到的证据全部为定性/金额级（QUAL 或非数量级），无一条满足 C1"],
+      "verdict": "bridge_closed = false；residual_explained_kg = null（NE-3：不以 0 或估计值代填）",
+      "source": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/not_closed.json（sha256 f1545f06…，17,593 B）"
+    },
+    "3_字面触发不成立的事实": "① 「销售量 > 生产量 + 上期期末库存」：83,161 ≤ 82,743 + 1,734 = 84,477，未超 ⇒ 不成立；② 「与库存量同比变动方向相反」：销售量−生产量 = +418（应降库存），库存量同比 = −264（实际下降）⇒ 方向一致，不成立。如实登记（本工位未因不成立而修改字面）。两支均不成立的情况下，「无法凑平 ⇒ 口径不一致」支由 OWNER_DECISIONS §三十三 当轮裁定确认适用（owner 原话「确认适用 (c) 不改规则（建议）」），本工位据此执行支③。",
+    "4_恢复条件三条": [
+      "公司披露按金属拆分的期末存货数量（千克）",
+      "并购标的购买日存货的重量明细",
+      "产销量表新增「在产品 / 在途 / 寄售」数量列"
+    ],
+    "4_恢复规则": "任一出现即可按 OPEN6B-R2-INVENTORY-BRIDGE oracle §3.2 重评（本工位 revert_eval.py 已把该规则实现为阻断分支：恢复条件命中 ⇒ revert_applied = false）",
+    "4_extra_owner_todo_登记不执行": "(b) 的复活条件入册为待办：须同时 ① owner 按 DEC-14 修订 A-6.2（含 I-11-A/I-11-C 校验器同步）② 另取可核的黄金存货数量；缺一即退化为「为解锁而签」。本工位只登记，不执行、不代签。"
+  },
+
+  "mutations": {
+    "harness": "revert_eval.py（python -B；实测事实现读 not_closed.json，不硬编码结论）",
+    "aggregate_rc": 0,
+    "cases": {
+      "g1_real_revert": {"kind": "green", "rc": 0, "revert_applied": true, "branch_used": "支③「无法凑平 ⇒ 口径不一致」（OWNER_DECISIONS §三十三 确认适用）", "expectation_met": true, "note": "正例（按裁定该退的这一支）必须真退 —— 已真退"},
+      "m1_default_literal_only": {"kind": "red", "rc": 0, "revert_applied": false, "expectation_met": true, "note": "红·默认/弱化触发：只认两条字面触发 ⇒ 83,161 ≤ 84,477 未超、方向一致 ⇒ 不该退（若判 true 即红，未发生）"},
+      "m2_recovery_condition_present": {"kind": "red", "rc": 0, "revert_applied": false, "recovery_triggered": true, "expectation_met": true, "note": "红·恢复条件命中 ⇒ 不得退，转 §3.2 重评（若仍判 true 即红，未发生）"},
+      "m3_in_cap_closeable": {"kind": "red", "rc": 0, "revert_applied": false, "expectation_met": true, "note": "红·不该退的被退：铜行 +1 吨在帽内可凑平、无 owner 支 ⇒ 不退（若判 true 即红，未发生）"},
+      "m4_recovery_phantom_satisfied": {"kind": "red", "rc": 0, "revert_applied": true, "recovery_triggered": false, "expectation_met": true, "note": "红·恢复条件被误判为已满足：三条实测均未出现 ⇒ 必须 recovery_triggered=false 且真退（若判 true 即红，未发生）"}
+    },
+    "per_case_artifact_assertions": "每案都额外断言：产物 hypotheses[2].state == unquantified、modified_indices == [2]、revert_rule 字面在产物中逐字相同、封盘原件 sha == f2178768…、其余 7 个下标 deep-equal —— 5 案全通过",
+    "sensitivity_negative_control": {"rc": 1, "meaning": "故意写错期望（默认字面路径下金行应退）⇒ 断言失败、rc=1，证明本 harness 不是恒真、rc 可以为非 0"},
+    "post_freeze_extra": "m4 与 sensitivity 对照为冻结后加测（超出 oracle §⑥ 四行清单，判据更严，不放宽任何冻结判据）",
+    "results_file": "mutations_results.json（sha256 5fed730a…）"
+  },
+
+  "blocked_6b_status": {
+    "BLOCKED-6b": "still_blocked",
+    "why": "ruling_6b.md L110 明定整条 BLOCKED 的状态由 owner/编排层在 R2 解决后重判；且 4 条逐条签署现 signed_count=3 / not_signed_count=1（R2 = NOT_SIGNED）。本工位只完成 R2 的 (c) 写入，不参与重判。",
+    "BLOCKED-6a": "不动",
+    "BLOCKED-6c": "不动",
+    "OPEN-2": "不动",
+    "OPEN-6": "不动",
+    "OPEN-11": "不动（R6 条件2 仍未满足）"
+  },
+
+  "releases_nothing": true,
+  "does_not_sign_tau": true,
+  "does_not_accept": true,
+  "revert_rule_literal_unchanged": true,
+  "not_done": [
+    "不修订 revert_rule 字面（owner 选择 #2「不改规则」）—— 只执行",
+    "不签 τ、不代签、不放行参数（parameter_mapping.low/base/high 仍 null）",
+    "不产生 ACCEPT、不声称 I-11-A 已验收",
+    "不解除 BLOCKED-6b（仍 still_blocked）/ BLOCKED-6a / BLOCKED-6c",
+    "不解除 OPEN-2 / OPEN-6 / OPEN-11",
+    "不改 threshold_basis（仍 arithmetic_identity）/ threshold_review_status（仍 not_reviewed）/ 任何 decision 字段（仍 pending）",
+    "不改 ruling_6b.md / OPEN6-TOLERANCE-TABLE/* / 不创建 tolerance_signed.json",
+    "不改五份计划文件、不改 OWNER_DECISIONS.md、不改两半区裁定",
+    "不改封盘 I-11-A hypotheses.json 任一字节（写前写后 sha 均为 f2178768…）",
+    "不写产品仓（落点在计划目录内；产品仓 hypotheses.json 数量 = 0）",
+    "禁 git 写（未执行 git status）、禁联网、禁破坏性替代（git apply / > 重定向 / 删后重写 均未使用）"
+  ],
+
+  "protected_files_verify": {
+    "method": "读 LastWriteTimeUtc + sha256（本工位会话开始于 2026-09-26T14:52Z，任何早于该时点的写入均非本工位所为）",
+    "OWNER_DECISIONS.md": "mtime 2026-09-26T14:22:50Z（早于本会话）· sha256 9075f9aa… 未改",
+    "ruling_6b.md": "mtime 2026-09-25T23:52:05Z · 28,628 B · sha256 e5d1efce… 未改",
+    "not_closed.json": "mtime 2026-09-26T14:13:10Z · 17,593 B · sha256 f1545f06… 未改",
+    "五份计划文件": "task_plan.md 14:14:52Z / findings.md 14:16:20Z / progress.md 14:10:43Z / implementation_plan.md 2026-09-20 / audit_report.md 2026-09-20 —— 全部早于本会话",
+    "封盘 hypotheses.json": "mtime 2026-09-20T14:48:19Z · 51,697 B · sha256 f2178768… 未改",
+    "tolerance_signed.json": "不存在（Test-Path = False；OPEN6-TOLERANCE-TABLE 仍只有 4 个文件）"
+  },
+
+  "written_files": [
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/oracle.md", "bytes": 18215, "sha256": "f5bf25a76bf26d84e4643d4950fc525068327d17d88589eff38ef272a0f7562c", "note": "先冻结（含门 0 原始输出、变异清单）"},
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/preimage/hypotheses.json", "bytes": 51697, "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "note": "前像（回滚唯一依据），已复算"},
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/preimage/preimage_manifest.json", "bytes": 1272, "sha256": "3821a069d49a55b5dc5927cac94ad6cedbf18aa5bde363e14b9038fa08bdace4"},
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/build_r2_revert.py", "bytes": 13010, "sha256": "88e7380ac3e77d0e533d3d213a259da22e7f322cee88951179ee10e0bc26de59", "note": "落点写入脚本（外科式文本编辑 + 白名单断言）"},
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/hypotheses_r2_v1.json", "bytes": 54975, "sha256": "57dc6469a090075778584f0dbf93b46672cb4b37fcec810c996acf3adade4ef5", "note": "落点产物（supersedes f2178768…、modified_indices [2]）"},
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/revert_eval.py", "bytes": 12662, "sha256": "fc88a8718cbb2b8c6cfd95030780ef14ad869d8e513efd00d3eec44055d412ea", "note": "红绿变异判据"},
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/mutations_results.json", "bytes": 1538, "sha256": "5fed730ad3bb6a9abd94ceca03d4d4999b3d1de992851eedeae30f002290897d"},
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/revert_r2.json", "sha256": null, "note": "本文件；sha 于写入后外部复算（自指不可自证）"},
+    {"path": "execution_runs/OPEN6B-R2-REVERT-UNQUANTIFIED/a20260926-01/handoff.json", "sha256": null, "note": "同上"}
+  ],
+
+  "git_diff_non_planning": 0,
+  "git_diff_command": "git -c core.quotepath=false diff HEAD --name-only（未用 git status）",
+  "git_diff_baseline": {"total": 3830, "non_planning": 0, "taken_before_write": true}
+}

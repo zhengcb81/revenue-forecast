@@ -1,0 +1,430 @@
+{
+  "schema": "i12d_verification/1",
+  "card": "I-12-D",
+  "attempt": "execution_runs/I-12-D/a20260926-01",
+  "role": "implementer_i12d",
+  "verified_at": "2026-09-26T21:2x+01:00",
+  "exit_code_legend": {
+    "0": "ALL_INVARIANTS_OK（命令正常结束且业务判定通过）",
+    "1": "harness 失败（缺件 / JSON 解析失败）",
+    "2": "无裁决（本卡未使用）",
+    "3": "具名不变量 D1..D10 违例（负例被正确拒绝）",
+    "note": "本卡自描述码表；跨批聚合前须读本表"
+  },
+  "action0_gate": {
+    "rule": "卡文动作 0：先跑 metric_numeric_oracle 及负例，合格才碰真实样本",
+    "command": "python _metric_oracle.py",
+    "rc": 0,
+    "oracle_verdict": "PASS_metric_implementation_qualified_only",
+    "oracle_all_expected_pass": true,
+    "negatives_all_pass": true,
+    "frozen_negative_cases": 3,
+    "extended_controls": 2,
+    "stop_METRICS_triggered": false,
+    "sample_side_written_after_gate": true,
+    "iteration_note": "首次 _metric_oracle.py 运行 rc=3：期望值比较器把纯整数（absolute_error_sum=40、baseline_absolute_error_sum=50）误判为 undefined。修正＝比较器支持整数观测按精确有理数比对（判据未放宽、期望值未改），复跑 rc=0。此为发现并修正自身实现缺陷。"
+  },
+  "upstream_consistency": {
+    "method": "_verify.py D9 对 oracle §2 的 18 件上游文件现场重算 sha256 并与冻结值比对（每次绿臂/红臂运行均执行）",
+    "result": "18/18 一致",
+    "items": [
+      {
+        "id": "U1",
+        "path": "execution_v2/card_I-12-D.md",
+        "bytes": 1776,
+        "frozen": "c6595cef4b3523c4fd4a879cd8f4106675130463f5573d09efb812fc6dbd4f69",
+        "recomputed": "c6595cef4b3523c4fd4a879cd8f4106675130463f5573d09efb812fc6dbd4f69",
+        "match": true
+      },
+      {
+        "id": "U2",
+        "path": "execution_v2/card_I-12-C.md",
+        "bytes": 1604,
+        "frozen": "49dbb572c7fc996721c1f096fc1743df67974c9020c4faf226a123929d0a6d91",
+        "recomputed": "49dbb572c7fc996721c1f096fc1743df67974c9020c4faf226a123929d0a6d91",
+        "match": true
+      },
+      {
+        "id": "U3",
+        "path": "execution_v2/research_cards.json",
+        "bytes": 40058,
+        "frozen": "4a22e26608d421799e2b8adde0d0424fa48a634509a0559c51d279e06d918263",
+        "recomputed": "4a22e26608d421799e2b8adde0d0424fa48a634509a0559c51d279e06d918263",
+        "match": true,
+        "note": "metric_numeric_oracle 冻结期望来源"
+      },
+      {
+        "id": "U4",
+        "path": "execution_v2/common_research_cards.md",
+        "bytes": 14736,
+        "frozen": "2c6fad2cfba4e096b0f6ed5436158666fdd51265fbc87ad65227f943f27f484b",
+        "recomputed": "2c6fad2cfba4e096b0f6ed5436158666fdd51265fbc87ad65227f943f27f484b",
+        "match": true
+      },
+      {
+        "id": "U5",
+        "path": "execution_v2/START_HERE.md",
+        "bytes": 20436,
+        "frozen": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+        "recomputed": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+        "match": true
+      },
+      {
+        "id": "U6",
+        "path": "execution_v2/review_and_handoff.md",
+        "bytes": 4005,
+        "frozen": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9",
+        "recomputed": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9",
+        "match": true
+      },
+      {
+        "id": "U7",
+        "path": "OWNER_DECISIONS.md",
+        "bytes": 109029,
+        "frozen": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d",
+        "recomputed": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d",
+        "match": true
+      },
+      {
+        "id": "U8",
+        "path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json",
+        "bytes": 22317,
+        "frozen": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+        "recomputed": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+        "match": true
+      },
+      {
+        "id": "U9",
+        "path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json",
+        "bytes": 5334,
+        "frozen": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+        "recomputed": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+        "match": true,
+        "note": "6 项关键统计阈值 unsigned ⇒ 动作 3 不可执行"
+      },
+      {
+        "id": "U10",
+        "path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json",
+        "bytes": 5618,
+        "frozen": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178",
+        "recomputed": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178",
+        "match": true
+      },
+      {
+        "id": "U11",
+        "path": "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/sample_manifest.jsonl",
+        "bytes": 11085,
+        "frozen": "679a7a496e87ed953311d8d8139b47576ab84ddf7f0f0a4238991695d4ef0702",
+        "recomputed": "679a7a496e87ed953311d8d8139b47576ab84ddf7f0f0a4238991695d4ef0702",
+        "match": true
+      },
+      {
+        "id": "U12",
+        "path": "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/actuals_policy_application.json",
+        "bytes": 7916,
+        "frozen": "998823537e8f493545562a05b1e0308f1865b0231ddb44b1bfc9fee5a7ac3942",
+        "recomputed": "998823537e8f493545562a05b1e0308f1865b0231ddb44b1bfc9fee5a7ac3942",
+        "match": true
+      },
+      {
+        "id": "U13",
+        "path": "execution_runs/I-12-C/a20260926-01/evidence/I-12-C/forecast_vintages.jsonl",
+        "bytes": 9918,
+        "frozen": "42daea726d9d1d0c5e538881d5f31c663b3a5619a3f2d6dd7350e48a5965cf1f",
+        "recomputed": "42daea726d9d1d0c5e538881d5f31c663b3a5619a3f2d6dd7350e48a5965cf1f",
+        "match": true
+      },
+      {
+        "id": "U14",
+        "path": "execution_runs/I-12-C/a20260926-01/evidence/I-12-C/baseline_vintages.jsonl",
+        "bytes": 14104,
+        "frozen": "043f31c9441030a003b5d2cba3286676d35fff30a801909e08b255c3f17a2cbc",
+        "recomputed": "043f31c9441030a003b5d2cba3286676d35fff30a801909e08b255c3f17a2cbc",
+        "match": true
+      },
+      {
+        "id": "U15",
+        "path": "execution_runs/I-12-C/a20260926-01/evidence/I-12-C/forecast_manifest.json",
+        "bytes": 5467,
+        "frozen": "03cdb01c71b232b8797e2eedf1503d3d8b0b5407a6c93cf7cb9e0384da26922a",
+        "recomputed": "03cdb01c71b232b8797e2eedf1503d3d8b0b5407a6c93cf7cb9e0384da26922a",
+        "match": true
+      },
+      {
+        "id": "U16",
+        "path": "execution_runs/I-12-C/a20260926-01/evidence/I-12-C/unblind_receipt.json",
+        "bytes": 1968,
+        "frozen": "99ed0139434a2777f4ede1454782fb83c60f315c3d83e00e1c8b175324e991f1",
+        "recomputed": "99ed0139434a2777f4ede1454782fb83c60f315c3d83e00e1c8b175324e991f1",
+        "match": true
+      },
+      {
+        "id": "U17",
+        "path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json（封盘）",
+        "bytes": 51697,
+        "frozen": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+        "recomputed": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+        "match": true
+      },
+      {
+        "id": "U18",
+        "path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json（store）",
+        "bytes": 61231,
+        "frozen": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+        "recomputed": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+        "match": true
+      }
+    ]
+  },
+  "green_arms": [
+    {
+      "arm": "GREEN_PREHANDOFF",
+      "rc": 0,
+      "expected": 0,
+      "pass": true,
+      "detail": "CHECK D1..D9 全 OK、D10 SKIP（handoff 未写）",
+      "when": "oracle + 样本证据完成后"
+    },
+    {
+      "arm": "GREEN_FINAL",
+      "rc": 0,
+      "expected": 0,
+      "pass": true,
+      "detail": "verification/handoff 定稿后执行；原始输出 final_green_output.txt",
+      "when": "定稿后"
+    }
+  ],
+  "red_arms": [
+    {
+      "arm": "P1",
+      "mutation": "oracle 指标值篡改（WAPE 分子 40→41，结果挑选形态）",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL D1: independent recompute mismatch for WAPE",
+      "output": "_mut/P1/verifier_output.txt"
+    },
+    {
+      "arm": "P2",
+      "mutation": "零分母负例改为 epsilon 代入（WAPE=0.0）",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL D2: case N1_zero_denominator not passed",
+      "also_failed": [
+        "D2 N1 WAPE must be undefined/zero_denominator",
+        "D2 N1 must show no epsilon used"
+      ],
+      "output": "_mut/P2/verifier_output.txt"
+    },
+    {
+      "arm": "P3",
+      "mutation": "sample_errors.csv 塞入伪造评分明细行",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL D3: sample_errors.csv must be header-only (0 data rows), got 2 lines",
+      "output": "_mut/P3/verifier_output.txt"
+    },
+    {
+      "arm": "P4",
+      "mutation": "阈值未签却声称 95% CI 已算",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL D6: confidence intervals must not be computed while thresholds unsigned",
+      "also_failed": [
+        "D6 must register >=5 pending CI items"
+      ],
+      "output": "_mut/P4/verifier_output.txt"
+    },
+    {
+      "arm": "P5",
+      "mutation": "0 可评分样本却宣称显著（significance_claimed=true）",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL D4: state must be descriptive_only",
+      "also_failed": [
+        "D4 must not claim significance / accuracy improvement"
+      ],
+      "output": "_mut/P5/verifier_output.txt"
+    }
+  ],
+  "red_arms_summary": {
+    "count": 5,
+    "pass": 5,
+    "min_required": 3,
+    "requirement_met": true
+  },
+  "originals_unchanged": {
+    "method": "变异前后对原件（oracle.md + 7 件证据 + 3 个脚本）复哈希比对；变异只写入 _mut/<arm>/ 副本",
+    "pre_post_sha_match": true,
+    "files": [
+      {
+        "path": "oracle.md",
+        "sha256": "c631c201571218cc688a969c22412aeac5e35802903c86396bdf1ec4e4eb0daa"
+      },
+      {
+        "path": "_metric_oracle.py",
+        "sha256": "f9b32c8d9f885403dd1db1cbee3d633a6b2625a5142e492f9618586d192f208c"
+      },
+      {
+        "path": "_build_sample_evidence.py",
+        "sha256": "ab0715cfbaef7896d46171bfa6a8214d60584133af42827d4de11779835eca70"
+      },
+      {
+        "path": "_verify.py",
+        "sha256": "c7fa3477ec25ccf890b07a763cfdef78ba9f4b41954eee74d1266154282076c8"
+      },
+      {
+        "path": "_run_mutations.py",
+        "sha256": "612f99dc45a4d22c24c908445959df26518244b45682abbeed6ec4fa9c22b761"
+      },
+      {
+        "path": "evidence/I-12-D/metric_oracle_result.json",
+        "sha256": "0d64d62e0f60df0a253bea58b9cb0841b0377198631cccdc7a0109e7366e83ca"
+      },
+      {
+        "path": "evidence/I-12-D/metric_negative_results.json",
+        "sha256": "22b88eb3497a1aceceaed69df5a0969d9afee2656b64649a9fc9b3abdd662429"
+      },
+      {
+        "path": "evidence/I-12-D/sample_errors.csv",
+        "sha256": "b36045e8438fa54a6bb0232265a4b315c36f323c4b59850bf8eb28f88a920320"
+      },
+      {
+        "path": "evidence/I-12-D/metrics_by_stratum.json",
+        "sha256": "ad14f515bcb4f796bf063957a5a005f26b08babea312b94a6367de98b3392e2e"
+      },
+      {
+        "path": "evidence/I-12-D/paired_comparison.json",
+        "sha256": "5709203bac2753c37fe6c56853f4f6d875d5149a1fd56edc993f275ce6e2e0d5"
+      },
+      {
+        "path": "evidence/I-12-D/interval_diagnostics.json",
+        "sha256": "555dbf864d294b74993746656048f49ccf48e273fa2340c8b86a5199ea976531"
+      },
+      {
+        "path": "evidence/I-12-D/metric_reproduction.md",
+        "sha256": "2431a520ae836aa9da12d49be1733f6fc7b7c9bf3dc8f3ae38de9d7a9082f4dd"
+      }
+    ]
+  },
+  "invariants": [
+    {
+      "id": "D1",
+      "title": "metric oracle 与冻结期望一致 + 独立有理数复算（14 指标）",
+      "green": "PASS"
+    },
+    {
+      "id": "D2",
+      "title": "3 冻结负例 + 2 扩展控制全过（零分母 undefined、错位拒绝、baseline loss=0）",
+      "green": "PASS"
+    },
+    {
+      "id": "D3",
+      "title": "sample_errors.csv 仅表头、逐样本明细结构在位",
+      "green": "PASS (0 行)"
+    },
+    {
+      "id": "D4",
+      "title": "分层 n_companies/n_origins 如实、n_scorable=0、descriptive_only、无显著性宣称",
+      "green": "PASS (7 层)"
+    },
+    {
+      "id": "D5",
+      "title": "成对比较 n_pairs=0、区间 null 且方法未批准（≥5 项 pending）、cluster/block 冻结",
+      "green": "PASS"
+    },
+    {
+      "id": "D6",
+      "title": "无概率声明 ⇒ interval_score/pinball 禁用；CI 未签不算、不挑种子",
+      "green": "PASS"
+    },
+    {
+      "id": "D7",
+      "title": "metric_reproduction 含手算 + 复跑命令 + limitation 逐字",
+      "green": "PASS"
+    },
+    {
+      "id": "D8",
+      "title": "OPEN-2 红线不消费 + 不放行参数 + 不自签",
+      "green": "PASS"
+    },
+    {
+      "id": "D9",
+      "title": "上游 18 件 sha 一致性 + 封盘/store 零字节",
+      "green": "PASS (18/18)"
+    },
+    {
+      "id": "D10",
+      "title": "handoff 形态（review_pending/gate0/releases_nothing/git_diff=0/7 件证据）",
+      "green": "PASS"
+    }
+  ],
+  "counts_and_findings": {
+    "oracle_metrics_checked": 14,
+    "negative_cases_frozen": 3,
+    "negative_cases_extended": 2,
+    "negative_pass_rate": "5/5",
+    "real_scorable_samples": 0,
+    "sample_error_rows": 0,
+    "strata_reported": 7,
+    "n_pairs": 0,
+    "epsilon_substitutions": 0,
+    "interval_score_enabled": false,
+    "pinball_enabled": false,
+    "confidence_intervals_computed": false,
+    "seeds_fixed_by_implementer": 0,
+    "significance_claimed": false,
+    "metrics_swapped": 0,
+    "stop_METRICS_triggered": false,
+    "state": "descriptive_only"
+  },
+  "discipline_declarations": {
+    "gate0_passed": true,
+    "oracle_frozen_before_evidence": true,
+    "action0_before_sample_side": true,
+    "params_released": false,
+    "implementer_signed": false,
+    "releases_nothing": true,
+    "open2_ban_observed": true,
+    "sealed_hypotheses_untouched": true,
+    "store_untouched": true,
+    "writes_outside_planning": 0,
+    "git_writes": 0,
+    "git_commands_run": 0,
+    "git_status_run": false,
+    "network_used": false,
+    "test_results_unsealed": false,
+    "accuracy_results_read": false,
+    "reads_performed": [
+      "card_I-12-D.md",
+      "card_I-12-C.md",
+      "research_cards.json（metric_definitions L130-L191 + metric_numeric_oracle L836-L951 + I-12 段）",
+      "common_research_cards.md",
+      "START_HERE.md",
+      "review_and_handoff.md",
+      "OWNER_DECISIONS §三十四/§三十七",
+      "I-12-A 三件（字段 9/10/11/12 + unsigned 阈值）",
+      "I-12-B 样本/实际值政策证据",
+      "I-12-C 预测/基线/manifest/回执证据"
+    ],
+    "reads_forbidden_and_not_performed": [
+      "任何测试集/回测/准确性结果",
+      "目标期 FY2027 实际值",
+      "I-13 买方验收面"
+    ],
+    "five_plan_files_written_by_this_card": false,
+    "five_plan_files_note": "本卡写入面枚举推导：本 attempt 未写 task_plan.md / findings.md / progress.md / audit_report.md / implementation_plan.md；复核时 progress.md、task_plan.md 的 mtime 变动发生在本工位之外（父层记账/规划钩子并发写入），非本卡产物，此处如实登记以免误读。"
+  },
+  "conclusion": {
+    "green_pass": true,
+    "red_pass": true,
+    "upstream_consistent": true,
+    "card_action_state": "动作 0 完成并作为前置门（先于样本侧）；动作 1 明细结构落位（0 行）；动作 2 分层 n 计数落位；动作 3 因区间方法未批准而 fail-closed 不算；动作 4 四类并报均登记为 undefined/disabled",
+    "card_verdict": "指标实现合格（oracle 14/14 + 负例 5/5，STOP_METRICS 未触发）；真实样本侧 n=0 ⇒ descriptive_only、不宣称显著更准确 ⇒ 卡文验收「独立抽核手算样本和聚合权重」在 oracle 面可达成、在真实样本面不可达成 ⇒ fail-closed 判 blocked（合格形态）",
+    "reviewer_status": "pending（统计 reviewer 独立复算另派；实现者不自签）"
+  }
+}

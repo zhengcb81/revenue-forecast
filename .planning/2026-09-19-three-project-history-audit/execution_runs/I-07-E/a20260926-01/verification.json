@@ -1,0 +1,75 @@
+{
+  "schema": "i07e_verification/1",
+  "card": "I-07-E",
+  "attempt": "execution_runs/I-07-E/a20260926-01",
+  "role": "implementer_i07e",
+  "purpose": "红绿双向变异（≥3，实做 5）+ 上游一致性核（24 件 sha 全量复算）。变异在 _mut/ 副本上执行，原件字节不动（sha 前后比对）。校验器=_verify_summary.ps1。",
+  "exit_code_legend": {
+    "0": "ALL_INVARIANTS_OK（命令正常结束且业务判定通过）",
+    "1": "harness 失败（输入缺失/路径未绑定等运行器自身错误）",
+    "2": "无裁决（本校验器不产生 2）",
+    "3": "不变量违例（具名 J1..J5；红臂期望值；冻结码表『声明期望不符』）",
+    "note": "红臂 rc=3 与 I-11-C 本地惯例（红=rc=1）不同名同义（都是『校验器拒绝变异件』）；跨批聚合先读本 legend，不假设码表一致。"
+  },
+  "verifier": {
+    "script": "execution_runs/I-07-E/a20260926-01/_verify_summary.ps1",
+    "invocations": "powershell -NoProfile -ExecutionPolicy Bypass -File _verify_summary.ps1 -Root <dir> -PlanRoot <plan-root>",
+    "invariants": {
+      "J1_release_lock": "handoff.params_released=false / implementer_signed=false / releases_nothing=true / status=review_pending",
+      "J2_open2_ban": "summary 带 open2_ban_observed=true + registered_not_consumed（ZIJIN_MINERAL_REALIZED_UNIT_REVENUE 只登记不消费）；禁 consumed_for_forecast；handoff.open2_ban_observed=true",
+      "J3_upstream_sha": "upstream_inputs 24 件逐件按 sha256 复算比对（含封盘 f2178768… 与 store b2063ac8…）",
+      "J4_ea_template": "summary 含 EA-1..EA-7 与 sensitivity_interval；equivalent_to_disclosure_basis=false ≥7 且 =true 为 0（H4 (iv) 常量不可改写）",
+      "J5_synthetic_quarantine": "隔离合成数（281520/299040/17520/264000）只允许出现在隔离登记行；synthetic_quarantine_enforced=true"
+    }
+  },
+  "upstream_inputs": [
+    {"path": "execution_v2/card_I-07-E.md", "bytes": 1773, "sha256": "9552ac980756d59daf9c3cb48455c404ef2ffada6213ec3f0338b13c0a2e861d"},
+    {"path": "execution_v2/card_I-11-B.md", "bytes": 1672, "sha256": "38ff2907acb627f3d5f6a97ca386a17551329ad3909720e84463a185154ae87c"},
+    {"path": "execution_v2/card_I-11-C.md", "bytes": 1433, "sha256": "b7812e38e425dd00d93b41fe994ab7ab84723081b093e191946a80222f351a7a"},
+    {"path": "OWNER_DECISIONS.md", "bytes": 109029, "sha256": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d"},
+    {"path": "REMEDIATION_REGISTER.md", "bytes": 486951, "sha256": "867dc5f17f12199fb885336abf8da4a5dba8f6435e54636f8f77d1271652ca9a"},
+    {"path": "execution_runs/I-07-B/a20260923-01/handoff.json", "bytes": 31448, "sha256": "e43cf258e78f1ddc2085ef5e8c5d6cb3e2a730179cb18f566c6da4e15acb9e99"},
+    {"path": "execution_runs/I-07-C/a20260923-01/handoff.json", "bytes": 46545, "sha256": "550b489da48c5366069cef5248735d4804837469c67ae467348185c7388491f7"},
+    {"path": "execution_runs/I-07-D/a20260923-01/handoff.json", "bytes": 45995, "sha256": "82bb03aca1756d0cec155d039150e930d7b2a885659ad73d5a94e1c032d09e13"},
+    {"path": "execution_runs/I-08-A/a20260919-01/handoff.json", "bytes": 24147, "sha256": "a728d8f690d6cdda27b23edf61e134cf4b0a9a80904811f00adf19b9616bd3e7"},
+    {"path": "execution_runs/I-09-A/a20260919-01/handoff.json", "bytes": 43143, "sha256": "816a44599270fae32492534d6928463f77d377c54efe87f3d07071803c19580d"},
+    {"path": "execution_runs/I-09-B/a20260919-01/handoff.json", "bytes": 10793, "sha256": "00dd5018ff825ebadafe5fca62f6b908319721fe2316b21325afcdd34977c0b6"},
+    {"path": "execution_runs/I-09-C/a20260922-01/handoff.json", "bytes": 34036, "sha256": "fa5c456b6a817ef7ba6a520bdc2e500d48488efc5214fb9e3d64591e80d17d83"},
+    {"path": "execution_runs/I-10-A/a20260923-01/handoff.json", "bytes": 40574, "sha256": "a3f2208ac8601e1a1711d3f6aa30b3e935148bb93017c8a21d350c10dbea3c58"},
+    {"path": "execution_runs/I-11-A/a20260919-01/handoff.json", "bytes": 27788, "sha256": "e4dafd16952b31317aa47f43e14fd73b078497d488be06a594a9de6b73c903c4"},
+    {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "bytes": 51697, "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "note": "封盘，零字节；新版本走 supersedes 落本目录（本卡未启用）"},
+    {"path": "execution_runs/I-11-B/a20260926-01/calibration_plan.json", "bytes": 32665, "sha256": "e86b41355c1ba7c5e90fe11c763c1966939621d38f0597dc4a4bfa0d73090e1c"},
+    {"path": "execution_runs/I-11-B/a20260926-01/expert_assumptions.json", "bytes": 8580, "sha256": "9f8b844e342ec17e731cbe4554388005f5070e0c586de329782df86ee3abd79f"},
+    {"path": "execution_runs/I-11-B/a20260926-01/handoff.json", "bytes": 37319, "sha256": "4c3c5c908f7c69b23f3ecec52fc81fcbd766e1bfa1174422f8abafbbd7caed31"},
+    {"path": "execution_runs/I-11-B/a20260926-01/oracle.md", "bytes": 17723, "sha256": "80a2cda0601fcec5f9495e60ebc9f221c161188e9b585036bdd8d6648eeabba6"},
+    {"path": "execution_runs/I-11-C/a20260926-01/parameter_mapping.json", "bytes": 54875, "sha256": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c"},
+    {"path": "execution_runs/I-11-C/a20260926-01/mapping_verification.json", "bytes": 9193, "sha256": "cecdcb33281727f7c450d7c121d420dd743edbe53c88dbff25491cf8e4cb633f"},
+    {"path": "execution_runs/I-11-C/a20260926-01/handoff.json", "bytes": 20258, "sha256": "da25f736cfde6f97047a691ddff28f1b079c6c29d1cfeac03729ce4c32b9c453"},
+    {"path": "execution_runs/I-11-C/a20260926-01/oracle.md", "bytes": 16336, "sha256": "437a7758da4c038762ff72ca95b9cca7492e41fd87b8cd6eca70b397680a01ec"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json", "bytes": 61231, "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "note": "store，只读；low/base/high 全 null、两个 _PLACEHOLDER 在位"}
+  ],
+  "upstream_consistency_notes": [
+    {"id": "u-N4", "registration": "unverified", "desc": "store hypotheses_v3.json 内 US-MSFT-10K-FY2026.doc_sha256 = 63 位（e3de0053…40ecff，缺末位 f）vs I-07-B handoff 实测 64 位（e3de0053…40ecfff，US-MSFT-2026 re-verified before AND after）—— 转录层缺陷（F-REV-I10A-1 同物种）", "disposition": "只登记不更正（store 只读）；文件级 sha 复算不受影响"},
+    {"id": "u-N5", "registration": "unverified", "desc": "unverified-N1 继承：store H-01 original_value=349,079,082,852（四分部合计/合并营业收入）与 ZIJIN_SEG_MINERAL 分部语义张力；矿产品分部单值 109,977,556,345 由差额法与 H-02 引数法双路推出", "disposition": "登记不回改；AR p327/p328 回源归独立复审"},
+    {"id": "u-N6", "registration": "unverified", "desc": "unverified-N3 继承：EA-4 band_rationale 注记区间 [320,763, 348,432] 与自身带换算（≈[375,283.38, 414,786.90]；基期合计±5% ≈[315,247.05, 348,430.95]）不符", "disposition": "登记交独立复审；MSFT 三行算术不受影响"}
+  ],
+  "mutation_results": {
+    "status": "executed",
+    "note": "变异在 _mut/ 副本上执行，原件字节不动（sha 前后比对见 originals_untouched）；校验器=_verify_summary.ps1。运行时本文件 sha256=14fe1ffb02bd2a516ca671851d6fa4607704aa939226362fbb4c63e6170d6ee7（upstream_inputs 节在运行与定稿之间逐字节不变；本 mutation_results 节为运行后补记，定稿 sha 记于 handoff.written_files）。原始输出逐字存 _mut/Mx/verifier_output.txt。",
+    "runs": [
+      {"id": "GREEN", "target": "原件（calibration_validation_summary.md + handoff.json + verification.json）", "rc": 0, "expected": "rc=0 ALL_INVARIANTS_OK", "observed": "CHECK J1-J5 全 OK；RESULT ALL_INVARIANTS_OK", "pass": true},
+      {"id": "M1", "mutation": "handoff.json 的 params_released false→true（模拟放行参数）", "copy": "_mut/M1", "rc": 3, "expected": "rc=3 违例含 J1", "observed": "VIOLATION J1: handoff.params_released != false（其余 J2-J5 OK）", "pass": true},
+      {"id": "M2", "mutation": "汇总件 registered_not_consumed→consumed_for_forecast（模拟消费 OPEN-2 禁消费值）", "copy": "_mut/M2", "rc": 3, "expected": "rc=3 违例含 J2", "observed": "VIOLATION J2×2: missing registered_not_consumed + contains consumed_for_forecast（其余 OK）", "pass": true},
+      {"id": "M3", "mutation": "verification.json 上游清单 card_I-07-E.md 的 sha256 改 1 个 hex 位（9552ac98→9552ac99，模拟上游指纹不符）", "copy": "_mut/M3", "rc": 3, "expected": "rc=3 违例含 J3", "observed": "VIOLATION J3: sha mismatch execution_v2/card_I-07-E.md recorded=9552ac99… actual=9552ac98…（其余 OK）", "pass": true},
+      {"id": "M4", "mutation": "汇总件 EA 模板镜像 equivalent_to_disclosure_basis false→true（模拟破坏 H4 (iv) 常量）", "copy": "_mut/M4", "rc": 3, "expected": "rc=3 违例含 J4", "observed": "VIOLATION J4×2: =false count=0(<7) + =true count=7（其余 OK）", "pass": true},
+      {"id": "M5", "mutation": "汇总件 ZINC 行真实数值格 352,470→281520（注入隔离合成数）", "copy": "_mut/M5", "rc": 3, "expected": "rc=3 违例含 J5", "observed": "VIOLATION J5: quarantined synthetic number 281520 outside quarantine register line（其余 OK）", "pass": true}
+    ],
+    "originals_untouched": {
+      "calibration_validation_summary.md": {"sha256": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb", "unchanged": true},
+      "handoff.json": {"sha256_during_runs": "57fb321bb23896cbc1cfcb02b9c7dcf0e58a91fb3efd61092e3a48e7c9e3ab5a", "unchanged_by_mutations": true, "note": "定稿时仅补 written_files sha，属本卡写入面正常记账"},
+      "oracle.md": {"sha256": "5f3685e0b7f628a089636e2226fd03eef95952d0d6b2ba22f3cb7a7cee5ca7fc", "unchanged": true},
+      "upstream_inputs_24": {"unchanged": true, "proof": "J3 绿臂在红臂之后仍全绿（24/24 复算一致）"}
+    },
+    "verdict": "红绿双向成立：绿 rc=0（ALL_INVARIANTS_OK）；5 红全 rc=3 且违例具名（J1/J2/J3/J4/J5 各被对应变异击杀）"
+  }
+}

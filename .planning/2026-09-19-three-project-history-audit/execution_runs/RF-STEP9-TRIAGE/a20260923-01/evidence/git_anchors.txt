@@ -1,0 +1,19 @@
+﻿ echo "# git attribution anchors — RF-STEP9-TRIAGE"; echo "date_utc=$([DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ
+'))"; echo "rf_production_HEAD=$(git -C $rf rev-parse HEAD)"; echo "repro_clone_HEAD(WSL rf-ci-repro)=b0d016a645f52ce91
+4197629b3ca5995609d9e89"; echo; echo "== last-green anchor #287 46bd8b16:"; git -C $rf log -1 --format='%H %cI %s' 46bd
+8b16; echo; echo "== introducing candidates:"; foreach($s in @('5db4734a','70dd9f6e','ec307d20','5fd82de7','ec307d20^',
+'70dd9f6e^')){ git -C $rf log -1 --format="$s -> %H %cI %s" $s }; echo; echo "== E27 string intro (scripts/):"; git -C 
+$rf log --format='%h %cI %s' -S 'attestation_missing_record' -- scripts/; echo; echo "== provider_absent intro:"; git -
+C $rf log --format='%h %cI %s' -S 'provider_absent' -- scripts/; echo; echo "== subprocess import in revenue_core:"; gi
+t -C $rf log --format='%h %cI %s' -S 'import subprocess' -- scripts/revenue_core.py; echo; echo "== calc.py bounds mess
+age change:"; git -C $rf log --format='%h %cI %s' -S 'outside permitted bounds' -- scripts/forecast/calc.py; echo "== c
+alc.py old messages removal:"; git -C $rf log --format='%h %cI %s' -S 'cannot be negative' -- scripts/forecast/calc.py;
+ echo; echo "== document.py future-leak check:"; git -C $rf log --format='%h %cI %s' -S 'future information leak' -- sc
+ripts/contracts/document.py; echo "== test_backtest as_of adaptation (same commit):"; git -C $rf log --format='%h %cI %
+s' -S 'Only usable after these actuals are known' -- tests/test_backtest.py; echo; echo "== failing test files last-tou
+ch:"; foreach($f in @('tests/adversarial/test_receipt_attacks.py','tests/test_attestation.py','tests/test_fc1102_t2_run
+ner.py','tests/test_fc1302_scan_health.py','tests/test_single_owner_guard.py','tests/test_zr1102_adversarial_audit.py',
+'tests/test_zr601_asset_facts.py','tests/test_zr708_backtest_reverify.py','tools/mutation_patrol.py','tools/daily_t2_ru
+nner.py')){ $l = git -C $rf log -1 --format='%h %cI %s' -- $f; echo "$f => $l" }; echo; echo "== commits 46bd8b16..b0d0
+16a6 (red-streak window):"; git -C $rf log --oneline 46bd8b16..b0d016a6 | Measure-Object -Line | ForEach-Object { "coun
+t=$($_.Lines)" }; git -C $rf log --oneline 46bd8b16..b0d016a6 

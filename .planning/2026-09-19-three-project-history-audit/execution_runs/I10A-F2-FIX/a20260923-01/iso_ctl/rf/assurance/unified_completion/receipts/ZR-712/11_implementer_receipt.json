@@ -1,0 +1,102 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ca05154d56301e9ce02eed2cf471a6fac7508add",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "fcc237aa46c0b21bb6bb0035140b5718758fa86ecbc52a608924f50039135899",
+  "commands": [
+    {
+      "command": "RED 探针：confidence.py 权重/rating 阈值硬编码（20/25/10/15/15/15 + 80/55）；grep mutation/duplicate/split/plug/zero-impact/one-observation/wrong-record confidence.py → 零命中；test_scenarios_confidence 仅覆盖 3 例",
+      "exit_code": 0,
+      "result": "G1 policy 版本化缺失 + G2 反博弈缺失——真实产品缺口"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr712_confidence_policy.py -q --tb=short",
+      "exit_code": 0,
+      "result": "15 passed（C1 版本化 policy 5 + C2 六类博弈 7 + C3 rating 重算 3）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "755 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+15 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/confidence_policy.py tests/test_zr712_confidence_policy.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（validate_confidence_policy 12→拆 _validate_weights/_validate_rating_caps；detect_gaming_mutations 16→拆 4 helpers——NEW_FILE_MAX 10 门）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 144 files"
+    },
+    {
+      "command": "git diff ca05154 2373c42 --stat",
+      "exit_code": 0,
+      "result": "6 文件 +380：confidence_policy.py（新 ~200 行）、test_zr712_confidence_policy.py（新 15 tests）+ 4 planning docs（ZR-708 closure 条目合入）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T08:20:00+00:00",
+  "findings": [
+    {
+      "detail": "ConfidencePolicy 版本化：policy = {version, weights, rating_caps} 数据对象，未知版本 fail-closed；默认权重/阈值与 legacy 一致（20/25/10/15/15/15 + 80/55）——存量 confidence.py 行为零回归。六类博弈检测：duplicate（同 backtest_id）、split（同 year/source/value 多记录）、plug（无 record_sha256）、zero-impact（wape=0 诚实披露）、one-observation（单观测封顶 8/15）、wrong-record（hash 缺失/篡改拒绝）。recompute_rating 从 caps 数据重算（high/medium/low）。",
+      "id": "ZR712-IMPL-001",
+      "severity": "info",
+      "title": "版本化 policy + 六类反博弈 + rating caps 重算"
+    },
+    {
+      "detail": "ratchet 两次触发（validate_confidence_policy 12、detect_gaming_mutations 16）均以 helper 提取解决——新文件也要警惕 NEW_FILE_MAX 10（ZR-605 教训再验证）。",
+      "id": "ZR712-IMPL-002",
+      "severity": "info",
+      "title": "NEW_FILE_MAX 门两次触发"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/confidence_policy.py：validate_confidence_policy（版本化 + 权重/caps 校验 helpers）+ detect_gaming_mutations（六类博弈，4 个检查 helpers + disclosures）+ recompute_rating（caps 驱动）。零产品硬编码；存量 confidence.py 公式未动（加性）。",
+    "files": [
+      "revenue-forecast/scripts/confidence_policy.py",
+      "revenue-forecast/tests/test_zr712_confidence_policy.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-712/**"
+    ]
+  },
+  "implementer": "zr712-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 2373c42（含 ZR-708 closure docs 条目）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=e4b3aa6d（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr712-independent）。",
+    "注：base_triplet.revenue=ca05154 为 ZR-708 closure commit。"
+  ],
+  "objective": "F2 版本化 ConfidencePolicy 与反博弈：policy 数据化（版本+权重+caps，未知版本 fail-closed），duplicate/split/plug/zero-impact/one-observation/wrong-record 六类博弈 mutations 全杀，rating caps 可重算。",
+  "plan_sha256": "e4b3aa6d1d66fabe32c729de7df5b1e42db31641a96be7c09e22e757789aac94",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "2373c42389cb1acf4a6787487b0009f28e1cf8d5",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/confidence_policy.py（新）、tests/test_zr712_confidence_policy.py（新 15 tests）；revenue 侧 receipts/ZR-712/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/confidence_policy.py",
+    "revenue-forecast/tests/test_zr712_confidence_policy.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-712/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-712"
+}

@@ -1,0 +1,952 @@
+FFF.....FFFFFFF......FFFFF..F                                            [100%]
+================================== FAILURES ===================================
+___________ test_container_clock_source_refused_not_crashing[dict] ____________
+
+shape = 'dict'
+
+    @pytest.mark.parametrize("shape", sorted(CLOCK_CONTAINERS))
+    def test_container_clock_source_refused_not_crashing(shape):
+        case = _cal("K-" + shape, _c3(clock_source=CLOCK_CONTAINERS[shape]), CLAIM_C3)
+>       got = _classify(case)                     # pre-fix: TypeError unhashable
+              ^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': {'source': 'system_utc'}, 'ledger': {'daily': [{'run_id': 'T2-2026-09-08', 'started_at': '2026-09-08T...id': 'drill-1', 'acked': True}]}, '_claim': {'status': 'complete', 'natural_observation_seconds': None, 'basis': None}}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+>       if clock_source not in TRUSTED_CLOCKS:  # J7
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: unhashable type: 'dict'
+
+iso\natural_window.py:355: TypeError
+___________ test_container_clock_source_refused_not_crashing[list] ____________
+
+shape = 'list'
+
+    @pytest.mark.parametrize("shape", sorted(CLOCK_CONTAINERS))
+    def test_container_clock_source_refused_not_crashing(shape):
+        case = _cal("K-" + shape, _c3(clock_source=CLOCK_CONTAINERS[shape]), CLAIM_C3)
+>       got = _classify(case)                     # pre-fix: TypeError unhashable
+              ^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': ['system_utc'], 'ledger': {'daily': [{'run_id': 'T2-2026-09-08', 'started_at': '2026-09-08T03:30:00Z'...id': 'drill-1', 'acked': True}]}, '_claim': {'status': 'complete', 'natural_observation_seconds': None, 'basis': None}}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+>       if clock_source not in TRUSTED_CLOCKS:  # J7
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: unhashable type: 'list'
+
+iso\natural_window.py:355: TypeError
+__________ test_container_clock_source_refused_not_crashing[nested] ___________
+
+shape = 'nested'
+
+    @pytest.mark.parametrize("shape", sorted(CLOCK_CONTAINERS))
+    def test_container_clock_source_refused_not_crashing(shape):
+        case = _cal("K-" + shape, _c3(clock_source=CLOCK_CONTAINERS[shape]), CLAIM_C3)
+>       got = _classify(case)                     # pre-fix: TypeError unhashable
+              ^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': [['x']], 'ledger': {'daily': [{'run_id': 'T2-2026-09-08', 'started_at': '2026-09-08T03:30:00Z', 'ok':...id': 'drill-1', 'acked': True}]}, '_claim': {'status': 'complete', 'natural_observation_seconds': None, 'basis': None}}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+>       if clock_source not in TRUSTED_CLOCKS:  # J7
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: unhashable type: 'list'
+
+iso\natural_window.py:355: TypeError
+_________ test_clock_membership_is_total_over_every_json_value_shape __________
+
+    def test_clock_membership_is_total_over_every_json_value_shape():
+        shapes = ["system_utc", "scheduler_trusted", "simulated_x", "", None, 5, 1.5, True,
+                  [], {}, ["system_utc"], {"source": "system_utc"}, [["x"]]]
+        for value in shapes:
+>           got = value in SUT.TRUSTED_CLOCKS       # pre-fix: TypeError for list/dict
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: unhashable type: 'list'
+
+harness\tests\test_i14b_natural_window_container_total.py:190: TypeError
+_ test_malformed_status_carrier_fails_closed_with_existing_code[list_on_empty] _
+
+name = 'list_on_empty'
+
+    @pytest.mark.parametrize("name", ["list_on_empty", "str", "int", "bool"])
+    def test_malformed_status_carrier_fails_closed_with_existing_code(name):
+        fields, claim, present = MALFORMED_CARRIERS[name]
+        f = json.loads(json.dumps(fields))
+        f["clock_source"] = "system_utc"
+>       got = _classify(_cal("S-" + name, f, claim, claim_present=present))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': 'system_utc', 'ledger': {'daily': [], 'weekly': [], 'monthly': [], 'alerts': []}, '_claim': ['pending']}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+        if clock_source not in TRUSTED_CLOCKS:  # J7
+            refusals.append("R-SIMULATED-CLOCK")
+    
+        complete = (best >= 7 and weekly_count >= 2 and monthly_count >= 1 and alert_count >= 1)
+        computed_status = "complete" if complete else "pending"
+>       claim_status = (fields.get("_claim") or {}).get("status")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'list' object has no attribute 'get'
+
+iso\natural_window.py:360: AttributeError
+_____ test_malformed_status_carrier_fails_closed_with_existing_code[str] ______
+
+name = 'str'
+
+    @pytest.mark.parametrize("name", ["list_on_empty", "str", "int", "bool"])
+    def test_malformed_status_carrier_fails_closed_with_existing_code(name):
+        fields, claim, present = MALFORMED_CARRIERS[name]
+        f = json.loads(json.dumps(fields))
+        f["clock_source"] = "system_utc"
+>       got = _classify(_cal("S-" + name, f, claim, claim_present=present))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': 'system_utc', 'ledger': {'daily': [{'run_id': 'T2-2026-09-10', 'started_at': '2026-09-10T03:30:00Z', ..._at': '2026-09-13T04:30:00Z', 'ok': True, 'report_sha256': 'w1b0'}], 'monthly': [], 'alerts': []}, '_claim': 'pending'}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+        if clock_source not in TRUSTED_CLOCKS:  # J7
+            refusals.append("R-SIMULATED-CLOCK")
+    
+        complete = (best >= 7 and weekly_count >= 2 and monthly_count >= 1 and alert_count >= 1)
+        computed_status = "complete" if complete else "pending"
+>       claim_status = (fields.get("_claim") or {}).get("status")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'str' object has no attribute 'get'
+
+iso\natural_window.py:360: AttributeError
+_____ test_malformed_status_carrier_fails_closed_with_existing_code[int] ______
+
+name = 'int'
+
+    @pytest.mark.parametrize("name", ["list_on_empty", "str", "int", "bool"])
+    def test_malformed_status_carrier_fails_closed_with_existing_code(name):
+        fields, claim, present = MALFORMED_CARRIERS[name]
+        f = json.loads(json.dumps(fields))
+        f["clock_source"] = "system_utc"
+>       got = _classify(_cal("S-" + name, f, claim, claim_present=present))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': 'system_utc', 'ledger': {'daily': [{'run_id': 'T2-2026-09-10', 'started_at': '2026-09-10T03:30:00Z', ...'started_at': '2026-09-13T04:30:00Z', 'ok': True, 'report_sha256': 'w1b0'}], 'monthly': [], 'alerts': []}, '_claim': 5}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+        if clock_source not in TRUSTED_CLOCKS:  # J7
+            refusals.append("R-SIMULATED-CLOCK")
+    
+        complete = (best >= 7 and weekly_count >= 2 and monthly_count >= 1 and alert_count >= 1)
+        computed_status = "complete" if complete else "pending"
+>       claim_status = (fields.get("_claim") or {}).get("status")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'int' object has no attribute 'get'
+
+iso\natural_window.py:360: AttributeError
+_____ test_malformed_status_carrier_fails_closed_with_existing_code[bool] _____
+
+name = 'bool'
+
+    @pytest.mark.parametrize("name", ["list_on_empty", "str", "int", "bool"])
+    def test_malformed_status_carrier_fails_closed_with_existing_code(name):
+        fields, claim, present = MALFORMED_CARRIERS[name]
+        f = json.loads(json.dumps(fields))
+        f["clock_source"] = "system_utc"
+>       got = _classify(_cal("S-" + name, f, claim, claim_present=present))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': 'system_utc', 'ledger': {'daily': [{'run_id': 'T2-2026-09-10', 'started_at': '2026-09-10T03:30:00Z', ...arted_at': '2026-09-13T04:30:00Z', 'ok': True, 'report_sha256': 'w1b0'}], 'monthly': [], 'alerts': []}, '_claim': True}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+        if clock_source not in TRUSTED_CLOCKS:  # J7
+            refusals.append("R-SIMULATED-CLOCK")
+    
+        complete = (best >= 7 and weekly_count >= 2 and monthly_count >= 1 and alert_count >= 1)
+        computed_status = "complete" if complete else "pending"
+>       claim_status = (fields.get("_claim") or {}).get("status")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'bool' object has no attribute 'get'
+
+iso\natural_window.py:360: AttributeError
+___ test_malformed_status_carrier_on_c1_attack_facts_refused_with_all_codes ___
+
+    def test_malformed_status_carrier_on_c1_attack_facts_refused_with_all_codes():
+        f = json.loads(json.dumps(F_C1))
+        f["clock_source"] = "system_utc"
+>       got = _classify(_cal("S-c1", f, ["complete"]))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': 'system_utc', 'ledger': {'daily': [{'run_id': 'T2-a1', 'started_at': '2026-10-01T03:30:00Z', 'ok': Tr...:00:00Z', 'ok': True, 'report_sha256': ''}], 'alerts': [{'run_id': 'drill-1', 'acked': True}]}, '_claim': ['complete']}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+        if clock_source not in TRUSTED_CLOCKS:  # J7
+            refusals.append("R-SIMULATED-CLOCK")
+    
+        complete = (best >= 7 and weekly_count >= 2 and monthly_count >= 1 and alert_count >= 1)
+        computed_status = "complete" if complete else "pending"
+>       claim_status = (fields.get("_claim") or {}).get("status")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'list' object has no attribute 'get'
+
+iso\natural_window.py:360: AttributeError
+________ test_malformed_status_carrier_over_complete_facts_is_accepted ________
+
+    def test_malformed_status_carrier_over_complete_facts_is_accepted():
+        # frozen boundary (oracle sec 3.3): complete facts support EVERY status claim,
+        # and no vocabulary code refuses a claim the facts fully substantiate.
+        f = json.loads(json.dumps(F_C3))
+        f["clock_source"] = "system_utc"
+>       got = _classify(_cal("S-c3", f, ["pending"]))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'clock_source': 'system_utc', 'ledger': {'daily': [{'run_id': 'T2-2026-09-08', 'started_at': '2026-09-08T03:30:00Z', ...:00Z', 'ok': True, 'report_sha256': 'm0b0'}], 'alerts': [{'run_id': 'drill-1', 'acked': True}]}, '_claim': ['pending']}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_calendar(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        ledger = fields.get("ledger") or {}
+    
+        daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+        best = 0
+        chain = 0
+        prev_date = None
+        prev_dt = None
+        same_day_dropped = 0
+        for entry in daily:
+            when = _parse(entry["started_at"])
+            day = when.date()
+            if prev_date is not None and day == prev_date:  # J10c
+                same_day_dropped += 1
+                continue
+            if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+                chain = 0
+            chain += 1
+            best = max(best, chain)
+            prev_date, prev_dt = day, when
+    
+        weekly, weekly_ref = _eligible(ledger.get("weekly") or [], frozen_now)
+        weekly_count = 0
+        if weekly:
+            latest = _parse(weekly[-1]["started_at"])
+            if _secs(latest, frozen_now) <= WEEKLY_MAX_AGE_SECONDS:
+                distinct: list[datetime] = []
+                for entry in weekly:
+                    when = _parse(entry["started_at"])
+                    if not distinct or _secs(distinct[-1], when) >= WEEKLY_GAP_SECONDS:
+                        distinct.append(when)
+                weekly_count = len(distinct)
+    
+        monthly, monthly_ref = _eligible(ledger.get("monthly") or [], frozen_now)
+        monthly_count = sum(
+            1 for entry in monthly
+            if _secs(_parse(entry["started_at"]), frozen_now) <= MONTHLY_MAX_AGE_SECONDS
+        )
+    
+        alert_count = sum(1 for a in (ledger.get("alerts") or []) if a.get("acked") is True)
+    
+        refusals += daily_ref + weekly_ref + monthly_ref
+        clock_source = fields.get("clock_source")
+        if clock_source not in TRUSTED_CLOCKS:  # J7
+            refusals.append("R-SIMULATED-CLOCK")
+    
+        complete = (best >= 7 and weekly_count >= 2 and monthly_count >= 1 and alert_count >= 1)
+        computed_status = "complete" if complete else "pending"
+>       claim_status = (fields.get("_claim") or {}).get("status")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'list' object has no attribute 'get'
+
+iso\natural_window.py:360: AttributeError
+_ test_windows_container_degrades_to_evidence_default_and_accepts_honest_claim _
+
+    def test_windows_container_degrades_to_evidence_default_and_accepts_honest_claim():
+>       got = _classify(_win("P4-W1", _good(windows=json.loads(json.dumps(W_DICT))),
+                             dict(UNION_1740)))
+
+harness\tests\test_i14b_natural_window_container_total.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:447: in classify
+    computed, refusals = derive_window(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'started_at': '2026-09-20T00:00:00Z', 'observation_finished_at': '2026-09-20T00:29:00Z', 'sampled_at': ['2026-09-20T0...0:06:00Z', '2026-09-20T00:08:00Z', '2026-09-20T00:10:00Z', ...], 'quick_check_started_at': '2026-09-20T00:29:00Z', ...}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_window(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        started = _parse(fields["started_at"])
+        scheduled = _opt(fields, "scheduled_at")
+        obs_finished = _opt(fields, "observation_finished_at")
+        qc_started = _opt(fields, "quick_check_started_at")
+        qc_finished = _opt(fields, "quick_check_finished_at")
+        cmd_finished = _opt(fields, "command_finished_at")
+    
+        sample_stamps = [_parse(x) for x in (fields.get("sampled_at") or [])]
+        outside = []
+        if obs_finished is not None:
+            outside = [s for s in sample_stamps if s < started or s > obs_finished]
+        in_window = [s for s in sample_stamps if s not in outside]
+    
+        span = None
+        if len(in_window) >= 2:
+            span = _secs(min(in_window), max(in_window))
+    
+        quick_check = None
+        if qc_started is not None and qc_finished is not None:
+            quick_check = _secs(qc_started, qc_finished)
+    
+        command_total = None
+        if cmd_finished is not None:
+            command_total = _secs(started, cmd_finished)
+    
+        explicit = [
+>           (_parse(w["started_at"]), _parse(w["finished_at"]))
+                    ^^^^^^^^^^^^^^^
+            for w in (fields.get("windows") or [])
+        ]
+E       TypeError: string indices must be integers, not 'str'
+
+iso\natural_window.py:164: TypeError
+_______________ test_windows_container_overclaim_still_refused ________________
+
+    def test_windows_container_overclaim_still_refused():
+        # anti-weaponisation (oracle APPENDIX A.5): degraded windows can only LOWER
+        # the supported ceiling, so an inflated claim hits J11.
+>       got = _classify(_win("P4-W2", _good(windows=json.loads(json.dumps(W_DICT))),
+                             dict(UNION_2220)))
+
+harness\tests\test_i14b_natural_window_container_total.py:274: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:447: in classify
+    computed, refusals = derive_window(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fields = {'started_at': '2026-09-20T00:00:00Z', 'observation_finished_at': '2026-09-20T00:29:00Z', 'sampled_at': ['2026-09-20T0...0:06:00Z', '2026-09-20T00:08:00Z', '2026-09-20T00:10:00Z', ...], 'quick_check_started_at': '2026-09-20T00:29:00Z', ...}
+frozen_now = datetime.datetime(2026, 9, 20, 2, 56, 38, tzinfo=datetime.timezone.utc)
+
+    def derive_window(fields: dict, frozen_now: datetime) -> tuple[dict, list[str]]:
+        refusals: list[str] = []
+        started = _parse(fields["started_at"])
+        scheduled = _opt(fields, "scheduled_at")
+        obs_finished = _opt(fields, "observation_finished_at")
+        qc_started = _opt(fields, "quick_check_started_at")
+        qc_finished = _opt(fields, "quick_check_finished_at")
+        cmd_finished = _opt(fields, "command_finished_at")
+    
+        sample_stamps = [_parse(x) for x in (fields.get("sampled_at") or [])]
+        outside = []
+        if obs_finished is not None:
+            outside = [s for s in sample_stamps if s < started or s > obs_finished]
+        in_window = [s for s in sample_stamps if s not in outside]
+    
+        span = None
+        if len(in_window) >= 2:
+            span = _secs(min(in_window), max(in_window))
+    
+        quick_check = None
+        if qc_started is not None and qc_finished is not None:
+            quick_check = _secs(qc_started, qc_finished)
+    
+        command_total = None
+        if cmd_finished is not None:
+            command_total = _secs(started, cmd_finished)
+    
+        explicit = [
+>           (_parse(w["started_at"]), _parse(w["finished_at"]))
+                    ^^^^^^^^^^^^^^^
+            for w in (fields.get("windows") or [])
+        ]
+E       TypeError: string indices must be integers, not 'str'
+
+iso\natural_window.py:164: TypeError
+____________ test_sampled_at_container_is_refused_with_no_samples _____________
+
+    def test_sampled_at_container_is_refused_with_no_samples():
+>       got = _classify(_win("P4-S1", _good(sampled_at={"a": "2026-09-20T00:01:00Z"}),
+                             dict(UNION_1740)))
+
+harness\tests\test_i14b_natural_window_container_total.py:281: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:447: in classify
+    computed, refusals = derive_window(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:145: in derive_window
+    sample_stamps = [_parse(x) for x in (fields.get("sampled_at") or [])]
+                     ^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+ts = 'a'
+
+    def _parse(ts: str) -> datetime:
+        if ts.endswith("Z"):
+            ts = ts[:-1] + "+00:00"
+>       dt = datetime.fromisoformat(ts)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: Invalid isoformat string: 'a'
+
+iso\natural_window.py:85: ValueError
+____________ test_ledger_container_with_complete_claim_is_refused _____________
+
+    def test_ledger_container_with_complete_claim_is_refused():
+        f = json.loads(json.dumps(F_C3))
+        f["ledger"]["daily"] = {"d1": dict(DAILY_ENTRY)}
+>       got = _classify(_cal("P4-L1", f, CLAIM_C3))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:291: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:315: in derive_calendar
+    daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:281: in _eligible
+    ordered = sorted(entries, key=lambda e: _parse(e["started_at"]))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+e = 'd1'
+
+>   ordered = sorted(entries, key=lambda e: _parse(e["started_at"]))
+                                                   ^^^^^^^^^^^^^^^
+E   TypeError: string indices must be integers, not 'str'
+
+iso\natural_window.py:281: TypeError
+________ test_ledger_container_with_pending_claim_control_is_accepted _________
+
+    def test_ledger_container_with_pending_claim_control_is_accepted():
+        f = json.loads(json.dumps(F_C2))
+        f["ledger"]["daily"] = {"d1": dict(DAILY_ENTRY)}
+>       got = _classify(_cal("P4-L2", f, CLAIM_C2))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+harness\tests\test_i14b_natural_window_container_total.py:301: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+harness\tests\test_i14b_natural_window_container_total.py:113: in _classify
+    return SUT.classify(case, _parse(FROZEN_NOW), 5.0, 5.0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:449: in classify
+    computed, refusals = derive_calendar(fields, frozen_now)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:315: in derive_calendar
+    daily, daily_ref = _eligible(ledger.get("daily") or [], frozen_now)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+iso\natural_window.py:281: in _eligible
+    ordered = sorted(entries, key=lambda e: _parse(e["started_at"]))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+e = 'd1'
+
+>   ordered = sorted(entries, key=lambda e: _parse(e["started_at"]))
+                                                   ^^^^^^^^^^^^^^^
+E   TypeError: string indices must be integers, not 'str'
+
+iso\natural_window.py:281: TypeError
+________________ test_one_malformed_case_cannot_kill_the_batch ________________
+
+tmp_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/T1-F2-FIX/a20260923-01/_pytest_tmp2/before_suite_container29/test_one_malformed_case_cannot0')
+
+    def test_one_malformed_case_cannot_kill_the_batch(tmp_path):
+        cases = [
+            _win("W-GOOD", dict(GOOD_FIELDS), dict(UNION_1740)),
+            _cal("C3-GOOD", F_C3, CLAIM_C3),
+            _cal("C2-GOOD", F_C2, CLAIM_C2),
+            _cal("BAD-F1", _c3(clock_source=["system_utc"]), CLAIM_C3),
+            _cal("BAD-F2", F_C2, ["pending"]),
+            _win("BAD-P4W", _good(windows=json.loads(json.dumps(W_DICT))), dict(UNION_2220)),
+            _win("BAD-P4S", _good(sampled_at={"a": "2026-09-20T00:01:00Z"}),
+                 dict(UNION_1740)),
+            _cal("BAD-P4L", {**json.loads(json.dumps(F_C3)),
+                             "ledger": {**json.loads(json.dumps(F_C3))["ledger"],
+                                        "daily": {"d1": dict(DAILY_ENTRY)}}}, CLAIM_C3),
+        ]
+        cases_path = tmp_path / "cases.json"
+        report_path = tmp_path / "report.json"
+        cases_path.write_text(
+            json.dumps({"frozen_now_utc": FROZEN_NOW, "cases": cases}),
+            encoding="utf-8")
+    
+        proc = subprocess.run(
+            [sys.executable, "-X", "utf8", "-B", str(SUT_PATH),
+             "--cases", str(cases_path), "--report", str(report_path)],
+            capture_output=True, text=True)
+    
+        # pre-fix: rc=4 and NO report at all (every case's verdict destroyed)
+>       assert proc.returncode == 0, f"rc={proc.returncode} stdout={proc.stdout!r}"
+E       AssertionError: rc=4 stdout='{"ok": false, "error": "internal_error", "detail": "unhashable type: \'list\'"}\n'
+E       assert 4 == 0
+E        +  where 4 = CompletedProcess(args=['C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\...], returncode=4, stdout='{"ok": false, "error": "internal_error", "detail": "unhashable type: \'list\'"}\n', stderr='').returncode
+
+harness\tests\test_i14b_natural_window_container_total.py:361: AssertionError
+=========================== short test summary info ===========================
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_container_clock_source_refused_not_crashing[dict]
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_container_clock_source_refused_not_crashing[list]
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_container_clock_source_refused_not_crashing[nested]
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_clock_membership_is_total_over_every_json_value_shape
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_malformed_status_carrier_fails_closed_with_existing_code[list_on_empty]
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_malformed_status_carrier_fails_closed_with_existing_code[str]
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_malformed_status_carrier_fails_closed_with_existing_code[int]
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_malformed_status_carrier_fails_closed_with_existing_code[bool]
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_malformed_status_carrier_on_c1_attack_facts_refused_with_all_codes
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_malformed_status_carrier_over_complete_facts_is_accepted
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_windows_container_degrades_to_evidence_default_and_accepts_honest_claim
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_windows_container_overclaim_still_refused
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_sampled_at_container_is_refused_with_no_samples
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_ledger_container_with_complete_claim_is_refused
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_ledger_container_with_pending_claim_control_is_accepted
+FAILED harness/tests/test_i14b_natural_window_container_total.py::test_one_malformed_case_cannot_kill_the_batch
+16 failed, 13 passed in 1.03s

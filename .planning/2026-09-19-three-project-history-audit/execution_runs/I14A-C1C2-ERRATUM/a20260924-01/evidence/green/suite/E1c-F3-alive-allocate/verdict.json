@@ -1,0 +1,190 @@
+{
+  "case": "E1c-F3-alive-allocate",
+  "checks": {
+    "expected_raw_returncode": {
+      "ok": true,
+      "detail": {
+        "raw": 2,
+        "expected": 2
+      }
+    },
+    "calls_failed": {
+      "ok": true,
+      "detail": {
+        "raw": 0,
+        "expected": 0
+      }
+    },
+    "peak_rss_gt": {
+      "ok": true,
+      "detail": {
+        "raw": 0.268,
+        "expected_gt": 0.0
+      }
+    },
+    "peak_rss_source": {
+      "ok": true,
+      "detail": {
+        "raw": "live_sample",
+        "expected": "live_sample"
+      }
+    },
+    "rss_sample_count_min_gte": {
+      "ok": true,
+      "detail": {
+        "raw": 27,
+        "expected_gte": 10
+      }
+    },
+    "fixture_pid_is_in_samples": {
+      "ok": true,
+      "detail": {
+        "identity_scope": "alive_ge_2x_effective_cadence",
+        "threshold_seconds": 0.1504,
+        "fixture_reported_pids": [
+          7184,
+          14560,
+          20028,
+          20580,
+          21560,
+          21680
+        ],
+        "sampled": [
+          7184,
+          10604,
+          12224,
+          13908,
+          14560,
+          17260,
+          19512,
+          20028,
+          20580,
+          21560,
+          21680,
+          22436
+        ],
+        "per_call": [
+          {
+            "child_pid": 19512,
+            "fixture_pid": 20580,
+            "elapsed_seconds": 1.742092,
+            "in_scope": true
+          },
+          {
+            "child_pid": 10604,
+            "fixture_pid": 20028,
+            "elapsed_seconds": 1.746805,
+            "in_scope": true
+          },
+          {
+            "child_pid": 12224,
+            "fixture_pid": 7184,
+            "elapsed_seconds": 1.74874,
+            "in_scope": true
+          },
+          {
+            "child_pid": 13908,
+            "fixture_pid": 14560,
+            "elapsed_seconds": 1.749786,
+            "in_scope": true
+          },
+          {
+            "child_pid": 17260,
+            "fixture_pid": 21680,
+            "elapsed_seconds": 1.76097,
+            "in_scope": true
+          },
+          {
+            "child_pid": 22436,
+            "fixture_pid": 21560,
+            "elapsed_seconds": 1.739305,
+            "in_scope": true
+          }
+        ]
+      }
+    },
+    "rss_pids_include_child_pids": {
+      "ok": true,
+      "detail": {
+        "sampled": [
+          7184,
+          10604,
+          12224,
+          13908,
+          14560,
+          17260,
+          19512,
+          20028,
+          20580,
+          21560,
+          21680,
+          22436
+        ],
+        "child_pids": [
+          10604,
+          12224,
+          13908,
+          17260,
+          19512,
+          22436
+        ]
+      }
+    },
+    "window_present:command_total_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 10.571606
+      }
+    },
+    "window_present:slo_window_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 10.509708
+      }
+    },
+    "window_present:rss_sample_window_seconds_max": {
+      "ok": true,
+      "detail": {
+        "value": 1.709697
+      }
+    },
+    "window_present:quick_check_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.059345
+      }
+    },
+    "quick_check_outside_slo_window": {
+      "ok": true,
+      "detail": {
+        "value": false
+      }
+    },
+    "rss_window_not_before_slo_window": {
+      "ok": true,
+      "detail": {
+        "rss": 1.709697,
+        "slo": 10.509708
+      }
+    },
+    "frozen_budgets_untouched": {
+      "ok": true,
+      "detail": {
+        "raw": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        },
+        "frozen": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        }
+      }
+    }
+  },
+  "all_ok": true,
+  "failed_checks": []
+}

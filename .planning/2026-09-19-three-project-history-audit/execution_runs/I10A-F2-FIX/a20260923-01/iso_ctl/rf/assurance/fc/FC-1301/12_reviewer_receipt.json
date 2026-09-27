@@ -1,0 +1,84 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1301",
+  "review_round": "r1",
+  "reviewer": "reviewer-fc1301-independent",
+  "implementer": "honest-implementer",
+  "decision": "accepted",
+  "status": "accepted",
+  "base_triplet": {
+    "revenue": "4a4c1089b00716696b8c382b9265ba9478b9ec05",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "result_triplet": {
+    "revenue": "a9f1ff1821c64dde55601d7fd4606a4e91d0c0df",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "304966d1579344cbf4b1c368c7ddea46b443f982"
+  },
+  "reviewed_at": "2026-08-13T03:15:36Z",
+  "replay_note": "Full from-scratch replay in clean worktrees under .fcap-review/fc-130x/ (revenue-base @ 4a4c108, revenue-forecast @ a9f1ff1, filing-fetch @ 83c638e, wiki-base @ b93994a, wiki-result @ 304966d, plus a transient junction company-wiki -> wiki-result for the revenue sibling-layout contract, removed at cleanup). F-6 rule honored: zero `git checkout <rev> -- <paths>`; RED test files copied onto base worktrees and deleted afterwards (base clean); the single mutation was a reverse edit on the result worktree. All triplet hashes git rev-parsed, never hand-written. Diff audit: wiki b93994a..304966d = exactly one commit touching exactly two files — observability.py (REASON_TAXONOMY_VERSION 1.0->1.1, +50 codes additive, grouped by adapter/acquisition, artifact gate, worker/control, latest/gap, documents/scan, llm) and the new tests/contract/test_fc1301_reason_taxonomy.py. Zero behavior change elsewhere (registry-only; validate_reason consumers unchanged).",
+  "commands": [
+    {
+      "command": "Diff audit: git show --stat 304966d + full observability.py diff in wiki-result worktree",
+      "exit_code": 0,
+      "result": "1 commit, 2 files changed: +60/-1 observability.py (version line 1.0->1.1; 50 new codes with non-empty descriptions), +62 new audit test. No extra files in the range; nothing else changed.",
+      "cwd": "fc-130x/wiki-result worktree"
+    },
+    {
+      "command": "Registry counts at both tips (direct import, worktrees)",
+      "exit_code": 0,
+      "result": "base: REASON_TAXONOMY_VERSION=1.0, len(REASONS)=28. result: 1.1, len(REASONS)=78. Delta +50 codes, additive.",
+      "cwd": "fc-130x/wiki-base and wiki-result worktrees"
+    },
+    {
+      "command": "RED at base: copy test_fc1301_reason_taxonomy.py onto wiki-base, run audit gate",
+      "exit_code": 0,
+      "result": "RED reproduced: 2 failed, 1 passed (test_taxonomy_version_current + test_every_emitted_reason_is_registered). The unregistered list is exactly the 50 codes added in 1.1 — confirms the 28-registered-vs-50-emitted claim. Copy removed afterwards; wiki-base worktree clean.",
+      "cwd": "fc-130x/wiki-base worktree"
+    },
+    {
+      "command": "GREEN at result: python -B -m pytest tests/contract/test_fc1301_reason_taxonomy.py -q",
+      "exit_code": 0,
+      "result": "3 passed in 0.91s.",
+      "cwd": "fc-130x/wiki-result worktree"
+    },
+    {
+      "command": "M1 mutation: inject keyword-position reason=\"unregistered_drift_code\" emission into production acquisition.py (resolve_or_stage), run audit gate",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — gate died with exactly: unregistered reason codes in production source: ['unregistered_drift_code'] (1 failed, 2 passed). Reverted via reverse edit -> 3 passed, git status clean.",
+      "cwd": "fc-130x/wiki-result worktree"
+    },
+    {
+      "command": "python tools/receipt_validator.py --receipt assurance/fc/FC-1301/11_implementer_receipt.json (after result_triplet fix)",
+      "exit_code": 0,
+      "result": "OK: 1 receipt(s) valid. result_triplet was stale (pre-commit heads captured by _write_receipts.py heads(); equal to base) — reviewer updated it to the actual tips a9f1ff1/304966d (finding F1). plan_sha256 matches audit_review/2026-08-09_full_completion_assurance_plan/task_plan.md; command_registry_sha256 matches compatibility/current.json.",
+      "cwd": "revenue-forecast (main checkout, read-only except the documented triplet fix)"
+    },
+    {
+      "command": "Post-review hygiene: git status --porcelain across all fc-130x worktrees; junction removed",
+      "exit_code": 0,
+      "result": "All worktrees clean after RED-copy removal and M1 revert; company-wiki junction removed; main checkouts untouched (only the pre-existing dirty items remain).",
+      "cwd": "all"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "M1",
+      "file": "company-wiki/src/company_wiki/source_catalog/acquisition.py",
+      "mutation": "Injected an unregistered literal emission reason=\"unregistered_drift_code\" in resolve_or_stage (reverse edit, keyword position so the AST scan's literal pattern catches it)",
+      "killed": true,
+      "result": "tests/contract/test_fc1301_reason_taxonomy.py -> test_every_emitted_reason_is_registered FAILS with exactly ['unregistered_drift_code'] (1 failed, 2 passed). Reverted via reverse edit -> 3 passed, worktree clean."
+    }
+  ],
+  "unresolved_findings": [
+    {
+      "id": "FC-1301-F1",
+      "severity": "info",
+      "file": "revenue-forecast/assurance/fc/FC-1301/11_implementer_receipt.json",
+      "issue": "result_triplet was generated pre-commit (_write_receipts.py captures heads() before the sealing commit) and therefore equaled the base triplet instead of the result tips a9f1ff1/304966d.",
+      "disposition": "Fixed by reviewer in this round; finding recorded for audit trail."
+    }
+  ],
+  "summary": "r1 ACCEPTED. Diff audit exact: wiki b93994a..304966d is a single commit touching only observability.py (version 1.0->1.1, +50 additive codes, 28->78) and the new audit gate test — zero behavior change elsewhere. RED reproduced at base in isolation (2 failed: version + 50 unregistered codes, exactly the 28-vs-50 drift claimed), GREEN at result (3 passed). M1 mutation kill confirmed and reverted (gate reports the exact drift code name). Implementer receipt structurally valid after the reviewer corrected the stale result_triplet (F1, the only finding). Result triplet (rev-parsed fcap tips): revenue a9f1ff1, filing 83c638e, wiki 304966d over base 4a4c108/83c638e/b93994a."
+}

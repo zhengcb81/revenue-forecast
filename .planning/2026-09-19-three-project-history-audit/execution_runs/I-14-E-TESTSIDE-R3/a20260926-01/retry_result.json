@@ -1,0 +1,154 @@
+{
+  "card": "I-14-E-TESTSIDE-R3",
+  "attempt": "a20260926-01",
+  "generated_utc": "2026-09-26T19:12:00Z",
+  "outcome": "application_executed_under_narrowed_gate_1; timing criteria undemonstrable_in_this_session (inherited env blocker), delivery complete",
+  "gate_1_scoped": {
+    "criteria_verbatim_dispatch": {
+      "old_over_strict": "OpenProcess(ALL_ACCESS) 否 ⇒ 全停",
+      "new_scoped": "直接尝试运行三臂 pytest —— a) pytest 能启动、能跑完、能出 rc ⇒ 继续施加（worker handle 与 pytest 无关） b) 仅当具体步骤确实被 worker handle / Start-Process 卡住 ⇒ 记录该步骤、其余照跑 c) 全部步骤被卡 ⇒ 判 blocked（合格）原始输出全程留档（每步 rc/耗时/报错）"
+    },
+    "verdict": "CONTINUE (a)",
+    "verdict_detail": "pytest started, ran to completion and produced rc in this session (smoke #2: rc=1, wall 2.89 s) -> all six carried steps executed; (b) fired only on the in-test launcher step (see stuck_steps); (c) not triggered (0 of 6 carried steps fully stuck)",
+    "measurements": [
+      {
+        "id": "G1-0",
+        "what": "record-only S8-1 capability probe (not a gate; evidence trail)",
+        "script": "harness/gate1_record_probe.py",
+        "raw_output": "evidence/gate1-record-probe-raw.txt",
+        "rc": 0,
+        "wall_seconds": 6.85,
+        "ran_utc": "2026-09-26T18:58:23Z",
+        "result": "S8-1-1 FAIL (OpenProcess 0x1F0FFF self+child: handle=0 lasterr=5; 0x1000 control ok) ; S8-1-2 FAIL (Start-Process with redirect: .Handle null; no-redirect control handle=2752)",
+        "error": "none (probe itself ran clean)"
+      },
+      {
+        "id": "G1-0a",
+        "what": "first probe attempt, PS redirect leg invalid (my quoting bug: literal $env:TEMP path) - kept for transparency",
+        "raw_output": "evidence/gate1-record-probe-raw-attempt1-quoting-bug.txt",
+        "rc": 0,
+        "wall_seconds": 4.53,
+        "error": "PSREDIRECT leg aborted with DriveNotFound ('$env'); corrected in G1-0; ctypes legs of both attempts agree"
+      },
+      {
+        "id": "G1-1",
+        "what": "direct three-arm pytest smoke #1 (red shape, pre-fix, 1 run)",
+        "raw_output": "evidence/gate1-pytest-smoke-raw.txt (driver console, ORIGINAL) + evidence/gate1-smoke1-capture-restored-from-transcript.txt (pytest capture, transcript-restored - see evidence_defect)",
+        "band_json": "evidence/gate1-smoke-band.json (overwritten in place by G1-2; G1-1 structured record survives only in the driver console line)",
+        "pytest_rc": 3,
+        "verdict": "unknown",
+        "wall_seconds": 1.27,
+        "error": "INTERNALERROR FileNotFoundError: .planning\\...\\evidence\\gate1-smoke\\basetemp-decisions.jsonl - my --evidence argument was a RELATIVE path while pytest cwd is the %TEMP% work root; harness invocation error on my side, recorded not hidden; fixed by absolute paths in G1-2"
+      },
+      {
+        "id": "G1-2",
+        "what": "direct three-arm pytest smoke #2 (red shape, pre-fix, 1 run, absolute paths)",
+        "raw_output": "evidence/gate1-pytest-smoke2-raw.txt (driver console) + evidence/gate1-smoke/captures/red-p1-r1.txt (pytest capture, ORIGINAL)",
+        "pytest_rc": 1,
+        "verdict": "failed",
+        "wall_seconds": 2.89,
+        "error_shape": "rc-gate assert 1 == 0 at assert completed.returncode == 0; launcher events {starting, launcher_exception: Cannot convert null to type System.IntPtr at source_catalog_worker.ps1:341 Assign}",
+        "gate_1_reading": "(a) satisfied: pytest 能启动、能跑完、能出 rc -> 继续施加"
+      }
+    ],
+    "evidence_defect_disclosed": "smoke #2 reused smoke #1's arm/pass/run-derived filenames (--arm red --runs 1 -> red-p1-r1.txt and the same --out), so G1-1's pytest capture and band json were OVERWRITTEN IN PLACE by G1-2 (my invocation error). G1-1's ORIGINAL surviving bytes: evidence/gate1-pytest-smoke-raw.txt (driver console with rc=3/wall/tally). The capture text is preserved as a clearly-marked transcript reconstruction at evidence/gate1-smoke1-capture-restored-from-transcript.txt. The four band arms are unaffected (distinct --evidence dirs per arm, 6 captures + 6 events jsonl each, verified).",
+    "stuck_steps_recorded_per_b": [
+      {
+        "step": "in-test product launcher child start (source_catalog_worker.ps1:340-341 Start-Process -RedirectStandard* -PassThru -> .Handle null -> [KillOnCloseJob]::Assign throws)",
+        "stuck_by": "Start-Process / worker handle (exactly the shape named in dispatch criterion b)",
+        "effect": "every arm run dies at the test's rc gate before the watchdog; 24/24 runs across four bands show it",
+        "everything_else_ran": true
+      }
+    ]
+  },
+  "carried_steps_R2_section_3_executed": [
+    {
+      "step": 1,
+      "name": "门 -1 自证（本轮=收窄判据：直接跑三臂 pytest）",
+      "status": "done",
+      "rc": "pytest rc produced (1)",
+      "wall_seconds": 2.89,
+      "raw": ["evidence/gate1-pytest-smoke2-raw.txt", "evidence/gate1-record-probe-raw.txt"]
+    },
+    {
+      "step": 2,
+      "name": "SUT 复位（iso 拷贝自 a20260924-01/iso；tests 复位原始字节）",
+      "status": "done",
+      "rc": 0,
+      "evidence": {
+        "iso_files_copied": 668,
+        "tests_file_sha256_after_reset": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+        "tests_file_bytes": 40868,
+        "launcher_sha256": "5c12cd740cc36abf95f3b9559485472d9d9a760143d27de46e3aaa7b4bbbc311",
+        "launcher_pin_note": "R2 recorded pin string is 63 hex chars (transcription lost one 'b'); R1 hashed_before.json full value == computed value == real repo value",
+        "real_repo_read_only_check": {"tests": "32515aa6...c005c1", "launcher": "5c12cd74...bbc311"},
+        "venv": "byte copy of a20260924-01/venv (python 3.13.9, pytest 9.1.1), 1232 files"
+      }
+    },
+    {
+      "step": 3,
+      "name": "三臂（红 N=6 修前 0.5 s；绿 N=6 H=min(max(2.0,4*t0),t0+3)）",
+      "status": "executed_both_arms",
+      "rc": {"red_per_run": [1, 1, 1, 1, 1, 1], "green_per_run": [1, 1, 1, 1, 1, 1]},
+      "counts": {"red": "0 passed / 6 failed", "green": "0 passed / 6 failed"},
+      "wall_seconds_total_red": 11.44,
+      "wall_seconds_total_green": 18.20,
+      "shape": "24/24 later, and 2/2 smoke runs: rc-gate launcher_exception; timing shape not reachable in this session",
+      "raw": ["red/red-run-raw.txt", "green/green-run-raw.txt", "red/band-red.json", "green/band-green.json"]
+    },
+    {
+      "step": 4,
+      "name": "红绿双向变异 M1 + M2-upper（R2 §4 预注册，各 1 条，各 N=6）",
+      "status": "executed_both_mutations",
+      "rc": {"m1_per_run": [1, 1, 1, 1, 1, 1], "m2upper_per_run": [1, 1, 1, 1, 1, 1]},
+      "counts": {"m1": "0 passed / 6 failed", "m2upper": "0 passed / 6 failed"},
+      "discriminating_power": "not demonstrable in this session (green fails for the identical environmental reason)",
+      "raw": ["mut1/mut1-run-raw.txt", "mut2/mut2-run-raw.txt", "mut1/band-mut-m1.json", "mut2/band-mut-m2upper.json"]
+    },
+    {
+      "step": 5,
+      "name": "交付 after/changes.diff（只含 tests/**，逐文件披露）+ retry_result.json + handoff.json",
+      "status": "done",
+      "rc": 0,
+      "evidence": {
+        "changes.diff": "after/changes.diff, 6533 bytes, sha256 3952cff55f17b57e189e76c94df1f63dae1dbf4ee13902b3bb04b281bbc6db72",
+        "changes.diff_identical_to_R1_delivery": true,
+        "file_count": 1,
+        "all_paths_under_tests": true,
+        "manifest": "after/changes.manifest.json",
+        "note": "raw iso-vs-current-CW diff (which would conflate external repo drift) preserved separately as after/disclosure-iso-vs-cw-full.diff"
+      }
+    },
+    {
+      "step": 6,
+      "name": "边界自证",
+      "status": "done_with_disclosed_deviation",
+      "rc": 0,
+      "evidence": {
+        "before_inventory": "before/hashed_before.json",
+        "after_inventory": "after/hashed_after.json",
+        "boundary_check": "after/boundary_check.json (+ before/final_hashes.json + after/final_hashes.json aliases)",
+        "all_required_equal": true,
+        "all_required_equal_faces": ["CW/src", "CW/scripts", "CW/tests", "CW/pytest.ini", "CW/conftest.py", "iso/src", "iso/scripts", "iso/config", "iso/pytest.ini", "iso/conftest.py"],
+        "iso_tests_changed_files": ["contract/test_source_catalog_worker_bootstrap.py"],
+        "git_diff_non_planning": {"total_lines": 3830, "non_planning_count": 0, "non_planning_paths": []},
+        "disclosed_deviation": "boundary_check.json verdict string is BOUNDARY_BREACH driven solely by the check iso_tests_copy_was_faithful (iso/tests vs CURRENT CW/tests): company-wiki/tests advanced AFTER the a20260924-01 iso copy on 3 unrelated modules (2 modified, 1 added; the pinned bootstrap anchor is still current). See after/disclosure-drift.json. All P1 faces are before==after equal; the real repo received zero writes.",
+        "inventories_taken_at": "after the four bands; sequence: revert -> hashes.py before -> re-apply fix (byte-identical a1cfeb13) -> hashes.py after -> check; runs themselves write only to %TEMP% basetemps + attempt evidence"
+      }
+    }
+  ],
+  "discipline_compliance": {
+    "git_status_forbidden_and_not_run": "hashes.py (copied from R1 harness) contained git status --porcelain in git_readonly(); patched out BEFORE first use and replaced with an explicit omission record - see harness/hashes.py git_readonly()",
+    "git_write_operations": 0,
+    "network": "none (product hermetic fixture; no fetch attempted)",
+    "product_repo_writes": 0,
+    "writes_outside_attempt_dir": "only %TEMP%\\i14ets-r3\\* pytest scratch (basetemp/cwd, addendum-A A3 disclosed shape) and two PS probe temp logs named in the probe script",
+    "accept_or_signature": "none (independent review is dispatched separately)"
+  },
+  "unverified_carried": [
+    "red timing shape (assert N==2 / TimeoutExpired) not demonstrable in this session",
+    "green 6/6 not demonstrable in this session (0/6)",
+    "mutation discriminating power not demonstrable in this session",
+    "node 2 (15/15/20 s budgets) not applied (source card measured 16/16 passing; no red reproducible)"
+  ]
+}

@@ -154,3 +154,13 @@ driver as `missing` with the fields that would have to be filled, and no value w
   `_FAILED_first_attempt` suffix under `after/`.
 - `decision.md` section "Owner hand-off" points at `handoff.json` (`open_questions`, `next_action`,
   `blocked_by`) as the authoritative continuation record.
+
+## 独立验收裁定（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅本 attempt、仅锚 9ec65295…。
+- 既有终裁载体（采信）：独立 reviewer 报告 sha256 5a44fd4e1e4dca5f…（40679 B）「## 1. 结论汇总」M09 行
+  「| M09 | resource | accepted_scoped | 仅 formula |」+ 卡内逐字副本 evidence/M09/reviewer_report_m09m12.md。
+- 本块即 owed 的卡内裁决区补录（追加式，附前缀哈希证明）；in_card_transcription_owed 由此清账。
+- carried：F-MT-02/03/04（由本块闭合）。本次抽验：[122] 三方一致；负例 11/11；九件齐；pin 3/3（LF 直配）；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "independent verdict transcribed in-card by M-T-REVIEW append (N=1) 2026-09-23: accepted_scoped (formula only); original carrier report 5a44fd4e…", carrier: "…/reviews/M09.md + acceptance_rulings.md#M09", implementer_signed: false, supersedes: "RESOLVED … in-card verdict region owed" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 e01551c6f5c7dcf9a33261477e9dbe29faf4be3def6ee971f7cfe574f332225d over 11608 bytes, verified post-install as sha256 of the first 11608 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = 84a766b5b8586e41518da11e7920d4318a0b98a961898f16f7471f27e6b434c0 = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 1086 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M09.md (sha256 423766517b0e64a5197e0ac4b3a8452880db3d0b56f1cf8f05cff245865a67b8) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

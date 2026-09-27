@@ -132,4 +132,11 @@ re-hashed; see `evidence/M07/evidence_hashes.json` and `after/rerun_sha256.json`
 
 Status after r2: `formula` = review_pending (point review of r2), `disclosure_adaptation` = unmapped, `accuracy` = unproven.
 
----
+---
+## 独立验收裁定 · r2 态（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅 r2 态、仅锚 9ec65295…。本块为缺失的 r2 点复审确认轮。
+- carried：F-MT-01/02/03；F-MT-04/05 由本块闭合。r2 对 oracle_document.honest_gap 的纠偏采信（记账诚实）。
+- 本次抽验：[122] 三方一致；负例 11/11；九件齐；pin 3/3（CRLF）；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "r2 point review returned by M-T-REVIEW (N=1) 2026-09-23: accepted_scoped (formula only)", carrier: "…/reviews/M07.md + acceptance_rulings.md#M07", implementer_signed: false, supersedes: "review_pending (point review of r2)" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 0295d81fc55e451ad569856fa4ab5c7e00f35454d4c3b74a31b70e98d3e6b89e over 9386 bytes, verified post-install as sha256 of the first 9386 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = a7d0e2fd677956ad3ecce76fef96d21ac3cb9dd1adf1d70189ca265eda1c87e4 = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 771 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M07.md (sha256 43b397d6f78e9751080af6baa626a929b72f8f1d402ae91c6cac6e3e702ddefb) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

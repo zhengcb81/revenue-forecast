@@ -1,0 +1,97 @@
+{
+  "probe": "b03_review_mutations",
+  "wiki_head": "f0aacbfd258b85b2eb76d41365786abf58179067",
+  "product_repo_untouched": true,
+  "isolated_copy": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\bvr03-mut-vzrdimvs",
+  "copy_restored": true,
+  "results": [
+    {
+      "id": "baseline",
+      "status": "n/a",
+      "result": {
+        "returncode": 0,
+        "failed": [],
+        "tail": "======================== 13 passed, 1 skipped in 3.44s ========================"
+      }
+    },
+    {
+      "id": "M1_serve_on_claim",
+      "status": "killed",
+      "breaks": "the digest gate itself: the buffer is returned even when its digest differs from the requested version",
+      "killed_by": [
+        "test_r4b03_same_size_content_change_is_refused",
+        "test_r4b03_catalog_claim_does_not_override_the_bytes",
+        "test_r4b03_truncated_file_is_refused",
+        "test_r4b03_every_refusal_stays_inside_the_contract_error_values"
+      ],
+      "result": {
+        "returncode": 1,
+        "failed": [
+          "test_r4b03_same_size_content_change_is_refused",
+          "test_r4b03_catalog_claim_does_not_override_the_bytes",
+          "test_r4b03_truncated_file_is_refused",
+          "test_r4b03_every_refusal_stays_inside_the_contract_error_values"
+        ],
+        "tail": "=================== 4 failed, 9 passed, 1 skipped in 1.41s ===================="
+      }
+    },
+    {
+      "id": "M2_recheck_off",
+      "status": "killed",
+      "breaks": "the size+mtime re-check after the read",
+      "killed_by": [
+        "test_r4b03_change_during_read_is_refused"
+      ],
+      "result": {
+        "returncode": 1,
+        "failed": [
+          "test_r4b03_change_during_read_is_refused"
+        ],
+        "tail": "=================== 1 failed, 12 passed, 1 skipped in 1.60s ==================="
+      }
+    },
+    {
+      "id": "M3_containment_off",
+      "status": "killed",
+      "breaks": "the out-of-root locator refusal",
+      "killed_by": [
+        "test_r4b03_locator_outside_the_roots_is_not_found",
+        "test_r4b03_every_refusal_stays_inside_the_contract_error_values"
+      ],
+      "result": {
+        "returncode": 1,
+        "failed": [
+          "test_r4b03_locator_outside_the_roots_is_not_found",
+          "test_r4b03_every_refusal_stays_inside_the_contract_error_values"
+        ],
+        "tail": "=================== 2 failed, 11 passed, 1 skipped in 1.43s ==================="
+      }
+    },
+    {
+      "id": "M4_inloop_cancel_off",
+      "status": "SURVIVED",
+      "breaks": "the in-loop (mid-read) cancellation check",
+      "killed_by": [],
+      "result": {
+        "returncode": 0,
+        "failed": [],
+        "tail": "======================== 13 passed, 1 skipped in 1.46s ========================"
+      }
+    },
+    {
+      "id": "M5_hydration_off",
+      "status": "killed",
+      "breaks": "the cloud-placeholder refusal",
+      "killed_by": [
+        "test_r4b03_placeholder_is_refused_without_hydrating"
+      ],
+      "result": {
+        "returncode": 1,
+        "failed": [
+          "test_r4b03_placeholder_is_refused_without_hydrating"
+        ],
+        "tail": "=================== 1 failed, 12 passed, 1 skipped in 1.31s ==================="
+      }
+    }
+  ]
+}

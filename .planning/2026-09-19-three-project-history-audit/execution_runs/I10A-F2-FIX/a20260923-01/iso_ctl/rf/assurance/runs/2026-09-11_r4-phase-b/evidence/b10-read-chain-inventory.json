@@ -1,0 +1,509 @@
+{
+  "tool": "b10_read_chain_inventory.py",
+  "note": "AST inventory of every parse of the shared documents.metadata_json column. `metadata_object` calls are the SINGLE CHAIN; `loads` calls are direct readers (candidates for convergence or for an explicit adapter).",
+  "roots": [
+    "C:\\Users\\郑曾波\\Projects\\company-wiki\\src\\company_wiki\\source_catalog"
+  ],
+  "totals": {
+    "sites": 21,
+    "single_chain_calls": 2,
+    "direct_readers": 19,
+    "confirmed_direct_readers": 10,
+    "heuristic_candidates": 9,
+    "modules_with_direct_readers": 12
+  },
+  "by_module": {
+    "artifact_backfill.py": [
+      {
+        "module": "artifact_backfill.py",
+        "symbol": "_classify",
+        "line": 175,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "row['metadata_json'] or '{}'",
+        "source": "metadata = json.loads(row[\"metadata_json\"] or \"{}\")"
+      }
+    ],
+    "artifact_read_model.py": [
+      {
+        "module": "artifact_read_model.py",
+        "symbol": "_artifact_row",
+        "line": 105,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "str(artifact.get('metadata_json') or '{}')",
+        "source": "metadata = json.loads(str(artifact.get(\"metadata_json\") or \"{}\"))"
+      }
+    ],
+    "backfill_v2.py": [
+      {
+        "module": "backfill_v2.py",
+        "symbol": "run_backfill",
+        "line": 217,
+        "callee": "metadata_object",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "single_chain",
+        "argument": "row['metadata_json']",
+        "source": "metadata = metadata_object(row[\"metadata_json\"])"
+      }
+    ],
+    "extraction_quality.py": [
+      {
+        "module": "extraction_quality.py",
+        "symbol": "ExtractionQualityService",
+        "line": 391,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "row['span_json']",
+        "source": "span = EvidenceSpan.from_dict(json.loads(row[\"span_json\"]))"
+      }
+    ],
+    "migration_ledger.py": [
+      {
+        "module": "migration_ledger.py",
+        "symbol": "build_quality_ledger",
+        "line": 78,
+        "callee": "metadata_object",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "single_chain",
+        "argument": "row['metadata_json']",
+        "source": "metadata = metadata_object(row[\"metadata_json\"])"
+      }
+    ],
+    "normalizer.py": [
+      {
+        "module": "normalizer.py",
+        "symbol": "normalize_catalog",
+        "line": 1633,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "document['metadata_json']",
+        "source": "metadata = json.loads(document[\"metadata_json\"])"
+      },
+      {
+        "module": "normalizer.py",
+        "symbol": "_frontmatter",
+        "line": 1441,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "document['metadata_json']",
+        "source": "json.loads(document[\"metadata_json\"]) if document[\"metadata_json\"] else {}"
+      },
+      {
+        "module": "normalizer.py",
+        "symbol": "normalize_catalog",
+        "line": 1631,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "primary['manifest_json']",
+        "source": "manifest = SourceManifest.from_dict(json.loads(primary[\"manifest_json\"]))"
+      },
+      {
+        "module": "normalizer.py",
+        "symbol": "normalize_catalog",
+        "line": 1684,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "document['normalization_metadata_json'] or '{}'",
+        "source": "existing_metadata = json.loads("
+      }
+    ],
+    "prompt_injection.py": [
+      {
+        "module": "prompt_injection.py",
+        "symbol": "record_prompt_injection_review",
+        "line": 108,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "row[0] or '{}'",
+        "source": "metadata = json.loads(row[0] or \"{}\")"
+      },
+      {
+        "module": "prompt_injection.py",
+        "symbol": "read_prompt_injection_review",
+        "line": 151,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "row[0] or '{}'",
+        "source": "metadata = json.loads(row[0] or \"{}\")"
+      }
+    ],
+    "prompt_injection_guard.py": [
+      {
+        "module": "prompt_injection_guard.py",
+        "symbol": "_receipt_from_store",
+        "line": 118,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "str(row[0] or '{}')",
+        "source": "metadata = json.loads(str(row[0] or \"{}\"))"
+      }
+    ],
+    "resolver.py": [
+      {
+        "module": "resolver.py",
+        "symbol": "_metadata_conflict_reason",
+        "line": 816,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "row['metadata_json'] or '{}'",
+        "source": "payload = json.loads(row[\"metadata_json\"] or \"{}\")"
+      }
+    ],
+    "scanner.py": [
+      {
+        "module": "scanner.py",
+        "symbol": "_merge_metadata_json",
+        "line": 1330,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "stored_json or '{}'",
+        "source": "stored = json.loads(stored_json or \"{}\")"
+      },
+      {
+        "module": "scanner.py",
+        "symbol": "_merge_document_row",
+        "line": 1697,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "existing_document['metadata_json'] or '{}'",
+        "source": "existing_meta = json.loads(existing_document[\"metadata_json\"] or \"{}\")"
+      }
+    ],
+    "section_query.py": [
+      {
+        "module": "section_query.py",
+        "symbol": "SectionQueryService",
+        "line": 109,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "row['metadata_json'] or '{}'",
+        "source": "meta = json.loads(row[\"metadata_json\"] or \"{}\")"
+      }
+    ],
+    "service.py": [
+      {
+        "module": "service.py",
+        "symbol": "_read_shared_metadata",
+        "line": 93,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "raw or '{}'",
+        "source": "payload = json.loads(raw or \"{}\")"
+      },
+      {
+        "module": "service.py",
+        "symbol": "SourceCatalog",
+        "line": 432,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "row['metadata_json'] or '{}'",
+        "source": "payload = json.loads(row[\"metadata_json\"] or \"{}\")"
+      }
+    ],
+    "source_lifecycle.py": [
+      {
+        "module": "source_lifecycle.py",
+        "symbol": "_safety_receipt",
+        "line": 151,
+        "callee": "loads",
+        "names_column_in_argument": true,
+        "column_referenced_in_symbol": true,
+        "confidence": "confirmed",
+        "argument": "str(row['metadata_json'] or '{}')",
+        "source": "metadata = json.loads(str(row[\"metadata_json\"] or \"{}\"))"
+      }
+    ],
+    "store.py": [
+      {
+        "module": "store.py",
+        "symbol": "metadata_object",
+        "line": 947,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "raw or '{}'",
+        "source": "value = json.loads(raw or \"{}\")"
+      },
+      {
+        "module": "store.py",
+        "symbol": "read_pipeline_status",
+        "line": 566,
+        "callee": "loads",
+        "names_column_in_argument": false,
+        "column_referenced_in_symbol": true,
+        "confidence": "heuristic",
+        "argument": "latest['report_json'] or '{}'",
+        "source": "report = json.loads(latest[\"report_json\"] or \"{}\")"
+      }
+    ]
+  },
+  "sites": [
+    {
+      "module": "artifact_backfill.py",
+      "symbol": "_classify",
+      "line": 175,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "row['metadata_json'] or '{}'",
+      "source": "metadata = json.loads(row[\"metadata_json\"] or \"{}\")"
+    },
+    {
+      "module": "artifact_read_model.py",
+      "symbol": "_artifact_row",
+      "line": 105,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "str(artifact.get('metadata_json') or '{}')",
+      "source": "metadata = json.loads(str(artifact.get(\"metadata_json\") or \"{}\"))"
+    },
+    {
+      "module": "backfill_v2.py",
+      "symbol": "run_backfill",
+      "line": 217,
+      "callee": "metadata_object",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "single_chain",
+      "argument": "row['metadata_json']",
+      "source": "metadata = metadata_object(row[\"metadata_json\"])"
+    },
+    {
+      "module": "extraction_quality.py",
+      "symbol": "ExtractionQualityService",
+      "line": 391,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "row['span_json']",
+      "source": "span = EvidenceSpan.from_dict(json.loads(row[\"span_json\"]))"
+    },
+    {
+      "module": "migration_ledger.py",
+      "symbol": "build_quality_ledger",
+      "line": 78,
+      "callee": "metadata_object",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "single_chain",
+      "argument": "row['metadata_json']",
+      "source": "metadata = metadata_object(row[\"metadata_json\"])"
+    },
+    {
+      "module": "normalizer.py",
+      "symbol": "normalize_catalog",
+      "line": 1633,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "document['metadata_json']",
+      "source": "metadata = json.loads(document[\"metadata_json\"])"
+    },
+    {
+      "module": "normalizer.py",
+      "symbol": "_frontmatter",
+      "line": 1441,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "document['metadata_json']",
+      "source": "json.loads(document[\"metadata_json\"]) if document[\"metadata_json\"] else {}"
+    },
+    {
+      "module": "normalizer.py",
+      "symbol": "normalize_catalog",
+      "line": 1631,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "primary['manifest_json']",
+      "source": "manifest = SourceManifest.from_dict(json.loads(primary[\"manifest_json\"]))"
+    },
+    {
+      "module": "normalizer.py",
+      "symbol": "normalize_catalog",
+      "line": 1684,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "document['normalization_metadata_json'] or '{}'",
+      "source": "existing_metadata = json.loads("
+    },
+    {
+      "module": "prompt_injection.py",
+      "symbol": "record_prompt_injection_review",
+      "line": 108,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "row[0] or '{}'",
+      "source": "metadata = json.loads(row[0] or \"{}\")"
+    },
+    {
+      "module": "prompt_injection.py",
+      "symbol": "read_prompt_injection_review",
+      "line": 151,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "row[0] or '{}'",
+      "source": "metadata = json.loads(row[0] or \"{}\")"
+    },
+    {
+      "module": "prompt_injection_guard.py",
+      "symbol": "_receipt_from_store",
+      "line": 118,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "str(row[0] or '{}')",
+      "source": "metadata = json.loads(str(row[0] or \"{}\"))"
+    },
+    {
+      "module": "resolver.py",
+      "symbol": "_metadata_conflict_reason",
+      "line": 816,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "row['metadata_json'] or '{}'",
+      "source": "payload = json.loads(row[\"metadata_json\"] or \"{}\")"
+    },
+    {
+      "module": "scanner.py",
+      "symbol": "_merge_metadata_json",
+      "line": 1330,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "stored_json or '{}'",
+      "source": "stored = json.loads(stored_json or \"{}\")"
+    },
+    {
+      "module": "scanner.py",
+      "symbol": "_merge_document_row",
+      "line": 1697,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "existing_document['metadata_json'] or '{}'",
+      "source": "existing_meta = json.loads(existing_document[\"metadata_json\"] or \"{}\")"
+    },
+    {
+      "module": "section_query.py",
+      "symbol": "SectionQueryService",
+      "line": 109,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "row['metadata_json'] or '{}'",
+      "source": "meta = json.loads(row[\"metadata_json\"] or \"{}\")"
+    },
+    {
+      "module": "service.py",
+      "symbol": "_read_shared_metadata",
+      "line": 93,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "raw or '{}'",
+      "source": "payload = json.loads(raw or \"{}\")"
+    },
+    {
+      "module": "service.py",
+      "symbol": "SourceCatalog",
+      "line": 432,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "row['metadata_json'] or '{}'",
+      "source": "payload = json.loads(row[\"metadata_json\"] or \"{}\")"
+    },
+    {
+      "module": "source_lifecycle.py",
+      "symbol": "_safety_receipt",
+      "line": 151,
+      "callee": "loads",
+      "names_column_in_argument": true,
+      "column_referenced_in_symbol": true,
+      "confidence": "confirmed",
+      "argument": "str(row['metadata_json'] or '{}')",
+      "source": "metadata = json.loads(str(row[\"metadata_json\"] or \"{}\"))"
+    },
+    {
+      "module": "store.py",
+      "symbol": "metadata_object",
+      "line": 947,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "raw or '{}'",
+      "source": "value = json.loads(raw or \"{}\")"
+    },
+    {
+      "module": "store.py",
+      "symbol": "read_pipeline_status",
+      "line": 566,
+      "callee": "loads",
+      "names_column_in_argument": false,
+      "column_referenced_in_symbol": true,
+      "confidence": "heuristic",
+      "argument": "latest['report_json'] or '{}'",
+      "source": "report = json.loads(latest[\"report_json\"] or \"{}\")"
+    }
+  ]
+}

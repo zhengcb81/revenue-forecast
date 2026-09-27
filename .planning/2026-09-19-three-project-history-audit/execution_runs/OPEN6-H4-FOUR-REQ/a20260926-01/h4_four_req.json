@@ -1,0 +1,259 @@
+{
+ "schema": "h4_four_req/1",
+ "carrier": "execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01",
+ "role": "accounting_reviewer_h4",
+ "generated_at_utc": "2026-09-26T10:25:42Z",
+ "oracle": {
+  "path": "oracle.md",
+  "sha256_frozen": "5b66584f5b4b89ef5fc8fc2311b32da2e11b606fcdc076ff0c9399912d534f0d",
+  "bytes": 19032,
+  "frozen_before_outputs": true
+ },
+ "authorization": {
+  "authorized_by_ind_l299_verbatim": "放行条件：本条仅为行业面审定；是否可标 threshold_basis 升级、以什么基础允许给数，由 I11A-OPEN-ACCT 依其基础规则确认，在此之前 I-11-B/I-11-C 不得据此触发。",
+  "authorized_by_merge_ruling_3_2": "### 3.2 易误读点 (a)：行业面给了 H4 = [0.90, 1.10] —— 这等于该命题 approved_frozen 吗？",
+  "authorized_by_acct_l226_verbatim": "审定一个阈值必须同时具备可复算观测量 + 可核基础 + 非实现者签署（decision_sha256） + 追加式版本化，否则一律维持 not_reviewed",
+  "authorized_by_c5_verbatim": "OPEN-6：threshold_review_status 落地 + H4 四要件补齐 + H2 基准 + 恒等式容差对照表",
+  "sources": {
+   "acct_ruling_md": {
+    "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2",
+    "bytes": 37355,
+    "lines_cited": "L226/L230/L240/L248-L256/L284/L296/L298"
+   },
+   "ind_ruling_md": {
+    "sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b",
+    "bytes": 39207,
+    "lines_cited": "L288/L296/L299/L330"
+   },
+   "merge_ruling_md": {
+    "sha256": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1",
+    "bytes": 49062,
+    "lines_cited": "L275-L297"
+   },
+   "merge_handoff_json": {
+    "sha256": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878",
+    "bytes": 21808,
+    "lines_cited": "L122"
+   }
+  }
+ },
+ "target": {
+  "hypothesis_id": "H-CN-ZIJIN-PLAN-04",
+  "threshold": "实际产量 ÷ 计划产量 ∈ [0.9, 1.1] 之外即显著偏离",
+  "threshold_basis_before": "professional_judgement_required",
+  "threshold_basis_after": "professional_judgement_required",
+  "threshold_basis_changed": false,
+  "threshold_review_status_before": null,
+  "threshold_review_status_after": "not_reviewed",
+  "threshold_review_status_upgraded": false,
+  "parameters": [
+   "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER",
+   "ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER"
+  ],
+  "parameters_released": false
+ },
+ "requirements": {
+  "1_recomputable_observable": {
+   "verdict": "satisfied",
+   "preexisting": true,
+   "evidence": {
+    "observable": "FY2026 实际披露：年报产销量表矿产金/矿产铜的实际产量与销售量，对照计划值 105 吨/120 万吨",
+    "source_route": "CN-ZIJIN-AR2025 → 管理层讨论与分析 → 2026年计划及展望 → 经营计划；实现值取自同一发行人 FY2026 年报产销量情况分析表",
+    "observation_date": "FY2026 年报披露日（预计2027-03前后）；半年报可用于方向核对但不得替代年度口径",
+    "threshold": "实际产量 ÷ 计划产量 落在 [0.9, 1.1] 之外即视为计划显著偏离（阈值依据：professional_judgement_required）",
+    "threshold_basis": "professional_judgement_required",
+    "source_doc_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+    "anchor_text": "2026年公司主要矿产品产量计划",
+    "quote_from": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json 下标 3 L415-L421（封盘原件只读）",
+    "validator": "封盘校验器对本条未报 E_MISSING_FALSIFIER / E_OBSERVATION_DATE_UNRESOLVED"
+   },
+   "caveat": "observable 指定的『产销量情况分析表』与年报正文 MD&A 的 FY2025 矿产铜口径不一致（见 r2.evidence.single_period_probe），须由行业面会签先行统一口径；该差异不削弱 A-6.3 第1条的『可定位/可复算』要件（两个数字都可从原文复算），但会改变判定结果。"
+  },
+  "2_verifiable_basis": {
+   "verdict": "satisfied",
+   "chosen_class": "(iv) expert_assumption",
+   "expert_assumption_marked": true,
+   "equivalent_to_disclosure_basis": false,
+   "sensitivity_interval": {
+    "main": [
+     0.9,
+     1.1
+    ],
+    "outer": [
+     0.85,
+     1.15
+    ],
+    "inner": [
+     0.95,
+     1.05
+    ]
+   },
+   "evidence": {
+    "search_corpus": {
+     "path": "execution_runs/I-10-A/a20260923-01/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt",
+     "sha256": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591",
+     "bytes": 763644
+    },
+    "class_i_source_disclosed_tolerance": {
+     "verdict": "not_available",
+     "probe": "re.search(r'达成率|±\\s*10\\s*%?|偏差.{0,6}10') over the FY2025 full-text extract",
+     "hits": 0,
+     "finding": "被引原文未披露任何『计划达成率』容差/口径定义；原文只有『本计划为指导性指标，存在不确定性，不构成对产量实现的承诺』的定性免责句"
+    },
+    "class_ii_same_basis_historical_dispersion": {
+     "verdict": "not_available",
+     "requirement": "同一披露指标在 ≥2 个可比披露期上的实际波动，计算过程与所用原文一并归档",
+     "completable_pairs_on_disk": 1,
+     "minimum_required_pairs": 2,
+     "pair_inventory": [
+      {
+       "year": "FY2025",
+       "plan": "紫金 FY2024 年报 leaf 55『经营计划 / 2025 年公司主要矿产品产量计划』：矿产铜 115 万吨、矿产金 85 吨",
+       "actual": "紫金 FY2025 年报 ②产销量情况分析表 + MD&A",
+       "completable": true
+      },
+      {
+       "year": "FY2026",
+       "plan": "紫金 FY2025 年报 L5479-L5480『2026 年公司主要矿产品产量计划』：矿产金 105 吨、矿产铜 120 万吨",
+       "actual": "尚未披露（observation_date = FY2026 年报披露日，预计 2027-03 前后）",
+       "completable": false
+      },
+      {
+       "year": "FY2024",
+       "plan": "需 FY2023 年报（盘上不存在）",
+       "actual": "紫金 FY2024 年报在盘",
+       "completable": false
+      }
+     ],
+     "annual_reports_on_disk": [
+      "2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf",
+      "2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf"
+     ],
+     "finding": "可配对期数 = 1 < 2；单点无『离散』可算 ⇒ (ii) 不可用（且盘上还存在口径未定问题，见 single_period_probe）"
+    },
+    "class_iii_standard_regulatory_text": {
+     "verdict": "not_available",
+     "probe": "同上关键词检索 + 全文抽取件内无准则/监管/交易所对『产量计划达成率容差』的明文定义",
+     "hits": 0
+    },
+    "class_iv_expert_assumption": {
+     "verdict": "chosen",
+     "requirement": "标 expert_assumption + 给出敏感性区间 + 永远不得记为等同披露依据",
+     "satisfied": true,
+     "origin_of_the_number": "I11A-OPEN-IND/a20260924-01/ruling.md L288/L296（矿业面 professional_judgement 给数 0.90-1.10）",
+     "sensitivity_interval": {
+      "main": [
+       0.9,
+       1.1
+      ],
+      "outer": [
+       0.85,
+       1.15
+      ],
+      "inner": [
+       0.95,
+       1.05
+      ]
+     },
+     "sensitivity_consequence": "内档 ±5% 更严 ⇒ 爬坡年/并表年/长周期检修年更易被误判；外档 ±15% 更宽 ⇒ 计划明显失真可能漏检；两档均为 reviewer 声明，非披露依据"
+    },
+    "single_period_probe": {
+     "note": "仅为信息性实测，明确【不作为】(ii) 的基础（期数 1 < 2，且两个披露口径结论相反）",
+     "plan_FY2025": "矿产铜 1,150,000 吨；矿产金 85,000 千克（紫金 FY2024 年报 leaf 55）",
+     "caliber_A_production_sales_table": {
+      "source": "紫金 FY2025 年报 ②产销量情况分析表（本表不含非控股企业相关数据）",
+      "mine_copper_t": 878180,
+      "mine_gold_kg": 82743,
+      "ratio_copper": 0.763635,
+      "ratio_gold": 0.973447,
+      "copper_in_band_0.9_1_1": false,
+      "gold_in_band": true
+     },
+     "caliber_B_mda": {
+      "source": "紫金 FY2025 年报 MD&A（L2880 矿山产铜 1,085,126 吨；L3310 实现矿产金 90 吨、矿产铜 109 万吨）",
+      "mine_copper_t": 1085126,
+      "mine_gold_t": 90,
+      "ratio_copper": 0.943588,
+      "ratio_gold": 1.058824,
+      "copper_in_band": true,
+      "gold_in_band": true
+     },
+     "conclusion": "同一期、同一指标，两个披露口径给出相反结论（0.763635 落在带外 vs 0.943588 落在带内）⇒ 口径未定；差异成因本工位未取证（未做口径桥），据实登记为会签提请事项，不得用任一口径宣称『历史离散支持 ±10%』"
+    }
+   }
+  },
+  "3_non_implementer_signature": {
+   "verdict": "satisfied",
+   "evidence": {
+    "signer_role": "accounting_reviewer_h4",
+    "signer_identity": "会计 / 披露 reviewer（非实现者）",
+    "is_implementer": false,
+    "implementer_markers": [
+     "本卡实现者",
+     "implementer",
+     "I-11-A implementer",
+     "弱模型"
+    ],
+    "marker_hit": null,
+    "signed_at_utc": "2026-09-26T10:25:42Z",
+    "scope_hypothesis_id": "H-CN-ZIJIN-PLAN-04",
+    "scope_parameter_ids": [
+     "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER",
+     "ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER"
+    ],
+    "written_into": "hypotheses_h4_v1.json → [3].decision.decision_sha256",
+    "sealed_before": null,
+    "sealed_after": "9d2d38450d8fa8f1423a695628b6fbacf91eecc5b4796d3fa7fb621fd147e1c9"
+   }
+  },
+  "4_append_only_versioning": {
+   "verdict": "satisfied",
+   "evidence": {
+    "new_file": "hypotheses_h4_v1.json",
+    "new_file_sha256": "329a719beb9e6ce2bdecdfdde7c6bc6db9e3e1c7e4f36f7fb982cdf81e109717",
+    "new_file_bytes": 54592,
+    "shape": "8-element JSON array (same shape as the sealed original)",
+    "provenance_path": "hypotheses_h4_v1.json → [3].provenance",
+    "supersedes_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+    "modified_indices": [
+     3
+    ],
+    "unchanged_indices_equal_to_sealed": [
+     0,
+     1,
+     2,
+     4,
+     5,
+     6,
+     7
+    ],
+    "index3_genuinely_new": true,
+    "sealed_original": {
+     "path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+     "sha256_before": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+     "sha256_after": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+     "unchanged": true
+    },
+    "old_version_retained": true
+   }
+  }
+ },
+ "four_req_status": "4/4",
+ "decision_sha256": "9d2d38450d8fa8f1423a695628b6fbacf91eecc5b4796d3fa7fb621fd147e1c9",
+ "decision_sha256_preimage_schema": "decision-sha256/v1",
+ "decision_sha256_preimage_composition": "sha256( utf8( json.dumps(pre, sort_keys=True, ensure_ascii=False, separators=(',',':')) ) )",
+ "decision_preimage_bytes": 1472,
+ "decision_preimage_canonical": "{\"action\":\"h4_threshold_four_requirements_confirmation\",\"authorized_by\":{\"c5\":\"OPEN-6：threshold_review_status 落地 + H4 四要件补齐 + H2 基准 + 恒等式容差对照表\",\"ind_l299\":\"放行条件：本条仅为行业面审定；是否可标 threshold_basis 升级、以什么基础允许给数，由 I11A-OPEN-ACCT 依其基础规则确认，在此之前 I-11-B/I-11-C 不得据此触发。\",\"merge_ruling_3_2\":\"### 3.2 易误读点 (a)：行业面给了 H4 = [0.90, 1.10] —— 这等于该命题 approved_frozen 吗？\"},\"basis_class\":\"expert_assumption\",\"carrier\":\"execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01\",\"equivalent_to_disclosure_basis\":false,\"expert_assumption_marked\":true,\"four_requirements\":{\"r1\":\"satisfied\",\"r2\":\"satisfied\",\"r3\":\"satisfied\",\"r4\":\"satisfied\"},\"new_version_file\":\"hypotheses_h4_v1.json\",\"releases_nothing\":true,\"role\":\"accounting_reviewer_h4\",\"schema\":\"decision-sha256/v1\",\"scope\":{\"hypothesis_id\":\"H-CN-ZIJIN-PLAN-04\",\"parameter_ids\":[\"ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER\",\"ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER\"],\"threshold\":\"实际产量 ÷ 计划产量 ∈ [0.9, 1.1]\"},\"sealed_original_sha256\":\"f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28\",\"sensitivity_interval\":{\"inner\":[0.95,1.05],\"main\":[0.9,1.1],\"outer\":[0.85,1.15]},\"signed_at_utc\":\"2026-09-26T10:25:42Z\",\"signed_by\":\"accounting_reviewer_h4（会计/披露 reviewer，非实现者）\",\"threshold_review_status_effective\":\"not_reviewed\"}",
+ "decision_sha256_before_write": "9d2d38450d8fa8f1423a695628b6fbacf91eecc5b4796d3fa7fb621fd147e1c9",
+ "decision_sha256_after_write": "9d2d38450d8fa8f1423a695628b6fbacf91eecc5b4796d3fa7fb621fd147e1c9",
+ "decision_sha256_two_pass_match": true,
+ "threshold_review_status_effective": "not_reviewed",
+ "threshold_review_status_explanation": "四要件 4/4 ⇒ A-6.3『缺一即维持 not_reviewed』的强制不再适用；但本工位不把状态升为 reviewed：字段落地与校验器改动属 BLOCKED-6c（ACCT L298 归实现者/编排层/schema 侧，派单明令不解除），行业面会签按派单『另议』，且派单禁止本工位触发任何自动动作 ⇒ 权威封盘文件字段缺失（有效值 = 默认 not_reviewed），本工位新版本显式写 not_reviewed ⇒ A-6.1 触发门两侧均保持关闭。",
+ "blocked_6a_status": "still_blocked（3 条 pjr 中 H2/H8 未按 A-6.3 签署；H4 这一份额已补齐，但不构成 BLOCKED-6a 整体解除）",
+ "blocked_6b_status": "untouched",
+ "blocked_6c_status": "untouched（本工位不改任何校验器、不代落地 schema）",
+ "open6_status": "untouched",
+ "releases_nothing": true,
+ "does_not_trigger_any_action": true,
+ "does_not_claim_I11BAcceptance": true
+}

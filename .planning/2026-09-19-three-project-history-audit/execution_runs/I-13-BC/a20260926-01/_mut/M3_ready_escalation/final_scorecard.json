@@ -1,0 +1,607 @@
+{
+  "schema": "i13bc_final_scorecard/1",
+  "card": "I-13-BC",
+  "card_stage": "C（评分定级，原卡 card_I-13-C.md 判据 + common_research_cards.md L291-L312 评分规则）",
+  "attempt": "execution_runs/I-13-BC/a20260926-01",
+  "role": "implementer_i13bc",
+  "status": "review_pending",
+  "frozen_before": {
+    "oracle": "execution_runs/I-13-BC/a20260926-01/oracle.md",
+    "freeze_point": "§2.B oracle_C 冻结点（先于本文件写入）",
+    "note": "评分规则、三栏要求、保留清单、STOP 判据已事前冻结；本文件逐条对上 oracle §5 P6-P8。"
+  },
+  "prerequisite_check": {
+    "card_text": "card_I-13-C L9 前提：『全部阻断项已逐项判定；资格状态不相互替代。』",
+    "all_blocking_items_determined": true,
+    "determined_where": "I-13-A blocking_issues.json（7 条 hard_blocks 逐条 disposition + 三件套 + 反证）已 accepted_scoped；本卡『blocking_items_determined』节逐条转录引用，不重开、不改判",
+    "qualification_statuses_do_not_substitute": true
+  },
+  "scoring_rule": {
+    "verbatim": "任一硬阻断或任一维度0→blocked；没有0但存在1→research_draft_needs_review；全部八维2且独立签署→buy_side_review_ready。总分0–16只展示，不能抵消阻断；该标签不是投资回报保证或准确性认证。",
+    "source": "execution_v2/common_research_cards.md L293（卡文动作1『按评分规则』点名，定域取尺逐字，sha 2c6fadcf…）",
+    "hard_blocks_verbatim_source": "common_research_cards.md L295-L301（7 条）；维度尺 L303-L312（B01-B08）——与 I-13-A oracle §2 冻结件逐字一致，本站沿用不重定义"
+  },
+  "classification_inputs": {
+    "dimension_scores_carried": {
+      "B01": 1,
+      "B02": 1,
+      "B03": 1,
+      "B04": 1,
+      "B05": 1,
+      "B06": 1,
+      "B07": 2,
+      "B08": 1
+    },
+    "dimension_scores_source": "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/buy_side_scorecard.json（sha e74631c7…，accepted_scoped；本站不重打分——打分是 I-13-A 的交付物）",
+    "hard_blocks_dispositions": {
+      "HB1": "not_established",
+      "HB2": "not_established",
+      "HB3": "not_established",
+      "HB4": "not_established",
+      "HB5": "not_established",
+      "HB6": "not_established",
+      "HB7": "not_established"
+    },
+    "hard_blocks_note": "HB3 由独立买方 reviewer 回源推翻（实现者原判 established）：A 支收入对账差=0、B 支产销恒等式闭合、C 支两处均有有权方明文适用性裁决且已执行（§三十三『确认适用 (c)』+ 16:16 revert 执行；§三十六 追加支 + R2 18:08 countersigned）——reviewer_report.md §二（sha 7f0c379c…）；HB2 字面 hash 缺陷（store 63 位）复审维持 not_established、缺陷只登记（F-3）",
+    "zeros_present": 0,
+    "dimensions_with_score_1": 7,
+    "independent_full_dimension_signature": false
+  },
+  "classification": "buy_side_review_ready",
+  "classification_derivation": {
+    "step1_hard_blocks": "established_hard_blocks = []（HB3=not_established 复审裁定；其余 6 条维持 not_established）",
+    "step2_scores": "zeros_present = 0；存在 1 的维度 = 7（B01,B02,B03,B04,B05,B06,B08）",
+    "step3_rule_application": "『没有0但存在1→research_draft_needs_review』⇒ 机械结果 = research_draft_needs_review",
+    "not_ready_reasons": [
+      "7 维为 1（缺口未补齐）",
+      "缺独立全维签署（buy_side_review_ready 需『全部八维2且独立签署』）",
+      "card_I-13-C L20：任何未解决 blocking issue 或缺独立签名 → 不得正式标 ready（OPEN-2/3/5/6、BLOCKED-6b(3/4)、gap-U1..U4 未解 + 独立签名缺）"
+    ],
+    "stage_b_consistency": "阶段 B 走查结论（Q3 不可得、预期差不可得、逐年路径缺）与 7 维=1 的待审状态一致，不新增硬阻断、不新增 0（Q3 缺口属 B06『贡献分解未完整说明』=1 档，非 0 档）",
+    "overturn_conditions": [
+      "若复审采严格读法（『最终报告』须独立成篇正式报告）⇒ 阶段 B STOP 判 blocked ⇒ 整卡 STOP（fail-closed，父 21:1x 确认），分类按 fail-closed 记账由复审/父直写改判",
+      "若后续补齐缺口并获独立全维签署 ⇒ 可按同一规则机械升格；本站不预支"
+    ]
+  },
+  "qualification_statuses": {
+    "rule_note": "card_I-13-C L23 验收：『明确区分研究可审阅、部署可用、预测准确性；保留所有未证实事项』——三状态分列、互不替代",
+    "research_reviewable": {
+      "status": "research_draft_needs_review",
+      "meaning": "研究可审阅：研究草稿形态可进入独立复审（非 ready、非放行）",
+      "basis": "I-07-E summary 研究草稿形态 + 18 槽位登记值可复核"
+    },
+    "deployment_usable": {
+      "status": true,
+      "meaning": "部署可用：否——不得作为部署/正式预测使用",
+      "basis": "formal_publication_slot=blocked、params_released=false、store low/base/high 全 null、两个 _PLACEHOLDER 维持、发布资格未验证（须另行真实验证）"
+    },
+    "forecast_accuracy": {
+      "status": "unproven",
+      "meaning": "预测准确性：未证实——I-12 未执行/未派；禁止改成已验证预测（card_I-13-C L14 逐字）",
+      "basis": "I-07-E handoff accuracy=unproven；I-12-A 三件仅取 sha 未读内容（准确性结果封存）"
+    }
+  },
+  "per_model_columns": {
+    "rule": "card_I-13-C L14 逐字：『逐模型列公式、披露、准确性三栏；准确性未证实也必须明写，禁止改成已验证预测。』+ research_cards.md L525 逐字：『把公式资格、披露适配和准确性三栏合并呈现，但禁止一栏PASS覆盖另一栏不足。』",
+    "column_semantics": "common_research_cards.md L11 逐字：『M卡调度accepted仅指A–C公式/负例资格通过。D–E是实际采用模型的企业披露适配资格，由先行I-10-A完成并供I-11-B及I-07-E消费…I-10-A不依赖I-11或I-07-E。F归I-12独立后续。D–F不阻断M卡的公式阶段完成，M accepted绝不等于披露或准确性通过。』",
+    "one_column_pass_never_masks_another": true,
+    "rows": [
+      {
+        "model_id": "ZJ-MIN-M09",
+        "model": "紫金矿产品分部对外收入 + 量价构建（direct_revenue + resource/realized_price + saleable_volume）",
+        "parameter_slots": [
+          "ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027",
+          "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027",
+          "ZIJIN_MINERAL_COPPER/GOLD_REALIZED_UNIT_REVENUE_FY2027",
+          "ZIJIN_MINERAL_COPPER/GOLD_SALEABLE_VOLUME_FY2027"
+        ],
+        "formula": {
+          "status": "accepted_scoped_not_extrapolated_with_open_slots",
+          "detail": "M01-M31 公式资格 accepted_scoped（不外推）；contract arithmetic 差额法双路同值（109,977,556,345）+ historical relationship ±10%（产销恒等式 Cu 878,180+6,763=884,943）；但 REALIZED_UNIT 三槽位公式不自洽（分母 884,943+83,161×24=2,880,807≠885,141，unverified-N2）⇒ not_executable_no_propagation，两分金属实现价显式拒绝出数（EA-7）",
+          "evidence": "summary:L36/L40-L43；PM:L45-L117/L305-L336"
+        },
+        "disclosure": {
+          "status": "signed_case_limited",
+          "detail": "I-10-A 4 case 已签之一：ZJ-MIN-M09（限本公司/分部/口径/期间）；但 OPEN-2 量价系数口径未裁 + 6b 容差未签 ⇒ 披露适配不覆盖被禁槽位",
+          "evidence": "summary:L134/L40"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行（F 归 I-12 独立后续）；不授予样本外准确性；禁止改成已验证预测",
+          "evidence": "summary:L133；I-07-E handoff:L14"
+        },
+        "row_status": "research_draft_only_not_ready"
+      },
+      {
+        "model_id": "ZJ-SMT-M09",
+        "model": "紫金冶炼分部对外销售收入（direct_revenue）",
+        "parameter_slots": [
+          "ZIJIN_SEG_SMELT_EXTERNAL_REVENUE_FY2027"
+        ],
+        "formula": {
+          "status": "accepted_scoped_not_extrapolated",
+          "detail": "contract arithmetic ±5%（max|偏差|=0.3 元）；base=FY2025 同口径值持平（EA-3）",
+          "evidence": "summary:L37；PM:L119-L181"
+        },
+        "disclosure": {
+          "status": "signed_case_limited",
+          "detail": "I-10-A：ZJ-SMT-M09 已签（限口径/期间）",
+          "evidence": "summary:L134"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "同上：I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "research_draft_only_not_ready"
+      },
+      {
+        "model_id": "ZJ-TRADE",
+        "model": "紫金贸易分部对外销售收入（direct_revenue）",
+        "parameter_slots": [
+          "ZIJIN_SEG_TRADE_EXTERNAL_REVENUE_FY2027"
+        ],
+        "formula": {
+          "status": "accepted_scoped_not_extrapolated",
+          "detail": "contract arithmetic ±5%（.5 对称进位）",
+          "evidence": "summary:L38；PM:L181-L243"
+        },
+        "disclosure": {
+          "status": "not_registered_in_read_face",
+          "detail": "I-10-A 4 case 名单（ZJ-MIN-M09/ZJ-SMT-M09/XM-PHONE-M03/XM-EV-M03）未含贸易分部 ⇒ 披露适配登记缺位（如实登记，不虚报已签）",
+          "evidence": "summary:L134"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "research_draft_only_not_ready"
+      },
+      {
+        "model_id": "ZJ-OTHER",
+        "model": "紫金其他分部对外销售收入（direct_revenue）",
+        "parameter_slots": [
+          "ZIJIN_SEG_OTHER_EXTERNAL_REVENUE_FY2027"
+        ],
+        "formula": {
+          "status": "accepted_scoped_not_extrapolated",
+          "detail": "contract arithmetic ±5%（max|偏差|=0.15 元）",
+          "evidence": "summary:L39；PM:L243-L305"
+        },
+        "disclosure": {
+          "status": "not_registered_in_read_face",
+          "detail": "同 ZJ-TRADE：I-10-A 名单未含，登记缺位",
+          "evidence": "summary:L134"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "research_draft_only_not_ready"
+      },
+      {
+        "model_id": "ZJ-VOL-03",
+        "model": "紫金铜/金/锌/银可售量（resource/saleable_volume）",
+        "parameter_slots": [
+          "ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027",
+          "ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027",
+          "ZIJIN_MINERAL_ZINC_SALEABLE_VOLUME_FY2027",
+          "ZIJIN_MINERAL_SILVER_SALEABLE_VOLUME_FY2027"
+        ],
+        "formula": {
+          "status": "accepted_scoped_not_extrapolated_constrained",
+          "detail": "historical relationship ±10%（逐位相等）；产销主恒等式闭合但受 BLOCKED-6b/OPEN-11（154 千克容差 NOT_SIGNED，signed 3/4）约束 ⇒ 映射算术可执行、传播用途受限",
+          "evidence": "summary:L43-L46；PM:L506-L701（carve_out）"
+        },
+        "disclosure": {
+          "status": "signed_case_limited",
+          "detail": "同 ZJ-MIN-M09 族（量侧，AR2025 p44 产销量表）；库存释放 +6,763 吨/+418 千克不外推",
+          "evidence": "summary:L43-L44"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "research_draft_only_not_ready"
+      },
+      {
+        "model_id": "ZJ-PLAN-04",
+        "model": "紫金 FY2026 管理层计划对照（达成率情景，D6）",
+        "parameter_slots": [
+          "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER"
+        ],
+        "formula": {
+          "status": "expert_assumption_registered",
+          "detail": "达成率带 [0.9,1.1]（金 94,500/105,000/115,500 千克；铜 1,080,000/1,200,000/1,320,000 吨）；management_target_is_not_independent=true；_PLACEHOLDER 维持",
+          "evidence": "summary:L47/L81；PM:L701-L764"
+        },
+        "disclosure": {
+          "status": "management_target_not_independent",
+          "detail": "AR2025 p56 指导性指标、不构成承诺；不得作独立准确性证据（store L546：产量计划本身不构成收入确认）",
+          "evidence": "summary:L47/L81；store:L518-L546"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行；管理层目标不得冒充准确性证据",
+          "evidence": "summary:L133"
+        },
+        "row_status": "research_draft_only_not_ready"
+      },
+      {
+        "model_id": "ZJ-ELIM-05",
+        "model": "紫金分部收入恒等式/抵销桥（contract arithmetic）",
+        "parameter_slots": [
+          "ZIJIN_SEGMENT_RECONCILIATION_FY2027"
+        ],
+        "formula": {
+          "status": "contract_arithmetic_signed_tolerance",
+          "detail": "584,049,229,264−234,970,146,412=349,079,082,852（差=0，τ=1 元，ACCT R1/R3 SIGNED）；store state=unquantified（6b 路径(c)）",
+          "evidence": "summary:L48/L111"
+        },
+        "disclosure": {
+          "status": "audited_caliber_h_elim_05",
+          "detail": "合并/内部抵销口径已审（H-CN-ZIJIN-ELIM-05/E5）：内部交易 234,970,146,412 元仅进恒等式桥，不得作参数收入基期（否则高估约 67%）",
+          "evidence": "summary:L93；store:L622"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "恒等式可核≠预测准确性；I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "research_draft_only_not_ready"
+      },
+      {
+        "model_id": "XM-PHONE-M03",
+        "model": "小米手机出货量×平均售价",
+        "parameter_slots": [],
+        "formula": {
+          "status": "historical_reconstruction_only",
+          "detail": "FY2025 历史复建值（165,200,000 部×1,128.7 元，I-10-A 已签映射 case）；FY2027 = 0 槽位（gap-U1，I-11-A source_map=not_readable_in_this_attempt STOP_EVIDENCE）",
+          "evidence": "summary:L16/L60/L131"
+        },
+        "disclosure": {
+          "status": "signed_case_limited",
+          "detail": "I-10-A：XM-PHONE-M03 已签（限 FY2025 口径）；披露日未登记（gap-U2）",
+          "evidence": "summary:L16/L134"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "blocked_gap_no_fy2027_path"
+      },
+      {
+        "model_id": "XM-EV-M03",
+        "model": "小米 EV 交付量×ASP + 其他收入单列",
+        "parameter_slots": [],
+        "formula": {
+          "status": "historical_reconstruction_only",
+          "detail": "FY2025 历史复建值（411,082 辆×251,171 元 + other_revenue 2,800,000,000 元单列一次，E4）；FY2027 = 0 槽位（gap-U1）",
+          "evidence": "summary:L16/L60"
+        },
+        "disclosure": {
+          "status": "signed_case_limited",
+          "detail": "I-10-A：XM-EV-M03 已签（限 FY2025 口径）",
+          "evidence": "summary:L134"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "blocked_gap_no_fy2027_path"
+      },
+      {
+        "model_id": "MS-PBP-M05",
+        "model": "微软 Productivity and Business Processes 分部增速（direct_growth）",
+        "parameter_slots": [
+          "MSFT_PBP_REVENUE_FY2027"
+        ],
+        "formula": {
+          "status": "accepted_scoped_not_extrapolated",
+          "detail": "g 换算 (1+g)×0.95/1.05−1（g=0.16 ⇒ 0.102/0.16/0.218 逐位）；增速持续=纯分析师判断（EA-4）",
+          "evidence": "summary:L54/L69；PM:L900-L966"
+        },
+        "disclosure": {
+          "status": "not_granted",
+          "detail": "I-10-A：MS-PBP-M05 = STOP_DISCLOSURE_ADAPTATION（不授予）",
+          "evidence": "summary:L130/L134"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "disclosure_not_granted_no_formal_delivery"
+      },
+      {
+        "model_id": "MS-IC-M06",
+        "model": "微软 Intelligent Cloud 分部增速（direct_growth）",
+        "parameter_slots": [
+          "MSFT_IC_REVENUE_FY2027"
+        ],
+        "formula": {
+          "status": "accepted_scoped_not_extrapolated",
+          "detail": "g=0.30 ⇒ 0.235/0.30/0.365（47/200、73/200 逐位）；EA-4 纯分析师判断；unverified-N3（注记区间与自身带换算不符）登记",
+          "evidence": "summary:L55/L69/L106；PM:L966-L1031"
+        },
+        "disclosure": {
+          "status": "not_granted",
+          "detail": "I-10-A：MS-IC-M06 = STOP_DISCLOSURE_ADAPTATION（不授予）",
+          "evidence": "summary:L130/L134"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "disclosure_not_granted_no_formal_delivery"
+      },
+      {
+        "model_id": "MSFT-MPC",
+        "model": "微软 More Personal Computing 分部增速（direct_growth，不得被集团增长掩盖）",
+        "parameter_slots": [
+          "MSFT_MPC_REVENUE_FY2027"
+        ],
+        "formula": {
+          "status": "accepted_scoped_not_extrapolated",
+          "detail": "g=−0.01 ⇒ −0.0595/−0.01/0.0395（−119/2000、79/2000 逐位）；E7 三分部建模、集团增速互斥",
+          "evidence": "summary:L56/L87；PM:L1031-L1096"
+        },
+        "disclosure": {
+          "status": "not_registered_in_read_face",
+          "detail": "I-10-A 名单未含 MPC 案（4 签 + 2 不授予）⇒ 登记缺位（如实登记）",
+          "evidence": "summary:L134"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "research_draft_only_not_ready"
+      },
+      {
+        "model_id": "MSFT-SEG-02",
+        "model": "Microsoft Cloud 聚合口径（direct_revenue）",
+        "parameter_slots": [
+          "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER"
+        ],
+        "formula": {
+          "status": "not_executable_declined",
+          "detail": "无可用换算公式（缺 Cloud→分部/产品行完备映射表）；EA-7 显式拒绝出数；_PLACEHOLDER 维持",
+          "evidence": "summary:L57/L119；PM:L1096-L1156"
+        },
+        "disclosure": {
+          "status": "n/a_caliber_prohibited",
+          "detail": "聚合口径与分部/产品行不等价（store L856-L858：三者混用会把同一收入计两次）；E6 PROHIBITED_CO_USE",
+          "evidence": "summary:L87；store:L856-L858"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "declined_no_number"
+      },
+      {
+        "model_id": "MSFT-SEG-03",
+        "model": "微软许可 vs 云构成（subscription）",
+        "parameter_slots": [
+          "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027"
+        ],
+        "formula": {
+          "status": "not_executable_declined",
+          "detail": "缺行内拆分（云/许可分项、平均付费席位、净 ARPU）；EA-7 显式拒绝出数",
+          "evidence": "summary:L58/L119；PM:L1156-L1213"
+        },
+        "disclosure": {
+          "status": "not_granted_missing_split",
+          "detail": "产品/服务分解行与分部收入交叉（store L961：需要许可证与云的拆分表才能落 subscription 类模型）——拆分披露缺位",
+          "evidence": "store:L961"
+        },
+        "accuracy": {
+          "status": "unproven",
+          "detail": "I-12 未执行",
+          "evidence": "summary:L133"
+        },
+        "row_status": "declined_no_number"
+      }
+    ],
+    "row_count": 14,
+    "accuracy_column_all_unproven": true,
+    "rows_claiming_formal_delivery": 0
+  },
+  "blocking_items_determined": {
+    "hard_blocks_7": {
+      "HB1": "not_established",
+      "HB2": "not_established（字面 63 位 hash 缺陷只登记，F-3；从严读法可转 established，登记不隐藏）",
+      "HB3": "not_established（独立买方 reviewer 回源推翻，reviewer_report §二）",
+      "HB4": "not_established",
+      "HB5": "not_established",
+      "HB6": "not_established",
+      "HB7": "not_established"
+    },
+    "open_items_carried": [
+      {
+        "id": "OPEN-2",
+        "what": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE 量价系数口径 + 分母 885,141 权威推导未裁",
+        "disposition": "未解——红线只登记不消费",
+        "owner": "有权方（会计/行业面）"
+      },
+      {
+        "id": "OPEN-3",
+        "what": "MSFT 分部口径放行",
+        "disposition": "未解——全部维持不放行",
+        "owner": "有权方"
+      },
+      {
+        "id": "OPEN-5 / OPEN-6",
+        "what": "证据/口径桥四要件（H4 269t/534kg 残差）",
+        "disposition": "未解——§三十六 追加支 + R2 countersigned 已执行，但 threshold_review_status=not_reviewed",
+        "owner": "行业面/编排层"
+      },
+      {
+        "id": "BLOCKED-6b",
+        "what": "库存桥 154 千克容差（R2=H-CN-ZIJIN-VOL-03 实测金 +154 千克 NOT_SIGNED，signed 3/4）",
+        "disposition": "still_blocked；整条是否转 accepted 按 ruling_6b L110 由 owner/编排层另判（F-2）",
+        "owner": "owner/编排层"
+      },
+      {
+        "id": "gap-U1",
+        "what": "小米 FY2027 命题/参数载体缺位（I-11-A STOP_EVIDENCE）",
+        "disposition": "blocked-缺位，fail-closed 不补假数据",
+        "owner": "I-11-A 族"
+      },
+      {
+        "id": "gap-U2",
+        "what": "小米披露日未登记",
+        "disposition": "显式保留",
+        "owner": "I-11-A 族"
+      },
+      {
+        "id": "gap-U3 / gap-U4",
+        "what": "H1锁定、微软重述已审载体未检出",
+        "disposition": "显式保留，不伪造处理记录",
+        "owner": "编排层定位"
+      },
+      {
+        "id": "u-N4",
+        "what": "store 内 MSFT doc_sha256 63 位 vs 实测 64 位",
+        "disposition": "只登记不更正（store 只读）；核源用 64 位实测值（F-3）",
+        "owner": "store 有权方勘误"
+      },
+      {
+        "id": "u-N5",
+        "what": "store H-01 349,079,082,852 与矿产品分部语义张力（约 3.17 倍）",
+        "disposition": "登记不回改；AR p327/p328 回源归独立复审",
+        "owner": "独立复审/会计面"
+      },
+      {
+        "id": "u-N6",
+        "what": "EA-4 注记区间与自身带换算不符",
+        "disposition": "登记（注记层缺陷，不影响 new_value 算术）",
+        "owner": "独立复审"
+      },
+      {
+        "id": "unverified-D1",
+        "what": "I-11-C 卡文 L13-L16 反方审查/触发更新 reviewer 面未在实现站执行",
+        "disposition": "erratum_recorded；反方审查面缺口归 reviewer 站",
+        "owner": "独立复审"
+      },
+      {
+        "id": "严格读法之争",
+        "what": "存在任一 not_executable 槽位即整卡 blocked 的字面读法",
+        "disposition": "上游复审按不触发接受；本站不重开、不自裁（登记）",
+        "owner": "独立复审"
+      }
+    ],
+    "stage_b_open_items": [
+      "G1 贡献分解缺",
+      "G2 确认时点缺",
+      "G3 逐年路径缺",
+      "G4 预期差/consensus 不可得",
+      "G5 小米缺位",
+      "G6 u-N5",
+      "G7 红线族",
+      "G8 gap-U3/U4——见 reviewer_answers.json gap_routing，逐条路由回对应卡"
+    ]
+  },
+  "retained": {
+    "source_hashes": {
+      "CN-ZIJIN-AR2025": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d（p327-p328、p44、p56）",
+      "HK-XIAOMI-AR2025": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c（p.21）",
+      "US-MSFT-10K-FY2026": "e3de0053…40ecfff（I-07-B 实测 64 位；store 记 63 位 = u-N4 转录缺陷，核源用 64 位）（table 74/76、MD&A）"
+    },
+    "model_and_artifact_hashes": {
+      "parameter_mapping.json": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c（18 映射行载体）",
+      "hypotheses_v3.json (store)": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+      "hypotheses.json (sealed)": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+      "calibration_validation_summary.md": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb",
+      "expert_assumptions.json (I-11-B)": "9f8b844e342ec17e731cbe4554388005f5070e0c586de329782df86ee3abd79f（EA 模板源）",
+      "formula_models_M01_M31_per_model_hash": "不可得——M 卡逐模型载体 hash 未在授权回源面内（只登记『formula=M01-M31 accepted_scoped（不外推）』汇总语，summary L134）；显式缺口，不虚报"
+    },
+    "as_of": {
+      "as_of": "2026-09-18",
+      "published_at_available_at": {
+        "CN-ZIJIN-AR2025": "2026-03-20（published_at=available_at）",
+        "US-MSFT-10K-FY2026": "2026-07-29（published_at=available_at）",
+        "HK-XIAOMI-AR2025": "未登记（gap-U2）"
+      },
+      "red_line_note": "红线族只登记不消费（OPEN-2）"
+    },
+    "current_limitations": [
+      "params_released=false；store low/base/high 全 null、两个 _PLACEHOLDER 维持；formal_publication_slot=blocked",
+      "accuracy=unproven（I-12 未执行）；样本外准确性不授予",
+      "5/18 槽位 not_executable/显式拒绝（REALIZED_UNIT、两分金属实现价、MSFT_CLOUD、MSFT_LICENSING）",
+      "小米 FY2027 = 0 槽位（gap-U1）、披露日缺（gap-U2）；3/3 声明=否",
+      "OPEN-2/3/5/6 未解；BLOCKED-6b still_blocked（3/4 签）；threshold_review_status=not_reviewed",
+      "u-N4/N5/N6、unverified-D1、gap-U3/U4 登记未销",
+      "阶段 B 缺口：贡献分解缺（交互项禁分配）、收入确认时点缺、逐年路径缺、consensus/market-implied 不可得",
+      "披露适配缺位登记：ZJ-TRADE、ZJ-OTHER、MSFT-MPC 三模型未见 I-10-A 案；MS-PBP-M05/MS-IC-M06 不授予"
+    ],
+    "update_triggers": [
+      "OPEN-2 裁定（系数来源 + 分母 885,141 权威推导/算术更正）⇒ 解锁 REALIZED_UNIT 族",
+      "ruling_6b L110 重判（154 千克容差签署或否决）⇒ BLOCKED-6b 状态变更",
+      "H4 Q2 threshold_review_status 升级（须字段落地 + 编排层）⇒ 内档 [0.95,1.05] 适用性落地",
+      "AR p327/p328 回源裁定（u-N5）⇒ 矿产品基期语义定案",
+      "I-12 准确性执行完成 ⇒ accuracy 栏由 unproven 更新",
+      "小米源可读化/披露日登记 ⇒ gap-U1/U2 销账",
+      "store 63 位 hash 勘误（u-N4）；gap-U3/U4 载体定位",
+      "任何新披露/重述/实际值（含 FY2027 实绩）⇒ 触发对应模型重校"
+    ],
+    "next_cards_and_owners": [
+      {
+        "card": "I-13-BC 复审",
+        "owner": "独立买方 reviewer + 行业 reviewer（阶段 B 面）/ 主审 + 独立买方 reviewer（阶段 C 面）",
+        "note": "一次复审 + 一次落定（父直写）；status_authority 引同一复审报告"
+      },
+      {
+        "card": "I-12 系列（准确性）",
+        "owner": "独立统计/专业 reviewer（F 归 I-12）",
+        "note": "本 unit 不派（依赖顺序另派）"
+      },
+      {
+        "card": "I-16-A",
+        "owner": "另派",
+        "note": "本 unit 不派（派单明令；依赖顺序另派）"
+      },
+      {
+        "card": "I-16 / I-17（安全与时间要求）",
+        "owner": "另派",
+        "note": "维持分立（合并卡 L6）"
+      },
+      {
+        "card": "ruling_6b L110 重判 / OPEN-2/3/5/6 裁定",
+        "owner": "owner/编排层/有权方（会计·行业面）",
+        "note": "残余不隐藏"
+      }
+    ]
+  },
+  "stop_conditions_evaluated": {
+    "ready_prohibition": {
+      "rule": "card_I-13-C L20：任何未解决blocking issue或缺独立签名→不得正式标ready",
+      "applied": true,
+      "result": "classification=research_draft_needs_review（非 buy_side_review_ready）；无任何 ready/正式发布主张"
+    },
+    "STOP_PROVENANCE": {
+      "rule": "card_I-13-C L21：无真实运行/消费/发布证据却只凭receipt文件存在→STOP_PROVENANCE",
+      "triggered": false,
+      "basis": "本站无任何 host_receipt/发布回执主张；正式发布格=blocked 如实登记；动作4 不走发布卡（上游发布/回执流程不合格，卡文 L16 逐字）"
+    },
+    "publication_card_walked": false,
+    "host_receipt_written": false,
+    "index_modified": false
+  },
+  "independent_buy_side_signoff": {
+    "status": "pending_not_produced",
+    "produced_by": "独立买方 reviewer（card_I-13-C Owner 面 = 主审和独立买方 reviewer，另派）",
+    "implementer_signed": false,
+    "note": "card_I-13-C 证据面 independent_buy_side_signoff.md 归独立买方 reviewer 站出具；本站不自签、不代签、不产签核件（§三十四 L765『实现者不自签 · 独立复审 · 落定走三件套』+ 合并卡 L12）"
+  },
+  "handoff_manifest_ref": "execution_runs/I-13-BC/a20260926-01/handoff.json（written_files bytes+sha 于定稿复算；handoff 自身为自指文件不记自身 sha）",
+  "disclaimer": "本标签（research_draft_needs_review）= 买方可审阅性判据的机械应用结果，不是投资回报保证、不是准确性认证、不构成投资建议；三资格状态互不替代；所有未证实事项已保留（accuracy=unproven 逐模型明写，禁改成已验证预测）。"
+}

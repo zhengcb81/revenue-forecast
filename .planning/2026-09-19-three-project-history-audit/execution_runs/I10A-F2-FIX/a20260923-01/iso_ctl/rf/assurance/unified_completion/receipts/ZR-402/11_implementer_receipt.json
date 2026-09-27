@@ -1,0 +1,106 @@
+{
+  "base_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "b0140a2e62417f272879ed3c21e801c6890af764",
+    "wiki": "251615ea9eb524b3c1d8594b3d6b004423a8ccfd"
+  },
+  "canonical_hash": "d16dd724f32718c51b599a440b6c548f12932b60080889e21dd7090b07189be5",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr402_adapter_route_contract.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "36 passed（C1 kind 分支机械门 3+9 参数化对抗、C2 kind/root_id 无关路由 9+4+3、C3 全入口 fail closed 3、C4 突变击杀电池 6+3+kill 表+基线 sanity；ruff format 后复跑同绿）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr402_adapter_route_contract.py test_adapter_conformance.py test_adapter_production_dispatch.py test_adapter_registry.py test_adapter_spi.py test_scanner_facade.py test_scanner_cutover.py test_shadow_parity.py test_shadow_parity_runner.py test_fc1201_root_hardcode_gate.py test_future_root_config_only.py test_company_raw_adapter.py test_dayu_adapter.py test_sidecar_adapter.py -q --tb=short (company-wiki, tests/contract)",
+      "exit_code": 0,
+      "result": "116 passed（36 新 + 80 既有 adapter/registry/facade/cutover/parity/FC-1201 无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（无回归）"
+    },
+    {
+      "command": "python -m ruff check tests/contract/test_zr402_adapter_route_contract.py; python -m ruff format --check 同文件 (base python, wiki venv 无 ruff)",
+      "exit_code": 0,
+      "result": "All checks passed（format 一次修正后 Would reformat 消除）"
+    },
+    {
+      "command": "python receipts/ZR-402/red/zr402_red_probe.py (wiki venv, 只读探针)",
+      "exit_code": 0,
+      "result": "red_confirmed=true：S2 kind 路由突变体在现有断言下存活（2 错配场景无 killer）、S3 determinism 负例缺失、S4 路由五模块零 kind 分支无机械门（FC-1201 allowlist 盲区）；S1 诚实负例=facade 失败封闭已被 seam02+ex08×2 完整钉死"
+    },
+    {
+      "command": "git diff 251615e 57cd72e --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "仅 tests/contract/test_zr402_adapter_route_contract.py（+459），产品代码零改动（FC-302/303 机制复用未改）"
+    }
+  ],
+  "created_at_utc": "2026-08-18T19:55:00+00:00",
+  "findings": [
+    {
+      "detail": "FC-302/303 机制（registry/dispatch/conformance/SPI/三 adapter/facade v2 seam）已实现且失败封闭完整（seam02 missing-id、ex08 bogus-id、ex08 运行时失败无 v1 回退）。本卡为纯验收：钉死 registry 三证据（core 无 kind/ID 特判、unknown fail、contract mutation），产品零改动。",
+      "id": "ZR402-IMPL-001",
+      "severity": "info",
+      "title": "纯验收卡：FC-302/303 机制已实现，本卡钉死三证据"
+    },
+    {
+      "detail": "RED 探针三个真缺口全部由本卡击杀：S2 kind 路由突变体（新 C2 行为测试 9 组错配 kind + 进程内突变体重放 kill 证明）；S3 determinism 负例（新 _NonDeterministicAdapter，电池树加至 2 个 pdf 使顺序翻转可观察）；S4 路由五模块零 kind 分支机械门（含对抗检出负例；FC-1201 对 adapter_dispatch/admission 是 allowlist 盲区、test_spi02 只冻结 scanner.py）。S1 探针首版误报已修正为诚实负例（facade 失败封闭已有完整 killer，本卡仅在 M9 击杀表复述场景，不重复造 killer）。",
+      "id": "ZR402-IMPL-002",
+      "severity": "info",
+      "title": "三幸存突变体全部击杀；探针 S1 误报诚实修正"
+    },
+    {
+      "detail": "generic_document_v1 是注册但非 scanner 适配器（无 dispatch factory）：dispatch 对其 fail closed（'no scanner adapter implementation'）且该拒绝同样 kind 无关。C2 测试据此分两组断言（scanner 三 adapter 路由等值；registry-only 一律 kind 无关 fail closed）——这是发现的既有正确行为，非缺口。",
+      "id": "ZR402-IMPL-003",
+      "severity": "info",
+      "title": "generic_document_v1 registry-only：kind 无关 fail closed（既有行为钉死）"
+    },
+    {
+      "detail": "测试模块首轮 6 失败均为测试自身 bug（generic registry-only 未分组、电池树单 pdf 翻转不可见、kill 表 id 形态断言错误），修正后全绿；产品行为零缺陷。移交 ZR-403：adapter_dispatch._to_scanner_candidate 仍用 scanner._infer_company 做路径实体推断、facade v2 忽略 master_identity/portfolio_urls（shadow 语义）——dedupe/resolver 泛化时统一。",
+      "id": "ZR402-IMPL-004",
+      "severity": "info",
+      "title": "首轮失败为测试自 bug；_infer_company 路径推断移交 ZR-403"
+    }
+  ],
+  "implementation": {
+    "design": "新增 tests/contract/test_zr402_adapter_route_contract.py（36 tests）：C1 路由五模块（adapter_dispatch/admission/adapters.registry/adapters.interface/adapters.conformance）零 `.kind ==`/`.kind in`/`root_id ==` 机械门（逐模块 count==0）+ 临时模块植入 kind 分支对抗检出 + RootSpec 伪造 kind 模型层 fail closed；C2 scanner 三 adapter × 三合法 kind 全组合路由等值 + registry-only adapter kind 无关 fail closed + root_id 无关 + kind 路由突变体进程内重放 kill 证明；C3 registry/dispatch/facade 三入口 unknown fail closed 复述矩阵；C4 M1~M9 突变击杀表（M1 非确定性→determinism FAILED 为新增负例；M2~M6 conformance 检出；M7/M8 进程内 seam 突变体 kill 证明；M9 ex08 场景电池内复述；表完整性门）。产品代码零改动。",
+    "files": [
+      "company-wiki/tests/contract/test_zr402_adapter_route_contract.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-402/**"
+    ]
+  },
+  "implementer": "zr402-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 b0140a2（ZR-401 closure docs commit）；result_triplet.wiki 为本卡验收测试提交 57cd72e。",
+    "red_evidence sha256=454477bdf7abfed4c81949664f852ddd58925bf9cfb07bf17dc7d2f3169c6129；reviewed_object（新测试文件）sha256=cdf8230a722edca5df80636bb4b1f7312067a141e5eed310decc3ebbd064f725。",
+    "卡片 hash 于最终编辑后计算并冻结（吸取 ZR401-REV-005 教训）：plan_sha256=524a5161…，此后不再改动 00_wu_card.md。"
+  ],
+  "objective": "adapter registry：把 path/sidecar 差异隔离在 adapter。证据=core 无 root kind/ID 特判；unknown adapter fail；adapter contract mutation。",
+  "plan_sha256": "524a5161ebf6aaf99990c3175f6447f5bfbe51e680b01969bbc498049bb07167",
+  "result_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "b0140a2e62417f272879ed3c21e801c6890af764",
+    "wiki": "57cd72e07800d5a0f3d1628475d6665e8a9a6302"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 tests/contract/test_zr402_adapter_route_contract.py（36 tests）；revenue 侧 receipts/ZR-402/**（含 red/ 探针与证据 JSON）与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr402_adapter_route_contract.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-402/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-402"
+}

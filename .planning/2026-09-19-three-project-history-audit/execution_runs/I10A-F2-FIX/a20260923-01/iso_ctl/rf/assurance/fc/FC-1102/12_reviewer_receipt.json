@@ -1,0 +1,45 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1102",
+  "reviewer_identity": "reviewer-fc1102-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "c551dfee5b26bed2fdf49e4c7fa49b20e695798c",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "ec1d71dcd6aec753dbce42f68be2c7ec382893fa",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "commands_replayed": [
+    {"command": "git diff c551dfe..ec1d71d --stat", "exit_code": 0, "result": "exactly 2 new files; zero production code"},
+    {"command": "ruff check the 2 files", "exit_code": 0, "result": "All checks passed!"},
+    {"command": "pytest tests/test_fc1102_t2_runner.py -q", "exit_code": 0, "result": "4 passed"},
+    {"command": "pytest tests/ -q", "exit_code": 0, "result": "443 passed, 106 subtests, 0 failed"},
+    {"command": "static read-only audit (grep write stmts + sqlite executes)", "exit_code": 1, "result": "zero write statements; mode=ro + query_only; only report write under report-root"},
+    {"command": "M1: samples check removed", "exit_code": 1, "result": "test_degraded_samples_fail_nonzero FAILS; reverted -> 4 passed"},
+    {"command": "production run with report-root=/tmp", "exit_code": 0, "result": "exit 0; samples 133/136; scan 212/16; latency 0.0059s; report isolated; mtime invariant"}
+  ],
+  "scenario_results": [
+    {"id": "AUD-02", "status": "passed", "note": "triplet commits verified via cat-file -e"},
+    {"id": "AUD-03", "status": "passed", "note": "degraded samples fail non-zero (M1 kills the guard)"},
+    {"id": "AUD-05", "status": "passed", "note": "scan-health trend mechanism exercised; production smoke 212 errors"}
+  ],
+  "mutation_results": [
+    {"id": "FC-1102-M1", "killed": true, "detail": "samples-degraded check removed -> test_degraded_samples_fail_nonzero FAILS; reverted byte-identical -> 4 passed"}
+  ],
+  "side_effect_reconciliation": {"passed": true, "note": "zero write statements outside report path; catalog mtime unchanged across controlled run"},
+  "codegraph_reachability": {"passed": true, "note": "daily_t2_runner referenced only by its module + test; zero production callers"},
+  "rollback": {"passed": true, "required": false, "note": "standalone new tool; git revert ec1d71d removes it"},
+  "unresolved_findings": [
+    {"id": "F1", "severity": "P3", "evidence": "docstring claims schema-drift/policy-freshness check; code lacks it", "recovery": "implement policy-snapshot hash comparison or amend acceptance text; close before Phase 11 exit gate"},
+    {"id": "F2", "severity": "P3", "evidence": "AUD-01 freshness window + AUD-08 atomic publish not implemented", "recovery": "add previous-report age check + atomic publish, or defer to FC-1104 dashboard"},
+    {"id": "F3", "severity": "P3", "evidence": "roots_fingerprint recorded but never trend-compared (AUD-04 drift never fails)", "recovery": "compare root counts vs previous report and fail on drift beyond tolerance"},
+    {"id": "F4", "severity": "P3", "evidence": "implementer receipt AUD scenario IDs mislabeled", "recovery": "re-mapped in the sealed implementer receipt"}
+  ],
+  "decision": "accepted",
+  "reviewed_at": "2026-08-12T06:50:39Z",
+  "reviewer_receipt_sha256": "aab23d43e5c63e2479fe6d66c7d05989d67b5094db98ab53772e487410ce3e72"
+}

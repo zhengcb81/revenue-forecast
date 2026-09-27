@@ -1,0 +1,90 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "568ebac08284cb42ee86f177188dc8f09e81e2ad",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca202* + ZR-902 coverage review",
+      "exit_code": 0,
+      "result": "G1~G2 缺口确认（无 ca202 套件；ZR-902 纯逻辑无真实 runner 组合验收）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca202_daily_t2_runner.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "10 passed in 57.19s (C1 real runner report + exact triplet + samples; C2 zero-write oracle; C3 three-root unique samples; C4 read-only connection + SLO; C5 missing-run alert/block + fresh release)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr902_daily_schedule.py tests/test_zr806_real_t2_samples.py tests/test_zr1004_small_cohort.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "31 passed in 2.06s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_ca202_daily_t2_runner.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (1 auto-fixed + 1 manual, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "fa4eff3 test(CA-202) — 1 file +257"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "937 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T14:35:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: run_checks on production catalog (mode=ro) returns complete report {run_id/checks/triplet/ok}; triplet equals real three-repo HEADs (verified via git rev-parse); checks include triplet/policy_freshness/samples/scan_health/latency/roots_fingerprint; samples bound_artifacts>=3 + producer_events>=3. C2: catalog row counts (documents/sources/locations) and three-root shallow fingerprints unchanged before/after run. C3: production resolver read-only — Zijin FY2025 + Genscript 1548 FY2021 REUSED_EXACT, Dropbox StarLake honest MISSING. C4: read-only connection (query_only, write attempt raises OperationalError); runner sample latency < p95 SLO 5s. C5: missing/stale(>24h)/not-ok -> alert + release blocked; fresh+ok -> ready.",
+      "id": "CA202-IMPL-001",
+      "severity": "info",
+      "title": "Daily T2 真实 runner + 三 root unique 样本 + 零写/SLO/告警组合验收"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca202_daily_t2_runner.py（10 tests）：C1 真实 runner 报告（production catalog mode=ro + 精确 triplet + samples）；C2 零写 oracle（行数 + 三 root 浅指纹）；C3 三 root unique 样本 resolve 只读；C4 只读连接（写尝试抛错）+ SLO；C5 缺 run 告警/阻断 + fresh 放行。产品零改动、Task Scheduler 零触碰。",
+    "files": [
+      "revenue-forecast/tests/test_ca202_daily_t2_runner.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-202/**"
+    ]
+  },
+  "implementer": "ca202-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = fa4eff3（revenue HEAD = CA-202 实现 commit，parent 568ebac）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 Windows Task Scheduler 注册为部署动作（daily_t2_schedule register/query），不在本卡；task_status 只读语义由 ZR-902 覆盖。"
+  ],
+  "objective": "阶段 H CA 部分首卡：Daily T2 实际 scheduler（真实 Windows runner 每天抽样三 root unique 样本；Reader/live WAL、exact reuse、artifact/readiness、零写、锁和 SLO）",
+  "plan_sha256": "27a4206b61451cdf840912357cb8b851b60b4a2b1aa2a131b2ecf5a29409f7f4",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "fa4eff367dc3d212dad2c90b7b6f7badd63c86d0",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca202_daily_t2_runner.py (new 10 tests)；assurance/unified_completion/receipts/CA-202/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 30,
+    "registry_writes": 0,
+    "task_scheduler_changes": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca202_daily_t2_runner.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-202/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-202",
+  "canonical_hash": "db33bf91c81ee086d190fd4273e2088f10eb52c887e487bad7f1f68737feaf8e"
+}

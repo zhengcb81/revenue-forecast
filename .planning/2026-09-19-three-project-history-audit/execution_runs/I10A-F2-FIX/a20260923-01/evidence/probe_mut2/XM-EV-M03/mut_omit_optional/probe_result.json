@@ -1,0 +1,132 @@
+{
+ "artifact": "historical_mapping_probe_result",
+ "historical_mapping_probe": true,
+ "label": "historical_mapping_probe",
+ "NOT_a_three_scenario_forecast": true,
+ "accuracy_evidence": false,
+ "case_id": "XM-EV-M03",
+ "variant": "mut_omit_optional",
+ "started_at_local": "2026-09-24T21:15:21",
+ "finished_at_local": "2026-09-24T21:15:21",
+ "product_entry": "iso/rf/scripts/forecast/segments.py calculate_model_path",
+ "model_id": "unit_sales",
+ "period": "FY2025",
+ "scenarios_run": [
+  "low",
+  "base",
+  "high"
+ ],
+ "scenario_values_identical_by_design": "historical_mapping_probe: disclosed historical parameters at identical values on low/base/high (card action 4); mapping verification ONLY",
+ "counts_measured": {
+  "calculate_registered_model_calls": 3,
+  "calculate_model_path_calls": 3
+ },
+ "counts_expected": {
+  "calculate_registered_model_calls": 3,
+  "instances": 1,
+  "scenarios_per_instance": 3
+ },
+ "counts_ok": true,
+ "call_log": [
+  {
+   "fn": "calculate_registered_model",
+   "seq": 1
+  },
+  {
+   "fn": "calculate_registered_model",
+   "seq": 2
+  },
+  {
+   "fn": "calculate_registered_model",
+   "seq": 3
+  }
+ ],
+ "instances": [
+  {
+   "instance": "smart_ev_segment",
+   "cn": "智能電動汽車及AI等創新業務",
+   "parameter_index": {
+    "P-HK-SMART_EV_SEGMENT-QTY": {
+     "value": 411082.0,
+     "unit": "輛",
+     "dimension": "quantity",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMART_EV_SEGMENT-PRICE": {
+     "value": 251171.0,
+     "unit": "元/輛",
+     "dimension": "revenue_per_unit",
+     "period": "FY2025",
+     "scenario": "all"
+    },
+    "P-HK-SMART_EV_SEGMENT-T": {
+     "value": 1.0,
+     "unit": "ratio",
+     "dimension": "ratio",
+     "period": "FY2025",
+     "scenario": "all"
+    }
+   },
+   "driver_parameter_ids": {
+    "units": [
+     "P-HK-SMART_EV_SEGMENT-QTY"
+    ],
+    "unit_revenue": [
+     "P-HK-SMART_EV_SEGMENT-PRICE"
+    ],
+    "timing_factor": [
+     "P-HK-SMART_EV_SEGMENT-T"
+    ]
+   },
+   "per_scenario": {
+    "low": {
+     "ok": true,
+     "annual_revenue": 103251877022.0
+    },
+    "base": {
+     "ok": true,
+     "annual_revenue": 103251877022.0
+    },
+    "high": {
+     "ok": true,
+     "annual_revenue": 103251877022.0
+    }
+   },
+   "driver_values_sample": {
+    "units": {
+     "2025": 411082.0
+    },
+    "unit_revenue": {
+     "2025": 251171.0
+    },
+    "timing_factor": {
+     "2025": 1.0
+    },
+    "other_revenue": {
+     "2025": 0.0
+    }
+   },
+   "low_base_high_identical": true,
+   "frozen_expected_revenue": 106051877022.0,
+   "matches_frozen_expected": false
+  }
+ ],
+ "product_errors": [],
+ "refusals": [],
+ "mismatches": [
+  {
+   "instance": "smart_ev_segment",
+   "expected": 106051877022.0,
+   "measured": [
+    103251877022.0,
+    103251877022.0,
+    103251877022.0
+   ],
+   "variant": "mut_omit_optional"
+  }
+ ],
+ "business_verdict": "correctly_rejected",
+ "expected_business_result": "runner MUST record product refusal (post-I-10-B registry raises on omitted optional without explicit default) — rc 2",
+ "raw_rc": 2
+}

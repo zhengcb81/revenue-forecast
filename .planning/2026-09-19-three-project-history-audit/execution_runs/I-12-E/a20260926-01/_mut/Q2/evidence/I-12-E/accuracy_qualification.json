@@ -1,0 +1,312 @@
+{
+  "schema": "i12e_accuracy_qualification/1",
+  "card": "I-12-E",
+  "attempt": "execution_runs/I-12-E/a20260926-01",
+  "role": "implementer_i12e",
+  "premise": {
+    "card_verbatim": "冻结阈值已在结果前批准；全量结果可见。",
+    "thresholds_approved_before_results": false,
+    "all_results_visible": false,
+    "checks": [
+      {
+        "item": "冻结阈值已在结果前批准",
+        "met": false,
+        "evidence": "I-12-A professional_approval.json：statistical_reviewer/industry_reviewer 双双 unsigned；unsigned_key_statistical_options 6 项全 PENDING（派单记「双签在飞」）"
+      },
+      {
+        "item": "全量结果可见",
+        "met": false,
+        "evidence": "I-12-D metrics_by_stratum scorable_samples=0 / paired_comparison n_pairs=0；I-12-C forecast_values_frozen=0；I-12-C unblind_receipt state=not_issued；test_results_unsealed=false"
+      }
+    ],
+    "met_count": "0/2",
+    "consequence": "前提未满足 ⇒ 本卡不作 supported/unsupported 判定；全部比较按 fail-closed 记 inconclusive（默认登记，非专业判定），整卡判 blocked（合格形态）"
+  },
+  "primary_endpoint": {
+    "id": "SKILL_WAPE_VS_NAIVE_BASELINE",
+    "ref": "evaluation_design fields[1]（frozen）",
+    "direction": "Skill>0 = 优于朴素 baseline；负 skill 不得删除"
+  },
+  "threshold_state": "unsigned",
+  "thresholds_unsigned": [
+    "字段 10：最小公司数 / 每层最小样本数 / 目标统计功效 / 可接受 CI 宽度 / 效应量定义 — PENDING",
+    "字段 11：置信水平（CI level/α） — PENDING（unsigned）",
+    "字段 11：重复抽样次数 — PENDING（unsigned）",
+    "字段 11：随机种子 — PENDING（unsigned）",
+    "字段 11：多重比较校正方法 — PENDING（unsigned；候选 Holm FWER / BH FDR）",
+    "字段 12：成功/失败阈值（经济显著改善幅度、可接受偏差、情景包含率、区间宽度） — PENDING"
+  ],
+  "anti_cherry_pick_rule": "任何阈值在结果解封后补写 ⇒ 该次评估作废为探索性（exploratory），不得作确认性成功（设计字段 12 逐字）",
+  "comparisons": [
+    {
+      "comparison_id": "CMP-PRIMARY-MACRO",
+      "pre_registered": true,
+      "primary_endpoint": "SKILL_WAPE_VS_NAIVE_BASELINE（设计字段 1）",
+      "stratum": "primary_endpoint macro（entity 等权）",
+      "n_companies": 2,
+      "n_origins": 2,
+      "n_registered_samples": 7,
+      "n_scorable": 0,
+      "observed_skill": null,
+      "observed_wape": null,
+      "threshold_applied": null,
+      "threshold_state": "unsigned",
+      "verdict": "inconclusive",
+      "verdict_reason": [
+        "冻结阈值未在结果前批准（professional_approval 双签 unsigned；6 项关键阈值 PENDING）",
+        "全量结果不可见（scorable_samples=0；forecast_values_frozen=0；unblind_receipt=not_issued；test_results_unsealed=false）"
+      ],
+      "verdict_is_fail_closed_default_not_professional_determination": true,
+      "judge_authority": "统计reviewer + 行业reviewer（not_assigned）",
+      "negative_skill_rule": "负 skill 一旦产生不得删除、不得因难看而剔除（设计字段 1 / metric_definitions）",
+      "failed_strata_rule": "失败层保留原样、不并入其他层、不静默丢弃（卡文动作 1 逐字）"
+    },
+    {
+      "comparison_id": "CMP-MARKET-A",
+      "pre_registered": true,
+      "primary_endpoint": "SKILL_WAPE_VS_NAIVE_BASELINE（设计字段 1）",
+      "stratum": "market=A（紫金矿业）",
+      "n_companies": 1,
+      "n_origins": 1,
+      "n_registered_samples": 4,
+      "n_scorable": 0,
+      "observed_skill": null,
+      "observed_wape": null,
+      "threshold_applied": null,
+      "threshold_state": "unsigned",
+      "verdict": "inconclusive",
+      "verdict_reason": [
+        "冻结阈值未在结果前批准（professional_approval 双签 unsigned；6 项关键阈值 PENDING）",
+        "全量结果不可见（scorable_samples=0；forecast_values_frozen=0；unblind_receipt=not_issued；test_results_unsealed=false）"
+      ],
+      "verdict_is_fail_closed_default_not_professional_determination": true,
+      "judge_authority": "统计reviewer + 行业reviewer（not_assigned）",
+      "negative_skill_rule": "负 skill 一旦产生不得删除、不得因难看而剔除（设计字段 1 / metric_definitions）",
+      "failed_strata_rule": "失败层保留原样、不并入其他层、不静默丢弃（卡文动作 1 逐字）"
+    },
+    {
+      "comparison_id": "CMP-MARKET-US",
+      "pre_registered": true,
+      "primary_endpoint": "SKILL_WAPE_VS_NAIVE_BASELINE（设计字段 1）",
+      "stratum": "market=US（微软）",
+      "n_companies": 1,
+      "n_origins": 1,
+      "n_registered_samples": 3,
+      "n_scorable": 0,
+      "observed_skill": null,
+      "observed_wape": null,
+      "threshold_applied": null,
+      "threshold_state": "unsigned",
+      "verdict": "inconclusive",
+      "verdict_reason": [
+        "冻结阈值未在结果前批准（professional_approval 双签 unsigned；6 项关键阈值 PENDING）",
+        "全量结果不可见（scorable_samples=0；forecast_values_frozen=0；unblind_receipt=not_issued；test_results_unsealed=false）"
+      ],
+      "verdict_is_fail_closed_default_not_professional_determination": true,
+      "judge_authority": "统计reviewer + 行业reviewer（not_assigned）",
+      "negative_skill_rule": "负 skill 一旦产生不得删除、不得因难看而剔除（设计字段 1 / metric_definitions）",
+      "failed_strata_rule": "失败层保留原样、不并入其他层、不静默丢弃（卡文动作 1 逐字）"
+    },
+    {
+      "comparison_id": "CMP-HORIZON-h2FY",
+      "pre_registered": true,
+      "primary_endpoint": "SKILL_WAPE_VS_NAIVE_BASELINE（设计字段 1）",
+      "stratum": "horizon=h2FY（FY2025→FY2027）",
+      "n_companies": 1,
+      "n_origins": 1,
+      "n_registered_samples": 4,
+      "n_scorable": 0,
+      "observed_skill": null,
+      "observed_wape": null,
+      "threshold_applied": null,
+      "threshold_state": "unsigned",
+      "verdict": "inconclusive",
+      "verdict_reason": [
+        "冻结阈值未在结果前批准（professional_approval 双签 unsigned；6 项关键阈值 PENDING）",
+        "全量结果不可见（scorable_samples=0；forecast_values_frozen=0；unblind_receipt=not_issued；test_results_unsealed=false）"
+      ],
+      "verdict_is_fail_closed_default_not_professional_determination": true,
+      "judge_authority": "统计reviewer + 行业reviewer（not_assigned）",
+      "negative_skill_rule": "负 skill 一旦产生不得删除、不得因难看而剔除（设计字段 1 / metric_definitions）",
+      "failed_strata_rule": "失败层保留原样、不并入其他层、不静默丢弃（卡文动作 1 逐字）"
+    },
+    {
+      "comparison_id": "CMP-HORIZON-h1FY",
+      "pre_registered": true,
+      "primary_endpoint": "SKILL_WAPE_VS_NAIVE_BASELINE（设计字段 1）",
+      "stratum": "horizon=h1FY（FY2026→FY2027）",
+      "n_companies": 1,
+      "n_origins": 1,
+      "n_registered_samples": 3,
+      "n_scorable": 0,
+      "observed_skill": null,
+      "observed_wape": null,
+      "threshold_applied": null,
+      "threshold_state": "unsigned",
+      "verdict": "inconclusive",
+      "verdict_reason": [
+        "冻结阈值未在结果前批准（professional_approval 双签 unsigned；6 项关键阈值 PENDING）",
+        "全量结果不可见（scorable_samples=0；forecast_values_frozen=0；unblind_receipt=not_issued；test_results_unsealed=false）"
+      ],
+      "verdict_is_fail_closed_default_not_professional_determination": true,
+      "judge_authority": "统计reviewer + 行业reviewer（not_assigned）",
+      "negative_skill_rule": "负 skill 一旦产生不得删除、不得因难看而剔除（设计字段 1 / metric_definitions）",
+      "failed_strata_rule": "失败层保留原样、不并入其他层、不静默丢弃（卡文动作 1 逐字）"
+    },
+    {
+      "comparison_id": "CMP-MARKET-H",
+      "pre_registered": true,
+      "primary_endpoint": "SKILL_WAPE_VS_NAIVE_BASELINE（设计字段 1）",
+      "stratum": "market=H（小米，已排除）",
+      "n_companies": 0,
+      "n_origins": 0,
+      "n_registered_samples": 0,
+      "n_scorable": 0,
+      "observed_skill": null,
+      "observed_wape": null,
+      "threshold_applied": null,
+      "threshold_state": "unsigned",
+      "verdict": "inconclusive",
+      "verdict_reason": [
+        "冻结阈值未在结果前批准（professional_approval 双签 unsigned；6 项关键阈值 PENDING）",
+        "全量结果不可见（scorable_samples=0；forecast_values_frozen=0；unblind_receipt=not_issued；test_results_unsealed=false）"
+      ],
+      "verdict_is_fail_closed_default_not_professional_determination": true,
+      "judge_authority": "统计reviewer + 行业reviewer（not_assigned）",
+      "negative_skill_rule": "负 skill 一旦产生不得删除、不得因难看而剔除（设计字段 1 / metric_definitions）",
+      "failed_strata_rule": "失败层保留原样、不并入其他层、不静默丢弃（卡文动作 1 逐字）"
+    }
+  ],
+  "comparison_counts": {
+    "pre_registered": 6,
+    "supported": 0,
+    "unsupported": 0,
+    "inconclusive": 6
+  },
+  "judge_authority": {
+    "roles": [
+      "统计reviewer",
+      "行业reviewer"
+    ],
+    "assigned": false,
+    "signature_status": "unsigned",
+    "implementer_did_not_determine": true,
+    "note": "实现者不自签（§三十四 L765）；本件为登记，不是专业判定、不产生 ACCEPT"
+  },
+  "negative_and_failed_preservation": {
+    "negative_skill_preserved_rule": true,
+    "failed_strata_preserved_rule": true,
+    "observed_negative_skills": [],
+    "observed_negative_skill_note": "n=0 ⇒ 本 attempt 无 skill 观测；规则先冻结，有值后照此执行"
+  },
+  "scope_limitation": {
+    "dataset": "本审计三家公司（紫金矿业 CN A+H / 小米集团 HK / 微软 US）；可评 entity=2",
+    "model_version": "unbound（params_released=false，forecast_values_frozen=0）",
+    "industry": "unproven（设计字段 3 未赋值）",
+    "lifecycle": "unproven（设计字段 3/7 未赋值）",
+    "disclosure_quality": "4 case signed / 2 case STOP_DISCLOSURE_ADAPTATION / 3 段无 case（disclosure_adaptation_v2）",
+    "horizon": "FY2027（h2FY 紫金 / h1FY 微软）；不与其它 horizon 混成单一平均",
+    "no_generalization": "结论不外推到未列数据集、模型版本、行业、生命周期、披露质量或 horizon"
+  },
+  "uncovered_strata": [
+    {
+      "stratum": "market=H",
+      "state": "unproven",
+      "reason": "小米按设计字段 3 排除（gap-U1 证据不可读 / gap-U2 披露日未登记）；exclusions.jsonl EX-001"
+    },
+    {
+      "stratum": "industry=unassigned",
+      "state": "unproven",
+      "reason": "设计字段 3 未给出行业取值 ⇒ 分层键留空"
+    },
+    {
+      "stratum": "lifecycle=unassigned",
+      "state": "unproven",
+      "reason": "设计字段 3/7 未给出生命周期取值"
+    },
+    {
+      "stratum": "disclosure_quality=US-MSFT PBP/IC",
+      "state": "unproven",
+      "reason": "MS-PBP-M05 / MS-IC-M06 = partial_STOP_DISCLOSURE_ADAPTATION（signed=false）"
+    },
+    {
+      "stratum": "disclosure_quality=CN-ZIJIN TRADE/OTHER + US-MSFT MPC",
+      "state": "unproven",
+      "reason": "无披露适配 case（未覆盖），不得记为通过"
+    },
+    {
+      "stratum": "model_version=unbound",
+      "state": "unproven",
+      "reason": "params_released=false ⇒ forecast_values_frozen=0，无模型版本可评"
+    },
+    {
+      "stratum": "dataset=single_frame_3_entities",
+      "state": "unproven",
+      "reason": "仅本审计三家公司；可评 entity=2，不外推到其他数据集/市场"
+    }
+  ],
+  "three_column": {
+    "presentation": "三栏合并呈现（卡文动作 3）",
+    "no_cross_column_pass_override": false,
+    "formula_qualification": {
+      "column_state": "pass_scoped",
+      "value": "M01-M31 = accepted_scoped（仅 A–C 公式面，调度验收）",
+      "source_ref": "disclosure_adaptation_v2 每 case formula.status + I-07-E §E + common_research_cards.md L11",
+      "does_not_imply": [
+        "disclosure_adaptation",
+        "accuracy"
+      ],
+      "formula_pass_does_not_imply_accuracy": true
+    },
+    "disclosure_adaptation": {
+      "column_state": "partial",
+      "value": "4 signed（ZJ-MIN-M09 / ZJ-SMT-M09 / XM-PHONE-M03 / XM-EV-M03）+ 2 STOP（MS-PBP-M05 / MS-IC-M06）+ 3 段无 case",
+      "source_ref": "execution_runs/I10A-DISCLOSURE-ADAPT-SIGN/a20260925-01/disclosure_adaptation_v2.json",
+      "does_not_imply": [
+        "accuracy"
+      ],
+      "disclosure_signing_does_not_imply_accuracy": true
+    },
+    "accuracy": {
+      "column_state": "pass",
+      "state": "pass",
+      "value": "未评估：0 可评分样本 + 阈值未签 + 结果封存",
+      "source_ref": "I-12-D metrics_by_stratum/paired_comparison + I-12-A unseal gate"
+    },
+    "accuracy_improvement_claimed": false,
+    "override_examples_forbidden": [
+      "不得因公式栏 pass_scoped 而把准确性栏写成 pass",
+      "不得因 4 例披露签署而把准确性栏写成 pass",
+      "不得因少数公司拟合而写成准确率提升"
+    ]
+  },
+  "stops": {
+    "STOP_CLAIM": {
+      "rule_verbatim": "把31公式通过或少数公司拟合直接称准确率提升→STOP_CLAIM。",
+      "triggered": false,
+      "basis": "本件 accuracy 栏=unproven、accuracy_improvement_claimed=false、无任何 supported 判定；变异 Q3 可验证本判据"
+    },
+    "STOP_RELEASE_WORDING": {
+      "rule_verbatim": "没有达到统计判定条件却宣称普遍有效→STOP_RELEASE_WORDING。",
+      "triggered": false,
+      "basis": "未产生任何普遍有效/发布措辞；发布格=blocked；scope_limitation.no_generalization 在位"
+    }
+  },
+  "counts": {
+    "comparisons": 6,
+    "supported": 0,
+    "unsupported": 0,
+    "inconclusive": 6,
+    "uncovered_strata": 7,
+    "scorable_samples": 0,
+    "accuracy_improvement_claimed": false
+  },
+  "declarations": {
+    "params_released": false,
+    "implementer_signed": false,
+    "releases_nothing": true,
+    "open2_ban_observed": true,
+    "produces_ACCEPT": false,
+    "verdict_authority": "not_the_implementer"
+  }
+}

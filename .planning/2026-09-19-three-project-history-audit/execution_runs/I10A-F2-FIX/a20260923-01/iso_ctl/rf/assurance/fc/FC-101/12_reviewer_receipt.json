@@ -1,0 +1,58 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-101",
+  "implementer_receipt_sha256": "60f2736e60008607088527adfe6f0a1f56b6a140a800ae3696c478837c6fdf2f",
+  "reviewer_identity": "reviewer-fc101-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "3ce9cc4d3ea91b15aad42eff1f55b72a44834dd7",
+    "filing": "c9799b722a97376f9717bcfacfa0685135dcbd15",
+    "wiki": "109a1a6a77d7f4b37f849207fbd9e5d8caf2bc07"
+  },
+  "result_triplet": {
+    "revenue": "296e17b0216015767a674c56ed261327979be5f7",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "replayed_command_ids": [
+    "revenue.unit.tests",
+    "revenue.unit.full",
+    "revenue.governance.receipt"
+  ],
+  "scenario_results": [],
+  "mutation_results": [
+    {
+      "id": "FC-101-M-review",
+      "killed": true
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true
+  },
+  "codegraph_reachability": {
+    "passed": true
+  },
+  "rollback": {
+    "required": false,
+    "passed": true
+  },
+  "unresolved_findings": [
+    {
+      "id": "FC-101-F1",
+      "severity": "informational",
+      "summary": "No origin/fcap remote branch exists yet. The triplet was verified from local git object stores: revenue 3ce9cc4/67609128 (revenue-forecast, shared object store with the review worktree; 67609128 confirmed ancestor of HEAD 296e17b via git merge-base --is-ancestor), filing c9799b72/d5e87237 (filing-fetch repo), wiki 109a1a6a/453f9584 (company-wiki repo). All six commits exist. git ls-remote origin shows no fcap branch in any of the three remotes; fcap exists only locally. Push/closure is a later step, not an FC-101 defect."
+    },
+    {
+      "id": "FC-101-F2",
+      "severity": "informational",
+      "summary": "Sealing hashes: contract_registry.json=e434acb1..., scenario_registry.json=ecaaa3f4..., command_registry.json=bd4e507d... all match raw sha256sum of disk bytes exactly. task_plan.md raw disk sha256sum in this clean worktree = 6a21d1c4... which differs from the receipt's claimed 158fc1e1...; however this is a checkout line-ending artifact only: core.autocrlf=true converts LF->CRLF in a fresh worktree, while the canonical committed content (git blob) of task_plan.md hashes to exactly 158fc1e1... (verified via git show HEAD:path | sha256sum, and identical at the FC-101 result commit 67609128), and the implementer's own working-tree file was LF and hashed to 158fc1e1... git status is clean (no content drift). Recommendation for FC-104 closure validator: normalize line endings or hash the git blob so seals are platform-stable; do not treat this as FC-101 content tampering."
+    },
+    {
+      "id": "FC-101-F3",
+      "severity": "informational",
+      "summary": "Scope check: the FC-101 feature commits touch exactly the five allowed files (revenue: compatibility/contract_registry.json, compatibility/contract_registry.py, tests/test_contract_registry.py; filing: references/contract-ownership.md; wiki: docs/adr/ADR-010-fcap-contract-ownership.md), and llm_cost_log.csv appears in none of the three base..result diffs. The full base->result ranges also include the shared plan-freeze baseline commits (revenue 2d64186, filing 2f6c18c, wiki b47cc07) that freeze FCAP-2026-08-09-r2 and legacy disposition overlays; those are docs-only (verified no .py/.json changes), are the plan baseline every r2 receipt references via plan_sha256, and are not FC-101's changed files. No product code or config touched outside the allowlist."
+    }
+  ],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-10"
+}

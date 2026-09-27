@@ -1,0 +1,398 @@
+{
+  "schema": "i11b_handoff/1",
+  "card": "I-11-B",
+  "attempt": "execution_runs/I-11-B/a20260926-01",
+  "role": "implementer_i11b",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "objective": "校准参数幅度和联合情景（card_I-11-B.md L11-L16 四动作）；开工门槛按 OWNER_DECISIONS §三十四 改判",
+  "authorized_by": {
+    "owner_decision_verbatim": "OWNER_DECISIONS.md §三十四（L745-L780，2026-09-26 15:4x 选项式问答原话）：owner 选择「A」；L757「改判 I-11-B 的开工门槛 —— 以 MERGE 七条当前 5✅ + 2❌ 现状开工；i11b_unblocked 的语义从『7/7 才开』改为『owner 明文许可开工』」；L758「C3/C5 的残余不丢、不隐藏 —— 列为 I-11-B 开工后的并行欠账，每项在卡内载体以 expert_assumption 或 unverified 形式登记」",
+    "unlock_condition_1_verbatim": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json i11b_unlock_conditions[0]：「≥1 条命题在新版本上由非实现者 reviewer 写入 decision.decision_sha256 并达 approved_frozen（或 owner 明文改判开工门槛）」—— 本节即逃生口后半句的行使（前半句亦已由 I11A-HYP-APPROVE 满足，双路径成立）",
+    "card_face_L5": "Parent：I-11；状态：planned；Owner：行业/会计reviewer决策，弱模型执行已签规则；依赖：I-11-A、I-10-A。",
+    "card_face_L7_L9": "前提：I-11-A命题已批准；I-10-A已为实际采用的公司/分部/模型签署披露适配口径。",
+    "prerequisites_verified": {
+      "I-11-A": "execution_runs/I-11-A/a20260919-01/handoff.json L317 status=accepted_scoped（唯一 attempt = 卡级最新；父勘误：派单所称 a20260922-02 不存在，系 I-06-A 误记）",
+      "I-10-A": "execution_runs/I10A-DISCLOSURE-ADAPT-SIGN/a20260925-01/handoff.json c7_status=met · signed_count=4 · decision_sha256=86d0a80e3de76325ba4ac12376c7beb40770e063f2b77e8af6ee104e47c6f22b"
+    }
+  },
+  "gate0_passed": true,
+  "gate0_raw_output": "=== GATE0 BEGIN (I-11-B/a20260926-01) ===\ncwd=C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\ngate0 probe I-11-B a20260926-01 write-readback-delete\n--- step3 delete ---\ndeleted_gone=True\n=== GATE0 END ===",
+  "gate0_note": "写+回读+删除三步均本会话自探（另有 17:14:22 首探同结论）；零提权、零破坏性替代；探针已删",
+  "seven_conditions_status": [
+    {"id": "C1", "status": "met", "sha": "decision_sha256=4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f", "source": "execution_runs/I11A-HYP-APPROVE/a20260925-01/handoff.json (af4130bb6c67a8e6/19,481B) + hypotheses_v2.json (32c22208573a71d5/55,213B): approved_frozen_count=1 (H-CN-ZIJIN-SEG-01)"},
+    {"id": "C2", "status": "met", "sha": "hypotheses_v3.json=b2063ac8533a96ba/61,231B; handoff=ae67e2b9fda61942/21,226B", "source": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01: c2_branch2_discharged=true; 4 新 parameter_id 已注册 model_cards+hypotheses_v3; parameter_id_count=18"},
+    {"id": "C3", "status": "not_met", "sha": "OPEN3-E1-ORIGIN-BYTES-R2 handoff=见 residuals; OPEN-3-ACCT-R2 handoff=291cb50725404357/17,984B", "source": "origin 62,953B ✅(cf84c29048ab314e…) · B2 晋升父对账 ✅ · ACCT-R2 ✅(E1=BLOCKED-PARTIAL/S1/4 语料降 E3) · IND-r2 在跑（目录空）"},
+    {"id": "C4", "status": "met", "sha": "S3=df5b368c26192499 · S4=88e12c72621da52d · S5-ACCT=5609ac467c82de0b · S5-IND=b7fc61c5a2668f17（均为 handoff.json sha256 前 16 位）", "source": "S3 readable(5/5 锚) · S4 accepted_scoped · S5 会计 GRADED · S5 行业 PASS"},
+    {"id": "C5", "status": "not_met", "sha": "BLOCKED6C=9cca874fb8ab743a · OPEN6H4=24292c7db69a9dbe · OPEN6B-R2-REVERT=758aa03fdcbf94c2 · OPEN6H2=7be2122a75de16c6（handoff.json sha256 前 16 位）", "source": "6c ✅accepted_scoped · H4 ⚠️残差 269t/534kg 闭合不了 · 6b 路径(c) 已执行 unquantified（整条归 ruling_6b L110 另判）· H2 交付仍 still_blocked(0/3)"},
+    {"id": "C6", "status": "met", "sha": "handoff=69fcc785e45abd37/8,703B", "source": "execution_runs/I11A-OPEN11-IND/a20260924-01: cross_period_availability=available_verified_locally_two_consecutive_periods"},
+    {"id": "C7", "status": "met", "sha": "decision_sha256=86d0a80e3de76325ba4ac12376c7beb40770e063f2b77e8af6ee104e47c6f22b", "source": "execution_runs/I10A-DISCLOSURE-ADAPT-SIGN/a20260925-01: c7_status=met · disclosure_adaptation_signed_count=4"}
+  ],
+  "seven_conditions_summary": "实测 5✅(C1/C2/C4/C6/C7) + 2❌(C3/C5)，与 §三十四 现状一致；开工门槛 = owner 明文改判（非 7/7）",
+  "c3_c5_residuals": [
+    {"id": "C3-①", "item": "origin 字节", "registration": "unverified", "detail": "62,953B 已落（origin_bytes.bin sha cf84c29048ab314e…）；但 E1 等级=BLOCKED-PARTIAL，字节层 ✅ ≠ E1 解锁"},
+    {"id": "C3-②", "item": "B2 晋升", "registration": "verified_by_parent", "detail": "父对账：晋升已完成（dayu sec_downloader.py=74,543B/4684933e…、cw dayu_cli_adapter.py=25,328B/32ef1165…，Copy-Item 单步覆盖，committed=false）；B2-PROMOTION handoff 的 MISSING 为事故时点旧值；本工位无产品仓读面，状态为父证"},
+    {"id": "C3-③", "item": "ACCT-R2 定级", "registration": "unverified", "detail": "RULED 但 e1_level=BLOCKED-PARTIAL、s_level=S1、4 份语料降 E3（8 条引文作废）；'已裁定'≠'通过'，等级即 fail-closed 结果"},
+    {"id": "C3-④", "item": "IND-r2", "registration": "unverified", "detail": "在跑未归（OPEN-3-IND-R2/a20260926-01 目录空）"},
+    {"id": "C3-⑤", "item": "MSFT 六参数/新两分部参数/HK 参数", "registration": "unverified", "detail": "维持不放行（OPEN-3/OPEN-5）；MSFT_MICROSOFT_CLOUD、MSFT_LICENSING_VS_CLOUD 本卡显式拒绝出数（EA-7）"},
+    {"id": "C5-①", "item": "6c threshold_review_status 落地", "registration": "unverified", "detail": "accepted_scoped 带 2×P2+3×P3，非 clean accept"},
+    {"id": "C5-②", "item": "H4 口径桥", "registration": "unverified", "detail": "残差 269 吨（铜）/534 千克（金）未逐行闭合，金在内/外档翻转 ⇒ 冻结判据 Q2 fail-closed；countersigned=false；会签前不得升 reviewed、不得触发任何动作"},
+    {"id": "C5-③", "item": "6b 恒等式容差", "registration": "unverified", "detail": "路径(c) 已按 revert_rule 退 unquantified；R2（金 154 千克）NOT_SIGNED；整条 BLOCKED-6b 状态归 ruling_6b L110：须新建 OPEN6B-TOLERANCE-RULING-R2 后由 owner/编排层重判"},
+    {"id": "C5-④", "item": "H2 基准", "registration": "unverified", "detail": "交付但 still_blocked；3 条 pjr 完成 A-6.3 全套 = 0/3"}
+  ],
+  "residual_red_line": "以上 9 项无一写作'已解'；expert_assumption 只承接校准幅度判断，不冲销任何 BLOCKED（§三十四 L758 + fail-closed）",
+  "dispatch_discrepancies_registered": [
+    {"id": "unverified-D1", "registration": "erratum_recorded", "detail": "派单称 I-11-A 卡级最新=a20260922-02 —— 不存在；父勘误：I-11-A 唯一 attempt=a20260919-01/accepted_scoped（父误记 I-06-A 的卡级最新）"},
+    {"id": "unverified-C3b", "registration": "verified_by_parent", "detail": "派单 C3-② ✅ vs B2-PROMOTION handoff blocked —— 父对账后改记：晋升已完成，handoff 为事故时点旧值"}
+  ],
+  "four_actions_done": {
+    "action_1": "方法选择+依据+样本：calibration_plan.json action_1_method_selection + 各参数 action1_calibration（contract arithmetic 优先；历史经验限 FY2025/FY2024；外部可比未用、网络未用；缺数据全部 expert_assumption 承接）",
+    "action_2": "low/base/high+单位+起止年份+原值→新值+转换公式：18 槽位逐条（14 出数 proposed_not_released + 4 显式拒绝出数维持 null）；管理层目标仅作情景对照，management_target_is_not_independent=true",
+    "action_3": "dependency_control：7 共享驱动 + 7 事件复用检查（无同一事件在销量/价格/额外收入重复）+ 联合情景联动规则 + STOP_SCENARIO 未触发",
+    "action_4": "合成示例手算复核 5/5 步一致（synthetic_mechanism_check.json part_1）→ 真实已审定映射执行 4/4 case 逐位复算一致 + 3/3 恒等式成立（part_2）；示例数字零复制（part_3）"
+  },
+  "expert_assumptions_count": 7,
+  "expert_assumptions_form": "每条含 sensitivity_interval + equivalent_to_disclosure_basis=false（A-6.3 (iv) 形态）；1 条为显式拒绝出数（EA-7）",
+  "params_released": false,
+  "params_released_detail": "store 侧 low/base/high 全部仍 null、两个 _PLACEHOLDER 维持、released=false；hypotheses*.json/model_cards* 零写入（只读）；本卡未产生 hypotheses 新版本",
+  "stop_calibration_triggered": false,
+  "stop_scenario_triggered": false,
+  "stop_note": "STOP_CALIBRATION 严格读法之争已登记于 revert_or_stop.json strict_alternative_reading_registered，交独立复审裁定；若采严格读法 ⇒ 本卡转 blocked，回滚=作废 proposed 值（零封盘改动）",
+  "mutation_rc": {"M1_red": 1, "M2_red": 1, "M3_red": 1, "M4_red": 1, "M5_red": 1, "green": 0, "note": "verify_plan.py：green=ALL_INVARIANTS_OK(rc=0)；5 红均 rc=1 且违例具名（I1/I1/I5/I4/I5）；变异副本在 _mut/，原件字节未动"},
+  "falsifiers_triggered": 0,
+  "auto_actions_triggered": 0,
+  "status": "accepted_scoped",
+  "status_before": "review_pending",
+  "status_transition": "review_pending -> accepted_scoped",
+  "status_scope": "范围严格限于本卡交付物的证据与判据（oracle.md · calibration_plan.json · expert_assumptions.json · synthetic_mechanism_check.json · revert_or_stop.json · verify_plan.py · _mut/×5）；非 clean accept（带 3×P2 + 3×P3）",
+  "status_history": [
+    {
+      "seq": 1,
+      "status": "review_pending",
+      "recorded_by": "implementer_i11b（本 attempt 实现者工位）",
+      "recorded_at": "2026-09-26 17:44:22（本地时；复审 §6 C3-④ 逐字：「本卡 handoff 写于 17:44:22」）",
+      "basis": "实现者交付自述：四动作完成、mutation_rc 5 红 / 绿 0、releases_nothing=true、implementer_signed=false，交独立复审",
+      "carrier_then": "reviewer_report.md 尚不存在（复审于其后撰写）"
+    },
+    {
+      "seq": 2,
+      "status": "accepted_scoped",
+      "recorded_by": "carrier-landing bookkeeping executor（父派委派的簿记落定子代理）—— 只转录，不新裁、不代签",
+      "recorded_at_utc": "2026-09-26T18:05:20Z",
+      "basis": "转录独立复审工位已写在 reviewer_report.md L18（字节区 [1384,1463)，79 B）的裁决行；裁决字节非本工位产生",
+      "scope": "本卡交付物（校准计划 / 映射产出）的证据与判据",
+      "verdict_is_transcribed_not_authored": true,
+      "implementer_signed": false
+    }
+  ],
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "carrier_path_inside_attempt": "reviewer_report.md",
+    "carrier_bytes": 28698,
+    "carrier_sha256": "5af4987ee0547a5320fcc35d338d8dbf59ec086e031202638b909c2dfc7e200d",
+    "carrier_sha256_prefix16": "5af4987ee0547a53",
+    "carrier_total_lines": 208,
+    "carrier_encoding": "UTF-8 无 BOM（BOM=False，首字节 0x23 即 # 号）；仅 LF 行尾（CR=0，LF=208）；文件以单个 LF 结尾；严格 UTF-8 解码通过",
+    "carrier_encoding_flags": {
+      "bom": false,
+      "cr_count": 0,
+      "lf_count": 208,
+      "utf8_valid": true,
+      "strict_utf8_decode": true,
+      "first_byte": 35
+    },
+    "three_way_consistency": "落定工位自算 sha256 == reviewer_report.sha256 侧车内容 == 派单给定 5af4987ee0547a53…，三方一致",
+    "three_way_match": true,
+    "verdict_word_written_by_reviewer": "ACCEPT",
+    "verdict_line_text_as_written_by_reviewer": "`VERDICT: ACCEPT (with P2x3, P3x3; strict-reading dispute ruled NOT triggered)`",
+    "verdict_line": 18,
+    "verdict_line_range_inclusive_1_based": [
+      18,
+      18
+    ],
+    "verdict_line_byte_region": {
+      "start": 1384,
+      "end_inclusive": 1462,
+      "end_exclusive": 1463,
+      "length": 79,
+      "sha256": "2d212bed0fc137c234b1001ddebe42c28676d49e0812a89af1f49c062c065eb3",
+      "decoded_utf8": "`VERDICT: ACCEPT (with P2x3, P3x3; strict-reading dispute ruled NOT triggered)`"
+    },
+    "verdict_token_byte_region": {
+      "start": 1385,
+      "end_inclusive": 1399,
+      "end_exclusive": 1400,
+      "length": 15,
+      "sha256": "f422a3f09f3f34867781b3d435ff517074b87f9ef6852bd7732ef50f8b95d1e7",
+      "decoded_utf8": "VERDICT: ACCEPT",
+      "note": "裁决词本体 = 裁决行去掉首尾反引号后的前 15 字节"
+    },
+    "verdict_line_located_by": "本落定工位自行定位（读原始字节 → 严格 UTF-8 解码 → 按 LF 切行 → 逐行累加回算 0-based 字节前缀和）；行号与字节区均为自算，未采信派单文本",
+    "verdict_line_unique": true,
+    "verdict_line_other_occurrences_note": "全文 VERDICT 出现 1 次（唯一，即 L18）、ACCEPT 出现 3 次（L12 判级、L18 裁决行、L173 §9 判级）；独立成行且唯一承载裁决词的行 = L18",
+    "judgement_line": 12,
+    "judgement_line_text": "**判定：ACCEPT（附 P2×3 · P3×3；无 P1 ⇒ 不构成 `changes_required`）**",
+    "section9_accept_line": 173,
+    "section9_accept_line_text": "**ACCEPT**（无 P1；严格读法裁定不触发，故不转 changes_required）",
+    "verdict_written_by": "独立复审工位（reviewer_report.md 的作者；与实现者 implementer_i11b 非同一人；实现者未自签）",
+    "verdict_is_transcribed_not_authored": true,
+    "implementer_signed": false,
+    "transcribed_by": "carrier-landing bookkeeping executor（父派委派的簿记落定子代理）—— 只做簿记转录，不产生新裁决、不自签",
+    "scope": "accepted_scoped —— 接受范围严格限于本卡交付物（oracle.md · calibration_plan.json · expert_assumptions.json · synthetic_mechanism_check.json · revert_or_stop.json · verify_plan.py · _mut/）的证据与判据；非 clean accept（带 3×P2 + 3×P3）",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "present": true,
+      "bytes": 84,
+      "sha256": "4f83905ab386ec06c4de3441b66a7805638a6bfb6ee57e7d29db1600b9c07a42",
+      "content": "5af4987ee0547a5320fcc35d338d8dbf59ec086e031202638b909c2dfc7e200d  reviewer_report.md",
+      "three_way_match": true,
+      "verified": "侧车内容（64 位小写 sha + 两个空格 + 文件名 reviewer_report.md = 84 B，无换行）与落定时独立重算的 reviewer_report.md sha256 逐字节相同；三方一致；本 pass 对侧车写入 0 字节"
+    },
+    "read_only_by_this_pass": "本落定工位对 reviewer_report.md 与 reviewer_report.sha256 的写入字节数 = 0",
+    "unverified_source": "reviewer_report.md §10（L185–L187）逐字转录进 handoff.unverified；实现者原残余登记（seven_conditions_status / c3_c5_residuals / dispatch_discrepancies_registered）原位保留，披露不丢失",
+    "landing_file": {
+      "file": "review.md",
+      "pre_image": "落定前 Test-Path 断言全部 = False（.\\review.md → False；.\\evidence → False；.\\evidence\\I-11-B → False；.\\evidence\\I-11-B\\qualification.json → False）⇒ 无实现者存根需保留 ⇒ review.md 新建、evidence/I-11-B/ 目录与 qualification.json 一并新建"
+    },
+    "section_line_ranges_inclusive_1_based": {
+      "verdict_line": [
+        18,
+        18
+      ],
+      "judgement_line": [
+        12,
+        12
+      ],
+      "strict_reading_ruling_section": [
+        34,
+        47
+      ],
+      "four_actions_section": [
+        51,
+        100
+      ],
+      "slots_section": [
+        104,
+        110
+      ],
+      "ea_section": [
+        112,
+        127
+      ],
+      "residuals_section": [
+        129,
+        144
+      ],
+      "mutations_section": [
+        146,
+        162
+      ],
+      "findings_section": [
+        171,
+        183
+      ],
+      "unverified_section": [
+        185,
+        187
+      ]
+    }
+  },
+  "carried_findings": [
+    {
+      "level": "P2",
+      "id": "P2-1",
+      "dispatch_id": "P2-1",
+      "source_section": "reviewer_report.md §9（L176）",
+      "finding_verbatim": "- **P2-1** `ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027` 基期可复算性缺陷：store L175 转换公式自相矛盾（`884,943+83,161×24=2,880,807` ≠ `885,141`；真值 38,175.95 vs 沿用值 124,248.63，差 3.25×；自洽基下两点差分应为 ≈−1,071 而非 −10,670.89）。处置：在卡内补登 unverified 项（store 先天缺陷+本卡沿用未标）；**OPEN-2 裁定前任何下游不得消费 124,248.63 及其 ±5% 带**；建议同时提示编排层在 OPEN-2 裁定时先修 store 口径桥。",
+      "supporting_section": "reviewer_report.md §3-②（L84）",
+      "supporting_verbatim": "**P2-1（本工位重算发现，卡内未登记）**：`ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027` 的 base=124,248.63（=109,977,556,345÷885,141，实现除式本身自洽），但 **store `hypotheses_v3.json` L175 转换公式自写除式为「884,943 + 83,161×24」= 2,880,807 ≠ 885,141**——按自写除式真值 = **38,175.95**（差 3.25 倍）；两点差分框架（885,141→968,302，−10,670.89）只在 /885,141 基下自洽，若按自洽除式则每 +1 系数仅 ≈−1,071 元。该矛盾**是封盘 store 的先天缺陷**（本卡正确地未回改封盘），但本卡以「contract arithmetic（基期推导）」承接该 base 并逐字沿用矛盾除式，**未把\"base 不可复算\"登记为 unverified 项**（仅登记了系数来源缺口）。落定前必须补登 + 禁止任何下游在 OPEN-2 裁定前消费 124,248.63（详见 §9 P2-1）。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P2",
+      "id": "P2-2",
+      "dispatch_id": "P2-2",
+      "source_section": "reviewer_report.md §9（L177）",
+      "finding_verbatim": "- **P2-2** EA 模板 8 字段缺口：7/7 条缺逐条 `carrier_form`（oracle §5 自设失败条款字面即触发\"不成立\"）。处置：7 行常量补齐 + 校验器 I1 扩至 8 字段 + 新增 M6 变异（删 carrier_form 必红）重跑红绿。",
+      "supporting_section": "reviewer_report.md §5（L126）",
+      "supporting_verbatim": "- **模板缺口（P2-2）**：oracle §5 模板 8 字段中 `carrier_form` **7/7 逐条缺失**（文件顶层有）；按 oracle 自设失败条款的字面，7 条 EA 均不成立——信息零损失（常量串）但违反其自设模板纪律，落定前补齐（7 行常量）并把校验器 I1 从 2 字段扩到 8 字段 + 加 M6 变异（删 carrier_form 必须红）。",
+      "also_at": "reviewer_report.md §2（L47）模板性缺口说明",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P2",
+      "id": "P2-3",
+      "dispatch_id": "P2-3",
+      "source_section": "reviewer_report.md §9（L178）",
+      "finding_verbatim": "- **P2-3** C3-④ 事实过时：「IND-r2 在跑（目录空）」在 handoff 交付时点（17:44:22）已不成立（IND-r2 17:34-17:38 已 RULED：segment_set_ok=yes content-layer+bridge caveat、S1 会签、E1 仍 BLOCKED-PARTIAL、零放行）。处置：更新登记详情（登记形态 unverified 不变）；确认 IND-r2 不改变本卡任一 blocked_by（本工位已核：不改变）。",
+      "supporting_section": "reviewer_report.md §6（L136）",
+      "supporting_verbatim": "| C3-④ | IND-r2 | unverified（**详情过时 → P2-3**） | **IND-r2 已在本卡运行窗内落地**（`OPEN-3-IND-R2/a20260926-01`：ruling_ind_r2.md 17:34:28、ind_ruling_r2.json 17:36:20、handoff 17:38:08 `status=RULED`；segment_set_ok=yes_content_layer_with_bridge_caveat、S1 countersigned、E1 维持 BLOCKED-PARTIAL、releases_nothing=true）。本卡 handoff 写于 17:44:22，其\"在跑未归（目录空）\"在交付时点已是旧值。**登记形态（unverified）仍正确**，事实描述须更新；IND-r2 未放行任何东西，I-11-B 的 blocked_by 不因此变化 |",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P3",
+      "id": "P3-4",
+      "dispatch_id": "P3-1",
+      "label_note": "派单以 P3-1 指称；复审报告原文编号为 P3-4（一一对应，逐字取自报告，未弱化）",
+      "source_section": "reviewer_report.md §9（L181）",
+      "finding_verbatim": "- **P3-4** 金锭线 spot-check 誊算：39,757,982,580 应为 39,758,282,580（差 300,000）；真实线残差 +302,580（0.0007611%），结论不变。",
+      "supporting_section": "reviewer_report.md §3-④（L99）",
+      "supporting_verbatim": "  - P3-4（誊算差错）：卡内金锭线 spot-check 写作「49,074 千克×810.17 元/克 = 39,757,982,580 元」——**本工位重算真值 = 39,758,282,580（差 +300,000）**；对披露 3,975,798 万元的真实线残差 = +302,580（0.0007611%），**结论（线级容差内）不变**，但等式如印是错的。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P3",
+      "id": "P3-5",
+      "dispatch_id": "P3-2",
+      "label_note": "派单以 P3-2 指称；复审报告原文编号为 P3-5（一一对应，逐字取自报告，未弱化）",
+      "source_section": "reviewer_report.md §9（L182）",
+      "finding_verbatim": "- **P3-5** EA-4 注解内联合收入带 [320,763, 348,432] 不可复现（应为 [375,283, 414,787]；g 运行值本身全对）。",
+      "supporting_section": "reviewer_report.md §5（L127）",
+      "supporting_verbatim": "- 数值小注（P3-5）：EA-4 band_rationale 的「三情景三分部收入合计区间 = [320,763, 348,432] USD mn」**不可复现**：按其自身 g 带作用于 FY2026 应为 **[375,283, 414,787]**；声称高点 ≈ FY2026 合计×1.05（348,431），低点无出处。运行值（g_low/g_high）本身全部正确，此为注解内数字错误。EA-2 k=23 点标注\"两点差分方向\"（134,919.5）系线性外推、精确值 137,132.54——已自declared为近似，可接受（备注级）。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P3",
+      "id": "P3-6",
+      "dispatch_id": "P3-3",
+      "label_note": "派单以 P3-3 指称；复审报告原文编号为 P3-6（一一对应，逐字取自报告，未弱化）",
+      "source_section": "reviewer_report.md §9（L183）",
+      "finding_verbatim": "- **P3-6** M3/M5 变异副本基于旧 handoff 快照（mutation_rc=None 等），非纯单字段差分；建议以定稿字节重生成。",
+      "supporting_section": "reviewer_report.md §7（L160）",
+      "supporting_verbatim": "- 变异真实性（逐文件 deep-diff）：M1 仅 EA-1 缺字段 ✓；M2 仅 EA-2 eqt 翻转 ✓；M4 恰 12 处 `low: None→0`、余字节全同 ✓；M3/M5 主体变异正确，但**变异副本基于定稿前的 handoff 旧快照**（mutation_rc=None、缺 git_diff_non_planning_measured、written_files 旧版）——不纯单字段差分，P3-6 记录（被测不变量不受影响）。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    }
+  ],
+  "reviewer_resolved_items": [
+    {
+      "item": 1,
+      "topic": "⭐ 严格读法之争裁定 = 采实现者运行读法（STOP_CALIBRATION 未触发）",
+      "source_section": "reviewer_report.md §0（L14）+ §2（L34–L47）",
+      "ruling_headline_verbatim": "- **严格读法之争裁定：STOP_CALIBRATION 未触发**（裁定与逐字依据见 §2 —— 这是本复审的职权裁定，不再上抛 owner）",
+      "ruling_verbatim": "**裁定**：卡文 L20 严格读法下，本卡 **14 个 proposed 槽位与 7 条 EA 均**不触发 STOP_CALIBRATION；`revert_or_stop.json` 的 `stop_calibration_evaluation.triggered=false` **成立**，4 个 declined 槽位不构成触发。",
+      "consequence_verbatim": "**后果核**：4 个 declined 槽位的 fail-closed 处置（不出数、不放行、`blocked_by` 保留 OPEN-2/OPEN-3）与 STOP 想要的实际效果（无来源幅度不得进入任何下游）**完全一致**；采严格读法只会把一份零放行的诚实交付改判 blocked，不增加任何保护。故不触发。",
+      "template_gap_note_verbatim": "**⚠️ 复审另发现的模板性缺口（不改判、但落定前必修 → P2-2）**：oracle §5 冻结的 EA 模板含 8 字段，其自设失败条款为「缺任一字段 ⇒ 该条不成立 ⇒ 对应参数触发 STOP_CALIBRATION」。实测 **7 条 EA 逐条均缺 `carrier_form` 字段**（文件顶层有、逐条无，7/7）。该失败条款是**实现者自设的模板纪律**而非卡文 L20 本身：carrier_form 是常量串、信息零损失、卡文 L20 的两个要件（明确假设+区间）逐条满足，故不据此判 STOP；但按其自设条款的字面，该缺口一旦成立即波及全部 EA —— 必须在落定前补齐（见 P2-2）。",
+      "basis_count": 4,
+      "basis_labels": [
+        "L20 是合取命题",
+        "卡文 L13（动作①）正向指令",
+        "owner §三十四 是更高位的现行授权",
+        "merge_ruling §3.2 四类合法基础"
+      ],
+      "basis_verbatim": [
+        "1. **L20 是合取命题**：「幅度**无来源又**未明确分析师假设→STOP_CALIBRATION」——触发主语是**一个幅度**，且须同时满足 (a) 无来源 (b) 未被明确标注为分析师假设。4 个 declined 槽位（ZIJIN_MINERAL_COPPER/GOLD_REALIZED_UNIT_REVENUE_FY2027、MSFT_MICROSOFT_CLOUD、MSFT_LICENSING_VS_CLOUD）**根本未产出任何幅度**（`new_value` 全 null，本工位逐槽验证 §4）：无\"幅度\"存在，条件 (a) 的主语不存在；且 EA-7 本身就是**明示的分析师立场声明**（\"显式拒绝出数、不作任何幅度假设\"），即便把\"假想幅度\"当主语，(b) 也已满足。把合取降格为\"存在无来源槽位即停\"，字面上删去了「又未明确分析师假设」半个条件。",
+        "2. **卡文 L13（动作①）正向指令**：「按contract arithmetic、历史经验或外部可比选择校准方法……**缺数据就标expert_assumption**」——卡文自身设计就是\"缺数据→标注假设→继续校准\"。若\"槽位无来源\"本身触发整卡 STOP，动作①的这句指令将永远不可用，属目的性废文。",
+        "3. **owner §三十四 是更高位的现行授权**：L751 选项 A 明文「以 5✅+2❌ 现状开 I-11-B，C3/C5 残余列开工后并行欠账」；L758 明文残余「以 expert_assumption 或 unverified 形式登记（不隐藏）」。严格读法会在 owner 作出决定的同一时刻使其落空（C3/C5 残余必然伴随至少 4 个无基期槽位）——`revert_or_stop.json` 自己也登记了这一后果。L775 明文「本节是 owner 的明文改判，优先级高于该自述」。",
+        "4. **merge_ruling §3.2（ACCT L226 框架）四类合法基础**：「数值有可核基础（四类之一：来源披露容差 / 同口径历史离散可复算 / 准则监管明文 / **明示 expert_assumption+敏感性区间**）」——权威框架本身把\"明示假设+区间\"认可为与\"有来源\"并列的合法基础，即 **「有来源 **或** 明示假设」的运行读法就是审定框架的读法**。本卡 14 个出数槽位全部满足\"基期有来源（contract arithmetic/历史关系，回源见 §3-②）+ 幅度带明示假设（EA-1/3/4/5，`equivalent_to_disclosure_basis=false` 常量 ✓）\"。"
+      ],
+      "review_results_count": 6,
+      "review_results": [
+        {
+          "id": "R1",
+          "topic": "方法可回源",
+          "source_section": "reviewer_report.md §3-①（L53）",
+          "result_verbatim": "### ① 方法选择依据是否可回源 — **PASS**"
+        },
+        {
+          "id": "R2",
+          "topic": "18 槽位重算一致且 store 全 null",
+          "source_section": "reviewer_report.md §3-②（L58）",
+          "result_verbatim": "### ② 18 槽位逐一核 — **PASS（14 出数全部复算一致 + 4 显式拒绝全部真 null；1 项基期可复算性缺陷 → P2-1）**"
+        },
+        {
+          "id": "R3",
+          "topic": "dependency_control 抽验 E1+E4 真无双通道",
+          "source_section": "reviewer_report.md §3-③（L86）",
+          "result_verbatim": "### ③ dependency_control 无双通道重复计权 — **PASS（7 共享驱动 + 7 事件逐条在案；抽 2 条自验）**"
+        },
+        {
+          "id": "R4",
+          "topic": "手算全重算仅金锭誊算错",
+          "source_section": "reviewer_report.md §3-④（L92）",
+          "result_verbatim": "### ④ 手算复核 — **PASS（本工位全部独立重算，5+4+3 全对；1 处线级誊算差错 → P3-4）**"
+        },
+        {
+          "id": "R5",
+          "topic": "7 条 EA 区间齐",
+          "source_section": "reviewer_report.md §5（L124）",
+          "result_verbatim": "- **敏感区间 + eqt=false：7/7 齐备**（校验器 I1 绿灯 + M1/M2 红灯双证）✓"
+        },
+        {
+          "id": "R6",
+          "topic": "残余 9 项全 open-form",
+          "source_section": "reviewer_report.md §6（L143）",
+          "result_verbatim": "- **红线核**：9 项无一写成\"已解\"（校验器 I5 绿灯 + M5 红灯[登记→resolved 即 rc=1]双证）；expert_assumption 只承接校准幅度判断、未冲销任何 BLOCKED ✓"
+        }
+      ],
+      "landing_state": "reviewer 已裁定并复核（本落定只转录，不新增裁决、不改判）"
+    }
+  ],
+  "unverified": {
+    "source": "reviewer_report.md §10（L185–L187）",
+    "verbatim": "卡内 9 项残余（C3-①…⑤、C5-①…④，全 open-form，§6）+ 派单差异 2 项（unverified-D1、unverified-C3b）+ 本复审新增 3 项（**unverified-N2**：H-02 转换公式自相矛盾/基期不可复算[P2-1]；**unverified-N3**：EA 模板 carrier_form 缺失[P2-2]；**unverified-N4**：C3-④ IND-r2 已 RULED 的登记更新[P2-3]）+ 数值小注 2 项（P3-4/P3-5）。",
+    "count": 16,
+    "decomposition": "卡内残余 9（C3-①…⑤、C5-①…④）+ 派单差异 2（unverified-D1、unverified-C3b）+ 复审新增 3（unverified-N2/N3/N4）+ 数值小注 2（P3-4/P3-5）= 16；全部保持 open-form，无一写作已解",
+    "items": [
+      "C3-①｜origin 字节｜unverified｜62,953B 已落（origin_bytes.bin sha cf84c29048ab314e…）；但 E1 等级=BLOCKED-PARTIAL，字节层 ✅ ≠ E1 解锁",
+      "C3-②｜B2 晋升｜verified_by_parent｜父对账：晋升已完成（dayu sec_downloader.py=74,543B/4684933e…、cw dayu_cli_adapter.py=25,328B/32ef1165…，Copy-Item 单步覆盖，committed=false）；B2-PROMOTION handoff 的 MISSING 为事故时点旧值；本工位无产品仓读面，状态为父证",
+      "C3-③｜ACCT-R2 定级｜unverified｜RULED 但 e1_level=BLOCKED-PARTIAL、s_level=S1、4 份语料降 E3（8 条引文作废）；'已裁定'≠'通过'，等级即 fail-closed 结果",
+      "C3-④｜IND-r2｜unverified｜在跑未归（OPEN-3-IND-R2/a20260926-01 目录空）",
+      "C3-⑤｜MSFT 六参数/新两分部参数/HK 参数｜unverified｜维持不放行（OPEN-3/OPEN-5）；MSFT_MICROSOFT_CLOUD、MSFT_LICENSING_VS_CLOUD 本卡显式拒绝出数（EA-7）",
+      "C5-①｜6c threshold_review_status 落地｜unverified｜accepted_scoped 带 2×P2+3×P3，非 clean accept",
+      "C5-②｜H4 口径桥｜unverified｜残差 269 吨（铜）/534 千克（金）未逐行闭合，金在内/外档翻转 ⇒ 冻结判据 Q2 fail-closed；countersigned=false；会签前不得升 reviewed、不得触发任何动作",
+      "C5-③｜6b 恒等式容差｜unverified｜路径(c) 已按 revert_rule 退 unquantified；R2（金 154 千克）NOT_SIGNED；整条 BLOCKED-6b 状态归 ruling_6b L110：须新建 OPEN6B-TOLERANCE-RULING-R2 后由 owner/编排层重判",
+      "C5-④｜H2 基准｜unverified｜交付但 still_blocked；3 条 pjr 完成 A-6.3 全套 = 0/3",
+      "unverified-D1｜erratum_recorded｜派单称 I-11-A 卡级最新=a20260922-02 —— 不存在；父勘误：I-11-A 唯一 attempt=a20260919-01/accepted_scoped（父误记 I-06-A 的卡级最新）",
+      "unverified-C3b｜verified_by_parent｜派单 C3-② ✅ vs B2-PROMOTION handoff blocked —— 父对账后改记：晋升已完成，handoff 为事故时点旧值",
+      "unverified-N2｜open｜- **P2-1** `ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027` 基期可复算性缺陷：store L175 转换公式自相矛盾（`884,943+83,161×24=2,880,807` ≠ `885,141`；真值 38,175.95 vs 沿用值 124,248.63，差 3.25×；自洽基下两点差分应为 ≈−1,071 而非 −10,670.89）。处置：在卡内补登 unverified 项（store 先天缺陷+本卡沿用未标）；**OPEN-2 裁定前任何下游不得消费 124,248.63 及其 ±5% 带**；建议同时提示编排层在 OPEN-2 裁定时先修 store 口径桥。",
+      "unverified-N3｜open｜- **P2-2** EA 模板 8 字段缺口：7/7 条缺逐条 `carrier_form`（oracle §5 自设失败条款字面即触发\"不成立\"）。处置：7 行常量补齐 + 校验器 I1 扩至 8 字段 + 新增 M6 变异（删 carrier_form 必红）重跑红绿。",
+      "unverified-N4｜open｜- **P2-3** C3-④ 事实过时：「IND-r2 在跑（目录空）」在 handoff 交付时点（17:44:22）已不成立（IND-r2 17:34-17:38 已 RULED：segment_set_ok=yes content-layer+bridge caveat、S1 会签、E1 仍 BLOCKED-PARTIAL、零放行）。处置：更新登记详情（登记形态 unverified 不变）；确认 IND-r2 不改变本卡任一 blocked_by（本工位已核：不改变）。",
+      "P3-4（复审 §10 数值小注 1）｜open｜- **P3-4** 金锭线 spot-check 誊算：39,757,982,580 应为 39,758,282,580（差 300,000）；真实线残差 +302,580（0.0007611%），结论不变。",
+      "P3-5（复审 §10 数值小注 2）｜open｜- **P3-5** EA-4 注解内联合收入带 [320,763, 348,432] 不可复现（应为 [375,283, 414,787]；g 运行值本身全对）。"
+    ]
+  },
+  "pre_image": {
+    "file": "handoff.json",
+    "description": "本次状态面转录之前的 handoff.json（实现者写就：status=review_pending、无 status_authority 等落定键、implementer_signed=false）",
+    "sha256": "8d8c974a102416676e9c48f52cb632c3ba6c7d8fa50af74d3b4db7a3e9c110ca",
+    "bytes": 11349,
+    "recomputed_by": "落定工位写入前自算（SHA256 自算，非抄派单给定值）",
+    "non_status_keys_deep_equal": true,
+    "changed_existing_keys": [
+      "status"
+    ],
+    "added_keys": [
+      "status_before",
+      "status_transition",
+      "status_scope",
+      "status_history",
+      "status_authority",
+      "carried_findings",
+      "reviewer_resolved_items",
+      "unverified",
+      "pre_image",
+      "verdict_is_transcribed_not_authored"
+    ]
+  },
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+  "releases_nothing": true,
+  "releases_nothing_detail": "不产生 ACCEPT · 不放行任何参数 · 不触发任何 falsifier/自动动作（ACCT L230 + IND L299）· 不解 OPEN-2/3/5/6/任何 BLOCKED-* · 不代签行业/会计/外部面 · 不改两半区/封盘任一字节 · 不派 I-11-C · 不写五份计划文件",
+  "written_files": [
+    "execution_runs/I-11-B/a20260926-01/oracle.md",
+    "execution_runs/I-11-B/a20260926-01/calibration_plan.json",
+    "execution_runs/I-11-B/a20260926-01/expert_assumptions.json",
+    "execution_runs/I-11-B/a20260926-01/synthetic_mechanism_check.json",
+    "execution_runs/I-11-B/a20260926-01/revert_or_stop.json",
+    "execution_runs/I-11-B/a20260926-01/verify_plan.py",
+    "execution_runs/I-11-B/a20260926-01/_mut/{m1_eas,m2_eas,m3_handoff,m4_store,m5_handoff}.json（变异副本，红绿变异用，原件未动）",
+    "execution_runs/I-11-B/a20260926-01/handoff.json"
+  ],
+  "git_diff_non_planning_measured": "git -c core.quotepath=false diff HEAD --name-only → total=3830（历史/并发写入方均在 .planning 内），non_planning=0；禁 git status 未跑、无 git 写",
+  "write_surface": "仅 execution_runs/I-11-B/a20260926-01/",
+  "git_writes_performed": false,
+  "git_status_run": false,
+  "network_requests_made": 0,
+  "git_diff_non_planning": 0,
+  "file_format": "UTF-8 (JSON 写后重解析校验)",
+  "next_action": "编排层另派独立复审（非实现者）：审 calibration_plan/expert_assumptions/synthetic_mechanism_check → 落定走三件套（review.md + qualification.json + handoff.json）；I-11-C 按卡文依赖顺序（I-11-C ← I-11-B）另行派单；C3/C5 九项欠账并行推进（IND-r2 归档、OPEN6B-TOLERANCE-RULING-R2、H4 残差闭合、H2 A-6.3 0/3）"
+}

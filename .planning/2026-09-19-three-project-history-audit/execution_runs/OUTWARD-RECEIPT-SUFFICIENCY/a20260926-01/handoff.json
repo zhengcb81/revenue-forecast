@@ -1,0 +1,180 @@
+{
+  "card_id": "OUTWARD-RECEIPT-SUFFICIENCY",
+  "attempt_id": "a20260926-01",
+  "role": "receipt_sufficiency_ruler",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+
+  "authorized_by": [
+    {
+      "src": "REMEDIATION_REGISTER.md §154 派工表（2026-09-26 14:15–14:55）",
+      "quote": "| `OUTWARD-RECEIPT-SUFFICIENCY`（`85347bee`） | **五问**：形式上算回执吗 · 落差确切是什么 · 达成条件清单 · **⭐ owner 签收能解什么/不能解什么** · 对 `I-06-A` 的实际影响 · 并产出**「签收件应含哪些内容」清单** |"
+    },
+    {
+      "src": "REMEDIATION_REGISTER.md §154 共同红线",
+      "quote": "**共同红线**：`outward_requests/` 与三份 `T2-SIM` ruling **只读**（**2026-09-23 冻结令**）· **fail-closed 不为勾掉放宽** · **不代外部方签、不代 owner 签**。"
+    },
+    {
+      "src": "REMEDIATION_REGISTER.md §72(1) 门①口径",
+      "quote": "**门①正确表述=「owner 终确模拟裁定解除（非外部回执）」**，随下游引用携带。"
+    },
+    {
+      "src": "OWNER_DECISIONS.md §二十一",
+      "quote": "owner 原话（对主偏离报告第四节（门①/函A 语义口径）的答复）：「**维持例外**」。……函A TIER-2 判据④按字面\"真实外部回执\"的口径 = owner 明示不采用。记录性状不变：「非外部方真实签署、未在任何函上签字」（诚实标签全程保留）。"
+    },
+    {
+      "src": "outward_requests/README.md:24",
+      "quote": "**不得代签**：编排层、实现者、owner 均不得代收件方作答。"
+    }
+  ],
+
+  "five_questions": {
+    "Q1_形式上是否已构成回执": {
+      "verdict": "不满足",
+      "one_liner": "登记行字段齐（函 A 3 行），但性状自述「非外部方真实签署、未在任何函上签字、仅系本计划内部归档」⇒ 只能记「已预置、待签收」，不能记「已签收」",
+      "key_evidence": [
+        "RESPONSES.md:3",
+        "README.md:7-8 / :24 / :12",
+        "task_plan.md:73（四封函共同纪律：不得代签、回执落各卡自己的载体、不在函上签字）",
+        "A_DW06_OPEN-4-5-6.md:147-149（不在本函上签字）",
+        "T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md:102（过渡期规则：信任根建成并核验前，任何回执不得宣称为「已签名审核」）",
+        "I-06-A/a20260922-02/handoff F9_note（卡内转录件 = parent transcription batch, not this card's write）"
+      ]
+    },
+    "Q2_L301与RESPONSES是否矛盾": {
+      "verdict": "不矛盾（不同对象、不同判据栏）；但 L301 括注「owner 发送/追发」的「发送」半句已陈旧",
+      "gap": [
+        "① 对象：模拟裁定登记（函 A）vs 三函真实外部回执",
+        "② 主体：owner 终确的 role-play vs 收件方本人",
+        "③ 覆盖：RESPONSES 仅函 A 3 行；函 B 0 份、函 C 0 份（execution_runs/T2-* 仅 3 个全属函 A）",
+        "④ 落点：内部归档+编排层转录 vs 各卡自己的载体本人签",
+        "⑤ 效力范围：§19/§21 例外只解门①（§72），不改 L301 字面对象",
+        "⑥ 括注时效：三函 2026-09-22 已送达（_provenance physical_transmission = owner「给你回执」；登记册 §三十九「三函递交=已完成」），仍缺的是回复到达"
+      ],
+      "which_governs": {
+        "三函回执这一行是否达成": "以 task_plan L301 字面 + 登记册 §四十三「RESPONSES.md 一行/函 + 卡载体转录」+ progress.md:1427「三函（A/B/C）真实外部回执」为准 ⇒ 未达成",
+        "门①与I-06-A是否解锁": "以 OWNER_DECISIONS §19 生效链 + §21「维持例外」+ §72 表述为准 ⇒ 已解除"
+      }
+    },
+    "Q3_达成条件清单": {
+      "verdict": "下列 L1–L5 全部合取满足才可判达成；现 5 条全 FAIL",
+      "standard_L": [
+        {"id": "L1", "cond": "RESPONSES.md 出现函 B、函 C 各自回执登记行（一行/函）", "now": "FAIL"},
+        {"id": "L2", "cond": "每行性状不再是「非外部方真实签署」", "now": "FAIL"},
+        {"id": "L3", "cond": "收件方本人在其自己的卡载体留签（编排层转录不算）", "now": "FAIL"},
+        {"id": "L4", "cond": "函 A 三项通过 OPEN-4 ruling L102：信任根建成并核验（函 B T2-9/OPEN-D1）", "now": "FAIL"},
+        {"id": "L5", "cond": "task_plan L301 括注与实况自洽（已送达须标注 / 判据改名）", "now": "FAIL"}
+      ],
+      "standard_E_owner_exception": {
+        "E1_三份T2模拟裁定": true,
+        "E2_owner全部接受": true,
+        "E3_RESPONSES三行加勘误加冻结令": true,
+        "E4_两卡转录字节保真": true,
+        "E5_维持例外": true,
+        "scope": "E 全绿 ⇒ 只解门①；不使 L1–L5 任一条成立"
+      }
+    },
+    "Q4_owner签收能解什么": {
+      "verdict": "部分解：可解 L1(owner 侧)+L5+追认标准 E；不可解 L2、L3、L4，不产生 ACCEPT，不解除 I-06-A",
+      "would_unlock": [
+        "L5 括注时效自洽（owner 原话可确认「已送达、待回复」）",
+        "L1 的 owner 侧部分（owner 只能签自己身份的事）",
+        "对标准 E 的追认/重申（不新增效力）",
+        "授权追发/更新函件（§十八 行 C 先例，送达仍归 owner）"
+      ],
+      "would_NOT_unlock": [
+        "L3 代替三方收件方签收 —— README.md:24「owner 均不得代收件方作答」+ 函A §4",
+        "L2 把登记行变成「已签收」—— RESPONSES:3 性状 + README.md:12「等同伪造签名」",
+        "L4 OPEN-4 ruling:102 过渡期规则 —— 需信任根建成并核验，一句话不等于信任根建成（函B:27-28 实测不存在）",
+        "函 B 回执内容（D1/D2/D3/D5/D6/D7/I09A-1…6）—— 登记 0 行",
+        "函 C 回执内容（GAP-2 blocked / GAP-3 pending reviewer decision）—— I-05-C handoff:201-210",
+        "任何 ACCEPT / I-06-A 解除 / 任何卡 status 变更（同族：§二十四「授权是许可不是动作」）",
+        "19 卡链 I-11 与 I-14-E 两根"
+      ],
+      "if_signed_as_达成": "触发 README.md:12 伪造签名 + 执行纪律第 7 条 ⇒ 本工位判「不满足 + 记违规」",
+      "reverse_option_owner_judgement_seat": "owner 也可选按字面真实外部回执口径重开门①（§73「改判=按字面真实外部回执重开门①」）—— 方向是收紧，不是达成；本工位不代选"
+    },
+    "Q5_I06A是否必然开": {
+      "verdict": "不必然（回执是必要非充分）；且现况它已开、依据不是三函回执",
+      "evidence": [
+        "card_I-06-A.md:7「依赖：I-02-E。设计前置：D-W06。」——门是设计签署，不是这行清单项",
+        "I-06-A/a20260919-01/handoff.json:7 blocked_reason = 「D-W06 未签：……先指定单一持久 owner 与迁移及 API（没有 schema 不得由执行者自选 SQLite/文件队列）」——缺 schema 决定，非「缺回执」字面",
+        "同文件 :151 blocked_by[0] OPEN-4/5/6 remain UNSIGNED … does NOT constitute their verdicts",
+        "同文件 :153 blocked_by[2] 候选 UNRATIFIED 且 known-insufficient，须修订后方可提升 ⇒ 回执后仍需 转录→首条解除→修订→实施→独立复审",
+        "I-06-A/a20260922-02/handoff.json:6 status = accepted_scoped（round-2 独立复核），:135 objective 载「按 RATIFIED 裁定契约（OPEN-1 A/OPEN-2 A/OPEN-2b/OPEN-3/OPEN-4 §4.3/OPEN-5 §4.3+§4.5/OPEN-6 三值语义/owner §十九 TTL 30d）实现」",
+        "登记册多 attempt 节：只读旧 attempt 会把 I-06-A 误读为仍 blocked ⇒ 须卡级聚合取最新 attempt",
+        "task_plan.md:292 三根未解 = I-11(MERGE 七条, i11b_unblocked=false) · I-08(已解) · I-14-E(源卡 pending)；链 4/19"
+      ],
+      "impact_on_19_card_chain": "三函回执达成不会解除任何一根本锁；task_plan:20「gated on I-06-A」是闸的身份描述，该闸按 §19/§21 已解、链已过 4 张"
+    }
+  },
+
+  "sufficiency_status": {
+    "value": "insufficient",
+    "target": "task_plan.md L301 Phase 7 未完成判据项「仍等外部：三函回执（owner 发送/追发，父无对外发信能力）」",
+    "missing": [
+      "函 B 回执 0 份（T2-8/D7 · T2-9/D1·D2·D3 · T2-10/D6 · T2-11/D5 · T2-13/I09A-1…6 · T2-15 W/T/L）",
+      "函 C 回执 0 份（GAP-2 = blocked on RF consumer_analysis owner；GAP-3 = pending reviewer decision）",
+      "函 A 三行性状 = 非真实签署；收件方本人卡载体签收 0 份",
+      "信任根未建成未核验（OPEN-4 ruling L102 + 函B:27-28）⇒ 现有回执只能记「未签名归属记录」，不得称「已签名审核」、不得用于产品晋级",
+      "task_plan L301 括注「发送」半句与 _provenance 已送达事实不自洽（表述缺陷；须父方择一改括注或改判据名，本工位不改）"
+    ],
+    "separate_column_not_missing": "标准 E（三 T2 模拟裁定 + owner「全部接受」+ RESPONSES 三行 + 两卡转录 + §21 维持例外）全部成立 ⇒ 门①已解；但其效力不外溢到本项"
+  },
+
+  "signable_now": false,
+  "signable_now_basis": "不存在一份按本计划判据签了就能把「三函回执」判成「达成」的签收件：L2/L3/L4 均不由 owner 签字解决。owner 现在可签的只是「部分性质件」（内容清单见 ruling_sufficiency.md §4），其效力上限 = L1(owner 侧) + L5 + 对标准 E 的追认",
+
+  "what_signing_would_and_would_not_unlock": {
+    "would_unlock": [
+      "L5：task_plan L301 括注时效自洽",
+      "L1 的 owner 侧部分（owner 本人身份的签收/呈批确认）",
+      "对标准 E（§19/§21）的追认/重申（不新增效力）",
+      "授权编排层追发/更新三函（§十八 行 C 先例，送达仍归 owner）"
+    ],
+    "would_NOT_unlock": [
+      "L2：把 RESPONSES 三行变成「已签收」",
+      "L3：代替 wiki 来源审核 owner / 安全 reviewer / RF 消费 owner / 跨仓双方 / 独立 reviewer 本人签收",
+      "L4：OPEN-4 ruling L102 过渡期规则（需信任根建成并核验）",
+      "函 B 全部回执内容",
+      "函 C 全部回执内容（GAP-2 / GAP-3）",
+      "任何 ACCEPT、I-06-A 解除、任何卡 status 变更",
+      "19 卡链三根中的 I-11（MERGE 七条）与 I-14-E"
+    ]
+  },
+
+  "signed_by_this_station": false,
+  "releases_nothing": true,
+  "no_accept_produced": true,
+  "no_carrier_written_outside_own_dir": true,
+  "readonly_respected": {
+    "outward_requests": "只读（RESPONSES.md L17 冻结令 2026-09-23）",
+    "T2-SIM three rulings": "只读（冻结令）",
+    "I-06-A / I-06-B carriers": "只读（含 rulings_transcribed_2026-09-22.md）",
+    "five_plan_files": "只读（task_plan / progress / findings / REMEDIATION_REGISTER / OWNER_DECISIONS）",
+    "outside_planning": "未触碰",
+    "network": "未使用"
+  },
+
+  "mutation_checks": {
+    "R1_drop_disclaimer_still_insufficient": "PASS",
+    "R2_owner_signs_on_behalf_of_recipients_rejected": "PASS",
+    "R3_use_E_to_tick_L_rejected": "PASS",
+    "R4_read_only_old_attempt_rejected": "PASS",
+    "G1_letters_B_and_C_rows_would_flip_L1": "PASS (现缺)",
+    "G2_recipient_self_sign_plus_trust_root_would_flip_L2_L3_L4": "PASS (现缺)",
+    "G3_owner_sign_only_partial": "PASS",
+    "G4_I06A_back_to_blocked_forces_reruling": "PASS (未触发)",
+    "overall": "8/8 按预期"
+  },
+
+  "written_files": [
+    "execution_runs/OUTWARD-RECEIPT-SUFFICIENCY/a20260926-01/oracle.md",
+    "execution_runs/OUTWARD-RECEIPT-SUFFICIENCY/a20260926-01/sufficiency_ruling.json",
+    "execution_runs/OUTWARD-RECEIPT-SUFFICIENCY/a20260926-01/ruling_sufficiency.md",
+    "execution_runs/OUTWARD-RECEIPT-SUFFICIENCY/a20260926-01/handoff.json"
+  ],
+  "git_diff_non_planning": 0,
+  "git_evidence": "git --no-optional-locks diff --name-only HEAD ⇒ 3830 条，全部位于 .planning/ ⇒ 非 .planning = 0；未使用 git status，零 git 写",
+  "status": "complete",
+  "next_action": "父方收本件：按 §4 清单决定是否向 owner 呈签收件（本工位不代签、不解除任何门）"
+}

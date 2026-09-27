@@ -1,0 +1,233 @@
+{
+ "schema": "handoff/1",
+ "role": "accounting_reviewer_h4",
+ "card": "I-11-A",
+ "attempt_under_review": "execution_runs/I-11-A/a20260919-01（全程只读）",
+ "carrier": "execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01",
+ "generated_at_utc": "2026-09-26T10:25:42Z",
+ "implementer_signed": false,
+ "is_implementer": false,
+ "authorized_by": {
+  "ind_l299_verbatim": "放行条件：本条仅为行业面审定；是否可标 threshold_basis 升级、以什么基础允许给数，由 I11A-OPEN-ACCT 依其基础规则确认，在此之前 I-11-B/I-11-C 不得据此触发。",
+  "ind_l299_source": {
+   "file": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+   "line": 299,
+   "sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b"
+  },
+  "merge_ruling_3_2_verbatim": "### 3.2 易误读点 (a)：行业面给了 H4 = [0.90, 1.10] —— 这等于该命题 approved_frozen 吗？\n\n# 判定：否。H4 不等于 approved_frozen；threshold_review_status 仍应视为 not_reviewed。",
+  "merge_ruling_3_2_source": {
+   "file": "execution_runs/I11A-OPEN-MERGE/a20260924-01/merge_ruling.md",
+   "lines": "275-297",
+   "sha256": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1"
+  },
+  "acct_l226_verbatim": "审定一个阈值必须同时具备可复算观测量 + 可核基础 + 非实现者签署（decision_sha256） + 追加式版本化，否则一律维持 not_reviewed",
+  "acct_l226_source": {
+   "file": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+   "line": 226,
+   "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2"
+  },
+  "c5_verbatim": "OPEN-6：threshold_review_status 落地 + H4 四要件补齐 + H2 基准 + 恒等式容差对照表",
+  "c5_source": {
+   "file": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json",
+   "line": 122,
+   "sha256": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878"
+  }
+ },
+ "oracle": {
+  "path": "oracle.md",
+  "frozen_before_outputs": true,
+  "sha256_at_freeze": "5b66584f5b4b89ef5fc8fc2311b32da2e11b606fcdc076ff0c9399912d534f0d",
+  "bytes": 19032,
+  "sha256_at_delivery": "5b66584f5b4b89ef5fc8fc2311b32da2e11b606fcdc076ff0c9399912d534f0d",
+  "unchanged_since_freeze": true
+ },
+ "h4_four_req_status": "4/4",
+ "h4_four_req_detail": {
+  "1_recomputable_observable": "satisfied（原本就在；我回源逐字复核封盘 hypotheses.json 下标 3 falsifier 六字段）",
+  "2_verifiable_basis": "satisfied（补齐）—— A-6.3 第2条落 (iv) expert_assumption + 敏感性区间 [0.85,1.15]/[0.95,1.05] + equivalent_to_disclosure_basis=false；(i)/(iii) 关键词 0 命中、(ii) 可配对期数 1<2 均实测不可用",
+  "3_non_implementer_signature": "satisfied（补齐）—— accounting_reviewer_h4（非实现者）签署，作用域 hypothesis_id + 2 个 parameter_id，写入前后各复算一次",
+  "4_append_only_versioning": "satisfied（补齐）—— hypotheses_h4_v1.json，supersedes_sha256=f2178768…，modified_indices=[3]，其余 7 条与封盘相等，封盘零字节改动"
+ },
+ "fail_closed_triggered": false,
+ "fail_closed_note": "四要件判齐 ⇒ 未触发 blocked；fail-closed 的反向分支（B0/M1/M2/M3）全部 rc≠0，证明判据未被放宽",
+ "threshold_review_status": "not_reviewed",
+ "threshold_review_status_still_not_reviewed": true,
+ "threshold_review_status_explanation": "仍 not_reviewed（两侧一致）。权威封盘 hypotheses.json 根本不含该字段（我实测 8 条全无）⇒ 有效值 = 默认 not_reviewed；本工位新版本显式写 not_reviewed、不升级为 reviewed。四要件 4/4 只解除 A-6.3『缺一即维持 not_reviewed』的强制，不等于状态字段自动升级；升级有三重障碍：(a) 字段落地与校验器改动属 BLOCKED-6c（ACCT L298 归实现者/编排层/schema 侧，派单明令不解除），(b) IND L299 的行业面会签按派单『另议』、本工位不代签，(c) 派单禁止本工位触发任何自动动作，而 reviewed 正是打开 A-6.1 下游触发门的开关。机器证据：BLOCKED6C patched 校验器 threshold_reviewability(H4) 返回 usable=false / reasons=[judgement_not_reviewed]。",
+ "threshold_basis_changed": false,
+ "threshold_review_status_upgraded": false,
+ "decision_sha256": "9d2d38450d8fa8f1423a695628b6fbacf91eecc5b4796d3fa7fb621fd147e1c9",
+ "decision_sha256_preimage_schema": "decision-sha256/v1",
+ "decision_sha256_preimage_composition": "sha256( utf8( json.dumps(pre, sort_keys=True, ensure_ascii=False, separators=(',',':')) ) )",
+ "decision_sha256_before_write": "9d2d38450d8fa8f1423a695628b6fbacf91eecc5b4796d3fa7fb621fd147e1c9",
+ "decision_sha256_after_write": "9d2d38450d8fa8f1423a695628b6fbacf91eecc5b4796d3fa7fb621fd147e1c9",
+ "decision_sha256_two_pass_match": true,
+ "decision_sha256_preimage_bytes": 1472,
+ "decision_sha256_scope": "hypothesis_id = H-CN-ZIJIN-PLAN-04；parameter_id = ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER, ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER（仅登记作用域，不放行）；签署人 = accounting_reviewer_h4（非实现者）",
+ "decision_sha256_location": "hypotheses_h4_v1.json → [3].decision.decision_sha256（同值亦见 [3].threshold_review.signer.decision_sha256 与 h4_four_req.json）",
+ "validator_check": {
+  "discipline": "只调用 validate(hypotheses, source_map, attempt, doc_texts)；不执行 main()；PYTHONDONTWRITEBYTECODE=1 + python -X utf8 -B（脚本经 stdin，零 __pycache__ 落封盘）",
+  "sealed_validator": {
+   "path": "execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py",
+   "sha256": "cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac",
+   "baseline_errors": 0,
+   "hypotheses_h4_v1_errors": 0
+  },
+  "crosscheck_validator": {
+   "path": "execution_runs/BLOCKED6C-THRESHOLD-REVIEW-STATUS/a20260926-01/iso_patched/tools/validate_hypotheses.py",
+   "sha256": "1085368e3d05cf9bda73258764fcae34ae67d0b76960d863d7900c091bdd2429",
+   "baseline_errors": 0,
+   "hypotheses_h4_v1_errors": 0,
+   "threshold_reviewability_H4": {
+    "present": true,
+    "raw": "not_reviewed",
+    "effective": "not_reviewed",
+    "usable": false,
+    "reasons": [
+     "judgement_not_reviewed"
+    ]
+   }
+  },
+  "errors_total": 0
+ },
+ "red_green_mutations": {
+  "overall_rc": 0,
+  "cases": [
+   {
+    "id": "G1_green",
+    "verdict": "4/4",
+    "expect": "4/4",
+    "expect_met": true,
+    "rc": 0,
+    "note": "本工位新版本：四要件齐"
+   },
+   {
+    "id": "B0_baseline_sealed",
+    "verdict": "1/4",
+    "expect": "not 4/4",
+    "expect_met": true,
+    "rc": 0,
+    "note": "封盘原件：无阈值审定记录（应复现 1/4）"
+   },
+   {
+    "id": "M1_missing_req2",
+    "verdict": "3/4",
+    "expect": "not 4/4",
+    "expect_met": true,
+    "rc": 0,
+    "note": "四要件缺一：② 可核基础类目被清空"
+   },
+   {
+    "id": "M2_sha_tampered",
+    "verdict": "3/4",
+    "expect": "not 4/4",
+    "expect_met": true,
+    "rc": 0,
+    "note": "decision_sha256 换值（末位改写）"
+   },
+   {
+    "id": "M3_version_is_old",
+    "verdict": "1/4",
+    "expect": "not 4/4",
+    "expect_met": true,
+    "rc": 0,
+    "note": "新版本改回旧版本字节但谎报 modified_indices=[3]"
+   },
+   {
+    "id": "M4_weaken_R2",
+    "verdict": "weak=4/4 / strict=3/4",
+    "expect": "weak 4/4, strict red",
+    "expect_met": true,
+    "rc": 0,
+    "note": "判据改弱后，只有行业叙述、无四类归类/无 expert_assumption 标注/无敏感性区间的阈值必须能通过"
+   },
+   {
+    "id": "M5_weaken_R3",
+    "verdict": "weak=4/4 / strict=3/4",
+    "expect": "weak 4/4, strict red",
+    "expect_met": true,
+    "rc": 0,
+    "note": "只看 decision_sha256 非空、不复算 preimage ⇒ 任意假 sha 通过；本判据必须拒绝"
+   }
+  ],
+  "execution": "python -X utf8 -B -（脚本经 stdin 内联执行，不落盘）"
+ },
+ "blocked_status": {
+  "BLOCKED-6a": "still_blocked（3 条 pjr 中 H2/H8 未按 A-6.3 签署；H4 这一份额已补齐，不构成 6a 整体解除）",
+  "BLOCKED-6b": "untouched（属 OPEN6B-TOLERANCE-RULING）",
+  "BLOCKED-6c": "untouched（本工位不改任何校验器、不代落地 schema）",
+  "OPEN-6": "untouched（C5 四子项中只做「H4 四要件」）",
+  "OPEN-2/3/5/11": "untouched"
+ },
+ "releases_nothing": true,
+ "releases": {
+  "parameters_released": [],
+  "parameters_still_placeholder": [
+   "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER",
+   "ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER"
+  ],
+  "low_base_high_still_null": true,
+  "threshold_review_status_changed_to_reviewed": false,
+  "blocked_items_released": [],
+  "actions_triggered": [],
+  "falsifier_triggered": false,
+  "scenario_switch_triggered": false,
+  "calibration_boundary_triggered": false,
+  "i11c_countertest_triggered": false,
+  "i11b_acceptance": false,
+  "industry_countersign_signed": false,
+  "statement": "阈值审定 ≠ 参数放行（IND L330 逐字）；本工位放行的东西 = 无。"
+ },
+ "does_not_claim_I11A_acceptance": true,
+ "does_not_claim_I11BAcceptance": true,
+ "written_files": [
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01/oracle.md",
+   "sha256": "5b66584f5b4b89ef5fc8fc2311b32da2e11b606fcdc076ff0c9399912d534f0d",
+   "bytes": 19032,
+   "note": "判据冻结件；冻结后未回改"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01/h4_four_req.json",
+   "sha256": "b11b905d28c389996d15903ee7f7ec1d8654a8c5b82bd19d37d34d4abd64a1ca",
+   "bytes": 13722,
+   "note": "逐要件结论 + 证据 + decision_preimage_canonical + 写入前后两次求值；json.load 重解析通过、UTF-8 无 BOM、LF"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01/hypotheses_h4_v1.json",
+   "sha256": "329a719beb9e6ce2bdecdfdde7c6bc6db9e3e1c7e4f36f7fb982cdf81e109717",
+   "bytes": 54592,
+   "note": "追加式新版本；8 元素数组；仅下标 3 改；json.load 重解析通过、UTF-8 无 BOM、LF（CR=0）"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01/ruling_h4.md",
+   "sha256": "acce9a38be1a98a2b394e44eb14770348bce03fb654476b676245ca1b78cbaef",
+   "bytes": 23957,
+   "note": "四步 + 红绿变异 + 给行业面的会签提请"
+  },
+  {
+   "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6-H4-FOUR-REQ/a20260926-01/handoff.json",
+   "sha256": null,
+   "bytes": null,
+   "note": "本文件自身（自指不可自证）"
+  }
+ ],
+ "written_files_count": 5,
+ "sealed_attempt_integrity": {
+  "hypotheses_json": {
+   "sha256_before": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "sha256_after": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "unchanged": true
+  },
+  "validate_hypotheses_py_sha256": "cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac (unchanged)",
+  "pycache_mtime_unchanged": true,
+  "note": "封盘 tools/__pycache__ 内三个 .pyc 的 LastWriteTime 仍为 2026-09-20，未新增字节"
+ },
+ "git_diff_total": 3830,
+ "git_diff_non_planning": 0,
+ "git_status_used": false,
+ "git_writes": 0,
+ "network_requests": 0,
+ "writes_outside_planning": 0,
+ "version_chain_note": "本版本以封盘原件为 supersedes 基线（派单要求 supersedes_sha256 指向 f2178768…），不携带 hypotheses_v2/v3/v4 的改动（下标 0/1/2 在本分支仍是封盘原字节）；v2/v3/v4 与本分支的裁并归编排层，本工位不做裁并、不回改任何既有版本。",
+ "next_action": "① 行业面（I11A-OPEN-IND）复核并会签 ruling_h4.md §⑧ 五项（口径统一为最高优先）；② 会签后由实现者/schema owner 按 BLOCKED-6c 落地 threshold_review_status 字段与校验器（DEC-14 流程）；③ C5 另两个子项（H2 基准、恒等式容差对照表）分别归行业面与 OPEN6B；④ 编排层裁并 hypotheses 版本链。"
+}

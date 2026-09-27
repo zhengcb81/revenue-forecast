@@ -1,0 +1,133 @@
+﻿...F..F................................................................. [ 12%]
+...................................................F.................... [ 25%]
+........................................................... [ 35%]
+......................................... [ 42%]
+...................................................................... [ 54%]
+..............................................F...F...ssFF.s [ 65%]
+...FF................................................................... [ 78%]
+...............................................................F........ [ 90%]
+........................................F.....F....FF                    [100%]
+================================== FAILURES ===================================
+_ ReceiptAttackTests.test_context_fabrication_is_rejected_by_final_validation _
+tests\adversarial\test_receipt_attacks.py:47: in test_context_fabrication_is_rejected_by_final_validation
+    receipt = build_publication_receipt(
+scripts\revenue_publication.py:396: in build_publication_receipt
+    require(
+scripts\contracts\evidence.py:93: in require
+    raise ForecastInputError(message)
+E   contracts.evidence.ForecastInputError: attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)
+___ AttestationTests.test_configured_provider_means_host_signed_publication ___
+tests\test_attestation.py:72: in test_configured_provider_means_host_signed_publication
+    self.assertTrue(attestation_capability())
+E   AssertionError: False is not true
+________________ test_fc505_chain_exact_hit_zero_side_effects _________________
+tests\test_dropbox_full_chain_fc505.py:132: in test_fc505_chain_exact_hit_zero_side_effects
+    from filing_contracts import validate_handle
+E   ModuleNotFoundError: No module named 'filing_contracts'
+___________________ test_c1_no_orphaned_script_without_main ___________________
+tests\test_zr1102_adversarial_audit.py:83: in test_c1_no_orphaned_script_without_main
+    assert len(files) >= 1, f"{path.name} orphaned (no importer)"
+E   AssertionError: asset_ownership.py orphaned (no importer)
+E   assert 0 >= 1
+E    +  where 0 = len([])
+____________________ test_c4_mutation_patrol_capabilities _____________________
+tests\test_zr1102_adversarial_audit.py:135: in test_c4_mutation_patrol_capabilities
+    results = mp.patrol(seed=42, samples=3)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tools\mutation_patrol.py:153: in patrol
+    mutant = mutate(golden, rng)
+             ^^^^^^^^^^^^^^^^^^^
+tools\mutation_patrol.py:79: in field_delete
+    return _resign(mutant)
+           ^^^^^^^^^^^^^^^
+tools\mutation_patrol.py:48: in _resign
+    result["publication_receipt"] = build_publication_receipt(
+scripts\revenue_publication.py:396: in build_publication_receipt
+    require(
+scripts\contracts\evidence.py:93: in require
+    raise ForecastInputError(message)
+E   contracts.evidence.ForecastInputError: attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)
+____________________ test_c2_processed_reuse_single_flight ____________________
+tests\test_zr1103_journey_reverify.py:101: in test_c2_processed_reuse_single_flight
+    harness = _SpyWiki()
+              ^^^^^^^^^^
+tests\test_ca203_weekly_t3.py:175: in __init__
+    from isolated_wiki import IsolatedWiki
+E   ModuleNotFoundError: No module named 'isolated_wiki'
+__________________ test_c3_three_markets_covered_in_t3_suite __________________
+tests\test_zr1103_journey_reverify.py:131: in test_c3_three_markets_covered_in_t3_suite
+    assert t3.is_file(), "filing-fetch T3 suite missing"
+E   AssertionError: filing-fetch T3 suite missing
+E   assert False
+E    +  where False = is_file()
+E    +    where is_file = WindowsPath('C:/Users/֣����/AppData/Local/Temp/filing-fetch/tests/test_e2e_download.py').is_file
+___________________ test_c1_negative_asset_drivers_rejected ___________________
+tests\test_zr601_asset_facts.py:91: in test_c1_negative_asset_drivers_rejected
+    with pytest.raises(ForecastInputError, match="cannot be negative"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'cannot be negative'
+E     Actual message: 'driver opening_reserves outside permitted bounds [0.0, inf]: opening_reserves_2027_base'
+_________________ test_c1_recovery_rate_out_of_range_rejected _________________
+tests\test_zr601_asset_facts.py:98: in test_c1_recovery_rate_out_of_range_rejected
+    with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'must be between 0 and 1'
+E     Actual message: 'driver recovery_rate outside permitted bounds [0.0, 1.0]: recovery_rate_2027_base'
+_______________ test_c2_accuracy_record_consumed_by_confidence ________________
+tests\test_zr708_backtest_reverify.py:78: in test_c2_accuracy_record_consumed_by_confidence
+    result = run_forecast(data)
+             ^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:445: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:81: in _build_forecast_draft
+    result["confidence"] = calculate_confidence(data, validated, result, sensitivities)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\analysis\confidence.py:151: in calculate_confidence
+    historical_wape, historical_observations = validate_historical_accuracy_records(
+scripts\contracts\document.py:796: in validate_historical_accuracy_records
+    require(origin < available <= cutoff,
+scripts\contracts\evidence.py:93: in require
+    raise ForecastInputError(message)
+E   contracts.evidence.ForecastInputError: historical accuracy future information leak: 451a070b299e074256f0c3c9983dbe8faf92248f2d4b8f23e1c8b25cbf479cf5
+________ test_lock_held_write_transaction_does_not_block_read_journey _________
+tests\test_zr803_chaos_recovery.py:122: in test_lock_held_write_transaction_does_not_block_read_journey
+    assert proc.returncode == 0, proc.stderr[-400:]
+E   AssertionError: {"error_code": "upstream", "error": "filing-fetch client exited 2: {\"error_code\": \"fatal\", \"error\": \"filing-fetch script not found at C:\\\\Users\\\\\u90d1\u66fe\u6ce2\\\\AppData\\\\Local\\\\Temp\\\\filing-fetch\\\\scripts\\\\fetch_filing.py; install the skill or override filing_fetch_root\", \"retryable\": false}"}
+E     
+E   assert 3 == 0
+E    +  where 3 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\֣����\\AppData\\Local\\Temp\\rf-rest-a-iso2\\scrip...\\\\\\scripts\\\\\\\\fetch_filing.py; install the skill or override filing_fetch_root\\", \\"retryable\\": false}"}\n').returncode
+____________ test_case_swapped_project_dir_runs_identical_journey _____________
+tests\test_zr804_platform_shape.py:125: in test_case_swapped_project_dir_runs_identical_journey
+    assert proc.returncode == 0, proc.stderr[-400:]
+E   AssertionError: {"error_code": "upstream", "error": "filing-fetch client exited 2: {\"error_code\": \"fatal\", \"error\": \"filing-fetch script not found at C:\\\\Users\\\\\u90d1\u66fe\u6ce2\\\\AppData\\\\Local\\\\Temp\\\\filing-fetch\\\\scripts\\\\fetch_filing.py; install the skill or override filing_fetch_root\", \"retryable\": false}"}
+E     
+E   assert 3 == 0
+E    +  where 3 = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\֣����\\AppData\\Local\\Temp\\rf-rest-a-iso2\\scrip...\\\\\\scripts\\\\\\\\fetch_filing.py; install the skill or override filing_fetch_root\\", \\"retryable\\": false}"}\n').returncode
+___________ ComplexityRatchetTests.test_frozen_files_do_not_worsen ____________
+tools\tests\test_complexity_ratchet.py:82: in test_frozen_files_do_not_worsen
+    self.assertLessEqual(actual, frozen, f"{rel} max {actual} > {frozen}")
+E   AssertionError: 32 not less than or equal to 23 : analysis/confidence.py max 32 > 23
+______________ ComplexityRatchetTests.test_new_files_stay_simple ______________
+tools\tests\test_complexity_ratchet.py:90: in test_new_files_stay_simple
+    self.assertLessEqual(actual, NEW_FILE_MAX, f"{rel} max {actual} > {NEW_FILE_MAX}")
+E   AssertionError: 27 not less than or equal to 10 : model_extensions.py max 27 > 10
+=========================== short test summary info ===========================
+FAILED tests/adversarial/test_receipt_attacks.py::ReceiptAttackTests::test_context_fabrication_is_rejected_by_final_validation
+FAILED tests/test_attestation.py::AttestationTests::test_configured_provider_means_host_signed_publication
+FAILED tests/test_dropbox_full_chain_fc505.py::test_fc505_chain_exact_hit_zero_side_effects
+FAILED tests/test_zr1102_adversarial_audit.py::test_c1_no_orphaned_script_without_main
+FAILED tests/test_zr1102_adversarial_audit.py::test_c4_mutation_patrol_capabilities
+FAILED tests/test_zr1103_journey_reverify.py::test_c2_processed_reuse_single_flight
+FAILED tests/test_zr1103_journey_reverify.py::test_c3_three_markets_covered_in_t3_suite
+FAILED tests/test_zr601_asset_facts.py::test_c1_negative_asset_drivers_rejected
+FAILED tests/test_zr601_asset_facts.py::test_c1_recovery_rate_out_of_range_rejected
+FAILED tests/test_zr708_backtest_reverify.py::test_c2_accuracy_record_consumed_by_confidence
+FAILED tests/test_zr803_chaos_recovery.py::test_lock_held_write_transaction_does_not_block_read_journey
+FAILED tests/test_zr804_platform_shape.py::test_case_swapped_project_dir_runs_identical_journey
+FAILED tools/tests/test_complexity_ratchet.py::ComplexityRatchetTests::test_frozen_files_do_not_worsen
+FAILED tools/tests/test_complexity_ratchet.py::ComplexityRatchetTests::test_new_files_stay_simple
+14 failed, 554 passed, 3 skipped, 130 subtests passed in 266.01s (0:04:26)
+

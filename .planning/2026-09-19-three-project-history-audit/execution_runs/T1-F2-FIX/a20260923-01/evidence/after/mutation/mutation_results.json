@@ -1,0 +1,152 @@
+{
+  "arms": [
+    {
+      "arm": "MUT-F1",
+      "crash_returned": true,
+      "mutant_sha256": "29b3f70d69867e80e49e6326554f11df56d701c336a82de6863ec6eeb67e8012",
+      "probes": [
+        {
+          "cases_decided": 0,
+          "rc": 4,
+          "report_written": false,
+          "shape": "K1",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"unhashable type: 'list'\"}\n"
+        },
+        {
+          "cases_decided": 0,
+          "rc": 4,
+          "report_written": false,
+          "shape": "K2",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"unhashable type: 'dict'\"}\n"
+        },
+        {
+          "cases_decided": 0,
+          "rc": 4,
+          "report_written": false,
+          "shape": "K3",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"unhashable type: 'list'\"}\n"
+        }
+      ],
+      "reverts": "TRUSTED_CLOCKS tuple -> set"
+    },
+    {
+      "arm": "MUT-F2",
+      "crash_returned": true,
+      "mutant_sha256": "1892e8b5494ec76e16f32da21b3cf4cf4694853b6f2290790b5dc3b3c8fa8403",
+      "probes": [
+        {
+          "cases_decided": 0,
+          "rc": 4,
+          "report_written": false,
+          "shape": "S1",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"'list' object has no attribute 'get'\"}\n"
+        },
+        {
+          "cases_decided": 0,
+          "rc": 4,
+          "report_written": false,
+          "shape": "S3",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"'str' object has no attribute 'get'\"}\n"
+        }
+      ],
+      "reverts": "F-2 carrier guard -> original single line"
+    },
+    {
+      "arm": "MUT-P4",
+      "crash_returned": true,
+      "mutant_sha256": "fba2a2dffc0346ed618d8740885e0d150bbd897d49565dcb6ae888e3c04f481a",
+      "probes": [
+        {
+          "cases_decided": 0,
+          "rc": 4,
+          "report_written": false,
+          "shape": "P4-W2",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"string indices must be integers, not 'str'\"}\n"
+        },
+        {
+          "cases_decided": 0,
+          "rc": 4,
+          "report_written": false,
+          "shape": "P4-S1",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: 'a'\"}\n"
+        },
+        {
+          "cases_decided": 0,
+          "rc": 4,
+          "report_written": false,
+          "shape": "P4-L1",
+          "stdout_head": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"string indices must be integers, not 'str'\"}\n"
+        }
+      ],
+      "reverts": "P4 classify-entry normalisation removed"
+    }
+  ],
+  "attempt_id": "a20260923-01",
+  "baseline_sut_sha256": "064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d",
+  "card": "T1-F2-FIX",
+  "checks": [
+    {
+      "detail": "fixed=1 base=1",
+      "holds": true,
+      "name": "MUT-A1: MUT-7-J7 anchor exactly-once fixed==baseline==1 and identical"
+    },
+    {
+      "detail": "fixed=1 base=1",
+      "holds": true,
+      "name": "MUT-A1: MUT-11-J11 anchor exactly-once fixed==baseline==1 and identical"
+    },
+    {
+      "detail": "fixed=1 base=1",
+      "holds": true,
+      "name": "MUT-A1: MUT-15-J16 anchor exactly-once fixed==baseline==1 and identical"
+    },
+    {
+      "detail": "fixed=1 base=1",
+      "holds": true,
+      "name": "MUT-A1: MUT-16-P2 anchor exactly-once fixed==baseline==1 and identical"
+    },
+    {
+      "detail": "fixed=1 base=1",
+      "holds": true,
+      "name": "MUT-A1: sorted_TRUSTED anchor exactly-once fixed==baseline==1 and identical"
+    },
+    {
+      "detail": "count=1",
+      "holds": true,
+      "name": "MUT-A2: TRUSTED_def exactly-once in FIXED (tuple form)"
+    },
+    {
+      "detail": "fixed=1 base=1",
+      "holds": true,
+      "name": "MUT-A2: BASIS_tuple_def exactly-once in fixed AND baseline (T1-10-FIX prerequisite not reverted)"
+    },
+    {
+      "detail": "count=1",
+      "holds": true,
+      "name": "MUT-A1: baseline still carries the set form of TRUSTED_CLOCKS"
+    },
+    {
+      "detail": "{\"trusted\": 1, \"f2\": 1, \"p4\": 1}",
+      "holds": true,
+      "name": "MUT-A2: fix blocks present exactly-once in fixed SUT"
+    },
+    {
+      "detail": "[{\"shape\": \"K1\", \"rc\": 4, \"report_written\": false, \"cases_decided\": 0, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"unhashable type: 'list'\\\"}\\n\"}, {\"shape\": \"K2\", \"rc\": 4, \"report_written\": false, \"cases_decided\": 0, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"unhashable type: 'dict'\\\"}\\n\"}, {\"shape\": \"K3\", \"rc\": 4, \"report_written\": false, \"cases_decided\": 0, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"unhashable type: 'list'\\\"}\\n\"}]",
+      "holds": true,
+      "name": "MUT-F1: guard reverted -> crash RETURNS on every probed shape (non-vacuous)"
+    },
+    {
+      "detail": "[{\"shape\": \"S1\", \"rc\": 4, \"report_written\": false, \"cases_decided\": 0, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"'list' object has no attribute 'get'\\\"}\\n\"}, {\"shape\": \"S3\", \"rc\": 4, \"report_written\": false, \"cases_decided\": 0, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"'str' object has no attribute 'get'\\\"}\\n\"}]",
+      "holds": true,
+      "name": "MUT-F2: guard reverted -> crash RETURNS on every probed shape (non-vacuous)"
+    },
+    {
+      "detail": "[{\"shape\": \"P4-W2\", \"rc\": 4, \"report_written\": false, \"cases_decided\": 0, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"string indices must be integers, not 'str'\\\"}\\n\"}, {\"shape\": \"P4-S1\", \"rc\": 4, \"report_written\": false, \"cases_decided\": 0, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"Invalid isoformat string: 'a'\\\"}\\n\"}, {\"shape\": \"P4-L1\", \"rc\": 4, \"report_written\": false, \"cases_decided\": 0, \"stdout_head\": \"{\\\"ok\\\": false, \\\"error\\\": \\\"internal_error\\\", \\\"detail\\\": \\\"string indices must be integers, not 'str'\\\"}\\n\"}]",
+      "holds": true,
+      "name": "MUT-P4: guard reverted -> crash RETURNS on every probed shape (non-vacuous)"
+    }
+  ],
+  "failed_checks": [],
+  "fixed_sut_sha256": "9b1ebda2b75c4d1124d0d20a95d7a16cb31b8d9564c1c90da9b4d2d77eaa3ba2",
+  "overall": "PASS"
+}

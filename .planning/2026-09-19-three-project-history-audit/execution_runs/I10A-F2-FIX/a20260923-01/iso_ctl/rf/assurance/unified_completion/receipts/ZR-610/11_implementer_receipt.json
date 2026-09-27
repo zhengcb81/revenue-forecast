@@ -1,0 +1,68 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d86afa5d321ccf2dd3d8c10efb9b81424875abe2",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "5140ceed500dd310d8e92b8165893bc94ff00677234f6fbdef1d8c9bbdc67724",
+  "commands": [
+    {
+      "command": "ADR 文档 adr_mining_accounting.md 编写",
+      "exit_code": 0,
+      "result": "覆盖 8 条会计决策：①逐矿贡献=模型估计（非披露事实）②resource≠reserve 语义隔离 ③basis 元数据三字段（ownership_basis/reporting_standard/measurement_date）④ownership timeline 时点语义+链式权益一次连乘 ⑤单位一致性门（同维度驱动同单位）⑥双 assertion+resolution status 冲突解决 ⑦地区层级声明与检索 ⑧ADR 边界（冻结 vs 移交后续卡）"
+    },
+    {
+      "command": "git diff HEAD --stat（验证无产品代码改动）",
+      "exit_code": 0,
+      "result": "无 scripts/ 或 tests/ 改动——revenue receipts/ZR-610/** 仅 ADR 文档与 receipt"
+    }
+  ],
+  "created_at_utc": "2026-08-22T03:30:00+00:00",
+  "findings": [
+    {
+      "detail": "ADR 文档覆盖 8 条会计决策，无产品代码改动。ADR 核心声明：逐矿贡献是模型估计（非披露事实），模型输出不携带 disclosed 标记。ADR 边界明确：冻结范围为 ZR-601~604 已实现的决策（resource≠reserve/basis/ownership timeline/冲突解决/地区层级/单位一致性），移交范围为 ZR-605~608 的实现（MineYearOperation/商业量价/内部交易/对账）。",
+      "id": "ZR610-IMPL-001",
+      "severity": "info",
+      "title": "ADR 文档冻结（8 条会计决策 + 边界声明）"
+    }
+  ],
+  "implementation": {
+    "design": "ADR 文档（无产品代码改动）：adr_mining_accounting.md 覆盖 8 条会计决策，逐条说明决策、理由、实现（引用 ZR-601~604 的代码位置）与规则。ADR 边界明确：冻结范围 vs 移交后续卡。独立会计 reviewer 待派出。",
+    "files": [
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-610/adr_mining_accounting.md",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-610/**"
+    ]
+  },
+  "implementer": "zr610-implementer",
+  "kind": "implementer",
+  "notes": [
+    "无产品代码改动——result_triplet.revenue 与 base_triplet.revenue 相同（无新 commit）。",
+    "ADR 文档 SHA-256：6c608c6a8c149e1c…（完整见 receipt-sign 输出）。",
+    "卡片 hash 冻结：plan_sha256=2fbee3c6（00_wu_card.md，hashlib 注入）。",
+    "独立会计 reviewer 待派出（reviewer-zr610-accounting-independent）。",
+    "注：base_triplet.revenue=d86afa5 为 ZR-603 closure commit（ZR-604 closure commit 后台运行中，若先落地则 base_triplet 更新）。"
+  ],
+  "objective": "F2 会计 ADR 冻结：将 ZR-601~604 的设计决策固化为会计 ADR，明确逐矿贡献是模型估计（非披露事实），为 ZR-605~611 提供冻结的会计框架。",
+  "plan_sha256": "2fbee3c69a302f7e2889cb5094052a1c33bd64696f01fbd73ebf6e9c9a1566c0",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d86afa5d321ccf2dd3d8c10efb9b81424875abe2",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：无产品代码改动；revenue 侧 receipts/ZR-610/adr_mining_accounting.md（ADR 文档）+ receipt。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-610/**"
+  ],
+  "unit": "ZR-610"
+}

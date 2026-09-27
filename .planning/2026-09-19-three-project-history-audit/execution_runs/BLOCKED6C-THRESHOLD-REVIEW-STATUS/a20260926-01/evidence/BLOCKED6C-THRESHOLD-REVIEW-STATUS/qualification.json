@@ -1,0 +1,360 @@
+{
+  "card_id": "BLOCKED6C-THRESHOLD-REVIEW-STATUS",
+  "attempt_id": "a20260926-01",
+  "revision": "r1",
+  "record_kind": "carrier-landing qualification record for the independent reviewer's already-written verdict",
+  "formula": "not_applicable_with_reason",
+  "formula_reason": "本卡是纯簿记落定（把独立复审已写下的 VERDICT: ACCEPT 转录进卡载体），不产生任何预测/公式结果；且 granted_scope 严格限于 iso 改动 + changes.diff 的证据与判据，既不改公式、也不认证任何公式输出 —— 故 formula 不适用，并在此写明原因而非留空。",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "status": "accepted_scoped",
+  "status_before": "review_pending",
+  "status_transition": "review_pending -> accepted_scoped",
+  "status_scope": "范围严格限于 iso 改动 + changes.diff（accepted_scoped，非 clean accept；带 2×P2 + 3×P3）",
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "authority": "裁决由独立复审工位写在 reviewer_report.md L3（字节区 [77,92)，15 B，与实现者非同一人）；本文件与 review.md 只转录，不新增任何接受结论",
+    "landing_agent": "carrier-landing bookkeeping executor（父派委派的簿记落定子代理）—— 只做簿记转录，不产生新裁决、不自签",
+    "verdict_word_written_by_reviewer": "ACCEPT",
+    "verdict_line_text_as_written_by_reviewer": "VERDICT: ACCEPT",
+    "verdict_line": 3,
+    "count_line": 286,
+    "count_line_text": "**P1 = 0 ⇒ `VERDICT: ACCEPT`（可带 P2/P3）。**"
+  },
+  "carrier": {
+    "file": "reviewer_report.md",
+    "path_inside_attempt": "reviewer_report.md",
+    "sha256_recomputed_at_landing": "442577484e7b32bd1af18df872568afa1f645a46f335159e843523a4db9a3ff9",
+    "three_way_consistency": "自算 sha256 == reviewer_report.sha256 侧车内容 == 派单给定 442577484e7b32bd…，三方一致",
+    "bytes": 33083,
+    "total_lines": 375,
+    "encoding": "UTF-8 without BOM；仅 LF 行尾（CR=0、LF=375）；单个结尾 LF",
+    "verdict_line_range_inclusive_1_based": [
+      3,
+      3
+    ],
+    "verdict_line_byte_region": {
+      "start": 77,
+      "end_inclusive": 91,
+      "end_exclusive": 92,
+      "length": 15,
+      "sha256": "f422a3f09f3f34867781b3d435ff517074b87f9ef6852bd7732ef50f8b95d1e7",
+      "decoded_utf8": "VERDICT: ACCEPT"
+    },
+    "count_line_byte_region": {
+      "start": 25114,
+      "end_inclusive": 25166,
+      "length": 53,
+      "sha256": "ad6a0d132e20e1ae77679464f169ab48eb8dcaaca2d3b9a63e61034054956d7c"
+    },
+    "region_definition": "0-based 字节偏移，针对记录 sha256 时的文件字节；区域长度不含行尾 LF",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "present": true,
+      "bytes": 85,
+      "sha256": "c3349767b342b580d9585e91802083f5992bb80d6eaf20c14f1a08071fa8e042",
+      "content": "442577484e7b32bd1af18df872568afa1f645a46f335159e843523a4db9a3ff9  reviewer_report.md",
+      "verified": "侧车内容与落定时独立重算的 reviewer_report.md sha256 一致（三方一致）；本 pass 写 0 字节"
+    },
+    "read_only_by_this_pass": "本落定工位对 reviewer_report.md 与 reviewer_report.sha256 的写入字节数 = 0",
+    "landing_file": {
+      "file": "review.md",
+      "pre_image": "落定前 Test-Path 断言 = False（本 attempt 内原先不存在 review.md，无实现者存根需保留）⇒ 新建"
+    }
+  },
+  "pre_image": {
+    "file": "handoff.json",
+    "description": "本次状态面转录之前的 handoff.json（实现者写就：status=review_pending、无 status_authority、implementer_signed=false）",
+    "sha256": "88c39b95e0afa99f68f50ca7108cfe5774b8160e11cf5c7860299f38c67785a0",
+    "bytes": 30842,
+    "recomputed_by": "落定工位写入前自算（SHA256 流式自算，非抄派单给定值）"
+  },
+  "post_image": {
+    "file": "handoff.json",
+    "sha256": "9cca874fb8ab743a8f810524a4a941bd65c9128ca086c9983100511af661e5e0",
+    "bytes": 48744,
+    "review_md_sha256": "43143814afbe1c90e14cb38e93db7af83d8fcbce209b2924f80b1c01252dce6c",
+    "review_md_bytes": 33100
+  },
+  "scope": {
+    "scoped": true,
+    "granted_scope": [
+      "iso 改动的证据与判据：iso/tools/validate_hypotheses.py（前像 28,549 B / cb49360d15bc044d…，与封盘 I-11-A 校验器逐字节相同）→ iso_patched/tools/validate_hypotheses.py（后像 39,435 B / 1085368e3d05cf9b…），新增 B6C-SCHEMA / B6C-HELPERS / B6C-G1..G4 判据",
+      "changes.diff 的证据与判据：15,892 B / sha256 b2ec16ffe1e8f32b01831eb2941e7c99347ac8379ccc3d6a208c9e55a58ef21a / 恰 1 个文件 / +207 −0 / 7 hunks 纯新增（复审独立重算字节相同）",
+      "与上述改动直接对应的红判据（CE-22..CE-25 在前像上 4/4 放行、rc=1）、绿判据（正例 pass、CE 4/4 拒、25/25、原 21 例回归 21/21 未破）、5 条变异 M1–M5 逐条 rc=1 按预登记翻红",
+      "L271 双读法量化证据（记录级 N=40/U=14、去重级 N=8/U=4、T1/T2/T3 在 U-PRIMARY 下全不命中 ⇒ trigger_fired=false）",
+      "独立复审对上述证据已写下的 VERDICT: ACCEPT（P1 = 0，带 2×P2 + 3×P3）本身"
+    ],
+    "not_granted": [
+      "阈值审定签署 / 3 签名路径 —— 本复审不授予任何审定签署（复审 §7-8），reviewed 语义的后续使用仍须按 A-6.3 逐条取证",
+      "BLOCKED-6a（3 条判断类阈值数值）解除 —— 仍 still_blocked",
+      "BLOCKED-6b（4 条容差）解除 —— 仍 still_blocked",
+      "BLOCKED-6c / OPEN-12 的任何状态变更",
+      "OPEN-6 解除",
+      "放行任何参数 —— low/base/high 仍 null",
+      "改 threshold_basis 或任何阈值值",
+      "封盘 I-11-A/a20260919-01 任何字节，以及两半区裁定 / 容差裁定任何字节",
+      "I-11-B 的 ACCEPT",
+      "I-11-C 的 ACCEPT",
+      "晋升（promotion）",
+      "产品仓任何字节（.planning 之外的 src/ scripts/ 产品 tools/ 一律未写）",
+      "字面读法下的 blocked 改判 —— 须 owner 明文采字面读法才触发；本落定不改判",
+      "五份计划文件的任何改动",
+      "clean（无条件）接受 —— 本接受是 scoped，不是 clean"
+    ]
+  },
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "carrier_path_inside_attempt": "reviewer_report.md",
+    "carrier_bytes": 33083,
+    "carrier_sha256": "442577484e7b32bd1af18df872568afa1f645a46f335159e843523a4db9a3ff9",
+    "carrier_sha256_prefix16": "442577484e7b32bd",
+    "carrier_total_lines": 375,
+    "carrier_encoding": "UTF-8 无 BOM（BOM=False）；仅 LF 行尾（CR=0，LF=375）",
+    "carrier_encoding_flags": {
+      "bom": false,
+      "cr_count": 0,
+      "lf_count": 375,
+      "utf8_valid": true
+    },
+    "three_way_consistency": "落定工位自算 sha256 == reviewer_report.sha256 侧车内容 == 派单给定 442577484e7b32bd…，三方一致",
+    "three_way_match": true,
+    "verdict_word_written_by_reviewer": "ACCEPT",
+    "verdict_line_text_as_written_by_reviewer": "VERDICT: ACCEPT",
+    "verdict_line": 3,
+    "verdict_line_range_inclusive_1_based": [
+      3,
+      3
+    ],
+    "verdict_line_byte_region": {
+      "start": 77,
+      "end_inclusive": 91,
+      "end_exclusive": 92,
+      "length": 15,
+      "sha256": "f422a3f09f3f34867781b3d435ff517074b87f9ef6852bd7732ef50f8b95d1e7",
+      "decoded_utf8": "VERDICT: ACCEPT"
+    },
+    "verdict_line_located_by": "本落定工位自行定位（读原始字节 → UTF-8 解码 → 按 LF 切行 → 子串索引 → 回算 0-based 字节前缀和）；行号与字节区均为自算，未采信派单文本",
+    "verdict_line_unique": true,
+    "verdict_line_other_occurrences_note": "全文 `VERDICT` 出现 3 次、`ACCEPT` 出现 6 次，均在正文内被引用；独立成行且唯一承载裁决词的行 = L3",
+    "count_line": 286,
+    "count_line_text": "**P1 = 0 ⇒ `VERDICT: ACCEPT`（可带 P2/P3）。**",
+    "count_line_byte_region": {
+      "start": 25114,
+      "end_inclusive": 25166,
+      "length": 53,
+      "sha256": "ad6a0d132e20e1ae77679464f169ab48eb8dcaaca2d3b9a63e61034054956d7c"
+    },
+    "verdict_written_by": "独立复审工位（reviewer_report.md 的作者；与实现者非同一人；实现者未自签）",
+    "verdict_is_transcribed_not_authored": true,
+    "implementer_signed": false,
+    "transcribed_by": "carrier-landing bookkeeping executor（父派委派的簿记落定子代理）—— 只做簿记转录，不产生新裁决、不自签",
+    "scope": "accepted_scoped —— 接受范围**严格限于 iso 改动 + changes.diff** 的证据与判据；非 clean accept（带 2×P2 + 3×P3）",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "present": true,
+      "bytes": 85,
+      "sha256": "c3349767b342b580d9585e91802083f5992bb80d6eaf20c14f1a08071fa8e042",
+      "content": "442577484e7b32bd1af18df872568afa1f645a46f335159e843523a4db9a3ff9  reviewer_report.md",
+      "three_way_match": true,
+      "verified": "侧车内容与落定时独立重算的 reviewer_report.md sha256 逐字节相同；本 pass 对侧车写入 0 字节"
+    },
+    "read_only_by_this_pass": "本落定工位对 reviewer_report.md 与 reviewer_report.sha256 的写入字节数 = 0",
+    "unverified_source": "reviewer_report.md §7（L323–L340）9 条逐字转录进 handoff.unverified；实现者原 9 条逐字保存在 evidence/BLOCKED6C-THRESHOLD-REVIEW-STATUS/qualification.json 的 unverified_implementer_pre_review，披露不丢失",
+    "landing_file": {
+      "file": "review.md",
+      "pre_image": "落定前 Test-Path 断言 = False（本 attempt 内原先不存在 review.md，无实现者存根需保留）⇒ 新建"
+    },
+    "section_line_ranges_inclusive_1_based": {
+      "verdict_line": [
+        3,
+        3
+      ],
+      "count_line": [
+        286,
+        286
+      ],
+      "dual_reading_ruling_and_L271_section": [
+        198,
+        250
+      ],
+      "L17_section": [
+        254,
+        266
+      ],
+      "not_recommended_section": [
+        270,
+        280
+      ],
+      "findings_P1_P2_P3": [
+        284,
+        319
+      ],
+      "unverified_section": [
+        323,
+        340
+      ]
+    }
+  },
+  "carried_findings": [
+    {
+      "level": "P2",
+      "id": "P2-1",
+      "source_section": "reviewer_report.md §6（L290–L298）",
+      "finding_verbatim": "- **P2-1｜冻结手算 `24` vs 实测 `28` 未记 `erratum`，且 `handoff` 声称「全部匹配」。**\n  `oracle §6.3` 的 T3 括注逐字「*手算预期*：2、1 ⇒ 不命中（**U-LITERAL：24、5** ⇒ 命中）」，\n  而 `U_newly_literal` 实测 = **28**（记录级）/ 5（去重级）。`24` 恰等于 §6.2 自己的「24 条 arithmetic」，\n  漏算了 4 条 `disclosure_definition` ⇒ **属 oracle 内部算术笔误**（§6.2 的 `A-6.2 判可用 = 28` 本身是对的、我实测也是 28）。\n  `oracle §6.2/§9` 规定「实测与本表不符 ⇒ 按 `erratum-*` 记录，不回改本表」，\n  而 `handoff.L271.matches_oracle_frozen_hand_calculation = true`、step 2 detail 更写\n  「**no erratum needed because every measured number matched the frozen hand calculation**」—— **该句对 24/28 这一点不成立**。\n  **影响**：`28 ≥ 14` 与 `24 ≥ 14` 同为命中，**T3-literal 结论、U-PRIMARY 全部数字、最终 verdict 均不受影响**；\n  纯属**披露/计数纪律**问题 ⇒ **P2，不升 P1**。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P2",
+      "id": "P2-2",
+      "source_section": "reviewer_report.md §6（L299–L305）",
+      "finding_verbatim": "- **P2-2｜同一份机器报告里并存两条互相矛盾的读法，且未标注哪条对 `usable` 生效。**\n  `green/validation_report.json` 的 `threshold_reviewability.rule` 写 U-PRIMARY（`not_reviewed` 的 arithmetic/disclosure **usable=true**），\n  而紧邻的 `threshold_review_status_schema.fail_closed` 逐字写\n  「`threshold_review_status` absent **or not_reviewed** ⇒ **the threshold does not participate in any judgement**」（= 字面 A-6.1）。\n  对同 26 条记录，一个说「可用」、一个说「不参与任何判定」，**下游 I-11-B「阈值门」/ I-11-C 无法从报告本身判断以谁为准**。\n  **方向是 fail-safe 的**（字面串只会导致更保守），且本复审已在 §3 裁定 U-PRIMARY 生效 ⇒ **P2 不升 P1**；\n  建议补一行 `reading: \"U-PRIMARY governs usable; the fail_closed string is the verbatim A-6.1 item-1 source text (literal reading, counterfactual)\"`。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P3",
+      "id": "P3-1",
+      "source_section": "reviewer_report.md §6（L309–L310）",
+      "finding_verbatim": "- **P3-1｜补丁内引用路径笔误**：`changes.diff` L24（= `iso_patched` 内 `B6C-SCHEMA` 注释）写\n  `ruling execution_runs/I11A-OPEN-ACCT/a20260924-01.md L226`，正确应为 `.../a20260924-01/ruling.md`。仅注释，不影响判定。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P3",
+      "id": "P3-2",
+      "source_section": "reviewer_report.md §6（L311–L312）",
+      "finding_verbatim": "- **P3-2｜报告键名与冻结措辞有出入**：`oracle §3.1` 冻结「报告写 `defaulted=true` + **`carried=false`**」；\n  实现落的是 `defaulted` + **`threshold_review_status_present`**（语义等价，但无字面 `carried` 键）。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    },
+    {
+      "level": "P3",
+      "id": "P3-3",
+      "source_section": "reviewer_report.md §6（L313–L315）",
+      "finding_verbatim": "- **P3-3｜M4/M5 是「判定级」而非「整标记块级」变异**（保留共享 `_trs_*` 赋值以免 `NameError`）——\n  实现者已在 `handoff.unverified` 第 3 条与 `make_mutants.py` 内如实披露；我复核其源码后认为**该保留在方法上正当**\n  （删整块会崩溃、不构成判别力证据），**不扣分**，仅登记。",
+      "landing_state": "carried（未销项；本落定只转录，不改级、不处置、不销项）"
+    }
+  ],
+  "reviewer_resolved_items": [
+    {
+      "item": 1,
+      "topic": "⭐ 双读法裁定 = 采 `U-PRIMARY`（主读法）",
+      "source_section": "reviewer_report.md §3.1–§3.2（L198–L228）",
+      "ruling_verbatim": "> **我裁定采用 `U-PRIMARY`（oracle §3.3 冻结的主读法）作为判定本卡 J4 / `L271` 触发线的唯一读法。**\n> 依据 U-PRIMARY：`T1/T2/T3` **全部不命中** ⇒ `trigger_fired = false` ⇒ **fail-closed 第 1 条未触发 ⇒ 不判 `blocked`**。\n> `U-LITERAL` 的量化（40/40、8/8、三线全中）**照实保留**为反事实披露，**不作判据**。\n> **若采字面读法 ⇒ 三线全中 ⇒ 按本卡冻结的 `J4` 应判 `blocked`。** 故本裁定是决定性的，我明确落笔、不回避。",
+      "basis_count": 4,
+      "basis_labels": [
+        "L226 禁令自带范围",
+        "A-6.1 小节标题是「占位阈值」使用禁令",
+        "字面读法会让 A-6.2 成死条文",
+        "L271 自己把「实施方式」与「实质」切开"
+      ],
+      "basis_verbatim": [
+        "**正证 1 —— 裁定主体的禁令子句自带范围。** ruling **L226** 是 OPEN-6 的「裁定（一句话）」，其禁令原文是\n「`threshold_basis=professional_judgement_required` **且** `threshold_review_status≠reviewed` 的阈值**不得触发任何自动动作**」。\n字面读法把范围词 `professional_judgement_required` 删掉，等于**改写了裁定主体的量词**。",
+        "**正证 2 —— A-6.1 的小节标题即范围。** L228 逐字「裁定 A-6.1：**占位阈值**在审定前的使用禁令」；\n`decision.md DEC-6` L156–157 把**占位阈值**定义为 `threshold_basis = \"professional_judgement_required\"` 的那一类。\nA-6.1 第 1 条是**该小节下的第 1 条**，其「二者缺一或 `not_reviewed` ⇒ fail-closed」按标题与 DEC-6 只辖占位阈值。",
+        "**正证 3 —— 字面读法会让同一条裁定的 A-6.2 成为死条文。** L236–L242 的 A-6.2 表有一列**列名就叫「审定前可否使用」**，\n逐字给 `arithmetic_identity = 可用（等式判定）`、`disclosure_definition = 可用（是/否型判定）`、\n`professional_judgement_required = 不可用`。\n而**盘上 40 条记录 0 条携带该字段**（我已实测）⇒ 全部落默认 `not_reviewed` ⇒ 字面读法下 **40/40 全不可用**，\nA-6.2 那两行「可用」**永远不可能成立**、`DEC-6` 的「两类阈值」之分也随之塌缩。\n**一条裁定不会在同一节里既说「审定前可用」又说「只要没审定就一律不可用」** ⇒ 字面读法与 A-6.2 冲突，须让位于明确列举的表格。",
+        "**正证 4 —— L271 自己把「实质」与「实施方式」切开了。** L271 逐字：「⇒ A-6.1 的**实施方式**（追加字段 + 默认 `not_reviewed`）\n**需按实际情况重议**，但**『未审定不得当已审定』这一实质不因此改变**。」\n即：**大批判不可用 ⇒ 触发的是「重议实施方式」这个 owner 动作，不是「实现者的实现错了」**。\n字面读法**恰恰会让该反例在字段落地的第一天就必然成立**（40/40 ⇒ 三线全中），\n这说明字面读法不是裁定者想要的操作化方式 —— 否则他不会把它写成「什么会推翻本裁定」里的一条。"
+      ]
+    },
+    {
+      "item": 2,
+      "topic": "⭐ `L271` 段落位置的影响",
+      "source_section": "reviewer_report.md §3.2 段落位置证 1/2（L230–L239）",
+      "basis_verbatim": [
+        "**段落位置证 1 —— L271 在 `#### 反例（什么会推翻本裁定）` 之下（该段首行 = L268，L271 是其第 2 条）。**\n反例段的语义是「**若出现该现象，则本裁定的实施方式需重议**」——它是一个**带后果的触发器**，\n**不是**「落地前必须先满足的前置条件」。登记册 §一四三 B.2 已明确记载父曾把它误读成前置条件并自纠\n（逐字「**把反例当成了前置条件，属误读**」，L3557 再记一次）。**本次复审确认该自纠正确。**",
+        "**段落位置证 2 —— 位置差异改变了 `trigger_fired=true` 的读法。**\n若 L271 是前置条件 ⇒ 触发 ⇒ 「实现者不该动手」⇒ 卡本身有问题。\n若 L271 是反例（实际位置）⇒ 触发 ⇒ 「**ruling owner 要重议 A-6.1 的实施方式**」，**实质（未审定不得当已审定）继续有效**，\n实现者**把该触发如实量化并上交裁定**（而不是自行判死或自行放行）**恰恰是正确处置**。\n实现者在 `oracle §3.3` 明写「**此分歧由复审裁定，不由我静默选边**」，并在 `handoff.unverified` 第 2 条再次披露 —— **不静默选边成立**。"
+      ],
+      "conclusion": "L271 在 `#### 反例（什么会推翻本裁定）`（段首 L268）之下 ⇒ **带后果的触发器，不是前置条件**；复审确认登记册 §143-B.2 的自纠正确；实现者「不静默选边」成立"
+    },
+    {
+      "item": 3,
+      "topic": "⭐ 显式反面登记",
+      "source_section": "reviewer_report.md §3.1 L205 / §3.3-4 L249–L250 / §5 L270–L280",
+      "verbatim_reverse_verdict": "> **若采字面读法 ⇒ 三线全中 ⇒ 按本卡冻结的 `J4` 应判 `blocked`。** 故本裁定是决定性的，我明确落笔、不回避。",
+      "verbatim_no_reversal": "**不建议。** 两道 fail-closed 的实测状态：\n\n| fail-closed | 条件（oracle 冻结） | 我的实测 | 后果 |\n|---|---|---|---|\n| 第 1 条 | 任一 `L271` 触发线在 **U-PRIMARY** 下命中 | **T1 不命中 / T2 记录 14<30、去重 4<6 不命中 / T3 记录 2<14、去重 1<2.5 不命中** ⇒ `trigger_fired=false` | **未触发** |\n| 第 2 条 | 原 21 例在**未变异补丁版**上任一回归 | **21/21 仍拒、`accepted_ids=[]`** | **未触发** |\n\n⇒ 按我裁定的 U-PRIMARY，**两道均未触发 ⇒ 不判 `blocked`**，本卡 `status=review_pending` + `implementer_signed=false`\n的交付形态**成立**。（**若采字面读法则必须 `blocked`** —— 见 §3.1/§3.3-4，我已显式登记，不留给下一位猜。）",
+      "verbatim_owner_trigger": "4. **若日后 owner 明文采字面读法** ⇒ 按本卡冻结 `J4` 三线全中 ⇒ 本卡应改判 `blocked` 并按 L271 重议实施方式；\n   该情形**由我显式登记在此**，不由实现者承担。"
+    },
+    {
+      "item": 4,
+      "topic": "`L17 scope` 裁定 = 不适用（oracle §0.1 明令由复审行使）",
+      "source_section": "reviewer_report.md §4（L254–L266）",
+      "verbatim_l17_text": "**L17 逐字（我独立回源读到）**：「凡跨项目公共schema、canonical writer、registry或worker API，只有指定owner写；\n发现scope外必要改动先记录阻断并交owner补卡，不能为绿灯建立平行框架。」",
+      "verbatim_ruling_and_basis": "**我的裁定：L17 不适用（同意实现者 §0.1 的判断，理由为我自读原文后独立得出）**：\n1. L17 的四类辖域是**跨项目公共**件；被改对象是 `execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py`，\n   落在 `.planning` 内、**非产品仓**（`src/`/`scripts/`/产品 `tools/` 计 0 文件，我复核 diff 头与 `git diff` 均一致）；\n2. 该文件目前是 `I-11-A` **自己**的校验器；`I-11-C 是否复用同一校验器` 属 `OPEN-12`（owner 已裁「另立校验器专业卡」），\n   **跨项目复用尚未发生**，故尚不存在「公共 API 由非 owner 改写」的事实；\n3. 本补丁**不建平行框架**：新错误码、新报告块全部进**同一支**校验器与**同一份** `validation_report.json`；\n4. 附**前置提醒（P3 级）**：一旦 `OPEN-12` 卡裁 `I-11-C` 复用本校验器，`B6C-G1..G4` 与三新错误码须按\n   `A-6.3 第 5 条 / DEC-14 L364` 跨卡同步，**那时 L17 才可能被触发**；届时由 schema owner 收口。",
+      "carry_forward": "前置提醒（P3 级）：一旦 `OPEN-12` 裁 `I-11-C` 复用本校验器，须按 A-6.3 第 5 条 / DEC-14 L364 跨卡同步，**那时 L17 才可能被触发**；届时由 schema owner 收口"
+    }
+  ],
+  "unverified": {
+    "source": "reviewer_report.md §7（L323–L340），9 条逐字",
+    "count": 9,
+    "items": [
+      "1. **21,908 文件的全盘 JSON 扫描未复跑**（oracle §6.1 冻结时做过）。我只复核了**冻结的 6 份语料**\n   （sha 全等 + 记录数 8/8/8/8/4/4 + 分 basis 24/4/12 + 0 字段携带）。\n   ⇒ 「盘上没有第 7 份阈值记录文件」这一断言**未独立复验**。",
+      "2. **`T1` 是「可用阈值探针」，不是真的 I-11-C 启动**：真实 I-11-C 代码是否能开机**未测**（超出本卡范围，实现者已披露）。",
+      "3. **`A-6.3` 的四要素是否满足**（观测量可复算 / 可核基础 / 非实现者签署 / 追加式版本化）**与本卡无关、我未审**：\n   `BLOCKED-6a`（3 条判断类阈值数值）、`BLOCKED-6b`（4 条容差）**仍 `still_blocked`**，本报告**不解锁、不代签**。",
+      "4. **实现者未跑任何产品仓测试套件 / CI / lint**（超范围，已披露）；我同样未跑 —— 因为本卡**零产品写**。",
+      "5. **`red/` 下的日志与报告带 CRLF**（Windows 控制台 / 校验器写出），实现者已披露并将 `green/` 归一为 LF；\n   我核的是**内容全等**而非行尾。",
+      "6. **`handoff.continuation.previous_patch_sha_not_recoverable`**（36,030 B 的中间态补丁无 sha 可回填）——\n   属系统事件遗留，**我无法验证也未试图恢复**；本 attempt 的**后像**已由 `1085368e3d05cf9b…` 锁定。",
+      "7. **`I-11-C` 是否复用同一校验器** 未裁（`OPEN-12` 另立专业卡，owner 已答「是」）。",
+      "8. **3 签名阈值审定路径**：本复审**不授予任何审定签署**，`reviewed` 语义的后续使用仍须按 A-6.3 逐条取证。",
+      "9. **`red/` 由「上一位 worker」与「续跑 worker」两段完成**：前者的 rc 从未落盘、\n   `rc=0` 来自续跑重跑（`red/baseline_recheck_report.json` 与前件 sha 相同 `adcade2f…`）——\n   我的独立重跑给出**同样的 0**，但**无法回溯上一位当时的真实 rc**。"
+    ]
+  },
+  "unverified_implementer_pre_review": {
+    "count": 9,
+    "note": "实现者原 handoff.unverified 的 9 条逐字留存于此（本落定把 handoff.unverified 换成复审 §7 的 9 条；实现者的第 1、2 条已由复审裁定解决，其余 7 条均被复审 §7 覆盖），披露不丢失",
+    "items": [
+      "No independent review has happened; implementer_signed=false and this card does not sign for anyone.",
+      "The U-PRIMARY vs U-LITERAL reading split is NOT settled by this card: under the A-6.1 item-1 literal reading every one of the 40 records is unusable and all three trigger lines fire, which would make this card blocked. Oracle 3.3 pre-registers that the split is for the reviewer to rule on; both numbers are disclosed here.",
+      "Mutations M4/M5 delete the judgement `if` block but keep the shared `_trs_*` tuple assignment; deleting the whole marker block would raise NameError instead of flipping the judgement, so that is not a faithful mutation. Disclosed in tools/make_mutants.py.",
+      "The previous worker's red baseline rc was never recorded on disk; rc=0 comes from this continuation's re-run (red/baseline_recheck_report.json, byte-identical to the previous worker's report).",
+      "L271 was quantified on the 6 corpus files frozen in oracle section 6 (sha256 all re-verified); the 21908-file sweep done while freezing was not repeated.",
+      "T1 is a usable-threshold probe, not an actual I-11-C boot: whether the real I-11-C code starts was not tested (out of scope).",
+      "The B6C-G4 report block was added by THIS continuation; the intermediate 36030 B patch state left by the previous worker has no recorded sha256 and is not recoverable.",
+      "red/ logs and reports carry CRLF line endings (Windows console / validator writer); green/validation_report.json and green/validation_run.log were normalised to LF after writing, content unchanged. changes.diff and handoff.json are LF, UTF-8, no BOM.",
+      "Only this card's own validator copy was exercised; no product-repo test suite, CI or lint was run (out of scope)."
+    ]
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-26",
+    "what_this_pass_did": "把独立复审已写在 reviewer_report.md L3（字节区 [77,92)）的 VERDICT: ACCEPT 转录进卡载体：状态面 review_pending -> accepted_scoped；新建 review.md 与本 qualification 记录；登记 status_authority / carried_findings / reviewer_resolved_items / unverified / pre_image",
+    "files_written": [
+      "handoff.json（仅状态面 + 追加转录键；非状态面键深比对全等）",
+      "review.md（新建；落定前 Test-Path = False）",
+      "evidence/BLOCKED6C-THRESHOLD-REVIEW-STATUS/qualification.json（新建目录 + 新建文件）"
+    ],
+    "files_read_only": [
+      "reviewer_report.md",
+      "reviewer_report.sha256",
+      "oracle.md",
+      "changes.diff",
+      "final_verification.json",
+      "iso/",
+      "iso_patched/",
+      "tools/",
+      "red/",
+      "green/",
+      "mut/",
+      "l271/",
+      "五份计划文件",
+      ".planning 之外的产品仓"
+    ],
+    "reviewer_report_md_bytes_written": 0,
+    "reviewer_sidecar_bytes_written": 0,
+    "existing_attempt_artifacts_bytes_written": 0,
+    "product_repo_bytes_written": 0,
+    "git_writes": 0,
+    "git_status_used": false,
+    "network_used": false,
+    "tests_run": false,
+    "promotion_performed": false,
+    "blocked_resolved": [],
+    "implementer_signed": false,
+    "verdict_is_transcribed_not_authored": true,
+    "carried_findings_count": 5,
+    "reviewer_resolved_items_count": 4,
+    "unverified_reviewer_count": 9,
+    "unverified_implementer_count": 9,
+    "git_diff_HEAD_name_only_non_planning": 0,
+    "git_diff_HEAD_name_only_total": 3830,
+    "recorded_at_utc": "2026-09-26T10:22:59Z"
+  },
+  "note": "由簿记落定工位创建。formula = not_applicable_with_reason（本卡不产生任何公式/预测结果，理由写在 formula_reason）；disclosure_adaptation 仍为 unmapped、accuracy 仍为 unproven，本落定不触碰二者。裁决只存在于 reviewer_report.md（sha256 442577484e7b32bd…、33,083 B、375 行、由独立复审工位写在 L3），本文件与 review.md 只转录，不新增任何接受。接受是 SCOPED：范围严格限于 iso 改动 + changes.diff，带 2×P2 + 3×P3。"
+}

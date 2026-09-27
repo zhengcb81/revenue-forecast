@@ -1,0 +1,82 @@
+﻿{
+  "label": "mutA_rule",
+  "entries": 113,
+  "credential_leaks": [
+    "cred-digit-password2",
+    "cred-digit-api-key2"
+  ],
+  "credential_secret_leaks": [
+    "open-two-token-then-wrap",
+    "open-quoted-two-token",
+    "open-line3-bare-credential",
+    "open-prebreak-cr",
+    "open-prebreak-vtab",
+    "open-prebreak-ff",
+    "cred-digit-token2-pair",
+    "cred-digit-secret2",
+    "cred-digit-env-secret2"
+  ],
+  "touched_but_should_not_be": [],
+  "residuals_with_marker_surviving": [
+    "res-digest",
+    "res-flag",
+    "res-json-quoted"
+  ],
+  "residual_rows": [
+    "res-digest",
+    "res-flag",
+    "res-json-quoted",
+    "res-partial-multiword-secret"
+  ],
+  "over_redaction_rows": [
+    "over-auth-scheme-then-key",
+    "over-auth-scheme-then-reqid",
+    "over-auth-scheme-then-stage",
+    "over-auth-token-then-keys",
+    "over-auth-crlf-then-key",
+    "over-auth-obsfold-then-key",
+    "over-proxy-auth-then-key",
+    "over-auth-scheme-then-marker",
+    "over-auth-generic-then-key",
+    "over-auth-break-comma-then-key",
+    "over-auth-break-dquote-then-key"
+  ],
+  "over_redaction_touched": [
+    "over-auth-scheme-then-key",
+    "over-auth-scheme-then-reqid",
+    "over-auth-scheme-then-stage",
+    "over-auth-token-then-keys",
+    "over-auth-crlf-then-key",
+    "over-auth-obsfold-then-key",
+    "over-proxy-auth-then-key",
+    "over-auth-scheme-then-marker",
+    "over-auth-generic-then-key",
+    "over-auth-break-comma-then-key",
+    "over-auth-break-dquote-then-key"
+  ],
+  "registered_open_rows": [
+    "open-two-token-then-wrap",
+    "open-quoted-two-token",
+    "open-line3-bare-credential",
+    "open-prebreak-cr",
+    "open-prebreak-vtab",
+    "open-prebreak-ff",
+    "open-two-token-then-wrap-marker"
+  ],
+  "registered_open_leaking": [
+    "open-two-token-then-wrap",
+    "open-quoted-two-token",
+    "open-line3-bare-credential",
+    "open-prebreak-cr",
+    "open-prebreak-vtab",
+    "open-prebreak-ff",
+    "open-two-token-then-wrap-marker"
+  ],
+  "fidelity_ok": false,
+  "verdict": "negative"
+}
+FIDELITY-FAIL cred-digit-token2-pair expected 'token=<redacted> token2=<redacted> b=2' got 'token=<redacted> token2=ghp_ZQ7ReviewerFakeCredential0123456789 b=2'
+FIDELITY-FAIL cred-digit-secret2 expected 'secret2=<redacted>' got 'secret2=ghp_ZQ7ReviewerFakeCredential0123456789'
+FIDELITY-FAIL cred-digit-password2 expected 'password2=<redacted>' got 'password2=SYNTHETIC_AUDIT_TOKEN'
+FIDELITY-FAIL cred-digit-api-key2 expected 'api_key2=<redacted>' got 'api_key2=SYNTHETIC_AUDIT_TOKEN'
+FIDELITY-FAIL cred-digit-env-secret2 expected 'export SECRET2=<redacted>' got 'export SECRET2=ghp_ZQ7ReviewerFakeCredential0123456789'

@@ -1,0 +1,397 @@
+{
+  "claim1_additive": {
+    "ok": true,
+    "value": {
+      "default_is_none": true,
+      "field_type": "dict[str, Any] | None",
+      "no_handle_qualification": null,
+      "served_label": {
+        "label": "verified_input",
+        "gaps": [],
+        "reason": ""
+      },
+      "schema_version": "1.0",
+      "to_dict_has_key": true,
+      "to_dict_keys": [
+        "activation_epoch",
+        "bundle",
+        "bundle_hash",
+        "bundle_status",
+        "candidate_exclusion_trace",
+        "canonical_location_rationale",
+        "cohorts",
+        "download_events",
+        "envelope_schema_version",
+        "llm_calls",
+        "outcome",
+        "parser_calls",
+        "policy_hash",
+        "prompt_injection_status",
+        "qualification",
+        "source_sha256"
+      ],
+      "handle_facts": {
+        "entity_ids": [
+          "ticker:ACME"
+        ],
+        "fiscal_year": 2025,
+        "published_date": "2026-02-20",
+        "https_url": "https://sec.gov/x/2025",
+        "capture_ready": true,
+        "missing_capture_fields": [],
+        "hashes_64": true,
+        "source_id": "urn:company-wiki:source:sha256:9f232bd8b4d188a0d6c00959c121842e55ca23aed62b0a0a29f2486571271a84"
+      }
+    }
+  },
+  "claim4_missing_url": {
+    "ok": true,
+    "value": {
+      "status": "missing",
+      "matches": 0,
+      "trace": [
+        "entity_gate_rejected: 0",
+        "Acme 2025 Annual Report: capture_incomplete"
+      ],
+      "qualification": null,
+      "outcome": "missing"
+    }
+  },
+  "claim4_no_fiscal_year": {
+    "ok": true,
+    "value": {
+      "exact_mode": {
+        "status": "reused_exact",
+        "matches": 1,
+        "handle_fiscal_year": null,
+        "handle_published_date": "2026-02-20",
+        "handle_capture_ready": true,
+        "qualification": {
+          "label": "verified_input",
+          "gaps": [],
+          "reason": ""
+        },
+        "outcome": "reused_existing"
+      },
+      "latest_as_of_mode": {
+        "status": "reused_exact",
+        "matches": 1,
+        "qualification": {
+          "label": "verified_input",
+          "gaps": [],
+          "reason": ""
+        },
+        "outcome": "reused_existing"
+      },
+      "plan_rule_expectation": "b06-plan.md s2/s4: no fiscal_year => blocked/period_missing"
+    }
+  },
+  "claim4_identity_db_surgery": {
+    "ok": true,
+    "value": {
+      "entity_rows_removed": 1,
+      "status": "reused_exact",
+      "matches": 1,
+      "handle_entity_ids": [
+        []
+      ],
+      "qualification_after_surgery": {
+        "label": "blocked",
+        "gaps": [
+          "identity_missing"
+        ],
+        "reason": "identity or period is unknown: identity_missing"
+      },
+      "baseline_qualification": {
+        "label": "verified_input",
+        "gaps": [],
+        "reason": ""
+      },
+      "pipeline_always_links_an_entity": true
+    }
+  },
+  "claim4_identity_from_scan": {
+    "ok": true,
+    "value": {
+      "status": "reused_exact",
+      "matches": 1,
+      "entity_rows": [
+        {
+          "document_id": "urn:company-wiki:document:sha256:9f232bd8b4d188a0d6c00959c121842e55ca23aed62b0a0a29f2486571271a84",
+          "entity_id": "ticker:ACME",
+          "confidence": 1.0,
+          "method": "path_ticker"
+        }
+      ],
+      "handle_entity_ids": [
+        [
+          "ticker:ACME"
+        ]
+      ]
+    }
+  },
+  "claim4_forged_handle_preview": {
+    "ok": true,
+    "value": {
+      "qualification": {
+        "label": "preview",
+        "gaps": [
+          "url_missing"
+        ],
+        "reason": "locally readable; provenance gaps: url_missing"
+      },
+      "outcome": "reused_existing"
+    }
+  },
+  "claim4_two_matches_label": {
+    "ok": true,
+    "value": {
+      "qualification": {
+        "label": "verified_input",
+        "gaps": [],
+        "reason": ""
+      },
+      "note": "matches[0] qualified even though the response is not a single selection"
+    }
+  },
+  "claim5_fuzz_conflict_reader": {
+    "ok": true,
+    "value": {
+      "shapes": {
+        "payload_list": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "payload_string": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "payload_null": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "payload_int": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "payload_bytes": {
+          "result": "field conflict recorded for: title",
+          "elapsed_s": 0.0
+        },
+        "payload_bytes_bad": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "not_json": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "reserved_string": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "reserved_list": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "reserved_null": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "fields_list_empty": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "fields_list_of_pairs": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "fields_string": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "fields_null": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "record_string": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "record_list_of_dicts": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "record_nested_list": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "conflicts_string": {
+          "result": "field conflict recorded for: title",
+          "elapsed_s": 0.0
+        },
+        "conflicts_dict": {
+          "result": "field conflict recorded for: title",
+          "elapsed_s": 0.0
+        },
+        "conflicts_empty_list": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "conflicts_zero": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "conflicts_none": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "fields_nonstr_keys": {
+          "result": "field conflict recorded for: title",
+          "elapsed_s": 0.0
+        },
+        "empty_object": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "empty_string": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "null_string": {
+          "result": "",
+          "elapsed_s": 0.0
+        },
+        "big_10mb": {
+          "result": "",
+          "elapsed_s": 0.0126
+        }
+      },
+      "edges": {
+        "store_none": "",
+        "document_id_none": "",
+        "document_id_empty": "",
+        "row_none": "",
+        "fetchone_raises": "RAISED RuntimeError: injected fetchone failure",
+        "row_without_column": "RAISED KeyError: 'metadata_json'"
+      }
+    }
+  },
+  "claim3_read_side_agreement": {
+    "ok": true,
+    "value": {
+      "envelope_label": {
+        "label": "blocked",
+        "gaps": [],
+        "reason": "field conflict recorded for: title"
+      },
+      "envelope_outcome": "reused_existing",
+      "read_side_metadata_status": "blocked",
+      "read_side_conflicts": [
+        "title"
+      ],
+      "document_id": "urn:company-wiki:document:sha256:9f232bd8b4d188a0d6c00959c121842e55ca23aed62b0a0a29f2486571271a84",
+      "malformed_shared_column": {
+        "fields_list_empty": {
+          "read_side_metadata_status": "RAISED AttributeError: 'list' object has no attribute 'items'",
+          "b06_conflict_reason": "",
+          "b06_label": [
+            "verified_input",
+            ""
+          ]
+        },
+        "fields_list_of_pairs": {
+          "read_side_metadata_status": "RAISED AttributeError: 'list' object has no attribute 'items'",
+          "b06_conflict_reason": "",
+          "b06_label": [
+            "verified_input",
+            ""
+          ]
+        },
+        "reserved_string": {
+          "read_side_metadata_status": "ok",
+          "b06_conflict_reason": "",
+          "b06_label": [
+            "verified_input",
+            ""
+          ]
+        },
+        "not_json": {
+          "read_side_metadata_status": "RAISED JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+          "b06_conflict_reason": "",
+          "b06_label": [
+            "verified_input",
+            ""
+          ]
+        },
+        "record_string": {
+          "read_side_metadata_status": "ok",
+          "b06_conflict_reason": "",
+          "b06_label": [
+            "verified_input",
+            ""
+          ]
+        }
+      }
+    }
+  },
+  "claim3_store_none_label": {
+    "ok": true,
+    "value": {
+      "with_store": {
+        "label": "blocked",
+        "gaps": [],
+        "reason": "field conflict recorded for: title"
+      },
+      "store_none": {
+        "label": "verified_input",
+        "gaps": [],
+        "reason": ""
+      },
+      "read_side_status": "blocked"
+    }
+  },
+  "claim2_consumer_validator": {
+    "ok": true,
+    "value": {
+      "consumer_outcomes": [
+        "ambiguous",
+        "downloaded_new",
+        "failed",
+        "gap",
+        "missing",
+        "rejected",
+        "reused_after_discovery",
+        "reused_existing"
+      ],
+      "has_blocked": false,
+      "schema_version_expected": "1.0",
+      "blocked_qualification_accepted": true,
+      "qualification_survives_normalization": {
+        "label": "blocked",
+        "gaps": [],
+        "reason": "field conflict recorded for: title"
+      },
+      "outcome_unchanged": "reused_existing",
+      "outcome_blocked_accepted": "RAISED FilingFetchError: resolution_envelope outcome is outside the taxonomy: 'blocked'"
+    }
+  },
+  "claim2b_blocked_looks_like_success": {
+    "ok": true,
+    "value": {
+      "qualification": {
+        "label": "blocked",
+        "gaps": [],
+        "reason": "field conflict recorded for: title"
+      },
+      "outcome": "reused_existing",
+      "download_events": 0,
+      "bundle_status": "available",
+      "bundle_hash_present": true,
+      "prompt_injection_status": "not_reviewed",
+      "handle_capture_ready": true,
+      "handle_missing_fields": [],
+      "read_side_metadata_status": "blocked"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "465033c4404f9129f74f5b83951b7baa23ce1c5b",
+    "wiki": "8c5f24fde877c3f5f425280d8c83c66eb6b551dc"
+  },
+  "canonical_hash": "2b189bd35bbb69b32cf18031440cae10088f191f9abf9629024b497ec3197d96",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3 ; git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --porcelain",
+      "exit_code": 0,
+      "result": "HEAD = 19c3b73 (feat(ZR-502): homepage identity verification ...). Working tree has NO uncommitted changes to any ZR-502 tracked file. Only unrelated entries: D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr502_homepage_identity.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed in 0.57s (collected 11 items; all green)."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_cw_228_backfill.py -q --tb=short",
+      "exit_code": 0,
+      "result": "27 passed in 40.45s (collected 27: 10 ZR-501 + 3 taxonomy + 14 backfill). Unit-card expectation of 38 equals 27 + 11 (ZR-502 suite), i.e. the two suites combined; no failures."
+    },
+    {
+      "command": "throwaway script (sys.path->src) exercising assess_homepage_identity + homepage_identity_quality_flag (14 assertions)",
+      "exit_code": 0,
+      "result": "14/14 PASS: (a) 中信证券 紫金矿业集团股份有限公司 深度报告 vs declared title+publisher -> consistent; (b) 陕西煤业 cover vs 紫金 title -> contradiction; (c) None -> unverifiable; (d) '年报' framing only, no declared value -> contradiction (no fabricated pass); (e) '附件：财务报表附注' -> unverifiable (no framing, no hit); (f) '紫金矿业2025年年度报告摘要' vs declared title '紫金矿业2025年年度报告' -> consistent (substring containment per design); (g) homepage_identity_quality_flag('contradiction')=='homepage_identity_contradiction', ('consistent') is None, ('unverifiable') is None. Evidence shape verified: reasons no_first_page_text / no_declared_identity_on_cover / no_strong_cover_framing, matched_tokens+declared_count on consistent. Module source contains no network/LLM imports (hermetic)."
+    },
+    {
+      "command": "python -c \"import sys; sys.path.insert(0,'src'); from company_wiki.source_contract.evidence_span import QualityFlag; print(QualityFlag.HOMEPAGE_IDENTITY_CONTRADICTION.value)\"",
+      "exit_code": 0,
+      "result": "homepage_identity_contradiction"
+    },
+    {
+      "command": "grep observability.py for no_first_page_text | no_declared_identity_on_cover | no_strong_cover_framing",
+      "exit_code": 0,
+      "result": "All three codes registered in REASONS (lines 65-67) and in STAGES_BY_REASON under 'semantic' (lines 253-255)."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/homepage_identity.py src/company_wiki/source_catalog/normalizer.py src/company_wiki/source_catalog/adapters/sidecar.py src/company_wiki/source_catalog/observability.py src/company_wiki/source_contract/evidence_span.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py",
+      "exit_code": 0,
+      "result": "All checks passed! (exit 0)"
+    }
+  ],
+  "created_at_utc": "2026-08-19T19:38:06+00:00",
+  "findings": [
+    {
+      "detail": "The replay instructions stated 'Expect 38 passed' for the ZR-501 + taxonomy + backfill run, but pytest collected and passed 27 items (10 + 3 + 14). 38 equals 27 + 11, i.e. the two suites (ZR-502 + regression) summed. No failures were observed; this is a count-expectation discrepancy in the unit card, not a defect.",
+      "id": "ZR502-REV-001",
+      "severity": "info",
+      "title": "Regression-suite collected count is 27, not 38"
+    },
+    {
+      "detail": "git status --porcelain shows D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json. None of the 8 ZR-502 tracked files (homepage_identity.py, normalizer.py, adapters/sidecar.py, observability.py, evidence_span.py, docs/contracts/evidence-span-v1.md, test_zr502_homepage_identity.py, test_zr501_broker_metadata_contract.py) have uncommitted changes.",
+      "id": "ZR502-REV-002",
+      "severity": "info",
+      "title": "Unrelated working-tree dirt observed"
+    },
+    {
+      "detail": "assess_homepage_identity uses only re/unicodedata string operations (no LLM/network imports). C1 holds at every layer: sidecar.py enumerate skips *.source.json files outright (never a candidate); company_raw.py emits sidecars only with role 'metadata' (never 'original_primary'); conformance.py NON_PRIMARY_SUFFIXES blocks primary roles on .source.json; resolver.py canonical-location selection and _handle both require role == 'original_primary', so matches[0] can never be a sidecar. End-to-end resolver test (test_c1_filing_request_never_matches_sidecar_file) passes with matches[0] == .../2025.pdf.",
+      "id": "ZR502-REV-003",
+      "severity": "info",
+      "title": "Hermeticity and C1 role-separation closure re-verified from source"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-502 independent review",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "465033c4404f9129f74f5b83951b7baa23ce1c5b",
+    "wiki": "19c3b73174170c3e7a3d9724b85599cce8237f42"
+  },
+  "reviewed_object_sha256": "610b546cc7244d0efe759df8dc3b5dafc59cfa74f7979f37c2d06153577f01c6",
+  "reviewer": "reviewer-zr502-independent",
+  "schema_version": 1,
+  "unit": "ZR-502",
+  "verdict": "accepted"
+}

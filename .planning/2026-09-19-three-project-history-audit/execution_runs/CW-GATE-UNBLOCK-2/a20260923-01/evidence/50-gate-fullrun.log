@@ -1,0 +1,77 @@
+﻿GATE FULL-RUN (per-step + whole) — iso final tree
+===== STEP: 1-ruff =====
+All checks passed!
+rc=0
+===== STEP: 2-compileall =====
+rc=0
+===== STEP: 3-config_doctor =====
+OK: C:\Users\֣����\AppData\Local\Temp\cwgu2\repo\config\source_catalog.yaml healthy
+rc=0
+===== STEP: 4-complexity-ratchet =====
+CW-BASETEMP-DECISION {"event": "decision", "relocated": false, "reason": "no-explicit-basetemp", "detail": "pytest derives its default basetemp from %TEMP%; short by construction"}
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.5.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: C:\Users\֣����\AppData\Local\Temp\cwgu2\repo
+configfile: pytest.ini
+plugins: anyio-4.13.0, Faker-40.19.1, asyncio-1.3.0, base-url-2.1.0, benchmark-5.2.3, cov-7.0.0, html-4.1.1, metadata-3.1.1, mock-3.15.1, playwright-0.7.2, timeout-2.4.0, xdist-3.8.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests\contract\test_fc1204_complexity_ratchet.py ..                      [100%]
+
+============================== 2 passed in 9.88s ==============================
+rc=0
+===== STEP: 5-host_assumption_guard =====
+scanned roots=['tests', 'src']; violations=96; new(not baselined/registered)=0; baseline=71; registered_hashes=5
+rc=0
+===== STEP: 6-contract-meta =====
+CW-BASETEMP-DECISION {"event": "decision", "relocated": false, "reason": "no-explicit-basetemp", "detail": "pytest derives its default basetemp from %TEMP%; short by construction"}
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.5.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: C:\Users\֣����\AppData\Local\Temp\cwgu2\repo
+configfile: pytest.ini
+plugins: anyio-4.13.0, Faker-40.19.1, asyncio-1.3.0, base-url-2.1.0, benchmark-5.2.3, cov-7.0.0, html-4.1.1, metadata-3.1.1, mock-3.15.1, playwright-0.7.2, timeout-2.4.0, xdist-3.8.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+timeout: 180.0s
+timeout method: thread
+timeout func_only: False
+collected 99 items
+
+tests\contract\test_source_catalog_section_extractor.py ................ [ 16%]
+.......                                                                  [ 23%]
+tests\contract\test_fc906a_producer_binding_metadata.py ....             [ 27%]
+tests\contract\test_legacy_observation.py ...................            [ 46%]
+tests\contract\test_zr506_section_chunk_fact.py ..............           [ 60%]
+tests\unit\test_writer_freeze.py .............                           [ 73%]
+tests\contract\test_fc1307_host_assumption_gate.py ..................... [ 94%]
+.....                                                                    [100%]
+
+======================= 99 passed in 124.54s (0:02:04) ========================
+rc=0
+===== WHOLE GATE =====
+
+=== ruff (CI WU-1.2 full scope) ===
+ok
+
+=== compileall ===
+ok
+
+=== config_doctor (CI WU-7.1) ===
+ok
+
+=== FC-1204 complexity ratchet (CI meta-gate) ===
+ok
+
+=== host assumption guard (FC-1307-a; the class that broke CI in F-B01-9) ===
+ok
+
+=== contract tests (extractor + binding + observation + chunk) + meta gates ===
+ok
+
+pre-push gate GREEN — safe to push (then self-monitor CI).
+whole-gate rc=0
+===== STEP: 7-unique-test-symbols (CI WU-1.1, extra) =====
+OK: 276 test file(s), no duplicate test_* definitions
+rc=0

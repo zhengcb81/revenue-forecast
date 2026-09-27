@@ -1,0 +1,63 @@
+{
+ "unit": "CA-306",
+ "reviewer": "reviewer-ca306-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "7a9eca7c7391a12da89efa5b3f306a728af1a96bc951a428d01ae156c2574eda",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca306_terminal_closure.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "8 passed in 0.29s (C1 notice contract; C2 history immutable; C3 disposition complete; C4 claims closed; C5 single entry)"
+  },
+  {
+   "command": "independent probes: notice token search, old-dir snapshots/mtime, disposition counts, state current_phase/next, README markers",
+   "exit_code": 0,
+   "result": "closed_superseded_incomplete only in tests/README/specs/card/receipts (no deployed notice — owner deployment action per card); 6 old dirs mtime all pre-08-31 (zero touch); fc_entries=71 waves=10 closure_items=5 (all P, zero missing successors); ld.verify fresh; state current_phase=J_final_verification current_next=CA-306; README single control page"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD~1..HEAD + uc.receipt.validate",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=d2d576d parent=cd6a005 matches; commit only tests/test_ca306_terminal_closure.py +204; receipt canonical 7a9eca7c == recomputed; base/result triplet real HEADs; plan_sha256 == sha256(00_wu_card.md)"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "cd6a0059df2c5242490e114b09893a43723b7b5b",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "d2d576d712635d861d270703d5c64486f3d8d5d1",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA306-REV-001",
+   "severity": "info",
+   "title": "C1 为契约模板自检，无实际 notice 部署物",
+   "detail": "与卡原文一致（00_wu_card 明示 notice 写为 owner 部署动作）；部署时需按契约验证。"
+  },
+  {
+   "id": "CA306-REV-002",
+   "severity": "info",
+   "title": "3 个旧计划目录 git 无跟踪基线",
+   "detail": "C2 不可变仅工作区级佐证（既有状态）；属仓库卫生问题。"
+  },
+  {
+   "id": "CA306-REV-003",
+   "severity": "info",
+   "title": "工作区部署侧未提交变更与声明一致",
+   "detail": "state.json 增 CA-306 单元 + receipts/CA-306 未跟踪；closure 推进时状态落库。"
+  },
+  {
+   "id": "CA306-REV-004",
+   "severity": "info",
+   "title": "仓库根 .coverage.*/.tmp-* 残留",
+   "detail": "既有卫生问题，非本卡产物。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T19:09:27+00:00",
+ "canonical_hash": "8ba3226ba6f1e7dd294bf5042cf50259484a9951e705c249894e85c61ea87dd6"
+}

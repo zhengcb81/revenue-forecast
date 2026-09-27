@@ -1,0 +1,84 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "cc1b4bfddc0a231951d9a27396578bac2d0defed",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca305* + six-problems source review",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 ca305 套件；六问题定义明确；证据单元全 accepted）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca305_six_problems.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "7 passed in 0.54s (C1 six questions enumerated; C2 evidence units closed + receipts; C3 scenario tests; C4 triplet 40-hex + state deterministic; C5 reviewer presence incl delta; C6 per-problem not aggregate)"
+    },
+    {
+      "command": "ruff check tests/test_ca305_six_problems.py (F841 manual fix)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "1f39a7b test(CA-305) — 1 file +215"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1019 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T18:45:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: frozen source §6 has exactly 6 numbered success questions, each present in text. C2: each problem maps to evidence units all 'accepted' in state.json, each with 11+12 receipts on disk. C3: each problem has scenario-level test files in the current suite. C4: every evidence unit's 11 receipt result_triplet is 40-hex for revenue/filing/wiki; state sha256 deterministic. C5: every unit has state.reviewer + closure.by; 12 verdict accepted, or 13_delta_review_receipt present (ZR-904 first-round changes_required then delta accepted). C6: every problem's evidence set fully accepted individually; overall count >=100 informational only.",
+      "id": "CA305-IMPL-001",
+      "severity": "info",
+      "title": "六问题 machine closure ledger 验收（需求→证据→场景→triplet→reviewer 逐项映射，非聚合）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca305_six_problems.py（7 tests）：C1 六问题枚举；C2 证据单元 closed + receipts；C3 场景测试文件；C4 triplet 40-hex 绑定 + state 确定性；C5 reviewer 存在（含 delta 语义）；C6 每问独立 pass 非聚合。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_ca305_six_problems.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-305/**"
+    ]
+  },
+  "implementer": "ca305-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 1f39a7b（revenue HEAD = CA-305 实现 commit，parent cc1b4bf）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "旧计划 terminal notice 写入为 CA-306 动作，本卡只验收 ledger 映射。"
+  ],
+  "objective": "阶段 J 第五卡：六问题 machine closure ledger（每问 需求→证据→场景→triplet→reviewer 映射；每问 pass 且子项 pass；known limitation 仅非目标外延或诚实 data gap；不允许总体百分比替代单项）",
+  "plan_sha256": "67727d5ddd270b603bd1e099cb86a1adf853d21082a219a8570753dcf81e7e43",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1f39a7b580a844e439f489f760f6b7344a87a48c",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca305_six_problems.py (new 7 tests)；assurance/unified_completion/receipts/CA-305/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca305_six_problems.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-305/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-305",
+  "canonical_hash": "bb1264351fa232742f64da4fd6a8e5c94d27b9a5e17cfeffc511ea24fb66a561"
+}

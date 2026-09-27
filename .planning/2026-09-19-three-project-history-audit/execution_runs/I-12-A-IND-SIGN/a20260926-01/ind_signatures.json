@@ -1,0 +1,453 @@
+{
+  "schema": "i12a_ind_signatures/1",
+  "card": "I-12-A",
+  "attempt": "execution_runs/I-12-A-IND-SIGN/a20260926-01",
+  "role": "industry_reviewer_i12a",
+  "reviewer_id": "industry_reviewer",
+  "role_label": "行业reviewer",
+  "design_signed": {
+    "target": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json",
+    "design_version": "v1",
+    "sha256": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+    "primary_endpoint_untouched": "SKILL_WAPE_VS_NAIVE_BASELINE（evaluation_design.json L44；本面不改 primary）"
+  },
+  "authorized_by": {
+    "card_owner_clause_verbatim": "Owner：统计reviewer和行业reviewer共同签字；依赖：I-07-E。",
+    "card_owner_clause_ref": "execution_v2/card_I-12-A.md:L5",
+    "stop_path_verbatim": "任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。",
+    "stop_path_ref": "execution_v2/card_I-12-A.md:L20",
+    "industry_scope_ref": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json:L38-L43（industry_reviewer.scope_of_signature）",
+    "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871）沙箱操作常设授权；边界 L860-L862「授权 ≠ 免除纪律」「产品仓提交不在本授权内」——本面使用面=零提权，且该授权不是专业签署本身"
+  },
+  "seal_state": {
+    "test_results_sealed": true,
+    "test_results_unsealed": false,
+    "accuracy_results_read": false,
+    "reads_performed": [
+      "execution_v2/card_I-12-A.md",
+      "execution_runs/I-12-A/a20260926-01/oracle.md",
+      "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json",
+      "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json",
+      "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json",
+      "execution_runs/I-12-A/a20260926-01/handoff.json",
+      "OWNER_DECISIONS.md §三十七（L852-L871）"
+    ],
+    "reads_forbidden_and_not_performed": [
+      "任何测试集/回测/准确性结果（I-10-B、I-13、I-12 结果面）",
+      "execution_runs/I-12-A/a20260926-01/verification.json（结果/变异面）",
+      "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md（验证数值面，仅转引不回读）",
+      "REMEDIATION_REGISTER.md 全册（仅转引 L3951 红线原文）"
+    ]
+  },
+  "source_hashes": {
+    "note": "门 0（2026-09-26T20:51:04+01:00）只读实测；K3 逐件复算比对",
+    "execution_v2/card_I-12-A.md": "a4d4b2dcce2aa1de04ab6aff757de0fb6e75fa21bc5cf0ab0151e5d1e940470f",
+    "execution_runs/I-12-A/a20260926-01/oracle.md": "08723ab0f62c07cbf0f9a7563b8fc6382bff41da8a3f7c72ab14b81cfc7e76ee",
+    "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+    "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+    "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178",
+    "execution_runs/I-12-A/a20260926-01/handoff.json": "7bf747b15bf97032f75f9377a9c7bf1c2c023c54c272975cc8b30450ef11c714",
+    "OWNER_DECISIONS.md": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d",
+    "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+    "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff"
+  },
+  "scope_boundary": {
+    "industry_face_signed_here": "口径 / 分部 / 业务定义边界 / 公司池 / 朴素 baseline / cluster-block 单位 / 情景语义（vintage_class 硬分含在内）",
+    "statistical_six_deferred": [
+      "字段 5 时间划分折数/切点/窗口长度",
+      "字段 10 最小公司数/每层样本数/统计功效/可接受 CI 宽度",
+      "字段 11 置信水平(CI level/α)",
+      "字段 11 重复抽样次数与随机种子",
+      "字段 11 多重比较校正方法",
+      "字段 12 成功/失败阈值（经济显著改善幅度、可接受偏差、情景包含率、区间宽度）—— 与行业面重叠，本面不签数值"
+    ],
+    "statistics_owner": "statistical_reviewer（派单：并行在飞，agent 98869ea8）",
+    "no_cross_signing": "本面任何项 signed_by 均为 industry_reviewer_i12a；不代统计面签、不代实现者签、不产生 ACCEPT",
+    "not_signature_targets": "字段 1/7/13 等 requires_professional_signature=false 的结构字段不列入签署对象（不虚增 signed_count）"
+  },
+  "items": [
+    {
+      "item_id": "IND-01",
+      "field_index": 4,
+      "topic": "vintage_class 硬分（真实历史 vintage vs 事后重建）",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "数据层以 vintage_class 字段硬分：primary 池只准 true_vintage；post_hoc_reconstruction 只进 sensitivity/secondary；primary 池出现重建观测即判失败",
+      "rationale_refs": [
+        "execution_v2/card_I-12-A.md:L15（动作3 逐字「严格区分真实历史vintage与重建实验」）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L130-L134（vintage_classes 定义 + separation_rule）"
+      ],
+      "counterexample": "两类混池则事后重述口径被当作 origin 时点可得信息，skill 系统性虚高，且卡文动作3 逐字被破坏",
+      "compatibility_impact": "与统计面 6 项阈值零重叠（不含任何数值）；为字段 5 提供观测级标记，但切点/折数仍归 DEF-01",
+      "recovery_rule": "任一 primary 观测 vintage_class 缺失或=post_hoc ⇒ 剔除并计数、记 reason_code；若确须入 primary ⇒ 改 design 版本（新探索版本）+ 重新双签",
+      "rejected_alternatives": [
+        "按 model_version 事后标记替代 vintage 硬分（重建仍可混池）",
+        "按数据来源路径事后推断 vintage（不可核、易漂移）",
+        "方向倒置：primary 以重建为主、vintage 作敏感性（与卡文相反）"
+      ],
+      "decision_payload": "IND-01 || f4 vintage_class硬分 || primary只准true_vintage、post_hoc只进sensitivity、primary出现重建即判失败 || card_I-12-A.md:L15 + evaluation_design.json:L130-L134 || counter:混池使重述口径冒充origin可得信息、skill虚高、破坏卡文动作3 || compat:与6项阈值零重叠，字段5切点仍归DEF-01 || recovery:vintage缺失/post_hoc入primary则剔除计数，须入则改design版本+重签 || rejected:model_version标记替代、来源路径推断、方向倒置",
+      "decision_sha256": "3f14421a021705288ac0bbf7ed8f36874a294cfc8fde50157bcb405c71d45479"
+    },
+    {
+      "item_id": "IND-02",
+      "field_index": 4,
+      "topic": "信息截点：available_at<=origin 硬约束与披露日缺失处置",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "available_at<=origin 必须严格成立（违反=泄漏观测，剔除并计数、不静默丢弃）；披露日缺失 ⇒ 该 origin 记 unavailable、不入池（fail-closed，禁止默认可用）",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L123（hard_constraint）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L129（missing_publish_date_rule）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L127（小米 gap-U2 登记为 null）"
+      ],
+      "counterexample": "默认「披露日缺失=可用」会让 origin 之后才公开的信息进入评估，skill 虚高且不可审（小米 gap-U2 即此类）",
+      "compatibility_impact": "与 DEF-01 互补不重叠：本项管观测级可得性，切分折数/窗口归统计面；不含阈值数值",
+      "recovery_rule": "补登记 available_at（来源 sha 可核且 <= origin）后按同一 design 版本重新入池；版本不变须记 append 事件，改 design ⇒ 新探索版本",
+      "rejected_alternatives": [
+        "按 as_of 统一近似披露日（近似即可能泄漏）",
+        "对缺失披露日插补一个默认更早日期（伪造来源）"
+      ],
+      "decision_payload": "IND-02 || f4 信息截点 || available_at<=origin硬约束+违反即泄漏剔除计数；披露日缺失⇒unavailable不入池fail-closed || evaluation_design.json:L123/L127/L129 || counter:默认缺失即可用让origin后信息入池、skill虚高 || compat:与DEF-01互补不重叠，纯可得性判定无数值 || recovery:补登记可核available_at(<=origin)后同版本append入池 || rejected:as_of近似披露日、插补默认日期",
+      "decision_sha256": "7af0b90c47db86d0ca18de723f6de511c401c62e72b03ae16c510c24963768c5"
+    },
+    {
+      "item_id": "IND-03",
+      "field_index": 2,
+      "topic": "分部口径与重复权重：合并/分部不双计",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "合并行与分部行不同时入误差池：合并收入=Σ四分部对外销售收入（上游 I-07-E §C4/E5 恒等式桥，转引）；同一 origin×horizon 合并与分部并存 ⇒ 只计分部层，合并行仅作 driver_reconciliation 校验；entity 内 segment 等权",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L77（merge_vs_segment_rule）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L78（duplicate_rule）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L76（segment_weight）"
+      ],
+      "counterexample": "合并行与分部行同值同时入池 ⇒ 同一收入被计两次，误差池分母翻倍稀释，WAPE/skill 虚高且不可归因",
+      "compatibility_impact": "权重结构属口径面；macro/micro 并报规则已在字段 9 冻结（filled、非 6 项阈值）；cluster 单位另见 IND-11，方差估计方法归 DEF-03/DEF-04",
+      "recovery_rule": "若某 origin 合并行 ≠ Σ分部（恒等式破）⇒ 该观测剔除误差池、记 reason_code、只进 reconciliation 残差；恒等式修复前不得入 primary",
+      "rejected_alternatives": [
+        "合并行优先（丢分部结构、无法按 segment 归因）",
+        "合并与分部同时入池取平均（双计 + 伪重复观测）",
+        "按收入规模加权 segment（大分部主导、掩盖薄层）"
+      ],
+      "decision_payload": "IND-03 || f2 分部口径与重复权重 || 合并=Σ四分部对外销售、合并/分部不同时入池只计分部、合并行仅作reconciliation、entity内segment等权 || evaluation_design.json:L76-L78 || counter:合并+分部同值双计⇒误差池分母翻倍、WAPE/skill虚高 || compat:与6项阈值零重叠，方差方法归DEF-03/04 || recovery:恒等式破⇒剔除计reason_code、只进残差，修复前不入primary || rejected:合并优先、双行取平均、规模加权",
+      "decision_sha256": "005856dd9b3e9ab599654d8ef0f4a0427e9776d99a55dd4fbe13357abf196a88"
+    },
+    {
+      "item_id": "IND-04",
+      "field_index": 6,
+      "topic": "gross/net 统一：对外销售收入口径",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "统一为对外销售收入（net of internal，E5 抵销口径）；含内部交易的分部总计不得作收入基期/actual",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L169（gross_net，含「否则高估约 67%，上游 §C4」转引）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L158（字段 6 定义：gross/net 统一）"
+      ],
+      "counterexample": "以含内部交易的分部合计作基期 ⇒ 内部转移被重复计入，基期与增速系统性高估（转引约 67%），误差分母全错",
+      "compatibility_impact": "纯口径判定，不涉 6 项阈值；与 IND-03 恒等式同源；「约 67%」为转引未独立复核（oracle §4 残余 1），本签只锁口径不锁该数值",
+      "recovery_rule": "若某实体仅披露 gross 口径 ⇒ 不入 primary、记 reason_code，补可核 net 披露后再入；口径改判 ⇒ 改 design 版本 + 重签",
+      "rejected_alternatives": [
+        "用 gross 合计再乘经验折扣系数修正（系数不可核）",
+        "逐实体混用 gross/net（跨实体不可比）"
+      ],
+      "decision_payload": "IND-04 || f6 gross/net统一 || 统一为对外销售收入net of internal(E5抵销)，含内部交易的分部总计不作基期 || evaluation_design.json:L158/L169(67%转引) || counter:内部交易重复计入⇒基期高估、增速与分母全错 || compat:纯口径零阈值，67%为转引不独立复核 || recovery:仅gross披露⇒记reason_code不入primary，补可核net后再入 || rejected:gross乘折扣系数、逐实体混用口径",
+      "decision_sha256": "ae2e5a3cfc685f66c0fdc27a4ee4bc17a43e636a30bbed5c7f1581fb8449d936"
+    },
+    {
+      "item_id": "IND-05",
+      "field_index": 6,
+      "topic": "实际值定义：首次披露 vs 最终重述",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "primary actual = 首次披露值（as-originally-reported）；最终重述值仅作 secondary 对照，且在 origin 时点不可得者不得入 primary",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L163（primary_actual）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L164（restated_actual 限制）"
+      ],
+      "counterexample": "以最终重述值作 primary ⇒ 引入 origin 之后才存在的会计调整信息，与 available_at<=origin 冲突，评估偏向事后口径",
+      "compatibility_impact": "与 IND-01 vintage 硬分同向（重述=重建 ⇒ post_hoc）；不含数值阈值，与 DEF-01..06 零重叠",
+      "recovery_rule": "重述值登记为 secondary series（vintage_class=post_hoc）；如需升 primary ⇒ 新 design 版本 + 双签 + 须证明该重述在 origin 时点可得",
+      "rejected_alternatives": [
+        "primary 用最终重述值（look-ahead 泄漏）",
+        "首披与重述取均值（无会计含义、混合口径）"
+      ],
+      "decision_payload": "IND-05 || f6 实际值定义 || primary=首次披露as-originally-reported，重述仅secondary且origin不可得者不入primary || evaluation_design.json:L163-L164 || counter:重述入primary引入origin后信息、与available_at<=origin冲突 || compat:与IND-01 vintage硬分同向，零阈值重叠 || recovery:重述作secondary标post_hoc，升primary须新版本+双签+origin可得证明 || rejected:重述作primary、首披与重述取均值",
+      "decision_sha256": "7672e130f2f27b62e6a6bf16ceb3a2d561e193e470db39f82a0247d3d3305b17"
+    },
+    {
+      "item_id": "IND-06",
+      "field_index": 6,
+      "topic": "财年对齐 / 分部重组不回溯 / 并购断点规则",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "统一到 FY 标签并显式登记各实体财年截止（微软 6-30；紫金/小米 12-31），不同截止期的年度不当同一 horizon；分部重组不回溯改写历史口径（回溯=新 vintage）；并购致口径断裂 ⇒ 断点后单列新 series、不跨断点算误差",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L167（segment_reorg）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L168（fiscal_year）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L170（ma_interruption）"
+      ],
+      "counterexample": "把微软 FY（截至 6-30）与紫金 FY（12-31）当同一 horizon 混层 ⇒ 日历年错配、一次性事项错配；跨并购断点续算 ⇒ 断点两侧口径不可比却同池",
+      "compatibility_impact": "支撑字段 7 分层（filled、无需签）；不设阈值；与 DEF-01 的 horizon/切分互补（折数与窗口归统计面）",
+      "recovery_rule": "发现财年错配观测 ⇒ 剔除并计 reason_code；并购断点未登记 ⇒ 补登记后按新 series 重算（同 design 版本记 append 事件）",
+      "rejected_alternatives": [
+        "按自然年重切财年数据（需重述、来源不可核）",
+        "并购后按备考口径回溯拼接长序列（伪连续）",
+        "不分财年直接混层平均"
+      ],
+      "decision_payload": "IND-06 || f6 财年/重组/并购 || FY标签+显式财年截止(微软6-30、紫金小米12-31)不同截止不当同一horizon；重组不回溯(回溯=新vintage)；并购断点后新series不跨断点 || evaluation_design.json:L167-L170 || counter:跨财年混层⇒日历年错配；跨并购断点续算⇒两侧不可比同池 || compat:支撑字段7分层、零阈值，切分折数归DEF-01 || recovery:财年错配剔除计reason_code；断点未登记补登记后按新series重算 || rejected:自然年重切、备考回溯拼接、不分财年混层",
+      "decision_sha256": "f7d5a011ce828e4cfffb92f63ec43662f0dd79a93439b2676de6a1cd3cb1bfb9"
+    },
+    {
+      "item_id": "IND-07",
+      "field_index": 6,
+      "topic": "跨币种绝对误差展示（origin 前可得汇率来源）",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "NOT_SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "不签（维持 PENDING）：跨币种绝对误差展示项缺 origin 前可得且可核的汇率来源",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L166（fx_cross_entity_note：无可核汇率来源前该项 PENDING，不伪造）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L165（跨实体汇总只用无量纲指标）"
+      ],
+      "not_signed_reason": "证据不足（fail-closed）：本面禁联网、回源面不含任何汇率登记，无法给出「文件+行号」级可核依据；不以近似汇率凑签",
+      "counterexample": "用 as_of 当前汇率换算 origin 前误差 ⇒ 引入 origin 后信息且汇率错配；用假定固定汇率先签后补 = 挑方便值（卡文动作1 禁）",
+      "compatibility_impact": "不阻断 primary/secondary 路径（L165 已限定跨实体只用无量纲指标），故不阻断 IND-04/05/06；属行业面未签项 ⇒ 直接导致 industry_countersign_complete=false",
+      "recovery_rule": "补登记 origin 前可得汇率（来源 sha 可核 + 取数时点 <= origin + 时区登记）后，按同一 design 版本补签；在此之前跨币种绝对金额误差一律不汇总、不出数",
+      "rejected_alternatives": [
+        "以假定固定汇率（如 7.0）先签后补",
+        "以 as_of 汇率换算历史误差"
+      ],
+      "decision_payload": "IND-07 || f6 跨币种绝对误差展示 || NOT_SIGNED：无可核origin前汇率来源(禁网+回源面无汇率登记)，fail-closed维持PENDING || evaluation_design.json:L165-L166 || counter:as_of汇率引入origin后信息；固定汇率先签后补=挑方便值 || compat:不阻断无量纲主路径与IND-04/05/06，但使行业会签未完成 || recovery:补登记可核origin前汇率后同版本补签，此前不汇总跨币种绝对误差 || rejected:固定汇率凑签、as_of汇率换算",
+      "decision_sha256": "NOT_SIGNED"
+    },
+    {
+      "item_id": "IND-08",
+      "field_index": 3,
+      "topic": "公司池纳入/排除理由与分层结构",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "池=本审计三家公司 frame（紫金 A+H / 小米 HK / 微软 US）；纳入=原文可读且 sha 可核 + available_at<=origin 已登记 + 分部口径可对齐；小米因 gap-U1/U2 fail-closed 排除并记 reason_code（附 reentry 规则）；退市/失败/并购不静默剔除（纳入或排除均记 reason_code）；分层=市场×行业×生命周期×可得披露条件，层间不合并单一平均",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L90（frame）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L92-L96（inclusion_criteria）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L100（小米 gap-U1 不可入池）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L102-L110（excluded_with_reason / delisted_failed_ma / strata）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json:L39（行业 scope：字段 3）"
+      ],
+      "counterexample": "为凑样本把证据不可读的小米补假数据入池 ⇒ 伪造；或静默剔除退市/并购公司 ⇒ 池选择性偏倚不可审",
+      "compatibility_impact": "只签纳入/排除理由与分层结构；层内最小 n、功效、CI 宽度归字段 10（DEF-02 统计面）；可评 entity=2 ⇒ 样本不足时按字段 10 降级为描述性，不由本签放行",
+      "recovery_rule": "小米解 gap-U1（证据可读）+ gap-U2（登记 available_at）后按同一 design 版本重新入池（版本不变记 append）；池结构变更 ⇒ 新 design 版本 + 重签",
+      "rejected_alternatives": [
+        "把小米按无数据当零增长入池（伪造）",
+        "只留紫金+微软且不登记小米排除理由（选择性偏倚）",
+        "扩池到审计外公司以凑样本量（超出卡文证据面）"
+      ],
+      "decision_payload": "IND-08 || f3 公司池与分层 || 三家公司frame+可核纳入判据；小米gap-U1/U2 fail-closed排除记reason_code带reentry；退市/失败/并购不静默剔除；分层市场×行业×生命周期×可得披露条件不合并单一平均 || evaluation_design.json:L90/L92-L96/L100/L102-L110 + professional_approval.json:L39 || counter:补假数据入池=伪造；静默剔除=选择性偏倚 || compat:层内最小n/功效/CI归字段10(DEF-02)，entity=2不足时降级描述性不由本签放行 || recovery:解gap-U1/U2后同版本append入池；池结构变更须新版本重签 || rejected:小米按零增长入池、不记排除理由、扩池外公司",
+      "decision_sha256": "0453d74c7b7397154a349515dea68252125445501884093151bd3565195dcf45"
+    },
+    {
+      "item_id": "IND-09",
+      "field_index": 8,
+      "topic": "朴素 baseline 选择 + 季节性同季 not_applicable 获批",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "primary baseline=最后可得同口径年度收入不变（naive level persistence，与上游 EA-3 基线同形）；secondary=上一可得同比延续；「季节性同季」= not_applicable 由行业面获批（可得序列为年度分部收入，无同季可比序列）；baseline 不可得 ⇒ 该观测 undefined 并计数，不改用其他 baseline",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L194（primary_baseline）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L196-L199（seasonal_same_quarter not_applicable，approval=pending_reviewer）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L201（tie_in 字段 1 分母）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json:L40（行业 scope：字段 8 + not_applicable 项）"
+      ],
+      "counterexample": "无同季序列却硬造季节 baseline ⇒ 拿噪声当基准、skill 分母失真；baseline 不可得时偷换更弱 baseline ⇒ 挑方便值（卡文动作1 禁）",
+      "compatibility_impact": "baseline 是字段 1 primary 的分母（L201），本签不含任何阈值数值；not_applicable 获批仅限「季节性同季」整项，与 DEF-01..06 零重叠",
+      "recovery_rule": "若后续登记到可比同季序列 ⇒ 本 not_applicable 失效，须改 design 版本 + 重新签署后方可启用季节 baseline；primary/secondary 互换同理须重签",
+      "rejected_alternatives": [
+        "标 not_applicable 却继续声称覆盖季节性（虚报覆盖）",
+        "以 3 个月移动平均替代同季序列（仍属造数）",
+        "primary 改为上一可得同比延续（与 EA-3 不同形、易受单年异动支配）"
+      ],
+      "decision_payload": "IND-09 || f8 朴素baseline+not_applicable获批 || primary=最后可得同口径年度收入不变(与EA-3同形)、secondary=上一同比延续；季节性同季=not_applicable行业面获批(年度分部序列无同季)；baseline不可得⇒undefined计数不换 || evaluation_design.json:L194/L196-L199/L201 + professional_approval.json:L40 || counter:硬造季节baseline拿噪声当基准；偷换更弱baseline=挑方便值 || compat:零阈值数值，not_applicable仅限季节性同季整项 || recovery:登记到同季序列则not_applicable失效，须新版本+重签 || rejected:假覆盖季节性、移动平均代同季、primary改YoY延续",
+      "decision_sha256": "9707656f7b65e5235d31d433c08a16a9d73cf9ed361f1e74e88db0f52e688f68"
+    },
+    {
+      "item_id": "IND-10",
+      "field_index": 9,
+      "topic": "low/high = 情景带而非统计区间（业务定义边界）",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "low/high = 情景（scenario bands）非统计区间：只评 scenario_containment=count(low<=actual<=high)/n 且同时报 interval_width；禁称 80%/90% 置信覆盖；interval_score 与 pinball 禁用",
+      "rationale_refs": [
+        "execution_v2/card_I-12-A.md:L15（动作3 逐字「低/高情景没有概率标签就只评情景包含率」）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L215（low_high_classification）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L216（consequence：禁置信覆盖措辞、禁 interval_score/pinball）"
+      ],
+      "counterexample": "给情景带标「90% 覆盖」或用 interval_score ⇒ 声称不存在的名义概率（store low/base/high 无概率标签），把敏感性设计误报为精度主张",
+      "compatibility_impact": "本签只锁语义边界；字段 12 的「可接受情景包含率」阈值数值归 DEF-06（统计面出值后行业回签），零数值重叠",
+      "recovery_rule": "若上游为 low/base/high 补上事前声明的名义概率与 tau ⇒ 开新 design 版本重新评估是否启用 interval_score/pinball（须双签），本版不得追溯启用",
+      "rejected_alternatives": [
+        "把 base 当中位数、low/high 当 10/90 分位（无事前声明）",
+        "以极宽区间换取高包含率且不报宽度（L216 已禁）"
+      ],
+      "decision_payload": "IND-10 || f9 low/high=情景 || 只评scenario_containment并同时报interval_width；禁称80%/90%置信覆盖；interval_score/pinball禁用 || card_I-12-A.md:L15 + evaluation_design.json:L215-L216 || counter:标90%覆盖或用interval_score=声称不存在的名义概率、把敏感性误报为精度 || compat:只锁语义，包含率阈值数值归DEF-06零数值重叠 || recovery:上游补事前名义概率与tau后开新版本双签才可启用 || rejected:base当中位数、极宽区间不报宽度",
+      "decision_sha256": "466c5aa1c01583afd184a40a714dd2525360e404d7ad0a4b68a6c0bf1c07de17"
+    },
+    {
+      "item_id": "IND-11",
+      "field_index": 11,
+      "topic": "行业相关 cluster/block 单位",
+      "industry_face": true,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": false,
+      "ruling": "SIGNED",
+      "signed_by": "industry_reviewer_i12a",
+      "choice": "cluster 单位=entity（同集团分部强相关）；block 单位=origin（时间块），重叠 horizon 观测按 origin 聚簇、方差按 origin block 估计，不假设观测独立",
+      "rationale_refs": [
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L243（cluster 单位=entity）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json:L244（block 单位=origin、时间相关分块）",
+        "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json:L41（行业 scope：字段 11 行业相关 cluster/block 单位）"
+      ],
+      "counterexample": "把 entity×segment 当独立观测 ⇒ 同集团分部相关性被忽略，方差低估、CI 收窄、显著性虚高",
+      "compatibility_impact": "只签单位选择（行业结构面）；置信水平、重抽样次数与种子、多重比较校正归 DEF-03/DEF-04/DEF-05（统计面），本面不碰任何阈值",
+      "recovery_rule": "若引入跨集团合并样本、新 model_version 混池或 origin 层不足 ⇒ cluster/block 定义须重议（改 design 版本 + 重签）",
+      "rejected_alternatives": [
+        "cluster=segment（低估相关性）",
+        "block=财年（块内仍含多 origin，时间相关残留）",
+        "不聚簇直接 i.i.d. 重抽样"
+      ],
+      "decision_payload": "IND-11 || f11 cluster/block单位 || cluster=entity、block=origin，重叠horizon按origin聚簇、方差按origin block估计、不假设独立 || evaluation_design.json:L243-L244 + professional_approval.json:L41 || counter:当独立观测⇒方差低估、CI收窄、显著性虚高 || compat:只签单位，CI/种子/校正归DEF-03/04/05零重叠 || recovery:跨集团样本或origin不足⇒重议定义、新版本重签 || rejected:cluster=segment、block=财年、不聚簇i.i.d.",
+      "decision_sha256": "717d5106f1d4a10543d1841a97fe385c6b5eb2502eb5a2e899940d695bd2ed27"
+    },
+    {
+      "item_id": "DEF-01",
+      "field_index": 5,
+      "topic": "时间划分折数/切点/窗口长度",
+      "industry_face": false,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": true,
+      "overlap_with_industry_face": false,
+      "ruling": "deferred_to_statistics",
+      "decision_sha256": "NOT_SIGNED",
+      "deferred_to": "statistical_reviewer（98869ea8，并行在飞）",
+      "deferred_reason": "派单明示「时间切分归统计面」；属统计面 6 项阈值第 1 项（professional_approval.json L58），本面不裁、不代签",
+      "complementarity": "与 IND-02（观测级可得性）互补不重叠；切点/折数未签前 STOP① 对本项持续成立"
+    },
+    {
+      "item_id": "DEF-02",
+      "field_index": 10,
+      "topic": "最小公司数/每层样本数/统计功效/可接受 CI 宽度",
+      "industry_face": false,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": true,
+      "overlap_with_industry_face": false,
+      "ruling": "deferred_to_statistics",
+      "decision_sha256": "NOT_SIGNED",
+      "deferred_to": "statistical_reviewer（98869ea8，并行在飞）",
+      "deferred_reason": "派单明示「功效归统计面」；属统计面 6 项阈值第 2 项（professional_approval.json L59）。行业面可评 entity=2 的事实已由 IND-08 登记，但样本量/功效阈值不由行业面填值",
+      "complementarity": "IND-08 只签池与分层结构；「样本不足⇒只描述不宣称优势」的不变量由卡文/字段 10 自带（evaluation_design.json L230），无需本面代签"
+    },
+    {
+      "item_id": "DEF-03",
+      "field_index": 11,
+      "topic": "置信水平（CI level/α）",
+      "industry_face": false,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": true,
+      "overlap_with_industry_face": false,
+      "ruling": "deferred_to_statistics",
+      "decision_sha256": "NOT_SIGNED",
+      "deferred_to": "statistical_reviewer（98869ea8，并行在飞）",
+      "deferred_reason": "属统计面 6 项阈值第 3 项（professional_approval.json L60）；派单「CI 归统计面」",
+      "complementarity": "IND-11 只签 cluster/block 单位（结构），CI 水平不属行业面；零重叠"
+    },
+    {
+      "item_id": "DEF-04",
+      "field_index": 11,
+      "topic": "重复抽样次数与随机种子",
+      "industry_face": false,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": true,
+      "overlap_with_industry_face": false,
+      "ruling": "deferred_to_statistics",
+      "decision_sha256": "NOT_SIGNED",
+      "deferred_to": "statistical_reviewer（98869ea8，并行在飞）",
+      "deferred_reason": "属统计面 6 项阈值第 4 项（professional_approval.json L61）；种子不得由任何一侧挑「刚好好看」的值",
+      "complementarity": "与 IND-11 分工：单位已签、重抽样参数未签；零重叠"
+    },
+    {
+      "item_id": "DEF-05",
+      "field_index": 11,
+      "topic": "多重比较校正方法",
+      "industry_face": false,
+      "requires_industry_cosign": false,
+      "belongs_to_statistical_six": true,
+      "overlap_with_industry_face": false,
+      "ruling": "deferred_to_statistics",
+      "decision_sha256": "NOT_SIGNED",
+      "deferred_to": "statistical_reviewer（98869ea8，并行在飞）",
+      "deferred_reason": "属统计面 6 项阈值第 5 项（professional_approval.json L62，候选 Holm/BH 由统计面定）",
+      "complementarity": "行业面无对应项；零重叠"
+    },
+    {
+      "item_id": "DEF-06",
+      "field_index": 12,
+      "topic": "成功/失败阈值（经济显著改善幅度、可接受偏差、情景包含率、区间宽度）",
+      "industry_face": false,
+      "requires_industry_cosign": true,
+      "industry_cosign_state": "OUTSTANDING（值未出，本并行轮无值可签）",
+      "belongs_to_statistical_six": true,
+      "overlap_with_industry_face": true,
+      "ruling": "deferred_to_statistics",
+      "decision_sha256": "NOT_SIGNED",
+      "deferred_to": "statistical_reviewer（98869ea8，并行在飞）",
+      "deferred_reason": "与统计面 6 项阈值第 6 项完全重叠（professional_approval.json L63；evaluation_design.json L263-L268 全 PENDING）⇒ 按派单标 deferred_to_statistics，本面不预填任何数值",
+      "complementarity": "卡文 Owner 条款与 professional_approval.json L42 要求字段 12 由统计+行业共同签字：统计面出值后须由行业面**回签**（早于测试结果解封），届时才可解除本项 OUTSTANDING；在此之前 industry_countersign_complete=false、STOP① 持续成立",
+      "industry_semantic_constraints_reserved": "行业面预留（届时随值同审）：情景包含率阈值不得写成覆盖率阈值（与 IND-10 一致）；经济显著幅度须以对外销售收入口径（IND-04）与分部不双计（IND-03）为基"
+    }
+  ],
+  "summary": {
+    "total_items": 17,
+    "signed": 10,
+    "not_signed": 1,
+    "deferred_to_statistics": 6,
+    "signed_count": 10,
+    "industry_face_items": 11,
+    "industry_face_unsigned": ["IND-07", "DEF-06（行业半签未完成）"],
+    "industry_countersign_complete": false,
+    "industry_countersign_complete_rule": "存在任一 industry_face 且非 SIGNED 的项，或任一 requires_industry_cosign 且非 SIGNED 的项 ⇒ 必须 false（oracle §5 判定式，fail-closed）",
+    "statistics_sign_still_needed": true,
+    "statistics_six_state": "6/6 未由本面签署（DEF-01..DEF-06 均 deferred_to_statistics，decision_sha256=NOT_SIGNED）",
+    "stop_1_state": "BLOCKED_PROFESSIONAL_DECISION 持续成立（本面登记，不解除）",
+    "releases_nothing": true,
+    "produces_accept": false
+  }
+}

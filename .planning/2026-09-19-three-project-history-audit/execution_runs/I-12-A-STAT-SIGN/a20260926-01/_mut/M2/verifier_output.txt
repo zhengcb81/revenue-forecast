@@ -1,0 +1,16 @@
+﻿=== MUTATION M2 ===
+rc=3
+first_fail=FAIL K2_verdict_lock : S3.selection=NOT_SIGNED != frozen SIGNED
+CHECK K1_items_set OK
+CHECK K3_value_lock OK
+CHECK K5_result_seal OK
+CHECK K6_boundary_lock OK
+CHECK K8_open2_redline OK
+FAIL K2_verdict_lock : S3.selection=NOT_SIGNED != frozen SIGNED
+FAIL K4_signature_form : S3 NOT_SIGNED must carry decision_sha256=null
+FAIL K4_signature_form : S3 NOT_SIGNED missing refusal_sha256
+FAIL K4_signature_form : S3 refusal_reason_code != insufficient_evidence
+FAIL K4_signature_form : S3 NOT_SIGNED without measured missing evidence
+FAIL K4_signature_form : S3 NOT_SIGNED but signature.signed!=false
+FAIL K7_hash_integrity : S3 refusal_sha256 mismatch (recorded= recomputed=12e0ea07cca59111e5a61c4f4403ecf3efa84f7874adc2b35f3c636ec45fac51)
+RESULT CRITERIA_VIOLATION primary=K2_verdict_lock count=7

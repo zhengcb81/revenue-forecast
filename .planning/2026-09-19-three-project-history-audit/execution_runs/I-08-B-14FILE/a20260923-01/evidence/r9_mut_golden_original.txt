@@ -1,0 +1,27 @@
+﻿F                                                                        [100%]
+================================== FAILURES ===================================
+______ GoldenBehaviorLockTests.test_all_model_family_outputs_are_pinned _______
+
+self = <test_golden_behavior_lock.GoldenBehaviorLockTests testMethod=test_all_model_family_outputs_are_pinned>
+
+    def test_all_model_family_outputs_are_pinned(self) -> None:
+        expected = json.loads(GOLDEN_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(set(expected), set(MODEL_SPECS), "golden file model drift")
+        for family in MODEL_SPECS:
+            result = run_family(family)
+            actual = canonical_sha256(result)
+>           self.assertEqual(
+                actual,
+                expected[family],
+                f"{family} output hash changed — R9 split must be "
+                "behavior-locked (byte-identical outputs)",
+            )
+E           AssertionError: '97b9044f3279906160777b1db81f30267e6e047c0d4e98e05359935c78d099eb' != '2f9337fdf5986ea8b6db98196d660e3d8ece44a6f675869e7959c1042e0abd38'
+E           - 97b9044f3279906160777b1db81f30267e6e047c0d4e98e05359935c78d099eb
+E           + 2f9337fdf5986ea8b6db98196d660e3d8ece44a6f675869e7959c1042e0abd38
+E            : volume output hash changed — R9 split must be behavior-locked (byte-identical outputs)
+
+tests\test_golden_behavior_lock.py:156: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_golden_behavior_lock.py::GoldenBehaviorLockTests::test_all_model_family_outputs_are_pinned
+1 failed in 5.57s

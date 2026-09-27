@@ -1,0 +1,108 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1101",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "PR current-triplet gate: CI sibling checkouts now manifest-driven (tools/ci_checkout_siblings.py reads compatibility/current.json current_triplet) — replaces hardcoded pins (revenue ad62592/77669ae, filing a42bb40). Manifest current_triplet refreshed to actual HEADs. Revenue + filing workflows updated; 4 gate tests (no-hardcoded-pin scan, manifest-driven wiring, triplet==HEADs, tool requires --manifest); M1 (reverting to a hardcoded pin) kills the gate. Revenue full suite 438 passed / 0 failed.",
+  "base_triplet": {
+    "revenue": "48df4a5cf128b913f24e9739817bb28bbb61e44d",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "6ae5febd9e93a0bd6ce34c759d1d7cfdc689084d",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tools/ci_checkout_siblings.py",
+    "revenue-forecast/tests/test_fc1101_ci_manifest.py",
+    "revenue-forecast/.github/workflows/quality.yml",
+    "revenue-forecast/compatibility/current.json",
+    "filing-fetch/.github/workflows/quality.yml",
+    "revenue-forecast/assurance/fc/FC-1101/11_implementer_receipt.json",
+    "revenue-forecast/assurance/fc/FC-1101/12_reviewer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/tools/ci_checkout_siblings.py",
+    "revenue-forecast/tests/test_fc1101_ci_manifest.py",
+    "revenue-forecast/.github/workflows/quality.yml",
+    "revenue-forecast/compatibility/current.json",
+    "filing-fetch/.github/workflows/quality.yml"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/fc/FC-104/ (accepted) — compatibility manifest",
+    "revenue-forecast/assurance/fc/FC-1001..1005 (accepted) — Phase 10"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "CTRL-05",
+      "status": "passed",
+      "note": "manifest triplet == three HEADs (drift fails red); CI checkouts pinned to current triplet, never stale pins or floating main."
+    },
+    {
+      "id": "PR-gate",
+      "status": "passed",
+      "note": "workflow scan: zero hardcoded 40-hex sibling pins; manifest-driven checkout wired in both repos."
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_fc1101_ci_manifest.py -q",
+      "exit_code": 0,
+      "result": "4 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "438 passed, 106 subtests, 0 failed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B tools/ci_checkout_siblings.py --manifest compatibility/current.json --skip revenue filing wiki",
+      "exit_code": 0,
+      "result": "parses + layout math OK (smoke)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit (auto): suite + E2E + R4.2 (both repos)",
+      "exit_code": 0,
+      "result": "revenue 438; filing 277 passed / 6 skipped; E2E PASS x2; R4.2 MATCH",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "catalog_mutations": 0,
+    "note": "Workflow + tooling only; no data side effects."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "CI tooling + workflow files."
+  },
+  "mutation": {
+    "id": "FC-1101-M1",
+    "killed": true,
+    "details": "M1: reverted revenue workflow to a hardcoded pin (checkout ad62592) -> test_manifest_driven_checkout_wired FAILS. Reverted; 4 passed."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert 1b41d62 + 592fae6 restores pinned workflows; current.json re-editable."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1101-independent-r3",
+    "reviewer_receipt_sha256": "47507547cf74db5aa3bc1afcc2c29cee8d1b312d9f2336ebcd31cbaa059e8cef",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-12T06:31:05Z",
+    "note": "r1 F1 (manifest stale) + F2 (scan) -> fixed; r2 F2 not sealed (0x08 regex) -> 6ae5feb; r3 ACCEPTED (F2 byte-verified 5c 62, negative control added, 439/0). unresolved_findings=[]"
+  },
+  "provisional_note": "Feat sealed at revenue 1b41d62 / filing 592fae6 / wiki unchanged. Manifest-driven CI in place; 4 gate tests. Independent review pending."
+}

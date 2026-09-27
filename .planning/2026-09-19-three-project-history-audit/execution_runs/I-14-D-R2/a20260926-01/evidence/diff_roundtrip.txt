@@ -1,0 +1,28 @@
+I-14-D-R2 changes.diff round-trip verification (oracle.md §8.3)
+================================================================
+
+patch: execution_runs/I-14-D-R2/a20260926-01/changes.diff
+       1636 bytes, 1 hunk, 1 file, POSIX forward-slash paths only
+       files_touched = src/company_wiki/source_catalog/observability.py
+       index header  = 842d0cfbc7e3..ff9c65586cff 100644
+
+(1) own applier (harness/verify_diff_r2.py), no git involved
+    forward: apply the patch to the PRE bytes  -> sha 8dab63d9c21a7f32679b11c6ef5d4337bdac33b4ff4f4b6a937a17ced87107ca
+             == iso/product_post observability.py                        MATCH
+    reverse: apply the reversed patch to the POST bytes -> sha e8abd522b2072add062be225d7ec1ca10621ffa5be7841f99ef9fb339015cbd0
+             == iso/product_pre observability.py                         MATCH
+    rc = 0
+
+(2) independent cross-check with real `git apply` (no --index, no git write;
+    scratch copy lives at scratch/applycheck2, inside this attempt)
+    git apply --check -p1 --directory=<scratch>  changes.diff   rc = 0
+    git apply      -p1 --directory=<scratch>  changes.diff      rc = 0
+        applied file sha256 = 8dab63d9c21a7f32679b11c6ef5d4337bdac33b4ff4f4b6a937a17ced87107ca  MATCH product_post
+    git apply -R   -p1 --directory=<scratch>  changes.diff      rc = 0
+        reverse-applied sha256 = e8abd522b2072add062be225d7ec1ca10621ffa5be7841f99ef9fb339015cbd0 MATCH product_pre
+    git apply --stat / --numstat on the patch                    rc = 0
+        "1 file changed, 12 insertions(+), 1 deletion(-)"
+    `git diff --cached --name-only` after all of the above      -> 0 entries (index untouched)
+
+note: an earlier attempt with `git -C <scratch> apply` reported "Skipped patch" (a no-op) and was
+NOT counted; the --directory form from the repository root is the one verified above.

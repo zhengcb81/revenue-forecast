@@ -1,0 +1,87 @@
+{
+    "attempt": "I-14-D-R8/a20260923-01",
+    "card": "WC-1 (I-14-D r8 残差一轮) — work card of REGISTRY-CLOSURE",
+    "frozen_at": "2026-09-23",
+    "freeze_discipline": "oracle.md frozen (sha sidecar) BEFORE any execution of the code under test; expectations from residual-row text + pinned sources + pure arithmetic only (harness/freeze_arithmetic.py)",
+    "oracle_sha256": "cd8b05e07118844135dfba4349488b47f10a52479b7f0caa7af35e02e18162c4",
+    "spec": {
+        "path": "execution_runs/REGISTRY-CLOSURE/a20260923-01/decision.md",
+        "sha256": "a68ed77fe922f768a845a6497000de93baab922f1d2128ffe9bbc5727fe79353",
+        "bytes": 23413,
+        "row": "§WORK-CARD WC-1, L84-85 (verbatim scope: REM-06 / REM-67③=R3-05 / R5-08 / R3-07)",
+        "verified": "sha recomputed by this card and equal to REGISTRY-CLOSURE's own binding.json decision_sha256"
+    },
+    "targets": [
+        {
+            "path": "execution_runs/I-14-D/a20260919-01/iso/product_narrow_r6/src/company_wiki/source_catalog/observability.py",
+            "sha256": "2f6449949c76b97c636d5d50e2ca848403116a85a1858bb9ba8f5a2808362464",
+            "bytes": 43746,
+            "role": "I-14-D r6 generation tree (newest; r7-accepted) — WC-1 base pin, re-verified by this card"
+        },
+        {
+            "path": "../../../company-wiki/src/company_wiki/source_catalog/observability.py",
+            "sha256": "edcbeccb9b13778efe2d80c58a401c345856bf04220462e1fbbe56ea96111f4e",
+            "bytes": 43707,
+            "role": "production copy (company-wiki repo, READ-ONLY, zero writes)",
+            "measured_relation_to_r6": "byte-identical to the r6 tree EXCEPT it lacks the r6 tree's one dead line `            quote = text[value_start]` (r6 line 400; 39-byte delta). Both WC-1 fix regions (key_is_credential ~L254-264, _AUTH_SCHEME_SPLIT ~L329-336) lie BEFORE that line and are byte-identical across the two targets, so one hunk body applies to both (verified by apply-check in evidence/production_apply.json)."
+        }
+    ],
+    "instruments": [
+        {
+            "path": "execution_runs/I-14-D/a20260919-01/harness/run_i14d_oracle_r6.py",
+            "sha256": "85a1b064fa90616a04f0ae34f618576af073bccbaff02b01c5c6ebeb70813f30",
+            "bytes": 16066,
+            "role": "frozen r7 oracle harness (44 cases) — base of this card's r8 row extension"
+        },
+        {
+            "path": "execution_runs/I-14-D/a20260919-01/harness/run_rule_table_i14d_r6.py",
+            "sha256": "8f5feffddb6f2931942bb76ab0aa213e82d3fa23f645d0206d063f397b162638",
+            "bytes": 22874,
+            "role": "frozen r7 rule-table harness (95 rows) — base of this card's r8 row extension"
+        }
+    ],
+    "comparison_tree": {
+        "path": "execution_runs/I-14-D/a20260919-01/iso/product_base/src/company_wiki/source_catalog/observability.py",
+        "sha256": "c5608c4b45a55cce03df9988561e1a3ad1cab0970c51e8b3af630239fe9de35c",
+        "bytes": 40060,
+        "role": "pre-fix base tree for direction runs (READ-ONLY, run with -B / PYTHONDONTWRITEBYTECODE)"
+    },
+    "sealed_inputs": [
+        "REGISTRY-CLOSURE/a20260923-01/decision.md (WC-1 spec)",
+        "REGISTRY-CLOSURE/a20260923-01/oracle.md / changes.diff / binding.json (precedent)",
+        "REMEDIATION_REGISTER.md (REM-06 row L17; WC-1 row L1665/L1713)",
+        "I-14-D/a20260919-01/reviewer_report.md (F-REV-D-03, L305-318)",
+        "I-14-D/a20260919-01/reviewer_report_r3.md (F-REV-R3-05 L448-454; F-REV-R3-07 L465-474)",
+        "I-14-D/a20260919-01/reviewer_report_r5.md (F-REV-R5-08 L534-554)",
+        "I-14-D/a20260919-01/reviewer_report_r7.md + .sha256 sidecar (cc6da8d3…, recomputed and equal)",
+        "I-14-D/a20260919-01/handoff_r6.json (r6+r7 lineage, pins, status authority)",
+        "I-14-D/a20260919-01/oracle.md / decision.md / review.md / fix_record.md",
+        "I-08-C-RESIDUAL/a20260923-01/decision.md + handoff.json (goal-item① sibling closure context)"
+    ],
+    "pins_recomputed_at_freeze": {
+        "REMEDIATION_REGISTER.md": "5348278fc1c4ffdc4aff9d26067ded13f7746e12b228d376aaf920b3a82b58d6 / 218750 B",
+        "reviewer_report_r7.md": "cc6da8d3878dbd942bc6d47bdd750913d1c0646742e22c737ffe73191f610076 / 17203 B (== sidecar)"
+    },
+    "runtime": {
+        "python": "3.13.9 (Miniconda C:/Miniconda/python.exe and I-14-D iso venv, both -B, PYTHONDONTWRITEBYTECODE=1)",
+        "network": "none",
+        "git": "none"
+    },
+    "writes": [
+        "this attempt dir only; transient scratch under %TEMP% (mutant trees, production apply-check copy); ZERO writes to revenue-forecast, company-wiki, I-14-D sealed attempt, register, or any plan file"
+    ],
+    "status": "review_pending",
+    "implementer_signed": false,
+    "disclosure_adaptation": "unmapped",
+    "accuracy": "unproven",
+    "verdict_authority": "independent reviewer (not this implementer)",
+    "oracle_sha256_pre_correction": "c6cbf8691c838ddb5c0e06d803ebff364dfff8b8870e0e00202ed8bc6e50c16c",
+    "oracle_correction": "CORRECTION W1 appended after the RED run: one mis-forecast instrument cell (r8_base credential_leaks); append-only, prefix proof in evidence/oracle_prefix_proof.json; row expectations and all other frozen cells unchanged and verified",
+    "changes_diff_sha256": "baec3153e853ae8eb20c7683c5c508d1336559e70d2b61e061ed11cc4e0a6925",
+    "register_drift": {
+        "freeze_pin": "5348278fc1c4ffdc4aff9d26067ded13f7746e12b228d376aaf920b3a82b58d6",
+        "freeze_bytes": 218750,
+        "note": "REMEDIATION_REGISTER.md was appended by a PARALLEL card during this session (new section belongs to that card); this card never wrote it (commands.md) -- accepted under row-level verification of every cited row (L17 REM-06, L1665, L1713 WC-1) in evidence/final_integrity.json",
+        "row_level_verified": true
+    }
+}

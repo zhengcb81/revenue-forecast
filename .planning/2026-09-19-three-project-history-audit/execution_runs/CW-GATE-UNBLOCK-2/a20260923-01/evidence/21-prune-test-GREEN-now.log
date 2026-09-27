@@ -1,0 +1,27 @@
+﻿CW-BASETEMP-DECISION {"event": "decision", "relocated": false, "reason": "no-explicit-basetemp", "detail": "pytest derives its default basetemp from %TEMP%; short by construction"}
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.5.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: C:\Users\֣����\AppData\Local\Temp\cwgu2\repo
+configfile: pytest.ini
+plugins: anyio-4.13.0, Faker-40.19.1, asyncio-1.3.0, base-url-2.1.0, benchmark-5.2.3, cov-7.0.0, html-4.1.1, metadata-3.1.1, mock-3.15.1, playwright-0.7.2, timeout-2.4.0, xdist-3.8.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 3 items
+
+tests\contract\test_source_catalog_prune_retired.py FF.                  [100%]
+
+================================== FAILURES ===================================
+___________________ test_prune_dry_run_reports_span_volume ____________________
+tests\contract\test_source_catalog_prune_retired.py:70: in test_prune_dry_run_reports_span_volume
+    assert report.oldest_archive == "2026-05-01"
+E   AssertionError: assert None == '2026-05-01'
+E    +  where None = PruneReport(dry_run=True, retired_documents=1, span_rows=6, oldest_archive=None, retention_days=90, due=False, deleted...ests={}, archives=(), retention_days=90, plan_hash='211222d407ebfe84497c87dc23b4883df1904bcce125296c9e4b088dbcab116a')).oldest_archive
+___________________ test_prune_apply_deletes_spans_when_due ___________________
+tests\contract\test_source_catalog_prune_retired.py:86: in test_prune_apply_deletes_spans_when_due
+    assert report.due is True
+E   AssertionError: assert False is True
+E    +  where False = PruneReport(dry_run=False, retired_documents=1, span_rows=6, oldest_archive=None, retention_days=0, due=False, deleted...gests={}, archives=(), retention_days=0, plan_hash='04fbd2506610798a96862c61a18fb29f8c85885698c36767c1cdb50bbff56f83')).due
+=========================== short test summary info ===========================
+FAILED tests/contract/test_source_catalog_prune_retired.py::test_prune_dry_run_reports_span_volume
+FAILED tests/contract/test_source_catalog_prune_retired.py::test_prune_apply_deletes_spans_when_due
+======================== 2 failed, 1 passed in 20.63s =========================

@@ -1,0 +1,82 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1101",
+  "reviewer_identity": "reviewer-fc1101-independent-r3",
+  "clean_checkout": true,
+  "base_triplet": {
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "revenue": "48df4a5cf128b913f24e9739817bb28bbb61e44d",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "revenue": "6ae5febd9e93a0bd6ce34c759d1d7cfdc689084d",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "commands_replayed": [
+    {
+      "command": "git diff e280da2..6ae5feb --stat",
+      "exit_code": 0,
+      "result": "exactly 1 file: tests/test_fc1101_ci_manifest.py (+14/-5), test-only"
+    },
+    {
+      "command": "git show 6ae5feb:tests/test_fc1101_ci_manifest.py | grep 'SHA1 = ' | od -c",
+      "exit_code": 0,
+      "result": "regex bytes 5c 62 (real backslash-b); old blob held 0x08 backspaces; F2 sealed at blob level"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_fc1101_ci_manifest.py -q",
+      "exit_code": 0,
+      "result": "5 passed (incl. abbreviated-pin negative control)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "439 passed, 106 subtests, 0 failed"
+    },
+    {
+      "command": "M1: replace manifest line with 'git checkout ad62592' -> focused suite",
+      "exit_code": 1,
+      "result": "2 failed (pin scan + wiring); reverted byte-identical; 5 passed"
+    },
+    {
+      "command": "manifest triplet existence + independent 7+hex grep on both workflows",
+      "exit_code": 1,
+      "result": "all 3 manifest commits exist; zero pins in workflows"
+    }
+  ],
+  "scenario_results": [
+    {
+      "id": "CTRL-05",
+      "status": "passed",
+      "note": "manifest current_triplet commits exist in sibling repos; commits-exist anti-forgery design"
+    },
+    {
+      "id": "PR-gate",
+      "status": "passed",
+      "note": "zero hardcoded pins; manifest-driven checkout wired in both; M1 killed gate red and reverted"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "FC-1101-M1",
+      "killed": true,
+      "detail": "git checkout ad62592 replacing manifest line -> 2 tests fail; reverted byte-identical; 5 passed"
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true
+  },
+  "codegraph_reachability": {
+    "passed": true
+  },
+  "rollback": {
+    "passed": true,
+    "required": false
+  },
+  "unresolved_findings": [],
+  "decision": "accepted",
+  "reviewed_at": "2026-08-12T06:31:05Z",
+  "reviewer_receipt_sha256": "47507547cf74db5aa3bc1afcc2c29cee8d1b312d9f2336ebcd31cbaa059e8cef",
+  "hash_note": "recomputed over sealed file (compact sort_keys)"
+}

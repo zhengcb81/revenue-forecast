@@ -1,0 +1,96 @@
+{
+  "schema": "i12e_error_taxonomy/1",
+  "card": "I-12-E",
+  "attempt": "execution_runs/I-12-E/a20260926-01",
+  "role": "implementer_i12e",
+  "categories": {
+    "data": [
+      {
+        "id": "u-N4",
+        "item": "US-MSFT-10K-FY2026 sha 转录层 63 位 vs 实测 64 位（缺尾位）",
+        "source_ref": "I-07-E §D1（u-N4）+ I-11-A source_map.json / store"
+      },
+      {
+        "id": "gap-U1",
+        "item": "HK-XIAOMI-AR2025 原文在本回源面不可读（STOP_EVIDENCE，不引用任何值）",
+        "source_ref": "I-11-A source_map.json not_readable_in_this_attempt"
+      }
+    ],
+    "definition": [
+      {
+        "id": "u-N5",
+        "item": "store H-01 original_value 与矿产品分部语义张力（差额法 vs 分部合计口径）",
+        "source_ref": "I-07-E §D1（u-N5）/ unverified-N1"
+      },
+      {
+        "id": "E5-elim",
+        "item": "含内部交易的分部总计不得作收入基期（否则高估约 67%）⇒ 统一用对外销售收入口径",
+        "source_ref": "I-07-E §C4 / 设计字段 6 gross_net"
+      },
+      {
+        "id": "H4-residual",
+        "item": "H4 口径桥残差闭合不了（含内外翻转），整改未完",
+        "source_ref": "OWNER_DECISIONS §三十六 + I-07-E §B3 EA-1 blocked_by_residuals=OPEN-6"
+      }
+    ],
+    "driver": [
+      {
+        "id": "OPEN-2",
+        "item": "单位收入参数转换公式分母不自洽（差约 3.25×/3.26×）⇒ 数值只登记不消费，具体数值见本卡 oracle §4 红线登记，不在本件复制",
+        "source_ref": "REMEDIATION_REGISTER.md L3951（转引 I-07-E §F）"
+      },
+      {
+        "id": "u-N6",
+        "item": "EA-4 增速带换算注记区间与自身带换算结果不符",
+        "source_ref": "I-07-E §D1（u-N6）/ unverified-N3"
+      }
+    ],
+    "timing": [
+      {
+        "id": "gap-U2",
+        "item": "披露日未在回源面登记 ⇒ available_at<=origin 无法验证（fail-closed 不入池）",
+        "source_ref": "I-07-E §A gap-U2 / 设计字段 4"
+      },
+      {
+        "id": "unseal",
+        "item": "解封门 0/4 满足 + 目标期 FY2027 未结束 ⇒ 实际值不可得，评分时点未到",
+        "source_ref": "I-12-A design_manifest.unseal_gate + I-12-B actuals_policy_application"
+      }
+    ],
+    "structure": [
+      {
+        "id": "dup-row",
+        "item": "合并行与分部行同 origin×horizon 会双计权 ⇒ 误差池只计分部层",
+        "source_ref": "设计字段 2 duplicate_rule / I-12-B exclusions EX-002/EX-003"
+      },
+      {
+        "id": "E6-prohibited",
+        "item": "Microsoft Cloud 聚合不得与 IC 分部并列（PROHIBITED_CO_USE）",
+        "source_ref": "I-07-E §C3 E6"
+      }
+    ]
+  },
+  "category_ids": [
+    "data",
+    "definition",
+    "driver",
+    "timing",
+    "structure",
+    "random"
+  ],
+  "category_source_verbatim": "记录误差来源为数据/定义/驱动/时点/结构/随机（卡文动作 4 逐字）",
+  "follow_up_questions": [],
+  "forecast_fixed_this_round": false,
+  "no_prediction_changes": true,
+  "no_prediction_changes_note": "不在本轮评分中修预测（卡文动作 4 逐字）；本件只登记来源与后续问题",
+  "counts": {
+    "categories": 6,
+    "items": 13,
+    "follow_up_questions": 6
+  },
+  "declarations": {
+    "params_released": false,
+    "implementer_signed": false,
+    "open2_ban_observed": true
+  }
+}

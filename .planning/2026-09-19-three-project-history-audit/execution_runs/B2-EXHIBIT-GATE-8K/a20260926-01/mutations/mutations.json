@@ -1,0 +1,153 @@
+{
+  "baseline_sha256": {
+    "cw": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+    "dayu": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b"
+  },
+  "finished_utc": "2026-09-26T00:07:03+00:00",
+  "mismatch": 0,
+  "mutations": [
+    {
+      "desc": "把两个 iso 文件还原为产品前像（等价于完全撤回本卡改动）",
+      "id": "M0",
+      "restored_ok": true,
+      "restored_sha256": {
+        "cw": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+        "dayu": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b"
+      },
+      "runs": [
+        {
+          "failed_names": [
+            "G1_8k_exhibit_in_filenames"
+          ],
+          "harness": "dayu",
+          "missing_expected_red": [],
+          "ok": true,
+          "rc": 1,
+          "unexpected_red": []
+        },
+        {
+          "failed_names": [
+            "A1_8k_stages_primary_and_exhibit_only",
+            "A2_8k_exhibit_bytes_match_meta_sha",
+            "A6_include_exhibits_flag_gates_8k"
+          ],
+          "harness": "adapter",
+          "missing_expected_red": [],
+          "ok": true,
+          "rc": 3,
+          "unexpected_red": []
+        }
+      ]
+    },
+    {
+      "desc": "dayu 闸门改回 frozenset({'6-K'})（把 8-K 分支改回去）",
+      "id": "M1",
+      "restored_ok": true,
+      "restored_sha256": {
+        "cw": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+        "dayu": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b"
+      },
+      "runs": [
+        {
+          "failed_names": [
+            "G1_8k_exhibit_in_filenames"
+          ],
+          "harness": "dayu",
+          "missing_expected_red": [],
+          "ok": true,
+          "rc": 1,
+          "unexpected_red": []
+        }
+      ]
+    },
+    {
+      "desc": "删掉共享 exhibit 分支里的一行（6-K 走到被改动的共享分支）",
+      "id": "M2",
+      "restored_ok": true,
+      "restored_sha256": {
+        "cw": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+        "dayu": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b"
+      },
+      "runs": [
+        {
+          "failed_names": [
+            "G3_6k_list_byte_identical",
+            "G4_6k_expected_names_present"
+          ],
+          "harness": "dayu",
+          "missing_expected_red": [],
+          "ok": true,
+          "rc": 2,
+          "unexpected_red": []
+        }
+      ]
+    },
+    {
+      "desc": "adapter 闸门放宽为 {'6-K','8-K'}（让 6-K 也走新复制逻辑）",
+      "id": "M3",
+      "restored_ok": true,
+      "restored_sha256": {
+        "cw": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+        "dayu": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b"
+      },
+      "runs": [
+        {
+          "failed_names": [
+            "A4_6k_result_byte_identical_to_before"
+          ],
+          "harness": "adapter",
+          "missing_expected_red": [],
+          "ok": true,
+          "rc": 1,
+          "unexpected_red": []
+        }
+      ]
+    },
+    {
+      "desc": "adapter exhibit 判定恒真（任何 files[] 条目都算 exhibit）",
+      "id": "M4",
+      "restored_ok": true,
+      "restored_sha256": {
+        "cw": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+        "dayu": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b"
+      },
+      "runs": [
+        {
+          "failed_names": [
+            "A1_8k_stages_primary_and_exhibit_only"
+          ],
+          "harness": "adapter",
+          "missing_expected_red": [],
+          "ok": true,
+          "rc": 1,
+          "unexpected_red": []
+        }
+      ]
+    },
+    {
+      "desc": "adapter _INCLUDE_EXHIBITS = False",
+      "id": "M5",
+      "restored_ok": true,
+      "restored_sha256": {
+        "cw": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+        "dayu": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b"
+      },
+      "runs": [
+        {
+          "failed_names": [
+            "A1_8k_stages_primary_and_exhibit_only",
+            "A2_8k_exhibit_bytes_match_meta_sha",
+            "A4_6k_result_byte_identical_to_before",
+            "A5_10k_result_byte_identical_to_before",
+            "A6_include_exhibits_flag_gates_8k"
+          ],
+          "harness": "adapter",
+          "missing_expected_red": [],
+          "ok": true,
+          "rc": 5,
+          "unexpected_red": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "revert_mutations/v1",
+  "harness": "revert_eval.py",
+  "cases": {
+    "g1_real_revert": {
+      "kind": "green",
+      "desc": "正例（按裁定该退的这一支）：实测 154 千克结构差、C1 FAIL、B1/B2 触发、§三十三 确认适用、恢复条件未出现 ⇒ 必须真退",
+      "rc": 0
+    },
+    "m1_default_literal_only": {
+      "kind": "red",
+      "desc": "红·默认/弱化触发：只认两条字面触发（不带 owner 确认）⇒ 实测 83,161 ≤ 84,477 未超、方向一致 ⇒ 不该退；若判 true 即红",
+      "rc": 0
+    },
+    "m2_recovery_condition_present": {
+      "kind": "red",
+      "desc": "红·恢复条件命中时不得退（转 §3.2 重评）；若仍判 revert=true 即红",
+      "rc": 0
+    },
+    "m3_in_cap_closeable": {
+      "kind": "red",
+      "desc": "红·不该退的被退：铜行残差 +1 吨在 A-6.2 帽内、可凑平、无 owner 支 ⇒ 不退；若判 true 即红",
+      "rc": 0
+    },
+    "m4_recovery_phantom_satisfied": {
+      "kind": "red",
+      "desc": "红·恢复条件被误判为已满足：三条恢复条件实测均未出现 ⇒ recovery_triggered 必须 false 且必须真退；若判 recovery_triggered=true（因而不退）即红",
+      "rc": 0
+    }
+  },
+  "summary": {
+    "rcs": {
+      "g1_real_revert": 0,
+      "m1_default_literal_only": 0,
+      "m2_recovery_condition_present": 0,
+      "m3_in_cap_closeable": 0,
+      "m4_recovery_phantom_satisfied": 0
+    },
+    "all_expectations_met": true,
+    "n_cases": 5
+  }
+}

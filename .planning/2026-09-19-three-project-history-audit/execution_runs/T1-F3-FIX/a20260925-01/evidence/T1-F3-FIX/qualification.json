@@ -1,0 +1,256 @@
+{
+  "card_id": "T1-F3-FIX",
+  "attempt_id": "a20260925-01",
+  "plan": "2026-09-19-three-project-history-audit",
+  "artifact": "qualification.json",
+  "revision": "r1",
+  "date": "2026-09-25",
+  "created_by": "carrier-landing bookkeeping executor (delegated subagent of session-19074bf0-0205-4315-af73-9db57597275a), 2026-09-25 (local)",
+  "creation_note": "created by the carrier-landing 簿记 pass. Before this pass the attempt root held after/ baseline/ before/ evidence/ recovery/ scripts/ worktree/ _pytest_tmp/ plus binding.json / changes.diff / commands.json / decision.md / diff_stats.json / handoff.json / oracle.md / reviewer_report.md / reviewer_report.sha256; there was NO review.md (Test-Path = false) and NO qualification file for this card (Test-Path evidence/T1-F3-FIX/qualification.json = false). This file mirrors the same ruling as review.md / handoff.json and adds no acceptance of its own (verdict_is_transcribed_not_authored=true).",
+
+  "formula": "not_applicable_with_reason",
+  "formula_reason": "本卡不是公式卡：被判据化的是 F-3 修复（畸形时间戳 `_parse` → per-case 拒绝 + 单一新码 `R-TIMESTAMP-MALFORMED` + 受影响时间字段置 null）的**证据与判据**（5 个 TS 探针 rc4→rc0 翻转、域 rc2/rc4 不变、NC-MISSING 7 行字节全等、四变异臂真红、批次负控与逐字节相同、词表 16→17、行不交界三区全等、合并链两步逐字节重建、changes.diff 可逆重建、invariants 31/31、mut20 20/20），没有任何公式、情景或数值推导被判据化；本 pass 更只做簿记转录。故 formula 记 not_applicable_with_reason，理由如本字段——不授予任何公式资格，也不提升任何既有卡的 formula 状态。",
+  "disclosure_adaptation": "unmapped",
+  "disclosure_adaptation_note": "canonical value retained unchanged; the reviewer grants no disclosure adaptation on this card (carrier sections 13-15 list no such grant).",
+  "accuracy": "unproven",
+  "accuracy_note": "canonical value retained unchanged; the reviewer claims no accuracy qualification on this card. Note carrier §14 item 1 keeps evidence/before/* provenance at 「无法逐字节比对两版脚本」 and item 5 keeps the interpreter-environment comparison unmade, so accuracy stays unproven.",
+
+  "verdict": "ACCEPT",
+  "verdict_counts": "P1=0 / P2=0 / P3=8 (report section 13); P1=0 => verdict is ACCEPT, not changes_required; section 14 carries the unverified/limitation list",
+  "verdict_line": 7,
+  "verdict_line_text": "VERDICT: ACCEPT",
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+
+  "granted_scope": [
+    "F-3 修复（畸形时间戳路径）的**证据与判据**：before TS1–TS5 全 rc=4 / report 未写出 / 0 裁决 + stdout internal_error（`Invalid isoformat string: 'not-a-timestamp'`，TS5 = `\"'list' object has no attribute 'endswith'\"`）+ 直调 `classify()` 抛 `ValueError`（Traceback 5/5）；after TS1–TS5 全 rc=0 / 报告写出 / `reject_claim` / `[R-TIMESTAMP-MALFORMED]` / 受影响时间字段 null",
+    "域不变的**成对可判据**：**DOC-2 两像均 rc=2 `malformed_input` 逐字节同**、**CTRL-4 两像均 rc=4 `\"'str' object has no attribute 'get'\"` 逐字节同** ⇒ rc=2 / rc=4 两域均未被吃掉",
+    "**NC-MISSING 7 行逐字节全等**：S7a/S7b/S7c = `accept_claim []`；S8 = `reject [R-EMPTY-EVIDENCE, R-FUTURE-CLOCK, R-SAME-INSTANT]` **不含 `R-CLAIM-EXCEEDS`**；K7 = `[R-SIMULATED-CLOCK]`；S9 = 四码；S10 = `accept []`",
+    "**词表 16 → 17 的独立复算**：`\\bR-[A-Z0-9-]+\\b` 左像 `9b1ebda2…` = **16**、修复像 `d1ced6ac…` = **17**、`after−before = {R-TIMESTAMP-MALFORMED}`、`before−after = ∅`、16 码与 T1-10-FIX reviewer §7 **逐字一致**；裸式左像 17 / 修复像 18、两像 bare-only **恒为 `{R-UNKNOWN}`**（`R-UNKNOWN_CLASS` 被 `_` 截断）⇒ 实现者「裸=17、带\\b=16、多计一个假码」成立；既有 16 码两像原样、`R-UNKNOWN_CLASS` 两像均仍在源码",
+    "**四变异臂真红**（各 anchor 1 次，mutant sha 记入）：A 还原 `_parse` = `47788debe8b32622`/30048 ⇒ TS1–5 **5/5 rc=4 / 无报告 / 0 裁决**；B 去新码 = `bb2a3d136a166e11`/30857 ⇒ **5/5 rc=0 但 `verdict=accept_claim`、`refusals=[]`（危险 accept）**；C `computed` 不置 null = `9fdf20649345971e`/30785 ⇒ **TS1/TS5 非 null**；D 删降级 = `a4f4987283275560`/30849 ⇒ **TS1=4、TS5=4、TS2/3/4=0**；驱动 `all_arms_red=true`",
+    "**批次负控**：before `[BAD,W1,X5,C1]` = **rc=4 / 无报告 / 0 裁决**；after = **rc=0 / 报告 / 4 条 verdict**（**accept 恰 2 = W1、X5**；C1 仍四码 reject；BAD 单独新码）；**B-BYTE-1** `verdicts[1:]` == 只跑良构 **逐字节 true**；**B-BYTE-2** 良构-only 报告 sha **`41bf0a402ee3cc23b9be49920f1546f04852604ce048c6ca617f6406d6a99648`**（复审两像 + 实现者登记值三方相同）",
+    "**suites / gates / invariants / mut20**：四套件 `32/18/23/29` 两像 **0 failed**，新族 **6p13f → 19p0f**；gates before==after（r2 `beb06495…` 34/34、r1 `6fa04855…`/W1 既有态）；**invariants 31/31 PASS**；mut20 两像各 **20/20 all red**；probes before **12/12**、after **22/22**",
+    "**行不交界独立重算**：T1-10 `{67-75,81,214-224}`、T1-F2 `{56-63,367-379,461-476}`、defect-2 `{189-212}` **三项与登记值全等**；改动行集与三外部区交集 **∅**（`foreign_hits = {}`）；`_parse` 本体 `{89-95} ⊇ {89-92}`；**即使按含上下文整 hunk 包络加严（T1-10 `64-84/211-227`、T1-F2 `53-66/364-382/458-479`）交集仍 ∅**",
+    "**合并链重建**：`apply(D1 625ecfe4…, L0 7fff6f0c…)` = `064e5381…` == L1、`apply(D2 bc87bf81…, L1)` = `9b1ebda2…` == L2 **均逐字节 True**（复审自写 unified-diff 应用器，未跑对方 `analyze_chain.py`）；`merge_order_position = 3_of_3`",
+    "**changes.diff**：**29067 B / `693d6239fd958545bc05ad8d246758f2bb47a4ca10de37187c2f9454fadaf5ba` / +539 −23 / 恰 2 文件**；**`+++ b/src/` 0 条、`+++ b/scripts/` 0 条**；应用到左像**逐字节重建** `d1ced6ac…` 的 SUT 与 `5e6644fa…` 的新测试；`diff_stats.json` 五项独立重数全部相等",
+    "**ERRATUM-1 = 合法的追加式更正、非事后改期望**（carrier §7.1 三条理由）：① §4 冻结输入 + SUT 自身定义独立手算得 `offsets=[0,10]`、`errors=[0,0]`、`max_error=0.0`、`label_count=3`（与观测无关）② 冻结体内仍是 `label_offsets_seconds=[0,0]`（字节级确认）③ 冻结体前 24326 B sha `539dbb38…` 仍是当前 31227 B 文件的不间断前缀（ERRATUM-1 起于 24332、ERRATUM-2 起于 27082），**其余期望一字未改**",
+    "**「不自填 B1/B4/B5/B3」= 正确**（carrier §8）：§11.8 ③b 是唯一授权来源（时间戳形状 + 一个新码），§5 I-2 / §8.1 明令「缺键行为不变」⇒ **两令相交**；两像逐字节实测不变（B1→rc=4 `\"'started_at'\"`、B4→rc=4、B5→rc=4 float 错、B3→rc=4 `string indices must be integers`）；新测试族专设 `test_missing_required_timestamp_key_still_raises_keyerror` 钉成断言",
+    "**仪器纠偏与先冻后跑时序**：IC-1/2/3 **全部在 SUT 修改之前**（`instrument_runs` 最晚 `21:30:47Z` < SUT `21:33:43Z`，之后 0 文件）；IC-3 插件 `e96890fe…`/1725 B 与 T1-F2-FIX 同名文件逐字节相同；oracle 冻结 `21:15:15` → freeze `21:25:10` → `evidence/before` 最晚 `21:31:38`（101 文件，晚于 SUT 者 0）→ SUT `21:33:43` → 两 erratum `21:40:49` → diff `21:41:40` → handoff `21:45:57`",
+    "**未跟踪披露核对 = 如实**：非 `.planning` 现 **48 条**（`.tmp-r41-mutation` 45 + `h2.log` + `h2.log.err` + `plan_inputs.json.bak`）；`probe_root_m777*/f.txt` 2 条已按父处置移入 `I-14-E-TESTSIDE`；`probe_root_m700` git 无法枚举；**45+1+2+2 = 50 与披露总数吻合**（分组标签 (46) 实为 45 = P3-4）",
+    "**裁决的转录面**：review.md（新建）、handoff.json 的 status 面（review_pending → accepted_scoped + status_before / status_authority / status_history / reviewer_status / carried_findings / unverified / merge_order_position / verdict_is_transcribed_not_authored）、本 qualification.json",
+    "**八条 P3 的原样携带**：P3-1 … P3-8（逐字，见 carried_findings；8 条均不阻断）"
+  ],
+  "not_granted": [
+    "落库 —— `changes.diff` 是否入库，**归父方**；本 pass 零生产合并、零 git 写",
+    "合并 —— 合并序 625ecfe4 → bc87bf81 → 693d6239 的**执行**归父方；本 pass 只转录 `merge_order_position = 3_of_3`，不 apply、不 merge",
+    "晋升 —— 把 changes.diff 晋升到生产是 **owner 独立决定**，本卡与本 pass 均不授予（promotions = 0）",
+    "B1 / B4 / B5 / B3 四条边界的**处置权** —— 归父 / owner；复审只判定「不自填」这一处置**正确**，**未裁**四条是否改成 per-case 拒绝、配哪个码",
+    "产品闭环 —— 生产树零写入、零合并，**不可记生产 CLOSED**",
+    "F-1 / F-2 / P4 复审结论的重裁 —— 归 T1-F2-FIX / T1-10-FIX 裁权，本 pass 不读判、不复述",
+    "accuracy —— 保持 `unproven`（carrier §14.1 / §14.5），本 pass 不做任何 accuracy 判定",
+    "disclosure_adaptation —— 保持 `unmapped`，本 pass 不授予任何披露适配资格",
+    "公式资格 —— formula = `not_applicable_with_reason`（见上）",
+    "任何八条 P3 的处置 —— 复审与本 pass 均只**原样转录**，不做处置、不弱化",
+    "登记册 / 五份计划文件的改写 —— 归父（父统一折入）；本 pass 零计划文件写入",
+    "I-14-B `oracle.md`（§11.8 只读）与两前置卡（T1-10-FIX / T1-F2-FIX）任何字节的改动 —— 0 字节"
+  ],
+
+  "status_authority": {
+    "status": "accepted_scoped",
+    "status_before": "review_pending",
+    "status_transition": "review_pending -> accepted_scoped",
+    "status_rounds": 1,
+    "carrier": "reviewer_report.md",
+    "path_inside_attempt": "execution_runs/T1-F3-FIX/a20260925-01/reviewer_report.md",
+    "carrier_sha256": "e992c1f1e5882d77e45c90bb84aa8acd2e5a00f57096e15b4743fa89c8ba8ba4",
+    "carrier_bytes": 32516,
+    "carrier_total_lines": 288,
+    "carrier_encoding": "UTF-8 without BOM (first bytes 35 32 84 = '# T'), LF-only (CR count = 0), single trailing LF",
+    "carrier_pin_sidecar": "reviewer_report.sha256 (85 B; sidecar's own sha256 = b0605bc62ef984cb7dcce29e22dfd8b8d52256019f91762a7611f777217ba8db; content 'e992c1f1e5882d77e45c90bb84aa8acd2e5a00f57096e15b4743fa89c8ba8ba4  reviewer_report.md' MATCHES an independent re-hash at landing)",
+    "verdict_word_written_by_reviewer": "ACCEPT",
+    "verdict_line": 7,
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "verdict_line_byte_region_inclusive": [450, 465],
+    "verdict_line_length": 16,
+    "verdict_line_sha256": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4",
+    "verdict_line_text_only": {"start": 450, "end_inclusive": 464, "length": 15, "sha256": "f422a3f09f3f34867781b3d435ff517074b87f9ef6852bd7732ef50f8b95d1e7"},
+    "region_definition": "0-based byte offsets against reviewer_report.md as it stands at carrier_sha256; each region includes its final line's trailing LF",
+    "sections": {
+      "s13_findings_lines_247_263": {"start": 26057, "end_inclusive": 28966, "length": 2910, "sha256": "02c02a48a9644356084dc3cfdd6ce2cd4dd2543aea17fc98507a20ca60cf124d"},
+      "s13_p3_items_only_lines_253_260": {"start": 26153, "end_inclusive": 28960, "length": 2808, "sha256": "43a360a3a83e4bd8e710b4dfbc013247a4ad7e7de2e5e53fdfbfd83da5486cef"},
+      "s14_unverified_lines_264_276": {"start": 28967, "end_inclusive": 31190, "length": 2224, "sha256": "06f7069a0843ae60ae1063ccdb3a34556b53cdb2b3cb49276e47445b864d180e"},
+      "s14_items_only_lines_266_273": {"start": 29010, "end_inclusive": 31184, "length": 2175, "sha256": "96c7918d7312913accd1cff429272621ec153d14accc37b51db9c2c9973e1f4f"},
+      "s15_did_not_do_lines_277_288": {"start": 31191, "end_inclusive": 32515, "length": 1325, "sha256": "a00ad2ff13a702dffb2695409681f78022122f1848af9217258c28832798f64f"},
+      "s0_method_lines_11_27": {"start": 472, "end_inclusive": 2903, "length": 2432, "sha256": "fd0b19829f7ff697f70cd6f9b6f8fdaf160e0d1be54e6a345b1ad934f31a0aed"},
+      "s1_checklist_lines_28_51": {"start": 2904, "end_inclusive": 7288, "length": 4385, "sha256": "05034146bb4320976c115e8b8cc4253aa99e0f9ab8516f47857e1df8d4605ea3"},
+      "s2_vocabulary_lines_52_66": {"start": 7289, "end_inclusive": 8703, "length": 1415, "sha256": "cfd9a14dfb763734a461cd9803ccab3cf38eb02e00b7a85979a48772075a7fe7"},
+      "s3_arms_and_batch_lines_67_88": {"start": 8704, "end_inclusive": 10801, "length": 2098, "sha256": "46cd074ff783bf60c86b7ed8c1f12fb9886b02c174cdbff51c5afc31932f38e4"},
+      "s4_line_disjointness_lines_89_107": {"start": 10802, "end_inclusive": 12826, "length": 2025, "sha256": "00d3c53cb114467a46cb38359c7b57522bed5845a919c767729d5ad4dc7e8faf"},
+      "s5_merge_chain_lines_108_120": {"start": 12827, "end_inclusive": 13465, "length": 639, "sha256": "0d99a1febe5a76bf146e232e7c252acac422f9d6a9ad47642fdb4155674ee94d"},
+      "s6_changes_diff_lines_121_131": {"start": 13466, "end_inclusive": 14596, "length": 1131, "sha256": "863ca365daf931827a38598591523dc9adcefbe91ead81887efd76387e1bf586"},
+      "s7_oracle_and_errata_lines_132_164": {"start": 14597, "end_inclusive": 18609, "length": 4013, "sha256": "9e016a2fa59358111792ae1f0da50d659a11d47d9c09d00642689c971e30d568"},
+      "s8_no_self_fill_lines_165_187": {"start": 18610, "end_inclusive": 20620, "length": 2011, "sha256": "edb254fdaf014d1d2617ec6606bf0c5dcf04e0ee4a87cd30a24de9d8e1ffd05d"},
+      "s9_instrument_lines_188_196": {"start": 20621, "end_inclusive": 21948, "length": 1328, "sha256": "a81a792dd9c90d2d0597a54868e5e4f4979648c2a7914c9ff247db7064442f47"},
+      "s10_untracked_lines_197_206": {"start": 21949, "end_inclusive": 23320, "length": 1372, "sha256": "3e8e8c7a8e02a57a2435a4668e2f918132e14efa2c97d9ad60ff94bd2db6589d"},
+      "s11_boundary_lines_207_215": {"start": 23321, "end_inclusive": 24286, "length": 966, "sha256": "0807353e408efb5bf4662430f0c35feb20a7153f7bfe1c6f54585a2a80335978"},
+      "s12_hash_table_lines_216_246": {"start": 24287, "end_inclusive": 26056, "length": 1770, "sha256": "97d1ae53436299289b5a44ab6159d7e1df81eaac6cf48e121669ac2653238fa4"},
+      "verdict_line_7": {"start": 450, "end_inclusive": 465, "length": 16, "sha256": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4"}
+    },
+    "verdict_counts": "P1=0 / P2=0 / P3=8 (section 13)",
+    "unverified_counts": "section 14 numbers 8 entries verbatim; the dispatch records 6 unverified items - reconciliation in unverified_count_reconciliation (items 1/2/3/5/6/7 = 6 unverified; item 4 = 未裁/owner scope; item 8 = explanation of the 30/31 mtime blip)",
+    "status_label_transcribed": "accepted_scoped",
+    "status_label_mapping_note": "the reviewer writes the word ACCEPT (not a status enum); accepted_scoped is the plan's canonical status for an ACCEPT carrying the eight P3 findings the reviewer lists in section 13 - none of them blocks (section 13 heading: P3（不阻断，供父方/下轮参考）)",
+    "reviewer": "independent reviewer, N=1 (carrier lines 3-5: 独立复审（与实现者非同一人）); did not participate in this card's implementation; wrote only reviewer_report.md + reviewer_report.sha256 inside this attempt (carrier line 5)",
+    "reviewer_method_boundary": "read-only production tree; all re-runs inside the reviewer's own %TEMP% isolated copies (f3rev + f3rev2); zero writes to the attempt except the two new report files; no network; no tests on the production tree; no state-changing git and git status never used (carrier sections 0/1/11/15)",
+    "merge_order_position": "3_of_3",
+    "merge_order_chain": "625ecfe45f3d713a... (T1-10-FIX, D1) -> bc87bf81bc53aad1... (T1-F2-FIX, D2) -> 693d6239fd958545... (this card, THIRD)",
+    "mirror": "handoff.json: status=accepted_scoped, status_before=review_pending, status_transition, status_history, status_authority, reviewer_status, carried_findings, unverified, unverified_pre_verdict_retained, merge_order_position=3_of_3, verdict_is_transcribed_not_authored=true, implementer_signed=false, bookkeeping",
+    "transcription_only": "this file, review.md and handoff.json transcribe the carrier verdict and add no acceptance of their own"
+  },
+
+  "carried_findings": [
+    {
+      "id": "P3-1",
+      "level": "P3",
+      "title": "文档精度：冻结 oracle §3「新侧全 hunk」列与 difflib 头差 3 行",
+      "verbatim_must_carry": "**P3-1（文档精度）** 冻结 oracle §3 表中 T1-F2-FIX 的「**新侧全 hunk** = `53–63 / 364–379 / 458–476`」与 difflib 头本身不符（`@@ -53,7 +53,14 @@` 的新侧全 hunk 实为 `53–66`；另两处实为 `364–382`、`458–479`）—— 该列实际给的是「上下文起点 → 改动终点」。**受影响的断言口径是「新增内容 = 56–63 / 367–379 / 461–476」，我重算完全正确；且即便按整 hunk 包络加严，交集仍为 ∅** ⇒ 结论不受影响。",
+      "dispatch_addendum": "父派单携带口径：oracle §3「新侧全 hunk」列与 difflib 头差 3 行（实为 53-66/364-382/458-479），其断言口径「新增内容」正确、结论不受影响。",
+      "disposition": "carried verbatim; no oracle byte is changed by this pass",
+      "blocking": false,
+      "source": "reviewer_report.md §13 P3-1 (line 253) + §4"
+    },
+    {
+      "id": "P3-2",
+      "level": "P3",
+      "title": "判据覆盖：驱动臂 4 不校验 TS2/3/4 仍 rc=0",
+      "verbatim_must_carry": "**P3-2（判据覆盖）** `cmd_mutations` 对臂 4 的红判据只要求 `TS1/TS5 == rc=4`，**不校验 `TS2/3/4` 仍 rc=0**（E2-c 声称其为预期）。实测确为 0/0/0，但驱动未把该预期固化为 check。",
+      "dispatch_addendum": "父派单携带口径：驱动臂 4 不校验 `TS2/3/4` 仍 rc=0。",
+      "disposition": "carried verbatim; measured 0/0/0, not encoded as a check - no criterion is changed by this pass",
+      "blocking": false,
+      "source": "reviewer_report.md §13 P3-2 (line 254) + §3 arm D row"
+    },
+    {
+      "id": "P3-3",
+      "level": "P3",
+      "title": "判据覆盖：cmd_batch 的 B-BYTE-2 在 after 相是 ok=True 占位",
+      "verbatim_must_carry": "**P3-3（判据覆盖）** `cmd_batch` after 相的 `B-BYTE-2` check 是硬编码 `ok=True` 占位（真正跨相比较放在 `invariants`）；我已**自行逐字节验证**良构-only 报告 sha 前后相等，故事实成立，但该子命令单独跑时会给人「B-BYTE-2 已验」的错觉。",
+      "dispatch_addendum": "父派单携带口径：`cmd_batch` 的 `B-BYTE-2` 在 after 相是 `ok=True` 占位（真比较在 `invariants`，复审已自行验证）。",
+      "disposition": "carried verbatim; the fact (good-only report sha 41bf0a402ee3cc23... equal before/after, three-way match) was independently verified by the reviewer",
+      "blocking": false,
+      "source": "reviewer_report.md §13 P3-3 (line 255) + §3 B-BYTE-2 row"
+    },
+    {
+      "id": "P3-4",
+      "level": "P3",
+      "title": "披露精度：未跟踪分组标签 (46) 实为 45（总数 50 正确）",
+      "verbatim_must_carry": "**P3-4（披露精度）** `handoff.boundary.untracked_non_planning_disclosure` 把 `.tmp-r41-mutation/**` 记作 **(46)**，我实测 **45**（总数 50 正确：45+1+2+2）。",
+      "dispatch_addendum": "父派单携带口径：`handoff` 未跟踪分组标签 (46) 实为 45（总数 50 对）。",
+      "disposition": "TRANSCRIBED ONLY - this pass does not edit the pre-existing boundary disclosure string; P3-4 itself is the record of the discrepancy",
+      "blocking": false,
+      "source": "reviewer_report.md §13 P3-4 (line 256) + §10"
+    },
+    {
+      "id": "P3-5",
+      "level": "P3",
+      "title": "复现性提示：驱动 --sut 默认指向修复像",
+      "verbatim_must_carry": "**P3-5（复现性提示）** 驱动的 `probes/gates/ncmissing/vocab/batch` 的 `--sut` **默认指向 worktree（修复像）**，复审者若不显式传 `--sut <left image>` 会把 `--phase before` 静默跑在修复像上；`commands.json` 里 before 相显式带了 `--sut`，故实现者没错，但这是驱动的易错点（我复跑时全部显式传参）。",
+      "dispatch_addendum": "父派单携带口径：驱动 `--sut` 默认指向修复像，复审者漏传会把 before 跑错像。",
+      "disposition": "carried verbatim; the implementer is explicitly not at fault; the reviewer passed --sut explicitly on every rerun",
+      "blocking": false,
+      "source": "reviewer_report.md §13 P3-5 (line 257) + §0"
+    },
+    {
+      "id": "P3-6",
+      "level": "P3",
+      "title": "表述计数：「11 个 harness pin」实为 10 个 harness 文件 + I-14-B oracle",
+      "verbatim_must_carry": "**P3-6（表述计数）** oracle §5 I-7 / handoff / decision.md 称「**11 个 harness pin**」，而 `binding.json.harness_pins_byte_identical_through_the_run` 实为 **10 个 harness 文件**（另含 1 条 I-14-B oracle + 2 条目录级 0 字节声明 + 1 条 note，共 14 键）；若把 oracle 计入则为 11 个被 pin 文件，但那样 §5 又把它与「I-14-B oracle」并列重复计数。实质（全部 pin 三次 sha 相等）我已验证成立。",
+      "dispatch_addendum": "父派单携带口径：「11 个 harness pin」实为 10 个 harness 文件 + I-14-B oracle（实质已全验）。",
+      "disposition": "carried verbatim; wording/count only - substance independently verified (binding harness pins == freeze.json.harness_pins (10 harness files) == binding registered values; I-7a/I-7b PASS)",
+      "blocking": false,
+      "source": "reviewer_report.md §13 P3-6 (line 258) + §12"
+    },
+    {
+      "id": "P3-7",
+      "level": "P3",
+      "title": "观测口径：evaluate_probes 只比期望表列出的 computed 键",
+      "verbatim_must_carry": "**P3-7（观测口径）** `evaluate_probes` 的 GREEN `computed` 比较只比对冻结期望表里**列出的键**（多余键不会失败）；良构路径的字节同一性由 `gates` 另行覆盖，故风险有限。",
+      "dispatch_addendum": "父派单携带口径：`evaluate_probes` 只比期望表列出的 `computed` 键。",
+      "disposition": "carried verbatim; bounded risk because gates covers byte-identity of the well-formed path",
+      "blocking": false,
+      "source": "reviewer_report.md §13 P3-7 (line 259)"
+    },
+    {
+      "id": "P3-8",
+      "level": "P3",
+      "title": "证据易碎性（非产品缺陷）：invariants temporal 检查读 mtime",
+      "verbatim_must_carry": "**P3-8（证据易碎性，非产品缺陷）** `invariants` 的 temporal 检查读的是 `evidence/before/**` 的 **mtime**；我在第一份副本上**就地重跑 before 相**后该项翻红（30/31），把原始 before 证据原样还原后即回 31/31，且生产树上该检查本为真（101 文件最晚 `21:31:38` < SUT `21:33:43`，晚于者 0）。⇒ 该 check 对「复审者就地重跑」敏感，建议将来改用证据内嵌的 run 时间戳或在 after 相重新落盘前先快照 before。",
+      "dispatch_addendum": "父派单携带口径：`invariants` 的 temporal 检查读 mtime，复审者就地重跑 before 相会误报（复审在副本上先误红 30/31，还原原始 before 证据后 31/31；生产树上该判据为真）。",
+      "disposition": "carried verbatim as evidence fragility, explicitly not a product defect; this pass re-runs nothing and rewrites no evidence, so the mtime ordering is untouched",
+      "blocking": false,
+      "source": "reviewer_report.md §13 P3-8 (line 260) + §14 item 8"
+    }
+  ],
+  "carried_findings_counts": "P1=0, P2=0, P3=8 (verbatim from reviewer_report.md section 13)",
+  "carried_findings_effect": "all eight are P3 and none blocks the ACCEPT verdict (section 13 heading: P3（不阻断，供父方/下轮参考）)",
+
+  "unverified": [
+    "1. **`evidence/before/*` 由脚本早期版本生成**（handoff 自曝的三处差异：S9 码序表、TS4 GREEN 表、变异臂定义）—— 旧版本未留存，**我无法逐字节比对两版脚本**；但我在隔离副本上**独立复跑 before 相全部判据**（probes 12/12、gates、suites 32/18/23/29、ncmissing 7/7、vocab 16、batch B-NEG、mut20 20/20），结果与其登记值一致 ⇒ 该披露对结论无实质影响。 [未验证 1/6]",
+    "2. **未复跑 `freeze` 与 `diff` 子命令**（二者会覆写 `evidence/freeze.json` / `changes.diff` / `diff_stats.json`，越我写入面）；改为对这些产物做哈希与内容独立核验。 [未验证 2/6]",
+    "3. **新测试族 16144 B 我未逐行通读**：实读到 **15 个 `def test_*`**，其中 1 个按 `TS_CASES = {TS1…TS5}`（5 例）参数化 ⇒ **14 + 5 = 19 例**；TS-4 断言值为 `[0, 10]`（`[0, 0]` 断言 0 处）；并以 empirically RED（6 passed/13 failed）→ GREEN（19 passed/0 failed）验证。 [未验证 3/6]",
+    "4. **未裁** `changes.diff` 是否落库/合并、未裁 B1/B4/B5/B3 四条边界的最终归属、未裁 F-1/F-2/P4 复审结论 —— 均属父方/owner。 [限制 / 裁权边界，不计入 6]",
+    "5. 解释器差异：实现者用 I-14-B venv `python.exe`，我用系统 `python`（同为 3.13.9，pytest 同为 9.1.1），结果逐项一致，但我未逐文件比对两解释器环境。 [未验证 4/6]",
+    "6. `probe_root_m700/` 因权限不可枚举，我只能确认其**存在**与 git 无法列出，未核其内容（父方已登记「删不掉」）。 [未验证 5/6]",
+    "7. 实现者称「4 个未跟踪文件 mtime 落在本卡时间窗内」—— 现存项中最早的 `h2.log` 为 `21:01:12`（早于 freeze `21:25:10`），被移走的两个 `probe_root_m777*` 我已无法取其原 mtime，**该句只作部分核实**。 [未验证 6/6]",
+    "8. 我在 `%TEMP%` 副本上的**第一次** `invariants` 出现 30/31（唯一红 = temporal），原因见 P3-8：是我先在同一副本重跑了 before 相，把 `evidence/before/**` 的 mtime 刷新到 SUT 修改之后。**这不是实现者的缺陷**：还原原始 before 证据后 31/31，未动的干净副本亦 31/31，且我独立在生产树上算过该判据为真。报告中所有 31/31 均指还原后/干净副本的结果。 [限制 / 成因说明，不计入 6]"
+  ],
+  "unverified_source": "reviewer_report.md section 14 (lines 264-276; numbered items at lines 266-273, byte region [29010, 31184] length 2175 sha256 96c7918d7312913accd1cff429272621ec153d14accc37b51db9c2c9973e1f4f), transcribed item by item without altering any number",
+  "unverified_count_reconciliation": "The dispatch records 「复审 6 项未验证」; section 14 numbers 8 entries. All 8 are carried, none dropped: items 1/2/3/5/6/7 = the 6 unverified items; item 4 = explicit 未裁 / owner-scope statement; item 8 = explanatory note for the 30/31 mtime blip.",
+  "unverified_pre_verdict_retained": [
+    "TS-4 探针的 label_offsets_seconds=[0,10] 由 oracle ERRATUM-1 在 GREEN 首跑发现笔误后 append-only 更正 —— 该单值不作为「先于观测冻结」的证据（其 rc/verdict/新码/label_count/max_error/anchor id 部分仍是冻结面），交付报告标注「更正后复测」。",
+    "evidence/before/* 由 scripts/verify_t1_f3_fix.py 的一个早期版本生成（仅 S9 期望表、TS4 GREEN 表、变异臂定义三处后来改动，三者都不影响 before 判据）；before 阶段各 check 的判据文本在两版之间完全一致。",
+    "_pytest_tmp/before_test_i14b_natural_window_{bas,con,tim} 三个 0o700 目录不可删除（沙箱 ACL，实测 Remove-Item 拒绝），为 IC-3 两次 plugin-less 仪器运行的遗留；已用 g1_ 前缀永久绕开，不参与任何判定。",
+    "本卡不判断 changes.diff 是否应落库、不判断 F-1/F-2/P4 的复审结论 —— 那属父方与 reviewer。"
+  ],
+  "unverified_pre_verdict_note": "the four pre-verdict unverified entries of the implementer's handoff are retained verbatim here and in handoff.json (nothing deleted); the authoritative unverified list is the reviewer's section 14 above.",
+
+  "merge_order_position": "3_of_3",
+  "merge_order": "T1-10-FIX 625ecfe45f3d713a... -> T1-F2-FIX bc87bf81bc53aad1... -> THIS CARD 693d6239fd958545... (THIRD of three; execution of the merge belongs to the parent)",
+
+  "boundary": {
+    "product_tree_writes": 0,
+    "git_writes": 0,
+    "git_read_only_commands": "git -c core.quotepath=false diff HEAD --name-only (read-only boundary check); git status NOT used",
+    "git_diff_HEAD_name_only_total_at_landing": 3826,
+    "git_diff_HEAD_name_only_non_planning_at_landing": 0,
+    "oracle_writes": 0,
+    "reviewer_report_bytes_written": 0,
+    "plan_file_writes": 0,
+    "deletions": 0,
+    "network": 0,
+    "tests_run": 0,
+    "promotions": 0,
+    "merges": 0
+  },
+
+  "files_and_hashes": {
+    "review.md": {"state": "created (did not exist before this pass; Test-Path was false)", "sha256_bytes": "reported in the pass delivery message (self-hash cannot be embedded)"},
+    "handoff.json": {"state": "status face transcribed", "sha256_before": "b636707f23a44774e320e1b2aece121401c4bbd410e3b040f7bd5fec970591ef", "bytes_before": 19808, "mtime_before": "2026-09-25 22:45:57 (local)", "sha256_after": "549f96818c9cc5ccb99d79ccf21f7e1d0a4900beb0c37d9c1bad1694453f02ad", "bytes_after": 46781, "json_reparse": "re-parsed after write (OK)"},
+    "qualification.json": {"state": "created (this file; directory evidence/T1-F3-FIX/ newly created)", "sha256_bytes": "reported in the pass delivery message"},
+    "carrier": {"file": "reviewer_report.md", "bytes": 32516, "sha256": "e992c1f1e5882d77e45c90bb84aa8acd2e5a00f57096e15b4743fa89c8ba8ba4", "bytes_written_by_this_pass": 0},
+    "carrier_sidecar": {"file": "reviewer_report.sha256", "bytes": 85, "sha256": "b0605bc62ef984cb7dcce29e22dfd8b8d52256019f91762a7611f777217ba8db", "bytes_written_by_this_pass": 0},
+    "untouched_originals": ["oracle.md", "binding.json", "commands.json", "decision.md", "changes.diff", "diff_stats.json", "evidence/** (all pre-existing files: freeze.json, line_zones.json, before/**, after/**, instrument_runs/**)", "scripts/**", "worktree/**", "baseline/**", "before/**", "after/**", "recovery/**", "_pytest_tmp/**", "reviewer_report.md", "reviewer_report.sha256", "handoff.json non-status bytes"]
+  },
+
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent of session-19074bf0-0205-4315-af73-9db57597275a)",
+    "status_transition_mirrored": "review_pending -> accepted_scoped (handoff.json)",
+    "write_surface": "exactly 3 files, all inside this attempt: review.md (new), handoff.json (status face only), evidence/T1-F3-FIX/qualification.json (new; directory created)",
+    "never_written": ["REMEDIATION_REGISTER.md", "progress.md", "findings.md", "task_plan.md", "OWNER_DECISIONS.md", "任何 .planning 之外的文件", "reviewer_report.md + reviewer_report.sha256", "本 attempt 的既有 carrier（oracle / binding / commands / decision / changes.diff / diff_stats / 既有 evidence / scripts / worktree / baseline / handoff 的非状态字节）", "I-14-B oracle.md 与两前置卡（T1-10-FIX / T1-F2-FIX）的任何文件"],
+    "json_reparse": "handoff.json and this file re-parsed after writing (json.load / ConvertFrom-Json OK)",
+    "implementer_signed": false,
+    "verdict_is_transcribed_not_authored": true
+  },
+
+  "note": "Created by the carrier-landing bookkeeping pass. verdict = ACCEPT (reviewer_report.md:7, sha256 e992c1f1...8ba4, 32516 B / 288 lines, pinned by reviewer_report.sha256 85 B), counts P1=0 / P2=0 / P3=8 + section 14 unverified list (8 numbered entries; dispatch records 6 - reconciled in unverified_count_reconciliation, nothing dropped). The eight P3 findings change nothing (all P3, non-blocking). formula = not_applicable_with_reason (this card's adjudicated object is evidence and criteria, not a formula), disclosure_adaptation stays unmapped, accuracy stays unproven. granted_scope = the evidence and criteria of the F-3 malformed-timestamp fix plus the transcription of the verdict; not_granted = 落库、合并、晋升、B1/B4/B5/B3 四条边界的处置权、产品闭环、F-1/F-2/P4 重裁、accuracy、disclosure adaptation、formula qualification. merge_order_position = 3_of_3 (625ecfe4 -> bc87bf81 -> 693d6239). This file adds no acceptance of its own."
+}

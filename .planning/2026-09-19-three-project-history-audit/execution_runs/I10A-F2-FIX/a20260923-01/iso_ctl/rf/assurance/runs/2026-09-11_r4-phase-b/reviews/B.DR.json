@@ -1,0 +1,386 @@
+{
+  "review_id": "B.DR",
+  "reviewed_scope": "R4 阶段 B 设计包（DESIGN_ONLY）冻结于 revenue-forecast `assurance/runs/2026-09-11_r4-phase-b/` 提交 `1b4bab4`：task_plan.md、b-design.md、file-scope.md、test-acceptance-map.md、risk-and-stop-rules.md、findings.md、progress.md、evidence/build_checkpoint.py、.gitattributes；外加上级提交 `4c37ca3` 新增的 checkpoint.json（该提交只新增此一文件，已独立验证）。继承审查对象：阶段 A run 目录四份合同（root-contract v0.4、operation-contract v0.3.1、identity-contract v0.3.1、baseline-map）、owner-rulings-2026-09-11.md、boundary-audit.md、a05-corpus-sample-plan.md、a06-baseline-plan.md、command-manifest-readonly.json；治理文件 company-wiki `docs/plans/painpoint-outcome-audit-2026-09-05/{simplified-execution-plan.md,simplified-test-matrix.md,execution-handbook.md}`。审查方式：只读（git 查询、文件哈希、文本检索、Python ast、Get-Item 元数据）。未执行任何 wiki CLI（含 `--help`），未打开/查询/复制/哈希生产库 `company-wiki/.source_catalog/catalog.sqlite3`（仅 Get-Item 元数据），未改动任何产品文件或 run 目录文件（本文件除外）。",
+  "reviewed_commit": "1b4bab4",
+  "reviewer_agent_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe（读自 $env:DSH_SESSION_ID；属进程级自报证据，不构成制度性独立证明，独立资格最终须由引用的真实 task/agent ID 与指派原件（G5/G6）确认；本审查由父 agent session-bfecd191-fbc3-4a66-8ed1-6562479bf102 指派）",
+  "independence_statement": "本人未撰写、编辑或参与本包及任何被审文档（含阶段 A 合同与治理文件）的创作。本次仅只读检查：git log/show/rev-parse/status/reflog/ls-tree、文件 sha256、文本检索、Python `ast`、`Get-Item` 元数据；未执行 wiki CLI（含 `--help`），未运行产品测试，未打开或查询生产 catalog，未写入除本记录外的任何文件（仅创建了承载本文件的空目录 `reviews/`）。所有反证均给出 file:line 并逐字引用被反驳文本。严重度定义（本次自定并显式声明）：P0 = 被引事实为假且按设计实施会破坏在产合同/使 gate 结论失效；P1 = 治理要求未被设计满足、设计要素在提案文件范围内不可实现、或安全相关行为变更无测试；P2 = 事实/锚点/边界不精确或未指明而影响可实施性与可验证性；P3 = 引用与时间戳等文档精度问题。",
+  "inputs_read": [
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/task_plan.md", "sha256": "17f7f2c5cb12ae314e11d7f564f719246a74a254f88697cfb764a4c3a3d18b63"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/b-design.md", "sha256": "d4828aa46862114c49f15465c078024b17867372c0e524280bf1ad3fcc75f5c3"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/file-scope.md", "sha256": "192c68a81406fb1d52dd741e9b53c198048c4101730ac674a92fb35a1aae38c8"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/test-acceptance-map.md", "sha256": "6c26776ab22313c63d8719050fb09cbfb2fd8d7f791d30e7d535cfc7003658d8"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/risk-and-stop-rules.md", "sha256": "c6fd3048ca1afeac68f06628341819179077ec3d83fd72328c99952232212a71"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/findings.md", "sha256": "fccaabdfccf597465af24c4984355733632e48932449ad9282a2efbcc55ca5b0"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/progress.md", "sha256": "40e8361a4f0152cdb60eaea04d34ee7980f07027ffe5a40dec1bee341550a290"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/checkpoint.json", "sha256": "913fe257f707e764d981982714eedf02dd09afb505de12475d7541d5efd8e9ee"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/evidence/build_checkpoint.py", "sha256": "0dcd085d52cf542131d90b38d204b0581612ffdbb023c149fc27da8afdb21d0e"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-b/.gitattributes", "sha256": "2380dc1cb5c4831e386ce5df2b0ab9bb333dddaee7b615e42b20d94b617de879"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/root-contract.md", "sha256": "cecab8cfff54285d461505201beb816fc069d46c48fdf9662e80095704c4bd43"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/operation-contract.md", "sha256": "8f3727ff39f685b0f557d103349bd810f7e661d39da13952115d5c9e4a2b7ec2"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/identity-contract.md", "sha256": "84c6aec96886761c7ae4cc5eebe24400e0c3cd985d40e753d35724a3b4803c4c"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/baseline-map.md", "sha256": "9eb319a5b8e06cdd5945142679e8c51421d1a969b299ebc93d8776d1d336e227"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/owner-rulings-2026-09-11.md", "sha256": "70e7b4d4eb85e731443dcd397be6b5e35571ac223a04d92ee53223fd80e451ae"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md", "sha256": "52183e1427648b6695e346514131d358fe0e46accb3153dd0762cd54763b0cdc"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/a05-corpus-sample-plan.md", "sha256": "9f5b856ff310ba34239e8684789e077192502feb09371cb442980f468dc87a76"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/a06-baseline-plan.md", "sha256": "9b21c8278431166694a96fb45fb8a48f00c57e82dd5a9660014ff7b7bc5878e4"},
+    {"path": "assurance/runs/2026-09-11_r4-phase-a/command-manifest-readonly.json", "sha256": "4382e434805910a401898c037a9abdf497d7e279dc9694106decee4eb97e7556"},
+    {"path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md", "sha256": "e0dccd11ef9191c97c1a9688a319ba253aed7c936836b8b01a476cdcf2896467"},
+    {"path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-test-matrix.md", "sha256": "b90ef4d0b1c3e9446210953f1fa9696575e5c14292a914a8f8469679a1380f49"},
+    {"path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/execution-handbook.md", "sha256": "b20ace43143727376e83801771d08ba550d2ba3429d8f3f902db6847c2b113af"},
+    {"path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/filing-audit.md", "sha256": "0c0624aea79dfd7c405d5ff71e261dad270250118131eeacb62497bacbc63505"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/service.py", "sha256": "6412b19e8e9a3073b2b74f298f1d43c7848bd12eda9df5b657a26cfb94161f96"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/resolver.py", "sha256": "6962b258ce198f1927fb2a63205e3c2f3572f5571089038ec33939dc188b7cec"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/scanner.py", "sha256": "c2ada3e26a53b53527cf82bea8a31f6a5e0af3535b73246a4cf0c799e84920ac"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/reader.py", "sha256": "ad8cb9147d4f2f51e99c4f6f76e8c14e39e5735f9e562a3f768afce566220532"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/models.py", "sha256": "fc6cc009fb22f6d6f844ee3d35cd43da4da5bf5be37eb50612bb586f84159000"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/config.py", "sha256": "e96cea75cb27bcf6a696829f0c01a640b09b6fa6e8a5f6083ad99f72e89437f7"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/policy.py", "sha256": "78320c429e4b7bc92e257c87bbee3dd97b1a384111cb1bd059828713b54763df"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/policy_2x.py", "sha256": "4cebc3babf16aa617c72f756d51b910f06c0f4bffa3af077dfe977a5c364d1d5"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/cli.py", "sha256": "2f5c5740343697078d1e69b3a6a9ef9b0809277799c2d9c28a2d3e4048c4d512"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/store.py", "sha256": "70c4f013c1bd3130897269fa98977a927237addba6bc67b8f4d163431c251a98"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/llm_summarizer.py", "sha256": "13ff33b76547d39dc72e33c55fda6fb397aad59646daa3afa17b474098c27f12"},
+    {"path": "company-wiki/config/source_catalog.yaml", "sha256": "f9eb72a6c37c2dfeacf18a10df9b983dac104276efaf55b0a55b2c5c15f655df"},
+    {"path": "filing-fetch/scripts/filing_contracts.py", "sha256": "2d1b2e3374f1d0c255f94303d208f8657f54c9c32b3428e424f43e6a81ddc457"}
+  ],
+  "commands_run": [
+    "pwd; $env:DSH_SESSION_ID; git -C revenue-forecast log --oneline -5",
+    "Get-ChildItem -Force -Recurse revenue-forecast\\assurance\\runs\\2026-09-11_r4-phase-b\\ | Select FullName,Length,LastWriteTime",
+    "git -C revenue-forecast show --name-status --format=%H%n%P%n%s%n%ci 4c37ca3 (与 1b4bab4)",
+    "git -C company-wiki log --oneline -3 / status --porcelain / show --name-status --format=... 032da52",
+    "git -C company-wiki log -1 --format=... 7d4852f; git rev-parse 7d4852f^{tree} 032da52^{tree}; git diff --stat 7d4852f 032da52 -- src config; git diff --stat 7d4852f 032da52",
+    "Get-FileHash -Algorithm SHA256 (F1-F8 八个候选产品文件 + policy_2x.py + policy_3x.py)",
+    "Select-String -Path phase-a\\*.md,*.json,evidence\\*.py -Pattern '6412b19e|6962b258|c2ada3e2|ad8cb914|fc6cc009|e96cea75|f9eb72a6|78320c42|4cebc3ba|651613d8'",
+    "read tool: resolver.py 775-804 / 900-959 / 522-539 / 1155-1186; service.py 612-681 / 322-343 / 518-535 / 764-781; scanner.py 1000-1089 / 1089-1163 / 855-889 / 745-784 / 980-1009; reader.py 1-60 / 138-197; models.py 84-153; config.py 62-121; policy.py 全文件; policy_2x.py 150-199; cli.py 800-844 / 845-889 / 1170-1195 / 1272-1293; store.py 143-197; llm_summarizer.py 320-349; filing_contracts.py 405-504; source_catalog.yaml 全文件",
+    "Select-String -Path company-wiki\\src -Pattern 'privacy_class|def registered_adapter|ADAPTER_REGISTRY|adapter_id=' 等（adapter/registry、policy_2x/policy_3x 引用面）",
+    "Get-Content <file> | Measure-Object -Line 与 (Get-Content <file>).Count（policy.py/reader.py/models.py/config.py/resolver.py/service.py/scanner.py/llm_summarizer.py 行数）",
+    "python -c \"ast.parse(resolver.py/scanner.py/service.py) → 把 912/918/933/1155/1166/782/528/1222、1007/1038/1078/872/993/753、329/527/621/643/772 映射到所在 def/class\"",
+    "python -c 独立复算：checkpoint.json produced_files 的 9 个 digest 对比 工作树 / index / HEAD / 1b4bab4 四处 blob，并核对 size 与目录覆盖完整性",
+    "python evidence/build_checkpoint.py --verify-only（只读分支，无写入；rc=0）",
+    "git -C revenue-forecast ls-tree -r --name-only HEAD -- assurance/runs/2026-09-11_r4-phase-b/",
+    "git -C {company-wiki,revenue-forecast,filing-fetch} rev-parse HEAD; git -C ... status --porcelain（dirty 计数）",
+    "git -C revenue-forecast log -6 --format='%h %ad | %cd | %s' --date=iso-strict; git branch -vv; git branch -r --contains 4c37ca3; git reflog --date=iso -12; git rev-parse origin/main",
+    "Get-Date -Format 'yyyy-MM-dd HH:mm:ss K'; (Get-Date).ToUniversalTime()",
+    "Get-Item -LiteralPath company-wiki\\.source_catalog\\catalog.sqlite3, catalog.sqlite3-wal, catalog.sqlite3-shm, legacy_periods.json（仅元数据：Length/LastWriteTime/LastAccessTime）",
+    "Select-String -Path company-wiki\\tests\\{contract,unit}\\*.py -Pattern 'tmp_path|catalog.sqlite3|\\.source_catalog'（验证既有测试的 tmp-catalog 机制）"
+  ],
+  "verifications_passed": [
+    "reviewed_commit `1b4bab4` 存在，其父为 `1c2749a`；后续提交 `4c37ca3` 的 name-status 为 `A assurance/runs/2026-09-11_r4-phase-b/checkpoint.json`（仅此一文件），核实了『后续提交只改 checkpoint.json』。注意：checkpoint.json 在 `1b4bab4` 时并不存在（`git show 1b4bab4:.../checkpoint.json` 无该 blob），它是 `4c37ca3` 新增的，故 `checkpoint.json` 的审查对象是 `4c37ca3` 的字节。",
+    "file-scope.md §1 的 F1–F8 八个文件全部存在，`sha256(16)` 与实测逐一相同：service.py `6412b19e8e9a3073`(55519B)、resolver.py `6962b258ce198f19`(56769B)、scanner.py `c2ada3e26a53b535`(62894B)、reader.py `ad8cb9147d4f2f51`(15521B)、models.py `fc6cc009fb22f6d6`(10292B)、config.py `e96cea75cb27bcf6`(9744B)、config/source_catalog.yaml `f9eb72a6c37c2dfe`(1712B)、policy.py `78320c429e4b7bc9`(3384B)。其中 7 个同时等于 baseline-map.md:19-26 的 A01 §0 冻结值（reader.py 无 A01 冻结对应项，见 B-DR-09）。",
+    "『wiki HEAD `032da52` 的父级产品树 = `7d4852f` 冻结的产品输入，产品代码自 A01 冻结后未变』的实质成立：`git diff --stat 7d4852f 032da52 -- src config` 为空输出；`7d4852f..032da52` 全部差异仅为 `PLANNING_STATUS.md`、`docs/plans/painpoint-outcome-audit-2026-09-05/progress.md`、`.../task_plan.md`（3 文件 +32 行）。wiki 工作树 clean，HEAD=032da52。",
+    "代码事实逐条复现：`resolver.py:782-786`（reusable_root_ids 只由 `root.kind in reusable_root_kinds` 构造，位于 `SourceResolver.resolve` [762-1048]）；`resolver.py:912-921`（canonical_locations 过滤 `is_canonical` + `role==original_primary` + `location_status==active` + `:918-920` 排除 `.rejections`）；`resolver.py:933-940`（canonical_locations 上测 `root_id in reusable_root_ids`）；`service.py:643-653`（`ordered = sorted(... key=(root_priority, root_id, relative_path, location_id))`→`canonical = ordered[0]`→`is_canonical=True`，位于 `_annotate_locations` [621-663]）；`service.py:329`/`:527`/`:772`（三处 `ORDER BY ... r.priority, l.root_id, l.relative_path`）；`scanner.py:1038`（`elif root.priority <= existing_document[\"metadata_priority\"]:`，位于 `_scan_catalog_impl` [790-1241]）；`resolver.py:528-533`（`\"selection\": \"lowest_priority_active_original_primary_then_tiebreak\"`，位于 `build_resolution_envelope`）。",
+    "file-scope 其余锚点复现：reader.py `CatalogReader:47`、`ReadOnlyCatalogReader:144`、`mode=ro`+`query_only` `:16`/`:181`；models.py `CATALOG_SCHEMA_VERSION:11`、`ROOT_KINDS:39`、`RootSpec:86-109`（`:86` 为 `@dataclass(frozen=True)`，字段至 `:109 canonical_write_target`）；config.py 字段准入 `:70-118`、未知字段拒绝 `:82-84`；scanner.py `_select_roots:753`；resolver.py rationale `:528-533`。",
+    "风险文件对 cli.py 帮助文本的引用复现（源码级，未执行 CLI）：`cli.py:356-357` \"prune-retired-evidence\" / \"physically delete retired evidence spans after retention window (dry-run default)\"；`cli.py:397-401` duplicate-recycle 的 `--confirmation-token` 为 `required=True`。",
+    "测试矩阵引文逐条比对 simplified-test-matrix.md 后完全一致（含 L01/L03/L05/L07/L08/L09/L10/L11/L12 的输入列与验收列，仅空格差异），测试 ID 未新造；`D0 诊断 / R1 真实本地 / R2 真实外部 / R3 真实持续` 的分层名与 execution-handbook.md §4 表格一致。",
+    "hard stop 数量复现：risk-and-stop-rules.md §3 确为 10 条编号项；其内容与 execution-handbook.md:80 的硬停止清单逐项对应（越界写/未批准外发/未知费用/bad source-hash/真实 source 被 mock/必需测试 skip 或 rc0 空输出/基线漂移/超时无法取消/归档恢复集合不一致 + 本阶段自加的 G8『隔离不足』）。",
+    "findings F-B00-3 的实质成立：wiki 既有测试确实用 tmp_path 构造临时 catalog（如 `tests/contract/test_source_catalog_resolver.py:9 _company_catalog(tmp_path)`、`:46 _dayu_catalog(tmp_path)`，三文件中 `tmp_path|catalog.sqlite3` 命中 57 处），故『机制层用小 catalog、不必复制 49.7 GB』可复现；但引用页码有偏（见 B-DR-18）。",
+    "checkpoint.json 的 `inputs` 三仓快照复现：company-wiki `032da52cf699e26c4de86557dcc9189f883f1292` dirty 0；filing-fetch `b44edd8182028f6a134c30bc58f5900fdc539aab` dirty 0；revenue-forecast 记录为生成时刻 `1b4bab4` dirty 1（当时 checkpoint.json 未跟踪），与本记录写入时工作树 clean、HEAD 前进到 `4c37ca3` 相容。",
+    "`evidence/build_checkpoint.py --verify-only` 复现：输出 `{\"checked\": 9, \"source\": \"head\", \"blob_mismatches\": [], \"all_match\": true}`，rc=0；独立复算亦确认 9 个 digest 在 工作树 / index / HEAD / `1b4bab4` 四处字节一致，且当前 run 目录（除被排除的 checkpoint.json 外）无遗漏文件。",
+    "生产库只读边界遵守：全程仅 `Get-Item` 读取 catalog.sqlite3 / -wal / -shm / legacy_periods.json 的元数据（未哈希、未打开、未查询）；主库 `catalog.sqlite3` 49677344768 B、mtime 2026-09-08 22:23:21，`catalog.sqlite3-wal` 0 B、mtime 2026-09-08 22:23:21，即无逻辑写入迹象。"
+  ],
+  "claim_checks": [
+    {
+      "claim": "b-design.md:28 「按 owner R-3：停用 `policy_2x` 路径，`config.py` 为唯一准入」＋现状栏「`policy_2x.py:39/164`（无生产调用者）」；file-scope.md:26 禁止项理由「owner R-3 判定为『无生产调用者』的那套」",
+      "reproduced": false,
+      "evidence": "`policy_2x.py` 有在产调用者：`cli.py:849-851`（`_policy_export_payload` 内）`from .policy_2x import export_policy_2x` / `policy_hash, policy = export_policy_2x(config)`；该 payload 被 `cli.py:830-831`（policy-export 命令）、`cli.py:811`（ensure 响应）、`cli.py:1182`（resolve 响应）使用；resolve 正是 B02/B04 要改的那条读取路径。filing-fetch 把该 payload 当作唯一 containment 来源：`filing_contracts.py:450`「FC-501: policy snapshot is the single containment source.」、`:461-467` 对其重算 hash 并校验、`:480-484` 用其 `reusable_for_filing` 造 allowance。仅 `load_root_policy_2x` 无在产调用者（与 root-contract v0.4 更正文一致）——设计把『loader 无调用者』扩大成了『整个模块无调用者』。",
+      "residual": "`policy.py`（1.x 导出，`export_policy`）同样在产：`cli.py:1281-1283`（activation apply）。因此两个导出器都在产，B01 所述『以生效的 `config.py` 为唯一来源，停用无生产调用者的那套』对导出链不成立。"
+    },
+    {
+      "claim": "b-design.md:8 总原则 P-1/P-2 与 capability 四轴『互不推导』『未注册 root / 显式 deny 不因默认等价放行』来自 A02 R1/R2",
+      "reproduced": true,
+      "evidence": "root-contract.md:44「契约规则 R1（不变）：C1–C4 是四个独立轴，**任一声明不得推导出另一轴**」；root-contract.md:52「契约规则 R2：等价性只建立在**已注册 root** 之上……不因『落在某个已注册 root 目录下』或『kind 相同』而获得 C1–C4 任一能力」。设计 B02 第 1 段『未注册即出局』与其一致。",
+      "residual": "设计未点名 L04 的真实验收句『合法第五根无需消费者代码改动；未知/deny 拒绝，**不以平权绕过能力限制**』，而该句正是 R1/R2 的验收句（见 B-DR-15）。"
+    },
+    {
+      "claim": "b-design.md:17 显式 `reusable_for_filing: false` 必须生效（P-7，owner R-2），实现点为『policy 层单一函数』『同一处判定』",
+      "reproduced": "partial",
+      "evidence": "fail-open 事实复现：`resolver.py:782-786`/`:933-940` 确实只读 `root.kind`，从不读 `per-root` 字段（models.py:97 `reusable_for_filing: bool | None = None  # None = follow kind policy`）。但在产的『effective_reusable』实现不是一套而是两套：`policy.py:67-72 _effective_reusable`（`if spec.reusable_for_filing is not None: return bool(...)`）与 `policy_2x.py:308-311 _effective_reusable_2x`（同语义），两者都优先 per-root 字段，且都被在产 CLI 调用（cli.py:1281-1283、cli.py:849-851）；加上 resolver 的 kind-only 逻辑共三处分叉。filing-audit.md:65 已登记该后果：「wiki可能给出禁用root，filing按export拒绝」。",
+      "residual": "设计把 DR 检查点写成『不得**新增**第二套 effective_reusable』，却在现状栏遗漏已存在的两套；F2 把修复放在 resolver.py、B01 又把所有者写成『policy 层单一函数』，两者跨文件耦合而设计未指明由谁 import 谁，实施者可能就地再写第三套（正是检查点要防的）。"
+    },
+    {
+      "claim": "b-design.md:29 P-6 / A04 R4『路径诊断信息不得进入业务身份』，B04『绝对路径与 location_id 只用于诊断』",
+      "reproduced": true,
+      "evidence": "identity-contract.md:25「契约规则 R4（目标，非现状）」、:27-31 残留清单（含 service.py:643-653、:329/:527/:772、resolver.py:912-921、:528-533 及 5 个同型排序点）；owner-rulings-2026-09-11.md:16 R-6 裁定『认作需要整改』『不要求现在改代码』。",
+      "residual": "R-6 登记的多点中，canonical_writer.py:287、duplicate_cleanup.py:210/:486、normalizer.py:1600/:1892、llm_summarizer.py:371、evidence_query.py:269 全部存在且确为 priority/path 定序（已逐行读取），但它们既不在 allowed_files 也不在 forbidden_paths（见 B-DR-13）。"
+    },
+    {
+      "claim": "test-acceptance-map.md:10 断言 B01 的『本 run 设计对应』包含『b-design §B01 字段 owner 表 + 旧字段映射』；task_plan.md:22 B01『设计完成』",
+      "reproduced": false,
+      "evidence": "b-design.md:34「**旧字段版本映射**（B01 交付物）：为下列字段给出『保留 / 弃用 / 改名』的目标与迁移条件——」后仅列出 14 个字段名（read_only、reusable_for_filing、symlink_policy、priority、privacy_class、cohort、canonical_write_target、adapter_id/adapter_version_range、allowed_document_kinds、allowed_statuses、sidecar_suffixes、max_file_size、encoding、routes），文档中不存在任何『保留/弃用/改名』映射表；task_plan.md:37 把该映射列为 B.DR 的审查内容之一（『字段 owner 合并/弃用』）。",
+      "residual": "gate 的第一项审查内容（合并/弃用方案）在包内没有可审对象；owner R-1（symlink_policy 实现真检查或删除字段）也没有落成任何设计决定。"
+    },
+    {
+      "claim": "b-design.md:95-104 / findings.md:11,30：B05 从 metadata 真伪判定中『完全移除』priority，swap priority/scan order 后业务事实不变（对应 L08）",
+      "reproduced": false,
+      "evidence": "同一代码块 `scanner.py:1007-1081` 不只写 metadata：`:1078-1081` 的 `UPDATE documents SET primary_source_id=COALESCE(?,primary_source_id),title=?,source_type=?,document_kind=?,published_date=COALESCE(?,published_date),source_status=?,metadata_priority=?,metadata_json=?,last_seen_at=?` 把 title/source_type/document_kind/published_date/source_status/primary_source_id 一律取自**本次扫描**（只有 metadata_json 受 `prefer_new`（`:1059-1077`）影响），而是否进入该分支由 `:1038 elif root.priority <= existing_document[\"metadata_priority\"]` 决定；插入分支 `:1010-1027` 同样以先到者的值建行。即 priority/扫描顺序仍决定文档级业务字段的真伪。",
+      "residual": "L08 的验收句『业务事实不随位置改变』因此未被设计覆盖；`metadata_priority` 也是 `documents` 表 NOT NULL 列（store.py:151），设计未说明其去留。"
+    },
+    {
+      "claim": "b-design.md:46『未被选中的同版本副本在查询早期就被屏蔽』——canonical 先行是 B02/B04 的核心问题定位",
+      "reproduced": "partial",
+      "evidence": "`resolve` 内的过滤复现（resolver.py:912-921）；但**真正决定 handle 的位置**在另一个函数：`resolver.py:1142-1224 _handle` 内 `:1155-1163` 再次只取 `is_canonical` 且排除 `.rejections`，`:1166 if canonical is None or not Path(canonical[\"absolute_path\"]).is_file(): return None` —— 首选副本不在盘上即整体返回 None（调用侧转 `placeholder_no_handle`），可用副本在此被丢弃。",
+      "residual": "file-scope F2 的符号/锚点只列『复用判定 :782-786/:933-940、canonical 过滤 :912-921、rationale :528-533』，未列 `_handle`；execution-plan §B 的候选清单却明确写了『resolver._handle/resolve』。按现包锚点施工，L03『撤首选→有合格副本自动切换』的最关键改动点可能被漏掉。"
+    },
+    {
+      "claim": "b-design.md:129 B07『缺 policy 时禁止静默退回 `companies` 目录（无 fallback）』；file-scope.md:31 禁止 `filing-fetch/**`、`revenue-forecast/**`（除本 run 目录）",
+      "reproduced": false,
+      "evidence": "该 fallback 位于消费仓：`filing_contracts.py:485-486`「elif allowed_roots is None: allowance = ((wiki_root / \"companies\").resolve(),)」（同一函数 :419-422 自述 legacy allowance 『DEPRECATED (kept only for N/N-1 compat)』）。wiki 侧的 `_policy_export_payload`（cli.py:835-857）只负责**产出** policy，不具备『拒绝缺失 policy 的调用方』的语义。而 execution-plan §B 开头写明『主责任wiki；filing/revenue**仅最小协议适配**，消费者大瘦身留C』，即最小适配属 B。",
+      "residual": "同一范围矛盾还影响 B07 的『边界 adapter』：execution-plan §B 候选清单含『现有adapter』，但 adapters/registry.py、adapters/sidecar.py、adapter_dispatch.py 均不在 F1–F8。另：cli.py（A01 已冻结为 `2f5c574034369707`）承载 policy_export 与 preview/verified 相关出口，亦不在两表中。"
+    },
+    {
+      "claim": "b-design.md:50 B02 第 2 段把 `.rejections` 从屏蔽改为『标记而非优先屏蔽』；risk-and-stop-rules.md:22『B02/B04 的候选选择**必须在安全拒绝之后**……设计已写死』",
+      "reproduced": false,
+      "evidence": "两段自相矛盾：若 `.rejections` 只是标记而非过滤，被 provider 拒绝的路径即重新进入可排序、可成为 `canonical` 的合格集合；risk 文件却称『设计已写死』拒绝在排序之前，且 execution-plan §B02 与 resolver.py:918-920 代码注释（『WU-3.1: provider-rejected paths never count as canonical.』）都把它当资格条件。矩阵 O03 验收为『位置变化不能洗掉拒绝』。",
+      "residual": "该语义变更没有任何测试 ID 承接：B02 的必测集是 L01–L04，其中 L04 的『显式 deny』指 root 准入 deny，不是 `.rejections`。"
+    },
+    {
+      "claim": "b-design.md:66 B03 第 1 段『打开 → 取 size/mtime 快照 → 流式 hash → 校验 content_sha256 → **在同一句柄上**读回内容（Windows 上以 FILE_SHARE_READ 打开并禁止写入者替换）』满足 L05『只返回验证版本字节或明确失败，TOCTOU 不混读』",
+      "reproduced": "unproven",
+      "evidence": "设计中**交付给调用方的字节没有被再次校验**：hash 校验发生在读回之前，若在 hash 与读回之间字节被改，返回的仍是被污染内容。且 Windows 共享模式只在**打开时**裁决：以 `FILE_SHARE_READ` 打开可阻止**新的**写/删除打开，但无法撤销此前已持有 `FILE_SHARE_WRITE` 的写者句柄，因此『禁止写入者替换』不是绝对保证。",
+      "residual": "缺一条明确要求：返回字节必须与已校验 hash 同源（边读边 hash 并在流末比对，或读回后复算 hash 失败即显式失败）；也未说明 hash 与读回之间的窗口如何处理。"
+    },
+    {
+      "claim": "b-design.md:51 B02 第 3 段以『能打开且能读到与目标 content_sha256 相同的字节』作为资格条件，且整体符合 P-5/A03 R3 与 L01『零网络』",
+      "reproduced": "partial",
+      "evidence": "该资格判定要求在选择阶段真实读取每一份候选的字节；a05-corpus-sample-plan.md:38 明确预期真实语料会命中云占位（『`dropbox_stock` root 的样本可能涉及云占位文件（OneDrive/Dropbox 占位）』），而 source_catalog.yaml:25-27 的 `dropbox_stock` 是四个在产 root 之一。设计未规定『资格判定不得触发 hydration/联网』，也未规定占位候选是『资格出局』还是『合格但 open 时显式失败』（B03 第 2/3 段只在 open 侧谈占位）。",
+      "residual": "A03 契约规则 R3（operation-contract.md:19）『任何纯查询接口若可能触发 ensure/download/pause/worker 启动，该设计退回』与 L01 验收『零网络』因此存在被资格读取破坏的路径。"
+    },
+    {
+      "claim": "file-scope.md:42『上表 F1–F8 的 sha256(16) 与 A01 §0 冻结值逐一相同……即 B 的改动面可从 A 的冻结基线精确 diff』",
+      "reproduced": false,
+      "evidence": "baseline-map.md:19-26 的 A01 §0 冻结表只有 7 个 wiki 文件（source_catalog.yaml、resolver.py、service.py、policy.py、scanner.py、cli.py、config.py、models.py 中除 cli.py 外的 7 项）；`reader.py` 不在其中，只在 baseline-map.md:32 被记为『`reader.py` 存在』。file-scope.md:42 的括注也只列了 7 个哈希（缺 reader.py），与同句『F1–F8……逐一相同』冲突。",
+      "residual": "F4 reader.py 是 B03/B07 的只读底座，却没有 A01 冻结基线可比对，无法检出其相对 A01 的漂移。"
+    },
+    {
+      "claim": "file-scope.md:18 F8『`company-wiki/src/company_wiki/source_catalog/policy.py` | `:1-3384` 导出策略』（列名『符号 / 区域（实测行号）』）",
+      "reproduced": false,
+      "evidence": "policy.py 共 **86 行**（Get-Content 计数 86；read 工具报『total 86 lines』），3384 是该文件的**字节数**（与同行 baseline-map.md:22 的 `3384` 一致）。`:`1-3384`` 作为行号区间不可能存在；该行也没有给出任何符号。",
+      "residual": "F8 是 B06/B07 的『合同出口』，却是八行中唯一没有可解析符号/行锚点的条目；可用的真实符号是 `POLICY_SCHEMA_VERSION:16`、`export_policy:28`、`_effective_reusable:67`、`policy_authorizes_root:81`。"
+    },
+    {
+      "claim": "checkpoint.json `produced_files_verification` 与 .gitattributes:4 的『checkpoint.json records a sha256 for every produced file here』；以及任务描述中转述的『`--verify-only` 证明每个记录的 digest 等于已提交的 blob』",
+      "reproduced": "partial",
+      "evidence": "digest 层面完全复现（见 verifications_passed 与 build_checkpoint.py:63-79 的比对逻辑）；`--verify-only` 走 `verify_blobs(existing[\"produced_files\"], source=\"head\")`（:150），而 `:67 spec = f\":{run_rel}/{rel}\" if source == \"index\" else f\"HEAD:{run_rel}/{rel}\"` —— **source 只能取 index 或 HEAD**，从不取 `reviewed_commit`。",
+      "residual": "① 比对锚点是运行时的 HEAD，不绑定 `reviewed_commit`；② `reviewed_commit` 由 `:160 args.reviewed_commit or \"PENDING\"` 写入，是不经 git 校验的自由文本（本包记录 `1b4bab4` 属实，但机制上也可写任意串）；③ `produced_files` 以 `EXCLUDE_NAMES = {\"checkpoint.json\"}` 自排除且**没有**对目录树的完整性断言，任何此后新增的文件（含 `reviews/**`）都自动不在账内；④ 因此 .gitattributes『every produced file』的措辞严格说只对生成时刻的既有文件成立。"
+    },
+    {
+      "claim": "checkpoint.json `actual_side_effects`『No CLI of any kind was executed in this run, no data command, no network, no product/config/DB/task/worker change』与 progress.md:31『未执行：任何 CLI（含 `--help`）』",
+      "reproduced": "unproven",
+      "evidence": "该断言在包内只有作者自述，没有任何独立观测产物（相位 A 对同类断言留下了 `evidence/cli-help-matrix.json` 与 `evidence/catalog-companion-observation.*`，本包没有对应物）；而 findings.md:23-26（F-B00-4）自己确立的标准是『作者自证不构成独立证据』，boundary-audit.md:109 更写明『任何「零触碰生产数据」的边界声明都必须显式排除 push/gate 协议——后续阶段的边界证据必须以独立观测或隔离副本为唯一合法形式』。独立观测（本轮，元数据级）：`catalog.sqlite3-shm` LastWriteTime = **2026-09-12 07:48:06 +01:00**，即被审提交 stamp（07:46:17）后约 109 秒有一次生产库打开；同期 `catalog.sqlite3`（49677344768 B）mtime 仍为 2026-09-08 22:23:21、`catalog.sqlite3-wal` 0 B，无逻辑写入迹象。`git branch -r --contains 4c37ca3` 显示 `origin/main` 已含该提交，故最可能的解释是**本 run 自身推送触发的 revenue pre-push gate**（checkpoint 已披露该路径），但无法据此指认进程。",
+      "residual": "断言本身被披露为将来事件的注记所部分抵消（checkpoint 已说明推送会只读打开生产库），且 checkpoint 已把独立边界观测登记为待办（authorization_needed 的 G5/G6）。真正的缺口是：**没有任何机制**把『未执行 CLI』变成可核事实，因此该断言在 B.DR 只能记为 unproven。另：-shm 的写入已覆盖相位 B 写作窗口的观测值，故『写作期间是否开库』现已不可回溯。"
+    },
+    {
+      "claim": "test-acceptance-map.md §3 的四项『完成定义』（含第 3 项『独立复审（B.DR 或 B.VR）就**同一输入 hash** 出具 verdict』）",
+      "reproduced": "partial",
+      "evidence": "四项本身表述清楚且与 execution-handbook.md:53（review 字段要求『阅读输入hash/范围』）同源；但包内没有任何位置定义『同一输入 hash』指哪个集合、由谁冻结、记录在何处：checkpoint.json 的 `inputs` 只有三仓 HEAD 与 dirty 计数，`produced_files` 只是本 run 产物哈希，reviewer 的输入清单不在任何字段中。",
+      "residual": "第 3 项因此在机制上可空过（reviewer 自选输入即可宣称『同一 hash』）。本记录自建 inputs_read 哈希表以自救，但这属于 reviewer 的额外约束，不是包内要求。"
+    },
+    {
+      "claim": "task_plan.md:60-62 与 progress.md:3 的变更记录『23:3x』、file-scope.md:4『实测于 2026-09-11 23:3x』",
+      "reproduced": false,
+      "evidence": "被审产物 mtime 为 2026-09-12 07:43:56–07:46:17 +01:00，提交时间为 `1b4bab4` 2026-09-12T07:46:12+01:00、`4c37ca3` 07:46:17+01:00，checkpoint `generated_at_utc` 2026-09-12T06:46:17Z（=07:46:17 +01:00）；阶段 A 最后一次提交为 2026-09-11T23:04 +01:00。阶段 A 文档的时间戳（21:xx、22:00:18、22:26:59）与机器本地时区 +01:00 一致，故『23:3x』与 B 包自身产物相差约 8 小时 40 分。",
+      "residual": "属文档精度问题，不影响设计实质；但使『本 run 时间窗』无法用于边界归因（与上一条叠加）。"
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-DR-01",
+      "severity": "P0",
+      "area": "B01 字段 owner / owner 裁定 R-3 / file-scope 禁止项理由",
+      "claim": "被审包断言 `policy_2x.py` 属『无生产调用者』的那套，据此设计『停用 `policy_2x` 路径，`config.py` 为唯一准入』并将其列为禁止改动（b-design.md:28；file-scope.md:26）。",
+      "counter_evidence": "`policy_2x` 在产：`cli.py:849`（`_policy_export_payload` 内）`from .policy_2x import export_policy_2x`，`:851 policy_hash, policy = export_policy_2x(config)`；该 payload 由 `cli.py:811`（ensure 响应）、`cli.py:1182`（resolve 响应）、`cli.py:830-831`（policy-export 命令）输出。filing-fetch 把它当唯一 containment 来源：`filing_contracts.py:450` 逐字写着「FC-501: policy snapshot is the single containment source.」，`:461-467` 对同一文档重算 hash 并要求等于 `expected_policy_hash`，`:480-484` 用 `root.get(\"reusable_for_filing\") is True` 造 allowance；`fetch_filing.py:916-927` 再把 envelope.policy_hash 与该导出 hash 交叉校验、漂移即 fail closed。`1b4bab4` 冻结的 `cli.py`（sha256 `2f5c574034369707`，即 A01 §0 冻结值）就是这条链的载体。",
+      "required_fix": "① 把 B01 的 R-3 收敛范围收窄为**只针对 loader**（`load_root_policy_2x`），与 root-contract v0.4 修正后的措辞一致；② 若确要收敛导出实现，必须把 `cli.py:835-857`（或 `policy_2x.py:275-311`）纳入 allowed_files 并写明『导出 payload 的字节与 hash 契约必须保持不变或同步升级 filing-fetch 的 FC-501/ZR-405 校验』，或另行取得 owner 裁定；③ file-scope.md §2 删除『无生产调用者』这一理由，改为『loader 无在产调用者』。"
+    },
+    {
+      "id": "B-DR-02",
+      "severity": "P1",
+      "area": "B01 交付物 / B.DR gate 第一项审查内容",
+      "claim": "task_plan.md:22 记 B01『设计完成』；test-acceptance-map.md:10 记 B01 的对应设计为『b-design §B01 字段 owner 表 + 旧字段映射』。",
+      "counter_evidence": "b-design.md:34-36 只给出字段名清单与方法句：「**旧字段版本映射**（B01 交付物）：为下列字段给出『保留 / 弃用 / 改名』的目标与迁移条件——」；全文没有任何一条字段的『保留/弃用/改名』结论。task_plan.md:37 又把『字段 owner 合并/弃用』列为 B.DR 的审查内容。owner R-1（`symlink_policy`：实现真实检查或删除字段，见 owner-rulings-2026-09-11.md:11）同样未落成设计决定。",
+      "required_fix": "补齐 14 个字段（含 `symlink_policy`、`priority`、`canonical_write_target`、`cohort`）的逐字段保留/弃用/改名结论、迁移条件、兼容期与对应的 N-1 测试；并把 `_handle` 未覆盖的 `documents.metadata_priority` 列（store.py:151）一并纳入。"
+    },
+    {
+      "id": "B-DR-03",
+      "severity": "P1",
+      "area": "B05 设计完整性 vs L08 验收",
+      "claim": "b-design.md:95-104 与 findings.md:30 称 B05 把 priority 从『哪份 metadata 算真』中『完全移除』，从而满足 L08『业务事实不随位置改变；……冲突保留而非按 priority 默选』。",
+      "counter_evidence": "同一分支不只决定 metadata：`scanner.py:1078-1081` 的 UPDATE 语句逐字为「UPDATE documents SET primary_source_id=COALESCE(?,primary_source_id),title=?,source_type=?,document_kind=?,published_date=COALESCE(?,published_date),source_status=?,metadata_priority=?,metadata_json=?,last_seen_at=? WHERE document_id=?」——除 metadata_json（受 `:1059-1077 prefer_new` 影响）外，其余文档级业务字段全部取自本次扫描；进入该分支的条件 `:1038 elif root.priority <= existing_document[\"metadata_priority\"]:` 仍由 priority 决定，`else: :1095-1099` 只更新 last_seen_at。插入路径 `:1010-1027` 亦以先到值建行。",
+      "required_fix": "把 B05 的对象从 `metadata_json` 扩展到 `:1007-1081` 全部文档级字段（title/source_type/document_kind/published_date/source_status/primary_source_id），给出逐字段的『原文/捕获来源/质量』合并与冲突保留规则，并明确 `metadata_priority` 列的去留；L08 的必测集需增加『交换 priority 与扫描顺序后 title/document_kind/source_status/primary_source_id 不变』的断言。"
+    },
+    {
+      "id": "B-DR-04",
+      "severity": "P1",
+      "area": "B02/B04 改动面（锚点与符号）",
+      "claim": "b-design.md:44-57 与 file-scope.md F2 把 B02/B04 的实现面定义为 `resolve` 的 canonical 过滤（`resolver.py:912-921`）加复用判定与 rationale。",
+      "counter_evidence": "handle 的实际选取与『撤首选后是否还能读』的判定在 `resolver.py:1142-1224 _handle`：`:1155-1163` 第二次只取 `is_canonical` 且排除 `.rejections`，`:1166 if canonical is None or not Path(canonical[\"absolute_path\"]).is_file(): return None` —— 首选副本不在盘上即整体放弃该文档，可用副本在此丢失（调用侧转 `placeholder_no_handle`）。文件范围表未列 `_handle`，而 execution-plan §B 候选清单明确写了「resolver._handle/resolve」。",
+      "required_fix": "在 file-scope F2 的符号/锚点中补 `_handle :1142-1224`（尤其 `:1155-1163`、`:1166`），并在 B02/B04 中明确：handle 选取必须在**资格集合**上进行、以字节 hash 而非 `absolute_path.is_file()` 决定可用性。"
+    },
+    {
+      "id": "B-DR-05",
+      "severity": "P1",
+      "area": "B07 可实施性 / file-scope 与 execution-plan §B 冲突",
+      "claim": "b-design.md:129『缺 policy 时禁止静默退回 `companies` 目录（无 fallback）』、`:128『旧客户端（filing/revenue）通过边界 adapter 转换』；file-scope.md:31 禁止一切 `filing-fetch/**`、`revenue-forecast/**`（除本 run 目录）。",
+      "counter_evidence": "fallback 在消费仓：`filing_contracts.py:485-486`「elif allowed_roots is None: allowance = ((wiki_root / \"companies\").resolve(),)」，同函数 :419-422 自述这是 legacy allowance；wiki 侧只产出 policy（cli.py:835-857），不具备拒绝缺 policy 调用方的语义。execution-plan §B 开头写明『主责任wiki；filing/revenue**仅最小协议适配**，消费者大瘦身留C』，即最小适配属 B。另 execution-plan §B 的候选清单含『现有adapter』，而 `adapters/registry.py`、`adapters/sidecar.py`、`adapter_dispatch.py` 均不在 F1–F8；承载 policy_export 与相关出口的 `cli.py`（A01 冻结值 `2f5c574034369707`）同样不在 allowed_files 也不在 forbidden_paths。",
+      "required_fix": "二选一并写清：① 把 filing-fetch 的最小协议适配（`filing_contracts.py:485-486` 一带，其当前 sha256 `2d1b2e3374f1d0c2…` 仍等于 A01 冻结值，改动面可精确定位）与 wiki 侧 adapter/cli 出口纳入 allowed_files，并给出卡级 allowed/forbidden；② 或者把 B07 的『无 companies fallback』明确降级为 C 阶段交付物，并在 B07 的验收里划出 B 可签部分，避免 B.DR 通过一个不可实施的设计。"
+    },
+    {
+      "id": "B-DR-06",
+      "severity": "P1",
+      "area": "B02 安全语义（`.rejections`）与 O03 交叉",
+      "claim": "b-design.md:50『不是 provider 拒绝路径（`.rejections`，`resolver.py:918-920` 的既有语义**保留**，但改为**标记而非优先屏蔽**）』；risk-and-stop-rules.md:22『B02/B04 的候选选择**必须在安全拒绝之后**……设计已写死（资格段第 1/2 段在排序之前，且拒绝不因位置改变而消失）』。",
+      "counter_evidence": "若 `.rejections` 不再是资格条件而只是标记，被 provider 拒绝的路径即可进入合格集合并可能成为 `canonical`，与 risk 文件『资格段第 1/2 段在排序之前』的自述相反，也与矩阵 O03 验收『位置变化不能洗掉拒绝』方向相悖（resolver.py:918-920、:1160-1162 的代码注释均为『never count as canonical / are never canonical』）。该语义变更未分配任何测试 ID：B02 必测 L01–L04 中，L04 的『显式 deny』指的是 root 准入 deny。",
+      "required_fix": "在 b-design 中写明唯一规则：`.rejections` 路径**可否**成为 `canonical`/被选中读取目标；若允许（仅诊断可见），须给出与 O03 的一致性论证、把 risk 文件的自述改写成同一条规则，并新增/指定覆盖该规则的测试用例（不得以 L04 顶替）。"
+    },
+    {
+      "id": "B-DR-07",
+      "severity": "P1",
+      "area": "B03 字节保证完整性 vs L05 验收",
+      "claim": "b-design.md:66『打开 → 取 size/mtime 快照 → 流式 hash → 校验 `content_sha256` → **在同一句柄上**读回内容（Windows 上以 `FILE_SHARE_READ` 打开并禁止写入者替换）』，配 :63『不得出现 TOCTOU 混读』。",
+      "counter_evidence": "机制与其宣称的保证不闭合：交付给调用方的字节没有第二次校验（hash 在读回之前完成）；Windows 共享模式仅在打开时裁决，`FILE_SHARE_READ` 只能阻止**其后**的写/删除打开，无法使既有写者句柄失效，故『禁止写入者替换』不是绝对命题。",
+      "required_fix": "把『返回字节 == 已校验字节』写成硬要求（边读边 hash 并在流末比对后放行，或读回后复算 hash、不符即显式失败），并明确 hash 完成后字节被改的处置；在 L05 证据里要求记录『被交付字节的 hash 与目标 `content_sha256` 的比对方式』。"
+    },
+    {
+      "id": "B-DR-08",
+      "severity": "P1",
+      "area": "B02 资格判定带来的查询期 I/O / 网络面（P-5、A03 R3、L01 零网络）",
+      "claim": "b-design.md:51 B02 第 3 段以『能打开且能读到与目标 `content_sha256` 相同的字节』作为资格条件；总原则 P-5（:15）与 L01 验收要求查询不触网。",
+      "counter_evidence": "该资格判定要求在选择阶段真实读取每份候选字节；四个在产 root 含云目录（source_catalog.yaml:25-27 `dropbox_stock` → `${USER_PROFILE}/Dropbox/Stock`），a05-corpus-sample-plan.md:38 明确预期真实语料会命中云占位（『若命中占位，记为 L06 的真实样本，不强行下载』）。设计未规定资格判定不得触发 hydration/联网，也未规定占位候选是资格出局还是『合格但 open 显式失败』（B03 :67-68 只在 open 侧谈占位）。operation-contract.md:19 契约规则 R3 规定『任何纯查询接口若可能触发 ensure/download/pause/worker 启动，该设计退回』。",
+      "required_fix": "在 B02 第 3 段补两条硬约束：① 资格判定在**离线可读**前提下进行，不得触发 hydration/download/网络（命中占位即按『不可判资格』处理并在候选清单标注原因）；② 明确占位/不可读候选对 canonical 的影响与返回值语义，并把该约束写入 L01/L06 的必测点与证据字段。"
+    },
+    {
+      "id": "B-DR-09",
+      "severity": "P2",
+      "area": "file-scope §4 冻结基线比对",
+      "claim": "file-scope.md:42『上表 F1–F8 的 sha256(16) 与 A01 §0 冻结值逐一相同』。",
+      "counter_evidence": "baseline-map.md:19-26 的 A01 §0 只列 7 个 wiki 文件（`reader.py` 不在其中，只在 :32 被记为『`reader.py` 存在』）；file-scope.md:42 自己的括注也只列 7 个哈希。实测：8 个哈希本身全部正确，但 F4 reader.py `ad8cb9147d4f2f51` 在阶段 A 无冻结对应项。",
+      "required_fix": "改写为『F1–F3、F5–F8 与 A01 §0 逐一相同；F4 `reader.py` 无 A01 冻结项，本次实测值为 `ad8cb9147d4f2f51`（15521 B），建议纳入 A06 基线快照』。"
+    },
+    {
+      "id": "B-DR-10",
+      "severity": "P2",
+      "area": "file-scope F8 锚点（allowed_files 可解析性）",
+      "claim": "file-scope.md:18 F8『`policy.py` | `:1-3384` 导出策略』，列名声明为『符号 / 区域（实测行号）』。",
+      "counter_evidence": "policy.py 共 86 行；3384 是字节数（与 baseline-map.md:22 同行 `3384` 相同）。`:`1-3384`` 不是可解析的行区间，F8 也未给出任何符号。",
+      "required_fix": "把 F8 的符号/区域改为真实符号行号（如 `POLICY_SCHEMA_VERSION:16`、`export_policy:28`、`_effective_reusable:67-72`、`policy_authorizes_root:81-86`），或改为按字节数标注并注明『3384 B』；同时按 B-DR-01 复核 F8 是否确为『合同出口』（在产的导出出口在 `cli.py:835-857`）。"
+    },
+    {
+      "id": "B-DR-11",
+      "severity": "P2",
+      "area": "B01 唯一 owner 与『不得新增第二套 effective_reusable』检查点",
+      "claim": "b-design.md:30 记可复用资格唯一 owner 为『policy 层单一函数（**不得新增第二套 effective_reusable**）』，现状栏写『复用判定只看 `root.kind`（`resolver.py:782-786`/`:933-940`）』『实现点=同一处判定，不新增并行实现』。",
+      "counter_evidence": "已存在两套（且都在产）实现：`policy.py:67-72 _effective_reusable`（`if spec.reusable_for_filing is not None: return bool(spec.reusable_for_filing)`）与 `policy_2x.py:308-311 _effective_reusable_2x`（同语义），分别经 `cli.py:1281-1283` 与 `cli.py:849-851` 在生产路径被调用；resolver 的 kind-only 逻辑是第三处。filing-audit.md:65 已登记其后果：『其root IDs集合忽略 `RootSpec.reusable_for_filing`；反观`policy_2x._effective_reusable_2x`明确优先per-root字段。两层合同不一致』。",
+      "required_fix": "在 B01 现状栏列出三处分叉并指定唯一实现归属与 import 方向（例如 resolver 复用 `policy.*` 的那个函数），把 DR 检查点从『不得新增』升级为『存量两套必须收敛为一套，且导出与 resolver 结果一致性需有测试』。"
+    },
+    {
+      "id": "B-DR-12",
+      "severity": "P2",
+      "area": "B05 冲突/来源台账的持久化与迁移（store.py 不在范围）",
+      "claim": "b-design.md:98-101 要求『每个 metadata 字段记录 provenance（来自哪个 root/source、抓取时间、原始片段/hash）』『保留全部候选值 + 冲突标记』。",
+      "counter_evidence": "设计未说明该台账落在何处：`documents` 只有单一 `metadata_json TEXT NOT NULL` 与 `metadata_priority INTEGER NOT NULL`（store.py:151-152），逐来源信息现存于 `locations.metadata_json`（store.py:185）且每次重扫被 `ON CONFLICT(root_id,relative_path) DO UPDATE ... metadata_json=excluded.metadata_json`（scanner.py:1123-1131）覆盖。若需新增列/表，DDL 与迁移在 `store.py`（`:143-191` 建表、`:25 _UPGRADEABLE_SCHEMA_VERSIONS`、`:112 ALTER TABLE ADD COLUMN`），该文件既不在 F1–F8 也不在禁止清单。file-scope F5 只写『如需 schema 变更须单列迁移』，未展开。",
+      "required_fix": "明确台账形态：① 若读时从 `locations.metadata_json` 合并，须写出合并算法、历史覆盖不可回填的限制与 L08 的可测断言；② 若需持久化新列/表，须把 `store.py` 与迁移脚本列入 allowed_files 并单列迁移与回退方案。"
+    },
+    {
+      "id": "B-DR-13",
+      "severity": "P2",
+      "area": "owner R-6 整改面 / file-scope 完整性",
+      "claim": "file-scope.md:37『预计改动集中在 F1–F3……与 F8；F4–F6 为配套』、:42『B 的改动面可从 A 的冻结基线精确 diff』。",
+      "counter_evidence": "owner R-6（owner-rulings-2026-09-11.md:16）登记的『9 处』位置代表权包含 F1/F2 之外的 5 个文件，逐行实测均存在且确为 priority/path 定序：`canonical_writer.py:287`、`duplicate_cleanup.py:210`/`:486`、`normalizer.py:1600`/`:1892`、`llm_summarizer.py:371`、`evidence_query.py:269`。这些文件既不在 allowed_files 也不在 forbidden_paths（file-scope.md:22-33），而 handbook §3（execution-handbook.md:47）要求 card 的 `allowed_files`/`forbidden_paths` 明确列出。",
+      "required_fix": "在 file-scope 中显式二分类：把 R-6 未纳入 B 的 5 个文件写入 forbidden_paths（或标注『B 不动、留 C』），并说明 B 的『位置透明』验收（L01/L03/L07）在这些点未改时的适用边界。"
+    },
+    {
+      "id": "B-DR-14",
+      "severity": "P2",
+      "area": "B06 preview/verified_input 的承载接口",
+      "claim": "b-design.md:113『返回值携带**资格标签**：`preview`……vs `verified_input`……』；test-acceptance-map.md:15 把该设计对应到 B06 的 L09/L10。",
+      "counter_evidence": "设计未指明哪个返回值/哪个接口承载标签；阶段 A 冻结的 operation-contract.md §1 只定义 `query_local`/`open_version`/`request_work` 三个接口（无 preview 能力名），而真实 CLI 表面积的 41 个顶层命令里也没有 `preview`（baseline-map.md §4 权威列表）；同时 baseline-map.md:47 又写着『wiki `cli.py::query`/`preview`/`documents`/`export` 等』——阶段 A 内部即不一致。",
+      "required_fix": "指定标签的承载点（建议 `open_version`/`query_local` 的返回契约字段）与所在文件，并把 baseline-map.md:47 的 `preview` 命令表述一并更正；否则 B06 的验收无对象可测。"
+    },
+    {
+      "id": "B-DR-15",
+      "severity": "P2",
+      "area": "B01/B06 测试映射覆盖（owner R-2 / R-4 / R-1）",
+      "claim": "test-acceptance-map.md:10 把 B01 的必测 ID 定为『L11（N-1 支持合同）、L04（未知 adapter/deny/未注册）』，并逐字引用『支持兼容由单 adapter 转换且来源不变；未知拒绝，无 companies 静默 fallback，无第二权限语义』作为关键验收点。",
+      "counter_evidence": "所引句子是矩阵 L11 的验收句（simplified-test-matrix.md:38）；L04 的真实验收句是『合法第五根无需消费者代码改动；未知/deny拒绝，不以平权绕过能力限制』（:31），全文未被引用，也未出现任何针对显式 `reusable_for_filing: false`（owner R-2）、`privacy_class` 缺省不外发（R-4）、`symlink_policy`（R-1）的测试归属。另：四个在产 root 全部显式写 `privacy_class: public`（source_catalog.yaml:19/24/29/39），故 R-4 的『缺省』改动对在产行为是惰性的，其验收只能靠合成配置。",
+      "required_fix": "补齐 B01 的必测 ID 与其逐字验收句（含 L04 原句），为 R-2/R-4/R-1 各指定可执行用例（显式 `false`、省略 `privacy_class`、`.rejections`/symlink 逃逸），并注明 R-4 在现网配置上的惰性。"
+    },
+    {
+      "id": "B-DR-16",
+      "severity": "P2",
+      "area": "checkpoint 证据机制（--verify-only 的证明边界）",
+      "claim": "任务口径与 .gitattributes:4『checkpoint.json records a sha256 for every produced file here』；checkpoint.json `produced_files_verification` 以 `all_match: true` 示证。",
+      "counter_evidence": "digest 全部复现（9/9 与 工作树/index/HEAD/`1b4bab4` 一致，`--verify-only` rc=0），但机制上：`build_checkpoint.py:67` 的 `spec` 只支持 index 或 HEAD 两种锚点（`else f\"HEAD:{run_rel}/{rel}\"`），`:150` 用 `source=\"head\"`，**从不绑定 `reviewed_commit`**；`:160` 的 `reviewed_commit` 是不经 git 校验的自由文本；`produced_files` 自排除 `checkpoint.json` 且无目录完整性断言，故此后新增的 `reviews/**` 一律不在账内。",
+      "required_fix": "为生成器增加 commit 锚点（`git show <reviewed_commit>:<path>` 比对）与目录完整性断言（比对 `git ls-tree` 或目录清单），把 `reviewed_commit` 作为必填参数并校验其存在性；否则『digest == 已提交 blob』只能证明运行时刻的 HEAD。"
+    },
+    {
+      "id": "B-DR-17",
+      "severity": "P2",
+      "area": "边界声明可核性（『未执行任何 CLI』与 G5）",
+      "claim": "checkpoint.json `actual_side_effects`『No CLI of any kind was executed in this run……』；progress.md:31『未执行：任何 CLI（含 `--help`）』。",
+      "counter_evidence": "包内无任何独立观测产物支撑该断言（阶段 A 有 `evidence/cli-help-matrix.json` 与 `evidence/catalog-companion-observation.*`，本包没有对应物）；findings.md:23-26 自认『作者自证不构成独立证据』，boundary-audit.md:109 要求此类声明『必须以独立观测或隔离副本为唯一合法形式』。本轮元数据观测：`catalog.sqlite3-shm` LastWriteTime 2026-09-12 07:48:06 +01:00（被审提交 stamp 后约 109 秒），同期主库与 `-wal` 未变；`origin/main` 已含 `4c37ca3`，最可能对应 checkpoint 已披露的推送前 gate，但无法指认进程。",
+      "required_fix": "把该断言降级为『作者声明（待 G5 独立观测）』并给出可核形式（例如由独立 operator 记录 pre/post 的 catalog 三件套 + 进程/句柄观测）；同时在 checkpoint 中登记本 run 自身的推送/gate 时间（本 run 的实际推送发生于 stamp 之后，属实际副作用的一部分，宜显式记入 `actual_side_effects` 而非仅作为将来时的注记）。"
+    },
+    {
+      "id": "B-DR-18",
+      "severity": "P3",
+      "area": "引用精度（file-scope F3、findings F-B00-3、handbook 节号）",
+      "claim": "file-scope.md:13 F3『root 准入 `:872`/`:993`』；findings.md:20『见 a06-baseline-plan.md §1 盘点』；file-scope.md:3 与 task_plan.md:6『handbook §2.5』。",
+      "counter_evidence": "`scanner.py:872` 是 `candidate.admission.priority`（`group_items` 排序键），`:993` 是 metadata JSON 里的 `\"processing_priority\": admission.priority`，均属**候选准入**而非 root 准入（root 准入是 `:753 _select_roots`，F3 亦正确列出）；a06-baseline-plan.md §1 只『列名，未运行』，tmp-catalog 机制在 §2/§4（§4 才写『可以是新目录 + 既有测试的 tmp-catalog 机制，不需要复制 49.7 GB』）；execution-handbook.md §2 是 12 项接班核对表，所引句子『首次实施前用户须批准DEV精确工作包及文件范围』实为 handbook:15（§1 第 5 条），card 字段要求在 handbook:47（§3）。",
+      "required_fix": "更正为 `candidate admission :872/:993`、引用 a06 §2/§4、把 handbook 节号改为 §1.5 + §3（该节号误用阶段 A 亦存在，宜同步）。"
+    },
+    {
+      "id": "B-DR-19",
+      "severity": "P3",
+      "area": "run 时间戳与变更记录",
+      "claim": "task_plan.md:60-62 / progress.md:3 变更记录『23:3x』；file-scope.md:4『实测于 2026-09-11 23:3x』。",
+      "counter_evidence": "产物 mtime 为 2026-09-12 07:43:56–07:46:17 +01:00，提交 `1b4bab4` 2026-09-12T07:46:12+01:00、`4c37ca3` 07:46:17+01:00，checkpoint `generated_at_utc` 2026-09-12T06:46:17Z；阶段 A 最后提交 2026-09-11T23:04+01:00，且阶段 A 的时间戳与机器本地 +01:00 对齐。",
+      "required_fix": "把三处『23:3x』改为实际本地时间（2026-09-12 07:4x +01:00）或明确标注时区/来源；否则本 run 的时间窗无法用于边界归因。"
+    },
+    {
+      "id": "B-DR-20",
+      "severity": "P3",
+      "area": "反覆盖表内部一致性",
+      "claim": "test-acceptance-map.md:30『O01–O08 | D | ❌ 不属 B | 除 O03 的\"位置变化不能洗掉安全拒绝\"与 B04 交叉（见风险文件）』。",
+      "counter_evidence": "同一行既标『不属 B』又承认 O03 与 B02/B04 直接交叉；risk-and-stop-rules.md:22 更把 O03 写成对 B02/B04 的强制约束。此外该表把 L06 归为『B/C』，而矩阵 simplified-test-matrix.md:33 的 L06 阶段列为『B』；L11 被并入『L01–L04、L07–L09、L11 | B』一行，矩阵中 L11 为『B/C』、L01 为『A/B』、L09 为『A/B』。",
+      "required_fix": "把 O03 从『❌ 不属 B』改为『部分交叉：安全拒绝不被位置变化洗掉』并链接到 B02/B04 的具体规则与测试；反覆盖表的阶段列按矩阵逐行照抄，不做归并。"
+    }
+  ],
+  "design_completeness": {
+    "steps_covered": [
+      "B01：给出 5 语义 × 唯一 owner 表与 P-1…P-8 原则（字段 owner 表本身成立），但缺『旧字段版本映射』交付物（B-DR-02），且 R-3 收敛方向基于被证伪的前提（B-DR-01）",
+      "B02：四段式『注册/能力→状态→可读+同 hash→健康/IO 偏好』与 execution-plan §B02 原文逐段对应，资格与排序分离的方向正确；但漏 `_handle`（B-DR-04）、`.rejections` 语义自相矛盾（B-DR-06）、资格读取的网络面未约束（B-DR-08）",
+      "B03：三级字节提供（固定句柄→受控快照→显式失败）与『禁止只信 mtime/文件名、禁止在 query/open 内隐式建快照却宣称零写、纯读取不建缓存』均与 §B03 原文一致；但交付字节未复验（B-DR-07）",
+      "B04：路径/`location_id` 留诊断、不重编号已引用 source、搬家建新 location、全失效 unavailable 不自动取另一修订，方向与 §B04/矩阵 L03/L07 一致（存量执行依赖 B-DR-04）",
+      "B05：provenance + 冲突保留、priority 退出真伪判定的方向与 §B05 一致；但覆盖面只到 metadata_json（B-DR-03），台账落点未定（B-DR-12）",
+      "B06：preview / verified_input 分离、缺 URL 可预览、身份或期间不明不默认可信、缺文本只返回 pending 且不伪造 https_url，与 §B06/L09/L10 一致；但标签承载接口未指定（B-DR-14）",
+      "B07：版本化读取合同 + N-1 支持 + 无 companies fallback 的方向与 §B07/L11 一致；但关键实现点落在禁止/未列文件（B-DR-05）",
+      "B08–B10：作为前置条件陈述（隔离副本 G8、owner 样本确认 G7、B.AR 端到端、不回滚原始数据），与 task_plan §1/§2 及 findings F-B00-3 一致，且『隔离副本不必是 49.7 GB 拷贝』有既有测试 tmp-catalog 机制支撑（已独立复现）"
+    ],
+    "steps_missing_or_underspecified": [
+      "B01 的『保留/弃用/改名』映射表整体缺失（含 `symlink_policy`＝owner R-1 的处置决定、`priority`、`canonical_write_target`、`cohort`）",
+      "B02/B04 未覆盖 `resolver.py:1142-1224 _handle`（`:1155-1163` 二次 canonical 过滤、`:1166` `absolute_path.is_file()` 决定 handle 有无）",
+      "B02 未规定 `.rejections` 变更后的唯一规则与对应测试；未规定资格判定不得联网/hydration",
+      "B03 未要求校验『被交付字节』；未处理既有写者句柄（共享模式只在打开时裁决）",
+      "B04 未说明『搬家后自动切换』对所依赖的重扫描（写路径 `scan`）的触发与归属：无重扫描即无新 location 行，读取路径不得自行发现（P-5 禁写）",
+      "B05 未覆盖 `:1078-1081` 的 title/source_type/document_kind/published_date/source_status/primary_source_id；未定 provenance/冲突台账的存储形态与迁移",
+      "B06 未指明 preview/verified_input 标签的返回接口与字段",
+      "B07 未定位『边界 adapter』与『无 companies fallback』的改动文件（且其中之一在禁止仓）",
+      "无测试 ID 承接 owner R-2（显式 false）、R-4（缺省不外发）、R-1（symlink_policy）三项裁定"
+    ],
+    "file_scope_sufficient": false,
+    "notes": "八行候选文件的绝对路径、存在性、sha256 与绝大多数符号/行锚点可复现（F1/F2/F3/F4/F5/F6 精确；F7 为配置且『默认为不改』；F8 的行锚点是字节数，B-DR-10）。不足以支撑设计的原因有三类：① 设计要素落在既非 allowed 也非 forbidden 的文件（`cli.py` 的 policy_export/preview 出口、`adapters/*` 与 `adapter_dispatch.py` 的『现有adapter』、`store.py` 的 DDL/迁移、owner R-6 的 5 个同型排序文件）；② 一个设计要素（B07 无 companies fallback）的实现点在禁止仓 `filing-fetch/**`，与 execution-plan §B『filing/revenue 仅最小协议适配』相冲突；③ 一个设计要素的前提（policy_2x 无生产调用者）被证伪，按现文实施会触及在产跨仓 containment 链。另：handbook §1.5/§3 要求的 DEV card（`card.json`，含 `forbidden_paths` 等非空字段）尚未建立，checkpoint.json 已在 `failed_or_unknown` 如实登记该缺件；实施授权前必须补齐。"
+  },
+  "gate_items_absent_from_the_package": [
+    "B.DR 第 1 项『字段 owner 合并/弃用方案』：只有 owner 表，没有任何字段的保留/弃用/改名结论（b-design.md:34 把它写成待交付物）",
+    "B.DR 第 2 项『不得新增第二套 effective_reusable』：包内未列出**已存在**的两套在产实现（policy.py:67、policy_2x.py:308），也未指定唯一实现归属，检查点因此无法执行",
+    "B.DR 第 3 项『显式 false 必须保留含义』：无任何测试 ID 绑定（test-acceptance-map.md:10 的 L11/L04 都不针对该语义），且在产四 root 均未写 `reusable_for_filing`，缺少可复现用例",
+    "B.DR 第 4 项『测试与验收映射是否覆盖 L01–L12』：ID 覆盖齐全且引文忠实，但 L04 的真实验收句未引用、O03 交叉未被测试承接、L06/L11 的阶段归属与矩阵不符（B-DR-20）；L12 的『独立观察』被正确推迟到 B08",
+    "owner R-1（symlink_policy：实现真检查或删字段）与 L05 的『symlink/reparse 逃逸』在设计中无任何机制归属（b-design 只在测试 ID 处提到 symlink）",
+    "owner R-4（privacy_class 缺省不外发）的改动落点：设计把它挂在 F6 config.py，与实现一致（config.py:144 `privacy_class=str(item.get(\"privacy_class\", \"public\"))` 确认可行），但未说明其在现网配置上惰性，也无验收用例",
+    "handbook §1.5/§3 要求的 DEV card.json（allowed_files/forbidden_paths/owner/implementer/independent_reviewers/原条款ID与hash/dependency_gates/integration_scope/authorization_refs/stop_rules）",
+    "『独立复审就同一输入 hash 出具 verdict』所需的输入哈希集合定义与记录位置（checkpoint.json 无该字段）",
+    "B02/B04 对 `resolver._handle` 的锚点（execution-plan §B 明确列为候选，file-scope F2 未列）"
+  ],
+  "verdict": "rejected",
+  "verdict_reason": "本包的事实层质量高于常态（八个候选文件的存在性、sha256、绝大多数符号与行锚点、矩阵 ID 引文、hard stop 清单、H01/D.SAFE 交叉、『隔离副本不必是 49.7 GB』的判断、checkpoint 的 9 个 digest 与 `--verify-only` 均可复现，且对缺件与阻塞的披露诚实），设计方向与 execution-plan §B01–B10 逐句对应，未发现与阶段 A 冻结合同在『能力四轴、显式 false 语义、路径不入身份』上的正面冲突。但 B.DR 不能通过，理由有三：① 存在 1 个 P0——file-scope.md:26 与 b-design.md:28 的『policy_2x 无生产调用者』被 `cli.py:849-851`（resolve/ensure/policy-export 的 policy_export 出口）证伪，而该 payload 是 filing-fetch 的 FC-501『single containment source』（filing_contracts.py:450），按现文实施『停用 policy_2x 路径』会破坏在产跨仓 containment 与 ZR-405 hash 契约；② gate 的第 1 项（字段合并/弃用）在包内没有可审对象，而 task_plan.md:22 与 test-acceptance-map.md:10 却声称 B01 设计完成且含『旧字段映射』；③ 多个 P1 表明设计未真正满足其自定的验收：B05 未覆盖 scanner.py:1078-1081 的文档级业务字段（L08『业务事实不随位置改变』不成立）、B02/B04 漏掉 resolver.py:1142-1224 `_handle`（L03『撤首选→自动切换』不成立）、B03 不校验被交付字节（L05『TOCTOU 不混读』不成立）、B07 的无 companies fallback 与边界 adapter 落在禁止/未列文件（在提案文件范围内不可实施）。因此按执行计划『无法兼容/不合规则退回设计』的口径，本包应就地更正后由独立 reviewer 就新的冻结提交重审。",
+  "resubmission_path": "revenue-forecast/assurance/runs/2026-09-11_r4-phase-b/reviews/B.DR-rev2.json（对应更正文与新的冻结提交 sha：需先在 b-design.md/file-scope.md/test-acceptance-map.md/risk-and-stop-rules.md 就地补齐 B-DR-02/B-DR-03/B-DR-04/B-DR-05/B-DR-06/B-DR-07/B-DR-08，并重签 file-scope 的 allowed_files/forbidden_paths；重审须由另一独立 reviewer 就新提交与新的输入哈希集出具 rev2 verdict）",
+  "closed_at_utc": "2026-09-12T06:53:40Z"
+}

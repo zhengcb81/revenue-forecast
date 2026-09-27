@@ -1,0 +1,1038 @@
+--- a/scripts/forecast/calc.py
++++ b/scripts/forecast/calc.py
+@@ -232,6 +232,26 @@
+     return expanded
+ 
+ 
++def _recognition_parameter_ids(recognition: Any) -> list[str]:
++    """Parameter ids carried by a segment recognition block.
++
++    Collects ids from the carry-in and progress scenario maps; non-dict
++    containers contribute nothing (same filtering as the inline scan it
++    replaced inside ``collect_parameter_roles``).
++    """
++    collected: list[str] = []
++    if isinstance(recognition, dict):
++        carry_in = recognition.get("carry_in_parameter_ids", {})
++        if isinstance(carry_in, dict):
++            for ids in carry_in.values():
++                collected.extend(_listed_parameter_ids(ids))
++        progress = recognition.get("progress_parameter_ids", {})
++        if isinstance(progress, dict):
++            for ids in progress.values():
++                collected.extend(_listed_parameter_ids(ids))
++    return collected
++
++
+ def collect_parameter_roles(
+     data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
+ ) -> dict[str, set[str]]:
+@@ -266,15 +286,7 @@
+                     for ids in driver_map.values():
+                         forecast.update(_listed_parameter_ids(ids))
+         recognition = segment.get("recognition", {})
+-        if isinstance(recognition, dict):
+-            carry_in = recognition.get("carry_in_parameter_ids", {})
+-            if isinstance(carry_in, dict):
+-                for ids in carry_in.values():
+-                    forecast.update(_listed_parameter_ids(ids))
+-            progress = recognition.get("progress_parameter_ids", {})
+-            if isinstance(progress, dict):
+-                for ids in progress.values():
+-                    forecast.update(_listed_parameter_ids(ids))
++        forecast.update(_recognition_parameter_ids(recognition))
+ 
+     for adjustment in data.get("forecast_adjustments", []):
+         if not isinstance(adjustment, dict):
+--- a/scripts/generate_input_template.py
++++ b/scripts/generate_input_template.py
+@@ -22,7 +22,7 @@
+ import json
+ import sys
+ from pathlib import Path
+-from typing import Any
++from typing import Any, Callable
+ 
+ from revenue_core import (  # noqa: E402
+     FORECAST_SCHEMA_VERSION,
+@@ -34,6 +34,132 @@
+ from model_extensions import EXTENSION_OPENING_BALANCES
+ 
+ PLACEHOLDER_HASH = "0" * 64
++
++
++def _build_segments(
++    segment_names: list[str],
++    segment_base_ids: list[str],
++    segment_models: dict[str, str],
++    forecast_years: list[int],
++    base_year: int,
++    add_parameter: Callable[..., str],
++) -> list[dict[str, Any]]:
++    """Assemble segment blocks: per-scenario driver parameters + opening balance."""
++    segments: list[dict[str, Any]] = []
++    for segment, base_pid in zip(segment_names, segment_base_ids):
++        slug = segment.lower().replace(" ", "_")
++        model = segment_models.get(segment, "direct_revenue")
++        spec = MODEL_REGISTRY[model]
++        scenarios: dict[str, Any] = {}
++        for scenario in ("low", "base", "high"):
++            driver_ids = {driver: [
++                add_parameter(
++                    f"{slug}_{driver}_{scenario}_{year}",
++                    "analyst_assumption",
++                    0.0,
++                    f"FY{year}",
++                    dimension=spec.dimensions[driver],
++                    scenario=scenario,
++                    rationale=f"FIXME: {segment} {scenario} {driver} for FY{year}",
++                )
++                for year in forecast_years
++            ] for driver in spec.required}
++            scenarios[scenario] = {
++                "model": model,
++                "driver_parameter_ids": driver_ids,
++                "rationale": f"FIXME: {segment} {scenario} revenue path rationale",
++            }
++        segments.append(
++            {
++                "name": segment,
++                "base_revenue_parameter_id": base_pid,
++                "recognition": {
++                    "mode": "modeled_as_recognized",
++                    "timing": "point_in_time",
++                    "trigger": "FIXME: recognition trigger",
++                    "presentation": "gross",
++                },
++                "scenarios": scenarios,
++            }
++        )
++        opening = dict(EXTENSION_OPENING_BALANCES)
++        opening.update({
++            "project_backlog": ("base_backlog_parameter_id", "opening_backlog", "backlog"),
++            "delivery_pipeline": ("base_orders_parameter_id", "opening_orders", "quantity"),
++        })
++        if model in opening:
++            field, driver, dimension = opening[model]
++            segments[-1][field] = add_parameter(
++                f"{slug}_base_{driver}", "reported_fact", 0.0,
++                f"FY{base_year}", dimension=dimension,
++                rationale=f"FIXME: source-linked opening {driver}",
++            )
++    return segments
++
++
++def _build_historical(
++    base_year: int, source_id: str, as_of: str
++) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
++    """Historical-revenue claim entries and rows for FY(base_year-1) and FY(base_year)."""
++    claim_entries: list[dict[str, Any]] = []
++    historical: list[dict[str, Any]] = []
++    for year in (base_year - 1, base_year):
++        claim_id = f"claim_history_{year}"
++        claim_entries.append(
++            {
++                "claim_id": claim_id,
++                "source_id": source_id,
++                "target_type": "historical_revenue",
++                "target_id": f"historical_revenue:{year}",
++                "support_type": "exact_value",
++                "locator": "FIXME: historical revenue locator",
++                "excerpt": f"FIXME: checked excerpt for FY{year} revenue.",
++                "excerpt_sha256": PLACEHOLDER_HASH,
++                "content_sha256": PLACEHOLDER_HASH,
++                "capture_receipt_sha256": PLACEHOLDER_HASH,
++                "verification_status": "opened_and_checked",
++                "verified_by": "FIXME: research agent",
++                "verified_date": as_of,
++            }
++        )
++        historical.append(
++            {
++                "year": year,
++                "value": 0.0,
++                "source_ids": [source_id],
++                "claim_ids": [claim_id],
++            }
++        )
++    return claim_entries, historical
++
++
++def _build_research_coverage() -> list[dict[str, Any]]:
++    """One FIXME research-coverage row per research dimension (fixed order)."""
++    return [
++        {
++            "dimension": dimension,
++            "status": "data_gap",
++            "conclusion": f"FIXME: {dimension} conclusion",
++            "revenue_mechanism": f"FIXME: {dimension} revenue mechanism",
++            "rationale": f"FIXME: why {dimension} remains a data gap, or set status=modeled_driver and map parameters",
++        }
++        for dimension in RESEARCH_DIMENSIONS
++    ]
++
++
++def _build_management_coverage(as_of: str) -> list[dict[str, Any]]:
++    """One FIXME management-communication row per category (fixed order)."""
++    return [
++        {
++            "category": category,
++            "status": "not_checked",
++            "source_ids": [],
++            "checked_date": as_of,
++            "conclusion": f"FIXME: {category} review conclusion",
++            "material_revenue_target_ids": [],
++        }
++        for category in MANAGEMENT_COMMUNICATION_CATEGORIES
++    ]
+ 
+ 
+ def build_template(
+@@ -161,106 +287,22 @@
+         )
+         segment_base_ids.append(base_pid)
+ 
+-    segments: list[dict[str, Any]] = []
+-    for segment, base_pid in zip(segment_names, segment_base_ids):
+-        slug = segment.lower().replace(" ", "_")
+-        model = segment_models.get(segment, "direct_revenue")
+-        spec = MODEL_REGISTRY[model]
+-        scenarios: dict[str, Any] = {}
+-        for scenario in ("low", "base", "high"):
+-            driver_ids = {driver: [
+-                add_parameter(
+-                    f"{slug}_{driver}_{scenario}_{year}",
+-                    "analyst_assumption",
+-                    0.0,
+-                    f"FY{year}",
+-                    dimension=spec.dimensions[driver],
+-                    scenario=scenario,
+-                    rationale=f"FIXME: {segment} {scenario} {driver} for FY{year}",
+-                )
+-                for year in forecast_years
+-            ] for driver in spec.required}
+-            scenarios[scenario] = {
+-                "model": model,
+-                "driver_parameter_ids": driver_ids,
+-                "rationale": f"FIXME: {segment} {scenario} revenue path rationale",
+-            }
+-        segments.append(
+-            {
+-                "name": segment,
+-                "base_revenue_parameter_id": base_pid,
+-                "recognition": {
+-                    "mode": "modeled_as_recognized",
+-                    "timing": "point_in_time",
+-                    "trigger": "FIXME: recognition trigger",
+-                    "presentation": "gross",
+-                },
+-                "scenarios": scenarios,
+-            }
+-        )
+-        opening = dict(EXTENSION_OPENING_BALANCES)
+-        opening.update({
+-            "project_backlog": ("base_backlog_parameter_id", "opening_backlog", "backlog"),
+-            "delivery_pipeline": ("base_orders_parameter_id", "opening_orders", "quantity"),
+-        })
+-        if model in opening:
+-            field, driver, dimension = opening[model]
+-            segments[-1][field] = add_parameter(
+-                f"{slug}_base_{driver}", "reported_fact", 0.0,
+-                f"FY{base_year}", dimension=dimension,
+-                rationale=f"FIXME: source-linked opening {driver}",
+-            )
+-
+-    historical: list[dict[str, Any]] = []
+-    for year in (base_year - 1, base_year):
+-        claim_id = f"claim_history_{year}"
+-        claims.append(
+-            {
+-                "claim_id": claim_id,
+-                "source_id": source_id,
+-                "target_type": "historical_revenue",
+-                "target_id": f"historical_revenue:{year}",
+-                "support_type": "exact_value",
+-                "locator": "FIXME: historical revenue locator",
+-                "excerpt": f"FIXME: checked excerpt for FY{year} revenue.",
+-                "excerpt_sha256": PLACEHOLDER_HASH,
+-                "content_sha256": PLACEHOLDER_HASH,
+-                "capture_receipt_sha256": PLACEHOLDER_HASH,
+-                "verification_status": "opened_and_checked",
+-                "verified_by": "FIXME: research agent",
+-                "verified_date": as_of,
+-            }
+-        )
+-        historical.append(
+-            {
+-                "year": year,
+-                "value": 0.0,
+-                "source_ids": [source_id],
+-                "claim_ids": [claim_id],
+-            }
+-        )
+-
+-    research = [
+-        {
+-            "dimension": dimension,
+-            "status": "data_gap",
+-            "conclusion": f"FIXME: {dimension} conclusion",
+-            "revenue_mechanism": f"FIXME: {dimension} revenue mechanism",
+-            "rationale": f"FIXME: why {dimension} remains a data gap, or set status=modeled_driver and map parameters",
+-        }
+-        for dimension in RESEARCH_DIMENSIONS
+-    ]
+-    management = [
+-        {
+-            "category": category,
+-            "status": "not_checked",
+-            "source_ids": [],
+-            "checked_date": as_of,
+-            "conclusion": f"FIXME: {category} review conclusion",
+-            "material_revenue_target_ids": [],
+-        }
+-        for category in MANAGEMENT_COMMUNICATION_CATEGORIES
+-    ]
++    segments = _build_segments(
++        segment_names,
++        segment_base_ids,
++        segment_models,
++        forecast_years,
++        base_year,
++        add_parameter,
++    )
++
++    historical_claim_entries, historical = _build_historical(
++        base_year, source_id, as_of
++    )
++    claims.extend(historical_claim_entries)
++
++    research = _build_research_coverage()
++    management = _build_management_coverage(as_of)
+ 
+     return {
+         "_comment": (
+--- a/scripts/research/targets.py
++++ b/scripts/research/targets.py
+@@ -28,15 +28,17 @@
+ from forecast.calc import collect_parameter_roles, evaluate_derived_formula
+ 
+ 
+-def validate_management_target_coverage(
+-    data: dict[str, Any],
++def _normalize_communication_coverage(
++    coverage: Any,
+     source_index: dict[str, dict[str, Any]],
+-    parameter_index: dict[str, dict[str, Any]],
+-    claim_index: dict[str, dict[str, Any]],
+     as_of: date,
+-) -> dict[str, Any]:
+-    """Validate official communication coverage and every material forward revenue target."""
+-    coverage = data.get("management_communication_coverage")
++) -> tuple[dict[str, dict[str, Any]], set[str]]:
++    """Validate and normalize management communication coverage records.
++
++    Extracted verbatim from validate_management_target_coverage (the
++    coverage loop); runs at the same point in the same order, so every
++    require() still fires in the original sequence.
++    """
+     require(
+         isinstance(coverage, list), "management_communication_coverage must be a list"
+     )
+@@ -169,6 +171,363 @@
+                 normalized[optional] = record[optional].strip()
+         normalized_coverage[category] = normalized
+ 
++    return normalized_coverage, referenced_target_ids
++
++
++def _validate_management_target(
++    # target stays Any — exactly the inference the original loop had (the old
++    # `for ... in enumerate(targets)` iterated Any|None, so target: Any).
++    # Annotating dict[str, Any] would widen target.get(...) to Any|None and
++    # invent 8 new mypy errors against the frozen type baseline.
++    target: Any,
++    position: int,
++    data: dict[str, Any],
++    parameter_index: dict[str, dict[str, Any]],
++    claim_index: dict[str, dict[str, Any]],
++    roles: dict[str, set[str]],
++    segment_names: set[Any],
++    normalized_targets: dict[str, dict[str, Any]],
++) -> tuple[dict[str, Any], list[str]]:
++    """Validate one management target; return (normalized record, gap messages).
++
++    Extracted verbatim from the management_targets loop body of
++    validate_management_target_coverage. normalized_targets is read-only
++    here (duplicate check against previously accepted targets); the
++    orchestrator stores the returned record after this call.
++    """
++    gaps: list[str] = []
++    prefix = f"management_targets[{position}]"
++    require(isinstance(target, dict), f"{prefix} must be an object")
++    target_id = target.get("target_id")
++    require(
++        isinstance(target_id, str) and target_id.strip(),
++        f"{prefix}.target_id is required",
++    )
++    require(
++        target_id not in normalized_targets,
++        f"duplicate management target: {target_id}",
++    )
++    for field in (
++        "statement",
++        "metric_name",
++        "metric_definition",
++        "target_period",
++        "raw_unit",
++        "raw_currency",
++        "raw_scale",
++        "measurement_rationale",
++        "perimeter_notes",
++        "rationale",
++    ):
++        require(
++            isinstance(target.get(field), str) and target[field].strip(),
++            f"{target_id}.{field} is required",
++        )
++    raw_value = finite_number(
++        target.get("raw_target_value"), f"{target_id}.raw_target_value"
++    )
++    require(raw_value >= 0, f"management target cannot be negative: {target_id}")
++    measurement_basis = target.get("measurement_basis")
++    require(
++        measurement_basis in MANAGEMENT_TARGET_MEASUREMENT_BASES,
++        f"invalid management target measurement basis: {target_id}",
++    )
++    measurement_periods = target.get("measurement_periods")
++    require(
++        isinstance(measurement_periods, list)
++        and len(measurement_periods) == len(set(measurement_periods)),
++        f"invalid management target measurement periods: {target_id}",
++    )
++    measurement_years = [
++        period_year(period, f"{target_id}.measurement_periods")
++        for period in measurement_periods
++    ]
++    require(
++        measurement_years == sorted(measurement_years),
++        f"management target measurement periods must be ordered: {target_id}",
++    )
++    if measurement_basis in {"annual_period", "run_rate_at_period_end"}:
++        require(
++            len(measurement_years) == 1,
++            f"single-period management target requires exactly one measurement period: {target_id}",
++        )
++    elif measurement_basis == "cumulative_periods":
++        require(
++            len(measurement_years) >= 2,
++            f"cumulative management target requires at least two measurement periods: {target_id}",
++        )
++        require(
++            measurement_years
++            == list(range(measurement_years[0], measurement_years[-1] + 1)),
++            f"cumulative management target periods must be contiguous: {target_id}",
++        )
++    else:
++        require(
++            not measurement_years,
++            f"ambiguous management target cannot claim measurement periods: {target_id}",
++        )
++    materiality = target.get("materiality")
++    require(
++        materiality in {"material", "contextual"},
++        f"invalid management target materiality: {target_id}",
++    )
++    commitment_strength = target.get("commitment_strength")
++    require(
++        commitment_strength in {"guidance", "goal", "aspiration", "capacity_plan"},
++        f"invalid management target commitment strength: {target_id}",
++    )
++    perimeter_status = target.get("perimeter_status")
++    require(
++        perimeter_status in MANAGEMENT_TARGET_PERIMETERS,
++        f"invalid management target perimeter: {target_id}",
++    )
++    treatment = target.get("treatment")
++    require(
++        treatment in MANAGEMENT_TARGET_TREATMENTS,
++        f"invalid management target treatment: {target_id}",
++    )
++    comparison = target.get("comparison")
++    require(
++        comparison in MANAGEMENT_TARGET_COMPARISONS,
++        f"invalid management target comparison: {target_id}",
++    )
++    scope = target.get("scope")
++    require(
++        isinstance(scope, dict)
++        and scope.get("type") in {"company", "segment", "custom"},
++        f"invalid management target scope: {target_id}",
++    )
++    scope_name = scope.get("name")
++    require(
++        isinstance(scope_name, str) and scope_name.strip(),
++        f"management target scope name is required: {target_id}",
++    )
++    if scope["type"] == "segment":
++        require(
++            scope_name in segment_names,
++            f"unknown management target segment: {target_id}/{scope_name}",
++        )
++
++    claim_ids = target.get("claim_ids")
++    linked_claims = validate_claim_ids(
++        claim_ids,
++        claim_index,
++        "management_target",
++        target_id,
++        target_id,
++        "exact_value",
++    )
++    source_ids = []
++    for linked in linked_claims:
++        extracted = finite_number(
++            linked.get("extracted_value"), f"{linked['claim_id']}.extracted_value"
++        )
++        require(
++            math.isclose(extracted, raw_value, rel_tol=0, abs_tol=1e-9),
++            f"management target claim value mismatch: {target_id}",
++        )
++        require(
++            linked.get("unit") == target["raw_unit"],
++            f"management target claim unit mismatch: {target_id}",
++        )
++        require(
++            linked.get("period") == target["target_period"],
++            f"management target claim period mismatch: {target_id}",
++        )
++        source_ids.append(linked["source_id"])
++
++    mapped_ids = target.get("mapped_parameter_ids", [])
++    mapped_scenarios = target.get("mapped_scenarios", [])
++    require(
++        isinstance(mapped_ids, list) and len(mapped_ids) == len(set(mapped_ids)),
++        f"invalid mapped_parameter_ids: {target_id}",
++    )
++    require(
++        isinstance(mapped_scenarios, list)
++        and len(mapped_scenarios) == len(set(mapped_scenarios)),
++        f"invalid mapped_scenarios: {target_id}",
++    )
++    require(
++        set(mapped_scenarios) <= set(SCENARIOS),
++        f"invalid mapped scenario: {target_id}",
++    )
++    for parameter_id in mapped_ids:
++        require(
++            parameter_id in parameter_index,
++            f"unknown management target parameter: {target_id}/{parameter_id}",
++        )
++        require(
++            parameter_id in roles["forecast"],
++            f"management target parameter is not used by the forecast: {target_id}/{parameter_id}",
++        )
++
++    within_horizon = bool(measurement_years) and set(measurement_years) <= set(
++        data["forecast_years"]
++    )
++    comparable = (
++        measurement_basis != "ambiguous"
++        and perimeter_status in {"matched", "reconciled"}
++        and scope["type"] in {"company", "segment"}
++    )
++    if measurement_basis == "run_rate_at_period_end":
++        conversion_ids = target.get("normalization_parameter_ids", [])
++        conversion_formula = target.get("normalization_formula")
++        has_conversion = (
++            target.get("comparison_basis") == "annual_recognized_revenue"
++            and isinstance(conversion_ids, list) and bool(conversion_ids)
++            and isinstance(conversion_formula, str) and bool(conversion_formula.strip())
++        )
++        if treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
++            require(has_conversion,
++                    f"run-rate target requires explicit annual recognized revenue conversion: {target_id}")
++        comparable = comparable and has_conversion
++        if not has_conversion:
++            require(not mapped_ids and not mapped_scenarios,
++                    f"unconverted run-rate target cannot claim scenario mapping: {target_id}")
++    comparison_value = target.get("comparison_value")
++    if comparable:
++        if measurement_basis == "run_rate_at_period_end":
++            require(len(conversion_ids) == len(set(conversion_ids)),
++                    f"run-rate conversion parameters must be unique: {target_id}")
++            for parameter_id in conversion_ids:
++                require(parameter_id in parameter_index,
++                        f"unknown run-rate conversion parameter: {target_id}/{parameter_id}")
++                require(bool(parameter_index[parameter_id].get("claim_ids")),
++                        f"run-rate conversion parameter requires checked evidence: {parameter_id}")
++                source_ids.extend(parameter_index[parameter_id].get("source_ids", []))
++            converted = evaluate_derived_formula(conversion_formula, [raw_value] + [
++                float(parameter_index[pid]["value"]) for pid in conversion_ids
++            ])
++            formula_names = {node.id for node in ast.walk(ast.parse(conversion_formula, mode="eval"))
++                             if isinstance(node, ast.Name)}
++            require(
++                formula_names == {f"x{index}" for index in range(len(conversion_ids) + 1)},
++                f"run-rate conversion must use raw target x0 and every registered input: {target_id}",
++            )
++            require(math.isclose(converted, finite_number(comparison_value, "comparison_value"), rel_tol=1e-9, abs_tol=1e-9),
++                    f"run-rate normalization recomputation mismatch: {target_id}")
++        comparison_value = finite_number(
++            comparison_value, f"{target_id}.comparison_value"
++        )
++        require(
++            comparison_value >= 0,
++            f"management target comparison value cannot be negative: {target_id}",
++        )
++        require(
++            target.get("comparison_currency") == data["currency"],
++            f"management target comparison currency mismatch: {target_id}",
++        )
++        require(
++            target.get("comparison_scale") == data["unit"],
++            f"management target comparison scale mismatch: {target_id}",
++        )
++        require(
++            isinstance(target.get("normalization_rationale"), str)
++            and target["normalization_rationale"].strip(),
++            f"management target normalization rationale is required: {target_id}",
++        )
++    else:
++        require(
++            comparison_value is None,
++            f"non-comparable management target cannot contain comparison_value: {target_id}",
++        )
++
++    if measurement_basis == "ambiguous":
++        require(
++            treatment == "unmodeled_data_gap",
++            f"measurement-ambiguous target must remain an unmodeled data gap: {target_id}",
++        )
++        require(
++            not mapped_ids and not mapped_scenarios,
++            f"measurement-ambiguous target cannot claim scenario mapping: {target_id}",
++        )
++
++    if treatment in {"modeled_scenario", "scenario_boundary"}:
++        require(
++            within_horizon,
++            f"modeled management target must be inside forecast horizon: {target_id}",
++        )
++        require(
++            comparable,
++            f"modeled management target requires matched or reconciled perimeter: {target_id}",
++        )
++        require(
++            bool(mapped_ids) and bool(mapped_scenarios),
++            f"modeled management target requires mapped parameters and scenarios: {target_id}",
++        )
++    elif treatment == "independent_benchmark":
++        require(
++            within_horizon and comparable,
++            f"independent benchmark requires comparable in-horizon target: {target_id}",
++        )
++        require(
++            bool(mapped_ids) and set(mapped_scenarios) == set(SCENARIOS),
++            f"independent benchmark requires parameters and all three scenarios: {target_id}",
++        )
++        require(
++            isinstance(target.get("benchmark_rationale"), str)
++            and target["benchmark_rationale"].strip(),
++            f"independent benchmark requires benchmark_rationale: {target_id}",
++        )
++        benchmark_claims = validate_claim_ids(
++            target.get("benchmark_claim_ids"), claim_index,
++            "management_target", target_id, target_id, "rationale_support",
++        )
++        source_ids.extend(claim["source_id"] for claim in benchmark_claims)
++    elif treatment == "out_of_horizon":
++        require(
++            bool(measurement_years)
++            and max(measurement_years) > max(data["forecast_years"]),
++            f"out_of_horizon target must extend after forecast horizon: {target_id}",
++        )
++        require(
++            not mapped_ids and not mapped_scenarios,
++            f"out_of_horizon target cannot claim scenario mapping: {target_id}",
++        )
++        gaps.append(
++            f"management_target:{target_id}: target period {target['target_period']} is outside the forecast horizon"
++        )
++    else:
++        require(
++            not mapped_scenarios,
++            f"unmodeled management target cannot claim mapped scenarios: {target_id}",
++        )
++        gaps.append(f"management_target:{target_id}: {treatment}")
++
++    if materiality == "material" and within_horizon and comparable:
++        require(
++            treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"},
++            f"material in-horizon comparable target must enter a scenario: {target_id}",
++        )
++    if perimeter_status == "mismatch":
++        require(
++            treatment in {"unmodeled_data_gap", "out_of_horizon"},
++            f"perimeter-mismatched target cannot be modeled directly: {target_id}",
++        )
++
++    normalized = copy.deepcopy(target)
++    normalized["raw_target_value"] = raw_value
++    normalized["measurement_periods"] = list(measurement_periods)
++    normalized["source_ids"] = list(dict.fromkeys(source_ids))
++    if comparable:
++        normalized["comparison_value"] = float(comparison_value)
++
++    return normalized, gaps
++
++
++def validate_management_target_coverage(
++    data: dict[str, Any],
++    source_index: dict[str, dict[str, Any]],
++    parameter_index: dict[str, dict[str, Any]],
++    claim_index: dict[str, dict[str, Any]],
++    as_of: date,
++) -> dict[str, Any]:
++    """Validate official communication coverage and every material forward revenue target."""
++    coverage = data.get("management_communication_coverage")
++    normalized_coverage, referenced_target_ids = _normalize_communication_coverage(
++        coverage, source_index, as_of
++    )
++
+     targets = data.get("management_targets")
+     require(isinstance(targets, list), "management_targets must be a list")
+     roles = collect_parameter_roles(data, parameter_index)
+@@ -180,322 +539,18 @@
+     normalized_targets: dict[str, dict[str, Any]] = {}
+     gap_messages: list[str] = []
+     for position, target in enumerate(targets):
+-        prefix = f"management_targets[{position}]"
+-        require(isinstance(target, dict), f"{prefix} must be an object")
+-        target_id = target.get("target_id")
+-        require(
+-            isinstance(target_id, str) and target_id.strip(),
+-            f"{prefix}.target_id is required",
+-        )
+-        require(
+-            target_id not in normalized_targets,
+-            f"duplicate management target: {target_id}",
+-        )
+-        for field in (
+-            "statement",
+-            "metric_name",
+-            "metric_definition",
+-            "target_period",
+-            "raw_unit",
+-            "raw_currency",
+-            "raw_scale",
+-            "measurement_rationale",
+-            "perimeter_notes",
+-            "rationale",
+-        ):
+-            require(
+-                isinstance(target.get(field), str) and target[field].strip(),
+-                f"{target_id}.{field} is required",
+-            )
+-        raw_value = finite_number(
+-            target.get("raw_target_value"), f"{target_id}.raw_target_value"
+-        )
+-        require(raw_value >= 0, f"management target cannot be negative: {target_id}")
+-        measurement_basis = target.get("measurement_basis")
+-        require(
+-            measurement_basis in MANAGEMENT_TARGET_MEASUREMENT_BASES,
+-            f"invalid management target measurement basis: {target_id}",
+-        )
+-        measurement_periods = target.get("measurement_periods")
+-        require(
+-            isinstance(measurement_periods, list)
+-            and len(measurement_periods) == len(set(measurement_periods)),
+-            f"invalid management target measurement periods: {target_id}",
+-        )
+-        measurement_years = [
+-            period_year(period, f"{target_id}.measurement_periods")
+-            for period in measurement_periods
+-        ]
+-        require(
+-            measurement_years == sorted(measurement_years),
+-            f"management target measurement periods must be ordered: {target_id}",
+-        )
+-        if measurement_basis in {"annual_period", "run_rate_at_period_end"}:
+-            require(
+-                len(measurement_years) == 1,
+-                f"single-period management target requires exactly one measurement period: {target_id}",
+-            )
+-        elif measurement_basis == "cumulative_periods":
+-            require(
+-                len(measurement_years) >= 2,
+-                f"cumulative management target requires at least two measurement periods: {target_id}",
+-            )
+-            require(
+-                measurement_years
+-                == list(range(measurement_years[0], measurement_years[-1] + 1)),
+-                f"cumulative management target periods must be contiguous: {target_id}",
+-            )
+-        else:
+-            require(
+-                not measurement_years,
+-                f"ambiguous management target cannot claim measurement periods: {target_id}",
+-            )
+-        materiality = target.get("materiality")
+-        require(
+-            materiality in {"material", "contextual"},
+-            f"invalid management target materiality: {target_id}",
+-        )
+-        commitment_strength = target.get("commitment_strength")
+-        require(
+-            commitment_strength in {"guidance", "goal", "aspiration", "capacity_plan"},
+-            f"invalid management target commitment strength: {target_id}",
+-        )
+-        perimeter_status = target.get("perimeter_status")
+-        require(
+-            perimeter_status in MANAGEMENT_TARGET_PERIMETERS,
+-            f"invalid management target perimeter: {target_id}",
+-        )
+-        treatment = target.get("treatment")
+-        require(
+-            treatment in MANAGEMENT_TARGET_TREATMENTS,
+-            f"invalid management target treatment: {target_id}",
+-        )
+-        comparison = target.get("comparison")
+-        require(
+-            comparison in MANAGEMENT_TARGET_COMPARISONS,
+-            f"invalid management target comparison: {target_id}",
+-        )
+-        scope = target.get("scope")
+-        require(
+-            isinstance(scope, dict)
+-            and scope.get("type") in {"company", "segment", "custom"},
+-            f"invalid management target scope: {target_id}",
+-        )
+-        scope_name = scope.get("name")
+-        require(
+-            isinstance(scope_name, str) and scope_name.strip(),
+-            f"management target scope name is required: {target_id}",
+-        )
+-        if scope["type"] == "segment":
+-            require(
+-                scope_name in segment_names,
+-                f"unknown management target segment: {target_id}/{scope_name}",
+-            )
+-
+-        claim_ids = target.get("claim_ids")
+-        linked_claims = validate_claim_ids(
+-            claim_ids,
++        normalized, target_gaps = _validate_management_target(
++            target,
++            position,
++            data,
++            parameter_index,
+             claim_index,
+-            "management_target",
+-            target_id,
+-            target_id,
+-            "exact_value",
+-        )
+-        source_ids = []
+-        for linked in linked_claims:
+-            extracted = finite_number(
+-                linked.get("extracted_value"), f"{linked['claim_id']}.extracted_value"
+-            )
+-            require(
+-                math.isclose(extracted, raw_value, rel_tol=0, abs_tol=1e-9),
+-                f"management target claim value mismatch: {target_id}",
+-            )
+-            require(
+-                linked.get("unit") == target["raw_unit"],
+-                f"management target claim unit mismatch: {target_id}",
+-            )
+-            require(
+-                linked.get("period") == target["target_period"],
+-                f"management target claim period mismatch: {target_id}",
+-            )
+-            source_ids.append(linked["source_id"])
+-
+-        mapped_ids = target.get("mapped_parameter_ids", [])
+-        mapped_scenarios = target.get("mapped_scenarios", [])
+-        require(
+-            isinstance(mapped_ids, list) and len(mapped_ids) == len(set(mapped_ids)),
+-            f"invalid mapped_parameter_ids: {target_id}",
+-        )
+-        require(
+-            isinstance(mapped_scenarios, list)
+-            and len(mapped_scenarios) == len(set(mapped_scenarios)),
+-            f"invalid mapped_scenarios: {target_id}",
+-        )
+-        require(
+-            set(mapped_scenarios) <= set(SCENARIOS),
+-            f"invalid mapped scenario: {target_id}",
+-        )
+-        for parameter_id in mapped_ids:
+-            require(
+-                parameter_id in parameter_index,
+-                f"unknown management target parameter: {target_id}/{parameter_id}",
+-            )
+-            require(
+-                parameter_id in roles["forecast"],
+-                f"management target parameter is not used by the forecast: {target_id}/{parameter_id}",
+-            )
+-
+-        within_horizon = bool(measurement_years) and set(measurement_years) <= set(
+-            data["forecast_years"]
+-        )
+-        comparable = (
+-            measurement_basis != "ambiguous"
+-            and perimeter_status in {"matched", "reconciled"}
+-            and scope["type"] in {"company", "segment"}
+-        )
+-        if measurement_basis == "run_rate_at_period_end":
+-            conversion_ids = target.get("normalization_parameter_ids", [])
+-            conversion_formula = target.get("normalization_formula")
+-            has_conversion = (
+-                target.get("comparison_basis") == "annual_recognized_revenue"
+-                and isinstance(conversion_ids, list) and bool(conversion_ids)
+-                and isinstance(conversion_formula, str) and bool(conversion_formula.strip())
+-            )
+-            if treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
+-                require(has_conversion,
+-                        f"run-rate target requires explicit annual recognized revenue conversion: {target_id}")
+-            comparable = comparable and has_conversion
+-            if not has_conversion:
+-                require(not mapped_ids and not mapped_scenarios,
+-                        f"unconverted run-rate target cannot claim scenario mapping: {target_id}")
+-        comparison_value = target.get("comparison_value")
+-        if comparable:
+-            if measurement_basis == "run_rate_at_period_end":
+-                require(len(conversion_ids) == len(set(conversion_ids)),
+-                        f"run-rate conversion parameters must be unique: {target_id}")
+-                for parameter_id in conversion_ids:
+-                    require(parameter_id in parameter_index,
+-                            f"unknown run-rate conversion parameter: {target_id}/{parameter_id}")
+-                    require(bool(parameter_index[parameter_id].get("claim_ids")),
+-                            f"run-rate conversion parameter requires checked evidence: {parameter_id}")
+-                    source_ids.extend(parameter_index[parameter_id].get("source_ids", []))
+-                converted = evaluate_derived_formula(conversion_formula, [raw_value] + [
+-                    float(parameter_index[pid]["value"]) for pid in conversion_ids
+-                ])
+-                formula_names = {node.id for node in ast.walk(ast.parse(conversion_formula, mode="eval"))
+-                                 if isinstance(node, ast.Name)}
+-                require(
+-                    formula_names == {f"x{index}" for index in range(len(conversion_ids) + 1)},
+-                    f"run-rate conversion must use raw target x0 and every registered input: {target_id}",
+-                )
+-                require(math.isclose(converted, finite_number(comparison_value, "comparison_value"), rel_tol=1e-9, abs_tol=1e-9),
+-                        f"run-rate normalization recomputation mismatch: {target_id}")
+-            comparison_value = finite_number(
+-                comparison_value, f"{target_id}.comparison_value"
+-            )
+-            require(
+-                comparison_value >= 0,
+-                f"management target comparison value cannot be negative: {target_id}",
+-            )
+-            require(
+-                target.get("comparison_currency") == data["currency"],
+-                f"management target comparison currency mismatch: {target_id}",
+-            )
+-            require(
+-                target.get("comparison_scale") == data["unit"],
+-                f"management target comparison scale mismatch: {target_id}",
+-            )
+-            require(
+-                isinstance(target.get("normalization_rationale"), str)
+-                and target["normalization_rationale"].strip(),
+-                f"management target normalization rationale is required: {target_id}",
+-            )
+-        else:
+-            require(
+-                comparison_value is None,
+-                f"non-comparable management target cannot contain comparison_value: {target_id}",
+-            )
+-
+-        if measurement_basis == "ambiguous":
+-            require(
+-                treatment == "unmodeled_data_gap",
+-                f"measurement-ambiguous target must remain an unmodeled data gap: {target_id}",
+-            )
+-            require(
+-                not mapped_ids and not mapped_scenarios,
+-                f"measurement-ambiguous target cannot claim scenario mapping: {target_id}",
+-            )
+-
+-        if treatment in {"modeled_scenario", "scenario_boundary"}:
+-            require(
+-                within_horizon,
+-                f"modeled management target must be inside forecast horizon: {target_id}",
+-            )
+-            require(
+-                comparable,
+-                f"modeled management target requires matched or reconciled perimeter: {target_id}",
+-            )
+-            require(
+-                bool(mapped_ids) and bool(mapped_scenarios),
+-                f"modeled management target requires mapped parameters and scenarios: {target_id}",
+-            )
+-        elif treatment == "independent_benchmark":
+-            require(
+-                within_horizon and comparable,
+-                f"independent benchmark requires comparable in-horizon target: {target_id}",
+-            )
+-            require(
+-                bool(mapped_ids) and set(mapped_scenarios) == set(SCENARIOS),
+-                f"independent benchmark requires parameters and all three scenarios: {target_id}",
+-            )
+-            require(
+-                isinstance(target.get("benchmark_rationale"), str)
+-                and target["benchmark_rationale"].strip(),
+-                f"independent benchmark requires benchmark_rationale: {target_id}",
+-            )
+-            benchmark_claims = validate_claim_ids(
+-                target.get("benchmark_claim_ids"), claim_index,
+-                "management_target", target_id, target_id, "rationale_support",
+-            )
+-            source_ids.extend(claim["source_id"] for claim in benchmark_claims)
+-        elif treatment == "out_of_horizon":
+-            require(
+-                bool(measurement_years)
+-                and max(measurement_years) > max(data["forecast_years"]),
+-                f"out_of_horizon target must extend after forecast horizon: {target_id}",
+-            )
+-            require(
+-                not mapped_ids and not mapped_scenarios,
+-                f"out_of_horizon target cannot claim scenario mapping: {target_id}",
+-            )
+-            gap_messages.append(
+-                f"management_target:{target_id}: target period {target['target_period']} is outside the forecast horizon"
+-            )
+-        else:
+-            require(
+-                not mapped_scenarios,
+-                f"unmodeled management target cannot claim mapped scenarios: {target_id}",
+-            )
+-            gap_messages.append(f"management_target:{target_id}: {treatment}")
+-
+-        if materiality == "material" and within_horizon and comparable:
+-            require(
+-                treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"},
+-                f"material in-horizon comparable target must enter a scenario: {target_id}",
+-            )
+-        if perimeter_status == "mismatch":
+-            require(
+-                treatment in {"unmodeled_data_gap", "out_of_horizon"},
+-                f"perimeter-mismatched target cannot be modeled directly: {target_id}",
+-            )
+-
+-        normalized = copy.deepcopy(target)
+-        normalized["raw_target_value"] = raw_value
+-        normalized["measurement_periods"] = list(measurement_periods)
+-        normalized["source_ids"] = list(dict.fromkeys(source_ids))
+-        if comparable:
+-            normalized["comparison_value"] = float(comparison_value)
+-        normalized_targets[target_id] = normalized
++            roles,
++            segment_names,
++            normalized_targets,
++        )
++        gap_messages.extend(target_gaps)
++        normalized_targets[normalized["target_id"]] = normalized
+ 
+     require(
+         referenced_target_ids == set(normalized_targets),

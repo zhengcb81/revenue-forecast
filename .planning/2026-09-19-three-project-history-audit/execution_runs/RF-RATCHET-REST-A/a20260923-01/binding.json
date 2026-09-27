@@ -1,0 +1,43 @@
+{
+  "card": "RF-RATCHET-REST-A",
+  "attempt": "a20260923-01",
+  "status": "BINDING (step 2, living doc)",
+  "ruling_in_force": "refactor-DOWN only; NO frozen-cap changes; sources READ-ONLY; delivery via changes.diff only",
+  "src_root": "scripts/",
+  "ratchet_test": {
+    "path": "tools/tests/test_complexity_ratchet.py",
+    "sha256_before": "EB1A36CFD54A8B96E3B5DCA6CA4B7A89CA6B1E1605D22EEDB69F643245EDD10A",
+    "sha256_after": "EB1A36CFD54A8B96E3B5DCA6CA4B7A89CA6B1E1605D22EEDB69F643245EDD10A",
+    "invariant": "frozen table file bytes unchanged before==after",
+    "src_resolution": "Path(__file__).resolve().parents[2]/scripts -> <RF>/scripts (verified live by scan_ratchet.py)"
+  },
+  "sources_before_sha256": {
+    "scripts/forecast/calc.py": "BC4F33D92738029AE1E146E6323A23E818C3ABEB7CDF173C9BCFA4C462B02F79",
+    "scripts/generate_input_template.py": "F7C57911D5F85204B04D07DE02FDCF9BCDB2315CF0236181CD727986292870B1",
+    "scripts/research/targets.py": "1C885DEAF4168BACBD7D445EC6E76DA93193132FCE3B6CA67FBED4E6C910C48B"
+  },
+  "sources_after_sha256": {
+    "scripts/forecast/calc.py": "605BE6E875C60A2114F38795E56F109405F644CFFAAF624E68EB7ADB4907DFCA (refactored iso copy; delivered via changes.diff only — production untouched)",
+    "scripts/generate_input_template.py": "06591BE038E0B7DA7DF862C7B3630E82472D96B991BE9FE7601DFFCDC7D3F132 (refactored iso copy)",
+    "scripts/research/targets.py": "E7E8ED6B63238304D6278C7F563BC265A4BA5903D88ECC76FC37A8D5AFE48B3C (refactored iso copy)"
+  },
+  "family": {
+    "method": "family_inventory.py: AST import graph over scripts/, upward closure from the 3 seed modules, tests referencing any closure module or owned path",
+    "closure_modules": 16,
+    "n_tests": 55,
+    "aggregate_sha256_before": "947AB2EC03BA8082514413E5314F1F5DAF9FB8B6133F3C197B615B7218715387",
+    "aggregate_sha256_after": "947AB2EC03BA8082514413E5314F1F5DAF9FB8B6133F3C197B615B7218715387 (unchanged — family tests never touched)",
+    "per_file_shas": "evidence/family_shas_before.txt"
+  },
+  "cc_implementation": {
+    "primary": "ratchet test's own _max_complexity, imported live by scan_ratchet.py",
+    "cross_check": "twin_max_complexity (independent ast.walk implementation in scan_ratchet.py)",
+    "agreement": "43/43 files agreed in RED scan; disagreement aborts the scan script",
+    "red_scan": "evidence/scan_red.json + scan_red.txt"
+  },
+  "iso_policy": {
+    "production_writes": "NONE (refactored copies under this attempt dir; pytest/caches only under %TEMP%)",
+    "scratch": "%TEMP% iso copy (robocopy, disclosed, no .git metadata) + this attempt dir",
+    "git_usage": "read-only (log/diff/show); no index/HEAD/worktree mutations"
+  }
+}

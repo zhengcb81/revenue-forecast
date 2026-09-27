@@ -1,0 +1,34 @@
+﻿....F.............................                                       [100%]
+================================== FAILURES ===================================
+___________________ test_c1_no_orphaned_script_without_main ___________________
+
+    def test_c1_no_orphaned_script_without_main():
+        """Every scripts/*.py is either a CLI (has main) or a library module
+        imported by at least one other module (reachable production surface)."""
+        sys.path.insert(0, str(SCRIPTS))
+        import importlib
+    
+        for path in sorted(SCRIPTS.glob("*.py")):
+            if path.name == "__init__.py":
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if "def main(" in text or "def run(" in text or "def run_" in text:
+                continue  # CLI surface
+            # library module: must be importable and referenced elsewhere
+            module = importlib.import_module(path.stem)
+            assert module is not None, f"{path.name} not importable"
+            referenced = subprocess.run(
+                ["git", "-C", str(ROOT), "grep", "-l", path.stem, "--",
+                 "scripts/", "tests/"],
+                capture_output=True, text=True, encoding="utf-8", timeout=60)
+            files = [line for line in referenced.stdout.splitlines()
+                     if line.strip() and Path(line) != path]
+>           assert len(files) >= 1, f"{path.name} orphaned (no importer)"
+E           AssertionError: asset_ownership.py orphaned (no importer)
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests\test_zr1102_adversarial_audit.py:83: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_zr1102_adversarial_audit.py::test_c1_no_orphaned_script_without_main
+1 failed, 33 passed in 49.47s

@@ -1,0 +1,14 @@
+﻿=== 46-zr409-extra-failure-isolated-rerun.log ===
+why: AFTER-B (34) shows ONE extra failure vs BEFORE-B (33b): tests/contract/test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample (portfolio_before fingerprint mismatch). Isolated re-run of that exact test in the judgment copy (byte-identical iso copy, see 45):
+run 1 rc=0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 1 passed, 1 warning in 6.05s =========================
+
+run 2 rc=0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 1 passed, 1 warning in 2.18s =========================
+
+context: the test's own comments document concurrent-writer noise on the catalog (ZR-206 fingerprint lesson), and the 12 new coverage tests write ONLY under pytest tmp_path (grep of test_archive_retired_evidence_fail_closed.py: tmp_path/monkeypatch only, no shared-root writes).
+

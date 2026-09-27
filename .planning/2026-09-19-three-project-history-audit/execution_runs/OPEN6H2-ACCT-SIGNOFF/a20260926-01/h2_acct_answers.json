@@ -1,0 +1,273 @@
+{
+  "schema": "h2_acct_answers/1",
+  "station": "execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01",
+  "role": "accounting_reviewer_h2_signoff",
+  "generated_utc": "2026-09-26T11:52:10Z",
+  "question_source": {
+    "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/ruling_h2.md",
+    "bytes": 25872,
+    "sha256": "e073b49139ece818f484ba3a3b6740db8c4bdc90df5dacc769f32b0401650a38",
+    "section": "§6.1 给会计面 表 A / A' / B / C / D（L184–L192）",
+    "answering": 5,
+    "not_answering": "§6.2 给矿业行业面的 I / I' / I'' / I'''（归行业面，本工位一个字不碰）"
+  },
+  "oracle": {
+    "path": "execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01/oracle.md",
+    "frozen_utc": "2026-09-26T11:46:55Z",
+    "bytes": 21014,
+    "sha256_frozen": "e858b515bc9049a7641a244c81a6031291be8d873bc7acd774e36455e6912058",
+    "utf8_no_bom": true,
+    "cr_count": 0,
+    "frozen_before_judgement": true,
+    "criteria": ["Q1 净价桥", "Q2 A-2.2 适用性与充分性", "Q3 base_period 收窄", "Q4 四类判定树", "Q5 BLOCKED-6a"]
+  },
+  "discipline": {
+    "network_requests": 0,
+    "git_writes": 0,
+    "git_status_used": false,
+    "files_outside_planning": 0,
+    "planning_files_written": ["execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01/ (本目录 4 件)"],
+    "five_plan_files_written": false,
+    "read_only_inputs": [
+      "OPEN6H2-PRICE-NORMALIZATION-BASELINE (ruling_h2/h2_baseline/handoff/oracle)",
+      "OPEN6-H4-FOUR-REQ (ruling_h4/hypotheses_h4_v1)", "I11A-OPEN-ACCT", "I11A-OPEN-IND",
+      "I11A-OPEN-MERGE", "OPEN2-SUBSTITUTE-CALIBER", "HYPOTHESES-V4-MERGE",
+      "BLOCKED6C-THRESHOLD-REVIEW-STATUS", "I-11-A/a20260919-01", "I-10-A/a20260923-01",
+      "OWNER_DECISIONS.md §三十/§三十一", "company-wiki (只读 + pdftotext 输出进管道)"
+    ]
+  },
+  "answers": [
+    {
+      "id": "Q1",
+      "asked_as": "A 条：B-3 净价桥认定，或明文改走 A-6.3(ii)",
+      "conclusion": "不能认定：B3 = NOT_ESTABLISHED；且不采纳「明文改走 A-6.3(ii)」作为当下替代路径 —— 该改道 (a) 超出会计面单方裁权（任务定义含价格归一化，merge_ruling L234），(b) 即使改道，(ii) 的实测离散反证 ±5%，不产生可签数值。",
+      "verdict": {"bridge": "NOT_ESTABLISHED", "switch_to_ii": "denied_now", "h2_value": null, "signed": false},
+      "criteria_applied": ["Q1.1 五项折减状态逐项可指派", "Q1.2 换算式可定位", "Q1.3 双侧口径已声明", "Q1.4 可复算"],
+      "evidence": [
+        {"id": "Q1-E1", "item": "AR2025 全文抽取件词频（我自测）", "file": ".planning/.../I-10-A/a20260923-01/evidence/I-10-A/source_extracts/CN-ZIJIN-2025.txt", "sha256": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591", "bytes": 763644, "lines": 38741, "counts": {"TC/RC": 0, "payability": 0, "应付比例": 0, "净价": 0, "作价": 0, "加工费": 2, "权益金": 2, "不含税": 4, "增值税": 8, "LME": 1}, "contexts": "加工费 L3566/L5437 均为行业叙述（「冶炼端受益于加工费回升」「铜精矿加工费已跌至历史低位」）；权益金 L1348 资源量、L4115 单位成本说明；不含税 L3952/L3955 为表头「单价（不含税）」、L24177/L24180 为募资；增值税 L12869/L12960/L15410/L21553/L22503 为税项附注 —— 均非桥"},
+        {"id": "Q1-E2", "item": "AR2024 全文（pdftotext -enc UTF-8，输出进管道，29,738 行）词频（我自测）", "file": "company-wiki/companies/紫金矿业/raw/financial_reports/annual/2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf", "content_sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89", "counts": {"TC/RC": 0, "payability": 0, "净价": 0, "加工费": 4, "权益金": 1}, "contexts": "加工费 L2623/L2721/L3976/L3978 全为行业叙述；权益金 L22517 为收购对价条款（1.5% 黄金净冶炼收益权益金），均非折减口径/换算式"},
+        {"id": "Q1-E3", "item": "盘上裁定侧换算式指派检索（我自测）", "search": "grep 价格序列 over execution_runs/**/*.md → 24 命中", "finding": "0 条换算式、0 条 H2 归一化序列指派；命中全部为要求/缺口登记句（MERGE L234、IND L66/L305/L373、ACCT L57/L90、OPEN3-E1-ACCT），其中 IND L66 的 analyst 自算序列仅限 low/high 情景，非 H2 指派"},
+        {"id": "Q1-E4", "item": "被观察侧口径已声明（单侧）", "file": ".planning/.../I-11-A/a20260919-01/evidence/I-11-A/extract/P2_zijin_44_48.txt", "sha256": "073276d2dc73bddef40ec7d415e9f5e7e942769c645f673f422b507a72cbf159", "quote": "单价（不含税） … 注：本表不含非控股企业的相关数据。", "note": "序列侧（币种/含税/形态/时点）因无指派全缺 ⇒ Q1.3 只成立一半"},
+        {"id": "Q1-E5", "item": "QA-02/QA-03 层差实测（自算，未读写文件）", "method": "由 AR2024 leaf35 / AR2025 leaf36 的国内现货铜年均价与销售详情表单价直接相比", "results": {"形态差_铜精矿_vs_电解铜_FY2024_pct": -14.496, "形态差_铜精矿_vs_电解铜_FY2025_pct": -10.9336, "形态差_电积铜_vs_电解铜_FY2024_pct": -4.1187, "形态差_电积铜_vs_电解铜_FY2025_pct": -2.46, "现货_国内铜_年均价_FY2024": 75019, "现货_国内铜_年均价_FY2025": 81141, "现货_vs_铜精矿_FY2024_pct": -24.8964, "现货_vs_铜精矿_FY2025_pct": -21.6019, "现货_vs_电解铜_FY2024_pct": -12.1636, "现货_vs_电解铜_FY2025_pct": -11.9779}, "note": "与矿业面 −10.93% / −14.50% 独立吻合；层差是「无桥」的实测支撑，本身不构成桥"}
+      ],
+      "ii_retest_independent": {
+        "note": "不采信矿业面结论，按 oracle §② E1–E5 逐项实测（仅对「未归一化实现单价」这一同口径指标）",
+        "E1_observable_redefined": {"result": false, "evidence": "hypotheses_v4.json L352 仍为「分部报告矿产品对外收入 ÷ 产销量表铜当量销售量…」（sha ebf6fa4e2f708c397165127926475d5426afbdef0d93864a795a8640029c4654）"},
+        "E2_same_indicator_ge2_periods": {"result": true, "evidence": "AR2024 销售详情表含 2024 与 2023 两块（pdftotext L2944–L3012：2023 年单价 433.09 378.60 49,406 56,354 59,590 11,855 / 3.50 584 447.95 60,333 19,160），AR2025 表含 2025 与 2024 两块（P2 L51–L121）；两份年报的 2024 块逐值相同（533.39 504.30 56,342 63,180 65,894 14,921 / 4.74 694 549.93 66,227 20,785）⇒ 同表同注、跨文件复现，3 期齐"},
+        "E3_recomputable_archived": {"result": true, "with_residual": true, "method": "我用两表单价自算 22 个同比，与公司披露的「单价增减幅度（%）」逐点比对", "points": 22, "within_0_01pp": 18, "explainable_by_display_rounding": 3, "unexplained_residuals": 1, "worst_abs_diff_pp": 0.3607, "worst_case": "金锭 FY2025 自算 +51.8907% vs 披露 51.53%", "note": "残差须在取数时登记，不推翻 (ii) 的可复算性，但禁止当作零误差"},
+        "E4_period_alignment_rule": {"result": false, "evidence": "grep 期间对齐|对齐规则|基期窗口 over execution_runs → 命中全部为「缺口登记句」，盘上 0 处对齐规则文本"},
+        "E5_compatible_with_pm5": {"result": false, "method": "11 个产品 × 2 个同比 = 22 个同口径变动", "outside_pm5": 19, "mine_products_outside_pm5": 14, "mine_products_total": 16, "range_pct": [-4.8991, 51.8907], "blended_copper_derived": {"series": [51156.34, 58438.29, 65354.36], "yoy_pct": [14.2347, 11.8348], "outside_pm5": 2, "of": 2}, "interpretation": "未归一化口径下 (ii) 的实测结果不是「支撑 ±5%」，而是「±5% 必须重取」；归一化口径下 (ii) 因桥缺而不可算 —— 两条路都不产生可签数值"},
+        "overall": "(ii) 现阶段不可用（E1/E4/E5 不成立）；E2/E3 成立说明「同口径历史离散」在被观察指标上是有本地证据的类，四要素齐 + 重定义后应优先落 (ii)"
+      },
+      "counter_examples": [
+        "发行人原文出现 spot→实现单价 的折减/换算披露（VAT/TC-RC/payability/权益金/形态五项状态齐 + 算式）⇒ Q1.1/Q1.2 翻真，B3 可判 ESTABLISHED",
+        "owner 明文改任务定义（取消价格归一化）+ 矿业面会签 ⇒ 进入 (ii) 路径，但阈值仍须按 (ii) 实测重取",
+        "若补入归一化序列且 ≥3 期离散覆盖 ±5% ⇒ E5 翻真，(ii) 可直接支撑阈值"
+      ],
+      "compatibility_impact": [
+        "B-3 维持 NOT_ESTABLISHED ⇒ 与 B-1 相互锁（序列指派了也用不了），T-2 继续触发",
+        "归一化路径不通 ⇒ A-6.3(ii) 现阶段不可行使；(iv) 亦因观测量未定义不可行使 ⇒ 给数门全关",
+        "H2 语义仍是「待重定义」，旧 id falsifier 保持不可执行（IND L331）"
+      ],
+      "recovery_rule": "在本目录追加 h2_acct_answers_r2.json + ruling_h2_acct_r2.md（标 supersedes），不回改本版、不改 OPEN6H2-* / OPEN6-H4-* / 两半区 / OPEN6-TOLERANCE-* / BLOCKED6C-* 任何字节"
+    },
+    {
+      "id": "Q2",
+      "asked_as": "A' 条：A-2.2 L90 四件最小集是否适用于 H2、是否就是全部",
+      "conclusion": "适用（类比），但不充分：四件是必要非充分。四件 + A-2.2 第 3 条（payability/TC-RC 折减假设及出处）+ 期间对齐规则 + 汇率规则（多币种时）+ 年均价构造方法 + 产品形态/范围声明，才是 H2 的最小披露集。",
+      "verdict": {"applicable": true, "sufficient": false, "correction": "四件 ≠ H2 全部最小集"},
+      "criteria_applied": ["Q2.1 适用性", "Q2.2 充分性", "Q2.3 纠正的落点"],
+      "evidence": [
+        {"id": "Q2-E1", "item": "A-2.2 原文语境与第 2 条逐字", "file": ".planning/.../I11A-OPEN-ACCT/a20260924-01/ruling.md", "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2", "lines": "L87（标题「使用系数时必须披露的最小集合」）/ L90 / L91", "quote": "2. 价格假设：所用价格序列、币种、基准日（as_of），及其原文出处； 3. 回收率 / 品位 / payability（TC/RC、应付比例）假设及其出处；"},
+        {"id": "Q2-E2", "item": "四件在 H2 的现状", "finding": "价格序列 = 未指派（10 条候选 × 2 货币 × 2 形态）；币种 = 未定（美元/人民币并存、无汇率规则）；基准日 as_of = 价格序列侧未定（命题 source.as_of=2026-09-18 只覆盖申报取数）；原文出处 = 可定位（AR2024 leaf35 / AR2025 leaf36）—— 4 件中 3 件缺"},
+        {"id": "Q2-E3", "item": "补充项的缺口实测", "finding": "(a) 第 3 条桥 = Q1 实测 0 处；(b) 期间对齐 = 0 处文本；(c) 汇率规则 = 0 处；(d) 年均价构造方法 = 原文未披露（跨期同比自算 4/10 差 >0.5pp，见 XC-01 独立复算）；(e) 形态/范围声明已在 P2 表头与表注（可引用，须写入口径）"}
+      ],
+      "counter_examples": [
+        "owner 明文裁「只用国内现货人民币序列」⇒ (c) 汇率规则自动满足",
+        "发行人原文披露年均价构造方法 ⇒ (d) 满足",
+        "若 A-2.2 第 3 条被明文裁为「不适用 H2」（即不做归一化）⇒ (a) 消失，但须先解 Q1 的改道禁令"
+      ],
+      "compatibility_impact": [
+        "矿业面 §6.2 I 条（金属×市场×形态的行业选择）必须与本补充集同批裁定，否则 B-1 仍 NOT_ESTABLISHED",
+        "本裁定不改写 A-2.2 的适用范围（第 1/4/5/6/7/8 条仍只属铜当量系数场景）"
+      ],
+      "recovery_rule": "同 Q1（追加式 r2）；补充集若有删减须 owner 明文 + 追加登记"
+    },
+    {
+      "id": "Q3",
+      "asked_as": "B 条：base_period 由 FY2023–FY2025 收窄为 FY2024–FY2025，还是先补 FY2023 年报",
+      "conclusion": "不允许收窄（narrow_allowed = false）：必须先补 FY2023 年报原件（S1 级），或由 owner 明文批准收窄并落命题新版本。本工位不改 base_period 字段。",
+      "verdict": {"narrow_allowed": false, "path": "fetch_FY2023_annual_or_owner_approved_new_version", "field_changed": false},
+      "criteria_applied": ["N1 缺的是被观察指标而非旁支序列", "N2 不用反向推导补缺", "N3 只在命题新版本发生", "N4 取证便利不作口径理由", "N5 对 effective_period=FY2027 的影响已登记"],
+      "key_finding": "缺的是「市场价序列」的 FY2023，不是「被观察指标（同表同注实现单价）」的 FY2023 —— 后者三期齐备，收窄会丢已得证据",
+      "evidence": [
+        {"id": "Q3-E1", "item": "annual/ 目录枚举（我自测）", "path": "C:/Users/郑曾波/Projects/company-wiki/companies/紫金矿业/raw/financial_reports/", "files": ["2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf (32,100,114 B)", "2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf (79,925,886 B)", "+ 两份 .source.json"], "kinds_present": ["annual"], "finding": "只有 FY2024、FY2025 两份年报；无 FY2023、无季报/半年报、无 raw/other"},
+        {"id": "Q3-E2", "item": "AR2024 全文检索（我自测）", "counts": {"2023 年均价": 0, "2023年均价": 0, "年均价": 2, "年终价": 1}, "finding": "市场价序列 FY2023 年均价在 AR2024 原文中不存在（只有 2024 年终价与 2024 年均价 + 同比）"},
+        {"id": "Q3-E3", "item": "被观察指标三期齐备（我自测 + 既有登记）", "evidence": "AR2024 销售详情表 2023 块（pdftotext L2992–L3012：单价 433.09 378.60 49,406 56,354 59,590 11,855 / 3.50 584 447.95 60,333 19,160 与 单价增减幅度 23.16 33.20 14.04 …）+ AR2025 表 2024/2025 块；既有登记 substitute_caliber.json（sha 649a9ff8…）data.per_metal_unit_revenue_base_period_observation 三期值（copper 51156.34/58438.29/65354.36；gold 406112.85/520649.84/777709.98；zinc 11854.61/14921.31/14998.87；silver 3497.08/4739.7/6875.03）+ metal_sales_volume 三期 + segment_external_revenue FY2023=59,766,798,161 元，A1–A8 交叉核对最大 0.00498pp"},
+        {"id": "Q3-E4", "item": "反向推导不可用（我自测 XC-01 独立复算）", "method": "AR2024 leaf35 与 AR2025 leaf36 年均价重算同比 vs 披露同比", "worst_abs_diff_pp": 1.3281, "over_0_5pp": 4, "series": "金-国内 0.6061 / 银-伦敦 1.2571 / 银-国内 0.6742 / 铅-国内 1.3281", "conclusion": "与矿业面 XC-01 独立吻合；年均价构造方法未披露 ⇒ 不得用 FY2024÷(1+同比) 倒算 FY2023（A-2.1 第 5 条反向推导禁令 + 无原文出处）"}
+      ],
+      "narrow_if_forced_impacts_on_effective_period_FY2027": [
+        "基期窗 3→2 期 ⇒ A-6.3(ii) 可比期由 3 降到 2、离散点由 2 个降到 1 个（最弱可算形态）",
+        "已登记的 FY2023 观察值（实现单价、销量、分部对外收入）被排除出基期 ⇒ 与 substitute_caliber.json 既有登记不一致，须命题新版本 + decision_sha256 重登记",
+        "基期终点仍为 FY2025、观察期仍为 FY2027 ⇒ 与 FY2026 的空档不变（FY2026 年报预计 2027-03 披露）；变化仅在最旧年 FY2023→FY2024 ⇒ 归一化基准更贴近观察年，但完全失去跨周期锚（FY2025 为金价 +44.0%、铜 +8.2% 的高价位年，2 期基期代表性弱于 3 期）",
+        "若最终走归一化路径，FY2023 市场价仍需 AR2023 ⇒ 收窄不消除取证义务，只是把它隐藏",
+        "取证约束（OWNER_DECISIONS.md §三十 B1，sha 4fe79ba5…）：本会话 company-wiki 全域 Access denied 且本工位禁网 ⇒ AR2023 只能在可写 company-wiki 的会话经 filing-fetch 取回，本工位只登记路径不执行"
+      ],
+      "counter_examples": [
+        "owner 明文批准收窄且理由非取证便利 ⇒ N4 解除，可在命题新版本落 base_period_start=FY2024（实现者写入面 + 会计会签）",
+        "若 Q1 的改道（不做归一化）获批且 (ii) 只需 ≥2 期 ⇒ 收窄在 A-6.3 字面可满足，但仍须 owner/实现者落字段，会计面不代改",
+        "AR2023 进入本地语料 ⇒ 收窄议题自动消失，声明基期原样成立"
+      ],
+      "compatibility_impact": [
+        "B-2 判定不变：仍 NOT_ESTABLISHED（缺的是序列期 + 对齐规则，不是被观察指标期）",
+        "本裁定不改 base_period 字段（ruling_h2 §6.1 B 我方不让渡项），也不改 hypotheses 任何字节"
+      ],
+      "recovery_rule": "同 Q1（追加式 r2）；若 owner 批准收窄，须以命题新版本承载并附 decision_sha256，本目录追加登记而非回改"
+    },
+    {
+      "id": "Q4",
+      "asked_as": "C 条：重定义后 H2 数值基础归 (ii) 还是 (iv)",
+      "conclusion": "现在四类均不成立 ⇒ 不归类、维持 not_reviewed；重定义后的首选/目标类 = (ii) 同口径历史离散，(iv) 仅可作伴随敏感性区间（不得单独承载阈值、不得记为等同披露依据）；且 (ii) 的未归一化实测已反证 ±5% ⇒ 阈值必须由行业面重取、会计面会签，本工位不给数。",
+      "verdict": {"now": "no_class_all_four_fail", "after_redefinition_primary_class": "ii", "iv_role": "companion_sensitivity_band_only", "pm5_supported": false},
+      "criteria_applied": ["oracle §⑤ 四类判定树（(i)→(ii)→(iii)→(iv) 逐类，不跳类不合并）"],
+      "four_class_tree": [
+        {"class": "(i) 来源自身的披露容差/定义", "result": "不可用", "probe": "AR2025 抽取件与 AR2024 全文各检索 容差|允许偏差|达成率|偏差幅度|阈值|四舍五入|显著偏离", "hits": {"AR2025": 0, "AR2024": 0}},
+        {"class": "(ii) 同口径历史离散", "result": "现阶段不可用", "reason": "E1 ✗（observable 未重定义）+ E4 ✗（对齐规则 0 处）+ E5 ✗（19/22 变动超 ±5%）；E2 ✓、E3 ✓（带 0.3607pp 残差）", "future": "四要素齐 + 重定义后可行使，且是四类中唯一有本地证据的类"},
+        {"class": "(iii) 准则/监管/交易所明文", "result": "不可用", "probe": "同一检索集找明文定义句", "hits": 0},
+        {"class": "(iv) 专家假设", "result": "现阶段不可行使", "reason": "前置（观测量已重定义）未成立 ⇒ 无处安放（与矿业面一致）；重定义后可用，但只能伴随敏感性区间 + expert_assumption 标注 + equivalent_to_disclosure_basis=false，且不得用于维持 ±5%（会掩盖 E5 反证）", "rule": "A-6.3 L253 逐字"}
+      ],
+      "direct_answer_to_two_choice": "落 (ii)，不落 (iv)（(iv) 降为伴随）；但当前不给数",
+      "counter_examples": [
+        "归一化后 ≥3 期序列的离散覆盖 ±5% ⇒ (ii) 直接支撑阈值，(iv) 只作带",
+        "owner 明文要求先用 (iv) 过渡 ⇒ 必须标 expert_assumption + 敏感性区间 + 非等同披露依据，并同时登记 E5 反证",
+        "发行人披露容差 ⇒ (i) 可用并优先于 (ii)"
+      ],
+      "compatibility_impact": [
+        "±5% 无继承性：IND L307 反例要求「价格中性年份历史波动 ≤5%」，而我实测未归一化同口径 14/16 个矿产品变动超 ±5% ⇒ 该反例在未归一化口径下不可能满足",
+        "revert_rule 须补「价格归一化口径变化 ⇒ 先查口径、不直接改价」分支（属命题新版本，实现者写入面）",
+        "本裁定不产生数值、不产生签署、不改 threshold_basis"
+      ],
+      "recovery_rule": "同 Q1（追加式 r2）"
+    },
+    {
+      "id": "Q5",
+      "asked_as": "D 条：BLOCKED-6a 状态",
+      "conclusion": "维持 still_blocked（不推进）。3 条 pjr 阈值完成 A-6.3 全套签署 = 0/3。",
+      "verdict": {"blocked_6a_status": "still_blocked", "pjr_thresholds_signed": "0/3", "threshold_review_status": "not_reviewed", "advanced_by_this_station": 0},
+      "criteria_applied": ["oracle §⑥ 6a_cleared 全条件"],
+      "per_threshold": [
+        {"threshold": "H2 相对偏离 ±5%", "hypothesis_id": "H-CN-ZIJIN-SEG-02", "status": "unsigned", "evidence": "矿业面 h2_decision_sha256 = null（h2_baseline.json step_3，sha 0947e009899d7f160a5281aa032680bfb44ac1e23b554571d0d4f76ee05b8175）；会计面（本工位）五问全部 fail-closed ⇒ 本工位也不签（h2_acct_decision_sha256 = null）"},
+        {"threshold": "H4 实际产量 ÷ 计划产量 ∈ [0.9,1.1]", "hypothesis_id": "H-CN-ZIJIN-PLAN-04", "status": "accounting_signed_industry_pending", "evidence": "ruling_h4.md（sha acce9a38be1a98a2b394e44eb14770348bce03fb654476b676245ca1b78cbaef）L53 四要件 4/4、L197–L199 threshold_review_status 仍 not_reviewed、L201 自记 BLOCKED-6a = still_blocked（H2/H8 未签）；IND L299 行业面会签另议"},
+        {"threshold": "H8 拆分层级判定", "hypothesis_id": "H-US-MSFT-SEG-02 / H-US-MSFT-SEG-03", "status": "unsigned", "evidence": "merge_ruling.md（sha 2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1）L235「两点修订…需落到命题新版本；且按 A-6.3 留 decision_sha256 ｜ 行业面（软件）+ 会计面确认」—— 盘上无该载体"}
+      ],
+      "status_field_probe": {"search": "grep '\"threshold_review_status\": \"reviewed\"' over execution_runs/**/*.json", "hits": 0, "blocked6c_counts": "counts_threshold_review_status_defaulted = 8（8 条全部默认 not_reviewed）", "source": "BLOCKED6C-THRESHOLD-REVIEW-STATUS/a20260926-01/handoff.json L357-L360", "note": "该工位只落字段，其报告明确写 BLOCKED-6a/6b 仍 still_blocked、不解锁不代签（同文件 L994）"},
+      "counter_examples": [
+        "H2 双签（矿业 + 会计）+ 命题新版本 + 四要素齐 ⇒ H2 份额可解除，但 6a 还需 H4 行业会签与 H8 落版",
+        "owner 明文改 A-6.3 的签署要求（须追加登记）⇒ 本判定按新判据重跑 r2",
+        "若三条 pjr 中任一被改判为 disclosure_definition ⇒ 6a 范围收窄，须重新计数"
+      ],
+      "compatibility_impact": [
+        "A-6.1 门两侧保持关闭：该阈值不得触发任何 falsifier/情景切换/校准边界/I-11-C 反方检验",
+        "本工位不解 BLOCKED-6a/6b/6c、OPEN-6、OPEN-2、IND BLOCKED-1..7 任何一条（0 条关闭）"
+      ],
+      "recovery_rule": "四要素齐 + 双签 + 命题新版本齐 + 有权方（实现者/schema owner）落地状态后，另起新 attempt 重裁；本目录追加 r2"
+    }
+  ],
+  "five_question_summary": {
+    "Q1_B3_net_price_bridge": "NOT_ESTABLISHED（不认定）· 不改走 A-6.3(ii)",
+    "Q2_A22_L90_minimal_set": "适用但不充分（四件 ≠ 全部最小集）",
+    "Q3_base_period_narrowing": "不允许收窄 · 先补 FY2023 年报原件（或 owner 明文批准落新版本）",
+    "Q4_basis_classification": "现四类均不成立；重定义后首选 (ii)，(iv) 仅作伴随敏感性区间；±5% 必须重取",
+    "Q5_BLOCKED_6a": "still_blocked（0/3 pjr 完成 A-6.3 全套）"
+  },
+  "blocked_triggers_fired": ["A-1", "A-2", "A-3", "A-4", "A-5"],
+  "trigger_detail": {
+    "A-1": "Q1 = NOT_ESTABLISHED 且 (ii) 复测 E1/E4/E5 不成立",
+    "A-2": "Q2 = 适用但不充分（缺第 3 条桥、对齐、汇率、构造方法）",
+    "A-3": "Q3 = narrow_denied 且 FY2023 年报原件未到",
+    "A-4": "Q4 = 四类均不成立（(iv) 因观测量未定义无处安放）",
+    "A-5": "Q5 = 三条 pjr 任一未齐（H2 双签缺、H4 行业会签缺、H8 落版缺）"
+  },
+  "measured_gaps": [
+    {"gap": "净价桥", "measured": "AR2025 抽取件 TC/RC=0、payability=0、应付比例=0、净价=0、作价=0；AR2024 全文同三项=0；execution_runs 价格序列 24 命中 0 换算式", "blocks": "Q1"},
+    {"gap": "层差", "measured": "铜精矿 vs 电解铜 FY2024 −14.4960% / FY2025 −10.9336%；国内现货铜 vs 铜精矿 −24.8964% / −21.6019%", "blocks": "Q1"},
+    {"gap": "最小集", "measured": "A-2.2 四件中 3 件缺（序列/币种/基准日）；补充 4 项中 3 项 0 处文本", "blocks": "Q2"},
+    {"gap": "基期", "measured": "annual/ 仅 2 份 PDF；AR2024 `2023 年均价` = 0；被观察指标三期齐备（AR2024 2023 块 + substitute_caliber 三期登记）", "blocks": "Q3"},
+    {"gap": "数值基础", "measured": "(i)/(iii) 各 0 命中；(ii) E1/E4/E5 不成立且 19/22 变动超 ±5%；(iv) 前置未成立", "blocks": "Q4"},
+    {"gap": "6a 签署", "measured": "3 条 pjr 全套签署 0/3；`threshold_review_status=reviewed` 全库 0 命中；默认计数 8", "blocks": "Q5"}
+  ],
+  "unchanged_fields": {
+    "threshold_basis": "professional_judgement_required（未改）",
+    "threshold_review_status": "not_reviewed（维持）",
+    "hypotheses_state": "pending_professional_decision（未改）",
+    "parameters_released": 0,
+    "placeholder_suffixes_removed": 0,
+    "base_period": "FY2023–FY2025（未改）",
+    "blocked_items_closed": 0
+  },
+  "mutation_results": {
+    "oracle_sha256_used": "e858b515bc9049a7641a244c81a6031291be8d873bc7acd774e36455e6912058",
+    "runner": "python -X utf8 -c <inline judge; no file read/write>",
+    "rc_semantics": "0 = 接受 / 1 = 拒绝",
+    "implementation_notes": [
+      "RELEASE ⇔ (Q1 桥 ∨ (Q1 附带 E1–E5 ∧ 任务定义已变更)) ∧ Q2 ∧ Q3 ∧ Q4 ∧ Q5 ∧ A-6.3① ∧ A-6.3③④，与 oracle §⑦ C.1 一致",
+      "为隔离判据：用例 8 的 obs_redefined 置 true（A-6.3① 由用例 10 专门承重），Q4 的 iv_prereq_ok/marks_ok 置 false 承重 MUT-4；判据本身未放宽"
+    ],
+    "cases": [
+      {"u": 1, "case": "ACTUAL", "action": "release", "mode": "STRICT", "rc": 1, "expect": 1, "pass": true},
+      {"u": 2, "case": "ACTUAL", "action": "keep_blocked", "mode": "STRICT", "rc": 0, "expect": 0, "pass": true},
+      {"u": 3, "case": "SYNTH-FULL", "action": "release", "mode": "STRICT", "rc": 0, "expect": 0, "pass": true},
+      {"u": 4, "case": "SYNTH-FULL", "action": "keep_blocked", "mode": "STRICT", "rc": 1, "expect": 1, "pass": true},
+      {"u": 5, "case": "CF-NO-BRIDGE", "action": "release", "mode": "STRICT", "rc": 1, "expect": 1, "pass": true},
+      {"u": 5, "case": "CF-NO-BRIDGE", "action": "release", "mode": "MUT-1", "rc": 0, "expect": 0, "pass": true},
+      {"u": 6, "case": "SYNTH-MISS-MINSET", "action": "release", "mode": "STRICT", "rc": 1, "expect": 1, "pass": true},
+      {"u": 6, "case": "SYNTH-MISS-MINSET", "action": "release", "mode": "MUT-2", "rc": 0, "expect": 0, "pass": true},
+      {"u": 7, "case": "SYNTH-NARROW-BACKDERIVE", "action": "release", "mode": "STRICT", "rc": 1, "expect": 1, "pass": true},
+      {"u": 7, "case": "SYNTH-NARROW-BACKDERIVE", "action": "release", "mode": "MUT-3", "rc": 0, "expect": 0, "pass": true},
+      {"u": 8, "case": "SYNTH-IV-NO-MARK", "action": "release", "mode": "STRICT", "rc": 1, "expect": 1, "pass": true},
+      {"u": 8, "case": "SYNTH-IV-NO-MARK", "action": "release", "mode": "MUT-4", "rc": 0, "expect": 0, "pass": true},
+      {"u": 9, "case": "SYNTH-6a-PARTIAL", "action": "release", "mode": "STRICT", "rc": 1, "expect": 1, "pass": true},
+      {"u": 9, "case": "SYNTH-6a-PARTIAL", "action": "release", "mode": "MUT-5", "rc": 0, "expect": 0, "pass": true},
+      {"u": 10, "case": "SYNTH-NO-OBS", "action": "release", "mode": "STRICT", "rc": 1, "expect": 1, "pass": true},
+      {"u": 10, "case": "SYNTH-NO-OBS", "action": "release", "mode": "MUT-6", "rc": 0, "expect": 0, "pass": true}
+    ],
+    "rows": 16,
+    "failures": 0,
+    "EXPECT_RC": 0,
+    "OVERALL_RC": 1,
+    "python_exit_code": 0,
+    "mutation_survivors": "6/6",
+    "bidirectional_proof": [
+      "该放行时放行：SYNTH-FULL + release + STRICT = 0（判据不为难）",
+      "该 blocked 时红：ACTUAL + release + STRICT = 1；SYNTH-FULL + keep_blocked + STRICT = 1（不许赖 blocked）",
+      "改弱后不该放行的能通过：CF-NO-BRIDGE/MINSET/NARROW/IV/6a/NO-OBS 在 MUT-1..6 下 1 → 0 ⇒ Q1/Q2/Q3/Q4/Q5 与 A-6.3① 均为承重判据"
+    ],
+    "synthetic_fixture_disclaimer": "SYNTH-* / CF-* 为判据夹具（SYNTHETIC/COUNTERFACTUAL 语义、sha 0…0），不构成任何现实主张，不进入证据表"
+  },
+  "qa_probes": {
+    "note": "QA-01 是「同口径历史离散」的实测（Q1/Q4 的取证），不是阈值、不是归一化比值、不作任何参数取值",
+    "QA-01": {
+      "indicator": "按产品划分的销售详情 · 单价（不含税），同表同注，FY2023/FY2024/FY2025",
+      "sources": ["AR2024 销售详情表 2023/2024 块（pdftotext 全文 L2944–L3012）", "AR2025 销售详情表 2024/2025 块（P2_zijin_44_48.txt L51–L121）"],
+      "recompute_vs_disclosed": {"points": 22, "within_0_01pp": 18, "worst_abs_diff_pp": 0.3607, "unexplained": "金锭 FY2025 +51.8907% vs 披露 51.53%"},
+      "outside_pm5": {"all_products": "19/22", "mine_products": "14/16", "range_pct": [-4.8991, 51.8907]},
+      "explicitly_not": "不产出阈值、不产出归一化比值、不作参数取值"
+    },
+    "XC-01_independent_recheck": {"worst_abs_diff_pp": 1.3281, "over_0_5pp": 4, "agrees_with_mining_side": true, "scope": "市场现货年均价序列（B-1/B-2），与 QA-01 的实现单价指标不是同一序列"}
+  },
+  "not_granted": [
+    "未给 H2 任何数值（h2_value 维持 null；±5% 不采用，替代数值仍 BLOCKED）",
+    "未签署任何 decision_sha256（h2_acct_decision_sha256 = null）",
+    "未改 threshold_basis（仍 professional_judgement_required）",
+    "未升 threshold_review_status（仍 not_reviewed）",
+    "未放行任何参数：旧 id 与 4 个新 id 的 low/base/high 仍 null、released=false",
+    "未解除 _PLACEHOLDER",
+    "未改 base_period 字段（仍 FY2023–FY2025）",
+    "未解除 BLOCKED-6a/6b/6c、IND BLOCKED-1..7、OPEN-6、OPEN-2 任何一条（0 条关闭）",
+    "未产生 I-11-B 的 ACCEPT、未写 approved_frozen、未声称 I-11-A/I-11-B 验收",
+    "未触发任何 falsifier / 校准边界 / 情景切换 / I-11-C 反方检验",
+    "未代签矿业面（§6.2 四条未碰）、未代写 hypotheses / model_cards / 校验器",
+    "未改 OPEN6H2-* / OPEN6-H4-* / 两半区 / OPEN6-TOLERANCE-* / BLOCKED6C-* / 封盘 I-11-A 任何字节",
+    "未写五份计划文件、未在 .planning 之外写入任何字节、零网络、零 git 写、未执行 git status"
+  ]
+}

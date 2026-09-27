@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ACQUISITION",
+  "attempt_id": "a20260924-01",
+  "role": "controlled_acquisition",
+  "authorized_by": "OWNER_DECISIONS §二十四 #3（2026-09-24 深夜）—— owner 选择「授权 filing-fetch 路径」；执行映射：用 filing-fetch / 受控抓取把 2026-09-02 8-K Item 7.01（含 Exhibit 99.1 若可得）落成本地语料文件，记 URL + 取回 UTC + sha256 + 逐字引文（E1 五要素），满足后交会计面定等级；取证产物只落本计划目录内，不写 company-wiki 或其他产品仓",
+  "target_document": {
+    "issuer": "Microsoft Corporation (MSFT, CIK 0000789019)",
+    "form_type": "8-K",
+    "filed_date": "2026-09-02",
+    "items": ["7.01 Regulation FD Disclosure", "9.01(d) Exhibits"],
+    "accession": "0001193125-26-380280",
+    "primary_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm",
+    "exhibit_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm",
+    "exhibit_retrieved": true
+  },
+  "evidence_elements_met": {
+    "element_1_local_archive": true,
+    "element_2_sha256": true,
+    "element_3_retrieved_utc_to_second": true,
+    "element_4_verbatim_quotes": true,
+    "element_5_independent_verification_path": true,
+    "count_met": 5,
+    "count_total": 5
+  },
+  "element_caveats": {
+    "element_1": "本地字节 = 工位对 harness web_fetch 返回文本（第三方代理渲染结果）的 UTF-8 转写，非 origin HTTP 响应字节；SEC 直连 403（A1/A3，另 raw 代理 A8/A9/A17 亦未成功）。若『原文本地归档』严格要求 origin 字节 ⇒ 本项应判 ❌。",
+    "element_3": "为真实读秒的取回窗口 [start,end]（每次尝试前后各读一次 UTC 系统时钟），非服务端时间戳；未伪造单点时刻。",
+    "element_5": "两条路径为不同运营方/引擎（r.jina.ai 渲染代理 vs W3C www.w3.org html2txt），8 条引文全部双路径命中；但两条均为第三方代理，无原站直取样本。若要求至少一条非代理路径 ⇒ 本项应判 ❌。"
+  },
+  "level_claimed": "仅陈述观察到的形态，不作会计面等级判定：五要素逐项均有可举证证据（5/5），但 ①⑤ 带路径级限定（全链路第三方代理 + 转写字节、无 origin 直取）⇒ 形态为 E1-PARTIAL（缺 origin 响应字节层与非代理复核路径层）。证据等级 E1/E2 归会计面裁定（OWNER_DECISIONS §二十四 执行纪律第 504 行），本工位未判 E1/E2、未解除 OPEN-3、未写任何 status。",
+  "attempt_counts": {
+    "total": 21,
+    "document_text_retrieved": 5,
+    "search_results_retrieved": 3,
+    "partial_unusable": 3,
+    "failed": 9,
+    "structured_miss": 1,
+    "saved_to_corpus": 4
+  },
+  "third_party_dependency": {
+    "used": true,
+    "providers": ["r.jina.ai（第三方文本渲染代理，语料 1/3）", "www.w3.org/services/html2txt（W3C 文本转换服务，语料 2/4）"],
+    "sec_origin_direct_successes": 0,
+    "statement": "4 份语料全部经第三方取文；SEC 原站直取 0 成功（403）。"
+  },
+  "written_files": [
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/corpus/MSFT_8K_2026-09-02_Item7.01.md", "bytes": 3789, "sha256": "096c7d9df55ab46a0ccef21b3ac528b7e59483a91e1b6b32277808bcae801ad1"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/corpus/MSFT_8K_2026-09-02_Item7.01.verify-w3c-html2txt.txt", "bytes": 5183, "sha256": "5927de0367d1097a6bbb1f59c669a3461eacce43c8115874c5e0a497f7689f1c"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/corpus/MSFT_8K_2026-09-02_Exhibit99-1.md", "bytes": 27586, "sha256": "20392f0e110568fa4338a1167da3756627b77e606eec85ae113aeebf40373f58"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/corpus/MSFT_8K_2026-09-02_Exhibit99-1.verify-w3c-html2txt.txt", "bytes": 28536, "sha256": "56b0460b4e635b590c1870153a65adc996d134fd12e2cd6c2670c51ab170956d"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json", "bytes": 23034, "sha256": "e22bdca7726dd23da540b24ab6366419c01193ab91561f4884bf90643369b09e"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/acquisition_report.md", "bytes": 9515, "sha256": "e6eeb43ced7778e75d612a80b298585963570b0bb8f38c95a58040dcbdb46a88"}
+  ],
+  "written_files_note": "handoff.json 自身不入 written_files（自引用哈希不可稳定计算）。",
+  "git_diff_non_planning": 0,
+  "git_status_evidence": {
+    "command": "git status --porcelain",
+    "total_changes": 4003,
+    "changes_attributable_to_this_card": 1,
+    "attributable_path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACQUISITION/",
+    "pre_existing_non_planning_paths": [
+      {"path": ".tmp-r41-mutation/", "last_write_utc": "2026-09-20T17:31:30Z", "created_by_this_card": false},
+      {"path": "assurance/unified_completion/manifests/plan_inputs.json.bak", "last_write_utc": "2026-09-21T06:09:29Z", "created_by_this_card": false}
+    ],
+    "note": "两条非 .planning 的 untracked 路径修改时间早于本会话开始（≈2026-09-24T21:18Z），非本工位产生；本工位对 .planning 之外的净新增/修改 = 0，git 写操作 = 0。"
+  },
+  "not_done": [
+    "未写 company-wiki / filing-fetch / dayu-agent / revenue-forecast 等任何产品仓（含 companies/{entity}/raw/）",
+    "未执行 filing-fetch --allow-download（其唯一落盘点为 owner 禁写的产品仓）；仅只读 reuse 探针 A2",
+    "未判定 E1/E2 证据等级（会计面职权）",
+    "未修改 I-11-A（ACCT/IND/MERGE 三份 ruling 及 hypotheses.json 等 0 字节变更）",
+    "未解除 OPEN-3、未改任何 status / handoff.status（本文件 status 字段亦未设置）",
+    "未执行任何 git 写操作"
+  ],
+  "next_owner_action": "交会计面（I11A-OPEN-ACCT 侧）按 OWNER_DECISIONS §二十四 #3『满足后交会计面定等级』裁定证据等级；若认可则由会计面新建 OPEN-3-ACCT-R2，若判 E2/BLOCKED 则维持现状。"
+}

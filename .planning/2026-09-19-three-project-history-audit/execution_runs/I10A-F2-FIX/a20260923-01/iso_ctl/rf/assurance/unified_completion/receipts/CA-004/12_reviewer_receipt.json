@@ -1,0 +1,104 @@
+﻿{
+  "schema_version": "2.0",
+  "unit": "CA-004",
+  "reviewer": "reviewer-ca004-independent",
+  "verdict": "accepted",
+  "reviewed_at_utc": "2026-08-13T22:50:07Z",
+  "scope": "read-only review of revenue-forecast@HEAD (1e98d91); no writes to implementer repo; receipt written to temp dir only",
+  "base_triplet": {
+    "revenue": "f432023f0de431cf775530fb3032afa5125726dd"
+  },
+  "result_triplet": {
+    "revenue": "1e98d91540463196f760ac8d65c4070895d6a7fd"
+  },
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
+      "exit_code": 0,
+      "result": "HEAD=1e98d91 feat(CA-004): legacy disposition registry — 71 FC + 10 waves machine-validated (I=31/C=26/S=9/P=5, successors defined, graph acyclic); parent f432023 feat(CA-003): closure"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff f432023..HEAD --name-only",
+      "exit_code": 0,
+      "result": "4 files, all under assurance/unified_completion/**: legacy/legacy_disposition.json, receipts/CA-004/00_wu_card.md, receipts/CA-004/11_implementer_receipt.json, receipts/CA-004/red/RED.md (1439 insertions, 0 deletions; no product code/config/CI/catalog/roots/old-plan writes)"
+    },
+    {
+      "command": "python -B -c \"import json; d=json.load(open(...legacy_disposition.json,encoding='utf-8')); print(len(d['fc_entries']), len(d['waves']), len(d['closure_items']), d['counts'])\"",
+      "exit_code": 0,
+      "result": "71 10 5 {'C': 26, 'I': 31, 'P': 5, 'S': 9} — matches expected 71/10/5 with counts I=31/C=26/S=9/P=5 (dict key order differs, content identical)"
+    },
+    {
+      "command": "python -B -c \"...load_dag(...); bad=[(e['fc_id'],s) for e in d['fc_entries'] for s in e['successors'] if s not in units]; print('undefined successors:', bad)\"",
+      "exit_code": 0,
+      "result": "undefined successors: [] — every successor resolves to a defined CA/ZR unit"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli legacy-verify",
+      "exit_code": 0,
+      "result": "OK: legacy disposition matches the frozen tables exactly (71 FC + 10 waves, valid)"
+    },
+    {
+      "command": "python -B -m pytest assurance/unified_completion/tests/test_legacy_disposition.py -q",
+      "exit_code": 0,
+      "result": "8 passed in 0.46s"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc",
+      "exit_code": 0,
+      "result": "Success: no issues found in 11 source files"
+    },
+    {
+      "command": "Select-String -Path tools/closure_gate.py -Pattern '\"accepted\" in'",
+      "exit_code": 0,
+      "result": "2 hits (lines 44, 132) — RED-A substring acceptance judgment confirmed in source; closure_gate --json NOT run (would exceed 3-min constraint)"
+    },
+    {
+      "command": "Select-String -Path audit_review/2026-08-09_full_completion_assurance_plan/work_unit_registry.md -Pattern '^\\|\\s*FC-1301\\s*\\|'",
+      "exit_code": 0,
+      "result": "row: | FC-1301 | accepted（2026-08-13，reviewer-fc130x-independent r1；reason taxonomy 1.1 + audit gate） | FC-1301(链) | 三仓 | ... — dependency column contains FC-1301 (self-dependency), RED-B confirmed"
+    },
+    {
+      "command": "git status --porcelain -- audit_review/2026-08-09_full_completion_assurance_plan/ | Measure-Object -Line",
+      "exit_code": 0,
+      "result": "0 — old plan directory carries no new changes from this card (read-only freeze respected)"
+    },
+    {
+      "command": "Get-FileHash -Algorithm SHA256 assurance/unified_completion/legacy/legacy_disposition.json",
+      "exit_code": 0,
+      "result": "22B881238F3916E4FEE209647348D84638A2CDA0C21530878CBCE5C9F27C421E — matches claimed sha 22b88123…"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "id": "F1",
+      "detail": "base_triplet.revenue f432023f0de431cf775530fb3032afa5125726dd does not resolve to any object in the local revenue-forecast clone (git cat-file -t rc=128). git rev-parse f432023 resolves to f432023f0de431cf775530fb3032afa5125726dd (the true parent of HEAD). The claim-time base sha was recorded verbatim per orchestrator instruction and matches the implementer receipt's base/result triplet (claim-time env-freeze triplet per CA-002 context); the resolvable local base commit is f432023f0de431cf775530fb3032afa5125726dd. Orchestrator may reconcile the canonical base sha for the registry."
+    },
+    {
+      "severity": "note",
+      "id": "F2",
+      "detail": "counts dict prints as {'C': 26, 'I': 31, 'P': 5, 'S': 9} (insertion order differs from expected {'I': 31, 'C': 26, 'S': 9, 'P': 5}); values identical — cosmetic only."
+    },
+    {
+      "severity": "note",
+      "id": "F3",
+      "detail": "RED evidence verified at source level only, per constraint: closure_gate.py line 44 'if \"accepted\" in status:' and line 132 count of entries with 'accepted'/'completed' substring (RED-A); FC-1301 registry row dependency 'FC-1301(链)' self-reference plus Phase14 waves outside the 71-row state machine (RED-B, per implementer receipt and registry row). closure_gate --json not executed."
+    },
+    {
+      "severity": "note",
+      "id": "F4",
+      "detail": "Implementer receipt claims 81 tests total (8 legacy tests included); this review executed only the 8 legacy_disposition tests per step 6. Full-suite claim not re-verified by this reviewer."
+    },
+    {
+      "severity": "note",
+      "id": "F5",
+      "detail": "Acceptance criteria coverage: 71 FC + 10 waves + 5 closure items present with no duplicates (unique-id validation enforced by legacy-verify and mutation tests); DAG acyclic (mutation test kills graph cycle ZR-1<->ZR-2; legacy-verify 'valid'); every contradicted/stale/pending entry has >=1 successor (successor-definition check [] and '>=1 successor' validation); old execution entry read-only freeze confirmed (0 dirty files in old plan dir, terminal notice remains CA-306's exclusive job per implementer receipt)."
+    }
+  ],
+  "side_effect_note": "All commands read-only against C:\\Users\\郑曾波\\Projects\\revenue-forecast; no clone performed; no commands exceeded 3 minutes (longest was pytest at 0.46s); no writes to implementer repo, real catalog, or roots paths; only side effect is this reviewer receipt at C:\\Users\\郑曾波\\AppData\\Local\\Temp\\ca004-reviewer-receipt.json."
+}

@@ -1,0 +1,190 @@
+{
+  "schema_version": "open5-pend5a-handoff-1.0",
+  "card": "OPEN-5",
+  "card_context": "I-11-A 开放问题：港股（小米）年报原文可读性由谁解决；恢复路径 S0–S5 见 execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md",
+  "sub_path": "PEND-5a（S1 的一半：联网取可读港股替代件）",
+  "attempt": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/",
+  "role": "controlled_acquisition",
+  "station": "OPEN5-PEND5A-HK-ACQUISITION",
+  "dispatch_worker_id": "8abdd519",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "authorized_by": "OWNER_DECISIONS.md §二十六 #1（2026-09-24 深夜）owner 原话「1，授权」→ PEND-5a（联网取可读港股替代件）；派单原文「派 8abdd519 = OPEN5-PEND5A-HK-ACQUISITION」；硬边界「只落本计划目录、绝不写产品仓（含 companies/{entity}/raw/）；原站若 403 须显式标 external_retrieval_not_local；五要素自检 + 可读性锚词自检（原文件是 0 命中）；等级判定不做（归会计面）；取不到 ⇒ BLOCKED，不造绿样；期间不同的文件不得当同一件」",
+  "authorization_source_lines": "OWNER_DECISIONS.md L539–L548（§二十六 表行 #1 与执行纪律）",
+  "result": "delivered（本回执只报取证结果，不改变任何卡状态）",
+  "retrieval_window_utc": {
+    "first": "2026-09-24T22:04:02Z",
+    "last": "2026-09-25T20:43:08Z",
+    "note": "中断约 22 小时续跑；09-24 时刻为当时真实时刻原样保留，09-25 为续跑新动作时刻"
+  },
+  "evidence_elements_met": {
+    "definition_ref": "I11A-OPEN-ACCT/a20260924-01/ruling.md A-3.1/E1：①本地归档 ②文件 sha256 ③取回 UTC ④逐字引文 ⑤独立复核路径",
+    "attempt04_origin_fy2025_annual_results_zh": {
+      "artifact": "corpus/attempt04_hkexnews_xiaomi_fy2025_results_zh.pdf",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032400609_c.pdf",
+      "sha256": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+      "bytes": 1044325,
+      "retrieved_utc": "2026-09-24T22:09:26Z",
+      "retrieval_method": "direct_https_get_origin",
+      "external_retrieval_not_local": false,
+      "el_1_local_archive": true,
+      "el_2_sha256": true,
+      "el_3_retrieved_utc": true,
+      "el_4_verbatim_quotes": true,
+      "el_4_quote_ids": ["q-01", "q-02", "q-03", "q-04"],
+      "el_5_independent_path": true,
+      "el_5_detail": "PyMuPDF 1.26.7 与 pdfminer.six 20260107 独立抽取同字节，中文锚词均 4/5、CJK 均 23,481；pdftotext(Xpdf 4.00) 记录为能力不足路径（1/5，缺 Adobe-CNS1 CMap）",
+      "elements_met": "5/5",
+      "observed_form": "E1-COMPLETE",
+      "caveat": "文件类型是 FY2025 全年业绩公告（2026-03-24 刊发），不是年度报告（2026-04-28 刊发）；期间同为 FY2025。能否替代年报支撑命题 → 归会计面"
+    },
+    "attempt08_issuer_fy2025_annual_report_en": {
+      "artifact": "corpus/attempt08_irmi_xiaomi_ar2025_en.pdf",
+      "url": "https://ir.mi.com/system/files-encrypted/nasdaq_kms/assets/2026/04/28/5-29-08/Xiaomi%202025%20AR_EN.pdf",
+      "sha256": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+      "bytes": 3556507,
+      "retrieved_utc": "2026-09-25T20:37:56Z",
+      "retrieval_method": "direct_https_get_issuer",
+      "external_retrieval_not_local": false,
+      "el_1_local_archive": true,
+      "el_2_sha256": true,
+      "el_3_retrieved_utc": true,
+      "el_4_verbatim_quotes": true,
+      "el_4_quote_ids": ["q-08", "q-09"],
+      "el_5_independent_path": true,
+      "el_5_detail": "PyMuPDF 951,018 字符 / pdfminer.six 1,022,506 字符，英文锚词均 5/5",
+      "elements_met": "5/5",
+      "observed_form": "E1-COMPLETE",
+      "caveat": "年报本体的英文版本：期间同为 FY2025，但中文锚词 0/5（语言不同）⇒ 不满足本卡中文锚词探针"
+    },
+    "attempt01_attempt02_origin_zh_annual_report": {
+      "artifacts": ["corpus/attempt01_hkexnews_xiaomi_ar2025_zh.pdf", "corpus/attempt02_irmi_xiaomi_ar2025_zh.pdf"],
+      "sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+      "bytes": 4405561,
+      "retrieved_utc": ["2026-09-24T22:06:27Z", "2026-09-24T22:08:18Z"],
+      "retrieval_method": ["direct_https_get_origin", "direct_https_get_issuer"],
+      "external_retrieval_not_local": false,
+      "el_1_local_archive": true,
+      "el_2_sha256": true,
+      "el_3_retrieved_utc": true,
+      "el_4_verbatim_quotes": false,
+      "el_4_detail": "正文 0 锚词，无可读正文可引；仅封面引文 q-05 与乱码样张 q-06",
+      "el_5_independent_path": "partial",
+      "el_5_detail": "pdf_text.py(415/415 页) 与 PyMuPDF(415/415 页) 独立一致均为 0/5 —— 复核的是「不可读」这一事实",
+      "elements_met": "3/5（缺④，⑤仅部分）",
+      "observed_form": "BLOCKED",
+      "caveat": "sha 与原文件 HK-XIAOMI-AR2025 全等 ⇒ 同期间同一件，且仍不可读；不造绿样"
+    },
+    "attempt07_third_party_proxy": {
+      "artifact": "corpus/attempt07_rjina_xiaomi_ar2025_zh_proxy.txt",
+      "url": "https://r.jina.ai/https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0428/2026042800527_c.pdf",
+      "sha256": "a44064f13f6ee8a09093ff945ccfa3842d13339764f63f825583105e534684de",
+      "bytes": 873816,
+      "retrieved_utc": "2026-09-24T22:11:39Z",
+      "retrieval_method": "third_party_proxy_r_jina_ai",
+      "external_retrieval_not_local": true,
+      "elements_met": "3/5（④仅元数据行、⑤无）",
+      "observed_form": "BLOCKED",
+      "caveat": "代理返回的 Markdown 文本，非原站字节；正文乱码 0/5"
+    },
+    "attempt05_attempt06": {
+      "attempt05": {"observed_form": "BLOCKED", "reason": "中文业绩演示稿 38/38 页抽出 5,224 字符，锚词 0/5"},
+      "attempt06": {"observed_form": "FAILED_ATTEMPT", "reason": "HTTP 404（英文年报 URL 猜测错误），2,057 B 错误页留痕 corpus/attempt06_hkexnews_xiaomi_ar2025_en_404page.html"}
+    }
+  },
+  "readability_probe": {
+    "anchors": ["小米", "收入", "年度報告", "分部", "毛利"],
+    "threshold": "≥3 命中",
+    "original_file_baseline": {"file": "HK-XIAOMI-AR2025", "hit_words": 0, "sha256_prefix": "ffd733761633f464"},
+    "primary_result": {
+      "artifact": "corpus/attempt04_hkexnews_xiaomi_fy2025_results_zh.pdf",
+      "pass": true,
+      "hit_words": 4,
+      "counts_p3_pymupdf": {"小米": 47, "收入": 158, "年度報告": 0, "分部": 77, "毛利": 101, "total_chars": 45593, "cjk_chars": 23481, "rc": 0},
+      "counts_p4_pdfminer_independent": {"小米": 15, "收入": 21, "年度報告": 0, "分部": 18, "毛利": 21, "total_chars": 61520, "cjk_chars": 23481, "rc": 0},
+      "counts_p1_pdf_text_py": {"hit_words": 0, "rc": 0, "total_chars": 18150, "note": "工具明文不支持 CID fonts without ToUnicode；本文件中文为 Adobe-CNS1 字符集"},
+      "counts_p2_pdftotext": {"hit_words": 1, "rc": 0, "note": "stderr: Unknown character collection 'Adobe-CNS1' ×100+"}
+    },
+    "others": [
+      {"artifact": "attempt01 origin zh AR", "pass": false, "hit_words": 0, "tools": ["pdf_text.py 415/415 rc=0", "PyMuPDF 415/415 rc=0"]},
+      {"artifact": "attempt05 issuer deck zh", "pass": false, "hit_words": 0, "tools": ["pdf_text.py 38/38 rc=0"]},
+      {"artifact": "attempt07 proxy text", "pass": false, "hit_words": 0, "tools": ["text_anchor_probe rc=1"]},
+      {"artifact": "attempt08 issuer AR en", "pass_zh": false, "hit_words_zh": 0, "pass_en": true, "hit_words_en": 5, "counts_en": {"Xiaomi": 920, "Revenue": 33, "Annual Report": 3, "Segment": 9, "Gross profit": 7}}
+    ],
+    "probe_artifacts": [
+      "probe/attempt01_probe.json", "probe/attempt01_fitz.json", "probe/attempt04_probe.json",
+      "probe/attempt04_pdftotext_probe.json", "probe/attempt04_fitz.json", "probe/attempt04_pdfminer.json",
+      "probe/attempt05_probe.json", "probe/attempt07_probe.json", "probe/attempt08_en_probe.json",
+      "probe/attempt08_pdfminer.json", "probe/attempt08_pdfminer_en_count.json"
+    ]
+  },
+  "level_claimed": null,
+  "level_claimed_note": "等级判定不做（归会计面）：本回执只报观察形态 E1-COMPLETE / BLOCKED，不主张任何 E1/E2/E3 等级（OWNER_DECISIONS §二十四 执行纪律第 3 条原文「取证的证据等级由会计面定，不由取证方自定」）",
+  "period_cross_registration": {
+    "original": "HK-XIAOMI-AR2025 = FY2025（截至 2025-12-31 止年度）年报，2026-04-28 刊发",
+    "attempt01_02": "FY2025 = 同期间、同一篇、sha 全等（仍不可读）",
+    "attempt03_04": "FY2025（标题逐字「截至2025年12月31日止年度之全年業績公告」）= 同期间、不同文件类型（业绩公告 2026-03-24 ≠ 年报 2026-04-28）",
+    "attempt08": "FY2025 年报本体英文版 = 同期间同一篇、语言不同（中文锚词 0/5）",
+    "attempt05": "FY2025 演示稿（非申报原文）",
+    "attempt07": "FY2025 同一篇的第三方代理转录",
+    "different_period_files_used_as_same": false,
+    "open3_open5_period_support_observation": "attempt04 覆盖 FY2025 期间、含分部/收入/毛利叙述，可作为同期间可读原文线索；但其为业绩公告而非年报，能否支撑 OPEN-3/OPEN-5 所需的年报级证据 → 由会计面裁定，本工位不代答"
+  },
+  "third_party_proxy_disclosure": {
+    "any_third_party_proxy_used": true,
+    "only_instance": "attempt07 r.jina.ai",
+    "external_retrieval_not_local_flags": {
+      "attempt01": false, "attempt02": false, "attempt03": false, "attempt04": false,
+      "attempt05": false, "attempt06": false, "attempt07": true, "attempt08": false
+    },
+    "origin_reachable_no_403": "www1.hkexnews.hk 直取 HTTP 200（原站未 403；与上一站 SEC 403 情形不同）",
+    "discovery_clues_only": ["html.duckduckgo.com (web_fetch ×3)", "ir.mi.com 目录页 (web_fetch ×2)"]
+  },
+  "attempts_summary": {
+    "byte_retrieval_attempts": 8,
+    "byte_retrieval_success_http_200": 7,
+    "byte_retrieval_failure_http_404": 1,
+    "discovery_fetches": 5,
+    "failed_tool_or_channel_attempts": 7,
+    "total_external_requests_approx": 20,
+    "search_tool_failures": "web_search 端点错误 ×2（改走 web_fetch + DuckDuckGo HTML）"
+  },
+  "written_files": [
+    {"path": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/provenance.json", "bytes": 30108, "sha256": "d06df212d3c2fba7c91cb74dbcceb20a6bf4b1e163e0623a9d3168a507a3f9d1"},
+    {"path": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/acquisition_report.md", "bytes": 16663, "sha256": "9056d3d4612755e9ba5be93b045c68c63f9891489c776e5ee4cf382a808e3263"},
+    {"path": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/handoff.json", "bytes": null, "sha256": null, "note": "本文件自身（自引用不计哈希）"},
+    {"path": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/corpus/", "files": 8, "note": "attempt01..08 实际取得字节（含 1 个 404 错误页留痕）；逐件 sha256 见 provenance.json.external_evidence"},
+    {"path": "execution_runs/OPEN5-PEND5A-HK-ACQUISITION/a20260924-01/probe/", "files": 33, "note": "抽取/锚词/引文定位脚本 7 个、探针结果 JSON、抽取文本与引文定位 JSON"}
+  ],
+  "git_diff_non_planning": 0,
+  "git_diff_measurement": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "total_entries": 3826,
+    "non_planning_entries": 0,
+    "untracked_non_planning": 46,
+    "untracked_non_planning_note": "全部为既有 .tmp-r41-mutation/* 等历史路径，非本工位创建",
+    "git_write_commands_run": 0
+  },
+  "discipline_attestation": {
+    "writes_outside_planning": 0,
+    "product_repo_writes": 0,
+    "companies_raw_written": false,
+    "filing_fetch_download_executed": false,
+    "card_status_changed": false,
+    "I11A_modified": false,
+    "green_sample_fabricated": false,
+    "level_judged": false,
+    "green_sample": "无"
+  },
+  "unlocks_nothing": true,
+  "does_not_release_OPEN5": true,
+  "does_not_claim_I11A_acceptance": true,
+  "does_not_change_any_status": true,
+  "next_steps_observation": "S1 的 PEND-5a 半边已交付；S2（能力自检复核）、S3（新建 attempt 重新取证）、S4（双路径复核）、S5（行业复裁 + 会计定级）仍待各自角色；本工位不代劳、不预判",
+  "file_format": {
+    "encoding": "UTF-8",
+    "bom": false,
+    "line_ending": "LF",
+    "json_reparsed_after_write": true
+  },
+  "handoff_utc": "2026-09-25T20:44:00Z"
+}

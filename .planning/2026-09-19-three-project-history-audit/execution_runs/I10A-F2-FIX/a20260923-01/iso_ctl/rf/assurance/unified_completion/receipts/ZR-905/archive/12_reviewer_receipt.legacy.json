@@ -1,0 +1,124 @@
+{
+  "unit": "ZR-905",
+  "reviewer": "reviewer-zr905-independent",
+  "kind": "reviewer",
+  "schema_version": 1,
+  "verdict": "accepted",
+  "reviewed_object_sha256": "c647c378daa80b102e4db05d53e7e02176a5e78b60081be75d755e4c91a20c95",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3 && git show --stat --oneline e04b7a4",
+      "exit_code": 0,
+      "result": "HEAD=e04b7a4 fix(ZR-905): REV-001/002/003..., parent=f41fb81; delta touches 3 files: tests/test_zr904_release_gate.py (+3/-1), tests/test_zr905_audit_self_test.py (+40/-15, now 11 tests), tools/release_gate.py (+2 — sanctioned REV-002 production change)"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff f41fb81 e04b7a4",
+      "exit_code": 0,
+      "result": "REV-001: test_aud2_07 now in-process verify(ROOT, drifted, check_mtime=False), asserts clean baseline == 0 AND baseline > clean; REV-002: compute_sli adds artifact.ok=False when bound_artifacts==0; test_aud2_04 asserts artifact red; zr904 test keeps artifact-ok assertion with bound_artifacts=42; REV-003: new test_aud2_01_schedule_not_registered (read-only schtasks /query, expects non-zero)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr905_audit_self_test.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed in 0.37s (rerun during hermeticity check: 11 passed in 0.36s)"
+    },
+    {
+      "command": "python probe_delta.py (10 independent delta probes: REV-001 discrimination, REV-002 artifact SLI, REV-003 schtasks)",
+      "exit_code": 0,
+      "result": "10/10 PASS — REV-001: undrifted manifest verifies CLEAN (0 problems) with repo_root=ROOT, drifted raises count (1 > 0) with 'control page drift: audit_review\\README.md (000000000000… -> c6711136c423…)'; old vacuous invocation confirmed as context (repo_root='.'+cwd=UC gives 48 problems on BOTH drifted and clean, so the old test could never fail; new test is genuinely discriminating and fails if drift checks were removed); REV-002: artifact.ok=False when bound_artifacts=0, True when 42, base-ok when no catalog; REV-003: schtasks /query exit=1 (task absent, read-only, no deployment)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr904_release_gate.py tests/test_zr905_audit_self_test.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "25 passed in 0.71s (14 zr904 + 11 zr905 — matches implementer claim)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr902_daily_schedule.py tests/test_zr903_weekly_t3.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "24 passed in 0.94s (regression subset intact)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check tests/test_zr905_audit_self_test.py tests/test_zr904_release_gate.py tools/release_gate.py",
+      "exit_code": 0,
+      "result": "All checks passed (all three delta-touched files)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py -q",
+      "exit_code": 0,
+      "result": "Ran 2 tests in 0.290s, OK (2 passed)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+      "exit_code": 0,
+      "result": "862 passed, 3 deselected, 106 subtests passed in 143.26s (matches implementer claim 862+106; +1 test vs 861 baseline)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-905/11_implementer_receipt.json (cwd=assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt ... is canonical and well-formed; HEAD (git rev-parse) = e04b7a4eb90d7580f735cdb0bc3496aeb5aa0aaf; NOTE: implementer receipt was not refreshed for the delta — its result_triplet.revenue is still f41fb811c997d106ac710a6478996ac619de9bfb (bookkeeping, see REV-D1)"
+    },
+    {
+      "command": "Hermeticity: SHA-256 snapshot of state.json, manifests/, runs/, locks/, receipts/, 3 delta files before/after running the 11 tests",
+      "exit_code": 0,
+      "result": "HERMETIC-DELTA: no repo file added/changed/removed; plan_inputs.json untouched; schtasks query read-only; verify writes only tmp copies"
+    },
+    {
+      "command": "hashlib.sha256(tests/test_zr905_audit_self_test.py)",
+      "exit_code": 0,
+      "result": "c647c378daa80b102e4db05d53e7e02176a5e78b60081be75d755e4c91a20c95 (raw bytes == utf-8 text; no BOM)"
+    }
+  ],
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f41fb811c997d106ac710a6478996ac619de9bfb",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e04b7a4eb90d7580f735cdb0bc3496aeb5aa0aaf",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "findings": [
+    {
+      "id": "REV-D1",
+      "severity": "minor",
+      "title": "Implementer receipt not refreshed for the delta (result_triplet.revenue still f41fb81)",
+      "detail": "receipts/ZR-905/11_implementer_receipt.json validates OK (canonical and well-formed, canonical_hash=9694d5fad3b4d6dd83ee65833fd9038b6d0a8a8069d346ae77129900a5b110a3) but its result_triplet.revenue remains f41fb811c997d106ac710a6478996ac619de9bfb (the pre-delta object) while the reviewed delta HEAD is e04b7a4eb90d7580f735cdb0bc3496aeb5aa0aaf. No delta receipt (e.g. 12_*) exists. Non-blocking: this review receipt records the correct delta triplet; recommend refreshing the implementer receipt at closure so its result_triplet.revenue matches the accepted object."
+    },
+    {
+      "id": "REV-D2",
+      "severity": "info",
+      "title": "Sanctioned production change vs original 'zero production changes' gate",
+      "detail": "REV-002 required tools/release_gate.py to derive artifact.ok=False when bound_artifacts==0 (catalog present) — a +2-line production change explicitly specified in the delta fix content. Minimal, covered by test_aud2_04 and the updated test_zr904_release_gate.py::test_c2_catalog_regression_derives_not_ok (bound_artifacts=42 keeps artifact ok True); ruff clean; ratchet 2 OK. The original zero-production-changes gate is intentionally waived for this sanctioned delta."
+    },
+    {
+      "id": "REV-D3",
+      "severity": "info",
+      "title": "test_aud2_01_schedule_not_registered is environment-coupled",
+      "detail": "The new test asserts schtasks /query for revenue_daily_t2 returns non-zero (task absent). Verified true on this machine (exit=1, 'ERROR: The system cannot find the file specified.'; read-only; no deployment action performed). Caveat: if/when the ZR-902 register deployment is performed on this machine, this assertion will turn red — the test must be revisited (e.g. assert freshness of a registered task's ledger) at deployment time."
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "REV-001",
+      "status": "fixed",
+      "verification": "test_aud2_07 now verifies with repo_root=ROOT and asserts clean==0 AND baseline>clean; independently reproduced clean=0, drifted=1, problem mentions control page; the vacuous 48-on-both invocation is gone — the test fails if drift checks are removed"
+    },
+    {
+      "id": "REV-002",
+      "status": "fixed",
+      "verification": "compute_sli derives artifact.ok=False on bound_artifacts==0 with catalog present; probe confirms red on 0, green on 42, base-ok without catalog; AUD2-04 asserts it"
+    },
+    {
+      "id": "REV-003",
+      "status": "fixed",
+      "verification": "test_aud2_01_schedule_not_registered added; schtasks /query returns exit=1 for the unregistered task (read-only, no deployment)"
+    },
+    {
+      "id": "REV-004",
+      "status": "unchanged",
+      "verification": "info-level bookkeeping observation still holds; delta commit itself is clean (3 files, all sanctioned)"
+    }
+  ],
+  "created_at_utc": "2026-08-23T00:20:00Z",
+  "canonical_hash": "f2cff9dd268f2c09d3796c194746ae72a687ddf9129ea3954159644f2c14ca43"
+}

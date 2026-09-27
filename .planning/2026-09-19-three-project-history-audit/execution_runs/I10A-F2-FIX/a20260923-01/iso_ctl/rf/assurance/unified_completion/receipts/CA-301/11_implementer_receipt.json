@@ -1,0 +1,110 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d7c927624f8c90f208e75cf5cef59c671a2124cb",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca301* + full receipt canonical scan",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 ca301 套件；188 receipts 中 11 个 canonical mismatch——历史短 hash triplet）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca301_clean_checkout.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "9 passed in 1.19s (C1 triplet rebuildable; C2 env collect/verify + drift; C3 ALL 188 receipts recompute + state hash deterministic; C4 replay consistent; C5 fresh-evidence gate)"
+    },
+    {
+      "command": "fix 11 historical receipts (ZR-709/802/803/804/805 11+12: result/base_triplet.revenue short hash -> 40-hex, reseal canonical)",
+      "exit_code": 0,
+      "result": "11 receipts fixed; rescan 188/188 canonical MATCH; receipt-validate OK (ZR-802 11 canonical, etc.)"
+    },
+    {
+      "command": "python -m pytest tests/test_envfreeze.py (assurance/unified_completion cwd)",
+      "exit_code": 0,
+      "result": "13 passed in 28.12s (工具自身回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_ca301_clean_checkout.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "633bea2 test(CA-301) + receipt fixes — 11 files +276/-20"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "982 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T16:50:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: manifest current_triplet commits all valid git objects (cat-file -e); ci_checkout_siblings manifest-driven, no floating main. C2: envfreeze.collect on real trio (offline lookup) returns head/branch/push_state per repo matching real HEADs; verify exact-equality + drift detection works. C3: ALL 188 published 11/12 receipts' canonical hashes recompute from payloads — FOUND 11 historical defects (ZR-709/802/803/804/805 result/base_triplet.revenue short 7-char hashes) and FIXED them (completed to 40-hex + resealed); state.json sha256 deterministic. C4: state replay reproduces candidate closure (current_next set, accepted>=100, each accepted unit has implementer/reviewer). C5: fresh-evidence gate uses CA-206 soak semantics (7 fresh daily -> complete; old runs don't extend chain; weekly distinct + fresh latest).",
+      "id": "CA301-IMPL-001",
+      "severity": "info",
+      "title": "clean-checkout 独立复放验收 + 11 个历史 receipt 短 hash 缺陷修复"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca301_clean_checkout.py（9 tests）：C1 manifest triplet 可重建；C2 envfreeze collect/verify；C3 全量 188 receipt canonical 重算（发现并修复 11 个历史短 hash）+ state 确定性；C4 状态重放一致；C5 新鲜证据门（CA-206 soak 语义）。修复文件：ZR-709/802/803/804/805 的 11+12 receipt。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_ca301_clean_checkout.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-709/**",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-802/**",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-803/**",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-804/**",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-805/**",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-301/**"
+    ]
+  },
+  "implementer": "ca301-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 633bea2（revenue HEAD = CA-301 实现 commit，parent d7c9276）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 clean-checkout 复放执行（独立 reviewer 在干净 checkout 跑全量）为部署动作，本卡验收机制（triplet/env/receipt/state/freshness）。"
+  ],
+  "objective": "阶段 J 首卡：clean checkout 独立复放（独立 reviewer 三干净 checkout 精确 triplet 重建；T0/T1 全跑、证据新鲜；所有 receipt/hash 重算；结果与 candidate closure 一致）",
+  "plan_sha256": "526550c99431b6411edc58f0b838af82d968c72cc26cc4cc297145aec5aa4d72",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "633bea2523eb211e8608b3819877178f473fe5a6",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca301_clean_checkout.py (new 9 tests) + 11 个历史 receipt 修复；assurance/unified_completion/receipts/CA-301/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "receipts_resealed": 11,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca301_clean_checkout.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-709/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-709/12_reviewer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-802/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-802/12_reviewer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-803/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-803/12_reviewer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-804/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-804/12_reviewer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-805/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-805/12_reviewer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-301/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-301",
+  "canonical_hash": "ad2dd25dbb5e9c13fe14d63ff5cae6b8f849c4e5c1c08252d50ab96bab631b7a"
+}

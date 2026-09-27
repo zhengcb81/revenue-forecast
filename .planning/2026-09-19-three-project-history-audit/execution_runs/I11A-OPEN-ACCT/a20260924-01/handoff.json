@@ -1,0 +1,180 @@
+{
+  "schema": "i11a-open-acct-handoff/1",
+  "card": "I-11-A",
+  "attempt": "execution_runs/I11A-OPEN-ACCT/a20260924-01",
+  "role": "accounting_specialist_reviewer",
+  "authorized_by": "OWNER_DECISIONS §十 L116/L127 + §十一 L144",
+  "generated_utc": "2026-09-24T20:27:51Z",
+  "reviewed_attempt": "execution_runs/I-11-A/a20260919-01 (accepted_scoped; read-only, unmodified)",
+  "carrier_purpose": "新增载体：只出具会计/披露维度裁定；不回改 I-11-A 的任何 status/字段",
+  "scope": {
+    "ruled": [
+      "OPEN-2 accounting/disclosure dimension (source admissibility ladder S0-S4, mandatory disclosure set, fail-closed default + replacement ladder)",
+      "OPEN-3 accounting/disclosure dimension (evidence grades E0-E3, fail-closed handling when 8-K original not local, acceptability of as_of carry-forward with explicit risk flag)",
+      "OPEN-6 rule plane (unreviewed thresholds must not be consumed as approved; evidence requirements before any number may be given)"
+    ],
+    "not_ruled": [
+      "OPEN-2 mining/geology/market half (actual coefficient value, industry convention) -> mining industry reviewer",
+      "OPEN-3 Microsoft business substance / target segment architecture -> software & cloud industry reviewer",
+      "OPEN-6 numeric threshold values -> industry/professional reviewer",
+      "OPEN-5 entirely -> NOT_IN_MY_SCOPE",
+      "I-11-A acceptance status and approved_frozen writes"
+    ]
+  },
+  "rulings": [
+    {
+      "id": "RULING-OPEN-2-ACCT",
+      "dimension": "accounting_disclosure",
+      "status": "RULING",
+      "one_line": "铜当量换算系数仅 S1（公司原文披露）/S2（全输入可核且经非实现者签署采用的准则化口径）可支撑冻结；S3 仅可作敏感性带、S4 示意值不可作参数；本地当前无 S1/S2 ⇒ ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 保持 _PLACEHOLDER、I-11-B 不得放行幅度校准，替代方案为“分部对外收入 + 分金属销量”或整条 unquantified。",
+      "basis_type": "professional_judgement + local evidence",
+      "evidence_refs": ["loc-01", "loc-02", "loc-03", "loc-06", "loc-07", "loc-09", "loc-11", "search-01"],
+      "downstream_parameters_affected": [
+        "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 (blocked / placeholder)",
+        "H-CN-ZIJIN-SEG-02 falsifier ±5% (also depends on OPEN-6 and on OPEN-2 observability)",
+        "I-10-A disclosure adaptation: STOP_DISCLOSURE_ADAPTATION for the CuEq formula",
+        "I-07-E currency/unit freeze: must record “元/吨铜当量 = undisclosed conversion”"
+      ],
+      "counterexample": "找到紫金同期间原文中的铜当量系数（含价格/回收率/范围）并本地归档 ⇒ 升级 S1 可放行；或 owner 明文豁免允许 S3 作点估计。",
+      "recovery_rule": "追加 OPEN-2-ACCT-R2（新 provenance + decision_sha256），不回改本条；命题只新增版本，旧快照保留。"
+    },
+    {
+      "id": "RULING-OPEN-3-ACCT",
+      "dimension": "accounting_disclosure",
+      "status": "RULING",
+      "one_line": "分部口径“已核”= E1（8-K/10-K 分部附注原文本地归档：URL+取回UTC+sha256+逐字引文+独立复核路径）；本地只有自述“非来源捕获”的转录与研究稿（E3），本次 SEC 取回 403 ⇒ 不得记为已核；as_of=2026-09-18 的 PBP/IC/MPC 沿用 + 显式口径风险标注仅可作临时不可签发假设，且若后续确认重分类必须先按新分部重述重建基期再算增速（不改旧快照）。",
+      "basis_type": "professional_judgement + external retrieval (E3/E2 level) + local evidence",
+      "evidence_refs": ["loc-01", "loc-05", "loc-06", "loc-07", "loc-09", "loc-11", "loc-12", "loc-13", "ext-01", "ext-02", "ext-03"],
+      "downstream_parameters_affected": [
+        "MSFT_PBP_REVENUE_FY2027",
+        "MSFT_IC_REVENUE_FY2027",
+        "MSFT_MPC_REVENUE_FY2027",
+        "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027",
+        "I-07-E 分部口径冻结 (L8) 与 微软重述 (L9) 只能标待审定；发布格 blocked",
+        "availability rule: releasability keyed on hypothesis state, NOT on _PLACEHOLDER suffix"
+      ],
+      "counterexample": "E1 归档且显示未重分类 ⇒ 沿用升级为已核；E1 显示已重分类 ⇒ 立即触发基期重建；owner 裁定带出具方回执的在线取回即可视为 E1 ⇒ 等级定义被推翻（须追加登记）。",
+      "recovery_rule": "追加 OPEN-3-ACCT-R2（含 E1 provenance），不回改本条与被审 attempt 的 refuted_by。"
+    },
+    {
+      "id": "RULING-OPEN-6-RULES",
+      "dimension": "accounting_disclosure_rule_plane",
+      "status": "RULING",
+      "one_line": "占位阈值审定前不得被下游当作已审定值：必须带 threshold_basis + 显式 threshold_review_status（默认 not_reviewed），professional_judgement_required 且未审定的阈值不得触发任何自动动作；审定必须同时具备可复算观测量 + 可核基础（披露容差/同口径历史离散/准则原文/明示 expert_assumption）+ 非实现者 decision_sha256 + 追加式版本化；权威计数为 arithmetic 4 / professional_judgement 3 / disclosure_definition 1。",
+      "basis_type": "professional_judgement + local evidence",
+      "evidence_refs": ["loc-03", "loc-04", "loc-06", "loc-07", "loc-08", "loc-09", "loc-10", "loc-11"],
+      "downstream_parameters_affected": [
+        "I-11-B calibration gating (threshold_review_status + expert_assumption alignment)",
+        "I-11-C falsifier reuse (must accept the additive field)",
+        "I-11-A validator: new check requires new counterexamples per DEC-14 (implementer/orchestrator, not me)",
+        "stale-count correction: handoff.json L9/L244 and mechanism_review.md L211 say \"four professional_judgement_required\"; authoritative machine count is 3+1 (validation_report.json L28-L32)"
+      ],
+      "counterexample": "owner 豁免“未审定先用”；或加字段后 I-11-C 完全无法启动 ⇒ 实施方式可重议，但“未审定不得当已审定”的实质不因此改变。",
+      "recovery_rule": "阈值审定后追加 OPEN-6-ACCT-R2（审定记录 sha256 + 作用域），命题新增版本并保留旧阈值。"
+    },
+    {
+      "id": "NOT-IN-SCOPE-OPEN-5",
+      "dimension": "n/a",
+      "status": "NOT_IN_MY_SCOPE",
+      "one_line": "OPEN-5（港股/小米年报原文可读性）归环境/依赖 owner + 行业 reviewer，本工位不裁；其阻塞关系（港股份部命题与 I-11-B 港股参数）保持不变。",
+      "evidence_refs": ["loc-06"]
+    }
+  ],
+  "blocked": [
+    {
+      "id": "BLOCKED-2a",
+      "item": "铜当量换算系数的具体取值与行业合理性",
+      "missing": "S1/S2 级来源（或 owner 豁免决议）；且属矿业行业 reviewer 半区",
+      "assignee": "mining industry reviewer"
+    },
+    {
+      "id": "BLOCKED-2b",
+      "item": "\"公司全文从未披露铜当量系数\"的全文级断言",
+      "missing": "独立的紫金 PDF 全文检索记录（我只做了 .planning 外 ripgrep + 被审 attempt 抽取复核）",
+      "assignee": "mining industry reviewer / environment owner"
+    },
+    {
+      "id": "BLOCKED-3a",
+      "item": "FY2027 微软建模分部究竟为何（PBP/IC/MPC vs 新架构）",
+      "missing": "E1：8-K/Exhibit 99.1 原文本地归档（URL + 取回 UTC + sha256 + 引文 + 独立复核路径）",
+      "assignee": "software & cloud industry reviewer + accounting reviewer (re-rule after E1)"
+    },
+    {
+      "id": "BLOCKED-3b",
+      "item": "取得申报原文的合规路径",
+      "missing": "SEC 端点 HTTP 403；web_search 工具端点错误不可用",
+      "assignee": "environment/dependency owner"
+    },
+    {
+      "id": "BLOCKED-6a",
+      "item": "3 条 professional_judgement_required 阈值的数值（±5%、[0.9,1.1]、拆分层级判定）",
+      "missing": "按 A-6.3 的证据与非实现者签署；本工位不给数",
+      "assignee": "industry/professional reviewer"
+    },
+    {
+      "id": "BLOCKED-6b",
+      "item": "4 条 arithmetic_identity 阈值的舍入容差是否匹配来源披露粒度",
+      "missing": "逐条对照原文舍入粒度的对照表",
+      "assignee": "accounting reviewer (me, after table) + industry reviewer countersign"
+    },
+    {
+      "id": "BLOCKED-6c",
+      "item": "threshold_review_status 字段落地与校验器改动",
+      "missing": "I-11-A 实现者/编排层与 schema 侧动作（我只提要求，不代改）",
+      "assignee": "orchestrator / schema owner"
+    }
+  ],
+  "not_in_scope": [
+    "OPEN-5: HK (Xiaomi) annual report readability -> environment/dependency owner + industry reviewer",
+    "OPEN-2 mining/geology/market dimension (coefficient value)",
+    "OPEN-3 Microsoft business substance / segment architecture choice",
+    "OPEN-6 concrete threshold numbers",
+    "I-11-A acceptance verdict and approved_frozen writes (not claimed, not modified)"
+  ],
+  "evidence_summary": {
+    "external_sources_used": 3,
+    "external_retrieval_failures_logged": 2,
+    "provenance_entry_count": 20,
+    "provenance_breakdown": {
+      "local_evidence": 13,
+      "external_sources": 3,
+      "external_retrieval_failures": 2,
+      "local_search": 2
+    },
+    "snapshots_saved": 0,
+    "snapshot_note": "写入面被限定为 3 个文件，故外部快照未保存；引文逐字转录于 provenance.json"
+  },
+  "written_files": [
+    {
+      "path": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+      "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2",
+      "bytes": 37355
+    },
+    {
+      "path": "execution_runs/I11A-OPEN-ACCT/a20260924-01/provenance.json",
+      "sha256": "81b045bc636375738fbad1ae02515ea316cd28fbb6b8b156fbb084b22e9c10f1",
+      "bytes": 18975
+    },
+    {
+      "path": "execution_runs/I11A-OPEN-ACCT/a20260924-01/handoff.json",
+      "sha256": null,
+      "bytes": null,
+      "note": "自指不可自证：本文件的 sha256/bytes 不能写进自身；实测值由编排层在外部核对（本条目在写后立即由外部命令复算并回填于提交消息）"
+    }
+  ],
+  "file_format": "UTF-8 without BOM, LF line endings (verified for ruling.md and provenance.json)",
+  "git_diff_non_planning": 0,
+  "git_diff_total_entries_observed": 3821,
+  "git_diff_checked_utc": "2026-09-24T20:23Z and again 2026-09-24T20:30:16Z (both: total=3821, non_planning=0)",
+  "git_writes_performed": false,
+  "product_files_written": 0,
+  "status_fields_changed": 0,
+  "implementer_signed": false,
+  "i11a_acceptance_claimed": false,
+  "acceptance_note": "我不是实现者，也未验收 I-11-A：既有 accepted_scoped 判定来自 review.md §5 转录的独立 reviewer，我未修改它；本 handoff 只新增会计/披露维度裁定。",
+  "unlock_effect": {
+    "I-11-B": "NOT unlocked by this carrier: OPEN-2/OPEN-3 的行业半区与 OPEN-6 数值仍未裁定；本裁定只解除“会计维度规则面”的不确定性",
+    "I-07-E": "NOT unlocked by this carrier (same reason)"
+  },
+  "next_action": "编排层：①把本载体转给矿业行业 reviewer（OPEN-2 半区）与软件/云行业 reviewer（OPEN-3 半区）+ 阈值数值审定（OPEN-6）；②按 OPEN-3 需要安排 E1 取文（环境 owner 处理 SEC 403/web_search 不可用）；③下游脚本按 RULING-OPEN-6-RULES 增加 threshold_review_status 门；④注意 handoff.json/mechanism_review.md 中 \"four professional_judgement_required\" 为过期表述，权威计数为 3+1（validation_report.json L28-L32）。"
+}

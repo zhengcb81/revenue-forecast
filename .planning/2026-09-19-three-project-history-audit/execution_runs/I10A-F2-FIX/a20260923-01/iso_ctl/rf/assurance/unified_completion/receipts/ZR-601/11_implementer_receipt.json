@@ -1,0 +1,95 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "3f8131847513563730148f2ae53ab61bafdf1d88",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "ccbc5616dbefaaa0bcf10f29dfc1572d7da3e14ae9432d76b693df43429d7d50",
+  "commands": [
+    {
+      "command": "RED 探针：model_registry 已有 resource/reserve_depletion spec；非负/缺省/公式手算探针验证——非负强制已存在（'cannot be negative'）、缺省 fail-closed 已存在（'missing drivers'）、resource 公式手算一致（51/57）",
+      "exit_code": 0,
+      "result": "G1（非负已实现但多期/数学断言不完整钉死）/G2（缺省矩阵无完整测试）/G3（公式独立断言缺）坐实——机制正确，test-only 钉死"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr601_asset_facts.py -q --tb=short",
+      "exit_code": 0,
+      "result": "10 passed（C1 stock-flow 4 + C2 缺省 2 + C3 公式/注册表 4）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "525 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；无回归）"
+    },
+    {
+      "command": "ruff check tests/test_zr601_asset_facts.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "git diff 3f81318 1d32047 --stat",
+      "exit_code": 0,
+      "result": "1 文件 +172：tests/test_zr601_asset_facts.py（新 10 tests）——产品 src 零改动"
+    }
+  ],
+  "created_at_utc": "2026-08-20T22:09:01+00:00",
+  "findings": [
+    {
+      "detail": "F2 首卡 asset facts 契约钉死（test-only）：储量 stock-flow 三数学契约（平衡 opening+additions-depletion==closing / 连续性 closing[t-1]==opening[t] / 全驱动非负 + recovery_rate 0~1）；resource/reserve_depletion 缺省任一驱动 fail-closed 矩阵；公式手算一致（resource 51/57、reserve depletion×recovery×price）+ registry spec 词汇（required/formula）。探针确认机制已正确（非负强制/缺省拒绝/公式一致）——产品零改动。",
+      "id": "ZR601-IMPL-001",
+      "severity": "info",
+      "title": "asset facts 契约钉死（探针验证机制正确，test-only）"
+    },
+    {
+      "detail": "测试陷阱：YEARS 为 2 期（2026/2027）——3 期驱动第三期不被计算导致不平衡探针误报无错；连续性破坏必须同时保持 balance（构造 opening[1]=1010 + closing[1]=1030 使 balance 过而 continuity 破）；recovery_rate 是 ratio_driver（0~1 消息 'must be between 0 and 1' 而非负值消息）。",
+      "id": "ZR601-IMPL-002",
+      "severity": "info",
+      "title": "2 期 YEARS 陷阱与构造正确性"
+    }
+  ],
+  "implementation": {
+    "design": "测试钉死卡（产品零改动）：新 tests/test_zr601_asset_facts.py（10 tests）——C1 stock-flow（2 期平衡/连续性/非负 5 字段/回收率 0~1）；C2 缺省（resource 2 驱动 + reserve 6 驱动逐个删除 → 'missing drivers' 拒绝）；C3 公式/注册表（resource 手算 51/57 + formula 文本、reserve depletion×recovery×price 手算 + formula 文本、spec required/formula 词汇）。",
+    "files": [
+      "revenue-forecast/tests/test_zr601_asset_facts.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-601/**"
+    ]
+  },
+  "implementer": "zr601-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 1d32047；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=030ff627（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr601-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "注：base_triplet.revenue=3f81318 为 ZR-710 实现 commit（F1 末卡）。"
+  ],
+  "objective": "F2 首卡 asset facts：储量 stock-flow 数学契约（平衡/连续性/非负）+ resource 行式公式 + 缺省 fail-closed 矩阵 + registry 词汇（test-only 钉死，探针验证机制已正确）。",
+  "plan_sha256": "030ff627341d53e1b1a5e555b655e9f82e2fd1719fbc9c25bbb5ed069d833f91",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1d32047ac2dc3db735aa49885f0f80c1848074dd",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast 测试钉死卡（产品 src 零改动）：新 test_zr601_asset_facts.py（10 tests）；revenue 侧 receipts/ZR-601/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr601_asset_facts.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-601/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-601"
+}

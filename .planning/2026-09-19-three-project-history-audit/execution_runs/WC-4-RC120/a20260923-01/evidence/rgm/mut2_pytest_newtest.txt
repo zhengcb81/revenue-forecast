@@ -1,0 +1,41 @@
+F...F...                                                                 [100%]
+================================== FAILURES ===================================
+_________ test_broken_stdout_flush_exits_2_with_preserved_error_text __________
+
+    def test_broken_stdout_flush_exits_2_with_preserved_error_text() -> None:
+        proc = _spawn_without_stdout_reader([sys.executable, "-B", str(CLI), "--version"])
+        _, err = proc.communicate(timeout=120)
+        stderr = (err or b"").decode("utf-8", "replace")
+>       assert proc.returncode == 2, (
+            f"F12 flush failure must exit in the frozen domain {{0,2}} as rc=2, "
+            f"got {proc.returncode}; stderr={stderr!r}"
+        )
+E       AssertionError: F12 flush failure must exit in the frozen domain {0,2} as rc=2, got 120; stderr='error: stdout flush failed: [Errno 22] Invalid argument\r\nException ignored on flushing sys.stdout:\r\nOSError: [Errno 22] Invalid argument\r\n'
+E       assert 120 == 2
+E        +  where 120 = <Popen: returncode: 120 args: ['C:\\Miniconda\\python.exe', '-B', 'C:\\Users...>.returncode
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\WC-4-RC120\a20260923-01\iso\rf\tests\test_stdout_flush_exit_domain.py:94: AssertionError
+___________ test_finalize_exit_status_normalizes_flush_failure_to_2 ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001DD07D55350>
+
+    def test_finalize_exit_status_normalizes_flush_failure_to_2(monkeypatch) -> None:
+        broken = _BrokenStream()
+        capture = io.StringIO()
+        monkeypatch.setattr(sys, "stdout", broken)
+        monkeypatch.setattr(sys, "stderr", capture)
+        assert revenue_forecast._finalize_exit_status(0) == 2
+        text = capture.getvalue()
+        assert "stdout flush failed" in text, text
+        assert "Errno" in text, text
+        # the broken stream must be detached, otherwise interpreter shutdown would
+        # re-flush it and CPython would override the exit status with 120
+>       assert sys.stdout is not broken
+E       assert <test_stdout_flush_exit_domain._BrokenStream object at 0x000001DD07D3BCB0> is not <test_stdout_flush_exit_domain._BrokenStream object at 0x000001DD07D3BCB0>
+E        +  where <test_stdout_flush_exit_domain._BrokenStream object at 0x000001DD07D3BCB0> = sys.stdout
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\WC-4-RC120\a20260923-01\iso\rf\tests\test_stdout_flush_exit_domain.py:148: AssertionError
+=========================== short test summary info ===========================
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/WC-4-RC120/a20260923-01/iso/rf/tests/test_stdout_flush_exit_domain.py::test_broken_stdout_flush_exits_2_with_preserved_error_text
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/WC-4-RC120/a20260923-01/iso/rf/tests/test_stdout_flush_exit_domain.py::test_finalize_exit_status_normalizes_flush_failure_to_2
+2 failed, 6 passed in 7.98s

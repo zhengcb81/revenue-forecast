@@ -1,0 +1,280 @@
+{
+  "schema": "i11a-open-acct-provenance/1",
+  "card": "I-11-A",
+  "attempt": "execution_runs/I11A-OPEN-ACCT/a20260924-01",
+  "role": "accounting_specialist_reviewer",
+  "authorized_by": "OWNER_DECISIONS §十 L116/L127 + §十一 L144",
+  "generated_utc": "2026-09-24T20:27:51Z",
+  "reviewed_object": {
+    "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/",
+    "access": "read_only",
+    "modified": false
+  },
+  "write_surface": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/provenance.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/handoff.json"
+  ],
+  "external_sources": [
+    {
+      "id": "ext-01",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm",
+      "retrieved_utc_window": ["2026-09-24T20:23:20Z", "2026-09-24T20:23:31Z"],
+      "earlier_attempt_utc_before": "2026-09-24T20:23:04Z",
+      "http_status": 403,
+      "evidence_grade_by_this_ruling": "not_obtained",
+      "quote": "Your Request Originates from an Undeclared Automated Tool — 'To allow for equitable access to all users, SEC reserves the right to limit requests originating from undeclared automated tools. Your request has been identified as part of a network of automated tools outside of the acceptable policy...'",
+      "snapshot_path": null,
+      "snapshot_sha256": null,
+      "snapshot_note": "本载体写入面被限定为 3 个文件，故未保存快照；引文逐字转录于本文件。",
+      "used_for": "OPEN-3：证明 8-K exhibit 99.1 的原文端点存在，且本次会话不可取回（403）；不作为内容证据"
+    },
+    {
+      "id": "ext-02",
+      "url": "https://efts.sec.gov/LATEST/search-index?q=%22FY27+Segments+and+Investor+Metrics%22&forms=8-K",
+      "retrieved_utc_window": ["2026-09-24T20:10:00Z", "2026-09-24T20:23:04Z"],
+      "http_status": 403,
+      "evidence_grade_by_this_ruling": "not_obtained",
+      "quote": "SEC.gov | Your Request Originates from an Undeclared Automated Tool",
+      "snapshot_path": null,
+      "snapshot_sha256": null,
+      "used_for": "OPEN-3：SEC 全文检索端点同样拒止，无法在本会话内取得 E1/E2"
+    },
+    {
+      "id": "ext-03",
+      "url": "https://html.duckduckgo.com/html/?q=%22FY27+Segments+and+Investor+Metrics%22+Microsoft",
+      "retrieved_utc_window": ["2026-09-24T20:23:20Z", "2026-09-24T20:23:31Z"],
+      "earlier_attempt_utc_before": "2026-09-24T20:23:04Z",
+      "http_status": 200,
+      "evidence_grade_by_this_ruling": "E3_secondary_search_snippet",
+      "quotes": [
+        "On September 2, 2026, Microsoft Corporation (the \"Company\") posted presentation materials to its Investor Relations website titled \"FY27 Segments and Investor Metrics\" announcing a change in reportable segments and investor metrics.",
+        "Beginning in fiscal year 2027, the Company will manage its operations under this updated reporting structure and report its financial performance based on two ...",
+        "自2027财年起，微软将把沿用的三大报告分部——生产力与业务流程、智能云、更多个人计算——重组为两个：Agents and Inf..."
+      ],
+      "quote_sources_in_result": [
+        "www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm (result date 2026-09-02)",
+        "www.webull.com/news/15510679132840960",
+        "www.stocktitan.net/sec-filings/MSFT/8-k-microsoft-corp-reports-material-event-f8a7cf7d3af8.html",
+        "www.itiger.com/news/1165030464",
+        "xueqiu.com/3338215700/407923956"
+      ],
+      "snapshot_path": null,
+      "snapshot_sha256": null,
+      "used_for": "OPEN-3：仅为线索（E3），证明存在指向 2026-09-02 分部重分类的公开信息；按本裁定不得作为本地事实或参数依据"
+    }
+  ],
+  "external_retrieval_failures": [
+    {
+      "id": "fail-01",
+      "url": "https://duckduckgo.com/html/?q=%22FY27+Segments+and+Investor+Metrics%22+Microsoft",
+      "error": "cross-origin redirect to https://html.duckduckgo.com is not followed automatically; retry against that URL directly",
+      "handled": "改用 https://html.duckduckgo.com/html/... 成功（ext-03）",
+      "retrieved_utc_window": ["2026-09-24T20:10:00Z", "2026-09-24T20:23:04Z"]
+    },
+    {
+      "id": "fail-02",
+      "tool": "web_search",
+      "error": "DeepSeek returned an unprocessable response body: SyntaxError: Unexpected token 'e' ... is not valid JSON (search endpoint configuration error)",
+      "impact": "本会话无法使用 web_search；外部检索仅剩 web_fetch 单一路径，已按能力缺口登记于 ruling.md BLOCKED-3b",
+      "retrieved_utc": "2026-09-24T20:2x:xxZ（会话内，工具报错无独立时间戳）"
+    }
+  ],
+  "local_evidence": [
+    {
+      "id": "loc-01",
+      "path": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+      "sha256": "c13feca44a052f8238b32ab7db5de367859ddfc78cd0cc0b1bdefb80659bc6b7",
+      "bytes": 64386,
+      "lines_cited": ["L116", "L127", "L144"],
+      "quotes": [
+        "I-11-A OPEN-2/3/5/6 指派会计+行业 reviewer",
+        "编排层按此派单；OPEN-2/3/5/6 阻塞 I-11-B / I-07-E",
+        "2 | I-11-A OPEN-2/3/5/6 | 派新 subagent 当行业 reviewer | 编排层创建独立行业 reviewer subagent"
+      ],
+      "used_for": "身份与授权、阻塞关系"
+    },
+    {
+      "id": "loc-02",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_v2/card_I-11-A.md",
+      "sha256": "9567b8dd81411092a87f1b66304f6f038725a085d7184ea9a353ed409a997df1",
+      "bytes": 1433,
+      "lines_cited": ["L5", "L9", "L20", "L21", "L23"],
+      "quotes": [
+        "无法定位模型driver/收入确认环节→仅保留定性未量化。",
+        "来源晚于as_of或原文无法核查→STOP_EVIDENCE。"
+      ],
+      "used_for": "fail-closed 停止条件、验收口径"
+    },
+    {
+      "id": "loc-03",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_v2/START_HERE.md",
+      "sha256": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+      "bytes": 20436,
+      "lines_cited": ["L26", "L36", "L47"],
+      "quotes": [
+        "review_pending | 正反例/恢复/差异证据齐全 | 实现者不能自签accepted",
+        "数值预期手算或来自独立披露，不能调用被测函数先生成expected。专业决策未定先blocked。",
+        "以下先写decision.md，由对应专业reviewer给出明确选项及理由，之后再实施：……样本/基准/统计阈值及概率校准；……审查意见至少包含选择、理由、反例、兼容影响、恢复规则、拒绝的替代方案。不得用“按最佳实践”代替决定。"
+      ],
+      "used_for": "裁定格式与 fail-closed 授权、不代签依据"
+    },
+    {
+      "id": "loc-04",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_v2/card_I-11-B.md",
+      "sha256": "38ff2907acb627f3d5f6a97ca386a17551329ad3909720e84463a185154ae87c",
+      "bytes": 1672,
+      "lines_cited": ["L9", "L13", "L20", "L23"],
+      "quotes": [
+        "按contract arithmetic、历史经验或外部可比选择校准方法，保存选择依据与样本；缺数据就标expert_assumption。",
+        "幅度无来源又未明确分析师假设→STOP_CALIBRATION。",
+        "专业reviewer签署后方可进入forecast，不等同准确性通过。"
+      ],
+      "used_for": "OPEN-2/OPEN-6 兼容影响（下游校准与签署门）"
+    },
+    {
+      "id": "loc-05",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_v2/card_I-07-E.md",
+      "sha256": "9552ac980756d59daf9c3cb48455c404ef2ffada6213ec3f0338b13c0a2e861d",
+      "bytes": 1773,
+      "lines_cited": ["L6", "L8", "L9", "L10"],
+      "quotes": [
+        "为三公司各冻结基期、分部口径、币种单位、信息日、年度路径与来源claim；缺信息显式保留，不伪造capture。",
+        "按适用模型卡处理合并/内部抵销、H1锁定、微软重述等已审关键口径。",
+        "没有正式签名能力时可有研究草稿，但正式发布格blocked。"
+      ],
+      "used_for": "OPEN-3 兼容影响（分部口径冻结、微软重述、发布格）"
+    },
+    {
+      "id": "loc-06",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/decision.md",
+      "sha256": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951",
+      "bytes": 29756,
+      "lines_cited": ["L73-L96", "L153-L177", "L174-L175", "L234-L252", "L398", "L399", "L401", "L402", "L410-L411"],
+      "quotes": [
+        "OPEN-2 | 紫金矿产品\"铜当量换算系数\"从何而来？结论对其高度敏感：系数 +1 吨/千克 ⇒ 当量分母 +83,161 吨 ⇒ 单位收入 −10,670.89 元/吨铜当量（两点差分，非偏导） | 会计 reviewer + 矿业行业 reviewer | 否 | I-11-B 对 `ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027` 的幅度校准",
+        "OPEN-3 | FY2027 起微软建模分部是否仍为 PBP/IC/MPC（2026-09-02 8-K 的重分类原文不在本地可核来源） | 行业 reviewer（软件与云）+ 会计 reviewer | 否 | I-11-B/I-07-E 的微软分部选择",
+        "OPEN-6 | 3 条 `professional_judgement_required` 阈值（±5%、0.9–1.1 等）是否按此采用；另 1 条已改判 `disclosure_definition`（见 R2-2） | 行业 reviewer（分行业） | 否 | I-11-B/I-11-C 的触发器生效",
+        "没有任何一项阻塞本卡签收；但 OPEN-2 / OPEN-3 / OPEN-5 / OPEN-6 阻塞 I-11-B",
+        "阈值被专业审定后，写入命题的新版本（decision.decision_sha256 填审定记录的 hash），旧版本保留供 I-12 评分。"
+      ],
+      "used_for": "OPEN-2/3/6 题面、DEC-6 阈值两类、DEC-9 计数规则、恢复规则"
+    },
+    {
+      "id": "loc-07",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/review.md",
+      "sha256": "4938e745adc3f32582cc6fd70e3e69197385035d0270807d955d2a7c7776daed",
+      "bytes": 19417,
+      "lines_cited": ["L69-L70", "L75-L76", "L91-L147", "L125-L126", "L160", "L175-L176"],
+      "quotes": [
+        "MSFT FY2027 分部口径不确定：10-K 仍按 PBP/IC/MPC 编制（`Agents and Infra` 出现 0 次），as_of 之后的重分类 8-K 原文不在本地可核来源，故八线口径既未引用也未否定（OPEN-3）。",
+        "占位阈值：3 条 falsifier 阈值标 `professional_judgement_required`，未审定（OPEN-6）；另有 1 条（Microsoft Cloud 聚合口径）在 R2 改判为 `disclosure_definition`（判定式而非幅度）。",
+        "disclosure_adaptation = NOT granted（属 I-10-A；本卡只做「原文 → 原始串 / 页码 / 单位」的只读取证，且铜当量系数未披露，该式判 STOP_DISCLOSURE_ADAPTATION 是正确的）",
+        "I-11-B / I-11-C / I-07-E = NOT unlocked（0 条 approved_frozen，且 OPEN-2/3/5/6 阻塞参数校准与触发器生效）。"
+      ],
+      "used_for": "OPEN-3 事实、OPEN-6 计数、STOP_DISCLOSURE_ADAPTATION、既有验收状态（只引用不修改）"
+    },
+    {
+      "id": "loc-08",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/handoff.json",
+      "sha256": "e4dafd16952b31317aa47f43e14fd73b078497d488be06a594a9de6b73c903c4",
+      "bytes": 27788,
+      "lines_cited": ["L6", "L9", "L226", "L240", "L241", "L243", "L244"],
+      "quotes": [
+        "I-11-B: the 4 thresholds marked threshold_basis=professional_judgement_required must be signed off first (OPEN-6)",
+        "OPEN-6 (industry reviewers): accept or replace the four professional_judgement_required thresholds (e.g. +/-5% unit revenue drift, 0.9-1.1 plan attainment band)?",
+        "I-11-B MUST NOT start from this attempt: 0 propositions are approved_frozen, and OPEN-2/OPEN-3/OPEN-5/OPEN-6 block parameter calibration"
+      ],
+      "used_for": "下游阻塞关系；并登记其 \"four professional_judgement_required\" 为 R2 改判前的过期表述（与 validation_report 的 3+1 不一致）"
+    },
+    {
+      "id": "loc-09",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+      "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+      "bytes": 51697,
+      "lines_cited": ["L168", "L170", "L175", "L189", "L193", "L196-L197", "L310-L311", "L417-L418", "L523-L524", "L572-L573", "L605", "L617", "L624", "L636", "L648-L649", "L652", "L665", "L756-L757", "L861-L862"],
+      "quotes": [
+        "口径暴露一：公司未披露铜当量换算系数，本式假定 1 千克金 = 24 吨铜当量（示意值，不是披露值）。敏感性表述…金→铜当量系数每 +1 吨/千克 ⇒ 当量分母 +83,161 吨（885,141 → 968,302）⇒ 单位收入由 124,248.63 降到 113,577.74，即 −10,670.89 元/吨铜当量。这是**两点差分**，不是偏导数",
+        "threshold\": \"相对偏离 ±5%（阈值依据：professional_judgement_required，须由行业 reviewer 在 I-11-B 前确认或替换）",
+        "revert_rule: 若分部数或口径变化（例如按 2026-09-02 8-K 的重分类），本命题回到 'rebuild required'：以新分部的历史对照表重建基期，不改旧快照。",
+        "selection_rule: 只取 10-K 中三个报告分部的收入行与变动百分比行；不使用未经核验的 2026-09-02 8-K 八线口径",
+        "refuted_by: 公司在 FY2026 年报之后（2026-09-02 8-K）披露了将调整报告分部与产品线口径的重分类；as_of=2026-09-18 时该 8-K 尚未进入本地可核来源，故 FY2027 起可能不再是这三个分部"
+      ],
+      "used_for": "OPEN-2 推导与敏感性、OPEN-3 现状与 revert_rule、OPEN-6 四条阈值与依据类型"
+    },
+    {
+      "id": "loc-10",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/validation_report.json",
+      "sha256": "dc014e7e7a5699f5692d60d3e7cf76b782d1c64ef7668d5104e077290cb7c9b8",
+      "bytes": 5341,
+      "lines_cited": ["L13-L39", "L28-L32", "L170-L176", "L210-L216", "L218-L222"],
+      "quotes": [
+        "\"threshold_bases\": { \"arithmetic_identity\": 4, \"professional_judgement_required\": 3, \"disclosure_definition\": 1 }",
+        "\"counterexample_summary\": { \"cases\": 21, \"rejected_as_expected\": 21, \"accepted_by_mistake\": 0 }"
+      ],
+      "used_for": "OPEN-6 权威计数（4/3/1）与校验器已有/缺失检查项"
+    },
+    {
+      "id": "loc-11",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/mechanism_review.md",
+      "sha256": "70c3ca91c16bacedb719fbe8033ee169a490017e9da3099906879e222f8c6d26",
+      "bytes": 21806,
+      "lines_cited": ["L18", "L49-L50", "L117-L119", "L148-L151", "L207", "L208", "L211"],
+      "quotes": [
+        "紫金铜当量换算系数：公司未披露。命题 2 里被写成\"1 千克金 = 24 吨铜当量\"的示意系数…因此该系数不是参数，是待裁定项（OPEN-2）。",
+        "该 8-K 原文在本 attempt 的本地可核来源中不存在，且本卡禁网，因此八线口径未被引用、也未被否定。→ OPEN-3。",
+        "OPEN-6 | 8 条命题的 falsifier.threshold 中 4 条标为 professional_judgement_required（±5%、0.9–1.1 计划达成区间等）"
+      ],
+      "used_for": "OPEN-2/3 现状；并登记 L211 的 \"4 条\" 与机器计数 3 不一致（过期表述）"
+    },
+    {
+      "id": "loc-12",
+      "path": "audit_review/2026-09-18_real_company_skill_audit/MSFT/official_reclassification.web_tool_response.json",
+      "sha256": "fdd2a3fa18d435b41049b852ca0f2188e60b484b60767714ba8cc59918895f89",
+      "bytes": 30796,
+      "lines_cited": ["L2", "L3", "L4", "L5"],
+      "quotes": [
+        "\"purpose\": \"Actual web tool response log; not a source capture or host attestation receipt\"",
+        "\"information_cutoff\": \"2026-09-18\"",
+        "\"retrieved_date\": \"2026-09-19\""
+      ],
+      "used_for": "OPEN-3：本地存在关于 8-K 的**二手**材料，且其自述等级为“非来源捕获” ⇒ 归 E3，不能支撑“已核”"
+    },
+    {
+      "id": "loc-13",
+      "path": "audit_review/2026-09-18_real_company_skill_audit/MSFT/research.md",
+      "sha256": "d5e1c2793ff3cf43d700f54a28741ead3d8fb63e92d1ae15b5fe4d9f63653568",
+      "bytes": 7370,
+      "lines_cited": ["L35"],
+      "quotes": [
+        "八线均保留新口径对比，不能把旧Azure and other cloud增长、旧LinkedIn整额及新口径数字混用。新两报告分部 Agents and Infra 为268,127，Devices and Consumer为63,712，合计331,839。模板 PBP/IC/MPC 仅保留为真实过程证据，不是最终输入。"
+      ],
+      "used_for": "OPEN-3：二手研究稿的判断，属 E3；按本裁定不得作为分部口径结论"
+    }
+  ],
+  "local_search": [
+    {
+      "id": "search-01",
+      "tool": "grep (ripgrep)",
+      "pattern": "铜当量|当量|Agents and Infra",
+      "scope": "workspace root, hidden directories excluded by default (therefore .planning was read explicitly, not via this search)",
+      "include": "*.{md,json,txt,html,htm}",
+      "result_summary": "'铜当量' 在 .planning 之外 0 命中；'当量' 命中仅 audit_review/.../ZIJIN/annual_2025_selected_pages.json 中的“当量碳酸锂/金当量储量”；'Agents and Infra' 命中 audit_review/2026-09-18_real_company_skill_audit/MSFT/ 下 3 个二手文件",
+      "used_for": "OPEN-2（本地无铜当量披露痕迹）、OPEN-3（本地“Agents and Infra”只出现在二手材料）"
+    },
+    {
+      "id": "search-02",
+      "tool": "git -c core.quotepath=false diff HEAD --name-only",
+      "executed_utc": "2026-09-24T20:23:0xZ",
+      "result_summary": "total=3821, non_planning=0",
+      "used_for": "边界核对（零产品写）"
+    }
+  ],
+  "method_notes": [
+    "所有行号以本次 read/grep 观测为准（read 工具返回带行号）；行号可能随上游文件变化，故同时给出 sha256。",
+    "外部检索只用 web_fetch；web_search 在本会话不可用（见 fail-02）。SEC 端点返回 403，属站点对未声明自动工具的策略拒止，不是文件不存在的证据。",
+    "外部来源在本裁定中一律按 E3/E2 以下使用，未写入任何产品文件，也未作为本地事实参与结论。",
+    "本载体未保存外部快照：写入面被任务限定为 ruling.md / provenance.json / handoff.json 三个文件（见 write_surface），故 snapshot_path 与 snapshot_sha256 为 null。",
+    "被审 attempt 全程只读；未执行任何 git 写操作。"
+  ]
+}

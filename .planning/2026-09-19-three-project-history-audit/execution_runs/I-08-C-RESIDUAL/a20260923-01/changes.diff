@@ -1,0 +1,103 @@
+# I-08-C-RESIDUAL / a20260923-01 — changes.diff
+
+## 0. Modification set
+
+- **Production repos (RF/CW/FF): EMPTY SET — zero files modified** (goal discipline ⑤
+  生产零合并; re-verified `git status --porcelain --untracked-files=all -- scripts tests
+  config artifacts` = EMPTY after all runs, `evidence/c11_production_state.json`).
+- **Every referenced execution_runs/** attempt: EMPTY SET — zero files modified by this
+  card (`evidence/manifests_comparison.json`; the three concurrent BOOKKEEP-REPAIR
+  additions to the B1 tree are external and attributed, `verdict_supersession_20260923.md` §4).
+- **This attempt: NEW files only** (inventory below).
+
+## 1. Product/test fix demanded by a leftover — landed, NOT applied (justified in decision.md D-5)
+
+Leftover L3 (B1 review F3) demands "delete the E21 claim from the docstring" (its option
+(b); option (a) implement-E21 is cap-change blocked). The deletion is a production write
+reserved to the parent's batch (OWNER_DECISIONS.md:426 父保留各仓提交权), so this card
+lands it as apply-ready patch `patches/P-L3_delete_E21_docstring_claim.patch` against the
+current promoted bytes `scripts/revenue_publication.py` (`bc2bb4a33e36ed9ad82bc4ffe33e57de8999002c2c7910b9c8b9d1565678fcd0`),
+docstring lines 232-238. Verbatim:
+
+```diff
+--- a/scripts/revenue_publication.py
++++ b/scripts/revenue_publication.py
+@@ -232,8 +232,12 @@
+     * ``attestation_domain_mismatch`` (E17) — wrong domain separator.
+     * ``attestation_payload_hash_mismatch`` (E16) — the record does not bind the
+       live payload / result / receipt.
+-    * ``provider_key_untrusted`` (E20) / ``issuer_key_binding_mismatch`` (E21) —
+-      trust-domain failures.
++    * ``provider_key_untrusted`` (E20) — trust-domain failure.
++      (``issuer_key_binding_mismatch`` (E21) is documented but **not implemented
++      and never raised**: ``contracts.evidence._trusted_signer_public_keys()``
++      resolves fingerprint -> public key with no ``issuer``/``key_id`` fields, so
++      E21 as specified requires the 12-field trust-entry schema (I-08-A E25, not
++      implemented). Recorded as NOT CLOSED — I-08-C-RESIDUAL a20260923-01
++      evidence/L3_E21_not_closed_record_20260923.md.)
+     * ``attestation_signature_invalid`` (E14) — Ed25519 verification failed.
+     """
+     record = receipt.get("publication_attestation")
+```
+
+Docstring-only; zero behaviour change expected (asserted by inspection; a byte/AST
+equivalence run is owed when the parent applies it inside a promotion batch — recorded
+as routed residue, decision.md D-2 L3 row).
+
+## 2. New files of this attempt (the complete inventory)
+
+```
+oracle.md                                       (frozen before any judged run; verbatim conditions block + corrected source-of-truth + run contract + counting criteria)
+binding.json                                    (paths, isolation, interpreter, input hashes)
+commands.json                                   (13 bound commands, frozen expectations, raw rcs)
+decision.md                                     (per-residual table, state resolution, counting basis, disclosures)
+changes.diff                                    (this file)
+review.md                                       (review slot - no verdict; implementer never signs)
+handoff.json                                    (review_pending / unsigned / unmapped / unproven; deliverable hashes)
+verdict_supersession_20260923.md                (original-attempt state resolution + untouched assertion)
+patches/P-L3_delete_E21_docstring_claim.patch   (apply-ready product patch, routed)
+evidence/manifests_before.json                  (I08CR-c0: 3134-file before manifest of the three referenced attempts)
+evidence/manifests_after.json                   (I08CR-c12 after manifest)
+evidence/manifests_comparison.json              (untouched assertion + I-08-C handoff before==after)
+evidence/E_L1_checks.json                       (E-L1.1 prefix/marker + E-L1.2 text checks)
+evidence/E_L1_r5_region_dump.txt                (verbatim r5+ region of B1 oracle.md)
+evidence/E_L1_fieldcount_threeway.json          (E-L1.3: AST x2 + runtime = 10/10/10)
+evidence/E_L2_presence.json                     (E-L2.1 node + M6 presence)
+evidence/E_L2_run_fixed.stdout.txt              (E-L2.2 raw: 14/14 PASSED)
+evidence/E_L2_run_fixed.rc.txt
+evidence/E_L2_run_m6.stdout.txt                 (E-L2.3 raw: 1 failed (rem41_a) / 13 passed)
+evidence/E_L2_run_m6.rc.txt
+evidence/E_L3_e21_scan.json                     (E-L3.1 static scan)
+evidence/E_L3_trust_loader.json                 (E-L3.2 loader shape)
+evidence/AX1_f4f5_checks.json                   (F4/F5 re-verification)
+evidence/AX3_rem02_state.json                   (F7 state re-measurement, refined run)
+evidence/AX5_d1b_fsscan.json                    (D1b fs-scan)
+evidence/c11_production_state.json              (production anchors + porcelain)
+evidence/L3_E21_not_closed_record_20260923.md   (dated E21 not-closed record)
+evidence/AX_annex_closure_records_20260923.md   (AX-1..AX-5 dated records)
+evidence/c0_manifests.stdout.txt                (raw, per-run distinct labels)
+evidence/c1_check_l1.stdout.txt
+evidence/c2_check_fields.stdout.txt
+evidence/c3_check_l2_presence.stdout.txt
+evidence/c6_check_e21.stdout.txt
+evidence/c7_check_trust_loader.stdout.txt
+evidence/c8_check_ax1.stdout.txt
+evidence/c9_check_rem02.stdout.txt              (run 1, superseded-by-refinement, preserved)
+evidence/c9b_check_rem02.stdout.txt             (refined run)
+evidence/c10_check_d1b.stdout.txt
+evidence/c11_check_prod.stdout.txt
+evidence/c12_manifests.stdout.txt
+scratch/manifests.py, scratch/check_l1.py, scratch/check_fields.py,
+scratch/check_l2_presence.py, scratch/check_e21.py, scratch/check_trust_loader.py,
+scratch/check_ax1.py, scratch/check_rem02.py, scratch/check_d1b.py, scratch/check_prod.py
+                                              (probe logic authored in this attempt, bound to current bytes)
+recovery/README.md                              (recovery boundary)
+```
+
+## 3. Unchanged-by-design (asserted)
+
+- `I-08-C/a20260919-01/**` — 73/73 files byte- and mtime-identical before/after; its
+  `handoff.json` before-hash == after-hash (`b83e04a6…`, 58814 B).
+- `B1-PREREQ/a20260922-01/**` — 298/298 identical.
+- `B1-I08C-product-fixes/a20260921-01/**` — identical except the three BOOKKEEP-REPAIR
+  landing files (external, concurrent, attributed).

@@ -1,0 +1,14 @@
+{
+  "wu_id": "WU-204", "plan_version": "2.1-full-refactor-execution-cards",
+  "owner": "company-wiki source_bundle/artifact_handle contract",
+  "reviewer": "pending", "status": "implemented → pending review",
+  "baseline_commit": {"revenue": "20a6b33", "filing": "8714a66", "wiki": "111f214"},
+  "allowed_files": ["audit_review/2026-08-09_data_lake_refactor_plan/**"],
+  "actual_changed_files": ["tools/artifact_dag.py", "tools/tests/test_artifact_dag.py (11 tests)", "adr/WU-204-bundle-dag.md", "receipts/WU-204.json"],
+  "red_test_ids": ["test_b01_original_hash_change_invalidates_all", "test_b02_summary_producer_change_recomputes_summary_and_downstream_only", "test_b03_parser_change_invalidates_md_and_downstream", "test_b05_input_hash_mismatch_not_reused", "test_b06_retired_filing_rejects_all_artifacts", "test_b08_unknown_schema_fails_closed", "test_b09_snapshot_mismatch_stale_bundle"],
+  "focused_commands": ["python -m pytest tools/tests/test_artifact_dag.py -q（11 passed）"],
+  "mutation_proof": [{"mutation_id": "M-DAG", "description": "忽略 producer version（DAG 边缺失）", "expected_failure_test": "test_b02 summary 下游不失效", "observed_failure": "consumer_analysis 未进重算集", "revert_proof": "DAG 常量恢复"}, {"mutation_id": "M-SEL", "description": "忽略 input hash 校验", "expected_failure_test": "test_b05 summary 被复用", "observed_failure": "tampered artifact 被选", "revert_proof": "校验恢复"}],
+  "network_calls": 0, "download_calls": 0, "parser_calls": 0, "llm_calls": 0,
+  "external_write_calls": 0, "canonical_write_calls": 0,
+  "reviewer_findings": [], "admission_decision": "pending"
+}

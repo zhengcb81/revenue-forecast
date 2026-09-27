@@ -1,0 +1,231 @@
+{
+  "schema": "i11c_handoff/1",
+  "card": "I-11-C",
+  "card_id": "I-11-C",
+  "attempt": "execution_runs/I-11-C/a20260926-01",
+  "attempt_id": "a20260926-01",
+  "role": "implementer_i11c",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "objective": "校准后参数映射：消费 I-11-B/a20260926-01（review_pending）交付物——动作1 逐槽位核对幅度/单位/起止年份/转换公式可执行性；动作2 low/base/high+dependency_control 参数映射表；动作3 每行来源+依据（文件+行号）；动作4 红绿双向变异 ≥3 + STOP 核验",
+  "authorized_by": {
+    "dispatch": "编排层（父 agent session-19074bf0-0205-4315-af73-9db57597275a）本轮派单：工位 I-11-C「校准后参数映射」实现者；依赖 I-11-B（已交付 review_pending）；产出目录 execution_runs\\I-11-C\\a20260926-01（新建）；四件产出 oracle.md/parameter_mapping.json/mapping_verification.json/handoff.json；§三十四 L779『I-11-C 按卡文依赖顺序（I-11-C ← I-11-B）另派，不在本节一并授权』——本轮派单即该『另派』的行使",
+    "owner_decision_verbatim": "OWNER_DECISIONS.md §三十四（L745-L780，2026-09-26 15:4x）：L754 owner 选择「A」；L757「改判 I-11-B 的开工门槛 —— 以 MERGE 七条当前 5✅ + 2❌ 现状开工；i11b_unblocked 的语义从『7/7 才开』改为『owner 明文许可开工』」；L758「C3/C5 的残余不丢、不隐藏 —— 列为 I-11-B 开工后的并行欠账，每项在卡内载体以 expert_assumption 或 unverified 形式登记」；L761-L766 硬约束（oracle 先冻结／不放行任何参数／不触发任何 falsifier/自动动作（ACCT L230+IND L299）／实现者不自签·独立复审·落定走三件套／每条 expert_assumption 必须给敏感性区间 + equivalent_to_disclosure_basis=false）——本站延续适用",
+    "card_face_L5_verbatim": "Parent：I-11；状态：planned；Owner：未参与参数设定的独立研究reviewer；依赖：I-11-B。",
+    "card_role_boundary": "派单明示：本工位=映射实现者，独立复审另派。卡文 L13-L16（可证伪替代解释/falsifier/四失败/版本触发）为 reviewer 面动作，本站不执行（unverified-D1 登记于 parameter_mapping.json 与 oracle.md §1.2）",
+    "prerequisites_verified": {
+      "I-11-B": "execution_runs/I-11-B/a20260926-01/ 7 文件在位；handoff.json status=review_pending、expert_assumptions_count=7、params_released=false、18 槽位（14 proposed + 4 declined）、严格读法之争已登记（revert_or_stop.json L13-L17）；四件输入 sha256 见 input_hashes"
+    }
+  },
+  "gate0_passed": true,
+  "gate0_raw_output": "=== GATE0 BEGIN (I-11-C/a20260926-01) ===\ncwd=C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-11-C\\a20260926-01\n--- step0 mkdir ---\ndir_exists=True\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\nreadback=gate0 probe I-11-C a20260926-01 write-readback-delete 2026-09-26T18:00:38.6545155+01:00\n--- step3 delete ---\ndeleted_gone=True\nprobe_ts=2026-09-26T18:00:38.6545155+01:00\n=== GATE0 END ===",
+  "gate0_note": "写+回读+删除三步均本会话自探（18:00:38+01:00）；零提权、零破坏性替代；探针已删未留残件",
+  "completed_steps": [
+    "回源：card_I-11-C.md 全卡 25 行 + OWNER_DECISIONS §三十四 L745-L780 + I-11-B 四件（calibration_plan/expert_assumptions/synthetic_mechanism_check/oracle）+ revert_or_stop + verify_plan.py + store hypotheses_v3 + 协议（review_and_handoff.md/common_research_cards.md/hypotheses_h4_v1.json 形态先例）",
+    "门 0 自探留档（oracle.md §0）",
+    "oracle.md 先冻结（授权逐字 + C3/C5 残余 9 项逐条 unverified + EA 模板 + P1-P8 预期 + M1-M5 变异清单 + STOP 判据）",
+    "动作1：_recompute_action1.py 精确有理数复算——18 槽位 13 可执行 / 5 不可执行；P2（分母 2880807≠885141）与 P3（EA-4 注记区间不符）两处发现按预期坐实（unverified-N2/N3）",
+    "动作2+3：parameter_mapping.json 18 行（_build_mapping.py 机械转录 CP 原值 + 行号自动定位），13 行 mapped_not_released、5 行零传播",
+    "动作4：verify_mapping.py（J1-J4）绿证 + M1-M5 红绿变异（副本，原件字节不动）",
+    "git 只读 diff 计数：total=3830 全在 .planning，non_planning=0；禁 git status 未跑、无 git 写"
+  ],
+  "next_step_number": 8,
+  "next_action": "编排层另派 I-11-C 独立复审（非本实现者，卡文 L5 Owner 面）：审 parameter_mapping.json 18 行 + unverified-N1（AR p327/p328 回源）+ unverified-N2（REALIZED_UNIT 分母算术更正/权威推导，会计面）+ unverified-N3（EA-4 注记核对）+ 严格读法之争裁定（继承 I-11-B revert_or_stop.json L13-L17）→ 落定走三件套（review.md + qualification.json + handoff.json）；I-07-E 按依赖顺序另派，不在本卡",
+  "input_hashes": {
+    "algorithm": "sha256",
+    "I-11-B/calibration_plan.json": "e86b41355c1ba7c5e90fe11c763c1966939621d38f0597dc4a4bfa0d73090e1c (32665 B)",
+    "I-11-B/expert_assumptions.json": "9f8b844e342ec17e731cbe4554388005f5070e0c586de329782df86ee3abd79f (8580 B)",
+    "I-11-B/synthetic_mechanism_check.json": "89f4bafda23d520c5451d8b77356816559ad8bbea4574bf335b98d96a2f6edf1 (8035 B)",
+    "I-11-B/revert_or_stop.json": "9d5e05f1ac3748aad053cb2733fa7797dc7560b91d49e5d48a223dc06014b7c7 (4367 B)",
+    "OPEN2-C2-REGISTRATION/hypotheses_v3.json": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff (61231 B；== I-11-B handoff 所记 b2063ac8533a96ba)",
+    "execution_v2/card_I-11-C.md": "b7812e38e425dd00d93b41fe994ab7ab84723081b093e191946a80222f351a7a (1433 B)",
+    "execution_v2/card_I-11-B.md": "38ff2907acb627f3d5f6a97ca386a17551329ad3909720e84463a185154ae87c (1672 B)",
+    "OWNER_DECISIONS.md": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d (109029 B)"
+  },
+  "current_source_hashes_note": "见 written_files_hashes（本 handoff 与 mapping_verification.json 自身除外）；一致性由接手者按 review_and_handoff.md 先重验",
+  "changed_paths": [
+    "execution_runs/I-11-C/a20260926-01/oracle.md",
+    "execution_runs/I-11-C/a20260926-01/parameter_mapping.json",
+    "execution_runs/I-11-C/a20260926-01/mapping_verification.json",
+    "execution_runs/I-11-C/a20260926-01/verify_mapping.py",
+    "execution_runs/I-11-C/a20260926-01/_recompute_action1.py",
+    "execution_runs/I-11-C/a20260926-01/_build_mapping.py",
+    "execution_runs/I-11-C/a20260926-01/_mut/（5 个变异副本；原件字节未动）"
+  ],
+  "commands_executed": [
+    "pwsh: New-Item/Set-Content/Get-Content/Remove-Item（门 0 三步）",
+    "python _recompute_action1.py（动作1 精确复算；exit=0，DISCREPANCY 行=P2/P3 探针）",
+    "python _build_mapping.py（映射表机械构建；exit=0）",
+    "python verify_mapping.py（绿证 rc=0 / 红变异 rc=1×5）",
+    "git -c core.quotepath=false diff HEAD --name-only（只读计数）",
+    "Get-FileHash -Algorithm SHA256（输入指纹）"
+  ],
+  "raw_exit_codes": {
+    "gate0": 0,
+    "recompute_action1": 0,
+    "build_mapping": 0,
+    "verify_green": 0,
+    "mutations_M1_M2_M3_M4_M5": "见 mutation_rc（各=1，违例具名）",
+    "git_diff_readonly": 0
+  },
+  "expected_exit_codes": {
+    "gate0": 0,
+    "recompute_action1": 0,
+    "build_mapping": 0,
+    "verify_green": 0,
+    "mutations": "各=1（红）"
+  },
+  "mapping_count": 18,
+  "from_expert_assumption": 17,
+  "mapping_counts_detail": {
+    "rows_total": 18,
+    "rows_mapped_with_values": 13,
+    "rows_unmapped_no_propagation": 5,
+    "from_expert_assumption": 17,
+    "contract_arithmetic_only": 1,
+    "note": "17/18 行的带/基线/拒绝处置经 EA-1…EA-7 承接；唯一例外=ZIJIN_SEGMENT_RECONCILIATION（纯 contract arithmetic 恒等式，ea_refs=[]，CP L178）"
+  },
+  "four_actions_done": {
+    "action_1": "18 槽位逐条：13 executable（SEG×4/VOL×4/PLAN×1/RECON×1/MSFT×3）、5 not_executable（REALIZED_UNIT 公式分母不自洽 unverified-N2；COPPER/GOLD_REALIZED 与 MSFT_CLOUD/LICENSING 数据不足）；每条给出缺什么",
+    "action_2": "参数映射表 18 行（low/base/high+单位+起止年份+原值→新值+转换公式+联动约束），5 槽位零传播（new_value 全 null）；合成示例数字零复制（J2 机检通过）",
+    "action_3": "每行 source.primary（contract arithmetic/historical relationship/expert_assumption）+ ea_refs + basis 文件+行号（CP 行距/EAF EA 行距/ST 参数行/_recompute 输出，由 _build_mapping.py 扫描源文件自动定位）",
+    "action_4": "红绿双向变异 M1-M5（红 rc=1×5 具名违例，绿 rc=0）+ STOP 核验：槽位级 STOP 5 行（数据不足/公式不可执行 ⇒ 无数字）；卡级操作读法不触发、严格读法之争继承登记交独立复审"
+  },
+  "unverified_findings_registered": [
+    {
+      "id": "unverified-N1",
+      "summary": "store H-01 original_value 349,079,082,852 与分部语义张力（继承 I-11-B）",
+      "registration": "unverified"
+    },
+    {
+      "id": "unverified-N2",
+      "summary": "本站新发现：REALIZED_UNIT 转换公式分母不自洽（884943+83161×24=2880807≠885141；商差 3.26 倍；敏感性对内部矛盾）——proposed 值 118036.2/124248.63/130461.06 在更正前不得传播",
+      "registration": "unverified"
+    },
+    {
+      "id": "unverified-N3",
+      "summary": "本站新发现：EA-4 band_rationale 合计区间注记 [320763,348432] 与自身带换算（≈[375283,414787]）不符——注记层，不影响 new_value 算术",
+      "registration": "unverified"
+    },
+    {
+      "id": "unverified-D1",
+      "summary": "派单标题与卡文标题不同名（映射实现者站 vs 独立复审站拆分）",
+      "registration": "erratum_recorded"
+    }
+  ],
+  "c3_c5_residuals": [
+    {
+      "id": "C3-①",
+      "item": "origin 字节（62,953 B 已落；E1=BLOCKED-PARTIAL）",
+      "registration": "resolved",
+      "detail": "字节层✅ ≠ E1 解锁；OPEN3-E1-ORIGIN-BYTES-R2"
+    },
+    {
+      "id": "C3-②",
+      "item": "B2 晋升（父证已完成；本站无产品仓读面）",
+      "registration": "unverified",
+      "detail": "I-11-B 记 verified_by_parent，本站从严降记 unverified（父证转录，不自证）"
+    },
+    {
+      "id": "C3-③",
+      "item": "ACCT-R2 定级（RULED≠通过；E1=BLOCKED-PARTIAL/S1/4 语料降 E3）",
+      "registration": "unverified",
+      "detail": "等级即 fail-closed 结果"
+    },
+    {
+      "id": "C3-④",
+      "item": "IND-r2 在跑未归（目录空）",
+      "registration": "unverified",
+      "detail": "OPEN-3-IND-R2/a20260926-01 零文件"
+    },
+    {
+      "id": "C3-⑤",
+      "item": "MSFT 六参数/新两分部参数/HK 参数",
+      "registration": "unverified",
+      "detail": "维持不放行（OPEN-3/OPEN-5；I11A-OPEN-MERGE 两半裁定）"
+    },
+    {
+      "id": "C5-①",
+      "item": "6c threshold_review_status",
+      "registration": "unverified",
+      "detail": "accepted_scoped 带 2×P2+3×P3，非 clean accept"
+    },
+    {
+      "id": "C5-②",
+      "item": "H4 口径桥（残差 269 吨/534 千克；§三十六 追加修订后 Q2 须重跑，会签未成）",
+      "registration": "unverified",
+      "detail": "OPEN6H4-IND-COUNTERSIGN + §三十六 L820-L848；修订授权≠会签完成"
+    },
+    {
+      "id": "C5-③",
+      "item": "6b 恒等式容差（路径(c) unquantified；R2 NOT_SIGNED；归 ruling_6b L110 另判）",
+      "registration": "unverified",
+      "detail": "OPEN6B-TOLERANCE-RULING/a20260926-01/ruling_6b.md L110"
+    },
+    {
+      "id": "C5-④",
+      "item": "H2 基准（A-6.3 全套 0/3，still_blocked）",
+      "registration": "unverified",
+      "detail": "OPEN6H2-ACCT-SIGNOFF/a20260926-01"
+    }
+  ],
+  "residual_red_line": "以上 9 项在本站任何载体不写成已解；expert_assumption 只承接校准幅度判断，不冲销任何 BLOCKED（§三十四 L758 + fail-closed）",
+  "stop_calibration_triggered": false,
+  "stop_scenario_triggered": false,
+  "stop_note": "槽位级 STOP 已生效于 5 个不可执行槽位（零传播）；卡级：操作读法（从严触发式）不触发——本站传播的每个幅度皆可溯源或经 EA+区间承接；字面严格读法（存在 not_executable 槽位即整卡 blocked）原样继承 I-11-B revert_or_stop.json L13-L17 登记与升级路径，交独立复审裁定；若采严格读法 ⇒ 本卡连同 I-11-B 转 blocked，回滚=作废本表 mapped_not_released 行（零封盘改动、store 零改动）",
+  "params_released": false,
+  "params_released_detail": "store 侧 low/base/high 全 null（J3 机检）、两个 _PLACEHOLDER 维持、released=false；hypotheses*.json/model_cards* 零写入（只读）；本站未产生 hypotheses 新版本（无需 supersedes 形态；hypotheses_h4_v1.json 形态先例仅参照）；本表数值不写进任何 released 字段",
+  "mutation_rc": {
+    "M1_red": 1,
+    "M2_red": 1,
+    "M3_red": 1,
+    "M4_red": 1,
+    "M5_red": 1,
+    "green": 0,
+    "note": "verify_mapping.py：green=ALL_INVARIANTS_OK(rc=0)；5 红均 rc=1 且违例具名（J1/J2/J1/J2/J4）；变异副本在 _mut/，原件字节未动"
+  },
+  "falsifiers_triggered": 0,
+  "auto_actions_triggered": 0,
+  "status": "review_pending",
+  "implementer_signed": false,
+  "releases_nothing": true,
+  "releases_nothing_detail": "不产生 ACCEPT · 不放行任何参数 · 不触发任何 falsifier/自动动作（ACCT L230 + IND L299）· 不解 OPEN-2/3/5/6、不解任何 BLOCKED-* · 不代签行业/会计/外部面 · 不改封盘任一字节 · 不派 I-07-E · 不写 evidence/I-11-C/*（reviewer 写入面）· 不写五份计划文件",
+  "written_files": [
+    "execution_runs/I-11-C/a20260926-01/oracle.md",
+    "execution_runs/I-11-C/a20260926-01/parameter_mapping.json",
+    "execution_runs/I-11-C/a20260926-01/mapping_verification.json",
+    "execution_runs/I-11-C/a20260926-01/verify_mapping.py",
+    "execution_runs/I-11-C/a20260926-01/_recompute_action1.py",
+    "execution_runs/I-11-C/a20260926-01/_build_mapping.py",
+    "execution_runs/I-11-C/a20260926-01/_mut/{m1_released,m2_synthetic,m3_params_released,m4_ea_missing_interval,m5_residual_resolved}.json（变异副本）",
+    "execution_runs/I-11-C/a20260926-01/handoff.json"
+  ],
+  "write_surface": "仅 execution_runs/I-11-C/a20260926-01/",
+  "git_writes_performed": false,
+  "git_status_run": false,
+  "network_requests_made": 0,
+  "git_diff_non_planning": 0,
+  "git_diff_non_planning_measured": "git -c core.quotepath=false diff HEAD --name-only → total=3830（历史/并发写入方均在 .planning 内），non_planning=0；只读，禁 git status 未跑",
+  "file_format": "UTF-8（JSON 写后经 verify_mapping.py / json.load 重解析校验）",
+  "open_questions": [
+    "unverified-N2：REALIZED_UNIT 分母 885141 的权威推导或算术更正（须 CN-ZIJIN-AR2025 回源，会计/行业面）",
+    "unverified-N1：AR p327/p328 分部对外收入行回源核对（独立复审）",
+    "unverified-N3：EA-4 band_rationale 合计区间注记来源核对（独立复审）",
+    "严格读法之争：not_executable 槽位存在 ⇒ 整卡 blocked 与否（独立复审裁定，继承 I-11-B）",
+    "unverified-D1：I-11-C 两站拆分（映射实现者/独立复审）确权归编排层"
+  ],
+  "blocked_by": [
+    "OPEN-2（矿产品量价口径/系数未解；REALIZED_UNIT 与两分金属实现价槽位）",
+    "OPEN-3（MSFT 口径未放行；CLOUD/LICENSING 槽位）",
+    "BLOCKED-6b/OPEN-11（库存桥 154 千克未签——量恒等式约束未闭合，登记不阻断映射算术）",
+    "（以上为登记性 blocked_by，非本卡新增阻塞；本卡自身 status=review_pending 待独立复审）"
+  ],
+  "evidence_paths": [
+    "execution_runs/I-11-C/a20260926-01/oracle.md",
+    "execution_runs/I-11-C/a20260926-01/parameter_mapping.json",
+    "execution_runs/I-11-C/a20260926-01/mapping_verification.json",
+    "execution_runs/I-11-B/a20260926-01/calibration_plan.json",
+    "execution_runs/I-11-B/a20260926-01/expert_assumptions.json",
+    "execution_runs/I-11-B/a20260926-01/synthetic_mechanism_check.json"
+  ],
+  "reviewer_status": "pending（独立复审未派；卡文 L5 Owner 面；三件套落定归复审+有权方）"
+}

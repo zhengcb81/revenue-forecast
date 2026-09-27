@@ -1,0 +1,73 @@
+{
+  "schema": "i13bc_verification/1",
+  "card": "I-13-BC",
+  "attempt": "execution_runs/I-13-BC/a20260926-01",
+  "role": "implementer_i13bc",
+  "status": "review_pending",
+  "verifier": "_verify_i13bc.py（python 3.13，只读校验；exit code legend 冻结于 oracle §6）",
+  "exit_code_legend": {
+    "0": "ALL_INVARIANTS_OK",
+    "1": "harness 失败（文件缺失/JSON 不可解析）",
+    "2": "本校验器不产生",
+    "3": "不变量违例（具名 J1..J6）"
+  },
+  "invariants": {
+    "J1": "release/authority lock：handoff 八项（params_released=false / implementer_signed=false / releases_nothing=true / status=review_pending / gate0_passed=true / git_diff_non_planning=0 / open2_ban_observed=true / role=implementer_i13bc）+ final_scorecard deployment_usable=false + classification != buy_side_review_ready",
+    "J2": "三栏独立（一栏 PASS 盖另一栏 = 红）：per_model_columns ≥8 行、三栏非空、accuracy 全部=unproven、无 pass-like row_status、不授予/缺位行不得被公式栏顶替",
+    "J3": "open2 红线禁消费：消费主张标记（BAN_TOKEN，字面见 _verify_i13bc.py）零出现；红线族数字仅 registered_not_consumed 语境；params_released=false",
+    "J4": "阶段 B 完整 + 零编造：五问 Q1..Q5 齐（answer/answerability/evidence）、Q3=not_answerable 且交互项分配=none、consensus/market-implied 数字=0 且明写 unavailable、情景≠概率、产量/销量与总/净额 never_mixed、缺口逐条 not_fabricated",
+    "J5": "分类机械一致：classification == 由（established 硬阻断、zeros、存在 1）机械推导的标签；三资格状态分列互不替代、accuracy=unproven；ready 禁令 applied；无 host_receipt 补写",
+    "J6": "上游 sha：upstream_inputs 逐件复算 == 记录值（含封盘 f2178768… 与 store b2063ac8…）"
+  },
+  "upstream_inputs": [
+    {"path": "execution_v2/card_I-13-BC.md", "bytes": 2528, "sha256": "56d1dad542ca17d13cc820272f3d1717423cde5ef0e5759bf5761fe9b8d96a39"},
+    {"path": "execution_v2/card_I-13-B.md", "bytes": 1668, "sha256": "bd5abc554a230b9c8e6014f28bb444ce8fce290c8dfabad5d424363cd0a69b1d"},
+    {"path": "execution_v2/card_I-13-C.md", "bytes": 1448, "sha256": "575393ab353a2656e930c2e0b0afb801e0bbd4642fa404b2dce409e9ff8611e6"},
+    {"path": "execution_runs/I-13-A/a20260926-01/handoff.json", "bytes": 18472, "sha256": "0b466621ff964c8e3347cc96033bf7abd1f800eaf9eda75c3555209ac60a2f97"},
+    {"path": "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/buy_side_scorecard.json", "bytes": 15169, "sha256": "e74631c72b077a08fe4017fe7fee604923e4095b1c09e60f91128c69a08b290f"},
+    {"path": "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/blocking_issues.json", "bytes": 12694, "sha256": "c9c6030c7bde35e93b4d54279d0660c31a4bc88ba84491f29db15df3ce9b667e"},
+    {"path": "execution_runs/I-13-A/a20260926-01/reviewer_report.md", "bytes": 14143, "sha256": "7f0c379c61c75de131c4b87b8fe58f285fb64aafef33f37cba85ac40ccf75d62"},
+    {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "bytes": 26132, "sha256": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb"},
+    {"path": "execution_runs/I-11-C/a20260926-01/parameter_mapping.json", "bytes": 54875, "sha256": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c"},
+    {"path": "OWNER_DECISIONS.md", "bytes": 109029, "sha256": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json", "bytes": 61231, "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "note": "store，只读零改动"},
+    {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "bytes": 51697, "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "note": "封盘，只读零字节"},
+    {"path": "execution_v2/common_research_cards.md", "bytes": 14736, "sha256": "2c6fad2cfba4e096b0f6ed5436158666fdd51265fbc87ad65227f943f27f484b", "note": "定域取尺 L291-L312/L11/L156-L163"},
+    {"path": "execution_v2/research_cards.md", "bytes": 31387, "sha256": "5e1e2ffec554b05a27748f0ae3e20ad01fc7dc957555022b83bad2a44d0413fb", "note": "定域消歧 L1-L60/L521-600"}
+  ],
+  "structure_probes": {
+    "final_scorecard_classification": "research_draft_needs_review",
+    "per_model_rows": 14,
+    "accuracy_column_unproven_count": 14,
+    "rows_claiming_formal_delivery": 0,
+    "qualification_statuses_distinct": ["research_draft_needs_review", "False", "unproven"],
+    "five_questions_ids": ["Q1", "Q2", "Q3", "Q4", "Q5"],
+    "answers_tally": {"answerable": 2, "partial": 2, "not_answerable": 1},
+    "consensus_numbers_count": 0,
+    "market_implied_numbers_count": 0,
+    "interaction_allocation": "none",
+    "numeric_contribution_shares_count": 0,
+    "probability_claims_count": 0,
+    "gap_routing_count": 8,
+    "handoff_flags": "params_released=false / implementer_signed=false / releases_nothing=true / status=review_pending / gate0_passed=true / open2_ban_observed=true",
+    "red_line_banned_token_scan": "红线族数字出现行均带 registered_not_consumed/只登记/禁消费/存档/红线 语境标记（J3 逐行扫）",
+    "consumption_claim_marker_count": 0
+  },
+  "mutation_plan": {
+    "note": "变异在 _mut/Mx 副本上执行，原件字节不动（before/after sha 比对）；期望值冻结于 oracle §6，事后不得改写",
+    "arms": [
+      {"id": "GREEN", "what": "原件五件 + 上游 14 件", "expected_rc": 0},
+      {"id": "M1_one_column_masking", "what": "MS-PBP-M05 disclosure not_granted→granted + row_status→pass（一栏 PASS 盖另一栏）", "expected_rc": 3, "expected_violation": "J2"},
+      {"id": "M2_accuracy_overclaim", "what": "ZJ-SMT-M09 accuracy unproven→verified（禁改写为已验证预测）", "expected_rc": 3, "expected_violation": "J2"},
+      {"id": "M3_ready_escalation", "what": "classification→buy_side_review_ready + deployment_usable→true", "expected_rc": 3, "expected_violation": "J5(,J1)"},
+      {"id": "M4_redline_consumption", "what": "handoff params_released→true + 消费主张标记注入", "expected_rc": 3, "expected_violation": "J1(,J3)"},
+      {"id": "M5_fabricated_numbers", "what": "consensus 数字 + Q3 驱动贡献份额数字编造", "expected_rc": 3, "expected_violation": "J4"},
+      {"id": "M6_scenario_as_probability", "what": "情景带改标概率 + 产量/销量 never_mixed→false", "expected_rc": 3, "expected_violation": "J4"},
+      {"id": "GREEN_AFTER_MUTATIONS", "what": "原件复跑（证明未被红臂污染）", "expected_rc": 0}
+    ]
+  },
+  "expected_exit_codes": {"GREEN": 0, "M1": 3, "M2": 3, "M3": 3, "M4": 3, "M5": 3, "M6": 3, "GREEN_AFTER_MUTATIONS": 0, "GREEN_FINAL_post_finalization": 0},
+  "results": "PENDING_RUN（本字段于红绿臂执行后填写；不变量字段与其后定稿逐字一致，GREEN_FINAL 复证）",
+  "originals_untouched": "PENDING_RUN",
+  "finalization_note": "定稿只填 results/run_log（不变量判据字段零改动）；GREEN_FINAL 于定稿后复跑一次。"
+}

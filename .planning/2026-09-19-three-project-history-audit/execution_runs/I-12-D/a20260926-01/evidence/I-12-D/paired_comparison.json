@@ -1,0 +1,41 @@
+{
+  "schema": "i12d_paired_comparison/1",
+  "card": "I-12-D",
+  "attempt": "execution_runs/I-12-D/a20260926-01",
+  "role": "implementer_i12d",
+  "pairing_rule": "成对同样本：模型 vs baseline 在完全相同的 entity×segment×origin×horizon 观测集上比较（同缺失集）；设计字段 11 structure_frozen",
+  "cluster_unit": "entity",
+  "block_unit": "origin",
+  "time_dependence_rule": "时间相关性按 origin 分块重抽样处理，不假设观测独立（同上；本 attempt 未执行重抽样——无观测且方法未批准）",
+  "n_pairs": 0,
+  "n_companies": {
+    "A": 1,
+    "US": 1,
+    "H": 0
+  },
+  "n_origins": {
+    "2026-03-20": 1,
+    "2026-07-29": 1
+  },
+  "paired_differences": [],
+  "skill_vs_baseline": {
+    "value": null,
+    "defined": false,
+    "reason": "no_scorable_samples"
+  },
+  "state": "blocked_no_scorable_samples",
+  "uncertainty_interval": null,
+  "interval_method_not_approved": true,
+  "interval_method_pending_items": [
+    "confidence_level（CI 水平/α）— PENDING/unsigned（设计字段 11）",
+    "bootstrap_or_resample_repetitions — PENDING/unsigned",
+    "random_seed — PENDING/unsigned",
+    "multiplicity_correction — PENDING/unsigned（候选 Holm FWER / BH FDR，由统计 reviewer 定）",
+    "最小样本量/功效/可接受 CI 宽度 — PENDING（设计字段 10）"
+  ],
+  "why_no_interval": "卡文动作 3 要求「按已批准方法」；当前无任何已批准的区间方法（阈值 unsigned）⇒ 不算区间、不猜种子、不挑方法",
+  "cluster_block_repeated_years_rule": "重复年度不是独立公司 ⇒ 以 entity 为 cluster、origin 为 block（已在结构层冻结；本 attempt 无观测可聚）",
+  "significance_claimed": false,
+  "negative_skill_preserved_rule": "负 skill 不得删除（设计字段 1 / metric_definitions）；本 attempt 无 skill 可删",
+  "state_reason": "上游 forecast_values_frozen=0 且 scorable_samples=0"
+}

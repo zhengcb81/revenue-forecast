@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d4f4dc288fe6a0c8aa870dd6e849058fbb0887e3",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1008* + grep cutover/journey/SLO/side effects/rollback 组合",
+      "exit_code": 0,
+      "result": "G1~G2 缺口确认（无 zr1008 套件；ZR-701/705/709 分项存在但无 cutover 综合验收）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1008_new_chain_cutover.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "10 passed in 1.22s (C1 journey draft+formal+replay; C2 draft/formal separation; C3 SLO; C4 side effects exact count; C5 rollback/observation stability)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr701_f1_draft_formal.py tests/test_zr705_draft_formal_swap.py tests/test_zr709_zijin_journey.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "24 passed in 7.42s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_zr1008_new_chain_cutover.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (1 auto-fixed, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "36103cf test(ZR-1008) — 1 file +225"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "918 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T13:30:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: draft renders (markdown>500, formal_output_mode=draft, registry absent); formal registers exactly 1 entry bound to input_sha256/result_sha256; replay == formal with same result_sha256; snapshot round-trip same id. C2: draft receipt gate_ids=[]; draft flip to formal rejected; formal gate_ids non-empty + attestation in {host_signed, unattested}; formal downgrade to draft rejected; build_publication_receipt without VerificationContext raises TypeError. C3: journey draft+formal+replay < 60s SLO. C4: draft zero side effects (no registry, no stray files); formal exactly +1 entry (result_sha256 match, validation_status=validated). C5: rollback (clear read-only then remove entry) restores pre-cutover registry; same input in observation window replays identical result_sha256 (zero drift) and re-registers cleanly; 3 observation cycles bit-identical with 3 auditable entries.",
+      "id": "ZR1008-IMPL-001",
+      "severity": "info",
+      "title": "source/revenue 新链 cohort cutover 验收（旅程/draft-formal/SLO/side effects/rollback）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr1008_new_chain_cutover.py（10 tests）：C1 完整用户旅程（draft 渲染零写 → formal 恰好 1 条 → replay bit 一致 + snapshot 往返）；C2 draft/formal 分离（flip/downgrade/自签全部拒绝）；C3 冻结 SLO 预算；C4 side effects 精确计数；C5 rollback 恢复 + 观察期零漂移 + 3 周期可审计。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr1008_new_chain_cutover.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1008/**"
+    ]
+  },
+  "implementer": "zr1008-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 36103cf（revenue HEAD = ZR-1008 实现 commit，parent d4f4dc2）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实生产 cutover（新链替换生产预测）为部署动作，不在本卡（C5 证明观察期可回滚零漂移）。"
+  ],
+  "objective": "阶段 I 第八卡：source/revenue 新链 cohort cutover（用户旅程、draft/formal、SLO、side effects、rollback；观察期）",
+  "plan_sha256": "dbad8263ee68b2e84f4003cee07c42bef69594d66412a00ed9dce4976d4838aa",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "36103cfa74074ef06a760aad1fabf7c7475bcb8c",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr1008_new_chain_cutover.py (new 10 tests)；assurance/unified_completion/receipts/ZR-1008/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1008_new_chain_cutover.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1008/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1008",
+  "canonical_hash": "44c9ca3d28fce980fe6d9a23b6162426a85751704a1f3ccf9927f74e088d6065"
+}

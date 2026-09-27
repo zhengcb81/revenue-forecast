@@ -1,0 +1,68 @@
+{
+ "unit": "CA-305",
+ "reviewer": "reviewer-ca305-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "bb1264351fa232742f64da4fd6a8e5c94d27b9a5e17cfeffc511ea24fb66a561",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca305_six_problems.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "7 passed in 0.26s (C1 six questions; C2 evidence mapping; C3 scenarios; C4 triplet binding; C5 reviewer presence; C6 per-problem)"
+  },
+  {
+   "command": "independent probes: frozen source §6 enumeration; 25 evidence units accepted + receipts; ZR-904 delta semantics",
+   "exit_code": 0,
+   "result": "§6 lines 122-131 exactly 6 questions matching SIX_QUESTIONS; all 25 evidence units accepted with reviewer/closure.by; ZR-1004/CA-302/ZR-1008 12 receipts accepted; ZR-904 12=changes_required + 13_delta=accepted (delta holds)"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD~1..HEAD + triplet objects",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=1f39a7b parent=cc1b4bf matches; commit only tests/test_ca305_six_problems.py +215; base/result delta only revenue (filing/wiki real objects)"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "canonical bb126435 matches; base/result delta correct"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "cc1b4bfddc0a231951d9a27396578bac2d0defed",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "1f39a7b580a844e439f489f760f6b7344a87a48c",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA305-REV-001",
+   "severity": "info",
+   "title": "工作树 state.json 有未提交改动（CA-305=triplet_green）",
+   "detail": "不影响 C1-C6（测试只读 evidence units 不含 CA-305 自身）；closure 时提交。"
+  },
+  {
+   "id": "CA305-REV-002",
+   "severity": "info",
+   "title": "C4 对 state.json 仅断言 sha256 长度",
+   "detail": "较弱，但 triplet 40-hex 绑定断言真实。"
+  },
+  {
+   "id": "CA305-REV-003",
+   "severity": "info",
+   "title": "工作树未跟踪杂物（环境遗留）",
+   "detail": ".coverage.*/.tmp-*/.review-zr407-* 非本卡产物。"
+  },
+  {
+   "id": "CA305-REV-004",
+   "severity": "info",
+   "title": "全量 1019+106 未独立复跑（按指示）",
+   "detail": "零产品改动佐证回归风险可忽略。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T18:52:19+00:00",
+ "canonical_hash": "f15deb91ae687ef3ce0bb1fa0add83107ce8794799d21b8796da83d2a64a3147"
+}

@@ -1,0 +1,140 @@
+{
+  "card": "I11A-OPEN12-VALIDATOR-COMPLETENESS",
+  "attempt": "a20260925-01",
+  "generated_by": "carrier-landing bookkeeping pass（本文件 = 落定转录的第三件产物；只搬复审已有裁决与限定，不产生新裁决、不自签）",
+  "pre_create_assertion": "Test-Path <attempt>/evidence/I11A-OPEN12-VALIDATOR-COMPLETENESS/qualification.json = False（目录与文件均本 pass 新建，未覆盖任何既有字节）",
+  "status": "accepted_scoped",
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+  "opens_nothing": true,
+  "formula": "not_applicable_with_reason",
+  "formula_reason": "本卡不是公式卡：其授予面只有「P2-5…P2-9 校验器完备性裁定」与 changes.diff 的证据与判据（复审 §2 六项逐项核验、§3 19 个反例实测、§4 四臂 rc+变异、§5 封盘 103 文件、§6 changes.diff 解剖、§8 I-11-C 的 4 理由 5 前置）。裁决全文未授予任何 revenue 预测公式资格；且复审 §9-③ 逐字认定本卡补丁 G1/G3/G9 是「关键词/字典型有界代理」、「CE 集合不穷尽」，本身不构成完备性证明。故 formula 对本卡不适用（not_applicable_with_reason），判定依据为本卡自己的裁决文本。",
+  "disclosure_adaptation": "unmapped",
+  "disclosure_adaptation_reason": "复审报告未授予任何披露口径映射；其 §12.2 逐字「不解除任何 BLOCKED、不放行任何参数/阈值、不改 threshold_basis」。本 pass 只照原值登记 unmapped，不解释、不推进。",
+  "accuracy": "unproven",
+  "accuracy_reason": "复审报告未对任何预测精度作出结论（其 §12.3 逐字「不重裁实质结论…不重跑 A1–A7、不复核 46 条引用原值」），本卡亦不产生 accuracy 证据；照原值登记 unproven。",
+  "granted_scope": {
+    "statement": "只含本卡「校验器完备性裁定」与 changes.diff 的证据与判据；不含任何解锁、放行、晋升或签收。",
+    "items": [
+      "11 条本卡新反例：红臂 CE-01…CE-11 被原校验器 11/11 放行（rc=0），绿臂 11/11 被拒且 expected_code_seen=true（复审 §3.1/§3.2 逐条实测）",
+      "8 个原变异：红臂 7 拒、第 8 条 REPRO-8（两条同 parameter_id 的相同命题）仍放行；绿臂 8/8 全拒（REPRO-8 → E_DUPLICATE_PARAMETER）（复审 §3.1/§3.2）",
+      "10 条变异达标：M1…M10 逐条删 marker 块后目标翻回放行、others_leaked=[]、rc 逐条 0，合计 10/10 达到冻结预期（复审 §4）",
+      "四臂 rc 全 0：基线 main() / run_cases.py red / run_cases.py green / 补丁版 main()，正例 pass、自有套件 21/21、accepted_by_mistake=0（复审 §4）",
+      "封盘 103 文件 sha 前后 0 差异：hashdiff=0、missing=0、extra(非 venv/pyc)=0（复审 §5）",
+      "changes.diff 判据：12,113 B / 860963d4…、触碰文件 1、OPEN12-G1…G10 marker 10 对齐全、src/ 0、scripts/ 0、patch_open12.py 可逐字节复现（复审 §6）",
+      "I-11-C = not_reusable_as_is 的 4 条理由逐条命中原文 + 5 条前置（先落 G1..G10 并以本卡三份日志为回归基线；扩展而非替换并先冻结 oracle；schema 适配层独立并写 I-11-C 自己的错误码闭集；approved_frozen 身份与 decision_sha256 封缄继续生效、不得互签；不产生 I-11-C 的 ACCEPT、不解锁任何下游卡）（复审 §8，判定「站得住」）",
+      "P2-6 / P2-7 / P2-8 / P2-9 = 已处置（逐条回源），P2-5 = partial；三点偏差全部「如实」（复审 §7/§9）",
+      "发现分级本身：P1 = 0 · P2 = 1 · P3 = 4（复审 §10 L217–L248）"
+    ],
+    "scope_source": "reviewer_report.md（25,046 B / 9dbf6ba9…）§2–§10；本文件只转录，不扩张"
+  },
+  "not_granted": [
+    "OPEN-12 的解除 —— 维持 RULED_WITH_BLOCKED_VALUE（handoff.open12_status 原值未改；复审 §12.2 逐字「不解锁 OPEN-12」）",
+    "任何参数/阈值的放行（含 ±7% 等具体值）",
+    "threshold_basis 的任何改动",
+    "任何 BLOCKED-* 的解除（OPEN-2/3/5/6/11 等）",
+    "I-11-B 的 ACCEPT —— 不产生",
+    "I-11-C 的 ACCEPT —— 不产生；not_reusable_as_is 与 5 条前置只是条件式结论（handoff.i11c_reuse_conclusion.grants_nothing = true）",
+    "任何晋升；changes.diff 不得当作已入库实现（本卡只出 diff、不写真仓；复审 §6「与『只出 diff、不写真仓』一致」）",
+    "产品 src/ 与 scripts/ 的任何改动（diff 内 0 触碰，且本 pass 亦 0 触碰）",
+    "以未采用 11 反例为前提的「完备性证明」—— G1/G3/G9 是有界关键词/字典型代理、CE 集合不穷尽（复审 §9-③ 逐字），本 pass 不把 10/10 变异达标升级为完备性结论",
+    "重裁 I-11-A 已签收（accepted_scoped）的任何内容；不改 I-11-A 任何字节",
+    "实现者签收 —— implementer_signed 维持 false；本 pass 不代签（复审 §12.1「我不写卡状态」，落定由本簿记转录完成，签署面仍是 reviewer_report.md）",
+    "五份计划文件（task_plan.md / findings.md / progress.md / audit_report.md / implementation_plan.md）的任何写入"
+  ],
+  "status_authority": {
+    "carrier": "reviewer_report.md",
+    "path_inside_attempt": "execution_runs/I11A-OPEN12-VALIDATOR-COMPLETENESS/a20260925-01/reviewer_report.md",
+    "carrier_bytes": 25046,
+    "carrier_sha256": "9dbf6ba96b1bd411ac2dbdb184bd60f8ccc297ac4a3172f9ede59c90e5af1f57",
+    "carrier_total_lines": 280,
+    "carrier_encoding": "UTF-8 无 BOM / LF",
+    "carrier_encoding_detail": "UTF-8 without BOM（首 3 字节 23 20 E7 = ASCII '# 独'）、LF-only（CR 字节计数 = 0）、文件以单一 LF 结尾（按 LF 切分得 281 段，末段为空 ⇒ 280 行）",
+    "verdict_word_written_by_reviewer": "ACCEPT",
+    "verdict_line": 3,
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "verdict_line_byte_region_inclusive_0_based": [78, 93],
+    "verdict_text_byte_region_inclusive_0_based": [78, 92],
+    "verdict_text_length": 15,
+    "verdict_line_sha256_including_LF": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4",
+    "verdict_text_sha256": "f422a3f09f3f34867781b3d435ff517074b87f9ef6852bd7732ef50f8b95d1e7",
+    "verdict_line_occurrences": "全文恰 1 处字面「VERDICT: ACCEPT」（L280 只含反引号包裹的 VERDICT 一词与中文释义，不是裁决行）",
+    "counts": "P1 = 0 · P2 = 1 · P3 = 4",
+    "pin_sidecar": {
+      "file": "reviewer_report.sha256",
+      "bytes": 85,
+      "sidecar_sha256": "04bbaae883faaa3a7c2332838edca1bbe8fa6c9dddf65b8aece2c9692c31379c",
+      "content_read_back": "9dbf6ba96b1bd411ac2dbdb184bd60f8ccc297ac4a3172f9ede59c90e5af1f57  reviewer_report.md",
+      "verified": "sidecar 读回 == 本 pass 独立重算 reviewer_report.md == 派单 pin，三方逐字相等；本 pass 对 sidecar 0 字节写入"
+    },
+    "carrier_sha256_verification": "本 pass 只读独立重算 = 派单给定值 = sidecar 内容三方逐字一致（写前复核）",
+    "verdict_line_length_including_LF": 16,
+    "region_definition": "0-based 字节偏移，针对 carrier_sha256 时点的 reviewer_report.md；多行区域含内部 LF、含末行结尾 LF；由本 pass 逐字节定位并复算",
+    "counts_source": "reviewer_report.md §10「发现分级」L217–L248（P1「无」L219；P2「1 项，需更正但不改判」L223 起 P2-1 L225–L234；P3「4 项，建议性」L236 起 P3-1 L238–L239、P3-2 L240–L242、P3-3 L243–L244、P3-4 L245–L247）",
+    "section_byte_regions_0_based_inclusive": {
+      "s10_findings_L217_L248": {"start": 19330, "end_inclusive": 22068, "length": 2739, "sha256": "d7e8e37bc955540c37d7bc289ba3312d3230b0a91a1f67b2564efc56b192bc04"},
+      "P2_1_L225_L234": {"start": 19655, "end_inclusive": 20809, "length": 1155, "sha256": "c9d228fd55ebe023f7c1ddecdfbadd9283c9ee842d6582706b6be451068ff161"},
+      "P3_1_to_P3_4_L238_L247": {"start": 20845, "end_inclusive": 22067, "length": 1223, "sha256": "593a53f5325ca7da869211bde121759527d9697422b36eb0e5224876df8cefbd"},
+      "s11_unverified_items_L253_L265": {"start": 22128, "end_inclusive": 23881, "length": 1754, "sha256": "520f132087e74d25b4ab1a600654109f2f1316319e2bb83e5eacd05dbe672a06"},
+      "s12_boundary_L269_L280": {"start": 23888, "end_inclusive": 25045, "length": 1158, "sha256": "2e3a83f6eac850f74e81a3ea131b9e857cd8f2d238c4efb2d214f580afb9f50f"}
+    },
+    "reviewer": "独立复审，N=1（carrier L5–L7：复审位与被审 reviewer 不是同一人；报告只写复审结论、不写卡状态、不代其落定、不解锁 OPEN-12）。其写入面 = 本 attempt 内 reviewer_report.md + reviewer_report.sha256 两个新建文件，其余字节一律未动（carrier §0 / §12.4）",
+    "status_label_mapping_note": "复审原文写的是词「ACCEPT」（不是状态枚举）；accepted_scoped 是本计划对「带 P1/P2/P3 findings 的 ACCEPT」的 canonical 状态标签，此处只做标签映射，不改变报告任何字节",
+    "mirror_of": "handoff.json status_authority（同一 pass 写入；除本 mirror_of 注记键外与 handoff 逐字段相等，验证见 review.md §8）",
+    "nature": "本状态迁移只是载体裁决的簿记转录：verdict_is_transcribed_not_authored = true；签署面 = reviewer_report.md；落定转录不是实现者自签"
+  },
+  "carried_findings": [
+    {
+      "id": "P2-1",
+      "severity": "P2",
+      "source": "reviewer_report.md L225–L234（report §10）",
+      "verbatim": "- **P2-1｜`ruling.md §⑨.8` 的「全部位于」为假。**\n  原文：「`git ls-files --others` 在 `.planning` 外的 **48 个未跟踪文件全部位于 `.tmp-r41-mutation/`**」。\n  我实测（`git -c core.quotepath=false ls-files --others --exclude-standard`）：`.planning` 外未跟踪 = **48**（**总数命中**），\n  但**仅 45 个在 `.tmp-r41-mutation/`**；另 3 个是 `assurance/unified_completion/manifests/plan_inputs.json.bak`、\n  `h2.log`、`h2.log.err`。\n  **影响评估（故不升 P1）**：① 同段 `git diff HEAD --name-only` 非 `.planning` = **0**（我复算 3,826 行、全在 `.planning`，与裁定**完全一致**），硬闸未破；\n  ② 三个文件**均不可能是本卡产物** —— `plan_inputs.json.bak` 创建于 **2026-09-21 07:09**、\n  `h2.log`/`h2.log.err` 创建于 **2026-09-25 22:01:12**，而本 attempt 目录 **2026-09-25 23:40:15** 才创建（早 1 小时 39 分）；\n  ③ 三者都不在本卡写入面内。\n  ⇒ 这是**边界声明段里一句可证伪的绝对化表述错误**（计数对、位置描述错），应由 owner/后续读者更正，**不改变任何结论**。",
+      "mirror_of": "handoff.json carried_findings[P2-1].verbatim（逐字一致）"
+    },
+    {
+      "id": "P3-1",
+      "severity": "P3",
+      "source": "reviewer_report.md L238–L239（report §10）；同义原句见 §7 末条 L177–L178",
+      "verbatim": "- **P3-1｜P2-7 残留登记缺一环**：未点明 `review.md §5.1` 把 **P1-3 记为「已改」且列了 `binding.json` 为落点**，\n  因此该「已改」记录**本身不完整、须回到 P1-3 关闭**；只写「归 P1-3、仅登记」有被下游读成「P1-3 已闭环」的风险。",
+      "mirror_of": "handoff.json carried_findings[P3-1].verbatim（逐字一致）"
+    },
+    {
+      "id": "P3-2",
+      "severity": "P3",
+      "source": "reviewer_report.md L240–L242（report §10）",
+      "verbatim": "- **P3-2｜计数口径可再进一步**：`C:\\i11a-rv\\reserved_run.py` / `reserved_run2.py` 存在且可跑（见 §9-②），\n  「7/5」可复原为 R1–R7 集合、「8 行/6 接受」为混合集合；真正矛盾只在 `§5.8`/`DEC-14` 的「5 却列 6」。\n  裁定「不为任何一方背书」诚实，但**把三处笼统并列、未指出可复原路径**，取证深度不足。",
+      "mirror_of": "handoff.json carried_findings[P3-2].verbatim（逐字一致；JSON 内反斜杠按规则写作 \\\\，解析后与报告字节相同）"
+    },
+    {
+      "id": "P3-3",
+      "severity": "P3",
+      "source": "reviewer_report.md L243–L244（report §10）",
+      "verbatim": "- **P3-3｜引用路径不精确**：`ruling §④` P2-6 行与 `handoff` 写 `H-CN-ZIJIN-SEG-02.conversion_formula`，\n  实际字段是 **`parameter_mapping.conversion_formula`**（内容已核实存在，仅路径少一层）。",
+      "mirror_of": "handoff.json carried_findings[P3-3].verbatim（逐字一致）"
+    },
+    {
+      "id": "P3-4",
+      "severity": "P3",
+      "source": "reviewer_report.md L245–L247（report §10）",
+      "verbatim": "- **P3-4｜`OWNER_DECISIONS` 行号漂移未提示**：`oracle §1` 绑的是 84,868 B 版本，现文件 90,624 B；\n  `§二十八` 已由 `L578–L591` 漂到 **L617 起**。裁定引行号时**未附「行号对应冻结时点版本」的提示**\n  （sha 已绑定，可复原，故仅 P3）。",
+      "mirror_of": "handoff.json carried_findings[P3-4].verbatim（逐字一致）"
+    }
+  ],
+  "carried_findings_counts": "P1 = 0 · P2 = 1 · P3 = 4",
+  "unverified_carried": "reviewer_report.md §11 全 6 条逐字（见 handoff.unverified 与 review.md §5；本文件不重复展开以免第三份抄本产生漂移）",
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "authority": "裁决由独立复审写入 reviewer_report.md L3（字节区 78–93），经本 carrier-landing 簿记转录落定进 handoff.json 状态面 / review.md / 本文件；三处都只是转录，不代签、不产生新裁决",
+    "this_file_grants_nothing_new": true,
+    "opens_nothing": true,
+    "existing_bytes_written": "0（除 handoff.json 状态面外，本 pass 未改任何既有字节；oracle.md / ruling.md / changes.diff / reviewer_report.md / reviewer_report.sha256 / red/ green/ mut/ logs/ iso* 全部 0 字节改动）",
+    "files_written_by_this_pass": [
+      "handoff.json（仅状态面：status / status_before / status_before_at_card_start / status_transition / status_transition_basis / status_authority / status_history / carried_findings* / reviewer_recommendations / pre_image / verdict_* / opens_nothing / status_surface_note / unverified*）",
+      "review.md（新建）",
+      "evidence/I11A-OPEN12-VALIDATOR-COMPLETENESS/qualification.json（新建，本文件）"
+    ],
+    "git": "未用 git status、无 git 写、未联网、未跑测试；结束前 `git -c core.quotepath=false diff HEAD --name-only` 非 .planning = 0"
+  }
+}

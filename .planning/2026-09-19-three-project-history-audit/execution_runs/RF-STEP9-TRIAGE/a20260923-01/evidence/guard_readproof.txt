@@ -1,0 +1,31 @@
+=== RF-STEP9-TRIAGE #8 guard read-proof (iso clone, 2026-09-23T22:53:58Z) ===
+--- G1 guard implementation locations:
+tests/test_single_owner_guard.py
+--- G2 scripts importing subprocess:
+scripts/filing_fetch_client.py
+scripts/revenue_core.py
+scripts/source_preparation.py
+--- G3 revenue_core x DOWNLOAD_DOMAIN census (empty=clean):
+token=filing hits=0
+token=download hits=0
+token=fetch hits=0
+token=resolve_filing hits=0
+token=acquisitionmanager hits=0
+token=adapterregistry hits=0
+token=dayu hits=0
+token=stock hits=0
+token=dropbox hits=0
+token=curl hits=0
+token=wget hits=0
+token=xlsx hits=0
+--- G4 revenue_core subprocess lines (spawn=non-download):
+scripts/revenue_core.py:12:import subprocess
+scripts/revenue_core.py:223:        completed = subprocess.run(
+scripts/revenue_core.py:230:    except subprocess.TimeoutExpired:
+--- G5 canonical client = thin subprocess CLI client (declared download owner):
+scripts/filing_fetch_client.py:1:"""Thin subprocess client for the standalone filing-fetch skill.
+scripts/filing_fetch_client.py:12:    echo '<request-json>' | python scripts/filing_fetch_client.py [--allow-download]
+scripts/filing_fetch_client.py:208:        cmd.append("--allow-download")
+scripts/filing_fetch_client.py:306:        "--allow-download",
+--- G6 owner ruling file lines (RF production read this session):
+OWNER_DECISIONS.md:473-475 = 二十二、#8 single_owner 守卫 owner 裁定「守卫收窄」2026-09-23 深夜

@@ -1,0 +1,73 @@
+{
+ "unit": "CA-204",
+ "reviewer": "reviewer-ca204-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "7bf984dcaaf7528405310b4ef3b4fb6065ae1bd96715c499d0ebf9fb3285d516",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca204_monthly_generalization.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "8 passed in 0.90s (C1 registry; C2 shadow journey; C3 second miner; C4 non-mining; C5 anchors+zero-hardcode; C6 backtest/confidence)"
+  },
+  {
+   "command": "independent probes: corpus inventory, engine copper 2026 hand-check vs _segment_volume_and_net, git grep 紫金矿业/601899, snapshot replay",
+   "exit_code": 0,
+   "result": "corpus 12 samples (broker 7 incl changjiang, audited 2, all sha256 len 64); engine copper 2026 == per-mine sum 9,961,428.45 exactly (bridge real); git grep scripts/ -> ZERO hits; snapshot same id"
+  },
+  {
+   "command": "pytest adjacent spot check (test_zr609 9 + test_zr713 2 real cases)",
+   "exit_code": 0,
+   "result": "11 passed (ZR-609 full + ZR-713 as_of_cut + saleable decomposition)"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=f6ab43bb parent=71a821b matches; commit only tests/test_ca204_monthly_generalization.py +216"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical 7bf984dc matches; base_triplet (filing 5a1c18f/revenue 71a821b/wiki 35a1103) and result_triplet (revenue f6ab43bb) all real commits; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "71a821b12049c7aa821ee6ce30b3a68b0e7260f2",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "f6ab43bb15af2b729c0eaad501358734d53f43aa",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA204-REV-001",
+   "severity": "minor",
+   "title": "C2/C3 reconcile 断言为自反恒真",
+   "detail": "reconcile_layer(x,x) 未直接断言 mine→segment 勾稽；但独立手算证明 engine copper 2026 == 逐矿汇总 9,961,428.45 完全相等，且依赖卡 ZR-709 J2 已做真对比——底层真实，仅断言强度偏弱。"
+  },
+  {
+   "id": "CA204-REV-002",
+   "severity": "info",
+   "title": "C1 missing-BLOCKED 为恒真集合模拟",
+   "detail": "present=needed[:-1] 模拟缺失未接入真实管线；与卡片模拟语义定位一致。"
+  },
+  {
+   "id": "CA204-REV-003",
+   "severity": "info",
+   "title": "fixture grade 直乘单位约定（差 100 倍）",
+   "detail": "ZR-709 fixture grade=2.8 直乘未 /100；ZR-709 已 accepted 的既定约定，管线自洽，非缺陷。"
+  },
+  {
+   "id": "CA204-REV-004",
+   "severity": "info",
+   "title": "receipts/CA-204/ 未提交 + state.json 修改为 closure 前正常状态",
+   "detail": "对照 CA-203 先例，属 closure commit 统一提交前正常状态。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T16:06:06+00:00",
+ "canonical_hash": "39e186a4f4b7d50582de7cd17a28eb3fee68f4ef4d44fb4afffa43f43cb83f9b"
+}

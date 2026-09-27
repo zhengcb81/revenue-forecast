@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e7eafccfe528a276f7104604068090dbe6cb4d48",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1103* + journey assets review",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 zr1103 套件；CN/HK/US 跨市场在 filing-fetch T3 opt-in）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1103_journey_reverify.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "6 passed in 13.67s (C1 three-root journeys; C2 processed reuse single-flight; C3 CN/HK/US surface; C4 broker/mine chain; C5 Windows Chinese paths)"
+    },
+    {
+      "command": "python -m pytest tests/test_ca302_three_journeys.py tests/test_ca203_weekly_t3.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "16 passed in 51.52s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_zr1103_journey_reverify.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "02d1d97 test(ZR-1103) — 1 file +186"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1048 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T20:05:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: production resolver (read-only) — companies Zijin FY2025 + dayu Genscript 1548 FY2021 REUSED_EXACT; Dropbox StarLake 688031 FY2024 MISSING fail-closed (honest). C2: spy wiki — first authorized fetch=1 bytes>0, second identical request fetch still 1 + bytes unchanged (single-flight reuse). C3: filing-fetch T3 suite covers test_download_cn/hk/us_annual_report + opt-in FILING_FETCH_E2E_DOWNLOAD. C4: golden corpus broker_research >=7; ZR-709 mine chain runs draft path through engine (formal_output_mode=draft). C5: Chinese entity 紫金矿业 + security 601899 resolve on Windows with CJK identity present in debug trace.",
+      "id": "ZR1103-IMPL-001",
+      "severity": "info",
+      "title": "真实用户旅程复验验收（三 root/已处理复用/CN-HK-US/broker-mine/Windows 中文路径）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr1103_journey_reverify.py（6 tests）：C1 三 root production resolver 复验；C2 spy wiki 已处理复用；C3 T3 三市场面；C4 broker/mine 链；C5 Windows 中文路径。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr1103_journey_reverify.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1103/**"
+    ]
+  },
+  "implementer": "zr1103-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 02d1d97（revenue HEAD = ZR-1103 实现 commit，parent e7eafcc）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 provider 下载（T3 opt-in 执行）为部署/授权动作，本卡只验证市场面。"
+  ],
+  "objective": "Phase 11 第三卡：真实用户旅程复验（companies/dayu/Dropbox、旧+新、已处理、broker/mine、CN/HK/US、Windows 中文路径）",
+  "plan_sha256": "31dc32384a3b43e2531eb71445b53a25ae832374592cac3159d97eb26056eb3e",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "02d1d97a3c709731e5067e0646e0497aadd822fa",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr1103_journey_reverify.py (new 6 tests)；assurance/unified_completion/receipts/ZR-1103/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 12
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1103_journey_reverify.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1103/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1103",
+  "canonical_hash": "75c119f7c091d3815a43f1eb2764dde003eb05915bcc8ebe05b136c6a529425d"
+}

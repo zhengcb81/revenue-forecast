@@ -1,0 +1,109 @@
+{
+ "schema_version": "1.0",
+ "card": "I-17-A",
+ "attempt": "a20260926-01",
+ "generated_at_utc": "2026-09-27T08:03:25Z",
+ "source_shas": {
+  "daily_manifest.json": {
+   "sha256": "130f120afbef999c4c68f31391036c9802425371986da2939a5ce34a04cbecd5",
+   "bytes": 457
+  },
+  "weekly_manifest.json": {
+   "sha256": "d45445baafb3dd2f3348c5b0853fe1afd10b78ea3b7d24c17c4e6f21b4df9156",
+   "bytes": 364
+  },
+  "monthly_manifest.json": {
+   "sha256": "703f45844030f14e32ae9966397af8ece636c64799e7536c5359f66ffb66d018",
+   "bytes": 349
+  },
+  "legacy_periods.json": {
+   "sha256": "58cd90d3f9abcf9c1df371d04e9d67b5d6c5151c608a97ed08b1ddaafec295ae",
+   "bytes": 1078
+  },
+  "ledger.json": {
+   "sha256": "f4bea6bd4ce692c9d3c3ea9225fc541d1097cab7e80e5ae5d0339fe191c8f044",
+   "bytes": 1302
+  },
+  "daily_alert.jsonl": {
+   "sha256": "7bfec4c407ab1a5d283786e6c1dab7985b470a8e374b68e624d005aaa760168e",
+   "bytes": 603
+  },
+  "weekly_alert.jsonl": {
+   "sha256": "5d40aaa83961136f6146a162ecf964eb9833fe05ed1fca23d3a9e364bf6eea10",
+   "bytes": 607
+  }
+ },
+ "checks": {
+  "green_no_missing_required_fields": {
+   "rc": 0,
+   "violations": []
+  },
+  "M1_missing_due_must_not_time": {
+   "rc": 3,
+   "expectation": "in_progress item without due must be rejected (F1)",
+   "violations": [
+    [
+     "D1-daily-7checks",
+     "due-missing-but-in_progress"
+    ],
+    [
+     "D2-daily-alert-chain",
+     "due-missing-but-in_progress"
+    ],
+    [
+     "W2-weekly-triplet-binding",
+     "due-missing-but-in_progress"
+    ],
+    [
+     "M1-monthly-manifest",
+     "due-missing-but-in_progress"
+    ]
+   ]
+  },
+  "M2_missing_recovery_rule_rejected": {
+   "rc": 3,
+   "expectation": "empty recovery_rule must be rejected (F1)",
+   "violations": [
+    [
+     "D1-daily-7checks",
+     "recovery_rule"
+    ],
+    [
+     "D2-daily-alert-chain",
+     "recovery_rule"
+    ],
+    [
+     "W1-weekly-t3",
+     "recovery_rule"
+    ],
+    [
+     "W2-weekly-triplet-binding",
+     "recovery_rule"
+    ],
+    [
+     "M1-monthly-manifest",
+     "recovery_rule"
+    ],
+    [
+     "M2-legacy-periods",
+     "recovery_rule"
+    ],
+    [
+     "R1-release-gate",
+     "recovery_rule"
+    ]
+   ]
+  },
+  "M3_failure_not_deleted_nor_spliced": {
+   "rc": 0,
+   "expectation": "weekly failure window preserved verbatim in register (card L8)"
+  }
+ },
+ "red_green": {
+  "green_rc": 0,
+  "red_arms": 3,
+  "all_match": true
+ },
+ "git_diff_non_planning": 0,
+ "tasks_installed": 0
+}

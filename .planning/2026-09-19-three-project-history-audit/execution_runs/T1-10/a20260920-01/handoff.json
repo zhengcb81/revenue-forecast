@@ -3,7 +3,28 @@
  "attempt": "a20260920-01",
  "batch": "TIER-1 (owner-ruled)",
  "authority": "OWNER_DECISIONS.md section 13 T1-10 (TIER-1)",
- "status": "review_pending",
+ "status": "changes_required",
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> changes_required",
+ "status_history": [
+  {
+   "seq": 1,
+   "status": "review_pending",
+   "recorded_at": "2026-09-20",
+   "recorded_by": "the implementer of this card, at delivery",
+   "authority": "handoff.json as delivered (the pre-image of this pass: 13153 B / 715b5e0bc13a23fcf508525f8935c5ce781783dff5187e7d008ff48f7b2271ee), status field + boundary_checks.status_transitions = 0 + self_signed = false",
+   "note": "the card was delivered into review_pending and held there: reviewer_report.md line 5 records 复审首次派出 / 长期 review_pending; no status transition was performed by the card itself"
+  },
+  {
+   "seq": 2,
+   "status": "changes_required",
+   "recorded_at": "2026-09-26",
+   "authority": "reviewer_report.md line 3 (VERDICT: changes_required); carrier sha256 598f55d5cbd638f62d8775d06652b5010c33e1c465e53f55b34ceb3175b0370d; 25115 B; 246 lines; pinned by reviewer_report.sha256 (85 B)",
+   "written_by": "the independent reviewer, N=1, not the implementer of this card (carrier lines 5-6)",
+   "recorded_by": "carrier-landing bookkeeping pass (transcription only; verdict_is_transcribed_not_authored = true)",
+   "note": "report section 8 counts P1=1 (P1-1) / P2=1 (P2-1) / P3=3 (P3-1, P3-2, P3-3); carrier line 9 rule: 有 P1 ⇒ changes_required"
+  }
+ ],
  "self_signed": false,
  "nature_of_card": "verification + residual closure. This card does NOT modify any frozen artefact: not the subject, not cases.json, not the expectations, not oracle.md, not the runner. It measures and registers.",
  "ruling_excerpt": "authorise a card to fix, on both the product and plan sides, the two product-level defects of natural_window.py: (1) add an enumeration check for `claim.basis`; (2) correct union_of_windows/sum_of_windows so they stop counting the quick_check interval as natural observation time. Note (2) is already baked into the frozen expectation (W1 union_seconds=2220), so the fix must ALSO correct the expectation by append-only provenance and must NOT rewrite the frozen body.",
@@ -175,5 +196,342 @@
   "signatures_forged": 0,
   "production_anchor_scripts_model_registry_py": "must still be 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
   "production_anchor_scripts_model_extensions_py": "must still be 9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "status_authority": {
+  "status": "changes_required",
+  "status_before": "review_pending",
+  "status_transition": "review_pending -> changes_required",
+  "status_rounds": 1,
+  "carrier": "reviewer_report.md",
+  "path_inside_attempt": "execution_runs/T1-10/a20260920-01/reviewer_report.md",
+  "carrier_sha256": "598f55d5cbd638f62d8775d06652b5010c33e1c465e53f55b34ceb3175b0370d",
+  "carrier_sha256_source": "recomputed read-only by this carrier-landing pass over the 25115 bytes on disk; identical to the value pinned in reviewer_report.sha256",
+  "carrier_bytes": 25115,
+  "carrier_total_lines": 246,
+  "carrier_encoding": "UTF-8 without BOM (first three bytes 23 20 E7), LF-only (CR count = 0, LF count = 246), single trailing LF, no other line terminator",
+  "verdict_word_written_by_reviewer": "changes_required",
+  "verdict_line": 3,
+  "verdict_line_text": "VERDICT: changes_required",
+  "verdict_line_byte_region_inclusive": [
+   47,
+   72
+  ],
+  "verdict_line_length_including_lf": 26,
+  "verdict_line_sha256": "501cc91c3dc9566eeb7032d7c8aa2faccb5b68a41bf1582d848c4193f32d9488",
+  "verdict_line_text_only": {
+   "start": 47,
+   "end_inclusive": 71,
+   "length": 25,
+   "sha256": "3edab02acc91a428984c76b7e09defaeac09ea32ad3fd4a317413f11ec8d0db0"
+  },
+  "verdict_line_located_by": "this pass located the verdict line itself by scanning the carrier bytes (first line whose text begins VERDICT:) and then byte-verified the region; the resulting line number is 3, matching the dispatch statement, and the region was measured here, not copied",
+  "region_definition": "0-based byte offsets against reviewer_report.md as it stands at carrier_sha256; a single-line region includes its trailing LF; multi-line regions include internal LFs and exclude the final LF",
+  "verdict_rule_verbatim": "- 发现分级规则：**有 P1 ⇒ `changes_required`；否则 `ACCEPT`（可带 P2/P3）**",
+  "verdict_rule_line": 9,
+  "verdict_rule_byte_region_inclusive": [
+   593,
+   685
+  ],
+  "verdict_rule_sha256": "d1ac845cfd9267c25d78447de27dc0f43e6f6146591c11e86e7bc8784d1a6d72",
+  "verdict_counts": "P1=1 (P1-1) / P2=1 (P2-1) / P3=3 (P3-1, P3-2, P3-3) - report section 8; the section-8 closing paragraph labelled (非本卡) 给父的登记册观察 is an observation for the parent, not a finding on this card, and is not counted",
+  "pin_sidecar": {
+   "file": "reviewer_report.sha256",
+   "bytes": 85,
+   "sha256": "02a403986819d520858b22af978ee267f2579827a876b74318ccbc2865146534",
+   "content": "598f55d5cbd638f62d8775d06652b5010c33e1c465e53f55b34ceb3175b0370d  reviewer_report.md\n",
+   "verified": "content re-read byte-exactly by this pass and equal to an independent re-hash of reviewer_report.md; the sidecar file itself re-hashed at landing; bytes written to either file by this pass = 0"
+  },
+  "sections": {
+   "verdict_line_3": [
+    47,
+    72
+   ],
+   "s8_findings_lines_183_217": {
+    "lines": [
+     183,
+     217
+    ],
+    "start": 18307,
+    "end_inclusive": 22746,
+    "length": 4440,
+    "sha256": "db62d5d93c5140ef48b141e340bac27f36900f2d376f2e4f922296ffcc62df7a"
+   },
+   "p1_1_lines_187_196": {
+    "lines": [
+     187,
+     196
+    ],
+    "start": 18347,
+    "end_inclusive": 20580,
+    "length": 2234,
+    "sha256": "8efa9014f2c096b97b554c9ca9be13c92179ae8f334739cc93403812e53ec990"
+   },
+   "reviewer_discretion_line_196": {
+    "lines": [
+     196,
+     196
+    ],
+    "start": 20258,
+    "end_inclusive": 20581,
+    "length": 324,
+    "sha256": "1e41ae1e4eaa5c036e064e1d936f98e178f9132053649f27c8a07f3e5518c072"
+   },
+   "p2_1_lines_200_205": {
+    "lines": [
+     200,
+     205
+    ],
+    "start": 20624,
+    "end_inclusive": 21311,
+    "length": 688,
+    "sha256": "09507e6a6e631f07851cead957e65a5d52ca4e8df9ce02eebb9417efb0734948"
+   },
+   "p3_1_lines_209_211": {
+    "lines": [
+     209,
+     211
+    ],
+    "start": 21334,
+    "end_inclusive": 22045,
+    "length": 712,
+    "sha256": "dba4b51d1dff87e42e6959d6710d5371cf7eddb6af39bc94d73cc78cebe5e3e0"
+   },
+   "p3_2_line_213": {
+    "lines": [
+     213,
+     213
+    ],
+    "start": 22048,
+    "end_inclusive": 22230,
+    "length": 183,
+    "sha256": "21c9d8cd4d6157f82dd00a35a32a5f6fd43cbcaf0faa839e7273e409249be08c"
+   },
+   "p3_3_line_215": {
+    "lines": [
+     215,
+     215
+    ],
+    "start": 22232,
+    "end_inclusive": 22473,
+    "length": 242,
+    "sha256": "aa6003f7f3bb51be5cd383e7c59c2f711830bb18c128edb431c3af37905c628e"
+   },
+   "s9_unverified_lines_221_228": {
+    "lines": [
+     221,
+     228
+    ],
+    "start": 22754,
+    "end_inclusive": 24009,
+    "length": 1256,
+    "sha256": "fbfbb03fef216cd37832d7c87452e3703eb540ca0e5749aca2c33991fea432ed"
+   },
+   "unverified_items_lines_223_228": {
+    "lines": [
+     223,
+     228
+    ],
+    "start": 22790,
+    "end_inclusive": 24009,
+    "length": 1220,
+    "sha256": "707bf3df071d54f93d5a48335809df0c26f72cc6dc638303ed4c2f0ff5873831"
+   },
+   "l55_nothing_delivered_line_55": {
+    "lines": [
+     55,
+     55
+    ],
+    "start": 4705,
+    "end_inclusive": 4999,
+    "length": 295,
+    "sha256": "3ff5bc7d85651b496f28644b19bbf8f1ad3f1bcb7f46c9060f1ca8c07401ee30"
+   }
+  },
+  "reviewer": "independent reviewer, N=1, explicitly not the same person as this card implementer (carrier lines 5-6: 复审者：独立复审工位（N=1），与本卡实现者非同一人)",
+  "reviewer_write_boundary_transcribed": "the reviewer wrote only reviewer_report.md and reviewer_report.sha256 inside this attempt, changed no existing byte of the 7 pre-existing files, did not change handoff.json / status, did not land this card and did not self-sign any acceptance (carrier section 10)",
+  "prior_consistent_ruling_transcribed": "P1-1 last bullet records that the independent ruling in M-T-REVIEW/a20260923-01 (N=1) for this same card was also changes_required, for the same reasons (修复未闭合、校验非全函数); transcribed as reported, that carrier was not re-read by this pass",
+  "status_label_transcribed": "changes_required",
+  "status_label_note": "the reviewer writes the bare word changes_required on line 3; it is transcribed byte-identically, not normalised, not softened to a partial accept",
+  "mirror": "review.md (new) + this status face + evidence/T1-10/qualification.json all carry the same verdict and the same five findings",
+  "transcription_only": "this pass transcribes the carrier verdict and adds no acceptance of its own"
+ },
+ "carried_findings": [
+  {
+   "id": "P1-1",
+   "level": "P1",
+   "blocking": true,
+   "verbatim_must_carry": true,
+   "source": "reviewer_report.md section 8, P1 (blocking), heading at line 187; rule at line 9",
+   "carrier_line_range_inclusive": [
+    187,
+    196
+   ],
+   "byte_region_inclusive": [
+    18347,
+    20580
+   ],
+   "byte_region_length": 2234,
+   "byte_region_sha256": "8efa9014f2c096b97b554c9ca9be13c92179ae8f334739cc93403812e53ec990",
+   "disposition": "carried verbatim, NOT weakened, NOT closed: P1 stands, changes_required stands, the card is not accepted",
+   "verbatim": "**P1-1 卡文授权的产品侧修复①未在本卡交付。**\n- 卡文动作（§13 T1-10）含产品侧 ①「`claim.basis` 补枚举校验」；本卡交付为**核验 + 登记 + 移交**（`nature_of_card` 明写「does NOT modify any frozen artefact」），**无 worktree、无 `changes.diff`、无畸形 `basis` 负例族与负控产物**。\n- 至本次复审时点，**缺陷在 canonical 被测件上仍可复现**（我自建探针：list/dict `basis` ⇒ rc=4、0 裁决、不写报告），修复**仅存在于 `T1-10-FIX` 的 `changes.diff`（11534 B / `625ecfe4…`）且未被 apply**。\n- 本卡给出的三条不修理由经我复核**不足以支撑整体推迟**：\n  1. 「r2 冻结件、改须重冻（T1-11 互锁）」—— T1-11 禁的是**回改冻结正文与重冻**，不禁**卡内 worktree + changes.diff**；**同日 T 系卡即有此形态**（`T1-6/changes.diff`、`T1-13/t13_changes.diff`、`T1-19/t19_changes.diff`），`T1-10-FIX` 也正是以该形态交付。\n  2. 「`oracle.md` §11 口径属 reviewer」—— 该口径只约束**oracle 正文**，不阻断代码修复；`T1-10-FIX` 即**先交代码、后由其复审者裁 F-3**。\n  3. 「本卡性质是核验」—— 这是**卡自设的性质**，与卡文「授权立卡修复（产品 + 计划双侧）」的动作项不一致；`handoffs[0]` 请求的「授权一张新修订卡」**正是本卡已持有的授权**。\n- **不因 T1-10-FIX 已 accepted 而放松**：FIX 是另一张卡的交付（其 `handoff` 首个 `status_authority.authority_note` 原文：\"this card is the 立修卡 the block allows; it does NOT self-close T1-10 - closure requires the independent acceptance the block names\"）；且修复至今未落盘。\n- 与既有独立裁定**一致**：`M-T-REVIEW/a20260923-01`（N=1）对本卡的裁决即 `changes_required`，理由同为「修复①未闭合、校验非全函数」。\n- **边界**：若 owner 另裁「本卡义务形态 = 特征化 + 立卡（`T1-22` 的 `is_a_fix=false / why_not_a_fix=the ruling authorises carding` 形态）」，则本 P1 可由**同形态门读法例外**（§二十四式）豁免 —— 该裁量**属 owner，不属复审者**；我按卡文动作项如实分级。"
+  },
+  {
+   "id": "P2-1",
+   "level": "P2",
+   "blocking": false,
+   "verbatim_must_carry": true,
+   "source": "reviewer_report.md section 8, P2 (non-blocking, must be registered/corrected), heading at line 200",
+   "carrier_line_range_inclusive": [
+    200,
+    205
+   ],
+   "byte_region_inclusive": [
+    20624,
+    21311
+   ],
+   "byte_region_length": 688,
+   "byte_region_sha256": "09507e6a6e631f07851cead957e65a5d52ca4e8df9ce02eebb9417efb0734948",
+   "disposition": "carried verbatim; no register or task_plan byte is written by this pass (the recommended append-only erratum belongs to the parent)",
+   "verbatim": "**P2-1 `task_plan.md` Round 57 登记的两个 sha256 不可复算。**\n- `handoff.json`：登记 `ed206347b00b86d9…` vs 实盘 `715b5e0bc13a23fc…`（同为 13153 B）。\n- `append_only_proof_round57.json`：登记 `fb7bf6a0a8e9e602…` vs 实盘 `c0bc84cfedad7974…`（同为 676 B）。\n- 成因已由我取证闭合（等长单点替换，见 §4.3），非内容篡改；`handoff.artefacts` 表 4/4 正确。\n- 影响：`handoff.json` 自身不登记自哈希 ⇒ **该卡主载体的唯一登记位不可复算**。\n- 建议处置（不属我执行）：追加式勘误一行，登记实盘 `715b5e0bc13a23fcf508525f8935c5ce781783dff5187e7d008ff48f7b2271ee`，原值不回改。"
+  },
+  {
+   "id": "P3-1",
+   "level": "P3",
+   "blocking": false,
+   "verbatim_must_carry": true,
+   "source": "reviewer_report.md section 8, P3 (observation), heading at line 209",
+   "carrier_line_range_inclusive": [
+    209,
+    211
+   ],
+   "byte_region_inclusive": [
+    21334,
+    22045
+   ],
+   "byte_region_length": 712,
+   "byte_region_sha256": "dba4b51d1dff87e42e6959d6710d5371cf7eddb6af39bc94d73cc78cebe5e3e0",
+   "disposition": "carried verbatim; this pass declares the byte domain of every file it writes, but rewrites no pre-existing byte and does not retro-declare the card carriers",
+   "verbatim": "**P3-1 本卡三个 JSON 载体为 CRLF 工作副本域，git blob（LF）哈希不同，卡未声明字节域。**\n- `handoff.json` 盘 13153 B（CR=179）/ blob `82e15a7a0e40…`（12974 B）；`t1_10_defect_verification.json` 盘 12763 B（CR=288）/ blob `6116e32a03bd…`（12475 B）；`append_only_proof_round57.json` 盘 676 B（CR=18）/ blob `a2ba612b3738…`（658 B）。`decision.md` 与 `verify_t1_10.py` 为 LF-only，blob == 盘。\n- 卡的登记值与**盘上（CRLF）**一致，日常复算可用；但从 **git blob 复算会不等** —— 恰是本卡自己立的 F 段同族（「哈希取在哪个字节域没写明」），本卡未对自己的登记做同样声明。全文件无 BOM。"
+  },
+  {
+   "id": "P3-2",
+   "level": "P3",
+   "blocking": false,
+   "verbatim_must_carry": true,
+   "source": "reviewer_report.md section 8, P3 (observation), line 213",
+   "carrier_line_range_inclusive": [
+    213,
+    213
+   ],
+   "byte_region_inclusive": [
+    22048,
+    22230
+   ],
+   "byte_region_length": 183,
+   "byte_region_sha256": "21c9d8cd4d6157f82dd00a35a32a5f6fd43cbcaf0faa839e7273e409249be08c",
+   "disposition": "carried verbatim; no binding.json / oracle.md / commands.json / step record is created by this pass",
+   "verbatim": "**P3-2 九步载体缺 2/4/5/9**（`binding.json`/`oracle.md`/`commands.json`/步骤或 `next_action` 记录）—— 见 §7，按同日 T 卡形态记为形态差异，不阻断。"
+  },
+  {
+   "id": "P3-3",
+   "level": "P3",
+   "blocking": false,
+   "verbatim_must_carry": true,
+   "source": "reviewer_report.md section 8, P3 (observation), line 215",
+   "carrier_line_range_inclusive": [
+    215,
+    215
+   ],
+   "byte_region_inclusive": [
+    22232,
+    22473
+   ],
+   "byte_region_length": 242,
+   "byte_region_sha256": "aa6003f7f3bb51be5cd383e7c59c2f711830bb18c128edb431c3af37905c628e",
+   "disposition": "carried verbatim; this pass does not edit nature_of_card and does not close any residue",
+   "verbatim": "**P3-3 `nature_of_card` 自称 `verification + residual closure`**，但本卡实际**未闭合任何残留**（其 `conclusion.defect_1` 亦如实写明未闭合）—— 措辞与事实不一致的轻微自述瑕疵，披露本身诚实。"
+  }
+ ],
+ "carried_findings_counts": "P1=1 / P2=1 / P3=3 (report section 8), carried verbatim",
+ "carried_findings_effect": "P1-1 is blocking: changes_required stands. Nothing is accepted, nothing is closed, no finding is downgraded, and no OPEN-* / BLOCKED-* item is released by this pass",
+ "reviewer_discretion_reserved": {
+  "verbatim": "若 owner 裁定本卡义务形态 = T1-22 的 `is_a_fix=false / the ruling authorises carding` 形态，可由同形态门读法例外豁免 —— 该裁量属 owner，我不裁",
+  "carrier_quote_verbatim": "- **边界**：若 owner 另裁「本卡义务形态 = 特征化 + 立卡（`T1-22` 的 `is_a_fix=false / why_not_a_fix=the ruling authorises carding` 形态）」，则本 P1 可由**同形态门读法例外**（§二十四式）豁免 —— 该裁量**属 owner，不属复审者**；我按卡文动作项如实分级。",
+  "carrier_line": 196,
+  "carrier_byte_region_inclusive": [
+   20258,
+   20581
+  ],
+  "carrier_byte_region_length": 324,
+  "carrier_byte_region_sha256": "1e41ae1e4eaa5c036e064e1d936f98e178f9132053649f27c8a07f3e5518c072",
+  "adjudication_authority": "owner (the §二十四式 同形态门读法例外)",
+  "reviewer_reserved_it": true,
+  "ruled_by_this_pass": false,
+  "note": "this pass neither applies the exception nor weakens P1-1: the P1 finding stands exactly as written; the exception, if any, is an owner ruling and is NOT granted here (see qualification.json not_granted)"
+ },
+ "unverified": [
+  "1. **未复跑 `scripts/verify_t1_10.py` 本身**：其 `__file__` 路径断言要求真实仓库结构，且会在 attempt 内重写 `t1_10_defect_verification.json` ⇒ 违反「只写两文件」。**替代**：自建 `%TEMP%` 探针独立复算核心行为（§4.1）；脚本正文只作静态阅读。",
+  "2. **证据 JSON 的 4 次幂等同哈希自述**（`22ead5c5…` 连跑 4 次）—— 未复现；我只能验证该文件现存字节与登记一致。",
+  "3. **09-20 当时的瞬时边界**（产品树 0 写入、锚点当时值）无法回溯；我只能复算**当前** `git diff HEAD --name-only` 非 `.planning` = 0，以及 `model_registry.py` 的漂移归因于 `git log 5fd82de7`。",
+  "4. `run_a.json` / `run_b.json` 的生成过程（卡已披露为幂等调试遗留、非交付物）—— 未验证。",
+  "5. `M-T-REVIEW` 22 卡裁定的原始载体（`reviews/T1_rulings.md` / `acceptance_rulings.md`）—— 我只读了 `landing_package/t1_review_flips.md` 转录块，**未**回源到其原始裁决文件。",
+  "6. `REMEDIATION_REGISTER` §136-F 的父侧「假阳性第 17 起」自述 —— 我只验证结论方向（逐字检索），未复算父当时那条 `Contains('supersede')` 的执行现场。"
+ ],
+ "unverified_source": "reviewer_report.md section 9 (lines 221-228); the six numbered items at lines 223-228, byte region [22790, 24009] length 1220 sha256 707bf3df071d54f93d5a48335809df0c26f72cc6dc638303ed4c2f0ff5873831, transcribed item by item without altering any number",
+ "unverified_counts": "6 items verbatim, none dropped, none marked verified",
+ "pre_image": {
+  "path": "execution_runs/T1-10/a20260920-01/handoff.json",
+  "bytes": 13153,
+  "sha256": "715b5e0bc13a23fcf508525f8935c5ce781783dff5187e7d008ff48f7b2271ee",
+  "status_at_pre_image": "review_pending",
+  "top_level_key_count_at_pre_image": 20,
+  "line_endings_at_pre_image": "CRLF (CR = 179, LF = 180); the whole file is retained in that same CRLF domain after this pass - only inserted and edited lines differ",
+  "recomputed_by_this_pass_before_any_write": true,
+  "matches_carrier_measurement": "identical to reviewer_report.md lines 40 and 113 (13153 B / 715b5e0bc13a23fcf508525f8935c5ce781783dff5187e7d008ff48f7b2271ee)",
+  "other_registered_value": "the only other registered value for this file, task_plan.md:714 ed206347b00b86d96629e917a2c33f8054f9e323accc40f2d2d2ab0934501306, does NOT reproduce; that is P2-1 and it is carried verbatim above, unchanged and unweakened",
+  "post_image": "not embedded: a file cannot contain its own sha256 (self-reference is unsatisfiable); the post-image is reported in the pass delivery message and in evidence/T1-10/qualification.json"
+ },
+ "implementer_signed": false,
+ "verdict_is_transcribed_not_authored": true,
+ "bookkeeping": {
+  "recorded_by": "carrier-landing bookkeeping executor (delegated subagent of session-19074bf0-0205-4315-af73-9db57597275a), 2026-09-26",
+  "what_this_pass_did": "transcribed the independent reviewer verdict changes_required from reviewer_report.md (25115 B / 598f55d5cbd638f6... / 246 lines / verdict line 3, byte region [47,72], pinned by reviewer_report.sha256 85 B) into exactly three write surfaces inside this attempt: (1) this handoff status face, (2) review.md (new; Test-Path was false before creation), (3) evidence/T1-10/qualification.json (new; the directory did not exist). No new ruling was produced, nothing was signed, no finding was weakened.",
+  "write_surface": "exactly 3 files, all inside this attempt: review.md (created), handoff.json (status face only), evidence/T1-10/qualification.json (created; directory created)",
+  "never_written": [
+   "reviewer_report.md",
+   "reviewer_report.sha256",
+   "decision.md",
+   "t1_10_defect_verification.json",
+   "scripts/verify_t1_10.py",
+   "append_only_proof_round57.json",
+   "run_a.json",
+   "run_b.json",
+   "REMEDIATION_REGISTER.md",
+   "progress.md",
+   "findings.md",
+   "task_plan.md",
+   "OWNER_DECISIONS.md",
+   "anything outside .planning",
+   "the production tree",
+   "I-14-B and T1-10-FIX / T1-F2-FIX / T1-F3-FIX attempt files"
+  ],
+  "json_reparse": "handoff.json and evidence/T1-10/qualification.json re-parsed after writing (ok); review.md is markdown",
+  "git_writes": 0,
+  "git_status_used": false,
+  "network": 0,
+  "tests_run": 0,
+  "implementer_signed": false,
+  "verdict_is_transcribed_not_authored": true,
+  "what_this_pass_did_not_do": [
+   "did not treat changes_required as accepted",
+   "did not release any OPEN-* or BLOCKED-* item",
+   "did not adjudicate the 同形态门读法例外 (owner discretion)",
+   "did not promote or apply the T1-10-FIX / T1-F2-FIX / T1-F3-FIX changes.diff",
+   "did not claim any diff is applied",
+   "did not sign for the implementer or the reviewer",
+   "did not run any test, any probe, or verify_t1_10.py",
+   "did not use git status",
+   "did not go online"
+  ]
  }
 }

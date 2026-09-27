@@ -1,0 +1,104 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1302",
+  "review_round": "r1",
+  "reviewer": "reviewer-fc1302-independent",
+  "implementer": "honest-implementer",
+  "decision": "accepted",
+  "status": "accepted",
+  "base_triplet": {
+    "revenue": "4a4c1089b00716696b8c382b9265ba9478b9ec05",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "result_triplet": {
+    "revenue": "a9f1ff1821c64dde55601d7fd4606a4e91d0c0df",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "reviewed_at": "2026-08-13T03:15:36Z",
+  "replay_note": "Full from-scratch replay in clean worktrees under .fcap-review/fc-130x/ (revenue-base @ 4a4c108, revenue-forecast @ a9f1ff1, filing-fetch @ 83c638e, wiki-base @ b93994a, wiki-result @ 304966d, transient junction company-wiki -> wiki-result, removed at cleanup). F-6 rule honored throughout. Diff audit: revenue 4a4c108..a9f1ff1 = one commit; production-code changes are tools/daily_t2_runner.py (+54/-6) plus the two new test files (test_fc1302_scan_health.py, tools/tests/test_slo_probe.py for FC-1303); the rest of the commit is docs (4 receipts, Phase-13 WU card, Phase-13/_write_receipts.py helper). Runner diff verified line-by-line: SCAN_ERROR_DELTA_BUDGET (50) removed; NEW_ERRORS_24H_BUDGET=0 + INTERRUPTED_DELTA_BUDGET=5 added; scan_health now carries informational completed_with_errors + new_errors_24h + recurring_unchanged_runs_24h; the completed_with_errors delta in the trends loop is gone, replaced by interrupted delta with budget 5; the new_errors problems.append block is present. Production T2 run verified read-only (mode=ro + PRAGMA query_only) against the live catalog.",
+  "commands": [
+    {
+      "command": "Diff audit: git diff 4a4c108..a9f1ff1 -- tools/daily_t2_runner.py + commit stat",
+      "exit_code": 0,
+      "result": "Runner diff matches the spec exactly: old completed_with_errors-delta (budget 50) removed, new_errors_24h budget 0 + interrupted delta budget 5 added, recurring counted honestly. Commit contains no production-code changes beyond the runner and the two new test files (see replay_note).",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "RED at base: copy test_fc1302_scan_health.py onto revenue-base, run it",
+      "exit_code": 0,
+      "result": "RED reproduced: 3 failed — the base runner lacks the new fields/checks and exits 0 in all three scenarios (recurring test hits missing new_errors_24h key; new-errors and interrupted-delta tests assert non-zero exit and get 0). Copy removed afterwards; revenue-base worktree clean.",
+      "cwd": "fc-130x/revenue-base worktree"
+    },
+    {
+      "command": "GREEN at result: python -B -m pytest tools/tests/test_slo_probe.py tests/test_fc1302_scan_health.py -q",
+      "exit_code": 0,
+      "result": "6 passed in 6.21s (3 FC-1302 + 3 FC-1303).",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "Regression: python -B -m pytest tests/test_fc1102_t2_runner.py tests/test_fc1105_fault_injection.py -q",
+      "exit_code": 0,
+      "result": "9 passed in 8.24s — with the 3 FC-1302 tests = 12 passed, matching the implementer receipt's combined command exactly.",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "M2 mutation: remove the new_errors problems.append block from tools/daily_t2_runner.py (reverse edit), run test_fc1302_scan_health.py",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — test_new_errors_in_24h_fail FAILS (1 failed, 2 passed; runner exits 0 on a new error). Reverted via reverse edit -> 3 passed, git status clean.",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "Production verification: python tools/daily_t2_runner.py --catalog <production company-wiki/.source_catalog/catalog.sqlite3> --manifest compatibility/current.json --report-root <temp> --run-id reviewer-fc1302",
+      "exit_code": 0,
+      "result": "EXIT=0. scan_health: completed_with_errors=243 (informational), new_errors_24h=0, recurring_unchanged_runs_24h=34, interrupted=16. Implementer measured 242/33 — the ambient worker advanced one recurring run between the two measurements (the recurring empty user Excel re-scanned), which is the exact scenario the increment semantics exist for. policy_freshness matches; manifest triplet commits all exist; report written only to the temp dir; catalog opened mode=ro + query_only.",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "No-write source scan: grep INSERT/UPDATE/DELETE/CREATE TABLE in tools/daily_t2_runner.py",
+      "exit_code": 0,
+      "result": "Zero write statements in the runner source; catalog.sqlite3 mtime unchanged by the review run (03:57, pre-review).",
+      "cwd": "fc-130x/revenue-forecast worktree"
+    },
+    {
+      "command": "python tools/receipt_validator.py --receipt assurance/fc/FC-1302/11_implementer_receipt.json (after result_triplet fix)",
+      "exit_code": 0,
+      "result": "OK: 1 receipt(s) valid. result_triplet corrected by reviewer to revenue a9f1ff1 (finding F1).",
+      "cwd": "revenue-forecast (main checkout)"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "M2",
+      "file": "revenue-forecast/tools/daily_t2_runner.py",
+      "mutation": "Removed the new_errors > NEW_ERRORS_24H_BUDGET problems.append block (reverse edit)",
+      "killed": true,
+      "result": "tests/test_fc1302_scan_health.py -> test_new_errors_in_24h_fail FAILS (runner exits 0 on a new error). Reverted via reverse edit -> 3 passed, worktree clean."
+    }
+  ],
+  "unresolved_findings": [
+    {
+      "id": "FC-1302-F1",
+      "severity": "info",
+      "file": "revenue-forecast/assurance/fc/FC-1302/11_implementer_receipt.json",
+      "issue": "result_triplet was generated pre-commit and equaled the base triplet; corrected by reviewer to a9f1ff1.",
+      "disposition": "Fixed by reviewer in this round."
+    },
+    {
+      "id": "FC-1302-F2",
+      "severity": "info",
+      "file": "revenue-forecast/tools/daily_t2_runner.py",
+      "issue": "The 24h window filter compares started_at >= <T-format ISO> lexicographically. Production writes T-format timestamps (scanner._utc_now uses isoformat) so the boundary is correct there; the tests inject same-day rows (space-format datetime('now')) which compare fine against yesterday's cutoff. A space-format timestamp from the boundary day itself would compare out of the window (' ' < 'T').",
+      "disposition": "Non-blocking; no action needed while scanner._utc_now remains the only scan_runs writer. Normalize to a stored ISO comparison in any future touch."
+    },
+    {
+      "id": "FC-1302-F3",
+      "severity": "info",
+      "file": "revenue-forecast/assurance/fc/Phase-13/_write_receipts.py",
+      "issue": "Commit a9f1ff1 carries _write_receipts.py (receipt-generation helper) which is not listed in any receipt's allowed_files/changed_files. Docs-area tooling, no production impact.",
+      "disposition": "Non-blocking; note for audit trail."
+    }
+  ],
+  "summary": "r1 ACCEPTED. Diff audit exact: the only production-code change in the FC-1302 range is the runner rework matching the spec line-by-line (old error-delta budget 50 removed; new_errors_24h budget 0, interrupted delta budget 5, recurring counted honestly and informational totals kept). RED reproduced at base (3 failed — base runner exits 0 in all three scenarios), GREEN at result (3 passed; +9 FC-1102/1105 regression = 12, matching the implementer's combined claim). M2 mutation kill confirmed and reverted. Production run from clean worktree against the live catalog: exit 0, new_errors_24h=0, recurring_unchanged_runs_24h=34 (implementer: 33 — one ambient recurring run landed in between, the exact recurring-error scenario the increment semantics address), interrupted=16. Three non-blocking findings (stale result_triplet fixed; lexicographic 24h-boundary edge with no live impact; undocumented receipt helper). Result triplet (rev-parsed fcap tips): revenue a9f1ff1, filing 83c638e, wiki b93994a over base 4a4c108/83c638e/b93994a."
+}

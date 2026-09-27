@@ -1,0 +1,26 @@
+﻿=== RF-STEP9-TRIAGE reproducer (WINDOWS local arm run2, repaired wiki) ===
+date_utc=2026-09-23T21:05:32Z
+file=tests/test_attestation.py
+rf_sha=b0d016a645f52ce914197629b3ca5995609d9e89
+wiki_sha=5d725294304a1edb1731bd5de3720fe3608b00f4
+filing_sha=89c8bdb2cfba4d88720d005d0558f422957e8ade
+sandbox=C:\Users\郑曾波\AppData\Local\Temp\s9win\revenue-forecast (correct dir name)
+PYTHONPATH=C:\Users\郑曾波\AppData\Local\Temp\s9win\company-wiki\src
+cmd=python -m pytest tests/test_attestation.py -q
+F......                                                                  [100%]
+================================== FAILURES ===================================
+___ AttestationTests.test_configured_provider_means_host_signed_publication ___
+
+self = <test_attestation.AttestationTests testMethod=test_configured_provider_means_host_signed_publication>
+
+    def test_configured_provider_means_host_signed_publication(self) -> None:
+        os.environ["REVENUE_ATTESTATION_PROVIDER"] = sys.executable
+>       self.assertTrue(attestation_capability())
+E       AssertionError: False is not true
+
+tests\test_attestation.py:72: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_attestation.py::AttestationTests::test_configured_provider_means_host_signed_publication
+1 failed, 6 passed in 24.78s
+
+PYTEST_RC=1

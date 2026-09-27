@@ -1,0 +1,78 @@
+{
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "b784b547d976ea14d0ea0f9f0bc0297c6b944871",
+    "wiki": "080d20cefb4442199567a2c98911a83f6c583e40"
+  },
+  "canonical_hash": "0006483e617d7a4655a97fbdc7d39b9556e90328fd9f5d243cdfb11dea7cdc4d",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr306_role_dag.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "6 passed（document_hash 全失效、producer-key 变更=传递下游闭包、缺失子树只重算依赖、幂等+手工闭包对照、DAG 无环、PRODUCER_KEYS 覆盖 prompt/model/config hash）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr306_role_dag.py tests/contract/test_source_catalog_artifact_backfill.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "17 passed（6 新 + 11 既有 backfill 无回归；恢复后复验同绿）"
+    },
+    {
+      "command": "git diff 080d20c a608980 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "仅 tests/contract/test_zr306_role_dag.py（+148），产品代码零改动（artifact_dag.py WU-803 复用未改）"
+    }
+  ],
+  "created_at_utc": "2026-08-18T09:30:00+00:00",
+  "findings": [
+    {
+      "detail": "artifact_dag.py（WU-803）已实现 ROLE_DEPENDENCIES（normalized→markdown→summary→consumer_analysis；sections→normalized）+ invalidate（document_hash 全失效；producer-key 变更按 _downstream 传递闭包）+ PRODUCER_KEYS（含 prompt_hash/model_hash/config_hash）。本卡为纯验收：property tests 钉死失效范围正确性，产品零改动。",
+      "id": "ZR306-IMPL-001",
+      "severity": "info",
+      "title": "纯验收卡：WU-803 DAG 机制已实现，本卡钉死 property 证据"
+    },
+    {
+      "detail": "失效范围矩阵验证：document_hash→全部 role；normalized 变更→{normalized,markdown,summary,sections,consumer_analysis}；sections 变更→{sections}（独立分支不受影响）；summary 变更→{summary,consumer_analysis}；consumer_analysis 变更→{consumer_analysis}。失效集幂等且与手工下游闭包逐一相等。",
+      "id": "ZR306-IMPL-002",
+      "severity": "info",
+      "title": "最小失效语义：变更只波及依赖子树，独立分支零重算"
+    }
+  ],
+  "implementation": {
+    "design": "新增 tests/contract/test_zr306_role_dag.py：6 个 property tests——(1) document_hash 变更失效全部 role（穷举 role 组合域）；(2) 每个 role × 每个 PRODUCER_KEY 变更失效集 == 手工传递下游闭包（self 含）；(3) 缺失依赖子树只重算依赖闭包（sections 缺失不波及 markdown 链）；(4) 失效幂等 + 与手工闭包对照；(5) DAG 无环（每条依赖链终于 normalized 根）；(6) PRODUCER_KEYS 覆盖 prompt_hash/model_hash/config_hash（prompt/model 变更能触发失效）。产品代码零改动。",
+    "files": [
+      "company-wiki/tests/contract/test_zr306_role_dag.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-306/**"
+    ]
+  },
+  "implementer": "zr306-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 b784b54（ZR-305 closure commit）；result_triplet.wiki 为本卡验收测试提交 a608980。",
+    "本卡跨会话完成：实现提交于 2026-08-17 停点前（a608980），receipt 于恢复后（2026-08-18）补齐；恢复后 17 tests 复验同绿。"
+  ],
+  "objective": "SourceBundle role DAG 与最小失效：只重算缺失/依赖子树；source bytes/producer/model/prompt 变更的失效范围有 property tests。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "769070943fb8357b2c1c04fc55deddd9623d6894",
+    "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 tests/contract/test_zr306_role_dag.py（6 property tests）；revenue 侧 receipts/ZR-306/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr306_role_dag.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-306/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-306"
+}

@@ -1,0 +1,181 @@
+{
+  "schema": "i12a_ind_sign_handoff/1",
+  "card": "I-12-A",
+  "card_signoff_run": "I-12-A-IND-SIGN",
+  "attempt_id": "a20260926-01",
+  "role": "industry_reviewer_i12a",
+  "reviewer_label": "行业reviewer（行业半边会签；统计面 98869ea8 并行在飞）",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+
+  "authorized_by": {
+    "card_owner_clause_verbatim": "Owner：统计reviewer和行业reviewer共同签字；依赖：I-07-E。",
+    "card_owner_clause_ref": "execution_v2/card_I-12-A.md:L5",
+    "stop_path_verbatim_1": "任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。",
+    "stop_path_verbatim_1_ref": "execution_v2/card_I-12-A.md:L20",
+    "stop_path_verbatim_2": "已看测试结果后变更设计→新探索版本，旧结果不得追认确认性成功。",
+    "stop_path_verbatim_2_ref": "execution_v2/card_I-12-A.md:L21",
+    "acceptance_verbatim": "evaluation_design_fields全部完成或有获批not_applicable；SHA256冻结在结果解封前。",
+    "acceptance_ref": "execution_v2/card_I-12-A.md:L23",
+    "industry_scope_ref": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json:L38-L43（industry_reviewer.scope_of_signature 四项：字段3 / 字段8+not_applicable / 字段11 cluster-block / 字段12 共同）",
+    "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871）：「给你授权所有的沙箱操作，不要再问我了」，本会话编排层沙箱操作常设授权、无需逐次审批；边界 L860-L862「授权 ≠ 免除纪律」「纪律 16/17/18/19/20 全部继续有效」「产品仓提交（git add/commit/push）不在本授权内」。本工位使用面=零提权（全部动作=本 attempt 目录普通文件写入），且该授权是沙箱操作授权、不是专业签署本身",
+    "dispatch_verbatim_core": "行业面会签（卡文 Owner: 统计reviewer和行业reviewer共同签字 的行业半边；统计面由 98869ea8 并行签）：先冻结 oracle.md（行业面判据+签署形态+变异≥3）+门0；对行业面相关待签/待裁项逐条裁定（选择·理由·反例·兼容影响·恢复规则·被拒方案）；证据不足⇒NOT_SIGNED（fail-closed）；不得读测试/准确性结果（封存令）；不得代统计面签；与统计面 6 项阈值互补不重叠（重叠项标 deferred_to_statistics）"
+  },
+
+  "signed_count": 10,
+  "signed_item_ids": ["IND-01", "IND-02", "IND-03", "IND-04", "IND-05", "IND-06", "IND-08", "IND-09", "IND-10", "IND-11"],
+  "not_signed_item_ids": ["IND-07"],
+  "deferred_to_statistics_item_ids": ["DEF-01", "DEF-02", "DEF-03", "DEF-04", "DEF-05", "DEF-06"],
+  "industry_countersign_complete": false,
+  "industry_countersign_complete_reason": "fail-closed：① IND-07（跨币种绝对误差展示）无 origin 前可核汇率来源 ⇒ NOT_SIGNED；② DEF-06（字段 12 成功/失败阈值）是卡文 Owner 条款中统计+行业**共同签字**项，本并行轮统计面值未出、无值可签 ⇒ 行业半签 OUTSTANDING（deferred_to_statistics，须统计面出值后行业回签、早于解封）。故行业半边会签未整体完成。",
+  "industry_face_scope_ruled": true,
+  "industry_face_scope_note": "11 项行业面应裁项全部出具裁定（10 SIGNED + 1 NOT_SIGNED），6 项统计面阈值按派单标 deferred_to_statistics（无一项代签）",
+  "statistics_sign_still_needed": true,
+  "statistics_sign_still_needed_note": "并行在飞（98869ea8）；统计面 6 项（professional_approval.json L57-L64）本面一项未签，STOP① 对其持续成立",
+
+  "releases_nothing": true,
+  "params_released": false,
+  "params_released_count": 0,
+  "produces_accept": false,
+  "i12a_files_modified": 0,
+  "writes_outside_planning": 0,
+  "git_diff_non_planning": 0,
+  "git_diff_derivation": "写入面枚举推导：本 attempt 全部写入均在 .planning/2026-09-19-three-project-history-audit/execution_runs/I-12-A-IND-SIGN/a20260926-01/ 之内，.planning 之外写入 = 0；本工位未执行任何 git 命令（含禁用的 git status），git_writes=0、git_commands_run=0",
+
+  "test_results_sealed": true,
+  "test_results_unsealed": false,
+  "accuracy_results_read": false,
+  "open2_ban_observed": true,
+  "seal_declaration": {
+    "test_results_sealed": true,
+    "accuracy_results_read": false,
+    "reads_performed": [
+      "execution_v2/card_I-12-A.md（逐字回源）",
+      "execution_runs/I-12-A/a20260926-01/oracle.md",
+      "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json",
+      "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json",
+      "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json",
+      "execution_runs/I-12-A/a20260926-01/handoff.json",
+      "OWNER_DECISIONS.md §三十七（L852-L871）"
+    ],
+    "reads_forbidden_and_not_performed": [
+      "任何测试集/回测/准确性结果（I-10-B、I-13、I-12 结果面、accuracy 数值面）",
+      "execution_runs/I-12-A/a20260926-01/verification.json（结果/变异面）",
+      "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md（验证数值面；仅转引 §C4/E5 口径）",
+      "REMEDIATION_REGISTER.md 全册（仅转引 L3951 红线原文）"
+    ],
+    "open2_redline": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE 只登记不消费（登记值见 evaluation_design.json L307-L314）：本面未将其用作任何裁定输入、阈值、分层或 baseline；consumed=false"
+  },
+
+  "stop_registration": {
+    "stop_1": "BLOCKED_PROFESSIONAL_DECISION —— 持续成立，本面登记不解除：professional_approval.json 两 reviewer 全 unsigned、6 项关键统计选项/阈值全 PENDING（L57-L64）、status=BLOCKED_PROFESSIONAL_DECISION（L96）",
+    "stop_2": "NOT TRIGGERED —— 本面未读任何测试结果、未在看结果后变更设计；本面签署早于任何解封",
+    "authority": "卡文停止条件的最终裁定权=独立复审/编排层；本面只登记签署事实与未签残余，不改任何卡 status/decision/decision_sha256、不产生 ACCEPT",
+    "unseal_gate_unchanged": "design_manifest.unseal_gate.currently_satisfied=false（L22）：双签 + 新版本重冻 + 编排层明文解封指令，三者均未满足"
+  },
+
+  "gate0": {
+    "passed": true,
+    "performed": "写+回读+删除三步自探（本 attempt 目录、零提权）+ 封盘/store 只读复哈希 + 7 件回源 sha 实测",
+    "raw_output_location": "oracle.md §7（逐字）"
+  },
+
+  "mutation_results": {
+    "note": "红绿变异在 _mut/Rx 副本执行，原件与 I-12-A 三件字节不动；红臂原始输出逐字存 _mut/Rx/verifier_output.txt",
+    "legend": "0=ALL_INVARIANTS_OK；1=harness 失败；2=无裁决；3=不变量违例（具名 K1..K5）",
+    "GREEN": 0,
+    "R1_statistics_flag": 3,
+    "R2_payload_tamper": 3,
+    "R3_industry_signs_stats_threshold": 3,
+    "R4_source_hash_mismatch": 3,
+    "R5_fake_complete": 3,
+    "GREEN_FINAL": 0,
+    "expected_match": true,
+    "kill_evidence": "R1=K1 具名 1 处；R2=K4 载荷哈希不符；R3=K4 具名 6 处（含 signed_count 10≠11、行业代签统计 6 项）；R4=K3 professional_approval sha 复算不符；R5=K4 True≠计算值 False"
+  },
+
+  "written_files": {
+    "note": "sha256 于定稿时复算；handoff.json 自身为自指文件不记自身 sha（由父/复审复哈希）",
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/oracle.md": {
+      "bytes": 17787,
+      "sha256": "40adafdc050f173080158d5a36a396bf47e2781b6f178aa17a79bb24a4aacfe7"
+    },
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/ind_signatures.json": {
+      "bytes": 37009,
+      "sha256": "04981bda0eea4edf61fb985ed64b06a17ab9023a12712c788cb78888720379b5"
+    },
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/_verify_ind_sign.ps1": {
+      "bytes": 8537,
+      "sha256": "7c69eaaec8e2838e5e050d8675d1b8eb7b2f3f5f335574c61edeee460282fb8b"
+    },
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/ruling_ind_sign.md": {
+      "bytes": 18542,
+      "sha256": "05a1a05d8809c620f005e34232794c480ea2f14f344869e5b8478d046ecefe96"
+    },
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/_mut/**": "红臂副本 + 各臂 verifier_output.txt（原件字节不动）"
+  },
+
+  "changed_paths": [
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/oracle.md",
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/ind_signatures.json",
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/ruling_ind_sign.md",
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/handoff.json",
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/_verify_ind_sign.ps1",
+    "execution_runs/I-12-A-IND-SIGN/a20260926-01/_mut/**（变异副本与红臂输出；I-12-A 目录只读）"
+  ],
+
+  "source_integrity_recheck": {
+    "note": "门 0 实测值见 oracle §2；收尾再复哈希一次（同值即零改动）",
+    "i12a_three_files": {
+      "oracle.md": "08723ab0f62c07cbf0f9a7563b8fc6382bff41da8a3f7c72ab14b81cfc7e76ee",
+      "evidence/I-12-A/evaluation_design.json": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+      "evidence/I-12-A/professional_approval.json": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1"
+    },
+    "sealed_hypotheses": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28（零字节，51,697 B）",
+    "store_hypotheses_v3": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff（零改动）"
+  },
+
+  "commands_executed": [
+    "gate0 自探（写/回读/删 + 封盘/store/7 件回源只读复哈希）——原始输出见 oracle.md §7",
+    "powershell -NoProfile -ExecutionPolicy Bypass -File _verify_ind_sign.ps1 -Root <attempt|_mut/Rx> -PlanRoot .planning/2026-09-19-three-project-history-audit（绿臂 + 红臂；只读校验）"
+  ],
+
+  "residuals_not_hidden": [
+    "IND-07 NOT_SIGNED：跨币种绝对误差展示缺 origin 前可核汇率来源（禁网+回源面无汇率登记）⇒ fail-closed；恢复=补登记可核汇率后同版本补签",
+    "DEF-06 行业半签 OUTSTANDING：字段 12 需统计+行业共同签字，本并行轮无值可签 ⇒ 统计面出值后行业回签（早于解封），否则 STOP① 不解除",
+    "上游 §C4/E5 恒等式与「约 67%」为转引未独立复核（oracle §4 残余 1）",
+    "OPEN-2/3/5/6 未解（本面不解除）；正式发布格 blocked（本面无发布授权）"
+  ],
+
+  "open_questions": [
+    "统计面（98869ea8）6 项阈值签署结果未知 ⇒ statistics_sign_still_needed=true，本面不推定、不预签",
+    "字段 12 行业回签的载体与版本（是否须在 professional_approval 新版本上落签）归编排层/复审裁定，本面不自裁",
+    "小米 gap-U1/U2 解除后是否重新入池：按 IND-08 reentry 规则执行，池结构变更须新 design 版本+重签"
+  ],
+
+  "next_action": "①统计面（98869ea8）对 6 项阈值逐项签署并回传；②字段 12 出值后由行业面回签（本面可复派，载体由编排层定）；③双签齐 + 新版本重冻 SHA256 + 编排层明文解封指令三者齐备前，不解封任何测试实际值、不派 I-12-B、不产生 ACCEPT；④本面残余（IND-07/DEF-06/转引项）随件移交，不得以「已填写」冒充「已签署」。",
+
+  "boundary_self_declaration": {
+    "no_auto_actions": true,
+    "no_falsifier_triggered": true,
+    "no_status_decision_changed": true,
+    "no_accept_produced": true,
+    "no_signature_for_statistics": true,
+    "implementer_not_signed_for_me": true,
+    "sealed_hypotheses_untouched": true,
+    "store_untouched": true,
+    "five_plan_files_untouched": true,
+    "i12a_attempt_readonly": true,
+    "writes_outside_planning": 0,
+    "git_writes": 0,
+    "git_commands_run": 0,
+    "git_status_run": false,
+    "network_used": false,
+    "external_retrieval_not_local": false,
+    "test_results_unsealed": false,
+    "accuracy_results_read": false,
+    "params_released_count": 0,
+    "not_dispatched": ["I-12-B"]
+  },
+
+  "written_files_finalized": true
+}

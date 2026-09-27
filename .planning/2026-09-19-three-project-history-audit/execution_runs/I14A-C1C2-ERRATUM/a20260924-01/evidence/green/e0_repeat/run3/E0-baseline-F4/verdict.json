@@ -1,0 +1,181 @@
+{
+  "case": "E0-baseline-F4",
+  "checks": {
+    "expected_raw_returncode": {
+      "ok": true,
+      "detail": {
+        "raw": 2,
+        "expected": 2
+      }
+    },
+    "calls_failed": {
+      "ok": true,
+      "detail": {
+        "raw": 0,
+        "expected": 0
+      }
+    },
+    "peak_rss_gt": {
+      "ok": true,
+      "detail": {
+        "raw": 0.006,
+        "expected_gt": 0.0
+      }
+    },
+    "peak_rss_source": {
+      "ok": true,
+      "detail": {
+        "raw": "live_sample",
+        "expected": "live_sample"
+      }
+    },
+    "rss_sample_count_min_gte": {
+      "ok": true,
+      "detail": {
+        "raw": 1,
+        "expected_gte": 1
+      }
+    },
+    "fixture_pid_identity_scope": {
+      "ok": true,
+      "detail": {
+        "status": "not_claimed_sub_cadence",
+        "rule": "fixture_pid_is_in_samples required iff the call's elapsed_seconds >= 2x effective sampling cadence (0.1504 s = 2 * 75.2 ms); shorter calls are recorded as identity-not-claimed with their measured lifetimes",
+        "threshold_seconds": 0.1504,
+        "fixture_reported_pids": [
+          1768,
+          2572,
+          3032,
+          11100,
+          12224,
+          22036
+        ],
+        "sampled": [
+          460,
+          5968,
+          7332,
+          11100,
+          17860,
+          20624,
+          22492
+        ],
+        "per_call": [
+          {
+            "child_pid": 20624,
+            "fixture_pid": 11100,
+            "elapsed_seconds": 0.074016,
+            "in_scope": false
+          },
+          {
+            "child_pid": 460,
+            "fixture_pid": 22036,
+            "elapsed_seconds": 0.063387,
+            "in_scope": false
+          },
+          {
+            "child_pid": 5968,
+            "fixture_pid": 2572,
+            "elapsed_seconds": 0.06434,
+            "in_scope": false
+          },
+          {
+            "child_pid": 22492,
+            "fixture_pid": 12224,
+            "elapsed_seconds": 0.075337,
+            "in_scope": false
+          },
+          {
+            "child_pid": 17860,
+            "fixture_pid": 3032,
+            "elapsed_seconds": 0.074569,
+            "in_scope": false
+          },
+          {
+            "child_pid": 7332,
+            "fixture_pid": 1768,
+            "elapsed_seconds": 0.063433,
+            "in_scope": false
+          }
+        ]
+      }
+    },
+    "rss_pids_include_child_pids": {
+      "ok": true,
+      "detail": {
+        "sampled": [
+          460,
+          5968,
+          7332,
+          11100,
+          17860,
+          20624,
+          22492
+        ],
+        "child_pids": [
+          460,
+          5968,
+          7332,
+          17860,
+          20624,
+          22492
+        ]
+      }
+    },
+    "window_present:command_total_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.512705
+      }
+    },
+    "window_present:slo_window_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.438631
+      }
+    },
+    "window_present:rss_sample_window_seconds_max": {
+      "ok": true,
+      "detail": {
+        "value": 0.058448
+      }
+    },
+    "window_present:quick_check_seconds": {
+      "ok": true,
+      "detail": {
+        "value": 0.072197
+      }
+    },
+    "quick_check_outside_slo_window": {
+      "ok": true,
+      "detail": {
+        "value": false
+      }
+    },
+    "rss_window_not_before_slo_window": {
+      "ok": true,
+      "detail": {
+        "rss": 0.058448,
+        "slo": 0.438631
+      }
+    },
+    "frozen_budgets_untouched": {
+      "ok": true,
+      "detail": {
+        "raw": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        },
+        "frozen": {
+          "exact_p95": 5.0,
+          "latest_p95": 5.0,
+          "bundle_p95": 5.0,
+          "peak_rss_gb": 2.0
+        }
+      }
+    }
+  },
+  "all_ok": true,
+  "failed_checks": []
+}

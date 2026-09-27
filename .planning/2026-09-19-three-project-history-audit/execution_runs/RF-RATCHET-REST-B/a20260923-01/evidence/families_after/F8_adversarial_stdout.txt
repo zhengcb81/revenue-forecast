@@ -1,0 +1,54 @@
+...F..                                                                   [100%]
+================================== FAILURES ===================================
+_ ReceiptAttackTests.test_context_fabrication_is_rejected_by_final_validation _
+
+self = <adversarial.test_receipt_attacks.ReceiptAttackTests testMethod=test_context_fabrication_is_rejected_by_final_validation>
+
+    def test_context_fabrication_is_rejected_by_final_validation(self) -> None:
+        # A VerificationContext copied from a legit run with fabricated
+        # gate_ids can produce a receipt — but the final validator recomputes
+        # the gates from the result and must reject the mismatch.
+        from revenue_report import validate_published_forecast
+    
+        result = run_forecast(forecast_document())
+        legit_context = validate_published_forecast(
+            result, result["input_document"]
+        )
+        forged_context = copy.copy(legit_context)
+        forged_context.executed_gate_ids = ["output_recomputation", "input_contract"]
+>       receipt = build_publication_receipt(
+            result, forged_context, attestation_status="host_signed"
+        )
+
+tests\adversarial\test_receipt_attacks.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_publication.py:416: in build_publication_receipt
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = "attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)"
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: attestation_missing_record: attestation_status='host_signed' requires a publication_attestation record (E27)
+
+scripts\contracts\evidence.py:93: ForecastInputError
+=========================== short test summary info ===========================
+FAILED tests/adversarial/test_receipt_attacks.py::ReceiptAttackTests::test_context_fabrication_is_rejected_by_final_validation
+1 failed, 5 passed in 3.71s

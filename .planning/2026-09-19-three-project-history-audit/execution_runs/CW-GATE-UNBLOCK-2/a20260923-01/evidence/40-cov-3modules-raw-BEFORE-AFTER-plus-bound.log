@@ -1,0 +1,41 @@
+﻿=== 40-cov-3modules-raw-BEFORE-AFTER-plus-bound.log ===
+script: evidence\attr_3modules.py (coverage 7.12.0 PythonParser; read-only; no product write)
+exit code (rc): 0
+=== data files ===
+cov_beforeB.json sha256 8B18503772FF9A88358F68CDEC7AF5B8C072241BBE95C7B56206803E91532CF0  bytes 1186762
+cov_afterB.json  sha256 7C966B73ADD6196D1DA331E83F942E6D2D717B3B742D8934C94B736CCC2C21C0  bytes 1186681
+
+=== (a) per-module raw summaries, both CI-equivalent arms ===
+module | arm | stmts | cov_lines | branches | cov_branches | combined/total | pct | missing_lines | missing_branches
+observability.py | BEFORE-B | 283 | 198 | 70 | 34 | 232/353 | 65.7 | 85 | 36
+observability.py | AFTER-B | 283 | 198 | 70 | 34 | 232/353 | 65.7 | 85 | 36
+prompt_injection.py | BEFORE-B | 178 | 94 | 76 | 29 | 123/254 | 48.4 | 84 | 47
+prompt_injection.py | AFTER-B | 178 | 94 | 76 | 29 | 123/254 | 48.4 | 84 | 47
+prune_retired_evidence.py | BEFORE-B | 310 | 255 | 96 | 61 | 316/406 | 77.8 | 55 | 35
+prune_retired_evidence.py | AFTER-B | 310 | 255 | 96 | 61 | 316/406 | 77.8 | 55 | 35
+archive_retired_evidence.py | BEFORE-B | 141 | 127 | 30 | 19 | 146/171 | 85.4 | 14 | 11
+archive_retired_evidence.py | AFTER-B | 141 | 141 | 30 | 30 | 171/171 | 100.0 | 0 | 0
+
+=== (b) static counts (coverage 7.12 PythonParser) pristine(CW) vs split(iso) ===
+module | pristine stmts/branches | split stmts/branches | json(afterB) stmts/branches | parser==json?
+observability.py | 272/72 | 283/70 | 283/70 | stmts True arcs True
+    pristine sha EDCBECCB9B13778EFE2D80C58A401C345856BF04220462E1FBBE56EA96111F4E
+    split    sha D398F92176AA91B49DC5B431C22BF7F98525D167B18DA20659742AE3B1FAA5D8
+prompt_injection.py | 176/76 | 178/76 | 178/76 | stmts True arcs True
+    pristine sha 88154DE4AB7630606C2545CDCDF9C3AC44FAF32BCAE0F83F33A1CEBC6D490F33
+    split    sha 815691D1EB2B2A896CAB0B5A82B46A2A06A6AF978E720B46E2179D19523FD5D0
+prune_retired_evidence.py | 303/92 | 310/96 | 310/96 | stmts True arcs True
+    pristine sha 0C99BBE0C5F4EF16E7F84BA8AAE0548EF6F59A0080274D5BD1CE83A7D37990B0
+    split    sha CE35EAB403F709D2AD8F28D586B44E02DD8C2D5C6844F5215F8699B4BA7C22B9
+archive_retired_evidence.py | 141/30 | 141/30 | 141/30 | stmts True arcs True
+    pristine sha 2A236072E0C3CB3C3379020E855A1433091FBBDA42865C04AD0A6FDBC2AE01AD
+    split    sha 2A236072E0C3CB3C3379020E855A1433091FBBDA42865C04AD0A6FDBC2AE01AD
+
+=== (c) upper bound: could the SPLIT alone explain the shortfall? ===
+bound: metric_pristine <= C_split / T_pristine  (code motion cannot drop executed units)
+module | floor | measured(AFTER-B) | T_split | C_split | T_pristine | upper bound % | bound < floor-0.5 ?
+observability.py | 91 | 65.7 | 353 | 232 | 344 | 67.4 | YES -> split cannot be the cause
+prompt_injection.py | 73 | 48.4 | 254 | 123 | 252 | 48.8 | YES -> split cannot be the cause
+prune_retired_evidence.py | 87 | 77.8 | 406 | 316 | 395 | 80.0 | YES -> split cannot be the cause
+archive_retired_evidence.py | 95 | 100.0 | 171 | 171 | 171 | 100.0 | NO -> inconclusive
+

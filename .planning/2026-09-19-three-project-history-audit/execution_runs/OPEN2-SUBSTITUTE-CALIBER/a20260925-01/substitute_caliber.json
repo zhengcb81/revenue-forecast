@@ -1,0 +1,242 @@
+{
+  "schema": "open2-substitute-caliber/1",
+  "station": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01",
+  "attempt": "execution_runs/OPEN2-SUBSTITUTE-CALIBER/a20260925-01",
+  "role": "industry_or_accounting_reviewer",
+  "card": "I-11-B unlock condition C2 (branch 2), evaluated against card I-11-A / I-11-B artifacts",
+  "written_scope": "this directory only; all cited sources read-only; network=0; git writes=0",
+  "verdict": {
+    "substitute_established": true,
+    "established_meaning": "『分部对外收入 + 分金属销量』这一替代口径（定义 + FY2023/FY2024/FY2025 三年数据 + 新 parameter_id 规格）经本工位判定成立；仅在 conditions 全部成立时成立",
+    "conditions": [
+      "C-1 两槽独立：收入侧与量侧分别落参数，禁止跨层相除（oracle P3）",
+      "C-2 单位经济学若给，只能同表同注配对（按产品划分的销售详情：单价/销售数量/金额）（oracle P4）",
+      "C-3 收入路径只允许一条进入模型，另一侧只作对账（oracle P5）",
+      "C-4 新 parameter_id 由实现者在 model_cards.md 注册并通过 REGISTERED/唯一性检查；本工位不注册（oracle P6，写入面不含 model_cards.md）",
+      "C-5 low/base/high 保持 null；ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027 的 _PLACEHOLDER 与 threshold_basis 一律不动"
+    ],
+    "c2_branch2_fully_discharged": false,
+    "c2_branch2_why_not": "口径与 id 规格已立，但『注册』动作（model_cards.md 新增 + hypotheses.json 新版本 + decision_sha256）属实现者/编排层，本工位无该写入面；故 C2 第二分支尚未满足，OPEN-2 与 I-11-B 仍 BLOCKED",
+    "releases_nothing": true,
+    "does_not_unblock_open2": true
+  },
+  "caliber": {
+    "name": "分部对外收入 + 分金属销量（无换算系数两槽口径）",
+    "layer_1_revenue": {
+      "measure": "矿产品分部 对外销售收入（人民币元）",
+      "why": "抵销已在对外口径内完成，不得再扣抵销；与合并营业收入存在恒等关系（四分部对外之和 = 合并营业收入）",
+      "existing_parameter_id": "ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027",
+      "anchor_text": "对外销售收入"
+    },
+    "layer_2_volume": {
+      "measure": "分金属销售量（铜 吨 / 金 千克 / 锌 吨 / 银 千克）",
+      "why": "产销量情况分析表按金属分列披露生产量/销售量/库存量；表注『本表不含非控股企业的相关数据』",
+      "existing_parameter_ids": ["ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027", "ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027"],
+      "missing_parameter_ids": ["ZIJIN_MINERAL_ZINC_SALEABLE_VOLUME_FY2027", "ZIJIN_MINERAL_SILVER_SALEABLE_VOLUME_FY2027"],
+      "anchor_text": "②产销量情况分析表"
+    },
+    "layer_3_unit_economics_optional": {
+      "measure": "分金属单位实现收入（不含税单价，人民币元/吨、元/克）",
+      "rule": "分子分母必须同出『按产品划分的销售详情』一张表、同一条表注；分部对外收入与分金属销量之间不得相除",
+      "why_same_table": "该表同时披露 单价（不含税）/ 销售数量/ 金额 三列，两期同表，且 金额÷数量 与披露单价在舍入内一致（A12 实测相对误差 0.000616%）"
+    },
+    "forbidden_constructions": [
+      "F-1 分部对外收入 ÷ 任一（或合计）分金属销量 → 得『元/吨』类单位收入：分子含矿产品分部全部产品（铜/金/锌/银/铅精矿/锂/铁精矿/钨/钼）、为抵销后对外口径；分母仅四金属、且不含非控股企业 ⇒ 三重口径错配（实测 scope_mismatch）",
+      "F-2 把 吨 与 千克 相加成单一『混合金属分母』：等价于重新引入未披露换算系数，只是换了个名字",
+      "F-3 把 同行/行业平均『元/吨铜当量』套给紫金（IND C 类，跨公司不可比）",
+      "F-4 resource(量×价) 与 direct_revenue(分部对外收入) 两条路径同时进收入路径（双计，见 dependency_control）",
+      "F-5 用 摘要/研报/转述 口径替代产销量表或分部附注原文"
+    ],
+    "benefits": [
+      "彻底移除唯一无来源输入（铜当量换算系数），factor_basis=none",
+      "两侧均为公司同一报告期原文披露，页/表/锚文本可定位，sha256 绑定，且有第二条非取文工具的独立复核路径（算术闭环 + 跨报告同值）",
+      "原 double_count_exclusion『铜当量折算系数只允许出现一次』的约束自然消失（IND ruling L96）",
+      "口径暴露二（元/吨铜当量被误当铜价）与跨公司不可比（IND C 类）一并消失",
+      "对系数的极端敏感性（k=20/24/28 的数量级摆动）不再存在"
+    ],
+    "costs_risks": [
+      "R1 单位经济学若误用跨层相除，会以『元/吨』的形式原样复现口径暴露二（见 registered_observations ARITH-INCONSISTENCY-1：封盘件的 original_value 数值上就是 收入÷铜销量）",
+      "R2 分母口径暴露：产销量表不含非控股企业、不含 锂/钨/钼/铅 行 ⇒ 分部收入无法对四金属完全分解（见 not_established NE-2）",
+      "R3 双计：量价路径与分部收入路径互斥，必须二选一进模型",
+      "R4 起止年份只有 FY2023–FY2025 三个已披露年度，FY2027 幅度仍须 I-11-B 自行校准（本轮不给）",
+      "R5 单位对齐：金/银披露单价为 元/克、披露销量为 千克，模型相乘须显式 ×1000 比例因子（unit_scale_only，非金属换算）"
+    ]
+  },
+  "data": {
+    "segment_external_revenue_mineral_segment": {
+      "unit": "人民币元",
+      "basis": "company_disclosure",
+      "FY2023": 59766798161,
+      "FY2024": 74089365354,
+      "FY2025": 109977556345,
+      "cross_checks": [
+        "FY2024 在两份年报中同值（AR2024 与 AR2025），A9 rc=0",
+        "FY2025 四分部对外之和 = 合并营业收入 349079082852，A10 rc=0"
+      ]
+    },
+    "segment_external_revenue_all_segments": {
+      "unit": "人民币元",
+      "FY2023": 293403242878,
+      "FY2024": 303639957153,
+      "FY2025": 349079082852
+    },
+    "metal_sales_volume": {
+      "unit_note": "铜/锌=吨；金/银=千克（均为披露单位，不做任何折算）",
+      "basis": "company_disclosure",
+      "copper_t": {"FY2023": 810737, "FY2024": 824317, "FY2025": 884943},
+      "gold_kg": {"FY2023": 66707, "FY2024": 67786, "FY2025": 83161},
+      "zinc_t": {"FY2023": 414879, "FY2024": 386444, "FY2025": 352470},
+      "silver_kg": {"FY2023": 411403, "FY2024": 424145, "FY2025": 430254},
+      "derivation_note": "铜/金 FY2023–FY2025 = 销售详情表中该金属各产品行销售数量之和（铜精矿+电积铜+电解铜；金锭+金精矿）；锌/银为单产品行原值",
+      "cross_checks": "A1–A8：两年共 8 项销量同比与两份年报披露的同比%逐一吻合（最大偏差 0.00498pp < 0.005pp 冻结容差），A_RC=0"
+    },
+    "per_metal_unit_revenue_base_period_observation": {
+      "status": "base_period_observation_only_not_a_released_parameter",
+      "magnitude_released": false,
+      "method": "分产品金额(万元)×10000 ÷ 该金属销售数量（同表同注；锌/银因单产品行等于披露单价）",
+      "copper_yuan_per_t": {"FY2023": 51156.34, "FY2024": 58438.29, "FY2025": 65354.36},
+      "gold_yuan_per_kg": {"FY2023": 406112.85, "FY2024": 520649.84, "FY2025": 777709.98},
+      "zinc_yuan_per_t": {"FY2023": 11854.61, "FY2024": 14921.31, "FY2025": 14998.87},
+      "silver_yuan_per_kg": {"FY2023": 3497.08, "FY2024": 4739.7, "FY2025": 6875.03},
+      "disclosed_unit_price_cross_reference": {
+        "note": "披露不含税单价：铜精矿 49,406/56,342/63,613；电解铜 59,590/65,894/71,422；金锭 433.09/533.39/810.17 元/克；锌 11,855/14,921/14,999；银 3.50/4.74/6.88 元/克（FY2023/FY2024/FY2025）",
+        "zinc_silver_equal_disclosed_price": true
+      }
+    }
+  },
+  "scope_mismatch": {
+    "why_the_ratio_is_forbidden": "同一『元/吨』标签下，分子与分母在产品范围、抵销状态、并表范围三个维度都不同源",
+    "fy2025_measured": {
+      "segment_external_revenue": 109977556345,
+      "segment_internal_revenue": 28294116611,
+      "segment_total_including_internal": 138271672956,
+      "sum_of_mine_product_rows_gross_wan": 13148950,
+      "sum_of_mine_product_rows_gross_yuan": 131489500000,
+      "gap_gross_vs_external_yuan": 21511943655,
+      "gap_gross_vs_external_pct_of_external": 19.56,
+      "products_in_segment_but_not_itemized_yuan": 6782172956,
+      "volume_table_note": "本表不含非控股企业的相关数据。",
+      "segment_product_scope_verbatim": "矿产品分部的产品为矿山产铜、矿山产金、矿山产锌精矿、矿山产铅精矿、矿山产银、矿山产锂、铁精矿、钨精矿、钼精矿，涉及集团矿山企业的各个生产环节，如采矿、选矿和冶炼",
+      "naive_ratio_value": 124276.43,
+      "naive_ratio_formula": "109977556345 ÷ 884943 = 124276.43 元/吨（把金/银/锌/锂/铁/钨/钼 收入全部装进『元/吨铜』标签 ⇒ 原命题口径暴露二原样复现）"
+    }
+  },
+  "new_parameter_id": {
+    "primary": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+    "primary_reason": "C2 第二分支是对『系数取值解 BLOCKED』的替代，而被封的正是单位收入参数 ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027（hypotheses.json L168）；替代口径必须给出一个不依赖换算系数的单位收入落点，且须按 ACCT A-2.3 第1条『单位经济学若必须给出，按金属分别给（并须符合 M09 realized_price 的 driver 注册规则）』执行",
+    "companions": [
+      "ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027",
+      "ZIJIN_MINERAL_ZINC_SALEABLE_VOLUME_FY2027",
+      "ZIJIN_MINERAL_SILVER_SALEABLE_VOLUME_FY2027"
+    ],
+    "companion_reason": "把『分金属销量』按 IND L96 点名的 铜/金/锌/银 四金属补齐（铜、金销量 id 已存在，锌、银缺）；金/锌/银单位收入为可选槽位",
+    "alternative_landing": "若 I-11-B 走 direct_revenue（分部对外收入直接作收入路径），则新 id 只需补 锌/银 销量槽；两种落法都在本口径内，唯一被禁止的落法是跨层相除",
+    "spec": {
+      "parameter_id": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027",
+      "model_id": "resource",
+      "driver_name": "realized_price",
+      "unit": "人民币元/吨（不含税）",
+      "unit_basis": "disclosed_same_table_pairing",
+      "unit_basis_note": "分子分母同出『下表列示 2025 年及 2024 年按产品划分的销售详情』一张表与同一条表注；披露单价为公司原文值，混合单价为 reviewer 由披露值复算（标 derived，非披露原文数字）",
+      "factor_basis": "none",
+      "conversion_factor_value": null,
+      "factor_source_in_filing": "not_applicable_no_conversion_used",
+      "cross_company_comparable": "not_applicable（本口径不含任何跨公司输入）",
+      "low": null,
+      "base": null,
+      "high": null,
+      "base_period_start": "FY2023",
+      "base_period_end": "FY2025",
+      "effective_period": "FY2027（待 I-11-B 校准幅度）",
+      "conversion_formula": "单位实现收入 = 该金属各产品行金额(元) ÷ 该金属各产品行销售数量；收入 = 单位实现收入 × 销售数量。金/银须在 conversion_formula 显式登记 ×1000 比例因子（披露单价 元/克、披露销量 千克），标 unit_scale_only=true（尺度换算，不是金属换算）",
+      "original_value_status": "基期观察值已在 data.per_metal_unit_revenue_base_period_observation 登记（copper FY2025 = 65354.36 元/吨）；该值不是放行值，low/base/high 仍为 null",
+      "state": "pending_professional_decision",
+      "dependency_control": {
+        "shared_driver_ids": [
+          "ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027",
+          "ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027",
+          "ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027"
+        ],
+        "double_count_check": "收入路径只允许一条：要么用 分部对外收入（direct_revenue），要么用 分金属销量×分金属单位收入（resource），另一侧只作对账（falsifier：Σ分产品收入 − 内部抵消数 = 合并营业收入；Σ分部对外收入 = 合并营业收入）；价格变化不得再作为『额外收入』叠加；同一笔销量不得在两条路径重复计入；铜当量换算系数在任何路径中出现即判违例（factor_basis 必须为 none）",
+        "correlated_scenarios": ["金属价格与销量在并购/爬坡年同向变动，low/high 不得独立外推（STOP_SCENARIO）"],
+        "scenario_joint_logic": "价格情景与销量情景须联合给定，且不得使收入路径与量价路径同时生效"
+      },
+      "threshold_basis_touched": false,
+      "placeholder_suffix_removed": false,
+      "released": false
+    },
+    "registration_action_required_from": "实现者/编排层（model_cards.md 新增 parameter_id 条目 + hypotheses.json 新版本 + decision.decision_sha256），本工位无该写入面"
+  },
+  "naming_rule_evidence": {
+    "rule_found_by_source_reading": true,
+    "explicit_naming_rule_document": "NOT_FOUND（未见任何文档逐条规定 parameter_id 构词法）",
+    "rule": "{ISSUER} + {范围或分部} + {指标} + {期间 FY20xx}[_PLACEHOLDER]，全大写下划线分隔；_PLACEHOLDER 仅用于未获批占位值；一个 id 只能表示一条命题 × 一个 driver × 一个 effective_period",
+    "rule_sources": [
+      "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json 既有 14 个 id（L37/L49/L56/L63/L168/L275/L287/L390/L495/L605/L617/L627/L729/L834）",
+      "execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py L197-L213（E_DUPLICATE_PARAMETER 唯一性）、L187-L190（E_UNKNOWN_MODEL/E_UNKNOWN_DRIVER）",
+      "execution_runs/I-11-A/a20260919-01/decision.md DEC-5 L125-L135（只落到 model_cards.md 已注册 model_id/driver_name）",
+      "execution_v2/model_cards.md L644-L650（M09 resource：必填 saleable_volume/realized_price；单位口径『不得混矿石吨、精矿吨、金属吨』）"
+    ],
+    "why_id_differs_from_blocked_one": "被封 id 含『铜当量』语义且为混合分母；新 id 显式带金属名（COPPER/GOLD），符合 M09『不得混矿石吨、精矿吨、金属吨』与既有的 ZIJIN_MINERAL_{METRIC}_{METAL} 构词（ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027 的同构替换）"
+  },
+  "relation_to_proposition": {
+    "H-CN-ZIJIN-MIN-02": "NOT_ESTABLISHED（工作区内 0 命中，见 not_established NE-1）",
+    "actual_proposition_touched": "H-CN-ZIJIN-SEG-02（hypotheses.json L134-L239）",
+    "what_changes": "只改 parameter_mapping 落点（追加新版本，不回改旧快照）：unit 由『人民币元/吨铜当量』改为分金属单位；original_value/conversion_formula/falsifier.observable 换成同表同注口径",
+    "what_does_not_change": "claim（量×价=分部对外收入的相容性约束）、state=pending_professional_decision、decision_sha256=null、threshold_basis=professional_judgement_required、low/base/high=null",
+    "new_proposition_needed": false,
+    "proposition_count_impact": "不新增命题；若实现者要为『分金属单位收入』另立命题，属 I-11-A 新版本流程，不在本工位授权内"
+  },
+  "evidence": [
+    {"id": "EV-01", "item": "FY2025 矿产品分部对外销售收入 109,977,556,345", "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/extract/P1_zijin_pages.json", "line": "L161 (pdf_page=327), L163 (text)", "file_sha256": "f1909d136d05bde0230e7fd2761c079026f9a132dd7123109bd7ca7bab85e2cf", "file_bytes": 89754, "physical": "CN-ZIJIN-AR2025 sha256 01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d (79925886 B), pdftotext -f 326 -l 326, 页脚 -219 -, anchor 对外销售收入", "verbatim_quote": "2025年 项目矿产品冶炼产品贸易其他抵销合计 分部收入： 对外销售收入109,977,556,345165,858,644,87429,212,610,83044,030,270,803-349,079,082,852"},
+    {"id": "EV-02", "item": "FY2024 矿产品分部对外销售收入 74,089,365,354（AR2025）", "file": "同 EV-01 文件", "line": "L166 (pdf_page=328), L168 (text)", "physical": "pdftotext -f 327 -l 327, 页脚 -220 -", "verbatim_quote": "2024年 … 对外销售收入74,089,365,354181,141,823,72529,386,475,08519,022,292,989-303,639,957,153"},
+    {"id": "EV-03", "item": "FY2023 矿产品分部对外销售收入 59,766,798,161（AR2024 原件）", "file": "C:/Users/郑曾波/Projects/company-wiki/companies/紫金矿业/raw/financial_reports/annual/2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf", "file_sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89", "file_bytes": 32100114, "command": "pdftotext -enc UTF-8 -f 354 -l 355 <pdf> -", "pdf_leaf_1based": 354, "printed_footer": "240", "retrieved_at_utc": "2026-08-01T07:10:51Z", "source_url": "https://www.cninfo.com.cn/new/disclosure/detail?stockCode=601899&announcementId=1222870413&announcementTime=2025-03-21%2016:00", "verbatim_quote": "2023年 项目 分部收入: 对外销售收入 矿产品 冶炼产品 贸易 其他 抵销 合计 59,766,798,161 150,873,974,024 48,296,807,364 34,465,663,329 - 293,403,242,878", "snapshot": "no new snapshot written: write surface limited to this station's four deliverables; text transcribed verbatim here"},
+    {"id": "EV-04", "item": "FY2024 分部对外收入跨报告同值（第二条独立路径）", "file": "同 EV-03 文件", "command": "pdftotext -enc UTF-8 -f 352 -l 353 <pdf> -", "pdf_leaf_1based": 352, "printed_footer": "238", "verbatim_quote": "2024年 … 74,089,365,354 181,141,823,725 29,386,475,085 19,022,292,989 - 303,639,957,153", "note": "与 EV-02 完全同值 ⇒ A9 rc=0"},
+    {"id": "EV-05", "item": "FY2025 分金属销量（产销量情况分析表 销售量列）", "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/extract/P2_zijin_44_48.txt", "line": "L267(表名) L269-L277(列头) L279-L307(产品行) L309-L310(生产量) L312-L313(销售量) L315-L316(库存量) L318-L325(同比) L327(表注)", "file_sha256": "073276d2dc73bddef40ec7d415e9f5e7e942769c645f673f422b507a72cbf159", "file_bytes": 17810, "verbatim_quote": "83,161 884,943 352,470 430,254 ｜ 111.35 162,950 697,678 403,324 ｜ 产销量情况说明：本表不含非控股企业相关数据。", "note": "产品行顺序 金/铜/锌/银/铁精矿/冶炼加工贸易金/冶炼产铜/冶炼产锌 ⇒ 销售量 金 83,161 千克、铜 884,943 吨、锌 352,470 吨、银 430,254 千克"},
+    {"id": "EV-06", "item": "FY2024 分金属销量（两条路径）", "file_a": "同 EV-05 文件", "line_a": "L112-L113（销售详情表 2024 年 销售数量：38,087/29,699；620,407/80,919/122,991；386,444；424,145）", "file_b": "AR2024 原件（sha 同 EV-03）", "command_b": "pdftotext -enc UTF-8 -f 42 -l 42 <pdf> -", "pdf_leaf_1based": 42, "printed_footer": "42", "verbatim_quote": "67,786 824,317 386,444 424,145 … 销售量比上年增减（%） 1.62 1.68 -6.85 3.10"},
+    {"id": "EV-07", "item": "FY2023 分金属销量（销售详情表 2023 年列）", "file": "AR2024 原件（sha 同 EV-03）", "command": "pdftotext -enc UTF-8 -f 41 -l 41 <pdf> -", "pdf_leaf_1based": 41, "printed_footer": "41", "verbatim_quote": "下表列示 2024 年及 2023 年按产品划分的销售详情： … 2023 年 … 33,673 33,034 640,890 95,999 73,848 414,879 411,403 210.19 248,366 724,835 333,555", "derived_note": "铜 = 640,890+95,999+73,848 = 810,737；金 = 33,673+33,034 = 66,707；锌 = 414,879；银 = 411,403（A5–A8 与 AR2024 披露同比闭合）"},
+    {"id": "EV-08", "item": "披露不含税单价（三年）", "file_fy2025_fy2024": "同 EV-05 文件 L57-L58（2025）与 L107-L108（2024）", "file_fy2023": "AR2024 原件 pdftotext -f 41", "verbatim_quote_fy2025": "810.17 730.98 63,613 69,665 71,422 14,999 ｜ 6.88 660 772.15 71,621 20,327", "verbatim_quote_fy2023": "433.09 378.60 49,406 56,354 59,590 11,855 ｜ 3.50 584 447.95 60,333 19,160"},
+    {"id": "EV-09", "item": "矿产品分部产品范围（证明分部收入无法由四金属完全分解）", "file": "同 EV-01 文件", "line": "L156 (pdf_page=326), L158 (text)", "physical": "pdftotext -f 325 -l 325, 页脚 -218 -", "verbatim_quote": "(1)矿产品分部的产品为矿山产铜、矿山产金、矿山产锌精矿、矿山产铅精矿、矿山产银、矿山产锂、铁精矿、钨精矿、钼精矿，涉及集团矿山企业的各个生产环节，如采矿、选矿和冶炼"},
+    {"id": "EV-10", "item": "分产品金额 + 内部抵消数 + 合并数（收入路径对账式）", "file": "同 EV-05 文件", "line": "L215-L221", "verbatim_quote": "分产品 矿山产金锭 … 其它 内部抵消数 合并数 … 营业收入 3,975,798 2,491,716 4,237,657 665,294 880,537 528,665 295,801 73,482 12,582,221 4,996,807 819,823 26,857,122 -23,497,015 34,907,908", "note": "A11 rc=0"},
+    {"id": "EV-11", "item": "会计面首选替代（授权依据）", "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md", "line": "L100", "file_sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2", "verbatim_quote": "1. **单位回退（首选）**：只用披露单位计量 —— 收入侧用**分部对外收入（元）**，量侧用**分金属销量**（铜 吨、金 千克），不做混合金属分母；单位经济学若必须给出，按金属分别给（并须符合 M09 `realized_price` 的 driver 注册规则，见兼容影响）。"},
+    {"id": "EV-12", "item": "行业面首选口径替换（授权依据）", "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md", "line": "L96", "file_sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b", "verbatim_quote": "3. **首选口径替换（强烈建议 I-11-B 采用）**：不做当量合并，改为两个已披露量——「矿产品分部对外收入（元）」+「分金属销量（铜 884,943 吨 / 金 83,161 千克 / 锌 / 银，p44 产销量表）」分别落参数；这样 `double_count_exclusion` 中“铜当量折算系数只允许出现一次”的约束自然消失（`hypotheses.json:189/193`）"},
+    {"id": "EV-13", "item": "C2 题面原文（逐字）", "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json", "line": "L119", "file_sha256": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878", "verbatim_quote": "OPEN-2：系数取值解 BLOCKED（S1/A 级证据 + 双签）或落实『分部对外收入 + 分金属销量』替代口径并注册新 parameter_id"},
+    {"id": "EV-14", "item": "参数落点规则 DEC-5", "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/decision.md", "line": "L125-L135", "file_sha256": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951", "verbatim_quote": "DEC-5 参数落点：只落到 `model_cards.md` 已注册的 model_id/driver_name，落不下的判 pending"},
+    {"id": "EV-15", "item": "唯一性与注册检查", "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py", "line": "L21-L75 (REGISTERED), L187-L190, L197-L213", "verbatim_quote": "E_DUPLICATE_PARAMETER, parameter_id %s reused: same_driver=%s same_proposition=%s"},
+    {"id": "EV-16", "item": "M09 单位口径规则", "file": ".planning/2026-09-19-three-project-history-audit/execution_v2/model_cards.md", "line": "L644-L650", "file_sha256": "38ff2907acb627f3d5f6a97ca386a17551329ad3909720e84463a185154ae87c", "verbatim_quote": "单位/口径：已售可结算数量×U/同数量单位；不得混矿石吨、精矿吨、金属吨。 必填：`saleable_volume`、`realized_price`；可选默认：{\"other_revenue\":0}。"},
+    {"id": "EV-17", "item": "被封参数原文", "file": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "line": "L168-L175", "file_sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "verbatim_quote": "\"parameter_id\": \"ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027\", \"unit\": \"人民币元/吨铜当量\""},
+    {"id": "EV-18", "item": "索引口径差异（本轮实测）", "method": "对同一 PDF 分别用 pdftotext -f N -l N 与 被审 attempt 的 P1_zijin_pages.json 比对页面内容", "finding": "同一物理页在两套索引下编号不同：销售详情页（页脚 44）= pdftotext leaf 44 = P1 pdf_page 43；产销量表页（页脚 45）= pdftotext leaf 45 = P1 pdf_page 44（hypotheses page_span 记 44）；分部 2025 表页（页脚 -219 -）= pdftotext leaf 326 = P1 pdf_page 327 ⇒ MD&A 段 P1 = leaf−1、附注段 P1 = leaf+1，段间不一致", "implication": "跨源引用必须带 anchor_text，页码单独不可用（与 OPEN-11 R2-5 / DEC-2 一致，但本条是同文档内跨段不一致，属新实测）", "basis": "reviewer_measured"}
+  ],
+  "not_established": [
+    {"id": "NE-1", "item": "命题 id `H-CN-ZIJIN-MIN-02`", "result": "NOT_ESTABLISHED", "search": "对工作区（含 .planning 与 .planning 之外全部 md/json）检索 H-CN-ZIJIN-MIN-02 与 ZIJIN-MIN，命中 0", "nearest_real_proposition": "H-CN-ZIJIN-SEG-02", "rule": "不存在的 id 不得被当作原命题引用"},
+    {"id": "NE-2", "item": "矿产品分部内 锂/钨/钼/铅精矿/铁 的分金属销量（用于把分部收入完全分解到金属）", "result": "NOT_ESTABLISHED", "search": "AR2025 ②产销量情况分析表（pdftotext leaf 45）产品行只有 金/铜/锌/银/铁精矿/冶炼加工贸易金/冶炼产铜/冶炼产锌；分部定义却含 铅精矿/锂/钨/钼", "consequence": "分部对外收入 ÷ 四金属销量 在产品范围上不可闭合 ⇒ 支持 P3 禁止跨层相除"},
+    {"id": "NE-3", "item": "FY2023 年报原件（2023 年年报）", "result": "NOT_ESTABLISHED（本地语料不存在该原件）", "search": "company-wiki/companies/紫金矿业/raw/financial_reports/annual/ 下仅 FY2024 与 FY2025 两份 PDF", "consequence": "FY2023 数据全部取自 FY2024 年报的比较期（同一份原文、同一张表），口径连续性由 A5–A8 闭合；若需 FY2023 的产销量表库存列，则须另行取证"},
+    {"id": "NE-4", "item": "铜当量换算系数取值", "result": "不在本轮范围", "note": "两半区已判 fail-closed（ACCT BLOCKED-2a/2b、IND BLOCKED-2/3），本工位不重裁、不解锁"}
+  ],
+  "registered_observations_not_amending_any_file": [
+    {"id": "ARITH-INCONSISTENCY-1", "severity": "登记不回改", "finding": "封盘件的 original_value 自述『= 分部对外收入 ÷ (铜销量 884,943 吨 + 金销量 83,161 千克 × 24 吨/千克)』但写成 109977556345/885141：884,943 + 83,161×24 = 2,880,807，而 885,141 − 884,943 = 198（隐含系数 k = 0.002381，不是 24）", "measured": {"den_by_formula": 2880807, "num_over_den_by_formula": 38175.95, "num_over_885141": 124248.63, "implied_k": 0.002381}, "spillover": "IND ruling L86 的三点敏感性 k=20 ⇒ 43,159.55（与自述 ≈43,160 吻合）、k=28 ⇒ 34,224.13（吻合），但 k=24 应为 38,175.95 而自述写 124,248.63 ⇒ 该三点复算的中间点换了基准；ACCT 的 −10,670.89 在 885,141 基准内自洽（113,577.74 − 124,248.63）", "also_note": "109,977,556,345 ÷ 884,943 = 124,276.43 元/吨，与被登记的 124,248.63 几乎相等 ⇒ 封盘件的 headline 值在数值上就是『收入÷铜销量』这一跨层相除（正是 RED_B），这正是 P3 必须承重的实证理由", "effect_on_verdict": "不改变 fail-closed 结论（系数分支本来就判死）；本工位不修改任何既有文件，只登记"},
+    {"id": "AMBIG-ORACLE-MUT", "severity": "oracle §3 内部表述二义（登记不回改）", "finding": "公式行写 MUTATED = P1∧P2∧P6，括注又写『P5 仍保留』", "resolution": "以公式行为准；并把 RED_B 构造成 single_revenue_path=True（唯一缺陷就是跨层相除），使两种读法结论一致（MUTATED(RED_B) 均为 0）", "effect": "无，rc 未受影响"},
+    {"id": "IDX-DRIFT-1", "severity": "登记不回改", "finding": "见 evidence EV-18：同文档内两段的页索引偏移方向相反", "action": "下游一律用 anchor_text 跨源定位；本工位不改 hypotheses.json 的 page_span"}
+  ],
+  "provenance": {
+    "network_requests_made": 0,
+    "git_writes_performed": false,
+    "git_status_command_run": false,
+    "read_only_sources": [
+      ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/**（封盘 attempt，只读）",
+      ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT|IND|OPEN11-IND|OPEN-MERGE/**（两半区与合并载体，只读）",
+      ".planning/2026-09-19-three-project-history-audit/execution_v2/**（卡文与 model_cards，只读）",
+      "C:/Users/郑曾波/Projects/company-wiki/companies/紫金矿业/raw/financial_reports/annual/*.pdf（产品仓，只 Get-FileHash 与 pdftotext 输出到管道，零落盘零改字节）"
+    ],
+    "commands_used": [
+      "Get-FileHash -Algorithm SHA256 <file>",
+      "pdftotext -enc UTF-8 [-f N -l N] <pdf> -  （工具 C:/Program Files/Git/mingw64/bin/pdftotext.exe）",
+      "python -X utf8 -c <base64 编码的判据脚本>（oracle §6 A/B 两组；脚本不读写文件）",
+      "Select-String / Get-Content 只读检索"
+    ],
+    "derived_values_marked": "data.per_metal_unit_revenue_base_period_observation 与 scope_mismatch.naive_ratio_value 均为 reviewer 由披露值复算（basis=professional_judgement_reviewer_derived），非披露原文数字，且不作任何参数取值",
+    "oracle_sha256_frozen_before_runs": "f5c4529095534013e4dee39b40d42d24ab435030ef81290dfa5ab0e97419f945",
+    "evidence_index_convention": "P1/P2 抽取件给 file:line；PDF 原件给 pdf_leaf_1based + 页脚 + 命令 + sha256 + 逐字引文（无行号）；两者索引不一致见 EV-18"
+  },
+  "file_format": "UTF-8 without BOM, LF line endings; re-parsed with json.load after writing"
+}

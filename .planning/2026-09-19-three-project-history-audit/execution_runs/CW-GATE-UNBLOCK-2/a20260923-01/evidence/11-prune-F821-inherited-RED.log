@@ -1,0 +1,22 @@
+﻿F821 Undefined name `absent`
+   --> C:\Users\郑曾波\AppData\Local\Temp\cwgu2\repo\src\company_wiki\source_catalog\prune_retired_evidence.py:605:48
+    |
+604 |         store = CatalogStore(config.database_path)
+605 |         todo = _plan_todo(active_plan, states, absent)
+    |                                                ^^^^^^
+606 |         for batch in _chunks(todo, BATCH_SIZE):
+607 |             with store.transaction() as connection:
+    |
+
+F821 Undefined name `deleted`
+   --> C:\Users\郑曾波\AppData\Local\Temp\cwgu2\repo\src\company_wiki\source_catalog\prune_retired_evidence.py:630:13
+    |
+628 |                     batch)
+629 |                 batch_rows = cursor.rowcount
+630 |             deleted += max(batch_rows, 0)
+    |             ^^^^^^^
+631 |             receipt["committed_ids"] = list(
+632 |                 dict.fromkeys(receipt["committed_ids"] + batch))
+    |
+
+Found 2 errors.

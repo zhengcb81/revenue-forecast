@@ -1,0 +1,99 @@
+{
+  "schema": "i12c_run_logs/1",
+  "card": "I-12-C",
+  "attempt": "execution_runs/I-12-C/a20260926-01",
+  "role": "implementer_i12c",
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-C\\a20260926-01",
+  "commands": [
+    {
+      "id": "gate0",
+      "argv": [
+        "powershell",
+        "-NoProfile",
+        "-Command",
+        "写/回读/删除探针 + 只读复哈希（封盘/store/I-12-B 样本表）"
+      ],
+      "purpose": "门 0 自探与上游只读复哈希（oracle 冻结前）",
+      "rc": 0,
+      "output": "gate0_raw_output.txt",
+      "raw_excerpt": "write_ok=True / readback_match=True / deleted_gone=True / sealed f2178768… 51,697B / store b2063ac8… 61,231B / I-12-B sample_manifest 679a7a49… 11,085B",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-C\\a20260926-01"
+    },
+    {
+      "id": "build_evidence",
+      "argv": [
+        "python",
+        "_build_evidence.py"
+      ],
+      "purpose": "确定性生成 forecast_vintages / baseline_vintages / forecast_manifest / unblind_receipt",
+      "rc": 0,
+      "output": "stdout（session 记录）：forecast_vintages rows=7 sha=42daea726d9d；baseline_vintages rows=14 sha=043f31c94410；forecast_manifest sha=03cdb01c71b2 qual={'signed':2,'stop':2,'uncovered':3}；unblind_receipt issued=False",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-C\\a20260926-01"
+    },
+    {
+      "id": "verify_green_1",
+      "argv": [
+        "python",
+        "_verify.py",
+        "--root",
+        "<attempt_dir>"
+      ],
+      "purpose": "绿臂（run_logs/handoff 写入前）",
+      "rc": 0,
+      "output": "CHECK K1..K7 OK + K8/K9 SKIP + RESULT ALL_INVARIANTS_OK",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-C\\a20260926-01"
+    },
+    {
+      "id": "run_mutations",
+      "argv": [
+        "python",
+        "_run_mutations.py"
+      ],
+      "purpose": "红臂 N1-N5（_mut/ 副本上各施加一个变异后跑同一只读校验器）",
+      "rc": 0,
+      "output": "_mut/mutation_results.json + _mut/N1..N5/verifier_output.txt（各臂 rc=3）",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-C\\a20260926-01"
+    },
+    {
+      "id": "verify_green_after_runlogs",
+      "argv": [
+        "python",
+        "_verify.py",
+        "--root",
+        "<attempt_dir>"
+      ],
+      "purpose": "绿臂（run_logs 写入后，K8 生效）",
+      "rc": null,
+      "recorded_in": "verification.json.green_arms（本文件写入后实测；此处不预写数值）",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-C\\a20260926-01"
+    },
+    {
+      "id": "verify_final",
+      "argv": [
+        "python",
+        "_verify.py",
+        "--root",
+        "<attempt_dir>"
+      ],
+      "purpose": "定稿后绿臂（verification/handoff 均已写入，K8+K9 生效）",
+      "rc": null,
+      "recorded_in": "final_green_output.txt（自指尾：本文件写入后执行，由独立 reviewer 复哈希复跑）",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-C\\a20260926-01"
+    }
+  ],
+  "model_runs": [],
+  "model_run_reason": "binding_status=unbound（无 I-00-B 绑定的 argv/cwd/allowlist/config 指纹 ⇒ START_HERE「命令不能猜」）+ params_released=false（§三十四 硬约束）⇒ 本卡不执行任何模型命令；不以任何方式生成数值预测。",
+  "forecast_construction_info_rule": "同一 sample 只使用 origin 以前资料构造驱动；本卡驱动构造 = 0 次模型运行，7/7 样本 information_set 标注 origin 以前（forecast_vintages）。",
+  "source_manifest_hashes": {
+    "evidence/I-12-C/forecast_vintages.jsonl": "42daea726d9d…（完整值见 forecast_manifest.input_hashes 与 verification.json）",
+    "evidence/I-12-C/baseline_vintages.jsonl": "043f31c94410…（同上）",
+    "upstream_sample_table (I-12-B)": "679a7a496e87ed953311d8d8139b47576ab84ddf7f0f0a4238991695d4ef0702",
+    "design (I-12-A evaluation_design)": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+    "disclosure_adaptation_v2": "373c162197203da31d68b4273adb27d5c2ba68936bcdf4100e669c23fea9d522"
+  },
+  "network_used": false,
+  "git_used": false,
+  "git_status_run": false,
+  "writes_outside_attempt": 0,
+  "note": "commands 记录本 attempt 已执行的命令与原始 rc；本文件写入后的两次绿臂 rc 由 verification.json / final_green_output.txt 记录（自指尾不在此预写）。"
+}

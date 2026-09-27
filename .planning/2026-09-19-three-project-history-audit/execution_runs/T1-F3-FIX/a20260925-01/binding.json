@@ -1,0 +1,103 @@
+{
+  "card": "T1-F3-FIX",
+  "attempt_id": "a20260925-01",
+  "role": "implementer (F-3 independent repair track)",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "plan_dir": ".planning/2026-09-19-three-project-history-audit",
+  "attempt_dir": ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-F3-FIX/a20260925-01",
+  "frozen_at": "2026-09-25: binding.json + oracle.md written BEFORE any SUT/test/probe run of this card. scripts/analyze_chain.py is a READ-ONLY diff/line-zone analyser (difflib + unified-diff parsing over three text files); it executes no product code and generates no expected value. No natural_window.py, no harness runner, no pytest had been executed at freeze time.",
+  "scope": "F-3 ONLY = the timestamp parser `_parse` is not a total function. A present-but-malformed single-case timestamp field made `_parse` raise ValueError (e.g. started_at=\"not-a-timestamp\" -> ValueError: Invalid isoformat string) which escaped classify() into main()'s internal-error handler -> rc=4, NO report written, the WHOLE batch left with 0 adjudications (the defect-(1) 'verdict-stripping' shape). Repair mechanism per register L2103 = `_parse` made total + ONE new refusal code + a NEW test family + batch NC byte-equality.",
+  "repair_authority": {
+    "authoritative_source_read_first": {
+      "path": "execution_runs/I-14-B/a20260919-01/oracle.md",
+      "section": "### 11.8 rc 归属裁定：schema 级 vs per-case (reviewer-owned, appended)",
+      "lines": "274-294 (file is 294 lines)",
+      "sha256": "b1eb5d0cf83dd8f059d7f011427447a4b79b211c19167f0190b2c140cb34ade6",
+      "bytes": 28930,
+      "read_status": "READ-ONLY, 0 bytes written by this card",
+      "image_note": "pre-image bdd0407a... / 26554 B -> post-image b1eb5d0c... / 28930 B (+2376 B pure suffix appended by the parent; six post-conditions recorded in T1-10-FIX handoff notes.oracle_section_11_8)"
+    },
+    "carrier_1": {
+      "path": "execution_runs/T1-10-FIX/a20260923-01/review.md",
+      "sections": "7 (F-3 explicit ruling, L73-131 incl. verbatim 11.8 amendment text L104-125)",
+      "sha256": "1ab78c3d712ecef415a297ae768c23a950338a1d7b3ec16d1a062bedf0fd84cc",
+      "bytes": 24335
+    },
+    "carrier_2": {
+      "path": "execution_runs/T1-10-FIX/a20260923-01/reviewer_report.md",
+      "sections": "7.3 (full argument + the two easy-to-misread points), L159-216 incl. amendment text L190-210",
+      "sha256": "96847e0a9e2d01db44b882ae38b43541131865c55a95e4171e8bbb7ef4272a69",
+      "bytes": 30247,
+      "sidecar": "reviewer_report.sha256 (85 B) read-back equal"
+    },
+    "register_carrier": {
+      "path": "REMEDIATION_REGISTER.md",
+      "lines": "L2103 (three-track split: F-3 -> T1-F3-FIX new card, `_parse` total + new code + new family + batch NC byte) and L2242 (T1-F3-FIX prerequisites complete)",
+      "read": "read-only, 0 bytes written"
+    },
+    "protocol": {
+      "start_here": "execution_v2/START_HERE.md (20436 B) - nine-step method, rc table frozen by owner T1-19",
+      "review_and_handoff": "execution_v2/review_and_handoff.md (4005 B) - reviewer fixed operations + minimum deliverable directory + handoff fields",
+      "read": "read-only, 0 bytes written"
+    }
+  },
+  "prerequisite_layer": {
+    "merge_order": "T1-10-FIX changes.diff 625ecfe45f3d713a08b5873c6cb3df258c25279d4c5bf3f4e25295cd441199ac FIRST -> T1-F2-FIX changes.diff bc87bf81bc53aad17f5c2f1047db467c64a92ec0b431499d94a438e8cbd3f3ca SECOND -> this card THIRD",
+    "both_prerequisites_accepted_scoped": true,
+    "prerequisite_evidence_read": "T1-10-FIX handoff.json status=accepted_scoped / implementer_signed=false (26509 B, sha e6b9a94a...); T1-F2-FIX handoff.json status=accepted_scoped / status_before=review_pending / implementer_signed=false (43425 B, sha 662b7895...)",
+    "independent_chain_rebuild_by_this_card": {
+      "script": "scripts/analyze_chain.py (read-only unified-diff applier, no product code executed)",
+      "output": "evidence/line_zones.json",
+      "L0_r2_baseline": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796 (20293 B, I-14-B/iso/natural_window.py)",
+      "step1": "apply T1-10-FIX changes.diff to L0 -> byte-identical to 064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d (21416 B) = TRUE",
+      "step2": "apply T1-F2-FIX changes.diff to that -> byte-identical to 9b1ebda2b75c4d1124d0d20a95d7a16cb31b8d9564c1c90da9b4d2d77eaa3ba2 (23534 B) = TRUE",
+      "conclusion": "the two prerequisites are byte-reproducible and complete; this card starts exactly on their merged end-state"
+    }
+  },
+  "subject": {
+    "red_baseline_and_diff_left_image": "worktree/i14b/iso/natural_window.py = T1-F2-FIX fixed iso, sha256 9b1ebda2b75c4d1124d0d20a95d7a16cb31b8d9564c1c90da9b4d2d77eaa3ba2, 23534 B, 549 lines",
+    "pristine_copy": "baseline/natural_window.t1_f2fixed.pristine.py (sha256 9b1ebda2... / 23534 B, verified equal at copy time)",
+    "source_of_iso_copy": "execution_runs/T1-F2-FIX/a20260923-01/worktree/i14b/ (346 files / 4077963 B copied read-only into this attempt; 0 bytes written back)",
+    "fixed_sut": "worktree/i14b/iso/natural_window.py after this card's minimal edit (sha recorded in decision/handoff at delivery)"
+  },
+  "harness_pins_byte_identical_through_the_run": {
+    "note": "only the SUT plus ONE new test file may appear in changes.diff; every pin below must equal at freeze, at RED, at GREEN and at delivery",
+    "harness/run_cases.py": "f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23",
+    "harness/mutate.r2.py": "4f741cb72af5cdb62095b422d4d87d6440082091a53969704201616bed383def",
+    "harness/cases.json": "5d8c459277da88b8361b520bee1424f079dc1d9c08744433cae0d30cdbb67d64",
+    "harness/cases.r2.json": "23d89fb27bbdb599646290ba5dbf096a0d1513d63c7a6d19f3f16fe9f88279de",
+    "harness/frozen_expectations.json": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+    "harness/frozen_expectations.r2.json": "a24d8ab3444dd1c75eaa3533f424a048bdced4f0f66408cb04622ead760667ba",
+    "harness/tests/test_i14b_natural_window.py": "413ff05c52e07acacf0491a0ec3f2cd1c426011995b45d7ad3edaab65a38ad4e",
+    "harness/tests/test_i14b_natural_window_r2.py": "ace076871c811441bc454692323dbba71243086ec7287880eed9b51a8114d1e9",
+    "harness/tests/test_i14b_natural_window_basis_total.py": "316e369c9afc9d8df04a425945b97e41378e87f3ac17c721d0ab9ddf90904bfd (T1-10-FIX's 23 tests)",
+    "harness/tests/test_i14b_natural_window_container_total.py": "f39f1b912cfb664d207a95d8e7853c79dfc76cda6bdebd94afc9ea87e064387c (T1-F2-FIX's 29 tests)",
+    "I-14-B canonical oracle.md (OUT of this card's write scope)": "b1eb5d0cf83dd8f059d7f011427447a4b79b211c19167f0190b2c140cb34ade6",
+    "T1-10-FIX whole attempt dir": "0 bytes written by this card",
+    "T1-F2-FIX whole attempt dir": "0 bytes written by this card"
+  },
+  "runtime": {
+    "python": "execution_runs/I-14-B/a20260919-01/iso/venv/Scripts/python.exe (Python 3.13.9, pytest 9.1.1), reused READ-ONLY with -X utf8 -B -p no:cacheprovider",
+    "cwd_for_sut_runs": "attempt_dir/worktree/i14b",
+    "network": "disabled (no web tool, no download)",
+    "isolation": "every write confined to execution_runs/T1-F3-FIX/a20260925-01; pytest --basetemp points only at attempt-local scratch dirs",
+    "SUT_selection": "harness tests honour I14B_SUT=<abs path>; default is ATTEMPT/iso/natural_window.py relative to the test file"
+  },
+  "allowed_edits": [
+    "execution_runs/T1-F3-FIX/a20260925-01/** (this attempt directory only)",
+    "inside it: worktree/i14b/iso/natural_window.py (the SUT under test)",
+    "inside it: worktree/i14b/harness/tests/test_i14b_natural_window_timestamp_total.py (NEW test family, this card's own file)"
+  ],
+  "forbidden": {
+    "production_tree_read_only": "no file outside .planning; and inside .planning nothing except this attempt directory",
+    "git": "no add / commit / checkout / stash / restore / reset; the ONLY git command permitted is the read-only boundary probe `git -c core.quotepath=false diff HEAD --name-only` at delivery",
+    "network": 0,
+    "plan_files": "task_plan.md / findings.md / progress.md / REMEDIATION_REGISTER.md / OWNER_DECISIONS.md are NOT written by this card (parent folds the result in)",
+    "two_prerequisite_cards": "0 bytes written, 0 status fields touched",
+    "I-14-B oracle.md": "0 bytes written (section 11.8 is read-only; this card does NOT append to it)",
+    "no_self_sign": "handoff.json status=review_pending, implementer_signed=false; no ACCEPT wording authored by this card",
+    "no_promotion": "changes.diff is delivered, never applied/merged/rebased by this card",
+    "vocabulary": "the 16 pre-existing refusal codes must not be altered, renamed or removed"
+  },
+  "git_boundary_command": "git -c core.quotepath=false diff HEAD --name-only  (read-only; non-.planning count must be 0)"
+}

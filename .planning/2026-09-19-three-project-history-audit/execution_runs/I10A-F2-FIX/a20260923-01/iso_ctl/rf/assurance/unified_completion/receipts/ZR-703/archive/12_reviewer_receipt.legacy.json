@@ -1,0 +1,74 @@
+{
+  "at_utc": "2026-08-20T19:03:03+00:00",
+  "canonical_hash": "5723423671c9ba22852742aa17b456e397ad712fe6c62fc8de1fe8dcadb40993",
+  "commands": [
+    {
+      "command": "git log --oneline -3; git diff 00a1295 89ffc80 --stat; git status --short",
+      "exit_code": 0,
+      "result": "HEAD=89ffc80. diff exactly 5 files +102/-9: generate_input_template.py 9, fix_hashes.py 6, lint_input.py 4, schema_fields.py 2, tests/test_zr703_schema_drift_cleanup.py +90 (new). Unrelated assurance/audit tracking dirt only."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr703_schema_drift_cleanup.py -q --tb=short",
+      "exit_code": 0,
+      "result": "5 passed in 0.15s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_generate_input_template.py tests/test_lint_input.py tests/test_schema_compatibility.py tests/test_zr702_schema_source_of_truth.py -q --tb=short",
+      "exit_code": 0,
+      "result": "47 passed in 1.41s"
+    },
+    {
+      "command": "adversarial a-e (grep 'schema 3.6'=0 in 3 scripts; line 34 kept; missing=[]; template schema_version=='3.7'; draft output schema_version=='3.7')",
+      "exit_code": 0,
+      "result": "ALL PASS"
+    },
+    {
+      "command": "ruff check (4 scripts + test)",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "complexity ratchet",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "full root pytest -q",
+      "exit_code": 0,
+      "result": "827 passed, 7 failed, 106 subtests. 7 failures = pre-existing zr102/zr104 baseline (confirmed at parent in clean worktree)."
+    }
+  ],
+  "findings": [
+    {
+      "detail": "Actual diff has 9 hunks (generate_input_template 3, fix_hashes 3, lint_input 2, schema_fields 1); claim says '6 changes'. C1 substance fully verified (zero grep matches). Not blocking.",
+      "id": "ZR703-REV-001",
+      "severity": "info",
+      "title": "Claim diff-count narrative imprecise"
+    },
+    {
+      "detail": "tests/test_schema_fields.py is absent; actual schema tests are test_schema_compatibility.py + test_zr702_schema_source_of_truth.py (47 total regression passed). Not blocking.",
+      "id": "ZR703-REV-002",
+      "severity": "info",
+      "title": "Regression file name in claim does not exist"
+    },
+    {
+      "detail": "827 passed + 7 failed + 106 subtests. All 7 failures are pre-existing zr102/zr104 baseline tests, confirmed failing at parent commit in clean worktree. Not blocking.",
+      "id": "ZR703-REV-003",
+      "severity": "info",
+      "title": "Full-suite count not reproduced (490 vs 827)"
+    }
+  ],
+  "kind": "reviewer",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "89ffc80eaa9a7d7d74457c3bd902a4dbe4795aa5",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_commit": "89ffc80eaa9a7d7d74457c3bd902a4dbe4795aa5",
+  "reviewed_object_sha256": "ee9930995dcd758f4eb0a2d3f07b95ce989fa6cd2ab771b3f5eac5f47c634c3e",
+  "reviewer": "reviewer-zr703-independent",
+  "schema_version": 1,
+  "summary": "Independent replay of ZR-703 at HEAD 89ffc80: C1 zero 'schema 3.6' matches in 3 cleaned scripts (line 34 migration comment intentionally kept); C2 SUPPORTED_FORECAST_SCHEMA_VERSIONS all in SCHEMA_EMIT_ENGINES + FORECAST_SCHEMA_VERSION in SUPPORTED; C3 build_template + prepare_forecast(draft) both output schema_version == FORECAST_SCHEMA_VERSION. 5/5 tests + 47/47 regression + ruff + ratchet green. Verdict: accepted.",
+  "unit": "ZR-703",
+  "verdict": "accepted"
+}

@@ -1,0 +1,251 @@
+{
+ "card_id": "I-13-A",
+ "attempt_id": "a20260926-01",
+ "role": "implementer_i13a",
+ "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+ "status": "accepted_scoped",
+ "objective": "买方交付逐项评分：按 buy_side_dimensions 逐维 0/1/2 并引用产物页/字段；先核 hard_blocks；按冻结分类规则给标签（总分仅展示）；红绿变异 ≥3 + 上游一致性核。",
+ "authorized_by": {
+  "dispatch_verbatim": "编排层派单（2026-09-26）：「你是编排层派单的实现者，开 I-13-A（19 卡链第 5 卡，I-13 串行链头，与 I-12 链并行）。依赖 I-07-E + I-11-C 均已落定 accepted_scoped。」+ 硬性纪律（A 级 V3 全量档）：oracle 先冻结（卡文判据 + 上游 sha + 红线 + EA 模板 + 变异 ≥3）+ 门 0 自探留档 · 不放行参数 · 不触发自动动作 · 不自签 · 落定父直写 · 封盘 f2178768… 零字节 · 禁五份计划文件 · 禁 .planning 外 · 禁 git 写 · 禁 git status · 禁联网（需则 provenance 四件）· fail-closed：数据不足 ⇒ STOP（合格）· 不派 I-13-B · 红线：base 124,248.63（真值 38,175.95）OPEN-2 前禁消费 —— 只登记不消费 · 产出四件 oracle.md / 卡文动作逐条产物 / verification.json（红绿 ≥3 + 上游一致性）/ handoff.json（role=implementer_i13a、authorized_by 逐字、gate0_passed+原始输出、open2_ban_observed、params_released=false、status=review_pending、implementer_signed=false、releases_nothing=true、written_files、git_diff_non_planning=0）",
+  "owner_decision_s34": "OWNER_DECISIONS.md §三十四（L745-L780，2026-09-26 15:4x）：L754 owner 选择「A」；L757「改判 I-11-B 的开工门槛 —— 以 MERGE 七条当前 5✅ + 2❌ 现状开工；i11b_unblocked 的语义从『7/7 才开』改为『owner 明文许可开工』」；L758「C3/C5 的残余不丢、不隐藏 —— 列为 I-11-B 开工后的并行欠账」；L761-L766 硬约束「oracle 先冻结」「不放行任何参数」「不触发任何 falsifier/自动动作」「实现者不自签 · 独立复审 · 落定走三件套」「expert_assumption 必须给敏感性区间 + equivalent_to_disclosure_basis=false」；L769-L775 边界：不解除 OPEN-2/3/5/6 与任何 BLOCKED-*、不放行参数、不产生 ACCEPT、不代签；L779 后继卡按卡文依赖顺序另派（本轮 I-13-A 派单即该『另派』机制的行使）。",
+  "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871，2026-09-26 17:5x）：授权原话「给你授权所有的沙箱操作，不要再问我了」；覆盖三仓读写/系统调用/文件落点/网络取证；边界：纪律 16/17/18/19/20 继续有效、生产零未授权改动、git add/commit/push 不在授权内。本卡使用面 = 零提权（全部写入在本 attempt 目录普通文件）；网络 = 0（provenance 四件未触发）。",
+  "card_face_verbatim": "execution_v2/card_I-13-A.md（sha daaf300e…/1,383 B）L5「Parent：I-13；状态：planned；Owner：独立买方reviewer，不参与该预测设定；依赖：I-07-E、I-11-C。」；L9 前提「预测包及证据可读；可以没有I-12准确性优势，但必须诚实标未证实。」；L11 动作1「按buy_side_dimensions逐维打0/1/2并引用产物页/字段；缺失不靠总分补偿。」；L12 动作2「先核hard_blocks，再看评分；每个blocking issue写可复现样例、影响收入/场景/决策和所需修正。」；L13 动作3「全2才给buy_side_review_ready；任何0为blocked，只有1没有0则research_draft_needs_review。总分仅展示，不作自动放行阈值。」；L19 停止「任一hard_block成立→blocked，禁止以总分或文字解释豁免。」；L20 停止「未证明准确性只能写unproven，不因这一事实自动否定可审阅的研究草案。」；L22 验收「每个分值可由明确证据复核；不把分值或ready标签解释为投资建议正确率。」；L24 证据「evidence/I-13-A/buy_side_scorecard.json、blocking_issues.json、artifact_references.json」。",
+  "prerequisites_verified": {
+   "I-07-E": "execution_runs/I-07-E/a20260926-01/handoff.json → status=accepted_scoped（status_authority carrier=reviewer_report.md sha 6b48a2f5…、three_way_match=true）；calibration_validation_summary.md 26,132 B 可读",
+   "I-11-C": "execution_runs/I-11-C/a20260926-01/handoff.json → status=accepted_scoped（carrier sha 0664b8cf…、three_way_match=true）；parameter_mapping.json 18 映射行逐行读到"
+  }
+ },
+ "gate0_passed": true,
+ "gate0_raw_output": "=== GATE0 BEGIN (I-13-A/a20260926-01) ===\ncwd=C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-13-A\\a20260926-01\n--- step0 mkdir ---\ndir_exists=True\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\nreadback=gate0 probe I-13-A a20260926-01 write-readback-delete 2026-09-26T20:24:23.3543802+01:00\n--- step3 delete ---\ndeleted_gone=True\n--- step4 sealed sha (read-only) ---\nsealed_I-11-A_hypotheses_sha256=f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28\nsealed_matches_f2178768=True\nsealed_bytes=51697\n--- step5 store sha (read-only) ---\nstore_hypotheses_v3_sha256=b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff\nstore_matches_b2063ac8=True\nstore_bytes=61231\n=== GATE0 END ===",
+ "gate0_note": "写+回读+删三步本会话自探（20:24:23+01:00）；零提权、探针已删无残件；封盘/store 只读复哈希（oracle §0 冻结，定稿复验见 boundary_self_declaration）。",
+ "score_summary": {
+  "scores": {
+   "B01": 1,
+   "B02": 1,
+   "B03": 1,
+   "B04": 1,
+   "B05": 1,
+   "B06": 1,
+   "B07": 2,
+   "B08": 1
+  },
+  "total": 9,
+  "total_max": 16,
+  "zeros_present": 0,
+  "classification": "blocked",
+  "hard_blocks": {
+   "established": [
+    "HB3"
+   ],
+   "not_established": [
+    "HB1",
+    "HB2",
+    "HB4",
+    "HB5",
+    "HB6",
+    "HB7"
+   ]
+  },
+  "card_stop_triggered": true,
+  "accuracy_caveat": "blocked 的唯一依据 = HB3；不以 accuracy=unproven 为由（卡文 L20）",
+  "not_dispatched": [
+   "I-13-B"
+  ]
+ },
+ "completed_steps": [
+  "1 领取：card_I-13-A.md（sha daaf300e…）+ 派单只读清单 + §三十四/§三十七 + OPEN-2 红线回源完成；卡文点名的 buy_side_dimensions/hard_blocks 定域取尺并逐字冻结进 oracle §2（回源面声明见 oracle §2）",
+  "2 门 0 自探留档：写/回读/删 + 封盘 f2178768… 与 store b2063ac8… 只读复哈希（oracle §0）",
+  "3 绑定写入面：execution_runs/I-13-A/a20260926-01/（新建）；上游 13 件 sha256 冻结进 oracle §3",
+  "4 oracle 先冻结：卡文判据 + 上游 sha + 红线 + EA 模板（EA-1..EA-7）+ 预期 P1-P15 + 变异 M1-M6 + exit code legend（先于任何产物写入）",
+  "5 读证据：I-07-E summary 153 行全读 + handoff/verification；I-11-C parameter_mapping 18 行（结构机读）+ mapping_verification + handoff；结构机读：18 行状态分布、params_released=false、new_value 不含红线值",
+  "6 动作2 先核 hard_blocks：7 条逐条 disposition + 三件套（可复现样例/影响收入·场景·决策/所需修正）+ 反证登记 → evidence/I-13-A/blocking_issues.json（HB3 established）",
+  "7 动作1+3 打分与分类：8 维 0/1/2 逐维 path:line 引用 + 机械分类 → buy_side_scorecard.json（9/16，无 0，classification=blocked）；动作3 引用台账 → artifact_references.json",
+  "8 动作4：_verify_i13a.py 绿臂 + 6 红臂（_mut/ 副本，原件字节不动，sha 前后比对）+ 上游 13 件一致性复算 → verification.json",
+  "9 交审：本 handoff，status=review_pending（证据齐全的进入形态，非验收）；落定走父直写（V3 轻格式），本站不产生 ACCEPT"
+ ],
+ "next_step_number": 10,
+ "next_action": "独立买方 reviewer 另派（非本实现者，卡文 L5 Owner 面）：①逐维复核分值证据（artifact_references reviewer_hooks）②裁定 HB3：154 千克容差 ruling_6b 落定状态与 §三十六 Q2 重跑/会签是否构成『明确适用性裁决』——若判 not_established，分类按同一规则机械降为 research_draft_needs_review（见 scorecard.classification_derivation.overturn_condition）③裁定 HB2 字面 hash 缺陷是否升级 ④复算至少一件上游 sha + 重跑 _verify_i13a.py 绿臂与保留红臂 M2/M5。复审接受后由父直写落定（V3 轻格式）。本站不派 I-13-B（卡文 STOP 成立时依赖顺序另议），也不派 I-12/I-16/I-17。",
+ "input_hashes": {
+  "algorithm": "sha256",
+  "note": "完整 13 件见 oracle §3 与 verification.upstream_inputs（逐件复算一致）",
+  "execution_v2/card_I-13-A.md": "daaf300ebd3762e875e3c8b413de9e88d08110fe23709d5362030b544b14599b",
+  "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb",
+  "execution_runs/I-07-E/a20260926-01/handoff.json": "8cfce3671e29d69eac5d49af114d522d5ba4ae3681b3e70c2f688b45786ecc04",
+  "execution_runs/I-11-C/a20260926-01/parameter_mapping.json": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c",
+  "execution_runs/I-11-C/a20260926-01/handoff.json": "da25f736cfde6f97047a691ddff28f1b079c6c29d1cfeac03729ce4c32b9c453",
+  "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json (sealed)": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+  "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json (store)": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff"
+ },
+ "changed_paths": [
+  "execution_runs/I-13-A/a20260926-01/oracle.md",
+  "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/buy_side_scorecard.json",
+  "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/blocking_issues.json",
+  "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/artifact_references.json",
+  "execution_runs/I-13-A/a20260926-01/_verify_i13a.py",
+  "execution_runs/I-13-A/a20260926-01/verification.json",
+  "execution_runs/I-13-A/a20260926-01/handoff.json",
+  "execution_runs/I-13-A/a20260926-01/_mut/**（M1-M6 变异副本与红臂输出；原件不动）"
+ ],
+ "commands_executed": [
+  "pwsh: 门 0 三步（New-Item/WriteAllText/GetContent/Remove-Item）+ Get-FileHash 封盘/store 只读复哈希 —— 原始输出见 gate0_raw_output",
+  "pwsh: Get-FileHash SHA256 × 13 上游件（只读）",
+  "pwsh: Get-Content -Encoding UTF8 | ConvertFrom-Json —— parameter_mapping.json 结构机读（18 行状态分布/params_released/new_value 扫描）",
+  "git -c core.quotepath=false diff HEAD --name-only（只读计数，禁 git status 未跑）",
+  "python _verify_i13a.py --root <attempt|_mut/Mx> --plan <plan-root>（绿臂 + 6 红臂 + 定稿绿臂，只读校验）"
+ ],
+ "raw_exit_codes": {
+  "note": "exit_code_legend（冻结于 oracle §7）：0=ALL_INVARIANTS_OK；1=harness 失败；2=无裁决；3=不变量违例（具名 J1..J5）",
+  "GREEN": 0,
+  "M1_score_zero_no_class_change": 3,
+  "M2_disposition_flip": 3,
+  "M3_params_released": 3,
+  "M4_sha_and_open2_token": 3,
+  "M5_evidence_refs_removed": 3,
+  "GREEN_AFTER_MUTATIONS": 0,
+  "GREEN_FINAL_post_finalization": 0
+ },
+ "expected_exit_codes": {
+  "GREEN": 0,
+  "M1": 3,
+  "M2": 3,
+  "M3": 3,
+  "M4": 3,
+  "M5": 3,
+  "GREEN_AFTER_MUTATIONS": 0,
+  "GREEN_FINAL": 0,
+  "match": true
+ },
+ "mutation_summary": "红绿双向：绿 rc=0 ×3（首跑 / 红臂后 / 定稿后）；5 红 rc=3 全数与 oracle §7 一致，J1-J5 全覆盖（J1←M3、J2←M1+M2、J3+J4←M4、J5←M5）；原件与上游字节零改动（_run_mutations.py before/after 比对三轮均 untouched=True）",
+ "written_files": {
+  "note": "sha256 于定稿时复算（bytes|sha256）；handoff.json 自身为自指文件不记自身 sha（由父落定/复审复哈希）",
+  "oracle.md": {
+   "bytes": 22070,
+   "sha256": "d4292eff8965f946c8ad5c4ff339c4ef602effbb00dba908e89e818dadeff5fb"
+  },
+  "evidence/I-13-A/buy_side_scorecard.json": {
+   "bytes": 15169,
+   "sha256": "e74631c72b077a08fe4017fe7fee604923e4095b1c09e60f91128c69a08b290f"
+  },
+  "evidence/I-13-A/blocking_issues.json": {
+   "bytes": 12694,
+   "sha256": "c9c6030c7bde35e93b4d54279d0660c31a4bc88ba84491f29db15df3ce9b667e"
+  },
+  "evidence/I-13-A/artifact_references.json": {
+   "bytes": 8337,
+   "sha256": "62d440fe951272a23fb58133a3ed8b43628d690850ea65b873ddd3a8fd7dfa15"
+  },
+  "verification.json": {
+   "bytes": 11968,
+   "sha256": "ffa2f814e0c2660cb0e6e88ab2a0f61de86039154755468a249864eb9802cadf"
+  },
+  "_verify_i13a.py": {
+   "bytes": 12130,
+   "sha256": "d39bd8ce65746f3c5c4dfcbd7b3b0c7d8b78fa93ba08d823fc41f4a85a804c29"
+  },
+  "_run_mutations.py": {
+   "bytes": 5603,
+   "sha256": "4d74163c9d7c4fb3f26a5b07a98f2aabc87dec3db358bd37eab5e81d1086e6e7"
+  },
+  "_mut/M1..M5/**": "5 个变异副本 + 各臂 verifier_output.txt（原件字节不动）",
+  "handoff.json": "自指文件，不记自身 sha"
+ },
+ "open_questions": [
+  "HB3 裁定：6b 库存桥 154 千克容差是否已有 ruling_6b L110 落定；§三十六 追加支是否被视为『明确适用性裁决』（授权在、应用未跑）—— 本站从严判 established，裁定权=独立买方 reviewer",
+  "HB2 裁定：store 63 位 hash 转录缺陷是否按字面『hash错』升级（若升级 ⇒ blocked 叠加，不改结论）",
+  "gap-U3/U4（H1锁定、微软重述 已审载体定位）与 gap-U1/U2（小米载体与披露日）—— 继承上游，未在本站解决",
+  "u-N4/u-N5/u-N6 三条层内登记差异（只登记不更正）",
+  "严格读法之争（not_executable 槽位 ⇒ 整卡 blocked）：上游复审已按不触发接受；本站不重开、不自裁"
+ ],
+ "blocked_by": [
+  "OPEN-2（ZIJIN_MINERAL_REALIZED_UNIT_REVENUE base 124,248.63 禁消费；只登记不消费）",
+  "OPEN-3 / OPEN-5 / OPEN-6 未解（不解除）",
+  "BLOCKED-6a/6b/6c、BLOCKED-NEEDS-ORIGIN-BYTES 未解（本卡据以判 HB3 established）",
+  "正式发布格 blocked：本工位无正式签名能力（卡文 L10）",
+  "I-13-B 未派：卡文 STOP 成立（HB3）"
+ ],
+ "evidence_paths": [
+  "execution_runs/I-13-A/a20260926-01/oracle.md（门 0 原始输出 + 判据冻结 + 上游 sha + 红线 + EA 模板 + 预期 P1-P15 + 变异 M1-M6）",
+  "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/buy_side_scorecard.json（8 维分值与引用）",
+  "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/blocking_issues.json（7 条硬阻断 + HB3 三件套）",
+  "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/artifact_references.json（页/字段引用台账 + 上游 13 件 sha）",
+  "execution_runs/I-13-A/a20260926-01/verification.json（红绿变异 + 上游一致性核）",
+  "execution_runs/I-13-A/a20260926-01/_verify_i13a.py（只读校验器）",
+  "execution_runs/I-13-A/a20260926-01/_mut/（M1-M6 副本 + 各臂 verifier_output.txt）"
+ ],
+ "reviewer_status": "pending — 独立买方 reviewer 另派；实现者不自签（status=review_pending 是证据齐全的进入形态，不是验收）；落定走父直写（V3 轻格式），本卡不产生 ACCEPT",
+ "boundary_self_declaration": {
+  "no_auto_actions": true,
+  "no_falsifier_triggered": true,
+  "no_status_decision_changed": true,
+  "params_released": false,
+  "sealed_hypotheses_untouched": {
+   "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "bytes": 51697,
+   "zero_byte_change": true,
+   "new_version_needed": false
+  },
+  "store_untouched": {
+   "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+   "low_base_high_all_null": true,
+   "placeholders_in_place": true
+  },
+  "five_plan_files_untouched": true,
+  "writes_outside_planning": 0,
+  "git_writes": 0,
+  "git_status_run": false,
+  "network_used": false,
+  "external_retrieval_not_local": false,
+  "synthetic_quarantine_enforced": true,
+  "read_scope_V2_4": "只读清单（卡文 + I-07-E 三件 + I-11-C 两件/映射 + §三十四/§三十七 + 红线）+ 卡文点名的 buy_side_dimensions/hard_blocks 定域取尺（research_cards.json L192-L259，oracle §2 已声明）；其余零读",
+  "not_dispatched": [
+   "I-12",
+   "I-13-B",
+   "I-16",
+   "I-17"
+  ]
+ },
+ "git_diff_non_planning": 0,
+ "git_diff_non_planning_measured": "git -c core.quotepath=false diff HEAD --name-only（只读，两轮：开工基线 + 定稿）→ total=3830（历史/并发写入方均在 .planning 内），non_planning=0；git_diff_exit=0；禁 git status 未跑；无 git 写",
+ "open2_ban_observed": true,
+ "params_released": false,
+ "implementer_signed": false,
+ "releases_nothing": true,
+ "releases_nothing_detail": "不产生 ACCEPT · 不放行任何参数（store low/base/high 全 null、两个 _PLACEHOLDER 维持、18 行 13 mapped_not_released + 5 零传播）· 不触发任何 falsifier/自动动作 · 不解 OPEN-2/3/5/6、不解任何 BLOCKED-* · 不代签行业/会计/外部面/买方面 · 封盘与 store 零字节 · 不写 evidence/I-13-A 之外的他卡写入面 · 不写五份计划文件 · 不派 I-12/I-13-B/I-16/I-17",
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> accepted_scoped",
+ "status_history": [
+  {
+   "at_utc": "",
+   "status": "accepted_scoped",
+   "by": "landing_parent_v3",
+   "note": "父直写轻格式落定（V3）；前像 sha 见 pre_image"
+  }
+ ],
+ "status_authority": {
+  "carrier": "reviewer_report.md",
+  "carrier_sha256": "7f0c379c61c75de131c4b87b8fe58f285fb64aafef33f37cba85ac40ccf75d62",
+  "carrier_bytes": 14143,
+  "carrier_encoding": "UTF-8 no BOM",
+  "verdict_line": "**VERDICT: ACCEPT —— P1×0（数值/红线/封盘三项全过）；P2×1、P3×4 随附。核心裁定 `HB3 = not_established` ⇒ 分类按卡文规则机械降为 `research_draft_needs_review`（非 `buy_side_review_ready`，亦非 `blocked`）。分类是卡的交付物，本报告只作裁定与发现登记，不改任何 `status`/`decision`。**",
+  "verdict_byte_region": {
+   "content": [
+    431,
+    787
+   ],
+   "incl_lf": [
+    431,
+    788
+   ]
+  },
+  "verdict_word_written_by_reviewer": "ACCEPT",
+  "pin_sidecar": "7f0c379c61c75de131c4b87b8fe58f285fb64aafef33f37cba85ac40ccf75d62  reviewer_report.md",
+  "three_way_match": true
+ },
+ "carried_findings": [],
+ "pre_image": {
+  "sha256": "f0df12290fb7b5ad67180246839d473775adb9aca4d3fc417a52b839e8d7c482",
+  "bytes": 17120,
+  "status": "review_pending"
+ },
+ "verdict_is_transcribed_not_authored": true
+}

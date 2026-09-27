@@ -1,0 +1,1506 @@
+diff --git a/src/company_wiki/source_catalog/archive_retired_evidence.py b/src/company_wiki/source_catalog/archive_retired_evidence.py
+index 1693c62..b5c356d 100644
+--- a/src/company_wiki/source_catalog/archive_retired_evidence.py
++++ b/src/company_wiki/source_catalog/archive_retired_evidence.py
+@@ -127,24 +127,23 @@ def _verify_snapshot(temp_path: Path) -> tuple[int, dict[str, str]]:
+     return len(ids), digests
+ 
+ 
+-def archive_retired_evidence(
+-    database_path: Path | str,
+-    archive_root: Path | str,
+-    *,
+-    now: datetime,
+-    progress: Callable[[int, int], None] | None = None,
+-) -> ArchiveReport:
+-    """Archive retired spans; ``now`` (timezone-aware) is REQUIRED.
+-
+-    The machine clock is never read: ``now`` decides the date directory and the
+-    provenance timestamp, a uuid4 token decides file uniqueness (D2/D3).
+-    """
++def _validate_now(now: datetime) -> None:
++    """D3: ``now`` is REQUIRED and timezone-aware — the clock is never read."""
+     if not isinstance(now, datetime) or now.tzinfo is None:
+         raise TypeError(
+             "now: a timezone-aware datetime is required (no system-clock fallback)")
+-    database_path = Path(database_path)
+-    archive_root = Path(archive_root)
+ 
++
++def _snapshot_paths(
++    database_path: Path,
++    archive_root: Path,
++    now: datetime,
++) -> tuple[datetime, Path, Path]:
++    """Derive (moment, published path, temp path) and create the day directory.
++
++    Order matches the pre-split sequence exactly: UTC moment, date directory,
++    uuid4 (non-clock) token, mkdir, create-if-absent check, temp name (D2/D3).
++    """
+     moment = now.astimezone(timezone.utc)
+     day = moment.date().isoformat()
+     token = uuid.uuid4().hex[:16]                     # non-clock uniqueness (D2/D3)
+@@ -155,79 +154,147 @@ def archive_retired_evidence(
+         raise FileExistsError(f"snapshot path already published: {out_path}")
+     tmp_path = out_dir / (
+         f"retired-evidence-{token}.jsonl.gz.partial-{uuid.uuid4().hex[:8]}")
++    return moment, out_path, tmp_path
++
++
++def _count_retired(conn: sqlite3.Connection) -> int:
++    """Row count the export must reconcile against (fail closed, D5)."""
++    return int(
++        conn.execute(
++            "SELECT COUNT(*) FROM evidence_spans WHERE document_id IN "
++            "(SELECT document_id FROM documents WHERE source_status='retired')"
++        ).fetchone()[0]
++    )
++
++
++def _write_snapshot(
++    fh: Any,
++    conn: sqlite3.Connection,
++    progress: Callable[[int, int], None] | None,
++    total: int,
++) -> tuple[int, dict[str, str]]:
++    """Stream retired spans into the open temp gzip in span_id batches."""
++    rows_written = 0
++    written_digests: dict[str, str] = {}
++    last_id: str | None = None
++    while True:
++        if last_id is None:
++            rows = conn.execute(
++                _SELECT + " ORDER BY e.span_id LIMIT ?", (BATCH_SIZE,)
++            ).fetchall()
++        else:
++            rows = conn.execute(
++                _SELECT + " AND e.span_id > ? ORDER BY e.span_id LIMIT ?",
++                (last_id, BATCH_SIZE),
++            ).fetchall()
++        if not rows:
++            break
++        for row in rows:
++            row_dict = dict(row)
++            fh.write(json.dumps(row_dict, ensure_ascii=False) + "\n")
++            written_digests[row_dict["span_id"]] = _row_digest(row_dict)
++            last_id = row["span_id"]
++        rows_written += len(rows)
++        if progress is not None:
++            progress(rows_written, total)
++    return rows_written, written_digests
++
++
++def _reconcile(rows_written: int, total: int) -> None:
++    """Wrote-what-catalog-reports check: a mismatch never publishes (D5)."""
++    if rows_written != total:
++        raise RuntimeError(
++            f"archive reconciliation failed: wrote {rows_written}, "
++            f"catalog reports {total}; snapshot not published")
++
++
++def _verify_then_publish(
++    tmp_path: Path,
++    out_path: Path,
++    written_digests: dict[str, str],
++    rows_written: int,
++) -> int:
++    """Verify the bytes we are about to publish (fail closed, D5), then
++    atomically publish the temp file at the snapshot path."""
++    _fsync_file(tmp_path)
++    verified_count, verified_digests = _verify_snapshot(tmp_path)
++    if verified_count != rows_written or verified_digests != written_digests:
++        raise RuntimeError(
++            "archive self-verification failed: snapshot not published")
++
++    _publish(tmp_path, out_path)
++    return verified_count
++
++
++def _write_manifest(
++    database_path: Path,
++    out_path: Path,
++    moment: datetime,
++    verified_count: int,
++    verified_digests: dict[str, str],
++) -> Path:
++    """Write the per-snapshot verification manifest atomically (I-15-A D-W15-1).
++
++    Called only after publish; ``verified_digests`` equals the written digests
++    (checked by ``_verify_then_publish``), so the manifest content is unchanged.
++    """
++    archive_sha256 = _sha256_file(out_path)
++    manifest = {
++        "schema_version": MANIFEST_SCHEMA,
++        "catalog_identity": f"{database_path.name}:{CATALOG_SCHEMA_VERSION}",
++        "archive_path": str(out_path.resolve()),
++        "archive_sha256": archive_sha256,
++        "archive_bytes": out_path.stat().st_size,
++        "rows_in_archive": verified_count,
++        "verified_completed_at": moment.strftime("%Y-%m-%dT%H:%M:%SZ"),
++        "span_ids": sorted(verified_digests),
++        "row_digests": {k: verified_digests[k] for k in sorted(verified_digests)},
++        "verifier": ("archive_retired_evidence self-check: re-read snapshot, "
++                     "recomputed per-row digests and count before publish"),
++        "problems": [],
++        "ok": True,
++    }
++    manifest_path = out_path.parent / f"{out_path.name}.manifest.json"
++    _atomic_write_text(manifest_path,
++                       json.dumps(manifest, ensure_ascii=False, indent=2))
++    return manifest_path
++
++
++def archive_retired_evidence(
++    database_path: Path | str,
++    archive_root: Path | str,
++    *,
++    now: datetime,
++    progress: Callable[[int, int], None] | None = None,
++) -> ArchiveReport:
++    """Archive retired spans; ``now`` (timezone-aware) is REQUIRED.
++
++    The machine clock is never read: ``now`` decides the date directory and the
++    provenance timestamp, a uuid4 token decides file uniqueness (D2/D3).
++    """
++    _validate_now(now)
++    database_path = Path(database_path)
++    archive_root = Path(archive_root)
++    moment, out_path, tmp_path = _snapshot_paths(database_path, archive_root, now)
+ 
+     conn = sqlite3.connect(f"file:{database_path}?mode=ro", uri=True)
+     conn.row_factory = sqlite3.Row
+     published = False
+     try:
+-        total = int(
+-            conn.execute(
+-                "SELECT COUNT(*) FROM evidence_spans WHERE document_id IN "
+-                "(SELECT document_id FROM documents WHERE source_status='retired')"
+-            ).fetchone()[0]
+-        )
+-
+-        rows_written = 0
+-        written_digests: dict[str, str] = {}
+-        last_id: str | None = None
++        total = _count_retired(conn)
++
+         # D5: everything below writes the TEMP file only; the published path
+         # is touched once, atomically, after verification.
+         with gzip.open(tmp_path, "wt", encoding="utf-8", newline="\n") as fh:
+-            while True:
+-                if last_id is None:
+-                    rows = conn.execute(
+-                        _SELECT + " ORDER BY e.span_id LIMIT ?", (BATCH_SIZE,)
+-                    ).fetchall()
+-                else:
+-                    rows = conn.execute(
+-                        _SELECT + " AND e.span_id > ? ORDER BY e.span_id LIMIT ?",
+-                        (last_id, BATCH_SIZE),
+-                    ).fetchall()
+-                if not rows:
+-                    break
+-                for row in rows:
+-                    row_dict = dict(row)
+-                    fh.write(json.dumps(row_dict, ensure_ascii=False) + "\n")
+-                    written_digests[row_dict["span_id"]] = _row_digest(row_dict)
+-                    last_id = row["span_id"]
+-                rows_written += len(rows)
+-                if progress is not None:
+-                    progress(rows_written, total)
+-
+-        if rows_written != total:
+-            raise RuntimeError(
+-                f"archive reconciliation failed: wrote {rows_written}, "
+-                f"catalog reports {total}; snapshot not published")
+-
+-        # verify the bytes we are about to publish (fail closed, D5)
+-        _fsync_file(tmp_path)
+-        verified_count, verified_digests = _verify_snapshot(tmp_path)
+-        if verified_count != rows_written or verified_digests != written_digests:
+-            raise RuntimeError(
+-                "archive self-verification failed: snapshot not published")
+-
+-        _publish(tmp_path, out_path)
+-        published = True
++            rows_written, written_digests = _write_snapshot(
++                fh, conn, progress, total)
+ 
+-        archive_sha256 = _sha256_file(out_path)
+-        manifest = {
+-            "schema_version": MANIFEST_SCHEMA,
+-            "catalog_identity": f"{database_path.name}:{CATALOG_SCHEMA_VERSION}",
+-            "archive_path": str(out_path.resolve()),
+-            "archive_sha256": archive_sha256,
+-            "archive_bytes": out_path.stat().st_size,
+-            "rows_in_archive": verified_count,
+-            "verified_completed_at": moment.strftime("%Y-%m-%dT%H:%M:%SZ"),
+-            "span_ids": sorted(verified_digests),
+-            "row_digests": {k: verified_digests[k] for k in sorted(verified_digests)},
+-            "verifier": ("archive_retired_evidence self-check: re-read snapshot, "
+-                         "recomputed per-row digests and count before publish"),
+-            "problems": [],
+-            "ok": True,
+-        }
+-        manifest_path = out_dir / f"{out_path.name}.manifest.json"
+-        _atomic_write_text(manifest_path,
+-                           json.dumps(manifest, ensure_ascii=False, indent=2))
++        _reconcile(rows_written, total)
++        verified_count = _verify_then_publish(
++            tmp_path, out_path, written_digests, rows_written)
++        published = True
++        manifest_path = _write_manifest(
++            database_path, out_path, moment, verified_count, written_digests)
+     finally:
+         conn.close()
+         if not published and tmp_path.exists():
+diff --git a/src/company_wiki/source_catalog/observability.py b/src/company_wiki/source_catalog/observability.py
+index e90ca82..e593c1d 100644
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -365,8 +365,12 @@ def _redact_assignments(text: str) -> str:
+     For every ``:``/``=`` the scanner walks back over whitespace and key characters,
+     validates the key against the atom tables and, on a match, replaces the value.
+     A rejected key does NOT consume the rest of the assignment, so a later genuine
+-    credential pair in the same text is still redacted (e.g. a `url=...?token=...`
+-    or `cmd: --token=...` shape, which the previous regex skipped).
++    credential pair in the same text is still redacted (e.g. a ``url=...?token=...``
++    or ``cmd: --token=...`` shape, which the previous regex skipped).
++
++    FC-1204 deliberate split (ratchet-down): the walk-back, the key check and
++    the value scan moved to the helpers below — pure code motion; the scanner
++    still visits every character exactly once, in the same order.
+     """
+     out: list[str] = []
+     index = 0
+@@ -378,42 +382,13 @@ def _redact_assignments(text: str) -> str:
+             index += 1
+             continue
+ 
+-        # walk back over optional whitespace, then over the key characters
+-        cursor = index
+-        while cursor > 0 and text[cursor - 1] in _INLINE_SPACE:
+-            cursor -= 1
+-        key_end = cursor
+-        while cursor > 0 and text[cursor - 1] in _KEY_CHARS:
+-            cursor -= 1
+-        key = text[cursor:key_end]
+-        boundary_ok = cursor == 0 or text[cursor - 1] not in _KEY_CHARS
+-        if not (key and boundary_ok and key_is_credential(key)):
++        key = _credential_key_before(text, index)
++        if not key:
+             out.append(char)
+             index += 1
+             continue
+ 
+-        # the value: a quoted string, or a run of non-delimiter tokens
+-        value_start = index + 1
+-        while value_start < length and text[value_start] in _INLINE_SPACE:
+-            value_start += 1
+-        if value_start < length and text[value_start] in _QUOTES:
+-            closing = _find_closing_quote(text, value_start)
+-            if closing == -1:                      # unterminated quote: redact the tail
+-                value_end = length
+-            else:
+-                value_end = closing + 1
+-        else:
+-            # I-14-D (C13 narrowing): the value is ONE token.  It stops at any
+-            # whitespace INCLUDING newlines, so a diagnostic key after the
+-            # credential (`doc=17`, `stage=...` on the next line) survives.
+-            # value_end == value_start after the loop means "no value at all";
+-            # the `value_end <= value_start` guard below leaves the text alone,
+-            # exactly as before.
+-            value_end = value_start
+-            while (value_end < length
+-                   and text[value_end] not in _VALUE_STOP_CHARS
+-                   and not text[value_end].isspace()):
+-                value_end += 1
++        value_start, value_end = _value_span(text, index, length)
+         if value_end <= value_start:
+             out.append(char)
+             index += 1
+@@ -430,6 +405,66 @@ def _redact_assignments(text: str) -> str:
+     return "".join(out)
+ 
+ 
++def _skip_left(text: str, pos: int, charset: frozenset[str]) -> int:
++    """Walk *pos* left while the previous char is in *charset* (the pre-split
++    walk-back, shared by the whitespace and key-character steps)."""
++    while pos > 0 and text[pos - 1] in charset:
++        pos -= 1
++    return pos
++
++
++def _credential_key_before(text: str, index: int) -> str:
++    """The credential-shaped key immediately before the separator at *index*
++    (``""`` when absent or rejected).
++
++    The pre-split ``boundary_ok`` guard is provably tautological here and is
++    folded away as a zero-behavior change: the leftward key walk stops exactly
++    when the previous character is not a key character or the position is 0 —
++    which IS the guard's own condition — so the pre-split code rejected the
++    same inputs on it.
++    """
++    key_end = _skip_left(text, index, _INLINE_SPACE)
++    cursor = _skip_left(text, key_end, _KEY_CHARS)
++    key = text[cursor:key_end]
++    if key and key_is_credential(key):
++        return key
++    return ""
++
++
++def _skip_right(text: str, pos: int, length: int, charset: frozenset[str]) -> int:
++    """Walk *pos* right while the char at *pos* is in *charset* (the pre-split
++    value-start whitespace skip)."""
++    while pos < length and text[pos] in charset:
++        pos += 1
++    return pos
++
++
++def _skip_value_tokens(text: str, start: int, length: int) -> int:
++    """End of the ONE-token value (I-14-D C13 narrowing): the value stops at
++    any whitespace INCLUDING newlines, so a diagnostic key after the
++    credential (`doc=17`, `stage=...` on the next line) survives.
++    ``end == start`` after the loop means "no value at all"; the caller's
++    ``value_end <= value_start`` guard leaves the text alone, exactly as before.
++    """
++    end = start
++    while (end < length
++           and text[end] not in _VALUE_STOP_CHARS
++           and not text[end].isspace()):
++        end += 1
++    return end
++
++
++def _value_span(text: str, index: int, length: int) -> tuple[int, int]:
++    """``(value_start, value_end)`` for the assignment after the separator at
++    *index*: a quoted string (unterminated quote: the whole tail), else ONE
++    token run — the two pre-split branches, unchanged."""
++    value_start = _skip_right(text, index + 1, length, _INLINE_SPACE)
++    if value_start < length and text[value_start] in _QUOTES:
++        closing = _find_closing_quote(text, value_start)
++        return value_start, (length if closing == -1 else closing + 1)
++    return value_start, _skip_value_tokens(text, value_start, length)
++
++
+ def _find_closing_quote(text: str, quote_at: int) -> int:
+     quote = text[quote_at]
+     cursor = quote_at + 1
+@@ -448,6 +483,12 @@ def redact_and_truncate(text: Any, limit: int = MAX_REDACTED_MESSAGE_CHARS) -> A
+     return redacted[:limit]
+ 
+ 
++def _chained_exception(exc: BaseException) -> BaseException | None:
++    """Next exception along ``__cause__``/``__context__`` (pre-split line of
++    ``exception_cause_types`` — moved out verbatim for the FC-1204 ratchet)."""
++    return exc.__cause__ or exc.__context__
++
++
+ def exception_cause_types(exc: BaseException) -> list[str]:
+     """Exception class names along the ``__cause__``/``__context__`` chain.
+ 
+@@ -460,7 +501,7 @@ def exception_cause_types(exc: BaseException) -> list[str]:
+     seen: set[int] = set()
+     current = exc
+     while True:
+-        nxt = current.__cause__ or current.__context__
++        nxt = _chained_exception(current)
+         if nxt is None or id(nxt) in seen:
+             break
+         seen.add(id(nxt))
+diff --git a/src/company_wiki/source_catalog/prompt_injection.py b/src/company_wiki/source_catalog/prompt_injection.py
+index e1dd6d9..f8e9c1d 100644
+--- a/src/company_wiki/source_catalog/prompt_injection.py
++++ b/src/company_wiki/source_catalog/prompt_injection.py
+@@ -175,6 +175,32 @@ def _ed25519_verify(public_key_raw: bytes, message: bytes,
+         return False
+ 
+ 
++def _require_disposal_tuple(
++    ignore_reason: str | None,
++    ignore_authorizer: str | None,
++    authorized_at: str | None,
++    declared_matches: Any,
++) -> None:
++    """P5-b tuple completeness: every gap is a defined refusal.
++
++    Moved out of ``_disposal_gate`` verbatim for the FC-1204 ratchet
++    (deliberate split): same checks, same order, same messages, called at the
++    same point in the gate.
++    """
++    if not ignore_reason or not str(ignore_reason).strip():
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: ignore_reason")
++    if not ignore_authorizer or not str(ignore_authorizer).strip():
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: ignore_authorizer")
++    if not authorized_at or not str(authorized_at).strip():
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: authorized_at")
++    if not declared_matches:
++        raise PromptInjectionReviewError(
++            "disposal authorization unavailable: declared_matches")
++
++
+ def _disposal_gate(
+     *,
+     document_id: str,
+@@ -192,18 +218,8 @@ def _disposal_gate(
+ ) -> dict[str, str]:
+     """P5-b: detected_and_ignored passes ONLY with (tuple) + (trust root)
+     + (verified authorizer signature); every gap is a defined refusal."""
+-    if not ignore_reason or not str(ignore_reason).strip():
+-        raise PromptInjectionReviewError(
+-            "disposal authorization unavailable: ignore_reason")
+-    if not ignore_authorizer or not str(ignore_authorizer).strip():
+-        raise PromptInjectionReviewError(
+-            "disposal authorization unavailable: ignore_authorizer")
+-    if not authorized_at or not str(authorized_at).strip():
+-        raise PromptInjectionReviewError(
+-            "disposal authorization unavailable: authorized_at")
+-    if not declared_matches:
+-        raise PromptInjectionReviewError(
+-            "disposal authorization unavailable: declared_matches")
++    _require_disposal_tuple(ignore_reason, ignore_authorizer, authorized_at,
++                             declared_matches)
+     trust_root = _load_trust_root(trust_root_path)
+     if not trust_root:
+         raise PromptInjectionReviewError(
+diff --git a/src/company_wiki/source_catalog/prune_retired_evidence.py b/src/company_wiki/source_catalog/prune_retired_evidence.py
+index 6465412..b77f1e5 100644
+--- a/src/company_wiki/source_catalog/prune_retired_evidence.py
++++ b/src/company_wiki/source_catalog/prune_retired_evidence.py
+@@ -213,6 +213,68 @@ def _resolve_archive_path(manifest: Mapping[str, Any],
+     return None
+ 
+ 
++def _manifest_head(
++    manifest_path: Path,
++) -> tuple[dict | None, Path | None, str | None]:
++    """Parse + structural checks for ONE manifest (W15-R1).
++
++    Returns ``(data, archive_path, problem)``; a problem authorises nothing
++    (D1).  Moved out of ``_load_verified_archives`` verbatim (FC-1204
++    deliberate split): same checks, same order, same messages.
++    """
++    try:
++        data = json.loads(manifest_path.read_text(encoding="utf-8"))
++    except (OSError, json.JSONDecodeError) as exc:
++        return None, None, f"{manifest_path}: unreadable manifest ({exc})"
++    if data.get("schema_version") != MANIFEST_SCHEMA:
++        return None, None, f"{manifest_path}: unsupported schema_version"
++    if data.get("ok") is not True:
++        return None, None, f"{manifest_path}: manifest not ok"
++    archive_path = _resolve_archive_path(data, manifest_path)
++    if archive_path is None:
++        return None, None, f"{manifest_path}: archive file missing"
++    if archive_path.stat().st_size != data.get("archive_bytes"):
++        return None, None, f"{manifest_path}: archive size mismatch"
++    return data, archive_path, None
++
++
++def _manifest_archive(
++    manifest_path: Path,
++    data: dict,
++    archive_path: Path,
++) -> "VerifiedArchive | str":
++    """Byte/row verification of the manifest's archive: returns the verified
++    archive or the problem string.  Moved out of ``_load_verified_archives``
++    verbatim (FC-1204 deliberate split) — same checks, same order.
++    """
++    try:
++        actual_sha = _sha256_file(archive_path)
++    except OSError as exc:
++        return f"{manifest_path}: archive unreadable ({exc})"
++    if actual_sha != data.get("archive_sha256"):
++        return f"{manifest_path}: archive sha256 mismatch"
++    try:
++        ids, digests = _read_snapshot(archive_path)
++    except (OSError, EOFError, ValueError, json.JSONDecodeError) as exc:
++        return f"{manifest_path}: archive corrupt ({exc})"
++    if len(ids) != data.get("rows_in_archive"):
++        return f"{manifest_path}: row count mismatch"
++    if dict(digests) != dict(data.get("row_digests") or {}):
++        return f"{manifest_path}: row digest mismatch"
++    completed_at = data.get("verified_completed_at")
++    try:
++        _parse_utc(completed_at)
++    except (TypeError, ValueError):
++        return f"{manifest_path}: bad verified_completed_at"
++    return VerifiedArchive(
++        manifest_path=str(manifest_path),
++        archive_path=str(archive_path),
++        archive_sha256=actual_sha,
++        verified_completed_at=completed_at,
++        row_digests=dict(digests),
++    )
++
++
+ def _load_verified_archives(
+         archive_root: Path) -> tuple[list[VerifiedArchive], list[str]]:
+     """Verify every manifest under ``archive_root/archive`` (W15-R1).
+@@ -226,56 +288,15 @@ def _load_verified_archives(
+     if not base.exists():
+         return verified, problems
+     for manifest_path in sorted(base.rglob("*.manifest.json")):
+-        try:
+-            data = json.loads(manifest_path.read_text(encoding="utf-8"))
+-        except (OSError, json.JSONDecodeError) as exc:
+-            problems.append(f"{manifest_path}: unreadable manifest ({exc})")
+-            continue
+-        if data.get("schema_version") != MANIFEST_SCHEMA:
+-            problems.append(f"{manifest_path}: unsupported schema_version")
++        data, archive_path, problem = _manifest_head(manifest_path)
++        if problem is not None:
++            problems.append(problem)
+             continue
+-        if data.get("ok") is not True:
+-            problems.append(f"{manifest_path}: manifest not ok")
++        result = _manifest_archive(manifest_path, data, archive_path)
++        if isinstance(result, str):
++            problems.append(result)
+             continue
+-        archive_path = _resolve_archive_path(data, manifest_path)
+-        if archive_path is None:
+-            problems.append(f"{manifest_path}: archive file missing")
+-            continue
+-        if archive_path.stat().st_size != data.get("archive_bytes"):
+-            problems.append(f"{manifest_path}: archive size mismatch")
+-            continue
+-        try:
+-            actual_sha = _sha256_file(archive_path)
+-        except OSError as exc:
+-            problems.append(f"{manifest_path}: archive unreadable ({exc})")
+-            continue
+-        if actual_sha != data.get("archive_sha256"):
+-            problems.append(f"{manifest_path}: archive sha256 mismatch")
+-            continue
+-        try:
+-            ids, digests = _read_snapshot(archive_path)
+-        except (OSError, EOFError, ValueError, json.JSONDecodeError) as exc:
+-            problems.append(f"{manifest_path}: archive corrupt ({exc})")
+-            continue
+-        if len(ids) != data.get("rows_in_archive"):
+-            problems.append(f"{manifest_path}: row count mismatch")
+-            continue
+-        if dict(digests) != dict(data.get("row_digests") or {}):
+-            problems.append(f"{manifest_path}: row digest mismatch")
+-            continue
+-        completed_at = data.get("verified_completed_at")
+-        try:
+-            _parse_utc(completed_at)
+-        except (TypeError, ValueError):
+-            problems.append(f"{manifest_path}: bad verified_completed_at")
+-            continue
+-        verified.append(VerifiedArchive(
+-            manifest_path=str(manifest_path),
+-            archive_path=str(archive_path),
+-            archive_sha256=actual_sha,
+-            verified_completed_at=completed_at,
+-            row_digests=dict(digests),
+-        ))
++        verified.append(result)
+     return verified, problems
+ 
+ 
+@@ -397,40 +418,38 @@ def _verify_archives_on_disk(plan: PrunePlan) -> None:
+             raise PruneRefused(f"archive changed after plan: {path}")
+ 
+ 
+-def prune_retired_evidence(
++def _resolve_active_plan(
+     config: CatalogConfig,
+     archive_root: Path,
+-    *,
+-    apply: bool = False,
+-    retention_days: int = RETENTION_DAYS,
+     now: datetime,
+-    plan: PrunePlan | None = None,
+-) -> PruneReport:
+-    """Plan (dry-run by default) or apply a prune of verified retired spans.
+-
+-    ``now`` (timezone-aware) is REQUIRED — the machine clock is never read (D3).
+-    Pass the ``plan`` returned by a previous dry-run to apply *that exact set*;
+-    apply re-verifies it under the operation lock and refuses on any drift (D4).
+-    """
+-    if not isinstance(now, datetime) or now.tzinfo is None:
+-        raise TypeError(
+-            "now: a timezone-aware datetime is required (no system-clock fallback)")
+-    archive_root = Path(archive_root)
+-    retired, span_rows = _counts(config.database_path)
+-
+-    manifest_problems: list[str] = []
++    retention_days: int,
++    plan: PrunePlan | None,
++) -> tuple[PrunePlan, list[VerifiedArchive], list[str]]:
++    """Freeze-or-verify the active plan — the pre-split block of
++    ``prune_retired_evidence`` moved out verbatim (FC-1204 deliberate split):
++    dry-run builds a fresh plan; a caller-frozen plan must hash-match (D4)."""
+     if plan is None:
+         built_plan, verified, manifest_problems = _build_plan(
+             config, archive_root, now, retention_days)
+-        active_plan = built_plan
+-    else:
+-        if PrunePlan.compute_hash(plan.span_ids, plan.row_digests,
+-                                  plan.archives, plan.retention_days
+-                                  ) != plan.plan_hash:
+-            raise PruneRefused("frozen plan hash does not match its contents")
+-        verified, manifest_problems = _load_verified_archives(archive_root)
+-        active_plan = plan
+-
++        return built_plan, verified, manifest_problems
++    if PrunePlan.compute_hash(plan.span_ids, plan.row_digests,
++                              plan.archives, plan.retention_days
++                              ) != plan.plan_hash:
++        raise PruneRefused("frozen plan hash does not match its contents")
++    verified, manifest_problems = _load_verified_archives(archive_root)
++    return plan, verified, manifest_problems
++
++
++def _base_report(
++    active_plan: PrunePlan,
++    verified: list[VerifiedArchive],
++    now: datetime,
++    retired: int,
++    span_rows: int,
++    manifest_problems: list[str],
++) -> tuple[dict[str, Any], bool]:
++    """Shared report fields + the due verdict — the pre-split block of
++    ``prune_retired_evidence`` moved out verbatim (FC-1204 deliberate split)."""
+     due = bool(active_plan.archives) and any(
+         _is_due(va, now, active_plan.retention_days)
+         for va in active_plan.archives)
+@@ -451,35 +470,116 @@ def prune_retired_evidence(
+         manifest_problems=tuple(manifest_problems),
+         plan=active_plan,
+     )
++    return base_report, due
++
++
++def _verify_plan_states(
++    active_plan: PrunePlan,
++    states: Mapping[str, tuple[str, str]],
++) -> tuple[str, ...]:
++    """D4 pre-delete state check — the pre-split loop moved out verbatim
++    (FC-1204 deliberate split): absent rows are idempotent, drifted rows
++    refuse the whole apply."""
++    absent: list[str] = []
++    for span_id in active_plan.span_ids:
++        state = states.get(span_id)
++        if state is None:
++            absent.append(span_id)          # already deleted: idempotent, not drift
++            continue
++        live_digest, status = state
++        if status != "retired":
++            raise PruneRefused(
++                f"document of {span_id} is no longer retired; whole apply refused")
++        if live_digest != active_plan.row_digests[span_id]:
++            raise PruneRefused(
++                f"row {span_id} changed since the plan was frozen; whole apply refused")
++    return tuple(absent)
++
++
++def _delete_batches(
++    config: CatalogConfig,
++    active_plan: PrunePlan,
++    states: Mapping[str, tuple[str, str]],
++    already_absent: tuple[str, ...],
++    receipt: dict[str, Any],
++    receipt_file: Path,
++) -> int:
++    """D4/D5 batched delete — the pre-split loop moved out verbatim
++    (FC-1204 deliberate split): each batch re-verifies its rows INSIDE the
++    same transaction that deletes them, and the receipt is updated after
++    every committed batch.  Returns the deleted row count."""
++    store = CatalogStore(config.database_path)
++    todo = _plan_todo(active_plan, states, already_absent)
++    deleted = 0
++    for batch in _chunks(todo, BATCH_SIZE):
++        with store.transaction() as connection:
++            # atomic re-verification WITH the delete (D4)
++            placeholders = ",".join("?" * len(batch))
++            rows = {row["span_id"]: row for row in connection.execute(
++                _SPAN_STATE.format(placeholders=placeholders), batch)}
++            for span_id in batch:
++                row = rows.get(span_id)
++                if row is None:
++                    raise PruneRefused(
++                        f"row {span_id} vanished mid-apply; whole apply refused")
++                digest_row = {key: row[key] for key in row.keys()
++                              if key != "__source_status"}
++                if row["__source_status"] != "retired":
++                    raise PruneRefused(
++                        f"document of {span_id} reactivated mid-apply; "
++                        "whole apply refused")
++                if _row_digest(digest_row) != active_plan.row_digests[span_id]:
++                    raise PruneRefused(
++                        f"row {span_id} changed mid-apply; whole apply refused")
++            cursor = connection.execute(
++                f"DELETE FROM evidence_spans WHERE span_id IN ({placeholders})",
++                batch)
++            batch_rows = cursor.rowcount
++        deleted += max(batch_rows, 0)
++        receipt["committed_ids"] = list(
++            dict.fromkeys(receipt["committed_ids"] + batch))
++        receipt["deleted_rows"] = deleted
++        _atomic_write_json(receipt_file, receipt)     # after every commit
++    return deleted
++
++
++def prune_retired_evidence(
++    config: CatalogConfig,
++    archive_root: Path,
++    *,
++    apply: bool = False,
++    retention_days: int = RETENTION_DAYS,
++    now: datetime,
++    plan: PrunePlan | None = None,
++) -> PruneReport:
++    """Plan (dry-run by default) or apply a prune of verified retired spans.
++
++    ``now`` (timezone-aware) is REQUIRED — the machine clock is never read (D3).
++    Pass the ``plan`` returned by a previous dry-run to apply *that exact set*;
++    apply re-verifies it under the operation lock and refuses on any drift (D4).
++    """
++    if not isinstance(now, datetime) or now.tzinfo is None:
++        raise TypeError(
++            "now: a timezone-aware datetime is required (no system-clock fallback)")
++    archive_root = Path(archive_root)
++    retired, span_rows = _counts(config.database_path)
++
++    active_plan, verified, manifest_problems = _resolve_active_plan(
++        config, archive_root, now, retention_days, plan)
++    base_report, due = _base_report(active_plan, verified, now, retired,
++                                     span_rows, manifest_problems)
+ 
+     if not apply:
+         return PruneReport(dry_run=True, **base_report)
+     if not due:
+         return PruneReport(dry_run=False, deleted_rows=0, **base_report)
+ 
+-    receipt_path: str | None = None
+-    deleted = 0
+-    already_absent: tuple[str, ...] = ()
+     with CatalogOperationLock(config.catalog_dir,
+                               operation="prune_retired_evidence"):
+         # ---- D4: re-verify plan vs. current state before the first delete ----
+         _verify_archives_on_disk(active_plan)
+         states = _span_states(config.database_path, active_plan.span_ids)
+-        todo: list[str] = []
+-        absent: list[str] = []
+-        for span_id in active_plan.span_ids:
+-            state = states.get(span_id)
+-            if state is None:
+-                absent.append(span_id)          # already deleted: idempotent, not drift
+-                continue
+-            live_digest, status = state
+-            if status != "retired":
+-                raise PruneRefused(
+-                    f"document of {span_id} is no longer retired; whole apply refused")
+-            if live_digest != active_plan.row_digests[span_id]:
+-                raise PruneRefused(
+-                    f"row {span_id} changed since the plan was frozen; whole apply refused")
+-        already_absent = tuple(absent)
++        already_absent = _verify_plan_states(active_plan, states)
+ 
+         # ---- D5: pending receipt naming the FULL plan, before any delete ----
+         receipt: dict[str, Any] = {
+@@ -501,37 +601,10 @@ def prune_retired_evidence(
+         _atomic_write_json(receipt_file, receipt)
+         receipt_path = str(receipt_file.resolve())
+ 
+-        store = CatalogStore(config.database_path)
+-        todo = _plan_todo(active_plan, states, absent)
+-        for batch in _chunks(todo, BATCH_SIZE):
+-            with store.transaction() as connection:
+-                # atomic re-verification WITH the delete (D4)
+-                placeholders = ",".join("?" * len(batch))
+-                rows = {row["span_id"]: row for row in connection.execute(
+-                    _SPAN_STATE.format(placeholders=placeholders), batch)}
+-                for span_id in batch:
+-                    row = rows.get(span_id)
+-                    if row is None:
+-                        raise PruneRefused(
+-                            f"row {span_id} vanished mid-apply; whole apply refused")
+-                    digest_row = {key: row[key] for key in row.keys()
+-                                  if key != "__source_status"}
+-                    if row["__source_status"] != "retired":
+-                        raise PruneRefused(
+-                            f"document of {span_id} reactivated mid-apply; "
+-                            "whole apply refused")
+-                    if _row_digest(digest_row) != active_plan.row_digests[span_id]:
+-                        raise PruneRefused(
+-                            f"row {span_id} changed mid-apply; whole apply refused")
+-                cursor = connection.execute(
+-                    f"DELETE FROM evidence_spans WHERE span_id IN ({placeholders})",
+-                    batch)
+-                batch_rows = cursor.rowcount
+-            deleted += max(batch_rows, 0)
+-            receipt["committed_ids"] = list(
+-                dict.fromkeys(receipt["committed_ids"] + batch))
+-            receipt["deleted_rows"] = deleted
+-            _atomic_write_json(receipt_file, receipt)     # after every commit
++        # ---- D4/D5 batched delete (FC-1204 deliberate split: verbatim body in
++        # _delete_batches) — returns the deleted row count ----
++        deleted = _delete_batches(config, active_plan, states, already_absent,
++                                  receipt, receipt_file)
+ 
+         receipt["status"] = "complete"
+         _atomic_write_json(receipt_file, receipt)
+diff --git a/tests/contract/test_archive_retired_evidence_fail_closed.py b/tests/contract/test_archive_retired_evidence_fail_closed.py
+new file mode 100644
+index 0000000..ca3e226
+--- /dev/null
++++ b/tests/contract/test_archive_retired_evidence_fail_closed.py
+@@ -0,0 +1,192 @@
++"""FC-1204 coverage lane: fail-closed / exception paths of
++``archive_retired_evidence`` (DW15-REPAIR D5 arms relocated into helpers by
++the FC-1204 deliberate split).
++
++The split moved the writer's exception arms into ``_publish``,
++``_verify_snapshot``, ``_reconcile``, ``_verify_then_publish``,
++``_snapshot_paths`` and the ``finally`` cleanup; the happy-path family never
++trips them, so they sat uncovered below the frozen 95 branch floor (85.4%).
++These tests exercise exactly those arms (the coverage gate's missing lines and
++branch arcs) without touching production behaviour and without changing any
++frozen threshold.
++"""
++
++from __future__ import annotations
++
++import gzip
++import json
++import uuid
++from datetime import datetime, timezone
++from pathlib import Path
++from types import SimpleNamespace
++
++import pytest
++
++from company_wiki.source_catalog.archive_retired_evidence import (
++    ArchiveReport,
++    _publish,
++    _reconcile,
++    _verify_snapshot,
++    _verify_then_publish,
++    archive_retired_evidence,
++)
++from company_wiki.source_catalog.store import retire_document
++
++NOW = datetime(2026, 9, 22, 12, 0, tzinfo=timezone.utc)
++
++ANNUAL = """\
++第一节 释义
++
++释义：本报告使用的术语与定义说明，包括公司与关联方的界定，以及财务指标的计量口径说明。
++
++第三节 公司业务概要
++
++主营业务：公司主要从事半导体设备的研发、生产与销售，产品覆盖刻蚀、薄膜沉积、清洗等关键工艺环节。
++"""
++
++
++def _retired_catalog_for_fail_closed(tmp_path: Path):
++    import company_wiki.source_catalog as module
++
++    project = tmp_path / "project"
++    source_root = tmp_path / "sources"
++    source_root.mkdir()
++    (source_root / "a.txt").write_text(ANNUAL, encoding="utf-8")
++    catalog = module.SourceCatalog(
++        module.CatalogConfig(
++            project_root=project,
++            catalog_dir=project / ".source_catalog",
++            roots=(module.RootSpec("external", source_root, "directory"),),
++        )
++    )
++    catalog.scan()
++    catalog.normalize()
++    doc = catalog.store.fetchone("SELECT document_id FROM documents")
++    retire_document(
++        catalog.store,
++        document_id=doc["document_id"],
++        reason="test",
++        created_by="test",
++    )
++    return catalog
++
++
++def test_fcw_archive_report_to_dict_roundtrip(tmp_path):
++    catalog = _retired_catalog_for_fail_closed(tmp_path)
++    report = archive_retired_evidence(
++        catalog.config.database_path, tmp_path / "manifests", now=NOW)
++    assert isinstance(report, ArchiveReport)
++    assert report.to_dict() == dict(report.__dict__)
++
++
++def test_fcw_publish_refuses_existing_target(tmp_path):
++    tmp = tmp_path / "snap.partial"
++    tmp.write_bytes(b"x")
++    final = tmp_path / "snap.jsonl.gz"
++    final.write_bytes(b"y")
++    with pytest.raises(FileExistsError, match="already published"):
++        _publish(tmp, final)
++
++
++def test_fcw_publish_link_failure_falls_back_to_rename(tmp_path, monkeypatch):
++    def _link_fails(src, dst):
++        raise OSError("simulated hardlink failure")
++
++    monkeypatch.setattr("os.link", _link_fails)
++    tmp = tmp_path / "snap.partial"
++    tmp.write_bytes(b"x")
++    final = tmp_path / "snap.jsonl.gz"
++    _publish(tmp, final)
++    assert final.exists()
++    assert not tmp.exists()
++
++
++def test_fcw_publish_link_failure_still_refuses_raced_target(
++    tmp_path, monkeypatch
++):
++    def _link_races(src, dst):
++        Path(dst).write_bytes(b"y")   # a concurrent publish wins the race
++        raise OSError("simulated hardlink failure")
++
++    monkeypatch.setattr("os.link", _link_races)
++    tmp = tmp_path / "snap.partial"
++    tmp.write_bytes(b"x")
++    final = tmp_path / "snap.jsonl.gz"
++    with pytest.raises(FileExistsError, match="already published"):
++        _publish(tmp, final)
++
++
++def test_fcw_verify_snapshot_skips_blank_lines(tmp_path):
++    snap = tmp_path / "snap.jsonl.gz"
++    with gzip.open(snap, "wt", encoding="utf-8") as fh:
++        fh.write("\n")
++        fh.write(json.dumps({"span_id": "a", "v": 1}) + "\n")
++        fh.write("\n\n")
++        fh.write(json.dumps({"span_id": "b", "v": 2}) + "\n")
++    count, digests = _verify_snapshot(snap)
++    assert count == 2
++    assert set(digests) == {"a", "b"}
++
++
++def test_fcw_verify_snapshot_rejects_duplicate_span_ids(tmp_path):
++    snap = tmp_path / "dup.jsonl.gz"
++    with gzip.open(snap, "wt", encoding="utf-8") as fh:
++        fh.write(json.dumps({"span_id": "a", "v": 1}) + "\n")
++        fh.write(json.dumps({"span_id": "a", "v": 2}) + "\n")
++    with pytest.raises(RuntimeError, match="duplicate span_id"):
++        _verify_snapshot(snap)
++
++
++def test_fcw_archive_requires_timezone_aware_now(tmp_path):
++    catalog = _retired_catalog_for_fail_closed(tmp_path)
++    with pytest.raises(TypeError, match="timezone-aware"):
++        archive_retired_evidence(
++            catalog.config.database_path, tmp_path / "manifests",
++            now=datetime(2026, 9, 22, 12, 0))     # naive: refused (D3)
++
++
++def test_fcw_snapshot_path_collision_is_refused(tmp_path, monkeypatch):
++    catalog = _retired_catalog_for_fail_closed(tmp_path)
++    root = tmp_path / "manifests"
++    monkeypatch.setattr(uuid, "uuid4", lambda: SimpleNamespace(hex="ab" * 16))
++    first = archive_retired_evidence(
++        catalog.config.database_path, root, now=NOW)
++    assert first.ok
++    with pytest.raises(FileExistsError, match="already published"):
++        archive_retired_evidence(catalog.config.database_path, root, now=NOW)
++
++
++def test_fcw_progress_callback_is_invoked(tmp_path):
++    catalog = _retired_catalog_for_fail_closed(tmp_path)
++    calls = []
++    report = archive_retired_evidence(
++        catalog.config.database_path, tmp_path / "manifests", now=NOW,
++        progress=lambda written, total: calls.append((written, total)))
++    assert report.ok
++    assert calls and calls[-1][0] == report.rows_written
++
++
++def test_fcw_reconcile_refuses_count_mismatch():
++    with pytest.raises(RuntimeError, match="reconciliation failed"):
++        _reconcile(rows_written=3, total=4)
++
++
++def test_fcw_verify_then_publish_refuses_digest_mismatch(tmp_path):
++    snap = tmp_path / "snap.jsonl.gz"
++    with gzip.open(snap, "wt", encoding="utf-8") as fh:
++        fh.write(json.dumps({"span_id": "a", "v": 1}) + "\n")
++    out = tmp_path / "final.jsonl.gz"
++    with pytest.raises(RuntimeError, match="self-verification failed"):
++        _verify_then_publish(snap, out, {"a": "0" * 64}, 1)
++
++
++def test_fcw_failed_run_cleans_temp_residue(tmp_path, monkeypatch):
++    catalog = _retired_catalog_for_fail_closed(tmp_path)
++    monkeypatch.setattr(
++        "company_wiki.source_catalog.archive_retired_evidence._count_retired",
++        lambda conn: 999)
++    root = tmp_path / "manifests"
++    with pytest.raises(RuntimeError, match="reconciliation failed"):
++        archive_retired_evidence(catalog.config.database_path, root, now=NOW)
++    assert list((root / "archive").rglob("*.partial-*")) == []
++    assert list((root / "archive").rglob("*.manifest.json")) == []
+diff --git a/tests/contract/test_fc905_receipt_envelope.py b/tests/contract/test_fc905_receipt_envelope.py
+index df153a6..1a01333 100644
+--- a/tests/contract/test_fc905_receipt_envelope.py
++++ b/tests/contract/test_fc905_receipt_envelope.py
+@@ -110,18 +110,86 @@ def _add_artifact(catalog, tree, *, doc_id: str, role: str,
+ 
+ 
+ def _record_review(catalog, doc_id: str, *, status: str,
+-                   reviewer: str = "reviewer-a",
+-                   evidence: str | None = None) -> None:
++                   reviewer: str = "reviewer-a") -> None:
++    """Write a receipt per the post-GUARD-MERGE writer contract (5d72529).
++
++    P5-a: the evidence PAYLOAD bytes are mandatory — ``evidence_sha256`` must
++    be sha256 of exactly those bytes and the payload is re-scanned against
++    the declared status (benign payload + not_detected below).  P5-c: dual
++    source/policy binding is mandatory (this file never asserted either
++    value; PI-09 pins only envelope determinism).  The old ``evidence``
++    precomputed-hash parameter is gone BY CONTRACT: it was the exact escape
++    hatch P5-a closes, and neither of its historical values ("e"*64) has a
++    sha256 preimage anyway.
++
++    ``status="detected_and_ignored"`` additionally trips the P5-b disposal
++    gate, which demands a verified ed25519 authorizer signature over a trust
++    root; ``cryptography`` (the verification backend) is NOT a declared
++    dependency of CW's CI images (requirements*.txt), so a signing fixture
++    here would be host-dependent — the exact F-B01-9 host-assumption class
++    the guards exist to prevent.  PI-02 is an ENVELOPE-forwarding contract
++    (stored status -> forwarded status), so that receipt is planted directly
++    with the exact shape the writer emits: schema_version + status enum +
++    C7 state_domain satisfy read_prompt_injection_review's fail-closed gate
++    (same direct-plant technique tests/unit/test_prompt_injection_guard.py
++    already uses for un-writable rows).
++    """
++    if status == "detected_and_ignored":
++        _plant_receipt(catalog, doc_id, status=status, reviewer=reviewer)
++        return
+     from company_wiki.source_catalog.prompt_injection import (
+         record_prompt_injection_review,
+     )
+ 
++    payload = "fc905 envelope receipt evidence payload."
+     con = sqlite3.connect(catalog.config.database_path)
+     try:
+         record_prompt_injection_review(
+             con, doc_id, status=status, reviewer=reviewer,
+-            evidence_sha256=evidence or ("e" * 64),
+-            now="2026-08-11T00:00:00Z")
++            evidence_sha256=hashlib.sha256(payload.encode("utf-8")).hexdigest(),
++            evidence_payload=payload,
++            now="2026-08-11T00:00:00Z",
++            source_sha256="a" * 64, policy_hash="c" * 64)
++        con.commit()
++    finally:
++        con.close()
++
++
++def _plant_receipt(catalog, doc_id: str, *, status: str, reviewer: str) -> None:
++    """Store a contract-shaped receipt directly in documents.metadata_json.
++
++    See ``_record_review`` for why the P5-b write path cannot be exercised
++    hermetically today (undeclared crypto dependency).  The planted row is
++    byte-shape identical to what ``record_prompt_injection_review`` emits for
++    the fields the reader gate validates.
++    """
++    from company_wiki.source_catalog.prompt_injection import (
++        PROMPT_INJECTION_REVIEW_KEY,
++        PROMPT_INJECTION_REVIEW_SCHEMA_VERSION,
++        STATE_DOMAIN_REVIEW,
++    )
++
++    con = sqlite3.connect(catalog.config.database_path)
++    try:
++        row = con.execute(
++            "SELECT metadata_json FROM documents WHERE document_id=?",
++            (doc_id,)).fetchone()
++        metadata = json.loads(row[0] or "{}")
++        metadata[PROMPT_INJECTION_REVIEW_KEY] = {
++            "schema_version": PROMPT_INJECTION_REVIEW_SCHEMA_VERSION,
++            "status": status,
++            "reviewer": reviewer,
++            "reviewed_at": "2026-08-11T00:00:00Z",
++            "evidence_sha256": hashlib.sha256(
++                b"fc905 planted detected-and-ignored evidence payload."
++            ).hexdigest(),
++            "source_sha256": "a" * 64,
++            "policy_hash": "c" * 64,
++            "state_domain": STATE_DOMAIN_REVIEW,
++        }
++        con.execute(
++            "UPDATE documents SET metadata_json=? WHERE document_id=?",
++            (json.dumps(metadata, ensure_ascii=False), doc_id))
+         con.commit()
+     finally:
+         con.close()
+diff --git a/tests/contract/test_fc906a_producer_binding_metadata.py b/tests/contract/test_fc906a_producer_binding_metadata.py
+index 49003a0..54f6888 100644
+--- a/tests/contract/test_fc906a_producer_binding_metadata.py
++++ b/tests/contract/test_fc906a_producer_binding_metadata.py
+@@ -135,14 +135,21 @@ def _review_documents(catalog: SourceCatalog) -> None:
+     )
+     with catalog.store.transaction() as connection:
+         for row in rows:
++            # GUARD-MERGE P5-a (5d72529): the writer binds evidence_sha256 to
++            # sha256(evidence_payload) and re-scans the payload; a missing
++            # payload is refused fail-closed.  This fixture has always treated
++            # the source content_sha256 string as the evidence (that is what
++            # its evidence_sha256 hashed), so that same string is supplied as
++            # the payload — the evidence_sha256 value and every other receipt
++            # field stay byte-identical to the pre-5d72529 contract.
++            evidence = str(row["content_sha256"])
+             record_prompt_injection_review(
+                 connection,
+                 str(row["document_id"]),
+                 status="not_detected",
+                 reviewer="gp003-test-fixture",
+-                evidence_sha256=hashlib.sha256(
+-                    str(row["content_sha256"]).encode()
+-                ).hexdigest(),
++                evidence_sha256=hashlib.sha256(evidence.encode()).hexdigest(),
++                evidence_payload=evidence,
+                 now="2026-09-02T12:00:00Z",
+                 source_sha256=str(row["content_sha256"]),
+                 policy_hash="c" * 64,
+diff --git a/tests/contract/test_gp003_llm_exit_receipt_privacy_gate.py b/tests/contract/test_gp003_llm_exit_receipt_privacy_gate.py
+index f12c832..e73e243 100644
+--- a/tests/contract/test_gp003_llm_exit_receipt_privacy_gate.py
++++ b/tests/contract/test_gp003_llm_exit_receipt_privacy_gate.py
+@@ -141,6 +141,12 @@ def _review(catalog, document_id: str, *, source_sha256: str | None = None) -> N
+             status="not_detected",
+             reviewer="gp003-test",
+             evidence_sha256=hashlib.sha256(binding.encode()).hexdigest(),
++            # P5-a (GUARD-MERGE, 5d72529): the evidence BYTES are mandatory
++            # and evidence_sha256 must bind exactly them — this fixture always
++            # bound the binding string itself, so that same string IS the
++            # payload (the hash is unchanged).  It is hex, so the mandatory
++            # re-scan yields the declared not_detected.
++            evidence_payload=binding,
+             now="2026-09-02T12:00:00Z",
+             source_sha256=binding,
+             policy_hash="c" * 64,
+diff --git a/tests/contract/test_r4b05_metadata_provenance.py b/tests/contract/test_r4b05_metadata_provenance.py
+index 767fcdc..c24e026 100644
+--- a/tests/contract/test_r4b05_metadata_provenance.py
++++ b/tests/contract/test_r4b05_metadata_provenance.py
+@@ -153,6 +153,14 @@ def _fetchall(catalog, sql: str, params: tuple = ()):
+ 
+ 
+ def _receipt(catalog, document_id: str) -> None:
++    # P5-a + P5-c (GUARD-MERGE, 5d72529): the writer refuses a receipt
++    # without evidence bytes (evidence_sha256 must be sha256 of exactly the
++    # payload, which is re-scanned against the declared status) and without
++    # dual source/policy binding.  The old literal "a"*64 has no sha256
++    # preimage, so the hash is now derived from a benign payload (scans as
++    # the declared not_detected); this file's assertions pin only the
++    # receipt's presence/status, never the hash value.
++    payload = "r4b05 provenance test evidence payload."
+     con = sqlite3.connect(f"file:{catalog.config.database_path}?mode=rw", uri=True)
+     try:
+         record_prompt_injection_review(
+@@ -160,8 +168,11 @@ def _receipt(catalog, document_id: str) -> None:
+             document_id,
+             status="not_detected",
+             reviewer="r4b05-test",
+-            evidence_sha256="a" * 64,
++            evidence_sha256=hashlib.sha256(payload.encode("utf-8")).hexdigest(),
++            evidence_payload=payload,
+             now="2026-09-12T00:00:00Z",
++            source_sha256="a" * 64,
++            policy_hash="c" * 64,
+         )
+         con.commit()
+     finally:
+diff --git a/tests/contract/test_source_catalog_archive_retired.py b/tests/contract/test_source_catalog_archive_retired.py
+index bc60ad7..5d75417 100644
+--- a/tests/contract/test_source_catalog_archive_retired.py
++++ b/tests/contract/test_source_catalog_archive_retired.py
+@@ -3,6 +3,8 @@
+ from __future__ import annotations
+ 
+ import gzip
++import re
++from datetime import datetime, timezone
+ from pathlib import Path
+ 
+ from company_wiki.source_catalog.archive_retired_evidence import (
+@@ -10,6 +12,11 @@ from company_wiki.source_catalog.archive_retired_evidence import (
+ )
+ from company_wiki.source_catalog.store import retire_document
+ 
++# D3 (owner ruling A-1 / ac4ebd0 DW15-REPAIR): `now` is REQUIRED and injected —
++# the writer never reads the system clock.  A fixed timezone-aware moment keeps
++# every run deterministic (no wall-clock fallback exists to lean on).
++NOW = datetime(2026, 9, 22, 12, 0, tzinfo=timezone.utc)
++
+ 
+ ANNUAL = """\
+ 第一节 释义
+@@ -55,7 +62,8 @@ def _catalog_with_retired_doc(tmp_path: Path):
+ def test_archive_exports_retired_evidence_with_row_reconciliation(tmp_path):
+     catalog = _catalog_with_retired_doc(tmp_path)
+     manifests = tmp_path / "manifests"
+-    report = archive_retired_evidence(catalog.config.database_path, manifests)
++    report = archive_retired_evidence(
++        catalog.config.database_path, manifests, now=NOW)
+ 
+     assert report.ok
+     assert report.rows_written == report.rows_in_catalog
+@@ -63,7 +71,10 @@ def test_archive_exports_retired_evidence_with_row_reconciliation(tmp_path):
+ 
+     path = Path(report.archive_path)
+     assert path.exists()
+-    assert path.name == "retired-evidence.jsonl.gz"
++    # D2 (owner ruling A-1): every run writes a UNIQUELY named snapshot —
++    # uuid4 token, never the clock — so no run can overwrite another's publish.
++    assert re.fullmatch(r"retired-evidence-[0-9a-f]{16}\.jsonl\.gz", path.name), (
++        f"snapshot name must carry the uniqueness token: {path.name}")
+     assert "archive" in str(path)
+ 
+     with gzip.open(path, "rt", encoding="utf-8") as fh:
+@@ -106,6 +117,7 @@ def test_archive_empty_when_no_retired_documents(tmp_path):
+         )
+     )
+     catalog.scan()
+-    report = archive_retired_evidence(catalog.config.database_path, tmp_path / "manifests")
++    report = archive_retired_evidence(
++        catalog.config.database_path, tmp_path / "manifests", now=NOW)
+     assert report.ok
+     assert report.rows_written == 0
+diff --git a/tests/contract/test_source_catalog_focus_admission.py b/tests/contract/test_source_catalog_focus_admission.py
+index 6dc2622..7e9f6ce 100644
+--- a/tests/contract/test_source_catalog_focus_admission.py
++++ b/tests/contract/test_source_catalog_focus_admission.py
+@@ -52,14 +52,20 @@ def _review_documents(catalog: SourceCatalog) -> None:
+     )
+     with catalog.store.transaction() as connection:
+         for row in rows:
++            # P5-a (GUARD-MERGE, 5d72529): evidence bytes are mandatory —
++            # evidence_sha256 must be sha256(evidence_payload) and the payload
++            # is re-scanned against the declared status.  This fixture always
++            # bound the source content_sha256 string, so that same string is
++            # the payload: the hash and every receipt field stay unchanged,
++            # and a hex string scans as the declared not_detected.
++            evidence = str(row["content_sha256"])
+             record_prompt_injection_review(
+                 connection,
+                 str(row["document_id"]),
+                 status="not_detected",
+                 reviewer="gp003-test-fixture",
+-                evidence_sha256=hashlib.sha256(
+-                    str(row["content_sha256"]).encode()
+-                ).hexdigest(),
++                evidence_sha256=hashlib.sha256(evidence.encode()).hexdigest(),
++                evidence_payload=evidence,
+                 now="2026-09-02T12:00:00Z",
+                 source_sha256=str(row["content_sha256"]),
+                 policy_hash="c" * 64,
+diff --git a/tests/contract/test_source_catalog_prune_retired.py b/tests/contract/test_source_catalog_prune_retired.py
+index ec97de4..e10b408 100644
+--- a/tests/contract/test_source_catalog_prune_retired.py
++++ b/tests/contract/test_source_catalog_prune_retired.py
+@@ -2,13 +2,26 @@
+ 
+ from __future__ import annotations
+ 
++from datetime import datetime, timezone
+ from pathlib import Path
+ 
++from company_wiki.source_catalog.archive_retired_evidence import (
++    archive_retired_evidence,
++)
+ from company_wiki.source_catalog.prune_retired_evidence import (
+     prune_retired_evidence,
+ )
+ from company_wiki.source_catalog.store import retire_document
+ 
++# D3 (owner ruling A-1 / ac4ebd0 DW15-REPAIR): `now` is REQUIRED and injected —
++# the writer never reads the system clock.  Fixed timezone-aware moments keep
++# every run deterministic (no wall-clock fallback exists to lean on).  The
++# planted archives' own moments preserve the fixtures' original intent:
++# 2026-05-01 is > 90 days old (due) and 2026-08-07 is within retention (not).
++NOW = datetime(2026, 9, 22, 12, 0, tzinfo=timezone.utc)
++ARCHIVED_OLD = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
++ARCHIVED_RECENT = datetime(2026, 8, 7, 12, 0, tzinfo=timezone.utc)
++
+ 
+ ANNUAL = """\
+ 第一节 释义
+@@ -51,28 +64,47 @@ def _retired_catalog(tmp_path: Path):
+     return catalog
+ 
+ 
+-def test_prune_dry_run_reports_span_volume(tmp_path):
++def _archived_retired_catalog(tmp_path: Path, *, archive_now: datetime):
++    """Retired catalog plus a REAL verified archive (snapshot + manifest).
++
++    D1 / W15-R1 (ac4ebd0 DW15-REPAIR): prune only ever authorises deletions
++    from a fully verified ``archive-verified-manifest-1.0`` — a bare dated
++    directory authorises nothing.  The fixture therefore plants the archive
++    through ``archive_retired_evidence`` (whose self-check writes the
++    manifest), exactly as production does; the tests keep pinning prune's
++    report/apply contract against that verified input.
++    """
+     catalog = _retired_catalog(tmp_path)
+-    archive = tmp_path / "manifests"
+-    (archive / "archive" / "2026-05-01").mkdir(parents=True)  # > 90 days old
+-    report = prune_retired_evidence(catalog.config, archive)
++    archive_root = tmp_path / "manifests"
++    planted = archive_retired_evidence(
++        catalog.config.database_path, archive_root, now=archive_now)
++    assert planted.ok
++    return catalog, archive_root, planted
++
++
++def test_prune_dry_run_reports_span_volume(tmp_path):
++    catalog, archive, planted = _archived_retired_catalog(
++        tmp_path, archive_now=ARCHIVED_OLD)
++    report = prune_retired_evidence(catalog.config, archive, now=NOW)
+     assert report.dry_run is True
+     assert report.span_rows > 0
+     assert report.retired_documents == 1
+-    assert report.oldest_archive == "2026-05-01"
++    # the oldest VERIFIED archive is the planted 2026-05-01 snapshot; under
++    # the D2 unique-name contract its identity is the full snapshot path
++    assert report.oldest_archive == planted.archive_path
++    assert "2026-05-01" in report.oldest_archive
+     assert report.due is True
+ 
+ 
+ def test_prune_apply_deletes_spans_when_due(tmp_path):
+-    catalog = _retired_catalog(tmp_path)
+-    archive = tmp_path / "manifests"
+-    (archive / "archive" / "2026-05-01").mkdir(parents=True)
++    catalog, archive, _planted = _archived_retired_catalog(
++        tmp_path, archive_now=ARCHIVED_OLD)
+     before = catalog.store.fetchone(
+         "SELECT COUNT(*) FROM evidence_spans"
+     )[0]
+ 
+     report = prune_retired_evidence(
+-        catalog.config, archive, apply=True, retention_days=0
++        catalog.config, archive, apply=True, retention_days=0, now=NOW
+     )
+     assert report.dry_run is False
+     assert report.due is True
+@@ -85,10 +117,9 @@ def test_prune_apply_deletes_spans_when_due(tmp_path):
+ 
+ 
+ def test_prune_apply_within_retention_does_nothing(tmp_path):
+-    catalog = _retired_catalog(tmp_path)
+-    archive = tmp_path / "manifests"
+-    (archive / "archive" / "2026-08-07").mkdir(parents=True)  # today
+-    report = prune_retired_evidence(catalog.config, archive, apply=True)
++    catalog, archive, _planted = _archived_retired_catalog(
++        tmp_path, archive_now=ARCHIVED_RECENT)  # 2026-08-07: within 90 days
++    report = prune_retired_evidence(catalog.config, archive, apply=True, now=NOW)
+     assert report.due is False
+     assert report.deleted_rows == 0
+     remaining = catalog.store.fetchone("SELECT COUNT(*) FROM evidence_spans")[0]
+diff --git a/tests/contract/test_source_catalog_worker.py b/tests/contract/test_source_catalog_worker.py
+index 472b0f7..520806c 100644
+--- a/tests/contract/test_source_catalog_worker.py
++++ b/tests/contract/test_source_catalog_worker.py
+@@ -47,14 +47,20 @@ def _review_all(catalog) -> None:
+     )
+     with catalog.store.transaction() as connection:
+         for row in rows:
++            # P5-a (GUARD-MERGE, 5d72529): evidence bytes are mandatory —
++            # evidence_sha256 must be sha256(evidence_payload) and the payload
++            # is re-scanned against the declared status.  This fixture always
++            # bound the source content_sha256 string, so that same string is
++            # the payload: the hash and every receipt field stay unchanged,
++            # and a hex string scans as the declared not_detected.
++            evidence = str(row["content_sha256"])
+             record_prompt_injection_review(
+                 connection,
+                 str(row["document_id"]),
+                 status="not_detected",
+                 reviewer="gp003-test-fixture",
+-                evidence_sha256=hashlib.sha256(
+-                    str(row["content_sha256"]).encode()
+-                ).hexdigest(),
++                evidence_sha256=hashlib.sha256(evidence.encode()).hexdigest(),
++                evidence_payload=evidence,
+                 now="2026-09-02T12:00:00Z",
+                 source_sha256=str(row["content_sha256"]),
+                 policy_hash="c" * 64,
+diff --git a/tests/contract/test_zr1003_shadow_assertions.py b/tests/contract/test_zr1003_shadow_assertions.py
+index b061234..3e05033 100644
+--- a/tests/contract/test_zr1003_shadow_assertions.py
++++ b/tests/contract/test_zr1003_shadow_assertions.py
+@@ -20,6 +20,7 @@ Hermetic: temporary catalog only; production catalog never touched.
+ 
+ from __future__ import annotations
+ 
++import hashlib
+ import json
+ import sys
+ from pathlib import Path
+@@ -141,11 +142,19 @@ def test_c2_recorded_review_unblocks(tmp_path):
+     db_path = tmp_path / "catalog.sqlite3"
+     store = CatalogStore(db_path)
+     _seed(store)
++    # P5-a + P5-c (GUARD-MERGE, 5d72529): evidence bytes + dual binding are
++    # mandatory; "e"*64 has no sha256 preimage, so the hash derives from the
++    # benign payload (which re-scans as the declared not_detected).  This
++    # test pins only status/reviewer, never the hash value.
++    payload = "zr1003 recorded review evidence payload."
+     with store.transaction() as conn:
+         record_prompt_injection_review(
+             conn, document_id="d1",
+             status="not_detected", reviewer="zr1003-implementer",
+-            evidence_sha256="e" * 64, now="2026-08-23T00:00:00Z")
++            evidence_sha256=hashlib.sha256(payload.encode("utf-8")).hexdigest(),
++            evidence_payload=payload,
++            now="2026-08-23T00:00:00Z",
++            source_sha256="f" * 64, policy_hash="c" * 64)
+     row = store.fetchone(
+         "SELECT metadata_json FROM documents WHERE document_id='d1'")
+     meta = json.loads(row["metadata_json"])
+diff --git a/tools/pre_push_gate.py b/tools/pre_push_gate.py
+index 455d5d2..0072336 100644
+--- a/tools/pre_push_gate.py
++++ b/tools/pre_push_gate.py
+@@ -38,8 +38,28 @@ from pathlib import Path
+ PROJECT_ROOT = Path(__file__).resolve().parents[1]
+ 
+ 
++def _configure_output() -> None:
++    """Encoding-safe output (root-cause fix for the Windows GBK crash).
++
++    A failing step's output tail may carry characters the console codec
++    cannot encode; on a GBK stdout ``print(tail)`` then raised
++    ``UnicodeEncodeError: 'gbk' codec can't encode '\\u05a3'`` and CRASHED
++    the gate instead of reporting the step result.  Reconfigure both streams
++    to utf-8 with ``errors='replace'`` so printing child output can never
++    raise.  Return-code semantics are untouched.  Guarded: a stream that
++    cannot be reconfigured (pytest capture wrappers, closed streams) is
++    left as-is rather than raising here.
++    """
++    for stream in (sys.stdout, sys.stderr):
++        try:
++            stream.reconfigure(encoding="utf-8", errors="replace")
++        except (AttributeError, OSError, ValueError):
++            pass
++
++
+ def _run(cmd: list[str], label: str, timeout: int = 600, env_extra: dict | None = None) -> int:
+     import os
++    _configure_output()
+     env = dict(os.environ)
+     env["PYTHONPATH"] = str(PROJECT_ROOT / "src")
+     if env_extra:
+@@ -59,6 +79,7 @@ def _run(cmd: list[str], label: str, timeout: int = 600, env_extra: dict | None
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
++    _configure_output()
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--skip-contract", action="store_true",
+                         help="skip the contract-test step (fast lint-only)")

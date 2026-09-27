@@ -1,0 +1,126 @@
+{
+ "label": "chain",
+ "oracle_expected_source": "oracle.md S1.1 (frozen before first judged run)",
+ "expected_strings": {
+  "clean_probe.txt": null,
+  "no_sidecar_probe.txt": "missing_sidecar",
+  "broken_sidecar_probe.txt": "sidecar_parse_failed",
+  "mismatch_probe.txt": "missing_identity:canonical_entity_id;content_hash_mismatch;path_escape:canonical_path"
+ },
+ "hops": {
+  "broken_sidecar_probe.txt": {
+   "H1_adapter_evidence": "sidecar_parse_failed",
+   "H2_candidate_error": "sidecar_parse_failed",
+   "H3_locations_error": "sidecar_parse_failed",
+   "H4_query_locations_error": "sidecar_parse_failed",
+   "H4_seen_via_view": "explicit_source_status_incomplete",
+   "oracle_expected": "sidecar_parse_failed"
+  },
+  "clean_probe.txt": {
+   "H1_adapter_evidence": null,
+   "H2_candidate_error": null,
+   "H3_locations_error": null,
+   "H4_query_locations_error": null,
+   "H4_seen_via_view": "default_active_only",
+   "oracle_expected": null
+  },
+  "mismatch_probe.txt": {
+   "H1_adapter_evidence": "missing_identity:canonical_entity_id;content_hash_mismatch;path_escape:canonical_path",
+   "H2_candidate_error": "missing_identity:canonical_entity_id;content_hash_mismatch;path_escape:canonical_path",
+   "H3_locations_error": "missing_identity:canonical_entity_id;content_hash_mismatch;path_escape:canonical_path",
+   "H4_query_locations_error": "missing_identity:canonical_entity_id;content_hash_mismatch;path_escape:canonical_path",
+   "H4_seen_via_view": "explicit_source_status_incomplete",
+   "oracle_expected": "missing_identity:canonical_entity_id;content_hash_mismatch;path_escape:canonical_path"
+  },
+  "no_sidecar_probe.txt": {
+   "H1_adapter_evidence": "missing_sidecar",
+   "H2_candidate_error": "missing_sidecar",
+   "H3_locations_error": "missing_sidecar",
+   "H4_query_locations_error": "missing_sidecar",
+   "H4_seen_via_view": "default_active_only",
+   "oracle_expected": "missing_sidecar"
+  }
+ },
+ "per_probe_all_hops_match_oracle": {
+  "broken_sidecar_probe.txt": true,
+  "clean_probe.txt": true,
+  "mismatch_probe.txt": true,
+  "no_sidecar_probe.txt": true
+ },
+ "all_hops_match": true,
+ "query_views": {
+  "default_active_only": [
+   {
+    "title": "clean probe",
+    "source_status": "active",
+    "locations": [
+     {
+      "relative_path": "clean_probe.txt",
+      "error": null
+     }
+    ]
+   },
+   {
+    "title": "no_sidecar_probe",
+    "source_status": "active",
+    "locations": [
+     {
+      "relative_path": "no_sidecar_probe.txt",
+      "error": "missing_sidecar"
+     }
+    ]
+   }
+  ],
+  "explicit_source_status_incomplete": [
+   {
+    "title": "broken_sidecar_probe",
+    "source_status": "incomplete",
+    "locations": [
+     {
+      "relative_path": "broken_sidecar_probe.txt",
+      "error": "sidecar_parse_failed"
+     }
+    ]
+   },
+   {
+    "title": "mismatch_probe",
+    "source_status": "incomplete",
+    "locations": [
+     {
+      "relative_path": "mismatch_probe.txt",
+      "error": "missing_identity:canonical_entity_id;content_hash_mismatch;path_escape:canonical_path"
+     }
+    ]
+   }
+  ],
+  "explicit_source_status_active": [
+   {
+    "title": "clean probe",
+    "source_status": "active",
+    "locations": [
+     {
+      "relative_path": "clean_probe.txt",
+      "error": null
+     }
+    ]
+   },
+   {
+    "title": "no_sidecar_probe",
+    "source_status": "active",
+    "locations": [
+     {
+      "relative_path": "no_sidecar_probe.txt",
+      "error": "missing_sidecar"
+     }
+    ]
+   }
+  ]
+ },
+ "query_rows_returned_across_views": 6,
+ "query_h4_error": null,
+ "cell": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\wc6\\cells\\probes\\cwroot",
+ "fix_files": {
+  "adapter_dispatch.py": "0c5ac1a2c2a4bd53dc10f954bd4d429b2d5511dcc8610b3b901ea11c10754769",
+  "scanner.py": "85d96757b627a45e3487197d164eb611a19aa54bcfbfc4eb62ad223bd02a47a9"
+ }
+}

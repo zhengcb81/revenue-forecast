@@ -1,0 +1,95 @@
+{
+  "card_id": "M-T-REVIEW",
+  "attempt_id": "a20260923-01",
+  "status": "accepted_with_conditions",
+  "status_before": "review_pending",
+  "status_note": "Own review completed by the parent-dispatched independent reviewer (N=1): accepted_with_conditions (≡ accepted_scoped + carried) — delivery/bookkeeping carried only (F-RV-01..F-RV-05); the 53-row matrix conclusions are unchanged; D9 = CLOSED-via-this-agency pending install of landing_package/ per its README.",
+  "status_authority": {
+    "verdict": "accepted_with_conditions",
+    "verdict_is_transcribed_not_authored": true,
+    "transcribed_by": "carrier landing pass (this handoff status flip transcribes the own-review verdict; the transcriber never authors or signs a verdict)",
+    "authority": "parent-dispatched independent reviewer agent (session-bfecd191-fbc3-4a66-8ed1-6562479bf102); M-T-REVIEW does not self-sign its own acceptance (never self-sign)",
+    "carrier_file": "reviewer_report.md",
+    "carrier_sha256": "6aedddcc029922f348fdf36a0c67eeb11872fe9a687fe97940094e4fd7e10467",
+    "carrier_bytes": 27477,
+    "sidecar": "reviewer_report.sha256 (match verified)",
+    "N": 1,
+    "review_date": "2026-09-23",
+    "supersedes": "review_pending (own review of this review follows per dispatch: matrix contains changes_required)",
+    "implementer_signed": false,
+    "scope": "delivery/bookkeeping carried only; matrix conclusions stand (53 rulings: 12 accepted_scoped / 40 accepted_with_conditions / 1 changes_required (T1-10) / 0 insufficient_evidence + 6 registration rows)"
+  },
+  "role": "independent reviewer (sampled-verification review agency); never the implementer",
+  "completed_steps": {
+    "inventory": "31 M cards + 3 AUX batch dirs + 20 T1 dirs / 22 T1 attempts inventoried with spec pins (evidence/inventory.json)",
+    "frozen_oracle": "oracle.md frozen before first check (sha256 ef68aaaf3e161dc0a88e35ef0503fc54336cd0bf1b4de650f090c3d16c851da9)",
+    "sampled_checks": "4 checkpoints per card (mtime / hash re-pin / 3-5 headline clauses / recorded-evidence consistency) across all M attempts + T1 attempts",
+    "full_rulings": "M01-M20 per-card sub-reviews with verdicts + signatures (reviews/M01.md..M20.md)",
+    "sampled_rulings": "M21-M31 finals existence re-proved by own grep (11/11) + 3 deep samples (M21/M25/M31) + 8 name-checks (reviews/M21-M31_sampled.md)",
+    "t1_rulings": "22 T1-number verdicts + 6 owner-decision registration rows (reviews/T1_rulings.md)",
+    "consolidated": "acceptance_rulings.md (53 verdicts + signatures) + decision.md (full matrix)",
+    "landing_package": "landing_package/{README,review_flips_M01-M20,sampled_and_namecheck_M21-M31,t1_review_flips}.md — the two landing slots plus an optional T1 vehicle; nothing written into old attempts"
+  },
+  "completed_steps_list": ["inventory", "oracle-freeze", "sampled-checks", "M01-M20-rulings", "M21-M31-sampled", "T1-rulings", "consolidated-matrix", "landing-package"],
+  "next_step_number": 9,
+  "next_action": "Parent landing pass: install landing_package/review_flips_M01-M20.md blocks by APPEND into each M01-M20 attempt review.md (append-only, with prefix proof), align handoff.json.reviewer_status per block status_authority; register landing_package/sampled_and_namecheck_M21-M31.md as the D9 closure attachment (no M21-M31 attempt edits); decide whether to install landing_package/t1_review_flips.md into new per-card review.md files. Then dispatch a T1-10 follow-up fix card (claim.basis enum validation coverage + fabricated-green negative controls) and route it to independent acceptance.",
+  "verdict_counts": {
+    "accepted_scoped": 12,
+    "accepted_with_conditions": 40,
+    "changes_required": 1,
+    "insufficient_evidence": 0,
+    "registration_rows_not_applicable_with_reason": 6,
+    "total_rulings": 53
+  },
+  "changes_required_cards": ["T1-10"],
+  "input_hashes": {
+    "note": "reviewed inputs are read-only; per-card pinned samples are in evidence/pin_resolution.json",
+    "oracle_md_self": "ef68aaaf3e161dc0a88e35ef0503fc54336cd0bf1b4de650f090c3d16c851da9"
+  },
+  "current_source_hashes": {
+    "note": "production scripts/model_registry.py drifted to 62f864b9ab3f144eacff43448897d2c31abc217e17ed3b0e3f58894cdd985081 vs the cards' anchor 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f (finding F-MT-03); scripts/model_extensions.py unchanged 9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+  },
+  "changed_paths": {
+    "production_repos": [],
+    "reviewed_attempts": [],
+    "attempt_paths_created": ["execution_runs/M-T-REVIEW/a20260923-01"]
+  },
+  "commands_executed": ["C1-list-attempts", "C2-build-inventory", "C3-analyze-checks", "C4-hash-reattribution", "C5-crlf-hypothesis-test", "C6-pin-resolution", "C7-m21-m31-finals-grep", "C8-m08-m13-cases-provenance", "C9-m05m07-r2-state-check", "C10-t1-5-product-spot"],
+  "raw_exit_codes": {"C1": 0, "C2": 0, "C3": 0, "C4": 0, "C5": 0, "C6": 0, "C7": 0, "C8": 0, "C9": 0, "C10": 0},
+  "expected_exit_codes": {"all_units": 0},
+  "open_questions": [
+    "F-MT-02: the 2026-09-20 mass rewrite destroyed the original mtime freeze sequence fleet-wide; T1-24's third leg can only rest on recorded manifests. Should the parent register this as a permanent carrier-level gap (like F-M01-01) or commission a re-freeze policy for future cards?",
+    "F-MT-03 anchor drift: any re-run of a formula card must re-anchor explicitly; is a fleet-wide re-anchor card desired before promotion work?",
+    "T1-8 carried: START_HERE.md lines 114-115 reversed conclusion awaits a T1-12 form (1) append by the orchestration layer.",
+    "T1-8 continuation finding: the ruling's 'cost of not propagating' parenthetical is false and understates the defect (poisoned expected names still yield rc=0/11-11 PASS_rejected = fabricated green) — owner visibility requested."
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "acceptance_rulings.md", "decision.md", "oracle.md", "binding.json", "commands.json",
+    "reviews/M01.md ... reviews/M20.md", "reviews/M21-M31_sampled.md", "reviews/T1_rulings.md",
+    "landing_package/README.md", "landing_package/review_flips_M01-M20.md", "landing_package/sampled_and_namecheck_M21-M31.md", "landing_package/t1_review_flips.md",
+    "evidence/inventory.json", "evidence/per_card_checks.json", "evidence/clause_compare.json", "evidence/hash_reattribution.json", "evidence/pin_resolution.json", "evidence/digests.txt", "evidence/progress.md", "evidence/self_manifest.json",
+    "recovery/README.md"
+  ],
+  "reviewer_status": "accepted_with_conditions own review completed 2026-09-23 by the parent-dispatched independent reviewer (N=1); transcribed, not authored — carrier reviewer_report.md sha256 6aedddcc029922f348fdf36a0c67eeb11872fe9a687fe97940094e4fd7e10467",
+  "bookkeeping": {
+    "own_review_verdict_block": "accepted_with_conditions (transcribed from reviewer_report.md §0/§11; verdict_is_transcribed_not_authored=true; see status_authority)",
+    "carry": [
+      "F-RV-01 (P3): clause_compare.json exp_ok:false 31/31 + hash_missing_pin:true 27 and per_card_checks.json pin_present:false 81 / qual:\"\" are extractor-layer rows — NEVER cite these two machine files as verdict support; review support fixed to pin_resolution.json + reviewer own recompute (reviewer_report.md §2/§6)",
+      "F-RV-02 (P3): per-block carrier sha + appended-block sha256 inlined at install = done by this install pass (per-block records in install_log.jsonl)",
+      "F-RV-03 (P3): verdict_is_transcribed_not_authored:true added at each install = done here (every installed block carries the key)",
+      "F-RV-04 (P2): M17 card record byte_equality_proof_sha256=6096771aa0dd906b… vs live evidence/M17/transcription_proof_r3.json=9d21f8557d2762cf… mismatch (block range [32643,42998) hash e383f5e8… verified OK) — follow-up row registered for M17 by the parent (parent records; noted here, M17 bytes untouched)",
+      "F-RV-05 (P3): M01 first_run_forensics.json vs review.md disagree which file carried 01:18:24 (stderr.txt vs oracle.json) — noted; F-MT-02 substance unaffected"
+    ],
+    "install_record": "install_log.jsonl (this attempt) — one line per target with pre/post sha256, prefix-proof result, F-RV-02 block sha and F-RV-03 key presence; written as the install runs",
+    "carry_inherits": [
+      "M-card qualifications: disclosure_adaptation=unmapped, accuracy=unproven (formula only, anchor 9ec65295…)",
+      "F-MT-01 / F-MT-02 / F-MT-03 = VERIFIED, carried with this acceptance; F-MT-02 policy ruling (content-based freeze attestations + permanent gap note) registered by the parent"
+    ],
+    "status_historical_pre_verdict": "review_pending",
+    "status_note_historical_pre_verdict": "Deliverables complete. Per the dispatch, this attempt's own review follows separately (review_pending) because the matrix contains changes_required (T1-10) — per the handoff rule, an own-review follows when the matrix has any changes_required.",
+    "reviewer_status_historical_pre_verdict": "review_pending (own review of this review follows per dispatch: matrix contains changes_required)",
+    "status_authority_historical_pre_verdict": null
+  },
+  "signature": "independent reviewer M-T-REVIEW / N=1, 2026-09-23"
+}

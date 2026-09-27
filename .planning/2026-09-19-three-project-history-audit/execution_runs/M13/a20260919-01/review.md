@@ -324,3 +324,11 @@ point review), `disclosure_adaptation` remains `unmapped`, `accuracy` remains `u
 > affects any other card's verdict (each has its own frozen isolate, which this reviewer did not
 > re-examine); the exact number and ordering of writes to the production file inside the review
 > window; and a full replay of the other three cards' observations to "bit-identical to r2" strength.
+
+## 独立验收裁定（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions —— 仅 formula、仅本 attempt、仅锚 9ec65295…。r3 点复审裁定（verdict_transcription_r3.json 逐字节校验）采信。
+- carried：F-MT-02/03；handoff.input_hashes["evidence/M13/cases.json"] 停留在注释性 repack 前值 0353e544…（前像存 recovery/before_fixes/；现值 54399cd2… 记于 source_manifest/run_result/oracle.md 等多处）——本行即追加式对齐注记，不回改；mtime 腿记录态为凭。
+- 本次抽验：[25] 三方一致；负例 11/11；九件齐；pin 2/2 直配 + repack 对账；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "independent acceptance (M-T-REVIEW N=1) 2026-09-23: accepted_with_conditions (formula only); stale cases pin = pre-repack value, see repack ledger", carrier: "…/reviews/M13.md + acceptance_rulings.md#M13", implementer_signed: false, supersedes: "r3 point review transcribed" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 8e4ec60f0de4fc2eefac25864fcc34428b726531244dfef2b04f1ad86572e719 over 26378 bytes, verified post-install as sha256 of the first 26378 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = 55b430853c71c0c9c9cf0e87fffe16815a431ef04f9e4c0b15c370dd0056b639 = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 1044 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M13.md (sha256 05a11de66d7072bdf4174b5a233862c4ce18cbfd57a7fac22075a56a7e49a547) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

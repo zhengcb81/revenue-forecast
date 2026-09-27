@@ -1,0 +1,75 @@
+{
+  "schema": "i11c_mapping_verification/1",
+  "card": "I-11-C",
+  "attempt": "execution_runs/I-11-C/a20260926-01",
+  "role": "implementer_i11c",
+  "status": "review_pending",
+  "purpose": "动作4：红绿双向变异（≥3，实做 5+1）+ STOP 核验 + 动作1 复算对照表（oracle.md §4.2 P1-P8 预期 vs 实测）。变异全部在 _mut/ 副本上执行，原件字节不动（sha 前后比对）。",
+  "verifier": {
+    "script": "execution_runs/I-11-C/a20260926-01/verify_mapping.py",
+    "invariants": {
+      "J1_release_lock": "无 value_state 声明放行；handoff params_released=false / implementer_signed=false / releases_nothing=true / status=review_pending；不可执行/拒绝槽位 new_value 必须全 null",
+      "J2_synthetic_and_EA": "隔离清单（2/8760/0.5/0.6/0.7/40/20/30/32/34/1200/264000/281520/299040/17520）中的数不得作为任何真实 low/base/high 数值出现；每行 ea_refs 必须解析到 I-11-B expert_assumptions.json 中仍带 sensitivity_interval 且 equivalent_to_disclosure_basis=false 的 EA",
+      "J3_store_lock": "store（hypotheses_v3.json，只读）low/base/high 全 null、两个 _PLACEHOLDER id 在位",
+      "J4_residual_lock": "C3/C5 残余 registration 只允许 open-form（unverified 等），resolved 禁止"
+    }
+  },
+  "mutation_results": {
+    "note": "变异在副本上执行（_mut/），原件 sha256 前后一致（parameter_mapping.json / handoff.json / I-11-B expert_assumptions.json 三方比对通过）；校验器=verify_mapping.py",
+    "runs": [
+      {"id": "GREEN", "target": "原件（mapping+handoff+I-11-B EA+store）", "red_rc": null, "rc": 0, "expected": "ALL_INVARIANTS_OK", "observed": "ALL_INVARIANTS_OK", "pass": true},
+      {"id": "M1", "mutation": "mapping_rows[0].value_state → \"released\"（模拟放行）", "copy": "_mut/m1_released.json", "rc": 1, "expected": "rc=1 违例含 J1", "observed": "VIOLATION: J1 violated: ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027 value_state='released'", "pass": true},
+      {"id": "M2", "mutation": "mapping_rows[0].new_value.base → 281520（注入合成示例数）", "copy": "_mut/m2_synthetic.json", "rc": 1, "expected": "rc=1 违例含 J2", "observed": "VIOLATION: J2 violated: ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027.base=281520 is a quarantined synthetic number", "pass": true},
+      {"id": "M3", "mutation": "handoff.params_released → true（模拟放行参数）", "copy": "_mut/m3_params_released.json", "rc": 1, "expected": "rc=1 违例含 J1", "observed": "VIOLATION: J1 violated: handoff.params_released != false", "pass": true},
+      {"id": "M4", "mutation": "删除 I-11-B EA-1 的 sensitivity_interval（模拟 EA 缺件仍被映射引用）", "copy": "_mut/m4_ea_missing_interval.json", "rc": 1, "expected": "rc=1 违例含 J2", "observed": "VIOLATION: J2 violated: ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027 relies on EA-1 which has no sensitivity_interval (EA template broken)", "pass": true},
+      {"id": "M5", "mutation": "handoff.c3_c5_residuals[0].registration → \"resolved\"（模拟残余隐藏）", "copy": "_mut/m5_residual_resolved.json", "rc": 1, "expected": "rc=1 违例含 J4", "observed": "VIOLATION: J4 violated: residual C3-① registration='resolved'", "pass": true}
+    ],
+    "originals_untouched": {"parameter_mapping.json": true, "handoff.json": true, "I-11-B/expert_assumptions.json": true},
+    "verdict": "红绿双向成立：绿 rc=0（ALL_INVARIANTS_OK）；5 红全 rc=1 且违例具名（J1/J2/J1/J2/J4）"
+  },
+  "action1_recompute_against_oracle": {
+    "tool": "_recompute_action1.py（fractions.Fraction 精确有理数）",
+    "table": [
+      {"expect": "P1 13 可执行/5 不可执行", "observed": "13/5（executable=SEG×4+VOL×4+PLAN+RECON+MSFT×3；not_executable=REALIZED_UNIT+两分金属实现价+MSFT_CLOUD+LICENSING）", "match": true},
+      {"expect": "P2 REALIZED_UNIT 公式分母不自洽", "observed": "DISCREPANCY P2.denominator_composition: 884943+83161×24=2880807 ≠ 885141；quotient_from_registered_denom=124248.62970419403≈124248.63（登记除法成立）；quotient_from_stated_composition=38175.95428815606（按公式合成分母，差 3.26 倍）；sensitivity_denominator_plus1: 885141+83161=968302 ✓ 但 c=24 隐含金项 198 吨 vs 83161×24=1995864 吨 ⇒ 判 not_executable（unverified-N2）", "match": true},
+      {"expect": "P3 EA-4 注记区间与自身带换算不符", "observed": "DISCREPANCY P3.scenario_low_total=375283.383 vs 注记 320763；P3.scenario_high_total=414786.897 vs 注记 348432；P3.plus5_on_base_total=348430.95 vs 注记 348432（差 1.05，亦不吻合）⇒ unverified-N3（注记层）", "match": true},
+      {"expect": "P4 各带与恒等式逐位复算成立", "observed": "CHECK 全 OK：SEG×4 ±5%（最大偏差 0.25 元，round-to-nearest）；差额法 base 差=0；H-05 与 store L641 毛总计和逐位=0 差；VOL×4 ±10% 逐位相等；PLAN 达成率带逐位相等；MSFT g 换算（51/500、109/500、47/200、73/200、−119/2000、79/2000）逐位相等", "match": true},
+      {"expect": "P5 合成示例数字零出现于真实数值字段", "observed": "J2 绿证通过（0 违例）；1,200,000 铜计划吨数 ≠ 示例 1200（collision 登记沿 I-11-B part_3 先例）", "match": true},
+      {"expect": "P6 绿 rc=0；5 红 rc=1 具名", "observed": "与 mutation_results 一致", "match": true},
+      {"expect": "P7 槽位级 STOP 5 行；卡级操作读法不触发；严格读法继承登记", "observed": "与 stop_verification 一致", "match": true},
+      {"expect": "P8 store 只读零改动；low/base/high 全 null；_PLACEHOLDER 在位；无新版本需求", "observed": "J3 绿证通过；本站零 hypotheses 写入；hypotheses_h4_v1.json supersedes 形态未启用（不需要）", "match": true}
+    ]
+  },
+  "stop_verification": {
+    "slot_level_stop": {
+      "applied": true,
+      "rows": [
+        {"parameter_id": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027", "reason": "转换公式分母不自洽（unverified-N2）+ OPEN-2", "disposition": "not_executable_no_propagation；I-11-B proposed 值存档于 i11b_proposed_values 字段、传播值置 null"},
+        {"parameter_id": "ZIJIN_MINERAL_COPPER_REALIZED_UNIT_REVENUE_FY2027", "reason": "无铜产品线量价行，基期不可复算 + OPEN-2", "disposition": "unmapped_declined_no_number（沿 I-11-B EA-7 显式拒绝）"},
+        {"parameter_id": "ZIJIN_MINERAL_GOLD_REALIZED_UNIT_REVENUE_FY2027", "reason": "金锭口径≠矿产金 + OPEN-2", "disposition": "unmapped_declined_no_number"},
+        {"parameter_id": "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER", "reason": "无换算公式/映射表缺失 + OPEN-3", "disposition": "unmapped_declined_no_number"},
+        {"parameter_id": "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027", "reason": "行内拆分缺失 + OPEN-3", "disposition": "unmapped_declined_no_number"}
+      ],
+      "rule": "数据不足以映射/映射不可执行 ⇒ 该槽位不出数、不传播（fail-closed；派单动作4）"
+    },
+    "card_level_stop_calibration": {
+      "triggered": false,
+      "operative_reading": "从严触发式（继承 I-11-B revert_or_stop.json L12）：本站传播的每一个幅度皆可溯源（contract arithmetic/已签容差 τ=1/historical relationship）或由 EA+敏感性区间承接（EA-1…EA-7）⇒ 无『无来源又未声明』的幅度",
+      "strict_reading_registered": "字面读法（继承 L13-L17）：存在任一 not_executable 槽位即整卡 blocked——本站 5 个该类槽位存在；若独立复审采严格读法 ⇒ 本卡连同 I-11-B 转 blocked；回滚=作废本表 mapped_not_released 行（零封盘改动、store 零改动）。裁定权=独立复审，本站不自裁"
+    },
+    "stop_scenario": {
+      "triggered": false,
+      "check": "18 行逐行携带 joint_scenario_constraint（EA-6 联动）；未构造量 high×价 high×其他收入 high 独立叠加（≈+21% 不可能联合）；E1-E7 事件复用检查（CP L249-L255）转录：E1 库存释放仅销量通道 / E2 系数仅量侧一次 / E3 计划值仅对照 / E4 其他收入单列一次 / E5 抵销仅恒等式桥 / E6 Cloud 与 IC 互斥（PROHIBITED_CO_USE）/ E7 三分部建模集团增速不用"
+    }
+  },
+  "inputs_integrity": {
+    "input_hashes_check": "_check_hashes.py → RESULT ALL_OK（8/8：I-11-B 四件 + store + card_I-11-C/B + OWNER_DECISIONS.md）",
+    "store_released_false_lines": "ST L191/L210/L386/L405（只读实测）",
+    "ea_template_integrity": "EA-1…EA-7 全部含 sensitivity_interval + equivalent_to_disclosure_basis=false（EAF 实测 L14/L23/L32/L41/L50/L59/L68；count=7，all_have_sensitivity_interval=true，all_equivalent_to_disclosure_basis_false=true，EAF L75-L77）"
+  },
+  "reviewer_hooks": [
+    "复算至少一个卡片专属 oracle：_recompute_action1.py 可独立重跑（只读）",
+    "保留案例建议：对 M2 类注入变异换用 299040/17520 或对 EA-3/EA-4 缺件变异重跑 verify_mapping.py（实现者未用于放行的变化面）",
+    "公式正确与准确性分开：本站全部结论是算术/口径层，不含任何准确性主张"
+  ]
+}

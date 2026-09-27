@@ -1,0 +1,261 @@
+{
+  "card": "OPEN5-PEND5B-OCR-CAPABILITY",
+  "attempt": "a20260924-01",
+  "role": "capability_landing",
+  "authorized_by": "OWNER_DECISIONS §二十六 #2",
+  "authorization_verbatim": "owner 首答「1，授权，2，要」→ 父澄清提问 → owner 答「两项都要（PEND-5b 装 + E1 交会计面）」 ⇒ 第2行 = PEND-5b 装 OCR 引擎（「要」）",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "generated_utc": "2026-09-25T21:41:16Z",
+  "conclusion": "CAPABLE",
+  "selected_backend": {
+    "ocr": "rapidocr 3.9.2 (PP-OCRv6 det/rec + cls models bundled, 3 onnx, 31749509 B, offline)",
+    "runtime": "onnxruntime 1.30.0 (CPU)",
+    "renderer": "pypdfium2 5.13.0",
+    "python": "3.13.9 (card venv)",
+    "why": "pure-pip, small, offline-capable; rapidocr-onnxruntime 1.4.4 rejected (requires_python<3.13 vs only interpreter 3.13.9); easyocr/paddleocr rejected (>200MB-class deps); tesseract-class NOT installed (system binary forbidden -> would be BLOCKED-NEEDS-SYSTEM-BINARY, not needed)",
+    "system_binary_required": false
+  },
+  "install_scope": {
+    "venv": "venv/ (this card's attempt only)",
+    "site_packages": "venv/Lib/site-packages",
+    "mechanism": "urllib download + direct wheel extraction (pip network unusable in sandbox: temp-dir Errno13 + index-fetch hang, 3 bounded attempts)",
+    "system_level": {
+      "path_modified": false,
+      "windows_packages": false,
+      "global_site_packages_writes": 0,
+      "system_python_packages": 0
+    },
+    "download_packages": 23,
+    "download_total_bytes": 112399186,
+    "download_largest_single_bytes": 44000345,
+    "download_any_over_200mb": false,
+    "all_sha256_verified": true,
+    "models_downloaded_separately": 0,
+    "verify_all_imports_ok": true
+  },
+  "self_check_on_readable_sample": {
+    "gate_ran_before_hk_probe": true,
+    "file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\紫金矿业\\raw\\financial_reports\\annual\\2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf",
+    "sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+    "bytes": 79925886,
+    "page": 1,
+    "anchors": [
+      "紫金",
+      "收入",
+      "年度报告"
+    ],
+    "anchor_hit_pages": {
+      "紫金": [
+        1
+      ],
+      "收入": [],
+      "年度报告": [
+        1
+      ]
+    },
+    "anchors_hit_count": 2,
+    "passed": true,
+    "ocr_ms": 7169,
+    "ocr_chars": 230,
+    "score_mean": 0.9964
+  },
+  "hk_probe": {
+    "file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\小米集團－Ｗ\\raw\\financial_reports\\annual\\2026-04-28_hkexnews_12127452_2025年度報告.pdf",
+    "sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+    "bytes": 4405561,
+    "read_only": true,
+    "pages_probed": 43,
+    "page_count": 415,
+    "coverage_fraction": 0.1036,
+    "anchors_hit": [
+      "分部",
+      "小米",
+      "年度報告",
+      "收入",
+      "毛利"
+    ],
+    "anchors_missed": [],
+    "ocr_anchor_page_hits": 53,
+    "text_layer_anchor_page_hits": 0,
+    "ocr_error_count": 0,
+    "total_ocr_chars": 38227,
+    "ocr_ms_per_page_mean": 12177,
+    "confidence_score_mean": 0.9807,
+    "anchor_hit_pages_union": {
+      "小米": [
+        1,
+        30,
+        40,
+        44,
+        46,
+        48,
+        50,
+        55,
+        56,
+        57,
+        59,
+        60,
+        65,
+        68,
+        72,
+        88,
+        90,
+        112,
+        118,
+        124,
+        135,
+        140,
+        160,
+        200,
+        242,
+        272,
+        356
+      ],
+      "收入": [
+        115,
+        337
+      ],
+      "年度報告": [
+        1,
+        2,
+        43,
+        47,
+        49,
+        53,
+        55,
+        57,
+        59,
+        65,
+        67,
+        71,
+        115,
+        135,
+        243,
+        275,
+        277,
+        325,
+        337,
+        355,
+        395,
+        399
+      ],
+      "分部": [
+        337
+      ],
+      "毛利": [
+        337
+      ]
+    },
+    "note": "origin text layer = 0 anchor hits on the same 43 pages (root cause RC-1); OCR outputs are ocr_reconstruction, never origin text"
+  },
+  "cover_counter_test": {
+    "text_layer_chars": 35,
+    "text_layer_excerpt": "2025\r\n股份代號：1810（港幣櫃台）及 81810（人民幣櫃台）",
+    "ocr_excerpt": "股份代號：1810（港幣櫃台）及81810（人民幣櫃台）\nMI\n小米集团\n(於開曼群島註冊成立以不同投票權控制的有限公司)\n2025年度報告",
+    "verdict": "OCR reproduces the readable cover line AND reads content the text layer cannot provide; combined with body TL=0 vs OCR hits => font-mapping root cause + OCR bypass demonstrated"
+  },
+  "ocr_reconstruction_disclaimer": true,
+  "written_files": [
+    {
+      "path": "capability_report.md",
+      "bytes": 14272,
+      "sha256": "76fbb9f8b11af0eaf3f37a33da486cbe0b554b9ffa7d4e8a6d576bf2d456cfe3"
+    },
+    {
+      "path": "provenance.json",
+      "bytes": 33012,
+      "sha256": "739b4481ebef12e450711a3613e427c9a4ccddcd18f3d9a04d009204cb333c3e"
+    },
+    {
+      "path": "_work\\hk_probe_aggregate.json",
+      "bytes": 10355,
+      "sha256": "e5adfc58c0c3547597f6e28733bfd5b77f02fff4c8c2d1c8db19358275d13f26"
+    },
+    {
+      "path": "_work\\cn_selfcheck.json",
+      "bytes": 2595,
+      "sha256": "99b10741ef9d61f2ecbe3f8a0a0e4cf487c626af40546dc6229c2964238afc70"
+    },
+    {
+      "path": "_work\\hk_probe.json",
+      "bytes": 43167,
+      "sha256": "e6b7433415eda0cd9208b2722ceacdeb56620990ce4b24451eb7aa510ba1dc89"
+    },
+    {
+      "path": "_work\\hk_probe2.json",
+      "bytes": 29686,
+      "sha256": "42222a88c21c390177baea5f368a1d7d45ca8d72ec4236b2c6c0ae782e4a01b7"
+    },
+    {
+      "path": "_work\\hk_probe3.json",
+      "bytes": 39749,
+      "sha256": "a36caa58448749e3b6b19e668c3a0a2ac144003be9384ca996617b2ef7db3360"
+    },
+    {
+      "path": "_work\\hk_probe4.json",
+      "bytes": 32435,
+      "sha256": "353f8a66533756226157bc4348b6e66701dce48f3c61a980c0dcab67896e0640"
+    },
+    {
+      "path": "_work\\build_env.py",
+      "bytes": 28307,
+      "sha256": "45a4b73ef7446564d906996b2763150d2aa1e5678d11900f1f7310f8b523221b"
+    },
+    {
+      "path": "_work\\probe_ocr.py",
+      "bytes": 6488,
+      "sha256": "f1fc366451f2f14f44156b05aa4f0a068ff610dfd0ba5c5a0d2a6986b6c5e7ef"
+    },
+    {
+      "path": "_work\\aggregate.py",
+      "bytes": 6166,
+      "sha256": "0ec9c213efc41529018d65be516ae08b45c75603e516e7ac4a64e11c28c42f84"
+    },
+    {
+      "path": "_work\\make_provenance.py",
+      "bytes": 17917,
+      "sha256": "ae505e32b6eba8ad2384d8b6ba74628695c0e42cd1fe6294459cdc189ab0f886"
+    },
+    {
+      "path": "_shim\\sitecustomize.py",
+      "bytes": 954,
+      "sha256": "bb0af4b9d112f4e95ce0b6d8bb2b9b1c28a940aa8d9027bfb3bfc3f5811fcbc6"
+    },
+    {
+      "path": "_dl\\build_receipts.json",
+      "bytes": 33477,
+      "sha256": "e73be0e23f36b04cc0e4157fbffc0c9b9e864c9ad58b51d6ff162d14c44a1849"
+    },
+    {
+      "path": "_dl\\install_report.json",
+      "bytes": 14466,
+      "sha256": "0c0e6a41a5dd8ce7f264b28e46344ca510e7d0928bff0adb0ffe9949105330d4"
+    },
+    {
+      "path": "_dl\\verify.json",
+      "bytes": 2067,
+      "sha256": "18607d80f902bcf497db51cb11f01944386d48d1f412c5f7b8798668a775e38d"
+    }
+  ],
+  "write_face": "only execution_runs/OPEN5-PEND5B-OCR-CAPABILITY/a20260924-01/",
+  "git_diff_non_planning": 0,
+  "git_untracked_non_planning_by_this_card": 0,
+  "git_writes": 0,
+  "product_repo_writes_by_this_card": 0,
+  "unlocks_nothing": true,
+  "does_not": [
+    "no system-level install (PATH / Windows packages / global site-packages untouched)",
+    "no writes outside .planning (company-wiki/filing-fetch/revenue-forecast untouched by this card)",
+    "OPEN-5 not released; I-11-B / I-07-B not unblocked; no ACCEPT / no status change",
+    "OCR output never treated as primary disclosure (all tagged ocr_reconstruction)",
+    "no S3 re-evidence / S4 dual-path cross-check / S5 grading (those stay with orchestrator + professional reviewers)",
+    "full 415-page sweep not executed (43-page probe only)"
+  ],
+  "file_format": {
+    "encoding": "UTF-8",
+    "bom": false,
+    "line_ending": "LF",
+    "json_reparse": "ok"
+  },
+  "note": "handoff.json does not include its own hash"
+}

@@ -1,0 +1,294 @@
+{
+  "card_id": "I-14-A",
+  "card": "I-14-A",
+  "card_title": "性能测量先验证失败分支",
+  "attempt_id": "a20260919-01",
+  "attempt": "execution_runs/I-14-A/a20260919-01",
+  "record": "qualification",
+  "carrier_completeness_note": "三件套 = review.md + handoff.json + qualification.json。本卡 review.md（35831 B）与 handoff.json（25662 B）在位，qualification 此前缺失；本文件补上后本卡三件齐全（登记册 §132 计的 117 张 accepted 中唯一缺口自此清零）。",
+  "path_choice_note": "本 attempt 创建时无 evidence/ 目录（父实测顶层 7 件，连 evidence/ 都不存在）。按登记册 §122-B 的标准位 evidence/<CARD>/qualification.json 与 §132 L2759 明示路径 I-14-A/a20260919-01/evidence/I-14-A/qualification.json 创建新目录 + 新文件；与 §122-B1 兜底落点同一形态（该处原话：「该 attempt 既无 evidence/ 目录也无任何 qualification*.json ⇒ 按父单兜底落 evidence/B1-I08C-product-fixes/」）。",
+  "written_by": "qualification bookkeeping executor (delegated subagent); parent = session-19074bf0-0205-4315-af73-9db57597275a",
+  "created_utc": "2026-09-25T22:22:32Z",
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "this_file_grants_nothing_new": true,
+
+  "formula": "not_applicable_with_reason",
+  "formula_reason": "本卡是性能测量先验证卡，不是收入预测公式卡。逐字回源：binding.json:8 objective —「Freeze the RSS/rc/timing measurement rules, then EXERCISE the failure branches as falsifiable counterexamples on an isolated copy of the meter.」；handoff.json:85 M9_scope —「this card proves the meter; production SLO qualification needs I-16 and I-14-B」；review.md:342-344 —「card_I-14-A.md claims nothing about production SLOs, the production catalog, bundle-consumption latency, resolve behaviour, or prediction accuracy」。因此 formula 判为 not_applicable_with_reason（不适用并附理由，非通过、非不通过）：本文件不产生、不修正、不验收任何 revenue-forecast 公式结果，也不授予任何公式资格。",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+  "three_field_provenance": {
+    "disclosure_adaptation": "review.md:345-346 逐字「**`disclosure_adaptation` = unmapped** (this card never touched the log-redaction clause — that is I-14-C)」；handoff.json:259 同值「unmapped — this card never touched the log-redaction clause (that is I-14-C)」",
+    "accuracy": "review.md:346 逐字「**`accuracy` = unproven** (no prediction, no accuracy claim, no basis for one)」；handoff.json:260 同值「unproven — no prediction, no accuracy claim, no basis for one」",
+    "note": "两字段本卡原文即有值，按 §122-D 照抄，未套用 canonical 兜底、未推进取值"
+  },
+
+  "status": "accepted_scoped",
+  "status_basis": "execution_runs/I-14-A/a20260919-01/handoff.json:4 顶层键「\"status\": \"accepted_scoped\"」——逐字一致（§122-C 核验口径：status 必须与该卡 handoff.json 顶层 status 逐字一致）",
+  "status_scope_note": "并存披露、不回改任一方：review.md:348 逐字「This card's verdict remains `review_pending` as a card status」是 reviewer r4 时点（2026-09-20）的记述；handoff.json:4/:5 的 accepted_scoped 是 r3/r4 复读确认后的簿记值（review_outcome_r3）。登记册 §132 L2752 以 accepted_scoped 计：「唯一缺口：I-14-A/a20260919-01（accepted_scoped，review.md ✓ handoff ✓）」。",
+  "scope_is_scoped_not_clean": true,
+
+  "d2_state": "pending_resign_not_in_this_scope",
+  "d2_state_detail": {
+    "D2_resign_pending": true,
+    "sources_verbatim": [
+      "I14A-C1C2-ERRATUM/a20260924-01/handoff.json:15 —— \"D2_resign_pending\": true",
+      "I14A-C1C2-ERRATUM/a20260924-01/handoff.json:219 ——「C-2: D2 re-sign is still pending (D2_resign_pending=true) — the tightened `consistent` rule (filename must equal configured_catalog_file) is a code change requiring a separate controlled card」",
+      "I-14-A/a20260919-01/decision.md:222 ——「`D2_resign_pending = true`：本卡只完成更正与证据准备；`confirmation_D2` 的复签归 SLO/探针 owner（ruling §6.3 的「更正 + 复签」两步中的第二步）。」",
+      "REMEDIATION_REGISTER §132 L2753 ——「I-14-A 的 qualification.json 必须反映终裁 D2，而 D2 是 pending/provenance_hash_change_only、value=null、在 _pending_and_excluded 之内；提前写会立刻过期」",
+      "REMEDIATION_REGISTER §134-C L2836 ——「落定携带全部 5 条发现 + 6 项未证实；不处置 D2 复签与产品收紧（应另开受控卡）」"
+    ],
+    "effect": "复签不在本簿记内：本文件不代签 D2、不处置 D2、不解除 D2 相关门；D2 现状按上述原样登记为 pending_resign_not_in_this_scope。"
+  },
+
+  "c1_c2_outcome": {
+    "C-1": {
+      "what": "E0/F4 身份断言适用域更正（路线 A，追加式）：断言限定到存活 ≥ 2× 有效节拍（阈值 0.1504 s = 2 × 75.2 ms）的调用；域外调用改标 identity-not-claimed，其余判据照旧绑定；并接线原死键 rss_pids_include_child_pids（判据 13→14，只增不减）。",
+      "sealed_append": "封盘 oracle.md 追加 §10（前像 20457 B / 87775f2f4ff025e4d104fd1dfe23d7f7bfc75a20520f8859732133e96ec84bb7 → 现 31256 B / 4dc8600f2bbbd40b…，prefix_bytes_preserved=true，proof 在 I14A-C1C2-ERRATUM/a20260924-01/evidence/prefix_proofs.json）",
+      "executable_correction_location": "只落在 I14A-C1C2-ERRATUM/a20260924-01/harness/ 自有复制件；封盘 harness/** 与 iso/** 字节未动（oracle.md:308、handoff.json sealed_files_untouched）",
+      "reviewer_verdict": "reviewer_report.md:40「判定：是「导出」，不是「调到刚好通过」。」；:44「我把公式里的 max 换成 min 得 0.1338 s……逐调用重判，结论不变」；:31 第 3 处原文更正「成立，纯加固」"
+    },
+    "C-2": {
+      "what": "两处被推翻原文的读法更正：① catalog.db 主张（tools/*.py 中 .db 0 命中，实为 .source_catalog/catalog.sqlite3）② 「支持行内 # 注释」能力声明（引号标量 + 注释实测 rc=3 fail-closed，仅裸标量支持）；并登记顶层 error 恒为 catalog_config_mismatch、须引 binding.*。",
+      "sealed_append": "封盘 oracle.md §10.2 + 封盘 decision.md 追加节（前像 8467 B / a1a9d37478ffb42f15877ac29b9ecb044b8f402f4d77f532d1a25f1646bfda24 → 现 20545 B / 11cf833424841653…，prefix_bytes_preserved=true）",
+      "reviewer_verdict": "reviewer_report.md:32 逐项 6 判「成立」；:32 ③ 生产配置 .review-zr407-20260818/company-wiki/config/source_catalog.yaml:2 不含行内注释 ⇒ 当前生产不受影响（不夸大）"
+    },
+    "erratum_landing_remeasured_by_this_pass": {
+      "attempt": "execution_runs/I14A-C1C2-ERRATUM/a20260924-01",
+      "status": "accepted_scoped（handoff.json:7；status_before=review_pending）",
+      "reviewer_report.md": "23627 B / sha256 前16 b088ed676644e46d（本工位只读复测，与派单值一致）",
+      "review.md": "23109 B / sha256 前16 4f0de7fdb211f069（本工位只读复测）",
+      "handoff.json": "35801 B / sha256 前16 6d49a5ed29db7652（本工位只读复测）",
+      "evidence/I14A-C1C2-ERRATUM/qualification.json": "20036 B / sha256 前16 538ff4430618d5b7（本工位只读复测）",
+      "provenance_note": "父派单称该三件「已入父复核 20/20」；我回源到登记册最新节 §136 未见该 20/20 的记载，故只登记我复测的字节与 sha256，20/20 记为父侧转述、不当作我已核实的事实。"
+    }
+  },
+
+  "granted_scope": {
+    "statement": "授予范围 = C-1 阈值（适用域）更正与 C-2 读法更正的**证据与判据**被独立复审判为成立（VERDICT: ACCEPT，P1=0 / P2×2 / P3×3 + 6 项未证实），且仅限于此；不外扩到晋升、D2 复签、产品收紧或 I-14-A 的产品化授权。",
+    "items": [
+      "C-1 阈值导出性判据（reviewer_report.md:23 逐项 1）：三源在盘且复审独立复算 —— 名义 50 ms = 封盘 iso/slo_probe_patched.py:76；reviewer 节拍 64.0–75.2 ms = I14A-D1-OPS-REVIEW/.../evidence/e1c_samples_inside_life.json（1965 B，sha256 7d7455eb…c4375 复算一致）；本会话节拍 63.67–66.92 ms 由 evidence/green/sweep/E1c-F3-alive-allocate/report.json 按 window/(count-1) 自行重算 ⇒ 0.1504 = 2 × max(75.2, 66.92) 复算一致 ⇒ 判「导出成立」",
+      "C-1 系数外生性判据（reviewer_report.md:24 / :42）：2× 与 ≈150 ms 逐字来自 D1 已签署 ruling.md:174 与 :185(i)；D1 载体最后写入 2026-09-24T20:55:57Z，早于本更正 attempt 首写 21:15:46Z ⇒ 系数不是为出绿而发明",
+      "C-1 先冻后跑判据（reviewer_report.md:25）：oracle.md 冻结 21:15:46Z < 最早 evidence 21:17:30Z < 首份运行证据 21:17:44Z",
+      "C-1 只增不减判据（reviewer_report.md:26/:27）：git diff --no-index 独立比对 ⇒ fixture_spec.py +27/−0（期望字典零删除）、run_probe_cases.py +58/−5（5 行删除全在原身份块内）；E0 判据 13→14（新增 rss_pids_include_child_pids，身份断言由域内/域外分支承接）",
+      "C-1 阈值不在刀口判据（reviewer_report.md:44）：max→min 得 0.1338 s，对 10 次 E0 + --all + M1–M4 逐调用重判结论全不变；唯一 ≥0.1338 的调用 0.135917 s 属修后 run2，其 fixture pid 全集 ⊆ 采样集（missing=[]），即使入域仍绿",
+      "C-1 三臂与四变异判据（reviewer_report.md:28，复审在 %TEMP% 隔离副本自跑）：修前 E0×5 = 3 红/2 绿、红时恒 fixture_pid_is_in_samples、pytest rc=1 1f/11p/1s；修后 E0×3 全绿 14 键、--all rc=0 7/7、pytest rc=0 12p/1s；M1 红（4 项）· M2 红且唯一 fixture_pid_is_in_samples · M3 红且唯一（寿命入域）· M4 绿 ⇒ E0 非空断言成立",
+      "C-1 三代并存判据（reviewer_report.md:29）：Gen-1 封盘绿 / Gen-2 reviewer 6 红 1 绿 / Gen-3 本更正 3 红 2 绿 → 修后绿，三者在盘可辨、未用新绿覆盖旧绿",
+      "C-1 两处封盘前缀判据（reviewer_report.md:33，P1=0 的根据）：oracle.md 前 20457 B = 87775f2f…84bb7、decision.md 前 8467 B = a1a9d374…bfda24，四值与自述逐一相符；两前缀 git hash-object 后与 HEAD: blob 比对相等（2cd1926d… / 89f5d936…）即前像 = 提交原像；封盘树其余字节与 HEAD 逐 blob 相等 ⇒ 追加未越界",
+      "C-2 读法更正判据（reviewer_report.md:32 逐项 6 判「成立」）：tools/*.py 24 文件、\\.db\\b 0 命中；release_readiness.py:37 = CATALOG = WIKI_ROOT / \".source_catalog\" / \"catalog.sqlite3\"；全树 catalog.db 4 命中且与自述逐一相同、全非产品代码；隔离副本实跑 引号+注释 ⇒ rc=3、引号残留、same_directory=false，裸标量+注释 ⇒ 绑定接受；--catalog <dir>/catalog.db ⇒ consistent=true 但解析目标为 catalog.sqlite3 ⇒ clause 6 对 catalog.db 确未达成；生产 source_catalog.yaml:2 不含行内注释 ⇒ 当前生产不受影响"
+    ],
+    "not_included_in_granted_scope": ["晋升（promotion）", "D2 复签", "产品收紧", "I-14-A 的产品化授权"]
+  },
+
+  "not_granted": [
+    "晋升（探针/产品任何路径的 promotion；封盘 recovery/README.md:11-15「Promotion gate (the one thing that must not be skipped)」、handoff.json:21-23 promotion_blocked；本文件不解除）",
+    "D2 复签（D2_resign_pending = true；复审 :138 与落定 handoff.json:219 均明示应另开受控卡，本簿记不处置）",
+    "产品收紧（产品侧 consistent 收紧属代码改动，需另开受控卡；reviewer_report.md:138「D2 复签与产品侧 consistent 收紧仍应另开受控卡，本报告不作处置」）",
+    "I-14-A 的产品化授权（把 iso/slo_probe_patched.py 落入 RF/tools/ 及其测试落入 RF/tools/tests/ 的授权；须先有 D1/D2/D3 签署，本文件不含）",
+    "I-14-A 通过声明 / 卡片关闭（ERRATUM handoff.json:12 does_not_claim_I14A_acceptance = true、:13 does_not_change_card_status = true；review.md:348-353 卡状态与晋升禁令原样）",
+    "干净环境绿（复审仅在 %TEMP% 隔离副本复跑，未在干净环境取证）",
+    "disclosure_adaptation 与 accuracy 的任何推进（分别保持 unmapped / unproven）",
+    "6 项未证实事项的补证或消解（随行登记，本簿记不补证、不改判）",
+    "P2-1 / P2-2 / P3-1 / P3-2 / P3-3 五处文字数值的修复（按 T1-21 另起纯追加更正登记，本轮不改任何既有 carrier 字节）",
+    "D1 / D3 的关闭（D1 由独立运维 reviewer 签署于 I14A-D1-OPS-REVIEW；D3 属 I-16）",
+    "任何 status 变更（本文件不写 handoff.json、不转 status、不解除任何 BLOCKED）"
+  ],
+
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "verdict_is_transcribed_not_authored": true,
+    "verdict_author": "独立复审工位（independent reviewer session，与实现者非同一人）— written in reviewer_report.md line 13，由本文件转录，不由实现者、也不由本文件作者书写",
+    "written_by_role": "qualification bookkeeping executor (delegated subagent) — 只做簿记转录与哈希取证，未写任何裁决",
+    "bookkeeping_transcription_adds_no_acceptance": true,
+    "no_new_adjudication": true,
+    "existing_bytes_written": 0,
+    "sealed_files_bytes_written": 0,
+    "status_rewrites": 0,
+    "signatures_made": 0,
+    "plan_files_written": 0,
+    "git_write_operations": 0,
+    "network_access": 0,
+    "tests_run": 0
+  },
+
+  "status_authority": {
+    "status": "accepted_scoped",
+    "quote": "`accepted_scoped` — for the isolated measurement fix only",
+    "quote_source": "execution_runs/I-14-A/a20260919-01/review.md:338（reviewer 自撰 r4 attestation §5「Conclusion, and the scope I am NOT granting」结论行）",
+    "quote_verified_present_in_review_md": true,
+    "card_own_status_carrier": {"file": "handoff.json", "line": 4, "value": "accepted_scoped", "file_bytes": 25662, "sha256_prefix16": "294055659e03830f"},
+    "carrier": {
+      "file": "reviewer_report.md",
+      "path_inside_attempt": "reviewer_report.md",
+      "attempt": "execution_runs/I14A-C1C2-ERRATUM/a20260924-01",
+      "bytes": 23627,
+      "sha256": "b088ed676644e46d8dbb2f1b37034266a257d9564d976d5472e3164524bda246",
+      "total_lines": 138,
+      "encoding": "UTF-8 without BOM; LF line endings only (0 CR); single trailing LF",
+      "line_range_inclusive_1_based": [1, 138],
+      "verdict_line": 13,
+      "verdict_line_range_inclusive": [13, 13],
+      "verdict_line_text": "VERDICT: ACCEPT",
+      "conclusion_line": 15,
+      "pin_sidecar": {"file": "reviewer_report.sha256", "bytes": 85, "sha256": "6dc03f05aeaa44df8dba1775c0ea956f740b31fd279aca10650b5bd8cb6bb750", "content": "b088ed676644e46d8dbb2f1b37034266a257d9564d976d5472e3164524bda246  reviewer_report.md\n"},
+      "mirror_note": "逐字镜像 I14A-C1C2-ERRATUM/a20260924-01 落定的 status_authority.carrier（其 handoff.json:304-341）；本工位独立只读复测 23627 B / b088ed676644e46d… 与镜像值一致"
+    },
+    "carrier_scope": "该 carrier 是触发本文件写入的裁决载体（C-1/C-2 更正轮的 ACCEPT，登记册 §132 L2759 派序的第一步）；本卡自身的 accepted_scoped 由本卡 review.md:107/:156/:338 与 handoff.json:4 见证。两者并列登记，互不取代。",
+    "verdict": "ACCEPT",
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "verdict_written_by": "独立复审工位（independent reviewer session, 与实现者非同一人）— written in reviewer_report.md, never by the implementer",
+    "verdict_is_transcribed_not_authored": true,
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority_statement": "status accepted_scoped 只是对 reviewer_report.md 既有裁决的簿记转录；本 pass 不产生新裁决、不自签、不宣布 I-14-A 通过、不处置 D2 复签与产品收紧。",
+    "counts": {"P1": 0, "P2": 2, "P3": 3, "unverified": 6},
+    "scope_note": "ACCEPT 为 scoped 而非 clean：复审登记 2 项 P2 + 3 项 P3 的自述文字/数值与盘上 raw 不符或论据方向错误，以及 6 项明示未证实；不授予晋升、不授予 I-14-A 通过声明、不授予 D2 复签、不授予产品收紧、不授予干净环境绿。"
+  },
+
+  "carried_findings": [
+    {
+      "id": "P2-1",
+      "severity": "P2 (需按 T1-21 追加式更正，不阻断本卡)",
+      "origin": "reviewer_report.md line 99 (§五 P2)",
+      "title_verbatim": "P2-1 阈值「更大 ⇒ 更严」方向说反",
+      "finding_verbatim": "P2-1 阈值「更大 ⇒ 更严」方向说反：`oracle.md:65`（已冻结正文）与封盘追加节 `oracle.md` §10.1 表述「取两者较大值……阈值只会更大（更严）」不成立——在 `elapsed >= threshold` 才入域的规则下阈值越大域门越宽松。正确论据是「取最坏节拍上界才兑现『≥2 节拍必有一次周期采样』的保证」。该句论据不成立，但结论（导出而非调到刚好通过）不依赖它。",
+      "must_not_be_weakened": "结论（导出）不依赖此句；该句会被误读为安全裕度。",
+      "status": "carried_not_resolved"
+    },
+    {
+      "id": "P2-2",
+      "severity": "P2 (需按 T1-21 追加式更正，不阻断本卡)",
+      "origin": "reviewer_report.md line 100 (§五 P2)",
+      "title_verbatim": "P2-2 「首跑 4 臂全假绿」与盘上 raw 不符",
+      "finding_verbatim": "P2-2 「首跑 4 臂全假绿」与盘上 raw 不符：`report.md:41` 与 `handoff.json.C1_execution.mutation_first_run_disclosed.issue` 称首跑「4 臂全假绿」；实际 `evidence/mutations/*/run1_driver_bug/arm.stdout.json` 为 `m1: all_ok=true`（假绿）、`m2: all_ok=false, failed=[fixture_pid_is_in_samples]`（**红**，其变异打在探针文件上、不受该驱动 bug 影响）、`m3: all_ok=true`（假绿）、`m4: all_ok=true`（对照臂**本就应绿**）。准确表述应为「2 臂（m1/m3）假绿、m4 应绿、m2 本就红」。影响：披露文字失真，**不影响**绿的准入（准入依据是修正后 m1/m2/m3 均打红，我已独立复现）。",
+      "must_not_be_weakened": "准确说法是「2 臂假绿」；不影响绿准入（准入依据 = 修正后 m1/m2/m3 均红，复审已复现）。",
+      "status": "carried_not_resolved"
+    },
+    {
+      "id": "P3-1",
+      "severity": "P3 (记录在案，供后续追加更正)",
+      "origin": "reviewer_report.md line 104 (§五 P3)",
+      "title_verbatim": "P3-1 M3 寿命上限自述 0.497 s，raw 为 0.473486 s",
+      "finding_verbatim": "P3-1 M3 寿命上限自述 0.497 s，raw 为 0.473486 s（`evidence/mutations/m3/E0-baseline-F4/verdict.json` 与 `arm.stdout.json` 两处一致：0.473486/0.471959/0.466426/0.471499/0.464713/0.458451）；`0.497` 实为 M4 的上限（0.496813）。出现在 `report.md:36`、`handoff.json`、封盘追加节 §10.1 三处。**不影响**「6 调用全部入域（>0.1504）」的结论。",
+      "must_not_be_weakened": "0.497 实为 M4 上限 0.496813；出现在 report/handoff/封盘追加节三处；不影响入域结论。",
+      "status": "carried_not_resolved"
+    },
+    {
+      "id": "P3-2",
+      "severity": "P3 (记录在案，供后续追加更正)",
+      "origin": "reviewer_report.md line 105 (§五 P3)",
+      "title_verbatim": "P3-2 `handoff.json` 的 `e0_identity_branch` 区间与盘上实测不符",
+      "finding_verbatim": "P3-2 `handoff.json` 的 `e0_identity_branch` 写「per-call lifetimes recorded (0.055-0.099 s)」，盘上 5 次绿 run 的实测区间为 `0.0515–0.1359 s`（单次最大 0.135917 s，见 run2）。**不影响**判定（全部 < 0.1504，走 `not_claimed_sub_cadence` 分支，我已复算）。",
+      "must_not_be_weakened": "盘上 5 次绿实测 0.0515–0.1359s，handoff 写 0.055-0.099s；不影响判定。",
+      "status": "carried_not_resolved"
+    },
+    {
+      "id": "P3-3",
+      "severity": "P3 (记录在案，供后续追加更正)",
+      "origin": "reviewer_report.md line 106 (§五 P3)",
+      "title_verbatim": "P3-3 `_strip_scalar` 机理表述不准",
+      "finding_verbatim": "P3-3 `_strip_scalar` 机理表述不准：`report.md:50`、`decision.md` 追加节 §3 写「引号分支先返回 ⇒ `#` 注释不再剥除」；我直接调用实测为——引号+注释输入因首尾字符不同**不进**引号分支，而是走 `elif \" #\"` 分支**剥掉注释、保留引号** ⇒ 引号残留（结论与 rc=3 观测正确，机理描述错误；同节对裸标量例又写「`elif \" #\"` 分支生效」，前后自相矛盾）。",
+      "must_not_be_weakened": "结论 rc=3/引号残留正确，机理错；同节对裸标量又写「elif 分支生效」自相矛盾。",
+      "status": "carried_not_resolved"
+    }
+  ],
+
+  "unverified": {
+    "source": "reviewer_report.md §五「未证实 / 未逐件复算（如实登记）」 lines 108-115 (byte region 19857..21473, 1617 B, sha256 eb69eccd1a8b847afa01f13d804be42c6f48add32df4b791af9e09f85c85f746)",
+    "count": 6,
+    "items": [
+      "1. 「`.planning` 之外全树仅此一份 `source_catalog.yaml`」：我在可读范围内仅找到 `.review-zr407-20260818/company-wiki/config/source_catalog.yaml` 这一份；但枚举过程对若干目录被沙箱拒绝（多个 `.pytest_cache/`、`scratch/`、`.tmp-*`、`probe_root_m700/` 等 `Access denied`）⇒ **部分未证实**。同法下 `catalog.db` 全树扫描我得到与自述**完全相同的 4 处**命中。",
+      "2. `evidence/copied_inputs_sha256.json` 的「1053/1053 逐件一致 + manifest 同哈希」为实现者自算；我做的是**现存**逐件哈希对照（排除 `__pycache__`）：`harness` 11 件中 2 件不同（= 被补丁的两文件）、`iso` 559 件中 3 件不同（**全部**在 `iso/fixture_root/config/*.yaml`，由 `ensure_fixture_root()` 复跑重建，属预期）、`company-wiki` 2 件全同；`*.pyc` 未逐件比对。",
+      "3. `--catalog <dir>/catalog.db` 的「6 次 resolve 调用 succeeded」：我复测 `calls.total=6`、`consistent=true`，但因我的默认 resolver 不可运行而 `succeeded=0`；「6 次成功」未由我复现（绑定层结论已证实）。",
+      "4. C-2 两处接受类 rc（自述 2）：见四.6，我得到绑定接受但 rc=4（resolver 差异），非 rc=2。",
+      "5. Gen-2「6 红 1 绿」：为文件级核验（`ruling.md:131` + reviewer raw 在盘），**未**由我重跑 reviewer 会话。",
+      "6. 修前红的复现是概率性的：我的 5 次为 `R,G,G,R,G`，实现者为 `绿,红,绿,红,红`——比例同为 3红2绿，排列不同属竞态随机，非矛盾。"
+    ],
+    "disposition": "复审已明示边界与原因，不以推断充作结论；本簿记不补证、不改判、随行登记。"
+  },
+
+  "eligibility_statement": {
+    "formula_classification": "No revenue-forecast formula work. This is a performance-measurement card (binding.json:objective「Freeze the RSS/rc/timing measurement rules, then EXERCISE the failure branches …」); handoff.json:85「this card proves the meter; production SLO qualification needs I-16 and I-14-B」。formula = not_applicable_with_reason.",
+    "disclosure_adaptation": "NOT ADDRESSED by this card; stays unmapped (review.md:345-346).",
+    "accuracy": "NOT ADDRESSED, NOT IMPROVED, NOT CLAIMED by this card; stays unproven (review.md:346).",
+    "production_write": "NOT GRANTED. 生产树全程只读；本簿记非 .planning 改动 = 0。",
+    "promotion": "NOT GRANTED. 晋升禁令继续有效（封盘 recovery/README.md:11-15、handoff.json:21-23）。",
+    "D2_re_sign": "NOT GRANTED. d2_state = pending_resign_not_in_this_scope（D2_resign_pending = true）。",
+    "product_tightening": "NOT GRANTED. 产品侧 consistent 收紧属代码改动，需另开受控卡。",
+    "I14A_productization": "NOT GRANTED. 不授予 I-14-A 的产品化授权（iso/slo_probe_patched.py 不得进 RF/tools/）。"
+  },
+
+  "delay_and_trigger_provenance": {
+    "why_not_written_earlier_verbatim": [
+      "REMEDIATION_REGISTER §122 L2302 ——「派 79ea54ad 补 **16 张**，**明确排除 `I-14-A`**（其 D1 专家裁定 `e383cb03` 在飞，补 qual 会与其签署面耦合）」",
+      "REMEDIATION_REGISTER §122-G L2331 ——「三件套缺口中 **16/17 已清**；余 `I-14-A` 一件**待 D1 签署落地后**再补（非遗漏，是刻意排除）」",
+      "REMEDIATION_REGISTER §125 L2407 ——「三件套最后一张 **`I-14-A/qualification.json` 仍缺**（17/17 中唯一未补的那张，本轮刻意排除）——**待 C-1/C-2 收口后再补**，因为届时卡面状态才稳定（现在补会与 D1 OPEN ITEM「验收不得判绿」的口径打架）」",
+      "REMEDIATION_REGISTER §132 L2753 ——「早先已决定 **deferred until C-1/C-2 close**，理由：`I-14-A` 的 `qualification.json` 必须反映**终裁 D2**，而 D2 是 `pending/provenance_hash_change_only`、`value=null`、在 `_pending_and_excluded` 之内；**提前写会立刻过期**」"
+    ],
+    "dispatch_order_verbatim": "REMEDIATION_REGISTER §132 L2759 ——「⇒ **派工序确定为：`934bc19e` 出裁 → 落定 `review.md`+`handoff` → 此时才写 `I-14-A/a20260919-01/evidence/I-14-A/qualification.json`**（口径须带上 D2 现状与 C-1/C-2 更正结果；`accuracy=unproven`、`disclosure_adaptation` 按终裁）。**复审出裁前不动手**」",
+    "register_boundary_verbatim": "REMEDIATION_REGISTER §132 L2761 ——「**边界**：本节只做**测量与派工序登记**，**不写任何载体、不改 status、不代签**。」（该边界约束 §132 自身；本工位受父派单约束，另见 declarations）",
+    "progress_R105": "progress.md:1475「## 2026-09-25 — Round 105（R17–R19 合记）…」；同步行 progress.md:1510「本节 R105 · `task_plan` Phase 7 Status 行已刷 · 登记册至 **§129** · `findings` 至 **Round 104** · `OWNER_DECISIONS` 至 **§二十六**」",
+    "progress_R107": "progress.md:1561「## 2026-09-25 — Round 107（R28–R35 合记）…」；§B progress.md:1573「**`I14A-C1C2-ERRATUM`** … → **ACCEPT**（P1=0/P2×2/P3×3）… → 落定在飞」；§C progress.md:1579「唯一缺口 = `I-14-A` 的 `qualification.json`，**触发条件已到但须等其复审出裁**，派序入 §132」",
+    "trigger_now_met": [
+      "独立复审 reviewer_report.md 23627 B / b088ed676644e46d… → 第 13 行 VERDICT: ACCEPT（本工位只读复测字节与 sha 一致）",
+      "落定三件在位：review.md 23109 B、handoff.json 35801 B（status=accepted_scoped）、evidence/I14A-C1C2-ERRATUM/qualification.json 20036 B（本工位只读复测）",
+      "⇒ §132 L2759 的两步前置（出裁 + 落定）均已满足 ⇒ 此时才写本文件"
+    ]
+  },
+
+  "seal_boundary": {
+    "verdict": "allowed —— 在封盘 attempt 内新增本文件属允许范围（父派单第一步 fail-closed 查封所得）",
+    "seal_definition_as_found_on_disk": [
+      "封盘 attempt 自身 oracle.md:307（§10.3 边界第 1 条）——「封盘 `oracle.md` / `decision.md` / `review.md` / `binding.json` / `commands.json` / `evidence/**` 的**既有字节零改动**；本节是 `oracle.md` 的唯一追加节。」⇒ 封盘保护的对象是**既有字节**",
+      "I14A-C1C2-ERRATUM/a20260924-01/evidence/append_to_sealed.py:1-13 —— 硬护栏为「封盘文件仍为登记前像大小与 sha256」「新字节保持前像为精确前缀」，mode =「append-only (T1-12 (1)); no pre-existing byte modified」",
+      "I14A-C1C2-ERRATUM/a20260924-01/handoff.json:166-197 —— sealed_appends 两处（oracle.md、decision.md 已追加、prefix_bytes_preserved=true）+ sealed_files_untouched（review.md/binding.json/commands.json/handoff.json/evidence/**/harness/**/iso/** changed_bytes=0）",
+      "task_plan.md:259（I-04-D 条）——「**封盘后不再写入的纪律**本轮被违反两次」⇒ 封盘确有一条「不得任意再写」的纪律，其被追责的形态是**改既有字节/事后改值**"
+    ],
+    "why_new_file_is_allowed": [
+      "登记册 §132 L2759 明示指定本文件的确切路径与写入时机（出裁 → 落定 → 此时才写），且 §136-E L2945 面板把本工单列为在飞项「`I-14-A qual 补齐`（查封盘范围，未动字节）」 ⇒ 编排层已把「在封盘 attempt 内新增本文件」登记为既定工序",
+      "先例：登记册 §122-B/F 对 16 张 accepted 卡**新建** 16 个文件于标准位 evidence/<CARD>/qualification.json，父独立复核 16/16；§122-B 记载 B1 卡「既无 evidence/ 目录」⇒ **在既有 attempt 内新建 evidence/ 目录 + 新文件是已执行并被父复核通过的形态**",
+      "先例：本封盘 attempt 在 2026-09-24 已被授权追加写入（oracle.md §10 + decision.md 追加节，authority = OWNER_DECISIONS 十 L126 / 十一 L143 / T1-12(1) / T1-21），复审据此前缀自证判 P1=0「追加未越界」",
+      "本 attempt 自身 binding.json:37-39 allowed_write_roots = 该 attempt 目录本身",
+      "回源检索 REMEDIATION_REGISTER.md / progress.md / task_plan.md / findings.md / 本 attempt binding.json / handoff.json，**未找到任何「封盘后禁止新增文件」的原文**；所有封盘原文约束的都是既有字节与回改"
+    ],
+    "controls_applied": [
+      "执行前后对同一文件集合逐一算 sha256（before_hashes.json / after_hashes.json），两表逐条相等才交付；任何一条变即停",
+      "写入面 = 仅新建 evidence/I-14-A/ 目录与其中的 qualification.json + 哈希/取证记录；既有 1580 件字节零改动",
+      "不改 handoff.json / status / review.md / oracle.md / decision.md / 封盘任何既有件；不写五份计划文件；零 git 写；禁用 git status；零联网；不代签"
+    ],
+    "inventory_cross_check": {
+      "files_under_attempt_before_this_write": 1580,
+      "matches_erratum_seal_inventory": "I14A-C1C2-ERRATUM/a20260924-01/evidence/I14A-C1C2-ERRATUM/qualification.json 的 granted_scope「C-1 两处封盘前缀复算判据」条逐字：「封盘 85 个被跟踪文件逐 git hash-object 比对仅这 2 个不等；封盘全树 mtime≥2026-09-21 只有这两个、其余 1578 件仍为封盘当时」⇒ 封盘库存 1578 + 两处追加 = 1580，与本工位枚举逐数吻合；同句「85 个被跟踪文件」亦与本工位 git ls-files 实测 85 逐数吻合",
+      "tracked_files_git_ls_files": 85,
+      "tracked_note": "父派单称「该路径下 0 个文件被 git 跟踪」；本工位实测 `git -c core.quotepath=false ls-files -- .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/a20260919-01/` = 85 个（含 7 件顶层、harness/**、recovery/**、after/**、before/**、company-wiki/config）。两说并存登记，以本工位实测为准；该差异不影响封盘判定（是否被跟踪不是封盘的判据）"
+    }
+  },
+
+  "bookkeeping": {
+    "recorded_by": "qualification bookkeeping executor (delegated subagent)",
+    "what_this_pass_did": "只读回源取口径 + 封盘边界 fail-closed 判定 + 对封盘既有件做前后哈希取证 + 新建本 qualification 记录；未写任何既有字节",
+    "files_created": [
+      "evidence/I-14-A/qualification.json（本文件，新建）",
+      "evidence/I-14-A/before_hashes.json（新建，执行前 1580 件哈希表）",
+      "evidence/I-14-A/after_hashes.json（新建，执行后 1580 件哈希表）",
+      "evidence/I-14-A/qualification_provenance.json（新建，前后哈希逐条相等证明 + 封盘边界引证 + git 边界计数）"
+    ],
+    "existing_files_bytes_written": 0,
+    "sealed_files_bytes_written": 0,
+    "handoff_json_bytes_written": 0,
+    "review_md_bytes_written": 0,
+    "oracle_md_bytes_written": 0,
+    "decision_md_bytes_written": 0,
+    "status_rewrites": 0,
+    "signatures_made": 0,
+    "plan_files_written": 0,
+    "git_write_operations": 0,
+    "network_access": 0,
+    "tests_run": 0,
+    "status_transition": "none — 本 pass 不转移任何 status"
+  },
+
+  "note": "created by the qualification bookkeeping pass under REMEDIATION_REGISTER §132 dispatch order, after I14A-C1C2-ERRATUM returned VERDICT: ACCEPT (reviewer_report.md 23627 B / b088ed676644e46d8dbb2f1b37034266a257d9564d976d5472e3164524bda246, verdict line 13) and after its carrier landing (review.md / handoff.json / evidence qualification). formula = not_applicable_with_reason（性能测量卡，不授予公式资格）；disclosure_adaptation stays unmapped；accuracy stays unproven；d2_state = pending_resign_not_in_this_scope（D2_resign_pending = true，复签不在本簿记内）；granted_scope 只覆盖 C-1 阈值更正与 C-2 读法更正的证据与判据，明确不含晋升、D2 复签、产品收紧与 I-14-A 的产品化授权；verdict_is_transcribed_not_authored = true；implementer_signed = false。本文件不产生任何新裁决、不改任何既有字节。"
+}

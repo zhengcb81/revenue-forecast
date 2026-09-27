@@ -1,0 +1,80 @@
+{
+ "unit": "ZR-1103",
+ "reviewer": "reviewer-zr1103-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "75c119f7c091d3815a43f1eb2764dde003eb05915bcc8ebe05b136c6a529425d",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr1103_journey_reverify.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "6 passed in 11.80s (C1 three roots; C2 reuse; C3 markets; C4 broker/mine; C5 Windows CJK)"
+  },
+  {
+   "command": "independent read-only probes: production resolver (mode=ro+query_only), spy wiki counts, T3 suite markers",
+   "exit_code": 0,
+   "result": "Zijin FY2025 + Genscript 1548 FY2021 REUSED_EXACT, StarLake 688031 MISSING fail-closed; Zijin trace carries 紫金矿业 CJK identity; catalog mtime/size unchanged; spy fetch count + bytes invariant on second request; filing-fetch T3 has cn/us/hk markers + opt-in gate"
+  },
+  {
+   "command": "git status --porcelain -- scripts tools + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "scripts/ tools/ clean; HEAD=02d1d97 parent=e7eafcc matches; commit only tests/test_zr1103_journey_reverify.py +186"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "canonical 75c119f7 matches; delta only revenue (filing/wiki base=result); four SHAs real git objects"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "e7eafccfe528a276f7104604068090dbe6cb4d48",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "02d1d97a3c709731e5067e0646e0497aadd822fa",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR1103-REV-001",
+   "severity": "info",
+   "title": "复放通过",
+   "detail": "6 passed in 11.80s，与声明同量级。"
+  },
+  {
+   "id": "ZR1103-REV-002",
+   "severity": "info",
+   "title": "只读探针三 root 复验 + CJK 身份 + catalog 零变异",
+   "detail": "金斯瑞 trace 含 CJK document-kind 标签但无实体名——C5 断言仅针对紫金用例，无影响。"
+  },
+  {
+   "id": "ZR1103-REV-003",
+   "severity": "info",
+   "title": "spy wiki 计数/字节断言真实",
+   "detail": "actions() 读真实 spy_log.jsonl、companies_bytes() 统计真实文件字节，非 fake counter。"
+  },
+  {
+   "id": "ZR1103-REV-004",
+   "severity": "info",
+   "title": "T3 三市场 marker + opt-in 门",
+   "detail": "cn(L118)/us(L141)/hk(L159) + FILING_FETCH_E2E_DOWNLOAD(L43) 齐备。"
+  },
+  {
+   "id": "ZR1103-REV-005",
+   "severity": "info",
+   "title": "产品零改动 + commit 链正确",
+   "detail": "state.json 未提交改动为 implementer 的 ZR-1103 triplet_green 块（workflow 常态）。"
+  },
+  {
+   "id": "ZR1103-REV-006",
+   "severity": "info",
+   "title": "receipt canonical 自洽",
+   "detail": "75c119f7 重算一致；delta 仅 revenue。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T20:08:41+00:00",
+ "canonical_hash": "0d0fffd042a226cd775b834b34b6ff8bee513fe8736a0c88acbf369332a0caa1"
+}

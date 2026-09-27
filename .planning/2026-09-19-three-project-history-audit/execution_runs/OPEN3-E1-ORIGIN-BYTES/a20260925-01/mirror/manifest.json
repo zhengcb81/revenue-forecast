@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ORIGIN-BYTES",
+  "attempt_id": "a20260925-01",
+  "purpose": "本计划目录对 origin 响应字节的镜像 + sha 校验（OWNER_DECISIONS §二十七 #2：本计划目录另存镜像与 sha 校验）",
+  "mirror_status": "EMPTY_BLOCKED",
+  "mirrored_origin_byte_count": 0,
+  "entries": [],
+  "expected_but_absent": [
+    {
+      "document": "Microsoft Corporation Form 8-K (2026-09-02), Item 7.01 + 9.01(d)",
+      "accession": "0001193125-26-380280",
+      "origin_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm",
+      "sha256": null,
+      "bytes": null,
+      "origin_bytes": false,
+      "blocked_by": ["B1 landing (workspace-write denies company-wiki)", "B2 (8-K primary reachable in principle, but landing blocked)"]
+    },
+    {
+      "document": "Exhibit 99.1 'FY27 Segments and Investor Metrics' (2026-09-02)",
+      "accession": "0001193125-26-380280",
+      "origin_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm",
+      "sha256": null,
+      "bytes": null,
+      "origin_bytes": false,
+      "blocked_by": ["B2 mechanism gap (filing-fetch/dayu downloads exhibits for form 6-K only; adapter copies only primary_document)"]
+    }
+  ],
+  "statement": "本轮 origin 字节取回 0 个：filing-fetch --allow-download 在 company-wiki 落点被会话文件策略拒绝（downloads=0），且 filing-fetch 既有机制不覆盖 8-K 的 exhibit 下载。镜像目录如实为空，未以任何转写文本、代理渲染或第三方镜像冒充 origin 字节。sha256 字段为 null 表示『无对象可算』，不是 0 或占位值。"
+}

@@ -1,0 +1,230 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ORIGIN-BYTES-R2",
+  "attempt_id": "a20260926-01",
+  "role": "evidence_acquirer",
+  "status": "BLOCKED-PARTIAL",
+  "blocked_status": "BLOCKED-PARTIAL",
+  "status_reason": "origin 响应字节已按下载型机制取回 2/2（62,953 B、HTTP 200、sha 实测、provenance 四件齐）；但 (a) 门 0 实测 P1/P2/P3 产品仓目标目录全部 Access denied ⇒ 本工位会话『无写权限』，§二十七 #2 授权的 company-wiki 落点 0 字节、filing-fetch 分支按纪律 16 停手；(b) C5『origin 与既有语料一致性』与 ① 的正式翻正归会计面。故如实判 BLOCKED-PARTIAL，不判满足、不造绿样。",
+  "authorized_by": {
+    "progress_l1244_verbatim": "网络口径（本轮明确，需入册）：允许 `web_search`/`web_fetch` 取证（专家 reviewer 职权），但**每条外部证据必须落 `provenance.json`**（URL + 取回 UTC + 原文引文 + 快照 sha）；**外部来源不得冒充本地可核事实**——I-11-A 已登记「2026-09-02 8-K 原文不在本地可核来源」，联网取到须显式标注为**外部获取**。",
+    "owner_decisions_l543_verbatim": "| **3** | **E1 等级现交会计面裁** | **「要」**（澄清答确认） | 派 `1e143a7e` = `OPEN3-E1-ACCT-RULING`。**只定级、不重取**（禁联网；若必须看原站字节 ⇒ 判 `BLOCKED-NEEDS-ORIGIN-BYTES` 而**不自己去取**）；`fail-closed`——**不得为推进链抬高等级**；`releases_nothing=true` |",
+    "l543_why_not_binding_on_this_card": "L543 的受约束对象被原文点名 = 派 `1e143a7e` = OPEN3-E1-ACCT-RULING『只定级、不重取』；同一行还规定『若必须看原站字节 ⇒ 判 BLOCKED-NEEDS-ORIGIN-BYTES 而不自己去取』——该名目本身就把『取字节』外派给另一工位。REMEDIATION_REGISTER §153 更正表（L3792-L3795）把三条口径分层：L541=owner 授权联网、L543=owner 按卡禁网（仅 E1 定级工位）、L1244=项目默认允许、L1186『零网络』=父自加的保守默认（非会话限制）。本卡受 L1244 约束，不受 L543 约束，但仍不判等级。",
+    "remediation_register_153_verbatim": "⚠️【更正 · 2026-09-26 13:15】本节原文写「`filing-fetch` 但**本会话禁网**」——**这是错的，已实测推翻**：`https://example.com` **HTTP 200 ⇒ 会话不禁网**。 | progress L1244（网络口径，本轮明确） | **项目默认 = 允许** | **「允许 `web_search`/`web_fetch` 取证（专家 reviewer 职权）」**，外部证据须落 provenance.json（URL+取回 UTC+引文+快照 sha）、**不得冒充本地可核**",
+    "landing_authorization": "OWNER_DECISIONS.md §二十七 #2（2026-09-25，owner 选择『落产品仓（与 filing-fetch 同流）（建议）』）+ §三十一（B3：8-K 诚实 kind current_report 落 raw/other/，含 raw/… 之澄清）+ §三十（B2 扩闸授权）+ §三十二（晋升授权，实测晋升 blocked）——本工位只消费落点口径，未执行任何产品改动。",
+    "card_dispatch_verbatim": "门 0（纪律 16/17）：目标目录真实写探针 —— 写+回读+删除，三者都成功才算过；失败 ⇒ 报 `blocked`、停手；禁止尝试任何可能破坏原状的替代方法（`git apply`/`>`重定向/删除-重写 等一律禁用）。"
+  },
+  "parent_followup_instruction": "父 2026-09-26 回执：『继续，不停取回』——授权写入面=P0（已 PASS），origin_bytes.bin 与 provenance.json 落本目录；产品仓落点分支停手正确；能否落 company-wiki 由父随后用提权单独处理；非 200/URL 不可回源 ⇒ 照旧 fail-closed 报 blocked。",
+  "gate0": {
+    "gate0_writability_passed": false,
+    "payload": "GATE0-PROBE-a20260926-01",
+    "payload_bytes": 24,
+    "probe_pid": 16680,
+    "raw_output_file": "gate0_probe_raw.txt",
+    "raw_output": [
+      "P0_output_dir | dir=C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN3-E1-ORIGIN-BYTES-R2\\a20260926-01 | exists=True | WRITE_rc=0 | READBACK_rc=0 | match=True (len=24) | DELETE_rc=0 | residual_exists=False",
+      "P1_company_wiki_companies | dir=C:\\Users\\郑曾波\\Projects\\company-wiki\\companies | exists=True | WRITE_rc=ERR: Exception calling \"WriteAllText\" with \"3\" argument(s): \"Access to the path 'C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\_gate0_probe_16680_2.tmp' is denied.\" | READBACK_rc=NA | match=NA | DELETE_rc=NA | residual_exists=NA",
+      "P2_cw_source_catalog | dir=C:\\Users\\郑曾波\\Projects\\company-wiki\\src\\company_wiki\\source_catalog | exists=True | WRITE_rc=ERR: ... '_gate0_probe_16680_3.tmp' is denied. | READBACK_rc=NA | DELETE_rc=NA | residual_exists=NA",
+      "P3_dayu_downloaders | dir=C:\\Users\\郑曾波\\Projects\\dayu-agent\\dayu-agent\\dayu\\fins\\downloaders | exists=True | WRITE_rc=ERR: ... '_gate0_probe_16680_4.tmp' is denied. | READBACK_rc=NA | DELETE_rc=NA | residual_exists=NA"
+    ],
+    "output_dir_writable": true,
+    "product_repo_writable": false,
+    "consequence": "产品仓落点分支停手：未跑 filing-fetch --allow-download、未试任何替代写法；产品仓 0 字节残留、0 既有文件改动",
+    "note_vs_parent_probe": "父 2026-09-26 14:0x 三处 OK 系带 danger-full-access 提权所测；本工位无提权（审批禁用、子代理权限固定）⇒ 两份探针都为真，纪律 16/17 要求自探的理由"
+  },
+  "origin_bytes_retrieved": 62953,
+  "origin_bytes_retrieved_target_count": "2/2",
+  "origin_sha256": {
+    "d291965d8k.htm": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878",
+    "d291965dex991.htm": "47a0a4a1d6a335fffab571789aba597eca0637d2650f0f62371afa10e205b987",
+    "origin_bytes.bin": "cf84c29048ab314e329758975e101804ba3032f28e2b22d0373f46e3d3c9db1e",
+    "identity_index_0001193125-26-380280-index.htm": "618f010b6e56597ce881da5ada82b6946615caf2d1062a68942d34a9e24753cf",
+    "independent_0001193125-26-380280_complete_submission.txt": "d82838ac92ed3e8b8e2d6f2ee21b51997309c53d38bcc637ba1041392d1b118f"
+  },
+  "targets": [
+    {
+      "document": "MSFT 8-K 2026-09-02 Item 7.01/9.01",
+      "accession": "0001193125-26-380280",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965d8k.htm",
+      "retrieved_utc": "2026-09-26T13:29:40Z",
+      "http_status": 200,
+      "bytes": 28665,
+      "sha256": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878",
+      "landed_path": "origin_bytes/MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+      "origin_bytes": true
+    },
+    {
+      "document": "MSFT 8-K Exhibit 99.1 FY27 Segments and Investor Metrics",
+      "accession": "0001193125-26-380280",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/d291965dex991.htm",
+      "retrieved_utc": "2026-09-26T13:29:41Z",
+      "http_status": 200,
+      "bytes": 34288,
+      "sha256": "47a0a4a1d6a335fffab571789aba597eca0637d2650f0f62371afa10e205b987",
+      "landed_path": "origin_bytes/MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+      "origin_bytes": true
+    }
+  ],
+  "provenance_four_elements": {
+    "url": true,
+    "retrieved_utc": true,
+    "verbatim_quote": true,
+    "sha256": true,
+    "http_status": 200,
+    "complete": true,
+    "file": "provenance.json",
+    "note": "另含 bytes/mechanism/user_agent/document_identity/landed_path/external_retrieval_not_local=true/gate0/attempts/previous_corpus_reverification"
+  },
+  "accounting_gap_status": {
+    "e1_five_elements_origin_side": {
+      "1_local_archive_origin": "字节层 ✅（落本计划目录）；产品仓同流落点 0 ⇒ 待父提权补",
+      "2_sha256": "✅",
+      "3_retrieved_utc": "✅",
+      "4_verbatim_quote": "✅ 8/8 去空白归一化（空白敏感 7/8，Q1 差 2 空格）",
+      "5_independent_path": "✅ 与 EDGAR 完整申报 as-filed 副本逐字节相同"
+    },
+    "verdict": "BLOCKED-PARTIAL",
+    "not_met": [
+      "B1 产品仓落点（company-wiki 0 字节）",
+      "B2 filing-fetch 分支未执行 ⇒ 无 immutable provenance sidecar、产品仓新增路径=[]",
+      "C5 origin 与既有 4 语料一致性未裁（Q1 空格差 + 边缘注入脚本差异）"
+    ],
+    "level_claimed": null,
+    "judgement_authority": "等级与 C5 归会计面（OPEN-3-ACCT-R2 / ACCT ruling L201/L251），本工位只交证据"
+  },
+  "edge_injected_script_finding": "响应体含 <script src=\"/QQpw/SBxk/Vaws3/_e/ukQ/ahaE2chLLGzQfS/Ji1MAQ/Zg9QCV/p9Knc\"></script>（8-K [28544,28650]、Ex99.1 [34147,34253]）；Content-Length=28665 与实收一致、响应头为 SEC S3+Akamai 头 ⇒ 属本客户端收到的响应体（非本地改写）；剥去后两份内容与 EDGAR 归档 as-filed 副本逐字节相同。",
+  "mutation_discrimination": {
+    "file": "mutation_results.json",
+    "discrimination_ok": true,
+    "green": 1,
+    "red": 6
+  },
+  "releases_nothing": true,
+  "does_not_claim_I11A_acceptance": true,
+  "adds_no_new_domain_judgement": true,
+  "not_granted": [
+    "不解除 OPEN-3",
+    "不解除 BLOCKED-NEEDS-ORIGIN-BYTES / B1",
+    "不判 E1/E2 等级",
+    "不产生 ACCEPT",
+    "不放行参数",
+    "不代签",
+    "不改任何 status/state/decision/decision_sha256",
+    "不碰封盘 I-11-A / OPEN6-TOLERANCE-* / BLOCKED6C-* / OPEN6-H2-* 任一字节",
+    "不做 filing-fetch/dayu 产品改动"
+  ],
+  "git_boundary": {
+    "command_used": "git -c core.quotepath=false diff HEAD --name-only（只读；未执行 git status —— 派单纪律 #6 禁用）",
+    "revenue_forecast": {
+      "diff_total_lines": 3830,
+      "git_diff_non_planning": 0
+    },
+    "company_wiki": {
+      "diff_lines": 3,
+      "paths": [
+        "CLAUDE.md",
+        "README.md",
+        "src/company_wiki/source_catalog/artifact_dag.py"
+      ],
+      "mtime_all": "2026-09-23 13:08:38（早于本工位 3 天，他人既有改动）",
+      "contributed_by_this_station": 0,
+      "new_paths_from_filing_fetch": []
+    },
+    "dayu_agent": {
+      "repo_root": "C:\\Users\\郑曾波\\Projects\\dayu-agent\\dayu-agent",
+      "diff_lines": 0,
+      "contributed_by_this_station": 0
+    },
+    "git_writes": 0,
+    "git_status_used": false
+  },
+  "attempt_counts": {
+    "total": 8,
+    "network_requests": 8,
+    "origin_bytes_retrieved": 62953,
+    "http_200": 6,
+    "mechanism_failures": 2,
+    "harness_403": 1,
+    "gate0_probes": 4
+  },
+  "third_party_dependency": {
+    "used": false,
+    "providers": [],
+    "statement": "本工位直连 sec.gov 取 origin（声明 UA），未用任何第三方代理/转写服务取 origin；r.jina.ai / W3C html2txt 语料仅作被核对象，不登记为本工位取证。"
+  },
+  "written_files": [
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/_analysis_output.json",
+      "bytes": 4812,
+      "sha256": "8b9adc312a65abcd40260b08a4c4d84c0384d3a1f5a1cfedbb4c6606df5338cc"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/gate0_probe_raw.txt",
+      "bytes": 2650,
+      "sha256": "efd4d1adddfd057327d5a9ebba7de8609a6aed4e464da49987932c0c1e2728b6"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/mutation_results.json",
+      "bytes": 2480,
+      "sha256": "f020053f8c14228b9f668f84c38f4ef77860bb2c9c312681520c48a484c62150"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/oracle.md",
+      "bytes": 19748,
+      "sha256": "977d2069952d7f155948bc2800ea62beb32d39220ab09e25adbd793e2848ec3c"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/origin_bytes.bin",
+      "bytes": 62953,
+      "sha256": "cf84c29048ab314e329758975e101804ba3032f28e2b22d0373f46e3d3c9db1e"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/origin_bytes/MSFT_8-K_2026-09-02_0001193125-26-380280_d291965d8k.htm.origin",
+      "bytes": 28665,
+      "sha256": "a3d0bbf6411bb2b2db0bc9deee1541ea44639399e26e1f08adf8df3037ab0878"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/origin_bytes/MSFT_8-K_Ex99.1_2026-09-02_0001193125-26-380280_d291965dex991.htm.origin",
+      "bytes": 34288,
+      "sha256": "47a0a4a1d6a335fffab571789aba597eca0637d2650f0f62371afa10e205b987"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/origin_bytes/_identity_0001193125-26-380280-index.htm",
+      "bytes": 17557,
+      "sha256": "618f010b6e56597ce881da5ada82b6946615caf2d1062a68942d34a9e24753cf"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/origin_bytes/_independent_0001193125-26-380280_complete_submission.txt",
+      "bytes": 2721504,
+      "sha256": "d82838ac92ed3e8b8e2d6f2ee21b51997309c53d38bcc637ba1041392d1b118f"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/origin_bytes/_mutation_R1_sec_block_page.htm",
+      "bytes": 4819,
+      "sha256": "2922be224c135e1d4189e37f70e25af3d9e17ce40650c25a1611cb99a4e040a0"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/provenance.json",
+      "bytes": 19965,
+      "sha256": "21ce23f958e80c2b2944ccb24158f77d39e63912453fe399e8792445562c0907"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ORIGIN-BYTES-R2/a20260926-01/ruling_e1_bytes.md",
+      "bytes": 11577,
+      "sha256": "9ac4a37adc23406254fc9bb7129df873f66c26abac87e09a9637907248f740ae"
+    }
+  ],
+  "written_files_note": "handoff.json 自身不入 written_files（自引用哈希不可稳定计算）；全部 12+ 文件均在本 attempt 目录内。",
+  "not_done": [
+    "未判 E1/E2 等级（level_claimed=null）",
+    "未解除 OPEN-3 / BLOCKED-NEEDS-ORIGIN-BYTES / B1 任何一项",
+    "未产生 ACCEPT、未改任何 status/state/decision/decision_sha256",
+    "未放行 MSFT 参数、未冻结 I-07-E 分部口径",
+    "未在 company-wiki / dayu-agent 写入任何字节（门 0 三处 DENIED，0 残留）",
+    "未运行 filing-fetch --allow-download、未试 git apply/重定向/删除-重写等替代写法",
+    "未用 harness web_fetch 文本冒充 origin 字节",
+    "未做产品代码改动（B2 扩闸/晋升均未触碰）",
+    "未回改上游任何载体（OPEN3-E1-ACQUISITION / OPEN3-E1-ACCT-RULING / I11A-* / OWNER_DECISIONS / progress / task_plan）",
+    "未执行 git 写、未执行 git status"
+  ]
+}

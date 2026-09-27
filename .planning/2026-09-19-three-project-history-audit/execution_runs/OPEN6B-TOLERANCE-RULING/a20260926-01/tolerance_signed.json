@@ -1,0 +1,180 @@
+{
+  "schema": "tolerance-signed/1",
+  "role": "accounting_reviewer",
+  "carrier": "execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01",
+  "attempt": "execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01",
+  "plan_root": ".planning/2026-09-19-three-project-history-audit",
+  "generated_utc": "2026-09-26T00:00:00Z",
+  "task": "按 OPEN6-TOLERANCE-TABLE §⑥ 提请，对 BLOCKED-6b 的三点逐条补裁，并对 4 条 arithmetic_identity 阈值逐条签署容差（或判 NOT_SIGNED）",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+
+  "authorized_by": {
+    "blocked_6b_verbatim": "BLOCKED-6b：4 条 arithmetic_identity 的容差是否与其来源舍入粒度一致（含 ±1 USD million）—— 需逐条对照原文舍入粒度复核后签署（规则已给，值未审）",
+    "blocked_6b_source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L297, bytes [32795,33005), sha256 f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2 (37355 B)",
+    "blocked_6b_dispatch_verbatim": "BLOCKED-6b | 4 条恒等式阈值的容差是否匹配披露舍入粒度 | 逐条对照原文舍入粒度 | 会计 reviewer（我）在拿到对照表后补裁 / 行业 reviewer 会签",
+    "blocked_6b_dispatch_source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L323, bytes [35734,35923)",
+    "c5_verbatim": "OPEN-6：threshold_review_status 落地 + H4 四要件补齐 + H2 基准 + 恒等式容差对照表",
+    "c5_source": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json L122, bytes [11330,11437), sha256 b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878 (21808 B)",
+    "c5_breakdown_verbatim": "4 条恒等式容差对照原文舍入粒度（BLOCKED-6b）",
+    "c5_breakdown_source": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json L108, bytes [9785,9857)",
+    "rule_a62_verbatim": "arithmetic_identity | 4（hypotheses.json L88 / L311 / L524 / L649） | 可用（等式判定） | 舍入容差必须显式且不超过来源披露的舍入粒度（如\"允许 |差| ≤ 1 元\"对应元位披露），容差依据须写明；不得自由放大",
+    "rule_a62_source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L240, bytes [26593,27309)（本工位逐字切片复核）",
+    "four_requirements_verbatim": "审定一个阈值必须同时具备可复算观测量 + 可核基础 + 非实现者签署（decision_sha256） + 追加式版本化，否则一律维持 not_reviewed",
+    "four_requirements_source": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md L226",
+    "criteria_frozen_in": "oracle.md §②（写入本文件之前冻结）"
+  },
+
+  "three_questions": {
+    "q1_model_A_or_B": {
+      "question": "模型 A（round-half-to-nearest，L_A = n·g/2）还是模型 B（账簿精确值，L_B = 0）适用于这些披露（NE-2）",
+      "conclusion": "insufficient_evidence",
+      "ne2_upheld": true,
+      "evidence": [
+        "CN-ZIJIN-2025.txt（sha256 196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591，763644 B）检索 四舍五入|舍入|取整|rounding|四捨五入 => 0 命中（本工位现跑）",
+        "US-MSFT-2026.txt（sha256 8da453c191394c1530a7d036018b0a8ede34fa43a8c78c36bd12293f6d64fabe，356348 B）检索 [Rr]ound|ROUND|rounded|nearest => 7 命中全为词内子串（ground 等），无舍入政策句（本工位现跑）",
+        "两份原文只有单位声明：CN L10842-L10843「除有特别说明外，均以人民币元为单位表示」、L34952 页眉「人民币元」、L1107/L1108 与 L3839「单位：元」；MSFT L821/L769/L1360「(In millions…)」—— 单位 ≠ 舍入模式"
+      ],
+      "consequence": "两个模型都不得采用；任何由模型推导的下限（L_A 或 L_B）均不得作为签署或拒签的承重理由；签署值必须在模型 A 与模型 B 下就 A-6.2 上限（τ ≤ g）都可容。注册文本中\"允许披露四舍五入引入的\"这一因果归属无原文支撑，登记为待更正措辞（追加式，不回改），数值本身的依据改为原文粒度 g。",
+      "material_to_signing": "否（承重条件改由 C1/C2/C3 提供）"
+    },
+    "q2_rule_conflict": {
+      "question": "L_A > U 时以哪条判据为准（RULE_CONFLICT，R1/R3/R4）",
+      "conclusion": "以 A-6.2 上限 U = g 为准；模型 A 下限 L_A 不具约束力",
+      "reasoning": "①书面规则（A-6.2，无条件、可核）层级高于条件式推导量（L_A 依赖 q1 未证前提）；②L_A > U 仅在模型 A 成立时出现，而模型 A 按 q1 判 insufficient_evidence；③把 τ 放大到 > g 等于修改 A-6.2，属 owner/DEC-14 流程（A-6.3 第5条、ACCT ruling L278），本工位无权；④本工位是规则适用者，不是规则修改者。",
+      "residual_risk_registered": "若模型 A 日后被证实，纯舍入可能产生 R1 2 元 / R3 3 元 / R4 2 USD mn 量级残差而被判超限（假阳性）。登记而不预防：判超限属 fail-closed 方向，且该观测本身即为\"独立舍入发生过\"的新证据，触发恢复规则重裁。",
+      "third_criterion_alternative": "拒绝：\"冲突需要第三判据\"= 新增规则，须 owner/DEC-14（含校验器同步），不属本次补裁。"
+    },
+    "q3_r2_numeric_tolerance": {
+      "question": "R2（H-CN-ZIJIN-VOL-03）是否补登数值容差",
+      "conclusion": "不补登（本轮不能补登）",
+      "status": "NOT_SIGNED",
+      "reason_code": "insufficient_evidence",
+      "prerequisite_now_met": "OPEN-11 已裁「跨期可得性成立」（I11A-OPEN11-IND/a20260924-01/ruling.md L95 裁定文本、R2 节），NE-4 的可得性前置满足 —— 故本工位可就 R2 补登问题作出判断，但容差值仍由本工位自定",
+      "blocking_measurement": {
+        "granularity_cap": "g = 1 吨（铜/锌）/ 1 千克（金/银）；A-6.2 上限 U = 1 单位",
+        "observed_abs_residuals_recomputed_by_this_station": "铜 +1 吨、锌 0 吨、银 -1 千克、金 +154 千克",
+        "admissible_band": "0 < τ ≤ 1 单位",
+        "required_band_to_cover_observed": "τ ≥ 154 千克",
+        "intersection": "空集 ⇒ 无任何可容取值能覆盖实测；τ ≥ 154 又违反 A-6.2 且无 A-6.3 基础（存货桥证据未取得 = OPEN-11 R6 条件2 未满足）"
+      },
+      "rejected_values": ["τ = 0（NE-3 明令不以 0 代填；且无原文精确性依据）", "τ = 1 单位（可容但已知覆盖不了金 +154 ⇒ 已知会出错的签署）", "τ = 2 单位（= n·g/2，超 A-6.2 上限且仍覆盖不了 154）", "τ ≥ 154 千克（超上限 154 倍，属\"自由放大\"，并对 ≤154 千克的并购范围变化/在途寄售完全失明）"],
+      "consequence": "NE-3 保持（比较 NOT_ESTABLISHED，不以 0 或 1 代填）；按 OPEN-11 R4 第5步，凑平支在容差签署前不得执行；上限判据与方向判据的实测通过（四产品 upper_bound_ok=True、direction_ok=True）只是测量事实，不构成放行。"
+    }
+  },
+
+  "thresholds": [
+    {
+      "row_id": "R1",
+      "threshold_id": "H-CN-ZIJIN-SEG-01",
+      "alias": "H1",
+      "threshold_basis": "arithmetic_identity",
+      "status": "SIGNED",
+      "tau": "1",
+      "tau_unit": "CNY_yuan",
+      "signed_unit_label": "1 人民币元",
+      "registered_tau_unchanged": "0（算术恒等式，允许披露四舍五入引入的 |差| ≤ 1 元）",
+      "measured_granularity": "1 人民币元",
+      "granularity_evidence": "CN-ZIJIN-2025.txt L34952 页眉「人民币元」（PAGE 326，与操作数同页）；L10842-L10843 会计政策「除有特别说明外，均以人民币元为单位表示」（PAGE 131）；L991-L992 营业收入 349,079,082,852 与同页 L1107-L1108「单位：元」同处 PAGE 15（行 975-1108）；两表操作数全为整数、无小数",
+      "n_operands": 5,
+      "observed_residuals_recomputed": {"FY2025": "0", "FY2024": "0"},
+      "evaluation": "Δ = (矿产品 + 冶炼产品 + 贸易 + 其他 对外销售收入) - 合并营业收入，整数元精确求和；判定 |Δ| ≤ τ",
+      "criteria": {"C1_granularity": "pass", "C2_explicit_and_within_cap": "pass (τ = 1 = g = U)", "C3_basis_not_premise_dependent": "pass (依据=原文单位/粒度声明)", "C4_observed_coverage": "pass (max|Δ| = 0 ≤ 1)", "C5_non_implementer_signature": "pass (decision_sha256 本文件)"},
+      "signed_by": "accounting_reviewer (non-implementer)",
+      "not_signed_reason": null
+    },
+    {
+      "row_id": "R2",
+      "threshold_id": "H-CN-ZIJIN-VOL-03",
+      "alias": "H3",
+      "threshold_basis": "arithmetic_identity",
+      "status": "NOT_SIGNED",
+      "tau": null,
+      "tau_unit": null,
+      "signed_unit_label": null,
+      "registered_tau_unchanged": "无（阈值为披露可判定式，未登记任何数值容差）——本工位不代填",
+      "measured_granularity": "1 吨（铜/锌）/ 1 千克（金/银），FY2024 与 FY2025 两期一致",
+      "granularity_evidence": "CN-ZIJIN-2025.txt L4281-L4312（PAGE 45，②产销量情况分析表，单位列「千克」「吨」，值为整数）；上一期同表取自 2024 年报 PDF leaf 42（只读，sha256 004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89，32100114 B），锚文本「②产销量情况分析表」在该页字符位 1267",
+      "n_operands": 4,
+      "observed_residuals_recomputed": {"copper_t": "+1", "zinc_t": "0", "silver_kg": "-1", "gold_kg": "+154", "period": "FY2024 期末库存 -> FY2025"},
+      "evaluation": "Δ = 期末库存 - (上一期期末库存 + 生产量 - 销售量)，按产品、按披露整数求值；本工位不签署 τ，故不执行该判定的凑平支",
+      "criteria": {"C1_granularity": "pass", "C2_explicit_and_within_cap": "fail (无已注册 τ；候选 τ=1 虽在帽内但被 C4 拒；τ=154 超帽被 C2 拒)", "C3_basis_not_premise_dependent": "fail (任何可容 τ 都无法解释 154 千克结构差)", "C4_observed_coverage": "fail (max|Δ| = 154 > 帽 1)", "C5_non_implementer_signature": "n/a (未签)"},
+      "signed_by": null,
+      "not_signed_reason": "insufficient_evidence：可容带 (0,1 单位] 与覆盖实测所需带 [154,∞) 交集为空；两方向都不可采 ⇒ fail-closed",
+      "recovery_rule": "取得存货桥闭合证据（在产品/在途/寄售/并购范围明细，OPEN-11 R6 条件2）后，在 hypotheses.json 的新版本上重评：(a) 若结构差被解释且恒等式按新口径重述，则按 A-6.3(2) 选基础并在 0<τ≤1 单位内签署；(b) 若须 τ>1 单位，先由 owner 修订 A-6.2（DEC-14，含校验器同步），本工位不代改；(c) 若结构差无法解释，则按 hypotheses.json L315 revert_rule 处理，不由本工位执行。"
+    },
+    {
+      "row_id": "R3",
+      "threshold_id": "H-CN-ZIJIN-ELIM-05",
+      "alias": "H5",
+      "threshold_basis": "arithmetic_identity",
+      "status": "SIGNED",
+      "tau": "1",
+      "tau_unit": "CNY_yuan",
+      "signed_unit_label": "1 人民币元",
+      "registered_tau_unchanged": "0（算术恒等式，允许 |差| ≤ 1 元）",
+      "measured_granularity": "1 人民币元",
+      "granularity_evidence": "CN-ZIJIN-2025.txt PAGE 326：页眉 L34952「人民币元」与 6 个操作数（L35011-L35017）同页；同页 L35003/L34996 抵销与合计为整数；PAGE 327 的 2024 年表（L35319-L35346）同构",
+      "n_operands": 6,
+      "observed_residuals_recomputed": {"FY2025": "0", "FY2024": "0"},
+      "evaluation": "Δ = (4 个分部总计) - 抵销 - 对外销售收入合计，整数元精确求和；判定 |Δ| ≤ τ",
+      "criteria": {"C1_granularity": "pass", "C2_explicit_and_within_cap": "pass (τ = 1 = g = U)", "C3_basis_not_premise_dependent": "pass", "C4_observed_coverage": "pass (max|Δ| = 0 ≤ 1)", "C5_non_implementer_signature": "pass"},
+      "signed_by": "accounting_reviewer (non-implementer)",
+      "not_signed_reason": null
+    },
+    {
+      "row_id": "R4",
+      "threshold_id": "H-US-MSFT-SEG-01",
+      "alias": "H6",
+      "threshold_basis": "arithmetic_identity",
+      "status": "SIGNED",
+      "tau": "1",
+      "tau_unit": "USD_million",
+      "signed_unit_label": "±1 USD million",
+      "registered_tau_unchanged": "0（分部加总恒等式，允许 ±1 USD million 舍入）；对 FY2027 分部增速本卡不设幅度阈值",
+      "measured_granularity": "1 USD million",
+      "granularity_evidence": "US-MSFT-2026.txt L820-L821「SEGMENT RESULTS OF OPERATIONS / (In millions, except percentages)」与分部收入 L829/L850/L871；L1359-L1360「INCOME STATEMENTS / (In millions, except per share amounts)」与 Total revenue L1378/L1379；文件内「In millions」共 63 处；值均为整数百万",
+      "n_operands": 4,
+      "observed_residuals_recomputed": {"FY2026": "0", "FY2025": "0"},
+      "evaluation": "Δ = PBP + IC + MPC - Total revenue，整数百万美元精确求和；判定 |Δ| ≤ τ",
+      "criteria": {"C1_granularity": "pass", "C2_explicit_and_within_cap": "pass (τ = 1 = g = U)", "C3_basis_not_premise_dependent": "pass (依据=表头 In millions 单位声明，非舍入模式)", "C4_observed_coverage": "pass (max|Δ| = 0 ≤ 1)", "C5_non_implementer_signature": "pass"},
+      "signed_by": "accounting_reviewer (non-implementer)",
+      "not_signed_reason": null
+    }
+  ],
+
+  "evaluation_semantics": {
+    "arithmetic": "全部在披露整数（或整数百万）上精确求和，不用浮点、不用近似",
+    "judgement": "signed 行：|Δ| ≤ τ 为通过；|Δ| > τ 为不通过并按各行 revert_rule 登记，不得据本文件自动触发任何动作",
+    "unit_binding": "τ 的单位恒等于该行来源披露粒度的单位（元 / USD million）；跨单位不得混用",
+    "r2": "未签署 τ ⇒ 按 oracle §②.0 C2 判 NOT_SIGNED，凑平支不执行"
+  },
+
+  "decision_preimage_schema": "decision-sha256/v1",
+  "decision_preimage_canonical": "{\"authorized_by\":\"I11A-OPEN-ACCT/a20260924-01/ruling.md L297 bytes[32795,33005)\",\"authorized_by_sha256\":\"f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2\",\"blocked_6b_status\":\"still_blocked\",\"carrier\":\"execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01\",\"does_not_claim_I11BAcceptance\":true,\"not_signed\":[{\"cap_max\":\"1 unit\",\"observed_abs_residuals\":\"copper +1 t, zinc 0 t, silver -1 kg, gold +154 kg\",\"reason\":\"insufficient_evidence\",\"recovery\":\"inventory-bridge evidence (OPEN-11 R6-2) + new additive version\",\"row\":\"R2\",\"status\":\"NOT_SIGNED\",\"threshold_id\":\"H-CN-ZIJIN-VOL-03\"}],\"q1_model\":\"insufficient_evidence (NE-2 upheld): no rounding-policy sentence in either source; neither model A nor B adopted; no model-derived floor applied\",\"q2_rule_conflict\":\"A-6.2 cap U=g governs; model-A floor L_A=n*g/2 conditional on unestablished premise and may not enlarge tau beyond g\",\"q3_r2\":\"NOT_SIGNED insufficient_evidence: admissible 0<tau<=1 unit cannot cover observed max abs residual 154 kg; tau>=154 exceeds cap and lacks A-6.3 basis\",\"releases_nothing\":true,\"role\":\"accounting_reviewer\",\"schema\":\"decision-sha256/v1\",\"scope\":\"BLOCKED-6b\",\"signed\":[{\"evaluation\":\"abs(sum(4 external segment revenues)-consolidated operating revenue) <= tau, integer yuan\",\"granularity\":\"1 CNY yuan\",\"observed_max_abs_residual\":\"0\",\"observed_periods\":\"FY2025,FY2024\",\"row\":\"R1\",\"tau\":\"1\",\"threshold_id\":\"H-CN-ZIJIN-SEG-01\",\"unit\":\"CNY_yuan\"},{\"evaluation\":\"abs(sum(4 segment totals)-elimination-external revenue total) <= tau, integer yuan\",\"granularity\":\"1 CNY yuan\",\"observed_max_abs_residual\":\"0\",\"observed_periods\":\"FY2025,FY2024\",\"row\":\"R3\",\"tau\":\"1\",\"threshold_id\":\"H-CN-ZIJIN-ELIM-05\",\"unit\":\"CNY_yuan\"},{\"evaluation\":\"abs(PBP+IC+MPC-Total revenue) <= tau, integer USD millions\",\"granularity\":\"1 USD million\",\"observed_max_abs_residual\":\"0\",\"observed_periods\":\"FY2026,FY2025\",\"row\":\"R4\",\"tau\":\"1\",\"threshold_id\":\"H-US-MSFT-SEG-01\",\"unit\":\"USD_million\"}],\"signed_count\":3}",
+  "decision_preimage_composition": "上述 decision_preimage_canonical 的 UTF-8 字节（json.dumps(pre, sort_keys=True, ensure_ascii=False, separators=(',',':'))），1979 字节；pre 对象 = {schema, role, carrier, scope, authorized_by, authorized_by_sha256, q1_model, q2_rule_conflict, q3_r2, signed[3], not_signed[1], blocked_6b_status, signed_count, releases_nothing, does_not_claim_I11BAcceptance}",
+  "decision_sha256": "b9c6bab547cb97184ad9c058ca10490ea84e5b4b538f85356525b100377989da",
+  "decision_sha256_verification": {
+    "before_write": "b9c6bab547cb97184ad9c058ca10490ea84e5b4b538f85356525b100377989da",
+    "after_write": "b9c6bab547cb97184ad9c058ca10490ea84e5b4b538f85356525b100377989da",
+    "after_write_rechecked_after_field_fill": "b9c6bab547cb97184ad9c058ca10490ea84e5b4b538f85356525b100377989da",
+    "method": "sha256( decision_preimage_canonical.encode('utf-8') )"
+  },
+
+  "signed_count": 3,
+  "not_signed_count": 1,
+  "thresholds_count": 4,
+  "blocked_6b_status": "still_blocked",
+  "blocked_6b_status_reason": "BLOCKED-6b 的完成条件是 4 条逐条复核后签署；R1/R3/R4 已签，R2 判 NOT_SIGNED(insufficient_evidence) ⇒ 少签 1 条 ⇒ 未达成",
+  "open11_prerequisite": {"reference": "execution_runs/I11A-OPEN11-IND/a20260924-01/ruling.md L95/R2/R3, sha256 c02e255f67f76be9c0a38569454b64cd93f8469d9fc5244e6da2ce7cfc3bb95d (38930 B)", "cross_period_availability": "成立（前裁，已满足）", "used_as": "只用其结论与角色分工；其列示的残差数值由本工位自算复核，不作为本裁定的证据引用"},
+
+  "releases_nothing": true,
+  "does_not_claim_I11BAcceptance": true,
+  "does_not_unblock_open6": true,
+  "does_not_unblock_blocked_6c": true,
+  "does_not_release_any_parameter": true,
+  "does_not_change_threshold_basis": true,
+  "does_not_change_threshold_review_status": true,
+  "produces_no_accept": true,
+  "does_not_countersign_industry_reviewer": true,
+  "low_base_high_still_null": true
+}

@@ -1,0 +1,455 @@
+{
+  "schema": "i12e_verification/1",
+  "card": "I-12-E",
+  "attempt": "execution_runs/I-12-E/a20260926-01",
+  "role": "implementer_i12e",
+  "verified_at": "2026-09-26T21:3x+01:00",
+  "exit_code_legend": {
+    "0": "ALL_INVARIANTS_OK（命令正常结束且业务判定通过）",
+    "1": "harness 失败（缺件 / JSON 解析失败）",
+    "2": "无裁决（本卡未使用）",
+    "3": "具名不变量 E1..E10 违例（负例被正确拒绝）",
+    "note": "本卡自描述码表；跨批聚合前须读本表"
+  },
+  "premise_check": {
+    "card_premise_verbatim": "冻结阈值已在结果前批准；全量结果可见。",
+    "thresholds_approved_before_results": false,
+    "all_results_visible": false,
+    "met": "0/2",
+    "evidence": [
+      "I-12-A professional_approval.json：statistical/industry reviewer 双双 unsigned；6 项关键统计选项/阈值全 PENDING（派单记「双签在飞」）",
+      "I-12-D metrics_by_stratum scorable_samples=0、paired_comparison n_pairs=0；I-12-C forecast_values_frozen=0、unblind_receipt=not_issued；test_results_unsealed=false"
+    ],
+    "consequence": "fail-closed：6 个预注册比较全部记 inconclusive（默认登记，非专业判定）；不作 supported/unsupported；整卡判 blocked（合格形态）"
+  },
+  "upstream_consistency": {
+    "method": "_verify.py E8 对 oracle §2 的 21 件上游文件现场重算 sha256 并与冻结值比对（每次绿臂/红臂运行均执行）",
+    "result": "21/21 一致",
+    "items": [
+      {
+        "id": "U1",
+        "path": "execution_v2/card_I-12-E.md",
+        "bytes": 1469,
+        "frozen": "3c7d6da514dc9897bd7575a2e8e883bd9f883be89d1bdda6075d23a7f1ed497b",
+        "recomputed": "3c7d6da514dc9897bd7575a2e8e883bd9f883be89d1bdda6075d23a7f1ed497b",
+        "match": true
+      },
+      {
+        "id": "U2",
+        "path": "execution_v2/card_I-12-D.md",
+        "bytes": 1776,
+        "frozen": "c6595cef4b3523c4fd4a879cd8f4106675130463f5573d09efb812fc6dbd4f69",
+        "recomputed": "c6595cef4b3523c4fd4a879cd8f4106675130463f5573d09efb812fc6dbd4f69",
+        "match": true
+      },
+      {
+        "id": "U3",
+        "path": "execution_v2/research_cards.json",
+        "bytes": 40058,
+        "frozen": "4a22e26608d421799e2b8adde0d0424fa48a634509a0559c51d279e06d918263",
+        "recomputed": "4a22e26608d421799e2b8adde0d0424fa48a634509a0559c51d279e06d918263",
+        "match": true
+      },
+      {
+        "id": "U4",
+        "path": "execution_v2/common_research_cards.md",
+        "bytes": 14736,
+        "frozen": "2c6fad2cfba4e096b0f6ed5436158666fdd51265fbc87ad65227f943f27f484b",
+        "recomputed": "2c6fad2cfba4e096b0f6ed5436158666fdd51265fbc87ad65227f943f27f484b",
+        "match": true
+      },
+      {
+        "id": "U5",
+        "path": "execution_v2/START_HERE.md",
+        "bytes": 20436,
+        "frozen": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+        "recomputed": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318",
+        "match": true
+      },
+      {
+        "id": "U6",
+        "path": "execution_v2/review_and_handoff.md",
+        "bytes": 4005,
+        "frozen": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9",
+        "recomputed": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9",
+        "match": true
+      },
+      {
+        "id": "U7",
+        "path": "OWNER_DECISIONS.md",
+        "bytes": 109029,
+        "frozen": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d",
+        "recomputed": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d",
+        "match": true
+      },
+      {
+        "id": "U8",
+        "path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json",
+        "bytes": 22317,
+        "frozen": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+        "recomputed": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+        "match": true
+      },
+      {
+        "id": "U9",
+        "path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json",
+        "bytes": 5334,
+        "frozen": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+        "recomputed": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+        "match": true,
+        "note": "双签 unsigned ⇒ 前提 1 不满足"
+      },
+      {
+        "id": "U10",
+        "path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json",
+        "bytes": 5618,
+        "frozen": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178",
+        "recomputed": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178",
+        "match": true
+      },
+      {
+        "id": "U11",
+        "path": "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/sample_manifest.jsonl",
+        "bytes": 11085,
+        "frozen": "679a7a496e87ed953311d8d8139b47576ab84ddf7f0f0a4238991695d4ef0702",
+        "recomputed": "679a7a496e87ed953311d8d8139b47576ab84ddf7f0f0a4238991695d4ef0702",
+        "match": true
+      },
+      {
+        "id": "U12",
+        "path": "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/exclusions.jsonl",
+        "bytes": 3060,
+        "frozen": "a4940267efc9683793baef0f52668e93b657c8c6ccd756b6349224e5275d3e93",
+        "recomputed": "a4940267efc9683793baef0f52668e93b657c8c6ccd756b6349224e5275d3e93",
+        "match": true
+      },
+      {
+        "id": "U13",
+        "path": "execution_runs/I-12-C/a20260926-01/evidence/I-12-C/forecast_manifest.json",
+        "bytes": 5467,
+        "frozen": "03cdb01c71b232b8797e2eedf1503d3d8b0b5407a6c93cf7cb9e0384da26922a",
+        "recomputed": "03cdb01c71b232b8797e2eedf1503d3d8b0b5407a6c93cf7cb9e0384da26922a",
+        "match": true
+      },
+      {
+        "id": "U14",
+        "path": "execution_runs/I-12-C/a20260926-01/evidence/I-12-C/unblind_receipt.json",
+        "bytes": 1968,
+        "frozen": "99ed0139434a2777f4ede1454782fb83c60f315c3d83e00e1c8b175324e991f1",
+        "recomputed": "99ed0139434a2777f4ede1454782fb83c60f315c3d83e00e1c8b175324e991f1",
+        "match": true
+      },
+      {
+        "id": "U15",
+        "path": "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metric_oracle_result.json",
+        "bytes": 8415,
+        "frozen": "0d64d62e0f60df0a253bea58b9cb0841b0377198631cccdc7a0109e7366e83ca",
+        "recomputed": "0d64d62e0f60df0a253bea58b9cb0841b0377198631cccdc7a0109e7366e83ca",
+        "match": true
+      },
+      {
+        "id": "U16",
+        "path": "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/metrics_by_stratum.json",
+        "bytes": 12085,
+        "frozen": "ad14f515bcb4f796bf063957a5a005f26b08babea312b94a6367de98b3392e2e",
+        "recomputed": "ad14f515bcb4f796bf063957a5a005f26b08babea312b94a6367de98b3392e2e",
+        "match": true
+      },
+      {
+        "id": "U17",
+        "path": "execution_runs/I-12-D/a20260926-01/evidence/I-12-D/paired_comparison.json",
+        "bytes": 1961,
+        "frozen": "5709203bac2753c37fe6c56853f4f6d875d5149a1fd56edc993f275ce6e2e0d5",
+        "recomputed": "5709203bac2753c37fe6c56853f4f6d875d5149a1fd56edc993f275ce6e2e0d5",
+        "match": true
+      },
+      {
+        "id": "U18",
+        "path": "execution_runs/I10A-DISCLOSURE-ADAPT-SIGN/a20260925-01/disclosure_adaptation_v2.json",
+        "bytes": 66887,
+        "frozen": "373c162197203da31d68b4273adb27d5c2ba68936bcdf4100e669c23fea9d522",
+        "recomputed": "373c162197203da31d68b4273adb27d5c2ba68936bcdf4100e669c23fea9d522",
+        "match": true,
+        "note": "4 signed + 2 STOP + 3 段无 case"
+      },
+      {
+        "id": "U19",
+        "path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md",
+        "bytes": 26132,
+        "frozen": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb",
+        "recomputed": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb",
+        "match": true
+      },
+      {
+        "id": "U20",
+        "path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json（封盘）",
+        "bytes": 51697,
+        "frozen": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+        "recomputed": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+        "match": true
+      },
+      {
+        "id": "U21",
+        "path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json（store）",
+        "bytes": 61231,
+        "frozen": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+        "recomputed": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+        "match": true
+      }
+    ]
+  },
+  "green_arms": [
+    {
+      "arm": "GREEN_FIRST",
+      "rc": 3,
+      "expected": 0,
+      "pass": false,
+      "detail": "FAIL E5: limitations.md missing token '生命周期'（覆盖表使用了英文 lifecycle，缺中文标签）",
+      "when": "首版证据"
+    },
+    {
+      "arm": "GREEN_AFTER_FIX",
+      "rc": 0,
+      "expected": 0,
+      "pass": true,
+      "detail": "CHECK E1..E9 全 OK、E10 SKIP",
+      "when": "按事实补中文标签后复跑"
+    },
+    {
+      "arm": "GREEN_FINAL",
+      "rc": 0,
+      "expected": 0,
+      "pass": true,
+      "detail": "verification/handoff 定稿后执行；原始输出 final_green_output.txt",
+      "when": "定稿后"
+    }
+  ],
+  "green_iteration_note": "首版 limitations.md 未含中文『生命周期』标签 ⇒ E5 判据（覆盖缺口须含行业与生命周期）未满足，rc=3。修正＝在覆盖表补中文标签（判据与期望未放宽、未删判据），复跑 rc=0。此为发现并修正自身证据缺陷。",
+  "red_arms": [
+    {
+      "arm": "Q1",
+      "mutation": "阈值未签却把比较判为 supported",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL E1: comparison CMP-MARKET-A verdict='supported' must be inconclusive (thresholds unsigned)",
+      "also_failed": [
+        "E1 threshold_state must be unsigned",
+        "E1 comparison_counts"
+      ],
+      "output": "_mut/Q1/verifier_output.txt"
+    },
+    {
+      "arm": "Q2",
+      "mutation": "一栏 PASS 盖另一栏（no_cross_column_pass_override=false + accuracy.state=pass）",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL E3: no_cross_column_pass_override must be true",
+      "also_failed": [
+        "E3 accuracy column state must be unproven"
+      ],
+      "output": "_mut/Q2/verifier_output.txt"
+    },
+    {
+      "arm": "Q3",
+      "mutation": "宣称准确率提升（accuracy_improvement_claimed=true + STOP_CLAIM triggered）",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL E1: STOP_CLAIM must be registered as not triggered",
+      "also_failed": [
+        "E3 accuracy_improvement_claimed must be false"
+      ],
+      "output": "_mut/Q3/verifier_output.txt"
+    },
+    {
+      "arm": "Q4",
+      "mutation": "evidence 写入 OPEN-2 红线字面量 124248.63",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL E7: OPEN-2 redline literal '124248.63' consumed in evidence\\I-12-E\\error_taxonomy.json",
+      "output": "_mut/Q4/verifier_output.txt"
+    },
+    {
+      "arm": "Q5",
+      "mutation": "删掉 random 误差类并清空后续研究问题",
+      "expected_rc": 3,
+      "actual_rc": 3,
+      "pass": true,
+      "first_fail": "FAIL E4: taxonomy missing category random",
+      "also_failed": [
+        "E4 need >=3 follow-up questions, got 0"
+      ],
+      "output": "_mut/Q5/verifier_output.txt"
+    }
+  ],
+  "red_arms_summary": {
+    "count": 5,
+    "pass": 5,
+    "min_required": 3,
+    "requirement_met": true
+  },
+  "originals_unchanged": {
+    "method": "变异前后对原件（oracle.md + 4 件证据 + 3 个脚本）复哈希比对；变异只写入 _mut/<arm>/ 副本",
+    "pre_post_sha_match": true,
+    "files": [
+      {
+        "path": "oracle.md",
+        "sha256": "f03e5223613907d5e85e22eb6f11eeb3bb9a9d74dbd06a8d61fe7f84b848a890"
+      },
+      {
+        "path": "_build_evidence.py",
+        "sha256": "5ce62e6c495c4783699035bd1b9a2b15ed94f16c49bbecb44b6fe46501238349"
+      },
+      {
+        "path": "_verify.py",
+        "sha256": "c2fbd1c1bb83613d42aed171528fdaac3f167541cb7f164abf8bb847d113ac75"
+      },
+      {
+        "path": "_run_mutations.py",
+        "sha256": "ceb93d51ddcc01ce4169ba245cd2f7adbd1f8ef69747aebd38eddfba043650c0"
+      },
+      {
+        "path": "evidence/I-12-E/accuracy_qualification.json",
+        "sha256": "52c1d0abd3e13e750d1db96b9f4f0c405da2769e7856435f765ecbfe2fe95b64"
+      },
+      {
+        "path": "evidence/I-12-E/limitations.md",
+        "sha256": "154514b6b4e32e157674fb6d2f8d21d7d41e489b9333e90e0a70e4123ccb0709"
+      },
+      {
+        "path": "evidence/I-12-E/error_taxonomy.json",
+        "sha256": "a1323bcf1592240b2e20f1e32315020610d4db3d3a24d572e441901b92302fef"
+      },
+      {
+        "path": "evidence/I-12-E/independent_statistical_review.md",
+        "sha256": "a290ea6e41cefc04df8cf995af6312bf1ca1bf6f7e3b1937d75ec7ec46f3d272"
+      }
+    ]
+  },
+  "invariants": [
+    {
+      "id": "E1",
+      "title": "前提 0/2 + 6 比较全 inconclusive + 阈值 unsigned + 保留规则 + STOP 登记",
+      "green": "PASS"
+    },
+    {
+      "id": "E2",
+      "title": "六键范围限定 + 未覆盖分层全 unproven + 不外推",
+      "green": "PASS (7 项)"
+    },
+    {
+      "id": "E3",
+      "title": "三栏合并且禁一栏 PASS 盖另一栏，accuracy=unproven",
+      "green": "PASS"
+    },
+    {
+      "id": "E4",
+      "title": "六类误差来源 + ≥3 后续研究问题 + 本轮不修预测",
+      "green": "PASS (6 类/13 项/6 问)"
+    },
+    {
+      "id": "E5",
+      "title": "limitations 覆盖缺口/负结果/不确定性显式保留且无准确性主张",
+      "green": "PASS"
+    },
+    {
+      "id": "E6",
+      "title": "独立统计复审件 = 未指派/未签署/非签署状态登记",
+      "green": "PASS"
+    },
+    {
+      "id": "E7",
+      "title": "OPEN-2 红线不消费 + 不放行参数 + 不自签",
+      "green": "PASS"
+    },
+    {
+      "id": "E8",
+      "title": "上游 21 件 sha 一致性",
+      "green": "PASS (21/21)"
+    },
+    {
+      "id": "E9",
+      "title": "封盘/store 零字节",
+      "green": "PASS"
+    },
+    {
+      "id": "E10",
+      "title": "handoff 形态（review_pending/gate0/releases_nothing/git_diff=0/4 件证据）",
+      "green": "PASS"
+    }
+  ],
+  "counts_and_findings": {
+    "premise_met": "0/2",
+    "pre_registered_comparisons": 6,
+    "supported": 0,
+    "unsupported": 0,
+    "inconclusive": 6,
+    "uncovered_strata_unproven": 7,
+    "negative_skill_observations": 0,
+    "failed_strata_preserved": true,
+    "three_columns": {
+      "formula": "pass_scoped",
+      "disclosure": "partial",
+      "accuracy": "unproven"
+    },
+    "no_cross_column_pass_override": true,
+    "accuracy_improvement_claimed": false,
+    "stop_CLAIM_triggered": false,
+    "stop_RELEASE_WORDING_triggered": false,
+    "error_categories": 6,
+    "follow_up_questions": 6,
+    "forecast_fixed_this_round": false,
+    "card_state": "blocked（前提 0/2，fail-closed 合格形态）"
+  },
+  "discipline_declarations": {
+    "gate0_passed": true,
+    "oracle_frozen_before_evidence": true,
+    "params_released": false,
+    "implementer_signed": false,
+    "releases_nothing": true,
+    "open2_ban_observed": true,
+    "sealed_hypotheses_untouched": true,
+    "store_untouched": true,
+    "writes_outside_planning": 0,
+    "git_writes": 0,
+    "git_commands_run": 0,
+    "git_status_run": false,
+    "network_used": false,
+    "test_results_unsealed": false,
+    "accuracy_results_read": false,
+    "produces_ACCEPT": false,
+    "reads_performed": [
+      "card_I-12-E.md",
+      "card_I-12-D.md",
+      "research_cards.json（I-12-E 段 + 指标面）",
+      "common_research_cards.md",
+      "START_HERE.md",
+      "review_and_handoff.md",
+      "OWNER_DECISIONS §三十四/§三十七",
+      "I-12-A 三件（阈值签署状态）",
+      "I-12-B 证据",
+      "I-12-C 证据",
+      "I-12-D 三件证据",
+      "disclosure_adaptation_v2.json",
+      "I-07-E calibration_validation_summary"
+    ],
+    "reads_forbidden_and_not_performed": [
+      "任何测试集/回测/准确性结果",
+      "目标期 FY2027 实际值",
+      "I-13 买方验收面"
+    ],
+    "five_plan_files_written_by_this_card": false,
+    "five_plan_files_note": "本卡写入面枚举推导：本 attempt 未写 task_plan.md / findings.md / progress.md / audit_report.md / implementation_plan.md；复核时 progress.md、task_plan.md 的 mtime 变动发生在本工位之外（父层记账/规划钩子并发写入），非本卡产物，此处如实登记以免误读。"
+  },
+  "conclusion": {
+    "green_pass": true,
+    "red_pass": true,
+    "upstream_consistent": true,
+    "card_action_state": "动作 1 完成（6 比较全 inconclusive + 负/失败保留规则）；动作 2 完成（六键限定 + 7 未覆盖层 unproven）；动作 3 完成（三栏合并 + 禁覆盖 + 校验器强制）；动作 4 完成（六类来源 + 6 个后续问题 + 不修预测）",
+    "card_verdict": "前提 0/2 不满足（阈值未签 + 结果不可见）⇒ 不作 supported/unsupported，全部 inconclusive 默认登记 ⇒ fail-closed 判 blocked（合格形态）；STOP_CLAIM 与 STOP_RELEASE_WORDING 均未触发（无准确性/普遍有效主张）",
+    "reviewer_status": "pending（统计与行业 reviewer 另派；实现件不自签、不产生 ACCEPT）"
+  }
+}

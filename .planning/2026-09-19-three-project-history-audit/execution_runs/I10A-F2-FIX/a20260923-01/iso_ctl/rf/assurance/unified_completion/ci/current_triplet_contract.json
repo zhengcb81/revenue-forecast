@@ -1,0 +1,57 @@
+{
+  "frozen_at": "2026-08-14T00:00:00+00:00",
+  "required_checks": {
+    "affected_repo_fanout": {
+      "description": "任一仓变更触发受影响三仓验证（跨仓 fan-out 由 CA-201 调度/attestation 实现；本契约只定义 required checks）。",
+      "machine_rules": [
+        "每个 workflow 必须存在跨仓触发或 fan-out 映射（repository_dispatch/workflow_run 指向 sibling 或等价 manifest 驱动映射）；仅 push/pull_request 自身仓为 gap"
+      ],
+      "successor": "CA-201"
+    },
+    "collected_skip_delta_controlled": {
+      "description": "collected 测试数与 skip 数相对冻结基线必须受控：无静默收集数下降、无新增无条件 skip、无 || true 吞错。",
+      "machine_rules": [
+        "workflow 必须记录 collected/skipped 并与冻结基线比较（delta 有界且显式）",
+        "禁止无条件 || true 吞掉必选测试步骤的退出码"
+      ],
+      "successor": "CA-201"
+    },
+    "exact_triplet_binding": {
+      "description": "每个 gating workflow 必须以机器可验证的方式绑定三仓精确 HEAD（manifest 三元组与冻结 triplet 相等；禁止无 pin 的浮动 clone），不再验证陈旧/浮动组合。",
+      "machine_rules": [
+        "revenue: workflow 必须引用 manifest 驱动的 sibling checkout；manifest 的 current_triplet 必须与冻结 triplet 完全相等",
+        "filing: 不得出现无 pinned-sha 的 git clone（浮动组合）；sibling checkout 必须来自带 sha 的 manifest",
+        "wiki: 必须 checkout 两个 sibling 的精确 HEAD（manifest 或显式 sha）"
+      ],
+      "successor": "CA-201"
+    }
+  },
+  "schema_version": 1,
+  "successors": {
+    "affected_repo_fanout": "CA-201",
+    "collected_skip_delta_controlled": "CA-201",
+    "exact_triplet_binding": "CA-201"
+  },
+  "triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "19cb45aed2807374abf3de783b709f403bf51a27",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "unit": "ZR-105",
+  "workflow_files": {
+    "filing": {
+      "last_rebind_note": "2026-08-31: quoted name values containing 'FC-1101: '/'FC-1202: ' (YAML scanner fix, CI startup failure)",
+      "rel_path": ".github/workflows/quality.yml",
+      "sha256": "83d84e1ddf2aac39e4bc8617c8a0b444810c2c3483b39ecf6625925269ed725d"
+    },
+    "revenue": {
+      "last_rebind_note": "2026-09-08 GP-006: real-roots job is now blocking (removed continue-on-error) and mirrors the local sibling layout with junctions; registry hashes rebased to LF bytes",
+      "rel_path": ".github/workflows/quality.yml",
+      "sha256": "98a92f5252c7596c2ad3ad7a21af2e5ac33d6f6f28d67c327e25a225ced53e1b"
+    },
+    "wiki": {
+      "rel_path": ".github/workflows/ci.yml",
+      "sha256": "8a4cff64dd3003f47f3884c626bf4ba550e4508e09a8cea004a8c2e4927c1594"
+    }
+  }
+}

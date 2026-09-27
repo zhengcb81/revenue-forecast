@@ -1,0 +1,166 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN3-E1-ACCT-RULING",
+  "attempt": "a20260924-01",
+  "attempt_id": "a20260924-01",
+  "role": "accounting_disclosure_reviewer",
+  "authorized_by": "OWNER_DECISIONS.md §二十六（2026-09-24 深夜）第 3 行：事项「E1 等级现交会计面裁」→ owner 首答「1，授权，2，要」→ 澄清答「两项都要（PEND-5b 装 + E1 交会计面）」→ owner 原话「要」；执行映射「派 1e143a7e = OPEN3-E1-ACCT-RULING。只定级、不重取（禁联网；若必须看原站字节 ⇒ 判 BLOCKED-NEEDS-ORIGIN-BYTES 而不自己去取）；fail-closed——不得为推进链抬高等级；releases_nothing=true」。上游链：§二十四 #3「授权 filing-fetch 路径」（L498）+ 执行纪律 L504「取证（选项 3）的证据等级由会计面定，不由取证方自定」→ 取证工位 OPEN3-E1-ACQUISITION/a20260924-01 已交付 → 本工位定级。",
+  "object_under_review": {
+    "path": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/",
+    "access": "read_only",
+    "files_examined": 7,
+    "files_modified": 0
+  },
+  "rule_source": {
+    "e1_definition": "I11A-OPEN-ACCT/a20260924-01/ruling.md L66/L153（申报原文本地归档 + URL + 取回 UTC + 文件 sha256 + 逐字引文 + 至少一条独立复核路径）",
+    "prior_merge_judgement": "I11A-OPEN-MERGE/a20260924-01/merge_ruling.md L313「5 要素缺 4 …… 最好情况也只到会计面的 E2」（对 r.jina.ai 单路径、无快照件）",
+    "independence_criterion": "I-11-A decision.md L19/L27 + oracle.md L56/L62/L76（P1/P2 = 代码不共享的第二条路 + 结论不矛盾）"
+  },
+
+  "e1_elements": {
+    "element_1_local_archive": {
+      "met": false,
+      "reason": "存在性成立、原文性不成立：4 份字节均为工位对 harness web_fetch 返回文本（第三方代理渲染结果）的 UTF-8 转写，非 sec.gov origin 响应字节；SEC 直取 0 成功（A1/A3 均 403），盘上无 origin 锚点（无响应字节、无出具方回执、无 origin digest）；且转写层已被实测证明可错（A21 修正 A4 封面页 2 处），Exhibit 主文件（27,586 B）未做过对再取的全量核对；sha256 只证明写后完整性，对 origin 忠实度零证明力。要件原文是「申报**原文**本地归档」，复合要件中原文性这一半未建立 ⇒ fail-closed 判 ❌。",
+      "recovery": "R1（首选）origin 响应字节以文件形式落进本计划目录（须 owner 先解落盘点冲突：filing-fetch 下载点 = company-wiki 产品仓 vs §二十四 L498「只落本计划目录」；且 harness web_fetch 只回文本、不产响应字节，故必须用下载型机制）；R2（等价）owner 明文登记「代理渲染 + 双路径一致 = 申报原文本地归档」（ACCT L190 对称）。"
+    },
+    "element_2_sha256": {
+      "met": true,
+      "reason": "4/4 语料文件 sha256 与字节数经本工位实测 Get-FileHash 复算，与取证方 handoff/provenance 自报逐一相同（096c7d9d… / 5927de03… / 20392f0e… / 56b0460b…）。"
+    },
+    "element_3_retrieved_utc_to_second": {
+      "met": true,
+      "reason": "4 个语料文件各有到秒的读秒取回窗口（A4 21:20:45–21:20:56Z、A5 21:21:03–21:21:11Z、A19 21:26:35–21:26:42Z、A20 21:26:49–21:26:54Z，2026-09-24），21 次尝试逐条带窗口，且显式声明不伪造单点时刻；窗口式是更保守的诚实形式，ACCT L66 未要求服务端时间戳。"
+    },
+    "element_4_verbatim_quotes": {
+      "met": true,
+      "reason": "8 条引文经本工位实测：path A 字节区逐字节精确 8/8、行号精确 8/8（L65/67/69、L23/41/89/119/5）；path B 去空白归一化后 8/8 逐字命中。附带登记一处元数据命名缺陷：provenance 的 whitespace_insensitive_byte_span 实为 path B 原始（含空白）字节区（8/8 在该解释下精确），值可用、标签不准，登记不回改。"
+    },
+    "element_5_independent_verification_path": {
+      "met": true,
+      "reason": "「两条不同第三方」算：按本计划自己的独立判据（P1/P2 = 代码不共享的第二条路 + 结论不矛盾），path A r.jina.ai 与 path B W3C www.w3.org/services/html2txt 属不同运营方、不同引擎、无共享实现，上游同为同一 sec.gov URL；实测不矛盾——全量 token 双向比对：Exhibit 唯一数字 463 vs 460，差集仅图片 URL/编号片段；8-K 差集仅为两渲染器头部与 URL 词；8/8 引文双路径命中。限定：独立层 = 实现/运营方层，origin 层无样本（该缺口计入 element_1，不重复计罚）。不采纳「至少一条非代理路径」这一更严口径（须 owner 登记；且即使采纳，本件降为 3/5，等级仍为 BLOCKED-PARTIAL，方向不变）。"
+    },
+    "count_met": 4,
+    "count_total": 5,
+    "missing_layer": "origin 响应字节层（申报原文的原文性/保真锚点），落在 element_1"
+  },
+
+  "level_ruled": "BLOCKED-PARTIAL",
+  "level_ruled_rationale": "证据不足 ⇒ 按 fail-closed 只能在 E2 / BLOCKED-PARTIAL 中择一；E2 的定义（「未落本地归档」）与 4 个已落盘、sha 可复算的文件事实冲突，会错报证据状态 ⇒ 取 BLOCKED-PARTIAL：partial = ②③④⑤ 四要素已实测成立（不抹掉取证进度），blocked = E1 未达成、缺口须 origin 字节补齐。缺的一层 = origin 响应字节层（element_1）。未取 E1-COMPLETE（① ❌ 且禁止为推进链抬高等级）；未取 E1-PARTIAL（非 ACCT 分级表内值、名含 E1 有下游误读风险、缺层恰为 owner 备好的 BLOCKED-NEEDS-ORIGIN-BYTES 情形）。",
+  "level_blocked_item": {
+    "name": "BLOCKED-NEEDS-ORIGIN-BYTES",
+    "applies_to": "element_1 升 ✅ 所需的 origin 响应字节",
+    "clarification": "该名目是 owner 为「必须看原站字节才能定级」准备的退出状态；本工位不需要看 origin 字节即可按 fail-closed 定级，故照常完成定级、不退出为 BLOCKED，并把 origin 字节登记为 element_1 的补齐条件（我判该条件、不自己去取）。"
+  },
+  "self_downgrade_adoption": {
+    "question": "取证方自陈「若把『原文』严格定义为 origin 字节、或要求至少一条非代理路径 ⇒ 应降 E2/BLOCKED-PARTIAL」——采不采？",
+    "answer": "部分采纳",
+    "adopted": [
+      "方向：本件不是 E1-COMPLETE（同判）",
+      "触发条件一（原文 = 需 origin 字节/原文性锚点）：采纳为 element_1 的判据",
+      "落点之一 BLOCKED-PARTIAL：采纳（即本卡定级）"
+    ],
+    "rejected": [
+      "落点之一 E2：不采 —— 与「未落本地归档」定义事实冲突，错报证据状态并抹掉「可本地复核」事实",
+      "触发条件二（独立 = 至少一条非代理路径）：不采 —— 不在 ACCT L66/L153 文本内，与本计划 P1/P2 判据冲突，采纳等于新增第 6 要件（须 owner 登记）；且不影响结论方向",
+      "自评标签 E1-PARTIAL：不作为等级采纳（形态描述可引用）",
+      "自检表 ① 行「✅（带路径限定 ⚠）」：改判 ❌ —— fail-closed 不接受「判定 ✅ + 脚注削弱」"
+    ],
+    "one_line": "采其方向与「缺 origin 层」的实质，不采其 E2 / E1-PARTIAL 标签，也不采其对 element_5 的自我降级。"
+  },
+
+  "open3_evidence_effect": {
+    "status": "MAINTAINED_BLOCKED",
+    "loosened": false,
+    "reason": "MERGE §2.2 L162 解锁条件 1「E1 归档（核心缺口）」未满足 ⇒ OPEN-3 的 RULED_WITH_BLOCKED_VALUE 中 BLOCKED 部分原样保留。",
+    "progress_recorded_not_unlocking": "合并裁当时判「缺 4」（MERGE L313）；现为「缺 1」——本地归档存在性、sha256、取回 UTC 三项已补齐，element_5 已满足；属证据进度，不产生解锁效力。",
+    "conditions_to_loosen": [
+      "C1 origin 响应字节落进本计划目录（须 owner 解决 filing-fetch 落盘点 vs §二十四 L498 写入边界的冲突；必须用下载型机制，web_fetch 不产响应字节）",
+      "C2 或 owner 明文登记 E1 定义放宽（ACCT L190 对称，须追加登记）",
+      "C3 可选非充分：至少一条非代理直取样本（只补路径层，不补 origin 字节层）",
+      "C4 之后：ACCT 出 OPEN-3-ACCT-R2 认定等级 → IND 出 ruling_r2.md 标 supersedes → 命题/参数换版（MERGE L165）",
+      "C5 反向 fail-closed：若 origin 落盘后与现有语料不一致 ⇒ 4 文件降 E3、8 条引文作废"
+    ],
+    "not_released_by_this_card": [
+      "OPEN-3 状态本身",
+      "ACCT BLOCKED-3a（FY2027 分部究竟为何）、BLOCKED-3b（合规取文路径）",
+      "IND BLOCKED-4（8-K 进本地可核来源）、BLOCKED-5（参数放行/口径冻结）",
+      "MSFT_PBP_REVENUE_FY2027 / MSFT_IC_REVENUE_FY2027 / MSFT_MPC_REVENUE_FY2027 / MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027（一律维持未放行）",
+      "新两分部参数（其取数仍只存在于外部/未达 E1）",
+      "H-US-MSFT-SEG-01 的 state（维持 pending_professional_decision，不升 approved_frozen）",
+      "I-07-E 微软分部口径冻结、I-11-B 开工（7 条一条未动，见 ruling.md §5.4）",
+      "MERGE BLOCKED-UNADJ-2（临时建模假设适用年度）",
+      "任何 status / state / decision_sha256 / 阈值审定状态"
+    ],
+    "expected_answer_for_parent": "OPEN-3 是否因此松动：否"
+  },
+
+  "if_e1_reached_remaining_preconditions": {
+    "triggered": false,
+    "note": "因 element_1 ❌ 未触发；列出仅为给后续工位逐条核对表，本卡对任何一条都不授予满足。",
+    "four_requirements_acct_L226_for_msft_thresholds": {
+      "recomputable_observable": "满足（hypotheses.json L647/L755/L860）",
+      "verifiable_basis": "部分（arithmetic_identity 可用但容差对照表 = ACCT BLOCKED-6b 未出；disclosure_definition 可用；professional_judgement_required L862 仍 not_reviewed）",
+      "non_implementer_signing_decision_sha256": "不满足",
+      "additive_versioning": "不满足",
+      "verdict": "1/4 明确满足 ⇒ 阈值审定不成立（ACCT L226 缺一即 not_reviewed；字段落地仍属 BLOCKED-6c）"
+    },
+    "merge_7_unlock_conditions": {
+      "1_approved_frozen_proposition": "❌",
+      "2_open2_basis_or_alternative_registered": "❌",
+      "3_open3_E1_then_acct_r2_then_ind_r2": "❌（本裁定结果 = 未过）",
+      "4_open5_owner_path": "❌",
+      "5_open6_threshold_field_and_four_requirements": "❌",
+      "6_open11_mining_inventory": "❌",
+      "7_card_L9_disclosure_adaptation_signed": "❌",
+      "verdict": "7/7 未满足"
+    }
+  },
+
+  "written_files": [
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACCT-RULING/a20260924-01/ruling.md", "bytes": 39830, "sha256": "49799cca2e8cc006018dd15803d3dee3f1b4e1e6e17d305f8833c426c6a69972"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACCT-RULING/a20260924-01/provenance.json", "bytes": 16400, "sha256": "b55c95433f341feb3135e3de03353ffa1aaf9c41e1747f0b095f256444af929d"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN3-E1-ACCT-RULING/a20260924-01/handoff.json", "bytes": null, "sha256": null, "note": "自引用哈希不可稳定计算：bytes/sha256 由父代理在收尾时外部复算填入（与取证工位 handoff L55 同约定）。"}
+  ],
+  "written_files_count": 3,
+
+  "provenance_summary": {
+    "cited_provenance_entries": 18,
+    "cited_entries_source": "execution_runs/OPEN3-E1-ACQUISITION/a20260924-01/provenance.json（逐条标 source=）",
+    "local_read_only_inputs": 8,
+    "reviewer_local_verifications": 8,
+    "external_sources_added": 0,
+    "network_requests": 0
+  },
+
+  "git_diff_non_planning": 0,
+  "git_status_evidence": {
+    "diff_HEAD_total": 3826,
+    "diff_HEAD_non_planning": 0,
+    "porcelain_non_planning": 2,
+    "porcelain_non_planning_paths": [".tmp-r41-mutation/", "assurance/unified_completion/manifests/plan_inputs.json.bak"],
+    "note": "两条非 .planning 的 untracked 路径为本会话开始前既有的他卡产物（取证工位 handoff L62-L66 已同判），非本工位产生；本工位 git 写操作 = 0（仅只读 diff/status）。"
+  },
+
+  "releases_nothing": true,
+  "does_not_claim_I11A_acceptance": true,
+  "adds_no_new_domain_judgement": true,
+
+  "not_done": [
+    "未联网重取（网络请求 = 0；若需 origin 字节则按 owner 规则判 BLOCKED-NEEDS-ORIGIN-BYTES 的补齐条件，不自己去取）",
+    "未修改 OPEN3-E1-ACQUISITION 的任何字节（7 个文件 mtime/sha 读取前后不变）",
+    "未修改 I-11-A 封盘 attempt、I11A-OPEN-ACCT/IND/MERGE 三份裁定的任何字节",
+    "未解除任何 BLOCKED（ACCT BLOCKED-3a/3b、IND BLOCKED-4/5、MERGE BLOCKED-UNADJ-2 全部原样）",
+    "未改任何 status / state / decision / decision_sha256 / 阈值审定状态",
+    "未代签、未产生任何 ACCEPT，未声称已验收 I-11-A",
+    "未在 .planning 之外创建或修改任何文件",
+    "未执行任何 git 写操作（add/commit/checkout/stash/restore/reset）"
+  ],
+
+  "next_owner_action": "若要闭合 element_1：owner 指定/授权在本计划目录内的落盘点并允许下载型取文（filing-fetch --allow-download 或等价物），把 d291965d8k.htm 与 d291965dex991.htm 的 origin 响应字节落盘 + sha256 登记；或 owner 明文登记 E1 定义放宽。二者任一到位后新建 R2 载体（本卡不回改）复裁等级，再由 ACCT OPEN-3-ACCT-R2 → IND ruling_r2.md 走 MERGE L162-L167 的后续条件。",
+
+  "file_format": {
+    "encoding": "UTF-8 no BOM",
+    "line_ending": "LF",
+    "json_reparse": "provenance.json 与 handoff.json 写后均经 ConvertFrom-Json 重解析通过"
+  }
+}

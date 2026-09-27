@@ -1,0 +1,99 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "214a28022ab17bce1a697304b31aa30497b1b22f",
+    "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep zr1004 → 零命中；ZR-806 三 root 无 future_lake/per-root 分组/同 request 恢复语义",
+      "exit_code": 0,
+      "result": "G1~G2 真实缺口"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1004_small_cohort.py -q --tb=short",
+      "exit_code": 0,
+      "result": "7 passed（C1 四 root 4 / C2 零写 1 / C3 同 request 恢复 2）"
+    },
+    {
+      "command": "ruff check tests/test_zr1004_small_cohort.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 160 files"
+    },
+    {
+      "command": "git commit（pre-commit 全套：896+106 全量 + sync MATCH）",
+      "exit_code": 0,
+      "result": "06d259c test(ZR-1004) — 1 file +163"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "896 passed + 106 subtests（889 基线 + 7 新增，零回归）"
+    },
+    {
+      "command": "回归子集：tests/test_zr806_real_t2_samples.py",
+      "exit_code": 0,
+      "result": "10 passed（零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T04:50:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 四 root cohort 旅程：companies 紫金 FY2025/FY2024 REUSED_EXACT、dayu 1548 FY2021 REUSED_EXACT、Dropbox 星环 fail-closed MISSING（诚实）、future_lake 根配置在位（ZR-409）且出现在生产 resolver 的 root 列表。C2 external write=0：四 root 浅指纹 + catalog documents/sources/locations 行数旅程前后不变。C3 同 request rollback 恢复：companies 同 request 重复 resolve → 状态+trace 完全一致（幂等复用）；Dropbox 失败 request 重试 → 同结构 MISSING（无伪造 handle 生成——失败恢复一致）。",
+      "id": "ZR1004-IMPL-001",
+      "severity": "info",
+      "title": "四 root 小 cohort（per-root T2/UJ + external write=0 + 同 request 恢复）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue 新 tests/test_zr1004_small_cohort.py（7 tests，复用 ZR-806 的 _shallow_fingerprint + ZR-409 的 future_lake 配置）：per-root resolve 旅程（真实 catalog 只读）+ 零写 oracle + 同 request 幂等（trace 相等）与失败重试一致性（MISSING 结构化）。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr1004_small_cohort.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1004/**"
+    ]
+  },
+  "implementer": "zr1004-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 06d259c（parent 214a280 = ZR-1003 closure）；wiki 9a00df6、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=4680dc51（00_wu_card.md，hashlib 注入）。",
+    "真实生产 cohort 切换为部署动作（发布窗口内执行）。",
+    "独立 reviewer 待派出（reviewer-zr1004-independent）。"
+  ],
+  "objective": "阶段 I 第四卡：companies→dayu→Dropbox→future root 小 cohort——每 root T2/UJ；external write=0；同 request rollback 恢复。",
+  "plan_sha256": "4680dc51f1a3482137c0e9c5e72469fb5fb48dac00c3df4cbbc92b4622025b9d",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "06d259c0b359c5b38800b6f6e26ecd2778f39a35",
+    "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr1004_small_cohort.py（新 7 tests）；真实根只读（companies/dayu/Dropbox/future_lake）；receipts/ZR-1004/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 3
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1004_small_cohort.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1004/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1004",
+  "canonical_hash": "cb504d0098fa8702010d352a5281d887e3a36cf214cf89c624eeffed36274ecc"
+}

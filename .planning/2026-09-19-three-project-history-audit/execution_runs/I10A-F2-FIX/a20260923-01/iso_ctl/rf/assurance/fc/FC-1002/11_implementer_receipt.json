@@ -1,0 +1,113 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1002",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "Real three-process E2E chain tests (process_count>=3 per FC-102 gate): revenue source_preparation -> filing-fetch client -> company-wiki CLI, all real OS subprocesses. Fixture extensions (isolated_lake.py): review receipts (FC-905-b gate), security_master identity snapshot, wiki config, companies under wiki_root. 3 contracts; M1 (receipt removal) kills via policy block. Revenue full suite 414 passed / 0 failed.",
+  "base_triplet": {
+    "revenue": "e966ae8b05132fe974b0e7acfc8f37844ff3162f",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "result_triplet": {
+    "revenue": "21540325d7ba07f6d9f581e984282a774cc1ffff",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tests/e2e_support/isolated_lake.py",
+    "revenue-forecast/tests/test_fc1002_three_process_e2e.py",
+    "revenue-forecast/assurance/fc/FC-1002/11_implementer_receipt.json",
+    "revenue-forecast/assurance/fc/FC-1002/12_reviewer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/tests/e2e_support/isolated_lake.py",
+    "revenue-forecast/tests/test_fc1002_three_process_e2e.py"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/fc/FC-1001/ (accepted) — isolated lake fixture",
+    "company-wiki/assurance/fc/FC-905/ + FC-906/ (accepted) — policy gate + v2 contract"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "EX-01",
+      "status": "passed",
+      "note": "companies-only exact hit via real 3-process chain: artifact_read>0, journal unchanged, download/llm=0."
+    },
+    {
+      "id": "AR-02",
+      "status": "passed",
+      "note": "missing artifact -> producer_events DAG closure (normalized scheduled), never a blind full recompute."
+    },
+    {
+      "id": "SAFE-04",
+      "status": "passed",
+      "note": "review receipts required: M1 (removing fixture receipts) kills the chain test via FC-905-b block."
+    },
+    {
+      "id": "FC-102-gate",
+      "status": "passed",
+      "note": "process_count>=3: chain spawns 3 real OS processes (verified hops in production code + output flow)."
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=scripts:tests:../company-wiki/src:../filing-fetch/scripts python -B -m pytest tests/test_fc1002_three_process_e2e.py -q",
+      "exit_code": 0,
+      "result": "3 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=scripts:tests:../company-wiki/src:../filing-fetch/scripts python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "414 passed, 106 subtests, 0 failed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check tests/e2e_support/isolated_lake.py tests/test_fc1002_three_process_e2e.py",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit (auto): suite + E2E + R4.2 install-sync",
+      "exit_code": 0,
+      "result": "414 passed; E2E PASS; MATCH 102 files (after sync_installations --apply — first attempt DIFF 3 files, R4.2 blocked; synced then committed)",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "catalog_mutations": 0,
+    "note": "Temp catalogs only; the chain itself is the test subject."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "Test infra only; no production code changed."
+  },
+  "mutation": {
+    "id": "FC-1002-M1",
+    "killed": true,
+    "details": "M1: removed the fixture's prompt-injection review receipts -> test_three_process_chain_exact_hit FAILS (FC-905-b blocks: not_reviewed). Reverted; 3 passed restored. The policy gate is load-bearing for the E2E chain."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert 2154032; no data side effects."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1002-independent",
+    "reviewer_receipt_sha256": "f8ed3d8f478d309b8264b3bd8ed57f04521fcf6c2c7102fa0eaf259ff187a10e",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-12T02:57:25Z",
+    "note": "independent reviewer replayed diff + focused + M1 from clean worktree 2154032; psutil-confirmed 5 OS processes; full suite 414/0; verdict accepted; unresolved_findings=[]"
+  },
+  "provisional_note": "Feat sealed at revenue 2154032 (filing/wiki unchanged). 3 chain contracts + fixture extensions; full suite 414/0. Independent review pending."
+}

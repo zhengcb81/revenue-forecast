@@ -1,0 +1,607 @@
+diff --git a/scripts/model_registry.py b/scripts/model_registry.py
+--- a/scripts/model_registry.py
++++ b/scripts/model_registry.py
+@@ -371,57 +371,118 @@
+     return number
+ 
+ 
+-def calculate_registered_model(
+-    model_id: str,
+-    base_revenue: float,
+-    drivers: Mapping[str, list[float]],
+-    years: Sequence[int],
+-) -> list[float]:
++def _resolve_model_spec(model_id: str) -> ModelSpec:
++    """Registered spec lookup, with the frozen unsupported-model error."""
+     try:
+         spec = MODEL_REGISTRY[model_id]
+     except KeyError as exc:
+         raise ModelRegistryError(f"unsupported revenue model: {model_id}") from exc
++    return spec
++
++
++def _validated_base_revenue(model_id: str, base_revenue: float) -> float:
++    """Finite non-negative base revenue, with the frozen error messages."""
+     base = _finite_model_number(base_revenue, f"{model_id}.base_revenue")
+     if base < 0:
+         raise ModelRegistryError(f"{model_id}.base_revenue cannot be negative")
++    return base
++
++
++def _validated_years(model_id: str, years: Sequence[int]) -> None:
++    """Fiscal-year values must be present, bool-free ints in 1..9999, ordered."""
+     if not years or any(isinstance(year, bool) or not isinstance(year, int) or not 1 <= year <= 9999 for year in years):
+         raise ModelRegistryError(f"{model_id}.years must contain fiscal years")
++    _validated_year_order(model_id, years)
++
++
++def _validated_year_order(model_id: str, years: Sequence[int]) -> None:
++    """Years must be consecutive and strictly increasing."""
+     if any(later != earlier + 1 for earlier, later in zip(years, years[1:])):
+         raise ModelRegistryError(f"{model_id}.years must be consecutive and increasing")
+-    if not isinstance(drivers, Mapping):
+-        raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
++
++
++def _validate_driver_sets(
++    model_id: str,
++    spec: ModelSpec,
++    drivers: Mapping[str, list[float]],
++) -> None:
++    """Exact driver-key contract: no missing required, no unsupported extras."""
+     missing = set(spec.required) - set(drivers)
+     if missing:
+         raise ModelRegistryError(f"missing drivers for {model_id}: {', '.join(sorted(missing))}")
+     extra = set(drivers) - set(spec.required) - set(spec.optional)
+     if extra:
+         raise ModelRegistryError(f"unsupported drivers for {model_id}: {', '.join(sorted(extra))}")
++
++
++def _driver_series(
++    model_id: str,
++    spec: ModelSpec,
++    driver: str,
++    drivers: Mapping[str, list[float]],
++    years: Sequence[int],
++) -> list | tuple:
++    # --- I-10-B defect 1 fix (T1-22) ------------------------------------
++    # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
++    # That silently filled any optional driver lacking an explicit default
++    # with 0.0, encoding "absent" and "not found" as the SAME input.
++    # Now: an omitted driver is legal ONLY when spec.defaults carries an
++    # explicit value for it.  Note we deliberately do NOT substitute an
++    # explicit 0.0 — that would still fail to distinguish "not found".
++    if driver not in drivers:
++        if driver not in spec.defaults:
++            raise ModelRegistryError(
++                f"missing driver for {model_id}: {driver} has no explicit default"
++            )
++        values: object = [spec.defaults[driver]] * len(years)
++    else:
++        values = drivers[driver]
++    if not isinstance(values, (list, tuple)) or len(values) != len(years):
++        raise ModelRegistryError(f"driver {model_id}.{driver} must contain one value per forecast year")
++    return values
++
++
++def _normalized_driver(
++    model_id: str,
++    driver: str,
++    years: Sequence[int],
++    values: list | tuple,
++    lower: float,
++    upper: float,
++) -> list[float]:
++    """One driver's per-year finite values, bounds-checked in year order."""
++    numbers: list[float] = []
++    for year, value in zip(years, values):
++        number = _finite_model_number(value, f"{model_id}.{driver}.FY{year}")
++        if not lower <= number <= upper:
++            raise ModelRegistryError(f"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}")
++        numbers.append(number)
++    return numbers
++
++
++def _normalized_drivers(
++    model_id: str,
++    spec: ModelSpec,
++    drivers: Mapping[str, list[float]],
++    years: Sequence[int],
++) -> dict[str, list[float]]:
++    """Materialize every declared driver in (required + optional) order."""
+     normalized: dict[str, list[float]] = {}
+     for driver in spec.required + spec.optional:
+-        # --- I-10-B defect 1 fix (T1-22) ------------------------------------
+-        # Previously: drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))
+-        # That silently filled any optional driver lacking an explicit default
+-        # with 0.0, encoding "absent" and "not found" as the SAME input.
+-        # Now: an omitted driver is legal ONLY when spec.defaults carries an
+-        # explicit value for it.  Note we deliberately do NOT substitute an
+-        # explicit 0.0 — that would still fail to distinguish "not found".
+-        if driver not in drivers:
+-            if driver not in spec.defaults:
+-                raise ModelRegistryError(
+-                    f"missing driver for {model_id}: {driver} has no explicit default"
+-                )
+-            values: object = [spec.defaults[driver]] * len(years)
+-        else:
+-            values = drivers[driver]
+-        if not isinstance(values, (list, tuple)) or len(values) != len(years):
+-            raise ModelRegistryError(f"driver {model_id}.{driver} must contain one value per forecast year")
++        values = _driver_series(model_id, spec, driver, drivers, years)
+         lower, upper = driver_value_bounds(model_id, driver)
+-        normalized[driver] = []
+-        for year, value in zip(years, values):
+-            number = _finite_model_number(value, f"{model_id}.{driver}.FY{year}")
+-            if not lower <= number <= upper:
+-                raise ModelRegistryError(f"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}")
+-            normalized[driver].append(number)
++        normalized[driver] = _normalized_driver(model_id, driver, years, values, lower, upper)
++    return normalized
++
++
++def _checked_model_path(
++    model_id: str,
++    spec: ModelSpec,
++    base: float,
++    normalized: dict[str, list[float]],
++    years: Sequence[int],
++) -> list[float]:
++    """Run the calculator and validate path length, finiteness and sign."""
+     try:
+         result = spec.calculator(base, normalized, years)
+     except ArithmeticError as exc:
+@@ -432,3 +493,19 @@
+     if any(value < 0 for value in checked):
+         raise ModelRegistryError(f"calculated revenue cannot be negative: {model_id}")
+     return checked
++
++
++def calculate_registered_model(
++    model_id: str,
++    base_revenue: float,
++    drivers: Mapping[str, list[float]],
++    years: Sequence[int],
++) -> list[float]:
++    spec = _resolve_model_spec(model_id)
++    base = _validated_base_revenue(model_id, base_revenue)
++    _validated_years(model_id, years)
++    if not isinstance(drivers, Mapping):
++        raise ModelRegistryError(f"{model_id}.drivers must be a mapping")
++    _validate_driver_sets(model_id, spec, drivers)
++    normalized = _normalized_drivers(model_id, spec, drivers, years)
++    return _checked_model_path(model_id, spec, base, normalized, years)
+diff --git a/scripts/revenue_core.py b/scripts/revenue_core.py
+--- a/scripts/revenue_core.py
++++ b/scripts/revenue_core.py
+@@ -200,6 +200,85 @@
+     return {"code": match.group(1), "message": match.group(2).strip()}
+ 
+ 
++def _resolve_attestation_provider_file(provider):
++    resolved = shutil.which(provider) or Path(provider).expanduser()
++    if resolved is None or not os.path.isfile(resolved):
++        _record_attestation_failure(
++            f"provider_path_unopenable: {provider!r} does not resolve to a file"
++        )
++        return None
++    return resolved
++
++
++def _spawn_attestation_provider(resolved, request):
++    try:
++        completed = subprocess.run(
++            [str(resolved)],
++            input=json.dumps(request, sort_keys=True).encode("utf-8"),
++            capture_output=True,
++            timeout=ATTESTATION_PROVIDER_TIMEOUT_SECONDS,
++            check=False,
++        )
++    except subprocess.TimeoutExpired:
++        _record_attestation_failure(
++            "provider_timeout: provider exceeded "
++            f"{ATTESTATION_PROVIDER_TIMEOUT_SECONDS}s and was terminated"
++        )
++        return None
++    except OSError as exc:
++        _record_attestation_failure(f"provider_path_unopenable: {exc}")
++        return None
++    return completed
++
++
++def _record_provider_exit_failure(completed, detail):
++    if "cannot sign" in detail or "no private key" in detail:
++        _record_attestation_failure(
++            f"provider_signing_unavailable: {detail or 'provider refused to sign'}"
++        )
++    else:
++        _record_attestation_failure(
++            f"provider_exit_nonzero: exit code {completed.returncode}; {detail}"
++        )
++
++
++
++def _attestation_exit_checked(completed):
++    if completed.returncode != 0:
++        detail = completed.stderr.decode("utf-8", "replace").strip()[:200]
++        _record_provider_exit_failure(completed, detail)
++        return None
++    return completed
++
++
++def _attestation_provider_output(completed):
++    raw = completed.stdout
++    if len(raw) > ATTESTATION_PROVIDER_MAX_STDOUT_BYTES:
++        _record_attestation_failure(
++            "provider_output_too_large: provider wrote "
++            f"{len(raw)} bytes, above the {ATTESTATION_PROVIDER_MAX_STDOUT_BYTES} "
++            "byte bound"
++        )
++        return None
++    text = raw.decode("utf-8", "replace").strip()
++    if not text:
++        _record_attestation_failure(
++            "provider_protocol_violation: provider wrote no response"
++        )
++        return None
++    try:
++        response = json.loads(text)
++    except json.JSONDecodeError as exc:
++        _record_attestation_failure(f"provider_invalid_json: {exc}")
++        return None
++    if not isinstance(response, dict):
++        _record_attestation_failure(
++            "provider_schema_mismatch: response must be a single JSON object"
++        )
++        return None
++    return response
++
++
+ def _run_attestation_provider(request: dict[str, Any]) -> dict[str, Any] | None:
+     """One-shot provider handshake.  Returns the response object, or None.
+ 
+@@ -213,82 +292,25 @@
+             "provider_absent: REVENUE_ATTESTATION_PROVIDER is not set"
+         )
+         return None
+-    resolved = shutil.which(provider) or Path(provider).expanduser()
+-    if resolved is None or not os.path.isfile(resolved):
+-        _record_attestation_failure(
+-            f"provider_path_unopenable: {provider!r} does not resolve to a file"
+-        )
+-        return None
+-    try:
+-        completed = subprocess.run(
+-            [str(resolved)],
+-            input=json.dumps(request, sort_keys=True).encode("utf-8"),
+-            capture_output=True,
+-            timeout=ATTESTATION_PROVIDER_TIMEOUT_SECONDS,
+-            check=False,
+-        )
+-    except subprocess.TimeoutExpired:
+-        _record_attestation_failure(
+-            "provider_timeout: provider exceeded "
+-            f"{ATTESTATION_PROVIDER_TIMEOUT_SECONDS}s and was terminated"
+-        )
+-        return None
+-    except OSError as exc:
+-        _record_attestation_failure(f"provider_path_unopenable: {exc}")
+-        return None
+-    if completed.returncode != 0:
+-        detail = completed.stderr.decode("utf-8", "replace").strip()[:200]
+-        if "cannot sign" in detail or "no private key" in detail:
+-            _record_attestation_failure(
+-                f"provider_signing_unavailable: {detail or 'provider refused to sign'}"
+-            )
+-        else:
+-            _record_attestation_failure(
+-                f"provider_exit_nonzero: exit code {completed.returncode}; {detail}"
+-            )
+-        return None
+-    raw = completed.stdout
+-    if len(raw) > ATTESTATION_PROVIDER_MAX_STDOUT_BYTES:
+-        _record_attestation_failure(
+-            "provider_output_too_large: provider wrote "
+-            f"{len(raw)} bytes, above the {ATTESTATION_PROVIDER_MAX_STDOUT_BYTES} "
+-            "byte bound"
+-        )
+-        return None
+-    text = raw.decode("utf-8", "replace").strip()
+-    if not text:
+-        _record_attestation_failure(
+-            "provider_protocol_violation: provider wrote no response"
+-        )
+-        return None
+-    try:
+-        response = json.loads(text)
+-    except json.JSONDecodeError as exc:
+-        _record_attestation_failure(f"provider_invalid_json: {exc}")
+-        return None
+-    if not isinstance(response, dict):
+-        _record_attestation_failure(
+-            "provider_schema_mismatch: response must be a single JSON object"
+-        )
++    resolved = _resolve_attestation_provider_file(provider)
++    if resolved is None:
++        return None
++    completed = _spawn_attestation_provider(resolved, request)
++    if completed is None:
++        return None
++    checked = _attestation_exit_checked(completed)
++    if checked is None:
++        return None
++    response = _attestation_provider_output(checked)
++    if response is None:
+         return None
+     _ATTESTATION_LAST_FAILURE = None
+     return response
+ 
+ 
+-def _validate_attestation_response(
+-    request: dict[str, Any], response: dict[str, Any]
+-) -> dict[str, str]:
+-    """Validate one provider response; raise ``ForecastInputError`` if untrusted.
+-
+-    Returns the identity fields on success so the caller can assemble the
+-    binding record.
+-    """
+-    from revenue_publication import (
+-        PUBLICATION_ATTESTATION_ALGORITHM,
+-        PUBLICATION_ATTESTATION_SCHEMA_VERSION,
+-        verify_ed25519_signature,
+-    )
+-
++
++
++def _validate_attestation_field_set(response):
+     missing = [field for field in ATTESTATION_RESPONSE_FIELDS if field not in response]
+     extra = sorted(set(response) - set(ATTESTATION_RESPONSE_FIELDS))
+     if missing or extra:
+@@ -296,6 +318,11 @@
+             "provider_schema_mismatch: response field set mismatch "
+             f"(missing={missing}, extra={extra})"
+         )
++
++
++
++def _validate_attestation_echo(request, response):
++    from revenue_publication import PUBLICATION_ATTESTATION_SCHEMA_VERSION
+     if (
+         response["attestation_response_schema_version"]
+         != PUBLICATION_ATTESTATION_SCHEMA_VERSION
+@@ -308,6 +335,11 @@
+             raise ForecastInputError(
+                 f"provider_binding_mismatch: response.{field} does not echo the request"
+             )
++
++
++
++def _validate_attestation_signer(response):
++    from revenue_publication import PUBLICATION_ATTESTATION_ALGORITHM
+     if response["algorithm"] != PUBLICATION_ATTESTATION_ALGORITHM:
+         raise ForecastInputError(
+             "provider_schema_mismatch: response.algorithm must be "
+@@ -318,6 +350,10 @@
+             raise ForecastInputError(
+                 f"provider_schema_mismatch: response.{field} must be a non-empty string"
+             )
++
++
++
++def _validate_attestation_fingerprint(response):
+     if (
+         not isinstance(response["fingerprint"], str)
+         or re.fullmatch(r"[0-9a-f]{32}", response["fingerprint"]) is None
+@@ -325,6 +361,10 @@
+         raise ForecastInputError(
+             "provider_schema_mismatch: response.fingerprint must be 32 lowercase hex"
+         )
++
++
++
++def _validate_attestation_signature(response):
+     if not isinstance(response["signature"], str) or not response["signature"]:
+         raise ForecastInputError(
+             "attestation_missing_signature: provider returned no signature (E12)"
+@@ -334,6 +374,10 @@
+             "attestation_malformed_signature: response.signature must be 128 "
+             "lowercase hex (E13)"
+         )
++
++
++
++def _validate_attestation_signed_at(response):
+     if (
+         not isinstance(response["signed_at"], str)
+         or re.fullmatch(
+@@ -344,6 +388,26 @@
+         raise ForecastInputError(
+             "provider_schema_mismatch: response.signed_at must be RFC3339 UTC 'Z'"
+         )
++
++
++
++def _validate_attestation_response(
++    request: dict[str, Any], response: dict[str, Any]
++) -> dict[str, str]:
++    """Validate one provider response; raise ``ForecastInputError`` if untrusted.
++
++    Returns the identity fields on success so the caller can assemble the
++    binding record.
++    """
++    from revenue_publication import verify_ed25519_signature
++
++    _validate_attestation_field_set(response)
++    _validate_attestation_echo(request, response)
++    _validate_attestation_signer(response)
++    _validate_attestation_fingerprint(response)
++    _validate_attestation_signature(response)
++    _validate_attestation_signed_at(response)
++
+     # The signing target is the request object as the provider received it, so a
+     # signature cannot be moved onto a different request.
+     message = canonical_sha256(request).encode("ascii")
+@@ -357,6 +421,8 @@
+         "signature": response["signature"],
+         "signed_at": response["signed_at"],
+     }
++
++
+ 
+ 
+ def request_publication_attestation(
+diff --git a/scripts/revenue_publication.py b/scripts/revenue_publication.py
+--- a/scripts/revenue_publication.py
++++ b/scripts/revenue_publication.py
+@@ -218,6 +218,81 @@
+         ) from exc
+ 
+ 
++def _require_attestation_field_set(record: dict) -> None:
++    """Closed field set + schema/domain/algorithm constants (B1 / REM-01)."""
++    require(
++        isinstance(record, dict),
++        "attestation_missing_record: publication_attestation must be an object",
++    )
++    missing = PUBLICATION_ATTESTATION_FIELDS - set(record)
++    extra = set(record) - PUBLICATION_ATTESTATION_FIELDS
++    require(
++        not missing and not extra,
++        "attestation_payload_fields: publication_attestation field set mismatch "
++        f"(missing={sorted(missing)}, extra={sorted(extra)})",
++    )
++    require(
++        record["attestation_payload_schema_version"]
++        == PUBLICATION_ATTESTATION_SCHEMA_VERSION,
++        "attestation_payload_fields: publication_attestation schema version mismatch",
++    )
++    require(
++        record["domain_separator"] == PUBLICATION_ATTESTATION_DOMAIN,
++        "attestation_domain_mismatch: publication_attestation domain_separator "
++        f"must be {PUBLICATION_ATTESTATION_DOMAIN!r}",
++    )
++    require(
++        record["algorithm"] == PUBLICATION_ATTESTATION_ALGORITHM,
++        "attestation_payload_fields: publication_attestation algorithm must be "
++        f"{PUBLICATION_ATTESTATION_ALGORITHM!r}",
++    )
++
++
++def _require_attestation_identity_fields(record: dict) -> None:
++    """Issuer and key_id must be non-empty strings."""
++    for field in ("issuer", "key_id"):
++        require(
++            isinstance(record[field], str) and record[field].strip(),
++            f"attestation_payload_fields: publication_attestation.{field} is required",
++        )
++
++
++def _require_attestation_hex_fields(record: dict) -> None:
++    """Fingerprint (32 hex) and request_id (64 hex) format checks."""
++    require(
++        isinstance(record["fingerprint"], str)
++        and _HEX32.fullmatch(record["fingerprint"]) is not None,
++        "attestation_payload_fields: publication_attestation.fingerprint must be "
++        "32 lowercase hex",
++    )
++    require(
++        isinstance(record["request_id"], str)
++        and _HEX64.fullmatch(record["request_id"]) is not None,
++        "attestation_payload_fields: publication_attestation.request_id must be "
++        "64 lowercase hex",
++    )
++
++
++def _require_attestation_signature_fields(record: dict) -> None:
++    """signed_at format + signature presence/128-hex checks (E12/E13)."""
++    require(
++        isinstance(record["signed_at"], str)
++        and _RFC3339_Z.fullmatch(record["signed_at"]) is not None,
++        "attestation_payload_fields: publication_attestation.signed_at must be "
++        "RFC3339 UTC 'Z'",
++    )
++    require(
++        isinstance(record["signature"], str) and record["signature"],
++        "attestation_missing_signature: publication_attestation.signature is "
++        "required (E12)",
++    )
++    require(
++        _HEX128.fullmatch(record["signature"]) is not None,
++        "attestation_malformed_signature: publication_attestation.signature must "
++        "be 128 lowercase hex (E13)",
++    )
++
++
+ def validate_publication_attestation(
+     result: dict[str, Any], receipt: dict[str, Any]
+ ) -> None:
+@@ -248,65 +323,10 @@
+                 "publication_attestation record (E27)"
+             )
+         return
+-    require(
+-        isinstance(record, dict),
+-        "attestation_missing_record: publication_attestation must be an object",
+-    )
+-    missing = PUBLICATION_ATTESTATION_FIELDS - set(record)
+-    extra = set(record) - PUBLICATION_ATTESTATION_FIELDS
+-    require(
+-        not missing and not extra,
+-        "attestation_payload_fields: publication_attestation field set mismatch "
+-        f"(missing={sorted(missing)}, extra={sorted(extra)})",
+-    )
+-    require(
+-        record["attestation_payload_schema_version"]
+-        == PUBLICATION_ATTESTATION_SCHEMA_VERSION,
+-        "attestation_payload_fields: publication_attestation schema version mismatch",
+-    )
+-    require(
+-        record["domain_separator"] == PUBLICATION_ATTESTATION_DOMAIN,
+-        "attestation_domain_mismatch: publication_attestation domain_separator "
+-        f"must be {PUBLICATION_ATTESTATION_DOMAIN!r}",
+-    )
+-    require(
+-        record["algorithm"] == PUBLICATION_ATTESTATION_ALGORITHM,
+-        "attestation_payload_fields: publication_attestation algorithm must be "
+-        f"{PUBLICATION_ATTESTATION_ALGORITHM!r}",
+-    )
+-    for field in ("issuer", "key_id"):
+-        require(
+-            isinstance(record[field], str) and record[field].strip(),
+-            f"attestation_payload_fields: publication_attestation.{field} is required",
+-        )
+-    require(
+-        isinstance(record["fingerprint"], str)
+-        and _HEX32.fullmatch(record["fingerprint"]) is not None,
+-        "attestation_payload_fields: publication_attestation.fingerprint must be "
+-        "32 lowercase hex",
+-    )
+-    require(
+-        isinstance(record["request_id"], str)
+-        and _HEX64.fullmatch(record["request_id"]) is not None,
+-        "attestation_payload_fields: publication_attestation.request_id must be "
+-        "64 lowercase hex",
+-    )
+-    require(
+-        isinstance(record["signed_at"], str)
+-        and _RFC3339_Z.fullmatch(record["signed_at"]) is not None,
+-        "attestation_payload_fields: publication_attestation.signed_at must be "
+-        "RFC3339 UTC 'Z'",
+-    )
+-    require(
+-        isinstance(record["signature"], str) and record["signature"],
+-        "attestation_missing_signature: publication_attestation.signature is "
+-        "required (E12)",
+-    )
+-    require(
+-        _HEX128.fullmatch(record["signature"]) is not None,
+-        "attestation_malformed_signature: publication_attestation.signature must "
+-        "be 128 lowercase hex (E13)",
+-    )
++    _require_attestation_field_set(record)
++    _require_attestation_identity_fields(record)
++    _require_attestation_hex_fields(record)
++    _require_attestation_signature_fields(record)
+     # Binding to the live artifact: the record must describe THIS publication.
+     # The record binds the two fields that are knowable BEFORE the receipt
+     # exists: the payload digest (everything except `result_sha256` and

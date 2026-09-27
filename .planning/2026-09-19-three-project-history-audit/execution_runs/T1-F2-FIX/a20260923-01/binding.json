@@ -1,0 +1,90 @@
+{
+  "card": "T1-F2-FIX",
+  "attempt_id": "a20260923-01",
+  "frozen_at": "2026-09-23 (oracle.md base written BEFORE any probe run; APPENDIX appended before any probe run; pins written by scripts/verify_t1_f2_fix.py pins --write before phase=before)",
+  "scope": "F-1 (J7 clock_source set-membership non-total) + F-2 (calendar claim.status carrier non-total) + P4 container family (windows / sampled_at / ledger.{daily,weekly,monthly,alerts}) + light bidirectional negative control + anchor verification; F-3 = out-of-scope pending-ruling (stated, not self-filled)",
+  "repair_authority": {
+    "primary_carrier": {
+      "path": "T1-10-FIX/a20260923-01/decision.md",
+      "lines": "sec 6 (L108-117): F-1 row (new, not named by reviewer P4), F-2 row, F-3 row, P4-registered row",
+      "sha256": "7adebb7a340a22b49afa67dec94cd8d3cfea2aee25792ca2c574fd0cea9f780d"
+    },
+    "secondary_carrier": {
+      "path": "T1-10-FIX/a20260923-01/handoff.json",
+      "lines": "unproven[2] registers F-1/F-2/F-3 + P4 family for follow-up cards per owner order",
+      "sha256": "f3f4dd2bc5c08f09f69261a1069a5ec3eedab1206d02951ea6b84195c661a445"
+    },
+    "measurement_carrier": {
+      "path": "T1-10-FIX/a20260923-01/evidence/after/probes/family_results.json",
+      "field": "adjacent_discovery (clock_source_container_J7 rc4 unhashable list; calendar_claim_carrier rc4 'list' has no attribute 'get'; malformed_timestamp_schema rc4)",
+      "sha256": "f7394f8c31fe2a02cc85cc624061de762fdbc2562701902f11d47f269334fbb1"
+    },
+    "upstream_repair_block": {
+      "path": "M-T-REVIEW/a20260923-01/landing_package/t1_review_flips.md",
+      "lines": "L28-40 (T1-10 changes_required block that created the prerequisite layer)",
+      "sha256": "90bcefb9aadfe098dee1f16802bdf0af9ac7af9b2d74b21cc10a45e07b26c33b"
+    },
+    "owner_order": "发现的缺陷都要全部修复 (discovered defects must all be fixed) - cited by the dispatch card"
+  },
+  "parent_messages": {
+    "note": "session messages from the parent agent session-bfecd191-fbc3-4a66-8ed1-6562479bf102; no file carrier exists on disk at freeze time - the registry round receipt referenced by the parent is parent-side and pending; registered in handoff.next_action. Verbatim key text preserved here as the binding record.",
+    "dispatch_card": "T1-F2-FIX follow-up fix for two same-family non-total-validation defects T1-10-FIX measured and registered (decision sec 6): F-1 J7 clock_source TRUSTED_CLOCKS set at natural_window.py:338; F-2 calendar claim.status carrier read natural_window.py:343; F-3 malformed-timestamp rc=4 = schema-level, ruling sits with the T1-10-FIX reviewer (dispatched) - oracle must STATE F-3 out-of-scope-pending-ruling, do not self-fill rc ownership. PLAN=.planning/2026-09-19-three-project-history-audit ATTEMPT=<PLAN>/execution_runs/T1-F2-FIX/a20260923-01. Sources READ-ONLY; delivery via changes.diff only; base the fix on T1-10-FIX's FIXED state (changes.diff 625ecfe4... = prerequisite layer).",
+    "parent_pre_freeze_ruling": "【父方 pre-freeze 裁定：F-2 = fail-closed + 缺键≠畸形】1. present-but-malformed（claim.status 真值存在但非字典）→ 结构化拒绝（fail-closed）：拒码=你 oracle 词表中最贴的既有码（如 R-CLAIM-EXCEEDS 类=对 pending 事实拒、或你判定更贴的既有 refusal——披露选择理由）；probe 探针沿你 §4 C1 攻击账本、GREEN=rc0+该拒码+only-BAD rejected。2. 真正缺键（key absent）→ 行为字节不变=事实定。3. 依据：basis 先例=缺键走原行为、不可读→R-BASIS-UNKNOWN 拒（T1-10-FIX 的 E1 修法）——「不可读≡缺键」与该先例自相矛盾；status=时钟攻击面，畸形当缺=绕过 FUTURE-CLOCK/SAME-INSTANT 检查=旁路开口。父方 pre-freeze 裁定、引登记册本轮回执为凭。4. 与 F-3（时间戳畸形 rc 归属=pending T1-10-FIX 复审裁）同边界披露；MUT-7 锚安全✓照你核（定义行不钉）。",
+    "parent_expansion_order": "【父方扩围令（T1-10-FIX 复审已 ACCEPT + F-3 已裁）】你的 T1-F2-FIX scope 追加 P4 容器族（复审活测同机制 rc4、建议并入本卡、父裁采纳）：①windows dict 容器 → rc4 string indices…；②sampled_at dict 容器 → rc4 Invalid isoformat 'a'；③ledger.daily dict 容器 → rc4 string indices…（基线同值实测于 T1-10-FIX 修复后树）——同 set/非字典非全函数族，修法=你已定的 tuple/isinstance 模式逐落点、逐落点红绿变异+批次负控照 F-1/F-2 同标准；不变量加一条=时间戳类畸形不归你（R-TIMESTAMP-MALFORMED/rc 归属=F-3 裁定后由 T1-F3-FIX 独立修轨、其 §11.8 追加文已在其复审报告 §7.3——你的卡面遇时间戳形状=按 pending-routed 记录不自修）。合并序更新：T1-10-FIX(625ecfe4) first → 你(基于其 fixed iso 064e5381) second → T1-F3-FIX third（其 scope=_parse 时间戳区、与你的 clock_source:338/claim.status:343/P4 容器须行不交）。oracle 若已冻则按追加文 (APPEND) 补 P4 三落点+批负控（append-only 注记）；未冻则直接入冻结面。",
+    "parent_p4_confirmation": "【父方一句确认：P4 evidence-degraded 模式照准，APPEND 补文入册即冻】附两不变量必须写进补文（缺一不可）：1. windows 归一空的安全部论证：「畸形 windows 归一 []/{} → 回退 obs_finished 证据派生区间——畸形 windows 在任何情形下不得比证据派生默认更宽地扩大可接受区间（只降不升=攻击者控制值永不进计算）」——把这句原文写进 APPEND；并保留你的批 BAD 超主张变体（only-BAD rejected 证门仍承重）。2. 每落点一条反武器化负探针：windows-BAD 超主张→R-CLAIM-EXCEEDS、sampled_at 畸形→R-NO-SAMPLES、ledger 畸形+complete 主张→J11，三探针 raw 入 evidence。其余全按你预告执行……无需再问，直接续到交付。"
+  },
+  "prerequisite_layer": {
+    "t1_10_fix_changes_diff_sha256": "625ecfe45f3d713a08b5873c6cb3df258c25279d4c5bf3f4e25295cd441199ac",
+    "t1_10_fix_fixed_iso_sha256": "064e5381444d35a8ab1184d6c8d2eaa839a40f96c704ae7995fa3b660c7e273d",
+    "r2_baseline_iso_sha256": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
+    "merge_order": "T1-10-FIX 625ecfe4... FIRST -> this card's changes.diff (difflib left side = their fixed iso 064e5381...) SECOND -> T1-F3-FIX THIRD (scope = _parse timestamp zone lines 82-88, line-disjoint from this card's hunks)",
+    "coordinate_check": "this card's hunk zones on the fixed iso: F-1 ~lines 50-59, F-2 ~lines 354-364, P4 ~lines 439-446; their changed regions on the same file = lines 60-74 (BASIS_REGISTRY comment+tuple) and 207-217 (E1 carrier guard); defect-2 zone = 182-205; _parse zone = 82-88. Disjointness is measured post-generation in evidence/after/invariants.json and recorded in decision.md."
+  },
+  "subject": {
+    "red_baseline": "worktree_before/i14b/iso/natural_window.py = T1-10-FIX fixed iso (sha 064e5381...)",
+    "diff_left_image": "worktree/baseline/natural_window.t1_10fixed.pristine.py (sha 064e5381...)",
+    "fixed": "worktree/i14b/iso/natural_window.py (sha recorded in decision.md sec 9 after the fix is applied)"
+  },
+  "interlocked_harness_pins": {
+    "note": "byte-identical through the whole run (evidence/pin_hashes.sha256.tsv, re-checked at the end); only the SUT + ONE new test file appear in changes.diff",
+    "harness/run_cases.py": "f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23",
+    "harness/mutate.r2.py": "4f741cb72af5cdb62095b422d4d87d6440082091a53969704201616bed383def",
+    "harness/tests/test_i14b_natural_window.py": "413ff05c52e07acacf0491a0ec3f2cd1c426011995b45d7ad3edaab65a38ad4e",
+    "harness/tests/test_i14b_natural_window_r2.py": "ace076871c811441bc454692323dbba71243086ec7287880eed9b51a8114d1e9",
+    "harness/tests/test_i14b_natural_window_basis_total.py": "316e369c9afc9d8df04a425945b97e41378e87f3ac17c721d0ab9ddf90904bfd (T1-10-FIX's 23-test suite, inherited GREEN both phases)",
+    "harness/cases.json": "5d8c459277da88b8361b520bee1424f079dc1d9c08744433cae0d30cdbb67d64",
+    "harness/cases.r2.json": "23d89fb27bbdb599646290ba5dbf096a0d1513d63c7a6d19f3f16fe9f88279de",
+    "harness/frozen_expectations.json": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+    "harness/frozen_expectations.r2.json": "a24d8ab3444dd1c75eaa3533f424a048bdced4f0f66408cb04622ead760667ba",
+    "oracle.md (I-14-B, reviewer-owned)": "bdd0407ab577ed4564b8e948d8e3954b663c795dbcd7a3035485424ae753baf3",
+    "review.md": "ab93734d430bd2814d55ae8be5f22297c4a3888c8ac83f0c43192fa0576142ed",
+    "changes.r2.diff": "660bc943187db1c083ef8f04b3c642f3917a3040a5eae376c4fcbbb7ef2c2104"
+  },
+  "this_card_artifacts": {
+    "oracle.md": "ea63701c288fdc890cd985b077dce37c4a53aebd438e1548add9d047714f30ce (base frozen before any run; APPENDIX appended before any run; both byte-frozen thereafter)",
+    "scripts/verify_t1_f2_fix.py": "b903a9f677d537ca2d1fee4bac22723317ede80449e4cfcb1f8126981d47b7f1 (will be re-hashed at delivery; edits before first run are part of pre-run construction)",
+    "scripts/inherit_probe_t1_10_fix.py": "88f15ee66c6df28ffb528b1366f25d11d65b44e80a758256f52dbadcbb4515bf = byte-identical copy of T1-10-FIX/a20260923-01/scripts/verify_t1_10_fix.py (verified equal at copy time)"
+  },
+  "j7_j11_surface_anchors": {
+    "MUT-7 anchor": "mutate.r2.py:63 text-pins the GUARD line '    if clock_source not in TRUSTED_CLOCKS:  # J7' (NOT the TRUSTED_CLOCKS definition line) -> set->tuple fix keeps the guard line byte-identical; verified exactly-once before AND after (MUT-A1)",
+    "MUT-11 anchor": "mutate.r2.py:83 text-pins '    if claim_status == \"complete\" and computed_status != \"complete\":  # J11' -> F-2 guard keeps this line byte-identical; exactly-once both phases",
+    "MUT-15 anchor": "mutate.r2.py:99 text-pins '    if basis not in BASIS_REGISTRY:  # J16 / P1' -> untouched; exactly-once both phases",
+    "test anchors": "test_i14b_natural_window_r2.py:150 sorted(SUT.BASIS_REGISTRY); test_i14b_natural_window.py:171-175 C5/C4 J7/J11 calendar assertions - file shas pinned, suites green before==after",
+    "report anchor": "natural_window.py sorted(TRUSTED_CLOCKS) report site - tuple-agnostic, present exactly-once"
+  },
+  "runtime": {
+    "python": "I-14-B/a20260919-01/iso/venv/Scripts/python.exe (Python 3.13.9, pytest 9.1.1, reused READ-ONLY with -X utf8 -B -p no:cacheprovider)",
+    "isolation": "all writes confined to T1-F2-FIX/a20260923-01 (two worktree copies + evidence); source tree written 0 times"
+  },
+  "boundary": {
+    "sources_read_only": true,
+    "delivery": "changes.diff only (zero production merge; promotion remains a separate owner decision)",
+    "git_commands": 0,
+    "deletions": 0,
+    "status_transfers": 0,
+    "signatures": "none (implementer_signed=false)",
+    "promotions": 0,
+    "oracle_edits": "0 after freeze (base + APPENDIX both written before any run; I-14-B oracle.md never touched)",
+    "f3_boundary": "malformed-timestamp rc ownership NOT self-filled; PT-1/PT-2 rows recorded as pending-routed to T1-F3-FIX, excluded from PASS/FAIL"
+  }
+}

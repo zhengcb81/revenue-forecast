@@ -1,0 +1,102 @@
+{
+  "arms": {
+    "GREEN": {
+      "rc": 0,
+      "violations": []
+    },
+    "M1_one_column_masking": {
+      "rc": 3,
+      "violations": [
+        "J2: row MS-PBP-M05 row_status pass-like despite unproven accuracy / non-granted columns"
+      ]
+    },
+    "M2_accuracy_overclaim": {
+      "rc": 3,
+      "violations": [
+        "J2: row ZJ-SMT-M09 accuracy.status != unproven (accuracy column must stay unproven; masking forbidden)"
+      ]
+    },
+    "M3_ready_escalation": {
+      "rc": 3,
+      "violations": [
+        "J1: final_scorecard.qualification_statuses.deployment_usable.status != false",
+        "J1: classification must not be buy_side_review_ready in this unit",
+        "J5: classification=buy_side_review_ready but rule-derived=research_draft_needs_review",
+        "J5: ready claimed without all-2 dims + independent signature"
+      ]
+    },
+    "M4_redline_consumption": {
+      "rc": 3,
+      "violations": [
+        "J1: handoff.params_released != false",
+        "J3: handoff.json contains consumed_for_forecast",
+        "J3: params_released must stay false"
+      ]
+    },
+    "M5_fabricated_numbers": {
+      "rc": 3,
+      "violations": [
+        "J4: Q3 numeric_contribution_shares must be empty (no arbitrary interaction allocation)",
+        "J4: consensus/market-implied numbers must be empty (no fabricated figures)",
+        "J4: driver_contributions must stay not_available/none/[]"
+      ]
+    },
+    "M6_scenario_as_probability": {
+      "rc": 3,
+      "violations": [
+        "J4: scenario_is_probability != false",
+        "J4: probability_claims_count != 0",
+        "J4: production_vs_sales.never_mixed != true"
+      ]
+    },
+    "GREEN_AFTER_MUTATIONS": {
+      "rc": 0,
+      "violations": []
+    }
+  },
+  "originals_untouched": true,
+  "before": {
+    "oracle.md": [
+      27249,
+      "f1f9240a9ade28ecf1e951cac83f4f4b2de68c93368cfc0a67eef0d3baf2ff00"
+    ],
+    "reviewer_answers.json": [
+      27844,
+      "df599de9214384e8f54f4f28483d41ea4e3328164efb35893c8f2498b4653656"
+    ],
+    "final_scorecard.json": [
+      27097,
+      "06976e807fd5077a493151e7f4391dd238004abeb8ca9bbe3f50a48f21850263"
+    ],
+    "verification.json": [
+      7145,
+      "b0ff9c08379489fb477164e56aea501e3f95ee6b2d4388de6361bf30cf3f2176"
+    ],
+    "handoff.json": [
+      18818,
+      "849c4826134481579d1e8739a5ee6e3c7a4324acf18fdc8caa1648f2a7d1b052"
+    ]
+  },
+  "after": {
+    "oracle.md": [
+      27249,
+      "f1f9240a9ade28ecf1e951cac83f4f4b2de68c93368cfc0a67eef0d3baf2ff00"
+    ],
+    "reviewer_answers.json": [
+      27844,
+      "df599de9214384e8f54f4f28483d41ea4e3328164efb35893c8f2498b4653656"
+    ],
+    "final_scorecard.json": [
+      27097,
+      "06976e807fd5077a493151e7f4391dd238004abeb8ca9bbe3f50a48f21850263"
+    ],
+    "verification.json": [
+      7145,
+      "b0ff9c08379489fb477164e56aea501e3f95ee6b2d4388de6361bf30cf3f2176"
+    ],
+    "handoff.json": [
+      18818,
+      "849c4826134481579d1e8739a5ee6e3c7a4324acf18fdc8caa1648f2a7d1b052"
+    ]
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "carrier": "handoff.json",
+  "card": "I-14-A",
+  "attempt": "execution_runs/I14A-D1-OPS-REVIEW/a20260924-01",
+  "role": "independent_ops_slo_reviewer",
+  "author_of_probe": false,
+  "authorized_by": "OWNER_DECISIONS §十 L126 + §十一 L143",
+  "authorization_quotes": {
+    "OWNER_DECISIONS_L116": "…I-14-A D1/D2 指派运维与 SLO owner…",
+    "OWNER_DECISIONS_L126": "**I-14-A D1/D2** | **指派**：运维 owner 签 D1、SLO/探针 owner 签 D2 | 编排层按此派单（**D1 必须由非本探针作者签**）；未签前 `iso/slo_probe_patched.py` **不得**进 `RF/tools/`",
+    "OWNER_DECISIONS_L143": "1 | I-14-A D1/D2 | **派新 subagent** 当独立运维/SLO reviewer | 编排层创建独立 reviewer subagent（**D1 必须非本探针作者**）",
+    "declaration": "本人为编排层新建 subagent、非本探针作者，具备 D1 签署资格。"
+  },
+  "ruling_D1": {
+    "status": "SIGNED_RULING_PER_ITEM",
+    "signed_by": "independent_ops_slo_reviewer (not the probe's author)",
+    "items": {
+      "sampling_interval": {
+        "value": "nominal 50 ms fixed (RSS_SAMPLE_INTERVAL_SECONDS = 0.05)",
+        "measured_effective_cadence_ms": [
+          64.0,
+          75.2
+        ],
+        "scope": "processes alive >= ~2x effective cadence (~150 ms) get PID-identifiable samples; shorter children may be missed entirely",
+        "counterexample": "E0 fixture_pid_is_in_samples red 6/7 in this session (suite 1 + 5 repeats), green in the sealed attempt",
+        "open_item": "append-only correction of the F4/E0 identity expectation OR a spawn-time sampling guarantee — required before card pass"
+      },
+      "peak_method": {
+        "value": "option 2: live rss sampled at fixed interval, peak = max of summed process tree",
+        "rejected": [
+          "option 1 peak_wset",
+          "option 3 ctypes GetProcessMemoryInfo"
+        ],
+        "measured": {
+          "option2_tree_sum_gb": 0.2674,
+          "option1_peak_wset_gb": 0.2634,
+          "option3_ctypes_gb": 0.2634,
+          "option1_vs_option3_pairs": "61 pairs, 59 identical, 2 differ by -65536 B",
+          "post_exit": "psutil NoSuchProcess; ctypes still returned 4743168 B (ambiguous)"
+        },
+        "counterexample_to_decision_md": "the 'interpreter start-up spike' premise was NOT reproduced here (delta 0.0 MB); recorded as basis=professional_judgement"
+      },
+      "measurement_error_rule": {
+        "value": "no sample => null + uncollected/sampler_disabled + explicit breach, never 0.0, never green; attribution limited to peak_tree_pids; synthetic allocation is order-of-magnitude only; interval/method/error changes need a new independent reason + new oracle",
+        "added_by_this_review": "a peak whose sampled pid set excludes the measured program's pid must be read as launcher-attributed only and must not be cited as the resolver's RSS",
+        "residual": "the meter does not machine-enforce the attribution downgrade yet; exit code attribution to the RSS breach is not isolated in the observed E2 run (bundle breach also present)"
+      }
+    },
+    "signature_terms_accepted": [
+      "F-I14A-01: any invocation without --bundle-measurement exits 2 (measured, intended)",
+      "F-I14A-02: rc is unobservable/unobserved on the old tool (6x UnicodeDecodeError measured)",
+      "tree-sum is a conservative overestimate (+4.059 MB launcher measured here)"
+    ],
+    "does_not_declare_card_pass": true,
+    "does_not_lift_promotion_prohibition": true
+  },
+  "confirmation_D2": {
+    "status": "not_confirmed_as_written",
+    "confirmed_properties": [
+      "inconsistent binding refused with exit 3 and zero resolve calls",
+      "consistent binding accepted (quoted / bare / ${PROJECT_ROOT} / catalog.db) with 6 resolve calls",
+      "parser fails closed on block scalar, anchor, residual ${}, missing key",
+      "E4/E4b re-run green (rc 3 / 2)"
+    ],
+    "refuted_claims": [
+      "decision.md D2 says RF/tools/release_readiness.py uses catalog.db; measured: 0 matches for .db in tools/*.py and release_readiness.py:37 is .source_catalog/catalog.sqlite3 => 'actual target agreement' is not demonstrated for the catalog.db name",
+      "decision.md/oracle.md say the small reader handles inline # comments; measured: quoted scalar + inline comment is refused (exit 3) because _strip_scalar drops the comment before unquoting"
+    ],
+    "recovery_rule": "append-only correction of decision.md D2 / oracle.md §9.3, or tighten `consistent` to require the filename to equal configured_catalog_file; then re-confirm"
+  },
+  "status_D3": {
+    "status": "unsigned_awaiting_I-16",
+    "signed_by_this_reviewer": false,
+    "reason": "D3 belongs to I-16 (bundle measurement changes the default exit semantics); no execution_runs/I-16* exists, cards I-16-A/I-16-B are 'planned', and no bundle measurement file exists anywhere outside .planning",
+    "bundle_measurement_file_present": false,
+    "default_invocation_exit_code_observed": 2
+  },
+  "promotion_prohibition_still_in_force": true,
+  "counterexample_raw_returncodes": {
+    "patched": {
+      "E0": 2,
+      "E1a": 4,
+      "E1b": 4,
+      "E1c": 2,
+      "E2": 2,
+      "E3": 2,
+      "E7": 2,
+      "E4": 3,
+      "E4b": 2,
+      "E6": 0,
+      "runner_rc": 0
+    },
+    "production_tool_via_runner": {
+      "all_cases": 2,
+      "E6": 0,
+      "runner_rc": 1
+    },
+    "pytest_suite_patched": {
+      "rc": 1,
+      "passed": 11,
+      "failed": 1,
+      "skipped": 1,
+      "failed_item": "test_frozen_case[E0-baseline-F4] -> fixture_pid_is_in_samples"
+    },
+    "pytest_suite_production": {
+      "rc": 1,
+      "passed": 2,
+      "failed": 10,
+      "skipped": 1
+    },
+    "e5_old_tool_on_failing_children": {
+      "raw_rc": 0,
+      "breaches": [],
+      "unicode_decode_errors": 6
+    },
+    "bundle_control": {
+      "rc": 0,
+      "pass1": 2,
+      "pass2a_copied": 0,
+      "pass2b_independent": 0
+    },
+    "e0_identity_repeats": {
+      "runs": 5,
+      "red": 5,
+      "green": 0
+    }
+  },
+  "written_files": [
+    {
+      "path": "ruling.md",
+      "sha256": "ede71bfa7b1a521b6f3252af539ef8aded9f645b92be82ac12460a93b11ab6c8",
+      "bytes": 34896
+    },
+    {
+      "path": "provenance.json",
+      "sha256": "8d22a92a91e854c787072272f1cec0bdf0e1ac46c29204046397b6a1406d88eb",
+      "bytes": 61292
+    }
+  ],
+  "self_hash_note": "handoff.json does not cite its own sha256 (self-citation would be stale by construction); hash it externally after the last write.",
+  "git_diff_non_planning": 0,
+  "git_diff_measurement": "git -c core.quotepath=false diff HEAD --name-only -> 3824 lines, 0 outside .planning (evidence/boundary_checks.txt)",
+  "product_write_count": 0,
+  "promotion_copy_count": 0,
+  "i14a_mutation_count": 0,
+  "does_not_claim_I14A_acceptance": true,
+  "open_items_carried": [
+    "D1-1(c): E0/F4 sub-interval identity expectation must be corrected append-only or made deterministic before card pass",
+    "D2: two documented claims refuted by measurement -> append-only correction + re-confirm",
+    "D3: awaiting I-16 bundle measurement; promotion stays prohibited until then"
+  ],
+  "generated_utc": "2026-09-24T20:55:57Z"
+}

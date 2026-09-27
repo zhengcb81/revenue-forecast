@@ -1,0 +1,61 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d86afa5d321ccf2dd3d8c10efb9b81424875abe2",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "b7c8f11a628dd3e50aa1d2e6ea3cc56e0955ff91530ff337e718974138de2207",
+  "commands": [
+    {
+      "command": "read adr_mining_accounting.md (156 lines, full review)",
+      "exit_code": 0,
+      "result": "Read ADR in full: 7 substantive decisions + §8 ADR boundary + §9 reviewer confirmation section; verified all 8 unit-card decisions present."
+    },
+    {
+      "command": "read 00_wu_card.md + 11_implementer_receipt.json + red/RED.md (cross-check)",
+      "exit_code": 0,
+      "result": "Unit card C1/C2/C3 and implementer receipt align with ADR content; receipt notes ADR SHA-256 prefix 6c608c6a8c149e1c… matches computed hash."
+    },
+    {
+      "command": "grep repo for ADR implementation references (calculate_model_path/calculate_registered_model/_check_asset_fact_unit_consistency/apply_ownership_share/effective_group_share/geography_index/assertion_status/resolution_status)",
+      "exit_code": 0,
+      "result": "All referenced code exists: scripts/forecast/segments.py, scripts/asset_ownership.py, scripts/model_registry.py, scripts/contracts/document.py (ZR-604 validation), plus tests test_zr601/602/603/604."
+    },
+    {
+      "command": "read scripts/asset_ownership.py + grep constants.py for basis enum and apply_ownership_share semantics",
+      "exit_code": 0,
+      "result": "ASSET_FACT_OWNERSHIP_BASES = {one_hundred_percent, equity_share, consolidated}; apply_ownership_share rejects equity_share ('ownership share already applied… Kamoa/Porgera guard') and consolidated; effective_group_share docstring: 60% × 70% == 0.42 applied once per level — matches ADR §3/§4 verbatim."
+    },
+    {
+      "command": "python hashlib sha256 of adr_mining_accounting.md",
+      "exit_code": 0,
+      "result": "6c608c6a8c149e1ce5d1f9fe682ca1d36e117f88969c2799d7dafde86d90939a"
+    }
+  ],
+  "created_at_utc": "2026-08-21T21:13:44Z",
+  "findings": [
+    {
+      "detail": "Under IAS 28 the equity method does not bring an associate's revenue into the consolidated income statement (only share of profit). The ADR's 'equity_share' basis therefore represents a management/operational attribution metric rather than a disclosed IFRS line. The ADR's treatment is correct — rejecting re-discounting of equity_share revenue at the apply_ownership_share layer is precisely the right anti-double-counting design — but a one-line clarification in §3/§4 (equity-share revenue is a model/operational metric, not a consolidated financial-statement line) would prevent future misreading.",
+      "id": "REV-001",
+      "severity": "info",
+      "title": "equity_share basis is an operational metric, not an IFRS income-statement line"
+    },
+    {
+      "detail": "IFRS 3 requires recognizing the acquiree's results from the acquisition date; the ADR's allow_pro_rata day-weighting across a period is a defensible model approximation of that rule (and default-rejecting silent averaging is the right conservative default). Recommend one sentence in §4 noting this is a modeling simplification of acquisition-date accounting, not an IFRS 3 election.",
+      "id": "REV-002",
+      "severity": "info",
+      "title": "day-weighted pro-rata is a model approximation of IFRS 3 acquisition-date recognition"
+    }
+  ],
+  "kind": "reviewer",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d86afa5d321ccf2dd3d8c10efb9b81424875abe2",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_object_sha256": "6c608c6a8c149e1ce5d1f9fe682ca1d36e117f88969c2799d7dafde86d90939a",
+  "reviewer": "reviewer-zr610-accounting-independent",
+  "schema_version": 1,
+  "unit": "ZR-610",
+  "verdict": "accepted"
+}

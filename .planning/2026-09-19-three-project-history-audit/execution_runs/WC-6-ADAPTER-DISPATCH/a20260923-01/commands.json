@@ -1,0 +1,119 @@
+{
+  "card": "WC-6-ADAPTER-DISPATCH",
+  "attempt_id": "a20260923-01",
+  "binding_status": "bound",
+  "cwd_default": "<attempt>",
+  "interpreter": "<attempt>/iso/venv/Scripts/python.exe (sha256 0e818a1f9a0b8fbd4e7cc458a07cb7de2ea02ea326e387699a33b92f151242cd)",
+  "env_common": {
+    "PYTHONPATH": "<attempt>/iso/cw/src for product runs; <cwd> implied for harness imports",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUTF8": "1",
+    "network": "disabled by construction for every command below"
+  },
+  "exit_code_legend": {
+    "self_describing": true,
+    "scope": "THIS batch only (harness rcs); product rcs are recorded raw and are NOT this legend",
+    "harness_rc": {
+      "0": "harness command completed and its evidence file was written (business verdict lives inside the evidence JSON)",
+      "1": "harness failure: import error, evidence not written",
+      "2": "no verdict / usage: required argument or precondition missing before judging",
+      "3": "not as expected: a frozen comparison of this batch failed (outcome bytes differ, iso copy not byte-identical, family outcomes differ, live pins drifted)"
+    },
+    "product_rc_recorded_raw": {
+      "company_wiki cli scan": "0 = ok; 1 = failure (config-load errors surface as a RAW traceback before cli.py's try)",
+      "company_wiki cli resolve": "0 = envelope printed (found / not_found / blocked judged from the envelope, not the rc)",
+      "pytest": "raw rc as printed by pytest; the verdict of this card is the per-test outcome list, not the rc"
+    }
+  },
+  "commands": [
+    {"id": "CMD-WC6-PIN-BEFORE",
+     "purpose": "step 2/3: pin live CW src+tests+config, prove the iso copy is byte-identical, hash the I-07-C carriers and the REMEDIATION_REGISTER",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/pin_sources.py", "before"],
+     "cwd": "<attempt>", "timeout_seconds": 900, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "evidence/source_pins_before.json"},
+
+    {"id": "CMD-WC6-SELECT-FAMILY",
+     "purpose": "step 6 precondition: mechanical grep selection of the regression family (oracle §6)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/select_family.py"],
+     "cwd": "<attempt>", "timeout_seconds": 300, "expected_returncode": 0,
+     "binding_status": "bound",
+     "evidence": "evidence/family_files.json + evidence/family_grep.txt"},
+
+    {"id": "CMD-WC6-PREPARE-<label>",
+     "purpose": "step 5/7: (re)build ONE fresh isolated probe cell with the four I-07-C-shaped probes",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/prepare.py", "<label>"],
+     "cwd": "<attempt>", "timeout_seconds": 300, "expected_returncode": 0,
+     "binding_status": "bound",
+     "labels": ["red", "green", "mutation"],
+     "evidence": "evidence/<label>/{fixture_manifest.json,prepare.json}"},
+
+    {"id": "CMD-WC6-SCAN-<label>",
+     "purpose": "step 5/7: judged registration run of the PRODUCT's own scan entry (I-00-B argv form)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_stage.py", "<label>", "scan"],
+     "wrapper_note": "executes the recorded inner argv [python -X utf8 -B -m company_wiki.source_catalog.cli --config <cell>/config/source_catalog.yaml scan] with cwd=<cell>/cwroot and PYTHONPATH=<attempt>/iso/cw/src",
+     "cwd": "<attempt>", "timeout_seconds": 600, "expected_returncode": 0,
+     "expected_product_returncode": "0",
+     "binding_status": "bound",
+     "evidence": "evidence/<label>/scan/{argv.json,stdout.txt,stderr.txt,product_rc.json,catalog_dump.json,normalized.json}"},
+
+    {"id": "CMD-WC6-RESOLVE-<label>",
+     "purpose": "step 7: judged read run of the product's resolve entry (read-path outcome must be byte-identical before/after)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_stage.py", "<label>", "resolve"],
+     "wrapper_note": "inner argv [... --config <cfg> resolve --entity <inputs/probe_fixture.json.company_name> --document-kind annual_report --as-of-date 2026-09-23] with cwd=<cell>/cwroot",
+     "cwd": "<attempt>", "timeout_seconds": 600, "expected_returncode": 0,
+     "expected_product_returncode": "0 (envelope printed; business result judged from the envelope)",
+     "binding_status": "bound",
+     "evidence": "evidence/<label>/resolve/{argv.json,stdout.txt,stderr.txt,product_rc.json,catalog_dump.json,normalized.json}"},
+
+    {"id": "CMD-WC6-CFG01-<label>",
+     "purpose": "G-4 quote-preserve: unknown adapter_id still refused at config load with the CFG-01 text",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_stage.py", "<label>", "cfg01"],
+     "cwd": "<attempt>", "timeout_seconds": 300, "expected_returncode": 0,
+     "expected_product_returncode": "1 with \"adapter_id 'unknown_layout_v9' not registered (CFG-01)\" on stderr (recorded raw)",
+     "binding_status": "bound",
+     "evidence": "evidence/<label>/cfg01/{stderr.txt,product_rc.json}"},
+
+    {"id": "CMD-WC6-COMPARE-RED-GREEN",
+     "purpose": "step 7: byte-compare outcome fields per probe; assert locations.error is the only change",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/compare_runs.py", "red", "green"],
+     "cwd": "<attempt>", "timeout_seconds": 300, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "evidence/compare_red_vs_green.json"},
+
+    {"id": "CMD-WC6-COMPARE-GREEN-MUTATION",
+     "purpose": "step 7 mutation arm: outcome bytes identical, reasons cleared",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/compare_runs.py", "green", "mutation"],
+     "cwd": "<attempt>", "timeout_seconds": 300, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "evidence/compare_green_vs_mutation.json"},
+
+    {"id": "CMD-WC6-FAMILY-<label>",
+     "purpose": "step 5/7 regression: mechanically selected contract family, per-test outcomes",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_family.py", "<label>", "--cwd", "<iso|live>"],
+     "cwd": "<attempt>", "timeout_seconds": 3000, "expected_returncode": 0,
+     "labels": ["fam_before (--cwd iso)", "fam_after (--cwd iso)", "fam_live_before (--cwd live, READ-ONLY witness)"],
+     "binding_status": "bound",
+     "evidence": "evidence/<label>_family.txt + <label>_family_outcomes.json + <label>_family.xml"},
+
+    {"id": "CMD-WC6-COMPARE-FAMILY",
+     "purpose": "step 7: before == after per-test outcomes (also iso-baseline == live-baseline)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/compare_family.py", "<labelA>", "<labelB>"],
+     "cwd": "<attempt>", "timeout_seconds": 300, "expected_returncode": 0,
+     "pairs": [["fam_before", "fam_after"], ["fam_before", "fam_live_before"]],
+     "binding_status": "bound",
+     "evidence": "evidence/compare_family_<A>_vs_<B>.json"},
+
+    {"id": "CMD-WC6-CHANGES-DIFF",
+     "purpose": "step 8: unified difflib diff of the iso-fixed product files vs their live CW pre-image (no git)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/make_changes_diff.py"],
+     "cwd": "<attempt>", "timeout_seconds": 300, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "changes.diff"},
+
+    {"id": "CMD-WC6-PIN-AFTER",
+     "purpose": "step 8 no-mutation witness: live CW pins must equal the step-2 pins (zero product writes)",
+     "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/pin_sources.py", "after"],
+     "cwd": "<attempt>", "timeout_seconds": 900, "expected_returncode": 0,
+     "binding_status": "bound", "evidence": "evidence/source_pins_after.json"}
+  ],
+  "raw_exit_codes": "filled by handoff.json from the captured runs",
+  "expected_exit_codes": "harness 0 for every command above unless its frozen comparison itself fails (then 3 and the card stops); product rcs recorded raw per the legend",
+  "git": "NOT USED as a bound command in this card (no git entries above; delivery = changes.diff)"
+}

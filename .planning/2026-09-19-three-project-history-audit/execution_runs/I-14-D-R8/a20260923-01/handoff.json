@@ -1,0 +1,119 @@
+{
+    "card": "WC-1 (I-14-D r8 残差一轮) — attempt execution_runs/I-14-D-R8/a20260923-01",
+    "landing": "carrier landing of the independent review verdict (transcription + bookkeeping only; no self-signing, no product writes, no git)",
+    "status": "accepted_scoped",
+    "status_before": "review_pending",
+    "status_authority": {
+        "carrier": "reviewer_report.md",
+        "path": "execution_runs/I-14-D-R8/a20260923-01/reviewer_report.md",
+        "sha256": "57033339620bdf8085ec647bb0c049a41ebf20af62390f626148155bae44ca44",
+        "bytes": 27918,
+        "sidecar": {
+            "file": "reviewer_report.sha256",
+            "bytes": 85,
+            "sha256": "704ac4148e1609673f5f1f7673e851e23fc65326af8e837c6d3f5a69494b23af",
+            "content": "57033339620bdf8085ec647bb0c049a41ebf20af62390f626148155bae44ca44  reviewer_report.md",
+            "verified": "85B, two-space separator, content-match to recomputed report hash at landing"
+        },
+        "byte_proofs": {
+            "report_sha_recomputed_at_landing": "57033339620bdf8085ec647bb0c049a41ebf20af62390f626148155bae44ca44 == sidecar",
+            "verdict_section": "L17-18 (## VERDICT: accepted_scoped ... COLLISION NOTE)",
+            "findings_F_REV_R8_01_05": "L325-354 (## 10. Findings)",
+            "collision_section_8": "L284-305 (## 8. COLLISION NOTE)",
+            "scope_section_9": "L307-323 (## 9. Scope-if-accepting + carried)",
+            "per_item_section_3": "L83-167 (4/4 residuals)",
+            "counts_section_4": "L169-185",
+            "diff_section_5": "L187-216",
+            "disclosures_section_6": "L218-248 (9 items)",
+            "integrity_section_7": "L250-282",
+            "unverified_section_11": "L356-376 (7 items)",
+            "rem79_selfcheck_section_12": "L378-382 (0 violations, rc 0)",
+            "signature": "L386-387"
+        },
+        "verdict": "accepted_scoped",
+        "N_reviewers": 1,
+        "transcribed": true,
+        "transcription_only": true,
+        "self_signing": false,
+        "reviewer_pre_image": {
+            "handoff_md_sha256": "4eb20f2650a1ba8a1f2dee16adf27116cfc145412d17df75ad0c96c8b497b122",
+            "handoff_md_bytes": 5666,
+            "binding_json_sha256": "4df744a9d9a07d129ce023cdc1c9dfce5dc75c08ab2f039eee111e17c9fb9054",
+            "binding_json_bytes": 5909,
+            "fields_at_review": {
+                "status": "review_pending",
+                "implementer_signed": false,
+                "disclosure_adaptation": "unmapped",
+                "accuracy": "unproven"
+            }
+        }
+    },
+    "bookkeeping": {
+        "decision_erratum": {
+            "section": "decision.md `## F-REV-R8 erratum (landing)` (append; §1-§5 unchanged)",
+            "decision_md_sha256_before": "21254d54c6db84375083d16ddb8fb957cf89ecdd197e16e3e30409fb84b3f66a",
+            "decision_md_bytes_before": 13961,
+            "decision_md_sha256_after": "bb540ed362c74cc7d95015f154ec9599f814eaacb80e8eb1c4cfcd6b8664af01",
+            "decision_md_bytes_after": 17867
+        },
+        "F-REV-R8-01": "INFO bookkeeping — register close-figure measurement-timing drift: decision §4.8 accddcc3…/228888 vs final_integrity 5a9b8737…/232018 vs review-time 72e044d9…/237713 and bd83a61f…/243062; external parallel appends (no register write in this card's log); ROW-LEVEL VERIFICATION HOLDS AT EACH POINT (L17/L1665/L1713 verbatim); disposition: note appended to decision.md erratum, no measurement changed",
+        "F-REV-R8-02": "INFO bookkeeping — REM-79 mechanized scan flags 34 carrier-prose lines (oracle 14/decision 7/commands 10/handoff 3); belongs to the REM-94 append-only bookkeeping track (register L1456/L1494), NOT a gate for this card's residual verdicts; reviewer's own report = 0 violations; disposition: carried bookkeeping downstream",
+        "F-REV-R8-03": "INFO minor — attempt-1 sweep stdout archived without paired .rc.txt (rc=1 in commands.md prose only); archive nit, tracebacks retained; disposition: recorded, no claim affected",
+        "F-REV-R8-04": "INFO tooling — build_r8.py `nl.strip(\"\\r\")` newline field lossy (prints \\n for LF and CRLF; targets are CRLF, 937 lines); content shas unaffected, no claim changed; disposition: recorded as reproducer note",
+        "F-REV-R8-05": "INFO positive — freeze-first timestamped anchor: pre-run pin c6cbf869… embedded in build_r8.py@23:39:56 + generated harness@23:40:05 < first RED@23:40:52 < CORRECTION W1@23:48, prefix-proved; disposition: recorded as positive evidence",
+        "collision_sequence": {
+            "adjudication": "parent-adjudicated, reviewer-grounded (reviewer_report §8, L284-305)",
+            "sequence": [
+                "1. CW-GATE-UNBLOCK-2 split diff lands FIRST",
+                "2. then WC-1 K1/K2 content is re-based into the split structure (mechanical re-anchor of the 3 hunks onto the post-split function layout)",
+                "3. then complexity is re-measured — WC-1 content bumps = targeted re-split if needed",
+                "4. final ratchet test green"
+            ],
+            "on_disk_grounding": "CW-GATE-2 changes.diff 66831 B includes --- a/src/company_wiki/source_catalog/observability.py; its decision.md records RC-2b _redact_assignments complexity 27 → 6 (split DONE, max 6), pending re-verify + mutation at review time",
+            "executor_dependency": "WC-1 hunks are written against the PRE-SPLIT observability.py (both targets, bodies byte-identical); mechanical re-anchor REQUIRED at landing — do NOT apply this changes.diff verbatim onto a post-split file"
+        },
+        "binding_status_untouched_note": "Per the card's own structure, binding.json stores `status` alongside the pins (line 73). This landing does NOT rewrite binding.json: status flips live in handoff.json (status/status_authority) and evidence/I-14-D-R8/qualification.json (formula.state) per the house landing pattern; binding.json remains byte-untouched (sha256 4df744a9d9a07d129ce023cdc1c9dfce5dc75c08ab2f039eee111e17c9fb9054, still reading status=review_pending as its historical pre-verdict value). Binding pins (spec a68ed77f…, trees, harnesses, oracle dual pins, changes_diff_sha256 baec3153…, register_drift) untouched; forcing the binding.json status flip is NOT this carrier's authority.",
+        "files_written": [
+            "decision.md (append-only erratum `## F-REV-R8 erratum (landing)`)",
+            "review.md (new — transcription-only verdict record)",
+            "handoff.json (new — status live carrier)",
+            "evidence/I-14-D-R8/qualification.json (new — formula state carrier)"
+        ],
+        "never_touched": [
+            "reviewer_report.md + reviewer_report.sha256 (status authority, read-only)",
+            "binding.json (pins + historical status)",
+            "oracle.md + oracle.sha256 (frozen oracle, dual pins)",
+            "commands.md, changes.diff, recovery.md, handoff.md (original handoff carrier, pre-image retained)",
+            "evidence/ originals (except the new evidence/I-14-D-R8/ subdir)",
+            "harness/ originals",
+            "sealed I-14-D/a20260919-01 attempt, company-wiki production sources, REMEDIATION_REGISTER.md, plan files, r3/r6/r7 carriers (handoff_r3.json 3e9648c8… untouched)"
+        ],
+        "no_git": true,
+        "production_writes": 0
+    },
+    "carries": {
+        "lineage": {
+            "r6_r7": "I-14-D a20260919-01 r6/r7 generation: r7 verdict accepted_scoped, status authority reviewer_report_r7.md sha256 cc6da8d3878dbd942bc6d47bdd750913d1c0646742e22c737ffe73191f610076 == sidecar (recomputed and equal at this card's freeze); r6 pins tree 2f644994… / harnesses 85a1b064…, 8f5feffd… / counts 44/95 carried forward",
+            "spec": "REGISTRY-CLOSURE a20260923-01 decision.md a68ed77f…fe79353 (§WORK-CARD WC-1 L84-85)"
+        },
+        "disclosure_adaptation": "unmapped",
+        "accuracy": "unproven",
+        "queue_refs": {
+            "WC-2": "REM-07 swallow — untouched, out of frozen scope (oracle §7), queued",
+            "WC-3": "REM-17 negatives — untouched, out of frozen scope (oracle §7), queued",
+            "WC-5": "REM-79 tooling — untouched; its informational scan output (F-REV-R8-02) feeds the REM-94 append-only bookkeeping track"
+        },
+        "other_carried": [
+            "changes.diff UNAPPLIED — merge-wave content layer; landing awaits owner's promotion/repair batch, post CW-GATE-2 split with mechanical re-anchor REQUIRED",
+            "I-14-C real-exit pytest suite not run (production-write risk) — run in the promotion batch that lands K1/K2",
+            "declared-open: R3b marker-twin asymmetry (oracle 4d); value-start \\r \\v \\f after break; delimiter+space; single-line delimiter values (N29)",
+            "WC-4 (F12) and WC-6 (REM-95) also untouched per oracle §7"
+        ]
+    },
+    "supersessions": {
+        "binding_status_historical_pre_verdict": "binding.json.status = review_pending (NOT rewritten; historical pre-verdict value superseded by this handoff.json.status per the house landing pattern)",
+        "handoff_md_status_historical_pre_verdict": "handoff.md (sha256 4eb20f26…, 5666 B) line 5 `status: review_pending` + line 6 `implementer_signed: false` + line 7 `disclosure_adaptation: unmapped` / `accuracy: unproven` — retained as the implementer's pre-verdict carrier; superseded for status by this handoff.json (implementer_signed stays false as a fact; unmapped/unproven remain live as carried fields)",
+        "decision_verdicts_historical_pre_verdict": "decision.md §1 dispositions remain implementer-PROPOSED verdicts; the accepted_scoped verdict authority is the reviewer report (this landing transcribes, never re-derives)"
+    },
+    "json_reparse": "verified after write (ConvertFrom-Json parse rc 0)"
+}

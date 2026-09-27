@@ -1,0 +1,145 @@
+{
+  "phase": "before",
+  "sut_sha256": "9b1ebda2b75c4d1124d0d20a95d7a16cb31b8d9564c1c90da9b4d2d77eaa3ba2",
+  "mixed": {
+    "raw_returncode": 4,
+    "stdout": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: 'not-a-timestamp'\"}\r\n",
+    "stderr": "",
+    "report_written": false,
+    "report_sha256": null
+  },
+  "mixed_verdicts": null,
+  "good_only": {
+    "raw_returncode": 0,
+    "stdout": "{\r\n  \"ok\": true,\r\n  \"report\": \"C:\\\\Users\\\\\\u90d1\\u66fe\\u6ce2\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\T1-F3-FIX\\\\a20260925-01\\\\evidence\\\\before\\\\batch\\\\good_only.report.json\",\r\n  \"case_count\": 3,\r\n  \"accepted_claim_count\": 2,\r\n  \"sut_version\": \"i14b-after-2\"\r\n}\r\n",
+    "stderr": "",
+    "report_written": true,
+    "report_sha256": "41bf0a402ee3cc23b9be49920f1546f04852604ce048c6ca617f6406d6a99648"
+  },
+  "good_only_verdicts": [
+    {
+      "case_id": "W1",
+      "class": "window_accounting",
+      "requirement_id": "SYNTHETIC-TIMER-ONLY(I-14-B#2)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "sample_span",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "sample_span"
+      },
+      "note": "card oracle: observation 00:00-00:29 then quick_check 8 min -> observation is 29 min, NOT 37"
+    },
+    {
+      "case_id": "X5",
+      "class": "window_accounting",
+      "requirement_id": "P2-QC-NOT-IN-UNION(review finding)",
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "scheduled_at": "2026-09-19T00:00:00Z",
+        "started_at": "2026-09-19T00:00:00Z",
+        "first_sampled_at": "2026-09-19T00:00:00Z",
+        "last_sampled_at": "2026-09-19T00:29:00Z",
+        "observation_finished_at": "2026-09-19T00:29:00Z",
+        "observation_span_seconds": 1740.0,
+        "sample_count": 30,
+        "samples_outside_window": 0,
+        "quick_check_seconds": 480.0,
+        "command_total_seconds": 2220.0,
+        "schedule_lag_seconds": 0.0,
+        "observation_interval_count": 1,
+        "observation_intervals": [
+          [
+            "2026-09-19T00:00:00Z",
+            "2026-09-19T00:29:00Z"
+          ]
+        ],
+        "quick_check_in_observation_intervals": false,
+        "quick_check_overlap_seconds": 0.0,
+        "union_seconds": 1740.0,
+        "sum_seconds": 1740.0,
+        "overlap_seconds": 0.0,
+        "basis": "union_of_windows",
+        "basis_registered": true,
+        "sum_used_for_natural_duration": false
+      },
+      "claim": {
+        "status": "eligible",
+        "natural_observation_seconds": 1740,
+        "basis": "union_of_windows"
+      },
+      "note": "P2 fixed direction: the honest 1740 s claim under union_of_windows is now supported"
+    },
+    {
+      "case_id": "C1",
+      "class": "calendar",
+      "requirement_id": "CA-206",
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-EMPTY-EVIDENCE",
+        "R-FUTURE-CLOCK",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "daily_same_day_runs_dropped": 0,
+        "weekly_count": 0,
+        "monthly_count": 0,
+        "alert_count": 1,
+        "window_status": "pending",
+        "clock_source": "system_utc"
+      },
+      "claim": {
+        "status": "complete",
+        "natural_observation_seconds": null,
+        "basis": null
+      },
+      "note": "historical attack reproduced from reviews/revenue/review.md:13: 7 distinct ids, one future instant, empty evidence hashes"
+    }
+  ],
+  "good_only_report_sha256": "41bf0a402ee3cc23b9be49920f1546f04852604ce048c6ca617f6406d6a99648",
+  "checks": [
+    {
+      "name": "B-NEG: one bad case blows up the whole batch (rc=4 / no report / 0 adjudications)",
+      "ok": true,
+      "detail": "rc=4 written=False stdout='{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"Invalid isoformat string: \\'not-a-timestamp\\'\"}'"
+    },
+    {
+      "name": "control: good-only batch still adjudicates (rc=0, 3 verdicts)",
+      "ok": true,
+      "detail": "rc=0"
+    }
+  ],
+  "checks_pass": true,
+  "failed": []
+}

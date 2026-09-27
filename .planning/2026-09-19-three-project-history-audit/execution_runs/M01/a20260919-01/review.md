@@ -219,3 +219,12 @@ reachable in practice") was wrong and is corrected here.
 6. `scripts/model_registry.py` 的 mtime 变更**无法归因**（内容 hash 未变，不影响本卡）。
 7. 本卡的 D/E/F **会计/行业实质**未获审阅（需签署方）；本裁决仅覆盖 A–C（formula）+ 记账。
 8. 并发卡 M05–M31 的任何陈述均为**时点观察**，其后可能已被其他 session 改变。
+
+## 独立验收裁定（M-T-REVIEW 点复审 · 2026-09-23）
+- 结论：accepted_with_conditions（≡ accepted_scoped + carried）—— 仅 formula、仅本 attempt 盘上版本、仅锚 9ec65295…。
+- 未授予：disclosure_adaptation（unmapped）/ accuracy（unproven）/ D/E/F / 一切外推。
+- carried：F-MT-01/02/03（全队载体：CRLF 形态 pin、09-20 批量重写灭失 mtime 冻结序、生产锚漂移 62f864b9…）；首冻 oracle.md 运行前 hash 永久缺口（如实自曝，不作已证）；revision_history 双 r2 记账噪声。
+- 本次抽验：期望输出 [220,110,0] 三方一致；负例 11/11 全拒 ModelRegistryError；A–C 九件齐；pin 3/3 复现（CRLF 形态）；无产品重写。
+- status_authority: { status: "accepted_scoped", reviewer_status: "independent acceptance (M-T-REVIEW N=1) 2026-09-23: accepted_with_conditions (formula only)", carrier: "M-T-REVIEW/a20260923-01/reviews/M01.md + acceptance_rulings.md#M01", implementer_signed: false, supersedes: "point_review_returned" }
+— 独立审查员 M-T-REVIEW / N=1
+- install_record (carrier landing batch 2026-09-23 | M-T-REVIEW/a20260923-01): append-only flip per landing_package/README.md; prefix proof: pre-append sha256 2ef547f89e127559155135c72b9e6e1b3a863515ef708b2d4767c0398f8cb18e over 18419 bytes, verified post-install as sha256 of the first 18419 bytes of this file (PASS/FAIL + post sha in install_log.jsonl); F-RV-02 block_sha256 = 20a8cb6750317839086cfe0424f70280490e725cee3571e6d631dca5d3921fd4 = sha256 of the appended block body above (header ## 独立验收裁定 line through the signature line — 独立审查员 M-T-REVIEW / N=1, LF-terminated, 1072 bytes); F-RV-03 verdict_is_transcribed_not_authored: true; block transcribes the signed ruling carried by M-T-REVIEW/a20260923-01/reviews/M01.md (sha256 23b949c7e771c286c8d274f834d8d8acf1da436c4133bff0a330623550e2e77a) + acceptance_rulings.md (sha256 257e47da5f2924c2f6079f093c6884aa8ecc37a6eab2ce044c7fc26130e5495b); installer authors no verdict and signs nothing (never self-sign)

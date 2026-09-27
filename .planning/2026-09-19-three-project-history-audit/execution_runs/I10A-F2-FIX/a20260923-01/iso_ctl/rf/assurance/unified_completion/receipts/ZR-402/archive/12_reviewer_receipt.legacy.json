@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-402",
+  "kind": "reviewer",
+  "reviewer": "reviewer-zr402-independent",
+  "created_at_utc": "2026-08-18T18:09:08+00:00",
+  "verdict": "accepted",
+  "base_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "b0140a2e62417f272879ed3c21e801c6890af764",
+    "wiki": "251615ea9eb524b3c1d8594b3d6b004423a8ccfd"
+  },
+  "result_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "b0140a2e62417f272879ed3c21e801c6890af764",
+    "wiki": "57cd72e07800d5a0f3d1628475d6665e8a9a6302"
+  },
+  "reviewed_object_sha256": "cdf8230a722edca5df80636bb4b1f7312067a141e5eed310decc3ebbd064f725",
+  "commands": [
+    {
+      "command": "git -C company-wiki rev-parse HEAD / HEAD~1; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
+      "exit_code": 0,
+      "result": "wiki HEAD=57cd72e07800d5a0f3d1628475d6665e8a9a6302 (claimed), parent=251615ea9eb524b3c1d8594b3d6b004423a8ccfd (claimed); filing HEAD=df667966928b6c7d72c19685be01f45268eaba5e (claimed); revenue HEAD=b0140a2e62417f272879ed3c21e801c6890af764 == receipt base (at-or-after base)"
+    },
+    {
+      "command": "git show --stat 57cd72e; git diff 251615e 57cd72e --stat",
+      "exit_code": 0,
+      "result": "commit 57cd72e touches exactly 1 file (tests/contract/test_zr402_adapter_route_contract.py, +459); diff base..HEAD shows ONLY that test file (1 file changed, 459 insertions) => product zero-change confirmed"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr402_adapter_route_contract.py -q --tb=short",
+      "exit_code": 0,
+      "result": "36 passed in 5.79s (matches claimed 36; includes C1 gate + adversarial, C2 kind/root_id-agnostic 9+3+3, C3 fail-closed x3, C4 mutant battery 6+3+kill-table+sanity)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/{14 files} -q --tb=short",
+      "exit_code": 0,
+      "result": "116 passed in 6.10s (matches claimed 116 = 36 new + 80 existing)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short",
+      "exit_code": 0,
+      "result": "787 passed in 59.17s (matches claimed 787)"
+    },
+    {
+      "command": "RED probe rerun: wiki-venv python red/zr402_red_probe.py <tmp-out> (HEAD) AND patched copy against base worktree 251615e",
+      "exit_code": 0,
+      "result": "At base 251615e: exit 0, red_confirmed=true with S2/S3/S4 survivor=true, S1 covered=true, S4 pin_exists=false, route counts all 0, fc1201 allowlists adapter_dispatch/admission=true — byte-consistent with archived zr402_red_evidence.json (sha256 454477bd...). At HEAD: red_confirmed=false because S4 pin now detected (new module mentions adapter_dispatch.py + '.kind ==') — expected post-fix flip; probe wrote only to argv[1], git status unchanged pre/post (read-only confirmed)"
+    },
+    {
+      "command": "S1 honesty cross-check: grep test_scanner_facade.py + test_shadow_parity_runner.py for named killers",
+      "exit_code": 0,
+      "result": "test_scanner_facade.py::test_seam02_v2_stub_fails_closed (missing adapter_id -> ScannerFacadeError); test_shadow_parity_runner.py::test_ex08_future_root_unknown_adapter_blocks (bogus not_registered_v1 -> ScannerFacadeError); test_ex08_adapter_error_fails_closed_not_legacy_fallback (RuntimeError _BoomAdapter -> ScannerFacadeError, no v1 fallback) — S1 honest negative fully corroborated"
+    },
+    {
+      "command": "Kill-table truth: read module code + check-3 run",
+      "exit_code": 0,
+      "result": "M1: _NonDeterministicAdapter flips enumerate order, battery tree has 2 pdfs (2025.pdf/2024.pdf)+1 md so order flip observable; test asserts receipt['determinism'] contains FAILED and passed; conformance.py has check_candidate_determinism + receipt['determinism']='ok'/'FAILED:...'. M8: test_c2_kind_routing_mutant_is_killed replays kind-routing mutant in-process (passed). M9: test_c4_facade_fallback_mutant_is_killed restates ex08 RuntimeError->ScannerFacadeError (passed). test_c4_kill_table_complete gates exact M1..M9 set + executing killers in source (passed)"
+    },
+    {
+      "command": "Criterion 1: Select-String over the 5 route modules for '\\.kind\\s*==|\\.kind\\s+in\\b|root_id\\s*=='",
+      "exit_code": 0,
+      "result": "adapter_dispatch.py, admission.py, adapters/registry.py, adapters/interface.py, adapters/conformance.py: 0 matches each (kind/ID patterns exist only in non-route modules: scanner.py, resolver.py, cli.py, duplicate_cleanup.py, canonical_writer.py, focus_cleanup.py). C1 gate test_c1_route_module_has_zero_kind_branches (5 parametrized) + test_c1_gate_detects_newly_planted_kind_branch (adversarial, proves gate detects planted branch) both passed"
+    },
+    {
+      "command": "Criterion 2 one-liners (wiki venv python -c): registered_adapter / adapter_for / scan_root_strategy",
+      "exit_code": 0,
+      "result": "registered_adapter('not_registered_v99') is None; adapter_for raises AdapterDispatchError 'not registered' for unknown and 'no adapter_id' for None; scan_root_strategy(v2_scan_shadow=True) raises ScannerFacadeError 'not registered' for bogus adapter_id — all three entries fail closed"
+    },
+    {
+      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-402/11_implementer_receipt.json; python -m uc.cli state-show",
+      "exit_code": 0,
+      "result": "Implementer receipt: 'OK: receipt ... is canonical and well-formed'. state-show: units.ZR-402.status=independent_review, current_next=ZR-402, current_phase=D_lifecycle_roots_freshness. result_triplet.wiki=57cd72e..., base_triplet.wiki=251615e... in receipt; plan_sha256 (524a5161...) == sha256 of current 00_wu_card.md bytes (verified); reviewed_object sha256 cdf8230a... == my SHA-256 of test file at HEAD"
+    },
+    {
+      "command": "Overclaims scan of receipt commands[] vs observed",
+      "exit_code": 0,
+      "result": "36/116/787 pytest counts all reproduced exactly; ruff check 'All checks passed!' + ruff format --check '1 file already formatted' reproduced (exit 0); red probe red_confirmed=true reproduced at base; git diff stat reproduced. ROOT_KINDS=3 (company_raw/dayu_portfolio/directory), REGISTERED_ADAPTERS=4 (3 scanner + generic_document_v1 registry-only) consistent with module math (7+16+3+10=36 collected)"
+    }
+  ],
+  "findings": [
+    {
+      "id": "ZR402-REV-001",
+      "severity": "info",
+      "title": "RED probe at HEAD returns red_confirmed=false — expected post-fix flip, archived evidence honest",
+      "detail": "Rerunning red/zr402_red_probe.py against the CURRENT tree exits 1 with red_confirmed=false because check_s4 now sees pin_exists_in_any_test=true (the new module references adapter_dispatch.py and '.kind =='). Running the same probe against a base-251615e worktree reproduces the archived evidence exactly (exit 0, red_confirmed=true, S2/S3/S4 survivor, S1 covered, S4 pin_exists=false). The archived JSON therefore honestly records the pre-fix state."
+    },
+    {
+      "id": "ZR402-REV-002",
+      "severity": "info",
+      "title": "Probe/test runs are read-only wrt tracked files",
+      "detail": "git status --porcelain before and after the probe run is identical; the probe writes only to its argv[1] output path. Pre-existing working-tree dirt in company-wiki (D .claude/settings.local.json, M llm_cost_log.csv, untracked .coverage/coverage.json) predates this review and is unrelated to commit 57cd72e, which contains exactly one file."
+    },
+    {
+      "id": "ZR402-REV-003",
+      "severity": "info",
+      "title": "generic_document_v1 registry-only fail-closed behavior verified",
+      "detail": "REGISTERED_ADAPTERS has 4 entries; 3 are scanner-capable (company_raw_v1/dayu_filing_v1/sidecar_filing_v1) and generic_document_v1 is registry-only. adapter_for raises AdapterDispatchError 'no scanner adapter' for it under every ROOT_KINDS value (3 parametrized cases passed) — kind-agnostic fail closed as claimed."
+    }
+  ],
+  "note": "ZR-402 independent review",
+  "canonical_hash": "e575c9b0d1e5e25367faea53bfbb96f71866122e236e65aacafb004c91eaf707"
+}

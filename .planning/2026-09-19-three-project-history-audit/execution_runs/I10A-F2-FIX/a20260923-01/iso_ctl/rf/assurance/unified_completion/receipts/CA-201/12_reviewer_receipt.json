@@ -1,0 +1,90 @@
+{
+  "unit": "CA-201",
+  "reviewer": "reviewer-ca201-independent",
+  "kind": "reviewer",
+  "schema_version": 1,
+  "verdict": "accepted",
+  "reviewed_object_sha256": "747228fb11851bb69a94fb18fa7dc290749570b0f69a987c25d6e23f9afe2402",
+  "base_triplet": {
+    "revenue": "0c53238a93c389329ee5ecd197dd718db24355bd",
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "result_triplet": {
+    "revenue": "e67d1fea4c3dd157cdb628d2dbcd7f407d8ea08f",
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "python -m pytest tests/test_ca201_pr_fanout_ownership.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "7 passed in 0.35s (C1 DAG deps accepted; C2 README row; C3 contract successors; C4 ci-gap honest mapping; C5 PR-gate evidence; C6 zero-dup; C7 state entry+cursor)"
+    },
+    {
+      "command": "git show --stat/--name-only e67d1fe; git diff assurance/unified_completion/state.json",
+      "exit_code": 0,
+      "result": "e67d1fe single parent 0c53238; commit contains ONLY tests/test_ca201_pr_fanout_ownership.py (+203). state.json CA-201 entry (implementer=zz, status=triplet_green) + receipts/CA-201/** are working-tree-only, uncommitted at HEAD"
+    },
+    {
+      "command": "python -B ca201_review_scan.py (independent rescan, no test import)",
+      "exit_code": 0,
+      "result": "state: CA-107/ZR-105/ZR-901 all accepted, CA-201 entry status=triplet_green (valid strict_state status, uc/strict_state.py L28), current_next=CA-201, current_phase=J_final_verification. README: exactly line 132 carries all four needles. Contract: schema_version=1, unit=ZR-105, exactly 3 required_checks, successors all CA-201, per-check machine_rules non-empty (3/1/2). Zero-dup recursive: tools/ no fanout, uc/ no fanout modules, ci/ only current_triplet_contract.json. ci-gap: exit 1, JSON schema_version=1 unit=ZR-105, 3 repos, revenue 3 checks present, all 9 unsatisfied checks successor=CA-201 (no fake green). quality.yml: has compatibility/current.json + ci_checkout_siblings, no 'git clone', no '|| true'"
+    },
+    {
+      "command": "canonical recompute: json.dumps(receipt w/o canonical_hash, ensure_ascii=False, sort_keys=True) -> SHA-256",
+      "exit_code": 0,
+      "result": "recomputed 747228fb11851bb69a94fb18fa7dc290749570b0f69a987c25d6e23f9afe2402 == claimed; all triplet legs full 40-hex"
+    },
+    {
+      "command": "git -C company-wiki rev-parse HEAD; git -C filing-fetch rev-parse HEAD",
+      "exit_code": 0,
+      "result": "wiki=35a1103ac05ab5e9a703242cbf1136f96b745197, filing=5a1c18f5171db0e4b9113138ea360db361e1e435 — both equal receipt base/result (unchanged, expected)"
+    },
+    {
+      "command": "git log -- assurance/unified_completion/state.json; git show HEAD:state.json | Select-String CA-201",
+      "exit_code": 0,
+      "result": "Repo pattern: state.json committed by closure commits (e.g. 0c53238 close ZR-901); committed HEAD state has current_next=CA-201 but no units[CA-201] entry — pre-closure working-tree posture is intended"
+    }
+  ],
+  "findings": [
+    {
+      "id": "CA201-REV-001",
+      "severity": "minor",
+      "title": "state.json CA-201 entry + receipts/CA-201/** uncommitted at e67d1fe",
+      "detail": "git status shows ' M assurance/unified_completion/state.json' (adds units[CA-201] implementer=zz/status=triplet_green, bumps updated_at) and '?? assurance/unified_completion/receipts/CA-201/'. Commit e67d1fe contains only the test file, matching the protocol step-4 expectation; repo pattern confirms closure commits carry state.json (0c53238 did for ZR-901). Consequence: a clean checkout of e67d1fe alone would fail test_c1/test_c7 (units[CA-201] missing). Non-blocking — closure commit must carry state.json + receipts/CA-201/**."
+    },
+    {
+      "id": "CA201-REV-002",
+      "severity": "info",
+      "title": "state.json CA-201 implementer identity 'zz' vs receipt 'ca201-implementer'",
+      "detail": "units[CA-201].implementer='zz' (same as ZR-901 entry), while 11_implementer_receipt.json declares implementer='ca201-implementer'. Cosmetic identity inconsistency; does not affect acceptance surfaces."
+    },
+    {
+      "id": "CA201-REV-003",
+      "severity": "info",
+      "title": "test_c7 status assertion weaker than its docstring",
+      "detail": "test_c7 asserts entry status not in (None, 'pending'), while docstring claims 'red_proved-or-later' — a hypothetical 'rejected' status would pass. Actual status is triplet_green, a valid strict_state status (uc/strict_state.py L28) after red_proved. Independent check confirms state is sound; assertion looseness only."
+    },
+    {
+      "id": "CA201-REV-004",
+      "severity": "info",
+      "title": "test_c2 anchors on first matching line, not §7 row 132 specifically",
+      "detail": "Test selects hits[0] of lines containing 'current-triplet PR fan-out'+'CA-201' then asserts both ZR names + 'required checks' in that row. Independent scan confirms exactly one line (L132) contains all four needles, so current behavior is correct; but a duplicate earlier row would also satisfy the test. Row 132 wording 'CA拥有调度/attestation；ZR提供required checks' not directly asserted."
+    },
+    {
+      "id": "CA201-REV-005",
+      "severity": "info",
+      "title": "test_c6 duplicate-implementation globs are non-recursive",
+      "detail": "Test checks tools/* top-level names, uc/*.py, ci/*.json only. Independent recursive scan (rglob all depths) found zero fanout tools, zero fanout/pr_fanout modules, and only current_triplet_contract.json under ci/ — so no duplicates exist; the test's depth coverage is the only weakness."
+    },
+    {
+      "id": "CA201-REV-006",
+      "severity": "info",
+      "title": "Contract machine_rules is per-check nested, not a top-level key",
+      "detail": "'machine_rules 非空' holds per required_check: exact_triplet_binding=3 rules, affected_repo_fanout=1, collected_skip_delta_controlled=2 — all non-empty, matching ZR-105's design (rules inside each check). Top-level keys: schema_version/unit/frozen_at/triplet/workflow_files/required_checks/successors."
+    }
+  ],
+  "created_at_utc": "2026-08-31T21:36:28.749546+00:00",
+  "canonical_hash": "8382aba494e706de2dffca3673e05948d3f4112b8e419f020cc765c32b47360a"
+}

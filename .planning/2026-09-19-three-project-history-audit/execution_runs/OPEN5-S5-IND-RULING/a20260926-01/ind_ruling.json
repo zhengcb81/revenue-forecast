@@ -1,0 +1,499 @@
+{
+  "card": "OPEN-5",
+  "step": "S5（行业半区 · 行业复裁）",
+  "attempt": "OPEN5-S5-IND-RULING/a20260926-01",
+  "role": "industry_reviewer_s5",
+  "generated_utc": "2026-09-26T09:55:26Z",
+  "oracle": {
+    "file": "oracle.md",
+    "sha256": "549cadfe0c66614b2687da12e094317db9601633718f204ce35ca17de71b07ee",
+    "frozen_before_judging": true,
+    "modified_by_this_round": false
+  },
+  "authorization": {
+    "S5_definition_verbatim": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN5-ENVOWNER/a20260924-01/ruling.md L166",
+      "quote": "| **S5** | **行业复裁 + 会计定级**：按 IND 已裁的 C 表①/②登记来源等级，**证据等级由会计面认定**（§二十四 执行纪律第 3 条）；通过后才谈港股命题与参数 | 行业 reviewer + 会计 reviewer | 各自专业裁定权（**本载体不代行**） | 任一面未过 ⇒ 港股参数继续 `_PLACEHOLDER` |"
+    },
+    "boundary_verbatim": {
+      "source": "同文件 L179",
+      "quote": "- 即使 S2 自检显示\"某路径能读出锚词\"，在 S3/S4/S5 走完之前**仍按不可读处置**（IND 处置规则 B 部分继续有效：港股命题零产出、参数维持 `_PLACEHOLDER`）。"
+    },
+    "owner_rule_verbatim": {
+      "source": "OWNER_DECISIONS.md L504",
+      "quote": "- **取证（选项 3）的证据等级由会计面定，不由取证方自定**；取不到就维持 BLOCKED，**不造绿色样例**。"
+    },
+    "owner_authorization_for_retrieval": "OWNER_DECISIONS.md §二十六 #1（2026-09-24 深夜）owner 原话「1，授权」→ PEND-5a（联网取可读港股替代件）；派单原文「派 8abdd519 = OPEN5-PEND5A-HK-ACQUISITION」；硬边界「只落本计划目录、绝不写产品仓（含 companies/{entity}/raw/）；原站若 403 须显式标 external_retrieval_not_local；五要素自检 + 可读性锚词自检（原文件是 0 命中）；等级判定不做（归会计面）；取不到 ⇒ BLOCKED，不造绿样；期间不同的文件不得当同一件」"
+  },
+  "points": [
+    {
+      "id": "P1",
+      "topic": "C 表是否启用（IND L240/L241 裁定权在行业面）+ attempt04/08/07 定级会签",
+      "verdict": "启用（限定效力范围）；三件来源定级逐条会签：attempt04 承认 ①+④、attempt08 承认 ①+④、attempt07 承认 ③（= 不可采）",
+      "c_table_adopted": true,
+      "conditions": {
+        "J1-1_owner_unlock": true,
+        "J1-2_S3_S4_done": true,
+        "J1-3_L241_antecedent": true,
+        "J1-4_L240_reading": "α（l240 的『读不出原文』= 新 attempt 产不出任何可读原文文本；S3 路径 A 5/5 + 两件①替代件可读 ⇒ 不成立）"
+      },
+      "basis_verbatim": {
+        "IND_L240": "- 环境 owner 解决可读性后，若新 attempt 实测仍读不出原文 ⇒ B 部分（保持不可用）继续有效，C 表不启用；",
+        "IND_L241": "- 若出现①类可读原文且含分部收入 ⇒ B 的\"零产出\"解除，港股命题可重新走正常取证（仍需会计面定证据等级）；",
+        "IND_L227": "**C. 可接受的替代来源及其证据等级（我裁，供 owner 解锁后使用）**",
+        "IND_L231": "| ① | **同一发行人、同一报告期**的其他**可读原文**官方文件（HKEX 披露易 PDF 文本层正常者、全年业绩公告、中期报告、公司 IR 的年报 HTML/可读 PDF） | `company_primary_disclosure`（与年报同级，但必须标注**文件类型与期间**） | 必须：原文可定位（页码/锚文本或章节）+ 原始 sha256 + 期间与年报一致；跨期文件必须标 `period_mismatch_risk` |",
+        "IND_L233": "| ③ | 券商研报 / 新闻 / 数据商 / wiki | `secondary_lead_only` | **仅可作线索**，**不得**进参数、**不得**进命题的 `cited_values` |",
+        "IND_L234": "| ④ | 外部抓取的港股年报 PDF（若本地原件不可读） | `external_retrieval_not_local` | 必须登记 URL + 取回时间 + sha256，**永不冒充本地可核**；且仍需可复核的取文路径 |"
+      },
+      "measured": {
+        "attempt04_1_conditions": {
+          "c1_locatable": true,
+          "c1_evidence": {
+            "label": "分部收入",
+            "window": "分部收入為人民幣3,512 億元，同比增長5.4%；我們的「智能電動汽車及AI等創新業務」分部收入為人民幣 1,061億元，同比增長223.8%。2025年，集團經調整淨利潤為人民幣392億元，同比增 長43.8%。 2025年第四季度，儘",
+            "numbers": [
+              "3,512",
+              "5.4",
+              "1,061",
+              "223.8",
+              "2025",
+              "392"
+            ]
+          },
+          "c2_sha256_equal": true,
+          "c2_sha_chain": {
+            "pend5a": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "s3": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "s4": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "acct_g2": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "recomputed": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+            "all_equal": true
+          },
+          "c3_period_same": true,
+          "c3_period_evidence": "标题逐字「截至2025年12月31日止年度…全年業績公告」",
+          "r4_url": true,
+          "r4_url_value": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032400609_c.pdf",
+          "r4_retrieved_utc": "2026-09-24T22:09:26Z",
+          "r4_utc_matches_mtime": true,
+          "r4_sha256": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+          "segment_revenue_anchors": [
+            "分部收入",
+            "手機×AIoT"
+          ],
+          "readable_anchor_hits": 4,
+          "c1_4_conditions_ok": true,
+          "contains_segment_revenue": true,
+          "tier_1_ok": true
+        },
+        "attempt08_1_conditions": {
+          "c1_locatable": true,
+          "c1_evidence": {
+            "label": "Segment-wise",
+            "window": "Segment-wise, in 2025, revenue of our smartphone  × AIoT segment reached RMB351.2 billion, up 5.4% year-over-year; reven",
+            "numbers": [
+              "2025,",
+              "351.2",
+              "5.4"
+            ]
+          },
+          "c2_sha256_equal": true,
+          "c2_sha_chain": {
+            "pend5a": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "s3": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "s4": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "acct_g2": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "recomputed": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+            "all_equal": true
+          },
+          "c3_period_same": true,
+          "c3_period_evidence": "封面逐字「2025 ANNUAL REPORT」",
+          "r4_url": true,
+          "r4_url_value": "https://ir.mi.com/system/files-encrypted/nasdaq_kms/assets/2026/04/28/5-29-08/Xiaomi%202025%20AR_EN.pdf",
+          "r4_retrieved_utc": "2026-09-25T20:37:56Z",
+          "r4_utc_matches_mtime": true,
+          "r4_sha256": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2",
+          "segment_revenue_anchors": [
+            "Segment-wise",
+            "segment revenue",
+            "revenue of our"
+          ],
+          "readable_anchor_hits": 5,
+          "c1_4_conditions_ok": true,
+          "contains_segment_revenue": true,
+          "tier_1_ok": true
+        },
+        "attempt07": {
+          "provenance_class": "third_party_proxy (第三方代理，不是原站字节)",
+          "is_third_party_proxy": true,
+          "anchor_hits_zh": 0,
+          "tier": "③",
+          "external_flag": true,
+          "tier_filter_enforced": true,
+          "tier_effective": "③（secondary_lead_only，按定义不可进参数/命题）",
+          "readable_ok": false,
+          "industry_admissible": false
+        },
+        "s3_s4": {
+          "s3_pathA_5of5_recorded": true,
+          "s3_B1_0of5_recorded": true,
+          "s4_consistency_result": "NOT_USABLE",
+          "s4_u1": "NOT_USABLE",
+          "s4_u2": "CONSISTENT",
+          "s4_u3": "CONSISTENT",
+          "ok": true
+        }
+      },
+      "scope_limits": [
+        "仅解除 IND B-1 中「①类替代件缺位 ⇒ 零产出」那一层；B-3（不接受二手补位）/ B-4（不接受行业常识补位）继续有效",
+        "origin 本体不因启用而可引用（L165 + S4 NOT_USABLE 维持）",
+        "参数不放行（L166「通过后才谈」+ L179 + ENVOWNER §⑦）",
+        "④ 标记的件永不冒充本地原件/origin"
+      ],
+      "reading_divergence": {
+        "adopted": "α",
+        "alpha": "L240 的『读不出原文』= 新 attempt 产不出任何可读原文文本 ⇒ 实测 S3 路径 A 5/5 + 两件①替代件可读 ⇒ 不成立",
+        "beta_not_adopted": "『原文』仅指 origin 本体字节（B1 仍 0/5、U1 NOT_USABLE）⇒ 若采 β 则 C 表不启用",
+        "why_alpha": "IND L227 明写 C 表是『替代来源……供 owner 解锁后使用』；β 会使替代来源表永无适用场景，与表自身用途矛盾；L241 用『出现①类可读原文』措辞，开关挂在替代件上",
+        "registered_for_owner": "该解释分歧显式登记给 owner/编排层；无论采 α 还是 β，hk_parameters_released 均保持 false、origin 均保持排除"
+      }
+    },
+    {
+      "id": "P2",
+      "topic": "attempt04 文件类型用途（全年业绩公告 FY2025，非年报）",
+      "verdict": "承认其为同期间公司原文披露，但用途按内容清单裁：可用 A1/A2/A3/A4a/A5a/A6b；不可用 A4b/A5b/A6a/A7",
+      "measured_document_type": {
+        "attempt04_has_results_announcement_title": true,
+        "attempt04_has_period_verbatim": true,
+        "attempt04_has_annual_report_title": false,
+        "attempt04_title_snippet": " === page 1 === 1 香港交易及結算所有限公司及香港聯合交易所有限公司對本公告之內容概不負責，對其準確性或完整性亦不發表 任何聲明，並明確表示概不就因本公告全部或任何部分內容而產生或因倚賴該等內容而引致之任何損失承擔任何 責任。 XIAOMI CORPORATION 小米集团 （於開曼群島註冊成立以不同投票權控制的有限公司） 股份代號：1810（港幣櫃台）及81810（人民幣櫃台） 截至2 0 2 5 年1 2 月3 1 日止年度之全年業績公告 小米集团（「本公司」）董事（「董事」）會（「董事會」）欣然公佈本公司及其附屬公司（統稱「本 集團」）截至2025年12月31日止年度的經",
+        "attempt08_has_annual_report_title": true,
+        "attempt08_has_period_marker": true,
+        "attempt08_title_snippet": " === page 1 === 2025 ANNUAL REPORT Stock Codes: 1810 (HKD counter) and 81810 (RMB counter)  === page 2 === This annual report (in both English and Chinese versions)  has been posted on the Company’s website at www.mi.com  and the Stock Exchange’s website at www.hkexnews.hk.  Shareholders who have chosen to rely on copies of the corporate  communications (including but not limited to annual report "
+      },
+      "usable_for": {
+        "A1_分部收入水平与增速": true,
+        "A2_分部毛利率与毛利": true,
+        "A3_总收入与增速": true,
+        "A4a_分部加总=合并总收入恒等式": true,
+        "A5a_公告自述审核状态": true,
+        "A6b_分部存货与按性质开支": true
+      },
+      "not_usable_for": {
+        "A4b_分部资产与负债划分": true,
+        "A5b_审计意见与核数师报告逐字": true,
+        "A6a_五年财务摘要与跨期多年序列": true,
+        "A7_年报本体页码与锚文本": true,
+        "A8_年报刊发日(2026-04-28)之后才披露的内容": true
+      },
+      "a4b_evidence": {
+        "en_ar_states_no_segment_assets": true,
+        "zh_announcement_segment_assets_anchor_hits": 0,
+        "ruling": "缺 ⇒ 禁止（fail-closed：两个来源都明示/实测不含分部资产与负债划分）"
+      },
+      "must_label": [
+        "document_type=全年业绩公告（results announcement，非年度报告）",
+        "period=FY2025",
+        "publication=2026-03-24（早于年报 2026-04-28）",
+        "external_retrieval_not_local=true",
+        "language_face=zh-Hant"
+      ],
+      "basis": [
+        "IND L231 ① 明列『全年业绩公告』为①类来源，但要求『必须标注文件类型与期间』",
+        "自抽实测：标题逐字『截至2025年12月31日止年度之全年業績公告』；『年度報告』锚 0 命中；59 页 vs 年报 415 页",
+        "自抽实测：分部资料及收入附注在 p49（分部收入/销售成本/毛利 + 總計列），p50 地区收入 + 可报告分部存货",
+        "自抽实测：核數師報告 0 命中、無保留意見 0 命中；僅有『經審核合併業績』自述与核數師『數字一致』程序",
+        "自抽实测：財務摘要 0 命中（『五年』4 次命中均为营销表述『五年排名全球前三』）"
+      ],
+      "arithmetic_identity_check": {
+        "lhs": 351217174,
+        "rhs": 106069513,
+        "total": 457286687,
+        "equal": true
+      }
+    },
+    {
+      "id": "P3",
+      "topic": "attempt08 英文面在港股命题中的可用范围（中文锚词 0/5）",
+      "verdict": "承认会计面 usable=[\"en\"]；英文面可用于数值型/年报本体命题，禁止用于中文原文逐字与中文锚词类命题",
+      "measured": {
+        "zh_anchor_hits": 0,
+        "zh_registered_as": "0/5（会计面 usable=[en]）",
+        "zh_matches_registration": true,
+        "en_anchor_hits_fitz": 5,
+        "en_anchor_hits_pdfminer": 5,
+        "en_threshold_ge4": true
+      },
+      "cross_language_check": {
+        "pairs": [
+          {
+            "pair": "total_revenue_bn",
+            "zh_value": 457.3,
+            "en_value": 457.3,
+            "status": "equal"
+          },
+          {
+            "pair": "segment_revenue_bn",
+            "zh_value": 351.2,
+            "en_value": 351.2,
+            "status": "equal"
+          },
+          {
+            "pair": "segment_table_mn",
+            "zh_value": 351217.2,
+            "en_value": 351217.2,
+            "status": "equal"
+          },
+          {
+            "pair": "total_table_mn",
+            "zh_value": 457286.7,
+            "en_value": 457286.7,
+            "status": "equal"
+          },
+          {
+            "pair": "yoy_pct",
+            "zh_value": 25.0,
+            "en_value": 25.0,
+            "status": "equal"
+          },
+          {
+            "pair": "segment_gm_pct",
+            "zh_value": 21.7,
+            "en_value": 21.7,
+            "status": "equal"
+          }
+        ],
+        "equal": 6,
+        "conflict": 0,
+        "require_ge2_equal_and_0_conflict": true
+      },
+      "usable_scope": [
+        "需要年报本体页/表定位的命题（五年财务摘要、审计意见、分部附注在 EN 年报中均可定位）",
+        "数值型港股份部命题（收入/毛利/占比/增速）——须标 language_face=en 并用英文原文逐字引文",
+        "与 attempt04 中文件的数值交叉验证（本工位实测 6 对共享数值，equal=6 / conflict=0）"
+      ],
+      "prohibited": [
+        "任何要求中文原文逐字引文 / 中文锚词命中的命题（中文 0/5）",
+        "任何『中文年报原文已核』的口径声明",
+        "翻译敏感的定义性表述（分部名称、会计政策措辞）未经 attempt04 中文件对照单独成立",
+        "英文面冒充中文面（与④『永不冒充本地』同构：en 面不得冒充 zh 原文面）"
+      ],
+      "basis_verbatim": {
+        "IND_L231": "| ① | **同一发行人、同一报告期**的其他**可读原文**官方文件（HKEX 披露易 PDF 文本层正常者、全年业绩公告、中期报告、公司 IR 的年报 HTML/可读 PDF） | `company_primary_disclosure`（与年报同级，但必须标注**文件类型与期间**） | 必须：原文可定位（页码/锚文本或章节）+ 原始 sha256 + 期间与年报一致；跨期文件必须标 `period_mismatch_risk` |",
+        "ENVOWNER_L179": "   - 即使 S2 自检显示\"某路径能读出锚词\"，在 S3/S4/S5 走完之前**仍按不可读处置**（IND 处置规则 B 部分继续有效：港股命题零产出、参数维持 `_PLACEHOLDER`）。"
+      }
+    },
+    {
+      "id": "P4",
+      "topic": "G3 口径会签（会计 true vs PEND-5a/S3 false）",
+      "verdict": "按 IND L234/L360 裁口径 B（external_retrieval_not_local=true）为准；两边都不回改，只登记分歧",
+      "measured": {
+        "side_A_false": {
+          "pend5a_ext04": false,
+          "pend5a_ext08": false,
+          "s3_in02": false,
+          "s3_in03": false
+        },
+        "side_B_true": {
+          "s4_attempt04": true,
+          "s4_attempt08": true,
+          "ind_L234_4_row": true,
+          "ind_L360": true
+        },
+        "adopted": "B（true）",
+        "both_sides_back_written": false,
+        "side_A_is_false": true,
+        "side_B_is_true": true
+      },
+      "basis_verbatim": {
+        "IND_L234": "| ④ | 外部抓取的港股年报 PDF（若本地原件不可读） | `external_retrieval_not_local` | 必须登记 URL + 取回时间 + sha256，**永不冒充本地可核**；且仍需可复核的取文路径 |",
+        "IND_L360": "- **外部 ≠ 本地**：所有 `EXT-*` 一律标 `evidence_class=external_retrieval_not_local`；`2026-09-02 8-K` 条目显式写明\"**本地不可核，外部获取，不得作为本地可核证据放行**\"。",
+        "IND_L261": "- 用外部抓取件静默顶替本地原件（必须按④登记为外部）；"
+      },
+      "both_sides_back_written": false,
+      "divergence_registered": "口径 A（false=非第三方代理，PEND-5a ext-04/ext-08 + S3 in-02/in-03）vs 口径 B（true=外部取回件永不冒充本地，④/OPEN-11 L360/S4 own_provenance）；本工位采 B"
+    }
+  ],
+  "c_table_adopted": true,
+  "c_table_registration": {
+    "rule": "IND C 表（I11A-OPEN-IND L227–L234）+ oracle §4.5",
+    "attempt04": "① + ④",
+    "attempt08": "① + ④",
+    "attempt07": "③（仅线索，不可采）",
+    "attempt02_or_regulator_rows": "② 本轮零登记",
+    "origin": "不登记（排除在定级外）"
+  },
+  "attempt_levels_confirmed": {
+    "source_of_levels": "会计面 OPEN5-S5-ACCT-GRADING/a20260926-01（证据等级由会计面认定，本工位只读引用、不改）",
+    "accounting_levels": {
+      "attempt04": {
+        "c_table": "① + ④",
+        "e_level": "E1",
+        "s_tier": "S1",
+        "usable_faces": [
+          "zh-Hant"
+        ],
+        "admissible": true,
+        "document_type": "全年业绩公告（results announcement，非年度报告）",
+        "period": "FY2025"
+      },
+      "attempt08": {
+        "c_table": "① + ④",
+        "e_level": "E1",
+        "s_tier": "S1",
+        "usable_faces": [
+          "en"
+        ],
+        "admissible": true,
+        "document_type": "年度报告英文版（annual report, EN）",
+        "period": "FY2025"
+      },
+      "attempt07": {
+        "c_table": "③",
+        "e_level": "E3",
+        "s_tier": "S0",
+        "usable_faces": [],
+        "admissible": false,
+        "document_type": "third_party_proxy_render",
+        "period": "FY2025"
+      }
+    },
+    "industry_confirmation": {
+      "attempt04": {
+        "confirmed": true,
+        "c_table_adopted": "① + ④",
+        "evidence_class": "company_primary_disclosure",
+        "industry_scope_note": "同期间发行人原文披露；①④叠加（①=来源级别，④=取回路径外部身份）",
+        "must_label": [
+          "document_type=全年业绩公告（非年度报告）",
+          "period=FY2025",
+          "period_mismatch_risk=false",
+          "external_retrieval_not_local=true",
+          "language_face=zh-Hant"
+        ]
+      },
+      "attempt08": {
+        "confirmed": true,
+        "c_table_adopted": "① + ④",
+        "evidence_class": "company_primary_disclosure",
+        "industry_scope_note": "年报本体英文版；①④叠加；语言面仅 en（中文锚词0/5）",
+        "must_label": [
+          "document_type=年度报告英文版",
+          "period=FY2025",
+          "period_mismatch_risk=false",
+          "external_retrieval_not_local=true",
+          "language_face=en"
+        ]
+      },
+      "attempt07": {
+        "confirmed": true,
+        "c_table_adopted": "③",
+        "evidence_class": "secondary_lead_only",
+        "industry_scope_note": "第三方代理渲染件，且正文中文锚词 0/5（不可读）⇒ 双重不可采",
+        "must_label": [
+          "document_type=third_party_proxy_render",
+          "external_retrieval_not_local=true",
+          "lead_only=true"
+        ]
+      },
+      "HK-XIAOMI-AR2025 (origin)": {
+        "confirmed": null,
+        "c_table_adopted": null,
+        "evidence_class": null,
+        "industry_scope_note": "排除在定级外（S4 NOT_USABLE + L165），不赋级",
+        "must_label": [
+          "graded=false",
+          "level=null",
+          "admissible=false"
+        ]
+      }
+    },
+    "all_three_confirmed": true
+  },
+  "accounting_face_linkage": {
+    "agreed": [
+      "attempt04 = ①+④ / E1 / S1 / usable=[zh-Hant]（行业面承认来源等级与语言面）",
+      "attempt08 = ①+④ / E1 / S1 / usable=[en]（行业面承认，并加英文面用途限制）",
+      "attempt07 = ③ / E3 / S0 不可采（行业面承认，并加『正文 0/5 不可读』的第二条不可采理由）",
+      "origin 排除在定级外（level=null）",
+      "G3 按④裁 true（与会计半区 §1.2 判定一致）",
+      "hk_parameters_released=false（与会计半区 §4 结论一致）"
+    ],
+    "divergences": [
+      "无实质分歧；行业面在会计面等级之上**追加用途/语言面限制**（更严，非更松）：attempt04 禁 A4b/A5b/A6a/A7；attempt08 禁中文原文面；attempt07 增列『不可读』为第二条不可采理由",
+      "解释分歧登记：C 表启用的 L240/L241 读法（α/β）由行业面采 α 并显式登记 β（会计面 §6-2 明文留待行业面裁）"
+    ],
+    "not_signed_for_accounting": [
+      "未改 E1/E3/S1/S0、未改 usable_faces、未改 admissible、未重做会计四步",
+      "未回改会计半区任何字节（sha 见 read_only_attestation）"
+    ]
+  },
+  "s4_read_only": {
+    "consistency_result": "NOT_USABLE",
+    "changed_by_this_station": false,
+    "numeric_conflict_changed": false,
+    "used_as": "U2/U3 = CONSISTENT 作 E1f 路径①引用；U1 = NOT_USABLE 只读接受"
+  },
+  "origin": {
+    "source": "HK-XIAOMI-AR2025",
+    "excluded": true,
+    "graded": false,
+    "level": null,
+    "admissible": false,
+    "s4_consistency_result": "NOT_USABLE",
+    "rule": "ENVOWNER L165 + S4 NOT_USABLE + oracle §4.5/§4.6"
+  },
+  "hk_parameters_released": false,
+  "placeholder_maintained": true,
+  "low_base_high": [
+    null,
+    null,
+    null
+  ],
+  "open5_released": false,
+  "accept_produced": false,
+  "releases_nothing": true,
+  "industry_face_status": "PASS（四点全部裁定成立）",
+  "fail_condition": "任一面未过 ⇒ 港股参数继续 _PLACEHOLDER（本次两面均过 ⇒ 只是『可谈』，仍不放行）",
+  "mutations": {
+    "script": "_work/s5_ind_grade.py",
+    "modes": [
+      "baseline",
+      "m1_weak",
+      "m2_origin",
+      "m3_nourl",
+      "m4_noseg",
+      "m5_langconflict"
+    ],
+    "results": "见 _work/expect_*.json 与 s5_ind_report.md §红绿变异"
+  },
+  "read_only_attestation": {
+    "inputs": [
+      "IN-01 ENVOWNER ruling",
+      "IN-02 IND ruling",
+      "IN-03 会计半区交付",
+      "IN-04 S4",
+      "IN-05 S3 provenance",
+      "IN-06 PEND-5a",
+      "IN-07 corpus 字节",
+      "IN-08 S3 report",
+      "IN-09 OWNER_DECISIONS",
+      "IN-10 本工位自抽工件"
+    ],
+    "sha256": {
+      "acct_grading.json": "3a5623afb19a19bdf9b83520595980810e41d14072131769639c00c5a69b0eda",
+      "s5_acct_report.md": "0bfbedaead34929cdd994e5e1a3660d642d6720a50a9f95c8041ff8f3cb9fd5c",
+      "acct_handoff.json": "5609ac467c82de0b155e328b878bda2375a6ceb26a6148f1d8eaf9fa93249433",
+      "s4_dual_path_verify.json": "218a4195bcd72637d8cd48e87c93a39414f392b04b16248d5275f5a48767e46a",
+      "s4_s4_report.md": "7987f5de4926f0e27e61c90127bd91b04679e496c11ec1eef33143cdcc283221",
+      "s3_provenance.json": "3e44f7e97a74409acc2e1e57f7bc868d85e9e5ba0ef8048cf9212edba70a3d05",
+      "pend5a_provenance.json": "d06df212d3c2fba7c91cb74dbcceb20a6bf4b1e163e0623a9d3168a507a3f9d1",
+      "attempt04_pdf": "d0975600c918683636d4679328fa1eaa4a7a14b53950440d53005c831829b62b",
+      "attempt08_pdf": "b787f0290513e48a95078ed2a68dc1e240da68d204e5dd9aedc59b66a7c75ec2"
+    },
+    "back_written_to_prior_stations": false
+  },
+  "network_used": false,
+  "git_write_ops": 0,
+  "git_status_used": false,
+  "writes_outside_planning": 0
+}

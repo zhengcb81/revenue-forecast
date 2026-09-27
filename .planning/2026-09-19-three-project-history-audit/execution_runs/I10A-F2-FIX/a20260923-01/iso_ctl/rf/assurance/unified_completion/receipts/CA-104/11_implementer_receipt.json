@@ -1,0 +1,102 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "10b574adc33cda7c7c298392bac6c903edaf688b",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "aaac9e1f027887d055d14777ae565ed88616cbb1f23d412bf835fd3559ba8eff",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "123 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 15 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/CA-104/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed"
+    }
+  ],
+  "created_at_utc": "2026-08-14T03:10:00Z",
+  "findings_registered": [
+    {
+      "id": "CI-001",
+      "severity": "P3",
+      "successor": "CA-201",
+      "summary": "company-wiki .github/workflows/ci.yml:80 'collect_news.py --help || true' permits non-enforced failure; fix belongs to CA-201"
+    }
+  ],
+  "implementer": "ca104-implementer",
+  "kind": "implementer",
+  "mutation": {
+    "details": "structured_failure via marker with exit 0; infra_error marker classification; secret env value never in serialized result; replay-diff detects changed output; empty argv rejected.",
+    "id": "CA-104-M-commands",
+    "killed": true
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "red_evidence": [
+    {
+      "description": "99 receipt command entries with zero stdout/stderr hashes. See receipts/CA-104/red/RED.md.",
+      "id": "RED-A",
+      "status": "red_proved"
+    },
+    {
+      "description": "company-wiki ci.yml:80 'collect_news.py --help || true' (fix deferred to CA-201, registered finding). See receipts/CA-104/red/RED.md.",
+      "id": "RED-B",
+      "status": "red_proved"
+    },
+    {
+      "description": "structured business failure with process=0 recorded as pass. See receipts/CA-104/red/RED.md.",
+      "id": "RED-C",
+      "status": "red_proved"
+    },
+    {
+      "description": "no infra-error classification and no secret-value protection existed. See receipts/CA-104/red/RED.md.",
+      "id": "RED-D",
+      "status": "red_proved"
+    }
+  ],
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "10b574adc33cda7c7c298392bac6c903edaf688b",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "review": {
+    "status": "pending"
+  },
+  "revision": "r1",
+  "rollback": {
+    "note": "Additive assurance code; rollback = revert commit.",
+    "proved": true,
+    "required": false
+  },
+  "scenario_note": "Governance tooling card; no 197-scenario mapping. T0 contract/mutation tests only.",
+  "scenario_results": [],
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "summary": "CA-104 (command registry + execution attestation): implemented uc/commands.py + CLI command-run/command-replay. CommandSpec freezes argv/cwd/env-allowlist/timeout/tier/side-effect budget + success/failure/infra markers; CommandResult is an immutable attestation (exit code, business outcome pass/structured_failure/infra_error, pytest-style collected/passed/failed/skipped parsing, duration, stdout/stderr SHA-256, timestamp) with environment VALUES never recorded (secret-free); replay-diff re-runs the spec and reports output-hash/exits differences against the recorded artifact. RED evidence: 99 receipt command entries with zero output hashes (reusing old stdout undetectable); company-wiki ci.yml:80 carries 'collect_news.py --help || true' (registered as finding for CA-201); structured-failure-with-exit-0 previously recorded as pass. 7 new tests. Full suite: 123 passed. Product code/config/CI/catalog/roots: zero writes.",
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/uc/commands.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_commands.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-104/*"
+  ],
+  "unit": "CA-104"
+}

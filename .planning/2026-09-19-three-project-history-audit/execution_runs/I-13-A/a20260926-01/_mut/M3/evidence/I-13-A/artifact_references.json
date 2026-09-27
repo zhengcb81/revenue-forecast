@@ -1,0 +1,108 @@
+{
+  "schema": "i13a_artifact_references/1",
+  "card": "I-13-A",
+  "attempt": "execution_runs/I-13-A/a20260926-01",
+  "role": "implementer_i13a",
+  "status": "review_pending",
+  "purpose": "卡文 L11 动作1『引用产物页/字段』的引用台账：每个分值/判定都能落到 path:line 或 JSON 字段；路径相对 .planning/2026-09-19-three-project-history-audit/。",
+  "legend": {
+    "S": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md（sha a2304fdd…/26132 B）",
+    "H7E": "execution_runs/I-07-E/a20260926-01/handoff.json（sha 8cfce367…/14267 B，status=accepted_scoped）",
+    "V7E": "execution_runs/I-07-E/a20260926-01/verification.json（sha 237bc2d3…/10089 B）",
+    "PM": "execution_runs/I-11-C/a20260926-01/parameter_mapping.json（sha d542b34d…/54875 B）",
+    "MV": "execution_runs/I-11-C/a20260926-01/mapping_verification.json（sha cecdcb33…/9193 B）",
+    "H11C": "execution_runs/I-11-C/a20260926-01/handoff.json（sha da25f736…/20258 B，status=accepted_scoped）",
+    "EAF": "execution_runs/I-11-B/a20260926-01/expert_assumptions.json（sha 9f8b844e…/8580 B）",
+    "SEAL": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json（封盘，sha f2178768…/51697 B，只读）",
+    "ST": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json（store，sha b2063ac8…/61231 B，只读）"
+  },
+  "companies": [
+    {
+      "company": "紫金矿业（CN）",
+      "fields": {
+        "基期": "FY2025 年度实际；FY2026 仅管理层目标对照",
+        "分部口径": "四报告分部对外销售收入（矿产品/冶炼/贸易/其他）；含内部交易分部总计不得直接相加",
+        "币种单位": "人民币元（量：吨/千克）",
+        "信息日": "published_at=available_at=2026-03-20；as_of=2026-09-18",
+        "年度路径": "FY2025（基期）→ FY2027（生效）",
+        "来源claim": "CN-ZIJIN-AR2025 / 01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d / p327-p328、p44、p56",
+        "结果": "有可审查来源链与产物（13 槽位全部登记）；研究草稿未放行"
+      },
+      "refs": ["S:15", "S:19-L24", "S:32-L48（B1 13 槽位）", "S:129", "PM:L47-L897（13 行）", "PM:L1215 action_1_summary"],
+      "gaps": ["gap-U1 小米非本司", "u-N5/unverified-N1 语义张力（S:105、PM:L71）", "BLOCKED-6b 容差未签（PM:L530、L596）", "OPEN-2 禁消费（S:139-L147）"]
+    },
+    {
+      "company": "小米集团（HK）",
+      "fields": {
+        "基期": "FY2025 仅 I-10-A 已签映射 case 的历史复建值（XM-PHONE-M03、XM-EV-M03）",
+        "分部口径": "手机出货量×平均售价；EV 交付量×ASP + 其他收入单列一次",
+        "币种单位": "人民币元（量：部/辆）",
+        "信息日": "as_of=2026-09-18；披露日未在回源面内登记（gap-U2）",
+        "年度路径": "缺位（显式保留）：store 8 条 hypothesis = 紫金5+微软3，小米 FY2027 = 0 槽位",
+        "来源claim": "HK-XIAOMI-AR2025 / ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c / p.21",
+        "结果": "明确 blocked（缺位）：I-11-A source_map = not_readable_in_this_attempt（STOP_EVIDENCE），不伪造 capture；3/3 声明=否"
+      },
+      "refs": ["S:16", "S:20-L21", "S:131", "S:133"],
+      "gaps": ["gap-U1 无 FY2027 命题/参数载体", "gap-U2 披露日未登记"]
+    },
+    {
+      "company": "微软（US）",
+      "fields": {
+        "基期": "FY2026（截至 2026-06-30）三分部收入 PBP 139,996 / IC 137,791 / MPC 54,052 USD mn（+16%/+30%/−1% 仅作对照）",
+        "分部口径": "合并报表三分部；Microsoft Cloud 聚合不得与 IC 并列（E6 PROHIBITED_CO_USE）",
+        "币种单位": "USD million（增长率=小数）",
+        "信息日": "published_at=available_at=2026-07-29；as_of=2026-09-18",
+        "年度路径": "FY2026（基线年）→ FY2027（生效）",
+        "来源claim": "US-MSFT-10K-FY2026 / store 记 e3de0053…40ecff（63 位，u-N4）vs I-07-B 实测 e3de0053…40ecfff（64 位）/ table 74/76、MD&A Microsoft Cloud",
+        "结果": "有可审查来源链与产物（5 槽位全部处置：3 登记 + 2 显式拒绝）；全部 OPEN-3 不放行"
+      },
+      "refs": ["S:17", "S:50-L58（B2 5 槽位）", "S:130", "PM:L900-L1196（5 行）", "V7E:L52（u-N4）"],
+      "gaps": ["gap-U4 微软重述已审载体未检出（S:23）", "MS-PBP-M05/MS-IC-M06 = STOP_DISCLOSURE_ADAPTATION（S:130）", "OPEN-3"]
+    }
+  ],
+  "parameter_slots_index": {
+    "total": 18,
+    "mapped_not_released": 13,
+    "not_executable_no_propagation": 1,
+    "unmapped_declined_no_number": 4,
+    "refs": "PM:L47/L119/L181/L243/L305/L384/L445/L506/L572/L638/L701/L764/L843/L900/L966/L1031/L1096/L1156（parameter_id 逐行）",
+    "action_1_summary_ref": "PM:L1215",
+    "value_policy_ref": "PM:L9（params_released=false）"
+  },
+  "red_line_refs": {
+    "registered_value": "124,248.63（S:143；PM:L318 i11b_proposed_values 仅存档）",
+    "store_truth": "38,175.95（S:144）",
+    "disposition": "registered_not_consumed（S:141-L147；V7E 无消费主张）",
+    "ban": "OPEN-2 前禁消费 —— 只登记不消费（派单逐字）"
+  },
+  "ea_template_refs": {
+    "count": 7,
+    "range": "S:62-L74（EA-1..EA-7 逐条转录核 + count=7/all_have_sensitivity_interval=true/all_equivalent_false=true）",
+    "source": "EAF L11-L77",
+    "all_equivalent_to_disclosure_basis_false": true
+  },
+  "upstream_artifacts": [
+    {"path": "execution_v2/card_I-13-A.md", "bytes": 1383, "sha256": "daaf300ebd3762e875e3c8b413de9e88d08110fe23709d5362030b544b14599b"},
+    {"path": "OWNER_DECISIONS.md", "bytes": 109029, "sha256": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d"},
+    {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "bytes": 26132, "sha256": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb"},
+    {"path": "execution_runs/I-07-E/a20260926-01/handoff.json", "bytes": 14267, "sha256": "8cfce3671e29d69eac5d49af114d522d5ba4ae3681b3e70c2f688b45786ecc04"},
+    {"path": "execution_runs/I-07-E/a20260926-01/verification.json", "bytes": 10089, "sha256": "237bc2d394ec5726c05adc00f6b7de2b88e302aafe658300f64fbac5dd25671c"},
+    {"path": "execution_runs/I-07-E/a20260926-01/reviewer_report.md", "bytes": 9555, "sha256": "6b48a2f5e2085f70c29315b4da1537ba80006833ef721468d9c11a87d714cca2"},
+    {"path": "execution_runs/I-11-C/a20260926-01/parameter_mapping.json", "bytes": 54875, "sha256": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c"},
+    {"path": "execution_runs/I-11-C/a20260926-01/mapping_verification.json", "bytes": 9193, "sha256": "cecdcb33281727f7c450d7c121d420dd743edbe53c88dbff25491cf8e4cb633f"},
+    {"path": "execution_runs/I-11-C/a20260926-01/handoff.json", "bytes": 20258, "sha256": "da25f736cfde6f97047a691ddff28f1b079c6c29d1cfeac03729ce4c32b9c453"},
+    {"path": "execution_runs/I-11-C/a20260926-01/oracle.md", "bytes": 16336, "sha256": "437a7758da4c038762ff72ca95b9cca7492e41fd87b8cd6eca70b397680a01ec"},
+    {"path": "execution_runs/I-11-B/a20260926-01/expert_assumptions.json", "bytes": 8580, "sha256": "9f8b844e342ec17e731cbe4554388005f5070e0c586de329782df86ee3abd79f"},
+    {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "bytes": 51697, "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "note": "封盘，只读零字节"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json", "bytes": 61231, "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "note": "store，只读零改动"}
+  ],
+  "not_referenced_by_design": [
+    "execution_v2/research_cards.json（仅 L192-L259 定域取尺，见 oracle §2 回源面声明）",
+    "其他卡 attempt 目录、五份计划文件、REMEDIATION_REGISTER 正文 —— 均未读"
+  ],
+  "reviewer_hooks": [
+    "复核任一分值：按 dimensions[].evidence 的 path:line 直读原文",
+    "复核 HB3：grep '154 千克|量恒等式约束未闭合' PM；grep 'BLOCKED-6a/6b/6c' H7E",
+    "复核引用完整性：artifact_references 任一条 → 上游 sha 与本表 upstream_artifacts 比对（见 verification.json J4）"
+  ]
+}

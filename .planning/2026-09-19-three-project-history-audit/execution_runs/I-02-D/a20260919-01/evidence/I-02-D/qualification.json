@@ -1,0 +1,43 @@
+{
+  "card": "I-02-D",
+  "attempt": "a20260919-01",
+  "generated_by": "carrier-landing bookkeeping pass (2026-09-24)",
+  "verdict_is_transcribed_not_authored": true,
+  "status": "accepted_scoped",
+  "status_authority": {
+    "source_file": "review.md",
+    "line_refs": [5, 67, 69, 70, 71, 72],
+    "quote": "## 结论：**ACCEPT**",
+    "quote_scope_declared_lines_69_70": "- 本次接受授予的权限范围 = **同 bytes 幂等重入根（同 request 重入、同 bytes 同身份\n  dedup 资格、staging 恢复证据时点）这一类资格**；仅此。",
+    "verdict_word_note": "诚实转录：reviewer 在 review.md:5 的原词是 `ACCEPT`，不是本计划四值结论域（accepted_scoped / changes_required / blocked / not_applicable_with_reason）之一。handoff.json 顶层 status 记为 accepted_scoped，且 handoff.json reviewer_status 内自带 VOCABULARY NOTE，逐字写明「normalizing the reviewer's word is pending the reviewer's own confirmation」。本文件不改判、不换词，只并列登记两处原值。",
+    "corroboration": "handoff.json status = accepted_scoped（该规范化值由既有簿记写入，本 pass 未改）"
+  },
+  "formula": {
+    "state": "not_applicable_with_reason",
+    "scope": "同 bytes 幂等重入根（同 request 重入、同 bytes 同身份 dedup 资格、staging 恢复证据时点）这一类资格；仅此（review.md:69-70 逐字）",
+    "reason": "本卡授予面是 canonical_writer dedup 分支在隔离副本内的幂等重入资格；review.md:69-72 逐字限定「仅此」并明写不授予跨进程锁资格与监管/并发设计，全文未授予任何预测公式资格，故 formula 对本卡不适用。判定依据为本卡自己的裁决文本。"
+  },
+  "disclosure_adaptation": {
+    "state": "unmapped",
+    "reason": "本卡 review.md 与 handoff.json 原文均未提及 disclosure_adaptation（全文检索 0 命中）；按登记册 REMEDIATION_REGISTER.md:708 通则回填 canonical 值 unmapped。"
+  },
+  "accuracy": {
+    "state": "unproven",
+    "reason": "本卡 review.md 与 handoff.json 原文均未提及 accuracy（全文检索 0 命中）；按登记册 REMEDIATION_REGISTER.md:708 通则回填 canonical 值 unproven。"
+  },
+  "not_granted": [
+    "跨进程锁资格——锁机制变更需 D-W02 及 I-04 owner 确认；I-04 owner scope 保持 open（review.md:71）",
+    "监管/并发设计——CLI 层并发 harness、acquisition 级独立锁，留 I-02-E/I-04（review.md:72）",
+    "同 bytes 幂等重入根以外的任何资格——review.md:69-70「这一类资格**；仅此。」"
+  ],
+  "sources_read": ["review.md", "handoff.json"],
+  "pre_image_notes": "本次写入前实测：本 attempt 下不存在任何 qualification*.json，且 evidence/ 目录不存在（本 pass 新建目录与本文件）；三资格字段在前像中整体缺失，按 REMEDIATION_REGISTER.md:708 补 canonical 记录。reviewer 原词 ACCEPT vs 既有 status=accepted_scoped 的词汇差为既有簿记记录的待规范化项，本 pass 不触碰。",
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "裁决由独立 reviewer 写入 review.md:5（原词 ACCEPT）；本文件仅转录，不代签、不改任何 status",
+    "this_file_grants_nothing_new": true,
+    "existing_bytes_written": 0
+  },
+  "carrier_completeness_note": "本文件为第三件载体补齐（原缺失）；不新增任何资格、不改任何既有字节、不转移 status"
+}

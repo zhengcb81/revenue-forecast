@@ -1,0 +1,227 @@
+{
+  "schema": "handoff/1",
+  "station": "execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01",
+  "role": "accounting_reviewer_h2_signoff",
+  "attempt": "a20260926-01",
+  "generated_utc": "2026-09-26T12:06:14Z",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "task": "MERGE 七条 C5 一步：答复 ruling_h2.md §⑥ 给会计面的 5 条会签提请（净价桥 · A-2.2 L90 适用性 · base_period 收窄 · 数值基础归类 · BLOCKED-6a 状态）",
+  "authorized_by": [
+    {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-PRICE-NORMALIZATION-BASELINE/a20260926-01/ruling_h2.md",
+      "lines": "§6.1 表 A / A' / B / C / D（L184–L192）",
+      "file_sha256": "e073b49139ece818f484ba3a3b6740db8c4bdc90df5dacc769f32b0401650a38",
+      "file_bytes": 25872,
+      "verbatim": [
+        "### 6.1 给**会计面**（`I11A-OPEN-ACCT` 继任 / `OPEN-6-ACCT-R2`）",
+        "| A | **B-3 净价口径**：认定 现货价格序列 ↔ `单价（不含税）` 之间的 VAT / TC-RC / payability / 权益金 / 产品形态桥，或明文裁定\"不做价格归一化，改走 A-6.3(ii) 同口径历史离散\" | `h2_baseline.json → step_2.elements[B3].found/gap`（4 条证据 + 缺口实测） | 我**不代**会计面定净价口径，**不给**换算系数 |",
+        "| A' | **B-1 系列指派的\"币种 + 基准日\"面**：会计面 A-2.2 L90 要求「价格序列、币种、基准日（`as_of`）、原文出处」——请确认该最小集是否适用于 H2（我按同类规则类比适用，**请确认或纠正**） | `h2_baseline.json → B1.found[B1-D4]`（ACCT L90/L91 逐字） | 我不改写 A-2.2 的适用范围 |",
+        "| B | **B-2 期间基期**：是否允许把新 id 的 `base_period` 由 FY2023–FY2025 收窄为 FY2024–FY2025（本地仅两期年均价），或要求补 FY2023 年报原件 | `h2_baseline.json → step_2.elements[B2].gap`（命中 0 与目录枚举） | 我不改 `base_period` 字段 |",
+        "| C | **A-6.3 ② 可核基础归类**：重定义后的 H2 数值应归 (ii) 同口径历史离散 还是 (iv) `expert_assumption` + 敏感性区间 | 本文件 §4.1 第 4 行 | 我不在四要素齐之前给任何数值基础 |",
+        "| D | **`BLOCKED-6a` 状态**：本工位**未**解除它（四要件 0/6）；请在收到四要素齐的载体后再裁 | §4.1、`h2_baseline.json → step_3` | 我不要求提前解除 |"
+      ]
+    },
+    {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md",
+      "lines": "L226（四要件总纲）+ A-6.3 L244–L256（给数前置）+ A-6.1 L230 + A-2.1 L83 + A-2.2 L90/L91 + L296（BLOCKED-6a）",
+      "file_sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2",
+      "file_bytes": 37355,
+      "verbatim": [
+        "审定一个阈值必须同时具备**可复算观测量 + 可核基础 + 非实现者签署（decision_sha256） + 追加式版本化**，否则一律维持 `not_reviewed`",
+        "必须**同时**满足，缺一即维持 not_reviewed：1. **观测量可复算**…2. **数值有可核基础**，且属于以下之一并写明：(i) 来源自身的披露容差/定义；(ii) **同口径历史离散**：同一披露指标在 ≥2 个可比披露期上的实际波动，计算过程与所用原文一并归档（可复算）；(iii) 准则/监管/交易所明文定义；(iv) **专家假设**：允许，但必须标 `expert_assumption` 并给出敏感性区间，**永远不得**被记为\"等同披露依据\"；3. **签署身份**：非实现者…带 `decision_sha256`、日期、作用域（`hypothesis_id` + `parameter_id`）；4. **追加式版本化**…不回改**历史",
+        "- **BLOCKED-6a**：3 条 `professional_judgement_required` 阈值的**数值**是否恰当（±5%、[0.9,1.1]、拆分层级判定）—— 需行业/专业 reviewer 按 A-6.3 给出证据与签署；我**不给数**。"
+      ]
+    },
+    {
+      "source": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+      "lines": "§三十 L641–L661 / §三十一 L665–L683",
+      "file_sha256": "4fe79ba53db5915cb9cab645f448e9861323814f679ec5bb0154a166cd31fe9e",
+      "verbatim": "本会话 `workspace-write` 下 `company-wiki` 全域 `Access denied`（B1 仍阻断）…不解除 `BLOCKED-NEEDS-ORIGIN-BYTES`、不解除 `OPEN-3`、不产生 ACCEPT、不判 E1/E2 等级（归会计面）"
+    }
+  ],
+  "oracle": {
+    "path": "execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01/oracle.md",
+    "bytes": 21014,
+    "sha256_frozen_utc": "2026-09-26T11:46:55Z",
+    "sha256": "e858b515bc9049a7641a244c81a6031291be8d873bc7acd774e36455e6912058",
+    "sha256_stable": true,
+    "frozen_before_judgement": true,
+    "utf8_no_bom": true,
+    "cr_count": 0,
+    "criteria": ["Q1 净价桥认定", "Q2 A-2.2 L90 适用性与充分性", "Q3 base_period 收窄", "Q4 四类判定树", "Q5 BLOCKED-6a", "C.1 会签放行门 / C.2 blocked 触发 / C.3 被拒路径", "§⑧ 变异清单 MUT-1..6"]
+  },
+  "five_question_conclusions": {
+    "Q1_B3_net_price_bridge": {
+      "ask": "B-3 净价桥认定，或明文改走 A-6.3(ii)",
+      "conclusion": "不能认定（B3 = NOT_ESTABLISHED）；且不采纳「改走 (ii)」——超裁权（任务定义含价格归一化，merge L234）+ (ii) 实测反证 ±5% 不产生可签数值 + (ii) 现阶段 E1/E4 不成立",
+      "measured": "AR2025 抽取件 TC/RC=0、payability=0、应付比例=0、净价=0、作价=0；AR2024 全文同三项=0（加工费 4 处全为叙述）；execution_runs 价格序列 24 命中 0 换算式；层差 铜精矿 vs 电解铜 −14.4960%/−10.9336%、现货 vs 实现 −11.98%~−24.90%；(ii) E1✗ E2✅ E3✅ E4✗ E5✗（22 变动中 19 个超 ±5%）",
+      "signed": false
+    },
+    "Q2_A22_L90_minimal_set": {
+      "ask": "A-2.2 L90 四件是否适用于 H2、是否就是全部",
+      "conclusion": "适用（类比）但不充分：四件是必要非充分；H2 最小集 = 四件 + A-2.2 第 3 条（payability/TC-RC 桥）+ 期间对齐规则 + 汇率规则（多币种）+ 年均价构造方法 + 产品形态/范围声明",
+      "measured": "四件现状 1 有 3 缺（出处可定位；序列/币种/价格侧 as_of 未定）；补充项中 3 项 0 处文本",
+      "scope_note": "不改写 A-2.2 适用范围（第 1/4/5/6/7/8 条仍只属铜当量系数场景）"
+    },
+    "Q3_base_period_narrowing": {
+      "ask": "base_period 由 FY2023–FY2025 收窄为 FY2024–FY2025，还是先补 FY2023 年报",
+      "conclusion": "不允许收窄（narrow_allowed=false）：必须先补 FY2023 年报原件（S1），或 owner 明文批准 + 命题新版本 + 会计会签；本工位不改 base_period 字段",
+      "key_finding": "缺的是市场价序列的 FY2023（AR2024 `2023 年均价`=0、annual/ 仅 2 份 PDF），不是被观察指标的 FY2023（AR2024 销售详情表 2023 块 + substitute_caliber 三期登记齐备，A1–A8 ≤0.00498pp）",
+      "narrow_if_forced_impact_FY2027": [
+        "基期 3→2 期 ⇒ (ii) 可比期 3→2、离散点 2→1",
+        "FY2023 已登记观察值被排除 ⇒ 须命题新版本 + decision_sha256 重登记",
+        "基期终点仍 FY2025、观察期仍 FY2027 ⇒ 与 FY2026 空档不变；最旧年 FY2023→FY2024 ⇒ 失去跨周期锚（FY2025 为高价位年）",
+        "走归一化路径则 FY2023 市场价仍需 AR2023 ⇒ 收窄不消除取证义务",
+        "OWNER §三十 B1：本会话 company-wiki Access denied + 本工位禁网 ⇒ AR2023 须在可写会话经 filing-fetch 取回（本工位只登记路径）"
+      ],
+      "field_changed": false
+    },
+    "Q4_basis_classification": {
+      "ask": "重定义后 H2 数值基础归 (ii) 还是 (iv)",
+      "conclusion": "现在四类均不成立 ⇒ 不归类、维持 not_reviewed；重定义后首选/目标类 = (ii) 同口径历史离散，(iv) 仅作伴随敏感性区间（不得单独承载阈值、不得记为等同披露依据）；且 (ii) 未归一化实测反证 ±5% ⇒ 阈值必须重取",
+      "four_class_tree": {"i": "不可用（AR2025/AR2024 各 7 词检索 0 命中）", "ii": "现阶段不可用（E1/E4/E5 ✗；E2/E3 ✓）——唯一有本地证据的类", "iii": "不可用（0 命中）", "iv": "现阶段不可行使（前置未成立）；重定义后只作伴随带"},
+      "pm5_supported": false
+    },
+    "Q5_BLOCKED_6a": {
+      "ask": "BLOCKED-6a 状态",
+      "conclusion": "维持 still_blocked（不推进）；3 条 pjr 完成 A-6.3 全套 = 0/3",
+      "per_threshold": {"H2 ±5%": "矿业面 sha=null、会计面（我）不签 ⇒ 0/2 签", "H4 [0.9,1.1]": "会计面 4/4 已签、行业面会签未做、status 仍 not_reviewed", "H8 拆分层级判定": "两点修订未落命题新版本、无 decision_sha256（merge L235）"},
+      "status_field_probe": "`threshold_review_status=reviewed` 全库 0 命中；BLOCKED6C 计数 defaulted=8（全 not_reviewed）",
+      "advanced_by_this_station": 0
+    }
+  },
+  "blocked_6a_status": "still_blocked",
+  "blocked_6a_detail": {
+    "pjr_thresholds_total": 3,
+    "pjr_full_a63_signed": 0,
+    "h2_signed_by_mining": false,
+    "h2_signed_by_accounting": false,
+    "h2_acct_decision_sha256": null,
+    "h4_industry_cosign_pending": true,
+    "h8_new_version_absent": true,
+    "note": "本工位只出具会计面五问答复与证据/缺口；按 ACCT L296 数值是否恰当属行业/专业 reviewer 的证据与签署，我一个数都不给、也不代签"
+  },
+  "threshold_review_status": "not_reviewed",
+  "threshold_review_status_changed": false,
+  "threshold_basis": "professional_judgement_required",
+  "threshold_basis_changed": false,
+  "blocked_triggers_fired": ["A-1", "A-2", "A-3", "A-4", "A-5"],
+  "mutation_results": {
+    "rc_semantics": "0 = 接受 / 1 = 拒绝",
+    "cases_run": 16,
+    "expectations_met": 16,
+    "failures": 0,
+    "EXPECT_RC": 0,
+    "OVERALL_RC": 1,
+    "python_exit_code": 0,
+    "mutation_survivors": "6/6",
+    "bidirectional": {
+      "green_when_should_release": "SYNTH-FULL + release + STRICT = 0",
+      "red_when_should_block": "ACTUAL + release + STRICT = 1；SYNTH-FULL + keep_blocked + STRICT = 1",
+      "mutation_survives": [
+        "CF-NO-BRIDGE: STRICT=1 → MUT-1=0（Q1 承重）",
+        "SYNTH-MISS-MINSET: 1 → MUT-2=0（Q2 承重）",
+        "SYNTH-NARROW-BACKDERIVE: 1 → MUT-3=0（Q3 承重）",
+        "SYNTH-IV-NO-MARK: 1 → MUT-4=0（Q4 承重）",
+        "SYNTH-6a-PARTIAL: 1 → MUT-5=0（Q5 承重）",
+        "SYNTH-NO-OBS: 1 → MUT-6=0（A-6.3① 承重）"
+      ],
+      "load_bearing_criteria": ["Q1 净价桥", "Q2 充分性", "Q3 收窄条件", "Q4 四类树", "Q5 6a 全套", "A-6.3 第 1 件"]
+    },
+    "synthetic_fixture_note": "SYNTH-* / CF-* 为判据夹具（SYNTHETIC/COUNTERFACTUAL、sha 0…0），不构成现实主张"
+  },
+  "qa_probes_note": "QA-01（同口径实现单价 22 点复算 + 19/22 超 ±5%）、QA-02/QA-03（层差与现货差）、XC-01 独立复算（worst 1.3281pp、4/10 >0.5pp）全部为取证探针：不产出阈值、不产出归一化比值、不作任何参数取值",
+  "written_files": [
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01/oracle.md",
+      "bytes": 21014,
+      "sha256": "e858b515bc9049a7641a244c81a6031291be8d873bc7acd774e36455e6912058",
+      "frozen_before_judgement": true
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01/h2_acct_answers.json",
+      "bytes": 30466,
+      "sha256": "132dd038cecd65902c520e8150a5301592375e86b097849075e8d5cccee0038d",
+      "json_reparse_ok": true
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01/ruling_h2_acct.md",
+      "bytes": 29387,
+      "sha256": "63aef5f91a1772b6566045c635446fa792f8a9ed7e5d3b6293eab91ec758a986"
+    },
+    {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN6H2-ACCT-SIGNOFF/a20260926-01/handoff.json",
+      "bytes": null,
+      "sha256": null,
+      "note": "自指不可自证：本文件 sha256 不写入自身，由外部复算"
+    }
+  ],
+  "written_files_count": 4,
+  "git_diff_observed": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "baseline_before_write_utc": "2026-09-26T11:42:14Z",
+    "baseline_total": 3830,
+    "baseline_non_planning": 0,
+    "final_total": 3830,
+    "git_diff_non_planning": 0,
+    "git_status_used": false,
+    "git_writes": 0,
+    "untracked_note": "本工位 4 件均为未跟踪路径，不进入 git diff HEAD；total 3830 → 3830，非 .planning 计数恒 0"
+  },
+  "read_only_recheck": {
+    "ruling_h2.md": "e073b49139ece818f484ba3a3b6740db8c4bdc90df5dacc769f32b0401650a38（同开工前）",
+    "h2_baseline.json": "0947e009899d7f160a5281aa032680bfb44ac1e23b554571d0d4f76ee05b8175（同开工前）",
+    "OPEN6H2 handoff.json": "905019205b2fd0cb5c8b144f998d86ac74db8448f73a77e89c2d433a91812b5e",
+    "ruling_h4.md": "acce9a38be1a98a2b394e44eb14770348bce03fb654476b676245ca1b78cbaef",
+    "hypotheses_h4_v1.json": "329a719beb9e6ce2bdecdfdde7c6bc6db9e3e1c7e4f36f7fb982cdf81e109717",
+    "hypotheses_v4.json": "ebf6fa4e2f708c397165127926475d5426afbdef0d93864a795a8640029c4654",
+    "substitute_caliber.json": "649a9ff8d1a4490aedbe863ee52a338ba7b30c50408d7ca5f0a9361daa622e72",
+    "I11A-OPEN-ACCT/ruling.md": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2",
+    "I11A-OPEN-MERGE/merge_ruling.md": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1",
+    "OWNER_DECISIONS.md": "4fe79ba53db5915cb9cab645f448e9861323814f679ec5bb0154a166cd31fe9e",
+    "all_unmodified": true
+  },
+  "releases_nothing": true,
+  "does_not_release_any_parameter": true,
+  "does_not_change_threshold_fields": true,
+  "does_not_change_base_period": true,
+  "does_not_unblock_BLOCKED_6a": true,
+  "does_not_unblock_BLOCKED_6b": true,
+  "does_not_unblock_BLOCKED_6c": true,
+  "does_not_unblock_OPEN_6": true,
+  "does_not_unblock_OPEN_2": true,
+  "does_not_unblock_IND_BLOCKED_1_to_7": true,
+  "does_not_claim_I11BAcceptance": true,
+  "does_not_trigger_any_falsifier": true,
+  "does_not_sign_for_mining_side": true,
+  "implementer_signed": false,
+  "signed_anything": false,
+  "network_requests": 0,
+  "files_outside_planning": 0,
+  "five_plan_files_written": false,
+  "git_diff_non_planning": 0,
+  "not_granted": [
+    "H2 任何数值（h2_value=null；±5% 不采用，替代数值仍 BLOCKED）",
+    "任何 decision_sha256 签署（h2_acct_decision_sha256=null）",
+    "threshold_basis 变更（仍 professional_judgement_required）",
+    "threshold_review_status 升级（仍 not_reviewed，未升 reviewed）",
+    "base_period 收窄（仍 FY2023–FY2025）",
+    "任何参数放行（旧 id 与 4 个新 id low/base/high 全 null、released=false）",
+    "_PLACEHOLDER 解除",
+    "ACCT BLOCKED-6a/6b/6c、IND BLOCKED-1..7、OPEN-6、OPEN-2 的解除（0 条关闭）",
+    "I-11-B 的 ACCEPT / approved_frozen / 任何验收声称",
+    "任何 falsifier 触发、校准边界、情景切换、I-11-C 反方检验",
+    "代签矿业面 §6.2 四条或任何其他角色",
+    "对 OPEN6H2-* / OPEN6-H4-* / 两半区 / OPEN6-TOLERANCE-* / BLOCKED6C-* / 封盘 I-11-A / 五份计划文件 / company-wiki 的任何字节改动"
+  ],
+  "discipline_attestation": {
+    "oracle_frozen_first": true,
+    "network_requests": 0,
+    "git_writes": 0,
+    "git_status_used": false,
+    "files_outside_planning": 0,
+    "company_wiki": "只读（目录枚举 / Get-FileHash / pdftotext 输出进管道），未落盘未改字节",
+    "json_written_and_reparsed": ["h2_acct_answers.json", "handoff.json"],
+    "utf8_no_bom_lf": true
+  }
+}

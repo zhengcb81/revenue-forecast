@@ -1,0 +1,98 @@
+{
+  "schema": "i12a_professional_approval/1",
+  "card": "I-12-A",
+  "attempt": "execution_runs/I-12-A/a20260926-01",
+  "role": "implementer_i12a",
+  "design_version": "v1",
+  "card_owner_clause_verbatim": "Owner：统计reviewer和行业reviewer共同签字；依赖：I-07-E。",
+  "purpose": "登记设计的 reviewer 身份与签署状态；实现者不自签；本件是签署状态的如实记录，不是签署本身。",
+
+  "reviewers": [
+    {
+      "id": "statistical_reviewer",
+      "role_label": "统计reviewer",
+      "required_by": "卡文 Owner 栏 + 动作 1「不由弱模型选择方便通过的阈值」+ 动作 4「reviewer身份、签署」",
+      "identity_status": "未指派（编排层独立复审另派，非本工位）",
+      "assigned_by": null,
+      "signed": false,
+      "signature_status": "unsigned",
+      "signed_at": null,
+      "signature_sha256": null,
+      "scope_of_signature": [
+        "字段 5 训练/验证/测试时间切分与折数",
+        "字段 10 最小样本量/功效/可接受 CI 宽度",
+        "字段 11 置信水平、重复抽样次数与随机种子、多重比较校正方法",
+        "字段 12 成功/失败阈值（经济显著改善幅度、可接受偏差/覆盖/区间宽度）"
+      ]
+    },
+    {
+      "id": "industry_reviewer",
+      "role_label": "行业reviewer",
+      "required_by": "卡文 Owner 栏（与统计 reviewer 共同签字）",
+      "identity_status": "未指派（编排层独立复审另派，非本工位）",
+      "assigned_by": null,
+      "signed": false,
+      "signature_status": "unsigned",
+      "signed_at": null,
+      "signature_sha256": null,
+      "scope_of_signature": [
+        "字段 3 公司池纳入/排除理由与分层（A/H/US、行业、生命周期）",
+        "字段 8 朴素 baseline 选择与 not_applicable 项",
+        "字段 11 行业相关的 cluster/block 单位",
+        "字段 12 成功/失败阈值（与统计 reviewer 共同）"
+      ]
+    },
+    {
+      "id": "implementer_i12a",
+      "role_label": "实现者（本工位）",
+      "identity_status": "本 attempt 执行者",
+      "signed": false,
+      "signature_status": "unsigned_by_rule",
+      "may_sign": false,
+      "rule": "实现者不自签（OWNER_DECISIONS §三十四 L765「实现者不自签 · 独立复审」；派单硬性纪律「不自签（独立复审另派）」）",
+      "scope_of_signature": []
+    }
+  ],
+
+  "unsigned_key_statistical_options": [
+    {"field_index": 5, "item": "时间划分折数/切点/窗口长度", "state": "PENDING", "signed": false},
+    {"field_index": 10, "item": "最小公司数/每层样本数/统计功效/可接受 CI 宽度", "state": "PENDING", "signed": false},
+    {"field_index": 11, "item": "置信水平(CI level/α)", "state": "PENDING", "signed": false},
+    {"field_index": 11, "item": "重复抽样次数与随机种子", "state": "PENDING", "signed": false},
+    {"field_index": 11, "item": "多重比较校正方法", "state": "PENDING", "signed": false},
+    {"field_index": 12, "item": "成功/失败阈值：经济显著改善幅度、可接受偏差、情景包含率、区间宽度", "state": "PENDING", "signed": false}
+  ],
+
+  "stop_condition": {
+    "rule_verbatim": "任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。",
+    "triggered": true,
+    "code": "BLOCKED_PROFESSIONAL_DECISION",
+    "triggered_by": ["statistical_reviewer unsigned", "industry_reviewer unsigned", "6 项关键统计选项/阈值全部 unsigned"],
+    "card_acceptance_state": "evaluation_design_fields 13 项 = 9 filled + 1 filled_threshold_unsigned + 3 PENDING + 0 not_applicable ⇒ 「全部完成或有获批 not_applicable」未达成",
+    "disposition": "fail-closed 判 blocked（合格形态）：不以「已填写」冒充「已签署」，不解封测试实际值，不推进到 I-12-B",
+    "unblock_conditions": [
+      "编排层指派统计 reviewer 与行业 reviewer",
+      "两名 reviewer 在本载体（或其复审载体）对 unsigned_key_statistical_options 逐项签署，签署须早于测试结果解封",
+      "签署后重算 design_manifest SHA256 并冻结（新版本）；结果解封后才补签的阈值一律作废为探索性"
+    ],
+    "second_stop_rule_verbatim": "已看测试结果后变更设计→新探索版本，旧结果不得追认确认性成功。",
+    "second_stop_triggered": false,
+    "second_stop_basis": "test_results_sealed=true、accuracy_results_read=false（本 attempt 未读任何测试/准确性结果）"
+  },
+
+  "no_signature_performed_by": {
+    "implementer": true,
+    "owner_as_proxy": false,
+    "parent_agent": false,
+    "note": "本件不含任何代签；OWNER_DECISIONS §三十四/§三十七 授权的是沙箱操作与开工纪律，不是统计阈值的专业签署。"
+  },
+
+  "seal_state_at_signing": {
+    "test_results_unsealed": false,
+    "results_read_before_signing": false,
+    "freeze_first": "SHA256 冻结（design_manifest.json）先于任何结果解封——当前冻结未含签署，故签署到位后必须新版本重冻"
+  },
+
+  "status": "BLOCKED_PROFESSIONAL_DECISION",
+  "handoff_status_note": "handoff.json.status=review_pending 是证据齐全的交付进入形态（供独立复审），不是验收、不是签署、不解除本 STOP。"
+}

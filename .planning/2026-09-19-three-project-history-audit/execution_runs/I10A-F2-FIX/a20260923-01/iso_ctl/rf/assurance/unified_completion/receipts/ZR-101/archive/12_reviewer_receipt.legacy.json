@@ -1,0 +1,113 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "06530afe8020eb7ffc7df79a21ecf7d0bfae2cbd",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "canonical_hash": "8626dedc215fb6ab65349a79c200f2e063379e848c350fac51e531cfdee61c5c",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD",
+      "exit_code": 0,
+      "result": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc (matches frozen annex)"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --porcelain",
+      "exit_code": 0,
+      "result": "Only user dirt in working tree: D .claude/settings.local.json, M llm_cost_log.csv — neither in commit b661755"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat b661755",
+      "exit_code": 0,
+      "result": "2 files changed, 650 insertions(+), 2 deletions(-): src/company_wiki/source_catalog/observability.py + tests/unit/test_stage_taxonomy.py ONLY; no user dirt committed"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
+      "exit_code": 0,
+      "result": "06530afe8020eb7ffc7df79a21ecf7d0bfae2cbd (matches frozen annex)"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast show --stat 06530af",
+      "exit_code": 0,
+      "result": "3 files changed, 128 insertions(+), 1 deletion(-): receipts/ZR-101/00_wu_card.md, receipts/ZR-101/11_implementer_receipt.json, assurance/unified_completion/state.json — only receipts/ZR-101/* + state.json"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show ef125ed63:src/company_wiki/source_catalog/observability.py > %TEMP%\\obs-base.py; git -C ... show b661755:... > %TEMP%\\obs-new.py; python zr101_cmp.py obs-base.py obs-new.py (ast parse of REASONS dict keys)",
+      "exit_code": 0,
+      "result": "OLD 78 keys, NEW 78 keys, missing (old - new): NONE -> PASS (v1.1 REASONS fully additive, old set subset of new)"
+    },
+    {
+      "command": "python zr101_map.py observability.py (ast: enum order, STAGES_BY_REASON coverage, versions)",
+      "exit_code": 0,
+      "result": "CrossRepoStage order == frozen 8 (identity,resolution,freshness,acquisition,safety,artifact,semantic,consumer); 78/78 REASONS keys attributed, 0 orphans, 0 attributed codes outside REASONS; REASON_TAXONOMY_VERSION=1.1, STAGE_TAXONOMY_VERSION=2.0 -> PASS"
+    },
+    {
+      "command": "python zr101_behavior.py (runtime checks on stages_for_reason / validate_stage_event / redaction)",
+      "exit_code": 0,
+      "result": "16/16 PASS: unknown reason -> ValueError; valid event -> [] problems; unknown stage / unknown reason / reason-stage mismatch / wrong schema_version / bad emitted_at / non-dict input all flagged (never raises); path-like detail redacted in place to <redacted> for both dict and StageEvent"
+    },
+    {
+      "command": "cd C:\\Users\\郑曾波\\Projects\\company-wiki; PYTHONIOENCODING=utf-8 uv run python -m pytest tests/unit/test_stage_taxonomy.py -q --tb=short",
+      "exit_code": 0,
+      "result": "20 passed in 0.26s"
+    },
+    {
+      "command": "cd C:\\Users\\郑曾波\\Projects\\company-wiki; PYTHONIOENCODING=utf-8 uv run python -m pytest tests/unit -q --tb=short",
+      "exit_code": 0,
+      "result": "First run: 692 passed, 1 failed (test_m14_concurrent_init_produces_one_v1_schema, SQLite 'database is locked' flake; file untouched by ZR-101, last change 42ff8da). Passed alone (1 passed in 0.15s). Full rerun: 693 passed in 31.85s — confirms implementer's 693 claim; flake unrelated to ZR-101"
+    },
+    {
+      "command": "cd C:\\Users\\郑曾波\\Projects\\revenue-forecast; PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-101/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed; canonical_hash present (b52f37235db5ed9b84fc906ca417f578fdfe5277fa203301bf7c89dba41c6b0c); result_triplet.wiki == b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+    },
+    {
+      "command": "cd C:\\Users\\郑曾波\\Projects\\revenue-forecast; PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli state-show",
+      "exit_code": 0,
+      "result": "units.ZR-101.status=independent_review; current_next=ZR-101; current_phase=C_read_only_and_contracts"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -1 -- tests/contract/test_source_catalog_worker_bootstrap.py",
+      "exit_code": 0,
+      "result": "e81465c (not b661755) — contract test untouched by ZR-101; 8-failure claim (7 frozen-HEAD pre-existing + 1 load flake) consistent with untouched contract suite; 7-minute suite not rerun per task spec"
+    },
+    {
+      "command": "cmd /c git -C C:\\Users\\郑曾波\\Projects\\company-wiki show b661755:src/company_wiki/source_catalog/observability.py > %TEMP%\\obs-b661755-raw.py; Get-FileHash ... -Algorithm SHA256; git cat-file -s b661755:...observability.py",
+      "exit_code": 0,
+      "result": "SHA256=C36EA8B423346175156A85DFC421A220156DAEF6BF1D99818BBF1C7E25B4FD58; extracted size 21650 == git blob size 21650 (byte-exact)"
+    }
+  ],
+  "created_at_utc": "2026-08-14T05:12:51.204670Z",
+  "findings": [
+    {
+      "detail": "state.json base_triplet.revenue = c3a0519 (set at bootstrap commit 1bee2f4) differs from the task-context frozen triplet revenue 739d5aa and from the implementer receipt's base_triplet.revenue 739d5aa. Pre-existing machine-state condition: the 06530af diff only adds the ZR-101 unit entry and timestamp, never touching base_triplet. Not introduced by ZR-101; reviewer anchors base/result_triplet to the git HEAD binding per task spec. No impact on verdict.",
+      "id": "ZR101-REV-001",
+      "severity": "info",
+      "title": "state.json base_triplet.revenue predates ZR-101 and differs from frozen triplet"
+    },
+    {
+      "detail": "First full unit-suite run: 692 passed + 1 failed (test_m14_concurrent_init_produces_one_v1_schema, OperationalError 'database is locked'). Test file last changed by 42ff8da (Phase 16), not by b661755; passes alone (0.15s) and on full rerun (693 passed in 31.85s). Confirms the implementer's 693-passed claim; failure was a SQLite concurrency flake unrelated to ZR-101's taxonomy code.",
+      "id": "ZR101-REV-002",
+      "severity": "info",
+      "title": "Unit-suite flake on first run, 693 passed on rerun"
+    },
+    {
+      "detail": "Contract spot-check per spec: tests/contract/test_source_catalog_worker_bootstrap.py last commit e81465c (not b661755), so ZR-101 introduced no changes to the contract suite; the receipt's 8-failure claim (7 frozen-HEAD pre-existing + 1 load flake passing in isolation) is plausible and consistent. Full 7-minute contract suite not rerun, per task instruction.",
+      "id": "ZR101-REV-003",
+      "severity": "info",
+      "title": "Contract 8-failure claim consistent with untouched contract tests"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-101 independent review",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "06530afe8020eb7ffc7df79a21ecf7d0bfae2cbd",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "reviewed_object_sha256": "c36ea8b423346175156a85dfc421a220156daef6bf1d99818bbf1c7e25b4fd58",
+  "reviewer": "reviewer-zr101-independent",
+  "schema_version": 1,
+  "unit": "ZR-101",
+  "verdict": "accepted"
+}

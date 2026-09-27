@@ -1,0 +1,42 @@
+﻿=== 39a-cov-GATE-95-judgment-AFTER-B-control.log ===
+arm: AFTER-B control (must reproduce 36)
+cmd: FC1204_COVERAGE_GATE=1 python -m pytest -q tests/contract/test_fc1204_coverage_ratchet.py
+rootdir: C:\Users\郑曾波\AppData\Local\Temp\dsh-nedzqX\cwgu2j\repo (pytest.ini)  python C:\Miniconda\python.exe 3.13.9  pytest 9.1.1  (same as 36)
+data file in place: C:\Users\郑曾波\AppData\Local\Temp\cwgu2\scratch\cov_afterB.json
+coverage.json sha256: 7C966B73ADD6196D1DA331E83F942E6D2D717B3B742D8934C94B736CCC2C21C0
+exit code (rc): 1
+=== pytest raw output ===
+CW-BASETEMP-DECISION {"event": "decision", "relocated": false, "reason": "no-explicit-basetemp", "detail": "pytest derives its default basetemp from %TEMP%; short by construction"}
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.5.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: C:\Users\֣����\AppData\Local\Temp\dsh-nedzqX\cwgu2j\repo
+configfile: pytest.ini
+plugins: anyio-4.13.0, Faker-40.19.1, asyncio-1.3.0, base-url-2.1.0, benchmark-5.2.3, cov-7.0.0, html-4.1.1, metadata-3.1.1, mock-3.15.1, playwright-0.7.2, timeout-2.4.0, xdist-3.8.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests\contract\test_fc1204_coverage_ratchet.py .F                        [100%]
+
+================================== FAILURES ===================================
+____________________ test_tier2_and_frozen_do_not_regress _____________________
+tests\contract\test_fc1204_coverage_ratchet.py:171: in test_tier2_and_frozen_do_not_regress
+    _check({**TIER2, **FROZEN}, _load(), required=False)
+tests\contract\test_fc1204_coverage_ratchet.py:163: in _check
+    assert not problems, "; ".join(problems)
+E   AssertionError: observability.py branch coverage 65.7% < 91% (frozen); prompt_injection.py branch coverage 48.4% < 73% (frozen); prune_retired_evidence.py branch coverage 77.8% < 87% (frozen)
+E   assert not ['observability.py branch coverage 65.7% < 91% (frozen)', 'prompt_injection.py branch coverage 48.4% < 73% (frozen)', 'prune_retired_evidence.py branch coverage 77.8% < 87% (frozen)']
+============================== warnings summary ===============================
+..\..\..\..\..\..\..\..\Miniconda\Lib\site-packages\_pytest\cacheprovider.py:469
+  C:\Miniconda\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: could not create cache path C:\Users\֣����\AppData\Local\Temp\dsh-nedzqX\cwgu2j\repo\.pytest_cache\v\cache\nodeids: [WinError 5] �ܾ����ʡ�: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-nedzqX\\cwgu2j\\repo\\pytest-cache-files-h56b0djt'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+..\..\..\..\..\..\..\..\Miniconda\Lib\site-packages\_pytest\cacheprovider.py:423
+  C:\Miniconda\Lib\site-packages\_pytest\cacheprovider.py:423: PytestCacheWarning: could not create cache path C:\Users\֣����\AppData\Local\Temp\dsh-nedzqX\cwgu2j\repo\.pytest_cache\v\cache\lastfailed: [WinError 5] �ܾ����ʡ�: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-nedzqX\\cwgu2j\\repo\\pytest-cache-files-6a4ahh3m'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/contract/test_fc1204_coverage_ratchet.py::test_tier2_and_frozen_do_not_regress
+=================== 1 failed, 1 passed, 2 warnings in 0.44s ===================
+

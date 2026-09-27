@@ -1,0 +1,37 @@
+{
+  "schema": "i12b_split_manifest/1",
+  "card": "I-12-B",
+  "attempt": "execution_runs/I-12-B/a20260926-01",
+  "role": "implementer_i12b",
+  "design_field_index": 5,
+  "design_field_status": "PENDING",
+  "design_pending_reason_verbatim": "可得 vintage 清单（历史 origin 逐个 available_at）未在本卡回源面内 ⇒ 切点/折数无法核算；不由实现者挑方便值（卡文动作 1）",
+  "state": "PENDING_unsigned_split_not_assigned",
+  "rules_frozen": {
+    "split_type": "纯时间因果切分，禁止随机切分",
+    "scheme": "滚动 origin（rolling）为主口径；扩展窗口（expanding）仅作敏感性对照",
+    "leakage_rule": "同一 entity（集团）任何分部不得跨 train/tune/validation/final_test；同一 origin 的全部 segment×horizon 观测必须同集合",
+    "overlap_horizon_rule": "重叠 horizon 观测按 origin 聚簇（block），方差按 origin block 估计",
+    "final_test_rule": "最终测试集实际值在 design_manifest SHA256 冻结前保持封存，一次性解封"
+  },
+  "assignments": {
+    "train": [],
+    "tune": [],
+    "validation": [],
+    "final_test": []
+  },
+  "counts": {
+    "train": 0,
+    "tune": 0,
+    "validation": 0,
+    "final_test": 0,
+    "unassigned": 7,
+    "total_included_samples": 7
+  },
+  "why_no_split": "设计字段 5 = PENDING（折数/切点/窗口/调参预算未签署）⇒ 本卡只登记规则骨架与 0 分配，不挑切点（卡文动作 1 + 派单 fail-closed）",
+  "auditability": "分组与时间切分规则面可审计；切点待统计 reviewer 签署后由新 attempt 以 append 事件追加，本件字节不改",
+  "grouping_keys": [
+    "entity（集团不得跨集合）",
+    "origin（同 origin 全部 segment×horizon 同集合）"
+  ]
+}

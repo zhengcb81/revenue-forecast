@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-305",
+  "kind": "reviewer",
+  "reviewer": "reviewer-zr305-independent",
+  "verdict": "accepted",
+  "note": "ZR-305 independent review",
+  "created_at_utc": "2026-08-17T21:01:19.325094+00:00",
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "a87f3daccc18d55f13914e7cf05387edba9c1914",
+    "wiki": "838fc464563bfc9071d89a806e02c4bdf62fd662"
+  },
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "a87f3daccc18d55f13914e7cf05387edba9c1914",
+    "wiki": "080d20cefb4442199567a2c98911a83f6c583e40"
+  },
+  "reviewed_object_sha256": "f0694e76ee68419eab7c0f8084aaa624447d3774c9b400ccdf7463497f24cb30",
+  "commands": [
+    {
+      "command": "git rev-parse HEAD; git rev-parse HEAD~1 (company-wiki)",
+      "exit_code": 0,
+      "result": "wiki HEAD=080d20cefb4442199567a2c98911a83f6c583e40; parent=838fc464563bfc9071d89a806e02c4bdf62fd662 (matches base triplet)"
+    },
+    {
+      "command": "git rev-parse HEAD (filing-fetch)",
+      "exit_code": 0,
+      "result": "filing HEAD=0e5d209bc352c6087fab51d09d55aa33aea81f85 (matches)"
+    },
+    {
+      "command": "git rev-parse HEAD (revenue-forecast)",
+      "exit_code": 0,
+      "result": "revenue HEAD=a87f3daccc18d55f13914e7cf05387edba9c1914 (matches)"
+    },
+    {
+      "command": "git show --stat 080d20c (company-wiki)",
+      "exit_code": 0,
+      "result": "exactly 1 file changed: tests/contract/test_zr305_legacy_migration.py (+289); commit message describes the 5 acceptance tests, parent=838fc46"
+    },
+    {
+      "command": "git diff 838fc46 080d20c --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "only tests/contract/test_zr305_legacy_migration.py (+289); NO product code changed"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr305_legacy_migration.py tests/contract/test_source_catalog_artifact_backfill.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "16 passed in 2.71s (5 new ZR-305 + 11 existing FC-901 backfill) — expected count exactly"
+    },
+    {
+      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-305/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed; canonical_hash=3698351cd18653e80c924db956b4e4077e59ec132cd1641f454a2ab6a8be1f9e (matches frozen context)"
+    },
+    {
+      "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "units.ZR-305.status=independent_review; current_next=ZR-305; current_phase=D_lifecycle_roots_freshness; implementer=zr305-implementer"
+    },
+    {
+      "command": "Get-FileHash -Algorithm SHA256 tests/contract/test_zr305_legacy_migration.py + git diff HEAD --stat on it (company-wiki)",
+      "exit_code": 0,
+      "result": "reviewed_object_sha256=f0694e76ee68419eab7c0f8084aaa624447d3774c9b400ccdf7463497f24cb30; file clean vs HEAD (working tree == tested == committed)"
+    },
+    {
+      "command": "Get-FileHash receipts/ZR-305/00_wu_card.md + hash scan of plan dir (revenue-forecast)",
+      "exit_code": 0,
+      "result": "wu_card hash=d4b86d91293c1df89fa6190266ddbf96cb9937b92128bc5df39ee924f2f571eb (LF-only, 3917B); plan_sha256 861e28f9... = SHA-256 of completion_assurance_registry.md (plan-level), identical across CA-001..ZR-305 receipts"
+    },
+    {
+      "command": "git status --short (company-wiki)",
+      "exit_code": 0,
+      "result": "test file not dirty; local noise only (.claude/settings.local.json D, llm_cost_log.csv M, untracked .coverage + coverage.json pytest-cov artifacts)"
+    },
+    {
+      "command": "git status --short (revenue-forecast)",
+      "exit_code": 0,
+      "result": "process artifacts only: receipts/ZR-305/{00_wu_card.md,11_implementer_receipt.json} untracked, state.json M (matches touched_files); no product code; HEAD unchanged a87f3da"
+    },
+    {
+      "command": "git show -s --format=%H%n%aI%n%cI 080d20c + receipt file mtime + state updated_at_utc",
+      "exit_code": 0,
+      "result": "wiki commit=2026-08-17T21:57:00+01:00 (=20:57Z); receipt file mtime=2026-08-17T20:57:43Z; state updated_at=2026-08-17T20:57:46Z — implementer receipt self-reports created_at_utc 22:20Z (OBS-1)"
+    }
+  ],
+  "findings": [
+    {
+      "id": "ZR305-REV-CHK1",
+      "severity": "pass",
+      "title": "HEAD triplet verified",
+      "detail": "wiki 080d20c with parent 838fc46, filing 0e5d209, revenue a87f3da — all match claimed result/base triplets exactly."
+    },
+    {
+      "id": "ZR305-REV-CHK2",
+      "severity": "pass",
+      "title": "Commit scope = exactly 1 test file",
+      "detail": "git show --stat 080d20c and git diff 838fc46 080d20c --stat both show only tests/contract/test_zr305_legacy_migration.py (+289)."
+    },
+    {
+      "id": "ZR305-REV-CHK3",
+      "severity": "pass",
+      "title": "Hermetic contract tests green",
+      "detail": "16 passed in 2.71s (5 new ZR-305 + 11 existing FC-901 backfill), exactly the expected count."
+    },
+    {
+      "id": "ZR305-REV-CHK4",
+      "severity": "pass",
+      "title": "Acceptance criteria honestly pinned (read full 289-line test)",
+      "detail": "Five-bucket dry-run: 5 legacy artifacts each land in exactly one bucket (bindable/hash_mismatch/missing_bytes/unknown_generator/legacy_unbound), per-bucket count==1, bucket conservation input==sum==5, result.closed asserted. Two dry-runs byte-identical via json.dumps(as_dict(), sort_keys=True) equality. After apply: REAL production build_source_bundle (imported from src, no mocks) consumes the binding — 'normalized' in valid_handles, handle.artifact_id=='ok', reusable True, bundle_hash truthy; metadata_json merged for schema_version/source_sha256 per production convention. Apply idempotent (repeat apply -> still [('ok','shadow')], zero duplicates); artifacts never deleted (COUNT stays 1); reversible by DELETE artifact_bindings WHERE created_by='fc-901' without touching artifacts."
+    },
+    {
+      "id": "ZR305-REV-CHK5",
+      "severity": "pass",
+      "title": "No product code changed",
+      "detail": "git diff 838fc46 080d20c --stat shows only the test file; revenue/filing HEADs unchanged; side_effect_counts.product_code_changes=0 confirmed truthful."
+    },
+    {
+      "id": "ZR305-REV-CHK6",
+      "severity": "pass",
+      "title": "Implementer receipt canonical",
+      "detail": "uc.cli receipt-validate -> OK canonical and well-formed; stored canonical_hash 3698351c... matches the frozen context value."
+    },
+    {
+      "id": "ZR305-REV-CHK7",
+      "severity": "pass",
+      "title": "Machine state consistent",
+      "detail": "units.ZR-305.status=independent_review; current_next=ZR-305; current_phase=D_lifecycle_roots_freshness."
+    },
+    {
+      "id": "ZR305-REV-OBS1",
+      "severity": "info",
+      "title": "Timestamp bookkeeping discrepancy",
+      "detail": "Implementer receipt created_at_utc 2026-08-17T22:20:00+00:00 and wu_card claim time 22:10Z are ~1h20m later than the authoritative seal (~20:57Z: wiki commit 21:57:00+01:00, receipt file mtime 20:57:43Z, state updated 20:57:46Z). Metadata-only inconsistency; no acceptance impact."
+    },
+    {
+      "id": "ZR305-REV-OBS2",
+      "severity": "info",
+      "title": "plan_sha256 provenance confirmed",
+      "detail": "plan_sha256 861e28f9... is the SHA-256 of completion_assurance_registry.md (plan-level frozen doc), identical across every unit receipt CA-001..ZR-305; the per-unit 00_wu_card.md hash (d4b86d91...) differs by design — the implementer's plan_sha256 matches the frozen context and is NOT an overclaim."
+    },
+    {
+      "id": "ZR305-REV-OBS3",
+      "severity": "info",
+      "title": "No overclaims in implementer receipt",
+      "detail": "side_effect_counts (product_code_changes=0, catalog_mutations=0, downloads=0, real_catalog_access=0, llm_calls=0, parser_calls=0, ci_changes=0, external_root_writes=0) all consistent with evidence; touched_files matches (wiki test file + receipts/ZR-305/** + state.json); findings ZR305-IMPL-001 (pure acceptance card, mechanics pre-exist in FC-901/ZR-304) and ZR305-IMPL-002 (apply -> real SourceBundle consumption) both match verified reality. Implementer's unverified extras (18 passed incl. ratchet; 775 unit tests) not re-run per review instruction 'do not run the full wiki suite'; mandatory 16-test evidence passed, and 775 is consistent with ZR-304 state history."
+    }
+  ],
+  "canonical_hash": "465b9b7f662f04737bc4fdd3481de478c7e0e747b9c402d59eb2cb4f592f88d2"
+}

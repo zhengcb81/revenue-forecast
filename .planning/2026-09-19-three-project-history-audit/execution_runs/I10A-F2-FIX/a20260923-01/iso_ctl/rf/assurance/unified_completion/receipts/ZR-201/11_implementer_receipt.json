@@ -1,0 +1,75 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "3b66d318f3fdf42f96413c970ff3168dc518c209",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "canonical_hash": "8c665133e51a72ea4d697c2467109df06dfcaa6ae74f614b4de4050c06b9ec1a",
+  "commands": [
+    {
+      "command": "uv run python -m pytest tests/unit/test_catalog_reader.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "10 passed"
+    },
+    {
+      "command": "uv run python -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "703 passed (baseline 693 → +10)"
+    },
+    {
+      "command": "uv run ruff check + ruff format --check (reader.py + test file)",
+      "exit_code": 0,
+      "result": "All checks passed / already formatted"
+    }
+  ],
+  "created_at_utc": "2026-08-14T11:00:00+00:00",
+  "findings": [
+    {
+      "detail": "reader 本身零写（数据文件 size/mtime 不变、-wal 无 committed frames、无 DDL/journal_mode）；生产 catalog 由 writer 维护 side 文件，读路径不会新建。测试以数据文件字节不变 + -wal 空 + -shm≤32KiB 为不变量并注明。",
+      "id": "ZR201-IMPL-001",
+      "severity": "info",
+      "title": "SQLite WAL 读协议在 -wal/-shm 缺失时可能创建空 side 文件（-shm 为固定 32KiB 索引头）"
+    }
+  ],
+  "implementation": {
+    "design": "CatalogReader Protocol（仅 fetchone/fetchall/schema_version/close/上下文管理，无任何写入口）；ReadOnlyCatalogReader：不存在路径先检查→CatalogReaderUnavailable 且不创建任何文件/目录；file:...?mode=ro + PRAGMA query_only=ON 立即执行；从不 journal_mode/DDL/executescript/commit；OS 只读文件可正常 SELECT（ZR001-W1 反例的反面）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/reader.py",
+      "company-wiki/tests/unit/test_catalog_reader.py"
+    ],
+    "wiki_commit": "a46db08aac6fcff8e2cda3e89e30894759e9cb03"
+  },
+  "implementer": "zr201-implementer",
+  "kind": "implementer",
+  "notes": [
+    "ZR001-W1 反例的修复面：CatalogReader 不 mkdir、不存在 DB 不创建、OS 只读成功、query_only 写尝试被 SQLite 拒绝。",
+    "生产 read path 接线（service/resolver/CLI 只读入口改用 Reader）归 ZR-202/203；本卡只交付协议与工厂。"
+  ],
+  "objective": "定义无写能力 CatalogReader protocol/connection factory：构造不存在 DB 不创建；OS read-only 成功；无 mkdir/WAL/DDL/migration/seed/commit。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "3b66d318f3fdf42f96413c970ff3168dc518c209",
+    "wiki": "a46db08aac6fcff8e2cda3e89e30894759e9cb03"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki src/company_wiki/source_catalog/reader.py + tests/unit/test_catalog_reader.py；revenue 侧 receipts/ZR-201/** 与 state.json。CatalogStore 本体与生产接线零改动（接线归 ZR-203）。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes_outside_scope": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/reader.py",
+    "company-wiki/tests/unit/test_catalog_reader.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-201/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-201/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-201"
+}

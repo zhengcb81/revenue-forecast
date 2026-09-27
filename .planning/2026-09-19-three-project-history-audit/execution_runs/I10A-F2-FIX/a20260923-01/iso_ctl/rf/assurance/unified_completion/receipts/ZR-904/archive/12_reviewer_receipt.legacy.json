@@ -1,0 +1,132 @@
+{
+  "unit": "ZR-904",
+  "reviewer": "reviewer-zr904-independent",
+  "kind": "reviewer",
+  "schema_version": 1,
+  "review_round": 2,
+  "verdict": "changes_required",
+  "reviewed_object_sha256": "d8bcd846996df00f3a7f2d3b5d1aa39e57c4a48ca4fd0ccfc0f4666376d19a8e",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3",
+      "exit_code": 0,
+      "result": "HEAD=a192a82 fix(ZR-904): REV-001/002/003 (parent 6ca9ec5); rev-parse HEAD=a192a82b5ec7bdf7e36c5eea85d3c52c33cacc87, HEAD^=6ca9ec550d47ebfb51b384ce653a28e16df53b42"
+    },
+    {
+      "command": "git diff --stat 6ca9ec5 a192a82",
+      "exit_code": 0,
+      "result": "2 files changed, 49 insertions(+), 3 deletions(-): tools/release_gate.py +20/-3, tests/test_zr904_release_gate.py +29"
+    },
+    {
+      "command": "git diff 6ca9ec5 a192a82 -- scripts/",
+      "exit_code": 0,
+      "result": "empty — delta is zero production change; only the two ZR-904 files touched"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr904_release_gate.py -q --tb=short",
+      "exit_code": 0,
+      "result": "14 passed in 0.33s (11 + 3 new regression tests: test_c1_wrong_triplet_keys_rejected, test_c2_catalog_regression_derives_not_ok, test_c2_empty_sli_blocks)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr904-reviewer\\probe_zr904_delta.py (independent delta probe)",
+      "exit_code": 0,
+      "result": "ALL PASS (26 checks). REV-001: compute_sli({'ok':True}, catalog={consumer_ready_rate:0.3, render_ok:False, reuse_count:0}) -> consumer_ready.ok=False, render.ok=False, reuse.ok=False, artifact.ok=True; release_decision(fresh report, matching ledger, catalog-derived sli) -> BLOCKED ['reuse','consumer_ready','render'] (AUD2-06 on derivation path); boundary rate 0.9 / render_ok True / reuse_count 5 stay ok; healthy catalog -> ready; no catalog -> ledger-driven; ledger not ok -> all red. REV-002: triplet {revenue,filing,extra}, {x,y,z}, 4-key, 2-key all rejected 'triplet must map exactly revenue/filing/wiki'; exact {revenue,filing,wiki} accepted; e2e publish of wrong-keys pending rejected, nothing published. REV-003: release_decision({}, report) -> blocked 'no SLI data'; release_decision(None, report) -> blocked too; healthy non-empty sli still ready."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr904-reviewer\\probe_zr904.py (original probe suite re-run on delta)",
+      "exit_code": 0,
+      "result": "ALL PASS — all original C1/C2/C3/C4 checks still green (atomic publish, idempotent rerun, AUD2-06 injection path, alert ack, stale/future/hash-mismatch rejection); A5b 3-key-wrong-names now REJECTED (was accepted pre-fix); C7 catalog regression now derives ok=False and blocks; C8 empty sli now blocked"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check tools/release_gate.py tests/test_zr904_release_gate.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "Ran 2 tests ... OK"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr902_daily_schedule.py tests/test_zr903_weekly_t3.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "24 passed in 0.99s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+      "exit_code": 0,
+      "result": "851 passed, 3 deselected, 106 subtests passed in 155.13s (848 baseline + 3 new regression tests, zero regressions)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-904/11_implementer_receipt.json (CWD assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: canonical and well-formed — BUT the receipt's result_triplet.revenue is 6ca9ec550d47ebfb51b384ce653a28e16df53b42 (pre-delta commit), NOT a192a82; NO receipt anywhere references a192a82 (searched unified_completion tree and repo for 'a192a82' -> zero hits). The required check 'result_triplet.revenue == HEAD' therefore FAILS for the delta."
+    },
+    {
+      "command": "git status --short assurance/unified_completion/state.json; git diff assurance/unified_completion/state.json",
+      "exit_code": 0,
+      "result": "state.json has UNCOMMITTED ZR-904 entry {implementer: zr904-implementer, status: triplet_green, updated_at_utc: 2026-08-22T23:21:42} — the delta commit a192a82 did not include it"
+    }
+  ],
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "6ca9ec550d47ebfb51b384ce653a28e16df53b42",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "a192a82b5ec7bdf7e36c5eea85d3c52c33cacc87",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "findings": [
+    {
+      "id": "REV-001",
+      "severity": "minor",
+      "disposition": "fixed — verified",
+      "title": "compute_sli now derives ok=False from catalog counters",
+      "detail": "Verified by independent probe: catalog consumer_ready_rate 0.3 -> consumer_ready.ok=False (<0.9 threshold), render_ok False -> render.ok=False, reuse_count 0 with catalog present -> reuse.ok=False; artifact (not degraded) stays ok=True. release_decision on the catalog-derived sli with a fresh report + matching ledger returns blocked ['reuse','consumer_ready','render'] — AUD2-06 now holds on the derivation path, not only injection. Boundary 0.9 exactly stays ok; healthy catalog -> ready; no catalog -> ledger-driven ok; ledger not ok -> all red."
+    },
+    {
+      "id": "REV-002",
+      "severity": "minor",
+      "disposition": "fixed — verified",
+      "title": "validate_report now requires exactly {revenue, filing, wiki}",
+      "detail": "Verified: 3-key wrong-name ({revenue,filing,extra}), 3 arbitrary keys ({x,y,z}), 4-key, and 2-key triplets all rejected with 'triplet must map exactly revenue/filing/wiki'; exact {revenue,filing,wiki} accepted; end-to-end publish of a wrong-keys pending report rejected, nothing published, pending retained."
+    },
+    {
+      "id": "REV-003",
+      "severity": "minor",
+      "disposition": "fixed — verified",
+      "title": "release_decision blocks on empty SLI dict",
+      "detail": "Verified: release_decision({}, fresh report) -> blocked with 'no SLI data'; release_decision(None, report) also blocked (not sli covers None); healthy non-empty sli still returns ready."
+    },
+    {
+      "id": "REV-D1",
+      "severity": "blocking",
+      "title": "No receipt/state bookkeeping for the delta commit a192a82",
+      "detail": "The only ZR-904 receipt (assurance/unified_completion/receipts/ZR-904/11_implementer_receipt.json) still records result_triplet.revenue = 6ca9ec550d47ebfb51b384ce653a28e16df53b42 (the pre-fix commit). No receipt anywhere in the repo references a192a82 (searched for 'a192a82' — zero hits). The required acceptance check 'receipt-validate OK with result_triplet.revenue == HEAD' therefore FAILS: 6ca9ec5 != a192a82b5ec7bdf7e36c5eea85d3c52c33cacc87. Additionally, the ZR-904 entry in assurance/unified_completion/state.json (status 'triplet_green') is UNCOMMITTED and was not included in a192a82. Remediation: update 11_implementer_receipt.json (or add a delta receipt) with result_triplet.revenue = a192a82b5ec7bdf7e36c5eea85d3c52c33cacc87 and commit state.json, then re-validate. Code itself is accepted — this is a completion-bookkeeping-only blocker."
+    },
+    {
+      "id": "REV-D2",
+      "severity": "info",
+      "title": "state.json ZR-904 entry status is 'triplet_green', not 'accepted'",
+      "detail": "The uncommitted state.json entry records status 'triplet_green' (updated 2026-08-22T23:21:42). After closure it should be set to the accepted state per the unified_completion workflow, alongside the REV-D1 receipt fix."
+    },
+    {
+      "id": "REV-004",
+      "severity": "info",
+      "disposition": "not in delta scope",
+      "title": "Unparseable started_at raises ValueError instead of graceful blocked",
+      "detail": "Still present (probe C9): release_decision on a report with non-ISO started_at raises ValueError — loud, never silent, but not the graceful blocked path. Not part of the REV-001/002/003 fix scope."
+    },
+    {
+      "id": "REV-005",
+      "severity": "info",
+      "disposition": "not in delta scope",
+      "title": "mark_acked on a non-file path silently returns 0",
+      "detail": "Still present (probe D10): the loud-failure guarantee (append sink, verified FileExistsError) is unchanged; ack-side silence on a dir path is out of card scope."
+    }
+  ],
+  "created_at_utc": "2026-08-22T23:40:24.250Z",
+  "canonical_hash": "0acd4e289fb182c35608ea3a9a4f392c6ae44c43c7a8be185f2eeb8139b22b5a"
+}

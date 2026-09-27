@@ -1,0 +1,45 @@
+{
+  "cell": "probes",
+  "note": "Synthetic isolated probe fixtures for WC-6. No real company, no real filing: every string below is invented for this attempt (oracle S1). I-07-C's UNK-sidecar cell used the same four shapes; its entity literal is NOT reused here, the entity below is this card's own synthetic token.",
+  "company_name": "WC6 Isolated Probe Co",
+  "canonical_entity_id": "wc6-isolated-probe-1",
+  "market": "US",
+  "security_id": "WC6ISO1",
+  "document_kind": "annual_report",
+  "fiscal_year": 2025,
+  "fiscal_period": "FY",
+  "period_end": "2025-12-31",
+  "provider": "example-filing",
+  "provider_document_id": "wc6-unk-clean",
+  "filing_date": "2026-02-12",
+  "source_title": "clean probe",
+  "source_url": "https://example.invalid/wc6/unk-clean",
+  "as_of_date": "2026-09-23",
+  "texts": {
+    "clean_probe.txt": "clean probe payload with a complete adapter-contract sidecar\n",
+    "no_sidecar_probe.txt": "payload without any sidecar\n",
+    "broken_sidecar_probe.txt": "payload whose sidecar is not JSON\n",
+    "mismatch_probe.txt": "payload whose sidecar declares another hash and an absolute path\n"
+  },
+  "broken_sidecar_text": "{not valid json,",
+  "mismatch_sidecar_overrides": {
+    "market": "US",
+    "security_id": "WC6ISO1",
+    "content_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "canonical_path": "C:\\escape\\target.pdf",
+    "document_kind": "annual_report",
+    "fiscal_year": 2025,
+    "period_end": "2025-12-31",
+    "provider": "example-filing",
+    "provider_document_id": "wc6-unk-mismatch"
+  },
+  "root": {
+    "root_id": "wc6_probe_lake",
+    "kind": "directory",
+    "adapter_id": "sidecar_filing_v1",
+    "read_only": true,
+    "reusable_for_filing": true,
+    "priority": 10,
+    "privacy_class": "public"
+  }
+}

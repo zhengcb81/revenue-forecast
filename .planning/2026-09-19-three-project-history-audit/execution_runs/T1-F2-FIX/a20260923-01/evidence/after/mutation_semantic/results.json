@@ -1,0 +1,262 @@
+{
+  "arms": {
+    "MUT-SEM-1-fail-closed-to-silent": {
+      "mutant_sha256": "59763c0a27b6203cdad6d1ce0b5c8df9f626456a8c8389df71871ae64579d89f",
+      "rows": {
+        "S1": {
+          "cases_decided": 1,
+          "rc": 0,
+          "refusals": [],
+          "report_written": true,
+          "verdict": "accept_claim"
+        },
+        "S2": {
+          "cases_decided": 1,
+          "rc": 0,
+          "refusals": [
+            "R-EMPTY-EVIDENCE",
+            "R-FUTURE-CLOCK",
+            "R-SAME-INSTANT"
+          ],
+          "report_written": true,
+          "verdict": "reject_claim"
+        },
+        "S3": {
+          "cases_decided": 1,
+          "rc": 0,
+          "refusals": [],
+          "report_written": true,
+          "verdict": "accept_claim"
+        }
+      }
+    },
+    "MUT-SEM-2-missing-key-also-rejected": {
+      "mutant_sha256": "10879b2c82c9124c8690122d20b4507b27b970ddf3eedd4d9574e558698c0cb7",
+      "rows": {
+        "S10": {
+          "cases_decided": 1,
+          "rc": 0,
+          "refusals": [],
+          "report_written": true,
+          "verdict": "accept_claim"
+        },
+        "S7a": {
+          "cases_decided": 1,
+          "rc": 0,
+          "refusals": [
+            "R-CLAIM-EXCEEDS"
+          ],
+          "report_written": true,
+          "verdict": "reject_claim"
+        },
+        "S7c": {
+          "cases_decided": 1,
+          "rc": 0,
+          "refusals": [
+            "R-CLAIM-EXCEEDS"
+          ],
+          "report_written": true,
+          "verdict": "reject_claim"
+        },
+        "S8": {
+          "cases_decided": 1,
+          "rc": 0,
+          "refusals": [
+            "R-CLAIM-EXCEEDS",
+            "R-EMPTY-EVIDENCE",
+            "R-FUTURE-CLOCK",
+            "R-SAME-INSTANT"
+          ],
+          "report_written": true,
+          "verdict": "reject_claim"
+        }
+      }
+    }
+  },
+  "attempt_id": "a20260923-01",
+  "card": "T1-F2-FIX",
+  "checks": [
+    {
+      "detail": "{\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-CLAIM-EXCEEDS\"]}",
+      "holds": true,
+      "name": "control: fixed SUT holds frozen criterion for S1 (reject_claim ['R-CLAIM-EXCEEDS'])"
+    },
+    {
+      "detail": "{\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-CLAIM-EXCEEDS\", \"R-EMPTY-EVIDENCE\", \"R-FUTURE-CLOCK\", \"R-SAME-INSTANT\"]}",
+      "holds": true,
+      "name": "control: fixed SUT holds frozen criterion for S2 (reject_claim ['R-CLAIM-EXCEEDS', 'R-EMPTY-EVIDENCE', 'R-FUTURE-CLOCK', 'R-SAME-INSTANT'])"
+    },
+    {
+      "detail": "{\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-CLAIM-EXCEEDS\"]}",
+      "holds": true,
+      "name": "control: fixed SUT holds frozen criterion for S3 (reject_claim ['R-CLAIM-EXCEEDS'])"
+    },
+    {
+      "detail": "{\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": []}",
+      "holds": true,
+      "name": "control: fixed SUT holds frozen criterion for S7a (accept_claim [])"
+    },
+    {
+      "detail": "{\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": []}",
+      "holds": true,
+      "name": "control: fixed SUT holds frozen criterion for S7c (accept_claim [])"
+    },
+    {
+      "detail": "{\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-EMPTY-EVIDENCE\", \"R-FUTURE-CLOCK\", \"R-SAME-INSTANT\"]}",
+      "holds": true,
+      "name": "control: fixed SUT holds frozen criterion for S8 (reject_claim ['R-EMPTY-EVIDENCE', 'R-FUTURE-CLOCK', 'R-SAME-INSTANT'])"
+    },
+    {
+      "detail": "{\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": []}",
+      "holds": true,
+      "name": "control: fixed SUT holds frozen criterion for S10 (accept_claim [])"
+    },
+    {
+      "detail": "{\"mutant\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": []}, \"frozen\": [\"reject_claim\", [\"R-CLAIM-EXCEEDS\"]]}",
+      "holds": true,
+      "name": "MUT-SEM-1: S1 frozen GREEN criterion turns RED on the mutant (fail-closed half is load-bearing)"
+    },
+    {
+      "detail": "{\"mutant\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-EMPTY-EVIDENCE\", \"R-FUTURE-CLOCK\", \"R-SAME-INSTANT\"]}, \"frozen\": [\"reject_claim\", [\"R-CLAIM-EXCEEDS\", \"R-EMPTY-EVIDENCE\", \"R-FUTURE-CLOCK\", \"R-SAME-INSTANT\"]]}",
+      "holds": true,
+      "name": "MUT-SEM-1: S2 frozen GREEN criterion turns RED on the mutant (fail-closed half is load-bearing)"
+    },
+    {
+      "detail": "{\"mutant\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": []}, \"frozen\": [\"reject_claim\", [\"R-CLAIM-EXCEEDS\"]]}",
+      "holds": true,
+      "name": "MUT-SEM-1: S3 frozen GREEN criterion turns RED on the mutant (fail-closed half is load-bearing)"
+    },
+    {
+      "detail": "{\"mutant\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-CLAIM-EXCEEDS\"]}, \"frozen\": [\"accept_claim\", []]}",
+      "holds": true,
+      "name": "MUT-SEM-2: S7a frozen STABLE criterion turns RED on the mutant (over-rejection of the ABSENT key is detected)"
+    },
+    {
+      "detail": "{\"mutant\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-CLAIM-EXCEEDS\"]}, \"frozen\": [\"accept_claim\", []]}",
+      "holds": true,
+      "name": "MUT-SEM-2: S7c frozen STABLE criterion turns RED on the mutant (over-rejection of the ABSENT key is detected)"
+    },
+    {
+      "detail": "{\"mutant\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-CLAIM-EXCEEDS\", \"R-EMPTY-EVIDENCE\", \"R-FUTURE-CLOCK\", \"R-SAME-INSTANT\"]}, \"frozen\": [\"reject_claim\", [\"R-EMPTY-EVIDENCE\", \"R-FUTURE-CLOCK\", \"R-SAME-INSTANT\"]]}",
+      "holds": true,
+      "name": "MUT-SEM-2: S8 frozen STABLE criterion turns RED on the mutant (over-rejection of the ABSENT key is detected)"
+    },
+    {
+      "detail": "{\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": []}",
+      "holds": true,
+      "name": "MUT-SEM-2: S10 (status key really present) is NOT touched by the mutant -- the red is specific to the missing-key branch"
+    },
+    {
+      "detail": "{\"before\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": [], \"verdicts\": [{\"case_id\": \"S7a\", \"claim\": {}, \"class\": \"calendar\", \"computed\": {\"alert_count\": 0, \"clock_source\": \"system_utc\", \"daily_count\": 5, \"daily_same_day_runs_dropped\": 0, \"monthly_count\": 0, \"weekly_count\": 1, \"window_status\": \"pending\"}, \"note\": null, \"refusals\": [], \"requirement_id",
+      "holds": true,
+      "name": "NC-MISSING: row S7a (absent key / normal carrier) byte-identical before == after"
+    },
+    {
+      "detail": "{\"before\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": [], \"verdicts\": [{\"case_id\": \"S7b\", \"claim\": {\"other\": 1}, \"class\": \"calendar\", \"computed\": {\"alert_count\": 0, \"clock_source\": \"system_utc\", \"daily_count\": 5, \"daily_same_day_runs_dropped\": 0, \"monthly_count\": 0, \"weekly_count\": 1, \"window_status\": \"pending\"}, \"note\": null, \"refusals\": [], \"requ",
+      "holds": true,
+      "name": "NC-MISSING: row S7b (absent key / normal carrier) byte-identical before == after"
+    },
+    {
+      "detail": "{\"before\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": [], \"verdicts\": [{\"case_id\": \"S7c\", \"claim\": null, \"class\": \"calendar\", \"computed\": {\"alert_count\": 0, \"clock_source\": \"system_utc\", \"daily_count\": 5, \"daily_same_day_runs_dropped\": 0, \"monthly_count\": 0, \"weekly_count\": 1, \"window_status\": \"pending\"}, \"note\": null, \"refusals\": [], \"requirement_",
+      "holds": true,
+      "name": "NC-MISSING: row S7c (absent key / normal carrier) byte-identical before == after"
+    },
+    {
+      "detail": "{\"before\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-EMPTY-EVIDENCE\", \"R-FUTURE-CLOCK\", \"R-SAME-INSTANT\"], \"verdicts\": [{\"case_id\": \"S8\", \"claim\": {}, \"class\": \"calendar\", \"computed\": {\"alert_count\": 1, \"clock_source\": \"system_utc\", \"daily_count\": 0, \"daily_same_day_runs_dropped\": 0, \"monthly_count\": 0, \"weekly_count\": 0, \"window_status\": \"pen",
+      "holds": true,
+      "name": "NC-MISSING: row S8 (absent key / normal carrier) byte-identical before == after"
+    },
+    {
+      "detail": "{\"before\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-CLAIM-EXCEEDS\", \"R-EMPTY-EVIDENCE\", \"R-FUTURE-CLOCK\", \"R-SAME-INSTANT\"], \"verdicts\": [{\"case_id\": \"S9\", \"claim\": {\"basis\": null, \"natural_observation_seconds\": null, \"status\": \"complete\"}, \"class\": \"calendar\", \"computed\": {\"alert_count\": 1, \"clock_source\": \"system_utc\", \"daily_count\": 0, \"da",
+      "holds": true,
+      "name": "NC-MISSING: row S9 (absent key / normal carrier) byte-identical before == after"
+    },
+    {
+      "detail": "{\"before\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"accept_claim\", \"refusals\": [], \"verdicts\": [{\"case_id\": \"S10\", \"claim\": {\"basis\": null, \"natural_observation_seconds\": null, \"status\": \"pending\"}, \"class\": \"calendar\", \"computed\": {\"alert_count\": 0, \"clock_source\": \"system_utc\", \"daily_count\": 5, \"daily_same_day_runs_dropped\": 0, \"monthly_count\": 0, \"weekly_count\": 1, \"wi",
+      "holds": true,
+      "name": "NC-MISSING: row S10 (absent key / normal carrier) byte-identical before == after"
+    },
+    {
+      "detail": "{\"before\": {\"rc\": 0, \"report_written\": true, \"cases_decided\": 1, \"verdict\": \"reject_claim\", \"refusals\": [\"R-SIMULATED-CLOCK\"], \"verdicts\": [{\"case_id\": \"K7\", \"claim\": {\"basis\": null, \"natural_observation_seconds\": null, \"status\": \"complete\"}, \"class\": \"calendar\", \"computed\": {\"alert_count\": 1, \"clock_source\": null, \"daily_count\": 7, \"daily_same_day_runs_dropped\": 0, \"monthly_count\": 1, \"weekly_cou",
+      "holds": true,
+      "name": "NC-MISSING: row K7 (absent key / normal carrier) byte-identical before == after"
+    }
+  ],
+  "failed_checks": [],
+  "fixed_control_rows": {
+    "S1": {
+      "cases_decided": 1,
+      "rc": 0,
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "report_written": true,
+      "verdict": "reject_claim"
+    },
+    "S10": {
+      "cases_decided": 1,
+      "rc": 0,
+      "refusals": [],
+      "report_written": true,
+      "verdict": "accept_claim"
+    },
+    "S2": {
+      "cases_decided": 1,
+      "rc": 0,
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-EMPTY-EVIDENCE",
+        "R-FUTURE-CLOCK",
+        "R-SAME-INSTANT"
+      ],
+      "report_written": true,
+      "verdict": "reject_claim"
+    },
+    "S3": {
+      "cases_decided": 1,
+      "rc": 0,
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "report_written": true,
+      "verdict": "reject_claim"
+    },
+    "S7a": {
+      "cases_decided": 1,
+      "rc": 0,
+      "refusals": [],
+      "report_written": true,
+      "verdict": "accept_claim"
+    },
+    "S7c": {
+      "cases_decided": 1,
+      "rc": 0,
+      "refusals": [],
+      "report_written": true,
+      "verdict": "accept_claim"
+    },
+    "S8": {
+      "cases_decided": 1,
+      "rc": 0,
+      "refusals": [
+        "R-EMPTY-EVIDENCE",
+        "R-FUTURE-CLOCK",
+        "R-SAME-INSTANT"
+      ],
+      "report_written": true,
+      "verdict": "reject_claim"
+    }
+  },
+  "fixed_sut_sha256": "9b1ebda2b75c4d1124d0d20a95d7a16cb31b8d9564c1c90da9b4d2d77eaa3ba2",
+  "missing_key_rows_equal": {
+    "K7": true,
+    "S10": true,
+    "S7a": true,
+    "S7b": true,
+    "S7c": true,
+    "S8": true,
+    "S9": true
+  },
+  "note": "extra arms on top of oracle sec 6 MUT-F1/F2/P4; the fixed SUT is never edited, only SCRATCH copies",
+  "overall": "PASS"
+}

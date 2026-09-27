@@ -1,0 +1,179 @@
+WC-4 r2 coverage subset: CLI-touching tests executable in this sandbox
++ the WC-4 product test (per-module gate lower bound)
+
+## C:\Miniconda\python.exe -B -m coverage run -m pytest tests/test_stdout_flush_exit_domain.py tests/test_verbose_validation.py -q -p no:cacheprovider --noconftest
+raw_rc=1
+..............FEFE                                                       [100%]
+=================================== ERRORS ====================================
+____ ERROR at teardown of VerboseCliTests.test_verbose_clean_doc_is_valid _____
+
+top = 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpn2cjqd_c'
+topdown = False
+onerror = <function _rmtree_unsafe.<locals>.onerror at 0x00000239C892A520>
+followlinks = <object object at 0x00000239C2CA01F0>
+
+>   ???
+E   PermissionError: [WinError 5] �ܾ����ʡ�: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpn2cjqd_c'
+
+<frozen os>:369: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_verbose_validation.VerboseCliTests testMethod=test_verbose_clean_doc_is_valid>
+
+    def tearDown(self) -> None:
+>       self._tmp.cleanup()
+
+tests\test_verbose_validation.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Miniconda\Lib\tempfile.py:955: in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+C:\Miniconda\Lib\tempfile.py:935: in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+C:\Miniconda\Lib\shutil.py:790: in rmtree
+    return _rmtree_unsafe(path, onexc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\shutil.py:613: in _rmtree_unsafe
+    for dirpath, dirnames, filenames in results:
+                                        ^^^^^^^
+<frozen os>:372: in walk
+    ???
+C:\Miniconda\Lib\shutil.py:611: in onerror
+    onexc(os.scandir, err.filename, err)
+C:\Miniconda\Lib\tempfile.py:907: in onexc
+    _resetperms(path)
+C:\Miniconda\Lib\tempfile.py:287: in _resetperms
+    _dont_follow_symlinks(_os.chmod, path, 0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+func = <built-in function chmod>
+path = 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpn2cjqd_c'
+args = (448,)
+
+    def _dont_follow_symlinks(func, path, *args):
+        # Pass follow_symlinks=False, unless not supported on this platform.
+        if func in _os.supports_follow_symlinks:
+>           func(path, *args, follow_symlinks=False)
+E           PermissionError: [WinError 5] �ܾ����ʡ�: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpn2cjqd_c'
+
+C:\Miniconda\Lib\tempfile.py:276: PermissionError
+_ ERROR at teardown of VerboseCliTests.test_verbose_reports_all_and_writes_nothing _
+
+top = 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpc37xge7f'
+topdown = False
+onerror = <function _rmtree_unsafe.<locals>.onerror at 0x00000239C892A840>
+followlinks = <object object at 0x00000239C2CA01F0>
+
+>   ???
+E   PermissionError: [WinError 5] �ܾ����ʡ�: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpc37xge7f'
+
+<frozen os>:369: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_verbose_validation.VerboseCliTests testMethod=test_verbose_reports_all_and_writes_nothing>
+
+    def tearDown(self) -> None:
+>       self._tmp.cleanup()
+
+tests\test_verbose_validation.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Miniconda\Lib\tempfile.py:955: in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+C:\Miniconda\Lib\tempfile.py:935: in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+C:\Miniconda\Lib\shutil.py:790: in rmtree
+    return _rmtree_unsafe(path, onexc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\shutil.py:613: in _rmtree_unsafe
+    for dirpath, dirnames, filenames in results:
+                                        ^^^^^^^
+<frozen os>:372: in walk
+    ???
+C:\Miniconda\Lib\shutil.py:611: in onerror
+    onexc(os.scandir, err.filename, err)
+C:\Miniconda\Lib\tempfile.py:907: in onexc
+    _resetperms(path)
+C:\Miniconda\Lib\tempfile.py:287: in _resetperms
+    _dont_follow_symlinks(_os.chmod, path, 0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+func = <built-in function chmod>
+path = 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpc37xge7f'
+args = (448,)
+
+    def _dont_follow_symlinks(func, path, *args):
+        # Pass follow_symlinks=False, unless not supported on this platform.
+        if func in _os.supports_follow_symlinks:
+>           func(path, *args, follow_symlinks=False)
+E           PermissionError: [WinError 5] �ܾ����ʡ�: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpc37xge7f'
+
+C:\Miniconda\Lib\tempfile.py:276: PermissionError
+================================== FAILURES ===================================
+_______________ VerboseCliTests.test_verbose_clean_doc_is_valid _______________
+
+self = <test_verbose_validation.VerboseCliTests testMethod=test_verbose_clean_doc_is_valid>
+
+    def test_verbose_clean_doc_is_valid(self) -> None:
+>       result = self._run(self._write(forecast_document()), "--validate-only", "--verbose")
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_verbose_validation.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_verbose_validation.VerboseCliTests testMethod=test_verbose_clean_doc_is_valid>
+data = {'company_name': 'Test Co', 'as_of_date': '2026-07-12', 'currency': 'USD', 'unit': 'million', ...}
+
+    def _write(self, data: dict) -> str:
+        path = os.path.join(self.dir, "input.json")
+>       with open(path, "w", encoding="utf-8") as handle:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       PermissionError: [Errno 13] Permission denied: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpn2cjqd_c\\input.json'
+
+tests\test_verbose_validation.py:77: PermissionError
+_________ VerboseCliTests.test_verbose_reports_all_and_writes_nothing _________
+
+self = <test_verbose_validation.VerboseCliTests testMethod=test_verbose_reports_all_and_writes_nothing>
+
+    def test_verbose_reports_all_and_writes_nothing(self) -> None:
+        data = forecast_document()
+        data["evidence_claims"][0]["excerpt_sha256"] = "0" * 64
+        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0]["weight"] = 0.8
+        out = os.path.join(self.dir, "out.json")
+>       result = self._run(self._write(data), "--validate-only", "--verbose", "--output", out)
+                           ^^^^^^^^^^^^^^^^^
+
+tests\test_verbose_validation.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_verbose_validation.VerboseCliTests testMethod=test_verbose_reports_all_and_writes_nothing>
+data = {'company_name': 'Test Co', 'as_of_date': '2026-07-12', 'currency': 'USD', 'unit': 'million', ...}
+
+    def _write(self, data: dict) -> str:
+        path = os.path.join(self.dir, "input.json")
+>       with open(path, "w", encoding="utf-8") as handle:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       PermissionError: [Errno 13] Permission denied: 'C:\\Users\\֣����\\AppData\\Local\\Temp\\dsh-HgEFRP\\tmpc37xge7f\\input.json'
+
+tests\test_verbose_validation.py:77: PermissionError
+=========================== short test summary info ===========================
+FAILED tests/test_verbose_validation.py::VerboseCliTests::test_verbose_clean_doc_is_valid
+FAILED tests/test_verbose_validation.py::VerboseCliTests::test_verbose_reports_all_and_writes_nothing
+ERROR tests/test_verbose_validation.py::VerboseCliTests::test_verbose_clean_doc_is_valid
+ERROR tests/test_verbose_validation.py::VerboseCliTests::test_verbose_reports_all_and_writes_nothing
+2 failed, 14 passed, 2 errors in 2.56s
+
+
+## coverage combine
+raw_rc=1
+No data to combine
+
+
+## coverage report --include=scripts/revenue_forecast.py
+raw_rc=0
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+scripts\revenue_forecast.py      96     60    38%
+-------------------------------------------------
+TOTAL                            96     60    38%
+

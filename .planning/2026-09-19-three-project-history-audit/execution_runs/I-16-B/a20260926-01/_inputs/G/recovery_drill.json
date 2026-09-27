@@ -1,0 +1,133 @@
+{
+ "card_id": "I-16-A",
+ "attempt_id": "a20260926-01",
+ "run_at_utc": "2026-09-26T21:30:59.908746+00:00",
+ "environment": "隔离（本 attempt 目录）；产品三仓只读",
+ "checks": [
+  {
+   "id": "R1_snapshot_restore_byte_identical",
+   "ok": true,
+   "detail": {
+    "restored": 109,
+    "expected": 109,
+    "mismatch": []
+   }
+  },
+  {
+   "id": "R2_backup_migrate_restore_byte_identical",
+   "ok": true,
+   "detail": {
+    "sha_before": "c563fb439d8bf9a1b31fbec169e7682a464a463f1571c0dbd083151c78bb3d0e",
+    "sha_after_migrate": "5673c251a5e58cae3f27a18ac7151649875f24d92906492d18e36d9ac61bf56c",
+    "sha_after_validate": "5673c251a5e58cae3f27a18ac7151649875f24d92906492d18e36d9ac61bf56c",
+    "sha_after_restore": "c563fb439d8bf9a1b31fbec169e7682a464a463f1571c0dbd083151c78bb3d0e",
+    "backup": {
+     "backup": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-16-A\\a20260926-01\\drill_db\\drift.sqlite3.pre_migrate.bak",
+     "from": 0,
+     "to": 1
+    },
+    "report_from": 0,
+    "report_to": 1,
+    "second_call_is_readonly": true,
+    "byte_identical_restore": true
+   }
+  },
+  {
+   "id": "R3_newer_user_version_fail_closed_unchanged",
+   "ok": true,
+   "detail": {
+    "error": "UnsupportedSchemaVersionError: user_version 99 is newer than supported 1",
+    "sha_before": "9f641d5da1800253e33e0be6c6ade38629b7da7af44e2efcce180278b3ab439e",
+    "sha_after": "9f641d5da1800253e33e0be6c6ade38629b7da7af44e2efcce180278b3ab439e",
+    "unchanged": true
+   }
+  },
+  {
+   "id": "R4_schema_drift_fail_closed_readonly",
+   "ok": true,
+   "detail": {
+    "error": "SchemaDriftError: table set mismatch; missing=[] extra=['extra_drift']",
+    "sha_before": "f3157fff8a1a8fc6b483b9763e8ac4dab4f2c1af88c5f51704e5fc19e567e681",
+    "sha_after": "f3157fff8a1a8fc6b483b9763e8ac4dab4f2c1af88c5f51704e5fc19e567e681",
+    "readonly": true
+   }
+  },
+  {
+   "id": "R5_registry_compat_boundary_observed",
+   "ok": true,
+   "detail": {
+    "r1_bump_from_0": {
+     "user_version_before": 0,
+     "user_version_after": 1,
+     "tables": [
+      "source_aliases",
+      "sources"
+     ]
+    },
+    "r2_silently_accept_9": {
+     "user_version_before": 9,
+     "user_version_after": 9,
+     "tables": []
+    }
+   }
+  }
+ ],
+ "snapshot_restore": {
+  "restored": 109,
+  "mismatch": [],
+  "ok": true
+ },
+ "db": {
+  "R2": {
+   "sha_before": "c563fb439d8bf9a1b31fbec169e7682a464a463f1571c0dbd083151c78bb3d0e",
+   "sha_after_migrate": "5673c251a5e58cae3f27a18ac7151649875f24d92906492d18e36d9ac61bf56c",
+   "sha_after_restore": "c563fb439d8bf9a1b31fbec169e7682a464a463f1571c0dbd083151c78bb3d0e",
+   "byte_identical": true,
+   "backup": {
+    "backup": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-16-A\\a20260926-01\\drill_db\\drift.sqlite3.pre_migrate.bak",
+    "from": 0,
+    "to": 1
+   },
+   "second_migrate_readonly": true
+  },
+  "R3": {
+   "error": "UnsupportedSchemaVersionError: user_version 99 is newer than supported 1",
+   "unchanged": true
+  },
+  "R4": {
+   "error": "SchemaDriftError: table set mismatch; missing=[] extra=['extra_drift']",
+   "readonly": true
+  },
+  "R5": {
+   "r1_bump_from_0": {
+    "user_version_before": 0,
+    "user_version_after": 1,
+    "tables": [
+     "source_aliases",
+     "sources"
+    ]
+   },
+   "r2_silently_accept_9": {
+    "user_version_before": 9,
+    "user_version_after": 9,
+    "tables": []
+   }
+  }
+ },
+ "production_catalog_anchor": {
+  "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3",
+  "bytes": 3055796224,
+  "sha256_at_bind": "63c359aa4b09545a540a05f8d32d66ac3c9dbd4ccf696470d55cb38a31f6dcfc",
+  "mtime_utc": "2026-09-26T17:48:22.684241+00:00",
+  "user_version": 0,
+  "note": "生产库本卡只读；部署窗口须复核 size/mtime/sha256 与本锚点一致"
+ },
+ "migration_reversible": true,
+ "recovery_provable": true,
+ "compat_boundary": {
+  "catalog_automation": "user_version > SCHEMA_VERSION → UnsupportedSchemaVersionError（fail-closed，文件字节不变）；== → 只读校验；< → 单事务迁移 + backup_hook",
+  "registry_source": "user_version < 1 → CREATE + bump 到 1；> 1 → 旧代码不校验、静默接受（**无 fail-closed 前向守卫**，边界风险登记）",
+  "raw": "raw 层由 acquisition 追加写入；部署不改 raw 字节；本卡零写（见 combo_manifest.raw）"
+ },
+ "all_checks_ok": true
+}

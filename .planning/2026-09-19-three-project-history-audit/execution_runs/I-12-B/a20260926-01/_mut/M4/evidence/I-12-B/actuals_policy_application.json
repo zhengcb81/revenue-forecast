@@ -1,0 +1,157 @@
+{
+  "schema": "i12b_actuals_policy_application/1",
+  "card": "I-12-B",
+  "attempt": "execution_runs/I-12-B/a20260926-01",
+  "role": "implementer_i12b",
+  "frozen_policy_source": {
+    "design_field_index": 6,
+    "design_path": "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json",
+    "design_sha256": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+    "rules": {
+      "primary_actual": "首次披露值（as-originally-reported）",
+      "restated_actual": "最终重述值仅作 secondary 对照；若在 origin 时点尚不可得 ⇒ 不可用于 primary",
+      "currency_fx": "各实体按本币评估（人民币元 / USD million）；跨实体汇总只用无量纲指标；跨币种展示须用 origin 前可得汇率且本卡禁联网 ⇒ 该项 PENDING（不伪造）",
+      "segment_reorg": "以 origin 时点披露分部口径为准；重组后不回溯改写历史口径，回溯改写 = 新 vintage",
+      "fiscal_year": "统一到 FY 标签并显式登记财年截止（微软 FY 截至 6-30；紫金 12-31），不同截止期的年度不作同一 horizon",
+      "gross_net": "统一为对外销售收入（net of internal，E5 抵销口径）；含内部交易的分部总计不得作收入基期",
+      "ma_interruption": "并购致口径断裂 ⇒ 断点后单列为新 series，不跨断点计算误差；断裂登记 reason_code"
+    }
+  },
+  "sealing": {
+    "rule_verbatim": "I-12-B的实际值由独立reviewer收集封存，预测执行者只见ID、hash与政策；I-12-C冻结预测manifest后才由该reviewer出具unblind_receipt解封。（common_research_cards.md L289）",
+    "actuals_collector": "独立reviewer（非本工位）",
+    "target_period_actuals_delivered_to_this_station": 0,
+    "target_period_actuals_seen_by_this_station": false,
+    "baseline_period_disclosures_seen_by_this_station": true,
+    "baseline_period_disclosures_are_origin_information_set": true,
+    "exposure_recorded": "目标期实际值零暴露 ⇒ 不降级 exploratory；基期披露值属 origin 前信息（设计字段 8 baseline 输入），非目标期实际值",
+    "unseal_gate_currently_satisfied": false,
+    "unseal_gate_requires": [
+      "professional_approval.json 中 statistical_reviewer 与 industry_reviewer 双签（signed=true）——当前均 unsigned（双签在飞）",
+      "evaluation_design 13 字段全部完成或获批 not_applicable——当前 3 PENDING + 1 含未签阈值",
+      "design_manifest 重冻（新版本）并由独立复审核验",
+      "父层/编排层明文解封指令"
+    ],
+    "test_results_sealed": true,
+    "test_results_unsealed": false,
+    "accuracy_results_read": false
+  },
+  "application_per_sample": [
+    {
+      "sample_id": "SMP-CN-ZIJIN_MINERAL_20260320_FY2027",
+      "target_period": "FY2027",
+      "target_period_end": "2027-12-31",
+      "as_of": "2026-09-26",
+      "horizon_elapsed": false,
+      "actual_value": null,
+      "actual_state": "not_yet_existing（目标财年未结束）+ sealed（独立 reviewer 未交付）",
+      "primary_actual_rule_when_available": "首次披露值（as-originally-reported）",
+      "restated_rule_when_available": "最终重述值仅作 secondary；origin 时点不可得 ⇒ 不用于 primary",
+      "scorable": false
+    },
+    {
+      "sample_id": "SMP-CN-ZIJIN_SMELT_20260320_FY2027",
+      "target_period": "FY2027",
+      "target_period_end": "2027-12-31",
+      "as_of": "2026-09-26",
+      "horizon_elapsed": false,
+      "actual_value": null,
+      "actual_state": "not_yet_existing（目标财年未结束）+ sealed（独立 reviewer 未交付）",
+      "primary_actual_rule_when_available": "首次披露值（as-originally-reported）",
+      "restated_rule_when_available": "最终重述值仅作 secondary；origin 时点不可得 ⇒ 不用于 primary",
+      "scorable": false
+    },
+    {
+      "sample_id": "SMP-CN-ZIJIN_TRADE_20260320_FY2027",
+      "target_period": "FY2027",
+      "target_period_end": "2027-12-31",
+      "as_of": "2026-09-26",
+      "horizon_elapsed": false,
+      "actual_value": null,
+      "actual_state": "not_yet_existing（目标财年未结束）+ sealed（独立 reviewer 未交付）",
+      "primary_actual_rule_when_available": "首次披露值（as-originally-reported）",
+      "restated_rule_when_available": "最终重述值仅作 secondary；origin 时点不可得 ⇒ 不用于 primary",
+      "scorable": false
+    },
+    {
+      "sample_id": "SMP-CN-ZIJIN_OTHER_20260320_FY2027",
+      "target_period": "FY2027",
+      "target_period_end": "2027-12-31",
+      "as_of": "2026-09-26",
+      "horizon_elapsed": false,
+      "actual_value": null,
+      "actual_state": "not_yet_existing（目标财年未结束）+ sealed（独立 reviewer 未交付）",
+      "primary_actual_rule_when_available": "首次披露值（as-originally-reported）",
+      "restated_rule_when_available": "最终重述值仅作 secondary；origin 时点不可得 ⇒ 不用于 primary",
+      "scorable": false
+    },
+    {
+      "sample_id": "SMP-US-MSFT_PBP_20260729_FY2027",
+      "target_period": "FY2027",
+      "target_period_end": "2027-06-30",
+      "as_of": "2026-09-26",
+      "horizon_elapsed": false,
+      "actual_value": null,
+      "actual_state": "not_yet_existing（目标财年未结束）+ sealed（独立 reviewer 未交付）",
+      "primary_actual_rule_when_available": "首次披露值（as-originally-reported）",
+      "restated_rule_when_available": "最终重述值仅作 secondary；origin 时点不可得 ⇒ 不用于 primary",
+      "scorable": false
+    },
+    {
+      "sample_id": "SMP-US-MSFT_IC_20260729_FY2027",
+      "target_period": "FY2027",
+      "target_period_end": "2027-06-30",
+      "as_of": "2026-09-26",
+      "horizon_elapsed": false,
+      "actual_value": null,
+      "actual_state": "not_yet_existing（目标财年未结束）+ sealed（独立 reviewer 未交付）",
+      "primary_actual_rule_when_available": "首次披露值（as-originally-reported）",
+      "restated_rule_when_available": "最终重述值仅作 secondary；origin 时点不可得 ⇒ 不用于 primary",
+      "scorable": false
+    },
+    {
+      "sample_id": "SMP-US-MSFT_MPC_20260729_FY2027",
+      "target_period": "FY2027",
+      "target_period_end": "2027-06-30",
+      "as_of": "2026-09-26",
+      "horizon_elapsed": false,
+      "actual_value": null,
+      "actual_state": "not_yet_existing（目标财年未结束）+ sealed（独立 reviewer 未交付）",
+      "primary_actual_rule_when_available": "首次披露值（as-originally-reported）",
+      "restated_rule_when_available": "最终重述值仅作 secondary；origin 时点不可得 ⇒ 不用于 primary",
+      "scorable": false
+    }
+  ],
+  "counts": {
+    "samples_registered": 7,
+    "target_period_actuals_existing": 0,
+    "target_period_actuals_delivered": 0,
+    "scorable_samples": 0
+  },
+  "stop_registration": {
+    "STOP_DATASET": {
+      "triggered": false,
+      "rule_verbatim": "future leakage、重复sample或缺origin→STOP_DATASET。",
+      "checked": [
+        "future leakage：available_at<=origin 7/7 通过，目标期信息零使用",
+        "重复 sample：sample_id 7/7 唯一（J1）",
+        "缺 origin：0 条（origin 全部登记）"
+      ]
+    },
+    "limited": {
+      "triggered": true,
+      "rule_verbatim": "分层样本不足→记录limited，不补选表现更好的公司。",
+      "reason": "可评样本 0（目标期未结束 + 未解封）⇒ 记录 limited；小米按 fail-closed 保持排除，不补选"
+    }
+  },
+  "acceptance_state": {
+    "traceable_to_info_time": true,
+    "traceable_to_actual_value": false,
+    "why": "目标期实际值尚不存在且封存未解封 ⇒ 验收「可从每个样本追到…实际值」在本 attempt 不可达成（fail-closed 登记，非绕过）",
+    "counts_conserved": true
+  },
+  "redline_probe_mutation": {
+    "value": "124248.63",
+    "state": "consumed"
+  }
+}

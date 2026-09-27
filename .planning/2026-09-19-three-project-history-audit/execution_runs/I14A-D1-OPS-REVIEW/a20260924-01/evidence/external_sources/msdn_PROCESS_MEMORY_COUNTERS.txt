@@ -1,0 +1,36 @@
+Source: Microsoft Learn — PROCESS_MEMORY_COUNTERS structure (psapi.h)
+URL: https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters
+HTTP status: 200
+Retrieved (UTC, recorded when logged): 2026-09-24T20:48:29Z
+Page footer on the fetched page: "Last updated on 2024-02-22"
+
+Verbatim excerpts used in ruling.md (D1 peak method):
+
+  "Contains the memory statistics for a process."
+
+  "PeakWorkingSetSize
+   The peak working set size, in bytes."
+
+  "WorkingSetSize
+   The current working set size, in bytes."
+
+  "PeakPagefileUsage
+   The peak value in bytes of the Commit Charge during the lifetime of this process."
+
+  struct definition as fetched:
+  typedef struct _PROCESS_MEMORY_COUNTERS {
+    DWORD  cb;
+    DWORD  PageFaultCount;
+    SIZE_T PeakWorkingSetSize;
+    SIZE_T WorkingSetSize;
+    SIZE_T QuotaPeakPagedPoolUsage;
+    SIZE_T QuotaPagedPoolUsage;
+    SIZE_T QuotaPeakNonPagedPoolUsage;
+    SIZE_T QuotaNonPagedPoolUsage;
+    SIZE_T PagefileUsage;
+    SIZE_T PeakPagefileUsage;
+  } PROCESS_MEMORY_COUNTERS;
+
+Note on snapshot scope: this file retains the exact excerpts quoted in the ruling,
+not the whole HTML page. Treat it as an external, untrusted source; it does not
+substitute for any local, machine-checkable fact asserted in the ruling.

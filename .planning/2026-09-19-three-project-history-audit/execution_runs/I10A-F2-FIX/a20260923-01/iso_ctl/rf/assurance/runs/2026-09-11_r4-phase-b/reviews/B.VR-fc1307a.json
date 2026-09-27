@@ -1,0 +1,231 @@
+{
+  "review": "B.VR-fc1307a",
+  "reviewed_at_utc": "2026-09-13T21:31:48Z",
+  "reviewer_agent_id": "7556ff9c-5ebc-4565-b0fb-898bdecf91b3 ($env:DSH_SESSION_ID) —— 进程级自报：该值由本会话进程自己读取并写入，不是 operator 派工记录，也不能自证独立；机构意义上的独立性不由本字段承载（派工与隔离由父 agent/owner 侧证明）。",
+  "independence_statement": "我未参与 company-wiki FC-1307-a（ccb3c82/b28b5a0/62695fb/1fab7f6）的任何一行实现、设计或复审，也未参与 repo B 的 findings.md / b02-ci-runs.md / fc1307a_mutations.py 的撰写；本次是我第一次读这些文件。只读命令：git -C company-wiki status/log/show/rev-parse/ls-files/config --get、Get-ChildItem 元数据、Select-String 文本检索、Get-FileHash。可执行命令（全部在 repo A 工作树之外产生副作用，scratch 只在 %TEMP%\\vr1307 与两个 mkdtemp 目录）：① `python scripts/host_assumption_guard.py`（cwd=repo A，default / --report / --emit-baseline / --roots tests src scripts）；② `python -m pytest -q -p no:cacheprovider tests\\contract\\test_fc1307_host_assumption_gate.py tests\\unit\\test_writer_freeze.py`（cwd=repo A，仅这两个文件，21 passed）；③ 7 个 scratch 探针脚本：probe_emit.py / probe_rules.py / mut_check.py / history_probe.py / probe_baseline.py / probe_s4_real.py / probe_writer_freeze.py（importlib 载入守卫模块；三个变异与 S7 注入在 %TEMP% 的**副本仓库**上跑 pytest；pre-fix blob 由只读 `git show <rev>:<path>` 取出）。**没有跑**：`tools/pre_push_gate.py`（会执行我未被允许的其它 pytest 文件）、ruff、mypy、compileall、任何全量套件、任何网络命令、任何 wiki CLI；company-wiki\\.source_catalog\\catalog.sqlite3 未被打开/查询/哈希（只取了路径元数据）。未执行任何 git 写操作（无 checkout/add/commit/push/--no-verify）；未修改 repo A 任何文件——全树快照（57908 个非 .git 文件的 relpath+size+mtime ticks）在会话开始前与全部命令结束后 SHA-256 完全相同（04E8F61D6C09FFD62BF26A9F51C6CFD77B6D8EE6F017AC696AADED16AA3AE3E5），`git status --porcelain` 为空。repo B 只新增本记录文件。",
+  "artifacts": {
+    "scripts/host_assumption_guard.py": "sha256=a83c3a599e9158c7318086ca204573077b4c54ae41433d98f03a852df261c1fd lines=220 blob=a5a3f37134c16029a482743e98be9c2f86b3e6b9 (HEAD 1fab7f6)",
+    "tests/contract/host_assumption_baseline.json": "sha256=792c754f3ffabde7a4b002b003f8a87b96924df277b00fdaa8558c57daf12490 lines=63 (58 entries) blob=7ab4b0f4624cbafc821fdf6ec507e6d42e891058 (HEAD 1fab7f6)",
+    "tests/contract/host_assumption_allowlist.json": "sha256=da0301e7a1c0c802cb11082206a15066f5a06cf865630bad07769e5de7ff0799 lines=30 (5 digests) blob=6bf27e1470dcb42993f839e0da6c06325fcf1715 (HEAD 1fab7f6)",
+    "tests/contract/test_fc1307_host_assumption_gate.py": "sha256=5117053deda782af96e0525baa7c591a018f93d8de84ac9f7c0f4cf499027d86 lines=189 (8 test defs) blob=9f721ba9e4271c4f7730878509d6f1ec6296f180 (HEAD 1fab7f6)",
+    "tools/pre_push_gate.py": "sha256=28338622cc3bfbd0dd3d98547844dc3500c2ec9a5fe656faed641c7b8743edc3 lines=106 blob=455d5d244869a2104035d78c0b647d3dca065311 (HEAD 1fab7f6)",
+    ".pre-commit-config.yaml": "sha256=e72d101d249e354009488b4629ac6dc1331918731c37a0eb315f06c496b2f530 lines=59 blob=9612037e084bcd14f4d7f682206eaddd9330b293 (HEAD 1fab7f6)"
+  },
+  "verdict": "accepted_with_findings",
+  "counts": {
+    "P0": 0,
+    "P1": 3,
+    "P2": 2,
+    "P3": 3
+  },
+  "claims_verified": [
+    {
+      "claim": "守卫在本树报告 `violations=94; new=0; baseline=58; registered=5`，退出 0",
+      "verdict": "sound",
+      "evidence": "cwd=company-wiki: `python scripts/host_assumption_guard.py` → 逐字 `scanned roots=['tests', 'src']; violations=94; new(not baselined/registered)=0; baseline=58; registered_hashes=5`，exit=0；`--report` 同数 exit=0。",
+      "note": "94 = 87×host-absolute-path + 7×unregistered-frozen-hash（7 条命中落在 5 个已登记摘要上，另有 2 条是同一摘要的重复出现）。0 条 host-capability-without-skip。"
+    },
+    {
+      "claim": "baseline 是 58 条棘轮条目，且 `--emit-baseline` 输出的就是已提交的那份（可以照贴）",
+      "verdict": "sound",
+      "evidence": "probe_emit.py（importlib 载入守卫，contextlib.redirect_stdout 捕获）：emitted=58 / committed=58，`only_in_emitted=[]`、`only_in_committed=[]`、duplicates=0、note 字段逐字相同。",
+      "note": "58 条全部对应活的命中（dead_count=0），58 条引用的文件全部存在（missing=[]），基线里没有任何 host-capability 条目。"
+    },
+    {
+      "claim": "allowlist 有 5 个已登记 64-hex，每条带 `where` + `rationale`，测试要求 rationale>40 字",
+      "verdict": "sound",
+      "evidence": "`Select-String` 逐个摘要搜 tests/**.py：cf0ac2ad… → test_r4b01_field_owner_alignment.py:59；273d4508… → test_zr503:36 / test_zr504:47 / test_zr505:42；efe2ccd9… → test_portfolio_promoter.py:30；888f427a… → test_cw1_source_contract_receipt.py:139,143；abcd1234… → test_source_catalog_artifact_reconciliation.py:9。5 条的 `where` 全部与实测位置一致。",
+      "note": "登记表的 `where` 没有编错；`test_fc1307a_every_registered_digest_carries_a_rationale` 通过。"
+    },
+    {
+      "claim": "三个变异（emit 写盘 / 基线 key 丢值 / 规则 A 扩大范围）全部 KILLED，且基线测试绿",
+      "verdict": "sound",
+      "evidence": "mut_check.py 在 %TEMP% 的副本仓库上复跑（脚本与测试文件均从 HEAD 复制，repo A 未动）：基线 `8 passed in 0.35s`；变异 A → `1 failed, 7 deselected`，其它 7 条仍 `7 passed`；B → 同；C → 同；副本守卫复原后逐字节相同。",
+      "note": "三条用例确实承重，不是装饰。我没有在 repo A 上跑他们的 harness（它会 `git checkout --` 改工作树，超出我的授权），只用副本复现。"
+    },
+    {
+      "claim": "`tree_restored=true`（harness 跑完树是干净的）",
+      "verdict": "sound",
+      "evidence": "副本运行：守卫复原后 `guard_restored_byte_identical=true`；repo A 侧：我这个会话在跑过守卫/探针/pytest 之后 `git status --porcelain` 为空，全树快照 SHA-256 与开跑前相同。",
+      "note": "对 repo A 而言这是'没有被弄脏'的独立证明；对 harness 自身 `_restore` 的逐字节还原，我只证明了副本路径。"
+    },
+    {
+      "claim": "注入一个 `C:/Windows/win.ini` 字面量 ⇒ 门 exit 1 并点名文件；仓库级用例会红",
+      "verdict": "sound",
+      "evidence": "副本仓库加 tests/vr1307_injected_case.py 后：`python scripts/host_assumption_guard.py`（副本）→ exit=1，stdout 首行 `VIOLATION host-absolute-path: tests/vr1307_injected_case.py:1  C:/Windows/win.ini`；`pytest -k the_repository_has_no_new_host_assumptions` → `1 failed`；其余 7 条 `7 passed`。",
+      "note": "仓库级用例是**承重**的：它真的把守卫的退出码映射成断言。"
+    },
+    {
+      "claim": "守卫 READ-ONLY / `--emit-baseline` 只打印绝不写盘",
+      "verdict": "sound",
+      "evidence": "全树快照（57908 文件，relpath+size+mtime ticks）跑前/跑后 JSON SHA-256 相同 = 04E8F61D…AAE3AE3E5，`git status` 空；guard 源码无 `.write_text/.write_bytes/open(...,'w')/os.replace/unlink`（`grep`）；`tests/unit/test_writer_freeze.py` 13 passed（即它不在'直接写者 CLI'清单里）。",
+      "note": "这条 docstring 的说法成立，且 b28b5a0 的修法正确。"
+    },
+    {
+      "claim": "三处同时跑：commit（.pre-commit-config.yaml）/ push（tools/pre_push_gate.py）/ CI",
+      "verdict": "sound",
+      "evidence": "① `git config --get core.hooksPath` = `.githooks`；`.githooks/pre-commit` 是 pre-commit 生成的 hook-impl（`--config=.pre-commit-config.yaml --hook-type=pre-commit`），且 `git ls-files .githooks` 显示 pre-commit/pre-push 两个文件都被跟踪；② pre_push_gate.py 的 gates 列表第 5 项就是守卫，第 6 项（append）含 `tests/unit/test_writer_freeze.py` 与守卫的契约测试；③ `.github/workflows/ci.yml` 的 Contract tests 跑 `pytest tests/contract`，`--ignore` 列表里没有 test_fc1307_host_assumption_gate.py。",
+      "note": "措辞小偏差见 B-VR1307-08（findings.md 说守卫在 pre-push '新第 6 步'，实际它是第 5 个 gate，第 6 步是 meta 对）。"
+    },
+    {
+      "claim": "扫描范围保持 `tests src`；把它扩到 `tests src scripts` 今天不改变任何结果（owner 已裁定不扩）",
+      "verdict": "sound",
+      "evidence": "`python scripts/host_assumption_guard.py --roots tests src scripts` → exit=0，`scanned roots=['tests', 'src', 'scripts']; violations=94; ... baseline=58; registered_hashes=5`，与默认范围逐字相同。",
+      "note": "测量复现成功。原因也成立：规则 A/② 只判含 `tests` 的路径，scripts/ 下没有未登记的 64-hex。"
+    },
+    {
+      "claim": "守卫自己的那一次 CI 红（run 34751519232）是 `tests/unit/test_writer_freeze.py` 因 `host_assumption_guard.py` 是写者 CLI 而失败；b28b5a0 改只读后消失",
+      "verdict": "sound",
+      "evidence": "probe_writer_freeze.py 用 `tests/unit/test_writer_freeze.py:105-126` 的**同一谓词**判 blob：`git show ccb3c82:scripts/host_assumption_guard.py` → has_direct_cli=true、text 命中 `['.write_text(']`、不在 CONTROL_TOOL_ALLOWLIST（该清单 12 项，从 writer_policy.py 读出）→ `would_be_MISSING: true`（即 `assert not missing` 必红、missing=['host_assumption_guard.py']）；`HEAD` blob → text 命中 `[]` → false。",
+      "note": "机理与其证据页引用的 CI 日志行一致；但 CI 日志本身我**没有**取回（无网络），见 not_checked。"
+    },
+    {
+      "claim": "该门能抓住 F-B01-9 的三类宿主假设（历史三次 CI 失败）",
+      "verdict": "false",
+      "evidence": "history_probe.py 对 pre-fix blob 跑 scan_file：`5ab0779:tests/contract/test_r4b03_stable_bytes.py`（symlink 那条，F-B01-9 表第 3 行）→ `rules: []`，即**零命中**（该 blob 含 `pytest.skip`，见 B-VR1307-01）；`52d394d^:…test_r4b03_stable_bytes.py`（win.ini 那条）→ 3×host-absolute-path，含 `C:\\Windows\\win.ini` ✅；`5ab0779:…test_r4b01_field_owner_alignment.py` → 2×unregistered-frozen-hash，含 `c773099b…` ✅。",
+      "note": "三类里 2 类确实覆盖（这条声称只对 2/3 成立），symlink 那类不成立 —— 见 B-VR1307-01。"
+    },
+    {
+      "claim": "（我没有找到的）任何'一边报 violation 一边 exit 0'的路径",
+      "verdict": "sound",
+      "evidence": "probe_rules.py 的 S8 分支：非 UTF-8 文件 → `UnicodeDecodeError` 抛出（进程非零）；`--roots` 指向 repo 外且外部有命中 → `ValueError: ... is not in the subpath of ...`（非零）；仓库外且无命中 → exit 0，但确实没有命中；baseline/registry 文件缺失 → 把全部命中当 new，exit 1（fail-closed）；registry JSON 损坏 → `JSONDecodeError`（非零）；语法错误文件 → 变成 `syntax-error` 命中并计入 new，exit 1。",
+      "note": "除**成文**的 `--report` 与 `--emit-baseline`（两者 docstring 明说 exit 0）外，没有发现静默放过。方向都是 fail-closed / 噪声大，不是漏放。"
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR1307-01",
+      "severity": "P1",
+      "area": "规则②（host-capability-without-skip）的能力声明与历史事实不符",
+      "claim": "守卫 docstring:9-15 与测试 docstring:10-12 和 findings.md F-B01-9 闭环②都写着：该门抓的第二类是「a host CAPABILITY used without a skip (symlink creation) - the case skips on Windows and really runs on Linux」/「用了宿主能力却**没有 skip**（symlink 等）」，即覆盖 F-B01-9 表第 3 行 `test_r4b03_symlink_escape_is_refused_where_symlinks_exist`。",
+      "counter_evidence": "① `python history_probe.py`：把 `git show 5ab0779:tests/contract/test_r4b03_stable_bytes.py`（失败发生的那一版）落到 %TEMP% 后 `guard.scan_file()` → `rules: []`，零命中；同一 blob 的 `contains_pytest_skip_literal: true`（该版本第 381 行就是 `pytest.skip(\"host cannot create symlinks (registered limitation)\")`）。规则②要求**整文件**没有任何 SKIP MARKER 才报，因此这一版**必然**是绿的——门在那次真实 CI 失败上会放行。② 描述本身自相矛盾：'used without a skip' 与 'the case skips on Windows' 不可能同时成立；而且真正'用了能力却没有 skip'的用例在 Windows 上会**红**（本地 hook 本来就能看见），恰恰不是'本机绿、Linux 红'那一类。③ findings.md 自己的表第 3 行给的根因是 '断言假设错了层'（Linux 上扫描层不收录越界 symlink ⇒ 前置断言 `len(result.matches) == 1` 错），不是缺 skip。",
+      "required_fix": "二选一并落到文字与证据：① 把守卫 docstring / 测试 docstring / findings.md 闭环②的表述改成规则②真正防的东西（新出现在**本地门不跑的文件**里的、未加任何 skip 的能力调用），并明确写'规则②不覆盖 F-B01-9 第 3 行，那一类是断言语义错层，语法门抓不到'；或② 另加一条能覆盖该类的机制（例如要求宿主能力用例必须断言'与层次无关的性质'，或把该用例列入强制本地跑清单）。**不接受**维持现文案。",
+      "residual": "规则②仍有独立价值（本地 pre-push 门只跑 6 个契约文件，新文件里的裸 symlink 调用确实只有它能看见）；但本树当前 0 命中、基线 0 条，规则②在仓库里完全靠自测用例支撑。"
+    },
+    {
+      "id": "B-VR1307-02",
+      "severity": "P1",
+      "area": "规则②的豁免判据是'整文件任意位置出现标记'，且读的是原始文本",
+      "claim": "守卫 docstring:17-18 写着 'The guard is AST-based on purpose: comments and docstrings may DISCUSS such paths ... so only runtime string literals count'，而 rule② 的实现（guard.py:127-135）用 `text = path.read_text(...)`、`any(marker in text for marker in SKIP_MARKERS)`；测试 docstring 断言只有'用了能力却不 skip'才会被报。",
+      "counter_evidence": "probe_rules.py 的 S2 分支（每个变体写在 %TEMP% 的 `tests/` 下后调 `guard.scan_file`）：裸 symlink 用例 → `['host-capability-without-skip']`；**同一个文件里另一个不相干的 test 写 `pytest.skip(...)`** → `[]`；标记只出现在**注释**里 → `[]`；标记只作为**变量名** `skipif_note = 'not a real gate'` → `[]`；标记只出现在**无关函数的 docstring** `\"\"\"Historically we used skipif here.\"\"\"` → `[]`。反向也有误报：一个普通辅助函数 `def link(a, b)` 被调用 → `['host-capability-without-skip']`（`_calls` 只比最后一段名字，`link` 撞上 `os.link`）。",
+      "required_fix": "把豁免收窄到调用点附近：要求 SKIP MARKER 出现在**包含能力调用的同一个函数体**（或同一个 try/except 的 handler）里，而不是整文件；并把能力匹配从'最后一段名字等同'改为限定 `os.symlink|os.link|os.mkfifo|Path.symlink_to|Path.hardlink_to` 的接收者，避免 `link()` 之类误报。若决定保留整文件粒度，必须在 docstring 与证据页写明'粒度=文件，任何 skip 串都会豁免'。",
+      "residual": "词法邻近仍可被绕过（例如在同一函数里为一个无关原因 skip），但比'整文件'强得多。"
+    },
+    {
+      "id": "B-VR1307-03",
+      "severity": "P1",
+      "area": "棘轮 key 把值截断到 40 字符 ⇒ 新违规可被静默豁免",
+      "claim": "test_fc1307_host_assumption_gate.py:148-151 断言 'The baseline must excuse the EXACT recorded offender only'；守卫 docstring:177-181 也写 'a new absolute path ... must be fixed rather than silently added'。实现 guard.py:166-168 的 key = `rule|relpath|value[:40]`。",
+      "counter_evidence": "probe_s4_real.py（用**已提交的** baseline 逐字复制到一个临时仓库，再 monkeypatch REPO/BASELINE/REGISTRY）：已基线字面量 `C:/Users/jane/Dropbox/Stock/ACME/2025-04-30_annual.pdf` → exit 0（应当）；**从未基线过的** `C:/Users/jane/Dropbox/Stock/ACME/2025-04-15_interim.pdf`（仅前 40 字符 `C:/Users/jane/Dropbox/Stock/ACME/2025-04` 相同）→ `violations=1; new(not baselined/registered)=0`，**exit 0**；对照 `/etc/vr1307-controlled`（前缀不同）→ exit 1 并打印 `VIOLATION host-absolute-path: tests/contract/test_snapshot_catalog.py:1  /etc/vr1307-controlled`。已提交基线里**恰好有 10 条**的 value 段长度正好是 40（即被截断过，今天就是活的）：例如 tests/contract/test_observability.py 的 `/home/runner/work/revenue-forecast/secre`、tests/contract/test_snapshot_catalog.py 的 `C:/Users/jane/Dropbox/Stock/ACME/2025-04`。",
+      "required_fix": "key 改用**全值**或全值的摘要（如 `rule|rel|sha256(value)[:16]`），不要用 40 字符前缀当身份；改完按 `--emit-baseline` 重新生成 baseline（虽然 10 条会重写，但其余 48 条不变，diff 很小）。同时给测试补一条用例：同一文件里第二个**共享 40 字符前缀**的绝对路径必须仍然失败（现有用例用的是 `C:/Windows/win.ini` / `/etc/passwd` 这类短值，碰不到截断）。",
+      "residual": "改动后基线值变长，人读性略降；可保留截断值作为注释字段而不参与 key。"
+    },
+    {
+      "id": "B-VR1307-04",
+      "severity": "P2",
+      "area": "POSIX_ABS 是 12 项枚举，漏掉真实绝对路径",
+      "claim": "守卫 docstring:9-11 说该类是 'an absolute host path baked into a test'，findings.md 闭环①说'测试里硬编码的绝对宿主路径'；实现 guard.py:50 只认 `/etc|/tmp|/usr|/var|/home|/opt|/root|/proc|/sys|/dev|/mnt|/media`。",
+      "counter_evidence": "probe_rules.py 的 S1 分支（15 个绝对路径各写成一个 `tests/` 下的字面量后 scan_file）：命中=true 只有 `/etc/passwd` 与 `/tmp/x.pdf`；命中=false 的有 `/Users/alice/Dropbox/Stock/a.pdf`、`/Volumes/Data/stock/a.pdf`、`/private/tmp/x.pdf`、`/srv/data/a.pdf`、`/data/fixtures/a.pdf`、`/github/workspace/a.pdf`、`/builds/group/project/a.pdf`、`/workspace/repo/a.pdf`、`/Library/Application Support/x.pdf`、`/bin/sh`、`/Users`、以及正斜杠 UNC `//server/share/file.pdf`。（反斜杠 UNC 与 `\\\\?\\` 由 WIN_ABS 覆盖。）`/Users/...` 与 `C:\\Windows\\win.ini` 是同一失效模式：Windows 上不是绝对、Linux/macOS 上是绝对，断言会翻转。",
+      "required_fix": "把枚举补成 macOS/容器侧常见根（至少 /Users /Volumes /private /srv /data /Library /workspace /builds /github /bin /lib /boot /run），或改成'一切 `^/` 减去一份**写在注释里**的排除清单'；并在契约测试里钉住至少 `/Users/...` 与 `/srv/...` 两个必须命中的样本。若刻意保持窄枚举，必须在 docstring 与证据页**写明这是有限枚举及其名单**（现在是零文档的静默缺口）。",
+      "residual": "任何字面量枚举都漏得掉拼接构造（`\"C:\" + \"/Windows/win.ini\"`、`os.path.join`），这属于 AST 字面量扫描的固有边界，应写进 docstring。"
+    },
+    {
+      "id": "B-VR1307-05",
+      "severity": "P2",
+      "area": "HEX64 只认小写、恰好 64 位、且必须是字面量",
+      "claim": "findings.md 闭环③/守卫 docstring:13-15 说该类是'把机器相关值冻成常量'；测试 docstring:83-85 说 'an unregistered 64-hex literal is refused'。实现 guard.py:52 是 `^[0-9a-f]{64}$`（同文件的 URL 正则第 51 行**用了** `re.IGNORECASE`）。",
+      "counter_evidence": "probe_rules.py 的 S3 分支：`HEX64.match` 对小写 64 位=true，对**全大写 64 位**=false、首字母大写=false、63 位=false、65 位=false、`32hex_32hex`=false；落地成文件的规则命中：小写字面量=true，**全大写字面量=false**、`\"<32>\" + \"<32>\"`（同一个冻值拆两半）=false、`bytes.fromhex(\"<64hex>\")`=true（字面量本身仍可见）、运行时 `hashlib.sha256(PAYLOAD).hexdigest()` 再与常量比较=false。`re.IGNORECASE` 缺失尤其现实：很多工具（含 Windows 侧摘要输出）习惯打印大写十六进制。",
+      "required_fix": "给 HEX64 加 `re.IGNORECASE`（一行），并考虑把'看起来像摘要的长十六进制串'（32–64 位）也纳入登记要求；至少在 docstring 里写明'只覆盖小写、恰好 64 位、字面量形式'的边界，并说明运行时计算出的机器相关摘要**不在**语法门能力范围内。",
+      "residual": "运行时计算/拼接的摘要无法用 AST 规则覆盖；这属于该类门的天然上限，但必须写进文字，否则'抓第三类'的声明过宽。"
+    },
+    {
+      "id": "B-VR1307-06",
+      "severity": "P3",
+      "area": "解析失败的文件：注释说不归它管，代码却让它红",
+      "claim": "guard.py:108 行内注释 `except SyntaxError as exc:  # a file that does not parse is not this gate's business`。",
+      "counter_evidence": "probe_rules.py 的 S8：`scan_file` 对 `def broken(:` 返回 `[{'rule': 'syntax-error', 'line': 1, 'value': 'invalid syntax ...'}]`；`main` 的 new 分支对 `syntax-error` 不做任何豁免（既不查基线也不查登记表），于是 `VIOLATION syntax-error: tests/broken_fixture.py:1 ... new(...)=1`、exit=1。即任何**故意**语法不合法、但被 tests/ 收录的 `.py` 夹具（本仓库是有解析器/文件格式夹具的项目，这类夹具很常见）都会把门顶红。",
+      "required_fix": "二者取一：按注释的意思 `continue` 掉（并把该行为写成一个契约用例），或改掉注释、明确写'不可解析的 .py 视为门红'（当前是 fail-closed，安全但会误伤夹具）。",
+      "residual": "现状方向是保守（红而不是漏），因此只是精度问题。"
+    },
+    {
+      "id": "B-VR1307-07",
+      "severity": "P3",
+      "area": "崩溃式失败路径：错误信息是 traceback 而不是可读诊断",
+      "claim": "docstring 的用法示例把 `--roots` 当作公开参数（`python scripts/host_assumption_guard.py --roots tests src`），并用 `load_json` 读取两个 JSON。",
+      "counter_evidence": "probe_rules.py 的 S8：(a) 一个含 latin-1 字节的 `.py` → `UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe9 in position 34`（未捕获，只有 SyntaxError 被捕获）；(b) `--roots <repo 外的目录>` 且该目录有命中 → `ValueError: 'C:\\\\...\\\\outside\\\\tests\\\\ext.py' is not in the subpath of 'C:\\\\...\\\\enc'`（`key()` 里 `Path(...).relative_to(REPO)` 抛出）；(c) registry JSON 损坏 → `JSONDecodeError` 未捕获。三者都非零退出（fail-closed），但提示是 traceback。",
+      "required_fix": "捕获 `UnicodeDecodeError/OSError` 后按 violation 或清晰的错误行报告；对 repo 外的 root 直接告警并跳过（或提前拒绝），而不是等 `relative_to` 抛 ValueError。",
+      "residual": "无安全影响；只影响可诊断性。"
+    },
+    {
+      "id": "B-VR1307-08",
+      "severity": "P3",
+      "area": "文字精确性（三处）",
+      "claim": "① findings.md:F-B01-9 闭环写'push 时（tools/pre_push_gate.py 新第 6 步）'指守卫；② 同一段写'新用例 5 passed'；③ .pre-commit-config.yaml 注释写 'The guard scans the whole tree, so it takes no filenames.'",
+      "counter_evidence": "① `git show ccb3c82:tools/pre_push_gate.py` 的 gates 列表顺序 = ruff, compileall, config_doctor, FC-1204 棘轮, **host_assumption_guard.py（第 5 个）**, 然后 `gates.append(...)` 契约步（第 6 个），与 HEAD 一致（HEAD 的 docstring 自己编号为 '5. host-assumption guard' / '6. ... plus the META tests'）⇒ 守卫是第 5 步，第 6 步是被 62695fb 加了 meta 对的那一步。② `git show ccb3c82:tests/.../test_fc1307_host_assumption_gate.py | Select-String '^def test_'` = 5 个，HEAD = 8 个（1fab7f6 加了 3 条）；所以 '5 passed' 对 ccb3c82 成立、对 tip 已过时，而同一 run 的 evidence/b02-ci-runs.md 写的是'基线 8 passed'——两份文档数字并存。③ `grep -n 'rglob' scripts/host_assumption_guard.py` = `for path in sorted(base.rglob('*.py'))`，base ∈ {REPO/tests, REPO/src}（DEFAULT_ROOTS），且规则 A/② 还要 `'tests' in path.parts` ⇒ 不是 whole tree（scripts/、tools/、tests 之外的 .py 都不在范围内）。",
+      "required_fix": "① 改成'第 5 步（第 6 步是加了 meta 对的那一步）'或直接写 gate 名；② 把 '5 passed' 更新为 '8 passed'（或注明是 ccb3c82 时的数字）；③ .pre-commit-config.yaml 注释改为 'scans tests/ and src/'。",
+      "residual": "不影响行为，但这类'文字落后于代码'正是 F-B01-9 记录的失效模式，值得顺手清掉。"
+    }
+  ],
+  "suspicions": [
+    {
+      "id": "S1",
+      "status": "confirmed",
+      "evidence": "probe_rules.py S1 表：15 个绝对路径探针里只有 `/etc/passwd`、`/tmp/x.pdf` 命中；`/Users/alice/...`、`/Volumes/...`、`/private/tmp/...`、`/srv/...`、`/data/...`、`/github/workspace/...`、`/builds/...`、`/workspace/...`、`/Library/...`、`/bin/sh`、`/Users`、`//server/share/file.pdf` 全部漏。",
+      "why": "是真漏：这些值与历史缺陷 `C:\\Windows\\win.ini` 属同一失效模式（本机非绝对 / Linux 上是绝对 ⇒ 断言翻转），且现在**没有任何文档**说规则 A 只是有限枚举（见 B-VR1307-04）。但严重度我判 P2 而非 P1：实现用的是显式枚举（可见的设计选择），历史缺陷与全部 58 条基线都在枚举覆盖内，属'可一行补齐的窄枚举缺口'而非'声称的整体失效'。正斜杠 UNC `//server/share` 也漏，属同一枚举问题。"
+    },
+    {
+      "id": "S2",
+      "status": "confirmed",
+      "evidence": "probe_rules.py S2：无关 test 里的 `pytest.skip`、注释里的 `skipif`、变量名 `skipif_note`、无关函数 docstring 里的 `skipif` —— 四种都让裸 symlink 用例从 `['host-capability-without-skip']` 变成 `[]`；反过来 `def link(a,b)` 被调用会被误报。",
+      "why": "确认（见 B-VR1307-02）。这是最容易被真实代码踩到的漏洞：`@pytest.mark.skipif(sys.platform == 'win32', ...)` 标在同文件另一条用例上是极常见写法，一旦出现，整个文件里所有能力调用就永久免疫。"
+    },
+    {
+      "id": "S3",
+      "status": "confirmed",
+      "evidence": "probe_rules.py S3：全大写 / 首字母大写 / 63 位 / 65 位 / 32+32 拼接的摘要都不被 HEX64 命中；`bytes.fromhex(\"<64hex>\")` 反而会被命中。",
+      "why": "确认（见 B-VR1307-05）。运行时算出的摘要不可见属语法门的固有限制（应写进 docstring），但**大小写**这一条是纯粹的疏漏：同一文件的 URL 正则用了 IGNORECASE，HEX64 没有。"
+    },
+    {
+      "id": "S4",
+      "status": "confirmed",
+      "evidence": "probe_s4_real.py：用已提交 baseline 逐字复制到临时仓库 —— 已基线字面量 exit 0；从未基线过的 `.../ACME/2025-04-15_interim.pdf`（与基线值共享前 40 字符）→ `new=0` **exit 0**；对照（前缀不同）→ exit 1。已提交 baseline 中 value 段正好 40 字符的有 10 条。",
+      "why": "确认（见 B-VR1307-03）。这直接推翻测试自己写的 'excuse the EXACT recorded offender only'：棘轮按 40 字符前缀而不是按值身份。实际影响：在同一个夹具目录里新增一条**新的**绝对宿主路径（换个月内文件名）就会被静默豁免，而门打印的仍是 `new=0`——正是它宣称要防的'静默进基线'。"
+    },
+    {
+      "id": "S5",
+      "status": "refuted",
+      "evidence": "mut_check.py（副本仓库）：基线 `8 passed`；A `1 failed, 7 deselected`、B 同、C 同，三次的其它 7 条都 `7 passed`；副本守卫复原后逐字节相同。",
+      "why": "怀疑（某个变异存活）被驳回：三个变异都被对应用例杀死，与 evidence/fc1307a_mutations.py 的 all_killed 声明一致。我没有在 repo A 上跑他们的 harness（会 `git checkout --`，越权），用副本等价复现。"
+    },
+    {
+      "id": "S6",
+      "status": "confirmed",
+      "evidence": "过实之处：①'三类里第二类'（B-VR1307-01，pre-fix blob scan_file → `rules: []`）；②'新用例 5 passed' 已过时（ccb3c82=5 条，HEAD=8 条，证据页自己写 8 passed）；③'push 时新第 6 步'（守卫实为第 5 个 gate）；④'.pre-commit-config.yaml: The guard scans the whole tree'（实为 tests+src）。**没有**过实之处：'READ-ONLY by design / never writes'（全树快照 SHA-256 前后相同 + git status 干净 + writer-freeze 13 passed）、'94/58/5'、'wired into commit+push+CI'（.githooks/pre-commit = pre-commit hook-impl + core.hooksPath=.githooks + 两个 hook 文件被跟踪；pre_push_gate 第 5 步守卫 + 第 6 步 guard 契约测试 + writer_freeze；ci.yml 跑 `pytest tests/contract` 未 ignore 该文件）、'scripts 扩范围今天零差异'。",
+      "why": "确认存在过实，但集中在'历史覆盖声明'与三处文字；守卫的只读性、接线、数字与变异声明都经得起复现。"
+    },
+    {
+      "id": "S7",
+      "status": "refuted",
+      "evidence": "① 代码阅读：仓库级用例断言 `guard.main([\"--roots\",\"tests\",\"src\"]) == 0`，`main` 在 `new` 非空时返回 1（guard.py:209-216）。② 端到端：副本仓库注入 `tests/vr1307_injected_case.py`（`C:/Windows/win.ini`）后 `pytest -k the_repository_has_no_new_host_assumptions` → `1 failed`，同次其余 7 条 `7 passed`；守卫 exit 1 并打印 `VIOLATION host-absolute-path: tests/vr1307_injected_case.py:1  C:/Windows/win.ini`。",
+      "why": "怀疑（新违规不会让它红）被驳回：该用例承重。注意它只在 CI/全量契约跑时生效（pre-push 门第 6 步也跑它），本机 commit 时代跑的是守卫本体（同一条规则，退出码同源）。"
+    },
+    {
+      "id": "S8",
+      "status": "confirmed",
+      "evidence": "崩溃/噪声路径确认：非 UTF-8 文件 → `UnicodeDecodeError`；`--roots` 指向 repo 外且有命中 → `ValueError: ... is not in the subpath of ...`；registry JSON 损坏 → `JSONDecodeError`；语法错误文件 → 计入 new 并 exit 1（与注释矛盾）。**未发现**'一边报 violation 一边 exit 0'：除成文的 `--report` 与 `--emit-baseline`（docstring 明说 exit 0）外，缺 baseline/registry 是 fail-closed（全部当 new，exit 1），repo 外无命中时 exit 0 但也确实无命中。",
+      "why": "确认的是诊断质量（三种 traceback，见 B-VR1307-07）与语法错误的语义矛盾（B-VR1307-06）；'静默 exit 0'这一半被驳回。另外两个我查过但没构成问题的点：`rglob(\"*.py\")` 在 Windows 上大小写不敏感（会扫 `.PY`），但 `Get-ChildItem | Where-Object Extension -ceq '.PY'` 在 tests/src 下 = 0 个，今天无影响，只值得记一笔跨平台口径差异；'文件在列举与读取之间消失'未构造（会抛 FileNotFoundError ⇒ 非零，方向安全）。"
+    }
+  ],
+  "not_checked": [
+    "CI 日志本身：环境禁网，未取回 run 34751519232 / 34752267614 / 34752249798 / 34720686541 / 34720741197；'该门在 CI 上先红一次'与'两条 tip CI success'只做了**机理复现**（用 test_writer_freeze.py 的同一条谓词判 ccb3c82 vs HEAD blob）与提交信息互证，没有日志原文。",
+    "`python tools/pre_push_gate.py` 的完整 6 步没有跑（会执行我未被授权的其它 pytest 文件，且约 2-3 分钟）：'pre-push 门（6 步）GREEN' 只验证了步骤存在/顺序/关键文件能过，ruff、compileall、config_doctor、FC-1204 棘轮四步**未复跑**。",
+    "ruff 没有跑 ⇒ 'ruff clean' 未验证（不在我被允许的命令集里）。",
+    "mypy / compileall / 覆盖率棘轮 / 任何全量套件：未跑（明令禁止）。",
+    "87 条 host-absolute-path 基线的**语义**正确性（每条是否真是'故意输入的路径'）未逐条审读；只验证了它们与活的命中一一对应、无死条目、引用的文件都存在。",
+    "守卫在 Linux/macOS 上的实际行为未测（我只有 Windows + Miniconda 3.13.9）；跨平台差异只做了静态推理（例如 `rglob('*.py')` 的大小写口径、`/tmp` 是否真是符号链接对 `_fake_repo` 的 `resolve()` 注释）。",
+    "company-wiki\\.source_catalog\\catalog.sqlite3 未被打开/查询/哈希（按规则只取路径元数据）。",
+    "没有独立 oracle 能证明该门'抓得住未来未知的宿主假设类别'；我评的是它对自己的三类声明是否成立，不是它对任意未来缺陷的完备性。",
+    "repo A 的 `tests/archive/`、`tests/acceptance/` 等目录是否被 CI 实际收集未逐一核对（只核对了 ci.yml 的 --ignore 列表不含 FC-1307 文件）。"
+  ],
+  "notes": "【我自己的两处错误，已更正】(1) 第一版 S4 探针打印了一行 `NEW is itself in the committed baseline: True`——那是我把 `NEW[:40] in [value_keys]` 的布尔值贴错了标签：**NEW 本身从未进过基线**，进基线的是它的 40 字符前缀（这正是漏洞本身）。结论不变，probe_s4_real.py 用逐字复制的已提交 baseline + 对照实验重新证明了一次。(2) probe_writer_freeze.py 第一版的 CONTROL_TOOL_ALLOWLIST 提取正则没匹配上 `frozenset({...})` 形式，于是 `control_tool_allowlist_size=0`、并把 12 个**受控工具**（architecture_gate.py…wr109_step6_capture.py）错报成 `would_be_MISSING`；直接从 writer_policy.py 读出该清单后，那些名字全部是 allowlist 成员，当前树 missing=[]，与 `test_writer_freeze.py` 13 passed 一致。本记录只采用更正后的结论。\n\n【给实现者的优先级建议】三个 P1 都是小改动、但要一起改才自洽：①棘轮 key 用全值/摘要（B-VR1307-03，最该先改：它是'新违规被静默当基线'的唯一活路径，而且今天的 baseline 里就有 10 条处于被截断状态）；②规则②的豁免收窄到调用点 + 把能力匹配限定到真正的 symlink/link API（B-VR1307-02）；③把'第二类覆盖了 F-B01-9 symlink 那条'这句话从守卫 docstring、测试 docstring 和 findings.md 三处撤掉或改准（B-VR1307-01）。P2 两条都是一行级（POSIX 根枚举、HEX64 加 IGNORECASE）。\n\n【值得保留的强项】守卫的只读性是**真的**（全树 57908 文件 relpath+size+mtime 快照前后 SHA-256 相同、git status 干净、writer-freeze 13 passed）；仓库级用例是**真的承重**（注入新违规 → 用例红 + 守卫 exit 1 点名文件）；三个变异**真的**全杀；`--emit-baseline` 的输出与已提交 baseline **逐字**一致；'扩到 scripts 今天零差异'的测量**可复现**；接线（commit hook / pre-push 第 5+第 6 步 / CI contract 步）**三处都在**。也就是说：这是一台能用的门，问题在于它对'第二类'的说法大于它的能力，以及棘轮身份的截断。\n\n【关于独立性】本记录的 reviewer_agent_id 是进程级自报（$env:DSH_SESSION_ID），不构成机构意义上的独立证据；真正的独立性来自父 agent 的派工与隔离安排。我能自证的是：repo A 在本会话前后**全树逐字节/逐 mtime 未变**（快照 SHA-256 04E8F61D…AAE3AE3E5，git status 为空），repo B 只新增本文件，scratch 全部落在 %TEMP%\\vr1307 与两个 mkdtemp 目录。"
+}

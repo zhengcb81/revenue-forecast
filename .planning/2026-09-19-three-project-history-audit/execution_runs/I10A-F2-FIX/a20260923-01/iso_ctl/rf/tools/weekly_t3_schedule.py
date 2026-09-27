@@ -1,0 +1,363 @@
+"""ZR-903: weekly / pre-release T3 scheduling — <=7d freshness, blocked alerts.
+
+Wraps the filing-fetch T3 real-download suite (``tests/test_e2e_download.py``,
+opt-in via ``FILING_FETCH_E2E_DOWNLOAD=1``, temp wiki only) into a weekly
+scheduled assurance loop, reusing the ZR-902 ledger machinery:
+
+  run-weekly   run the T3 suite, write the weekly ledger
+               (``assurance/runs/weekly_manifest.json``), judge freshness
+               (<= 7d and ok -> fresh; older -> stale; absent -> missing),
+               append an alert journal entry when not fresh, and record a
+               BLOCKED status (never a pass) when the suite could not be
+               evaluated here.  ``blocked`` is decided on evidence - the explicit
+               sentinel ``T3-SUITE-COULD-NOT-RUN``, pytest's own "no tests ran",
+               or an environment-looking marker - and the marker path is a
+               HEURISTIC: a product-side collection error can be reported as
+               "could not run here", so the persisted report is the authority and
+               the alert names the words that matched.  By contrast ``not-ok``
+               means tests ran and failed.  A run that does not reach a verdict
+               exits non-zero even when pytest exited 0, so the scheduler does not
+               record a success for a gate that is blocked (CA-203 RED).
+               A crash or a timeout is recorded as a run too (ledger + alert +
+               report), because "no record at all" used to leave the previous
+               green run satisfying the gate for up to seven days.
+               The suite's own output is persisted next to the ledger as
+               ``weekly-run-<run_id>.log`` and that file name is what the ledger's
+               ``report_path`` records (with a ``(NOT WRITTEN: ...)`` marker if the
+               write failed) — before F-B01-10 the value was a label with no file
+               behind it, so a failed weekly run said only "exit 1" and could not
+               be diagnosed.
+  register     register a Windows Task Scheduler weekly task (deployment
+               action; requires elevation) that invokes ``run-weekly``.
+  query        read-only status of the scheduled task (exists / last run).
+  unregister   remove the scheduled task (deployment action).
+  verify       combined status: schedule + last run — AUD2-01/02/03 oracle.
+
+The release gate is the ZR-902 pure function over the ledger: fresh + ok ->
+ready; stale / missing / not-ok / all-skipped -> blocked.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+from daily_t2_schedule import (
+    append_alert,
+    freshness_status,
+    query_task_status,
+    read_ledger,
+    release_gate,
+    write_ledger,
+    _head,
+)
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
+T3_SUITE = FILING_ROOT / "tests" / "test_e2e_download.py"
+WEEKLY_LEDGER = PROJECT_ROOT / "assurance" / "runs" / "weekly_manifest.json"
+WEEKLY_ALERTS = PROJECT_ROOT / "assurance" / "runs" / "weekly_alert.jsonl"
+WEEKLY_TASK = "revenue_weekly_t3"
+MAX_AGE_DAYS = 7
+# How much of the suite's output the persisted report keeps.  The tail is where
+# pytest puts the failure summary; the full log can be megabytes.
+REPORT_TAIL_CHARS = 20000
+
+# pytest's summary counts.  A count of passed/failed/xfailed/xpassed means the
+# suite reached a verdict ON THE PRODUCT; anything else means it never got that
+# far (collection error, missing tool, no tests collected).
+VERDICT_COUNTS = re.compile(r"(\d+)\s+(?:passed|failed|xfailed|xpassed)")
+# The AUTHORITATIVE way for the suite to say "I could not run here": print this
+# token.  It beats every heuristic below, and it is the recommended signal for the
+# filing-fetch side to emit in its own guard clauses.
+ENVIRONMENT_SENTINEL = "T3-SUITE-COULD-NOT-RUN"
+# Fallback markers - a HEURISTIC, and the docstring says so (B-VR903-01).  Chosen to
+# be language-neutral where possible: exception CLASS names and numeric OS error
+# codes survive localization ("FileNotFoundError: [WinError 2] 系统找不到指定的文件。"
+# contains both), which is what B-VR903-02 found the first list missing.
+ENVIRONMENT_MARKERS = (
+    "not found",
+    "no such file",
+    "filenotfounderror",
+    "winerror 2",
+    "errno 2",
+    "timeoutexpired",
+    "connectionerror",
+    "connection",
+    "timed out",
+    "network",
+    "sslerror",
+    "socket.gaierror",
+    "urlerror",
+    "httperror",
+    "credentials",
+    "unauthorized",
+    "permission denied",
+    "permissionerror",
+    "not installed",
+)
+
+
+def _run_t3_suite(timeout: int = 3600) -> subprocess.CompletedProcess:
+    env = dict(os.environ)
+    env["FILING_FETCH_E2E_DOWNLOAD"] = "1"
+    # SYSTEM-context fix (GP-009, 2026-09-08): the isolated-wiki adapter config
+    # resolves ${USERPROFILE}/Projects/... tokens and the download-tool gate
+    # checks ~/Projects, but under the SYSTEM account Path.home() is the system
+    # profile.  The suite therefore skipped every Sunday ("production download
+    # tools not found") and the weekly window could never accumulate an ok run.
+    # Derive the real profile from the repo location, exactly like the daily
+    # runner derives the Dropbox root.
+    profile = PROJECT_ROOT.parent.parent
+    if profile.is_dir():
+        env["USERPROFILE"] = str(profile)
+    return subprocess.run(
+        [sys.executable, "-B", "-m", "pytest", str(T3_SUITE), "-q", "--tb=short"],
+        capture_output=True, text=True, errors="replace", timeout=timeout,
+        env=env,
+    )
+
+
+def _tests_reached_a_verdict(out: str) -> bool:
+    """True when pytest reported at least one test that ran to a result."""
+    return any(int(count) > 0 for count in VERDICT_COUNTS.findall(out))
+
+
+def _suite_outcome(proc: subprocess.CompletedProcess) -> tuple[bool, str, str]:
+    """(ok, status, detail) — an all-skipped suite is BLOCKED, never a pass.
+
+    ``not-ok`` blames the code; ``blocked`` says the suite could not be evaluated
+    here (no credentials, no tool, nothing collected).  Both block the release gate.
+
+    HONEST LIMITS (B.VR903-01).  ``blocked`` is decided on EVIDENCE - an explicit
+    sentinel, pytest's own "no tests ran", or an environment-looking marker - and the
+    marker path is a HEURISTIC.  A product-side collection error can therefore be
+    reported as ``blocked`` ("fix the machine") when the code under test is what
+    broke; the persisted report is the authority, and the ``detail`` names the words
+    that matched so a human can check.  The first version of this function claimed a
+    real defect "must never be laundered into the environment did it" - that claim was
+    false and is withdrawn.  What IS guaranteed: a suite that produced any verdict is
+    never called ``blocked``, and both statuses block the gate.
+    """
+    out = (proc.stdout or "") + (proc.stderr or "")
+    lowered = out.lower()
+    if ENVIRONMENT_SENTINEL.lower() in lowered:
+        return False, "blocked", (
+            f"T3 suite declared it could not run here (sentinel "
+            f"{ENVIRONMENT_SENTINEL}; exit {proc.returncode})"
+        )
+    if proc.returncode == 0:
+        if "skipped" in out and "passed" not in out:
+            return False, "blocked", "T3 suite fully skipped (credentials/network missing)"
+        if not _tests_reached_a_verdict(out):
+            return False, "blocked", (
+                "T3 suite exited 0 but reported no test result (nothing was evaluated)"
+            )
+        return True, "ok", "T3 suite passed"
+    if not _tests_reached_a_verdict(out):
+        # pytest's own wording for "nothing was collected" (exit 5) is evidence in
+        # itself: no test was evaluated, so no marker is needed.
+        if "no tests ran" in lowered:
+            return False, "blocked", (
+                f"T3 suite collected no tests (exit {proc.returncode}) - nothing was "
+                "evaluated"
+            )
+        markers = [m for m in ENVIRONMENT_MARKERS if m in lowered]
+        if markers:
+            return False, "blocked", (
+                f"T3 suite could not run here (exit {proc.returncode}; environment-looking "
+                f"evidence: {', '.join(markers[:3])}) - no test reached a verdict.  This is "
+                "a heuristic: check the report before blaming either side"
+            )
+    return False, "not-ok", f"T3 suite exit {proc.returncode}"
+
+
+def _write_suite_report(ledger_path: Path, run_id: str,
+                        proc: subprocess.CompletedProcess, ok: bool,
+                        status: str, detail: str) -> str:
+    """Persist the suite's output beside the ledger; return the file NAME.
+
+    F-B01-10 (2026-09-13): the weekly ledger recorded ``not-ok`` / ``exit 1`` while
+    the subprocess output lived only in memory and ``report_path`` was a label with
+    no file behind it, so that failure could not be diagnosed from the record at
+    all.
+
+    The returned value is deliberately a bare file name, not an absolute path: the
+    ledger is a TRACKED artifact, so an absolute path would bake this machine's user
+    profile into the repository - the machine-scoped-constant class F-B01-9 is
+    about.  The report always sits next to the ledger, so the name resolves
+    unambiguously; the daily T2 runner records an absolute path only because its
+    report lives in a different directory tree.
+
+    ``argv`` is recorded as the script NAME plus arguments (B.VR903-05): under the
+    scheduled task the real argv[0] is an absolute path containing the user profile,
+    and this report is a tracked file.  An unwritable report is reported in the
+    returned value (B.VR903-06's sibling): the ledger must not silently name a file
+    that does not exist.
+    """
+    target = ledger_path.parent / f"weekly-run-{run_id}.log"
+    output = (proc.stdout or "") + (proc.stderr or "")
+    argv = [Path(sys.argv[0]).name, *sys.argv[1:]]
+    body = (
+        f"run_id={run_id}\n"
+        f"status={status} ok={ok} exit_code={proc.returncode}\n"
+        f"detail={detail}\n"
+        f"argv={argv}\n"
+        f"--- suite output, last {REPORT_TAIL_CHARS} chars ---\n"
+        f"{output[-REPORT_TAIL_CHARS:]}\n"
+    )
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(body, encoding="utf-8")
+    except OSError as exc:  # a diagnostic file must never break the assurance run
+        print(f"warning: could not persist the suite report: {exc}", file=sys.stderr)
+        return f"{target.name} (NOT WRITTEN: {type(exc).__name__})"
+    return target.name
+
+
+def _unique_run_id(ledger_path: Path) -> str:
+    """A run id that cannot collide with the ledger's current one (B-VR903-06).
+
+    The id is a second-resolution timestamp; two runs inside the same second used to
+    overwrite the report and make the ledger and the alert journal disagree about
+    what that id refers to."""
+    base = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    previous = (read_ledger(ledger_path) or {}).get("latest_run_id")
+    if previous != base:
+        return base
+    for suffix in range(2, 10):
+        candidate = f"{base}-{suffix}"
+        if previous != candidate:
+            return candidate
+    return f"{base}-{datetime.now(UTC).microsecond}"
+
+
+def run_weekly(ledger_path: Path, alert_path: Path) -> int:
+    run_id = _unique_run_id(ledger_path)
+    try:
+        proc = _run_t3_suite()
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        # B-VR903-06: a crash or a hang used to leave NO ledger, NO alert and NO
+        # report, so the previous (possibly green) run kept satisfying the gate for
+        # up to seven days with no trace of the failure.  Record it as a real run.
+        started = datetime.now(UTC).isoformat()
+        detail = f"T3 suite did not complete: {type(exc).__name__}: {exc}"
+        crashed = subprocess.CompletedProcess(args=[], returncode=124, stdout="",
+                                              stderr=detail)
+        triplet = {"revenue": _head(PROJECT_ROOT),
+                   "filing": _head(FILING_ROOT),
+                   "wiki": _head(PROJECT_ROOT.parent / "company-wiki")}
+        report = _write_suite_report(ledger_path, run_id, crashed, False, "not-ok", detail)
+        write_ledger(ledger_path, run_id, started, triplet, False, report)
+        append_alert(alert_path, {
+            "at_utc": started, "run_id": run_id, "status": "not-ok",
+            "reason": detail, "exit_code": 124,
+        })
+        print(f"run_id={run_id} ok=False status=not-ok detail={detail}", file=sys.stderr)
+        return 124
+    started = datetime.now(UTC).isoformat()
+    ok, status, detail = _suite_outcome(proc)
+    triplet = {"revenue": _head(PROJECT_ROOT),
+               "filing": _head(FILING_ROOT),
+               "wiki": _head(PROJECT_ROOT.parent / "company-wiki")}
+    report = _write_suite_report(ledger_path, run_id, proc, ok, status, detail)
+    write_ledger(ledger_path, run_id, started, triplet, ok, report)
+    if status != "ok":
+        append_alert(alert_path, {
+            "at_utc": started, "run_id": run_id, "status": status,
+            "reason": detail, "exit_code": proc.returncode,
+        })
+    print(f"run_id={run_id} ok={ok} status={status} detail={detail}")
+    if status != "ok":
+        # Task Scheduler must not record a success for a run that could not
+        # establish the gate (an all-skipped suite exits 0 on its own).
+        return proc.returncode or 1
+    return proc.returncode
+
+
+def cmd_register_weekly(_args: argparse.Namespace) -> int:
+    """Register via PowerShell Register-ScheduledTask (no password prompt).
+
+    Power/wake fix (0x800710E0, diagnosed 2026-09-05): explicit settings
+    allow any power source, wake the computer to run on schedule, and
+    StartWhenAvailable catches up a missed Sunday run on the next boot.
+    """
+    script = (
+        "$action = New-ScheduledTaskAction -Execute "
+        f"'{sys.executable}' -Argument '\"{Path(__file__).resolve()}\" run-weekly'; "
+        "$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At 04:30; "
+        "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
+        "-LogonType ServiceAccount -RunLevel Highest; "
+        "$settings = New-ScheduledTaskSettingsSet "
+        "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun "
+        "-StartWhenAvailable; "
+        f"Register-ScheduledTask -TaskName '{WEEKLY_TASK}' "
+        "-Action $action -Trigger $trigger -Principal $principal "
+        "-Settings $settings -Force | Out-Null"
+    )
+    proc = subprocess.run(
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+        capture_output=True, text=True, errors="replace", timeout=60,
+    )
+    if proc.returncode != 0:
+        print((proc.stderr or "register failed").strip(), file=sys.stderr)
+        return proc.returncode or 1
+    print(f"registered weekly task {WEEKLY_TASK}")
+    return 0
+
+
+def cmd_query_weekly(_args: argparse.Namespace) -> int:
+    status, detail = query_task_status(WEEKLY_TASK)
+    print(f"task={WEEKLY_TASK} status={status} detail={detail}")
+    return 0 if status == "registered" else 1
+
+
+def cmd_unregister_weekly(_args: argparse.Namespace) -> int:
+    proc = subprocess.run(
+        ["schtasks", "/delete", "/tn", WEEKLY_TASK, "/f"],
+        capture_output=True, text=True, errors="replace", timeout=60,
+    )
+    if proc.returncode != 0:
+        print((proc.stderr or "unregister failed").strip(), file=sys.stderr)
+        return proc.returncode or 1
+    print(f"unregistered {WEEKLY_TASK}")
+    return 0
+
+
+def cmd_verify_weekly(args: argparse.Namespace) -> int:
+    ledger = read_ledger(Path(args.ledger))
+    run_status, run_detail = freshness_status(ledger, max_age_hours=MAX_AGE_DAYS * 24)
+    ready, gate = release_gate(Path(args.ledger), max_age_hours=MAX_AGE_DAYS * 24)
+    print(f"last_run={run_status} ({run_detail})")
+    # release_gate comes from the shared ZR-902 machinery and words itself for the
+    # DAILY T2 loop (B-VR903-08); say which gate this is.
+    print(f"release_gate={ready} ({gate.replace('daily T2', 'weekly T3')})")
+    return 0 if run_status == "fresh" else 1
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Weekly T3 scheduling (ZR-903)")
+    parser.add_argument("--ledger", type=Path, default=WEEKLY_LEDGER)
+    parser.add_argument("--alerts", type=Path, default=WEEKLY_ALERTS)
+    sub = parser.add_subparsers(dest="command", required=True)
+    for name in ("run-weekly", "register", "unregister", "query", "verify"):
+        sub.add_parser(name)
+    args = parser.parse_args()
+    if args.command == "run-weekly":
+        return run_weekly(Path(args.ledger), Path(args.alerts))
+    if args.command == "register":
+        return cmd_register_weekly(args)
+    if args.command == "unregister":
+        return cmd_unregister_weekly(args)
+    if args.command == "query":
+        return cmd_query_weekly(args)
+    return cmd_verify_weekly(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

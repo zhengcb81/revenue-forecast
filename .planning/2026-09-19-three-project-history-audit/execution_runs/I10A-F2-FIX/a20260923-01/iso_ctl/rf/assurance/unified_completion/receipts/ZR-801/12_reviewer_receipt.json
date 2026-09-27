@@ -1,0 +1,58 @@
+{
+ "unit": "ZR-801",
+ "reviewer": "reviewer-zr801-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "139e224a25b4535f48cc3df5693e8d70115dda38d2825b782d780efda2124b6b",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr801_scenario_registry.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "7 passed in 0.34s (C1 registry; C2 authority; C3 families; C4 no duplicate; C5 documented)"
+  },
+  {
+   "command": "independent full registry audit + README §7 + git + receipt checks",
+   "exit_code": 0,
+   "result": "197 scenarios all unique; source new102=102/old95=95; tier distribution fully valid (T0..T4 combos, sum 197); families AR=9 BR=26 MINE=24 READ=12 REV=22 AUD=16 (incl AUD2); README §7 L131 records absorption; scripts/ clean; HEAD=928663a parent=f53a3f9; canonical 139e224a == recomputed; validate problems=[]; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "f53a3f95627714ea61fbae3c17462a0fc28f1e14",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "928663a61d7fa75c463554ddb8277e43bcc97278",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR801-REV-001",
+   "severity": "info",
+   "title": "C1 测试仅抽查前 20 条 tier",
+   "detail": "reviewer 已全量确认 197 条合法，断言真实性不受影响。"
+  },
+  {
+   "id": "ZR801-REV-002",
+   "severity": "info",
+   "title": "C5 README 实为 audit_review/README.md §7",
+   "detail": "位置核实无误。"
+  },
+  {
+   "id": "ZR801-REV-003",
+   "severity": "info",
+   "title": "state.json 中 ZR-801=triplet_green 属预期",
+   "detail": "closure 后才置 accepted。"
+  },
+  {
+   "id": "ZR801-REV-004",
+   "severity": "info",
+   "title": "AUD 家族含 AUD2- 前缀 8 条",
+   "detail": "被 startswith('AUD') 覆盖，无遗漏。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T20:56:03+00:00",
+ "canonical_hash": "71ae591824bcb7e8a5015794d13baf5c68829d3be8a5ef5aa6f0c892a5eca603"
+}

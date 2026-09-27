@@ -1,0 +1,10 @@
+arm=P4 expected_rc=3 actual_rc=3
+CHECK D1 OK :: oracle matches frozen fixture expectations AND independent rational recompute (14 metrics)
+CHECK D2 OK :: 3 frozen negatives + 2 extended controls all pass; zero denominator undefined, no epsilon
+CHECK D3 OK :: sample_errors.csv header-only with full per-sample column structure (0 rows, no averages-only)
+CHECK D4 OK :: 7 strata with n_companies/n_origins, all n_scorable=0, descriptive_only, no significance
+CHECK D5 OK :: n_pairs=0, interval=null with >=5 unsigned items, cluster=entity/block=origin
+CHECK D10 SKIP :: handoff.json not yet written (pre-finalization run)
+FAIL D6: confidence intervals must not be computed while thresholds unsigned
+FAIL D6: must register >=5 pending CI items
+RESULT INVARIANT_VIOLATION count=2

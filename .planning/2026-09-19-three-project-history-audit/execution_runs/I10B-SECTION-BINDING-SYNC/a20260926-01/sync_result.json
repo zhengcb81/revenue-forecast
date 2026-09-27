@@ -1,0 +1,231 @@
+{
+  "schema": "i10b_section_binding_sync_result/v1",
+  "attempt": "execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01",
+  "role": "implementer_section_sync",
+  "written_utc": "2026-09-26",
+  "oracle": {
+    "path": "execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/oracle.md",
+    "sha256_frozen": "e0a2f864d65508413f3a6efd563902b1fe39748ae9dfbc7e0585849a470921c8",
+    "bytes": 12099,
+    "utf8_no_bom": true,
+    "cr_bytes": 0,
+    "frozen_before_target_writes": true,
+    "freeze_order": "写 oracle.md → 复算 sha → 之后才写 dispatch.json / card_I-10-B.md"
+  },
+  "predicate": {
+    "source": "execution_v2/validate_execution_pack.py L21-L36（逐行照抄，判据 0 改动）",
+    "tool": "execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/recompute_section_binding.py",
+    "read_only": true,
+    "writes_validation_json": false,
+    "production_script_run": false,
+    "stale_definition": "sha256(section) != dispatch.json.cards[].source_section_sha256 ⇒ 'stale extracted card source <id>'",
+    "clone_definition": "card_*.md read_text(utf-8-sig).split('\\n\\n',1)[-1] != section ⇒ 'single-card body differs from source <id>'",
+    "section_definition": "source[start:end].strip()+'\\n'；start/next heading 用 ^#{2,3} <id>(?=\\s|[·—:：]) 定位；最后一个卡片段 end=len(source)",
+    "i10b_fragment_source": "execution_v2/model_cards.md（I-10-B 是该文件 32 个卡标题中的最后一个 ⇒ 段到文件尾）"
+  },
+  "before": {
+    "state": "OPEN2-C2-REGISTRATION 末尾追加后、本工位同步前",
+    "shas": {
+      "execution_v2/dispatch.json": {"sha256": "c63764d11de1bcef47574df9b5898fdb9379e16eb86b5dea4287af9018ae4768", "bytes": 663351},
+      "execution_v2/card_I-10-B.md": {"sha256": "4129871d7fc6bf8766cb68d0dcf8839799437d286292097e0b8432c21dc02e25", "bytes": 2938},
+      "execution_v2/model_cards.md": {"sha256": "cc24be67c06d250342d7624ad7d0190a21f67505317dc4e749d3e809deb0748d", "bytes": 171460},
+      "execution_v2/validation.json": {"sha256": "a14dbf14eac3f5fea215e120c49628fd4af64115e436ed3996d28058ef7767d5", "bytes": 175007},
+      "execution_v2/validate_execution_pack.py": {"sha256": "7841d014384b1a41da1ae50b3eb3e5515104e7da256bf2cf17889c726c70a03d", "bytes": 6556},
+      "execution_v2/model_cards.json": {"sha256": "34914037fdc2f56e9396811fccb8c5ec99cfd43b223c7c84fb9831255b4f0c0d", "bytes": 430795}
+    },
+    "section_bindings_total": 92,
+    "section_bindings_model_cards_md": 32,
+    "last_binding_card_of_model_cards_md": "I-10-B",
+    "stale_count": 1,
+    "clone_count": 1,
+    "stale_ids": ["I-10-B"],
+    "clone_ids": ["I-10-B"],
+    "errors_verbatim": [
+      "stale extracted card source I-10-B",
+      "single-card body differs from source I-10-B"
+    ],
+    "error_count": 2,
+    "rc_raw": 1,
+    "i10b_section_bytes": 8404,
+    "i10b_section_sha256_actual": "3ceb4692e0adf961cc98da8aa91da023ae58930adbe241cee1bd22f18e37e704",
+    "i10b_section_sha256_in_dispatch": "0ecb7a135b608444c1da25808c7ecc337c96511f2932b0401424faa2ac3ad4d7",
+    "i10b_card_body_chars": 1499,
+    "i10b_section_chars": 5402
+  },
+  "after": {
+    "state": "本工位同步后",
+    "shas": {
+      "execution_v2/dispatch.json": {"sha256": "93a54a50b050dace883675f7e462643433aec48eacb330d306e341630ac1555e", "bytes": 663351},
+      "execution_v2/card_I-10-B.md": {"sha256": "5bf5232613d0616cbc2d846b29032f7759ce6f2b6487ae44e72ccc7f83c53086", "bytes": 8735},
+      "execution_v2/model_cards.md": {"sha256": "cc24be67c06d250342d7624ad7d0190a21f67505317dc4e749d3e809deb0748d", "bytes": 171460, "unchanged": true},
+      "execution_v2/validation.json": {"sha256": "a14dbf14eac3f5fea215e120c49628fd4af64115e436ed3996d28058ef7767d5", "bytes": 175007, "unchanged": true},
+      "execution_v2/validate_execution_pack.py": {"sha256": "7841d014384b1a41da1ae50b3eb3e5515104e7da256bf2cf17889c726c70a03d", "bytes": 6556, "unchanged": true},
+      "execution_v2/model_cards.json": {"sha256": "34914037fdc2f56e9396811fccb8c5ec99cfd43b223c7c84fb9831255b4f0c0d", "bytes": 430795, "unchanged": true}
+    },
+    "section_bindings_total": 92,
+    "section_bindings_model_cards_md": 32,
+    "stale_count": 0,
+    "clone_count": 0,
+    "stale_ids": [],
+    "clone_ids": [],
+    "errors_verbatim": [],
+    "error_count": 0,
+    "rc_raw": 0
+  },
+  "stale_clone_count_2_to_0": true,
+  "fields_changed": [
+    {
+      "file": "execution_v2/dispatch.json",
+      "field": "cards[79] (id=I-10-B).source_section_sha256",
+      "from": "0ecb7a135b608444c1da25808c7ecc337c96511f2932b0401424faa2ac3ad4d7",
+      "to": "3ceb4692e0adf961cc98da8aa91da023ae58930adbe241cee1bd22f18e37e704",
+      "why": "段哈希由 model_cards.md 实际段内容现算；追加使段扩到文件尾 ⇒ 记录值失配（stale）。dispatch.json 是机器 JSON、值在数组中部，无法追加 ⇒ 唯一 64 位 token 就地替换。"
+    },
+    {
+      "file": "execution_v2/card_I-10-B.md",
+      "change": "末尾追加 5,797 字节（model_cards.md[165695:] 的 5,765 字节 + 32 个 CR，按本文件既有 CRLF 约定）",
+      "why": "clone 判据要求卡文正文 == 源段；源段已含追加节 ⇒ 按 T1-12 ① 只追加、既有字节 0 改动。"
+    }
+  ],
+  "prefix_unchanged_proof": {
+    "card_I-10-B.md": {
+      "preimage_sha256": "4129871d7fc6bf8766cb68d0dcf8839799437d286292097e0b8432c21dc02e25",
+      "preimage_bytes": 2938,
+      "postimage_sha256": "5bf5232613d0616cbc2d846b29032f7759ce6f2b6487ae44e72ccc7f83c53086",
+      "postimage_bytes": 8735,
+      "postimage_first_2938_bytes_sha256": "4129871d7fc6bf8766cb68d0dcf8839799437d286292097e0b8432c21dc02e25",
+      "prefix_bytes_unchanged": true,
+      "appended_bytes": 5797,
+      "appended_equals_model_cards_tail_lf_normalized": true
+    },
+    "dispatch.json": {
+      "preimage_sha256": "c63764d11de1bcef47574df9b5898fdb9379e16eb86b5dea4287af9018ae4768",
+      "postimage_sha256": "93a54a50b050dace883675f7e462643433aec48eacb330d306e341630ac1555e",
+      "bytes_before": 663351,
+      "bytes_after": 663351,
+      "differing_bytes": 58,
+      "differing_offset_range": [632979, 633042],
+      "semantic_diff": ["/cards[79]/source_section_sha256: 0ecb7a13… → 3ceb4692…"],
+      "semantic_diff_count": 1,
+      "json_reparse_ok": true,
+      "crlf_bytes_before_after": [14757, 14757],
+      "utf8_no_bom": true,
+      "why_not_appendable": "dispatch.json 是 build_dispatch.py 生成的机器 JSON：该字段位于 cards[79]（文件中部），JSON 键只能有一个值；末尾追加任何字节都改不了读取结果并会破坏结构。⇒ 属 oracle §4.1 认定的『必须就地改值的机器文件』，降级为最小改动（唯一 token 单点替换），前像全文保留在 preimage_dispatch.json。"
+    },
+    "model_cards.md": {
+      "sha256_before": "cc24be67c06d250342d7624ad7d0190a21f67505317dc4e749d3e809deb0748d",
+      "sha256_after": "cc24be67c06d250342d7624ad7d0190a21f67505317dc4e749d3e809deb0748d",
+      "bytes_before_after": [171460, 171460],
+      "unchanged": true,
+      "note": "触发源本体本轮 0 字节写入；其前缀（前 165,695 B = 855b5e2d…）为 OPEN2-C2-REGISTRATION 已证事实，本轮未触碰"
+    }
+  },
+  "red_green": {
+    "red_before": {"rc_raw": 1, "stale": 1, "clone": 1, "errors": ["stale extracted card source I-10-B", "single-card body differs from source I-10-B"]},
+    "green_after": {"rc_raw": 0, "stale": 0, "clone": 0, "errors": []}
+  },
+  "mutations": [
+    {
+      "id": "M1_wrong_sync_value",
+      "where": "%TEMP%/i10b_sync_a20260926/m1（生产树 0 变异）",
+      "what": "把 I-10-B.source_section_sha256 改回 0ecb7a13…（错误同步值）",
+      "rc_raw": 1,
+      "stale": 1,
+      "clone": 0,
+      "errors": ["stale extracted card source I-10-B"],
+      "expected_red_observed": true
+    },
+    {
+      "id": "M2_wrong_card_body",
+      "where": "%TEMP%/i10b_sync_a20260926/m2",
+      "what": "card_I-10-B.md 正文尾部增 1 行（MUTATION）",
+      "rc_raw": 1,
+      "stale": 0,
+      "clone": 1,
+      "errors": ["single-card body differs from source I-10-B"],
+      "expected_red_observed": true
+    },
+    {
+      "id": "M3a_remove_append_in_synced_state",
+      "where": "%TEMP%/i10b_sync_a20260926/m3a",
+      "what": "model_cards.md 截回 165,695 B（前像 855b5e2d…），dispatch/卡文保持已同步值",
+      "rc_raw": 1,
+      "stale": 1,
+      "clone": 1,
+      "errors": ["stale extracted card source I-10-B", "single-card body differs from source I-10-B"],
+      "expected_red_observed": true,
+      "note": "两条同时回来 ⇒ 同步值确实绑定在该追加上，不是恒绿"
+    },
+    {
+      "id": "M3b_remove_append_in_original_state",
+      "where": "%TEMP%/i10b_sync_a20260926/m3b",
+      "what": "追加前像 model_cards.md + 追加前 dispatch/卡文（= 追加前基线）",
+      "rc_raw": 0,
+      "stale": 0,
+      "clone": 0,
+      "section_error_count": 0,
+      "note": "段绑定回到 32 段 0 错基线；此时整体验证器的红来自另一类错误（产品源漂移，见 other_red_class）⇒ rc=1 的来源类别不同，红/绿结论未变"
+    }
+  ],
+  "original_script_runs_in_temp_copy": {
+    "allowed_by": "派单纪律 6『或在 %TEMP% 副本里跑』",
+    "location": "%TEMP%/i10b_sync_a20260926/{real_red,real_post,real_pre}/validate_execution_pack.py",
+    "production_validation_json_touched": false,
+    "arms": [
+      {"arm": "real_red（追加后 + 未同步 = 修复前生产态）", "rc_raw": 1, "error_count": 92, "stale_clone": 2},
+      {"arm": "real_post（同步后生产态）", "rc_raw": 1, "error_count": 90, "stale_clone": 0},
+      {"arm": "real_pre（追加前基线）", "rc_raw": 1, "error_count": 90, "stale_clone": 0}
+    ],
+    "caveat": "副本落在 %TEMP% ⇒ RF=P.parents[2] 指向临时根：非段绑定错误被布局性放大（broken link 2 / source binding 85 / model snapshot 3），且三臂完全相同；可归因于段绑定的差值恰为 2 → 0。三臂 rc 均为 1 ⇒ 验证器红/绿结论未变。"
+  },
+  "other_red_class": {
+    "what": "产品源漂移 'source binding changed or missing'（与段绑定无关，非本工位写入面）",
+    "production_validation_json_2026_09_21": {"error_count": 32, "all_are_source_binding": true, "stale_clone": 0, "document_hashes_model_cards_md": "855b5e2d06cc02a1c103316224a428fcfc7a1cc8fb3cfbf07f1f066a552855ab"},
+    "current_readonly_recompute_L69_L81": {"bindings": 121, "error_count": 57, "product": 56, "model_snapshot": 1, "note": "当前漂移是 2026-09-21 记录的 8 条去重错误的超集（old ⊆ new），即漂移在增长，且本工位 0 触碰"},
+    "conclusion": "该验证器在本工位之前即不通过；本工位只把段绑定类错误 2 → 0，不改变整体红/绿结论"
+  },
+  "fail_closed": {
+    "triggered": false,
+    "checked_conditions": [
+      "无需改 validation.json 就转绿（只读复算 + %TEMP% 副本即可取证）",
+      "无需改 model_cards.md 任何字节",
+      "无需改 validate_execution_pack.py 判据",
+      "dispatch 单 token 替换 + 卡文前缀不变 + model_cards.md 不变 + 段绑定 0 错 四条同时成立"
+    ],
+    "blocked": null
+  },
+  "boundary": {
+    "git_diff_HEAD_total_before_after": [3827, 3829],
+    "git_diff_non_planning_before_after": [0, 0],
+    "git_diff_delta_explained": "+2 = execution_v2/dispatch.json 与 execution_v2/card_I-10-B.md（均在 .planning 内）",
+    "git_status_command_run": false,
+    "git_writes": 0,
+    "network_requests": 0,
+    "writes_outside_planning": 0,
+    "production_validation_json_overwritten": false
+  },
+  "written_files": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/oracle.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/recompute_section_binding.py",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/preimage_dispatch.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/preimage_card_I-10-B.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/sync_result.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/sync_report.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/handoff.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_v2/dispatch.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_v2/card_I-10-B.md"
+  ],
+  "releases_nothing": true,
+  "not_done": [
+    "不解除 OPEN-2",
+    "不放行任何参数",
+    "不关任何 BLOCKED-*",
+    "不产生 ACCEPT",
+    "不改封盘 I-11-A 任何字节",
+    "不改 model_cards.md 既有行（本体 0 字节）",
+    "不改 validate_execution_pack.py 判据（判据若被认为有错：只登记不改）",
+    "不代签",
+    "不写五份计划文件",
+    "不跑生产树整脚本（validation.json 未被覆写）"
+  ]
+}

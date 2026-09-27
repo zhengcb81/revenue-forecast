@@ -1,0 +1,103 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ca05154d56301e9ce02eed2cf471a6fac7508add",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "6d1c07a3be0700fdff6bec4b10e2fce843d8e4fd5155005eae56d5edbf2df58a",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3",
+      "exit_code": 0,
+      "result": "HEAD=1c04684 (REV-001/002/004 delta fix), parent 2373c42 (initial impl); both real commits"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff 2373c42 1c04684",
+      "exit_code": 0,
+      "result": "Only the 2 reviewed files changed (+38/-4): _observation_key numeric require(); recompute_rating math.isfinite gate + caps high/medium require(); +3 regression tests; c3 match widened to 'score must be'"
+    },
+    {
+      "command": "git status --porcelain scripts/confidence_policy.py tests/test_zr712_confidence_policy.py; git cat-file -t 1c04684",
+      "exit_code": 0,
+      "result": "Clean tree; 1c046847a10c1d37d295fabc6de838f61474c42d is a real commit object == HEAD"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr712_confidence_policy.py -q --tb=short",
+      "exit_code": 0,
+      "result": "18 passed in 0.12s (15 original + 3 delta regression tests)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr708_backtest_reverify.py tests/test_scenarios_confidence.py tests/test_golden_behavior_lock.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "25 passed, 2 subtests passed in 1.27s (confidence behavior unchanged)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/confidence_policy.py tests/test_zr712_confidence_policy.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "Ran 2 tests, OK (NEW_FILE_MAX=10 still holds)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+      "exit_code": 0,
+      "result": "758 passed, 3 deselected, 106 subtests passed in 115.30s (755 + 3 new; no regressions)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-712/11_implementer_receipt.json (CWD assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed (triplets unchanged; result.revenue still references 2373c42 initial impl commit)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr712-reviewer\\probe_policy.py (v2, 45 adversarial probes)",
+      "exit_code": 0,
+      "result": "ALL ADVERSARIAL PROBES PASSED: original 36 probes unchanged; NEW b11/b11b REV-001 string/bool record value -> ForecastInputError 'value must be numeric' (never raw ValueError), b11c missing value still handled; c4/c4b/c4c REV-002 NaN/+inf/-inf score -> ForecastInputError 'finite number' (never silent 'low'); c5/c5b REV-004 caps missing medium/high -> ForecastInputError 'high and medium' (never KeyError), c5c None caps uses defaults"
+    },
+    {
+      "command": "grep -iE '紫金|矿业|company|mine|洛阳|华友|天齐|赣锋|宁德|catl|zijin' scripts/confidence_policy.py tests/test_zr712_confidence_policy.py",
+      "exit_code": 0,
+      "result": "No matches found (zero company/mine hardcoding retained after delta)"
+    }
+  ],
+  "created_at_utc": "2026-08-22T11:44:26+00:00",
+  "findings": [
+    {
+      "detail": "Delta commit 1c04684: _observation_key now validates value via require(isinstance(value,(int,float)) and not bool) before float(); string and bool values raise ForecastInputError 'accuracy record value must be numeric' instead of raw ValueError. Verified by new shipped test test_c2_non_numeric_record_value_fails_closed and reviewer probes b11/b11b; missing value (None) still handled (b11c, split key part None, no false split).",
+      "id": "REV-001",
+      "severity": "resolved",
+      "title": "detect_gaming_mutations raw ValueError on non-numeric record value — FIXED and verified"
+    },
+    {
+      "detail": "Delta commit 1c04684: score gate now includes math.isfinite(float(score)); NaN, +inf and -inf all raise ForecastInputError 'score must be a finite number'. Verified by new shipped test test_c3_nan_score_rejected and reviewer probes c4/c4b/c4c. No behavior change for finite scores (all c1 edge cases still pass).",
+      "id": "REV-002",
+      "severity": "resolved",
+      "title": "recompute_rating silently rated NaN as 'low' — FIXED and verified"
+    },
+    {
+      "detail": "Delta commit 1c04684: recompute_rating now require()s 'high' and 'medium' in caps before lookup; missing either raises ForecastInputError 'rating caps require high and medium' instead of KeyError. Verified by new shipped test test_c3_unvalidated_caps_missing_medium_rejected and reviewer probes c5/c5b; None caps still falls back to defaults (c5c).",
+      "id": "REV-004",
+      "severity": "resolved",
+      "title": "recompute_rating KeyError for caps missing 'medium' — FIXED and verified"
+    },
+    {
+      "detail": "validate_confidence_policy({'version':'1.0','weights':{}}) still passes and returns an empty weight map (no completeness check on the six legacy components). Not in the delta scope; card C1 requires defaults/overrides and non-negative weights only, so it remains accepted-as-designed. Not a blocker.",
+      "id": "REV-003",
+      "severity": "info",
+      "title": "Empty weights table accepted by validate_confidence_policy (open, non-blocking)"
+    }
+  ],
+  "kind": "reviewer",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1c046847a10c1d37d295fabc6de838f61474c42d",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_object_sha256": "37d7a3eca5ec319f3f6e4bcf5d0b4fb40ae7abdb7832f0a1fd17fecd04528bab",
+  "reviewer": "reviewer-zr712-independent",
+  "schema_version": 1,
+  "unit": "ZR-712",
+  "verdict": "accepted"
+}

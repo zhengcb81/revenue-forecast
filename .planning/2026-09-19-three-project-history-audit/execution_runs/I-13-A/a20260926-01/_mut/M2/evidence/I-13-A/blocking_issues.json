@@ -1,0 +1,161 @@
+{
+  "schema": "i13a_blocking_issues/1",
+  "card": "I-13-A",
+  "attempt": "execution_runs/I-13-A/a20260926-01",
+  "role": "implementer_i13a",
+  "status": "review_pending",
+  "order_note": "卡文 L14『先核hard_blocks，再看评分』——本件先于评分判完 7 条；评分见 buy_side_scorecard.json。",
+  "no_waiver_clause": "任一hard_block成立→blocked，禁止以总分或文字解释豁免（卡文 L19 逐字）",
+  "hard_blocks": [
+    {
+      "id": "HB1",
+      "text_verbatim": "实质性单位/币种/尺度/期间/总净额或并表范围错误。",
+      "disposition": "not_established",
+      "basis": [
+        "币种/尺度/期间/并表范围在交付面显式冻结：人民币元（吨/千克）、USD million、FY2025→FY2027 / FY2026→FY2027、四分部对外销售收入 + 抵销仅恒等式桥、Microsoft Cloud 不与 IC 并列（summary L15-L17、L93）",
+        "收入对账算术无差：584,049,229,264−234,970,146,412=349,079,082,852 差=0；四分部对外合计逐位（summary L111）",
+        "唯一的尺度/公式不自洽点（REALIZED_UNIT 分母 885,141 vs 合成 2,880,807）判 not_executable、传播值=null，未进入任何收入/情景/映射路径（parameter_mapping.json L305-L336、L324 value_state=not_executable_no_propagation）"
+      ],
+      "counter_evidence": "I-11-C 复审已就该不自洽登记 unverified-N2 并保持零传播（handoff L100-L104）；OPEN-2 红线只登记不消费——若后续有人把 124,248.63 或 38,175.95 任一值传播进路径（违反禁消费）⇒ 本条立刻转 established",
+      "reproducible_sample": "python -c \"import json;d=json.load(open('execution_runs/I-11-C/a20260926-01/parameter_mapping.json',encoding='utf-8'));r=[x for x in d['mapping_rows'] if x['parameter_id']=='ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027'][0];print(r['value_state'],r['new_value'])\" → not_executable_no_propagation {'low': None, 'base': None, 'high': None}",
+      "impact": {
+        "revenue": "0（零传播）",
+        "scenario": "0",
+        "decision": "该槽位不出数，买方按缺口处理"
+      },
+      "required_fix": "OPEN-2 裁定系数来源 + 分母 885,141 权威推导或算术更正（CN-ZIJIN-AR2025 产销量表回源，会计/行业面）"
+    },
+    {
+      "id": "HB2",
+      "text_verbatim": "重要事实无可核原文、hash错、源实际读取未证实或信息泄漏。",
+      "disposition": "not_established",
+      "basis": [
+        "紫金 CN-ZIJIN-AR2025 sha256 01819e1c…343d + p327/p328/p44/p56 + published_at=available_at=2026-03-20（summary L15）",
+        "微软 US-MSFT-10K-FY2026 + table 74/76 + 2026-07-29（summary L17）",
+        "小米 HK-XIAOMI-AR2025 sha ffd73376…da7c + p.21；I-10-A decode 272,511/0 unmapped；源在 I-11-A attempt 不可读处**显式 blocked-缺位、零主张**，不造 capture（summary L16、L131）",
+        "u-N4（store 内 MSFT doc_sha256 63 位）：同件同时给出 I-07-B 实测 64 位值与『转录层缺陷』定性，源身份可核（summary L17、L104；verification L52）"
+      ],
+      "counter_evidence": "字面存在一处 hash 记录错误（store 63 位）——**只登记不更正（store 只读）**；若买方从严读作『hash错』字面即成立，则本条转 established、分类不变（仍 blocked，叠加 HB3）。无信息泄漏：未来信息/未公开信息零主张",
+      "reproducible_sample": "grep -n 'u-N4' execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md → L104（63 位 vs 64 位对照）",
+      "impact": {
+        "revenue": "0（源身份以 I-07-B 实测为准，未用错误值计算）",
+        "scenario": "0",
+        "decision": "买方核源时须用 64 位实测值"
+      },
+      "required_fix": "store 侧 63 位转录缺陷由有权方勘误（本工位只读不可改）；小米披露日 gap-U2 补登记；gap-U3/U4 载体定位或确认缺位"
+    },
+    {
+      "id": "HB3",
+      "text_verbatim": "存量桥、收入对账、产销/供需约束失败且未获明确适用性裁决。",
+      "disposition": "not_established",
+      "reading": "fail-closed 从严读法（派单：fail-closed；卡文：禁止以总分或文字解释豁免）",
+      "basis": [
+        "① 库存桥/量恒等式未闭合且容差未签：parameter_mapping.json L530「量恒等式约束未闭合：BLOCKED-6b/OPEN-11 库存桥 154 千克容差未签（CP L123）——映射算术可执行，传播用途受该未签约束限制（登记交有权方）」；L596「同铜：BLOCKED-6b」；铜/金两行 value_state=mapped_not_released 却带未签约束（L521、L587）",
+        "② 两份上游 handoff 均记该族阻断『未解』：I-07-E/handoff.json L114-L121「BLOCKED-6a/6b/6c、BLOCKED-NEEDS-ORIGIN-BYTES 未解（不解除）」；I-11-C/handoff.json L230-L235「BLOCKED-6b/OPEN-11（库存桥 154 千克未签——量恒等式约束未闭合，登记不阻断映射算术）」",
+        "③ H4 口径桥 269t/534kg『闭合不了』；§三十六 追加支（残差≤量级上界 2,039 kg 且方向一致 ⇒ 视为已解释）已由 owner 授权，但『修订后重跑 Q2 → 会签』尚未执行 ⇒ 适用性裁决在应用层未落地（I-11-C/handoff.json L156-L159「修订授权≠会签完成」；OWNER_DECISIONS §三十六 L820-L848）",
+        "④ 6b 整条是否转 accepted 按 ruling_6b L110 另判 —— 在本站授权回源面内未见该裁决落地（I-11-C/handoff.json L161-L164；I-07-E summary L48『store state=unquantified（6b 路径(c)）』）"
+      ],
+      "counter_evidence": [
+        "收入对账恒等式差=0 且 ACCT R1/R3 已签（τ=1 元）——收入对账支不失败（summary L111、L48）",
+        "产销主恒等式逐位闭合：铜 878,180+6,763=884,943；金 82,743+418=83,161（summary L43-L44）",
+        "受影响参数全部 mapped_not_released、零传播：params_released=false、store low/base/high 全 null（I-11-C handoff L175-L176；parameter_mapping L9）",
+        "上游两站复审均按『登记不阻断算术/ACCEPT（带 P2/P3）』接受（I-11-C handoff L188-L190、L318-L327）",
+        "H4 支已有 owner 明文适用性裁决（§三十六），只是应用未跑完"
+      ],
+      "reproducible_sample": "grep -n '154 千克\\|量恒等式约束未闭合' execution_runs/I-11-C/a20260926-01/parameter_mapping.json → L530/L596；grep -n 'BLOCKED-6a/6b/6c' execution_runs/I-07-E/a20260926-01/handoff.json → L118；python -c \"import json;d=json.load(open('execution_runs/I-11-C/a20260926-01/parameter_mapping.json',encoding='utf-8'));print([r['carve_out'] for r in d['mapping_rows'] if r['parameter_id'] in ('ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027','ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027')])\"",
+      "impact": {
+        "revenue": "铜 884,943 吨 / 金 83,161 千克是量×价收入路径（含 OPEN-2 被禁的 REALIZED_UNIT 分母 = 884,943+83,161×24）的直接输入；库存桥容差未签 ⇒ 一旦放行，矿产品量价收入基线的可核性不成立（当前零传播，故已交付数值影响=0）",
+        "scenario": "EA-1 量带 [0.9,1.1] 与 EA-6 S-VOL-PRICE 联动档建立在未签的量恒等式上；H4 口径桥未跑完 ⇒ 内档 [0.95,1.05] 的适用性未定",
+        "decision": "买方无法确认数量驱动的收入构建可靠 ⇒ 不得据以形成任何放行/投资判断"
+      },
+      "required_fix": "① 有权方落定 ruling_6b L110（154 千克容差签署或否决）并同步 OPEN-11；② 按 §三十六 重跑 H4 Q2 会签（量级上界折算式 + 单价来源可核）并如实登记翻转事实；③ 二者落地后由独立买方 reviewer 复核本条是否转 not_established ⇒ 分类按规则机械重算",
+      "ruling_authority": "独立买方 reviewer（卡文 L5 Owner 面）+ 有权方（ruling_6b / H4 会签）；本站不自裁、不豁免"
+    },
+    {
+      "id": "HB4",
+      "text_verbatim": "参数冒充披露、管理层目标冒充独立证据、同一驱动双计。",
+      "disposition": "not_established",
+      "basis": [
+        "管理层目标未冒充独立：management_target_is_not_independent=true，105 吨/120 万吨仅作达成率情景对照上界（summary L81、L47；parameter_mapping L797 carve_out）",
+        "参数未冒充披露：全部数值标 proposed_not_released/mapped_not_released；124,248.63 标『推导值非披露原文』并 registered_not_consumed（summary L36、L143）",
+        "双计审查逐条完成：E1 库存释放仅销量通道 / E2 系数量侧一次 / E3 计划值仅对照 / E4 其他收入单列一次 / E5 抵销仅恒等式桥 / E6 Cloud↔IC PROHIBITED_CO_USE / E7 三分部建模集团增速不用（summary L86-L87）"
+      ],
+      "counter_evidence": "E1-E7 为实现站自检 + I-11-C 复审复核；独立买方复核未做（本卡即该复核的实现位）",
+      "reproducible_sample": "grep -n 'E1\\|PROHIBITED_CO_USE' execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md → L87",
+      "impact": {
+        "revenue": "0",
+        "scenario": "0",
+        "decision": "无"
+      },
+      "required_fix": "无（保持隔离与一次性复用登记即可）"
+    },
+    {
+      "id": "HB5",
+      "text_verbatim": "伪造模型运行、生产接线、下载/索引/发布回执或以文件名替代实际行为。",
+      "disposition": "not_established",
+      "basis": [
+        "门 0 与各校验器均有原始输出与 rc 留档（I-07-E handoff L22-L26、L65-L83；本卡 oracle §0）",
+        "无发布回执主张：formal_publication_slot=blocked（summary L4、L134）",
+        "合成示例数隔离机检：真实数值字段出现次数=0（summary L115）"
+      ],
+      "counter_evidence": "本站未进入产品仓/生产面（git 写=0、禁 git status）",
+      "reproducible_sample": "grep -n 'synthetic_quarantine_enforced' execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md → L6、L115",
+      "impact": {
+        "revenue": "0",
+        "scenario": "0",
+        "decision": "无"
+      },
+      "required_fix": "无"
+    },
+    {
+      "id": "HB6",
+      "text_verbatim": "未通过适用模型公式与披露资格，却以正式预测交付。",
+      "disposition": "not_established",
+      "basis": [
+        "非正式交付：formal_publication_slot=blocked、params_released=false、releases_nothing=true（I-07-E handoff L8-L13）",
+        "资格面如实分列：formula M01-M31 accepted_scoped（不外推）、disclosure_adaptation 4 case 已签 + 2 case 不授予（summary L134、L130）",
+        "13 行 mapped_not_released + 5 行零传播（parameter_mapping L1215、L9）"
+      ],
+      "counter_evidence": "研究草稿 = 卡文 L10 允许的形态；正式发布资格明确未验证（须另行真实验证）",
+      "reproducible_sample": "python -c \"import json;d=json.load(open('execution_runs/I-13-A/a20260926-01/handoff.json',encoding='utf-8'));print(d['params_released'],d['status'])\" → False review_pending",
+      "impact": {
+        "revenue": "0",
+        "scenario": "0",
+        "decision": "无（未交付正式预测）"
+      },
+      "required_fix": "无"
+    },
+    {
+      "id": "HB7",
+      "text_verbatim": "把未验证概率、回测提升或准确性作为已经成立的结论。",
+      "disposition": "not_established",
+      "basis": [
+        "accuracy=unproven 且明写不授予样本外准确性、归后继 I-12（I-07-E handoff L14、summary L133）",
+        "情景带不称概率/置信：低高档只作情景，无 80%/90% 覆盖主张（summary L71、L88）",
+        "无回测提升主张：I-12 未做、准确性 F 未派（I-07-E handoff L135、L153-L158 not_dispatched）"
+      ],
+      "counter_evidence": "管理层目标达成率情景为情景对照，不作准确性证据（summary L81）",
+      "reproducible_sample": "grep -n 'unproven' execution_runs/I-07-E/a20260926-01/handoff.json → L14",
+      "impact": {
+        "revenue": "0",
+        "scenario": "0",
+        "decision": "无"
+      },
+      "required_fix": "无（准确性结论只能由 I-12 完成后另行给出）"
+    }
+  ],
+  "established_hard_blocks": [
+    "HB3"
+  ],
+  "classification_impact": {
+    "per_rule": "任一硬阻断→blocked（oracle §2.3）",
+    "result": "blocked",
+    "card_stop_triggered": true,
+    "not_dispatched": [
+      "I-13-B"
+    ],
+    "accuracy_caveat": "该 blocked 不以『准确性未证明』为由（卡文 L20 禁止）；accuracy=unproven 单独不否定研究草案"
+  },
+  "residual_disclosure": "残余不隐藏（§三十四 L758）：HB3 的反证与 overturn 条件同登记；HB2 的字面 hash 缺陷同登记；两条均交独立买方 reviewer 裁定，本站不自裁。",
+  "score_card_ref": "execution_runs/I-13-A/a20260926-01/evidence/I-13-A/buy_side_scorecard.json"
+}

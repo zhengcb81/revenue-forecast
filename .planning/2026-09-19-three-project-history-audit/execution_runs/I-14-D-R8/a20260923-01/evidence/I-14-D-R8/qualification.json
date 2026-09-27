@@ -1,0 +1,76 @@
+{
+    "card": "WC-1",
+    "attempt": "execution_runs/I-14-D-R8/a20260923-01",
+    "formula": {
+        "state": "accepted_scoped",
+        "state_before": "review_pending",
+        "derivation": "carrier verdict (accepted_scoped, N=1 independent reviewer) transcribed by this landing; no re-derivation, no self-signing",
+        "formula": "state = f(status_authority.verdict) where status_authority = reviewer_report.md sha256 57033339…ca44; implementation-side fields (implementer_signed/disclosure_adaptation/accuracy) unchanged"
+    },
+    "mirrors": {
+        "handoff_json_status": "accepted_scoped",
+        "handoff_json_status_before": "review_pending",
+        "binding_json_status": "review_pending (NOT rewritten — historical pre-verdict value; binding status flip is not this carrier's authority)",
+        "handoff_md_status": "review_pending (original implementer carrier, untouched, sha256 4eb20f26…)",
+        "live_status_carriers": [
+            "handoff.json.status / status_authority",
+            "evidence/I-14-D-R8/qualification.json.formula.state (this file)"
+        ]
+    },
+    "status_authority": {
+        "carrier": "reviewer_report.md",
+        "sha256": "57033339620bdf8085ec647bb0c049a41ebf20af62390f626148155bae44ca44",
+        "bytes": 27918,
+        "sidecar_sha256": "704ac4148e1609673f5f1f7673e851e23fc65326af8e837c6d3f5a69494b23af",
+        "sidecar_bytes": 85,
+        "verdict_line_range": "L17-18",
+        "findings_line_range": "L325-354",
+        "collision_line_range": "L284-305",
+        "scope_line_range": "L307-323",
+        "N": 1,
+        "transcribed": true
+    },
+    "collision_sequence_mirror": {
+        "source": "reviewer_report.md §8 (L284-305), parent-adjudicated",
+        "sequence": [
+            "1. CW-GATE-UNBLOCK-2 split diff lands FIRST",
+            "2. WC-1 K1/K2 mechanical re-anchor into the split structure",
+            "3. complexity re-measure / targeted re-split if needed",
+            "4. final ratchet green"
+        ],
+        "grounding": "CW-GATE-2 changes.diff 66831 B includes observability.py; RC-2b complexity 27 → 6 split DONE pending re-verify + mutation",
+        "landing_constraint": "changes.diff is the merge-wave CONTENT layer landing AFTER the CW-GATE-2 split; mechanical re-anchor REQUIRED"
+    },
+    "f_mirror": {
+        "F-REV-R8-01": "INFO bookkeeping — register measurement-timing drift; row-level verification holds at each point; note recorded in decision.md erratum (before sha 21254d54… → after bb540ed3…)",
+        "F-REV-R8-02": "INFO bookkeeping — 34 REM-79 carrier-prose hits = REM-94 append-only track, NOT a gate; reviewer report 0 violations",
+        "F-REV-R8-03": "INFO minor — attempt-1 sweep stdout lacks paired .rc.txt; archive nit",
+        "F-REV-R8-04": "INFO tooling — nl.strip(\"\\r\") lossy newline field; content shas unaffected",
+        "F-REV-R8-05": "INFO positive — freeze-first timestamp-anchored pre-run-pin c6cbf869… embedded build_r8.py@23:39:56 < first RED@23:40:52 < correction@23:48"
+    },
+    "merge_content_layer_mirror": {
+        "changes_diff_sha256": "baec3153e853ae8eb20c7683c5c508d1336559e70d2b61e061ed11cc4e0a6925",
+        "changes_diff_bytes": 9161,
+        "hunks": "6 (K1 const+func, K2 auth) × 2 targets; bodies byte-identical across targets",
+        "apply_verification": "git apply --check rc 0 + apply rc 0 on fresh scratch copies of both targets → r6 after 90b3fdc3…/45774, production after 081fdf5e…/45735 (== claimed); grafted production tree ran both instruments GREEN",
+        "applied": false,
+        "layer": "merge-wave CONTENT layer, landing after CW-GATE-UNBLOCK-2 split with mechanical re-anchor REQUIRED"
+    },
+    "verdicts_mirror": {
+        "REM-06": "fixed-with-rgm (K1)",
+        "R3-05": "fixed-with-rgm (K2)",
+        "R5-08": "fixed-with-rgm (record-level)",
+        "R3-07": "closed-now-with-proof (sealed handoff_r3.json 3e9648c8… untouched; R3b asymmetry declared)"
+    },
+    "counts_mirror": {
+        "rule_rows": "95 → 113",
+        "oracle_cases": "44 → 61",
+        "rule_rc": "3 / negative BY DESIGN (no rc0-claim-for-rule anywhere — grep verified)"
+    },
+    "implementation_fields": {
+        "implementer_signed": false,
+        "disclosure_adaptation": "unmapped",
+        "accuracy": "unproven"
+    },
+    "json_reparse": "verified after write (ConvertFrom-Json parse rc 0)"
+}

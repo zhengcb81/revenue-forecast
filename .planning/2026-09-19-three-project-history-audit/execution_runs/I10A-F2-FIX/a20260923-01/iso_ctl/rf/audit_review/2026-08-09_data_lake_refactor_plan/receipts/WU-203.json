@@ -1,0 +1,14 @@
+{
+  "wu_id": "WU-203", "plan_version": "2.1-full-refactor-execution-cards",
+  "owner": "company-wiki gap/resolver contract（planning 契约参考）+ filing request tests",
+  "reviewer": "pending", "status": "implemented → pending review",
+  "baseline_commit": {"revenue": "20a6b33", "filing": "8714a66", "wiki": "111f214"},
+  "allowed_files": ["audit_review/2026-08-09_data_lake_refactor_plan/**"],
+  "actual_changed_files": ["tools/reuse_latest_policy.py", "tools/tests/test_reuse_latest_policy.py (11 tests)", "adr/WU-203-reuse-latest.md", "receipts/WU-203.json"],
+  "red_test_ids": ["test_exact_valid_never_triggers_discovery", "test_latest_covered_period_not_in_gap", "test_authorization_stale_hash_invalid", "test_authorization_expired_invalid", "test_canonical_gap_hash_deterministic_and_binds_plan"],
+  "focused_commands": ["python -m pytest tools/tests/test_reuse_latest_policy.py -q（11 passed）"],
+  "mutation_proof": [{"mutation_id": "M-EXACT", "description": "exact 调 discovery", "expected_failure_test": "test_exact_valid_never_triggers_discovery", "observed_failure": "exact_decision 返回非 REUSED", "revert_proof": "契约函数恒定"}, {"mutation_id": "M-GAP", "description": "covered period 入 missing", "expected_failure_test": "test_latest_covered_period_not_in_gap", "observed_failure": "gap 含 covered", "revert_proof": "集合差语义恒定"}],
+  "network_calls": 0, "download_calls": 0, "parser_calls": 0, "llm_calls": 0,
+  "external_write_calls": 0, "canonical_write_calls": 0,
+  "reviewer_findings": [], "admission_decision": "pending"
+}

@@ -1,0 +1,38 @@
+# probe_f12.py:65 correction (delivered by WC-4; I-09-C sealed bytes NOT edited)
+
+**Target (sealed, sha-bound in this card's binding):**
+`.planning\2026-09-19-three-project-history-audit\execution_runs\I-09-C\a20260922-01\harness\probe_f12.py`
+sha256 = `0f6e7aa4b6be03ab…` (full value in `binding.json` pin `i09c_probe_f12_line65`)
+
+**Defect (as ruled by the I-09-C reviewer, `reviewer_report.md:46`):** the C arm
+(`stdout = regular file`) reuses arm B's `err` variable for its `stderr` field,
+so `pipe_controls.json`'s `C_stdout_to_file.stderr` holds B's stale text. The
+returncodes A/B/C are each collected in their own branch and are correct; only
+the C.stderr *label* is wrong.
+
+**Why not edited in place:** I-09-C is a sealed attempt (`handoff.json` /
+`reviewer_report.md` pin its bytes; project discipline = sealed carriers are
+corrected by later carriers, never rewritten). This card therefore ships the
+one-line correction here, exactly as register §八十四 F12 row says "随修
+probe_f12.py:65" — the parent applies it if/when a superseded copy of the
+harness is re-carried.
+
+```diff
+--- a/harness/probe_f12.py
++++ b/harness/probe_f12.py
+@@ -62,7 +62,7 @@
+     with out_file.open("wb") as fh:
+         p = subprocess.run(base, cwd=str(ISO_RF), env=env, stdout=fh,
+                            stderr=subprocess.PIPE, timeout=180)
+     results["C_stdout_to_file"] = {
+         "raw_returncode": p.returncode,
+         "stdout_file": str(out_file),
+-        "stderr": (err or b"").decode("utf-8", "replace")[:200],
++        "stderr": (p.stderr or b"").decode("utf-8", "replace")[:200],
+     }
+```
+
+**Effect of the correction on the frozen record:** none for the F12 attribution —
+A=0 / B=120 / C=0 returncodes and the `OSError[Errno 22]` stderr fingerprint are
+unchanged; only arm C's (empty) stderr is reported truthfully instead of B's
+stale copy.

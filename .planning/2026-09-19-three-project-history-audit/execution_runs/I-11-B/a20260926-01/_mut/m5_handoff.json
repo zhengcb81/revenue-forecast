@@ -1,0 +1,84 @@
+﻿{
+  "schema": "i11b_handoff/1",
+  "card": "I-11-B",
+  "attempt": "execution_runs/I-11-B/a20260926-01",
+  "role": "implementer_i11b",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "objective": "校准参数幅度和联合情景（card_I-11-B.md L11-L16 四动作）；开工门槛按 OWNER_DECISIONS §三十四 改判",
+  "authorized_by": {
+    "owner_decision_verbatim": "OWNER_DECISIONS.md §三十四（L745-L780，2026-09-26 15:4x 选项式问答原话）：owner 选择「A」；L757「改判 I-11-B 的开工门槛 —— 以 MERGE 七条当前 5✅ + 2❌ 现状开工；i11b_unblocked 的语义从『7/7 才开』改为『owner 明文许可开工』」；L758「C3/C5 的残余不丢、不隐藏 —— 列为 I-11-B 开工后的并行欠账，每项在卡内载体以 expert_assumption 或 unverified 形式登记」",
+    "unlock_condition_1_verbatim": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json i11b_unlock_conditions[0]：「≥1 条命题在新版本上由非实现者 reviewer 写入 decision.decision_sha256 并达 approved_frozen（或 owner 明文改判开工门槛）」—— 本节即逃生口后半句的行使（前半句亦已由 I11A-HYP-APPROVE 满足，双路径成立）",
+    "card_face_L5": "Parent：I-11；状态：planned；Owner：行业/会计reviewer决策，弱模型执行已签规则；依赖：I-11-A、I-10-A。",
+    "card_face_L7_L9": "前提：I-11-A命题已批准；I-10-A已为实际采用的公司/分部/模型签署披露适配口径。",
+    "prerequisites_verified": {
+      "I-11-A": "execution_runs/I-11-A/a20260919-01/handoff.json L317 status=accepted_scoped（唯一 attempt = 卡级最新；父勘误：派单所称 a20260922-02 不存在，系 I-06-A 误记）",
+      "I-10-A": "execution_runs/I10A-DISCLOSURE-ADAPT-SIGN/a20260925-01/handoff.json c7_status=met · signed_count=4 · decision_sha256=86d0a80e3de76325ba4ac12376c7beb40770e063f2b77e8af6ee104e47c6f22b"
+    }
+  },
+  "gate0_passed": true,
+  "gate0_raw_output": "=== GATE0 BEGIN (I-11-B/a20260926-01) ===\ncwd=C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\ngate0 probe I-11-B a20260926-01 write-readback-delete\n--- step3 delete ---\ndeleted_gone=True\n=== GATE0 END ===",
+  "gate0_note": "写+回读+删除三步均本会话自探（另有 17:14:22 首探同结论）；零提权、零破坏性替代；探针已删",
+  "seven_conditions_status": [
+    {"id": "C1", "status": "met", "sha": "decision_sha256=4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f", "source": "execution_runs/I11A-HYP-APPROVE/a20260925-01/handoff.json (af4130bb6c67a8e6/19,481B) + hypotheses_v2.json (32c22208573a71d5/55,213B): approved_frozen_count=1 (H-CN-ZIJIN-SEG-01)"},
+    {"id": "C2", "status": "met", "sha": "hypotheses_v3.json=b2063ac8533a96ba/61,231B; handoff=ae67e2b9fda61942/21,226B", "source": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01: c2_branch2_discharged=true; 4 新 parameter_id 已注册 model_cards+hypotheses_v3; parameter_id_count=18"},
+    {"id": "C3", "status": "not_met", "sha": "OPEN3-E1-ORIGIN-BYTES-R2 handoff=见 residuals; OPEN-3-ACCT-R2 handoff=291cb50725404357/17,984B", "source": "origin 62,953B ✅(cf84c29048ab314e…) · B2 晋升父对账 ✅ · ACCT-R2 ✅(E1=BLOCKED-PARTIAL/S1/4 语料降 E3) · IND-r2 在跑（目录空）"},
+    {"id": "C4", "status": "met", "sha": "S3=df5b368c26192499 · S4=88e12c72621da52d · S5-ACCT=5609ac467c82de0b · S5-IND=b7fc61c5a2668f17（均为 handoff.json sha256 前 16 位）", "source": "S3 readable(5/5 锚) · S4 accepted_scoped · S5 会计 GRADED · S5 行业 PASS"},
+    {"id": "C5", "status": "not_met", "sha": "BLOCKED6C=9cca874fb8ab743a · OPEN6H4=24292c7db69a9dbe · OPEN6B-R2-REVERT=758aa03fdcbf94c2 · OPEN6H2=7be2122a75de16c6（handoff.json sha256 前 16 位）", "source": "6c ✅accepted_scoped · H4 ⚠️残差 269t/534kg 闭合不了 · 6b 路径(c) 已执行 unquantified（整条归 ruling_6b L110 另判）· H2 交付仍 still_blocked(0/3)"},
+    {"id": "C6", "status": "met", "sha": "handoff=69fcc785e45abd37/8,703B", "source": "execution_runs/I11A-OPEN11-IND/a20260924-01: cross_period_availability=available_verified_locally_two_consecutive_periods"},
+    {"id": "C7", "status": "met", "sha": "decision_sha256=86d0a80e3de76325ba4ac12376c7beb40770e063f2b77e8af6ee104e47c6f22b", "source": "execution_runs/I10A-DISCLOSURE-ADAPT-SIGN/a20260925-01: c7_status=met · disclosure_adaptation_signed_count=4"}
+  ],
+  "seven_conditions_summary": "实测 5✅(C1/C2/C4/C6/C7) + 2❌(C3/C5)，与 §三十四 现状一致；开工门槛 = owner 明文改判（非 7/7）",
+  "c3_c5_residuals": [
+    {"id": "C3-①", "item": "origin 字节", "registration": "resolved", "detail": "62,953B 已落（origin_bytes.bin sha cf84c29048ab314e…）；但 E1 等级=BLOCKED-PARTIAL，字节层 ✅ ≠ E1 解锁"},
+    {"id": "C3-②", "item": "B2 晋升", "registration": "verified_by_parent", "detail": "父对账：晋升已完成（dayu sec_downloader.py=74,543B/4684933e…、cw dayu_cli_adapter.py=25,328B/32ef1165…，Copy-Item 单步覆盖，committed=false）；B2-PROMOTION handoff 的 MISSING 为事故时点旧值；本工位无产品仓读面，状态为父证"},
+    {"id": "C3-③", "item": "ACCT-R2 定级", "registration": "resolved", "detail": "RULED 但 e1_level=BLOCKED-PARTIAL、s_level=S1、4 份语料降 E3（8 条引文作废）；'已裁定'≠'通过'，等级即 fail-closed 结果"},
+    {"id": "C3-④", "item": "IND-r2", "registration": "resolved", "detail": "在跑未归（OPEN-3-IND-R2/a20260926-01 目录空）"},
+    {"id": "C3-⑤", "item": "MSFT 六参数/新两分部参数/HK 参数", "registration": "resolved", "detail": "维持不放行（OPEN-3/OPEN-5）；MSFT_MICROSOFT_CLOUD、MSFT_LICENSING_VS_CLOUD 本卡显式拒绝出数（EA-7）"},
+    {"id": "C5-①", "item": "6c threshold_review_status 落地", "registration": "resolved", "detail": "accepted_scoped 带 2×P2+3×P3，非 clean accept"},
+    {"id": "C5-②", "item": "H4 口径桥", "registration": "resolved", "detail": "残差 269 吨（铜）/534 千克（金）未逐行闭合，金在内/外档翻转 ⇒ 冻结判据 Q2 fail-closed；countersigned=false；会签前不得升 reviewed、不得触发任何动作"},
+    {"id": "C5-③", "item": "6b 恒等式容差", "registration": "resolved", "detail": "路径(c) 已按 revert_rule 退 unquantified；R2（金 154 千克）NOT_SIGNED；整条 BLOCKED-6b 状态归 ruling_6b L110：须新建 OPEN6B-TOLERANCE-RULING-R2 后由 owner/编排层重判"},
+    {"id": "C5-④", "item": "H2 基准", "registration": "resolved", "detail": "交付但 still_blocked；3 条 pjr 完成 A-6.3 全套 = 0/3"}
+  ],
+  "residual_red_line": "以上 9 项无一写作'已解'；expert_assumption 只承接校准幅度判断，不冲销任何 BLOCKED（§三十四 L758 + fail-closed）",
+  "dispatch_discrepancies_registered": [
+    {"id": "unverified-D1", "registration": "erratum_recorded", "detail": "派单称 I-11-A 卡级最新=a20260922-02 —— 不存在；父勘误：I-11-A 唯一 attempt=a20260919-01/accepted_scoped（父误记 I-06-A 的卡级最新）"},
+    {"id": "unverified-C3b", "registration": "verified_by_parent", "detail": "派单 C3-② ✅ vs B2-PROMOTION handoff blocked —— 父对账后改记：晋升已完成，handoff 为事故时点旧值"}
+  ],
+  "four_actions_done": {
+    "action_1": "方法选择+依据+样本：calibration_plan.json action_1_method_selection + 各参数 action1_calibration（contract arithmetic 优先；历史经验限 FY2025/FY2024；外部可比未用、网络未用；缺数据全部 expert_assumption 承接）",
+    "action_2": "low/base/high+单位+起止年份+原值→新值+转换公式：18 槽位逐条（14 出数 proposed_not_released + 4 显式拒绝出数维持 null）；管理层目标仅作情景对照，management_target_is_not_independent=true",
+    "action_3": "dependency_control：7 共享驱动 + 7 事件复用检查（无同一事件在销量/价格/额外收入重复）+ 联合情景联动规则 + STOP_SCENARIO 未触发",
+    "action_4": "合成示例手算复核 5/5 步一致（synthetic_mechanism_check.json part_1）→ 真实已审定映射执行 4/4 case 逐位复算一致 + 3/3 恒等式成立（part_2）；示例数字零复制（part_3）"
+  },
+  "expert_assumptions_count": 7,
+  "expert_assumptions_form": "每条含 sensitivity_interval + equivalent_to_disclosure_basis=false（A-6.3 (iv) 形态）；1 条为显式拒绝出数（EA-7）",
+  "params_released": false,
+  "params_released_detail": "store 侧 low/base/high 全部仍 null、两个 _PLACEHOLDER 维持、released=false；hypotheses*.json/model_cards* 零写入（只读）；本卡未产生 hypotheses 新版本",
+  "stop_calibration_triggered": false,
+  "stop_scenario_triggered": false,
+  "stop_note": "STOP_CALIBRATION 严格读法之争已登记于 revert_or_stop.json strict_alternative_reading_registered，交独立复审裁定；若采严格读法 ⇒ 本卡转 blocked，回滚=作废 proposed 值（零封盘改动）",
+  "mutation_rc": {"M1_red": null, "M2_red": null, "M3_red": null, "M4_red": null, "M5_red": null, "green": null, "note": "verify_plan.py 运行后回填"},
+  "falsifiers_triggered": 0,
+  "auto_actions_triggered": 0,
+  "status": "review_pending",
+  "implementer_signed": false,
+  "releases_nothing": true,
+  "releases_nothing_detail": "不产生 ACCEPT · 不放行任何参数 · 不触发任何 falsifier/自动动作（ACCT L230 + IND L299）· 不解 OPEN-2/3/5/6/任何 BLOCKED-* · 不代签行业/会计/外部面 · 不改两半区/封盘任一字节 · 不派 I-11-C · 不写五份计划文件",
+  "written_files": [
+    "execution_runs/I-11-B/a20260926-01/oracle.md",
+    "execution_runs/I-11-B/a20260926-01/calibration_plan.json",
+    "execution_runs/I-11-B/a20260926-01/expert_assumptions.json",
+    "execution_runs/I-11-B/a20260926-01/synthetic_mechanism_check.json",
+    "execution_runs/I-11-B/a20260926-01/revert_or_stop.json",
+    "execution_runs/I-11-B/a20260926-01/verify_plan.py",
+    "execution_runs/I-11-B/a20260926-01/handoff.json"
+  ],
+  "write_surface": "仅 execution_runs/I-11-B/a20260926-01/",
+  "git_writes_performed": false,
+  "git_status_run": false,
+  "network_requests_made": 0,
+  "git_diff_non_planning": 0,
+  "file_format": "UTF-8 (JSON 写后重解析校验)",
+  "next_action": "编排层另派独立复审（非实现者）：审 calibration_plan/expert_assumptions/synthetic_mechanism_check → 落定走三件套（review.md + qualification.json + handoff.json）；I-11-C 按卡文依赖顺序（I-11-C ← I-11-B）另行派单；C3/C5 九项欠账并行推进（IND-r2 归档、OPEN6B-TOLERANCE-RULING-R2、H4 残差闭合、H2 A-6.3 0/3）"
+}
+

@@ -1,0 +1,280 @@
+{
+  "schema": "i13bc_reviewer_answers/1",
+  "card": "I-13-BC",
+  "card_stage": "B（独答报告，原卡 card_I-13-B.md 判据）",
+  "attempt": "execution_runs/I-13-BC/a20260926-01",
+  "role": "implementer_i13bc",
+  "status": "review_pending",
+  "owner_note": "卡文 Owner 面 = 独立买方reviewer与行业reviewer；本文件为实现者按冻结判据整理的独答走查产物，不自签、不含任何签署主张（implementer_signed=false）。",
+  "frozen_before": {
+    "oracle": "execution_runs/I-13-BC/a20260926-01/oracle.md",
+    "freeze_point": "§2.A oracle_B 冻结点（先于本文件写入）",
+    "note": "五问清单、复核面、预期对照、STOP 判据、变异清单均已事前冻结；本文件逐条对上 oracle §5 P1-P5。"
+  },
+  "final_report_identification": {
+    "question": "card_I-13-B L13『reviewer 只用最终报告回答』——『最终报告』在本站授权回源面内指哪件？",
+    "adopted_reading": {
+      "reading": "『最终报告』= 完整输出（预测包）的最终交付报告面：execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md（sha a2304fdd…，26,132 B，153 行全读）",
+      "basis": [
+        "card_I-13-B L9 前提『完整输出已评分』——完整输出=I-13-A 所评分的买方交付面（I-13-A buy_side_scorecard.scored_object.primary_artifact 逐字即该件）",
+        "card_I-13-B L23 验收『具体问题可用最终交付独立回答』——以『最终交付』为作答面，与本读法一致",
+        "该件是完整输出中唯一报告形态载体（三公司冻结表 + 18 槽位校准表 + 驱动/口径/验证/红线登记），可区分事实、假设、未知（L9 前提满足）"
+      ],
+      "limits": "该报告面是研究草稿（formal_publication_slot=blocked、params_released=false），非正式发布件；作答只读该报告面正文，不借证据链（parameter_mapping/blocking_issues）补答——证据链仅用于 L16 动作4 的溯源链与原文实读核对。",
+      "availability": "available_as_final_delivery_report_face"
+    },
+    "strict_reading_registered": {
+      "reading": "『最终报告』须为独立成篇的正式最终研究报告（非校准/验证汇总表）——授权回源面内不存在该件 ⇒ 最终报告不可得 ⇒ 合并卡 L27『STOP 判 blocked（合格）』，且父确认『任一段 STOP ⇒ 整卡 STOP』",
+      "status_if_adopted": "stage_B=STOP(blocked)；整卡 STOP；final_scorecard 分类机械下限不变（research_draft_needs_review），但两段结论改为 STOP 记账",
+      "who_rules": "独立买方 reviewer + 行业 reviewer（卡文 L5 Owner 面）；本站不自裁"
+    },
+    "overturn_condition": "若复审裁定『最终报告』须为正式独立成篇报告（采纳严格读法）⇒ 阶段 B 转 STOP 判 blocked ⇒ 整卡 STOP（fail-closed）；若裁定研究草稿报告面即可作答（采纳采用读法）⇒ 本走查维持。两读法均已登记、无隐藏。",
+    "stop_rule_note": "编排层 2026-09-26 21:1x：两段各一 oracle 冻结点，任一段 STOP ⇒ 整卡 STOP（fail-closed）。"
+  },
+  "report_face_scope": {
+    "used_for_answers": "仅 I-07-E summary（最终交付报告面）正文",
+    "used_for_chain_and_receipt_only": ["execution_runs/I-11-C/a20260926-01/parameter_mapping.json", "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json（store，只读）"],
+    "not_used_to_fill_gaps": "缺口一律明写不可得并路由回对应卡（card_I-13-B L23：不能在总结里虚报补齐）"
+  },
+  "five_questions": [
+    {
+      "id": "Q1",
+      "question": "增长从何而来",
+      "answer": "基情景与情景带分开作答：①基情景（ZJ）零增长——base=FY2025 同口径值持平（EA-3 朴素基线，summary L36-L39/L68），FY2025→FY2027 增量=0；②基情景（MSFT）唯一正增长来源=三分部增速持续（D7：PBP +16% / IC +30% / MPC −1%，FY2026 已披露增速外推 FY2027，EA-4 纯分析师判断，summary L17/L54-L56/L69）；③情景带内增长来自 D1 矿产品实现价（±5%）与 D2 可售量（±10%）的成对联动（S-MIN-PRICE / S-VOL-PRICE，EA-6）；④D3 other_revenue（XM-EV 映射 2,800,000,000 元）只单列一次，但小米 FY2027 = 0 槽位（gap-U1）⇒ 该公司无增长路径可答（summary L16/L60/L84）。",
+      "answerability": "partial",
+      "why_partial": "增长来源可枚举（D1-D7 驱动注册 + 基情景语义），但『贡献分解』不存在 ⇒ 无法给出来源占比（见 Q3）。",
+      "evidence_refs": ["summary:L36-L39（base=FY2025 不变）", "summary:L54-L56（MSFT 三档 g）", "summary:L83-L88（D1-D7 + E1-E7）", "summary:L16/L60/L131（小米 0 槽位）", "PM:L45-L117（row1 base 语义与 conversion_formula）"]
+    },
+    {
+      "id": "Q2",
+      "question": "何时确认",
+      "answer": "生效时点可答：ZJ FY2025（基期）→ FY2027（生效）；MSFT FY2026（基线年）→ FY2027（生效）（summary L15/L17）。FY2026 仅为管理层计划对照年度——store H-CN-ZIJIN-PLAN-04 原文『产量计划本身不构成收入确认；且原文声明为指导性指标、不构成承诺』（store L546）。但收入确认时点（年度内分布、确认政策、时点级『何时兑现』）在报告面不存在：机制链止于『收入确认』环节名（store mechanism_chain），无时点参数（PM 全部 period_start/period_end 为年度粒度）。",
+      "answerability": "partial",
+      "why_partial": "生效期间（年度）可答；确认时点/兑现节奏不可答。",
+      "evidence_refs": ["summary:L15/L17（年度路径列）", "store:L518-L546（H-CN-ZIJIN-PLAN-04 claim + mechanism_chain）", "PM:L52-L53（period_start/period_end 年度粒度）"]
+    },
+    {
+      "id": "Q3",
+      "question": "最大三项驱动贡献",
+      "answer": "不可得——不编数字。报告面只有驱动注册（D1-D7）与逐参数敏感性带，无任何贡献分解计算产物。冻结的分解规则是线性单通道可加（CP L263 转录：『任一情景 收入增量=Σ(各驱动单通道增量)；同一事件不得贡献两个及以上通道；违反⇒STOP_SCENARIO』，PM:L1279），但各通道增量未被计算；非线性分解方法未冻结 ⇒ 交互项分配=none（card_I-13-B L14 禁令，遵守）。且 EA-6 共享驱动联动（S-MIN-PRICE/S-VOL-PRICE 与 H-02 量×价共享驱动，PM row1 joint_scenario_constraint）禁止把分部带与量价带独立叠加成『贡献』。因此『最大三项驱动贡献』在最终交付中不可回答。",
+      "answerability": "not_answerable",
+      "registered_magnitude_order_not_contributions": "仅登记带幅序（≠贡献、不得引用为贡献）：D7 MSFT 分部增速带（PBP [10.2%,21.8%]、IC [23.5%,36.5%]、MPC [−5.95%,+3.95%]）> D2 可售量带（±10%）> D1 价/收入带（±5%）；EA-5 语义张力为最大敏感性来源（base 差约 3.17 倍，summary L70）。",
+      "interaction_allocation": "none",
+      "numeric_contribution_shares": [],
+      "gap_routing": "G1 → I-07-E（校准汇总无分解）/ I-11-B（非线性分解方法未冻结）/ I-11-C（映射层无贡献计算）",
+      "evidence_refs": ["summary:L83-L88（D1-D7 注册，无分解）", "PM:L1262-L1279（scenario_joint_logic 线性可加规则）", "summary:L66-L71（EA-1/2/6 带，非贡献）", "card_I-13-B:L14（禁令原文）"]
+    },
+    {
+      "id": "Q4",
+      "question": "哪些约束会使高情景失败",
+      "answer": "可答（7 条，全部来自报告面登记）：①EA-6 联合约束——量 high×价 high×其他收入 high 独立叠加≈+21% 为不可能联合（STOP_SCENARIO 拦截对象），高情景必须成对联动（summary L71/L88）；②产销/库存约束（store H-CN-ZIJIN-VOL-03 claim『可售量不能在中期内超过披露的生产量所隐含的产能上限；销量与产量的差额受库存变动约束』store L323）——量 high（铜 973,437.3 吨/金 91,477.1 千克）须有产能与库存支撑，FY2025 库存释放（铜 +6,763 吨/金 +418 千克）登记不外推（summary L43-L44）；③BLOCKED-6b 库存桥 154 千克容差 NOT_SIGNED（signed 3/4）⇒ 量恒等式约束未闭合，量通道高情景不可核（summary L44/L48；PM:L530/L596）；④OPEN-2 红线——价通道高情景不得消费被禁单位收入值（红线登记区，registered_not_consumed，summary L139-L147）；⑤管理层计划只是对照上界（105 吨/120 万吨，指导性非承诺、management_target_is_not_independent=true、达成率带 [0.9,1.1]）（summary L47/L81）；⑥H4 口径桥内档 [0.95,1.05] 的适用性未全落地（threshold_review_status=not_reviewed）；⑦MSFT 高增速（IC high +36.5%）建立在增速持续的纯分析师判断上，无披露来源（EA-4，unverified-N3 注记不符，summary L69/L106）。",
+      "answerability": "answerable",
+      "evidence_refs": ["summary:L71/L88（EA-6 + STOP_SCENARIO）", "store:L323（H-CN-ZIJIN-VOL-03 claim 原文）", "summary:L43-L44/L48（产销 + 6b）", "PM:L530/L596（容差未签）", "summary:L139-L147（红线登记区）", "summary:L47/L81（计划对照）", "summary:L69/L106（EA-4/unverified-N3）"]
+    },
+    {
+      "id": "Q5",
+      "question": "哪条证据推翻基情景",
+      "answer": "可答（候选反证按强度登记）：①最强——FY2025 库存释放的一次性登记（铜 +6,763 吨/金 +418 千克，『不外推为常态』summary L15/L43-L44）与 EA-3 持平基线存在张力：持平基线把含一次性释放的 FY2025 销量持平带入 FY2027，若按其自身『不外推』登记剔除该释放，则基情景下修（铜 884,943→产量口径 878,180、金 83,161→82,743）——该证据直接推翻『持平=中性』的基情景语义；②u-N5/unverified-N1——store H-01 original_value=349,079,082,852 与矿产品分部登记基期 109,977,556,345 存在语义张力（约 3.17 倍，EA-5 明写『最大敏感性来源，优先裁并』summary L70/L105），若 AR p327/p328 回源裁定 store 语义，矿产品基期整体改写 ⇒ 推翻基情景；③MSFT 基情景 = 增速持续（EA-4 纯分析师判断），FY2027 实际披露/重述一出即构成推翻证据（gap-U4 微软重述载体未检出）。",
+      "answerability": "answerable",
+      "evidence_refs": ["summary:L15/L43-L44（库存释放登记）", "summary:L68（EA-3 基线 + 不外推）", "summary:L70/L105（EA-5/u-N5 语义张力）", "summary:L17/L69（EA-4 增速持续）", "summary:L23（gap-U4）"]
+    }
+  ],
+  "action2_verification": {
+    "note": "card_I-13-B L14 复核面五项；全部复算值标 review_recompute_not_released（复核用，不写入任何 released 字段、不放行）。",
+    "revenue_annual_path": {
+      "review_result": "partially_present",
+      "detail": "ZJ：仅两时点（FY2025 基期 → FY2027 生效），无逐年多期路径（FY2026 无同口径观测，计划值仅对照）；MSFT：FY2026→FY2027 单年；小米：0 槽位、路径缺位（显式保留）。low<base<high 13 行次序成立（承接 I-13-A B05）。",
+      "recompute_review_not_released": "ZJ 四分部 base 合计 109,977,556,345+165,858,644,874+29,212,610,830+44,030,270,803 = 349,079,082,852（逐位）；high 合计 366,533,036,995（≈base×1.05）；low 合计 331,625,128,710（≈base×0.95）"
+    },
+    "increments": {
+      "review_result": "computable_but_not_published",
+      "detail": "基情景 ZJ FY2025→FY2027 增量 = 0（持平基线直接结果）；参数带算术增量 ±17,453,954,143 元（四分部 ±5% 带线性求和，属带幅算术、非驱动贡献）；MSFT 三分部单年增量复算（review_recompute_not_released）：PBP 139,996×0.16≈+22,399、IC 137,791×0.30≈+41,337、MPC 54,052×(−0.01)≈−541（USD mn）。小米增量=不可得（无路径）。",
+      "caveat": "带幅求和不得与量价带独立叠加（EA-6 共享驱动），此处只作复核不作情景合成"
+    },
+    "cagr_bounds": {
+      "rule": "common_research_cards.md L163 逐字：CAGR=(R_end/R_start)^(1/h)-1；R_start>0且h>0才可算；零基期记undefined，报告绝对增量",
+      "review_result": "computed_for_review",
+      "detail": "ZJ（R_start=349,079,082,852>0，h=2）：base CAGR=0.00%（持平基线结果，非伪造 0%——其为 EA-3 假设的直接推论并已注明）；带界 low=(0.95)^(1/2)−1≈−2.53%、high=(1.05)^(1/2)−1≈+2.47%。MSFT（h=1）：CAGR=g 本身——PBP 16% [10.2%,21.8%]、IC 30% [23.5%,36.5%]、MPC −1% [−5.95%,+3.95%]。小米：CAGR=undefined（无 FY2027 路径、R_end 缺），绝对增量亦不可得。",
+      "label": "review_recompute_not_released"
+    },
+    "driver_contributions": {
+      "review_result": "not_available",
+      "detail": "同 Q3：无贡献分解产物；冻结分解规则=线性单通道可加（PM:L1279），非线性分解方法未冻结 ⇒ 交互项分配=none；禁止把带幅或增速误标为贡献份额。",
+      "interaction_allocation": "none",
+      "numeric_contribution_shares": []
+    },
+    "sensitivity": {
+      "review_result": "registered_not_released",
+      "detail": "EA-1 带形状（量 ±10% / 价·收入 ±5% / g 按 (1+g)×0.95,1.05−1）；EA-2 系数两点差分（系数 23/24/25 三档与每 +1 ⇒ −10,670.89）属红线族 registered_not_consumed（不进入任何产出）；EA-3 基线选择敏感性（±0% vs 趋势外推 ±10% 以上）；EA-5 语义张力=最大敏感性来源（base 差约 3.17 倍）；EA-6 联合档 ≈−14.5% / +15.5%，独立极值 ≈+21% 不可能（STOP_SCENARIO 拦截）。全部 mapped_not_released，零传播。"
+    }
+  },
+  "action3_expectation_comparison": {
+    "consensus_availability": "unavailable",
+    "consensus_statement": "不可得——授权回源面内无可靠 consensus/market-implied 数据（禁联网、I-12 未做、清单外零读）；按 card_I-13-B L15 明写不可得、不编数字。",
+    "consensus_numbers": [],
+    "market_implied_numbers": [],
+    "caliber_difference_check": {
+      "conclusion": "可预期差异均来自口径不同，而非市场分歧；无外部预期可对照时不做预期差主张（预期差口径归 I-12/独立预期来源，缺口 G4）。",
+      "items": [
+        "u-N5：349,079,082,852（四分部合计/含内部交易口径）vs 109,977,556,345（分部对外口径）——口径层级不同（summary L105）",
+        "红线两值 124,248.63 vs 38,175.95——分母口径不同（登记分母 885,141 vs 公式合成分母 2,880,807），属公式口径缺陷非市场分歧（registered_not_consumed）",
+        "产量/销量：铜 878,180（产量）vs 884,943（销量）、金 82,743 vs 83,161——库存释放差额口径（summary L43-L44）",
+        "总额/净额：584,049,229,264（毛总计）vs 349,079,082,852（对外合计）；234,970,146,412 内部抵销仅进恒等式桥（store L622：『否则会高估收入约 67%』）",
+        "Microsoft Cloud 214,400 USD mn 叙述值 ≠ 分部/产品行（E6 PROHIBITED_CO_USE，store L856-L858）"
+      ]
+    }
+  },
+  "source_chains": {
+    "format": "source→parameter→calculation→output（card_I-13-B L16 动作4）",
+    "chains": [
+      {
+        "id": "CH-1",
+        "source": "CN-ZIJIN-AR2025 / 01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d / p327-p328「对外销售收入」",
+        "parameter": "ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027（H-CN-ZIJIN-SEG-01，direct_revenue）",
+        "calculation": "差额法 349,079,082,852−165,858,644,874−29,212,610,830−44,030,270,803 = 109,977,556,345（差=0）；low/high=base×0.95/1.05（EA-1）",
+        "output": "base 109,977,556,345 / low 104,478,678,528 / high 115,476,434,162（mapped_not_released）",
+        "refs": ["summary:L36", "PM:L45-L117"]
+      },
+      {
+        "id": "CH-2",
+        "source": "CN-ZIJIN-AR2025 / p44 产销量情况分析表",
+        "parameter": "ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027（H-CN-ZIJIN-VOL-03，resource/saleable_volume）",
+        "calculation": "historical relationship ±10%；产销主恒等式 Cu 878,180+6,763=884,943（销量 ≤ 产量+期初库存）",
+        "output": "796,448.7 / 884,943 / 973,437.3 吨（mapped_not_released；blocked_by BLOCKED-6b/OPEN-11）",
+        "refs": ["summary:L43", "PM:L506-L572"]
+      },
+      {
+        "id": "CH-3",
+        "source": "CN-ZIJIN-AR2025 / p327-p328 + p44（量价同源相容约束，store H-CN-ZIJIN-SEG-02 claim）",
+        "parameter": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027（resource/realized_price）",
+        "calculation": "转换公式分母不自洽：884,943+83,161×24=2,880,807 ≠ 登记分母 885,141（unverified-N2）；红线族两值只登记不消费",
+        "output": "null / null / null（not_executable_no_propagation；OPEN-2 红线 registered_not_consumed）",
+        "refs": ["summary:L40", "PM:L305-L336"]
+      },
+      {
+        "id": "CH-4",
+        "source": "US-MSFT-10K-FY2026 / store 记 e3de0053…40ecff（63 位，u-N4）vs I-07-B 实测 e3de0053…40ecfff（64 位）/ table 74/76",
+        "parameter": "MSFT_PBP_REVENUE_FY2027（H-US-MSFT-SEG-01，direct_growth/growth_rate）",
+        "calculation": "g 换算 (1+g)×0.95/1.05−1（g=0.16）＝ 51/500、109/500 逐位",
+        "output": "0.102 / 0.16 / 0.218（mapped_not_released；blocked_by OPEN-3）",
+        "refs": ["summary:L54", "PM:L900-L966"]
+      },
+      {
+        "id": "CH-5",
+        "source": "CN-ZIJIN-AR2025 / p327-p328（内部抵销 234,970,146,412 元，store H-CN-ZIJIN-ELIM-05 claim『否则会高估收入约 67%』）",
+        "parameter": "ZIJIN_SEGMENT_RECONCILIATION_FY2027（direct_revenue，纯恒等式）",
+        "calculation": "584,049,229,264−234,970,146,412=349,079,082,852（容差 τ=1 元，ACCT R1/R3 SIGNED）",
+        "output": "0 / 0 / 0（恒等式偏差槽位；mapped_not_released；store state=unquantified）",
+        "refs": ["summary:L48/L111", "store:L622", "PM:L843-L897"]
+      },
+      {
+        "id": "CH-6",
+        "source": "CN-ZIJIN-AR2025 / p56「2026年主要矿产品产量计划」（管理层目标，指导性非承诺）",
+        "parameter": "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER（H-CN-ZIJIN-PLAN-04，resource）",
+        "calculation": "达成率带 [0.9,1.1]（management_target_is_not_independent=true）",
+        "output": "金 94,500 / 105,000 / 115,500 千克（proposed_not_released；_PLACEHOLDER 维持）",
+        "refs": ["summary:L47/L81", "store:L518-L546"]
+      },
+      {
+        "id": "CH-7",
+        "source": "US-MSFT-10K-FY2026 / MD&A「Microsoft Cloud revenue」叙述值",
+        "parameter": "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER（H-US-MSFT-SEG-02，direct_revenue）",
+        "calculation": "无可用换算公式（缺 Cloud→分部/产品行完备映射表）",
+        "output": "null / null / null（unmapped_declined_no_number；显式拒绝出数）",
+        "refs": ["summary:L57", "store:L856-L858", "PM:L1096-L1156"]
+      }
+    ]
+  },
+  "source_read_receipts": {
+    "rule": "card_I-13-B L16 逐字：『点开至少一个重要原文来源确认真实内容，摘要或manifest名不代替实际读取』",
+    "receipts": [
+      {
+        "id": "R-1",
+        "artifact": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json（store，只读）",
+        "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+        "bytes": 61231,
+        "access": "read_only_opened",
+        "confirmed_verbatim": [
+          "L4 H-CN-ZIJIN-SEG-01 claim：『紫金矿业合并营业收入的构成由四个报告分部的**对外**销售收入相加得到；分部收入口径为对外销售收入，不得把含内部交易的分部总计直接相加。』",
+          "L135 H-CN-ZIJIN-SEG-02 claim：『矿产品分部的单位实现收入由'已售可结算数量 × 单位实现价格'驱动；…不得由外生价格假设单独决定收入。』",
+          "L323 H-CN-ZIJIN-VOL-03 claim：『矿山产铜与矿山产金的可售量不能在中期内超过披露的生产量所隐含的产能上限；销量与产量的差额受库存变动约束，不能把'产量计划'直接当成'可售量计划'。』",
+          "L518-L546 H-CN-ZIJIN-PLAN-04：『…不得作为独立准确性证据，也不得被当作已实现产量』+『产量计划本身不构成收入确认；且原文声明为指导性指标、不构成承诺』",
+          "L622 H-CN-ZIJIN-ELIM-05：『…必须显式扣除内部抵销 234,970,146,412 元（2025年），否则会高估收入约 67%。』",
+          "L732 H-US-MSFT-SEG-01：『…分部增长差异（16% / 30% / −1%）必须分别建模，不得用单一集团增长率代替。』",
+          "L856-L858 H-US-MSFT-SEG-02：『'Microsoft Cloud' 是公司自定义的聚合口径…把三者混用会把同一收入计两次』（state=unquantified）"
+        ]
+      },
+      {
+        "id": "R-2",
+        "artifact": "execution_runs/I-11-C/a20260926-01/parameter_mapping.json",
+        "sha256": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c",
+        "bytes": 54875,
+        "access": "read_only_opened",
+        "confirmed": ["L45-L117 row1 全字段（value_state、conversion_formula、carve_out unverified-N1、joint_scenario_constraint）", "L1215-L1260 action_1_summary（18 槽位 = 13 可执行 + 5 不可执行，逐条 why/missing）", "L1262-L1279 dependency_control（D1-D7、E1-E7、scenario_joint_logic 线性可加规则）", "L1290-L1331 unverified-N1/N2/N3/D1 + stop_evaluation"]
+      },
+      {
+        "id": "R-3",
+        "artifact": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md（最终交付报告面）",
+        "sha256": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb",
+        "bytes": 26132,
+        "access": "full_read_153_lines",
+        "confirmed": ["§A 三公司冻结表（L11-L24）", "§B 18 槽位校准表（L28-L60）", "§B3 EA-1..EA-7（L62-L74）", "§C 驱动/口径（L78-L96）", "§D 验证（L99-L122）", "§E 三公司独立结果（L125-L135）", "§F 红线登记区（L139-L147）"]
+      }
+    ],
+    "manifest_name_substitution_avoided": true
+  },
+  "scenario_constraints": {
+    "high_scenario_failure_constraints": ["EA-6 联合约束/STOP_SCENARIO（独立极值 ≈+21% 不可能）", "H-CN-ZIJIN-VOL-03 产销/库存上限（销量≤产量+期初库存；库存释放不外推）", "BLOCKED-6b 154 千克容差 NOT_SIGNED（量恒等式未闭合）", "OPEN-2 红线禁消费（价通道）", "管理层计划对照非承诺 + 达成率带 [0.9,1.1]", "H4 口径桥内档 [0.95,1.05] 适用性（threshold_review_status=not_reviewed）", "MSFT 增速持续纯分析师判断（EA-4，unverified-N3）"],
+    "correlated_scenarios": ["S-MIN-PRICE", "S-VOL-PRICE", "S-MSFT-SEG"],
+    "event_reuse_rules": "E1-E7：ALLOWED_ONCE / PROHIBITED_CO_USE 逐条（summary L86-L87）",
+    "stop_scenario_triggered": false
+  },
+  "accounting_distinctions": {
+    "scenario_is_probability": false,
+    "probability_claims_count": 0,
+    "bands_note": "低/高档为情景带，不称概率/置信（无 80%/90% 覆盖主张）",
+    "production_vs_sales": {"never_mixed": true, "production": "铜 878,180 吨 / 金 82,743 千克", "sales": "铜 884,943 吨 / 金 83,161 千克", "gap": "库存释放 铜 +6,763 / 金 +418（不外推）"},
+    "gross_vs_net": {"never_mixed": true, "gross_total": "584,049,229,264 元（含内部交易毛总计）", "external_total": "349,079,082,852 元（四分部对外合计）", "elimination": "234,970,146,412 元仅进恒等式桥"}
+  },
+  "stage_b_stop_evaluation": {
+    "STOP_INVESTOR_USE": {
+      "triggered": false,
+      "basis": "判据为『报告只能给目标数，无法回答驱动/时点/约束』；实际报告面可答驱动（D1-D7 注册 + Q1）、时点（生效期间 + Q2）、约束（Q4 七条）与反证（Q5）骨架，非『只能给目标数』。Q3 贡献分解不可得属卡文 L23『缺失』情形 ⇒ 路由回对应卡、不虚报，不构成该 STOP。"
+    },
+    "STOP_ACCOUNTING": {
+      "triggered": false,
+      "basis": "三重区分显式保留（情景≠概率、产量≠销量、总≠净额，见 accounting_distinctions）；未把低高情景当概率、未混淆产量/销量、未混淆总净额。"
+    },
+    "final_report_availability": {
+      "adopted_reading_verdict": "可得（最终交付报告面）⇒ 走查执行，段不 STOP",
+      "strict_reading_verdict_if_adopted": "不可得（无独立成篇正式最终报告）⇒ 合并卡 L27 STOP 判 blocked ⇒ 整卡 STOP",
+      "ruling_authority": "独立买方 reviewer + 行业 reviewer；本站不自裁、两读法均登记"
+    }
+  },
+  "gap_routing": [
+    {"id": "G1", "gap": "驱动贡献分解不存在", "route_to": "I-07-E / I-11-B（非线性分解方法未冻结）/ I-11-C", "not_fabricated": true},
+    {"id": "G2", "gap": "收入确认时点/兑现节奏缺失", "route_to": "I-11 参数 effective_period 粒度 + 会计面收入确认载体", "not_fabricated": true},
+    {"id": "G3", "gap": "逐年多期收入路径缺失（仅两时点）", "route_to": "I-07-E 年度路径面", "not_fabricated": true},
+    {"id": "G4", "gap": "consensus/market-implied 不可得、预期差口径缺", "route_to": "I-12（未做）/ 独立预期来源（禁联网）", "not_fabricated": true},
+    {"id": "G5", "gap": "小米 FY2027 缺位（gap-U1）+ 披露日未登记（gap-U2）", "route_to": "I-11-A STOP_EVIDENCE 源不可读（HK-XIAOMI-AR2025）", "not_fabricated": true},
+    {"id": "G6", "gap": "u-N5 语义张力（349bn vs 109.98bn）未裁", "route_to": "AR p327/p328 回源（独立复审/会计面）", "not_fabricated": true},
+    {"id": "G7", "gap": "红线族（OPEN-2）与 u-N2 分母不自洽", "route_to": "OPEN-2 有权方裁定（会计/行业面）", "not_fabricated": true},
+    {"id": "G8", "gap": "gap-U3/gap-U4（H1锁定、微软重述载体未检出）", "route_to": "I-07-E 缺口登记继承，载体定位另派", "not_fabricated": true}
+  ],
+  "red_line_registration": {
+    "disposition": "registered_not_consumed（OPEN-2 前只登记不消费；本文件不将其用于任何路径/增量/CAGR/贡献/敏感性产出）",
+    "registered_value_note": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE 登记除法成立值与 store 自写除式真值（见 oracle §4 与 summary §F L139-L147）——红线族数字仅在本登记块与 oracle §4 出现，其余字段一律引用不带值",
+    "i11b_proposed_triplet": "proposed_not_released 仅存档，传播值=null",
+    "ea2_coefficient_sensitivity": "两点差分（非偏导）登记不消费",
+    "open2_ban_observed": true
+  },
+  "stage_b_verdict": {
+    "stage": "B",
+    "walkthrough_completed_under_adopted_reading": true,
+    "stop_triggered": false,
+    "answers_tally": {"answerable": 2, "partial": 2, "not_answerable": 1},
+    "acceptance_check": "card_I-13-B L23『具体问题可用最终交付独立回答；缺失需回到对应卡，不能在总结里虚报补齐』——可答者逐条独立作答，缺失者（Q3/确认时点/逐年路径/预期差）逐条路由 gap_routing，无虚报补齐",
+    "boundary": "不自签（独立买方 reviewer + 行业 reviewer 另派复审）；不放行参数；不产生 ACCEPT；红线只登记不消费；交互项零分配",
+    "feeds_stage_C": "本走查五问与缺口清单为 final_scorecard.json『当前限制/触发更新条件』输入；分类推导输入仍为 I-13-A 已落定分值 + HB3=not_established（见 final_scorecard.json）"
+  }
+}

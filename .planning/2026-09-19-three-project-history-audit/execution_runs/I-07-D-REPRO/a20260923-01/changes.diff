@@ -1,0 +1,46 @@
+# changes.diff — I-07-D-REPRO a20260923-01 — EMPTY DIFF ASSERTED (0 product hunks)
+
+scope = F02/F03/F04 fault-case RE-RUN + evidence preservation card (no product code,
+config, data or history modification was in scope or performed).
+
+## Product diff: EMPTY (0 files changed)
+
+Evidence (this attempt, re-computable):
+
+1. `evidence/snapshot_before.json` vs `evidence/snapshot_after.json` (harness/snapshot.py,
+   same tool as I-07-D): **20 hashed anchors — changed: []** (RF scripts/config, FF
+   scripts, CW source_catalog modules + configs); 6 PLAN anchors `missing==missing`
+   VACUOUS in both snapshots — cause = the snapshot tool computes `ATT.parents[1]`
+   (= `execution_runs`) instead of `parents[2]` (= PLAN root), the SAME defect I-07-D's
+   reviewer recorded as FR-2; therefore the 6 were independently re-hashed at their
+   corrected paths (see evidence/anchor_compare.txt): all 6 present and equal to the
+   frozen pins (card_I-07-D `b54f4bc8…2c553`, scenario_matrix `0dec23cd…292299f`,
+   sample_manifest `d5d0bb92…`, I-00-B commands `f8a397ec…` / binding `fdb2a598…`
+   — byte-equal to I-07-D binding's input pins). Honest count: **20 hashed + 6
+   pin-verified at corrected paths = 26/26 unchanged** (not "26 hashed").
+2. Production catalog (`company-wiki/.source_catalog/catalog.sqlite3`): bytes
+   49677344768-class identity unchanged (bytes + mtime_ns identical before/after),
+   `-wal` bytes+mtime identical, `-shm` bytes 32768 unchanged but **-shm mtime changed** —
+   disclosed as the read-only WAL reader-attachment side effect (state2 build copies the
+   entity registry via `mode=ro` + `PRAGMA query_only=ON`; zero data writes) — the same
+   class of side effect I-07-D §8 disclosed. No other production file differs.
+3. Production samples re-hashed before/after (`snapshot_*.json: production_samples`):
+   raw+sidecar `all_match=true` both sides for all three samples (CN/HK/US).
+4. Write-scope audit of this attempt: every write is under `ATT/**` (this attempt dir:
+   evidence/, harness/preserve_manifest.py [the only NEW file], iso/ rebuilt copy,
+   deliverables) or `%TEMP%\i07d\**` (scratch cells, per commands.json allowed_write_roots).
+   The I-07-D reference attempt received **0 writes** (all access read-only).
+5. No git command was run; no network call was made (F04 provider = frozen sim metadata).
+
+## New files created (all inside this attempt; none in any product tree)
+
+- `harness/preserve_manifest.py` (long-path-aware preservation manifest tool — new,
+  recorded as such; not part of the reused frozen harness)
+- deliverables: oracle.md, binding.json, commands.json, decision.md, handoff.json,
+  changes.diff, review.md (stub), recovery/README.md
+- evidence/** (runs' raw transcripts + preserved judged bytes + manifests)
+
+## Asserted conclusion
+
+`git diff`-style product diff = **EMPTY**. No historical receipt, raw, expected sample,
+threshold or completion table was modified (protocol rule: 不改旧收据/历史raw/预期样本).

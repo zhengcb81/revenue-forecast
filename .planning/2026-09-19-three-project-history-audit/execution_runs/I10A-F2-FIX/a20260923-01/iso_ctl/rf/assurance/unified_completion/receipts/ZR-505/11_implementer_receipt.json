@@ -1,0 +1,100 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "5ae9e9fb51e6015e6e52a90b9003ab1559e22e1a",
+    "wiki": "2781df937d65ef492f988bfb1af53ae263690ff5"
+  },
+  "canonical_hash": "b31691c6e704793f5668202f3c72d81210343de3d6f555c54b5c7c0bb6b9f603",
+  "commands": [
+    {
+      "command": "RED 探针（wiki 2781df9，合成含表 fixture 直喂 adapt_pdf_pages）：2×2 表（str/int/bool/null）locator/值保真 + 非矩形拒绝",
+      "exit_code": 0,
+      "result": "机制已保真：cell locator (page, table_index, row_index, column_index) 全序、raw_value 类型不变形（str/int/bool/null）、value 文本化正确（str 原样/int→str/bool→true/null→None）、rows×cols 全覆盖、非矩形 PageAwarePDFAdapterError 拒绝——RED 为'无测试钉死'型，产品零改动"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr505_table_fidelity.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "11 passed（C1 locator 流 2 + C2 值保真 2 + C3 渲染 1 + C4 校验拒绝 4 + C5 多表/跨页+锚定 2）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "101 passed（含 ZR-504 10 + ZR-503 13 + ZR-502 11 + ZR-501 10 + taxonomy + evidence span + ratchet 全绿，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --timeout=300 (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（质量门 unit 787）"
+    },
+    {
+      "command": "ruff check tests/contract/test_zr505_table_fidelity.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git diff 2781df9 7c44904 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "1 文件 +263：tests/contract/test_zr505_table_fidelity.py（新，11 tests）——产品 src 零改动"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:08:12+00:00",
+  "findings": [
+    {
+      "detail": "RED 探针：2×2 表（str/int/bool/null）cell locator 全序保真、raw_value 类型不变形、value 文本化正确、非矩形拒绝——G1~G3 均为'无测试钉死'缺口，产品机制内建已保真，本卡产品 src 零改动（git diff 证明）。",
+      "id": "ZR505-IMPL-001",
+      "severity": "info",
+      "title": "机制已保真：RED 为测试钉死型，产品零改动"
+    },
+    {
+      "detail": "cell 值契约钉死：str/int/float/bool/null 五种标量 raw_value 类型不变形（100→100、True→True、2.5→2.5）、value 文本化（'100'/'true'/'2.5'/None 空）；非矩形/rows 不匹配/非标量 cell/字段集不精确四种校验拒绝路径全断言——下游表格引用（ZR-506/revenue）的可靠输入。",
+      "id": "ZR505-IMPL-002",
+      "severity": "info",
+      "title": "标量类型保真与四路校验拒绝钉死"
+    },
+    {
+      "detail": "多表/跨页：同页两表 table_index 0,1、跨页每页从 0 重置（[0,1,0]）；渲染顺序 row-major（Table cell [0,0]<[0,1]<[1,0]<[1,1]）且段落后；golden corpus 七份研报 ≥7 + 长江 sha256 冻结只读锚定。",
+      "id": "ZR505-IMPL-003",
+      "severity": "info",
+      "title": "多表/跨页重置与渲染顺序钉死"
+    }
+  ],
+  "implementation": {
+    "design": "测试钉死卡（产品零改动）：新 tests/contract/test_zr505_table_fidelity.py（11 tests）——C1 cell locator 流（page/table_index/row_index/column_index row-major、与段落 span 共存顺序）；C2 结构化值保真（str/int/float/bool/null 类型不变形 + value 文本化 + rows×cols 全覆盖）；C3 渲染（body 中 Table cell [r,c] 行 row-major 且段落后）；C4 校验拒绝（非矩形/rows 不匹配/非标量 cell/字段集不精确 → PageAwarePDFAdapterError）；C5 多表/跨页（table_index 页内从 0 重置 [0,1,0]）+ golden corpus 七份研报只读锚定。",
+    "files": [
+      "company-wiki/tests/contract/test_zr505_table_fidelity.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-505/**"
+    ]
+  },
+  "implementer": "zr505-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 5ae9e9f（ZR-504 closure commit，本次未动 revenue）；result_triplet.wiki 为本卡测试提交 7c44904。",
+    "卡片 hash 冻结：plan_sha256=0501db63（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr505-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "typed table artifact 保真：cell locator 三维（page/table/row/column）全序、结构化值类型保真（str/int/float/bool/null）、渲染顺序 row-major、四路校验拒绝、多表/跨页 table_index 重置、golden corpus 只读锚定。",
+  "plan_sha256": "0501db6356791a360e36be0447b328db0e27b23ee95d9c9a66c5dbbdd40cebc2",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "5ae9e9fb51e6015e6e52a90b9003ab1559e22e1a",
+    "wiki": "7c4490496e2ead975f39519fcf8a9392cd00511b"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 测试钉死卡（产品 src 零改动）：新 test_zr505_table_fidelity.py（11 tests，合成 pages fixture 直喂 adapt_pdf_pages）；revenue 侧 receipts/ZR-505/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr505_table_fidelity.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-505/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-505"
+}

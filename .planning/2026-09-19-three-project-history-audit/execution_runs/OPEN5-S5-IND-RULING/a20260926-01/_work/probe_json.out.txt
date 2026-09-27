@@ -1,0 +1,21 @@
+PEND5A prov top: ['schema_version', 'card', 'station', 'attempt_dir', 'role', 'parent_agent_id', 'authorization', 'time_windows', 'external_evidence', 'failed_tool_attempts', 'probes', 'verbatim_quotes', 'method_notes', 'boundaries']
+external_evidence[0] keys: ['id', 'attempt', 'url', 'retrieved_utc', 'http_status', 'bytes', 'sha256', 'content_type', 'retrieval_method', 'provenance_class', 'external_retrieval_not_local', 'saved_path', 'document', 'period', 'period_same_as_original', 'readability_probe', 'anchor_hits', 'outcome', 'quotes']
+S3 prov top: ['attempt', 'role', 'generated_utc', 'authorization', 'write_surface', 'self_hash_note', 'entries', 'entry_count', 'counts']
+  attempt str 
+  role str 
+  generated_utc str 
+  authorization dict ['step', 'decision_rule', 'owner_authorization', 'hard_bounds_verbatim']
+  write_surface str 
+  self_hash_note str 
+  entries list 
+  entry_count int 
+  counts dict ['inputs', 'ocr_page_renders', 'deliverables']
+s4 provenance_review keys: ['criteria', 's3_provenance', 'gaps', 'own_provenance']
+own_provenance keys: ['origin_file', 'substitute_attempt04', 'substitute_attempt08', 'own_outputs']
+substitute_attempt04 keys: ['id', 'kind', 'sha256', 'bytes', 'pages', 'page_evidence', 'anchor_text', 'url', 'url_source', 'retrieved_utc', 'external_retrieval_not_local', 'external_flag_basis', 'substitute_not_origin', 'retrieval_method', 'divergence_from_s3']
+acct top: ['card', 'step', 'attempt', 'role', 'generated_utc', 'oracle', 'authorization', 'step1_g2_g3', 'step2_c_table_registration', 'step3_accounting_grading', 'origin_excluded', 'step4_hk_parameters', 'mutations', 'verdict', 'inputs_read_only', 'own_extraction_sha256', 'own_extraction_stability', 'releases_nothing', 'open5_released', 'accept_produced', 'network_used']
+g2 keys: ['rule', 'resolved', 'back_written_to_prior_stations', 'gap_before_this_station', 'resolution', 'by_source', 'not_resolved_for']
+by_source keys: ['attempt04', 'attempt08']
+attempt04 keys: ['source', 'rule', 'G2a_url', 'G2b_retrieved_utc', 'G2c_sha256', 'G2d_recorded_here', 'resolved']
+G2c keys: ['result', 'sha256_registered_pend5a', 'sha256_recomputed_by_this_station', 'sha256_s3_in', 'sha256_s4_own', 'three_way_equal', 'evidence']
+g3 station_records: ['rule', 'resolved', 'adopted_semantics', 'station_records', 'authority', 'divergence', 'constraint_on_grading']

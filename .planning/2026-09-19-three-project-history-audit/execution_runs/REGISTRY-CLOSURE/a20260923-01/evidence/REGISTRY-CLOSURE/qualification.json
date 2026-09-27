@@ -1,0 +1,88 @@
+{
+  "card_id": "REGISTRY-CLOSURE",
+  "attempt_id": "a20260923-01",
+  "revision": "r1",
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before": "review_pending",
+    "state_authority": "transcribed from the independent reviewer's (独立复核) single-round ACCEPTED-SCOPED signed verdict; not authored here",
+    "verdict_label_written_by_reviewer": "ACCEPTED-SCOPED — 签署（signed），附 2 条非阻断 findings + 3 条 INFO。",
+    "verdict_written_by": "独立复核 (delegated independent reviewer session; never the implementer; carrier §12:129)",
+    "verdict_rounds": 1,
+    "N": 1,
+    "scope_is_scoped_not_clean": true,
+    "verdict_scope": "2 non-blocking findings (F-R1 MEDIUM merge-path header fix, F-R2 LOW stale section numbers) + 3 INFO (F-R3, F-R4, F-R5); accepted scope = the 42-row disposition table + routing as transcribed in carrier §11",
+    "verdict_void_without_scope": "the verdict is scoped, not clean: F-R1 must be fixed as the first merge-wave item and F-R2 carried by the decision erratum (both non-blocking per the carrier); disclosure_adaptation stays unmapped and accuracy stays unproven"
+  },
+  "mirrors": {
+    "status_mirror": "handoff.json: status=accepted_scoped, status_before=review_pending, status_transition=review_pending -> accepted_scoped, status_rounds=1, verdict_is_transcribed_not_authored=true, implementer_signed=false",
+    "verdict_mirror": "review.md §1 verdict block: ACCEPTED-SCOPED transcribed + carrier sha/pin + N=1 + transcription-only (adds no acceptance of its own)",
+    "carrier_mirror": "reviewer_report.md sha256 b7790be7f3f9d42995790af71f2310b6a06d7193f3951ab8efff5f2cebd78a05 (re-hash MATCH == dispatch pin == sidecar reviewer_report.sha256), 19887 B, 135 lines, verdict line 9 byte region [665,753]/3f8465db…, verdict section [650,1734]/688aa34a…, findings [14039,15917]/d0edbe7d…, scope [1735,2889]/cc19c76d…, unverified [15918,17038]/09bd0add…, boundary [17039,17904]/881dc916…, scope-if-accepting [17905,19087]/d70855d8…, signature [19088,19886]/cda55a33…",
+    "boundary_mirror": "zero network; zero git mutation (this pass ran no git at all; card used git diff --no-index only; reviewer used read-only git + %TEMP% git apply); zero product writes byte-proven (r6 target 2f644994… MATCH + production edcbeccb… MATCH at landing); oracle recompute 16e4f2a0… MATCH + freeze-first (mtime 22:37:42 < all disposition artifacts)",
+    "bookkeeping_mirror": "exactly 3 files written (review.md, handoff.json, evidence/REGISTRY-CLOSURE/qualification.json) + the one commissioned decision.md append (`## F-R erratum (landing)`, a68ed77f…/23413 B -> 5e275968…/26557 B, first 23413 bytes re-hash to the pre-image sha = append-only proven); reviewer report/sidecar/oracle/oracle.sha256/binding/commands/changes.diff/recovery/handoff.md/evidence originals/register untouched; no git; no self-signing"
+  },
+  "owner_vote_integration_mirror": {
+    "source": "OWNER_DECISIONS §23 (:481-486, landed after card close; re-read at landing)",
+    "REM-24": "CLOSED (owner-ratified 追认, verbatim「1，追认」) — owner slot externally lifted; card OWNER-BLOCKED -1",
+    "F12": "ruled「2，记为待修」— rc domain stays {0,2}; observed rc=120 (finalization flush failure) recorded as product defect → WC-4-RC120 dispatched = WC-4 running",
+    "card_effect": "card-internal OWNER-BLOCKED 2 → 0 achieved post-close; carrier §1/§11 transcribed only, no card table row rewritten; register §八十七 :1745-1749 carries both votes",
+    "mirror_target": "review.md §8 + handoff.json bookkeeping.owner_vote_integration"
+  },
+  "fr_mirror": {
+    "F-R1": "MEDIUM — changes.diff:20 `#--- a/iso/…` comment-prefixed header ⇒ as-delivered git apply --check rc=128 'patch fragment without header at line 22'; content valid (1-line fix `#--- `→`--- ` → check rc0/apply rc0/py_compile OK×2/comment-only PASS, reviewer-proven); ACTION = first item of the J1/J2 merge-wave list: fix that line before apply (or commands.md manual-insert fallback); disposition landed verbatim in decision.md erratum item 1; decision sha before a68ed77fe922f768a845a6497000de93baab922f1d2128ffe9bbc5727fe79353 -> after 5e2759683489eb09dece52ca68a0cf8d5ad4b05fc88b340251e53bbe018a23cd",
+    "F-R2": "LOW — decision.md:120 preview heading §七十九 + handoff.md:30 本节号=七十九 are stale; actual appended register section = §八十四 (commands.md step 21 correct; §79 taken by parent); landed erratum-style in decision.md erratum item 2; sealed rows untouched; register correct (heading ×1 :1655, count row :1658, §85/§86 collision notes :1731/:1741); decision sha before a68ed77f…353 -> after 5e275968…3cd",
+    "F-R3": "INFO — F12 physically one row with two class labels (class labels 43 = 42 + 1; totals close, no drops); landed in erratum item 3; downstream reads rows 42 / labels 43; decision sha before a68ed77f…353 -> after 5e275968…3cd",
+    "F-R4": "INFO — register line citations drift +1 by concurrent appends (REM-95/96 now :1312/:1313, landing re-read ✓) + register_sha256_at_freeze not re-derivable-by-design (append-only); landed in erratum item 3; anchor on row text; no action; decision sha before a68ed77f…353 -> after 5e275968…3cd",
+    "F-R5": "INFO — oracle.sha256 sidecar written at batch end (22:55:22, honestly logged commands.md step 20; content-freeze-first proven by oracle.md mtime 22:37:42 + hash consistency); landed in erratum item 3; no action; decision sha before a68ed77f…353 -> after 5e275968…3cd",
+    "levels": "1 MEDIUM + 1 LOW (both explicitly non-blocking) + 3 INFO — matches the carrier verdict line '附 2 条非阻断 findings + 3 条 INFO'"
+  },
+  "wc_routing_mirror": {
+    "WC-1": "DISPATCHED — I-14-D-R8, d28ac9ef",
+    "WC-6": "DISPATCHED — REM-95-ADAPTER-DISPATCH, 9d8cb419",
+    "WC-4": "DISPATCHED POST-VOTE — WC-4-RC120 activated by OWNER_DECISIONS §23; running",
+    "WC-2": "QUEUED (I-18-A refinement)",
+    "WC-3": "QUEUED (B4a declaration-level negatives)",
+    "WC-5": "QUEUED (REM-79 dual-difference mechanization)",
+    "queue_note": "specs live in this card's decision.md; register §八十六 :1739 + §八十七",
+    "bookkeep_plus_2": [
+      "R5-06 note: `_review_i14d_r5_20260922/` added to git in the BOOKKEEP-REPAIR batch",
+      "REF §八十四 full-name cross-reference (citations carry section titles per §35 discipline)"
+    ],
+    "merge_wave_list": "J1 (REM-05 comments ×2 targets) + J2 (R5-03 unique-reading rewrite ×2 targets) + F-R1 header-line fix FIRST, then P-L3 patch, git-add five, ratchet batch (refs: register :1817, :1860, §八十三 :1650, §九十六 :1880/:1885/:1887)"
+  },
+  "declarations": {
+    "verdict_is_transcribed_not_authored": true,
+    "bookkeeping_nature": "bookkeeping transcription, adds no acceptance of its own",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "carrier_never_self_signs": true,
+    "accepted_scope": "the 42-row disposition table (40 mandate items, five classes 16/13/11/2/1), its count reconciliation (SA-DEFECT 25 / AUDIT-GOAL 24 / diff = REM-62 / card 25 ✓), the 42=40 mapping, register §八十四 backfill, the J1/J2 comment-only change set (not yet applied), WC-1..6 routing, and the owner-vote integration — scoped by findings F-R1/F-R2 (non-blocking) and carried per §11",
+    "explicitly_out": [
+      "(a) applying changes.diff to any tree — merge-wave only, F-R1 header fix first, independent re-review before use",
+      "(b) implementing any WC-1..6 fix — specs only; WC cards are separate dispatches",
+      "(c) REM-96 — external data-track dependency, not fixable here",
+      "(d) rewriting any sealed carrier / register historical row — append-only discipline; F-R2 carried by the decision erratum alone",
+      "(e) acceptance authority beyond the carrier — this pass grants none"
+    ],
+    "acceptance_conditions": "none blocking; F-R1 and F-R2 are binding scope with concrete dispositions (merge-wave precondition / erratum landed), F-R3..R5 INFO recorded only",
+    "production_writes": "none",
+    "git_writes": "none",
+    "network": "none"
+  },
+  "files_and_hashes": {
+    "review.md": {"state": "created", "sha256": "b71af9b903ea2191d812dd2c25ba3940cdb471c6f4e95234f17b2cb7ac13bd7b", "bytes": 22495, "lines": 251},
+    "handoff.json": {"state": "created", "sha256": "06544bcf7501cee2e40ade03b7099a0b24d178b1b74944d5fef921994e1923dc", "bytes": 22013, "json_parse": "OK (27 top-level keys)"},
+    "decision.md": {"state": "appended once (commissioned F-R erratum)", "sha256_before": "a68ed77fe922f768a845a6497000de93baab922f1d2128ffe9bbc5727fe79353", "bytes_before": 23413, "sha256_after": "5e2759683489eb09dece52ca68a0cf8d5ad4b05fc88b340251e53bbe018a23cd", "bytes_after": 26557, "append_only_proof": "prefix 23413 bytes re-hash == sha256_before (True)"},
+    "carrier": {"file": "reviewer_report.md", "sha256": "b7790be7f3f9d42995790af71f2310b6a06d7193f3951ab8efff5f2cebd78a05", "bytes": 19887, "sidecar": "reviewer_report.sha256 (85 B, content MATCHES re-hash)", "bytes_written_by_this_pass": 0},
+    "untouched_originals": ["oracle.md", "oracle.sha256", "binding.json", "commands.md", "changes.diff", "recovery.md", "handoff.md", "evidence/* (all pre-existing)", "fix_rem05/*", "fix_r503/*", "REMEDIATION_REGISTER.md", "reviewer_report.md", "reviewer_report.sha256"]
+  },
+  "unverified_carried": [
+    "REM-18 4/4 prefix size series not re-measured (carrier §9.1)",
+    "register_sha256_at_freeze not re-derivable by design (carrier §9.2)",
+    "REM-21/56/59/60/61/62/64 + C9d audit §10 family + REM-67③ enumeration + REM-06 95-row rule table not re-derived verbatim (carrier §9.3)",
+    "C6 overall-PASS grep not re-run (carrier §9.4)",
+    "no historical-attempt script executed (carrier §9.5 / recovery.md:14 discipline)"
+  ],
+  "qualification_timestamp": "2026-09-23/24",
+  "note": "created by the carrier-landing pass. formula.state = accepted_scoped is SCOPED, not clean: disclosure_adaptation stays unmapped, accuracy stays unproven, and the verdict carries 2 non-blocking findings (F-R1 merge-path header fix as first merge-wave item; F-R2 stale §七十九 vs actual §八十四, erratum landed) + 3 INFO. The verdict lives in reviewer_report.md (sha256 b7790be7…a05, 19887 B, pinned by reviewer_report.sha256) at line 9 and was written by 独立复核; this file, review.md and handoff.json transcribe it and add no acceptance of their own. No git, no network, no self-signing; exactly three files written plus the single commissioned decision append."
+}

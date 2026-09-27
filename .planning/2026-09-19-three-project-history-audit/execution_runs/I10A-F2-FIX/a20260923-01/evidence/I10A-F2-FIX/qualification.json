@@ -1,0 +1,165 @@
+{
+  "card_id": "I10A-F2-FIX",
+  "attempt_id": "a20260923-01",
+  "plan": "2026-09-19-three-project-history-audit",
+  "date": "2026-09-25",
+  "created_by": "carrier-landing bookkeeping pass (transcription only)",
+  "creation_note": "created by the carrier-landing 簿记 pass. Before this pass the attempt had NO review.md (attempt root held only after/ before/ command_runs/ evidence/ harness/ iso/ iso_ctl/ oracle/ recovery/ scratch/ scripts/ _scratch_i10b/ _scratch_import/ plus changes.diff, frozen_regression_rerun.json, handoff.json, oracle.md, reviewer_report.md, reviewer_report.sha256). This file adds no acceptance of its own.",
+
+  "formula": "not_applicable_with_reason",
+  "formula_reason": "本卡不是公式卡：被判据化的是 F-I10A-2（forecast entry 层省缺可选驱动即抛、报文与 I-10-B registry 层逐字节相同）这一**证据与判据**——三臂 raw rc（RED 3,3,3,2 / GREEN 2,2,2,2 / MUT 3,3,3,2 / RESTORE 2,2,2,2）、field_class_check true→false→true、家族 1169/59/4/11 → 1164/64/4/11 与 regressed=5 的集合等式、changes.diff 14366 B / 8 文件 / unexpected=0 missing=0、夹具断言多重集 0 删 0 增，没有任何公式、情景或数值推导被判据化；本 pass 更只做簿记转录。故 formula 记 not_applicable_with_reason，理由如本字段——不授予任何公式资格，也不提升任何既有卡的 formula 状态。",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven",
+
+  "verdict": "ACCEPT",
+  "verdict_line_text": "VERDICT: ACCEPT",
+  "verdict_counts": "P1=0 / P2=0 / P3=4 + 7 unverified items (report section 10); P1=0 => verdict is ACCEPT, not changes_required; scoped, not clean",
+  "verdict_is_transcribed_not_authored": true,
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+
+  "granted_scope": [
+    "F-I10A-2 修复的**证据与判据**：forecast entry 层对『省缺且无 spec.defaults 声明』的可选驱动即抛 `ForecastInputError: missing driver for {resource|unit_sales}: other_revenue has no explicit default`（与 I-10-B registry 层逐字节同一报文），显式 spec.defaults 集合仍默认容忍——三臂 raw rc 逐臂复现（复审自拷原像树自跑：RED mut_omit 3,3,3,2、GREEN 2,2,2,2、MUT 3,3,3,2（变异 sha a8077642… 与 evidence/mut_arm.json 的 sha_after 完全相同）、RESTORE 2,2,2,2 且 calc.py 归位 15969 B / 9eecf260…），20/20 次 process_rc == harness raw_rc，field_class_check 变异态 all_pass=false（FC1/FC2 真打红）→ 归位 all_pass=true",
+    "F-I10A-2 的交付载体：changes.diff 14366 B / sha bcd44c249da249b283cc06088e5da8e3aa8d092ecae28cae506be631503f6db8 / 8 对 ---+++（产品面恰 2：calc.py 14978→15969、segments.py 27697→27966），git apply --check rc=0，复审自写 unified-diff 应用器『生产原文 + diff 应用后与 iso 逐字节比对』= 8/8 MATCH ⇒ unexpected=0 / missing=0 可证",
+    "家族面判据：复审用 ElementTree 重算 junit（非读 handoff）1169/59/4/11 → 1164/64/4/11、regressed=5 / fixed=0 / other=0 / added=0 / removed=0 / same=1238；regressed 集合与对照臂 5 条完全相等（passed_in_control=[]、ids_not_run_in_control=[]）；复审在字节级原像树独立重跑 5 个 id = 5/5 全失败（606.91s）⇒ environment=5 / fix_attributable=0（B-1 成立）",
+    "夹具未弱化（D-5）的判据：6 个夹具文件断言行多重集比对 删 0 / 增 0 / 改 0，skip·xfail 新增 0；test_retail_franchise_optional_pair_is_enforced 的 assertRaisesRegex(\"requires franchise_system_sales and recognized_fee_rate together\") 逐字节未变、只新增 pop(\"recognized_fee_rate\")；fixture_fix_check_junit 114 tests / 0 failures 证明仍是 pair 规则在报文",
+    "不变量判据：I-1 model_registry.py 62f864b9…（30116 B）与 model_extensions.py 9939480b…（14475 B）两树逐字节相同；D-2 shim（1584 B / 68a3a296…）只包装 os.mkdir 按 0o777 建、不 import 产品/不碰断言/不筛选用例；D-3 披露完整（test_zr804._sync_installations 跑 --apply 无 --destination ⇒ Path.home()/.{agents,claude,codex}/skills，基线亦然——family_before_junit 中 zr804 两条 passed 佐证）",
+    "裁决的转录面：review.md（新建）、handoff.json 的 status 面（review_pending → accepted_scoped + status_before / status_authority / status_history / reviewer_status / carried_findings / unverified / d1_state / verdict_is_transcribed_not_authored）、本 qualification.json",
+    "四条 P3 与七条 unverified 的**随卡携带**（逐字、不弱化），以及复审两条自报副作用的如实携带"
+  ],
+  "not_granted": [
+    "生产闭环 —— changes.diff 仍在本 attempt 的 iso 树；生产 calc.py 14978 B / bc4f33d9…、segments.py 27697 B / 95555509… 仍为前像，生产缺陷未修；**不可记生产 CLOSED**",
+    "晋升 / 生产合并 —— 把 changes.diff 晋升到生产树是 **owner 独立决定**（另卡/另授权），本卡与本 pass 均不授予",
+    "家族 AFTER 计数（1164 passed / 64 failed / 4 error / 11 skipped）之外的任何『干净环境绿』—— 含 dispatch 所称『家族 64/48 之外的干净环境绿』：复审 unverified #4 明写『5 个安装门在干净环境下会绿』未验证（也不在 B-1 要求内），一律不授予",
+    "CLI rc=2 端到端 —— 新拒绝的 CLI rc=2 路径未跑通（复审 unverified #1，实现者自曝 probe 直接调 calculate_model_path），不授予",
+    "fc1004 根因 —— test_fc1004 在一次性 destination 上 rc=1 + 空 stdout 的根因**未诊断**（复审 unverified #3），只到『非本卡回归』，不到『已知为何必失败』，不授予",
+    "disclosure accuracy —— disclosure_adaptation 保持 unmapped、accuracy 保持 unproven，本 pass 不做任何 accuracy 判定",
+    "公式资格 —— formula = not_applicable_with_reason（见上）",
+    "任何 status 之外既有字节的改动 —— reviewer_report.md / reviewer_report.sha256 / oracle.md / changes.diff / frozen_regression_rerun.json / evidence 既有 147 件 / handoff.json 的非 status 字节一律只读",
+    "登记册与计划五文件（REMEDIATION_REGISTER.md / progress.md / findings.md / task_plan.md / OWNER_DECISIONS.md）—— 父统一折入，本 pass 零写入",
+    "publications.jsonl 的任何处置 —— D-1 已由父完成（不重做截断、不清属性），本 pass 不碰"
+  ],
+
+  "status_authority": {
+    "status": "accepted_scoped",
+    "status_before": "review_pending",
+    "status_transition": "review_pending -> accepted_scoped",
+    "status_rounds": 1,
+    "carrier": "reviewer_report.md",
+    "carrier_path_inside_attempt": "reviewer_report.md",
+    "carrier_bytes": 27699,
+    "carrier_sha256": "667694e9e2c566df3b7a33f7e9e49692c639264083c4be05ed63552f8b47353f",
+    "carrier_total_lines": 314,
+    "carrier_encoding": "UTF-8, LF-only (CR=0), final line terminated by LF",
+    "carrier_pin_sidecar": "reviewer_report.sha256 (85 B; sha256 of the sidecar itself = c92acefd22ac7c987290ddde7794715e9c7c96fb214787c5b42fd9e33e17f621; content = \"667694e9e2c566df3b7a33f7e9e49692c639264083c4be05ed63552f8b47353f  reviewer_report.md\\n\") content-MATCHES an independent read-only re-hash at landing; 0 bytes written to either file by this pass",
+    "verdict_line": 9,
+    "verdict_line_byte_region_inclusive": [415, 430],
+    "verdict_line_length": 16,
+    "verdict_line_sha256": "ffd796ea6572fdaf4dce6d9984e6e9294cf8c0c564ce345d73132bf29aa1b3b4",
+    "verdict_line_text": "VERDICT: ACCEPT",
+    "region_definition": "0-based byte offsets against reviewer_report.md at sha256 667694e9e2c566df3b7a33f7e9e49692c639264083c4be05ed63552f8b47353f; the single-line verdict region includes its trailing LF; multi-line section regions include internal LFs and exclude the section's final LF",
+    "section_byte_regions": {
+      "s0_method_lines_16_22": {"start": 622, "end_inclusive": 1469, "length": 848, "sha256": "4f33be478d9d8d8a9cb03c7af1b1660181531be8cba3e68ab05eb28a5d62889b"},
+      "s1_checklist_lines_24_34": {"start": 1472, "end_inclusive": 2377, "length": 906, "sha256": "383226d290fa5ddce68ee41b4ed57d3a861842afa5519ecf91adeb74d97a6a07"},
+      "s2_three_arms_lines_37_66": {"start": 2384, "end_inclusive": 5207, "length": 2824, "sha256": "b98f733a5e03b79b341eb67970d3857f5e332dfee0323614b76c00ebae1c2cdb"},
+      "s3_family_lines_69_114": {"start": 5214, "end_inclusive": 8873, "length": 3660, "sha256": "c3e5320f99e4f5d461a551f7427ccdef46ba097966d82b156c489b7b3868c8f4"},
+      "s4_diff_lines_117_129": {"start": 8880, "end_inclusive": 10490, "length": 1611, "sha256": "c1242d59dc35d875a92483d815b1f20584916bbb88da9c2f098103ffe712df8c"},
+      "s5_fixture_d5_lines_132_156": {"start": 10497, "end_inclusive": 12880, "length": 2384, "sha256": "1260db761f111ae5a7138efc032f3a17bdad1b3beb254625f5aab0f89fca83a1"},
+      "s6_d1_lines_159_181": {"start": 12887, "end_inclusive": 15411, "length": 2525, "sha256": "571d7672b67242d48ad00e0bb9eab4d102bb35ab5c1f10044e7f05bb65a9d3cf"},
+      "s7_b1_lines_184_196": {"start": 15418, "end_inclusive": 16858, "length": 1441, "sha256": "bf0d38dfce75ac657e2e79c4fc573a11d5b73b63327bcd16f54ec722cf8bce89"},
+      "s8_disclosures_lines_199_227": {"start": 16865, "end_inclusive": 20400, "length": 3536, "sha256": "5f4ced407ca0a1a59f491bd70897fa113f3da43c32897716db04c99e82fbb7ae"},
+      "s9_findings_lines_230_250": {"start": 20407, "end_inclusive": 22582, "length": 2176, "sha256": "dcf5e58aa9d2f460dcca176edd3c1e2b4d1dc7e57d268d63d10b38d5f18fbcc4"},
+      "s10_unverified_lines_253_262": {"start": 22589, "end_inclusive": 23885, "length": 1297, "sha256": "7995e3df4ab06b9a5e4035f6f22a04c5d6347e8e66c5b64960ffd67b92a6a995"},
+      "s11_boundaries_lines_265_281": {"start": 23892, "end_inclusive": 25945, "length": 2054, "sha256": "0edc52a86751a2834a69cf38de4f618ced7e99ace6ee0c492361689344323be3"},
+      "s12_quickref_lines_284_314": {"start": 25952, "end_inclusive": 27697, "length": 1746, "sha256": "6bc87f92f26426074664bce664218092e9f7205a14916d90e8b0433f7ed0062c"}
+    },
+    "mirror": "handoff.json: status=accepted_scoped, status_before=review_pending, status_transition=review_pending -> accepted_scoped, status_rounds=1, status_history=[round 0 pre-verdict, round 1 carrier verdict, carrier landing transcription], status_authority (full mirror incl. carrier pin + verdict line + section byte regions), reviewer_status, carried_findings=P3-1..P3-4, unverified=10 (3 implementer-side preserved + 7 reviewer), d1_state=remediated_by_parent_see_isolation_incident, implementer_signed=false, verdict_is_transcribed_not_authored=true",
+    "transcription_only": "this file, review.md and handoff.json transcribe the carrier verdict and add no acceptance of their own"
+  },
+
+  "carried_findings": [
+    {
+      "id": "P3-1",
+      "level": "P3",
+      "title": "family_ctl_subset_junit.xml 内部路径自相矛盾",
+      "verbatim_must_carry": "P3-1 `family_ctl_subset_junit.xml` 内部路径自相矛盾。 同一份文件里，zr804 的 subprocess 实参是 `…\\iso_ctl\\rf\\tools\\sync_installations.py`（4 处，JSON 转义 `\\`），而 traceback 的源文件路径是 `..\\..\\iso\\rf\\tests\\test_zr804_platform_shape.py:161/176`（7 处，指向 AFTER 树）——两者由同一模块的 `__file__`/`co_filename` 推出，不可能同时为真（`iso/rf` 与 `iso_ctl/rf` 的 `tests/` 是两个内容不同的真实目录，已哈希验证）。 同时，对照臂的 pytest 实际命令行 / cwd / rootdir 没有落在盘上任何地方（`run_log.jsonl` 只有叙述，`family_ctl_subset_stdout.txt` 无 session 头、无 `rootdir:` 行）。 影响：对照臂的“树=iso_ctl”只有 zr804 的实参这一条硬证据，fc1004/zr907 三条的树归属在他们的产物里是含糊的。 为何不升级：结论已被我的独立原像树重跑（5/5 failed）替代证明；且我那份对照 junit 中 traceback 与实参同指一棵树，可作正确留痕的样板。",
+      "disposition": "carried verbatim to parent/register (evidence-quality/trace; does not overturn ACCEPT); no card action in this pass",
+      "blocking": false,
+      "source": "reviewer_report.md section 9 P3-1 (lines 240-244)"
+    },
+    {
+      "id": "P3-2",
+      "level": "P3",
+      "title": "首次 validator rc=3 的输出被覆盖，未留档",
+      "verbatim_must_carry": "P3-2 首次 validator `rc=3` 的输出被覆盖，未留档。 披露本身在 `run_log`，但原始产物不可复核（见 §8 末）。",
+      "disposition": "carried verbatim to parent/register; feeds unverified item 5; no card action in this pass",
+      "blocking": false,
+      "source": "reviewer_report.md section 9 P3-2 (line 245)"
+    },
+    {
+      "id": "P3-3",
+      "level": "P3",
+      "title": "BEFORE 家族跑的命令行/stdout 未留盘",
+      "verbatim_must_carry": "P3-3 BEFORE 家族跑的命令行/stdout 未留盘。 只有 `family_before_junit.xml`（+`family_before.json` 纯状态表），“上一 session、默认临时根、无 shim”是 handoff 的自述；我只能从 junit 里 `Temp\\...` 匹配为空间接印证“不是本 session 的短根”。",
+      "disposition": "carried verbatim to parent/register; only indirect corroboration available; no card action in this pass",
+      "blocking": false,
+      "source": "reviewer_report.md section 9 P3-3 (line 246)"
+    },
+    {
+      "id": "P3-4",
+      "level": "P3",
+      "title": "evidence/family_measure_junit.xml 用途/来源未在 handoff 说明",
+      "verbatim_must_carry": "P3-4 `evidence/family_measure_junit.xml`（1169/59/4/11，与 family_before 同计数）未在 handoff 中说明其用途/来源，仅作为 hash 清单成员列出；不构成矛盾，但读者无法定位它与 `family_before_junit.xml` 的关系。",
+      "disposition": "carried verbatim to parent/register; not a contradiction; no card action in this pass",
+      "blocking": false,
+      "source": "reviewer_report.md section 9 P3-4 (line 247)"
+    }
+  ],
+  "carried_findings_counts": "P1=0 / P2=0 / P3=4 (all four P3 carried verbatim, none weakened)",
+
+  "unverified": [
+    "IMPLEMENTER (pre-existing, preserved): CLI rc-2 path for the new refusal (oracle section 2 mentions revenue_forecast.py:120-122 -> stderr + rc 2) was NOT exercised end-to-end: the probes call calculate_model_path directly. Message/type are proven; the CLI wrapper exit code is not.",
+    "IMPLEMENTER (pre-existing, preserved): The environment-caused flip set is measured by a targeted control run of the 5 flipped ids in iso_ctl (pristine product + fixtures, same session), not by a second full-suite control run.",
+    "IMPLEMENTER (pre-existing, preserved): Why the installed skill copies under Path.home()/.{agents,claude,codex}/skills differ from BOTH production and iso (198 files) is not diagnosed; this card does not touch them.",
+    "REVIEWER item 1: 新拒绝的 CLI rc=2 端到端路径未跑通（实现者自曝，probe 直接调 `calculate_model_path`）；我亦未补跑 → **未证实**。",
+    "REVIEWER item 2: 最终 `family_after` / `family_ctl` 两次 pytest 是否真的 `-p i10a_dir_mode_shim`：盘上无命令行留痕，`plugins:` 行只列 entry-point 插件（不列 `-p` 模块），只能间接推断（若无 shim 会全线 PermissionError，而两次都只有 4 error）→ **未证实**。",
+    "REVIEWER item 3: `test_fc1004` 在一次性 destination 上 `rc=1`+空 stdout 的根因未诊断 → 只能说“原像树同样失败=非本卡回归”，不能说“已知为何必失败”。",
+    "REVIEWER item 4: “5 个安装门在干净环境下会绿” 未验证（也不在 B-1 要求内）。",
+    "REVIEWER item 5: validator rc=0 来自 I-10-A 原脚本 的出处（脚本路径/sha 未记录在 `validate_result.json`）→ 未证实。",
+    "REVIEWER item 6: D-3 的完整性：我只核了已披露的 `sync_installations --apply` 机制，没有穷举 1243 个用例里所有写 `.planning` 之外的路径 → 未穷尽。",
+    "REVIEWER item 7: handoff 记 `git_diff_HEAD_name_only_total=3824`，我两次实测 3826；差 2 全在 `.planning` 内，非本卡面，未追查具体两条（非 `.planning` 均为 0，此点两版一致）。"
+  ],
+  "unverified_source": "items 1-3 = implementer-side entries preserved from the pre-image handoff (never deleted); items 4-10 = reviewer_report.md section 10 (lines 253-262, byte region 22589-23885, sha256 7995e3df4ab06b9a5e4035f6f22a04c5d6347e8e66c5b64960ffd67b92a6a995), item-by-item; total 10",
+
+  "d1_state": "remediated_by_parent_see_isolation_incident",
+  "d1_state_detail": "D-1 dispositioned by the PARENT under owner option (a) 截断回 60 行 — executed_at_utc 2026-09-24T21:41:35.194073Z, PRE 50229 B / 65 lines / 18310faea83bad23e68f6713b2c5cce2ad6a3d89f6d8a6b8a02419659335ad55, POST 46369 B / 60 lines / bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91, readonly_before=True -> readonly_after=False. Incident directory: execution_runs/_isolation_incidents/20260924-i10a-f2-baseline-wrote-production-registry/ (INCIDENT.md 5966 B status RESOLVED; REMEDIATION_RECORD.md 992 B; publications.jsonl.pre_truncation_20260924 = 50229 B / 65 lines / 18310fae…). Reviewer section 6 only VERIFIED consistency (只核不处置) and did not redo the truncation, did not touch the file, did not clear the attribute; this pass does the same.",
+  "b1_state": "upheld_by_reviewer (environment=5 / fix_attributable=0): byte-level pre-image tree rerun 5/5 failed in 606.91s + production-side sync_installations read-only check rc=1 with .agents=198 DIFF and .codex=198 DIFF reproduced independently; residual = fc1004 one-shot-destination rc=1 + empty stdout root cause undiagnosed",
+
+  "reviewer_reported_side_effects": [
+    "REVIEWER SELF-REPORTED DEVIATION: the reviewer's control rerun executed test_zr804 -> sync_installations.py --apply writing Path.home()/.{agents,codex}/skills (outside .planning); killed at the 300 s timeout; read-only recheck = both targets still 198 files DIFF each (same as the pre-run reading), no observed state change, git diff HEAD --name-only non-.planning still 0. Filed per discipline (deselect could have avoided it; not foreseeable to the reviewer in advance). Not an implementer problem.",
+    "REVIEWER SELF-REPORTED TOOLING DEFECT: first rebuild of changes.diff wrote its temporary patch with the system GBK code page, polluting the git apply result; its own tool error, not a defect of the reviewed artifact — after switching to UTF-8: git apply --check rc=0 and 8/8 byte-exact MATCH."
+  ],
+
+  "files_and_hashes": {
+    "review.md": {"state": "created (did not exist before this pass)", "sha256": "e69c58930d8877b65270204ac0f61838074ce6d444f488078a357936e6117038", "bytes": 25431, "lines": 268},
+    "handoff.json": {"state": "status face rewritten (status/status_before/status_authority/status_history/reviewer_status/carried_findings/unverified/d1_state/verdict_is_transcribed_not_authored only)", "sha256_before": "00ae453b05a78435127dc0d39ee15f084b707a47b62d65812381e8a04b70d404", "bytes_before": 51834, "sha256_after": "faf2060044d343faefea55f4ef03f8b3839d7e0014d105d77e9edae17bdbb39f", "bytes_after": 68933, "json_parse": "OK (40 top-level keys; python json.load after write)", "pre_image_preserved_in": ["status_authority.pre_verdict_authority", "status_history round 0", "reviewer_status_historical_pre_verdict"]},
+    "qualification.json": {"state": "created", "note": "this file; its own sha256/bytes are reported in the pass result (a file cannot embed its own hash)"},
+    "carrier": {"file": "reviewer_report.md", "bytes": 27699, "sha256": "667694e9e2c566df3b7a33f7e9e49692c639264083c4be05ed63552f8b47353f", "bytes_written_by_this_pass": 0},
+    "carrier_sidecar": {"file": "reviewer_report.sha256", "bytes": 85, "sha256": "c92acefd22ac7c987290ddde7794715e9c7c96fb214787c5b42fd9e33e17f621", "bytes_written_by_this_pass": 0},
+    "untouched_originals": ["oracle.md (14872 B / 6d6cf38463d9d822f8fe7ca9c90dde4b57f4aa0e030705ab48dfa816b41748cd)", "changes.diff (14366 B / bcd44c249da249b283cc06088e5da8e3aa8d092ecae28cae506be631503f6db8)", "frozen_regression_rerun.json (4580 B / 1ceb9e430ef02a468ca1665eddd3a85a5af234bbe0907b5ecb0746ab977814dd)", "evidence/** (147 deliverable files, read-only)", "reviewer_report.md + reviewer_report.sha256", "after/ before/ command_runs/ harness/ iso/ iso_ctl/ oracle/ recovery/ scratch/ scripts/", "publications.jsonl + the incident directory", "every other card", "the five plan files"]
+  },
+
+  "bookkeeping": {
+    "write_surface": "exactly 3 files, all inside this attempt: review.md (new), handoff.json (status face only), evidence/I10A-F2-FIX/qualification.json (new; directory created)",
+    "never_written": ["REMEDIATION_REGISTER.md", "progress.md", "findings.md", "task_plan.md", "OWNER_DECISIONS.md", "任何 .planning 之外的产品文件", "reviewer_report.md + reviewer_report.sha256", "本 attempt 的既有 carrier（oracle.md / changes.diff / frozen_regression_rerun.json / evidence 147 件 / handoff.json 的非 status 字节）", "其他卡的任何文件", "publications.jsonl"],
+    "git": "no git write operation; git status is BANNED in this repo and was not executed; only `git -c core.quotepath=false diff HEAD --name-only` (read-only) — non-.planning count = 0 at baseline (total 3826) and = 0 at end of pass",
+    "network": "none",
+    "tests": "none run",
+    "promotion": "none",
+    "json_reparse": "handoff.json and this file re-parsed with python json.load after writing (OK)",
+    "implementer_signed": false,
+    "verdict_is_transcribed_not_authored": true
+  },
+
+  "note": "Created by the carrier-landing bookkeeping pass. verdict = ACCEPT (reviewer_report.md line 9, byte region [415,430], line sha256 ffd796ea…, file 27699 B / 667694e9e2c566df3b7a33f7e9e49692c639264083c4be05ed63552f8b47353f, pinned by reviewer_report.sha256 85 B), counts P1=0 / P2=0 / P3=4 + 7 unverified items. formula = not_applicable_with_reason (this card's adjudicated object is evidence and criteria, not a formula), disclosure_adaptation stays unmapped, accuracy stays unproven. granted_scope = the evidence and criteria of the F-I10A-2 fix plus the transcription of the verdict; not_granted = production closure, promotion, any clean-environment green outside the family AFTER 1164/64/4/11 counting, the CLI rc=2 end-to-end path, the fc1004 root cause, disclosure accuracy, formula qualification, any write outside this attempt's three files, the plan's five files, and any publications.jsonl disposition. d1_state = remediated_by_parent_see_isolation_incident. The four P3 findings and seven unverified items are carried verbatim and must not be weakened; the reviewer's two self-reported side effects are carried as disclosed. This file adds no acceptance of its own."
+}

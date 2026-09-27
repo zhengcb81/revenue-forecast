@@ -1,0 +1,443 @@
+{
+  "station": "OPEN12-CUTOFF-ANNOUNCE-ACQUISITION",
+  "attempt": "a20260925-01",
+  "generated_utc": "2026-09-25T22:12:49Z",
+  "station_layer": "acquisition_layer_only",
+  "scope": "取证层：cutoff 后交易所公告这一来源是否存在、可得、字节可核（OPEN-12 = RULED_WITH_BLOCKED_VALUE 的取值侧取证）",
+  "discipline": {
+    "allowed_methods": ["web_fetch (read-only GET)", "web_search", "filing-fetch (read-only)"],
+    "methods_actually_used": ["web_fetch (read-only GET)", "web_search (attempted once, tool failed)"],
+    "filing_fetch_used": false,
+    "git_write_operations": "none",
+    "git_status_used": false,
+    "git_diff_head_name_only_used": true,
+    "write_surface": "本计划目录 execution_runs/OPEN12-CUTOFF-ANNOUNCE-ACQUISITION/a20260925-01/ 仅",
+    "product_repo_writes": 0,
+    "fail_closed": true
+  },
+  "authorization": {
+    "authorized_by": "OWNER_DECISIONS §二十七 #1",
+    "source_file": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+    "source_bytes_at_read": 76005,
+    "source_sha256_at_read": "fe26a2dbacc42a1e7ca252c08c6d7c7538360883dbc0a9cd072fb4af526d9bbe",
+    "source_line": "L558",
+    "owner_words_verbatim": "两条都授权（建议）",
+    "row_verbatim": "| **1** | **G2=`OPEN-4`、G3=`OPEN-12`** 至今未授权未派（合并裁列的授权缺口，**G1 已由 `OPEN-11` 补上**） | **「两条都授权（建议）」** | 派 `OPEN-4`（wiki 来源审核）与 `OPEN-12`（cutoff 后交易所公告取得方式）**受控取证**；**产物只落本计划目录**（同 §二十四 #3 形态）；**不解除任何 BLOCKED、不产生 ACCEPT**；两站交付后**仍须过 MERGE 七条** |",
+    "companion_ref": "OWNER_DECISIONS §二十四 L498（取证产物只落本计划目录）",
+    "section_27_exec_discipline_verbatim": "**三票 = 三个许可，不是三个结论**：**不解除 `OPEN-4`/`OPEN-12`/`OPEN-3`/`OPEN-5` 任何 BLOCKED**、**不产生 ACCEPT**、**不改任何 status**、**不授权晋升**。",
+    "section_27_scope_note_verbatim": "**#2 是对 §二十四 L498 的定向取代**，适用范围**仅限「origin 响应字节经 filing-fetch 取回」这一场景**；**其余取证产物仍只落本计划目录**。"
+  },
+  "definition_conflict_registered": {
+    "type": "OPEN-12 所指不一致（登记不裁）",
+    "card_side": {
+      "file": "execution_runs/I-11-A/a20260919-01/decision.md",
+      "line": "L408",
+      "quote": "| OPEN-12 | 独立复核指出的 P2-5/P2-6/P2-7/P2-8/P2-9 已在本 attempt 内处置（见 oracle §R2、mechanism_review §5 第 8/9 条、review.md §4）；是否需要为“校验器完备性”另立一张专业卡（统计/工程 reviewer） | PLAN owner / 统计 reviewer | 否 | I-11-C 是否复用同一校验器 |"
+    },
+    "merge_side": {
+      "file": "execution_runs/I11A-OPEN-MERGE/a20260924-01/merge_ruling.md",
+      "line": "L362",
+      "quote": "**G3** | **OPEN-12** | 「是否需要为“校验器完备性”另立一张专业卡（统计/工程 reviewer）｜**PLAN owner / 统计 reviewer**」（`decision.md` L408）"
+    },
+    "owner_side": {
+      "file": "OWNER_DECISIONS.md",
+      "line": "L558",
+      "quote": "派 `OPEN-4`（wiki 来源审核）与 `OPEN-12`（cutoff 后交易所公告取得方式）**受控取证**"
+    },
+    "handling": "本工位按 owner 裁定行（§二十七 #1）的所指执行取证；不裁“OPEN-12 到底指哪一个”，不改任何 status，登记冲突交父/owner。"
+  },
+  "cutoff_window": {
+    "as_of_date": "2026-09-18",
+    "as_of_sources": [
+      "audit_review/2026-09-18_real_company_skill_audit/requests/zijin_2025.json L4 (\"as_of_date\": \"2026-09-18\")",
+      "audit_review/2026-09-18_real_company_skill_audit/requests/msft_2026.json L4",
+      "audit_review/2026-09-18_real_company_skill_audit/requests/xiaomi_2025.json L4",
+      "audit_review/2026-09-18_real_company_skill_audit/independent/acquisition_aftercheck.json L70/L164 (\"as_of_date\": \"2026-09-18\")"
+    ],
+    "window_definition_verbatim": [
+      {
+        "file": "execution_v2/card_I-11-A.md",
+        "line": "L21",
+        "quote": "来源晚于as_of或原文无法核查→STOP_EVIDENCE。"
+      },
+      {
+        "file": "audit_review/2026-09-18_real_company_skill_audit/AUDIT_REPORT.md",
+        "line": "L76",
+        "quote": "补充静态观察：capture验证要求published<=captured<=as_of。9/19恢复研究、信息集仍9/18时，不能把实际获取时间伪填前一天。"
+      }
+    ],
+    "post_cutoff_window_used": "(2026-09-18 00:00, 2026-09-25T22:11Z] —— 即 as_of 之后至本工位取回时点",
+    "timezone_note": "HKEX `DATE_TIME` 字段为香港本地时间（UTC+8）；eastmoney `notice_date`/`display_time` 为北京时间（UTC+8）；SEC `Filing Date` 无时区。跨源比较按日期，不做秒级对齐。",
+    "relation_note": "该窗口内的公告按 card_I-11-A L21 属 `STOP_EVIDENCE` 域（不得进 I-11-A 证据集）。本工位只测来源可得性，不判定其可否被使用（规则/审核层）与证据等级（会计面）。"
+  },
+  "attempts_summary": {
+    "total": 18,
+    "web_fetch": 17,
+    "web_search": 1,
+    "http_200": 10,
+    "http_403": 2,
+    "http_500": 1,
+    "tool_level_failures": 5,
+    "usable_data_responses": 6,
+    "saved_to_corpus": 3,
+    "third_party_paths": 5,
+    "first_party_paths": 12
+  },
+  "external_entries": [
+    {
+      "id": "att-01",
+      "url": "https://data.sec.gov/submissions/CIK0000789019.json",
+      "retrieved_utc": "2026-09-25T21:59:50Z (session window；工具不提供逐请求时间戳，不伪造精确秒值)",
+      "http_status": 403,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": false,
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "Your Request Originates from an Undeclared Automated Tool"},
+        {"locator": "inline response body", "text": "To allow for equitable access to all users, SEC reserves the right to limit requests originating from undeclared automated tools."},
+        {"locator": "inline response body", "text": "Reference ID: 0.31a01302.1790373666.6277120"}
+      ],
+      "finding": "SEC origin 对本工位 UA 一律 403 ⇒ MSFT 交易所公告 origin 字节不可得（fail-closed）"
+    },
+    {
+      "id": "att-02",
+      "url": "http://www.cninfo.com.cn/new/fulltextSearch?notautosubmit=&keyWord=%E7%B4%AB%E9%87%91%E4%B8%9A%E5%8F%91",
+      "retrieved_utc": "2026-09-25T22:00:10Z (session window)",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": false,
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "包含\"{{kwSearch}}\"关键词的搜索结果"},
+        {"locator": "inline response body", "text": "{{ announcementText }}"},
+        {"locator": "inline response body", "text": "巨潮资讯网是深圳证券交易所信息披露官方网站，由深交所全资子公司深圳证券信息有限公司运营"}
+      ],
+      "finding": "HTTP 200 但为 JS SPA 外壳（模板占位符未渲染），无任何公告条目 ⇒ 对 A 股公告取得无信息量"
+    },
+    {
+      "id": "att-03",
+      "url": "web_search queries: [\"紫金矿业 601899 公告 2026年9月\", \"小米集团 1810 公告 2026年9月 hkexnews\", \"Microsoft 8-K September 2026 SEC filing\"]",
+      "retrieved_utc": "2026-09-25T22:00:15Z (session window)",
+      "http_status": null,
+      "retrieval_method": "web_search",
+      "third_party": false,
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "tool error", "text": "Error: DeepSeek returned an unprocessable response body"},
+        {"locator": "tool error", "text": "The web search request used endpoint \"https://api.deepseek.com/anthropic/v1/messages\"."},
+        {"locator": "tool error", "text": "Search endpoint configuration is separate from chat."}
+      ],
+      "finding": "web_search 端点故障（与 §二十四 #3 记载的既往故障同型）⇒ 检索路径不可用，未取得数据"
+    },
+    {
+      "id": "att-04",
+      "url": "https://np-anotice-stock.eastmoney.com/api/security/ann?page_size=50&page_index=1&ann_type=A&client_source=web&stock_list=601899&f_node=0&s_node=0",
+      "retrieved_utc": "2026-09-25T22:01:00Z (session window)",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": true,
+      "third_party_note": "东方财富（第三方行情/公告聚合站），非交易所 origin；按纪律显式标注 `external_retrieval_not_local`",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "\"notice_date\":\"2026-09-17 00:00:00\",\"product_code\":\"\",\"sort_date\":\"2026-09-17 12:00:00\",\"source_type\":\"31\",\"title\":\"紫金矿业:紫金矿业集团股份有限公司第九届董事会独立董事专门会议第一次会议决议\""},
+        {"locator": "inline response body", "text": "\"art_code\":\"AN202609061829069202\""},
+        {"locator": "inline response body", "text": "\"total_hits\":2767"}
+      ],
+      "finding": "601899 最新一条 `notice_date = 2026-09-17`（**cutoff 之前**）；降序排列下该 feed 在 (2026-09-18, 2026-09-25] 无条目 ⇒ A 股侧窗口覆盖**未证**（第三方覆盖不等于交易所无公告）"
+    },
+    {
+      "id": "att-05",
+      "url": "https://www1.hkexnews.hk/search/prefix.do?callback=cb&lang=EN&type=A&name=1810&market=SEHK",
+      "retrieved_utc": "2026-09-25T22:01:30Z (session window)",
+      "http_status": null,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": false,
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "tool error", "text": "Error: unsupported content type \"application/javascript;charset=utf-8\""},
+        {"locator": "tool error", "text": "unsupported content type"},
+        {"locator": "request", "text": "https://www1.hkexnews.hk/search/prefix.do?callback=cb&lang=EN&type=A&name=1810&market=SEHK"}
+      ],
+      "finding": "hkexnews 代码→stockId 映射接口返回 JSONP（application/javascript），harness web_fetch 不接受该 content-type ⇒ 小米(01810) 定向查询所需的 stockId 未能取得"
+    },
+    {
+      "id": "att-06",
+      "url": "https://www1.hkexnews.hk/search/titleSearchServlet.do?sortDir=0&sortByOptions=DateTime&category=0&market=SEHK&stockId=-1&documentType=-1&fromDate=20260918&toDate=20260925&title=&searchType=1&t1code=40000&t2Gcode=-2&t2code=-2&rowRange=100&lang=EN",
+      "retrieved_utc": "2026-09-25T22:02:22Z",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)，响应全文由 harness spill 落临时文件后复制入 corpus",
+      "third_party": false,
+      "first_party_note": "hkexnews.hk = 香港交易所旗下披露易（交易所 origin）",
+      "saved": true,
+      "bytes": 55471,
+      "sha256": "ede179a0bce20b673bb0d879530871e0dbc86023de2511f122027d41737f917f",
+      "saved_path": "corpus/ext-01_hkexnews_titleSearch_financial_20260918-20260925.txt",
+      "byte_fidelity": "harness_spill_of_formatted_result（web_fetch 只回解码/渲染文本，**非 origin HTTP 响应字节**；sha256 覆盖的是实际保存的这 55,471 B）",
+      "verbatim_quote": [
+        {"line": 1, "byte_offset": 0, "text": "Fetched https://www1.hkexnews.hk/search/titleSearchServlet.do?...&fromDate=20260918&toDate=20260925&...&t1code=40000&...&rowRange=100&lang=EN (HTTP 200)"},
+        {"line": 5, "byte_offset": 723, "text": "DATE_TIME\\\":\\\"25/09/2026 21:24"},
+        {"line": 5, "byte_offset": 39526, "text": "\\\"STOCK_NAME\\\":\\\"ZIJIN MINING\\\",\\\"TITLE\\\":\\\"2026 Interim Report\\\",\\\"FILE_TYPE\\\":\\\"PDF\\\",\\\"DATE_TIME\\\":\\\"25/09/2026 12:01\\\""},
+        {"line": 5, "byte_offset": 55437, "text": "\"loadedRecord\":100,\"recordCnt\":748}"}
+      ],
+      "finding": "cutoff 后窗口 (09-18→09-25) 财务报告类公告 748 条，已载入 100 条（24/09 18:51–25/09 21:24）；其中含**被审计主体紫金矿业 H 股(02899) 于 2026-09-25 12:01 发布的 2026 Interim Report** ⇒ cutoff 后交易所公告**存在且一级来源可得**"
+    },
+    {
+      "id": "att-07",
+      "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000789019&type=8-K&dateb=&owner=include&count=10&action=getcompany",
+      "retrieved_utc": "2026-09-25T22:02:35Z (session window)",
+      "http_status": 403,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": false,
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "SEC.gov | Your Request Originates from an Undeclared Automated Tool"},
+        {"locator": "inline response body", "text": "Please declare your traffic by updating your user agent to include company specific information."},
+        {"locator": "inline response body", "text": "Reference ID: 0.19c2645f.1790373741.1aae5893"}
+      ],
+      "finding": "第二个 SEC origin 端点同样 403 ⇒ SEC origin 全域（data.sec.gov + www.sec.gov）对本工位不可得"
+    },
+    {
+      "id": "att-08",
+      "url": "https://www1.hkexnews.hk/search/titleSearchServlet.do?...&fromDate=20260918&toDate=20260920&...&t1code=-2&t2Gcode=-2&t2code=-2&rowRange=100&lang=EN",
+      "retrieved_utc": "2026-09-25T22:03:16Z",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)，harness spill 复制入 corpus",
+      "third_party": false,
+      "saved": true,
+      "bytes": 60665,
+      "sha256": "9a101bf92ab4d7909057088c9d9a3711f379401210fb968fc0c1cbc84fcd9c95",
+      "saved_path": "corpus/ext-02_hkexnews_titleSearch_all_20260918-20260920.txt",
+      "byte_fidelity": "harness_spill_of_formatted_result（非 origin 响应字节）",
+      "verbatim_quote": [
+        {"line": 1, "byte_offset": 0, "text": "Fetched https://www1.hkexnews.hk/search/titleSearchServlet.do?...&fromDate=20260918&toDate=20260920&...&t1code=-2&...&rowRange=100&lang=EN (HTTP 200)"},
+        {"line": 5, "byte_offset": 643, "text": "DATE_TIME\\\":\\\"20/09/2026 19:58"},
+        {"line": 5, "byte_offset": 60368, "text": "DATE_TIME\\\":\\\"18/09/2026 21:52"},
+        {"line": 5, "byte_offset": 60631, "text": "\"loadedRecord\":100,\"recordCnt\":922}"}
+      ],
+      "finding": "cutoff 当日起 3 日（09-18→09-20）全类别公告 922 条，已载入 100 条（18/09 21:52–20/09 19:58）⇒ 窗口**首日即有覆盖**"
+    },
+    {
+      "id": "att-09",
+      "url": "https://r.jina.ai/https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000789019&type=8-K&dateb=&owner=include&count=10",
+      "retrieved_utc": "2026-09-25T22:03:50Z (session window)",
+      "http_status": null,
+      "retrieval_method": "web_fetch → r.jina.ai 文本渲染代理（首次）",
+      "third_party": true,
+      "third_party_note": "r.jina.ai = 第三方文本渲染/抓取代理，非 SEC origin；显式标注 `external_retrieval_not_local`",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "tool error", "text": "Error: tool call timed out after 30000ms"},
+        {"locator": "tool error", "text": "tool call timed out"},
+        {"locator": "request", "text": "https://r.jina.ai/https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000789019&type=8-K&dateb=&owner=include&count=10"}
+      ],
+      "finding": "首次经代理取 SEC 失败（超时）⇒ 记为失败尝试，不计证据"
+    },
+    {
+      "id": "att-10",
+      "url": "https://np-anotice-stock.eastmoney.com/api/security/ann?page_size=20&page_index=1&ann_type=HK&client_source=web&stock_list=01810&f_node=0&s_node=0",
+      "retrieved_utc": "2026-09-25T22:04:20Z (session window)",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": true,
+      "third_party_note": "东方财富第三方聚合站；`external_retrieval_not_local`",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "{\"data\":{\"list\":\\[\\],\"page\\_index\":1,\"page\\_size\":20,\"total\\_hits\":0},\"error\":\"\",\"success\":1}"},
+        {"locator": "inline response body", "text": "\"total\\_hits\":0"},
+        {"locator": "inline response body", "text": "\"success\":1"}
+      ],
+      "finding": "小米(01810) 港股公告查询返回空列表 ⇒ **不构成**“窗口内无公告”的证据（第三方覆盖/参数未证），fail-closed 记为未证"
+    },
+    {
+      "id": "att-11",
+      "url": "https://sec.report/CIK/0000789019",
+      "retrieved_utc": "2026-09-25T22:04:35Z (session window)",
+      "http_status": null,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": true,
+      "third_party_note": "sec.report = 第三方 SEC 镜像站；`external_retrieval_not_local`",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "tool error", "text": "Error: web fetch failed: TypeError: fetch failed"},
+        {"locator": "tool error", "text": "fetch failed"},
+        {"locator": "request", "text": "https://sec.report/CIK/0000789019"}
+      ],
+      "finding": "第三方 SEC 镜像连接失败 ⇒ 不可用"
+    },
+    {
+      "id": "att-12",
+      "url": "https://np-anotice-stock.eastmoney.com/api/security/ann?page_size=20&page_index=1&ann_type=HK&client_source=web&stock_list=1810&f_node=0&s_node=0",
+      "retrieved_utc": "2026-09-25T22:05:30Z (session window)",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": true,
+      "third_party_note": "东方财富第三方聚合站；`external_retrieval_not_local`",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "{\"data\":{\"list\":\\[\\],\"page\\_index\":1,\"page\\_size\":20,\"total\\_hits\":0},\"error\":\"\",\"success\":1}"},
+        {"locator": "inline response body", "text": "\"page\\_size\":20"},
+        {"locator": "inline response body", "text": "\"error\":\"\""}
+      ],
+      "finding": "换代码写法(1810)仍空 ⇒ 小米窗口覆盖仍未证"
+    },
+    {
+      "id": "att-13",
+      "url": "https://r.jina.ai/https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000789019&type=8-K&count=10",
+      "retrieved_utc": "2026-09-25T22:06:00Z (session window)",
+      "http_status": 200,
+      "retrieval_method": "web_fetch → r.jina.ai 文本渲染代理（重试成功）",
+      "third_party": true,
+      "third_party_note": "r.jina.ai = 第三方文本渲染代理；SEC origin 仍 403；显式标注 `external_retrieval_not_local`；内容未经 origin 独立复核",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "URL Source: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000789019&type=8-K&count=10"},
+        {"locator": "inline response body", "text": "| 8-K | [Documents](https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/0001193125-26-380280-index.htm) | Current report, items 7.01 and 9.01 Acc-no: 0001193125-26-380280(34 Act) Size: 2 MB | 2026-09-02 |"},
+        {"locator": "inline response body", "text": "| 8-K | [Documents](https://www.sec.gov/Archives/edgar/data/789019/000119312526323632/0001193125-26-323632-index.htm) | Current report, items 2.02 and 9.01 Acc-no: 0001193125-26-323632(34 Act) Size: 1 MB | 2026-07-29 |"}
+      ],
+      "finding": "经第三方代理取回 MSFT 8-K 列表（10 条）：**最新一条 Filing Date = 2026-09-02（cutoff 之前）**，列表内无任何 ≥2026-09-19 的申报 ⇒ 在该代理可见范围内，MSFT 窗口内 8-K 为 0；但此为第三方、且仅覆盖 type=8-K/count=10，**不作 origin 级结论**"
+    },
+    {
+      "id": "att-14",
+      "url": "https://www1.hkexnews.hk/search/prefix.do?lang=EN&type=A&name=XIAOMI&market=SEHK",
+      "retrieved_utc": "2026-09-25T22:06:30Z (session window)",
+      "http_status": null,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": false,
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "tool error", "text": "Error: unsupported content type \"application/javascript;charset=utf-8\""},
+        {"locator": "tool error", "text": "unsupported content type"},
+        {"locator": "request", "text": "https://www1.hkexnews.hk/search/prefix.do?lang=EN&type=A&name=XIAOMI&market=SEHK"}
+      ],
+      "finding": "去掉 callback 后仍 JSONP content-type ⇒ 小米 stockId 映射仍不可得（同一工具限制）"
+    },
+    {
+      "id": "att-15",
+      "url": "http://query.sse.com.cn/security/stock/queryCompanyBulletinNew.do?jsonCallBack=jsonpCallback1&isPagination=true&productId=601899&...&beginDate=2026-09-18&endDate=2026-09-25&...",
+      "retrieved_utc": "2026-09-25T22:06:50Z (session window)",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": false,
+      "first_party_note": "上交所 query.sse.com.cn = 一级来源",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "({\"jsonCallBack\":\"jsonpCallback1\",\"success\":\"false\",\"error\":\"系统繁忙...\",\"errorType\":\"ExceptionInterceptor\"})"},
+        {"locator": "inline response body", "text": "\"success\":\"false\""},
+        {"locator": "inline response body", "text": "\"errorType\":\"ExceptionInterceptor\""}
+      ],
+      "finding": "上交所公告查询接口 HTTP 200 但业务层拒绝（缺 Referer/反爬）⇒ **一级来源 A 股公告列表不可得**"
+    },
+    {
+      "id": "att-16",
+      "url": "https://www1.hkexnews.hk/search/titleSearchServlet.do?...&fromDate=20260918&toDate=20260925&...&t1code=-2&t2Gcode=-2&t2code=-2&rowRange=100&lang=EN",
+      "retrieved_utc": "2026-09-25T22:07:56Z",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)，harness spill 复制入 corpus",
+      "third_party": false,
+      "saved": true,
+      "bytes": 57308,
+      "sha256": "70eec1a6109661c436c78ea2209cf65c2348eeb6e00ab3c14fd475522025eb94",
+      "saved_path": "corpus/ext-03_hkexnews_titleSearch_all_20260918-20260925.txt",
+      "byte_fidelity": "harness_spill_of_formatted_result（非 origin 响应字节）",
+      "verbatim_quote": [
+        {"line": 1, "byte_offset": 0, "text": "Fetched https://www1.hkexnews.hk/search/titleSearchServlet.do?...&fromDate=20260918&toDate=20260925&...&t1code=-2&...&rowRange=100&lang=EN (HTTP 200)"},
+        {"line": 5, "byte_offset": 467, "text": "TOTAL_COUNT\\\":\\\"4920"},
+        {"line": 5, "byte_offset": 597, "text": "DATE_TIME\\\":\\\"25/09/2026 22:55"},
+        {"line": 5, "byte_offset": 57292, "text": "\"loadedRecord\":100,\"recordCnt\":4920}"}
+      ],
+      "finding": "cutoff 后全窗口 (09-18→09-25) **全类别 4,920 条**公告，已载入最新 100 条（25/09 19:17–25/09 22:55）⇒ 窗口整体有覆盖；本工位仅载入 100/4,920，**未枚举全窗口**"
+    },
+    {
+      "id": "att-17",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0920/2026092000072.htm",
+      "retrieved_utc": "2026-09-25T22:08:30Z (session window)",
+      "http_status": 200,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": false,
+      "first_party_note": "hkexnews 交易所 origin；该件为窗口内 (20/09/2026 19:38) 的公告正文文档",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "byte_note": "响应体为渲染后文本且较短，未落盘 ⇒ 无 sha256（fail-closed，不以转录冒充字节）",
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "Listed Company Information"},
+        {"locator": "inline response body", "text": "An announcement has just been published by the issuer in the Chinese section of this website, a corresponding version of which may or may not be published in this section."},
+        {"locator": "inline response body", "text": "### Listed Company Information"}
+      ],
+      "finding": "**文档级**可得性已证：窗口内公告正文（.htm）一级来源 HTTP 200 直取成功；但字节未落盘 ⇒ 该件 sha256 缺"
+    },
+    {
+      "id": "att-18",
+      "url": "http://www.cninfo.com.cn/new/hisAnnouncement/query?stock=601899&tabName=fulltext&pageSize=30&pageNum=1&column=sse&category=&seDate=2026-09-18~2026-09-25&isHLtitle=true",
+      "retrieved_utc": "2026-09-25T22:10:30Z (session window)",
+      "http_status": 500,
+      "retrieval_method": "web_fetch (read-only GET)",
+      "third_party": false,
+      "first_party_note": "巨潮资讯网（深交所子公司运营的法定披露平台）",
+      "saved": false,
+      "bytes": null,
+      "sha256": null,
+      "verbatim_quote": [
+        {"locator": "inline response body", "text": "很抱歉，您访问的页面不存在"},
+        {"locator": "inline response body", "text": "请尝试刷新页面，或稍后再试"},
+        {"locator": "inline response body", "text": "![](//static.cninfo.com.cn/new/assets/image/nofind.png)"}
+      ],
+      "finding": "巨潮 hisAnnouncement/query 仅接受 POST，GET ⇒ HTTP 500 ⇒ **A 股一级来源公告列表在只读 GET 方法下不可得**"
+    }
+  ],
+  "local_sources": [
+    {"path": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md", "bytes": 76005, "sha256": "fe26a2dbacc42a1e7ca252c08c6d7c7538360883dbc0a9cd072fb4af526d9bbe", "quoted_lines": "L552-L565（§二十七）、L490-L504（§二十四）"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-MERGE/a20260924-01/merge_ruling.md", "bytes": 49062, "sha256": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1", "quoted_lines": "L10-L13、L53、L125、L299-L322、L358-L369"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/T2-SIM-OPEN6-SEC/a20260922-01/ruling.md", "bytes": 52560, "sha256": "5cb476767a934885f48eb40fcccac0515243471a7fc6f0aa0b66680bea99cf15", "quoted_lines": "L67、L163-L176（C1–C8）"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_v2/card_I-11-A.md", "bytes": 1433, "sha256": "9567b8dd81411092a87f1b66304f6f038725a085d7184ea9a353ed409a997df1", "quoted_lines": "L21"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_v2/card_I-11-B.md", "bytes": 1672, "sha256": "38ff2907acb627f3d5f6a97ca386a17551329ad3909720e84463a185154ae87c", "quoted_lines": "L9、L23"},
+    {"path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/decision.md", "bytes": 29756, "sha256": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951", "quoted_lines": "L408"},
+    {"path": "audit_review/2026-09-18_real_company_skill_audit/requests/zijin_2025.json", "bytes": 166, "sha256": "7fbcff48e54846325ba8f1df272fb03cb1c6f242eabed0066739154bb2841fb5", "quoted_lines": "L4"},
+    {"path": "audit_review/2026-09-18_real_company_skill_audit/independent/acquisition_aftercheck.json", "bytes": 14798, "sha256": "6b8690a9b4bd33b7898336eabf5aa778f932c4110d5c162a980f63ad5b6ef65b", "quoted_lines": "L70、L164"},
+    {"path": "audit_review/2026-09-18_real_company_skill_audit/AUDIT_REPORT.md", "bytes": 13711, "sha256": "4880878919dc251637a01d4390fd8c11f72bc19cd03d78508d04d6115fc41b7f", "quoted_lines": "L76"}
+  ],
+  "evidence_elements": {
+    "url": "present for all 18 attempts",
+    "retrieved_utc": "exact (file mtime, UTC) for the 3 saved corpus files; session-window (21:59Z–22:11Z) for the other 15 —— harness web_fetch 不提供逐请求时间戳，不伪造",
+    "http_status": "present for 13 attempts; null for 5 tool-level failures (记录为 tool error, 不冒充 HTTP)",
+    "sha256_of_saved_bytes": "3 corpus files (55,471 / 60,665 / 57,308 B)",
+    "origin_response_bytes": "NOT obtained —— harness `web_fetch` 只回解码/渲染文本，不产 origin 响应字节（与 §二十七 #2 提问背景一致）",
+    "verbatim_quote": "≥3 条/条目，带行号（corpus 行 1/5）与字节偏移（保存文件内绝对偏移）或 inline locator",
+    "retrieval_method": "present for all 18",
+    "third_party_marking": "att-04/09/10/11/12/13 显式 third_party=true + `external_retrieval_not_local`"
+  },
+  "not_done": [
+    "未执行任何 git 写操作（无 add/commit/checkout/stash/restore/reset），未执行 git status",
+    "未写入产品仓（company-wiki / filing-fetch 落点 / companies/{entity}/raw 等），非 .planning 写入 = 0",
+    "未使用 filing-fetch（见 handoff.landing_target_decision 理由）",
+    "未修改任何 status / 命题 state / 参数取值 / handoff.status",
+    "未产生 ACCEPT、未解除任何 BLOCKED、未代签、未做证据等级判定（归会计面）、未做来源可用性裁定（归交易所公告来源审核）",
+    "未下载窗口内紫金 23 MB PDF（体积超出受控取证合理范围，未尝试 ⇒ 该件字节未证）"
+  ]
+}

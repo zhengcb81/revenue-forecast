@@ -1,0 +1,207 @@
+{
+ "schema": "i11a-hyp-approve-handoff/1",
+ "card": "I-11-A",
+ "attempt": "execution_runs/I11A-HYP-APPROVE/a20260925-01",
+ "role": "industry_reviewer_non_implementer",
+ "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+ "station_purpose": "只裁 1 条命题（下标 0 H-CN-ZIJIN-SEG-01）是否够格 approved_frozen —— I-11-B 解锁条件 C1 的唯一主路径；不放行任何参数、不给阈值、不解除任何 BLOCKED、不产生 I-11-B 的 ACCEPT、不代签其他角色、不改封盘 attempt",
+
+ "authorized_by": "≥1 条命题在新版本上由非实现者 reviewer 写入 decision.decision_sha256 并达 approved_frozen（或 owner 明文改判开工门槛）",
+ "authorized_by_source": {
+  "field": "i11b_unlock_conditions[0]",
+  "path": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json",
+  "line": 118,
+  "file_sha256": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878",
+  "file_bytes": 21808,
+  "companion_quote_i11b_reason": "两半合起来产生的 approved_frozen 命题 = 0、可放行参数 = 0、可触发阈值 = 0：……被审 attempt 仍为 6 pending + 2 unquantified / approved_frozen=0（handoff L298、L321；validation_report L13-L18），且 OPEN-2/3/5/6 的取值与证据仍全部 BLOCKED。规则已立 ≠ 参数已批：card_I-11-B.md L9 要求『I-11-A命题已批准』、L23 要求『专业reviewer签署后方可进入forecast』，当前一条都不满足。",
+  "corroborating": [
+   "execution_v2/card_I-11-A.md L16（sha256 9567b8dd81411092a87f1b66304f6f038725a085d7184ea9a353ed409a997df1）：行业reviewer审定可观测性、时间滞后及是否已在基期/其他driver反映。",
+   "execution_runs/I-11-A/a20260919-01/decision.md DEC-3（sha256 e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951）：本 attempt 的 approved_frozen 计数必须为 0，由行业 reviewer 在独立审查中写入。",
+   "OWNER_DECISIONS.md §十一 L147（sha256 fe26a2dbacc42a1e7ca252c08c6d7c7538360883dbc0a9cd072fb4af526d9bbe）：OPEN-7 分部集合维持。",
+   "execution_v2/START_HERE.md L26（sha256 5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318）：实现者不能自签accepted。"
+  ]
+ },
+ "role_attestation": {
+  "non_implementer": true,
+  "implementer_signed": false,
+  "signed_for_other_roles": false,
+  "identity_used_in_file": "行业 reviewer（紫金覆盖）（hypotheses[0].reviewer / decision.professional_reviewer 原文，未改动）",
+  "validator_rule_satisfied": "validate_hypotheses.py L292-L302：reviewer 非 IMPLEMENTER_MARKERS 且长度≥8（12 字符）、decision.decision_sha256 非空；L233-L237 的 professional_judgement_required 强制 pending 规则不适用于本命题（threshold_basis=arithmetic_identity）"
+ },
+
+ "decision_sha256": "4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f",
+ "adjudication": {
+  "index": 0,
+  "hypothesis_id": "H-CN-ZIJIN-SEG-01",
+  "claim_verbatim_sha256_input_bytes": 196,
+  "state_before": "pending_professional_decision",
+  "state_after": "approved_frozen",
+  "decision_before": "pending",
+  "decision_after": "approved_frozen",
+  "decision_sha256": "4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f",
+  "decision_sha256_verification": {
+   "computed_by": "本工位（非实现者行业 reviewer），PowerShell SHA256，非复制任何既有值",
+   "method": "preimage = UTF-8(claim 原文逐字, 取自被审 hypotheses.json 下标 0) + 0x0A + UTF-8(ruling.md 中 --- BEGIN RULING TEXT --- 与 --- END RULING TEXT --- 之间的那一行裁定正文)，无尾随换行",
+   "claim_source": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json -> [0].claim",
+   "ruling_text_source": "execution_runs/I11A-HYP-APPROVE/a20260925-01/ruling.md -> 标记块内单行",
+   "ruling_text_bytes": 2254,
+   "preimage_bytes": 2451,
+   "runs": [
+    {"when_utc": "2026-09-25T22:1xZ（写 hypotheses_v2.json 之前）", "result": "4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f"},
+    {"when_utc": "2026-09-25T22:26:13Z（写入 JSON 与 ruling.md §4.5 之后重新提取复算）", "result": "4d4ee106f4764d5347a9f4b328939eab4da9f27eea6918a70f9feade133e7b6f", "matches_json": true}
+   ]
+  },
+  "scope_of_signature": "仅命题本体（claim + 机制 + 证据 + 可观测性/时滞/基期反映）；不含 threshold 数值、不含 parameter 放行、不含三资格"
+ },
+
+ "hypotheses_proposal_version": {
+  "from": {
+   "path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json",
+   "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "bytes": 51697
+  },
+  "to": {
+   "path": "execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json",
+   "sha256": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859",
+   "bytes": 55213
+  },
+  "file_shape": "顶层仍为与原文件同形的 8 元素 JSON 数组；provenance 附在被改动的 [0] 条目内（JSON 数组没有顶层伴随键，故不能在不破坏同形的前提下另设顶层 provenance）",
+  "modified_indices": [0],
+  "unchanged_indices": [1, 2, 3, 4, 5, 6, 7],
+  "byte_identity_proof": {
+   "method": "取两个文件中从 \"hypothesis_id\": \"H-CN-ZIJIN-SEG-02\" 起到文件末尾的子串分别求 sha256",
+   "suffix_sha256_from": "5b8ac9f194c2b56e3082435783157683d806a01c6e1e94efc26057fc30daefd0",
+   "suffix_sha256_to": "5b8ac9f194c2b56e3082435783157683d806a01c6e1e94efc26057fc30daefd0",
+   "identical": true,
+   "changed_prefix_lines": "仅 6 处：state / state_reason / decision.decision / decision.reason / decision.decision_sha256 / 新增 provenance（含 anchor_text 行补逗号）"
+  },
+  "encoding": "UTF-8 无 BOM（首三字节 91,10,32）、全文件 0 个 CR 字节（LF）、写后重解析通过"
+ },
+
+ "approved_frozen_count": 1,
+ "approved_frozen_hypotheses": ["H-CN-ZIJIN-SEG-01"],
+ "state_counts_after": {"approved_frozen": 1, "pending_professional_decision": 5, "unquantified": 2, "STOP_EVIDENCE": 0, "STOP_DISCLOSURE_ADAPTATION": 0},
+ "state_counts_before": {"approved_frozen": 0, "pending_professional_decision": 6, "unquantified": 2},
+ "c1_status": "C1 第 1 条路径已满足（≥1 条命题在新版本上由非实现者 reviewer 写入 decision.decision_sha256 并达 approved_frozen）；C1 的另一分支（owner 明文改判开工门槛）未使用、未必要",
+
+ "i11b_unlock_condition_1_quote": "≥1 条命题在新版本上由非实现者 reviewer 写入 decision.decision_sha256 并达 approved_frozen（或 owner 明文改判开工门槛）",
+ "i11b_unlock_conditions_2_to_7_untouched": true,
+ "i11b_unblocked": false,
+ "i11b_verdict": "仍 BLOCKED：7 条解锁条件中本工位只触碰第 1 条（C1）；第 2 条 OPEN-2 铜当量系数、第 3 条 OPEN-3 8-K E1 归档、第 4 条 OPEN-5 港股可读性、第 5 条 OPEN-6 threshold_review_status+H4 四要件+H2 基准+恒等式容差、第 6 条 OPEN-11（已由 I11A-OPEN11-IND 裁定但四要件 0/4）、第 7 条 card_I-11-B.md L9 的 I-10-A 披露适配签署，全部未动",
+ "releases_nothing": true,
+ "does_not_claim_I11A_acceptance": true,
+ "does_not_change_any_status": true,
+
+ "not_granted": [
+  "不审定任何阈值：falsifier.threshold「0（…允许 |差| ≤ 1 元）」的容差仍属会计面 BLOCKED-6b；未新增 threshold_review_status、未改 threshold_basis、未把 not_reviewed 改成 reviewed",
+  "不放行任何参数：low/base/high 全部维持 null；original_value 349,079,082,852 维持为 FY2025 披露值；四个 ZIJIN_SEG_*_EXTERNAL_REVENUE_FY2027 parameter_id 不因此可被 I-11-B 取用做幅度",
+  "不解除任何 BLOCKED：OPEN-2/3/5/6 与 ACCT BLOCKED-2a/2b/3a/3b/6a/6b/6c、IND BLOCKED-1..7 全部原样保留",
+  "不产生 I-11-A 验收、不产生 I-11-B 的 ACCEPT、不改任何 status",
+  "不授予三资格：formula=not_applicable_here / disclosure_adaptation=not_granted / accuracy=not_granted 原样保留",
+  "不代签其他角色：会计 reviewer、研究负责人、环境/依赖 owner、schema owner、统计 reviewer 各自项一项未签"
+ ],
+
+ "not_adjudicated": [
+  {"index": 1, "hypothesis_id": "H-CN-ZIJIN-SEG-02", "state_left": "pending_professional_decision", "reason": "铜当量系数与 ±5% 阈值属 OPEN-2 / BLOCKED-2a/2b（会计面+矿业面未放行），我 fail-closed 不裁"},
+  {"index": 2, "hypothesis_id": "H-CN-ZIJIN-VOL-03", "state_left": "pending_professional_decision", "reason": "存货桥未闭合：I11A-OPEN11-IND R3 实测金差 154 千克、铜差 1 吨，零容差会假阳性，容差归会计面 BLOCKED-6b；OPEN-11 裁定自证四要件 0/4 不授予 approved_frozen"},
+  {"index": 3, "hypothesis_id": "H-CN-ZIJIN-PLAN-04", "state_left": "pending_professional_decision", "reason": "阈值 [0.9,1.1] 属 OPEN-6 professional_judgement_required 未审定，且需研究负责人（管理层目标权重）会签"},
+  {"index": 4, "hypothesis_id": "H-CN-ZIJIN-ELIM-05", "state_left": "unquantified", "reason": "抵销口径归会计 reviewer；本条为叙述性约束，我未裁其 decision"},
+  {"index": 5, "hypothesis_id": "H-US-MSFT-SEG-01", "state_left": "pending_professional_decision", "reason": "OPEN-3：2026-09-02 8-K 重分类原文不满足会计面 E1（本地归档 5 缺 4 ⇒ 至多 E2），FY2027 分部集合不可判"},
+  {"index": 6, "hypothesis_id": "H-US-MSFT-SEG-02", "state_left": "unquantified", "reason": "disclosure_definition 判定未闭合（无到分部/产品行的可复算映射）"},
+  {"index": 7, "hypothesis_id": "H-US-MSFT-SEG-03", "state_left": "pending_professional_decision", "reason": "缺席位/ARPU 单位经济学披露，且 professional_judgement_required 阈值未审定"}
+ ],
+
+ "validator_check": {
+  "module": "execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py",
+  "module_sha256": "cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac",
+  "mode": "只调用 validate(hypotheses, source_map, attempt, doc_texts)；未执行 main()（main 会向封盘目录写 validation_report.json）；python -B -X utf8 + PYTHONDONTWRITEBYTECODE=1，封盘 tools/__pycache__ 三个 .pyc 的 mtime 仍为 2026-09-20（未变）",
+  "run_window_utc": "2026-09-25T22:20:00Z – 2026-09-25T22:26:13Z",
+  "result_hypotheses_v2_errors": 0,
+  "result_original_baseline_errors": 0,
+  "inputs_read_only": ["hypotheses_v2.json", "source_map.json", "extract/*（封盘，只读）"],
+  "exit_code": 0
+ },
+
+ "evidence_files_reviewed": [
+  {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "bytes": 51697, "how": "全文 906 行逐字读"},
+  {"path": "execution_runs/I11A-OPEN-MERGE/a20260924-01/handoff.json", "sha256": "b7314a22ebae453d4df6e6a93df62b993e0b179140feb67dafa0ec52b18b5878", "bytes": 21808, "how": "全文 285 行逐字读；并独立复算其登记的 3 个 sha（ACCT/IND/merge_ruling）3/3 吻合"},
+  {"path": "execution_runs/I11A-OPEN11-IND/a20260924-01/ruling.md", "sha256": "c02e255f67f76be9c0a38569454b64cd93f8469d9fc5244e6da2ce7cfc3bb95d", "bytes": 38930, "how": "全文 325 行逐字读（R1–R6、反例、§3.8 四要件 0/4）"},
+  {"path": "execution_runs/I11A-OPEN-ACCT/a20260924-01/ruling.md", "sha256": "f3040df0081f6653c0d18ac334890bf0aff12175aeacbdc8e31485972bb329c2", "bytes": 37355, "how": "读 L215–L274（A-6.1/A-6.2/A-6.3 给数四要件与三类 threshold_basis 可用范围）"},
+  {"path": "execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md", "sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b", "bytes": 39207, "how": "定位并逐字引用 L51（OPEN-7 owner 已裁维持）"},
+  {"path": "OWNER_DECISIONS.md", "sha256": "fe26a2dbacc42a1e7ca252c08c6d7c7538360883dbc0a9cd072fb4af526d9bbe", "bytes": 76005, "how": "读 L140–L149（§十一 含 L147）、L490–L505（§二十四 含 L502 执行纪律）"},
+  {"path": "execution_v2/card_I-11-A.md", "sha256": "9567b8dd81411092a87f1b66304f6f038725a085d7184ea9a353ed409a997df1", "bytes": 1433, "how": "全文"},
+  {"path": "execution_v2/card_I-11-B.md", "sha256": "38ff2907acb627f3d5f6a97ca386a17551329ad3909720e84463a185154ae87c", "bytes": 1672, "how": "全文（L9/L23 逐字）"},
+  {"path": "execution_v2/START_HERE.md", "sha256": "5c6e111f00f6925d6b645c76ead1b060923f30283ba239403c98cd1431fa1318", "bytes": 20436, "how": "读 L1–L55（L26/L36/L47）"},
+  {"path": "execution_runs/I-11-A/a20260919-01/decision.md", "sha256": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951", "bytes": 29756, "how": "读 L55–L184、L330–L421（DEC-3/DEC-6/开放项表/L418）"},
+  {"path": "execution_runs/I-11-A/a20260919-01/tools/validate_hypotheses.py", "sha256": "cb49360d15bc044dd46a3233c8ae0dd53eb3d95e2942bf2e6ac63d6937be17ac", "bytes": 28549, "how": "读 approved_frozen 与 threshold_basis 机器判据源码"},
+  {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/extract/P1_zijin_pages.json", "sha256": "f1909d136d05bde0230e7fd2761c079026f9a132dd7123109bd7ca7bab85e2cf", "bytes": 89754, "how": "读 pdf_page 326/327/328 三页原文，与我的 pdftotext 抽取互证"},
+  {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/source_map.json", "sha256": "3ce2e20acffa26dc08ca7c563c27fe19d1771594b2c2612b748252ad30112ecf", "bytes": 13863, "how": "只哈希（校验器输入）"},
+  {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/validation_report.json", "sha256": "dc014e7e7a5699f5692d60d3e7cf76b782d1c64ef7668d5104e077290cb7c9b8", "bytes": 5341, "how": "只哈希（其结论不作为裁定证据）"},
+  {"path": "C:/Users/郑曾波/Projects/company-wiki/companies/紫金矿业/raw/financial_reports/annual/2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf", "sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d", "bytes": 79925886, "how": "只读 pdftotext 抽取 leaf 15/43/252/325/326/327 + 全篇 353 页扫描；与 hypotheses.source.doc_sha256 相同"},
+  {"path": "C:/Users/郑曾波/Projects/company-wiki/companies/紫金矿业/raw/financial_reports/annual/2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf", "sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89", "bytes": 32100114, "how": "只读 pdftotext 抽取 leaf 15/40/265/351/352/354 + 全篇 380 页扫描"},
+  {"path": "C:/Program Files/Git/mingw64/bin/pdftotext.exe", "sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0", "bytes": 1537966, "how": "取文工具，sha 与 OWNER_DECISIONS.md L101 登记值一致"}
+ ],
+
+ "independent_recomputations": [
+  {"id": "R-A-FY2025", "expr": "109,977,556,345 + 165,858,644,874 + 29,212,610,830 + 44,030,270,803", "result": 349079082852, "expected_disclosed": 349079082852, "diff": 0},
+  {"id": "R-B-FY2025", "expr": "584,049,229,264 - 234,970,146,412", "result": 349079082852, "expected_disclosed": 349079082852, "diff": 0},
+  {"id": "R-A-FY2024", "expr": "74,089,365,354 + 181,141,823,725 + 29,386,475,085 + 19,022,292,989", "result": 303639957153, "expected_disclosed": 303639957153, "diff": 0},
+  {"id": "R-B-FY2024", "expr": "476,803,084,126 - 173,163,126,973", "result": 303639957153, "expected_disclosed": 303639957153, "diff": 0},
+  {"id": "R-A-FY2023", "expr": "62,178,809,312 + 152,879,445,220 + 48,296,807,364 + 30,048,180,982", "result": 293403242878, "expected_disclosed": 293403242878, "diff": 0},
+  {"id": "R-B-FY2023", "expr": "421,391,715,510 - 127,988,472,632", "result": 293403242878, "expected_disclosed": 293403242878, "diff": 0}
+ ],
+ "independent_recomputation_note": "全部用 [int64] 整数加减、输入取自我自行 pdftotext 抽取的披露原文与被审 P1 抽取件；未引用实现者 state_reason 中的 A1/A2/A3 自述；合并营业收入侧在同一年报的另外三处独立位置（主要会计数据 / 附注五.54 / 利润表相关科目变动分析表）逐年一致",
+
+
+ "sealed_attempt_verification": {
+  "path": "execution_runs/I-11-A/a20260919-01",
+  "modified": false,
+  "before_after_sha256_unchanged": [
+   {"file": "evidence/I-11-A/hypotheses.json", "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28"},
+   {"file": "decision.md", "sha256": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951"},
+   {"file": "review.md", "sha256": "4938e745adc3f32582cc6fd70e3e69197385035d0270807d955d2a7c7776daed"},
+   {"file": "handoff.json", "sha256": "e4dafd16952b31317aa47f43e14fd73b078497d488be06a594a9de6b73c903c4"},
+   {"file": "evidence/I-11-A/extract/P1_zijin_pages.json", "sha256": "f1909d136d05bde0230e7fd2761c079026f9a132dd7123109bd7ca7bab85e2cf"}
+  ],
+  "pycache_untouched": "tools/__pycache__ 三个 .pyc mtime 仍为 2026-09-20 03:36/03:45/04:16（本工位未写入）",
+  "company_wiki_readonly": true
+ },
+
+ "written_files": [
+  {"path": "execution_runs/I11A-HYP-APPROVE/a20260925-01/hypotheses_v2.json", "sha256": "32c22208573a71d53033c4535e8d0cb598c61710e06174196033d996999d7859", "bytes": 55213},
+  {"path": "execution_runs/I11A-HYP-APPROVE/a20260925-01/ruling.md", "sha256": "5b71efa4a27f9860bc02d03f10c37bd919ecbf57199369318829d342b1932050", "bytes": 37879},
+  {"path": "execution_runs/I11A-HYP-APPROVE/a20260925-01/handoff.json", "sha256": null, "bytes": null, "note": "自指不可自证：本文件的 sha256/bytes 不能写进自身；实测值由父代理外部复算（与本计划既有载体同一处理方式）"}
+ ],
+ "file_format": "UTF-8 without BOM, LF line endings; hypotheses_v2.json 写后已重解析（8 条命题、approved_frozen=1），handoff.json 写后已重解析",
+
+ "git_diff_non_planning": 0,
+ "git_diff_observed": {
+  "command": "git -c core.quotepath=false diff HEAD --name-only",
+  "total_tracked_diff_lines": 3826,
+  "non_planning_lines": 0,
+  "measured_at": "ruling.md 与 hypotheses_v2.json 写入后、handoff.json 写入前；handoff.json 为 .planning 内未跟踪新路径，不进入 git diff HEAD",
+  "final_closeout": {"total_tracked_diff_lines": 3826, "non_planning_lines": 0, "measured_at": "2026-09-25T22:30:00Z（三个文件全部写入并校验后复测）"},
+  "untracked_station_files": ["hypotheses_v2.json", "ruling.md", "handoff.json"]
+ },
+ "git_writes_performed": false,
+ "git_status_run": false,
+ "git_mutating_commands_run": [],
+ "network_requests_made": 0,
+ "product_files_written": 0,
+ "writes_outside_planning": 0,
+ "sealed_status_fields_changed": 0,
+
+ "boundary_attestation": {
+  "zero_sealed_write": true,
+  "zero_git_write": true,
+  "zero_git_status": true,
+  "zero_network": true,
+  "zero_proxy_signing": true,
+  "zero_parameter_release": true,
+  "zero_threshold_approval": true,
+  "zero_blocker_removal": true,
+  "fail_closed_applied": "证据不足的 7 条命题一律不裁、状态原样保留；命题 [0] 的阈值与容差按 A-6.1/A-6.3 维持 not_reviewed 归属会计面；不因 C1 需要 ≥1 条而扩大批准面"
+ },
+
+ "next_action": "编排层：① C1（i11b_unlock_conditions[0] 第 1 条）已由本载体满足，可据 hypotheses_v2.json[0] 与本 handoff 登记；② 第 2–7 条解锁条件仍须各自 owner/reviewer 处理，I-11-B 维持 BLOCKED；③ 若后续要审定 H-01 的 |差|≤1 元容差，须走会计面 BLOCKED-6b 并出新版本，不得借用本 decision_sha256；④ 若 FY2026/2027 分部口径变更，按 ruling.md §7.2 追加 ruling_r2.md + hypotheses_v3.json，不回改"
+}

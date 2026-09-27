@@ -1,0 +1,96 @@
+{
+  "unit": "ZR-1004",
+  "reviewer": "reviewer-zr1004-independent",
+  "kind": "reviewer",
+  "schema_version": 1,
+  "verdict": "accepted",
+  "reviewed_object_sha256": "4c90ded0e68d6176d5683dc433aac0259809cc20870f61f28946f7348e8cd2f4",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
+      "exit_code": 0,
+      "result": "HEAD=06d259c (ZR-1004), parent=214a280 (ZR-1003 closure) — matches unit card"
+    },
+    {
+      "command": "git show --stat --oneline 06d259c0b359c5b38800b6f6e26ecd2778f39a35",
+      "exit_code": 0,
+      "result": "1 file changed: tests/test_zr1004_small_cohort.py, 163 insertions — exactly 1 file"
+    },
+    {
+      "command": "git diff 214a28022ab17bce1a697304b31aa30497b1b22f 06d259c0b359c5b38800b6f6e26ecd2778f39a35 -- scripts/",
+      "exit_code": 0,
+      "result": "empty — zero production changes in scripts/"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1004_small_cohort.py -q --tb=short",
+      "exit_code": 0,
+      "result": "7 passed in 2.55s"
+    },
+    {
+      "command": "independent probe (probe_zr1004.py): 4 per-root journeys + future_lake configured + zero-write + same-request idempotency",
+      "exit_code": 0,
+      "result": "ALL PROBES PASSED — Zijin FY2025/FY2024 + dayu 1548 REUSED_EXACT; Dropbox MISSING with 0 matches; future_lake in root list; all 4 root fingerprints + catalog rows unchanged; same-request identical status+trace+payload; MISSING retry structurally consistent"
+    },
+    {
+      "command": "python -m pytest tests/test_zr806_real_t2_samples.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "10 passed in 1.30s — regression subset clean"
+    },
+    {
+      "command": "python -m ruff check tests/test_zr1004_small_cohort.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "python tools/tests/test_complexity_ratchet.py -q",
+      "exit_code": 0,
+      "result": "Ran 2 tests ... OK"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+      "exit_code": 0,
+      "result": "896 passed, 3 deselected, 106 subtests passed (216.68s); re-run #2: 896 passed, 106 subtests passed (282.73s)"
+    },
+    {
+      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-1004/11_implementer_receipt.json (cwd assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed"
+    },
+    {
+      "command": "git cat-file -t base/result commits",
+      "exit_code": 0,
+      "result": "214a28022ab17bce1a697304b31aa30497b1b22f = commit (real object); 06d259c0b359c5b38800b6f6e26ecd2778f39a35 = commit == HEAD"
+    },
+    {
+      "command": "python -c hashlib.sha256(tests/test_zr1004_small_cohort.py)",
+      "exit_code": 0,
+      "result": "4c90ded0e68d6176d5683dc433aac0259809cc20870f61f28946f7348e8cd2f4"
+    }
+  ],
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "214a28022ab17bce1a697304b31aa30497b1b22f",
+    "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+  },
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "06d259c0b359c5b38800b6f6e26ecd2778f39a35",
+    "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+  },
+  "findings": [
+    {
+      "id": "REV-001",
+      "severity": "info",
+      "title": "companies shallow-fingerprint delta observed between first probe and post-suite-1 window — environmental, not reproducible, not caused by ZR-1004",
+      "detail": "During review, the companies/ shallow fingerprint read 7dfb1ca2... in the first independent probe but c2e55234... afterwards, and it has been stable since. Attribution: the delta fell inside the window where full suite run #1 executed concurrently with the zr806 regression subset, ruff, ratchet, and with Dropbox/OneDrive sync daemons starting (10:44-10:47). Exculpatory evidence: (1) suite run #2 (identical command, run without concurrency) produced ZERO diffs on companies children before/after; (2) isolated test_zr1004 run: companies before==after (c2e55234); (3) independent probe re-run: before==after, all checks pass; (4) the suite's own C2 zero-write oracle (test_c2_journeys_leave_roots_and_catalog_untouched) passed in both full-suite runs; (5) no child under companies has a suite-window mtime and git shows no changes there; (6) dayu/dropbox/future_lake fingerprints and catalog row counts (23530/43112/46606) were identical across every snapshot. The ZR-1004 test file contains no write operations (resolve + fingerprints + sqlite mode=ro only), so this is an environmental observation, not a defect."
+    },
+    {
+      "id": "REV-002",
+      "severity": "info",
+      "title": "implementer's test_c3_failed_request_retry_consistent asserts only status equality; reviewer probe verified full structural consistency independently",
+      "detail": "The implementer's C3 retry test asserts first.status is second.status for the failed (Dropbox MISSING) request but does not compare debug_trace or full payload. The independent reviewer probe re-ran the Dropbox request twice and verified identical status AND identical debug_trace AND identical full to_dict() payload with zero matches (no fake handle materialized on retry), so acceptance criterion C3 holds; the observation is about test strength only."
+    }
+  ],
+  "created_at_utc": "2026-08-31T10:22:23.905587+00:00",
+  "canonical_hash": "22ef3dc4e49d76757d68d12d58a7a73de2fe49f4fe8f129e28f88c75340a6ea1"
+}

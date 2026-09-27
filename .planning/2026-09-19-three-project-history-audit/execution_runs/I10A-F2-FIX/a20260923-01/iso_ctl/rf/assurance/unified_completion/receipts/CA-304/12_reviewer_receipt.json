@@ -1,0 +1,73 @@
+{
+ "unit": "CA-304",
+ "reviewer": "reviewer-ca304-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "d147f94d298fb8fb6e9bedf17e83966438aefed8165bdfb33ff8389da99c7030",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca304_r9_removal.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "11 passed in 17.40s (C1 close-gate 6 classes; C2 oracle; C3 staged batch + rollback; C4 no residue; C5 drill; no skip — C2 executed against production catalog)"
+  },
+  {
+   "command": "independent probes: close_gate_allowed source semantics; final_ratchet scan_legacy/scan_encoding; flags EXCLUDES; CatalogStore round trip",
+   "exit_code": 0,
+   "result": "C1 six assertions match source line-by-line; scan_legacy(scripts)=0 + scan_encoding=0; legacy_bridge_enabled migration-only exclusion; active->shadow->active preserves epoch/cohort with distinct receipt ids"
+  },
+  {
+   "command": "pytest adjacent spot check (company-wiki test_zr305 5 + test_zr1003 7)",
+   "exit_code": 0,
+   "result": "12 passed (matches declaration)"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD~1..HEAD + triplet objects",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=60bb910 parent=849c186 matches; only M is state.json (CA-304 registration matching touched_files); base/result triplet objects all exist; delta only revenue"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "canonical d147f94d matches; base/result delta correct"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "849c1866674dd5232847416d1ed503aac75d2913",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "60bb910212a7e107afe187cb0649465e910ef786",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA304-RVW-001",
+   "severity": "minor",
+   "title": "C2 断言偏浅（结构存在性，未构造 hits>0 场景）",
+   "detail": "同源性由源码审阅支撑（run_checks 读 catalog_meta legacy_bridge_hits% 前缀）+ C1 hits-block 覆盖，证据链闭合。"
+  },
+  {
+   "id": "CA304-RVW-002",
+   "severity": "info",
+   "title": "C4 legacy_bridge_enabled 为 migration-only 排除（字面'不存在'属部署中间态）",
+   "detail": "测试与 flags.py docstring 均透明声明；最终删除属 CA-304 部署动作。"
+  },
+  {
+   "id": "CA304-RVW-003",
+   "severity": "info",
+   "title": "复放/相邻回归数据",
+   "detail": "11 passed in 17.40s；ZR-305 5 + ZR-1003 7 = 12。"
+  },
+  {
+   "id": "CA304-RVW-004",
+   "severity": "info",
+   "title": "工作树非产品改动说明",
+   "detail": "state.json 注册 + 历史 untracked 临时产物；C2 零仓库副作用（run_checks 不写盘，assurance/runs/ca304-tmp 不存在）。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T18:34:12+00:00",
+ "canonical_hash": "06c3c085fdc539109c4242ba6aab315e1992859b87e309173d5ae5b5d4fe03b1"
+}

@@ -1,0 +1,33 @@
+{
+  "report": "audit_report.md",
+  "report_sha256": "883f7f0ada12b2d2ad220662a8d0b1a2d2beb31e358995cdc74387bbd5cf06ee",
+  "auditor": "AUDIT-INTEGRITY",
+  "signature": "独立审查员（owner 令）AUDIT-INTEGRITY / N=1",
+  "VERDICT": "BROKEN-LINKS-found",
+  "fabrication_suspect": "NONE",
+  "broken_links": [
+    {
+      "id": "BL-1",
+      "severity": "MEDIUM",
+      "what": "OPEN-6 ruling.md pin stale (8aabac09 vs live 5cb47676), git-explained batch-5 revision, NOT fabrication"
+    },
+    {
+      "id": "BL-2",
+      "severity": "LOW",
+      "what": "PROMOTION-EXEC binding company-wiki/README.md (302bd10b vs live fdc75e0a), mutable+dirty product file, expected drift"
+    }
+  ],
+  "faces": {
+    "F1_carrier_chain": "PASS (14/14 3-pt, 286/286 byte-proofs, 0 self-sign)",
+    "F2_transcription": "PASS + 1 stale pin (BL-1)",
+    "F3_cross_repo": "PASS (12/12)",
+    "F4_batch_chain": "PASS (batch-2..9 continuous)",
+    "F5_no_fabrication": "PASS (0 fabricated)",
+    "F6_zero_self_sign": "PASS (435 implementer_signed all false)",
+    "F7_REM79": "PASS (8 hits, 0 true positives)",
+    "F8_historical_immutable": "PASS",
+    "F9_inflight": "NOTED (no unchanged claims)"
+  },
+  "sample_points": ">=40 (all self-run)",
+  "independence": "independent reviewer; no product repo mutated; report+sidecar+evidence = signature"
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-104",
+  "implementer_receipt_sha256": "0746148f402251e80e3067a9682b3705a63fcc67df62ab1f9a57314a1b8cf4d9",
+  "reviewer_identity": "reviewer-fc104-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "296e17b0216015767a674c56ed261327979be5f7",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "result_triplet": {
+    "revenue": "296e17b0216015767a674c56ed261327979be5f7",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "replayed_command_ids": [
+    "fc-104-focused-manifest (python -m pytest tests/test_compatibility_manifest.py -q)",
+    "revenue.unit.full (python -m pytest tests/ tools/tests/ -q)"
+  ],
+  "scenario_results": [],
+  "mutation_results": [
+    {
+      "id": "FC-104-M-review",
+      "killed": true,
+      "details": "manifest + command-registry tamper mutations rejected: (1) current_triplet.revenue zeroed -> descendant + structural tests fail; (2) contract_registry_sha256 -> garbage -> hash + structural tests fail; (3) expected_min_collected -> -5 -> 5 tests fail; (4) dropped revenue.unit.full command -> 3 tests fail via sealed registry hash. All restored; worktree clean."
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true,
+    "note": "Implementer receipt side_effect_counts all 0; review verified no product-code writes (tamper checks restored via git checkout). Reviewer provisioned read-only sibling clones in .fcap-review/ purely as verification object stores for the descendant gate; removed after use."
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "note": "compatibility_manifest.py has no production callers; only referenced by tests/test_compatibility_manifest.py and plan docs (grep-verified). Governance infra with no production data path, matching the implementer receipt."
+  },
+  "rollback": {
+    "required": false,
+    "passed": true,
+    "note": "Pure additions: compatibility/current.json, command_registry.json, compatibility_manifest.py, tests/test_compatibility_manifest.py (718 insertions, 0 product deletions). Revert = remove files + commits."
+  },
+  "unresolved_findings": [
+    {
+      "severity": "info",
+      "finding": "No origin/fcap branch exists yet; the current triplet was verified from local objects only. origin/main (revenue) = 3ce9cc4 = frozen baseline; filing origin/main = c9799b7 = frozen baseline; wiki origin/master = 109a1a6 = frozen baseline. Local fcap branches carry db383e6/d5e87237/453f9584, all verified descendants of their baselines. Result commit db383e6 is an ancestor of HEAD 296e17b. Informational per review instructions; cannot be closed until fcap branches are pushed."
+    },
+    {
+      "severity": "low",
+      "finding": "Validator environment dependency: compatibility_manifest.py computes REPO_DIRS as parents[2] of the compatibility dir, requiring sibling checkouts (revenue-forecast/filing-fetch/company-wiki) at that relative path for the baseline-descendant gate. In the raw clean worktree without siblings, 9 of 19 focused tests fail with NotADirectoryError (10 passed). Provisioning sibling object stores (clones of the real repos) makes all 19 pass — matching the implementer's environment (C:/Users/郑曾波/Projects/ holds the three repos as siblings). Not a code defect; the gate fails closed. Recovery condition: run in the canonical sibling layout (as CI would need all three repos), or make REPO_DIRS configurable."
+    },
+    {
+      "severity": "low",
+      "finding": "Receipt accuracy: implementer receipt records exit_code 0 for 'python -m pytest tests/ tools/tests/ -q', but pytest returns exit code 1 when the known pre-existing test_audit_baseline failure occurs (observed: 423 passed / 1 failed, exit 1). The result string honestly reports '423 passed / 1 pre-existing PORT-01 (FC-1205)' and the failure is confirmed pre-existing (file untouched by FC-104 commit, present since FC-103). The exit_code field is technically inaccurate (0 vs 1); substance of the claim is verified."
+    },
+    {
+      "severity": "low",
+      "finding": "Scope note: commit db383e6 additionally updates 3 audit_review tracking docs (findings.md, progress.md, work_unit_registry.md) not listed in the receipt's allowed_files/changed_files. These are plan-tracking documents, not product/test code; the work_unit_registry status flip (pending -> independent_review) is the plan's own required process. No production code outside the allowlist."
+    },
+    {
+      "severity": "info",
+      "finding": "CRLF/hash nuance: on-disk sha256 of task_plan.md (6a21d1c4...) differs from the sealed 158fc1e1... only because core.autocrlf=true converts LF to CRLF on checkout; the canonical git blob at db383e6 and HEAD hashes exactly to 158fc1e1 (verified). The registry sealed values (e434acb1/ecaaa3f4/bd4e507d) match the on-disk CRLF bytes; their LF git blobs differ. Both interpretations are consistent with the sealed values; no content tampering."
+    }
+  ],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-10"
+}

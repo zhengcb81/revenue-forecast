@@ -1,0 +1,94 @@
+{
+  "schema": "handoff/v1",
+  "attempt": "execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01",
+  "role": "implementer_section_sync",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+  "implementer_signed": false,
+  "station_purpose": "按 T1-12 ① 同步 OPEN2-C2-REGISTRATION 末尾追加造成的 I-10-B 段绑定失配：刷新 dispatch.json 的 source_section_sha256 并把 card_I-10-B.md 正文追加至与源段一致，使 stale/clone 由 2 条降为 0 条。",
+  "authorized_by": {
+    "registration_item_labeled_by_dispatch": "#2 I10B-SECTION-BINDING",
+    "registration_item_numbering_note": "派单称『登记项 #2』；盘上同一登记项实为 registration.md §⑥ 第 4 条、OPEN2-C2-REGISTRATION handoff.json 的 registered_findings_not_amending_any_file[3]（编号差异只登记、不改任何既有文件）。",
+    "registration_item_verbatim_registration_md": "4. **`I10B-SECTION-BINDING`**：`model_cards.md` 末尾追加使 `validate_execution_pack.py` 的最后一个卡片段（`I-10-B`）出现 `stale` + `clone` 两条错误（追加前基线 32 段 0 错，追加后 32 段 2 错，逐条同名于 `oracle.md` §6 的冻结预测）。`dispatch.json` / `card_I-10-B.md` 不在写入面 ⇒ **不修改**，移交编排层按 T1-12 ① 同步。该验证器在本轮之前已因 32 条产品源漂移而不通过，本轮不改变其红/绿结论。",
+    "registration_item_verbatim_handoff_json": "I10B-SECTION-BINDING：model_cards.md 末尾追加使 validate_execution_pack.py 的最后卡片段(I-10-B)出现 stale+clone 两条错误（基线 32 段 0 错 → 追加后 32 段 2 错，逐条同名于 oracle §6 的冻结预测）；dispatch.json / card_I-10-B.md 不在写入面故未改，移交编排层按 T1-12 ① 同步。该验证器本轮之前已因 32 条产品源漂移而不通过，红/绿结论未变。",
+    "registration_item_next_action_verbatim": "②把 I10B-SECTION-BINDING 移交项派给有 dispatch.json/card_I-10-B.md 写入面的工位按 T1-12 ① 同步；",
+    "t1_12_verbatim": "| T1-12 | **第八节第 11 项：今后编辑已冻结正文的统一规则** | **采纳建议**：一律采用 **① 形态**（追加新节 + 行级「第 X 行已过时，以本节为准」标注）；**不外扩**就地编辑授权。既有 M21–M24「仅此一次、自此冻结」裁决**维持**。 |",
+    "t1_12_source": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md L218",
+    "append_precedent_verbatim_START_HERE": "## rc 码表·勘误 append-3（REM-84；owner 授权 2026-09-22「A-2: 授权」；T1-12 ① 形态） ／ > **本节只登记、不回改上方任何字节**：本追加前全文 = 18452 B，前缀 sha256 `a9cb5a4a34929fb21d43b3f8308c36b03440d73c43325b8952e81fe130f64caf`（追加后复算须一致，已验证）。"
+  },
+  "oracle": {
+    "path": "execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/oracle.md",
+    "sha256": "e0a2f864d65508413f3a6efd563902b1fe39748ae9dfbc7e0585849a470921c8",
+    "bytes": 12099,
+    "frozen_before_target_writes": true
+  },
+  "stale_clone_before": {
+    "rc_raw": 1,
+    "stale": 1,
+    "clone": 1,
+    "error_count": 2,
+    "errors": [
+      "stale extracted card source I-10-B",
+      "single-card body differs from source I-10-B"
+    ],
+    "section_sha256_actual": "3ceb4692e0adf961cc98da8aa91da023ae58930adbe241cee1bd22f18e37e704",
+    "section_sha256_recorded": "0ecb7a135b608444c1da25808c7ecc337c96511f2932b0401424faa2ac3ad4d7",
+    "card_body_chars": 1499,
+    "section_chars": 5402,
+    "section_bindings_model_cards_md": 32
+  },
+  "stale_clone_after": {
+    "rc_raw": 0,
+    "stale": 0,
+    "clone": 0,
+    "error_count": 0,
+    "errors": [],
+    "section_bindings_model_cards_md": 32
+  },
+  "mutations_raw_rc": {
+    "M1_wrong_sync_value": {"rc": 1, "stale": 1, "clone": 0},
+    "M2_wrong_card_body": {"rc": 1, "stale": 0, "clone": 1},
+    "M3a_remove_append_synced": {"rc": 1, "stale": 1, "clone": 1},
+    "M3b_remove_append_original": {"rc": 0, "stale": 0, "clone": 0, "other_red_class": "产品源漂移 source binding changed or missing（生产 validation.json 32 条 / 现只读复算 57 条）"},
+    "original_script_in_temp": {"real_red": 1, "real_post": 1, "real_pre": 1, "note": "三臂 rc 全 1 ⇒ 验证器整体红/绿结论未变；段绑定错误 2 → 0"}
+  },
+  "blocked": false,
+  "blocked_reason": null,
+  "fail_closed_triggered": false,
+  "releases_nothing": true,
+  "releases_nothing_detail": "不解除 OPEN-2；不放行任何参数（dispatch/卡文均无 low/base/high、released、threshold 字段改动）；不关任何 BLOCKED-*；不产生 ACCEPT；不改封盘 I-11-A；不代签。",
+  "written_files": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/oracle.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/recompute_section_binding.py",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/preimage_dispatch.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/preimage_card_I-10-B.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/sync_result.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/sync_report.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/I10B-SECTION-BINDING-SYNC/a20260926-01/handoff.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_v2/dispatch.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_v2/card_I-10-B.md"
+  ],
+  "target_file_proofs": {
+    "dispatch.json": {"before": "c63764d11de1bcef47574df9b5898fdb9379e16eb86b5dea4287af9018ae4768/663351", "after": "93a54a50b050dace883675f7e462643433aec48eacb330d306e341630ac1555e/663351", "byte_diff": 58, "offset_range": [632979, 633042], "semantic_diff_count": 1, "json_reparse_ok": true},
+    "card_I-10-B.md": {"before": "4129871d7fc6bf8766cb68d0dcf8839799437d286292097e0b8432c21dc02e25/2938", "after": "5bf5232613d0616cbc2d846b29032f7759ce6f2b6487ae44e72ccc7f83c53086/8735", "prefix_2938_sha256": "4129871d7fc6bf8766cb68d0dcf8839799437d286292097e0b8432c21dc02e25", "prefix_bytes_unchanged": true, "appended_bytes": 5797},
+    "model_cards.md": {"before_after": "cc24be67c06d250342d7624ad7d0190a21f67505317dc4e749d3e809deb0748d/171460", "changed": false},
+    "validation.json": {"before_after": "a14dbf14eac3f5fea215e120c49628fd4af64115e436ed3996d28058ef7767d5/175007", "changed": false},
+    "validate_execution_pack.py": {"before_after": "7841d014384b1a41da1ae50b3eb3e5515104e7da256bf2cf17889c726c70a03d/6556", "changed": false}
+  },
+  "git_diff_non_planning": 0,
+  "git_diff_observed": {"before_total": 3827, "after_total": 3829, "delta": "+2 = execution_v2/dispatch.json, execution_v2/card_I-10-B.md", "non_planning_before_after": [0, 0]},
+  "git_status_command_run": false,
+  "git_writes_performed": false,
+  "network_requests_made": false,
+  "product_files_written": 0,
+  "production_validation_json_overwritten": false,
+  "does_not_claim": [
+    "不解除 OPEN-2",
+    "不产生 I-11-B ACCEPT、不声称 I-11-A/I-11-B 验收",
+    "不放行任何参数、不改任何 threshold_basis",
+    "不关闭任何 BLOCKED-*",
+    "不修改 validate_execution_pack.py 的判据（判据若有问题只登记）",
+    "不修改 model_cards.md 任何字节",
+    "不写五份计划文件、不代签 reviewer/owner"
+  ],
+  "next_action": "编排层可按需在有写入面的场合重跑 validate_execution_pack.py（会覆写 validation.json，本工位未跑）；产品源漂移（现只读复算 57 条）属另一类红、与本同步无关，仍待产品侧/编排层处置；OPEN-2 与 I-11-B 状态不变。"
+}

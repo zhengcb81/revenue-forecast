@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "card": "B2-PROMOTION",
+  "attempt_id": "a20260926-01",
+  "role": "promotion_executor",
+  "status": "blocked",
+  "status_reason": "git apply 阶段：--check rc=0 通过，但本会话对产品仓不可写（应用前零字节探针已 Access denied），git apply rc=128 并把两个目标文件删除后写回失败；执行者 5 种还原手段全被沙箱拒绝 ⇒ 晋升未完成，两文件当前缺失，须由可写会话按 rollback_procedure.md 还原为前像。",
+
+  "authorized_by": [
+    {
+      "type": "change_authorization",
+      "source": "OWNER_DECISIONS.md §三十（L641–L661，2026-09-26，选项式问答原话）",
+      "owner_verbatim": "授权扩闸到 8-K（建议）",
+      "verbatim_context": "owner 选择（B2）：「授权扩闸到 8-K（建议）」",
+      "execution_discipline_verbatim": "产品改动须走既有流程：iso → changes.diff → 独立复审 → 晋升授权，不得直接写产品仓。"
+    },
+    {
+      "type": "promotion_authorization",
+      "source_card_face": "OWNER_DECISIONS.md 最新一问（2026-09-26 12:07）",
+      "source_actually_found": "REMEDIATION_REGISTER.md §一五二.C L3695（本会话回源实测：OWNER_DECISIONS.md 最新节为 §三十一，全文无「授权晋升」原话）",
+      "owner_verbatim": "授权晋升（建议）",
+      "verbatim_context": "### C. ⭐ owner 授权 `B2` 晋升（2026-09-26 12:07 原话「授权晋升（建议）」）",
+      "both_required_note": "两段授权须并存：§三十 的改动授权 + 本次的晋升授权（缺一不可）。"
+    }
+  ],
+
+  "promoted_files": [
+    {
+      "path": "dayu-agent/dayu-agent/dayu/fins/downloaders/sec_downloader.py",
+      "preimage_sha256": "543d005c25fabea3431704293e05e79ebfa76de71f031bf6dc6106113e7a5da0",
+      "preimage_bytes": 74235,
+      "expected_postimage_sha256": "4684933e076e759c8ebc8acc494c0611f763e95364bc4a9d0a9a16165e1e4e1b",
+      "expected_postimage_bytes": 74543,
+      "actual_postimage_sha256": null,
+      "promoted": false,
+      "current_disk_state": "MISSING（git apply 删除后写回被拒）"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/dayu_cli_adapter.py",
+      "preimage_sha256": "bcbbbfd955306c3ed7ca4febff03813ea7dfafeb068c114873bfbfd3456eab5a",
+      "preimage_bytes": 19775,
+      "expected_postimage_sha256": "32ef1165a4948818e2442c57c78550ad026902539c405d9ae42413bb3ab3f7cb",
+      "expected_postimage_bytes": 25328,
+      "actual_postimage_sha256": null,
+      "promoted": false,
+      "current_disk_state": "MISSING（git apply 删除后写回被拒）"
+    }
+  ],
+
+  "git_apply_check_rc": 0,
+  "git_apply_rc": 128,
+  "postimage_matches_registered": false,
+  "sixk_regression_ok": false,
+  "sixk_regression_note": "未执行：两文件缺失、产品代码不可导入，无后像可测。期望值 dayu 6-K `649d906c3bc03bccd19c51849e78363646f36c7636ce8753173a884086def2bd`(3318B)、adapter 6-K `0c9000a11443dba1a505534d80dfb3f2d8717bcef705734a494d02e89ef41b7c`、10-K `7507acadb06e691ba923ce1d9acb689d9df122ebff491af5fa009696ca9f3109`。",
+
+  "tests_passed": {
+    "dayu_test_sec_downloader": {"rc": 2, "expected": "41 passed", "ok": false, "error": "ModuleNotFoundError: dayu.fins.downloaders.sec_downloader（文件缺失）"},
+    "company_wiki_dayu_adapter_3files": {"rc": 2, "expected": "14 passed", "ok": false, "error": "ModuleNotFoundError: company_wiki.source_catalog.dayu_cli_adapter（文件缺失）"},
+    "all_green": false
+  },
+
+  "git_diff": {
+    "dayu_agent": ["dayu/fins/downloaders/sec_downloader.py (D)"],
+    "company_wiki": ["CLAUDE.md (M·既有)", "README.md (M·既有)", "src/company_wiki/source_catalog/artifact_dag.py (M·既有)", "src/company_wiki/source_catalog/dayu_cli_adapter.py (D·本卡)"],
+    "git_diff_non_planning": 0
+  },
+
+  "committed": false,
+  "pushed": false,
+  "releases_nothing": true,
+  "releases_nothing_detail": "不解 OPEN-3 / BLOCKED-NEEDS-ORIGIN-BYTES / B1；不判 E1/E2；不产生 ACCEPT；不代签；不改 canonical_writer kind；不执行下载；不写五份计划文件。",
+
+  "written_files": [
+    "execution_runs/B2-PROMOTION/a20260926-01/oracle.md",
+    "execution_runs/B2-PROMOTION/a20260926-01/preimage/dayu-agent/dayu-agent/dayu/fins/downloaders/sec_downloader.py",
+    "execution_runs/B2-PROMOTION/a20260926-01/preimage/company-wiki/src/company_wiki/source_catalog/dayu_cli_adapter.py",
+    "execution_runs/B2-PROMOTION/a20260926-01/verification/b2_promo_shim.py",
+    "execution_runs/B2-PROMOTION/a20260926-01/promotion_result.json",
+    "execution_runs/B2-PROMOTION/a20260926-01/rollback_procedure.md",
+    "execution_runs/B2-PROMOTION/a20260926-01/incident_git_apply_deletion.md",
+    "execution_runs/B2-PROMOTION/a20260926-01/handoff.json"
+  ],
+
+  "next_action": "可写产品仓的会话执行 rollback_procedure.md §2 还原两文件（sha 必须回到 543d005c…/74235 与 bcbbbfd9…/19775）；之后由 owner 决定是否在可写会话重跑本卡晋升。B1 仍外部阻断，晋升不解决它。"
+}

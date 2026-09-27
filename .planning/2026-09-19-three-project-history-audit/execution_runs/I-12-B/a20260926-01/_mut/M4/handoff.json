@@ -1,0 +1,154 @@
+{
+ "card_id": "I-12-B",
+ "attempt_id": "a20260926-01",
+ "role": "implementer_i12b",
+ "status": "review_pending",
+ "status_note": "review_pending = 证据齐全的交付进入形态（供独立复审），不是验收、不是签署、不产生 ACCEPT、不改任何卡 status/decision/decision_sha256。",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "releases_nothing": true,
+ "params_released": false,
+ "params_released_count": 0,
+ "open2_ban_observed": true,
+ "gate0_passed": true,
+ "git_diff_non_planning": 0,
+ "git_diff_derivation": "写入面枚举推导：本 attempt 全部写入均在 .planning/2026-09-19-three-project-history-audit/execution_runs/I-12-B/a20260926-01/ 之内（含 _mut/ 变异副本）；.planning 之外写入 = 0。本卡未执行任何 git 命令（含被禁的 git status）⇒ git_writes=0、git_commands_run=0。",
+ "formal_publication_slot": "blocked（无正式签名能力；独立证据 reviewer 未验收）",
+ "accuracy": "unproven（本卡只建样本与政策登记面，不评估准确性；目标期实际值封存且尚未存在）",
+ "card_stop": {
+  "stop_1": {
+   "code": "STOP_DATASET",
+   "rule_verbatim": "future leakage、重复sample或缺origin→STOP_DATASET。",
+   "triggered": false,
+   "checked": "available_at<=origin 7/7 通过；sample_id 7/7 唯一；缺 origin = 0"
+  },
+  "stop_2": {
+   "code": "limited",
+   "rule_verbatim": "分层样本不足→记录limited，不补选表现更好的公司。",
+   "triggered": true,
+   "triggered_by": "可评样本 = 0：目标期 FY2027 未结束（紫金 2027-12-31 / 微软 2027-06-30）且 design_manifest.unseal_gate.currently_satisfied=false（双签在飞）⇒ 目标期实际值既不存在也未解封；小米按 fail-closed 保持排除",
+   "disposition": "fail-closed：登记面完成 + 评分数 0 ⇒ 记 limited；验收「可从每个样本追到…实际值」本 attempt 不可达成，判 blocked（合格形态），裁定权=独立复审/编排层"
+  },
+  "acceptance_state": {
+   "traceable_to_info_time": true,
+   "traceable_to_actual_value": false,
+   "counts_conserved": true,
+   "verdict": "blocked（数据/历史期不足；合格形态，非绕过）"
+  }
+ },
+ "authorized_by": {
+  "owner_decision_s34": "OWNER_DECISIONS.md §三十四（L745-L780）：L762-L766 硬约束逐字「oracle 先冻结」「不放行任何参数」「不触发任何 falsifier/自动动作」「实现者不自签 · 独立复审 · 落定走三件套」「每一条以 expert_assumption 承接的判断，必须给敏感性区间 + equivalent_to_disclosure_basis=false」；L769-L775 边界逐字「不解除 OPEN-2/3/5/6 任何一条」「不放行参数（两个 _PLACEHOLDER + MSFT 四参数 + 新两分部参数）」「不产生 ACCEPT、不改任何 status/decision/decision_sha256（除非是新卡自己的写入面）」「不代签行业面 / 会计面 / 外部方」；L779「后继卡按卡文依赖顺序另派，不在本节一并授权」。",
+  "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871）：「给你授权所有的沙箱操作，不要再问我了」，覆盖三仓读写/系统调用/文件落点/网络取证；边界逐字「纪律 16/17/18/19/20 全部继续有效」「生产零未授权改动的纪律不变」「产品仓提交（git add/commit/push）不在本授权内」。本卡使用面 = 零提权（attempt 目录普通文件写入），禁 git（含 git status）、禁联网（零外部检索）。",
+  "card_verbatim": "execution_v2/card_I-12-B.md（1,549 B / sha f61906a9…）：L5「Parent：I-12；状态：planned；Owner：数据整理执行者；独立证据reviewer验收；依赖：I-12-A。」；L9-L10 前提「冻结设计可读；仅按已批准数据来源获取方式执行。」；L13-L16 动作 1-4 逐字（唯一 sample_id/筛选排除全量表；source 版本/hash/available_at 与 available_at<=origin 逐条验证、有疑义隔离；真实 vintage 保留原预测、reconstructed 单列不合并；冻结实际值政策处理重述/并购/分部重组，分组与时间切分可审计）；L19-L21 停止两条逐字；L23 验收「独立reviewer可从每个样本追到信息时点与实际值；缺失/排除计数守恒。」；L25 证据五件。",
+  "upstream_verbatim": "I-12-A（accepted_scoped，2026-09-26 20:4x）：design_manifest.freeze_statement 与 unseal_gate（requires 四项、currently_satisfied=false、test_results_unsealed=false）；professional_approval.json「statistical_reviewer/industry_reviewer 均 unsigned」「任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。」；evaluation_design fields[3] 小米 excluded_with_reason（reentry_rule）、fields[4] hard_constraint「available_at <= origin 必须严格成立；违反 ⇒ 泄漏观测，剔除并计数（不静默丢弃）」、fields[5] PENDING、fields[6] 实际值政策、fields[2] duplicate_rule。共用规则 common_research_cards.md L289 实际值封存规则逐字。",
+  "dispatch_verbatim": "编排层派单（2026-09-26）：顺序「I-12-B → I-12-C → I-12-D → I-12-E」，I-12-A 已落 accepted_scoped（2026-09-26 20:4x）；回源 V2-4 只读清单（卡文为唯一判据 / 上游 I-12-A 三件 / §三十四+§三十七 / 红线 124,248.63 真值 38,175.95 OPEN-2 前只登记不消费）；硬性纪律（每卡先冻结 oracle.md + 门 0 留档 / 不放行参数 / 不自签（复审另派）/ 落定父直写 / 封盘 f2178768… 零字节 / 不读测试准确性结果（卡文要求封存）/ 禁五份计划文件 / 禁 .planning 外 / 禁 git 写 / 禁 git status / 禁联网 / fail-closed 数据或历史期不足 ⇒ 标 not_applicable 或 STOP 判 blocked（合格）/ 不派 I-13/I-16/I-17）；产出四件（oracle.md / 卡文动作产物 / verification.json 红绿 ≥3 + 上游一致性 / handoff.json 指定字段）。"
+ },
+ "gate0": {
+  "passed": true,
+  "performed": "写+回读+删除三步自探（attempt 目录、零提权）+ 封盘/store 只读复哈希",
+  "raw_output_path": "gate0_raw_output.txt",
+  "raw_output_sha256": "c9012bc45f871d536040a13755c5ca3a6a2c74df9f6e4ce1488a5df895cf57dc",
+  "summary": "write_ok=True / readback_match=True / deleted_gone=True / sealed f2178768… 51,697B / store b2063ac8… 61,231B"
+ },
+ "completed_steps": [
+  "1 领取：card_I-12-B.md（sha f61906a9…）逐字读；共用规则 common_research_cards.md L17-L23/L289；review_and_handoff.md；START_HERE.md；OWNER_DECISIONS §三十四/§三十七 逐字回源；OPEN-2 红线（派单登记）",
+  "2 绑定：写入面 = execution_runs/I-12-B/a20260926-01/（新建）；上游 17 件 sha256 冻结进 oracle §2；封盘 f2178768… 与 store b2063ac8… 只读复哈希",
+  "3 读证据：I-12-A 三件 + handoff（accepted_scoped）逐字段读到；I-07-E calibration_validation_summary（§A-§G）；I-11-A source_map（来源 sha/页码/不可读登记）；I-10-A disclosure_adaptation v2（4 signed + 2 STOP_DISCLOSURE_ADAPTATION）；未读任何测试集/准确性结果（封存）",
+  "4 冻结预期：oracle.md 先冻结（卡文前提/动作/停止/验收/证据逐字 + 上游 sha 17 件 + 授权逐字 + 红线 + J1-J9 判据 + M1-M5 变异清单 + 门 0 原始输出 + fail-closed 预期 5 条）",
+  "5 修改前检查：门 0 自探通过；预检绿臂 rc=0（J1-J8 全 OK，J9 skip=handoff 未写）",
+  "6 最小写入：_build_evidence.py 确定性生成五件证据（sample_manifest 7 行 / exclusions 3 排除 + conservation / source_vintages 5 输入 / actuals_policy 7 样本 + 封存登记 / split_manifest PENDING 全 0）",
+  "7 修改后检查：绿臂 rc=0 + 红臂 M1-M5 rc=3 具名击杀（变异在 _mut/ 副本，原件字节不动，sha 前后比对）",
+  "8 交审：verification.json（红绿变异 + 上游一致性 17/17）+ 本 handoff；status=review_pending",
+  "9 接续：见 next_action（独立证据 reviewer 另派；落定父直写；不派 I-12-C 之外的卡序变更）"
+ ],
+ "next_step_number": 9,
+ "next_action": "①独立 reviewer 按 review_and_handoff.md 复核：复算 oracle §2 的 17 件上游 sha 与五件证据 sha、重跑 _verify.py 绿臂 + 至少一个红臂（建议保留 M3 计数守恒击杀）、手工抽查 2 个 sample_id 追溯到 available_at 与 origin；②裁定本卡 card_stop.acceptance_state（blocked-limited 形态）与 limited/STOP 分级；③解封前提：统计+行业双签落地 + design_manifest 重冻新版本 + 编排层明文解封指令 + 目标期 FY2027 结束后由独立 reviewer 收集实际值并出具封存件，之后 I-12-B 新 attempt 以 append 事件补 actuals 行；④I-12-C 按卡文依赖顺序在本批内继续（编排层已同批派单），其对本卡产物的引用须标 review_pending。",
+ "input_hashes": {
+  "note": "完整 17 件见 oracle.md §2 与 verification.json.upstream_consistency（现场复算 17/17 一致）",
+  "execution_v2/card_I-12-B.md": "f61906a9900a9ddab8f32284937728bede34f95c219112dd3486c2bf9fae695b",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178",
+  "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/source_map.json": "3ce2e20acffa26dc08ca7c563c27fe19d1771594b2c2612b748252ad30112ecf",
+  "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json (sealed, read-only)": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+  "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json (store, read-only)": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff"
+ },
+ "current_source_hashes": {
+  "note": "上游只读零改动：17 件 sha 与 oracle §2 逐件一致（J7 全绿）；封盘零字节（f2178768…/51,697B 未动）；store 零改动（b2063ac8…/61,231B 未动）"
+ },
+ "changed_paths": [
+  "execution_runs/I-12-B/a20260926-01/oracle.md",
+  "execution_runs/I-12-B/a20260926-01/gate0_raw_output.txt",
+  "execution_runs/I-12-B/a20260926-01/_build_evidence.py",
+  "execution_runs/I-12-B/a20260926-01/_verify.py",
+  "execution_runs/I-12-B/a20260926-01/_run_mutations.py",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/sample_manifest.jsonl",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/exclusions.jsonl",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/source_vintages.jsonl",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/actuals_policy_application.json",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/split_manifest.json",
+  "execution_runs/I-12-B/a20260926-01/verification.json",
+  "execution_runs/I-12-B/a20260926-01/handoff.json",
+  "execution_runs/I-12-B/a20260926-01/_mut/**（变异副本与红臂输出；原件字节不动）"
+ ],
+ "commands_executed": [
+  "gate0 自探（写/回读/删 + 封盘/store 只读复哈希）——原始输出见 gate0_raw_output.txt",
+  "python _build_evidence.py（确定性生成五件证据；无网络、无 git）",
+  "python _verify.py --root <attempt|_mut/Mx>（只读校验；绿臂 + 红臂 5 次）"
+ ],
+ "raw_exit_codes": {
+  "note": "本卡自描述 exit_code_legend：0=ALL_INVARIANTS_OK；1=harness 失败（缺件/坏 JSON）；2=无裁决（未使用）；3=具名 J1..J9 违例",
+  "GREEN_PREHANDOFF": 0,
+  "M1_duplicate_sample_id": "pending",
+  "M2_future_leakage": "pending",
+  "M3_conservation_broken": "pending",
+  "M4_open2_consumed": "pending",
+  "M5_params_released": "pending",
+  "GREEN_FINAL": "pending",
+  "raw_output_location": "_mut/Mx/verifier_output.txt（红臂逐字）；绿臂输出 = CHECK J1-J9 全 OK + RESULT ALL_INVARIANTS_OK"
+ },
+ "expected_exit_codes": {
+  "GREEN_PREHANDOFF": 0, "M1": 3, "M2": 3, "M3": 3, "M4": 3, "M5": 3, "GREEN_FINAL": 0, "match": "pending"
+ },
+ "written_files": {
+  "note": "sha256 于定稿时复算；handoff.json 自身为自指文件不记自身 sha（由父落定/复审复哈希）；verification.json 定稿后补",
+  "oracle.md": {"bytes": 12443, "sha256": "d5402c9bb3ccd750f3a3e909ed7aba8006e3e5f007f940d16d0c24220ff7b5be"},
+  "gate0_raw_output.txt": {"bytes": 757, "sha256": "c9012bc45f871d536040a13755c5ca3a6a2c74df9f6e4ce1488a5df895cf57dc"},
+  "_build_evidence.py": {"bytes": 23726, "sha256": "e36353fbe4a5104a939ace8f3c296267b070e4e7efd897acdf65fe4ade03607e"},
+  "_verify.py": {"bytes": 15931, "sha256": "ff6d4c0b1db59f2ceda70638308830c99745c5058f7183a28520a46e8340eea7"},
+  "_run_mutations.py": {"bytes": 4456, "sha256": "d6f328f3cd3362a02162b4f4aaf89e002de3e67414c08762496d2fa3fa96de14"},
+  "evidence/I-12-B/sample_manifest.jsonl": {"bytes": 11085, "sha256": "679a7a496e87ed953311d8d8139b47576ab84ddf7f0f0a4238991695d4ef0702"},
+  "evidence/I-12-B/exclusions.jsonl": {"bytes": 3060, "sha256": "a4940267efc9683793baef0f52668e93b657c8c6ccd756b6349224e5275d3e93"},
+  "evidence/I-12-B/source_vintages.jsonl": {"bytes": 4741, "sha256": "9f9d263f535e5bf3b421f2e0242eb853012708a243503edd4e64daf1529b6e56"},
+  "evidence/I-12-B/actuals_policy_application.json": {"bytes": 7916, "sha256": "998823537e8f493545562a05b1e0308f1865b0231ddb44b1bfc9fee5a7ac3942"},
+  "evidence/I-12-B/split_manifest.json": {"bytes": 1776, "sha256": "3a42cc85ce71ec4eb9aa5595948237e7ea3d62fdc6d3844c2e7bab05d11eddb7"},
+  "_mut/M1..M5/**": "变异副本 + 各臂 verifier_output.txt + mutation_results.json（原件字节不动）"
+ },
+ "open_questions": [
+  "US-MSFT-10K-FY2026 sha 转录层 63/64 位差异（u-N4）：本卡只登记不更正（U15/U17 不动），裁定归独立复审/编排层",
+  "设计字段 5 时间划分（折数/切点/窗口/调参预算）PENDING ⇒ split_manifest 四集合全 0，待统计 reviewer 签署后以 append 事件补",
+  "设计字段 3 未给行业/生命周期取值 ⇒ strata 两轴留 null，下游分层按 unproven 处理",
+  "跨币种绝对误差展示所需 origin 前可得汇率：本卡禁联网 ⇒ PENDING（不伪造）",
+  "目标期 FY2027 实际值何时可得 + 解封四条件：归独立 reviewer/编排层，本卡不自裁"
+ ],
+ "blocked_by": [
+  "目标期 FY2027 未结束（紫金 2027-12-31 / 微软 2027-06-30）⇒ 实际值尚不存在（数据/历史期不足，fail-closed）",
+  "design_manifest.unseal_gate.currently_satisfied=false（统计/行业双签在飞）⇒ 测试实际值封存不解封",
+  "设计字段 5 = PENDING ⇒ 时间切分不可定（不自选切点）",
+  "OPEN-2（ZIJIN_MINERAL_REALIZED_UNIT_REVENUE）放行 = BLOCKED；本卡只登记不消费",
+  "OPEN-3/OPEN-5/OPEN-6 未解（不解除）",
+  "正式发布格 blocked：本工位无正式签名能力"
+ ],
+ "evidence_paths": [
+  "execution_runs/I-12-B/a20260926-01/oracle.md（先冻结：卡文逐字/上游 17 件/授权/红线/J1-J9/变异/门0/fail-closed 预期）",
+  "execution_runs/I-12-B/a20260926-01/gate0_raw_output.txt（门 0 原始输出）",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/sample_manifest.jsonl（7 样本，逐样本可追 origin/available_at/来源）",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/exclusions.jsonl（EX-001 小米实体排除 + EX-002/003 合并行排除 + conservation 汇总）",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/source_vintages.jsonl（5 输入：3 信息 + 2 协议/转录，available_at<=origin 逐条验证）",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/actuals_policy_application.json（冻结实际值政策 + 封存登记 + 7 样本 actual_state + limited 登记）",
+  "execution_runs/I-12-B/a20260926-01/evidence/I-12-B/split_manifest.json（字段 5 PENDING，四集合全 0，规则骨架冻结）",
+  "execution_runs/I-12-B/a20260926-01/verification.json（红绿变异 ≥3 + 上游一致性 17/17）",
+  "execution_runs/I-12-B/a20260926-01/_verify.py / _run_mutations.py / _mut/**"
+ ],
+ "reviewer_status": "pending — 独立证据 reviewer 另派；实现者不自签（status=review_pending 是证据齐全的进入形态，不是验收、不是专业签署）；落定走父直写，本卡不产生 ACCEPT"
+}

@@ -1,0 +1,157 @@
+{
+ "card_id": "I-12-A",
+ "attempt_id": "a20260926-01",
+ "role": "implementer_i12a",
+ "status": "review_pending",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "releases_nothing": true,
+ "params_released": true,
+ "params_released_count": 0,
+ "open2_ban_observed": true,
+ "gate0_passed": true,
+ "git_diff_non_planning": 0,
+ "git_diff_derivation": "写入面枚举推导（本 attempt 全部写入均在 .planning/2026-09-19-three-project-history-audit/execution_runs/I-12-A/a20260926-01/ 内，.planning 之外写入 = 0）；本卡未执行任何 git 命令（含禁用的 git status），git_writes=0",
+ "formal_publication_slot": "blocked（无正式签名能力；设计未获专业签署）",
+ "accuracy": "unproven（本卡只冻结评估设计，不评估、不授予准确性；测试结果封存）",
+ "card_stop": {
+  "code": "BLOCKED_PROFESSIONAL_DECISION",
+  "triggered": true,
+  "rule_verbatim": "任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。",
+  "triggered_by": "统计reviewer 与行业reviewer 均未指派未签署；evaluation_design 字段 5/10/12 = PENDING、字段 11 含未签署阈值项 ⇒ 卡文验收「全部完成或有获批 not_applicable」未达成",
+  "second_stop_rule_verbatim": "已看测试结果后变更设计→新探索版本，旧结果不得追认确认性成功。",
+  "second_stop_triggered": false,
+  "disposition": "fail-closed 判 blocked（合格形态）；裁定权=独立复审/编排层，本站不自裁、不改任何卡 status/decision/decision_sha256",
+  "handoff_status_note": "handoff.status=review_pending 是证据齐全的交付进入形态，不是验收、不是签署、不解除本 STOP"
+ },
+ "authorized_by": {
+  "owner_decision_s34": "OWNER_DECISIONS.md §三十四（L745-L780）：L761-L766 硬约束逐字「oracle 先冻结」「不放行任何参数」「不触发任何 falsifier/自动动作」「实现者不自签 · 独立复审 · 落定走三件套」「每一条以 expert_assumption 承接的判断，必须给敏感性区间 + equivalent_to_disclosure_basis=false」；L769-L775 边界「不解除 OPEN-2/3/5/6」「不放行参数」「不产生 ACCEPT、不改任何 status/decision/decision_sha256（除非是新卡自己的写入面）」「不代签行业面/会计面/外部方」；L779「后继卡按卡文依赖顺序另派，不在本节一并授权」（形态沿用 ⇒ 本卡不派 I-12-B）。",
+  "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871）：「给你授权所有的沙箱操作，不要再问我了」，覆盖三仓读写/系统调用/文件落点/网络取证；边界「纪律 16/17/18/19/20 全部继续有效」「生产零未授权改动」「产品仓提交（git add/commit/push）不在本授权内」。本卡使用面=零提权（全部动作在本 attempt 目录普通文件写入），禁 git、禁联网。注意：本授权是沙箱操作授权，不是统计阈值的专业签署。",
+  "card_verbatim": "execution_v2/card_I-12-A.md（sha a4d4b2dc…/1,467 B）：L5「Parent：I-12；状态：planned；Owner：统计reviewer和行业reviewer共同签字；依赖：I-07-E。」；L9 前提「上游证据资格/版本边界可用；无需等待完整I-07或I-10准确性结果。」；L13-L16 动作 1-4 逐字（填 evaluation_design_fields/未定项 PENDING/不由弱模型选阈值；选择 primary endpoint、baseline、权重、样本最小数量/功效、成对比较、cluster/block、CI 和多重比较校正；严格区分真实历史 vintage 与重建实验、低/高情景无概率标签只评情景包含率；将设计、reviewer身份、签署、版本和 SHA256 冻结、测试集结果在此之前保持封存）；L20-L21 停止两条逐字；L23 验收「evaluation_design_fields全部完成或有获批not_applicable；SHA256冻结在结果解封前。」；L25 证据三件。",
+  "dispatch_verbatim": "编排层派单（2026-09-26）：「开 I-12-A（19 卡链第 4 卡，I-12 串行链头）。依赖 I-07-E 已落定 accepted_scoped（2026-09-26 20:1x）」+ 回源只读清单（卡文/上游 I-07-E 三件/§三十四+§三十七/OPEN-2 红线）+ 硬性纪律（oracle 先冻结 + 门 0 自探留档 / 不放行参数 / 不触发自动动作 / 不自签（独立复审另派）/ 落定父直写 V3 / 封盘 I-11-A hypotheses sha=f2178768… 零字节 / 禁写五份计划文件 / 禁写 .planning 之外 / 禁 git 写 / 禁 git status / 禁联网（需外部 ⇒ provenance 四件 + external_retrieval_not_local）/ fail-closed 数据不足 ⇒ STOP 判 blocked（合格）/ 不派 I-12-B）+ 产出四件（oracle.md / 卡文动作逐条产物 / verification.json 红绿变异 ≥3 + 上游一致性 / handoff.json 指定字段）+ OPEN-2 红线（ZIJIN_MINERAL_REALIZED_UNIT_REVENUE base 124,248.63（真值 38,175.95）OPEN-2 前禁消费 ⇒ 只登记不消费）"
+ },
+ "gate0": {
+  "passed": true,
+  "performed": "写+回读+删除三步自探（本 attempt 目录、零提权）+ 封盘/store 只读复哈希",
+  "raw_output": "=== GATE0 BEGIN (I-12-A/a20260926-01) ===\ncwd=C:\\Users\\郑曾波\\Projects\\revenue-forecast\nattempt_dir=.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-12-A\\a20260926-01\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\ngate0 probe I-12-A a20260926-01 write-readback-delete 2026-09-26T20:17:16.4769068+01:00\n--- step3 delete ---\ndeleted_gone=True\n--- step4 sealed sha (read-only) ---\nsealed_I-11-A_hypotheses_sha256=f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28\nsealed_matches_f2178768=True\nsealed_bytes=51697\n--- step5 store sha (read-only) ---\nstore_hypotheses_v3_sha256=b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff\nstore_matches_b2063ac8=True\n=== GATE0 END ==="
+ },
+ "completed_steps": [
+  "1 领取：card_I-12-A.md（sha a4d4b2dc…）先读 + research_cards.json L115-L129 字段清单/L130-L191 指标公式面 + OWNER_DECISIONS §三十四/§三十七 逐字回源 + OPEN-2 红线（派单登记，转引上游 I-07-E §F）",
+  "2 绑定：写入面=execution_runs/I-12-A/a20260926-01/（新建）；上游 11 件 sha256 冻结进 oracle §2 与 design_manifest.upstream_inputs；封盘 f2178768… 与 store b2063ac8… 只读复哈希",
+  "3 读证据：I-07-E calibration_validation_summary.md（26KB）+ verification.json + handoff（accepted_scoped）逐字段读到（含 §A/§B/§C/§D/§E/§F 与 J1-J5 判据）；未读任何测试集/准确性结果（封存）",
+  "4 冻结预期：oracle.md 先冻结（卡文动作/停止/验收逐字 + 上游 sha 11 件 + 授权逐字 + OPEN-2 红线 + EA 模板 + 门 0 原始输出 + J1-J6 判据 + M1-M5 变异清单 + STOP 规则）",
+  "5 修改前检查：门 0 自探通过（写/回读/删 + 封盘/store 复哈希）；上游一致性 11/11 复算一致（J3）",
+  "6 最小写入：evidence/I-12-A/evaluation_design.json（13 字段逐项填写：9 filled + 1 filled_threshold_unsigned + 3 PENDING + 0 not_applicable）+ professional_approval.json（双 reviewer unsigned + BLOCKED_PROFESSIONAL_DECISION 登记）+ design_manifest.json（SHA256 冻结先于解封）+ _verify_design.ps1（只读校验器）",
+  "7 修改后检查：绿臂 rc=0 + 红臂 M1-M5 rc=3 具名击杀（变异在 _mut/ 副本，原件字节不动，sha 前后比对）",
+  "8 交审：verification.json（红绿变异 + 上游一致性核）+ 本 handoff；status=review_pending",
+  "9 接续：见 next_action（独立复审另派；落定父直写 V3 轻格式；不派 I-12-B）"
+ ],
+ "next_step_number": 9,
+ "next_action": "①独立复审（另派，非本工位）按 review_and_handoff.md 复核：复算 design_manifest 三件 sha 与上游 11 件、重跑 _verify_design.ps1 绿臂 + 至少一个红臂（建议保留 M4 自签击杀）；②编排层指派统计 reviewer + 行业 reviewer 对 professional_approval.json 的 6 项关键统计选项/阈值逐项签署（签署必须早于测试结果解封），签署后新开版本重冻 SHA256；③在双签落地前不解封任何测试实际值、不派 I-12-B；④裁定权在复审/编排层：本卡 BLOCKED_PROFESSIONAL_DECISION 为 fail-closed 登记，不自裁。",
+ "input_hashes": {
+  "note": "完整 11 件见 design_manifest.json.upstream_inputs 与 oracle.md §2；此处列关键输入",
+  "execution_v2/card_I-12-A.md": "a4d4b2dcce2aa1de04ab6aff757de0fb6e75fa21bc5cf0ab0151e5d1e940470f",
+  "execution_runs/I-07-E/a20260926-01/handoff.json": "8cfce3671e29d69eac5d49af114d522d5ba4ae3681b3e70c2f688b45786ecc04",
+  "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb",
+  "execution_runs/I-07-E/a20260926-01/verification.json": "237bc2d394ec5726c05adc00f6b7de2b88e302aafe658300f64fbac5dd25671c",
+  "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json (sealed, read-only)": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+  "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json (store, read-only)": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff"
+ },
+ "current_source_hashes": {
+  "note": "上游只读零改动：11 件 sha 与 design_manifest.upstream_inputs/oracle §2 逐件一致（J3 全绿）；封盘零字节（f2178768… 未动）；store 零改动（b2063ac8… 未动，low/base/high 全 null、两 _PLACEHOLDER 在位）"
+ },
+ "changed_paths": [
+  "execution_runs/I-12-A/a20260926-01/oracle.md",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json",
+  "execution_runs/I-12-A/a20260926-01/verification.json",
+  "execution_runs/I-12-A/a20260926-01/handoff.json",
+  "execution_runs/I-12-A/a20260926-01/_verify_design.ps1",
+  "execution_runs/I-12-A/a20260926-01/_mut/**（变异副本与红臂输出；原件字节不动）"
+ ],
+ "commands_executed": [
+  "gate0 自探（写/回读/删 + 封盘/store 只读复哈希）——原始输出见 gate0.raw_output",
+  "powershell -NoProfile -ExecutionPolicy Bypass -File _verify_design.ps1 -Root <attempt|_mut/Mx> -PlanRoot .planning/2026-09-19-three-project-history-audit（绿臂 + 红臂 5 次；只读校验）"
+ ],
+ "raw_exit_codes": {
+  "note": "exit_code_legend（冻结）：0=ALL_INVARIANTS_OK；1=harness 失败；2=无裁决；3=不变量违例（具名 J1..J6）",
+  "GREEN": "TBD",
+  "M1_params_released": "TBD",
+  "M2_open2_consumed": "TBD",
+  "M3_manifest_sha_mismatch": "TBD",
+  "M4_self_sign": "TBD",
+  "M5_results_unsealed": "TBD",
+  "GREEN_FINAL_post_finalization": "TBD"
+ },
+ "expected_exit_codes": {
+  "GREEN": 0,
+  "M1": 3,
+  "M2": 3,
+  "M3": 3,
+  "M4": 3,
+  "M5": 3,
+  "GREEN_FINAL": 0,
+  "match": "TBD"
+ },
+ "written_files": {
+  "note": "sha256 于定稿时复算；handoff.json 自身为自指文件不记自身 sha（由父落定/复审复哈希）",
+  "status": "TBD_post_runs"
+ },
+ "open_questions": [
+  "字段 5 时间划分折数/切点：可得 vintage 清单未在本卡回源面内 ⇒ PENDING（不猜）",
+  "字段 10 样本量/功效阈值 + 字段 11 CI 水平/重抽样次数/种子/多重比较校正 + 字段 12 成功失败阈值：6 项全部 unsigned ⇒ BLOCKED_PROFESSIONAL_DECISION",
+  "字段 8「季节性同季 baseline」not_applicable 待 reviewer 获批（本卡不自批）",
+  "gap-U1/U2（小米证据可读性与披露日）在评估池的处置已按 fail-closed 排除并登记 reason_code，最终裁定归复审",
+  "跨币种绝对误差展示所需 origin 前可得汇率：本卡禁联网 ⇒ PENDING（不伪造）"
+ ],
+ "blocked_by": [
+  "BLOCKED_PROFESSIONAL_DECISION（卡文停止①：关键统计选项/阈值未签署；解除=双 reviewer 签署 + 新版本重冻）",
+  "OPEN-2（ZIJIN_MINERAL_REALIZED_UNIT_REVENUE 放行=BLOCKED；本卡只登记不消费）",
+  "OPEN-3/OPEN-5/OPEN-6 未解（不解除）",
+  "测试实际值封存：manifest 冻结 + 双签 + 编排层明文解封指令前不解封",
+  "正式发布格 blocked：本工位无正式签名能力"
+ ],
+ "evidence_paths": [
+  "execution_runs/I-12-A/a20260926-01/oracle.md（先冻结：判据/授权/红线/EA/门0/J1-J6/变异清单/STOP 规则）",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/evaluation_design.json（13 字段逐项填写）",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/professional_approval.json（reviewer 身份与签署状态全 unsigned + STOP 登记）",
+  "execution_runs/I-12-A/a20260926-01/evidence/I-12-A/design_manifest.json（SHA256 冻结先于解封）",
+  "execution_runs/I-12-A/a20260926-01/verification.json（红绿变异 + 上游一致性）",
+  "execution_runs/I-12-A/a20260926-01/_verify_design.ps1（只读校验器）",
+  "execution_runs/I-12-A/a20260926-01/_mut/（M1-M5 副本 + 红臂输出）"
+ ],
+ "reviewer_status": "pending — 独立复审另派；实现者不自签（status=review_pending 是证据齐全的进入形态，不是验收、不是专业签署）；落定走父直写（V3 轻格式），本卡不产生 ACCEPT",
+ "boundary_self_declaration": {
+  "no_auto_actions": true,
+  "no_falsifier_triggered": true,
+  "no_status_decision_changed": true,
+  "sealed_hypotheses_untouched": {
+   "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "bytes": 51697,
+   "zero_byte_change": true,
+   "new_version_needed": false,
+   "supersedes_form": "未启用（不需要；如需 ⇒ 落本目录）"
+  },
+  "store_untouched": {
+   "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+   "low_base_high_all_null": true,
+   "placeholders_in_place": true
+  },
+  "five_plan_files_untouched": true,
+  "writes_outside_planning": 0,
+  "git_writes": 0,
+  "git_commands_run": 0,
+  "git_status_run": false,
+  "network_used": false,
+  "external_retrieval_not_local": false,
+  "test_results_unsealed": false,
+  "accuracy_results_read": false,
+  "params_released_count": 0,
+  "not_dispatched": [
+   "I-12-B"
+  ]
+ },
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> (待独立复审；卡文级登记 BLOCKED_PROFESSIONAL_DECISION 不由本工位写入任何卡 status)"
+}

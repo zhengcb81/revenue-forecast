@@ -1,0 +1,21 @@
+# anchor_compare.txt — changes.diff evidence (2026-09-24)
+
+## snapshot_before vs snapshot_after (harness/snapshot.py, both sides)
+
+- hashed_anchors: 20 — changed: [] (identical sha256)
+- missing==missing (vacuous, FR-2 root bug parents[1]): 6 PLAN anchors
+- production catalog: bytes+mtime_ns identical; -wal identical; -shm bytes identical
+  (32768), -shm mtime changed = read-only WAL reader-attachment side effect (disclosed)
+- production samples: raw+sidecar all_match=true before AND after (CN/HK/US)
+
+## 6 PLAN anchors re-hashed at CORRECTED paths (PLAN root = ATT.parents[2])
+
+b54f4bc8f3eb1810f66a6a18f37b55b85bcdc98229c5493c11d2ad326228c553  execution_v2/card_I-07-D.md          (= I-07-D's frozen card pin b54f4bc8…2c553)
+0dec23cd10f00efd6ad82cf923552bd46c1763bcf9f740422f51f4973292299f  execution_v2/scenario_matrix.md      (= frozen pin 0dec23cd…292299f)
+d5d0bb92da9eee92666459ccf344d549343008db8bf32fd1257dbf6f5f3ec851  execution_v2/sample_manifest.json    (= frozen pin d5d0bb92…)
+f8a397ecd306b03f03385ad25c28667338c85e3301277414ddf4013f3c9a24df  execution_runs/I-00-B/a20260919-01/commands.json (= I-07-D binding pin f8a397ec…)
+fdb2a59890e64c42f4a4566c8aaa6eefaec8e867c01779974178048d9fbf75f0  execution_runs/I-00-B/a20260919-01/binding.json   (= I-07-D binding pin fdb2a598…)
+de784cb2f94cb2ed7a3b13a315063fb4fc7b746519db939ea58e6707abbe8684  execution_runs/I-07-A/a20260919-01/after/state_matrix.json
+
+Honest anchor count for changes.diff: 20 hashed identical + 6 pin-verified at corrected
+paths = 26/26 unchanged (0 product anchors changed).

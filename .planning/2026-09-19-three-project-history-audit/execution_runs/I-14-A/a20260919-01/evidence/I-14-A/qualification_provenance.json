@@ -1,0 +1,122 @@
+{
+  "record": "qualification_provenance",
+  "card_id": "I-14-A",
+  "attempt": "execution_runs/I-14-A/a20260919-01",
+  "pass": "qualification bookkeeping executor (delegated subagent); parent = session-19074bf0-0205-4315-af73-9db57597275a",
+  "created_utc": "2026-09-25T22:22:32Z (qualification written 22:22-22:25Z; this file written last)",
+  "purpose": "封盘边界 fail-closed 判定 + 前后哈希表逐条相等的证明 + git 边界计数 + 产物清单。本文件自身无自引用哈希（自引用必然过期），落盘后外部重算即可。",
+
+  "seal_boundary_check": {
+    "question": "I-14-A/a20260919-01 是封盘 attempt，新增 evidence/I-14-A/qualification.json（新目录 + 新文件）是否在允许范围内？",
+    "verdict": "ALLOWED（允许）",
+    "method": "回源检索 REMEDIATION_REGISTER.md / progress.md / task_plan.md / findings.md / OWNER_DECISIONS.md / 本 attempt binding.json / handoff.json / oracle.md / decision.md / review.md / recovery/README.md 中的 seal / sealed_at / 封盘 / 追加 / 新增 字样，逐条引原文行号",
+    "findings_quotes": [
+      {"src": "execution_runs/I-14-A/a20260919-01/oracle.md:307", "quote": "封盘 `oracle.md` / `decision.md` / `review.md` / `binding.json` / `commands.json` / `evidence/**` 的**既有字节零改动**；本节是 `oracle.md` 的唯一追加节。", "reading": "封盘保护对象 = 既有字节；该行本身即封盘 attempt 自己声明的边界"},
+      {"src": "execution_runs/I14A-C1C2-ERRATUM/a20260924-01/evidence/append_to_sealed.py:1-13,100", "quote": "Append the two correction sections to the SEALED I-14-A attempt (append-only). … mode: append-only (T1-12 (1)); no pre-existing byte modified", "reading": "对封盘 attempt 的写入已有硬护栏脚本，护栏拦的是「改前像」，不是「新增」"},
+      {"src": "execution_runs/I14A-C1C2-ERRATUM/a20260924-01/handoff.json:166-197", "quote": "sealed_appends: oracle.md 前像 20457B/87775f2f… → 31256B/4dc8600f…、decision.md 前像 8467B/a1a9d374… → 20545B/11cf8334…, prefix_bytes_preserved=true; sealed_files_untouched: review.md/binding.json/commands.json/handoff.json/evidence/**/harness/**/iso/** changed_bytes = 0", "reading": "封盘 attempt 已于 2026-09-24 被授权写入过两次（追加），封盘未被理解为「绝对只读」"},
+      {"src": "REMEDIATION_REGISTER.md §132 L2759", "quote": "⇒ 派工序确定为：`934bc19e` 出裁 → 落定 `review.md`+`handoff` → 此时才写 `I-14-A/a20260919-01/evidence/I-14-A/qualification.json`（口径须带上 D2 现状与 C-1/C-2 更正结果…）", "reading": "编排层明示指定本文件的确切路径与写入时机 —— 即「在封盘 attempt 内新增此文件」已被登记为既定工序"},
+      {"src": "REMEDIATION_REGISTER.md §136-E L2945", "quote": "在飞 5：… · `I-14-A qual 补齐`（查封盘范围，未动字节） · …", "reading": "本工单被父登记为在飞项，约束条件写的是「未动字节」而非「不得新增」"},
+      {"src": "REMEDIATION_REGISTER.md §122-B L2304 / §122-F L2326 / §122-B1 L2328", "quote": "B. 交付（恰好 16 个新建文件，标准位 `evidence/<CARD>/qualification.json`） … F. 16 个 attempt 内 qualification 以外文件近 6h mtime 命中 = 0 … B1 落点选择：该 attempt 既无 `evidence/` 目录也无任何 `qualification*.json` ⇒ 按父单兜底落 `evidence/B1-I08C-product-fixes/`", "reading": "同形先例：在既成 attempt（含无 evidence/ 目录者）内新建 evidence/<CARD>/qualification.json 已执行 16 例并经父独立复核 16/16"},
+      {"src": "execution_runs/I-14-A/a20260919-01/binding.json:37-39", "quote": "\"allowed_write_roots\": [ \"C:\\...\\execution_runs\\I-14-A\\a20260919-01\\\" ]", "reading": "该 attempt 自身的绑定允许在 attempt 目录内写入"},
+      {"src": "task_plan.md:259", "quote": "注意 `handoff.json` 的 `seal_discipline_conflict` 字段：封盘后不再写入的纪律本轮被违反两次（修 JSON 合法性、把嵌合哈希换成现算值）", "reading": "反向证据（fail-closed 已计）：封盘确有「不再写入」纪律，但被追责的两起都是**改既有字节/事后改值**；本 pass 未改任何既有字节，且其写入由 §132 明示工序授权"},
+      {"src": "findings.md:71", "quote": "其封盘证据里字段名 `cited_by_parent` 不准确这一点，因 attempt 已封盘而不回改（如需盘面准确须开新 attempt 或明确解封后仅追加只读注记）", "reading": "反向证据：该条针对「更正既有字段的不准确」，须开新 attempt 或解封；本 pass 不更正任何既有字段，只补登记册要求的新载体"}
+    ],
+    "no_prohibition_found": "在上述全部源中未找到任何「封盘后禁止新增文件」的原文；封盘原文一律约束既有字节、回改与事后改值",
+    "conclusion": "ALLOWED —— 新增文件不触碰任何既有字节，且由登记册 §132 L2759 明示路径 + §122 同形先例 + attempt 自身 allowed_write_roots 三重支撑；同时按 §136-E「未动字节」执行"
+  },
+
+  "artifacts": [
+    {"path": "execution_runs/I-14-A/a20260919-01/evidence/I-14-A/qualification.json", "role": "三件套第三件（本工单主产物）", "bytes": 33338, "sha256": "5e4789e56145f4235796d9fae0fc782471babeb4c2beb2d4ca11f07f7231bd1d", "sha256_prefix16": "5e4789e56145f423"},
+    {"path": "execution_runs/I-14-A/a20260919-01/evidence/I-14-A/before_hashes.json", "role": "执行前哈希表（1580 件）", "bytes": 442722, "sha256_prefix16": "2a14874e305e7344"},
+    {"path": "execution_runs/I-14-A/a20260919-01/evidence/I-14-A/after_hashes.json", "role": "执行后哈希表（1580 件）", "bytes": 442631, "sha256_prefix16": "bd78e0abaaa60a6c"},
+    {"path": "execution_runs/I-14-A/a20260919-01/evidence/I-14-A/qualification_provenance.json", "role": "本文件（前后哈希表 + 边界证明）；自引用哈希不可写，落盘后外部重算", "bytes": null, "sha256_prefix16": null}
+  ],
+  "artifacts_note": "before/after 两张表 JSON 字节数不同（442722 vs 442631）只因 record/purpose/captured_utc 三个元数据键不同；承载事实的 files 数组经规范化摘要证明逐条相等（见下）。",
+
+  "hash_equality_proof": {
+    "scope": "attempt 下全部常规文件，排除 evidence/**（本工位新建的簿记目录）；即封盘既有件全集",
+    "file_count_before": 1580,
+    "file_count_after": 1580,
+    "comparison_method": "① 按 rel 逐条比 bytes + sha256；② 把两表 files 数组按 rel 排序、拼成 `rel|bytes|sha256` 换行串，各自算 sha256 规范化摘要再比对",
+    "mismatch_count": 0,
+    "missing_after": 0,
+    "new_outside_evidence": 0,
+    "canonical_digest_before": "017e2010e3c38256fe09216f459f9918c8da6221691401bf5a777b651d0ee669",
+    "canonical_digest_after": "017e2010e3c38256fe09216f459f9918c8da6221691401bf5a777b651d0ee669",
+    "canonical_digest_equal": true,
+    "line_counts": {"before": 1580, "after": 1580},
+    "top_level_7": [
+      {"file": "binding.json", "bytes": 10305, "sha256_before": "d713c6c385318ef60a8786690ef3533615af359743d3844fc46f7a892d64808c", "sha256_after": "d713c6c385318ef60a8786690ef3533615af359743d3844fc46f7a892d64808c", "equal": true},
+      {"file": "changes.diff", "bytes": 33241, "sha256_before": "fcb9ae658c9c261bf4dc06c1f9523dad5fdefccae0b4161a50909870d01a7aee", "sha256_after": "fcb9ae658c9c261bf4dc06c1f9523dad5fdefccae0b4161a50909870d01a7aee", "equal": true, "cross_check": "= binding.json:77 artifacts.changes_diff.sha256 与 review.md:311 所引值"},
+      {"file": "commands.json", "bytes": 12609, "sha256_before": "59624971ec0bd926d16c580963cb6ed92e2f07778b100faf6beb4f6e6181867e", "sha256_after": "59624971ec0bd926d16c580963cb6ed92e2f07778b100faf6beb4f6e6181867e", "equal": true},
+      {"file": "decision.md", "bytes": 20545, "sha256_before": "11cf83342484165308445ad085ba4e1f296bb8d7ad08b5afa81feb57e28dc772", "sha256_after": "11cf83342484165308445ad085ba4e1f296bb8d7ad08b5afa81feb57e28dc772", "equal": true},
+      {"file": "handoff.json", "bytes": 25662, "sha256_before": "294055659e03830f67a94d1a22f8d3956a2a82b7d9542dfafbff4da9738b1f22", "sha256_after": "294055659e03830f67a94d1a22f8d3956a2a82b7d9542dfafbff4da9738b1f22", "equal": true},
+      {"file": "oracle.md", "bytes": 31256, "sha256_before": "4dc8600f2bbbd40b93585788cd0e6f2b2dc5b2501487e2eeb71377e092b9c204", "sha256_after": "4dc8600f2bbbd40b93585788cd0e6f2b2dc5b2501487e2eeb71377e092b9c204", "equal": true, "cross_check": "= I14A-C1C2 handoff sealed_appends post_image（31256 B / 4dc8600f…）"},
+      {"file": "review.md", "bytes": 35831, "sha256_before": "bab39ef647db5aee750bac72ed04fbc29f2e33b925a9a17e90f5ab6e530a0038", "sha256_after": "bab39ef647db5aee750bac72ed04fbc29f2e33b925a9a17e90f5ab6e530a0038", "equal": true}
+    ],
+    "top_level_7_all_equal": true,
+    "inventory_cross_check": "本工位枚举 1580 件、git ls-files 实测 85 个被跟踪文件；两个数值均与 I14A-C1C2-ERRATUM/a20260924-01/evidence/I14A-C1C2-ERRATUM/qualification.json 的封盘记述逐数吻合 —— 其 granted_scope「C-1 两处封盘前缀复算判据」条逐字：「封盘 85 个被跟踪文件逐 git hash-object 比对仅这 2 个不等；封盘全树 mtime≥2026-09-21 只有这两个、其余 1578 件仍为封盘当时」（1578 + 两处追加 = 1580）"
+  },
+
+  "git_boundary": {
+    "command": "git -c core.quotepath=false diff HEAD --name-only",
+    "total_lines": 3826,
+    "non_planning_count": 0,
+    "staged_count": 0,
+    "head": "b7a6a1167beeac6975fa9f8fe130bdd2136ecbcb",
+    "untracked_under_attempt": [
+      ".planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/a20260919-01/evidence/I-14-A/before_hashes.json",
+      ".planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/a20260919-01/evidence/I-14-A/qualification.json",
+      ".planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/a20260919-01/evidence/I-14-A/after_hashes.json",
+      ".planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/a20260919-01/evidence/I-14-A/qualification_provenance.json（本文件，写于最后一次计数之后）"
+    ],
+    "git_writes": 0,
+    "git_status_used": false,
+    "note": "禁用 git status（只用了带 pathspec 的 ls-files / diff 读类命令）；未 add / commit / restore / stash"
+  },
+
+  "discrepancies_vs_parent_premises": [
+    {
+      "parent_premise": "「该路径下 0 个文件被 git 跟踪」",
+      "measured": "git -c core.quotepath=false ls-files -- .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/a20260919-01/ = 85 个（7 件顶层 + after/** + before/** + harness/** + recovery/** + company-wiki/config）",
+      "impact": "不影响封盘判定（是否被跟踪不是封盘判据），也不改变写入面；如实登记以免后续按错误前提推理"
+    },
+    {
+      "parent_premise": "「顶层只有 7 件…连 evidence/ 目录都不存在」",
+      "measured": "顶层条目 = 13：7 件文件 + 6 个目录（after/ before/ company-wiki/ harness/ iso/ recovery/）；evidence/ 确不存在（Test-Path = False）",
+      "impact": "「7 件」是顶层文件数而非顶层条目数；evidence/ 不存在这一点属实，故本工单需新建目录"
+    },
+    {
+      "parent_premise": "「落定三件已入父复核 20/20」",
+      "measured": "三件字节/尺寸我已只读复测并与派单数值吻合（review.md 23109 B / 4f0de7fdb211f069、handoff.json 35801 B / 6d49a5ed29db7652、evidence/I14A-C1C2-ERRATUM/qualification.json 20036 B / 538ff4430618d5b7）；但登记册最新节 §136 与 progress R108 未见该 20/20 记载",
+      "impact": "qualification.json 中把 20/20 标为父侧转述、不作为我已核实的事实"
+    }
+  ],
+
+  "discipline_checklist": {
+    "existing_bytes_changed": 0,
+    "before_after_tables_equal": true,
+    "handoff_json_touched": false,
+    "status_changed": false,
+    "review_md_touched": false,
+    "oracle_md_touched": false,
+    "decision_md_touched": false,
+    "binding_commands_changes_touched": false,
+    "plan_files_written": 0,
+    "git_writes": 0,
+    "git_status_used": false,
+    "network_access": 0,
+    "tests_run": 0,
+    "signatures_made": 0,
+    "blocking_remediation_released": 0,
+    "not_done": [
+      "未改封盘任何既有字节（1580 件前后哈希逐条相等）",
+      "未改 handoff.json / status / review.md / oracle.md / decision.md / binding.json / commands.json / changes.diff",
+      "未写五份计划文件（task_plan / progress / findings / REMEDIATION_REGISTER / OWNER_DECISIONS）",
+      "未做任何 git 写（add/commit/restore/stash 皆无；staged = 0），未使用 git status",
+      "未联网、未跑测试、未代签 D1/D2/D3、未宣布 I-14-A 通过、未解除任何 BLOCKED 或晋升禁令",
+      "未处置 D2 复签与产品收紧（按 §134-C 应另开受控卡）",
+      "未补证 6 项 unverified、未修复 P2×2/P3×3 五处文字数值"
+    ]
+  }
+}

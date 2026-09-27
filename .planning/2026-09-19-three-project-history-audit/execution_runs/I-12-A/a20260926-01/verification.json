@@ -1,0 +1,93 @@
+{
+  "schema": "i12a_verification/1",
+  "card": "I-12-A",
+  "attempt": "execution_runs/I-12-A/a20260926-01",
+  "role": "implementer_i12a",
+  "purpose": "红绿双向变异（≥3，实做 5 红 + 1 绿 + 1 定稿绿）+ 上游一致性核（11 件 sha 全量复算）。变异在 _mut/ 副本执行，原件字节不动（sha 前后比对）。校验器=_verify_design.ps1。",
+  "exit_code_legend": {
+    "0": "ALL_INVARIANTS_OK（命令正常结束且业务判定通过）",
+    "1": "harness 失败（输入缺失/路径未绑定等运行器自身错误）",
+    "2": "无裁决（本校验器不产生 2）",
+    "3": "不变量违例（具名 J1..J6；红臂期望值；冻结码表『声明期望不符』）",
+    "note": "与 I-07-E 码表同名同义；跨批聚合先读本 legend，不假设码表一致（I-11-C 本地惯例曾用红=rc=1）。"
+  },
+  "verifier": {
+    "script": "execution_runs/I-12-A/a20260926-01/_verify_design.ps1",
+    "invocations": "powershell -NoProfile -ExecutionPolicy Bypass -File _verify_design.ps1 -Root <dir> -PlanRoot <plan-root>",
+    "invariants": {
+      "J1_release_lock": "handoff.params_released=false / implementer_signed=false / releases_nothing=true / status=review_pending / params_released_count=0",
+      "J2_open2_ban": "handoff.open2_ban_observed=true；oracle.md 与 evaluation_design.json 带 registered_not_consumed，且 evaluation_design.json 零次出现 consumed_for_forecast；oracle.md 中该 token 只允许出现在 J2 定义行、§4 消费面定义行与 §7 M2 变异命名行（rule_scope 见下）",
+      "J3_upstream_sha": "design_manifest.upstream_inputs 11 件逐件按 sha256 + bytes 复算比对（含封盘 f2178768… 与 store b2063ac8…）",
+      "J4_professional_signoff": "professional_approval：statistical_reviewer/industry_reviewer signed=false 且 signature_status=unsigned、implementer signed=false 且 may_sign=false、stop_condition.triggered=true 且 code=BLOCKED_PROFESSIONAL_DECISION（未签署 ⇒ 必须登记 STOP，不得静默通过）",
+      "J5_result_seal": "design_manifest.test_results_unsealed=false 与 accuracy_results_read=false；evaluation_design.test_results_sealed=true、accuracy_results_read=false、results_unsealed=false",
+      "J6_manifest_freeze": "design_manifest.artifacts_frozen 3 件（oracle.md + evaluation_design.json + professional_approval.json）sha256 + bytes 与磁盘实测逐件一致"
+    },
+    "j2_rule_scope_note": "oracle §6 J2 行字面写着『禁出现 consumed_for_forecast』，但该行自身与 §7 M2 变异命名行必然含此 token（自指）。为避免 GREEN 误杀，J2 扫描范围收敛为『除 J2 定义行与 M2 变异命名行外禁出现』；oracle 原文一字未改（sha 08723ab0… 与 design_manifest 记录一致）。红臂 M2 翻转的是 §4 红线登记表行（line 89），不含豁免标记 ⇒ 必被击杀，判别力未被削弱。"
+  },
+  "upstream_inputs": [
+    {"path": "execution_v2/card_I-12-A.md", "bytes": 1467, "sha256": "a4d4b2dcce2aa1de04ab6aff757de0fb6e75fa21bc5cf0ab0151e5d1e940470f", "verified": true},
+    {"path": "execution_v2/research_cards.json", "bytes": 40058, "sha256": "4a22e26608d421799e2b8adde0d0424fa48a634509a0559c51d279e06d918263", "verified": true},
+    {"path": "OWNER_DECISIONS.md", "bytes": 109029, "sha256": "17c0db1dbdbb96b58c4798b724095e1285b787e78ddb19f4a6be6fea77a0ba8d", "verified": true, "cross_check": "与 I-07-E verification.json L29 记录值逐字节一致"},
+    {"path": "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md", "bytes": 26132, "sha256": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb", "verified": true, "cross_check": "与 I-07-E handoff.written_files 一致"},
+    {"path": "execution_runs/I-07-E/a20260926-01/verification.json", "bytes": 10089, "sha256": "237bc2d394ec5726c05adc00f6b7de2b88e302aafe658300f64fbac5dd25671c", "verified": true, "cross_check": "与 I-07-E handoff.written_files 一致"},
+    {"path": "execution_runs/I-07-E/a20260926-01/handoff.json", "bytes": 14267, "sha256": "8cfce3671e29d69eac5d49af114d522d5ba4ae3681b3e70c2f688b45786ecc04", "verified": true, "note": "status=accepted_scoped（本卡依赖的落定证据）"},
+    {"path": "execution_runs/I-07-E/a20260926-01/oracle.md", "bytes": 18913, "sha256": "5f3685e0b7f628a089636e2226fd03eef95952d0d6b2ba22f3cb7a7cee5ca7fc", "verified": true, "cross_check": "与 I-07-E handoff.written_files 一致"},
+    {"path": "execution_runs/I-07-E/a20260926-01/evidence/I-07-E/qualification.json", "bytes": 767, "sha256": "60f2e263db99b9c595dbedf54226c18fc2f8e8ca5ee3f417b71f8ac9df09fb08", "verified": true},
+    {"path": "execution_runs/I-07-E/a20260926-01/reviewer_report.md", "bytes": 9555, "sha256": "6b48a2f5e2085f70c29315b4da1537ba80006833ef721468d9c11a87d714cca2", "verified": true, "cross_check": "与 I-07-E handoff.status_authority.carrier_sha256 一致（three_way_match=true）"},
+    {"path": "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json", "bytes": 51697, "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28", "verified": true, "note": "封盘，零字节改动（派单 sha=f2178768… 复核一致）"},
+    {"path": "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json", "bytes": 61231, "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff", "verified": true, "note": "store，只读；low/base/high 全 null、两 _PLACEHOLDER 在位"}
+  ],
+  "upstream_consistency": {
+    "files_checked": 11,
+    "files_matched": 11,
+    "mismatches": [],
+    "i07e_status": "accepted_scoped（handoff.status_transition=review_pending -> accepted_scoped；by=landing_parent_v3；status_authority.three_way_match=true）",
+    "card_prerequisite_met": "卡文前提「上游证据资格/版本边界可用」= 11 件可读可复算 + I-07-E 落定 ✅；「无需等待完整 I-07/I-10 准确性结果」= 未读任何结果 ✅",
+    "inherited_register_notes": [
+      {"id": "u-N4", "registration": "unverified", "desc": "store MSFT doc_sha256 63 位转录缺陷（上游 I-07-E 继承）", "disposition": "本卡只继承登记，不更正（store 只读）"},
+      {"id": "u-N5", "registration": "unverified", "desc": "store H-01 original_value 与 ZIJIN_SEG_MINERAL 分部语义张力（继承 unverified-N1）", "disposition": "登记不回改；回源归独立复审"},
+      {"id": "u-N6", "registration": "unverified", "desc": "EA-4 注记区间与自身带换算不符（继承 unverified-N3）", "disposition": "登记交独立复审"},
+      {"id": "gap-U1", "registration": "blocked", "desc": "小米 FY2027 命题/参数 = 0（I-11-A STOP_EVIDENCE）⇒ 评估池排除并登记 reason_code（fail-closed）", "disposition": "不补假数据；重新入池须解证据可读性"},
+      {"id": "gap-U2", "registration": "blocked", "desc": "小米披露日未登记 ⇒ origin 不可用", "disposition": "field 4 规则：缺披露日 ⇒ unavailable 不入池"}
+    ]
+  },
+  "mutation_results": {
+    "status": "executed",
+    "note": "变异在 _mut/ 副本执行，原件字节不动（sha 前后比对见 originals_untouched）；校验器=_verify_design.ps1。原始输出逐字存 _mut/Mx/verifier_output.txt。",
+    "runs": [
+      {"id": "GREEN", "target": "原件（oracle.md + evidence/I-12-A/*.json + handoff.json）", "rc": 0, "expected": "rc=0 ALL_INVARIANTS_OK", "observed": "CHECK J1-J6 全 OK；RESULT ALL_INVARIANTS_OK", "pass": true},
+      {"id": "M1", "mutation": "handoff.json 的 params_released false→true（模拟放行参数）", "copy": "_mut/M1", "rc": 3, "expected": "rc=3 违例含 J1", "observed": "VIOLATION J1: handoff.params_released != false（其余 J2-J6 OK；RESULT 1 NAMED VIOLATION(S)）", "pass": true},
+      {"id": "M2", "mutation": "oracle.md §4 红线登记行 registered_not_consumed→consumed_for_forecast（模拟消费 OPEN-2 禁消费值）", "copy": "_mut/M2", "rc": 3, "expected": "rc=3 违例含 J2", "observed": "VIOLATION J2: oracle line 89 carries consumed_for_forecast outside the frozen M2/J2 definition rows（并连带 J6 oracle sha/bytes 失配；RESULT 3 NAMED VIOLATION(S)）", "pass": true},
+      {"id": "M3", "mutation": "design_manifest.json 内 evaluation_design.json 的 sha256 改 1 个 hex 位（203dd4a8→203dd4a9，模拟冻结指纹不符）", "copy": "_mut/M3", "rc": 3, "expected": "rc=3 违例含 J6", "observed": "VIOLATION J6: artifact sha mismatch evidence/I-12-A/evaluation_design.json recorded=203dd4a9… actual=203dd4a8…（其余 OK）", "pass": true},
+      {"id": "M4", "mutation": "professional_approval.json 把 industry_reviewer.signed false→true 且 stop_condition.triggered true→false（模拟自签/静默通过）", "copy": "_mut/M4", "rc": 3, "expected": "rc=3 违例含 J4", "observed": "VIOLATION J4×2: industry_reviewer.signed != false + stop_condition.triggered != true（并连带 J6 professional_approval sha 失配；RESULT 3 NAMED VIOLATION(S)）", "pass": true},
+      {"id": "M5", "mutation": "design_manifest.json 的 test_results_unsealed false→true（模拟结果提前解封）", "copy": "_mut/M5", "rc": 3, "expected": "rc=3 违例含 J5", "observed": "VIOLATION J5: design_manifest.test_results_unsealed != false（其余 OK）", "pass": true},
+      {"id": "GREEN_FINAL", "target": "定稿原件（handoff.json 补 written_files 与 raw_exit_codes 之后）", "rc": "recorded_in_handoff.raw_exit_codes.GREEN_FINAL_post_finalization", "expected": "rc=0", "observed": "见 handoff.raw_exit_codes（定稿后重跑校验器；该次只改 handoff 的记账字段，J1-J6 判据面未变）", "pass": "recorded_in_handoff"}
+    ],
+    "originals_untouched": {
+      "oracle.md": {"sha256": "08723ab0f62c07cbf0f9a7563b8fc6382bff41da8a3f7c72ab14b81cfc7e76ee", "unchanged": true},
+      "evidence/I-12-A/evaluation_design.json": {"sha256": "203dd4a8a138b6456de2b9f7e6b7e34855d137b8d2324caea21185fbb136f2c0", "unchanged": true},
+      "evidence/I-12-A/professional_approval.json": {"sha256": "0befb15460985140476e953e070531592fdbac6d30986e7d163e82637be36bb1", "unchanged": true},
+      "evidence/I-12-A/design_manifest.json": {"sha256": "ad46a6e69dc9fc5c826cf71bb91102e9c86e6d5506e8c9b2c525a73be7fb7178", "bytes": 5618, "unchanged_by_mutations": true},
+      "handoff.json": {"sha256_during_runs": "7b319024c17d0e3bcfcf4287225b2253cafb88d59863c742dfe764179d3fcc97", "bytes_during_runs": 14326, "unchanged_by_mutations": true, "note": "定稿时仅补 written_files/raw_exit_codes，属本卡写入面正常记账"},
+      "upstream_inputs_11": {"unchanged": true, "proof": "J3 绿臂在 5 个红臂之后仍全绿（11/11 复算一致）"}
+    },
+    "verdict": "红绿双向成立：绿 rc=0（ALL_INVARIANTS_OK）；5 红全 rc=3 且违例具名（J1/J2/J4/J5/J6 分别被 M1/M2/M4/M5/M3 击杀；J3 在全部红臂中保持 11/11 一致，证明变异未触及上游）"
+  },
+  "card_action_trace": {
+    "action_1_fill_fields": "13 字段逐项填写（9 filled + 1 filled_threshold_unsigned + 3 PENDING + 0 not_applicable）；未定项标 PENDING，未选任何方便通过的阈值 ⇒ evaluation_design.json.fields",
+    "action_2_choose": "primary endpoint=SKILL_WAPE_VS_NAIVE_BASELINE；baseline=最后可得同口径年度收入不变（+同比延续次基线）；权重=entity 等权 macro + micro 并报；样本最小数量/功效=PENDING（未签）；成对比较/cluster-block=entity cluster + origin block（已冻结）；CI/多重比较校正=PENDING（未签）",
+    "action_3_vintage_vs_scenario": "vintage_class 硬分 true_vintage / post_hoc_reconstruction，primary 只用前者；low/high 判为情景 ⇒ 只评 scenario_containment + interval_width，禁用 interval_score/pinball 与『80%/90% 覆盖』表述",
+    "action_4_freeze": "design_manifest.json 冻结 设计/版本/reviewer 身份（unsigned）/SHA256，先于任何结果解封；test_results_unsealed=false",
+    "stop_1": "TRIGGERED —— BLOCKED_PROFESSIONAL_DECISION（关键统计选项 6 项 unsigned）",
+    "stop_2": "NOT TRIGGERED —— 未读测试结果、未在看结果后改设计"
+  },
+  "open2_registration": {
+    "open2_ban_observed": true,
+    "parameter": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE",
+    "registration_state": "registered_not_consumed",
+    "registered_base": 124248.63,
+    "store_formula_truth": 38175.95,
+    "consumed": false,
+    "used_in_design": "none（未作 endpoint/baseline/actual/权重/分层/阈值输入）"
+  }
+}

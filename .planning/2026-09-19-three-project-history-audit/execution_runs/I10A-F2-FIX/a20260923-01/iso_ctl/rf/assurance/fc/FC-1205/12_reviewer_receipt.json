@@ -1,0 +1,110 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1205",
+  "review_round": "r1",
+  "reviewer": "reviewer-fc1205-independent",
+  "implementer": "honest-implementer",
+  "decision": "accepted",
+  "status": "accepted",
+  "base_triplet": {
+    "revenue": "91cbc137916b1ab7571e199555fddfa4115d914b",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "925b3e8027f9c22c475656efae98142b976244e6"
+  },
+  "result_triplet": {
+    "revenue": "58db948678d7a04b525fe57006cf9a9658f133bf",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "reviewed_at": "2026-08-13T02:34:38Z",
+  "replay_note": "Full from-scratch replay in clean worktrees under .fcap-review/fc-1205/ (revenue-base @ 91cbc13, revenue-forecast @ 58db948, wiki-base @ 925b3e8, wiki-result @ b93994a, filing-fetch @ 83c638e). F-6 rule honored throughout: zero `git checkout <rev> -- <paths>`; all mutations via reverse edits; main checkouts untouched. Environment had PYTHONIOENCODING=None and PYTHONUTF8=None for every run (verified before and after). Diff audit: wiki b93994a = only tools/check_unique_test_symbols.py (+12); revenue e60ed1c = only tools/audit_baseline.py (+23/-1, encoding/errors on _git+version_of + main() stdio reconfigure); 58db948 = docs only; the base..result range additionally carries 65c2b87 (FC-1204 acceptance docs, docs-only) — the only non-docs change in the range is audit_baseline.py. A transient junction fc-1205/company-wiki -> wiki-result was created for the revenue sibling-layout tests (FC-1204 r3 precedent) and removed afterwards. All triplet hashes rev-parsed (never hand-written).",
+  "commands": [
+    {
+      "command": "RED wiki-base: python -B -m pytest tests/contract/test_check_unique_test_symbols.py -q",
+      "exit_code": 0,
+      "result": "RED reproduced (inner pytest exit 1): 2 failed, 3 passed — test_duplicate_test_definition_fails + test_syntax_error_is_reported_as_failure, reader-thread UnicodeDecodeError bytes 0xd4/0xa1 (GBK-pipe mechanism exactly as claimed).",
+      "cwd": "fc-1205/wiki-base worktree"
+    },
+    {
+      "command": "RED revenue-base: python -B -m pytest tools/tests/test_audit_baseline.py -q",
+      "exit_code": 0,
+      "result": "RED reproduced (inner pytest exit 1): 1 failed, 4 passed — test_collects_baseline_facts, reader-thread UnicodeDecodeError byte 0xd4 (position 363).",
+      "cwd": "fc-1205/revenue-base worktree"
+    },
+    {
+      "command": "GREEN wiki-result: python -B -m pytest tests/contract/test_check_unique_test_symbols.py -q",
+      "exit_code": 0,
+      "result": "5 passed.",
+      "cwd": "fc-1205/wiki-result worktree"
+    },
+    {
+      "command": "GREEN revenue-result: python -B -m pytest tools/tests/test_audit_baseline.py -q",
+      "exit_code": 0,
+      "result": "5 passed.",
+      "cwd": "fc-1205/revenue-forecast worktree"
+    },
+    {
+      "command": "wiki full suite: python -B -m pytest tests/ -q (no PYTHONIOENCODING)",
+      "exit_code": 0,
+      "result": "2232 passed, 3 skipped, 0 failed (458.28s) — first zero-failure wiki run verified directly.",
+      "cwd": "fc-1205/wiki-result worktree"
+    },
+    {
+      "command": "revenue full suite: python -B -m pytest tests/ tools/tests/ -q (no PYTHONIOENCODING)",
+      "exit_code": 0,
+      "result": "516 passed, 2 warnings, 106 subtests passed, 0 failed (249.85s) — first zero-failure revenue run verified directly. First attempt in a worktree named 'revenue-result' gave 14 failed/502 passed: the known isolated-worktree sibling-naming artifact (compatibility_manifest REPO_DIRS and fc1101_ci_manifest resolve PROJECT_ROOT.parent/'revenue-forecast'); after `git worktree move` to the canonical name all 33 tests in the 4 affected files passed and the re-run went 516/0. No code defect.",
+      "cwd": "fc-1205/revenue-forecast worktree"
+    },
+    {
+      "command": "PORT-03: grep runs-on in the three CI workflow files at result tips",
+      "exit_code": 0,
+      "result": "runs-on: ubuntu-latest present in revenue .github/workflows/quality.yml (line 9), filing quality.yml (line 9), wiki ci.yml (lines 11/63/83/101) — the Linux-golden scenario definitions are the claim; verified as stated.",
+      "cwd": "fc-1205 worktrees"
+    },
+    {
+      "command": "python tools/receipt_validator.py --receipt assurance/fc/FC-1205/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: 1 receipt(s) valid. Content audit: base/result triplets correct (result excludes the docs-seal commit 58db948 per FC-1204 convention); PORT-01/02/03 notes and command results match independently measured numbers.",
+      "cwd": "revenue-forecast (main checkout, read-only)"
+    },
+    {
+      "command": "Post-review hygiene: git status --porcelain in all fc-1205 worktrees + main checkouts; junction removed",
+      "exit_code": 0,
+      "result": "All worktrees clean after M1/M2 reverts; company-wiki junction removed (wiki-result intact); main checkouts untouched (only the pre-existing dirty items remain).",
+      "cwd": "all"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "M1",
+      "file": "company-wiki/tools/check_unique_test_symbols.py",
+      "mutation": "Remove the main() stdout/stderr reconfigure block (reverse edit)",
+      "killed": true,
+      "result": "tests/contract/test_check_unique_test_symbols.py -> 2 failed, 3 passed (GBK 0xd4/0xa1 reader-thread errors return). Reverted via reverse edit -> 5 passed, worktree clean."
+    },
+    {
+      "id": "M2",
+      "file": "revenue-forecast/tools/audit_baseline.py",
+      "mutation": "Remove only the main() stdio reconfigure block (subprocess encoding/errors kept)",
+      "killed": true,
+      "result": "tools/tests/test_audit_baseline.py -> test_collects_baseline_facts FAILS (GBK 0xd4 reader-thread). Reverted via reverse edit -> 5 passed, worktree clean."
+    }
+  ],
+  "unresolved_findings": [
+    {
+      "id": "FC-1205-F1",
+      "severity": "info",
+      "file": "company-wiki/tools/check_unique_test_symbols.py and revenue-forecast/tools/audit_baseline.py",
+      "issue": "Both fix commits carry the FC-1205 comment block twice, verbatim, in main() (cosmetic duplication). Zero functional impact.",
+      "disposition": "Non-blocking; fold a deduplication into any future tidy-up commit."
+    },
+    {
+      "id": "FC-1205-F2",
+      "severity": "info",
+      "file": "revenue-forecast/tools/sync_installations.py (via tests/test_fc1004_platform.py::test_install_sync_gate_detects_drift)",
+      "issue": "The revenue full suite shows 2 pre-existing PytestUnhandledThreadExceptionWarning reader-thread UnicodeDecodeErrors (GBK byte 0xd4) from sync_installations.py — a third GBK-pipe site outside PORT-01's declared two-site scope. Verified identical at base (1 passed, 2 warnings); warning-only because the test never consumes stdout on success.",
+      "disposition": "Non-blocking; recommend a follow-up applying the same fetch_filing reconfigure pattern."
+    }
+  ],
+  "summary": "r1 ACCEPTED. Diff audit exact: the two FC-1205 commits touch only the two tool files (plus docs); the only non-docs change in base..result is tools/audit_baseline.py. RED reproduced at base in isolation (wiki 2 failed with GBK 0xd4/0xa1 reader-thread decode errors; revenue 1 failed), GREEN at result (5/5 both). Both full suites ran zero-failure WITHOUT PYTHONIOENCODING/PYTHONUTF8: revenue 516 passed / 0 failed / 106 subtests and wiki 2232 passed / 3 skipped / 0 failed — the first zero-failure runs in the FCAP, verified directly (the single 14-failure attempt was the known isolated-worktree sibling-naming artifact, eliminated by using the canonical worktree name revenue-forecast, FC-1204 precedent). M1/M2 mutation kills confirmed and reverted (both worktrees clean). PORT-03 CI definitions verified at result tips (ubuntu-latest in all three workflows). Implementer receipt structurally valid with accurate triplets and measurements. Two non-blocking info findings: duplicated FC-1205 comment block in both tool mains (cosmetic), and a pre-existing warning-only GBK-pipe site in sync_installations.py recommended for follow-up. Result triplet (rev-parsed fcap tips): revenue 58db948, filing 83c638e, wiki b93994a over base 91cbc13/83c638e/925b3e8."
+}

@@ -1,0 +1,13 @@
+--- a/src/company_wiki/source_catalog/observability.py
++++ b/src/company_wiki/source_catalog/observability.py
+@@ -316,8 +316,8 @@
+ # without this branch the full credential is persisted in the append-only event log.
+ # Deliberate, registered cost (F-REV-R2-02): it cannot tell a wrapped credential from
+ # a diagnostic key, so `Authorization: Bearer` + newline DELETES `doc=17`.  The
+-# breaks are consumed by the match; the indentation and the keys on the lines AFTER
+-# the redacted one are not.
++# breaks and the indentation that FOLLOWS them are consumed by the match; the keys
++# on the lines AFTER the redacted one are not.
+ # One shape stays OPEN and is registered rather than hidden: a TWO-token value that
+ # then wraps (`Authorization: Bearer abc` + newline + secret) -- the space is exactly
+ # what a non-whitespace run stops at.  Closing it needs the whole first line consumed

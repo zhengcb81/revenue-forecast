@@ -1,0 +1,153 @@
+diff --git a/tests/contract/test_source_catalog_worker_bootstrap.py b/tests/contract/test_source_catalog_worker_bootstrap.py
+--- a/tests/contract/test_source_catalog_worker_bootstrap.py
++++ b/tests/contract/test_source_catalog_worker_bootstrap.py
+@@ -758,6 +758,131 @@ def _launcher_events(project: Path) -> list[dict[str, object]]:
+     return [json.loads(line) for line in text.splitlines() if line.strip()]
+ 
+ 
++# ---------------------------------------------------------------------------
++# I-14-E-TESTSIDE — test-side timing fix (frozen in oracle.md §2, owner §二十五 A)
++# ---------------------------------------------------------------------------
++
++_WARMUP_PROBE_PS1 = r"""
++param(
++    [Parameter(Mandatory = $true)][string]$PythonExe,
++    [Parameter(Mandatory = $true)][string]$ProjectRoot,
++    [Parameter(Mandatory = $true)][string]$LogDir,
++    [double]$DeadlineSeconds = 60
++)
++$ErrorActionPreference = 'Stop'
++Set-Location -LiteralPath $ProjectRoot
++$env:PYTHONUTF8 = '1'
++$env:PYTHONIOENCODING = 'utf-8'
++$ConfigPath = Join-Path $ProjectRoot 'config/source_catalog.yaml'
++$WorkerConfigPath = Join-Path $ProjectRoot 'config/source_catalog_worker.yaml'
++$CatalogDir = Join-Path $ProjectRoot '.source_catalog'
++$Marker = Join-Path $CatalogDir 'fake_worker_count.txt'
++if (Test-Path -LiteralPath $Marker) { Remove-Item -LiteralPath $Marker -Force }
++New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
++$Arguments = @(
++    '-m', 'company_wiki.source_catalog.cli',
++    '--config', $ConfigPath,
++    'worker',
++    '--worker-config', $WorkerConfigPath
++)
++# Exactly the supervisor's own clock: $StartedAt immediately before Start-Process
++# (source_catalog_worker.ps1:327-333), same argv/cwd/redirects.
++$StartedAt = Get-Date
++$Child = Start-Process `
++    -FilePath $PythonExe `
++    -ArgumentList $Arguments `
++    -WorkingDirectory $ProjectRoot `
++    -WindowStyle Hidden `
++    -RedirectStandardOutput (Join-Path $LogDir 'warmup_stdout.log') `
++    -RedirectStandardError (Join-Path $LogDir 'warmup_stderr.log') `
++    -PassThru
++$ChildPid = $Child.Id
++$found = $false
++while (((Get-Date) - $StartedAt).TotalSeconds -lt $DeadlineSeconds) {
++    if (Test-Path -LiteralPath $Marker) { $found = $true; break }
++    Start-Sleep -Milliseconds 5
++}
++$t0 = ((Get-Date) - $StartedAt).TotalSeconds
++try {
++    if (-not $Child.HasExited) { $Child.Kill(); $null = $Child.WaitForExit(10000) }
++} catch { }
++if (-not $found) {
++    Write-Output ('ERR ' + $t0.ToString([cultureinfo]::InvariantCulture))
++    exit 2
++}
++Write-Output ('OK ' + $t0.ToString([cultureinfo]::InvariantCulture))
++exit 0
++"""
++
++
++def _measure_startup_bandwidth(tmp_path: Path, project: Path) -> float:
++    """t0 = launch -> first side effect, measured with the watchdog's own clock.
++
++    The warm-up child is started exactly the way the supervisor starts a child
++    (same PowerShell clock, same argv, same working directory, same redirects),
++    probed every 5 ms for ``.source_catalog/fake_worker_count.txt``, then killed.
++    The marker is deleted afterwards so the asserted run starts from the same
++    clean state as before the change.
++    """
++    script = tmp_path / "tside_warmup_probe.ps1"
++    script.write_text(_WARMUP_PROBE_PS1, encoding="utf-8")
++    completed = subprocess.run(
++        [
++            "powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy",
++            "Bypass", "-File", str(script),
++            "-PythonExe", sys.executable,
++            "-ProjectRoot", str(project),
++            "-LogDir", str(tmp_path / "tside_warmup_logs"),
++        ],
++        cwd=str(project),
++        capture_output=True,
++        text=True,
++        encoding="utf-8",
++        errors="replace",
++        timeout=120,
++        check=False,
++    )
++    lines = [line.strip() for line in (completed.stdout or "").splitlines() if line.strip()]
++    line = lines[-1] if lines else ""
++    if completed.returncode != 0 or not line.startswith("OK "):
++        raise AssertionError(
++            "startup-bandwidth warm-up failed: rc=%r stdout=%r stderr=%r"
++            % (completed.returncode, (completed.stdout or "")[-400:],
++               (completed.stderr or "")[-400:])
++        )
++    marker = project / ".source_catalog" / "fake_worker_count.txt"
++    if marker.exists():
++        marker.unlink()
++    return float(line[3:].split()[0])
++
++
++def _exported_hang_timeout(t0_seconds: float) -> float:
++    """建议1 + semantic upper bound, both derived in oracle.md §2.1.
++
++    lower: max(2.0, 4*t0) covers the worst tail the source card measured
++           (2.486 s) as long as t0 >= 0.6215 s; every cpu8 sample was >= 0.642 s.
++    upper: t0 + 3.0 keeps >= 2 s of margin before behaviour #1's 5 s sleep ends,
++           because the watchdog MUST still fire (otherwise the node loses its
++           ``child_unresponsive`` event and fails with StopIteration instead).
++    """
++    return min(max(2.0, 4.0 * t0_seconds), t0_seconds + 3.0)
++
++
++def _record_timing_trace(node: str, t0_seconds: float, hang_timeout_seconds: float) -> None:
++    """Optional evidence sink; the fix does not depend on it being set."""
++    path = os.environ.get("CW_TSIDE_TRACE_FILE")
++    if not path:
++        return
++    payload = {
++        "node": node,
++        "t0_seconds": round(t0_seconds, 4),
++        "hang_timeout_seconds": round(hang_timeout_seconds, 4),
++        "wall_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
++    }
++    with open(path, "a", encoding="utf-8") as handle:
++        handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
++
++
+ @pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell launcher integration")
+ def test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8(tmp_path):
+     project = _prepare_fake_launcher_project(
+@@ -899,10 +1024,16 @@ def test_child_without_runtime_session_is_terminated_and_restarted(tmp_path):
+         ],
+     )
+ 
++    # I-14-E-TESTSIDE (oracle.md §2.1): derive -WorkerHangTimeoutSeconds from
++    # this run's own measured startup bandwidth instead of a hard-coded 0.5 s.
++    t0_seconds = _measure_startup_bandwidth(tmp_path, project)
++    hang_timeout_seconds = _exported_hang_timeout(t0_seconds)
++    _record_timing_trace("child_without_runtime", t0_seconds, hang_timeout_seconds)
++
+     completed = _run_real_worker_launcher(
+         project,
+         timeout=15,
+-        worker_hang_timeout_seconds=0.5,
++        worker_hang_timeout_seconds=hang_timeout_seconds,
+         child_poll_milliseconds=100,
+     )
+ 

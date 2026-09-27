@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-08-09",
+  "commits": {
+    "revenue": {
+      "head": "2c6550d189429ccc3f493691f9df7e08ed2ec008",
+      "branch": "main"
+    },
+    "filing": {
+      "head": "ad62592b69ea841b5e31153327e28b2c3b68149c",
+      "branch": "main"
+    },
+    "wiki": {
+      "head": "77669ae55d9f4974f258899d276ec87d12ffe687",
+      "branch": "master"
+    }
+  },
+  "config_hashes": {
+    "wiki/source_catalog.yaml": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+    "filing/company_wiki.json": "cfcb8dbeaa2b5ce40f44294beae4033c6fff486232da43a405054afa4db0f7aa"
+  },
+  "plan_hash": "77ab30f04126a81099e4241fc115ffd8519771757b4526aaa473d7b2d00c2d89",
+  "closure_ledger": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\audit_review\\2026-08-09_data_lake_refactor_plan\\closure_ledger.json",
+  "known_limitations": [
+    "WU-1303 BLOCKED_NO_ELIGIBLE_PRODUCTION_SAMPLE: 真实 Dropbox canary 无合格样本",
+    "WU-903/905/906 生产 apply/backfill 需变更窗口执行（窗口已授权，逐文档 reviewer 批准）",
+    "Phase 15 legacy 退役需两个验证周期观察"
+  ],
+  "feature_flags": {
+    "v2_scan_shadow": false,
+    "v2_persist_assertions": false,
+    "v2_resolve_shadow": false,
+    "v2_resolve_active": false,
+    "v2_bundle_active": false,
+    "legacy_bridge_enabled": true
+  },
+  "rollback_commands": {
+    "resolver": "关闭 v2_resolve_active flag（atomic_rollback）",
+    "scanner": "v2_scan_shadow=False（facade 默认 v1）",
+    "bundle": "consumer 协议版本回退（N-1 窗口）",
+    "migration": "journal 恢复（last_key 边界）+ backup"
+  }
+}

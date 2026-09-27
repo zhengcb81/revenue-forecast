@@ -1,0 +1,116 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-505",
+  "implementer_receipt_sha256": "bae3b9271b2e8e9d533766ce73a6f2e64349db0c0ab554440568d0ca22729827",
+  "reviewer_identity": "reviewer-fc505-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "068f91631bf6349916df0a5bf977f66469a27a8b",
+    "filing": "6274be2187b450d14492defd03579d6209d1b1cc",
+    "wiki": "f58a9dfb6fb45b2e32837c1678011ba7b42ad662"
+  },
+  "result_triplet": {
+    "revenue": "4a2c65ff209f966225cf51c3154c1f4361a6397a",
+    "filing": "6274be2187b450d14492defd03579d6209d1b1cc",
+    "wiki": "47a03117ada0d5b3fe33ba9ab62a6718a3efeaeb"
+  },
+  "replayed_command_ids": [
+    "fc505.wiki.focused_regression",
+    "wiki.unit.full",
+    "fc505.revenue.chain_tests",
+    "fc505.replay_tool",
+    "fc505.ruff_changed_files",
+    "revenue.governance.receipt"
+  ],
+  "scenario_results": [
+    {
+      "id": "EX-03",
+      "status": "passed",
+      "note": "full three-repo chain re-verified: company-wiki resolve (REUSED_EXACT) -> filing-fetch validate_handle policy-snapshot containment (hash-bound) -> revenue build_revenue_source_record -> validate_sources artifact selection. 4 chain tests pass (4/4, exit 0, twice + controls). Every stage pure on the exact hit."
+    },
+    {
+      "id": "DBX-01",
+      "status": "passed",
+      "note": "real replay run twice (exit 0 both): 紫金矿业 FY2024/FY2025 REUSED_EXACT with zero download (canonical paths under company-wiki/companies); 星环科技 FY2024/FY2025 fail-closed capture_incomplete (dayu canonical copies carry http not https source_url — data-quality note, never fabricated). Dropbox root fingerprint unchanged."
+    },
+    {
+      "id": "DBX-08",
+      "status": "passed",
+      "note": "cohort activation + rollback test re-verified: apply_activation flips, rollback_activation reverts; same request returns pre-cohort response with identical canonical_path/content_sha256; file kept on disk, no deletion."
+    },
+    {
+      "id": "FC-505-exit-gate",
+      "status": "passed",
+      "note": "known-gap closed: probe test now asserts REUSED_EXACT matching its pre-committed docstring flip; scanner non-focus sidecar pairing + directory-metadata persist verified in diff; canary present -> REUSED_EXACT, sidecar removed -> fail closed (chain test re-verified)."
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "FC-505-M1",
+      "killed": true,
+      "note": "reverted non-focus sidecar pairing to metadata={} in scanner.py (main checkout, byte-identical to worktree): all 4 FC-505 chain tests FAIL (4 failed, pytest exit 1). Restored via git checkout (sha256 back to 513723e4...); control 4 passed."
+    },
+    {
+      "id": "FC-505-M2",
+      "killed": true,
+      "note": "reverted persist wrapper to company_raw-only (root.kind == 'company_raw'): all 4 FC-505 chain tests FAIL (4 failed, pytest exit 1). Restored via git checkout; control 4 passed."
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true,
+    "note": "replay read-only: live catalog counts identical before/after both of my replay runs (documents=23521 sources=43082 locations=46581); Dropbox root fingerprint unchanged; downloads=0 catalog_writes=0 provider_calls=0 parser_calls=0 llm_calls=0. Note: current counts are +8 vs the implementer baseline (23513/43074/46573) due to hourly production scans ingesting new Dropbox files (scan 20:22Z files_hashed=8, 21:23Z files_hashed=4) — catalog growth between implementer recording and review, not a replay side effect."
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "note": "codegraph (company-wiki index, 455 files): _scan_root_v1 -> scan_root_strategy -> _scan_catalog_impl (production scan path); _load_acquisition_metadata/_ACQUISITION_SIDECAR_SUFFIX imported from adapters.common into scanner.py; FC-505 chain tests exercise the real production scan (SourceCatalog.scan + SourceResolver.resolve)."
+  },
+  "rollback": {
+    "required": false,
+    "passed": true,
+    "note": "revert = revert wiki commits e8c4820 + 47a0311 (and revenue f7946535 + 4a2c65ff); the mutation replay proved reverted code fails all 4 chain tests, so rollback is observable and testable."
+  },
+  "unresolved_findings": [
+    {
+      "id": "F1",
+      "severity": "low",
+      "finding": "no-remote-branch: branch fcap has no remote counterpart (same known caveat as prior FCs, e.g. FC-504 F1); FC-505 evidence exists only on the local fcap branch and cannot be pushed. Non-blocking for acceptance; the fcap branch must eventually merge to master for upstream evidence."
+    },
+    {
+      "id": "F2",
+      "severity": "low",
+      "finding": "ruff F401: `import pytest` unused in new file tests/test_dropbox_full_chain_fc505.py (line 26; tmp_path is injected, no pytest symbols used). The revenue repo has no ruff config and contains a pre-existing identical F401 (tests/test_compatibility_manifest.py), so ruff-clean is not an enforced gate; one-line removal fixes it. Wiki changed files all ruff-clean."
+    },
+    {
+      "id": "F3",
+      "severity": "low",
+      "finding": "implementer receipt records exit_code 0 for `python -m pytest tests/ -q` while the true pytest exit code is 1 (2 pre-existing PORT-01 failures recorded in the same entry). Numbers and failure identity are correct (2142 passed / 2 failed, both test_check_unique_test_symbols.py; reproduced 2 failed at base f58a9dfb — genuinely pre-existing and environmental: subprocess stdout is None due to Windows GBK console bytes not decodable as UTF-8). Recording discrepancy only — no code or evidence impact."
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "finding": "base_triplet wiki anchor f58a9dfb predates the 3 FC-504 closure commits (3aee90c/6401f32/47f2e4c); `git diff f58a9dfb..47a0311 --name-only` therefore includes 3 FC-504 receipt files in addition to the FC-505 allowlist. The FC-505-specific diff (47f2e4c..47a0311) is exactly the 3 allowlisted wiki files; revenue base 068f9163 is the exact parent of result f7946535. Anchor staleness only — change scope is exactly the allowlist; llm_cost_log.csv in neither diff."
+    },
+    {
+      "id": "F5",
+      "severity": "low",
+      "finding": "星环科技 (688031) FY2024/FY2025 real canaries resolve fail-closed capture_incomplete because their canonical dayu copies carry http (not https) source_url — a data-quality note on the dayu-side copies, correctly refusing the handle rather than fabricating. Expected for DBX-01; does not block acceptance."
+    },
+    {
+      "id": "F6",
+      "severity": "info",
+      "finding": "expected-count drift: the procedure expected the live catalog at documents=23513 sources=43074 locations=46573; actual is 23521/43082/46581 (+8). Verified via scan_runs that hourly production scans ingest new Dropbox files; my replay before/after counts are identical, so the replay is provably read-only."
+    },
+    {
+      "id": "F7",
+      "severity": "info",
+      "finding": "stale expectations in the fixed procedure: focused wiki regression expected '12 passed incl. 1 env skip' — actual 17 passed, 0 skipped (6+3+8, same composition at base f58a9dfb); full suite shows 1 runtime env skip (Windows symlink/host-dependent). No failure or hidden skip in FC-505 scope."
+    },
+    {
+      "id": "F8",
+      "severity": "low",
+      "finding": "concurrent activity on the revenue fcap branch DURING this review: three doc-only commits landed after the sealed result triplet (86180dd docs(wu-1500), 107710c docs(fcap) FC-505 implementation log, 4e6e6eb docs: cross-session audit log; later 4a31fca docs(fc-104) refresh of compatibility/current.json with EOL normalization). All touch only audit progress docs and the compatibility manifest — none touches the FC-505 allowlist (tests/test_dropbox_full_chain_fc505.py, tools/ex05_chain_replay.py) or either FC-505 receipt. Revenue HEAD verified exactly 4a2c65ff at review start; drift is the user's concurrent session, not an FC-505 defect. Note: the result_triplet commit 4a2c65ff still exists and is ancestry-verified (parent f7946535)."
+    }
+  ],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-10"
+}

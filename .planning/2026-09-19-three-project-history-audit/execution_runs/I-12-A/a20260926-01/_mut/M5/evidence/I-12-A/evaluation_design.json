@@ -1,0 +1,325 @@
+{
+  "schema": "i12a_evaluation_design/1",
+  "card": "I-12-A",
+  "attempt": "execution_runs/I-12-A/a20260926-01",
+  "role": "implementer_i12a",
+  "design_version": "v1",
+  "frozen_at": "2026-09-26T20:2x+01:00",
+  "test_results_sealed": true,
+  "accuracy_results_read": false,
+  "results_unsealed": false,
+  "params_released": false,
+  "implementer_signed": false,
+  "open2_ban_observed": true,
+  "primary_endpoint_locked_before_results": true,
+  "source_of_fields": {
+    "path": "execution_v2/research_cards.json",
+    "lines": "L115-L129 evaluation_design_fields（13 项，逐字）；metric 公式面 L130-L191",
+    "sha256": "4a22e26608d421799e2b8adde0d0424fa48a634509a0559c51d279e06d918263"
+  },
+  "status_legend": {
+    "filled": "整项已按设计冻结（含非阈值的结构/规则选择）",
+    "filled_threshold_unsigned": "结构规则已冻结，但其中关键统计阈值项未签署 ⇒ 计入停止①",
+    "PENDING": "整项未定（数据不足或须专业签署）；fail-closed 保留，不由实现者挑方便值",
+    "not_applicable": "经获批不适用（本卡未取得任何整项 not_applicable 批准 ⇒ 计 0）"
+  },
+  "summary": {
+    "total_fields": 13,
+    "filled": 9,
+    "filled_threshold_unsigned": 1,
+    "PENDING": 3,
+    "not_applicable": 0,
+    "acceptance_met": false,
+    "acceptance_gap": "字段 5/10/12 = PENDING；字段 11 含未签署阈值项 ⇒ 验收「全部完成或有获批 not_applicable」未达成 ⇒ 卡文停止①成立（见 professional_approval.json）"
+  },
+  "fields": [
+    {
+      "index": 1,
+      "field": "评估问题：绝对收入/增速/驱动/条件收入何者为主要目标；唯一primary endpoint。",
+      "status": "filled",
+      "requires_professional_signature": false,
+      "signature_status": "not_required_for_structure",
+      "value": {
+        "primary_endpoint": {
+          "id": "SKILL_WAPE_VS_NAIVE_BASELINE",
+          "formula_ref": "research_cards.json L157-L160 skill_vs_baseline：Skill = 1 - Loss_model/Loss_baseline（同样本、同损失、同权重）；Loss = WAPE（L137-L140）",
+          "target_dimension": "绝对收入（revenue level）",
+          "aggregation": "entity×segment 层先算 WAPE，再按 entity 等权 macro-average（field 2）；baseline loss=0 ⇒ undefined 不改定义",
+          "direction": "Skill > 0 = 优于朴素 baseline；负 skill 不得删除"
+        },
+        "secondary_endpoints": [
+          "MAE（同币种尺度内；跨公司不直接混合绝对误差）",
+          "WAPE_micro（合并误差池，须与 macro 并报）",
+          "signed_bias / NormalizedBias（正值=高估；分母 0 ⇒ undefined；另报正/负误差分布）",
+          "driver_reconciliation 残差（revenue_residual = independently_reported − rebuilt；非用收入反推参数）",
+          "scenario_containment（仅情景，见 field 9）+ interval_width（宽度必须同时报）",
+          "CAGR（R_start>0 且 h>0 才算；零基期记 undefined）"
+        ],
+        "not_primary": [
+          "增速（不设第二 primary，避免与绝对收入双主）",
+          "驱动拟合优度",
+          "条件收入（无已冻结定义，不入 primary）"
+        ],
+        "lock": "primary endpoint 在测试实际值解封前锁定；结果后不得更换（停止②）"
+      }
+    },
+    {
+      "index": 2,
+      "field": "样本单位：entity×segment×origin×horizon×model_version；合并/分部关系与重复权重。",
+      "status": "filled",
+      "requires_professional_signature": false,
+      "signature_status": "not_required_for_structure",
+      "value": {
+        "unit": "entity × segment × origin × horizon × model_version",
+        "primary_weight": "每 entity 等权（macro-average）",
+        "secondary_weight": "micro（WAPE 汇总口径，大公司占权，必须与 macro 并报）",
+        "segment_weight": "entity 内各 segment 等权",
+        "merge_vs_segment_rule": "合并行与分部行不同时入误差池：合并收入 = Σ四分部对外销售收入（上游 I-07-E §C4 / E5 恒等式桥），同值重复观测会双计权",
+        "duplicate_rule": "同一 origin×horizon 若合并与分部同时存在 ⇒ 只计分部层；合并行仅作 driver_reconciliation 校验",
+        "cluster_unit": "entity（同集团分部强相关）",
+        "model_version_rule": "不同 model_version 不混池；跨版本比较走 field 11 成对设计"
+      }
+    },
+    {
+      "index": 3,
+      "field": "公司池及抽样：A/H/US、行业、生命周期、可得披露条件；退市/失败/并购公司纳入及排除理由。",
+      "status": "filled",
+      "requires_professional_signature": true,
+      "signature_status": "structure_frozen_pool_pending_signoff",
+      "value": {
+        "frame": "本审计三家公司：紫金矿业（CN，A+H）/ 小米集团（HK）/ 微软（US）",
+        "markets": ["A", "H", "US"],
+        "inclusion_criteria": [
+          "原文可读且 sha256 可核",
+          "available_at <= origin 已登记（缺披露日 ⇒ 不可入，见 field 4）",
+          "分部口径与实际值定义可对齐（field 6）"
+        ],
+        "current_evaluability": {
+          "紫金矿业": "可入池 —— 13 槽位全部登记，来源链 CN-ZIJIN-AR2025 sha 可核（上游 I-07-E §A/§B1）",
+          "微软": "可入池 —— 5 槽位全部处置；FY2027 增速为 EA-4 分析师判断（非披露）",
+          "小米": "不可入池 —— gap-U1：FY2027 命题/参数 = 0（I-11-A STOP_EVIDENCE / source_map not_readable_in_this_attempt）；fail-closed 不补假数据"
+        },
+        "excluded_with_reason": [
+          {
+            "entity": "XIAOMI_HK",
+            "reason_codes": ["gap-U1 evidence_unreadable", "gap-U2 publish_date_unregistered"],
+            "reentry_rule": "解证据可读性并登记 available_at 后，按同一 design 版本重新纳入评估池（版本不变则须记 append 事件；改 design ⇒ 新探索版本）"
+          }
+        ],
+        "delisted_failed_ma": "退市/失败/并购公司不静默剔除：纳入或排除均记 reason_code 进 manifest；并购致口径断裂按 field 6 中断规则处理",
+        "strata": "市场(A/H/US) × 行业 × 生命周期 × 可得披露条件 分层；层间不合并成单一平均",
+        "pool_size_current": "可评 entity 数 = 2（紫金、微软）；最终池与样本量见 field 10（PENDING）"
+      }
+    },
+    {
+      "index": 4,
+      "field": "信息截点：origin时刻与时区；available_at<=origin；发布日期缺失的处理；真实历史vintage和事后重建分开。",
+      "status": "filled",
+      "requires_professional_signature": false,
+      "signature_status": "not_required_for_structure",
+      "value": {
+        "origin_definition": "origin = 该次预测的信息截点（as_of，评估时按当时可得信息回放）",
+        "timezone": "CN/HK = Asia/Shanghai (UTC+8)；US = America/New_York；存储统一记录日期 + 时区，日粒度",
+        "hard_constraint": "available_at <= origin 必须严格成立；违反 ⇒ 泄漏观测，剔除并计数（不静默丢弃）",
+        "registered_cutoffs": [
+          {"entity": "紫金矿业", "published_at": "2026-03-20", "available_at": "2026-03-20", "as_of": "2026-09-18", "source": "上游 I-07-E §A"},
+          {"entity": "微软", "published_at": "2026-07-29", "available_at": "2026-07-29", "as_of": "2026-09-18", "source": "上游 I-07-E §A"},
+          {"entity": "小米", "published_at": null, "available_at": null, "as_of": "2026-09-18", "note": "gap-U2：披露日未在回源面内登记 ⇒ 不可入池"}
+        ],
+        "missing_publish_date_rule": "发布日期缺失 ⇒ 该 origin 记 unavailable、不入池（fail-closed；禁止默认可用）",
+        "vintage_classes": {
+          "true_vintage": "origin 当时真实可得的原文口径（primary 唯一允许）",
+          "post_hoc_reconstruction": "事后重建/重述口径（只进 sensitivity，不进 primary）"
+        },
+        "separation_rule": "两类在数据层以 vintage_class 字段硬分；primary 池中出现重建观测 ⇒ 判失败（J 系不变量）"
+      }
+    },
+    {
+      "index": 5,
+      "field": "训练/调参/验证/最终测试的时间划分；滚动窗口/扩展窗口；同一集团不可跨集合泄漏；重叠horizon关联。",
+      "status": "PENDING",
+      "pending_reason": "可得 vintage 清单（历史 origin 逐个 available_at）未在本卡回源面内 ⇒ 切点/折数无法核算；不由实现者挑方便值（卡文动作 1）",
+      "requires_professional_signature": true,
+      "signature_status": "unsigned",
+      "value": {
+        "rules_frozen": {
+          "split_type": "纯时间因果切分，禁止随机切分",
+          "scheme": "滚动 origin（rolling）为主口径；扩展窗口（expanding）仅作敏感性对照",
+          "leakage_rule": "同一 entity（集团）任何分部不得跨 train/tune/validation/final_test；同一 origin 的全部 segment×horizon 观测必须同集合",
+          "overlap_horizon_rule": "重叠 horizon 观测按 origin 聚簇（block），方差按 origin block 估计",
+          "final_test_rule": "最终测试集实际值在 design_manifest SHA256 冻结前保持封存，一次性解封"
+        },
+        "PENDING_parts": ["可得 vintage 清单", "折数与切点日期", "滚动/扩展窗口长度", "调参预算与早停规则"],
+        "unblock_requires": "统计 reviewer 签署（样本量核算见 field 10 之后）"
+      }
+    },
+    {
+      "index": 6,
+      "field": "实际值定义：首次披露还是最终重述；币种/汇率、分部重组、财政年度、gross/net统一；并购中断规则。",
+      "status": "filled",
+      "requires_professional_signature": true,
+      "signature_status": "rules_frozen_units_fx_pending_signoff",
+      "value": {
+        "primary_actual": "首次披露值（as-originally-reported）",
+        "restated_actual": "最终重述值仅作 secondary 对照；若在 origin 时点尚不可得 ⇒ 不可用于 primary",
+        "currency_fx": "各实体按本币评估（人民币元 / 人民币元 / USD million，见上游 §A 币种单位）；跨实体汇总只用无量纲指标（WAPE/Skill/bias），不折算合并绝对金额",
+        "fx_cross_entity_note": "如需跨币种展示绝对误差，须用 origin 前可得汇率并登记来源；本卡禁联网 ⇒ 无可核汇率来源前该项 PENDING（不伪造）",
+        "segment_reorg": "以 origin 时点披露分部口径为准；重组后不回溯改写历史口径，回溯改写 = 新 vintage",
+        "fiscal_year": "统一到财年 FY 标签并显式登记各实体财年截止（微软 FY 截至 6-30；紫金/小米 12-31），不把不同截止期的年度当同一 horizon",
+        "gross_net": "统一为对外销售收入（net of internal，E5 抵销口径）；含内部交易的分部总计不得作收入基期（否则高估约 67%，上游 §C4）",
+        "ma_interruption": "并购致口径断裂 ⇒ 断点后单列为新 series，不跨断点计算误差；断裂登记 reason_code 进 manifest"
+      }
+    },
+    {
+      "index": 7,
+      "field": "预测horizon按财年或距origin月数；按horizon和生命周期分层，不能混成单一平均。",
+      "status": "filled",
+      "requires_professional_signature": false,
+      "signature_status": "not_required_for_structure",
+      "value": {
+        "horizon_axis": "按财年（FY）为主轴，同时登记距 origin 月数（months_from_origin）作排序/分层键",
+        "current_horizon": "FY2027（基期 FY2025→FY2027，上游 §A；微软 FY2026 基线年→FY2027）",
+        "stratification": "按 horizon（h=1FY / h=2FY…）× 生命周期（导入期/成长期/成熟期）分层报告",
+        "no_single_average": "禁把不同 horizon、不同生命周期层混成单一平均数；每层独立报告 n 与指标",
+        "thin_stratum_rule": "某层 n 低于 field 10 最小样本量 ⇒ 该层只描述、不宣称准确性优势"
+      }
+    },
+    {
+      "index": 8,
+      "field": "朴素baseline：最后可得同口径年度收入不变；上一可得同比延续；适用时季节性同季；不可得则标not_applicable。",
+      "status": "filled",
+      "requires_professional_signature": true,
+      "signature_status": "baseline_choice_frozen_not_signed",
+      "value": {
+        "primary_baseline": "最后可得同口径年度收入不变（naive level persistence）—— 与上游 EA-3 基线口径同形（基期 = 最后可得同口径年度值）",
+        "secondary_baseline": "上一可得同比延续（last YoY growth carried forward）",
+        "seasonal_same_quarter": {
+          "state": "not_applicable",
+          "reason": "本审计可得序列为年度分部收入，无同季可比序列（季节性同季 baseline 无输入）",
+          "approval": "pending_reviewer（not_applicable 须获批，卡文验收口径；本卡不自批）"
+        },
+        "tie_in": "field 1 primary_endpoint 的 baseline 分母即本项 primary_baseline；baseline 不可得时该观测记 undefined 并计数，不改用其他 baseline"
+      }
+    },
+    {
+      "index": 9,
+      "field": "指标/权重/零分母与缺失规则；low/high是否情景还是具有名义覆盖率的统计区间。",
+      "status": "filled",
+      "requires_professional_signature": false,
+      "signature_status": "not_required_for_structure",
+      "value": {
+        "metrics": "采用 research_cards.json L130-L191 冻结公式：MAE / WAPE / signed_bias / skill_vs_baseline / scenario_containment / interval_width（sMAPE、MASE、interval_score、pinball = optional，须事前声明才可用）",
+        "weights": "primary = entity 等权 macro；secondary = micro；两套必须并报",
+        "zero_denominator": "分母 0 ⇒ undefined 并计数，不加任意 epsilon",
+        "missing": "缺失观测排除并计数，不插补、不前值填充",
+        "low_high_classification": "low/high = 情景（scenario bands），非统计区间",
+        "consequence": "只评 scenario_containment = count(low<=actual<=high)/n，并同时报 interval_width；禁称 80%/90% 置信覆盖；interval_score 与 pinball 禁用（无 1-alpha 名义覆盖率、无事前 tau 声明）",
+        "grounding": "上游 EA-1「带形状=敏感性设计非精度主张」、store low/base/high 情景档、metric boundary L164"
+      }
+    },
+    {
+      "index": 10,
+      "field": "最小公司数/每层样本数、统计功效或可接受CI宽度；不足只描述，不宣称准确性优势。",
+      "status": "PENDING",
+      "pending_reason": "样本量/功效阈值属关键统计阈值，须统计 reviewer + 行业 reviewer 签字（卡文动作 1 禁实现者挑方便值）；且可评 entity 当前 = 2、vintage 清单未核算",
+      "requires_professional_signature": true,
+      "signature_status": "unsigned",
+      "value": {
+        "method_frozen": "以可接受 CI 宽度反推每层最小 n（精度型），不足则降级为描述性报告",
+        "PENDING_parts": ["最小公司数", "每层最小样本数", "目标统计功效 (1-beta)", "可接受 CI 宽度", "效应量定义"],
+        "invariant_frozen": "样本不足 ⇒ 只描述、不宣称准确性优势（卡文原文；无论阈值最终取何值都成立）",
+        "current_pool_note": "可评 entity = 2（field 3）⇒ 以公司为单位的功效几乎必然不足，届时按本项降级为描述性（fail-closed）"
+      }
+    },
+    {
+      "index": 11,
+      "field": "比较设计：成对同样本、cluster/block单位、时间相关性、置信水平、重复抽样次数与随机种子；多模型检验校正方法。",
+      "status": "filled_threshold_unsigned",
+      "requires_professional_signature": true,
+      "signature_status": "unsigned",
+      "value": {
+        "structure_frozen": {
+          "pairing": "成对同样本：模型 vs baseline 在完全相同的 entity×segment×origin×horizon 观测集上比较（同缺失集）",
+          "cluster": "cluster 单位 = entity；block 单位 = origin（时间块）",
+          "time_dependence": "时间相关性按 origin 分块重抽样处理，不假设观测独立"
+        },
+        "threshold_items_unsigned": {
+          "confidence_level": "PENDING（CI 水平/α 未签）",
+          "bootstrap_or_resample_repetitions": "PENDING（重复抽样次数未签）",
+          "random_seed": "PENDING（种子未签；实现者不擅自固定一个『刚好好看』的种子）",
+          "multiplicity_correction": "PENDING（多模型/多指标检验校正方法未签；候选：Holm FWER / BH FDR，二选一由统计 reviewer 定）"
+        },
+        "prohibition": "阈值在看到测试结果前必须签署；结果后补阈值 = 触发停止②，旧结果不得追认确认性成功"
+      }
+    },
+    {
+      "index": 12,
+      "field": "成功/失败阈值：经济显著改善幅度、可接受偏差/覆盖/区间宽度，由统计与行业reviewer签字；禁止看到结果后补阈值。",
+      "status": "PENDING",
+      "pending_reason": "卡文明文要求由统计 reviewer 与行业 reviewer 共同签字；实现者无签署资格（不自签）⇒ 本 attempt 内不可能完成 ⇒ 直接触发停止① BLOCKED_PROFESSIONAL_DECISION",
+      "requires_professional_signature": true,
+      "signature_status": "unsigned",
+      "value": {
+        "threshold_set": {
+          "min_economic_improvement_vs_baseline": "PENDING（经济显著改善幅度未签）",
+          "acceptable_bias": "PENDING（可接受偏差未签）",
+          "acceptable_containment": "PENDING（情景包含率可接受值未签；注意无名义概率 ⇒ 只能对情景包含率设阈值，不得写成覆盖率阈值）",
+          "acceptable_interval_width": "PENDING（区间宽度上限未签）"
+        },
+        "who_signs": ["统计reviewer", "行业reviewer"],
+        "anti_cherry_pick": "任何阈值在结果解封后补写 ⇒ 该次评估作废为探索性（exploratory），不得作确认性成功",
+        "status": "BLOCKED_PROFESSIONAL_DECISION（停止①，逐字见卡文「停止」第 1 条）"
+      }
+    },
+    {
+      "index": 13,
+      "field": "中止、重跑及版本修订规则；注册冻结manifest SHA256后才解封测试实际值。",
+      "status": "filled",
+      "requires_professional_signature": false,
+      "signature_status": "not_required_for_structure",
+      "value": {
+        "abort_rules": [
+          "关键统计选项/阈值未签署 ⇒ BLOCKED_PROFESSIONAL_DECISION（本卡已触发，见 professional_approval.json）",
+          "数据不足（vintage 不可读/披露日缺失/样本不足）⇒ fail-closed 降级为描述性或 blocked，不放行",
+          "OPEN-2 禁消费值被用作设计输入 ⇒ 立即中止并判失败（J2）"
+        ],
+        "rerun_rules": "同 design + 同已签参数 + 同种子 ⇒ 允许复算重跑（结果必须逐位一致或差异可解释）；任何 design 字段变更 ⇒ 版本 +1 并新开探索版本",
+        "version_revision_rule": "已看测试结果后变更设计 ⇒ 新探索版本；旧结果不得追认确认性成功（卡文停止②逐字）",
+        "freeze_rule": "design_manifest.json 冻结 oracle.md + evaluation_design.json + professional_approval.json + 上游 11 件的 SHA256 之后，才允许解封测试实际值",
+        "unseal_state": "results_unsealed = false（当前）"
+      }
+    }
+  ],
+  "metric_catalog_frozen": [
+    {"id": "MAE", "boundary": "同币种尺度内；跨公司不经权重设计不直接混合"},
+    {"id": "WAPE", "boundary": "分母 0 ⇒ undefined 并计数；同时报每公司等权指标"},
+    {"id": "signed_bias", "boundary": "正值=高估；分母 0 ⇒ undefined；另报正/负误差分布"},
+    {"id": "skill_vs_baseline", "boundary": "baseline loss=0 ⇒ undefined；负 skill 不删"},
+    {"id": "scenario_containment", "boundary": "无名义概率的情景带只能叫情景包含率；同时报 interval_width"},
+    {"id": "interval_width", "boundary": "high<low = 数据错误；极宽区间的高包含率不代表质量高"},
+    {"id": "driver_reconciliation", "boundary": "不是用收入反推参数后再声称独立验证"},
+    {"id": "CAGR", "boundary": "R_start>0 且 h>0 才可算；零基期记 undefined"},
+    {"id": "sMAPE_optional", "boundary": "未事前声明不启用；不得事后改用它获得漂亮结果"},
+    {"id": "MASE_optional", "boundary": "分母只用训练段；短序列不得虚构尺度"},
+    {"id": "interval_score_if_probabilistic", "boundary": "情景带禁用"},
+    {"id": "pinball_if_quantiles", "boundary": "不可把 base 擅自称中位数"}
+  ],
+  "open2_redline_registration": {
+    "parameter": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE",
+    "registration_state": "registered_not_consumed",
+    "registered_values": {"derived_base": 124248.63, "store_formula_truth": 38175.95, "proposed_band": [118036.2, 124248.63, 130461.06]},
+    "consumed_in_design": false,
+    "used_for": "none —— 未作 endpoint/baseline/actual/权重/分层/阈值输入",
+    "ban_source": "REMEDIATION_REGISTER.md L3951「OPEN-2 前禁消费」（转引上游 I-07-E §F）"
+  },
+  "seal_declaration": {
+    "test_results_sealed": true,
+    "accuracy_results_read": false,
+    "reads_performed": ["execution_v2/card_I-12-A.md", "execution_v2/research_cards.json (字段与公式面)", "I-07-E/a20260926-01 三件 + oracle/qualification/reviewer_report", "OWNER_DECISIONS §三十四/§三十七", "OPEN-2 红线（派单登记）"],
+    "reads_forbidden_and_not_performed": ["任何测试集/回测/准确性结果", "I-10-B 结果面", "I-13 买方验收面"]
+  },
+  "stop_registration": {
+    "stop_1_professional_decision": "TRIGGERED —— 关键统计选项/阈值（字段 5/10/11阈值项/12）未签署 ⇒ BLOCKED_PROFESSIONAL_DECISION",
+    "stop_2_post_hoc_design_change": "NOT TRIGGERED —— 本 attempt 未读任何测试结果，设计未在看结果后变更；此后变更须新开探索版本"
+  }
+}

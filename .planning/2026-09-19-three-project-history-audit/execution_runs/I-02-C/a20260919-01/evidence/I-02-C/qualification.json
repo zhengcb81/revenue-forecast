@@ -1,0 +1,43 @@
+{
+  "card": "I-02-C",
+  "attempt": "a20260919-01",
+  "generated_by": "carrier-landing bookkeeping pass (2026-09-24)",
+  "verdict_is_transcribed_not_authored": true,
+  "status": "accepted_scoped",
+  "status_authority": {
+    "source_file": "review.md",
+    "line_refs": [5, 20, 22, 23, 24, 25],
+    "quote": "## 结论：accepted_scoped",
+    "quote_scope_section": "## 限定申明",
+    "corroboration": "handoff.json status = accepted_scoped; handoff.json reviewer_status 记录该词转录自 review.md:5"
+  },
+  "formula": {
+    "state": "not_applicable_with_reason",
+    "scope": "本卡只获得**注册=来源链资格**：注册成功仅证明来源链资格（source-chain qualification）（review.md:22 逐字）",
+    "reason": "本卡授予面是隔离 case 树/samples 副本上的「注册=来源链资格」；review.md:22-25 逐字写明不构成审核资格、不构成工件完成、更不构成预测可用/预测成功，复用 ≠ 消费端预测资格，全文未授予任何预测公式资格，故 formula 对本卡不适用。判定依据为本卡自己的裁决文本。"
+  },
+  "disclosure_adaptation": {
+    "state": "unmapped",
+    "reason": "本卡 review.md 与 handoff.json 原文均未提及 disclosure_adaptation（全文检索 0 命中）；review.md:24 逐字记录 prompt_injection_status=not_reviewed / bundle_usable=false 为「未完成的如实声明」，与 unmapped 一致；按 REMEDIATION_REGISTER.md:708 回填 canonical 值 unmapped。"
+  },
+  "accuracy": {
+    "state": "unproven",
+    "reason": "本卡原文直接触及准确性且为不授予：review.md:22「更不构成预测可用/预测成功」、review.md:24「≠ 消费端预测资格」；未授予即保持 canonical 值 unproven（REMEDIATION_REGISTER.md:708）。"
+  },
+  "not_granted": [
+    "审核资格、工件完成、预测可用/预测成功（review.md:22「不构成审核资格、不构成工件完成、更不构成预测可用/预测成功」）",
+    "对 CW 生产 .source_catalog 及生产 raw/sidecar 的写入——全程只读未改，两个真实样本的注册只发生在隔离 scratch case 树与 samples 副本上（review.md:23）",
+    "把复用（reused / registered_existing）读作审核、工件完成或消费端预测资格（review.md:24）",
+    "CLI 层负例与 W03/W05 隔离 pytest nodeids 绑定——仍为 I-02-D/E / I-00-B 待办，不在本卡范围（review.md:25）"
+  ],
+  "sources_read": ["review.md", "handoff.json"],
+  "pre_image_notes": "本次写入前实测：本 attempt 下不存在任何 qualification*.json，且 evidence/ 目录不存在（本 pass 新建目录与本文件）；三资格字段在前像中整体缺失，按 REMEDIATION_REGISTER.md:708 补 canonical 记录。",
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "裁决由独立 reviewer 写入 review.md；本文件仅转录，不代签、不改任何 status",
+    "this_file_grants_nothing_new": true,
+    "existing_bytes_written": 0
+  },
+  "carrier_completeness_note": "本文件为第三件载体补齐（原缺失）；不新增任何资格、不改任何既有字节、不转移 status"
+}

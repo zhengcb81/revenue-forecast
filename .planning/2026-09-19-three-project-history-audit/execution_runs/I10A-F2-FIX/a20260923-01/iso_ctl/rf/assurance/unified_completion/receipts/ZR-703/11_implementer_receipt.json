@@ -1,0 +1,102 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "00a12952b131f26e530a91c78600506b6a5b27c7",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "7cdeac488a465a081dc60d423a19c64f8ba4bf266a24cc3e9c2c1a96e19011ce",
+  "commands": [
+    {
+      "command": "RED 探针：grep 'schema 3.6' scripts/（5 处 docstring/CLI help 硬编码）+ generator 输出 schema_version 无独立钉死",
+      "exit_code": 0,
+      "result": "G1（5 处 3.6 硬编码与 FORECAST_SCHEMA_VERSION=3.7 不一致）/G2（SUPPORTED_FORECAST_SCHEMA_VERSIONS 与 COMPATIBLE_VERSIONS 一致性待验证）/G3（generator schema_version 无独立钉死）坐实"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr703_schema_drift_cleanup.py -q --tb=short",
+      "exit_code": 0,
+      "result": "5 passed（C1 无硬编码 1 + C2 迁移 allowlist 一致性 2 + C3 schema_version 钉死 2）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=300",
+      "exit_code": 0,
+      "result": "490 passed + 106 subtests（基线 485 + 本卡 5；exit 0 无回归）"
+    },
+    {
+      "command": "ruff check (5 ZR-703 files)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（FC-1204-b ratchet 绿——纯文档清理无复杂度增加）"
+    },
+    {
+      "command": "git diff 00a1295 89ffc80 --stat",
+      "exit_code": 0,
+      "result": "5 文件 +102/-9：generate_input_template.py/fix_hashes.py/lint_input.py（注释+CLI help 3.6 清理）、schema_fields.py（docstring）、test_zr703（新 5 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-20T18:40:19+00:00",
+  "findings": [
+    {
+      "detail": "6 处 'schema 3.6' 硬编码清理：generate_input_template.py docstring(1/41)+_comment(238)、fix_hashes.py docstring(1)+CLI help(157)、lint_input.py docstring(1)+CLI help(531)、schema_fields.py docstring(1)——均改为引用常量或直接删除版本号。schema_compatibility.py:34 注释 'schema 3.6 — engines...' 保留（正确的迁移说明，非漂移）。",
+      "id": "ZR703-IMPL-001",
+      "severity": "info",
+      "title": "6 处硬编码清理（注释+CLI help+docstring）"
+    },
+    {
+      "detail": "迁移 allowlist 一致性钉死：SUPPORTED_FORECAST_SCHEMA_VERSIONS 每版在 SCHEMA_EMIT_ENGINES 有非空引擎集；FORECAST_SCHEMA_VERSION 本身在 SUPPORTED 中。generator 输出 schema_version == FORECAST_SCHEMA_VERSION；prepare_forecast(mode='draft') 结果 schema_version 也一致。",
+      "id": "ZR703-IMPL-002",
+      "severity": "info",
+      "title": "迁移 allowlist + generator/engine schema_version 钉死"
+    }
+  ],
+  "implementation": {
+    "design": "纯文档清理 + 一致性测试（零产品逻辑变化）：6 处 schema 3.6 硬编码删除（注释改为引用常量或直接删版本号）；test_zr703 5 tests：C1 源码 grep 无硬编码 + C2 迁移 allowlist（SUPPORTED ⊆ SCHEMA_EMIT_ENGINES + FORECAST ∈ SUPPORTED）+ C3 schema_version 钉死（build_template + prepare_forecast(draft)）。",
+    "files": [
+      "revenue-forecast/scripts/generate_input_template.py",
+      "revenue-forecast/scripts/fix_hashes.py",
+      "revenue-forecast/scripts/lint_input.py",
+      "revenue-forecast/scripts/schema_fields.py",
+      "revenue-forecast/tests/test_zr703_schema_drift_cleanup.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-703/**"
+    ]
+  },
+  "implementer": "zr703-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 89ffc80；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=7df712bd（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr703-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "F1 schema 文档/注释漂移清理（REV-01/03 docs 一致）：6 处 schema 3.6 硬编码删除 + 迁移 allowlist 一致性 gate + generator/engine schema_version 钉死。",
+  "plan_sha256": "7df712bdeb7f6fa97f86bce7bcaafd2d2c5901f244dadec763b9f2c3e925f9c6",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "89ffc80eaa9a7d7d74457c3bd902a4dbe4795aa5",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast 注释清理（4 scripts）+ 新测试 test_zr703_schema_drift_cleanup.py（5 tests）；revenue 侧 receipts/ZR-703/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 4,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/generate_input_template.py",
+    "revenue-forecast/scripts/fix_hashes.py",
+    "revenue-forecast/scripts/lint_input.py",
+    "revenue-forecast/scripts/schema_fields.py",
+    "revenue-forecast/tests/test_zr703_schema_drift_cleanup.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-703/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-703"
+}

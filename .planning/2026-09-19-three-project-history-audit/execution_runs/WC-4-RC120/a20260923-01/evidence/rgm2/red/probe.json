@@ -1,0 +1,98 @@
+{
+  "card": "WC-4 = F12-RC120",
+  "round": "r2",
+  "finding": "F-01 (P1): argparse SystemExit raised inside main() bypassed _finalize_exit_status",
+  "stage": "red",
+  "note": "r2 step2 RED: iso r1 delivery 4e6b64a7 measured BEFORE the r2 wrapper; --help/-h broken pipe = raw 120, only CPython Exception ignored on stderr",
+  "iso_cli_sha256": "4e6b64a789b97f30daf5def474bcd5a1d19cbc45b555e554b23fb8ecafe9e977",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+  "harness_rewrites_child_rc": false,
+  "fault_construction": "stdout=pipe write end, read end closed",
+  "arms": {
+    "f01_help_noreader": {
+      "raw_returncode": 120,
+      "stderr": "Exception ignored on flushing sys.stdout:\r\nOSError: [Errno 22] Invalid argument\r\n"
+    },
+    "f01_h_noreader": {
+      "raw_returncode": 120,
+      "stderr": "Exception ignored on flushing sys.stdout:\r\nOSError: [Errno 22] Invalid argument\r\n"
+    },
+    "f12_validate_noreader": {
+      "raw_returncode": 2,
+      "stderr": "error: stdout flush failed: [Errno 22] Invalid argument\r\n"
+    },
+    "f12_version_noreader": {
+      "raw_returncode": 2,
+      "stderr": "error: stdout flush failed: [Errno 22] Invalid argument\r\n"
+    },
+    "usage_noreader": {
+      "raw_returncode": 2,
+      "stderr": "usage: revenue_forecast.py [-h] [--output OUTPUT] [--markdown MARKDOWN]\r\n                           [--validate-only] [--verbose] [--version]\r\n                           [input]\r\nrevenue_forecast.py: error: the following arguments are required: input\r\n"
+    },
+    "help_reader": {
+      "raw_returncode": 0,
+      "stdout": "usage: revenue_forecast.py [-h] [--output OUTPUT] [--markdown MARKDOWN]\r\n                           [--validate-only] [--verbose] [--version]\r\n                           [input]\r\n\r\nCalculate a source-traceable revenue-only forecast\r\n\r\npositional arguments:\r\n  input                input JSON document (required unless --version)\r\n\r\noptions:\r\n  -h, --help           show this help message and exit\r\n  --output OUTPUT      JSON output path; stdout when omitted\r\n  --markdown MARKDOWN  optional Markdown report path\r\n  --validate-only      validate input and output without writing\r\n  --verbose            with --validate-only, report every input violation in\r\n                       one pass\r\n  --version            print engine version and this installation's manifest\r\n                       hash (R4.2)\r\n",
+      "stderr": ""
+    },
+    "h_reader": {
+      "raw_returncode": 0,
+      "stdout": "usage: revenue_forecast.py [-h] [--output OUTPUT] [--markdown MARKDOWN]\r\n                           [--validate-only] [--verbose] [--version]\r\n                           [input]\r\n\r\nCalculate a source-traceable revenue-only forecast\r\n\r\npositional arguments:\r\n  input                input JSON document (required unless --version)\r\n\r\noptions:\r\n  -h, --help           show this help message and exit\r\n  --output OUTPUT      JSON output path; stdout when omitted\r\n  --markdown MARKDOWN  optional Markdown report path\r\n  --validate-only      validate input and output without writing\r\n  --verbose            with --validate-only, report every input violation in\r\n                       one pass\r\n  --version            print engine version and this installation's manifest\r\n                       hash (R4.2)\r\n",
+      "stderr": ""
+    },
+    "validate_reader": {
+      "raw_returncode": 0,
+      "stdout": "valid\r\n",
+      "stderr": ""
+    },
+    "version_reader": {
+      "raw_returncode": 0,
+      "stdout": "revenue-forecast 4.1.0 manifest_sha256=de6d43cb21d0c29b\r\n",
+      "stderr": ""
+    },
+    "usage_reader": {
+      "raw_returncode": 2,
+      "stdout": "",
+      "stderr": "usage: revenue_forecast.py [-h] [--output OUTPUT] [--markdown MARKDOWN]\r\n                           [--validate-only] [--verbose] [--version]\r\n                           [input]\r\nrevenue_forecast.py: error: the following arguments are required: input\r\n"
+    }
+  },
+  "checks": {
+    "f01_help_noreader.rc": 120,
+    "f01_help_noreader.expected_rc": 120,
+    "f01_help_noreader.match": true,
+    "f01_h_noreader.rc": 120,
+    "f01_h_noreader.expected_rc": 120,
+    "f01_h_noreader.match": true,
+    "f12_validate_noreader.rc": 2,
+    "f12_validate_noreader.expected_rc": 2,
+    "f12_validate_noreader.match": true,
+    "f12_version_noreader.rc": 2,
+    "f12_version_noreader.expected_rc": 2,
+    "f12_version_noreader.match": true,
+    "usage_noreader.rc": 2,
+    "usage_noreader.expected_rc": 2,
+    "usage_noreader.match": true,
+    "help_reader.rc": 0,
+    "help_reader.expected_rc": 0,
+    "help_reader.match": true,
+    "h_reader.rc": 0,
+    "h_reader.expected_rc": 0,
+    "h_reader.match": true,
+    "validate_reader.rc": 0,
+    "validate_reader.expected_rc": 0,
+    "validate_reader.match": true,
+    "version_reader.rc": 0,
+    "version_reader.expected_rc": 0,
+    "version_reader.match": true,
+    "usage_reader.rc": 2,
+    "usage_reader.expected_rc": 2,
+    "usage_reader.match": true,
+    "f01_help_in_frozen_domain_0_2": false,
+    "f01_help_product_error_text": false,
+    "f01_help_cpython_exception_ignored": true,
+    "all_arms_match_stage_expectation": true,
+    "normal_reader_matrix_ok": true,
+    "normal_stdout_shapes_ok": true
+  },
+  "verdict": "RED_F01_HELP_STILL_RAW_120_NO_PRODUCT_TEXT",
+  "verdict_ok": true
+}

@@ -1,0 +1,110 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ab29ce212d1db43b03107d31e84afe7b0798729e",
+    "wiki": "cbc6d8c25b98b005856601620b43eb1877a53a35"
+  },
+  "canonical_hash": "f1eace9a5cf136bc74fa92ac37b8b8ca0b52c03d89601322d635e4d0e77d1c49",
+  "commands": [
+    {
+      "command": "RED 探针：grep ProcessingDemand src/company_wiki (wiki cbc6d8c)",
+      "exit_code": 0,
+      "result": "0 命中——ProcessingDemand 不存在；codegraph_freeze wiki 目标含 'ProcessingDemand'（required but expected missing，registered）——G1~G3 坐实"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr507_processing_demand.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "14 passed（C1 API 4 + C2 生命周期 5 + C3 priority 隔离 3 + C4 确定性 2）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "129 passed（含 ZR-506 14 + ZR-505 11 + ZR-504 10 + ZR-503 13 + ZR-502 11 + ZR-501 10 + taxonomy + evidence span + ratchet 全绿，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --timeout=300 (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（质量门 unit 787）"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/processing_demand.py tests/contract/test_zr507_processing_demand.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed（F401 field/Any + F841 未用变量三处修复后）"
+    },
+    {
+      "command": "git diff cbc6d8c bd337c4 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "2 文件 +436：processing_demand.py（新，ProcessingDemand dataclass + DemandQueue）、test_zr507（新 14 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:23:49+00:00",
+  "findings": [
+    {
+      "detail": "ProcessingDemand 为 codegraph_freeze「required but expected missing」符号（CA-003 登记）——本卡实现为纯内存纯函数库（ProcessingDemand frozen dataclass + DemandQueue），零 IO/DB/网络；closure 时更新 codegraph_freeze（移至 present）后 codegraph-verify 验证。",
+      "id": "ZR507-IMPL-001",
+      "severity": "info",
+      "title": "codegraph_freeze 期望缺失符号实现"
+    },
+    {
+      "detail": "租约语义：claim 设 lease_until=now+ttl；heartbeat 续租（拒绝无租约/过期）；expire 超时回收回 pending 可再 claim；complete/fail 仅租约持有者（_require_lease 校验）；fail 指数退避 retry_at=now+backoff*2^(attempts-1) + 上限 terminal_failed——生命周期闭环 5 测试。",
+      "id": "ZR507-IMPL-002",
+      "severity": "info",
+      "title": "租约/heartbeat/退避/终态闭环"
+    },
+    {
+      "detail": "consumer-priority 隔离：priority 存于 frozen dataclass（不可变）；claim 按 (priority desc, created asc) 全局序——consumer 提交的 priority 无法在 enqueue 后修改全局序（测试：claim 后入队高优先级不重排已 claim；同 priority FIFO）。",
+      "id": "ZR507-IMPL-003",
+      "severity": "info",
+      "title": "priority 不可变：consumer 不能插队"
+    },
+    {
+      "detail": "clock 注入（now 参数）驱动全部时序路径（租约/退避/超时）；同操作序列两次运行 snapshot 逐字段一致（C4 确定性）；测试时钟未推进导致的 backoff gate 失败（test_c2_attempt_cap）修正为递增时钟。",
+      "id": "ZR507-IMPL-004",
+      "severity": "info",
+      "title": "注入时钟确定性 + 测试时钟修正"
+    }
+  ],
+  "implementation": {
+    "design": "新 src/company_wiki/source_catalog/processing_demand.py：ProcessingDemand frozen dataclass（demand_id/key/kind/priority/status/attempts/lease_owner/lease_until/retry_at/created_at/updated_at）+ DemandQueue（lease_seconds/max_attempts/backoff_base 可配）：enqueue 按 key 去重（重复 key 返回既有）、claim（就绪中 priority desc + created asc 首个 + 租约）、heartbeat（续租）、complete/fail（租约持有者限定；fail 指数退避 + 上限 terminal_failed）、expire（超时回收）、snapshot（排序确定性）。纯内存、clock 注入。测试 14 个：C1 API（dedupe/claim 序/heartbeat/无租约拒绝）、C2 生命周期（全链/过期回收/退避 gate/终态/未知 id）、C3 priority 隔离（不重排已 claim/不可变/FIFO）、C4 确定性（同序列同快照/expire 计数）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/processing_demand.py",
+      "company-wiki/tests/contract/test_zr507_processing_demand.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-507/**"
+    ]
+  },
+  "implementer": "zr507-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 ab29ce2（ZR-506 closure commit，本次未动 revenue）；result_triplet.wiki 为本卡实现提交 bd337c4。",
+    "卡片 hash 冻结：plan_sha256=5910494a（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr507-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "codegraph_freeze 期望缺失更新（ProcessingDemand 移至 present）在本卡 closure 提交内完成。"
+  ],
+  "objective": "ProcessingDemand API：enqueue（key 去重）/claim（priority desc 租约）/heartbeat（续租）/complete/fail（指数退避+上限）/expire（超时回收）全生命周期；consumer priority 不可变（防插队）；clock 注入确定性；纯内存零 IO。",
+  "plan_sha256": "5910494a641e1ff5cc8426f6b13bd5e1b009eadfe9c9c429861a9249816102a5",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ab29ce212d1db43b03107d31e84afe7b0798729e",
+    "wiki": "bd337c488bc8f0fcac8212451aab8fb0a7c68a74"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki processing_demand.py（新 ProcessingDemand API 纯内存库）+ 新测试 test_zr507_processing_demand.py（14 tests）；revenue 侧 receipts/ZR-507/** + state.json + codegraph_freeze 期望缺失更新。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 1,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/processing_demand.py",
+    "company-wiki/tests/contract/test_zr507_processing_demand.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-507/**",
+    "revenue-forecast/assurance/unified_completion/state.json",
+    "revenue-forecast/assurance/unified_completion/uc/codegraph_freeze.py"
+  ],
+  "unit": "ZR-507"
+}

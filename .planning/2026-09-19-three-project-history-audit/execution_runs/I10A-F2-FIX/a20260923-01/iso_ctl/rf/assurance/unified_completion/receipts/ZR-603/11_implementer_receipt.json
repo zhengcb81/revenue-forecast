@@ -1,0 +1,110 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "2139a2c67b0fec2fe14407775924620f285c0915",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "36a7e343c07952bad58c0e49e45660a61e06ee6e430c196848fc6ab25da19a08",
+  "commands": [
+    {
+      "command": "RED 探针：grep ownership|consolidat|equity_share|effective_date|country|region scripts → 命中均为无关同名（consolidated_forecast=场景合并/segment_attribution=驱动归因/constants equity_share=ZR-602 枚举值）；grep equity|minority|stake|holding → 零计算命中；grep country|region|geo → 零命中",
+      "exit_code": 0,
+      "result": "G1 ownership timeline / G2 二次乘权益防护 / G3 地区层级均为真实产品缺口（词汇与机制全缺）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr603_ownership_timeline.py -q --tb=short",
+      "exit_code": 0,
+      "result": "22 passed（C1 timeline 9 + C2 不二次乘权益 6 + C3 geography/文档级 3 组）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "567 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+22 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/asset_ownership.py scripts/contracts/document.py tests/test_zr603_ownership_timeline.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（document.py ≤32——加性调用零 McCabe 增量模式复用；新文件 asset_ownership.py 各函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex skills: 126 files（+2 新文件自动入集）"
+    },
+    {
+      "command": "git diff 2139a2c b52568b --stat",
+      "exit_code": 0,
+      "result": "3 文件 +500：asset_ownership.py（新契约层 ~280 行）、contracts/document.py（+7：import + 2 行加性调用）、test_zr603_ownership_timeline.py（新 22 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T01:20:00+00:00",
+  "findings": [
+    {
+      "detail": "ownership timeline 契约：effective_date 唯一 ISO + fraction ∈ (0,1]；lookup 取最新 effective_date ≤ on_date，早于首条目 fail-closed（不隐式回溯）；收购生效日前后 fraction 不同由 lookup 语义钉死；period 内变更默认拒绝（不静默平均），显式 allow_pro_rata 才日加权。",
+      "id": "ZR603-IMPL-001",
+      "severity": "info",
+      "title": "timeline 时点契约（fail-closed 回溯/中段变更）"
+    },
+    {
+      "detail": "不二次乘权益防线：effective_group_share 链式一次连乘（0.6×0.7=0.42）；apply_ownership_share 与 ZR-602 basis 枚举逐字对齐——one_hundred_percent 恰一次乘有效份额；equity_share 拒绝（'already applied'，Kamoa/Porgera 防线）；consolidated 拒绝（合并口径收入不在此层折算）。三 basis 值各一条无歧义规则。",
+      "id": "ZR603-IMPL-002",
+      "severity": "info",
+      "title": "apply-once 权益门（三 basis 语义表）"
+    },
+    {
+      "detail": "document.py 集成复用 ZR-602 零 McCabe 模式：validate_segments 循环内两行纯调用（validate_segment_ownership/validate_segment_geography，None 早退）——document.py max 保持 32 无需 helper 重构；geography_index 拒绝静默省略（无 geography 资产不可索引）；golden/industry e2e 全链路零破坏（加性键，输出路径未动）。",
+      "id": "ZR603-IMPL-003",
+      "severity": "info",
+      "title": "零 McCabe 集成模式复用 + 输出零变更"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/asset_ownership.py 契约层（timeline 校验/时点查询/period 处理（默认 fail-closed + 显式 pro-rata 日加权）/链式一次连乘/apply-once 权益门（与 ZR-602 basis 枚举对齐）/geography 校验与可检索索引/segment 级加性包装）+ contracts/document.py validate_segments 两行加性调用（None 早退零 McCabe）。零产品硬编码：Kamoa/Porgera 仅出现在 docstring 防线语义说明与测试注释，代码与词汇表零公司/矿名。",
+    "files": [
+      "revenue-forecast/scripts/asset_ownership.py",
+      "revenue-forecast/scripts/contracts/document.py",
+      "revenue-forecast/tests/test_zr603_ownership_timeline.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-603/**"
+    ]
+  },
+  "implementer": "zr603-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 b52568b；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=0a18baa8（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr603-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "注：base_triplet.revenue=2139a2c 为 ZR-602 closure commit。"
+  ],
+  "objective": "F2 第三卡 ownership/consolidation timeline 与地区层级：effective-dated fraction 契约（收购生效日语义、fail-closed 回溯与中段变更）、链式有效权益一次连乘（不二次乘权益——Kamoa/Porgera 防线）、apply-once 权益门（三 basis 无歧义语义）、asset geography 层级声明与可检索索引。",
+  "plan_sha256": "0a18baa8a1222836e6940cadb2bd13516b0f6ceb392a30cfbbcbd8588a822479",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b52568b33b60352195fd9fcc722fa4fa577956dd",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/asset_ownership.py（新契约层）、scripts/contracts/document.py（validate_segments 加性调用 +7 行）、tests/test_zr603_ownership_timeline.py（新 22 tests）；revenue 侧 receipts/ZR-603/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 3,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/asset_ownership.py",
+    "revenue-forecast/scripts/contracts/document.py",
+    "revenue-forecast/tests/test_zr603_ownership_timeline.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-603/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-603"
+}

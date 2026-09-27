@@ -1,0 +1,197 @@
+{
+ "card_id": "I-07-E",
+ "attempt_id": "a20260926-01",
+ "role": "implementer_i07e",
+ "status": "accepted_scoped",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "releases_nothing": true,
+ "params_released": false,
+ "open2_ban_observed": true,
+ "gate0_passed": true,
+ "git_diff_non_planning": 0,
+ "formal_publication_slot": "blocked（无正式签名能力；本交付=研究草稿，卡文 L10）",
+ "accuracy": "unproven（不授予样本外准确性；准确性 F 归后继 I-12，卡文 L6/L12）",
+ "disclosure_adaptation": "消费 I-10-A 已签资格（4 case signed + 2 STOP not granted）；本卡不新签、不代签",
+ "authorized_by": {
+  "owner_decision_s34": "OWNER_DECISIONS.md §三十四（L745-L780）：owner 选择（L754）「A」= owner 明文改判开工门槛；L757「改判 I-11-B 的开工门槛 —— 以 MERGE 七条当前 5✅ + 2❌ 现状开工；i11b_unblocked 的语义从『7/7 才开』改为『owner 明文许可开工』」；L758「C3/C5 的残余不丢、不隐藏 —— 列为 I-11-B 开工后的并行欠账，每项在卡内载体以 expert_assumption 或 unverified 形式登记」；L761-L766 硬约束「oracle 先冻结」「不放行任何参数」「不触发任何 falsifier/自动动作」「实现者不自签 · 独立复审 · 落定走三件套」「每一条以 expert_assumption 承接的判断，必须给敏感性区间 + equivalent_to_disclosure_basis=false（同 H4 的 (iv) 形态）」；L769-L775 边界：不解除 OPEN-2/3/5/6 与任何 BLOCKED-*、不放行参数、不产生 ACCEPT、不代签；L779 后继卡按依赖顺序另派（本卡 I-07-E 即按编排层派单依此授权开工）。",
+  "owner_decision_s37": "OWNER_DECISIONS.md §三十七（L852-L871）：「给你授权所有的沙箱操作，不要再问我了」；覆盖三仓读写/系统调用/文件落点/网络取证；边界：纪律 16/17/18/19/20 继续有效、生产零未授权改动、git add/commit/push 不在授权内。本卡使用面=零提权（全部动作在本 attempt 目录普通文件写入）。",
+  "card_verbatim": "execution_v2/card_I-07-E.md（sha 9552ac98…/1,773 B）：L4「Parent：I-07。依赖：I-07-B、I-08、I-09、I-10、I-11。Owner：研究执行者；独立买方验收。」；L8「为三公司各冻结基期、分部口径、币种单位、信息日、年度路径与来源claim；缺信息显式保留，不伪造capture。」；L11「将管理目标和主要增长驱动按I-11映射，按适用模型卡处理合并/内部抵销、H1锁定、微软重述等已审关键口径。」；L10「经真实计算→验证→发布到隔离正式格式registry，记录完整输入/输出与签名资格；没有正式签名能力时可有研究草稿，但正式发布格blocked。」；L12「独立复算分部加总、年度增量、敏感性和场景约束；跨根来源失效能追溯到相关输入/产物。」；L13「输出三公司独立结果，不因其中一家成功写3/3。交I-13买方验收；本卡仍不授予样本外准确性。」；L14 退出「每家公司有完整可审查来源链和产物，或明确blocked；无全文研究包不能通过。」",
+  "dispatch_verbatim": "编排层派单（2026-09-26）：「开 I-07-E（19 卡链第 3 卡）：I-07 家族收官卡（校准与验证汇总）。依赖 I-07-B/C/D + I-08 + I-09 + I-10 + I-11 家族全部已满足（I-11-B/I-11-C 今天落定 accepted_scoped）」+ 硬约束（oracle 先冻结/门 0 自探/不放行参数/不触发自动动作/不自签/独立复审另派/落定父直写/变异≥3 红绿双向/封盘 f2178768… 零字节/禁写五份计划文件/禁写 .planning 之外/禁 git 写/禁 git status/禁联网/fail-closed/不派 I-12/I-13/I-16/I-17）+ P2-1 红线（ZIJIN_MINERAL_REALIZED_UNIT_REVENUE base 124,248.63（真值 38,175.95）OPEN-2 前禁消费 ⇒ 只能登记、不得消费）"
+ },
+ "gate0": {
+  "passed": true,
+  "performed": "写+回读+删除三步自探（本会话、零提权）+ 封盘/store 只读复哈希",
+  "raw_output": "=== GATE0 BEGIN (I-07-E/a20260926-01) ===\ncwd=.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-07-E\\a20260926-01\n--- step1 write ---\nwrite_ok=True\n--- step2 readback ---\ngate0 probe I-07-E a20260926-01 write-readback-delete\n--- step3 delete ---\ndeleted_gone=True\n--- step4 sealed sha (read-only) ---\nsealed_I-11-A_hypotheses_sha256=f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28\nsealed_matches_f2178768=True\n--- step5 store sha (read-only) ---\nstore_hypotheses_v3_sha256=b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff\n=== GATE0 END ==="
+ },
+ "completed_steps": [
+  "1 领取：card_I-07-E.md（sha 9552ac98…）+ START_HERE/common_root_cards/review_and_handoff 冻结契约 + §三十四/§三十七 + P2-1 红线（REMEDIATION_REGISTER L3951）回源完成",
+  "2 绑定：写入面=execution_runs/I-07-E/a20260926-01/（新建）；上游 24 件 sha256 冻结进 oracle §2；封盘 f2178768…/store b2063ac8… 只读复哈希",
+  "3 读证据：I-07-B/C/D、I-08-A、I-09-A/B/C、I-10-A、I-11-A/B/C handoff/oracle/CP/EAF/PM/MV/store 源文件关键字段逐项读到（含行号）",
+  "4 冻结预期：oracle.md 先冻结（门 0 原始输出 + 授权逐字 + 上游 sha + OPEN-2 红线 + EA 模板 + P1-P10 正例 + M1-M5 变异清单）",
+  "5 修改前检查：门 0 自探通过；上游一致性 24/24 复算一致（J3）",
+  "6 最小写入：calibration_validation_summary.md（三公司冻结表 + 18 槽位校准汇总 + EA 模板转录 + 验证汇总 + 三公司独立结果 + 红线登记区）+ _verify_summary.ps1（只读校验器）",
+  "7 修改后检查：绿臂 rc=0 + 红臂 M1-M5 rc=3 具名击杀（变异在 _mut/ 副本，原件字节不动，sha 前后比对）",
+  "8 交审：verification.json（红绿变异 + 上游一致性核 + u-N4/5/6 登记）+ 本 handoff；status=review_pending",
+  "9 接续：见 next_action（独立复审另派；落定父直写 V3 轻格式）"
+ ],
+ "next_step_number": 9,
+ "next_action": "独立复审（另派，非本工位）按 review_and_handoff.md 九条复核：①复算至少一个卡片专属 oracle（建议：分部恒等式 584,049,229,264−234,970,146,412=349,079,082,852，或 MSFT g 换算 51/500 等）；②重跑 _verify_summary.ps1 绿臂 + 至少一个红臂（建议保留案例：M5 换 299040 或对 M2 换注入点）；③裁定卡级 STOP_CALIBRATION 严格读法之争（I-11-B ROS L13-L17 形态，本站不自裁）；④裁并 unverified-N1/u-N5（AR p327/p328 回源）与 u-N4（store MSFT doc_sha256 63 位转录缺陷）；⑤裁定 gap-U3/U4（H1锁定/微软重述的已审载体定位或确认缺位）。复审接受后由父直写落定（V3 轻格式）；本卡不派 I-12/I-13/I-16/I-17（依赖顺序另派）。",
+ "input_hashes": {
+  "note": "完整 24 件见 oracle.md §2 与 verification.json upstream_inputs；此处列关键输入",
+  "execution_v2/card_I-07-E.md": "9552ac980756d59daf9c3cb48455c404ef2ffada6213ec3f0338b13c0a2e861d",
+  "execution_runs/I-11-B/a20260926-01/calibration_plan.json": "e86b41355c1ba7c5e90fe11c763c1966939621d38f0597dc4a4bfa0d73090e1c",
+  "execution_runs/I-11-B/a20260926-01/expert_assumptions.json": "9f8b844e342ec17e731cbe4554388005f5070e0c586de329782df86ee3abd79f",
+  "execution_runs/I-11-C/a20260926-01/parameter_mapping.json": "d542b34d3429f2409417c2d72cb4335ad2fdde5bf1875103b79a0a2abce7192c",
+  "execution_runs/I-11-C/a20260926-01/mapping_verification.json": "cecdcb33281727f7c450d7c121d420dd743edbe53c88dbff25491cf8e4cb633f",
+  "execution_runs/OPEN2-C2-REGISTRATION/a20260926-01/hypotheses_v3.json (store, read-only)": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+  "execution_runs/I-11-A/a20260919-01/evidence/I-11-A/hypotheses.json (sealed, read-only)": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28"
+ },
+ "current_source_hashes": {
+  "note": "上游只读零改动：24 件 sha 与 input_hashes/oracle §2 逐件一致（J3 全绿）；封盘零字节（f2178768… 未动）；store 零改动（b2063ac8… 未动）"
+ },
+ "changed_paths": [
+  "execution_runs/I-07-E/a20260926-01/oracle.md",
+  "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md",
+  "execution_runs/I-07-E/a20260926-01/verification.json",
+  "execution_runs/I-07-E/a20260926-01/handoff.json",
+  "execution_runs/I-07-E/a20260926-01/_verify_summary.ps1",
+  "execution_runs/I-07-E/a20260926-01/_mut/**（变异副本与红臂输出；原件不动）"
+ ],
+ "commands_executed": [
+  "gate0 自探（写/回读/删 + 封盘/store 只读复哈希）——原始输出见 gate0.raw_output",
+  "powershell -NoProfile -ExecutionPolicy Bypass -File _verify_summary.ps1 -Root <attempt|_mut/Mx> -PlanRoot .planning/2026-09-19-three-project-history-audit（绿臂 1 次 + 红臂 5 次；只读校验）"
+ ],
+ "raw_exit_codes": {
+  "note": "exit_code_legend（冻结）：0=ALL_INVARIANTS_OK；1=harness 失败；2=无裁决；3=不变量违例（具名）",
+  "GREEN": 0,
+  "M1_params_released": 3,
+  "M2_open2_consumed": 3,
+  "M3_sha_mismatch": 3,
+  "M4_ea_constant": 3,
+  "M5_synthetic_injected": 3,
+  "GREEN_FINAL_post_finalization": 0
+ },
+ "expected_exit_codes": {
+  "GREEN": 0,
+  "M1": 3,
+  "M2": 3,
+  "M3": 3,
+  "M4": 3,
+  "M5": 3,
+  "match": true
+ },
+ "written_files": {
+  "note": "sha256 于定稿时复算；handoff.json 自身为自指文件不记自身 sha（由父落定/复审复哈希）",
+  "oracle.md": {
+   "bytes": 18913,
+   "sha256": "5f3685e0b7f628a089636e2226fd03eef95952d0d6b2ba22f3cb7a7cee5ca7fc"
+  },
+  "calibration_validation_summary.md": {
+   "bytes": 26132,
+   "sha256": "a2304fdd082583e7a0395955db9629106b546df549f2f560218f7bd8a8b906eb"
+  },
+  "verification.json": {
+   "bytes": 10089,
+   "sha256": "237bc2d394ec5726c05adc00f6b7de2b88e302aafe658300f64fbac5dd25671c"
+  },
+  "_verify_summary.ps1": {
+   "bytes": 5099,
+   "sha256": "d03da4048033997dbd0242863a5ec63877b5ec2f6d9fdd0eaaab5c830b7f53a2"
+  },
+  "_mut/M1..M5/**": "变异副本 + 各臂 verifier_output.txt（原件字节不动）"
+ },
+ "open_questions": [
+  "gap-U3：卡文 L11「H1锁定」的已审载体在回源面内未检出 —— 显式保留，交独立复审/编排层定位",
+  "gap-U4：卡文 L11「微软重述」的已审载体同上未检出 —— 显式保留",
+  "gap-U1：小米 FY2027 命题/参数缺位（I-11-A STOP_EVIDENCE：HK-XIAOMI-AR2025 not_readable_in_this_attempt）——该公司判明确 blocked-缺位；若需补齐须先解证据可读性",
+  "gap-U2：小米 AR2025 披露日（published_at/available_at）未在回源面内登记",
+  "u-N4：store MSFT doc_sha256 63 位转录缺陷（只登记）",
+  "u-N5/unverified-N1：store H-01 original_value 与矿产品分部语义张力（p327/p328 回源归复审）",
+  "u-N6/unverified-N3：EA-4 注记区间与自身带换算不符（注记层）",
+  "卡级 STOP_CALIBRATION 严格读法之争（字面读法：存在任一 not_executable 槽位即整卡 blocked）——裁定权=独立复审，本站不自裁"
+ ],
+ "blocked_by": [
+  "OPEN-2（ZIJIN_MINERAL_REALIZED_UNIT_REVENUE 放行=BLOCKED；系数来源未裁定；本卡只登记不消费）",
+  "OPEN-3（MSFT 分部口径参数一律未放行）",
+  "OPEN-5/OPEN-6 未解（不解除）",
+  "BLOCKED-6a/6b/6c、BLOCKED-NEEDS-ORIGIN-BYTES 未解（不解除）",
+  "正式发布格 blocked：本工位无正式签名能力（卡文 L10）",
+  "小米年度路径缺位（gap-U1）"
+ ],
+ "evidence_paths": [
+  "execution_runs/I-07-E/a20260926-01/oracle.md（门 0 原始输出 + 冻结预期 + 红线 + 变异清单）",
+  "execution_runs/I-07-E/a20260926-01/calibration_validation_summary.md（校准/验证汇总表）",
+  "execution_runs/I-07-E/a20260926-01/verification.json（红绿变异 + 上游一致性核）",
+  "execution_runs/I-07-E/a20260926-01/_verify_summary.ps1（只读校验器）",
+  "execution_runs/I-07-E/a20260926-01/_mut/（M1-M5 副本 + 红臂输出）"
+ ],
+ "reviewer_status": "pending — 独立复审另派；实现者不自签（status=review_pending 是证据齐全的进入形态，不是验收）；落定走父直写（V3 轻格式），本卡不产生 ACCEPT",
+ "boundary_self_declaration": {
+  "no_auto_actions": true,
+  "no_falsifier_triggered": true,
+  "no_status_decision_changed": true,
+  "sealed_hypotheses_untouched": {
+   "sha256": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+   "bytes": 51697,
+   "zero_byte_change": true,
+   "new_version_needed": false,
+   "supersedes_form": "未启用（不需要；如需 ⇒ 落本目录）"
+  },
+  "store_untouched": {
+   "sha256": "b2063ac8533a96ba0be8095293e30191cc0796a7eb84dcd16dac0b71aff413ff",
+   "low_base_high_all_null": true,
+   "placeholders_in_place": true
+  },
+  "five_plan_files_untouched": true,
+  "writes_outside_planning": 0,
+  "git_writes": 0,
+  "git_status_run": false,
+  "network_used": false,
+  "external_retrieval_not_local": false,
+  "synthetic_quarantine_enforced": true,
+  "not_dispatched": [
+   "I-12",
+   "I-13",
+   "I-16",
+   "I-17"
+  ]
+ },
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> accepted_scoped",
+ "status_history": [
+  {
+   "at_utc": "",
+   "status": "accepted_scoped",
+   "by": "landing_parent_v3",
+   "note": "父直写轻格式落定（V3）；前像 sha 见 pre_image"
+  }
+ ],
+ "status_authority": {
+  "carrier": "reviewer_report.md",
+  "carrier_sha256": "6b48a2f5e2085f70c29315b4da1537ba80006833ef721468d9c11a87d714cca2",
+  "carrier_bytes": 9555,
+  "carrier_encoding": "UTF-8 no BOM",
+  "verdict_line": "VERDICT: **ACCEPT**（可带 P2/P3 —— 本判 0×P1 / 0×P2 / 2×P3；数值无错、红线未破、封盘未动）",
+  "verdict_byte_region": {
+   "content": [
+    967,
+    1085
+   ],
+   "incl_lf": [
+    967,
+    1086
+   ]
+  },
+  "verdict_word_written_by_reviewer": "**ACCEPT**（可带",
+  "pin_sidecar": "6b48a2f5e2085f70c29315b4da1537ba80006833ef721468d9c11a87d714cca2  reviewer_report.md",
+  "three_way_match": true
+ },
+ "carried_findings": [],
+ "pre_image": {
+  "sha256": "6ca09368ff0f47ecb317a3604876a32c17f88950c3b69d1d6f55ef815aa0f9e4",
+  "bytes": 13219,
+  "status": "review_pending"
+ },
+ "verdict_is_transcribed_not_authored": true
+}

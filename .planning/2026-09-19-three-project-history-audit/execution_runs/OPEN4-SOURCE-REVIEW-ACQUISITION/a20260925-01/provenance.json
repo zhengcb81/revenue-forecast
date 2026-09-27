@@ -1,0 +1,689 @@
+{
+  "schema_version": "1.0",
+  "card": "OPEN4-SOURCE-REVIEW-ACQUISITION",
+  "attempt_id": "a20260925-01",
+  "role": "controlled_acquisition",
+  "generated_utc": "2026-09-25T22:16:20Z",
+  "authorization": {
+    "authorized_by": "OWNER_DECISIONS §二十七 #1",
+    "source_file": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+    "source_sha256": "fe26a2dbacc42a1e7ca252c08c6d7c7538360883dbc0a9cd072fb4af526d9bbe",
+    "source_bytes": 76005,
+    "source_line": 558,
+    "verbatim_cell": "**1** | **`G2=`OPEN-4`、`G3=`OPEN-12`** 至今未授权未派（合并裁列的授权缺口，**G1 已由 `OPEN-11` 补上**） | **「两条都授权（建议）」** | 派 `OPEN-4`（wiki 来源审核）与 `OPEN-12`（cutoff 后交易所公告取得方式）**受控取证**；**产物只落本计划目录**（同 §二十四 #3 形态）；**不解除任何 BLOCKED、不产生 ACCEPT**；两站交付后**仍须过 MERGE 七条**",
+    "verbatim_discipline_1_line_563": "**三票 = 三个许可，不是三个结论**：**不解除 `OPEN-4`/`OPEN-12`/`OPEN-3`/`OPEN-5` 任何 BLOCKED**、**不产生 ACCEPT**、**不改任何 status**、**不授权晋升**。",
+    "verbatim_discipline_2_line_564": "**#2 是对 §二十四 L498 的定向取代**，适用范围**仅限「origin 响应字节经 filing-fetch 取回」这一场景**；**其余取证产物仍只落本计划目录**。",
+    "scope_conclusion": "本工位不属于「origin 字节经 filing-fetch」场景 ⇒ §二十四 L498 未被取代，取证产物只落本计划目录（本 attempt 目录），未写任何产品仓。"
+  },
+  "retrieval_methods_used": [
+    "local_readonly_filesystem_read",
+    "local_readonly_hash_sha256",
+    "local_readonly_grep_census",
+    "local_readonly_existence_probe"
+  ],
+  "quote_transcription_convention": "单行引文 = 该行逐字（带 byte_range 者为该行内逐字节区间，已对本 attempt corpus 副本实测）；跨行引文以 \" / \" 表示原文件换行，覆盖 line_start..line_end 连续行；凡含省略号「…」者为省略中段的显式截断，两端逐字。",
+  "external_evidence": [],
+  "external_evidence_note": "本工位 0 次联网：未调用 web_fetch / web_search / filing-fetch 下载路径（filing-fetch 只读 reuse 探针亦未调用）。理由（fail-closed，不为凑要素而联网）：OPEN-4（wiki 来源审核）的 C1–C6 检验面全部是仓内对象 —— 产品写入/读取字节、既有失败用例与 harness 正例工件、函 B 信任根存在性；外部网页对该条件集无可证价值。故 external_evidence = []，且不存在任何需要 url/retrieved_utc/http_status 的外部条目。",
+  "external_evidence_field_spec_if_present": [
+    "url",
+    "retrieved_utc",
+    "http_status",
+    "sha256",
+    "bytes",
+    "verbatim_quote",
+    "retrieval_method",
+    "via_third_party"
+  ],
+  "third_party": {
+    "used": false,
+    "providers": [],
+    "statement": "本 attempt 无任何第三方代理、无任何网络取回；全部字节来自本机只读文件系统。"
+  },
+  "retrieval_windows_utc": {
+    "hash_and_read_pass_1": "2026-09-25T22:01:45Z",
+    "product_line_extraction": "2026-09-25T22:12:10Z/2026-09-25T22:12:10Z",
+    "trust_root_probe_1": "2026-09-25T22:13:10Z/2026-09-25T22:13:10Z",
+    "corpus_copy": "2026-09-25T22:13:11Z/2026-09-25T22:13:12Z",
+    "grep_census_write": "2026-09-25T22:15:24Z",
+    "trust_root_probe_2_live_rewrite": "2026-09-25T22:15:56Z/2026-09-25T22:15:56Z",
+    "final_consolidated_hash_pass": "2026-09-25T22:16:20Z/2026-09-25T22:16:20Z",
+    "note": "均为本工位真实读取系统时钟得到的窗口（发起前/返回后各读一次 UTC），不伪造单点秒级时刻。"
+  },
+  "local_evidence": [
+    {
+      "id": "L01",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md",
+      "bytes": 42062,
+      "sha256": "37413f7812bbe4aa21948f0f474a2ceac2ad0f778f1a3c5eb4f6b3af7e1d98bb",
+      "retrieved_utc": "2026-09-25T22:01:45Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["C1", "C2", "C3", "C4", "C5", "C6", "identity_of_OPEN4"],
+      "self_check": "sha256 与 outward_requests/RESPONSES.md L5 登记值逐字符合（注册时点版本，文件自 2026-09-22 冻结后未动）",
+      "verbatim_quotes": [
+        {
+          "id": "L01-Q1",
+          "line_start": 147,
+          "line_end": 147,
+          "text": "**C1（载体唯一性）**：审核结论的唯一权威载体为 `documents.metadata_json[\"prompt_injection_review\"]`（schema_version `\"1.0\"`）。**检验**：产品代码中 review 结论的写入只经 `record_prompt_injection_review`（对 CW 仓 grep 可验）；任何导出 JSON 均带 non-authoritative 副本标注。"
+        },
+        {
+          "id": "L01-Q2",
+          "line_start": 150,
+          "line_end": 150,
+          "text": "**C4（身份绑定 + 单一信任根）**：`reviewer` 须为「角色 + 具名主体 + 进程凭据」可验证主体引用，且来源审核签名挂靠**函 B / I-08-A 的同一信任根**。**检验**：在函 B（`T2-9/OPEN-D1` 等）出裁且信任根文件实测存在之前，任何回执不得标称 signed、不得以「已签审核」名义晋级；自由字符串 reviewer 不得出现在晋级路径（现产品 prompt_injection.py:57–58 仅非空校验，即为待改点；I-06-B decision.md:44 已自认该缺口）。"
+        },
+        {
+          "id": "L01-Q3",
+          "line_start": 151,
+          "line_end": 151,
+          "text": "**C5（失效语义落地）**：按 §4.3 选择实现失效判定（读取时 fail-closed；policy 内容变⇒全量作废重审；版本号单独变不失效；role_set/请求身份变不动回执）。**检验**：I-06-B 可失败用例至少覆盖 INV-1 / INV-2 / INV-3 / INV-6 / INV-7（既有）**加两条新正例**：① policy 版本号变、内容哈希不变 ⇒ 仍 `hit`（不失效）；② role_set / 请求身份变 ⇒ 原回执仍 `hit`、demand 按 OPEN-2 A 得新键。"
+        },
+        {
+          "id": "L01-Q4",
+          "line_start": 152,
+          "line_end": 152,
+          "text": "**C6（覆盖留痕）**：`record_prompt_injection_review` 覆盖旧收据前，须在审核执行事件记录中留档旧收据的 sha256（形态参照 `I-06-B/.../after/review-execution-events.json`）。**检验**：任一覆盖事件可查到前后两收据哈希；缺失则该次审核事件无效。"
+        },
+        {
+          "id": "L01-Q5",
+          "line_start": 62,
+          "line_end": 62,
+          "text": "| **4b reviewer 身份绑定** | **CONDITIONAL**：方向已定（角色+具名主体+进程凭据、不可伪造签名链、与函 B **同一套**信任根），但签名链的可核销落地**取决于函 B 信任根出裁且实测存在**，见 §5 条件 C4 |"
+        },
+        {
+          "id": "L01-Q6",
+          "line_start": 148,
+          "line_end": 148,
+          "text": "**C2（闭集冻结）**：判定词汇闭集 = `{not_reviewed, not_detected, detected_and_ignored}`（三层划分见 §4.1）。**检验**：`PROMPT_INJECTION_REVIEW_STATUSES` 保持 `frozenset({\"not_detected\", \"detected_and_ignored\"})`（prompt_injection.py:23–24）；向回执写入 `not_reviewed` 或任何闭集外值被拒（:53–56）；新增状态必须 `schema_version` 升级 + 重新送裁。"
+        },
+        {
+          "id": "L01-Q7",
+          "line_start": 149,
+          "line_end": 149,
+          "text": "**C3（双绑定必填）**：凡用于晋级/消费的回执必须同时携带 `source_sha256` 与 `policy_hash`（各为 64 位小写 hex）。**检验**：record 调用两参均非 None（prompt_injection.py:64–65、123–126）；无绑定回执维持 INV-6 fail-closed（`tampered`，`review-invalidation-matrix.json:56–65`）。"
+        },
+        {
+          "id": "L01-Q8",
+          "line_start": 83,
+          "line_end": 83,
+          "text": "（今日复算 sha256 `7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618`，与 `I-06-B/a20260919-01/handoff.json` 的 `input_hashes` 记录**逐字符合**，即 2026-09-19 以来未漂移）"
+        },
+        {
+          "id": "L01-Q9",
+          "line_start": 175,
+          "line_end": 175,
+          "text": "今日仅复算核对 CW 侧两文件（`prompt_injection.py` = `7b22f239…139618`、`prompt_injection_guard.py` = `f900a13d…0b9c08`，与 I-06-B `input_hashes` 记录一致）"
+        }
+      ]
+    },
+    {
+      "id": "L02",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/outward_requests/RESPONSES.md",
+      "bytes": 2302,
+      "sha256": "1cfeef0fb438fae8d3d63d89a2626a235e3c7466b8142e8f2d99070c2e538e39",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["C1", "C2", "C3", "C4", "C5", "C6", "scope_count"],
+      "verbatim_quotes": [
+        {
+          "id": "L02-Q1",
+          "line_start": 5,
+          "line_end": 5,
+          "text": "函 A / T2-1(OPEN-4) / wiki 来源审核 owner（模拟·owner 终确）/ 落点 execution_runs/T2-SIM-OPEN4-WIKI/a20260922-01/ruling.md / sha256 37413f7812bbe4aa21948f0f474a2ceac2ad0f778f1a3c5eb4f6b3af7e1d98bb / 2026-09-22 / 结论 CONDITIONAL（C1–C6）"
+        },
+        {
+          "id": "L02-Q2",
+          "line_start": 3,
+          "line_end": 3,
+          "text": "本登记为 owner 终确（原话「全部接受」）下的 role-play 模拟裁定转录——**非外部方真实签署、未在任何函上签字**；收函方若出正式回执，以其本人卡载体签收为准，本登记仅系本计划内部归档"
+        }
+      ],
+      "key_fact": "OPEN-4 的条件集逐字为 C1–C6（非题面所称 C1–C8）；C1–C8 属 T2-3(OPEN-5) 与 T2-2(OPEN-6) 两行。"
+    },
+    {
+      "id": "L03",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/outward_requests/B_signature_trust_domain.md",
+      "bytes": 15946,
+      "sha256": "f494ac3db7ce2ff2318ed4c0932ece81e4c90c0534f84f1dde813e94364fe57d",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["C4"],
+      "verbatim_quotes": [
+        {
+          "id": "L03-Q1",
+          "line_start": 7,
+          "line_end": 7,
+          "text": "| **T2-9 / OPEN-D1** | 权威信任根位置（repo 配置文件 / 机器级只读路径 / OS keystore） | **跨仓双方**（安全/运维提选项，项目 owner 择定） |"
+        },
+        {
+          "id": "L03-Q2",
+          "line_start": 28,
+          "line_end": 28,
+          "text": "**不存在可用于生产验证的信任根**。"
+        },
+        {
+          "id": "L03-Q3",
+          "line_start": 240,
+          "line_end": 240,
+          "text": "4. **信任根文件仍实测缺席**——B1-F5 完整性复验对四生产锚的核验两处记「**trust 缺**」…与本函 P1「默认零可信签名者」的设计默认一致。"
+        }
+      ]
+    },
+    {
+      "id": "L04",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/OWNER_DECISIONS.md",
+      "bytes": 76005,
+      "sha256": "fe26a2dbacc42a1e7ca252c08c6d7c7538360883dbc0a9cd072fb4af526d9bbe",
+      "retrieved_utc": "2026-09-25T22:01:45Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["authorization", "boundaries"],
+      "verbatim_quotes": [
+        {
+          "id": "L04-Q1",
+          "line_start": 558,
+          "line_end": 558,
+          "text": "派 `OPEN-4`（wiki 来源审核）与 `OPEN-12`（cutoff 后交易所公告取得方式）**受控取证**；**产物只落本计划目录**（同 §二十四 #3 形态）；**不解除任何 BLOCKED、不产生 ACCEPT**；两站交付后**仍须过 MERGE 七条**"
+        },
+        {
+          "id": "L04-Q2",
+          "line_start": 563,
+          "line_end": 563,
+          "text": "**三票 = 三个许可，不是三个结论**：**不解除 `OPEN-4`/`OPEN-12`/`OPEN-3`/`OPEN-5` 任何 BLOCKED**、**不产生 ACCEPT**、**不改任何 status**、**不授权晋升**。"
+        },
+        {
+          "id": "L04-Q3",
+          "line_start": 437,
+          "line_end": 437,
+          "text": "三份 T2 模拟裁定全部接受：OPEN-4（CONDITIONAL：4a/4c APPROVE、4b 挂函 B 信任根、C1–C6）"
+        }
+      ]
+    },
+    {
+      "id": "L05",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-MERGE/a20260924-01/merge_ruling.md",
+      "bytes": 49062,
+      "sha256": "2d214bab861be4ff30ebb7118705d23183fb2eec3e58f987d52287d0bab2e5c1",
+      "retrieved_utc": "2026-09-25T22:01:45Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["G2_identity_discrepancy", "RULED_WITH_BLOCKED_VALUE_meaning"],
+      "verbatim_quotes": [
+        {
+          "id": "L05-Q1",
+          "line_start": 361,
+          "line_end": 361,
+          "text": "「`pdf_leaf_1based` / `table_index_0based` 是否需成为披露字段的规范枚举值｜**schema owner**」（`decision.md` L400） | 本轮未派；`OWNER_DECISIONS.md` 内**未见**针对 I-11-A OPEN-4 的裁定行"
+        },
+        {
+          "id": "L05-Q2",
+          "line_start": 53,
+          "line_end": 53,
+          "text": "状态取值域：`RULED_BOTH_HALVES` / `RULED_WITH_BLOCKED_VALUE` / `BLOCKED` / `OWNER_ONLY`。"
+        },
+        {
+          "id": "L05-Q3",
+          "line_start": 60,
+          "line_end": 60,
+          "text": "| **OPEN-3** | `RULED_WITH_BLOCKED_VALUE` | `NO_CONFLICT`（+1 条范围注记 `AMBIGUITY_REGISTERED`，见 §2.2「范围注记」） | 证据等级 E1 规则（会计）与分部选择（行业）互补且互相让位；**E1 未满足 ⇒ 证据 BLOCKED** |"
+        }
+      ],
+      "key_fact": "合并裁的四条 OPEN 状态表只含 OPEN-2/3/5/6；OPEN-4 在该文件中只以 G2 授权缺口行出现，且其对象是 schema 位置枚举（schema owner），与 §二十七 #1 执行映射中的「OPEN-4（wiki 来源审核）」不是同一编号空间 —— 该身份不一致已登记，未由本工位择一。"
+    },
+    {
+      "id": "L06",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/decision.md",
+      "bytes": 29756,
+      "sha256": "e9c96f02118514b8596620b3c0e235a797747fcd3bcf59d1a0fd20aa70166951",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["G2_identity_discrepancy"],
+      "verbatim_quotes": [
+        {
+          "id": "L06-Q1",
+          "line_start": 400,
+          "line_end": 400,
+          "text": "| OPEN-4 | `pdf_leaf_1based` / `table_index_0based` 是否需成为披露字段的规范枚举值 | schema owner | 否 | 跨卡页码复用 |"
+        }
+      ]
+    },
+    {
+      "id": "L07",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I11A-OPEN-IND/a20260924-01/ruling.md",
+      "bytes": 39207,
+      "sha256": "8bc685a4964a7fe64f8590cc7ec0dc93824385b90b9063722ffd34808cab7f4b",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["G2_identity_discrepancy"],
+      "verbatim_quotes": [
+        {
+          "id": "L07-Q1",
+          "line_start": 51,
+          "line_end": 51,
+          "text": "OPEN-4（位置枚举，schema owner）"
+        }
+      ]
+    },
+    {
+      "id": "L08",
+      "kind": "corpus_copy",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/corpus/CW_prompt_injection.py",
+      "source_path": "C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/prompt_injection.py",
+      "bytes": 20100,
+      "sha256": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+      "source_sha256_at_copy_time": "88154de4ab7630606c2545cdcdf9c3ac44faf32bcae0f83f33a1cebc6d490f33",
+      "copy_window_utc": "2026-09-25T22:13:11Z/2026-09-25T22:13:12Z",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+byte_identical_copy_to_this_attempt_dir",
+      "via_third_party": false,
+      "supports": ["C1", "C2", "C3", "C4", "C6", "premise_drift"],
+      "verbatim_quotes": [
+        {
+          "id": "L08-Q1",
+          "line_start": 5,
+          "line_end": 5,
+          "byte_range": "[199,254)",
+          "text": "``documents.metadata_json[\"prompt_injection_review\"]``:"
+        },
+        {
+          "id": "L08-Q2",
+          "line_start": 66,
+          "line_end": 67,
+          "byte_range": "[3296,3341)",
+          "text": "PROMPT_INJECTION_REVIEW_STATUSES = frozenset("
+        },
+        {
+          "id": "L08-Q3",
+          "line_start": 118,
+          "line_end": 120,
+          "text": "# FIX-W06-GAPS P5-c: dual binding MANDATORY for every status (was / # optional=True — an unbound receipt was accepted while the reader / # treats missing binding as tampered)."
+        },
+        {
+          "id": "L08-Q4",
+          "line_start": 121,
+          "line_end": 121,
+          "byte_range": "[5460,5507)",
+          "text": "_require_sha256(source_sha256, \"source_sha256\")"
+        },
+        {
+          "id": "L08-Q5",
+          "line_start": 207,
+          "line_end": 210,
+          "byte_range": "[8712,8774)",
+          "text": "disposal authorization unavailable: trust root not established"
+        },
+        {
+          "id": "L08-Q6",
+          "line_start": 381,
+          "line_end": 383,
+          "byte_range": "[16274,16329)",
+          "text": "metadata[PROMPT_INJECTION_REVIEW_AUDIT_KEY] = audit + ["
+        },
+        {
+          "id": "L08-Q7",
+          "line_start": 322,
+          "line_end": 322,
+          "byte_range": "[13637,13694)",
+          "text": "\"evidence_sha256 does not match sha256(evidence_payload)\""
+        }
+      ],
+      "drift_finding": "裁定（2026-09-22）记该文件 sha256=7b22f23918d5e6b083a3c5272de2ed26c8a0c420b007f1268c664c0c86139618、6,619 B（ruling L83）；本工位实测现盘=88154de4…、20,100 B ⇒ 检验面锚点已前提变化（FIX-W06-GAPS 修复面已入产品）。"
+    },
+    {
+      "id": "L09",
+      "kind": "corpus_copy",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/corpus/CW_prompt_injection_guard.py",
+      "source_path": "C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/prompt_injection_guard.py",
+      "bytes": 14514,
+      "sha256": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+      "source_sha256_at_copy_time": "d71254782c10cd6d58c768eeb50e220de5e3d8047709e26f0604b5c59e67df0d",
+      "copy_window_utc": "2026-09-25T22:13:11Z/2026-09-25T22:13:12Z",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+byte_identical_copy_to_this_attempt_dir",
+      "via_third_party": false,
+      "supports": ["C3", "C5", "premise_drift"],
+      "verbatim_quotes": [
+        {
+          "id": "L09-Q1",
+          "line_start": 87,
+          "line_end": 87,
+          "byte_range": "[3971,4048)",
+          "text": "CACHE_STATES = frozenset({\"hit\", \"ignored\", \"expired\", \"tampered\", \"absent\"})"
+        },
+        {
+          "id": "L09-Q2",
+          "line_start": 220,
+          "line_end": 224,
+          "byte_range": "[9588,9617)",
+          "text": "def _binding_mismatch(receipt"
+        },
+        {
+          "id": "L09-Q3",
+          "line_start": 10,
+          "line_end": 11,
+          "text": "* hit      — receipt valid, source_sha256 + policy_hash match, fresh; / * ignored  — policy_hash changed (ruleset moved on): not_reviewed,"
+        }
+      ],
+      "drift_finding": "裁定（2026-09-22）记该文件 sha256=f900a13d…0b9c08、8,382 B（ruling L175）；本工位实测现盘=d7125478…、14,514 B ⇒ 检验面锚点已前提变化。"
+    },
+    {
+      "id": "L10",
+      "kind": "corpus_copy",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/corpus/CW_test_prompt_injection_guard.py",
+      "source_path": "C:/Users/郑曾波/Projects/company-wiki/tests/unit/test_prompt_injection_guard.py",
+      "bytes": 13143,
+      "sha256": "d3bde1a3d5ec2495474aae5b91595362b2caad4c8a0178c6927bf2d8023eec3f",
+      "copy_window_utc": "2026-09-25T22:13:11Z/2026-09-25T22:13:12Z",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+byte_identical_copy_to_this_attempt_dir",
+      "via_third_party": false,
+      "supports": ["C2", "C5"],
+      "verbatim_quotes": [
+        {
+          "id": "L10-Q1",
+          "line_start": 309,
+          "line_end": 309,
+          "byte_range": "[10943,11003)",
+          "text": "def test_evaluate_legacy_unbound_receipt_is_tampered_not_hit"
+        },
+        {
+          "id": "L10-Q2",
+          "line_start": 229,
+          "line_end": 229,
+          "byte_range": "[8148,8193)",
+          "text": "def test_evaluate_ignored_when_policy_changed"
+        },
+        {
+          "id": "L10-Q3",
+          "line_start": 158,
+          "line_end": 158,
+          "text": "def test_record_without_binding_rejected(db) -> None:"
+        }
+      ]
+    },
+    {
+      "id": "L11",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-06-B/a20260919-01/after/review-invalidation-matrix.json",
+      "bytes": 3085,
+      "sha256": "5964143a68525a69f197269d33ed2a4114cd794221ea21b66ae35ee275bfcc9f",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["C5"],
+      "verbatim_quotes": [
+        {
+          "id": "L11-Q1",
+          "line_start": 77,
+          "line_end": 82,
+          "text": "\"summary\": { \"total_scenarios\": 7, \"verified\": 7, \"all_fail_closed\": true, \"no_faked_green_in_any_scenario\": true }"
+        },
+        {
+          "id": "L11-Q2",
+          "line_start": 57,
+          "line_end": 64,
+          "text": "\"id\": \"INV-6\", \"scenario\": \"Legacy unbound receipt (no source_sha256/policy_hash)\", \"cache_state\": \"tampered\", \"status\": \"not_reviewed\", \"action_required\": \"Legacy receipt cannot be proven fresh → fail closed, treat as tampered\""
+        },
+        {
+          "id": "L11-Q3",
+          "line_start": 6,
+          "line_end": 15,
+          "text": "\"id\": \"INV-1\", \"scenario\": \"Source bytes changed (1+ byte)\", \"cache_state\": \"tampered\", \"status\": \"not_reviewed\", \"test_case\": \"STALE (p.15→p.16)\", \"verdict\": \"VERIFIED\""
+        }
+      ]
+    },
+    {
+      "id": "L12",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-06-B/a20260919-01/after/review-execution-events.json",
+      "bytes": 4889,
+      "sha256": "96170891f7ec3538dadcc84c348579ebc8d73be7530029b674d459cfcebc6af2",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["C6"],
+      "verbatim_quotes": [
+        {
+          "id": "L12-Q1",
+          "line_start": 119,
+          "line_end": 120,
+          "text": "\"total_events\": 14, \"execution_result\": \"14/14 PASS\""
+        },
+        {
+          "id": "L12-Q2",
+          "line_start": 16,
+          "line_end": 20,
+          "text": "\"event\": \"record_receipt_clean\", \"function\": \"record_prompt_injection_review\", \"input\": {\"document_id\": \"doc-clean\", \"status\": \"not_detected\", \"reviewer\": \"zr302-test\", \"source_sha256\": \"58e517ac...\", \"policy_hash\": \"19ace502...\"}"
+        },
+        {
+          "id": "L12-Q3",
+          "line_start": 1,
+          "line_end": 4,
+          "text": "\"card_id\": \"I-06-B\", \"attempt_id\": \"a20260919-01\", \"description\": \"Ordered events from the review lifecycle execution\""
+        }
+      ],
+      "key_fact": "该样例事件记录内 14 条事件均无「覆盖前后两收据 sha256」字段（本工位逐条读毕）；C6 所要求的旧收据哈希留档在样例与现产品中均未见对应字段。"
+    },
+    {
+      "id": "L13",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-06-B/a20260922-02/evidence/green/M1.json",
+      "bytes": 1389,
+      "sha256": "17cad77ded221e65e339223e9fd37394fd231288699a92db47a23c70358a3b74",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["C5_1"],
+      "verbatim_quotes": [
+        {
+          "id": "L13-Q1",
+          "line_start": 3,
+          "line_end": 6,
+          "text": "\"title\": \"OPEN-4 C5① version-only change ⇒ still hit\", \"iso\": \"fixed\", \"ruling_clause\": \"OPEN-4 condition C5① (two new positives unlocked for I-06-B)\", \"verdict\": \"PASS\","
+        },
+        {
+          "id": "L13-Q2",
+          "line_start": 16,
+          "line_end": 16,
+          "text": "\"detail\": \"eval=ReviewEvaluation(status='not_detected', cache_state='hit', state_domain='cache', reason='receipt fresh and bound') (binding axes are source_sha256 × policy_hash CONTENT only; the ruleset version label is not a binding axis — OPEN-4 C5①)\""
+        },
+        {
+          "id": "L13-Q3",
+          "line_start": 24,
+          "line_end": 26,
+          "text": "\"name\": \"M1d_content_change_invalidates\", \"ok\": true, \"detail\": \"eval=ReviewEvaluation(status='not_reviewed', cache_state='ignored', state_domain='cache', reason='policy ruleset changed since review') (content hash change DOES invalidate — the contrast case, probe06 N2b)\""
+        }
+      ],
+      "caveat": "该正例在隔离副本（iso=fixed）中运行，非产品仓实跑；finished_at=2026-09-22T23:12:49（工件自报时刻，非本工位观测时刻）。"
+    },
+    {
+      "id": "L14",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-06-B/a20260922-02/evidence/green/M2.json",
+      "bytes": 1187,
+      "sha256": "c07047fd3e1856e85d1fd27aff3b1224e7ab89b12992cb25182623163de083f7",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["C5_2"],
+      "verbatim_quotes": [
+        {
+          "id": "L14-Q1",
+          "line_start": 3,
+          "line_end": 6,
+          "text": "\"title\": \"OPEN-4 C5② role/request change ⇒ receipt hit + role key\", \"iso\": \"fixed\", \"ruling_clause\": \"OPEN-4 condition C5② + §4.3 domain split\", \"verdict\": \"PASS\","
+        },
+        {
+          "id": "L14-Q2",
+          "line_start": 14,
+          "line_end": 16,
+          "text": "\"name\": \"M2b_role_set_change_new_demand_key\", \"ok\": true, \"detail\": \"key1=0e73626631e4ddff884c9dce38adce87908f52191d5dcaa13e2e6ac65876cf52 key2=7f45fcf4beadf77b4b016686e98b70ae4c5517df47cfefe71d9e24d0f2dfe815\""
+        },
+        {
+          "id": "L14-Q3",
+          "line_start": 19,
+          "line_end": 21,
+          "text": "\"name\": \"M2c_receipt_still_hit_after_role_and_request_change\", \"ok\": true, \"detail\": \"eval=ReviewEvaluation(status='not_detected', cache_state='hit', state_domain='cache', reason='receipt fresh and bound') — role_set / request identity are NOT receipt binding axes (OPEN-4 C5②); the request-identity → new demand-key half is asserted by case A\""
+        }
+      ],
+      "caveat": "同 L13：iso=fixed 隔离副本运行，finished_at=2026-09-22T23:12:50（工件自报）。"
+    },
+    {
+      "id": "L15",
+      "kind": "source",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-06-B/a20260922-02/scripts/run_cases.py",
+      "bytes": 58569,
+      "sha256": "1656124425564bc553cc5c6c9918e3a355157016bc1a4b8f34713967d9115930",
+      "retrieved_utc": "2026-09-25T22:16:20Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_filesystem_read+local_readonly_hash_sha256",
+      "via_third_party": false,
+      "supports": ["C5_1", "C5_2"],
+      "verbatim_quotes": [
+        {
+          "id": "L15-Q1",
+          "line_start": 1116,
+          "line_end": 1116,
+          "text": "\"\"\"M1 — OPEN-4 C5①: policy version-only change ⇒ still hit.\"\"\""
+        },
+        {
+          "id": "L15-Q2",
+          "line_start": 1223,
+          "line_end": 1223,
+          "text": "(\"M1\", \"OPEN-4 C5① version-only change ⇒ still hit\", case_M1),"
+        },
+        {
+          "id": "L15-Q3",
+          "line_start": 1139,
+          "line_end": 1139,
+          "text": "meta[\"policy_version_label\"] = \"v2-version-only-bump\""
+        }
+      ]
+    },
+    {
+      "id": "L16",
+      "kind": "generated_evidence",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/evidence/trust_root_probe.txt",
+      "bytes": 969,
+      "sha256": "a09686ca75954631f877df173ebd3f0b28cc604f4a26f642f51228b4d24a3ba5",
+      "retrieved_utc": "2026-09-25T22:15:56Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_existence_probe (env var + 19 个 JSON 文件内容扫描 + CW src grep)",
+      "via_third_party": false,
+      "supports": ["C4"],
+      "verbatim_quotes": [
+        {
+          "id": "L16-Q1",
+          "line_start": 3,
+          "line_end": 3,
+          "text": "env PROMPT_INJECTION_TRUST_ROOT=[] (empty = unset)"
+        },
+        {
+          "id": "L16-Q2",
+          "line_start": 6,
+          "line_end": 6,
+          "text": "json_files_containing_signers_or_trust_root=NONE across 19 files scanned"
+        },
+        {
+          "id": "L16-Q3",
+          "line_start": 8,
+          "line_end": 10,
+          "text": "src/company_wiki/source_catalog/prompt_injection.py:136: def _load_trust_root(path: str | None) -> dict[str, bytes]: / :139: path = os.environ.get(\"PROMPT_INJECTION_TRUST_ROOT\") / :207: trust_root = _load_trust_root(trust_root_path)"
+        }
+      ],
+      "scope_limit": "探针范围有界：CW 根 *.json + CW config/**.json + RF config/**.json + CW src/*.py；未扫描 OS keystore / 机器级只读路径（本工位无该层权限，且属环境/依赖 owner 面）。"
+    },
+    {
+      "id": "L17",
+      "kind": "generated_evidence",
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/OPEN4-SOURCE-REVIEW-ACQUISITION/a20260925-01/evidence/grep_census.txt",
+      "bytes": 2424,
+      "sha256": "b89a7ad890d43898a3cd559d9fb68cd467b81db8c5df1bcc1fa88cb8e1dfebbd",
+      "retrieved_utc": "2026-09-25T22:15:24Z",
+      "http_status": null,
+      "retrieval_method": "local_readonly_grep_census",
+      "via_third_party": false,
+      "supports": ["C1", "C5", "C6"],
+      "verbatim_quotes": [
+        {
+          "id": "L17-Q1",
+          "line_start": 3,
+          "line_end": 9,
+          "text": "[C1] assignment sites of documents.metadata_json[\"prompt_injection_review\"] in CW src: prompt_injection.py:384: metadata[PROMPT_INJECTION_REVIEW_KEY] = receipt … record_prompt_injection_review call sites: prompt_injection.py:263 (definition), read_chain.py:223, source_lifecycle.py:168"
+        },
+        {
+          "id": "L17-Q2",
+          "line_start": 10,
+          "line_end": 10,
+          "text": "[C1] grep non-authoritative|non_authoritative in CW src/*.py => 0 hits"
+        },
+        {
+          "id": "L17-Q3",
+          "line_start": 34,
+          "line_end": 35,
+          "text": "[C6] grep old_receipt|previous_receipt|before_receipt in CW src/*.py: 0 hits in CW src"
+        }
+      ]
+    }
+  ],
+  "attempt_counts": {
+    "network_attempts": 0,
+    "web_fetch_calls": 0,
+    "web_search_calls": 0,
+    "filing_fetch_calls": 0,
+    "third_party_proxy_fetches": 0,
+    "local_read_probe_commands_pwsh": 37,
+    "local_file_reads_read_tool": 12,
+    "local_grep_tool_calls": 3,
+    "hash_passes": 3,
+    "failed_or_aborted_local_commands": 4,
+    "failed_detail": [
+      "2 次超时的宽目录列举（execution_runs 根、plan 目录全树）——改用定向列举",
+      "1 次 plan 全树 grep 因不可读目录（os error 5）失败——改用定向 grep",
+      "1 次 PowerShell 解析错误（证据文件首写，双引号转义）——改用单引号重写，已重跑并以实测值落盘"
+    ],
+    "files_written_to_disk": 5
+  },
+  "fail_closed_statements": [
+    "未取得的项一律标 未证/BLOCKED，未造任何绿色样例；",
+    "二手稿（模拟裁定、转录、harness 工件）一律标为二手，未当一手；",
+    "凡涉及「是否满足某条件」的判定，本工位只交检验物与字节事实，不代判。"
+  ],
+  "boundary_attestation": {
+    "writes_outside_plan_dir": 0,
+    "product_repo_writes": 0,
+    "git_write_commands": 0,
+    "git_status_used": false,
+    "status_fields_changed": 0,
+    "implements_signed": false,
+    "releases_nothing": true,
+    "does_not_claim_I11A_acceptance": true,
+    "adds_no_new_domain_judgement": true
+  }
+}

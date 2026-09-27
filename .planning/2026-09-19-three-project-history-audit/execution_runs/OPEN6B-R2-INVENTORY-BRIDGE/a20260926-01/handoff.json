@@ -1,0 +1,102 @@
+{
+  "schema": "handoff/v1",
+  "role": "evidence_acquirer_r2",
+  "station": "OPEN6B-R2-INVENTORY-BRIDGE",
+  "attempt": "a20260926-01",
+  "carrier": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01",
+  "created_utc": "2026-09-26T14:20:00Z",
+  "parent_agent_id": "session-19074bf0-0205-4315-af73-9db57597275a",
+
+  "authorized_by": {
+    "file": "execution_runs/OPEN6B-TOLERANCE-RULING/a20260926-01/ruling_6b.md",
+    "lines": "L94-L97 (recovery-path block), path (a) = L95",
+    "sha256": "e5d1efce3821c252d0da18b7cd5734192993328f03da6c918eaa42db417ee3df",
+    "bytes": 28628,
+    "verbatim": "**恢复规则（R2 可被签署的三个互斥路径，均须新版本）**：\n- (a) 取得**存货桥闭合证据**（在产品 / 在途 / 寄售 / 并购范围明细，OPEN-11 R6 条件2）解释 154 千克，恒等式按新口径重述后，在 `0 < τ ≤ 1 单位` 内按 A-6.3(2) 选基础签署；\n- (b) 若确须 `τ > 1 单位` ⇒ 先由 owner 修订 A-6.2（DEC-14，含 I-11-A / I-11-C 校验器同步），我**不代改**；\n- (c) 若结构差无法解释 ⇒ 按 `hypotheses.json` L315 `revert_rule` 退 `unquantified` —— 该写入属有写入面的实现者 / 编排层，**我不执行**。",
+    "also_cited": ["L66", "L90", "L104", "L110"]
+  },
+
+  "gate0_passed": true,
+  "gate0_raw_output": "created: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\OPEN6B-R2-INVENTORY-BRIDGE\\a20260926-01\n== [2] write ==\nwrite OK bytes=92\n== [3] read back ==\nreadback: GATE0-PROBE a20260926-01 utc=2026-09-26T13:24:43Z nonce=1fa5aee7-265f-4aee-8021-b5a22dd47ceb\nreadback_equals_written: True\n== [4] sha256 ==\nsha256: 788dfc9fb4be4a93061c7b0907328a48a61015fab0abab275d22e5241ee79392\n== [5] delete ==\nprobe_exists_after_delete: False\n== GATE0 RESULT: write=True read=True delete=True ==",
+  "gate0_three_steps": {"write": true, "read_back": true, "delete": true, "destructive_alternatives_used": false},
+
+  "bridge_closed": false,
+  "residual_explained_kg": null,
+  "residual_target_kg": 154,
+  "residual_gap_kg": 154,
+  "suggested_tau_basis": null,
+  "verdict": "blocked (合格结果 per oracle.md §5 triggers B1 + B2)",
+  "failed_criteria": ["C1 可量化（四条线 0 千克）", "C4 残差进帽（|154 − 0| = 154 > 1 千克）"],
+
+  "four_lines_summary": {
+    "L1_在产品": {"found": "存货附注四类别（人民币金额），在产品 2025 18,597,301,620 元 / 2024 14,916,924,011 元", "quantified_kg": null, "gap_kg": 154},
+    "L2_在途": {"found": "披露中无该科目（在途物资/发出商品 0 命中）；无所有权受限存货", "quantified_kg": null, "gap_kg": 154},
+    "L3_寄售": {"found": "『寄售』0 命中；仅有黄金租赁（融资，租入当即卖出），只有人民币金额", "quantified_kg": null, "gap_kg": 154},
+    "L4_并购范围": {"found": "FY2025 三宗并购购买日 + 购买日存货公允价值（271,074,320 / 502,160,256 / 1,381,036,350 元）；阿基姆 5,088 千克、瑞果多 1,236 千克产量归属；方向一致", "quantified_kg": null, "gap_kg": 154, "direction_consistent": true}
+  },
+
+  "cross_year_finding": "同一张产销量表两年 16 个『行×年』检验：14 个在 ±1 单位内；仅『矿山产金』连续两年超帽 —— FY2024 +93 千克、FY2025 +154 千克（合计 +247 千克）。两年均为黄金并购交割年（La Arena 2024-12-03；阿基姆 2025-04-16、藏格 2025-04-30、瑞果多 2025-10-10）⇒ 机制方向一致、数量未披露。",
+
+  "next_step": {
+    "recommend": "(c)",
+    "reason": "结构性、跨年、金行专属差额；四线无任何数量 ⇒ A-6.3『可核基础』缺失，(b) 今天同样无法为 τ 选值",
+    "caveat": "hypotheses.json L315 revert_rule 的两个字面触发条件（销量>生产+期初、方向相反）实测均不成立 ⇒ 执行 (c) 须 owner/编排层先确认『无法凑平』支适用或先修订规则；本工位不执行该写入",
+    "b_conditions": ["owner 按 DEC-14 修订 A-6.2（含 I-11-A/I-11-C 校验器同步）", "另行取得可核的黄金存货数量，使 τ 有 A-6.3 基础"]
+  },
+
+  "mutations": {
+    "green_g1": {"rc": 0, "result": "closes=true"},
+    "mutants": ["m1_qualitative_only", "m2_unanchored_number", "m3_rounding_scale", "m3b_rounding_1kg", "m4_external_no_provenance", "m5_wrong_direction", "m6_scope_mismatch", "m7_short_by_12kg"],
+    "all_mutants_detected": true,
+    "real_evidence_test": "REAL_all_four_lines_as_found closes=False (C1:no_items); REAL_L4_acquired_inventory_yuan closes=False (C1:item0_not_quantified)"
+  },
+
+  "provenance_complete_four_parts": true,
+  "provenance_note": "外部 6 条（3 成功/3 失败）全部落 provenance.json：EXT-01/02 有 URL + 取回 UTC + 逐字引文 + 快照 sha256；EXT-03/04/05 为失败/环境事实，sha256 = null 并写明原因；外部一律 evidence_class = external_retrieval_not_local，不冒充本地可核。pwsh 直连 HTTPS 被拒 ⇒ 快照 sha 的口径（针对本载体内逐字引文）已在 provenance.json 显式声明。",
+
+  "signed_by_this_station": false,
+  "does_not_sign_tau": true,
+  "releases_nothing": true,
+  "releases_nothing_detail": [
+    "不解除 BLOCKED-6b（owner/编排层在 R2 解决后重判，ruling_6b.md L110）",
+    "不解除 BLOCKED-6a / BLOCKED-6c",
+    "不解除 OPEN-6 / OPEN-2 / OPEN-11（R6 条件2 仍未满足）",
+    "不放行任何参数（low/base/high 仍 null；ZIJIN_MINERAL_*_FY2027 维持 BLOCKED）",
+    "不改 threshold_basis / threshold_review_status（仍 not_reviewed/字段不存在）",
+    "不产生 ACCEPT、不声称已验收 I-11-A、不代签行业/会计会签"
+  ],
+  "not_modified_verified": {
+    "ruling_6b.md": "sha256 e5d1efce3821c252d0da18b7cd5734192993328f03da6c918eaa42db417ee3df（28,628 B）交付前后一致",
+    "hypotheses*.json": "未改（只读 sha f2178768…）",
+    "company-wiki": "只读；未写任何字节",
+    "git_writes": "零；未执行 git status"
+  },
+
+  "written_files": [
+    {"path": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/oracle.md", "bytes": 13172, "sha256": "0cdf06f44090eed97b877b18a0d21f610c8621587e185335e64ce3ab1802d421", "note": "先冻结（含门0 原始输出）"},
+    {"path": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/not_closed.json", "bytes": 17593, "sha256": "f1545f064329ccaa2fcfc7271bc79e8b5b3f620b1178f5ce09aa22ef02d26aea"},
+    {"path": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/provenance.json", "bytes": 11545, "sha256": "86918200ec2bb6fcc1a3e65f0fe8e7aba37c5776591e9acbd0320674b7255f62"},
+    {"path": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/ruling_r2_path_a.md", "bytes": 15334, "sha256": "84e64e07985322cec87b60c502b3ca07b03087159405a2f3198febaa05d6cc73"},
+    {"path": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/evidence/CN-ZIJIN-2024.full.txt", "bytes": 821643, "sha256": "ad6d9e50f05003e90d14aa685cf48c226bae35647a1fc72e2f98baa213443e46", "note": "pdftotext 自取的 FY2024 全文派生件（产品仓 PDF 只读）"},
+    {"path": "execution_runs/OPEN6B-R2-INVENTORY-BRIDGE/a20260926-01/handoff.json", "sha256": null, "note": "本文件；sha 于写入后现算，交付时在报告中给出"}
+  ],
+  "no_inventory_bridge_json": "未创建 inventory_bridge.json —— 依产出约定（闭合⇒inventory_bridge.json / 未闭合⇒not_closed.json），本卡结果为未闭合，故只落 not_closed.json；其中 four_lines/cross_year_structural_test 已含逐项来源与闭合计算。",
+
+  "git_diff_non_planning": 0,
+  "git_diff_total": 3830,
+  "git_diff_command": "git -c core.quotepath=false diff HEAD --name-only（未用 git status）",
+
+  "read_only_sources_sha256": {
+    "ruling_6b.md": "e5d1efce3821c252d0da18b7cd5734192993328f03da6c918eaa42db417ee3df",
+    "I11A-OPEN11-IND/ruling.md": "c02e255f67f76be9c0a38569454b64cd93f8469d9fc5244e6da2ce7cfc3bb95d",
+    "I-11-A/hypotheses.json": "f217876804c96335cddab6aa95df00abadc294d7bbd066daaebe4d5108f79a28",
+    "OWNER_DECISIONS.md": "917d30efafe22065c875f8c62e2ee4a06eb60bdf6737f1b2dd1cd14405c4fdab",
+    "OPEN6H4-IND-COUNTERSIGN/ruling_h4_ind.md": "0aef8925dac9cf2004f46af398494c40c291bb38dfa7e7e4af897010a3d7de6b",
+    "progress.md": "0f7b5808f71679512a19ec16a60b7b316e0eb837093d70f3f3a75acf700b98ee",
+    "CN-ZIJIN-2025.txt": "196f2c5419fe7d67d50e1b6a13da641e225be515be46aeb53af2b203fe423591",
+    "FY2025年报PDF": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+    "FY2024年报PDF": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89"
+  },
+
+  "countersign_requested_from": "accounting_reviewer (OPEN6B-TOLERANCE-RULING) —— 请求项见 ruling_r2_path_a.md §⑤；本工位不代签"
+}
