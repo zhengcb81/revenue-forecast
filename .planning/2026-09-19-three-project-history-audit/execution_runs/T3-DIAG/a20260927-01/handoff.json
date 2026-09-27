@@ -1,0 +1,71 @@
+{
+ "role": "diagnostician_t3",
+ "authorized_by": "§四十裁定三",
+ "readonly_only": true,
+ "status": "accepted_scoped",
+ "implementer_signed": false,
+ "releases_nothing": true,
+ "written_files": [
+  "execution_runs/T3-DIAG/a20260927-01/diagnosis.md",
+  "execution_runs/T3-DIAG/a20260927-01/evidence.json",
+  "execution_runs/T3-DIAG/a20260927-01/handoff.json"
+ ],
+ "git_diff_non_planning": 0,
+ "discipline": {
+  "product_code_modified": false,
+  "data_modified": false,
+  "git_writes": 0,
+  "git_status_run": false,
+  "network_access": false,
+  "repro_scope": "%TEMP%\\t3-diag-repro\\ only",
+  "plan_files_written": 0
+ },
+ "summary_for_implementer": {
+  "root_cause": "Weekly T3 task runs as SYSTEM; Playwright resolves browsers via LOCALAPPDATA -> C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Local\\ms-playwright (absent). tools/weekly_t3_schedule.py GP-009 patch (L116-118) fixes USERPROFILE only, not LOCALAPPDATA/PLAYWRIGHT_BROWSERS_PATH.",
+  "both_defeats": "20260920T033000Z and 20260927T033001Z: identical failure, DownloadE2E::test_download_cn_annual_report, assert rc==0 got 2 at tests/test_e2e_download.py:144, BrowserType.launch executable-missing at ensure stage, downloads=0, 1 failed / 3 passed",
+  "current_repro_rc": {
+   "baseline_user_env": 0,
+   "simulated_system_env": 1,
+   "error_matches_logs_byte_identical": true
+  },
+  "recommended_fix": "in _run_t3_suite also set env['LOCALAPPDATA'] = str(profile / 'AppData' / 'Local') (or PLAYWRIGHT_BROWSERS_PATH to the user's ms-playwright); alternative: machine-wide browser install via PLAYWRIGHT_BROWSERS_PATH; optional sentinel preflight (T3-SUITE-COULD-NOT-RUN) to classify machine faults as blocked; note SYSTEM must also have cninfo network reachability for the suite to go green",
+  "evidence_files": "see evidence.json in this directory"
+ },
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> accepted_scoped",
+ "status_history": [
+  {
+   "at_utc": "",
+   "status": "accepted_scoped",
+   "by": "landing_parent_v3",
+   "note": "父直写轻格式落定（V3）；前像 sha 见 pre_image"
+  }
+ ],
+ "status_authority": {
+  "carrier": "reviewer_report.md",
+  "carrier_sha256": "741f0fe4196903cef5a64534e132350622e663540bb104c7d4cea82ea377f664",
+  "carrier_bytes": 9117,
+  "carrier_encoding": "UTF-8 no BOM",
+  "verdict_line": "VERDICT: ACCEPT（P1 = 0；带 3×P3 + 4×unverified）",
+  "verdict_byte_region": {
+   "content": [
+    94,
+    149
+   ],
+   "incl_lf": [
+    94,
+    150
+   ]
+  },
+  "verdict_word_written_by_reviewer": "ACCEPT",
+  "pin_sidecar": "741f0fe4196903cef5a64534e132350622e663540bb104c7d4cea82ea377f664  reviewer_report.md",
+  "three_way_match": true
+ },
+ "carried_findings": [],
+ "pre_image": {
+  "sha256": "733444feea9598a7f45133e8a12107f16bc5626a6a073dd033bc419b6decc558",
+  "bytes": 1859,
+  "status": "review_pending"
+ },
+ "verdict_is_transcribed_not_authored": true
+}

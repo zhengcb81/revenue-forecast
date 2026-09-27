@@ -14,6 +14,7 @@ from typing import Any
 
 from uc.receipt import validate as receipt_validate
 from uc.revision import select as revision_select
+from uc.scenarios import closure_report as scenario_closure_report
 
 RECEIPT_DIRS: dict[str, list[Path]] = {
     "revenue": [
@@ -102,11 +103,7 @@ def closure_report(
             units.append(classify_unit(root, listing["unit_dir"], repo_roots))
     legacy = json.loads(legacy_artifact.read_text(encoding="utf-8"))
     scenarios = json.loads(scenario_registry.read_text(encoding="utf-8"))
-    unsatisfied_scenarios = [
-        sid
-        for sid, info in scenarios.get("scenarios", {}).items()
-        if info.get("status") not in ("passed", "expected_failure_pass")
-    ]
+    scenario_result = scenario_closure_report(scenarios)
     fc_pending = [
         row["fc_id"] for row in legacy.get("fc_entries", []) if row["class"] == "P"
     ]
@@ -116,7 +113,7 @@ def closure_report(
     reasons = [
         f"{fc_contradicted} legacy FCs contradicted by current behavior",
         f"{len(fc_pending)} legacy closure items pending ({fc_pending})",
-        f"{len(unsatisfied_scenarios)} of "
+        f"{scenario_result['unsatisfied']} of "
         f"{scenarios['counts']['unique_total']} mandatory scenarios unsatisfied",
         "R9 legacy removal frozen (4/4 RED at audit; deletion belongs to CA-304)",
         "legacy receipt sets remain outside the machine schema (grandfathered "
@@ -127,6 +124,19 @@ def closure_report(
         reasons.append(
             f"{len(machine_invalid)} unit(s) with incomplete machine evidence: "
             f"{machine_invalid}"
+        )
+    # DEF-I00C-GATE-NEG (N6b): a narrowed successor card must be flagged and
+    # must never silently satisfy the original (wider) obligation.
+    narrowed = [
+        row["fc_id"]
+        for row in legacy.get("fc_entries", [])
+        if str(row.get("fc_id", "")).endswith("-narrow")
+    ]
+    if narrowed:
+        reasons.append(
+            f"{len(narrowed)} narrowed successor card(s) flagged, not accepted "
+            f"as substitutes: {narrowed} — original obligations stay pending "
+            "until closed on their own scope"
         )
     return {
         "schema_version": 1,
@@ -139,7 +149,10 @@ def closure_report(
         },
         "scenario_summary": {
             "total": scenarios["counts"]["unique_total"],
-            "unsatisfied": len(unsatisfied_scenarios),
+            "unsatisfied": scenario_result["unsatisfied"],
+            "unsatisfied_ids": scenario_result["unsatisfied_ids"],
+            "closure_ready": scenario_result["closure_ready"],
+            "evidence_hash_pending": scenario_result["evidence_hash_pending"],
         },
         "legacy_summary": {
             "fc_total": len(legacy["fc_entries"]),

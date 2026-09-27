@@ -959,5 +959,60 @@ E21 产品卡新轨道 · REM-86 锚点 EOL 规范化 · REM79 检查器转常�
 2. **`H2` 块关闭**登记入 `REMEDIATION_REGISTER` + `task_plan` 七条行刷 `7✅`
 3. **`I-16-A` 的下一卡 `I-16-B`** 依赖 `I-16-A`；`I-17-A ← I-16-B + I-14-B`（`I-14-B` ✓）；`I-17-B ← I-17-A + I-07-C + I-12 + I-13 + I-00-C`（除 `I-17-A` 与 `I-12` 已落外齐）
 
+---
+
+## 四十一、【已裁定·第二十五批】**`dayu` 工具归属规则**（2026-09-27 10:4x，原话「**dayu是外部工具，不能提交，你如果真的需要什么工具应该放到其他仓库并提交**」）
+
+### 规则（本会话与后续一律适用）
+1. **`dayu-agent` 仓绝不 `add`/`commit`/`push`** —— 外部工具仓，本计划对它**只读 + 零提交**。
+2. **需要持久化的工具改动 → 放其他仓 + 在该仓提交**（合法目标仓 = `company-wiki`（已有 `dbe4745` 先例）或 `revenue-forecast` 的 `.planning` 内）。
+3. **只属于 `dayu` 上游的修复**（如 `sec_downloader` 文档提取修复）⇒ **只能经 `dayu` 项目自身的上游流程**（外部方）；**本计划不代提、也不在 `dayu` 工作区长期携带为「待提交态」**。
+
+### 当前 `dayu` 工作区状态（如实登记，**永不入提交**）
+- `M dayu/fins/downloaders/sec_downloader.py`（`sha 4684933e…` = `§三十二` 授权晋升后像）—— **运行时仍加载**；其**前像 `543d005c…` 与 `changes.diff` 已完整留档** `.planning`（`B2-PROMOTION/preimage/` + `B2-EXHIBIT-GATE-8K/`）⇒ 即使日后还原，修复零丢失
+- `?? docs/architecture_report.html`（非本计划产物，不碰）
+- **`company-wiki` 侧同批修复已提交 `dbe4745` ✓ —— 这正是规则 2 的既有实例**
+
+### 与既有裁定的关系
+- **不推翻 `§三十二`**（晋升有效、运行时加载）；**收紧其持久化**：晋升件**永不提交**
+- **不推翻 `§三十八 裁定三` 的 dayu 剔除**；本节给出正向规则（工具往哪放）
+- **后续所有缺陷卡的修复**（含在飞 `DEF-MSFT-CANONICAL-DUP`）：改动只许落 `filing-fetch`/`company-wiki`/`revenue-forecast`，**`dayu` 只读**
+
+---
+
+## 四十二、【已裁定·第二十六批】**`cw` 推送门禁处置 + `closure_ready` P2 放宽**（2026-09-27 11:0x，选项式问答两题原话）
+
+> **【记账纪律】** 本节**当轮即写**（第 33 起 + 第 39 起教训）。
+
+### 裁定一：**`company-wiki` 推送门禁 ——「我修棘轮 + 你处置叙事文件（根因修，建议）」**
+- **背景**：`pre-push` 门（`FC-1204` 棘轮）两条红，**均非本次提交**（`dbe4745` 只改 `dayu_cli_adapter.py`）：
+  1. `archive_retired_evidence.py` 复杂度 `19 > frozen 7` —— 由 **09-22 `ac4ebd0`（PROMOTION-EXEC B3/B4/B5）** 弄红；上次成功推送停在 **09-19 `f39bd5a`**
+  2. `narrative_evidence.py` **未跟踪**（外部叙事工位 WIP，04:12 写）复杂度 `363 > 10`
+- **分工**：
+  - **父**：修 `archive_retired_evidence.py` 棘轮（**门禁自己指的根因修法**：拆分函数 + 更新冻结表，使 `actual ≤ 7`）——**产品码改动，前像留痕**
+  - **owner**：处置 `narrative_evidence.py`（让叙事会话修/提交/移出）
+  - **两项齐后门自然绿 → 我重推**（**不绕过**，`do not bypass` 尊重）
+- **若门在棘轮修复后仍剩叙事红** ⇒ 推送继续等（如实登记，不绕）
+
+### 裁定二：**`closure_ready` P2 ——「放宽（复审建议，建议）」**
+- **背景**：`DEF-I00C-GATE-NEG` 修复后生产 registry 上 `closure_ready` **恒 `False`**（`197/197` 因 `fixture_hash=null`；`scenarios.py::build()` `L80` 恒写 `None`、**全仓无写入方**）—— fail-closed 方向安全，但**判据永不可满足、闭环永不可宣告**
+- **处置**：**放宽为「有 `evidence_path` 才校验其 `hash`」**（复审建议方案）：
+  - 无 `evidence_path` 字段 ⇒ **不再因 `fixture_hash=null` 恒红**
+  - **有 `evidence_path` ⇒ 仍严格校验**（`N1` 无证据全过的堵口保持）
+  - **九例负例回归必须仍 9/9 拒**（放宽只影响「无证据字段」的恒红，不放行走私）
+- **执行**：父改 `assurance/unified_completion/uc/scenarios.py` 的 `_evidence_problems`，前像留痕，改后重跑九例 + `pytest`
+
+### 边界（不变）
+`dayu` 零改零提交 · 参数不放行 · 封盘 `f2178768…` · 不解除任何 `OPEN/BLOCKED-*`
+
+---
+
+## 四十三、【后续裁定·覆盖 §四十二裁定二】RF 主线整合的证据 hash 门（2026-09-27）
+
+- owner 在 RF 并线复审时明确选择：「有路径必须有 hash（推荐；闭环更严格）」。因此 §四十二中可被理解为“有证据路径、缺 hash 也可闭环”的放宽解释不再适用。
+- `evidence_path` 缺失仍拒绝；有路径而 `fixture_hash` 缺失或不是 64 位 SHA-256 十六进制字符串也拒绝。`evidence_hash_pending` 继续显示缺失数，但不是放行项。三仓关闭报告与场景报告共用这一判定。
+- `fixture_hash` 仍表示样本/夹具 hash，不能把证据 JSON 的 hash 填入该字段冒充完成。当前生产 registry 的 197 项该字段均为空，因此本次并线后场景关闭门如实保持红；补齐来源字节绑定、oracle、tier/triplet 和场景语义需要独立实施及复审。
+- owner 随后要求 RF 已完成的支线改进适当放松并尽快并入，条件是本轮测试为绿。因此本次整合只修严格门、报告口径与对应测试，不在并线批次扩张整套证据迁移；既有九负例及跨仓离线端到端仍作为大节点检查。
+
 
 

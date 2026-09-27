@@ -4120,3 +4120,32 @@ I-17-A ← I-16-B + I-14-B✓
 **父侧错误终值：39 起 + 工具缺陷 5 起；载体/交付侧仍 0。**
 
 **完成度 Phase 7 OPEN（链 2 张 + 四步提交 + 清单 2 项外部）。**
+---
+
+## 一六四、【收尾三件收口 + 双仓推送状态】2026-09-27 12:3x
+
+### A. 三件全部 accepted_scoped
+| 件 | 实现 | 复审 | 落定 |
+|---|---|---|---|
+| DEF-I00C-GATE-NEG | 9/9 拒 | ACCEPT 0P1（双向复跑自跑全等） | ✓ |
+| DEF-MSFT-CANONICAL-DUP | 续做完成（红绿+6变异+39测试） | ACCEPT 0P1（11案自跑复现） | ✓（含裁决行引回 L10 修正） |
+| T3-DIAG | 只读诊断 | ACCEPT 0P1（根因/复现/四项归因） | ✓ |
+
+### B. 推送
+- revenue-forecast ✅ 已并主线：origin/main = origin/fcap = ee0a82bf（门禁 GREEN ×2）
+- company-wiki ⏳ 挡在门禁：11 处违规（09-22 ac4ebd0 引入）→ §四十二 裁定一：archive 父亲拆已过 · A/B/C 三工位 10 文件在飞 · narrative_evidence.py 归 owner（叙事会话活跃中）
+
+### C. owner 裁定（§四十二 当轮入册）
+① cw 门禁 = 我修棘轮 + 你处置叙事文件 · ② closure_ready P2 = 放宽（有 evidence_path 才校验 hash，九例回归必须仍 9/9 拒）
+
+### D. 收口状态
+本目标（收尾三件）达成；余 cw 推送（待三工位 + narrative）为附加授权项，继续推进中。
+
+---
+
+## 一六五、【RF 未提交尾项并主线复审】2026-09-27
+
+- 本次只以远端 `ee0a82bfd` 为基线收纳已签收的 RF assurance 修复及 DEF-I00C、DEF-MSFT、T3-DIAG 审查证据；§一六四的 `ee0a82bfd` 仅表示此前一批已入主线，不表示本次未提交尾项也已入主线。
+- owner 后续 §四十三明确“有路径必须有 hash”；缺 `fixture_hash` 的当前 197 项继续显示未满足，不用证据 JSON 的 SHA 冒充样本 hash。两份关闭报告已共用场景判定。
+- 本轮定向测试 22 passed、九个负例 9/9 拒且控制通过、真实年报跨仓离线 E2E 五项 PASS，RF 原工作树 pre-push gate GREEN。最终推送仍以隔离候选提交及真实 hook 为准。
+- RATCHET A/B/C/ARCHIVE 的收据与 company-wiki 产品代码属于另一在飞收口；本条仅登记边界，不改其状态。RF 原树后续追加的相关规划文本有控制字符，未复制进本批隔离候选。

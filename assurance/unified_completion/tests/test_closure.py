@@ -136,7 +136,11 @@ def _artifacts(tmp_path):
                 "counts": {"unique_total": 197},
                 "scenarios": {
                     "AR-01": {"status": "pending"},
-                    "AR-02": {"status": "passed"},
+                    "AR-02": {
+                        "status": "passed",
+                        "evidence_path": "receipts/AR-02.json",
+                        "fixture_hash": "ab" * 32,
+                    },
                 },
             }
         ),
@@ -158,6 +162,19 @@ def test_closure_report_honest_incomplete(tmp_path):
     assert report["legacy_summary"]["pending"] == 1
 
 
+def test_three_repo_report_reuses_scenario_evidence_gate(tmp_path):
+    roots = _repo_layout(tmp_path)
+    legacy, scenarios = _artifacts(tmp_path)
+    payload = json.loads(scenarios.read_text(encoding="utf-8"))
+    payload["scenarios"]["AR-02"].pop("evidence_path")
+    _write(scenarios, payload)
+    report = cl.closure_report(roots, legacy, scenarios)
+    assert report["scenario_summary"]["unsatisfied"] == 2
+    assert not report["scenario_summary"]["closure_ready"]
+    assert any("AR-02: passed without evidence_path" in item for item in report["scenario_summary"]["unsatisfied_ids"])
+    assert any("2 of 197 mandatory scenarios unsatisfied" in reason for reason in report["reasons"])
+
+
 def test_closure_report_lists_incomplete_units(tmp_path):
     roots = _repo_layout(tmp_path)
     legacy, scenarios = _artifacts(tmp_path)
@@ -168,3 +185,20 @@ def test_closure_report_lists_incomplete_units(tmp_path):
     unit = next(u for u in report["units"] if u["unit"] == "CA-T")
     assert unit["status"] == "incomplete"
     assert any("no reviewer receipt" in p for p in unit["problems"])
+
+
+def test_closure_report_flags_narrowed_successor_without_closing_original(tmp_path):
+    roots = _repo_layout(tmp_path)
+    legacy, scenarios = _artifacts(tmp_path)
+    _write(
+        legacy,
+        {
+            "fc_entries": [
+                {"fc_id": "CA-206", "class": "P"},
+                {"fc_id": "CA-206-narrow", "class": "D"},
+            ]
+        },
+    )
+    report = cl.closure_report(roots, legacy, scenarios)
+    assert report["legacy_summary"]["pending"] == 1
+    assert any("CA-206-narrow" in reason for reason in report["reasons"])

@@ -1,0 +1,126 @@
+{
+  "case": "m2_s4",
+  "variant": "m2",
+  "scenario": "S4",
+  "expect": "mut_sidecar",
+  "workspace_root": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\m2_s4",
+  "network_calls": 0,
+  "production_writes": 0,
+  "variant_info": {
+    "variant": "m2",
+    "sha256": "81DC56C5D85B2A55E4B068979B9755249E32B1803CB9E22DEBD643F4A0DD6CDA",
+    "bytes": 23265
+  },
+  "pre_state": {
+    "annual": [
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+    ],
+    "staged": [
+      "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+    ]
+  },
+  "rc": 1,
+  "run": {
+    "duration_s": 1.369,
+    "argv": [
+      "--config",
+      "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\m2_s4\\config\\source_catalog.yaml",
+      "ensure",
+      "--entity",
+      "MICROSOFT CORP",
+      "--market",
+      "US",
+      "--security-id",
+      "MSFT",
+      "--document-kind",
+      "annual_report",
+      "--as-of-date",
+      "2026-09-27",
+      "--fiscal-year",
+      "2026",
+      "--allow-download",
+      "--acquisition-config",
+      "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\m2_s4\\config\\source_acquisition.yaml",
+      "--allow-acquisition-while-paused"
+    ],
+    "company_wiki_module": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\shadow\\company_wiki\\__init__.py"
+  },
+  "stdout": "",
+  "stderr": "{\"error\": \"immutable provenance sidecar conflict\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"}\n",
+  "parsed_stdout": {
+    "error": "immutable provenance sidecar conflict",
+    "error_type": "fatal",
+    "retryable": false,
+    "status": "failed"
+  },
+  "journal": [
+    {
+      "adapter_name": "dayu-sec-cli",
+      "attempt_id": "urn:company-wiki:acquisition-attempt:sha256:619616b3f3fe357c69c13f73cb6da1ecd0d39b0a552ccb43e668b79c5580a81b",
+      "candidate_id": "sec:0001193125-26-323660",
+      "canonical_path": null,
+      "content_sha256": "095935f968b53055cfa23f65ef8d60b8f0e414991a9b82b9582de1dac606b9e8",
+      "error": "immutable provenance sidecar conflict",
+      "error_type": "CanonicalImportError",
+      "outcome": "failed",
+      "provider": "sec",
+      "provider_document_id": "0001193125-26-323660",
+      "reason": "canonical_import_failed",
+      "recorded_at": "2026-09-27T10:38:28Z",
+      "request_id": "urn:company-wiki:source-request:sha256:1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838",
+      "schema_version": "1.0",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526323660/msft-20260630.htm"
+    }
+  ],
+  "db": {
+    "db_exists": true,
+    "counts": {
+      "sources": 0,
+      "documents": 0,
+      "locations": 0
+    },
+    "fixture_sha_sources": 0,
+    "orphan_sha_sources": 0,
+    "locations": [],
+    "scan_runs": []
+  },
+  "post_state": {
+    "annual": [
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+    ],
+    "staged": [
+      "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+    ]
+  },
+  "checks": [
+    {
+      "name": "rc_nonzero",
+      "ok": true,
+      "detail": "rc=1"
+    },
+    {
+      "name": "sidecar_conflict_raised",
+      "ok": true,
+      "detail": "\n{\"error\": \"immutable provenance sidecar conflict\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"}\n"
+    },
+    {
+      "name": "journal_canonical_import_failed",
+      "ok": true,
+      "detail": "{\"adapter_name\": \"dayu-sec-cli\", \"attempt_id\": \"urn:company-wiki:acquisition-attempt:sha256:619616b3f3fe357c69c13f73cb6da1ecd0d39b0a552ccb43e668b79c5580a81b\", \"candidate_id\": \"sec:0001193125-26-323660\", \"canonical_path\": null, \"content_sha256\": \"095935f968b53055cfa23f65ef8d60b8f0e414991a9b82b9582de1dac606b9e8\", \"error\": \"immutable provenance sidecar conflict\", \"error_type\": \"CanonicalImportError\", \"outcome\": \"failed\", \"provider\": \"sec\", \"provider_document_id\": \"0001193125-26-323660\", \"reason\": \"canonical_import_failed\", \"recorded_at\": \"2026-09-27T10:38:28Z\", \"request_id\": \"urn:company-wiki:source-request:sha256:1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\", \"schema_version\": \"1.0\", \"source_url\": \"https://www.sec.gov/Archives/edgar/data/789019/000119312526323660/msft-20260630.htm\"}"
+    },
+    {
+      "name": "fixture_sha_not_indexed",
+      "ok": true,
+      "detail": "0"
+    }
+  ],
+  "all_checks_ok": true,
+  "verdict": "MUTATION_CAUGHT",
+  "duration_s": 2.069
+}

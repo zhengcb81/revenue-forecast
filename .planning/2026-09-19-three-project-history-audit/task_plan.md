@@ -8,7 +8,16 @@ PLAN_ID: 2026-09-19-three-project-history-audit
 PWF_PLAN_ROOT: C:/Users/郑曾波/Projects/revenue-forecast
 Owner: root。所有代理加入同一计划，只写各自reviews子目录。命令内显式pin仅影响该子进程，不宣称已更改宿主hook环境；不改变共享active_plan指针。
 
-## Next Step
+## Next Step（2026-09-27 RF 主线整合）
+
+> 本节覆盖下方 2026-09-24 Round 98 的旧交接指令；下方原文保留为历史记录。`progress.md` Round 121/122 与 `REMEDIATION_REGISTER.md` §一六四记录 Phase 7 的限定范围收口，不等于所有跨仓产品代码已部署。
+
+1. 远端 `revenue-forecast` 的 `main` 与 `fcap` 已同为 `ee0a82bfd`；旧 phase-14/19 分支及复审工作树均是其祖先，不再逐支重复合并。待整合的是后续本地 `assurance/unified_completion` 缺陷修复、对应计划记录与审查证据。
+2. 在隔离候选中只纳入 RF 自有改动。owner 后续 §四十三明确要求有证据路径必须有有效 `fixture_hash`；缺 hash 的 197 项保持未满足并显示待补计数。补验无证据拒绝、缩小后继卡不能替代原义务，再跑定向测试及 9/9 负例。暂存须用明确文件清单，不用全仓 `git add -A`；DEF-I00C 的非交付 scratch 不入主线，DEF-MSFT 的 98 个已签交付文件须完整纳入，即使其中包含重复夹具字节。
+3. `DEF-MSFT-CANONICAL-DUP` 的公司目录修复仅有隔离复审 `accepted_scoped`，生产 G3 回放尚未验证，company-wiki 产品树及棘轮 A/B/C 另行审查；本次 RF 并线不得推动、修改或宣称完成它们。company-wiki 与 RF/filing-fetch/StockWiki 的位置透明来源接口仍按 company-wiki R4 计划另行实施。
+4. RF 候选门禁通过后，将隔离分支快进远端 `main` 并逐 SHA 核对；`fcap` 是否同步以远端实际状态核验。周任务 2026-09-27 的 SYSTEM Playwright 失败属于独立运行事件，修复仍待单独实施，不与本次缺陷代码混同。
+
+## Historical Next Step（2026-09-24 Round 98，以下保留原文）
 
 > **⚠️ 本节已刷新（2026-09-24 Round 98，新会话接手）。以下为当前唯一权威 Next Step；其后的全部历史段落（Round 41 起）仅作史料，与本段冲突时以本段为准。实时台账 = `REMEDIATION_REGISTER.md`（已至 §117，本会话新增并已续至 **§128**）与 `progress.md`（**R103 交接注记**为恢复入口）。**
 
@@ -321,7 +330,7 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
   > **⇒ 以实盘值为权威；登记位不可复算，追加本勘误即闭合；不回改 L714 原文。**
   > **【同轮另记 · §136-F 表述过宽（T1-10 复审证伪）】** §136-F「`T1-10-FIX` 全文不提本卡」**只在 `handoff` 粒度成立** —— 实测 `T1-10-FIX/binding.json:27-29` 以**只读 pin** 引用 `T1-10/a20260920-01/{decision.md d7fe3ebb…, scripts/verify_t1_10.py 544ae0ad…, t1_10_defect_verification.json 22ead5c5…}`（三 sha 复审逐一复验相等），且 `oracle.md:20` 引「探针形状逐字取自 T1-10」。**性质 = 只读输入依赖、非取代/关闭指针** ⇒ 双向无指针结论**仍成立**，但**措辞以偏概全**，已在本注更正。
   > ⚠️ **本行原写「剩 13 张」却列出 15 个 —— 是父的计数错，2026-09-25 回源重算改正**；与「19 卡链」的口径冲突见 L275 的更正注。**门开者 0 张**（`db46a988` 两次核验一致：零目录、零写入）
-- **Status:** Phase 7 进行中 —— **卡级 `accepted` = 124 / 有 attempt 的卡 197**（census v3 卡级口径，**2026-09-26 19:16 实测**；**分项相加 = 124+41+13+5+3+3+2+2+1+1+1+1 = 197 —— 父当场验算**。**旧值「…123/188」等均已过时，以本行为准**；增长含 `I-11-B` 落定与在飞工位新建 attempt）。资格限定不变：M01–M31 **全部仅 formula 资格**；I-14-A 仅隔离测量、I-15-A 仅证据、I-11-A 仅设计契约、I-00-A 限定只读基线、I-14-C 仅证据与判据不含促销、**全部 iso-副本资格，不含生产部署**。
+- **Status:** Phase 7 **COMPLETE**（2026-09-27 10:2x 收口）—— **19 卡链（乙 合并后 15 张执行单元）15/15 全落 `accepted_scoped`** · **七条 7✅** · **Phase 7 清单 35/35**（`I-05-C` ②③ owner §四十 裁定一本人授权 + 链项本日全落）· **四步提交完成**（`ee0a82bf`，11,296 文件 +3,907,566，三钩子如方案预期全 `SKIP`，stage 面纯 `.planning`）· census `accepted=135` · 外部两件已如实登记（三函签收 ✓ `§三十五` · `INVEST` 外部待合入）· **盘上卡状态与账本一致**（`census_v3` `accepted=135` 与本行同步）资格限定不变：M01–M31 **全部仅 formula 资格**；I-14-A 仅隔离测量、I-15-A 仅证据、I-11-A 仅设计契约、I-00-A 限定只读基线、I-14-C 仅证据与判据不含促销、**全部 iso-副本资格，不含生产部署**。
   **三项在位审计（2026-09-26 12:42 全量复测）**：**三件套 `FULL TRIAD = 124/124`** · **权威链 `PROBLEMS = 0`**（`audit_authority_chain_v2`，六种键族/形状；`carrier-named 61 / sha-search 17 / role-hint 3 / documented 5`）· **落定积压 `0 / 0`**（未转录裁决 0、状态不反映裁决 0；有裁决者 33 已 accepted / 共 35）。**第 4 层证据清单 = 231 条 sha，8 条 mismatch 全属已结案三类、0 条无法解释。**
   **三项在位审计**：**三件套 `FULL TRIAD = 123/123`** · **权威链 0 缺陷**（`audit_authority_chain_v2`，覆盖六种键族/形状）· **落定积压 0**（`audit_landing_backlog_v2`，全裁决口径 + 最高修订件生效）。**第 4 层「证据清单」= 230 条 sha 已全数结案（§141）。**
   **卡级非 accepted 分布（2026-09-26 17:2x census 实测，分项相加 = 193）**：`review_pending` **2** —— `I-08-A`（禁写载体走 §二十四 例外，**设计如此**）· `I-14-E`（源卡，结论栏空白待施加卡）· `changes_required` **2**（`B5` + `T1-10`）· **`blocked` 2**（`I-14-E-TESTSIDE`，三件齐 · **`B2-PROMOTION`——卡状态留 `blocked` 是工位记录；**其晋升本体已于 17:0x 由父提权完成**（两文件后像 sha 全对：`4684933e`/`32ef1165`、`committed=false`），以本注为准**）· `signed_scoped` **1**（`I10A-DISCLOSURE` = **C7**）· `rulings_issued_industry_dimension_only` **1** · `merged_two_halves_rulings_issued_i11b_remains_blocked` **1** · **`RULED` 1**（`OPEN-3-ACCT-R2`，会计面裁定 `E1=BLOCKED-PARTIAL/S1/语料E3/引文作废待重锚`）· `planned` **5**（T1-6/7/13/14/27，§116 设计如此）· `<handoff 无 status 键>` **40** · `<no carrier>` **15** · **合计 193（123+40+15+5+2+2+2+1+1+1+1，父当场验算）**。
@@ -329,7 +338,7 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
   **在飞 5**：`B2 晋升`（产品写入 · 四道 fail-closed · 目录已建）· `H4 行业会签`（**oracle 已冻、口径桥已取证残差 269t/534kg**）· `H2 会计会签`（目录已建）· `H2` 已收工、`+1`。
   **已收工的复审/落定（2026-09-26 10:11）**：`B2 扩闸` 复审 **ACCEPT** → 落定 **`ALL PASS`（accepted 120→121、三件套 121→122）** · `T1-10` 复审 **changes_required(P1)** → 落定 **`ALL PASS`** · `S4` 复审 **ACCEPT**（3 处数字冲突字节级坐实、**漏报 G8**） · `BLOCKED-6c` 交付 **`ALL PASS`**（**21 例回归未破**、`L271` 双读法待复审裁） · `S5 会计半区` 交付 **`ALL PASS`**（G2/G3 补齐、**origin 排除**、**港股仍 `_PLACEHOLDER`**）。
   **在飞 4**：`S4 落定` · `BLOCKED-6c 复审` · `S5 行业面`（C4 收口最后一半）· +1。
-  **19 卡链 = 15 张（⭐ 2026-09-26 owner 批「乙」合并后口径）· 已落 11/15**（原 19 张；**`I-12-B/C/D/E` → `I-12-BE` 一张、`I-13-B/C` → `I-13-BC` 一张**，合并卡文 `execution_v2/card_I-12-BE.md` + `card_I-13-BC.md`，原卡判据逐字索引、零字节改动）：链成员（合并后）= `I-07-B/C/D/E` + `I-10-A` + `I-11-B/C` + `I-12-A…E` + `I-13-A…C` + `I-16-A/B` + `I-17-A/B`（4+1+2+5+3+2+2 = **19**）；**链内已落 = 4**（`I-07-B`、`I-07-C`、`I-07-D`、`I-10-A`）；**链内未落 = 15** —— **与 `db46a988` 的 15 行门表完全吻合（该表一直是对的）**。**`I-06-A`/`I-06-B` 不是链成员而是「门」**：依据 `task_plan:20`「19/19 全 **gated on** `I-06-A`」（被门挡 ≠ 门本身）+ Round 91 核验时 `I-06-A` 已 `blocked`、`I-06-B` 已 `accepted`，二者算**闸**不算**被闸挡的卡**。⚠️ **原「6/19」与「余 13 张」是父的计数错**（把闸算进成员；且 13 与所列 15 自相矛盾），本行更正留痕、**不改历史段落**。三根未解 = **I-11**（MERGE 七条 —— **2026-09-26 11:59 门核工位 `db46a988` R4 独立重算：`5✅ + 2❌`**（R3 为 `4✅+1🟡+2❌`）：
+  **19 卡链 = 15 张（⭐ 2026-09-26 owner 批「乙」合并后口径）· ✅ 已落 15/15（2026-09-27 10:1x `I-17-B` 终审 ACCEPT + 落定，`accepted=135`）**（原 19 张；**`I-12-B/C/D/E` → `I-12-BE` 一张、`I-13-B/C` → `I-13-BC` 一张**，合并卡文 `execution_v2/card_I-12-BE.md` + `card_I-13-BC.md`，原卡判据逐字索引、零字节改动）：链成员（合并后）= `I-07-B/C/D/E` + `I-10-A` + `I-11-B/C` + `I-12-A…E` + `I-13-A…C` + `I-16-A/B` + `I-17-A/B`（4+1+2+5+3+2+2 = **19**）；**链内已落 = 4**（`I-07-B`、`I-07-C`、`I-07-D`、`I-10-A`）；**链内未落 = 15** —— **与 `db46a988` 的 15 行门表完全吻合（该表一直是对的）**。**`I-06-A`/`I-06-B` 不是链成员而是「门」**：依据 `task_plan:20`「19/19 全 **gated on** `I-06-A`」（被门挡 ≠ 门本身）+ Round 91 核验时 `I-06-A` 已 `blocked`、`I-06-B` 已 `accepted`，二者算**闸**不算**被闸挡的卡**。⚠️ **原「6/19」与「余 13 张」是父的计数错**（把闸算进成员；且 13 与所列 15 自相矛盾），本行更正留痕、**不改历史段落**。三根未解 = **I-11**（MERGE 七条 —— **2026-09-26 11:59 门核工位 `db46a988` R4 独立重算：`5✅ + 2❌`**（R3 为 `4✅+1🟡+2❌`）：
   **✅ C1**（`approved_frozen=1`、`4d4ee106…`，v4 后 `c1_preserved=true`）· **✅ C2**（字面分支 B，`c2_branch2_discharged=true`、4 新 id 已落；保留：新 id 仍 `pending`/`released=false`）·
   **✅ C4（🟡→✅）** —— **`L164-166` 的 S3/S4/S5 三步全部交付、S4 经独立复审 `ACCEPT` 并落定 `accepted_scoped`、S5 会计 `GRADED` + 行业 `PASS` 两半齐** ⇒ **`L179` 过渡条款按其自身条件到期**；**⭐ 但门核同时裁定：「走完」≠ 解除** —— `§⑦.6` 明写「才可能由相应 reviewer 谈解锁（仍不由本载体）」、**全盘 0 个载体声明解除**（`open5_released`/`hk_parameters_released`/`i11b_unblocked` 均无 true）⇒ **`OPEN-5` 与港股命题/参数状态未变（仍 `_PLACEHOLDER`）、origin 仍 `NOT_USABLE`** · **✅ C6** · **✅ C7**（`met`、`signed_count=4`、`86d0a80e…`）·
   **❌ C3**（最硬：`origin_bytes_retrieved=0` 且该载体 00:08 后零变化；B2 落定只关了 iso 侧机制闸、**晋升是 owner 另行决定**；**四步顺序依赖全未做** = B1 可写会话 → B2 晋升授权 → origin 重新取文 → `ACCT-R2` + `IND-r2`）·
