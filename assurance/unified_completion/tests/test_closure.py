@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -129,6 +130,9 @@ def _artifacts(tmp_path):
         ),
         encoding="utf-8",
     )
+    evidence = tmp_path / "revenue" / "receipts" / "AR-02.json"
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.write_bytes(b'{"proof":1}\n')
     scenarios = tmp_path / "scenarios.json"
     scenarios.write_text(
         json.dumps(
@@ -139,7 +143,7 @@ def _artifacts(tmp_path):
                     "AR-02": {
                         "status": "passed",
                         "evidence_path": "receipts/AR-02.json",
-                        "fixture_hash": "ab" * 32,
+                        "fixture_hash": hashlib.sha256(evidence.read_bytes()).hexdigest(),
                     },
                 },
             }
@@ -173,6 +177,17 @@ def test_three_repo_report_reuses_scenario_evidence_gate(tmp_path):
     assert not report["scenario_summary"]["closure_ready"]
     assert any("AR-02: passed without evidence_path" in item for item in report["scenario_summary"]["unsatisfied_ids"])
     assert any("2 of 197 mandatory scenarios unsatisfied" in reason for reason in report["reasons"])
+
+
+def test_three_repo_report_rejects_tampered_evidence_bytes(tmp_path):
+    roots = _repo_layout(tmp_path)
+    legacy, scenarios = _artifacts(tmp_path)
+    evidence = roots["revenue"] / "receipts" / "AR-02.json"
+    evidence.write_bytes(b'{"proof":2}\n')
+    report = cl.closure_report(roots, legacy, scenarios)
+    assert report["scenario_summary"]["unsatisfied"] == 2
+    assert report["scenario_summary"]["closure_ready"] is False
+    assert any("mismatch" in item for item in report["scenario_summary"]["unsatisfied_ids"])
 
 
 def test_closure_report_lists_incomplete_units(tmp_path):

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
+from pathlib import Path
 
 import pytest
 
@@ -42,7 +44,7 @@ def test_closure_report_red_until_filled(tmp_path):
     out = tmp_path / "registry.json"
     sc.build(REPO_ROOT, out)
     payload = json.loads(out.read_text(encoding="utf-8"))
-    report = sc.closure_report(payload)
+    report = sc.closure_report(payload, tmp_path)
     assert report["closure_ready"] is False
     assert report["unsatisfied"] == 197
 
@@ -51,18 +53,68 @@ def test_closure_report_green_when_filled(tmp_path):
     out = tmp_path / "registry.json"
     sc.build(REPO_ROOT, out)
     payload = json.loads(out.read_text(encoding="utf-8"))
+    relative, digest, _path = _evidence(tmp_path)
     for info in payload["scenarios"].values():
         info["status"] = "passed"
-        info["evidence_path"] = "evidence/filled.json"
-        info["fixture_hash"] = "ab" * 32
-    assert sc.closure_report(payload)["closure_ready"] is True
+        info["evidence_path"] = relative
+        info["fixture_hash"] = digest
+    assert sc.closure_report(payload, tmp_path)["closure_ready"] is True
 
 
 def _single_scenario(info: dict) -> dict:
     return {"counts": {"unique_total": 1}, "scenarios": {"S-1": info}}
 
 
-def test_closure_report_rejects_bare_passed_without_evidence():
+def _evidence(repo_root: Path) -> tuple[str, str, Path]:
+    relative = "assurance/unified_completion/scenarios/evidence/S_1.json"
+    path = repo_root / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    content = b'{"proof":1}\n'
+    path.write_bytes(content)
+    return relative, hashlib.sha256(content).hexdigest(), path
+
+
+def test_closure_report_replays_evidence_bytes_and_detects_tamper(tmp_path):
+    relative, digest, path = _evidence(tmp_path)
+    payload = _single_scenario(
+        {"status": "passed", "evidence_path": relative, "fixture_hash": digest}
+    )
+    before = json.loads(json.dumps(payload))
+    assert sc.closure_report(payload, repo_root=tmp_path)["closure_ready"] is True
+
+    path.write_bytes(b'{"proof":2}\n')  # same-size replacement
+    report = sc.closure_report(payload, repo_root=tmp_path)
+    assert report["closure_ready"] is False
+    assert any("mismatch" in item for item in report["unsatisfied_ids"])
+    assert payload == before
+
+    path.unlink()
+    assert sc.closure_report(payload, repo_root=tmp_path)["closure_ready"] is False
+
+
+def test_closure_report_rejects_evidence_path_outside_repo(tmp_path):
+    root = tmp_path / "repo"
+    root.mkdir()
+    outside = tmp_path / "outside.json"
+    outside.write_bytes(b'{"proof":1}\n')
+    payload = _single_scenario(
+        {
+            "status": "passed",
+            "evidence_path": "../outside.json",
+            "fixture_hash": hashlib.sha256(outside.read_bytes()).hexdigest(),
+        }
+    )
+    report = sc.closure_report(payload, repo_root=root)
+    assert report["closure_ready"] is False
+    assert any("outside" in item for item in report["unsatisfied_ids"])
+
+    payload["scenarios"]["S-1"]["evidence_path"] = "C:\\outside.json"
+    report = sc.closure_report(payload, repo_root=root)
+    assert report["closure_ready"] is False
+    assert any("outside" in item for item in report["unsatisfied_ids"])
+
+
+def test_closure_report_rejects_bare_passed_without_evidence(tmp_path):
     report = sc.closure_report(
         _single_scenario(
             {
@@ -72,13 +124,13 @@ def test_closure_report_rejects_bare_passed_without_evidence():
                 "fixture_hash": None,
                 "oracle": None,
             }
-        )
+        ), tmp_path
     )
     assert report["closure_ready"] is False
     assert any("evidence_path" in entry for entry in report["unsatisfied_ids"])
 
 
-def test_closure_report_rejects_missing_hash_without_mutating_registry():
+def test_closure_report_rejects_missing_hash_without_mutating_registry(tmp_path):
     payload = _single_scenario(
         {
             "status": "passed",
@@ -88,29 +140,30 @@ def test_closure_report_rejects_missing_hash_without_mutating_registry():
         }
     )
     before = json.loads(json.dumps(payload))
-    report = sc.closure_report(payload)
+    report = sc.closure_report(payload, tmp_path)
     assert report["closure_ready"] is False
     assert report["evidence_hash_pending"] == 1
     assert any("fixture_hash" in entry for entry in report["unsatisfied_ids"])
     assert payload == before
 
 
-def test_closure_report_does_not_count_recorded_hash_as_pending():
+def test_closure_report_does_not_count_recorded_hash_as_pending(tmp_path):
+    relative, digest, _path = _evidence(tmp_path)
     report = sc.closure_report(
         _single_scenario(
             {
                 "status": "passed",
                 "tier": "T1",
-                "evidence_path": "evidence/S_1.json",
-                "fixture_hash": "ab" * 32,
+                "evidence_path": relative,
+                "fixture_hash": digest,
             }
-        )
+        ), tmp_path
     )
     assert report["closure_ready"] is True
     assert report["evidence_hash_pending"] == 0
 
 
-def test_closure_report_rejects_malformed_fixture_hash():
+def test_closure_report_rejects_malformed_fixture_hash(tmp_path):
     report = sc.closure_report(
         _single_scenario(
             {
@@ -118,13 +171,13 @@ def test_closure_report_rejects_malformed_fixture_hash():
                 "evidence_path": "evidence/S_1.json",
                 "fixture_hash": "not-a-sha256",
             }
-        )
+        ), tmp_path
     )
     assert report["closure_ready"] is False
     assert any("SHA-256" in entry for entry in report["unsatisfied_ids"])
 
 
-def test_closure_report_rejects_wrong_capability_evidence():
+def test_closure_report_rejects_wrong_capability_evidence(tmp_path):
     report = sc.closure_report(
         _single_scenario(
             {
@@ -135,29 +188,30 @@ def test_closure_report_rejects_wrong_capability_evidence():
                 "required_capability": "deadline",
                 "covered_capabilities": ["artifact"],
             }
-        )
+        ), tmp_path
     )
     assert report["closure_ready"] is False
     assert any("deadline" in entry for entry in report["unsatisfied_ids"])
 
 
-def test_closure_report_accepts_covering_capability():
+def test_closure_report_accepts_covering_capability(tmp_path):
+    relative, digest, _path = _evidence(tmp_path)
     report = sc.closure_report(
         _single_scenario(
             {
                 "status": "passed",
                 "tier": "T1",
-                "evidence_path": "evidence/S_1.json",
-                "fixture_hash": "ab" * 32,
+                "evidence_path": relative,
+                "fixture_hash": digest,
                 "required_capability": "deadline",
                 "covered_capabilities": ["deadline"],
             }
-        )
+        ), tmp_path
     )
     assert report["closure_ready"] is True
 
 
-def test_closure_report_rejects_empty_oracle_content():
+def test_closure_report_rejects_empty_oracle_content(tmp_path):
     base = {
         "status": "passed",
         "tier": "T1",
@@ -169,7 +223,7 @@ def test_closure_report_rejects_empty_oracle_content():
         {"validated_commands": ["c1"], "invariants": []},
         {"validated_commands": [], "invariants": []},
     ):
-        report = sc.closure_report(_single_scenario(dict(base, oracle=oracle)))
+        report = sc.closure_report(_single_scenario(dict(base, oracle=oracle)), tmp_path)
         assert report["closure_ready"] is False, oracle
 
 

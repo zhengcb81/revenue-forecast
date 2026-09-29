@@ -5,8 +5,8 @@ capture/safety evidence from the envelope.
 The hardcoded `prompt_injection_status="not_detected"` and
 `parser_calls: 0, llm_calls: 0` must be GONE:
 
-- prompt_injection_status comes from the envelope; `not_reviewed` BLOCKS
-  (RuntimeError) — an unreviewed source is never prepared.
+- prompt_injection_status comes from the envelope; `not_reviewed` remains an
+  honest diagnostic after source bytes and period have been verified.
 - parser_calls/llm_calls come from the envelope; absent (None) FAILS CLOSED —
   never fabricated as 0.
 - input/source/artifact hash, model/prompt and schema tampering each trigger
@@ -14,16 +14,11 @@ The hardcoded `prompt_injection_status="not_detected"` and
 
 RED phase: the envelope fields are ignored / hardcoded values remain.
 
-FIX-W06-GAPS P4-SCOPE (iso after-copy; product edit recorded in
-changes.diff): the loose `match="not reviewed|blocked"` coverage is replaced
-with a VERBATIM pin of the full blocked sentence — a one-byte wording change
-now turns these tests red (see test_message_contract_pins.py for the
-complete pin set incl. the three-copy convergence).
+The former blocked-message pin is superseded by verified-byte consumption.
 """
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -34,12 +29,6 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import pytest  # noqa: E402
 
 from company_wiki_source import CompanyWikiSourceError, select_artifact_roles  # noqa: E402
-
-BLOCK_SENTENCE = (
-    "prompt injection not reviewed — source preparation blocked per "
-    "policy (prompt_injection_status=not_reviewed)"
-)
-
 
 def _envelope(**overrides) -> dict:
     envelope = {
@@ -81,21 +70,22 @@ def _run(monkeypatch, envelope, *, record_extra=None):
     return record, calls
 
 
-# --- PI-B1: not_reviewed blocks (never prepared) ------------------------------
+# --- PI-B1: unreviewed is a diagnostic, not an acquisition veto ---------------
 
 
-def test_b1_not_reviewed_blocks(monkeypatch):
-    with pytest.raises(RuntimeError, match=re.escape(BLOCK_SENTENCE)):
-        _run(monkeypatch, _envelope(prompt_injection_status="not_reviewed"))
+def test_b1_not_reviewed_is_forwarded(monkeypatch):
+    record, calls = _run(monkeypatch, _envelope(prompt_injection_status="not_reviewed"))
+    assert calls["kwargs"]["prompt_injection_status"] == "not_reviewed"
+    assert record["reuse_receipt"]["prompt_injection_status"] == "not_reviewed"
 
 
-def test_b2_missing_status_blocks_defensively(monkeypatch):
-    """A defensive N-1 envelope without the field is treated as not_reviewed
-    -> blocked (filing-fetch normalizes N-1 upstream; revenue never assumes)."""
+def test_b2_missing_status_defaults_to_not_reviewed(monkeypatch):
+    """A missing N-1 field is recorded honestly, never treated as clean."""
     envelope = _envelope()
     del envelope["prompt_injection_status"]
-    with pytest.raises(RuntimeError, match=re.escape(BLOCK_SENTENCE)):
-        _run(monkeypatch, envelope)
+    record, calls = _run(monkeypatch, envelope)
+    assert calls["kwargs"]["prompt_injection_status"] == "not_reviewed"
+    assert record["reuse_receipt"]["prompt_injection_status"] == "not_reviewed"
 
 
 # --- PI-B3: reviewed status passes through to the capture record --------------

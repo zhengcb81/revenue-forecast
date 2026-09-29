@@ -103,7 +103,7 @@ def closure_report(
             units.append(classify_unit(root, listing["unit_dir"], repo_roots))
     legacy = json.loads(legacy_artifact.read_text(encoding="utf-8"))
     scenarios = json.loads(scenario_registry.read_text(encoding="utf-8"))
-    scenario_result = scenario_closure_report(scenarios)
+    scenario_result = scenario_closure_report(scenarios, repo_roots["revenue"])
     fc_pending = [
         row["fc_id"] for row in legacy.get("fc_entries", []) if row["class"] == "P"
     ]

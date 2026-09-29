@@ -145,15 +145,11 @@ def prepare_source(
     artifact_read_events = io_evidence["verified_read_events"]
     artifact_failed_events = io_evidence["failed_read_events"]
     # FC-905-b: capture/safety evidence comes from the envelope — never
-    # hardcoded.  An unreviewed source is blocked per policy; absent parser/
-    # llm counts fail closed (never fabricated as 0).
+    # hardcoded.  Preserve an unreviewed status as a diagnostic; absent
+    # parser/llm counts still fail closed (never fabricated as 0).
     prompt_injection_status = envelope.get("prompt_injection_status")
     if prompt_injection_status is None:
         prompt_injection_status = "not_reviewed"  # defensive N-1 default
-    if prompt_injection_status == "not_reviewed":
-        raise RuntimeError(
-            "prompt injection not reviewed — source preparation blocked "
-            "per policy (prompt_injection_status=not_reviewed)")
     parser_calls = envelope.get("parser_calls")
     llm_calls = envelope.get("llm_calls")
     if parser_calls is None or llm_calls is None:

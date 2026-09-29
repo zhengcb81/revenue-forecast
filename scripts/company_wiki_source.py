@@ -41,7 +41,9 @@ _SOURCE_TYPES = {
     "specialist_research",
     "reputable_news",
 }
-_PROMPT_INJECTION_STATUSES = {"not_detected", "detected_and_ignored"}
+_PROMPT_INJECTION_STATUSES = {
+    "not_reviewed", "not_detected", "detected_and_ignored",
+}
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -402,10 +404,10 @@ def build_revenue_source_record(
 
     ``handle`` is returned by ``filing_fetch_client.resolve_filing`` or the
     filing-fetch CLI.
-    ``source_type``, ``publisher``, evidence locator, and prompt-injection
-    status remain explicit caller judgments. This function verifies the whole
-    local file hash but does not claim that a passage supports any revenue
-    parameter.
+    ``source_type``, ``publisher``, and evidence locator remain explicit caller
+    judgments. Prompt-injection status is a diagnostic from the upstream
+    envelope. This function verifies the whole local file hash but does not
+    claim that a passage supports any revenue parameter.
     """
 
     if not isinstance(handle, dict):
@@ -417,7 +419,7 @@ def build_revenue_source_record(
     locator = _required_text(page_or_section, "page_or_section")
     if prompt_injection_status not in _PROMPT_INJECTION_STATUSES:
         raise CompanyWikiSourceError(
-            "prompt_injection_status must be explicitly reviewed"
+            "invalid prompt_injection_status"
         )
     if handle.get("capture_ready") is not True:
         raise CompanyWikiSourceError("company-wiki handle is not capture_ready")

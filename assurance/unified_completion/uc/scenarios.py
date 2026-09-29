@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import re
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from uc.casfile import cas_update, exclusive_publish, sha256_bytes, sha256_file
@@ -143,7 +143,9 @@ def verify(repo_root: Path, registry_path: Path) -> list[str]:
 SATISFIED_STATUSES = ("passed", "expected_failure_pass")
 
 
-def _evidence_problems(info: dict[str, Any]) -> tuple[list[str], bool]:
+def _evidence_problems(
+    info: dict[str, Any], repo_root: Path,
+) -> tuple[list[str], bool]:
     """Evidence-completeness problems for a cell whose status is satisfied.
 
     A satisfied status alone never proves completion (DEF-I00C-GATE-NEG):
@@ -152,15 +154,13 @@ def _evidence_problems(info: dict[str, Any]) -> tuple[list[str], bool]:
     be empty — validated commands or invariants that are empty mean nothing
     was validated.
 
-    Owner's later 2026-09-27 integration decision requires a recorded
-    fixture_hash whenever evidence_path is present. Missing or malformed
-    hashes block closure. This is a registry completeness check, not proof
-    that a fixture or evidence file has been independently revalidated.
-    Reporting must not silently modify the registry payload.
+    A recorded fixture_hash is the SHA-256 of the evidence_path file. Closure
+    re-reads those bytes; a plausible-looking digest is not evidence.
+    Reporting does not modify the registry payload.
     """
     problems: list[str] = []
     evidence_path = info.get("evidence_path")
-    if not evidence_path:
+    if not isinstance(evidence_path, str) or not evidence_path.strip():
         problems.append("passed without evidence_path")
     fixture_hash = info.get("fixture_hash")
     hash_pending = bool(evidence_path and not fixture_hash)
@@ -171,6 +171,32 @@ def _evidence_problems(info: dict[str, Any]) -> tuple[list[str], bool]:
         or re.fullmatch(r"[0-9a-fA-F]{64}", fixture_hash) is None
     ):
         problems.append("fixture_hash is not a SHA-256 hex digest")
+    if (
+        isinstance(evidence_path, str)
+        and evidence_path.strip()
+        and isinstance(fixture_hash, str)
+        and re.fullmatch(r"[0-9a-fA-F]{64}", fixture_hash)
+    ):
+        relative = Path(evidence_path.replace("\\", "/"))
+        if (
+            relative.is_absolute()
+            or relative.drive
+            or PureWindowsPath(evidence_path).drive
+            or ".." in relative.parts
+        ):
+            problems.append("evidence_path is outside repo_root")
+        else:
+            try:
+                root = repo_root.resolve(strict=True)
+                evidence = (root / relative).resolve(strict=True)
+                if not evidence.is_relative_to(root):
+                    problems.append("evidence_path is outside repo_root")
+                elif not evidence.is_file():
+                    problems.append("evidence_path is not a file")
+                elif sha256_file(evidence).lower() != fixture_hash.lower():
+                    problems.append("evidence SHA-256 mismatch")
+            except (OSError, RuntimeError):
+                problems.append("evidence_path is missing or unreadable")
     required = info.get("required_capability")
     if required and required not in (info.get("covered_capabilities") or []):
         problems.append(
@@ -190,7 +216,7 @@ def _evidence_problems(info: dict[str, Any]) -> tuple[list[str], bool]:
     return problems, hash_pending
 
 
-def closure_report(payload: dict[str, Any]) -> dict[str, Any]:
+def closure_report(payload: dict[str, Any], repo_root: Path) -> dict[str, Any]:
     """Machine summary: how many required cells are unsatisfied (closure red
     while any scenario status is pending/blocked, or a satisfied cell lacks
     supporting evidence, capability coverage, or a non-empty oracle)."""
@@ -200,7 +226,7 @@ def closure_report(payload: dict[str, Any]) -> dict[str, Any]:
         if info.get("status") not in SATISFIED_STATUSES:
             unsatisfied.append(scenario_id)
             continue
-        problems, hash_pending = _evidence_problems(info)
+        problems, hash_pending = _evidence_problems(info, repo_root)
         if hash_pending:
             pending_hash += 1
         if problems:

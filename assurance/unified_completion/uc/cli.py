@@ -404,8 +404,9 @@ def cmd_scenario_verify(_args: argparse.Namespace) -> int:
             print(f"SCENARIO-DRIFT: {problem}")
         return 1
     payload = json.loads(SCENARIO_REGISTRY_PATH.read_text(encoding="utf-8"))
-    print(json.dumps(scenarios_closure_report(payload), ensure_ascii=False, indent=2))
-    return 0
+    report = scenarios_closure_report(payload, REPO_ROOT)
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0 if report["closure_ready"] else 1
 
 
 def cmd_closure_report(_args: argparse.Namespace) -> int:
@@ -421,6 +422,8 @@ def cmd_closure_report(_args: argparse.Namespace) -> int:
         SCENARIO_REGISTRY_PATH,
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
+    if not report["scenario_summary"]["closure_ready"]:
+        return 1
     return 1 if report["old_plan_verdict"] != "incomplete" else 0
 
 

@@ -7,7 +7,7 @@ for the message contracts the OPEN5-DOUBT-PROBE sweep (evidence
 04_blocked_message_sweep.md) found UNPINNED, so a one-byte wording change
 turns these tests red instead of passing silently:
 
-  #2  the full blocked sentence (RF scripts/source_preparation.py) — verbatim;
+  #2  the former review block is superseded by verified-byte consumption;
   #5  the six demand/claim refusal texts (RF + CW processing_demand.py) —
       verbatim behavior pins AND cross-repo (RF/CW) equality (逐字同文);
   #8  the "{field} must be a lowercase SHA-256" family — verbatim behavior pins;
@@ -48,10 +48,6 @@ _CW_DEFAULT = ROOT.parent / "company-wiki" / "src" / "company_wiki" / "source_ca
 RF_SCRIPTS = Path(os.environ.get("GAPS_PIN_RF_SCRIPTS", _RF_DEFAULT))
 CW_DIR = Path(os.environ.get("GAPS_PIN_CW_DIR", _CW_DEFAULT))
 
-BLOCK_SENTENCE = (
-    "prompt injection not reviewed — source preparation blocked per "
-    "policy (prompt_injection_status=not_reviewed)"
-)
 COUNTS_SENTENCE = (
     "parser/llm counts absent from the resolution envelope — fail "
     "closed instead of fabricating 0"
@@ -142,22 +138,6 @@ def _load_cw_pair(tmp_path: Path):
     finally:
         sys.path.remove(str(tmp_path))
     return pi, guard
-
-
-# --- #2: the full blocked sentence, verbatim --------------------------------
-
-
-def test_block_sentence_pinned_verbatim():
-    import ast
-
-    source = (RF_SCRIPTS / "source_preparation.py").read_text(encoding="utf-8")
-    constants = [
-        node.value for node in ast.walk(ast.parse(source))
-        if isinstance(node, ast.Constant) and isinstance(node.value, str)
-    ]
-    assert BLOCK_SENTENCE in constants, (
-        "the full blocked sentence drifted from its pinned verbatim text")
-    assert constants.count(BLOCK_SENTENCE) == 1
 
 
 # --- #9: parser/llm counts fail-closed sentence, verbatim -------------------

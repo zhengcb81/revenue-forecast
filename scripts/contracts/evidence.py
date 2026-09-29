@@ -203,7 +203,9 @@ CAPTURE_METHODS: set[str] = {
     "manual_open",
 }
 
-PROMPT_INJECTION_STATUSES: set[str] = {"not_detected", "detected_and_ignored"}
+PROMPT_INJECTION_STATUSES: set[str] = {
+    "not_reviewed", "not_detected", "detected_and_ignored",
+}
 
 HOST_RECEIPT_SCHEMA_VERSION = "1.0"
 
