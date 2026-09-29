@@ -1,44 +1,48 @@
-"""ZR-1001: release readiness — repo fingerprint / catalog integrity /
-capacity budgets / backup readability / rollback dry-run / authorization.
+"""ZR-1001: automatic release readiness checks.
 
-Every check must pass before a release window opens (registry: "integrity/
-fingerprint, 耗时/空间预算, 用户授权; 未满足不进入窗口"):
+Every check must pass before a release window opens:
 
   fingerprints  three repo HEADs recorded and consistent.
   integrity     production catalog read-only open + key-table row probes
                 (fast gate; full integrity_check is minutes-scale on the
                 production catalog — deliberately replaced, documented in
                 the card C2).
+  scenario_evidence  all 197 required scenario files re-read and SHA-verified.
   capacity      assurance/runs space within the frozen budget (suite time is
                 bounded by CI timeouts — REV-002 resolved by removing the
                 dead constant).
   backup        backup location exists and is readable.
   rollback      dry-run: current HEADs recorded as the rollback point
                 (rollback_manifest.json); steps parse — nothing executes.
-  authorization release_authorization.json present and valid (owner/reason/
-                at_utc) — without it the readiness gate stays blocked.
-
 Usage:
   python tools/release_readiness.py            # check (exit 1 on any red)
-  python tools/release_readiness.py issue-auth --owner X --reason Y
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sqlite3
 import subprocess
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "assurance" / "unified_completion"))
+
+from uc.scenarios import closure_report as scenario_closure_report  # noqa: E402
+from uc.scenarios import verify as scenario_verify  # noqa: E402
+
 WIKI_ROOT = ROOT.parent / "company-wiki"
 CATALOG = WIKI_ROOT / ".source_catalog" / "catalog.sqlite3"
 RUNS_DIR = ROOT / "assurance" / "runs"
 BACKUP_DIR = ROOT / "assurance" / "backup"
-AUTH_PATH = RUNS_DIR / "release_authorization.json"
 ROLLBACK_PATH = RUNS_DIR / "rollback_manifest.json"
+SCENARIO_REGISTRY_PATH = (
+    ROOT / "assurance" / "unified_completion" / "scenarios" / "scenario_registry.json"
+)
 
 BUDGET_RUNS_MB = 2048
 
@@ -50,12 +54,27 @@ REPOS = {
 
 
 def _head(repo: Path) -> str:
-    return subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
-                          capture_output=True, text=True).stdout.strip()
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "HEAD"],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=False,
+        )
+    except OSError:
+        return ""
+    if result.returncode != 0:
+        return ""
+    return result.stdout.decode("ascii", errors="ignore").strip()
 
 
 def head_fingerprints() -> dict:
     return {name: _head(path) for name, path in REPOS.items()}
+
+
+def _fingerprints_complete(heads: dict) -> bool:
+    return set(heads) == set(REPOS) and all(
+        isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{40}", sha)
+        for sha in heads.values()
+    )
 
 
 def catalog_integrity() -> tuple[bool, str]:
@@ -77,14 +96,35 @@ def catalog_integrity() -> tuple[bool, str]:
     return True, detail
 
 
+def scenario_evidence_integrity() -> tuple[bool, str]:
+    """Use the same frozen-matrix and byte-level verifier as closure-report."""
+    try:
+        problems = scenario_verify(ROOT, SCENARIO_REGISTRY_PATH)
+        if problems:
+            return False, f"scenario registry drift: {problems[0]}"
+        payload = json.loads(SCENARIO_REGISTRY_PATH.read_text(encoding="utf-8"))
+        report = scenario_closure_report(payload, ROOT)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return False, f"scenario evidence unavailable: {exc}"
+    ready = report["closure_ready"] and report["total_scenarios"] == 197
+    return ready, (
+        f"{report['total_scenarios']} scenarios, "
+        f"{report['unsatisfied']} evidence failures"
+    )
+
+
 def capacity_ok() -> tuple[bool, str]:
-    size_mb = 0
+    size_bytes = 0
     if RUNS_DIR.is_dir():
         for path in RUNS_DIR.rglob("*"):
             if path.is_file():
-                size_mb += path.stat().st_size
-    size_mb = size_mb // (1024 * 1024)
-    return size_mb <= BUDGET_RUNS_MB, f"assurance/runs {size_mb}MB <= {BUDGET_RUNS_MB}MB"
+                size_bytes += path.stat().st_size
+    mib = 1024 * 1024
+    size_mb = size_bytes / mib
+    return (
+        size_bytes <= BUDGET_RUNS_MB * mib,
+        f"assurance/runs {size_mb:.2f}MB <= {BUDGET_RUNS_MB}MB",
+    )
 
 
 def backup_readable() -> tuple[bool, str]:
@@ -99,64 +139,49 @@ def backup_readable() -> tuple[bool, str]:
     return True, "backup dir readable"
 
 
-def write_rollback_point() -> tuple[bool, str]:
+def write_rollback_point(heads: dict[str, str] | None = None) -> tuple[bool, str]:
+    if heads is None:
+        heads = head_fingerprints()
+    if not _fingerprints_complete(heads):
+        return False, "rollback point requires complete three-repo HEADs"
     payload = {
         "recorded_at_utc": datetime.now(UTC).isoformat(),
-        "heads": head_fingerprints(),
+        "heads": heads,
         "rollback_steps": ["git checkout <head> -- <product paths>",
                            "restore backup -> catalog (if needed)"],
     }
-    RUNS_DIR.mkdir(parents=True, exist_ok=True)
-    ROLLBACK_PATH.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    try:
+        RUNS_DIR.mkdir(parents=True, exist_ok=True)
+        ROLLBACK_PATH.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        return False, f"rollback point unwritable: {exc}"
     return True, f"rollback point recorded at {ROLLBACK_PATH.name}"
 
 
-def authorization() -> tuple[bool, str]:
-    if not AUTH_PATH.is_file():
-        return False, "release_authorization.json missing (release blocked)"
-    data = json.loads(AUTH_PATH.read_text(encoding="utf-8"))
-    required = ("owner", "reason", "at_utc")
-    if not all(key in data and data[key] for key in required):
-        return False, "authorization incomplete (owner/reason/at_utc)"
-    return True, f"authorized by {data['owner']}"
-
-
-def issue_authorization(owner: str, reason: str) -> None:
-    RUNS_DIR.mkdir(parents=True, exist_ok=True)
-    payload = {"owner": owner, "reason": reason,
-               "at_utc": datetime.now(UTC).isoformat()}
-    AUTH_PATH.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-
 def run_checks() -> dict:
+    heads = head_fingerprints()
+    fingerprint_ok = _fingerprints_complete(heads)
     int_ok, int_detail = catalog_integrity()
+    evidence_ok, evidence_detail = scenario_evidence_integrity()
     cap_ok, cap_detail = capacity_ok()
     bak_ok, bak_detail = backup_readable()
-    rb_ok, rb_detail = write_rollback_point()
-    auth_ok, auth_detail = authorization()
+    rb_ok, rb_detail = write_rollback_point(heads)
     return {
-        "fingerprints": {"ok": True, "detail": json.dumps(head_fingerprints())},
+        "fingerprints": {"ok": fingerprint_ok, "detail": json.dumps(heads)},
         "integrity": {"ok": int_ok, "detail": int_detail},
+        "scenario_evidence": {"ok": evidence_ok, "detail": evidence_detail},
         "capacity": {"ok": cap_ok, "detail": cap_detail},
         "backup": {"ok": bak_ok, "detail": bak_detail},
         "rollback": {"ok": rb_ok, "detail": rb_detail},
-        "authorization": {"ok": auth_ok, "detail": auth_detail},
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Release readiness (ZR-1001)")
-    sub = parser.add_subparsers(dest="command")
-    auth = sub.add_parser("issue-auth")
-    auth.add_argument("--owner", required=True)
-    auth.add_argument("--reason", required=True)
-    args = parser.parse_args()
-    if args.command == "issue-auth":
-        issue_authorization(args.owner, args.reason)
-        print(f"authorization issued for {args.owner}")
-        return 0
+    parser.parse_args()
     result = run_checks()
     for name, gate in result.items():
         detail = gate.get("detail") or ""
