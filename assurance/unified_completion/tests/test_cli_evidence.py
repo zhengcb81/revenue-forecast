@@ -5,14 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
+import pytest
 import uc.scenarios as scenarios
 from conftest import REPO_ROOT
-
 
 CONTROL_CODE = REPO_ROOT / "assurance" / "unified_completion"
 
@@ -63,6 +63,25 @@ def _run_cli(root: Path, command: str) -> subprocess.CompletedProcess[str]:
         cwd=root, env=env, capture_output=True, text=True, encoding="utf-8",
         timeout=30, check=False,
     )
+
+
+@pytest.mark.parametrize("command", ["cmd_scenario_verify", "cmd_closure_report"])
+def test_closure_cli_allows_missing_hash_for_existing_evidence_file(tmp_path, command):
+    root, registry = _invalid_registry(tmp_path)
+    payload = json.loads(registry.read_text(encoding="utf-8"))
+    for info in payload["scenarios"].values():
+        info.pop("fixture_hash", None)
+    registry.write_text(json.dumps(payload), encoding="utf-8")
+    before = registry.read_bytes()
+
+    result = _run_cli(root, command)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = json.loads(result.stdout)
+    summary = report.get("scenario_summary", report)
+    assert summary["closure_ready"] is True
+    assert summary["evidence_hash_pending"] == len(payload["scenarios"])
+    assert registry.read_bytes() == before
 
 
 def test_scenario_verify_cli_exits_nonzero_for_wrong_evidence_hash(tmp_path):

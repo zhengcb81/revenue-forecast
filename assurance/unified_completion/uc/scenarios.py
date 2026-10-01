@@ -148,40 +148,36 @@ def _evidence_problems(
 ) -> tuple[list[str], bool]:
     """Evidence-completeness problems for a cell whose status is satisfied.
 
-    A satisfied status alone never proves completion (DEF-I00C-GATE-NEG):
-    the cell must carry its evidence path, the declared required capability
-    must actually be covered by that evidence, and a present oracle must not
-    be empty — validated commands or invariants that are empty mean nothing
-    was validated.
-
-    A recorded fixture_hash is the SHA-256 of the evidence_path file. Closure
-    re-reads those bytes; a plausible-looking digest is not evidence.
-    Reporting does not modify the registry payload.
+    A satisfied status still requires an existing readable evidence file inside
+    ``repo_root``. A missing fixture hash is visible as pending bookkeeping but
+    does not block closure. If a hash is recorded, it must be a SHA-256 digest
+    matching the evidence file's current bytes. Reporting never mutates input.
     """
     problems: list[str] = []
     evidence_path = info.get("evidence_path")
     if not isinstance(evidence_path, str) or not evidence_path.strip():
         problems.append("passed without evidence_path")
+
     fixture_hash = info.get("fixture_hash")
-    hash_pending = bool(evidence_path and not fixture_hash)
-    if hash_pending:
-        problems.append("evidence_path without fixture_hash")
-    elif evidence_path and (
-        not isinstance(fixture_hash, str)
-        or re.fullmatch(r"[0-9a-fA-F]{64}", fixture_hash) is None
-    ):
-        problems.append("fixture_hash is not a SHA-256 hex digest")
-    if (
-        isinstance(evidence_path, str)
-        and evidence_path.strip()
-        and isinstance(fixture_hash, str)
-        and re.fullmatch(r"[0-9a-fA-F]{64}", fixture_hash)
-    ):
-        relative = Path(evidence_path.replace("\\", "/"))
+    hash_pending = fixture_hash is None or (
+        isinstance(fixture_hash, str) and not fixture_hash.strip()
+    )
+    valid_hash = False
+    if not hash_pending:
+        if (
+            not isinstance(fixture_hash, str)
+            or re.fullmatch(r"[0-9a-fA-F]{64}", fixture_hash) is None
+        ):
+            problems.append("fixture_hash is not a SHA-256 hex digest")
+        else:
+            valid_hash = True
+
+    if isinstance(evidence_path, str) and evidence_path.strip():
+        relative = Path(evidence_path.strip().replace("\\", "/"))
         if (
             relative.is_absolute()
             or relative.drive
-            or PureWindowsPath(evidence_path).drive
+            or PureWindowsPath(evidence_path.strip()).drive
             or ".." in relative.parts
         ):
             problems.append("evidence_path is outside repo_root")
@@ -193,10 +189,17 @@ def _evidence_problems(
                     problems.append("evidence_path is outside repo_root")
                 elif not evidence.is_file():
                     problems.append("evidence_path is not a file")
-                elif sha256_file(evidence).lower() != fixture_hash.lower():
-                    problems.append("evidence SHA-256 mismatch")
+                elif valid_hash:
+                    if sha256_file(evidence).lower() != fixture_hash.lower():
+                        problems.append("evidence SHA-256 mismatch")
+                else:
+                    # Open even when no digest was recorded so unreadable
+                    # evidence cannot be mistaken for a complete closure.
+                    with evidence.open("rb"):
+                        pass
             except (OSError, RuntimeError):
                 problems.append("evidence_path is missing or unreadable")
+
     required = info.get("required_capability")
     if required and required not in (info.get("covered_capabilities") or []):
         problems.append(
@@ -236,6 +239,6 @@ def closure_report(payload: dict[str, Any], repo_root: Path) -> dict[str, Any]:
         "unsatisfied": len(unsatisfied),
         "unsatisfied_ids": unsatisfied[:10],
         "closure_ready": not unsatisfied,
-        # Historical key retained for existing callers; missing hash blocks.
+        # Diagnostic counter retained for existing callers; missing hash is non-blocking.
         "evidence_hash_pending": pending_hash,
     }

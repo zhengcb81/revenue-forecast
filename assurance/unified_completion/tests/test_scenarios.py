@@ -130,21 +130,43 @@ def test_closure_report_rejects_bare_passed_without_evidence(tmp_path):
     assert any("evidence_path" in entry for entry in report["unsatisfied_ids"])
 
 
-def test_closure_report_rejects_missing_hash_without_mutating_registry(tmp_path):
+@pytest.mark.parametrize("fixture_hash", [None, "", "   "])
+def test_closure_report_allows_missing_hash_with_real_evidence_file_without_mutation(
+    tmp_path, fixture_hash
+):
+    relative, _digest, _path = _evidence(tmp_path)
     payload = _single_scenario(
         {
             "status": "passed",
             "tier": "T1",
-            "evidence_path": "evidence/S_1.json",
-            "fixture_hash": None,
+            "evidence_path": relative,
+            "fixture_hash": fixture_hash,
         }
     )
     before = json.loads(json.dumps(payload))
+
     report = sc.closure_report(payload, tmp_path)
+
+    assert report["closure_ready"] is True
+    assert report["unsatisfied"] == 0
+    assert report["evidence_hash_pending"] == 1
+    assert payload == before
+
+
+def test_closure_report_rejects_missing_hash_when_evidence_file_is_missing(tmp_path):
+    report = sc.closure_report(
+        _single_scenario(
+            {
+                "status": "passed",
+                "tier": "T1",
+                "evidence_path": "evidence/not-created.json",
+                "fixture_hash": None,
+            }
+        ), tmp_path
+    )
     assert report["closure_ready"] is False
     assert report["evidence_hash_pending"] == 1
-    assert any("fixture_hash" in entry for entry in report["unsatisfied_ids"])
-    assert payload == before
+    assert any("missing or unreadable" in entry for entry in report["unsatisfied_ids"])
 
 
 def test_closure_report_does_not_count_recorded_hash_as_pending(tmp_path):

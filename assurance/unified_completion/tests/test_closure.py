@@ -179,6 +179,23 @@ def test_three_repo_report_reuses_scenario_evidence_gate(tmp_path):
     assert any("2 of 197 mandatory scenarios unsatisfied" in reason for reason in report["reasons"])
 
 
+def test_three_repo_report_allows_pending_hash_for_existing_evidence(tmp_path):
+    roots = _repo_layout(tmp_path)
+    legacy, scenarios = _artifacts(tmp_path)
+    payload = json.loads(scenarios.read_text(encoding="utf-8"))
+    payload["scenarios"].pop("AR-01")
+    payload["scenarios"]["AR-02"].pop("fixture_hash")
+    _write(scenarios, payload)
+    before = scenarios.read_bytes()
+
+    report = cl.closure_report(roots, legacy, scenarios)
+
+    assert report["scenario_summary"]["unsatisfied"] == 0
+    assert report["scenario_summary"]["closure_ready"] is True
+    assert report["scenario_summary"]["evidence_hash_pending"] == 1
+    assert scenarios.read_bytes() == before
+
+
 def test_three_repo_report_rejects_tampered_evidence_bytes(tmp_path):
     roots = _repo_layout(tmp_path)
     legacy, scenarios = _artifacts(tmp_path)
