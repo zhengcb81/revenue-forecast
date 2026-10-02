@@ -4120,3 +4120,70 @@ I-17-A ← I-16-B + I-14-B✓
 **父侧错误终值：39 起 + 工具缺陷 5 起；载体/交付侧仍 0。**
 
 **完成度 Phase 7 OPEN（链 2 张 + 四步提交 + 清单 2 项外部）。**
+---
+
+## 一六四、【收尾三件收口 + 双仓推送状态】2026-09-27 12:3x
+
+### A. 三件全部 accepted_scoped
+| 件 | 实现 | 复审 | 落定 |
+|---|---|---|---|
+| DEF-I00C-GATE-NEG | 9/9 拒 | ACCEPT 0P1（双向复跑自跑全等） | ✓ |
+| DEF-MSFT-CANONICAL-DUP | 续做完成（红绿+6变异+39测试） | ACCEPT 0P1（11案自跑复现） | ✓（含裁决行引回 L10 修正） |
+| T3-DIAG | 只读诊断 | ACCEPT 0P1（根因/复现/四项归因） | ✓ |
+
+### B. 推送
+- revenue-forecast ✅ 已并主线：origin/main = origin/fcap = ee0a82bf（门禁 GREEN ×2）
+- company-wiki ⏳ 挡在门禁：11 处违规（09-22 ac4ebd0 引入）→ §四十二 裁定一：archive 父亲拆已过 · A/B/C 三工位 10 文件在飞 · narrative_evidence.py 归 owner（叙事会话活跃中）
+
+### C. owner 裁定（§四十二 当轮入册）
+① cw 门禁 = 我修棘轮 + 你处置叙事文件 · ② closure_ready P2 = 放宽（有 evidence_path 才校验 hash，九例回归必须仍 9/9 拒）
+
+### D. 收口状态
+本目标（收尾三件）达成；余 cw 推送（待三工位 + narrative）为附加授权项，继续推进中。
+---
+
+## 一六五、【§四十二 两裁定执行完毕 + 棘轮真账收敛 + 三仓推送定案】2026-09-27 12:0x–14:0x
+
+### A. §四十二 裁定二（closure_ready 放宽）—— 已实施并三绿验证
+改 ssurance/unified_completion/uc/scenarios.py：无 evidence_path 仍拒（N1 堵口保持）· 有 evidence_path 而无 ixture_hash ⇒ 计入新的 **evidence_hash_pending**（可见、不阻断）· 记录 hash 仍必在场。
+**验证**：生产 closure_report = unsatisfied=0 / **closure_ready=true** / evidence_hash_pending=197（197/197 恒红解除）· **九例回归 
+egatives_rejected=9（未放行走私）** · 	ests/test_scenarios.py **11 passed**。
+
+### B. 棘轮真账（门禁口径，权威）
+| 文件 | 真基线 | 处置 |
+|---|---|---|
+| rchive_retired_evidence.py | **19 > 7** | ✅ 父拆 7/7 |
+| observability.py | **27 > 6** | ✅ 6/6（redact 单测全绿） |
+| prune_retired_evidence.py | **27 > 12** | ✅ C 组拆 12/12 |
+| 
+arrative_evidence.py | 363 > 10 | ⏳ **另一项目在写的文件**（未触碰） |
+| parity 13 · lock 15 · prompt 15 · store 30 · producer 1 · identity 6 · artifact_read 8 · conformance 8 | 全 **OK** | ❌ **父口径误报** ⇒ **全部还原** |
+**⇒ 本项目对 cw 净改动 = 3 文件**（最小足迹，尊重并发项目）；**门禁 rozen 组 PASS，仅 
+arrative FAIL**。
+
+### C. 父两错（入 indings #40/#41 + **纪律 23**）
+① 自写扫描口径与门禁不一致（多算 IfExp）⇒ 8 误报 · ② 用**拆后态**验证「本来是否违规」⇒ 误判 prune（C 组用 pre_image 当场纠正）。**纪律 23**：验收口径必须取自被验系统自带度量、结论必须量**变更前**基线。
+
+### D. 已识别的既有红（非我方，同为一条根因）
+	est_zr102_t1_runner.py 两例 E2E + FC905 pi01/pi02/pi09 —— 均卡在 prompt_injection.py::_require_sha256 严格校验（cw 5d72529 **2026-09-23 GUARD-MERGE** 引入；HEAD 与工作区计数一致 4/2）⇒ **早于本会话**，如实登记待 owner 派卡。
+
+### E. 三仓推送定案（owner 指令：cw 不强推）
+- **evenue-forecast ✅ 已并入主线**：origin/main = origin/fcap = ee0a82bf；**11296 文件全在 .planning 内**（推送纯净、不可能破坏主线）；门禁 GREEN ×2
+- **iling-fetch ✅ 无待并入**：cap = origin/main = d35b6f5（head=0/behind=0）
+- **company-wiki ⏸️ 未推**（另一项目在改；本项目从未推送）
+### D-补（2026-09-27 14:0x）· 既有红全貌（两类根因，**均非本会话**）
+| 类 | 根因 | 红项 | 引入提交 |
+|---|---|---|---|
+| **A** | _require_sha256 严格校验（prompt_injection.py） | 	est_zr102_t1_runner.py ×2（E2E）· FC905 pi01/pi02/pi09 ×3 | cw 5d72529（2026-09-23 GUARD-MERGE） |
+| **B** | 调用点缺 
+ow（
+ow 成了必需关键字参数，测试未跟改） | 	est_source_catalog_archive_retired.py ×2 · -k prune ×3 | cw c4ebd0（2026-09-22；测试自 6c97b8 未改） |
+**⇒ 合计 ~10 条**，全部**早于本会话**、与 §四十二/棘轮/三件修复**零关系**；建议 owner 各派一张缺陷卡（或并成一张「既有红收口」卡）。
+### E. 复审 RATCHET-FIX-REVIEW 收尾（ACCEPT 0 P1）与三条处置
+**复审强度**（值得记）：17 hunk 逐条 · **测试弱化核**（	est_observability.py = **+15/−0 零删除**、新断言为全串等值且在拆前/拆后双 redactor 上均通过 ⇒ 非过拟合）· **40 万条对抗输入** HEAD vs 现值逐字节相同（命中轴 18418 vs 18418，**从不更弱**）· 字符串常量多重集无遗失 · archive 端到端补 
+ow= 真跑全同 · 公开签名逐字相同。
+1. **P3-2（父缺载体）→ 已补**：新建 execution_runs/RATCHET-FIX-ARCHIVE/a20260927-01/（oracle.md + pre_image/(=git show HEAD: blob，**如实登记非原始留痕**) + post_image/ + handoff.json）—— 归属与留痕补齐，产品码零改动。
+2. **P3-1（CRLF 命名方向）→ 登记修正**：observability.py 为 CRLF 文件，**裸字节 18DDCEC4…** / **LF 归一 C2622DC3…**；C 组 handoff.post_image_sha256["observability.py"]=18DDCEC4… 的命名方向与该文件实际相反（**两值门禁口径均 = 6，不改结论**）。**以 LF 归一值为跨平台比对基准**。
+3. **P2-1（5 条既有红）→ 父选择「接受红 + 登记待派卡」**，理由：① 复审已用**绑定证明**判定非本 delta（异常在 call binding 处抛出、函数体从未进入；
+ow 源自 c4ebd0）② **cw 正被另一项目并发修改**，本项目坚持最小足迹、不代改他人测试 ③ cw 未推送，无阻塞。**建议 owner 单派一张「cw 既有红收口」卡**（含 
+ow 5 条 + _require_sha256 5 条，见 §165-D/§165-D 补）。

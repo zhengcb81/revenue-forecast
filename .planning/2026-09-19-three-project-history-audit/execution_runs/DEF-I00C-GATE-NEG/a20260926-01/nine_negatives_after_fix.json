@@ -1,0 +1,66 @@
+{
+ "combination": {
+  "uc_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion",
+  "scenarios_py_sha256": "2a262da84b15e47b295ab13ef9f3da0527dbf72323da3d743f08bed964cfb63f",
+  "closure_py_sha256": "09f13d388c04d243cfd37c0d8be094ba85782616dd990407c2c0cb6abdfb0f54",
+  "registry_sha256": "d25e6f0600bab482a8ebd780ed307e4e58ddd5cc68ea4b2a5da19f832f377427",
+  "patch_gate_present": false,
+  "python": "3.13.9"
+ },
+ "negative_count": 9,
+ "negatives_rejected": 9,
+ "controls_ok": true,
+ "all_nine_rejected": true,
+ "results": [
+  {
+   "case": "N1_all_passed_but_no_evidence",
+   "rejected": true,
+   "detail": "closure_ready=False unsatisfied=1"
+  },
+  {
+   "case": "N2_read10_wrong_capability_evidence",
+   "rejected": true,
+   "detail": "closure_ready=False unsatisfied_ids=[\"READ-10: required capability 'deadline' not covered by evidence (covered=['artifact'])\"]"
+  },
+  {
+   "case": "CTRL_read10_covering_capability_accepted",
+   "rejected": true,
+   "detail": "closure_ready=True (control, must be True)"
+  },
+  {
+   "case": "N3_stale_accepted_after_newer_fail",
+   "rejected": true,
+   "detail": "verdict=changes_required problems=['1 older accepted review(s) exist but latest verdict is changes_required — stale accepted must not win']"
+  },
+  {
+   "case": "N4_empty_commands",
+   "rejected": true,
+   "detail": "closure_ready=False unsatisfied_ids=['S-1: oracle validated_commands is empty']"
+  },
+  {
+   "case": "N5_empty_invariants",
+   "rejected": true,
+   "detail": "closure_ready=False unsatisfied_ids=['S-1: oracle invariants is empty']"
+  },
+  {
+   "case": "N45_both_empty",
+   "rejected": true,
+   "detail": "closure_ready=False unsatisfied_ids=['S-1: oracle validated_commands is empty; oracle invariants is empty']"
+  },
+  {
+   "case": "N4b_receipt_layer_requires_commands",
+   "rejected": true,
+   "detail": "required=('base_triplet', 'result_triplet', 'plan_sha256', 'commands', 'touched_files', 'side_effect_counts', 'implementer')"
+  },
+  {
+   "case": "N6_original_obligations_still_pending",
+   "rejected": true,
+   "detail": "pending=3 reasons=['0 legacy FCs contradicted by current behavior', \"3 legacy closure items pending (['CA-206', 'CA-301', 'CA-302'])\", '0 of 197 mandatory scenarios unsatisfied', 'R9 legacy removal frozen (4/4 RED at audit; deletion belongs to CA-304)', 'legacy receipt sets remain outside the machine schema (grandfathered history; migration is CA-107+CA-304 scope)', \"3 narrowed successor card(s) flagged, not accepted as substitutes: ['CA-206-narrow', 'CA-301-narrow', 'CA-302-narrow'] — original obligations stay pending until closed on their own scope\"]"
+  },
+  {
+   "case": "N6b_narrowed_successor_flagged",
+   "rejected": true,
+   "detail": "narrowed_flagged=True reasons=['0 legacy FCs contradicted by current behavior', \"3 legacy closure items pending (['CA-206', 'CA-301', 'CA-302'])\", '0 of 197 mandatory scenarios unsatisfied', 'R9 legacy removal frozen (4/4 RED at audit; deletion belongs to CA-304)', 'legacy receipt sets remain outside the machine schema (grandfathered history; migration is CA-107+CA-304 scope)', \"3 narrowed successor card(s) flagged, not accepted as substitutes: ['CA-206-narrow', 'CA-301-narrow', 'CA-302-narrow'] — original obligations stay pending until closed on their own scope\"]"
+  }
+ ]
+}

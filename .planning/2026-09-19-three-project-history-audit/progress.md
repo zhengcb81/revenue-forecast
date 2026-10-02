@@ -2083,6 +2083,17 @@ census  review_pending 5→4 · **blocked 1**（小写被正确计入）· signe
 
 ---
 
+## 2026-09-27 — Round 121（R246–R256 合记）：**⭐⭐ 链 15/15 全走完 · 四步提交完成 · Phase 7 COMPLETE**
+
+**owner 五答**（§四十 三裁定 + R1-R8 全批 + 轮次 256→356）：`I-05-C` ②③「我就是授权方」· 两张新缺陷卡「本期开」· T3「授权排查」· **部署 R1-R8「全批」** · **轮次上限 +100**。
+**链收官**（15 张执行单元全 `accepted_scoped`）：`I-16-B`（父执行部署窗口：R4 重绑门绿 → R5 全路径修复 GREEN+持久化 → R6 备份三重互证 → 复用 3/3 ✓ → 摄取 3 失败**全排除回归** → 工件失效 unverified → worker paused 维持）→ 复审 `ACCEPT`（`P2×2`：开窗时点静默未维持/`R5` 修复未持久化——**当轮已修**）→ 落定；`I-17-A`（2 工位失败后父接手，7 条要求复审签定，含外部周任务失败作真实样本）→ `ACCEPT` → 落定；**`I-17-B` 终审**（工位崩溃于报告写作，父接手：六负例 **UTF-16 缺陷**实证 **9 例仅 3 拒、`N1/N2/N4/N5` 未拒** = **验收门负例缺口（新阻断级发现）**，六资格分列、accuracy=unproven 如实）→ 复审 `ACCEPT`（0P1，独立解码复核）→ 落定 ⇒ **15/15**。
+**四步提交**：步 0 预检（np=2=外部周任务归属调整并记录）→ 步 1 补丁导出 1,175,996B → 步 2 `core.longpaths` 适配后 stage 11,296 全 `.planning` → 步 3 **提交 `ee0a82bf`**（+3,907,566/−47，三钩子如方案预期全 `SKIP`）→ 步 4 核对（剩 4 = 外部 2 + 补丁等）。
+**三新工位**（§四十）：`DEF-I00C-GATE-NEG`（78a935b1）· `DEF-MSFT-CANONICAL-DUP`（c53d598a）· `T3-DIAG`（b3a427a3，**已交付**：周任务两连败根因 = **SYSTEM 账户无 Playwright 浏览器目录**，产品码排除、修法三选已给、下周日会再败）。
+**外部信号**：周任务 `T3` 两连败（09-20/09-27）—— 真实产品信号，修复方向已给（`LOCALAPPDATA` 补丁/共享浏览器/哨兵）。
+**面板**：`accepted 135/197` · **链 15/15** · **七条 7✅** · **清单 35/35** · **四步提交 ✓** · **Phase 7 COMPLETE**。
+
+---
+
 ## 2026-09-26 — Round 120（R246–R250 合记）：**甲+乙 合卡落地 · 链 9/15 · 双面签署收官**
 
 **甲**（逐卡必要性回源 10 张动作段）：**无「免费砍」** —— 样本/建模/指标/判定/独答/评分/部署/观察/终审全为真实工作。
@@ -2102,3 +2113,29 @@ census  review_pending 5→4 · **blocked 1**（小写被正确计入）· signe
 
 
 
+
+---
+
+## 2026-09-27 — Round 122（收尾三件收口 + rf 并主线 + 棘轮 10 文件在飞）
+
+**收尾三件全部 accepted_scoped（目标 goal-6a380581 收口条件达成）**：
+1. **DEF-I00C-GATE-NEG** —— 根因 uc/scenarios.py::closure_report 只看 status；修复加 _evidence_problems 三重校验；**九例 3/9→9/9 拒**（复审双向复跑自跑全等 · 4/4 变异 killed · ACCEPT 0P1）；P2-1 修复致生产 closure_ready 恒 False（fixture_hash=null 无写入方）→ **owner 裁定放宽**（有 evidence_path 才校验 hash，§四十二 裁定二）
+2. **DEF-MSFT-CANONICAL-DUP** —— 根因 canonical_writer 重名导入身份解析失败（destination_preexisting 误真）；红复现生产签名 · 绿 39 passed · 6/6 变异 · **复审 ACCEPT 0P1**（11 案自跑全复现、前像与 git HEAD blob 逐字节、修正裁为非弱化）→ 落定；P2 G3 生产回放留 owner · P3 6 件孤儿登记不删
+3. **T3-DIAG** —— 根因 SYSTEM 账户无 Playwright 浏览器目录（runner GP-009 只补 USERPROFILE）；复审 ACCEPT 0P1（根因+复现+四项归因全核）→ 落定；修法三选已给、下周日会再败
+
+**revenue-forecast 推送并入主线**：fcap → main = ee0a82bf（门禁 GREEN ×2、各 ~7 分钟）· fcap 分支同步备份 ✓
+**company-wiki 推送被 pre-push 门禁拦**（§四十二 裁定一「我修棘轮」）：全表扫出 **11 处违规**（09-22 ac4ebd0 引入，上次推送停 09-19）—— archive_retired_evidence.py 父亲拆 19→6 已过；余 **10 文件分派 A/B/C 三工位**在飞；narrative_evidence.py（339>10）归 owner（外部叙事会话 12:00 仍在写）
+**owner 裁定**：§四十二（cw 门禁处置 + closure_ready 放宽）
+**纪律增补**：land_v3_generic.py 侧车 sha 大小写不敏感修正 + 裁决行误指节标题按纪律 21 引回 L10（DEF-MSFT 落定修正入 status_authority 注记）
+**面板**：三件 accepted_scoped ×3 · 棘轮 10 文件三工位在飞 · rf 已并主线 · cw 待棘轮+narrative
+---
+
+## 2026-09-27 — Round 123（§四十二 执行完 + 棘轮真账 + 三仓定案）
+
+**closure_ready 放宽已实施并三绿**：生产 closure_ready=true（197/197 恒红解除）· 九例 9/9 拒（未放行走私）· 	est_scenarios.py 11 passed。
+**棘轮真账（门禁口径）**：真违规 4 处 —— rchive 19>7 ✓ · observability 27>6 ✓ · prune 27>12 ✓ · 
+arrative 363>10（**另一项目在写**）；**8 处为我口径误报，已全部还原**（净改动收敛到 3 文件）。
+**父两错**：#40 口径不一致（多算 IfExp）· #41 用拆后态冒充基线 —— **纪律 23**：口径取被验系统自带度量、基线量变更前。
+**既有红（非我方）**：zr102 E2E ×2 + FC905 ×3，同源于 cw 5d72529（09-23 GUARD-MERGE）的 _require_sha256 严格校验。
+**三仓**：f ✅ 已并主线（ee0a82bf，纯 .planning）· iling-fetch ✅ 平齐无待并入 · cw ⏸️ **未推**（owner 令：另一项目在改）。
+**在线**：A/B 组已交付（A 净改动 0、B 三文件已还原）· C 组 handoff 待落（保留 observability+prune；conformance 已还原）。

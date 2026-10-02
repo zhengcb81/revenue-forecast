@@ -1,0 +1,45 @@
+schema_version: "1.3"
+runtime_config: "config/minimal_config.yaml"
+
+# 鍘熶欢绱㈠紩姣忓皬鏃跺鏍镐竴娆★紱鎵弿涓嶇瓑寰呮満鍣ㄧ┖闂层€?scan_interval_minutes: 60
+export_interval_minutes: 60
+poll_interval_seconds: 30
+# 鏈夊疄闄匨arkdown/LLM浜у嚭鏃剁缉鐭笅涓€杞瓑寰咃紱鏃犱骇鍑恒€佸湪鐢垫睜涓婃垨provider閫€閬挎椂浠嶇瓑30绉掋€?active_poll_interval_seconds: 2
+
+# 鍚庡彴澶勭悊涓嶅啀渚濊禆榧犳爣/閿洏绌洪棽锛涗粛淇濇寔浣庤繘绋嬩紭鍏堢骇骞跺彲闅忔椂鏆傚仠鎴栧仠姝€?idle_seconds_required: 600
+require_user_idle: false
+allow_processing_on_battery: false
+
+# 鍗曠嚎绋嬨€佹瘡寰幆鏈€澶氫竴浠斤紱濡傞渶鎭㈠鏃ц涓猴紝鍙妸 require_user_idle 鏀逛负 true銆?# CW-3.5 / Phase 10: export throttled, safe to raise batch to 3.
+normalize_batch_size: 3
+llm_summary_batch_size: 1
+
+# CW-2.28 搂12.4.3.6: fingerprint backfill runs after normalize, before LLM summary.
+# Each cycle processes at most this many pending documents.
+fingerprint_backfill_batch_size: 3
+# Retry transient failures up to this many times before declaring terminal.
+fingerprint_retry_limit: 3
+# Seconds to wait before a retryable failure becomes eligible again.
+fingerprint_retry_backoff_seconds: 900
+
+# Phase 4: section extraction (MD&A / business) runs after fingerprint, before LLM.
+# Each cycle processes at most this many normalized documents.
+section_extraction_batch_size: 5
+
+# Phase 2.3: weekly retained-evidence prune check (90-day retention default).
+# The worker auto-recycles retired evidence spans once the oldest archive
+# passes the retention window; not-due checks are no-ops.
+prune_retention_days: 90
+prune_check_interval_seconds: 604800
+
+# WR-10.13: parsing runs in one short-lived child while the parent worker owns DB writes.
+# The child reports liveness every 15s and has an independent one-hour document deadline.
+document_parse_timeout_seconds: 3600
+parser_heartbeat_interval_seconds: 15
+parser_result_max_bytes: 268435456
+normalization_retry_limit: 3
+normalization_retry_backoff_seconds: 900
+
+# LLM 浣跨敤 config.yaml 鐨?MiniMax M3锛屽苟娌跨敤 MiMo 2.5 Pro fallback銆?llm_max_input_chars: 120000
+# M3 浼氭妸鎺ㄧ悊 token 璁″叆瀹屾垚涓婇檺锛?200 鍦ㄧ湡瀹為暱鏂囦笂浼氭埅鏂?JSON銆?llm_max_output_tokens: 2400
+llm_retry_backoff_minutes: 60

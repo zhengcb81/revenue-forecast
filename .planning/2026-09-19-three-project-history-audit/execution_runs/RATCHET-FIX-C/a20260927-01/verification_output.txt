@@ -1,0 +1,66 @@
+﻿FINAL VERIFICATION (2026-09-27, after conformance revert)
+=== complexity: authoritative test metric (file max / frozen) ===
+observability.py: max=6 target=6 frozen_table=6 OK
+    L 254   6  key_is_credential
+    L 489   6  _next_unseen_cause
+    L 421   6  _is_credential_key
+    L 443   5  _unquoted_assignment_end
+    L 366   5  _redact_assignments
+    L 765   5  _reason_stage_problems
+    L 742   5  _is_iso8601_utc
+    L 453   5  _find_closing_quote
+prune_retired_evidence.py: max=12 target=12 frozen_table=12 OK
+    L 381  12  _build_plan
+    L 599   8  _delete_batch
+    L 280   7  _verified_archive
+    L 445   6  prune_retired_evidence
+    L 202   6  _resolve_archive_path
+    L 229   5  _verify_one_manifest
+    L 342   5  _span_states
+    L 185   5  _read_snapshot
+adapters/conformance.py: max=8 target=8 frozen_table=8 OK
+    L  18   8  run_conformance
+    L  79   3  _tree_fingerprint
+    L  88   2  conformance_ok
+RESULT: PASS
+
+=== dual metric TEST/M ===
+
+> === CURRENT working tree ===
+  src/company_wiki/source_catalog/observability.py: TEST=6 M=6
+  src/company_wiki/source_catalog/prune_retired_evidence.py: TEST=12 M=10
+  src/company_wiki/source_catalog/adapters/conformance.py: TEST=8 M=13
+  === HEAD (committed) ===
+
+
+
+=== ratchet gate ===
+E   AssertionError: new file narrative_evidence.py has max complexity 363 > 10
+E   assert 363 <= 10
+=========================== short test summary info ===========================
+FAILED tests/contract/test_fc1204_complexity_ratchet.py::test_complexity_ratchet_new_files_stay_simple
+========================= 1 failed, 1 passed in 1.50s =========================
+
+=== -k redact ===
+
+===================== 9 passed, 2952 deselected in 5.07s ======================
+
+=== -k conformance ===
+
+===================== 14 passed, 2947 deselected in 5.16s =====================
+
+=== -k prune (3 pre-existing: call-site lacks required 
+ow, introduced ac4ebd0; test last touched b6c97b8) ===
+=========================== short test summary info ===========================
+FAILED tests/contract/test_source_catalog_prune_retired.py::test_prune_dry_run_reports_span_volume
+FAILED tests/contract/test_source_catalog_prune_retired.py::test_prune_apply_deletes_spans_when_due
+FAILED tests/contract/test_source_catalog_prune_retired.py::test_prune_apply_within_retention_does_nothing
+===================== 3 failed, 2958 deselected in 9.80s ======================
+
+=== tests/contract/test_observability.py (redaction surface) ===
+
+============================== 8 passed in 0.53s ==============================
+
+=== ruff on the two fixed files ===
+All checks passed!
+

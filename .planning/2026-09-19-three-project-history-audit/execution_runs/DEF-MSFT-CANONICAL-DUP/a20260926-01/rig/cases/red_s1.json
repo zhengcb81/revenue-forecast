@@ -1,0 +1,175 @@
+{
+  "case": "red_s1",
+  "variant": "asfound",
+  "scenario": "S1",
+  "expect": "red_identity",
+  "workspace_root": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\red_s1",
+  "network_calls": 0,
+  "production_writes": 0,
+  "variant_info": {
+    "variant": "asfound",
+    "sha256": "835DAB7F2FFDC4B10D8892EDB94BB88E77F840DF59D05CF6C9FEBA7AAD4337DB",
+    "bytes": 17958
+  },
+  "pre_state": {
+    "annual": [
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json"
+    ],
+    "staged": [
+      "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+    ]
+  },
+  "rc": 1,
+  "run": {
+    "duration_s": 1.767,
+    "argv": [
+      "--config",
+      "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\red_s1\\config\\source_catalog.yaml",
+      "ensure",
+      "--entity",
+      "MICROSOFT CORP",
+      "--market",
+      "US",
+      "--security-id",
+      "MSFT",
+      "--document-kind",
+      "annual_report",
+      "--as-of-date",
+      "2026-09-27",
+      "--fiscal-year",
+      "2026",
+      "--allow-download",
+      "--acquisition-config",
+      "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\red_s1\\config\\source_acquisition.yaml",
+      "--allow-acquisition-while-paused"
+    ],
+    "company_wiki_module": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\shadow\\company_wiki\\__init__.py"
+  },
+  "stdout": "",
+  "stderr": "{\"error\": \"canonical file was written but exact provider identity did not resolve\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"}\n",
+  "parsed_stdout": {
+    "error": "canonical file was written but exact provider identity did not resolve",
+    "error_type": "fatal",
+    "retryable": false,
+    "status": "failed"
+  },
+  "journal": [
+    {
+      "adapter_name": "dayu-sec-cli",
+      "attempt_id": "urn:company-wiki:acquisition-attempt:sha256:39d8fd50054f8829c2da9d3b5b1deadb016f0d8d9fa685cba66c03fc31f72b05",
+      "candidate_id": "sec:0001193125-26-323660",
+      "canonical_path": null,
+      "content_sha256": "095935f968b53055cfa23f65ef8d60b8f0e414991a9b82b9582de1dac606b9e8",
+      "error": "canonical file was written but exact provider identity did not resolve",
+      "error_type": "CanonicalImportError",
+      "outcome": "failed",
+      "provider": "sec",
+      "provider_document_id": "0001193125-26-323660",
+      "reason": "canonical_import_failed",
+      "recorded_at": "2026-09-27T10:38:16Z",
+      "request_id": "urn:company-wiki:source-request:sha256:1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838",
+      "schema_version": "1.0",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526323660/msft-20260630.htm"
+    }
+  ],
+  "db": {
+    "db_exists": true,
+    "counts": {
+      "sources": 0,
+      "documents": 0,
+      "locations": 0
+    },
+    "fixture_sha_sources": 0,
+    "orphan_sha_sources": 0,
+    "locations": [],
+    "scan_runs": [
+      {
+        "run_id": "scan-539ff312e3ea41e8b72cccb2ab83c311",
+        "started_at": "2026-09-27T10:38:16Z",
+        "status": "completed_with_errors",
+        "report": {
+          "dry_run": false,
+          "error_details": [
+            {
+              "error": "scan_root_strategy: v2 scanner unavailable (fail closed): root 'company_raw' has no adapter_id (2.x policy required)",
+              "relative_path": "",
+              "root_id": "company_raw",
+              "unchanged": false
+            }
+          ],
+          "errors": 1,
+          "files_excluded": 0,
+          "files_hashed": 0,
+          "files_reused": 0,
+          "files_seen": 0,
+          "known_quarantined": 0,
+          "locations_active": 0,
+          "locations_missing": 0,
+          "new_errors": 1,
+          "policy_excluded": 0,
+          "run_id": "scan-539ff312e3ea41e8b72cccb2ab83c311",
+          "strategy": {
+            "company_raw": "adapter"
+          }
+        }
+      }
+    ]
+  },
+  "post_state": {
+    "annual": [
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+    ],
+    "staged": [
+      "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+    ]
+  },
+  "checks": [
+    {
+      "name": "rc_nonzero",
+      "ok": true,
+      "detail": "rc=1"
+    },
+    {
+      "name": "identity_error_raised",
+      "ok": true,
+      "detail": "\n{\"error\": \"canonical file was written but exact provider identity did not resolve\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"}\n"
+    },
+    {
+      "name": "journal_canonical_import_failed",
+      "ok": true,
+      "detail": "{\"adapter_name\": \"dayu-sec-cli\", \"attempt_id\": \"urn:company-wiki:acquisition-attempt:sha256:39d8fd50054f8829c2da9d3b5b1deadb016f0d8d9fa685cba66c03fc31f72b05\", \"candidate_id\": \"sec:0001193125-26-323660\", \"canonical_path\": null, \"content_sha256\": \"095935f968b53055cfa23f65ef8d60b8f0e414991a9b82b9582de1dac606b9e8\", \"error\": \"canonical file was written but exact provider identity did not resolve\", \"error_type\": \"CanonicalImportError\", \"outcome\": \"failed\", \"provider\": \"sec\", \"provider_document_id\": \"0001193125-26-323660\", \"reason\": \"canonical_import_failed\", \"recorded_at\": \"2026-09-27T10:38:16Z\", \"request_id\": \"urn:company-wiki:source-request:sha256:1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\", \"schema_version\": \"1.0\", \"source_url\": \"https://www.sec.gov/Archives/edgar/data/789019/000119312526323660/msft-20260630.htm\"}"
+    },
+    {
+      "name": "journal_canonical_path_null",
+      "ok": true,
+      "detail": "None"
+    },
+    {
+      "name": "journal_content_sha_is_fixture",
+      "ok": true,
+      "detail": "095935f968b53055cfa23f65ef8d60b8f0e414991a9b82b9582de1dac606b9e8"
+    },
+    {
+      "name": "fixture_sha_not_indexed",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "import_scan_failed_closed",
+      "ok": true,
+      "detail": "{\"dry_run\": false, \"error_details\": [{\"error\": \"scan_root_strategy: v2 scanner unavailable (fail closed): root 'company_raw' has no adapter_id (2.x policy required)\", \"relative_path\": \"\", \"root_id\": \"company_raw\", \"unchanged\": false}], \"errors\": 1, \"files_excluded\": 0, \"files_hashed\": 0, \"files_reused\": 0, \"files_seen\": 0, \"known_quarantined\": 0, \"locations_active\": 0, \"locations_missing\": 0, \"new"
+    },
+    {
+      "name": "committed_file_left_unindexed",
+      "ok": true,
+      "detail": "htm=['2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm', '2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm'] indexed=[]"
+    }
+  ],
+  "all_checks_ok": true,
+  "verdict": "RED_REPRODUCED",
+  "duration_s": 2.506
+}

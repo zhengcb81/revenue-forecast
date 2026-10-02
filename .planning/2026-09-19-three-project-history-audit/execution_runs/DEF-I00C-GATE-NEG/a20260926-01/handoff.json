@@ -1,0 +1,127 @@
+{
+ "card": "DEF-I00C-GATE-NEG",
+ "role": "implementer_def_i00c",
+ "run_dir": "execution_runs/DEF-I00C-GATE-NEG/a20260926-01",
+ "authorized_by": "OWNER_DECISIONS.md §四十 裁定二（逐字引用见 authorized_by_verbatim_quote）",
+ "authorized_by_verbatim_quote": "### 裁定二：**两张新缺陷卡 —— 「本期开 2 张（建议）」** | **`DEF-I00C-GATE-NEG`** | `I-00-C` 验收/关闭门负例缺口：9 例仅 3 拒（**`N1/N2/N4/N5` 未拒** —— `closure_ready=True` 但无证据/错能力证据/空命令/空不变量均放行） | 本期 |",
+ "gate0_passed": true,
+ "root_cause": "uc/scenarios.py::closure_report 只校验 status 字段（passed/expected_failure_pass 即满足），不校验 evidence_path/fixture_hash（N1）、required_capability 是否被 covered_capabilities 覆盖（N2）、oracle.validated_commands 与 oracle.invariants 非空（N4/N5/N45）；uc/closure.py::closure_report 的 reasons 不标记 -narrow 缩小后继卡（N6b）。既有测试 test_closure_report_green_when_filled 以无证据 passed 断言绿，固化了缺陷行为。",
+ "fix_summary": "scenarios.py 新增 SATISFIED_STATUSES + _evidence_problems（证据存在性/能力覆盖/oracle 非空三重校验，未满足场景以 'ID: 问题' 进 unsatisfied_ids，closure_ready=无未满足）；closure.py 对 -narrow 后继卡追加 reasons 标记；tests/test_scenarios.py 绿测试改为填证据才绿并新增 4 个负例回归测试。",
+ "pre_post_shas": {
+  "assurance/unified_completion/uc/scenarios.py": {
+   "pre": "524fc1e6d6ba6a841e36f339c1aaf4e14bd7f26ec3ed6f04c83669d082544f29",
+   "post": "2a262da84b15e47b295ab13ef9f3da0527dbf72323da3d743f08bed964cfb63f"
+  },
+  "assurance/unified_completion/uc/closure.py": {
+   "pre": "952abfe0ea39ced076e3b83090de79e90ee95e5a39d94d8711377f65a446300e",
+   "post": "09f13d388c04d243cfd37c0d8be094ba85782616dd990407c2c0cb6abdfb0f54"
+  },
+  "assurance/unified_completion/tests/test_scenarios.py": {
+   "pre": "14f3910e9817f4834ec539326fe118b69e4c652a9a812dae6b114bd292b67597",
+   "post": "68185a97a875425845fc08cb1aa39be7bdae49e540995c75d34ccca45d4789ac"
+  }
+ },
+ "pre_image_provenance": "git HEAD blob 字节级提取（python subprocess，非 pwsh 重定向）；两 uc 文件前像 sha 与 I-17-B six_negatives_result.json.combination 逐一吻合；pre_image/ 与 post_image/ 备份在本目录。",
+ "negatives_rejected_before": 3,
+ "negatives_rejected_after": 9,
+ "negative_count": 9,
+ "controls_ok_after": true,
+ "red_revert_reproduces_defect": true,
+ "red_revert_detail": "回滚前像复跑：negatives_rejected=3/9，runner exit=3（nine_negatives_red_revert.json）",
+ "mutations": {
+  "count": 4,
+  "all_killed": true,
+  "exit": 0,
+  "detail": "M1 丢证据校验→N1 翻放；M2 丢能力覆盖→N2 翻放；M3 丢 oracle 空校验→N4/N5/N45 翻放；M4 丢缩小标记→N6b 翻放；全部在 tmp/mut_* 一次性副本上运行，生产文件零触碰（mutation_results.json）"
+ },
+ "pytest_regression": "tests/test_scenarios.py + tests/test_closure.py = 17 passed",
+ "status": "accepted_scoped",
+ "implementer_signed": false,
+ "releases_nothing": true,
+ "written_files": [
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/oracle.md",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/fix_diff.md",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/nine_negatives_after_fix.json",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/handoff.json",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/nine_negatives_before_fix.json",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/nine_negatives_red_revert.json",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/mutation_results.json",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/run_nine_negatives.py",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/run_mutations.py",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/gen_fix_diff.py",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/pre_image/scenarios.py",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/pre_image/closure.py",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/pre_image/test_scenarios.py",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/post_image/scenarios.py",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/post_image/closure.py",
+  "execution_runs/DEF-I00C-GATE-NEG/a20260926-01/post_image/test_scenarios.py",
+  "assurance/unified_completion/uc/scenarios.py",
+  "assurance/unified_completion/uc/closure.py",
+  "assurance/unified_completion/tests/test_scenarios.py"
+ ],
+ "git_diff_non_planning": 0,
+ "git_diff_non_planning_meaning": "未授权非计划文件改动数=0。rf 仓 git diff --name-only 中的非 .planning 改动恰为 3 个授权 unified_completion 文件（见 git_diff_authorized_files），无任何越权非计划写入。",
+ "git_diff_authorized_files": [
+  "assurance/unified_completion/uc/scenarios.py",
+  "assurance/unified_completion/uc/closure.py",
+  "assurance/unified_completion/tests/test_scenarios.py"
+ ],
+ "git_diff_preexisting_not_mine": [
+  ".planning/2026-09-19-three-project-history-audit/progress.md",
+  ".planning/2026-09-19-three-project-history-audit/task_plan.md",
+  "assurance/runs/weekly_alert.jsonl",
+  "assurance/runs/weekly_manifest.json"
+ ],
+ "git_diff_preexisting_note": "以上 4 个脏文件在本工位开工前即已存在（其他工位/编排层所留），本工位未写过任何 .planning 文件或 assurance/runs。",
+ "planning_files_written_by_me": 0,
+ "seal_f2178768_untouched": true,
+ "seal_note": "封盘令牌 f2178768… 为所有者边界不变式（§四十 执行纪律逐字）；本工位写入面仅=本目录+3 个授权 unified_completion 代码/测试文件，未触碰任何封盘对象。",
+ "no_internet": true,
+ "no_git_write": true,
+ "no_param_passthrough": true,
+ "did_not_touch": [
+  "uc/revision.py（N3 路径零触碰）",
+  "uc/receipt.py（N4b 路径零触碰）",
+  "scenarios/scenario_registry.json（sha d25e6f06… 未变）",
+  ".planning/**",
+  "I-17-B 目录（只读引用）"
+ ],
+ "reviewer_note": "复审可独立复核：python run_nine_negatives.py（exit 0 = 9/9 拒）；红相：以 pre_image/ 覆盖两 uc 文件后复跑须 exit 3；变异：python run_mutations.py（exit 0 = 4/4 killed）。",
+ "status_before": "review_pending",
+ "status_transition": "review_pending -> accepted_scoped",
+ "status_history": [
+  {
+   "at_utc": "",
+   "status": "accepted_scoped",
+   "by": "landing_parent_v3",
+   "note": "父直写轻格式落定（V3）；前像 sha 见 pre_image"
+  }
+ ],
+ "status_authority": {
+  "carrier": "reviewer_report.md",
+  "carrier_sha256": "7d87f72208bcbd823ab60078e6cee2077f9a6ea0cd95c93697371a3bc5f806e9",
+  "carrier_bytes": 11691,
+  "carrier_encoding": "UTF-8 no BOM",
+  "verdict_line": "VERDICT: ACCEPT  （无 P1；P2×1 · P3×3 · unverified×2）",
+  "verdict_byte_region": {
+   "content": [
+    609,
+    672
+   ],
+   "incl_lf": [
+    609,
+    673
+   ]
+  },
+  "verdict_word_written_by_reviewer": "ACCEPT",
+  "pin_sidecar": "7d87f72208bcbd823ab60078e6cee2077f9a6ea0cd95c93697371a3bc5f806e9  reviewer_report.md",
+  "three_way_match": true
+ },
+ "carried_findings": [],
+ "pre_image": {
+  "sha256": "975315b0b248548e60b9475244b2e0f9fb5a2e20b2f6fb171fa6ea40305f7d1e",
+  "bytes": 6330,
+  "status": "review_pending"
+ },
+ "verdict_is_transcribed_not_authored": true
+}

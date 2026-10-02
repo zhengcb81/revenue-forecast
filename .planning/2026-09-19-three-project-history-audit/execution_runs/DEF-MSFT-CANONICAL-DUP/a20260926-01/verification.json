@@ -1,0 +1,786 @@
+{
+  "card": "DEF-MSFT-CANONICAL-DUP",
+  "station": "a20260926-01",
+  "generated_at_utc": "2026-09-27T10:51:10Z",
+  "oracle": {
+    "path": "oracle.md",
+    "sha256": "129CB2FD665DCC0AE393A638EBA0FD5586CC9EB74156006033C1C0D309410F5B",
+    "root_cause_pinned": true,
+    "fix_criteria_frozen": true,
+    "mutations_frozen": [
+      "M1",
+      "M2",
+      "M3"
+    ]
+  },
+  "images": {
+    "preimage_asfound_lf": {
+      "path": "canonical_writer.preimage_asfound.py",
+      "sha256": "835DAB7F2FFDC4B10D8892EDB94BB88E77F840DF59D05CF6C9FEBA7AAD4337DB"
+    },
+    "preimage_asfound_crlf_equivalent": {
+      "sha256": "4BC653725FEBCC755E3A01AC48227A6B0799C4C262968356B356F8CB42D3C6BC",
+      "note": "working-tree as-found line endings (reconstruct_preimage.py EXPECTED)"
+    },
+    "preimage_with_bom": {
+      "path": "canonical_writer.preimage.py",
+      "sha256": "1F2BE3B4077387F573174281708BF1D060917D40B33171B2268F4DCDDDCA6C7B",
+      "note": "same content as the as-found preimage plus UTF-8 BOM (CRLF)"
+    },
+    "git_head_blob": {
+      "sha256": "835DAB7F2FFDC4B10D8892EDB94BB88E77F840DF59D05CF6C9FEBA7AAD4337DB",
+      "note": "git show HEAD:src/company_wiki/source_catalog/canonical_writer.py == canonical_writer.preimage_asfound.py (byte-identical)"
+    },
+    "postimage_fixed": {
+      "path": "canonical_writer.fixed.py",
+      "sha256": "D7F6AFC53F62637BA2B881B3BE629D2AAE392C670182D0A3514A27FA6B2428F8",
+      "live_company_wiki_sha256": "D7F6AFC53F62637BA2B881B3BE629D2AAE392C670182D0A3514A27FA6B2428F8"
+    },
+    "live_equals_fixed": true
+  },
+  "fix_variants": {
+    "asfound": {
+      "bytes_lf": 17958,
+      "description": "as-found pre-fix image (defect present)",
+      "sha256_lf": "835DAB7F2FFDC4B10D8892EDB94BB88E77F840DF59D05CF6C9FEBA7AAD4337DB"
+    },
+    "fixed": {
+      "bytes_lf": 23433,
+      "description": "fix image under review (3 elements, DEF-MSFT-CANONICAL-DUP)",
+      "sha256_lf": "D3DE75BF85AEFDAF926B6CED3934BBEA75622743B7E7FBF028587BA672F6C011"
+    },
+    "m1": {
+      "bytes_lf": 23528,
+      "description": "revert fix element 1: import-time scan uses the v2 snapshot flag again",
+      "sha256_lf": "1004D7EC4F46EE7DF59BF8E0382B37F3EE23D6D4C17B54C0D63D475C010E268B"
+    },
+    "m2": {
+      "bytes_lf": 23265,
+      "description": "revert fix element 2: always rewrite the immutable provenance sidecar",
+      "sha256_lf": "81DC56C5D85B2A55E4B068979B9755249E32B1803CB9E22DEBD643F4A0DD6CDA"
+    },
+    "m3": {
+      "bytes_lf": 21715,
+      "description": "revert fix element 3: post-write verification demands strict REUSED_EXACT",
+      "sha256_lf": "DCFA3EE1DAA5970EDB14C2D96B837CD7CC115554291CAAC063D8073E22B13404"
+    },
+    "m4": {
+      "bytes_lf": 23113,
+      "description": "break the __<sha12> hash-suffix fallback for same-name conflicts",
+      "sha256_lf": "AE0B0DAA61596593E2417F655E3B487D942253C940B180AEC4339663EC2855D0"
+    },
+    "m5": {
+      "bytes_lf": 23376,
+      "description": "break the F-EE1 request_id identity back-fill on the returned resolution",
+      "sha256_lf": "A38A78766CCEFDDB5695724F649D2D6B75526572BBA5521027FC6E7AF92B8E5A"
+    },
+    "m6": {
+      "bytes_lf": 23516,
+      "description": "break the duplicate branch (_existing_original always returns None)",
+      "sha256_lf": "E1198E842F2710BD60F2CD798D8EB47DBC348351FC4D6B36CFCD66721A15D6EB"
+    }
+  },
+  "isolation": {
+    "workspace_root": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup",
+    "network_calls": 0,
+    "production_writes": 0,
+    "dayu_agent_writes": 0,
+    "acquisition_stub": "AcquisitionCoordinator.resolve_or_stage replaced in-process by FixtureCoordinator returning the production fixture candidate/receipt as STAGED; the dayu/sec adapters are never constructed or invoked",
+    "code_under_test": "shadow copy of company_wiki package (sys.path[0]); the production canonical_writer.py is byte-identical to canonical_writer.fixed.py and is not mutated by any run",
+    "fixture_bytes_source": "production company-wiki (read-only)"
+  },
+  "fixture": {
+    "request_id": "urn:company-wiki:source-request:sha256:1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838",
+    "provider": "sec",
+    "provider_document_id": "0001193125-26-323660",
+    "receipt_content_sha256": "095935f968b53055cfa23f65ef8d60b8f0e414991a9b82b9582de1dac606b9e8",
+    "receipt_byte_size": 8585621,
+    "staged_bytes_sha256": "095935f968b53055cfa23f65ef8d60b8f0e414991a9b82b9582de1dac606b9e8",
+    "sibling_orphan_file": {
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+      "sha256": "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecfff",
+      "bytes": 8585615
+    },
+    "hash_suffix_file": {
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "sha256": "095935f968b53055cfa23f65ef8d60b8f0e414991a9b82b9582de1dac606b9e8",
+      "bytes": 8585621
+    },
+    "provenance_sidecar": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+  },
+  "red": {
+    "red_s1": {
+      "case": "red_s1",
+      "variant": "835DAB7F2FFDC4B10D8892EDB94BB88E77F840DF59D05CF6C9FEBA7AAD4337DB",
+      "scenario": "S1",
+      "rc": 1,
+      "verdict": "RED_REPRODUCED",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_nonzero",
+          "ok": true
+        },
+        {
+          "name": "identity_error_raised",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_import_failed",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_path_null",
+          "ok": true
+        },
+        {
+          "name": "journal_content_sha_is_fixture",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_not_indexed",
+          "ok": true
+        },
+        {
+          "name": "import_scan_failed_closed",
+          "ok": true
+        },
+        {
+          "name": "committed_file_left_unindexed",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "failed",
+      "journal_reason": "canonical_import_failed",
+      "journal_canonical_path": null,
+      "journal_error": "canonical file was written but exact provider identity did not resolve",
+      "ensure_status": "failed",
+      "fixture_sha_indexed": 0,
+      "orphan_sha_indexed": 0,
+      "import_scan": {
+        "status": "completed_with_errors",
+        "files_seen": 0,
+        "strategy": {
+          "company_raw": "adapter"
+        },
+        "errors": 1
+      },
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [
+        "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+      ],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 2.506
+    },
+    "red_s4": {
+      "case": "red_s4",
+      "variant": "835DAB7F2FFDC4B10D8892EDB94BB88E77F840DF59D05CF6C9FEBA7AAD4337DB",
+      "scenario": "S4",
+      "rc": 1,
+      "verdict": "RED_REPRODUCED",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_nonzero",
+          "ok": true
+        },
+        {
+          "name": "sidecar_conflict_raised",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_import_failed",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_not_indexed",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "failed",
+      "journal_reason": "canonical_import_failed",
+      "journal_canonical_path": null,
+      "journal_error": "immutable provenance sidecar conflict",
+      "ensure_status": "failed",
+      "fixture_sha_indexed": 0,
+      "orphan_sha_indexed": 0,
+      "import_scan": null,
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [
+        "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+      ],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 1.973
+    }
+  },
+  "green": {
+    "green_s1": {
+      "case": "green_s1",
+      "variant": "D3DE75BF85AEFDAF926B6CED3934BBEA75622743B7E7FBF028587BA672F6C011",
+      "scenario": "S1",
+      "rc": 0,
+      "verdict": "GREEN_PASSED",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_zero",
+          "ok": true
+        },
+        {
+          "name": "ensure_status_imported_or_deduplicated",
+          "ok": true
+        },
+        {
+          "name": "journal_outcome_downloaded_new",
+          "ok": true
+        },
+        {
+          "name": "canonical_path_hash_suffix_file",
+          "ok": true
+        },
+        {
+          "name": "content_sha_is_fixture",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_indexed",
+          "ok": true
+        },
+        {
+          "name": "orphan_sha_indexed_too",
+          "ok": true
+        },
+        {
+          "name": "every_canonical_file_indexed",
+          "ok": true
+        },
+        {
+          "name": "staging_consumed",
+          "ok": true
+        },
+        {
+          "name": "identity_backfill_intact",
+          "ok": true
+        },
+        {
+          "name": "import_scan_indexed_files",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "downloaded_new",
+      "journal_reason": "missing_source_downloaded_to_staging_pending_canonical_import",
+      "journal_canonical_path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\green_s1\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "journal_error": null,
+      "ensure_status": "imported",
+      "fixture_sha_indexed": 1,
+      "orphan_sha_indexed": 1,
+      "import_scan": {
+        "status": "completed",
+        "files_seen": 4,
+        "strategy": {
+          "company_raw": "legacy"
+        },
+        "errors": 0
+      },
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 2.328
+    },
+    "green_s4": {
+      "case": "green_s4",
+      "variant": "D3DE75BF85AEFDAF926B6CED3934BBEA75622743B7E7FBF028587BA672F6C011",
+      "scenario": "S4",
+      "rc": 0,
+      "verdict": "GREEN_PASSED",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_zero",
+          "ok": true
+        },
+        {
+          "name": "ensure_status_imported_or_deduplicated",
+          "ok": true
+        },
+        {
+          "name": "journal_outcome_deduplicated_after_download",
+          "ok": true
+        },
+        {
+          "name": "canonical_path_hash_suffix_file",
+          "ok": true
+        },
+        {
+          "name": "content_sha_is_fixture",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_indexed",
+          "ok": true
+        },
+        {
+          "name": "orphan_sha_indexed_too",
+          "ok": true
+        },
+        {
+          "name": "every_canonical_file_indexed",
+          "ok": true
+        },
+        {
+          "name": "staging_consumed",
+          "ok": true
+        },
+        {
+          "name": "identity_backfill_intact",
+          "ok": true
+        },
+        {
+          "name": "import_scan_indexed_files",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "deduplicated_after_download",
+      "journal_reason": "missing_source_downloaded_to_staging_pending_canonical_import",
+      "journal_canonical_path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\green_s4\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "journal_error": null,
+      "ensure_status": "deduplicated",
+      "fixture_sha_indexed": 1,
+      "orphan_sha_indexed": 1,
+      "import_scan": {
+        "status": "completed",
+        "files_seen": 4,
+        "strategy": {
+          "company_raw": "legacy"
+        },
+        "errors": 0
+      },
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 2.44
+    },
+    "dedup_s5": {
+      "case": "dedup_s5",
+      "variant": "D3DE75BF85AEFDAF926B6CED3934BBEA75622743B7E7FBF028587BA672F6C011",
+      "scenario": "S5",
+      "rc": 0,
+      "verdict": "GREEN_PASSED",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_zero",
+          "ok": true
+        },
+        {
+          "name": "journal_outcome_deduplicated_after_download",
+          "ok": true
+        },
+        {
+          "name": "dedup_branch_taken_provenance_null",
+          "ok": true
+        },
+        {
+          "name": "canonical_path_hash_suffix_file",
+          "ok": true
+        },
+        {
+          "name": "staging_consumed",
+          "ok": true
+        },
+        {
+          "name": "no_new_file_created",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_indexed",
+          "ok": true
+        },
+        {
+          "name": "identity_backfill_intact",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "deduplicated_after_download",
+      "journal_reason": "missing_source_downloaded_to_staging_pending_canonical_import",
+      "journal_canonical_path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\green_s4\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "journal_error": null,
+      "ensure_status": "deduplicated",
+      "fixture_sha_indexed": 1,
+      "orphan_sha_indexed": 1,
+      "import_scan": {
+        "status": "completed",
+        "files_seen": 4,
+        "strategy": {
+          "company_raw": "legacy"
+        },
+        "errors": 0
+      },
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 1.565
+    }
+  },
+  "mutations": {
+    "m1_s1": {
+      "case": "m1_s1",
+      "variant": "1004D7EC4F46EE7DF59BF8E0382B37F3EE23D6D4C17B54C0D63D475C010E268B",
+      "scenario": "S1",
+      "rc": 1,
+      "verdict": "MUTATION_CAUGHT",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_nonzero",
+          "ok": true
+        },
+        {
+          "name": "identity_error_raised",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_import_failed",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_path_null",
+          "ok": true
+        },
+        {
+          "name": "journal_content_sha_is_fixture",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_not_indexed",
+          "ok": true
+        },
+        {
+          "name": "import_scan_failed_closed",
+          "ok": true
+        },
+        {
+          "name": "committed_file_left_unindexed",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "failed",
+      "journal_reason": "canonical_import_failed",
+      "journal_canonical_path": null,
+      "journal_error": "canonical file was written but exact provider identity did not resolve",
+      "ensure_status": "failed",
+      "fixture_sha_indexed": 0,
+      "orphan_sha_indexed": 0,
+      "import_scan": {
+        "status": "completed_with_errors",
+        "files_seen": 0,
+        "strategy": {
+          "company_raw": "adapter"
+        },
+        "errors": 1
+      },
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [
+        "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+      ],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 2.323
+    },
+    "m2_s4": {
+      "case": "m2_s4",
+      "variant": "81DC56C5D85B2A55E4B068979B9755249E32B1803CB9E22DEBD643F4A0DD6CDA",
+      "scenario": "S4",
+      "rc": 1,
+      "verdict": "MUTATION_CAUGHT",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_nonzero",
+          "ok": true
+        },
+        {
+          "name": "sidecar_conflict_raised",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_import_failed",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_not_indexed",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "failed",
+      "journal_reason": "canonical_import_failed",
+      "journal_canonical_path": null,
+      "journal_error": "immutable provenance sidecar conflict",
+      "ensure_status": "failed",
+      "fixture_sha_indexed": 0,
+      "orphan_sha_indexed": 0,
+      "import_scan": null,
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [
+        "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+      ],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 2.069
+    },
+    "m3_s1": {
+      "case": "m3_s1",
+      "variant": "DCFA3EE1DAA5970EDB14C2D96B837CD7CC115554291CAAC063D8073E22B13404",
+      "scenario": "S1",
+      "rc": 1,
+      "verdict": "MUTATION_CAUGHT",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_nonzero",
+          "ok": true
+        },
+        {
+          "name": "identity_error_raised",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_import_failed",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_path_null",
+          "ok": true
+        },
+        {
+          "name": "import_scan_indexed_files",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_indexed_but_verification_rejected",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "failed",
+      "journal_reason": "canonical_import_failed",
+      "journal_canonical_path": null,
+      "journal_error": "canonical file was written but exact provider identity did not resolve",
+      "ensure_status": "failed",
+      "fixture_sha_indexed": 1,
+      "orphan_sha_indexed": 1,
+      "import_scan": {
+        "status": "completed",
+        "files_seen": 4,
+        "strategy": {
+          "company_raw": "legacy"
+        },
+        "errors": 0
+      },
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [
+        "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+      ],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 2.374
+    },
+    "m4_s1": {
+      "case": "m4_s1",
+      "variant": "AE0B0DAA61596593E2417F655E3B487D942253C940B180AEC4339663EC2855D0",
+      "scenario": "S1",
+      "rc": 1,
+      "verdict": "MUTATION_CAUGHT",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_nonzero",
+          "ok": true
+        },
+        {
+          "name": "collision_error_raised",
+          "ok": true
+        },
+        {
+          "name": "journal_canonical_import_failed",
+          "ok": true
+        },
+        {
+          "name": "fixture_sha_not_indexed",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "failed",
+      "journal_reason": "canonical_import_failed",
+      "journal_canonical_path": null,
+      "journal_error": "canonical filename collision after hash suffix",
+      "ensure_status": "failed",
+      "fixture_sha_indexed": 0,
+      "orphan_sha_indexed": 0,
+      "import_scan": null,
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json"
+      ],
+      "post_staging": [
+        "1eb6c299311836a2be1bf989e399c54ffa061513a532a9f5748ee742ab6d1838\\msft-20260630.htm"
+      ],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 1.758
+    },
+    "m5_s1": {
+      "case": "m5_s1",
+      "variant": "A38A78766CCEFDDB5695724F649D2D6B75526572BBA5521027FC6E7AF92B8E5A",
+      "scenario": "S1",
+      "rc": 0,
+      "verdict": "MUTATION_CAUGHT",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_zero_import_succeeded",
+          "ok": true
+        },
+        {
+          "name": "identity_backfill_broken_by_mutation",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "downloaded_new",
+      "journal_reason": "missing_source_downloaded_to_staging_pending_canonical_import",
+      "journal_canonical_path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\m5_s1\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "journal_error": null,
+      "ensure_status": "imported",
+      "fixture_sha_indexed": 1,
+      "orphan_sha_indexed": 1,
+      "import_scan": {
+        "status": "completed",
+        "files_seen": 4,
+        "strategy": {
+          "company_raw": "legacy"
+        },
+        "errors": 0
+      },
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 2.476
+    },
+    "m6_dedup": {
+      "case": "m6_dedup",
+      "variant": "E1198E842F2710BD60F2CD798D8EB47DBC348351FC4D6B36CFCD66721A15D6EB",
+      "scenario": "S5",
+      "rc": 0,
+      "verdict": "MUTATION_CAUGHT",
+      "all_checks_ok": true,
+      "checks": [
+        {
+          "name": "rc_zero_import_succeeded",
+          "ok": true
+        },
+        {
+          "name": "dedup_branch_skipped_by_mutation",
+          "ok": true
+        }
+      ],
+      "journal_outcome": "deduplicated_after_download",
+      "journal_reason": "missing_source_downloaded_to_staging_pending_canonical_import",
+      "journal_canonical_path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\defmsftdup\\work\\m6_dedup\\companies\\MICROSOFT CORP\\raw\\financial_reports\\annual\\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+      "journal_error": null,
+      "ensure_status": "deduplicated",
+      "fixture_sha_indexed": 1,
+      "orphan_sha_indexed": 1,
+      "import_scan": {
+        "status": "completed",
+        "files_seen": 4,
+        "strategy": {
+          "company_raw": "legacy"
+        },
+        "errors": 0
+      },
+      "post_annual_files": [
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm.source.json",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm",
+        "2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30__095935f968b5.htm.source.json"
+      ],
+      "post_staging": [],
+      "network_calls": 0,
+      "production_writes": 0,
+      "duration_s": 2.5
+    }
+  },
+  "g4_unit_tests": {
+    "ran": true,
+    "command": "python -m pytest -q -p no:cacheprovider --basetemp=%TEMP%/defmsft_pytest tests/contract/test_source_catalog_canonical_writer.py tests/contract/test_canonical_ingest_service.py tests/contract/test_source_catalog_acquisition.py tests/contract/test_source_catalog_resolver.py",
+    "result": "39 passed",
+    "passed": 39,
+    "failed": false,
+    "company_wiki_diff_set_unchanged_by_run": true
+  },
+  "summary": {
+    "red_reproduced": true,
+    "green_passed": true,
+    "mutations_caught": true,
+    "mutation_count": 6,
+    "all_pass": true
+  },
+  "cases_dir": "rig/cases",
+  "harness": {
+    "entry": "rig/harness/run_case.py",
+    "variants": "rig/harness/make_variants.py",
+    "diff_report": "rig/diff_report.txt",
+    "unified_diff": "rig/diff_asfound_to_fixed.patch",
+    "company_wiki_git_diff": "rig/cw_git_diff_canonical_writer.patch"
+  }
+}

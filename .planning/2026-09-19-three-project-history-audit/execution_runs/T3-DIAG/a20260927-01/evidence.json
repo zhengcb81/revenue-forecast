@@ -1,0 +1,114 @@
+{
+  "diagnostic": {
+    "role": "diagnostician_t3",
+    "authorized_by": "§四十裁定三",
+    "date": "2026-09-27",
+    "workspace": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+    "readonly": true,
+    "network_used": false,
+    "git_commands_used": 0,
+    "repro_isolation": "%TEMP%\\t3-diag-repro\\"
+  },
+  "logs": {
+    "20260920T033000Z": {
+      "path": "assurance/runs/weekly-run-20260920T033000Z.log",
+      "sha256": "20b255a255214c2d15cd7a346ad360c20418370b5d94149753b799ddef01a77d",
+      "bytes": 3660,
+      "key_lines": [
+        "status=not-ok ok=False exit_code=1",
+        "detail=T3 suite exit 1",
+        "argv=['weekly_t3_schedule.py', 'run-weekly']",
+        "C:\\Users\\郑曾波\\Projects\\filing-fetch\\tests\\test_e2e_download.py:144: in test_download_cn_annual_report",
+        "self.assertEqual(rc, 0, out + err)",
+        "E   AssertionError: 2 != 0",
+        "E     \"error\": \"company-wiki ensure exited 1: {\\\"error\\\": \\\"adapter stockinfo-cninfo discover exited 1: [04:30:27] ERROR stock_downloader: Browser init failed: BrowserType.launch: Executable doesn't exist at C:\\\\WINDOWS\\\\system32\\\\config\\\\systemprofile\\\\AppData\\\\Local\\\\ms-playwright\\\\chromium_headless_shell-1194\\\\chrome-win\\\\headless_shell.exe",
+        "E     \"stage\": \"ensure\",",
+        "E     \"attempts\": 1,",
+        "E     \"calls\": 3,",
+        "E     \"downloads\": 0",
+        "1 failed, 3 passed in 111.45s (0:01:51)"
+      ]
+    },
+    "20260927T033001Z": {
+      "path": "assurance/runs/weekly-run-20260927T033001Z.log",
+      "sha256": "dd9123ea3981de86e0c25fcee1eea4b9b85cd55190dabbb63ccdf027b92e9894",
+      "bytes": 3684,
+      "key_lines": [
+        "status=not-ok ok=False exit_code=1",
+        "detail=T3 suite exit 1",
+        "argv=['weekly_t3_schedule.py', 'run-weekly']",
+        "C:\\Users\\郑曾波\\Projects\\filing-fetch\\tests\\test_e2e_download.py:144: in test_download_cn_annual_report",
+        "E   AssertionError: 2 != 0",
+        "E     \"error\": \"company-wiki ensure exited 1: {\\\"error\\\": \\\"adapter stockinfo-cninfo discover exited 1: [04:30:26] ERROR stock_downloader: Browser init failed: BrowserType.launch: Executable doesn't exist at C:\\\\WINDOWS\\\\system32\\\\config\\\\systemprofile\\\\AppData\\\\Local\\\\ms-playwright\\\\chromium_headless_shell-1194\\\\chrome-win\\\\headless_shell.exe",
+        "E     \"stage\": \"ensure\",",
+        "E     \"downloads\": 0",
+        "1 failed, 3 passed in 92.01s (0:01:32)"
+      ]
+    }
+  },
+  "alert_journal": {
+    "path": "assurance/runs/weekly_alert.jsonl",
+    "entries": [
+      {"run_id": "20260906T070858Z", "status": "blocked", "exit_code": 0, "reason": "T3 suite fully skipped (credentials/network missing)"},
+      {"run_id": "20260913T064640Z", "status": "not-ok", "exit_code": 1, "reason": "T3 suite exit 1", "note": "no report file (predates F-B01-10)"},
+      {"run_id": "20260920T033000Z", "status": "not-ok", "exit_code": 1},
+      {"run_id": "20260927T033001Z", "status": "not-ok", "exit_code": 1}
+    ]
+  },
+  "counter_evidence_manual_green": {
+    "note": "same product code, manual runs from repo root under the interactive user account -> suite fully green",
+    "runs": [
+      {"log": "assurance/runs/weekly-run-20260913T194021Z.log", "argv": "['tools/weekly_t3_schedule.py', 'run-weekly']", "result": "status=ok exit_code=0", "suite": "4 passed in 78.35s"},
+      {"log": "assurance/runs/weekly-run-20260913T194234Z.log", "argv": "['tools/weekly_t3_schedule.py', 'run-weekly']", "result": "status=ok exit_code=0", "suite": "4 passed in 56.02s"}
+    ]
+  },
+  "filesystem_facts": {
+    "systemprofile_ms_playwright_dir_exists": false,
+    "systemprofile_headless_shell_1194_exists": false,
+    "user_headless_shell_1194_exists": true,
+    "user_headless_shell_1194_path": "C:\\Users\\郑曾波\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1194\\chrome-win\\headless_shell.exe",
+    "user_ms_playwright_builds": ["chromium-1194", "chromium-1243", "chromium_headless_shell-1194", "chromium_headless_shell-1243", "ffmpeg-1011", "firefox-1543", "webkit-2359", "winldd-1007"]
+  },
+  "playwright_path_resolution": {
+    "method": "python -m playwright install chromium --dry-run (prints only, no download)",
+    "interpreter": "C:\\Miniconda\\python.exe (python 3.13.9, playwright 1.56.0, chromium 141.0.7390.37 -> build 1194)",
+    "user_env_resolves_to": "C:\\Users\\郑曾波\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1194",
+    "simulated_system_env_resolves_to": "C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1194",
+    "conclusion": "path resolution keys off LOCALAPPDATA only; the runner's GP-009 USERPROFILE patch does not affect it"
+  },
+  "repro": {
+    "script": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\t3-diag-repro\\repro_browser.py",
+    "design": "identical chromium.launch(headless=True) twice; baseline = current user env; simulated SYSTEM = USERPROFILE patched as _run_t3_suite does + LOCALAPPDATA at systemprofile + PLAYWRIGHT_BROWSERS_PATH unset",
+    "baseline_rc": 0,
+    "baseline_output": "LAUNCH-OK",
+    "simulated_system_rc": 1,
+    "simulated_system_error": "playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1194\\chrome-win\\headless_shell.exe",
+    "matches_log_error": true,
+    "full_suite_rerun_done": false,
+    "full_suite_rerun_reason": "real CN test requires cninfo network access (forbidden) and run-weekly writes ledger/alert/report inside the repo (forbidden); the simulated repro covers the decisive condition"
+  },
+  "suite_definition": {
+    "runner": "tools/weekly_t3_schedule.py",
+    "suite_command": "[sys.executable, -B, -m, pytest, <filing-fetch>/tests/test_e2e_download.py, -q, --tb=short]",
+    "gate_env": "FILING_FETCH_E2E_DOWNLOAD=1",
+    "gp009_patch_lines": "116-118: env['USERPROFILE'] = PROJECT_ROOT.parent.parent (LOCALAPPDATA untouched)",
+    "failing_test": "DownloadE2E::test_download_cn_annual_report (assert at tests/test_e2e_download.py:144)",
+    "other_tests": ["test_download_us_annual_report (dayu-agent)", "test_download_hk_annual_report (dayu-agent)", "test_download_rejects_corrupted_local_copy (seeded, no browser)"],
+    "register_script_target": "SYSTEM / LogonType ServiceAccount / weekly Sunday 04:30 (weekly_t3_schedule.py L293-295)"
+  },
+  "scheduled_task_query": {
+    "schtasks_query_tn": "Access denied (non-elevated session)",
+    "get_scheduledtask_by_name": "not found in this session's view",
+    "full_action_scan_for_weekly_t3": "no hit (visibility limited)",
+    "system_context_evidence_instead": ["register script -UserId 'SYSTEM'", "error path under C:\\WINDOWS\\system32\\config\\systemprofile", "adapter timestamps [04:30:26/27] match registered Sunday 04:30 trigger"]
+  },
+  "attribution": {
+    "root_cause": "environment: Playwright browsers never installed for the SYSTEM service account; runner's GP-009 fix patches USERPROFILE but Playwright resolves browsers via LOCALAPPDATA",
+    "product_code_change": "excluded",
+    "wiki_sha_change_bf0c8b27_to_dbe47450": "excluded (triplet is runtime git-HEAD recording; test uses temp IsolatedWiki; failure precedes any content access; downloads=0)",
+    "test_itself": "excluded as defect (faithfully surfaced env fault); sentinel-preflight improvement suggested",
+    "data_missing": "excluded (failure at browser init, before discovery/data layer)",
+    "self_healed": false,
+    "next_sunday_will_fail_again": true
+  }
+}
