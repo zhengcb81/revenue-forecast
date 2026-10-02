@@ -128,6 +128,19 @@ def closure_report(
             f"{len(machine_invalid)} unit(s) with incomplete machine evidence: "
             f"{machine_invalid}"
         )
+    # DEF-I00C-GATE-NEG (N6b): a narrowed successor card must be flagged and
+    # must never silently satisfy the original (wider) obligation.
+    narrowed = [
+        row["fc_id"]
+        for row in legacy.get("fc_entries", [])
+        if str(row.get("fc_id", "")).endswith("-narrow")
+    ]
+    if narrowed:
+        reasons.append(
+            f"{len(narrowed)} narrowed successor card(s) flagged, not accepted "
+            f"as substitutes: {narrowed} — original obligations stay pending "
+            "until closed on their own scope"
+        )
     return {
         "schema_version": 1,
         "old_plan_verdict": "incomplete",

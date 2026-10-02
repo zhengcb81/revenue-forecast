@@ -53,7 +53,78 @@ def test_closure_report_green_when_filled(tmp_path):
     payload = json.loads(out.read_text(encoding="utf-8"))
     for info in payload["scenarios"].values():
         info["status"] = "passed"
+        info["evidence_path"] = "evidence/filled.json"
+        info["fixture_hash"] = "ab" * 32
     assert sc.closure_report(payload)["closure_ready"] is True
+
+
+def _single_scenario(info: dict) -> dict:
+    return {"counts": {"unique_total": 1}, "scenarios": {"S-1": info}}
+
+
+def test_closure_report_rejects_bare_passed_without_evidence():
+    report = sc.closure_report(
+        _single_scenario(
+            {
+                "status": "passed",
+                "tier": "T1",
+                "evidence_path": None,
+                "fixture_hash": None,
+                "oracle": None,
+            }
+        )
+    )
+    assert report["closure_ready"] is False
+    assert any("evidence_path" in entry for entry in report["unsatisfied_ids"])
+
+
+def test_closure_report_rejects_wrong_capability_evidence():
+    report = sc.closure_report(
+        _single_scenario(
+            {
+                "status": "passed",
+                "tier": "T1",
+                "evidence_path": "evidence/S_1.json",
+                "fixture_hash": "ab" * 32,
+                "required_capability": "deadline",
+                "covered_capabilities": ["artifact"],
+            }
+        )
+    )
+    assert report["closure_ready"] is False
+    assert any("deadline" in entry for entry in report["unsatisfied_ids"])
+
+
+def test_closure_report_accepts_covering_capability():
+    report = sc.closure_report(
+        _single_scenario(
+            {
+                "status": "passed",
+                "tier": "T1",
+                "evidence_path": "evidence/S_1.json",
+                "fixture_hash": "ab" * 32,
+                "required_capability": "deadline",
+                "covered_capabilities": ["deadline"],
+            }
+        )
+    )
+    assert report["closure_ready"] is True
+
+
+def test_closure_report_rejects_empty_oracle_content():
+    base = {
+        "status": "passed",
+        "tier": "T1",
+        "evidence_path": "evidence/S_1.json",
+        "fixture_hash": "cd" * 32,
+    }
+    for oracle in (
+        {"validated_commands": [], "invariants": ["i1"]},
+        {"validated_commands": ["c1"], "invariants": []},
+        {"validated_commands": [], "invariants": []},
+    ):
+        report = sc.closure_report(_single_scenario(dict(base, oracle=oracle)))
+        assert report["closure_ready"] is False, oracle
 
 
 @pytest.fixture

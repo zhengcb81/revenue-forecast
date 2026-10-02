@@ -140,17 +140,73 @@ def verify(repo_root: Path, registry_path: Path) -> list[str]:
     return problems
 
 
+SATISFIED_STATUSES = ("passed", "expected_failure_pass")
+
+
+def _evidence_problems(info: dict[str, Any]) -> list[str]:
+    """Evidence-completeness problems for a cell whose status is satisfied.
+
+    A satisfied status alone never proves completion (DEF-I00C-GATE-NEG):
+    the cell must carry its evidence path, the declared required capability
+    must actually be covered by that evidence, and a present oracle must not
+    be empty — validated commands or invariants that are empty mean nothing
+    was validated.
+
+    Owner §四十二 裁定二 (2026-09-27, "放宽（复审建议）") relaxes the hash leg
+    exactly once: a cell WITH an evidence path but WITHOUT a recorded
+    fixture_hash is a registry bookkeeping gap (``build()`` never writes one)
+    — it stays visible via ``closure_report()["evidence_hash_pending"]`` but
+    no longer blocks closure.  A cell with NO evidence path still fails
+    (the N1 "all passed but no evidence" port stays shut), and a hash that IS
+    recorded remains a strict requirement.  Nine-negative regression must stay
+    9/9 rejected (护栏).
+    """
+    problems: list[str] = []
+    if not info.get("evidence_path"):
+        problems.append("passed without evidence_path")
+    elif not info.get("fixture_hash") and not info.get("evidence_hash_pending"):
+        # Owner §四十二 裁定二: evidence present, hash not recorded yet —
+        # tracked as pending bookkeeping, NOT a closure blocker.
+        info["evidence_hash_pending"] = True
+    required = info.get("required_capability")
+    if required and required not in (info.get("covered_capabilities") or []):
+        problems.append(
+            f"required capability {required!r} not covered by evidence "
+            f"(covered={info.get('covered_capabilities') or []})"
+        )
+    oracle = info.get("oracle")
+    if isinstance(oracle, dict):
+        commands = oracle.get("validated_commands")
+        invariants = oracle.get("invariants")
+        if commands is not None and not commands:
+            problems.append("oracle validated_commands is empty")
+        if invariants is not None and not invariants:
+            problems.append("oracle invariants is empty")
+    elif isinstance(oracle, str) and not oracle.strip():
+        problems.append("oracle is empty")
+    return problems
+
+
 def closure_report(payload: dict[str, Any]) -> dict[str, Any]:
     """Machine summary: how many required cells are unsatisfied (closure red
-    while any scenario status is pending/blocked)."""
-    unsatisfied = [
-        scenario_id
-        for scenario_id, info in payload.get("scenarios", {}).items()
-        if info.get("status") not in ("passed", "expected_failure_pass")
-    ]
+    while any scenario status is pending/blocked, or a satisfied cell lacks
+    supporting evidence, capability coverage, or a non-empty oracle)."""
+    unsatisfied: list[str] = []
+    pending_hash = 0
+    for scenario_id, info in payload.get("scenarios", {}).items():
+        if info.get("status") not in SATISFIED_STATUSES:
+            unsatisfied.append(scenario_id)
+            continue
+        problems = _evidence_problems(info)
+        if info.get("evidence_hash_pending"):
+            pending_hash += 1
+        if problems:
+            unsatisfied.append(f"{scenario_id}: " + "; ".join(problems))
     return {
         "total_scenarios": payload.get("counts", {}).get("unique_total"),
         "unsatisfied": len(unsatisfied),
         "unsatisfied_ids": unsatisfied[:10],
         "closure_ready": not unsatisfied,
+        # Owner §四十二 裁定二: visible, non-blocking bookkeeping gap counter
+        "evidence_hash_pending": pending_hash,
     }
