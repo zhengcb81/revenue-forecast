@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+import subprocess
 from pathlib import Path
 import sys
 
@@ -85,3 +86,24 @@ def test_reference_accepts_only_metadata_receipt_and_full_source_binding(tmp_pat
     with pytest.raises(NarrativeTransportError):
         find_narrative_reference(request, catalog_config=tmp_path / "catalog.yaml",
                                   reader_command=_fake(tmp_path, encode(ref), encode(bad)))
+
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX executable-provider CLI smoke")
+def test_posix_cli_smoke_uses_own_nonblocking_transport(tmp_path):
+    body = (GOLDEN / "bundle.json").read_bytes()
+    command = _fake(tmp_path, body, _receipt())
+    provider = Path(command[-1])
+    provider.write_text("#!" + sys.executable + "\n" + provider.read_text(), encoding="utf-8")
+    provider.chmod(0o700)
+    result = subprocess.run(
+        [sys.executable, "-B", str(ROOT / "scripts/narrative_source_preparation.py"),
+         "--company-wiki-catalog-config", str(tmp_path / "catalog.yaml"),
+         "--reader-executable", str(provider)],
+        input=json.dumps(_request()).encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        timeout=5, check=False,
+    )
+    assert result.returncode == 0 and result.stderr == b""
+    context = json.loads(result.stdout)
+    assert context["schema_version"] == "revenue-narrative-context/1"
+    assert context["read_receipt"]["replay_status"] == "verified"

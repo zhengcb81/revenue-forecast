@@ -96,6 +96,8 @@ def test_deadline_and_tree_cleanup_cover_exited_wrapper_with_live_pipe_holders(t
 
 @pytest.mark.parametrize("fault", ["tree_attach", "second_thread"])
 def test_startup_fault_reaps_suspended_or_partially_started_process(tmp_path, monkeypatch, fault):
+    if fault == "second_thread" and sys.platform != "win32":
+        pytest.skip("POSIX pipes are nonblocking and have no background thread startup")
     import company_wiki_narrative_process as process_module
     baseline = {thread.ident for thread in live_threads()}
     processes = []
@@ -129,3 +131,51 @@ def test_startup_fault_reaps_suspended_or_partially_started_process(tmp_path, mo
     assert len(processes) == 1 and processes[0].poll() is not None
     assert all(pipe.closed for pipe in (processes[0].stdin, processes[0].stdout, processes[0].stderr))
     assert {thread.ident for thread in live_threads()} <= baseline
+
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX session detachment; Windows Job owns descendants")
+def test_detached_pipe_holder_cannot_hang_local_reader_host(tmp_path):
+    pid_path = tmp_path / "detached.pid"
+    wrapper = tmp_path / "wrapper.py"
+    child = ("import os,time,pathlib; p=pathlib.Path(" + repr(str(pid_path))
+             + "); t=p.with_suffix('.tmp'); t.write_text(str(os.getpid())); t.replace(p); time.sleep(30)")
+    wrapper.write_text(
+        "import pathlib,subprocess,sys,time\n"
+        + "subprocess.Popen([sys.executable,'-c'," + repr(child) + "],start_new_session=True)\n"
+        + "while not pathlib.Path(" + repr(str(pid_path)) + ").exists(): time.sleep(0.005)\n",
+        encoding="utf-8",
+    )
+    driver = tmp_path / "host.py"
+    driver.write_text(
+        "import sys,json,threading,time\n"
+        + "sys.path.insert(0," + repr(str(ROOT / "scripts")) + ")\n"
+        + "import company_wiki_narrative_process as port\n"
+        + "from company_wiki_narrative_contracts import NarrativeTransportError\n"
+        + "created=[]; original=port._start\n"
+        + "def record(*args):\n p=original(*args);created.append(p);return p\n"
+        + "port._start=record;started=time.monotonic()\n"
+        + "try:\n port.run_bounded([sys.executable," + repr(str(wrapper))
+        + "],b'',stdout_limit=32,stderr_limit=32,timeout_seconds=2)\n"
+        + "except NarrativeTransportError as error:\n"
+        + " print(json.dumps({'reason':error.reason,'elapsed':time.monotonic()-started,"
+        + "'reader_threads':sum(t.name.startswith('rf-narrative-') for t in threading.enumerate()),"
+        + "'pipes_closed':all(p.closed for p in (created[0].stdin,created[0].stdout,created[0].stderr))}),flush=True)\n"
+        + " raise SystemExit(2)\n", encoding="utf-8",
+    )
+    host = subprocess.Popen([sys.executable, "-B", str(driver)],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        stdout, stderr = host.communicate(timeout=4)
+        assert host.returncode == 2 and stderr == b""
+        import json
+        result = json.loads(stdout)
+        assert result["reason"] == "reader_timeout" and result["elapsed"] < 4
+        assert result["pipes_closed"] is True and result["reader_threads"] == 0
+        assert pid_path.exists()
+        os.kill(int(pid_path.read_text()), 0)  # Escaped PID is out of scope; only local resources must close.
+    finally:
+        if host.poll() is None:
+            host.kill()
+        _stop_test_child(pid_path)
+        host.communicate(timeout=3)

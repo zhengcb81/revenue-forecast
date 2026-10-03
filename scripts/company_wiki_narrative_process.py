@@ -13,6 +13,7 @@ from typing import BinaryIO, Sequence, cast
 
 from company_wiki_narrative_contracts import NarrativeTransportError, REQUEST_LIMIT
 from company_wiki_narrative_tree import ProcessTree
+from company_wiki_narrative_posix import transfer_posix
 
 
 @dataclass(frozen=True)
@@ -157,16 +158,20 @@ def _capture_result(process: subprocess.Popen[bytes], captures: list[_Capture], 
     return ReaderOutput(process.returncode, bytes(captures[0].data), bytes(captures[1].data))
 
 
+def _captures(process: subprocess.Popen[bytes], limits: tuple[int, int],
+              overflow: Event) -> list[_Capture]:
+    return [_Capture(cast(BufferedReader, process.stdout), limits[0], overflow),
+            _Capture(cast(BufferedReader, process.stderr), limits[1], overflow)]
+
+
 def _channels(process: subprocess.Popen[bytes], limits: tuple[int, int], data: bytes,
               overflow: Event) -> tuple[list[_Capture], list[Thread]]:
-    captures = [_Capture(cast(BufferedReader, process.stdout), limits[0], overflow),
-                _Capture(cast(BufferedReader, process.stderr), limits[1], overflow)]
+    captures = _captures(process, limits, overflow)
     threads = [Thread(target=capture.collect, name=f"rf-narrative-{process.pid}-pipe-{index}")
                for index, capture in enumerate(captures)]
     threads.append(Thread(target=_write_input, args=(process.stdin, data),
                           name=f"rf-narrative-{process.pid}-input"))
     return captures, threads
-
 
 
 def _start_threads(threads: list[Thread]) -> None:
@@ -175,6 +180,12 @@ def _start_threads(threads: list[Thread]) -> None:
             thread.start()
     except RuntimeError as exc:
         raise NarrativeTransportError("unavailable", "reader_unavailable") from exc
+
+
+def _run_posix(process: subprocess.Popen[bytes], captures: list[_Capture], data: bytes,
+               limits: tuple[int, int], deadline: float) -> None:
+    streams = (cast(BinaryIO, process.stdin), cast(BinaryIO, process.stdout), cast(BinaryIO, process.stderr))
+    transfer_posix(streams, data, [capture.data for capture in captures], limits, deadline)
 
 
 def run_bounded(
@@ -198,8 +209,13 @@ def run_bounded(
             tree.attach(process)
         except OSError as exc:
             raise NarrativeTransportError("unavailable", "reader_unavailable") from exc
-        captures, threads = _channels(process, (stdout_limit, stderr_limit), data, overflow)
-        _start_threads(threads)
+        limits = (stdout_limit, stderr_limit)
+        if tree.start_new_session:
+            captures = _captures(process, limits, overflow)
+            _run_posix(process, captures, data, limits, deadline)
+        else:
+            captures, threads = _channels(process, limits, data, overflow)
+            _start_threads(threads)
         reason = _wait(process, overflow, threads, deadline)
     finally:
         clean = _cleanup(tree, process, threads)
