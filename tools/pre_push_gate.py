@@ -216,6 +216,8 @@ def main(argv: list[str] | None = None) -> int:
         ([sys.executable, "-m", "compileall", "-q",
           "scripts", "tests", "tools", "e2e"],
          "compileall"),
+        ([sys.executable, str(PROJECT_ROOT / "tools" / "tests" / "test_complexity_ratchet.py")],
+         "complexity ratchet (FC-1204-b)"),
         ([sys.executable, str(PROJECT_ROOT / "tools" / "check_unique_test_symbols.py")],
          "unique test symbols (CI WU-1.1)"),
         # FC-1307-a (vendored from company-wiki): host assumptions - a test path or

@@ -67,6 +67,10 @@ _SOURCE_TYPE_BY_KIND = {
     "official_statistics": "official_statistics",
     "company_release": "company_release",
 }
+_SOURCE_LOCATION_FIELDS = {
+    "path", "canonical_path", "relative_path", "storage_path",
+    "canonical_location_id", "root_path", "filesystem_path",
+}
 
 
 def _revenue_source_type(handle: dict) -> str:
@@ -74,28 +78,42 @@ def _revenue_source_type(handle: dict) -> str:
     return _SOURCE_TYPE_BY_KIND.get(kind, "regulatory_filing")
 
 
-def prepare_source(
-    request: dict,
-    *,
-    allow_download: bool = False,
-    timeout_seconds: float = 900.0,
-    python: tuple[str, ...] = (sys.executable,),
-    company_wiki_config: Path | None = None,
-    filing_fetch_root: Path | None = None,
-) -> dict:
-    """Orchestrate the real chain and return the RevenueSourceRecord."""
-    # no --request-file: the client reads the request from stdin (C1 fix)
+def _catalog_config_for_reader(
+    enabled: bool, catalog_config: Path | None,
+) -> Path | None:
+    if not enabled:
+        return None
+    if not isinstance(catalog_config, Path):
+        raise RuntimeError("SourceRef v2 requires company_wiki_catalog_config")
+    try:
+        resolved = catalog_config.expanduser().resolve(strict=True)
+    except OSError as exc:
+        raise RuntimeError("company-wiki catalog config is unavailable") from exc
+    if not resolved.is_file():
+        raise RuntimeError("company-wiki catalog config must be a file")
+    return resolved
+
+
+def _filing_fetch_command(
+    python: tuple[str, ...], *, filing_fetch_root: Path | None,
+    company_wiki_config: Path | None, allow_download: bool,
+    source_reader_v2: bool, timeout_seconds: float,
+) -> tuple[str, ...]:
     command = (*python, str(FILING_FETCH_CLIENT))
     if filing_fetch_root is not None:
-        # FC-1202: explicit root override for E2E fixtures — no implicit
-        # sibling-location fallback anywhere in the chain.
         command = (*command, "--filing-fetch-root", str(filing_fetch_root))
     if company_wiki_config is not None:
         command = (*command, "--company-wiki-config", str(company_wiki_config))
     if allow_download:
         command = (*command, "--allow-download")
+    if source_reader_v2:
+        command = (*command, "--source-ref-v2")
     if timeout_seconds:
         command = (*command, "--timeout-seconds", str(timeout_seconds))
+    return command
+
+
+def _run_filing_fetch(request: dict, command: tuple[str, ...], timeout: float) -> dict:
     proc = subprocess.run(
         command,
         input=json.dumps(request, ensure_ascii=False),
@@ -103,7 +121,7 @@ def prepare_source(
         encoding="utf-8",
         capture_output=True,
         cwd=str(PROJECT_ROOT),
-        timeout=timeout_seconds + 30,
+        timeout=timeout + 30,
         check=False,
     )
     if proc.returncode != 0:
@@ -112,14 +130,94 @@ def prepare_source(
             f"{proc.stderr.strip()[-800:]}"
         )
     payload = json.loads(proc.stdout)
-    # the client prints the handle dict directly (no wrapper); FC-704: the
-    # handle carries the deep-validated resolution envelope (journal-derived
-    # outcome + download event evidence) when company-wiki supplied one.
-    handle = payload if isinstance(payload, dict) else {}
-    # FC-704: download evidence comes from the resolution envelope, never
-    # inferred from whether a handle was returned (scenario_matrix §2).
-    # No envelope => fail closed: a receipt claiming zero downloads without
-    # event evidence is exactly the fake the plan forbids.
+    return payload if isinstance(payload, dict) else {}
+
+
+def _validate_v2_candidate(request: dict, handle: dict) -> int:
+    source_ref = handle.get("source_ref")
+    if _SOURCE_LOCATION_FIELDS & set(handle):
+        raise RuntimeError("filing-fetch SourceRef candidate contains a storage location")
+    if isinstance(source_ref, dict) and _SOURCE_LOCATION_FIELDS & set(source_ref):
+        raise RuntimeError("filing-fetch SourceRef contains a storage location")
+    if not isinstance(source_ref, dict):
+        raise RuntimeError("filing-fetch SourceRef candidate is missing source_ref")
+    if handle.get("document_kind") != request.get("document_kind"):
+        raise RuntimeError("filing-fetch SourceRef document_kind mismatch")
+    fiscal_year = request.get("fiscal_year")
+    if type(fiscal_year) is not int or fiscal_year < 1:
+        raise RuntimeError("SourceRef v2 requires a valid fiscal_year")
+    if handle.get("fiscal_year") != fiscal_year:
+        raise RuntimeError("filing-fetch SourceRef fiscal_year mismatch")
+    if handle.get("fiscal_period") != request.get("fiscal_period"):
+        raise RuntimeError("filing-fetch SourceRef fiscal_period mismatch")
+    return fiscal_year
+
+
+def _v2_resolution_events(handle: dict) -> tuple[str, int]:
+    outcome = handle.get("resolution_outcome")
+    if not isinstance(outcome, str) or outcome not in {
+        "reused_existing", "reused_after_discovery", "downloaded_new",
+    }:
+        raise RuntimeError("filing-fetch SourceRef resolution_outcome is invalid")
+    downloads = handle.get("download_events")
+    if isinstance(downloads, bool) or downloads not in (0, 1):
+        raise RuntimeError("filing-fetch SourceRef download_events is invalid")
+    expected_downloads = int(outcome == "downloaded_new")
+    if downloads != expected_downloads:
+        raise RuntimeError(
+            "filing-fetch SourceRef outcome/download_events mismatch"
+        )
+    return outcome, downloads
+
+
+def _prepare_source_ref_v2(
+    request: dict, handle: dict, catalog_config: Path, *, timeout_seconds: float,
+) -> dict:
+    """Open and record one pathless candidate using company-wiki's verifier."""
+    from company_wiki_source_reader_v2 import open_source_version_v2
+    from company_wiki_source_v2 import build_revenue_source_record_from_verified_read
+
+    fiscal_year = _validate_v2_candidate(request, handle)
+    outcome, downloads = _v2_resolution_events(handle)
+    body, receipt, manifest = open_source_version_v2(
+        source_ref=handle["source_ref"],
+        catalog_config=catalog_config,
+        as_of_date=str(request.get("as_of_date", "")),
+        expected_fiscal_year=fiscal_year,
+        timeout_seconds=min(timeout_seconds, 30.0),
+    )
+    record = build_revenue_source_record_from_verified_read(
+        source_ref=handle["source_ref"],
+        read_receipt=receipt,
+        source_bytes=body,
+        source_manifest=manifest,
+        source_candidate=handle,
+        as_of_date=str(request.get("as_of_date", "")),
+        source_type=_revenue_source_type(handle),
+        publisher=str(handle.get("provider") or "company-wiki"),
+        page_or_section="1",
+        prompt_injection_status=handle.get("prompt_injection_status"),
+    )
+    record["reuse_receipt"] = {
+        "parser_calls": None,
+        "llm_calls": None,
+        "download_calls": downloads,
+        "outcome": outcome,
+        "policy_hash": receipt["policy_sha256"],
+        "source_read_policy_sha256": receipt["source_read_policy_sha256"],
+        "prompt_injection_status": record["capture"]["prompt_injection_status"],
+        "artifact_read": [],
+        "producer_events": [],
+        "artifact_read_events": [],
+        "artifact_failed_events": [],
+    }
+    _submit_preparation_demand(record)
+    return record
+
+
+def _prepare_legacy_source(request: dict, handle: dict) -> dict:
+    # Download evidence comes from the resolution envelope, never from the
+    # existence of a returned handle; absent evidence is fail-closed.
     envelope = handle.get("resolution_envelope")
     if not isinstance(envelope, dict):
         raise RuntimeError(
@@ -131,31 +229,20 @@ def prepare_source(
         raise RuntimeError(
             f"invalid download_events in resolution envelope: {download_events!r}"
         )
-    # FC-904: artifact selection is DAG-minimal and SOURCED from the envelope
-    # bundle (FC-902) via the selector — the unsourced
-    # payload.get("selected_artifacts") path is removed.  artifact_read =
-    # roles with a verified artifact (producers do not run); producer_events =
-    # requested missing roles + their non-reusable ancestors (never a blind full recompute).
-    artifact_read, producer_events = (
-        company_wiki_source.select_artifact_roles(handle))
-    # W05-B: verify the ACTUAL artifact reads.  artifact_read is the PLAN;
-    # artifact_read_events is the IO PROOF.  Without verified events, the
-    # selection alone cannot prove bytes were consumed.
+    artifact_read, producer_events = company_wiki_source.select_artifact_roles(handle)
     io_evidence = company_wiki_source.verify_artifact_reads(handle, artifact_read)
     artifact_read_events = io_evidence["verified_read_events"]
     artifact_failed_events = io_evidence["failed_read_events"]
-    # FC-905-b: capture/safety evidence comes from the envelope — never
-    # hardcoded.  Preserve an unreviewed status as a diagnostic; absent
-    # parser/llm counts still fail closed (never fabricated as 0).
     prompt_injection_status = envelope.get("prompt_injection_status")
     if prompt_injection_status is None:
-        prompt_injection_status = "not_reviewed"  # defensive N-1 default
+        prompt_injection_status = "not_reviewed"
     parser_calls = envelope.get("parser_calls")
     llm_calls = envelope.get("llm_calls")
     if parser_calls is None or llm_calls is None:
         raise RuntimeError(
             "parser/llm counts absent from the resolution envelope — fail "
-            "closed instead of fabricating 0")
+            "closed instead of fabricating 0"
+        )
     record = company_wiki_source.build_revenue_source_record(
         handle,
         as_of_date=str(request.get("as_of_date", "")),
@@ -178,10 +265,40 @@ def prepare_source(
         "artifact_read_events": artifact_read_events,
         "artifact_failed_events": artifact_failed_events,
     }
-    # ZR-701: submit one processing demand per prepared source; a repeated
-    # preparation of the same source dedupes to the existing demand.
     _submit_preparation_demand(record)
     return record
+
+
+def prepare_source(
+    request: dict,
+    *,
+    allow_download: bool = False,
+    timeout_seconds: float = 900.0,
+    python: tuple[str, ...] = (sys.executable,),
+    company_wiki_config: Path | None = None,
+    filing_fetch_root: Path | None = None,
+    source_reader_v2: bool = False,
+    company_wiki_catalog_config: Path | None = None,
+) -> dict:
+    """Orchestrate the real chain and return the RevenueSourceRecord."""
+    catalog_config = _catalog_config_for_reader(
+        source_reader_v2, company_wiki_catalog_config,
+    )
+    command = _filing_fetch_command(
+        python,
+        filing_fetch_root=filing_fetch_root,
+        company_wiki_config=company_wiki_config,
+        allow_download=allow_download,
+        source_reader_v2=source_reader_v2,
+        timeout_seconds=timeout_seconds,
+    )
+    handle = _run_filing_fetch(request, command, timeout_seconds)
+    if source_reader_v2:
+        assert catalog_config is not None
+        return _prepare_source_ref_v2(
+            request, handle, catalog_config, timeout_seconds=timeout_seconds,
+        )
+    return _prepare_legacy_source(request, handle)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -190,6 +307,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--request-file", help="request JSON file (else stdin)")
     parser.add_argument("--allow-download", action="store_true")
+    parser.add_argument("--source-reader-v2", action="store_true")
+    parser.add_argument("--company-wiki-catalog-config", type=Path, default=None)
     parser.add_argument("--timeout-seconds", type=float, default=900.0)
     parser.add_argument("--company-wiki-config", type=Path, default=None,
                         help="override company-wiki config for the chain (E2E)")
@@ -209,6 +328,8 @@ def main(argv: list[str] | None = None) -> int:
             timeout_seconds=args.timeout_seconds,
             company_wiki_config=args.company_wiki_config,
             filing_fetch_root=args.filing_fetch_root,
+            source_reader_v2=args.source_reader_v2,
+            company_wiki_catalog_config=args.company_wiki_catalog_config,
         )
     except (json.JSONDecodeError, ValueError) as exc:
         sys.stderr.write(json.dumps({"error_code": "bad_request", "error": str(exc)}))

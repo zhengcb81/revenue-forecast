@@ -132,30 +132,75 @@ def _inventory(rows: list[dict[str, float]], years: Sequence[int], error: type[V
     return result
 
 
+def _validate_driver_names(
+    model_id: str, dimensions: Mapping[str, str], optional: tuple[str, ...],
+    drivers: Mapping[str, list[float]], error: type[ValueError],
+) -> None:
+    unknown = set(drivers) - set(dimensions)
+    missing = set(dimensions) - set(optional) - set(drivers)
+    if unknown or missing:
+        raise error(f"invalid drivers for {model_id}: missing={sorted(missing)}, unknown={sorted(unknown)}")
+
+
+def _validate_numeric_driver(value: float, model_id: str, name: str,
+                             error: type[ValueError]) -> None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise error(f"driver must be finite numeric: {model_id}/{name}")
+
+
+def _validate_driver_bound(value: float, lower: float | None, upper: float | None,
+                           model_id: str, name: str, error: type[ValueError]) -> None:
+    if (lower is not None and value < lower) or (upper is not None and value > upper):
+        raise error(f"driver out of bounds: {model_id}/{name}")
+
+
+def _validate_driver_path(
+    model_id: str, name: str, values: list[float], years: Sequence[int],
+    dimension: str, bounds: Mapping[str, tuple[float | None, float | None]],
+    error: type[ValueError],
+) -> None:
+    if len(values) != len(years):
+        raise error(f"driver path length mismatch: {model_id}/{name}")
+    lower, upper = bounds.get(
+        name, (0.0, 1.0 if dimension == "ratio" else None),
+    )
+    for value in values:
+        _validate_numeric_driver(value, model_id, name, error)
+        _validate_driver_bound(value, lower, upper, model_id, name, error)
+
+
+def _resolve_driver_paths(
+    model_id: str, dimensions: Mapping[str, str], bounds: Mapping[str, tuple[float | None, float | None]],
+    drivers: Mapping[str, list[float]], years: Sequence[int], error: type[ValueError],
+) -> dict[str, list[float]]:
+    resolved = {name: list(drivers.get(name, [0.0] * len(years))) for name in dimensions}
+    for name, values in resolved.items():
+        _validate_driver_path(model_id, name, values, years, dimensions[name], bounds, error)
+    return resolved
+
+
+def _validate_calculated_output(
+    output: list[float], years: Sequence[int], model_id: str,
+    error: type[ValueError],
+) -> None:
+    invalid = len(output) != len(years) or any(
+        not math.isfinite(value) or value < 0 for value in output
+    )
+    if invalid:
+        raise error(f"calculated revenue must be finite and non-negative: {model_id}")
+
+
 def _validated_calculator(model_id: str, dimensions: Mapping[str, str], optional: tuple[str, ...],
                           bounds: Mapping[str, tuple[float | None, float | None]],
                           calculator: Callable[..., list[float]], error: type[ValueError]) -> Callable[..., list[float]]:
     """Keep public pure calculators safe even when called without the input engine."""
     def calculate(base_revenue: float, drivers: Mapping[str, list[float]], years: Sequence[int]) -> list[float]:
         del base_revenue
-        unknown = set(drivers) - set(dimensions)
-        missing = set(dimensions) - set(optional) - set(drivers)
-        if unknown or missing:
-            raise error(f"invalid drivers for {model_id}: missing={sorted(missing)}, unknown={sorted(unknown)}")
-        resolved = {name: list(drivers.get(name, [0.0] * len(years))) for name in dimensions}
-        for name, values in resolved.items():
-            if len(values) != len(years):
-                raise error(f"driver path length mismatch: {model_id}/{name}")
-            lower, upper = bounds.get(name, (0.0, 1.0 if dimensions[name] == "ratio" else None))
-            for value in values:
-                if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
-                    raise error(f"driver must be finite numeric: {model_id}/{name}")
-                if (lower is not None and value < lower) or (upper is not None and value > upper):
-                    raise error(f"driver out of bounds: {model_id}/{name}")
+        _validate_driver_names(model_id, dimensions, optional, drivers, error)
+        resolved = _resolve_driver_paths(model_id, dimensions, bounds, drivers, years, error)
         rows = [{name: values[index] for name, values in resolved.items()} for index in range(len(years))]
         output = calculator(rows, years, error)
-        if len(output) != len(years) or any(not math.isfinite(v) or v < 0 for v in output):
-            raise error(f"calculated revenue must be finite and non-negative: {model_id}")
+        _validate_calculated_output(output, years, model_id, error)
         return output
     return calculate
 

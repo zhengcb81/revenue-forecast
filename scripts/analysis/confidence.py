@@ -63,6 +63,48 @@ def parameter_revenue_weights(
     return dict(weights)
 
 
+def _history_score(
+    data: dict[str, Any], historical_wape: float | None,
+    historical_observations: int,
+) -> tuple[float, int]:
+    history_score = (
+        0.0
+        if historical_wape is None
+        else 15
+        if historical_wape <= 0.05
+        else 12
+        if historical_wape <= 0.10
+        else 8
+        if historical_wape <= 0.20
+        else 4
+        if historical_wape <= 0.30
+        else 0
+    )
+    records = data.get("historical_accuracy_records", [])
+    usable_origins = sum(record.get("record_schema_version") == "1.1" for record in records)
+    discounted = history_score * min(
+        1.0, historical_observations / 5, usable_origins / 3,
+    )
+    return discounted, usable_origins
+
+
+def _append_history_limitations(
+    limitations: list[str], data: dict[str, Any],
+    observations: int, usable_origins: int,
+) -> None:
+    limitations.append("Confidence is an evidence/workflow score, not a calibrated forecast probability")
+    if usable_origins:
+        limitations.append(
+            "Historical accuracy summary hashes validate integrity, not source provenance; "
+            "archived snapshot and evaluation artifacts require audit before treating the score as verified historical skill"
+        )
+    if observations and (observations < 5 or usable_origins < 3):
+        limitations.append("Historical accuracy has fewer than five observations or three forecast origins; score is discounted")
+    records = data.get("historical_accuracy_records", [])
+    if any(record.get("record_schema_version") == "1.0" for record in records):
+        limitations.append("Legacy accuracy records lack identity/date/denominator and are excluded from scoring")
+
+
 def calculate_confidence(
     data: dict[str, Any],
     validated: dict[str, Any],
@@ -151,25 +193,9 @@ def calculate_confidence(
     historical_wape, historical_observations = validate_historical_accuracy_records(
         data
     )
-    history_score = (
-        0.0
-        if historical_wape is None
-        else 15
-        if historical_wape <= 0.05
-        else 12
-        if historical_wape <= 0.10
-        else 8
-        if historical_wape <= 0.20
-        else 4
-        if historical_wape <= 0.30
-        else 0
+    history_score, usable_origins = _history_score(
+        data, historical_wape, historical_observations,
     )
-    # Conservative sample sufficiency policy, not a calibrated probability.
-    usable_origins = sum(
-        record.get("record_schema_version") == "1.1"
-        for record in data.get("historical_accuracy_records", [])
-    )
-    history_score *= min(1.0, historical_observations / 5, usable_origins / 3)
 
     sensitivity_coverage = 0.0
     concentration = None
@@ -229,16 +255,9 @@ def calculate_confidence(
         )
         if condition
     ]
-    limitations.append("Confidence is an evidence/workflow score, not a calibrated forecast probability")
-    if usable_origins:
-        limitations.append(
-            "Historical accuracy summary hashes validate integrity, not source provenance; "
-            "archived snapshot and evaluation artifacts require audit before treating the score as verified historical skill"
-        )
-    if historical_observations and (historical_observations < 5 or usable_origins < 3):
-        limitations.append("Historical accuracy has fewer than five observations or three forecast origins; score is discounted")
-    if any(record.get("record_schema_version") == "1.0" for record in data.get("historical_accuracy_records", [])):
-        limitations.append("Legacy accuracy records lack identity/date/denominator and are excluded from scoring")
+    _append_history_limitations(
+        limitations, data, historical_observations, usable_origins,
+    )
     target_coverage = validated.get("management_target_coverage")
     if target_coverage and target_coverage["counts"]["targets_unmodeled"] > 0:
         limitations.append(

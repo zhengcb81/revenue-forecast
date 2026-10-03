@@ -179,6 +179,15 @@ class ResolveFilingErrorDiagnosticsTests(unittest.TestCase):
             self.assertIn("status=not_found", str(ctx.exception))
 
 
+class SourceRefV2ClientTests(unittest.TestCase):
+    def test_resolve_filing_forwards_source_ref_v2(self) -> None:
+        with _fake_root() as root:
+            handle = resolve_filing(
+                _request("AMD"), filing_fetch_root=root, source_ref_v2=True,
+            )
+        self.assertIn("--source-ref-v2", handle["_received_argv"])
+
+
 class FilingFetchRootConfigTests(unittest.TestCase):
     """FC-1202: the filing-fetch root must come from an explicit config file
     (``config/filing_fetch.json``) — no implicit sibling-directory lookup.

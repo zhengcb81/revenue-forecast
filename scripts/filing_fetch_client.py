@@ -189,6 +189,7 @@ def resolve_filing(
     timeout_seconds: float = 900.0,
     filing_fetch_root: Path | None = None,
     company_wiki_config: Path | None = None,
+    source_ref_v2: bool = False,
 ) -> dict[str, Any]:
     """Resolve (or, when authorized, ensure) a filing via filing-fetch.
 
@@ -206,6 +207,8 @@ def resolve_filing(
     cmd = [sys.executable, str(script)]
     if allow_download:
         cmd.append("--allow-download")
+    if source_ref_v2:
+        cmd.append("--source-ref-v2")
     if company_wiki_config is not None:
         cmd.extend(["--config", str(company_wiki_config)])
     cmd.extend(["--timeout-seconds", str(timeout_seconds)])
@@ -308,6 +311,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Authorize filing-fetch to download when no reusable source is found.",
     )
     parser.add_argument(
+        "--source-ref-v2",
+        action="store_true",
+        help="request a pathless SourceRef for a later verified company-wiki read",
+    )
+    parser.add_argument(
         "--timeout-seconds",
         type=float,
         default=900.0,
@@ -348,6 +356,7 @@ def main(argv: list[str] | None = None) -> int:
             timeout_seconds=args.timeout_seconds,
             filing_fetch_root=root,
             company_wiki_config=args.company_wiki_config,
+            source_ref_v2=args.source_ref_v2,
         )
     except _ClientError as exc:
         _emit_error(

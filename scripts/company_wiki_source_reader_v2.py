@@ -94,6 +94,14 @@ def _date(value: Any, field: str) -> date:
         raise SourceVersionTransportError(f"{field} must be an ISO date") from exc
 
 
+def _check_datetime_zone(parsed: datetime, field: str, require_utc: bool) -> None:
+    offset = parsed.utcoffset()
+    if parsed.tzinfo is None or offset is None:
+        raise SourceVersionTransportError(f"{field} must be timezone-aware")
+    if require_utc and offset.total_seconds() != 0:
+        raise SourceVersionTransportError(f"{field} must be UTC")
+
+
 def _datetime(value: Any, field: str, *, require_utc: bool = False) -> datetime:
     if not isinstance(value, str) or not value.strip():
         raise SourceVersionTransportError(f"{field} must be timezone-aware")
@@ -101,11 +109,21 @@ def _datetime(value: Any, field: str, *, require_utc: bool = False) -> datetime:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:
         raise SourceVersionTransportError(f"{field} must be timezone-aware") from exc
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise SourceVersionTransportError(f"{field} must be timezone-aware")
-    if require_utc and parsed.utcoffset().total_seconds() != 0:
-        raise SourceVersionTransportError(f"{field} must be UTC")
+    _check_datetime_zone(parsed, field, require_utc)
     return parsed.astimezone(UTC)
+
+
+def _valid_ref_text(value: Any) -> bool:
+    return (
+        isinstance(value, str) and bool(value.strip()) and value == value.strip()
+        and all(ord(char) >= 32 for char in value)
+    )
+
+
+def _validate_ref_identifiers(source_ref: dict[str, Any]) -> None:
+    for field in ("document_id", "source_id", "mime_type"):
+        if not _valid_ref_text(source_ref[field]):
+            raise SourceVersionTransportError(f"source_ref {field} is invalid")
 
 
 def _validate_ref(source_ref: dict[str, Any]) -> None:
@@ -113,13 +131,7 @@ def _validate_ref(source_ref: dict[str, Any]) -> None:
         raise SourceVersionTransportError("source_ref fields are not exact")
     if source_ref["schema_version"] != "2.0":
         raise SourceVersionTransportError("source_ref schema is unsupported")
-    for field in ("document_id", "source_id", "mime_type"):
-        value = source_ref[field]
-        if (
-            not isinstance(value, str) or not value.strip()
-            or value != value.strip() or any(ord(char) < 32 for char in value)
-        ):
-            raise SourceVersionTransportError(f"source_ref {field} is invalid")
+    _validate_ref_identifiers(source_ref)
     if not _valid_sha256(source_ref["content_sha256"]):
         raise SourceVersionTransportError("source_ref SHA-256 is invalid")
     size = source_ref["byte_size"]
@@ -152,35 +164,49 @@ def _run_reader(
         raise SourceVersionTransportError("source reader CLI unavailable") from exc
 
 
+def _validate_review_shape(review: dict[str, Any]) -> None:
+    if set(review) != _REVIEW_FIELDS:
+        raise SourceVersionTransportError("source receipt review shape invalid")
+    if review["status"] not in _REVIEW_STATUSES:
+        raise SourceVersionTransportError("source receipt review status invalid")
+
+
+def _validate_review_hashes(review: dict[str, Any]) -> None:
+    for field in ("evidence_sha256", "policy_hash"):
+        if review[field] is not None and not _valid_sha256(review[field]):
+            raise SourceVersionTransportError(f"source receipt review {field} invalid")
+
+
 def _validate_review(review: Any, source_ref: dict[str, Any]) -> None:
     # The review is diagnostic. It is not an authorization or a precondition.
     if review is None:
         return
-    if not isinstance(review, dict) or set(review) != _REVIEW_FIELDS:
+    if not isinstance(review, dict):
         raise SourceVersionTransportError("source receipt review shape invalid")
-    if review["status"] not in _REVIEW_STATUSES:
-        raise SourceVersionTransportError("source receipt review status invalid")
+    _validate_review_shape(review)
     if review["source_sha256"] is not None and (
         review["source_sha256"] != source_ref["content_sha256"]
     ):
         raise SourceVersionTransportError("source receipt review source mismatch")
-    for field in ("evidence_sha256", "policy_hash"):
-        if review[field] is not None and not _valid_sha256(review[field]):
-            raise SourceVersionTransportError(f"source receipt review {field} invalid")
+    _validate_review_hashes(review)
     if review["reviewed_at"] is not None:
         _datetime(review["reviewed_at"], "source receipt review reviewed_at")
 
 
-def _validate_manifest(
-    manifest: Any, source_ref: dict[str, Any], as_of: date, fiscal_year: int,
-) -> dict[str, Any]:
-    if not isinstance(manifest, dict) or set(manifest) != _MANIFEST_FIELDS:
-        raise SourceVersionTransportError("source receipt manifest fields invalid")
-    for field in ("document_id", "source_id", "content_sha256", "byte_size", "mime_type"):
+def _validate_manifest_identity(
+    manifest: dict[str, Any], source_ref: dict[str, Any],
+) -> None:
+    fields = ("document_id", "source_id", "content_sha256", "byte_size", "mime_type")
+    for field in fields:
         if type(manifest[field]) is not type(source_ref[field]) or (
             manifest[field] != source_ref[field]
         ):
             raise SourceVersionTransportError(f"source manifest {field} mismatch")
+
+
+def _validate_manifest_period(
+    manifest: dict[str, Any], as_of: date, fiscal_year: int,
+) -> None:
     if type(manifest["fiscal_year"]) is not int or manifest["fiscal_year"] != fiscal_year:
         raise SourceVersionTransportError("source manifest fiscal_year mismatch")
     published = _date(manifest["published_date"], "source manifest published_date")
@@ -190,7 +216,103 @@ def _validate_manifest(
         raise SourceVersionTransportError("source manifest period ends after publication")
     if not (published <= retrieved.date() <= as_of):
         raise SourceVersionTransportError("source manifest is outside as_of_date")
+
+
+def _validate_manifest(
+    manifest: Any, source_ref: dict[str, Any], as_of: date, fiscal_year: int,
+) -> dict[str, Any]:
+    if not isinstance(manifest, dict) or set(manifest) != _MANIFEST_FIELDS:
+        raise SourceVersionTransportError("source receipt manifest fields invalid")
+    _validate_manifest_identity(manifest, source_ref)
+    _validate_manifest_period(manifest, as_of, fiscal_year)
     return manifest
+
+
+def _validate_timeout(timeout_seconds: float) -> None:
+    if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, (int, float)):
+        raise SourceVersionTransportError("source reader timeout is invalid")
+    if timeout_seconds <= 0 or not math.isfinite(timeout_seconds):
+        raise SourceVersionTransportError("source reader timeout is invalid")
+
+
+def _validate_open_request(
+    source_ref: dict[str, Any], catalog_config: Path, as_of_date: str,
+    expected_fiscal_year: int, timeout_seconds: float,
+) -> date:
+    _validate_ref(source_ref)
+    if not isinstance(catalog_config, Path) or not catalog_config.is_absolute():
+        raise SourceVersionTransportError("catalog_config must be an absolute Path")
+    _validate_timeout(timeout_seconds)
+    as_of = _date(as_of_date, "as_of_date")
+    if type(expected_fiscal_year) is not int or expected_fiscal_year < 1:
+        raise SourceVersionTransportError("expected_fiscal_year is invalid")
+    return as_of
+
+
+def _valid_refusal(refusal: dict[str, Any]) -> bool:
+    return (
+        set(refusal) == {"schema_version", "status", "reason"}
+        and refusal["schema_version"] == "2.1"
+        and refusal["status"] in _REFUSAL_STATUSES
+        and isinstance(refusal["reason"], str)
+        and _REFUSAL_REASON.fullmatch(refusal["reason"]) is not None
+    )
+
+
+def _raise_reader_refusal(opened: subprocess.CompletedProcess[bytes]) -> None:
+    if opened.stdout:
+        raise SourceVersionTransportError("source reader emitted partial bytes on refusal")
+    try:
+        refusal = _one_json_line(opened.stderr)
+    except SourceVersionTransportError:
+        raise SourceVersionTransportError("source reader refused current version") from None
+    if _valid_refusal(refusal):
+        raise SourceVersionTransportError(f"source reader refused: {refusal['reason']}")
+    raise SourceVersionTransportError("source reader refused current version")
+
+
+def _validate_receipt_shape(receipt: dict[str, Any]) -> None:
+    if set(receipt) != _RECEIPT_FIELDS:
+        raise SourceVersionTransportError("source receipt fields/status invalid")
+    if receipt["schema_version"] != "2.1" or receipt["status"] != "ok":
+        raise SourceVersionTransportError("source receipt fields/status invalid")
+
+
+def _validate_receipt_identity(
+    receipt: dict[str, Any], source_ref: dict[str, Any],
+) -> None:
+    fields = ("document_id", "source_id", "content_sha256", "byte_size")
+    for field in fields:
+        if type(receipt[field]) is not type(source_ref[field]) or (
+            receipt[field] != source_ref[field]
+        ):
+            raise SourceVersionTransportError(f"source receipt {field} mismatch")
+
+
+def _validate_receipt_policies(receipt: dict[str, Any]) -> None:
+    fields = ("policy_sha256", "source_read_policy_sha256")
+    for field in fields:
+        if not _valid_sha256(receipt[field]):
+            raise SourceVersionTransportError(f"source receipt {field} invalid")
+
+
+def _validate_success_receipt(
+    receipt: dict[str, Any], source_ref: dict[str, Any], as_of: date,
+    fiscal_year: int,
+) -> dict[str, Any]:
+    _validate_receipt_shape(receipt)
+    _validate_receipt_identity(receipt, source_ref)
+    _validate_receipt_policies(receipt)
+    _datetime(receipt["read_at"], "source receipt read_at", require_utc=True)
+    _validate_review(receipt["review"], source_ref)
+    return _validate_manifest(receipt["manifest"], source_ref, as_of, fiscal_year)
+
+
+def _verify_bytes(body: bytes, source_ref: dict[str, Any]) -> None:
+    if len(body) != source_ref["byte_size"] or (
+        hashlib.sha256(body).hexdigest() != source_ref["content_sha256"]
+    ):
+        raise SourceVersionTransportError("source bytes SHA-256/size mismatch")
 
 
 def open_source_version_v2(
@@ -199,58 +321,17 @@ def open_source_version_v2(
     timeout_seconds: float = 30.0,
 ) -> tuple[bytes, dict[str, Any], dict[str, Any]]:
     """Return verified source bytes, a pathless receipt, and a same-call manifest."""
-    _validate_ref(source_ref)
-    if not isinstance(catalog_config, Path) or not catalog_config.is_absolute():
-        raise SourceVersionTransportError("catalog_config must be an absolute Path")
-    if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, (int, float)):
-        raise SourceVersionTransportError("source reader timeout is invalid")
-    if timeout_seconds <= 0 or not math.isfinite(timeout_seconds):
-        raise SourceVersionTransportError("source reader timeout is invalid")
-    as_of = _date(as_of_date, "as_of_date")
-    if type(expected_fiscal_year) is not int or expected_fiscal_year < 1:
-        raise SourceVersionTransportError("expected_fiscal_year is invalid")
-
+    as_of = _validate_open_request(
+        source_ref, catalog_config, as_of_date, expected_fiscal_year, timeout_seconds,
+    )
     opened = _run_reader(source_ref, catalog_config, timeout_seconds)
     if opened.returncode != 0:
-        if opened.stdout:
-            raise SourceVersionTransportError("source reader emitted partial bytes on refusal")
-        try:
-            refusal = _one_json_line(opened.stderr)
-        except SourceVersionTransportError:
-            raise SourceVersionTransportError("source reader refused current version") from None
-        reason = refusal.get("reason")
-        if (
-            set(refusal) == {"schema_version", "status", "reason"}
-            and refusal["schema_version"] == "2.1"
-            and refusal["status"] in _REFUSAL_STATUSES
-            and isinstance(reason, str)
-            and _REFUSAL_REASON.fullmatch(reason)
-        ):
-            raise SourceVersionTransportError(f"source reader refused: {reason}")
-        raise SourceVersionTransportError("source reader refused current version")
-
+        _raise_reader_refusal(opened)
     receipt = _one_json_line(opened.stderr)
-    if set(receipt) != _RECEIPT_FIELDS or (
-        receipt["schema_version"] != "2.1" or receipt["status"] != "ok"
-    ):
-        raise SourceVersionTransportError("source receipt fields/status invalid")
-    for field in ("document_id", "source_id", "content_sha256", "byte_size"):
-        if type(receipt[field]) is not type(source_ref[field]) or (
-            receipt[field] != source_ref[field]
-        ):
-            raise SourceVersionTransportError(f"source receipt {field} mismatch")
-    for field in ("policy_sha256", "source_read_policy_sha256"):
-        if not _valid_sha256(receipt[field]):
-            raise SourceVersionTransportError(f"source receipt {field} invalid")
-    _datetime(receipt["read_at"], "source receipt read_at", require_utc=True)
-    _validate_review(receipt["review"], source_ref)
-    manifest = _validate_manifest(
-        receipt["manifest"], source_ref, as_of, expected_fiscal_year,
+    manifest = _validate_success_receipt(
+        receipt, source_ref, as_of, expected_fiscal_year,
     )
-    if len(opened.stdout) != source_ref["byte_size"] or (
-        hashlib.sha256(opened.stdout).hexdigest() != source_ref["content_sha256"]
-    ):
-        raise SourceVersionTransportError("source bytes SHA-256/size mismatch")
+    _verify_bytes(opened.stdout, source_ref)
     bare_receipt = {key: value for key, value in receipt.items() if key != "manifest"}
     return opened.stdout, bare_receipt, manifest
 

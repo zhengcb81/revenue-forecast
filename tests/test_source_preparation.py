@@ -4,11 +4,16 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from source_preparation import prepare_source  # noqa: E402
+from source_preparation import (  # noqa: E402
+    _v2_resolution_events,
+    _validate_v2_candidate,
+    prepare_source,
+)
 
 
 def test_process_red01_entry_exists_and_is_cli():
@@ -115,6 +120,7 @@ def test_prepare_source_forwards_allow_download(monkeypatch):
                "as_of_date": "2026-12-31"}
     record = prepare_source(request, allow_download=True)
     assert "--allow-download" in captured["command"]
+    assert "--source-ref-v2" not in captured["command"]
     assert record["reuse_receipt"]["download_calls"] == 0
 
 
@@ -233,3 +239,63 @@ def test_c1_request_reaches_client_not_file_error():
         # whatever the chain outcome, the C1 file-not-found error must
         # never appear (the request was handed to the client via stdin)
         assert "cannot read request file" not in proc.stderr
+
+
+@pytest.mark.parametrize(
+    ("outcome", "downloads"),
+    (("reused_existing", 0), ("reused_after_discovery", 0),
+     ("downloaded_new", 1)),
+)
+def test_source_ref_v2_resolution_events_accept_consistent_counts(outcome, downloads):
+    assert _v2_resolution_events({
+        "resolution_outcome": outcome, "download_events": downloads,
+    }) == (outcome, downloads)
+
+
+@pytest.mark.parametrize(
+    ("outcome", "downloads"),
+    (("reused_existing", 1), ("reused_after_discovery", 1),
+     ("downloaded_new", 0)),
+)
+def test_source_ref_v2_resolution_events_reject_inconsistent_counts(outcome, downloads):
+    with pytest.raises(RuntimeError, match="outcome/download_events mismatch"):
+        _v2_resolution_events({
+            "resolution_outcome": outcome, "download_events": downloads,
+        })
+
+
+def test_source_ref_v2_resolution_events_reject_untyped_outcome():
+    with pytest.raises(RuntimeError, match="resolution_outcome is invalid"):
+        _v2_resolution_events({"resolution_outcome": [], "download_events": 0})
+
+
+@pytest.mark.parametrize("location_field", ("path", "canonical_path", "storage_path"))
+def test_source_ref_v2_candidate_rejects_storage_paths_before_read(location_field):
+    handle = {
+        "source_ref": {"schema_version": "2.0"},
+        "document_kind": "annual_report",
+        "fiscal_year": 2025,
+        "fiscal_period": None,
+    }
+    handle[location_field] = "private/raw.pdf"
+    request = {
+        "document_kind": "annual_report", "fiscal_year": 2025,
+        "fiscal_period": None,
+    }
+    with pytest.raises(RuntimeError, match="contains a storage location"):
+        _validate_v2_candidate(request, handle)
+
+
+def test_source_ref_v2_candidate_rejects_nested_storage_path_before_read():
+    handle = {
+        "source_ref": {"canonical_path": "private/raw.pdf"},
+        "document_kind": "annual_report",
+        "fiscal_year": 2025,
+        "fiscal_period": None,
+    }
+    request = {
+        "document_kind": "annual_report", "fiscal_year": 2025,
+        "fiscal_period": None,
+    }
+    with pytest.raises(RuntimeError, match="SourceRef contains a storage location"):
+        _validate_v2_candidate(request, handle)

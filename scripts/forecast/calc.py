@@ -232,6 +232,65 @@ def _expand_derived_inputs(
     return expanded
 
 
+def _collect_segment_foundation(
+    segment: dict[str, Any], foundation: set[str],
+) -> None:
+    base_id = segment.get("base_revenue_parameter_id")
+    if isinstance(base_id, str):
+        foundation.add(base_id)
+    fields = (
+        "base_backlog_parameter_id", "base_orders_parameter_id",
+        *(entry[0] for entry in EXTENSION_OPENING_BALANCES.values()),
+    )
+    for field in fields:
+        value = segment.get(field)
+        if isinstance(value, str):
+            foundation.add(value)
+
+
+def _collect_parameter_map(
+    container: dict[str, Any], field: str, forecast: set[str],
+) -> None:
+    parameter_map = container.get(field, {})
+    if isinstance(parameter_map, dict):
+        for ids in parameter_map.values():
+            forecast.update(_listed_parameter_ids(ids))
+
+
+def _collect_scenario_drivers(segment: dict[str, Any], forecast: set[str]) -> None:
+    scenarios = segment.get("scenarios", {})
+    if not isinstance(scenarios, dict):
+        return
+    for scenario in scenarios.values():
+        if not isinstance(scenario, dict):
+            continue
+        _collect_parameter_map(scenario, "driver_parameter_ids", forecast)
+
+
+def _collect_recognition_drivers(segment: dict[str, Any], forecast: set[str]) -> None:
+    recognition = segment.get("recognition", {})
+    if not isinstance(recognition, dict):
+        return
+    _collect_parameter_map(recognition, "carry_in_parameter_ids", forecast)
+    _collect_parameter_map(recognition, "progress_parameter_ids", forecast)
+
+
+def _collect_segment_roles(
+    segment: Any, foundation: set[str], forecast: set[str],
+) -> None:
+    if not isinstance(segment, dict):
+        return
+    _collect_segment_foundation(segment, foundation)
+    _collect_scenario_drivers(segment, forecast)
+    _collect_recognition_drivers(segment, forecast)
+
+
+def _collect_adjustment_roles(adjustment: Any, forecast: set[str]) -> None:
+    if not isinstance(adjustment, dict):
+        return
+    _collect_parameter_map(adjustment, "scenario_parameter_ids", forecast)
+
+
 def collect_parameter_roles(
     data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
 ) -> dict[str, set[str]]:
@@ -245,47 +304,12 @@ def collect_parameter_roles(
     foundation.update(
         _listed_parameter_ids(data.get("base_adjustment_parameter_ids", []))
     )
-
     for segment in data.get("segments", []):
-        if not isinstance(segment, dict):
-            continue
-        base_id = segment.get("base_revenue_parameter_id")
-        if isinstance(base_id, str):
-            foundation.add(base_id)
-        for base_field in ("base_backlog_parameter_id", "base_orders_parameter_id",
-                           *(entry[0] for entry in EXTENSION_OPENING_BALANCES.values())):
-            if isinstance(segment.get(base_field), str):
-                foundation.add(segment[base_field])
-        scenarios = segment.get("scenarios", {})
-        if isinstance(scenarios, dict):
-            for scenario in scenarios.values():
-                if not isinstance(scenario, dict):
-                    continue
-                driver_map = scenario.get("driver_parameter_ids", {})
-                if isinstance(driver_map, dict):
-                    for ids in driver_map.values():
-                        forecast.update(_listed_parameter_ids(ids))
-        recognition = segment.get("recognition", {})
-        if isinstance(recognition, dict):
-            carry_in = recognition.get("carry_in_parameter_ids", {})
-            if isinstance(carry_in, dict):
-                for ids in carry_in.values():
-                    forecast.update(_listed_parameter_ids(ids))
-            progress = recognition.get("progress_parameter_ids", {})
-            if isinstance(progress, dict):
-                for ids in progress.values():
-                    forecast.update(_listed_parameter_ids(ids))
-
+        _collect_segment_roles(segment, foundation, forecast)
     for adjustment in data.get("forecast_adjustments", []):
-        if not isinstance(adjustment, dict):
-            continue
-        scenario_ids = adjustment.get("scenario_parameter_ids", {})
-        if isinstance(scenario_ids, dict):
-            for ids in scenario_ids.values():
-                forecast.update(_listed_parameter_ids(ids))
+        _collect_adjustment_roles(adjustment, forecast)
 
     forecast.update(constraint_parameter_ids(data.get("revenue_constraints", [])))
-
     foundation = _expand_derived_inputs(foundation, parameter_index)
     forecast = _expand_derived_inputs(forecast, parameter_index)
     return {
@@ -327,6 +351,11 @@ def base_forecast_parameter_ids(
     return _expand_derived_inputs(parameter_ids, parameter_index)
 
 
+def _add_segment_name(names: set[str], value: Any) -> None:
+    if isinstance(value, str):
+        names.add(value)
+
+
 def base_segment_parameter_ids(
     data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
 ) -> dict[str, set[str]]:
@@ -361,7 +390,7 @@ def base_segment_parameter_ids(
         if constraint.get("type") == "sum_cap":
             affected_segments.update(constraint.get("segments", []))
         elif constraint.get("type") == "linked_ratio":
-            affected_segments.add(constraint.get("target_segment"))
+            _add_segment_name(affected_segments, constraint.get("target_segment"))
         elif constraint.get("type") == "elimination":
             affected_segments.update(
                 constraint.get("segment_adjustment_parameter_ids", {})
