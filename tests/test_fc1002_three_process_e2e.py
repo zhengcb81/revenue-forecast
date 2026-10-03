@@ -109,11 +109,15 @@ def test_chain_is_three_real_processes(tmp_path: Path):
     from filing_fetch_client import resolve_filing
     import source_preparation
 
-    # hop 1: source_preparation -> filing-fetch client (subprocess.run)
-    src = inspect.getsource(source_preparation.prepare_source)
-    assert "subprocess.run" in src and "FILING_FETCH_CLIENT" in src, (
-        "source_preparation must spawn the filing-fetch client as a subprocess"
+    # hop 1: source_preparation delegates to the subprocess-owning transport.
+    entry = inspect.getsource(source_preparation.prepare_source)
+    builder = inspect.getsource(source_preparation._filing_fetch_command)
+    runner = inspect.getsource(source_preparation._run_filing_fetch)
+    assert "_filing_fetch_command" in entry and "_run_filing_fetch" in entry, (
+        "source preparation must build and run the filing-fetch command"
     )
+    assert "FILING_FETCH_CLIENT" in builder, "command builder must select the client"
+    assert "subprocess.run" in runner, "command runner must spawn a subprocess"
     # hop 2: filing-fetch client -> company-wiki CLI (subprocess.run)
     client = inspect.getsource(resolve_filing)
     assert "subprocess.run" in client and "fetch_filing.py" in client, (
