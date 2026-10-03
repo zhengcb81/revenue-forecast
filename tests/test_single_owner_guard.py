@@ -24,6 +24,7 @@ CANONICAL_CLIENT = "filing_fetch_client.py"
 SUBPROCESS_CLIENTS = {
     "filing_fetch_client.py",
     "company_wiki_source_reader_v2.py",
+    "company_wiki_narrative_process.py",
     "source_preparation.py",
     "revenue_core.py",
 }
