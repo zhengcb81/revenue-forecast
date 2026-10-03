@@ -6,14 +6,13 @@ from dataclasses import dataclass, field
 from io import BufferedReader
 import math
 import os
-import signal
 import subprocess
-import sys
 from threading import Event, Thread
 import time
 from typing import BinaryIO, Sequence, cast
 
 from company_wiki_narrative_contracts import NarrativeTransportError, REQUEST_LIMIT
+from company_wiki_narrative_tree import ProcessTree
 
 
 @dataclass(frozen=True)
@@ -52,29 +51,10 @@ def _write_input(stream: BinaryIO, data: bytes) -> None:
     except (BrokenPipeError, OSError, ValueError):
         pass
     finally:
-        stream.close()
-
-
-def _terminate_tree(process: subprocess.Popen[bytes]) -> None:
-    # This is a local, fixed command with an integer PID and no shell. On
-    # Windows it kills descendants that inherited a pipe as well as the reader.
-    if sys.platform == "win32":
         try:
-            subprocess.run(
-                ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                timeout=5, check=False, creationflags=subprocess.CREATE_NO_WINDOW,
-            )
-        except (OSError, subprocess.TimeoutExpired):
+            stream.close()
+        except (BrokenPipeError, OSError, ValueError):
             pass
-    else:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-    if process.poll() is None:
-        process.kill()
-    process.wait(timeout=5)
 
 
 def _options(command: Sequence[str], data: bytes, timeout: float, limits: tuple[int, int]) -> None:
@@ -98,43 +78,70 @@ def _timeout_option(timeout: float) -> None:
         raise NarrativeTransportError("blocked", "invalid_reader_timeout")
 
 
-def _wait(process: subprocess.Popen[bytes], overflow: Event, deadline: float) -> str | None:
-    while process.poll() is None:
+def _wait(process: subprocess.Popen[bytes], overflow: Event, threads: list[Thread],
+          deadline: float) -> str | None:
+    # Parent exit is not EOF: a wrapper's descendants may still own both pipes.
+    while True:
         if overflow.is_set():
             return "reader_output_limit"
+        if process.poll() is not None and not any(thread.is_alive() for thread in threads):
+            return None
         if time.monotonic() >= deadline:
             return "reader_timeout"
         time.sleep(0.01)
-    return None
 
 
-def _close_pipes(process: subprocess.Popen[bytes], captures: list[_Capture], threads: list[Thread]) -> bool:
+def _join_threads(threads: list[Thread], deadline: float) -> bool:
     for thread in threads:
-        thread.join(timeout=2)
-    alive = any(thread.is_alive() for thread in threads)
-    if alive:
-        _terminate_tree(process)
-        for thread in threads:
-            thread.join(timeout=2)
-        alive = any(thread.is_alive() for thread in threads)
-    if not alive:
-        for capture in captures:
-            capture.stream.close()
-    return not alive
+        if thread.ident is not None:
+            thread.join(timeout=max(0, deadline - time.monotonic()))
+    return not any(thread.is_alive() for thread in threads)
 
 
-def _start(command: Sequence[str]) -> subprocess.Popen[bytes]:
+def _close_streams(process: subprocess.Popen[bytes], threads: list[Thread]) -> None:
+    pipes = (process.stdout, process.stderr, process.stdin)
+    if not threads:
+        for pipe in pipes:
+            if pipe is not None:
+                pipe.close()
+        return
+    for pipe, thread in zip(pipes, threads):
+        if not thread.is_alive() and pipe is not None:
+            pipe.close()  # Never close a buffered pipe held by a live reader.
+
+
+def _cleanup(tree: ProcessTree, process: subprocess.Popen[bytes] | None,
+             threads: list[Thread]) -> bool:
+    # One bounded budget for reaping and all drains, not N seconds per pipe.
+    try:
+        tree.terminate()
+    except OSError:
+        pass  # Windows kill-on-close remains the independent fallback.
+    tree.close()
+    if process is None:
+        return True
+    deadline = time.monotonic() + 1.0
+    if process.poll() is None:
+        process.kill()  # Handles startup failure before assignment to the job.
+    try:
+        process.wait(timeout=max(0, deadline - time.monotonic()))
+    except subprocess.TimeoutExpired:
+        return False
+    joined = _join_threads(threads, deadline)
+    _close_streams(process, threads)
+    return joined
+
+
+def _start(command: Sequence[str], tree: ProcessTree) -> subprocess.Popen[bytes]:
     environment = dict(os.environ)
     environment.update(PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHON_DOTENV_DISABLED="1")
-    flags = 0
-    if sys.platform == "win32":
-        flags = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
     try:
-        return subprocess.Popen(
+        process = subprocess.Popen(
             list(command), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, env=environment, shell=False, creationflags=flags,
-            start_new_session=sys.platform != "win32",
+            stderr=subprocess.PIPE, env=environment, shell=False, creationflags=tree.creationflags,
+            start_new_session=tree.start_new_session,
         )
+        return process
     except OSError as exc:
         raise NarrativeTransportError("unavailable", "reader_unavailable") from exc
 
@@ -150,25 +157,50 @@ def _capture_result(process: subprocess.Popen[bytes], captures: list[_Capture], 
     return ReaderOutput(process.returncode, bytes(captures[0].data), bytes(captures[1].data))
 
 
+def _channels(process: subprocess.Popen[bytes], limits: tuple[int, int], data: bytes,
+              overflow: Event) -> tuple[list[_Capture], list[Thread]]:
+    captures = [_Capture(cast(BufferedReader, process.stdout), limits[0], overflow),
+                _Capture(cast(BufferedReader, process.stderr), limits[1], overflow)]
+    threads = [Thread(target=capture.collect, name=f"rf-narrative-{process.pid}-pipe-{index}")
+               for index, capture in enumerate(captures)]
+    threads.append(Thread(target=_write_input, args=(process.stdin, data),
+                          name=f"rf-narrative-{process.pid}-input"))
+    return captures, threads
+
+
+
+def _start_threads(threads: list[Thread]) -> None:
+    try:
+        for thread in threads:
+            thread.start()
+    except RuntimeError as exc:
+        raise NarrativeTransportError("unavailable", "reader_unavailable") from exc
+
+
 def run_bounded(
     command: Sequence[str], data: bytes, *, stdout_limit: int,
     stderr_limit: int, timeout_seconds: float = 30,
 ) -> ReaderOutput:
-    """Only a capped buffer is allocated; timeout/overflow terminate the tree."""
+    """Cap bytes and contain the tree through wait, drain and shared cleanup."""
     _options(command, data, timeout_seconds, (stdout_limit, stderr_limit))
-    process = _start(command)
+    deadline = time.monotonic() + timeout_seconds
+    try:
+        tree = ProcessTree()
+    except OSError as exc:
+        raise NarrativeTransportError("unavailable", "reader_unavailable") from exc
+    process = None
+    threads: list[Thread] = []
     overflow = Event()
-    captures = [_Capture(cast(BufferedReader, process.stdout), stdout_limit, overflow),
-                _Capture(cast(BufferedReader, process.stderr), stderr_limit, overflow)]
-    threads = [Thread(target=capture.collect, daemon=True) for capture in captures]
-    threads.append(Thread(target=_write_input, args=(process.stdin, data), daemon=True))
-    for thread in threads:
-        thread.start()
     reason = None
     try:
-        reason = _wait(process, overflow, time.monotonic() + timeout_seconds)
-        if reason:
-            _terminate_tree(process)
+        process = _start(command, tree)
+        try:
+            tree.attach(process)
+        except OSError as exc:
+            raise NarrativeTransportError("unavailable", "reader_unavailable") from exc
+        captures, threads = _channels(process, (stdout_limit, stderr_limit), data, overflow)
+        _start_threads(threads)
+        reason = _wait(process, overflow, threads, deadline)
     finally:
-        clean = _close_pipes(process, captures, threads)
+        clean = _cleanup(tree, process, threads)
     return _capture_result(process, captures, overflow, reason, clean)
