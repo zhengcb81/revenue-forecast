@@ -74,6 +74,10 @@ def test_c2_accuracy_record_consumed_by_confidence():
     assert record["backtest_id"] == evaluation["backtest_id"]
     assert "record_sha256" in record
     data = forecast_document()
+    # The backtest actuals are available as of this date; keep the consumer's
+    # information date aligned so point-in-time validation tests the intended
+    # accuracy-record path rather than rejecting future information.
+    data["as_of_date"] = "2028-03-01"
     data["historical_accuracy_records"] = [record]
     result = run_forecast(data)
     assert result["confidence"]["historical_accuracy"]["wape"] == pytest.approx(
@@ -89,8 +93,9 @@ def test_c2_tampered_accuracy_record_rejected():
     record = dict(evaluation["accuracy_record"])
     record["wape"] = 0.0  # tamper with the metric
     data = forecast_document()
+    data["as_of_date"] = "2028-03-01"
     data["historical_accuracy_records"] = [record]
-    with pytest.raises(ForecastInputError):
+    with pytest.raises(ForecastInputError, match="record hash mismatch"):
         run_forecast(data)
 
 

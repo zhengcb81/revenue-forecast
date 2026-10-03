@@ -6,8 +6,8 @@ production catalog) through the real filing-fetch tests, and reports:
   - PASS (exit 0): all three markets green with real downloads + second-request
     zero-download verification (FC805_REAL_DOWNLOAD=1 must be set by the
     release owner).
-  - BLOCKED (exit 2): T3 not authorized (FC805_REAL_DOWNLOAD != 1) or
-    provider credentials missing — an alert, never a silent green.
+  - BLOCKED (exit 2): T3 not authorized (FC805_REAL_DOWNLOAD != 1) or the
+    provider suite skipped checks — an alert, never a silent green.
   - FAIL (exit 1): any market download/verification failed.
 
 The report lands under ``assurance/runs/{run_id}/t3_report.json`` (isolated).
@@ -61,11 +61,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     report["returncode"] = proc.returncode
     report["stdout_tail"] = proc.stdout[-2000:]
-    if proc.returncode == 0:
+    if proc.returncode == 0 and "skipped" not in proc.stdout.lower():
         report["status"] = "passed"
-    elif "skip" in proc.stdout.lower() and "failed" not in proc.stdout.lower():
+    elif proc.returncode == 0 and "skipped" in proc.stdout.lower():
         report["status"] = "blocked"
-        report["reason"] = "T3 skipped (provider credentials missing?)"
+        report["reason"] = "T3 provider suite skipped one or more market checks"
     else:
         report["status"] = "failed"
     out = args.report_root / run_id
@@ -75,7 +75,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"T3 status: {report['status']}")
     if proc.returncode != 0:
         print(proc.stdout[-1500:])
-    return {0: 0, 2: 2}.get(proc.returncode, 1)
+    return {"passed": 0, "blocked": 2, "failed": 1}[report["status"]]
 
 
 if __name__ == "__main__":

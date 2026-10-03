@@ -371,6 +371,7 @@ def request_publication_attestation(
     record would be a fixpoint.  The artifact is still bound — see
     ``revenue_publication.publication_attestation_request``.
     """
+    global _ATTESTATION_LAST_FAILURE
     from revenue_publication import (
         PUBLICATION_ATTESTATION_ALGORITHM,
         PUBLICATION_ATTESTATION_DOMAIN,

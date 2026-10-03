@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -19,9 +20,12 @@ from contracts.evidence import (  # noqa: E402
     build_host_receipt,
     validate_host_receipt,
 )
+import revenue_core  # noqa: E402
 from revenue_core import (  # noqa: E402
     attestation_capability,
+    attestation_last_failure,
     canonical_sha256,
+    request_publication_attestation,
     run_forecast,
 )
 from test_recognition_bridge import forecast_document  # noqa: E402
@@ -182,6 +186,71 @@ class AttestationTests(unittest.TestCase):
             timestamp="2026-08-08T00:00:00Z",
         )
         validate_host_receipt(receipt)
+
+    def test_publication_attestation_round_trip(self) -> None:
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+            Ed25519PrivateKey,
+        )
+        from revenue_publication import (
+            PUBLICATION_ATTESTATION_ALGORITHM,
+            PUBLICATION_ATTESTATION_SCHEMA_VERSION,
+            validate_publication_attestation,
+        )
+
+        private_key = Ed25519PrivateKey.generate()
+        public_bytes = self._public_bytes(private_key)
+        fingerprint = hashlib.sha256(public_bytes).hexdigest()[:32]
+        os.environ["REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS"] = str(
+            self._whitelist(public_bytes)
+        )
+
+        def sign_request(request: dict) -> dict:
+            return {
+                "attestation_response_schema_version": (
+                    PUBLICATION_ATTESTATION_SCHEMA_VERSION
+                ),
+                "request_id": request["request_id"],
+                "payload_sha256": request["payload_sha256"],
+                "domain_separator": request["domain_separator"],
+                "issuer": "unit-test-signer",
+                "key_id": "test-key",
+                "fingerprint": fingerprint,
+                "algorithm": PUBLICATION_ATTESTATION_ALGORITHM,
+                "signature": private_key.sign(
+                    canonical_sha256(request).encode("ascii")
+                ).hex(),
+                "signed_at": "2026-10-03T00:00:00Z",
+            }
+
+        result = {"input_sha256": "a" * 64, "forecast": {"revenue": 123}}
+        with patch.object(
+            revenue_core, "_run_attestation_provider", side_effect=sign_request
+        ):
+            record = request_publication_attestation(result)
+
+        self.assertIsNotNone(record)
+        assert record is not None
+        receipt = {
+            "attestation_status": "host_signed",
+            "publication_attestation": record,
+            "validated_payload_sha256": record["payload_sha256"],
+        }
+        validate_publication_attestation(result, receipt)
+        self.assertIsNone(attestation_last_failure())
+
+    def test_invalid_publication_attestation_stays_unattested(self) -> None:
+        result = {"input_sha256": "b" * 64, "forecast": {"revenue": 456}}
+        with patch.object(
+            revenue_core,
+            "_run_attestation_provider",
+            return_value={"request_id": "wrong-request"},
+        ):
+            record = request_publication_attestation(result)
+
+        self.assertIsNone(record)
+        failure = attestation_last_failure()
+        self.assertIsNotNone(failure)
+        self.assertEqual(failure["code"], "provider_schema_mismatch")
 
 
 if __name__ == "__main__":

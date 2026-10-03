@@ -79,7 +79,7 @@ CODE_PINS = {
     FF_ROOT / "tests" / "e2e_support" / "isolated_wiki.py":
         "4e3e4dfe38b75ec772fd558972542f7a33e710459cc434138abba9c30bf8a9e4",
     CW_ROOT / "src" / "company_wiki" / "source_catalog" / "cli.py":
-        "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
+        "35a4272b4d9b52e91228a5173d80b0b8b0d1ea7f3b0b69b9abadc75e346d82b8",
 }
 ALLOWED_NEW_RF_FILES = {
     "e2e/run_cross_repo_chain_e2e.py",

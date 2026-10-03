@@ -88,14 +88,14 @@ def test_c1_negative_asset_drivers_rejected():
         drivers = _reserve_drivers()
         drivers[field] = list(drivers[field])
         drivers[field][1] = -1.0
-        with pytest.raises(ForecastInputError, match="cannot be negative"):
+        with pytest.raises(ForecastInputError, match="outside permitted bounds"):
             _run("reserve_depletion", drivers)
 
 
 def test_c1_recovery_rate_out_of_range_rejected():
     drivers = _reserve_drivers()
     drivers["recovery_rate"] = [0.9, 1.5]  # ratio driver must be in [0, 1]
-    with pytest.raises(ForecastInputError, match="must be between 0 and 1"):
+    with pytest.raises(ForecastInputError, match="outside permitted bounds"):
         _run("reserve_depletion", drivers)
 
 

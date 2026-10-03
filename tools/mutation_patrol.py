@@ -52,7 +52,9 @@ def _resign(result: dict) -> dict:
             expected_publication_gates(result),
             result["engine_version"],
         ),
-        attestation_status="host_signed",
+        # This local mutation harness has no host signer. Keep the receipt
+        # valid without inventing a host attestation while re-binding hashes.
+        attestation_status="unattested",
     )
     result["result_sha256"] = canonical_sha256(
         {key: value for key, value in result.items() if key != "result_sha256"}

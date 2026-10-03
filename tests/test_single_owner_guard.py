@@ -1,9 +1,10 @@
 """Single-owner structural guards (R3, roadmap RC-3 / N-03).
 
 Filing acquisition has exactly one canonical owner: ``filing_fetch_client.py``
-(which routes to filing-fetch).  These AST-level guards fail the build if a
-second owner ever grows back in ``scripts/`` or if the docs re-reference the
-removed legacy module.
+(which routes to filing-fetch). These AST-level guards reject a second owner or
+legacy resolver. Several other modules use subprocess for non-download work
+(source reads, orchestration, attestation), so their process boundary is
+checked as a closed allowlist rather than banned wholesale.
 """
 
 from __future__ import annotations
@@ -16,10 +17,16 @@ from pathlib import Path
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_CLIENT = "filing_fetch_client.py"
-# Orchestrators that invoke the canonical client as a subprocess but never
-# download themselves (WU-1000 source preparation).  No new entries without
-# review — a second *download owner* is exactly what this guard forbids.
-ORCHESTRATORS = {"source_preparation.py"}
+# Exact subprocess boundary. Each non-acquisition use has its own contract:
+# source preparation delegates to the canonical client; SourceRef reads use
+# company-wiki's source_reader_cli; revenue_core calls the attestation provider.
+# A new process caller must add a focused contract test before entering here.
+SUBPROCESS_CLIENTS = {
+    "filing_fetch_client.py",
+    "company_wiki_source_reader_v2.py",
+    "source_preparation.py",
+    "revenue_core.py",
+}
 FORBIDDEN_SYMBOLS = {"resolve_filing", "AcquisitionManager", "AdapterRegistry"}
 DOC_SOURCES = (
     [SKILL_ROOT / "SKILL.md"]
@@ -32,24 +39,22 @@ def _python_files() -> list[Path]:
 
 
 class SingleOwnerGuardTests(unittest.TestCase):
-    def test_only_canonical_client_may_use_subprocess_download_adapters(self) -> None:
+    def test_subprocess_use_is_limited_to_contract_clients(self) -> None:
+        observed: set[str] = set()
         for path in _python_files():
-            if path.name == CANONICAL_CLIENT or path.name in ORCHESTRATORS:
-                continue
             tree = ast.parse(path.read_text(encoding="utf-8"))
+            imports_subprocess = False
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
-                    self.assertNotIn(
-                        "subprocess",
-                        {alias.name.split(".")[0] for alias in node.names},
-                        f"{path.name} imports subprocess (second download owner)",
+                    imports_subprocess |= any(
+                        alias.name.split(".")[0] == "subprocess"
+                        for alias in node.names
                     )
                 if isinstance(node, ast.ImportFrom):
-                    self.assertNotEqual(
-                        node.module,
-                        "subprocess",
-                        f"{path.name} imports subprocess (second download owner)",
-                    )
+                    imports_subprocess |= node.module == "subprocess"
+            if imports_subprocess:
+                observed.add(path.name)
+        self.assertEqual(observed, SUBPROCESS_CLIENTS)
 
     def test_no_second_resolve_filing_symbol(self) -> None:
         for path in _python_files():

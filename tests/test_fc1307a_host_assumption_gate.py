@@ -69,14 +69,14 @@ def test_fc1307a_every_registered_digest_carries_a_rationale():
         assert len(entry.get("rationale", "")) > 40, digest
 
 
-def test_fc1307a_the_three_vendored_copies_are_byte_identical():
-    """Drift guard for the vendored copy: a local fix that only lands in one repo is
-    how this kind of gate rots.  Skips where the siblings are not checked out."""
-    mine = GUARD.read_bytes()
+def test_fc1307a_the_three_vendored_copies_are_content_identical():
+    """Drift guard for the vendored copy, independent of checkout line endings."""
+    mine = GUARD.read_bytes().replace(b"\r\n", b"\n")
     present = {name: path for name, path in SIBLINGS.items() if path.is_file()}
     if not present:
         pytest.skip("sibling checkouts not present (expected in CI)")
-    digests = {name: hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+    digests = {name: hashlib.sha256(
+                   path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()[:16]
                for name, path in present.items()}
     mine_digest = hashlib.sha256(mine).hexdigest()[:16]
     assert all(digest == mine_digest for digest in digests.values()), (

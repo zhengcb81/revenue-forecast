@@ -138,7 +138,11 @@ def test_case_swapped_project_dir_runs_identical_journey(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_missing_explicit_config_fails_closed_without_record(tmp_path):
+def test_missing_explicit_config_fails_closed_without_record(tmp_path, monkeypatch):
+    # The checked-in filing-fetch config expands USER_PROFILE to locate the
+    # canonical wiki. Isolate that default too, otherwise this test can read
+    # real owner-host filings and pass/fail based on the developer's library.
+    monkeypatch.setenv("USERPROFILE", str(tmp_path / "isolated-profile"))
     proc = _chain(tmp_path, tmp_path, with_config=False)
     assert proc.returncode != 0
     assert proc.stdout.strip() == ""  # never a fabricated handle/record

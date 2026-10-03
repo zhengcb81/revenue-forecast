@@ -115,10 +115,12 @@ def test_c3_no_test_islands():
 
 def test_c3_spot_collection_no_errors():
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", "tests/test_ca306_terminal_closure.py",
+        [sys.executable, "-m", "pytest", "-p", "no:langsmith_plugin",
+         "-p", "no:cacheprovider", "tests/test_ca306_terminal_closure.py",
          "tests/test_zr1009_legacy_removal.py", "--collect-only", "-q"],
-        capture_output=True, text=True, encoding="utf-8", timeout=180)
-    out = proc.stdout + proc.stderr
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+        timeout=30)
+    out = (proc.stdout or "") + (proc.stderr or "")
     assert proc.returncode == 0, out[-400:]
     assert "error" not in out.lower()
 

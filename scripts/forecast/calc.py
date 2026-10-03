@@ -118,7 +118,8 @@ def resolve_driver_series(
         value = float(parameter["value"])
         lower, upper = driver_value_bounds(model, driver)
         require(lower <= value <= upper,
-                f"driver {driver} outside permitted bounds [{lower}, {upper}]: {parameter_id}")
+                f"driver {driver} outside permitted bounds "
+                f"[{lower}, {upper}]: {parameter_id}")
         values.append(value)
     return values
 
