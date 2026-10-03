@@ -48,11 +48,25 @@ Usage: python tools/pre_push_gate.py [--skip-mypy] [--skip-meta-tests]
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+_GIT_REPOSITORY_CONTEXT = (
+    "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE",
+    "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_PREFIX", "GIT_NAMESPACE", "GIT_QUARANTINE_PATH",
+)
+
+
+def _subprocess_environment() -> dict[str, str]:
+    """Let child Git commands resolve their cwd instead of the parent hook."""
+    environment = os.environ.copy()
+    for name in _GIT_REPOSITORY_CONTEXT:
+        environment.pop(name, None)
+    return environment
 
 
 def _safe_console() -> None:
@@ -80,6 +94,7 @@ def _run(
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=_subprocess_environment(),
         timeout=timeout,
     )
     tail = (proc.stdout or "")[-2000:] + (proc.stderr or "")[-1000:]
@@ -239,7 +254,8 @@ def main(argv: list[str] | None = None) -> int:
         gates.append((
             [sys.executable, "-m", "pytest", "-q", "--timeout=180",
              "tests/test_zr901_pr_fanout.py",
-             "tests/test_compatibility_manifest.py"],
+             "tests/test_compatibility_manifest.py",
+             "tests/test_pre_push_gate_git_hook_env.py"],
             "meta/binding tests (workflow byte-binding + manifest hashes)",
         ))
 
