@@ -22,8 +22,10 @@ evidence:
     unsatisfied check maps to the CA-201 successor; no fake green);
 (g) README §7 documents the absorption (CA-201 owns, ZR-105/ZR-901
     provide required checks).
+(h) the Windows real-roots job enables Git long paths before checkout, so
+    deeply nested review-fixture files do not make the required job fail.
 
-Zero product-code / workflow-file changes on this card.
+The checks here cover CI wiring and evidence contracts, not product behavior.
 """
 
 from __future__ import annotations
@@ -94,6 +96,14 @@ def test_quality_yml_has_no_floating_clone_no_swallow() -> None:
         ln for ln, line in enumerate(text.splitlines(), 1) if re.search(r"\|\|\s*true", line)
     ]
     assert not swallow_hits, f"unconditional || true swallows: {swallow_hits}"
+
+
+def test_windows_real_roots_enables_git_longpaths_before_checkout() -> None:
+    text = _read_text(QUALITY_YML)
+    windows_job = text.split("  real-roots:\n", maxsplit=1)[1]
+    enable = windows_job.index("git config --global core.longpaths true")
+    checkout = windows_job.index("uses: actions/checkout@v4")
+    assert enable < checkout, "Windows Git long paths must be enabled before checkout"
 
 
 # ---------------------------------------------------------------------------

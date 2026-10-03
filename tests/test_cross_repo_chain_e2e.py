@@ -28,6 +28,9 @@ REPO = Path(__file__).resolve().parents[1]
 RUNNER = REPO / "e2e" / "run_cross_repo_chain_e2e.py"
 FF_SIBLING = REPO.parent / "filing-fetch"
 CW_SIBLING = REPO.parent / "company-wiki"
+CATL_REL = (Path("companies") / "宁德时代" / "raw" /
+            "financial_reports" / "annual" /
+            "2025-03-14_cninfo_1222806982_2024年年度报告.pdf")
 
 
 def _chain_deps_available() -> tuple[bool, str]:
@@ -36,6 +39,15 @@ def _chain_deps_available() -> tuple[bool, str]:
         return False, "filing-fetch sibling repo absent"
     if not (CW_SIBLING / "src" / "company_wiki").is_dir():
         return False, "company-wiki sibling repo absent"
+    required_production_inputs = (
+        CW_SIBLING / CATL_REL,
+        Path(str(CW_SIBLING / CATL_REL) + ".source.json"),
+        CW_SIBLING / ".source_catalog" / "security_master" / "cn.json",
+    )
+    missing_inputs = [str(path) for path in required_production_inputs
+                      if not path.is_file()]
+    if missing_inputs:
+        return False, "production E2E inputs absent: " + ", ".join(missing_inputs)
     if not RUNNER.is_file():
         return False, "runner e2e/run_cross_repo_chain_e2e.py absent"
     try:

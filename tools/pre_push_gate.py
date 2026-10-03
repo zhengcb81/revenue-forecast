@@ -163,6 +163,9 @@ REAL_ROOTS_TESTS = (
     "tests/test_ca302_three_journeys.py",
 )
 REAL_DATA_TESTS = (
+    # Pins the Ningde Times production filing plus source-catalog identity
+    # snapshot; not available on GitHub-hosted runners.
+    "tests/test_cross_repo_chain_e2e.py",
     "tests/test_zr806_real_t2_samples.py",
     "tests/test_zr1004_small_cohort.py",
     "tests/test_fc1001_isolated_lake.py",

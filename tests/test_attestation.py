@@ -67,12 +67,14 @@ class AttestationTests(unittest.TestCase):
         )
         self.assertFalse(attestation_capability())
 
-    def test_configured_provider_means_host_signed_publication(self) -> None:
+    def test_unverified_executable_does_not_enable_host_signing(self) -> None:
+        # An executable path alone is not provider capability: it must complete
+        # the signed attestation handshake and resolve in the trust domain.
         os.environ["REVENUE_ATTESTATION_PROVIDER"] = sys.executable
-        self.assertTrue(attestation_capability())
+        self.assertFalse(attestation_capability())
         result = run_forecast(forecast_document())
         self.assertEqual(
-            result["publication_receipt"]["attestation_status"], "host_signed"
+            result["publication_receipt"]["attestation_status"], "unattested"
         )
 
     def _whitelist(self, public_key_bytes: bytes) -> Path:

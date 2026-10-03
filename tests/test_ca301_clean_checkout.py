@@ -55,7 +55,8 @@ MANIFEST = ROOT / "compatibility" / "current.json"
 def _head(repo: Path) -> str:
     return subprocess.run(
         ["git", "-C", str(repo), "rev-parse", "HEAD"],
-        capture_output=True, text=True, encoding="utf-8", timeout=60,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+        timeout=60,
     ).stdout.strip()
 
 
@@ -74,7 +75,8 @@ def test_c1_manifest_triplet_is_rebuildable():
         assert len(commit) == 40
         proc = subprocess.run(
             ["git", "-C", str(repo), "cat-file", "-e", commit],
-            capture_output=True, text=True, encoding="utf-8", timeout=60)
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=60)
         assert proc.returncode == 0, (
             f"{repo_name}: triplet commit {commit[:12]} not an object")
 
@@ -100,7 +102,8 @@ def test_c1_clean_checkout_layout_from_triplet(tmp_path):
         assert len(commit) == 40
         proc = subprocess.run(
             ["git", "-C", str(repo), "cat-file", "-e", commit],
-            capture_output=True, text=True, encoding="utf-8", timeout=60)
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=60)
         assert proc.returncode == 0, f"{repo_name} triplet commit missing"
 
 
@@ -109,10 +112,19 @@ def test_c1_clean_checkout_layout_from_triplet(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_c2_env_freezing_collects_clean_facts():
+def test_c2_env_freezing_collects_clean_facts(monkeypatch, tmp_path):
     """collect() works on the real trio (read-only) and returns the full
     fact surface the freeze/verify gate consumes."""
     import uc.envfreeze as ef
+
+    # Keep environment freezing hermetic: global skill directories are
+    # user-owned state and may be unreadable in CI/sandboxed runners.
+    skills = tmp_path / "skills"
+    skill = skills / "fixture-skill"
+    skill.mkdir(parents=True)
+    skill_text = "# Fixture skill\n"
+    (skill / "SKILL.md").write_bytes(skill_text.encode("utf-8"))
+    monkeypatch.setattr(ef, "SKILLS_DIR", skills)
 
     facts = ef.collect(
         ROOT,
@@ -122,6 +134,8 @@ def test_c2_env_freezing_collects_clean_facts():
     )
     repos = facts.get("repos", {})
     assert set(repos) >= {"revenue", "filing", "wiki"}
+    assert facts["skills"]["fixture-skill"] == hashlib.sha256(
+        skill_text.encode("utf-8")).hexdigest()
     for name in ("revenue", "filing", "wiki"):
         rec = repos[name]
         assert rec["head"] == _head(REPO_ROOTS[name]), f"{name} head drift"

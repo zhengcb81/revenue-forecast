@@ -34,8 +34,8 @@ class ReceiptAttackTests(unittest.TestCase):
 
     def test_context_fabrication_is_rejected_by_final_validation(self) -> None:
         # A VerificationContext copied from a legit run with fabricated
-        # gate_ids can produce a receipt — but the final validator recomputes
-        # the gates from the result and must reject the mismatch.
+        # gate_ids can produce an unattested receipt — but the final validator
+        # recomputes the gates from the result and must reject the mismatch.
         from revenue_report import validate_published_forecast
 
         result = run_forecast(forecast_document())
@@ -45,7 +45,7 @@ class ReceiptAttackTests(unittest.TestCase):
         forged_context = copy.copy(legit_context)
         forged_context.executed_gate_ids = ["output_recomputation", "input_contract"]
         receipt = build_publication_receipt(
-            result, forged_context, attestation_status="host_signed"
+            result, forged_context, attestation_status="unattested"
         )
         result["publication_receipt"] = receipt
         result["result_sha256"] = canonical_sha256(

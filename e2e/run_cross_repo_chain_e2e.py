@@ -61,23 +61,23 @@ CW_ROOT = REPO.parent / "company-wiki"
 
 RUN_STAMP = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%SZ")
 
-# --- pins (binding.json of the E2E-EXPAND attempt; code pins re-verified at
-# preflight — drift => exit 2, rebind required, never run on old pins) ---
+# --- pins (rebound to the 2026-10-03 RF integration plus the FF/CWP
+# compatibility-manifest commits; drift => exit 2, never run on stale pins) ---
 CODE_PINS = {
     REPO / "scripts" / "source_preparation.py":
-        "91a6dc32466e9d67b9d034ac345349ee683f6d5fd9486a67cd3ade009c6ebf4d",
+        "0b22c199c03c651d3d0bb49dbfe0c72df2a2ccda5c7898c85c9933a0181efaa0",
     REPO / "scripts" / "filing_fetch_client.py":
-        "b281e6d15e016dd067f21709e71638e3c052370e07381cfc7ea7ccd071deb3bc",
+        "511414eb5fb15dfa0668f7089b70c3c98dda1d15ba72a827754f4970941d2c28",
     REPO / "scripts" / "company_wiki_source.py":
-        "7d1bd8f9d9122dc4a99465a8f9201e855417a5d0756f5bfdd6d404f7ca9e48ce",
+        "b223974e94ffb6d91e0e927b252e1fbc67a590fc910c3da10600d292d48d4470",
     REPO / "tests" / "e2e_support" / "isolated_lake.py":
         "867ac82bcb48e9fd81592c2304ac390453b5b1f85bee0b8d9efa476d57aa2883",
     FF_ROOT / "scripts" / "fetch_filing.py":
-        "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+        "eec00738e07741bfe6101565f802bd618c07341b2bf314e282207966ed96a32c",
     FF_ROOT / "scripts" / "filing_contracts.py":
-        "2d1b2e3374f1d0c255f94303d208f8657f54c9c32b3428e424f43e6a81ddc457",
+        "b933d0d04c553a33376ce7b91ee6d73f09540831e2d5416ccc04319dd6e5c66d",
     FF_ROOT / "tests" / "e2e_support" / "isolated_wiki.py":
-        "8966e7e1f0fee8a60c24512bebd7ce683ed0b590e65f1b52b59bd3f48b983d55",
+        "4e3e4dfe38b75ec772fd558972542f7a33e710459cc434138abba9c30bf8a9e4",
     CW_ROOT / "src" / "company_wiki" / "source_catalog" / "cli.py":
         "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
 }
