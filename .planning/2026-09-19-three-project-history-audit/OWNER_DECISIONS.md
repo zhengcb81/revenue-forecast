@@ -1016,3 +1016,11 @@ E21 产品卡新轨道 · REM-86 锚点 EOL 规范化 · REM79 检查器转常�
 
 
 
+
+
+## 四十四、【后续裁定·覆盖 §四十三缺 hash 阻断】缺 hash 仅作诊断（2026-10-03）
+
+- Owner 后续明确要求“放松缺 hash 可闭环的严格要求”，本节取代 §四十三关于缺 `fixture_hash` 阻止闭环的规则。
+- `status` 满足且 `evidence_path` 指向仓库根内真实、可读文件时，缺少 `fixture_hash` 可以闭环；`evidence_hash_pending` 保留为诊断计数，不自动生成或伪造 hash。
+- 若提供 `fixture_hash`，仍须是有效 SHA-256 且与实际文件字节一致；路径缺失、越出根目录、文件不存在/不可读或 hash 不匹配仍不闭环。
+- 当前 main 的 `scenarios.py` 已实现这些语义，并保留证据字节校验、能力覆盖和 oracle 非空检查。并线后定向测试 `test_scenarios.py` + `test_closure.py` 为 29 passed。

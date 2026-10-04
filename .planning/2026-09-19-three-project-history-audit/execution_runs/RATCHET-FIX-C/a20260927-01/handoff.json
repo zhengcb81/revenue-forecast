@@ -1,0 +1,99 @@
+{
+  "role": "implementer_ratchet_c",
+  "authorized_by": "§四十二裁定一",
+  "dispatch": "FC-1204 complexity ratchet (C group, 3 files)",
+  "run": "RATCHET-FIX-C/a20260927-01",
+  "date": "2026-09-27",
+  "status": "review_pending",
+  "implementer_signed": false,
+  "releases_nothing": true,
+
+  "files_fixed": ["observability.py", "prune_retired_evidence.py"],
+  "reverted_files": ["adapters/conformance.py"],
+  "metric_correction_acknowledged": true,
+
+  "frozen_targets": {
+    "observability.py": 6,
+    "prune_retired_evidence.py": 12,
+    "adapters/conformance.py": 8
+  },
+  "max_complexity_before": {
+    "observability.py": {"test_metric": 6, "pre_image_note": "split body already in working tree (mtime 11:56, uncommitted); committed HEAD = 27 (dispatch's 20~27 = HEAD test/M)"},
+    "prune_retired_evidence.py": {"test_metric": 27, "m_metric": 25, "worst_fn": "prune_retired_evidence=27, _load_verified_archives=16"},
+    "adapters/conformance.py": {"test_metric": 8, "m_metric": 13, "worst_fn": "run_conformance"}
+  },
+  "max_complexity_after": {
+    "observability.py": 6,
+    "prune_retired_evidence.py": 12,
+    "adapters/conformance.py": 8
+  },
+  "max_complexity_after_detail": {
+    "observability.py": {"test": 6, "m": 6, "worst_fn": "key_is_credential=6; _redact_assignments=5"},
+    "prune_retired_evidence.py": {"test": 12, "m": 10, "worst_fn": "_build_plan=12; prune_retired_evidence=6"},
+    "adapters/conformance.py": {"test": 8, "m": 13, "worst_fn": "run_conformance=8 (reverted to pre-image; pre-image passes the gate metric)"},
+    "gate_result": "PASS - all three <= frozen under the authoritative test metric"
+  },
+
+  "tests_passed": {
+    "test_fc1204_complexity_ratchet_frozen_files": "PASSED (was FAILED at pre-image: prune 27 > 12)",
+    "-k redact": "9 passed",
+    "tests/contract/test_observability.py": "8 passed (redaction surface, incl. test_obs08 redaction-preserves-adjacent-fields)",
+    "-k conformance": "14 passed",
+    "-k prune": "3 failed - PRE-EXISTING, unrelated to this run (see pre_existing_failures)",
+    "ruff_check_changed_files": "All checks passed"
+  },
+
+  "behaviour_zero_change_evidence": {
+    "prune_probe_17_scenarios": {
+      "pre_vs_post_transcripts": "byte-identical",
+      "sha256_both": "6DB7D1FA262C5BD224AED6EAE036DC4566040BFFA2B9BA2E63DE8ED5585F5E57",
+      "artifacts": ["prune_probe.py", "probe_pre.json", "probe_post.json"]
+    },
+    "prune_signature_pre_post": "IDENTICAL (signature_check.py)",
+    "observability": "diff pre->post = ratchet comment only (git diff --no-index); split body branches verified 1:1; redaction unit tests 8+9 green"
+  },
+
+  "pre_existing_failures": [
+    {
+      "scope": "-k prune",
+      "tests": [
+        "tests/contract/test_source_catalog_prune_retired.py::test_prune_dry_run_reports_span_volume",
+        "tests/contract/test_source_catalog_prune_retired.py::test_prune_apply_deletes_spans_when_due",
+        "tests/contract/test_source_catalog_prune_retired.py::test_prune_apply_within_retention_does_nothing"
+      ],
+      "cause": "call sites pass no `now`; required keyword-only `now` added in ac4ebd0 (2026-09-22), test file last touched in b6c97b8 - red for ~5 days before this run",
+      "proven_unrelated": "TypeError raised at call binding; signature byte-identical pre/post; test file not in authorized write surface"
+    },
+    {
+      "scope": "ratchet new-files",
+      "tests": ["test_fc1204_complexity_ratchet::test_complexity_ratchet_new_files_stay_simple"],
+      "cause": "untracked new file narrative_evidence.py 363 > 10; concurrent agent owns it (tests/.tmp-narrative-ratchet-agent/)"
+    }
+  ],
+
+  "git_diff_non_planning": 0,
+  "git_diff_non_planning_evidence": "this implementer wrote only the 3 authorized product files (adapters/conformance.py restored byte-identical to pre_image == HEAD, no longer in git diff) + this output dir; all other dirty files in company-wiki pre-date this run (baseline diff of 13 files recorded) or belong to concurrent agents",
+
+  "pre_image_sha256": {
+    "observability.py": "563CDF1D95817665F91BED01FEA76C2D632E082F3C4751316EE0FF87D818993E",
+    "prune_retired_evidence.py": "0C99BBE0C5F4EF16E7F84BA8AAE0548EF6F59A0080274D5BD1CE83A7D37990B0",
+    "adapters/conformance.py": "D99BDF79BE4A055500B25A5846BC59C85E88C45C005AC8EE70E4438B31ECFD99"
+  },
+  "post_image_sha256": {
+    "observability.py": "18DDCEC4F8FE207C0E4E65C6AA31F30CC09ABA93B11BB935E5D9B03BCC75BCCE",
+    "prune_retired_evidence.py": "70CC807A2FA59883E503DE0F43B21951A16408BD4F30AFCAE0632E747907334C",
+    "adapters/conformance.py": "D99BDF79BE4A055500B25A5846BC59C85E88C45C005AC8EE70E4438B31ECFD99"
+  },
+
+  "discipline": {
+    "frozen_table_untouched": true,
+    "identity_cli_py_untouched": true,
+    "git_writes": 0,
+    "git_status_used": false,
+    "network_used": false,
+    "dayu_agent_touched": false,
+    "write_surface": "3 authorized product files + this output dir only"
+  },
+
+  "outputs": ["oracle.md", "split_report.md", "handoff.json", "pre_image/", "post_image/", "verification_output.txt", "measure_complexity.py", "dual_metric.py", "prune_probe.py", "probe_pre.json", "probe_post.json", "signature_check.py"]
+}

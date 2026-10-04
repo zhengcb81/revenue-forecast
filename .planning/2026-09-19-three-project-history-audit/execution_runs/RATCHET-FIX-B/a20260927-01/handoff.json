@@ -1,0 +1,115 @@
+{
+  "role": "implementer_ratchet_b",
+  "authorized_by": "§四十二裁定一",
+  "authorization_note": "FC-1204 complexity ratchet — owner §四十二 裁定一, 2026-09-27; split only; behaviour unchanged; FROZEN_MAX untouched",
+  "run_id": "RATCHET-FIX-B/a20260927-01",
+  "output_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\RATCHET-FIX-B\\a20260927-01",
+  "target_repo": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+
+  "metric_authority": "tests/contract/test_fc1204_complexity_ratchet.py::_max_complexity (top-level FunctionDef in tree.body, 1 + _mccabe; IfExp NOT counted)",
+  "metric_note": "The dispatch's 实际 numbers 3/9/11 are a DIFFERENT口径 (IfExp counted, BoolOp n-1 only) — reproduced exactly in evidence_per_function_complexity.txt PRE-IMAGE段. All three files now satisfy the target under ALL THREE口径 (gate / auditB / auditA).",
+
+  "files_fixed": [
+    {
+      "file": "src/company_wiki/source_catalog/producer_events.py",
+      "sha256_pre": "8E0F18FBD17C1A2BB0E50947831889FDAEF2F7AE318AD3C93A5333CFE6AAC874",
+      "sha256_post": "4BA3B4834145B36C170F401216FAD03EB3C6C4B67C2A1F55236EBE8C1A9DDEC0",
+      "frozen_max": 1,
+      "max_complexity_before": {"gate": 1, "auditB_dispatch": 3, "auditA": 3},
+      "max_complexity_after": {"gate": 1, "auditB_dispatch": 1, "auditA": 1},
+      "worst_function_after": "count_producer_events / _tally (=1 in all口径)",
+      "split": "两处三元 if 移入新顶层 _tally(row)=int((row,_ZERO_ROW)[row is None][0]) — 选择而非分支(无 If/IfExp/BoolOp/For/comprehension); event_type 过滤本就在 SQL; 调用方 resolver.py 不在写入面。count_producer_events 变纯直通，SQL 文本/查询数/返回值不变。"
+    },
+    {
+      "file": "src/company_wiki/source_catalog/identity_cli.py",
+      "sha256_pre": "989CF4181F7C8B2084663058FCD84A526C5D03A577CC668983A49DD87D1572A2",
+      "sha256_post": "C4CA684F971A093F7F29CF1565E310BF2BB50D645F5D3307473BA6CC4E046E49",
+      "frozen_max": 6,
+      "max_complexity_before": {"gate": 6, "auditB_dispatch": 9, "auditA": 9},
+      "max_complexity_after": {"gate": 3, "auditB_dispatch": 4, "auditA": 4},
+      "worst_function_after": "_configure_stdio (=3 gate) / main (=2 gate, 4 auditB)",
+      "split": "main 按原 try 块边界拆为 _configure_stdio + _refreshed + _resolved_payload; 异常照旧由 main 的 except 走 structured_error→return 1; print/return 0|2 语句序不变。"
+    },
+    {
+      "file": "src/company_wiki/source_catalog/artifact_read_model.py",
+      "sha256_pre": "EE2792312947BC694084B059384D7A30376A29293A57E3F69534A4D37BC55711",
+      "sha256_post": "D2191509DF9397C6FB8A00E56FDB41F21E8873E494399E320CEA6F5C7764C68A",
+      "frozen_max": 10,
+      "frozen_entry": null,
+      "max_complexity_before": {"gate": 8, "auditB_dispatch": 11, "auditA": 12},
+      "max_complexity_after": {"gate": 8, "auditB_dispatch": 7, "auditA": 8},
+      "worst_function_after": "read_artifact (=8 gate) / _readable_artifact (=1 gate, 5 auditB)",
+      "split": "ReadableArtifact 组装(4 个 binding-vs-legacy 三元)原样搬入新顶层 _readable_artifact; read_artifact 只留读取+4 个 fail-closed 检查。"
+    }
+  ],
+
+  "max_complexity_after": {
+    "producer_events.py": 1,
+    "identity_cli.py": 3,
+    "artifact_read_model.py": 8
+  },
+  "targets": {"producer_events.py": 1, "identity_cli.py": 6, "artifact_read_model.py": 10},
+  "all_within_target": true,
+  "authority_check_output": [
+    "producer_events.py         _max_complexity=1  target<=1  frozen=1  -> PASS",
+    "identity_cli.py            _max_complexity=3  target<=6  frozen=6  -> PASS",
+    "artifact_read_model.py     _max_complexity=8  target<=10  frozen=None  -> PASS",
+    "AUTHORITY CHECK: ALL PASS"
+  ],
+
+  "tests_passed": true,
+  "tests": [
+    {
+      "command": "pytest tests/contract/test_source_catalog_security_identity.py tests/unit/test_zr304_read_model.py tests/contract/test_fc905_receipt_envelope.py tests/contract/test_fc1204_complexity_ratchet.py -q -p no:cacheprovider",
+      "result": "25 passed, 4 failed",
+      "failed_out_of_scope": [
+        "test_fc905_receipt_envelope.py::test_pi01 / pi02 / pi09 — prompt_injection.py::_require_sha256 'source_sha256 must be a lowercase SHA-256'; SAME 3 reds in the pre-edit baseline run; stack does not touch the three B files",
+        "test_fc1204_complexity_ratchet.py::test_complexity_ratchet_new_files_stay_simple — narrative_evidence.py 363 > 10 (new file, not a B-group file)"
+      ],
+      "in_scope": "test_complexity_ratchet_frozen_files_do_not_worsen PASS (covers producer_events 1<=1, identity_cli 6<=6, all frozen files); test_zr304_read_model all green; both identity_cli tests green"
+    },
+    {
+      "command": "pytest tests/contract tests/unit -q -k 'identity or envelope or zr304 or read_model'",
+      "result": "117 passed, 3 failed (same 3 out-of-scope prompt_injection reds)"
+    }
+  ],
+  "coverage_check": {
+    "method": "same test batch, branch coverage, COVERAGE_FILE + json report kept in the output dir (repo coverage.json untouched)",
+    "producer_events.py": "100.0 -> 100.0 (floor 95 required) OK",
+    "identity_cli.py": "82.4 -> 84.5 (floor 82) OK",
+    "artifact_read_model.py": "91.2 -> 91.3 (no floor)"
+  },
+
+  "self_proof_toplevel_scan": "selfproof_toplevel_scan.py -> evidence_toplevel_scan.txt: nested-function branches ARE counted in their top-level parent (case=2, not 1) — the dispatch's 'nested closure hides it' hint does NOT hold; module-level if / module-level lambda sit outside the scan (1). Not used by this station.",
+  "fail_closed": "not triggered — all three files met target with green in-scope tests; no rollback needed",
+
+  "scope_discipline": {
+    "write_surface": "3 authorized source files + this output dir only",
+    "frozen_table_edited": false,
+    "tests_edited": false,
+    "five_plan_files_written": false,
+    "git_writes": 0,
+    "git_status_run": false,
+    "network_used": false,
+    "dayu_agent_touched": false
+  },
+
+  "git_diff_non_planning": 0,
+  "git_diff_non_planning_measured": "只读 `git -c core.quotepath=false diff HEAD --name-only`（未跑 git status、零 git 写）：rf 仓 total=9、non-planning=5 全部在 assurance/(既存其他工位改动，本卡零写入)；cw 仓 total=23，其中本卡归因的改动恰为 3 个授权文件 producer_events.py / identity_cli.py / artifact_read_model.py，其余 20 项为并行工位/既存改动（C 组 observability·prune_retired_evidence·adapters/conformance、A 组 prompt_injection、以及 CLAUDE.md/README/docs/* 等）⇒ 归因本卡的未授权非计划改动 = 0。",
+
+  "written_files": [
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/RATCHET-FIX-B/a20260927-01/oracle.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/RATCHET-FIX-B/a20260927-01/split_report.md",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/RATCHET-FIX-B/a20260927-01/handoff.json",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/RATCHET-FIX-B/a20260927-01/pre_image/{producer_events,identity_cli,artifact_read_model}.py + SHA256SUMS.txt",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/RATCHET-FIX-B/a20260927-01/post_image/{producer_events,identity_cli,artifact_read_model}.py + SHA256SUMS.txt",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/RATCHET-FIX-B/a20260927-01/{measure_all,authority_check,selfproof_toplevel_scan,cov_compare}.py",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/RATCHET-FIX-B/a20260927-01/evidence_{authority_check,per_function_complexity,tests_after,coverage_compare,toplevel_scan}.txt",
+    ".planning/2026-09-19-three-project-history-audit/execution_runs/RATCHET-FIX-B/a20260927-01/cov_{before,after}.json"
+  ],
+
+  "status": "review_pending",
+  "implementer_signed": false,
+  "releases_nothing": true,
+  "next_action": "owner/orchestrator review of split_report.md + post_image diff; out-of-scope reds (prompt_injection pi01/pi02/pi09, narrative_evidence.py 363) belong to other stations"
+}

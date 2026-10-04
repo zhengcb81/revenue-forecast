@@ -1,0 +1,64 @@
+{
+  "role": "implementer_ratchet_a",
+  "run_id": "RATCHET-FIX-A/a20260927-01",
+  "authorized_by": "§四十二裁定一",
+  "authorization_text": "owner §四十二 裁定一 — FC-1204 complexity ratchet",
+  "date": "2026-09-27",
+  "repo": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "files_fixed": 0,
+  "files_fixed_detail": [],
+  "files_in_scope": [
+    "src/company_wiki/source_catalog/adapters/parity.py",
+    "src/company_wiki/source_catalog/lock.py",
+    "src/company_wiki/source_catalog/prompt_injection.py",
+    "src/company_wiki/source_catalog/store.py"
+  ],
+  "reverted_files": [
+    "src/company_wiki/source_catalog/adapters/parity.py",
+    "src/company_wiki/source_catalog/lock.py"
+  ],
+  "revert_note": "prompt_injection.py and store.py were never modified by this session; parity.py and lock.py mid-session splits were rolled back to pre_image on parent stop-order. All 4 worktree sha256 == pre_image sha256.",
+  "metric_correction_acknowledged": true,
+  "metric_correction_note": "Dispatch 'actual' values 14/17/16/32 came from a standard-McCabe count that includes IfExp; the gate's own _max_complexity (no IfExp) measures 13/15/15/30, all <= frozen 13/15/15/30. Zero real violations under the gate metric.",
+  "max_complexity_before": {
+    "adapters/parity.py": 13,
+    "lock.py": 15,
+    "prompt_injection.py": 15,
+    "store.py": 30
+  },
+  "max_complexity_after": {
+    "adapters/parity.py": 13,
+    "lock.py": 15,
+    "prompt_injection.py": 15,
+    "store.py": 30
+  },
+  "frozen_max": {
+    "adapters/parity.py": 13,
+    "lock.py": 15,
+    "prompt_injection.py": 15,
+    "store.py": 30
+  },
+  "all_within_frozen": true,
+  "sha256_worktree_equals_pre_image": true,
+  "sha256": {
+    "adapters/parity.py": "BBF35590271123ACD7C4A74516F35D4AB743223595C176F6A853307581AE501F",
+    "lock.py": "2303D3E5A4A790070B253CBF3A319B38BE25D4D412DA8F8E067726D0553D5B4C",
+    "prompt_injection.py": "0DAEFC79FDC6070E5864E81FD26E649734F2D4D82A0F787689148B6D7C56F476",
+    "store.py": "1A7832404C39DA858400A99D2F7E9495E8B169498DACAD591FDA5447B2DA9615"
+  },
+  "tests_passed": true,
+  "tests": [
+    {"cmd": "pytest -k 'parity or operation_lock or prompt_injection or pipeline_status'", "result": "57 passed"},
+    {"cmd": "pytest -k store", "result": "100 passed"},
+    {"cmd": "pytest tests/contract/test_fc1204_complexity_ratchet.py::test_complexity_ratchet_frozen_files_do_not_worsen", "result": "passed"},
+    {"cmd": "pytest tests/contract/test_fc1204_complexity_ratchet.py::test_complexity_ratchet_new_files_stay_simple", "result": "failed - narrative_evidence.py 363 > 10 (new-file rule; out of this dispatch's 4-file scope, pre-existing, not introduced by this run)"}
+  ],
+  "status": "review_pending",
+  "implementer_signed": false,
+  "releases_nothing": true,
+  "git_diff_non_planning": 0,
+  "git_diff_note": "This run's net product-code diff is 0 (parity.py and lock.py reverted to pre_image, sha256-verified). The worktree still carries a PRE-EXISTING uncommitted diff in prompt_injection.py (mtime 11:53, before this run started at 12:00, copied into pre_image) made by another actor — not touched, not reverted, not attributed to this run.",
+  "frozen_table_touched": false,
+  "dayu_agent_contact": false,
+  "network_used": false
+}
