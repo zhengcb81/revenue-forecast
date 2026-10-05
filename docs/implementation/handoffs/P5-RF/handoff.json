@@ -1,0 +1,152 @@
+{
+  "schema_version": "cwp-parallel-handoff/2",
+  "lane_id": "P5-RF",
+  "status": "complete",
+  "repo": "C:/Users/郑曾波/Projects/revenue-forecast",
+  "worktree": "C:/Users/郑曾波/Projects/cwp-lanes-20261005/rf-source-v2",
+  "branch": "codex/p5-rf-source-default",
+  "base_head": "8a153f3387ae75fb172e70f8ab63ffd38100779a",
+  "delivery_head": "31fe65e6bf673a29f1ab3ac6f7b64248246ca6a2",
+  "commits": ["31fe65e6bf673a29f1ab3ac6f7b64248246ca6a2"],
+  "changed_paths": [
+    "scripts/source_preparation.py",
+    "SKILL.md",
+    "tests/e2e_support/isolated_lake.py",
+    "tests/test_source_preparation.py",
+    "tests/test_fc904_artifact_selection.py",
+    "tests/test_fc905b_trusted_receipt.py",
+    "tests/test_zr701_f1_draft_formal.py",
+    "tests/test_fc1002_three_process_e2e.py",
+    "tests/test_fc1003_uj.py",
+    "tests/test_fc1004_platform.py",
+    "tests/test_zr802_combined_journeys.py",
+    "tests/test_zr803_chaos_recovery.py",
+    "tests/test_zr804_platform_shape.py",
+    "tests/test_zr805_t3_authorization.py",
+    "tests/test_zr709_zijin_journey.py",
+    "tests/test_preparation_e2e_success.py",
+    "tests/test_message_contract_pins.py",
+    "tests/test_p5_source_default_v2.py",
+    "tests/test_p5_source_default_cli_e2e.py",
+    ".planning/p5-rf-source-default/task_plan.md",
+    ".planning/p5-rf-source-default/findings.md",
+    ".planning/p5-rf-source-default/progress.md",
+    "docs/implementation/handoffs/P5-RF/HANDOFF.md",
+    "docs/implementation/handoffs/P5-RF/handoff.json"
+  ],
+  "upstream": [
+    {
+      "repo": "filing-fetch",
+      "head": "d4d2fac (local HEAD used for E2E); compatibility pin 89c8bdb2cfba4d88720d005d0558f422957e8ade",
+      "interfaces": [
+        "filing-fetch_client --source-ref-v2 (pathless SourceRef handle on stdout)",
+        "fetch_filing.py source query -> company_wiki.source_catalog.source_query_cli"
+      ]
+    },
+    {
+      "repo": "company-wiki",
+      "head": "a2563f9 (local HEAD); compatibility pin a640400af4bea0ce97944e99ac9cb6abc6813ae9",
+      "interfaces": [
+        "source_reader_cli --config source_catalog.yaml (verified raw open, SourceRef v2)",
+        "runtime_policy.load/build_snapshot + policy_2x.export_policy_2x (policy_hash pin)",
+        "RuntimePolicySnapshot FLAGS legal all-off + legacy_bridge_enabled",
+        "describe_version capture claims: source_title/published_date/retrieved_at explicit fields",
+        "SourceReadError {unavailable,no_verified_location} / verification fail-closed"
+      ]
+    }
+  ],
+  "entrypoints": [
+    {
+      "command": "echo '<request json>' | python scripts/source_preparation.py --company-wiki-catalog-config <wiki>/config/source_catalog.yaml [--allow-download]",
+      "output_contract": "RevenueSourceRecord + reuse_receipt (v2 semantics: artifact_read==[], parser/llm honest-None, pathless capture); missing catalog config => exit 3 structured error before any outbound call"
+    },
+    {
+      "command": "python scripts/source_preparation.py --source-reader-v2 ...",
+      "output_contract": "compatibility no-op (identical v2-only behavior; no legacy branch)"
+    }
+  ],
+  "tests": [
+    {
+      "command": "python -m pytest -q tests/test_p5_source_default_v2.py",
+      "exit_code": 0,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "note": "RED first run on baseline default: 8 failed / 1 passed"
+    },
+    {
+      "command": "FF_V2_CODE_ROOT=C:/Users/郑曾波/Projects/filing-fetch CWP_V2_CODE_ROOT=C:/Users/郑曾波/Projects/company-wiki python -m pytest -q tests/test_p5_source_default_cli_e2e.py",
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "note": "public CLI, no --source-reader-v2: derived-deletion independence + corrupted-raw fail-closed then heal"
+    },
+    {
+      "command": "python -m pytest -q tests/test_p5_source_default_v2.py tests/test_p5_source_default_cli_e2e.py tests/test_source_preparation.py tests/test_fc904_artifact_selection.py tests/test_fc905b_trusted_receipt.py tests/test_zr701_f1_draft_formal.py tests/test_fc1002_three_process_e2e.py tests/test_fc1003_uj.py tests/test_fc1004_platform.py tests/test_zr802_combined_journeys.py tests/test_zr803_chaos_recovery.py tests/test_zr804_platform_shape.py tests/test_zr805_t3_authorization.py tests/test_preparation_e2e_success.py tools/tests/test_complexity_ratchet.py tests/test_single_owner_guard.py tests/test_skill_doc_executable.py",
+      "exit_code": 0,
+      "passed": 98,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python -m ruff check scripts/ tests/",
+      "exit_code": 0,
+      "passed": null,
+      "failed": 0,
+      "note": "All checks passed"
+    }
+  ],
+  "cleanup": {
+    "test_root": "pytest tmp_path / %TEMP% isolates; FF/CWP fixtures built under tmp",
+    "before_digest": "absent",
+    "after_digest": "absent",
+    "restored": true,
+    "temporary_worktrees_removed": [
+      "revenue-forecast@rf-p5-baseline (Temp)",
+      "filing-fetch@p5_pin_ff (Temp)"
+    ]
+  },
+  "protection": {
+    "originals_unchanged": true,
+    "owner_files_unchanged": true,
+    "production_written": false,
+    "validation_rules_changed": false,
+    "ci_matrix_changed": false
+  },
+  "calls": {"network": 0, "download": 0, "llm": 0},
+  "metrics": {
+    "receipt_semantics": {
+      "artifact_read": "[] (never a storage path; no derived body claim)",
+      "parser_calls": null,
+      "llm_calls": null,
+      "producer_events": "[] on successful v2 reuse",
+      "download_calls": 0
+    },
+    "e2e_proof": {
+      "derived_tree_deleted_then_second_journey": "exit 0, download_calls=0",
+      "artifacts_table_deleted_then_second_journey": "exit 0, download_calls=0",
+      "corrupted_raw": "exit 3 source reader refused; restored bytes heal to same snapshot_sha256 with download_calls=0"
+    }
+  },
+  "integration_notes": [
+    "Prepared --company-wiki-catalog-config is now REQUIRED for every real-chain caller; every migrated suite passes the fixture catalog yaml explicitly.",
+    "Legacy envelope contract tests call the isolated helper source_preparation._prepare_legacy_source directly (documented non-production fixture entry); production default never reaches it.",
+    "tests/e2e_support/isolated_lake.py now writes a CWP-valid runtime policy AFTER scan with policy_hash pinned from the YAML-loaded config (programmatic vs YAML config export hashes differ); sidecars carry explicit source_title/published_date/retrieved_at; source_url host must not end with .example (valid_source_url).",
+    "HOLD (a): compatibility-pinned FF 89c8bdb2 has no --source-ref-v2 (usage error) -> CI real-roots cannot run the v2 default chain; the new CLI E2E is env-gated (FF_V2_CODE_ROOT/CWP_V2_CODE_ROOT) and skips with a pointer to HANDOFF.md. MAIN must rebind compatibility or upgrade the FF pin.",
+    "HOLD (b): local CWP HEAD 1cfec10 (2026-10-04) removed prompt_injection_guard.evaluate_review -> test_message_contract_pins::test_lowercase_sha256_family_pinned fails locally; pinned wiki a640400 still has the API (git show verified) so CI stays green. Pre-existing drift, not from this lane.",
+    "HOLD (c): lanes worktree lacks sibling junctions -> pre-existing local failures (fc1302 triplet manifest, contract_registry/scenario_coverage sibling ADR+marker docs, dropbox fc505 filing_contracts, compatibility_manifest, ca2xx/fc1102 sibling paths, T3 suite missing, triplet object checks). Baseline double-run proved identical failures (not caused by this lane); CI junction layout stays green.",
+    "HOLD (d): test_narrative_source_preparation_e2e requires CWP_NARRATIVE_CODE_ROOT (named failure without it) - local env gap.",
+    "HOLD (e): live-data machine tests test_zr806_real_t2_samples / test_zr1004_small_cohort fail identically on baseline (owner production wiki + real Dropbox state) - 4 failed / 13 passed both sides.",
+    "HOLD (f): e2e/run_cross_repo_chain_e2e.py S1-S6 legacy scenes + CODE_PINS (pins the pre-migration source_preparation sha) are marked HISTORICAL FIXTURES in HANDOFF.md; both CI and this machine skip it behind the dependency gate. The v2 default acceptance proof moved to tests/test_p5_source_default_cli_e2e.py.",
+    "HOLD (g): RF consumer-side migration done; production CWP derived deletion (2.826 GB) and remaining caller cleanup stay with MAIN S5. No production data or owner original trees touched.",
+    "Message-pin literals (e.g. parser/llm fail-closed sentence) preserved verbatim; validation rules / contract registries untouched -> validation-runtime self-check not applicable.",
+    "Batch-order note: tests/test_source_ref_v2_three_repo_e2e.py imports FF e2e_support and can be shadowed by RF's own tests/e2e_support when narrative e2e imports it earlier in a full sweep (pre-existing batch fragility; passes standalone and in the 98-test batch)."
+  ],
+  "remaining": [
+    "MAIN: rebind compatibility triple (or upgrade FF pin) so CI real-roots runs the v2 default chain; then un-gate the CLI E2E.",
+    "MAIN: decide fate of e2e/run_cross_repo_chain_e2e.py legacy scenes (rewrite to v2 semantics or retire behind historical-fixture flag).",
+    "MAIN S5: production derived deletion + remaining CWP body-reader retirement (this lane only removed the RF default consumer).",
+    "Push: codex/p5-rf-source-default committed locally only; push is MAIN's decision."
+  ]
+}
