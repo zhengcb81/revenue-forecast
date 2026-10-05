@@ -59,3 +59,13 @@ and exact CI still require coordinator completion; delivery signoff is not that 
 Normal commit first rejected the new fixed raw-sample SHA as unregistered by the existing
 host guard. Registered that byte-only sample with its provenance; no hash assertion
 was removed or changed to a computed host-dependent value.
+
+## Checkout bottleneck found after publication
+
+The first exact code run37391276302 remained in actions/checkout before executing tests.
+Git tracked directory counts: .planning47079 files, assurance1392, actual scripts51,
+tests151. Daily CI now sparsely checks out its actual source/test/config dependencies,
+excluding historical execution archives; original tracked history is not deleted.
+Supported checkout@v4 sparse-checkout semantics were verified against the action's
+[official README](https://github.com/actions/checkout/tree/v4#fetch-only-part-of-the-repository).
+This is a new configuration correction, not a blind rerun of the earlier SHA.
