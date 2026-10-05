@@ -6,7 +6,7 @@
 #
 # Installed as .githooks/pre-push (git config core.hooksPath .githooks).
 # Every `git push` runs the fast gate first; a red fast gate aborts the push.
-# Run `python tools/pre_push_gate.py` manually for the full local suite.
+# CI and this hook invoke the same bounded behavior set.
 #
 # NOTE: shebang MUST be #!/bin/sh (git-for-windows spawns /bin/sh hooks
 # natively; /usr/bin/env bash failed with "cannot spawn").  Use
@@ -19,8 +19,7 @@ if [ ! -f "$ROOT/tools/pre_push_gate.py" ]; then
   exit 0
 fi
 
-python "$ROOT/tools/pre_push_gate.py" \
-  --skip-install-sync --skip-real-roots --skip-real-data
+python "$ROOT/tools/pre_push_gate.py"
 rc=$?
 if [ "$rc" -ne 0 ]; then
   echo "" >&2

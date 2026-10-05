@@ -11,9 +11,8 @@ Acceptance proof for the default migration (plan card §6):
 - a corrupted raw refuses closed; restoring the original bytes heals into
   the same identity with zero downloads.
 
-Skipped unless FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT are set (the compatibility
-pinned FF lacks --source-ref-v2; the hold is recorded in
-docs/implementation/handoffs/P5-RF/HANDOFF.md).
+Uses sibling checkouts by default; explicit FF_V2_CODE_ROOT/CWP_V2_CODE_ROOT
+may select integration trees. Missing dependencies fail visibly, never skip.
 """
 
 from __future__ import annotations
@@ -27,7 +26,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -45,15 +43,12 @@ REQUEST = {
 
 
 def _env_roots() -> tuple[Path, Path]:
-    ff_raw = os.environ.get("FF_V2_CODE_ROOT")
-    cwp_raw = os.environ.get("CWP_V2_CODE_ROOT")
-    if not (ff_raw and cwp_raw):
-        pytest.skip(
-            "FF_V2_CODE_ROOT/CWP_V2_CODE_ROOT not set: the compatibility-"
-            "pinned FF has no --source-ref-v2 (see "
-            "docs/implementation/handoffs/P5-RF/HANDOFF.md)"
-        )
-    return Path(ff_raw), Path(cwp_raw)
+    ff_root = Path(os.environ.get("FF_V2_CODE_ROOT", ROOT.parent / "filing-fetch"))
+    cwp_root = Path(os.environ.get("CWP_V2_CODE_ROOT", ROOT.parent / "company-wiki"))
+    for root in (ff_root, cwp_root):
+        if not root.is_dir():
+            raise FileNotFoundError(f"Required offline source dependency missing: {root}")
+    return ff_root, cwp_root
 
 
 def _build_wiki(tmp: Path, ff_root: Path, cwp_root: Path):
@@ -128,12 +123,41 @@ def _run_cli(wiki, ff_root: Path, cwp_root: Path, request: dict):
     )
 
 
+
+def _seed_legacy_artifacts(wiki):
+    """Put actual obsolete rows/files in the isolated catalog before deleting them."""
+    derived = wiki.catalog_dir / "derived"
+    derived.mkdir(exist_ok=True)
+    con = sqlite3.connect(wiki.catalog_dir / "catalog.sqlite3")
+    try:
+        document_id, source_id = con.execute("SELECT document_id, primary_source_id FROM documents LIMIT 1").fetchone()
+        for role in ("normalized", "sections", "summary"):
+            path = derived / f"legacy-{role}.md"
+            body = b"obsolete fixture body; default raw reader must ignore this"
+            path.write_bytes(body)
+            con.execute(
+                "INSERT INTO artifacts (artifact_id, document_id, source_id, artifact_role, path, "
+                "content_sha256, byte_size, mime_type, generator_name, generator_version, status, "
+                "metadata_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f"p5-legacy-{role}", document_id, source_id, role, str(path),
+                 hashlib.sha256(body).hexdigest(), len(body), "text/markdown", "legacy-fixture",
+                 "0.0", "completed", "{}", "2026-09-27T00:00:00Z"),
+            )
+        con.commit()
+        assert con.execute("SELECT COUNT(*) FROM artifacts").fetchone()[0] == 3
+    finally:
+        con.close()
+    assert len(list(derived.iterdir())) == 3
+    return derived
+
+
 def test_cli_default_v2_journey_survives_derived_deletion(tmp_path):
     """Public CLI, NO --source-reader-v2 flag: full v2 journey, then delete
     every derived artifact and the derived tree — a second journey still
     succeeds with zero downloads (raw-only verification)."""
     ff_root, cwp_root = _env_roots()
     wiki, source = _build_wiki(tmp_path, ff_root, cwp_root)
+    derived = _seed_legacy_artifacts(wiki)
 
     proc = _run_cli(wiki, ff_root, cwp_root, REQUEST)
     assert proc.returncode == 0, f"journey failed: {proc.stderr[-800:]}"
@@ -144,9 +168,9 @@ def test_cli_default_v2_journey_survives_derived_deletion(tmp_path):
     assert rr["parser_calls"] is None and rr["llm_calls"] is None
     assert "canonical_path" not in json.dumps(record["company_wiki_trace"])
 
-    derived = tmp_path / "wiki" / "derived"
-    if derived.is_dir():
-        shutil.rmtree(derived)
+    assert derived.is_dir()
+    shutil.rmtree(derived)
+    assert not derived.exists()
     sqlite = wiki.catalog_dir / "catalog.sqlite3"
     if sqlite.is_file():
         con = sqlite3.connect(sqlite)

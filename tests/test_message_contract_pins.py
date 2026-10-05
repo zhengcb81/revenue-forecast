@@ -210,16 +210,9 @@ def test_lowercase_sha256_family_pinned(tmp_path):
     with pytest.raises(ValueError) as excinfo:
         guard.scan_text("x", ruleset_hash="ABC")
     assert str(excinfo.value) == "ruleset_hash must be a lowercase SHA-256"
-    with pytest.raises(ValueError) as excinfo:
-        guard.evaluate_review(
-            con, "doc-1", source_sha256="ABC", policy_hash="b" * 64,
-            now="2026-09-22T00:00:00Z", ttl_seconds=1.0)
-    assert str(excinfo.value) == "source_sha256 must be a lowercase SHA-256"
-    with pytest.raises(ValueError) as excinfo:
-        guard.evaluate_review(
-            con, "doc-1", source_sha256="b" * 64, policy_hash="ABC",
-            now="2026-09-22T00:00:00Z", ttl_seconds=1.0)
-    assert str(excinfo.value) == "policy_hash must be a lowercase SHA-256"
+    # evaluate_review was retired with the manual prompt-review gate.
+    # Active raw/SourceRef hashes are verified by test_company_wiki_source_ref_v2.
+    con.close()
 
 
 # --- #3: runner vocabulary is NOT product vocabulary (structural zero-hit) ---
