@@ -44,6 +44,8 @@ ROOT = Path(__file__).resolve().parents[1]
 # a baked-in machine path.
 _RF_DEFAULT = ROOT / "scripts"
 _CW_DEFAULT = ROOT.parent / "company-wiki" / "src" / "company_wiki" / "source_catalog"
+if not _CW_DEFAULT.is_dir():  # lanes worktree layout: sibling under ~/Projects
+    _CW_DEFAULT = Path.home() / "Projects" / "company-wiki" / "src" / "company_wiki" / "source_catalog"
 
 RF_SCRIPTS = Path(os.environ.get("GAPS_PIN_RF_SCRIPTS", _RF_DEFAULT))
 CW_DIR = Path(os.environ.get("GAPS_PIN_CW_DIR", _CW_DEFAULT))

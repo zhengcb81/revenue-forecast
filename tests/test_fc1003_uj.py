@@ -46,7 +46,9 @@ def _run_chain(tmp_path: Path, request: dict, *, m=None) -> tuple[int, str]:
     env["PYTHONIOENCODING"] = "utf-8"
     proc = subprocess.run(
         [sys.executable, "-B", str(PROJECT_ROOT / "scripts" / "source_preparation.py"),
-         "--company-wiki-config", str(wiki_cfg)],
+         "--company-wiki-config", str(wiki_cfg),
+         "--company-wiki-catalog-config",
+         str(tmp_path / "lake" / "project" / "config" / "source_catalog.yaml")],
         input=json.dumps(request, ensure_ascii=False),
         text=True, encoding="utf-8", capture_output=True,
         cwd=str(PROJECT_ROOT), env=env, timeout=180, check=False,
@@ -63,8 +65,10 @@ def test_uj01_companies_only_journey_zero_side_effects(tmp_path: Path):
         "as_of_date": _AS_OF})
     assert rc == 0, f"chain failed: {err[-500:]}"
     rr = json.loads(out).get("reuse_receipt") or {}
-    assert rr.get("download_calls") == 0 and rr.get("llm_calls") == 0
-    assert "normalized" in rr.get("artifact_read", [])
+    assert rr.get("download_calls") == 0
+    # P5-RF: the v2 route reads no derived body; parser/LLM stay honest-None
+    assert rr.get("llm_calls") is None and rr.get("parser_calls") is None
+    assert rr.get("artifact_read") == [], rr
 
 
 def test_uj02_dayu_only_raw_no_download(tmp_path: Path):

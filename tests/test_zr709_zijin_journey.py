@@ -421,6 +421,11 @@ def _document_row(
                 "provider": "example-filing",
                 "market": "US",
                 "security_id": "SEC-US",
+                # P5-RF: the v2 manifest requires explicit tz-aware capture
+                # fields (same contract as tests/e2e_support/isolated_lake)
+                "source_title": title,
+                "published_date": published,
+                "retrieved_at": published + "T00:00:00Z",
             },
             # RF-E2E-ADAPT: the review receipt is NOT hand-shaped here —
             # _journey_wiki_root writes it through CW's fail-closed writer
@@ -456,7 +461,9 @@ def _document_row(
         (
             "l" + doc_id[1:],
             "company_raw",
-            pdf_path.name,
+            # P5-RF: the v2 reader resolves root/relative_path — the row must
+            # carry the path RELATIVE to the companies root, not a bare name
+            str(pdf_path.relative_to(pdf_path.parents[4])).replace("\\", "/"),
             str(pdf_path),
             source_id,
             doc_id,
@@ -689,6 +696,8 @@ def _prepare(tmp_path: Path, wiki: Path, document_kind: str):
             str(ROOT / "scripts" / "source_preparation.py"),
             "--company-wiki-config",
             str(filing_config),
+            "--company-wiki-catalog-config",
+            str(wiki / "config" / "source_catalog.yaml"),
         ],
         input=json.dumps(request),
         text=True,
@@ -712,21 +721,17 @@ def test_j1_reuses_filing_and_research_with_explainable_receipt(tmp_path):
         receipt = record["reuse_receipt"]
         # 补齐依据可解释：reuse provenance is fully explicit, zero downloads
         assert receipt["download_calls"] == 0
-        assert receipt["parser_calls"] == 0
-        assert receipt["llm_calls"] == 0
+        # P5-RF: the v2 route schedules no derived recompute and never reads
+        # derived bodies; parser/LLM stay honest-None without real usage
+        assert receipt["parser_calls"] is None
+        assert receipt["llm_calls"] is None
         assert receipt["outcome"] == "reused_existing"
-        assert receipt["bundle_status"] == "available"
         # upstream-published policy identity is passed through verbatim —
         # a fixture root without a policy document honestly reports None
         # (never fabricated); production roots embed the exported hash.
         assert "policy_hash" in receipt
-        assert isinstance(receipt["artifact_read"], list)
-        assert set(receipt["producer_events"]) >= {
-            "markdown",
-            "normalized",
-            "sections",
-            "summary",
-        }
+        assert receipt["artifact_read"] == [], receipt
+        assert receipt["producer_events"] == [], receipt
         assert record["capture"]["prompt_injection_status"] == "not_detected"
     assert len(seen_sources) == 2  # two distinct reused sources, no fabrication
 

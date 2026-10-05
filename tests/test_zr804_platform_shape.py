@@ -34,9 +34,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests" / "e2e_support"))
-FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
+FILING_ROOT = Path.home() / "Projects" / "filing-fetch"
+if not (FILING_ROOT / "scripts" / "fetch_filing.py").is_file():
+    FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
 sys.path.insert(0, str(FILING_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT.parent / "company-wiki" / "src"))
+sys.path.insert(0, str(FILING_ROOT.parent / "company-wiki" / "src"))
 
 AS_OF = (_dt.date.today() + _dt.timedelta(days=7)).isoformat()
 INSTALL_ROOTS = (
@@ -85,12 +87,18 @@ def _chain(
     }
     env = dict(os.environ)
     env["PYTHONIOENCODING"] = "utf-8"
+    catalog_args = []
+    if wiki_root is not None:
+        catalog_yaml = wiki_root / "config" / "source_catalog.yaml"
+        if catalog_yaml.is_file():
+            catalog_args = ["--company-wiki-catalog-config", str(catalog_yaml)]
     return subprocess.run(
         [
             sys.executable,
             "-B",
             str(PROJECT_ROOT / "scripts" / "source_preparation.py"),
             *config_args,
+            *catalog_args,
             "--filing-fetch-root",
             str(FILING_ROOT),
         ],

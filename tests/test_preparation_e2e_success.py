@@ -4,6 +4,7 @@ Builds a temp company-wiki root (config + catalog with one active document),
 spawns the REAL source_preparation chain with --company-wiki-config, and
 asserts a RevenueSourceRecord is produced (no fabricated handles).
 """
+import datetime as _dt
 import json
 import sqlite3
 import subprocess
@@ -153,7 +154,12 @@ def _fixture_wiki_root(tmp: Path) -> Path:
 
 
 def test_full_chain_hits_fixture_record(tmp_path):
-    wiki = _fixture_wiki_root(tmp_path)
+    """P5-RF: the real chain hits an EXISTING indexed filing on the v2 route
+    and the record comes back with zero expensive calls."""
+    from e2e_support.isolated_lake import IsolatedLake
+
+    IsolatedLake(tmp_path, seed="prep-e2e").build()
+    wiki = tmp_path / "lake" / "project"
     filing_config = wiki / "filing_config.json"
     filing_config.write_text(
         json.dumps({"schema_version": "1.0",
@@ -162,27 +168,30 @@ def test_full_chain_hits_fixture_record(tmp_path):
     )
     request = {
         "schema_version": "1.2",
-        "company_query": "Acme",
-        "market": "US",
+        "company_query": "紫金矿业",
+        "market": "CN",
         "document_kind": "annual_report",
-        "as_of_date": "2026-12-31",
+        "as_of_date": (_dt.date.today() + _dt.timedelta(days=7)).isoformat(),
         "fiscal_year": 2025,
     }
     proc = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "source_preparation.py"),
-         "--company-wiki-config", str(filing_config)],
+         "--company-wiki-config", str(filing_config),
+         "--filing-fetch-root",
+         str(Path.home() / "Projects" / "filing-fetch"),
+         "--company-wiki-catalog-config",
+         str(wiki / "config" / "source_catalog.yaml")],
         input=json.dumps(request), text=True, encoding="utf-8",
         capture_output=True, timeout=300, check=False,
     )
     # C2: the chain MUST succeed against the fixture (existing filing hit)
     assert proc.returncode == 0, f"chain failed: {proc.stderr}"
     record = json.loads(proc.stdout)
-    assert record["source_id"] == "s1"
     assert record["source_type"] == "regulatory_filing"
-    assert record["company_wiki_trace"]["document_id"] == "d1"
+    assert record["company_wiki_trace"]["read_receipt"]["document_id"]
     # PROCESS-E2E-01: hit-existing-filing => zero expensive calls
     receipt = record["reuse_receipt"]
-    assert receipt["parser_calls"] == 0
-    assert receipt["llm_calls"] == 0
+    assert receipt["parser_calls"] is None
+    assert receipt["llm_calls"] is None
     assert receipt["download_calls"] == 0
-    assert record["capture"]["prompt_injection_status"] == "not_detected"
+    assert receipt["outcome"] in ("reused_existing", "reused_exact")

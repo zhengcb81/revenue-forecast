@@ -34,7 +34,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests" / "e2e_support"))
-FILING_FETCH_ROOT = PROJECT_ROOT.parent / "filing-fetch"
+FILING_FETCH_ROOT = Path.home() / "Projects" / "filing-fetch"
+if not (FILING_FETCH_ROOT / "scripts" / "fetch_filing.py").is_file():
+    FILING_FETCH_ROOT = PROJECT_ROOT.parent / "filing-fetch"
 FILING_FETCH_TESTS = FILING_FETCH_ROOT / "tests" / "test_e2e_download.py"
 
 AS_OF = (_dt.date.today() + _dt.timedelta(days=7)).isoformat()
@@ -121,6 +123,8 @@ def test_unauthorized_missing_source_zero_downloads_in_journal(tmp_path):
             str(wiki_cfg),
             "--filing-fetch-root",
             str(FILING_FETCH_ROOT),
+            "--company-wiki-catalog-config",
+            str(project / "config" / "source_catalog.yaml"),
         ],
         input=json.dumps(request, ensure_ascii=False),
         text=True,

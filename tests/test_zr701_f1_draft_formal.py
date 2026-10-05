@@ -65,9 +65,17 @@ def test_c2_validate_only_writes_nothing(tmp_path):
     env = dict(os.environ)
     env["REVENUE_PUBLICATION_REGISTRY"] = str(out_dir / "publications.jsonl")
     proc = subprocess.run(
-        [sys.executable, "scripts/revenue_forecast.py", str(input_file),
-         "--validate-only"],
-        cwd=str(ROOT), text=True, capture_output=True, env=env, timeout=120,
+        [
+            sys.executable,
+            "scripts/revenue_forecast.py",
+            str(input_file),
+            "--validate-only",
+        ],
+        cwd=str(ROOT),
+        text=True,
+        capture_output=True,
+        env=env,
+        timeout=120,
     )
     assert proc.returncode == 0, proc.stderr
     assert proc.stdout.strip() == "valid"
@@ -134,9 +142,14 @@ def test_c3_old_entries_without_key_still_readable(tmp_path, monkeypatch):
 
 
 def test_c4_demand_contract_matches_wiki_semantics():
-    queue = processing_demand.DemandQueue(lease_seconds=10.0, max_attempts=2, backoff_base=5.0)
+    queue = processing_demand.DemandQueue(
+        lease_seconds=10.0, max_attempts=2, backoff_base=5.0
+    )
     first = queue.enqueue(key="k1", kind="source_preparation", now=0.0)
-    assert queue.enqueue(key="k1", kind="source_preparation", now=1.0).demand_id == first.demand_id
+    assert (
+        queue.enqueue(key="k1", kind="source_preparation", now=1.0).demand_id
+        == first.demand_id
+    )
     claimed = queue.claim(owner="w1", now=1.0)
     assert claimed.status == "running"
     assert claimed.lease_owner == "w1"
@@ -151,49 +164,87 @@ def test_c4_demand_contract_matches_wiki_semantics():
 
 
 def test_c4_prepare_source_enqueues_demand(tmp_path, monkeypatch):
-    import company_wiki_source
+    """P5-RF: the v2 default path enqueues the same deduped demand."""
+    import company_wiki_source_reader_v2 as reader_v2
+    import company_wiki_source_v2 as builder_v2
 
     def fake_run(command, **kwargs):  # noqa: ARG001
         payload = {
-            "resolution_envelope": {
-                "download_events": 0,
-                "prompt_injection_status": "reviewed",
-                "parser_calls": 0,
-                "llm_calls": 0,
-                "outcome": "reused",
-                "policy_hash": "a" * 64,
-                "activation_epoch": 1,
-                "bundle_status": "ok",
+            "source_ref": {
+                "schema_version": "2.0",
+                "document_id": "doc-1",
+                "source_id": "src-1",
+                "content_sha256": "b" * 64,
+                "byte_size": 3,
+                "mime_type": "application/pdf",
             },
             "document_kind": "annual_report",
-            "provider": "cninfo",
+            "fiscal_year": 2025,
+            "fiscal_period": None,
+            "provider": "company-wiki",
+            "prompt_injection_status": None,
+            "resolution_outcome": "reused_existing",
+            "download_events": 0,
         }
-        return subprocess.CompletedProcess(command, 0, stdout=json.dumps(payload), stderr="")
+        return subprocess.CompletedProcess(
+            command, 0, stdout=json.dumps(payload), stderr=""
+        )
+
+    def fake_open(**kwargs):  # noqa: ARG001
+        return (
+            b"PDF",
+            {
+                "schema_version": "2.1",
+                "status": "ok",
+                "document_id": "doc-1",
+                "source_id": "src-1",
+                "content_sha256": "b" * 64,
+                "byte_size": 3,
+                "policy_sha256": "c" * 64,
+                "source_read_policy_sha256": "d" * 64,
+            },
+            {"keep": True},
+        )
 
     monkeypatch.setattr(source_preparation.subprocess, "run", fake_run)
+    monkeypatch.setattr(reader_v2, "open_source_version_v2", fake_open)
     monkeypatch.setattr(
-        company_wiki_source,
-        "select_artifact_roles",
-        lambda handle: ([], []),
+        builder_v2,
+        "build_revenue_source_record_from_verified_read",
+        lambda **kwargs: {
+            "source_id": "src-abc",
+            "source_sha256": "a" * 64,
+            "capture": {"prompt_injection_status": None},
+        },
     )
-    monkeypatch.setattr(
-        company_wiki_source,
-        "build_revenue_source_record",
-        lambda handle, **kwargs: {"source_id": "src-abc", "source_sha256": "a" * 64},
-    )
+    config = tmp_path / "source_catalog.yaml"
+    config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+    request = {
+        "entity": "x",
+        "as_of_date": "2026-06-30",
+        "document_kind": "annual_report",
+        "fiscal_year": 2025,
+        "fiscal_period": None,
+    }
     record = source_preparation.prepare_source(
-        {"entity": "x", "as_of_date": "2026-06-30"}, timeout_seconds=30.0
+        request,
+        timeout_seconds=30.0,
+        company_wiki_catalog_config=config,
     )
     assert record["source_id"] == "src-abc"
     demands = source_preparation.preparation_demands().snapshot()
-    assert len(demands) == 1
-    assert demands[0].key == "src-abc"
-    assert demands[0].kind == "source_preparation"
+    assert [d.key for d in demands].count("src-abc") == 1
+    assert demands[-1].key == "src-abc"
+    assert demands[-1].kind == "source_preparation"
     # repeated preparation dedupes
     source_preparation.prepare_source(
-        {"entity": "x", "as_of_date": "2026-06-30"}, timeout_seconds=30.0
+        request,
+        timeout_seconds=30.0,
+        company_wiki_catalog_config=config,
     )
-    assert len(source_preparation.preparation_demands().snapshot()) == 1
+    assert [d.key for d in
+            source_preparation.preparation_demands().snapshot()].count(
+                "src-abc") == 1
 
 
 # ---------------------------------------------------------------------------

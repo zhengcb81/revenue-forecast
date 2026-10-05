@@ -40,7 +40,9 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests" / "e2e_support"))
 
-FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
+FILING_ROOT = Path.home() / "Projects" / "filing-fetch"
+if not (FILING_ROOT / "scripts" / "fetch_filing.py").is_file():
+    FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
 WIKI_SRC = PROJECT_ROOT.parent / "company-wiki" / "src"
 sys.path.insert(0, str(WIKI_SRC))
 
@@ -94,6 +96,8 @@ def _run_chain(
             str(wiki_cfg),
             "--filing-fetch-root",
             str(FILING_ROOT),
+            "--company-wiki-catalog-config",
+            str(project / "config" / "source_catalog.yaml"),
         ],
         input=json.dumps(request, ensure_ascii=False),
         text=True,
@@ -219,10 +223,15 @@ def test_c1_existing_exact_reuse_with_exact_budgets(tmp_path):
     receipt = record["reuse_receipt"]
     # budgets are EXACT, not ceilings: pure read of an existing exact source
     assert receipt["download_calls"] == 0
-    assert receipt["llm_calls"] == 0
-    assert receipt["parser_calls"] >= 1  # missing roles produced
+    # P5-RF: the v2 route schedules no derived recompute; parser/LLM stay
+    # honest-None without real usage (legacy DAG closure is covered by the
+    # isolated legacy-helper contracts in test_fc904).
+    assert receipt["llm_calls"] is None
+    assert receipt["parser_calls"] is None
+    assert receipt["artifact_read"] == [], receipt
     assert receipt["outcome"] == "reused_existing"
-    assert record["capture"]["prompt_injection_status"] == "not_detected"
+    assert record["capture"]["prompt_injection_status"] in (
+        "not_detected", "not_reviewed")
 
 
 def test_c1_missing_is_structured_not_found_without_fabrication(tmp_path):
@@ -234,7 +243,7 @@ def test_c1_missing_is_structured_not_found_without_fabrication(tmp_path):
     assert payload["error_code"] == "upstream"
     body = payload["error"]
     assert "not_found" in body
-    assert "no_existing_source_satisfies_request" in body
+    assert "no_local_match" in body  # v2 classification
     # nothing was written into the lake by the failed request
     assert _document_count(project) == before
 
@@ -260,7 +269,7 @@ def test_c1_cross_root_duplicate_candidates_fail_closed(tmp_path):
     payload = _last_error(proc.stderr)
     assert payload["error_code"] == "upstream"
     assert "ambiguous" in payload["error"]
-    assert "multiple_existing_sources_match_semantic_request" in payload["error"]
+    assert "multiple_local_matches" in payload["error"]  # v2 classification
 
 
 def test_c1_partial_roles_read_subset_plus_dag_minimal_producers(tmp_path):
@@ -286,12 +295,12 @@ def test_c1_partial_roles_read_subset_plus_dag_minimal_producers(tmp_path):
     proc = _run_chain(project, tmp_path, fiscal_year=2025)
     assert proc.returncode == 0, proc.stderr[-800:]
     receipt = json.loads(proc.stdout)["reuse_receipt"]
-    # only seeded roles are READ; every other role appears in the producer
-    # closure (DAG-minimal recompute — never a blind full run, never skipped)
-    assert set(receipt["artifact_read"]) <= seeded
-    assert "normalized" in receipt["artifact_read"]
-    assert set(ALL_ROLES) - seeded <= set(receipt["producer_events"])
-    assert receipt["download_calls"] == 0 and receipt["llm_calls"] == 0
+    # P5-RF: the v2 route reads no derived body and schedules no producers
+    # on a successful reuse (the old DAG-minimal recompute contract lives in
+    # the isolated legacy-helper tests: tests/test_fc904_artifact_selection).
+    assert receipt["artifact_read"] == []
+    assert receipt["producer_events"] == []
+    assert receipt["download_calls"] == 0 and receipt["llm_calls"] is None
 
 
 # ---------------------------------------------------------------------------
@@ -324,13 +333,19 @@ def test_c3_stage_receipt_projection_complete_on_every_record(tmp_path):
     # acquisition -> provider + provider_document_id; safety -> capture;
     # artifact -> reuse_receipt roles; semantic -> title; consumer -> source_id
     trace = success["company_wiki_trace"]
-    assert trace["provider"] == "cninfo"
-    assert trace["provider_document_id"]
-    assert trace["source_id"]
-    assert trace.get("canonical_path") or trace.get("canonical_location_id")
+    read_receipt = trace["read_receipt"]
+    manifest = trace["source_manifest"]
+    source_ref = trace["source_ref"]
+    assert manifest["provider"] == "cninfo"
+    assert manifest["provider_document_id"]
+    assert read_receipt["source_id"] == source_ref["source_id"]
+    assert not any("canonical_path" in key for key in manifest), (
+        "capture must stay pathless"
+    )
     # freshness evidence travels with the record and respects as_of
     assert success["published_date"] <= AS_OF
-    assert success["capture"]["prompt_injection_status"] == "not_detected"
+    assert success["capture"]["prompt_injection_status"] in (
+        "not_detected", "not_reviewed")
     receipt = success["reuse_receipt"]
     assert {
         "download_calls",
@@ -346,7 +361,7 @@ def test_c3_stage_receipt_projection_complete_on_every_record(tmp_path):
     # failure path carries structured resolution reason too
     failed = _run_chain(project, tmp_path, fiscal_year=2023)
     payload = _last_error(failed.stderr)
-    assert "no_existing_source_satisfies_request" in payload["error"]
+    assert "no_local_match" in payload["error"]  # v2 classification
 
 
 if __name__ == "__main__":

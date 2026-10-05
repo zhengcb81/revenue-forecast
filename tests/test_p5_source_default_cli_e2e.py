@@ -1,0 +1,188 @@
+"""P5-RF CLI E2E: the PUBLIC source_preparation entry drives SourceRef v2
+with NO opt-in flag, against the three real repos' current committed code
+(the proven recipe of tests/test_source_ref_v2_three_repo_e2e.py, driven
+through the CLI instead of the Python API).
+
+Acceptance proof for the default migration (plan card §6):
+- the CLI carries the required --company-wiki-catalog-config;
+- the record path is the verified raw open (never derived bodies);
+- deleting ALL derived artifacts and the derived tree does not break a
+  second journey (independent of old derived state);
+- a corrupted raw refuses closed; restoring the original bytes heals into
+  the same identity with zero downloads.
+
+Skipped unless FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT are set (the compatibility
+pinned FF lacks --source-ref-v2; the hold is recorded in
+docs/implementation/handoffs/P5-RF/HANDOFF.md).
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import shutil
+import sqlite3
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "tests"))
+
+AS_OF = "2026-09-27"
+REQUEST = {
+    "schema_version": "1.1",
+    "company_query": "Apple Inc.",
+    "market": "US",
+    "document_kind": "annual_report",
+    "fiscal_year": 2025,
+    "as_of_date": AS_OF,
+}
+
+
+def _env_roots() -> tuple[Path, Path]:
+    ff_raw = os.environ.get("FF_V2_CODE_ROOT")
+    cwp_raw = os.environ.get("CWP_V2_CODE_ROOT")
+    if not (ff_raw and cwp_raw):
+        pytest.skip(
+            "FF_V2_CODE_ROOT/CWP_V2_CODE_ROOT not set: the compatibility-"
+            "pinned FF has no --source-ref-v2 (see "
+            "docs/implementation/handoffs/P5-RF/HANDOFF.md)"
+        )
+    return Path(ff_raw), Path(cwp_raw)
+
+
+def _build_wiki(tmp: Path, ff_root: Path, cwp_root: Path):
+    """Proven three-repo fixture recipe (see test_source_ref_v2_three_repo_e2e)."""
+    # Load FF's isolated_wiki under a standalone module name: the RF repo
+    # ships its own tests/e2e_support package, and touching the shared
+    # namespace would poison later tests in the same batch run.
+    import importlib.util
+
+    module_path = ff_root / "tests" / "e2e_support" / "isolated_wiki.py"
+    spec = importlib.util.spec_from_file_location(
+        "p5_ff_isolated_wiki", module_path)
+    isolated_wiki = importlib.util.module_from_spec(spec)
+    sys.modules["p5_ff_isolated_wiki"] = isolated_wiki
+    spec.loader.exec_module(isolated_wiki)
+
+    isolated_wiki.PRODUCTION_WIKI = cwp_root
+    cwp_src = str(cwp_root / "src")
+    existing = os.environ.get("PYTHONPATH", "")
+    if cwp_src not in existing.split(os.pathsep):
+        os.environ["PYTHONPATH"] = (
+            cwp_src + os.pathsep + existing if existing else cwp_src)
+    wiki = isolated_wiki.IsolatedWiki(tmp / "wiki")
+    catalog_text = wiki.config_path.read_text(encoding="utf-8")
+    wiki.config_path.write_text(
+        catalog_text.replace(
+            "    priority: 10\n",
+            "    priority: 10\n    reusable_for_filing: false\n",
+        )
+        + "reusable_root_kinds: [directory]\n",
+        encoding="utf-8",
+    )
+    source = wiki.seed_market("US")
+    sidecar_path = source.with_name(source.name + ".source.json")
+    sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    sidecar.update(
+        {
+            "retrieved_at": "2026-09-27T00:00:00Z",
+            "adapter_name": "p5-cli-e2e",
+            "adapter_version": "1.0.0",
+        }
+    )
+    sidecar_path.write_text(json.dumps(sidecar, ensure_ascii=False), encoding="utf-8")
+    wiki.scan()
+    return wiki, source
+
+
+def _run_cli(wiki, ff_root: Path, cwp_root: Path, request: dict):
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(cwp_root / "src")
+    env["PYTHONUTF8"] = "1"
+    return subprocess.run(
+        [
+            sys.executable,
+            "-B",
+            str(ROOT / "scripts" / "source_preparation.py"),
+            "--company-wiki-config",
+            str(wiki.root / "company_wiki.json"),
+            "--filing-fetch-root",
+            str(ff_root),
+            "--company-wiki-catalog-config",
+            str(wiki.config_path),
+        ],
+        input=json.dumps(request, ensure_ascii=False),
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+        cwd=str(ROOT),
+        env=env,
+        timeout=300,
+        check=False,
+    )
+
+
+def test_cli_default_v2_journey_survives_derived_deletion(tmp_path):
+    """Public CLI, NO --source-reader-v2 flag: full v2 journey, then delete
+    every derived artifact and the derived tree — a second journey still
+    succeeds with zero downloads (raw-only verification)."""
+    ff_root, cwp_root = _env_roots()
+    wiki, source = _build_wiki(tmp_path, ff_root, cwp_root)
+
+    proc = _run_cli(wiki, ff_root, cwp_root, REQUEST)
+    assert proc.returncode == 0, f"journey failed: {proc.stderr[-800:]}"
+    record = json.loads(proc.stdout)
+    rr = record["reuse_receipt"]
+    assert rr["artifact_read"] == [], rr
+    assert rr["download_calls"] == 0
+    assert rr["parser_calls"] is None and rr["llm_calls"] is None
+    assert "canonical_path" not in json.dumps(record["company_wiki_trace"])
+
+    derived = tmp_path / "wiki" / "derived"
+    if derived.is_dir():
+        shutil.rmtree(derived)
+    sqlite = wiki.catalog_dir / "catalog.sqlite3"
+    if sqlite.is_file():
+        con = sqlite3.connect(sqlite)
+        con.execute("DELETE FROM artifacts")
+        con.commit()
+        con.close()
+
+    second = _run_cli(wiki, ff_root, cwp_root, REQUEST)
+    assert second.returncode == 0, f"post-delete: {second.stderr[-800:]}"
+    rr2 = json.loads(second.stdout)["reuse_receipt"]
+    assert rr2["download_calls"] == 0
+    assert rr2["artifact_read"] == []
+
+
+def test_cli_corrupted_raw_refuses_then_heals(tmp_path):
+    """Corrupting the stored raw body must refuse closed (never a bad read);
+    restoring the original bytes heals into the same identity, zero downloads."""
+    ff_root, cwp_root = _env_roots()
+    wiki, source = _build_wiki(tmp_path, ff_root, cwp_root)
+
+    proc = _run_cli(wiki, ff_root, cwp_root, REQUEST)
+    assert proc.returncode == 0, proc.stderr[-800:]
+    content_sha = json.loads(proc.stdout)["capture"]["snapshot_sha256"]
+    original = source.read_bytes()
+    assert hashlib.sha256(original).hexdigest() == content_sha
+
+    source.write_bytes(original + b"XX")
+    bad = _run_cli(wiki, ff_root, cwp_root, REQUEST)
+    assert bad.returncode != 0, "corrupted raw must never be accepted"
+    # the reader refuses closed; per-location hash failures aggregate into
+    # no_verified_location (failures detail never leaks byte paths)
+    assert "source reader refused" in bad.stderr, bad.stderr[-400:]
+
+    source.write_bytes(original)
+    healed = _run_cli(wiki, ff_root, cwp_root, REQUEST)
+    assert healed.returncode == 0, healed.stderr[-800:]
+    healed_record = json.loads(healed.stdout)
+    assert healed_record["capture"]["snapshot_sha256"] == content_sha
+    assert healed_record["reuse_receipt"]["download_calls"] == 0

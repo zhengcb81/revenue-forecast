@@ -1,8 +1,14 @@
 """WU-1000: the single production orchestration entry — source preparation.
 
 From a FilingRequest, this CLI drives the REAL cross-repo chain as
-subprocesses: filing-fetch (resolve/ensure) → company-wiki catalog
-(SourceBundle) → artifact selection → RevenueSourceRecord + reuse receipt.
+subprocesses: filing-fetch (resolve/ensure, always requested in pathless
+SourceRef v2 form) → company-wiki catalog (verified raw open) → RevenueSourceRecord
++ reuse receipt.  The verified open is done by company-wiki itself
+(``--company-wiki-catalog-config`` is required; missing/unavailable config is a
+named failure before any outbound call).  The former legacy normalized-body
+reader survives only as ``_prepare_legacy_source``, an isolated helper for
+historical offline fixture replay — it is not a production default and is
+never called from ``prepare_source``.
 
 The forecast calculator (revenue_forecast.py) stays pure: it consumes the
 validated source record and never touches network/catalog/download.
@@ -68,8 +74,13 @@ _SOURCE_TYPE_BY_KIND = {
     "company_release": "company_release",
 }
 _SOURCE_LOCATION_FIELDS = {
-    "path", "canonical_path", "relative_path", "storage_path",
-    "canonical_location_id", "root_path", "filesystem_path",
+    "path",
+    "canonical_path",
+    "relative_path",
+    "storage_path",
+    "canonical_location_id",
+    "root_path",
+    "filesystem_path",
 }
 
 
@@ -78,11 +89,8 @@ def _revenue_source_type(handle: dict) -> str:
     return _SOURCE_TYPE_BY_KIND.get(kind, "regulatory_filing")
 
 
-def _catalog_config_for_reader(
-    enabled: bool, catalog_config: Path | None,
-) -> Path | None:
-    if not enabled:
-        return None
+def _catalog_config_for_reader(catalog_config: Path | None) -> Path:
+    """Resolve the required catalog config; named failure before outbound."""
     if not isinstance(catalog_config, Path):
         raise RuntimeError("SourceRef v2 requires company_wiki_catalog_config")
     try:
@@ -95,19 +103,20 @@ def _catalog_config_for_reader(
 
 
 def _filing_fetch_command(
-    python: tuple[str, ...], *, filing_fetch_root: Path | None,
-    company_wiki_config: Path | None, allow_download: bool,
-    source_reader_v2: bool, timeout_seconds: float,
+    python: tuple[str, ...],
+    *,
+    filing_fetch_root: Path | None,
+    company_wiki_config: Path | None,
+    allow_download: bool,
+    timeout_seconds: float,
 ) -> tuple[str, ...]:
-    command = (*python, str(FILING_FETCH_CLIENT))
+    command = (*python, str(FILING_FETCH_CLIENT), "--source-ref-v2")
     if filing_fetch_root is not None:
         command = (*command, "--filing-fetch-root", str(filing_fetch_root))
     if company_wiki_config is not None:
         command = (*command, "--company-wiki-config", str(company_wiki_config))
     if allow_download:
         command = (*command, "--allow-download")
-    if source_reader_v2:
-        command = (*command, "--source-ref-v2")
     if timeout_seconds:
         command = (*command, "--timeout-seconds", str(timeout_seconds))
     return command
@@ -136,7 +145,9 @@ def _run_filing_fetch(request: dict, command: tuple[str, ...], timeout: float) -
 def _validate_v2_candidate(request: dict, handle: dict) -> int:
     source_ref = handle.get("source_ref")
     if _SOURCE_LOCATION_FIELDS & set(handle):
-        raise RuntimeError("filing-fetch SourceRef candidate contains a storage location")
+        raise RuntimeError(
+            "filing-fetch SourceRef candidate contains a storage location"
+        )
     if isinstance(source_ref, dict) and _SOURCE_LOCATION_FIELDS & set(source_ref):
         raise RuntimeError("filing-fetch SourceRef contains a storage location")
     if not isinstance(source_ref, dict):
@@ -156,7 +167,9 @@ def _validate_v2_candidate(request: dict, handle: dict) -> int:
 def _v2_resolution_events(handle: dict) -> tuple[str, int]:
     outcome = handle.get("resolution_outcome")
     if not isinstance(outcome, str) or outcome not in {
-        "reused_existing", "reused_after_discovery", "downloaded_new",
+        "reused_existing",
+        "reused_after_discovery",
+        "downloaded_new",
     }:
         raise RuntimeError("filing-fetch SourceRef resolution_outcome is invalid")
     downloads = handle.get("download_events")
@@ -164,14 +177,16 @@ def _v2_resolution_events(handle: dict) -> tuple[str, int]:
         raise RuntimeError("filing-fetch SourceRef download_events is invalid")
     expected_downloads = int(outcome == "downloaded_new")
     if downloads != expected_downloads:
-        raise RuntimeError(
-            "filing-fetch SourceRef outcome/download_events mismatch"
-        )
+        raise RuntimeError("filing-fetch SourceRef outcome/download_events mismatch")
     return outcome, downloads
 
 
 def _prepare_source_ref_v2(
-    request: dict, handle: dict, catalog_config: Path, *, timeout_seconds: float,
+    request: dict,
+    handle: dict,
+    catalog_config: Path,
+    *,
+    timeout_seconds: float,
 ) -> dict:
     """Open and record one pathless candidate using company-wiki's verifier."""
     from company_wiki_source_reader_v2 import open_source_version_v2
@@ -216,6 +231,13 @@ def _prepare_source_ref_v2(
 
 
 def _prepare_legacy_source(request: dict, handle: dict) -> dict:
+    """ISOLATED historical offline-fixture path (P5-RF): builds a record from
+    the legacy resolution_envelope plus derived normalized/summary/sections
+    artifact bodies.  NOT a production default and never invoked by
+    ``prepare_source``; retained only so legacy offline contract fixtures
+    (e.g. tests/test_fc904, tests/test_message_contract_pins) keep replaying
+    their real assertions.  New code must not call this.
+    """
     # Download evidence comes from the resolution envelope, never from the
     # existence of a returned handle; absent evidence is fail-closed.
     envelope = handle.get("resolution_envelope")
@@ -277,28 +299,33 @@ def prepare_source(
     python: tuple[str, ...] = (sys.executable,),
     company_wiki_config: Path | None = None,
     filing_fetch_root: Path | None = None,
-    source_reader_v2: bool = False,
+    source_reader_v2: bool = True,
     company_wiki_catalog_config: Path | None = None,
 ) -> dict:
-    """Orchestrate the real chain and return the RevenueSourceRecord."""
-    catalog_config = _catalog_config_for_reader(
-        source_reader_v2, company_wiki_catalog_config,
-    )
+    """Orchestrate the real chain and return the RevenueSourceRecord.
+
+    The only default route is SourceRef v2: the FF candidate is requested in
+    pathless SourceRef form and verified by company-wiki's reader with the
+    REQUIRED ``company_wiki_catalog_config`` (missing/unavailable config is a
+    named failure before any outbound call).  ``source_reader_v2`` remains
+    accepted only for call-site compatibility — it is a no-op, there is no
+    legacy fallback.
+    """
+    catalog_config = _catalog_config_for_reader(company_wiki_catalog_config)
     command = _filing_fetch_command(
         python,
         filing_fetch_root=filing_fetch_root,
         company_wiki_config=company_wiki_config,
         allow_download=allow_download,
-        source_reader_v2=source_reader_v2,
         timeout_seconds=timeout_seconds,
     )
     handle = _run_filing_fetch(request, command, timeout_seconds)
-    if source_reader_v2:
-        assert catalog_config is not None
-        return _prepare_source_ref_v2(
-            request, handle, catalog_config, timeout_seconds=timeout_seconds,
-        )
-    return _prepare_legacy_source(request, handle)
+    return _prepare_source_ref_v2(
+        request,
+        handle,
+        catalog_config,
+        timeout_seconds=timeout_seconds,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -307,13 +334,26 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--request-file", help="request JSON file (else stdin)")
     parser.add_argument("--allow-download", action="store_true")
-    parser.add_argument("--source-reader-v2", action="store_true")
+    parser.add_argument(
+        "--source-reader-v2",
+        action="store_true",
+        help="compatibility no-op: SourceRef v2 is the only default; "
+        "the legacy normalized-body reader is no longer reachable",
+    )
     parser.add_argument("--company-wiki-catalog-config", type=Path, default=None)
     parser.add_argument("--timeout-seconds", type=float, default=900.0)
-    parser.add_argument("--company-wiki-config", type=Path, default=None,
-                        help="override company-wiki config for the chain (E2E)")
-    parser.add_argument("--filing-fetch-root", type=Path, default=None,
-                        help="override the filing-fetch skill root for the chain (E2E)")
+    parser.add_argument(
+        "--company-wiki-config",
+        type=Path,
+        default=None,
+        help="override company-wiki config for the chain (E2E)",
+    )
+    parser.add_argument(
+        "--filing-fetch-root",
+        type=Path,
+        default=None,
+        help="override the filing-fetch skill root for the chain (E2E)",
+    )
     args = parser.parse_args(argv)
 
     for stream in (sys.stdin, sys.stdout, sys.stderr):

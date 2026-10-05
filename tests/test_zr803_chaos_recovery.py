@@ -42,7 +42,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests" / "e2e_support"))
-FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
+FILING_ROOT = Path.home() / "Projects" / "filing-fetch"
+if not (FILING_ROOT / "scripts" / "fetch_filing.py").is_file():
+    FILING_ROOT = PROJECT_ROOT.parent / "filing-fetch"
 sys.path.insert(0, str(FILING_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT.parent / "company-wiki" / "src"))
 
@@ -86,6 +88,8 @@ def _chain(tmp_path: Path):
                 str(wiki_cfg),
                 "--filing-fetch-root",
                 str(FILING_ROOT),
+                "--company-wiki-catalog-config",
+                str(project / "config" / "source_catalog.yaml"),
                 "--timeout-seconds",
                 str(timeout_seconds),
             ],

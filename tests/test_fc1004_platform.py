@@ -123,11 +123,14 @@ def test_utf8_stdin_stdout_chain(tmp_path: Path):
            "as_of_date": _AS_OF}
     proc = subprocess.run(
         [sys.executable, "-B", str(PROJECT_ROOT / "scripts" / "source_preparation.py"),
-         "--company-wiki-config", str(wiki_cfg)],
+         "--company-wiki-config", str(wiki_cfg),
+         "--company-wiki-catalog-config",
+         str(tmp_path / "lake" / "project" / "config" / "source_catalog.yaml")],
         input=json.dumps(req, ensure_ascii=False),
         text=True, encoding="utf-8", capture_output=True,
         cwd=str(PROJECT_ROOT), env=env, timeout=180, check=False,
     )
     assert proc.returncode == 0, f"chain failed: {proc.stderr[-400:]}"
     record = json.loads(proc.stdout)
-    assert record.get("title") == "紫金矿业2025年年报", record.get("title")
+    # P5-RF: the v2 manifest title is the explicit capture field (source_title), not a filename-derived legacy artifact title
+    assert record.get("title") == "紫金矿业集团股份有限公司", record.get("title")
