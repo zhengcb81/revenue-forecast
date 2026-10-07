@@ -1,0 +1,304 @@
+{
+  "schema_version": "g5-handoff/1",
+  "package_id": "G5-RF-INSTALL",
+  "repo": "C:/Users/郑曾波/Projects/revenue-forecast",
+  "worktree": "C:/Users/郑曾波/Projects/_g5/rf",
+  "branch": "codex/g5-rf-install",
+  "base_commit": "ab7a7a4434bbb4c52a5bd2a6cd6ed710d7151eee",
+  "implementation_commit": "a2116ca6d5280c140b42a0d8bd2d94521ee80ccd",
+  "owned_files": [
+    "tools/sync_installations.py",
+    "tools/tests/test_g5_selective_install.py",
+    ".planning/g5-rf-install/task_plan.md",
+    ".planning/g5-rf-install/findings.md",
+    ".planning/g5-rf-install/progress.md",
+    ".planning/g5-rf-install/HANDOFF.md",
+    ".planning/g5-rf-install/handoff.json",
+    ".planning/g5-rf-install/main_wiring.md",
+    ".planning/g5-rf-install/install_delta.json"
+  ],
+  "public_contracts": [
+    {
+      "name": "default check (no flags)",
+      "compatibility": "unchanged",
+      "detail": "Whole-runtime read-only check; byte-identical MATCH/DIFF output and the same exit codes as the base commit. A missing installation still reports MATCH and exits 0."
+    },
+    {
+      "name": "--print-manifest / --import-from / --canonical / --destination",
+      "compatibility": "unchanged",
+      "detail": "Parsing, output and behaviour are untouched. Combining either of them with --file or --json is now a usage error (exit 2) raised before any write."
+    },
+    {
+      "name": "public functions installable_files / manifest / installation_diff / sync_installation / import_installation / unique_destinations / main",
+      "compatibility": "unchanged",
+      "detail": "Every positional signature is unchanged and locked by test_old_public_callers_keep_their_signatures. sync_installation now returns its per-target result dict instead of None and still raises OSError when any file could not be written, so library callers keep the old fail-loud contract."
+    },
+    {
+      "name": "installable_files(canonical) runtime closure",
+      "compatibility": "unchanged",
+      "detail": "Still 75 files (3 root files + agents/config/references/scripts). tools/ and tools/tests/ are not in the manifest and are never copied into a user skill installation."
+    },
+    {
+      "name": "--file <relative> (repeatable)",
+      "compatibility": "compatible_extension",
+      "detail": "New. Restricts check, --plan and --apply to a normalized, de-duplicated, sorted subset of installable_files(canonical). Absolute paths, '..', directory names, out-of-closure paths and target-escaping links are rejected with exit 2 and zero writes at every destination."
+    },
+    {
+      "name": "--plan",
+      "compatibility": "compatible_extension",
+      "detail": "New. Zero-write plan emitted as exactly one rf-install-plan/1 JSON value on stdout; exit 0 when the plan is produced, exit 2 only on a validation error. Per target/relative it carries operation (new|replace|unchanged), before_sha256 or null, source_sha256, size, plus selected_drift and unselected_drift counts. It may report 'new' for a missing installation even though the default check still reports no drift there. It is machine fact, never a receipt or an eligibility gate, and no plan file is required before --apply."
+    },
+    {
+      "name": "rf-install-result/1 (--json)",
+      "compatibility": "compatible_extension",
+      "detail": "New. Exactly one JSON value on stdout with all diagnostics on stderr. Each target entry carries target/selected/written/unchanged/failed/conflicts/drifted/remaining_selected_drift/remaining_unselected_drift/status, with status in completed|partial|failed. Exit code is 1 exactly when remaining_selected_drift > 0, so unselected drift can never fail a completed selected sync and a clean subset never prints the whole-runtime MATCH."
+    },
+    {
+      "name": "per-file atomic replacement and failure reporting",
+      "compatibility": "compatible_extension",
+      "detail": "Files whose bytes already match are never staged, never os.replace'd and keep their mtime/size/content. Source and target are re-hashed immediately before each swap; a change on either side is reason='conflict' and the file is left alone. A failure returns exit 1 with accurate written/unchanged/failed/conflict lists, claims no whole-batch rollback, keeps no backup and no second transaction store, and a re-run against the current differences converges on the remainder while touching already-written files no further."
+    },
+    {
+      "name": "temporary-file ownership",
+      "compatibility": "unchanged",
+      "detail": "Only this invocation's own .<skill>-stage-<random>/ directory under destination and its <name>.<pid>.syncing siblings are created and cleaned; no glob ever removes another process's temporary files."
+    }
+  ],
+  "tests": [
+    {
+      "name": "RED at base commit: three card behaviours plus the existing-GREEN temp-hygiene item (3 of 4 probes FAIL)",
+      "command": "python -B <system-temp>/g5_red_probe.py <worktree> with tools/sync_installations.py restored from `git show HEAD:tools/sync_installations.py`",
+      "status": "red",
+      "exit_code": 0,
+      "elapsed_seconds": 0.5,
+      "passed": 1,
+      "failed": 3,
+      "skipped": 0,
+      "replace_seams": [
+        "base tool bytes restored from git for the duration of the probe, then the implementation restored byte-for-byte",
+        "controlled failure injected as a directory occupying an installed package path (portable across Windows and POSIX)",
+        "identical-bytes case forced with a stale mtime and observed through an os.replace spy, never a sleep"
+      ],
+      "external_network_requests": 0
+    },
+    {
+      "name": "G5 centralized unit/CLI node",
+      "command": "python -B -m pytest -q -p no:cacheprovider --basetemp=.planning/test-tmp/g5-install tools/tests/test_sync_installations.py tools/tests/test_g3_skill_package.py tools/tests/test_g5_selective_install.py",
+      "status": "green",
+      "exit_code": 0,
+      "elapsed_seconds": 17.13,
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "replace_seams": [
+        "E2E drift is synthetic: a marker appended to the card's 8 files plus one deliberately unselected file inside three tmp installation roots built from a git archive export of HEAD",
+        "controlled failure injected as a directory occupying an installed package path, then cleared to prove rerun convergence",
+        "escaping-link rejection creates a real os.symlink with an unprivileged mklink /J fallback and pytest.skip when the host forbids links"
+      ],
+      "external_network_requests": 0
+    },
+    {
+      "name": "related: installed copies execute with canonical identity",
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/test_zr804_platform_shape.py::test_installed_copy_executes_with_canonical_identity",
+      "status": "green",
+      "exit_code": 0,
+      "elapsed_seconds": 10.99,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "replace_seams": [
+        "the test drives the real --apply against three tmp_path destinations, never a home installation"
+      ],
+      "external_network_requests": 0
+    },
+    {
+      "name": "related: install-sync gate detects drift",
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/test_fc1004_platform.py::test_install_sync_gate_detects_drift",
+      "status": "green",
+      "exit_code": 0,
+      "elapsed_seconds": 7.13,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "replace_seams": [
+        "the test drives the real --apply against two tmp_path destinations, never a home installation"
+      ],
+      "external_network_requests": 0
+    },
+    {
+      "name": "static: ruff on the owned and adjacent Python files",
+      "command": "ruff check tools/sync_installations.py tools/tests/test_sync_installations.py tools/tests/test_g3_skill_package.py tools/tests/test_g5_selective_install.py",
+      "status": "green",
+      "exit_code": 0,
+      "elapsed_seconds": 0.05,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "replace_seams": [],
+      "external_network_requests": 0
+    },
+    {
+      "name": "static: host-assumption guard (no new absolute-path or frozen-hash literal)",
+      "command": "python tools/host_assumption_guard.py --roots tests tools scripts e2e",
+      "status": "green",
+      "exit_code": 0,
+      "elapsed_seconds": 1.33,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "replace_seams": [],
+      "external_network_requests": 0
+    },
+    {
+      "name": "pre-commit hook (ruff, mypy-contract, host-assumption-guard)",
+      "command": "git commit on codex/g5-rf-install (core.hooksPath=.githooks)",
+      "status": "green",
+      "exit_code": 0,
+      "elapsed_seconds": null,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 1,
+      "replace_seams": [],
+      "external_network_requests": 0
+    },
+    {
+      "name": "read-only --plan against the three real home roots from this worktree (zero writes)",
+      "command": "python -B tools/sync_installations.py --file <the card's 8 files> --plan",
+      "status": "green",
+      "exit_code": 0,
+      "elapsed_seconds": null,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "replace_seams": [
+        "no file under a home installation is written, created, renamed or deleted by this command"
+      ],
+      "external_network_requests": 0
+    },
+    {
+      "name": "full unified-completion suite",
+      "command": "python -B -m pytest -q -p no:cacheprovider assurance/unified_completion/tests/",
+      "status": "not_run",
+      "exit_code": null,
+      "elapsed_seconds": null,
+      "passed": null,
+      "failed": null,
+      "skipped": null,
+      "replace_seams": [],
+      "external_network_requests": 0
+    }
+  ],
+  "protection": {
+    "owner_files": [
+      {
+        "path": "assurance/runs/daily_alert.jsonl",
+        "before_sha256": "c3f88f63e12c143d6d722904fef7f29cd5d6c5751782d9b0fbd54ea9db11687d",
+        "after_sha256": "c3f88f63e12c143d6d722904fef7f29cd5d6c5751782d9b0fbd54ea9db11687d"
+      },
+      {
+        "path": "assurance/runs/weekly_alert.jsonl",
+        "before_sha256": "108d0b14387dc50a7c0437cbe8f029d2e442dd6ed9c7bde7aea19e2113ae8ce0",
+        "after_sha256": "108d0b14387dc50a7c0437cbe8f029d2e442dd6ed9c7bde7aea19e2113ae8ce0"
+      },
+      {
+        "path": "assurance/runs/weekly_manifest.json",
+        "before_sha256": "6562b768adf760fde2e0918344f9d15ccc51978dfe3ff4817c7eecd66d86d7ef",
+        "after_sha256": "6562b768adf760fde2e0918344f9d15ccc51978dfe3ff4817c7eecd66d86d7ef"
+      }
+    ],
+    "production_writes": 0,
+    "raw_deletions": 0,
+    "paid_calls": 0
+  },
+  "cleanup": [
+    {
+      "path": "C:/Users/郑曾波/Projects/_g5/rf/.planning/test-tmp/g5-install",
+      "before": "absent",
+      "after": "absent",
+      "owned": true,
+      "detail": "pytest --basetemp scratch root for the centralized node; created for the run and removed afterwards"
+    },
+    {
+      "path": "C:/Users/郑曾波/Projects/_g5/rf/.planning/test-tmp",
+      "before": "absent",
+      "after": "absent",
+      "owned": true,
+      "detail": "parent created only to host the basetemp; removed together with it so the plan directory returns to its pre-run state"
+    },
+    {
+      "path": "<system-temp>/g5_sync_installations.impl.py",
+      "before": "absent",
+      "after": "absent",
+      "owned": true,
+      "detail": "byte backup of the base tool used to run the RED probe outside the repository; deleted at handoff"
+    },
+    {
+      "path": "<system-temp>/g5_red_probe.py",
+      "before": "absent",
+      "after": "absent",
+      "owned": true,
+      "detail": "RED probe harness written outside the repository; deleted at handoff together with its output"
+    }
+  ],
+  "main_wiring": [
+    {
+      "repo": "revenue-forecast",
+      "path": "tools/sync_installations.py",
+      "action": "no_change",
+      "reason": "Merge the committed implementation as-is. It stays a repository maintenance tool: it is not added to the runtime manifest and nothing under tools/ or tools/tests/ is copied into a user skill installation."
+    },
+    {
+      "repo": "revenue-forecast",
+      "path": "tools/sync_installations.py (--file x8 --apply --json)",
+      "action": "apply_after_merge",
+      "reason": "MAIN performs the 24-candidate selective sync of the three configured home roots after merge, running from the original repository working tree where the card's 8-file reality reproduces (unselected_drift=0). A fresh checkout of the same commit reports 12 and the raw git blob 13, both pure line-ending byte state; the live update list must not be widened."
+    },
+    {
+      "repo": "revenue-forecast",
+      "path": "tests/test_zr804_platform_shape.py::test_installed_copy_executes_with_canonical_identity",
+      "action": "verify",
+      "reason": "Runs the real --apply against three tmp_path destinations, never a home installation; 3 passed in this lane. No wiring change is needed."
+    },
+    {
+      "repo": "revenue-forecast",
+      "path": "tests/test_fc1004_platform.py::test_install_sync_gate_detects_drift",
+      "action": "verify",
+      "reason": "Runs --apply against two tmp_path destinations; 1 passed in this lane. No wiring change is needed."
+    },
+    {
+      "repo": "revenue-forecast",
+      "path": ".githooks/pre-push",
+      "action": "no_change",
+      "reason": "No check was removed to go green. If a sibling repository is missing in the delivery layout, point the gate at the existing FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT explicit committed read-only entry."
+    },
+    {
+      "repo": "revenue-forecast",
+      "path": "assurance/runs/daily_alert.jsonl, assurance/runs/weekly_alert.jsonl, assurance/runs/weekly_manifest.json",
+      "action": "no_change",
+      "reason": "Owner logs: SHA-256 identical before and after this lane; recorded under protection.owner_files."
+    },
+    {
+      "repo": "revenue-forecast",
+      "path": "SKILL.md",
+      "action": "no_change",
+      "reason": "The 'Installation and repository layout' section already documents the repository-tool split. The new flags are documented by the CLI help text and by this handoff; SKILL.md and every shipped runtime file are outside this lane's write set."
+    },
+    {
+      "repo": "company-wiki",
+      "path": "docs/plans/narrative-evidence-pilot-2026-09-26/harness_lanes/g5_rf_selective_installation.md",
+      "action": "no_change",
+      "reason": "Read-only card input; g5_handoff.schema.json is the read-only contract this handoff was validated against."
+    }
+  ],
+  "remaining": [
+    "The three real home installations are still unsynchronised. This lane deliberately performed no --apply against ~/.agents, ~/.claude or ~/.codex (card section 6); MAIN runs the 24-candidate selective sync after merge.",
+    "Observed live drift does not equal the card's figure of 8: 8 from the original repository working tree (the card figure, unselected_drift=0), 12 from any fresh checkout of the same commit, 13 against the raw git blob. The difference is working-tree line-ending byte state, not content; real content drift is the same 6 files under every canonical. Recorded as fact in install_delta.json.observed_drift_facts; the live update list was not widened.",
+    "~/.claude/skills/revenue-forecast is a symlink to ~/.agents/skills/revenue-forecast, so unique_destinations collapses the three configured roots into two physical trees. The .claude surface is covered by the .agents write; no third write is missing.",
+    "Pre-existing repository-only tests/ residue inside each installation is neither drift nor covered by the comparison and was not deleted; remove it explicitly if desired.",
+    "pre-push was not exercised in this lane because the exclusive worktree has no sibling checkouts. If it is needed, use the existing FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT explicit committed read-only entry rather than deleting a check.",
+    "The full unified-completion suite and the full root suite were deliberately not run (card: one centralized unit/CLI node, no full UC, no paid/live, no coverage or CI gate change).",
+    "Pre-existing GBK PytestUnhandledThreadExceptionWarning noise in the test_zr804 / test_fc1004 runs is unchanged by this lane and was left alone.",
+    "No forecast, no publication and no production data path was exercised; this package is an explicit engineering tool only and never runs implicitly while a forecast executes."
+  ],
+  "delivery_status": "ready_for_main"
+}
