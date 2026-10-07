@@ -253,6 +253,7 @@
     "No full-suite nightly/per-commit run was added; durations and counts above are measured facts with no numeric gate."
   ],
   "merge_notes": [
+    "PUSHED: origin/codex/g2-rf-tools (two commits: 8a2c7fe9 implementation, 19aef7c4 handoff docs). main was never pushed to.",
     "Merge into main is MAIN's decision; this lane never merged and never pushed to main.",
     "Push target is the same-named construction branch codex/g2-rf-tools only.",
     "After merging, re-run the original daily fast CI (`python -B tools/pre_push_gate.py`) and then run tools/sync_installations.py point-wise to clear installation_sync_pending.",
@@ -260,5 +261,13 @@
     "Missing-hash stays a diagnostic and a supplied-but-mismatching hash stays a failure: this lane did not restore the early all-path mandatory-hash rule and did not modify current business closure rules.",
     "If uc.quality._revenue_coverage or a wider assurance reader must be retired later, first report the concrete caller and counterexample; do not write the whole assurance tree from this lane.",
     "This is an engineering-simplification handoff: no authorization or release sign-off artifact was created."
-  ]
+  ],
+  "push": {
+    "remote": "origin",
+    "branch": "codex/g2-rf-tools",
+    "result": "pushed (new branch)",
+    "pre_push_gate": "GREEN: ruff + public contract types + 107 passed in the 11-file offline group",
+    "environment_note": "the push hook had to run with FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT exported because the lane checkout has no filing-fetch/company-wiki siblings next to it; the main checkout needs no such variable",
+    "pushed_to_main": false
+  }
 }

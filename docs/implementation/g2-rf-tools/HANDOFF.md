@@ -150,8 +150,12 @@
 
 ## 6. 合并注意事项（MAIN）
 
-- 普通 commit 到 `codex/g2-rf-tools`（实现 `8a2c7fe9c25155631a01b083684b8524b38ccc40`，
-  本交接文档在其后的提交里）；**不合 main、不写 installed**。
+- **已 push** `origin/codex/g2-rf-tools`（新分支）：
+  `8a2c7fe9c25155631a01b083684b8524b38ccc40`（实现 + PWF）
+  → `19aef7c4`（本交接文档）。push 时 pre-push gate 实跑 GREEN
+  （ruff + 公共契约 mypy + 11 文件组 107 passed）；**main 从未 push、未合入、不写 installed**。
+  该次 push hook 需要导出 `FF_V2_CODE_ROOT`/`CWP_V2_CODE_ROOT`（lane checkout 无兄弟目录），
+  主仓不需要。
 - **`installation_sync_pending = true`**：`tools/sync_installations.py` 的写集是
   `.gitignore/CHANGELOG.md/SKILL.md + agents/config/references/scripts/tests`，
   **含 `tests` 不含 `tools`**。本卡改了 6 个 `tests/**` 文件 ⇒ 安装副本待同步。
