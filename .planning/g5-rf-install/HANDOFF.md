@@ -202,7 +202,21 @@ See `main_wiring.md` for the exact commands. Summary:
    authorization and let MAIN handle it.
 5. Pre-push needs sibling repositories: use the existing `FF_V2_CODE_ROOT` /
    `CWP_V2_CODE_ROOT` explicit committed read-only entry rather than removing a
-   check to go green.
+   check to go green. **Done here**: with
+   `FF_V2_CODE_ROOT=C:/Users/郑曾波/Projects/filing-fetch` and
+   `CWP_V2_CODE_ROOT=C:/Users/郑曾波/Projects/company-wiki` the gate is
+   **GREEN** (`pre-push/CI checks GREEN`, ruff clean, public-contract types
+   clean, 107 passed) and `git push -u origin codex/g5-rf-install` succeeded.
 
 Nothing in this lane claims that a production forecast has been run, and the
 other two lanes are unaffected.
+
+## 10. Delivery record
+
+| item | value |
+|---|---|
+| implementation commit | `a2116ca6d5280c140b42a0d8bd2d94521ee80ccd` — pre-commit: ruff Passed, mypy-contract Skipped, host-assumption-guard Passed |
+| handoff commit | this `.planning/g5-rf-install/**` package; `handoff.json` validated against the read-only `g5_handoff.schema.json` |
+| pre-push gate | exit 0, `pre-push/CI checks GREEN`, 107 passed in 18.11 s (ruff + public-contract types clean), sibling entry supplied through `FF_V2_CODE_ROOT` / `CWP_V2_CODE_ROOT` |
+| push | `git push -u origin codex/g5-rf-install` exit 0; new remote branch, upstream set |
+| not done | no merge into RF main, no real home installation synchronized — both are MAIN's steps (card §6) |

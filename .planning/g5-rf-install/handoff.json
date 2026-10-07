@@ -176,6 +176,20 @@
       "external_network_requests": 0
     },
     {
+      "name": "pre-push gate (ruff, public-contract types, bounded source/forecast behavior)",
+      "command": "python tools/pre_push_gate.py with FF_V2_CODE_ROOT=C:/Users/郑曾波/Projects/filing-fetch and CWP_V2_CODE_ROOT=C:/Users/郑曾波/Projects/company-wiki",
+      "status": "green",
+      "exit_code": 0,
+      "elapsed_seconds": 18.11,
+      "passed": 107,
+      "failed": 0,
+      "skipped": 0,
+      "replace_seams": [
+        "sibling repositories supplied through the existing FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT explicit committed read-only entry; no check removed and no gate bypassed"
+      ],
+      "external_network_requests": 0
+    },
+    {
       "name": "full unified-completion suite",
       "command": "python -B -m pytest -q -p no:cacheprovider assurance/unified_completion/tests/",
       "status": "not_run",
@@ -295,7 +309,7 @@
     "Observed live drift does not equal the card's figure of 8: 8 from the original repository working tree (the card figure, unselected_drift=0), 12 from any fresh checkout of the same commit, 13 against the raw git blob. The difference is working-tree line-ending byte state, not content; real content drift is the same 6 files under every canonical. Recorded as fact in install_delta.json.observed_drift_facts; the live update list was not widened.",
     "~/.claude/skills/revenue-forecast is a symlink to ~/.agents/skills/revenue-forecast, so unique_destinations collapses the three configured roots into two physical trees. The .claude surface is covered by the .agents write; no third write is missing.",
     "Pre-existing repository-only tests/ residue inside each installation is neither drift nor covered by the comparison and was not deleted; remove it explicitly if desired.",
-    "pre-push was not exercised in this lane because the exclusive worktree has no sibling checkouts. If it is needed, use the existing FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT explicit committed read-only entry rather than deleting a check.",
+    "pre-push was exercised in this lane with the card-sanctioned explicit sibling entry FF_V2_CODE_ROOT=C:/Users/郑曾波/Projects/filing-fetch and CWP_V2_CODE_ROOT=C:/Users/郑曾波/Projects/company-wiki: exit 0, ruff and public-contract types clean, 107 passed. git push -u origin codex/g5-rf-install then succeeded. If a sibling repository is missing in a different layout, use the same explicit committed read-only entry rather than deleting a check.",
     "The full unified-completion suite and the full root suite were deliberately not run (card: one centralized unit/CLI node, no full UC, no paid/live, no coverage or CI gate change).",
     "Pre-existing GBK PytestUnhandledThreadExceptionWarning noise in the test_zr804 / test_fc1004 runs is unchanged by this lane and was left alone.",
     "No forecast, no publication and no production data path was exercised; this package is an explicit engineering tool only and never runs implicitly while a forecast executes."

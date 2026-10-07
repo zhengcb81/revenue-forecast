@@ -105,6 +105,25 @@ Live read-only runs (no writes anywhere):
 
 Owner-log SHA-256 after: identical to the "before" block above.
 
+### Delivery
+
+- Implementation commit `a2116ca6d5280c140b42a0d8bd2d94521ee80ccd`
+  (`feat: add explicit --file/--plan/--json selective installation sync (G5-RF-INSTALL)`),
+  pre-commit hook green (ruff Passed, mypy-contract Skipped, host-assumption-guard Passed).
+- Handoff commit `e8bed893…` (`docs: record G5-RF-INSTALL handoff with measured
+  RED-GREEN and installation delta facts`); `handoff.json` validated against the
+  read-only `g5_handoff.schema.json`.
+- Pre-push gate run with the card-sanctioned explicit sibling entry
+  `FF_V2_CODE_ROOT=C:/Users/郑曾波/Projects/filing-fetch` and
+  `CWP_V2_CODE_ROOT=C:/Users/郑曾波/Projects/company-wiki` → **exit 0**,
+  `pre-push/CI checks GREEN`: ruff clean, public-contract types clean,
+  **107 passed in 18.11 s**. No check was removed or bypassed.
+- `git push -u origin codex/g5-rf-install` → **exit 0**, new remote branch.
+  PR creation link handed to MAIN:
+  `https://github.com/zhengcb81/revenue-forecast/pull/new/codex/g5-rf-install`.
+- The branch was **not** merged into RF main and no real installation was
+  synchronized: both are MAIN's steps (card §6).
+
 ### Not done (by design)
 
 - No real home installation was written. `tests/test_zr804_platform_shape.py`

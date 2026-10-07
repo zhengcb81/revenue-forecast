@@ -10,13 +10,13 @@ forecast/source rules, or the three real home installations.
 
 ## Next Step
 
-Commit the PWF handoff package (implementation commit
-`a2116ca6d5280c140b42a0d8bd2d94521ee80ccd` already made), then push
-`codex/g5-rf-install` if the pre-push gate can run.
+Done — hand the branch to MAIN. The only remaining actions are MAIN's:
+merge into RF main, run the 24-candidate selective sync from the original
+repository, then update the total PWF.
 
 ## Current Phase
 
-Phase 5
+Complete
 
 ## Phases
 
@@ -65,9 +65,12 @@ Phase 5
 - [x] `.planning/g5-rf-install/{HANDOFF.md,handoff.json,main_wiring.md,install_delta.json}` written.
 - [x] `handoff.json` validated against the read-only `g5_handoff.schema.json`.
 - [x] Cleanup of `.planning/test-tmp/g5-install` scratch (restored `absent`, together
-      with its parent, after the run).
-- [ ] Commit on `codex/g5-rf-install`.
-- **Status:** in_progress
+      with its parent, after the run) and of the out-of-repo RED probe scratch.
+- [x] Commits on `codex/g5-rf-install`: `a2116ca6` (implementation) +
+      `e8bed893` (handoff), plus this delivery record.
+- [x] Pre-push gate GREEN with the explicit `FF_V2_CODE_ROOT`/`CWP_V2_CODE_ROOT`
+      sibling entry; `git push -u origin codex/g5-rf-install` exit 0.
+- **Status:** complete
 
 ## Key Questions
 
