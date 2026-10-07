@@ -85,7 +85,7 @@ def test_request_is_exact_versioned_and_typed(mutation):
 
 @pytest.mark.parametrize("mutation", [
     "metadata_only", "receipt_version", "wrong_asof", "wrong_ref", "raw_sha",
-    "unknown_publication", "future_capture", "nonutc_capture", "wrong_entity",
+    "unknown_publication", "future_publication", "invalid_publication", "nonutc_capture", "invalid_capture", "wrong_entity",
     "wrong_year", "wrong_period", "locator_count", "wrong_quality", "extra_path",
 ])
 def test_response_receipt_cannot_misstate_eligibility_or_identity(mutation):
@@ -103,8 +103,12 @@ def test_response_receipt_cannot_misstate_eligibility_or_identity(mutation):
         receipt["manifest"]["content_sha256"] = "a" * 64
     elif mutation == "unknown_publication":
         receipt["manifest"]["published_date"] = None
-    elif mutation == "future_capture":
-        receipt["manifest"]["retrieved_at"] = "2026-09-02T00:00:00Z"
+    elif mutation == "future_publication":
+        receipt["manifest"]["published_date"] = "2026-09-02"
+    elif mutation == "invalid_publication":
+        receipt["manifest"]["published_date"] = "2026-02-30"
+    elif mutation == "invalid_capture":
+        receipt["manifest"]["retrieved_at"] = "2026-02-30T00:00:00Z"
     elif mutation == "nonutc_capture":
         receipt["manifest"]["retrieved_at"] = "2026-08-02T00:00:00+01:00"
     elif mutation == "wrong_entity":
@@ -213,3 +217,16 @@ def test_current_read_policy_may_change_without_rewriting_persisted_artifact():
     context = validate_narrative_response(request, body, _canonical(receipt) + b"\n").to_dict()
     assert context["narrative_ref"] == request["narrative_ref"]
     assert context["read_receipt"]["source_read_policy_sha256"] == "a" * 64
+
+
+@pytest.mark.parametrize("published_date", ["2026-08-01", "2026-09-01"])
+def test_publication_cutoff_accepts_later_download_without_rewriting_metadata(published_date):
+    request, body, raw = _valid()
+    receipt = json.loads(raw)
+    receipt["manifest"]["published_date"] = published_date
+    receipt["manifest"]["retrieved_at"] = "2026-09-02T00:00:00Z"
+    context = validate_narrative_response(request, body, _canonical(receipt) + b"\n").to_dict()
+    assert context["as_of_date"] == "2026-09-01"
+    assert context["read_receipt"]["manifest"] == receipt["manifest"]
+    assert context["evidence_spans"] == json.loads(body)["evidence_spans"]
+    assert context["narrative_ref"] == request["narrative_ref"]

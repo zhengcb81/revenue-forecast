@@ -208,7 +208,7 @@ def _manifest(receipt: dict, request: dict) -> dict:
     cutoff = _date(request["as_of_date"])
     _require(manifest["published_date"] is not None, "source_publication_unknown")
     _require(_date(manifest["published_date"]) <= cutoff, "source_after_as_of")
-    _require(_utc(manifest["retrieved_at"]).date() <= cutoff, "source_after_as_of")
+    _utc(manifest["retrieved_at"])  # Validate metadata, not local collection availability.
     return manifest
 
 
