@@ -139,6 +139,19 @@ revenue 解析结果 = `scripts/contracts/{__init__,constants,document,evidence}
 
 ---
 
+## 5A. 提交与推送状态
+
+| 项 | 值 |
+|---|---|
+| 提交 1（代码+测试+SKILL+规划/HANDOFF/证据） | `e9f9405936c8b123b17592538d1bf70f76d8a6a5` |
+| 提交 2（`handoff.json`，不自引用 sha） | `87129d124c86a2926f993f4cf73a161f043dd112` |
+| 提交 3（本行所在的 push 记录 docs 更新；sha 见 `git log --oneline -4`） | 后续 docs 提交 |
+| 工作树 | clean（`.planning/g3-rf-assurance/scratch` 已删除恢复 absent） |
+| 分支可从原仓读到 | 是：`git -C Projects/revenue-forecast rev-parse codex/g3-rf-assurance` → `87129d12` |
+| push | **被 `.githooks/pre-push` 拦截，未推送、未绕过 hook** |
+
+push 被拦的根因：`tools/pre_push_gate.py` 的 `tests/test_p5_source_default_cli_e2e.py` 2 项要求 `../filing-fetch`、`../company-wiki`，本独占 worktree 没有邻仓。同命令在 base commit 结果**完全相同**（105 passed / 2 failed，见 §5），与本卡改动无关；卡同时禁止写其他仓、要求全离线（下载 0），也禁止 `--no-verify`。因此本卡不在本环境强推：MAIN 可从共享 ref 本地并线，或在带邻仓的 checkout 复核精确 CI 后再推。
+
 ## 6. 真正的 remaining（不由本卡解决）
 
 1. **W1**（`scripts/revenue_forecast.py --version` 的 `_root_directories`）未落之前，`test_zr804_platform_shape` 的身份断言在“新集合同步过”的安装上会红。实测数值见 §3。

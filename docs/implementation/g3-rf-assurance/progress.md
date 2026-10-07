@@ -60,4 +60,5 @@ scratch 测试根 `.planning/g3-rf-assurance/scratch`（运行前 absent；本�
 ## Phase 7 — 交付（进行中）
 
 - `docs/implementation/g3-rf-assurance/{task_plan.md,findings.md,progress.md,HANDOFF.md,handoff.json}` + 证据 `runtime_closure_scan.py`。
-- 正常 commit，只推本分支，不合 main。
+- 提交 1 `e9f9405936c8b123b17592538d1bf70f76d8a6a5`（代码+测试+SKILL+规划/HANDOFF/扫描证据）；提交 2 `87129d124c86a2926f993f4cf73a161f043dd112`（handoff.json）。工作树 clean，不合 main。
+- **push 结果：被 `.githooks/pre-push` 拦截，未推送、未绕过 hook。** 根因是 `tools/pre_push_gate.py` 里 `tests/test_p5_source_default_cli_e2e.py` 的2项需要 `../filing-fetch`、`../company-wiki`，本独占 worktree 没有邻仓；同命令在 base commit **完全相同**（105 passed / 2 failed），与本卡改动无关。卡禁止写其他仓（且全离线、下载0），故无法在此环境补齐邻仓；也禁止 `--no-verify`。分支已在共享 ref 存储中（原仓 `git rev-parse codex/g3-rf-assurance` = `87129d12`），MAIN 可直接本地并线，或在带邻仓的 checkout 里复核精确 CI 后再推。
