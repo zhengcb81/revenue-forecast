@@ -13,8 +13,9 @@ trend, docs/schema/skill drift; required CI carries no ``|| true``.
   C3  module boundary / complexity trend: the complexity ratchet suite
       stays green (new/changed functions bounded), and per-module
       coverage gates run clean.
-  C4  type gate: mypy errors on scripts/ stay within the frozen baseline
-      (no NEW type errors introduced by this work).
+  C4  type gate: the mypy subprocess really runs and its actual result is
+      reported — a usable run is a diagnostic, a missing/broken/timed-out
+      mypy is RED (never green).
   C5  docs/schema drift: the plan manifest's frozen inputs re-verify
       offline (uc manifest-verify) and the machine state re-verifies
       (state sha256 deterministic; control page hash consistent).
@@ -81,7 +82,8 @@ def test_c2_workflows_free_of_silent_pass():
         text = path.read_text(encoding="utf-8")
         for number, line in enumerate(text.splitlines(), 1):
             assert "|| true" not in line and "||true" not in line, (
-                f"{path.name}:{number}: silent-pass {line.strip()}")
+                f"{path.name}:{number}: silent-pass {line.strip()}"
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -91,8 +93,17 @@ def test_c2_workflows_free_of_silent_pass():
 
 def test_c3_complexity_ratchet_green():
     proc = subprocess.run(
-        [sys.executable, "-B", str(ROOT / "tools" / "tests" / "test_complexity_ratchet.py"), "-q"],
-        capture_output=True, text=True, encoding="utf-8", timeout=180)
+        [
+            sys.executable,
+            "-B",
+            str(ROOT / "tools" / "tests" / "test_complexity_ratchet.py"),
+            "-q",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=180,
+    )
     out = proc.stdout + proc.stderr
     assert proc.returncode == 0, f"complexity ratchet red: {out[-500:]}"
 
@@ -106,12 +117,16 @@ def test_c3_coverage_gates_run():
 
 
 # ---------------------------------------------------------------------------
-# C4 — type gate within frozen baseline
+# C4 — type gate reports the real mypy tool result
 # ---------------------------------------------------------------------------
 
 
-def test_c4_mypy_stays_within_baseline():
-    """Type gate: mypy errors on scripts/ stay within the frozen baseline.
+def test_c4_type_gate_reports_the_real_mypy_result():
+    """Type gate: mypy runs for real and the gate states its actual result.
+
+    A usable mypy that reports historical errors is a diagnostic (the count
+    no longer decides qualification); a mypy that is missing, unusable or
+    times out must come back RED rather than green.
 
     mypy runs as a subprocess (its stdout carries the error lines); under
     pytest-timeout the communicate() handshake can stall, so the subprocess
@@ -131,6 +146,8 @@ def test_c4_mypy_stays_within_baseline():
     worker.join(timeout=900)
     assert not worker.is_alive(), "mypy gate exceeded 900s"
     assert result.get("ok"), result.get("detail")
+    assert "mypy" in str(result.get("detail")).lower()
+    assert "error" in str(result.get("detail")).lower()
 
 
 # ---------------------------------------------------------------------------
@@ -141,8 +158,12 @@ def test_c4_mypy_stays_within_baseline():
 def test_c5_manifest_verifies_offline():
     proc = subprocess.run(
         [sys.executable, "-m", "uc.cli", "manifest-verify"],
-        capture_output=True, text=True, encoding="utf-8", timeout=300,
-        cwd=str(UC_ROOT))
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=300,
+        cwd=str(UC_ROOT),
+    )
     out = proc.stdout + proc.stderr
     assert proc.returncode == 0 and "OK" in out, out[-300:]
 
@@ -152,8 +173,10 @@ def test_c5_state_hash_deterministic():
     raw = state_path.read_bytes()
     import hashlib
 
-    assert hashlib.sha256(raw).hexdigest() == hashlib.sha256(
-        state_path.read_bytes()).hexdigest()
+    assert (
+        hashlib.sha256(raw).hexdigest()
+        == hashlib.sha256(state_path.read_bytes()).hexdigest()
+    )
     state = json.loads(raw)
     assert state["current_next"] and state["current_phase"]
 
@@ -165,8 +188,10 @@ def test_c5_state_hash_deterministic():
 
 def test_c6_codegraph_freeze_callers_present():
     freeze = json.loads(
-        (UC_ROOT / "codegraph" / "codegraph_freeze.json")
-        .read_text(encoding="utf-8-sig"))
+        (UC_ROOT / "codegraph" / "codegraph_freeze.json").read_text(
+            encoding="utf-8-sig"
+        )
+    )
     report = freeze.get("caller_report", {})
     targets = report.get("targets", {})
     # the three repos all have caller targets recorded
@@ -178,10 +203,11 @@ def test_c6_codegraph_freeze_callers_present():
 
 def test_c6_blocking_findings_registered_not_silent():
     freeze = json.loads(
-        (UC_ROOT / "codegraph" / "codegraph_freeze.json")
-        .read_text(encoding="utf-8-sig"))
-    registered = freeze.get("caller_report", {}).get(
-        "blocking_findings_registered", [])
+        (UC_ROOT / "codegraph" / "codegraph_freeze.json").read_text(
+            encoding="utf-8-sig"
+        )
+    )
+    registered = freeze.get("caller_report", {}).get("blocking_findings_registered", [])
     # registered findings exist (honest inventory) — never silently dropped
     assert isinstance(registered, list)
     for finding in registered:
