@@ -86,12 +86,14 @@
 
 ### Phase 5: 恢复与交付
 
-- **Status:** in_progress
+- **Status:** complete
 - Actions taken:
   - 清理 `C:/Users/郑曾波/Projects/_g2/tmp-g2-rf-pt`（先核绝对路径包含 `_g2`、无 symlink/reparse、只读文件先 `chmod` 再删）、`_g2/g2_before.json`。
   - 清理本轮产生的 `.mypy_cache/`、`.pytest_cache/`、`.ruff_cache/`、各处 `__pycache__/`（均 gitignored，基线 absent）。
   - `tests/_g2_ruff_probe.py` 已由用例 finally 删除；`assurance/backup/` 只剩 `README.md`。
   - 三 owner 日志在本 worktree 与 HEAD 一致；主仓 `e241389a` + 三 owner 文件未提交原状未动。
+- 写 `docs/implementation/g2-rf-tools/{HANDOFF.md,handoff.json}`（`schema_version=g2-lane-handoff/1`，必备键齐全，四个外部计数全 0）。
+- 实现 commit：`8a2c7fe9c25155631a01b083684b8524b38ccc40`；handoff 紧随其后的 commit。
 - Files created/modified: 见 `task_plan.md` Phase 3 与 handoff `changed_files`。
 
 ## Test Results
@@ -122,8 +124,8 @@
 
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 5（恢复与交付，进行中） |
-| Where am I going? | 写 `docs/implementation/g2-rf-tools/{HANDOFF.md,handoff.json}` → 普通 commit → push 同名施工分支 |
+| Where am I? | Phase 5（complete） |
+| Where am I going? | 已交付；MAIN 集中复核并线 + 定点安装同步 |
 | What's the goal? | RF 可选工程工具默认只读、数值仅诊断、全套只在集中命令 |
 | What have I learned? | 见 `findings.md` |
 | What have I done? | 见上 |

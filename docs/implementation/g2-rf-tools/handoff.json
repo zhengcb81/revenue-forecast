@@ -1,0 +1,264 @@
+{
+  "schema_version": "g2-lane-handoff/1",
+  "lane_id": "G2-RF-TOOLS",
+  "title": "RF可选工程工具和收尾流程简化",
+  "status": "complete",
+  "repo": "C:/Users/郑曾波/Projects/revenue-forecast",
+  "base_commit": "e241389adeda37bc9cbb53d7831063718552a936",
+  "branch": "codex/g2-rf-tools",
+  "worktree": "C:/Users/郑曾波/Projects/_g2/revenue-forecast",
+  "delivery_commits": [
+    "8a2c7fe9c25155631a01b083684b8524b38ccc40"
+  ],
+  "delivery_commit_note": "implementation + PWF planning files; this handoff artifact lands in the commit immediately after it, so the branch tip is the delivery point for MAIN.",
+  "changed_files": [
+    ".coveragerc",
+    "tools/release_readiness.py",
+    "tools/run_coverage_gates.py",
+    "tools/final_ratchet.py",
+    "tools/release_checklist.py",
+    "tools/session_checklist.md",
+    "tests/test_zr1001_release_readiness.py",
+    "tests/test_zr906_final_ratchet.py",
+    "tests/test_ca303_arch_quality.py",
+    "tests/test_rf_optional_tools_e2e.py",
+    "tests/test_rf_coverage_report.py",
+    "tests/test_rf_release_checklist.py",
+    ".planning/g2-rf-tools/task_plan.md",
+    ".planning/g2-rf-tools/findings.md",
+    ".planning/g2-rf-tools/progress.md",
+    "docs/implementation/g2-rf-tools/HANDOFF.md",
+    "docs/implementation/g2-rf-tools/handoff.json"
+  ],
+  "unchanged_gates": [
+    ".github/workflows/quality.yml",
+    "tools/pre_push_gate.py",
+    "git hooks",
+    "assurance/unified_completion/uc/quality.py",
+    "assurance/unified_completion/uc/scenarios.py",
+    "scripts/**",
+    "tools/sync_installations.py"
+  ],
+  "retired_controls": [
+    "release_readiness: default read of neighbour company-wiki internal SQLite catalog",
+    "release_readiness: default requirement of complete three-repo HEAD fingerprints",
+    "release_readiness: default hard requirement of total_scenarios == 197",
+    "release_readiness: default 2048MB capacity gate (now a diagnostic unless --budget-mb)",
+    "release_readiness: backup .read-probe write on every check",
+    "release_readiness: default write of the tracked assurance/runs/rollback_manifest.json",
+    "release_readiness: human release_authorization / issue-auth surface (already absent, re-asserted)",
+    "run_coverage_gates: `coverage erase` of the repository's existing .coverage",
+    "run_coverage_gates: unconditional 900s full-suite pytest on every invocation",
+    "run_coverage_gates: 84% total fail_under gate",
+    "run_coverage_gates: 8-entry PER_MODULE_MINIMUM 40-80 gate",
+    "final_ratchet: `errors <= MYPY_BASELINE(69)` reported as green",
+    "final_ratchet: default invocation of the coverage/full-suite responsibility",
+    "release_checklist: EXPECTED_RED fixed pytest red-exemption",
+    "release_checklist: parsing FAILED lines instead of the real pytest return code",
+    "release_checklist: frozen schema-migration-3.6-to-3.7 document as a release rite",
+    "release_checklist: sync_installations all-MATCH / --apply as release qualification",
+    "release_checklist: mutation patrol sweep as release qualification",
+    "release_checklist: its own copy of the full pytest suite",
+    "session_checklist: per-session full pytest + real E2E + all-installation MATCH + config checkout-to-HEAD + historical 197 rerun"
+  ],
+  "retained_checks": [
+    "scan_hardcode / scan_legacy / scan_encoding with real positive and negative examples",
+    "final_ratchet complexity gate (tools/tests/test_complexity_ratchet.py)",
+    "mypy really runs; missing / no-version-banner / rc>=2 / timeout are RED",
+    "release_readiness read-only own-repository HEAD fingerprint",
+    "release_readiness measured runs size as a numeric diagnostic",
+    "uc.scenarios verify + closure_report reused for an explicitly supplied registry",
+    "read-only SQLite row probe for an explicitly supplied catalog",
+    "read-only directory probe for an explicitly supplied backup dir (no probe file)",
+    "CHANGELOG section for the current SKILL_VERSION",
+    "publication_registry.py audit (read-only)",
+    "daily 11-file offline behaviour group + ruff + public-contract mypy via pre_push_gate (unmodified)",
+    "uc.quality._revenue_coverage remains able to read both compatibility shapes"
+  ],
+  "compatibility_surfaces": [
+    ".coveragerc [report] fail_under = 0 (configparser-readable)",
+    "tools/run_coverage_gates.py PER_MODULE_MINIMUM = {} written as an ast.Assign dict literal (not an annotated assignment) so uc.quality._top_level_assignments still sees it",
+    "final_ratchet.scan_hardcode/scan_legacy/scan_encoding signatures unchanged",
+    "real importers kept green: tests/test_ca303_arch_quality.py, tests/test_ca304_r9_removal.py, tests/test_zr1102_adversarial_audit.py",
+    "final_ratchet --print-json still emits the six-gate ok map (status/problems added)",
+    "release_readiness still emits the six-gate map with JSON-string detail (status/problems added)",
+    "PYTEST_COVERAGE_EXTRA_ARGS passthrough retained",
+    "tools/sync_installations.py write set unchanged (includes tests/, excludes tools/)"
+  ],
+  "red_runs": [
+    {
+      "command": "python -B -m pytest -q --tb=no -p no:cacheprovider tests/test_zr1001_release_readiness.py --basetemp <lane temp>",
+      "exit_code": 1,
+      "count": "25 failed, 6 passed",
+      "seconds": 6.05
+    },
+    {
+      "command": "python -B -m pytest -q --tb=no -p no:cacheprovider tests/test_zr906_final_ratchet.py -k \"not c4_mypy_without_version_banner and not c4_type_failure_makes\" --basetemp <lane temp>",
+      "exit_code": 1,
+      "count": "10 failed, 11 passed, 2 deselected",
+      "seconds": 1.33,
+      "note": "the 2 deselected cases would start the old tool's full coverage suite (recursion); excluded from RED, executed for real in GREEN"
+    },
+    {
+      "command": "python -B -m pytest -q --tb=no -p no:cacheprovider tests/test_rf_optional_tools_e2e.py -k \"not e4_default_is_green\" --basetemp <lane temp>",
+      "exit_code": 1,
+      "count": "15 failed, 4 passed, 1 deselected",
+      "seconds": 5.82,
+      "note": "the deselected case would start the old tool's full coverage suite; executed for real in GREEN"
+    },
+    {
+      "command": "python -B -m pytest -q --tb=no -p no:cacheprovider tests/test_rf_coverage_report.py -k c1 --basetemp <lane temp>",
+      "exit_code": 1,
+      "count": "3 failed, 13 deselected",
+      "seconds": 0.85,
+      "note": "deselected cases drive the coverage tool's default path, which on the old tool erases .coverage and starts the full suite"
+    },
+    {
+      "command": "python -B -m pytest -q --tb=no -p no:cacheprovider tests/test_rf_release_checklist.py -k \"c1 or c2 or c3\" --basetemp <lane temp>",
+      "exit_code": 1,
+      "count": "11 failed, 1 passed, 2 deselected",
+      "seconds": 60.79,
+      "note": "the 2 deselected CLI cases would run the old tool's self-copied full pytest suite; one of the executed cases did run it (60.79s) and proved the old tool ignores argv entirely"
+    },
+    {
+      "command": "python -B -m pytest -q --tb=no -p no:cacheprovider tests/test_ci_smoke_plan.py --basetemp <lane temp>",
+      "exit_code": 0,
+      "count": "3 passed (control group, unchanged gate)",
+      "seconds": 0.65
+    },
+    {
+      "command": "python -B tools/release_readiness.py (old implementation, direct probe)",
+      "exit_code": 1,
+      "count": "fingerprints: RED; integrity: RED catalog unreadable; rollback: RED requires complete three-repo HEADs; backup wrote assurance/backup/.read-probe",
+      "seconds": 1
+    }
+  ],
+  "green_runs": [
+    {
+      "command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_zr1001_release_readiness.py tests/test_zr906_final_ratchet.py tests/test_rf_optional_tools_e2e.py tests/test_rf_coverage_report.py tests/test_rf_release_checklist.py tests/test_ci_smoke_plan.py --basetemp C:/Users/郑曾波/Projects/_g2/tmp-g2-rf-pt",
+      "exit_code": 0,
+      "count": "107 passed",
+      "seconds": 69.57
+    },
+    {
+      "command": "python -B -m ruff check tools tests",
+      "exit_code": 0,
+      "count": "All checks passed",
+      "seconds": 1
+    },
+    {
+      "command": "python -B tools/pre_push_gate.py",
+      "exit_code": 0,
+      "count": "ruff green, public contract types green, 107 passed in the 11-file offline group; 'pre-push/CI checks GREEN'",
+      "seconds": 30
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "count": "no whitespace errors (autocrlf notices only)",
+      "seconds": 1
+    },
+    {
+      "command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_ca303_arch_quality.py --basetemp <lane temp>",
+      "exit_code": 0,
+      "count": "10 passed, 1 failed (C5 manifest-verify --mtime strict worktree checkout drift; tool/scanner responsibility C1-C4+C6 all green)",
+      "seconds": 4.32
+    },
+    {
+      "command": "python -B -m uc.cli manifest-verify --mtime off (cwd assurance/unified_completion)",
+      "exit_code": 0,
+      "count": "OK: frozen inputs re-verifiable (hash+size)",
+      "seconds": 1
+    },
+    {
+      "command": "python -B -m pytest -q --tb=short -p no:cacheprovider tests/test_ca304_r9_removal.py tests/test_zr1102_adversarial_audit.py --basetemp <lane temp>",
+      "exit_code": 0,
+      "count": "19 passed, 1 skipped",
+      "seconds": 4.67
+    },
+    {
+      "command": "pre-commit hook on the delivery commit (ruff WU-1.2 / mypy public contracts FC-1204-c / host assumption guard FC-1307-a)",
+      "exit_code": 0,
+      "count": "Passed, Skipped, Passed",
+      "seconds": 5
+    }
+  ],
+  "cli_evidence": {
+    "default_check_only": "exit 0; fingerprints/integrity/scenario_evidence/backup/rollback = NOT_SUPPLIED, capacity = DIAGNOSTIC",
+    "zero_write": "assurance/** 1392 files SHA+mtime identical before/after the whole node; repository-root coverage data set identical ({}); git status --porcelain -uall delta equals the intended change set only",
+    "return2_config_errors": [
+      "release_readiness --budget-mb not-a-number -> 2",
+      "release_readiness --expect-head no-equals-sign -> 2",
+      "release_checklist --not-a-real-flag -> 2"
+    ],
+    "return2_without_failed_line": "release_checklist delegate `python -c \"raise SystemExit(2)\"` prints no FAILED text; result RELEASE-BLOCK: ... returned exit code 2, exit 1",
+    "bad_sha": "--expect-head revenue=<40-hex that does not match> -> exit 1 with RED; matching real HEAD -> exit 0",
+    "explicit_inputs": [
+      "--scenario-registry <committed registry> -> exit 0 with scenario_evidence OK and a scenario count",
+      "--scenario-registry <tampered registry> -> exit 1 with RED",
+      "--scenario-registry <missing> -> exit 1",
+      "--catalog <tmp sqlite> -> exit 0 read-only row probe; --catalog <missing> -> exit 1",
+      "--backup-dir <tmp> -> exit 0 and the directory SHA/mtime unchanged (no .read-probe); --backup-dir <missing> -> exit 1",
+      "--record-rollback <path> -> file written (the single explicit writer)"
+    ],
+    "coverage_run": [
+      "--run --scratch <DIR> --target tests/test_schema_compatibility.py -> exit 0, every coverage file inside DIR, repository root untouched",
+      "--run without --scratch -> non-zero, message names --scratch",
+      "--scratch <a regular file> -> non-zero",
+      "--target <nonexistent> -> non-zero (pytest exit code)",
+      "PYTHONPATH stub coverage.py raising SystemExit(7) -> non-zero, 'coverage unavailable'",
+      "--timeout 1 with a sleeping target -> non-zero, timeout reported"
+    ],
+    "coverage_default_does_not_start_pytest": "report mode with a PYTHONPATH stub pytest.py raising SystemExit(9) still exits 0 and prints no pytest summary",
+    "low_numbers_are_diagnostic": "explicit short run reports percentages well below 84 while exiting 0",
+    "type_gate": [
+      "PYTHONPATH stub mypy.py (no version banner) -> final_ratchet --print-json type.ok=false, status=red, exit 1",
+      "real mypy historical error count printed as a diagnostic, never as '0 errors'",
+      "monkeypatched mypy missing / TimeoutExpired / rc=2 -> gate_type ok=false"
+    ],
+    "final_ratchet_full": "--full without --coverage-scratch -> non-zero naming --coverage-scratch; --full with scratch+target -> coverage: OK and data only in the scratch",
+    "default_final_ratchet_no_coverage": "--print-json default -> coverage status not_supplied and no repository-root coverage file created"
+  },
+  "temporary_paths": [
+    "C:/Users/郑曾波/Projects/_g2/tmp-g2-rf-pt (pytest --basetemp; absent at baseline)",
+    "C:/Users/郑曾波/Projects/_g2/g2_before.json (lane snapshot; created this session)",
+    ".mypy_cache/, .pytest_cache/, .ruff_cache/, **/__pycache__/ (absent at baseline, gitignored)",
+    "tests/_g2_ruff_probe.py (created and removed inside the ruff-failure CLI test)"
+  ],
+  "cleanup": "every path above removed after verifying the absolute path is inside the lane roots, contains no symlink/reparse parent, and belongs to this lane; read-only publications.jsonl was chmod'ed before deletion; no git clean and no cross-shell string deletion were used",
+  "owner_files_preserved": true,
+  "owner_files_detail": "assurance/runs/daily_alert.jsonl, assurance/runs/weekly_alert.jsonl and assurance/runs/weekly_manifest.json are unmodified against HEAD in this worktree, and the main checkout at C:/Users/郑曾波/Projects/revenue-forecast still shows exactly those three as its only local modifications; never checked out, reset or staged",
+  "production_roots_untouched": "main repo, company-wiki, filing-fetch, StockWiki, StockQA, ET, IQS, Dayu, installed skill copies: no writes",
+  "installation_sync_pending": true,
+  "installation_sync_note": "tools/sync_installations.py covers .gitignore/CHANGELOG.md/SKILL.md + agents/config/references/scripts/tests, i.e. tests/ in and tools/ out; this lane changed six tests/** files, so the installed copies drift. MAIN syncs point-wise after merging; this lane never ran --apply and never made installation drift a gate.",
+  "external_provider_calls": 0,
+  "paid_calls": 0,
+  "production_writes": 0,
+  "raw_deleted": 0,
+  "network_calls": 0,
+  "llm_calls": 0,
+  "secrets_included": false,
+  "raw_external_responses_included": false,
+  "remaining_issues": [
+    "tests/test_ca303_arch_quality.py::test_c5_manifest_verifies_offline is red in a fresh worktree because uc.cli manifest-verify defaults to --mtime strict and every audit_review/** mtime equals the checkout time 2026-10-07 09:42:49; `manifest-verify --mtime off` proves all hashes/sizes still verify. Not caused by this lane's write set; card says this drift is not a reason to expand scope.",
+    "uc.cli quality-verify is already red on the base commit: uc.quality.strict_targets() cannot find a `python -m mypy` command in .github/workflows/quality.yml (the workflow now delegates to tools/pre_push_gate.py), so compute_baseline() raises before it ever reaches the coverage dimension. Reported to MAIN per the card; the daily workflow was deliberately not changed for it.",
+    "After MAIN fixes strict_targets, quality-verify will additionally report the coverage floor moving from 84 to 0 as a ratchet weakening. quality_baseline.json was NOT re-frozen and assurance/ was NOT widened, as the card requires.",
+    "run_coverage_gates --run with the default target `tests` reaches this lane's own CLI-driving tests, which then run a narrow --run/--full themselves. Nesting is bounded at depth 2 (3 through release_checklist -> pre_push_gate) and observed green; no exclusion rule was added because the card forbids per-case special casing."
+  ],
+  "limitations": [
+    "RED had to deselect four cases that on the OLD tools start the forbidden full coverage suite; those four were executed for real in the GREEN concentrated node. Deselection is recorded, not counted as a pass.",
+    "During RED the old final_ratchet default did recurse (run_coverage_gates tests re-invoking run_coverage_gates) and hit the 900s tool timeout; all lane processes were killed by an exact `_g2` + `revenue-forecast` match, and processes belonging to other harness lanes were left running.",
+    "In this worktree pre_push_gate needs FF_V2_CODE_ROOT / CWP_V2_CODE_ROOT exported because the lane checkout has no filing-fetch/company-wiki siblings next to it (tests/test_p5_source_default_cli_e2e.py::_env_roots' pre-existing env override). The main checkout needs no such variable.",
+    "Numeric coverage / mypy / capacity values are diagnostics only and no longer decide qualification; real tool failures, pytest non-zero exits (including rc=2 collection errors), launch failures, timeouts, illegal configuration and explicitly supplied bad SHAs still fail.",
+    "No full-suite nightly/per-commit run was added; durations and counts above are measured facts with no numeric gate."
+  ],
+  "merge_notes": [
+    "Merge into main is MAIN's decision; this lane never merged and never pushed to main.",
+    "Push target is the same-named construction branch codex/g2-rf-tools only.",
+    "After merging, re-run the original daily fast CI (`python -B tools/pre_push_gate.py`) and then run tools/sync_installations.py point-wise to clear installation_sync_pending.",
+    "Do not re-run already-green cross-repo or paid nodes for this lane.",
+    "Missing-hash stays a diagnostic and a supplied-but-mismatching hash stays a failure: this lane did not restore the early all-path mandatory-hash rule and did not modify current business closure rules.",
+    "If uc.quality._revenue_coverage or a wider assurance reader must be retired later, first report the concrete caller and counterexample; do not write the whole assurance tree from this lane.",
+    "This is an engineering-simplification handoff: no authorization or release sign-off artifact was created."
+  ]
+}

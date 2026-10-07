@@ -8,11 +8,11 @@ Use this file as the durable roadmap for the task. Create it before complex work
 
 ## Next Step
 
-写 `docs/implementation/g2-rf-tools/{HANDOFF.md,handoff.json}`，普通 commit 到 `codex/g2-rf-tools` 并 push 同名施工分支（不合 main、不写 installed）。
+交付完成。MAIN 集中复核并线后：定点 `tools/sync_installations.py` 清 `installation_sync_pending`，并复跑原日常快 CI。
 
 ## Current Phase
 
-Phase 5
+Phase 5（complete）
 
 ## Phases
 
@@ -52,9 +52,10 @@ Phase 5
 ### Phase 5: 恢复与交付
 
 - [x] 清理本轮临时根与 caches、核三 owner 日志与主仓未动
-- [ ] 写 `docs/implementation/g2-rf-tools/{HANDOFF.md,handoff.json}`（`g2-lane-handoff/1`）
-- [ ] 普通 commit 到 `codex/g2-rf-tools`（可 push 同名分支，不合 main、不写 installed）
-- **Status:** in_progress
+- [x] 写 `docs/implementation/g2-rf-tools/{HANDOFF.md,handoff.json}`（`g2-lane-handoff/1`）
+- [x] 实现 commit `8a2c7fe9c25155631a01b083684b8524b38ccc40`；handoff commit 紧随其后
+- [x] push 同名施工分支 `codex/g2-rf-tools`（不合 main、不写 installed）
+- **Status:** complete
 
 ## Key Questions
 
