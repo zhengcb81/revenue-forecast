@@ -8,8 +8,14 @@ from pathlib import Path
 
 import pytest
 
-from conftest import REPO_ROOT
-from uc.manifest import ManifestError, build, verify
+from uc.manifest import ManifestError, build, mtime_diagnostics, verify
+
+# G3: resolve the repository root locally instead of importing it from
+# ``conftest``.  When this suite runs in the same pytest session as the
+# repository-root ``tests/`` tree, pytest imports both ``conftest.py`` files
+# under the same module name and the last one wins, so
+# ``from conftest import REPO_ROOT`` used to raise ImportError at collection.
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _h(path: Path) -> str:
@@ -120,7 +126,10 @@ def test_offline_verify_detects_hash_drift(tmp_path):
     assert any("hash drift" in p and "a.md" in p for p in problems)
 
 
-def test_offline_verify_detects_mtime_drift(tmp_path):
+def test_mtime_drift_is_diagnostic_by_default_and_strict_on_request(tmp_path):
+    """G3: the default check is SHA-256 + size.  A differing working-tree
+    mtime is reported as a diagnostic and only fails under the explicit
+    legacy strict mode — checkout time is not source fact."""
     repo = make_fixture_repo(tmp_path)
     manifest = tmp_path / "m.json"
     build(repo, manifest)
@@ -129,11 +138,15 @@ def test_offline_verify_detects_mtime_drift(tmp_path):
     )
     stat = victim.stat()
     os.utime(victim, (stat.st_atime, stat.st_mtime + 120))
-    problems = verify(repo, manifest)
-    assert any("mtime drift" in p and "z1.md" in p for p in problems)
+
+    assert verify(repo, manifest) == []
+    notes = mtime_diagnostics(repo, manifest)
+    assert any("mtime drift" in note and "z1.md" in note for note in notes)
+    strict = verify(repo, manifest, check_mtime=True)
+    assert any("mtime drift" in p and "z1.md" in p for p in strict)
 
 
-def test_verify_mtime_off_skips_mtime_but_keeps_hash(tmp_path):
+def test_default_verification_skips_mtime_but_keeps_hash(tmp_path):
     repo = make_fixture_repo(tmp_path)
     manifest = tmp_path / "m.json"
     build(repo, manifest)
@@ -142,9 +155,9 @@ def test_verify_mtime_off_skips_mtime_but_keeps_hash(tmp_path):
     )
     stat = victim.stat()
     os.utime(victim, (stat.st_atime, stat.st_mtime + 120))
-    assert verify(repo, manifest, check_mtime=False) == []  # mtime-only drift passes
+    assert verify(repo, manifest) == []  # mtime-only difference passes
     _write(victim, "tampered\n")
-    problems = verify(repo, manifest, check_mtime=False)
+    problems = verify(repo, manifest)
     assert any("hash drift" in p for p in problems)  # hash still enforced
 
 

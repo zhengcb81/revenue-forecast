@@ -15,6 +15,19 @@ Produce historical revenue, a concise ranked list of future revenue drivers, an 
 
 Do not produce stock-price, valuation, profitability, cash-generation, investment-rating, expected-return, or position-sizing conclusions. Use the relevant `invest-*` skill if the user separately requests them.
 
+## Installation and repository layout
+
+The installable package is the runtime closure of this skill's entry points:
+`SKILL.md`, `agents/`, `config/`, `references/` and `scripts/`. Everything
+else in the development repository — `tools/`, `tests/`, `assurance/`,
+`audit_review/`, `.github/` — is repository engineering control and is
+deliberately **not** distributed with the skill: a forecast does not need it,
+and an installation is not made usable by copying the engineering control
+plane into it. `python tools/sync_installations.py` (read-only check by
+default; `--apply` updates only the files the package owns and preserves
+unknown files, user configuration and `output`) is a repository tool for the
+same reason.
+
 ## Versioning
 
 `SKILL_VERSION` in `scripts/revenue_core.py` is the runtime source of truth;

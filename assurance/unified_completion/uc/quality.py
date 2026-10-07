@@ -1,33 +1,46 @@
-"""ZR-104 quality baseline: freeze and verify a three-repo quality ratchet.
+"""ZR-104 quality baseline: freeze and REPORT a three-repo quality baseline.
 
 Freezes, per repo (revenue / filing / wiki), the five quality dimensions
 that already exist as separate machine assets — the strict-mypy target set
-(CI workflow commands), coverage floors (existing ratchet configs/tests),
-complexity (wiki FC-1204 per-file frozen max; revenue/filing enforced on
-new/changed critical functions only), root hardcoding (wiki FC-1201 frozen
-allowlist; revenue FC-1101 workflow-pin scan), and dead production callers
-(CA-003 CodeGraph caller report) — into one machine-verifiable baseline
-bound to each repo's product subtree.
+(the repository's actual CI type entry), coverage floors (existing ratchet
+configs/tests), complexity (wiki FC-1204 per-file frozen max; revenue/filing
+enforced on new/changed critical functions only), root hardcoding (wiki
+FC-1201 frozen allowlist; revenue FC-1101 workflow-pin scan), and dead
+production callers (CA-003 CodeGraph caller report) — into one
+machine-recomputable baseline bound to each repo's product subtree.
 
-Design rules (ZR-104, phase C):
+Design rules (ZR-104 phase C, revised by G3-RF-ASSURANCE):
 
 - Every value is machine-computed by :func:`compute_baseline` from the
   repos and the toolchain at freeze time AND at verify time.  No value in
   the baseline is hand-written except structural metadata (schema, unit,
   the fixed frozen-at constant, file paths, the max-complexity constant).
-- The baseline is bound to each repo's PRODUCT subtree (``HEAD:scripts`` for
-  revenue/filing, ``HEAD:src/company_wiki/source_catalog`` for wiki); verify
-  requires exact equality (re-freeze after deliberate product-code review).
-  The raw git HEADs are NOT recorded in the baseline at all: the assurance
-  control plane lives inside the revenue repository, so its receipt/state/
-  closure commits must never invalidate the quality baseline (the frozen
-  HEADs of each unit are already recorded in its receipts).
-- Ratchet semantics: the frozen baseline must *match-or-improve* the
-  recomputed state — the frozen value must be at least as strict as the
-  value recomputed today.  A baseline that was weakened (coverage floor
-  lowered, allowlist grown, complexity max raised, strict target dropped,
-  dead caller hidden) is rejected with named violations; a baseline that
-  was strengthened verifies green.
+- The type target set comes from the repository's ACTUAL engineering
+  definition.  RF's CI workflow delegates its type check to
+  ``tools/pre_push_gate.py``; :func:`strict_targets` follows that
+  delegation by reading the tool as Python source (AST) — it never restores
+  an inline workflow ``python -m mypy`` line and never executes YAML text.
+- Scope that is not part of this checkout is reported, never invented: a
+  missing sibling repository or an unresolvable git subtree comes back as
+  ``not_available`` with the scope that explains it, never as a zero and
+  never by copying another repo's set.
+- :func:`verify` returns FAILURES only, and the failure set is closed:
+  real input corruption, an explicitly supplied input that is unreadable,
+  an invalid baseline configuration (schema/unit), and a real process that
+  exits non-zero.  Everything numeric the old ratchet compared — coverage
+  floors, complexity maxima, frozen allowlists, dead-caller counts,
+  product-subtree drift, sibling HEADs, old workflow text — is a
+  DIAGNOSTIC in :mod:`uc.quality_report`, not a qualification gate.
+  Retired engineering thresholds therefore stop blocking the layer that
+  outlived them, without the frozen baseline being re-frozen or its
+  historical account rewritten.
+- The baseline stays bound to each repo's PRODUCT subtree (``HEAD:scripts``
+  for revenue/filing, ``HEAD:src/company_wiki/source_catalog`` for wiki)
+  and that binding is reported as a historical comparison.  The raw git
+  HEADs are NOT recorded in the baseline at all: the assurance control
+  plane lives inside the revenue repository, so its receipt/state/closure
+  commits must never invalidate the quality baseline (the frozen HEADs of
+  each unit are already recorded in its receipts).
 - :func:`freeze` writes the baseline once and refuses to overwrite without
   ``force`` (CAS replace); :func:`check_critical_complexity` is the AST
   McCabe gate for new/changed critical functions (no third-party deps).
@@ -203,14 +216,59 @@ def _mypy_target_tokens(workflow_text: str) -> list[str]:
     return tokens
 
 
-def strict_targets(repo_name: str, root: Path) -> list[str]:
-    """Resolve the repo's CI strict-mypy command to a sorted file set
-    (relative paths).  Directories are expanded to their ``*.py`` files."""
-    repo = DEFAULT_REPOS[repo_name](root)
-    workflow = repo / WORKFLOW_RELPATHS[repo_name]
-    tokens = _mypy_target_tokens(_read_text(workflow, f"{repo_name} CI workflow"))
-    if not tokens:
-        raise ValueError(f"no `python -m mypy` command found in {workflow}")
+# A workflow that no longer inlines its type check delegates it to a
+# repository tool (RF: ``run: python tools/pre_push_gate.py``).  Only a
+# ``tools/*.py`` path is ever followed, the file is read as Python source
+# and never executed, and no YAML text is interpreted as a command.
+_DELEGATED_TOOL_RE = re.compile(
+    r"python3?\s+(?:-m\s+\S+\s+)?(tools/[A-Za-z0-9_./-]+\.py)"
+)
+
+
+def _mypy_target_tokens_from_python(source: str) -> list[str]:
+    """``-m mypy`` target tokens from a Python tool's source (AST only)."""
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.List, ast.Tuple)):
+            continue
+        elements = node.elts
+        for index in range(len(elements) - 1):
+            flag, module = elements[index], elements[index + 1]
+            if not (isinstance(flag, ast.Constant) and flag.value == "-m"):
+                continue
+            if not (isinstance(module, ast.Constant) and module.value == "mypy"):
+                continue
+            rest = elements[index + 2 :]
+            tokens: list[str] = []
+            for item in rest:
+                if not (isinstance(item, ast.Constant) and isinstance(item.value, str)):
+                    tokens = []
+                    break
+                tokens.append(item.value)
+            if tokens and len(tokens) == len(rest):
+                return tokens
+    return []
+
+
+def _delegated_mypy_tokens(repo: Path, workflow_text: str) -> list[str]:
+    for line in workflow_text.splitlines():
+        match = _DELEGATED_TOOL_RE.search(line)
+        if not match:
+            continue
+        tool = repo / match.group(1)
+        if not tool.is_file():
+            continue
+        try:
+            source = tool.read_text(encoding="utf-8")
+            tokens = _mypy_target_tokens_from_python(source)
+        except (OSError, SyntaxError):
+            continue
+        if tokens:
+            return tokens
+    return []
+
+
+def _expand_targets(repo: Path, tokens: list[str]) -> list[str]:
     resolved: list[str] = []
     for token in tokens:
         candidate = repo / token
@@ -224,6 +282,99 @@ def strict_targets(repo_name: str, root: Path) -> list[str]:
         else:
             raise ValueError(f"strict-mypy target does not exist: {candidate}")
     return sorted(set(resolved))
+
+
+def strict_targets(repo_name: str, root: Path) -> list[str]:
+    """Resolve the repo's strict-mypy target set to sorted relative paths.
+
+    The repository's CI workflow is the machine source.  When it carries an
+    inline ``python -m mypy`` line (filing/wiki still do) that line decides;
+    when it delegates — RF's workflow now only runs
+    ``python tools/pre_push_gate.py`` — the delegation is followed by
+    reading that repository tool as Python (AST) and taking *its* mypy
+    targets.  Neither the workflow text nor the tool is ever executed.
+    """
+    repo = DEFAULT_REPOS[repo_name](root)
+    workflow = repo / WORKFLOW_RELPATHS[repo_name]
+    text = _read_text(workflow, f"{repo_name} CI workflow")
+    tokens = _mypy_target_tokens(text) or _delegated_mypy_tokens(repo, text)
+    if not tokens:
+        raise ValueError(
+            f"no `python -m mypy` command and no delegated type entry in {workflow}"
+        )
+    return _expand_targets(repo, tokens)
+
+
+REVENUE = "revenue"
+
+
+def type_targets(repo_name: str, root: Path) -> dict[str, Any]:
+    """The repo's strict-mypy target set as a report.
+
+    ``status`` is ``ok`` with the resolved set, ``not_available`` when the
+    repository (or its type entry) is out of this checkout's scope, or
+    ``error`` when a repository that IS present cannot be read.  Never a
+    fabricated zero set and never an implicit copy of another repo's set.
+    """
+    repo = DEFAULT_REPOS[repo_name](root)
+    if not repo.is_dir():
+        return {
+            "status": "not_available",
+            "scope": f"repository not present: {repo}",
+            "strict_mypy_targets": [],
+        }
+    try:
+        targets = strict_targets(repo_name, root)
+    except (ValueError, OSError) as exc:
+        status = "error" if repo_name == REVENUE else "not_available"
+        return {
+            "status": status,
+            "scope": str(exc),
+            "strict_mypy_targets": [],
+        }
+    return {
+        "status": "ok",
+        "scope": str(repo),
+        "strict_mypy_targets": targets,
+    }
+
+
+def _dimension(
+    compute: Callable[[], dict[str, Any]], repo_name: str, repo: Path
+) -> dict[str, Any]:
+    """Run one dimension, converting an unreadable scope into a report.
+
+    A repository that is absent is ``not_available``.  A repository that is
+    present but unreadable is ``error`` for revenue (our own repository — a
+    real input failure) and ``not_available`` for the sibling repositories
+    (their HEAD is theirs; their drift is a diagnostic, not our failure).
+    """
+    if not repo.is_dir():
+        return {
+            "status": "not_available",
+            "scope": f"repository not present: {repo}",
+        }
+    try:
+        section = compute()
+    except (ValueError, OSError, KeyError, TypeError, configparser.Error) as exc:
+        return {
+            "status": "error" if repo_name == REVENUE else "not_available",
+            "scope": str(exc),
+        }
+    section["status"] = "ok"
+    section["scope"] = str(repo)
+    return section
+
+
+def _product_tree(repo: Path, product_path: str) -> str | None:
+    """The product subtree's git tree SHA, or ``None`` when it cannot be
+    resolved in this checkout (missing repository, not a git worktree)."""
+    if not repo.is_dir():
+        return None
+    try:
+        return product_tree_sha(repo, product_path)
+    except ValueError:
+        return None
 
 
 def _revenue_coverage(root: Path) -> dict[str, Any]:
@@ -428,26 +579,58 @@ def _dead_callers(control_root: Path) -> dict[str, Any]:
 def compute_baseline(root: Path) -> dict[str, Any]:
     """Recompute the full baseline from the repos and the toolchain.  This
     is the SINGLE computation shared by freeze and verify — the baseline
-    JSON must never carry a number that this function cannot reproduce."""
-    product_trees: dict[str, str] = {}
+    JSON must never carry a number that this function cannot reproduce.
+
+    Scope handling (G3-RF-ASSURANCE): a dimension whose scope is not part of
+    this checkout — a sibling repository that is not checked out, a git
+    subtree that cannot be resolved — is reported as ``not_available`` with
+    the scope that explains it.  Nothing is ever invented to stand in for
+    it.  A repository that IS present but cannot be read yields ``error``
+    for revenue (our own repository) and ``not_available`` for the sibling
+    repositories (their HEAD is theirs).
+    """
+    product_trees: dict[str, str | None] = {}
+    product_tree_scopes: dict[str, str] = {}
     repos: dict[str, Any] = {}
     for repo_name in REPO_ORDER:
         repo = DEFAULT_REPOS[repo_name](root)
-        product_trees[repo_name] = product_tree_sha(repo, PRODUCT_TREE_PATHS[repo_name])
+        product_trees[repo_name] = _product_tree(repo, PRODUCT_TREE_PATHS[repo_name])
+        product_tree_scopes[repo_name] = (
+            str(repo)
+            if product_trees[repo_name] is not None
+            else (
+                f"repository not present: {repo}"
+                if not repo.is_dir()
+                else f"git tree unavailable: {repo}:{PRODUCT_TREE_PATHS[repo_name]}"
+            )
+        )
         repos[repo_name] = {
-            "types": {"strict_mypy_targets": strict_targets(repo_name, root)},
-            "coverage": _coverage_for(repo_name, root),
-            "complexity": _complexity_for(repo_name, root),
-            "hardcoding": _hardcoding_for(repo_name, root),
+            "types": type_targets(repo_name, root),
+            "coverage": _dimension(
+                lambda name=repo_name: _coverage_for(name, root), repo_name, repo
+            ),
+            "complexity": _dimension(
+                lambda name=repo_name: _complexity_for(name, root), repo_name, repo
+            ),
+            "hardcoding": _dimension(
+                lambda name=repo_name: _hardcoding_for(name, root), repo_name, repo
+            ),
         }
     control_root = Path(__file__).resolve().parents[1]
+    try:
+        dead_callers = _dead_callers(control_root)
+    except (ValueError, OSError, json.JSONDecodeError) as exc:
+        dead_callers = {"status": "error", "scope": str(exc)}
+    else:
+        dead_callers["status"] = "ok"
     return {
         "schema_version": SCHEMA_VERSION,
         "unit": UNIT,
         "frozen_at": FROZEN_AT_UTC,
         "product_trees": product_trees,
+        "product_tree_scopes": product_tree_scopes,
         "repos": repos,
-        "dead_callers": _dead_callers(control_root),
+        "dead_callers": dead_callers,
     }
 
 
@@ -502,196 +685,24 @@ def freeze(root: Path, output: Path, force: bool = False) -> str:
     return sha256_bytes(data)
 
 
-def _verify_floor_map(
-    repo_name: str,
-    dimension: str,
-    frozen_map: dict[str, Any],
-    current_map: dict[str, Any],
-    problems: list[str],
-) -> None:
-    for key, floor in sorted(frozen_map.items()):
-        if key not in current_map:
-            problems.append(
-                f"{repo_name}/{dimension}: frozen floor for {key} lost "
-                "(constraint removed from the ratchet)"
-            )
-        elif floor < current_map[key]:
-            problems.append(
-                f"{repo_name}/{dimension}: frozen floor {floor} for {key} is "
-                f"below the recomputed {current_map[key]} (threshold may "
-                "only stay-or-rise)"
-            )
-
-
-def _verify_types(
-    repo_name: str, fr: dict[str, Any], cr: dict[str, Any], problems: list[str]
-) -> None:
-    frozen_set = set(fr.get("types", {}).get("strict_mypy_targets", []))
-    current_set = set(cr.get("types", {}).get("strict_mypy_targets", []))
-    dropped = sorted(frozen_set - current_set)
-    if dropped:
-        problems.append(
-            f"{repo_name}/types: strict-mypy target set shrank — files no "
-            f"longer strict-checked: {dropped} (target set may only grow)"
-        )
-
-
-def _verify_coverage(
-    repo_name: str, fr: dict[str, Any], cr: dict[str, Any], problems: list[str]
-) -> None:
-    fc = fr.get("coverage", {})
-    cc = cr.get("coverage", {})
-    frozen_map: dict[str, Any] = {}
-    current_map: dict[str, Any] = {}
-    if "total_floor" in fc and "total_floor" in cc:
-        frozen_map["total_floor"] = fc["total_floor"]
-        current_map["total_floor"] = cc["total_floor"]
-    frozen_map.update(fc.get("per_module_floors", {}))
-    current_map.update(cc.get("per_module_floors", {}))
-    frozen_map.update(fc.get("floors", {}))
-    current_map.update(cc.get("floors", {}))
-    _verify_floor_map(repo_name, "coverage", frozen_map, current_map, problems)
-
-
-def _verify_complexity(
-    repo_name: str, fr: dict[str, Any], cr: dict[str, Any], problems: list[str]
-) -> None:
-    fc = fr.get("complexity", {})
-    cc = cr.get("complexity", {})
-    frozen_max = fc.get("frozen_max", {})
-    current_max = cc.get("frozen_max", {})
-    for file_rel, frozen in sorted(frozen_max.items()):
-        if file_rel not in current_max:
-            problems.append(
-                f"{repo_name}/complexity: frozen max for {file_rel} lost "
-                "(constraint removed from the ratchet)"
-            )
-        elif frozen > current_max[file_rel]:
-            problems.append(
-                f"{repo_name}/complexity: frozen max {frozen} for {file_rel} "
-                f"exceeds the recomputed {current_max[file_rel]} (complexity "
-                "may only stay-or-fall)"
-            )
-    if (
-        "new_file_max" in fc
-        and "new_file_max" in cc
-        and fc["new_file_max"] > cc["new_file_max"]
-    ):
-        problems.append(
-            f"{repo_name}/complexity: frozen new-file max {fc['new_file_max']} "
-            f"exceeds the recomputed {cc['new_file_max']}"
-        )
-
-
-def _verify_hardcoding(
-    repo_name: str, fr: dict[str, Any], cr: dict[str, Any], problems: list[str]
-) -> None:
-    fc = fr.get("hardcoding", {})
-    cc = cr.get("hardcoding", {})
-    removed_tokens = sorted(
-        set(fc.get("frozen_tokens", [])) - set(cc.get("frozen_tokens", []))
-    )
-    if removed_tokens:
-        problems.append(
-            f"{repo_name}/hardcoding: frozen root tokens removed: "
-            f"{removed_tokens} (token set may only grow)"
-        )
-    frozen_allowlist = set(fc.get("allowlist", []))
-    current_allowlist = set(cc.get("allowlist", []))
-    grown = sorted(frozen_allowlist - current_allowlist)
-    if grown:
-        problems.append(
-            f"{repo_name}/hardcoding: frozen allowlist grew beyond the "
-            f"recomputed set: {grown} (allowlist may only shrink)"
-        )
-    frozen_scan = fc.get("scan")
-    current_scan = cc.get("scan")
-    if frozen_scan is not None:
-        if current_scan is None:
-            problems.append(
-                f"{repo_name}/hardcoding: frozen scan "
-                f"{frozen_scan.get('name')} is no longer computed"
-            )
-            return
-        if frozen_scan.get("pattern") != current_scan.get("pattern") or frozen_scan.get(
-            "targets"
-        ) != current_scan.get("targets"):
-            problems.append(
-                f"{repo_name}/hardcoding: frozen scan definition changed "
-                "(pattern/targets)"
-            )
-        new_hits = [
-            hit
-            for hit in current_scan.get("hits", [])
-            if hit not in frozen_scan.get("hits", [])
-        ]
-        if new_hits:
-            problems.append(
-                f"{repo_name}/hardcoding: new hardcoded values detected by "
-                f"the frozen scan: {new_hits}"
-            )
-
-
-def _verify_dead_callers(
-    frozen: dict[str, Any], current: dict[str, Any], problems: list[str]
-) -> None:
-    if frozen.get("input_hash") != current.get("input_hash"):
-        problems.append(
-            "dead_callers: CodeGraph caller-report input changed (artifact "
-            "re-frozen); re-freeze the quality baseline to bind the new report"
-        )
-    frozen_repos = frozen.get("repos", {})
-    current_repos = current.get("repos", {})
-    for repo_name in REPO_ORDER:
-        frozen_count = len(frozen_repos.get(repo_name, {}).get("targets", []))
-        current_count = len(current_repos.get(repo_name, {}).get("targets", []))
-        if current_count > frozen_count:
-            problems.append(
-                f"dead_callers/{repo_name}: dead-production-caller count rose "
-                f"{frozen_count} -> {current_count}: "
-                f"{current_repos.get(repo_name, {}).get('targets', [])} "
-                "(count may only stay-or-fall)"
-            )
-
-
 def verify(root: Path, frozen: dict[str, Any]) -> list[str]:
-    """Recompute the baseline and compare it against the frozen payload.
+    """Recompute the baseline and return the report's FAILURES.
 
-    PASS (empty list) only when the frozen baseline is bound to the current
-    product subtrees AND every ratchet dimension matches-or-improves the
-    recomputed state.  Returns named violations; any entry means exit-code 1
-    for the ``quality-verify`` CLI gate.
+    The quality layer reports rather than gates: coverage floors,
+    complexity maxima, frozen allowlists, dead-caller counts,
+    product-subtree drift, sibling-HEAD differences and old workflow text
+    are diagnostics (see :mod:`uc.quality_report`), never numeric
+    qualification gates.  What can still fail is the closed set the G3 card
+    keeps: real input corruption, an explicitly supplied input that is
+    unreadable, an invalid baseline configuration (schema/unit) and a real
+    process that exits non-zero.
+
+    Returns ``[]`` when nothing failed; ``quality-verify`` turns a
+    non-empty list into exit code 1.
     """
-    problems: list[str] = []
-    if frozen.get("schema_version") != SCHEMA_VERSION:
-        problems.append(
-            f"schema: schema_version {frozen.get('schema_version')!r} != "
-            f"{SCHEMA_VERSION}"
-        )
-    if frozen.get("unit") != UNIT:
-        problems.append(f"schema: unit {frozen.get('unit')!r} != {UNIT!r}")
-    current = compute_baseline(root)
-    for repo_name in REPO_ORDER:
-        frozen_sha = frozen.get("product_trees", {}).get(repo_name)
-        current_sha = current["product_trees"][repo_name]
-        if frozen_sha != current_sha:
-            problems.append(
-                f"product_trees/{repo_name}: frozen {frozen_sha} != current "
-                f"{current_sha} (baseline is bound to the product subtree "
-                f"{PRODUCT_TREE_PATHS[repo_name]}; re-freeze after deliberate "
-                "product-code review)"
-            )
-    for repo_name in REPO_ORDER:
-        fr = frozen.get("repos", {}).get(repo_name, {})
-        cr = current["repos"][repo_name]
-        _verify_types(repo_name, fr, cr, problems)
-        _verify_coverage(repo_name, fr, cr, problems)
-        _verify_complexity(repo_name, fr, cr, problems)
-        _verify_hardcoding(repo_name, fr, cr, problems)
-    _verify_dead_callers(
-        frozen.get("dead_callers", {}), current["dead_callers"], problems
-    )
-    return problems
+    from uc.quality_report import build_report
+
+    return build_report(root, frozen)["failures"]
 
 
 # ---------------------------------------------------------------------------

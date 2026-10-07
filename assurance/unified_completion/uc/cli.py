@@ -3,7 +3,10 @@
 Usage (from repo root, PYTHONPATH=assurance/unified_completion):
 
     python -m uc.cli manifest-build     # bootstrap the machine manifest
-    python -m uc.cli manifest-verify    # exit 1 when any frozen input drifted
+    python -m uc.cli manifest-verify    # exit 1 when a frozen input drifted
+                                        # (default: SHA-256 + size; mtime is
+                                        # a diagnostic — pass --mtime strict
+                                        # for the legacy strict opt-in)
     python -m uc.cli lock-acquire --resource <name> --owner <id> [--ttl N]
     python -m uc.cli lock-status  --resource <name>
     python -m uc.cli lock-release --resource <name> --owner <id> --nonce <nonce>
@@ -12,6 +15,8 @@ Usage (from repo root, PYTHONPATH=assurance/unified_completion):
     python -m uc.cli state-update --unit CA-001 --status accepted --reviewer <id>
     python -m uc.cli closure-advance --next CA-002 --phase A0... --reviewer <id>
     python -m uc.cli next               # units whose deps are all accepted
+    python -m uc.cli quality-verify     # quality report: failures gate, diagnostics do not
+    python -m uc.cli quality-report --root <dir> --baseline <json> [--json]
 
 Mutating subcommands verify the frozen-input manifest first (drift guard).
 Exit codes: 0 ok, 1 drift/failed verification, 2 lock/state/CAS conflict,
@@ -41,7 +46,6 @@ from uc.closure import closure_report as three_repo_closure_report
 from uc.legacy_gate import report as legacy_gate_report
 from uc.mutations import run_suite as mutation_run_suite
 from uc.quality import freeze as quality_freeze
-from uc.quality import verify as quality_verify
 from uc.control import patch_section0, plan_advance_fields
 from uc.dag import load_dag, next_units
 from uc.envfreeze import collect as env_collect
@@ -57,9 +61,12 @@ from uc.lock import (
 )
 from uc.legacy_disposition import build as legacy_build
 from uc.legacy_disposition import verify as legacy_verify
+from uc.manifest import ManifestError
 from uc.manifest import build as manifest_build
+from uc.manifest import mtime_diagnostics
 from uc.manifest import verify as manifest_verify
 from uc.manifest import README_PATH
+from uc.quality_report import build_report as quality_build_report
 from uc.receipt import sign, validate as receipt_validate
 from uc.revision import select as revision_select
 from uc.scenarios import build as scenarios_build
@@ -76,14 +83,24 @@ RECEIPTS_DIR = CONTROL_ROOT / "receipts"
 QUALITY_PATH = CONTROL_ROOT / "quality" / "quality_baseline.json"
 
 
-def _require_no_drift(check_mtime: bool = True) -> None:
+def _require_no_drift(check_mtime: bool = False) -> None:
+    """Drift guard for mutating subcommands.
+
+    Default semantics are SHA-256 + size: a clean checkout cannot reproduce
+    working-tree mtimes, so checkout time is never treated as source fact.
+    ``--mtime strict`` is the explicit legacy opt-in.
+    """
     if not MANIFEST_PATH.is_file():
         print(
             "DRIFT: machine manifest not built yet — run manifest-build first",
             file=sys.stderr,
         )
         sys.exit(1)
-    problems = manifest_verify(REPO_ROOT, MANIFEST_PATH, check_mtime=check_mtime)
+    try:
+        problems = manifest_verify(REPO_ROOT, MANIFEST_PATH, check_mtime=check_mtime)
+    except ManifestError as exc:
+        print(f"DRIFT: {exc}", file=sys.stderr)
+        sys.exit(1)
     if problems:
         for problem in problems:
             print(f"DRIFT: {problem}", file=sys.stderr)
@@ -108,22 +125,35 @@ def cmd_manifest_build(args: argparse.Namespace) -> int:
 
 
 def cmd_manifest_verify(args: argparse.Namespace) -> int:
-    check_mtime = getattr(args, "mtime", "strict") == "strict"
-    problems = manifest_verify(REPO_ROOT, MANIFEST_PATH, check_mtime=check_mtime)
+    check_mtime = getattr(args, "mtime", "off") == "strict"
+    try:
+        problems = manifest_verify(REPO_ROOT, MANIFEST_PATH, check_mtime=check_mtime)
+        notes = [] if check_mtime else mtime_diagnostics(REPO_ROOT, MANIFEST_PATH)
+    except ManifestError as exc:
+        print(f"DRIFT: {exc}")
+        return 1
     if problems:
         for problem in problems:
             print(f"DRIFT: {problem}")
         return 1
+    if check_mtime:
+        print("OK: all frozen inputs re-verified offline (hash+size+mtime)")
+        return 0
     print(
-        "OK: all frozen inputs re-verified offline"
-        if check_mtime
-        else "OK: frozen inputs re-verified (hash+size; mtime skipped — clean-checkout mode)"
+        "OK: frozen inputs re-verified (hash+size; mtime skipped — clean-checkout mode)"
     )
+    for note in notes[:5]:
+        print(f"NOTE: {note} (diagnostic only; --mtime strict enforces)")
+    if len(notes) > 5:
+        print(
+            f"NOTE: ... and {len(notes) - 5} more mtime difference(s) "
+            "(diagnostic only; --mtime strict enforces)"
+        )
     return 0
 
 
 def cmd_lock_acquire(args: argparse.Namespace) -> int:
-    _require_no_drift(getattr(args, "mtime", "strict") == "strict")
+    _require_no_drift(getattr(args, "mtime", "off") == "strict")
     try:
         record = acquire(LOCK_DIR, args.resource, args.owner, args.ttl)
     except LockConflict as exc:
@@ -227,7 +257,7 @@ def cmd_state_show(_args: argparse.Namespace) -> int:
 
 
 def cmd_state_update(args: argparse.Namespace) -> int:
-    _require_no_drift(getattr(args, "mtime", "strict") == "strict")
+    _require_no_drift(getattr(args, "mtime", "off") == "strict")
     from uc.strict_state import STATES, validate_transition
 
     if args.status not in STATES:
@@ -539,7 +569,7 @@ def closure_state_transform(
 
 
 def cmd_closure_advance(args: argparse.Namespace) -> int:
-    _require_no_drift(getattr(args, "mtime", "strict") == "strict")
+    _require_no_drift(getattr(args, "mtime", "off") == "strict")
     state = read_state(STATE_PATH)
     if state is None:
         print("machine state does not exist yet", file=sys.stderr)
@@ -761,7 +791,7 @@ def cmd_codegraph_verify(_args: argparse.Namespace) -> int:
 
 
 def cmd_env_freeze(args: argparse.Namespace) -> int:
-    _require_no_drift(getattr(args, "mtime", "strict") == "strict")
+    _require_no_drift(getattr(args, "mtime", "off") == "strict")
     try:
         payload_hash = env_freeze(
             REPO_ROOT, ENV_FREEZE_PATH, dirty_ignore=ENV_DIRTY_IGNORE
@@ -822,25 +852,97 @@ def cmd_quality_freeze(args: argparse.Namespace) -> int:
     return 0
 
 
+def _quality_report_from(
+    root: Path, baseline_path: Path, *, run_types: bool = False
+) -> tuple[dict | None, int | None]:
+    """Read an explicitly supplied baseline and build the quality report.
+
+    Returns ``(report, None)`` on success or ``(None, exit_code)`` when the
+    explicit input is missing or unreadable.  A damaged input is reported
+    and left exactly as it was — check-only commands never repair.
+    """
+    if not baseline_path.is_file():
+        print(
+            f"QUALITY-VIOLATION: baseline not found: {baseline_path}",
+            file=sys.stderr,
+        )
+        return None, 1
+    try:
+        frozen = json.loads(baseline_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(
+            f"QUALITY-VIOLATION: baseline unreadable: {baseline_path}: {exc}",
+            file=sys.stderr,
+        )
+        return None, 1
+    if not isinstance(frozen, dict):
+        print(
+            f"QUALITY-VIOLATION: baseline payload is not a JSON object: "
+            f"{baseline_path}",
+            file=sys.stderr,
+        )
+        return None, 1
+    return quality_build_report(root, frozen, run_types=run_types), None
+
+
+def _emit_quality_report(report: dict, *, as_json: bool) -> int:
+    if as_json:
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        return 1 if report["failures"] else 0
+    for note in report["diagnostics"]:
+        print(f"QUALITY-NOTE: {note}")
+    for failure in report["failures"]:
+        print(f"QUALITY-VIOLATION: {failure}")
+    if report["failures"]:
+        print(
+            f"FAILED: {len(report['failures'])} quality failure(s), "
+            f"{len(report['diagnostics'])} diagnostic(s)"
+        )
+        return 1
+    print(
+        "OK: quality report computed with no failures "
+        f"({len(report['diagnostics'])} diagnostic(s); historical thresholds "
+        "are reported, not gated)"
+    )
+    return 0
+
+
 def cmd_quality_verify(_args: argparse.Namespace) -> int:
-    """Recompute the baseline and enforce the five-dimension ratchet."""
+    """Recompute the quality baseline and report failures (exit 1) plus
+    diagnostics (never an exit gate)."""
     if not QUALITY_PATH.is_file():
         print(
             "quality baseline does not exist yet — run quality-freeze first",
             file=sys.stderr,
         )
         return 1
-    frozen = json.loads(QUALITY_PATH.read_text(encoding="utf-8"))
-    problems = quality_verify(REPO_ROOT, frozen)
-    if problems:
-        for problem in problems:
-            print(f"QUALITY-VIOLATION: {problem}")
+    report, failed = _quality_report_from(REPO_ROOT, QUALITY_PATH)
+    if report is None:
+        return int(failed)
+    return _emit_quality_report(report, as_json=False)
+
+
+def cmd_quality_report(args: argparse.Namespace) -> int:
+    """Quality report over isolated, explicit inputs — read-only.
+
+    ``--root`` and ``--baseline`` make the run independent of the
+    repository's production control state, which is what the offline tests
+    use.  Check-only execution writes zero files.
+    """
+    root = Path(args.root) if args.root else REPO_ROOT
+    baseline_path = Path(args.baseline) if args.baseline else QUALITY_PATH
+    if not root.is_dir():
+        print(
+            f"QUALITY-VIOLATION: root is not a directory: {root}",
+            file=sys.stderr,
+        )
         return 1
-    print(
-        "OK: quality baseline matches-or-improves the recomputed three-repo "
-        "state (types / coverage / complexity / hardcoding / dead callers)"
+    report, failed = _quality_report_from(
+        root, baseline_path, run_types=bool(args.run_types)
     )
-    return 0
+    if report is None:
+        return int(failed)
+    return _emit_quality_report(report, as_json=bool(args.json))
 
 
 def cmd_ci_gap(_args: argparse.Namespace) -> int:
@@ -877,7 +979,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--mtime",
         choices=("strict", "off"),
-        default="strict",
+        default="off",
         help="mtime off = clean-checkout mode (hash+size only)",
     )
     p.set_defaults(func=cmd_manifest_verify)
@@ -889,7 +991,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--mtime",
         choices=("strict", "off"),
-        default="strict",
+        default="off",
         help="mtime off = clean-checkout replay mode",
     )
     p.set_defaults(func=cmd_lock_acquire)
@@ -920,7 +1022,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--mtime",
         choices=("strict", "off"),
-        default="strict",
+        default="off",
         help="mtime off = clean-checkout replay mode",
     )
     p.set_defaults(func=cmd_state_update)
@@ -983,7 +1085,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--mtime",
         choices=("strict", "off"),
-        default="strict",
+        default="off",
         help="mtime off = clean-checkout replay mode",
     )
     p.set_defaults(func=cmd_closure_advance)
@@ -995,7 +1097,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--mtime",
         choices=("strict", "off"),
-        default="strict",
+        default="off",
         help="mtime off = clean-checkout replay mode",
     )
     p.set_defaults(func=cmd_env_freeze)
@@ -1025,6 +1127,32 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("quality-verify")
     p.set_defaults(func=cmd_quality_verify)
+
+    p = sub.add_parser(
+        "quality-report",
+        help="quality report from explicit isolated inputs (read-only)",
+    )
+    p.add_argument(
+        "--root",
+        default=None,
+        help="repository root to recompute from (default: this repository)",
+    )
+    p.add_argument(
+        "--baseline",
+        default=None,
+        help="baseline JSON to compare (default: the committed baseline)",
+    )
+    p.add_argument(
+        "--json",
+        action="store_true",
+        help="print the whole report as JSON on stdout",
+    )
+    p.add_argument(
+        "--run-types",
+        action="store_true",
+        help="also run the repository's real type command as a probe",
+    )
+    p.set_defaults(func=cmd_quality_report)
 
     p = sub.add_parser("ci-gap")
     p.set_defaults(func=cmd_ci_gap)

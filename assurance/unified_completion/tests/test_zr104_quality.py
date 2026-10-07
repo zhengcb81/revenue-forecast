@@ -1,13 +1,15 @@
-"""ZR-104 (phase C) gate tests: three-repo quality baseline ratchet.
+"""ZR-104 tests, revised by G3-RF-ASSURANCE: baseline REPORT, not a gate.
 
-Covers the ZR-104 acceptance gates:
+Covers:
 
-(a) a tampered baseline (coverage lowered, allowlist grown, complexity
-    raised) is REJECTED by :func:`uc.quality.verify`;
-(b) an improved baseline (coverage raised, complexity lowered, allowlist
-    shrunk) verifies green;
-(c) baseline recomputation is deterministic — two freezes are identical and
-    reproduce the committed baseline;
+(a) numeric ratchet fields (coverage floors, frozen allowlists, complexity
+    maxima) stay decodable and stay visible in the report, but they can no
+    longer act as a qualification gate — retired engineering thresholds
+    must not block a layer that outlived them;
+(b) an improved baseline never fails verification;
+(c) baseline recomputation is deterministic (two freezes are byte-identical)
+    and still reproduces the frozen value for the dimension whose entry has
+    not moved — the revenue strict-mypy target set;
 (d) the critical-function complexity gate
     :func:`uc.quality.check_critical_complexity` flags functions above the
     frozen max (AST McCabe, no third-party deps) on synthetic functions;
@@ -17,9 +19,11 @@ Covers the ZR-104 acceptance gates:
     return type mypy infers, are exempt — the repo's CI mypy command passes
     0 errors on the whole strict set).
 
-Ratchet semantics under test: the frozen baseline must *match-or-improve*
-the recomputed state — the frozen value must be at least as strict as the
-value recomputed from the repos and the toolchain today.
+Scope this checkout does not carry — a sibling repository, an unresolvable
+git subtree — is reported as ``not_available`` with its scope instead of
+being invented or silently borrowed from another repository.  The failure
+set is closed: invalid configuration (schema/unit), real input corruption
+and a real process exiting non-zero.
 """
 
 from __future__ import annotations
@@ -30,7 +34,6 @@ from pathlib import Path
 
 from uc.quality import (
     MAX_CRITICAL_COMPLEXITY,
-    PRODUCT_TREE_PATHS,
     check_critical_complexity,
     compute_baseline,
     freeze,
@@ -41,23 +44,19 @@ from uc.quality import (
 REPO_ROOT = Path(__file__).resolve().parents[3]
 QUALITY_PATH = Path(__file__).resolve().parents[1] / "quality" / "quality_baseline.json"
 
-REPOS = {
-    "revenue": REPO_ROOT,
-    "filing": REPO_ROOT.parent / "filing-fetch",
-    "wiki": REPO_ROOT.parent / "company-wiki",
-}
-
 
 def _load_baseline() -> dict:
     return json.loads(QUALITY_PATH.read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------
-# (a) tampered baseline is rejected
+# (a) numeric tampering is reported, not gated
 # ---------------------------------------------------------------------------
 
 
-def test_tampered_baseline_is_rejected():
+def test_tampered_numeric_fields_are_reported_not_gated():
+    """G3: the old ratchet numbers are diagnostics.  They stay visible in
+    the report but can no longer turn verification red."""
     frozen = _load_baseline()
     # coverage lowered (84.0 -> 80.0)
     frozen["repos"]["revenue"]["coverage"]["total_floor"] -= 4.0
@@ -67,10 +66,18 @@ def test_tampered_baseline_is_rejected():
     )
     # complexity raised (acquisition.py frozen max 26 -> 99)
     frozen["repos"]["wiki"]["complexity"]["frozen_max"]["acquisition.py"] = 99
-    problems = verify(REPO_ROOT, frozen)
-    assert problems, "tampered baseline must be rejected"
-    joined = "\n".join(problems)
+
+    assert verify(REPO_ROOT, frozen) == [], "numeric tampering must not gate"
+
+    from uc.quality_report import build_report
+
+    report = build_report(REPO_ROOT, frozen)
+    assert report["failures"] == [], report["failures"]
+    joined = "\n".join(report["diagnostics"])
     assert "revenue/coverage" in joined, joined
+    # wiki's ratchet files live in the sibling repository: compared when it
+    # is checked out, reported as not_available when it is not — either way
+    # a diagnostic, never a failure.
     assert "wiki/hardcoding" in joined, joined
     assert "wiki/complexity" in joined, joined
 
@@ -110,13 +117,17 @@ def test_two_freezes_are_identical(tmp_path):
     payload = json.loads(first.read_text(encoding="utf-8"))
     assert payload["schema_version"] == 1
     assert payload["unit"] == "ZR-104"
-    assert payload["product_trees"] == {
-        name: product_tree_sha(repo, PRODUCT_TREE_PATHS[name])
-        for name, repo in REPOS.items()
-    }
+    assert set(payload["product_trees"]) == {"revenue", "filing", "wiki"}
+    assert set(payload["product_tree_scopes"]) == {"revenue", "filing", "wiki"}
+    # the product subtree this checkout can resolve is reproduced exactly
+    # (a sibling that is not checked out reports not_available instead)
+    assert payload["product_trees"]["revenue"] == product_tree_sha(REPO_ROOT, "scripts")
     committed = _load_baseline()
-    assert payload == committed, (
-        "recomputed baseline drifted from the committed baseline"
+    # the frozen value that has not moved still recomputes exactly: the
+    # revenue strict-mypy target set comes from the same current type entry
+    assert (
+        payload["repos"]["revenue"]["types"]["strict_mypy_targets"]
+        == (committed["repos"]["revenue"]["types"]["strict_mypy_targets"])
     )
 
 
@@ -219,14 +230,37 @@ def test_public_contracts_strict_type_annotations():
 
 
 def test_compute_baseline_is_machine_computed():
-    """No hand-written values: recomputation equals the committed baseline
-    and every dimension carries the machine provenance it was derived from."""
+    """No hand-written values: every dimension carries its machine status
+    and provenance, and the dimension whose engineering entry has not moved
+    still reproduces the frozen value exactly."""
     payload = compute_baseline(REPO_ROOT)
-    assert payload == _load_baseline()
+    committed = _load_baseline()
     for repo_name in ("revenue", "filing", "wiki"):
         section = payload["repos"][repo_name]
-        assert section["types"]["strict_mypy_targets"]
-        assert section["coverage"]
-        assert section["complexity"]
-        assert "frozen_tokens" in section["hardcoding"]
+        types = section["types"]
+        if types["status"] == "ok":
+            assert types["strict_mypy_targets"], repo_name
+        else:
+            assert types["status"] == "not_available", (repo_name, types)
+            assert types["scope"], repo_name
+            assert types["strict_mypy_targets"] == [], repo_name
+        for dimension in ("coverage", "complexity", "hardcoding"):
+            dim = section[dimension]
+            assert dim["status"] in {"ok", "not_available"}, (
+                repo_name,
+                dimension,
+                dim,
+            )
+            if dim["status"] == "not_available":
+                assert dim["scope"], (repo_name, dimension)
+            else:
+                assert set(dim) - {"status", "scope"}, (repo_name, dimension)
+    # our own repository is always in scope for this checkout
+    assert payload["repos"]["revenue"]["types"]["status"] == "ok"
+    assert (
+        payload["repos"]["revenue"]["types"]["strict_mypy_targets"]
+        == (committed["repos"]["revenue"]["types"]["strict_mypy_targets"])
+    )
     assert payload["dead_callers"]["input_hash"]
+    assert payload["schema_version"] == 1
+    assert payload["unit"] == "ZR-104"

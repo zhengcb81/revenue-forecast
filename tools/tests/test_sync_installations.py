@@ -43,6 +43,18 @@ class SyncInstallationTests(unittest.TestCase):
 
         self.assertIn("config/config.txt", result)
 
+    def test_manifest_excludes_repository_engineering_tests(self) -> None:
+        """G3: the package is the runtime closure of the skill entry points.
+        ``tests/`` holds repository engineering tests that read repo-only
+        ``tools/``, so it is not part of the distribution package — the
+        fixture still creates it to prove it is left out."""
+        with TemporaryDirectory() as temporary:
+            skill = self._skill(Path(temporary) / "skill", "one")
+            result = manifest(skill)
+
+        self.assertNotIn("tests/tests.txt", result)
+        self.assertIn("SKILL.md", result)
+
     def test_installed_output_is_preserved_and_ignored_by_diff(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -75,7 +87,9 @@ class SyncInstallationTests(unittest.TestCase):
             import_installation(source, canonical)
 
             self.assertEqual(manifest(canonical), manifest(source))
-            self.assertEqual(repository_only.read_text(encoding="utf-8"), "KEEP = True\n")
+            self.assertEqual(
+                repository_only.read_text(encoding="utf-8"), "KEEP = True\n"
+            )
 
     def test_duplicate_destinations_are_applied_once(self) -> None:
         with TemporaryDirectory() as temporary:

@@ -156,16 +156,25 @@ def test_c4_type_gate_reports_the_real_mypy_result():
 
 
 def test_c5_manifest_verifies_offline():
+    """C5 in a clean checkout: the default verification is SHA-256 + size.
+
+    A fresh worktree cannot reproduce the frozen working-tree mtimes, so
+    checkout time must not be treated as source fact; mtime differences are
+    reported as non-fatal diagnostics instead of turning this red.
+    """
     proc = subprocess.run(
         [sys.executable, "-m", "uc.cli", "manifest-verify"],
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
         timeout=300,
         cwd=str(UC_ROOT),
     )
     out = proc.stdout + proc.stderr
     assert proc.returncode == 0 and "OK" in out, out[-300:]
+    assert "DRIFT" not in out, out[-300:]
+    assert "mtime skipped" in out, out[-300:]
 
 
 def test_c5_state_hash_deterministic():

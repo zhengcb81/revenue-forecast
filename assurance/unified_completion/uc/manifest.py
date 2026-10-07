@@ -15,6 +15,14 @@ other before they are trusted: input_snapshot.md must match the hash recorded
 in PLAN_MANIFEST §3, and the zijin PLAN_MANIFEST.md must match the hash
 recorded in input_snapshot.md.  Every entry is frozen as
 ``path, size, mtime, SHA-256`` and re-verifiable offline.
+
+Verification semantics (G3-RF-ASSURANCE): the default check is **SHA-256 +
+size** — a git checkout cannot reproduce working-tree mtimes and checkout
+time is not source fact.  mtime stays available as a non-fatal diagnostic
+(:func:`mtime_diagnostics`) and as an explicit legacy strict opt-in
+(``check_mtime=True`` / ``--mtime strict``).  Entries whose path leaves the
+repository root are rejected.  Every read entry point is read-only:
+verification never repairs a damaged manifest.
 """
 
 from __future__ import annotations
@@ -342,71 +350,119 @@ def _file_mtime_str(path: Path) -> str:
     return datetime.fromtimestamp(path.stat().st_mtime).strftime(MTIME_FMT)
 
 
-def verify(
-    repo_root: Path,
-    manifest_path: Path,
-    check_mtime: bool = True,
-) -> list[str]:
-    """Re-verify every frozen input offline.  Returns drift descriptions
-    (empty list = no drift).  Raises ManifestError on structural problems.
+def _resolve_entry_path(repo_root: Path, rel_path: Any) -> Path | None:
+    """Resolve a manifest-relative path, refusing anything that leaves the
+    repository root (absolute paths, drive-relative paths, ``..`` escapes).
 
-    ``check_mtime=False`` skips mtime equality (hash + size still checked):
-    git checkouts cannot reproduce working-tree mtimes, so clean-checkout
-    re-verification runs in this mode; the strict mode remains the
-    original-tree tamper-evidence gate.
+    Returns ``None`` when the entry must be rejected; the caller reports a
+    named problem so verification stays non-zero instead of silently
+    reading a file outside the repository.
     """
-    payload: dict[str, Any] = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(rel_path, str) or not rel_path:
+        return None
+    candidate = Path(rel_path.replace("\\", "/"))
+    if candidate.is_absolute() or candidate.drive or ".." in candidate.parts:
+        return None
+    root = repo_root.resolve()
+    try:
+        resolved = (root / candidate).resolve()
+    except (OSError, ValueError):
+        return None
+    try:
+        resolved.relative_to(root)
+    except ValueError:
+        return None
+    return resolved
+
+
+def _load_manifest(manifest_path: Path) -> dict[str, Any]:
+    """Read the manifest itself.  Structural problems raise
+    :class:`ManifestError`; nothing here ever repairs the input."""
+    try:
+        raw = manifest_path.read_text(encoding="utf-8")
+    except FileNotFoundError as exc:
+        raise ManifestError(f"manifest missing: {manifest_path}") from exc
+    except OSError as exc:
+        raise ManifestError(f"manifest unreadable: {manifest_path}: {exc}") from exc
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ManifestError(
+            f"manifest is not valid JSON: {manifest_path}: {exc}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise ManifestError(f"manifest payload must be a JSON object: {manifest_path}")
     if payload.get("schema_version") != 1:
         raise ManifestError(
             f"unsupported manifest schema {payload.get('schema_version')!r}"
         )
+    return payload
+
+
+def _collect(
+    repo_root: Path, payload: dict[str, Any], *, check_mtime: bool
+) -> tuple[list[str], list[str]]:
+    """Re-verify every frozen input.
+
+    Returns ``(problems, mtime_notes)``.  Hash/size/missing/escape problems
+    always land in ``problems``; mtime differences land in ``problems`` only
+    in the explicit strict mode and otherwise stay in ``mtime_notes`` as
+    non-fatal diagnostics.
+    """
     problems: list[str] = []
+    mtime_notes: list[str] = []
 
     for source in payload.get("sources", []):
-        path = repo_root / source["rel_path"]
+        rel = source.get("rel_path") if isinstance(source, dict) else None
+        path = _resolve_entry_path(repo_root, rel)
+        if path is None:
+            problems.append(f"path escapes repository root: {rel!r}")
+            continue
         try:
             actual = sha256_file(path)
         except FileNotFoundError:
-            problems.append(f"spec source missing: {source['rel_path']}")
+            problems.append(f"spec source missing: {rel}")
             continue
         if actual != source["sha256"]:
             problems.append(
-                f"spec source drift: {source['rel_path']} "
-                f"({source['sha256'][:12]}… -> {actual[:12]}…)"
+                f"spec source drift: {rel} ({source['sha256'][:12]}… -> {actual[:12]}…)"
             )
 
     for entry in payload.get("entries", []):
-        path = repo_root / entry["rel_path"]
+        rel = entry.get("rel_path") if isinstance(entry, dict) else None
+        path = _resolve_entry_path(repo_root, rel)
+        if path is None:
+            problems.append(f"path escapes repository root: {rel!r}")
+            continue
         try:
             actual = sha256_file(path)
         except FileNotFoundError:
-            problems.append(f"frozen input missing: {entry['rel_path']}")
+            problems.append(f"frozen input missing: {rel}")
             continue
         if actual != entry["sha256"]:
             problems.append(
-                f"hash drift: {entry['rel_path']} "
-                f"({entry['sha256'][:12]}… -> {actual[:12]}…)"
+                f"hash drift: {rel} ({entry['sha256'][:12]}… -> {actual[:12]}…)"
             )
         size = entry.get("size")
         if size is not None:
             try:
                 if path.stat().st_size != int(size):
                     problems.append(
-                        f"size drift: {entry['rel_path']} "
-                        f"({size} -> {path.stat().st_size})"
+                        f"size drift: {rel} ({size} -> {path.stat().st_size})"
                     )
             except OSError:
-                problems.append(f"frozen input unreadable: {entry['rel_path']}")
+                problems.append(f"frozen input unreadable: {rel}")
         mtime = entry.get("mtime")
-        if mtime and check_mtime:
+        if mtime:
             try:
                 if _file_mtime_str(path) != mtime:
-                    problems.append(
-                        f"mtime drift: {entry['rel_path']} "
-                        f"({mtime} -> {_file_mtime_str(path)})"
-                    )
+                    note = f"mtime drift: {rel} ({mtime} -> {_file_mtime_str(path)})"
+                    if check_mtime:
+                        problems.append(note)
+                    else:
+                        mtime_notes.append(note)
             except OSError:
-                problems.append(f"frozen input unreadable: {entry['rel_path']}")
+                problems.append(f"frozen input unreadable: {rel}")
 
     readme_hash = payload.get("control_page_sha256")
     if readme_hash:
@@ -420,4 +476,36 @@ def verify(
                 f"control page drift: {README_PATH} "
                 f"({readme_hash[:12]}… -> {(actual_readme or 'missing')[:12]}…)"
             )
+    return problems, mtime_notes
+
+
+def verify(
+    repo_root: Path,
+    manifest_path: Path,
+    check_mtime: bool = False,
+) -> list[str]:
+    """Re-verify every frozen input offline.  Returns drift descriptions
+    (empty list = no drift).  Raises :class:`ManifestError` on structural
+    problems (missing, unreadable or non-JSON manifest, unsupported schema).
+
+    Default semantics are **SHA-256 + size**: a clean git checkout cannot
+    reproduce working-tree mtimes, so checkout time is never treated as
+    source fact.  ``check_mtime=True`` is the explicit legacy strict opt-in;
+    in the default mode mtime differences are still available from
+    :func:`mtime_diagnostics` as non-fatal diagnostics.
+
+    Read-only: verification never repairs, rebuilds or re-freezes anything.
+    """
+    payload = _load_manifest(manifest_path)
+    problems, _ = _collect(repo_root, payload, check_mtime=check_mtime)
     return problems
+
+
+def mtime_diagnostics(repo_root: Path, manifest_path: Path) -> list[str]:
+    """mtime differences between the manifest and the working tree.
+
+    Diagnostic only — never part of the default exit semantics.
+    """
+    payload = _load_manifest(manifest_path)
+    _, notes = _collect(repo_root, payload, check_mtime=False)
+    return notes

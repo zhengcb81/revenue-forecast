@@ -1,4 +1,22 @@
-"""Hash-check or atomically synchronize the installable revenue skill."""
+"""Hash-check or atomically synchronize the installable revenue skill.
+
+Packaging responsibility (G3-RF-ASSURANCE): the package is delimited by what
+the skill's own entry points actually need — ``SKILL.md``, ``agents/``,
+``config/``, ``references/`` and ``scripts/``.  Repository engineering
+controls (``tools/``, ``tests/``, ``assurance/``, ``audit_review/``,
+``.github/``) stay in the repository: an installation that was byte-equal
+to a copy of them was never thereby usable, and copying the engineering
+control plane into every installation is not a fix.  A static closure scan
+of the shipped runtime confirms nothing under it imports or opens
+``tests/`` or ``tools/``.
+
+``check`` (the default) never writes.  An explicit ``--apply`` updates only
+the files this package owns, staging them under a tmp directory and
+replacing them one at a time, so unknown files, user configuration,
+``output`` and any repository-only residue already on disk survive.
+``installation_diff`` compares the responsible runtime only: residue is
+neither drift nor a licence to keep shipping it.
+"""
 
 from __future__ import annotations
 
@@ -13,7 +31,10 @@ from pathlib import Path
 
 SKILL_NAME = "revenue-forecast"
 ROOT_FILES = (".gitignore", "CHANGELOG.md", "SKILL.md")
-ROOT_DIRECTORIES = ("agents", "config", "references", "scripts", "tests")
+# The runtime closure of the skill entry points.  ``tests/`` is deliberately
+# absent: the repository's engineering tests read repo-only ``tools/`` and
+# are not part of a distribution package.
+ROOT_DIRECTORIES = ("agents", "config", "references", "scripts")
 IGNORED_PARTS = {"__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
 PRESERVED_INSTALLATION_DIRECTORIES = {"output"}
 # Phase 6 B3 (F-08): every supported install root is a default check target so
@@ -26,7 +47,12 @@ DEFAULT_DESTINATIONS = (
 
 
 def installable_files(root: Path) -> list[Path]:
-    """Return the closed set of files that belongs in an installed copy."""
+    """Return the closed set of files this skill package owns.
+
+    That set is the runtime closure of the skill's entry points: the root
+    files plus ``agents/``, ``config/``, ``references/`` and ``scripts/``.
+    Repository-only engineering controls are never part of it.
+    """
     files = [root / name for name in ROOT_FILES]
     for directory in ROOT_DIRECTORIES:
         base = root / directory
@@ -64,6 +90,14 @@ def _installed_manifest(root: Path) -> dict[str, str]:
 
 
 def installation_diff(canonical: Path, destination: Path) -> list[str]:
+    """Drift of the RESPONSIBLE runtime only.
+
+    Only files this package owns are compared.  Anything else in the
+    installation — old repository-only residue, user configuration,
+    ``output`` — is outside the comparison: it is neither drift nor a
+    licence to keep shipping it.  Owned files that are missing or whose
+    bytes differ are reported.
+    """
     expected = manifest(canonical)
     target = destination / SKILL_NAME
     if not target.is_dir():
@@ -71,11 +105,18 @@ def installation_diff(canonical: Path, destination: Path) -> list[str]:
         # fresh machines have no copies; pre-commit on the author machine does).
         return []
     actual = _installed_manifest(target)
-    keys = sorted(set(expected) | set(actual))
-    return [key for key in keys if expected.get(key) != actual.get(key)]
+    return sorted(key for key, digest in expected.items() if actual.get(key) != digest)
 
 
 def sync_installation(canonical: Path, destination: Path) -> None:
+    """Update the files this package owns, in place, through a tmp stage.
+
+    Every owned file is copied into a staging directory under ``destination``
+    first and then swapped in one atomic ``os.replace``.  Nothing else in the
+    installation is written or removed: unknown files, user configuration,
+    ``output`` and any repository-only residue left by an older installation
+    all survive, and there is no whole-directory replacement.
+    """
     destination.mkdir(parents=True, exist_ok=True)
     target = destination / SKILL_NAME
     with tempfile.TemporaryDirectory(
@@ -88,25 +129,18 @@ def sync_installation(canonical: Path, destination: Path) -> None:
             output = staged / relative
             output.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, output)
-        backup = destination / f".{SKILL_NAME}-backup-{os.getpid()}"
-        if backup.exists():
-            shutil.rmtree(backup)
-        if target.exists():
-            os.replace(target, backup)
-        try:
-            os.replace(staged, target)
-            if backup.exists():
-                for directory in PRESERVED_INSTALLATION_DIRECTORIES:
-                    preserved = backup / directory
-                    restored = target / directory
-                    if preserved.exists() and not restored.exists():
-                        os.replace(preserved, restored)
-        except Exception:
-            if backup.exists() and not target.exists():
-                os.replace(backup, target)
-            raise
-        if backup.exists():
-            shutil.rmtree(backup)
+        target.mkdir(parents=True, exist_ok=True)
+        for source in staged.rglob("*"):
+            if not source.is_file():
+                continue
+            final = target / source.relative_to(staged)
+            final.parent.mkdir(parents=True, exist_ok=True)
+            temporary = final.with_name(final.name + f".{os.getpid()}.syncing")
+            try:
+                shutil.copy2(source, temporary)
+                os.replace(temporary, final)
+            finally:
+                temporary.unlink(missing_ok=True)
 
 
 def import_installation(source: Path, canonical: Path) -> None:
