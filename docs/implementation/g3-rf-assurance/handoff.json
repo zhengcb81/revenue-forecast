@@ -1,0 +1,179 @@
+{
+  "schema_version": "g3-handoff/1",
+  "lane": "G3-RF-ASSURANCE",
+  "base_commit": "1a2f9428a599504eb8355fcaebf86c6cbcaccbb3",
+  "head_commit": "e9f9405936c8b123b17592538d1bf70f76d8a6a5",
+  "branch": "codex/g3-rf-assurance",
+  "worktree": "C:/Users/郑曾波/Projects/_g3/RF-ASSURANCE/revenue-forecast",
+  "commits": [
+    "e9f9405936c8b123b17592538d1bf70f76d8a6a5"
+  ],
+  "changed_paths": [
+    "SKILL.md",
+    "assurance/unified_completion/tests/test_g3_manifest_checkout.py",
+    "assurance/unified_completion/tests/test_g3_quality_reporting.py",
+    "assurance/unified_completion/tests/test_manifest.py",
+    "assurance/unified_completion/tests/test_zr104_quality.py",
+    "assurance/unified_completion/uc/cli.py",
+    "assurance/unified_completion/uc/manifest.py",
+    "assurance/unified_completion/uc/quality.py",
+    "assurance/unified_completion/uc/quality_report.py",
+    "docs/implementation/g3-rf-assurance/HANDOFF.md",
+    "docs/implementation/g3-rf-assurance/findings.md",
+    "docs/implementation/g3-rf-assurance/handoff.json",
+    "docs/implementation/g3-rf-assurance/progress.md",
+    "docs/implementation/g3-rf-assurance/runtime_closure_scan.py",
+    "docs/implementation/g3-rf-assurance/task_plan.md",
+    "tests/test_ca303_arch_quality.py",
+    "tests/test_g3_assurance_cli.py",
+    "tools/sync_installations.py",
+    "tools/tests/test_g3_skill_package.py",
+    "tools/tests/test_sync_installations.py"
+  ],
+  "tests": [
+    {
+      "command": "python -m pytest -q -p no:cacheprovider --basetemp=.planning/g3-rf-assurance/scratch/pytest-final assurance/unified_completion/tests/test_zr104_quality.py assurance/unified_completion/tests/test_manifest.py assurance/unified_completion/tests/test_g3_quality_reporting.py assurance/unified_completion/tests/test_g3_manifest_checkout.py tools/tests/test_sync_installations.py tools/tests/test_g3_skill_package.py tests/test_ca303_arch_quality.py tests/test_g3_assurance_cli.py",
+      "exit_code": 0,
+      "seconds": 20,
+      "passed": 74,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python -m ruff check assurance/unified_completion/uc/{quality,quality_report,manifest,cli}.py assurance/unified_completion/tests/{test_zr104_quality,test_manifest,test_g3_quality_reporting,test_g3_manifest_checkout}.py tools/sync_installations.py tools/tests/{test_sync_installations,test_g3_skill_package}.py tests/{test_ca303_arch_quality,test_g3_assurance_cli}.py",
+      "exit_code": 0,
+      "seconds": 2,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python -m pytest -q -p no:cacheprovider assurance/unified_completion/tests/",
+      "exit_code": 1,
+      "seconds": 238,
+      "passed": 228,
+      "failed": 13,
+      "skipped": 0
+    },
+    {
+      "command": "python -m pytest -q -p no:cacheprovider tools/tests/",
+      "exit_code": 0,
+      "seconds": 8,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python -m pytest -q -p no:cacheprovider tests/test_zr905_audit_self_test.py tests/test_zr907_drift_patrol.py tests/test_rf_coverage_report.py tests/test_rf_release_checklist.py tests/test_ci_smoke_plan.py tests/test_fc1004_platform.py tests/test_ca301_clean_checkout.py",
+      "exit_code": 1,
+      "seconds": 46,
+      "passed": 56,
+      "failed": 7,
+      "skipped": 0
+    },
+    {
+      "command": "python tools/pre_push_gate.py",
+      "exit_code": 1,
+      "seconds": 8,
+      "passed": 105,
+      "failed": 2,
+      "skipped": 0
+    }
+  ],
+  "behavior_changes": [
+    "uc.quality.strict_targets now resolves the revenue type set by following the CI workflow's delegation to tools/pre_push_gate.py (AST-read, never executed); the workflow is no longer required to inline 'python -m mypy'. Filing/wiki keep their inline workflow definition. The resolved revenue set is still exactly the 7 frozen files.",
+    "uc.quality.compute_baseline reports absent scope instead of raising: a sibling repository or an unresolvable git subtree yields {'status':'not_available','scope':...} (product_tree -> None plus product_tree_scopes), never a fabricated zero set and never a copy of revenue's set. A revenue repository that IS present but unreadable yields status='error' and becomes a failure.",
+    "uc.quality.verify now returns FAILURES only (closed set: invalid schema/unit config, unreadable in-scope revenue inputs, unreadable codegraph artifact). Coverage floors, complexity maxima, frozen allowlists, dead-caller counts, product-tree drift, sibling HEADs and old workflow text moved to uc.quality_report diagnostics and can no longer block.",
+    "New uc/quality_report.py exposes build_report(root, frozen, run_types=False) -> {schema_version, unit, root, failures, diagnostics, scope, baseline}, run_probe(cmd) which judges a real process ONLY by return code (exit 2 with no 'FAILED' text is a failure), and type_check_command().",
+    "uc.manifest.verify default flipped to check_mtime=False (SHA-256 + size). New mtime_diagnostics() returns the same differences as non-fatal notes. Path-escaping entries (absolute, drive-relative, '..') are rejected; a missing/non-JSON/schema-less manifest raises ManifestError instead of a raw traceback. Verification is read-only and never repairs.",
+    "uc/cli: all five '--mtime' flags and _require_no_drift default to 'off'; 'manifest-verify' prints OK plus up to 5 'NOTE: mtime drift ... (diagnostic only; --mtime strict enforces)' lines; ManifestError exits 1 cleanly; new 'quality-report --root --baseline --json --run-types' runs from isolated explicit inputs and writes zero files; 'quality-verify' prints QUALITY-NOTE diagnostics (never an exit gate) and QUALITY-VIOLATION failures (exit 1).",
+    "tools/sync_installations.ROOT_DIRECTORIES dropped 'tests' -> the package is now the runtime closure (3 root files + agents/config/references/scripts = 75 files). installation_diff compares only the owned runtime (residue/user files are neither drift nor a usage permit). sync_installation stages under a tmp dir and swaps files one by one, preserving unknown files, user configuration, output and old repository-only residue; no whole-directory replacement.",
+    "SKILL.md gained an 'Installation and repository layout' section describing the user-skill vs repository-engineering-tool responsibility split; research methods and source-evidence rules untouched."
+  ],
+  "compatibility": [
+    "Public import API preserved: uc.quality.{freeze, verify, strict_targets, compute_baseline, check_critical_complexity, product_tree_sha, git_head, MAX_CRITICAL_COMPLEXITY, PRODUCT_TREE_PATHS, SCHEMA_VERSION, UNIT, REPO_ORDER, DEFAULT_REPOS, FROZEN_AT_UTC, NEW_FILE_MAX} and uc.quality._revenue_coverage (AST reader asserted by tests/test_rf_coverage_report.py and documented in tools/run_coverage_gates.py).",
+    "uc.manifest.verify keeps its positional signature; check_mtime=True still selects the legacy strict behaviour used by tests/test_zr905_audit_self_test.py:209/217 and tests/test_zr907_drift_patrol.py:79 (both already pass it explicitly).",
+    "sync_installations installable_files/manifest/installation_diff/sync_installation/import_installation/unique_destinations/main keep their signatures; main without --apply remains read-only (check-only zero writes); --apply/--print-manifest/--import-from/--canonical/--destination unchanged.",
+    "quality-freeze still CAS-writes the baseline and refuses overwrite without --force (exit 2). The committed quality_baseline.json was NOT re-frozen and NOT modified; audit_review/**, frozen control assets, tools/pre_push_gate.py, .github/workflows/*, .githooks/* and the G2 tool suite were not touched.",
+    "tests/test_fc1004_platform.py::test_install_sync_gate_detects_drift moved from failing at base to passing; tests/test_zr1001_release_readiness.py and tests/test_rf_release_checklist.py were not modified.",
+    "Both responsibility-test trees can now run in one pytest session: test_manifest.py resolves REPO_ROOT locally instead of importing the shadowed 'conftest' module."
+  ],
+  "protected_state": {
+    "owner_logs_untouched": [
+      "assurance/runs/daily_alert.jsonl",
+      "assurance/runs/weekly_alert.jsonl",
+      "assurance/runs/weekly_manifest.json"
+    ],
+    "frozen_control_untouched": [
+      "assurance/unified_completion/quality/quality_baseline.json",
+      "assurance/unified_completion/manifests/plan_inputs.json",
+      "assurance/unified_completion/state.json",
+      "assurance/unified_completion/codegraph/codegraph_freeze.json",
+      "audit_review/**"
+    ],
+    "engineering_control_untouched": [
+      "tools/pre_push_gate.py",
+      "tools/release_readiness.py",
+      "tools/release_checklist.py",
+      "tools/final_ratchet.py",
+      "tools/run_coverage_gates.py",
+      "tools/drift_patrol.py",
+      ".github/workflows/quality.yml",
+      ".githooks/pre-push",
+      ".githooks/pre-commit"
+    ],
+    "no_refreeze_or_history_rewrite": "neither the frozen quality baseline nor any frozen manifest/spec table was re-frozen, CAS-replaced or edited to make a failure disappear"
+  },
+  "cleanup": {
+    "roots": [
+      "C:/Users/郑曾波/Projects/_g3/RF-ASSURANCE/revenue-forecast/.planning/g3-rf-assurance/scratch"
+    ],
+    "restored": true
+  },
+  "external_effects": {
+    "model_posts": 0,
+    "downloads": 0,
+    "production_writes": 0,
+    "installation_writes": 0
+  },
+  "remaining": [
+    "scripts/revenue_forecast.py:73-95 (--version branch) still hard-codes _root_directories = {agents, config, references, scripts, tests} with a comment saying it mirrors tools/sync_installations.py. Measured after this lane: canonical --version prints manifest_sha256=c58de2c159dcfcf5, a package built from the new set prints 76b37ec851b558eb, so tests/test_zr804_platform_shape.py::test_installed_copy_executes_with_canonical_identity goes red once the new package is synced. File is outside this lane's write set (forecast runtime); MAIN must drop 'tests' from that set literal.",
+    "tests/test_zr804_platform_shape.py:169-180 runs sync_installations.py --apply against ~/.agents and ~/.codex; it was deliberately NOT run in this lane. MAIN should either keep it (after the fix above) or point it at a tmp destination.",
+    "assurance/unified_completion/README.md:21-22,35 still documents mtime as the default strict check; outside this lane's write set.",
+    "references/{extended-models,input-construction,model-library,schema-migration-3.6-to-3.7}.md still point contributors at tests/... files that no longer ship in an installation (documentation only, no runtime import).",
+    "The pre-existing conftest-name collision remains for the other 11 assurance/unified_completion tests that do 'from conftest import REPO_ROOT' when both test trees share one pytest session; only test_manifest.py (part of this lane's responsibility command) was made self-sufficient.",
+    "pre_push_gate reports 2 failures (tests/test_p5_source_default_cli_e2e.py needs ../filing-fetch and ../company-wiki relative to this exclusive worktree). Identical at base commit; sibling repositories cannot be created here because writing other repositories is forbidden by the card. ruff and mypy inside the same gate are green.",
+    "13 failures in the full assurance/unified_completion suite and 7 in the affected root suite were each reproduced at the base commit with git stash and are pre-existing (test_receipt_shas, test_zr001_drift_ledger, test_zr102_t1_runner, test_zr105_ci_contract, test_zr907_drift_patrol, test_rf_release_checklist, test_ca301_clean_checkout). Listed, not widened into.",
+    "The three installed copies were already 24 files in DIFF before this lane; no --apply was performed on them."
+  ],
+  "main_integration": {
+    "cli_changes": [
+      "uc.cli 'manifest-verify' default is now --mtime off (SHA-256 + size) with mtime printed as NOTE diagnostics; --mtime strict remains the explicit legacy opt-in and is what turns a fresh checkout red.",
+      "uc.cli lock-acquire / state-update / closure-advance / env-freeze / _require_no_drift default to the same SHA+size drift guard (their '--mtime' defaults flipped strict -> off).",
+      "uc.cli gained 'quality-report --root <dir> --baseline <json> [--json] [--run-types]' (read-only, check-only zero writes).",
+      "uc.cli 'quality-verify' now prints QUALITY-NOTE (diagnostics, never an exit gate) and QUALITY-VIOLATION (failures, exit 1); previously any ratchet difference exited 1.",
+      "exit codes unchanged: 0 ok, 1 drift/failed verification, 2 CAS/lock conflict, 3 usage."
+    ],
+    "runtime_file_set": [
+      ".gitignore",
+      "CHANGELOG.md",
+      "SKILL.md",
+      "agents/**",
+      "config/**",
+      "references/**",
+      "scripts/**"
+    ],
+    "old_engineering_residues": [
+      "scripts/revenue_forecast.py --version _root_directories still contains 'tests' (out-of-boundary mirror constant; wiring item W1 in HANDOFF.md section 3).",
+      "assurance/unified_completion/README.md still documents the old strict-mtime default (W3).",
+      "Four references/*.md files still name tests/ paths as contributor guidance (W4).",
+      "Existing installations keep their repository-only tests/ residue after the next sync by design (preserved unknown files); it is neither reported as drift nor covered by the comparison (W5 note in HANDOFF.md section 3)."
+    ],
+    "installation_actions": [
+      "1) Land W1 (drop 'tests' from scripts/revenue_forecast.py _root_directories) before any --apply, otherwise the --version identity check diverges.",
+      "2) Then run 'python tools/sync_installations.py' (read-only) to confirm the owned runtime matches ~/.agents, ~/.codex and the ~/.claude -> ~/.agents symlinked target (already deduplicated by unique_destinations).",
+      "3) Only then 'python tools/sync_installations.py --apply': the new targeted sync updates owned files and preserves unknown files, user configuration and output.",
+      "4) Optionally delete the now-unowned tests/ residue in each installation explicitly; the checker will not treat it as drift either way."
+    ]
+  }
+}
