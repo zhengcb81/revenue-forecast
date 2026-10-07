@@ -10,13 +10,13 @@ gate; this suite closes the remaining gaps:
   sibling   without explicit --company-wiki-config the chain FAILS CLOSED
              (structured upstream error) — it must never silently resolve
              a hard-coded sibling location.
-  installed every synced installation copy (.agents/.codex) executes as an
+  installed each isolated installation copy (agents/claude/codex) executes as an
              entrypoint and reports the SAME engine version + manifest hash
              as the canonical tree (R4.2 drift made visible at runtime).
   portable  active production scripts carry no Windows-only constructs
              (os.system / process-attribute structs) — Linux semantic parity.
 
-Zero production changes; hermetic T1 (installed-copy probe is read-only).
+Zero production changes; hermetic T1 (installed-copy probe writes only tmp_path).
 """
 
 from __future__ import annotations
@@ -41,10 +41,6 @@ sys.path.insert(0, str(FILING_ROOT))
 sys.path.insert(0, str(FILING_ROOT.parent / "company-wiki" / "src"))
 
 AS_OF = (_dt.date.today() + _dt.timedelta(days=7)).isoformat()
-INSTALL_ROOTS = (
-    Path.home() / ".agents" / "skills" / "revenue-forecast",
-    Path.home() / ".codex" / "skills" / "revenue-forecast",
-)
 ACTIVE_SCRIPTS = (
     "source_preparation.py",
     "filing_fetch_client.py",
@@ -166,29 +162,21 @@ def test_missing_explicit_config_fails_closed_without_record(tmp_path, monkeypat
 # ---------------------------------------------------------------------------
 
 
-def _sync_installations() -> None:
-    """The --version manifest covers every installable file (incl. tests/),
-    so an unsynced NEW file legitimately makes identities differ (R4.2 makes
-    that visible).  Sync first; the comparison below is then exact."""
-    subprocess.run(
-        [
-            sys.executable,
-            str(PROJECT_ROOT / "tools" / "sync_installations.py"),
-            "--apply",
-        ],
-        capture_output=True,
-        text=True,
-        timeout=300,
-        check=False,
+@pytest.mark.parametrize("surface", ("agents", "claude", "codex"))
+def test_installed_copy_executes_with_canonical_identity(tmp_path, surface):
+    # Exercise the real sync command against an isolated installation only.
+    destination = tmp_path / surface / "skills"
+    sync = subprocess.run(
+        [sys.executable, '-B', str(PROJECT_ROOT / 'tools/sync_installations.py'),
+         '--apply', '--destination', str(destination)],
+        capture_output=True, text=True, encoding='utf-8', timeout=30,
     )
-
-
-@pytest.mark.parametrize("install_root", INSTALL_ROOTS)
-def test_installed_copy_executes_with_canonical_identity(install_root):
-    _sync_installations()
-    entry = install_root / "scripts" / "revenue_forecast.py"
-    if not entry.exists():
-        pytest.skip(f"installation copy not present: {install_root}")
+    assert sync.returncode == 0, sync.stderr
+    install_root = destination / 'revenue-forecast'
+    assert not (install_root / 'tests').exists()
+    assert not (install_root / 'tools').exists()
+    entry = install_root / 'scripts' / 'revenue_forecast.py'
+    assert entry.is_file()
     canonical_out = subprocess.run(
         [
             sys.executable,

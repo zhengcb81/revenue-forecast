@@ -163,3 +163,8 @@ revenue = sold_units × net_revenue_per_unit
 `tests/test_model_extensions.py` 检查八类公式、六类存量桥、连续性、年底新增零贡献、完全流失/限电边界、供给约束、市场耗尽、生产不等于销售、负市场变动/负电价、超 100% 新店生产率、未知 NRR/POS 拒绝、非有限值拒绝和输入不可变。与全引擎的行业测试共同验证注册、参数解析、会计确认及输出合同。
 
 这些属于模型正确性与边界测试，尚不是预测准确性证据。对新增模型的正式采用，应比较原简单模型与新增模型在同一信息日、同一公司/分部/预测期的滚动样本外误差；参数更多但 WAPE/MASE 未改善时，应保留更简单模型或明确记录数据不足。
+
+
+## Repository engineering tests
+
+The `tests/` paths mentioned here are contributor instructions for the source repository. Tests and engineering tools are not shipped with the installed skill and are not required to run a forecast.

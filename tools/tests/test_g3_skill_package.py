@@ -377,3 +377,13 @@ def test_import_installation_still_preserves_repository_only_tools():
 
 if __name__ == "__main__":
     sys.exit(__import__("pytest").main([__file__, "-q"]))
+
+
+def test_runtime_version_uses_the_distributed_file_set():
+    expected = sorted(path.relative_to(REPO_ROOT).as_posix()
+                      for path in installable_files(REPO_ROOT))
+    digest = hashlib.sha256(json.dumps(expected, ensure_ascii=False).encode()).hexdigest()[:16]
+    proc = subprocess.run([sys.executable, '-B', str(REPO_ROOT / 'scripts/revenue_forecast.py'),
+                           '--version'], capture_output=True, text=True, timeout=20)
+    assert proc.returncode == 0, proc.stderr
+    assert f'manifest_sha256={digest}' in proc.stdout

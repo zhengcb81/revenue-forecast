@@ -100,3 +100,8 @@ The scoring penalty is not evidence that a more complex model predicts better. P
 3. Register the spec once in `MODEL_REGISTRY`; duplicate IDs and incomplete dimension coverage must fail at import time.
 4. Add the model to `tests/test_models.py` and `tests/test_industry_end_to_end.py`. Registry IDs, formula cases, and industry fixtures must remain exactly aligned.
 5. Never add `if model == ...` or `elif model == ...` to `calculate_model_path`. Parameter resolution and common finite/non-negative checks remain in `revenue_core.py`; model-specific stock-flow continuity belongs in the registered calculator.
+
+
+## Repository engineering tests
+
+The `tests/` paths mentioned here are contributor instructions for the source repository. Tests and engineering tools are not shipped with the installed skill and are not required to run a forecast.

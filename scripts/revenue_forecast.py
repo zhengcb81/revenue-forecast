@@ -78,7 +78,7 @@ def main() -> int:
         # (only the files an installation actually contains are counted).
         _excluded_parts = {"__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
         _root_files = {".gitignore", "CHANGELOG.md", "SKILL.md"}
-        _root_directories = {"agents", "config", "references", "scripts", "tests"}
+        _root_directories = {"agents", "config", "references", "scripts"}
         installable: list[Path] = [root / name for name in _root_files]
         for directory in _root_directories:
             base = root / directory

@@ -166,3 +166,8 @@ Run after every edit to `input.json`, not only at delivery:
 3. `python scripts/fix_hashes.py input.json` — recompute the two recomputable hash layers and sync the two copies.
 4. `python scripts/revenue_forecast.py input.json --validate-only --verbose` — full engine validation, every violation grouped.
 5. Repeat until clean, then drop `--validate-only` to emit `forecast.json` / `forecast.md`.
+
+
+## Repository engineering tests
+
+The `tests/` paths mentioned here are contributor instructions for the source repository. Tests and engineering tools are not shipped with the installed skill and are not required to run a forecast.

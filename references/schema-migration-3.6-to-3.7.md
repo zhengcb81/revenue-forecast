@@ -28,3 +28,8 @@
 
 `git revert` 版本 bump 提交；schema 常量回到 3.6 即恢复（3.7 工件不再被验证，
 但 3.7 未被发布到外部，无兼容负担）。
+
+
+## Repository engineering tests
+
+The `tests/` paths mentioned here are contributor instructions for the source repository. Tests and engineering tools are not shipped with the installed skill and are not required to run a forecast.
