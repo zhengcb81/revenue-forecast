@@ -230,3 +230,41 @@ def test_publication_cutoff_accepts_later_download_without_rewriting_metadata(pu
     assert context["read_receipt"]["manifest"] == receipt["manifest"]
     assert context["evidence_spans"] == json.loads(body)["evidence_spans"]
     assert context["narrative_ref"] == request["narrative_ref"]
+
+
+@pytest.mark.parametrize("published_date", [None, "2026-08-01", "2026-09-02"])
+def test_current_material_preserves_publication_without_historical_claim(published_date):
+    request, body, raw = _valid()
+    request["as_of_date"] = None
+    receipt = json.loads(raw)
+    receipt["as_of_date"] = None
+    receipt["manifest"]["published_date"] = published_date
+    dto = validate_narrative_response(request, body, _canonical(receipt) + b"\n").to_dict()
+    assert dto["as_of_date"] is None
+    assert dto["manifest"]["published_date"] == published_date
+    assert dto["narrative_ref"] == request["narrative_ref"]
+    assert dto["evidence_spans"] == json.loads(body)["evidence_spans"]
+    assert "forecast" not in dto
+
+
+def test_current_request_cannot_accept_historical_receipt_or_bad_bytes():
+    request, body, raw = _valid()
+    request["as_of_date"] = None
+    receipt = json.loads(raw)
+    receipt["as_of_date"] = None
+    receipt["manifest"]["published_date"] = None
+    valid = _canonical(receipt) + b"\n"
+    assert validate_narrative_response(request, body, valid).to_dict()["as_of_date"] is None
+    with pytest.raises(NarrativeTransportError):
+        validate_narrative_response(request, body + b" ", valid)
+    receipt["as_of_date"] = "2026-09-01"
+    with pytest.raises(NarrativeTransportError, match="receipt_request_mismatch"):
+        validate_narrative_response(request, body, _canonical(receipt) + b"\n")
+
+
+@pytest.mark.parametrize("cutoff", [False, [], "", "2026-02-30"])
+def test_invalid_cutoff_never_becomes_current_mode(cutoff):
+    request, _, _ = _valid()
+    request["as_of_date"] = cutoff
+    with pytest.raises(NarrativeTransportError):
+        validate_narrative_request(request)

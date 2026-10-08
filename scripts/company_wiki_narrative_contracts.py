@@ -181,7 +181,8 @@ def validate_narrative_request(value: Any) -> dict:
                      "invalid_read_request")
     _require(request["schema_version"] == "narrative-read-request/1", "unsupported_read_request")
     validate_narrative_ref(request["narrative_ref"])
-    _date(request["as_of_date"])
+    if request["as_of_date"] is not None:
+        _date(request["as_of_date"])
     _constraints(request["expected_source"])
     _pathless(request)
     _require(len(canonical_bytes(request)) <= REQUEST_LIMIT, "request_size_limit")
@@ -205,9 +206,12 @@ def _manifest(receipt: dict, request: dict) -> dict:
     for key, value in request["expected_source"].items():
         if value is not None:
             _require(type(manifest[key]) is type(value) and manifest[key] == value, "manifest_request_mismatch")
-    cutoff = _date(request["as_of_date"])
-    _require(manifest["published_date"] is not None, "source_publication_unknown")
-    _require(_date(manifest["published_date"]) <= cutoff, "source_after_as_of")
+    if request["as_of_date"] is not None:
+        cutoff = _date(request["as_of_date"])
+        _require(manifest["published_date"] is not None, "source_publication_unknown")
+        _require(_date(manifest["published_date"]) <= cutoff, "source_after_as_of")
+    elif manifest["published_date"] is not None:
+        _date(manifest["published_date"])  # Current mode preserves typed metadata.
     _utc(manifest["retrieved_at"])  # Validate metadata, not local collection availability.
     return manifest
 
