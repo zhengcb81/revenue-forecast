@@ -16,6 +16,7 @@ from contracts.evidence import (
 from forecast.calc import parameter_driver_roles, referenced_parameter_ids
 from forecast.segments import _run_forecast_core
 from model_registry import MODEL_REGISTRY, driver_value_bounds
+from research.input_quantities import validate_input_quantity_record
 
 
 def _sensitivity_bounds(
@@ -144,6 +145,16 @@ def calculate_sensitivities(
         requested_down, requested_up, shock = _requested_sensitivity_values(
             test, original, name, parameter["dimension"]
         )
+        input_quantity = test.get("input_quantity")
+        if input_quantity is not None:
+            require(
+                input_quantity.get("engine_value") == shock,
+                f"{name}.input_quantity.engine_value does not match shock_value: "
+                f"{input_quantity.get('engine_value')} != {shock}",
+            )
+            validate_input_quantity_record(
+                input_quantity, field=f"{name}.input_quantity"
+            )
         lower, upper = _sensitivity_bounds(parameter, roles.get(parameter_id, set()))
         effective_down = min(max(requested_down, lower), upper)
         effective_up = min(max(requested_up, lower), upper)
@@ -165,27 +176,28 @@ def calculate_sensitivities(
             abs(terminals["down"] - baseline_terminal),
             abs(terminals["up"] - baseline_terminal),
         )
-        outputs.append(
-            {
-                "name": name,
-                "parameter_id": parameter_id,
-                "shock_type": test["shock_type"],
-                "shock_value": shock,
-                "requested_values": {"down": requested_down, "up": requested_up},
-                "effective_values": {"down": effective_down, "up": effective_up},
-                "clamped": {
-                    "down": not math.isclose(requested_down, effective_down),
-                    "up": not math.isclose(requested_up, effective_up),
-                },
-                "baseline_terminal_revenue": baseline_terminal,
-                "down_terminal_revenue": terminals["down"],
-                "up_terminal_revenue": terminals["up"],
-                "max_absolute_terminal_impact": impact,
-                "max_relative_terminal_impact": None
-                if baseline_terminal == 0
-                else impact / baseline_terminal,
-            }
-        )
+        output = {
+            "name": name,
+            "parameter_id": parameter_id,
+            "shock_type": test["shock_type"],
+            "shock_value": shock,
+            "requested_values": {"down": requested_down, "up": requested_up},
+            "effective_values": {"down": effective_down, "up": effective_up},
+            "clamped": {
+                "down": not math.isclose(requested_down, effective_down),
+                "up": not math.isclose(requested_up, effective_up),
+            },
+            "baseline_terminal_revenue": baseline_terminal,
+            "down_terminal_revenue": terminals["down"],
+            "up_terminal_revenue": terminals["up"],
+            "max_absolute_terminal_impact": impact,
+            "max_relative_terminal_impact": None
+            if baseline_terminal == 0
+            else impact / baseline_terminal,
+        }
+        if input_quantity is not None:
+            output["input_quantity"] = input_quantity
+        outputs.append(output)
     return outputs
 
 

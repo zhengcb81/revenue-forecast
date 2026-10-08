@@ -208,8 +208,18 @@ MANAGEMENT_TARGET_MEASUREMENT_BASES = {
     "annual_period",
     "run_rate_at_period_end",
     "cumulative_periods",
+    "quarterly_period",
     "ambiguous",
 }
+
+
+# R6-RF-INPUT I2: additive management-target semantics (absent on legacy
+# inputs, so existing inputs keep their previous behavior exactly).
+MANAGEMENT_TARGET_CURRENCY_BASES = {"reported", "constant_currency"}
+
+MANAGEMENT_TARGET_PRESENTATION_BASES = {"gross", "net"}
+
+MANAGEMENT_TARGET_RAW_VALUE_KINDS = {"numeric", "numeric_range", "qualitative_range"}
 
 
 GROWTH_DRIVER_TREE_STATUSES = {"modeled", "data_gap"}
@@ -224,6 +234,31 @@ GROWTH_DRIVER_PERSISTENCE = {
 
 
 GROWTH_DRIVER_INFERENCE_DISTANCES = {"direct", "one_step", "analogical", "contrary"}
+
+
+# R6-RF-INPUT I3: additive evidence roles for claims. Optional on legacy
+# inputs; when present the engine enforces role/support-type consistency and
+# the growth-driver triangulation excludes peer analogies.
+GROWTH_DRIVER_EVIDENCE_ROLES = {
+    "history_base",
+    "mechanism_direction",
+    "value_range",
+    "counter_comparison",
+    "peer_analogy",
+    "conversion_assumption",
+    "recognition_policy",
+    "counterevidence",
+}
+
+# Roles that state a direction or analogy, never a numeric value.
+DIRECTIONAL_EVIDENCE_ROLES = {
+    "mechanism_direction",
+    "peer_analogy",
+    "counter_comparison",
+    "conversion_assumption",
+    "history_base",
+    "counterevidence",
+}
 
 
 GROWTH_DRIVER_COUNTEREVIDENCE_STATUSES = {"found", "searched_none_found", "data_gap"}

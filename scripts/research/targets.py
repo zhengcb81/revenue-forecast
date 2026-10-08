@@ -13,8 +13,11 @@ from contracts.constants import (
     MANAGEMENT_COMMUNICATION_CATEGORIES,
     MANAGEMENT_COMMUNICATION_STATUSES,
     MANAGEMENT_TARGET_COMPARISONS,
+    MANAGEMENT_TARGET_CURRENCY_BASES,
     MANAGEMENT_TARGET_MEASUREMENT_BASES,
     MANAGEMENT_TARGET_PERIMETERS,
+    MANAGEMENT_TARGET_PRESENTATION_BASES,
+    MANAGEMENT_TARGET_RAW_VALUE_KINDS,
     MANAGEMENT_TARGET_TREATMENTS,
     SCENARIOS,
 )
@@ -207,10 +210,80 @@ def validate_management_target_coverage(
                 isinstance(target.get(field), str) and target[field].strip(),
                 f"{target_id}.{field} is required",
             )
-        raw_value = finite_number(
-            target.get("raw_target_value"), f"{target_id}.raw_target_value"
+        # R6-RF-INPUT I2: additive semantics for quarterly / qualitative /
+        # range / basis-labeled targets. Every key is optional; legacy numeric
+        # annual targets keep their previous behavior exactly.
+        raw_value_kind = target.get("raw_value_kind")
+        require(
+            raw_value_kind in (None, *sorted(MANAGEMENT_TARGET_RAW_VALUE_KINDS)),
+            f"invalid management target raw_value_kind: {target_id}",
         )
-        require(raw_value >= 0, f"management target cannot be negative: {target_id}")
+        currency_basis = target.get("currency_basis")
+        require(
+            currency_basis in (None, *sorted(MANAGEMENT_TARGET_CURRENCY_BASES)),
+            f"invalid management target currency_basis: {target_id}",
+        )
+        presentation_basis = target.get("presentation_basis")
+        require(
+            presentation_basis in (None, *sorted(MANAGEMENT_TARGET_PRESENTATION_BASES)),
+            f"invalid management target presentation_basis: {target_id}",
+        )
+        target_quarter = target.get("target_quarter")
+        require(
+            target_quarter in (None, "Q1", "Q2", "Q3", "Q4", "H1", "H2"),
+            f"invalid management target target_quarter: {target_id}",
+        )
+        raw_label = target.get("raw_label")
+        if raw_label is not None:
+            require(
+                isinstance(raw_label, str) and raw_label.strip(),
+                f"invalid management target raw_label: {target_id}",
+            )
+        unmodeled_reason = target.get("unmodeled_reason")
+        if unmodeled_reason is not None:
+            require(
+                isinstance(unmodeled_reason, str) and unmodeled_reason.strip(),
+                f"invalid management target unmodeled_reason: {target_id}",
+            )
+        raw_value_low = target.get("raw_target_value_low")
+        raw_value_high = target.get("raw_target_value_high")
+        if raw_value_kind == "qualitative_range":
+            require(
+                raw_label is not None,
+                f"qualitative management target requires raw_label: {target_id}",
+            )
+            require(
+                target.get("raw_target_value") is None
+                and raw_value_low is None
+                and raw_value_high is None,
+                f"qualitative management target cannot carry a numeric value: {target_id}",
+            )
+            raw_value = None
+        elif raw_value_kind == "numeric_range":
+            require(
+                raw_value_low is not None and raw_value_high is not None,
+                f"numeric range management target requires both endpoints: {target_id}",
+            )
+            low_number = finite_number(
+                raw_value_low, f"{target_id}.raw_target_value_low"
+            )
+            high_number = finite_number(
+                raw_value_high, f"{target_id}.raw_target_value_high"
+            )
+            require(
+                low_number >= 0 and low_number <= high_number,
+                f"invalid numeric range for management target: {target_id}",
+            )
+            require(
+                target.get("raw_target_value") is None,
+                f"numeric range management target cannot carry a single point: {target_id}",
+            )
+            raw_value = None
+        else:
+            raw_value = finite_number(
+                target.get("raw_target_value"), f"{target_id}.raw_target_value"
+            )
+            require(raw_value >= 0, f"management target cannot be negative: {target_id}")
         measurement_basis = target.get("measurement_basis")
         require(
             measurement_basis in MANAGEMENT_TARGET_MEASUREMENT_BASES,
@@ -230,7 +303,32 @@ def validate_management_target_coverage(
             measurement_years == sorted(measurement_years),
             f"management target measurement periods must be ordered: {target_id}",
         )
-        if measurement_basis in {"annual_period", "run_rate_at_period_end"}:
+        has_conversion = False
+        if measurement_basis == "quarterly_period":
+            require(
+                target_quarter is not None,
+                f"quarterly management target requires target_quarter: {target_id}",
+            )
+            conversion_ids = target.get("normalization_parameter_ids", [])
+            conversion_formula = target.get("normalization_formula")
+            has_conversion = (
+                target.get("comparison_basis") == "annual_recognized_revenue"
+                and isinstance(conversion_ids, list) and bool(conversion_ids)
+                and isinstance(conversion_formula, str) and bool(conversion_formula.strip())
+            )
+            if has_conversion:
+                require(
+                    len(measurement_years) == 1,
+                    f"quarterly management target conversion compares exactly one annual period: {target_id}",
+                )
+            else:
+                # No pseudo-annualization: a quarter stays a quarter unless an
+                # explicit, evidence-backed conversion exists.
+                require(
+                    not measurement_years,
+                    f"quarterly management target cannot claim annual measurement periods without an explicit conversion: {target_id}",
+                )
+        elif measurement_basis in {"annual_period", "run_rate_at_period_end"}:
             require(
                 len(measurement_years) == 1,
                 f"single-period management target requires exactly one measurement period: {target_id}",
@@ -303,6 +401,14 @@ def validate_management_target_coverage(
         )
         source_ids = []
         for linked in linked_claims:
+            if raw_value is None:
+                # Qualitative labels and numeric ranges bind the verbatim
+                # statement; no single numeric value exists to compare.
+                require(
+                    linked.get("extracted_value") is None,
+                    f"non-numeric management target claim cannot carry extracted_value: {target_id}",
+                )
+                continue
             extracted = finite_number(
                 linked.get("extracted_value"), f"{linked['claim_id']}.extracted_value"
             )
@@ -353,7 +459,7 @@ def validate_management_target_coverage(
             and perimeter_status in {"matched", "reconciled"}
             and scope["type"] in {"company", "segment"}
         )
-        if measurement_basis == "run_rate_at_period_end":
+        if measurement_basis in {"run_rate_at_period_end", "quarterly_period"}:
             conversion_ids = target.get("normalization_parameter_ids", [])
             conversion_formula = target.get("normalization_formula")
             has_conversion = (
@@ -363,14 +469,14 @@ def validate_management_target_coverage(
             )
             if treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
                 require(has_conversion,
-                        f"run-rate target requires explicit annual recognized revenue conversion: {target_id}")
+                        f"{measurement_basis} target requires explicit annual recognized revenue conversion: {target_id}")
             comparable = comparable and has_conversion
             if not has_conversion:
                 require(not mapped_ids and not mapped_scenarios,
-                        f"unconverted run-rate target cannot claim scenario mapping: {target_id}")
+                        f"unconverted {measurement_basis} target cannot claim scenario mapping: {target_id}")
         comparison_value = target.get("comparison_value")
         if comparable:
-            if measurement_basis == "run_rate_at_period_end":
+            if measurement_basis in {"run_rate_at_period_end", "quarterly_period"}:
                 require(len(conversion_ids) == len(set(conversion_ids)),
                         f"run-rate conversion parameters must be unique: {target_id}")
                 for parameter_id in conversion_ids:
@@ -476,13 +582,36 @@ def validate_management_target_coverage(
                 not mapped_scenarios,
                 f"unmodeled management target cannot claim mapped scenarios: {target_id}",
             )
-            gap_messages.append(f"management_target:{target_id}: {treatment}")
+            gap_message = f"management_target:{target_id}: {treatment}"
+            reason = target.get("unmodeled_reason")
+            if isinstance(reason, str) and reason.strip():
+                gap_message = f"{gap_message} ({reason.strip()})"
+            gap_messages.append(gap_message)
+
+        if treatment == "unmodeled_data_gap" and (
+            raw_value_kind in {"qualitative_range", "numeric_range"}
+            or measurement_basis == "quarterly_period"
+            or measurement_basis == "ambiguous"
+        ):
+            require(
+                isinstance(target.get("unmodeled_reason"), str)
+                and target["unmodeled_reason"].strip(),
+                f"qualitative/range/quarterly/ambiguous unmodeled target requires unmodeled_reason: {target_id}",
+            )
 
         if materiality == "material" and within_horizon and comparable:
-            require(
-                treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"},
-                f"material in-horizon comparable target must enter a scenario: {target_id}",
+            # A qualitative range, a numeric range or an unconverted quarterly
+            # basis has no machine-comparable single value, so the material
+            # in-horizon gate cannot demand scenario treatment for it.
+            semantics_block_comparable = (
+                raw_value_kind in {"qualitative_range", "numeric_range"}
+                or (measurement_basis == "quarterly_period" and not has_conversion)
             )
+            if not semantics_block_comparable:
+                require(
+                    treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"},
+                    f"material in-horizon comparable target must enter a scenario: {target_id}",
+                )
         if perimeter_status == "mismatch":
             require(
                 treatment in {"unmodeled_data_gap", "out_of_horizon"},

@@ -1469,10 +1469,33 @@ def render_markdown(result: dict[str, Any]) -> str:
                 )
                 or "—"
             )
+            raw_value = target.get("raw_target_value")
+            if raw_value is None and target.get("raw_target_value_low") is not None:
+                raw_value = target["raw_target_value_low"]
+            raw_cell = (
+                _escape(target["raw_label"])
+                if target.get("raw_label")
+                else _num(raw_value)
+            )
+            if target.get("raw_target_value_high") is not None:
+                raw_cell = f"{raw_cell}–{_num(target['raw_target_value_high'])}"
+            basis_cell = _escape(target.get("measurement_basis", "legacy_unspecified"))
+            basis_tags = [
+                tag for tag in (
+                    target.get("target_quarter"),
+                    target.get("currency_basis"),
+                    target.get("presentation_basis"),
+                ) if tag
+            ]
+            if basis_tags:
+                basis_cell = f"{basis_cell} [{_escape(', '.join(basis_tags))}]"
+            basis_cell = (
+                f"{basis_cell}: {_escape(', '.join(target.get('measurement_periods', [])) or '—')}"
+            )
             lines.append(
                 f"| {_escape(target['target_id'])} | {_escape(target['commitment_strength'])} | "
-                f"{_num(target['raw_target_value'])} {_escape(target['raw_unit'])} | {_escape(target['target_period'])} | "
-                f"{_escape(target.get('measurement_basis', 'legacy_unspecified'))}: {_escape(', '.join(target.get('measurement_periods', [])) or '—')} | "
+                f"{raw_cell} {_escape(target['raw_unit'])} | {_escape(target['target_period'])} | "
+                f"{basis_cell} | "
                 f"{_escape(target['perimeter_status'])}: {_escape(target['perimeter_notes'])} | {_escape(target['treatment'])} | "
                 f"{_escape(', '.join(target['mapped_scenarios']) or '—')} | {_escape(attainment)} |"
             )

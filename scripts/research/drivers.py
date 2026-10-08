@@ -186,12 +186,43 @@ def _validate_growth_driver_evidence(
             any(node["inference_distance"] == "contrary" for node in normalized_nodes),
             f"{driver_id} found counterevidence requires a contrary evidence node",
         )
+    # The same checked excerpt cannot serve as both support and counterevidence.
+    excerpt_distances: dict[str, set[str]] = {}
+    for node in normalized_nodes:
+        for claim_id in node["claim_ids"]:
+            excerpt_sha = claim_index.get(claim_id, {}).get("excerpt_sha256")
+            if excerpt_sha:
+                excerpt_distances.setdefault(excerpt_sha, set()).add(
+                    node["inference_distance"]
+                )
+    dual_use = [
+        claim_index[next(cid for cid in node["claim_ids"]
+                         if claim_index.get(cid, {}).get("excerpt_sha256") == sha)]["claim_id"]
+        for sha in excerpt_distances
+        if "contrary" in excerpt_distances[sha] and len(excerpt_distances[sha]) > 1
+        for node in normalized_nodes
+        if any(claim_index.get(cid, {}).get("excerpt_sha256") == sha for cid in node["claim_ids"])
+    ]
+    require(
+        not dual_use,
+        f"{driver_id}: the same excerpt cannot support and contradict (claims: {', '.join(sorted(set(dual_use)))})",
+    )
+    # A peer analogy is a reference class, never the company's own mechanism:
+    # peer-based nodes are disclosed but excluded from triangulation.
+    def _is_peer_based(node: dict[str, Any]) -> bool:
+        return any(
+            claim_index.get(claim_id, {}).get("evidence_role") == "peer_analogy"
+            for claim_id in node["claim_ids"]
+        )
+
+    core_nodes = [node for node in supporting_nodes if not _is_peer_based(node)]
+    peer_nodes = [node for node in supporting_nodes if _is_peer_based(node)]
     evidence_types = list(
-        dict.fromkeys(node["evidence_type"] for node in supporting_nodes)
+        dict.fromkeys(node["evidence_type"] for node in core_nodes)
     )
     evidence_source_ids = list(
         dict.fromkeys(
-            source_id for node in supporting_nodes for source_id in node["source_ids"]
+            source_id for node in core_nodes for source_id in node["source_ids"]
         )
     )
     evidence_status = (
@@ -199,7 +230,16 @@ def _validate_growth_driver_evidence(
         if len(evidence_types) >= 2 and len(evidence_source_ids) >= 2
         else "limited"
     )
-    return normalized_nodes, evidence_types, evidence_source_ids, evidence_status
+    peer_note = None
+    if not core_nodes:
+        peer_note = (
+            f"Growth driver {driver_id} relies on peer-analogy evidence only; company-mechanism evidence is missing"
+        )
+    elif peer_nodes:
+        peer_note = (
+            f"Growth driver {driver_id}: peer-analogy evidence is disclosed but excluded from triangulation"
+        )
+    return normalized_nodes, evidence_types, evidence_source_ids, evidence_status, peer_note
 
 
 def _validate_growth_driver_record(
@@ -278,7 +318,7 @@ def _validate_growth_driver_record(
         counterevidence_status in GROWTH_DRIVER_COUNTEREVIDENCE_STATUSES,
         f"unsupported counterevidence_status for {driver_id}: {counterevidence_status}",
     )
-    normalized_nodes, evidence_types, evidence_source_ids, evidence_status = (
+    normalized_nodes, evidence_types, evidence_source_ids, evidence_status, peer_note = (
         _validate_growth_driver_evidence(
             driver_id,
             driver.get("evidence_nodes"),
@@ -288,6 +328,8 @@ def _validate_growth_driver_record(
             claim_index,
         )
     )
+    if peer_note:
+        context["limitations"].append(peer_note)
     if counterevidence_status == "data_gap":
         context["gap_messages"].append(
             f"growth_driver:{driver_id}: counterevidence search is incomplete"

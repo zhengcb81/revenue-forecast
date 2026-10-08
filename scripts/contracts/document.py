@@ -12,7 +12,9 @@ from contracts.constants import (
     ASSET_FACT_BASIS_REQUIRED,
     ASSET_FACT_OWNERSHIP_BASES,
     ASSERTION_STATUSES,
+    DIRECTIONAL_EVIDENCE_ROLES,
     FORECAST_SCHEMA_VERSION,
+    GROWTH_DRIVER_EVIDENCE_ROLES,
     MONETARY_DIMENSIONS,
     OPT_IN_SCHEMA_VERSION,
     PARAMETER_DIMENSIONS,
@@ -628,6 +630,32 @@ def validate_evidence_claims(
             f"claim verification date is outside the allowed information set: {claim_id}",
         )
 
+        # R6-RF-INPUT I3: additive evidence role. Optional; when present it
+        # must be a known role consistent with the support type and the
+        # presence/absence of a numeric value.
+        evidence_role = claim.get("evidence_role")
+        if evidence_role is not None:
+            require(
+                evidence_role in GROWTH_DRIVER_EVIDENCE_ROLES,
+                f"unsupported evidence_role for {claim_id}: {evidence_role}",
+            )
+            if evidence_role in DIRECTIONAL_EVIDENCE_ROLES:
+                require(
+                    claim.get("extracted_value") is None,
+                    f"directional evidence_role {evidence_role} cannot carry extracted_value: {claim_id}",
+                )
+            if evidence_role == "value_range":
+                require(
+                    support_type == "exact_value"
+                    and claim.get("extracted_value") is not None,
+                    f"value_range evidence_role requires an exact value claim: {claim_id}",
+                )
+            if evidence_role == "recognition_policy":
+                require(
+                    support_type == "policy_support",
+                    f"recognition_policy evidence_role requires policy_support: {claim_id}",
+                )
+
         if target_type == "parameter":
             require(
                 target_id in parameter_index,
@@ -690,6 +718,18 @@ def validate_evidence_claims(
             require(
                 any(c["support_type"] == "rationale_support" for c in linked),
                 f"source-linked assumption {parameter_id} requires a rationale-support claim",
+            )
+            # A historical base is a fact about the past; alone it never
+            # supports a future assumption's mechanism or range.
+            roled = [c for c in linked if c.get("evidence_role")]
+            if roled:
+                require(
+                    any(c.get("evidence_role") != "history_base" for c in roled),
+                    f"history_base claims alone cannot support assumption {parameter_id}",
+                )
+            require(
+                all(c.get("evidence_role") != "counterevidence" for c in linked),
+                f"counterevidence claim cannot support parameter {parameter_id}",
             )
     return index
 
