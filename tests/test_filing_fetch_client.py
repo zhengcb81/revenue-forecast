@@ -397,3 +397,31 @@ class FilingFetchClientCliTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_schema2_source_candidate_is_unwrapped(tmp_path, monkeypatch):
+    import filing_fetch_client as client
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/fetch_filing.py").write_text("", encoding="utf-8")
+    filing = {"status": "source_candidate", "source_ref": {"schema_version": "2.0"},
+              "document_kind": "annual_report", "fiscal_year": 2025, "fiscal_period": "FY",
+              "resolution_outcome": "reused_existing", "download_events": 0,
+              "byte_verification": "pending_verified_open"}
+    payload = {"schema_version": "2.0", "status": "source_candidate", "filing": filing,
+               "transcript": {"status": "not_requested"}, "calls": 2, "downloads": 0}
+    monkeypatch.setattr(client.subprocess, "run", lambda *a, **kw:
+                        subprocess.CompletedProcess([], 0, json.dumps(payload), ""))
+    assert client.resolve_filing({"schema_version": "2.0"}, filing_fetch_root=tmp_path) == filing
+
+
+def test_schema2_gap_keeps_provider_reason(tmp_path, monkeypatch):
+    import filing_fetch_client as client
+    import pytest
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/fetch_filing.py").write_text("", encoding="utf-8")
+    payload = {"schema_version": "2.0", "status": "gap",
+               "filing": {"status": "gap", "reason": "provider_unavailable"}}
+    monkeypatch.setattr(client.subprocess, "run", lambda *a, **kw:
+                        subprocess.CompletedProcess([], 0, json.dumps(payload), ""))
+    with pytest.raises(client._ClientError, match="provider_unavailable"):
+        client.resolve_filing({"schema_version": "2.0"}, filing_fetch_root=tmp_path)

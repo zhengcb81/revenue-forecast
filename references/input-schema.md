@@ -118,6 +118,7 @@ Historical records require value, year, source IDs, and exact-value claim IDs. Y
 Each segment contains the same model in low/base/high and one parameter-ID series per driver. Recognition requires timing, trigger, gross/net presentation, matching `modeled_presentation`, and recognition-policy claim IDs.
 
 - Point-in-time `modeled_as_recognized`: modeled revenue is recognized directly.
+- Published aggregates may use `timing: mixed` and/or `presentation: mixed` only with `modeled_as_recognized` and `direct_growth` / `direct_revenue` in all scenarios. `modeled_presentation` must still match. Require a nonempty `aggregation_boundary` and recognition-policy claims explaining the component policies and unavailable split. These annual totals are already recognized: do not supply progress, lag, carry-in, or a second gross/net conversion. Use the ordinary single-policy fields when the underlying component is disclosed. Mixed is a disclosure limitation, not permission to treat activity measures as recognized revenue.
 - Point-in-time `lagged_activity`: supply `lag_years` and scenario carry-in parameter IDs.
 - Over-time: supply `progress_measure` and low/base/high annual `progress_parameter_ids`; recognized revenue equals modeled revenue times progress.
 
@@ -251,6 +252,16 @@ Probabilities are optional. When supplied, require low/base/high values summing 
 The input field is `sensitivity_tests` (or `sensitivities` as an alias). Each test requires a `name` field; if omitted, the engine auto-generates it from `parameter_id`. Each base-referenced assumption can appear once. Supported shocks:
 
 - `percent`, `percentage_point`, `basis_point`, or `absolute` with positive `shock_value`;
+
+Sensitivity units are numeric contract units, not the free-text test name:
+
+- `percent`: multiplicative fractional change. `shock_value=0.05` means +/-5% of the parameter: `v +/- abs(v) * 0.05`. It does not mean 5 percentage points.
+- `percentage_point`: additive change to a ratio stored as a fraction. For growth `v=0.38`, +/-5 percentage points requires `shock_value=0.05`, giving requested values `0.33` and `0.43`. `shock_value=5.0` means +/-500 percentage points, even if the name says "5pp".
+- `basis_point`: one basis point is 0.0001; `shock_value=50` requests an additive ratio change of 0.005.
+- `absolute`: use the parameter's declared unit and scale.
+
+Check the requested and effective up/down parameter values against the intended unit before accepting the result. Bounds/clamping do not correct a unit error. Recomputing the same malformed input only verifies arithmetic consistency; it cannot prove the free-text name or economic intent is correct.
+
 - `range` or `discrete` with `down_value` and `up_value`.
 
 The output records requested values, effective bounded values, and clamp flags. Use absolute/range shocks for zero-base parameters.

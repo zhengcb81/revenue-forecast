@@ -256,6 +256,18 @@ def resolve_filing(
     if not isinstance(response, dict):
         raise _ClientError("filing-fetch response must be an object")
     status = response.get("status")
+    if response.get("schema_version") == "2.0":
+        filing = response.get("filing")
+        if (status == "source_candidate" and isinstance(filing, dict)
+                and filing.get("status") == "source_candidate"
+                and isinstance(filing.get("source_ref"), dict)):
+            return filing
+        reason = filing.get("reason") if isinstance(filing, dict) else None
+        raise _ClientError(
+            f"filing-fetch returned status={status}: {reason or 'invalid v2 filing result'}",
+            status=status, error_code=status,
+            retryable=filing.get("retryable", False) if isinstance(filing, dict) else False,
+        )
     if status != "capture_ready":
         raise _ClientError(
             f"filing-fetch returned status={status}: {response.get('error', 'unknown error')}",

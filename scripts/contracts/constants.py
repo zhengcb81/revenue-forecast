@@ -143,10 +143,10 @@ TIME_BASES = {"annual", "point_in_time"}
 RECOGNITION_MODES = {"modeled_as_recognized", "lagged_activity"}
 
 
-RECOGNITION_TIMING = {"point_in_time", "over_time"}
+RECOGNITION_TIMING = {"point_in_time", "over_time", "mixed"}
 
 
-PRESENTATIONS = {"gross", "net"}
+PRESENTATIONS = {"gross", "net", "mixed"}
 
 
 ADJUSTMENT_CATEGORIES = {

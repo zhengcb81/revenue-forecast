@@ -188,3 +188,15 @@ def test_refusal_with_partial_bytes_is_rejected(monkeypatch, tmp_path):
     monkeypatch.setattr("subprocess.run", fake_run)
     with pytest.raises(_reader().SourceVersionTransportError, match="partial bytes"):
         _open(tmp_path)
+
+
+def test_null_original_retrieval_is_preserved(monkeypatch, tmp_path):
+    receipt = _receipt()
+    receipt["manifest"]["retrieved_at"] = None
+    monkeypatch.setattr("subprocess.run", lambda command, **kw:
+                        subprocess.CompletedProcess(command, 0, BODY,
+                            (json.dumps(receipt) + "\n").encode()))
+    body, read_receipt, manifest = _open(tmp_path)
+    assert body == BODY
+    assert manifest["retrieved_at"] is None
+    assert read_receipt["read_at"] == receipt["read_at"]

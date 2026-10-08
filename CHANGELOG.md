@@ -2,6 +2,15 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## Unreleased — 2026-10-08 cross-market source audit
+
+- Accept filing-fetch schema-2 pathless candidates and verify their source reference, identity and period against the actual producer read. Annual requests may omit FY; nonannual periods remain explicit.
+- Preserve unknown historical retrieval timestamps as null; record the actual verified read timestamp for the new local capture. Publication and as-of checks remain enforced.
+- Represent already-recognized mixed-policy aggregates truthfully, only for direct recognized-revenue models with explicit aggregation boundaries and policy evidence. Reject progress, lag and carry-in transforms on these aggregates.
+- Fix publication audit's anchor lookup: generation conflict keys are tuples, whereas input anchors are strings. Keep chain, conflict and unregistered-claim checks; add real CLI positive and negative regressions.
+- Clarify sensitivity ratio units: a 5-percentage-point shock is 0.05, not 5.0. The engine already implements that contract; this documentation prevents malformed research inputs.
+- Runtime identifies as 4.1.0/schema 3.7 during this workspace audit. Pin exact source hashes and commit identity for these repairs; keep all old inputs, publications and snapshots intact. Do not relabel old outputs as having passed the repaired audit.
+
 ## 4.1.0 (2026-09-18) — buy-side methodology and model review
 
 - Reviewed all 23 existing models; added 8 registered, executable business models with stock-flow and timing constraints (31 total). Added cohort timing weights, non-revenue backlog remeasurements and reserve revisions without changing the default revenue paths.

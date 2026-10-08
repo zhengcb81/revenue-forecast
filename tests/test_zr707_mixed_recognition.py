@@ -134,7 +134,7 @@ def test_c3_invalid_presentation_rejected():
 
 
 def test_c3_presentations_exact():
-    assert PRESENTATIONS == {"gross", "net"}
+    assert PRESENTATIONS == {"gross", "net", "mixed"}
 
 
 if __name__ == "__main__":

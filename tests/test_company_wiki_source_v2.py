@@ -194,3 +194,27 @@ def test_missing_explicit_title_stays_missing_after_verified_read() -> None:
     candidate = _candidate(ref, manifest)
     with pytest.raises(CompanyWikiSourceError, match="title"):
         _build(ref, receipt, manifest, candidate=candidate)
+
+
+def test_unknown_retrieval_preserved_and_actual_read_captured():
+    ref, receipt, manifest = _inputs()
+    manifest["retrieved_at"] = None
+    result = _build(ref, receipt, manifest)
+    assert result["company_wiki_trace"]["source_manifest"]["retrieved_at"] is None
+    assert result["capture"]["captured_date"] == receipt["read_at"][:10]
+    assert result["accessed_date"] == receipt["read_at"][:10]
+    validate_sources({"sources": [result]}, date.fromisoformat("2026-09-27"), require_capture=True)
+
+
+def test_minimal_schema2_candidate_uses_verified_manifest():
+    ref, receipt, manifest = _inputs()
+    minimal = {"status": "source_candidate", "source_ref": ref,
+               "byte_verification": "pending_verified_open", "document_kind": "annual_report",
+               "fiscal_year": 2025, "fiscal_period": None,
+               "resolution_outcome": "reused_existing", "download_events": 0}
+    record = _build(ref, receipt, manifest, candidate=minimal)
+    assert record["published_date"] == manifest["published_date"]
+    assert record["title"] == manifest["title"]
+    minimal["fiscal_year"] = 2024
+    with pytest.raises(CompanyWikiSourceError, match="fiscal_year"):
+        _build(ref, receipt, manifest, candidate=minimal)

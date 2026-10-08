@@ -254,6 +254,34 @@ def validate_recognition_metadata(
         isinstance(recognition.get("trigger"), str) and recognition["trigger"].strip(),
         f"{name} requires a revenue-recognition trigger",
     )
+    if timing == "mixed" or presentation == "mixed":
+        # These values describe a published aggregate, not an activity-level
+        # recognition algorithm. Never invent one uniform timing/principal
+        # policy for a segment whose component policies differ.
+        require(
+            mode == "modeled_as_recognized",
+            f"{name} mixed accounting requires already recognized revenue",
+        )
+        scenarios = segment.get("scenarios")
+        require(
+            isinstance(scenarios, dict) and set(scenarios) == set(SCENARIOS)
+            and all(isinstance(item, dict)
+                    and item.get("model") in {"direct_growth", "direct_revenue"}
+                    for item in scenarios.values()),
+            f"{name} mixed accounting requires direct_growth/direct_revenue",
+        )
+        boundary = recognition.get("aggregation_boundary")
+        require(
+            isinstance(boundary, str) and bool(boundary.strip()),
+            f"{name} mixed accounting requires aggregation_boundary",
+        )
+        transforms = {"progress_measure", "progress_parameter_ids", "lag_years",
+                      "carry_in_parameter_ids"} & recognition.keys()
+        require(
+            not transforms,
+            f"{name} mixed accounting cannot contain recognition transforms: "
+            f"{', '.join(sorted(transforms))}",
+        )
     if timing == "over_time":
         require(
             isinstance(recognition.get("progress_measure"), str)

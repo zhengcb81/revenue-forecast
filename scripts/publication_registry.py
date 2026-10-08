@@ -219,6 +219,7 @@ def audit(result_files: list[Path] | None = None, *, since: str | None = None) -
                 f"conflict: input {anchor[:16]}... (engine {engine}, schema {schema}, "
                 f"{artifact_type}) registered {len(result_hashes)} distinct result hashes"
             )
+    registered_anchors = {entry["input_sha256"] for entry in entries}
     for path in result_files or []:
         try:
             artifact = json.loads(path.read_text(encoding="utf-8"))
@@ -226,7 +227,7 @@ def audit(result_files: list[Path] | None = None, *, since: str | None = None) -
             problems.append(f"unreadable result artifact {path}: {exc}")
             continue
         claimed = artifact.get("input_sha256")
-        if not isinstance(claimed, str) or claimed not in by_generation:
+        if not isinstance(claimed, str) or claimed not in registered_anchors:
             problems.append(
                 f"unregistered claim: {path} anchors input "
                 f"{(claimed or '?')[:16]} which was never registered"

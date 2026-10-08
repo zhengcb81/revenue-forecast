@@ -174,9 +174,12 @@ def _validate_manifest_metadata(manifest: dict[str, Any]) -> None:
 
 def _validate_manifest_dates(manifest: dict[str, Any], as_of: date) -> date:
     published = _iso_date(manifest.get("published_date"), "source manifest published_date")
-    retrieved = _aware_datetime(manifest.get("retrieved_at"), "source manifest retrieved_at")
-    if not published <= retrieved.date() <= as_of:
+    if published > as_of:
         raise CompanyWikiSourceError("source manifest is outside as_of_date")
+    if manifest.get("retrieved_at") is not None:
+        retrieved = _aware_datetime(manifest["retrieved_at"], "source manifest retrieved_at")
+        if not published <= retrieved.date() <= as_of:
+            raise CompanyWikiSourceError("source manifest is outside as_of_date")
     period_end = manifest.get("period_end")
     if period_end is not None and _iso_date(
         period_end, "source manifest period_end"
@@ -212,6 +215,19 @@ def _validate_candidate(
         raise CompanyWikiSourceError("source candidate contains a storage location")
     candidate_ref = _validate_ref(candidate.get("source_ref"))
     _same(candidate_ref, ref, "source candidate source_ref")
+    if candidate.get("status") == "source_candidate":
+        expected_fields = {"status", "source_ref", "byte_verification", "document_kind",
+                           "fiscal_year", "fiscal_period", "resolution_outcome", "download_events"}
+        if set(candidate) != expected_fields:
+            raise CompanyWikiSourceError("v2 source candidate fields are invalid")
+        _same(candidate["byte_verification"], "pending_verified_open", "byte verification")
+        for field in ("document_kind", "fiscal_year", "fiscal_period"):
+            _same(candidate[field], manifest[field], f"source candidate {field}")
+        outcome = candidate["resolution_outcome"]
+        if not isinstance(outcome, str) or outcome not in _OUTCOMES:
+            raise CompanyWikiSourceError("source candidate outcome invalid")
+        _same(candidate["download_events"], int(outcome == "downloaded_new"), "download events")
+        return candidate
     pairs = {
         "document_id": "document_id", "source_id": "source_id",
         "snapshot_sha256": "content_sha256", "byte_size": "byte_size",
@@ -279,9 +295,14 @@ def build_revenue_source_record_from_verified_read(
     publisher = _required_text(publisher, "publisher")
     locator = _required_text(page_or_section, "page_or_section")
     status = _diagnostic_status(prompt_injection_status, candidate, receipt)
-    retrieved = _aware_datetime(manifest["retrieved_at"], "source manifest retrieved_at")
-    captured_date = retrieved.date().isoformat()
     read_at = receipt["read_at"]
+    # Unknown historical collection time stays unknown. The new local capture
+    # uses the actual verified-read event, never an invented collection time.
+    captured_at = manifest["retrieved_at"] if manifest["retrieved_at"] is not None else read_at
+    retrieved = _aware_datetime(captured_at, "source capture timestamp")
+    if not published <= retrieved.date() <= as_of:
+        raise CompanyWikiSourceError("source capture is outside as_of_date")
+    captured_date = retrieved.date().isoformat()
     capture = {
         "capture_schema_version": "1.0",
         "capture_method": "local_document",

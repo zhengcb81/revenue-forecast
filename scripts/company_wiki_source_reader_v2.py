@@ -210,12 +210,16 @@ def _validate_manifest_period(
     if type(manifest["fiscal_year"]) is not int or manifest["fiscal_year"] != fiscal_year:
         raise SourceVersionTransportError("source manifest fiscal_year mismatch")
     published = _date(manifest["published_date"], "source manifest published_date")
-    retrieved = _datetime(manifest["retrieved_at"], "source manifest retrieved_at")
+    retrieved_value = manifest["retrieved_at"]
     period_end = manifest["period_end"]
     if period_end is not None and _date(period_end, "source manifest period_end") > published:
         raise SourceVersionTransportError("source manifest period ends after publication")
-    if not (published <= retrieved.date() <= as_of):
+    if published > as_of:
         raise SourceVersionTransportError("source manifest is outside as_of_date")
+    if retrieved_value is not None:
+        retrieved = _datetime(retrieved_value, "source manifest retrieved_at")
+        if not (published <= retrieved.date() <= as_of):
+            raise SourceVersionTransportError("source manifest is outside as_of_date")
 
 
 def _validate_manifest(

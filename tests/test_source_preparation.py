@@ -415,3 +415,15 @@ def test_source_ref_v2_candidate_rejects_nested_storage_path_before_read():
     }
     with pytest.raises(RuntimeError, match="SourceRef contains a storage location"):
         _validate_v2_candidate(request, handle)
+
+
+def test_annual_optional_period_defaults_to_canonical_fy():
+    import source_preparation as prep
+    import pytest
+    request = {"document_kind": "annual_report", "fiscal_year": 2025}
+    handle = {"source_ref": {}, "document_kind": "annual_report",
+              "fiscal_year": 2025, "fiscal_period": "FY"}
+    assert prep._validate_v2_candidate(request, handle) == 2025
+    request["fiscal_period"] = "H1"
+    with pytest.raises(RuntimeError, match="fiscal_period"):
+        prep._validate_v2_candidate(request, handle)

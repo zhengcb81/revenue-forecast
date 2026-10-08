@@ -159,7 +159,11 @@ def _validate_v2_candidate(request: dict, handle: dict) -> int:
         raise RuntimeError("SourceRef v2 requires a valid fiscal_year")
     if handle.get("fiscal_year") != fiscal_year:
         raise RuntimeError("filing-fetch SourceRef fiscal_year mismatch")
-    if handle.get("fiscal_period") != request.get("fiscal_period"):
+    requested_period = request.get("fiscal_period")
+    if requested_period is None and request.get("document_kind") == "annual_report":
+        # FY is the only annual period; do not infer a quarterly/half-year period.
+        requested_period = handle.get("fiscal_period") if handle.get("fiscal_period") in (None, "FY") else "FY"
+    if handle.get("fiscal_period") != requested_period:
         raise RuntimeError("filing-fetch SourceRef fiscal_period mismatch")
     return fiscal_year
 
