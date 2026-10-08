@@ -1,0 +1,180 @@
+{
+  "schema_version": "cmrf-lane-handoff/1",
+  "lane_id": "R6-RF-INPUT",
+  "status": "ready_for_main",
+  "repository": "C:/Users/郑曾波/Projects/_harness_worktrees/cmrf-20261008/rf-inputs",
+  "baseline_commit": "72ce94c160bbb5b9399c8716307588b443a72a83",
+  "branch": "codex/cmrf-input-semantics-20261008",
+  "commits": [
+    "0bcbae935c47ef1f3053ead8984f63bdb9a53d95",
+    "f70d197869294a16841eb31a38c9328eb6991567"
+  ],
+  "head": "f70d197869294a16841eb31a38c9328eb6991567",
+  "files": [
+    {
+      "path": "scripts/research/input_quantities.py",
+      "sha256": "0217ce20bd3456122349d59dd49f4b471c4e6fc844878e561141d95a28d11f1a"
+    },
+    {
+      "path": "scripts/research/input_targets.py",
+      "sha256": "2f4f86db37d7315533ba3f86491d0a03b5dfa6e5523cdd118406ce0530995e96"
+    },
+    {
+      "path": "scripts/research/input_evidence.py",
+      "sha256": "22f258d7288ca8f7e8df4923b7f7dddb23431778e37e3b4457eeefee2a55b64a"
+    },
+    {
+      "path": "scripts/analysis/sensitivity.py",
+      "sha256": "da033d45f616ce547d71c1f2189cd6fd639eb992dc0336e0e3de6daa374056b9"
+    },
+    {
+      "path": "scripts/contracts/constants.py",
+      "sha256": "f958974573c7e59e132cadf5cc043bbadb552098f7398532ee883ed0ab271e37"
+    },
+    {
+      "path": "scripts/contracts/document.py",
+      "sha256": "970a45271a5aa6df2748271689d32a9f7da7828a2e2612cc99f8dee941fe20b7"
+    },
+    {
+      "path": "scripts/research/targets.py",
+      "sha256": "6f1216c973035e3aed2119ac3d9bacba1914f5bad2f5ee8f5d2eab8523cd7f31"
+    },
+    {
+      "path": "scripts/research/drivers.py",
+      "sha256": "656c50b3d3e7fc52a8637b9fe587e22fc1f0a894bfb7b343aed2ee53afd85e22"
+    },
+    {
+      "path": "scripts/revenue_report.py",
+      "sha256": "b3d3590bcf1eb703d3d48c2f809c0f644b89a4d54461d5a0f25d6ce74ce3c1fb"
+    },
+    {
+      "path": "tests/test_input_quantity_conversion.py",
+      "sha256": "4c55eca2f833d5c71629ddc294cdf2b22339938e599d409b6b4d2f28a9c23477"
+    },
+    {
+      "path": "tests/test_management_target_semantics.py",
+      "sha256": "fda93d8a80b296255750f2f6f6c32118b3f287ac4ac5d765b6731e35d712e30c"
+    },
+    {
+      "path": "tests/test_evidence_input_lineage.py",
+      "sha256": "0b74fa20825ed57f002e8c3ecbf170507a707aaa71da8c42edbdc5b2540b9187"
+    },
+    {
+      "path": "tests/test_input_semantics_e2e.py",
+      "sha256": "59b348657c414978fca2ab415892331cf6d3c73e97ca05e5375d884af7ca7311"
+    },
+    {
+      "path": "docs/implementation/cmrf-input-semantics-20261008/task_plan.md",
+      "sha256": "49c2c82ffb7ff89f4ab2e25e643a64078294f9ea42fba63a5fe26fdfb1042f84"
+    },
+    {
+      "path": "docs/implementation/cmrf-input-semantics-20261008/findings.md",
+      "sha256": "1d34ac3ab93c4469c73b007d0e2c1a46e34ee77cb75d6da1cc6e4899cd23d1c8"
+    },
+    {
+      "path": "docs/implementation/cmrf-input-semantics-20261008/progress.md",
+      "sha256": "5f587a3423ea8b007b24b85135853e3f8eaaf0e6b862c40d87671e6f7fe33c90"
+    },
+    {
+      "path": "docs/implementation/cmrf-input-semantics-20261008/HANDOFF.md",
+      "sha256": "6ec94bbf0f43c2af555cca32cf5dcccd554f05fe16fd2485f8da8037c39ba2cf"
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "convert_input_quantity / build_sensitivity_test",
+      "version": "rf-input-quantity/1",
+      "path": "scripts/research/input_quantities.py",
+      "example": "tests/test_input_quantity_conversion.py::FormalSensitivityPathTests"
+    },
+    {
+      "name": "build_management_target",
+      "version": "schema 3.7 additive (quarterly_period etc.)",
+      "path": "scripts/research/input_targets.py",
+      "example": "tests/test_management_target_semantics.py::test_quarterly_target_is_preserved_without_annual_comparison"
+    },
+    {
+      "name": "bind_parameter_evidence (incl. narrative_span_binding)",
+      "version": "rf-evidence-role/1",
+      "path": "scripts/research/input_evidence.py",
+      "example": "tests/test_evidence_input_lineage.py::NarrativeBindingTests::test_narrative_bound_driver_enters_the_formal_forecast"
+    }
+  ],
+  "tests": {
+    "red": [
+      {
+        "command": "python -X utf8 -m pytest tests/test_input_quantity_conversion.py tests/test_management_target_semantics.py tests/test_evidence_input_lineage.py -q",
+        "exit_code": 1,
+        "mechanism": "three construction modules missing (API gap) plus real semantic negatives: peer two-source/two-type still triangulated, same excerpt support+contradict accepted, forged 5.0-as-pp conversion arithmetic green"
+      }
+    ],
+    "green": [
+      {
+        "command": "python -X utf8 -m pytest tests/test_input_quantity_conversion.py -q",
+        "exit_code": 0,
+        "passed": 23,
+        "seconds": 0.7
+      },
+      {
+        "command": "python -X utf8 -m pytest tests/test_management_target_semantics.py -q",
+        "exit_code": 0,
+        "passed": 13,
+        "seconds": 0.8
+      },
+      {
+        "command": "python -X utf8 -m pytest tests/test_evidence_input_lineage.py -q",
+        "exit_code": 0,
+        "passed": 17,
+        "seconds": 0.5
+      },
+      {
+        "command": "python -X utf8 -m pytest tests/test_input_semantics_e2e.py -q",
+        "exit_code": 0,
+        "passed": 8,
+        "seconds": 3.4
+      },
+      {
+        "command": "python -X utf8 -m pytest tests/test_management_targets.py tests/test_independent_targets.py tests/test_structure_targets.py tests/test_growth_driver_tree.py tests/test_data_contract.py tests/test_output_report.py tests/test_scenarios_confidence.py tests/test_lint_input.py tests/test_input_construction_consistency.py tests/test_input_contract_migration.py tests/test_golden_behavior_lock.py -q",
+        "exit_code": 0,
+        "passed": 196,
+        "seconds": 6.5
+      },
+      {
+        "command": "python -X utf8 -m pytest tests -q --ignore=tests/test_narrative_source_preparation_e2e.py --ignore=tests/test_ca306_terminal_closure.py --ignore=tests/test_rf_coverage_report.py --ignore=tests/test_zr1001_release_readiness.py --ignore=tests/test_zr1009_legacy_removal.py",
+        "exit_code": 0,
+        "passed": 1387,
+        "seconds": 336.7,
+        "note": "99 failed / 4 errors all pre-existing: re-run of the same failing files on baseline 72ce94c1 reproduces them (HEAD-only failure set is empty); engineering-control tests depend on trees outside this sparse checkout"
+      }
+    ],
+    "e2e": [
+      {
+        "command": "python -X utf8 -m pytest tests/test_input_semantics_e2e.py -q",
+        "mode": "offline",
+        "status": "PASS",
+        "report": "tests/test_input_semantics_e2e.py"
+      }
+    ]
+  },
+  "isolation": {
+    "test_roots": [
+      "tempfile.mkdtemp prefix rf-inputsem-e2e- (per class, removed in tearDownClass)"
+    ],
+    "initial_state": "clean worktree on branch codex/cmrf-input-semantics-20261008 @ 72ce94c1",
+    "restored": true,
+    "retained_bytes": 0,
+    "originals_changed": 0,
+    "production_configs_changed": 0
+  },
+  "model_calls": 0,
+  "limitations": [
+    "machine checks cover structure/roles/distances/units; economic text-support review stays with MAIN's independent large-node review",
+    "qualitative/numeric-range targets keep verbatim labels; endpoint evidence binding not yet modeled",
+    "tests/test_narrative_source_preparation_e2e.py NOT_RUN (needs CWP producer checkout + PyMuPDF; MAIN integration node)"
+  ],
+  "main_actions": [
+    "merge branch and sync install closure via tools/sync_installations.py",
+    "rebuild the three-company inputs with the three builders and run the full new research + independent semantic review",
+    "generalize to the second cohort; run live narrative E2E"
+  ]
+}
