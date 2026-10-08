@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "lane_id": "RF-PROVIDER-CAUSE",
+  "status": "candidate_tested_not_published",
+  "base_sha": "424ba5b1596e7de0df4b3fc48cec5a0e447b0e64",
+  "branch": "codex/company-pool-failure-consumer-20261009",
+  "worktree": "C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\cmrf-20261008\\rf-inputs",
+  "changed_paths": [
+    "scripts/filing_upstream_cause.py",
+    "scripts/filing_fetch_client.py",
+    "scripts/source_preparation.py",
+    "tests/test_source_failure_cause.py",
+    "docs/implementation/company-pool-provider-cause-20261009/handoff.json",
+    "docs/implementation/company-pool-provider-cause-20261009/HANDOFF.md"
+  ],
+  "actual_red": {
+    "failed": 13,
+    "passed": 1,
+    "seconds": 2.45
+  },
+  "green": [
+    {
+      "command": "pytest new failure cause + original filing_fetch_client/source_preparation tests",
+      "passed": 57,
+      "skipped": 1,
+      "seconds": 7.32,
+      "skip_reason": "three repo test lacked explicit roots in first invocation"
+    },
+    {
+      "command": "pytest tests/test_source_ref_v2_three_repo_e2e.py with explicit FF_V2_CODE_ROOT/CWP_V2_CODE_ROOT",
+      "passed": 1,
+      "skipped": 0,
+      "seconds": 11.3
+    },
+    {
+      "command": "python tools/pre_push_gate.py with explicit FF/CWP code roots",
+      "passed": 125,
+      "seconds": 23.93,
+      "ruff": "PASS",
+      "mypy": "7 files PASS"
+    }
+  ],
+  "setup_errors": [
+    "first pytest14setupERROR .test-tmp parent missing; not productRED",
+    "first Ruff e2e absent in sparse checkout; add tracked e2e",
+    "first gate3FAIL: sparse .github missing and dependency roots omitted; restore tracked .github and set existing documented env roots"
+  ],
+  "wire_contract": "filing-upstream-cause/1 exact6fields, unknown/null preserved; safe code vocabulary only; no new retry inference",
+  "cwp_code_count": 33,
+  "rf_codes_count": 45,
+  "cwp_vocabulary_supported": true,
+  "success_contract_unchanged": true,
+  "legacy_error_semantics_preserved": true,
+  "production_writes": 0,
+  "supplier_calls": 0,
+  "paid_calls": 0,
+  "temporary_root": "C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\cmrf-20261008\\rf-inputs\\.test-tmp",
+  "cleanup_pending": false,
+  "review_remaining": "actual FF/CWP/RF failure integration and independent initial NVDA reviews before main/runtime publication",
+  "updated_at": "2026-10-08T23:47:16.271800+00:00",
+  "cleanup_result": "owned .test-tmp absent again; initial absent restored"
+}

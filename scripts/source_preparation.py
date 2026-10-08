@@ -30,6 +30,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
 
 import company_wiki_source  # noqa: E402
+from filing_upstream_cause import extract_cause, parse_error_document, validated_cause  # noqa: E402
 from processing_demand import DemandQueue  # noqa: E402
 
 # ZR-701: source preparation submits one demand per prepared source (key =
@@ -122,6 +123,14 @@ def _filing_fetch_command(
     return command
 
 
+class FilingSourcePreparationError(RuntimeError):
+    """A source failure with its safe upstream diagnostic, without inference."""
+
+    def __init__(self, message: str, *, upstream_cause: dict | None = None):
+        super().__init__(message)
+        self.upstream_cause = validated_cause(upstream_cause)
+
+
 def _run_filing_fetch(request: dict, command: tuple[str, ...], timeout: float) -> dict:
     proc = subprocess.run(
         command,
@@ -134,9 +143,10 @@ def _run_filing_fetch(request: dict, command: tuple[str, ...], timeout: float) -
         check=False,
     )
     if proc.returncode != 0:
-        raise RuntimeError(
+        raise FilingSourcePreparationError(
             f"filing-fetch client exited {proc.returncode}: "
-            f"{proc.stderr.strip()[-800:]}"
+            f"{proc.stderr.strip()[-800:]}",
+            upstream_cause=extract_cause(parse_error_document(proc.stderr)),
         )
     payload = json.loads(proc.stdout)
     return payload if isinstance(payload, dict) else {}
@@ -380,7 +390,11 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.write("\n")
         return 2
     except RuntimeError as exc:
-        sys.stderr.write(json.dumps({"error_code": "upstream", "error": str(exc)}))
+        failure = {"error_code": "upstream", "error": str(exc)}
+        cause = validated_cause(getattr(exc, "upstream_cause", None))
+        if cause is not None:
+            failure["upstream_cause"] = cause
+        sys.stderr.write(json.dumps(failure))
         sys.stderr.write("\n")
         return 3
     sys.stdout.write(json.dumps(record, ensure_ascii=False, indent=2))

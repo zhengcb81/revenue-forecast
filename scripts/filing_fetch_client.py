@@ -27,6 +27,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from filing_upstream_cause import extract_cause, failure_detail, validated_cause
+
 
 class _ClientError(RuntimeError):
     """Raised when filing-fetch cannot return a capture-ready handle.
@@ -45,12 +47,14 @@ class _ClientError(RuntimeError):
         error_code: str | None = None,
         retryable: bool | None = None,
         candidates: list | None = None,
+        upstream_cause: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(message)
         self.status = status
         self.error_code = error_code
         self.retryable = retryable
         self.candidates = candidates
+        self.upstream_cause = validated_cause(upstream_cause)
 
 
 # The location of the standalone filing-fetch canonical repo comes from an
@@ -239,13 +243,15 @@ def resolve_filing(
         # when stdout is not a JSON object.
         payload = _try_loads(completed.stdout)
         if isinstance(payload, dict):
+            detail = failure_detail(payload)
             raise _ClientError(
                 f"filing-fetch exited {completed.returncode}: "
                 f"{payload.get('error') or payload.get('status') or 'unknown error'}",
                 status=payload.get("status"),
                 error_code=payload.get("error_code"),
-                retryable=payload.get("retryable"),
-                candidates=payload.get("candidates"),
+                retryable=detail.get("retryable"),
+                candidates=detail.get("candidates"),
+                upstream_cause=extract_cause(payload),
             )
         detail = completed.stderr.strip() or "no stderr"
         raise _ClientError(f"filing-fetch exited {completed.returncode}: {detail}")
@@ -267,6 +273,7 @@ def resolve_filing(
             f"filing-fetch returned status={status}: {reason or 'invalid v2 filing result'}",
             status=status, error_code=status,
             retryable=filing.get("retryable", False) if isinstance(filing, dict) else False,
+            upstream_cause=extract_cause(response),
         )
     if status != "capture_ready":
         raise _ClientError(
@@ -275,6 +282,7 @@ def resolve_filing(
             error_code=response.get("error_code"),
             retryable=response.get("retryable"),
             candidates=response.get("candidates"),
+            upstream_cause=extract_cause(response),
         )
     handle = response.get("handle")
     if not isinstance(handle, dict):
@@ -288,6 +296,7 @@ def _emit_error(
     *,
     retryable: bool | None = False,
     candidates: list | None = None,
+    upstream_cause: dict[str, Any] | None = None,
 ) -> None:
     """Write a structured error document to stderr (success stream on stdout)."""
     payload: dict[str, Any] = {
@@ -297,6 +306,9 @@ def _emit_error(
     }
     if candidates:
         payload["candidates"] = candidates
+    cause = validated_cause(upstream_cause)
+    if cause is not None:
+        payload["upstream_cause"] = cause
     sys.stderr.write(json.dumps(payload, ensure_ascii=False))
     sys.stderr.write("\n")
 
@@ -376,6 +388,7 @@ def main(argv: list[str] | None = None) -> int:
             str(exc),
             retryable=exc.retryable,
             candidates=exc.candidates,
+            upstream_cause=exc.upstream_cause,
         )
         return 2
 
