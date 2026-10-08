@@ -9,7 +9,6 @@ annual comparison value, and the original statement is never overwritten.
 """
 from __future__ import annotations
 
-import copy
 import sys
 import unittest
 from pathlib import Path

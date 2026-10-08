@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import copy
 import hashlib
-import json
 import sys
 import unittest
 from pathlib import Path
@@ -25,7 +24,6 @@ from contracts.evidence import build_host_receipt  # noqa: E402
 from company_wiki_narrative_contracts import (  # noqa: E402
     SPAN_PREFIX, canonical_bytes, validate_narrative_response,
 )
-from test_data_contract import apply_parameter_contract, finalize_contract  # noqa: E402
 from test_recognition_bridge import forecast_document  # noqa: E402
 
 

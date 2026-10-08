@@ -21,7 +21,6 @@ from contracts.constants import (
     MANAGEMENT_TARGET_MEASUREMENT_BASES,
     MANAGEMENT_TARGET_PERIMETERS,
     MANAGEMENT_TARGET_PRESENTATION_BASES,
-    MANAGEMENT_TARGET_TREATMENTS,
 )
 from contracts.evidence import (
     ForecastInputError,
@@ -196,7 +195,7 @@ def build_management_target(
         elif raw_value_kind in {"qualitative_range", "numeric_range"}:
             reason_code = f"{raw_value_kind}_has_no_single_point_value"
             unmodeled_reason = (
-                f"Preserved verbatim label/range; no midpoint or point was invented."
+                "Preserved verbatim label/range; no midpoint or point was invented."
             )
         elif measurement_basis == "run_rate_at_period_end":
             reason_code = "run_rate_without_supported_annual_conversion"
