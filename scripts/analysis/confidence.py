@@ -10,14 +10,22 @@ from collections import defaultdict
 from contracts.constants import FORECAST_SCHEMA_VERSION
 from contracts.evidence import (
     parse_iso_date,
+    require,
 )
 from contracts.document import validate_historical_accuracy_records
+
+
+CONFIDENCE_CALCULATION_VERSION = "stable-fsum/1"
+# Only unmarked legacy confidence may differ by final floating-point bits.
+# 64 binary64 ULPs cover the observed positive-weight reductions; never use
+# revenue reconciliation tolerance for dimensionless confidence scores.
+LEGACY_CONFIDENCE_MAX_ULPS = 64
 
 
 def parameter_revenue_weights(
     data: dict[str, Any], result: dict[str, Any]
 ) -> dict[str, float]:
-    weights: dict[str, float] = defaultdict(float)
+    contributions: dict[str, list[float]] = defaultdict(list)
     segment_inputs = {segment["name"]: segment for segment in data["segments"]}
     for segment_result in result["segments"]:
         segment = segment_inputs[segment_result["name"]]
@@ -40,8 +48,8 @@ def parameter_revenue_weights(
             if isinstance(values, dict):
                 refs.update(values.get("base", []))
         if refs:
-            for parameter_id in refs:
-                weights[parameter_id] += terminal / len(refs)
+            for parameter_id in sorted(refs):
+                contributions[parameter_id].append(terminal / len(refs))
     for adjustment, bridge in zip(
         data.get("forecast_adjustments", []),
         result["consolidated_forecast"]["base"]["adjustment_bridge"],
@@ -50,17 +58,18 @@ def parameter_revenue_weights(
         impact = abs(float(list(bridge["annual_adjustment"].values())[-1]))
         if refs:
             for parameter_id in refs:
-                weights[parameter_id] += impact / len(refs)
+                contributions[parameter_id].append(impact / len(refs))
     # Constraint parameters drive effective revenue when constraints are present;
     # include their absolute revenue impact so confidence weights stay aligned
     # with the growth-driver helper.
     for entry in result.get("constraint_audit", []):
-        impact = sum(abs(change["adjustment"]) for change in entry.get("changes", []))
+        impact = math.fsum(sorted(abs(change["adjustment"]) for change in entry.get("changes", [])))
         param_ids = entry.get("parameter_ids", [])
         if param_ids and impact > 0:
             for parameter_id in param_ids:
-                weights[parameter_id] += impact / len(param_ids)
-    return dict(weights)
+                contributions[parameter_id].append(impact / len(param_ids))
+    # Stable key order and compensated sums preserve small shared exposures.
+    return {key: math.fsum(sorted(contributions[key])) for key in sorted(contributions)}
 
 
 def _history_score(
@@ -114,22 +123,22 @@ def calculate_confidence(
     parameters = validated["parameter_index"]
     claims = validated["claim_index"]
     weights = parameter_revenue_weights(data, result)
-    total_weight = sum(weights.values())
-    covered_weight = sum(
+    total_weight = math.fsum(weights.values())
+    covered_weight = math.fsum(
         weight
         for parameter_id, weight in weights.items()
         if parameters[parameter_id].get("claim_ids")
     )
     driver_coverage = 0 if total_weight == 0 else covered_weight / total_weight
-    quality_numerator = 0.0
-    freshness_numerator = 0.0
+    quality_terms: list[float] = []
+    freshness_terms: list[float] = []
     as_of = validated["as_of_date"]
     for parameter_id, weight in weights.items():
         claim_ids = parameters[parameter_id].get("claim_ids", [])
         if not claim_ids:
             continue
         parameter_claims = [claims[claim_id] for claim_id in claim_ids]
-        quality = sum(
+        quality = math.fsum(
             1.0
             if claim["support_type"] == "exact_value"
             else 0.8
@@ -147,16 +156,18 @@ def calculate_confidence(
             ).days
             for claim in parameter_claims
         ]
-        freshness = sum(
+        freshness = math.fsum(
             1.0 if age <= 180 else 0.8 if age <= 365 else 0.5 if age <= 730 else 0.2
             for age in ages
         ) / len(ages)
-        quality_numerator += weight * quality
-        freshness_numerator += weight * freshness
+        quality_terms.append(weight * quality)
+        freshness_terms.append(weight * freshness)
+    quality_numerator = math.fsum(quality_terms)
+    freshness_numerator = math.fsum(freshness_terms)
     source_quality = 0 if covered_weight == 0 else quality_numerator / covered_weight
     freshness = 0 if covered_weight == 0 else freshness_numerator / covered_weight
 
-    segment_total = sum(
+    segment_total = math.fsum(
         abs(
             float(
                 list(
@@ -171,7 +182,7 @@ def calculate_confidence(
         )
         for segment in result["segments"]
     )
-    explicit_total = sum(
+    explicit_total = math.fsum(
         abs(
             float(
                 list(
@@ -201,13 +212,13 @@ def calculate_confidence(
     concentration = None
     if sensitivities:
         impacts = [item["max_absolute_terminal_impact"] for item in sensitivities]
-        total_impact = sum(impacts)
+        total_impact = math.fsum(sorted(impacts))
         concentration = 0 if total_impact == 0 else max(impacts) / total_impact
         tested = {item["parameter_id"] for item in sensitivities}
         sensitivity_coverage = (
             0
             if total_weight == 0
-            else sum(
+            else math.fsum(
                 weight
                 for parameter_id, weight in weights.items()
                 if parameter_id in tested
@@ -223,7 +234,7 @@ def calculate_confidence(
         "historical_accuracy": history_score,
         "revenue_weighted_sensitivity_coverage": 15 * sensitivity_coverage,
     }
-    score = sum(components.values())
+    score = math.fsum(components.values())
     rating = "high" if score >= 80 else "medium" if score >= 55 else "low"
     quality_gates = {
         "base_reconciliation": True,
@@ -275,6 +286,7 @@ def calculate_confidence(
             "Company-level forecast adjustments are disclosed separately from operating growth-driver ranking"
         )
     return {
+        "calculation_version": CONFIDENCE_CALCULATION_VERSION,
         "score": score,
         "rating": rating,
         "components": components,
@@ -287,3 +299,54 @@ def calculate_confidence(
         "quality_gates": quality_gates,
         "limitations": limitations,
     }
+
+
+def _numeric_match(expected: Any, observed: Any, *, legacy: bool) -> bool:
+    if expected is None or observed is None:
+        return expected is observed
+    if type(expected) not in (int, float) or type(observed) not in (int, float):
+        return False
+    if not math.isfinite(expected) or not math.isfinite(observed):
+        return False
+    if expected == observed:
+        return True
+    return legacy and abs(expected - observed) <= LEGACY_CONFIDENCE_MAX_ULPS * max(
+        math.ulp(float(expected)), math.ulp(float(observed))
+    )
+
+
+def validate_confidence_recomputation(
+    expected: dict[str, Any], observed: dict[str, Any]
+) -> None:
+    """Exact stable revision; bounded legacy roundoff, never semantic slack.
+
+    Old signed/hashed bytes stay untouched. Unknown or null revision markers
+    are rejected. Counts/history and categorical values remain exact; only
+    the named dimensionless reducers admit legacy ULP noise. New emissions
+    always carry a revision marker and are checked bit-for-bit.
+    """
+    legacy = "calculation_version" not in observed
+    require(
+        legacy or observed.get("calculation_version") == CONFIDENCE_CALCULATION_VERSION,
+        "unknown confidence calculation version",
+    )
+    components = observed.get("components")
+    require(
+        isinstance(components, dict) and components.keys() == expected["components"].keys()
+        and all(_numeric_match(value, components[key], legacy=legacy)
+                for key, value in expected["components"].items()),
+        "confidence components recomputation mismatch",
+    )
+    for key in ("driver_evidence_coverage", "sensitivity_concentration", "score"):
+        require(_numeric_match(expected.get(key), observed.get(key), legacy=legacy),
+                f"confidence {key} recomputation mismatch")
+    history = observed.get("historical_accuracy")
+    require(
+        isinstance(history, dict)
+        and type(history.get("observations")) is int
+        and (history.get("wape") is None or type(history.get("wape")) in (int, float))
+        and expected.get("historical_accuracy") == history,
+        "confidence historical_accuracy recomputation mismatch",
+    )
+    require(expected.get("rating") == observed.get("rating"),
+            "confidence rating recomputation mismatch")

@@ -4,6 +4,9 @@ This project follows Semantic Versioning. The runtime release source of truth is
 
 ## Unreleased — 2026-10-08 cross-market source audit
 
+- Confidence numerical revision `stable-fsum/1`: canonical shared-parameter contributions and compensated positive-weight reductions make the result independent of Python hash seeds and equivalent aggregation order. New confidence blocks carry `calculation_version` and are revalidated exactly; unmarked legacy blocks admit at most 64 binary64 ULPs in named dimensionless reductions, with exact history counts, categories and source/input bindings. Unknown revisions, non-finite values and substantive changes remain rejected. Old bytes are never rewritten.
+- Five reviewed model-family golden hashes change only for the new confidence revision, its final-bit numerical corrections and dependent receipt/result hashes. The original HEAD goldens were reproduced and strongly validated; all non-confidence economic fields were unchanged (`docs/implementation/confidence-stability/golden_compatibility_audit.json`). The workspace remains 4.1.0/schema 3.7 under the existing unreleased audit; the explicit numerical revision and exact commit identify this patch.
+
 - Accept filing-fetch schema-2 pathless candidates and verify their source reference, identity and period against the actual producer read. Annual requests may omit FY; nonannual periods remain explicit.
 - Preserve unknown historical retrieval timestamps as null; record the actual verified read timestamp for the new local capture. Publication and as-of checks remain enforced.
 - Represent already-recognized mixed-policy aggregates truthfully, only for direct recognized-revenue models with explicit aggregation boundaries and policy evidence. Reject progress, lag and carry-in transforms on these aggregates.

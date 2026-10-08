@@ -1,11 +1,14 @@
-"""Golden behavior lock, refreshed for the reviewed 4.1.0 methodology changes.
+"""Golden behavior lock, refreshed for reviewed 4.1.0 and stable-fsum/1 changes.
 
 Five model families (volume / capacity / subscriber / backlog / bank) each
 get a full run through ``run_forecast``; the canonical hash of the entire
 result is pinned here. The 2026-09-18 refresh compared the original HEAD runtime
 in isolation: recognized/consolidated revenue and score components were unchanged;
 version/receipt hashes, disclosed limitations and optional zero stock adjustments
-changed intentionally. Future changes still require an explained baseline review.
+changed intentionally. The 2026-10-08 numerical revision audit additionally
+reproduced all five original hashes and strongly validated old/new outputs;
+non-confidence economic fields were unchanged. Its machine report is under
+docs/implementation/confidence-stability/. Future changes still require an explained baseline review.
 
 To refresh the baseline after a *deliberate, versioned* change:
     python tests/test_golden_behavior_lock.py --update-golden
@@ -156,7 +159,7 @@ class GoldenBehaviorLockTests(unittest.TestCase):
             self.assertEqual(
                 actual,
                 expected[family],
-                f"{family} output hash changed — R9 split must be "
+                f"{family} output hash changed — reviewed baseline must be "
                 "behavior-locked (byte-identical outputs)",
             )
 

@@ -68,3 +68,19 @@ Generate both outputs with:
 ```powershell
 python scripts/revenue_forecast.py input.json --output forecast.json --markdown forecast.md
 ```
+
+## Confidence numerical revision
+
+Current emissions identify `confidence.calculation_version="stable-fsum/1"`.
+Shared exposures use canonical parameter keys and compensated sums; every
+new confidence component, coverage, concentration and score is recomputed
+exactly across independent processes. This is an evidence/workflow score,
+not a forecast probability and not a revenue-model change.
+
+Unmarked legacy confidence can be read without rewriting the original
+artifact: only the named dimensionless numeric reductions allow up to 64
+binary64 ULPs of final-bit roundoff. Historical records/counts and categories,
+source facts, identity/periods, input bindings and all artifact hashes remain
+checked. Unknown/null revisions, non-finite or boolean numbers and substantive
+component changes are errors. Older methodology outputs still need their
+pinned emitting runtime when this compatibility bound does not apply.

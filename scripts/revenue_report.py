@@ -31,6 +31,7 @@ from revenue_core import (
     validate_growth_driver_tree,
     validate_source_capture,
 )
+from analysis.confidence import validate_confidence_recomputation
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 from revenue_publication import (
     VerificationContext,
@@ -1259,27 +1260,7 @@ def _validate_forecast_output(
         result,
         result.get("sensitivities", []),
     )
-    require(
-        expected_confidence["components"] == confidence["components"],
-        "confidence components recomputation mismatch",
-    )
-    # R6.2 (mutation patrol): every derived confidence component is part of
-    # the contract — driver_evidence_coverage and other nested values must
-    # match the recomputation exactly.
-    for _component in ("driver_evidence_coverage", "sensitivity_concentration", "historical_accuracy"):
-        require(
-            expected_confidence.get(_component) == confidence.get(_component),
-            f"confidence {_component} recomputation mismatch",
-        )
-    require(
-        math.isclose(
-            float(expected_confidence["score"]),
-            float(confidence["score"]),
-            rel_tol=1e-9,
-            abs_tol=1e-9,
-        ),
-        "confidence score recomputation mismatch",
-    )
+    validate_confidence_recomputation(expected_confidence, confidence)
     theme = result.get("theme_analysis")
     if theme is not None:
         _validate_theme_analysis(theme, segment_index, parameter_index, base, effective_path)
