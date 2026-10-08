@@ -20,12 +20,12 @@ assurance/runs、output、生产配置、compatibility/current.json、CI 工作�
 ## 步骤
 
 1. [x] 核实工作树/基线；读必读文档与实现入口（CodeGraph 式结构核实，见 findings.md）。
-2. [ ] RED：`tests/test_input_quantity_conversion.py`、`test_management_target_semantics.py`、`test_evidence_input_lineage.py`（函数缺失 RED + 真语义错误/正例 RED）。
-3. [ ] GREEN-1 单位：`input_quantities.py` + 参数 `input_quantity` 字段进 `contracts/document.py`/`lint_input.py`；正式 sensitivity 路径验证。
-4. [ ] GREEN-2 目标：`input_targets.py` + 合同扩展（constants/targets/report 同步）。
-5. [ ] GREEN-3 证据：`input_evidence.py` + `evidence_role`/peer 剔除进 document/drivers。
-6. [ ] E2E `tests/test_input_semantics_e2e.py`：独立测试根 构建→lint→fix_hashes→engine→report→snapshot→registry；支持源变体/peer 变体（收入不变，evidence_status/limitation 变）。
-7. [ ] 集中回归：rg 选相关既有测试清单集中跑 + golden 锁不漂移。
+2. [x] RED：`tests/test_input_quantity_conversion.py`、`test_management_target_semantics.py`、`test_evidence_input_lineage.py`（函数缺失 RED + 真语义错误/正例 RED）。
+3. [x] GREEN-1 单位：`input_quantities.py` + 参数 `input_quantity` 字段进 `contracts/document.py`/`lint_input.py`；正式 sensitivity 路径验证。
+4. [x] GREEN-2 目标：`input_targets.py` + 合同扩展（constants/targets/report 同步）。
+5. [x] GREEN-3 证据：`input_evidence.py` + `evidence_role`/peer 剔除进 document/drivers。
+6. [x] E2E `tests/test_input_semantics_e2e.py`：独立测试根 构建→lint→fix_hashes→engine→report→snapshot→registry；支持源变体/peer 变体（收入不变，evidence_status/limitation 变）。8 passed。
+7. [x] 集中回归：相关既有套件 196 passed + golden 锁不漂移；全量套件排除 5 个稀疏工作树环境受限文件（uc 包在 audit_review 域）后运行，结果见 HANDOFF。
 8. [ ] 交付：本目录五文件（task_plan/findings/progress/HANDOFF/handoff.json），Git 分批提交。
 
 ## 边界（每步适用）
