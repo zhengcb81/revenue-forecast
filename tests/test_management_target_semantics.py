@@ -83,6 +83,34 @@ class BuildManagementTargetTests(unittest.TestCase):
         self.assertFalse(built["notes"]["comparable"])
         self.assertTrue(built["notes"]["reason_code"])
 
+    def test_unmodeled_target_needs_no_duplicate_explanation_field(self) -> None:
+        baseline = run_forecast(self.data)["consolidated_forecast"]
+        for basis in ("quarterly_period", "ambiguous"):
+            with self.subTest(measurement_basis=basis):
+                import copy
+
+                built = self.build(**self._base_kwargs(measurement_basis=basis))
+                target = built["target"]
+                target.pop("unmodeled_reason", None)
+                if basis == "ambiguous":
+                    # The old contract already carries rationale and basis notes.
+                    target.pop("raw_value_kind", None)
+                    target.pop("target_quarter", None)
+                result = run_forecast(_attach(copy.deepcopy(self.data), built))
+                recorded = result["management_target_coverage"]["targets"][0]
+                self.assertEqual(recorded["statement"], target["statement"])
+                self.assertIsNone(recorded.get("comparison_value"))
+                self.assertEqual(recorded["scenario_comparison"], {})
+                self.assertEqual(result["consolidated_forecast"], baseline)
+                self.assertEqual(result["management_target_coverage"]["counts"]["targets_unmodeled"], 1)
+
+    def test_unmodeled_target_still_requires_its_business_rationale(self) -> None:
+        built = self.build(**self._base_kwargs())
+        built["target"].pop("unmodeled_reason", None)
+        built["target"]["rationale"] = ""
+        with self.assertRaisesRegex(ForecastInputError, "rationale"):
+            run_forecast(_attach(self.data, built))
+
     def test_quarterly_target_never_produces_annual_comparison_in_engine(self) -> None:
         built = self.build(**self._base_kwargs())
         data = _attach(self.data, built)

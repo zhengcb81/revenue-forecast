@@ -588,16 +588,10 @@ def validate_management_target_coverage(
                 gap_message = f"{gap_message} ({reason.strip()})"
             gap_messages.append(gap_message)
 
-        if treatment == "unmodeled_data_gap" and (
-            raw_value_kind in {"qualitative_range", "numeric_range"}
-            or measurement_basis == "quarterly_period"
-            or measurement_basis == "ambiguous"
-        ):
-            require(
-                isinstance(target.get("unmodeled_reason"), str)
-                and target["unmodeled_reason"].strip(),
-                f"qualitative/range/quarterly/ambiguous unmodeled target requires unmodeled_reason: {target_id}",
-            )
+        # rationale and measurement_rationale already explain the treatment.
+        # unmodeled_reason is optional diagnostic detail, not a second permit.
+        # Do not reject preserved qualitative/quarterly/undated statements just
+        # because an older input carries its explanation in the original fields.
 
         if materiality == "material" and within_horizon and comparable:
             # A qualitative range, a numeric range or an unconverted quarterly

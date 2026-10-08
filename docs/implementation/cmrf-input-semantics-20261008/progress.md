@@ -17,3 +17,8 @@
 - 未跑 `tests/test_narrative_source_preparation_e2e.py`（需 CWP producer checkout + PyMuPDF，属 MAIN 集成大节点）。
 - 未改 assurance/runs、output、生产配置、compatibility/current.json、CI、旧快照；golden 哈希未重算。
 - 三公司完整新研究、新 canonical 摘要消费、独立语义审查、第二组泛化：归 MAIN。
+
+
+## MAIN合并后兼容修复
+
+合并后的真实冻结三公司回放发现，中微未定年计划和微软季度目标已有rationale/measurement_rationale，却被新增可选unmodeled_reason字段重复阻断。两类责任测试真实2个subtest RED，保留业务解释、原话、无年度比较和收入不变断言；取消重复要求，显式无效字段仍拒绝。腾讯同一历史表格正反证据混用仍是需重做研究的实质缺口，不改封存输入/快照，不加公司白名单。
