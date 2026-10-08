@@ -268,3 +268,24 @@ def test_invalid_cutoff_never_becomes_current_mode(cutoff):
     request["as_of_date"] = cutoff
     with pytest.raises(NarrativeTransportError):
         validate_narrative_request(request)
+
+
+@pytest.mark.parametrize("cutoff", [None, "2026-09-01"])
+def test_unknown_collection_time_is_preserved_not_fabricated(cutoff):
+    request, body, raw = _valid()
+    receipt = json.loads(raw)
+    request["as_of_date"] = receipt["as_of_date"] = cutoff
+    receipt["manifest"]["retrieved_at"] = None
+    dto = validate_narrative_response(request, body, _canonical(receipt) + b"\n").to_dict()
+    assert dto["manifest"]["retrieved_at"] is None
+    assert dto["manifest"]["published_date"] == receipt["manifest"]["published_date"]
+    assert dto["evidence_spans"] == json.loads(body)["evidence_spans"]
+
+
+@pytest.mark.parametrize("retrieved_at", ["", "not-a-date", "2026-01-01", []])
+def test_present_invalid_collection_time_is_rejected(retrieved_at):
+    request, body, raw = _valid()
+    receipt = json.loads(raw)
+    receipt["manifest"]["retrieved_at"] = retrieved_at
+    with pytest.raises(NarrativeTransportError):
+        validate_narrative_response(request, body, _canonical(receipt) + b"\n")

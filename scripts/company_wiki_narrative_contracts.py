@@ -212,7 +212,8 @@ def _manifest(receipt: dict, request: dict) -> dict:
         _require(_date(manifest["published_date"]) <= cutoff, "source_after_as_of")
     elif manifest["published_date"] is not None:
         _date(manifest["published_date"])  # Current mode preserves typed metadata.
-    _utc(manifest["retrieved_at"])  # Validate metadata, not local collection availability.
+    if manifest["retrieved_at"] is not None:
+        _utc(manifest["retrieved_at"])  # Unknown collection time stays unknown.
     return manifest
 
 
