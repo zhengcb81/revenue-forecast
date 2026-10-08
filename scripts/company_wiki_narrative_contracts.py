@@ -445,7 +445,8 @@ def _bundle_contents(bundle: dict, receipt: dict, manifest: dict) -> None:
 def _bundle_metadata(bundle: dict, manifest: dict) -> dict:
     metadata = _exact(bundle["source_metadata"], {"source_class", "title", "document_kind", "language"},
                       "invalid_source_metadata")
-    _require(metadata["document_kind"] == manifest["document_kind"] and metadata["language"] == manifest["language"],
+    _require(metadata["document_kind"] == manifest["document_kind"] and
+             (manifest["language"] is None or metadata["language"] == manifest["language"]),
              "bundle_manifest_mismatch")
     _require(metadata["source_class"] in {"filing", "transcript"} and metadata["language"] in {"en", "zh", "mixed"},
              "invalid_source_metadata")

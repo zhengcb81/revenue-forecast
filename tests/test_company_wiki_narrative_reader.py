@@ -289,3 +289,18 @@ def test_present_invalid_collection_time_is_rejected(retrieved_at):
     receipt["manifest"]["retrieved_at"] = retrieved_at
     with pytest.raises(NarrativeTransportError):
         validate_narrative_response(request, body, _canonical(receipt) + b"\n")
+
+
+@pytest.mark.parametrize("language, allowed", [(None, True), ("en", True), ("zh", False)])
+def test_missing_registered_language_does_not_contradict_detected_language(language, allowed):
+    request, body, raw = _valid()
+    receipt = json.loads(raw)
+    request["as_of_date"] = receipt["as_of_date"] = None
+    receipt["manifest"]["language"] = language
+    if allowed:
+        dto = validate_narrative_response(request, body, _canonical(receipt) + b"\n").to_dict()
+        assert dto["manifest"]["language"] == language
+        assert dto["source_metadata"]["language"] == "en"
+    else:
+        with pytest.raises(NarrativeTransportError, match="bundle_manifest_mismatch"):
+            validate_narrative_response(request, body, _canonical(receipt) + b"\n")
