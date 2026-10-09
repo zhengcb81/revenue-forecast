@@ -1,0 +1,256 @@
+{
+  "schema_version": "rf-work-package-handoff/1",
+  "package": "W05",
+  "base": "a7c2c73758e7b7bbb6454c2955390f179f2d5f28",
+  "functional_commit": "5bcee2f5e2eb4617c24ab19b7a528335823f8d89",
+  "changed_paths": [
+    {
+      "path": "references/target-measurement-comparison.md",
+      "sha256": "ad47ce3c0b5951178f25b138e77d0d11dc476727ee244aeffb4f0ddab22a69b3"
+    },
+    {
+      "path": "scripts/contracts/constants.py",
+      "sha256": "362eb284dbe90345402c2652e123b9be0021aaab9c10a2d807f53b5ee1dea0af"
+    },
+    {
+      "path": "scripts/research/communication_scope.py",
+      "sha256": "7d5852f0b9ddfe765d952d78e1d88f1dab68a92bb00cc66c32cf228171e535ce"
+    },
+    {
+      "path": "scripts/research/target_measurement.py",
+      "sha256": "ef4db7e07332171e299626e1ed784065732e09aed87200728d5291ba2b7d1e85"
+    },
+    {
+      "path": "scripts/research/targets.py",
+      "sha256": "f69e82605e652403b474679d42395485fbb9fe154a1f90bf5ec62f84f6d24629"
+    },
+    {
+      "path": "scripts/revenue_report.py",
+      "sha256": "8fba8ee46b22f64d80978096c40e36035ef0413ff229708086017825a342b500"
+    },
+    {
+      "path": "tests/test_target_measurement_comparison.py",
+      "sha256": "20f7bf123f915892699f25ff5c3695617f11bae1a82ba1ebd90f9b25221ca973"
+    },
+    {
+      "path": "tools/run_target_measurement_e2e.py",
+      "sha256": "bf16fdfba5892e992afc1984fe840b6e2238eeadb8e08b2d48836fb9776f9d03"
+    },
+    {
+      "path": "scripts/research/native_dependencies.py",
+      "sha256": "b2f475371907885a0096d0c4b40f40d87e5a26cc6ff5f8cb0c59de17b0ba37ea"
+    },
+    {
+      "path": "tests/test_native_research_bindings.py",
+      "sha256": "7573d685d5d28e594451f0e6c865b2c589bff6b09a4209bedf483af27a946894"
+    }
+  ],
+  "red": {
+    "command": "python -X utf8 -B -m pytest tests/test_target_measurement_comparison.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 1,
+    "failed": 6,
+    "passed": 1,
+    "seconds": 0.57
+  },
+  "green": {
+    "command": "python -X utf8 -B -m pytest tests/test_target_measurement_comparison.py tests/test_management_targets.py tests/test_independent_targets.py tests/test_output_report.py tests/test_structure_targets.py tests/test_input_contract_migration.py tests/test_golden_behavior_lock.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 0,
+    "passed": 66,
+    "seconds": 3.06
+  },
+  "checks": {
+    "ruff_no_cache": "pass",
+    "mypy_public_contracts": "pass; 7 source files",
+    "commit": "normal git commit; configured .githooks absent, no hook executed; no suppression or replacement",
+    "legacy_golden": "five stable full hashes unchanged"
+  },
+  "native_recipe": {
+    "command": "python -X utf8 -B tools/run_target_measurement_e2e.py --input <typed-input.json> --output-root <absent-owned-output>",
+    "actual_fixture_run": "validate-only, compute/render, immutable snapshot subprocess exits [0,0,0]; engineering synthetic inputs",
+    "outputs": [
+      "forecast.json",
+      "forecast.md",
+      "snapshot.json",
+      "commands.json",
+      "publications.jsonl"
+    ]
+  },
+  "budget": {
+    "supplier_calls": 0,
+    "model_calls": 0,
+    "new_downloads": 0,
+    "unknown_usage_preserved": true
+  },
+  "temporary_roots": {
+    "initial": "short unique rW05-* root absent",
+    "final": "each owned root restored absent in finally; original files deleted 0"
+  },
+  "install": {
+    "performed": false,
+    "runtime_files": [
+      "scripts/contracts/constants.py",
+      "scripts/research/communication_scope.py",
+      "scripts/research/target_measurement.py",
+      "scripts/research/targets.py",
+      "scripts/revenue_report.py",
+      "scripts/research/native_dependencies.py"
+    ],
+    "reference_files": [
+      "references/target-measurement-comparison.md"
+    ],
+    "owner": "MAIN; no config/output overwrite",
+    "files": [
+      {
+        "path": "references/target-measurement-comparison.md",
+        "base_sha256": null,
+        "new_sha256": "ad47ce3c0b5951178f25b138e77d0d11dc476727ee244aeffb4f0ddab22a69b3",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/contracts/constants.py",
+        "base_sha256": "f958974573c7e59e132cadf5cc043bbadb552098f7398532ee883ed0ab271e37",
+        "new_sha256": "362eb284dbe90345402c2652e123b9be0021aaab9c10a2d807f53b5ee1dea0af",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "f958974573c7e59e132cadf5cc043bbadb552098f7398532ee883ed0ab271e37"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "f958974573c7e59e132cadf5cc043bbadb552098f7398532ee883ed0ab271e37"
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/communication_scope.py",
+        "base_sha256": null,
+        "new_sha256": "7d5852f0b9ddfe765d952d78e1d88f1dab68a92bb00cc66c32cf228171e535ce",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/target_measurement.py",
+        "base_sha256": null,
+        "new_sha256": "ef4db7e07332171e299626e1ed784065732e09aed87200728d5291ba2b7d1e85",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/targets.py",
+        "base_sha256": "07c54d41f3e7e9bdf8ddfc07b9c62a996569476000218459ecc2c39a3f9f9813",
+        "new_sha256": "f69e82605e652403b474679d42395485fbb9fe154a1f90bf5ec62f84f6d24629",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "07c54d41f3e7e9bdf8ddfc07b9c62a996569476000218459ecc2c39a3f9f9813"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "07c54d41f3e7e9bdf8ddfc07b9c62a996569476000218459ecc2c39a3f9f9813"
+          }
+        ]
+      },
+      {
+        "path": "scripts/revenue_report.py",
+        "base_sha256": "b3d3590bcf1eb703d3d48c2f809c0f644b89a4d54461d5a0f25d6ce74ce3c1fb",
+        "new_sha256": "8fba8ee46b22f64d80978096c40e36035ef0413ff229708086017825a342b500",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "b3d3590bcf1eb703d3d48c2f809c0f644b89a4d54461d5a0f25d6ce74ce3c1fb"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "b3d3590bcf1eb703d3d48c2f809c0f644b89a4d54461d5a0f25d6ce74ce3c1fb"
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/native_dependencies.py",
+        "base_sha256": null,
+        "new_sha256": "b2f475371907885a0096d0c4b40f40d87e5a26cc6ff5f8cb0c59de17b0ba37ea",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Native arithmetic and contract verification complete; economic validity and live M2 original reads remain MAIN-owned.",
+    "Legacy source-bearing checked coverage has no semantic completeness proof; optional audit_communication_coverage exposes semantically_unverified.",
+    "No consensus beat/accuracy inference, quarterly annualization, or management-attributed derived dollar promise."
+  ],
+  "functional_commits": [
+    "5bcee2f5e2eb4617c24ab19b7a528335823f8d89",
+    "cbbb0c2f3495ae6b038a553672c338c86d52282d",
+    "36743282f39e9e6c4a958693a3f22a57380ccab5"
+  ],
+  "functional_head": "36743282f39e9e6c4a958693a3f22a57380ccab5",
+  "manifest_scope": "current integrated branch at acceptance binding repair; original commit identities and verification records retained",
+  "boundary_scope_followup": {
+    "functional_commit": "cbbb0c2f3495ae6b038a553672c338c86d52282d",
+    "red": {
+      "exit": 1,
+      "failed": 1,
+      "passed": 11,
+      "seconds": 1.51
+    },
+    "green": {
+      "command": "python -X utf8 -B -m pytest tests/test_target_measurement_comparison.py -q -p no:cacheprovider --basetemp <owned>/p",
+      "exit": 0,
+      "passed": 13,
+      "seconds": 1.33
+    },
+    "behavior": "boundary filing does not complete later announcement interval; annual filing cannot prove earnings-call category; incomplete diagnostic, not an access gate"
+  },
+  "acceptance_binding_repair": {
+    "functional_commit": "36743282f39e9e6c4a958693a3f22a57380ccab5",
+    "base": "b62161c81d5a343e08aab4bf7d0ca15dd2e8ab8c",
+    "handoff": "docs/implementation/pool-w04-w06-binding-repair/handoff.json",
+    "status": "owner repair complete; original independent concentrated recheck pending",
+    "findings": [
+      "F1",
+      "F3",
+      "F4"
+    ],
+    "green": {
+      "passed": 201,
+      "subtests_passed": 167,
+      "seconds": 10.2,
+      "exit": 0
+    },
+    "w04_transport_rerun": false
+  }
+}

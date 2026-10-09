@@ -96,3 +96,12 @@ Low/High 是条件情景边界。未定义概率分布和验证标称覆盖率�
 | 置信评分 | 证据和流程指标，不能解释为达成概率、准确率或投资胜率 |
 
 交付前优先解决可能改变结论的大额缺口。剩余缺口进入正式 data_gaps/limitations；若缺口属于运行时硬门槛则保持阻断，若只是研究标准未满足则按实际状态披露，不能虚称代码验证通过即完成经济审查。盈利、现金流、治理评级、估值与仓位判断仍由对应 invest-* 模块处理。
+
+
+## 9. 经营内容清单、角色与范围的可执行补充
+
+先按实读原文列出 material target、新业务爬坡、确认条款、共享瓶颈、融资与竞争内容；每项记录 modeled/included/subscope/unmodeled/materiality_skip/unknown 与原因。包含于已有平台或分部的产品不能再加成独立收入。没有公开基期、TTM 与年度不匹配、租赁/最低保证与硬件销售不同，保留缺口而非造值。
+
+历史收入表头只能支持基线/口径；需求走弱应进入反证，不能当正增长机制。经营机制说明方向，原文所示数量区间结合明确 period/scope 和转化假设才支持量级。主要 driver 至少尝试独立经营/外部 reference range；不可得时保留 unverified/conditional/stress，降低模型自由度、缩短明确预测期并解释剩余收入暴露。现有总分只衡量证据流程，新 optional adequacy 分列 documentary presence/mechanism/magnitude，不调整旧权重，不解释为准确率或达成概率。
+
+可执行字段、两语言反例、原生公式校准、Q4→Q1 延期/取消与共享 cap、通用真实组装 CLI 见 [evidence-role-calibration.md](evidence-role-calibration.md)。季度/YoY 管理目标的原生分母、区间及 honest scope 见 [target-measurement-comparison.md](target-measurement-comparison.md)。这些 typed links 核对声明的引用与算术；独立研究者仍需核对原文、范围选择和经济反证。没有 frozen historical forecast 不伪称 backtest，资料不足不把 illustrative Low 宣称已校准。

@@ -1,0 +1,276 @@
+{
+  "schema_version": "rf-w04-w06-binding-repair/1",
+  "repair_date": "2026-10-09",
+  "worktree": "C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\cmrf-20261008\\rf-inputs",
+  "branch": "codex/pool-rf-source-context-20261009",
+  "repair_base": "b62161c81d5a343e08aab4bf7d0ca15dd2e8ab8c",
+  "functional_commit": "36743282f39e9e6c4a958693a3f22a57380ccab5",
+  "original_acceptance": "C:/Users/郑曾波/Projects/company-wiki/docs/plans/cross-market-rf-e2e-2026-10-08/phase6/rf_w04_w06_acceptance.md",
+  "decision": "OWNER_REPAIR_COMPLETE_PENDING_SAME_INDEPENDENT_NODE",
+  "merged": false,
+  "pushed": false,
+  "installed": false,
+  "findings": [
+    {
+      "id": "F1",
+      "package": "W05",
+      "rule": "Quarter parameters must be in actual target segment/scenario/year native ancestry; company selection covers every declared segment/adjustment component.",
+      "negative": "test_quarter_cannot_take_another_segments_native_bridge",
+      "positives": [
+        "test_quarter_scope_accepts_same_segment_actual_derived_ancestry",
+        "test_company_quarter_has_actual_native_composition"
+      ]
+    },
+    {
+      "id": "F2",
+      "package": "W06",
+      "rule": "Positive mechanism observation follows actual parameter claim_ids/target or exact growth-driver evidence_id node, then existing derived dependency; period and actual consumed scope are retained. Unknown scope/binding remains unverified, counters/history remain related.",
+      "negative": "test_mechanism_cannot_retarget_an_unbound_business_high_parameter",
+      "positives": [
+        "test_mechanism_allows_actual_cross_year_derivation_not_an_arbitrary_period",
+        "test_growth_driver_mechanism_uses_its_actual_evidence_node_binding"
+      ]
+    },
+    {
+      "id": "F3",
+      "package": "W05",
+      "rule": "Numeric range retains raw source unit/fiscal period checks and explicit optional currency/scale/measurement_period; modeled monetary raw_unit agrees with actual normalization currency/scale. Missing source unit/period only remains an explicit unmodeled/out-of-horizon gap.",
+      "negative": "test_numeric_range_keeps_source_measurement_binding [unit/period/currency/scale/measurement_period]",
+      "positives": [
+        "test_numeric_range_true_raw_to_comparison_units_remain_legal",
+        "test_numeric_range_with_unknown_source_unit_or_period_stays_explicit_gap"
+      ]
+    },
+    {
+      "id": "F4",
+      "package": "W05",
+      "rule": "Typed annual/YoY has exactly one annual measurement_periods entry matching comparison_basis.period and target_period; quarter has its separate existing non-annualized period.",
+      "negative": "test_typed_and_legacy_annual_measurement_periods_cannot_disagree [annual/YoY]",
+      "positive": "Same test first validates the correct period with native compute and strong output validation."
+    }
+  ],
+  "tests": {
+    "initial_red": {
+      "command": "python -X utf8 -B -m pytest tests/test_native_research_bindings.py -q -p no:cacheprovider --basetemp <owned>/p",
+      "exit": 1,
+      "failed": 12,
+      "passed": 2,
+      "seconds": 1.04,
+      "qualification": "11 expected relation assertions failed at the base, including all F1-F4; the additional unknown-scope diagnostic failed with missing binding_status KeyError and is not counted as functional RED. Its test assertion order was corrected to check positive support first."
+    },
+    "first_green": {
+      "command": "python -X utf8 -B -m pytest tests/test_native_research_bindings.py tests/test_research_evidence_roles.py tests/test_target_measurement_comparison.py -q -p no:cacheprovider --basetemp <owned>/p",
+      "exit": 0,
+      "passed": 38,
+      "seconds": 3.3
+    },
+    "specific_remaining_risk_red": {
+      "command": "python -X utf8 -B -m pytest tests/test_native_research_bindings.py -q -p no:cacheprovider --basetemp <owned>/p",
+      "exit": 1,
+      "failed": 3,
+      "passed": 14,
+      "seconds": 0.99,
+      "risk": [
+        "Actual growth-driver target is evidence node ID, not driver ID.",
+        "Unknown source unit/period must retain explicit unmodeled gap.",
+        "Range raw_unit cannot contradict normalization currency/scale."
+      ]
+    },
+    "responsibility_green": {
+      "command": "python -X utf8 -B -m pytest tests/test_native_research_bindings.py tests/test_research_evidence_roles.py tests/test_target_measurement_comparison.py -q -p no:cacheprovider --basetemp <owned>/p",
+      "exit": 0,
+      "passed": 41,
+      "seconds": 3.99
+    },
+    "concentrated_green": {
+      "command": "python -X utf8 -B -m pytest tests/test_native_research_bindings.py tests/test_research_evidence_roles.py tests/test_generate_input_template.py tests/test_scenarios_confidence.py tests/test_revenue_constraints.py tests/test_recognition_bridge.py tests/test_model_economic_guardrails.py tests/test_golden_behavior_lock.py tests/test_confidence_determinism.py tests/test_evidence_input_lineage.py tests/test_target_measurement_comparison.py tests/test_management_targets.py tests/test_independent_targets.py tests/test_structure_targets.py tests/test_input_contract_migration.py tests/test_output_report.py tests/test_growth_driver_tree.py -q -p no:cacheprovider --basetemp <owned>/p",
+      "exit": 0,
+      "passed": 201,
+      "subtests_passed": 167,
+      "seconds": 10.2,
+      "scope": "Original W06 105, management-target/scope/evidence regression files, 17 binding tests. Growth-driver file added only for the demonstrated evidence-node relation risk."
+    },
+    "ruff": {
+      "command": "python -X utf8 -B -m ruff check --no-cache scripts/research/native_dependencies.py scripts/research/evidence_roles.py scripts/research/target_measurement.py scripts/research/targets.py tests/test_native_research_bindings.py",
+      "exit": 0,
+      "result": "All checks passed"
+    },
+    "mypy": {
+      "command": "python -X utf8 -B -m mypy scripts/contracts/ scripts/schema_compatibility.py scripts/filing_fetch_client.py scripts/trust_anchor.py --cache-dir=nul",
+      "exit": 0,
+      "source_files": 7
+    },
+    "golden": "All five legacy stable full hashes unchanged in the concentrated suite.",
+    "further_full_suite_or_pre_push": false
+  },
+  "changed_paths": [
+    {
+      "path": "scripts/research/native_dependencies.py",
+      "sha256": "b2f475371907885a0096d0c4b40f40d87e5a26cc6ff5f8cb0c59de17b0ba37ea"
+    },
+    {
+      "path": "scripts/research/evidence_roles.py",
+      "sha256": "e923b5619ff0c3b4bee94d36ba7cdee88f3b6580b3fc0a1bb42f4d7fa87142be"
+    },
+    {
+      "path": "scripts/research/target_measurement.py",
+      "sha256": "ef4db7e07332171e299626e1ed784065732e09aed87200728d5291ba2b7d1e85"
+    },
+    {
+      "path": "scripts/research/targets.py",
+      "sha256": "f69e82605e652403b474679d42395485fbb9fe154a1f90bf5ec62f84f6d24629"
+    },
+    {
+      "path": "tests/test_native_research_bindings.py",
+      "sha256": "7573d685d5d28e594451f0e6c865b2c589bff6b09a4209bedf483af27a946894"
+    },
+    {
+      "path": "references/target-measurement-comparison.md",
+      "sha256": "ad47ce3c0b5951178f25b138e77d0d11dc476727ee244aeffb4f0ddab22a69b3"
+    },
+    {
+      "path": "references/evidence-role-calibration.md",
+      "sha256": "ce75ca0872b51b0af9eb6b7d801e996404e024c88b973aa625ee7ebf06a53f15"
+    }
+  ],
+  "install": {
+    "performed": false,
+    "owner": "MAIN after same independent engineering recheck and canonical pre-push/CI; preserve config/output",
+    "runtime_files": [
+      "scripts/research/native_dependencies.py",
+      "scripts/research/evidence_roles.py",
+      "scripts/research/target_measurement.py",
+      "scripts/research/targets.py"
+    ],
+    "reference_files": [
+      "references/target-measurement-comparison.md",
+      "references/evidence-role-calibration.md"
+    ],
+    "files": [
+      {
+        "path": "scripts/research/native_dependencies.py",
+        "repair_base_sha256": null,
+        "new_sha256": "b2f475371907885a0096d0c4b40f40d87e5a26cc6ff5f8cb0c59de17b0ba37ea",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/evidence_roles.py",
+        "repair_base_sha256": "f96fcc27551b7f7273ae6f9a61adf98e27a806bc4b3fcc7585796e36985c7775",
+        "new_sha256": "e923b5619ff0c3b4bee94d36ba7cdee88f3b6580b3fc0a1bb42f4d7fa87142be",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/target_measurement.py",
+        "repair_base_sha256": "aaac4d4cf88cfca9a3ff5ead8033fd8c57316acd03a3124e04bb53786eff3f23",
+        "new_sha256": "ef4db7e07332171e299626e1ed784065732e09aed87200728d5291ba2b7d1e85",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/targets.py",
+        "repair_base_sha256": "e8f3764b91f67abe1ff54aa55d6f57730873c73b2b7f150cb4faea9f1008926c",
+        "new_sha256": "f69e82605e652403b474679d42395485fbb9fe154a1f90bf5ec62f84f6d24629",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "07c54d41f3e7e9bdf8ddfc07b9c62a996569476000218459ecc2c39a3f9f9813"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "07c54d41f3e7e9bdf8ddfc07b9c62a996569476000218459ecc2c39a3f9f9813"
+          }
+        ]
+      },
+      {
+        "path": "references/target-measurement-comparison.md",
+        "repair_base_sha256": "edda3d4e0399bdfdf6690d4242c84e92c5e7ed33ccef7f9c01a54ad4772b6b34",
+        "new_sha256": "ad47ce3c0b5951178f25b138e77d0d11dc476727ee244aeffb4f0ddab22a69b3",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "references/evidence-role-calibration.md",
+        "repair_base_sha256": "620f3824b1572c0b7512a0dcd76018178f927a943486b0ff956d7a57bf36448b",
+        "new_sha256": "ce75ca0872b51b0af9eb6b7d801e996404e024c88b973aa625ee7ebf06a53f15",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      }
+    ]
+  },
+  "temporary_roots": {
+    "kind": "short unique newly created rBind-* owned roots",
+    "final": "TEMP/TMP restored and each owned root removed in finally; printed True for both checks",
+    "original_files_deleted": 0
+  },
+  "commit": {
+    "mode": "normal git commit",
+    "configured_hooks_path": ".githooks",
+    "worktree_hooks_directory_present": false,
+    "hook_executed": false,
+    "hook_copied_created_or_suppressed": false
+  },
+  "budget": {
+    "supplier_calls": 0,
+    "model_calls": 0,
+    "downloads": 0
+  },
+  "codegraph": "Main RF index previously checked stale; exclusive worktree index absent. Known files read directly; no index mutation.",
+  "boundaries": {
+    "source_identity_revalidation_added": false,
+    "permissions_added": false,
+    "human_review_gate_added": false,
+    "main_writes": 0,
+    "shared_pwf_writes": 0,
+    "provider_or_original_changes": 0,
+    "installation_writes": 0
+  },
+  "limitations": [
+    "Binding_status is declared structural provenance, not economic truth or current-company magnitude calibration.",
+    "Legacy qualitative target behavior, existing constraints, stable-fsum/1 weights and scores remain unchanged.",
+    "Current-company originals, economic M2/M3 and four business reviewer reports remain MAIN-owned.",
+    "Independent acceptance has not yet rerun the repair. Do not label this owner result independently accepted."
+  ],
+  "next": "MAIN asks the original independent acceptance agent to recheck F1-F4, legal positives and the same concentrated engineering node on the exact handoff HEAD; no additional small-node approval."
+}

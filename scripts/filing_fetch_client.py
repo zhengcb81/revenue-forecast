@@ -186,7 +186,7 @@ def _try_loads(text: str) -> Any:
         return None
 
 
-def resolve_filing(
+def resolve_filing_result(
     request: dict[str, Any],
     *,
     allow_download: bool = False,
@@ -197,7 +197,7 @@ def resolve_filing(
 ) -> dict[str, Any]:
     """Resolve (or, when authorized, ensure) a filing via filing-fetch.
 
-    Returns the capture-ready ``handle`` dict on success, or raises
+    Returns the complete validated machine result on success, or raises
     ``_ClientError`` carrying the upstream status / error_code / retryable /
     candidates when filing-fetch fails.
     """
@@ -267,7 +267,8 @@ def resolve_filing(
         if (status == "source_candidate" and isinstance(filing, dict)
                 and filing.get("status") == "source_candidate"
                 and isinstance(filing.get("source_ref"), dict)):
-            return filing
+            _validate_pathless_result(response)
+            return response
         reason = filing.get("reason") if isinstance(filing, dict) else None
         raise _ClientError(
             f"filing-fetch returned status={status}: {reason or 'invalid v2 filing result'}",
@@ -287,7 +288,46 @@ def resolve_filing(
     handle = response.get("handle")
     if not isinstance(handle, dict):
         raise _ClientError("filing-fetch response missing 'handle' object")
-    return handle
+    return response
+
+
+def _validate_pathless_result(value: Any) -> None:
+    """The v2 result has no storage locations; usage stays producer-owned."""
+    if isinstance(value, dict):
+        forbidden = {"path", "canonical_path", "relative_path", "storage_path",
+                     "canonical_location_id", "root_path", "filesystem_path"}
+        if forbidden & set(value):
+            raise _ClientError("filing-fetch v2 result contains a storage location")
+        for child in value.values():
+            _validate_pathless_result(child)
+    elif isinstance(value, list):
+        for child in value:
+            _validate_pathless_result(child)
+
+
+def select_filing(result: dict[str, Any]) -> dict[str, Any]:
+    """Select the filing once, preserving the legacy handle interface."""
+    if result.get("schema_version") == "2.0":
+        return result["filing"]
+    if "handle" in result:
+        return result["handle"]
+    # Historical injected source-preparation fixtures already hold a handle.
+    if "source_ref" in result:
+        return result
+    raise _ClientError("filing-fetch result missing filing handle")
+
+
+def resolve_filing(
+    request: dict[str, Any], *, allow_download: bool = False,
+    timeout_seconds: float = 900.0, filing_fetch_root: Path | None = None,
+    company_wiki_config: Path | None = None, source_ref_v2: bool = False,
+) -> dict[str, Any]:
+    """Compatibility API: return only the selected capture-ready filing."""
+    return select_filing(resolve_filing_result(
+        request, allow_download=allow_download, timeout_seconds=timeout_seconds,
+        filing_fetch_root=filing_fetch_root, company_wiki_config=company_wiki_config,
+        source_ref_v2=source_ref_v2,
+    ))
 
 
 def _emit_error(
@@ -334,6 +374,8 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Authorize filing-fetch to download when no reusable source is found.",
     )
+    parser.add_argument("--result-envelope", action="store_true",
+                        help="return the complete filing-fetch machine result")
     parser.add_argument(
         "--source-ref-v2",
         action="store_true",
@@ -374,7 +416,8 @@ def main(argv: list[str] | None = None) -> int:
 
     root = Path(args.filing_fetch_root) if args.filing_fetch_root else None
     try:
-        handle = resolve_filing(
+        resolver = resolve_filing_result if args.result_envelope else resolve_filing
+        handle = resolver(
             request,
             allow_download=args.allow_download,
             timeout_seconds=args.timeout_seconds,

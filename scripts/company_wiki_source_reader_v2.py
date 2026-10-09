@@ -18,6 +18,8 @@ import subprocess
 import sys
 from typing import Any
 
+from source_period_semantics import valid_fiscal_year
+
 
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 _DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")
@@ -205,9 +207,11 @@ def _validate_manifest_identity(
 
 
 def _validate_manifest_period(
-    manifest: dict[str, Any], as_of: date, fiscal_year: int,
+    manifest: dict[str, Any], as_of: date, fiscal_year: int | None,
 ) -> None:
-    if type(manifest["fiscal_year"]) is not int or manifest["fiscal_year"] != fiscal_year:
+    if not valid_fiscal_year(manifest["document_kind"], manifest["fiscal_year"]) or (
+        type(manifest["fiscal_year"]) is not type(fiscal_year) or manifest["fiscal_year"] != fiscal_year
+    ):
         raise SourceVersionTransportError("source manifest fiscal_year mismatch")
     published = _date(manifest["published_date"], "source manifest published_date")
     retrieved_value = manifest["retrieved_at"]
@@ -223,7 +227,7 @@ def _validate_manifest_period(
 
 
 def _validate_manifest(
-    manifest: Any, source_ref: dict[str, Any], as_of: date, fiscal_year: int,
+    manifest: Any, source_ref: dict[str, Any], as_of: date, fiscal_year: int | None,
 ) -> dict[str, Any]:
     if not isinstance(manifest, dict) or set(manifest) != _MANIFEST_FIELDS:
         raise SourceVersionTransportError("source receipt manifest fields invalid")
@@ -241,14 +245,14 @@ def _validate_timeout(timeout_seconds: float) -> None:
 
 def _validate_open_request(
     source_ref: dict[str, Any], catalog_config: Path, as_of_date: str,
-    expected_fiscal_year: int, timeout_seconds: float,
+    expected_fiscal_year: int | None, timeout_seconds: float,
 ) -> date:
     _validate_ref(source_ref)
     if not isinstance(catalog_config, Path) or not catalog_config.is_absolute():
         raise SourceVersionTransportError("catalog_config must be an absolute Path")
     _validate_timeout(timeout_seconds)
     as_of = _date(as_of_date, "as_of_date")
-    if type(expected_fiscal_year) is not int or expected_fiscal_year < 1:
+    if expected_fiscal_year is not None and (type(expected_fiscal_year) is not int or expected_fiscal_year < 1):
         raise SourceVersionTransportError("expected_fiscal_year is invalid")
     return as_of
 
@@ -302,7 +306,7 @@ def _validate_receipt_policies(receipt: dict[str, Any]) -> None:
 
 def _validate_success_receipt(
     receipt: dict[str, Any], source_ref: dict[str, Any], as_of: date,
-    fiscal_year: int,
+    fiscal_year: int | None,
 ) -> dict[str, Any]:
     _validate_receipt_shape(receipt)
     _validate_receipt_identity(receipt, source_ref)
@@ -321,7 +325,7 @@ def _verify_bytes(body: bytes, source_ref: dict[str, Any]) -> None:
 
 def open_source_version_v2(
     *, source_ref: dict[str, Any], catalog_config: Path,
-    as_of_date: str, expected_fiscal_year: int,
+    as_of_date: str, expected_fiscal_year: int | None,
     timeout_seconds: float = 30.0,
 ) -> tuple[bytes, dict[str, Any], dict[str, Any]]:
     """Return verified source bytes, a pathless receipt, and a same-call manifest."""

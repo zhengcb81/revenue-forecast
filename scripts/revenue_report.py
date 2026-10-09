@@ -32,6 +32,8 @@ from revenue_core import (
     validate_source_capture,
 )
 from analysis.confidence import validate_confidence_recomputation
+from research.target_measurement import is_typed_target, compare_target_measurement
+from research.targets import validate_management_target_coverage, add_management_target_analysis
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 from revenue_publication import (
     VerificationContext,
@@ -834,6 +836,16 @@ def _validate_forecast_output(
             == list(MANAGEMENT_COMMUNICATION_CATEGORIES),
             "management communication categories are missing or out of order",
         )
+        if data is not None and (data.get("audit_communication_coverage") or
+                                 any(is_typed_target(t) for t in data.get("management_targets", [])) or
+                                 any(c.get("checked_scope") is not None for c in data.get("management_communication_coverage", []))):
+            checked = validate_management_target_coverage(
+                data, {s["source_id"]: s for s in result["sources"]}, parameter_index,
+                {c["claim_id"]: c for c in result["evidence_claims"]}, parse_iso_date(result["as_of_date"], "as_of_date"),
+            )
+            expected = add_management_target_analysis({"management_target_coverage": checked,
+                                                       "parameter_index": parameter_index}, result)
+            require(target_coverage == expected, "typed management coverage/input binding mismatch")
         observed_target_ids: set[str] = set()
         for record in communications:
             require(
@@ -902,6 +914,10 @@ def _validate_forecast_output(
                     isinstance(target.get("measurement_periods"), list),
                     f"invalid management target measurement periods: {target_id}",
                 )
+            if is_typed_target(target):
+                require(comparisons == compare_target_measurement(target, result),
+                        f"typed management target comparison recomputation mismatch: {target_id}")
+                continue
             if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
                 require(
                     set(comparisons) == set(target.get("mapped_scenarios", [])),
@@ -1254,6 +1270,12 @@ def _validate_forecast_output(
             expected_growth_analysis == analysis,
             "growth driver analysis recomputation mismatch",
         )
+    research_input = data if data is not None else result.get("input_document", {})
+    if research_input.get("operating_research") is not None:
+        reconstructed_data.update({key: research_input[key] for key in
+                                   ("operating_research", "growth_driver_tree") if key in research_input})
+        reconstructed_data["base_year"] = result["base_year"]
+        reconstructed_data["forecast_years"] = result["forecast_years"]
     expected_confidence = calculate_confidence(
         reconstructed_data,
         reconstructed_validated,
@@ -1454,6 +1476,10 @@ def render_markdown(result: dict[str, Any]) -> str:
                 f"| {_escape(record['category'])} | {_escape(record['status'])} | {_escape(record['conclusion'])} | "
                 f"{_escape(', '.join(record['material_revenue_target_ids']) or '—')} | {_escape(', '.join(record['source_ids']) or '—')} |"
             )
+        for record in target_coverage["communications"]:
+            diagnostic = record.get("coverage_diagnostic")
+            if diagnostic is not None:
+                lines.extend(["", f"- {_escape(record['category'])} coverage: {_escape(diagnostic['status'])}; {_escape(diagnostic.get('start_date') or 'unknown')}–{_escape(diagnostic.get('end_date') or 'unknown')}; {_escape(diagnostic.get('reason') or 'complete')}."])
         lines.extend(
             [
                 "",
@@ -1500,6 +1526,20 @@ def render_markdown(result: dict[str, Any]) -> str:
                 f"{_escape(', '.join(target['mapped_scenarios']) or '—')} | {_escape(attainment)} |"
             )
         for target in target_coverage["targets"]:
+            if is_typed_target(target):
+                dates = ", ".join(f"{sid}:{published}" for sid, published in target.get("source_publication_dates", {}).items())
+                lines.extend(["", f"- {_escape(target['target_id'])} 原文：{_escape(target['statement'])}；来源日期：{_escape(dates)}。",
+                              "", "| Scenario | Metric / period | Modeled / unit | Target / range | Base / period | Difference | Status / reason |",
+                              "|---|---|---:|---:|---|---|---|"])
+                if not target["scenario_comparison"]:
+                    lines.append(f"- {_escape(target['treatment'])}: {_escape(target['rationale'])}; {_escape(target.get('comparison_reason') or 'comparison dependencies unavailable')}.")
+                for scenario, row in target["scenario_comparison"].items():
+                    difference = row.get("difference_percentage_points", row.get("difference"))
+                    difference_unit = "percentage_points" if row["metric_kind"] == "year_over_year_growth" else row["unit"]
+                    lines.append(f"| {_escape(scenario)} | {_escape(row['metric_kind'])} / {_escape(row['period'])} | {_num(row['modeled_value'])} {_escape(row['unit'])} | {_num(row['target_low'])}–{_num(row['target_high'])} ({_escape(row['comparison'])}) | {_num(row.get('base_value'))} / {_escape(row.get('base_period') or '—')} | {_num(difference)} {_escape(difference_unit)} | {_escape(row['comparison_status'])} / {_escape(row.get('reason') or '—')} |")
+                    derived = row.get("derived_revenue_benchmark")
+                    if derived is not None:
+                        lines.append(f"- {_escape(scenario)} analyst_derived revenue benchmark: {_num(derived['value'])} {_escape(derived['unit'])}; difference {_num(derived['difference'])}. Formula: {_escape(derived['formula'])}.")
             if target["treatment"] == "independent_benchmark":
                 lines.extend(["", f"- {_escape(target['target_id'])} 独立判断：{_escape(target['benchmark_rationale'])}；证据：{_escape(', '.join(target['benchmark_claim_ids']))}。"])
             if target.get("normalization_formula"):
@@ -1645,6 +1685,22 @@ def render_markdown(result: dict[str, Any]) -> str:
     )
     for name, score in confidence["components"].items():
         lines.append(f"| {_escape(name)} | {score:.1f} |")
+    adequacy = confidence.get("research_adequacy")
+    if adequacy is not None:
+        lines.extend(["", "### 经营内容与证据充分性", "",
+                      "旧置信度总分衡量证据与流程；方向和量级按以下独立诊断披露。",
+                      f"- Documentary presence: {adequacy['documentary_presence']['checked_claim_count']} checked claims",
+                      f"- Mechanism direction: {', '.join(adequacy['mechanism_adequacy']['supported_parameter_ids']) or 'unknown'}",
+                      f"- 量级支持: {adequacy['magnitude_adequacy']['status']}", "",
+                      "| 内容 | 主题 | 处理 | 包含于 | 收入确认与缺口 |", "|---|---|---|---|---|"])
+        for item in adequacy["inventory"]:
+            lines.append(f"| {_escape(item['item_id'])} | {_escape(item['topic'])} | {_escape(item['disposition'])} | {_escape(item['included_in'])} | {_escape(item['recognition_note'])}; {_escape(item['rationale'])} |")
+        for calibration in adequacy["calibrations"]:
+            lines.extend(["", f"- 校准 {_escape(calibration['calibration_id'])}: {_escape(calibration['adequacy_status'])}; {_escape(calibration['scope'])}, {_escape(calibration['observed_period'])}; observed_range={_escape(calibration['observed_range'])}; formula={_escape(calibration['conversion_formula'])}"])
+            for scenario, row in calibration["scenario_conversion"].items():
+                lines.append(f"  - {scenario}: {_escape(row['input_parameter_ids'])} → {_escape(row['output_parameter_id'])} = {_num(row['formula_value'])} {_escape(row['output_unit'])}; native={_num(row['native_value'])}")
+            lines.append(f"  - 限制: {_escape(calibration['reasons'] + calibration['limitations'])}")
+        lines.extend(f"- {_escape(item)}" for item in adequacy["limitations"])
     lines.extend(["", "### 质量硬门", ""])
     lines.extend(
         [

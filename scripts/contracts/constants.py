@@ -185,7 +185,7 @@ MANAGEMENT_COMMUNICATION_CATEGORIES = (
 )
 
 
-MANAGEMENT_COMMUNICATION_STATUSES = {"checked", "not_available", "not_applicable"}
+MANAGEMENT_COMMUNICATION_STATUSES = {"checked", "not_available", "not_applicable", "not_checked", "incomplete"}
 
 
 MANAGEMENT_TARGET_TREATMENTS = {
@@ -201,7 +201,7 @@ MANAGEMENT_TARGET_TREATMENTS = {
 MANAGEMENT_TARGET_PERIMETERS = {"matched", "reconciled", "mismatch"}
 
 
-MANAGEMENT_TARGET_COMPARISONS = {"at_least", "at_most", "approximately"}
+MANAGEMENT_TARGET_COMPARISONS = {"at_least", "at_most", "approximately", "greater_than", "less_than"}
 
 
 MANAGEMENT_TARGET_MEASUREMENT_BASES = {

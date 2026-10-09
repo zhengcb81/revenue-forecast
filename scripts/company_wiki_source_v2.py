@@ -16,6 +16,7 @@ from company_wiki_source import (
     _required_text,
 )
 from contracts.evidence import build_host_receipt, valid_source_url
+from source_period_semantics import valid_fiscal_year
 
 
 _REF_FIELDS = {
@@ -160,7 +161,7 @@ def _validate_manifest_identity(
 def _validate_manifest_metadata(manifest: dict[str, Any]) -> None:
     _required_text(manifest.get("title"), "source manifest title")
     _required_text(manifest.get("document_kind"), "source manifest document_kind")
-    if type(manifest.get("fiscal_year")) is not int or manifest["fiscal_year"] < 1:
+    if not valid_fiscal_year(manifest["document_kind"], manifest.get("fiscal_year")):
         raise CompanyWikiSourceError("source manifest fiscal_year is invalid")
     fields = (
         "collector_name", "collector_version", "canonical_entity_id", "display_name",

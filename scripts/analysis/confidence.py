@@ -285,7 +285,7 @@ def calculate_confidence(
         limitations.append(
             "Company-level forecast adjustments are disclosed separately from operating growth-driver ranking"
         )
-    return {
+    output = {
         "calculation_version": CONFIDENCE_CALCULATION_VERSION,
         "score": score,
         "rating": rating,
@@ -299,6 +299,10 @@ def calculate_confidence(
         "quality_gates": quality_gates,
         "limitations": limitations,
     }
+    if data.get("operating_research") is not None:
+        from research.evidence_roles import analyze_operating_research
+        output["research_adequacy"] = analyze_operating_research(data, validated)
+    return output
 
 
 def _numeric_match(expected: Any, observed: Any, *, legacy: bool) -> bool:
@@ -348,5 +352,7 @@ def validate_confidence_recomputation(
         and expected.get("historical_accuracy") == history,
         "confidence historical_accuracy recomputation mismatch",
     )
+    require(expected.get("research_adequacy") == observed.get("research_adequacy"),
+            "confidence research adequacy recomputation mismatch")
     require(expected.get("rating") == observed.get("rating"),
             "confidence rating recomputation mismatch")

@@ -639,7 +639,12 @@ def validate_evidence_claims(
                 evidence_role in GROWTH_DRIVER_EVIDENCE_ROLES,
                 f"unsupported evidence_role for {claim_id}: {evidence_role}",
             )
-            if evidence_role in DIRECTIONAL_EVIDENCE_ROLES:
+            factual_history = (
+                evidence_role == "history_base" and support_type == "exact_value" and
+                (target_type == "historical_revenue" or
+                 (target_type == "parameter" and parameter_index.get(target_id, {}).get("kind") == "reported_fact"))
+            )
+            if evidence_role in DIRECTIONAL_EVIDENCE_ROLES and not factual_history:
                 require(
                     claim.get("extracted_value") is None,
                     f"directional evidence_role {evidence_role} cannot carry extracted_value: {claim_id}",
@@ -1012,6 +1017,13 @@ def validate_operating_units(data: dict[str, Any]) -> list[dict[str, Any]]:
     return [vars(validate_mine_year_operation(unit)) for unit in units]
 
 
+def _validate_optional_operating_research(data, parameter_index, claim_index):
+    if data.get("operating_research") is not None:
+        from research.evidence_roles import analyze_operating_research
+        return analyze_operating_research(data, {"parameter_index": parameter_index, "claim_index": claim_index})
+    return None
+
+
 def validate_document(
     data: dict[str, Any], *, collector: Collector | None = None
 ) -> dict[str, Any]:
@@ -1042,6 +1054,7 @@ def validate_document(
         validate_historical_revenue(data, source_index, parameter_index, claim_index)
         validate_base_reconciliation(data, parameter_index)
         validate_operating_units(data)
+        _validate_optional_operating_research(data, parameter_index, claim_index)
         try:
             revenue_constraints = validate_revenue_constraints(
                 data.get("revenue_constraints", []),
@@ -1125,6 +1138,8 @@ def validate_document(
         _run_gate(
             collector, "operating_units", validate_operating_units, data
         )
+        _run_gate(collector, "operating_research", _validate_optional_operating_research,
+                  data, parameter_index, claim_index)
         _run_gate(
             collector,
             "base_reconciliation",

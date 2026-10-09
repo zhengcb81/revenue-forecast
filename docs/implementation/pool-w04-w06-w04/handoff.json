@@ -1,0 +1,269 @@
+{
+  "schema_version": "rf-work-package-handoff/1",
+  "package": "W04",
+  "base": "8b48a99f23a19b1fd71a7e051837a55e12bb7d30",
+  "functional_commit": "33404bd6daeba4be33a8ba407bb6362fa45b162e",
+  "changed_paths": [
+    {
+      "path": "scripts/company_wiki_narrative_contracts.py",
+      "sha256": "7fe95e14609a20d2258bafc0dca4ca932e39d6170da4499ed60ad78456292f4d"
+    },
+    {
+      "path": "scripts/company_wiki_source_reader_v2.py",
+      "sha256": "6f78821af79ae1d67e42974ee49e8eba85405c6bca87c493ab9f30931542cdca"
+    },
+    {
+      "path": "scripts/company_wiki_source_v2.py",
+      "sha256": "8077dde72782fee956883e5f479d12a04e79777d5f252d396df8009c5893b9db"
+    },
+    {
+      "path": "scripts/filing_fetch_client.py",
+      "sha256": "e6867ac7672c45342ed7f1ddb9ffb6fd5883618269d50364799686320ce10f57"
+    },
+    {
+      "path": "scripts/source_narrative_context.py",
+      "sha256": "bd2b297916384c12a7714e4cc9680e6f3e7df53c0ddbb7f3e2710b6febe78f6c"
+    },
+    {
+      "path": "scripts/source_period_semantics.py",
+      "sha256": "37bcf8383f9a559c17c25d23f39754c1823ab2af0bd34accbe551aa31b36b7c4"
+    },
+    {
+      "path": "scripts/source_preparation.py",
+      "sha256": "1c408bcb4ca308806e722d6a7ae4022816007f5dfd223f5166ab9b8fe89033d8"
+    },
+    {
+      "path": "tests/fixtures/cwp_narrative_transport_v1/html-bundle.json",
+      "sha256": "1576ae79794ed0a59028441297f99eee1155ffe44d07f06fe7833686937e23ce"
+    },
+    {
+      "path": "tests/fixtures/cwp_narrative_transport_v1/html-read-receipt.json",
+      "sha256": "251766bc567717422e172b3530cf6e76c619c2eebd6b686e1345bcf582eb470f"
+    },
+    {
+      "path": "tests/fixtures/cwp_narrative_transport_v1/html-read-request.json",
+      "sha256": "2ed345107aac3ba1d659ce46ac12e84e7437b4b71f810cc2fc874bb5283e1142"
+    },
+    {
+      "path": "tests/fixtures/ff_complete_success_v2.json",
+      "sha256": "97ae5e767dae25d587740cc5227229024f53c6b12d86d3dd476be9b37d88cdd5"
+    },
+    {
+      "path": "tests/test_nonfinancial_source_period.py",
+      "sha256": "0245f52527fdbc0e5271eab2e35687b0fd996df93e7eab6920c517fdbf43e1f0"
+    },
+    {
+      "path": "tests/test_source_preparation_complete_result.py",
+      "sha256": "2c9c611da93a72a7f043308f6cd6dc02bd3a519afe4b8dd79a8afee289746373"
+    },
+    {
+      "path": "tools/run_narrative_consumption_e2e.py",
+      "sha256": "abbc2dd24dc10433800daf31e039f1bc5cf3dea993d82b8523cf33991ca4035c"
+    }
+  ],
+  "red": {
+    "command": "python -X utf8 -B -m pytest tests/test_source_preparation_complete_result.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 1,
+    "failed": 5,
+    "passed": 3,
+    "seconds": 0.42
+  },
+  "green": {
+    "command": "python -X utf8 -B -m pytest tests/test_source_preparation_complete_result.py tests/test_filing_fetch_client.py tests/test_source_preparation.py tests/test_source_consumption.py tests/test_company_wiki_narrative_reader.py tests/test_source_failure_cause.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 0,
+    "passed": 146,
+    "seconds": 5.56
+  },
+  "checks": {
+    "ruff_no_cache": "pass",
+    "mypy_public_contracts": "pass; 7 source files",
+    "native_cli_help": "source_preparation.py and run_narrative_consumption_e2e.py exit 0",
+    "commit": "normal git commit; configured .githooks absent, no hook executed; no suppression or replacement"
+  },
+  "source_evidence": {
+    "recorded_ff_success": "roles/executor/commands/31871b1bc18442fb8af7b9c1c3041fc6/stdout.txt",
+    "fixture_sha256": "97ae5e767dae25d587740cc5227229024f53c6b12d86d3dd476be9b37d88cdd5",
+    "raw_open": "local producer golden same-call manifest and exact BODY SHA; two synthetic fiscal calendars; no live original reopened",
+    "narrative": "validated published golden bundle -> selected span -> new claim -> used Base revenue parameter -> native draft formula/output",
+    "html": "Exact W03 exported synthetic loopback narrative-bundle/2.0 and narrative-read-receipt/1; text/html same route; not a real supplier research run"
+  },
+  "budget": {
+    "supplier_calls": 0,
+    "model_calls": 0,
+    "new_downloads": 0,
+    "recorded_calls": 3,
+    "recorded_downloads": 0,
+    "unknown_usage_preserved": true
+  },
+  "temporary_roots": {
+    "initial": "each short rW04-* root absent",
+    "final": "each restored absent in finally; original files deleted 0"
+  },
+  "install": {
+    "performed": false,
+    "runtime_files": [
+      "scripts/company_wiki_narrative_contracts.py",
+      "scripts/company_wiki_source_reader_v2.py",
+      "scripts/company_wiki_source_v2.py",
+      "scripts/filing_fetch_client.py",
+      "scripts/source_narrative_context.py",
+      "scripts/source_period_semantics.py",
+      "scripts/source_preparation.py"
+    ],
+    "owner": "MAIN; preserve config/output; new engineering tools not installed",
+    "files": [
+      {
+        "path": "scripts/company_wiki_narrative_contracts.py",
+        "base_sha256": "11fef2a81ff60940fc97cb918b17f0ce64e67b74fbc76a9f53c237fc07d178d3",
+        "new_sha256": "7fe95e14609a20d2258bafc0dca4ca932e39d6170da4499ed60ad78456292f4d",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "11fef2a81ff60940fc97cb918b17f0ce64e67b74fbc76a9f53c237fc07d178d3"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "11fef2a81ff60940fc97cb918b17f0ce64e67b74fbc76a9f53c237fc07d178d3"
+          }
+        ]
+      },
+      {
+        "path": "scripts/company_wiki_source_reader_v2.py",
+        "base_sha256": "088f52be835c65bc6d4af494573c788d219e4448b2e723d6bebe0956e8db5a99",
+        "new_sha256": "6f78821af79ae1d67e42974ee49e8eba85405c6bca87c493ab9f30931542cdca",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "5f5bfd11cbc880c30f2766d8d6c78366d4e32f677ba9a517914a0df5f95faed1"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "5f5bfd11cbc880c30f2766d8d6c78366d4e32f677ba9a517914a0df5f95faed1"
+          }
+        ]
+      },
+      {
+        "path": "scripts/company_wiki_source_v2.py",
+        "base_sha256": "5a72de7e998d94b7400ea9e111c73d9aada2f1f8aca0f5d140d6c513e4227a7d",
+        "new_sha256": "8077dde72782fee956883e5f479d12a04e79777d5f252d396df8009c5893b9db",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "e40da4caca941828be78de3f019d1e1888ae776c03ac51844fc508e567098053"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "e40da4caca941828be78de3f019d1e1888ae776c03ac51844fc508e567098053"
+          }
+        ]
+      },
+      {
+        "path": "scripts/filing_fetch_client.py",
+        "base_sha256": "3a64a0a8dbe1dad95e09f6f165251e066e680a3273315551a653998ba228a3a6",
+        "new_sha256": "e6867ac7672c45342ed7f1ddb9ffb6fd5883618269d50364799686320ce10f57",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "3a64a0a8dbe1dad95e09f6f165251e066e680a3273315551a653998ba228a3a6"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "3a64a0a8dbe1dad95e09f6f165251e066e680a3273315551a653998ba228a3a6"
+          }
+        ]
+      },
+      {
+        "path": "scripts/source_narrative_context.py",
+        "base_sha256": null,
+        "new_sha256": "bd2b297916384c12a7714e4cc9680e6f3e7df53c0ddbb7f3e2710b6febe78f6c",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/source_period_semantics.py",
+        "base_sha256": null,
+        "new_sha256": "37bcf8383f9a559c17c25d23f39754c1823ab2af0bd34accbe551aa31b36b7c4",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/source_preparation.py",
+        "base_sha256": "0a6c37f4cffa9a7df7b73df0538df0ce8b0531da8e54f8c51d82a407e39b0071",
+        "new_sha256": "1c408bcb4ca308806e722d6a7ae4022816007f5dfd223f5166ab9b8fe89033d8",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "0a6c37f4cffa9a7df7b73df0538df0ce8b0531da8e54f8c51d82a407e39b0071"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "0a6c37f4cffa9a7df7b73df0538df0ce8b0531da8e54f8c51d82a407e39b0071"
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Real current-config finite summary and M2 remain MAIN-owned.",
+    "Narrative claim link currently explicit qualitative parameter rationale; no economic magnitude inferred.",
+    "Only financial report kinds annual_report/semi_annual_report/quarterly_report require a positive fiscal year; generic regulatory_filing is not automatically financial.",
+    "Official-source candidate acquisition accounting remains upstream; registered preparation does one verified local open without new FF resolution."
+  ],
+  "followup_functional_commits": [
+    "a7c2c73758e7b7bbb6454c2955390f179f2d5f28"
+  ],
+  "functional_commits": [
+    "33404bd6daeba4be33a8ba407bb6362fa45b162e",
+    "a7c2c73758e7b7bbb6454c2955390f179f2d5f28",
+    "73a03b5751cd9e95d166104f31210cc642af0a6c"
+  ],
+  "functional_head": "36743282f39e9e6c4a958693a3f22a57380ccab5",
+  "manifest_scope": "current integrated branch at acceptance binding repair; original commit identities and verification records retained",
+  "nullable_period_followup": {
+    "functional_commit": "73a03b5751cd9e95d166104f31210cc642af0a6c",
+    "red": {
+      "exit": 1,
+      "failed": 5,
+      "passed": 5,
+      "seconds": 0.54
+    },
+    "green": {
+      "command": "python -X utf8 -B -m pytest tests/test_nonfinancial_source_period.py tests/test_company_wiki_source_reader_v2.py tests/test_company_wiki_source_v2.py tests/test_source_preparation.py tests/test_source_preparation_complete_result.py -q -p no:cacheprovider --basetemp <owned>/p",
+      "exit": 0,
+      "passed": 75,
+      "seconds": 1.4
+    },
+    "source_evidence": "exact producer BODY SHA and mocked binary transport; registered IR -> same reader -> actual SourceCapture builder; not live original reopening",
+    "interface": "prepare_registered_source_result(candidate, as_of_date, company_wiki_catalog_config); no FF/nonfinancial resolver guess"
+  },
+  "acceptance_binding_repair": {
+    "functional_commit": "36743282f39e9e6c4a958693a3f22a57380ccab5",
+    "base": "b62161c81d5a343e08aab4bf7d0ca15dd2e8ab8c",
+    "handoff": "docs/implementation/pool-w04-w06-binding-repair/handoff.json",
+    "status": "owner repair complete; original independent concentrated recheck pending",
+    "findings": [],
+    "green": {
+      "passed": 201,
+      "subtests_passed": 167,
+      "seconds": 10.2,
+      "exit": 0
+    },
+    "w04_transport_rerun": false
+  }
+}
