@@ -10,7 +10,7 @@ from __future__ import annotations
 SCENARIOS = ("low", "base", "high")
 
 
-SKILL_VERSION = "4.1.0"
+SKILL_VERSION = "4.1.1"
 
 
 FORECAST_SCHEMA_VERSION = "3.7"

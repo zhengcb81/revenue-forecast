@@ -16,13 +16,23 @@ from schema_compatibility import (  # noqa: E402
 
 
 class SchemaCompatibilityRegistryTests(unittest.TestCase):
-    def test_current_schema_accepts_only_current_engine(self) -> None:
+    def test_current_schema_accepts_documented_engines_only(self) -> None:
         self.assertTrue(
             validating_engine_allowed(FORECAST_SCHEMA_VERSION, ENGINE_VERSION, "output")
         )
         self.assertFalse(
             validating_engine_allowed(FORECAST_SCHEMA_VERSION, "9.9.9", "output")
         )
+
+    def test_source_clock_version_emit_and_validation_matrix(self) -> None:
+        self.assertEqual(ENGINE_VERSION, "4.1.1")
+        for schema in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION):
+            for mode in ("snapshot", "output"):
+                self.assertTrue(validating_engine_allowed(schema, "4.1.0", mode))
+                self.assertTrue(validating_engine_allowed(schema, "4.1.1", mode))
+                self.assertFalse(validating_engine_allowed(schema, "9.9.9", mode))
+            self.assertFalse(validating_engine_allowed(schema, "4.1.0", "formal"))
+            self.assertTrue(validating_engine_allowed(schema, "4.1.1", "formal"))
 
     def test_legacy_schema_accepts_documented_emit_engines(self) -> None:
         # CHANGELOG: schema 3.4 was emitted by engines 3.5.0..3.10.0.

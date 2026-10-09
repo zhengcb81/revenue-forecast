@@ -2,6 +2,13 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## 4.1.1 (2026-10-09) — historical source clock responsibility
+
+- Shared `source-clock/1` qualifies exact source information by known publication or an explicitly declared public receipt 2.2 availability proof. Actual UTC read, capture and evidence checks keep their real dates and may occur after the historical information cutoff. Future publication remains refused; unknown publication without reliable exact-version prior availability is a named gap. Contradictory event dates and changed raw SHA proof reuse are refused.
+- SourceReader receipt 2.1 remains the default. Capability 2.2 is opt-in through `source_reader_receipt_version`; no retry, exceptional capability guess, fabricated publication, mtime proof or backdated current capture is added.
+- Forecast schema 3.7 and opt-in 3.8 are unchanged. Formal new output uses engine 4.1.1. Documented engine 4.1.0 remains a valid historical emit pair for output/snapshot metadata; reproducing its historical validation semantics uses the pinned e688b0a2 runtime. Old frozen inputs, outputs, snapshots and five full-output numerical golden hashes are not rewritten or relabeled.
+- Revenue calculations, numerical confidence revision and all economic model assumptions are unchanged. Local source qualification is not a fresh research PASS or a published forecast.
+
 ## Unreleased — 2026-10-08 cross-market source audit
 
 - Confidence numerical revision `stable-fsum/1`: canonical shared-parameter contributions and compensated positive-weight reductions make the result independent of Python hash seeds and equivalent aggregation order. New confidence blocks carry `calculation_version` and are revalidated exactly; unmarked legacy blocks admit at most 64 binary64 ULPs in named dimensionless reductions, with exact history counts, categories and source/input bindings. Unknown revisions, non-finite values and substantive changes remain rejected. Old bytes are never rewritten.

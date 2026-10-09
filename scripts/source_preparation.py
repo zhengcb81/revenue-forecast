@@ -21,8 +21,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +47,20 @@ _preparation_demands = DemandQueue()
 def preparation_demands() -> DemandQueue:
     """The process-level demand queue (test-visible)."""
     return _preparation_demands
+
+
+def _read_deadline(timeout_seconds: float) -> float:
+    if (isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, (int, float))
+            or not math.isfinite(timeout_seconds) or timeout_seconds <= 0):
+        raise RuntimeError("invalid_source_preparation_timeout: expected finite positive caller budget")
+    return time.monotonic() + timeout_seconds
+
+
+def _remaining_timeout(deadline: float) -> float:
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise RuntimeError("source_preparation_deadline_exhausted: no time remains for the next public read")
+    return remaining
 
 
 def _demand_key(record: dict) -> str:
@@ -207,12 +223,15 @@ def _prepare_source_ref_v2(
     handle: dict,
     catalog_config: Path,
     *,
-    timeout_seconds: float,
+    timeout_seconds: float, source_reader_receipt_version: str = "2.1",
 ) -> dict:
     """Open and record one pathless candidate using company-wiki's verifier."""
-    from company_wiki_source_reader_v2 import open_source_version_v2
+    from company_wiki_source_reader_v2 import open_source_version_v2, validate_source_reader_receipt_version
     from company_wiki_source_v2 import build_revenue_source_record_from_verified_read
 
+    version = validate_source_reader_receipt_version(source_reader_receipt_version)
+    deadline = _read_deadline(timeout_seconds)
+    reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
     fiscal_year = _validate_v2_candidate(request, handle)
     outcome, downloads = _v2_resolution_events(handle)
     body, receipt, manifest = open_source_version_v2(
@@ -220,7 +239,7 @@ def _prepare_source_ref_v2(
         catalog_config=catalog_config,
         as_of_date=str(request.get("as_of_date", "")),
         expected_fiscal_year=fiscal_year,
-        timeout_seconds=min(timeout_seconds, 30.0),
+        timeout_seconds=_remaining_timeout(deadline), **reader_options,
     )
     record = build_revenue_source_record_from_verified_read(
         source_ref=handle["source_ref"],
@@ -315,7 +334,7 @@ def _prepare_legacy_source(request: dict, handle: dict) -> dict:
 
 def prepare_registered_source_result(
     candidate: dict, *, as_of_date: str, company_wiki_catalog_config: Path,
-    timeout_seconds: float = 30.0,
+    timeout_seconds: float = 30.0, source_reader_receipt_version: str = "2.1",
 ) -> dict:
     """Read a registered pathless official source through the same exact verifier.
 
@@ -327,7 +346,8 @@ def prepare_registered_source_result(
                ("document_kind", "fiscal_year", "fiscal_period")}
     request["as_of_date"] = as_of_date
     source = _prepare_source_ref_v2(request, candidate,
-        _catalog_config_for_reader(company_wiki_catalog_config), timeout_seconds=timeout_seconds)
+        _catalog_config_for_reader(company_wiki_catalog_config), timeout_seconds=timeout_seconds,
+        source_reader_receipt_version=source_reader_receipt_version)
     return {"schema_version": "source-preparation-result/1", "source": source,
             "filing_fetch": None, "narrative": None}
 
@@ -343,6 +363,7 @@ def prepare_source_result(
     source_reader_v2: bool = True,
     company_wiki_catalog_config: Path | None = None,
     narrative_request: dict | None = None,
+    source_reader_receipt_version: str = "2.1",
 ) -> dict:
     """Orchestrate the real chain and return the RevenueSourceRecord.
 
@@ -353,6 +374,10 @@ def prepare_source_result(
     accepted only for call-site compatibility — it is a no-op, there is no
     legacy fallback.
     """
+    from company_wiki_source_reader_v2 import validate_source_reader_receipt_version
+    version = validate_source_reader_receipt_version(source_reader_receipt_version)
+    deadline = _read_deadline(timeout_seconds)
+    reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
     catalog_config = _catalog_config_for_reader(company_wiki_catalog_config)
     command = _filing_fetch_command(
         python,
@@ -361,19 +386,19 @@ def prepare_source_result(
         allow_download=allow_download,
         timeout_seconds=timeout_seconds,
     )
-    filing_fetch = _run_filing_fetch(request, command, timeout_seconds)
+    filing_fetch = _run_filing_fetch(request, command, _remaining_timeout(deadline))
     record = _prepare_source_ref_v2(
         request,
         select_filing(filing_fetch),
         catalog_config,
-        timeout_seconds=timeout_seconds,
+        timeout_seconds=_remaining_timeout(deadline), **reader_options,
     )
     narrative = None
     if narrative_request is not None:
         from company_wiki_narrative_reader import read_narrative_context
         from source_narrative_context import narrative_read_receipt
         context = read_narrative_context(narrative_request, catalog_config=catalog_config,
-                                         timeout_seconds=min(timeout_seconds, 30.0))
+                                         timeout_seconds=_remaining_timeout(deadline))
         if context.to_dict()["source_ref"] != select_filing(filing_fetch)["source_ref"]:
             raise RuntimeError("narrative SourceRef does not match the prepared source")
         narrative = narrative_read_receipt(context)
@@ -386,13 +411,14 @@ def prepare_source(
     python: tuple[str, ...] = (sys.executable,), company_wiki_config: Path | None = None,
     filing_fetch_root: Path | None = None, source_reader_v2: bool = True,
     company_wiki_catalog_config: Path | None = None, narrative_request: dict | None = None,
+    source_reader_receipt_version: str = "2.1",
 ) -> dict:
     """Compatibility source-only entry; the full result is an explicit sidecar."""
     return prepare_source_result(
         request, allow_download=allow_download, timeout_seconds=timeout_seconds, python=python,
         company_wiki_config=company_wiki_config, filing_fetch_root=filing_fetch_root,
         source_reader_v2=source_reader_v2, company_wiki_catalog_config=company_wiki_catalog_config,
-        narrative_request=narrative_request,
+        narrative_request=narrative_request, source_reader_receipt_version=source_reader_receipt_version,
     )["source"]
 
 
@@ -413,6 +439,8 @@ def main(argv: list[str] | None = None) -> int:
         "the legacy normalized-body reader is no longer reachable",
     )
     parser.add_argument("--company-wiki-catalog-config", type=Path, default=None)
+    parser.add_argument("--source-reader-receipt-version", choices=("2.1", "2.2"), default="2.1",
+                        help="declared producer receipt capability; 2.2 explicitly requests availability evidence")
     parser.add_argument("--timeout-seconds", type=float, default=900.0)
     parser.add_argument(
         "--company-wiki-config",
@@ -446,6 +474,7 @@ def main(argv: list[str] | None = None) -> int:
             source_reader_v2=args.source_reader_v2,
             company_wiki_catalog_config=args.company_wiki_catalog_config,
             narrative_request=narrative_request,
+            source_reader_receipt_version=args.source_reader_receipt_version,
         )
     except (json.JSONDecodeError, ValueError) as exc:
         sys.stderr.write(json.dumps({"error_code": "bad_request", "error": str(exc)}))

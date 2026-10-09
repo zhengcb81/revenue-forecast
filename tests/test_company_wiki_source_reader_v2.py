@@ -98,7 +98,7 @@ def test_same_size_tampered_bytes_are_rejected(monkeypatch, tmp_path):
 
 @pytest.mark.parametrize(
     ("as_of_date", "expected_fiscal_year"),
-    (("2026-02-20", 2025), ("2026-07-18", 2024)),
+    (("2026-02-19", 2025), ("2026-07-18", 2024)),
 )
 def test_verified_bytes_still_need_as_of_and_period(
     monkeypatch, tmp_path, as_of_date, expected_fiscal_year,

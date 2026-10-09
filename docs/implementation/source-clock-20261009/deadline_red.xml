@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="6" time="0.619" timestamp="2026-10-09T06:34:31.190221+01:00" hostname="DESKTOP-156V213"><testcase classname="tests.test_source_preparation_deadline" name="test_public_read_inherits_remaining_caller_deadline_over_thirty" time="0.108"><failure message="AssertionError: assert [('fetch', 90...ative', 30.0)] == [('fetch', 90...rrative', 35)]&#10;  &#10;  At index 1 diff: ('raw', 90) != ('raw', 50)&#10;  Use -v to get more diff">tests\test_source_preparation_deadline.py:48: in test_public_read_inherits_remaining_caller_deadline_over_thirty
+    assert calls == [("fetch", 90), ("raw", 50), ("narrative", 35)]
+E   AssertionError: assert [('fetch', 90...ative', 30.0)] == [('fetch', 90...rrative', 35)]
+E     
+E     At index 1 diff: ('raw', 90) != ('raw', 50)
+E     Use -v to get more diff</failure></testcase><testcase classname="tests.test_source_preparation_deadline" name="test_exhausted_caller_stops_before_next_actual_read" time="0.003"><failure message="Failed: DID NOT RAISE RuntimeError">tests\test_source_preparation_deadline.py:53: in test_exhausted_caller_stops_before_next_actual_read
+    with pytest.raises(RuntimeError, match="source_preparation_deadline_exhausted"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE RuntimeError</failure></testcase><testcase classname="tests.test_source_preparation_deadline" name="test_invalid_or_unbounded_caller_timeout_refused_before_upstream[0]" time="0.004"><failure message="Failed: DID NOT RAISE RuntimeError">tests\test_source_preparation_deadline.py:62: in test_invalid_or_unbounded_caller_timeout_refused_before_upstream
+    with pytest.raises(RuntimeError, match="invalid_source_preparation_timeout"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE RuntimeError</failure></testcase><testcase classname="tests.test_source_preparation_deadline" name="test_invalid_or_unbounded_caller_timeout_refused_before_upstream[inf]" time="0.003"><failure message="Failed: DID NOT RAISE RuntimeError">tests\test_source_preparation_deadline.py:62: in test_invalid_or_unbounded_caller_timeout_refused_before_upstream
+    with pytest.raises(RuntimeError, match="invalid_source_preparation_timeout"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE RuntimeError</failure></testcase><testcase classname="tests.test_source_preparation_deadline" name="test_invalid_or_unbounded_caller_timeout_refused_before_upstream[nan]" time="0.003"><failure message="Failed: DID NOT RAISE RuntimeError">tests\test_source_preparation_deadline.py:62: in test_invalid_or_unbounded_caller_timeout_refused_before_upstream
+    with pytest.raises(RuntimeError, match="invalid_source_preparation_timeout"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE RuntimeError</failure></testcase><testcase classname="tests.test_source_preparation_deadline" name="test_actual_transport_timeout_is_bounded_and_has_no_retry" time="0.163" /></testsuite></testsuites>

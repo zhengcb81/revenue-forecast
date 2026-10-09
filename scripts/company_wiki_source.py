@@ -431,10 +431,14 @@ def build_revenue_source_record(
         raise CompanyWikiSourceError(
             "retrieved_at must be UTC YYYY-MM-DDTHH:MM:SSZ"
         ) from exc
-    if not published <= captured <= as_of:
-        raise CompanyWikiSourceError(
-            "source capture is outside published <= captured <= as_of"
-        )
+    from contracts.source_clock import SourceClockError, qualify_source_information, validate_source_events
+    try:
+        information = qualify_source_information(source_sha256=handle.get("snapshot_sha256"),
+            published_date=published.isoformat(), as_of=as_of)
+        validate_source_events(eligibility=information, original_retrieved_at=retrieved_at,
+                               capture_date=captured.isoformat())
+    except SourceClockError as exc:
+        raise CompanyWikiSourceError(str(exc)) from exc
     snapshot_sha256 = _required_text(handle.get("snapshot_sha256"), "snapshot_sha256")
     if not _SHA256_RE.fullmatch(snapshot_sha256):
         raise CompanyWikiSourceError("snapshot_sha256 must be lowercase SHA-256")

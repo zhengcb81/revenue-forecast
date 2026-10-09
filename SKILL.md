@@ -38,6 +38,8 @@ output validation, and growth-driver attribution may include negative
 **legacy read-only** (emit matrix `schema_compatibility.py`).
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
+**Source clock (4.1.1 / source-clock/1):** `as_of_date` limits information availability, while current source read/capture/evidence checks retain actual UTC dates. Known publication after the cutoff is refused. Unknown publication needs reliable exact-SHA prior availability from the explicitly configured public SourceReader 2.2 producer; default 2.1 remains unchanged. A bare retrieval timestamp or file mtime is not availability proof. Preserve old artifact bytes and reproduce 4.1.0 semantics with their pinned runtime.
+
 **Methodology upgrade (4.1.0):** the runtime adds eight operating/lifecycle models, explicit timing and non-performance stock revisions, independent management-target comparisons, and better protected historical accuracy scoring and benchmark metrics. Canonical schema 3.7 and opt-in 3.8 remain unchanged; a schema number alone is not an engine-compatibility guarantee. Preserve old forecast/snapshot bytes and hashes. Older artifacts that require their original calculation behavior must be verified with the pinned emitting runtime; do not rewrite their engine version or recalculate them in place. Adopt the new methodology through a new input/forecast version and a newly validated publication. These changes improve modeling discipline and coverage; realized forecast accuracy still requires matched out-of-sample evidence.
 
 **Attestation (4.0.0, R2):** every formal publication receipt carries

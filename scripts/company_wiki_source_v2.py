@@ -16,6 +16,10 @@ from company_wiki_source import (
     _required_text,
 )
 from contracts.evidence import build_host_receipt, valid_source_url
+from contracts.source_clock import (
+    InformationEligibility, SourceClockError, qualify_source_information,
+    validate_availability_evidence, validate_source_events,
+)
 from source_period_semantics import valid_fiscal_year
 
 
@@ -101,7 +105,8 @@ def _validate_ref(source_ref: Any) -> dict[str, Any]:
 
 def _validate_receipt(receipt_value: Any, ref: dict[str, Any]) -> dict[str, Any]:
     receipt = _object(receipt_value, "read_receipt")
-    if set(receipt) != _RECEIPT_FIELDS or receipt.get("schema_version") != "2.1":
+    expected = _RECEIPT_FIELDS if receipt.get("schema_version") == "2.1" else _RECEIPT_FIELDS | {"availability_evidence"}
+    if receipt.get("schema_version") not in {"2.1", "2.2"} or set(receipt) != expected:
         raise CompanyWikiSourceError("source read receipt fields/schema are invalid")
     if receipt.get("status") != "ok":
         raise CompanyWikiSourceError("source read receipt is not successful")
@@ -113,6 +118,10 @@ def _validate_receipt(receipt_value: Any, ref: dict[str, Any]) -> dict[str, Any]
             raise CompanyWikiSourceError(f"source read receipt {field} is invalid")
     _aware_datetime(receipt.get("read_at"), "source read receipt read_at")
     _validate_review(receipt.get("review"), ref)
+    try:
+        validate_availability_evidence(receipt.get("availability_evidence"), ref["content_sha256"])
+    except SourceClockError as exc:
+        raise CompanyWikiSourceError(str(exc)) from exc
     return receipt
 
 
@@ -173,20 +182,24 @@ def _validate_manifest_metadata(manifest: dict[str, Any]) -> None:
             _required_text(manifest[field], f"source manifest {field}")
 
 
-def _validate_manifest_dates(manifest: dict[str, Any], as_of: date) -> date:
-    published = _iso_date(manifest.get("published_date"), "source manifest published_date")
-    if published > as_of:
-        raise CompanyWikiSourceError("source manifest is outside as_of_date")
-    if manifest.get("retrieved_at") is not None:
-        retrieved = _aware_datetime(manifest["retrieved_at"], "source manifest retrieved_at")
-        if not published <= retrieved.date() <= as_of:
-            raise CompanyWikiSourceError("source manifest is outside as_of_date")
+def _validate_manifest_dates(
+    manifest: dict[str, Any], as_of: date, *, availability_evidence: Any = None,
+    current_read_at: str | None = None,
+) -> InformationEligibility:
+    try:
+        information = qualify_source_information(
+            source_sha256=manifest["content_sha256"], published_date=manifest.get("published_date"),
+            as_of=as_of, availability_evidence=availability_evidence,
+        )
+        validate_source_events(eligibility=information,
+            original_retrieved_at=manifest.get("retrieved_at"), current_read_at=current_read_at)
+    except SourceClockError as exc:
+        raise CompanyWikiSourceError(str(exc)) from exc
     period_end = manifest.get("period_end")
-    if period_end is not None and _iso_date(
-        period_end, "source manifest period_end"
-    ) > published:
-        raise CompanyWikiSourceError("source manifest period ends after publication")
-    return published
+    if period_end is not None and _iso_date(period_end, "source manifest period_end") > information.available_by:
+        label = "publication" if information.published_date is not None else "verified availability"
+        raise CompanyWikiSourceError(f"source manifest period ends after {label}")
+    return information
 
 
 def _validate_manifest_url(manifest: dict[str, Any]) -> None:
@@ -196,14 +209,16 @@ def _validate_manifest_url(manifest: dict[str, Any]) -> None:
 
 
 def _validate_manifest(
-    manifest_value: Any, ref: dict[str, Any], as_of: date,
-) -> tuple[dict[str, Any], date]:
+    manifest_value: Any, ref: dict[str, Any], as_of: date, *,
+    availability_evidence: Any = None, current_read_at: str | None = None,
+) -> tuple[dict[str, Any], InformationEligibility]:
     manifest = _object(manifest_value, "source_manifest")
     if set(manifest) != _MANIFEST_FIELDS:
         raise CompanyWikiSourceError("source manifest fields are invalid")
     _validate_manifest_identity(manifest, ref)
     _validate_manifest_metadata(manifest)
-    published = _validate_manifest_dates(manifest, as_of)
+    published = _validate_manifest_dates(manifest, as_of,
+        availability_evidence=availability_evidence, current_read_at=current_read_at)
     _validate_manifest_url(manifest)
     return manifest, published
 
@@ -289,7 +304,8 @@ def build_revenue_source_record_from_verified_read(
     if len(source_bytes) != ref["byte_size"] or hashlib.sha256(source_bytes).hexdigest() != ref["content_sha256"]:
         raise CompanyWikiSourceError("verified source bytes SHA-256/size mismatch")
     as_of = _iso_date(as_of_date, "as_of_date")
-    manifest, published = _validate_manifest(source_manifest, ref, as_of)
+    manifest, information = _validate_manifest(source_manifest, ref, as_of,
+        availability_evidence=receipt.get("availability_evidence"), current_read_at=receipt["read_at"])
     candidate = _validate_candidate(source_candidate, ref, manifest)
     if source_type not in _SOURCE_TYPES:
         raise CompanyWikiSourceError(f"unsupported revenue source_type: {source_type}")
@@ -297,13 +313,9 @@ def build_revenue_source_record_from_verified_read(
     locator = _required_text(page_or_section, "page_or_section")
     status = _diagnostic_status(prompt_injection_status, candidate, receipt)
     read_at = receipt["read_at"]
-    # Unknown historical collection time stays unknown. The new local capture
-    # uses the actual verified-read event, never an invented collection time.
-    captured_at = manifest["retrieved_at"] if manifest["retrieved_at"] is not None else read_at
-    retrieved = _aware_datetime(captured_at, "source capture timestamp")
-    if not published <= retrieved.date() <= as_of:
-        raise CompanyWikiSourceError("source capture is outside as_of_date")
-    captured_date = retrieved.date().isoformat()
+    # Original collection remains in the manifest; this capture is the actual
+    # verified read, including a legitimate later historical-analysis replay.
+    captured_date = _aware_datetime(read_at, "source capture timestamp").date().isoformat()
     capture = {
         "capture_schema_version": "1.0",
         "capture_method": "local_document",
@@ -323,13 +335,13 @@ def build_revenue_source_record_from_verified_read(
         timestamp=read_at,
     )
     capture["receipt_sha256"] = _canonical_sha256(capture)
-    return {
+    record = {
         "source_id": ref["source_id"],
         "source_type": source_type,
         "title": _required_text(manifest.get("title"), "source manifest title"),
         "publisher": publisher,
         "url": manifest["source_url"],
-        "published_date": published.isoformat(),
+        "published_date": information.published_date.isoformat() if information.published_date else None,
         "accessed_date": captured_date,
         "page_or_section": locator,
         "capture": capture,
@@ -343,6 +355,9 @@ def build_revenue_source_record_from_verified_read(
             },
         },
     }
+    if receipt.get("availability_evidence") is not None:
+        record["availability_evidence"] = dict(receipt["availability_evidence"])
+    return record
 
 
 __all__ = ["build_revenue_source_record_from_verified_read"]

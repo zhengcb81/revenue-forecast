@@ -49,6 +49,7 @@ from forecast.calc import (
     evaluate_derived_formula,
     parameter_values,
 )
+from contracts.source_clock import SourceClockError, source_information_eligibility, validate_source_events
 from research.coverage import validate_research_coverage
 from research.drivers import validate_growth_driver_tree
 from research.targets import validate_management_target_coverage
@@ -272,17 +273,14 @@ def validate_sources(
                 isinstance(source.get(field), str) and source[field].strip(),
                 f"{source_id}.{field} is required",
             )
-        published = parse_iso_date(
-            source.get("published_date"), f"{source_id}.published_date"
-        )
-        require(
-            published <= as_of,
-            f"future information leak: {source_id} was published after as_of_date",
-        )
+        try:
+            information = source_information_eligibility(source, as_of)
+        except SourceClockError as exc:
+            raise ForecastInputError(f"{source_id}: {exc}") from exc
         if source.get("accessed_date") is not None:
             parse_iso_date(source["accessed_date"], f"{source_id}.accessed_date")
         if require_capture:
-            validate_source_capture(source, as_of)
+            validate_source_capture(source, as_of, information_eligibility=information)
         enriched = dict(source)
         enriched["source_rank"] = SOURCE_RANKS[source_type]
         index[source_id] = enriched
@@ -622,13 +620,13 @@ def validate_evidence_claims(
         verified_date = parse_iso_date(
             claim.get("verified_date"), f"{claim_id}.verified_date"
         )
-        published_date = parse_iso_date(
-            source_index[source_id]["published_date"], f"{source_id}.published_date"
-        )
-        require(
-            published_date <= verified_date <= as_of,
-            f"claim verification date is outside the allowed information set: {claim_id}",
-        )
+        try:
+            information = source_information_eligibility(source_index[source_id], as_of)
+            validate_source_events(eligibility=information,
+                capture_date=source_capture.get("captured_date") if isinstance(source_capture, dict) else None,
+                claim_verified_date=verified_date.isoformat())
+        except SourceClockError as exc:
+            raise ForecastInputError(f"{claim_id}: {exc}") from exc
 
         # R6-RF-INPUT I3: additive evidence role. Optional; when present it
         # must be a known role consistent with the support type and the

@@ -1,0 +1,176 @@
+{
+  "schema_version": "source-clock-implementation-handoff/1",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_MAIN_INTEGRATION_PENDING",
+  "implementation_commit": "a001995a26a6b9b1a294ae62bb4fe57eeac6ca51",
+  "base_commit": "e688b0a2dceeb7de453e43dad3534061bf346bc9",
+  "branch": "codex/source-clock-20261009",
+  "worktree": "C:\\Users\\郑曾波\\Projects\\_harness_worktrees\\cmrf-20261008\\rf-inputs",
+  "engine_version": "4.1.1",
+  "source_clock_version": "source-clock/1",
+  "forecast_schemas": [
+    "3.7",
+    "3.8"
+  ],
+  "default_source_receipt_version": "2.1",
+  "opt_in_source_receipt_version": "2.2",
+  "CWP_producer_dependency": {
+    "commit": "ea76998c",
+    "CI": "37888084960",
+    "declared_flag": "--include-availability-evidence"
+  },
+  "implementation_files": [
+    "CHANGELOG.md",
+    "SKILL.md",
+    "docs/implementation/source-clock-20261009/actual_late_read.json",
+    "docs/implementation/source-clock-20261009/actual_late_read_initial.json",
+    "docs/implementation/source-clock-20261009/capability_red.xml",
+    "docs/implementation/source-clock-20261009/deadline_green.xml",
+    "docs/implementation/source-clock-20261009/deadline_red.xml",
+    "docs/implementation/source-clock-20261009/findings.md",
+    "docs/implementation/source-clock-20261009/green.xml",
+    "docs/implementation/source-clock-20261009/green_initial.xml",
+    "docs/implementation/source-clock-20261009/pinned_golden_validation.json",
+    "docs/implementation/source-clock-20261009/progress.md",
+    "docs/implementation/source-clock-20261009/red.xml",
+    "docs/implementation/source-clock-20261009/regression.xml",
+    "docs/implementation/source-clock-20261009/regression_repair.xml",
+    "docs/implementation/source-clock-20261009/required_gate.log",
+    "docs/implementation/source-clock-20261009/task_plan.md",
+    "docs/implementation/source-clock-20261009/verify_late_read.py",
+    "docs/implementation/source-clock-20261009/verify_pinned_golden.py",
+    "scripts/company_wiki_source.py",
+    "scripts/company_wiki_source_reader_v2.py",
+    "scripts/company_wiki_source_v2.py",
+    "scripts/contracts/constants.py",
+    "scripts/contracts/document.py",
+    "scripts/contracts/evidence.py",
+    "scripts/contracts/source_clock.py",
+    "scripts/research/input_evidence.py",
+    "scripts/schema_compatibility.py",
+    "scripts/source_narrative_context.py",
+    "scripts/source_preparation.py",
+    "tests/test_company_wiki_source.py",
+    "tests/test_company_wiki_source_reader_v2.py",
+    "tests/test_data_contract.py",
+    "tests/test_golden_behavior_lock.py",
+    "tests/test_input_semantics_e2e.py",
+    "tests/test_schema_compatibility.py",
+    "tests/test_source_clock.py",
+    "tests/test_source_preparation_deadline.py"
+  ],
+  "tests": {
+    "initial_clock_red": {
+      "failed": 16,
+      "passed": 2,
+      "seconds": 0.75,
+      "file": "red.xml"
+    },
+    "clock_capability_green": {
+      "passed": 20,
+      "seconds": 0.43,
+      "file": "green.xml"
+    },
+    "deadline_red": {
+      "failed": 5,
+      "passed": 1,
+      "seconds": 0.63,
+      "file": "deadline_red.xml"
+    },
+    "deadline_related_green": {
+      "passed": 79,
+      "skipped": 2,
+      "seconds": 13.15,
+      "file": "deadline_green.xml"
+    },
+    "concentrated_first": {
+      "passed": 188,
+      "skipped": 5,
+      "failed": 4,
+      "errors": 11,
+      "seconds": 8.19,
+      "file": "regression.xml"
+    },
+    "failed_boundary_repair": {
+      "passed": 79,
+      "skipped": 2,
+      "seconds": 30.15,
+      "file": "regression_repair.xml"
+    },
+    "required_offline_gate": {
+      "status": "PASS",
+      "pytest_passed": 126,
+      "pytest_seconds": 18.63,
+      "ruff": "PASS",
+      "mypy_modules": 8,
+      "file": "required_gate.log"
+    }
+  },
+  "actual_known_publication_late_read": {
+    "status": "PASS",
+    "sources": 3,
+    "as_of_date": "2026-10-08",
+    "actual_event_day": "2026-10-09",
+    "registered_source_public_reads": 3,
+    "actual_FF_resolve": "NOT_RUN",
+    "file": "actual_late_read.json",
+    "actual_US_byte_inspection_claim": "PASS"
+  },
+  "old_frozen_numerics": {
+    "status": "PASS",
+    "pinned_engine": "4.1.0",
+    "pinned_runtime": "e688b0a2",
+    "old_goldens_reproduced": 5,
+    "golden_bytes_unchanged": true,
+    "nonmetadata_fields_exact_equal": true,
+    "file": "pinned_golden_validation.json"
+  },
+  "side_effects": {
+    "provider_calls": 0,
+    "model_calls": 0,
+    "download_events": 0,
+    "OCR_calls": 0,
+    "production_writes": 0,
+    "raw_writes": 0,
+    "installation_writes": 0,
+    "merge": false,
+    "push": false,
+    "temporary_fixtures_cleaned": true,
+    "environment_restored": true
+  },
+  "hooks": {
+    "normal_commit": true,
+    "bypass": false,
+    "configured_path": ".githooks",
+    "hook_files_present": false,
+    "explicit_required_gate": "PASS"
+  },
+  "limits": [
+    "Fresh research and full71 not run in this package",
+    "Unknown+proof cases are synthetic unit fixtures; no actual prior proof fabricated",
+    "Current narrative protocol has no availability DTO and unknown publication remains a gap",
+    "Current CWP producer supports verified DownloadReceipt prior_verified_capture only; primary_archive resolver not claimed",
+    "Original HK role and no-OCR fixture partial issues unchanged",
+    "No install sync performed"
+  ],
+  "installation_changed_runtime_closure": [
+    "SKILL.md",
+    "scripts/company_wiki_source.py",
+    "scripts/company_wiki_source_reader_v2.py",
+    "scripts/company_wiki_source_v2.py",
+    "scripts/contracts/constants.py",
+    "scripts/contracts/document.py",
+    "scripts/contracts/evidence.py",
+    "scripts/contracts/source_clock.py",
+    "scripts/research/input_evidence.py",
+    "scripts/schema_compatibility.py",
+    "scripts/source_narrative_context.py",
+    "scripts/source_preparation.py"
+  ],
+  "acceptance_commands": {
+    "required_gate": "$env:CWP_V2_CODE_ROOT='C:/Users/郑曾波/Projects/company-wiki'; $env:FF_V2_CODE_ROOT='C:/Users/郑曾波/Projects/filing-fetch'; $env:CWP_NARRATIVE_CODE_ROOT='C:/Users/郑曾波/Projects/company-wiki'; C:/Miniconda/python.exe -B tools/pre_push_gate.py",
+    "clock_and_deadline_closure": "C:/Miniconda/python.exe -B -m pytest tests/test_source_preparation_deadline.py tests/test_source_clock.py tests/test_source_preparation.py tests/test_source_preparation_complete_result.py tests/test_narrative_source_preparation_transport.py tests/test_company_wiki_narrative_process.py -q --tb=short",
+    "real_late_read": "C:/Miniconda/python.exe -B docs/implementation/source-clock-20261009/verify_late_read.py --cwp C:/Users/郑曾波/Projects/company-wiki --manifest C:/Users/郑曾波/Projects/company-wiki/docs/plans/cross-market-rf-e2e-2026-10-08/phase6/fresh_sources_preparation/manifest.json --output docs/implementation/source-clock-20261009/actual_late_read.json",
+    "pinned_golden": "C:/Miniconda/python.exe -B docs/implementation/source-clock-20261009/verify_pinned_golden.py"
+  },
+  "commands_workdir": "C:/Users/郑曾波/Projects/_harness_worktrees/cmrf-20261008/rf-inputs"
+}

@@ -103,17 +103,25 @@ class RevenueSourceRecordTests(unittest.TestCase):
                     prompt_injection_status="not_reviewed",
                 )
 
-    def test_capture_after_as_of_is_not_backdated(self) -> None:
+    def test_capture_after_as_of_keeps_actual_date_for_old_information(self) -> None:
         with TemporaryDirectory() as temporary:
-            with self.assertRaisesRegex(CompanyWikiSourceError, "outside"):
-                build_revenue_source_record(
-                    self._handle(Path(temporary)),
-                    as_of_date="2026-07-17",
-                    source_type="regulatory_filing",
-                    publisher="SEC",
-                    page_or_section="Revenue note",
-                    prompt_injection_status="not_reviewed",
-                )
+            source = build_revenue_source_record(
+                self._handle(Path(temporary)), as_of_date="2026-07-17",
+                source_type="regulatory_filing", publisher="SEC",
+                page_or_section="Revenue note", prompt_injection_status="not_reviewed",
+            )
+        self.assertEqual(source["capture"]["captured_date"], "2026-07-18")
+        self.assertEqual(source["published_date"], "2026-03-20")
+        validate_sources({"sources": [source]}, date(2026, 7, 17), require_capture=True)
+
+    def test_future_publication_is_still_refused(self) -> None:
+        with TemporaryDirectory() as temporary:
+            handle = self._handle(Path(temporary))
+            handle["published_date"] = "2026-07-18"
+            with self.assertRaisesRegex(CompanyWikiSourceError, "source_publication_after_asof"):
+                build_revenue_source_record(handle, as_of_date="2026-07-17",
+                    source_type="regulatory_filing", publisher="SEC",
+                    page_or_section="Revenue note", prompt_injection_status="not_reviewed")
 
 
 if __name__ == "__main__":
