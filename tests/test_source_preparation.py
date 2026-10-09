@@ -86,9 +86,10 @@ def test_prepare_source_raises_on_client_failure(tmp_path, monkeypatch):
     monkeypatch.setattr(subprocess, "run", fake_run)
     import pytest
 
-    with pytest.raises(RuntimeError, match="boom"):
+    with pytest.raises(RuntimeError, match="invalid upstream error document") as caught:
         prepare_source(request, python=(sys.executable,),
                        company_wiki_catalog_config=_catalog_config(tmp_path))
+    assert "boom" not in str(caught.value)
 
 
 def _envelope(**overrides):

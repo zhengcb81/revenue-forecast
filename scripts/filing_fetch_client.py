@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from filing_upstream_cause import extract_cause, failure_detail, validated_cause
+from filing_upstream_cause import FAILURE_STATUSES, failure_detail, failure_observation, safe_failure_message, validated_failure_candidates
 
 
 class _ClientError(RuntimeError):
@@ -48,13 +48,25 @@ class _ClientError(RuntimeError):
         retryable: bool | None = None,
         candidates: list | None = None,
         upstream_cause: dict[str, Any] | None = None,
+        acquisition_failure: dict[str, Any] | None = None,
+        stage: str | None = None,
+        attempts: int | None = None,
+        calls: int | None = None,
+        downloads: int | None = None,
     ) -> None:
         super().__init__(message)
-        self.status = status
-        self.error_code = error_code
-        self.retryable = retryable
-        self.candidates = candidates
-        self.upstream_cause = validated_cause(upstream_cause)
+        self.status = status if isinstance(status, str) and status in FAILURE_STATUSES else None
+        self.error_code = error_code if isinstance(error_code, str) and error_code in FAILURE_STATUSES else None
+        self.retryable = retryable if type(retryable) is bool else None
+        self.candidates = validated_failure_candidates(candidates)
+        observed = failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
+                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads})
+        self.upstream_cause = observed.get("upstream_cause")
+        self.acquisition_failure = observed.get("acquisition_failure")
+        self.stage = observed.get("stage")
+        self.attempts = observed.get("attempts")
+        self.calls = observed.get("calls")
+        self.downloads = observed.get("downloads")
 
 
 # The location of the standalone filing-fetch canonical repo comes from an
@@ -235,7 +247,7 @@ def resolve_filing_result(
             creationflags=creationflags,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        raise _ClientError(f"filing-fetch subprocess failed: {exc}") from exc
+        raise _ClientError("filing-fetch subprocess failed") from exc
     if completed.returncode != 0:
         # filing-fetch writes its structured error document to STDOUT and exits
         # non-zero (stderr is typically empty). Parse stdout first so callers
@@ -245,16 +257,14 @@ def resolve_filing_result(
         if isinstance(payload, dict):
             detail = failure_detail(payload)
             raise _ClientError(
-                f"filing-fetch exited {completed.returncode}: "
-                f"{payload.get('error') or payload.get('status') or 'unknown error'}",
+                safe_failure_message(payload, prefix=f"filing-fetch exited {completed.returncode}"),
                 status=payload.get("status"),
                 error_code=payload.get("error_code"),
                 retryable=detail.get("retryable"),
                 candidates=detail.get("candidates"),
-                upstream_cause=extract_cause(payload),
+                **failure_observation(payload),
             )
-        detail = completed.stderr.strip() or "no stderr"
-        raise _ClientError(f"filing-fetch exited {completed.returncode}: {detail}")
+        raise _ClientError(f"filing-fetch exited {completed.returncode}: invalid upstream error document")
     try:
         response = json.loads(completed.stdout)
     except json.JSONDecodeError:
@@ -269,21 +279,21 @@ def resolve_filing_result(
                 and isinstance(filing.get("source_ref"), dict)):
             _validate_pathless_result(response)
             return response
-        reason = filing.get("reason") if isinstance(filing, dict) else None
         raise _ClientError(
-            f"filing-fetch returned status={status}: {reason or 'invalid v2 filing result'}",
+            safe_failure_message(response, prefix="filing-fetch returned"),
             status=status, error_code=status,
             retryable=filing.get("retryable", False) if isinstance(filing, dict) else False,
-            upstream_cause=extract_cause(response),
+            candidates=filing.get("candidates") if isinstance(filing, dict) else None,
+            **failure_observation(response),
         )
     if status != "capture_ready":
         raise _ClientError(
-            f"filing-fetch returned status={status}: {response.get('error', 'unknown error')}",
+            safe_failure_message(response, prefix="filing-fetch returned"),
             status=status,
             error_code=response.get("error_code"),
             retryable=response.get("retryable"),
             candidates=response.get("candidates"),
-            upstream_cause=extract_cause(response),
+            **failure_observation(response),
         )
     handle = response.get("handle")
     if not isinstance(handle, dict):
@@ -337,6 +347,11 @@ def _emit_error(
     retryable: bool | None = False,
     candidates: list | None = None,
     upstream_cause: dict[str, Any] | None = None,
+    acquisition_failure: dict[str, Any] | None = None,
+    stage: str | None = None,
+    attempts: int | None = None,
+    calls: int | None = None,
+    downloads: int | None = None,
 ) -> None:
     """Write a structured error document to stderr (success stream on stdout)."""
     payload: dict[str, Any] = {
@@ -344,11 +359,11 @@ def _emit_error(
         "error": message,
         "retryable": bool(retryable),
     }
-    if candidates:
-        payload["candidates"] = candidates
-    cause = validated_cause(upstream_cause)
-    if cause is not None:
-        payload["upstream_cause"] = cause
+    safe_candidates = validated_failure_candidates(candidates)
+    if safe_candidates:
+        payload["candidates"] = safe_candidates
+    payload.update(failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
+                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads}))
     sys.stderr.write(json.dumps(payload, ensure_ascii=False))
     sys.stderr.write("\n")
 
@@ -432,6 +447,8 @@ def main(argv: list[str] | None = None) -> int:
             retryable=exc.retryable,
             candidates=exc.candidates,
             upstream_cause=exc.upstream_cause,
+            acquisition_failure=exc.acquisition_failure,
+            stage=exc.stage, attempts=exc.attempts, calls=exc.calls, downloads=exc.downloads,
         )
         return 2
 

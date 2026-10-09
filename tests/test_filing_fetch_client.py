@@ -127,9 +127,10 @@ class ResolveFilingErrorDiagnosticsTests(unittest.TestCase):
                 resolve_filing(_request("AMD"), filing_fetch_root=empty)
         self.assertIn("filing-fetch script not found", str(ctx.exception))
 
-    def test_resolve_filing_nonzero_exit_with_non_json_stdout_uses_stderr(self) -> None:
+    def test_resolve_filing_nonzero_exit_with_non_json_stdout_has_safe_diagnostic(self) -> None:
         # Phase 6 C1: when filing-fetch exits non-zero and stdout is not a JSON
-        # error document, the client must fall back to stderr detail.
+        # error document, diagnose malformed upstream output without echoing
+        # arbitrary stderr (W08: it can contain provider URLs or credentials).
         from unittest.mock import patch
 
         completed = subprocess.CompletedProcess(
@@ -142,7 +143,9 @@ class ResolveFilingErrorDiagnosticsTests(unittest.TestCase):
             with patch("filing_fetch_client.subprocess.run", return_value=completed):
                 with self.assertRaises(_ClientError) as ctx:
                     resolve_filing(_request("AMD"), filing_fetch_root=root)
-            self.assertIn("boom: upstream failure", str(ctx.exception))
+            self.assertIn("invalid upstream error document", str(ctx.exception))
+            self.assertNotIn("boom: upstream failure", str(ctx.exception))
+            self.assertIsNone(ctx.exception.upstream_cause)
 
     def test_resolve_filing_invalid_stdout_json_is_rejected(self) -> None:
         # Phase 6 C1: zero exit but non-JSON stdout must raise.

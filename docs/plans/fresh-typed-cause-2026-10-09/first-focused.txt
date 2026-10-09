@@ -1,0 +1,72 @@
+.........................................F..................F........... [ 70%]
+.........................F....                                           [100%]
+================================== FAILURES ===================================
+_ ResolveFilingErrorDiagnosticsTests.test_resolve_filing_nonzero_exit_with_non_json_stdout_uses_stderr _
+
+self = <test_filing_fetch_client.ResolveFilingErrorDiagnosticsTests testMethod=test_resolve_filing_nonzero_exit_with_non_json_stdout_uses_stderr>
+
+    def test_resolve_filing_nonzero_exit_with_non_json_stdout_uses_stderr(self) -> None:
+        # Phase 6 C1: when filing-fetch exits non-zero and stdout is not a JSON
+        # error document, the client must fall back to stderr detail.
+        from unittest.mock import patch
+    
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=2,
+            stdout="not-json",
+            stderr="boom: upstream failure",
+        )
+        with _fake_root() as root:
+            with patch("filing_fetch_client.subprocess.run", return_value=completed):
+                with self.assertRaises(_ClientError) as ctx:
+                    resolve_filing(_request("AMD"), filing_fetch_root=root)
+>           self.assertIn("boom: upstream failure", str(ctx.exception))
+E           AssertionError: 'boom: upstream failure' not found in 'filing-fetch exited 2: invalid upstream error document'
+
+tests\test_filing_fetch_client.py:145: AssertionError
+________________ test_prepare_source_raises_on_client_failure _________________
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/w08-concentrated-0eor3f6i/pytest/test_prepare_source_raises_on_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000021B11CA5590>
+
+    def test_prepare_source_raises_on_client_failure(tmp_path, monkeypatch):
+        request = {
+            "company_query": "Acme",
+            "document_kind": "annual_report",
+            "as_of_date": "2026-12-31",
+        }
+    
+        def fake_run(*args, **kwargs):
+            return subprocess.CompletedProcess(
+                args[0], returncode=1, stdout="", stderr="boom"
+            )
+    
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        import pytest
+    
+>       with pytest.raises(RuntimeError, match="boom"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'boom'
+E         Actual message: 'filing-fetch client exited 1: invalid upstream error document'
+
+tests\test_source_preparation.py:89: AssertionError
+_____________ test_exhausted_caller_stops_before_next_actual_read _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000021B139681D0>
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/w08-concentrated-0eor3f6i/pytest/test_exhausted_caller_stops_be0')
+
+    def test_exhausted_caller_stops_before_next_actual_read(monkeypatch, tmp_path):
+        config, calls = setup_chain(monkeypatch, tmp_path, [100, 100, 191])
+>       with pytest.raises(RuntimeError, match="source_preparation_deadline_exhausted"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'source_preparation_deadline_exhausted'
+E         Actual message: 'source preparation failed at source_reader'
+
+tests\test_source_preparation_deadline.py:53: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_filing_fetch_client.py::ResolveFilingErrorDiagnosticsTests::test_resolve_filing_nonzero_exit_with_non_json_stdout_uses_stderr
+FAILED tests/test_source_preparation.py::test_prepare_source_raises_on_client_failure
+FAILED tests/test_source_preparation_deadline.py::test_exhausted_caller_stops_before_next_actual_read
+3 failed, 99 passed in 12.89s

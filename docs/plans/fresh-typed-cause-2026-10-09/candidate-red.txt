@@ -1,0 +1,142 @@
+FFFF                                                                     [100%]
+================================== FAILURES ===================================
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[2-True] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-candidate-red-78147mp3/pytest/test_public_client_projects_ca0')
+v2 = True, exit_code = 2
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": "text/plain"}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'error': 'h...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         At index 0 diff: {'error': 'https://invalid/?api_key=synthetic-w08-secret-no-real-key'} != {'ticker': 'GOOGL', 'canonical_name': 'Alphabet Inc.', 'market': 'US', 'exchange': 'NASDAQ'}
+E         Left contains 3 more items, first extra item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}, 'debug': [{'provider_key': 'synthetic-w08-secret-no-real-key'}]}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:154: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[2-False] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-candidate-red-78147mp3/pytest/test_public_client_projects_ca1')
+v2 = False, exit_code = 2
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": "text/plain"}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'error': 'h...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         At index 0 diff: {'error': 'https://invalid/?api_key=synthetic-w08-secret-no-real-key'} != {'ticker': 'GOOGL', 'canonical_name': 'Alphabet Inc.', 'market': 'US', 'exchange': 'NASDAQ'}
+E         Left contains 3 more items, first extra item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}, 'debug': [{'provider_key': 'synthetic-w08-secret-no-real-key'}]}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:154: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[0-True] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-candidate-red-78147mp3/pytest/test_public_client_projects_ca2')
+v2 = True, exit_code = 0
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": "text/plain"}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert None == [{'ticker': 'GOOGL', 'canonical_name': 'Alphabet Inc.', 'market': 'US', 'exchange': 'NASDAQ'}, {'source_ref': {'schema...aaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}]
+E        +  where None = <built-in method get of dict object at 0x00000170D0FE81C0>('candidates')
+E        +    where <built-in method get of dict object at 0x00000170D0FE81C0> = {'error_code': 'ambiguous', 'error': 'filing-fetch returned: status=ambiguous: canonical_import_failed', 'retryable': ...iling-upstream-cause/1', 'operation': 'ensure', 'code': 'canonical_import_failed', 'provider_started': True, ...}, ...}.get
+
+tests\test_source_failure_observations.py:154: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[0-False] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-candidate-red-78147mp3/pytest/test_public_client_projects_ca3')
+v2 = False, exit_code = 0
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": "text/plain"}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'error': 'h...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         At index 0 diff: {'error': 'https://invalid/?api_key=synthetic-w08-secret-no-real-key'} != {'ticker': 'GOOGL', 'canonical_name': 'Alphabet Inc.', 'market': 'US', 'exchange': 'NASDAQ'}
+E         Left contains 3 more items, first extra item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}, 'debug': [{'provider_key': 'synthetic-w08-secret-no-real-key'}]}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:154: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[2-True]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[2-False]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[0-True]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[0-False]
+4 failed, 24 deselected in 0.99s

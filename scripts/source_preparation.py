@@ -32,7 +32,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
 
 import company_wiki_source  # noqa: E402
-from filing_upstream_cause import extract_cause, parse_error_document, validated_cause  # noqa: E402
+from filing_upstream_cause import failure_observation, parse_error_document, safe_failure_message  # noqa: E402
 from processing_demand import DemandQueue  # noqa: E402
 from filing_fetch_client import select_filing  # noqa: E402
 from source_period_semantics import valid_fiscal_year  # noqa: E402
@@ -146,9 +146,31 @@ def _filing_fetch_command(
 class FilingSourcePreparationError(RuntimeError):
     """A source failure with its safe upstream diagnostic, without inference."""
 
-    def __init__(self, message: str, *, upstream_cause: dict | None = None):
+    def __init__(self, message: str, *, upstream_cause: dict | None = None,
+                 acquisition_failure: dict | None = None, stage: str | None = None,
+                 attempts: int | None = None, calls: int | None = None, downloads: int | None = None):
         super().__init__(message)
-        self.upstream_cause = validated_cause(upstream_cause)
+        observed = failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
+                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads})
+        self.upstream_cause = observed.get("upstream_cause")
+        self.acquisition_failure = observed.get("acquisition_failure")
+        self.stage = observed.get("stage")
+        self.attempts = observed.get("attempts")
+        self.calls = observed.get("calls")
+        self.downloads = observed.get("downloads")
+
+
+def _safe_preparation_failure(exc: BaseException, stage: str) -> str:
+    """Keep local named deadline/refusal diagnostics without copying a body."""
+    marker = str(exc).split(":", 1)[0]
+    if marker in {"source_preparation_deadline_exhausted", "invalid_source_preparation_timeout"}:
+        return marker
+    text = str(exc)
+    if text.startswith("source reader refused: "):
+        reason = text.removeprefix("source reader refused: ")
+        if reason in {"reader_unavailable", "source_availability_unknown", "document_source_mismatch", "source_identity_mismatch", "source_period_mismatch"}:
+            return "source reader refused: " + reason
+    return f"source preparation failed at {stage}"
 
 
 def _run_filing_fetch(request: dict, command: tuple[str, ...], timeout: float) -> dict:
@@ -163,10 +185,10 @@ def _run_filing_fetch(request: dict, command: tuple[str, ...], timeout: float) -
         check=False,
     )
     if proc.returncode != 0:
+        payload = parse_error_document(proc.stderr)
         raise FilingSourcePreparationError(
-            f"filing-fetch client exited {proc.returncode}: "
-            f"{proc.stderr.strip()[-800:]}",
-            upstream_cause=extract_cause(parse_error_document(proc.stderr)),
+            safe_failure_message(payload, prefix=f"filing-fetch client exited {proc.returncode}"),
+            **failure_observation(payload),
         )
     payload = json.loads(proc.stdout)
     return payload if isinstance(payload, dict) else {}
@@ -387,21 +409,28 @@ def prepare_source_result(
         timeout_seconds=timeout_seconds,
     )
     filing_fetch = _run_filing_fetch(request, command, _remaining_timeout(deadline))
-    record = _prepare_source_ref_v2(
-        request,
-        select_filing(filing_fetch),
-        catalog_config,
-        timeout_seconds=_remaining_timeout(deadline), **reader_options,
-    )
-    narrative = None
-    if narrative_request is not None:
-        from company_wiki_narrative_reader import read_narrative_context
-        from source_narrative_context import narrative_read_receipt
-        context = read_narrative_context(narrative_request, catalog_config=catalog_config,
-                                         timeout_seconds=_remaining_timeout(deadline))
-        if context.to_dict()["source_ref"] != select_filing(filing_fetch)["source_ref"]:
-            raise RuntimeError("narrative SourceRef does not match the prepared source")
-        narrative = narrative_read_receipt(context)
+    stage = "source_reader"
+    try:
+        record = _prepare_source_ref_v2(
+            request,
+            select_filing(filing_fetch),
+            catalog_config,
+            timeout_seconds=_remaining_timeout(deadline), **reader_options,
+        )
+        narrative = None
+        if narrative_request is not None:
+            stage = "narrative_reader"
+            from company_wiki_narrative_reader import read_narrative_context
+            from source_narrative_context import narrative_read_receipt
+            context = read_narrative_context(narrative_request, catalog_config=catalog_config,
+                                             timeout_seconds=_remaining_timeout(deadline))
+            if context.to_dict()["source_ref"] != select_filing(filing_fetch)["source_ref"]:
+                raise RuntimeError("narrative SourceRef does not match the prepared source")
+            narrative = narrative_read_receipt(context)
+    except (RuntimeError, ValueError, OSError) as exc:
+        observed = failure_observation(filing_fetch)
+        observed["stage"] = stage
+        raise FilingSourcePreparationError(_safe_preparation_failure(exc, stage), **observed) from exc
     return {"schema_version": "source-preparation-result/1", "source": record,
             "filing_fetch": filing_fetch, "narrative": narrative}
 
@@ -482,9 +511,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     except RuntimeError as exc:
         failure = {"error_code": "upstream", "error": str(exc)}
-        cause = validated_cause(getattr(exc, "upstream_cause", None))
-        if cause is not None:
-            failure["upstream_cause"] = cause
+        failure.update(failure_observation({key: getattr(exc, key, None) for key in
+                       ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads")}))
         sys.stderr.write(json.dumps(failure))
         sys.stderr.write("\n")
         return 3
