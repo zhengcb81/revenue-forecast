@@ -12,6 +12,7 @@ from pathlib import Path
 from company_wiki_narrative_contracts import NarrativeContext
 from company_wiki_narrative_reader import read_narrative_context
 from contracts.evidence import text_sha256
+from contracts.source_clock import utc_timestamp
 from forecast.calc import collect_parameter_roles
 
 
@@ -45,7 +46,7 @@ def _formula_refs(data: dict, parameter_id: str, index: dict) -> list[dict]:
     return refs
 
 
-def _claim(binding: dict, span: dict, source: dict, as_of: str, verified_by: str) -> dict:
+def _claim(binding: dict, span: dict, source: dict, verified_date: str, verified_by: str) -> dict:
     excerpt = span["raw_text"]
     if not isinstance(excerpt, str) or not excerpt.strip() or span["parse_status"] != "parsed":
         raise ValueError("selected narrative span has no usable parsed text")
@@ -59,7 +60,7 @@ def _claim(binding: dict, span: dict, source: dict, as_of: str, verified_by: str
             "content_sha256": source["capture"]["snapshot_sha256"],
             "capture_receipt_sha256": source["capture"]["receipt_sha256"],
             "verification_status": "opened_and_checked", "verified_by": verified_by,
-            "verified_date": as_of}
+            "verified_date": verified_date}
 
 
 def consume_narrative_input(
@@ -85,6 +86,7 @@ def consume_narrative_input(
     used = collect_parameter_roles(updated, index)["used"]
     spans = {item["span_id"]: item for item in value["evidence_spans"]}
     receipt = narrative_read_receipt(context)
+    verified_date = utc_timestamp(value["read_receipt"]["read_at"], "narrative read_at").date().isoformat()
     claims = updated.setdefault("evidence_claims", [])
     claim_ids = {item["claim_id"] for item in claims}
     for binding in bindings:
@@ -94,7 +96,7 @@ def consume_narrative_input(
         if pid not in used or cid in claim_ids or binding["span_id"] not in spans:
             raise ValueError("narrative binding requires a unique claim and a used parameter/span")
         span = spans[binding["span_id"]]
-        claims.append(_claim(binding, span, source, data["as_of_date"], verified_by))
+        claims.append(_claim(binding, span, source, verified_date, verified_by))
         claim_ids.add(cid)
         parameter = index[pid]
         parameter.setdefault("claim_ids", []).append(cid)

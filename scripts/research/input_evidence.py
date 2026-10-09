@@ -26,6 +26,9 @@ from contracts.evidence import (
     require,
     text_sha256,
 )
+from contracts.source_clock import (
+    SourceClockError, iso_date, qualify_source_information, utc_timestamp, validate_source_events,
+)
 from company_wiki_narrative_contracts import SPAN_PREFIX
 import hashlib
 
@@ -280,17 +283,15 @@ def _bind_narrative_span(
         "narrative manifest/source content hash mismatch",
     )
     published_date = manifest.get("published_date")
-    require(
-        isinstance(published_date, str) and bool(published_date),
-        "narrative_source_publication_unknown: a source without a verified "
-        "publication date cannot enter the information set",
-    )
-    read_at = str(receipt.get("read_at") or "")
-    captured_date = read_at[:10]
-    require(
-        re.fullmatch(r"\d{4}-\d{2}-\d{2}", captured_date) is not None,
-        "narrative read receipt has no usable capture date",
-    )
+    read_at = receipt.get("read_at")
+    try:
+        information = qualify_source_information(source_sha256=content_sha256,
+            published_date=published_date, as_of=iso_date(receipt.get("as_of_date"), "narrative as_of_date"))
+        captured_date = utc_timestamp(read_at, "narrative read_at").date().isoformat()
+        validate_source_events(eligibility=information, current_read_at=read_at,
+                               capture_date=captured_date)
+    except SourceClockError as exc:
+        raise ForecastInputError(str(exc)) from exc
     source_label = binding.get("source_id") or "narrative_transcript"
     require(
         isinstance(source_label, str) and source_label.strip(),
@@ -312,7 +313,7 @@ def _bind_narrative_span(
             tool_name="company-wiki-narrative-reader",
             action="narrative_read",
             event_sha256=hashlib.sha256(artifact_id.encode("utf-8")).hexdigest(),
-            timestamp=captured_date,
+            timestamp=read_at,
         ),
     }
     capture = dict(capture_payload)

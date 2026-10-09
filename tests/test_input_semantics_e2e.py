@@ -400,7 +400,7 @@ class InputSemanticsE2ETests(unittest.TestCase):
         from revenue_core import ForecastInputError
 
         with self.assertRaisesRegex(
-            ForecastInputError, "narrative_source_publication_unknown"
+            ForecastInputError, "source_availability_unknown"
         ):
             bind_parameter_evidence(
                 parameter,

@@ -19,6 +19,10 @@ import sys
 from typing import Any
 
 from source_period_semantics import valid_fiscal_year
+from contracts.source_clock import (
+    SourceClockError, qualify_source_information, validate_availability_evidence,
+    validate_source_events,
+)
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
@@ -142,7 +146,8 @@ def _validate_ref(source_ref: dict[str, Any]) -> None:
 
 
 def _run_reader(
-    source_ref: dict[str, Any], config: Path, timeout_seconds: float,
+    source_ref: dict[str, Any], config: Path, timeout_seconds: float, *,
+    source_reader_receipt_version: str = "2.1",
 ) -> subprocess.CompletedProcess[bytes]:
     command = [
         sys.executable, "-B", "-m", "company_wiki.source_catalog.source_reader_cli",
@@ -152,6 +157,8 @@ def _run_reader(
         "--content-sha256", source_ref["content_sha256"],
         "--purpose", "filing_reuse",
     ]
+    if source_reader_receipt_version == "2.2":
+        command.append("--include-availability-evidence")
     environment = dict(os.environ)
     environment["PYTHONUTF8"] = "1"
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -207,32 +214,37 @@ def _validate_manifest_identity(
 
 
 def _validate_manifest_period(
-    manifest: dict[str, Any], as_of: date, fiscal_year: int | None,
+    manifest: dict[str, Any], as_of: date, fiscal_year: int | None, *,
+    availability_evidence: Any = None, current_read_at: str | None = None,
 ) -> None:
     if not valid_fiscal_year(manifest["document_kind"], manifest["fiscal_year"]) or (
         type(manifest["fiscal_year"]) is not type(fiscal_year) or manifest["fiscal_year"] != fiscal_year
     ):
         raise SourceVersionTransportError("source manifest fiscal_year mismatch")
-    published = _date(manifest["published_date"], "source manifest published_date")
-    retrieved_value = manifest["retrieved_at"]
+    try:
+        information = qualify_source_information(
+            source_sha256=manifest["content_sha256"], published_date=manifest["published_date"],
+            as_of=as_of, availability_evidence=availability_evidence,
+        )
+        validate_source_events(eligibility=information,
+            original_retrieved_at=manifest["retrieved_at"], current_read_at=current_read_at)
+    except SourceClockError as exc:
+        raise SourceVersionTransportError(str(exc)) from exc
     period_end = manifest["period_end"]
-    if period_end is not None and _date(period_end, "source manifest period_end") > published:
-        raise SourceVersionTransportError("source manifest period ends after publication")
-    if published > as_of:
-        raise SourceVersionTransportError("source manifest is outside as_of_date")
-    if retrieved_value is not None:
-        retrieved = _datetime(retrieved_value, "source manifest retrieved_at")
-        if not (published <= retrieved.date() <= as_of):
-            raise SourceVersionTransportError("source manifest is outside as_of_date")
+    if period_end is not None and _date(period_end, "source manifest period_end") > information.available_by:
+        label = "publication" if information.published_date is not None else "verified availability"
+        raise SourceVersionTransportError(f"source manifest period ends after {label}")
 
 
 def _validate_manifest(
-    manifest: Any, source_ref: dict[str, Any], as_of: date, fiscal_year: int | None,
+    manifest: Any, source_ref: dict[str, Any], as_of: date, fiscal_year: int | None, *,
+    availability_evidence: Any = None, current_read_at: str | None = None,
 ) -> dict[str, Any]:
     if not isinstance(manifest, dict) or set(manifest) != _MANIFEST_FIELDS:
         raise SourceVersionTransportError("source receipt manifest fields invalid")
     _validate_manifest_identity(manifest, source_ref)
-    _validate_manifest_period(manifest, as_of, fiscal_year)
+    _validate_manifest_period(manifest, as_of, fiscal_year,
+        availability_evidence=availability_evidence, current_read_at=current_read_at)
     return manifest
 
 
@@ -260,7 +272,7 @@ def _validate_open_request(
 def _valid_refusal(refusal: dict[str, Any]) -> bool:
     return (
         set(refusal) == {"schema_version", "status", "reason"}
-        and refusal["schema_version"] == "2.1"
+        and refusal["schema_version"] in {"2.1", "2.2"}
         and refusal["status"] in _REFUSAL_STATUSES
         and isinstance(refusal["reason"], str)
         and _REFUSAL_REASON.fullmatch(refusal["reason"]) is not None
@@ -279,10 +291,15 @@ def _raise_reader_refusal(opened: subprocess.CompletedProcess[bytes]) -> None:
     raise SourceVersionTransportError("source reader refused current version")
 
 
-def _validate_receipt_shape(receipt: dict[str, Any]) -> None:
-    if set(receipt) != _RECEIPT_FIELDS:
-        raise SourceVersionTransportError("source receipt fields/status invalid")
-    if receipt["schema_version"] != "2.1" or receipt["status"] != "ok":
+def validate_source_reader_receipt_version(value: Any) -> str:
+    if not isinstance(value, str) or value not in {"2.1", "2.2"}:
+        raise SourceVersionTransportError("source reader receipt capability must be 2.1 or 2.2")
+    return value
+
+
+def _validate_receipt_shape(receipt: dict[str, Any], *, source_reader_receipt_version: str = "2.1") -> None:
+    expected = _RECEIPT_FIELDS if source_reader_receipt_version == "2.1" else _RECEIPT_FIELDS | {"availability_evidence"}
+    if set(receipt) != expected or receipt.get("schema_version") != source_reader_receipt_version or receipt.get("status") != "ok":
         raise SourceVersionTransportError("source receipt fields/status invalid")
 
 
@@ -306,14 +323,19 @@ def _validate_receipt_policies(receipt: dict[str, Any]) -> None:
 
 def _validate_success_receipt(
     receipt: dict[str, Any], source_ref: dict[str, Any], as_of: date,
-    fiscal_year: int | None,
+    fiscal_year: int | None, *, source_reader_receipt_version: str = "2.1",
 ) -> dict[str, Any]:
-    _validate_receipt_shape(receipt)
+    _validate_receipt_shape(receipt, source_reader_receipt_version=source_reader_receipt_version)
     _validate_receipt_identity(receipt, source_ref)
     _validate_receipt_policies(receipt)
     _datetime(receipt["read_at"], "source receipt read_at", require_utc=True)
     _validate_review(receipt["review"], source_ref)
-    return _validate_manifest(receipt["manifest"], source_ref, as_of, fiscal_year)
+    try:
+        validate_availability_evidence(receipt.get("availability_evidence"), source_ref["content_sha256"])
+    except SourceClockError as exc:
+        raise SourceVersionTransportError(str(exc)) from exc
+    return _validate_manifest(receipt["manifest"], source_ref, as_of, fiscal_year,
+        availability_evidence=receipt.get("availability_evidence"), current_read_at=receipt["read_at"])
 
 
 def _verify_bytes(body: bytes, source_ref: dict[str, Any]) -> None:
@@ -326,18 +348,20 @@ def _verify_bytes(body: bytes, source_ref: dict[str, Any]) -> None:
 def open_source_version_v2(
     *, source_ref: dict[str, Any], catalog_config: Path,
     as_of_date: str, expected_fiscal_year: int | None,
-    timeout_seconds: float = 30.0,
+    timeout_seconds: float = 30.0, source_reader_receipt_version: str = "2.1",
 ) -> tuple[bytes, dict[str, Any], dict[str, Any]]:
     """Return verified source bytes, a pathless receipt, and a same-call manifest."""
+    version = validate_source_reader_receipt_version(source_reader_receipt_version)
     as_of = _validate_open_request(
         source_ref, catalog_config, as_of_date, expected_fiscal_year, timeout_seconds,
     )
-    opened = _run_reader(source_ref, catalog_config, timeout_seconds)
+    reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
+    opened = _run_reader(source_ref, catalog_config, timeout_seconds, **reader_options)
     if opened.returncode != 0:
         _raise_reader_refusal(opened)
     receipt = _one_json_line(opened.stderr)
     manifest = _validate_success_receipt(
-        receipt, source_ref, as_of, expected_fiscal_year,
+        receipt, source_ref, as_of, expected_fiscal_year, source_reader_receipt_version=version,
     )
     _verify_bytes(opened.stdout, source_ref)
     bare_receipt = {key: value for key, value in receipt.items() if key != "manifest"}

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="16" skipped="0" tests="18" time="0.743" timestamp="2026-10-09T06:17:04.965000+01:00" hostname="DESKTOP-156V213"><testcase classname="tests.test_source_clock" name="test_T01_reader_late_original_download_is_legal" time="0.101"><failure message="company_wiki_source_reader_v2.SourceVersionTransportError: source manifest is outside as_of_date">tests\test_source_clock.py:93: in test_T01_reader_late_original_download_is_legal
+    body, actual, manifest = open_transport(monkeypatch, tmp_path, receipt)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_source_clock.py:84: in open_transport
+    return reader.open_source_version_v2(source_ref=transport_ref(),
+scripts\company_wiki_source_reader_v2.py:339: in open_source_version_v2
+    manifest = _validate_success_receipt(
+scripts\company_wiki_source_reader_v2.py:316: in _validate_success_receipt
+    return _validate_manifest(receipt["manifest"], source_ref, as_of, fiscal_year)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_source_reader_v2.py:235: in _validate_manifest
+    _validate_manifest_period(manifest, as_of, fiscal_year)
+scripts\company_wiki_source_reader_v2.py:226: in _validate_manifest_period
+    raise SourceVersionTransportError("source manifest is outside as_of_date")
+E   company_wiki_source_reader_v2.SourceVersionTransportError: source manifest is outside as_of_date</failure></testcase><testcase classname="tests.test_source_clock" name="test_T02_null_original_capture_keeps_actual_next_day_read" time="0.001"><failure message="company_wiki_source.CompanyWikiSourceError: source capture is outside as_of_date">tests\test_source_clock.py:100: in test_T02_null_original_capture_keeps_actual_next_day_read
+    result = build(ref, receipt, manifest)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_source_clock.py:32: in build
+    return build_revenue_source_record_from_verified_read(
+scripts\company_wiki_source_v2.py:305: in build_revenue_source_record_from_verified_read
+    raise CompanyWikiSourceError("source capture is outside as_of_date")
+E   company_wiki_source.CompanyWikiSourceError: source capture is outside as_of_date</failure></testcase><testcase classname="tests.test_source_clock" name="test_T03_original_capture_is_not_this_read_date" time="0.001"><failure message="AssertionError: assert '2026-10-02' == '2026-10-09'&#10;  &#10;  - 2026-10-09&#10;  ?          ^&#10;  + 2026-10-02&#10;  ?          ^">tests\test_source_clock.py:110: in test_T03_original_capture_is_not_this_read_date
+    assert result["capture"]["captured_date"] == "2026-10-09"
+E   AssertionError: assert '2026-10-02' == '2026-10-09'
+E     
+E     - 2026-10-09
+E     ?          ^
+E     + 2026-10-02
+E     ?          ^</failure></testcase><testcase classname="tests.test_source_clock" name="test_T04_formal_source_capture_can_be_after_information_day" time="0.001"><failure message="contracts.evidence.ForecastInputError: source capture is outside the allowed information set: fixture-source">tests\test_source_clock.py:117: in test_T04_formal_source_capture_can_be_after_information_day
+    result = validate_sources({"sources": [src]}, AS_OF, require_capture=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:285: in validate_sources
+    validate_source_capture(source, as_of)
+scripts\contracts\evidence.py:424: in validate_source_capture
+    require(
+scripts\contracts\evidence.py:93: in require
+    raise ForecastInputError(message)
+E   contracts.evidence.ForecastInputError: source capture is outside the allowed information set: fixture-source</failure></testcase><testcase classname="tests.test_source_clock" name="test_T05_actual_claim_verification_can_be_after_information_day" time="0.001"><failure message="contracts.evidence.ForecastInputError: claim verification date is outside the allowed information set: clock-claim">tests\test_source_clock.py:125: in test_T05_actual_claim_verification_can_be_after_information_day
+    result = validate_evidence_claims({"schema_version": "3.7", "evidence_claims": [checked]}, index, {}, AS_OF)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:628: in validate_evidence_claims
+    require(
+scripts\contracts\evidence.py:93: in require
+    raise ForecastInputError(message)
+E   contracts.evidence.ForecastInputError: claim verification date is outside the allowed information set: clock-claim</failure></testcase><testcase classname="tests.test_source_clock" name="test_T06_auto_narrative_claim_uses_actual_check_UTC_day" time="0.049"><failure message="AssertionError: assert '2026-10-08' == '2026-10-09'&#10;  &#10;  - 2026-10-09&#10;  ?          ^&#10;  + 2026-10-08&#10;  ?          ^">tests\test_source_clock.py:154: in test_T06_auto_narrative_claim_uses_actual_check_UTC_day
+    assert checked["verified_date"] == "2026-10-09"
+E   AssertionError: assert '2026-10-08' == '2026-10-09'
+E     
+E     - 2026-10-09
+E     ?          ^
+E     + 2026-10-08
+E     ?          ^</failure></testcase><testcase classname="tests.test_source_clock" name="test_T07_future_publication_cannot_be_overridden_by_early_proof" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'source_publication_after_asof'&#10;  Actual message: 'source read receipt fields/schema are invalid'">tests\test_source_clock.py:164: in test_T07_future_publication_cannot_be_overridden_by_early_proof
+    with pytest.raises(CompanyWikiSourceError, match="source_publication_after_asof"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'source_publication_after_asof'
+E     Actual message: 'source read receipt fields/schema are invalid'</failure></testcase><testcase classname="tests.test_source_clock" name="test_T08_later_actual_fact_does_not_enter_old_information_set" time="0.001" /><testcase classname="tests.test_source_clock" name="test_T09_unknown_publication_without_proof_is_named_gap" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'source_availability_unknown'&#10;  Actual message: 'source manifest published_date must be non-empty trimmed text'">tests\test_source_clock.py:177: in test_T09_unknown_publication_without_proof_is_named_gap
+    with pytest.raises(CompanyWikiSourceError, match="source_availability_unknown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'source_availability_unknown'
+E     Actual message: 'source manifest published_date must be non-empty trimmed text'</failure></testcase><testcase classname="tests.test_source_clock" name="test_T10_same_SHA_prior_availability_does_not_invent_publication" time="0.001"><failure message="company_wiki_source.CompanyWikiSourceError: source read receipt fields/schema are invalid">tests\test_source_clock.py:186: in test_T10_same_SHA_prior_availability_does_not_invent_publication
+    result = build(ref, receipt, manifest)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_source_clock.py:32: in build
+    return build_revenue_source_record_from_verified_read(
+scripts\company_wiki_source_v2.py:286: in build_revenue_source_record_from_verified_read
+    receipt = _validate_receipt(read_receipt, ref)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\company_wiki_source_v2.py:105: in _validate_receipt
+    raise CompanyWikiSourceError("source read receipt fields/schema are invalid")
+E   company_wiki_source.CompanyWikiSourceError: source read receipt fields/schema are invalid</failure></testcase><testcase classname="tests.test_source_clock" name="test_T11_only_later_proof_still_refused" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'source_availability_after_asof'&#10;  Actual message: 'source read receipt fields/schema are invalid'">tests\test_source_clock.py:200: in test_T11_only_later_proof_still_refused
+    with pytest.raises(CompanyWikiSourceError, match="source_availability_after_asof"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'source_availability_after_asof'
+E     Actual message: 'source read receipt fields/schema are invalid'</failure></testcase><testcase classname="tests.test_source_clock" name="test_T12_new_raw_SHA_cannot_reuse_old_proof" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'source_availability_version_mismatch'&#10;  Actual message: 'source read receipt fields/schema are invalid'">tests\test_source_clock.py:209: in test_T12_new_raw_SHA_cannot_reuse_old_proof
+    with pytest.raises(CompanyWikiSourceError, match="source_availability_version_mismatch"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'source_availability_version_mismatch'
+E     Actual message: 'source read receipt fields/schema are invalid'</failure></testcase><testcase classname="tests.test_source_clock" name="test_T13_bare_old_retrieved_is_not_unknown_publication_proof" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'source_availability_unknown'&#10;  Actual message: 'source manifest published_date must be non-empty trimmed text'">tests\test_source_clock.py:217: in test_T13_bare_old_retrieved_is_not_unknown_publication_proof
+    with pytest.raises(CompanyWikiSourceError, match="source_availability_unknown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'source_availability_unknown'
+E     Actual message: 'source manifest published_date must be non-empty trimmed text'</failure></testcase><testcase classname="tests.test_source_clock" name="test_T14_conflicting_events_are_named_without_backdating" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'source_clock_conflict.*captured_date.*timestamp'&#10;  Actual message: 'source capture is outside the allowed information set: fixture-source'">tests\test_source_clock.py:223: in test_T14_conflicting_events_are_named_without_backdating
+    with pytest.raises(ForecastInputError, match="source_clock_conflict.*captured_date.*timestamp"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'source_clock_conflict.*captured_date.*timestamp'
+E     Actual message: 'source capture is outside the allowed information set: fixture-source'</failure></testcase><testcase classname="tests.test_source_clock" name="test_T15_receipt_22_requires_explicit_capability_and_exact_fields" time="0.003"><failure message="TypeError: open_source_version_v2() got an unexpected keyword argument 'source_reader_receipt_version'">tests\test_source_clock.py:236: in test_T15_receipt_22_requires_explicit_capability_and_exact_fields
+    body, bare, _ = open_transport(monkeypatch, tmp_path, receipt, version="2.2")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_source_clock.py:84: in open_transport
+    return reader.open_source_version_v2(source_ref=transport_ref(),
+E   TypeError: open_source_version_v2() got an unexpected keyword argument 'source_reader_receipt_version'</failure></testcase><testcase classname="tests.test_source_clock" name="test_T16_frozen_input_and_old_runtime_pair_are_not_rewritten" time="0.003" /><testcase classname="tests.test_source_clock" name="test_T17_actual_UTC_day_does_not_follow_original_event_day" time="0.001"><failure message="AssertionError: assert '2026-10-02' == '2026-10-09'&#10;  &#10;  - 2026-10-09&#10;  ?          ^&#10;  + 2026-10-02&#10;  ?          ^">tests\test_source_clock.py:263: in test_T17_actual_UTC_day_does_not_follow_original_event_day
+    assert result["capture"]["captured_date"] == "2026-10-09"
+E   AssertionError: assert '2026-10-02' == '2026-10-09'
+E     
+E     - 2026-10-09
+E     ?          ^
+E     + 2026-10-02
+E     ?          ^</failure></testcase><testcase classname="tests.test_source_clock" name="test_T18_shared_source_preparation_covers_markets_formats" time="0.014"><failure message="company_wiki_source.CompanyWikiSourceError: source capture is outside as_of_date">tests\test_source_clock.py:289: in test_T18_shared_source_preparation_covers_markets_formats
+    result = prep._prepare_source_ref_v2({"document_kind": "annual_report", "as_of_date": AS_OF.isoformat()},
+scripts\source_preparation.py:225: in _prepare_source_ref_v2
+    record = build_revenue_source_record_from_verified_read(
+scripts\company_wiki_source_v2.py:305: in build_revenue_source_record_from_verified_read
+    raise CompanyWikiSourceError("source capture is outside as_of_date")
+E   company_wiki_source.CompanyWikiSourceError: source capture is outside as_of_date</failure></testcase></testsuite></testsuites>

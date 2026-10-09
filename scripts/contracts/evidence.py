@@ -18,6 +18,11 @@ import re
 from datetime import date
 from pathlib import Path
 from typing import Any
+
+from contracts.source_clock import (
+    InformationEligibility, SourceClockError, source_information_eligibility,
+    validate_source_events,
+)
 from urllib.parse import urlparse
 
 
@@ -382,7 +387,10 @@ def valid_source_url(url: Any) -> bool:
     return "." in host
 
 
-def validate_source_capture(source: dict[str, Any], as_of: date) -> dict[str, Any]:
+def validate_source_capture(
+    source: dict[str, Any], as_of: date, *,
+    information_eligibility: InformationEligibility | None = None,
+) -> dict[str, Any]:
     """Validate a tool-linked source snapshot without claiming external fact truth."""
     source_id = source.get("source_id", "<unknown>")
     capture = source.get("capture")
@@ -418,13 +426,15 @@ def validate_source_capture(source: dict[str, Any], as_of: date) -> dict[str, An
     captured = parse_iso_date(
         capture["captured_date"], f"{source_id}.capture.captured_date"
     )
-    published = parse_iso_date(
-        source.get("published_date"), f"{source_id}.published_date"
-    )
-    require(
-        published <= captured <= as_of,
-        f"source capture is outside the allowed information set: {source_id}",
-    )
+    try:
+        information = information_eligibility or source_information_eligibility(source, as_of)
+        trace = source.get("company_wiki_trace")
+        read_receipt = trace.get("read_receipt") if isinstance(trace, dict) else None
+        current_read_at = read_receipt.get("read_at") if isinstance(read_receipt, dict) else None
+        validate_source_events(eligibility=information, capture_date=captured.isoformat(),
+            current_read_at=current_read_at, host_timestamp=capture["host_receipt"]["timestamp"])
+    except SourceClockError as exc:
+        raise ForecastInputError(f"{source_id}: {exc}") from exc
     require(
         source.get("accessed_date") == capture["captured_date"],
         f"source accessed_date/capture date mismatch: {source_id}",
