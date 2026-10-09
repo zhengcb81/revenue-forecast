@@ -32,6 +32,8 @@ from revenue_core import (
     validate_source_capture,
 )
 from analysis.confidence import validate_confidence_recomputation
+from research.target_measurement import is_typed_target, compare_target_measurement
+from research.targets import validate_management_target_coverage, add_management_target_analysis
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 from revenue_publication import (
     VerificationContext,
@@ -834,6 +836,16 @@ def _validate_forecast_output(
             == list(MANAGEMENT_COMMUNICATION_CATEGORIES),
             "management communication categories are missing or out of order",
         )
+        if data is not None and (data.get("audit_communication_coverage") or
+                                 any(is_typed_target(t) for t in data.get("management_targets", [])) or
+                                 any(c.get("checked_scope") is not None for c in data.get("management_communication_coverage", []))):
+            checked = validate_management_target_coverage(
+                data, {s["source_id"]: s for s in result["sources"]}, parameter_index,
+                {c["claim_id"]: c for c in result["evidence_claims"]}, parse_iso_date(result["as_of_date"], "as_of_date"),
+            )
+            expected = add_management_target_analysis({"management_target_coverage": checked,
+                                                       "parameter_index": parameter_index}, result)
+            require(target_coverage == expected, "typed management coverage/input binding mismatch")
         observed_target_ids: set[str] = set()
         for record in communications:
             require(
@@ -902,6 +914,10 @@ def _validate_forecast_output(
                     isinstance(target.get("measurement_periods"), list),
                     f"invalid management target measurement periods: {target_id}",
                 )
+            if is_typed_target(target):
+                require(comparisons == compare_target_measurement(target, result),
+                        f"typed management target comparison recomputation mismatch: {target_id}")
+                continue
             if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
                 require(
                     set(comparisons) == set(target.get("mapped_scenarios", [])),
@@ -1454,6 +1470,10 @@ def render_markdown(result: dict[str, Any]) -> str:
                 f"| {_escape(record['category'])} | {_escape(record['status'])} | {_escape(record['conclusion'])} | "
                 f"{_escape(', '.join(record['material_revenue_target_ids']) or '—')} | {_escape(', '.join(record['source_ids']) or '—')} |"
             )
+        for record in target_coverage["communications"]:
+            diagnostic = record.get("coverage_diagnostic")
+            if diagnostic is not None:
+                lines.extend(["", f"- {_escape(record['category'])} coverage: {_escape(diagnostic['status'])}; {_escape(diagnostic.get('start_date') or 'unknown')}–{_escape(diagnostic.get('end_date') or 'unknown')}; {_escape(diagnostic.get('reason') or 'complete')}."])
         lines.extend(
             [
                 "",
@@ -1500,6 +1520,20 @@ def render_markdown(result: dict[str, Any]) -> str:
                 f"{_escape(', '.join(target['mapped_scenarios']) or '—')} | {_escape(attainment)} |"
             )
         for target in target_coverage["targets"]:
+            if is_typed_target(target):
+                dates = ", ".join(f"{sid}:{published}" for sid, published in target.get("source_publication_dates", {}).items())
+                lines.extend(["", f"- {_escape(target['target_id'])} 原文：{_escape(target['statement'])}；来源日期：{_escape(dates)}。",
+                              "", "| Scenario | Metric / period | Modeled / unit | Target / range | Base / period | Difference | Status / reason |",
+                              "|---|---|---:|---:|---|---|---|"])
+                if not target["scenario_comparison"]:
+                    lines.append(f"- {_escape(target['treatment'])}: {_escape(target['rationale'])}; {_escape(target.get('comparison_reason') or 'comparison dependencies unavailable')}.")
+                for scenario, row in target["scenario_comparison"].items():
+                    difference = row.get("difference_percentage_points", row.get("difference"))
+                    difference_unit = "percentage_points" if row["metric_kind"] == "year_over_year_growth" else row["unit"]
+                    lines.append(f"| {_escape(scenario)} | {_escape(row['metric_kind'])} / {_escape(row['period'])} | {_num(row['modeled_value'])} {_escape(row['unit'])} | {_num(row['target_low'])}–{_num(row['target_high'])} ({_escape(row['comparison'])}) | {_num(row.get('base_value'))} / {_escape(row.get('base_period') or '—')} | {_num(difference)} {_escape(difference_unit)} | {_escape(row['comparison_status'])} / {_escape(row.get('reason') or '—')} |")
+                    derived = row.get("derived_revenue_benchmark")
+                    if derived is not None:
+                        lines.append(f"- {_escape(scenario)} analyst_derived revenue benchmark: {_num(derived['value'])} {_escape(derived['unit'])}; difference {_num(derived['difference'])}. Formula: {_escape(derived['formula'])}.")
             if target["treatment"] == "independent_benchmark":
                 lines.extend(["", f"- {_escape(target['target_id'])} 独立判断：{_escape(target['benchmark_rationale'])}；证据：{_escape(', '.join(target['benchmark_claim_ids']))}。"])
             if target.get("normalization_formula"):

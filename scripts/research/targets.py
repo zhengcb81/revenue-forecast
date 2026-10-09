@@ -29,6 +29,8 @@ from contracts.evidence import (
     validate_claim_ids,
 )
 from forecast.calc import collect_parameter_roles, evaluate_derived_formula
+from research.target_measurement import is_typed_target, validate_typed_target, compare_target_measurement
+from research.communication_scope import analyze_communication_scope
 
 
 def validate_management_target_coverage(
@@ -48,6 +50,7 @@ def validate_management_target_coverage(
         "management_communication_coverage must contain every required category",
     )
     normalized_coverage: dict[str, dict[str, Any]] = {}
+    coverage_gaps: list[str] = []
     referenced_target_ids: set[str] = set()
     for position, record in enumerate(coverage):
         prefix = f"management_communication_coverage[{position}]"
@@ -98,9 +101,9 @@ def validate_management_target_coverage(
             f"management communication checked after as_of_date: {category}",
         )
         rationale = record.get("rationale")
-        if status == "checked":
+        if status in {"checked", "incomplete"}:
             require(
-                bool(source_ids),
+                bool(source_ids) or status == "incomplete",
                 f"checked management communication requires source_ids: {category}",
             )
         else:
@@ -170,6 +173,17 @@ def validate_management_target_coverage(
         for optional in ("rationale", "search_description"):
             if isinstance(record.get(optional), str) and record[optional].strip():
                 normalized[optional] = record[optional].strip()
+        if record.get("checked_scope") is not None or data.get("audit_communication_coverage"):
+            diagnostic = analyze_communication_scope(record, source_index, as_of.isoformat())
+            normalized["coverage_diagnostic"] = diagnostic
+            if record.get("checked_scope") is not None:
+                normalized["checked_scope"] = copy.deepcopy(record["checked_scope"])
+            if not diagnostic["coverage_complete"]:
+                if status == "checked" and record.get("checked_scope") is not None:
+                    normalized["status"] = "incomplete"
+                coverage_gaps.append(f"management_communication:{category}: {diagnostic['reason']}")
+        elif status in {"not_checked", "incomplete"}:
+            coverage_gaps.append(f"management_communication:{category}: {status}")
         normalized_coverage[category] = normalized
 
     targets = data.get("management_targets")
@@ -181,7 +195,7 @@ def validate_management_target_coverage(
         if isinstance(segment, dict)
     }
     normalized_targets: dict[str, dict[str, Any]] = {}
-    gap_messages: list[str] = []
+    gap_messages: list[str] = list(coverage_gaps)
     for position, target in enumerate(targets):
         prefix = f"management_targets[{position}]"
         require(isinstance(target, dict), f"{prefix} must be an object")
@@ -451,6 +465,16 @@ def validate_management_target_coverage(
                 f"management target parameter is not used by the forecast: {target_id}/{parameter_id}",
             )
 
+        if is_typed_target(target):
+            normalized_targets[target_id] = validate_typed_target(
+                target, data, parameter_index, claim_index, source_index, roles["forecast"],
+            )
+            if target["treatment"] in {"unmodeled_data_gap", "out_of_horizon"}:
+                gap_messages.append(f"management_target:{target_id}: {target['treatment']} ({target['rationale']})")
+            continue
+        require(comparison in {"at_least", "at_most", "approximately"},
+                "strict relative comparison requires a typed measurement basis")
+
         within_horizon = bool(measurement_years) and set(measurement_years) <= set(
             data["forecast_years"]
         )
@@ -661,6 +685,10 @@ def add_management_target_analysis(
     for target in validated["management_target_coverage"]["targets"]:
         item = copy.deepcopy(target)
         comparisons: dict[str, Any] = {}
+        if is_typed_target(target):
+            item["scenario_comparison"] = compare_target_measurement(target, result, validated["parameter_index"])
+            output_targets.append(item)
+            continue
         if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
             measurement_periods = list(target["measurement_periods"])
             target_value = float(target["comparison_value"])
