@@ -24,3 +24,9 @@ Remaining: MAIN W03/M2 must provide a real canonical summary and run actual cons
 ## HTML follow-up
 
 Functional commit `a7c2c73758e7b7bbb6454c2955390f179f2d5f28` consumes the exact W03 exported HTML engineering golden through the existing route. RED: missing lineage 1 failed / 14 passed; GREEN: 146 passed, 5.56s, exit 0. Producer golden is synthetic loopback, not a paid/current company original read. Runtime closure also includes `scripts/company_wiki_narrative_contracts.py`. The earlier HTML-awaits-W03 limitation is resolved. Configured `.githooks` is absent; normal commits ran no hook; MAIN owns canonical gate.
+
+## Nullable nonfinancial SourceRef follow-up
+
+Functional commit `73a03b5751cd9e95d166104f31210cc642af0a6c`. RED 5 failed / 5 passed, 0.54s; GREEN 75 passed, 1.40s, exit 0. Shared period semantics keep only annual/semi-annual/quarterly financial reports strict; legitimate nonfinancial null stays null, positive exact-year requests still match. No false fiscal year is supplied. `prepare_registered_source_result` passes an already registered pathless candidate to the same binary reader and SourceCapture builder, without asking FF to resolve official IR/call content. IR maps to company_release, investor_call_transcript to earnings_transcript. This is verified engineering fixture replay; actual current-config original reads remain MAIN.
+
+`handoff.json` now contains all three functional commits, exact current branch file hashes and read-only old/new SHA values for both installed skills. No installation took place. It supersedes earlier single-commit path hashes where later W04 fixes changed files.

@@ -1,0 +1,292 @@
+{
+  "schema_version": "rf-work-package-handoff/1",
+  "package": "W06",
+  "base": "cbbb0c2f3495ae6b038a553672c338c86d52282d",
+  "functional_commit": "4015c50b4128c3cab6446db2780ceb740289db69",
+  "functional_head": "4015c50b4128c3cab6446db2780ceb740289db69",
+  "changed_paths": [
+    {
+      "path": "SKILL.md",
+      "sha256": "89d695d835dd4c0c764d2ec6b3dd26166cc990f18608b2b4b8bcc9044f191259"
+    },
+    {
+      "path": "references/buy-side-methodology.md",
+      "sha256": "1d6ef24f20620215c0c33251919a3c77e39677ad5f6f69b6dc24dcb4e9f85d3f"
+    },
+    {
+      "path": "references/evidence-role-calibration.md",
+      "sha256": "e3255cf932f81ada485b8447bbc070f56d51bfaf01fb04ba53050dff9fc33b3f"
+    },
+    {
+      "path": "scripts/analysis/confidence.py",
+      "sha256": "46bc664d0212be21c2ee8625498b9f7a85324f8e1f540896fade9c7846809839"
+    },
+    {
+      "path": "scripts/contracts/document.py",
+      "sha256": "3f9ee49742ee983979fa8f3bdcc203f67c753c85b0149fb3f80855856049107d"
+    },
+    {
+      "path": "scripts/generate_input_template.py",
+      "sha256": "2315d09feaf1d197803bfdf6bb98ede4edd50185f8a780991535651b8d62535b"
+    },
+    {
+      "path": "scripts/research/evidence_roles.py",
+      "sha256": "64ae31c91a756251c3a9b95acb6a73f5fb639cf657d80847636affa46df28613"
+    },
+    {
+      "path": "scripts/research/timing_bridge.py",
+      "sha256": "cbd88155ca5096bd049c7fdfb4382693f73f73a1928e35595073c6d5226e3135"
+    },
+    {
+      "path": "scripts/revenue_report.py",
+      "sha256": "8fba8ee46b22f64d80978096c40e36035ef0413ff229708086017825a342b500"
+    },
+    {
+      "path": "tests/fixtures/research_evidence_roles/aster-en.json",
+      "sha256": "a5630721d05efb04ad0d910949d9719329dd4f0761bfc3756ac1db773217262c"
+    },
+    {
+      "path": "tests/fixtures/research_evidence_roles/hengwei-zh.json",
+      "sha256": "11e631683bbd2d55e03c741be6af5d3dc263e10b9c86987dabd430854622f113"
+    },
+    {
+      "path": "tests/test_research_evidence_roles.py",
+      "sha256": "fa1b8fec0b3fe772783bac1d1b56a0240f2663d64d5231dd7bec3a4d3b58c4f6"
+    },
+    {
+      "path": "tools/build_auditable_case.py",
+      "sha256": "dbb82f7bc4b87c083d01ee4da1de82c479b6d5a2a46c13e43bf981d1be634a3c"
+    }
+  ],
+  "red": [
+    {
+      "command": "python -X utf8 -B -m pytest tests/test_research_evidence_roles.py -q -p no:cacheprovider --basetemp <owned>/p",
+      "exit": 1,
+      "failed": 5,
+      "passed": 0,
+      "seconds": 0.62,
+      "meaning": "module absent and generator role missing; prior import-path collection error corrected before this functional RED"
+    },
+    {
+      "exit": 1,
+      "failed": 3,
+      "passed": 6,
+      "seconds": 0.71,
+      "meaning": "observed-period mismatch incorrectly referenced, dated-delay bridge absent"
+    },
+    {
+      "exit": 1,
+      "failed": 1,
+      "passed": 10,
+      "seconds": 1.93,
+      "meaning": "numeric historical baseline role incorrectly rejected"
+    }
+  ],
+  "green": {
+    "command": "python -X utf8 -B -m pytest tests/test_research_evidence_roles.py tests/test_generate_input_template.py tests/test_scenarios_confidence.py tests/test_revenue_constraints.py tests/test_recognition_bridge.py tests/test_model_economic_guardrails.py tests/test_golden_behavior_lock.py tests/test_confidence_determinism.py tests/test_evidence_input_lineage.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 0,
+    "passed": 105,
+    "subtests_passed": 167,
+    "seconds": 5.62
+  },
+  "checks": {
+    "ruff_no_cache": "pass",
+    "mypy_public_contracts": "pass; 7 source files",
+    "legacy_behavior": "five golden hashes and stable-fsum/1 score unchanged",
+    "commit": "normal git commit; .githooks configured but absent; no hook executed/suppressed/copied"
+  },
+  "actual_cli": {
+    "assembly": "build_auditable_case.py joins explicit native input/research/preparation/discovery; subprocess exit 0",
+    "native": "run_target_measurement_e2e.py validate-only / compute-render / immutable snapshot all subprocess exits 0",
+    "fixture": "synthetic scoped source range with actual producer BODY bytes SHA through SourceCapture builder; no real current-company original or supplier call",
+    "outputs": [
+      "linked-input.json",
+      "inventory.json",
+      "calibration.json",
+      "research-adequacy.json",
+      "assembly.json",
+      "forecast.json",
+      "forecast.md",
+      "snapshot.json",
+      "commands.json",
+      "publications.jsonl"
+    ],
+    "narrative": "actual W04 verified-reader consumption is optional; merely prepared/read narrative stays not_consumed"
+  },
+  "budget": {
+    "supplier_calls": 0,
+    "model_calls": 0,
+    "new_downloads": 0,
+    "unknown_range_policy": "null remains null/unverified; no zero fill"
+  },
+  "temporary_roots": {
+    "initial": "each unique short rW06-* root absent",
+    "final": "restored absent in finally; original files deleted 0"
+  },
+  "install": {
+    "performed": false,
+    "owner": "MAIN; preserve config/output; exact file old/new SHA read-only below",
+    "runtime_files": [
+      "scripts/analysis/confidence.py",
+      "scripts/contracts/document.py",
+      "scripts/generate_input_template.py",
+      "scripts/research/evidence_roles.py",
+      "scripts/research/timing_bridge.py",
+      "scripts/revenue_report.py"
+    ],
+    "reference_files": [
+      "SKILL.md",
+      "references/buy-side-methodology.md",
+      "references/evidence-role-calibration.md"
+    ],
+    "engineering_tools": [
+      "tools/build_auditable_case.py"
+    ],
+    "files": [
+      {
+        "path": "SKILL.md",
+        "base_sha256": "3e12e492715131aeaadd060b785017590c18b6fad97dc00720f9056fc51bb3cf",
+        "new_sha256": "89d695d835dd4c0c764d2ec6b3dd26166cc990f18608b2b4b8bcc9044f191259",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "3e12e492715131aeaadd060b785017590c18b6fad97dc00720f9056fc51bb3cf"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "3e12e492715131aeaadd060b785017590c18b6fad97dc00720f9056fc51bb3cf"
+          }
+        ]
+      },
+      {
+        "path": "references/buy-side-methodology.md",
+        "base_sha256": "d8f87e45c5895da980f6152541dd4d3de9b4a72ad1857154f0db13d7da73c38e",
+        "new_sha256": "1d6ef24f20620215c0c33251919a3c77e39677ad5f6f69b6dc24dcb4e9f85d3f",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "d8f87e45c5895da980f6152541dd4d3de9b4a72ad1857154f0db13d7da73c38e"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "d8f87e45c5895da980f6152541dd4d3de9b4a72ad1857154f0db13d7da73c38e"
+          }
+        ]
+      },
+      {
+        "path": "references/evidence-role-calibration.md",
+        "base_sha256": null,
+        "new_sha256": "e3255cf932f81ada485b8447bbc070f56d51bfaf01fb04ba53050dff9fc33b3f",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/analysis/confidence.py",
+        "base_sha256": "91614c611afc2a0353a8b4b6b11440213238cc993b2476a966e2b3abec94f9c6",
+        "new_sha256": "46bc664d0212be21c2ee8625498b9f7a85324f8e1f540896fade9c7846809839",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "91614c611afc2a0353a8b4b6b11440213238cc993b2476a966e2b3abec94f9c6"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "91614c611afc2a0353a8b4b6b11440213238cc993b2476a966e2b3abec94f9c6"
+          }
+        ]
+      },
+      {
+        "path": "scripts/contracts/document.py",
+        "base_sha256": "970a45271a5aa6df2748271689d32a9f7da7828a2e2612cc99f8dee941fe20b7",
+        "new_sha256": "3f9ee49742ee983979fa8f3bdcc203f67c753c85b0149fb3f80855856049107d",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "970a45271a5aa6df2748271689d32a9f7da7828a2e2612cc99f8dee941fe20b7"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "970a45271a5aa6df2748271689d32a9f7da7828a2e2612cc99f8dee941fe20b7"
+          }
+        ]
+      },
+      {
+        "path": "scripts/generate_input_template.py",
+        "base_sha256": "f7c57911d5f85204b04d07de02fdcf9bcdb2315cf0236181cd727986292870b1",
+        "new_sha256": "2315d09feaf1d197803bfdf6bb98ede4edd50185f8a780991535651b8d62535b",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "f7c57911d5f85204b04d07de02fdcf9bcdb2315cf0236181cd727986292870b1"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "f7c57911d5f85204b04d07de02fdcf9bcdb2315cf0236181cd727986292870b1"
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/evidence_roles.py",
+        "base_sha256": null,
+        "new_sha256": "64ae31c91a756251c3a9b95acb6a73f5fb639cf657d80847636affa46df28613",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/research/timing_bridge.py",
+        "base_sha256": null,
+        "new_sha256": "cbd88155ca5096bd049c7fdfb4382693f73f73a1928e35595073c6d5226e3135",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": null
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": null
+          }
+        ]
+      },
+      {
+        "path": "scripts/revenue_report.py",
+        "base_sha256": "b3d3590bcf1eb703d3d48c2f809c0f644b89a4d54461d5a0f25d6ce74ce3c1fb",
+        "new_sha256": "8fba8ee46b22f64d80978096c40e36035ef0413ff229708086017825a342b500",
+        "installed_old": [
+          {
+            "root": "C:\\Users\\郑曾波\\.agents\\skills\\revenue-forecast",
+            "sha256": "b3d3590bcf1eb703d3d48c2f809c0f644b89a4d54461d5a0f25d6ce74ce3c1fb"
+          },
+          {
+            "root": "C:\\Users\\郑曾波\\.codex\\skills\\revenue-forecast",
+            "sha256": "b3d3590bcf1eb703d3d48c2f809c0f644b89a4d54461d5a0f25d6ce74ce3c1fb"
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Observation kinds/scopes are researcher declarations; no automatic business-fact or causal-truth inference.",
+    "Referenced-range means source-period-scope-native formula linkage, not empirical forecast/probability calibration.",
+    "Magnitude diagnostics are per native parameter, not a claim that all effective company revenue is calibrated.",
+    "Dated helper supports direct recognized revenue Q4-to-next-Q1 with explicit amount/catch-up fraction; other quarterly timing/cohort models remain explicit research work.",
+    "Native equal shared-cap allocation counterexample crosses segment scenario ordering and remains rejected; no annual sorting.",
+    "Current NVDA M2 live originals, independent external economic ranges and four-reviewer acceptance remain MAIN-owned, not completed by synthetic fixtures.",
+    "No frozen historical forecast was created retroactively; no accuracy/consensus-beat/backtest claim."
+  ]
+}

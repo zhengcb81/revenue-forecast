@@ -21,3 +21,9 @@ Checked scopes record category, interval, selected/read business originals, skip
 The new contract is documented in `references/target-measurement-comparison.md`. No installation was performed. MAIN should install the exact runtime closure in the JSON while preserving config/output.
 
 All tests used a short initially absent owned TEMP restored absent in finally. New supplier/model/download calls: 0. Raw originals, sealed audit outputs and adjacent repositories unchanged. Live economic adequacy, current official reads and M2 remain MAIN responsibilities.
+
+## Honest boundary and category follow-up
+
+Functional commit `cbbb0c2f3495ae6b038a553672c338c86d52282d`. RED 1 failed / 11 passed, 1.51s; GREEN 13 passed, 1.33s, exit 0. An annual filing at the interval start does not prove subsequent announcement content complete. A filing cannot prove a checked call category. These produce `incomplete` diagnostics, not model-access or human-approval gates. Ruff --no-cache PASS; normal commit executed no missing hook.
+
+Current integrated path hashes and both installed old/new SHA values are in the JSON. W06 also extends the shared renderer; its SHA is therefore the integrated branch value. No installation or live research run was performed.
