@@ -1,0 +1,8 @@
+# Findings
+RF reader validates exact native refusal JSON schema/status/token first, then SourceVersionTransportError applies validated_source_failure_reason. Four existing CWP refusal reasons are absent from SOURCE_FAILURE_REASONS: primary_issuer_conflict, primary_scope_conflict, primary_identity_unresolved, fiscal_period_unresolved. CODES already contains fiscal_period_unresolved but that is a separate six-key cause vocabulary; SOURCE_FAILURE_REASONS omission loses optional native diagnostic metadata.
+
+Production fix can remain a four-token finite vocabulary extension. RF must not re-resolve issuer, scope or period, parse arbitrary exception text, accept unknown tokens, relax byte/identity predicates or emit arbitrary native body. Existing reader/preparation already dispatch the shared pure projection through both subprocess boundaries. Preserve optional absence for unknown/malformed native messages.
+
+The new actual subprocess fixture emits existing native2.1/2.2 refusal JSON and empty stdout/exit2; unpatched RF native verified reader and source_preparation CLI consume it. This is a synthetic wire compatibility observation of already-real CWP tokens, not a reproduction of CWP issuer/scope validation.
+
+TDD confirms exact finite omission, not an issuer/period algorithm defect:16 failures match four omitted tokens in typed/native/CLI projections. Full unknown/malformed controls remained green. The production change only adds known producer vocabulary in the existing shared projector; CODES and six-key cause definition remain unchanged. Both native receipt capabilities2.1/2.2 execute through actual RF subprocess boundaries. Child source/body and receipt producer are synthetic; actual CWP issuer/target comparison is neither duplicated nor claimed.

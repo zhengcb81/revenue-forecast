@@ -44,6 +44,8 @@ SOURCE_FAILURE_REASONS = frozenset({
     "source_candidate_invalid", "source_clock_invalid_date", "source_availability_invalid",
     "source_availability_version_mismatch", "source_publication_after_asof", "source_availability_after_asof",
     "source_clock_conflict",
+    "primary_issuer_conflict", "primary_scope_conflict", "primary_identity_unresolved",
+    "fiscal_period_unresolved",
 })
 
 

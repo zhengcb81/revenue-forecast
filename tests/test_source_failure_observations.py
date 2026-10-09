@@ -164,7 +164,10 @@ def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(t
 @pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
     ("document_not_indexed", "document_not_indexed"), ("source_not_active", "source_not_active"),
     ("source_ref_changed", "source_ref_changed"), ("catalog_unavailable", "catalog_unavailable"),
-    ("candidate_budget_exceeded", "candidate_budget_exceeded"), ("api_key_synthetic_w08_secret", None)])
+    ("candidate_budget_exceeded", "candidate_budget_exceeded"),
+    ("primary_issuer_conflict", "primary_issuer_conflict"), ("primary_scope_conflict", "primary_scope_conflict"),
+    ("primary_identity_unresolved", "primary_identity_unresolved"), ("fiscal_period_unresolved", "fiscal_period_unresolved"),
+    ("api_key_synthetic_w08_secret", None)])
 def test_native_reader_refusal_retains_finite_reason_and_prior_counts(tmp_path, monkeypatch, reason, expected):
     import company_wiki_source_reader_v2 as reader
     config = tmp_path / "catalog.yaml"
@@ -198,7 +201,10 @@ def test_untyped_exception_body_cannot_publish_a_lookalike_known_reason(tmp_path
     assert SECRET not in str(caught.value)
 
 
-@pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"), (SECRET, None)])
+@pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
+    ("primary_issuer_conflict", "primary_issuer_conflict"), ("primary_scope_conflict", "primary_scope_conflict"),
+    ("primary_identity_unresolved", "primary_identity_unresolved"), ("fiscal_period_unresolved", "fiscal_period_unresolved"),
+    (SECRET, None)])
 def test_optional_native_reason_uses_same_finite_projection_across_cli_boundaries(tmp_path, reason, expected):
     payload = failure()
     payload["filing"]["source_failure_reason"] = reason
@@ -219,3 +225,123 @@ def test_malformed_native_refusal_keeps_safe_typed_failure(field):
         reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
     assert caught.value.source_failure_reason is None
     assert SECRET not in str(caught.value)
+
+
+@pytest.mark.parametrize("version", ["2.1", "2.2"])
+@pytest.mark.parametrize("reason,alteration,expected", [
+    ("primary_issuer_conflict", {}, "primary_issuer_conflict"),
+    ("primary_scope_conflict", {}, "primary_scope_conflict"),
+    ("primary_identity_unresolved", {}, "primary_identity_unresolved"),
+    ("fiscal_period_unresolved", {}, "fiscal_period_unresolved"),
+    ("future_scope_reason_not_published", {}, None),
+    ("https://invalid/?api_key=" + SECRET, {}, None),
+    ("synthetic/raw/document.txt?api_key=" + SECRET, {}, None),
+    ([SECRET], {}, None),
+    ("primary_issuer_conflict", {"schema_version": ["2.1"]}, None),
+    ("primary_scope_conflict", {"status": ["blocked"]}, None),
+    ("primary_identity_unresolved", {"extra": SECRET}, None),
+])
+def test_actual_native_refusal_reader_preparation_cli_retains_only_published_scope_reasons(
+    tmp_path, version, reason, alteration, expected,
+):
+    """Exact CWP native wire -> real RF reader -> real preparation CLI.
+
+    Only the owned wire producer is synthetic. CWP's issuer/scope predicates
+    remain its responsibility; RF executes its actual reader and CLI unchanged.
+    """
+    import hashlib
+    import shutil
+
+    environment_before = dict(os.environ)
+    sentinel = tmp_path / "keep.bin"
+    sentinel.write_bytes(b"preexisting scope-wire fixture")
+    sentinel_before = (sentinel.read_bytes(), sentinel.stat().st_mtime_ns)
+    owned = tmp_path / "scope-wire-owned"
+    owned.mkdir()
+    try:
+        original = b"synthetic source scope document"
+        raw = owned / "original.bin"
+        raw.write_bytes(original)
+        raw_before = (raw.read_bytes(), raw.stat().st_mtime_ns)
+        sha = hashlib.sha256(original).hexdigest()
+        source_ref = {"schema_version": "2.0",
+                      "document_id": "urn:company-wiki:document:sha256:" + sha,
+                      "source_id": "urn:company-wiki:source:sha256:" + sha,
+                      "content_sha256": sha, "byte_size": len(original), "mime_type": "application/pdf"}
+        observed = failure()
+        candidate = observed["filing"]
+        candidate.update(status="source_candidate", source_ref=source_ref,
+                         document_kind="annual_report", fiscal_year=2025, fiscal_period=None,
+                         provider="company-wiki", resolution_outcome="reused_existing", download_events=0)
+        observed["status"] = "source_candidate"
+        fetch = fake(owned, observed, exit_code=0)
+        # Independent call trace verifies no retry/fallback/new download occurs.
+        fetch_script = fetch / "scripts/fetch_filing.py"
+        fetch_script.write_text("from pathlib import Path\n" +
+                                "Path(" + repr(str(owned / "fetch.calls")) + ").open('a').write('fetch\\n')\n" +
+                                fetch_script.read_text(encoding="utf-8"), encoding="utf-8")
+        package = owned / "wire-producer/company_wiki/source_catalog"
+        package.mkdir(parents=True)
+        package.parent.joinpath("__init__.py").write_text("", encoding="utf-8")
+        package.joinpath("__init__.py").write_text("", encoding="utf-8")
+        refusal = {"schema_version": version, "status": "blocked", "reason": reason, **alteration}
+        native_code = (
+            "import hashlib,json,sys\nfrom pathlib import Path\n"
+            "Path(" + repr(str(owned / "reader.calls")) + ").open('a').write('reader\\n')\n"
+            "args=sys.argv\n"
+            "assert args[args.index('--purpose')+1]=='filing_reuse'\n"
+            "assert args[args.index('--content-sha256')+1]==" + repr(sha) + "\n"
+            "assert ('--include-availability-evidence' in args)==" + repr(version == "2.2") + "\n"
+            "assert hashlib.sha256(Path(" + repr(str(raw)) + ").read_bytes()).hexdigest()==" + repr(sha) + "\n"
+            "sys.stderr.write(" + repr(json.dumps(refusal) + "\n") + ")\nraise SystemExit(2)\n"
+        )
+        package.joinpath("source_reader_cli.py").write_text(native_code, encoding="utf-8")
+        config = owned / "catalog.yaml"
+        config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+        names = {"SYSTEMROOT", "WINDIR", "PATH", "PATHEXT", "COMSPEC", "TEMP", "TMP",
+                 "USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH"}
+        env = {key: value for key, value in os.environ.items() if key.upper() in names}
+        env.update(PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHON_DOTENV_DISABLED="1",
+                   PYTHONPATH=str(owned / "wire-producer"))
+        request = {"schema_version": "1.1", "company_query": "Fixture", "document_kind": "annual_report",
+                   "fiscal_year": 2025, "fiscal_period": None, "as_of_date": "2026-09-27"}
+        process = subprocess.run(
+            [sys.executable, "-X", "utf8", "-B", str(ROOT / "scripts/source_preparation.py"),
+             "--filing-fetch-root", str(fetch), "--company-wiki-catalog-config", str(config),
+             "--source-reader-receipt-version", version],
+            cwd=owned, env=env, input=json.dumps(request), capture_output=True,
+            text=True, encoding="utf-8", timeout=15, check=False,
+        )
+        assert process.returncode == 3 and not process.stdout
+        result = json.loads(process.stderr)
+        assert result["stage"] == "source_reader" and result["calls"] == 2 and result["downloads"] == 0
+        assert result["upstream_cause"] == candidate["upstream_cause"]
+        assert result["acquisition_failure"] == candidate["acquisition_failure"]
+        assert (owned / "fetch.calls").read_text(encoding="utf-8").splitlines() == ["fetch"]
+        assert (owned / "reader.calls").read_text(encoding="utf-8").splitlines() == ["reader"]
+        assert (raw.read_bytes(), raw.stat().st_mtime_ns) == raw_before
+        assert SECRET not in process.stderr and "https://invalid" not in process.stderr
+        assert str(owned) not in process.stderr
+        if expected is None:
+            assert "future_scope_reason_not_published" not in process.stderr
+        capture = os.environ.get("RF_SCOPE_REASON_PROOF_FILE")
+        if capture:
+            destination = Path(capture).resolve()
+            plan = (ROOT / "docs/plans/fresh-source-scope-reasons-2026-10-09").resolve()
+            assert plan in destination.parents
+            observation = {"fixture": "synthetic native wire; actual RF reader/preparation CLI",
+                           "native_receipt_version": version, "native_refusal": refusal,
+                           "source_ref": source_ref, "rf_exit": process.returncode,
+                           "rf_stdout_bytes": len(process.stdout.encode()), "rf_error": result,
+                           "fetch_invocations": 1, "reader_invocations": 1,
+                           "expected_reason": expected, "external_calls": 0, "paid_calls": 0}
+            with destination.open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(observation, ensure_ascii=False) + "\n")
+        assert result.get("source_failure_reason") == expected
+    finally:
+        assert owned.resolve().parent == tmp_path.resolve() and owned.name == "scope-wire-owned"
+        shutil.rmtree(owned)
+        assert not owned.exists()
+        assert sorted(path.name for path in tmp_path.iterdir()) == ["keep.bin"]
+        assert (sentinel.read_bytes(), sentinel.stat().st_mtime_ns) == sentinel_before
+        assert dict(os.environ) == environment_before
