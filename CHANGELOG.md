@@ -2,6 +2,12 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## Unreleased — 2026-10-09 fresh runtime boundary corrections
+
+- Management communication checks now use the shared source clock: preserve their actual dates after a historical cutoff, refuse future source information, and refuse a check before its source capture. No approval, backdated check, new clock field, or historical artifact rewriting.
+- Public CWP PPTX narrative exports use rich-document locator replay, alongside PDF/HTML/XHTML. Text/JSON transcript byte lineage remains required; unknown MIME and altered bytes still fail. This fixes the actual installed consumer boundary, not only a producer test.
+- Original public HTTP(S) provenance URLs are accepted without changing the publisher URL, fetching a duplicate, or inventing an HTTPS alias. Actual original-byte checks and configured acquisition remain unchanged. Runtime metadata 4.1.1 and forecast schemas are unchanged; the exact execution commit/file hashes identify this corrective patch.
+
 ## 4.1.1 (2026-10-09) — historical source clock responsibility
 
 - Shared `source-clock/1` qualifies exact source information by known publication or an explicitly declared public receipt 2.2 availability proof. Actual UTC read, capture and evidence checks keep their real dates and may occur after the historical information cutoff. Future publication remains refused; unknown publication without reliable exact-version prior availability is a named gap. Contradictory event dates and changed raw SHA proof reuse are refused.

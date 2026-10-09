@@ -45,6 +45,12 @@ SELECTION_FIELDS = {"status", "coverage_complete", "source_units", "candidate_co
                     "pages_total", "pages_read", "lines_total", "tables_total", "tables_scanned"}
 QUALITY = {"verified", "needs_review", "skipped_no_narrative"}
 SELECTION = {"selected", "partial", "needs_review", "blocked", "skipped_no_narrative"}
+# Native containers replay through page/paragraph locators; ET text/JSON
+# separately binds extracted lines to original byte ranges.
+RICH_DOCUMENT_MIMES = frozenset({
+    "application/pdf", "text/html", "application/xhtml+xml",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+})
 _PATH_KEYS = {"path", "root", "object_key", "absolute_path", "local_path", "raw_path",
               "root_path", "wiki_root", "catalog_path", "physical_path"}
 _SHA = re.compile(r"[0-9a-f]{64}\Z")
@@ -366,9 +372,8 @@ def _lineage(bundle: dict, source: dict, span_ids: set[str]) -> None:
     bindings = bundle["transcript_byte_bindings"]
     _require(isinstance(bindings, list), "invalid_transcript_bindings")
     if lineage is None:
-        _require(not bindings and source["mime_type"] in {
-            "application/pdf", "text/html", "application/xhtml+xml",
-        }, "missing_transcript_lineage")
+        _require(not bindings and source["mime_type"] in RICH_DOCUMENT_MIMES,
+                 "missing_transcript_lineage")
         return
     _lineage_source(lineage, source)
     _require({binding.get("evidence_id") for binding in bindings if isinstance(binding, dict)} == span_ids

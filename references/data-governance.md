@@ -21,7 +21,7 @@ Every source requires:
 - `source_id`;
 - accepted `source_type`;
 - title and publisher;
-- HTTPS URL to the underlying page or filing;
+- original public HTTP(S) URL to the underlying page or filing; preserve the producer's actual URL rather than inventing an HTTPS alias or repeating a verified local download; RF treats this field as provenance and acquisition remains the configured provider's responsibility;
 - `published_date` and optional `accessed_date`;
 - page, table, note, paragraph, or section locator.
 - a schema-1.0 capture receipt binding the tool trace, capture date, whole-source snapshot hash, untrusted-data treatment, and prompt-injection disposition.
