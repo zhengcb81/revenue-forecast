@@ -4,7 +4,7 @@
 Implement authorized generic ancestor sensitivity and faithful opening/foundation output validation at base 79139534375f7eb523a768202f34aedf58538051.
 
 ## Next Step
-MAIN independently reviews and integrates the implementation commit, then selects installation and M3 acceptance. Engineering lane is complete; company research acceptance is outstanding.
+MAIN local independent review, integration, exact remote CI and selected installation are complete (8bbb81c7 / CI37917444152). Next: real company M3 acceptance after the other common-root cards.
 
 ## Phases
 
@@ -16,7 +16,8 @@ MAIN independently reviews and integrates the implementation commit, then select
 | Concentrated engineering validation | complete | 202 passed, 202 subtests passed, 1 historical-version skip; normal hooks passed |
 | Retained equivalent HK/US DAG replay | complete | 12/24/24 shocks; source bytes unchanged; retained-dag-green.json |
 | Old behavior preservation | complete | Five full model-family result objects identical to pinned runtime |
-| Independent review, integration, selected installation and real M3 | MAIN pending | Source remains uninstalled and unmerged |
+| MAIN independent engineering review, integration, exact CI, selected installation | complete | main-integration.json; selected-installation-main.json; exact CI37917444152 success |
+| Real company M3 | pending | No engineering result claims research acceptance |
 
 ## Decisions
 
