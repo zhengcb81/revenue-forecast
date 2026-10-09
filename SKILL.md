@@ -144,14 +144,26 @@ unavailable config is a named failure before any outbound call.  The old
 derived-body reader survives only as an isolated historical offline-fixture
 helper and is never reachable from this entry.
 
+Carry forward the authorized company task and existing session authorization to
+its needed source acquisition through configured providers. Do not pause for each
+document or supplier, create a permission file, or require a human sign-off or
+canary. Use the current provider/model configuration and cumulative budget,
+including prior unknown usage; missing capability, credentials, entitlement or
+budget remains an honest gap. Normal platform security review still applies.
+
 ```powershell
-# Read-only reuse (default; --source-reader-v2 is a compat no-op):
-echo '{"schema_version":"1.1","company_query":"AMD","document_kind":"annual_report","fiscal_year":2025,"as_of_date":"2026-07-18"}' \
+# Schema 2.0 reuse-only; local metadata reconciliation may run, never downloads:
+echo '{"schema_version":"2.0","company_query":"AMD","document_kind":"annual_report","fiscal_year":2025,"as_of_date":"2026-07-18","filing_intent":"reuse_only"}' `
   | python scripts/source_preparation.py --company-wiki-catalog-config <wiki>/config/source_catalog.yaml
 
-# With explicit download authorization:
-echo '...' | python scripts/source_preparation.py --company-wiki-catalog-config <wiki>/config/source_catalog.yaml --allow-download
+# The same task's bounded missing-source acquisition (example limits, not a new budget):
+echo '{"schema_version":"2.0","company_query":"AMD","document_kind":"annual_report","fiscal_year":2025,"as_of_date":"2026-07-18","filing_intent":"fetch_if_missing","acquisition_limits":{"max_bytes":5000000,"timeout_seconds":60,"max_cost_usd":"0.00"}}' `
+  | python scripts/source_preparation.py --company-wiki-catalog-config <wiki>/config/source_catalog.yaml
 ```
+
+Schema 2.0's `filing_intent` is the single acquisition decision. Legacy 1.1/1.2
+callers retain `--allow-download` as their intent flag; it is not another human
+approval. Supply limits from the actual task and never widen them.
 
 The entry returns the formal revenue source/capture record with a reuse
 receipt (parser/LLM/download call budget).  Do NOT hand-splice the client
@@ -164,7 +176,12 @@ writing are delegated to ``company-wiki`` via ``filing-fetch`` (R3: the
 bundled legacy acquisition module was removed — filing acquisition has a
 single owner).
 
-A catalog document being *indexed* does not make it *reusable*: only active, capture-ready handles under a registered reusable root are reused; everything else fails closed.
+Indexing alone does not prove identity, period, information date or intact bytes.
+CWP owns source eligibility and bounded reconciliation of intact originals with
+legacy metadata gaps. Configured roots locate storage; they do not add a
+per-document permission. The public verified SourceRef read establishes exact
+bytes. Withdrawn, damaged, ambiguous or unresolved source-clock cases remain
+named gaps.
 
 Use strict `FYyyyy` periods and machine-readable dimension, time basis, currency, and scale. Open every cited page before creating its claim. URL-format validation and claim structure do not independently understand a live webpage.
 
