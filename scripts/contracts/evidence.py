@@ -376,11 +376,12 @@ def validate_host_receipt(receipt: Any) -> None:
 
 
 def valid_source_url(url: Any) -> bool:
+    """Validate public provenance without changing or fetching its original URL."""
     if not isinstance(url, str):
         return False
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
-    if parsed.scheme != "https" or not host:
+    if parsed.scheme not in {"http", "https"} or not host:
         return False
     if host in BLOCKED_HOSTS or host.endswith(".example"):
         return False

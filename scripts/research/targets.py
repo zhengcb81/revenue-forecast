@@ -28,6 +28,7 @@ from contracts.evidence import (
     require,
     validate_claim_ids,
 )
+from contracts.source_clock import SourceClockError, source_information_eligibility, validate_source_events
 from forecast.calc import collect_parameter_roles, evaluate_derived_formula
 from research.target_measurement import is_typed_target, validate_typed_target, compare_target_measurement
 from research.communication_scope import analyze_communication_scope
@@ -96,10 +97,23 @@ def validate_management_target_coverage(
         checked_date = parse_iso_date(
             record.get("checked_date"), f"{category}.checked_date"
         )
-        require(
-            checked_date <= as_of,
-            f"management communication checked after as_of_date: {category}",
-        )
+        # A research check is an actual operation, not an information cutoff.
+        # Reuse the source clock for publication eligibility and event order;
+        # keep the real date instead of backdating a historical study.
+        for source_id in source_ids:
+            if source_id not in source_index:
+                continue  # The named-source diagnostic above owns this failure.
+            source = source_index[source_id]
+            capture = source.get("capture")
+            try:
+                eligibility = source_information_eligibility(source, as_of)
+                validate_source_events(
+                    eligibility=eligibility,
+                    capture_date=capture.get("captured_date") if isinstance(capture, dict) else None,
+                    claim_verified_date=checked_date.isoformat(),
+                )
+            except SourceClockError as exc:
+                require(False, f"{category}.checked_date: {exc}")
         rationale = record.get("rationale")
         if status in {"checked", "incomplete"}:
             require(
