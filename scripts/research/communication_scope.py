@@ -25,6 +25,7 @@ def analyze_communication_scope(record: dict, sources: dict, as_of_date: str) ->
     item_refs = set()
     read_sources = set()
     unresolved = []
+    category_mismatches = []
     for item in scope["items"]:
         require(isinstance(item, dict) and set(item) <= {"item_ref", "source_id", "published_date", "content_role", "selected", "read", "skip_reason"}, "communication item fields invalid")
         ref = item.get("item_ref")
@@ -39,6 +40,15 @@ def analyze_communication_scope(record: dict, sources: dict, as_of_date: str) ->
             published = parse_iso_date(sources[sid]["published_date"], "communication source date")
             require(start <= published <= end, "read communication source is outside checked interval")
             read_sources.add(sid)
+            expected_types = {
+                "latest_annual_filing": {"regulatory_filing", "exchange_filing"},
+                "latest_results_release": {"company_release"},
+                "latest_earnings_call": {"earnings_transcript"},
+                "latest_investor_presentation": {"investor_presentation"},
+                "latest_strategy_communication": {"company_release", "investor_presentation", "earnings_transcript"},
+            }.get(record["category"])
+            if expected_types is not None and sources[sid].get("source_type") not in expected_types:
+                category_mismatches.append(sid)
         if item.get("published_date") is not None:
             published = parse_iso_date(item["published_date"], "discovery item published_date")
             require(start <= published <= end, "discovery item is outside checked interval")
@@ -47,8 +57,15 @@ def analyze_communication_scope(record: dict, sources: dict, as_of_date: str) ->
         elif not item["selected"]:
             require(isinstance(item.get("skip_reason"), str) and bool(item["skip_reason"].strip()), "unselected communication requires materiality/skip reason")
     require(read_sources == set(record.get("source_ids", [])), "communication source_ids must match actual read originals")
-    complete = scope["coverage_complete"] and not unresolved
+    boundary_only = (record["category"] == "material_announcements_since_last_filing" and
+                     start < end and bool(read_sources) and all(
+                         parse_iso_date(sources[sid]["published_date"], "communication source date") <= start
+                         for sid in read_sources))
+    complete = scope["coverage_complete"] and not unresolved and not boundary_only and not category_mismatches
+    reason = ("boundary_filing_does_not_cover_later_interval" if boundary_only else
+              "source_category_not_supported" if category_mismatches else
+              "scope_or_selected_content_incomplete" if not complete else None)
     return {"category": record["category"], "status": "verified_scope" if complete else "incomplete",
             "coverage_complete": complete, "start_date": scope["start_date"], "end_date": scope["end_date"],
             "discovered_item_refs": list(sorted(item_refs)), "read_source_ids": list(sorted(read_sources)),
-            "unresolved_item_refs": unresolved, "reason": None if complete else "scope_or_selected_content_incomplete"}
+            "unresolved_item_refs": unresolved, "reason": reason}

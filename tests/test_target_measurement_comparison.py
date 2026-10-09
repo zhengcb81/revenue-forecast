@@ -211,3 +211,25 @@ def test_recipe_runs_actual_native_validation_compute_and_snapshot(tmp_path):
     assert [event["exit_code"] for event in receipt["events"]] == [0, 0, 0]
     assert (output / "forecast.md").is_file() and (output / "snapshot.json").is_file()
     assert receipt["supplier_calls"] == 0
+
+
+def test_boundary_filing_alone_does_not_complete_post_filing_content_scope():
+    from research.communication_scope import analyze_communication_scope
+    sources={"annual":{"source_type":"regulatory_filing","published_date":"2026-02-20"}}
+    record={"category":"material_announcements_since_last_filing","source_ids":["annual"],
+        "checked_scope":{"schema_version":"management-communication-scope/1","category":"material_announcements_since_last_filing",
+            "start_date":"2026-02-20","end_date":"2026-10-09","coverage_complete":True,
+            "items":[{"item_ref":"annual","source_id":"annual","published_date":"2026-02-20","content_role":"business_original","selected":True,"read":True}]}}
+    diagnostic=analyze_communication_scope(record,sources,"2026-10-09")
+    assert diagnostic["coverage_complete"] is False
+    assert diagnostic["reason"]=="boundary_filing_does_not_cover_later_interval"
+
+
+def test_annual_filing_does_not_prove_a_checked_earnings_call():
+    from research.communication_scope import analyze_communication_scope
+    category="latest_earnings_call"
+    scope={"schema_version":"management-communication-scope/1","category":category,"start_date":"2026-02-20","end_date":"2026-10-09","coverage_complete":True,
+        "items":[{"item_ref":"annual","source_id":"annual","content_role":"business_original","selected":True,"read":True}]}
+    record={"category":category,"source_ids":["annual"],"checked_scope":scope}
+    diagnostic=analyze_communication_scope(record,{"annual":{"source_type":"regulatory_filing","published_date":"2026-02-20"}},"2026-10-09")
+    assert not diagnostic["coverage_complete"] and diagnostic["reason"]=="source_category_not_supported"
