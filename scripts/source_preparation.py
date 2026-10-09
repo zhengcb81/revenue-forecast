@@ -33,6 +33,7 @@ import company_wiki_source  # noqa: E402
 from filing_upstream_cause import extract_cause, parse_error_document, validated_cause  # noqa: E402
 from processing_demand import DemandQueue  # noqa: E402
 from filing_fetch_client import select_filing  # noqa: E402
+from source_period_semantics import valid_fiscal_year  # noqa: E402
 
 # ZR-701: source preparation submits one demand per prepared source (key =
 # the source record's sha-256 identity) so schedulers/consumers can claim,
@@ -74,6 +75,8 @@ _SOURCE_TYPE_BY_KIND = {
     "earnings_transcript": "earnings_transcript",
     "official_statistics": "official_statistics",
     "company_release": "company_release",
+    "investor_relations": "company_release",
+    "investor_call_transcript": "earnings_transcript",
 }
 _SOURCE_LOCATION_FIELDS = {
     "path",
@@ -153,7 +156,7 @@ def _run_filing_fetch(request: dict, command: tuple[str, ...], timeout: float) -
     return payload if isinstance(payload, dict) else {}
 
 
-def _validate_v2_candidate(request: dict, handle: dict) -> int:
+def _validate_v2_candidate(request: dict, handle: dict) -> int | None:
     source_ref = handle.get("source_ref")
     if _SOURCE_LOCATION_FIELDS & set(handle):
         raise RuntimeError(
@@ -166,7 +169,7 @@ def _validate_v2_candidate(request: dict, handle: dict) -> int:
     if handle.get("document_kind") != request.get("document_kind"):
         raise RuntimeError("filing-fetch SourceRef document_kind mismatch")
     fiscal_year = handle.get("fiscal_year")
-    if type(fiscal_year) is not int or fiscal_year < 1:
+    if not valid_fiscal_year(handle.get("document_kind"), fiscal_year):
         raise RuntimeError("SourceRef v2 requires a valid resolved fiscal_year")
     requested_year = request.get("fiscal_year")
     if requested_year is not None and (type(requested_year) is not int or requested_year < 1):
@@ -307,6 +310,26 @@ def _prepare_legacy_source(request: dict, handle: dict) -> dict:
     }
     _submit_preparation_demand(record)
     return record
+
+
+
+def prepare_registered_source_result(
+    candidate: dict, *, as_of_date: str, company_wiki_catalog_config: Path,
+    timeout_seconds: float = 30.0,
+) -> dict:
+    """Read a registered pathless official source through the same exact verifier.
+
+    Acquisition/discovery remain upstream. This entry opens the already registered
+    candidate once and produces a real SourceCapture, without asking FF to resolve
+    a nonfinancial document or inventing a financial year.
+    """
+    request = {field: candidate.get(field) for field in
+               ("document_kind", "fiscal_year", "fiscal_period")}
+    request["as_of_date"] = as_of_date
+    source = _prepare_source_ref_v2(request, candidate,
+        _catalog_config_for_reader(company_wiki_catalog_config), timeout_seconds=timeout_seconds)
+    return {"schema_version": "source-preparation-result/1", "source": source,
+            "filing_fetch": None, "narrative": None}
 
 
 def prepare_source_result(
