@@ -217,11 +217,19 @@ def _validate_v2_candidate(request: dict, handle: dict) -> int | None:
         raise RuntimeError("SourceRef v2 requires a valid requested fiscal_year")
     if requested_year is not None and requested_year != fiscal_year:
         raise FilingSourcePreparationError("filing-fetch SourceRef fiscal_year mismatch", source_failure_reason="fiscal_year_mismatch")
+    resolved_period = handle.get("fiscal_period")
+    if resolved_period is not None and (
+            not isinstance(resolved_period, str) or not resolved_period.strip()
+            or resolved_period.strip() != resolved_period):
+        raise RuntimeError("SourceRef v2 requires a valid resolved fiscal_period")
     requested_period = request.get("fiscal_period")
-    if requested_period is None and request.get("document_kind") == "annual_report":
-        # FY is the only annual period; do not infer a quarterly/half-year period.
-        requested_period = handle.get("fiscal_period") if handle.get("fiscal_period") in (None, "FY") else "FY"
-    if handle.get("fiscal_period") != requested_period:
+    if requested_period is None:
+        # FF/CWP already resolved one source. Omission is no extra period
+        # constraint, never an instruction to replace its observed period.
+        requested_period = resolved_period
+        if request.get("document_kind") == "annual_report" and resolved_period not in (None, "FY"):
+            requested_period = "FY"  # Preserve the existing annual-only rule.
+    if resolved_period != requested_period:
         raise FilingSourcePreparationError("filing-fetch SourceRef fiscal_period mismatch", source_failure_reason="fiscal_period_mismatch")
     return fiscal_year
 

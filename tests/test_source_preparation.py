@@ -428,3 +428,37 @@ def test_annual_optional_period_defaults_to_canonical_fy():
     request["fiscal_period"] = "H1"
     with pytest.raises(RuntimeError, match="fiscal_period"):
         prep._validate_v2_candidate(request, handle)
+
+
+@pytest.mark.parametrize("kind,resolved", [("semi_annual_report", "H1"), ("semi_annual_report", "H2"),
+    ("quarterly_report", "Q2"), ("regulatory_filing", "H1")])
+@pytest.mark.parametrize("explicit_null", [False, True])
+def test_optional_period_accepts_uniquely_resolved_source_period(kind, resolved, explicit_null):
+    request = {"document_kind": kind, "fiscal_year": 2025}
+    if explicit_null:
+        request["fiscal_period"] = None
+    handle = {"source_ref": {}, "document_kind": kind, "fiscal_year": 2025,
+              "fiscal_period": resolved}
+    assert _validate_v2_candidate(request, handle) == 2025
+    assert handle["fiscal_period"] == resolved and request.get("fiscal_period") is None
+
+
+@pytest.mark.parametrize("kind,requested,resolved", [("semi_annual_report", "H1", "H2"),
+    ("quarterly_report", "Q1", "Q2"), ("annual_report", None, "Q1"),
+    ("semi_annual_report", "H2", None)])
+def test_explicit_period_constraint_and_annual_semantics_stay_strict(kind, requested, resolved):
+    request = {"document_kind": kind, "fiscal_year": 2025, "fiscal_period": requested}
+    handle = {"source_ref": {}, "document_kind": kind, "fiscal_year": 2025,
+              "fiscal_period": resolved}
+    with pytest.raises(RuntimeError, match="fiscal_period mismatch") as caught:
+        _validate_v2_candidate(request, handle)
+    assert caught.value.source_failure_reason == "fiscal_period_mismatch"
+
+
+@pytest.mark.parametrize("resolved", [True, [], {}, "", " H1 "])
+def test_optional_period_does_not_accept_malformed_resolved_field(resolved):
+    request = {"document_kind": "semi_annual_report", "fiscal_year": 2025}
+    handle = {"source_ref": {}, "document_kind": "semi_annual_report", "fiscal_year": 2025,
+              "fiscal_period": resolved}
+    with pytest.raises(RuntimeError, match="fiscal_period"):
+        _validate_v2_candidate(request, handle)
