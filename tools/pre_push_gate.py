@@ -80,6 +80,8 @@ SMOKE_TESTS = (
     "tests/test_data_contract.py",
     "tests/test_recognition_bridge.py",
     "tests/test_confidence_determinism.py",
+    "tests/test_sensitivity_dependency_dag.py",
+    "tests/test_published_foundation_roundtrip.py",
     "tests/test_growth_driver_tree.py",
     "tests/test_revenue_constraints.py",
     "tests/test_schema_compatibility.py",

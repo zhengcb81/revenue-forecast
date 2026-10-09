@@ -35,7 +35,7 @@ def test_fast_gate_covers_default_cli_and_calculation_once(monkeypatch):
     pytest_commands = [command for command in calls if command[:3] == [sys.executable, "-m", "pytest"]]
     assert len(pytest_commands) == 1
     command = pytest_commands[0]
-    for name in ("tests/test_p5_source_default_v2.py", "tests/test_p5_source_default_cli_e2e.py", "tests/test_recognition_bridge.py", "tests/test_growth_driver_tree.py"):
+    for name in ("tests/test_p5_source_default_v2.py", "tests/test_p5_source_default_cli_e2e.py", "tests/test_recognition_bridge.py", "tests/test_growth_driver_tree.py", "tests/test_sensitivity_dependency_dag.py", "tests/test_published_foundation_roundtrip.py"):
         assert name in command
     assert not any("sync_installations" in item or "production" in item for call in calls for item in call)
     monkeypatch.setattr(gate, "_run", lambda *a, **kw: 7)
