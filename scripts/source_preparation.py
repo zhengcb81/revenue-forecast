@@ -32,6 +32,7 @@ FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
 import company_wiki_source  # noqa: E402
 from filing_upstream_cause import extract_cause, parse_error_document, validated_cause  # noqa: E402
 from processing_demand import DemandQueue  # noqa: E402
+from filing_fetch_client import select_filing  # noqa: E402
 
 # ZR-701: source preparation submits one demand per prepared source (key =
 # the source record's sha-256 identity) so schedulers/consumers can claim,
@@ -111,7 +112,7 @@ def _filing_fetch_command(
     allow_download: bool,
     timeout_seconds: float,
 ) -> tuple[str, ...]:
-    command = (*python, str(FILING_FETCH_CLIENT), "--source-ref-v2")
+    command = (*python, str(FILING_FETCH_CLIENT), "--source-ref-v2", "--result-envelope")
     if filing_fetch_root is not None:
         command = (*command, "--filing-fetch-root", str(filing_fetch_root))
     if company_wiki_config is not None:
@@ -164,10 +165,13 @@ def _validate_v2_candidate(request: dict, handle: dict) -> int:
         raise RuntimeError("filing-fetch SourceRef candidate is missing source_ref")
     if handle.get("document_kind") != request.get("document_kind"):
         raise RuntimeError("filing-fetch SourceRef document_kind mismatch")
-    fiscal_year = request.get("fiscal_year")
+    fiscal_year = handle.get("fiscal_year")
     if type(fiscal_year) is not int or fiscal_year < 1:
-        raise RuntimeError("SourceRef v2 requires a valid fiscal_year")
-    if handle.get("fiscal_year") != fiscal_year:
+        raise RuntimeError("SourceRef v2 requires a valid resolved fiscal_year")
+    requested_year = request.get("fiscal_year")
+    if requested_year is not None and (type(requested_year) is not int or requested_year < 1):
+        raise RuntimeError("SourceRef v2 requires a valid requested fiscal_year")
+    if requested_year is not None and requested_year != fiscal_year:
         raise RuntimeError("filing-fetch SourceRef fiscal_year mismatch")
     requested_period = request.get("fiscal_period")
     if requested_period is None and request.get("document_kind") == "annual_report":
@@ -305,7 +309,7 @@ def _prepare_legacy_source(request: dict, handle: dict) -> dict:
     return record
 
 
-def prepare_source(
+def prepare_source_result(
     request: dict,
     *,
     allow_download: bool = False,
@@ -315,6 +319,7 @@ def prepare_source(
     filing_fetch_root: Path | None = None,
     source_reader_v2: bool = True,
     company_wiki_catalog_config: Path | None = None,
+    narrative_request: dict | None = None,
 ) -> dict:
     """Orchestrate the real chain and return the RevenueSourceRecord.
 
@@ -333,13 +338,39 @@ def prepare_source(
         allow_download=allow_download,
         timeout_seconds=timeout_seconds,
     )
-    handle = _run_filing_fetch(request, command, timeout_seconds)
-    return _prepare_source_ref_v2(
+    filing_fetch = _run_filing_fetch(request, command, timeout_seconds)
+    record = _prepare_source_ref_v2(
         request,
-        handle,
+        select_filing(filing_fetch),
         catalog_config,
         timeout_seconds=timeout_seconds,
     )
+    narrative = None
+    if narrative_request is not None:
+        from company_wiki_narrative_reader import read_narrative_context
+        from source_narrative_context import narrative_read_receipt
+        context = read_narrative_context(narrative_request, catalog_config=catalog_config,
+                                         timeout_seconds=min(timeout_seconds, 30.0))
+        if context.to_dict()["source_ref"] != select_filing(filing_fetch)["source_ref"]:
+            raise RuntimeError("narrative SourceRef does not match the prepared source")
+        narrative = narrative_read_receipt(context)
+    return {"schema_version": "source-preparation-result/1", "source": record,
+            "filing_fetch": filing_fetch, "narrative": narrative}
+
+
+def prepare_source(
+    request: dict, *, allow_download: bool = False, timeout_seconds: float = 900.0,
+    python: tuple[str, ...] = (sys.executable,), company_wiki_config: Path | None = None,
+    filing_fetch_root: Path | None = None, source_reader_v2: bool = True,
+    company_wiki_catalog_config: Path | None = None, narrative_request: dict | None = None,
+) -> dict:
+    """Compatibility source-only entry; the full result is an explicit sidecar."""
+    return prepare_source_result(
+        request, allow_download=allow_download, timeout_seconds=timeout_seconds, python=python,
+        company_wiki_config=company_wiki_config, filing_fetch_root=filing_fetch_root,
+        source_reader_v2=source_reader_v2, company_wiki_catalog_config=company_wiki_catalog_config,
+        narrative_request=narrative_request,
+    )["source"]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -348,6 +379,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--request-file", help="request JSON file (else stdin)")
     parser.add_argument("--allow-download", action="store_true")
+    parser.add_argument("--result-envelope", action="store_true",
+                        help="retain filing-fetch result and explicit narrative read receipt")
+    parser.add_argument("--narrative-request-file", type=Path,
+                        help="explicit existing narrative-read-request/1; never starts a model")
     parser.add_argument(
         "--source-reader-v2",
         action="store_true",
@@ -376,7 +411,10 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         request = _read_request(args.request_file)
-        record = prepare_source(
+        prepare = prepare_source_result if args.result_envelope else prepare_source
+        narrative_request = (json.loads(args.narrative_request_file.read_text(encoding="utf-8"))
+                             if args.narrative_request_file else None)
+        record = prepare(
             request,
             allow_download=args.allow_download,
             timeout_seconds=args.timeout_seconds,
@@ -384,6 +422,7 @@ def main(argv: list[str] | None = None) -> int:
             filing_fetch_root=args.filing_fetch_root,
             source_reader_v2=args.source_reader_v2,
             company_wiki_catalog_config=args.company_wiki_catalog_config,
+            narrative_request=narrative_request,
         )
     except (json.JSONDecodeError, ValueError) as exc:
         sys.stderr.write(json.dumps({"error_code": "bad_request", "error": str(exc)}))
