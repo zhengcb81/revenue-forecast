@@ -25,6 +25,7 @@ from contracts.evidence import (
 from forecast.calc import (
     _optional_series,
     calculate_cagr,
+    opening_base_bridge,
     parameter_values,
     resolve_driver_series,
 )
@@ -524,6 +525,7 @@ def calculate_company_forecast(
         parameter_index[data["reported_total_revenue_parameter_id"]]["value"]
     )
     adjustments = resolve_adjustments(data, validated)
+    opening = opening_base_bridge(data, parameter_index)
     consolidated: dict[str, Any] = {}
     for scenario in SCENARIOS:
         segment_totals = [0.0] * len(years)
@@ -583,7 +585,10 @@ def calculate_company_forecast(
             }
             for segment in recognized_segments
         ]
-        adjustment_increment = adjustment_totals[-1] - base_adjustment_total
+        # Increment denominators use the reported opening total. The residual
+        # reconciles that denominator only; it adds no annual forecast revenue.
+        adjustment_increment = (adjustment_totals[-1] - base_adjustment_total
+                                + opening["reconciliation_difference"])
         contribution_sum = (
             sum(item["terminal_incremental_revenue"] for item in segment_contributions)
             + adjustment_increment
@@ -615,6 +620,9 @@ def calculate_company_forecast(
         "base_revenue": reported_base,
         "segments": recognized_segments,
         "consolidated_forecast": consolidated,
+        **({"opening_base_bridge": opening} if (data.get("base_adjustment_parameter_ids")
+            or opening["reconciliation_tolerance"] != 1e-6
+            or opening["reconciliation_difference"] != 0) else {}),
     }
 
 

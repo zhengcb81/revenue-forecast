@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import math
 from typing import Any
 
@@ -26,12 +27,12 @@ from revenue_core import (
     canonical_sha256,
     parse_iso_date,
     period_year,
-    referenced_parameter_ids,
     require,
     validate_growth_driver_tree,
     validate_source_capture,
 )
 from analysis.confidence import validate_confidence_recomputation
+from forecast.calc import opening_base_bridge, scenario_forecast_parameter_ids
 from research.target_measurement import is_typed_target, compare_target_measurement
 from research.targets import validate_management_target_coverage, add_management_target_analysis
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
@@ -160,28 +161,13 @@ def _recompute_consolidated_paths(
 
 
 def _validate_segment_opening_bases(
-    result: Any, parameter_index: Any, years: Any  # noqa: ARG001 - years for parity
+    result: Any, parameter_index: Any, years: Any, data: Any = None  # noqa: ARG001
 ) -> None:
-    """Bind ``segments[i].base_revenue`` to its source parameter (B1 / REM-03).
+    """Bind opening identity, signed adjustments and tolerance to authored input.
 
-    Two independent gates, both on pre-existing result fields:
-
-    * **per-segment identity** — the segment's ``base_revenue_parameter_id`` must
-      resolve in ``parameter_trace`` (which the strong path already requires to
-      equal the validated input's parameter list) to a revenue-dimension
-      parameter for the base year whose value equals ``base_revenue``.  This is
-      the same lookup the engine itself performs in
-      ``forecast.segments.calculate_segment_forecasts``, so an honest artifact
-      can never fail it.
-    * **opening-base reconciliation** — the segment opening bases must sum to the
-      reported company base within the artifact's declared
-      ``reconciliation_tolerance``, mirroring ``contracts.document``'s
-      ``validate_base_reconciliation`` on the output side.  A segment without a
-      ``base_revenue_parameter_id`` still enters this sum.
-
-    Scope: this binds the per-segment opening base (a presentation field in the
-    分部表).  Company totals were already bound by
-    ``_recompute_consolidated_paths``; this gate adds no claim about them.
+    The strong path also recomputes the opening residual and each increment
+    contribution. This residual explains the reported opening denominator; it
+    is never an annual revenue adjustment. Legacy reads retain their old gate.
     """
     segments = result.get("segments")
     require(isinstance(segments, list) and segments, "segments must be a non-empty list")
@@ -196,6 +182,10 @@ def _validate_segment_opening_bases(
         )
         observed = float(segment["base_revenue"])
         parameter_id = segment.get("base_revenue_parameter_id")
+        if data is not None:
+            authored = next((s for s in data["segments"] if s["name"] == segment.get("name")), None)
+            require(authored is not None and parameter_id == authored["base_revenue_parameter_id"],
+                    f"segment base revenue identity mismatch: {segment.get('name')}")
         if parameter_id is None:
             continue
         name = segment.get("name")
@@ -233,7 +223,35 @@ def _validate_segment_opening_bases(
         if isinstance(segment.get("base_revenue"), (int, float))
         and not isinstance(segment.get("base_revenue"), bool)
     )
-    tolerance = float(result.get("reconciliation_tolerance", 1e-6))
+    if data is not None:
+        expected = opening_base_bridge(data, parameter_index)
+        needed = (data.get("base_adjustment_parameter_ids")
+                  or expected["reconciliation_tolerance"] != 1e-6
+                  or expected["reconciliation_difference"] != 0)
+        if needed or "opening_base_bridge" in result:
+            require(result.get("opening_base_bridge") == expected,
+                    "opening base bridge recomputation mismatch")
+        opening_total += expected["base_adjustment_total"]
+        tolerance = expected["reconciliation_tolerance"]
+        for scenario in SCENARIOS:
+            forecast = result["consolidated_forecast"][scenario]
+            contribution = forecast["incremental_contribution"]
+            expected_segments = [{"name": s["name"], "terminal_incremental_revenue":
+                float(list(s["scenarios"][scenario].get("effective_revenue",
+                           s["scenarios"][scenario]["recognized_revenue"]).values())[-1])
+                - float(s["base_revenue"])} for s in segments]
+            expected_adjustment = (float(list(forecast["adjustment_total"].values())[-1])
+                                   - expected["base_adjustment_total"]
+                                   + expected["reconciliation_difference"])
+            require(contribution["segments"] == expected_segments
+                    and math.isclose(float(contribution["adjustments"]), expected_adjustment,
+                                     rel_tol=1e-9, abs_tol=1e-9)
+                    and math.isclose(float(contribution["total"]),
+                        sum(s["terminal_incremental_revenue"] for s in expected_segments) + expected_adjustment,
+                        rel_tol=1e-9, abs_tol=1e-9),
+                    f"opening base bridge incremental contribution mismatch: {scenario}")
+    else:
+        tolerance = float(result.get("reconciliation_tolerance", 1e-6))
     allowed = max(1.0, abs(reported_base)) * tolerance
     require(
         abs(opening_total - reported_base) <= allowed,
@@ -564,14 +582,9 @@ def _validate_forecast_output(
                 f"segment scenario ordering mismatch: {segment['name']}/{year}",
             )
 
-    # B1 / REM-03: `segments[i].base_revenue` is the opening base of the
-    # per-segment 分部表 column.  It was bound by NO output gate — the model
-    # recomputation only checks `modeled_activity`, and the company totals only
-    # check `annual_revenue` — so a self-hash-consistent forgery of the
-    # presentation field survived every gate and rendered into the official
-    # report.  Two gates now bind it, using pre-existing fields only so the
-    # signed payload domain of honest artifacts is unchanged.
-    _validate_segment_opening_bases(result, parameter_index, years)
+    # Opening presentation and incremental denominators must use the same
+    # authored foundation as the forecast calculation.
+    _validate_segment_opening_bases(result, parameter_index, years, data)
 
     current_constraint_contract = (
         result["schema_version"],
@@ -1061,8 +1074,10 @@ def _validate_forecast_output(
         }
         for sensitivity in result["sensitivities"]:
             expected = expected_by_param.get(sensitivity["parameter_id"])
-            if expected is None:
-                continue
+            require(expected is not None, f"unexpected sensitivity parameter: {sensitivity['parameter_id']}")
+            for field in ("requested_values", "effective_values", "clamped", "dependency_recalculation"):
+                require(sensitivity.get(field) == expected.get(field),
+                        f"sensitivity {field} recomputation mismatch: {sensitivity['name']}")
             require(
                 math.isclose(
                     float(sensitivity["down_terminal_revenue"]),
@@ -1090,7 +1105,7 @@ def _validate_forecast_output(
         param_kinds = {p["parameter_id"]: p["kind"] for p in result["parameter_trace"]}
         eligible = {
             pid
-            for pid in referenced_parameter_ids(data, "base")
+            for pid in scenario_forecast_parameter_ids(data, "base", parameter_index)
             if param_kinds.get(pid) in {"analyst_assumption", "scenario_stress"}
         }
         tested = {s["parameter_id"] for s in result.get("sensitivities", [])}
@@ -1276,6 +1291,8 @@ def _validate_forecast_output(
                                    ("operating_research", "growth_driver_tree") if key in research_input})
         reconstructed_data["base_year"] = result["base_year"]
         reconstructed_data["forecast_years"] = result["forecast_years"]
+    if data is not None:
+        reconstructed_data = copy.deepcopy(data)
     expected_confidence = calculate_confidence(
         reconstructed_data,
         reconstructed_validated,

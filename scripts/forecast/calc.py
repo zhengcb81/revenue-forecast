@@ -9,6 +9,7 @@ from typing import Any, Iterable
 
 from contracts.evidence import (
     ForecastInputError,
+    finite_number,
     period_year,
     require,
 )
@@ -161,6 +162,98 @@ def referenced_parameter_ids(data: dict[str, Any], scenario: str) -> set[str]:
     for adjustment in data.get("forecast_adjustments", []):
         referenced.update(adjustment["scenario_parameter_ids"][scenario])
     return referenced
+
+
+def scenario_forecast_parameter_ids(
+    data: dict[str, Any], scenario: str, parameter_index: dict[str, dict[str, Any]]
+) -> set[str]:
+    """Follow the native inputs consumed by one scenario, including constraints."""
+    def project(value: Any) -> Any:
+        if isinstance(value, dict):
+            if value and set(value) <= {"low", "base", "high"}:
+                return project(value.get(scenario, []))
+            return {key: project(child) for key, child in value.items()}
+        if isinstance(value, list):
+            return [project(child) for child in value]
+        return value
+
+    roots = referenced_parameter_ids(data, scenario)
+    roots.update(constraint_parameter_ids(project(data.get("revenue_constraints", []))))
+    return _expand_derived_inputs(roots & parameter_index.keys(), parameter_index)
+
+
+def sensitivity_domain_bounds(parameter: dict[str, Any]) -> tuple[float, float] | None:
+    """Validate an optional authored domain without guessing a ratio's meaning."""
+    if "sensitivity_domain" not in parameter:
+        return None
+    domain = parameter["sensitivity_domain"]
+    field = f"{parameter.get('parameter_id')}.sensitivity_domain"
+    require(isinstance(domain, dict) and set(domain) == {"lower", "upper", "basis"},
+            f"{field} requires lower, upper and basis")
+    require(isinstance(domain["basis"], str) and domain["basis"].strip(),
+            f"{field}.basis must be non-empty")
+    lower = -math.inf if domain["lower"] is None else finite_number(domain["lower"], f"{field}.lower")
+    upper = math.inf if domain["upper"] is None else finite_number(domain["upper"], f"{field}.upper")
+    require(lower <= upper, f"{field} requires lower <= upper")
+    require(lower <= float(parameter["value"]) <= upper,
+            f"{field} must include the original parameter value")
+    return lower, upper
+
+
+def refresh_derived_descendants(
+    parameter_index: dict[str, dict[str, Any]], changed_id: str
+) -> list[str]:
+    """Refresh only descendants in the copied native DAG, in dependency order."""
+    children: dict[str, set[str]] = defaultdict(set)
+    for parameter_id, parameter in parameter_index.items():
+        if parameter.get("kind") == "derived_fact":
+            for input_id in parameter["input_parameter_ids"]:
+                children[input_id].add(parameter_id)
+    affected: set[str] = set()
+    pending = [changed_id]
+    while pending:
+        for child in children[pending.pop()]:
+            if child not in affected:
+                affected.add(child)
+                pending.append(child)
+    resolved: set[str] = set()
+
+    def resolve(parameter_id: str, visiting: set[str]) -> float:
+        require(parameter_id in parameter_index, f"unknown derived input: {parameter_id}")
+        parameter = parameter_index[parameter_id]
+        if parameter_id not in affected or parameter_id in resolved:
+            return float(parameter["value"])
+        require(parameter_id not in visiting, f"derived_fact dependency cycle: {parameter_id}")
+        inputs = [resolve(input_id, visiting | {parameter_id})
+                  for input_id in parameter["input_parameter_ids"]]
+        parameter["value"] = evaluate_derived_formula(parameter["formula"], inputs)
+        resolved.add(parameter_id)
+        return float(parameter["value"])
+
+    for parameter_id in sorted(affected):
+        resolve(parameter_id, set())
+    return sorted(affected)
+
+
+def opening_base_bridge(
+    data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
+) -> dict[str, Any]:
+    """Describe the signed opening reconciliation; it never changes forecast revenue."""
+    total_id = data["reported_total_revenue_parameter_id"]
+    adjustment_ids = data.get("base_adjustment_parameter_ids", [])
+    reported = float(parameter_index[total_id]["value"])
+    segment_total = sum(float(parameter_index[s["base_revenue_parameter_id"]]["value"])
+                        for s in data["segments"])
+    adjustment_total = sum(parameter_values(parameter_index, adjustment_ids))
+    tolerance = finite_number(data.get("reconciliation_tolerance", 1e-6), "reconciliation_tolerance")
+    difference = segment_total + adjustment_total - reported
+    require(tolerance >= 0 and abs(difference) <= max(1.0, abs(reported)) * tolerance,
+            "opening base bridge does not reconcile within input tolerance")
+    return {"reported_total_revenue_parameter_id": total_id,
+            "base_adjustment_parameter_ids": list(adjustment_ids),
+            "segment_base_total": segment_total, "base_adjustment_total": adjustment_total,
+            "reported_base_revenue": reported, "reconciliation_tolerance": tolerance,
+            "reconciliation_difference": difference}
 
 
 def parameter_driver_roles(
@@ -324,32 +417,7 @@ def base_forecast_parameter_ids(
     data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
 ) -> set[str]:
     """Return the expanded parameter set that actually enters the base forecast path."""
-    parameter_ids: set[str] = set()
-    for segment in data.get("segments", []):
-        if not isinstance(segment, dict):
-            continue
-        base_scenario = segment.get("scenarios", {}).get("base", {})
-        if isinstance(base_scenario, dict):
-            driver_map = base_scenario.get("driver_parameter_ids", {})
-            if isinstance(driver_map, dict):
-                for ids in driver_map.values():
-                    parameter_ids.update(_listed_parameter_ids(ids))
-        recognition = segment.get("recognition", {})
-        if isinstance(recognition, dict):
-            for container in ("carry_in_parameter_ids", "progress_parameter_ids"):
-                scenario_map = recognition.get(container, {})
-                if isinstance(scenario_map, dict):
-                    parameter_ids.update(
-                        _listed_parameter_ids(scenario_map.get("base", []))
-                    )
-    for adjustment in data.get("forecast_adjustments", []):
-        if not isinstance(adjustment, dict):
-            continue
-        scenario_map = adjustment.get("scenario_parameter_ids", {})
-        if isinstance(scenario_map, dict):
-            parameter_ids.update(_listed_parameter_ids(scenario_map.get("base", [])))
-    parameter_ids.update(constraint_parameter_ids(data.get("revenue_constraints", [])))
-    return _expand_derived_inputs(parameter_ids, parameter_index)
+    return scenario_forecast_parameter_ids(data, "base", parameter_index)
 
 
 def _add_segment_name(names: set[str], value: Any) -> None:

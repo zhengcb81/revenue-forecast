@@ -13,22 +13,33 @@ from contracts.evidence import (
     period_year,
     require,
 )
-from forecast.calc import parameter_driver_roles, referenced_parameter_ids
+from forecast.calc import (
+    parameter_driver_roles, referenced_parameter_ids, refresh_derived_descendants,
+    scenario_forecast_parameter_ids, sensitivity_domain_bounds,
+)
 from forecast.segments import _run_forecast_core
 from model_registry import MODEL_REGISTRY, driver_value_bounds
 from research.input_quantities import validate_input_quantity_record
 
 
 def _sensitivity_bounds(
-    parameter: dict[str, Any], roles: set[tuple[str, str]]
+    parameter: dict[str, Any], roles: set[tuple[str, str]], *, ancestor: bool = False
 ) -> tuple[float, float]:
+    domain = sensitivity_domain_bounds(parameter)
+    require(not (ancestor and parameter["dimension"] == "ratio" and domain is None),
+            "ancestor ratio sensitivity requires explicit sensitivity_domain")
     model_bounds = [driver_value_bounds(model, driver) for model, driver in roles
                     if model in MODEL_REGISTRY]
     if model_bounds:
         lower = max(bound[0] for bound in model_bounds)
         upper = min(bound[1] for bound in model_bounds)
         require(lower <= upper, "sensitivity parameter has incompatible driver bounds")
+        if domain is not None:
+            lower, upper = max(lower, domain[0]), min(upper, domain[1])
+        require(lower <= upper, "sensitivity_domain conflicts with driver bounds")
         return lower, upper
+    if domain is not None and parameter["dimension"] == "ratio":
+        return domain
     if parameter["dimension"] == "ratio":
         return (0.0, 1.0)
     if parameter["dimension"] in {
@@ -42,10 +53,13 @@ def _sensitivity_bounds(
         "revenue_per_activity",
         "revenue_per_area",
     }:
+        if domain is not None:
+            require(domain[1] >= 0, "sensitivity_domain conflicts with physical bounds")
+            return max(0.0, domain[0]), domain[1]
         return (0.0, math.inf)
     if parameter["dimension"] == "revenue" and roles:
         return (0.0, math.inf)
-    return (-math.inf, math.inf)
+    return domain if domain is not None else (-math.inf, math.inf)
 
 
 def _requested_sensitivity_values(
@@ -104,7 +118,9 @@ def calculate_sensitivities(
             _test["name"] = _test["parameter_id"]
     if not tests:
         return []
-    base_refs = referenced_parameter_ids(data, "base")
+    parameter_index = {p["parameter_id"]: p for p in data["parameters"]}
+    base_refs = scenario_forecast_parameter_ids(data, "base", parameter_index)
+    direct_refs = referenced_parameter_ids(data, "base")
     baseline_terminal = result["consolidated_forecast"]["base"]["terminal_revenue"]
     parameter_positions = {
         parameter["parameter_id"]: index
@@ -155,10 +171,14 @@ def calculate_sensitivities(
             validate_input_quantity_record(
                 input_quantity, field=f"{name}.input_quantity"
             )
-        lower, upper = _sensitivity_bounds(parameter, roles.get(parameter_id, set()))
+        lower, upper = _sensitivity_bounds(
+            parameter, roles.get(parameter_id, set()), ancestor=parameter_id not in direct_refs
+        )
         effective_down = min(max(requested_down, lower), upper)
         effective_up = min(max(requested_up, lower), upper)
         terminals: dict[str, float] = {}
+        refreshed_values: dict[str, dict[str, float]] = {}
+        affected: list[str] = []
         for direction, shocked_value in (
             ("down", effective_down),
             ("up", effective_up),
@@ -167,6 +187,9 @@ def calculate_sensitivities(
             shocked["parameters"][parameter_positions[parameter_id]]["value"] = (
                 shocked_value
             )
+            shocked_index = {p["parameter_id"]: p for p in shocked["parameters"]}
+            affected = refresh_derived_descendants(shocked_index, parameter_id)
+            refreshed_values[direction] = {pid: float(shocked_index[pid]["value"]) for pid in affected}
             shocked.pop("sensitivity_tests", None)
             shocked_result = _run_forecast_core(shocked)
             terminals[direction] = shocked_result["consolidated_forecast"]["base"][
@@ -195,6 +218,13 @@ def calculate_sensitivities(
             if baseline_terminal == 0
             else impact / baseline_terminal,
         }
+        if affected or parameter_id not in direct_refs or "sensitivity_domain" in parameter:
+            output["dependency_recalculation"] = {
+                "affected_derived_parameter_ids": affected,
+                "derived_values": refreshed_values,
+                "basis": "native derived_fact formula DAG",
+                "sensitivity_domain": copy.deepcopy(parameter.get("sensitivity_domain")),
+            }
         if input_quantity is not None:
             output["input_quantity"] = input_quantity
         outputs.append(output)

@@ -48,6 +48,7 @@ from forecast.calc import (
     _parse_fiscal_year,
     evaluate_derived_formula,
     parameter_values,
+    sensitivity_domain_bounds,
 )
 from contracts.source_clock import SourceClockError, source_information_eligibility, validate_source_events
 from research.coverage import validate_research_coverage
@@ -390,6 +391,7 @@ def validate_parameters(
             f"unsupported parameter kind for {parameter_id}: {kind}",
         )
         value = finite_number(parameter.get("value"), f"{parameter_id}.value")
+        sensitivity_domain_bounds(parameter)
         for field in ("unit", "period", "definition"):
             require(
                 isinstance(parameter.get(field), str) and parameter[field].strip(),
