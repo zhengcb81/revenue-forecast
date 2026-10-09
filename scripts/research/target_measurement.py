@@ -7,6 +7,7 @@ import re
 
 from contracts.constants import SCENARIOS
 from contracts.evidence import finite_number, require, validate_claim_ids
+from research.native_dependencies import scope_components
 
 SCHEMA = "management-target-comparison/1"
 METRICS = {"annual_revenue_level", "quarterly_revenue_level", "year_over_year_growth"}
@@ -34,6 +35,8 @@ def normalize_target_bounds(target: dict, data: dict) -> tuple[float, float]:
         elif basis == "level_multiple":
             low, high = low - 1, high - 1
     else:
+        require(target["raw_unit"] == f"{target['raw_currency']} {target['raw_scale']}",
+                "typed target raw unit must match currency/scale used for normalization")
         require(target["raw_currency"] == data["currency"], "typed target currency mismatch; reconcile first")
         require(target["raw_scale"] in _SCALES and data["unit"] in _SCALES, "typed target scale is unsupported")
         factor = _SCALES[target["raw_scale"]] / _SCALES[data["unit"]]
@@ -55,6 +58,8 @@ def validate_typed_target(target, data, parameters, claims, sources, used):
     modeled = treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}
     require(target["target_period"] == f"FY{year}", "typed comparison target period mismatch")
     require(bool(target.get("normalization_rationale")), "typed comparison requires normalization rationale")
+    if metric != "quarterly_revenue_level":
+        require(target["measurement_periods"] == [period], "typed comparison measurement periods mismatch")
     allowed = {"schema_version", "metric_kind", "period"}
     if metric == "year_over_year_growth":
         allowed |= {"base_period", "raw_ratio_basis"}
@@ -75,6 +80,10 @@ def validate_typed_target(target, data, parameters, claims, sources, used):
                 require(p["dimension"] == "revenue" and p.get("measurement_period") == period and p["period"] == f"FY{year}" and p.get("scenario") in {scenario, "all", "shared", None}, "quarter bridge parameter period/scenario/dimension mismatch")
                 require(p["currency"] == data["currency"] and p["scale"] == data["unit"], "quarter bridge currency/scale mismatch")
                 require(bool(p.get("claim_ids")), "quarter bridge requires checked input claims")
+            components = scope_components(data, parameters, target["scope"], scenario, year)
+            members = set().union(*components.values()) if components else set()
+            require(set(ids) <= members and all(set(ids) & refs for refs in components.values()),
+                    "quarter bridge target scope must match its native component ancestry")
     else:
         require(target["measurement_basis"] == "annual_period", "annual comparison measurement basis mismatch")
     require(set(spec) == allowed, "typed comparison fields are not exact")

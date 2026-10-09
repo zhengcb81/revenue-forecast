@@ -10,6 +10,7 @@ from collections import Counter
 from contracts.constants import GROWTH_DRIVER_EVIDENCE_ROLES, SCENARIOS
 from contracts.evidence import finite_number, require
 from forecast.calc import collect_parameter_roles, evaluate_derived_formula
+from research.native_dependencies import observation_binding
 
 OBSERVATION_ROLES = {
     "historical_revenue_table": {"history_base"},
@@ -37,7 +38,8 @@ def _ids(values, available, label):
     return values
 
 
-def _observations(rows, parameters, claims, driver_ids):
+def _observations(rows, parameters, claims, drivers, data):
+    driver_ids = set(drivers)
     require(isinstance(rows, list), "operating observations must be a list")
     seen = set()
     result = []
@@ -52,7 +54,8 @@ def _observations(rows, parameters, claims, driver_ids):
             _text(row[key], f"observation {key}")
         _ids(row["parameter_ids"], parameters, "observation parameter_ids")
         _ids(row["driver_ids"], driver_ids, "observation driver_ids")
-        result.append({**row, "role": role, "source_id": claims[cid]["source_id"], "locator": claims[cid]["locator"]})
+        binding_status = observation_binding(row, claims[cid], data, parameters, drivers)
+        result.append({**row, "role": role, "source_id": claims[cid]["source_id"], "locator": claims[cid]["locator"], "binding_status": binding_status})
     return result
 
 
@@ -173,14 +176,15 @@ def analyze_operating_research(data, validated):
     parameters = validated["parameter_index"]
     claims = validated["claim_index"]
     roles = collect_parameter_roles(data, parameters)
-    driver_ids = {d["driver_id"] for d in data.get("growth_driver_tree", {}).get("drivers", [])}
-    observations = _observations(research["observations"], parameters, claims, driver_ids)
+    drivers = {d["driver_id"]: d for d in data.get("growth_driver_tree", {}).get("drivers", [])}
+    driver_ids = set(drivers)
+    observations = _observations(research["observations"], parameters, claims, drivers, data)
     inventory = _inventory(research["inventory"], parameters, claims, driver_ids, roles["used"])
     require(isinstance(research["calibrations"], list), "calibrations must be a list")
     calibrations = [_calibration(r, parameters, claims, observations, roles["used"]) for r in research["calibrations"]]
     ids = [c["calibration_id"] for c in calibrations]
     require(len(ids) == len(set(ids)), "duplicate calibration ID")
-    mechanisms = sorted({pid for o in observations if o["role"] == "mechanism_direction" for pid in o["parameter_ids"] if pid in roles["forecast"]})
+    mechanisms = sorted({pid for o in observations if o["role"] == "mechanism_direction" and o["binding_status"] == "bound" for pid in o["parameter_ids"] if pid in roles["forecast"]})
     magnitude = sorted({pid for c in calibrations if c["adequacy_status"] == "referenced_range" for pid in c["scenario_output_parameter_ids"].values()})
     limitations = ["Typed observations reflect researcher declarations; source bytes/parser/locators do not prove economic direction or magnitude.",
                    "Referenced range is a documented conversion, not empirical forecast/probability calibration."]

@@ -422,22 +422,34 @@ def validate_management_target_coverage(
                     linked.get("extracted_value") is None,
                     f"non-numeric management target claim cannot carry extracted_value: {target_id}",
                 )
-                continue
-            extracted = finite_number(
-                linked.get("extracted_value"), f"{linked['claim_id']}.extracted_value"
-            )
+                if raw_value_kind != "numeric_range":
+                    continue
+            else:
+                extracted = finite_number(
+                    linked.get("extracted_value"), f"{linked['claim_id']}.extracted_value"
+                )
+                require(
+                    math.isclose(extracted, raw_value, rel_tol=0, abs_tol=1e-9),
+                    f"management target claim value mismatch: {target_id}",
+                )
+            explicit_range_gap = raw_value_kind == "numeric_range" and treatment in {
+                "unmodeled_data_gap", "out_of_horizon",
+            }
             require(
-                math.isclose(extracted, raw_value, rel_tol=0, abs_tol=1e-9),
-                f"management target claim value mismatch: {target_id}",
-            )
-            require(
-                linked.get("unit") == target["raw_unit"],
+                linked.get("unit") == target["raw_unit"]
+                or explicit_range_gap and linked.get("unit") is None,
                 f"management target claim unit mismatch: {target_id}",
             )
             require(
-                linked.get("period") == target["target_period"],
+                linked.get("period") == target["target_period"]
+                or explicit_range_gap and linked.get("period") is None,
                 f"management target claim period mismatch: {target_id}",
             )
+            if is_typed_target(target):
+                for field, expected in (("currency", target["raw_currency"]), ("scale", target["raw_scale"]),
+                                        ("measurement_period", target["comparison_basis"].get("period"))):
+                    if field in linked:
+                        require(linked[field] == expected, f"management target claim {field} mismatch: {target_id}")
             source_ids.append(linked["source_id"])
 
         mapped_ids = target.get("mapped_parameter_ids", [])

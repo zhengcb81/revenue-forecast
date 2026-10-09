@@ -12,7 +12,7 @@
 {"schema_version":"management-target-comparison/1","metric_kind":"quarterly_revenue_level","period":"FY2027Q3","scenario_parameter_ids":{"low":["q3_low"],"base":["q3_base"],"high":["q3_high"]}}
 ```
 
-每个引用是已进入年度 derived bridge 的 revenue 参数，具有 `period="FY2027"`、`measurement_period="FY2027Q3"`、对应 scenario、统一币种/scale 和已检查 claims。季度参数相加得到实际季度路径；不乘四。年度合计的其他季度和额外周仍须有自己的经营/确认依据。Q/H 期间标签、annual/TTM/run-rate/cumulative 口径不能互换。
+每个引用是已进入年度 derived bridge 的 revenue 参数，具有 `period="FY2027"`、`measurement_period="FY2027Q3"`、对应 scenario、统一币种/scale 和已检查 claims。 必须沿现有 native 参数祖先关系进入目标分部在该 scenario/year 的实际 driver 或 recognition 路径；全局 used 不能代替分部归属。company scope 的参数须在既有各分部与已声明 adjustment 组成中，且每个组成都有实际季度引用；无法证明组成时保留显式 unmodeled gap，不能借另一分部的值。季度参数相加得到实际季度路径；不乘四。年度合计的其他季度和额外周仍须有自己的经营/确认依据。Q/H 期间标签、annual/TTM/run-rate/cumulative 口径不能互换。
 
 同比：
 
@@ -23,6 +23,10 @@
 原文 70 percent 保留为 raw_target_value=70/raw_unit=percent，comparison_value=0.70。每个 scenario 使用自己 FY2028/FY2027 − 1。raw_ratio_basis 明确 percent、fraction 或 level_multiple；2 倍收入对应增长 1。`greater_than`/`less_than` 是严格界限，不受 approximately tolerance 软化。数值区间保持两个端点，不制造中心美元目标。
 
 comparison 输出 metric_kind/period/unit、modeled_value、target_value 或 low/high、comparison、meets_target、status/reason；同比另列 base period/value、percentage_points 差。逐情景分母 × (1+ratio) 仅为 analyst_derived revenue benchmark，具有公式和美元差，不能改写为管理层发布的美元目标。缺/零/负基期保留 null，不除零或变为 0；基期未知可填 base_period=null 并保留 gap。
+
+typed annual/YoY 的 `measurement_periods` 必须为唯一 `[comparison_basis.period]`，同时与 `target_period` 一致；不能输出两套冲突年度。quarter 保留自己的 Q/H period 和空年度 measurement_periods，不自动 annualize。
+
+`numeric_range` 只省去单点 extracted_value 比较，仍校验 source claim 的 raw unit、fiscal period；显式 currency/scale/measurement_period 字段若存在也须与 raw 口径和 typed period 一致。金额 raw_unit 使用明确机器口径 `raw_currency + " " + raw_scale`，必须与实际换算字段一致；原文仍完整保存在 raw_statement。合法 billion→million 转换保留两端点。来源 unit/period 缺失时只允许明确 `unmodeled_data_gap` 或 `out_of_horizon`，不输出比较结果；显式矛盾不能靠 gap 跳过。
 
 币种、scope 或季度桥不可比时 treatment=unmodeled_data_gap，comparison_value=null、mapped_scenarios=[]，保留原 rationale。季度 scenario_parameter_ids=null 明确没有比较路径。无需重复的 unmodeled_reason 或人工许可。年度/累计/期末运行率原契约继续适用；无法支持的 TTM 或 percentage-point 变化保留原文和明确 gap，不改名为年度收入同比。
 
