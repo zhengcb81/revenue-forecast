@@ -1,0 +1,304 @@
+....FFFFFFFF                                                             [100%]
+================================== FAILURES ===================================
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/vnd.openxmlformats-officedocument.wordprocessingml.document-2-True] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-mime-red-7t8jg5rg/pytest/test_public_client_projects_ca4')
+v2 = True, exit_code = 2
+mime_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    @pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": mime_type}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+            {**identity, "market": {"error": SECRET}},
+            {"source_ref": {**ref, "mime_type": [SECRET]}},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'ticker': '...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         Right contains one more item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:157: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/vnd.openxmlformats-officedocument.wordprocessingml.document-2-False] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-mime-red-7t8jg5rg/pytest/test_public_client_projects_ca5')
+v2 = False, exit_code = 2
+mime_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    @pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": mime_type}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+            {**identity, "market": {"error": SECRET}},
+            {"source_ref": {**ref, "mime_type": [SECRET]}},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'ticker': '...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         Right contains one more item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:157: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/vnd.openxmlformats-officedocument.wordprocessingml.document-0-True] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-mime-red-7t8jg5rg/pytest/test_public_client_projects_ca6')
+v2 = True, exit_code = 0
+mime_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    @pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": mime_type}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+            {**identity, "market": {"error": SECRET}},
+            {"source_ref": {**ref, "mime_type": [SECRET]}},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'ticker': '...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         Right contains one more item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:157: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/vnd.openxmlformats-officedocument.wordprocessingml.document-0-False] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-mime-red-7t8jg5rg/pytest/test_public_client_projects_ca7')
+v2 = False, exit_code = 0
+mime_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    @pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": mime_type}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+            {**identity, "market": {"error": SECRET}},
+            {"source_ref": {**ref, "mime_type": [SECRET]}},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'ticker': '...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         Right contains one more item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:157: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/x-company-custom-2-True] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-mime-red-7t8jg5rg/pytest/test_public_client_projects_ca8')
+v2 = True, exit_code = 2, mime_type = 'application/x-company-custom'
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    @pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": mime_type}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+            {**identity, "market": {"error": SECRET}},
+            {"source_ref": {**ref, "mime_type": [SECRET]}},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'ticker': '...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         Right contains one more item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:157: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/x-company-custom-2-False] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-mime-red-7t8jg5rg/pytest/test_public_client_projects_ca9')
+v2 = False, exit_code = 2, mime_type = 'application/x-company-custom'
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    @pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": mime_type}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+            {**identity, "market": {"error": SECRET}},
+            {"source_ref": {**ref, "mime_type": [SECRET]}},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'ticker': '...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         Right contains one more item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:157: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/x-company-custom-0-True] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-mime-red-7t8jg5rg/pytest/test_public_client_projects_ca10')
+v2 = True, exit_code = 0, mime_type = 'application/x-company-custom'
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    @pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": mime_type}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+            {**identity, "market": {"error": SECRET}},
+            {"source_ref": {**ref, "mime_type": [SECRET]}},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'ticker': '...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         Right contains one more item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:157: AssertionError
+_ test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/x-company-custom-0-False] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-mime-red-7t8jg5rg/pytest/test_public_client_projects_ca11')
+v2 = False, exit_code = 0, mime_type = 'application/x-company-custom'
+
+    @pytest.mark.parametrize("v2", [True, False])
+    @pytest.mark.parametrize("exit_code", [2, 0])
+    @pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+    def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
+        payload = failure(v2=v2)
+        detail = payload["filing"] if v2 else payload
+        payload["status"] = detail["status"] = "ambiguous"
+        detail["error_code"] = "ambiguous"
+        sha = "a" * 64
+        ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
+               "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
+               "byte_size": 25, "mime_type": mime_type}
+        identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
+        detail["candidates"] = [
+            {"error": "https://invalid/?api_key=" + SECRET},
+            {**identity, "diagnostics": {"nested": {"authorization": SECRET}}, "source_url": "https://invalid/?api_key=" + SECRET},
+            {"source_ref": ref, "debug": [{"provider_key": SECRET}]},
+            {"source_ref": {**ref, "extra": SECRET}},
+            {**identity, "canonical_name": "https://invalid/?api_key=" + SECRET},
+            {**identity, "market": {"error": SECRET}},
+            {"source_ref": {**ref, "mime_type": [SECRET]}},
+        ]
+        root = fake(tmp_path, payload, exit_code=exit_code)
+        value = actual_cli(root, tmp_path, client_only=True)
+>       assert value.get("candidates") == [identity, {"source_ref": ref}]
+E       AssertionError: assert [{'ticker': '...e': 'NASDAQ'}] == [{'ticker': '...aaaaa', ...}}]
+E         
+E         Right contains one more item: {'source_ref': {'schema_version': '2.0', 'document_id': 'urn:company-wiki:document:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaaaaaaaaa', 'content_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+E         Use -v to get more diff
+
+tests\test_source_failure_observations.py:157: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/vnd.openxmlformats-officedocument.wordprocessingml.document-2-True]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/vnd.openxmlformats-officedocument.wordprocessingml.document-2-False]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/vnd.openxmlformats-officedocument.wordprocessingml.document-0-True]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/vnd.openxmlformats-officedocument.wordprocessingml.document-0-False]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/x-company-custom-2-True]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/x-company-custom-2-False]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/x-company-custom-0-True]
+FAILED tests/test_source_failure_observations.py::test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies[application/x-company-custom-0-False]
+8 failed, 4 passed, 24 deselected in 2.59s

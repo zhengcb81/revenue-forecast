@@ -56,7 +56,10 @@ def _candidate_reference(value: Any) -> dict[str, Any] | None:
         return None
     if type(value["byte_size"]) is not int or value["byte_size"] < 0:
         return None
-    if not isinstance(value["mime_type"], str) or value["mime_type"] not in {"application/pdf", "text/plain", "text/markdown", "application/json", "text/html", "application/octet-stream"}:
+    # Format support belongs to CWP's parser/reader. This consumer only
+    # projects a bounded MIME token; it must not maintain a second capability list.
+    if (not isinstance(value["mime_type"], str)
+            or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]{0,126}/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]{0,126}", value["mime_type"]) is None):
         return None
     for key, kind in (("document_id", "document"), ("source_id", "source")):
         identifier = value[key]

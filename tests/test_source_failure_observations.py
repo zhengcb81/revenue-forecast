@@ -132,7 +132,8 @@ def test_reader_failure_retains_prior_observations_without_replaying_fetch(tmp_p
 
 @pytest.mark.parametrize("v2", [True, False])
 @pytest.mark.parametrize("exit_code", [2, 0])
-def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code):
+@pytest.mark.parametrize("mime_type", ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/x-company-custom"])
+def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(tmp_path, v2, exit_code, mime_type):
     payload = failure(v2=v2)
     detail = payload["filing"] if v2 else payload
     payload["status"] = detail["status"] = "ambiguous"
@@ -140,7 +141,7 @@ def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(t
     sha = "a" * 64
     ref = {"schema_version": "2.0", "document_id": "urn:company-wiki:document:sha256:" + sha,
            "source_id": "urn:company-wiki:source:sha256:" + sha, "content_sha256": sha,
-           "byte_size": 25, "mime_type": "text/plain"}
+           "byte_size": 25, "mime_type": mime_type}
     identity = {"ticker": "GOOGL", "canonical_name": "Alphabet Inc.", "market": "US", "exchange": "NASDAQ"}
     detail["candidates"] = [
         {"error": "https://invalid/?api_key=" + SECRET},

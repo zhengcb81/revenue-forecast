@@ -13,10 +13,12 @@ FF v1 top-level / v2 filing optionally contain existing exact acquisition_failur
 
 ## State
 
-TDD, implementation and final concentrated validation complete (114passes/1existing POSIXskip). Independent major review found a nested-candidate leak in the intermediate public client CLI; its TDD repair is complete and independent retest pending. Parent approved interfaces. Historical US failed-call unknowns remain unknown regardless of new GREEN results.
+TDD, implementation and final concentrated validation complete (122passes/1existing POSIXskip). Source commit21b91959 completed with normal hooks. Independent major review verified the nested-candidate leak repair (8 actual controls); it then identified DOCX capability duplication. MIME TDD repair is complete; final independent recheck pending. Parent approved interfaces. Historical failed-call unknowns remain unknown regardless of new GREEN results.
 
 ## Major review extension
 
 W08-R1: the public failure payload must project candidates through a shared pure DTO decoder at _ClientError and _emit_error, rather than forwarding arbitrary nested bodies or relying on final source_preparation filtering. Keep valid legacy four-field identity and logical SourceRef disambiguation data; drop unknown diagnostic wrappers/provider URLs. Test actual v1/v2 exit0/nonzero client CLI, malformed nested types, known cause/usage/count continuity and legitimate candidates. No new identity resolution, byte verification, permission or retry layer.
 
 The source_reader stage denotes the existing combined verified reader/RevenueSourceRecord preparation helper; narrative_reader is separate. It does not claim detailed internal record-stage proof. Historical candidate/config/free-text fields beyond the explicit failure projection are not comprehensively migrated.
+
+SourceRef MIME is projected by safe token shape only: RF must not maintain a duplicate parser capability list. Existing W05 DOCX and valid logical MIME tokens survive the DTO projection, without claiming successful parsing. Unknown nested fields and non-token MIME values remain excluded.

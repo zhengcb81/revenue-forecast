@@ -17,4 +17,6 @@ _ClientError.candidates and _emit_error were a second arbitrary-body channel. Th
 
 ## Limits
 
+The first candidate fix incorrectly imposed a six-value MIME capability whitelist in RF. Independent review caught W05 DOCX dropping, while upstream supports it. This duplicated another layer's responsibility. The repair validates only safe MIME token syntax, not support, and includes DOCX plus an otherwise valid custom token as positive controls. Arbitrary URL/list MIME values remain rejected; opening/parsing remains CWP-owned.
+
 Historical failed US usage remains unknown; new tests and ceilings cannot recover it. MAIN W11 owns outer capture. source_reader labels the existing combined reader/record helper; narrative_reader is separately observed. Unrelated config/legacy free-text channels are not comprehensively migrated. New W08 controls all execute; the existing POSIX-only skip is recorded separately.
