@@ -1,0 +1,190 @@
+FFFFFF..                                                                 [100%]
+================================== FAILURES ===================================
+_ test_native_reader_refusal_retains_finite_reason_and_prior_counts[no_verified_location-no_verified_location] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-native-reason-red-cxal_659/pytest/test_native_reader_refusal_ret0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000234CD338C30>
+reason = 'no_verified_location', expected = 'no_verified_location'
+
+    @pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
+        ("document_not_indexed", "document_not_indexed"), ("source_not_active", "source_not_active"),
+        ("source_ref_changed", "source_ref_changed"), ("catalog_unavailable", "catalog_unavailable"),
+        ("candidate_budget_exceeded", "candidate_budget_exceeded"), ("api_key_synthetic_w08_secret", None)])
+    def test_native_reader_refusal_retains_finite_reason_and_prior_counts(tmp_path, monkeypatch, reason, expected):
+        import company_wiki_source_reader_v2 as reader
+        config = tmp_path / "catalog.yaml"
+        config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+        value = {"schema_version": "2.0", "status": "source_candidate", "filing": {"status": "source_candidate"}, "calls": 2, "downloads": 0}
+        monkeypatch.setattr(prep, "_run_filing_fetch", lambda *args: value)
+    
+        def refused(*args, **kwargs):
+            document = {"schema_version": "2.1", "status": "unavailable", "reason": reason}
+            reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+    
+        monkeypatch.setattr(prep, "_prepare_source_ref_v2", refused)
+        with pytest.raises(prep.FilingSourcePreparationError) as caught:
+            prep.prepare_source_result({}, company_wiki_catalog_config=config)
+>       assert getattr(caught.value, "source_failure_reason", None) == expected
+E       AssertionError: assert None == 'no_verified_location'
+E        +  where None = getattr(FilingSourcePreparationError('source preparation failed at source_reader'), 'source_failure_reason', None)
+E        +    where FilingSourcePreparationError('source preparation failed at source_reader') = <ExceptionInfo FilingSourcePreparationError('source preparation failed at source_reader') tblen=2>.value
+
+tests\test_source_failure_observations.py:182: AssertionError
+_ test_native_reader_refusal_retains_finite_reason_and_prior_counts[document_not_indexed-document_not_indexed] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-native-reason-red-cxal_659/pytest/test_native_reader_refusal_ret1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000234CD338770>
+reason = 'document_not_indexed', expected = 'document_not_indexed'
+
+    @pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
+        ("document_not_indexed", "document_not_indexed"), ("source_not_active", "source_not_active"),
+        ("source_ref_changed", "source_ref_changed"), ("catalog_unavailable", "catalog_unavailable"),
+        ("candidate_budget_exceeded", "candidate_budget_exceeded"), ("api_key_synthetic_w08_secret", None)])
+    def test_native_reader_refusal_retains_finite_reason_and_prior_counts(tmp_path, monkeypatch, reason, expected):
+        import company_wiki_source_reader_v2 as reader
+        config = tmp_path / "catalog.yaml"
+        config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+        value = {"schema_version": "2.0", "status": "source_candidate", "filing": {"status": "source_candidate"}, "calls": 2, "downloads": 0}
+        monkeypatch.setattr(prep, "_run_filing_fetch", lambda *args: value)
+    
+        def refused(*args, **kwargs):
+            document = {"schema_version": "2.1", "status": "unavailable", "reason": reason}
+            reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+    
+        monkeypatch.setattr(prep, "_prepare_source_ref_v2", refused)
+        with pytest.raises(prep.FilingSourcePreparationError) as caught:
+            prep.prepare_source_result({}, company_wiki_catalog_config=config)
+>       assert getattr(caught.value, "source_failure_reason", None) == expected
+E       AssertionError: assert None == 'document_not_indexed'
+E        +  where None = getattr(FilingSourcePreparationError('source preparation failed at source_reader'), 'source_failure_reason', None)
+E        +    where FilingSourcePreparationError('source preparation failed at source_reader') = <ExceptionInfo FilingSourcePreparationError('source preparation failed at source_reader') tblen=2>.value
+
+tests\test_source_failure_observations.py:182: AssertionError
+_ test_native_reader_refusal_retains_finite_reason_and_prior_counts[source_not_active-source_not_active] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-native-reason-red-cxal_659/pytest/test_native_reader_refusal_ret2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000234CDBCE450>
+reason = 'source_not_active', expected = 'source_not_active'
+
+    @pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
+        ("document_not_indexed", "document_not_indexed"), ("source_not_active", "source_not_active"),
+        ("source_ref_changed", "source_ref_changed"), ("catalog_unavailable", "catalog_unavailable"),
+        ("candidate_budget_exceeded", "candidate_budget_exceeded"), ("api_key_synthetic_w08_secret", None)])
+    def test_native_reader_refusal_retains_finite_reason_and_prior_counts(tmp_path, monkeypatch, reason, expected):
+        import company_wiki_source_reader_v2 as reader
+        config = tmp_path / "catalog.yaml"
+        config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+        value = {"schema_version": "2.0", "status": "source_candidate", "filing": {"status": "source_candidate"}, "calls": 2, "downloads": 0}
+        monkeypatch.setattr(prep, "_run_filing_fetch", lambda *args: value)
+    
+        def refused(*args, **kwargs):
+            document = {"schema_version": "2.1", "status": "unavailable", "reason": reason}
+            reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+    
+        monkeypatch.setattr(prep, "_prepare_source_ref_v2", refused)
+        with pytest.raises(prep.FilingSourcePreparationError) as caught:
+            prep.prepare_source_result({}, company_wiki_catalog_config=config)
+>       assert getattr(caught.value, "source_failure_reason", None) == expected
+E       AssertionError: assert None == 'source_not_active'
+E        +  where None = getattr(FilingSourcePreparationError('source preparation failed at source_reader'), 'source_failure_reason', None)
+E        +    where FilingSourcePreparationError('source preparation failed at source_reader') = <ExceptionInfo FilingSourcePreparationError('source preparation failed at source_reader') tblen=2>.value
+
+tests\test_source_failure_observations.py:182: AssertionError
+_ test_native_reader_refusal_retains_finite_reason_and_prior_counts[source_ref_changed-source_ref_changed] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-native-reason-red-cxal_659/pytest/test_native_reader_refusal_ret3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000234CD29D7B0>
+reason = 'source_ref_changed', expected = 'source_ref_changed'
+
+    @pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
+        ("document_not_indexed", "document_not_indexed"), ("source_not_active", "source_not_active"),
+        ("source_ref_changed", "source_ref_changed"), ("catalog_unavailable", "catalog_unavailable"),
+        ("candidate_budget_exceeded", "candidate_budget_exceeded"), ("api_key_synthetic_w08_secret", None)])
+    def test_native_reader_refusal_retains_finite_reason_and_prior_counts(tmp_path, monkeypatch, reason, expected):
+        import company_wiki_source_reader_v2 as reader
+        config = tmp_path / "catalog.yaml"
+        config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+        value = {"schema_version": "2.0", "status": "source_candidate", "filing": {"status": "source_candidate"}, "calls": 2, "downloads": 0}
+        monkeypatch.setattr(prep, "_run_filing_fetch", lambda *args: value)
+    
+        def refused(*args, **kwargs):
+            document = {"schema_version": "2.1", "status": "unavailable", "reason": reason}
+            reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+    
+        monkeypatch.setattr(prep, "_prepare_source_ref_v2", refused)
+        with pytest.raises(prep.FilingSourcePreparationError) as caught:
+            prep.prepare_source_result({}, company_wiki_catalog_config=config)
+>       assert getattr(caught.value, "source_failure_reason", None) == expected
+E       AssertionError: assert None == 'source_ref_changed'
+E        +  where None = getattr(FilingSourcePreparationError('source preparation failed at source_reader'), 'source_failure_reason', None)
+E        +    where FilingSourcePreparationError('source preparation failed at source_reader') = <ExceptionInfo FilingSourcePreparationError('source preparation failed at source_reader') tblen=2>.value
+
+tests\test_source_failure_observations.py:182: AssertionError
+_ test_native_reader_refusal_retains_finite_reason_and_prior_counts[catalog_unavailable-catalog_unavailable] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-native-reason-red-cxal_659/pytest/test_native_reader_refusal_ret4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000234CD29E030>
+reason = 'catalog_unavailable', expected = 'catalog_unavailable'
+
+    @pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
+        ("document_not_indexed", "document_not_indexed"), ("source_not_active", "source_not_active"),
+        ("source_ref_changed", "source_ref_changed"), ("catalog_unavailable", "catalog_unavailable"),
+        ("candidate_budget_exceeded", "candidate_budget_exceeded"), ("api_key_synthetic_w08_secret", None)])
+    def test_native_reader_refusal_retains_finite_reason_and_prior_counts(tmp_path, monkeypatch, reason, expected):
+        import company_wiki_source_reader_v2 as reader
+        config = tmp_path / "catalog.yaml"
+        config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+        value = {"schema_version": "2.0", "status": "source_candidate", "filing": {"status": "source_candidate"}, "calls": 2, "downloads": 0}
+        monkeypatch.setattr(prep, "_run_filing_fetch", lambda *args: value)
+    
+        def refused(*args, **kwargs):
+            document = {"schema_version": "2.1", "status": "unavailable", "reason": reason}
+            reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+    
+        monkeypatch.setattr(prep, "_prepare_source_ref_v2", refused)
+        with pytest.raises(prep.FilingSourcePreparationError) as caught:
+            prep.prepare_source_result({}, company_wiki_catalog_config=config)
+>       assert getattr(caught.value, "source_failure_reason", None) == expected
+E       AssertionError: assert None == 'catalog_unavailable'
+E        +  where None = getattr(FilingSourcePreparationError('source preparation failed at source_reader'), 'source_failure_reason', None)
+E        +    where FilingSourcePreparationError('source preparation failed at source_reader') = <ExceptionInfo FilingSourcePreparationError('source preparation failed at source_reader') tblen=2>.value
+
+tests\test_source_failure_observations.py:182: AssertionError
+_ test_native_reader_refusal_retains_finite_reason_and_prior_counts[candidate_budget_exceeded-candidate_budget_exceeded] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-native-reason-red-cxal_659/pytest/test_native_reader_refusal_ret5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000234CD25FC50>
+reason = 'candidate_budget_exceeded', expected = 'candidate_budget_exceeded'
+
+    @pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
+        ("document_not_indexed", "document_not_indexed"), ("source_not_active", "source_not_active"),
+        ("source_ref_changed", "source_ref_changed"), ("catalog_unavailable", "catalog_unavailable"),
+        ("candidate_budget_exceeded", "candidate_budget_exceeded"), ("api_key_synthetic_w08_secret", None)])
+    def test_native_reader_refusal_retains_finite_reason_and_prior_counts(tmp_path, monkeypatch, reason, expected):
+        import company_wiki_source_reader_v2 as reader
+        config = tmp_path / "catalog.yaml"
+        config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+        value = {"schema_version": "2.0", "status": "source_candidate", "filing": {"status": "source_candidate"}, "calls": 2, "downloads": 0}
+        monkeypatch.setattr(prep, "_run_filing_fetch", lambda *args: value)
+    
+        def refused(*args, **kwargs):
+            document = {"schema_version": "2.1", "status": "unavailable", "reason": reason}
+            reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+    
+        monkeypatch.setattr(prep, "_prepare_source_ref_v2", refused)
+        with pytest.raises(prep.FilingSourcePreparationError) as caught:
+            prep.prepare_source_result({}, company_wiki_catalog_config=config)
+>       assert getattr(caught.value, "source_failure_reason", None) == expected
+E       AssertionError: assert None == 'candidate_budget_exceeded'
+E        +  where None = getattr(FilingSourcePreparationError('source preparation failed at source_reader'), 'source_failure_reason', None)
+E        +    where FilingSourcePreparationError('source preparation failed at source_reader') = <ExceptionInfo FilingSourcePreparationError('source preparation failed at source_reader') tblen=2>.value
+
+tests\test_source_failure_observations.py:182: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_source_failure_observations.py::test_native_reader_refusal_retains_finite_reason_and_prior_counts[no_verified_location-no_verified_location]
+FAILED tests/test_source_failure_observations.py::test_native_reader_refusal_retains_finite_reason_and_prior_counts[document_not_indexed-document_not_indexed]
+FAILED tests/test_source_failure_observations.py::test_native_reader_refusal_retains_finite_reason_and_prior_counts[source_not_active-source_not_active]
+FAILED tests/test_source_failure_observations.py::test_native_reader_refusal_retains_finite_reason_and_prior_counts[source_ref_changed-source_ref_changed]
+FAILED tests/test_source_failure_observations.py::test_native_reader_refusal_retains_finite_reason_and_prior_counts[catalog_unavailable-catalog_unavailable]
+FAILED tests/test_source_failure_observations.py::test_native_reader_refusal_retains_finite_reason_and_prior_counts[candidate_budget_exceeded-candidate_budget_exceeded]
+6 failed, 2 passed, 36 deselected in 0.23s

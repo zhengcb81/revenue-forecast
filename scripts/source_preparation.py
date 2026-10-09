@@ -32,7 +32,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
 
 import company_wiki_source  # noqa: E402
-from filing_upstream_cause import failure_observation, parse_error_document, safe_failure_message  # noqa: E402
+from filing_upstream_cause import failure_observation, parse_error_document, safe_failure_message, validated_source_failure_reason  # noqa: E402
 from processing_demand import DemandQueue  # noqa: E402
 from filing_fetch_client import select_filing  # noqa: E402
 from source_period_semantics import valid_fiscal_year  # noqa: E402
@@ -148,16 +148,19 @@ class FilingSourcePreparationError(RuntimeError):
 
     def __init__(self, message: str, *, upstream_cause: dict | None = None,
                  acquisition_failure: dict | None = None, stage: str | None = None,
-                 attempts: int | None = None, calls: int | None = None, downloads: int | None = None):
+                 attempts: int | None = None, calls: int | None = None, downloads: int | None = None,
+                 source_failure_reason: str | None = None):
         super().__init__(message)
         observed = failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
-                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads})
+                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
+                                       "source_failure_reason": source_failure_reason})
         self.upstream_cause = observed.get("upstream_cause")
         self.acquisition_failure = observed.get("acquisition_failure")
         self.stage = observed.get("stage")
         self.attempts = observed.get("attempts")
         self.calls = observed.get("calls")
         self.downloads = observed.get("downloads")
+        self.source_failure_reason = observed.get("source_failure_reason")
 
 
 def _safe_preparation_failure(exc: BaseException, stage: str) -> str:
@@ -165,11 +168,11 @@ def _safe_preparation_failure(exc: BaseException, stage: str) -> str:
     marker = str(exc).split(":", 1)[0]
     if marker in {"source_preparation_deadline_exhausted", "invalid_source_preparation_timeout"}:
         return marker
-    text = str(exc)
-    if text.startswith("source reader refused: "):
-        reason = text.removeprefix("source reader refused: ")
-        if reason in {"reader_unavailable", "source_availability_unknown", "document_source_mismatch", "source_identity_mismatch", "source_period_mismatch"}:
-            return "source reader refused: " + reason
+    reason = validated_source_failure_reason(getattr(exc, "source_failure_reason", None))
+    if reason is not None:
+        if reason in {"document_kind_mismatch", "fiscal_year_mismatch", "fiscal_period_mismatch"}:
+            return "source validation refused: " + reason.replace("_mismatch", " mismatch")
+        return "source reader refused: " + reason
     return f"source preparation failed at {stage}"
 
 
@@ -205,7 +208,7 @@ def _validate_v2_candidate(request: dict, handle: dict) -> int | None:
     if not isinstance(source_ref, dict):
         raise RuntimeError("filing-fetch SourceRef candidate is missing source_ref")
     if handle.get("document_kind") != request.get("document_kind"):
-        raise RuntimeError("filing-fetch SourceRef document_kind mismatch")
+        raise FilingSourcePreparationError("filing-fetch SourceRef document_kind mismatch", source_failure_reason="document_kind_mismatch")
     fiscal_year = handle.get("fiscal_year")
     if not valid_fiscal_year(handle.get("document_kind"), fiscal_year):
         raise RuntimeError("SourceRef v2 requires a valid resolved fiscal_year")
@@ -213,13 +216,13 @@ def _validate_v2_candidate(request: dict, handle: dict) -> int | None:
     if requested_year is not None and (type(requested_year) is not int or requested_year < 1):
         raise RuntimeError("SourceRef v2 requires a valid requested fiscal_year")
     if requested_year is not None and requested_year != fiscal_year:
-        raise RuntimeError("filing-fetch SourceRef fiscal_year mismatch")
+        raise FilingSourcePreparationError("filing-fetch SourceRef fiscal_year mismatch", source_failure_reason="fiscal_year_mismatch")
     requested_period = request.get("fiscal_period")
     if requested_period is None and request.get("document_kind") == "annual_report":
         # FY is the only annual period; do not infer a quarterly/half-year period.
         requested_period = handle.get("fiscal_period") if handle.get("fiscal_period") in (None, "FY") else "FY"
     if handle.get("fiscal_period") != requested_period:
-        raise RuntimeError("filing-fetch SourceRef fiscal_period mismatch")
+        raise FilingSourcePreparationError("filing-fetch SourceRef fiscal_period mismatch", source_failure_reason="fiscal_period_mismatch")
     return fiscal_year
 
 
@@ -430,6 +433,9 @@ def prepare_source_result(
     except (RuntimeError, ValueError, OSError) as exc:
         observed = failure_observation(filing_fetch)
         observed["stage"] = stage
+        reason = validated_source_failure_reason(getattr(exc, "source_failure_reason", None))
+        if reason is not None:
+            observed["source_failure_reason"] = reason
         raise FilingSourcePreparationError(_safe_preparation_failure(exc, stage), **observed) from exc
     return {"schema_version": "source-preparation-result/1", "source": record,
             "filing_fetch": filing_fetch, "narrative": narrative}
@@ -512,7 +518,7 @@ def main(argv: list[str] | None = None) -> int:
     except RuntimeError as exc:
         failure = {"error_code": "upstream", "error": str(exc)}
         failure.update(failure_observation({key: getattr(exc, key, None) for key in
-                       ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads")}))
+                       ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads", "source_failure_reason")}))
         sys.stderr.write(json.dumps(failure))
         sys.stderr.write("\n")
         return 3

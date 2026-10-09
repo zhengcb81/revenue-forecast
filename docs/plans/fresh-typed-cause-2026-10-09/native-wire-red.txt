@@ -1,0 +1,22 @@
+F.                                                                       [100%]
+================================== FAILURES ===================================
+_ test_optional_native_reason_uses_same_finite_projection_across_cli_boundaries[no_verified_location-no_verified_location] _
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-native-wire-red-qorjbgtd/pytest/test_optional_native_reason_us0')
+reason = 'no_verified_location', expected = 'no_verified_location'
+
+    @pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"), (SECRET, None)])
+    def test_optional_native_reason_uses_same_finite_projection_across_cli_boundaries(tmp_path, reason, expected):
+        payload = failure()
+        payload["filing"]["source_failure_reason"] = reason
+        root = fake(tmp_path, payload)
+        value = actual_cli(root, tmp_path)
+>       assert value.get("source_failure_reason") == expected
+E       AssertionError: assert None == 'no_verified_location'
+E        +  where None = <built-in method get of dict object at 0x000002A80EDA5E00>('source_failure_reason')
+E        +    where <built-in method get of dict object at 0x000002A80EDA5E00> = {'error_code': 'upstream', 'error': 'filing-fetch client exited 2: status=upstream_error: canonical_import_failed', 'u...': 'acquisition-failure/1', 'code': 'canonical_import_failed', 'retryable': False, 'provider_started': True, ...}, ...}.get
+
+tests\test_source_failure_observations.py:207: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_source_failure_observations.py::test_optional_native_reason_uses_same_finite_projection_across_cli_boundaries[no_verified_location-no_verified_location]
+1 failed, 1 passed, 44 deselected in 0.86s

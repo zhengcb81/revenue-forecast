@@ -53,6 +53,7 @@ class _ClientError(RuntimeError):
         attempts: int | None = None,
         calls: int | None = None,
         downloads: int | None = None,
+        source_failure_reason: str | None = None,
     ) -> None:
         super().__init__(message)
         self.status = status if isinstance(status, str) and status in FAILURE_STATUSES else None
@@ -60,13 +61,15 @@ class _ClientError(RuntimeError):
         self.retryable = retryable if type(retryable) is bool else None
         self.candidates = validated_failure_candidates(candidates)
         observed = failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
-                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads})
+                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
+                                       "source_failure_reason": source_failure_reason})
         self.upstream_cause = observed.get("upstream_cause")
         self.acquisition_failure = observed.get("acquisition_failure")
         self.stage = observed.get("stage")
         self.attempts = observed.get("attempts")
         self.calls = observed.get("calls")
         self.downloads = observed.get("downloads")
+        self.source_failure_reason = observed.get("source_failure_reason")
 
 
 # The location of the standalone filing-fetch canonical repo comes from an
@@ -352,6 +355,7 @@ def _emit_error(
     attempts: int | None = None,
     calls: int | None = None,
     downloads: int | None = None,
+    source_failure_reason: str | None = None,
 ) -> None:
     """Write a structured error document to stderr (success stream on stdout)."""
     payload: dict[str, Any] = {
@@ -363,7 +367,8 @@ def _emit_error(
     if safe_candidates:
         payload["candidates"] = safe_candidates
     payload.update(failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
-                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads}))
+                                       "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
+                                       "source_failure_reason": source_failure_reason}))
     sys.stderr.write(json.dumps(payload, ensure_ascii=False))
     sys.stderr.write("\n")
 
@@ -449,6 +454,7 @@ def main(argv: list[str] | None = None) -> int:
             upstream_cause=exc.upstream_cause,
             acquisition_failure=exc.acquisition_failure,
             stage=exc.stage, attempts=exc.attempts, calls=exc.calls, downloads=exc.downloads,
+            source_failure_reason=exc.source_failure_reason,
         )
         return 2
 

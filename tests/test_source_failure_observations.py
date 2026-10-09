@@ -159,3 +159,63 @@ def test_public_client_projects_candidates_as_dtos_not_arbitrary_nested_bodies(t
     assert value["error_code"] == "ambiguous" and value["upstream_cause"] == detail["upstream_cause"]
     assert value["acquisition_failure"] == detail["acquisition_failure"]
     assert value["calls"] == 2 and value["downloads"] == 0
+
+
+@pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"),
+    ("document_not_indexed", "document_not_indexed"), ("source_not_active", "source_not_active"),
+    ("source_ref_changed", "source_ref_changed"), ("catalog_unavailable", "catalog_unavailable"),
+    ("candidate_budget_exceeded", "candidate_budget_exceeded"), ("api_key_synthetic_w08_secret", None)])
+def test_native_reader_refusal_retains_finite_reason_and_prior_counts(tmp_path, monkeypatch, reason, expected):
+    import company_wiki_source_reader_v2 as reader
+    config = tmp_path / "catalog.yaml"
+    config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+    value = {"schema_version": "2.0", "status": "source_candidate", "filing": {"status": "source_candidate"}, "calls": 2, "downloads": 0}
+    monkeypatch.setattr(prep, "_run_filing_fetch", lambda *args: value)
+
+    def refused(*args, **kwargs):
+        document = {"schema_version": "2.1", "status": "unavailable", "reason": reason}
+        reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+
+    monkeypatch.setattr(prep, "_prepare_source_ref_v2", refused)
+    with pytest.raises(prep.FilingSourcePreparationError) as caught:
+        prep.prepare_source_result({}, company_wiki_catalog_config=config)
+    assert getattr(caught.value, "source_failure_reason", None) == expected
+    assert caught.value.stage == "source_reader" and caught.value.calls == 2 and caught.value.downloads == 0
+    assert "api_key_synthetic_w08_secret" not in str(caught.value)
+    assert caught.value.acquisition_failure is None
+
+
+def test_untyped_exception_body_cannot_publish_a_lookalike_known_reason(tmp_path, monkeypatch):
+    config = tmp_path / "catalog.yaml"
+    config.write_text("schema_version: '1.0'\n", encoding="utf-8")
+    value = {"schema_version": "2.0", "status": "source_candidate", "filing": {}, "calls": 2, "downloads": 0}
+    monkeypatch.setattr(prep, "_run_filing_fetch", lambda *args: value)
+    monkeypatch.setattr(prep, "_prepare_source_ref_v2", lambda *args, **kwargs: (_ for _ in ()).throw(
+        RuntimeError("source reader refused: no_verified_location: api_key=" + SECRET)))
+    with pytest.raises(prep.FilingSourcePreparationError) as caught:
+        prep.prepare_source_result({}, company_wiki_catalog_config=config)
+    assert getattr(caught.value, "source_failure_reason", None) is None
+    assert SECRET not in str(caught.value)
+
+
+@pytest.mark.parametrize("reason,expected", [("no_verified_location", "no_verified_location"), (SECRET, None)])
+def test_optional_native_reason_uses_same_finite_projection_across_cli_boundaries(tmp_path, reason, expected):
+    payload = failure()
+    payload["filing"]["source_failure_reason"] = reason
+    root = fake(tmp_path, payload)
+    value = actual_cli(root, tmp_path)
+    assert value.get("source_failure_reason") == expected
+    assert value["calls"] == 2 and value["downloads"] == 0
+    assert value["acquisition_failure"] == proof()
+    assert SECRET not in json.dumps(value)
+
+
+@pytest.mark.parametrize("field", ["schema_version", "status", "reason"])
+def test_malformed_native_refusal_keeps_safe_typed_failure(field):
+    import company_wiki_source_reader_v2 as reader
+    document = {"schema_version": "2.1", "status": "unavailable", "reason": "no_verified_location"}
+    document[field] = [SECRET]
+    with pytest.raises(reader.SourceVersionTransportError) as caught:
+        reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+    assert caught.value.source_failure_reason is None
+    assert SECRET not in str(caught.value)

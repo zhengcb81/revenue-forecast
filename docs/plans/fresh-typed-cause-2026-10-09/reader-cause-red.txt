@@ -1,0 +1,64 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+________ test_default_failure_keeps_error_semantics_for_bad_candidate _________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001CF11035220>
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-reader-cause-red-7atxfewz/pytest/test_default_failure_keeps_err0')
+
+    def test_default_failure_keeps_error_semantics_for_bad_candidate(
+        monkeypatch,
+        tmp_path,
+    ):
+        _tripwire_legacy(monkeypatch)
+        _patch_v2_read(monkeypatch)
+        bad = _v2_handle()
+        bad["fiscal_year"] = 2024
+    
+        def fake_run(command, **kwargs):  # noqa: ARG001
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                stdout=json.dumps(bad),
+                stderr="",
+            )
+    
+        monkeypatch.setattr(sp.subprocess, "run", fake_run)
+>       with pytest.raises(RuntimeError, match="fiscal_year mismatch"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'fiscal_year mismatch'
+E         Actual message: 'source preparation failed at source_reader'
+
+tests\test_p5_source_default_v2.py:347: AssertionError
+__________________ test_cli_corrupted_raw_refuses_then_heals __________________
+
+tmp_path = WindowsPath('C:/Users/郑曾波/AppData/Local/Temp/rf-fresh-dag-20261009/docs/plans/fresh-typed-cause-2026-10-09/w08-reader-cause-red-7atxfewz/pytest/test_cli_corrupted_raw_refuses0')
+
+    def test_cli_corrupted_raw_refuses_then_heals(tmp_path):
+        """Corrupting the stored raw body must refuse closed (never a bad read);
+        restoring the original bytes heals into the same identity, zero downloads."""
+        ff_root, cwp_root = _env_roots()
+        wiki, source = _build_wiki(tmp_path, ff_root, cwp_root)
+    
+        proc = _run_cli(wiki, ff_root, cwp_root, REQUEST)
+        assert proc.returncode == 0, proc.stderr[-800:]
+        content_sha = json.loads(proc.stdout)["capture"]["snapshot_sha256"]
+        original = source.read_bytes()
+        assert hashlib.sha256(original).hexdigest() == content_sha
+    
+        source.write_bytes(original + b"XX")
+        bad = _run_cli(wiki, ff_root, cwp_root, REQUEST)
+        assert bad.returncode != 0, "corrupted raw must never be accepted"
+        # the reader refuses closed; per-location hash failures aggregate into
+        # no_verified_location (failures detail never leaks byte paths)
+>       assert "source reader refused" in bad.stderr, bad.stderr[-400:]
+E       AssertionError: {"error_code": "upstream", "error": "source preparation failed at source_reader", "stage": "source_reader", "calls": 2, "downloads": 0}
+E         
+E       assert 'source reader refused' in '{"error_code": "upstream", "error": "source preparation failed at source_reader", "stage": "source_reader", "calls": 2, "downloads": 0}\n'
+E        +  where '{"error_code": "upstream", "error": "source preparation failed at source_reader", "stage": "source_reader", "calls": 2, "downloads": 0}\n' = CompletedProcess(args=['C:\\Miniconda\\python.exe', '-B', 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\rf-fresh-dag-20261009...ream", "error": "source preparation failed at source_reader", "stage": "source_reader", "calls": 2, "downloads": 0}\n').stderr
+
+tests\test_p5_source_default_cli_e2e.py:205: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_p5_source_default_v2.py::test_default_failure_keeps_error_semantics_for_bad_candidate
+FAILED tests/test_p5_source_default_cli_e2e.py::test_cli_corrupted_raw_refuses_then_heals
+2 failed in 6.24s

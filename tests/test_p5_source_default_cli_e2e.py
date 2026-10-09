@@ -203,6 +203,12 @@ def test_cli_corrupted_raw_refuses_then_heals(tmp_path):
     # the reader refuses closed; per-location hash failures aggregate into
     # no_verified_location (failures detail never leaks byte paths)
     assert "source reader refused" in bad.stderr, bad.stderr[-400:]
+    failure = json.loads(bad.stderr)
+    assert bad.returncode == 3 and not bad.stdout
+    assert failure["error_code"] == "upstream" and failure["source_failure_reason"] == "no_verified_location"
+    assert {key: failure[key] for key in ("stage", "calls", "downloads")} == {
+        "stage": "source_reader", "calls": 2, "downloads": 0}
+    assert str(source) not in bad.stderr
 
     source.write_bytes(original)
     healed = _run_cli(wiki, ff_root, cwp_root, REQUEST)

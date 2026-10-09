@@ -19,6 +19,7 @@ import sys
 from typing import Any
 
 from source_period_semantics import valid_fiscal_year
+from filing_upstream_cause import validated_source_failure_reason
 from contracts.source_clock import (
     SourceClockError, qualify_source_information, validate_availability_evidence,
     validate_source_events,
@@ -57,6 +58,10 @@ _REFUSAL_REASON = re.compile(r"[a-z][a-z0-9_]{0,80}\Z")
 
 class SourceVersionTransportError(RuntimeError):
     """An exact source version could not be opened and verified."""
+
+    def __init__(self, message: str, *, source_failure_reason: str | None = None):
+        super().__init__(message)
+        self.source_failure_reason = validated_source_failure_reason(source_failure_reason)
 
 
 def _unique_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -170,7 +175,7 @@ def _run_reader(
             shell=False, creationflags=creationflags,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        raise SourceVersionTransportError("source reader CLI unavailable") from exc
+        raise SourceVersionTransportError("source reader CLI unavailable", source_failure_reason="reader_unavailable") from exc
 
 
 def _validate_review_shape(review: dict[str, Any]) -> None:
@@ -210,7 +215,7 @@ def _validate_manifest_identity(
         if type(manifest[field]) is not type(source_ref[field]) or (
             manifest[field] != source_ref[field]
         ):
-            raise SourceVersionTransportError(f"source manifest {field} mismatch")
+            raise SourceVersionTransportError(f"source manifest {field} mismatch", source_failure_reason="source_identity_mismatch")
 
 
 def _validate_manifest_period(
@@ -220,7 +225,7 @@ def _validate_manifest_period(
     if not valid_fiscal_year(manifest["document_kind"], manifest["fiscal_year"]) or (
         type(manifest["fiscal_year"]) is not type(fiscal_year) or manifest["fiscal_year"] != fiscal_year
     ):
-        raise SourceVersionTransportError("source manifest fiscal_year mismatch")
+        raise SourceVersionTransportError("source manifest fiscal_year mismatch", source_failure_reason="fiscal_year_mismatch")
     try:
         information = qualify_source_information(
             source_sha256=manifest["content_sha256"], published_date=manifest["published_date"],
@@ -229,7 +234,7 @@ def _validate_manifest_period(
         validate_source_events(eligibility=information,
             original_retrieved_at=manifest["retrieved_at"], current_read_at=current_read_at)
     except SourceClockError as exc:
-        raise SourceVersionTransportError(str(exc)) from exc
+        raise SourceVersionTransportError(str(exc), source_failure_reason=validated_source_failure_reason(str(exc).partition(":")[0])) from exc
     period_end = manifest["period_end"]
     if period_end is not None and _date(period_end, "source manifest period_end") > information.available_by:
         label = "publication" if information.published_date is not None else "verified availability"
@@ -272,7 +277,9 @@ def _validate_open_request(
 def _valid_refusal(refusal: dict[str, Any]) -> bool:
     return (
         set(refusal) == {"schema_version", "status", "reason"}
+        and isinstance(refusal["schema_version"], str)
         and refusal["schema_version"] in {"2.1", "2.2"}
+        and isinstance(refusal["status"], str)
         and refusal["status"] in _REFUSAL_STATUSES
         and isinstance(refusal["reason"], str)
         and _REFUSAL_REASON.fullmatch(refusal["reason"]) is not None
@@ -287,7 +294,9 @@ def _raise_reader_refusal(opened: subprocess.CompletedProcess[bytes]) -> None:
     except SourceVersionTransportError:
         raise SourceVersionTransportError("source reader refused current version") from None
     if _valid_refusal(refusal):
-        raise SourceVersionTransportError(f"source reader refused: {refusal['reason']}")
+        reason = validated_source_failure_reason(refusal["reason"])
+        message = f"source reader refused: {reason}" if reason is not None else "source reader refused current version"
+        raise SourceVersionTransportError(message, source_failure_reason=reason)
     raise SourceVersionTransportError("source reader refused current version")
 
 
@@ -311,7 +320,7 @@ def _validate_receipt_identity(
         if type(receipt[field]) is not type(source_ref[field]) or (
             receipt[field] != source_ref[field]
         ):
-            raise SourceVersionTransportError(f"source receipt {field} mismatch")
+            raise SourceVersionTransportError(f"source receipt {field} mismatch", source_failure_reason="source_identity_mismatch")
 
 
 def _validate_receipt_policies(receipt: dict[str, Any]) -> None:
@@ -333,7 +342,7 @@ def _validate_success_receipt(
     try:
         validate_availability_evidence(receipt.get("availability_evidence"), source_ref["content_sha256"])
     except SourceClockError as exc:
-        raise SourceVersionTransportError(str(exc)) from exc
+        raise SourceVersionTransportError(str(exc), source_failure_reason=validated_source_failure_reason(str(exc).partition(":")[0])) from exc
     return _validate_manifest(receipt["manifest"], source_ref, as_of, fiscal_year,
         availability_evidence=receipt.get("availability_evidence"), current_read_at=receipt["read_at"])
 
@@ -342,7 +351,7 @@ def _verify_bytes(body: bytes, source_ref: dict[str, Any]) -> None:
     if len(body) != source_ref["byte_size"] or (
         hashlib.sha256(body).hexdigest() != source_ref["content_sha256"]
     ):
-        raise SourceVersionTransportError("source bytes SHA-256/size mismatch")
+        raise SourceVersionTransportError("source bytes SHA-256/size mismatch", source_failure_reason="source_bytes_mismatch")
 
 
 def open_source_version_v2(

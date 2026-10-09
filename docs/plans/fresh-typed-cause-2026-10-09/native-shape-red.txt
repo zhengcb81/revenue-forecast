@@ -1,0 +1,72 @@
+FF.                                                                      [100%]
+================================== FAILURES ===================================
+___ test_malformed_native_refusal_keeps_safe_typed_failure[schema_version] ____
+
+field = 'schema_version'
+
+    @pytest.mark.parametrize("field", ["schema_version", "status", "reason"])
+    def test_malformed_native_refusal_keeps_safe_typed_failure(field):
+        import company_wiki_source_reader_v2 as reader
+        document = {"schema_version": "2.1", "status": "unavailable", "reason": "no_verified_location"}
+        document[field] = [SECRET]
+        with pytest.raises(reader.SourceVersionTransportError) as caught:
+>           reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+
+tests\test_source_failure_observations.py:219: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\company_wiki_source_reader_v2.py:294: in _raise_reader_refusal
+    if _valid_refusal(refusal):
+       ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+refusal = {'schema_version': ['synthetic-w08-secret-no-real-key'], 'status': 'unavailable', 'reason': 'no_verified_location'}
+
+    def _valid_refusal(refusal: dict[str, Any]) -> bool:
+        return (
+            set(refusal) == {"schema_version", "status", "reason"}
+>           and refusal["schema_version"] in {"2.1", "2.2"}
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            and refusal["status"] in _REFUSAL_STATUSES
+            and isinstance(refusal["reason"], str)
+            and _REFUSAL_REASON.fullmatch(refusal["reason"]) is not None
+        )
+E       TypeError: unhashable type: 'list'
+
+scripts\company_wiki_source_reader_v2.py:280: TypeError
+_______ test_malformed_native_refusal_keeps_safe_typed_failure[status] ________
+
+field = 'status'
+
+    @pytest.mark.parametrize("field", ["schema_version", "status", "reason"])
+    def test_malformed_native_refusal_keeps_safe_typed_failure(field):
+        import company_wiki_source_reader_v2 as reader
+        document = {"schema_version": "2.1", "status": "unavailable", "reason": "no_verified_location"}
+        document[field] = [SECRET]
+        with pytest.raises(reader.SourceVersionTransportError) as caught:
+>           reader._raise_reader_refusal(subprocess.CompletedProcess([], 1, b"", (json.dumps(document) + "\n").encode()))
+
+tests\test_source_failure_observations.py:219: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\company_wiki_source_reader_v2.py:294: in _raise_reader_refusal
+    if _valid_refusal(refusal):
+       ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+refusal = {'schema_version': '2.1', 'status': ['synthetic-w08-secret-no-real-key'], 'reason': 'no_verified_location'}
+
+    def _valid_refusal(refusal: dict[str, Any]) -> bool:
+        return (
+            set(refusal) == {"schema_version", "status", "reason"}
+            and refusal["schema_version"] in {"2.1", "2.2"}
+>           and refusal["status"] in _REFUSAL_STATUSES
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            and isinstance(refusal["reason"], str)
+            and _REFUSAL_REASON.fullmatch(refusal["reason"]) is not None
+        )
+E       TypeError: unhashable type: 'list'
+
+scripts\company_wiki_source_reader_v2.py:281: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_source_failure_observations.py::test_malformed_native_refusal_keeps_safe_typed_failure[schema_version]
+FAILED tests/test_source_failure_observations.py::test_malformed_native_refusal_keeps_safe_typed_failure[status]
+2 failed, 1 passed, 46 deselected in 0.17s

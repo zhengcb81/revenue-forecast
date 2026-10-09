@@ -326,14 +326,20 @@ def test_legacy_helper_is_isolated_non_production_fixture_entry(monkeypatch):
     assert record["reuse_receipt"]["download_calls"] == 0
 
 
+@pytest.mark.parametrize("field,value,reason", [("fiscal_year", 2024, "fiscal_year_mismatch"),
+    ("document_kind", "quarterly_report", "document_kind_mismatch"),
+    ("fiscal_period", "Q1", "fiscal_period_mismatch")])
 def test_default_failure_keeps_error_semantics_for_bad_candidate(
     monkeypatch,
     tmp_path,
+    field,
+    value,
+    reason,
 ):
     _tripwire_legacy(monkeypatch)
-    _patch_v2_read(monkeypatch)
+    captured = _patch_v2_read(monkeypatch)
     bad = _v2_handle()
-    bad["fiscal_year"] = 2024
+    bad[field] = value
 
     def fake_run(command, **kwargs):  # noqa: ARG001
         return subprocess.CompletedProcess(
@@ -344,5 +350,9 @@ def test_default_failure_keeps_error_semantics_for_bad_candidate(
         )
 
     monkeypatch.setattr(sp.subprocess, "run", fake_run)
-    with pytest.raises(RuntimeError, match="fiscal_year mismatch"):
+    with pytest.raises(RuntimeError, match=reason.replace("_mismatch", " mismatch")) as caught:
         sp.prepare_source(REQUEST, company_wiki_catalog_config=_config(tmp_path))
+    assert caught.value.source_failure_reason == reason
+    assert caught.value.stage == "source_reader"
+    assert caught.value.calls is None and caught.value.downloads is None
+    assert captured == {}, "a mismatched candidate must be refused before verified opening"

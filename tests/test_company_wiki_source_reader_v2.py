@@ -92,8 +92,9 @@ def test_same_size_tampered_bytes_are_rejected(monkeypatch, tmp_path):
         )
 
     monkeypatch.setattr("subprocess.run", fake_run)
-    with pytest.raises(_reader().SourceVersionTransportError, match="SHA-256"):
+    with pytest.raises(_reader().SourceVersionTransportError, match="SHA-256") as caught:
         _open(tmp_path)
+    assert caught.value.source_failure_reason == "source_bytes_mismatch"
 
 
 @pytest.mark.parametrize(
@@ -111,11 +112,12 @@ def test_verified_bytes_still_need_as_of_and_period(
         )
 
     monkeypatch.setattr("subprocess.run", fake_run)
-    with pytest.raises(_reader().SourceVersionTransportError):
+    with pytest.raises(_reader().SourceVersionTransportError) as caught:
         _reader().open_source_version_v2(
             source_ref=_ref(), catalog_config=tmp_path / "source_catalog.yaml",
             as_of_date=as_of_date, expected_fiscal_year=expected_fiscal_year,
         )
+    assert caught.value.source_failure_reason == ("fiscal_year_mismatch" if expected_fiscal_year != 2025 else "source_publication_after_asof")
 
 
 def test_wrong_version_refusal_never_falls_back_to_a_local_path(monkeypatch, tmp_path):

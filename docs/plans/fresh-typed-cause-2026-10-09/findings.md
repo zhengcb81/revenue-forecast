@@ -17,6 +17,16 @@ _ClientError.candidates and _emit_error were a second arbitrary-body channel. Th
 
 ## Limits
 
+## Follow-up root diagnosis: finite native reasons
+
+The public _safe_preparation_failure maintained an incomplete hard-coded reader-reason subset and erased locally owned candidate validation diagnostics. Existing reader validates a CWP refusal's exact schema/status/safe reason-token first; no_verified_location is a real upstream reason for no intact location. Candidate fiscal_year mismatch is a fixed local validation message. Both should publish finite typed reasons, not arbitrary exception bodies. Negative behavior remained intact; the regression is over-generalized failure diagnostics. Repair in the shared public model/native typed exception boundary, with no weaker hash/period checks and no company-specific substring matching.
+
+The normal pre-push failures were neither bad input fixtures nor grounds to remove the negative tests. Tests depended on necessary native diagnostics. They now check structured finite reasons plus real refusal and recovery, keeping old diagnostic wording where safe. Optional source_failure_reason is a diagnostic observation, not authorization or a second identity check; known producer reasons use the published finite vocabulary, future unknowns do not echo.
+
+Adjacent native refusal schema/status arrays revealed an existing unhashable-membership TypeError. Two type checks keep malformed receipts as safe typed refusal instead of losing the stable error/count envelope. This does not accept malformed receipts or weaken any raw verification.
+
+Coverage gap: the original consumer-focused W08 tests omitted P5/native verified-reader modules, even though the new wrapper affected their diagnostics. The plan now maps those files to the affected responsibility suite. Static pre-commit remains intentionally fast; normal pre-push caught these failures before upload. No expanded human gate or full regression on every small commit is needed.
+
 The first candidate fix incorrectly imposed a six-value MIME capability whitelist in RF. Independent review caught W05 DOCX dropping, while upstream supports it. This duplicated another layer's responsibility. The repair validates only safe MIME token syntax, not support, and includes DOCX plus an otherwise valid custom token as positive controls. Arbitrary URL/list MIME values remain rejected; opening/parsing remains CWP-owned.
 
 Historical failed US usage remains unknown; new tests and ceilings cannot recover it. MAIN W11 owns outer capture. source_reader labels the existing combined reader/record helper; narrative_reader is separately observed. Unrelated config/legacy free-text channels are not comprehensively migrated. New W08 controls all execute; the existing POSIX-only skip is recorded separately.

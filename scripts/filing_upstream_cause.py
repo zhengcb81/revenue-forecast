@@ -34,6 +34,21 @@ ACQUISITION_CODES = CODES - {"catalog_locked", "catalog_busy", "db_timeout", "wo
 FAILURE_STATUSES = frozenset({"fatal", "upstream_error", "not_found", "gap", "source_blocked", "ambiguous", "identity_error",
                             "request_error", "config_error", "catalog_locked", "catalog_busy", "db_timeout", "worker_paused"})
 SAFE_REASONS = CODES | {"provider_unavailable", "metadata_only_gap_plan", "not_published", "reader_unavailable"}
+SOURCE_FAILURE_REASONS = frozenset({
+    "invalid_read_policy_pin", "catalog_unavailable", "candidate_budget_exceeded", "document_not_indexed",
+    "source_not_active", "document_source_mismatch", "source_version_not_indexed", "expected_version_mismatch",
+    "source_ref_changed", "unsupported_version", "unsupported_purpose", "no_indexed_location",
+    "root_admission_denied", "verification_invariant_broken", "no_verified_location", "reader_unavailable",
+    "source_availability_unknown", "source_identity_mismatch", "source_period_mismatch",
+    "document_kind_mismatch", "fiscal_year_mismatch", "fiscal_period_mismatch", "source_bytes_mismatch",
+    "source_candidate_invalid", "source_clock_invalid_date", "source_availability_invalid",
+    "source_availability_version_mismatch", "source_publication_after_asof", "source_availability_after_asof",
+    "source_clock_conflict",
+})
+
+
+def validated_source_failure_reason(value: Any) -> str | None:
+    return value if isinstance(value, str) and value in SOURCE_FAILURE_REASONS else None
 
 
 def _candidate_token(value: Any, *, maximum: int = 256) -> bool:
@@ -158,6 +173,9 @@ def failure_observation(payload: Any) -> dict[str, Any]:
         result["upstream_cause"] = cause
     if receipt is not None:
         result["acquisition_failure"] = receipt
+    reason = validated_source_failure_reason(detail.get("source_failure_reason"))
+    if reason is not None:
+        result["source_failure_reason"] = reason
     stage = detail.get("stage")
     if isinstance(stage, str) and stage in STAGES:
         result["stage"] = stage
