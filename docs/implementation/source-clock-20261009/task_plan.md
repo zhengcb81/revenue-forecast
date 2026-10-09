@@ -1,6 +1,6 @@
 # RF source clock implementation
 
-Status: in_progress; base e688b0a2; branch codex/source-clock-20261009.
+Status: complete; base e688b0a2; branch codex/source-clock-20261009.
 
 ## Scope
 
@@ -14,11 +14,11 @@ Allowed: owned RF scripts/contracts/source_clock.py, card-listed RF boundaries/d
 2. Actual 18-case responsibility RED: complete (16 FAIL /2 PASS).
 3. Shared implementation and focused GREEN: complete (20 clock + 6 deadline responsibility cases).
 4. Concentrated regression/targeted repair/static checks: complete; required offline CI gate GREEN (126 PASS /18.63s).
-5. Scoped normal commit and INTERFACE/HANDOFF/handoff.json: pending.
+5. Scoped normal implementation commit a001995a; INTERFACE/HANDOFF/handoff.json and final normal docs commit: complete.
 
 ## Next Step
 
-Finish required offline gate, normal scoped implementation commit, and precise INTERFACE/HANDOFF with actual proof limits.
+MAIN integrates the implementation and final documentation commit, then owns actual fixed71/fresh workflow acceptance. This local package is complete; no further provider/model/full-suite work here.
 
 ## Errors
 
