@@ -34,3 +34,47 @@ The first local validation fixture failed its too-long excerpt and Windows TEMP 
 ## Commit / hooks / scope
 
 Normal git commits, no `--no-verify`, merge, push or installation sync. `core.hooksPath=.githooks` is configured but the isolated checkout has no hook files; commit hooks therefore did not execute. The required gate was executed explicitly and passed. No CWP/FF/Dayu code, production/config/raw/registry or MAIN PWF write. Allowed RF code boundaries, necessary release docs, responsibility tests and this standalone package only; exact implementation file list is in `handoff.json`.
+
+## Installation changed runtime closure / exact acceptance commands
+
+MAIN owns installation synchronization after integration. The changed distributed closure is the following 12 files (new source_clock.py must be included); CHANGELOG/tests/tools/docs are repository evidence, not distributed runtime:
+
+- `SKILL.md`
+- `scripts/company_wiki_source.py`
+- `scripts/company_wiki_source_reader_v2.py`
+- `scripts/company_wiki_source_v2.py`
+- `scripts/contracts/constants.py`
+- `scripts/contracts/document.py`
+- `scripts/contracts/evidence.py`
+- `scripts/contracts/source_clock.py`
+- `scripts/research/input_evidence.py`
+- `scripts/schema_compatibility.py`
+- `scripts/source_narrative_context.py`
+- `scripts/source_preparation.py`
+
+Commands run from the RF worktree root, already evidenced above; this handoff does not request another full126/OCR/provider run. Set the three explicit dependency-root environment variables before the gate.
+
+### required_gate
+
+```powershell
+$env:CWP_V2_CODE_ROOT='C:/Users/郑曾波/Projects/company-wiki'; $env:FF_V2_CODE_ROOT='C:/Users/郑曾波/Projects/filing-fetch'; $env:CWP_NARRATIVE_CODE_ROOT='C:/Users/郑曾波/Projects/company-wiki'; C:/Miniconda/python.exe -B tools/pre_push_gate.py
+```
+
+### clock_and_deadline_closure
+
+```powershell
+C:/Miniconda/python.exe -B -m pytest tests/test_source_preparation_deadline.py tests/test_source_clock.py tests/test_source_preparation.py tests/test_source_preparation_complete_result.py tests/test_narrative_source_preparation_transport.py tests/test_company_wiki_narrative_process.py -q --tb=short
+```
+
+### real_late_read
+
+```powershell
+C:/Miniconda/python.exe -B docs/implementation/source-clock-20261009/verify_late_read.py --cwp C:/Users/郑曾波/Projects/company-wiki --manifest C:/Users/郑曾波/Projects/company-wiki/docs/plans/cross-market-rf-e2e-2026-10-08/phase6/fresh_sources_preparation/manifest.json --output docs/implementation/source-clock-20261009/actual_late_read.json
+```
+
+### pinned_golden
+
+```powershell
+C:/Miniconda/python.exe -B docs/implementation/source-clock-20261009/verify_pinned_golden.py
+```
+

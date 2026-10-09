@@ -151,5 +151,26 @@
     "Current CWP producer supports verified DownloadReceipt prior_verified_capture only; primary_archive resolver not claimed",
     "Original HK role and no-OCR fixture partial issues unchanged",
     "No install sync performed"
-  ]
+  ],
+  "installation_changed_runtime_closure": [
+    "SKILL.md",
+    "scripts/company_wiki_source.py",
+    "scripts/company_wiki_source_reader_v2.py",
+    "scripts/company_wiki_source_v2.py",
+    "scripts/contracts/constants.py",
+    "scripts/contracts/document.py",
+    "scripts/contracts/evidence.py",
+    "scripts/contracts/source_clock.py",
+    "scripts/research/input_evidence.py",
+    "scripts/schema_compatibility.py",
+    "scripts/source_narrative_context.py",
+    "scripts/source_preparation.py"
+  ],
+  "acceptance_commands": {
+    "required_gate": "$env:CWP_V2_CODE_ROOT='C:/Users/郑曾波/Projects/company-wiki'; $env:FF_V2_CODE_ROOT='C:/Users/郑曾波/Projects/filing-fetch'; $env:CWP_NARRATIVE_CODE_ROOT='C:/Users/郑曾波/Projects/company-wiki'; C:/Miniconda/python.exe -B tools/pre_push_gate.py",
+    "clock_and_deadline_closure": "C:/Miniconda/python.exe -B -m pytest tests/test_source_preparation_deadline.py tests/test_source_clock.py tests/test_source_preparation.py tests/test_source_preparation_complete_result.py tests/test_narrative_source_preparation_transport.py tests/test_company_wiki_narrative_process.py -q --tb=short",
+    "real_late_read": "C:/Miniconda/python.exe -B docs/implementation/source-clock-20261009/verify_late_read.py --cwp C:/Users/郑曾波/Projects/company-wiki --manifest C:/Users/郑曾波/Projects/company-wiki/docs/plans/cross-market-rf-e2e-2026-10-08/phase6/fresh_sources_preparation/manifest.json --output docs/implementation/source-clock-20261009/actual_late_read.json",
+    "pinned_golden": "C:/Miniconda/python.exe -B docs/implementation/source-clock-20261009/verify_pinned_golden.py"
+  },
+  "commands_workdir": "C:/Users/郑曾波/Projects/_harness_worktrees/cmrf-20261008/rf-inputs"
 }
