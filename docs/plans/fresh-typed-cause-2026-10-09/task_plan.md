@@ -13,7 +13,7 @@ FF v1 top-level / v2 filing optionally contain existing exact acquisition_failur
 
 ## State
 
-TDD, implementation and final concentrated validation complete (122passes/1existing POSIXskip). Source commit21b91959 completed with normal hooks. Independent major review verified the nested-candidate leak repair (8 actual controls); it then identified DOCX capability duplication. MIME TDD repair is complete; final independent recheck pending. Parent approved interfaces. Historical failed-call unknowns remain unknown regardless of new GREEN results.
+This worker's implementation/TDD/concentrated validation/independent major review are complete. Final concentrated122PASS/1existing POSIXskip; independent50focusedPASS plus12public CLI MIME controls. Normal source21b91959+MIMEfixef515000 committed. MAIN owns integration/publication/targeted installed sync and M3/M4. Historical failed-call unknowns remain unknown regardless of new GREEN results.
 
 ## Major review extension
 
