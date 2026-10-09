@@ -1,0 +1,585 @@
+COMMAND: python -X utf8 -B -m pytest -q tests/test_sensitivity_dependency_dag.py tests/test_published_foundation_roundtrip.py --basetemp C:\Users\郑曾波\AppData\Local\Temp\rf-fresh-red-oadt7nry\pytest
+EXIT: 1
+SECONDS: 3.95
+FFFFFFFFFFFFFFFF                                                         [100%]
+================================== FAILURES ===================================
+_____ test_h2_ancestor_refreshes_later_year_without_changing_realized_h1 ______
+
+    def test_h2_ancestor_refreshes_later_year_without_changing_realized_h1():
+        data, pid, descendants = h2_document()
+        frozen = copy.deepcopy(data)
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_sensitivity_dependency_dag.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:78: in _build_forecast_draft
+    sensitivities = calculate_sensitivities(data, result)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\analysis\sensitivity.py:131: in calculate_sensitivities
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'sensitivity parameter is not referenced by the base scenario: h2_growth'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: sensitivity parameter is not referenced by the base scenario: h2_growth
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_______ test_signed_delta_keeps_negative_requested_and_effective_values _______
+
+    def test_signed_delta_keeps_negative_requested_and_effective_values():
+        data, pid = signed_delta_document()
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_sensitivity_dependency_dag.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:78: in _build_forecast_draft
+    sensitivities = calculate_sensitivities(data, result)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\analysis\sensitivity.py:131: in calculate_sensitivities
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'sensitivity parameter is not referenced by the base scenario: growth_change'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: sensitivity parameter is not referenced by the base scenario: growth_change
+
+scripts\contracts\evidence.py:98: ForecastInputError
+______ test_reversed_parameter_order_preserves_multi_level_shock_results ______
+
+    def test_reversed_parameter_order_preserves_multi_level_shock_results():
+        data, _, _ = h2_document()
+        other = copy.deepcopy(data)
+        other["parameters"].reverse()
+>       assert run_forecast(data)["sensitivities"] == run_forecast(other)["sensitivities"]
+               ^^^^^^^^^^^^^^^^^^
+
+tests\test_sensitivity_dependency_dag.py:95: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:78: in _build_forecast_draft
+    sensitivities = calculate_sensitivities(data, result)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\analysis\sensitivity.py:131: in calculate_sensitivities
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'sensitivity parameter is not referenced by the base scenario: h2_growth'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: sensitivity parameter is not referenced by the base scenario: h2_growth
+
+scripts\contracts\evidence.py:98: ForecastInputError
+____ test_direct_consumed_shared_assumption_also_refreshes_derived_fanout _____
+
+    def test_direct_consumed_shared_assumption_also_refreshes_derived_fanout():
+        data = forecast_document()
+        params = index(data)
+        root = data["segments"][1]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][1]
+        leaf = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][1]
+        params[leaf].update(kind="derived_fact", formula="x0*2", input_parameter_ids=[root])
+        data["sensitivity_tests"] = [{"name": "Shared", "parameter_id": root, "shock_type": "percent", "shock_value": 0.01}]
+        finalize_contract(data)
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_sensitivity_dependency_dag.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:78: in _build_forecast_draft
+    sensitivities = calculate_sensitivities(data, result)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\analysis\sensitivity.py:171: in calculate_sensitivities
+    shocked_result = _run_forecast_core(shocked)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\forecast\segments.py:623: in _run_forecast_core
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1039: in validate_document
+    parameter_index = validate_parameters(data, source_index)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:524: in validate_parameters
+    resolve_value(parameter_id, set())
+scripts\contracts\document.py:514: in resolve_value
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False, message = 'derived_fact value mismatch for 0_base_2027'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: derived_fact value mismatch for 0_base_2027
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_____ test_ancestor_ratio_needs_explicit_domain_instead_of_guessing_share _____
+
+    def test_ancestor_ratio_needs_explicit_domain_instead_of_guessing_share():
+        data, pid, _ = h2_document()
+        del index(data)[pid]["sensitivity_domain"]
+>       with pytest.raises(ForecastInputError, match="explicit sensitivity_domain"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'explicit sensitivity_domain'
+E         Actual message: 'sensitivity parameter is not referenced by the base scenario: h2_growth'
+
+tests\test_sensitivity_dependency_dag.py:115: AssertionError
+__________ test_parameter_domain_is_validated_before_shocks[domain0] __________
+
+domain = {'lower': 1, 'upper': 0, 'basis': 'bad'}
+
+    @pytest.mark.parametrize("domain", [{"lower": 1, "upper": 0, "basis": "bad"},
+                                        {"lower": False, "upper": 1, "basis": "bad"},
+                                        {"lower": 0, "upper": 0.1, "basis": "excludes original"}])
+    def test_parameter_domain_is_validated_before_shocks(domain):
+        data, pid, _ = h2_document()
+        index(data)[pid]["sensitivity_domain"] = domain
+>       with pytest.raises(ForecastInputError, match="sensitivity_domain"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ForecastInputError
+
+tests\test_sensitivity_dependency_dag.py:125: Failed
+__________ test_parameter_domain_is_validated_before_shocks[domain1] __________
+
+domain = {'lower': False, 'upper': 1, 'basis': 'bad'}
+
+    @pytest.mark.parametrize("domain", [{"lower": 1, "upper": 0, "basis": "bad"},
+                                        {"lower": False, "upper": 1, "basis": "bad"},
+                                        {"lower": 0, "upper": 0.1, "basis": "excludes original"}])
+    def test_parameter_domain_is_validated_before_shocks(domain):
+        data, pid, _ = h2_document()
+        index(data)[pid]["sensitivity_domain"] = domain
+>       with pytest.raises(ForecastInputError, match="sensitivity_domain"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ForecastInputError
+
+tests\test_sensitivity_dependency_dag.py:125: Failed
+__________ test_parameter_domain_is_validated_before_shocks[domain2] __________
+
+domain = {'lower': 0, 'upper': 0.1, 'basis': 'excludes original'}
+
+    @pytest.mark.parametrize("domain", [{"lower": 1, "upper": 0, "basis": "bad"},
+                                        {"lower": False, "upper": 1, "basis": "bad"},
+                                        {"lower": 0, "upper": 0.1, "basis": "excludes original"}])
+    def test_parameter_domain_is_validated_before_shocks(domain):
+        data, pid, _ = h2_document()
+        index(data)[pid]["sensitivity_domain"] = domain
+>       with pytest.raises(ForecastInputError, match="sensitivity_domain"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ForecastInputError
+
+tests\test_sensitivity_dependency_dag.py:125: Failed
+____________ test_fact_unused_node_duplicate_and_cycle_still_fail _____________
+
+    def test_fact_unused_node_duplicate_and_cycle_still_fail():
+        data, pid, descendants = h2_document()
+        for target in ("realized_h1", data["segments"][0]["scenarios"]["low"]["driver_parameter_ids"]["revenue"][0]):
+            changed = copy.deepcopy(data)
+            changed["sensitivity_tests"][0]["parameter_id"] = target
+            with pytest.raises(ForecastInputError):
+                run_forecast(changed)
+        repeated = copy.deepcopy(data)
+        repeated["sensitivity_tests"].append({**repeated["sensitivity_tests"][0], "name": "Again"})
+>       with pytest.raises(ForecastInputError, match="duplicate sensitivity parameter_id"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'duplicate sensitivity parameter_id'
+E         Actual message: 'sensitivity parameter is not referenced by the base scenario: h2_growth'
+
+tests\test_sensitivity_dependency_dag.py:138: AssertionError
+__________ test_infeasible_descendant_driver_bounds_are_not_relaxed ___________
+
+    def test_infeasible_descendant_driver_bounds_are_not_relaxed():
+        data, pid = signed_delta_document()
+        data["sensitivity_tests"][0].update(shock_type="discrete", down_value=-2, up_value=-0.1)
+>       with pytest.raises(ForecastInputError, match="bounds"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'bounds'
+E         Actual message: 'sensitivity parameter is not referenced by the base scenario: growth_change'
+
+tests\test_sensitivity_dependency_dag.py:149: AssertionError
+____ test_foundation_inventory_roundtrips_actual_base_total_and_stock_ids _____
+
+    def test_foundation_inventory_roundtrips_actual_base_total_and_stock_ids():
+        data = model_document("delivery_pipeline")
+        pids = [data["reported_total_revenue_parameter_id"], data["segments"][0]["base_revenue_parameter_id"], "base_orders"]
+        inventory(data, pids)
+        expected = collect_parameter_roles(data, validate_document(data)["parameter_index"])
+        assert set(pids) <= expected["foundation"]
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_published_foundation_roundtrip.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:451: in run_forecast
+    context = validate_published_forecast(result, data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_report.py:1310: in validate_published_forecast
+    _validate_forecast_output(result, data)
+scripts\revenue_report.py:1279: in _validate_forecast_output
+    expected_confidence = calculate_confidence(
+scripts\analysis\confidence.py:304: in calculate_confidence
+    output["research_adequacy"] = analyze_operating_research(data, validated)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\evidence_roles.py:182: in analyze_operating_research
+    inventory = _inventory(research["inventory"], parameters, claims, driver_ids, roles["used"])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\evidence_roles.py:78: in _inventory
+    require(row["claim_ids"] and row["parameter_ids"] and set(row["parameter_ids"]) <= used, "modeled inventory requires checked claims and used parameters")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'modeled inventory requires checked claims and used parameters'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: modeled inventory requires checked claims and used parameters
+
+scripts\contracts\evidence.py:98: ForecastInputError
+____ test_active_constraint_inventory_is_consumed_during_strong_roundtrip _____
+
+    def test_active_constraint_inventory_is_consumed_during_strong_roundtrip():
+        data = forecast_document()
+        caps = _series(data, "capacity", {"low": [140,145], "base": [150,170], "high": [160,190]}, "revenue")
+        data["revenue_constraints"] = [{"constraint_id": "shared", "type": "sum_cap", "segments": ["Segment A", "Segment B"],
+                                      "allocation": "proportional", "scenario_parameter_ids": caps, "rationale": "One shared external resource"}]
+        inventory(data, [caps["base"][1]])
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_published_foundation_roundtrip.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:451: in run_forecast
+    context = validate_published_forecast(result, data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_report.py:1310: in validate_published_forecast
+    _validate_forecast_output(result, data)
+scripts\revenue_report.py:1279: in _validate_forecast_output
+    expected_confidence = calculate_confidence(
+scripts\analysis\confidence.py:304: in calculate_confidence
+    output["research_adequacy"] = analyze_operating_research(data, validated)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\evidence_roles.py:182: in analyze_operating_research
+    inventory = _inventory(research["inventory"], parameters, claims, driver_ids, roles["used"])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\research\evidence_roles.py:78: in _inventory
+    require(row["claim_ids"] and row["parameter_ids"] and set(row["parameter_ids"]) <= used, "modeled inventory requires checked claims and used parameters")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'modeled inventory requires checked claims and used parameters'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: modeled inventory requires checked claims and used parameters
+
+scripts\contracts\evidence.py:98: ForecastInputError
+___ test_lawful_signed_opening_adjustment_publishes_and_stays_auditable[-5] ___
+
+adjustment = -5
+
+    @pytest.mark.parametrize("adjustment", [-5, 5])
+    def test_lawful_signed_opening_adjustment_publishes_and_stays_auditable(adjustment):
+        data = opening_document(adjustment)
+        inventory(data, ["opening_elimination"])
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_published_foundation_roundtrip.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:451: in run_forecast
+    context = validate_published_forecast(result, data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_report.py:1310: in validate_published_forecast
+    _validate_forecast_output(result, data)
+scripts\revenue_report.py:574: in _validate_forecast_output
+    _validate_segment_opening_bases(result, parameter_index, years)
+scripts\revenue_report.py:238: in _validate_segment_opening_bases
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'segment opening base does not reconcile: segments=150.0, reported=145.0'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: segment opening base does not reconcile: segments=150.0, reported=145.0
+
+scripts\contracts\evidence.py:98: ForecastInputError
+___ test_lawful_signed_opening_adjustment_publishes_and_stays_auditable[5] ____
+
+adjustment = 5
+
+    @pytest.mark.parametrize("adjustment", [-5, 5])
+    def test_lawful_signed_opening_adjustment_publishes_and_stays_auditable(adjustment):
+        data = opening_document(adjustment)
+        inventory(data, ["opening_elimination"])
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_published_foundation_roundtrip.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:451: in run_forecast
+    context = validate_published_forecast(result, data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_report.py:1310: in validate_published_forecast
+    _validate_forecast_output(result, data)
+scripts\revenue_report.py:574: in _validate_forecast_output
+    _validate_segment_opening_bases(result, parameter_index, years)
+scripts\revenue_report.py:238: in _validate_segment_opening_bases
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'segment opening base does not reconcile: segments=150.0, reported=155.0'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: segment opening base does not reconcile: segments=150.0, reported=155.0
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_______ test_custom_input_tolerance_preserves_explicit_opening_residual _______
+
+    def test_custom_input_tolerance_preserves_explicit_opening_residual():
+        data = opening_document(0, 0.01)
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_published_foundation_roundtrip.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:64: in _build_forecast_draft
+    result = _run_forecast_core(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\forecast\segments.py:635: in _run_forecast_core
+    company = calculate_company_forecast(data, validated, effective_segments)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\forecast\segments.py:592: in calculate_company_forecast
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'incremental revenue attribution does not reconcile in low'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: incremental revenue attribution does not reconcile in low
+
+scripts\contracts\evidence.py:98: ForecastInputError
+_____________ test_forged_opening_base_or_adjustment_is_rejected ______________
+
+    def test_forged_opening_base_or_adjustment_is_rejected():
+        data = opening_document(-5)
+>       result = run_forecast(data)
+                 ^^^^^^^^^^^^^^^^^^
+
+tests\test_published_foundation_roundtrip.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\revenue_core.py:451: in run_forecast
+    context = validate_published_forecast(result, data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_report.py:1310: in validate_published_forecast
+    _validate_forecast_output(result, data)
+scripts\revenue_report.py:574: in _validate_forecast_output
+    _validate_segment_opening_bases(result, parameter_index, years)
+scripts\revenue_report.py:238: in _validate_segment_opening_bases
+    require(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+condition = False
+message = 'segment opening base does not reconcile: segments=150.0, reported=145.0'
+
+    def require(condition: Any, message: str) -> None:
+        # Truthiness gate (bool in intent); data-validation callers pass
+        # isinstance()/fullmatch() results, so the parameter is Any.
+        """Raise ``ForecastInputError`` when *condition* is falsy.
+    
+        When a :class:`Collector` is active for the current context (set via
+        :func:`collect_mode`), a falsy *condition* appends to that collector instead
+        of raising, enabling a single collect-all pass. With no collector active the
+        behavior is unchanged (raise on the first violation).
+        """
+        if condition:
+            return
+        collector = _COLLECTOR.get()
+        if collector is not None:
+            collector.add(message)
+        else:
+>           raise ForecastInputError(message)
+E           contracts.evidence.ForecastInputError: segment opening base does not reconcile: segments=150.0, reported=145.0
+
+scripts\contracts\evidence.py:98: ForecastInputError
+=========================== short test summary info ===========================
+FAILED tests/test_sensitivity_dependency_dag.py::test_h2_ancestor_refreshes_later_year_without_changing_realized_h1
+FAILED tests/test_sensitivity_dependency_dag.py::test_signed_delta_keeps_negative_requested_and_effective_values
+FAILED tests/test_sensitivity_dependency_dag.py::test_reversed_parameter_order_preserves_multi_level_shock_results
+FAILED tests/test_sensitivity_dependency_dag.py::test_direct_consumed_shared_assumption_also_refreshes_derived_fanout
+FAILED tests/test_sensitivity_dependency_dag.py::test_ancestor_ratio_needs_explicit_domain_instead_of_guessing_share
+FAILED tests/test_sensitivity_dependency_dag.py::test_parameter_domain_is_validated_before_shocks[domain0]
+FAILED tests/test_sensitivity_dependency_dag.py::test_parameter_domain_is_validated_before_shocks[domain1]
+FAILED tests/test_sensitivity_dependency_dag.py::test_parameter_domain_is_validated_before_shocks[domain2]
+FAILED tests/test_sensitivity_dependency_dag.py::test_fact_unused_node_duplicate_and_cycle_still_fail
+FAILED tests/test_sensitivity_dependency_dag.py::test_infeasible_descendant_driver_bounds_are_not_relaxed
+FAILED tests/test_published_foundation_roundtrip.py::test_foundation_inventory_roundtrips_actual_base_total_and_stock_ids
+FAILED tests/test_published_foundation_roundtrip.py::test_active_constraint_inventory_is_consumed_during_strong_roundtrip
+FAILED tests/test_published_foundation_roundtrip.py::test_lawful_signed_opening_adjustment_publishes_and_stays_auditable[-5]
+FAILED tests/test_published_foundation_roundtrip.py::test_lawful_signed_opening_adjustment_publishes_and_stays_auditable[5]
+FAILED tests/test_published_foundation_roundtrip.py::test_custom_input_tolerance_preserves_explicit_opening_residual
+FAILED tests/test_published_foundation_roundtrip.py::test_forged_opening_base_or_adjustment_is_rejected
+16 failed in 1.54s

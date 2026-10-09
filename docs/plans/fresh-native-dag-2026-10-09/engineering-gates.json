@@ -1,0 +1,47 @@
+{
+  "gates": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "check",
+        "scripts/analysis/sensitivity.py",
+        "scripts/forecast/calc.py",
+        "scripts/contracts/document.py",
+        "scripts/forecast/segments.py",
+        "scripts/revenue_report.py",
+        "tests/test_sensitivity_dependency_dag.py",
+        "tests/test_published_foundation_roundtrip.py"
+      ],
+      "exit": 0,
+      "output": "All checks passed!\n"
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "mypy",
+        "scripts/contracts/",
+        "scripts/schema_compatibility.py",
+        "scripts/filing_fetch_client.py",
+        "scripts/trust_anchor.py"
+      ],
+      "exit": 0,
+      "output": "Success: no issues found in 8 source files\n"
+    },
+    {
+      "command": [
+        "python",
+        "tools/host_assumption_guard.py",
+        "--roots",
+        "tests",
+        "tools",
+        "scripts",
+        "e2e"
+      ],
+      "exit": 0,
+      "output": "scanned roots=['tests', 'tools', 'scripts', 'e2e']; violations=28; new(not baselined/registered)=0; baseline=16; registered_hashes=18\n"
+    }
+  ]
+}
