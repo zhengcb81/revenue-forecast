@@ -168,7 +168,9 @@ def _validate_manifest_identity(
 
 
 def _validate_manifest_metadata(manifest: dict[str, Any]) -> None:
-    _required_text(manifest.get("title"), "source manifest title")
+    title = manifest.get("title")
+    if title is not None and not isinstance(title, str):
+        raise CompanyWikiSourceError("source manifest title must be text or null")
     _required_text(manifest.get("document_kind"), "source manifest document_kind")
     if not valid_fiscal_year(manifest["document_kind"], manifest.get("fiscal_year")):
         raise CompanyWikiSourceError("source manifest fiscal_year is invalid")
@@ -283,6 +285,14 @@ def _diagnostic_status(
     return status if status is not None else "not_reviewed"
 
 
+def _display_title(manifest: dict[str, Any]) -> str:
+    """Supply an RF display label without inventing an upstream title fact."""
+    title = manifest.get("title")
+    if isinstance(title, str) and title.strip():
+        return title.strip()
+    return f"{manifest['document_kind']} [{manifest['source_id']}]"
+
+
 def build_revenue_source_record_from_verified_read(
     *,
     source_ref: dict[str, Any],
@@ -338,7 +348,7 @@ def build_revenue_source_record_from_verified_read(
     record = {
         "source_id": ref["source_id"],
         "source_type": source_type,
-        "title": _required_text(manifest.get("title"), "source manifest title"),
+        "title": _display_title(manifest),
         "publisher": publisher,
         "url": manifest["source_url"],
         "published_date": information.published_date.isoformat() if information.published_date else None,

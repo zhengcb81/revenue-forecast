@@ -20,7 +20,7 @@ Every source requires:
 
 - `source_id`;
 - accepted `source_type`;
-- title and publisher;
+- a display title and publisher; verified company-wiki v2 originals may have no declared title. The RF adapter uses a document-kind/source-ID display label in that case, while keeping the original unknown title in `company_wiki_trace.source_manifest`; this label is not a claimed document title and adds no source facts or acquisition requirement.
 - original public HTTP(S) URL to the underlying page or filing; preserve the producer's actual URL rather than inventing an HTTPS alias or repeating a verified local download; RF treats this field as provenance and acquisition remains the configured provider's responsibility;
 - `published_date` and optional `accessed_date`;
 - page, table, note, paragraph, or section locator.

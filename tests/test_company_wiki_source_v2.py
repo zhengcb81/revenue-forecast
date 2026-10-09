@@ -188,12 +188,43 @@ def test_changed_current_policy_is_audited_without_old_pin() -> None:
     assert record["company_wiki_trace"]["read_receipt"]["policy_sha256"] == "0" * 64
 
 
-def test_missing_explicit_title_stays_missing_after_verified_read() -> None:
+@pytest.mark.parametrize("title", [None, "", " \t\n"])
+@pytest.mark.parametrize("minimal", [False, True])
+def test_missing_display_title_preserves_unknown_and_verified_source(title, minimal) -> None:
     ref, receipt, manifest = _inputs()
-    manifest["title"] = None
+    manifest["title"] = title
+    before = deepcopy(manifest)
     candidate = _candidate(ref, manifest)
+    if minimal:
+        candidate = {"status": "source_candidate", "source_ref": ref,
+                     "byte_verification": "pending_verified_open", "document_kind": "annual_report",
+                     "fiscal_year": 2025, "fiscal_period": None,
+                     "resolution_outcome": "reused_existing", "download_events": 0}
+    record = _build(ref, receipt, manifest, candidate=candidate)
+    assert record["title"] == f"annual_report [{SOURCE}]"
+    assert record["company_wiki_trace"]["source_manifest"] == before
+    assert manifest == before
+    assert record["company_wiki_trace"]["source_ref"] == ref
+    assert record["capture"]["snapshot_sha256"] == SHA
+    assert record["capture"]["prompt_injection_status"] == "not_reviewed"
+    validate_sources({"sources": [record]}, date.fromisoformat("2026-09-27"), require_capture=True)
+
+
+@pytest.mark.parametrize("title", [False, 0, [], {}])
+def test_nontext_display_title_is_malformed_metadata_not_unknown(title) -> None:
+    ref, receipt, manifest = _inputs()
+    manifest["title"] = title
     with pytest.raises(CompanyWikiSourceError, match="title"):
-        _build(ref, receipt, manifest, candidate=candidate)
+        _build(ref, receipt, manifest)
+
+
+def test_display_whitespace_normalization_keeps_original_title_in_trace() -> None:
+    ref, receipt, manifest = _inputs()
+    manifest["title"] = "  Original report title — 公司 \t"
+    record = _build(ref, receipt, manifest)
+    assert record["title"] == manifest["title"].strip()
+    assert record["company_wiki_trace"]["source_manifest"]["title"] == manifest["title"]
+    validate_sources({"sources": [record]}, date.fromisoformat("2026-09-27"), require_capture=True)
 
 
 def test_unknown_retrieval_preserved_and_actual_read_captured():

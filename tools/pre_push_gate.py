@@ -76,6 +76,7 @@ SMOKE_TESTS = (
     "tests/test_p5_source_default_v2.py",
     "tests/test_p5_source_default_cli_e2e.py",
     "tests/test_company_wiki_source_ref_v2.py",
+    "tests/test_company_wiki_source_v2.py",
     "tests/test_source_preparation.py",
     "tests/test_data_contract.py",
     "tests/test_recognition_bridge.py",

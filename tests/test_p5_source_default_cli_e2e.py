@@ -51,7 +51,7 @@ def _env_roots() -> tuple[Path, Path]:
     return ff_root, cwp_root
 
 
-def _build_wiki(tmp: Path, ff_root: Path, cwp_root: Path):
+def _build_wiki(tmp: Path, ff_root: Path, cwp_root: Path, *, missing_title: bool = False):
     """Proven three-repo fixture recipe (see test_source_ref_v2_three_repo_e2e)."""
     # Load FF's isolated_wiki under a standalone module name: the RF repo
     # ships its own tests/e2e_support package, and touching the shared
@@ -91,6 +91,8 @@ def _build_wiki(tmp: Path, ff_root: Path, cwp_root: Path):
             "adapter_version": "1.0.0",
         }
     )
+    if missing_title:
+        sidecar.pop("source_title", None)
     sidecar_path.write_text(json.dumps(sidecar, ensure_ascii=False), encoding="utf-8")
     wiki.scan()
     return wiki, source
@@ -216,3 +218,22 @@ def test_cli_corrupted_raw_refuses_then_heals(tmp_path):
     healed_record = json.loads(healed.stdout)
     assert healed_record["capture"]["snapshot_sha256"] == content_sha
     assert healed_record["reuse_receipt"]["download_calls"] == 0
+
+
+def test_cli_verified_missing_title_is_display_only_metadata(tmp_path):
+    """A legacy catalog may lack a title even when the raw is qualified."""
+    ff_root, cwp_root = _env_roots()
+    wiki, source = _build_wiki(tmp_path, ff_root, cwp_root, missing_title=True)
+    original = source.read_bytes()
+    before_sha = hashlib.sha256(original).hexdigest()
+    # The sidecar lacks a declared source title, as in real older imports.
+    proc = _run_cli(wiki, ff_root, cwp_root, REQUEST)
+    assert proc.returncode == 0, proc.stderr[-1000:]
+    result = json.loads(proc.stdout)
+    manifest = result["company_wiki_trace"]["source_manifest"]
+    assert manifest["title"] is None
+    assert result["title"] == f"{manifest['document_kind']} [{result['source_id']}]"
+    assert result["reuse_receipt"]["download_calls"] == 0
+    assert result["capture"]["snapshot_sha256"] == before_sha
+    assert source.read_bytes() == original
+    assert "canonical_path" not in json.dumps(result)
