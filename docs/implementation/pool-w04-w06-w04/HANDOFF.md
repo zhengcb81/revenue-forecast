@@ -20,3 +20,7 @@ The recipe produces linked-input.json and consumption.json; MAIN next runs nativ
 No supplier/model/network call, installation, push, upstream/production write, or production original deletion occurred. Every rW04-* TEMP root was absent initially and restored in finally. Recorded FF calls=3/downloads=0 and independent transcript entitlement remain unchanged. Exact changed-file SHA and installation closure are in handoff.json.
 
 Remaining: MAIN W03/M2 must provide a real canonical summary and run actual consume. Current producer golden covers TXT/PDF transport; HTML and unknown-language extensions require the real W03 exported contract, not consumer invention. W05/W06 proceed on this functional commit.
+
+## HTML follow-up
+
+Functional commit `a7c2c73758e7b7bbb6454c2955390f179f2d5f28` consumes the exact W03 exported HTML engineering golden through the existing route. RED: missing lineage 1 failed / 14 passed; GREEN: 146 passed, 5.56s, exit 0. Producer golden is synthetic loopback, not a paid/current company original read. Runtime closure also includes `scripts/company_wiki_narrative_contracts.py`. The earlier HTML-awaits-W03 limitation is resolved. Configured `.githooks` is absent; normal commits ran no hook; MAIN owns canonical gate.

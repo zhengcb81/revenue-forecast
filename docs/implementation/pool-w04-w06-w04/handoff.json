@@ -39,20 +39,21 @@
   "green": {
     "command": "python -X utf8 -B -m pytest tests/test_source_preparation_complete_result.py tests/test_filing_fetch_client.py tests/test_source_preparation.py tests/test_source_consumption.py tests/test_company_wiki_narrative_reader.py tests/test_source_failure_cause.py -q -p no:cacheprovider --basetemp <owned>/p",
     "exit": 0,
-    "passed": 145,
-    "seconds": 7.23
+    "passed": 146,
+    "seconds": 5.56
   },
   "checks": {
     "ruff_no_cache": "pass",
     "mypy_public_contracts": "pass; 7 source files",
     "native_cli_help": "source_preparation.py and run_narrative_consumption_e2e.py exit 0",
-    "commit": "normal git commit; no hook suppression"
+    "commit": "normal git commit; configured .githooks absent, no hook executed; no suppression or replacement"
   },
   "source_evidence": {
     "recorded_ff_success": "roles/executor/commands/31871b1bc18442fb8af7b9c1c3041fc6/stdout.txt",
     "fixture_sha256": "97ae5e767dae25d587740cc5227229024f53c6b12d86d3dd476be9b37d88cdd5",
     "raw_open": "local producer golden same-call manifest and exact BODY SHA; two synthetic fiscal calendars; no live original reopened",
-    "narrative": "validated published golden bundle -> selected span -> new claim -> used Base revenue parameter -> native draft formula/output"
+    "narrative": "validated published golden bundle -> selected span -> new claim -> used Base revenue parameter -> native draft formula/output",
+    "html": "Exact W03 exported synthetic loopback narrative-bundle/2.0 and narrative-read-receipt/1; text/html same route; not a real supplier research run"
   },
   "budget": {
     "supplier_calls": 0,
@@ -71,13 +72,16 @@
     "runtime_files": [
       "scripts/filing_fetch_client.py",
       "scripts/source_preparation.py",
-      "scripts/source_narrative_context.py"
+      "scripts/source_narrative_context.py",
+      "scripts/company_wiki_narrative_contracts.py"
     ],
     "owner": "MAIN; preserve config/output; new engineering tools not installed"
   },
   "limitations": [
     "Real current-config finite summary and M2 remain MAIN-owned.",
-    "HTML/unknown-language producer compatibility awaits W03 real exported golden; no guessed lineage extension.",
     "Narrative claim link currently explicit qualitative parameter rationale; no economic magnitude inferred."
+  ],
+  "followup_functional_commits": [
+    "a7c2c73758e7b7bbb6454c2955390f179f2d5f28"
   ]
 }

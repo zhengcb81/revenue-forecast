@@ -1,0 +1,99 @@
+{
+  "schema_version": "rf-work-package-handoff/1",
+  "package": "W05",
+  "base": "a7c2c73758e7b7bbb6454c2955390f179f2d5f28",
+  "functional_commit": "5bcee2f5e2eb4617c24ab19b7a528335823f8d89",
+  "changed_paths": [
+    {
+      "path": "references/target-measurement-comparison.md",
+      "sha256": "4cf037a8166887cdf86967a357273b587f129b4b9c0f46ead9496bb33e8bf36d"
+    },
+    {
+      "path": "scripts/contracts/constants.py",
+      "sha256": "362eb284dbe90345402c2652e123b9be0021aaab9c10a2d807f53b5ee1dea0af"
+    },
+    {
+      "path": "scripts/research/communication_scope.py",
+      "sha256": "165c4d51c909d7396700ff6408d033c7554207cea511dada7ccadc0534908008"
+    },
+    {
+      "path": "scripts/research/target_measurement.py",
+      "sha256": "51adaa0d49514b6984dfd3e6647b139ad56fcb45f192d21701eb65828d383c80"
+    },
+    {
+      "path": "scripts/research/targets.py",
+      "sha256": "0d5cd1388423d5e11cc7b75577884c5483f76cad287b0974d14c2f6fa0e5fe16"
+    },
+    {
+      "path": "scripts/revenue_report.py",
+      "sha256": "d1833c76dabd1b7ee979fcc5ece851662ab6af0491f74b104b31551a8d66453a"
+    },
+    {
+      "path": "tests/test_target_measurement_comparison.py",
+      "sha256": "97e50ec91dd1775f9bdc0dd1b191e4965cb7fd479548c710daf5abe10f1c9087"
+    },
+    {
+      "path": "tools/run_target_measurement_e2e.py",
+      "sha256": "bf16fdfba5892e992afc1984fe840b6e2238eeadb8e08b2d48836fb9776f9d03"
+    }
+  ],
+  "red": {
+    "command": "python -X utf8 -B -m pytest tests/test_target_measurement_comparison.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 1,
+    "failed": 6,
+    "passed": 1,
+    "seconds": 0.57
+  },
+  "green": {
+    "command": "python -X utf8 -B -m pytest tests/test_target_measurement_comparison.py tests/test_management_targets.py tests/test_independent_targets.py tests/test_output_report.py tests/test_structure_targets.py tests/test_input_contract_migration.py tests/test_golden_behavior_lock.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 0,
+    "passed": 66,
+    "seconds": 3.06
+  },
+  "checks": {
+    "ruff_no_cache": "pass",
+    "mypy_public_contracts": "pass; 7 source files",
+    "commit": "normal git commit; configured .githooks absent, no hook executed; no suppression or replacement",
+    "legacy_golden": "five stable full hashes unchanged"
+  },
+  "native_recipe": {
+    "command": "python -X utf8 -B tools/run_target_measurement_e2e.py --input <typed-input.json> --output-root <absent-owned-output>",
+    "actual_fixture_run": "validate-only, compute/render, immutable snapshot subprocess exits [0,0,0]; engineering synthetic inputs",
+    "outputs": [
+      "forecast.json",
+      "forecast.md",
+      "snapshot.json",
+      "commands.json",
+      "publications.jsonl"
+    ]
+  },
+  "budget": {
+    "supplier_calls": 0,
+    "model_calls": 0,
+    "new_downloads": 0,
+    "unknown_usage_preserved": true
+  },
+  "temporary_roots": {
+    "initial": "short unique rW05-* root absent",
+    "final": "each owned root restored absent in finally; original files deleted 0"
+  },
+  "install": {
+    "performed": false,
+    "runtime_files": [
+      "scripts/contracts/constants.py",
+      "scripts/research/communication_scope.py",
+      "scripts/research/target_measurement.py",
+      "scripts/research/targets.py",
+      "scripts/revenue_report.py"
+    ],
+    "reference_files": [
+      "references/target-measurement-comparison.md"
+    ],
+    "owner": "MAIN; no config/output overwrite"
+  },
+  "limitations": [
+    "Native arithmetic and contract verification complete; economic validity and live M2 original reads remain MAIN-owned.",
+    "Legacy source-bearing checked coverage has no semantic completeness proof; optional audit_communication_coverage exposes semantically_unverified.",
+    "No consensus beat/accuracy inference, quarterly annualization, or management-attributed derived dollar promise."
+  ]
+}
