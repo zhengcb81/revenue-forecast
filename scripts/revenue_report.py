@@ -1270,6 +1270,12 @@ def _validate_forecast_output(
             expected_growth_analysis == analysis,
             "growth driver analysis recomputation mismatch",
         )
+    research_input = data if data is not None else result.get("input_document", {})
+    if research_input.get("operating_research") is not None:
+        reconstructed_data.update({key: research_input[key] for key in
+                                   ("operating_research", "growth_driver_tree") if key in research_input})
+        reconstructed_data["base_year"] = result["base_year"]
+        reconstructed_data["forecast_years"] = result["forecast_years"]
     expected_confidence = calculate_confidence(
         reconstructed_data,
         reconstructed_validated,
@@ -1679,6 +1685,22 @@ def render_markdown(result: dict[str, Any]) -> str:
     )
     for name, score in confidence["components"].items():
         lines.append(f"| {_escape(name)} | {score:.1f} |")
+    adequacy = confidence.get("research_adequacy")
+    if adequacy is not None:
+        lines.extend(["", "### 经营内容与证据充分性", "",
+                      "旧置信度总分衡量证据与流程；方向和量级按以下独立诊断披露。",
+                      f"- Documentary presence: {adequacy['documentary_presence']['checked_claim_count']} checked claims",
+                      f"- Mechanism direction: {', '.join(adequacy['mechanism_adequacy']['supported_parameter_ids']) or 'unknown'}",
+                      f"- 量级支持: {adequacy['magnitude_adequacy']['status']}", "",
+                      "| 内容 | 主题 | 处理 | 包含于 | 收入确认与缺口 |", "|---|---|---|---|---|"])
+        for item in adequacy["inventory"]:
+            lines.append(f"| {_escape(item['item_id'])} | {_escape(item['topic'])} | {_escape(item['disposition'])} | {_escape(item['included_in'])} | {_escape(item['recognition_note'])}; {_escape(item['rationale'])} |")
+        for calibration in adequacy["calibrations"]:
+            lines.extend(["", f"- 校准 {_escape(calibration['calibration_id'])}: {_escape(calibration['adequacy_status'])}; {_escape(calibration['scope'])}, {_escape(calibration['observed_period'])}; observed_range={_escape(calibration['observed_range'])}; formula={_escape(calibration['conversion_formula'])}"])
+            for scenario, row in calibration["scenario_conversion"].items():
+                lines.append(f"  - {scenario}: {_escape(row['input_parameter_ids'])} → {_escape(row['output_parameter_id'])} = {_num(row['formula_value'])} {_escape(row['output_unit'])}; native={_num(row['native_value'])}")
+            lines.append(f"  - 限制: {_escape(calibration['reasons'] + calibration['limitations'])}")
+        lines.extend(f"- {_escape(item)}" for item in adequacy["limitations"])
     lines.extend(["", "### 质量硬门", ""])
     lines.extend(
         [
