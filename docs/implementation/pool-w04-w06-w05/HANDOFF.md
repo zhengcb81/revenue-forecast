@@ -27,3 +27,7 @@ All tests used a short initially absent owned TEMP restored absent in finally. N
 Functional commit `cbbb0c2f3495ae6b038a553672c338c86d52282d`. RED 1 failed / 11 passed, 1.51s; GREEN 13 passed, 1.33s, exit 0. An annual filing at the interval start does not prove subsequent announcement content complete. A filing cannot prove a checked call category. These produce `incomplete` diagnostics, not model-access or human-approval gates. Ruff --no-cache PASS; normal commit executed no missing hook.
 
 Current integrated path hashes and both installed old/new SHA values are in the JSON. W06 also extends the shared renderer; its SHA is therefore the integrated branch value. No installation or live research run was performed.
+
+## Acceptance binding repair follow-up
+
+Integrated functional commit `36743282f39e9e6c4a958693a3f22a57380ccab5`, repair base `b62161c81d5a343e08aab4bf7d0ca15dd2e8ab8c`. Same original independent concentrated engineering recheck is pending; owner tests passed 201 + 167 subtests in 10.20s, Ruff no-cache and public-contract mypy PASS. See `docs/implementation/pool-w04-w06-binding-repair/HANDOFF.md` and its exact TDD/commands/manifest. Prior package test records above remain historical; no new W04 transport rerun was needed because its code was not changed. W05/W06 install closures now include the common native dependency module. No provider/original/main/PWF/install write; normal commit, absent worktree .githooks, no hook executed.

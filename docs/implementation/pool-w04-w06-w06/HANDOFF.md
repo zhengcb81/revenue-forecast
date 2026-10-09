@@ -35,3 +35,7 @@ The required input/research files contain source-read business values and explic
 New supplier/model/download calls: 0. Each short owned TEMP began absent and was restored absent in finally. No production originals, shared plan, sealed audit output, adjacent repository, configuration or installation was written. Read-only SHA for both installed skill roots and exact new files are in handoff.json; MAIN should install this runtime closure and W04/W05 dependencies while preserving config/output.
 
 Real original reads, independently justified current-company magnitude/risks, and four-reviewer M2/M3 acceptance remain MAIN work. No forecast accuracy, consensus beat, historical backtest or calibrated Low is claimed from these fixtures.
+
+## Acceptance binding repair follow-up
+
+Integrated functional commit `36743282f39e9e6c4a958693a3f22a57380ccab5`, repair base `b62161c81d5a343e08aab4bf7d0ca15dd2e8ab8c`. Same original independent concentrated engineering recheck is pending; owner tests passed 201 + 167 subtests in 10.20s, Ruff no-cache and public-contract mypy PASS. See `docs/implementation/pool-w04-w06-binding-repair/HANDOFF.md` and its exact TDD/commands/manifest. Prior package test records above remain historical; no new W04 transport rerun was needed because its code was not changed. W05/W06 install closures now include the common native dependency module. No provider/original/main/PWF/install write; normal commit, absent worktree .githooks, no hook executed.
