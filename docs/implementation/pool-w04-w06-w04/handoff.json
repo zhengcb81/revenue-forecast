@@ -1,0 +1,83 @@
+{
+  "schema_version": "rf-work-package-handoff/1",
+  "package": "W04",
+  "base": "8b48a99f23a19b1fd71a7e051837a55e12bb7d30",
+  "functional_commit": "33404bd6daeba4be33a8ba407bb6362fa45b162e",
+  "changed_paths": [
+    {
+      "path": "scripts/filing_fetch_client.py",
+      "sha256": "e6867ac7672c45342ed7f1ddb9ffb6fd5883618269d50364799686320ce10f57"
+    },
+    {
+      "path": "scripts/source_narrative_context.py",
+      "sha256": "bd2b297916384c12a7714e4cc9680e6f3e7df53c0ddbb7f3e2710b6febe78f6c"
+    },
+    {
+      "path": "scripts/source_preparation.py",
+      "sha256": "0483af18be65b00225550abd21a82fe3734823e7bab7c664c1693c578b82fe2d"
+    },
+    {
+      "path": "tests/fixtures/ff_complete_success_v2.json",
+      "sha256": "97ae5e767dae25d587740cc5227229024f53c6b12d86d3dd476be9b37d88cdd5"
+    },
+    {
+      "path": "tests/test_source_preparation_complete_result.py",
+      "sha256": "47d9a98a86b7dee99cff8c7de77bb7f85ff72e9dce95bfd2f5cf0e326ee7e0fc"
+    },
+    {
+      "path": "tools/run_narrative_consumption_e2e.py",
+      "sha256": "abbc2dd24dc10433800daf31e039f1bc5cf3dea993d82b8523cf33991ca4035c"
+    }
+  ],
+  "red": {
+    "command": "python -X utf8 -B -m pytest tests/test_source_preparation_complete_result.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 1,
+    "failed": 5,
+    "passed": 3,
+    "seconds": 0.42
+  },
+  "green": {
+    "command": "python -X utf8 -B -m pytest tests/test_source_preparation_complete_result.py tests/test_filing_fetch_client.py tests/test_source_preparation.py tests/test_source_consumption.py tests/test_company_wiki_narrative_reader.py tests/test_source_failure_cause.py -q -p no:cacheprovider --basetemp <owned>/p",
+    "exit": 0,
+    "passed": 145,
+    "seconds": 7.23
+  },
+  "checks": {
+    "ruff_no_cache": "pass",
+    "mypy_public_contracts": "pass; 7 source files",
+    "native_cli_help": "source_preparation.py and run_narrative_consumption_e2e.py exit 0",
+    "commit": "normal git commit; no hook suppression"
+  },
+  "source_evidence": {
+    "recorded_ff_success": "roles/executor/commands/31871b1bc18442fb8af7b9c1c3041fc6/stdout.txt",
+    "fixture_sha256": "97ae5e767dae25d587740cc5227229024f53c6b12d86d3dd476be9b37d88cdd5",
+    "raw_open": "local producer golden same-call manifest and exact BODY SHA; two synthetic fiscal calendars; no live original reopened",
+    "narrative": "validated published golden bundle -> selected span -> new claim -> used Base revenue parameter -> native draft formula/output"
+  },
+  "budget": {
+    "supplier_calls": 0,
+    "model_calls": 0,
+    "new_downloads": 0,
+    "recorded_calls": 3,
+    "recorded_downloads": 0,
+    "unknown_usage_preserved": true
+  },
+  "temporary_roots": {
+    "initial": "each short rW04-* root absent",
+    "final": "each restored absent in finally; original files deleted 0"
+  },
+  "install": {
+    "performed": false,
+    "runtime_files": [
+      "scripts/filing_fetch_client.py",
+      "scripts/source_preparation.py",
+      "scripts/source_narrative_context.py"
+    ],
+    "owner": "MAIN; preserve config/output; new engineering tools not installed"
+  },
+  "limitations": [
+    "Real current-config finite summary and M2 remain MAIN-owned.",
+    "HTML/unknown-language producer compatibility awaits W03 real exported golden; no guessed lineage extension.",
+    "Narrative claim link currently explicit qualitative parameter rationale; no economic magnitude inferred."
+  ]
+}

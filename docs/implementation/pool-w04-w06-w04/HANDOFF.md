@@ -1,0 +1,22 @@
+# W04 RF complete source result and narrative input consume
+
+Functional commit: `33404bd6daeba4be33a8ba407bb6362fa45b162e`; base `8b48a99f23a19b1fd71a7e051837a55e12bb7d30`.
+
+`resolve_filing_result` preserves the validated full FF machine result. `resolve_filing` still selects only the filing. `prepare_source_result` emits source-preparation-result/1 with source, filing_fetch, and explicit narrative read receipt. `prepare_source` and default CLI remain source-only. Latest uses the producer-resolved candidate year and the same verified manifest; exact year remains strict. Counts stay producer-owned and unknown stays null.
+
+`consume_narrative_input` reads one exact bundle once, creates claims only from caller-selected parsed spans, binds them to an existing source capture and used parameter, and records actual model/driver/output dependencies. An unreferenced summary is not_consumed. Invalid or unavailable references do not fall back to raw/audit paths or a model. The linked input is a new copy.
+
+RED: 5 failed/3 passed, exit 1, 0.42 s. Final concentrated GREEN: 145 passed, exit 0, 7.23 s. Ruff --no-cache and public-contract mypy passed. Local raw-open proof is the exact producer fixture with same-call manifest, two synthetic fiscal calendars, and negative period/as-of cases. This is local engineering evidence, not a real paid-summary or economic M2 PASS.
+
+Actual CLI:
+
+```text
+python -X utf8 -B scripts/source_preparation.py --request-file <request> --company-wiki-catalog-config <catalog> --company-wiki-config <ff_config> --filing-fetch-root <ff_root> --result-envelope
+python -X utf8 -B tools/run_narrative_consumption_e2e.py --input <new_input> --narrative-request <exact_read_request> --bindings <span_claim_parameter_bindings> --source-id <input_source_id> --catalog-config <catalog> --output-root <absent_owned_root>
+```
+
+The recipe produces linked-input.json and consumption.json; MAIN next runs native validation, compute, report, and snapshot. It has no --case flag or company special branch. Prepare can optionally read an existing same-source narrative with --narrative-request-file, and that read alone stays not_consumed until input bindings exist.
+
+No supplier/model/network call, installation, push, upstream/production write, or production original deletion occurred. Every rW04-* TEMP root was absent initially and restored in finally. Recorded FF calls=3/downloads=0 and independent transcript entitlement remain unchanged. Exact changed-file SHA and installation closure are in handoff.json.
+
+Remaining: MAIN W03/M2 must provide a real canonical summary and run actual consume. Current producer golden covers TXT/PDF transport; HTML and unknown-language extensions require the real W03 exported contract, not consumer invention. W05/W06 proceed on this functional commit.
