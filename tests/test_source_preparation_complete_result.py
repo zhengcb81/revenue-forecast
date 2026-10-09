@@ -184,3 +184,15 @@ def test_latest_still_rejects_manifest_period_or_publication_conflict(tmp_path, 
         with pytest.raises(RuntimeError):
             prep._prepare_source_ref_v2({"document_kind": "annual_report", "as_of_date": "2026-10-09"}, handle,
                                         tmp_path / "catalog.json", timeout_seconds=30)
+
+
+def test_actual_w03_html_export_uses_same_validated_context_route():
+    folder = ROOT / "tests" / "fixtures" / "cwp_narrative_transport_v1"
+    request = json.loads((folder / "html-read-request.json").read_bytes())
+    context = validate_narrative_response(request, (folder / "html-bundle.json").read_bytes(),
+                                          (folder / "html-read-receipt.json").read_bytes())
+    value = context.to_dict()
+    assert value["source_ref"]["mime_type"] == "text/html"
+    assert value["manifest"]["fiscal_year"] is None
+    assert value["evidence_spans"][0]["parser_name"] == "cwp_document_normalization"
+    assert value["evidence_spans"][0]["structured_value"]["source_locator"].startswith("cwp-html-dom/1")

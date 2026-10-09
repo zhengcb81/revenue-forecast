@@ -366,7 +366,9 @@ def _lineage(bundle: dict, source: dict, span_ids: set[str]) -> None:
     bindings = bundle["transcript_byte_bindings"]
     _require(isinstance(bindings, list), "invalid_transcript_bindings")
     if lineage is None:
-        _require(not bindings and source["mime_type"] == "application/pdf", "missing_transcript_lineage")
+        _require(not bindings and source["mime_type"] in {
+            "application/pdf", "text/html", "application/xhtml+xml",
+        }, "missing_transcript_lineage")
         return
     _lineage_source(lineage, source)
     _require({binding.get("evidence_id") for binding in bindings if isinstance(binding, dict)} == span_ids
