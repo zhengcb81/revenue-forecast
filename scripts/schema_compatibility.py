@@ -47,8 +47,8 @@ SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
     "3.6": frozenset({"3.10.0", "4.0.0"}),
     # 4.1.1 stays a documented emitter after the 4.2.0 engine bump; the
     # current engine is always a legal emitter for the schemas it can produce.
-    FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
-    OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
+    FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", "4.2.0", ENGINE_VERSION}),
+    OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", "4.2.0", ENGINE_VERSION}),
     PERIOD_EVIDENCE_SCHEMA_VERSION: frozenset({"4.2.0", ENGINE_VERSION}),
 }
 

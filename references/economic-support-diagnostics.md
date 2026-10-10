@@ -6,6 +6,7 @@ A read-only, validation-level view of which revenue-bearing parameters are actua
 
 - **Independent range endpoints** prove their real parameter, unit, observed period and declared reference scope; they may sit outside the revenue DAG. An unused upper bound remains a legal reference.
 - **Actual conversions and forecast outputs** must bind to the target business, scenario, period and the real native DAG. Unrelated scope or period cannot be promoted by a textual calibration label; a cross-scope benchmark needs an explicit reviewable conversion relation.
+- A direct conversion's native annual `period` must match its output's applicability, and a direct output must match the year of the actual consumed revenue/recognition cell. A mismatch adds specific parameter/output/claim/segment/scenario/period reasons and leaves optional support unverified; forecasting still runs. Source dates and historical observations are not an equality gate. An explicit native bridge can retain old provenance and derive a target-period conversion.
 - Support never propagates from one driver to other segments, scenarios or forecast years. `unknown` is never filled with zero and `stress` is never renamed a calibration.
 
 ## CLI

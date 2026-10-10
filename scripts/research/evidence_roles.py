@@ -10,7 +10,7 @@ from collections import Counter
 from contracts.constants import GROWTH_DRIVER_EVIDENCE_ROLES, SCENARIOS
 from contracts.evidence import finite_number, require
 from forecast.calc import collect_parameter_roles, evaluate_derived_formula
-from research.native_dependencies import observation_binding, parameter_scopes
+from research.native_dependencies import direct_parameter_cells, observation_binding, parameter_scopes
 
 OBSERVATION_ROLES = {
     "historical_revenue_table": {"history_base"},
@@ -175,6 +175,20 @@ def _calibration(row, parameters, claims, observations, used, data):
             if covering and not any(o["binding_status"] == "bound" for o in covering):
                 unbound = covering[0]
                 reasons.append(f"conversion_observation_{unbound['binding_status']}:{pid}:{unbound['claim_id']}")
+            # The annual parameter period is the native applicability context;
+            # measurement/claim/source dates retain their independent meaning.
+            # A historical factor can be carried by a real target-period
+            # derived node; no text label or self-consistent future observation
+            # alone makes a direct conversion applicable to this output.
+            conversion_period = parameters[pid]["period"]
+            if conversion_period != output["period"]:
+                claim_ids = ",".join(sorted({o["claim_id"] for o in covering}))
+                reasons.append(f"conversion_output_period_mismatch:{pid}:{conversion_period}:{output_id}:{output['period']}:{claim_ids}")
+        for segment, cell_scenario, cell_period in direct_parameter_cells(
+            data, output_id, scope=row["scope"], scenario=scenario
+        ):
+            if output["period"] != cell_period:
+                reasons.append(f"calibration_output_consumption_period_mismatch:{output_id}:{output['period']}:{segment}:{cell_scenario}:{cell_period}")
         # The forecast output must be consumed by the declared business scope
         # inside the real native DAG; a different company or total market is
         # not automatically the same perimeter.

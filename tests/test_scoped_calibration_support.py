@@ -122,3 +122,117 @@ def test_tampered_diagnostic_cannot_bypass_strong_recompute():
     result["confidence"]["research_adequacy"]["calibrations"][0]["adequacy_status"] = "referenced_range"
     with pytest.raises(ForecastInputError, match="research adequacy"):
         validate_published_forecast(result, d)
+
+
+def synchronized_conversion_period(document, period):
+    """Change the parameter applicability and its declared links together."""
+    ids = {o["parameter_ids"][0] for o in conversion_observations(document)}
+    for parameter in document["parameters"]:
+        if parameter["parameter_id"] in ids:
+            parameter["period"] = period
+    for claim in document["evidence_claims"]:
+        if claim["target_id"] in ids:
+            claim["period"] = period
+    for observation in conversion_observations(document):
+        observation["period"] = period
+
+
+@pytest.mark.parametrize("period", ["FY2027", "FY2031"])
+def test_synchronized_conversion_period_does_not_calibrate_fy2026(period):
+    d = calibrated_document()
+    synchronized_conversion_period(d, period)
+    diag = analyze(d)
+    # Each observation is internally bound; applicability to its real output
+    # must still be checked independently, without rejecting the document.
+    assert all(o["binding_status"] == "bound" for o in diag["evidence_roles"]
+               if o["observation_kind"] == "conversion")
+    cal = diag["calibrations"][0]
+    assert cal["adequacy_status"] == "unverified"
+    for scenario in ("low", "base", "high"):
+        assert (f"conversion_output_period_mismatch:conversion_{scenario}:{period}:"
+                f"0_{scenario}_2026:FY2026:claim_parameter_conversion_{scenario}") in cal["reasons"]
+    assert diag["magnitude_adequacy"]["supported_parameter_ids"] == []
+
+
+def test_output_period_must_match_its_actual_direct_revenue_cell():
+    d = calibrated_document()
+    synchronized_conversion_period(d, "FY2031")
+    outputs = set(d["operating_research"]["calibrations"][0]["scenario_output_parameter_ids"].values())
+    for parameter in d["parameters"]:
+        if parameter["parameter_id"] in outputs:
+            parameter["period"] = "FY2031"
+    for claim in d["evidence_claims"]:
+        if claim["target_id"] in outputs:
+            claim["period"] = "FY2031"
+    cal = analyze(d)["calibrations"][0]
+    assert cal["adequacy_status"] == "unverified"
+    for scenario in ("low", "base", "high"):
+        assert (f"calibration_output_consumption_period_mismatch:0_{scenario}_2026:"
+                f"FY2031:Segment A:{scenario}:FY2026") in cal["reasons"]
+
+
+def test_old_claim_disclosure_period_is_not_a_conversion_applicability_gate():
+    d = calibrated_document()
+    for claim in d["evidence_claims"]:
+        if claim["target_id"].startswith("conversion_"):
+            claim["period"] = "FY2025"
+    cal = analyze(d)["calibrations"][0]
+    assert cal["adequacy_status"] == "referenced_range"
+    assert cal["reasons"] == []
+
+
+def target_period_bridge_document():
+    """Reuse a historical assumption through an explicit target-period DAG node.
+
+    The old claim retains FY2025; its observation names a real downstream
+    derived conversion for FY2026, rather than rewriting source provenance.
+    """
+    from copy import deepcopy
+    d = calibrated_document()
+    synchronized_conversion_period(d, "FY2025")
+    parameters = {p["parameter_id"]: p for p in d["parameters"]}
+    calibration = d["operating_research"]["calibrations"][0]
+    for observation in conversion_observations(d):
+        source_id = observation["parameter_ids"][0]
+        scenario = parameters[source_id]["scenario"]
+        target_id = source_id + "_for_2026"
+        target = deepcopy(parameters[source_id])
+        target.update(parameter_id=target_id, kind="derived_fact", period="FY2026",
+                      definition="Explicit FY2026 bridge: " + source_id,
+                      formula="x0", input_parameter_ids=[source_id],
+                      source_ids=[], claim_ids=[])
+        d["parameters"].append(target)
+        calibration["scenario_input_parameter_ids"][scenario][1] = target_id
+        output_id = calibration["scenario_output_parameter_ids"][scenario]
+        parameters[output_id]["input_parameter_ids"][1] = target_id
+        observation.update(parameter_ids=[target_id], period="FY2026")
+    return d
+
+
+def test_explicit_native_target_period_bridge_keeps_historical_provenance():
+    from revenue_core import run_forecast
+    d = target_period_bridge_document()
+    diag = analyze(d)
+    cal = diag["calibrations"][0]
+    assert cal["adequacy_status"] == "referenced_range"
+    assert cal["reasons"] == []
+    for scenario in ("low", "base", "high"):
+        assert cal["scenario_conversion"][scenario]["input_parameter_ids"][1] == f"conversion_{scenario}_for_2026"
+        claim = next(c for c in d["evidence_claims"] if c["target_id"] == f"conversion_{scenario}")
+        assert claim["period"] == "FY2025"
+    assert run_forecast(d)["consolidated_forecast"] == run_forecast(calibrated_document())["consolidated_forecast"]
+
+
+def test_applicability_diagnostic_does_not_change_arithmetic_or_legacy_optional_behavior():
+    from revenue_core import run_forecast
+    valid = calibrated_document()
+    bad = calibrated_document()
+    synchronized_conversion_period(bad, "FY2031")
+    original = run_forecast(valid)
+    updated = run_forecast(bad)
+    assert updated["confidence"]["research_adequacy"]["calibrations"][0]["adequacy_status"] == "unverified"
+    assert updated["consolidated_forecast"] == original["consolidated_forecast"]
+    assert updated["confidence"]["score"] == original["confidence"]["score"]
+    assert updated["confidence"]["components"] == original["confidence"]["components"]
+    valid.pop("operating_research")
+    assert analyze(valid) is None

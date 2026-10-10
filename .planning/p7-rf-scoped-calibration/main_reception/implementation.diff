@@ -1,0 +1,295 @@
+diff --git a/references/economic-support-diagnostics.md b/references/economic-support-diagnostics.md
+index d5039c20..5162d9a0 100644
+--- a/references/economic-support-diagnostics.md
++++ b/references/economic-support-diagnostics.md
+@@ -6,6 +6,7 @@ A read-only, validation-level view of which revenue-bearing parameters are actua
+ 
+ - **Independent range endpoints** prove their real parameter, unit, observed period and declared reference scope; they may sit outside the revenue DAG. An unused upper bound remains a legal reference.
+ - **Actual conversions and forecast outputs** must bind to the target business, scenario, period and the real native DAG. Unrelated scope or period cannot be promoted by a textual calibration label; a cross-scope benchmark needs an explicit reviewable conversion relation.
++- A direct conversion's native annual `period` must match its output's applicability, and a direct output must match the year of the actual consumed revenue/recognition cell. A mismatch adds specific parameter/output/claim/segment/scenario/period reasons and leaves optional support unverified; forecasting still runs. Source dates and historical observations are not an equality gate. An explicit native bridge can retain old provenance and derive a target-period conversion.
+ - Support never propagates from one driver to other segments, scenarios or forecast years. `unknown` is never filled with zero and `stress` is never renamed a calibration.
+ 
+ ## CLI
+diff --git a/references/evidence-role-calibration.md b/references/evidence-role-calibration.md
+index 82f3ef9c..dfa0187a 100644
+--- a/references/evidence-role-calibration.md
++++ b/references/evidence-role-calibration.md
+@@ -41,6 +41,8 @@ The actual conversions and forecast outputs carry the stricter binding. Every sc
+ 
+ Example engineering bridge: an observed comparable range `[100,120] USD million` for `FY2025`, then `x0*x1` with reference 100 and separately disclosed Low/Base/High conversion factors 1.0/1.1/1.2, yields 100/110/120 USD million. These are arithmetic fixtures, not business estimates. Each formula is the native DAG, not a parallel calculator. Real inputs should use independently justified quantities, prices, cohorts, deliveries or transparent aggregate fallback as available; there is no mandatory units×ASP model or fixed percentage scaling.
+ 
++Direct conversion inputs also retain their native applicability period (`parameter.period`): it must describe the calibration output's period, and a directly consumed output must describe its actual revenue/recognition cell year. A self-consistent conversion parameter/claim/observation for FY2031 does not calibrate an FY2026 output. These mismatches add `conversion_output_period_mismatch:<parameter>:<applicability period>:<output>:<output period>:<claim IDs>` or `calibration_output_consumption_period_mismatch:<output>:<output period>:<segment>:<scenario>:<cell period>` diagnostics and demote optional support to `unverified`; they do not block the document or change revenue arithmetic. Source disclosure dates, claim periods and `measurement_period` are not forced to equal a forecast year: existing observation-to-parameter binding remains separate. A historical reference stays historical, an unused upper endpoint stays legal, and a reviewable cross-period native bridge may carry an old factor into a derived conversion whose period is the actual target. Formula linkage checks structure, not economic truth or accuracy.
++
+ The diagnostic says `referenced_range` only when the source-range links, the bound conversion observations and the native output scope bindings all agree. Missing ranges, period mismatch, unbound conversions, non-native scope, missing conversion disclosure or different formula links yield `unverified`; null is never filled with zero. `stress` remains an illustration. A documented range is not empirical forecast accuracy or calibrated probability coverage. Do not declare the whole company calibrated when only one driver has a supported range. Engine 4.2.1 re-emits these calibration diagnostics (inputs that previously reached `referenced_range` through unbound conversions or a non-native scope re-emit as `unverified`); revenue arithmetic and the input contract are unchanged, and old 4.2.0 outputs keep their original bytes against the pinned 4.2.0 emitter.
+ 
+ ## Joint financing, delivery and shared-capacity pressure
+diff --git a/scripts/research/evidence_roles.py b/scripts/research/evidence_roles.py
+index b4e60d98..ef3847a7 100644
+--- a/scripts/research/evidence_roles.py
++++ b/scripts/research/evidence_roles.py
+@@ -10,7 +10,7 @@ from collections import Counter
+ from contracts.constants import GROWTH_DRIVER_EVIDENCE_ROLES, SCENARIOS
+ from contracts.evidence import finite_number, require
+ from forecast.calc import collect_parameter_roles, evaluate_derived_formula
+-from research.native_dependencies import observation_binding, parameter_scopes
++from research.native_dependencies import direct_parameter_cells, observation_binding, parameter_scopes
+ 
+ OBSERVATION_ROLES = {
+     "historical_revenue_table": {"history_base"},
+@@ -175,6 +175,20 @@ def _calibration(row, parameters, claims, observations, used, data):
+             if covering and not any(o["binding_status"] == "bound" for o in covering):
+                 unbound = covering[0]
+                 reasons.append(f"conversion_observation_{unbound['binding_status']}:{pid}:{unbound['claim_id']}")
++            # The annual parameter period is the native applicability context;
++            # measurement/claim/source dates retain their independent meaning.
++            # A historical factor can be carried by a real target-period
++            # derived node; no text label or self-consistent future observation
++            # alone makes a direct conversion applicable to this output.
++            conversion_period = parameters[pid]["period"]
++            if conversion_period != output["period"]:
++                claim_ids = ",".join(sorted({o["claim_id"] for o in covering}))
++                reasons.append(f"conversion_output_period_mismatch:{pid}:{conversion_period}:{output_id}:{output['period']}:{claim_ids}")
++        for segment, cell_scenario, cell_period in direct_parameter_cells(
++            data, output_id, scope=row["scope"], scenario=scenario
++        ):
++            if output["period"] != cell_period:
++                reasons.append(f"calibration_output_consumption_period_mismatch:{output_id}:{output['period']}:{segment}:{cell_scenario}:{cell_period}")
+         # The forecast output must be consumed by the declared business scope
+         # inside the real native DAG; a different company or total market is
+         # not automatically the same perimeter.
+diff --git a/scripts/research/native_dependencies.py b/scripts/research/native_dependencies.py
+index bd04a0d6..53f13af7 100644
+--- a/scripts/research/native_dependencies.py
++++ b/scripts/research/native_dependencies.py
+@@ -4,6 +4,7 @@ This module preserves scope, scenario and period when following IDs. It does
+ not revalidate sources, infer business semantics or create another registry.
+ """
+ from __future__ import annotations
++from typing import Any
+ from forecast.calc import _expand_derived_inputs
+ 
+ 
+@@ -33,6 +34,25 @@ def segment_roots(data, segment, scenario, year):
+     return roots
+ 
+ 
++def direct_parameter_cells(
++    data: dict[str, Any], parameter_id: str, *, scope: str, scenario: str
++) -> list[tuple[str, str, str]]:
++    """Actual direct revenue/recognition consumers, without flattening a bridge.
++
++    A downstream derived FY2027 node may legitimately consume an FY2026
++    intermediate. Only a direct root claims to describe that cell itself;
++    preserve explicit cross-period ancestry rather than equating all dates.
++    """
++    cells = []
++    for segment in data.get("segments", []):
++        if scope not in {data.get("company_name"), segment["name"]}:
++            continue
++        for year in data["forecast_years"]:
++            if parameter_id in segment_roots(data, segment, scenario, year):
++                cells.append((segment["name"], scenario, f"FY{year}"))
++    return cells
++
++
+ def segment_ancestry(data, parameters, segment, scenario, year):
+     return ancestry(segment_roots(data, segment, scenario, year), parameters)
+ 
+diff --git a/scripts/schema_compatibility.py b/scripts/schema_compatibility.py
+index 34bddd97..ce6db332 100644
+--- a/scripts/schema_compatibility.py
++++ b/scripts/schema_compatibility.py
+@@ -47,8 +47,8 @@ SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
+     "3.6": frozenset({"3.10.0", "4.0.0"}),
+     # 4.1.1 stays a documented emitter after the 4.2.0 engine bump; the
+     # current engine is always a legal emitter for the schemas it can produce.
+-    FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
+-    OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
++    FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", "4.2.0", ENGINE_VERSION}),
++    OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", "4.2.0", ENGINE_VERSION}),
+     PERIOD_EVIDENCE_SCHEMA_VERSION: frozenset({"4.2.0", ENGINE_VERSION}),
+ }
+ 
+diff --git a/tests/test_data_contract.py b/tests/test_data_contract.py
+index 74c5d641..8554f1da 100644
+--- a/tests/test_data_contract.py
++++ b/tests/test_data_contract.py
+@@ -460,7 +460,7 @@ def valid_document() -> dict:
+ 
+ class DataContractTests(unittest.TestCase):
+     def test_release_and_schema_versions_are_explicit(self) -> None:
+-        self.assertEqual(SKILL_VERSION, "4.2.0")
++        self.assertEqual(SKILL_VERSION, "4.2.1")
+         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
+         self.assertEqual(FORECAST_SCHEMA_VERSION, "3.7")
+ 
+diff --git a/tests/test_m3_period_flow_contract.py b/tests/test_m3_period_flow_contract.py
+index 9a4d57a6..c6c81e65 100644
+--- a/tests/test_m3_period_flow_contract.py
++++ b/tests/test_m3_period_flow_contract.py
+@@ -112,7 +112,7 @@ def add_flow_parameter(
+ 
+ class PeriodFlowConstantTests(unittest.TestCase):
+     def test_engine_and_schema_versions_are_registered(self) -> None:
+-        self.assertEqual(SKILL_VERSION, "4.2.0")
++        self.assertEqual(SKILL_VERSION, "4.2.1")
+         self.assertEqual(PERIOD_EVIDENCE_SCHEMA_VERSION, "3.9")
+ 
+     def test_fiscal_year_window_resolves_calendar_and_offset_year_ends(self) -> None:
+@@ -342,7 +342,7 @@ class PeriodFlowIntegrationTests(unittest.TestCase):
+             legacy_result["consolidated_forecast"], modern_result["consolidated_forecast"]
+         )
+         self.assertEqual(modern_result["schema_version"], PERIOD_EVIDENCE_SCHEMA_VERSION)
+-        self.assertEqual(modern_result["engine_version"], "4.2.0")
++        self.assertEqual(modern_result["engine_version"], "4.2.1")
+         # The stock value passes through exactly — never doubled.
+         self.assertEqual(
+             modern_result["parameter_trace"][-1]["value"], 30.0
+diff --git a/tests/test_m3_schema_compatibility.py b/tests/test_m3_schema_compatibility.py
+index c8947019..d25dd806 100644
+--- a/tests/test_m3_schema_compatibility.py
++++ b/tests/test_m3_schema_compatibility.py
+@@ -38,7 +38,7 @@ PERIOD_EVIDENCE_SCHEMA_VERSION = "3.9"
+ 
+ class PeriodEvidenceSchemaCompatibilityTests(unittest.TestCase):
+     def test_new_schema_row_requires_new_engine(self) -> None:
+-        self.assertEqual(ENGINE_VERSION, "4.2.0")
++        self.assertEqual(ENGINE_VERSION, "4.2.1")
+         self.assertIn(PERIOD_EVIDENCE_SCHEMA_VERSION, SCHEMA_EMIT_ENGINES)
+         # 4.1.x never emitted schema 3.9 — fail closed in read modes.
+         self.assertFalse(
+diff --git a/tests/test_schema_compatibility.py b/tests/test_schema_compatibility.py
+index 48833dbb..fe709cd1 100644
+--- a/tests/test_schema_compatibility.py
++++ b/tests/test_schema_compatibility.py
+@@ -25,7 +25,7 @@ class SchemaCompatibilityRegistryTests(unittest.TestCase):
+         )
+ 
+     def test_source_clock_version_emit_and_validation_matrix(self) -> None:
+-        self.assertEqual(ENGINE_VERSION, "4.2.0")
++        self.assertEqual(ENGINE_VERSION, "4.2.1")
+         for schema in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION):
+             for mode in ("snapshot", "output"):
+                 self.assertTrue(validating_engine_allowed(schema, "4.1.0", mode))
+diff --git a/tests/test_scoped_calibration_support.py b/tests/test_scoped_calibration_support.py
+index 05517ae7..d4495994 100644
+--- a/tests/test_scoped_calibration_support.py
++++ b/tests/test_scoped_calibration_support.py
+@@ -122,3 +122,117 @@ def test_tampered_diagnostic_cannot_bypass_strong_recompute():
+     result["confidence"]["research_adequacy"]["calibrations"][0]["adequacy_status"] = "referenced_range"
+     with pytest.raises(ForecastInputError, match="research adequacy"):
+         validate_published_forecast(result, d)
++
++
++def synchronized_conversion_period(document, period):
++    """Change the parameter applicability and its declared links together."""
++    ids = {o["parameter_ids"][0] for o in conversion_observations(document)}
++    for parameter in document["parameters"]:
++        if parameter["parameter_id"] in ids:
++            parameter["period"] = period
++    for claim in document["evidence_claims"]:
++        if claim["target_id"] in ids:
++            claim["period"] = period
++    for observation in conversion_observations(document):
++        observation["period"] = period
++
++
++@pytest.mark.parametrize("period", ["FY2027", "FY2031"])
++def test_synchronized_conversion_period_does_not_calibrate_fy2026(period):
++    d = calibrated_document()
++    synchronized_conversion_period(d, period)
++    diag = analyze(d)
++    # Each observation is internally bound; applicability to its real output
++    # must still be checked independently, without rejecting the document.
++    assert all(o["binding_status"] == "bound" for o in diag["evidence_roles"]
++               if o["observation_kind"] == "conversion")
++    cal = diag["calibrations"][0]
++    assert cal["adequacy_status"] == "unverified"
++    for scenario in ("low", "base", "high"):
++        assert (f"conversion_output_period_mismatch:conversion_{scenario}:{period}:"
++                f"0_{scenario}_2026:FY2026:claim_parameter_conversion_{scenario}") in cal["reasons"]
++    assert diag["magnitude_adequacy"]["supported_parameter_ids"] == []
++
++
++def test_output_period_must_match_its_actual_direct_revenue_cell():
++    d = calibrated_document()
++    synchronized_conversion_period(d, "FY2031")
++    outputs = set(d["operating_research"]["calibrations"][0]["scenario_output_parameter_ids"].values())
++    for parameter in d["parameters"]:
++        if parameter["parameter_id"] in outputs:
++            parameter["period"] = "FY2031"
++    for claim in d["evidence_claims"]:
++        if claim["target_id"] in outputs:
++            claim["period"] = "FY2031"
++    cal = analyze(d)["calibrations"][0]
++    assert cal["adequacy_status"] == "unverified"
++    for scenario in ("low", "base", "high"):
++        assert (f"calibration_output_consumption_period_mismatch:0_{scenario}_2026:"
++                f"FY2031:Segment A:{scenario}:FY2026") in cal["reasons"]
++
++
++def test_old_claim_disclosure_period_is_not_a_conversion_applicability_gate():
++    d = calibrated_document()
++    for claim in d["evidence_claims"]:
++        if claim["target_id"].startswith("conversion_"):
++            claim["period"] = "FY2025"
++    cal = analyze(d)["calibrations"][0]
++    assert cal["adequacy_status"] == "referenced_range"
++    assert cal["reasons"] == []
++
++
++def target_period_bridge_document():
++    """Reuse a historical assumption through an explicit target-period DAG node.
++
++    The old claim retains FY2025; its observation names a real downstream
++    derived conversion for FY2026, rather than rewriting source provenance.
++    """
++    from copy import deepcopy
++    d = calibrated_document()
++    synchronized_conversion_period(d, "FY2025")
++    parameters = {p["parameter_id"]: p for p in d["parameters"]}
++    calibration = d["operating_research"]["calibrations"][0]
++    for observation in conversion_observations(d):
++        source_id = observation["parameter_ids"][0]
++        scenario = parameters[source_id]["scenario"]
++        target_id = source_id + "_for_2026"
++        target = deepcopy(parameters[source_id])
++        target.update(parameter_id=target_id, kind="derived_fact", period="FY2026",
++                      definition="Explicit FY2026 bridge: " + source_id,
++                      formula="x0", input_parameter_ids=[source_id],
++                      source_ids=[], claim_ids=[])
++        d["parameters"].append(target)
++        calibration["scenario_input_parameter_ids"][scenario][1] = target_id
++        output_id = calibration["scenario_output_parameter_ids"][scenario]
++        parameters[output_id]["input_parameter_ids"][1] = target_id
++        observation.update(parameter_ids=[target_id], period="FY2026")
++    return d
++
++
++def test_explicit_native_target_period_bridge_keeps_historical_provenance():
++    from revenue_core import run_forecast
++    d = target_period_bridge_document()
++    diag = analyze(d)
++    cal = diag["calibrations"][0]
++    assert cal["adequacy_status"] == "referenced_range"
++    assert cal["reasons"] == []
++    for scenario in ("low", "base", "high"):
++        assert cal["scenario_conversion"][scenario]["input_parameter_ids"][1] == f"conversion_{scenario}_for_2026"
++        claim = next(c for c in d["evidence_claims"] if c["target_id"] == f"conversion_{scenario}")
++        assert claim["period"] == "FY2025"
++    assert run_forecast(d)["consolidated_forecast"] == run_forecast(calibrated_document())["consolidated_forecast"]
++
++
++def test_applicability_diagnostic_does_not_change_arithmetic_or_legacy_optional_behavior():
++    from revenue_core import run_forecast
++    valid = calibrated_document()
++    bad = calibrated_document()
++    synchronized_conversion_period(bad, "FY2031")
++    original = run_forecast(valid)
++    updated = run_forecast(bad)
++    assert updated["confidence"]["research_adequacy"]["calibrations"][0]["adequacy_status"] == "unverified"
++    assert updated["consolidated_forecast"] == original["consolidated_forecast"]
++    assert updated["confidence"]["score"] == original["confidence"]["score"]
++    assert updated["confidence"]["components"] == original["confidence"]["components"]
++    valid.pop("operating_research")
++    assert analyze(valid) is None

@@ -1,0 +1,146 @@
+{
+  "schema_version": "p7-rf-main-integration-handoff/1",
+  "status": "implementation_complete_source_stable",
+  "actual_head": "183c9534b90549c094fc32a51ff6ada1e9cb5227",
+  "original_delivery_commit": "05aa2661c9cdc34cb7e9ce3cf7e83b43bee7f556",
+  "base": "6883bf00548abb9891eab6762aeaa89e3898b202",
+  "source_sha256": {
+    "references/economic-support-diagnostics.md": "12c89a1b5925e5790d2cdfa76e6b26a94ff3eb2f15f9c16e9726c1594402ca09",
+    "references/evidence-role-calibration.md": "dc386bee001fa8872c36c4a0ef8526a66b38e508dea5e21cda3a6cc5b8421cb9",
+    "scripts/research/evidence_roles.py": "a3efbf813492c2a9a838a0ff8679c810ee9b0ffb51c7877d322aea3bf47a758d",
+    "scripts/research/native_dependencies.py": "5e224d141d677525112ee4f4bc749bb8534d0fe4749f78fc220682139b1be16f",
+    "scripts/schema_compatibility.py": "1df2f419152fdf50da2555417952cb9fd028e6e85a5f5d1e39ca4f46e4e8707a",
+    "tests/test_data_contract.py": "1737d73c68d98cc0298896fc0e714d6c5281708015aeb9d3367df23563595202",
+    "tests/test_m3_period_flow_contract.py": "875830d8601c8079a2f940ef79c8b6455b54ee2acf45d692e92e62592efeb0b5",
+    "tests/test_m3_schema_compatibility.py": "d5048857e75db26f902c7449c41815e1c55d534ed57619f97ef2551de3b16850",
+    "tests/test_schema_compatibility.py": "290eb0fe28b7c9b6f54759a7f149baa10b311e62cc3498c47722356d54d68fad",
+    "tests/test_scoped_calibration_support.py": "eb6097bd302b692ce2e56d015f0be779331e85d46a87a473ae232b6ea14178b9"
+  },
+  "evidence_sha256": {
+    "red.json": "07f98b9d9da8881bddd8de607991394a5047e385079cb147a34f6ec05abc2e09",
+    "red.log": "8571320e191cb58acbba0a6d1fff9dadef286f458f235097c64166b7b773539e",
+    "concentrated.json": "1a836ead7f8cf53b3dd2205b1c353b2e8145b1749d18b0efe01cbeb4236059a4",
+    "responsibility-compatibility.log": "370df654f0aa1f7947ffba9285d726920c51481fdb402e52e7687d1c392ddc21",
+    "ruff.log": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+    "mypy.log": "281a094c39385b4d7b53e5db635f52158036861433c2a4975b9039e77a627a24",
+    "public_e2e.py": "93a4994a68864996d784457e33e638d5ac017d47ac7ea27a8932146aeaa7f030",
+    "main-e2e-receipt.json": "a8a5d9f77bef212f2b9d8c217c6175b7c745c0574ca9ee164167ca993460fd9b",
+    "protected-before.json": "127fbe23e64c330c65f19f94a66751798bfbc697f748df4cef5d98ff8eef13b2",
+    "protected-after.json": "3615b9d7743f8aac5f3b9364cc18fbdfef7ed075feb5c4f8c27dd4909c00f329",
+    "implementation.diff": "857504f22bd722e028520ad0cd9466e695dba2a0e07961824e5966637ad6d602"
+  },
+  "period_contract": {
+    "file": "scripts/contracts/evidence.py",
+    "line": 131,
+    "pattern": "FY\\d{4}",
+    "scope": "parameter.period in all validated native 3.7/3.8/3.9 documents; dated flows also retain FY period"
+  },
+  "red": {
+    "failed": 4,
+    "passed": 10,
+    "seconds": 0.69
+  },
+  "green": {
+    "passed": 119,
+    "subtests_passed": 7,
+    "seconds": 25.35,
+    "ruff_files": 9,
+    "mypy_source_files": 3
+  },
+  "actual_public_e2e": {
+    "status": "accepted",
+    "cases": [
+      {
+        "name": "positive",
+        "calibration_status": "referenced_range",
+        "reasons": [],
+        "real_snapshot": true,
+        "report_matches_diagnostic": true,
+        "registry_inside_owned": true
+      },
+      {
+        "name": "observation-period-negative",
+        "calibration_status": "unverified",
+        "reasons": [
+          "conversion_observation_unverified_period:conversion_base:claim_parameter_conversion_base",
+          "conversion_observation_unverified_period:conversion_high:claim_parameter_conversion_high",
+          "conversion_observation_unverified_period:conversion_low:claim_parameter_conversion_low"
+        ],
+        "real_snapshot": true,
+        "report_matches_diagnostic": true,
+        "registry_inside_owned": true
+      },
+      {
+        "name": "synchronized-future-conversion-period",
+        "calibration_status": "unverified",
+        "reasons": [
+          "conversion_output_period_mismatch:conversion_base:FY2031:0_base_2026:FY2026:claim_parameter_conversion_base",
+          "conversion_output_period_mismatch:conversion_high:FY2031:0_high_2026:FY2026:claim_parameter_conversion_high",
+          "conversion_output_period_mismatch:conversion_low:FY2031:0_low_2026:FY2026:claim_parameter_conversion_low"
+        ],
+        "real_snapshot": true,
+        "report_matches_diagnostic": true,
+        "registry_inside_owned": true
+      },
+      {
+        "name": "explicit-native-period-bridge",
+        "calibration_status": "referenced_range",
+        "reasons": [],
+        "real_snapshot": true,
+        "report_matches_diagnostic": true,
+        "registry_inside_owned": true
+      }
+    ],
+    "seconds": 11.143383800001175,
+    "synchronized_period_expectation": {
+      "expected": "unverified",
+      "actual": "unverified",
+      "met": true,
+      "original_output_period": "FY2026",
+      "conversion_parameter_claim_observation_period": "FY2031"
+    },
+    "emitter_compatibility": {
+      "3.7": {
+        "4.2.0": true,
+        "4.2.1": true
+      },
+      "3.8": {
+        "4.2.0": true,
+        "4.2.1": true
+      },
+      "3.9": {
+        "4.2.0": true,
+        "4.2.1": true
+      }
+    }
+  },
+  "preservation": {
+    "rf_original_files_unchanged": 23,
+    "canonical_owner_dirty_files_unchanged": 3,
+    "owner_status_unchanged": true,
+    "actual_cli_runtime_sha_unchanged": 107,
+    "owned_temporary_directories_removed": true,
+    "head_unchanged": true
+  },
+  "provider_calls": 0,
+  "model_calls": 0,
+  "new_cost_usd": 0,
+  "known_root_owned_changes": [
+    ".gitattributes: scoped attempts/** and main_reception/** raw-byte archival attributes",
+    ".planning/p7-rf-scoped-calibration/main_reception_fix.md: native evidence archive rule"
+  ],
+  "remaining_owner_actions": [
+    "normal hooks and commit",
+    "verify newly archived evidence blob bytes against file SHA",
+    "exact-HEAD CI",
+    "push/merge and scoped installation as needed"
+  ],
+  "open_research_items": [
+    "R16",
+    "R17",
+    "R18",
+    "W09"
+  ],
+  "economic_truth_inferred": false,
+  "git_status_at_handoff": "M .gitattributes\n M references/economic-support-diagnostics.md\n M references/evidence-role-calibration.md\n M scripts/research/evidence_roles.py\n M scripts/research/native_dependencies.py\n M scripts/schema_compatibility.py\n M tests/test_data_contract.py\n M tests/test_m3_period_flow_contract.py\n M tests/test_m3_schema_compatibility.py\n M tests/test_schema_compatibility.py\n M tests/test_scoped_calibration_support.py\n?? .planning/p7-rf-scoped-calibration/main_reception/\n?? .planning/p7-rf-scoped-calibration/main_reception_fix.md"
+}

@@ -4,6 +4,7 @@ This module preserves scope, scenario and period when following IDs. It does
 not revalidate sources, infer business semantics or create another registry.
 """
 from __future__ import annotations
+from typing import Any
 from forecast.calc import _expand_derived_inputs
 
 
@@ -31,6 +32,25 @@ def segment_roots(data, segment, scenario, year):
     roots.extend(_period_ids(recognition.get("progress_parameter_ids", {}), scenario, year, years))
     roots.extend(_period_ids(recognition.get("carry_in_parameter_ids", {}), scenario, year, years))
     return roots
+
+
+def direct_parameter_cells(
+    data: dict[str, Any], parameter_id: str, *, scope: str, scenario: str
+) -> list[tuple[str, str, str]]:
+    """Actual direct revenue/recognition consumers, without flattening a bridge.
+
+    A downstream derived FY2027 node may legitimately consume an FY2026
+    intermediate. Only a direct root claims to describe that cell itself;
+    preserve explicit cross-period ancestry rather than equating all dates.
+    """
+    cells = []
+    for segment in data.get("segments", []):
+        if scope not in {data.get("company_name"), segment["name"]}:
+            continue
+        for year in data["forecast_years"]:
+            if parameter_id in segment_roots(data, segment, scenario, year):
+                cells.append((segment["name"], scenario, f"FY{year}"))
+    return cells
 
 
 def segment_ancestry(data, parameters, segment, scenario, year):

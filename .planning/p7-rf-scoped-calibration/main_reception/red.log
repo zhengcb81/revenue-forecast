@@ -1,0 +1,86 @@
+........FFF..F                                                           [100%]
+================================== FAILURES ===================================
+____ test_synchronized_conversion_period_does_not_calibrate_fy2026[FY2027] ____
+
+period = 'FY2027'
+
+    @pytest.mark.parametrize("period", ["FY2027", "FY2031"])
+    def test_synchronized_conversion_period_does_not_calibrate_fy2026(period):
+        d = calibrated_document()
+        synchronized_conversion_period(d, period)
+        diag = analyze(d)
+        # Each observation is internally bound; applicability to its real output
+        # must still be checked independently, without rejecting the document.
+        assert all(o["binding_status"] == "bound" for o in diag["evidence_roles"]
+                   if o["observation_kind"] == "conversion")
+        cal = diag["calibrations"][0]
+>       assert cal["adequacy_status"] == "unverified"
+E       AssertionError: assert 'referenced_range' == 'unverified'
+E         
+E         - unverified
+E         + referenced_range
+
+tests\test_scoped_calibration_support.py:150: AssertionError
+____ test_synchronized_conversion_period_does_not_calibrate_fy2026[FY2031] ____
+
+period = 'FY2031'
+
+    @pytest.mark.parametrize("period", ["FY2027", "FY2031"])
+    def test_synchronized_conversion_period_does_not_calibrate_fy2026(period):
+        d = calibrated_document()
+        synchronized_conversion_period(d, period)
+        diag = analyze(d)
+        # Each observation is internally bound; applicability to its real output
+        # must still be checked independently, without rejecting the document.
+        assert all(o["binding_status"] == "bound" for o in diag["evidence_roles"]
+                   if o["observation_kind"] == "conversion")
+        cal = diag["calibrations"][0]
+>       assert cal["adequacy_status"] == "unverified"
+E       AssertionError: assert 'referenced_range' == 'unverified'
+E         
+E         - unverified
+E         + referenced_range
+
+tests\test_scoped_calibration_support.py:150: AssertionError
+________ test_output_period_must_match_its_actual_direct_revenue_cell _________
+
+    def test_output_period_must_match_its_actual_direct_revenue_cell():
+        d = calibrated_document()
+        synchronized_conversion_period(d, "FY2031")
+        outputs = set(d["operating_research"]["calibrations"][0]["scenario_output_parameter_ids"].values())
+        for parameter in d["parameters"]:
+            if parameter["parameter_id"] in outputs:
+                parameter["period"] = "FY2031"
+        for claim in d["evidence_claims"]:
+            if claim["target_id"] in outputs:
+                claim["period"] = "FY2031"
+        cal = analyze(d)["calibrations"][0]
+>       assert cal["adequacy_status"] == "unverified"
+E       AssertionError: assert 'referenced_range' == 'unverified'
+E         
+E         - unverified
+E         + referenced_range
+
+tests\test_scoped_calibration_support.py:168: AssertionError
+_ test_applicability_diagnostic_does_not_change_arithmetic_or_legacy_optional_behavior _
+
+    def test_applicability_diagnostic_does_not_change_arithmetic_or_legacy_optional_behavior():
+        from revenue_core import run_forecast
+        valid = calibrated_document()
+        bad = calibrated_document()
+        synchronized_conversion_period(bad, "FY2031")
+        original = run_forecast(valid)
+        updated = run_forecast(bad)
+>       assert updated["confidence"]["research_adequacy"]["calibrations"][0]["adequacy_status"] == "unverified"
+E       AssertionError: assert 'referenced_range' == 'unverified'
+E         
+E         - unverified
+E         + referenced_range
+
+tests\test_scoped_calibration_support.py:233: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_scoped_calibration_support.py::test_synchronized_conversion_period_does_not_calibrate_fy2026[FY2027]
+FAILED tests/test_scoped_calibration_support.py::test_synchronized_conversion_period_does_not_calibrate_fy2026[FY2031]
+FAILED tests/test_scoped_calibration_support.py::test_output_period_must_match_its_actual_direct_revenue_cell
+FAILED tests/test_scoped_calibration_support.py::test_applicability_diagnostic_does_not_change_arithmetic_or_legacy_optional_behavior
+4 failed, 10 passed in 0.69s
