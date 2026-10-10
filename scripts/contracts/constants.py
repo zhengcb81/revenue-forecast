@@ -10,7 +10,12 @@ from __future__ import annotations
 SCENARIOS = ("low", "base", "high")
 
 
-SKILL_VERSION = "4.2.0"
+# P7-RF (scoped calibration binding): 4.2.1 re-emits the optional
+# research-adequacy calibration diagnostics — actual conversions must be
+# carried by bound conversion observations and outputs must be consumed by
+# the declared business scope. Revenue arithmetic, schemas and the optional
+# operating-research input contract are unchanged.
+SKILL_VERSION = "4.2.1"
 
 
 FORECAST_SCHEMA_VERSION = "3.7"

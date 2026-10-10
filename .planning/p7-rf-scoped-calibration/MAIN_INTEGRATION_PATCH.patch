@@ -1,0 +1,76 @@
+diff --git a/scripts/schema_compatibility.py b/scripts/schema_compatibility.py
+index 34bddd97..ce6db332 100644
+--- a/scripts/schema_compatibility.py
++++ b/scripts/schema_compatibility.py
+@@ -47,8 +47,8 @@ SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
+     "3.6": frozenset({"3.10.0", "4.0.0"}),
+     # 4.1.1 stays a documented emitter after the 4.2.0 engine bump; the
+     # current engine is always a legal emitter for the schemas it can produce.
+-    FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
+-    OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
++    FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", "4.2.0", ENGINE_VERSION}),
++    OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", "4.2.0", ENGINE_VERSION}),
+     PERIOD_EVIDENCE_SCHEMA_VERSION: frozenset({"4.2.0", ENGINE_VERSION}),
+ }
+ 
+diff --git a/tests/test_data_contract.py b/tests/test_data_contract.py
+index 74c5d641..8554f1da 100644
+--- a/tests/test_data_contract.py
++++ b/tests/test_data_contract.py
+@@ -460,7 +460,7 @@ def valid_document() -> dict:
+ 
+ class DataContractTests(unittest.TestCase):
+     def test_release_and_schema_versions_are_explicit(self) -> None:
+-        self.assertEqual(SKILL_VERSION, "4.2.0")
++        self.assertEqual(SKILL_VERSION, "4.2.1")
+         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
+         self.assertEqual(FORECAST_SCHEMA_VERSION, "3.7")
+ 
+diff --git a/tests/test_m3_period_flow_contract.py b/tests/test_m3_period_flow_contract.py
+index 9a4d57a6..c6c81e65 100644
+--- a/tests/test_m3_period_flow_contract.py
++++ b/tests/test_m3_period_flow_contract.py
+@@ -112,7 +112,7 @@ def add_flow_parameter(
+ 
+ class PeriodFlowConstantTests(unittest.TestCase):
+     def test_engine_and_schema_versions_are_registered(self) -> None:
+-        self.assertEqual(SKILL_VERSION, "4.2.0")
++        self.assertEqual(SKILL_VERSION, "4.2.1")
+         self.assertEqual(PERIOD_EVIDENCE_SCHEMA_VERSION, "3.9")
+ 
+     def test_fiscal_year_window_resolves_calendar_and_offset_year_ends(self) -> None:
+@@ -342,7 +342,7 @@ class PeriodFlowIntegrationTests(unittest.TestCase):
+             legacy_result["consolidated_forecast"], modern_result["consolidated_forecast"]
+         )
+         self.assertEqual(modern_result["schema_version"], PERIOD_EVIDENCE_SCHEMA_VERSION)
+-        self.assertEqual(modern_result["engine_version"], "4.2.0")
++        self.assertEqual(modern_result["engine_version"], "4.2.1")
+         # The stock value passes through exactly — never doubled.
+         self.assertEqual(
+             modern_result["parameter_trace"][-1]["value"], 30.0
+diff --git a/tests/test_m3_schema_compatibility.py b/tests/test_m3_schema_compatibility.py
+index c8947019..d25dd806 100644
+--- a/tests/test_m3_schema_compatibility.py
++++ b/tests/test_m3_schema_compatibility.py
+@@ -38,7 +38,7 @@ PERIOD_EVIDENCE_SCHEMA_VERSION = "3.9"
+ 
+ class PeriodEvidenceSchemaCompatibilityTests(unittest.TestCase):
+     def test_new_schema_row_requires_new_engine(self) -> None:
+-        self.assertEqual(ENGINE_VERSION, "4.2.0")
++        self.assertEqual(ENGINE_VERSION, "4.2.1")
+         self.assertIn(PERIOD_EVIDENCE_SCHEMA_VERSION, SCHEMA_EMIT_ENGINES)
+         # 4.1.x never emitted schema 3.9 — fail closed in read modes.
+         self.assertFalse(
+diff --git a/tests/test_schema_compatibility.py b/tests/test_schema_compatibility.py
+index 48833dbb..fe709cd1 100644
+--- a/tests/test_schema_compatibility.py
++++ b/tests/test_schema_compatibility.py
+@@ -25,7 +25,7 @@ class SchemaCompatibilityRegistryTests(unittest.TestCase):
+         )
+ 
+     def test_source_clock_version_emit_and_validation_matrix(self) -> None:
+-        self.assertEqual(ENGINE_VERSION, "4.2.0")
++        self.assertEqual(ENGINE_VERSION, "4.2.1")
+         for schema in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION):
+             for mode in ("snapshot", "output"):
+                 self.assertTrue(validating_engine_allowed(schema, "4.1.0", mode))

@@ -16,15 +16,25 @@ def _period_ids(mapping, scenario, year, years):
     return [ids[years.index(year)]] if year in years and len(ids) == len(years) else []
 
 
-def segment_ancestry(data, parameters, segment, scenario, year):
+def segment_roots(data, segment, scenario, year):
+    """Unexpanded revenue roots (driver and recognition IDs) of one segment cell.
+
+    These are the revenue-bearing parameters of that segment/scenario/year; the
+    expanded ancestry is available through :func:`segment_ancestry`.
+    """
     years = data["forecast_years"]
+    if year not in years:
+        return []
     drivers = segment.get("scenarios", {}).get(scenario, {}).get("driver_parameter_ids", {})
-    roots = [ids[years.index(year)] for ids in drivers.values()
-             if year in years and len(ids) == len(years)]
+    roots = [ids[years.index(year)] for ids in drivers.values() if len(ids) == len(years)]
     recognition = segment.get("recognition", {})
     roots.extend(_period_ids(recognition.get("progress_parameter_ids", {}), scenario, year, years))
     roots.extend(_period_ids(recognition.get("carry_in_parameter_ids", {}), scenario, year, years))
-    return ancestry(roots, parameters)
+    return roots
+
+
+def segment_ancestry(data, parameters, segment, scenario, year):
+    return ancestry(segment_roots(data, segment, scenario, year), parameters)
 
 
 def scope_components(data, parameters, scope, scenario, year):

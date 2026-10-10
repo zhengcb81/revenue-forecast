@@ -10,7 +10,7 @@ from collections import Counter
 from contracts.constants import GROWTH_DRIVER_EVIDENCE_ROLES, SCENARIOS
 from contracts.evidence import finite_number, require
 from forecast.calc import collect_parameter_roles, evaluate_derived_formula
-from research.native_dependencies import observation_binding
+from research.native_dependencies import observation_binding, parameter_scopes
 
 OBSERVATION_ROLES = {
     "historical_revenue_table": {"history_base"},
@@ -94,7 +94,16 @@ def _inventory(rows, parameters, claims, driver_ids, used):
     return result
 
 
-def _calibration(row, parameters, claims, observations, used):
+def _calibration(row, parameters, claims, observations, used, data):
+    """Check one declared calibration relation against the native DAG.
+
+    Independent observed-range endpoints prove their real parameter/unit/
+    observed period and declared reference scope; they may sit outside the
+    revenue DAG (an unused upper endpoint stays a legal reference). The actual
+    conversions and forecast outputs must instead bind to the target business,
+    scenario, period and the real native DAG; unrelated scope or period cannot
+    be promoted by a textual calibration label.
+    """
     fields = {"calibration_id", "status", "scope", "observed_period", "source_claim_ids", "counterevidence_claim_ids", "observed_range", "conversion_formula", "output_unit", "scenario_input_parameter_ids", "scenario_output_parameter_ids", "rationale", "limitations"}
     require(isinstance(row, dict) and set(row) == fields, "calibration fields invalid")
     for key in ("calibration_id", "scope", "observed_period", "conversion_formula", "output_unit", "rationale"):
@@ -127,6 +136,9 @@ def _calibration(row, parameters, claims, observations, used):
         if not all(any(type(v) in (int, float) and math.isclose(v, bound, rel_tol=0, abs_tol=1e-9) for v in endpoints) for bound in (lower, upper)):
             reasons.append("range_endpoints_period_or_scope_not_supported")
     scenarios = {}
+    native_business = {data.get("company_name")} | {s["name"] for s in data.get("segments", [])}
+    if row["scope"] not in native_business:
+        reasons.append(f"calibration_scope_not_native_business:{row['scope']}")
     for scenario in SCENARIOS:
         inputs = _ids(input_map[scenario], parameters, "calibration inputs")
         require(bool(inputs), "calibration inputs cannot be empty")
@@ -155,6 +167,20 @@ def _calibration(row, parameters, claims, observations, used):
         conversion_observations = [o for o in observations if o["role"] == "conversion_assumption"]
         if any(not any(pid in o["parameter_ids"] for o in conversion_observations) for pid in conversion_ids):
             reasons.append("conversion_assumption_not_disclosed")
+        # Scoped binding: an actual conversion must be carried by a bound
+        # conversion observation; unbound text labels cannot promote an
+        # unrelated business scope or period to supported conversions.
+        for pid in conversion_ids:
+            covering = [o for o in conversion_observations if pid in o["parameter_ids"]]
+            if covering and not any(o["binding_status"] == "bound" for o in covering):
+                unbound = covering[0]
+                reasons.append(f"conversion_observation_{unbound['binding_status']}:{pid}:{unbound['claim_id']}")
+        # The forecast output must be consumed by the declared business scope
+        # inside the real native DAG; a different company or total market is
+        # not automatically the same perimeter.
+        output_scopes = parameter_scopes(data, parameters, output_id)
+        if row["scope"] != data.get("company_name") and row["scope"] not in output_scopes:
+            reasons.append(f"calibration_output_scope_mismatch:{output_id}:{row['scope']}->{'/'.join(sorted(output_scopes))}")
         scenarios[scenario] = {"input_parameter_ids": inputs, "output_parameter_id": output_id,
                                "formula_value": formula_value, "native_value": float(output["value"]),
                                "output_unit": output["unit"], "matches_native": matched}
@@ -181,7 +207,7 @@ def analyze_operating_research(data, validated):
     observations = _observations(research["observations"], parameters, claims, drivers, data)
     inventory = _inventory(research["inventory"], parameters, claims, driver_ids, roles["used"])
     require(isinstance(research["calibrations"], list), "calibrations must be a list")
-    calibrations = [_calibration(r, parameters, claims, observations, roles["used"]) for r in research["calibrations"]]
+    calibrations = [_calibration(r, parameters, claims, observations, roles["used"], data) for r in research["calibrations"]]
     ids = [c["calibration_id"] for c in calibrations]
     require(len(ids) == len(set(ids)), "duplicate calibration ID")
     mechanisms = sorted({pid for o in observations if o["role"] == "mechanism_direction" and o["binding_status"] == "bound" for pid in o["parameter_ids"] if pid in roles["forecast"]})

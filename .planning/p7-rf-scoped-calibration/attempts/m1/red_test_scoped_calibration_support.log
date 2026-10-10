@@ -1,0 +1,96 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.5.0 -- C:\Miniconda\python.exe
+cachedir: .pytest_cache
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+metadata: {'Python': '3.13.9', 'Platform': 'Windows-11-10.0.26300-SP0', 'Packages': {'pytest': '9.1.1', 'pluggy': '1.5.0'}, 'Plugins': {'anyio': '4.13.0', 'Faker': '40.19.1', 'langsmith': '0.14.4', 'asyncio': '1.3.0', 'base-url': '2.1.0', 'benchmark': '5.2.3', 'cov': '7.0.0', 'html': '4.1.1', 'metadata': '3.1.1', 'mock': '3.15.1', 'playwright': '0.7.2', 'timeout': '2.4.0', 'xdist': '3.8.0'}, 'Base URL': ''}
+rootdir: C:\Users\郑曾波\.codex\worktrees\m3-acceptance-20261010\revenue-forecast
+plugins: anyio-4.13.0, Faker-40.19.1, langsmith-0.14.4, asyncio-1.3.0, base-url-2.1.0, benchmark-5.2.3, cov-7.0.0, html-4.1.1, metadata-3.1.1, mock-3.15.1, playwright-0.7.2, timeout-2.4.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 7 items
+
+tests/test_scoped_calibration_support.py::test_unrelated_conversion_scope_cannot_promote_referenced_range FAILED [ 14%]
+tests/test_scoped_calibration_support.py::test_unrelated_conversion_period_cannot_promote_referenced_range FAILED [ 28%]
+tests/test_scoped_calibration_support.py::test_calibration_scope_must_name_native_business_and_output_segment FAILED [ 42%]
+tests/test_scoped_calibration_support.py::test_business_cross_borrowing_output_segment_mismatch_rejected FAILED [ 57%]
+tests/test_scoped_calibration_support.py::test_valid_fixture_keeps_referenced_range_and_upper_endpoint_legal PASSED [ 71%]
+tests/test_scoped_calibration_support.py::test_demoted_calibration_drops_magnitude_support_per_scenario_and_year FAILED [ 85%]
+tests/test_scoped_calibration_support.py::test_stress_and_unverified_statuses_unchanged_by_binding_rules PASSED [100%]
+
+================================== FAILURES ===================================
+_______ test_unrelated_conversion_scope_cannot_promote_referenced_range _______
+
+    def test_unrelated_conversion_scope_cannot_promote_referenced_range():
+        d = calibrated_document()
+        for o in conversion_observations(d):
+            o["scope"] = "Unrelated Business Line"
+        cal = analyze(d)["calibrations"][0]
+>       assert cal["adequacy_status"] == "unverified"
+E       AssertionError: assert 'referenced_range' == 'unverified'
+E         
+E         - unverified
+E         + referenced_range
+
+tests\test_scoped_calibration_support.py:36: AssertionError
+______ test_unrelated_conversion_period_cannot_promote_referenced_range _______
+
+    def test_unrelated_conversion_period_cannot_promote_referenced_range():
+        d = calibrated_document()
+        for o in conversion_observations(d):
+            o["period"] = "FY2031"
+        cal = analyze(d)["calibrations"][0]
+>       assert cal["adequacy_status"] == "unverified"
+E       AssertionError: assert 'referenced_range' == 'unverified'
+E         
+E         - unverified
+E         + referenced_range
+
+tests\test_scoped_calibration_support.py:47: AssertionError
+_____ test_calibration_scope_must_name_native_business_and_output_segment _____
+
+    def test_calibration_scope_must_name_native_business_and_output_segment():
+        d = calibrated_document()
+        for o in d["operating_research"]["observations"]:
+            if o["observation_kind"] == "quantitative_reference":
+                o["scope"] = "Unrelated Product X"
+        d["operating_research"]["calibrations"][0]["scope"] = "Unrelated Product X"
+        cal = analyze(d)["calibrations"][0]
+>       assert cal["adequacy_status"] == "unverified"
+E       AssertionError: assert 'referenced_range' == 'unverified'
+E         
+E         - unverified
+E         + referenced_range
+
+tests\test_scoped_calibration_support.py:59: AssertionError
+_______ test_business_cross_borrowing_output_segment_mismatch_rejected ________
+
+    def test_business_cross_borrowing_output_segment_mismatch_rejected():
+        d = calibrated_document()
+        d["operating_research"]["calibrations"][0]["scope"] = "Segment B"
+        cal = analyze(d)["calibrations"][0]
+        assert cal["adequacy_status"] == "unverified"
+>       assert "calibration_output_scope_mismatch:0_low_2026:Segment B->Segment A" in cal["reasons"]
+E       AssertionError: assert 'calibration_output_scope_mismatch:0_low_2026:Segment B->Segment A' in ['range_endpoints_period_or_scope_not_supported']
+
+tests\test_scoped_calibration_support.py:68: AssertionError
+___ test_demoted_calibration_drops_magnitude_support_per_scenario_and_year ____
+
+    def test_demoted_calibration_drops_magnitude_support_per_scenario_and_year():
+        d = calibrated_document()
+        for o in conversion_observations(d):
+            o["scope"] = "Unrelated Business Line"
+        diag = analyze(d)
+>       assert diag["calibrations"][0]["adequacy_status"] == "unverified"
+E       AssertionError: assert 'referenced_range' == 'unverified'
+E         
+E         - unverified
+E         + referenced_range
+
+tests\test_scoped_calibration_support.py:93: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_scoped_calibration_support.py::test_unrelated_conversion_scope_cannot_promote_referenced_range
+FAILED tests/test_scoped_calibration_support.py::test_unrelated_conversion_period_cannot_promote_referenced_range
+FAILED tests/test_scoped_calibration_support.py::test_calibration_scope_must_name_native_business_and_output_segment
+FAILED tests/test_scoped_calibration_support.py::test_business_cross_borrowing_output_segment_mismatch_rejected
+FAILED tests/test_scoped_calibration_support.py::test_demoted_calibration_drops_magnitude_support_per_scenario_and_year
+========================= 5 failed, 2 passed in 2.85s =========================
+EXIT=1
