@@ -90,6 +90,8 @@ SMOKE_TESTS = (
     "tests/test_growth_driver_tree.py",
     "tests/test_revenue_constraints.py",
     "tests/test_schema_compatibility.py",
+    "tests/test_research_support_diagnostics.py",
+    "tests/test_scoped_calibration_support.py",
 )
 
 

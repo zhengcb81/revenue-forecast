@@ -1,5 +1,13 @@
 # Findings — P7-RF
 
+## 2026-10-10T23:45:54.876418+00:00 — MAIN接收修复发布，自动回归纳入同一快检
+
+P7交付后的period与shared-scope根因已TDD修正，35集中责任测试、真实minimal public CLI及六项独立探针绿；正常source e929185c已合canonical main/push，260PASS/2subtests本地37.50s、精确CI38096020406 success。原assurance三个WIP SHA与output文件列表保持。九runtime/docs定点18文件同步、502其他文件SHA保持；fresh installed实际CLI集中复验进行。旧RED及外包原记录原样保留，不把源码完成叫经济研究完成。
+
+查同一pre-push/CI快捷清单遗漏新diagnostics与scoped-calibration两责任文件，新增这两组现成有界离线反例（不加新workflow、全覆盖、生产目录或人工门）。防止只跑旧260项导致本次根因以后无日常回归保护；仍单pytest执行，同清单本地/远端一致。R16/R17/R18/W09真实公司校准、跨三年预测与独立四审仍open，零新增provider/model/费。
+
+Next Step：正常提交该两快检登记与接收归总→同一门推送/精确CI；完成已安装真实CLI复验，再MAIN W04/W03及原三家研究四审。
+
 本卡完整已复现实证、根因与稳定接口见 IMPLEMENTATION_CARD.md §§1–3；这些是施工起因，不是本卡已经实施的结果。
 
 写集只限本卡；MAIN保留AUTO共同接线/跨仓安装与并线。另两卡物理目录和源码写集不同，不等待它们的新接口。原件/配置/旧证据与其他ownerWIP不改。
