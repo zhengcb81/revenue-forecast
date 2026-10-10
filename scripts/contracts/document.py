@@ -19,6 +19,8 @@ from contracts.constants import (
     OPT_IN_SCHEMA_VERSION,
     PARAMETER_DIMENSIONS,
     PARAMETER_KINDS,
+    PERIOD_EVIDENCE_SCHEMA_VERSION,
+    PERIOD_FLOW_TIME_BASIS,
     RESOLUTION_STATUSES,
     SCENARIOS,
     SOURCE_RANKS,
@@ -44,6 +46,7 @@ from asset_ownership import (
     validate_segment_ownership,
 )
 from mine_year_operation import validate_mine_year_operation
+from contracts.period_flow import validate_period_flow_fields
 from forecast.calc import (
     _parse_fiscal_year,
     evaluate_derived_formula,
@@ -82,9 +85,11 @@ def validate_top_level(data: dict[str, Any]) -> tuple[list[int], date]:
         require(key in data, f"missing required field: {key}")
 
     require(
-        data["schema_version"] in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION),
-        f"schema_version must be {FORECAST_SCHEMA_VERSION} or "
-        f"{OPT_IN_SCHEMA_VERSION} (opt-in)",
+        data["schema_version"]
+        in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, PERIOD_EVIDENCE_SCHEMA_VERSION),
+        f"schema_version must be {FORECAST_SCHEMA_VERSION}, "
+        f"{OPT_IN_SCHEMA_VERSION} (opt-in) or {PERIOD_EVIDENCE_SCHEMA_VERSION} "
+        "(period evidence opt-in)",
     )
 
     require(
@@ -375,6 +380,15 @@ def validate_parameters(
     semantic_groups: dict[tuple[str, str, str, str], list[dict[str, Any]]] = (
         defaultdict(list)
     )
+    # M3-FLOW: the dated-flow basis exists only in schema 3.9. On 3.7/3.8
+    # (and any older pin) period_flow fails closed, and period dates on a
+    # non-flow basis are rejected in every schema so the new fields can
+    # never ride along on legacy documents.
+    allowed_time_bases = (
+        TIME_BASES | {PERIOD_FLOW_TIME_BASIS}
+        if data["schema_version"] == PERIOD_EVIDENCE_SCHEMA_VERSION
+        else TIME_BASES
+    )
 
     for position, parameter in enumerate(parameters):
         prefix = f"parameters[{position}]"
@@ -405,9 +419,17 @@ def validate_parameters(
         )
         time_basis = parameter.get("time_basis")
         require(
-            time_basis in TIME_BASES,
+            time_basis in allowed_time_bases,
             f"unsupported time_basis for {parameter_id}: {time_basis}",
         )
+        if "period_start" in parameter or "period_end" in parameter:
+            require(
+                time_basis == PERIOD_FLOW_TIME_BASIS,
+                f"{parameter_id}: period_start/period_end require "
+                f"time_basis {PERIOD_FLOW_TIME_BASIS}",
+            )
+        if time_basis == PERIOD_FLOW_TIME_BASIS:
+            validate_period_flow_fields(parameter_id, parameter, data["fiscal_year_end"])
         if dimension in MONETARY_DIMENSIONS:
             require(
                 parameter.get("currency") == data["currency"],
@@ -605,7 +627,11 @@ def validate_evidence_claims(
             f"claim {claim_id} must be opened_and_checked",
         )
         source_capture = source_index[source_id].get("capture")
-        if data["schema_version"] in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION):
+        if data["schema_version"] in (
+            FORECAST_SCHEMA_VERSION,
+            OPT_IN_SCHEMA_VERSION,
+            PERIOD_EVIDENCE_SCHEMA_VERSION,
+        ):
             require(
                 isinstance(source_capture, dict),
                 f"claim source capture is missing: {claim_id}",

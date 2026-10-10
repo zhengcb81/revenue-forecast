@@ -1,0 +1,44 @@
+{
+  "schema_version": "m3-flow-consumer-map/1",
+  "lane_id": "M3-FLOW",
+  "owner": "m3_rf_flow_role_implementation",
+  "repository": "revenue-forecast",
+  "base_head": "0c248d9a07a2dd7a2c756946d88507479d5e9d15",
+  "topics": {
+    "time_basis_period_flow": {
+      "definition": "scripts/contracts/constants.py:140 TIME_BASES={annual,point_in_time}; new PERIOD_EVIDENCE_SCHEMA_VERSION/period_flow constants added here (single source of truth; revenue_core re-export untouched, new constants imported from contracts.constants directly)",
+      "consumers": [
+        {"path": "scripts/contracts/document.py", "lines": "406-410", "role": "validate_parameters enforces time_basis membership; period_flow accepted only for schema 3.9; period_start/period_end keys rejected unless time_basis=period_flow (any schema)"},
+        {"path": "scripts/contracts/document.py", "lines": "495-526", "role": "derived_fact resolve_value keeps H1+H2=annual composition tolerance semantics unchanged"},
+        {"path": "scripts/generate_input_template.py", "lines": "114", "role": "authoring skeleton emits time_basis=annual; gains opt-in schema_version choice (3.9) emitting the same annual defaults plus documented period-flow recipe"},
+        {"path": "scripts/lint_input.py", "lines": "94-106", "role": "static pre-flight uses schema_fields.PARAMETER_REQUIRED (required-only, additive keys pass; no time_basis enum check) — no change needed"},
+        {"path": "scripts/revenue_core.py", "lines": "47-66", "role": "engine consumes value unchanged (no implicit x2 annualization); result embeds ENGINE_VERSION (bumped via constants.SKILL_VERSION)"},
+        {"path": "scripts/revenue_report.py", "lines": "431,451-452,591", "role": "output/strong validation via require_validating_engine(schema,engine,mode); registry-driven, so the new 3.9 row activates read/strong paths without editing this MAIN-owned file"},
+        {"path": "scripts/revenue_backtest.py", "lines": "106", "role": "snapshot/backtest validation via the same registry"},
+        {"path": "scripts/schema_compatibility.py", "lines": "37-47", "role": "emit matrix: 3.7/3.8 frozen to {4.1.0,4.1.1,ENGINE_VERSION}; new row 3.9={ENGINE_VERSION} (born at engine 4.2.0)"},
+        {"path": "references/input-construction.md", "lines": "54", "role": "quick-reference TIME_BASES bullet stays legacy (annual,point_in_time); new schema-3.9 section documents period_flow contract; guard tests/test_input_construction_consistency.py reads only the quick-reference section"},
+        {"path": "tests/test_input_construction_consistency.py", "lines": "52-64", "role": "doc/source enum guard; unaffected while quick-reference bullets unchanged"}
+      ]
+    },
+    "evidence_role_triangulation": {
+      "definition": "scripts/research/drivers.py:210-242 _validate_growth_driver_evidence core_nodes/triangulation; roles vocabulary scripts/contracts/constants.py:242-261",
+      "consumers": [
+        {"path": "scripts/research/drivers.py", "lines": "210-242", "role": "triangulation rule; becomes schema-aware: 3.7/3.8 keep legacy peer-only exclusion; 3.9 requires mechanism_direction claims on >=2 nodes/types/sources for triangulated, all other roles disclosed with limitation note"},
+        {"path": "scripts/contracts/document.py", "lines": "636-661", "role": "claim-level evidence_role validation (role vocabulary, directional-role value restrictions) — unchanged semantics"},
+        {"path": "scripts/research/evidence_roles.py", "lines": "15-24", "role": "operating observation kinds map to role sets (operating_mechanism->mechanism_direction); unchanged"},
+        {"path": "scripts/revenue_core.py", "role": "growth_driver_analysis/calculate consume validated evidence_status; confidence score must not change due to role category (verified by test)"}
+      ]
+    },
+    "version_pins_outside_write_set": [
+        {"path": "tests/test_schema_compatibility.py", "lines": "28,32-35,66-72,96-99", "role": "hard-coded 4.1.1 emit pins and 3.9-fails-closed negative guard; mechanical release-wiring update required -> MAIN_INTEGRATION_PATCH.patch"},
+        {"path": "tests/test_data_contract.py", "lines": "461-464", "role": "SKILL_VERSION==4.1.1 release pin; same MAIN patch"},
+        {"path": "CHANGELOG.md", "role": "engine 4.2.0 + schema 3.9 entry required by schema_compatibility provenance rule; MAIN-owned -> MAIN_INTEGRATION_PATCH.patch"},
+        {"path": "SKILL.md", "role": "skill version surface; MAIN-owned -> MAIN patch"}
+    ],
+    "blast_radius_verified": {
+        "tests/test_golden_behavior_lock.py": "skips unless ENGINE_VERSION==4.1.0 (pinned runtime); stays skipped on 4.2.0",
+        "tests/test_source_clock.py": "uses (3.7,4.1.0,snapshot)=True and (3.7,9.9.9)=False; both hold after freezing {4.1.0,4.1.1,4.2.0}",
+        "tools/pre_push_gate.py SMOKE_TESTS": "runs test_data_contract.py and test_schema_compatibility.py -> exact CI on this branch stays red on the listed MAIN-owned pins until MAIN merges the patch; authorized-scope tests stay green"
+    }
+  }
+}

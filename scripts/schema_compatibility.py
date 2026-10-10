@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from contracts.constants import PERIOD_EVIDENCE_SCHEMA_VERSION
 from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, require
 
 # ---------------------------------------------------------------------------
@@ -33,6 +34,8 @@ from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_
 #   schema 3.5 — engine 3.10.0            (Unreleased, pre-3.6)
 #   schema 3.6 — engines 3.10.0/4.0.0     (v3.10.0, legacy read-only from v4.0.0)
 #   schemas 3.7/3.8 — engines 4.1.0/4.1.1 (v4.1.1 source-clock/1; old semantics need pinned runtime)
+#   schema 3.9 — engine 4.2.0             (M3-FLOW period_flow + role-aware triangulation;
+#                                          never emitted by 4.1.x, fail-closed there)
 # ---------------------------------------------------------------------------
 SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
     "3.0": frozenset({"3.0.0"}),
@@ -42,8 +45,11 @@ SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
     "3.4": frozenset({"3.5.0", "3.6.0", "3.7.0", "3.8.0", "3.9.0", "3.10.0", "4.0.0"}),
     "3.5": frozenset({"3.10.0", "4.0.0"}),
     "3.6": frozenset({"3.10.0", "4.0.0"}),
-    FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", ENGINE_VERSION}),
-    OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", ENGINE_VERSION}),
+    # 4.1.1 stays a documented emitter after the 4.2.0 engine bump; the
+    # current engine is always a legal emitter for the schemas it can produce.
+    FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
+    OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
+    PERIOD_EVIDENCE_SCHEMA_VERSION: frozenset({ENGINE_VERSION}),
 }
 
 

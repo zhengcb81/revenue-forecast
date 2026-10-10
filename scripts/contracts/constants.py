@@ -10,7 +10,7 @@ from __future__ import annotations
 SCENARIOS = ("low", "base", "high")
 
 
-SKILL_VERSION = "4.1.1"
+SKILL_VERSION = "4.2.0"
 
 
 FORECAST_SCHEMA_VERSION = "3.7"
@@ -20,6 +20,13 @@ FORECAST_SCHEMA_VERSION = "3.7"
 # operations per ZR-605) for the mining layer. Opt-in only: 3.7 stays the
 # canonical version and its validation behavior is unchanged.
 OPT_IN_SCHEMA_VERSION = "3.8"
+
+
+# M3-FLOW (root cause R20): schema 3.9 = 3.8 + typed dated period flows
+# (``time_basis=period_flow`` with ``period_start``/``period_end``) and the
+# role-aware mechanism triangulation in the growth-driver tree. Opt-in only;
+# 3.7/3.8 keep their exact legacy semantics and reject the new fields.
+PERIOD_EVIDENCE_SCHEMA_VERSION = "3.9"
 
 
 SUPPORTED_FORECAST_SCHEMA_VERSIONS = {
@@ -32,6 +39,7 @@ SUPPORTED_FORECAST_SCHEMA_VERSIONS = {
     "3.6",
     FORECAST_SCHEMA_VERSION,
     OPT_IN_SCHEMA_VERSION,
+    PERIOD_EVIDENCE_SCHEMA_VERSION,
 }
 
 
@@ -138,6 +146,22 @@ MONETARY_DIMENSIONS = {
 
 
 TIME_BASES = {"annual", "point_in_time"}
+
+# M3-FLOW (R20): the dated-flow basis is accepted only on schema 3.9 — it is
+# deliberately NOT added to TIME_BASES so 3.7/3.8 documents fail closed on it.
+PERIOD_FLOW_TIME_BASIS = "period_flow"
+
+# Calendar month lengths a period_flow may cover (3/6/12). Non-calendar or
+# transition fiscal years are covered by the fiscal-window containment rule
+# in contracts.period_flow, not by extra lengths.
+PERIOD_FLOW_MONTH_LENGTHS = frozenset({3, 6, 12})
+
+
+# M3-FLOW (R20): the only claim role that asserts an operating mechanism of
+# the modeled future growth. History bases, financing background, value
+# ranges, conversions, recognition policies, peer analogies, comparisons and
+# counterevidence stay disclosed but never count as future-mechanism support.
+MECHANISM_EVIDENCE_ROLES = frozenset({"mechanism_direction"})
 
 
 RECOGNITION_MODES = {"modeled_as_recognized", "lagged_activity"}
