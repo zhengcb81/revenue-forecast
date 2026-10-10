@@ -71,6 +71,10 @@ def _run(
 
 
 SMOKE_TESTS = (
+    "tests/test_m3_acquisition_usage_acceptance.py",
+    "tests/test_m3_period_flow_consumers.py",
+    "tests/test_m3_period_flow_annual_consumers.py",
+    "tests/test_m3_evidence_roles.py",
     "tests/test_ci_smoke_plan.py",
     "tests/test_pre_push_gate_git_hook_env.py",
     "tests/test_p5_source_default_v2.py",

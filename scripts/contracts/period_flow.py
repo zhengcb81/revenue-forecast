@@ -22,6 +22,7 @@ simply cannot be typed as ``period_flow`` yet.
 
 from __future__ import annotations
 
+from calendar import monthrange
 from datetime import date, timedelta
 
 from contracts.constants import (
@@ -34,13 +35,6 @@ from contracts.evidence import (
     period_year,
     require,
 )
-
-# Average calendar month length used to classify covered lengths. Calendar
-# halves are 181-184 days, quarters 89-92 days, fiscal years 365/366 days;
-# tolerance below keeps those inside {3, 6, 12} and everything else out.
-_AVG_MONTH_DAYS = 30.4375
-_MONTH_TOLERANCE = 0.2
-
 
 def _fiscal_year_end_date(fiscal_year_end: str, year: int) -> date:
     month, day = int(fiscal_year_end[:2]), int(fiscal_year_end[3:])
@@ -68,14 +62,36 @@ def fiscal_year_window(fiscal_year_end: str, year: int) -> tuple[date, date]:
 
 
 def period_flow_months(start: date, end: date) -> int:
-    """Calendar months covered by the inclusive window (nearest whole count)."""
+    """Exact 3/6/12 calendar-month span, using inclusive end dates.
+
+    The next period starts at the calendar-month anniversary of ``start``.
+    A duration merely close to a quarter or half year has no typed-month
+    meaning. The caller handles an exact fiscal-year window separately to
+    preserve leap-day year-end conventions.
+    """
     require(
         isinstance(start, date) and isinstance(end, date),
         "period_flow months requires date endpoints",
     )
     require(start < end, "period_start must be strictly before period_end")
-    inclusive_days = (end - start).days + 1
-    return round(inclusive_days / _AVG_MONTH_DAYS)
+    # Compare the exclusive boundary as a tuple so a valid window ending
+    # on 9999-12-31 does not overflow datetime by adding one day.
+    if end.day == monthrange(end.year, end.month)[1]:
+        exclusive_year, exclusive_month_index = divmod(end.year * 12 + end.month, 12)
+        exclusive_end = (exclusive_year, exclusive_month_index + 1, 1)
+    else:
+        exclusive_end = (end.year, end.month, end.day + 1)
+    for months in sorted(PERIOD_FLOW_MONTH_LENGTHS):
+        month_index = start.year * 12 + start.month - 1 + months
+        year, zero_based_month = divmod(month_index, 12)
+        month = zero_based_month + 1
+        boundary = (year, month, min(start.day, monthrange(year, month)[1]))
+        if exclusive_end == boundary:
+            return months
+    raise ForecastInputError(
+        "period_flow must cover 3, 6 or 12 whole calendar months; "
+        f"got {start.isoformat()}..{end.isoformat()}"
+    )
 
 
 def validate_period_flow_fields(
@@ -107,12 +123,12 @@ def validate_period_flow_fields(
         f"({window_start.isoformat()}..{window_end.isoformat()}) implied by "
         f"fiscal_year_end {fiscal_year_end}",
     )
-    inclusive_days = (end - start).days + 1
-    exact_months = inclusive_days / _AVG_MONTH_DAYS
-    months = round(exact_months)
-    require(
-        months in PERIOD_FLOW_MONTH_LENGTHS and abs(exact_months - months) <= _MONTH_TOLERANCE,
-        f"{parameter_id}: period_flow must cover 3, 6 or 12 whole months; "
-        f"got {inclusive_days} days",
-    )
+    # A fiscal year is explicitly a twelve-month reporting window even
+    # when its leap-day boundary does not match a naive date anniversary.
+    # All shorter flows must match exact calendar-month boundaries.
+    if (start, end) != (window_start, window_end):
+        try:
+            period_flow_months(start, end)
+        except ForecastInputError as exc:
+            raise ForecastInputError(f"{parameter_id}: {exc}") from exc
     return {"period_start": start, "period_end": end}

@@ -220,6 +220,33 @@ class PeriodFlowContractUnitTests(unittest.TestCase):
             with self.assertRaisesRegex(ForecastInputError, "month"):
                 validate_document(data)
 
+    def test_near_quarter_day_counts_are_not_whole_calendar_months(self) -> None:
+        for start, end in (
+            ("2026-01-02", "2026-03-28"),
+            ("2026-01-01", "2026-03-27"),
+            ("2026-01-01", "2026-07-03"),
+        ):
+            with self.subTest(start=start, end=end):
+                data = schema_3_9_document()
+                add_flow_parameter(data, "partial_flow", 55.0, start, end, 2026)
+                with self.assertRaisesRegex(ForecastInputError, "month"):
+                    validate_document(data)
+
+    def test_calendar_month_windows_remain_exact_across_leap_and_offset_fiscal_years(self) -> None:
+        cases = (
+            ("2024-01-01", "2024-03-31", "12-31", 2024),
+            ("2025-10-16", "2026-01-15", "10-15", 2026),
+            ("2024-02-29", "2025-02-28", "02-28", 2025),
+            ("9999-10-01", "9999-12-31", "12-31", 9999),
+        )
+        for start, end, fiscal_year_end, year in cases:
+            with self.subTest(start=start, end=end):
+                validate_period_flow_fields(
+                    "calendar_flow", {"time_basis": "period_flow", "period": f"FY{year}",
+                                      "period_start": start, "period_end": end},
+                    fiscal_year_end,
+                )
+
     def test_pure_field_validator_contract(self) -> None:
         parameter = {
             "time_basis": "period_flow",
@@ -321,7 +348,7 @@ class PeriodFlowIntegrationTests(unittest.TestCase):
             modern_result["parameter_trace"][-1]["value"], 30.0
         )
 
-    def test_different_flow_scopes_cannot_silently_mix(self) -> None:
+    def test_different_flow_scopes_remain_separate_observations(self) -> None:
         data = schema_3_9_document()
         shared = {
             "kind": "reported_fact",
@@ -356,8 +383,13 @@ class PeriodFlowIntegrationTests(unittest.TestCase):
         )
         finalize_contract(data)
         data["schema_version"] = PERIOD_EVIDENCE_SCHEMA_VERSION
-        with self.assertRaisesRegex(ForecastInputError, "conflict|resolution"):
-            validate_document(data)
+        validated = validate_document(data)
+        self.assertEqual(validated["parameter_index"]["scope_q2"]["value"], 30.0)
+        self.assertEqual(validated["parameter_index"]["scope_h1"]["value"], 55.0)
+        self.assertNotEqual(
+            validated["parameter_index"]["scope_q2"]["period_start"],
+            validated["parameter_index"]["scope_h1"]["period_start"],
+        )
 
     def test_published_3_9_result_strong_validates_and_renders(self) -> None:
         data = schema_3_9_document()

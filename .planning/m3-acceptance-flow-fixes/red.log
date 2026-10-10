@@ -1,0 +1,49 @@
+..F..F....                                                               [100%]
+================================== FAILURES ===================================
+_ MechanismRoleUnitTests.test_history_claim_source_cannot_become_second_mechanism_source _
+
+self = <test_m3_evidence_roles.MechanismRoleUnitTests testMethod=test_history_claim_source_cannot_become_second_mechanism_source>
+
+    def test_history_claim_source_cannot_become_second_mechanism_source(self) -> None:
+        data = role_document(
+            PERIOD_EVIDENCE_SCHEMA_VERSION,
+            [
+                {"roles": ["mechanism_direction"], "source_id": "filing", "evidence_type": "company_execution"},
+                {"roles": ["mechanism_direction"], "source_id": "filing", "evidence_type": "operating_metrics"},
+            ],
+        )
+        node = data["growth_driver_tree"]["drivers"][0]["evidence_nodes"][0]
+        node["claim_ids"].append(add_evidence_claim(
+            data, "history_other_source", "transcript", node["evidence_id"],
+            "history_base", "A historical base from a second source proves no operating mechanism.",
+        ))
+        status, nodes, _ = segment_a_status(data)
+>       self.assertEqual(status, "limited")
+E       AssertionError: 'triangulated' != 'limited'
+E       - triangulated
+E       + limited
+
+tests\test_m3_evidence_roles.py:248: AssertionError
+_ MechanismRoleUnitTests.test_mixed_peer_claim_preserves_valid_mechanism_support _
+
+self = <test_m3_evidence_roles.MechanismRoleUnitTests testMethod=test_mixed_peer_claim_preserves_valid_mechanism_support>
+
+    def test_mixed_peer_claim_preserves_valid_mechanism_support(self) -> None:
+        data = role_document(
+            PERIOD_EVIDENCE_SCHEMA_VERSION,
+            [
+                {"roles": ["mechanism_direction", "peer_analogy"], "source_id": "filing", "evidence_type": "company_execution"},
+                {"roles": ["mechanism_direction"], "source_id": "transcript", "evidence_type": "operating_metrics"},
+            ],
+        )
+        status, nodes, _ = segment_a_status(data)
+>       self.assertEqual(status, "triangulated")
+E       AssertionError: 'limited' != 'triangulated'
+E       - limited
+E       + triangulated
+
+tests\test_m3_evidence_roles.py:262: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_m3_evidence_roles.py::MechanismRoleUnitTests::test_history_claim_source_cannot_become_second_mechanism_source
+FAILED tests/test_m3_evidence_roles.py::MechanismRoleUnitTests::test_mixed_peer_claim_preserves_valid_mechanism_support
+2 failed, 8 passed in 1.21s

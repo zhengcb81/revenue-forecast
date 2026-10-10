@@ -33,6 +33,7 @@ from revenue_core import (  # noqa: E402
     validate_document,
 )
 from test_recognition_bridge import forecast_document  # noqa: E402
+from revenue_report import validate_published_forecast  # noqa: E402
 
 PERIOD_EVIDENCE_SCHEMA_VERSION = "3.9"
 
@@ -230,6 +231,64 @@ class MechanismRoleUnitTests(unittest.TestCase):
         status, nodes, _ = segment_a_status(data)
         self.assertEqual(status, "triangulated")  # mixed node still counts via its mechanism claim
         self.assertEqual(len(nodes), 3)  # the contrary row is preserved, not dropped
+
+    def test_history_claim_source_cannot_become_second_mechanism_source(self) -> None:
+        data = role_document(
+            PERIOD_EVIDENCE_SCHEMA_VERSION,
+            [
+                {"roles": ["mechanism_direction"], "source_id": "filing", "evidence_type": "company_execution"},
+                {"roles": ["mechanism_direction"], "source_id": "filing", "evidence_type": "operating_metrics"},
+            ],
+        )
+        node = data["growth_driver_tree"]["drivers"][0]["evidence_nodes"][0]
+        node["claim_ids"].append(add_evidence_claim(
+            data, "history_other_source", "transcript", node["evidence_id"],
+            "history_base", "A historical base from a second source proves no operating mechanism.",
+        ))
+        status, nodes, _ = segment_a_status(data)
+        self.assertEqual(status, "limited")
+        # The historical evidence remains available for disclosure.
+        self.assertEqual(nodes[0]["source_ids"], ["filing", "transcript"])
+        self.assertIn("history_other_source", nodes[0]["claim_ids"])
+
+    def test_mixed_peer_claim_preserves_valid_mechanism_support(self) -> None:
+        data = role_document(
+            PERIOD_EVIDENCE_SCHEMA_VERSION,
+            [
+                {"roles": ["mechanism_direction", "peer_analogy"], "source_id": "filing", "evidence_type": "company_execution"},
+                {"roles": ["mechanism_direction"], "source_id": "transcript", "evidence_type": "operating_metrics"},
+            ],
+        )
+        status, nodes, _ = segment_a_status(data)
+        self.assertEqual(status, "triangulated")
+        self.assertEqual(len(nodes[0]["claim_ids"]), 2)
+
+    def test_mixed_claim_roles_survive_public_compute_and_strong_recomputation(self) -> None:
+        for mixed_peer in (False, True):
+            with self.subTest(mixed_peer=mixed_peer):
+                data = role_document(
+                    PERIOD_EVIDENCE_SCHEMA_VERSION,
+                    [
+                        {"roles": ["mechanism_direction", "peer_analogy"] if mixed_peer
+                                  else ["mechanism_direction"],
+                         "source_id": "filing", "evidence_type": "company_execution"},
+                        {"roles": ["mechanism_direction"],
+                         "source_id": "transcript" if mixed_peer else "filing",
+                         "evidence_type": "operating_metrics"},
+                    ],
+                )
+                if not mixed_peer:
+                    node = data["growth_driver_tree"]["drivers"][0]["evidence_nodes"][0]
+                    node["claim_ids"].append(add_evidence_claim(
+                        data, "public_history_source", "transcript", node["evidence_id"],
+                        "history_base", "Only historical facts from the second source.",
+                    ))
+                result = run_forecast(data)
+                context = validate_published_forecast(result, data)
+                self.assertIsNotNone(context)
+                driver = result["growth_driver_analysis"]["drivers"][0]
+                self.assertEqual(driver["evidence_status"],
+                                 "triangulated" if mixed_peer else "limited")
 
     def test_legacy_peer_only_exclusion_unchanged_for_old_schemas(self) -> None:
         # On 3.7/3.8 the historical rule stands: only peer analogies are

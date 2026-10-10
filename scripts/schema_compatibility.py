@@ -49,8 +49,22 @@ SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
     # current engine is always a legal emitter for the schemas it can produce.
     FORECAST_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
     OPT_IN_SCHEMA_VERSION: frozenset({"4.1.0", "4.1.1", ENGINE_VERSION}),
-    PERIOD_EVIDENCE_SCHEMA_VERSION: frozenset({ENGINE_VERSION}),
+    PERIOD_EVIDENCE_SCHEMA_VERSION: frozenset({"4.2.0", ENGINE_VERSION}),
 }
+
+
+# Additive schemas share the modern bound-input/output features. Keeping this
+# set beside the emit registry avoids consumers equating "current default" with
+# "the only schema that has these features". Legacy output semantics remain
+# pinned to their existing documented branch checks.
+BOUND_INPUT_SCHEMA_VERSIONS = frozenset({
+    FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, PERIOD_EVIDENCE_SCHEMA_VERSION,
+})
+
+
+def requires_bound_input_schema(schema_version: str) -> bool:
+    """Whether an artifact uses modern bound-input/output recomputation."""
+    return schema_version in BOUND_INPUT_SCHEMA_VERSIONS
 
 
 def supported_schema_versions() -> frozenset[str]:

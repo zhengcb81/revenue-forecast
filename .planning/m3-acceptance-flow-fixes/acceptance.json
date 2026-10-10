@@ -1,0 +1,124 @@
+{
+  "schema_version": "m3-flow-acceptance-fixes/1",
+  "observed_at_utc": "2026-10-10T19:49:15.345327+00:00",
+  "delivered_head": "f8ae04884237c39d204689883c8756ee7d33a0a9",
+  "integration_head_before_fixes": "4a0c8c19",
+  "status": "engineering_fixes_green_main_publication_pending",
+  "files": [
+    {
+      "path": "scripts/research/drivers.py",
+      "sha256": "aebfc5ddcdb56e743efa35f3514b867e2cac6e9a1f335ab1c79bd309ccc8a696"
+    },
+    {
+      "path": "scripts/contracts/period_flow.py",
+      "sha256": "0caeb1f1d69778405c1816e1dcddfcc9faac4ddf618c883e70564d6f7ad1e19f"
+    },
+    {
+      "path": "tests/test_m3_evidence_roles.py",
+      "sha256": "0254062ffead4d8f0731d7ba9f84996ec240e5d86317c4f059907dafd29c3ad9"
+    },
+    {
+      "path": "tests/test_m3_period_flow_contract.py",
+      "sha256": "f16b4524840b95d142914fab25e1da4ecdcaf67a9f1341977eb90bf2b6680ab9"
+    }
+  ],
+  "findings": [
+    {
+      "id": "FLOW-P1-MIXED-SOURCE",
+      "file": "scripts/research/drivers.py",
+      "root_cause": "Mechanism-eligible nodes counted every claim source, including history-only sources.",
+      "fix": "Count independent sources only from mechanism_direction claims; retain all original claims/source IDs for disclosure.",
+      "status": "fixed"
+    },
+    {
+      "id": "FLOW-P1-MIXED-PEER",
+      "file": "scripts/research/drivers.py",
+      "root_cause": "A peer claim excluded an entire mixed node, discarding valid mechanism support.",
+      "fix": "3.9 counts valid mechanism claims inside mixed nodes; legacy peer-only behavior remains unchanged.",
+      "status": "fixed"
+    },
+    {
+      "id": "FLOW-P2-APPROXIMATE-MONTH",
+      "file": "scripts/contracts/period_flow.py",
+      "root_cause": "Average-day rounding with 0.2-month tolerance accepted partial quarters/halves.",
+      "fix": "Exact calendar anniversaries for 3/6/12 month spans, explicit complete fiscal-window annual span for leap-day FYE conventions.",
+      "status": "fixed"
+    },
+    {
+      "id": "FLOW-P1-SCHEMA-CONSUMERS",
+      "file": "scripts/revenue_report.py",
+      "root_cause": "New-schema registry acceptance did not activate existing current-schema output recomputation branches.",
+      "fix_owner": "MAIN",
+      "status": "parent_wiring_tests_green_pending_final_node"
+    },
+    {
+      "id": "FLOW-P2-RENDER-WINDOW",
+      "file": "scripts/revenue_report.py",
+      "root_cause": "Report parameter table displayed FY only and omitted period_flow dates/basis.",
+      "fix_owner": "MAIN",
+      "status": "parent_wiring_tests_green_pending_final_node"
+    }
+  ],
+  "tests": {
+    "mechanism_red": "2 failed, 8 passed",
+    "mechanism_green": "34 passed",
+    "period_red": "3 failed, 18 passed, 3 subtests passed",
+    "final_green": "58 passed, 9 subtests passed",
+    "static": "ruff exit 0; mypy exit 0, 7 source files",
+    "environment_failure": "Initial sandbox pytest default TMP numbered directory could not be created; 53 setup errors are environment errors, not product RED.",
+    "concurrent_parent_edit_failure": "period-green.log: 17 failed/40 passed/6 subtests while parent report glue was mid-edit (FORECAST_SCHEMA_VERSION NameError). Final-green replaces engineering verdict, historical log retained."
+  },
+  "logs": [
+    {
+      "path": "final-green.log",
+      "sha256": "861484297d81c12119298ea0c3a2417466bcd7dc2273e088872c73d8e842432f",
+      "bytes": 111
+    },
+    {
+      "path": "mechanism-green.log",
+      "sha256": "a7a7f8f36441ea24f1d46d12df64226d002edfba57997e68cab7542379855075",
+      "bytes": 101
+    },
+    {
+      "path": "period-green.log",
+      "sha256": "56f4fbb18719d29a61d4b120ede88b815d67aefa255dba171d1e2d011ae5c95c",
+      "bytes": 188321
+    },
+    {
+      "path": "period-red.log",
+      "sha256": "c006a76cc88d704006c1ad937be0b758a894eb38a5a5befec4e96b6daa8bea36",
+      "bytes": 3754
+    },
+    {
+      "path": "red.log",
+      "sha256": "391fdba0e59561cbc094a4768ccd1e2fc6a0a7aa836b9f48efb1e69921ee9865",
+      "bytes": 2663
+    },
+    {
+      "path": "static-0.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "bytes": 19
+    },
+    {
+      "path": "static-1.log",
+      "sha256": "e2702f9afc4c0f80ff1e8624f77af7a7d2689ca184512114aae5967a76229ba8",
+      "bytes": 44
+    }
+  ],
+  "isolation": {
+    "test_temp_removed": true,
+    "production_originals_modified": false,
+    "production_config_modified": false,
+    "external_provider_calls": 0,
+    "external_model_calls": 0,
+    "paid_tokens": 0,
+    "paid_micro_usd": 0,
+    "unknown_budget_preserved": true
+  },
+  "remaining": [
+    "MAIN normal commit/push/exact-head CI and targeted installation; no hook bypass",
+    "MAIN update references/m3-period-evidence.md and CHANGELOG/SKILL if they still describe duration tolerance or node-level role counting",
+    "Real company research acceptance is not established by these offline tests"
+  ],
+  "committed": false
+}

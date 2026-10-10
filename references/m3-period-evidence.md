@@ -33,8 +33,9 @@ only when `schema_version == "3.9"`:
    resolved from `fiscal_year_end` (Feb-29 FYE anchors to Feb-28 in non-leap
    years so windows stay contiguous). Cross-calendar-year flows and
    non-calendar fiscal years need no extra vocabulary.
-3. The covered length must be 3, 6 or 12 whole months (inclusive-day count
-   over the average calendar month, tolerance 0.2 months). Amounts belong to
+3. The covered length must be 3, 6 or 12 whole calendar months, using
+   exact date boundaries (a full fiscal-year window is 12 months, including
+   leap-day fiscal boundaries). No approximate-day tolerance is used. Amounts belong to
    the covered window; nothing annualizes implicitly. `H1 + H2 = annual` holds
    only through an explicit derived formula with identical unit/currency.
 4. `period_start`/`period_end` are rejected on every non-`period_flow`
@@ -48,8 +49,9 @@ only when `schema_version == "3.9"`:
 
 Gated on schema 3.9 (`role_aware`):
 
-* A supporting evidence node counts toward `triangulated` only when at least
-  one of its claims carries `evidence_role="mechanism_direction"`; two
+* Only claims carrying `evidence_role="mechanism_direction"` count toward
+  `triangulated`; source independence is counted from those claims
+  (`claim.source_id`), never from a mixed node's historical/peer sources. Two
   distinct evidence types and two distinct sources are still required.
 * `history_base`, `value_range`, `conversion_assumption`,
   `recognition_policy`, `counter_comparison`, `peer_analogy`, `counterevidence`

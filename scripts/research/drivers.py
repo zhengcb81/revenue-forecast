@@ -237,18 +237,32 @@ def _validate_growth_driver_evidence(
         core_nodes = [
             node
             for node in supporting_nodes
-            if not _is_peer_based(node) and _is_mechanism_support(node)
+            if _is_mechanism_support(node)
         ]
     else:
         core_nodes = [node for node in supporting_nodes if not _is_peer_based(node)]
     evidence_types = list(
         dict.fromkeys(node["evidence_type"] for node in core_nodes)
     )
-    evidence_source_ids = list(
-        dict.fromkeys(
-            source_id for node in core_nodes for source_id in node["source_ids"]
+    if role_aware:
+        # Independence belongs to the eligible mechanism claims, not the
+        # enclosing node. Mixed history/peer claims remain disclosed but
+        # their source IDs cannot fabricate a second mechanism source.
+        evidence_source_ids = list(
+            dict.fromkeys(
+                claim_index[claim_id]["source_id"]
+                for node in core_nodes
+                for claim_id in node["claim_ids"]
+                if claim_index[claim_id].get("evidence_role")
+                in MECHANISM_EVIDENCE_ROLES
+            )
         )
-    )
+    else:
+        evidence_source_ids = list(
+            dict.fromkeys(
+                source_id for node in core_nodes for source_id in node["source_ids"]
+            )
+        )
     evidence_status = (
         "triangulated"
         if len(evidence_types) >= 2 and len(evidence_source_ids) >= 2

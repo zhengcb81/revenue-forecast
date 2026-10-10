@@ -75,7 +75,8 @@ def usage(cost):
 
 
 def extra():
-    return {"http_wire_bytes": meter.wire, "http_wire_usage_complete": True,
+    return {"acquisition_cost_observed": True,
+            "http_wire_bytes": meter.wire, "http_wire_usage_complete": True,
             "http_exchanges": meter.exchanges, "http_observation": meter.last}
 
 
@@ -86,6 +87,15 @@ if a.action == "discover":
         response = conn.getresponse()
         body = response.read()
         meter.record(response, body, "identity")
+        if response.status != 200:
+            # A real provider child failure; the initial fee counter is not a
+            # provider billing receipt. CWP publishes its observation through
+            # MAIN's structured_error sibling, then FF and RF preserve it.
+            sys.stderr.write(json.dumps({"schema_version": "1.0", "status": "failed", "adapter": identity,
+                "error": {"code": "upstream_unavailable", "retryable": False,
+                          "message": "controlled metadata failure", "acquisition_usage": usage("0")},
+                **extra(), "acquisition_cost_observed": False}) + "\n")
+            raise SystemExit(1)
     candidates = [] if a.mode == "empty" else [{"candidate_id": "one", "provider": "loopback",
         "provider_document_id": "accession-one", "market": market, "entity": request["entity"],
         "title": "Fixture Annual Report", "source_url": "https://fixture.invalid/report.txt",
@@ -146,6 +156,7 @@ class _Handler(BaseHTTPRequestHandler):
 
 @pytest.fixture()
 def loopback():
+    _Handler.server_mode = "ok"
     server = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     yield server
@@ -318,3 +329,36 @@ def test_full_chain_missing_carries_observed_usage_to_rf_error(tmp_path, roots, 
     assert observation["cost_usd"] == "0.0003"
     assert value["calls"] >= 1 and value["downloads"] == 0
     assert "acquisition_failure" not in value  # a missing result is not a failure receipt
+
+
+def test_full_chain_hard_failure_preserves_primary_cause_and_unknown_cost(tmp_path, roots, loopback):
+    ff_root, cwp_root = roots
+    log_root = Path(os.environ["M3_E2E_LOG_ROOT"]) if os.environ.get("M3_E2E_LOG_ROOT") else None
+    _Handler.server_mode = "metadata-error"
+    base_url = f"http://127.0.0.1:{loopback.server_address[1]}"
+    env = _env(cwp_root / "src", base_url)
+    wiki, calls = _wiki(tmp_path, ff_root, cwp_root, "metadata-error", loopback.server_address[1])
+    request = tmp_path / "request.json"
+    request.write_text(json.dumps(_request("US", "AAPL", "Apple Inc.")), encoding="utf-8")
+    argv = [sys.executable, "-X", "utf8", "-B", str(RF_ROOT / "scripts" / "source_preparation.py"),
+            "--request-file", str(request), "--result-envelope", "--allow-download",
+            "--filing-fetch-root", str(ff_root),
+            "--company-wiki-config", str(wiki.root / "company_wiki.json"),
+            "--company-wiki-catalog-config", str(wiki.config_path), "--timeout-seconds", "120"]
+    result = _run("us_hard_failure", argv, env, tmp_path, log_root)
+    assert result.returncode == 3, result.stderr + result.stdout
+    assert not result.stdout
+    value = json.loads(result.stderr)
+    assert value["error_code"] == "upstream"
+    assert value["upstream_cause"]["code"] == "upstream_unavailable"
+    assert value["acquisition_failure"]["code"] == "upstream_unavailable"
+    observation = value["acquisition_observation"]
+    assert observation["outcome"] == "failed"
+    assert observation["provider_started"] is True
+    assert observation["http_exchanges"] == 2
+    assert observation["wire_body_bytes"] == len(META1) + len(META2)
+    assert observation["entity_body_bytes"] == len(META1) + len(META2)
+    assert observation["cost_usd"] is None  # Initial child counter zero is not a fee statement.
+    assert observation["http_observation"]["status_code"] == 500
+    assert value["downloads"] == 0
+    assert calls.read_text().splitlines() == ["discover"]  # No automatic charged retry or body fetch.
