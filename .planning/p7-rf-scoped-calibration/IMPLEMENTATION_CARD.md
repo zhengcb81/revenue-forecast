@@ -14,8 +14,10 @@
 Set-Location -LiteralPath 'C:/Users/郑曾波/.codex/worktrees/m3-acceptance-20261010/revenue-forecast'
 $env:PWF_PLAN_ROOT = (Get-Location).Path
 $env:PLAN_ID = 'p7-rf-scoped-calibration'
-& 'C:/Users/郑曾波/.agents/skills/planning-with-files/scripts/resolve-plan-dir.ps1'
+& 'C:/Users/郑曾波/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe' -NoProfile -File 'C:/Users/郑曾波/.agents/skills/planning-with-files/scripts/resolve-plan-dir.ps1'
 ```
+
+启动解析使用本机已有 PowerShell 7；旧 Windows PowerShell 5.1 缺 IsPathFullyQualified，会返回空结果，不能据此切换到别的计划。
 
 检查branch/base及本卡启动文件之外的diff。canonical仓 assurance3文件/output 是原owner WIP，不读作夹具、不改、不提交。
 
