@@ -163,6 +163,91 @@ def validated_acquisition_failure(value: Any) -> dict[str, Any] | None:
     return {**value, "acquisition_usage": dict(usage) if usage is not None else None}
 
 
+# M3-USAGE: observed-usage sibling. Pure validation of the producer's
+# operation observation; no recomputation, no fee inference, no MIME or
+# identity re-verification — values pass through or the object is dropped.
+ACQUISITION_OBSERVATION_SCHEMA = "acquisition-observation/1"
+OBSERVATION_OUTCOMES = frozenset({
+    "downloaded_new", "deduplicated_after_download",
+    "reused_before_download", "reused_after_discovery",
+    "missing", "ambiguous", "gap_plan", "gap_plan_provider_unavailable",
+    "failed",
+})
+_OBSERVATION_KEYS = frozenset({
+    "schema_version", "usage_scope", "outcome", "provider_started",
+    "usage_complete", "wire_body_bytes", "wire_usage_complete",
+    "entity_body_bytes", "http_exchanges", "http_exchanges_complete",
+    "cost_usd", "http_observation",
+})
+_HTTP_OBSERVATION_KEYS = frozenset({
+    "status_code", "mime_type", "content_encoding", "wire_content_length",
+})
+
+
+def validated_acquisition_observation(value: Any) -> dict[str, Any] | None:
+    """Copy the operation observation iff it matches the closed contract."""
+    if not isinstance(value, dict) or set(value) != _OBSERVATION_KEYS:
+        return None
+    if (value["schema_version"] != ACQUISITION_OBSERVATION_SCHEMA
+            or value["usage_scope"] != "operation"):
+        return None
+    outcome = value.get("outcome")
+    if outcome not in OBSERVATION_OUTCOMES:
+        return None
+    result: dict[str, Any] = {
+        "schema_version": ACQUISITION_OBSERVATION_SCHEMA,
+        "usage_scope": "operation",
+        "outcome": outcome,
+    }
+    for key in ("provider_started", "usage_complete", "wire_usage_complete",
+                "http_exchanges_complete"):
+        flag = value.get(key)
+        if flag is not None and type(flag) is not bool:
+            return None
+        result[key] = flag
+    for key in ("wire_body_bytes", "entity_body_bytes"):
+        count = value.get(key)
+        if type(count) is not int or count < 0:
+            return None
+        result[key] = count
+    exchanges = value.get("http_exchanges")
+    if type(exchanges) is not int or exchanges < 0:
+        return None
+    result["http_exchanges"] = exchanges
+    cost = value.get("cost_usd")
+    if cost is not None:
+        if not isinstance(cost, str):
+            return None
+        try:
+            amount = Decimal(cost)
+        except (InvalidOperation, ValueError):
+            return None
+        if not amount.is_finite() or amount < 0:
+            return None
+    result["cost_usd"] = cost
+    http_observation = value.get("http_observation")
+    if http_observation is not None:
+        if (not isinstance(http_observation, dict)
+                or set(http_observation) != _HTTP_OBSERVATION_KEYS):
+            return None
+        status = http_observation.get("status_code")
+        if type(status) is not int or status < 0:
+            return None
+        checked: dict[str, Any] = {"status_code": status}
+        for key in ("mime_type", "content_encoding"):
+            text = http_observation.get(key)
+            if not isinstance(text, str) or not text or len(text) > 128:
+                return None
+            checked[key] = text
+        length = http_observation.get("wire_content_length")
+        if length is not None and (type(length) is not int or length < 0):
+            return None
+        checked["wire_content_length"] = length
+        http_observation = checked
+    result["http_observation"] = http_observation
+    return result
+
+
 def failure_observation(payload: Any) -> dict[str, Any]:
     """Only allowlisted observed facts cross both RF subprocess boundaries."""
     if not isinstance(payload, dict):
@@ -171,10 +256,17 @@ def failure_observation(payload: Any) -> dict[str, Any]:
     result: dict[str, Any] = {}
     cause = validated_cause(detail.get("upstream_cause"))
     receipt = validated_acquisition_failure(detail.get("acquisition_failure"))
+    # M3-USAGE: the operation observation is an envelope-level account (like
+    # calls/downloads); the detail fallback keeps older flat shapes readable.
+    observation = validated_acquisition_observation(payload.get("acquisition_observation"))
+    if observation is None:
+        observation = validated_acquisition_observation(detail.get("acquisition_observation"))
     if cause is not None:
         result["upstream_cause"] = cause
     if receipt is not None:
         result["acquisition_failure"] = receipt
+    if observation is not None:
+        result["acquisition_observation"] = observation
     reason = validated_source_failure_reason(detail.get("source_failure_reason"))
     if reason is not None:
         result["source_failure_reason"] = reason

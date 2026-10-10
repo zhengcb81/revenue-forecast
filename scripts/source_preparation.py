@@ -149,13 +149,16 @@ class FilingSourcePreparationError(RuntimeError):
     def __init__(self, message: str, *, upstream_cause: dict | None = None,
                  acquisition_failure: dict | None = None, stage: str | None = None,
                  attempts: int | None = None, calls: int | None = None, downloads: int | None = None,
-                 source_failure_reason: str | None = None):
+                 source_failure_reason: str | None = None,
+                 acquisition_observation: dict | None = None):
         super().__init__(message)
         observed = failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
                                        "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
-                                       "source_failure_reason": source_failure_reason})
+                                       "source_failure_reason": source_failure_reason,
+                                       "acquisition_observation": acquisition_observation})
         self.upstream_cause = observed.get("upstream_cause")
         self.acquisition_failure = observed.get("acquisition_failure")
+        self.acquisition_observation = observed.get("acquisition_observation")
         self.stage = observed.get("stage")
         self.attempts = observed.get("attempts")
         self.calls = observed.get("calls")
@@ -526,7 +529,8 @@ def main(argv: list[str] | None = None) -> int:
     except RuntimeError as exc:
         failure = {"error_code": "upstream", "error": str(exc)}
         failure.update(failure_observation({key: getattr(exc, key, None) for key in
-                       ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads", "source_failure_reason")}))
+                       ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads",
+                        "source_failure_reason", "acquisition_observation")}))
         sys.stderr.write(json.dumps(failure))
         sys.stderr.write("\n")
         return 3
