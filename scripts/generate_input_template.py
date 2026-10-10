@@ -30,6 +30,10 @@ from revenue_core import (  # noqa: E402
     RESEARCH_DIMENSIONS,
     MONETARY_DIMENSIONS,
 )
+from contracts.constants import (  # noqa: E402
+    OPT_IN_SCHEMA_VERSION,
+    SUPPORTED_FORECAST_SCHEMA_VERSIONS,
+)
 from model_registry import MODEL_REGISTRY
 from model_extensions import EXTENSION_OPENING_BALANCES
 
@@ -44,6 +48,7 @@ def build_template(
     unit: str,
     segment_names: list[str],
     segment_models: dict[str, str] | None = None,
+    schema_version: str | None = None,
 ) -> dict[str, Any]:
     """Build a schema skeleton with FIXME placeholders and consistent references."""
     base_year = int(base_year)
@@ -53,6 +58,22 @@ def build_template(
         raise ValueError("segment_models contains an unknown segment")
     if any(model not in MODEL_REGISTRY for model in segment_models.values()):
         raise ValueError("segment_models contains an unknown revenue model")
+    # M3-FLOW: opt-in schema choice. The default stays the canonical 3.7; 3.8
+    # adds operating_units and 3.9 adds typed dated period flows plus the
+    # role-aware mechanism triangulation. The skeleton stays annual-basis —
+    # a dated flow is authored per parameter, never defaulted (no fabricated
+    # start dates).
+    if schema_version is None:
+        schema_version = FORECAST_SCHEMA_VERSION
+    if schema_version not in SUPPORTED_FORECAST_SCHEMA_VERSIONS:
+        raise ValueError(
+            f"unsupported schema_version {schema_version!r}; choose one of "
+            f"{sorted(SUPPORTED_FORECAST_SCHEMA_VERSIONS)}"
+        )
+    if schema_version == OPT_IN_SCHEMA_VERSION:
+        operating_units: list[dict[str, Any]] | None = []
+    else:
+        operating_units = None
     as_of = f"{base_year + 1}-06-30"
     source_id = "src_primary_filing"
     monetary_unit = f"{currency} {unit}"
@@ -264,13 +285,22 @@ def build_template(
         for category in MANAGEMENT_COMMUNICATION_CATEGORIES
     ]
 
-    return {
+    document: dict[str, Any] = {
         "_comment": (
-            f"Schema {FORECAST_SCHEMA_VERSION} skeleton. Replace every FIXME value, then run: "
+            f"Schema {schema_version} skeleton. Replace every FIXME value, then run: "
             "lint_input.py <file>  ->  fix_hashes.py <file>  ->  "
             "revenue_forecast.py <file> --validate-only."
+            + (
+                "  Schema 3.9 note: date half/quarter-year flows with "
+                "time_basis=period_flow plus period_start/period_end inside the "
+                "fiscal window, and give growth-driver claims an evidence_role; "
+                "history/financing/peer rows stay disclosed but no longer "
+                "triangulate the mechanism."
+                if schema_version == "3.9"
+                else ""
+            )
         ),
-        "schema_version": FORECAST_SCHEMA_VERSION,
+        "schema_version": schema_version,
         "company_name": name,
         "as_of_date": as_of,
         "currency": currency,
@@ -293,6 +323,9 @@ def build_template(
             "rationale": "FIXME: build a causal driver tree, or keep status=data_gap",
         },
     }
+    if operating_units is not None:
+        document["operating_units"] = operating_units
+    return document
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -320,6 +353,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--segment-model", action="append", default=[], metavar="SEGMENT=MODEL",
                         help="select a registered revenue model for a segment; repeat for multiple segments")
+    parser.add_argument(
+        "--schema",
+        default=None,
+        metavar="VERSION",
+        help="opt-in schema version (default 3.7; 3.8 adds operating_units, 3.9 adds dated period flows and role-aware triangulation)",
+    )
     args = parser.parse_args(argv)
 
     model_map = {}
@@ -328,15 +367,20 @@ def main(argv: list[str] | None = None) -> int:
         if not separator or segment not in args.segments or model not in MODEL_REGISTRY or segment in model_map:
             parser.error("--segment-model requires a unique declared SEGMENT=registered_model")
         model_map[segment] = model
-    data = build_template(
-        args.name,
-        args.base_year,
-        args.forecast_years,
-        args.currency,
-        args.unit,
-        args.segments,
-        model_map,
-    )
+    try:
+        data = build_template(
+            args.name,
+            args.base_year,
+            args.forecast_years,
+            args.currency,
+            args.unit,
+            args.segments,
+            model_map,
+            args.schema,
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
+        raise AssertionError("unreachable")  # parser.error exits
     rendered = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
     if args.output:
         args.output.write_text(rendered, encoding="utf-8")

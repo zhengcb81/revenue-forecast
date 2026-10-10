@@ -274,6 +274,74 @@ class GrowthDriverTreeTests(unittest.TestCase):
         )
         validate_forecast_output(legacy)
 
+    def test_schema_3_9_requires_typed_mechanism_roles_for_triangulation(self) -> None:
+        # M3-FLOW: the legacy two-types-and-sources rule (previous tests) is
+        # preserved for schemas 3.7/3.8. Schema 3.9 opts into the role-aware
+        # rule: an unroled or history-only second node no longer fabricates
+        # "triangulated" future-mechanism support.
+        data = forecast_document()
+        data["schema_version"] = "3.9"
+        source = {
+            "source_id": "industry_source",
+            "source_type": "industry_association",
+            "title": "Independent operating indicator",
+            "publisher": "Industry Association",
+            "url": "https://www.semiconductors.org/independent-operating-indicator",
+            "published_date": "2026-06-01",
+            "accessed_date": data["as_of_date"],
+            "page_or_section": "Operating indicator",
+        }
+        capture = {
+            "capture_schema_version": "1.0",
+            "capture_method": "browser_open",
+            "tool_name": "test-browser",
+            "tool_call_id": "fixture-industry-source",
+            "captured_date": data["as_of_date"],
+            "snapshot_sha256": "a" * 64,
+            "content_treatment": "untrusted_data_only",
+            "prompt_injection_status": "not_detected",
+        }
+        capture["host_receipt"] = build_host_receipt(
+            issuer="fixture-host",
+            environment="test",
+            tool_name="test-browser",
+            action="capture_open",
+            event_sha256=text_sha256("fixture-open-industry-source"),
+            timestamp=capture["captured_date"],
+        )
+        capture["receipt_sha256"] = canonical_sha256(capture)
+        source["capture"] = capture
+        data["sources"].append(source)
+        driver = data["growth_driver_tree"]["drivers"][0]
+        driver["evidence_nodes"].append(
+            {
+                "evidence_id": "independent_demand_signal",
+                "evidence_type": "independent_demand_signal",
+                "inference_distance": "one_step",
+                "conclusion": "An independent checked indicator supports the direction of the modeled demand path.",
+                "claim_ids": ["claim_independent_demand_signal"],
+            }
+        )
+        added_claim = _claim(
+            "claim_independent_demand_signal",
+            "industry_source",
+            "growth_driver",
+            "independent_demand_signal",
+            "rationale_support",
+            "Independent operating data supports the direction of the modeled demand path.",
+            data["as_of_date"],
+        )
+        added_claim["capture_receipt_sha256"] = capture["receipt_sha256"]
+        data["evidence_claims"].append(added_claim)
+        result = run_forecast(data)
+        first = next(
+            item
+            for item in result["growth_driver_analysis"]["drivers"]
+            if item["driver_id"] == driver["driver_id"]
+        )
+        self.assertEqual(first["evidence_status"], "limited")
+        self.assertEqual(len(first["evidence_nodes"]), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

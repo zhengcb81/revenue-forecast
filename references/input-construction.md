@@ -67,6 +67,40 @@ Binding rules (kept backtick-sparse on the bullet lines above so the guard can p
 - Recognition: a segment's `modeled_presentation` must equal its `presentation`, and `basis_claim_ids` must reference a `recognition_policy` claim (support_type `policy_support`).
 - Sensitivity: a test may shock a parameter only if that parameter is referenced by the **base** scenario — low/high-only parameters are rejected.
 
+## Dated period flows (schema 3.9 opt-in)
+
+Half-year and quarter revenue flows must not wear the `annual` label. Schema 3.9
+(engine 4.2.0) adds the explicit typed basis; 3.7/3.8 reject it unchanged:
+
+- Set `schema_version` to `3.9` (e.g. `generate_input_template.py --schema 3.9`).
+- On the flow parameter: `time_basis: "period_flow"` plus `period_start` and
+  `period_end` (strict `YYYY-MM-DD`, start strictly before end).
+- The dates must lie inside the fiscal-year window implied by `fiscal_year_end`
+  for the parameter's `FYyyyy` label — this is what makes a flow crossing
+  calendar years (e.g. an October–March half under a 03-31 FYE) expressible.
+- The covered window must be 3, 6 or 12 whole months. The amount belongs to
+  exactly that window: never multiply by 2 to "annualize"; compose H1+H2 into
+  the annual figure with an explicit derived fact (`x0+x1`), keeping currency
+  and scale identical.
+- `period_start`/`period_end` on any `annual` or `point_in_time` parameter are
+  rejected in every schema, so the new fields cannot ride along on old inputs.
+- Point-in-time stocks (subscriber counts, backlog balances) keep
+  `time_basis: "point_in_time"` and carry no period dates.
+- If the true start date cannot be evidenced from the filing, do not fabricate
+  one — the flow cannot be typed `period_flow` yet; keep it out until the
+  window is proven.
+
+## Mechanism evidence roles (schema 3.9 opt-in)
+
+On schema 3.9 the growth-driver triangulation counts only nodes carrying at
+least one `evidence_role: "mechanism_direction"` claim (two distinct evidence
+types and two distinct sources still apply). History bases, financing
+background, value ranges, conversion assumptions, recognition policies,
+unroled excerpts and peer analogies stay disclosed in `evidence_nodes` but
+never combine into `triangulated`. On 3.7/3.8 the legacy rule (peer analogies
+excluded only) is preserved so previously published results stand. Roles never
+raise the confidence score — they only stop fabricated triangulation.
+
 ## Hash ring (only 2 layers are recomputable)
 
 The engine checks four SHA-256 fields. `fix_hashes.py` recomputes the two
