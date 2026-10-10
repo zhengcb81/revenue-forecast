@@ -2,6 +2,12 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## 4.2.0 (2026-10-10) — M3-FLOW dated period flows and mechanism evidence roles
+
+- Forecast schema 3.9 (opt-in) adds `time_basis=period_flow` with `period_start`/`period_end`: 3/6/12-month flows, fiscal-window containment resolved from `fiscal_year_end` (cross-calendar-year and non-calendar fiscal years included), exact calendar boundaries without average-day tolerance, no implicit annualization, and fail-closed gating — period dates are rejected on legacy bases and `period_flow` is rejected on 3.7/3.8. At least 18 real half-year flows previously mislabeled `annual` (HK 10 H1 + 5 H2, CN 3 H1) are remediated through newly typed inputs, never by relabeling old artifacts.
+- Schema 3.9 also opts into role-aware growth-driver triangulation: only `mechanism_direction` claims and their actual claim-linked sources count toward `triangulated`; history-base, financing-background, value-range, conversion, recognition-policy, peer-analogy and unroled rows stay disclosed with all counterevidence; peer claims cannot remove valid support within mixed nodes. Shared strong validators apply the modern bound-input, source, model, target, constraint and receipt features to 3.7/3.8/3.9, and rendered partial-year parameters show their dated windows. Schemas 3.7/3.8 keep the legacy peer-only exclusion; old frozen outputs, hashes and published triangulated results are unchanged, and confidence never reads the role category.
+- Formal new output uses engine 4.2.0. Engines 4.1.0/4.1.1 remain documented emitters of schemas 3.7/3.8 and never emitted 3.9 (fail-closed in every read mode). Old snapshots still validate against their declared emitting runtime. Revenue calculations for legacy schemas are unchanged; a green contract does not validate forecast magnitudes.
+
 ## Unreleased — 2026-10-09 fresh runtime boundary corrections
 
 - Management communication checks now use the shared source clock: preserve their actual dates after a historical cutoff, refuse future source information, and refuse a check before its source capture. No approval, backdated check, new clock field, or historical artifact rewriting.

@@ -12,7 +12,6 @@ from revenue_core import (
     RESEARCH_DIMENSIONS,
     SCENARIOS,
     ENGINE_VERSION,
-    FORECAST_SCHEMA_VERSION,
     SUPPORTED_FORECAST_SCHEMA_VERSIONS,
     MANAGEMENT_COMMUNICATION_CATEGORIES,
     MANAGEMENT_COMMUNICATION_STATUSES,
@@ -32,6 +31,7 @@ from revenue_core import (
     validate_source_capture,
 )
 from analysis.confidence import validate_confidence_recomputation
+from contracts.annual_consumption import validate_annual_consumption
 from forecast.calc import opening_base_bridge, scenario_forecast_parameter_ids
 from research.target_measurement import is_typed_target, compare_target_measurement
 from research.targets import validate_management_target_coverage, add_management_target_analysis
@@ -41,7 +41,9 @@ from revenue_publication import (
     expected_publication_gates,
     validate_publication_receipt,
 )
-from schema_compatibility import require_validating_engine
+from schema_compatibility import (
+    BOUND_INPUT_SCHEMA_VERSIONS, require_validating_engine, requires_bound_input_schema,
+)
 from trust_anchor import verify_input_binding
 
 
@@ -347,7 +349,7 @@ def _validate_theme_analysis(
 
 def _validate_receipt_blocks(result: Any, hash_payload: Any) -> None:
     """Recompute workflow/publication receipt + result hash (FC-1204-b)."""
-    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+    if requires_bound_input_schema(result["schema_version"]):
         expected_receipt = build_workflow_compliance_receipt(
             result["input_sha256"],
             result["sources"],
@@ -451,7 +453,7 @@ def _validate_forecast_output(
     require_validating_engine(
         result["schema_version"], result["engine_version"], "output"
     )
-    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+    if requires_bound_input_schema(result["schema_version"]):
         require(
             "management_target_coverage" in result,
             "forecast output missing field: management_target_coverage",
@@ -534,6 +536,8 @@ def _validate_forecast_output(
     parameter_index = {
         parameter["parameter_id"]: parameter for parameter in result["parameter_trace"]
     }
+    if data is not None:
+        validate_annual_consumption(data, parameter_index)
     segment_index = {segment["name"]: segment for segment in result["segments"]}
     require(
         len(segment_index) == len(result["segments"]),
@@ -586,14 +590,13 @@ def _validate_forecast_output(
     # authored foundation as the forecast calculation.
     _validate_segment_opening_bases(result, parameter_index, years, data)
 
-    current_constraint_contract = (
+    current_constraint_contract = requires_bound_input_schema(result["schema_version"]) or (
         result["schema_version"],
         result["engine_version"],
     ) in {
         ("3.2", "3.3.0"),
         ("3.3", "3.4.0"),
         ("3.5", ENGINE_VERSION),
-        (FORECAST_SCHEMA_VERSION, ENGINE_VERSION),
     }
     if current_constraint_contract:
         require(
@@ -752,7 +755,7 @@ def _validate_forecast_output(
         isinstance(result["evidence_claims"], list) and result["evidence_claims"],
         "forecast output requires evidence claims",
     )
-    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+    if requires_bound_input_schema(result["schema_version"]):
         as_of = parse_iso_date(result["as_of_date"], "as_of_date")
         source_capture_index = {}
         for source in result["sources"]:
@@ -830,7 +833,7 @@ def _validate_forecast_output(
     require(
         coverage.get("counts") == recomputed_counts, "research_coverage counts mismatch"
     )
-    if result["schema_version"] in {"3.1", "3.2", "3.3", FORECAST_SCHEMA_VERSION}:
+    if result["schema_version"] in ({"3.1", "3.2", "3.3"} | BOUND_INPUT_SCHEMA_VERSIONS):
         target_coverage = result["management_target_coverage"]
         require(
             isinstance(target_coverage, dict),
@@ -917,7 +920,7 @@ def _validate_forecast_output(
                 isinstance(comparisons, dict),
                 f"management target scenario comparison must be an object: {target_id}",
             )
-            if result["schema_version"] in {"3.2", "3.3", FORECAST_SCHEMA_VERSION}:
+            if result["schema_version"] in ({"3.2", "3.3"} | BOUND_INPUT_SCHEMA_VERSIONS):
                 require(
                     target.get("measurement_basis")
                     in MANAGEMENT_TARGET_MEASUREMENT_BASES,
@@ -1195,11 +1198,11 @@ def _validate_forecast_output(
         "as_of_date": parse_iso_date(result["as_of_date"], "as_of_date"),
         "research_coverage": {"counts": coverage["counts"]},
     }
-    if result["schema_version"] in {"3.1", "3.2", "3.3", FORECAST_SCHEMA_VERSION}:
+    if result["schema_version"] in ({"3.1", "3.2", "3.3"} | BOUND_INPUT_SCHEMA_VERSIONS):
         reconstructed_validated["management_target_coverage"] = {
             "counts": result["management_target_coverage"]["counts"]
         }
-    if result["schema_version"] in {"3.3", FORECAST_SCHEMA_VERSION}:
+    if result["schema_version"] in ({"3.3"} | BOUND_INPUT_SCHEMA_VERSIONS):
         analysis = result["growth_driver_analysis"]
         require(
             isinstance(analysis, dict),
@@ -1265,6 +1268,7 @@ def _validate_forecast_output(
         if status == "data_gap":
             growth_tree["rationale"] = analysis.get("rationale")
         growth_data = {
+            "schema_version": result["schema_version"],
             "forecast_years": result["forecast_years"],
             "segments": reconstructed_segments,
             "forecast_adjustments": reconstructed_adjustments,
@@ -1340,7 +1344,7 @@ def validate_legacy_output(result: dict[str, Any]) -> None:
     completeness), so consumers must use ``validate_published_forecast`` for
     formal, invest-consumable artifacts.
     """
-    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+    if requires_bound_input_schema(result["schema_version"]):
         # R1.1 (N-01): a current-schema artifact carries no input at all —
         # there is nothing to bind, so it cannot be validated, only rejected.
         raise ForecastInputError(
@@ -1762,14 +1766,20 @@ def render_markdown(result: dict[str, Any]) -> str:
     claims = {claim["claim_id"]: claim for claim in result["evidence_claims"]}
     for parameter in result["parameter_trace"]:
         claim_ids = parameter.get("claim_ids", [])
+        displayed_period = parameter["period"]
+        if parameter.get("time_basis") == "period_flow":
+            displayed_period = (
+                f"{displayed_period} / period_flow "
+                f"{parameter['period_start']}..{parameter['period_end']}"
+            )
         if not claim_ids:
             lines.append(
-                f"| {_escape(parameter['parameter_id'])} | {_escape(parameter['kind'])} | {_num(parameter['value'])} | {_escape(parameter['period'])} | {_escape(parameter['dimension'])} | — | — | — | — | — |"
+                f"| {_escape(parameter['parameter_id'])} | {_escape(parameter['kind'])} | {_num(parameter['value'])} | {_escape(displayed_period)} | {_escape(parameter['dimension'])} | — | — | — | — | — |"
             )
         for claim_id in claim_ids:
             claim = claims[claim_id]
             lines.append(
-                f"| {_escape(parameter['parameter_id'])} | {_escape(parameter['kind'])} | {_num(parameter['value'])} | {_escape(parameter['period'])} | {_escape(parameter['dimension'])} | {_escape(claim_id)} | {_escape(claim['source_id'])} | {_escape(claim['support_type'])} | {_escape(claim['locator'])} | {_escape(claim['excerpt'])} |"
+                f"| {_escape(parameter['parameter_id'])} | {_escape(parameter['kind'])} | {_num(parameter['value'])} | {_escape(displayed_period)} | {_escape(parameter['dimension'])} | {_escape(claim_id)} | {_escape(claim['source_id'])} | {_escape(claim['support_type'])} | {_escape(claim['locator'])} | {_escape(claim['excerpt'])} |"
             )
 
     lines.extend(

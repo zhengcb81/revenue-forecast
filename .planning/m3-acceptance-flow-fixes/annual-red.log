@@ -1,0 +1,88 @@
+FFFFFF...F.FFFFFF                                                        [100%]
+================================== FAILURES ===================================
+___ test_public_annual_consumers_reject_half_year_as_full_year[0_base_2026] ___
+tests\test_m3_period_flow_annual_consumers.py:34: in test_public_annual_consumers_reject_half_year_as_full_year
+    with pytest.raises(ForecastInputError, match="annual"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ForecastInputError
+_ test_public_annual_consumers_reject_half_year_as_full_year[segment_a_base] __
+tests\test_m3_period_flow_annual_consumers.py:34: in test_public_annual_consumers_reject_half_year_as_full_year
+    with pytest.raises(ForecastInputError, match="annual"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ForecastInputError
+_ test_public_annual_consumers_reject_half_year_as_full_year[reported_total] __
+tests\test_m3_period_flow_annual_consumers.py:34: in test_public_annual_consumers_reject_half_year_as_full_year
+    with pytest.raises(ForecastInputError, match="annual"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ForecastInputError
+___ test_validate_only_rejects_half_year_at_actual_annual_role[0_base_2026] ___
+tests\test_m3_period_flow_annual_consumers.py:42: in test_validate_only_rejects_half_year_at_actual_annual_role
+    with pytest.raises(ForecastInputError, match="annual"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ForecastInputError
+_ test_validate_only_rejects_half_year_at_actual_annual_role[segment_a_base] __
+tests\test_m3_period_flow_annual_consumers.py:42: in test_validate_only_rejects_half_year_at_actual_annual_role
+    with pytest.raises(ForecastInputError, match="annual"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ForecastInputError
+_ test_validate_only_rejects_half_year_at_actual_annual_role[reported_total] __
+tests\test_m3_period_flow_annual_consumers.py:42: in test_validate_only_rejects_half_year_at_actual_annual_role
+    with pytest.raises(ForecastInputError, match="annual"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ForecastInputError
+_ test_explicit_half_year_sum_is_valid_annual_input_and_keeps_partial_evidence _
+tests\test_m3_period_flow_annual_consumers.py:69: in test_explicit_half_year_sum_is_valid_annual_input_and_keeps_partial_evidence
+    result = run_forecast(data)
+             ^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:446: in run_forecast
+    result = _build_forecast_draft(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\revenue_core.py:63: in _build_forecast_draft
+    validated = validate_document(data)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+scripts\contracts\document.py:1086: in validate_document
+    claim_index = validate_evidence_claims(
+scripts\contracts\document.py:705: in validate_evidence_claims
+    require(
+scripts\contracts\evidence.py:98: in require
+    raise ForecastInputError(message)
+E   contracts.evidence.ForecastInputError: claim source filing is not registered on parameter 0_base_2026
+_ test_single_annual_contract_covers_adjustments_recognition_and_constraints[base_adjustment] _
+tests\test_m3_period_flow_annual_consumers.py:87: in test_single_annual_contract_covers_adjustments_recognition_and_constraints
+    from contracts.annual_consumption import validate_annual_consumption
+E   ModuleNotFoundError: No module named 'contracts.annual_consumption'
+_ test_single_annual_contract_covers_adjustments_recognition_and_constraints[forecast_adjustment] _
+tests\test_m3_period_flow_annual_consumers.py:87: in test_single_annual_contract_covers_adjustments_recognition_and_constraints
+    from contracts.annual_consumption import validate_annual_consumption
+E   ModuleNotFoundError: No module named 'contracts.annual_consumption'
+_ test_single_annual_contract_covers_adjustments_recognition_and_constraints[carry_in] _
+tests\test_m3_period_flow_annual_consumers.py:87: in test_single_annual_contract_covers_adjustments_recognition_and_constraints
+    from contracts.annual_consumption import validate_annual_consumption
+E   ModuleNotFoundError: No module named 'contracts.annual_consumption'
+_ test_single_annual_contract_covers_adjustments_recognition_and_constraints[constraint] _
+tests\test_m3_period_flow_annual_consumers.py:87: in test_single_annual_contract_covers_adjustments_recognition_and_constraints
+    from contracts.annual_consumption import validate_annual_consumption
+E   ModuleNotFoundError: No module named 'contracts.annual_consumption'
+_ test_single_annual_contract_preserves_declared_point_in_time_stock_drivers __
+tests\test_m3_period_flow_annual_consumers.py:104: in test_single_annual_contract_preserves_declared_point_in_time_stock_drivers
+    from contracts.annual_consumption import validate_annual_consumption
+E   ModuleNotFoundError: No module named 'contracts.annual_consumption'
+___ test_non_calendar_full_year_does_not_mean_calendar_january_to_december ____
+tests\test_m3_period_flow_annual_consumers.py:117: in test_non_calendar_full_year_does_not_mean_calendar_january_to_december
+    from contracts.annual_consumption import validate_annual_consumption
+E   ModuleNotFoundError: No module named 'contracts.annual_consumption'
+=========================== short test summary info ===========================
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_public_annual_consumers_reject_half_year_as_full_year[0_base_2026]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_public_annual_consumers_reject_half_year_as_full_year[segment_a_base]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_public_annual_consumers_reject_half_year_as_full_year[reported_total]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_validate_only_rejects_half_year_at_actual_annual_role[0_base_2026]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_validate_only_rejects_half_year_at_actual_annual_role[segment_a_base]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_validate_only_rejects_half_year_at_actual_annual_role[reported_total]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_explicit_half_year_sum_is_valid_annual_input_and_keeps_partial_evidence
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_single_annual_contract_covers_adjustments_recognition_and_constraints[base_adjustment]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_single_annual_contract_covers_adjustments_recognition_and_constraints[forecast_adjustment]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_single_annual_contract_covers_adjustments_recognition_and_constraints[carry_in]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_single_annual_contract_covers_adjustments_recognition_and_constraints[constraint]
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_single_annual_contract_preserves_declared_point_in_time_stock_drivers
+FAILED tests/test_m3_period_flow_annual_consumers.py::test_non_calendar_full_year_does_not_mean_calendar_january_to_december
+13 failed, 4 passed in 0.88s

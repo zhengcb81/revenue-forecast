@@ -13,6 +13,8 @@ from contracts.constants import (
     GROWTH_DRIVER_INFERENCE_DISTANCES,
     GROWTH_DRIVER_PERSISTENCE,
     GROWTH_DRIVER_TREE_STATUSES,
+    MECHANISM_EVIDENCE_ROLES,
+    PERIOD_EVIDENCE_SCHEMA_VERSION,
 )
 from contracts.evidence import (
     finite_number,
@@ -111,7 +113,9 @@ def _validate_growth_driver_evidence(
     evidence_ids: set[str],
     source_index: dict[str, dict[str, Any]],
     claim_index: dict[str, dict[str, Any]],
-) -> tuple[list[dict[str, Any]], list[str], list[str], str]:
+    *,
+    role_aware: bool = False,
+) -> tuple[list[dict[str, Any]], list[str], list[str], str, str | None]:
     require(
         isinstance(evidence_nodes, list) and evidence_nodes,
         f"{driver_id}.evidence_nodes must be a non-empty list",
@@ -215,30 +219,81 @@ def _validate_growth_driver_evidence(
             for claim_id in node["claim_ids"]
         )
 
-    core_nodes = [node for node in supporting_nodes if not _is_peer_based(node)]
+    def _is_mechanism_support(node: dict[str, Any]) -> bool:
+        return any(
+            claim_index.get(claim_id, {}).get("evidence_role")
+            in MECHANISM_EVIDENCE_ROLES
+            for claim_id in node["claim_ids"]
+        )
+
     peer_nodes = [node for node in supporting_nodes if _is_peer_based(node)]
+    # M3-FLOW (schema 3.9): triangulation of a future-mechanism driver counts
+    # only nodes asserting the operating mechanism itself. History bases,
+    # financing background, value ranges, conversions, recognition policies,
+    # unroled excerpts and comparisons stay disclosed but cannot combine into
+    # "triangulated". Legacy schemas keep the peer-only exclusion so already
+    # published triangulated results are never silently re-judged.
+    if role_aware:
+        core_nodes = [
+            node
+            for node in supporting_nodes
+            if _is_mechanism_support(node)
+        ]
+    else:
+        core_nodes = [node for node in supporting_nodes if not _is_peer_based(node)]
     evidence_types = list(
         dict.fromkeys(node["evidence_type"] for node in core_nodes)
     )
-    evidence_source_ids = list(
-        dict.fromkeys(
-            source_id for node in core_nodes for source_id in node["source_ids"]
+    if role_aware:
+        # Independence belongs to the eligible mechanism claims, not the
+        # enclosing node. Mixed history/peer claims remain disclosed but
+        # their source IDs cannot fabricate a second mechanism source.
+        evidence_source_ids = list(
+            dict.fromkeys(
+                claim_index[claim_id]["source_id"]
+                for node in core_nodes
+                for claim_id in node["claim_ids"]
+                if claim_index[claim_id].get("evidence_role")
+                in MECHANISM_EVIDENCE_ROLES
+            )
         )
-    )
+    else:
+        evidence_source_ids = list(
+            dict.fromkeys(
+                source_id for node in core_nodes for source_id in node["source_ids"]
+            )
+        )
     evidence_status = (
         "triangulated"
         if len(evidence_types) >= 2 and len(evidence_source_ids) >= 2
         else "limited"
     )
     peer_note = None
+    excluded_supporting = [
+        node
+        for node in supporting_nodes
+        if node not in core_nodes and node not in peer_nodes
+    ]
     if not core_nodes:
-        peer_note = (
-            f"Growth driver {driver_id} relies on peer-analogy evidence only; company-mechanism evidence is missing"
-        )
-    elif peer_nodes:
-        peer_note = (
-            f"Growth driver {driver_id}: peer-analogy evidence is disclosed but excluded from triangulation"
-        )
+        if role_aware:
+            peer_note = (
+                f"Growth driver {driver_id} has no future-mechanism evidence: "
+                "every supporting node relies on history, financing, unroled or "
+                "peer-analogy claims, which cannot prove the modeled growth mechanism"
+            )
+        elif peer_nodes:
+            peer_note = (
+                f"Growth driver {driver_id} relies on peer-analogy evidence only; company-mechanism evidence is missing"
+            )
+    elif peer_nodes or (role_aware and excluded_supporting):
+        detail = "peer-analogy evidence is disclosed but excluded from triangulation"
+        if role_aware and excluded_supporting:
+            detail = (
+                "non-mechanism evidence (history_base, financing background, "
+                "value_range, conversion, recognition_policy, unroled excerpts) "
+                "is disclosed but excluded from mechanism triangulation"
+            )
+        peer_note = f"Growth driver {driver_id}: {detail}"
     return normalized_nodes, evidence_types, evidence_source_ids, evidence_status, peer_note
 
 
@@ -326,6 +381,7 @@ def _validate_growth_driver_record(
             context["evidence_ids"],
             source_index,
             claim_index,
+            role_aware=data.get("schema_version") == PERIOD_EVIDENCE_SCHEMA_VERSION,
         )
     )
     if peer_note:

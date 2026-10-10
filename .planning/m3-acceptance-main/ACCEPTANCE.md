@@ -1,0 +1,9 @@
+# M3-USAGE / M3-FLOW MAIN acceptance
+
+Source engineering accepted by independent read-only replay and concentrated final daily gate. Shared schema capability supports3.7/3.8/3.9 in strong output, model/receipt/target/source/constraint validation and report rendering. Methodology4.2.0 and additive input3.9 wired; old compatibility retained. Calendar windows are exact months, conflict identity includes actual dated window. Mechanism independence counts actual mechanism claim sources, mixed peer nodes retain valid support and provenance. No future magnitude is inferred from a direction claim.
+
+Single annual-consumption helper checks directly consumed roots at validated input and strong bound-output boundaries. Partial flows remain legal source observations/derived ancestors; direct annual amount misuse refused, full fiscal-year unchanged, explicit H1+H2 annual fact supported. Explicit stock roles and rates retained without blanket quantity/monetary dimension assumptions.
+
+Final FLOW responsibility109 PASS+46 subtests/2.30s; new annual helper Ruff/mypy PASS. Independent coherent-H1-input/trace/hash strong mutation refused, fullFY/derived/point stocks/prices accepted. New rapid counterexamples discovered by existing daily gate: FINAL actual260 PASS+2subtests/27.66s, Ruff PASS,10publicsourcefiles mypy PASS. Earlier real RED/type/miswiring logs retained. USAGE validators unknown-fee diagnostic behavior agrees across3repos/256variations; public chain101PASS includes loopback reuse and hardfailure, with restoredTEMP. Counts overlap and must not sum.
+
+Normal commit/main merge/push/exact CI and targeted runtime installation pending at writing. Delivered FLOW red CI/no-verify is historical, never reused as final qualification. Source engineering is not real-company research acceptance; AUTO JSON route and research W08/W09/reruns remain MAIN followups. Raw sources/config/budget/Dayu/assurance-output ownerWIP preserved; external fee/calls0.

@@ -1,0 +1,33 @@
+...........E.
+======================================================================
+ERROR: test_schema_3_9_requires_typed_mechanism_roles_for_triangulation (test_growth_driver_tree.GrowthDriverTreeTests.test_schema_3_9_requires_typed_mechanism_roles_for_triangulation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\郑曾波\AppData\Local\Temp\rf-period-evidence-20261010\tests\test_growth_driver_tree.py", line 336, in test_schema_3_9_requires_typed_mechanism_roles_for_triangulation
+    result = run_forecast(data)
+  File "C:\Users\郑曾波\AppData\Local\Temp\rf-period-evidence-20261010\scripts\revenue_core.py", line 446, in run_forecast
+    result = _build_forecast_draft(data)
+  File "C:\Users\郑曾波\AppData\Local\Temp\rf-period-evidence-20261010\scripts\revenue_core.py", line 63, in _build_forecast_draft
+    validated = validate_document(data)
+  File "C:\Users\郑曾波\AppData\Local\Temp\rf-period-evidence-20261010\scripts\contracts\document.py", line 1039, in validate_document
+    years, as_of = validate_top_level(data)
+                   ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\郑曾波\AppData\Local\Temp\rf-period-evidence-20261010\scripts\contracts\document.py", line 84, in validate_top_level
+    require(
+    ~~~~~~~^
+        data["schema_version"] in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        f"schema_version must be {FORECAST_SCHEMA_VERSION} or "
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        f"{OPT_IN_SCHEMA_VERSION} (opt-in)",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\郑曾波\AppData\Local\Temp\rf-period-evidence-20261010\scripts\contracts\evidence.py", line 98, in require
+    raise ForecastInputError(message)
+contracts.evidence.ForecastInputError: schema_version must be 3.7 or 3.8 (opt-in)
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.232s
+
+FAILED (errors=1)

@@ -1,0 +1,39 @@
+
+=== ruff ===
+All checks passed!
+
+=== public contract types ===
+Success: no issues found in 9 source files
+
+=== current source and forecast behavior ===
+lease_and_schema_versions_are_explicit _______
+tests\test_data_contract.py:463: in test_release_and_schema_versions_are_explicit
+    self.assertEqual(SKILL_VERSION, "4.1.1")
+E   AssertionError: '4.2.0' != '4.1.1'
+E   - 4.2.0
+E   + 4.1.1
+_ SchemaCompatibilityRegistryTests.test_registry_matches_supported_schema_set _
+tests\test_schema_compatibility.py:75: in test_registry_matches_supported_schema_set
+    self.assertEqual(
+E   AssertionError: frozenset({'3.1', '3.3', '3.8', '3.6', '3[35 chars].7'}) != {'3.1', '3.3', '3.8', '3.6', '3.0', '3.4'[17 chars]3.7'}
+_ SchemaCompatibilityRegistryTests.test_source_clock_version_emit_and_validation_matrix _
+tests\test_schema_compatibility.py:28: in test_source_clock_version_emit_and_validation_matrix
+    self.assertEqual(ENGINE_VERSION, "4.1.1")
+E   AssertionError: '4.2.0' != '4.1.1'
+E   - 4.2.0
+E   + 4.1.1
+______ SchemaCompatibilityRegistryTests.test_unknown_schema_fails_closed ______
+tests\test_schema_compatibility.py:68: in test_unknown_schema_fails_closed
+    self.assertFalse(validating_engine_allowed("3.9", ENGINE_VERSION, "snapshot"))
+E   AssertionError: True is not false
+=========================== short test summary info ===========================
+FAILED tests/test_p5_source_default_cli_e2e.py::test_cli_default_v2_journey_survives_derived_deletion
+FAILED tests/test_p5_source_default_cli_e2e.py::test_cli_corrupted_raw_refuses_then_heals
+FAILED tests/test_p5_source_default_cli_e2e.py::test_cli_verified_missing_title_is_display_only_metadata
+FAILED tests/test_data_contract.py::DataContractTests::test_release_and_schema_versions_are_explicit
+FAILED tests/test_schema_compatibility.py::SchemaCompatibilityRegistryTests::test_registry_matches_supported_schema_set
+FAILED tests/test_schema_compatibility.py::SchemaCompatibilityRegistryTests::test_source_clock_version_emit_and_validation_matrix
+FAILED tests/test_schema_compatibility.py::SchemaCompatibilityRegistryTests::test_unknown_schema_fails_closed
+7 failed, 188 passed in 14.93s
+
+FAILED: current source and forecast behavior
