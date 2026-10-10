@@ -30,6 +30,7 @@
     ".planning/p7-rf-scoped-calibration/attempts/m2/compatibility_main_patch_trial.log",
     ".planning/p7-rf-scoped-calibration/attempts/m3/m3_e2e.py",
     ".planning/p7-rf-scoped-calibration/attempts/m3/independent_review.md",
+    ".planning/p7-rf-scoped-calibration/attempts/m3/pre_push_gate_local.log",
     ".planning/p7-rf-scoped-calibration/attempts/m3_e2e.log"
   ],
   "tests": [
@@ -112,7 +113,7 @@
     "state": "not_triggered",
     "head": "05aa2661c9cdc34cb7e9ce3cf7e83b43bee7f556",
     "url": null,
-    "note": "exact CI runs on MAIN-integrated HEAD only; branch push recorded in HANDOFF.md section 6"
+    "note": "normal git push blocked by local pre-push gate (tools/pre_push_gate.py): ruff+mypy green, behavior gate 258 passed / 2 failed, both failures are MAIN-owned version-pin assertions wired by MAIN_INTEGRATION_PATCH.patch (trial-verified 88 passed when applied). Card forbids --no-verify, so no bypass was used; branch committed locally only, MAIN pushes/merges after applying the patch. Gate log: attempts/m3/pre_push_gate_local.log sha256 9721807ab2371ec4d8a5659224f501361d513032cc45478bca3fb38c9e86405a"
   },
   "install_candidates": [
     "scripts/research/evidence_roles.py",
@@ -129,8 +130,8 @@
     "MAIN_INTEGRATION_PATCH.patch: tests/test_data_contract.py, tests/test_schema_compatibility.py, tests/test_m3_schema_compatibility.py, tests/test_m3_period_flow_contract.py, scripts/schema_compatibility.py"
   ],
   "main_integration": [
-    "apply .planning/p7-rf-scoped-calibration/MAIN_INTEGRATION_PATCH.patch (version pins 4.2.0->4.2.1 + keep 4.2.0 a documented 3.7/3.8 emitter); without it the branch carries 5 known pin failures and 4 rf_coverage_report downstream errors",
-    "merge branch codex/p7-rf-calibration-binding; run exact CI on the integrated HEAD",
+    "apply .planning/p7-rf-scoped-calibration/MAIN_INTEGRATION_PATCH.patch (version pins 4.2.0->4.2.1 + keep 4.2.0 a documented 3.7/3.8 emitter); this also unblocks the pre-push gate (2 pin failures are the only gate failures)",
+    "push branch codex/p7-rf-calibration-binding and/or merge into main; run exact CI on the integrated HEAD",
     "optional: audit lane may later consume economic-support-diagnostics/1 as an additional read-only input; nothing in this card requires it"
   ],
   "remaining": [

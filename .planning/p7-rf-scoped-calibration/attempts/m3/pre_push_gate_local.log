@@ -1,0 +1,35 @@
+
+=== ruff ===
+All checks passed!
+
+=== public contract types ===
+Success: no issues found in 10 source files
+
+=== current source and forecast behavior ===
+...................................................................... [ 26%]
+........................................................................ [ 54%]
+..........................F............................................. [ 82%]
+............................................F.                           [100%]
+================================== FAILURES ===================================
+_______ DataContractTests.test_release_and_schema_versions_are_explicit _______
+tests\test_data_contract.py:463: in test_release_and_schema_versions_are_explicit
+    self.assertEqual(SKILL_VERSION, "4.2.0")
+E   AssertionError: '4.2.1' != '4.2.0'
+E   - 4.2.1
+E   ?     ^
+E   + 4.2.0
+E   ?     ^
+_ SchemaCompatibilityRegistryTests.test_source_clock_version_emit_and_validation_matrix _
+tests\test_schema_compatibility.py:28: in test_source_clock_version_emit_and_validation_matrix
+    self.assertEqual(ENGINE_VERSION, "4.2.0")
+E   AssertionError: '4.2.1' != '4.2.0'
+E   - 4.2.1
+E   ?     ^
+E   + 4.2.0
+E   ?     ^
+=========================== short test summary info ===========================
+FAILED tests/test_data_contract.py::DataContractTests::test_release_and_schema_versions_are_explicit
+FAILED tests/test_schema_compatibility.py::SchemaCompatibilityRegistryTests::test_source_clock_version_emit_and_validation_matrix
+2 failed, 258 passed, 2 subtests passed in 39.13s
+
+FAILED: current source and forecast behavior

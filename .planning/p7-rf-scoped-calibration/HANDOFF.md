@@ -10,8 +10,9 @@
 
 - base：`6883bf00548abb9891eab6762aeaa89e3898b202`（4.2.0 / opt-in 3.9）
 - branch：`codex/p7-rf-calibration-binding`
-- delivery HEAD：`05aa2661c9cdc34cb7e9ce3cf7e83b43bee7f556`（本 HANDOFF 所在的后续 docs commit 见 handoff.json note）
-- normal hooks commit：ruff / mypy public contracts / host assumption guard 全部 Passed（见提交输出）；push 状态见 §6。
+- delivery HEAD：`05aa2661c9cdc34cb7e9ce3cf7e83b43bee7f556`（源码+测试+文案+PWF证据；其后为本 HANDOFF/handoff.json 的 docs commit）
+- normal hooks commit：ruff / mypy public contracts / host assumption guard 全部 Passed（见提交输出）。
+- **push：被本地 `.githooks/pre-push`（`tools/pre_push_gate.py`）拦截，未绕过。** 门日志 attempts/m3/pre_push_gate_local.log（sha256 9721807a…）：ruff 与 mypy 门全绿，行为门 258 passed / 2 failed —— 仅 `test_data_contract.py::test_release_and_schema_versions_are_explicit` 与 `test_schema_compatibility.py::test_source_clock_version_emit_and_validation_matrix` 两个 MAIN-owned version-pin 断言（4.2.1 bump 的接线在本卡写集外）。根因消除路径即 §4 的 MAIN patch（compatibility trial 已证应用后 88 passed，含这两个文件）。本卡明文禁止 no-verify，故不采用 M3-FLOW 先例的 `--no-verify` 推送；分支保持本地提交，由 MAIN 应用 patch 后推送/合线（或由 MAIN 决定推送方式）。CI 因此未触发。
 
 ## 3. 根因 → 正负控 → 实现 → 结果（真实命令/exit/日志，路径相对本 PWF）
 
@@ -44,7 +45,7 @@ E2E 要点：正控 referenced_range/公式值 100/110/120/engine 4.2.1/stable-f
 
 ## 6. CI / 安装候选 / 限制
 
-- CI：exact CI 未触发（分支仅本地提交时记录 not_triggered；push 后状态见 handoff.json）。
+- CI：exact CI 未触发（not_triggered）。push 尝试被 pre-push 门拦截（见 §2；原因=2 个 MAIN-owned version-pin，应用 MAIN patch 即绿），本卡禁止 no-verify 故未绕过；remote 无本分支。
 - 安装候选（MAIN 执行）：`scripts/research/evidence_roles.py`、`scripts/research/native_dependencies.py`、`scripts/research_support_diagnostics.py`、`scripts/contracts/constants.py`（仅版本常量）、`CHANGELOG.md`、`SKILL.md`（3 处定点）、`references/evidence-role-calibration.md`、`references/economic-support-diagnostics.md`、`tests/test_scoped_calibration_support.py`、`tests/test_research_support_diagnostics.py`、`tests/fixtures/scoped_calibration_support/**`、MAIN patch 内 6 文件。
 - 限制：诊断 CLI 为 validation-level（run_forecast 层的模型 driver 规则仍由计算层强制）；诊断不等于买方经济质量认证。
 
