@@ -1,0 +1,143 @@
+{
+  "schema_version": "p7-lane-handoff/1",
+  "card_id": "P7-RF",
+  "status": "engineering_complete",
+  "base_head": "6883bf00548abb9891eab6762aeaa89e3898b202",
+  "delivery_head": "05aa2661c9cdc34cb7e9ce3cf7e83b43bee7f556",
+  "branch": "codex/p7-rf-calibration-binding",
+  "changed_paths": [
+    "scripts/research/evidence_roles.py",
+    "scripts/research/native_dependencies.py",
+    "scripts/research_support_diagnostics.py",
+    "scripts/contracts/constants.py",
+    "CHANGELOG.md",
+    "SKILL.md",
+    "references/evidence-role-calibration.md",
+    "references/economic-support-diagnostics.md",
+    "tests/test_scoped_calibration_support.py",
+    "tests/test_research_support_diagnostics.py",
+    "tests/fixtures/scoped_calibration_support/valid_calibrated.json",
+    "tests/fixtures/scoped_calibration_support/unrelated_conversion_scope.json",
+    "tests/fixtures/scoped_calibration_support/unrelated_calibration_scope.json",
+    "tests/fixtures/scoped_calibration_support/no_research.json",
+    "tests/fixtures/scoped_calibration_support/partial_driver_calibration.json",
+    ".planning/p7-rf-scoped-calibration/MAIN_INTEGRATION_PATCH.patch",
+    ".planning/p7-rf-scoped-calibration/attempts/m1/red_test_scoped_calibration_support.log",
+    ".planning/p7-rf-scoped-calibration/attempts/m1/red_test_research_support_diagnostics.log",
+    ".planning/p7-rf-scoped-calibration/attempts/m1/repro.py",
+    ".planning/p7-rf-scoped-calibration/attempts/m2/green_responsibility.log",
+    ".planning/p7-rf-scoped-calibration/attempts/m2/static.log",
+    ".planning/p7-rf-scoped-calibration/attempts/m2/compatibility_main_patch_trial.log",
+    ".planning/p7-rf-scoped-calibration/attempts/m3/m3_e2e.py",
+    ".planning/p7-rf-scoped-calibration/attempts/m3/independent_review.md",
+    ".planning/p7-rf-scoped-calibration/attempts/m3_e2e.log"
+  ],
+  "tests": [
+    {
+      "kind": "red",
+      "argv": ["python", "-X", "utf8", "-B", "-m", "pytest", "tests/test_scoped_calibration_support.py", "-v"],
+      "expected_exit_code": 1,
+      "exit_code": 1,
+      "log_path": "attempts/m1/red_test_scoped_calibration_support.log",
+      "log_sha256": "97a2d362ca451c72e6b3135ba6d6f3bb2da716bb784c7c16acf03ba889828ca2",
+      "note": "5 failed counterexamples (unrelated scope/period/non-native calibration scope), 2 positive controls passed"
+    },
+    {
+      "kind": "red",
+      "argv": ["python", "-X", "utf8", "-B", "-m", "pytest", "tests/test_research_support_diagnostics.py", "-v"],
+      "expected_exit_code": 1,
+      "exit_code": 1,
+      "log_path": "attempts/m1/red_test_research_support_diagnostics.log",
+      "log_sha256": "6da049c1cc1c9985aeb3f66fa47e65231511074d2946cd2e7675b9bb490d7f66",
+      "note": "CLI missing; read-only/fail-closed negative control passed"
+    },
+    {
+      "kind": "green",
+      "argv": ["python", "-X", "utf8", "-B", "-m", "pytest", "tests/test_scoped_calibration_support.py", "tests/test_research_support_diagnostics.py", "tests/test_research_evidence_roles.py", "-v"],
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "log_path": "attempts/m2/green_responsibility.log",
+      "log_sha256": "2225ce4c3db2d5a8c50fb68b883c00f2e5e31a89484c2f70e8266546382ca95e",
+      "note": "25 passed: 8 new scoped-binding (incl. strong-recompute tamper rejection), 6 CLI, 11 existing"
+    },
+    {
+      "kind": "static",
+      "argv": ["python", "-X", "utf8", "-B", "-m", "ruff", "check", "scripts/research/evidence_roles.py", "scripts/research/native_dependencies.py", "scripts/research_support_diagnostics.py", "scripts/contracts/constants.py", "tests/test_scoped_calibration_support.py", "tests/test_research_support_diagnostics.py"],
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "log_path": "attempts/m2/static.log",
+      "log_sha256": "fc315d60c8e4094da0aecc5cfb9bebc2a68d139a5d506d305ae025f72b891254",
+      "note": "ruff clean; mypy clean on the two new/changed research modules"
+    },
+    {
+      "kind": "e2e",
+      "argv": ["python", "-X", "utf8", "-B", "%TEMP%/p7-rf-scoped-calibration/m3_e2e.py"],
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "log_path": "attempts/m3_e2e.log",
+      "log_sha256": "da721f7c012ddbe50a2296d3e19e614f248c3a86654a4b751d66c727482e8065",
+      "note": "real build_auditable_case.py + run_target_measurement_e2e.py positive/negative controls in owned TEMP; registry inside owned root; positive/negative input.json sha equal; script archived at attempts/m3/m3_e2e.py"
+    },
+    {
+      "kind": "compatibility",
+      "argv": ["git", "apply", ".planning/p7-rf-scoped-calibration/MAIN_INTEGRATION_PATCH.patch", "&&", "python", "-X", "utf8", "-B", "-m", "pytest", "tests/test_data_contract.py", "tests/test_schema_compatibility.py", "tests/test_m3_schema_compatibility.py", "tests/test_m3_period_flow_contract.py", "tests/test_registry_artifact_audit.py", "tests/test_rf_coverage_report.py", "&&", "git", "apply", "-R", "..."],
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "log_path": "attempts/m2/compatibility_main_patch_trial.log",
+      "log_sha256": "9803fcd742ce2532b685eaad306beb0dd382d04bfb4664866f8ef93162cf2cf5",
+      "note": "88 passed with MAIN patch; reverting reproduces 5 version-pin failures + 4 rf_coverage downstream errors"
+    },
+    {
+      "kind": "independent_review",
+      "argv": ["read-only agent; fresh counterexamples via validate_document + analyze_operating_research"],
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "log_path": "attempts/m3/independent_review.md",
+      "log_sha256": "0638561e3c11df3babaa55e1751513eef1f3bfb5fe5a02f75ca52835921a0fd7",
+      "note": "invariant A (3 mutations demote) and B (legal unused upper endpoint) PASS; API shape PASS; 3 adversarial probes correct"
+    }
+  ],
+  "compatibility": [
+    "analyze_operating_research(data, validated) signature and research-adequacy/1 top-level keys unchanged; operating_research absent still returns None",
+    "revenue Low/Base/High arithmetic and stable-fsum/1 confidence totals byte-identical (E2E positive vs negative consolidated_forecast equal)",
+    "operating-research/1 input structure, source APIs and period contracts unchanged; schemas 3.7/3.8/3.9 untouched; no new required facts",
+    "engine 4.2.1 re-emits optional calibration diagnostics: previously false-green inputs now unverified; old 4.2.0 inputs/reports keep original bytes against the pinned 4.2.0 emitter",
+    "revenue_report generic adequacy rendering reused unchanged; new detail only in the read-only economic-support-diagnostics/1 CLI"
+  ],
+  "cleanup_receipt": "All evidence copied into .planning/p7-rf-scoped-calibration/attempts/ before deletion; removed %TEMP%/p7-rf-scoped-calibration (m1/m2/m3), %TEMP%/p7-rf-review, and the temporary base worktree via git worktree remove (shared object store, no history copy). No full-lake backup. canonical assurance files and output/ owner WIP untouched and uncommitted.",
+  "external_provider_calls": 0,
+  "external_model_calls": 0,
+  "new_cost_usd": 0,
+  "ci": {
+    "state": "not_triggered",
+    "head": "05aa2661c9cdc34cb7e9ce3cf7e83b43bee7f556",
+    "url": null,
+    "note": "exact CI runs on MAIN-integrated HEAD only; branch push recorded in HANDOFF.md section 6"
+  },
+  "install_candidates": [
+    "scripts/research/evidence_roles.py",
+    "scripts/research/native_dependencies.py",
+    "scripts/research_support_diagnostics.py",
+    "scripts/contracts/constants.py",
+    "CHANGELOG.md",
+    "SKILL.md",
+    "references/evidence-role-calibration.md",
+    "references/economic-support-diagnostics.md",
+    "tests/test_scoped_calibration_support.py",
+    "tests/test_research_support_diagnostics.py",
+    "tests/fixtures/scoped_calibration_support/**",
+    "MAIN_INTEGRATION_PATCH.patch: tests/test_data_contract.py, tests/test_schema_compatibility.py, tests/test_m3_schema_compatibility.py, tests/test_m3_period_flow_contract.py, scripts/schema_compatibility.py"
+  ],
+  "main_integration": [
+    "apply .planning/p7-rf-scoped-calibration/MAIN_INTEGRATION_PATCH.patch (version pins 4.2.0->4.2.1 + keep 4.2.0 a documented 3.7/3.8 emitter); without it the branch carries 5 known pin failures and 4 rf_coverage_report downstream errors",
+    "merge branch codex/p7-rf-calibration-binding; run exact CI on the integrated HEAD",
+    "optional: audit lane may later consume economic-support-diagnostics/1 as an additional read-only input; nothing in this card requires it"
+  ],
+  "remaining": [
+    "R16/R17/R18 real-company magnitudes, management-target/M&A control, three-year paths, timing and joint stress still require original-document research and four independent reviews; engineering green here does not close them",
+    "unsupported cells must not be aggregated into declared three-year success; W09 real research gap stays open",
+    "diagnostics CLI is validation-level; compute-layer model driver rules remain enforced by run_forecast; diagnostics is not a buyer-grade economic quality certification",
+    "environment noise (not this card, observed flapping on base too): ca202 c1_samples pre-existing failure; zr806/zr1004/zr709/ca302/fc1307a journey/canary/vendored tests race with parallel sessions editing live sibling checkouts"
+  ],
+  "example_only": false
+}

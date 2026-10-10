@@ -20,10 +20,10 @@
 | 准备 | 工作树/源码基线、独立PWF与施工卡/公共交接副本 | complete |
 | M1 | 读实际接口、固定输入输出样例、责任RED与真实日志 | complete |
 | M2 | 共用实现与集中GREEN、旧兼容、边界内静态检查 | complete |
-| M3 | 自有TEMP离线公共E2E、恢复、独立关键不变量审查、正常commit与交接 | in_progress |
+| M3 | 自有TEMP离线公共E2E、恢复、独立关键不变量审查、正常commit与交接 | complete |
 
 只有三个施工大节点，技术断言/诊断不是额外人工审批。分支CI未触发记录not_triggered，无remote记录no_remote，不伪造green。不关闭MAIN真实公司研究。
 
 ## Next Step
 
-开始M1：读本卡与实际项目约束/代码/现有测试，写最小契约RED并保存真实命令、exit和日志。先保留失败，再实现。
+全部大节点完成：交付 commit 05aa2661（源码+测试+文案+PWF证据），交接 HANDOFF.md/handoff.json 就绪。MAIN 应用 MAIN_INTEGRATION_PATCH.patch 后合线；research_remaining 不因本卡关闭。
