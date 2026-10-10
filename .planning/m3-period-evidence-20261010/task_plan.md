@@ -7,10 +7,10 @@ Explicit new schema and engine capability for dated period flows and same-propos
 
 ## Phases
 1. Current consumer/compatibility inventory and DTO: complete (contract_consumer_map.json).
-2. RED contract tests for periods/roles/old versions: in_progress.
-3. Implement pure contracts, role filtering, compatibility and authoring: pending.
-4. Focused GREEN, real half-year read-only conversion evidence, old byte controls: pending.
-5. Normal commit/push, exact CI and MAIN output/install handoff: pending.
+2. RED contract tests for periods/roles/old versions: complete (4 red logs, product RED).
+3. Implement pure contracts, role filtering, compatibility and authoring: complete (schema 3.9 + role-aware triangulation + registry + authoring + docs).
+4. Focused GREEN, real half-year read-only conversion evidence, old byte controls: complete (16+8+5+13+11 green; 18-flow mapping + control validated; 122 legacy controls; economic equivalence sha equal; restore 150/0).
+5. Normal commit/push, exact CI and MAIN output/install handoff: complete (commits d9e63597..0b957fd3 pushed; exact CI 38069923652 observed = documented MAIN-owned pin RED; HANDOFF.md + handoff.json schema-VALID).
 
 ## Next Step
 Write tests/test_m3_period_flow_contract.py, test_m3_evidence_roles.py, test_m3_schema_compatibility.py (RED) against the decided matrix: schema 3.9 opt-in + engine 4.2.0, 3.7/3.8 emit sets frozen to {4.1.0,4.1.1,ENGINE_VERSION}; role-aware triangulation gated on 3.9.
