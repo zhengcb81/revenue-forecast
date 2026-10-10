@@ -28,18 +28,30 @@ from research.native_dependencies import segment_roots
 DIAGNOSTICS_SCHEMA_VERSION = "economic-support-diagnostics/1"
 
 
+def _covering_calibrations_for_cell(
+    calibrations: list[dict], *, segment: str, scenario: str, year: int,
+    company: str, roots: list[str], parameters: dict,
+) -> dict[str, set[str]]:
+    """Bind support to the actual cell; a shared PID is not a shared scope."""
+    covering: dict[str, set[str]] = {}
+    for calibration in calibrations:
+        if calibration["scope"] not in {company, segment}:
+            continue
+        output = calibration["scenario_output_parameter_ids"][scenario]
+        if output in roots and parameters[output]["period"] == f"FY{year}":
+            covering.setdefault(output, set()).add(calibration["calibration_id"])
+    return covering
+
+
 def build_support_diagnostics(data: dict, input_sha256: str) -> dict:
     validated = validate_document(data)
     adequacy = analyze_operating_research(data, validated) if data.get("operating_research") is not None else None
     calibrations = adequacy["calibrations"] if adequacy is not None else []
-    covering: dict[str, str] = {}
     referenced = []
     demoted = []
     for calibration in calibrations:
         if calibration["adequacy_status"] == "referenced_range":
             referenced.append(calibration)
-            for pid in calibration["scenario_output_parameter_ids"].values():
-                covering.setdefault(pid, calibration["calibration_id"])
         else:
             demoted.append(calibration)
     segments = []
@@ -49,6 +61,11 @@ def build_support_diagnostics(data: dict, input_sha256: str) -> dict:
         for scenario in scenario_keys:
             for year in data["forecast_years"]:
                 roots = segment_roots(data, segment, scenario, year)
+                covering = _covering_calibrations_for_cell(
+                    referenced, segment=segment["name"], scenario=scenario, year=year,
+                    company=data["company_name"], roots=roots,
+                    parameters=validated["parameter_index"],
+                )
                 supported = sorted({p for p in roots if p in covering})
                 unsupported = sorted({p for p in roots if p not in covering})
                 reasons = []
@@ -56,7 +73,7 @@ def build_support_diagnostics(data: dict, input_sha256: str) -> dict:
                     reasons = ["no_optional_operating_research_declared"]
                 else:
                     reasons = [f"parameter_without_referenced_range_calibration:{p}" for p in unsupported]
-                    covering_ids = {covering[p] for p in supported}
+                    covering_ids = {calibration_id for p in supported for calibration_id in covering[p]}
                     for calibration in referenced:
                         if calibration["calibration_id"] not in covering_ids:
                             reasons.append(f"calibration_scope_not_covering:{calibration['calibration_id']}:{segment['name']}")
@@ -69,7 +86,7 @@ def build_support_diagnostics(data: dict, input_sha256: str) -> dict:
                     status = "conditional"
                 else:
                     status = "unsupported"
-                cell_calibration_ids = sorted({covering[p] for p in supported})
+                cell_calibration_ids = sorted({calibration_id for p in supported for calibration_id in covering[p]})
                 claim_ids = sorted({claim for calibration in referenced
                                     if calibration["calibration_id"] in set(cell_calibration_ids)
                                     for claim in calibration["source_claim_ids"]})

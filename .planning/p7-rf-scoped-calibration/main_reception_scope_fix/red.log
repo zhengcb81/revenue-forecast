@@ -1,0 +1,79 @@
+......FFF.                                                               [100%]
+================================== FAILURES ===================================
+_____ test_shared_root_does_not_borrow_another_segments_calibration_scope _____
+
+    def test_shared_root_does_not_borrow_another_segments_calibration_scope():
+        document = shared_root_document()
+        before = deepcopy(document)
+        diagnostics = diagnose_document(document)  # Actual native validation remains legal.
+        assert document == before
+        for scenario in ("low", "base", "high"):
+            a = support_cell(diagnostics, "Segment A", scenario, 2026)
+            b = support_cell(diagnostics, "Segment B", scenario, 2026)
+            assert a["status"] == "supported"
+            assert a["calibration_ids"] == ["reference_bridge"]
+>           assert b["status"] == "unsupported", b
+E           AssertionError: {'scenario': 'low', 'year': '2026', 'status': 'supported', 'reasons': [], ...}
+E           assert 'supported' == 'unsupported'
+E             
+E             - unsupported
+E             ? --
+E             + supported
+
+tests\test_research_support_diagnostics.py:191: AssertionError
+_ test_shared_root_with_distinct_scoped_calibrations_keeps_each_cells_claims[False] _
+
+reverse_calibrations = False
+
+    @pytest.mark.parametrize("reverse_calibrations", [False, True])
+    def test_shared_root_with_distinct_scoped_calibrations_keeps_each_cells_claims(reverse_calibrations):
+        document = shared_root_document()
+        b_claims = add_segment_b_calibration(document)
+        a_claims = document["operating_research"]["calibrations"][0]["source_claim_ids"]
+        if reverse_calibrations:
+            document["operating_research"]["calibrations"].reverse()
+        before = deepcopy(document)
+        diagnostics = diagnose_document(document)
+        assert document == before
+        for scenario in ("low", "base", "high"):
+            a = support_cell(diagnostics, "Segment A", scenario, 2026)
+            b = support_cell(diagnostics, "Segment B", scenario, 2026)
+            assert a["status"] == b["status"] == "supported"
+            assert a["calibration_ids"] == ["reference_bridge"]
+>           assert b["calibration_ids"] == ["reference_bridge_b"]
+E           AssertionError: assert ['reference_bridge'] == ['reference_bridge_b']
+E             
+E             At index 0 diff: 'reference_bridge' != 'reference_bridge_b'
+E             Use -v to get more diff
+
+tests\test_research_support_diagnostics.py:237: AssertionError
+_ test_shared_root_with_distinct_scoped_calibrations_keeps_each_cells_claims[True] _
+
+reverse_calibrations = True
+
+    @pytest.mark.parametrize("reverse_calibrations", [False, True])
+    def test_shared_root_with_distinct_scoped_calibrations_keeps_each_cells_claims(reverse_calibrations):
+        document = shared_root_document()
+        b_claims = add_segment_b_calibration(document)
+        a_claims = document["operating_research"]["calibrations"][0]["source_claim_ids"]
+        if reverse_calibrations:
+            document["operating_research"]["calibrations"].reverse()
+        before = deepcopy(document)
+        diagnostics = diagnose_document(document)
+        assert document == before
+        for scenario in ("low", "base", "high"):
+            a = support_cell(diagnostics, "Segment A", scenario, 2026)
+            b = support_cell(diagnostics, "Segment B", scenario, 2026)
+            assert a["status"] == b["status"] == "supported"
+>           assert a["calibration_ids"] == ["reference_bridge"]
+E           AssertionError: assert ['reference_bridge_b'] == ['reference_bridge']
+E             
+E             At index 0 diff: 'reference_bridge_b' != 'reference_bridge'
+E             Use -v to get more diff
+
+tests\test_research_support_diagnostics.py:236: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_research_support_diagnostics.py::test_shared_root_does_not_borrow_another_segments_calibration_scope
+FAILED tests/test_research_support_diagnostics.py::test_shared_root_with_distinct_scoped_calibrations_keeps_each_cells_claims[False]
+FAILED tests/test_research_support_diagnostics.py::test_shared_root_with_distinct_scoped_calibrations_keeps_each_cells_claims[True]
+3 failed, 7 passed in 2.13s

@@ -1,0 +1,68 @@
+{
+  "schema_version": "p7-rf-scope-run/1",
+  "phase": "green",
+  "owned_temp": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\p7-rf-scope-green-nsyiecc_",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "new_cost_usd": 0,
+  "runs": [
+    {
+      "label": "ruff",
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "ruff",
+        "check",
+        "--no-cache",
+        "scripts/research_support_diagnostics.py",
+        "tests/test_research_support_diagnostics.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.243469200002437
+    },
+    {
+      "label": "mypy",
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "mypy",
+        "--cache-dir",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\p7-rf-scope-green-nsyiecc_\\mypy",
+        "scripts/research_support_diagnostics.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.045243100001244
+    },
+    {
+      "label": "responsibility",
+      "argv": [
+        "C:\\Miniconda\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "pytest_timeout",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\p7-rf-scope-green-nsyiecc_\\pytest",
+        "--timeout=60",
+        "-q",
+        "tests/test_research_support_diagnostics.py",
+        "tests/test_scoped_calibration_support.py",
+        "tests/test_research_evidence_roles.py"
+      ],
+      "exit_code": 0,
+      "seconds": 7.422033399998327
+    }
+  ],
+  "owned_temp_removed": true
+}

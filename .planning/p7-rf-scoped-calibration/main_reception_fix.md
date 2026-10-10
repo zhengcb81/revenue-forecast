@@ -20,3 +20,9 @@
 ## 原生证据字节归档（MAIN）
 
 只读核对7交付日志：工作文件SHA全部匹配handoff，但Git在首次归档时换行规范化使7个blob全部不同。原文件不改、原handoff不改。MAIN仅为本卡attempts与main_reception证据路径设置-text/-eol/-diff，最终将原7files真实bytes重新纳入新的正常commit，并核canonical/新Gitblob/记录SHA。旧commit仍保留；不renormalize历史全库，不新副本/备份。源码与active计划仍正常LF/diff。
+
+## 最终独立复核补充：诊断覆盖必须是cell关系（2026-10-11）
+
+独立review真实反例：同一合法native parameter/root被Segment A与Segment B消费；只有scope=Segment A的calibration，nativevalidate仍合法，但CLI全局pid→calibration mapping把B也误报supported。这是诊断使用PID代替真实范围关系的共因；不禁止共享root、不改算术/参数/来源/发布许可。
+
+在scripts/research_support_diagnostics.py共用构造处按实际segment×scenario×year匹配reference calibration的scope、scenario output和适用期，保留explicit companyscope以及同pid不同scopedcalibration的各自claim IDs；只得到本cell支持的calibrationIDs，不跨scope借用。A正确supported、B无对应范围unsupported/具体原因；给B真实独立calibration则B可正常支持。新增test_research_support_diagnostics责任RED→GREEN、period/source/合法bridge旧正控不变；修前原report/receipt保留，新证据main_reception_scope_fix/**，独立review修后只重放最小反例。只一集中责任+原一次公共CLI诊断例，不再全119/4pipeline重复。0model/vendor，ownedTEMP恢复。ROOT随后正常补充commit合main。

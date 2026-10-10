@@ -5,11 +5,14 @@ not call models or downloads, and every non-supported cell must carry concrete
 calibration/parameter/claim-ID reasons instead of one generic "insufficient"."""
 from __future__ import annotations
 
+from copy import deepcopy
 import hashlib
 import json
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts" / "research_support_diagnostics.py"
@@ -137,3 +140,117 @@ def test_cli_is_read_only_and_fails_closed_on_bad_input(tmp_path):
     assert out.read_text(encoding="utf-8") == "sentinel"
     for name, payload in before.items():
         assert (FIXTURES / name).read_bytes() == payload
+
+
+def replace_parameter_references(value, replacements):
+    if isinstance(value, str):
+        return replacements.get(value, value)
+    if isinstance(value, list):
+        replaced = [replace_parameter_references(item, replacements) for item in value]
+        return list(dict.fromkeys(replaced)) if all(isinstance(item, str) for item in replaced) else replaced
+    if isinstance(value, dict):
+        return {key: replace_parameter_references(item, replacements) for key, item in value.items()}
+    return value
+
+
+def shared_root_document():
+    from test_research_evidence_roles import calibrated_document
+
+    document = calibrated_document()
+    replacements = {}
+    for scenario in ("low", "base", "high"):
+        shared = f"0_{scenario}_2026"
+        replacements[f"1_{scenario}_2026"] = shared
+        document["segments"][1]["scenarios"][scenario]["driver_parameter_ids"]["revenue"][0] = shared
+    for key in ("research_coverage", "growth_driver_tree"):
+        document[key] = replace_parameter_references(document[key], replacements)
+    return document
+
+
+def support_cell(diagnostics, segment, scenario, year):
+    return next(entry for row in diagnostics["segments"] if row["segment"] == segment
+                for entry in row["entries"] if entry["scenario"] == scenario and entry["year"] == str(year))
+
+
+def diagnose_document(document):
+    from research_support_diagnostics import build_support_diagnostics
+
+    return build_support_diagnostics(document, "0" * 64)
+
+
+def test_shared_root_does_not_borrow_another_segments_calibration_scope():
+    document = shared_root_document()
+    before = deepcopy(document)
+    diagnostics = diagnose_document(document)  # Actual native validation remains legal.
+    assert document == before
+    for scenario in ("low", "base", "high"):
+        a = support_cell(diagnostics, "Segment A", scenario, 2026)
+        b = support_cell(diagnostics, "Segment B", scenario, 2026)
+        assert a["status"] == "supported"
+        assert a["calibration_ids"] == ["reference_bridge"]
+        assert b["status"] == "unsupported", b
+        assert b["calibration_ids"] == b["claim_ids"] == b["supported_parameter_ids"] == []
+        assert b["unsupported_parameter_ids"] == [f"0_{scenario}_2026"]
+        assert "calibration_scope_not_covering:reference_bridge:Segment B" in b["reasons"]
+
+
+def add_segment_b_calibration(document):
+    research = document["operating_research"]
+    calibration = deepcopy(research["calibrations"][0])
+    calibration["calibration_id"] = "reference_bridge_b"
+    calibration["scope"] = "Segment B"
+    claims = {claim["claim_id"]: claim for claim in document["evidence_claims"]}
+    observations = {row["claim_id"]: row for row in research["observations"]}
+    replacements = {}
+    for old in calibration["source_claim_ids"]:
+        new = f"{old}_segment_b"
+        replacements[old] = new
+        claim = deepcopy(claims[old])
+        claim["claim_id"] = new
+        document["evidence_claims"].append(claim)
+        parameter = next(p for p in document["parameters"] if p["parameter_id"] == claim["target_id"])
+        parameter["claim_ids"].append(new)
+        observation = deepcopy(observations[old])
+        observation["claim_id"] = new
+        observation["scope"] = "Segment B"
+        research["observations"].append(observation)
+    calibration["source_claim_ids"] = [replacements[claim] for claim in calibration["source_claim_ids"]]
+    research["calibrations"].append(calibration)
+    return calibration["source_claim_ids"]
+
+
+@pytest.mark.parametrize("reverse_calibrations", [False, True])
+def test_shared_root_with_distinct_scoped_calibrations_keeps_each_cells_claims(reverse_calibrations):
+    document = shared_root_document()
+    b_claims = add_segment_b_calibration(document)
+    a_claims = document["operating_research"]["calibrations"][0]["source_claim_ids"]
+    if reverse_calibrations:
+        document["operating_research"]["calibrations"].reverse()
+    before = deepcopy(document)
+    diagnostics = diagnose_document(document)
+    assert document == before
+    for scenario in ("low", "base", "high"):
+        a = support_cell(diagnostics, "Segment A", scenario, 2026)
+        b = support_cell(diagnostics, "Segment B", scenario, 2026)
+        assert a["status"] == b["status"] == "supported"
+        assert a["calibration_ids"] == ["reference_bridge"]
+        assert b["calibration_ids"] == ["reference_bridge_b"]
+        assert a["claim_ids"] == sorted(a_claims)
+        assert b["claim_ids"] == sorted(b_claims)
+        assert support_cell(diagnostics, "Segment B", scenario, 2027)["status"] == "unsupported"
+
+
+def test_company_scope_covers_shared_roots_in_each_actual_cell():
+    document = shared_root_document()
+    research = document["operating_research"]
+    research["calibrations"][0]["scope"] = document["company_name"]
+    for observation in research["observations"]:
+        observation["scope"] = document["company_name"]
+    diagnostics = diagnose_document(document)
+    for segment in ("Segment A", "Segment B"):
+        for scenario in ("low", "base", "high"):
+            entry = support_cell(diagnostics, segment, scenario, 2026)
+            assert entry["status"] == "supported"
+            assert entry["calibration_ids"] == ["reference_bridge"]
+            assert entry["reasons"] == []
+            assert support_cell(diagnostics, segment, scenario, 2027)["status"] == "unsupported"
