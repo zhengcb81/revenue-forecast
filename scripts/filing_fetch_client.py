@@ -55,6 +55,7 @@ class _ClientError(RuntimeError):
         downloads: int | None = None,
         source_failure_reason: str | None = None,
         acquisition_observation: dict[str, Any] | None = None,
+        request_diagnostic: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(message)
         self.status = status if isinstance(status, str) and status in FAILURE_STATUSES else None
@@ -64,7 +65,8 @@ class _ClientError(RuntimeError):
         observed = failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
                                        "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
                                        "source_failure_reason": source_failure_reason,
-                                       "acquisition_observation": acquisition_observation})
+                                       "acquisition_observation": acquisition_observation, "request_diagnostic": request_diagnostic})
+        self.request_diagnostic = observed.get("request_diagnostic")
         self.upstream_cause = observed.get("upstream_cause")
         self.acquisition_failure = observed.get("acquisition_failure")
         self.acquisition_observation = observed.get("acquisition_observation")
@@ -360,6 +362,7 @@ def _emit_error(
     downloads: int | None = None,
     source_failure_reason: str | None = None,
     acquisition_observation: dict[str, Any] | None = None,
+    request_diagnostic: dict[str, Any] | None = None,
 ) -> None:
     """Write a structured error document to stderr (success stream on stdout)."""
     payload: dict[str, Any] = {
@@ -373,7 +376,7 @@ def _emit_error(
     payload.update(failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
                                        "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
                                        "source_failure_reason": source_failure_reason,
-                                       "acquisition_observation": acquisition_observation}))
+                                       "acquisition_observation": acquisition_observation, "request_diagnostic": request_diagnostic}))
     sys.stderr.write(json.dumps(payload, ensure_ascii=False))
     sys.stderr.write("\n")
 
@@ -461,6 +464,7 @@ def main(argv: list[str] | None = None) -> int:
             stage=exc.stage, attempts=exc.attempts, calls=exc.calls, downloads=exc.downloads,
             source_failure_reason=exc.source_failure_reason,
             acquisition_observation=exc.acquisition_observation,
+            request_diagnostic=exc.request_diagnostic,
         )
         return 2
 

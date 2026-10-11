@@ -32,7 +32,7 @@ def _refused(returncode: int, stdout: bytes, stderr: bytes) -> None:
         raise NarrativeTransportError("unavailable", "partial_body_on_refusal")
     refusal = decode_object(stderr, limit=RECEIPT_LIMIT, one_line=True)
     if set(refusal) != {"schema_version", "status", "reason"} or (
-        refusal["schema_version"] != "narrative-read-receipt/1"
+        refusal["schema_version"] not in {"narrative-read-receipt/1", "narrative-read-receipt/3"}
         or refusal["status"] not in {"blocked", "not_found", "not_indexed", "unavailable", "ambiguous"}
         or not isinstance(refusal["reason"], str)
     ):

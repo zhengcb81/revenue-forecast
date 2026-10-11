@@ -131,6 +131,28 @@ def validated_cause(value: Any) -> dict[str, Any] | None:
     return dict(value)
 
 
+REQUEST_DIAGNOSTIC_SCHEMA = "filing-request-diagnostic/1"
+REQUEST_DIAGNOSTIC_PATHS = {
+    "exact_requires_fiscal_year": frozenset({"fiscal_year"}),
+    "latest_forbids_fiscal_year": frozenset({"fiscal_year"}),
+    "latest_reuse_requires_acquisition_limits": frozenset({"acquisition_limits"}),
+    "acquisition_limits_invalid": frozenset({"acquisition_limits", "acquisition_limits.max_bytes",
+        "acquisition_limits.timeout_seconds", "acquisition_limits.max_cost_usd"}),
+}
+
+
+def validated_request_diagnostic(value: Any) -> dict[str, Any] | None:
+    """An optional closed sibling; the original six-field cause is unchanged."""
+    if not isinstance(value, dict) or set(value) != {"schema_version", "reason", "field_path"}:
+        return None
+    if value["schema_version"] != REQUEST_DIAGNOSTIC_SCHEMA or not isinstance(value["reason"], str):
+        return None
+    paths = REQUEST_DIAGNOSTIC_PATHS.get(value["reason"])
+    if paths is None or not isinstance(value["field_path"], str) or value["field_path"] not in paths:
+        return None
+    return dict(value)
+
+
 def failure_detail(payload: dict[str, Any]) -> dict[str, Any]:
     """A v2 filing's failure is independent of its transcript companion."""
     child = payload.get("filing")
@@ -255,6 +277,7 @@ def failure_observation(payload: Any) -> dict[str, Any]:
     detail = failure_detail(payload)
     result: dict[str, Any] = {}
     cause = validated_cause(detail.get("upstream_cause"))
+    diagnostic = validated_request_diagnostic(detail.get("request_diagnostic"))
     receipt = validated_acquisition_failure(detail.get("acquisition_failure"))
     # M3-USAGE: the operation observation is an envelope-level account (like
     # calls/downloads); the detail fallback keeps older flat shapes readable.
@@ -263,6 +286,8 @@ def failure_observation(payload: Any) -> dict[str, Any]:
         observation = validated_acquisition_observation(detail.get("acquisition_observation"))
     if cause is not None:
         result["upstream_cause"] = cause
+    if diagnostic is not None:
+        result["request_diagnostic"] = diagnostic
     if receipt is not None:
         result["acquisition_failure"] = receipt
     if observation is not None:

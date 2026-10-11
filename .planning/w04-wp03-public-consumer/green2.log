@@ -1,0 +1,81 @@
+........................................................................ [ 55%]
+..................................F......................                [100%]
+================================== FAILURES ===================================
+_______ test_public_read_inherits_remaining_caller_deadline_over_thirty _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026EED2CB5C0>
+tmp_path = WindowsPath('C:/tmp/w04rf-green2-20261011/test_public_read_inherits_rema0')
+
+    def test_public_read_inherits_remaining_caller_deadline_over_thirty(monkeypatch, tmp_path):
+        config, calls = setup_chain(monkeypatch, tmp_path, [100, 100, 140, 155])
+>       prep.prepare_source_result({}, company_wiki_catalog_config=config,
+                                   narrative_request={}, timeout_seconds=90)
+
+tests\test_source_preparation_deadline.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+request = {}, allow_download = False, timeout_seconds = 90
+python = ('C:\\Miniconda\\python.exe',), company_wiki_config = None
+filing_fetch_root = None, source_reader_v2 = True
+company_wiki_catalog_config = WindowsPath('C:/tmp/w04rf-green2-20261011/test_public_read_inherits_rema0/catalog.yaml')
+narrative_request = {}, source_reader_receipt_version = '2.1'
+
+    def prepare_source_result(
+        request: dict,
+        *,
+        allow_download: bool = False,
+        timeout_seconds: float = 900.0,
+        python: tuple[str, ...] = (sys.executable,),
+        company_wiki_config: Path | None = None,
+        filing_fetch_root: Path | None = None,
+        source_reader_v2: bool = True,
+        company_wiki_catalog_config: Path | None = None,
+        narrative_request: dict | None = None,
+        source_reader_receipt_version: str = "2.1",
+    ) -> dict:
+        """Orchestrate the real chain and return the RevenueSourceRecord.
+    
+        The only default route is SourceRef v2: the FF candidate is requested in
+        pathless SourceRef form and verified by company-wiki's reader with the
+        REQUIRED ``company_wiki_catalog_config`` (missing/unavailable config is a
+        named failure before any outbound call).  ``source_reader_v2`` remains
+        accepted only for call-site compatibility �� it is a no-op, there is no
+        legacy fallback.
+        """
+        from company_wiki_source_reader_v2 import validate_source_reader_receipt_version
+        version = validate_source_reader_receipt_version(source_reader_receipt_version)
+        deadline = _read_deadline(timeout_seconds)
+        reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
+        catalog_config = _catalog_config_for_reader(company_wiki_catalog_config)
+        command = _filing_fetch_command(
+            python,
+            filing_fetch_root=filing_fetch_root,
+            company_wiki_config=company_wiki_config,
+            allow_download=allow_download,
+            timeout_seconds=timeout_seconds,
+        )
+        filing_fetch = _run_filing_fetch(request, command, _remaining_timeout(deadline))
+        stage = "source_reader"
+        try:
+            record = _prepare_source_ref_v2(
+                request,
+                select_filing(filing_fetch),
+                catalog_config,
+                timeout_seconds=_remaining_timeout(deadline), **reader_options,
+            )
+            narrative = None
+            if narrative_request is not None:
+                stage = "narrative_reader"
+                from company_wiki_narrative_reader import read_narrative_context
+                from source_narrative_context import narrative_read_receipt
+                context = read_narrative_context(narrative_request, catalog_config=catalog_config,
+                                                 timeout_seconds=_remaining_timeout(deadline))
+                value = context.to_dict()
+>               refs = value["parent_source_refs"] if value["schema_version"] == "revenue-narrative-context/3" else [value["source_ref"]]
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^
+E               KeyError: 'schema_version'
+
+scripts\source_preparation.py:450: KeyError
+=========================== short test summary info ===========================
+FAILED tests/test_source_preparation_deadline.py::test_public_read_inherits_remaining_caller_deadline_over_thirty
+1 failed, 128 passed in 2.96s

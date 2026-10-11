@@ -1,0 +1,100 @@
+..............................FF.F...................................... [ 77%]
+....................s                                                    [100%]
+================================== FAILURES ===================================
+_______________ test_env09_download_calls_from_envelope_events ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FDE1D2A850>
+
+    def test_env09_download_calls_from_envelope_events(monkeypatch):
+        """ENV-09: envelope download_events=1 -> receipt download_calls=1.
+        The legacy fake ('0 if handle else 1') would report 0 for a handle that
+        carries a downloaded document �� this mutation must die."""
+>       record = _legacy_record(
+            monkeypatch, _envelope(download_events=1, outcome="downloaded_new"))
+
+tests\test_source_preparation.py:280: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_source_preparation.py:188: in _legacy_record
+    return _prepare_legacy_source(
+scripts\source_preparation.py:355: in _prepare_legacy_source
+    source_type=_revenue_source_type(handle),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+handle = {'handle': {'request_id': 'r1'}, 'selected_artifacts': [], 'resolution_envelope': {'envelope_schema_version': '1.0', '...ed_new', 'download_events': 1, 'policy_hash': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+
+    def _revenue_source_type(handle: dict) -> str:
+        kind = handle.get("document_kind")
+        if not isinstance(kind, str) or kind not in _SOURCE_TYPE_BY_KIND:
+>           raise RuntimeError("unsupported_revenue_document_kind")
+E           RuntimeError: unsupported_revenue_document_kind
+
+scripts\source_preparation.py:116: RuntimeError
+________________ test_env10_download_calls_zero_from_envelope _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FDE2629350>
+
+    def test_env10_download_calls_zero_from_envelope(monkeypatch):
+        """ENV-10: envelope download_events=0 -> receipt download_calls=0."""
+>       record = _legacy_record(monkeypatch, _envelope())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_source_preparation.py:288: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_source_preparation.py:188: in _legacy_record
+    return _prepare_legacy_source(
+scripts\source_preparation.py:355: in _prepare_legacy_source
+    source_type=_revenue_source_type(handle),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+handle = {'handle': {'request_id': 'r1'}, 'selected_artifacts': [], 'resolution_envelope': {'envelope_schema_version': '1.0', '...isting', 'download_events': 0, 'policy_hash': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}}
+
+    def _revenue_source_type(handle: dict) -> str:
+        kind = handle.get("document_kind")
+        if not isinstance(kind, str) or kind not in _SOURCE_TYPE_BY_KIND:
+>           raise RuntimeError("unsupported_revenue_document_kind")
+E           RuntimeError: unsupported_revenue_document_kind
+
+scripts\source_preparation.py:116: RuntimeError
+________________ test_env12_receipt_carries_envelope_evidence _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FDE1D95F40>
+
+    def test_env12_receipt_carries_envelope_evidence(monkeypatch):
+        """ENV-12: the receipt records the journal-derived outcome and the
+        policy/epoch/bundle evidence �� the evidence is IN the receipt, not
+        re-derived."""
+>       record = _legacy_record(
+            monkeypatch,
+            _envelope(
+                outcome="reused_after_discovery",
+                policy_hash="b" * 64,
+                activation_epoch="epoch-2",
+                bundle_status="unavailable",
+            ),
+        )
+
+tests\test_source_preparation.py:308: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_source_preparation.py:188: in _legacy_record
+    return _prepare_legacy_source(
+scripts\source_preparation.py:355: in _prepare_legacy_source
+    source_type=_revenue_source_type(handle),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+handle = {'handle': {'request_id': 'r1'}, 'selected_artifacts': [], 'resolution_envelope': {'envelope_schema_version': '1.0', '...covery', 'download_events': 0, 'policy_hash': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', ...}}
+
+    def _revenue_source_type(handle: dict) -> str:
+        kind = handle.get("document_kind")
+        if not isinstance(kind, str) or kind not in _SOURCE_TYPE_BY_KIND:
+>           raise RuntimeError("unsupported_revenue_document_kind")
+E           RuntimeError: unsupported_revenue_document_kind
+
+scripts\source_preparation.py:116: RuntimeError
+=========================== short test summary info ===========================
+FAILED tests/test_source_preparation.py::test_env09_download_calls_from_envelope_events
+FAILED tests/test_source_preparation.py::test_env10_download_calls_zero_from_envelope
+FAILED tests/test_source_preparation.py::test_env12_receipt_carries_envelope_evidence
+3 failed, 89 passed, 1 skipped in 4.19s

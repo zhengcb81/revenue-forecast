@@ -93,6 +93,11 @@ _SOURCE_TYPE_BY_KIND = {
     "company_release": "company_release",
     "investor_relations": "company_release",
     "investor_call_transcript": "earnings_transcript",
+    "broker_research": "specialist_research",
+    "prospectus": "regulatory_filing",
+    "equity_offering_prospectus": "regulatory_filing",
+    "convertible_bond_prospectus": "regulatory_filing",
+    "news": "reputable_news",
 }
 _SOURCE_LOCATION_FIELDS = {
     "path",
@@ -106,8 +111,10 @@ _SOURCE_LOCATION_FIELDS = {
 
 
 def _revenue_source_type(handle: dict) -> str:
-    kind = str(handle.get("document_kind") or "")
-    return _SOURCE_TYPE_BY_KIND.get(kind, "regulatory_filing")
+    kind = handle.get("document_kind")
+    if not isinstance(kind, str) or kind not in _SOURCE_TYPE_BY_KIND:
+        raise RuntimeError("unsupported_revenue_document_kind")
+    return _SOURCE_TYPE_BY_KIND[kind]
 
 
 def _catalog_config_for_reader(catalog_config: Path | None) -> Path:
@@ -150,12 +157,13 @@ class FilingSourcePreparationError(RuntimeError):
                  acquisition_failure: dict | None = None, stage: str | None = None,
                  attempts: int | None = None, calls: int | None = None, downloads: int | None = None,
                  source_failure_reason: str | None = None,
-                 acquisition_observation: dict | None = None):
+                 acquisition_observation: dict | None = None, request_diagnostic: dict | None = None):
         super().__init__(message)
         observed = failure_observation({"upstream_cause": upstream_cause, "acquisition_failure": acquisition_failure,
                                        "stage": stage, "attempts": attempts, "calls": calls, "downloads": downloads,
                                        "source_failure_reason": source_failure_reason,
-                                       "acquisition_observation": acquisition_observation})
+                                       "acquisition_observation": acquisition_observation, "request_diagnostic": request_diagnostic})
+        self.request_diagnostic = observed.get("request_diagnostic")
         self.upstream_cause = observed.get("upstream_cause")
         self.acquisition_failure = observed.get("acquisition_failure")
         self.acquisition_observation = observed.get("acquisition_observation")
@@ -260,6 +268,7 @@ def _prepare_source_ref_v2(
     catalog_config: Path,
     *,
     timeout_seconds: float, source_reader_receipt_version: str = "2.1",
+    registered_read: bool = False,
 ) -> dict:
     """Open and record one pathless candidate using company-wiki's verifier."""
     from company_wiki_source_reader_v2 import open_source_version_v2, validate_source_reader_receipt_version
@@ -269,7 +278,7 @@ def _prepare_source_ref_v2(
     deadline = _read_deadline(timeout_seconds)
     reader_options = {"source_reader_receipt_version": version} if version == "2.2" else {}
     fiscal_year = _validate_v2_candidate(request, handle)
-    outcome, downloads = _v2_resolution_events(handle)
+    outcome, downloads = ("reused_existing", 0) if registered_read else _v2_resolution_events(handle)
     body, receipt, manifest = open_source_version_v2(
         source_ref=handle["source_ref"],
         catalog_config=catalog_config,
@@ -277,6 +286,8 @@ def _prepare_source_ref_v2(
         expected_fiscal_year=fiscal_year,
         timeout_seconds=_remaining_timeout(deadline), **reader_options,
     )
+    if registered_read:
+        _registered_manifest_constraints(handle, manifest)
     record = build_revenue_source_record_from_verified_read(
         source_ref=handle["source_ref"],
         read_receipt=receipt,
@@ -344,7 +355,7 @@ def _prepare_legacy_source(request: dict, handle: dict) -> dict:
     record = company_wiki_source.build_revenue_source_record(
         handle,
         as_of_date=str(request.get("as_of_date", "")),
-        source_type=_revenue_source_type(handle),
+        source_type=_revenue_source_type({**request, **handle}),
         publisher=str(handle.get("provider") or "unknown"),
         page_or_section="1",
         prompt_injection_status=prompt_injection_status,
@@ -368,6 +379,16 @@ def _prepare_legacy_source(request: dict, handle: dict) -> dict:
 
 
 
+def _registered_manifest_constraints(candidate: dict, manifest: dict) -> None:
+    """Bind supplied period/issuer facts to the same public verified-open manifest."""
+    fields = ("document_kind", "fiscal_year", "fiscal_period", "market", "security_id", "canonical_entity_id")
+    for key in fields:
+        if key in candidate:
+            expected, actual = candidate[key], manifest[key]
+            if type(expected) is not type(actual) or expected != actual:
+                raise RuntimeError("registered_source_manifest_mismatch:" + key)
+
+
 def prepare_registered_source_result(
     candidate: dict, *, as_of_date: str, company_wiki_catalog_config: Path,
     timeout_seconds: float = 30.0, source_reader_receipt_version: str = "2.1",
@@ -383,7 +404,7 @@ def prepare_registered_source_result(
     request["as_of_date"] = as_of_date
     source = _prepare_source_ref_v2(request, candidate,
         _catalog_config_for_reader(company_wiki_catalog_config), timeout_seconds=timeout_seconds,
-        source_reader_receipt_version=source_reader_receipt_version)
+        source_reader_receipt_version=source_reader_receipt_version, registered_read=True)
     return {"schema_version": "source-preparation-result/1", "source": source,
             "filing_fetch": None, "narrative": None}
 
@@ -438,7 +459,9 @@ def prepare_source_result(
             from source_narrative_context import narrative_read_receipt
             context = read_narrative_context(narrative_request, catalog_config=catalog_config,
                                              timeout_seconds=_remaining_timeout(deadline))
-            if context.to_dict()["source_ref"] != select_filing(filing_fetch)["source_ref"]:
+            value = context.to_dict()
+            refs = value["parent_source_refs"] if value.get("schema_version") == "revenue-narrative-context/3" else [value["source_ref"]]
+            if select_filing(filing_fetch)["source_ref"] not in refs:
                 raise RuntimeError("narrative SourceRef does not match the prepared source")
             narrative = narrative_read_receipt(context)
     except (RuntimeError, ValueError, OSError) as exc:
@@ -477,7 +500,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--result-envelope", action="store_true",
                         help="retain filing-fetch result and explicit narrative read receipt")
     parser.add_argument("--narrative-request-file", type=Path,
-                        help="explicit existing narrative-read-request/1; never starts a model")
+                        help="explicit existing narrative-read-request/1 or projected /3; never starts a model")
     parser.add_argument(
         "--source-reader-v2",
         action="store_true",
@@ -530,7 +553,7 @@ def main(argv: list[str] | None = None) -> int:
         failure = {"error_code": "upstream", "error": str(exc)}
         failure.update(failure_observation({key: getattr(exc, key, None) for key in
                        ("upstream_cause", "acquisition_failure", "stage", "attempts", "calls", "downloads",
-                        "source_failure_reason", "acquisition_observation")}))
+                        "source_failure_reason", "acquisition_observation", "request_diagnostic")}))
         sys.stderr.write(json.dumps(failure))
         sys.stderr.write("\n")
         return 3

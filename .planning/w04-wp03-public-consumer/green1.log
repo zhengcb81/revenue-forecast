@@ -1,0 +1,31 @@
+.............F....                                                       [100%]
+================================== FAILURES ===================================
+_ test_projected_binding_or_receipt_drift_refused_even_with_resigned_body[generation] _
+
+mutation = 'generation'
+
+    @pytest.mark.parametrize("mutation", ["parent", "pointer", "issuer", "asof", "lineage", "generation"])
+    def test_projected_binding_or_receipt_drift_refused_even_with_resigned_body(mutation):
+        request, body, raw = projected_wire()
+        bundle, receipt = json.loads(body), json.loads(raw)
+        if mutation == "parent":
+            bundle["subject_binding"]["parent_source_refs"].pop()
+        elif mutation == "pointer":
+            bundle["evidence_spans"][0]["structured_value"]["pointer"] = "/other/answer"
+        elif mutation == "issuer":
+            bundle["subject_binding"]["issuer"]["security_id"] = "OTHER"
+        elif mutation == "asof":
+            bundle["subject_binding"]["as_of_date"] = "2026-09-02"
+        elif mutation == "lineage":
+            receipt["lineage_sha256"] = "0" * 64
+        else:
+            receipt["narrative_ref"]["generation_sha256"] = "0" * 64
+        body, raw = _resign(request, bundle, receipt)
+>       with pytest.raises(NarrativeTransportError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE NarrativeTransportError
+
+tests\test_w04_public_consumer.py:128: Failed
+=========================== short test summary info ===========================
+FAILED tests/test_w04_public_consumer.py::test_projected_binding_or_receipt_drift_refused_even_with_resigned_body[generation]
+1 failed, 17 passed in 0.83s

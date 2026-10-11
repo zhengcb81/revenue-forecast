@@ -16,12 +16,40 @@ from contracts.source_clock import utc_timestamp
 from forecast.calc import collect_parameter_roles
 
 
+def _read_time(value: dict) -> str:
+    receipt = value["read_receipt"]
+    return receipt["observed_at"] if value["schema_version"] == "revenue-narrative-context/3" else receipt["read_at"]
+
+
 def narrative_read_receipt(context: NarrativeContext) -> dict:
     value = context.to_dict()
-    return {"schema_version": "revenue-narrative-consumption/1", "status": "not_consumed",
-            "narrative_ref": value["narrative_ref"], "read_at": value["read_receipt"]["read_at"],
-            "quality_status": value["quality_status"], "selection": value["selection"],
-            "dependencies": []}
+    projected = value["schema_version"] == "revenue-narrative-context/3"
+    receipt = {"schema_version": "revenue-narrative-consumption/3" if projected else "revenue-narrative-consumption/1",
+        "status": "not_consumed", "narrative_ref": value["narrative_ref"], "read_at": _read_time(value),
+        "quality_status": value["quality_status"], "selection": value["selection"], "dependencies": []}
+    if projected:
+        receipt.update(subject_ref=value["narrative_ref"]["subject_ref"],
+                       parent_count=value["read_receipt"]["parent_count"],
+                       lineage_sha256=value["read_receipt"]["lineage_sha256"])
+    return receipt
+
+
+def _captured_parent(value: dict, source: dict | None) -> dict:
+    if source is None:
+        raise ValueError("narrative source does not bind to the input source capture")
+    refs = value["parent_source_refs"] if value["schema_version"] == "revenue-narrative-context/3" else [value["source_ref"]]
+    matches = [ref for ref in refs if ref["content_sha256"] == source["capture"]["snapshot_sha256"]]
+    if len(matches) != 1:
+        raise ValueError("narrative source does not bind to the input source capture")
+    ref = matches[0]
+    trace = source.get("company_wiki_trace", {}).get("source_ref")
+    if trace is not None and trace != ref:
+        raise ValueError("narrative parent differs from the prepared SourceRef")
+    return ref
+
+
+def _source_locator(span: dict, *, projected: bool) -> str:
+    return span["structured_value"]["source_locator"] if projected else span["locator"]
 
 
 def _formula_refs(data: dict, parameter_id: str, index: dict) -> list[dict]:
@@ -46,7 +74,7 @@ def _formula_refs(data: dict, parameter_id: str, index: dict) -> list[dict]:
     return refs
 
 
-def _claim(binding: dict, span: dict, source: dict, verified_date: str, verified_by: str) -> dict:
+def _claim(binding: dict, span: dict, source: dict, verified_date: str, verified_by: str, *, projected: bool = False) -> dict:
     excerpt = span["raw_text"]
     if not isinstance(excerpt, str) or not excerpt.strip() or span["parse_status"] != "parsed":
         raise ValueError("selected narrative span has no usable parsed text")
@@ -55,7 +83,7 @@ def _claim(binding: dict, span: dict, source: dict, verified_date: str, verified
         raise ValueError("narrative qualitative claim requires an explicit evidence role")
     return {"claim_id": binding["claim_id"], "source_id": source["source_id"],
             "target_type": "parameter", "target_id": binding["parameter_id"],
-            "support_type": support, "locator": span["locator"], "excerpt": excerpt,
+            "support_type": support, "locator": _source_locator(span, projected=projected), "excerpt": excerpt,
             "excerpt_sha256": text_sha256(excerpt),
             "content_sha256": source["capture"]["snapshot_sha256"],
             "capture_receipt_sha256": source["capture"]["receipt_sha256"],
@@ -78,15 +106,15 @@ def consume_narrative_input(
     value = context.to_dict()
     updated = deepcopy(data)
     source = next((item for item in updated.get("sources", []) if item["source_id"] == source_id), None)
-    if source is None or source["capture"]["snapshot_sha256"] != value["source_ref"]["content_sha256"]:
-        raise ValueError("narrative source does not bind to the input source capture")
+    parent = _captured_parent(value, source)
+    projected = value["schema_version"] == "revenue-narrative-context/3"
     if data.get("as_of_date") != request["as_of_date"]:
         raise ValueError("narrative information date does not match input")
     index = {item["parameter_id"]: item for item in updated.get("parameters", [])}
     used = collect_parameter_roles(updated, index)["used"]
     spans = {item["span_id"]: item for item in value["evidence_spans"]}
     receipt = narrative_read_receipt(context)
-    verified_date = utc_timestamp(value["read_receipt"]["read_at"], "narrative read_at").date().isoformat()
+    verified_date = utc_timestamp(_read_time(value), "narrative read_at").date().isoformat()
     claims = updated.setdefault("evidence_claims", [])
     claim_ids = {item["claim_id"] for item in claims}
     for binding in bindings:
@@ -96,7 +124,12 @@ def consume_narrative_input(
         if pid not in used or cid in claim_ids or binding["span_id"] not in spans:
             raise ValueError("narrative binding requires a unique claim and a used parameter/span")
         span = spans[binding["span_id"]]
-        claims.append(_claim(binding, span, source, verified_date, verified_by))
+        if span["source_id"] != parent["source_id"]:
+            raise ValueError("selected narrative span differs from the captured parent source")
+        formula_refs = _formula_refs(updated, pid, index)
+        if not formula_refs:
+            raise ValueError("narrative binding does not reach an actual segment formula")
+        claims.append(_claim(binding, span, source, verified_date, verified_by, projected=projected))
         claim_ids.add(cid)
         parameter = index[pid]
         parameter.setdefault("claim_ids", []).append(cid)
@@ -105,10 +138,13 @@ def consume_narrative_input(
         receipt["dependencies"].append({
             "span_id": span["span_id"], "locator": span["locator"],
             "parser_name": span["parser_name"], "parser_version": span["parser_version"],
-            "source_id": value["source_ref"]["source_id"],
-            "source_sha256": value["source_ref"]["content_sha256"],
-            "claim_id": cid, "parameter_id": pid, "formula_refs": _formula_refs(updated, pid, index),
+            "source_id": parent["source_id"],
+            "source_sha256": parent["content_sha256"],
+            "claim_id": cid, "parameter_id": pid, "formula_refs": formula_refs,
         })
+        if projected:
+            receipt["dependencies"][-1].update(source_locator=span["structured_value"]["source_locator"],
+                pointer=span["structured_value"]["pointer"], subject_ref=value["narrative_ref"]["subject_ref"])
     if receipt["dependencies"]:
         receipt["status"] = "consumed"
     return updated, receipt

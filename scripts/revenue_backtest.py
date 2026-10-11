@@ -15,8 +15,6 @@ from typing import Any
 
 from revenue_core import (
     ForecastInputError,
-    ENGINE_VERSION,
-    FORECAST_SCHEMA_VERSION,
     SUPPORTED_FORECAST_SCHEMA_VERSIONS,
     calculate_cagr,
     canonical_sha256,
@@ -41,6 +39,9 @@ def create_snapshot(data: dict[str, Any], forecast_version: str) -> dict[str, An
     frozen_input["forecast_version"] = forecast_version
     result = run_forecast(frozen_input)
     validate_published_forecast(result, frozen_input)
+    actual_schema = frozen_input["schema_version"]
+    require(result["schema_version"] == actual_schema, "snapshot input/result schema mismatch")
+    require_validating_engine(actual_schema, result["engine_version"], "formal")
     input_hash = canonical_sha256(frozen_input)
     result_hash = canonical_sha256(result)
     identity = {
@@ -49,8 +50,8 @@ def create_snapshot(data: dict[str, Any], forecast_version: str) -> dict[str, An
         "forecast_version": forecast_version,
         "input_sha256": input_hash,
         "forecast_result_sha256": result_hash,
-        "engine_version": ENGINE_VERSION,
-        "forecast_schema_version": FORECAST_SCHEMA_VERSION,
+        "engine_version": result["engine_version"],
+        "forecast_schema_version": actual_schema,
         "snapshot_schema_version": "2.0",
     }
     snapshot = {
@@ -76,8 +77,21 @@ def create_snapshot(data: dict[str, Any], forecast_version: str) -> dict[str, An
 def write_new_json(path: Path, data: dict[str, Any]) -> None:
     """Write once. Existing forecast history must never be overwritten."""
     with path.open("x", encoding="utf-8") as handle:
-        json.dump(data, handle, ensure_ascii=False, indent=2)
+        json.dump(data, handle, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
         handle.write("\n")
+
+
+def snapshot_schema_diagnostic(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Report historical header differences without changing frozen IDs or anchors."""
+    header = snapshot.get("forecast_schema_version")
+    input_schema = snapshot.get("input_document", {}).get("schema_version")
+    result_schema = snapshot.get("forecast_result", {}).get("schema_version")
+    known = all(isinstance(version, str) for version in (header, input_schema, result_schema))
+    status = ("consistent" if header == input_schema == result_schema else "metadata_mismatch") if known else "unknown"
+    return {"schema_version": "snapshot-schema-diagnostic/1",
+        "status": status,
+        "header_schema_version": header, "input_schema_version": input_schema,
+        "result_schema_version": result_schema, "snapshot_rewritten": False}
 
 
 def validate_snapshot(snapshot: dict[str, Any]) -> None:

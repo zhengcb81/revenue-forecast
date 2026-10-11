@@ -12,6 +12,7 @@ from datetime import date, datetime, timedelta
 import hashlib
 import json
 import re
+from urllib.parse import quote
 from typing import Any
 
 BODY_LIMIT = 1_310_720
@@ -21,6 +22,11 @@ SOURCE_PREFIX = "urn:company-wiki:source:sha256:"
 SPAN_PREFIX = "urn:company-wiki:evidence-span:sha256:"
 EXPECTED_FIELDS = {"canonical_entity_id", "market", "security_id", "document_kind",
                    "fiscal_year", "fiscal_period"}
+PROJECTED_REF_FIELDS = {"schema_version", "artifact_version_id", "artifact_sha256", "byte_size", "generation_sha256", "subject_ref"}
+SUBJECT_REF_FIELDS = {"schema_version", "kind", "item_key", "subject_sha256"}
+PROJECTION_PREFIX = "urn:company-wiki:source-projection:sha256:"
+ISSUER_FIELDS = {"market", "security_id", "provider_company_id", "provider_activity_company_id", "canonical_name", "entity_name"}
+PROJECTED_RECEIPT_FIELDS = {"schema_version", "status", "narrative_ref", "as_of_date", "observed_at", "locator_count", "parent_count", "lineage_sha256", "selection_status", "quality_status", "replay_status"}
 REF_FIELDS = {"schema_version", "artifact_version_id", "artifact_sha256", "byte_size", "source_ref"}
 SOURCE_FIELDS = {"schema_version", "document_id", "source_id", "content_sha256", "byte_size", "mime_type"}
 RECEIPT_FIELDS = {"schema_version", "status", "narrative_ref", "as_of_date", "manifest",
@@ -158,14 +164,28 @@ def validate_source_ref(value: Any) -> dict:
     return ref
 
 
+def validate_subject_ref(value: Any) -> dict:
+    ref = _exact(value, SUBJECT_REF_FIELDS, "invalid_subject_reference")
+    _require(ref["schema_version"] == "narrative-subject-ref/1" and
+             ref["kind"] == "official_json" and _sha(ref["subject_sha256"]) and
+             ref["item_key"] == PROJECTION_PREFIX + ref["subject_sha256"], "subject_hash_binding")
+    return ref
+
+
 def validate_narrative_ref(value: Any) -> dict:
-    ref = _exact(value, REF_FIELDS, "invalid_narrative_reference")
-    _require(ref["schema_version"] == "narrative-ref/1", "unsupported_narrative_reference")
+    projected = isinstance(value, dict) and value.get("schema_version") == "narrative-ref/3"
+    ref = _exact(value, PROJECTED_REF_FIELDS if projected else REF_FIELDS, "invalid_narrative_reference")
+    _require(ref["schema_version"] == ("narrative-ref/3" if projected else "narrative-ref/1"),
+             "unsupported_narrative_reference")
     _require(isinstance(ref["artifact_version_id"], str) and
              _ID.fullmatch(ref["artifact_version_id"]) is not None, "invalid_artifact_id")
     _require(_sha(ref["artifact_sha256"]), "invalid_artifact_sha")
     _require(_integer(ref["byte_size"], 1) and ref["byte_size"] <= BODY_LIMIT, "invalid_artifact_size")
-    validate_source_ref(ref["source_ref"])
+    if projected:
+        validate_subject_ref(ref["subject_ref"])
+        _require(_sha(ref["generation_sha256"]), "invalid_generation_sha")
+    else:
+        validate_source_ref(ref["source_ref"])
     _pathless(ref)
     return ref
 
@@ -182,24 +202,52 @@ def _constraints(value: Any) -> dict:
     return fields
 
 
+def _issuer_constraint(key: str, value: Any) -> None:
+    if key in {"provider_company_id", "provider_activity_company_id"} and type(value) is int:
+        return
+    _require(_text(value) and len(value) <= 256, "invalid_issuer_constraint")
+
+
+def _issuer_constraints(value: Any) -> dict | None:
+    if value is None:
+        return None
+    _require(isinstance(value, dict) and bool(value) and set(value) <= ISSUER_FIELDS,
+             "invalid_issuer_constraints")
+    for key, constraint in value.items():
+        _issuer_constraint(key, constraint)
+    return value
+
+
 def validate_narrative_request(value: Any) -> dict:
-    request = _exact(value, {"schema_version", "narrative_ref", "as_of_date", "expected_source"},
+    projected = isinstance(value, dict) and value.get("schema_version") == "narrative-read-request/3"
+    constraint_key = "expected_issuer" if projected else "expected_source"
+    request = _exact(value, {"schema_version", "narrative_ref", "as_of_date", constraint_key},
                      "invalid_read_request")
-    _require(request["schema_version"] == "narrative-read-request/1", "unsupported_read_request")
-    validate_narrative_ref(request["narrative_ref"])
+    _require(request["schema_version"] == ("narrative-read-request/3" if projected else "narrative-read-request/1"),
+             "unsupported_read_request")
+    ref = validate_narrative_ref(request["narrative_ref"])
+    _require(ref["schema_version"] == ("narrative-ref/3" if projected else "narrative-ref/1"), "request_reference_kind_mismatch")
     if request["as_of_date"] is not None:
         _date(request["as_of_date"])
-    _constraints(request["expected_source"])
+    (_issuer_constraints if projected else _constraints)(request[constraint_key])
     _pathless(request)
-    _require(len(canonical_bytes(request)) <= REQUEST_LIMIT, "request_size_limit")
+    _require(len(canonical_bytes(request)) + 1 <= REQUEST_LIMIT, "request_size_limit")
     return deepcopy(request)
 
 
 def validate_reference_request(value: Any) -> dict:
-    request = _exact(value, {"schema_version", "source_ref"}, "invalid_reference_request")
-    _require(request["schema_version"] == "narrative-reference-request/1", "unsupported_reference_request")
-    validate_source_ref(request["source_ref"])
+    projected = isinstance(value, dict) and value.get("schema_version") == "narrative-reference-request/3"
+    fields = {"schema_version", "subject_ref", "generation_sha256"} if projected else {"schema_version", "source_ref"}
+    request = _exact(value, fields, "invalid_reference_request")
+    _require(request["schema_version"] == ("narrative-reference-request/3" if projected else "narrative-reference-request/1"),
+             "unsupported_reference_request")
+    if projected:
+        validate_subject_ref(request["subject_ref"])
+        _require(_sha(request["generation_sha256"]), "invalid_generation_sha")
+    else:
+        validate_source_ref(request["source_ref"])
     _pathless(request)
+    _require(len(canonical_bytes(request)) + 1 <= REQUEST_LIMIT, "request_size_limit")
     return deepcopy(request)
 
 
@@ -268,10 +316,9 @@ def _coordinates(value: Any) -> str:
     return "/".join(parts)
 
 
-def _span(value: Any, source: dict) -> dict:
+def _span_core(value: Any) -> dict:
     span = _exact(value, SPAN_FIELDS, "invalid_evidence_span")
-    _require(span["schema_version"] == "1.0.0" and span["source_id"] == source["source_id"],
-             "span_source_mismatch")
+    _require(span["schema_version"] == "1.0.0", "unsupported_evidence_span")
     locator = _coordinates(span["coordinates"])
     _require(span["locator"] == locator, "span_locator_mismatch")
     _require(span["raw_text"] is None or isinstance(span["raw_text"], str), "invalid_span_text")
@@ -284,6 +331,12 @@ def _span(value: Any, source: dict) -> dict:
     })).hexdigest()
     _require(span["span_id"] == SPAN_PREFIX + span_sha, "span_identity_mismatch")
     _span_quality(span)
+    return span
+
+
+def _span(value: Any, source: dict) -> dict:
+    span = _span_core(value)
+    _require(span["source_id"] == source["source_id"], "span_source_mismatch")
     return span
 
 
@@ -409,13 +462,13 @@ def _byte_binding(binding: Any, lineage: dict, source: dict) -> None:
                  and part["end"] <= source["byte_size"], "invalid_transcript_binding")
 
 
-def _diagnostics(bundle: dict) -> None:
+def _diagnostics(bundle: dict, source_sha256: str | None = None) -> None:
     review = _exact(bundle["prompt_review"], {"status", "source_sha256", "evidence_sha256", "policy_hash",
                                             "reviewed_at"}, "invalid_prompt_diagnostic")
     _require(review["status"] in {"not_detected", "detected_and_ignored", "not_reviewed"},
              "invalid_prompt_diagnostic")
     if review["source_sha256"] is not None:
-        _require(review["source_sha256"] == bundle["source_ref"]["content_sha256"], "prompt_source_mismatch")
+        _require(review["source_sha256"] == (source_sha256 or bundle["source_ref"]["content_sha256"]), "prompt_source_mismatch")
     versions = _exact(bundle["versions"], {"parser", "selector", "material", "model", "prompt",
                                          "bundle_producer"}, "invalid_bundle_versions")
     _require(all(_text(versions[key]) for key in ("parser", "selector", "bundle_producer")),
@@ -449,14 +502,53 @@ def _bundle_contents(bundle: dict, receipt: dict, manifest: dict) -> None:
     _diagnostics(bundle)
 
 
+def _declared_language(metadata: dict) -> None:
+    declared = metadata.get("declared_language")
+    if declared is None:
+        return
+    _require(_text(declared), "invalid_declared_language")
+    if declared in {"zh", "en", "mixed"}:
+        family = declared
+    else:
+        family = _locale_family(declared)
+    _require(family == metadata["language"], "declared_language_family_mismatch")
+
+
+def _locale_family(declared: str) -> str:
+    match = re.fullmatch(r"(zh|en)(?:-(Hans|Hant|Latn))?(?:-([a-z]{2}|[0-9]{3}))?", declared, re.IGNORECASE)
+    _require(match is not None, "invalid_declared_language")
+    family, script, _region = match.groups()
+    family = family.lower()
+    scripts = {"hans", "hant"} if family == "zh" else {"latn"}
+    _require(not script or script.lower() in scripts, "invalid_declared_language")
+    return family
+
+
+def _metadata(value: Any, *, projected: bool = False) -> dict:
+    fields = {"source_class", "title", "document_kind", "language"}
+    if isinstance(value, dict) and "declared_language" in value:
+        fields.add("declared_language")
+    metadata = _exact(value, fields, "invalid_source_metadata")
+    _require(metadata["title"] is None or _text(metadata["title"]), "invalid_source_metadata")
+    _require(_text(metadata["document_kind"]), "invalid_source_metadata")
+    classes = {"official_json"} if projected else {"filing", "transcript"}
+    languages = {"en", "zh", "mixed", "unknown"} if projected else {"en", "zh", "mixed"}
+    _require(isinstance(metadata["source_class"], str) and metadata["source_class"] in classes, "invalid_source_metadata")
+    _require(isinstance(metadata["language"], str) and metadata["language"] in languages, "invalid_source_metadata")
+    _declared_language(metadata)
+    return metadata
+
+
+def _manifest_language_family(value: Any) -> str:
+    _require(_text(value), "invalid_manifest_language")
+    return value if value in {"en", "zh", "mixed"} else _locale_family(value)
+
+
 def _bundle_metadata(bundle: dict, manifest: dict) -> dict:
-    metadata = _exact(bundle["source_metadata"], {"source_class", "title", "document_kind", "language"},
-                      "invalid_source_metadata")
-    _require(metadata["document_kind"] == manifest["document_kind"] and
-             (manifest["language"] is None or metadata["language"] == manifest["language"]),
-             "bundle_manifest_mismatch")
-    _require(metadata["source_class"] in {"filing", "transcript"} and metadata["language"] in {"en", "zh", "mixed"},
-             "invalid_source_metadata")
+    metadata = _metadata(bundle["source_metadata"])
+    _require(metadata["document_kind"] == manifest["document_kind"], "bundle_manifest_mismatch")
+    if manifest["language"] is not None:
+        _require(metadata["language"] == _manifest_language_family(manifest["language"]), "bundle_manifest_mismatch")
     return metadata
 
 
@@ -493,9 +585,177 @@ class NarrativeContext:
         return deepcopy(self.value)
 
 
+def _projection_parents(subject: dict, receipt: dict) -> None:
+    parents = subject["parent_source_refs"]
+    _require(isinstance(parents, list) and bool(parents), "invalid_parent_references")
+    for parent in parents:
+        validate_source_ref(parent)
+    _require(len({parent["source_id"] for parent in parents}) == len(parents), "duplicate_parent_reference")
+    _require(_integer(receipt["parent_count"], 1) and receipt["parent_count"] == len(parents), "projection_parent_count_mismatch")
+    _require(_sha(receipt["lineage_sha256"]) and receipt["lineage_sha256"] ==
+             hashlib.sha256(canonical_bytes(subject)).hexdigest(), "projection_lineage_mismatch")
+
+
+def _projection_constraints(subject: dict, request: dict) -> None:
+    _date(subject["as_of_date"])
+    _require(request["as_of_date"] is None or subject["as_of_date"] == request["as_of_date"],
+             "projection_as_of_mismatch")
+    for key in ("issuer", "adapter", "coverage"):
+        _require(isinstance(subject[key], dict), "invalid_subject_context")
+    for key, expected in (request["expected_issuer"] or {}).items():
+        actual = subject["issuer"].get(key)
+        _require(type(actual) is type(expected) and actual == expected, "projection_issuer_mismatch")
+
+
+def _projected_subject(value: Any, request: dict, receipt: dict) -> dict:
+    subject = _exact(value, {"kind", "item_key", "subject_sha256", "parent_source_refs",
+                            "issuer", "as_of_date", "adapter", "coverage"}, "invalid_subject_binding")
+    compact = {"schema_version": "narrative-subject-ref/1", **{key: subject[key]
+               for key in ("kind", "item_key", "subject_sha256")}}
+    _require(compact == request["narrative_ref"]["subject_ref"], "bundle_subject_mismatch")
+    validate_subject_ref(compact)
+    _projection_parents(subject, receipt)
+    _projection_constraints(subject, request)
+    return subject
+
+
+def _span_parent(span: dict, binding: dict, subject: dict) -> dict:
+    parent = next((item for item in subject["parent_source_refs"] if
+                   item["source_id"] == span["source_id"] and
+                   item["content_sha256"] == binding.get("parent_content_sha256")), None)
+    _require(parent is not None, "projection_span_parent_mismatch")
+    _require(binding.get("projection_id") == subject["item_key"], "projection_span_parent_mismatch")
+    return parent
+
+
+def _projection_pointer(binding: dict) -> str:
+    pointer, record = binding.get("pointer"), binding.get("record_pointer")
+    _require(_text(pointer) and _text(record), "invalid_projection_pointer")
+    _require(record.startswith("/") and pointer.startswith(record + "/"), "invalid_projection_pointer")
+    suffix = pointer[len(record) + 1:]
+    _require(bool(suffix) and "/" not in suffix, "invalid_projection_pointer")
+    _require(not re.search(r"~(?![01])", pointer), "invalid_projection_pointer")
+    return pointer
+
+
+def _projection_range(value: Any, parent: dict) -> list[int]:
+    _require(isinstance(value, list) and len(value) == 2, "invalid_projection_byte_range")
+    _require(_integer(value[0]) and _integer(value[1], value[0]), "invalid_projection_byte_range")
+    _require(value[1] <= parent["byte_size"], "invalid_projection_byte_range")
+    return value
+
+
+def _projection_byte_binding(binding: dict, parent: dict) -> list[int]:
+    token = _projection_range(binding.get("token_range"), parent)
+    encoded = _projection_range(binding.get("encoded_body_range"), parent)
+    _require(token[0] < token[1], "invalid_projection_byte_binding")
+    _require(token[0] <= encoded[0] <= encoded[1] <= token[1], "invalid_projection_byte_binding")
+    for key in ("encoded_token_sha256", "decoded_sha256"):
+        _require(_sha(binding.get(key)), "invalid_projection_byte_binding")
+    return token
+
+
+def _projection_locator(binding: dict, pointer: str, token: list[int]) -> None:
+    locator = binding.get("source_locator")
+    prefix = "cwp-json-pointer/1|p=" + quote(pointer, safe="") + "|b=" + str(token[0]) + ":" + str(token[1]) + "|d=0:"
+    _require(isinstance(locator, str) and locator.startswith(prefix), "projection_pointer_locator_mismatch")
+    _require(re.fullmatch(r"[0-9]+\|x=json-string-decode/1", locator[len(prefix):]) is not None,
+             "projection_pointer_locator_mismatch")
+
+
+def _projected_span(value: Any, subject: dict) -> dict:
+    """Each field retains its own parent and pointer; the first parent is no anchor."""
+    span = _span_core(value)
+    binding = span["structured_value"]
+    _require(isinstance(binding, dict), "invalid_projection_span_binding")
+    parent = _span_parent(span, binding, subject)
+    pointer = _projection_pointer(binding)
+    token = _projection_byte_binding(binding, parent)
+    _projection_locator(binding, pointer, token)
+    return span
+
+
+def _projected_summary_draft(value: Any, subject: dict, spans: dict[str, dict], language: str) -> None:
+    draft = _exact(value, {"subject_id", "subject_sha256", "language", "claims", "status"},
+                   "invalid_subject_summary_draft")
+    _require(draft["subject_id"] == subject["item_key"] and draft["subject_sha256"] == subject["subject_sha256"]
+             and draft["language"] == language, "summary_subject_mismatch")
+    _require(draft["status"] in {"draft", "needs_review"}, "invalid_summary_status")
+    _require(isinstance(draft["claims"], list) and bool(draft["claims"]), "invalid_summary_claims")
+    claims = [_claim(claim, spans) for claim in draft["claims"]]
+    _require(len({claim["claim_id"] for claim in claims}) == len(claims), "duplicate_summary_claim")
+
+
+def _projected_summary(value: Any, subject: dict, spans: dict[str, dict], language: str, skipped: bool) -> None:
+    summary = _exact(value, {"status", "translate", "draft", "model"}, "invalid_summary")
+    _require(summary["translate"] is False, "translated_summary_forbidden")
+    if skipped:
+        _require(summary["status"] == "summary_not_needed" and summary["draft"] is None and
+                 summary["model"] is None, "invalid_skip_summary")
+        return
+    _require(summary["status"] == "completed", "invalid_summary_status")
+    _projected_summary_draft(summary["draft"], subject, spans, language)
+    _summary_model(summary["model"])
+
+
+def _projected_receipt(receipt: dict, request: dict) -> None:
+    _exact(receipt, PROJECTED_RECEIPT_FIELDS, "invalid_read_receipt")
+    _require(receipt["schema_version"] == "narrative-read-receipt/3" and receipt["status"] == "ok" and
+             receipt["replay_status"] == "verified", "unverified_read_receipt")
+    validate_narrative_ref(receipt["narrative_ref"])
+    _require(receipt["narrative_ref"] == request["narrative_ref"] and
+             receipt["as_of_date"] == request["as_of_date"], "receipt_request_mismatch")
+    _utc(receipt["observed_at"])
+    _require(_integer(receipt["locator_count"]), "invalid_locator_count")
+
+
+def _projection_bundle(body: bytes, ref: dict) -> dict:
+    _require(len(body) == ref["byte_size"] and hashlib.sha256(body).hexdigest() == ref["artifact_sha256"],
+             "artifact_bytes_mismatch")
+    bundle = decode_object(body, limit=BODY_LIMIT)
+    _require(canonical_bytes(bundle) == body, "noncanonical_bundle")
+    fields = (BUNDLE_FIELDS - {"source_ref", "expected_read_policy_sha256", "transcript_lineage",
+                             "transcript_byte_bindings"}) | {"subject_binding"}
+    _exact(bundle, fields, "invalid_narrative_bundle")
+    _require(bundle["schema_version"] == "narrative-bundle/3.0", "unsupported_narrative_bundle")
+    return bundle
+
+
+def _projection_spans(bundle: dict, subject: dict) -> tuple[list[dict], dict[str, dict]]:
+    _require(isinstance(bundle["evidence_spans"], list), "invalid_evidence_spans")
+    spans = [_projected_span(span, subject) for span in bundle["evidence_spans"]]
+    by_id = {span["span_id"]: span for span in spans}
+    _require(len(by_id) == len(spans), "duplicate_evidence")
+    return spans, by_id
+
+
+def _projected_response(request: dict, body: bytes, receipt: dict) -> NarrativeContext:
+    _projected_receipt(receipt, request)
+    ref = request["narrative_ref"]
+    bundle = _projection_bundle(body, ref)
+    subject = _projected_subject(bundle["subject_binding"], request, receipt)
+    metadata = _metadata(bundle["source_metadata"], projected=True)
+    spans, by_id = _projection_spans(bundle, subject)
+    selection = _selection(bundle["selection"], len(spans))
+    _require(not selection["coverage_complete"] or (subject["coverage"].get("pagination_complete") is True and
+             subject["coverage"].get("page_envelope_complete") is True), "projection_coverage_mismatch")
+    _bundle_quality(bundle, receipt, selection, len(spans))
+    _projected_summary(bundle["summary"], subject, by_id, metadata["language"],
+                       selection["status"] == "skipped_no_narrative")
+    _replay(bundle["replay"], len(spans))
+    _diagnostics(bundle, subject["parent_source_refs"][0]["content_sha256"])
+    return NarrativeContext({"schema_version": "revenue-narrative-context/3", "narrative_ref": ref,
+        "subject_binding": subject, "parent_source_refs": subject["parent_source_refs"],
+        "as_of_date": request["as_of_date"], "source_metadata": metadata, "selection": selection,
+        "quality_status": bundle["quality_status"], "evidence_spans": spans,
+        "summary": bundle["summary"], "read_receipt": receipt})
+
+
 def _validated_response(request: dict, body: bytes, receipt_bytes: bytes) -> NarrativeContext:
     request = validate_narrative_request(request)
     receipt = decode_object(receipt_bytes, limit=RECEIPT_LIMIT, one_line=True)
+    if request["schema_version"] == "narrative-read-request/3":
+        return _projected_response(request, body, receipt)
     manifest = _receipt(receipt, request)
     bundle = _bundle(body, request, receipt, manifest)
     return NarrativeContext({
@@ -522,8 +782,14 @@ def validate_reference_response(request: dict, body: bytes, receipt_bytes: bytes
     ref = validate_narrative_ref(decode_object(body, limit=REQUEST_LIMIT))
     receipt = decode_object(receipt_bytes, limit=RECEIPT_LIMIT, one_line=True)
     _exact(receipt, {"schema_version", "status", "narrative_ref"}, "invalid_reference_receipt")
-    _require(receipt["schema_version"] == "narrative-read-receipt/1" and
+    projected = request["schema_version"] == "narrative-reference-request/3"
+    _require(receipt["schema_version"] == ("narrative-read-receipt/3" if projected else "narrative-read-receipt/1") and
              receipt["status"] == "metadata_only" and receipt["narrative_ref"] == ref,
              "invalid_reference_receipt")
-    _require(ref["source_ref"] == request["source_ref"], "reference_source_mismatch")
+    if projected:
+        _require(ref["schema_version"] == "narrative-ref/3" and ref["subject_ref"] == request["subject_ref"] and
+                 ref["generation_sha256"] == request["generation_sha256"], "reference_subject_mismatch")
+    else:
+        _require(ref["schema_version"] == "narrative-ref/1" and ref["source_ref"] == request["source_ref"],
+                 "reference_source_mismatch")
     return deepcopy(ref)
