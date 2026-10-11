@@ -1,0 +1,365 @@
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -113,9 +113,17 @@
+ 
+ ### 1B. Establish an independent reference case
+ 
+-Build the smallest sufficient operating bridge before choosing scenario ranges. Register independently observed period/scope/unit ranges, conversion assumptions and contrary evidence. A missing comparable range remains unverified or conditional; reduce free parameters or shorten the explicit horizon. Independent range endpoints may stay outside the revenue DAG; actual conversions and outputs must bind to the target business, scenario, period and native DAG — an unrelated scope or period never reaches `referenced_range` through a calibration label. See [evidence-role-calibration.md](references/evidence-role-calibration.md).
++Build the smallest sufficient operating bridge before choosing scenario ranges. Register independently observed period/scope/unit ranges, conversion assumptions and contrary evidence. A missing comparable range remains unverified or conditional; reduce free parameters and disclose the conditional tail over the requested horizon. Shorten that horizon only when the task permits a changed scope. Independent range endpoints may stay outside the revenue DAG; actual conversions and outputs must bind to the target business, scenario, period and native DAG — an unrelated scope or period never reaches `referenced_range` through a calibration label. See [evidence-role-calibration.md](references/evidence-role-calibration.md).
+ 
+ Build the operating view and a comparable outside benchmark before choosing which management target to incorporate. Check historical execution, failed or delayed peers, customer behavior and supply limits. Write alternative explanations and observable falsifiers for material assumptions. Translate each supported qualitative conclusion into a driver, period and range; do not add narrative conviction directly to growth.
++
++### 1C. Execute the research-to-model bridge
++
++Use the ordered [research authoring procedure](references/research-coverage.md#research-authoring-procedure) to turn actual source reads into a complete native forecast. Record the latest-filing-to-as-of window and material document types, including IR activity records, offering/convertible prospectuses and transaction audit/pro-forma originals when relevant. Keep discovery, verified reading, narrative consumption and model use distinct; a missing call or an unread announcement cannot be labeled checked.
++
++Future `analyst_assumption` values may be non-null without future actuals. Choose the smallest supported bridge, check observed quantities/prices/cohorts or comparable history, disclose conversions, and reduce free parameters when ranges are unknown. A transparent conditional three-year Low/Base/High forecast is legitimate; all-null future slots do not complete the requested forecast. Never invent an empirical range or claim economic acceptance from a passing diagnostic. Preserve the requested horizon and disclose where later years are conditional; only change the requested horizon with a stated task-level decision.
++
++Check quote continuity, actor, measurement/control windows, constant-currency versus reported growth, gross/net and internal eliminations before binding a claim. Use shared shocks once in the same native DAG, retain the actual shock exposure and recovery/cancellation assumptions, and rerun complete scenarios. These are research responsibilities at the existing major execution/review node; they add no permission file, manual sign-off, source identity registry or extra validation stage.
+ 
+ ### 2. Verify history and the base
+ 
+--- a/references/research-coverage.md
++++ b/references/research-coverage.md
+@@ -116,3 +116,116 @@
+ | `reference_class` | 同类成功/失败样本与外部基准的可比性 |
+ 
+ Custom dimensions follow the same schema as core dimensions (status, conclusion, revenue_mechanism, parameter_ids, source_ids, rationale). They do not replace core dimensions. The engine outputs custom dimensions after the nine core ones.
++
++## Research authoring procedure
++
++This procedure connects research to the existing engine. It uses the native input objects already described in [input-schema.md](input-schema.md), [m3-period-evidence.md](m3-period-evidence.md), [evidence-role-calibration.md](evidence-role-calibration.md), and [target-measurement-comparison.md](target-measurement-comparison.md). The current engine is 4.2.1, canonical schema 3.7 with opt-in 3.8/3.9. It does not add a gate or require a new signed receipt. Use the task's actual installed runtime, configured source/LLM providers and existing cumulative resource limits; preserve historical inputs, failures and emitting versions.
++
++### A. Set the information window and material document needs
++
++Freeze company, fiscal calendar, reporting currency/scale, base year and the requested consecutive forecast years. `as_of_date` is the information cutoff; actual research/capture/check dates are UTC operation dates and are not backdated. First identify the latest eligible financial filing, then search the period from its **actual publication date through as-of**. An earlier acquisition announcement may support control facts, but cannot cover later announcements. If the latest relevant filing or publication date is unresolved, retain that specific window gap.
++
++Make one compact working matrix of document type, period/window, business question, materiality decision, actual query/tool/command event, returned original/reference and locator, and outcome. This is a research work record, not a new native schema or permission registry. Use it to fill existing communication coverage, targets, inventory and `data_gap` rationales. Do not repeat the same matrix into several artifacts; reference its retained bytes in the audit record.
++
++| Material document family | Read when it could change the model | Honest outcome if unavailable/unneeded |
++|---|---|---|
++| Annual, half-year, quarterly filing and results release | Base/reconciliation, policies, current operations, reported segment KPIs | Exact missing period/source clock or current provider failure |
++| Earnings call and original Q&A TXT/HTML/JSON | Near-term guidance, constraints, customer/price/mix changes, contrary answers | Actual market/capability/entitlement outcome; release/deck do not replace Q&A |
++| Investor presentation, strategy communication and **IR activity record** | Business detail, new products, overseas operations, dated plans | IR activity is a separate need even when it is DOCX; SSE questions are not answers |
++| IPO, equity/new-share/placement and convertible-bond prospectus; use-of-proceeds update | Business description, capacity build, funding prerequisites, customer concentration, new business | A separate materiality decision for each family; old IPO does not cover a current offering |
++| Acquisition/disposal agreement, target historical audit and transaction pro-forma | Control date, prior/after-control operating base, external revenue and eliminations | Title does not prove administrative content; name the missing original/bridge |
++| Post-filing material announcement, primary industry/customer/peer operating document | Updated drivers, prices, demand, constraints, counterevidence and independent range | Exact date/query/window and bounded failure or impact-specific skip reason |
++
++Reuse verified local originals through the public preparation/read interface before requesting a missing original. Financial documents use `scripts/source_preparation.py` → filing-fetch → CWP verified SourceRef read; registered non-period originals use the existing registered-source adapter. Provider routing and canonical writing belong to CWP/filing-fetch. Original transcript language is retained; do not translate or force TXT through PDF conversion. Raw file paths are storage-layer details and do not become consumer identities. Use configured acquisition intent and caps, not a new human permission.
++
++Every outcome must distinguish: discovered/indexed, original prepared/opened, selected/summary available, summary read, **used in a native parameter dependency**, or a concrete named gap. A fresh provider result replaces only that attempted case's current observation; never claim an old 403, missing credential or limit has been retested without a new call. A search lead/tool ID without retained original content cannot support a fact. An unsupported HK transcript provider is a capability gap, not proof that no call occurred publicly.
++
++### B. Preserve actual checked scope
++
++Use existing `management_communication_coverage` records for the six categories. `checked`, `incomplete`, `not_checked`, `not_available`, and `not_applicable` are distinct native statuses. For a current audit execution include the existing optional `checked_scope` (`management-communication-scope/1`): `category`, `start_date`, `end_date`, `coverage_complete`, `items` plus `schema_version`.
++
++An item carries `item_ref`, `source_id` when available, `content_role`, explicit `selected`/`read`, `skip_reason` for an unselected item, and an optional real `published_date`. Roles are `business_original`, `discovery_index`, or `index_notice`. Only an actually read registered business original enters `source_ids`. Do not paste loading notices or an index into original coverage. An unread selected item or incomplete discovery means `coverage_complete=false`; use `incomplete` and a concrete conclusion. If nothing was acquired, do not copy “Read original / no target found” from a checked row. `not_available` records the actual `search_description` and native `search_event`; `not_applicable` uses a reason grounded in the company and window. Do not fabricate receipt events for a search that never ran.
++
++For `material_announcements_since_last_filing`, the existing scope validator uses the latest registered regulatory/exchange filing publication date and requires the interval to end at as-of. Review the actual set of registered sources so a prospectus classification does not accidentally redefine the latest financial filing in research. If the runtime's category calculation and the desired financial-filing window differ, report the seam to the owner; do not silently relabel source types or pretend an incorrect interval is complete. `audit_communication_coverage=true` requests the existing read-only scope diagnostic; it does not create a new access restriction. Older no-scope rows remain legacy/semantically unverified and are not silently upgraded.
++
++### C. Inventory content before selecting a model
++
++Read original operating passages, accounting notes, target definitions and contrary context around each material item. Preserve negation, timing, qualification stage, speaker/company and product scope. A selection or parser score does not prove coverage. If a summary omits a material constraint but the original exists, read the original and classify the summary omission; do not declare the original absent or require a successful model summary before using a verified original.
++
++Register actual items in `operating_research.inventory` with its existing fields and dispositions. `included`/`subscope` point to an existing parent `item_id` and stay within its used parameter set. New product metrics do not automatically create an additional revenue line: identify whether they replace, bundle with or already belong to the parent. `unmodeled`/`unknown` retains the actual revenue mechanism and gap; `materiality_skip` explains the likely effect on this horizon. A general “needed_for revenue” phrase is not a materiality decision.
++
++Classify claims after reading: `history_base` establishes history; `mechanism_direction` establishes direction; `value_range` establishes observed magnitude; `conversion_assumption` is an analyst bridge; `recognition_policy` establishes accounting; `peer_analogy` needs comparability; `counterevidence`/`counter_comparison` challenges the thesis. A historical header or recognition policy cannot become a future growth mechanism, and one mixed node cannot borrow another source's independence. Register contrary evidence on its own role, not as positive parameter support.
++
++### D. Calibrate the smallest sufficient bridge
++
++Start from observations before picking Low/Base/High percentages. For each material revenue curve choose a bridge supported by actual disclosures: quantity × realized price × acceptance, average paying cohort × net revenue per cohort, bookings/backlog recognition, demand × qualified deliverable capacity, or a transparent aggregate fallback. Avoid multiplying several unknown drivers when only aggregate revenue is observed.
++
++1. Cross-check the latest reported amount against independent disclosed operations or comparable history. Explain the perimeter and timing. For example, equipment sales quantity and reported product revenue can give an **implied historical blended revenue per unit**, not a verified current selling price or future product mix. A point-in-time paid seat or registered user count is not average billable exposure.
++2. Identify reference scope, observed period, currency/scale, both real range endpoints and contrary evidence. Use several comparable measured periods when available. A single observation is a level, not an empirical range. No arbitrary ±10%, copied H1 YoY, or guessed peer interval becomes observed evidence.
++3. Explain each conversion from the reference to the target company's scenario/year, including mix, delivery/acceptance, net pricing and currency. Fill the actual native `derived_fact` formula and ordered `input_parameter_ids`; values and units must recompute and reach the intended segment/year/scenario.
++4. If declaring optional calibration, use the existing `calibrations` fields, `observed_range={lower,upper,unit}` or null, real `observed_period`, `source_claim_ids`, contrary claims, scenario input/output maps, rationale and limitations. Conversion claims/observations must bind to the actual company or segment and applicability period. An outside reference endpoint may stay outside the revenue DAG; converted outputs must be used in that DAG.
++5. Re-check all requested years. Evidence for 2026 H2 does not automatically calibrate 2027–28; later-year retention, saturation, replacements, qualification or demand conditions need an explicit bridge. Full-company support cannot be inferred from one calibrated driver.
++
++The P7 4.2.1 diagnostics distinguish structural support from economic truth. `referenced_range` means the endpoint/conversion/scope/period/native-use links agree; it is not accuracy or a probability interval. Diagnostic statuses/reasons stay visible even when arithmetic validates.
++
++### E. Complete a conditional forecast when facts are sparse
++
++Future actuals are not required. A future `analyst_assumption` or `scenario_stress` may be non-null with its real rationale and source-linked reasoning; a source is not claimed to have reported that analyst number. First seek any material existing facts missing from the model. Then reduce degrees of freedom: collapse an unsupported split into a recognized-revenue aggregate; use one explicitly conditional driver instead of guessed quantity, price, mix and recognition factors; or keep an identifiable launch line separate while avoiding double counting in its parent.
++
++Use the strongest observed anchor and a small set of disclosed conditions to derive Low/Base/High. Conditions may include verified capacity/acceptance thresholds, a company guideline with a supported conversion, or explicit analyst persistence/competition conditions. When numerical endpoints are not observed, `observed_range` stays null and `status="unverified"`; chosen conditional values explain the decision and why the range could be exceeded. A flat/reference extension can be shown as a named conditional benchmark, not a claimed expected path. Repeating historic growth unchanged requires an explicit persistence assumption and contrary check. Do not turn absent data into zero, declare an unsupported Low to be an empirical lower bound, or invent calibrated probabilities.
++
++Preserve the requested three-year horizon: every segment × three scenarios × three years must have valid numeric driver and recognized/effective revenue paths when a forecast can be constructed. Use existing `direct_growth`/`direct_revenue` fallbacks if granularity is unsupported; retain recognition policies and all reconciliation/target rules. If verified base/identity/units or required source contracts are genuinely unavailable, deliver the bounded failure and missing dependency, not fabricated numeric output. Incompleteness is not cured by all-null future slots or prose called a forecast.
++
++Do not add a “must be calibrated” gate. A structurally valid conditional forecast may remain low confidence and not yet meet the independent analyst review standard. Improve the research where a material uncertainty is actionable; where it is irreducible, state the conditional decision and its potential impact rather than endlessly retrying sources or guessing precision.
++
++### F. Resolve windows, perimeter and revenue recognition
++
++- Fiscal-year amounts and reporting-quarter/half windows are distinct. On 3.9 use `period_flow` with exact evidenced dates for the currently supported **3/6/12 whole calendar-month** windows; compose H1 + H2 via a native formula. Non-calendar fiscal years use the actual `fiscal_year_end`. Never infer an H1 date from the source publication date.
++- A group H1 reported flow can coexist with a newly controlled subsidiary's shorter contribution window. Keep the control date and exact contribution in the original source EvidenceSpan/checked excerpt and the working content inventory. Native inventory claim IDs must still bind to a legal target; do not leave a dangling parameter claim when the flow cannot be represented. The current `validate_period_flow_fields` cannot encode an arbitrary partial-control window: do not move its start to January 1 or change it into `point_in_time`/`annual` merely to pass. Keep the usable group H1 anchor and an explicit post-H1 conditional bridge; report only the missing typed partial-window representation to the runtime owner. Other amounts remain usable under their true definitions. Zero pre-control **group contribution** is not zero pre-control subsidiary sales.
++- Full-year subsidiary targets need a year-specific control/perimeter bridge. Compare target external/gross revenue to recognized **group external** revenue only after the control period and internal eliminations are known. Do not multiply consolidated revenue by ownership percentage or mechanically prorate 7/12. Acquisition adjustments and segment eliminations must each appear once.
++- Keep reported, constant-currency and adjusted growth separate. An FX percentage-point effect is not a multiplicative growth percentage. Normalized/ex-transaction variants remain distinct targets; an unsupported split remains an explicit gap. A search ex-TAC KPI is not the gross search/advertising plus another business's revenue perimeter.
++- RPO/backlog is a stock. Total and commercial RPO may overlap; average duration is not a straight-line recognition rule. An expected next-12-month conversion belongs to that interval, then new bookings/renewals/remaining recognition reconcile without a second recognition multiplier. New user/seat metrics require average paying exposure, net pricing, commercial availability and parent overlap before a revenue increment is added.
++- Recognition policy must describe the target business's actual performance trigger, gross/net and delivery/service period. Consulting services provided, ad displayed/action, license control, subscription service and hardware delivery are different policies. A KPI definition or another business's policy cannot fill the field. Already recognized aggregates use `modeled_as_recognized`; do not apply another recognition multiplier.
++
++### G. Keep management targets comparable and complete
++
++Record each material target found, including qualitative annual direction, capacity plans and adjusted/FX qualifiers, before choosing a target treatment. Retain exact wording, actor, target period, strength, raw currency/unit/scale, annual/quarter/run-rate/cumulative definition and scope. “Return to growth” and “roughly double capacity” are not automatically precise revenue amounts. “Billion”, “million”, 万元 and 亿元 require an explicit conversion; preserve the raw value and do not confuse a multiple with a growth percentage.
++
++Use `management-target-comparison/1` only for supported annual amount, quarterly/H amount or annual YoY comparison with the actual native parameter ancestry. A Q1 forecast is not FY revenue × 1/4, and a target's base year uses that scenario's true matched denominator. Match each annual target independently; a current acquisition-year mismatch must not be reused for a later full-control year. For an in-horizon comparable target, use valid scenario treatment or an evidenced `independent_benchmark` with all three scenarios; this allows an independently forecast miss without forcing attainment. Unknown conversions retain `unmodeled_data_gap`; they do not justify dropping the target or silently claiming mismatch for a comparable business.
++
++### H. Model a shared shock once and execute sensitivity
++
++Choose a named economic event and actual exposure: customer financing/demand, common equipment/compute bottleneck, acceptance delay, pricing or cancelation. Trace the event into affected volumes/cohorts/prices and recognized revenue **inside the same native DAG**. Explain who bears the shock and what is unaffected; do not apply an identical company-wide discount to heterogeneous businesses without a real shared mechanism.
++
++Use existing `sum_cap`, `linked_ratio`, elimination or signed adjustment only when their evidence/perimeter fits. Missing capacity data is not a zero cap and does not permit a guessed dollar ceiling. A financing receivable delay is not automatically a revenue cancellation. For a Q4→next-Q1 delay, specify the actual affected Q4 amount, catch-up fraction and cancellation; `build_quarter_delay_bridge` supports the transparent direct-revenue case and must not infer annual revenue/4. Explain if a general conditional stress has no measured exposure or calibrated probability.
++
++Construct a separate new stress input with all consistent affected parameters, then rerun the native engine. Report original and stressed annual revenue, net differences, current-year deferral, next-year catch-up/cancellation and constraint audits. Single sensitivities use native `sensitivity_tests`; `percent=0.05` is ±5% of a value, `percentage_point=0.05` is ±5pp of a fraction, and `basis_point=50` is ±0.005. Review requested/effective values and clamping. Test a base parameter once; effects from separate tests must not be added to estimate the joint result. Preserve native path-order rejection; do not sort genuine crossing paths into a false low/base/high ordering.
++
++### I. Preserve quote fidelity and attribution
++
++An excerpt marked opened-and-checked must be locatable in the **same** opened original/version. Capture enough continuous context to preserve subject, time, units, “Total” headers, negation and constraints. Do not silently join a main-text amount to a distant footnote or stitch recognition policies from different sections into one quotation. A valid excerpt SHA proves the saved excerpt, not its truth or continuity.
++
++For non-contiguous evidence, create separate native claims with their individual locators and short excerpts, then make the relationship explicit in the research rationale. If a manual OCR/table-row transcription is needed, label that transformation in the working authoring record, retain row/header/cell locators and original content, and check values/units independently. This label does not create a new native claim field or turn a reconstruction into a verbatim quote. A composite analyst summary is not quoted as one original span. Keep continuous quotation, reconstruction and inference visibly different.
++
++For Q&A keep question versus answer, speaker/issuer and publication qualification. An unanswered investor question is not company guidance; a closing speech is not an operating answer. A multi-issuer official JSON projection does not give every sibling the selected company's identity or publication clock. Keep unknown first-publication status; update/retrieval times alone cannot establish prior as-of availability. Do not append another consumer identity registry to repair missing source facts.
++
++### J. Execute once at the major research node and hand off
++
++Fill the native source/claim/parameter objects and all three scenario/year paths; identify recognition, bridge, targets, calibration and shared-shock dependencies before validation. Use `generate_input_template` only as a skeleton: replace FIXME values and never count its generated claims as actual reads. One static lint/hash check, one collected native validation, and compute/render/snapshot over the final new input are sufficient at this major node; repeat only for a concrete failure or changed model. Do not add tests at every research sentence or expand normal CI into unrelated manual contract suites.
++
++Use the actual runtime CLIs in this order:
++
++```text
++python -X utf8 -B scripts/lint_input.py <new-input.json>
++python -X utf8 -B scripts/fix_hashes.py <new-input.json> --check
++python -X utf8 -B scripts/revenue_forecast.py <new-input.json> --validate-only --verbose
++python -X utf8 -B scripts/revenue_forecast.py <new-input.json> --output <new-forecast.json> --markdown <new-forecast.md>
++python -X utf8 -B scripts/research_support_diagnostics.py --input <new-input.json> --output <new-economic-support.json>
++python -X utf8 -B scripts/revenue_backtest.py create <new-input.json> --version <same-new-version> --output <new-snapshot.json>
++```
++
++Hash repair, if actually needed, applies only to a new authored input; it cannot repair a false quote, wrong source snapshot or fake invocation. Before compute/snapshot set `REVENUE_PUBLICATION_REGISTRY` to the owned attempt's registry path and restore the previous environment afterward. Set `forecast_version` to the same new version in the input before both calls: snapshot creation sets it internally, so inconsistent versions would produce different input anchors. Native snapshot/forecast may use different JSON serialization; compare semantic/canonical anchors, not arbitrary file-byte equality. Do not overwrite an old input, result, snapshot or sealed run. `--validate-only` is zero registry write; formal compute/snapshot writes the current attempt's registry.
++
++Keep `input.json`, engine JSON/Markdown, snapshot, support diagnostics, actual command/exit records, source-to-used-parameter links, and an adjacent `TRUST_BOUNDARY.md` explaining structural versus actual-research guarantees. These are evidence artifacts, not sign-off files. Source bytes may remain referenced in CWP/audit CAS; do not duplicate the whole lake or every revision into the result. Report actual retained/peak sizes and prior unknown cost holds under the existing task budget.
++
++At the existing four-independent-reviewer node separate source handling, acquisition reuse/routing, process/data and economic model quality. Supply exact original locators, target/perimeter bridges, assumption/calibration gaps and actual sensitivity results. Report engineering status and research acceptance independently; a green engine or all cells structurally supported cannot close an economic issue. Each actionable common-root issue becomes owner-scoped repair and a new attempt; no case-specific percentage patch, historical rewrite or new manual permission. The repository execution checklist is `docs/w04_research_authoring_card.md`; this reference contains the full installable procedure.
+--- /dev/null
++++ b/docs/w04_research_authoring_card.md
+@@ -0,0 +1,222 @@
++# W04 WP06 — 下一轮真实研究执行卡
++
++> 2026-10-11；文档工程交付不等于原三公司经济验收。当前责任 RC09/RC10/RC11/RC12/RC17，87 个原 issue_key 保留原状态。供 ROOT 的新 owned attempt 使用；禁止改写 PW03 sealed input/run/report。
++
++## 0. 读者先知道的事实和边界
++
++- 编写基线：RF `b7fe04aabe1d2a53b67a385c97161af976031040`；当前 engine 4.2.1，canonical forecast schema 3.7，opt-in 3.8/3.9。
++- P7 RF 已接受的 4.2.1 修复解决的是 calibration 的 scope/period/native-use 关系；未证明任何真实公司的未来收入量级。
++- CWP 保存/校验原件、解析、选择/摘要、版本化只读 export；filing-fetch 请求复用/正确工具获取缺件；RF 负责研究和收入模型；audit 记录/独立诊断。CWP/audit 不做投资判断。
++- 用户已有资料采集、配置供应商原语言处理和外发授权。沿实际配置、费用/token/字节/时间母账执行；无逐材料批准、手写授权JSON、canary或人工签收。缺能力/预算如实报原因。Dayu不改；IQS与他人WIP不碰。
++- 本文的工作记录不新增 native 字段、数据库、签名者、许可链或“全公司校准”硬门。只在完整执行和四审两个既定大节点验收。
++
++## 1. 接口清单与合法使用
++
++| 公共对象/入口 | 实际字段/用法 | 不可声称的保证 |
++|---|---|---|
++| SourceRef2.0 | schema_version/document_id/source_id/content_sha256/byte_size/mime_type，无物理路径 | 文件名、目录或hash不能证明研究正确 |
++| source_preparation.py | --request-file、--result-envelope、--company-wiki-catalog-config、--timeout-seconds；2.0 filing_intent及actual acquisition_limits | --help、配置存在不代表provider已调用 |
++| prepare_registered_source_result | candidate, as_of_date, company_wiki_catalog_config, timeout_seconds=30, source_reader_receipt_version=2.1 | 非期间化deck/industry/IR不伪造FY或走SEC财报发现 |
++| narrative public reader | raw /1及显式compact投影/3；以真实read receipt和parent refs核对 | reference(metadata_only)、completed摘要不代表RF已用 |
++| consume_narrative_input | request/bindings/source_id/catalog_config；binding四键span_id/claim_id/parameter_id/support_type；read后真到native formula | 仅read不能记consumed；失败不强补成功receipt |
++| native schema3.9 | period_flow + period_start/end，当前3/6/12完整月；其他basis不带日期 | partial控制窗口不改名H1来适配 |
++| operating_research/1 | inventory/observations/calibrations，exact现有key集合 | optional诊断green不证明economic truth |
++| management-communication-scope/1 | category/start_date/end_date/coverage_complete/items；用实际read originals | discovery/index_notice不能作原件 |
++| management-target-comparison/1 | annual_revenue_level/quarterly_revenue_level/year_over_year_growth和已有scope ancestry | CC/adjusted/季度/年度/gross/net不能暗换 |
++| economic-support-diagnostics/1 | --input/--output，cell supported/conditional/unsupported与具体reason | 不要求future actual、不拦forecast、不当概率 |
++| snapshot-schema-diagnostic/1 | 新snapshot真实schema，旧header差异诊断 | 不改旧snapshot fingerprint/registry |
++
++公开范围未知的多issuer投影仍按真实producer资格报告；不能拿更新时间补首次发布时间。新compact运输修复不解开 c620 这类未知 source clock。可以使用其他合格原件完成模型并清楚列出该缺口。
++
++## 2. 有序施工：输入 → 研究 → 参数 → native结果
++
++完整方法见 [installable authoring procedure](../references/research-coverage.md#research-authoring-procedure)。以下为施工时的最小清单，不是新增小节点门。
++
++### 2.1 冻结请求和运行环境
++
++ROOT分配新attempt目录、输入请求、as-of、公司标识、报告币种/scale、fiscal-year end、base年和**连续三年**forecast_years；冻结实际工具/runtime/package版本及母账余额。读取实际provider/model/profile，不猜配置；不复制canonical assurance/output或全湖原件。操作日期真实记UTC，信息截止仍是请求as-of。
++
++本轮原三公司原请求是 CN688012/HK00700：CNY million、FY2025基期、FY2026–28；USMSFT：USD million、FYE06-30、FY2026基期、FY2027–29；as-of2026-10-08。它们是回归控制，不应把公司名写进通用源码。
++
++### 2.2 补真实需求矩阵和资料链
++
++用一份有界矩阵，逐类写实际查询窗口、经营问题、重大性、查询/命令事件、原件source/locator或named gap。年/半年/季报、release/call/deck/strategy/IR活动、IPO/equity/placement/convertible/proceeds、交易历史审计/备考、行业/客户/peer原件均需有逐类决策，不按扩展名或标题判断无价值。
++
++先查CWP原件，存在就prepare/open，不下载。缺件走有意图和实际硬限额的source_preparation/FF，ET适合市场按配置伴随；原语言TXT不翻译。已注册deck/industry/IR使用registered adapter，不强塞fiscal_year。网页事实须有正式原文/SourceRef/capture；搜索输出只有线索。失败保存本次reason/阶段/provider_started/calls/实际账，不继承旧外部状态。
++
++最新财务filing发布时间→as-of窗口完成前不能写checked；较早收购公告只用于控制事实。类型资料无需全选，但selected未读要留下incomplete；未选需specific materiality理由。`not_available`的conclusion写没拿到什么，而非“Read original/no target”。IR活动DOCX与官方问答分列需求；问答speaker/answer/first-publication unknown不装作管理层事实。
++
++### 2.3 真读、政策、目标和经营库存
++
++在原locator真开完整相关语义组：actor、产品、日期、Total/单位/货币、限制/反证和政策触发。summary只是资料导航；已open原文即使摘要失败仍能用于研究。continuous quote保留同一原文顺序；远处脚注/拼段拆成两个claim，不拼成一个verbatim excerpt。OCR/table_row_transcription在工作记录标明，保留各行列/header定位，不给native新增quote_type字段。
++
++按inventory现有topic/disposition记录新产品、目标、capacity/融资/确认/竞争/并购。included_in是父item_id而非随意segment名；相关parameter_ids必须属于父item且已用。所有管理层目标包括qualitative growth/capacity/FX/adjusted variants均进target ledger，正确分strength/period/perimeter后选treatment；不能让unmodeled一把抹去本来可比的目标。
++
++### 2.4 核实历史基期和最小经营cross-check
++
++历史收入、segment外部收入+signed base adjustments与报表总额同币种/scale/period；两年观察只是最小合同。产品收入/销售量推历史blended unit revenue要说明产品mix、服务/验收范围，不把隐含值称ASP。年度与H1/H2/native derived bridge、CC/FX/adjusted、grossnet、收购控制/内部抵销先定清。
++
++同一集团H1与购后短流可并存。众硅真实控制日2026-05-31，至6-30贡献1.29190208 CNYm；不是Jan1 H1，更不是众硅全年销售。64.69%控制股权不乘收入；28,000/43,000/58,000万元年度承诺不能机械7/12或套各年同mismatch。原生3.9当前仅3/6/12月，短流保留原source EvidenceSpan/已核摘录和工作库存；native inventory claim必须绑定合法target，不能留不存在parameter的悬空claim。集团H1保持合法参数。先用groupH1+post-H1 conditional模型；必要时向ROOT报通用typed contribution-window seam。不得因此宣布其它可用收入事实全部不可消费。
++
++### 2.5 先证据后幅度，少参数建三年低基高
++
++每个material curve按observed scope×period×unit/range→explicit conversion→native derived output建立路径。真实range两endpoint有value_range claim和相同observed期/scope/unit；conversion有bound observation、actual scenario applicability；输出必须进入该scope/year native ancestry。先核实际经营、同行/客户同口径和反证，再选future值。
++
++缺range：observed_range=null、unverified，少自由度而非全null。可用一个透明direct_growth/direct_revenue aggregate替多个猜测volume/price/mix/lag，以reported recognition basis解释；非null假设必须有决策理由、条件、counter/limits和未来复查指标。基础条件例是“已观测份额/交付能力持续、不发生新增扩产收入”，不是默认+10%或复制H1。同一future路径不表示已观测，后两年不能隐藏为自动平持；逐年保留条件与饱和/竞争/商业化边界。
++
++三年×三情景每个segment必须有可复算输入与recognized/effective revenue、总额、增量和CAGR；zero base CAGR undefined。没有材料可比范围不会新增发布权限门，但独立经济审查可认定重要量级依据未完成。不能为叫green而捏range，也不能把72future null当完成用户请求。
++
++### 2.6 目标、RPO、paid cohort与确认桥
++
++每个年度独立做perimeter/control/elim；年度/季度/YoY/RPO/run-rate/cumulative分开。CC与reported factor转换和adjusted variants单列，FX<1pp不写+1%乘数。Search exTAC和grossSearch+LinkedInMarketing/Premium不是matched。No consensus不称“超预期”。独立benchmark可不达到管理目标但需真实三情景路径/claims。
++
++总RPO684b与commercial678b是嵌套，不相加；2.3年平均期不等于等比释放；next12months比例只是对应边界，需新增订单/剩余释放/续约桥。paid seats期末存量不等于平均账单人数，registered/nonpaid/users不等于收入。E7 bundling/migration/GitHub reclassification必须在父级核一次；未GA的private preview不造商业化量。可保留清楚条件而非拆出虚构销售线。
++
++政策按实际biz触发：Frontier consulting services provided；Search ads displayed/action和netexTAC相关定义分开；Xbox硬件与内容订阅时点分别说明；FTB/paycohort混合边界不能被统一factor遮蔽；Others定义/recognition不是未来增长。
++
++### 2.7 联合冲击一次入同DAG，再做native sensitivity
++
++先选shared event、真实曝光/影响业务、数量/价格/支付量/变现/acceptance时点、取消/恢复条件；无需捏GPU物理cap。若少事实，用明确conditional金额stress，不称实证Low或probability。广告预算、游戏cohort、支付activity/cloud供给响应有异质性，统一×0.95只有实质共因/转换说明才合理。
++
++native constraints/adjustment每项只记一次。Q4→Q1延期用明确Q4暴露和catch-up/cancel，不能annual/4；customer AR延付不自动取消revenue。构建独立新stress input，重新native完整三年compute；保留Baseline→stressed年度净差、catch-up期限/取消、constraint before/after，不加单shock效应。按driver语义的percent/pp/bp/absolute/range/discrete测base参数各一次，核requested/effective/clamp。native annual paths crossed则如实reject，不能排序抹掉。
++
++### 2.8 单次主要执行与交付
++
++生成骨架时选择实际model/schema；skeleton不是facts/reads。完成所有实际claim/source/params后集中做lint→hashcheck→validate集错→compute/renderer→economicdiagnostics→immutable snapshot；具体命令见下一节。变动模型或具体失败才重跑相关阶段，禁止每个小节点重复完整测试或手写估算替代engine。
++
++一个新authoring输入版本贯穿compute/snapshot和stress；写在新owned路径，实际registry在ownedattempt环境变量，结束恢复原环境。审查包提供原件引用和native参数关系，不复制每版大JSON；记录owned retained/peak/actual收费及unknown母账。forecast目录相邻TRUST_BOUNDARY声明不作许可书。ROOT安排四独立agent分别审来源、fetch、流程数字、经济假设；文档工程完成不宣布研究通过。
++
++## 3. 实际命令和结果矩阵
++
++下面是已存在CLI。尖括号由ROOT新attempt真实值替换，不可直接带placeholder执行。安装skill没有tools/工程tests；本流程不依赖repo-only recipe。
++
++```powershell
++# Optional once: field-correct skeleton, no evidence generated
++python -X utf8 -B scripts/generate_input_template.py --name <company> --base-year <base> --forecast-years <y1> <y2> <y3> --currency <currency> --unit million --segments <actual-segments> --schema 3.9 --output <new-skeleton.json>
++
++python -X utf8 -B scripts/source_preparation.py --request-file <actual-bounded-request.json> --result-envelope --company-wiki-catalog-config <explicit-config> --timeout-seconds <remaining-budget>
++
++python -X utf8 -B scripts/lint_input.py <new-input.json>
++python -X utf8 -B scripts/fix_hashes.py <new-input.json> --check
++python -X utf8 -B scripts/revenue_forecast.py <new-input.json> --validate-only --verbose
++python -X utf8 -B scripts/revenue_forecast.py <new-input.json> --output <new-forecast.json> --markdown <new-forecast.md>
++python -X utf8 -B scripts/research_support_diagnostics.py --input <new-input.json> --output <new-economic-support.json>
++python -X utf8 -B scripts/revenue_backtest.py create <new-input.json> --version <same-new-version> --output <new-snapshot.json>
++```
++
++`REVENUE_PUBLICATION_REGISTRY`指定新attempt目录内**file**，不能改全局canonical registry。`forecast_version`先在input填same-new-version；schema3.9仅本次有period-flow或role-aware需要时显式选，schema3.7/3.8仍合法。`--validate-only`无registry写；正式compute及snapshot创建会登记。Native snapshot固定新写，不覆盖；JSON文件序列化不同不要求byte相等，强validator和canonical input/result anchor负责语义一致。不得为纯文档检验执行真实source/provider、三家engine或全量manual contracts。
++
++| 大节点 | 本次文档包已做 | 下一真实attempt必须做 |
++|---|---|---|
++| Doc/interface | 真实文件/字段/CLI适配检查和87key方法映射 | 使用实际已接受并安装的版本 |
++| Research+native | NOT_RUN；旧sealed状态保留 | actual originals→claim/param/DAG→三年三情景/target/sensitivity/render/snapshot |
++| Four reviewers | NOT_RUN | 实际source/window/locator、reuse/get、numeric/process、独立economic质量 |
++| New three companies | NOT_RUN | 不同市场/行业泛化；不加公司特例或继承旧审查 |
++
++## 4. 当前限制与ROOT接口交接
++
++1. `scripts/contracts/period_flow.py:validate_period_flow_fields`/`period_flow_months`只承载3/6/12完整月贡献。合法例：`period=FY2026,time_basis=period_flow,period_start=2026-01-01,period_end=2026-06-30`，须由FYE12-31和claim支持。短control-window金额仍可保留原source EvidenceSpan/已核摘录与context；native claim须有合法target，不可当该typed H1 fact。另开通用贡献窗口契约需ROOT定接口/TDD。
++2. `scripts/research/communication_scope.py:analyze_communication_scope`对postfiling取注册source_type regulatory_filing/exchange_filing的max published_date；IPO/发行材料也可能落该集合。下一执行需核是否与latest financial-filing需求一致；如冲突向ROOT提交例，不改source_type来骗窗口。
++3. `source_preparation.py:prepare_registered_source_result`及public reader是来源适配责任；research卡不另造来源身份或日期资格。c620多issuer selected row publication仍unknown时继续gap，不用crt/audit/upd timestamps放行。
++4. `scripts/research/evidence_roles.py:_calibration`的native scope/period/observed endpoints规则与P7 4.2.1接受一致。`observed_range=null`允许结构运行，不能承诺economicgreen；source-linkedfutureclaim仍遵守已有rationale_support合同，不强补futureactual。
++5. 新预算/profile/generation、provider策略、CAS/ledger与新attempt封装由ROOT/WP其他owner实施。此卡不写任何配置，不调整费用/空间cap，不收费追回旧supplier完整响应。
++
++## 5. 证据来源与87项映射
++
++本卡方法依据的是完整解析的PW03三家公司×四role JSON，而非摘要猜测。来源SHA在自身 `.planning/w04-wp06/evidence/implementation/wp06/sealed-report-read-index.json`；对应W04覆盖来源SHA为 `3a189e4e6a6c1768d1c5cf939146acfbfb2be746bf1f5d22d7eef9b322aff116`。P7 RF接受文档记录源主线47f497ad、actual4.2.1工程能力，旧run经济状态未因此改变。
++
++以下每项保持原key、历史状态及PW03复验；表中“研究待新attempt四审”表示文档实现只解决执行责任/方法，不能关旧finding。已PASS的旧症状仍原PASS，不重复造修复。
++
++| 原 issue_key | 方法/章节 | PW03 真实复验 | 新研究状态 |
++|---|---|---|---|
++| `fresh-20261009T065028-cn-688012/fetch/FETCH-002` | T09 §2.2–2.3 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-cn-688012/process/PROCESS-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-cn-688012/process/PROCESS-002` | T09 §2.2–2.3 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-cn-688012/process/PROCESS-008` | T17 §2.3/2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-cn-688012/analyst/ANALYST-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-cn-688012/analyst/ANALYST-002` | T12 §2.7 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-cn-688012/analyst/ANALYST-003` | T09 §2.2–2.3 | BLOCKED | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-cn-688012/analyst/ANALYST-004` | T11 §2.4–2.6 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-hk-00700/fetch/FETCH-004` | T09 §2.2–2.3 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-hk-00700/process/PROCESS-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-hk-00700/process/PROCESS-002` | T09 §2.2–2.3 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-hk-00700/analyst/ANALYST-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-hk-00700/analyst/ANALYST-002` | T12 §2.7 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-hk-00700/analyst/ANALYST-003` | T09 §2.2–2.3 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-us-msft/process/PROCESS-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-us-msft/analyst/ANALYST-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `fresh-20261009T065028-us-msft/analyst/ANALYST-002` | T12 §2.7 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/storage/M3-CN-STORAGE-006` | T09 §2.2–2.3 | NOT_RUN | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/fetch/CN688012-FETCH-007` | T17 §2.3/2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/process/CN688012-PROCESS-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/process/CN688012-PROCESS-008` | T17 §2.3/2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/analyst/ANALYST-CN688012-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/analyst/ANALYST-CN688012-002` | T11 §2.4–2.6 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/analyst/ANALYST-CN688012-003` | T12 §2.7 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/analyst/ANALYST-CN688012-004` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-cn-688012/analyst/ANALYST-CN688012-006` | T11 §2.4–2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/fetch/M3-HK-FETCH-004` | T09 §2.2–2.3 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/fetch/M3-HK-FETCH-005` | T17 §2.3/2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/fetch/M3-HK-FETCH-006` | T17 §2.3/2.6 | NOT_RUN | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/process/M3-HK-PROCESS-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/process/M3-HK-PROCESS-002` | T11 §2.4–2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/process/M3-HK-PROCESS-003` | T17 §2.3/2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/process/M3-HK-PROCESS-006` | T17 §2.3/2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/analyst/HK-ANALYST-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/analyst/HK-ANALYST-002` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/analyst/HK-ANALYST-003` | T11 §2.4–2.6 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/analyst/HK-ANALYST-004` | T11 §2.4–2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/analyst/HK-ANALYST-005` | T10 §2.4–2.5 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/analyst/HK-ANALYST-006` | T11 §2.4–2.6 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/analyst/HK-ANALYST-007` | T17 §2.3/2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-hk-00700/analyst/HK-ANALYST-009` | T11 §2.4–2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/process/M3-US-PROCESS-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/process/M3-US-PROCESS-002` | T11 §2.4–2.6 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/process/M3-US-PROCESS-006` | T17 §2.3/2.6 | N/A | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/process/M3-US-PROCESS-007` | T17 §2.3/2.6 | PASS | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/analyst/ANALYST-001` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/analyst/ANALYST-002` | T10 §2.4–2.5 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/analyst/ANALYST-003` | T11 §2.4–2.6 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/analyst/ANALYST-004` | T11 §2.4–2.6 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/analyst/ANALYST-005` | T12 §2.7 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `m3-20261009T184946-us-msft/analyst/ANALYST-007` | T11 §2.4–2.6 | FAIL | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/storage/PW03-CN-STORAGE-007` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/fetch/PW03-CN-FETCH-001` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/fetch/PW03-CN-FETCH-002` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/fetch/PW03-CN-FETCH-006` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/process/PROCESS-001` | T10 §2.4–2.5 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/process/PROCESS-002` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/process/PROCESS-006` | T11 §2.4–2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/process/PROCESS-007` | T11 §2.4–2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/analyst/ANALYST-PW03-CN-001` | T10 §2.4–2.5 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/analyst/ANALYST-PW03-CN-002` | T10 §2.4–2.5 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/analyst/ANALYST-PW03-CN-003` | T11 §2.4–2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/analyst/ANALYST-PW03-CN-004` | T12 §2.7 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-cn-688012/analyst/ANALYST-PW03-CN-005` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/storage/PW03-HK-STORAGE-004` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/fetch/PW03-HK-FETCH-002` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/fetch/PW03-HK-FETCH-004` | T17 §2.3/2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/process/PW03-HK-PROCESS-001` | T10 §2.4–2.5 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/process/PW03-HK-PROCESS-002` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/process/PW03-HK-PROCESS-005` | T17 §2.3/2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/analyst/ANALYST-001` | T10 §2.4–2.5 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/analyst/ANALYST-002` | T12 §2.7 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/analyst/ANALYST-003` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/analyst/ANALYST-004` | T17 §2.3/2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-hk-00700/analyst/ANALYST-005` | T17 §2.3/2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/storage/PW03-MSFT-STORAGE-006` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/fetch/PW03-US-FETCH-003` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/process/PW03-US-PROCESS-001` | T10 §2.4–2.5 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/process/PW03-US-PROCESS-003` | T11 §2.4–2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/process/PW03-US-PROCESS-004` | T17 §2.3/2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/process/PW03-US-PROCESS-007` | T09 §2.2–2.3 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/analyst/ANALYST-001` | T10 §2.4–2.5 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/analyst/ANALYST-002` | T10 §2.4–2.5 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/analyst/ANALYST-003` | T11 §2.4–2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/analyst/ANALYST-004` | T17 §2.3/2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/analyst/ANALYST-005` | T12 §2.7 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++| `pw03-20261011T010657Z-us-msft/analyst/ANALYST-006` | T11 §2.4–2.6 | new PW03 finding | NOT_RUN（研究待新attempt四审） |
++
++## 6. 停止与交接
++
++文档施工STOP：交三个排他diff/SHA、12 sealed报告读取清单、87key方法映射、轻量actualCLI/schema日志与真实未执行项。ROOT集中接受/正常commit/push/定点安装，随后G4新attempt完成原三公司三年native预测及四审；再新三家公司泛化/G5。此卡不把工程绿当经济完成，不追加每个小节点的审查或审批。

@@ -1,0 +1,809 @@
+{
+  "reports": [
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\reports\\storage.json",
+      "sha256": "aed252e271eb9e24926e237a34ea4b3572f9e6d771147d6da2d9853a3d9e7792",
+      "byte_size": 115934,
+      "role": "storage",
+      "company": "cn-688012",
+      "findings": [
+        {
+          "issue_id": "PW03-CN-STORAGE-001",
+          "summary": "FY2024 精确原件仍缺身份和公开日期。",
+          "expected": "raw SHA对应真实主体、期间、公开可用日期，不用mtime或另一原件日期替代。",
+          "actual": "3273711f…原件14,285,291 bytes/268页真开、SHA一致；首面是中微2024年报。登记title/company/security/fiscal/publication/URL仍null，执行正确UNKNOWN_PUBLICATION排除，FY24比较收入由FY25登记比较列供给。",
+          "recommendation": "来源层只据该SHA官方版本补元数据并保留旧记录；不足继续unknown。",
+          "forecast_impact": "限制FY24正文正式asof复用；未证实改变当前值。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-002",
+          "summary": "H1已生成摘要，但 RF reader 拒绝额外 source_metadata 字段。",
+          "expected": "producer DTO与RF严格读取契约兼容；完成不等于已消费。",
+          "actual": "H1 artifact145,904B completed/zh；body/source_metadata多declared_language=zh-CN。真实RF capture e4dd…exit1 invalid_source_metadata；CWP公开raw诊断成功而RF not_consumed_original_only。",
+          "recommendation": "沿公共DTO责任层修正键集合，使用现有有界reader真读；保留原失败。",
+          "forecast_impact": "H1经营摘要未入正式RF narrative链；原件数值可读，金额影响未知。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-003",
+          "summary": "完整官方JSON parents使公开叙述请求超过16KiB上限。",
+          "expected": "保留完整parents/coverage，同时通过受界公开版本引用或合法受界请求读取。",
+          "actual": "86parents/257records/3projection可回放；latest65parents导致sse-latest-read-request.json实际57,784B>16,384B。真实capture c29f…exit2 invalid_request；无新模型请求，producer completed不等于RF消费。",
+          "recommendation": "沿公共契约解决实际合法绑定大小；真读验证parents/coverage/版本，不能删父原件伪造小请求。",
+          "forecast_impact": "基地时间、供应链与累计海外交付摘要未入RF公开消费；金额未知。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-004",
+          "summary": "FY25年报仍8192截断，final为空，无摘要。",
+          "expected": "实际有限生成返回可验证final；失败保留usage与有界final，不当未调用/免费。",
+          "actual": "P1 deepseek-flash max_output8192；年报input3801/output8192/reasoning8192，length/MODEL_OUTPUT_TRUNCATED、final bytes0、dead_letter、artifact_ref null。未收费重发。H1/IPO6253/7343output成功，不抵消年度失败。",
+          "recommendation": "既有预算内先修有界策略/无收费契约，再由获授权执行者真实生成、公开读取并复审。",
+          "forecast_impact": "年度经营摘要、年份校正未完成；原件仍可读。该年度已知11993tokens，invoice未知。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-005",
+          "summary": "selector0.7.0重要新产品/年度LPCVD与风险限定仍漏。",
+          "expected": "有限选择保留重要经营主体、进展、限定；全页读取/span正确不证明语义覆盖。",
+          "actual": "H1 294candidate/96selected/198omitted：p17金属硅化物系统SA&SU/SPTi/ALD TiNM与p18 InP光通讯研发/下半年样机均不在所选spans，低价值境外资产标题入选。FY25 450candidate/96selected/354omitted：p41 LPCVD累计超过300反应台与新薄膜重复订单主体整段未选；p62多厂商缓释句缺失，只选风险标题/交期影响；p102信息披露/103 ESG占额。IPO p174短期人力/装配/供应商约束现已选，是改善。",
+          "recommendation": "以真实遗漏完整语义组与低价值竞争片段做针对回归，继续有限选择并保留partial/遗漏标记。",
+          "forecast_impact": "可能漏新增长产品与供给约束；方向/金额无法单由遗漏量化。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-006",
+          "summary": "成功摘要漏已选未来基地时间及IPO短期产能约束。",
+          "expected": "有界原语言摘要保留高价值期间、条件；selected-evidence-only/needs_review不能替代实际重要性检查。",
+          "actual": "H1 c8保留南昌14万m2/2023-7、临港18万m2/2024-8，省掉已选同组p19/paragraph41二期20万m2/2026H2开工，未呈现广州/成都2027投产。IPO160spans含p174短期突发产能的人力/装配/供应商约束，8claim未保留。未发现把原材料可获得扩成无限产能；不因此称其余支持正确的claim虚构。",
+          "recommendation": "原文→所选组→claim检查高价值前瞻时间/限定，并标partial；修复消费后实读。",
+          "forecast_impact": "削弱2026H2/2027经营解释；收入偏差金额未知。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-007",
+          "summary": "最新完整IR、重要公告及并购审计/备考正文仍未证明。",
+          "expected": "有价值的IR/融资/并购正文应真取得或明确缺口，不按标题/未入模型判行政或不存在。",
+          "actual": "2019IPO429页含业务/海外/季节性/募投已实读；SSE257record/24issuer完整回放但speaker/answer first publication仍unknown。document_matrix的完整call/presentation/strategy/announcement/transaction/current prospectus为partial/未取得；8-20至10-8重要公告全套、众硅历史审计与2025备考正文未获。未再误归行政，也未标N/A。",
+          "recommendation": "来源owner按实际授权意图补重要原件及精确身份，保留失败/未知，再接正式消费。",
+          "forecast_impact": "CMP历史可比基线、融资/产能及期间后更新不全；购后H1的1.29190208百万元非标的全年，影响未知。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-008",
+          "summary": "广义持久化和native final字节超scope。",
+          "expected": "scope32MiB persistent/2MiBfinal按完整owned边界计，不以provider增量替总占用。",
+          "actual": "仅本次owned根：source env9,944,668+roles/executor16,111,645+execution14,033,038=40,089,351B，超过33,554,432至少6,534,919B；native final文件2,475,566>2,097,152超378,414。provider增量1,834,036/peak231,728和sourceenv<256MiB各自合规不能抵消。",
+          "recommendation": "ROOT按基线负责最终清理；保留真实关键失败证据，后续引用已有对象/受界存储，不删初始原件造PASS。",
+          "forecast_impact": "资源约束失败；未发现因此丢原件或改数字。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-009",
+          "summary": "本次未实测重复cache、版本失效或故障恢复。",
+          "expected": "卡S10要求实际cache命中和source/config/generator变化失效，恢复/并发按发生的事实判断。",
+          "actual": "仅1narrative_run/4generation source/settings绑定；11attempts均mixed-1/runtime_generation2/attempt_no1，无第二batch、版本变更、重启/lease冲突/并发client。3outbox已delivered、4reservations结算，仅正常执行证据。",
+          "recommendation": "下一有界owned执行验证同版0模型命中、真实变更失效和既有AUTO恢复；review不补做/不收费重发。",
+          "forecast_impact": "尚未证明变更/重启正确更新且不重复计费；当前无重复费用迹象，金额未知。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-010",
+          "summary": "旧完整失败响应全文验收仅部分复验。",
+          "expected": "逐旧finding区分有界final改善与完整provider响应；hash不等于全文可复审。",
+          "actual": "新年度记provider response32798B/SHA126909…，final0/空SHA/未剪prefix、length、reasoning/output8192与knownusage。这足以支持空final诊断；未保存可打开的完整provider响应正文，不能复审其全部内容。旧M3丢失正文不可追补。",
+          "recommendation": "继续现有有界final/真实usage，明确是否以当前有界final政策supersede旧全文指标；不收费追回旧正文，不填unknown账单。",
+          "forecast_impact": "仅限制完整响应语义复审，不否定已核空final和截断；金额影响未知。"
+        },
+        {
+          "issue_id": "PW03-CN-STORAGE-011",
+          "summary": "旧Lam HTML外部下载/原子写入场景本次未测。",
+          "expected": "该历史R01目标必须新真实结果或明确未测；SEMI替代不等于Lam路径通过。",
+          "actual": "本run复用SEMI等7原件、本地导入86JSON，current downloads/HTTP0，未发生Lam HTTP/rename；旧丢失响应不可恢复。",
+          "recommendation": "保留NOT_RUN；实际需要该原件时由owner有界测试，review不追加GET。",
+          "forecast_impact": "SEMI本次原件已读，未证明造成新预测缺口，旧路径状态未核销。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\reports\\fetch.json",
+      "sha256": "e82fb4d00a17cd10222bc8858e0daeb90ca56e688aba9cef67f6ea4039619016",
+      "byte_size": 78119,
+      "role": "fetch",
+      "company": "cn-688012",
+      "findings": [
+        {
+          "issue_id": "PW03-CN-FETCH-001",
+          "summary": "交易、融资、演示和最新公告原件覆盖未闭合",
+          "expected": "F08必须考虑所有有重大模型价值材料，缺项真实有界尝试或给可复查具体来源/能力/预算障碍，未知不写N/A。",
+          "actual": "矩阵有六类partial行（独立call、演示、战略、最新公告、收购、融资）；全部filing reuse_only，无新下载、没有完整acquisition原文。H126176-177页真实披露64.69%控制、2026-05-31控制、购买日至H1收入1,291,902.08CNY与2026/27/28各28,000/43,000/58,000万元全年众硅收入承诺。",
+          "recommendation": "新attempt沿配置CWP官方入口有界获取优先交易完整报告/审计或proforma、融资募投和重要最新公告；逐source_id/locator登记实际状态，再由process/analyst判断全年目标与购后/group口径。"
+        },
+        {
+          "issue_id": "PW03-CN-FETCH-002",
+          "summary": "IR活动DOCX在fresh需求矩阵中被遗漏",
+          "expected": "review-fetch独立要求投资者关系记录/业绩说明会，presentation不是IR附件原文；旧finding7/75必须逐项新证据复验。",
+          "actual": "17矩阵行/6management类别/data_gaps未出现IR活动记录或DOCX，未找到该具体材料的本轮请求/原件/明确缺口。SSE问答得到部分原文改善，不能替代独立2026年8月IR记录。",
+          "recommendation": "将IR_activity_record作为独立需求与缺口；本轮旧状态保持FAIL，后续有界定位实际官方附件及格式、日期、主体，成功SourceRef或具体失败收据进入新attempt，不新增授权。"
+        },
+        {
+          "issue_id": "PW03-CN-FETCH-003",
+          "summary": "FY2024原件精确版本来源时钟及正式资格仍未知",
+          "expected": "来源owner恢复真实同SHA主体/期间/首次可用性证据后才正式reuse；封面可证财期，mtime/同标题事件不能证明公开日。",
+          "actual": "3273711f原件真实14,285,291B/268页，p1为FY2024，元数据及资格仍UNKNOWN_PUBLICATION/no_prior_verified_source_fact_patch；正式native未引用该详细产品历史。",
+          "recommendation": "CWP单一责任层恢复同SHA证据，不能新hash版本覆盖旧公开日；新attempt只读reuse+publicopen零下载复测，不能证明则继续unknown。"
+        },
+        {
+          "issue_id": "PW03-CN-FETCH-004",
+          "summary": "完成H126叙述的metadata DTO与RF exact消费合同不兼容",
+          "expected": "成功producer公开原body应按版本化metadata合同被已配置RF消费；已知语言扩展字段不应造成双方成功/失败不一致。",
+          "actual": "producer completed，public raw reader成功；RF e4dd9... exit1。实际metadata多declared_language=zh-CN，RF只允source_class/title/document_kind/language。",
+          "recommendation": "用冻结失败fixture先验证不兼容；在新attempt明确版本化/兼容metadata字段，再实际read同源。仅本地复验无需重复付费；本次旧报告FAIL不被ee293769/selector0.7.1新probe覆盖。"
+        },
+        {
+          "issue_id": "PW03-CN-FETCH-005",
+          "summary": "SSE完整65parent subject引用无法进入16KiB读请求",
+          "expected": "完整source lineage须可被有界reader消费，不通过删parent/涨cap/替换数据假装成功。",
+          "actual": "actual57,784B request>16,384B cap；c29fd...真实blocked:invalid_request。producer和投影完成均不等于读接口完成。",
+          "recommendation": "修正已有引用/服务端精确查回协议并保留全部父原件和hash，先冻结fixture验证语义及边界，再新attempt真实producer-ref/readback。本审查不跑新代码，不消除本次失败。"
+        },
+        {
+          "issue_id": "PW03-CN-FETCH-006",
+          "summary": "官方搜索与收购URL线索缺本轮可回放证据",
+          "expected": "F01/F08每次原生搜索/索引观察至少保留实际tool-call ID、query、result或source_id/locator；不能仅把文字观察写成搜索已检查。",
+          "actual": "document_matrix称official web search及full acquisition report URL discovered；discovery-observation仅7items/86imports/24records，无URL/搜索结果/调用ID，manifest/call_index无搜索capture。",
+          "recommendation": "新attempt记录原生工具真实ID及有限结果定位，矩阵绑定实际发现与原件取得；不补造旧call或用历史179标题当本次全文。"
+        },
+        {
+          "issue_id": "PW03-CN-FETCH-007",
+          "summary": "早期注册来源helper覆盖造成candidate构造历史不可完整复查",
+          "expected": "每attempt真实输入与执行构造依据应可回放；当前helper不能冒充早期helper字节。",
+          "actual": "business JSON被capture冻结，但cn_registered helper早期版本间覆盖；execution_outcome明确无法证明此前candidate DTO byte-for-byte，保留PARTIAL。",
+          "recommendation": "后续只在owned脚本版本路径保存明确使用版本/小型SHA引用并通过真实capture消费；不用重写旧历史或追加权限链。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\reports\\process.json",
+      "sha256": "935ad90bda2bc2a96fdfb185d3a42c0f568aea57646cba3750bcc1b74ab7d58b",
+      "byte_size": 104406,
+      "role": "process",
+      "company": "cn-688012",
+      "findings": [
+        {
+          "issue_id": "PROCESS-001",
+          "summary": "三年18单元的未来幅度仍未得到独立可比范围及转换支持",
+          "expected": "RF §1B/§3/§6要求当期可比范围与显式转换支持所选假设，而不是来源证明未来实际值。",
+          "actual": "2026–2028三年路径真实存在；18未来假设、6校准和18收入单元仍unsupported/unverified；8研究维度为gap。",
+          "recommendation": "在原预算与信息日内用客户订单/量价/交付验收及可比实际区间建立少参数独立桥；缺口保留conditional，不能拿当前算法绿接受经济研究。"
+        },
+        {
+          "issue_id": "PROCESS-002",
+          "summary": "管理沟通4/6未完整，三个承诺仍未能与集团外部收入比较",
+          "expected": "RF §1A须完整官方沟通并对目标保留正确年度及范围。",
+          "actual": "annual/results checked；call/presentation/strategy/announcements incomplete；28/43/58千万元为三个年度目标，保留perimeter mismatch和comparison null；尚缺购买前收入及集团内部抵销桥。",
+          "recommendation": "来源owner补齐实际可用官方沟通及购买前/内部交易桥；目标转换依证据完成，外部缺口如实保留。"
+        },
+        {
+          "issue_id": "PROCESS-003",
+          "summary": "H126 producer完成但RF消费者因metadata字段不兼容失败",
+          "expected": "真实完成叙述应能通过兼容公共DTO读取，不能把producer成功当消费者成功。",
+          "actual": "selector0.7.0生成H1成功，RF实退出1 blocked:invalid_source_metadata；多出declared_language，IPO另一bundle读回成功不能抵消。",
+          "recommendation": "修复producer/consumer版本化metadata DTO后用新attempt真实读回旧bundle；不修改本次封存或冒称当前ee293/0.7.1是旧运行通过。"
+        },
+        {
+          "issue_id": "PROCESS-004",
+          "summary": "FY25付费原语言叙述仍空final并dead_letter",
+          "expected": "当前配置输出窗口需产出可消费summary，失败须保留使用量与具名原因。",
+          "actual": "input3801/output8192/reasoning8192，MODEL_OUTPUT_TRUNCATED，final_content_bytes0，provider_response32798B/SHA有记录，无artifact；未自动重试。",
+          "recommendation": "由责任层在原配置资源上调整选取/输出规划，保留失败记录；新attempt才可验证，勿重置费用。"
+        },
+        {
+          "issue_id": "PROCESS-005",
+          "summary": "SSE完整65-parent引用请求超过RF reader16KiB上限",
+          "expected": "完整来源lineage应可传输而不裁掉parent或提高冻结资源。",
+          "actual": "request2实际57784B、cap16384B，reader退出2 invalid_request；producer已完成，RF仍未读回。",
+          "recommendation": "通过版本化有界ref/覆盖协议处理完整65parent；新attempt消费全覆盖，不能删parent造PASS。"
+        },
+        {
+          "issue_id": "PROCESS-006",
+          "summary": "众硅购后收入流的开始日被写成1月1日",
+          "expected": "period_flow要对应原件实际覆盖窗口，控制时点不能被半年简称覆盖。",
+          "actual": "cmp_h1_2026=1.29190208百万，原件p176购买日2026-05-31、购买日至期末收入1291902.08元；参数period_start=2026-01-01、end06-30。",
+          "recommendation": "新输入将购后流明确为2026-05-31至06-30，并以显式derived桥嵌入半年/全年；保留原输入历史。"
+        },
+        {
+          "issue_id": "PROCESS-007",
+          "summary": "众硅与原有业务工作分拆尚无外部收入/内部抵销证据",
+          "expected": "合并外部收入不能由被收购方单体购买后收入直接证明；各segment需范围一致。",
+          "actual": "集团H1总额减众硅购买后1.29190208作core；base2025众硅0；金额和股权64.69%未错乘，但购买后收入是否含集团内部销售未知。",
+          "recommendation": "在来源会计范围层拿到购后外部收入及抵销；无桥就保持工作分拆与未量化限制，勿把residual加总恒等式当segment事实。"
+        },
+        {
+          "issue_id": "PROCESS-008",
+          "summary": "FY2024独立原件身份/可用日期仍未知",
+          "expected": "原件存在与exactSHA在as-of前可用须分开；不得借另一活动日补日期。",
+          "actual": "3273711f原件UNKNOWN_PUBLICATION且未进入sources；FY23/24历史合法来自定日FY25比较列。",
+          "recommendation": "来源owner按同原件身份与可证日期关联补全；无法证实继续unknown，不创建人工许可。"
+        },
+        {
+          "issue_id": "PROCESS-009",
+          "summary": "冻结持久化及最终package字节上限仍超出",
+          "expected": "原scope32MiB持久化、2MiBfinal上限沿用；不以单日志小或局部TEMP小替代总owned核算。",
+          "actual": "独立stat execution14033038+executor16111645+TEMP9944668=40089351B >33554432；封存native package2475566B>2097152。每流1MiB及环境256MiB分别未超。",
+          "recommendation": "ROOT四审后按原基线清理本轮派生副本并保留来源/manifest恢复引用；不要删除生产原件或现场扩大scope。"
+        },
+        {
+          "issue_id": "PROCESS-010",
+          "summary": "早期registered-source helper被覆盖，无法逐字复演早期失败DTO",
+          "expected": "实际输入消费与运行代码身份需要区分；当前helper不能反证旧失败。",
+          "actual": "business请求冻结与exception日志保留，executor明确承认早期helper重写；major native产物可复核，但早期constructed candidate原字节不可复核。",
+          "recommendation": "后续attempt保留关键helper代码内容指纹/版本或小型write-once代码记录，保留原失败不补造。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-cn-688012\\reports\\analyst.json",
+      "sha256": "4840a3c26f2cda8bfcfae3d8f03f47939b2d47f02a56d94917e54a8bb214b86f",
+      "byte_size": 58717,
+      "role": "analyst",
+      "company": "cn-688012",
+      "findings": [
+        {
+          "issue_id": "ANALYST-PW03-CN-001",
+          "summary": "主营三年增长网格尚未建立可检验经营量级依据，95.1% Base终年增量仍属条件暴露",
+          "expected": "RF Step1B/6要求从可比经营参考、历史执行和明确转换假设选区间。允许分析师假设和透明direct_revenue，不要求未来actual；应说明为何这些幅度相对于客户需求、订单、价格和验收约束可信。",
+          "actual": "主营2026H2同比Low/Base/High=10%/25%/40%；2027=5%/20%/35%；2028=0%/15%/30%。原文提供产品验证方向和全球WFE背景，尚无对公司客户、份额、数量、净实现价格与验收时窗的桥。三个core calibration均observed_range=null；明确写unverified是正确披露，但未完成经济模型研究。",
+          "recommendation": "保留本次条件结果；新attempt建立最小主营桥，优先客户项目/订单交付及验收可见度、产品组合/净价和供应约束。可用明确分析师转换与宽范围，无需等待未来actual；若资料不足，应保留条件暴露并减少自由度或缩短明确预测期。"
+        },
+        {
+          "issue_id": "ANALYST-PW03-CN-002",
+          "summary": "已披露产品、专用设备产销量和客户集中度尚未进入最小数值cross-check",
+          "expected": "缺精确H1分产品披露可采用aggregate回退，但RF Step4和A05/A06仍需利用已可读rounded历史及相关生产、库存、需求/确认约束做最小交叉核验。",
+          "actual": "新品按included登记避免重算有改善；facility列unknown、客户集中列unmodeled。资料中FY25刻蚀约9832、LPCVD约506、专用设备约10527百万元和1240销售腔已可读，却没有作者数值交叉核验。参数仍只总金额增长，缺组合、库存资格、装配/安装与验收约束解释。",
+          "recommendation": "用rounding明确的FY25产品/residual与混合实现收入/销售腔代理检验所选路径，优先查库存机型/客户资格与安装验收能力；不要把代理叫ASP，不用平方米生成硬cap。"
+        },
+        {
+          "issue_id": "ANALYST-PW03-CN-003",
+          "summary": "众硅条件收入150/350/500百万元缺购后订单验收路径与集团外部收入抵销桥",
+          "expected": "A03/A11及目标契约要求控制时窗、商业化进度和确认范围桥；全年子集团承诺与集团购后外部贡献区分。未来数可为假设，仍需依据、替代解释及可实现节奏。",
+          "actual": "控制日2026-05-31、购买日至6月30日收入1.29190208百万元和零FY25集团贡献正确；未乘64.69%或7/12，目标登记为unmodeled_data_gap且2027/28明确预计全年控制有改善。Base2026购后金额151.29190208（H2假设150），FY27/28独立重设350/500；没有安装/验收或订单范围证明，也没有集团内交易/抵销证据。减购后收入形成core H1工作分拆，已诚实披露未经抵销核实。",
+          "recommendation": "新attempt核最终并购报告/标的审计与购后经营资料；FY26单列控制前收入和集团内抵销，FY27/28仅在持续控制假设下核内部抵销/业务边界；用订单及验收节奏支持假设，不强迫Base达到承诺。"
+        },
+        {
+          "issue_id": "ANALYST-PW03-CN-004",
+          "summary": "Low及联合需求/融资/交付压力缺独立曝光范围，现延期桥仅是有标注示意",
+          "expected": "RF Step6/8与A07/A12需使重要共同风险对应受影响收入、时点、取消/追回和可检验条件；示意压力应保持示意，不当概率区间或可信下界。",
+          "actual": "新joint将H2需求幅度减15pp、Q4递延100/250/400百万元、Q1补收25%/50%/75%，余项取消，原生DAG独立复算吻合；旧joint无时间桥症状已修。但这些金额、减速和恢复率均无订单/融资/关键部件曝光范围；formal Low2026仍+19.9690%，缺证据判断其为经济下界。没有测得的shared-cap没有硬填零是正确披露。",
+          "recommendation": "保留illustrative标签和真实取消/补收算式；新attempt选实读客户/订单/零件与验收事件范围，或明确宽的分析师条件并说明范围选取理由。逐年展示敏感性，CMP2026/27终年影响为0不等于当年不重要。"
+        },
+        {
+          "issue_id": "ANALYST-PW03-CN-005",
+          "summary": "最新官方沟通与并购/融资原件覆盖仍partial，管理目标和约束审查未完成",
+          "expected": "A08与RF管理沟通门要求重要原件实读与有界完整性/缺口；问题、目录、已归属JSON或当前代码支持不等于最新答案可按as-of使用或材料全覆盖。",
+          "actual": "SSE三流86页/24本发行人记录现可定位回放；已独立读本发行人原语言字段。8latest含累计海外800反应台/厂房60→90万平方米线索，1precollect回答重复海外基础；15questions未回答，不是公司事实。所有selected answer_first_publication_known=false、部分speaker未知；native未数值消费这些答案正确。官方类别仅2/6 checked；最新presentation、8月20日至10月8日公告全量及最终并购报告原件未取得，缺失未被新来源补齐。",
+          "recommendation": "由来源owner在已有配置和授权下补足本次具体重要原件/公开时间，另立new attempt；analyst无GET、无模型补跑。先核并购/项目约束与答案as-of资格，不把当前lead或未回答问题加入参数。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-hk-00700\\reports\\storage.json",
+      "sha256": "56a6b2a84c5b1ef4a77512d34ee6452e6f73d81c861d758a614804e111a5230e",
+      "byte_size": 55812,
+      "role": "storage",
+      "company": "hk-00700",
+      "findings": [
+        {
+          "issue_id": "PW03-HK-STORAGE-001",
+          "summary": "selector 0.7.0 的成功发布稿包只取脚注；deck仍漏关键经营上下文并保留大量财务表片段。",
+          "expected": "S06应优先保留重大业务机制、转化与限定；短脚注不代表业务叙述覆盖。",
+          "actual": "release 9页119units/7候选仅选1个181字p1/paragraph7脚注，6候选遗漏。原p1算力采购转收入、p2国际游戏-0.8%/常汇率+4%、广告AI与云定价/p3付费意愿全未入bundle。deck 28页445units/79候选选52、遗漏27、dropped_financial22；其中p4财务表整组仍在，p7战略、p10初始付费/市场教育、p18 Arrows归Marketing等未选。p10/paragraph17以economics开头丢失前句Current focus和主语。",
+          "recommendation": "由专家用本次原SHA构造足够的经营句与反例清单，在新attempt检查选取理由/遗漏与相邻范围；不重跑本执行包或以0.7.1当前源码证明旧运行PASS。"
+        },
+        {
+          "issue_id": "PW03-HK-STORAGE-002",
+          "summary": "业绩deck仍为真实已计费长度终止，无摘要产物。",
+          "expected": "S08必须形成有界可回放摘要或明确失败并保留真实费用/响应诊断。",
+          "actual": "deck input2650/output8192/reasoning8192，MODEL_OUTPUT_TRUNCATED，final-content0B，provider-response34712B/SHA9c4b951e…；费用11807microUSD，未publish，verify依赖终止。release1540microUSD成功，合计12718tokens/13347microUSD。初次请求有冻结输入但仅NARRATIVE_BATCH_ValueError/0费用，具体ValueError细节不可观察。",
+          "recommendation": "保留失败账和原request，只在新有界大节点验证供应商输出策略；不默默付费重试或提高全局上限。"
+        },
+        {
+          "issue_id": "PW03-HK-STORAGE-003",
+          "summary": "overview原件公开日期未知，来源完整资格仍partial。",
+          "expected": "S01 exact-SHA公开时间可证明，未知应保留排除。",
+          "actual": "H1 exact4170f8现在可读且metadata2026-08-25/eligible已用于native；overview a9b0a5d6…publication=null仍UNKNOWN_PUBLICATION，被打开但未列入15eligible来源。未知未由文件名/retrieval填造。",
+          "recommendation": "以后存在可信精确SHA公开日期/可用性证据时由来源owner登记；当前保留unknown，不借九月标题日期。"
+        },
+        {
+          "issue_id": "PW03-HK-STORAGE-004",
+          "summary": "问答缺口未消除，native公告checked行并未覆盖最新财报后的真实窗口。",
+          "expected": "S07真实Q&A实质与Aug25-Oct8重大公告窗口应读取或诚实标缺口。",
+          "actual": "本次ET/FMP unsupported_market/provider_unavailable，provider requests0，无TXT/JSON或问答内容，deck p27只有Q&A标题。material_announcements_since_last_filing checked只引用2026-05-18喜马拉雅完成公告，早于Aug25 latest filing；matrix已诚实披露窗口gap。融资pricing原p1说明USD2.43bn/CNY14.94bn净 proceeds/general corporate including refinancing，未当收入；实际可用替代H1/release/deck/融资/TME资料不等于Q&A/窗口穷尽。",
+          "recommendation": "未来新研究仅针对可用原语言Q&A与真正Aug25-Oct8公告证据；native覆盖行改为material gap。当前不把旧404当本次新的GET结果。"
+        },
+        {
+          "issue_id": "PW03-HK-STORAGE-005",
+          "summary": "叙述摘要没有进入RF消费链；年报/H1原native选择与摘要未在本次复测。",
+          "expected": "S09须证明source→精选→摘要→事实/假设→公式实际链；S05旧H1 native阻断复测应有本次真实select产物。",
+          "actual": "RF真实15来源和claims全由public raw读取，release成功bundle未消费，deck没有bundle；年报/H1不在2-item native叙述请求。H1原PDF正文可读、封面/封底文本空，不能把executor fitz原文提取当CWP native H1 repair通过。",
+          "recommendation": "下一责任大节点用公共narrative reader真实读取恰当bundle，记录断点到事实/参数；对年报/H1原SHA做必要native复测。当前仅NOT_RUN历史c4/c7/H1项目。"
+        },
+        {
+          "issue_id": "PW03-HK-STORAGE-006",
+          "summary": "原native snapshots与广义persistent留存真实超限；compact projection不能修复native超限。",
+          "expected": "scope final-object<=2097152B/persistent<=33554432B；派生尺寸实际与投影分列。",
+          "actual": "原v1 2262892B、原v2 2283328B，分别超165740/186176B。compact1778919B且语义相等，原bytes/SHA未改。execution112files18990745B+executor202files34542692B=53533437B，超persistent19979005B；ownedTEMP61files2639842B；总56173279B在environment268435456B内。freeze105copies34184589B/unique3963704B，复制冗余30220885B。native narrative仅323647B persistent added/3584B scratch peak，不等于广义audit全链。",
+          "recommendation": "新大节点在保留immutable originals/失败证据前提下设计可恢复引用与有界留存；ROOT四审后按原基线清理自有可删物，记录失去本地引用。不得用projection或unique bytes冒充cap已满足。"
+        },
+        {
+          "issue_id": "PW03-HK-STORAGE-007",
+          "summary": "本轮缓存复用/失效与crash恢复均未真实执行。",
+          "expected": "S10/S11绑定、当前完成发布与真实同输入重复/变更失效/恢复分别验收。",
+          "actual": "generation绑定原SHA/parser0.1.1/selector0.7.0/prompt1.7.0/model8192/settings193d31…，reused_artifact_pins={}。只有mixed-1一名worker；5attempts/2reservations/1verified effect/1delivered outbox，无live lease。首请求0费失败后第二请求付费2次不是zero-model cache复用。没有source/config/generator变更失效或crash/restart。",
+          "recommendation": "只在owned隔离夹具大节点补足必要cache/recovery行为证据；当前新调用0，不为本审查追加provider/model费。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-hk-00700\\reports\\fetch.json",
+      "sha256": "fb3a09010f99c970407dfefcba62e53d97cbb52c904a61d2715dcad1bc49f9a3",
+      "byte_size": 93843,
+      "role": "fetch",
+      "company": "hk-00700",
+      "findings": [
+        {
+          "issue_id": "PW03-HK-FETCH-001",
+          "summary": "FY2026Q2腾讯HK电话会原语言原文仍缺失",
+          "expected": "F06/management communication需要原语言精确季度call；缺能力保留真实原因和usage。",
+          "actual": "ET真实拒unsupported_market且未发HTTP；当前无TXT/JSON，没有call-only目标或Q&A内容可验证。",
+          "recommendation": "保持partial；下次有本任务已配置合法原文入口时按FY2026Q2获取登记。禁止改market绕过能力限制，不新增逐文审批。"
+        },
+        {
+          "issue_id": "PW03-HK-FETCH-002",
+          "summary": "原生公告checked覆盖实际不满足最新filing后窗口，文档需求矩阵不完整",
+          "expected": "F08及RF1A要求latest filing后重大公告窗口和每类文档需要/复用/缺失尝试/N/A理由。债务资料不能当作IPO/equity/convertible搜索已覆盖。",
+          "actual": "最新filing2026-08-25，但checked source仅2026-05-18 TME收购完成；矩阵仅已读原件加ET结果，缺IPO/equity/convertible类别与重大性说明，通用needed_for句子替代逐类决策。executor handover承认窗口缺口，但authoritative native状态仍checked，data_gaps也未显式列该窗口。",
+          "recommendation": "新attempt将Aug25–Oct8设真实未完成并具名缺口；用已保留合法索引按日期/内容/模型价值逐项映射read/covered_by/skip，缺证据才有界采集。补IPO/equity/convertible需求或实质无价值理由，不为填表强制下载。"
+        },
+        {
+          "issue_id": "PW03-HK-FETCH-003",
+          "summary": "逐来源台账遗漏真实FF、CWP GET、verified open和registered adapter调用关联",
+          "expected": "artifact-contract每来源应有可复查call IDs及实际response/状态因果链，等价索引也应明确逐项映射。",
+          "actual": "source_ledger14个calls为空，release/deck仅同一summarycall；native_source_preparation_ids仅四FF，不含11 registered成功；已有原始captured命令和records能人工拼回，但机读索引未绑定。",
+          "recommendation": "新attempt按source_ref从原caps和records投影精准call映射，包括d10d registered及两官方GET；保留失败8f287候选document_id mismatch，区别捕获exit与业务成功。不新GET补账。"
+        },
+        {
+          "issue_id": "PW03-HK-FETCH-004",
+          "summary": "喜马拉雅并表claim仍用非连续原文拼接excerpt",
+          "expected": "SourceRef+locator+opened_and_checked excerpt应忠于原文；多位置必须独立span/locator，self-hash不证明文本连续。",
+          "actual": "claim_ximalaya_postclose在RMB407m收入段[6]后直接接On May18...，实际footnote[6]在财务review后多段；sealed原页及raw均无该连续excerpt，结尾还截为compl。179其余连续匹配；原收入确认两类旧错误本轮已修。",
+          "recommendation": "新attempt拆收入review段和完整footnote[6]两claims，保留各自精确locator/完整句，不改sealed输入；加入原文字节片段绑定诊断。"
+        },
+        {
+          "issue_id": "PW03-HK-FETCH-005",
+          "summary": "腾讯September2026 overview仍无可绑定as-of的公开日期",
+          "expected": "F03/Source clock要求可可靠追溯exactSHA公开日期；封面月份、URL和mtime不能替代。",
+          "actual": "24页原件现存/SHA正确且已打开，published_date=null，已正确排除sources，但策略/公司概览所能补充的独特内容仍不能作as-of来源。H1事件证明仅对应不同SHA。",
+          "recommendation": "保留UNKNOWN_PUBLICATION与排除；如已有合法日期证据，由CWP来源owner exactSHA更新后新attempt读取。审查不新GET或绕过来源钟。"
+        },
+        {
+          "issue_id": "PW03-HK-FETCH-006",
+          "summary": "整run审计保留和native snapshot实际超出既有文件空间限额",
+          "expected": "scope既有32MiB persistent和2MiB final限额应在相应累计写入/最终对象边界生效；保留原失败和原件，超限必须partial。",
+          "actual": "本地统计与sealed观察吻合：53533437B audit persistent，v1/v2 snapshot2262892/2283328B；相比33554432B/2097152B超限。已诚实partial，未伪称compact等于原对象合规。",
+          "recommendation": "后续责任层在写入前统一计入owned累计与native对象大小，预算耗尽停止并保留具名诊断；ROOT四审后按既有基线清理，仅删owned可清派生物，保留失败账、原snapshots和原件。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-hk-00700\\reports\\process.json",
+      "sha256": "bf648c17b00a65d5223738c9cc2b5343e60de13e7b4a80e1f2ca4e334bb65bfb",
+      "byte_size": 82078,
+      "role": "process",
+      "company": "hk-00700",
+      "findings": [
+        {
+          "issue_id": "PW03-HK-PROCESS-001",
+          "summary": "三年收入路径仍由无独立范围校准的条件幅度决定。",
+          "expected": "RF步骤1B/6要求独立source×period×scope×observed range→conversion→native情景；缺幅度应降低自由参数/支持期限，透明标签不使未来范围验证通过。",
+          "actual": "18 calibration unverified/observed_range null，73假设；FY2026 H2 Base=423473 CNYm，FY2028 Base=964924.5326556193，high-low=237871.68105302262 CNYm。六curve均无未来幅度支持。",
+          "recommendation": "在新attempt补最小、可定位且作用于实际DAG的经营/外部范围转换；否则将正式支持期限及交付性质限定为条件情景。保留本run和旧未知，不用算术/工程发布/score0结案。"
+        },
+        {
+          "issue_id": "PW03-HK-PROCESS-002",
+          "summary": "最新filing之后公告窗口被May18历史公告错误标成checked。",
+          "expected": "RF1A material_announcements_since_last_filing应记录截至as-of的实际窗口与原件覆盖。",
+          "actual": "latest H1 source published2026-08-25；category却只引用2026-05-18 TME completion公告。执行包自身明确这是gap，formal输入仍checked。",
+          "recommendation": "新attempt按真实Aug25–Oct8窗口列已读/缺口及资料定位；没有完整证据时保留gap，不以旧公告替代。"
+        },
+        {
+          "issue_id": "PW03-HK-PROCESS-003",
+          "summary": "本期电话会/Q&A资料仍受真实配置市场能力限制。",
+          "expected": "有价值的管理沟通缺失应保留BLOCKED及可用替代的边界，不能声明N/A、目标不存在或内部修复等于外部成功。",
+          "actual": "RF→FF companion实际返回unsupported_market，provider_started false，requests0。已有presentation/release有用但不能覆盖未获Q&A。",
+          "recommendation": "后续在原累计账及可用来源能力内恢复官方电话会/Q&A；本轮继续保留真实gap，不重复零希望付费调用或补造全文。"
+        },
+        {
+          "issue_id": "PW03-HK-PROCESS-004",
+          "summary": "指定的deck原语言摘要真实付费后仍没有可用final产物。",
+          "expected": "指定parse/summary阶段需有可审查原语言结果或明确partial与失败费用；原文实读不是模型任务成功。",
+          "actual": "本run2项批次一成功一dead_letter；deck input2650/output8192/reasoning8192，final0B，response34712B/hash已保留。批次12718tokens/估算13347microUSD，无重试。旧H1整文叙述parser故障本run未以相同阶段重测。",
+          "recommendation": "下个有界真实attempt在已配置策略和累计账内验证可用final；沿用既有AUTO attempt/result诊断，保留旧收费失败与unknown invoice。H1 parser需实际任务复验，不能拿fitz原文读取结案。"
+        },
+        {
+          "issue_id": "PW03-HK-PROCESS-005",
+          "summary": "喜马拉雅收入claim把正文和远处脚注拼成未声明的单一原文跨度。",
+          "expected": "EvidenceClaim应使用准确locator和连续原文；非连续摘录必须拆span或明确多个区间/省略。",
+          "actual": "claim_ximalaya_postclose先取Financial Review RMB407m正文，再直接接约8千字符之后的footnote6 May18片段，locator仅HTML body section1；hash自洽但连续检查FAIL。407m和May18事实本身均在原文，不是金额伪造。",
+          "recommendation": "新attempt拆为Financial Review收入与footnote6纳入时点两条claim，保留源顺序及完整locator；原sealed错误字节不修改。"
+        },
+        {
+          "issue_id": "PW03-HK-PROCESS-006",
+          "summary": "正式forecast目录仍未伴随相邻TRUST_BOUNDARY声明。",
+          "expected": "installed RF compliance-contract Delivery narrative明确TRUST_BOUNDARY.md next to artifact；声明应绑定正式字节且说明结构/宿主/经济边界。",
+          "actual": "execution/TRUST_BOUNDARY.md存在并正确记录unattested/partial/null，但execution/forecast内没有TRUST_BOUNDARY.md，v2 MD没有链接声明。",
+          "recommendation": "下一次交付将实际边界声明伴随正式输出，绑定各自SHA与原观察；不新增许可/签名，旧run只保留历史缺口。"
+        },
+        {
+          "issue_id": "PW03-HK-PROCESS-007",
+          "summary": "native快照的forecast schema元数据与嵌入的实际3.9产物不符。",
+          "expected": "snapshot的emitting engine/schema/input/result元数据应一致，可据此选择正确只读验证语义；旧版本必须保留原字节。",
+          "actual": "snapshot-v2 top forecast_schema_version=3.7，而input_document、forecast_result及publication receipt都是3.9。snapshot input相对v6只加native forecast_version，canonical hash正确；收入没有变化。",
+          "recommendation": "在快照责任层新版本按实际result schema记录并做3.9回归；复验snapshot读入/校验/后续actual匹配。不得改写本run原生快照metadata后冒称旧run绿。"
+        },
+        {
+          "issue_id": "PW03-HK-PROCESS-008",
+          "summary": "真实native快照与audit留存越过既有final/persistent上限。",
+          "expected": "冻结scope的2MiB单final及32MiB persistent需实际约束；重复freeze/consume产生的物理字节不能用unique SHA bytes代替。",
+          "actual": "snapshotv2 2283328B、v1 2262892B，均大于2097152B；封存execution+executor 53533437B >33554432B，freeze copies retained34184589B。保留原件/旧失败正确，compact投影不改变原native越界。",
+          "recommendation": "在新attempt实行既有跨阶段实际字节预算及合法小型快照序列化；保留必要immutable/failure/source证据。本轮清理只由ROOT按基线在四审后处置owned副本，不能删原native以改结论。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-hk-00700\\reports\\analyst.json",
+      "sha256": "80a5fab30b5a7fce5f44019ebed04251cd15b08ed091dc083c71adf800bd6f68",
+      "byte_size": 234969,
+      "role": "analyst",
+      "company": "hk-00700",
+      "findings": [
+        {
+          "issue_id": "ANALYST-001",
+          "summary": "三年条件模型的重要未来量级均没有可审计的量级论证；后两年给出经营率而未校准范围。",
+          "expected": "RF buy-side methodology/review A04/A05/A07/A09要求每个物质性未来假设有匹配业务、期间、口径的经营量级、管理指引或外部参照及转换/反证。合法未来估计无需未来实际值，但需要足以评估所选幅度的依据；无法取得范围时减少自由参数或明确缩短有证支持期。",
+          "actual": "73个analyst_assumption全部明确披露为假设，这是正确分类。15个2026H2增长率以及2027/28国内engagement/monetization、国际CC/FX、广告impressions/eCPM、Social/FTB/Others增长率没有量级区间。全部18个calibration的observed_range=null、adequacy_status=unverified。原文给实际收入、DAU/发行排名、广告机制、云low-twenties历史增长与compute约束；没有把它们转换为作者选定的未来百分比。2026 Base H2 Games8%、Marketing18%、FTB9%接近H1同比9.659/20.884/8.808%，属于透明条件估计，无法证明Low/High或2027/28范围。2026H2 domestic share0.70有FY25/H126混合比例历史参照，但不是准确H225地理桥或已校准未来份额。",
+          "recommendation": "下一次有新执行窗口的研究先给广告与FTB等最大贡献业务建立最小外部/经营桥与反证，逐未来假设解释范围、迁移和持续期；无法取得时减少分解或将未支持期间另列conditional benchmark。保留本次全部原字节和诚实假设标签，不制造未来ground truth或回测。"
+        },
+        {
+          "issue_id": "ANALYST-002",
+          "summary": "联合压力已有真复算，但统一0.95乘数没有表示广告预算、游戏/支付需求与云算力分配的经济联动。",
+          "expected": "A05/A12要求重要共同需求、变现与共享供给压力有一致可复核的触发、量级/时点、传导与恢复/取消解释；单参数结果不能相加作为joint，illustration不可称校准区间。",
+          "actual": "27原生敏感性与两年同乘0.95的真实joint DAG已存在，且明确illustrative/no probability，这是较旧包实质改善。FY2027所有六段乘0.95，FY2028又乘0.95，故终值为原Base×0.9025。这个统一收入折扣没有支付量×客单×佣金、广告预算×load/eCPM、游戏留存/道具递延、内部/外部compute资源的差异响应；原文已明说compute constrained，但没有GPU/利用率/租赁与订阅份额、延期恢复或取消量级。缺失数据没有被伪造为cap，仍不足以覆盖主要经济联合风险。",
+          "recommendation": "保留0.95示例与费用账；下一attempt根据真实活动/资源曝光量设计少量一致需求和供给冲击，记录触发、受影响流、认收时点、恢复/取消及无法量化的范围。不要用CNY收入池当GPU容量，也不要求造未披露物理量。"
+        },
+        {
+          "issue_id": "ANALYST-003",
+          "summary": "原生管理公告覆盖checked没有覆盖最新财报后窗口；未取得电话会却复制“Read original content”结论。",
+          "expected": "A08/management-targets要求公告覆盖的期间与最新filing匹配，checked由实读支持；缺电话会仅表示call内容/targets未知。不得让hash或合规结构把范围缺口显示为已检查。",
+          "actual": "material_announcements_since_last_filing只有2026-05-18 TME并购完成公告，早于2026-08-25最新Tencent interim filing；没有08-25至10-08公告窗口实读证据。document_matrix和handover已明确承认，原生input/output仍checked，renderer显示官方5/6。latest_earnings_call虽正确not_available、unsupported_market且0请求，conclusion却同样写Read original content/No numeric future target located；这一句超出真实取得范围。presentation/strategy现已实读可用，并购公告在控制权用途有效。",
+          "recommendation": "下一attempt修正文档类别的真实窗口与状态，电话会行改为未知内容/未知目标；保留既有并购原件用于控制权。只能在新的授权窗口/剩余预算里按现配置补取，不能补造旧窗口事件或覆盖本次输入。"
+        },
+        {
+          "issue_id": "ANALYST-004",
+          "summary": "Others的正向机制来自业务/认收定义，FTB反证摘录在关键限制词前截断。",
+          "expected": "A02/A04/A08：认收政策与业务边界支持scope/policy，不能独自证明未来增长方向；counterevidence摘录须包含所声称的限制。引用的经济角色要依其内容，不靠分配闭合或字符串SHA。",
+          "actual": "claim_driver_others_mechanism引用AR2025 p167一大段FTB/云认收、Others电影/许可/商品定义与principal-agent起句，角色仍mechanism_direction，future Others增长0/5/10%没有发行、许可、交付或需求计划。旧gross-loss反证已移除、三场景也不再同值，相关旧症状改善；现counter是一般IP风险，仍无Others未来量级。FTB counter excerpt到although w就结束，没有原p20的we are still compute constrained；完整原文和coverage里限制确实存在，故非伪造反证事实，但该claim本身不足以承载声明。",
+          "recommendation": "下一attempt把Others该段归入认收/边界，用真实许可/内容交付或明确不可估替代growth mechanism。FTB反证保留包含compute constrained的连续完整句。不要制造scenario区别来修标签。"
+        },
+        {
+          "issue_id": "ANALYST-005",
+          "summary": "新增喜马拉雅post-close claim把Financial Review和远处footnote6拼成单一HTML原文摘录。",
+          "expected": "artifact-contract与RF data-governance要求opened_and_checked quote能按locator复放相同原文顺序；多span可以，但须各自定位，不把拼接文本当单一continuous excerpt。",
+          "actual": "180个claim自身excerptSHA均匹配；179个归一空白后能在定位原页/HTML连续找到。claim_ximalaya_postclose为Total revenues...RMB407m [6] . On May18...；原HTML407m后是music-related services业务段，May18文字出现在文件末footnote[6]。两处陈述真实，但单HTML body, section1没有标出两span。AR2025认收2个旧quote已连续复放，旧错误未重现。",
+          "recommendation": "保留现包；新attempt把407m业务段和May18并表脚注分两条可定位摘录，研究释义可连接它们但不冒充单quote。"
+        },
+        {
+          "issue_id": "ANALYST-006",
+          "summary": "最新电话会原文仍被本次配置的HK市场能力阻断；同行经营原件没有进入本次范围。",
+          "expected": "A08及审核协议要求保留真实provider限制和缺口。旧403/404不能自动当作本次失败，也不能把成功摘要、手读原件或工程发布推为call/peer研究完成。",
+          "actual": "本次真实RF->FF伴随ET/FMP结果provider_unavailable/reason unsupported_market，provider_requests=0、provider_started=false；无transcript。15合格来源包含CADPA历史资料，但没有同行公司原件/当前经营比较。本次没有重试旧网易403或旧webcast404，不能断言它们今天仍失败。Deck summary本次dead_letter/输出截断，release摘要completed；所有研究事实用原件且本审查已读，摘要失败没有使可取得deck不存在。",
+          "recommendation": "下一有新窗口的attempt选择现配置且支持HK的可用官方沟通/同行原件路线；无法取得则保留call-only目标与外部范围未知。人工手读已有原件可复用，已计费deck失败不得静默重复。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-us-msft\\reports\\storage.json",
+      "sha256": "0cf07997c862f9fd75e3be6e21d9616ccb657413708bb8d66f5acb51d132e2a2",
+      "byte_size": 65067,
+      "role": "storage",
+      "company": "us-msft",
+      "findings": [
+        {
+          "issue_id": "PW03-MSFT-STORAGE-001",
+          "summary": "原件可读但当前 PPTX 与 SRG 未形成 RF native source capture",
+          "expected": "已登记并已核实 exact SourceRef 应可沿适合该文档类型的公共链转为 RF 来源；原文可读和 native capture 分列。",
+          "actual": "11 raw open、9 native captures。c02f PPTX 与208f SRG首exact/无界latest请求真实request_error；bounded latest真实unsupported_sec_form，HTTP exchanges=0、downloads=0、current-operation cost=null。candidate中71条deck claims使用未登记source_id且capture_receipt_sha256=null。",
+          "recommendation": "在新 attempt 以现存 exact Ref 及已验证 owner facts 走适合非 filing 的公共入口；本地反例先验证当前deck/SRG资格与 source/capture 转换，随后新 RF 执行保留原失败。禁止伪造 fiscal_year/identity、不要再下载已有原件。",
+          "forecast_impact": {
+            "amount": null,
+            "currency": "USD",
+            "unit": "million",
+            "direction": "当前产品基数、重述口径与独立行业资料不能作为通过 native 验证的正式来源；无收入误差估计。",
+            "reason": "本轮无正式预测/反事实结果，不能量化收入差额；金额未知不记零。"
+          }
+        },
+        {
+          "issue_id": "PW03-MSFT-STORAGE-002",
+          "summary": "电话会和 PPTX 原语言摘要仍达到8192输出上限并死信",
+          "expected": "在真实配置/预算内形成完整原语言摘要及可回放消费；截断保留真实响应、reasoning细项和费用，不将失败计为成功。",
+          "actual": "P1三请求：deck input1608/output8192/reasoning7938，901B不完整final；call input4575/output8192/reasoning8192，0Bfinal。两项 MODEL_OUTPUT_TRUNCATED/DEPENDENCY_TERMINAL，artifact_ref=null。release成功不抵销两失败。",
+          "recommendation": "在冻结供应商边界内先以隔离本地响应夹具验输出规划与命名截断，保留failed-final/usage；只有新有界真实执行的call/deck完整摘要及公共read和RF消费可复验恢复。",
+          "forecast_impact": {
+            "amount": null,
+            "currency": "USD",
+            "unit": "million",
+            "direction": "电话会管理层经营限制和新口径叙述无法由完成摘要传入模型；金额方向未知。",
+            "reason": "本轮无正式预测/反事实结果，不能量化收入差额；金额未知不记零。"
+          }
+        },
+        {
+          "issue_id": "PW03-MSFT-STORAGE-003",
+          "summary": "release 完成摘要仍漏选关键经营亮点与口径限制",
+          "expected": "S06/S08应保留产品/收入机制、采用与定义限制；金融数值表可过滤，但非表格经营正文不能随模板大类丢弃。",
+          "actual": "真实 selected8/candidate8/coverage_complete=true，dropped_financial782。原文可回放paragraph11 Copilot>30M paidseats、57 Cloud59.3B/RPO678B、59 M365Commercial14%reported vs16%adjusted含2pp prior recognition、60 consumer24%/22%CC、64 Azure43%均未入选。已完成5摘要claims集中于通用研发营销与风险。metrics未参加本轮native叙述批次。",
+          "recommendation": "按这些真实DOM定位在隔离fixture先红，保留业务数值及reported/adjusted/CC限定并分别回放；后用新真实摘要/read/下游证据路径验证，不能以新增0.7.1诊断替封存执行。",
+          "forecast_impact": {
+            "amount": null,
+            "currency": "USD",
+            "unit": "million",
+            "direction": "席位/采用、收入增长可比性与积压转化限制缺失，可能影响趋势与经营模型；当前无已完成预测差额。",
+            "reason": "本轮无正式预测/反事实结果，不能量化收入差额；金额未知不记零。"
+          }
+        },
+        {
+          "issue_id": "PW03-MSFT-STORAGE-004",
+          "summary": "PPTX 第7页精选仍从缺业务主体的半句开始",
+          "expected": "保留句首业务主体和完整必要context，OCR部分质量真实披露；不可将不同分部归属混合。",
+          "actual": "native selected paragraph1以our consulting and support businesses开头，漏前句Agents and Infra will include the Microsoft Cloud, productivity and server licensing。原slide7清楚可见。selected8+9已联合保留previously reported in Azure，此局部改善成立；但deck summary截断、quality coverage=false/recall unverified，11/20/21低confidence。",
+          "recommendation": "真实slide7完整首句与8+9连句作隔离反例，校验主体和分部归属后再验新公共摘要/消费；保留OCR低置信/布局标记并逐关键原图核查。",
+          "forecast_impact": {
+            "amount": null,
+            "currency": "USD",
+            "unit": "million",
+            "direction": "咨询支持业务可能被误归到Devices and Consumer；未证明本次101938基数数值错误。",
+            "reason": "本轮无正式预测/反事实结果，不能量化收入差额；金额未知不记零。"
+          }
+        },
+        {
+          "issue_id": "PW03-MSFT-STORAGE-005",
+          "summary": "公共摘要读取只到 discovery，未形成可验的摘要→事实/假设→收入公式消费",
+          "expected": "S09须分清发现读取和预测证据的实际消费，保留完整来源/精选/摘要/参数/公式路径。",
+          "actual": "release公共 narrative preparation read exit0、locator_count8、replay verified；使用说明为Discovery and qualification context only。candidate107claims无narrative-ref/summary绑定；71deck claims无native capture；未来72参数null，正式forecast/renderer/snapshot/economic artifact缺失。不能把成功read或作者手工原文研究当完整摘要消费。",
+          "recommendation": "source资格/摘要恢复后用新的执行包把真正使用的摘要命题精确关联到事实或假设与参数/公式；允许摘要仅作发现，但对未进入收入模型的路径明确not_used而非全面消费成功。",
+          "forecast_impact": {
+            "amount": null,
+            "currency": "USD",
+            "unit": "million",
+            "direction": "没有已完成三年收入预测可供核算；不能量化叙述遗漏导致的收入差额。",
+            "reason": "本轮无正式预测/反事实结果，不能量化收入差额；金额未知不记零。"
+          }
+        },
+        {
+          "issue_id": "PW03-MSFT-STORAGE-006",
+          "summary": "本次6项已读最新 primary web 页面没有不可变 CWP raw/SourceRef",
+          "expected": "涉及官方沟通、产品可用性和行业边界的证据应登记不可变原文及公共Ref；web观察与本地原件回放必须分列。",
+          "actual": "document_matrix11原件+6web观察+3覆盖限制。6web项source_id=null、formal_cwp_capture=null，本轮记not_attempted/absent；只留URL/简述/tool_reference，不是原HTML SHA。招股/股债融资范围not established而非已证不存在。旧8项403/FMP限制不改，本次也不推定同一外部拒绝。",
+          "recommendation": "由source owner在新有界attempt按已授权当前路由登记所需网页原件/hash/as-of/locator并公共read；不能登记的保留真实named gap和实际usage。供股/可转债/募投资料按价值做有界发现，不机械N/A。",
+          "forecast_impact": {
+            "amount": null,
+            "currency": "USD",
+            "unit": "million",
+            "direction": "最新合同/计费、launch-to-recognition和物理供给反证无法 immutable replay；金额影响未知。",
+            "reason": "本轮无正式预测/反事实结果，不能量化收入差额；金额未知不记零。"
+          }
+        },
+        {
+          "issue_id": "PW03-MSFT-STORAGE-007",
+          "summary": "本run未执行相同batch复用及source/config/generator变更失效验收",
+          "expected": "S10区分实测派生尺寸、generation绑定、重复run和真实版本失效行为；配置存在不能当行为测试。",
+          "actual": "一个P1 batch、3代际manifest，有source/model/parser/OCR/settings指纹，0 reused_artifact_pins。无同batch第二轮或source/config/generator变化run。实测所有owned数量/bytes在限内，但这不证明缓存行为。",
+          "recommendation": "在角色/owner自有隔离fixture做有界重复与三个独立变更，验证复用不新增模型调用、依赖失效只重算相关角色且原件不改；旧历史缓存结果只保留历史身份。",
+          "forecast_impact": {
+            "amount": null,
+            "currency": "USD",
+            "unit": "million",
+            "direction": "缓存正确性尚未验收；无已观察收入错误或容量越界。",
+            "reason": "本轮无正式预测/反事实结果，不能量化收入差额；金额未知不记零。"
+          }
+        },
+        {
+          "issue_id": "PW03-MSFT-STORAGE-008",
+          "summary": "metrics与季报双期间摘要的本轮独立复验未执行",
+          "expected": "旧period/scope摘要缺陷需在新run保留真实parse/select/summary及原期间对照，不能因没有错误摘要产物就宣布修复。",
+          "actual": "metrics和FY2026Q1/Q2/Q3已公共raw及native source捕获；narrative-request只有deck/call/release。Q2仅被手工读出quarter81273/H1 158946且参数period_flow，未重验旧3个月31%/Azure39%与6个月30%/Azure40%压并摘要。",
+          "recommendation": "自有本地fixture先核Q2两段标题/期间与摘要语义、metrics paid-seat/ex-TAC/GAAP-CC定义，随后在新有界attempt保存必要真实摘要及消费。避免无差别全财报切片。",
+          "forecast_impact": {
+            "amount": null,
+            "currency": "USD",
+            "unit": "million",
+            "direction": "季度与累计趋势、指标分母及ex-TAC可能混配；本轮没有错误摘要进入数值公式的证据。",
+            "reason": "本轮无正式预测/反事实结果，不能量化收入差额；金额未知不记零。"
+          }
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-us-msft\\reports\\fetch.json",
+      "sha256": "e79fe03d1723663a9268dea08663c7fd914cae85075771fceac3f89310b0cec2",
+      "byte_size": 99108,
+      "role": "fetch",
+      "company": "us-msft",
+      "findings": [
+        {
+          "issue_id": "PW03-US-FETCH-001",
+          "summary": "已有非期间化deck/行业原件正式复用失败，误入财报-only SEC discovery",
+          "expected": "reuse_only pinned Ref应本地准确匹配verifiedopen；非财报不要求假FY，不以只支持fiscalreport的provider证明其不存在。",
+          "actual": "deck4016522B/Synergy22762B均可开，各3次实际准备失败。boundedlatest有limits仍provider_started/HTTP0/unsupported_sec_form；独立query_local found同Ref。",
+          "recommendation": "支持pinned非期间化Ref只读localselection/verifiedopen；真正unpinnedlatest仍按正确能力有界发现。正确表示industrypublisher/CYscope，勿靠假FY或声称unsupported意味着不存在。"
+        },
+        {
+          "issue_id": "PW03-US-FETCH-002",
+          "summary": "四个request_error具体原因坍缩为unspecified",
+          "expected": "F11要求请求/缺源/provider/parser错误分辨，已知安全validationreason应贯穿FF→RF。",
+          "actual": "exactnoFY/latestnoLimits4次stderrrequest_error:unspecified/calls0；纯validate_request有两个具体message。boundedcause保留不关闭不同情境。",
+          "recommendation": "保留validationreason/phase/usage；用相同4frozenrequest有限本地验证诊断。"
+        },
+        {
+          "issue_id": "PW03-US-FETCH-003",
+          "summary": "新业务/行业网页未进immutable来源链，文档类型价值判断不完整",
+          "expected": "F08/F09每类型要说明需要/复用/尝试/无重大价值；重要新资料绑定source_id+locator，不以无下载判无价值。",
+          "actual": "6web观察无sourceid/formal capture；11raw泛用needed_for。prospectus一行不代equity/placement/convertible/proceeds/M&A判定；Synergyprimaryindustry不等于卖方共识。",
+          "recommendation": "按driver补每类型materiality，必要者走已配置合法有界采集。未尝试URLs保留NOT_RUN，不继承旧403作今天外部限，也不强买付费研究。"
+        },
+        {
+          "issue_id": "PW03-US-FETCH-004",
+          "summary": "真P1批次deck/call native narrative仍截断",
+          "expected": "M3-FETCH002/F08需nativebusiness处理分别真实结果；raw人工读不能冒充native完整，保留费用/failedfinal。",
+          "actual": "deck1608in/8192out/7938reason/final901B；call4575in/8192out/8192reason/final0B，均truncated/dependencyterminal/nullartifact。results1355in/3613out完成17799B但needs_review。",
+          "recommendation": "在现预算/用途下优化有界input/output并验原语言内容+locatorcoverage，先本地诊断；当前reviewer不收费重发。"
+        },
+        {
+          "issue_id": "PW03-US-FETCH-005",
+          "summary": "本run未启动ET/FMP，旧credentials/entitlement不算已复测",
+          "expected": "原157/53、138需要actualET auth/entitlement/usage或NOT_RUN+原始替代；env路径存在不等于成功。",
+          "actual": "只有officialFY26Q4HTML原始callnative/open；无ET/FMP/TXTJSON/HTTP认证新结果。不读密钥，不推今天同旧拒绝。",
+          "recommendation": "保留NOT_RUN/旧unknown，不要求为审查重复下或付费订阅。下一需要ET时按真实配置启动，给具名认证/entitlement/usage，不输出密钥。"
+        },
+        {
+          "issue_id": "PW03-US-FETCH-006",
+          "summary": "全复用/pre-HTTP拒绝未复测旧真实下载限额和usage投影",
+          "expected": "原157/55、139/F04/F10要求实际HTTP读取界限和metadata+primarymeter贯穿CWP→FF→RF，历史缺count/bytes/fee保留null。",
+          "actual": "newdownload0/2nonfinancialpreHTTPHTTP0，没有SECactualsuccess/faildownload反证旧unknown和M3successmissingmetadatausage。配置不等于运行enforcement。",
+          "recommendation": "专项NOT_RUN/unknownbudget保留，先本地非零metadata+primarycontract；下一有业务价值必要采集验真实链，不为审查重复GET旧raw。"
+        },
+        {
+          "issue_id": "PW03-US-FETCH-007",
+          "summary": "FY26SEC index/primary115B差额仍无网络版本证据",
+          "expected": "原157/140/F09需区分索引陈旧/版本变化/bytes定义；hash/DEI不是远端版本一致证明。",
+          "actual": "current同SHA8585616B；历史index8585501B/delta115，index原响应/Content-Length未存。无currentGET无法调和。",
+          "recommendation": "维持BLOCKED，优先已有真实index/headers；无则unknown，下一必要采集保存证据，勿补造header/改raw消115B。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-us-msft\\reports\\process.json",
+      "sha256": "b467a9a38ffcf4058a2979b25d0a76f1f1fb85ee206a1bc98bea4278febceef2",
+      "byte_size": 71877,
+      "role": "process",
+      "company": "us-msft",
+      "findings": [
+        {
+          "issue_id": "PW03-US-PROCESS-001",
+          "summary": "请求3年收入路径尚未建成：72未来参数与84未来计算为空。",
+          "expected": "RF1B/6/7/8要求来源×scope×period×range→转换→native三情景完整路径。",
+          "actual": "原件方向和Q1指引可用；8产品FY27–29所有增长值null。年度recognized/effective、公司年值、CAGR、driver增量ranking、joint stress与单shock均未完成。",
+          "recommendation": "新attempt按企业付费暴露、净价/mix、供给commissioning与确认窗口减少自由参数；有证据再填区间，不制造硬概率。"
+        },
+        {
+          "issue_id": "PW03-US-PROCESS-002",
+          "summary": "原件已存在可读，非财报RF→FF接口仍拒绝deck与Synergy，71claims未绑定正式capture。",
+          "expected": "RF3单一source_preparation应消费CWP已资格化SourceRef并保留capture；已公开原件不应被财报form路由约束吞掉。",
+          "actual": "deck/Synergy raw打开11/11但RFsources9；exact请求先request_error，bounded latest变为unsupported_sec_form。deck64季数+7targetclaims缺source/capture，native gate拒绝。",
+          "recommendation": "修非财报SourceRef复用/capture传递，保留既有资格和零HTTP/current-cost-null，不伪造fiscal_year或改kind绕过。"
+        },
+        {
+          "issue_id": "PW03-US-PROCESS-003",
+          "summary": "官方沟通与target账未完成；FY27 Xbox恢复增长和公司capacity目标留在正文/事实之外未进target账。",
+          "expected": "RF1A要求找到的所有重大/contextual revenue/capacity目标入账，exact wording、期限、scope、treatment，并完成六类官方通讯。",
+          "actual": "call line205真实“expect to return the business to growth in fiscal2027”未在17项target；两年roughlydouble capacity在facts/prose而非capacity_plan target。3通讯incomplete。M36517/18调整与Azure<1pp FX原文已保存，但18未单列数值测量项，全年FX<1pp亦未登记。全部17unmodeled，未比较三情景。",
+          "recommendation": "新attempt全源上下文抽取目标与capacity plan，季度/年度、旧/新perimeter、CC/FX和调整后measure分开登记；不把定性措辞硬化为任意中心点。"
+        },
+        {
+          "issue_id": "PW03-US-PROCESS-004",
+          "summary": "两个segment确认政策claim内容与目标不符，另有拼接摘录定位不完整。",
+          "expected": "RF5及data-governance要求每段认列机制由实际对应原文支持；Note1广告action与咨询asprovided语句真实可用。",
+          "actual": "FrontierSupport引用“Revenue from search advertising excluding TAC…”定义；SearchAdvertising引用同定义加MD&A unearned paragraph，缺广告出现/action触发。四段policy excerpt非连续拼接却无拼接标记；Note1 locator未指明其它出处。",
+          "recommendation": "用Note1 p56“广告出现或必要action完成”“咨询服务提供时”精确claim；支持服务与各混合产品分段对应，跨段摘录逐locator并声明transcription/composite。"
+        },
+        {
+          "issue_id": "PW03-US-PROCESS-005",
+          "summary": "正式forecast/MD、强validator、renderer与immutable RF snapshot仍未完成。",
+          "expected": "RF10/11要求input-gated formal发布、同JSONrenderer和native immutable snapshot；缺产物不得由prose替代。",
+          "actual": "六真实调用仅hash检查通过；其余5 exit2，compute/snapshot首错unknown deck source，verbose也明确首个未来value不是numeric。strong result validation/render未执行，四formal outputs不存在。",
+          "recommendation": "在新attempt修前置后通过原生入口发布、strong验证、render、snapshot；不能编辑该sealed attempt或用文字代结果。"
+        },
+        {
+          "issue_id": "PW03-US-PROCESS-006",
+          "summary": "P1及Q&A选择修正已实用，但两份native narrative仍output截断，完整消费失败。",
+          "expected": "已授权指定P1大节点需完整select→model→read→真实消费；失败字节/token/费用不得用手读替成功。",
+          "actual": "运行selector0.7.0；call真实96selected/99candidate、Q&A1–6均在；deck23/24partial。deck与call模型output8192、reasoning7938/8192，dead_letter；release只有1completed、5claimsread needs_review。",
+          "recommendation": "保留0.7.0原运行和失败final；expert按真实generation_policy/必要scope调整，0.7.1局部probe不能冒称本运行。"
+        },
+        {
+          "issue_id": "PW03-US-PROCESS-007",
+          "summary": "新增六个external primary web观察仅保存摘要/tool IDs，关键原正文与数字无法在封存包独立重读。",
+          "expected": "RF3和process卡要求引用原件locator与可重读内容；未知不能由URL/toolref/title证明。",
+          "actual": "6网页均formal capture null，保存$5trillion2031和capacitydouble2/3years及GA/credits日期等观察，但无body/capture可本地独立复核；review限制0network故未重GET。原SynergyJuly30原件有供应，但RFcapture另失败。",
+          "recommendation": "新attempt通过CWP/source引用或有界真实原生body捕获保留各页面发布日、exact值/单位、period和可打开locator；不多次hash整湖。"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast-audit\\runs\\pw03-20261011T010657Z-us-msft\\reports\\analyst.json",
+      "sha256": "2a7222849ff556cfee4f8109f82af5bfa938e55b6d46689546197e91102d92b9",
+      "byte_size": 125491,
+      "role": "analyst",
+      "company": "us-msft",
+      "findings": [
+        {
+          "issue_id": "ANALYST-001",
+          "summary": "三年低/基/高未来量级未完成：72增长参数null，正式预测和经济支持产物不存在",
+          "expected": "按冻结scope及RF买方方法，三年来源→经营量→认收→年度low/base/high路径应有独立边界；不足保持partial。",
+          "actual": "8产品×3情景×3年=72增长值全部null；base24项kind=analyst_assumption，low/high48项kind=scenario_stress。三年结构诚实保留但无formal forecast-v2.json/md、economic-support-native-v2.json、snapshot-v2.json。原生调用真实尝试且拒绝输入。",
+          "recommendation": "executor新attempt建立可比经营区间后运行原生预测/经济诊断；不以历史美元增量倍数、quarter×4、flat后两年或任意百分点替代未来研究。",
+          "forecast_impact": "所有FY2027/28/29公司/产品收入、年度增量及3yCAGR不可知；本轮没有预测金额可宣称正确或与旧381954比较。331839 USD million基准的完整future路径缺失。"
+        },
+        {
+          "issue_id": "ANALYST-002",
+          "summary": "五driver根缺三年经营量级桥，证据范围及反证独立性不足",
+          "expected": "付费暴露/使用量、净价/产品组合、投产/续约与认收窗口需按当前范围校准年度贡献/持续期；一个段落不能计两份独立量级证据。",
+          "actual": "driver文字连真实参数ID，所有future数字null，direct_growth无经营输入。Azure机制与counter均L243，该段真实含容量约束但不是独立两份未来量级参考；Search两节点同L248。M365counter L236主要强premium/席位正证，具体低ARPU约束L268未作其native counter。Enterprise机制Dynamics L178承接许可/Industry/Frontier；consumer根Xbox重置与Windows库存不是同需求曲线。通用leading/falsifier重复，没有金额贡献/排序。",
+          "recommendation": "分别建Azure计费用量/交付，M365平均付费席位/ARPU/用量/续约，许可合同节点，IndustryCRM/医疗，Frontier服务，Searchgross/net及LinkedIn订阅，Xbox内容和Windows周期的有界桥；量级缺口明确推断距离、独立比较与deadline。",
+          "forecast_impact": "Azure+M365基准202237占60.94%；历史增量45022占89.84%总增量；Enterprise宽根基准65890。历史比重确定审查优先级，不能确定未来贡献，FY29金额未知。"
+        },
+        {
+          "issue_id": "ANALYST-003",
+          "summary": "管理目标漏全年Xbox/FX限定，SearchexTAC误matched；17/18CC原话恢复只是部分修正",
+          "expected": "RF management-targets要求所有物质forward statement的定性/数字/期间/currency_basis/调整基础与范围保存；目标可能乐观仍不能漏，比较前解决gross/net、商业/consumer边界。",
+          "actual": "17targets全部unmodeled_data_gap。新17%CC及18%CC调整后已同claim存原话，不能继承旧18完全消失；仅raw_target_value17，没有独立adjusted variant/比较。AzureQ1FX<1pp原话恢复；company全年FX<1pp和新Agents/Devices Q1 FX缺完整target/bridge。L205 XboxFY2027 return business to growth仅在叙述/segment rationale，没有正式全年target，call仍coverage_complete=true。SearchexTAC标matched/reported，但与gross Search/advertising含LinkedInMarketing/Premium范围不同。Windows全年高十几下降和旧commercial/server许可mid-single下降有目标，仍无当前组件年度比较桥。",
+          "recommendation": "补Xbox年度、各FX与17/18调整variant；明确原指标与当前父级组成/gross/net，保留定性不造mid-single点值，Q1不annualize；独立年度路径后再计算目标差异。",
+          "forecast_impact": "涉及Xbox21790、Windows17087、许可37285、Search24835 USD million基准；公司Q1管理89850–90950只一季，商业17/18不可套整个M365100299；无本轮forecast故目标差异金额未知。"
+        },
+        {
+          "issue_id": "ANALYST-004",
+          "summary": "Frontier确认claim实际引用SearchexTAC KPI；Search/Xbox确认链不完整",
+          "expected": "policy claim需精确支持对应业务控制/服务期/utilization/广告action和gross/net，locator真实命中；KPI或MD&A递延介绍不能代确认政策。",
+          "actual": "Frontier claim标Note1pp56–57，excerpt却是原L767搜索广告exTAC KPI，没有consulting services policy。真Note1L1966为广告appears/action及consulting services provided。Searchclaim拼KPI+MD&Aunearned，没有ads trigger/转入LinkedInPremium服务期；Xboxclaim有hardwarecontrol+unearned但缺内容/订阅timing；八业务通用mixedtrigger不能补错语义。Cloud/license政策可核；非连续拼接不自动判数字虚假。",
+          "recommendation": "修复真实Note1对应claim；分清KPI定义与policy角色，逐父级组件写确认边界，Searchgross/net及LinkedIn订阅、Xbox内容/服务/hardware明确；保留已认收父级不二次认收。",
+          "forecast_impact": "Frontier8260+Search24835+Xbox21790=54885 USD million，占16.54%总收入处于确认证据审查范围。无forecast不能声称实际错认收金额；错绑将使后续经营→年度收入桥不可审。"
+        },
+        {
+          "issue_id": "ANALYST-005",
+          "summary": "共同cloud供需/first-party占用/客户与延期风险仍无量化联合路径",
+          "expected": "CPU/GPU交付、billable需求/usage净价和first-party负荷应有物理量纲一致的联合约束，订阅/usage认收和延期/取消分清，不重扣M365服务为extra reserve，不以任意美元比例替容量。",
+          "actual": "旧90%/95%/10%美元cap已移除，无已校准替代。24single±1pp只是定义，native未执行；qualitativejoint不是金额路径。无shared_compute物理约束、commissioned可用容量或Azure外部/M365/内部R&D训练分配，Industrycloud暴露未知。OpenAI24100/AR6000已读，没有customer-specificfutureusage/融资/履约stress，不能ARdelay自动转revenuecancel。",
+          "recommendation": "建暴露和物理供需图，分订阅承诺/usage变动、连续冲击/离散交付延期/取消/恢复，瓶颈一次取min；独立有界条件后才跑nativejoint和单因子，不编reserve/概率。",
+          "forecast_impact": "Azure+M365FY26的202237/60.94%为重点但不是全部compute敏感池。FY27local1pp导数1019.38/1002.99 USDmillion，无base所以非正式敏感性；FY29范围未知。OpenAI公司24100占7.26%，不是Azure独占暴露。"
+        },
+        {
+          "issue_id": "ANALYST-006",
+          "summary": "RPO及新产品商业化事实没有形成前瞻确认节奏/父级增量校验",
+          "expected": "已读约30%RPO next12months、paid/registered/preview事实应进行条件cross-check；平均付费数量/净价/上线与服务期/父级包含和替代决定年度增量，不能只标included或避免乱加。",
+          "actual": "totalRPO684b和commercial678b重叠存量，2.3yrs属commercial平均期，next12months约30%期望。本人复算205200/203400与flat历史残余126639，executor无FY27值/残余桥。Copilot>30m期末paidseat，E7百万席位包含Copilot/E5/Entra/Agent365；GitHub50musers非paid且重分类到M365，60%QoQ无绝对量；Agent36540mregistered非billable，Perceptionprivatepreview无GA量级。缺平均暴露/净价/续约/认收节奏，credits或客户数量不自动收入conversion。",
+          "recommendation": "以totalRPO×约30%作conditional期待认收而非floor，解释new/in-year/renewal/other残余，不加commercial、不硬分Azure/M365；逐物质产品stage/付费定义/上线/父级/增量或替代/确认窗口及三年gap，无ASP/平均暴露不编。",
+          "forecast_impact": "openingRPO期望205200不是收入保证；真实FY27residual=R_FY2027−205200未知。registered40m或融资stock不能拉出收入第二曲线；未来产品改mix但金额未知。"
+        },
+        {
+          "issue_id": "ANALYST-007",
+          "summary": "deck原件可读但尚非RF合法source；近期策略/独立前瞻资料不可完整复验",
+          "expected": "重分类基准/目标消费端须有合法source/capture；重要策略/外部前瞻需原件/读回/范围与future链，未知保留。旧403不推今天失败，新工程/sourceowner32读回不代本次RF。",
+          "actual": "本人CWP public reader实开11原件；candidate9RFsources缺deck及Synergy。64quarter事实引缺席decksource，formal流程拒绝。当前exact缺period请求错误、boundedlatest unsupported_sec_form保留，原执行1152/0f/selector0.7.0，不冒称未发布0.7.1被消费。6postfilingweb只有日志，不是完整冻结正文，strategy/materialannouncecoveragefalse。narrative真实3请求1success2MODEL_OUTPUT_TRUNCATED；本人call/deck原件仍可直接核，不说原件不存在。旧403与OpenAI2026条款本review不GET，今日403/成功都未证明。",
+          "recommendation": "后续executor修deck/source边界并保留历史失败，必要有界原件获取/研究即可，不为形式成功重发已收费摘要。最新策略/合作条款列原版本日期范围，链接实际future推断；工程与经济支持分别验。",
+          "forecast_impact": "64重分类quarter事实及8产品基准影响native交付；独立历史算术正确也不能使当前输入合法。策略/合作/行业future边界仍未知，formalforecast及economic不存在不能接受。"
+        }
+      ]
+    }
+  ]
+}

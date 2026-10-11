@@ -113,9 +113,17 @@ For a run-rate target, preserve the raw target and require `comparison_basis="an
 
 ### 1B. Establish an independent reference case
 
-Build the smallest sufficient operating bridge before choosing scenario ranges. Register independently observed period/scope/unit ranges, conversion assumptions and contrary evidence. A missing comparable range remains unverified or conditional; reduce free parameters or shorten the explicit horizon. Independent range endpoints may stay outside the revenue DAG; actual conversions and outputs must bind to the target business, scenario, period and native DAG — an unrelated scope or period never reaches `referenced_range` through a calibration label. See [evidence-role-calibration.md](references/evidence-role-calibration.md).
+Build the smallest sufficient operating bridge before choosing scenario ranges. Register independently observed period/scope/unit ranges, conversion assumptions and contrary evidence. A missing comparable range remains unverified or conditional; reduce free parameters and disclose the conditional tail over the requested horizon. Shorten that horizon only when the task permits a changed scope. Independent range endpoints may stay outside the revenue DAG; actual conversions and outputs must bind to the target business, scenario, period and native DAG — an unrelated scope or period never reaches `referenced_range` through a calibration label. See [evidence-role-calibration.md](references/evidence-role-calibration.md).
 
 Build the operating view and a comparable outside benchmark before choosing which management target to incorporate. Check historical execution, failed or delayed peers, customer behavior and supply limits. Write alternative explanations and observable falsifiers for material assumptions. Translate each supported qualitative conclusion into a driver, period and range; do not add narrative conviction directly to growth.
+
+### 1C. Execute the research-to-model bridge
+
+Use the ordered [research authoring procedure](references/research-coverage.md#research-authoring-procedure) to turn actual source reads into a complete native forecast. Record the latest-filing-to-as-of window and material document types, including IR activity records, offering/convertible prospectuses and transaction audit/pro-forma originals when relevant. Keep discovery, verified reading, narrative consumption and model use distinct; a missing call or an unread announcement cannot be labeled checked.
+
+Future `analyst_assumption` values may be non-null without future actuals. Choose the smallest supported bridge, check observed quantities/prices/cohorts or comparable history, disclose conversions, and reduce free parameters when ranges are unknown. A transparent conditional three-year Low/Base/High forecast is legitimate; all-null future slots do not complete the requested forecast. Never invent an empirical range or claim economic acceptance from a passing diagnostic. Preserve the requested horizon and disclose where later years are conditional; only change the requested horizon with a stated task-level decision.
+
+Check quote continuity, actor, measurement/control windows, constant-currency versus reported growth, gross/net and internal eliminations before binding a claim. Use shared shocks once in the same native DAG, retain the actual shock exposure and recovery/cancellation assumptions, and rerun complete scenarios. These are research responsibilities at the existing major execution/review node; they add no permission file, manual sign-off, source identity registry or extra validation stage.
 
 ### 2. Verify history and the base
 
